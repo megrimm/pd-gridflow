@@ -76,14 +76,30 @@ void CObject_freeee (void *victim) {
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
+static Ruby mPointer=0;
 
-/*static Ruby cPointer2=0;
-static Ruby Pointer_new (void *ptr) {
-	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, ptr);
+\class Pointer < CObject
+struct Pointer : CObject {
+	void *p;
+	Pointer() { assert(!"DYING HORRIBLY"); }
+	Pointer(void *_p) : p(_p) {}
+	\decl Ruby ptr ();
+};
+\def Ruby ptr () { return LONG2NUM(((long)p)); }
+\classinfo {
+	IEVAL(rself,
+"self.module_eval{"
+"def inspect; p=('%08x'%ptr).gsub(/^\\.\\.f/,''); \"#<Pointer:#{p}>\" % ptr; end;"
+"alias to_s inspect }"
+);}
+\end class Pointer
+Ruby Pointer_s_new (void *ptr) {
+	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, new Pointer(ptr));
 }
-static void *Pointer_get (Ruby rself) {
-	void *p; Data_Get_Struct(rself,void *,p); return p;
-}*/
+void *Pointer_get (Ruby rself) {
+	DGS(Pointer);
+	return self->p;
+}
 
 static Ruby make_error_message () {
 	char buf[1000];
@@ -189,8 +205,8 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 		SETSYMBOL(at,gensym((char *)name));
 	} else if (FLOAT_P(arg)) {
 		SETFLOAT(at,RFLOAT(arg)->value);
-//	} else if (rb_obj_class(arg)==Pointer_class2) {
-//		SETPOINTER(at,Pointer_get(arg));
+	} else if (rb_obj_class(arg)==mPointer) {
+		SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
 	} else {
 		RAISE("cannot convert argument of class '%s'",
 			rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
@@ -203,8 +219,8 @@ static Ruby Bridge_import_value(const t_atom *at) {
 		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
 	} else if (t==A_FLOAT) {
 		return rb_float_new(at->a_w.w_float);
-//	} else if (t==A_POINTER) {
-//		return Pointer_new(at->a_w.w_gpointer);
+	} else if (t==A_POINTER) {
+		return Pointer_s_new(at->a_w.w_gpointer);
 		} else {
 		return Qnil; /* unknown */
 	}
@@ -647,7 +663,7 @@ struct Clock : CObject {
 	\decl void unset();
 };
 
-void Clock_fn (Ruby rself) { rb_funcall(rself,SI(call),0); }
+void Clock_fn (Ruby rself) { rb_funcall_myrescue(rself,SI(call),0); }
 void Clock_mark (Clock *self) { rb_gc_mark(self->owner); }
 void Clock_free (Clock *self) { clock_free(self->serf); CObject_freeee(self); }
 
@@ -699,7 +715,9 @@ Ruby gf_bridge_init (Ruby rself) {
 	// SDEF("add_to_menu",add_to_menu,-1);
 
 	\startall
-	rb_define_singleton_method(EVAL("GridFlow::Clock"),"new", (RMethod)Clock_s_new, 1);
+	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
+	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
+	mPointer = EVAL("GridFlow::Pointer");
 	return Qnil;
 }
 
