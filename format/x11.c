@@ -587,15 +587,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		unsigned char *prop_r;
 		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
 		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
-		//fprintf(stderr,"%*s0x%08x -> %s (%lu)\n",level*2,"",(int)children_r[i],prop_r,nitems_r);
 		uint32 value_l = strlen(value);
 		bool match = prop_r && nitems_r>=value_l &&
 			strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
 		XFree(prop_r);
 		if (match) {
 			target=children_r[i];
-			//gfpost("x11 embed: 0x%08x -> (%lu bytes) %s",
-			//	(int)children_r[i],nitems_r,prop_r);
 			break;
 		}
 		target = search_window_tree(children_r[i],key,value,level+1);
@@ -715,6 +712,13 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
+		} else if (winspec==SYM(embed_by_id)) {
+			const char *winspec2 = rb_sym_name(argv[i+1]);
+			if (strncmp(winspec2,"0x",2)==0) {
+				parent = strtol(winspec2+2,0,16);
+			} else {
+				parent = atoi(winspec2);
+			}
 		} else {
 			if (TYPE(winspec)==T_SYMBOL) {
 				const char *winspec2 = rb_sym_name(winspec);
