@@ -97,42 +97,36 @@ size_t n, const char *type, const char *file, int line, bool deadbeef) {
 	return data;
 }
 
-void *qrealloc(void *data, int n) {
-	void *data2 = realloc(data,n);
-#ifdef HAVE_LEAKAGE_DUMP
-	if (gf_alloc_set && gf_alloc_set!=Qnil) {
-		rb_funcall(gf_alloc_set,SI([]=),2,PTR2FIX(data2),
-			rb_funcall(gf_alloc_set,SI(delete),1,PTR2FIX(data)));
-	}
-#endif
-	return data2;
-}
-
 /* to help find dangling references */
 void qfree(void *data, bool fadedfoo) {
+	static int warncount=0;
 	assert(data);
 #ifdef HAVE_LEAKAGE_DUMP
 	if (gf_alloc_set && gf_alloc_set!=Qnil) {
 		VALUE a = rb_funcall(gf_alloc_set,SI(delete),1,PTR2FIX(data));
 		if (a==Qnil)
-			gfpost("warning: qfree() on unregistered pointer %08x",(long)data);
+			gfpost("warning: qfree() on unregistered pointer %08x (#%d)",
+				(long)data,warncount++);
 		else
 			free(FIX2PTR(a));
 	}
 #endif
+#ifdef HAVE_DEADBEEF
+/*
 	int n=8;
 	data = realloc(data,n);
-#ifdef HAVE_DEADBEEF
 	if (fadedfoo) {
 		long *data2 = (long *) data;
 		int nn = (int) n/4;
 		for (int i=0; i<nn; i++) data2[i] = 0xFADEDF00;
 	}
+*/
 #endif
-	free(data);
+//	free(data);
+//	delete data;
 }
 
-static VALUE GridFlow_alloctrace_to_s (VALUE self, VALUE p) {
+static VALUE GridFlow_alloctrace_to_a (VALUE self, VALUE p) {
 	AllocTrace *al = (AllocTrace *)FIX2PTR(p);
 	VALUE a = rb_ary_new2(3);
 	rb_ary_push(a,PTR2FIX(al->data));
@@ -224,19 +218,22 @@ VALUE FObject_delete(VALUE argc, VALUE *argv, VALUE $) {
 }
 
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
+	VALUE gc2 = rb_ivar_get(qlass,SI(@grid_class));
+/*
+	if (gc2==Qnil) RAISE("@grid_class not found in %s",
+		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);
+*/
+
+	GridClass *gc = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
+
 	BFObject *foreign_peer = 0;
 	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
-	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
+	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : NEW(GridObject,());
 	VALUE $; /* ruby_peer */
 	c_peer->foreign_peer = foreign_peer;
 	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
 	c_peer->peer = $;
-	VALUE gc2 = rb_ivar_get(qlass,SI(@grid_class));
-	/*
-	if (gc2==Qnil) RAISE("@grid_class not found in %s",
-		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);
-	*/
-	c_peer->grid_class = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
+	c_peer->grid_class = gc;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;
@@ -400,7 +397,7 @@ void Init_gridflow () {
 #endif
 
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
-	rb_define_singleton_method(GridFlow_module,"alloctrace_to_s",(RFunc)GridFlow_alloctrace_to_s,1);
+	rb_define_singleton_method(GridFlow_module,"alloctrace_to_a",(RFunc)GridFlow_alloctrace_to_a,1);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
 	rb_ivar_set(GridFlow_module, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(GridFlow_module, SI(@fclasses_set), rb_hash_new());

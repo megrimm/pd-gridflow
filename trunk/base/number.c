@@ -276,7 +276,7 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	if (size<1) RAISE("not enough masks");
 	if (size>4) RAISE("too many masks (%d)",size);
 	for (int i=0; i<size; i++) masks2[i] = INT(masks[i]);
-	c_peer = new BitPacking(endian,bytes,size,masks2);
+	c_peer = NEW(BitPacking,(endian,bytes,size,masks2));
 	
 	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
@@ -303,12 +303,12 @@ void Dim::check() {
 /* returns a string like "Dim(240,320,3)" */
 char *Dim::to_s() {
 	/* if you blow 256 chars it's your own fault */
-	char *bottom = NEW(char,256);
-	char *s = bottom;
+	char buf[256];
+	char *s = buf;
 	s += sprintf(s,"Dim(");
 	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
 	s += sprintf(s,")");
-	return (char *)REALLOC(bottom,strlen(bottom)+1);
+	return strdup(buf);
 }
 
 /* **************************************************************** */
