@@ -537,6 +537,19 @@ class ForEach < FObject
 	install "foreach", 1, 1
 end
 
+class Sprintf < GridFlow::FObject
+  def initialize(format) _1_symbol(format) end
+  def _0_list(*a)
+    a.each {|x| x=x.to_s if Symbol===x }
+    send_out 0, :symbol, (sprintf @format, *a).intern
+  end
+  alias _0_int _0_list
+  alias _0_float _0_list
+  alias _0_symbol _0_list
+  def _1_symbol(format) @format = format.to_s end
+  install "sprintf", 2, 1
+end
+
 #-------- fClasses for: jMax compatibility
 
 class JMaxUDPSend < FObject
@@ -862,7 +875,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 	end if false # disabled
 
 	class ListElement < FObject
-		def initialize(i) super; @i=i.to_i end
+		def initialize(i=0) super; @i=i.to_i end
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _0_list(*a)
 			e=a[@i]
@@ -876,7 +889,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 	end
 
 	class ListSublist < FObject
-		def initialize(i,n) super; @i,@n=i.to_i,n.to_i end
+		def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
 		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
@@ -884,14 +897,8 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 	end
 
 	class ListPrepend < FObject
-		def initialize(*b) super; 
-			GridFlow.post "%s", @b.inspect
-		@b=b
-		end
-		def _0_list(*a) a[0,0]=@b
-			GridFlow.post "%s", a.inspect
-			GridFlow.post "%s", @b.inspect
-			send_out 0, :list, *a end
+		def initialize(*b) super; @b=b end
+		def _0_list(*a) a[0,0]=@b; send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
 		install "#{LPrefix}listprepend", 2, 1
 	end
