@@ -102,7 +102,7 @@ GRCLASS(FormatMPEG,LIST(GRINLET2(FormatMPEG,0,4)),
 ){
 	IEVAL(rself,"install 'FormatMPEG',1,1;"
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
-	" (using Ward\\'s)'");
+	" (using Ward\\'s)', 'mpg,mpeg'");
 }
 
 \end class FormatMPEG
