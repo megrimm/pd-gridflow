@@ -123,6 +123,13 @@ static int HashFunc_default(void *k) {
 	return (int)k;
 }
 
+int HashFunc_string(void *k) {
+	const char *s = k;
+	int h=0;
+	while (*s) h = (h<<13)^(h>>19)^(*s++);
+	return h;
+}
+
 Dict *Dict_new(CompFunc cf, HashFunc hf) {
 	int i;
 	Dict *$ = NEW(Dict,1);

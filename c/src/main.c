@@ -123,7 +123,7 @@ void gridflow_module_init (void) {
 
 	gf_object_set = Dict_new(0,0);
 	gf_timer_set  = Dict_new(0,0);
-	gf_timer = Timer_new(fts_sched_get_clock(), gf_timer_handler, 0);
+	gf_timer = Timer_new(gf_timer_handler, 0);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
@@ -456,7 +456,7 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 void gf_timer_handler (Timer *foo, void *obj) {
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-	Timer_set_delay(gf_timer, 75.0);
+	Timer_set_delay(gf_timer, 200.0);
 	Timer_arm(gf_timer);
 }
 

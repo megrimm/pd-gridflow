@@ -49,7 +49,7 @@ typedef fts_object_t FObject;
 #define Var_put_int(a,b)    fts_set_int(a,b)
 #define Var_put_ptr(a,b)    fts_set_ptr(a,b)
 
-#define Timer_new(a,b,c) fts_alarm_new(a,b,c)
+#define Timer_new(b,c) fts_alarm_new(fts_sched_get_clock(),b,c)
 #define Timer_set_delay(a,b) fts_alarm_set_delay(a,b)
 #define Timer_arm(a) fts_alarm_arm(a)
 
