@@ -438,7 +438,7 @@ Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
-	defines :JMAXDISTDIR => proc { `pwd`.chomp + "/bundled/jmax" }
+        defines :JMAXDISTDIR => proc { Dir.getwd + "/bundled/jmax" }
 	test proc {
 		c_test '
 		#define new new_
@@ -809,7 +809,7 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	"%.o: %.c.fcs #{common_deps2}\n"+
 	"\ttime #{comp}\n"
 }
-mf.gsub! /^.SUFFIXES:.*$/, ".SUFFIXES:\n\n"
+mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
