@@ -113,7 +113,7 @@ GRID_INLET(FormatJPEG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0,4)),
+GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0)),
 \grdecl
 ) {
 	IEVAL(rself,

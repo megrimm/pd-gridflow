@@ -338,7 +338,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(FormatQuickTimeCamera,LIST(GRINLET2(FormatQuickTimeCamera,0,4)),
+GRCLASS(FormatQuickTimeCamera,LIST(GRINLET2(FormatQuickTimeCamera,0)),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatQuickTimeCamera',1,1;"
@@ -499,7 +499,7 @@ err:
 		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
 }
 
-GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0,4)),
+GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0)),
 \grdecl
 ){
 	IEVAL(rself,

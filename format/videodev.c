@@ -542,7 +542,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 /* **************************************************************** */
 
-GRCLASS(FormatVideoDev,LIST(GRINLET2(FormatVideoDev,0,4)),
+GRCLASS(FormatVideoDev,LIST(GRINLET2(FormatVideoDev,0)),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatVideoDev',1,1;"

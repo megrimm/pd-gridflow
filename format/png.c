@@ -135,7 +135,7 @@ GRID_INLET(FormatPNG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatPNG,LIST(GRINLET2(FormatPNG,0,4)),
+GRCLASS(FormatPNG,LIST(GRINLET2(FormatPNG,0)),
 \grdecl
 ) {
 	IEVAL(rself,

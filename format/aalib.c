@@ -161,7 +161,7 @@ GRID_INLET(FormatAALib,0) {
 }
 
 GRCLASS(FormatAALib,
-LIST(GRINLET2(FormatAALib,0,4)),
+LIST(GRINLET2(FormatAALib,0)),
 \grdecl
 ){
 	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());

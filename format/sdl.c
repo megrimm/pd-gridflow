@@ -124,7 +124,7 @@ GRID_INLET(FormatSDL,0) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatSDL_alarm));
 }
 
-GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0,4)),
+GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0)),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatSDL',1,1;"

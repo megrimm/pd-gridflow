@@ -739,7 +739,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 \def void delete_m () {
 }
 
-GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),
+GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0)),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatX11',1,1;"
