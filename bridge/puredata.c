@@ -324,6 +324,7 @@ void bf_activatefn(t_gobj *x, struct _glist *glist, int state) {
 void bf_deletefn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
+	canvas_deletelinesfor(glist, (t_text *)x);
 }
 
 /*  making visible or invisible */
