@@ -65,9 +65,10 @@ GRID_INLET(FormatAALib,0) {
 	}
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 } GRID_FLOW {
+	int f = in->factor();
 	if (raw_mode) {
-		int sx = min(in->factor,aa_scrwidth(context));
-		int y = in->dex/in->factor;
+		int sx = min(f,aa_scrwidth(context));
+		int y = in->dex/f;
 		while (n) {
 			if (y>=aa_scrheight(context)) return;
 			for (int x=0; x<sx; x++) {
@@ -75,18 +76,18 @@ GRID_INLET(FormatAALib,0) {
 				context->attrbuffer[y*aa_scrwidth(context)+x]=data[x*2+1];
 			}
 			y++;
-			n -= in->factor;
-			data += in->factor;
+			n-=f;
+			data+=f;
 		}
 	} else {
-		int sx = min(in->factor,context->imgwidth);
-		int y = in->dex/in->factor;
+		int sx = min(f,context->imgwidth);
+		int y = in->dex/f;
 		while (n) {
 			if (y>=context->imgheight) return;
 			for (int x=0; x<sx; x++) aa_putpixel(context,x,y,data[x]);
 			y++;
-			n -= in->factor;
-			data += in->factor;
+			n-=f;
+			data+=f;
 		}
 	}
 } GRID_FINISH {
