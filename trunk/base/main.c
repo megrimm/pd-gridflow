@@ -34,7 +34,6 @@
 
 #include "grid.h"
 
-#define MAKE_TMP_LOG
 #define MAKE_LEAK_DUMP
 
 #include "../config.h"
@@ -129,8 +128,6 @@ void qfree(void *data) {
 	free(data);
 }
 
-void post(const char *,...);
-
 static void qdump$1(void *obj, void *k, void *v) {
 	AllocTrace *al = (AllocTrace *)v;
 	post("warning: %d bytes leak allocated at file %s line %d",
@@ -150,9 +147,7 @@ void qdump(void) {
 */
 }
 
-const char *whine_header = "[whine] ";
 VALUE gf_object_set = 0;
-VALUE gf_timer_set = 0;
 
 FILE *whine_f;
 
@@ -168,16 +163,7 @@ char *rb_sym_name(VALUE sym) {
 	return rb_id2name(SYM2ID(sym));
 }
 
-void whinep(VALUE $) {
-/*
-	rb_funcall(rb_eval_string("STDERR"),rb_intern("puts"),1,
-		rb_funcall($,rb_intern("inspect"),0));
-*/
-	whine(RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr);
-}
-
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
-//	rb_funcall2(rb_cObject,rb_intern("p"),*argc,*argv);
 	if (*argc<1) RAISE("not enough args");
 	*outlet = NUM2INT(**argv);
 	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
@@ -206,7 +192,7 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	int i, n;
 	FObject_send_out_2(argc,argv,$);
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
-	whine("message: %s",rb_sym_name(sym));
+//	whine("message: %s",rb_sym_name(sym));
 	if (ary==Qnil) return Qnil;
 	n = RARRAY(ary)->len;
 	for (i=0; i<n; i++) {
@@ -231,13 +217,6 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->grid_class = FIX2PTR(rb_ivar_get(qlass,rb_intern("@grid_class")));
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 
-	whinep($);
-	{
-		int i;
-		for (i=0; i<argc; i++) whinep(argv[i]);
-	}
-	whine("argc = %d",argc);
-	whine("argv = %p",argv);
 	rb_funcall2($,rb_intern("initialize"),argc,argv);
 	return $;
 }
@@ -269,10 +248,6 @@ static void disable_signal_handlers (void) {
 	for(i=0; i<COUNT(signals); i++) {
 		signal(signals[i],SIG_DFL);
 	}
-}
-
-void showenv(const char *s) {
-	whine("%s = %s\n", s, getenv(s));
 }
 
 static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
@@ -307,11 +282,15 @@ VALUE gf_ruby_init$1 (void *foo) {
 }
 
 VALUE gf_ruby_init$2 (void *foo) {
-	whine("untrapped ruby exception occurred loading GridFlow");
+	post("untrapped ruby exception occurred loading GridFlow\n");
 	return Qnil;
 }
 
 #define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
+
+void showenv(const char *s) {
+	post("%s = %s\n", s, getenv(s));
+}
 
 /* at this point, Ruby should already be started */
 /* this part will load GridFlow _into_ Ruby */
@@ -336,17 +315,12 @@ void gf_init (void) {
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-	disable_signal_handlers();
+//	disable_signal_handlers();
 	srandom(time(0));
 
-#ifdef MAKE_TMP_LOG
-	whine_f = fopen("/tmp/gridflow.log","w");
-	if (!whine_f) whine_f = fopen("/dev/null","w");
-#endif
-
-	whine("Welcome to GridFlow " GF_VERSION);
-	whine("Compiled on: " GF_COMPILE_TIME);
-	whine("--- GridFlow startup: begin ---");
+	post("Welcome to GridFlow " GF_VERSION);
+	post("Compiled on: " GF_COMPILE_TIME);
+	post("--- GridFlow startup: begin ---");
 
 	showenv("LD_LIBRARY_PATH");
 	showenv("LIBRARY_PATH");
@@ -360,7 +334,7 @@ void gf_init (void) {
 
 	gf_ruby_init$1(0);
 
-	whine("--- GridFlow startup: end ---");
+	post("--- GridFlow startup: end ---\n");
 }
 
 /* this is the entry point for all of the above */
@@ -436,57 +410,25 @@ void MainLoop_add(void *data, void (*func)(void)) {
 }
 
 void MainLoop_remove(void *data) {
-	rb_funcall(rb_eval_string("$tasks"),rb_intern("remove"), 1,
+	rb_funcall(rb_eval_string("$tasks"),rb_intern("delete"), 1,
 		PTR2FIX(data));
 }
 
-/*
-	a slightly friendlier version of post(...)
-	it removes redundant messages.
-	it also ensures that a \n is added at the end.
-*/
 void whine(const char *fmt, ...) {
-	static const char *last_format = 0;
-	static int format_count = 0;
-
-	if (last_format && strcmp(last_format,fmt)==0) {
-		format_count++;
-		if (format_count >= 64) {
-			if (high_bit(format_count)-low_bit(format_count) < 3) {
-				post("[too many similar posts. this is # %d]\n",format_count);
-#ifdef MAKE_TMP_LOG
-				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
-				fflush(whine_f);
-#endif
-			}
-			return;
-		}
-	} else {
-		last_format = strdup(fmt);
-		format_count = 1;
-	}
-
-	/* do the real stuff now */
-	{
-		va_list args;
-		char post_s[256*4];
-		int length;
-		va_start(args,fmt);
-		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
-		post_s[sizeof(post_s)-1]=0; /* safety */
-		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
-#ifdef MAKE_TMP_LOG
-		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
-		fflush(whine_f);
-#endif
-	}
+	va_list args;
+	char post_s[256*4];
+	int length;
+	va_start(args,fmt);
+	length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
+	post_s[sizeof(post_s)-1]=0; /* safety */
+	rb_funcall(GridFlow_module,rb_intern("whine2"),2,
+		rb_str_new2(fmt),rb_str_new2(post_s));
 }
 
 VALUE gf_post_string (VALUE $, VALUE s) {
 	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
 
 	post("%s",RSTRING(s)->ptr);
-//	fprintf(stderr,"%s",RSTRING(s)->ptr);
 	return Qnil;
 }
 
