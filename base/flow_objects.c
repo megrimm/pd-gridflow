@@ -71,7 +71,7 @@ GRID_INLET(GridCast,0) {
 	this->nt = nt;
 }
 
-\classinfo { IEVAL(rself,"install '@cast',1,1"); }
+\classinfo { IEVAL(rself,"install '#cast',1,1"); }
 \end class GridCast
 
 //****************************************************************
@@ -127,8 +127,6 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
 		dim = dim_grid->to_dim();
-	} else {
-		dim = 0;
 	}
 }
 
@@ -137,7 +135,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	while (out->dim) out->send(1,foo);
 }
 
-\classinfo { IEVAL(rself,"install '@import',2,1"); }
+\classinfo { IEVAL(rself,"install '#import',2,1"); }
 \end class GridImport
 
 //****************************************************************
@@ -162,7 +160,7 @@ GRID_INLET(GridExport,0) {
 	}
 } GRID_FINISH {
 } GRID_END
-\classinfo { IEVAL(rself,"install '@export',1,1"); }
+\classinfo { IEVAL(rself,"install '#export',1,1"); }
 \end class GridExport
 
 /* **************************************************************** */
@@ -192,7 +190,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); // unkeep
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '@export_list',1,1"); }
+\classinfo { IEVAL(rself,"install '#export_list',1,1"); }
 \end class GridExportList
 
 /* **************************************************************** */
@@ -788,8 +786,7 @@ GRID_INLET(GridFinished,0) {
 	Ruby a[] = { INT2NUM(0), bsym._bang };
 	send_out(COUNT(a),a);
 } GRID_END
-
-\classinfo { IEVAL(rself,"install '@finished',1,1"); }
+\classinfo { IEVAL(rself,"install '#finished',1,1"); }
 \end class GridFinished
 
 \class GridDim < GridObject
@@ -801,7 +798,7 @@ GRID_INLET(GridDim,0) {
 	out.send(in->dim->n,Pt<int32>(in->dim->v,in->dim->n));
 	in->set_mode(0);
 } GRID_END
-\classinfo { IEVAL(rself,"install '@dim',1,1"); }
+\classinfo { IEVAL(rself,"install '#dim',1,1"); }
 \end class GridDim
 
 \class GridType < GridObject
@@ -813,7 +810,7 @@ GRID_INLET(GridType,0) {
 	send_out(COUNT(a),a);
 	in->set_mode(0);
 } GRID_END
-\classinfo { IEVAL(rself,"install '@type',1,1"); }
+\classinfo { IEVAL(rself,"install '#type',1,1"); }
 \end class GridType
 
 //****************************************************************
@@ -869,7 +866,7 @@ GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	dim = dim_grid->to_dim();
 }
 
-\classinfo { IEVAL(rself,"install '@redim',2,1"); }
+\classinfo { IEVAL(rself,"install '#redim',2,1"); }
 \end class GridRedim
 
 //****************************************************************
@@ -938,7 +935,7 @@ GRID_INLET(GridJoin,0) {
 	if (in->dim->prod()==0) out->send(r->dim->prod(),(Pt<T>)*r);
 } GRID_END
 
-GRID_INPUT(GridJoin,1,r) {L} GRID_END
+GRID_INPUT(GridJoin,1,r) {} GRID_END
 
 \def void initialize (int which_dim, Grid *r) {
 	rb_call_super(argc,argv);
@@ -983,7 +980,7 @@ GRID_INLET(GridGrade,0) {
 	}
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '@grade',1,1"); }
+\classinfo { IEVAL(rself,"install '#grade',1,1"); }
 \end class GridGrade
 
 //****************************************************************
@@ -1039,7 +1036,7 @@ GRID_INLET(GridTranspose,0) {
 	this->dim2 = dim2;
 }
 
-\classinfo { IEVAL(rself,"install '@transpose',3,1"); }
+\classinfo { IEVAL(rself,"install '#transpose',3,1"); }
 \end class GridTranspose
 
 //****************************************************************
@@ -1067,7 +1064,7 @@ GRID_INLET(GridPerspective,0) {
 } GRID_END
 
 \def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z; }
-\classinfo { IEVAL(rself,"install '@perspective',1,1"); }
+\classinfo { IEVAL(rself,"install '#perspective',1,1"); }
 \end class GridPerspective
 
 static Numop *OP(Ruby x) { return FIX2PTR(Numop,rb_hash_aref(op_dict,x)); }

@@ -60,16 +60,6 @@ end
 
 module GridFlow #------------------
 
-def self.esmtick
-	$esm.tick
-	$mainloop.timers.after(0.1) { esmtick }
-end
-
-def self.start_eval_server
-	$esm = EvalServerManager.new
-	esmtick
-end
-
 def self.post(s,*a)
 	post_string(sprintf("%s"+s,post_header,*a))
 	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
@@ -358,7 +348,13 @@ def GridFlow.macerr(i)
 	end
 end
 
-GridOp.addcreator "@"
+%w(
+  # #finished #type #dim #transpose #perspective
+  #grade #redim #import #export #export_list #cast
+  #scale_by #downscale_by #draw_polygon #draw_image #layer
+).each {|k|
+	FObject.name_lookup(k).addcreator k.gsub(/#/,"@")
+}
 end # module GridFlow
 
 #----------------------------------------------------------------#
@@ -384,64 +380,6 @@ class IO
     state = fcntl(Fcntl::F_GETFL, 0)
     fcntl(Fcntl::F_SETFL, (state & ~bit) |
       (if flag; bit else 0 end))
-  end
-end
-
-# this will accept and manage connections
-class EvalServerManager
-  def initialize
-    @conns = {}
-    for @port in 6400..6409
-      begin
-        @sock = TCPServer.new(@port)
-      rescue StandardError => e; GridFlow.post "ESM error: #{e}"
-      else break
-      end
-    end
-    raise "can't connect on any port in 6400..6409" if not @sock
-    STDERR.puts "eval-server launched on port #{@port}"
-    @sock.nonblock = true
-  end
-  def tick
-    STDERR.puts "esm tick begin"
-    begin
-      @conns[EvalServer.new(@sock.accept)]=1
-      STDERR.puts "NEW CONNECTION"
-    rescue Errno::EAGAIN
-    end
-    for s in @conns.keys do
-      begin s.tick
-      rescue Errno::EAGAIN
-      rescue EOFError, Errno::EPIPE
-        STDERR.puts "DEAD CONNECTION"
-        @conns.delete(s)
-      rescue Errno::E000
-        STDERR.puts "Error: Success (this is a bug in Ruby)"
-        @conns.delete(s)
-      end
-    end
-    STDERR.puts "esm tick end"
-  end
-end
-
-# this handles one server-side regular socket
-class EvalServer
-  def initialize sock
-    @sock = sock
-    @sock.nonblock = true
-  end
-  def tick
-    STDERR.puts "#{self} tick begin"
-    @sock.print "\e[0;36m"
-    @sock.flush
-    line = @sock.readline
-    begin
-      @sock.puts "\e[0;1;32m#{eval(line).inspect}"
-    rescue Exception => e
-      @sock.puts "\e[0;1;33m"+["#{e.class}: #{e}",*e.backtrace].join("\n")
-    end
-    @sock.flush
-    STDERR.puts "#{self} tick end"
   end
 end
 

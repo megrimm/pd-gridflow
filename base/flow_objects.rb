@@ -35,9 +35,6 @@ class GridGlobal < FObject
 		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
 	end
 	def _0_profiler_dump
-#		GridFlow.post "sorry, the profiler is broken. please someone fix it."
-#		return
-
 		ol = []
 		total=0
 		GridFlow.post "-"*32
@@ -73,25 +70,20 @@ class GridGlobal < FObject
 		end
 		GridFlow.post "-"*32
 	end
-
 	# security issue if patches shouldn't be allowed to do anything they want
 	def _0_eval(*l)
 		s = l.map{|x|x.to_i.chr}.join""
 		GridFlow.post "ruby: %s", s
-		GridFlow.post "returns: %s", eval(s).inspect end
-
+		GridFlow.post "returns: %s", eval(s).inspect
+	end
 	install "@global", 1, 1
 	begin
-#	if GridFlow.bridge_name == "puredata"
 		GridFlow.whatever :bind, "@global", "gridflow"
-		# GridFlow.whatever :bind, self, "gridflow"
-		# GridFlow.whatever :bind, self.new, "gridflow"
 	rescue Exception
 	end
 end
 
 class FPS < GridObject
-	@handlers = [] # for GridObject (BLETCH)
 	def initialize(*options)
 		super
 		@history = []   # list of delays between incoming messages
@@ -115,6 +107,18 @@ class FPS < GridObject
 	def _0_position(*); end
 	def method_missing(*a) end # ignore non-bangs
 	def _0_period x; @period=x end
+	def publish
+		if not @detailed then send_out 0, fps; return end
+		@history.sort!
+		n=@history.length
+		fps = @history.length/@duration
+		send_out 0, fps,
+			1000*@history.min,
+			500*(@history[n/2]+@history[(n-1)/2]),
+			1000*@history.max,
+			1000/fps,
+			1000*(@history.moment(2) - @history.moment(1)**2)**0.5
+	end
 	def _0_bang
 		t = case @mode
 		when :real; Time.new.to_f
@@ -126,23 +130,10 @@ class FPS < GridObject
 		@duration += t-@last
 		@last = t
 		return if @duration<@period
-		n=@history.length
-		fps = n/@duration
-		@duration = 0
-		if fps>0.001 then
-			if @detailed
-				@history.sort!
-				send_out 0, fps,
-					1000*@history.min,
-					500*(@history[n/2]+@history[(n-1)/2]),
-					1000*@history.max,
-					1000/fps,
-					1000*(@history.moment(2) - @history.moment(1)**2)**0.5
-			else
-				send_out 0, fps
-			end
-		end
+		fps = @history.length/@duration
+		publish if fps>0.001
 		@history.clear
+		@duration = 0
 	end
 	install "fps", 1, 1
 end
@@ -351,56 +342,32 @@ end
 
 #-------- fClasses for: math
 
-class GridComplexSq < FPatcher
-  @fobjects = ["@inner * + 0   {2 2 2 # 0 2 1 -1 1 0 1 1}","@fold * 1"]
-  @wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
-  def initialize() super end
-  install "@complex_sq", 1, 1
+class Messagebox<FPatcher
+  def initialize(*a) @a=a end
+  def _0_float(x)  send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
+  def _0_symbol(x) send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
+  install "gfmessagebox", 1, 1
 end
 
-class GridRavel < FPatcher
-	@fobjects = ["@dim","@fold * 1","@redim {1}","@redim {42}"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,3,1, -1,0,3,0, 3,0,-1,0]
-	def initialize() super end
-	install "@ravel", 1, 1
+class GridOp1<FPatcher
+  @fobjects = ["# +","@type","gfmessagebox list $1 #"]
+  @wires = [-1,0,1,0, 1,0,2,0, 2,0,0,1, -1,0,0,0, 0,0,-1,0]
+  def initialize(sym)
+	super
+	@fobjects[0].send_in 0, case sym
+		when :rand; "op rand"; when :sqrt; "op sqrt"
+		when :abs;  "op abs-"; when :sq;   "op sq-"
+		else raise "bork BORK bork" end
+  end
+  install "@!", 1, 1
 end
 
 #-------- fClasses for: video
 
-# linear solarization
-class GridSolarize < FPatcher
-	@fobjects = ["@ & 255","@ << 1","@ inv+ 255","@! abs","@ inv+ 255"]
-	@wires = [4,0,-1,0]
-	for i in 0..4 do @wires.concat [i-1,0,i,0] end
-	def initialize() super end
-	install "@solarize", 1, 1
-end		
-
-class GridCheckers < GridObject
-	def initialize
-		super
-		@chain =
-		[
-			"@ >> 3","@ & 1","@fold ^","@ inv+ 0","@ & 63",
-			"@ + 128","@outer + {0 0 0}"
-		].map {|o| FObject[o] }
-		(0..@chain.length-2).each {|i| @chain[i].connect 0,@chain[i+1],0 }
-		@chain[-1].connect 0,self,1
-	end
-	def _0_grid(*a) @chain[0]._0_grid(*a) end
-	def _1_grid(*a) send_out(0, :grid, *a) end
-	install "@checkers", 1, 1
-end
-
 class GridScaleTo < FPatcher
 	@fobjects = [
-			"@for {0 0} {42 42} {1 1}",
-			"@ *",
-			"@ /",
-			"@store",
-			"@dim",
-			"@redim {2}",
-			"@finished",
+		"@for {0 0} {42 42} {1 1}","@ *","@ /",
+		"@store","@dim","@redim {2}","@finished",
 	]
 	@wires = []
 	for i in 1..3 do @wires.concat [i-1,0,i,0] end
@@ -415,105 +382,11 @@ class GridScaleTo < FPatcher
 	install "@scale_to", 2, 1
 end
 
-class GridContrast < FPatcher
-	@fobjects = [
-		"@ inv+ 255",
-		"@ *",
-		"@ >> 8",
-		"@ inv+ 255",
-		"@ *",
-		"@ >> 8",
-		"@ min 255",
-		"@ max 0",
-	] 
-	@wires = []
-	for i in 0..7 do @wires.concat [i-1,0,i,0] end
-	@wires.concat [7,0,-1,0, -1,1,1,1, -1,2,4,1]
-	def initialize(iwhiteness=256,contrast=256)
-		super
-		send_in 1, iwhiteness
-		send_in 2, contrast
-	end
-	install "@contrast", 3, 1
-end
-
-class GridSpread < FPatcher
-	@fobjects = [
-		"@ & 0",
-		"@ + 5",
-		"@! rand",
-		"@ - 2",
-		"@ +",
-		"@ >> 1",
-	]
-	@wires = []
-	for i in 0..3 do @wires.concat [i-1,0,i,0] end
-	@wires.concat [3,0,4,1, -1,0,4,0, 4,0,-1,0, -1,1,1,1, -1,1,5,0, 5,0,3,1]
-	def initialize(factor)
-		super
-		send_in 1, factor
-	end
-	install "@spread", 2, 1
-end
-
-class GridPosterize < FPatcher
-	@fobjects =  [
-		"@ *",
-		"@ >> 8",
-		"@ * 255",
-		"@ /",
-		"@ - 1",
-	]
-	@wires = []
-	for i in 0..3 do @wires.concat [i-1,0,i,0] end
-	@wires.concat [3,0,-1,0, -1,1,0,1, -1,1,4,0, 4,0,3,1]
-	def initialize(factor=2) super; send_in 1, factor end
-	install "@posterize", 2, 1
-end
-
-class RGBtoGreyscale < FPatcher
-	@fobjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-	def initialize() super end
-	install "@rgb_to_greyscale", 1, 1
-end
-
-class GreyscaleToRGB < FPatcher
-	@fobjects = ["@fold put 0","@outer ignore {0 0 0}"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
-	def initialize() super end
-	install "@greyscale_to_rgb", 1, 1
-end
-
 #<vektor> told me to:
 # RGBtoYUV : @fobjects = ["@inner * + 0 {3 3 # 66 -38 112 128 -74 -94 25 112 -18}",
 #	"@ >> 8","@ + {16 128 128}"]
 # YUVtoRGB : @fobjects = ["@ - {16 128 128}",
 #	"@inner * + 0 {3 3 # 298 298 298 0 -100 516 409 -208 0}","@ >> 8"]
-
-class RGBtoYUV < FPatcher
-	@fobjects = ["@inner * + 0 {3 3 # 76 -44 128 150 -85 -108 29 128 -21}",
-	"@ >> 8","@ + {0 128 128}"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-	def initialize() super end
-	install "@rgb_to_yuv", 1, 1
-end
-
-class YUVtoRGB < FPatcher
-	@fobjects = ["@ - {0 128 128}",
-	"@inner * + 0 {3 3 # 256 256 256 0 -88 454 358 -183 0}","@ >> 8"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-	def initialize() super end
-	install "@yuv_to_rgb", 1, 1
-end
-
-class GridApplyColormapChannelwise < FPatcher
-	@fobjects = ["@outer & {-1 0}","@ + {3 2 # 0 0 0 1 0 2}","@store"]
-	@wires = [-1,1,2,1,2,0,-1,0]
-	for i in 0..2 do @wires.concat [i-1,0,i,0] end
-	def initialize() super end
-	install "@apply_colormap_channelwise", 2, 1
-end
 
 class GridRotate < FPatcher
 	@fobjects = ["@inner * + 0","@ >> 8"]
@@ -551,15 +424,6 @@ class GridRotate < FPatcher
 	def _1_int(angle) @angle = angle; update_rotator end
 	alias _1_float _1_int
 	install "@rotate", 2, 1
-end
-
-class GridRemapImage < FPatcher
-	@fobjects = ["@dim","@inner * + 0 {3 2 # 1 0 0}","@for {0 0} {0 0} {1 1}",
-	"@store","@finished"]
-	@wires = [-1,0,3,1, -1,0,0,0, 0,0,1,0, 1,0,2,1,
-	-1,0,4,0, 4,0,2,0, 2,0,-1,1, -1,1,3,0, 3,0,-1,0]
-	def initialize() super end
-	install "@remap_image", 2, 2
 end
 
 class ForEach < FObject
@@ -830,10 +694,7 @@ end
 
 # bogus class for representing objects that have no recognized class.
 class Broken < FObject
-	def args
-		a=@args.dup
-		a[7,0] = " "+classname
-		a end
+	def args; a=@args.dup; a[7,0] = " "+classname; a end
 	install "broken", 0, 0
 end
 
@@ -847,14 +708,8 @@ class Fork < FObject
 end
 
 class Shunt < FObject
-	def initialize(n,i=0)
-		super
-		@n=n
-		@i=i
-	end
-	def initialize2
-		GridFlow.whatever :addoutlets, self, @n
-	end
+	def initialize(n,i=0) super; @n=n; @i=i end
+	def initialize2; GridFlow.whatever :addoutlets, self, @n end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
 		send_out @i,$2.intern,*args

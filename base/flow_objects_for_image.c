@@ -168,7 +168,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 \end class GridConvolve
 
 /* ---------------------------------------------------------------- */
-/* "@scale_by" does quick scaling of pictures by integer factors */
+/* "#scale_by" does quick scaling of pictures by integer factors */
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 \class GridScaleBy < GridObject
 struct GridScaleBy : GridObject {
@@ -227,7 +227,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-\classinfo { IEVAL(rself,"install '@scale_by',2,1"); }
+\classinfo { IEVAL(rself,"install '#scale_by',2,1"); }
 \end class GridScaleBy
 
 // ----------------------------------------------------------------
@@ -315,7 +315,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-\classinfo { IEVAL(rself,"install '@downscale_by',2,1"); }
+\classinfo { IEVAL(rself,"install '#downscale_by',2,1"); }
 \end class GridDownscaleBy
 
 //****************************************************************
@@ -352,7 +352,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-\classinfo { IEVAL(rself,"install '@layer',2,1"); }
+\classinfo { IEVAL(rself,"install '#layer',2,1"); }
 \end class GridLayer
 
 // ****************************************************************
@@ -475,7 +475,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-\classinfo { IEVAL(rself,"install '@draw_polygon',3,1"); }
+\classinfo { IEVAL(rself,"install '#draw_polygon',3,1"); }
 \end class DrawPolygon
 
 //****************************************************************
@@ -599,7 +599,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '@draw_image',3,1"); }
+\classinfo { IEVAL(rself,"install '#draw_image',3,1"); }
 \end class DrawImage
 
 void startup_flow_objects_for_image () {
