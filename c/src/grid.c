@@ -29,7 +29,7 @@ int gf_max_packet_length = 1024;
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 
 #define INFO(_self_) \
-	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
+	Symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
 	(_self_)->winlet
 
 /* **************** GridInlet ************************************* */

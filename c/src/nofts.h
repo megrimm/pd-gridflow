@@ -98,8 +98,8 @@ typedef struct fts_alarm_t {
 #define post printf
 #define fts_SystemInlet (-1)
 
-Symbol fts_new_symbol(const char *s);
-const char *fts_symbol_name(Symbol sym);
+Symbol Symbol_new(const char *s);
+const char *Symbol_name(Symbol sym);
 
 void fts_method_define_optargs(fts_class_t *, int winlet, Symbol
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);

@@ -77,11 +77,7 @@ err:
 	return false;
 }
 
-GRID_BEGIN(FormatMPEG,0) {
-	whine("libmpeg.so can't write MPEG");
-	return false;
-}
-
+GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
 GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
@@ -100,7 +96,7 @@ Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
 		whine("usage: mpeg file <filename>"); goto err;
 	}
-	filename = fts_symbol_name(fts_get_symbol(at+1));
+	filename = Symbol_name(fts_get_symbol(at+1));
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {

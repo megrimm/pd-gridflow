@@ -54,7 +54,7 @@ static int symbols_n = 0;
 /* **************************************************************** */
 /* Symbol */
 
-Symbol fts_new_symbol (const char *s) {
+Symbol Symbol_new (const char *s) {
 	int i;
 	if (!symbols) symbols = NEW(symbol_entry_t,1024);
 	for (i=0; i<symbols_n; i++) {
@@ -66,7 +66,7 @@ Symbol fts_new_symbol (const char *s) {
 	return symbols_n++;
 }
 
-const char *fts_symbol_name(Symbol sym) { return symbols[sym].s; }
+const char *Symbol_name(Symbol sym) { return symbols[sym].s; }
 
 /* **************************************************************** */
 /* Atom */
@@ -97,9 +97,9 @@ void sprintf_atoms(char *buf, int ac, fts_atom_t *at) {
 		if (fts_is_int(at+i)) {
 			buf += sprintf(buf,"%d",fts_get_int(at+i));
 		} else if (fts_is_symbol(at+i)) {
-			buf += sprintf(buf,"%s",fts_symbol_name(fts_get_symbol(at+i)));
+			buf += sprintf(buf,"%s",Symbol_name(fts_get_symbol(at+i)));
 		} else {
-			buf += sprintf(buf,"<%s>",fts_symbol_name(at[i].type));
+			buf += sprintf(buf,"<%s>",Symbol_name(at[i].type));
 		}
 		*buf++ = i==ac-1 ? 0 : ' '; /* separate by space */
 	}
@@ -162,7 +162,7 @@ fts_object_t *fts_object_new(int ac, fts_atom_t *at) {
 	Symbol classname = fts_get_symbol(at);
 	fts_class_t *class = symbols[classname].c;
 	if (!class) {
-		printf("ERROR: class not found: %s\n",fts_symbol_name(classname));
+		printf("ERROR: class not found: %s\n",Symbol_name(classname));
 		exit(1);
 	}
 	return fts_object_new2(class,ac,at);
@@ -228,10 +228,10 @@ void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const fts_atom_t *
 	MethodDecl *md = (MethodDecl *) Dict_get(d,(void *)sel);
 	if (md) {
 /*		printf("object %08lx inlet %d selector %s argc
-		%d\n",(uint32)o,inlet,fts_symbol_name(sel),ac); */
+		%d\n",(uint32)o,inlet,Symbol_name(sel),ac); */
 		md->method(o,inlet,sel,ac,at);
 	} else {
-		printf("unknown method `%s'\n",fts_symbol_name(sel));
+		printf("unknown method `%s'\n",Symbol_name(sel));
 	}
 }
 
@@ -342,7 +342,7 @@ int silly_parse(const char *s, fts_atom_t *a) {
 			fts_set_int(a+i,atoi(p[i]));
 			//printf("%i: '%s' is int\n",i,p[i]);
 		} else {
-			fts_set_symbol(a+i,fts_new_symbol(p[i]));
+			fts_set_symbol(a+i,Symbol_new(p[i]));
 			//printf("%i: '%s' is symbol\n",i,p[i]);
 		}
 	}
@@ -379,15 +379,16 @@ extern fts_module_t gridflow_module;
 int gridflow_init_standalone (void) {
 	alarms = List_new(0);
 	fprintf(stdout,"< gridflow_init_standalone\n");
-	fts_new_symbol("symbol");
-	fts_new_symbol("int");
-	fts_new_symbol("float");
-	fts_new_symbol("list");
-	fts_new_symbol("ptr");
-	fts_new_symbol("init");
-	fts_new_symbol("delete");
-	fts_new_symbol("bang");
-	fts_new_symbol("set");
+
+	Symbol_new("symbol");
+	Symbol_new("int");
+	Symbol_new("float");
+	Symbol_new("list");
+	Symbol_new("ptr");
+	Symbol_new("init");
+	Symbol_new("delete");
+	Symbol_new("bang");
+	Symbol_new("set");
 
 	gridflow_module.foo3();
 	printf("> gridflow_init_standalone\n");

@@ -98,7 +98,7 @@ void gridflow_module_init (void) {
 	post("--- GridFlow startup: begin ---\n");
 
 	#define DEF_SYM(_sym_) \
-		sym_##_sym_ = fts_new_symbol(#_sym_);
+		sym_##_sym_ = Symbol_new(#_sym_);
 
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
@@ -297,7 +297,7 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 		}
 		fts_method_define_optargs(class,
 			md->winlet == -1 ? fts_SystemInlet : md->winlet,
-			fts_new_symbol(md->selector), md->method,
+			Symbol_new(md->selector), md->method,
 			n_args, args, min_args == -1 ? n_args : min_args);
 	}
 }
@@ -409,7 +409,7 @@ METHOD(GFGlobal,profiler_dump) {
 			ppm%10000,
 			o,
 			buf);
-		/* fts_symbol_name(fts_get_class_name(o->o.head.cl)) */
+		/* Symbol_new(fts_get_class_name(o->o.head.cl)) */
 	}
 	whine("--------------------------------");
 }
@@ -431,7 +431,7 @@ LIST(),
 	DECL(GFGlobal, 0,profiler_dump, ""))
 
 #define INSTALL(_sym_,_name_) \
-	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
 void gf_alarm_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 	callback(o);

@@ -198,7 +198,7 @@ typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
 #define GET(_i_,_type_,_default_) \
 	fts_get_##_type_##_arg (ac,at,_i_,_default_)
 
-#define SYM(_sym_) (fts_new_symbol(#_sym_))
+#define SYM(_sym_) (Symbol_new(#_sym_))
 
 /* **************************************************************** */
 /* other general purpose stuff */

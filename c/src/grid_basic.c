@@ -50,7 +50,7 @@ GRID_FLOW(GridImport,0) {
 		data += n2;
 	}
 }
-GRID_END(GridImport,0) { }
+GRID_END(GridImport,0) {}
 
 /* same inlet 1 as @redim */
 
@@ -63,6 +63,7 @@ GRID_BEGIN(GridImport,1) {
 	return true;
 }
 
+/* !@#$ this could blow up */
 GRID_FLOW(GridImport,1) {
 	int i;
 	int *dim = NEW(int,n);
@@ -83,7 +84,7 @@ METHOD(GridImport,init) {
 
 	for (i=0; i<ac-1; i++) {
 		v[i] = GET(i+1,int,0);
-		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
+		if (v[i]<1 || v[i]>MAX_INDICES) RAISE2("dim out of bounds");
 	}
 	$->dim = Dim_new(ac-1,v);
 }
@@ -137,10 +138,7 @@ GRID_FLOW(GridExport,0) {
 
 GRID_END(GridExport,0) {}
 
-METHOD(GridExport,init) {
-	GridObject_init((GridObject *)$);
-}
-
+METHOD(GridExport,init)   { GridObject_init(  (GridObject *)$); }
 METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridExport,inlets:1,outlets:1,
@@ -175,10 +173,7 @@ GRID_END(GridExportList,0) {
 	FREE($->list);
 }
 
-METHOD(GridExportList,init) {
-	GridObject_init((GridObject *)$);
-}
-
+METHOD(GridExportList,init)   { GridObject_init(  (GridObject *)$); }
 METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridExportList,inlets:1,outlets:1,
@@ -268,9 +263,7 @@ GRID_FLOW(GridStore,0) {
 	}
 }
 
-GRID_END(GridStore,0) {
-	GridOutlet_end($->out[0]);
-}
+GRID_END(GridStore,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridStore,1) {
 	int length = Dim_prod(in->dim);
@@ -313,7 +306,7 @@ METHOD(GridStore,init) {
 	} else if (t==SYM(uint8)) {
 		$->nt = uint8_type_i;
 	} else {
-		RAISE2("unknown element type \"%s\"", fts_symbol_name(t));
+		RAISE2("unknown element type \"%s\"", Symbol_name(t));
 	}
 }
 
@@ -370,9 +363,7 @@ METHOD(GridOp1,init) {
 	GridObject_init((GridObject *)$);
 
 	$->op = op1_table_find(sym);
-	if (!$->op) {
-		RAISE2("unknown unary operator \"%s\"", fts_symbol_name(sym));
-	}
+	if (!$->op) RAISE2("unknown unary operator \"%s\"", Symbol_name(sym));
 }
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
@@ -441,7 +432,7 @@ GRID_FLOW(GridOp2,1) {
 	in->dex += n;
 }
 
-GRID_END(GridOp2,1) { /* nothing goes here */ }
+GRID_END(GridOp2,1) {}
 
 METHOD(GridOp2,init) {
 	Symbol sym = GET(1,symbol,op2_table[0].sym);
@@ -451,9 +442,7 @@ METHOD(GridOp2,init) {
 	GridObject_init((GridObject *)$);
 
 	$->op = op2_table_find(sym);
-	if (!$->op) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
-	}
+	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
 METHOD(GridOp2,delete) {
@@ -524,9 +513,7 @@ METHOD(GridFold,init) {
 	GridObject_init((GridObject *)$);
 
 	$->op = op2_table_find(sym);
-	if (!$->op) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
-	}
+	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
 METHOD(GridFold,delete) { GridObject_delete((GridObject *)$); }
@@ -594,9 +581,7 @@ GRID_FLOW(GridInner,0) {
 	FREE(buf2);
 }
 
-GRID_END(GridInner,0) {
-	GridOutlet_end($->out[0]);
-}
+GRID_END(GridInner,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridInner,2) {
 	int length = Dim_prod(in->dim);
@@ -627,12 +612,8 @@ METHOD(GridInner,init) {
 
 	$->op_para = op2_table_find(sym_para);
 	$->op_fold = op2_table_find(sym_fold);
-	if (!$->op_para) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_para));
-	}
-	if (!$->op_fold) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
-	}
+	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
+	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
 }
 
 METHOD(GridInner,delete) {
@@ -683,9 +664,7 @@ GRID_FLOW(GridOuter,0) {
 	FREE(buf);
 }
 
-GRID_END(GridOuter,0) {
-	GridOutlet_end($->out[0]);
-}
+GRID_END(GridOuter,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridOuter,1) {
 	int length = Dim_prod(in->dim);
@@ -713,9 +692,7 @@ METHOD(GridOuter,init) {
 	$->data = 0;
 
 	$->op = op2_table_find(sym);
-	if (!$->op) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
-	}
+	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
 METHOD(GridOuter,delete) {
@@ -852,12 +829,8 @@ METHOD(GridConvolve,init) {
 	$->op_fold = op2_table_find(sym_fold);
 	$->rint = GET(3,int,0);
 
-	if (!$->op_para) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_para));
-	}
-	if (!$->op_fold) {
-		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
-	}
+	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
+	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
 }
 
 METHOD(GridConvolve,delete) {
@@ -1026,6 +999,7 @@ GRID_BEGIN(GridRedim,1) {
 	return true;
 }
 
+/* !@#$ this could blow up */
 GRID_FLOW(GridRedim,1) {
 	int i;
 	int *dim = NEW(int,n);
@@ -1098,7 +1072,7 @@ LIST(GRINLET(GridPrint,0)),
 /* **************************************************************** */
 
 #define INSTALL(_sym_,_name_) \
-	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
 void startup_grid_basic (void) {
 	INSTALL("@import",     GridImport);
