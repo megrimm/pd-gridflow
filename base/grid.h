@@ -364,13 +364,10 @@ public:
 	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16 *)start); }
 	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32 *)start); }
 //	operator T *() { return p; }
-//	operator Pt<const T>() { return Pt((const T *)p); }
 	int operator-(Pt x) { return p-x.p; }
 	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 };
-
-//template <class T> Pt<T>::operator Pt<const T>() { return Pt<const T>(*this); }
 
 #define STACK_ARRAY(_type_,_name_,_count_) \
 	_type_ _name_##_foo[_count_]; Pt<_type_> _name_(_name_##_foo,_count_);
@@ -952,8 +949,9 @@ typedef struct GridObject Format;
 #define FF_R   (1<<2)
 
 struct GFBridge {
-	/* send message */
-	/* pre: outlet number is valid; self has a bself */
+	/* bridge identification string */
+	const char *name;
+	/* send message; pre: outlet number is valid; self has a bself */
 	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby rself);
 	/* add new class */
 	Ruby (*class_install)(Ruby rself, char *name);
