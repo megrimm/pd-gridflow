@@ -34,8 +34,8 @@
 #include <quicktime/lqt_codecinfo.h>
 #endif
 
-\class FormatQuickTime < Format
-struct FormatQuickTime : Format {
+\class FormatQuickTimeHW < Format
+struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
 	int track;
 	Dim *dim;
@@ -44,7 +44,7 @@ struct FormatQuickTime : Format {
 	int channels;
 	bool started;
 	
-	FormatQuickTime() : track(0), dim(0), codec(QUICKTIME_RAW), started(false) {}
+	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), started(false) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -79,7 +79,7 @@ struct FormatQuickTime : Format {
 	return INT2NUM(nframe);
 }
 
-GRID_INLET(FormatQuickTime,0) {
+GRID_INLET(FormatQuickTimeHW,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
@@ -156,12 +156,12 @@ GRID_INLET(FormatQuickTime,0) {
 	colorspace_m(0,0,SYM(rgb));
 }
 
-GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
+GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0,4)),
 \grdecl
 ){
-	IEVAL(rself,"install 'FormatQuickTime',1,1;"
+	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"
 	"conf_format 6,'quicktime','Apple Quicktime (using "
-	"HeroineWarrior\\'s)'");
+	"HeroineWarrior\\'s)', 'mov'");
 
 #ifdef LQT_VERSION
 	lqt_registry_init();
@@ -184,4 +184,4 @@ GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
 #endif
 }
 
-\end class FormatQuickTime
+\end class FormatQuickTimeHW
