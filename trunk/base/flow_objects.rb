@@ -627,7 +627,7 @@ class JMaxUDPReceive < FObject
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
 	end
-	def delete; @socket.close end
+	def delete; $tasks.delete(self); @socket.close end
 	install "jmax_udpreceive", 0, 2
 end
 
@@ -669,7 +669,7 @@ class JMax4UDPReceive < FObject
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
 	end
-	def delete; @socket.close end
+	def delete; $tasks.delete(self); @socket.close end
 	install "jmax4_udpreceive", 0, 2
 end
 
@@ -699,7 +699,7 @@ class PDNetReceive < FObject
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
 	end
-	def delete; @socket.close end
+	def delete; $tasks.delete(self); @socket.close end
 	install "pd_netreceive", 0, 2
 end
 
