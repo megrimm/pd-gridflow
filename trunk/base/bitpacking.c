@@ -43,13 +43,14 @@
 	for (int bytes = self->bytes; bytes; bytes--, t>>=8) *out++ = t;
 
 #define WRITE_BE { int bytes; \
-	for (bytes = self->bytes; bytes; bytes--, t>>=8) out[bytes] = t; \
+	bytes = self->bytes; \
+	while (bytes--) { out[bytes] = t; t>>=8; }\
 	out += self->bytes; }
 
 /* this macro would be faster if the _increment_
    was done only once every loop. or maybe gcc does it, i dunno */
 #define NTIMES(_x_) \
-	for (; n>3; n-=4) { _x_ _x_ _x_ _x_ } \
+	for (; n>=4; n-=4) { _x_ _x_ _x_ _x_ } \
 	for (; n; n--) { _x_ }
 
 /* this could be faster (use asm) */
