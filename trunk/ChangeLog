@@ -6,11 +6,12 @@ version 0.2.2:
  * split BitPacking module from @video_out
  * added support for BTTV input (that is, using mmap() command)
  * new videodev options: channel,tuner,contrast,hue,etc.
- * now with 24 binary operators, and 3 unary operators
+ * now with 30 binary operators, and 3 unary operators
  * added many new samples
  * new objects:
-	@fold, @dim,
-	@pixelize
+	@!, @fold, @outer, @dim, @redim,
+	@posterize, @scale_to, @contrast, @spread,
+	@two, @three, @identity_transform
 
 version 0.2.1:
  * added private CVS repository on hostname.2y.net
