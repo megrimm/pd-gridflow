@@ -399,8 +399,17 @@ Operator1 op1_table[] = {
 		as+=4; bs+=4; n-=4; } } \
 	static Number op_fold_##_name_ (Number a, int n, const Number *bs) { \
 		while (n--) { Number b = *bs++; a = _expr_; } return a; } \
+	static void op_fold2_##_name_ (int an, Number *as, int n, const Number *bs) {\
+		while (n--) { \
+			for (int i=0; i<an; i++) { \
+				Number a = as[i], b = *bs++; as[i] = _expr_; } } } \
 	static void op_scan_##_name_ (Number a, int n, Number *bs) { \
-		while (n--) { Number b = *bs; *bs++ = a = _expr_; } }
+		while (n--) { Number b = *bs; *bs++ = a = _expr_; } } \
+	static void op_scan2_##_name_ (int an, const Number *as, int n, Number *bs) { \
+		while (n--) { \
+			for (int i=0; i<an; i++) { \
+				Number a = *as++, b = *bs; *bs++ = a = _expr_; } \
+			as=bs-an; } }
 
 DEF_OP2(add, a+b)
 DEF_OP2(sub, a-b)
@@ -444,7 +453,10 @@ DEF_OP2(pow, ipow(a,b))
 	&op_array_##_name_, \
 	&op_array2_##_name_, \
 	&op_fold_##_name_, \
-	&op_scan_##_name_ }
+	&op_fold2_##_name_, \
+	&op_scan_##_name_, \
+	&op_scan2_##_name_ }
+
 
 Operator2 op2_table[] = {
 	DECL_OP2(add, "+"),
