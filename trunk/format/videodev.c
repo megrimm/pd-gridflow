@@ -109,22 +109,22 @@ static const char *video_mode_choice[] = {
 
 /* **************************************************************** */
 
-#define TAB "    "
-
 #define WH(_field_,_spec_) \
-	gfpost(TAB "%s: " _spec_, #_field_, self->_field_);
+	sprintf(buf+strlen(buf), "%s: " _spec_ "; ", #_field_, self->_field_);
 
 #define WHYX(_name_,_fieldy_,_fieldx_) \
-	gfpost(TAB "%s: y=%d, x=%d", #_name_, self->_fieldy_, self->_fieldx_);
+	sprintf(buf+strlen(buf), "%s: y=%d, x=%d; ", #_name_, self->_fieldy_, self->_fieldx_);
 
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
+	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
+		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
 	delete[] foo;}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
+	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
+		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	delete[] foo;}
 
 static char *flags_to_s(int value, int n, const char **table) {
@@ -150,67 +150,74 @@ static char *choice_to_s(int value, int n, const char **table) {
 }
 
 static void gfpost(VideoChannel *self) {
-	gfpost("VideoChannel:");
+	char buf[256] = "[VideoChannel] ";
 	WH(channel,"%d");
 	WH(name,"%-32s");
 	WH(tuners,"%d");
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
 	WH(norm,"%d");
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoTuner *self) {
-	gfpost("VideoTuner:");
+	char buf[256] = "[VideoTuner] ";
 	WH(tuner,"%d");
 	WH(name,"%-32s");
-	WH(rangelow,"%u");
-	WH(rangehigh,"%u");
+	WH(rangelow,"%lu");
+	WH(rangehigh,"%lu");
 	WHFLAGS(flags,tuner_flags);
 	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoCapability *self) {
-	gfpost("VideoCapability:");
+	char buf[256] = "[VideoCapability] ";
 	WH(name,"%-20s");
 	WHFLAGS(type,video_type_flags);
 	WH(channels,"%d");
 	WH(audios,"%d");
 	WHYX(maxsize,maxheight,maxwidth);
 	WHYX(minsize,minheight,minwidth);
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoWindow *self) {
-	gfpost("VideoWindow:");
+	char buf[256] = "[VideoWindow] ";
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoPicture *self) {
-	gfpost("VideoPicture:");
+	char buf[256] = "[VideoPicture] ";
 	WH(brightness,"%d");
 	WH(hue,"%d");
 	WH(contrast,"%d");
 	WH(whiteness,"%d");
 	WH(depth,"%d");
 	WHCHOICE(palette,video_palette_choice);
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoMbuf *self) {
-	gfpost("VideoMBuf:");
+	char buf[256] = "[VideoMBuf] ";
 	WH(size,"%d");
 	WH(frames,"%d");
 	for (int i=0; i<4; i++) WH(offsets[i],"%d");
+	gfpost("%s",buf);
 }
 
 static void gfpost(VideoMmap *self) {
-	gfpost("VideoMMap:");
+	char buf[256] = "[VideoMMap] ";
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
+	gfpost("%s",buf);
 };
 
 /* **************************************************************** */
