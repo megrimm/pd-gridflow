@@ -172,7 +172,6 @@ GridObject.subclass("#print",1,0) {
 		if name then @name = name.to_s+": " else @name="" end
 		@base=10; @format="d"; @trunc=70; @maxrows=50
 	end
-	def post(*foo) post(*foo) end # so that it's hijackable by [display]
 	def end_hook; end # other hijackability
 	def format
 		case @nt
