@@ -72,7 +72,14 @@ METHOD3(FormatMPEG3,frame) {
 	return Qnil;
 }
 
-GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
+GRID_BEGIN(FormatMPEG3,0) {
+	RAISE("write support not implemented");
+	if (in->dim->n != 3)
+		RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3)
+		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+}
+
 GRID_FLOW(FormatMPEG3,0) {}
 GRID_END(FormatMPEG3,0) {}
 

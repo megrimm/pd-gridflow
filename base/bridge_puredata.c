@@ -293,9 +293,7 @@ static Ruby FObject_s_install_2(Ruby $, char *name) {
 	rb_hash_aset(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),
 		rb_str_new2(name), PTR2FIX(qlass));
 
-	FMessage fm;
-	fm.$ = 0;
-	fm.is_init = false;
+	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(
 		(RFunc)BFObject_class_init$1,(Ruby)qlass,
 		(RFunc)BFObject_rescue,(Ruby)&fm,

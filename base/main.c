@@ -69,7 +69,7 @@ Ruby rb_ary_fetch(Ruby $, int i) {
 
 const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
-void FObject_mark (void *z) {
+static void FObject_mark (void *z) {
 /*
 	GridObject *$ = (GridObject *)z;
 //	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",$,$->peer);

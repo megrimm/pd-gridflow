@@ -282,8 +282,11 @@ module EventIO
 			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
 			@stream = File.open filename, fmode
+#		when :files
+#			if mode==:in then
+#			@glob = Dir[]
 		when :gzfile
-s			filename = args[0].to_s
+			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
 			@stream = File.open filename, fmode
 			if mode==:in then
@@ -704,11 +707,6 @@ class FormatMulti < Format
 	install_rgrid 0
 	install_format "FormatMulti", 1, 1, FF_R, "multi", "joining multiple files"
 end
-
-class FormatSeq < Format
-	install_rgrid 0
-	install_format "FormatSeq", 1, 1, FF_R|FF_W, "seq", "several files in one"
-end 
 
 class FormatTempFile < Format
 	install_rgrid 0
