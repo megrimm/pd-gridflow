@@ -934,7 +934,7 @@ struct Grid : CObject {
 	void init(Dim *dim, NumberTypeE nt);
 	void init_clear(Dim *dim, NumberTypeE nt);
 	void init_from_ruby(Ruby x);
-	void init_from_ruby_list(int n, Ruby *a);
+	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_type_i);
 	void del();
 
 	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
@@ -1100,7 +1100,7 @@ struct GridInlet {
 	void begin( int argc, Ruby *argv);
 	template <class T> void flow(int mode, int n, Pt<T> data);
 	void end();
-	void from_ruby_list(int argc, Ruby *argv);
+	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_type_i);
 	void from_ruby(int argc, Ruby *argv);
 	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);

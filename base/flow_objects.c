@@ -167,8 +167,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 }
 
 \def void _0_list(...) {
-	fprintf(stderr,"GridImport#_0_list(...)\n");
-	in[0]->from_ruby_list(argc,argv);
+	//fprintf(stderr,"GridImport#_0_list(...): type=%d\n",cast);
+	in[0]->from_ruby_list(argc,argv,cast);
 }
 
 \def void _1_per_message() {
