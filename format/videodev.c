@@ -231,13 +231,13 @@ struct FormatVideoDev : Format {
 	VideoMmap vmmap;
 	Pt<uint8> image;
 	int palette;
-	int pending_frames[2], next_frame;
+	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap;
 	BitPacking *bit_packing;
 	Dim *dim;
 
-	FormatVideoDev () :	use_mmap(true), bit_packing(0), dim(0) {}
+	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
 	void frame_finished (Pt<uint8> buf);
 
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
@@ -251,7 +251,7 @@ struct FormatVideoDev : Format {
 	\decl void tuner (int value);
 	\decl void channel (int value);
 	\decl void frequency (int value);
-	\decl void transfer (Symbol sym);
+	\decl void transfer (Symbol sym, int queuemax=2);
 	\decl void colorspace (Symbol c);
 	\decl void initialize2 ();
 	GRINLET3(0);
@@ -334,15 +334,14 @@ struct FormatVideoDev : Format {
 
 \def void frame_ask () {
 	int fd = GETFD;
-	pending_frames[0] = pending_frames[1];
-	vmmap.frame = pending_frames[1] = next_frame;
+	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
+	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
+	vmmap.frame = queue[queuesize++] = next_frame;
 	vmmap.format = palette;
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
-//	gfpost(&vmmap);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
-//	gfpost(&vmmap);
-	next_frame = (pending_frames[1]+1) % vmbuf.frames;
+	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
@@ -404,14 +403,15 @@ static int read3(int fd, uint8 *image, int n) {
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
 		return;
 	}
-	int finished_frame;
-	if (pending_frames[0] < 0) {
-		next_frame = 0;
-		for (int i=0; i<2; i++) rb_funcall(rself,SI(frame_ask),0);
-	}
-	vmmap.frame = finished_frame = pending_frames[0];
+	while(queuesize<queuemax) rb_funcall(rself,SI(frame_ask),0);
+	vmmap.frame = queue[0];
+	uint64 t0 = gf_timeofday();
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
-	frame_finished(image+vmbuf.offsets[finished_frame]);
+	uint64 t1 = gf_timeofday();
+	if (t1-t0 > 100) gfpost("VIDIOCSYNC delay: %d us",t1-t0);
+	frame_finished(image+vmbuf.offsets[queue[0]]);
+	queuesize--;
+	for (int i=0; i<queuesize; i++) queue[i]=queue[i+1];
 	rb_funcall(rself,SI(frame_ask),0);
 }
 
@@ -461,7 +461,7 @@ GRID_INLET(FormatVideoDev,0) {
 	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
 }
 
-\def void transfer (Symbol sym) {
+\def void transfer (Symbol sym, int queuemax=2) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
@@ -469,7 +469,11 @@ GRID_INLET(FormatVideoDev,0) {
 	} else if (sym == SYM(mmap)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = true;
-		gfpost("transfer mmap");
+		rb_funcall(rself,SI(alloc_image),0);
+		queuemax=min(queuemax,vmbuf.frames);
+		gfpost("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)"
+			,queuemax,vmbuf.frames);
+		this->queuemax=queuemax;
 	} else RAISE("don't know that transfer mode");
 }
 
@@ -550,6 +554,13 @@ GRID_INLET(FormatVideoDev,0) {
 	int fd = GETFD;
 	VideoPicture *gp = new VideoPicture;
 
+/*
+	long flags;
+	fcntl(fd,F_GETFL,&flags);
+	flags |= O_NONBLOCK;
+	fcntl(fd,F_SETFL,&flags);
+*/
+
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
 	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
@@ -575,8 +586,6 @@ GRID_INLET(FormatVideoDev,0) {
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
 	rb_call_super(argc,argv);
-	pending_frames[0] = -1;
-	pending_frames[1] = -1;
 	image = Pt<uint8>();
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
