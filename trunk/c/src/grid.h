@@ -206,11 +206,26 @@ typedef struct BitPacking BitPacking;
 	Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
 
-typedef struct NumericType {
+#define DECL_TYPE(_name_,_size_) \
+	_name_##_type_i
+
+typedef enum NumberTypeIndex {
+	DECL_TYPE(     uint8,  8),
+	DECL_TYPE(      int8,  8),
+	DECL_TYPE(    uint16, 16),
+	DECL_TYPE(     int16, 16),
+/*	DECL_TYPE(    uint32, 32), */
+	DECL_TYPE(     int32, 32),
+	
+} NumberTypeIndex;
+
+#undef DECL_TYPE
+
+typedef struct NumberType {
 	fts_symbol_t sym;
 	const char *name;
 	int size;
-} NumericType;
+} NumberType;
 
 typedef struct Operator1 {
 	fts_symbol_t sym;

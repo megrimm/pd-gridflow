@@ -197,12 +197,10 @@ CLASS(GridExport) {
 
 typedef struct GridStore {
 	GridObject_FIELDS;
-	/* NumberType *nt; */
+/*	NumberType *nt; */
+	int nt;
 	Number *data;
 	Dim *dim;
-
-	Number *buf;
-	int bufn;
 } GridStore;
 
 GRID_BEGIN(GridStore,0) {
@@ -242,47 +240,50 @@ GRID_BEGIN(GridStore,0) {
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
 	GridOutlet_begin($->out[0],Dim_new(nd,v));
 	GridInlet_set_factor(in,nc);
-	$->buf = NEW2(Number,nc);
-	$->bufn = 0;
 /*	whine("[r] %s",Dim_to_s($->out[0]->dim)); */
 	return true;
 }
 
 GRID_FLOW(GridStore,0) {
-	GridOutlet *out = $->out[0];
 	int na = Dim_count(in->dim);
 	int nb = Dim_count($->dim);
 	int nc = Dim_get(in->dim,na-1);
 	int size = Dim_prod_start($->dim,nc);
-	int v[nb];
 	int i;
-
+	int v[nb];
 	assert((n % nc) == 0);
 
 	while(n>0) {
-		int bs = nc - $->bufn;
-		bs = n<bs?n:bs;
-		n -= bs;
-		
-		while (bs--) $->buf[$->bufn++] = *data++;
-		/*
-		memcpy(&$->buf[$->bufn],data,bs*sizeof(Number));
-		$->bufn += bs; data += bs; bs = 0;
-		*/
-
-		if ($->bufn == nc) {
-			for (i=0; i<nc; i++) { v[i] = mod($->buf[i],$->dim->v[i]); }
-			for (; i<nb; i++) { v[i] = 0; }
+		for (i=0; i<nc; i++) v[i] = mod(*data++,$->dim->v[i]);
+		while (i<nb) v[i++] = 0;
+		switch ($->nt) {
+		case int32_type_i:
 			GridOutlet_send($->out[0],size,&$->data[ Dim_calc_dex($->dim,v) ]);
-			$->bufn=0;
+		 	break;
+		case uint8_type_i: {
+			Number data3[16];
+			uint8 *data2 = (uint8 *)$->data + Dim_calc_dex($->dim,v);
+			int left = size;
+			while (left>=16) {
+				for (i=0; i<16; i++) { data3[i] = data2[i]; }
+				GridOutlet_send($->out[0],16,data3);
+				data2+=16;
+				left-=16;
+			}
+			while (left) {
+				data3[0] = *data2++;
+				GridOutlet_send($->out[0],1,data3);
+				left--;
+			}
+			break;}
+		default: assert(0);
 		}
+		n -= nc;
 	}
-	in->dex += n;
 }
 
 GRID_END(GridStore,0) {
 	GridOutlet_end($->out[0]);
-	FREE($->buf);
 }
 
 GRID_BEGIN(GridStore,1) {
@@ -291,12 +292,24 @@ GRID_BEGIN(GridStore,1) {
 	FREE($->dim);
 	FREE($->data);
 	$->dim = Dim_dup(in->dim);
-	$->data = NEW2(Number,length);
+	switch ($->nt) {
+	case int32_type_i: $->data = NEW2(Number,length); break;
+	case uint8_type_i: $->data = (Number *) NEW2(uint8,length); break;
+	default: assert(0);
+	}
 	return true;
 }
 
 GRID_FLOW(GridStore,1) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	int i;
+	switch ($->nt) {
+	case int32_type_i: memcpy(&$->data[in->dex], data, n*sizeof(Number)); break;
+	case uint8_type_i: {
+		uint8 *data2 = (uint8 *)$->data + in->dex;
+		for(i=0; i<n; i++) data2[i] = data[i];
+		break;}
+	default: assert(0);
+	}
 	in->dex += n;
 }
 
@@ -307,15 +320,24 @@ METHOD(GridStore,init) {
 	$->in[0] = GridInlet_NEW3($,GridStore,0);
 	$->in[1] = GridInlet_NEW3($,GridStore,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+	{
+		fts_symbol_t t = GET(1,symbol,SYM(int32));
+		if (t==SYM(int32)) {
+			$->nt = int32_type_i;
+		} else if (t==SYM(uint8)) {
+			$->nt = uint8_type_i;
+		} else {
+			fts_object_set_error(OBJ($),
+				"unknown element type \"%s\"", fts_symbol_name(t));
+		}
+	}
 	$->data = 0;
 	$->dim  = 0;
-	$->buf  = 0;
 }
 
 METHOD(GridStore,delete) {
 	FREE($->data);
 	FREE($->dim);
-	FREE($->buf);
 	GridObject_delete((GridObject *)$);
 }
 
@@ -331,10 +353,9 @@ METHOD(GridStore,bang) {
 
 CLASS(GridStore) {
 	int i;
-	fts_type_t int_alone[]  = { fts_t_int };
-	fts_type_t rien[] = { fts_t_symbol };
+	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridStore,init), ARRAY(rien),-1},
+		{-1, fts_s_init,   METHOD_PTR(GridStore,init), ARRAY(init_args),1},
 		{-1, fts_s_delete, METHOD_PTR(GridStore,delete),0,0,0 },
 		{ 0, fts_s_bang,   METHOD_PTR(GridStore,bang),  0,0,0 },
 	};
