@@ -1,0 +1,126 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridFlow 0.5.0 - reference</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="jmax.css" type="text/css">
+</head>
+<body
+  bgcolor="#FFFFFF"
+  leftmargin="0"
+  topmargin="0"
+  marginwidth="0"
+  marginheight="0">
+<table
+  width="100%"
+  bgcolor="white"
+  border="0"
+  cellspacing="2">
+<tr> 
+<td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23"></td>
+</tr>
+<tr> 
+<td>&nbsp;</td>
+</tr>
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4" height="16"> 
+    <h4>GridFlow 0.5.0 - reference index</h4>
+</td></tr>
+<tr> 
+  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="25%" height="23">&nbsp;</td>
+  <td width="66%" height="23">&nbsp;</td>
+  <td width="5%"  height="23">&nbsp;</td>
+</tr>
+<tr><td colspan="2"><h4><a href="#Software_(and_Hardware)_you_Probably_Need">Software (and Hardware) you Probably Need</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(for_jMax_2.5)">Installation process (for jMax 2.5)</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(without_jMax)">Installation process (without jMax)</a></h4><ul>
+</ul>
+<br><br>
+</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Software_(and_Hardware)_you_Probably_Need"></a><h4>Software (and Hardware) you Probably Need</h4></td></tr><tr><td></td><td></td><td> 
+<p>Required Hardware (One of...):<ul> <li><b>1</b> : i386 : "old" IBM PC, or "new" IBM PC with old compiler</li> <li><b>2</b> : i686 : "new" IBM PC with recent compiler</li> <li><b>3</b> : ppc : "new" Macintosh (IS NOT SUPPORTED YET - HELP US)</li> <li><b>4</b> : armv4l : Corel Netwinder (but jMax does not run on this)</li> <li><b>5</b> : mips : Silicon Graphics, non-PC (only tested without jMax)</li> 
+</ul></p> 
+<p>Required Software:<ul> <li><b>1</b> : Ruby 1.6 (language interpreter)</li> <li><b>2</b> : GNU C Compiler (gcc)</li> <li><b>3</b> : GNU Make (gmake)</li> <li><b>4</b> : GNU Bash</li> <li><b>5</b> : X11 Display Server</li> <li><b>6</b> : X11 Display Library (Xlib)</li> 
+</ul></p> 
+<p>Very Recommended:<ul> <li><b>1</b> : jMax 2.5</li> <li><b>2</b> : jMax 3.0 support coming soon</li> <li><b>3</b> : jMax 2.4 support removed</li> 
+</ul></p> 
+<p>Optional:<ul> <li><b>1</b> : HeroineWarrior's libmpeg3.so</li> <li><b>2</b> : Greg Ward's libmpeg.so ("Berkeley/MNI")</li> <li><b>3</b> : a digitizer card with a Video4linux 1.x driver (videodev.h)</li> <li><b>4</b> : Ruby 1.6 with package "xmlparser" (for editing documentation)</li> 
+</ul></p> 
+<p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's 
+extensive help file at <a href=''>nil</a> 
+as well as the jMax docs.</p> 
+<p>Also Useful:<ul> <li><b>1</b> : Pentium-compatible CPU (for profiling)</li> <li><b>2</b> : CVS (for live update)</li> 
+</ul></p> 
+<p>NOTE: 
+There are several different incompatible libmpeg's from different authors; 
+I found four of them, some numbered 2 and 3 as if they were version numbers 
+(but it seems they are not). 
+</p> 
+<p>NOTE: if one of your libraries are only available in .a format, you will not 
+be able to compile GridFlow. All libraries GridFlow uses must be in .so format. 
+</p> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Installation_process_(for_jMax_2.5)"></a><h4>Installation process (for jMax 2.5)</h4></td></tr><tr><td></td><td></td><td> 
+<ul> <li><b>1</b> : Download the latest version of GridFlow 
+      and download the images pack (gridflow-images-0.5.tar.gz). 
+      The download site is <a href=''>artengine.ca</a>. 
+      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice), 
+      which will create a directory called 'gridflow'; 
+      unpack the images pack into that directory, which will create 
+	 another one called 'images'. </li> <li><b>2</b> : Find your system type (for AMD K6 and Pentium Pro and compatibles, 
+  on Linux, this is <kbd>i686-linux</kbd>; if you have a recent Macintosh, this 
+  is <kbd>ppc-macosx</kbd> or <kbd>ppc-linux</kbd>)</li> <li><b>3</b> : Run <kbd>./configure --jmax25 --arch <i>your-system-type</i></kbd> from the <kbd>gridflow</kbd> directory. 
+  note: if you didn't install GridFlow in the <kbd>packages</kbd> directory, 
+  then you have to add the option <kbd>--jmax-dist-dir <i>your-jmax-source-directory-goes-here</i></kbd></li> <li><b>4</b> : <kbd>./configure</kbd> will try to detect some optional components (libmpeg, 
+  pentium clock, etc); error messages may appear in case of a <kbd>no</kbd>. 
+  usually a <kbd>yes</kbd> will not show anything else. In the end, the files <kbd>config.make</kbd>, <kbd>c/src/Sources</kbd> and <kbd>c/src/config.h</kbd> will be generated. </li> <li><b>5</b> : Stay in the same directory and do: <ul> <li><b>1</b> : <kbd>make all</kbd></li> <li><b>2</b> : <kbd>make install</kbd></li> </ul> 
+      but if the first one stops because of "Error" you shouldn't try the second 
+	 one. </li> <li><b>6</b> : Load <kbd>~/.jmaxrc</kbd> (text). Go to the <kbd>when start</kbd> section. 
+  Add a line that says <kbd>package require gridflow</kbd>. 
+  Add this line that says <kbd>dataDirectory </kbd><i>gridflow-directory</i><kbd>/images</kbd> </li> <li><b>7</b> : (Re)start jMax. </li> 
+</ul> <p>Note: If there's a problem with libmpeg anywhere in the process, 
+  you can add the option --no-mpeg to the configurator.</p> <p>Note: If you want more speed, you can configure with the --fast 
+  switch, which turns off many error-detection mechanisms; if you want 
+  more speed, you could configure with --no-profiling too, but if you do 
+  that, you can no longer find out which of the objects consume the most 
+  time.</p> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Installation_process_(without_jMax)"></a><h4>Installation process (without jMax)</h4></td></tr><tr><td></td><td></td><td> 
+	If you are not a C programmer you probably shouldn't do this. 
+<ul><li><b>1</b> :  
+	Use the <kbd>--nojmax</kbd> option instead of <kbd>--jmax25</kbd>. 
+	Don't do the regular <kbd>make all</kbd>; you can only do a <kbd>make standalone</kbd>. (note: You can also do <kbd>make standalone</kbd> 
+	when installing with jMax. in any case that command creates <kbd>c/lib2/libgridflow.so</kbd> which can be used without jMax). 
+</li></ul> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr> 
+<td colspan="4"> 
+<p><font size="-1">GridFlow 0.5.0 Documentation<br>
+by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+and<br>
+Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+</td>
+</tr>
+</table>
+</body>
+</html>
+
+

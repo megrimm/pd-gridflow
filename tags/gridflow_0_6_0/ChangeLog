@@ -1,0 +1,148 @@
+/* $Id$ */
+
+version 0.6.0 (2002.07.31):
+ * THIS IS AN EXPERIMENTAL BRANCH (VERY BUGGY)
+     REAL PROJECTS SHOULD USE VERSION 0.5.0 INSTEAD
+ * GridFlow rewritten as a plugin for Ruby instead of jMax.
+ * GridFlow now includes a Ruby-for-jMax bridge.
+ * you need Ruby 1.6.6 (including libruby.so) or compatible
+ * you don't need GNU Bash anymore (configurator is now a Ruby program)
+ * format handlers for .ppm, .tga, .grid rewritten in Ruby
+ * merged all Makefiles together, etc.
+ * sources are in base/ and format/ instead of c/src/
+ * many bugs removed, many bugs added.
+ * will read ~/.gridflow_startup if it exists
+
+version 0.5.0 (2002.06.08):
+ * big changes to the internals (especially use of macros)
+ * can compile without X11; added --no-x11 in ./configure
+ * removed support for jMax 2.4
+ * auto-detects jMax 2.5 and jMax 3.0
+ * @inner renamed to @inner2 (new, proper @inner coming soon)
+ * faster unary operators
+ * added unary operator: sq (faster squaring)
+ * further separation of GridFlow from jMax
+ * major format API changes (added Stream class)
+ * format "grid" now supports 8 bits per value
+ * support for HeroineWarrior's LibMPEG3 (reading + seeking)
+ * libmpeg.so (Greg Ward's) now also looked up as "libwardsmpeg.so"
+ * added objects: rtmetro, pingpong
+ * Moved CVS repository from Hostname.2y.net to Artengine.ca
+ * updated samples
+
+version 0.4.1 (2002.01.02):
+ * cvs repository now has public access
+ * now can run configure without jmax/fts being present
+ * standalone version now works on Silicon Graphics and Corel Netwinder.
+ * MPEG format readonly (single file at a time; mpeg video layer only)
+ * grid TCP: non-blocking read
+ * fixed all known memory leaks
+ * X11 Shared Memory now disables itself properly on remote display
+ * updated help files
+ * updated help screenshots in the manual
+ * fixed profiler bugs
+ * fts emulation moved to c/src/ and tests moved to tests/
+
+version 0.4.0 (2001.11.28):
+ * package name changed from "video4jmax" to "gridflow"
+ * documentation *rewritten*, more precise, more structured
+ * documentation format is now XML (includes HTMLized version)
+ * can now compile without jmax/fts (if you need quicker testing...)
+ * added format "grid" for storing any kind of grid to disk.
+ * added TCP client/server socket support (with format "grid" only)
+ * added (timewise) profiler
+ * @convolve now takes up to three arguments
+ * Format API changes again
+	* "connect" merged into "open"
+	* "size" merged into "option"
+	* @video_out merged into @out
+ * format videodev can now do full framerate (instead of just half)
+ * added X11 Shared Memory support (faster image transfer locally)
+ * added @scale_by for quick scaling by integer factors.
+ * @identity_transform, @scale_to are much faster.
+ * many other accelerations
+
+version 0.3.0 (2001.11.04):
+ * reworked File Format API
+ * grid objects now all accept lists of integers (auto-convert to 1D grid)
+ * many accelerations (incl large speedup on chains of binary operations)
+ * transformed @video_out (X11) into a "File Format" (really) and:
+	* allows multiple displays
+	* auto-resizing window
+	* can set output as wallpaper
+	* can read from the screen (screenshot)
+	* @video_out now a backward-compatibility wrapper
+ * format videodev now uses double buffer mmap (somewhat faster)
+ * @video_in_file, @video_out_file renamed to @in, @out (with aliases)
+ * new objects:
+	@convolve, @inner, @for
+ * more samples: Fire, Ripple, Game of Life, Chroma Key, Convolve, Saturation
+ * much improved samples: Color Correction, Linear Transform.
+ * use [@store uint8] for low-ram storage of values 0-255.
+ * videodev: added option norm 0=pal 1=ntsc 2=secam 3=auto
+
+version 0.2.2 (2001.08.15):
+ * @video_out auto-updates on X11 ExposeEvent
+ * updated documentation and help
+ * fixed installation/config of help and summary
+ * split BitPacking module from @video_out
+ * added support for BTTV input (that is, using mmap() command)
+ * new videodev options: channel,tuner,contrast,hue,etc.
+ * now with 30 binary operators, and 3 unary operators
+ * added many new samples
+ * new objects:
+	@!, @fold, @outer, @dim, @redim,
+	@posterize, @contrast, @two, @three,
+	@identity_transform, @scale_to, @spread
+
+version 0.2.1 (2001.08.01):
+ * added private CVS repository on hostname.2y.net
+ * added configuration script (detects video4linux 1.x)
+ * added documentation in HTML format
+ * added File Format API
+	* format "ppm": PPM P6 RGB24 support read-write
+	* format "targa": Targa RGB24 support read-only
+	* format "videodev": Video4linux read (using read() command only)
+ * @store no longer slowing down its downstream
+ * many other accelerations
+ * Tuple changed to Dim; Index removed
+ * Grid element type is typedef Number
+ * @ supports grids in right inlet
+ * now there are 20 binary operators
+
+version 0.2.0 (2001.05.05):
+ * package name changed from "video" to "video4jmax"
+ * new kind of post() cancels repetitive log entries
+ * major modifications to existing objects
+ * new "grid transmission system"
+	(Tuple,Index,GridInlet,GridOutlet,GridObject)
+ * vout -> @video_out
+ * vin_file -> @video_in_file
+ * vout_file -> @video_out_file
+ * added @import, @export
+ * added @, @store
+
+version 0.1.1 (2001.04.03):
+
+ * removed vout's grab
+ * vout width and height parameters swapped
+ * vout_file class is mostly like vout but writes to a file in PPM format.
+
+version 0.1.0 (2001.03.14):
+
+ * fixed the bits_per_pixel bug
+ * merged in some other variations on the main sample
+ * included Christian's makefiles for jmax 2.5
+
+version 0.0.7 (2001.03.08):
+
+ * vout should support most types of RGB visuals now
+ * autodraw now works: 0=none; 1=page; 2=line; 3=pixel
+ * less global variables
+ * putting all of this under the GPL
+
+version 0.0.5 (2001.03.05):
+
+ * vout class, two params: width, height; 24-bit BGR only; refresh by
+finishing scanline or sending bang; "grab" (hack); "reset" for resetting
+the pixel pointer. 

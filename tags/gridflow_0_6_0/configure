@@ -1,0 +1,547 @@
+#!/usr/bin/env ruby
+# $Id$
+=begin
+	GridFlow
+	Copyright (c) 2001 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file ../../COPYING for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=end
+
+#----------------------------------------------------------------#
+
+require "rbconfig"
+require "ftools"
+include Config
+DESTDIR = CONFIG["sitedir"] + "/" + CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
+RUBY = "ruby"
+
+FILES = [
+  [:directory, "base/",
+    [:ruby, "main.rb"],
+    [:ruby, "MainLoop.rb"],
+  ],
+  [:directory, "format/",
+    [:ruby, "main.rb"],
+  ],
+  [:directory, "extra/",
+	[:ruby, "eval_server.rb"],
+	[:ruby, "smpte.rb"],
+	[:ruby, "server_2.rb"],
+	[:ruby, "server_1_grid.rb"],
+	[:ruby, "server_1_ppm.rb"],
+	[:ruby, "server_0.rb"],
+  ],
+]
+
+#----------------------------------------------------------------#
+# Generic Parts
+
+class Or
+	attr_reader :a
+	class<<self; alias [] new end
+	def initialize(*a) @a=a end
+end
+
+def launch2(log,*command)
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch(nil,w,w,*command)
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid child
+	log << "error \##{ret}\n" if ret>0
+	return ret<=0
+end
+
+def c_test code, *link
+	log = ""
+	log << code << "\n"
+	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
+	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
+	launch2 log,*command or return false
+	command = ["/tmp/#{$$}"]
+	launch2 log,*command or return false
+	true
+ensure
+	LOG.puts log
+end
+
+def launch stdin,stdout,stderr,*command # -> returncode
+	child = fork
+	if not child then
+		STDIN.reopen stdin if stdin
+		STDOUT.reopen stdout if stdout
+		STDERR.reopen stderr if stderr
+		exec *command
+		STDERR.puts "SHOULD NOT GET THERE"
+		exit!
+	end
+	child
+end
+
+def join_pid pid
+	Process.waitpid2(pid)[1]
+end
+
+#----------------------------------------------------------------#
+# Specific to the GridFlow project
+
+class Feature
+	def initialize(&b)
+		instance_eval(&b)
+	end
+	def self.attr2(sym)
+		eval "def #{sym}(*args)
+			raise args.inspect if args.length>1
+			@#{sym}=args[0] if args.length>0
+			@#{sym} end"
+	end
+	attr2 :tag
+	attr2 :name
+	attr2 :status #!@#$
+	attr2 :uses_so #!@#$
+	attr2 :uses_h #!@#$
+	attr2 :uses_feature #!@#$
+	attr2 :test #!@#$
+	attr2 :formats #!@#$
+	attr2 :options #!@#$
+	attr2 :unless_feature #!@#$
+	attr2 :action #!@#$
+end
+
+$features = [
+Feature.new {
+	tag :fast
+	name "Compile for speed (and not debuggability)"
+},
+Feature.new {
+	tag :pentium
+	name "Pentium-compatible CPU"
+	uses_so ["-mpentium"]
+	test proc {
+		# this is very "heuristic" to say the least. sorry.
+		c_test '
+		typedef unsigned long long uint64;
+		int main(void) { uint64 x;
+		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+		return 0;}'
+	}
+	options ["HAVE_PENTIUM"]
+},
+Feature.new {
+	tag :profiler
+	name "profiler (speed measurements)"
+	uses_feature [:pentium]
+	options ["HAVE_TSC_PROFILING"]
+},
+Feature.new {
+	tag :x11
+	name "X11 Display Protocol"
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	test proc {
+		c_test "
+		#include <X11/Xlib.h>
+		int main (void) {return !XSetErrorHandler;}
+		", *uses_so
+	}
+	formats ["X11"]
+},
+Feature.new {
+	tag :x11_shm
+	name "X11 acceleration through shared memory"
+	uses_feature [:x11]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	test proc {
+		c_test "
+		#include <X11/Xlib.h>
+		#include <X11/Xutil.h>
+		#include <X11/StringDefs.h>
+		#include <sys/ipc.h>
+		#include <sys/shm.h>
+		#include <X11/extensions/XShm.h>
+		int main (void) {return !XShmPutImage;}
+		", *uses_so
+	}
+	options ["HAVE_X11_SHARED_MEMORY"]
+},
+Feature.new {
+	tag :videodev
+	name "Video4linux Digitizer Driver Interface"
+	test proc {
+		c_test "
+		#include <stdlib.h>
+		#include <linux/videodev.h>
+		int main (void) { struct video_window foo; return 0; }
+		"
+	}
+	formats ["VideoDev"]
+},
+Feature.new {
+	tag :mpeg3
+	name "HeroineWarrior's LibMPEG3"
+	uses_so ["-lmpeg3","-lpthread","-lm"]
+	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
+	test proc {|h|
+		c_test "
+		#include <#{h.uses_h}>
+		int main (void) { return !mpeg3_open; }
+		", *uses_so
+	}
+	formats ["MPEG3"]
+},
+Feature.new {
+	tag :mpeg
+	name "Greg Ward's LibMPEG"
+	unless_feature :mpeg3
+	test proc {
+		c_test "
+		#include <mpeg.h>
+		int main (void) { return !GetMPEGFrame; }
+		"
+	}
+	formats ["MPEG"]
+},
+Feature.new {
+	tag :quicktime
+	name "HeroineWarrior's QuickTime file reader"
+	status :disabled
+	uses_so ["-lquicktime","-lpthread","-lpng","-ldl","-lglib"]
+	test proc {
+		c_test "
+		#include <quicktime/quicktime.h>
+		int main (void) { return !quicktime_open; }
+		", *uses_so
+	}
+	formats ["QuickTime"]
+},
+Feature.new {
+	tag :jmax25
+	name "IRCAM's jMax 2.5"
+	test proc {
+		has_jmax "-DLINUXPC" and #!@#$ nonportable
+		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
+	}
+	options ["HAVE_JMAX_2_5"]
+},
+Feature.new {
+	tag :jmax30
+	name "IRCAM's jMax 3.0 / 3.1"
+	unless_feature :jmax25
+	status :disabled
+	test proc {
+		has_jmax "-DLINUXPC" and #!@#$ nonportable
+		File.exist?($conf[:JMAX_SOURCES]+"/include/ftsconfig.h")
+	}
+	options ["HAVE_JMAX_3_0"]
+},
+Feature.new {
+	tag :puredata
+	name "Miller Puckette's Pure Data"
+	options ["HAVE_PUREDATA"]
+	test proc {
+		c_test "
+			\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
+			int main (void) { return 0; }
+		"
+	}
+}]
+
+$features_h = {}
+$features.each {|f| $features_h[f.tag]=f }
+
+#--------------------------------#
+
+$conf={
+	:ARCH => nil,
+	:LDSOFLAGS => ["-lm","-lruby"],
+	:FEATURES => {},
+#	:FORMATS => ["PPM","Targa","Grid"],
+	:FORMATS => [],
+	:OPTIONS => [],
+	:DEFINES => {},
+}
+
+#--------------------------------#
+
+def usage
+	log = ""
+	log << "usage: ./configure --arch architecture "
+	log << "[--jmax-dist-dir directory] [--puredata-dist-dir directory] "
+	log << "[--debug] "
+	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
+	puts
+	while log.length>0 do puts log.slice!(/^.{1,70} /) end
+end
+
+puts
+if not File.exist?("./configure")
+	puts "Run me from the right directory please."
+	exit 1
+end
+
+while ARGV.length>0 do
+	arg=ARGV.shift
+	case arg
+	when /^--no-/
+		name = arg[5..-1].intern
+		puts "there is no feature called #{name}" if not $features_h[name]
+		puts "won't check for feature #{name}"
+		$features_h.delete name
+	when "--debug"
+		puts "Debug Mode (more error checking; less speed)"
+		$conf[:OPTIONS].push :HAVE_DEBUG
+	when "--arch"; $conf[:ARCH]=ARGV.shift
+	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
+	when "--puredata-dist-dir"; $conf[:PUREDATA_SOURCES]=ARGV.shift
+	else puts "unknown option \"#{arg}\""; exit 1
+	end
+end
+
+if not $conf[:JMAX_SOURCES]
+	$conf[:JMAX_SOURCES]=`(cd ../..; echo $PWD)`.chomp
+	if FileTest.directory? $conf[:JMAX_SOURCES]+"/Makefiles"
+		puts "assuming --jmax-dist-dir #{$conf[:JMAX_SOURCES]}"
+	else
+		#!@#$ should really disable.
+		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
+	end
+end
+
+if not $conf[:PUREDATA_SOURCES]
+	$conf[:PUREDATA_SOURCES]=`(cd ../..; echo $PWD)`.chomp
+	if FileTest.directory? $conf[:PUREDATA_SOURCES]+"/man/pd.1"
+		puts "assuming --puredata-dist-dir #{$conf[:PUREDATA_SOURCES]}"
+	else
+		#!@#$ should really disable.
+		puts "PureData disabled (otherwise use the --puredata-dist-dir option)"
+	end
+end
+
+if not $conf[:ARCH]; usage; exit 1; end
+
+LOG = File.open "./config.log", "w"
+
+#--------------------------------#
+
+def has_jmax(*link); c_test '
+	#include "fts/fts.h"
+/*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
+	int main (void) { return 0; }
+', *link
+end
+
+DUAL = Object.new
+DUAL.instance_eval {
+	def self.print x
+		LOG   .puts  x; LOG   .flush
+		STDERR.print x; STDERR.flush
+	end
+	def self.puts x
+		self.print x+"\n"
+	end
+}
+
+def try feature
+	if Or===feature.uses_h
+		a=feature.uses_h.a
+		for i in a do
+			e=feature.dup
+			e.uses_h i
+			e.name(e.name+" <#{e.uses_h}>")
+			r=try e
+			return r if r
+		end
+		return false
+	end
+	DUAL.print "[#{feature.tag}] #{feature.name}: "
+	if feature.status == :disabled
+		DUAL.puts "disabled (by author)"
+		return
+	end
+	if not $features_h[feature.tag]
+		DUAL.puts "disabled (by user)"
+		return
+	end
+	if feature.test
+		if feature.test.call(feature)
+			DUAL.puts "found"
+		else
+			DUAL.puts "missing"
+			return false
+		end
+	else
+		puts "enabled"
+		$conf[:FEATURES][feature.tag] = feature
+		feature.action.call if feature.action
+	end
+	feature.action.call if feature.action
+	$conf[:FEATURES][feature.tag] = feature
+	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	$conf[:FORMATS].concat(feature.formats||[])
+	$conf[:OPTIONS].concat(feature.options||[])
+	true
+end
+
+require "rbconfig"
+$conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
+STDERR.print "looking for libruby.so: "
+STDERR.flush
+c_test "
+#include <#{$conf[:RUBY_H]}>
+int main (void) { return !rb_rescue; }
+", "-lruby" or (
+	puts "no"
+	puts "can't continue: libruby.so is required"
+	exit 1)
+puts "yes"
+
+$features.each {|feature| try feature }
+
+$conf[:LDSOFLAGS].uniq!
+
+#--------------------------------#
+
+puts ""
+for z in [:ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
+  puts "#{z}: #{$conf[z].inspect}"
+end
+puts ""
+
+#--------------------------------#
+# extconf.rb
+
+def install_files(f,base,entries)
+  entries.each {|type,name,*rest|
+    case type
+    when :ruby
+      f.puts "\tinstall --mode 644 #{base+name} $(RUBYDESTDIR)/gridflow/#{base+name}"
+    when :directory
+      f.puts "\tmkdir -p $(RUBYDESTDIR)/gridflow/#{base+name}"
+      install_files(f,base+name,rest) 
+    end
+  }
+end
+
+def uninstall_files(f,base,entries)
+  entries.each {|type,name,*rest|
+    case type
+    when :ruby
+      f.puts "\trm $(RUBYDESTDIR)/gridflow/#{base+name}"
+    when :directory
+      uninstall_files(f,base+name,rest) 
+    end
+  }
+end
+
+def make_makefile f
+    f.puts "RUBYDESTDIR = #{DESTDIR}", ""
+    f.puts "RUBY = #{RUBY}"
+    f.puts "ruby-all::", ""
+#   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
+    f.puts "ruby-install::"
+    install_files(f,"",FILES)
+    f.puts
+    f.puts "ruby-uninstall::"
+    uninstall_files(f,"",FILES)
+    f.puts
+end
+
+#--------------------------------#
+puts "generating ./config.make"
+File.open("./config.make","w") {|f| f.puts "
+
+RUBYARCH=#{CONFIG["arch"]}
+
+ifndef ARCH
+ARCH=#{$conf[:ARCH]}
+endif
+"
+if $conf[:OPTIONS].include? "HAVE_JMAX_2_5"
+f.puts "
+JMAXROOTDIR=#{$conf[:JMAX_SOURCES]}
+JMAXDISTDIR=#{$conf[:JMAX_SOURCES]}
+include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
+"
+end
+
+f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
+
+for z in $conf[:OPTIONS] do
+	f.puts "#{z}=yes"
+end
+
+sources = %w(
+	base/number.c
+	base/grid.c
+	base/main.c
+	base/flow_objects.c
+)
+f.puts "SOURCES = #{sources.join(" ")} \\"
+for format in $conf[:FORMATS] do
+	f.puts "format/#{format.downcase}.c \\"
+end
+f.puts ""
+make_makefile f
+}
+
+#--------------------------------#
+puts "generating config.h"
+File.open("config.h","w") {|f| f.puts "
+\#ifndef __CONFIG_H
+\#define __CONFIG_H
+/* this file was auto-generated by gridflow/configure */
+
+#{`make export-config`}
+
+\#include <#{$conf[:RUBY_H]}>
+
+\#ifdef STANDALONE
+\#include \"base/bridge_none.h\"
+\#else
+//\#include \"base/bridge_jmax.h\"
+\#endif
+
+#define FORMAT_LIST(_pre_,_post_) \\"
+f.puts $conf[:FORMATS].map {|fmt| "  _pre_ Format#{fmt}##_post_" }.join(",\\\n")
+
+for z in $conf[:OPTIONS] do
+	f.puts "#define #{z}"
+end
+if $conf[:FEATURES][:mpeg3]
+f.puts "
+\#ifdef LIBMPEG_INCLUDE_HERE
+\#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
+\#endif
+\#ifdef PUREDATA_INCLUDE_HERE
+\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
+\#endif
+"
+end
+
+f.puts "
+#ifndef HAVE_DEBUG
+#define HAVE_SPEED
+#endif
+#endif /* __CONFIG_H */"
+}
+
+puts "",
+"please see ./config.log for the details of the configuration tests",
+""
+
+
+
