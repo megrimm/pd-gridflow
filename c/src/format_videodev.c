@@ -238,6 +238,8 @@ void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 	int v[] = {height, width, 3};
 	VideoWindow grab_win;
 
+	/* bug here: won't flush the frame queue */
+
 	$->dim = Dim_new(3,v);
 	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
@@ -441,21 +443,18 @@ void FormatVideoDev_close (FormatVideoDev *$) {
 	FREE($);
 }
 
-Format *FormatVideoDev_open (FormatClass *class, ATOMLIST, int mode) {
+Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+	FormatVideoDev *$ = (FormatVideoDev *)Format_open(&class_FormatVideoDev,parent,mode);
 	const char *filename;
-	FormatVideoDev *$ = NEW(FormatVideoDev,1);
-	$->cl = &class_FormatVideoDev;
+
+	if (!$) return 0;
+
 	$->pending_frames[0] = -1;
 	$->pending_frames[1] = -1;
 	$->image = 0;
 
 	if (ac!=1) { whine("usage: videodev filename"); goto err; }
 	filename = fts_symbol_name(fts_get_symbol(at+0));
-
-	switch(mode) {
-	case 4: break;
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	whine("will try opening file");
 
@@ -520,9 +519,10 @@ err:
 }
 
 FormatClass class_FormatVideoDev = {
+	object_size: sizeof(FormatVideoDev),
 	symbol_name: "videodev",
 	long_name: "Video4linux 1.x",
-	flags: (FormatFlags)0,
+	flags: FF_R,
 
 	open: FormatVideoDev_open,
 	frames: 0,

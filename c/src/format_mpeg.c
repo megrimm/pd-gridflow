@@ -91,23 +91,16 @@ void FormatMPEG_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatMPEG_open (FormatClass *qlass, ATOMLIST, int mode) {
+Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+	FormatMPEG *$ = (FormatMPEG *)Format_open(&class_FormatMPEG,parent,mode);
 	const char *filename;
-	Format *$ = NEW(FormatMPEG,1);
-	$->cl     = &class_FormatMPEG;
 
-	$->stream = -1;
-	$->bstream = 0;
+	if (!$) return 0;
 
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
 		whine("usage: mpeg file <filename>"); goto err;
 	}
 	filename = fts_symbol_name(fts_get_symbol(at+1));
-
-	switch(mode) {
-	case 4: break;
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
@@ -137,9 +130,10 @@ err:
 }
 
 FormatClass class_FormatMPEG = {
+	object_size: sizeof(FormatMPEG),
 	symbol_name: "mpeg",
 	long_name: "Motion Picture Expert Group Format",
-	flags: (FormatFlags)0,
+	flags: FF_R,
 
 	open: FormatMPEG_open,
 	frames: 0,

@@ -264,6 +264,8 @@ static inline int ipow(int a, int b) {
 #undef min
 #undef max
 
+/* minimum/maximum functions */
+
 static inline int min(int a, int b) { return a<b?a:b; }
 static inline int max(int a, int b) { return a>b?a:b; }
 /*
@@ -271,13 +273,16 @@ static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 */
 
+/* three-way comparison */
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 
+/* */
 static inline uint64 rdtsc(void) {
   uint64 x;
   __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
   return x;}
 
+/* is little-endian */
 static inline bool is_le(void) {
 	int x=1;
 	return ((char *)&x)[0];
@@ -371,14 +376,6 @@ typedef struct Dim {
 	int Dim_dex_add(Dim *$, int n, int *dex);
 	int Dim_calc_dex(Dim *$, int *v);
 
-/*
-	#ifdef GRID_USE_INLINE
-		#define PROC static inline
-		#include "dim.c"
-		#undef PROC		
-	#endif
-*/
-
 /* **************************************************************** */
 /* bitpacking.c */
 
@@ -442,7 +439,7 @@ typedef struct Operator2 {
 	extern Operator2 op2_table[];
 
 /* **************************************************************** */
-/* grid.c (1) */
+/* grid.c (part 1: inlet objects) */
 
 /* GridInlet represents a grid-aware jmax inlet */
 
@@ -513,7 +510,7 @@ struct GridInlet {
 		  ((GridEnd)_class_##_##_winlet_##_end), 6)
 
 /* **************************************************************** */
-/* grid.c (2) */
+/* grid.c (part 2: outlet objects) */
 /* GridOutlet represents a grid-aware jmax outlet */
 
 struct GridOutlet {
@@ -553,7 +550,7 @@ struct GridOutlet {
 	void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
 
 /* **************************************************************** */
-/* grid.c (3) */
+/* grid.c (part 3: processor objects) */
 
 #define GridObject_FIELDS \
 	fts_object_t o;  /* extends fts object */ \
@@ -574,9 +571,13 @@ struct GridObject {
 	void GridObject_delete(GridObject *$);
 
 /* **************************************************************** */
-/* grid.c (4) */
+/* grid.c (part 4: formats) */
 
-typedef enum FormatFlags {dummy_dummy} FormatFlags;
+#define FF_W   (1<<1)
+#define FF_R   (1<<2)
+#define FF_RW  (1<<3)
+extern const char *format_flags_names[];
+
 typedef struct FormatClass FormatClass;
 typedef struct Format Format;
 
@@ -597,15 +598,16 @@ typedef struct Format Format;
 	typedef void (*Format_close_m)(Format *$);
 
 struct FormatClass {
+	int object_size;
 	const char *symbol_name; /* short identifier */
 	const char *long_name; /* long identifier */
-	FormatFlags flags; /* future use (set to 0 please) */
+	int flags;
 
 	/*
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	Format *(*open)(FormatClass *$, ATOMLIST, int mode);
+	Format *(*open)(FormatClass *$, GridObject *parent, int mode, ATOMLIST);
 
 	Format_frames_m frames;
 	Format_frame_m frame;
@@ -625,6 +627,7 @@ struct FormatClass {
 	FormatClass *cl; \
 	GridObject *parent; \
 	Format *chain; \
+	int mode; \
 	int stream; \
 	FILE *bstream; \
 	BitPacking *bit_packing; \
@@ -638,6 +641,8 @@ extern FormatClass FORMAT_LIST( ,class_);
 extern FormatClass *format_classes[];
 FormatClass *FormatClass_find(const char *name);
 
+Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
+
 /* **************************************************************** */
 
 typedef struct ObjectSet ObjectSet;
@@ -646,12 +651,5 @@ ObjectSet *ObjectSet_new(void);
 void ObjectSet_add(ObjectSet *$, GridObject *obj);
 void ObjectSet_del(ObjectSet *$, GridObject *obj);
 extern ObjectSet *gridflow_object_set;
-
-/* for C++ (see at the top of this file) */
-/*
-#ifdef __cplusplus
-};
-#endif
-*/
 
 #endif /* __GRID_H */

@@ -75,6 +75,7 @@ bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 			if (bs2 < bs) {
 				whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
 			}
+			/* should use bitpacking instead... */
 			for (i=0; i<bs; i++) b2[i] = b1[i];
 			GridOutlet_send(out,bs,b2);
 		}
@@ -116,23 +117,16 @@ void FormatPPM_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatPPM_open (FormatClass *qlass, ATOMLIST, int mode) {
+Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+	FormatPPM *$ = (FormatPPM *)Format_open(&class_FormatPPM,parent,mode);
 	const char *filename;
-	Format *$ = NEW(Format,1);
-	$->cl     = &class_FormatPPM;
 
-	$->stream = -1;
-	$->bstream = 0;
+	if (!$) return 0;
 
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
 		whine("usage: ppm file <filename>"); goto err;
 	}
 	filename = fts_symbol_name(fts_get_symbol(at+1));
-
-	switch(mode) {
-	case 4: case 2: break;
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
@@ -146,9 +140,10 @@ err:
 }
 
 FormatClass class_FormatPPM = {
+	object_size: sizeof(FormatPPM),
 	symbol_name: "ppm",
 	long_name: "Portable PixMap",
-	flags: (FormatFlags)0,
+	flags: FF_R|FF_W,
 
 	open: FormatPPM_open,
 

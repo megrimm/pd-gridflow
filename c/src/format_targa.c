@@ -103,6 +103,7 @@ bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
 			if (bs2 < bs) {
 				whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
 			}
+			/* should use bitpacking instead... */
 			for (i=0; i<bs; i+=3) {
 				b2[i+0] = b1[i+2];
 				b2[i+1] = b1[i+1];
@@ -132,23 +133,16 @@ void FormatTarga_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatTarga_open (FormatClass *class, ATOMLIST, int mode) {
+Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+	FormatTarga *$ = (FormatTarga *)Format_open(&class_FormatTarga,parent,mode);
 	const char *filename;
-	Format *$ = NEW(Format,1);
-	$->cl = &class_FormatTarga;
-	$->stream = -1;
-	$->bstream = 0;
+
+	if (!$) return 0;
 
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
 		whine("usage: targa file <filename>"); goto err;
 	}
 	filename = fts_symbol_name(fts_get_symbol(at+1));
-
-	switch(mode) {
-//	case 4: case 2: break;
-	case 4: break; /* read-only for now */
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
@@ -162,9 +156,10 @@ err:
 }
 
 FormatClass class_FormatTarga = {
+	object_size: sizeof(FormatTarga),
 	symbol_name: "targa",
 	long_name: "TrueVision Targa",
-	flags: (FormatFlags)0,
+	flags: FF_R,
 
 	open: FormatTarga_open,
 

@@ -88,7 +88,7 @@ METHOD(GridIn,open) {
 	if ($->ff) $->ff->cl->close($->ff);
 	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,ac-1,at+1,4);
+		$->ff = qlass->open(qlass,self,4,ac-1,at+1);
 	} else {
 		whine("file format has no `open'");
 	}
@@ -240,7 +240,7 @@ METHOD(GridOut,open) {
 
 	if ($->ff) $->ff->cl->close($->ff);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,ac-1,at+1,2);
+		$->ff = qlass->open(qlass,self,2,ac-1,at+1);
 	} else {
 		whine("file format has no `open'");
 	}

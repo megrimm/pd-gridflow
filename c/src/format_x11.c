@@ -42,6 +42,8 @@
 #include <X11/extensions/XShm.h>
 #endif
 
+//static fts_alarm_t *x11_alarm;
+
 extern FormatClass class_FormatX11;
 typedef struct FormatX11 FormatX11;
 typedef struct X11Display {
@@ -71,7 +73,6 @@ struct FormatX11 {
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
 	bool is_owner;
-	int mode;
 };
 
 /* default connection (not used for now) */
@@ -392,12 +393,10 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	int v[3] = {sy, sx, 3};
 	Window oldw;
 
-/*
-	this test crashes.
-	if (!GridInlet_idle($->parent->in[0])) {
-		whine("warning: resizing while displaying!");
+	if ($->parent->in[0]->dex > 0) {
+		whine("resizing while receiving picture (ignoring)");
+		return;
 	}
-*/
 
 	FREE($->dim);
 	$->dim = Dim_new(3,v);
@@ -522,16 +521,15 @@ void FormatX11_option (FormatX11 *$, ATOMLIST) {
 	}
 }
 
-Format *FormatX11_open (FormatClass *qlass, ATOMLIST, int mode) {
-	FormatX11 *$ = NEW(FormatX11,1);
+Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+	FormatX11 *$ = (FormatX11 *)Format_open(&class_FormatX11,parent,mode);
 
 	/* defaults */
 	int sy = 240;
 	int sx = 320;
 
-	$->cl      = &class_FormatX11;
-	$->stream  = 0;
-	$->bstream = 0;
+	if (!$) return 0;
+
 	$->window  = 0;
 	$->is_owner= true;
 	$->image   = 0;
@@ -539,11 +537,6 @@ Format *FormatX11_open (FormatClass *qlass, ATOMLIST, int mode) {
 	$->autodraw= 1;
 	$->mode    = mode;
 	$->dim     = 0;
-
-	switch(mode) {
-	case 4: case 2: break;
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	/*
 		{here}
@@ -636,9 +629,10 @@ err:;
 }
 
 FormatClass class_FormatX11 = {
+	object_size: sizeof(FormatX11),
 	symbol_name: "x11",
 	long_name: "X Window System Version 11.5",
-	flags: (FormatFlags)0,
+	flags: FF_R | FF_W,
 
 	open: FormatX11_open,
 	frames: 0,
