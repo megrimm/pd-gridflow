@@ -1,26 +1,35 @@
 /* $Id$ */
 
+"!" is planned for 0.4.1
 
+Distribution (0.4.0)
+[x] send mail about name change
+[x] rearrange both web sites
+[ ] send announcement
 
-"!" is planned for "real soon now"
-
-Distribution
-[ ] send mail about name change
-[ ] open anonymous cvs
+Distribution (0.4.1)
+[x] open anonymous cvs
 [ ] rearrange both web sites
+[ ] send announcement
+
+Distribution (0.4.x)
 [ ] prepare gridflow-images-0.4
 
 Installation
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
-[ ] add --no-profiler and non-pentium autodetect
+[x] add --no-profiler and non-pentium autodetect
+[ ] installable doc, installable includes
+[ ] can compile without jmax installed at all
+[ ] introduce jMax 3.0 support
+[ ] phase out jMax 2.4 support
 
-Documentation / Help / HelpScreenshot Update
-[x| | ] @in, @video_in_file
-[x| | ] @out, @video_out_file, @video_out
+Documentation / Help / HelpScreenshot Update (all "!")
+[x|x|x] @in, @video_in_file
+[x|x|x] @out, @video_out_file, @video_out
 [x| | ] @scale_by
-[x| | ] @import, @export, @redim
-[x| | ] @store, @convolve
+[x| | ] @import, @export
+[x| | ] @store, @redim, @convolve
 [x| | ] @, @!
 [x| | ] @fold, @inner, @outer
 [x| | ] @for, @dim
@@ -28,16 +37,16 @@ Documentation / Help / HelpScreenshot Update
 [x| | ] @two, @three, @four
 [x| | ] @contrast, @posterize
 [x| | ] @identity_transform, @spread, @scale_to
-[x| | ] format ppm
-[x| | ] format targa
-[x| | ] format videodev
-[x| | ] format x11
-[x| | ] format grid
+[x|-|-] format ppm
+[x|-|-] format targa
+[x|-|-] format videodev
+[x|-|-] format x11
+[x|-|-] format grid
 
 Documentation
-[!] project_policy.xml
+[ ] project_policy.xml
 [ ] validate samples/outside
-[ ] specify policy for <sample>, <icon>, etc.
+[ ] specify policy for <help>, <icon>, etc.
 [ ] add credits
 [ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
 [ ] document internals
@@ -61,22 +70,24 @@ General
 [x] how can I write unit tests or contracts?
 [ ] MMX memcpy() ?
 [ ] runtime configurable packet_length
-[ ] there's a type called "GridFlow". This is confusing.
+[ ] there's a type called "GridFlow". Is this confusing?
+[ ] make Dict scalable
 
 Computation Objects
 [ ] @cartprod (?), @slice (@splice ?)
 [ ] black option in @store (?)
-[!] @export_list
+[ ] @export_list
 [ ] @import~, @export~, @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
+[ ] @pfold, @rfold, @prfold
 [ ] @matrix_inverse, @matrix_solve
 [ ] @transpose (dimension swapping and/or index reversing)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
 
 Effects
-[!] overlay using alpha channel
+[ ] overlay using alpha channel
 [ ] pinch
 [ ] pixelize, despeckle
 [ ] hue change
@@ -98,7 +109,7 @@ Structure & Protocol
 	messages; etc... (?!?)
 [ ] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
-[ ] replace #idle by #busy
+[x] replace #idle by #busy
 [ ] identify streams by ids given at grid_begin
     (may allow for cancelling rejected grids?)
     (add cancel option to the r/rw choice in callback of grid_begin ?)
@@ -108,36 +119,35 @@ Input/Output
 [ ] implement byte-order support in BitPacking
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
-[x] add NTSC<->PAL option
-[ ] allow to select tv channels (this is "freq")
-[ ] fix RGB<->BGR<->??? palette issues
-[!] should disable x11 shared memory on remote displays.
-[!] arguments to @in,@out could be a auto-open.
+[ ] arguments to @in,@out could be a auto-open.
 
 Formats
-[!] Targa write support
+[ ] Targa write support
 [ ] JPEG support
-[!] PPM P3    support
-[!] PGM P2,P5 support
+[ ] PPM P3    support
+[ ] PGM P2,P5 support
 [ ] PBM P1,P4 support
-[ ] XBM support
-[ ] XPM support
+[ ] XBM/XPM support
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
 [x] MPEG support
-[!] Better MPEG support
+[ ] Better MPEG support
 [x] TCP server
 [x] non-blocking read
-[!] non-blocking write
+[ ] non-blocking write
 [!] non-blocking listen
-[!] VDSP support
-[!] multi-image (seq) (createable by cat, ar, tar or zip)
+[ ] VDSP support
+[ ] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[!] rewinding file (or not)
-[!] Format base class + inheritance
+[ ] rewinding file (or not)
+[ ] Format base class + inheritance
 [x] Format pre-written open() code
 [x] single alarm for X11.
 [x] single alarm for GridFlow.
+[x] add NTSC<->PAL option
+[ ] allow to select tv channels (this is "freq")
+[ ] fix RGB<->BGR<->??? palette issues
+[x] should disable x11 shared memory on remote displays.
 
 Java/Swing
 [ ] color picker
@@ -150,8 +160,8 @@ Java/Swing
 UnitTesting/Bugs
 [ ] @out causes delayed crash when closing its associated window
 [ ] distinguish "mod" and "%" properly (re: rounding)
-[ ] leak in all FileFormat#close (?)
-[ ] add alloc-tracing to find all leaks
+[x] leak in all FileFormat#close (?)
+[x] add alloc-tracing to find all leaks
 [ ] TCP server socket busy even after kill
 
 Misc

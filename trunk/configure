@@ -32,6 +32,10 @@ do
 			JMAX_VERSION=none
 			echo "Not using jMax"
 		;;
+		--no-mpeg)
+			NO_MPEG=yes
+			echo "won't check for libmpeg"
+		;;
 		--fast)
 			echo "Fast Mode (less error checking)"
 			OPTIONS="$OPTIONS HAVE_SPEED"
@@ -70,6 +74,7 @@ fi
 #--------------------------------#
 
 has-libmpeg () {
+	if [ ! "z$NO_MPEG" = "z" ]; then return 1; fi
 (
 	echo '#include <mpeg.h>'
 	echo 'int main (void) { return GetMPEGFrame==0; }'
