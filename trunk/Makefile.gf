@@ -35,6 +35,7 @@ else
 	CFLAGS += -O3 -funroll-loops # speed
 endif
 
+CFLAGS += -fno-omit-frame-pointer
 CFLAGS += -g    # gdb info
 CFLAGS += -fPIC # some OSes/machines need that for .so files
 

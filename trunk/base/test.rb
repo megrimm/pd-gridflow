@@ -895,8 +895,8 @@ end
 #test_nonsense
 #test_ppm2
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
-#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
-test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
+test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
@@ -909,8 +909,3 @@ test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_sound
 #test_metro
 #$mainloop.loop
-
-x = FObject["@export_symbol"]
-y = FObject["rubyprint"]
-x.connect 0,y,0
-x.send_in 0, [70,79,79,33]

@@ -101,6 +101,8 @@ Architecture
 	<=3 : can open windows ?
 [ ] GRID_INLET/DIM_INLET could use a second buffer,
 	Grid *next inside Grid objects.
+[ ] Outlet#buffer should harmonise with the lcm of its
+	corresponding Inlet#factor's.
 
 Computation Objects
 [ ] @type, @cast
@@ -235,6 +237,7 @@ Bugs
 [ ] RtMetro isn't reliably working
 [ ] jpeg file cat crashes on second file (jpeglib buffering?)
 [ ] gcc 3.2 fails to instantiate templates
+[ ] videodev stays busy after closing patch ?
 
 SOON:
  
