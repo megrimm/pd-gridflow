@@ -1,125 +1,112 @@
-#N canvas 428 118 513 531 10;
-#X obj 294 120 @! sq;
-#X obj 13 494 print;
-#X obj 10 228 @ > 0;
-#X obj 297 81 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 2800 1;
-#X text 83 198 strict vs fuzzy;
-#X obj 64 250 @ + 128;
-#X obj 244 186 loadbang;
-#X text 274 9 step 3: select a point in the color cube \, and a radius
-of accepted similarity.;
-#X obj 10 198 demux 2;
-#X text 304 207 enable red enable green enable blue;
-#X obj 10 101 @! sq;
-#X obj 296 99 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 7800 1;
-#X obj 289 248 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 297 46 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 10600 1;
-#X obj 13 450 @out window;
-#X obj 66 198 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
-;
-#X text 209 141 all three = select sphere in color cube pick two =
-select circle in a color square pick one = select range in one channel
-;
-#X obj 10 123 @ *;
-#X obj 241 253 @three;
-#X obj 64 228 @ tanh* 127;
-#X text 437 45 red green blue similarity;
+#N canvas 20 153 603 490 10;
+#X obj 215 85 @! sq;
+#X obj 9 228 @ > 0;
+#X obj 63 250 @ + 128;
+#X obj 9 207 demux 2;
+#X obj 9 90 @! sq;
+#X obj 259 86 hsl 128 15 0 255 0 0 empty empty tolerance 8 8 0 8 -262144
+-1 -1 8100 1;
+#X obj 12 442 @out window;
+#X obj 9 109 @ *;
+#X obj 63 228 @ tanh* 127;
 #X obj 9 50 @store;
-#X obj 13 472 fps detailed;
-#X text 19 270 apply alpha channel;
-#X obj 289 228 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
+#X text 18 272 apply alpha channel;
+#X obj 219 123 tgl 15 1 empty empty empty 0 -6 0 8 -261689 -258699
+-1 1 1;
 #X obj 13 3 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1;
-#X obj 289 208 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
-1;
-#X obj 241 98 @three;
-#X obj 113 10 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 16 25 @in;
+#X obj 9 71 @ -;
+#X obj 9 147 @ inv+;
+#X obj 9 250 @ << 8;
+#X obj 9 128 @fold +;
+#X obj 9 310 demux 2;
+#X obj 162 400 loadbang;
+#X obj 143 443 @checkers;
+#X obj 9 288 @outer ignore ( 3 # 0 );
+#X obj 31 2 metro 33.3667;
+#X obj 12 393 @ +;
+#X obj 12 370 @ *;
+#X obj 82 351 @ *;
+#X obj 12 414 @ >> 8;
+#X obj 82 329 @ inv+ 256;
+#X obj 59 415 @ min 255;
+#X obj 143 400 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 113 52 @in;
-#X obj 10 79 @ -;
-#X obj 297 63 hsl 137 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 6900 1;
-#X obj 10 170 @ inv+;
-#X obj 10 250 @ << 8;
-#X obj 10 148 @fold +;
-#X text 35 14 step 2;
-#X text 131 9 step 1;
-#X obj 9 312 demux 2;
-#X obj 264 288 loadbang;
-#X obj 264 332 @checkers;
-#X obj 10 286 @outer ignore ( 3 # 0 );
-#X obj 13 23 metro 33.3667;
-#X obj 11 397 @ +;
-#X obj 11 374 @ *;
-#X obj 60 379 @ *;
-#X obj 11 425 @ >> 8;
-#X obj 8 335 fork;
-#X obj 60 357 @ inv+ 256;
-#X obj 69 315 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
-;
-#X text 90 313 select output;
-#X obj 194 398 @ min 255;
-#X obj 107 126 @redim ( 100 100 3 );
-#X obj 111 149 @out window;
-#X obj 174 77 fork;
-#X msg 113 30 open videodev /dev/video0 \, channel 1 \, size 480 640
-;
-#X obj 264 310 @for ( 0 0 ) ( 480 640 ) ( 1 1 );
-#X obj 337 286 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
--1;
-#X connect 0 0 32 1;
-#X connect 2 0 33 0;
-#X connect 3 0 27 2;
-#X connect 5 0 40 0;
-#X connect 6 0 26 0;
-#X connect 6 0 24 0;
-#X connect 6 0 12 0;
+#X obj 216 24 @color;
+#X obj 43 25 @camera_control;
+#X obj 56 47 s image;
+#X obj 28 351 r image;
+#X text 210 -6 select a point in the color cube \; and a radius of
+accepted similarity.;
+#X obj 143 421 @for ( 0 0 ) ( 240 320 ) ( 1 1 );
+#X obj 219 142 @pack 3;
+#X obj 241 123 tgl 15 1 empty empty empty 0 -6 0 8 -225271 -24198 -1
+1 1;
+#X obj 263 123 tgl 15 1 empty empty empty 0 -6 0 8 -228992 -62784 -1
+1 1;
+#X text 213 107 enable selection on:;
+#X text 281 124 all three = select sphere in color cube \; pick two
+= select circle in a color square \; pick one = select range in one
+channel;
+#X text 224 400 make background;
+#X obj 9 166 demux 2;
+#X obj 52 185 @ inv+;
+#X obj 214 177 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+-1 0;
+#X text 233 176 erase nonselected;
+#X text 233 193 erase selected;
+#X obj 214 217 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+-1 0;
+#X text 236 216 strict;
+#X text 235 232 fuzzy;
+#X obj 188 297 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+-1 0;
+#X text 210 297 see filtered image on checkers;
+#X text 210 312 see opacity mask;
+#X obj 9 331 t a a;
+#X connect 0 0 15 1;
+#X connect 1 0 16 0;
+#X connect 2 0 21 0;
+#X connect 3 0 1 0;
+#X connect 3 1 8 0;
+#X connect 4 0 7 0;
+#X connect 5 0 0 0;
+#X connect 7 0 17 0;
 #X connect 8 0 2 0;
-#X connect 8 1 19 0;
-#X connect 10 0 17 0;
-#X connect 11 0 0 0;
-#X connect 12 0 18 2;
-#X connect 13 0 27 0;
-#X connect 14 0 22 0;
-#X connect 15 0 8 1;
-#X connect 17 0 34 0;
-#X connect 18 0 17 1;
-#X connect 19 0 5 0;
-#X connect 21 0 30 0;
-#X connect 22 0 1 0;
-#X connect 24 0 18 1;
-#X connect 25 0 41 0;
-#X connect 26 0 18 0;
-#X connect 27 0 30 1;
-#X connect 27 0 51 0;
-#X connect 28 0 54 0;
-#X connect 29 0 43 1;
-#X connect 29 0 30 0;
-#X connect 30 0 10 0;
-#X connect 31 0 27 1;
-#X connect 32 0 8 0;
-#X connect 33 0 40 0;
-#X connect 34 0 32 0;
-#X connect 37 0 46 0;
-#X connect 37 1 50 0;
-#X connect 38 0 55 0;
-#X connect 39 0 44 1;
-#X connect 40 0 37 0;
-#X connect 41 0 29 0;
-#X connect 42 0 45 0;
-#X connect 43 0 42 0;
+#X connect 9 0 14 0;
+#X connect 11 0 36 0;
+#X connect 12 0 22 0;
+#X connect 13 0 14 0;
+#X connect 13 0 32 0;
+#X connect 14 0 4 0;
+#X connect 15 0 42 0;
+#X connect 16 0 21 0;
+#X connect 17 0 15 0;
+#X connect 18 0 53 0;
+#X connect 18 1 28 0;
+#X connect 19 0 29 0;
+#X connect 20 0 25 1;
+#X connect 21 0 18 0;
+#X connect 22 0 13 0;
+#X connect 23 0 26 0;
+#X connect 24 0 23 0;
+#X connect 25 0 23 1;
+#X connect 26 0 6 0;
+#X connect 27 0 25 0;
+#X connect 28 0 6 0;
+#X connect 29 0 35 0;
+#X connect 30 0 14 1;
+#X connect 31 0 13 0;
+#X connect 33 0 24 1;
+#X connect 35 0 20 0;
+#X connect 36 0 7 1;
+#X connect 37 0 36 1;
+#X connect 38 0 36 2;
+#X connect 42 0 3 0;
+#X connect 42 1 43 0;
+#X connect 43 0 3 0;
 #X connect 44 0 42 1;
-#X connect 45 0 14 0;
-#X connect 46 0 43 0;
-#X connect 46 1 47 0;
-#X connect 47 0 44 0;
-#X connect 48 0 37 1;
-#X connect 50 0 14 0;
-#X connect 51 0 52 0;
-#X connect 54 0 29 0;
-#X connect 55 0 39 0;
-#X connect 56 0 55 0;
+#X connect 47 0 3 1;
+#X connect 50 0 18 1;
+#X connect 53 0 24 0;
+#X connect 53 1 27 0;
