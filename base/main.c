@@ -273,11 +273,15 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	GridObject *self;
 	if (allocator==Qnil) {
 		/* this is a pure-ruby FObject/GridObject */
+		//fprintf(stderr,"FObject.new pure ruby\n");
 		self = new GridObject;
 	} else {
 		/* this is a C++ FObject/GridObject */
-		self = (GridObject *)((void*(*)())FIX2PTR(void,allocator))();
+		void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
+		//fprintf(stderr,"FObject.new with allocator %08x\n",(int)(void*)alloc);
+		self = (GridObject *)alloc();
 	}
+	self->check_magic();
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, Object_free, self);
@@ -421,7 +425,7 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
-	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX(func));
+	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX((void *)func)); //#!@$??
 }
 
 void MainLoop_remove(void *data) {
@@ -472,7 +476,8 @@ Ruby fclass_install(FClass *fc, Ruby super) {
 	for (int i=0; i<fc->handlersn; i++)
 		rb_ary_push(handlers,PTR2FIX(&fc->handlers[i]));
 	define_many_methods(rself,fc->methodsn,fc->methods);
-	rb_ivar_set(rself,SI(@allocator),PTR2FIX(fc->allocator));
+	//fprintf(stderr,"alloc: %08x\n", (int)(fc->allocator));
+	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator))); //#!@$??
 	if (fc->startup) fc->startup(rself);
 	return Qnil;
 }
