@@ -139,7 +139,7 @@ GRID_INLET(FormatQuickTime,0) {
 	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
-	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
+	if (!anim) RAISE("can't open file `%s': %s", rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),

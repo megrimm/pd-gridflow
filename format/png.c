@@ -32,9 +32,6 @@ extern "C" {
 \class FormatPNG < Format
 struct FormatPNG : Format {
 	BitPacking *bit_packing;
-//	struct jpeg_compress_struct cjpeg;
-//	struct jpeg_decompress_struct djpeg;
-//	struct jpeg_error_mgr jerr;
 	png_structp png;
 	png_infop info;
 	FILE *f;
@@ -53,7 +50,7 @@ GRID_INLET(FormatPNG,0) {
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
-	RAISE("bother, said pooh, as he reached for the reset button");
+	RAISE("bother, said pooh, as the PNG encoding was found unimplemented");
 } GRID_FLOW {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
@@ -61,17 +58,13 @@ GRID_INLET(FormatPNG,0) {
 	uint8 *rows[1] = { row };
 	while (n) {
 		bit_packing->pack(in->dim->get(1),data,Pt<uint8>(row,rowsize));
-//		jpeg_write_scanlines(&cjpeg,rows,1);		
 		n-=rowsize; data+=rowsize;
 	}
 } GRID_FINISH {
-//	jpeg_finish_compress(&cjpeg);
-//	jpeg_destroy_compress(&cjpeg);
 } GRID_END
 
 \def Ruby frame () {
 	if (feof(f)) return Qfalse;
-	//gfpost("ftell = %ld",ftell(f));
 	
 	uint8 sig[8];
 	if (!fread(sig, 1, 8, f)) return Qfalse;
@@ -106,33 +99,31 @@ GRID_INLET(FormatPNG,0) {
 /////////////////////////////////////////////////////// part 2
 
 	png_bytepp row_pointers = 0;
-
-	gfpost("color_type = %d", color_type);
 	if (color_type == PNG_COLOR_TYPE_PALETTE
 		|| (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
 		|| png_get_valid(png, info, PNG_INFO_tRNS))
 			png_set_expand(png);
 	// 16bpp y, 32bpp ya, 48bpp rgb, 64bpp rgba...
 	if (bit_depth == 16) png_set_strip_16(png);
-//	if (color_type & !PNG_COLOR_TYPE_COLOR) png_set_gray_to_rgb(png);
 
-	double display_exponent = 2.2;
+	double display_gamma = 2.2;
 	double gamma;
 	if (png_get_gAMA(png, info, &gamma))
-		png_set_gamma(png, display_exponent, gamma);
+		png_set_gamma(png, display_gamma, gamma);
 	png_read_update_info(png, info);
 
 	int rowbytes = png_get_rowbytes(png, info);
 	int channels = (int)png_get_channels(png, info);
 	uint8 *image_data = (uint8 *)malloc(rowbytes*height);
-	row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep));
-	gfpost("png: channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
-		channels, width, rowbytes, height, gamma);
-	for (int i=0; i<height; i++) row_pointers[i] = image_data + i*rowbytes;
-	if (rowbytes != width*channels) RAISE("rowbytes mismatch: %d is not %d*%d=%d",
-		rowbytes, width, channels, width*channels);
+	row_pointers = new png_bytep[height];
+	gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
+		color_type, channels, width, rowbytes, height, gamma);
+	for (int i=0; i<(int)height; i++) row_pointers[i] = image_data + i*rowbytes;
+	if ((uint32)rowbytes != width*channels)
+		RAISE("rowbytes mismatch: %d is not %d*%d=%d",
+			rowbytes, width, channels, width*channels);
 	png_read_image(png, row_pointers);
-	free(row_pointers);
+	delete row_pointers;
 	row_pointers = 0;
 	png_read_end(png, 0);
 

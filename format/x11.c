@@ -261,10 +261,11 @@ static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	fprintf(stderr,"X11 reports Error: display=0x%08x\n",(int)d);
 	gfpost("X11 reports Error: display=0x%08x",(int)d);
-	fprintf(stderr,"serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x\n",
+	fprintf(stderr,"serial=0x%08lx error=0x%08x request=0x%08x minor=0x%08x\n",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
+	//if () 
 	current_x11->use_shm = false;
 	return 42; /* it seems that the return value is ignored. */
 }
@@ -310,13 +311,13 @@ top:
 		shm_info->readOnly = False;
 
 		current_x11 = this;
-		XSetErrorHandler(FormatX11_error_handler);
+		//XSetErrorHandler(FormatX11_error_handler);
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 
 		/* make sure the server picks it up */
 		XSync(display,0);
 
-		XSetErrorHandler(0);
+		//XSetErrorHandler(0);
 
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl(shm_info->shmid,IPC_RMID,0);
@@ -382,7 +383,7 @@ GRID_INLET(FormatX11,0) {
 	in->set_factor(sxc);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in->dim->get(2)!=bit_packing->size) {
-		gfpost("changing bit_packing's number of channels");
+		//gfpost("changing bit_packing's number of channels");
 		BitPacking *o = bit_packing;
 		o->mask[3]=0;
 		bit_packing = new BitPacking(
@@ -494,7 +495,7 @@ void FormatX11::open_display(const char *disp_string) {
 	display = XOpenDisplay(disp_string);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
-	//XSetErrorHandler(FormatX11_error_handler);
+	XSetErrorHandler(FormatX11_error_handler);
 
 	/*
 	  btw don't expect too much from X11 error handling system.
@@ -554,8 +555,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		XFree(prop_r);
 		if (match) {
 			target=children_r[i];
-			gfpost("x11 embed: 0x%08x -> (%lu bytes) %s",
-				(int)children_r[i],nitems_r,prop_r);
+			//gfpost("x11 embed: 0x%08x -> (%lu bytes) %s",
+			//	(int)children_r[i],nitems_r,prop_r);
 			break;
 		}
 		target = search_window_tree(children_r[i],key,value,level+1);

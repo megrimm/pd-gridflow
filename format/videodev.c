@@ -239,7 +239,6 @@ struct FormatVideoDev : Format {
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
 	\decl void close ();
 	\decl void size (int sy, int sx);
-	\decl void option (Symbol sym, int value);
 	\decl void alloc_image ();
 	\decl void dealloc_image ();
 	\decl void frame ();
@@ -251,6 +250,12 @@ struct FormatVideoDev : Format {
 	\decl void transfer (Symbol sym);
 	\decl void initialize2 ();
 	GRINLET3(0);
+
+	\decl void brightness (short value);
+	\decl void hue        (short value);
+	\decl void colour     (short value);
+	\decl void contrast   (short value);
+	\decl void whiteness  (short value);
 };
 
 #define DEBUG(args...) 42
@@ -445,24 +450,23 @@ GRID_INLET(FormatVideoDev,0) {
 	} else RAISE("don't know that transfer mode");
 }
 
-\def void option (Symbol sym, int value) {
-	int fd = GETFD;
-	if (0) {
 #define PICTURE_ATTR(_name_) \
-	} else if (sym == SYM(_name_)) { \
-		VideoPicture vp; \
-		WIOCTL(fd, VIDIOCGPICT, &vp); \
-		vp._name_ = value; \
-		WIOCTL(fd, VIDIOCSPICT, &vp);
-	PICTURE_ATTR(brightness)
-	PICTURE_ATTR(hue)
-	PICTURE_ATTR(colour)
-	PICTURE_ATTR(contrast)
-	PICTURE_ATTR(whiteness)
-	} else {
-		rb_call_super(argc,argv);
-	}
-}
+	int fd = GETFD; \
+	VideoPicture vp; \
+	WIOCTL(fd, VIDIOCGPICT, &vp); \
+	vp._name_ = value; \
+	WIOCTL(fd, VIDIOCSPICT, &vp);
+
+\def void brightness (short value) {
+	PICTURE_ATTR(brightness)}
+\def void hue      (short value) {
+	PICTURE_ATTR(hue)}
+\def void colour (short value) {
+	PICTURE_ATTR(colour)}
+\def void contrast (short value) {
+	PICTURE_ATTR(contrast)}
+\def void whiteness (short value) {
+	PICTURE_ATTR(whiteness)}
 
 \def void close () {
 	if (bit_packing) delete bit_packing;
