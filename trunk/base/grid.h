@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 /* current version number as string literal */
-#define GF_VERSION "0.7.2"
+#define GF_VERSION "0.7.3"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -66,7 +66,7 @@ typedef /*volatile*/ VALUE Ruby;
 /* returns the size of a statically defined array */
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
-/* these could be inline functions */
+/* !@#$ these could be inline functions */
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
@@ -76,7 +76,7 @@ typedef /*volatile*/ VALUE Ruby;
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
-/* because of older versions of Ruby (1.6.???) */
+/* because of older versions of Ruby (1.6.?) */
 #define rb_obj_class(o) rb_funcall((o),SI(class),0)
 
 #define WATCH(n,ar) { \
@@ -559,16 +559,16 @@ void swap16 (int n, Pt<uint16> data);
 #define NUMBER_TYPES(MACRO) \
 	MACRO(     uint8,  8, NT_UNSIGNED) \
 	MACRO(      int8,  8, NT_UNSUPPORTED) \
-	MACRO(    uint16, 16, NT_UNSUPPORTED) \
+	MACRO(    uint16, 16, NT_UNSIGNED | NT_UNSUPPORTED) \
 	MACRO(     int16, 16, 0) \
-	MACRO(    uint32, 32, NT_UNSUPPORTED) \
+	MACRO(    uint32, 32, NT_UNSIGNED | NT_UNSUPPORTED) \
 	MACRO(     int32, 32, 0) \
-	MACRO(    uint64, 64, NT_UNSUPPORTED) \
+	MACRO(    uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED) \
 	MACRO(     int64, 64, NT_UNSUPPORTED) \
 	MACRO(   float32, 32, NT_FLOAT) \
-	MACRO(   float64, 64, NT_UNSUPPORTED) \
-	MACRO( complex64, 64, NT_UNSUPPORTED) \
-	MACRO(complex128,128, NT_UNSUPPORTED)
+	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED) \
+	MACRO( complex64, 64, NT_FLOAT | NT_UNSUPPORTED) \
+	MACRO(complex128,128, NT_FLOAT | NT_UNSUPPORTED)
 
 enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_type_i,

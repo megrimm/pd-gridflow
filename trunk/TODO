@@ -28,6 +28,8 @@ Installation
 [ ] install vs site-install mess
 [ ] --whole-archive
 [ ] bridge should check that the gridflow.so file matches.
+[ ] make ./configure's 'test' method work using exceptions
+    for meaningful error reporting in config.log.
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -100,6 +102,7 @@ Architecture
 [ ] add a GridFlow::LaterException or something
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
+[ ] add a deprecation system
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
@@ -173,6 +176,8 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] use 1.8.0's IO#read(Integer,String)->String
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
+[ ] x11: sync with the actual vsync of the monitor
+[ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
 [ ] shell object?
 [ ] @import, 'grid tcp': option: sudden vs gradual transmission through
 	gridflow.
@@ -270,6 +275,8 @@ Bugs
 [ ] @draw_polygon off-by-one
 [ ] FormatGrid: not properly tested (crashes sometimes)
 [ ] look for bugs in @yuv_to_rgb ?
+[ ] ./configure:462: command not found: jmax-config --package-dir
+[ ] too many open files (eg: jpeg writing)
 
 how about creating aliases like "open window" = "open x11 here" (or arbitrary
 user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
