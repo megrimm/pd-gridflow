@@ -300,6 +300,24 @@ Feature.new {
 	}
 },
 Feature.new {
+	tag :gcc64
+	name "GNU C++ in 64-bit mode"
+	options ["GCC64"]
+	test proc {
+		c_test %{
+		#include <stdio.h>
+		#include <stdlib.h>
+		#include <cstddef>
+		#define T(a) printf("%s:%d; ",#a,sizeof(a));
+		int main () {
+			T(void *)T(ptrdiff_t)T(off_t)T(size_t)puts("");
+			T(char)T(short)T(int)T(long)T(long long)puts("");
+			T(float)T(double)puts("");
+			return !( sizeof(void*)==8 );
+		}}
+	}
+},
+Feature.new {
 	tag :libruby
 	name "Ruby as a dynamic library"
 	uses_bridge_so ["-lruby"]
@@ -672,6 +690,16 @@ Feature.new {
 		return xine_new==0; }`
 	}
 	formats ["Xine"]
+},
+Feature.new {
+	tag :example
+	name "example (example file optional/example.c)"
+	test proc {|f|
+		c_test %`
+		#include <stdio.h>
+		int main () {
+		return 0 /* 0=ok, nonzero=bad */; }`
+	}
 },
 Feature.new {
 	tag :puredata
