@@ -177,7 +177,11 @@ void FormatX11_alarm(FormatX11 *$) {
 bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 	if (frame != -1) return 0;
 
-	whine("$->dim = %s",Dim_to_s($->dim));
+	{
+		char *s = Dim_to_s($->dim);
+		whine("$->dim = %s",s);
+		FREE(s);
+	}
 
 	XGetSubImage($->display, $->window,
 		0, 0, Dim_get($->dim,1), Dim_get($->dim,0),
@@ -291,11 +295,15 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	oldw = $->window;
 	if (oldw) {
 		if ($->is_owner) {
-			whine("About to resize window: %s",Dim_to_s($->dim));
+			char *s = Dim_to_s($->dim);
+			whine("About to resize window: %s",s);
+			FREE(s);
 			XResizeWindow($->display,$->window,sx,sy);
 		}
 	} else {
-		whine("About to create window: %s",Dim_to_s($->dim));
+		char *s = Dim_to_s($->dim);
+		whine("About to create window: %s",s);
+		FREE(s);
 		$->window = XCreateSimpleWindow($->display,
 			$->root_window, 0, 0, sx, sy, 0,
 			$->white_pixel, $->black_pixel);

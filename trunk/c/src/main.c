@@ -217,6 +217,18 @@ void *qalloc2(size_t n, const char *file, int line) {
 	return data;
 }
 
+void *qrealloc(void *data, int n) {
+	void *data2 = realloc(data,n);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		void *a = Dict_get(gf_alloc_set,data);
+		Dict_del(gf_alloc_set,data);
+		Dict_put(gf_alloc_set,data2,a);
+	}
+#endif
+	return data2;
+}
+
 /* to help find dangling references */
 void qfree(void *data) {
 	assert(data);
@@ -249,7 +261,11 @@ void qdump$1(void *obj, void *k, void *v) {
 }
 
 void qdump(void) {
+	whine("checking for memory leaks...");
 	Dict_each(gf_alloc_set,qdump$1,0);
+	if (Dict_size(gf_alloc_set)==0) {
+		whine("no leaks (yet)");
+	}
 }
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {

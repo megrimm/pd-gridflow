@@ -203,17 +203,12 @@ GRID_BEGIN(GridStore,0) {
 	int na = Dim_count(in->dim);
 	int nb,nc,nd,i;
 	int v[MAX_DIMENSIONS];
-	if (!$->data || !$->dim) {
+	if (!$->dim) {
 		whine("empty buffer, better luck next time.");
 		return false;
 	}
 
 	nb = Dim_count($->dim);
-
-/*
-	whine("[a] %s",Dim_to_s(in->dim));
-	whine("[b] %s",Dim_to_s($->dim));
-*/
 
 	if (na<1) {
 		whine("must have at least 1 dimension.",
@@ -239,7 +234,6 @@ GRID_BEGIN(GridStore,0) {
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
 	GridOutlet_begin($->out[0],Dim_new(nd,v));
 	GridInlet_set_factor(in,nc);
-/*	whine("[r] %s",Dim_to_s($->out[0]->dim)); */
 	return true;
 }
 
@@ -484,10 +478,9 @@ GRID_END(GridOp2,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridOp2,1) {
 	int length = Dim_prod(in->dim);
-	if ($->data) {
-		GridInlet_abort($->in[0]); /* bug? */
-		FREE($->data);
-	}
+	if ($->data) GridInlet_abort($->in[0]); /* bug? */
+	FREE($->data);
+	FREE($->dim);
 	$->dim = Dim_dup(in->dim);
 	$->data = NEW2(Number,length);
 	return true;
@@ -568,7 +561,6 @@ GRID_BEGIN(GridFold,0) {
 	if (n<1) { whine("minimum 1 dimension"); return false; }
 
 	foo = Dim_new(n-1,in->dim->v);
-/*	whine("fold dimension = %s",Dim_to_s(foo)); */
 	GridOutlet_begin($->out[0],foo);
 	GridInlet_set_factor(in,Dim_get(in->dim,Dim_count(in->dim)-1));
 	return true;
@@ -1281,9 +1273,9 @@ struct GridPrint {
 
 GRID_BEGIN(GridPrint,0) {
 	if (Dim_count(in->dim)>1) {
-		char *foo = Dim_to_s(in->dim);
-		whine("Grid %s: %s",foo);
-		FREE(foo);
+		char *s = Dim_to_s(in->dim);
+		whine("Grid %s: %s",s);
+		FREE(s);
 	}
 	return true;
 }

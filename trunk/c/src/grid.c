@@ -119,7 +119,6 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 	$->dim = Dim_new(ac-1,v);
 	FREE(v);
 
-/*	whine("%s:i%d: grid_begin: %s",INFO($),Dim_to_s($->dim)); */
 	$->dex = 0;
 	assert($->begin);
 	if (!$->begin((GridObject *)$->parent,$)) goto err;
@@ -288,8 +287,6 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	fts_atom_t a[MAX_DIMENSIONS+1];
 
 	assert($);
-
-/*	whine("%s:o%d: beginning a %s",INFO((GridInlet *)$), Dim_to_s(dim)); */
 
 	/* if (!GridOutlet_idle($)) GridOutlet_abort($); */
 
