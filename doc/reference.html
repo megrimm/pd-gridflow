@@ -1,1235 +1,1382 @@
 <html>
 <head>
-<title>video4jmax - reference</title>
+<title>GridFlow 0.4.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
+<body
+  bgcolor="#FFFFFF"
+  leftmargin="0"
+  topmargin="0"
+  marginwidth="0"
+  marginheight="0">
+<table
+  width="100%"
+  bgcolor="white"
+  border="0"
+  cellspacing="2">
+<tr> 
+<td colspan="4" bgcolor="#082069">
+<img src="images/jmax_titre.jpg" width="253" height="23"></td>
+</tr>
+<tr> 
+<td>&nbsp;</td>
+</tr>
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4" height="16"> 
+    <h4>GridFlow 0.4.0 - reference index</h4>
+</td></tr>
+<tr> 
+  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="25%" height="23">&nbsp;</td>
+  <td width="66%" height="23">&nbsp;</td>
+  <td width="5%"  height="23">&nbsp;</td>
+</tr>
+<tr><td colspan='2'>
+<h5><a href="Conventions of this Manual">Conventions of this Manual</a></h5><blockquote></blockquote><h5><a href="Grid Protocol">Grid Protocol</a></h5><blockquote></blockquote><h5><a href="Picture Protocol">Picture Protocol</a></h5><blockquote></blockquote><h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/video_out_240_320.jpg" alt="[@video_out 240 320]"><br><img src="images/video_out_file.jpg" alt="[@out]"><br><img src="images/video_in_file.jpg" alt="[@ import 240 320 3]"><br><img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br><img src="images/@export.jpg" alt="[@export]"><br></blockquote><h5><a href="Transformation Objects">Transformation Objects</a></h5><blockquote><img src="images/@fold_%2B.jpg" alt="[@fold +]"><br><img src="images/@redim.jpg" alt="[@redim 2]"><br><img src="images/@store.jpg" alt="[@store]"><br><img src="images/@outer.jpg" alt="[@outer +]"><br></blockquote><h5><a href="Reporting Objects">Reporting Objects</a></h5><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br></blockquote><h5><a href="Special Objects">Special Objects</a></h5><blockquote></blockquote><h5><a href="Compound Objects">Compound Objects</a></h5><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br><img src="images/@identity_transform.jpg" alt="[@identity_transform]"><br><img src="images/@posterize.jpg" alt="[@posterize]"><br><img src="images/@scale_to.jpg" alt="[@scale_to]"><br><img src="images/@spread.jpg" alt="[@spread]"><br><img src="images/@three.jpg" alt="[@three]"><br><img src="images/@two.jpg" alt="[@two]"><br></blockquote><h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote><h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote><h5><a href="External Picture Formats">External Picture Formats</a></h5><blockquote><img src="images/open_ppm.jpg" alt="[open filename.ppm]"><br><img src="images/open_tga.jpg" alt="[open filename.tga targa]"><br><img src="images/open_videodev.jpg" alt="[open /dev/video0 videodev]"><br><img src="" alt="[connect here x11]"><br></blockquote><br><br></td></tr>
 
-<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-<br>
-<table width="100%" bgcolor="white" border="0" cellspacing="2">
-  <tr> 
-    <td colspan="4" bgcolor="#082069"> <img src="images/jmax_titre.jpg" width="253" height="23"></td>
-  </tr>
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4" height="16"> 
-      <h4>Video4jmax 0.3.0 - reference index</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2" width="12%">&nbsp;</td>
-    <td width="30%" height="23">&nbsp;</td>
-    <td width="50%" height="23">&nbsp;</td>
-    <td width="10%" height="23">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="2" width="80%" height="421"> 
-      <table width="100%" bgcolor="white" cellspacing="2">
-        <tr> </tr>
-        <tr> 
-          <td width="25%" colspan="3"> 
-            <h5><a href="#grid">Grid Protocol</a></h5>
-          </td>
-          <td width="35%" colspan="2"> 
-            <h5><a href="#picture">Picture Protocol</a></h5>
-          </td>
-          <td width="40%">&nbsp;</td>
-        </tr>
-        <tr> 
-          <td width="25%" colspan="3"> 
-            <h5><a href="#input">Input/Output</a></h5>
-          </td>
-          <td width="35%" colspan="2"> 
-            <h5><a href="#binary_operations">Binary Operators</a></h5>
-          </td>
-          <td width="40%"> 
-            <h5><a href="#unary_operations">Unary Operators</a></h5>
-          </td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#video_out"><img src="images/video_out_240_320.jpg" width="123" height="18" alt="[@video_out 240 320]" border="0"></a></td>
-          <td> 
-            <p><a href="#1"><img src="images/@_%2B.jpg" width="64" height="18" alt="[@ +]" border="0"></a></p>
-          </td>
-          <td><a href="#12"><img src="images/@_shift_bits_left.jpg" width="64" height="18" alt="[@ &lt;&lt;]" border="0"></a></td>
-          <td> 
-            <p><a href="#abs"><img src="images/@!_abs.jpg" width="64" height="18" alt="[@!  abs]" border="0"></a></p>
-          </td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#video_out_file"><img src="images/video_out_file.jpg" width="94" height="19" alt="[@video_out_file]" border="0"></a></td>
-          <td> 
-            <p><a href="#2"><img src="images/@_-.jpg" width="64" height="18" alt="[@ -]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#13"><img src="images/@_shift_bits_right.jpg" width="64" height="18" alt="[@ &gt;&gt;]" border="0"></a></p>
-          </td>
-          <td><a href="#rand"><img src="images/@!_rand.jpg" width="64" height="20" alt="[@! rand]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#video_in_file"><img src="images/video_in_file.jpg" width="86" height="18" alt="[@video_in_file]" border="0"></a></td>
-          <td height="22"> 
-            <p><a href="#3"><img src="images/@_inv%2B.jpg" width="72" height="18" alt="[@ inv+]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#14"><img src="images/@_min.jpg" width="64" height="18" alt="[@ min]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#sqrt"><img src="images/@!_sqrt.jpg" width="64" height="18" alt="[@! sqrt]" border="0"></a></p>
-          </td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#import"><img src="images/@import_240_320_3.jpg" width="115" height="18" alt="[@ import 240 320 3]" border="0"></a></td>
-          <td> 
-            <p><a href="#4"><img src="images/@_x.jpg" width="64" height="18" alt="[@ *]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#15"><img src="images/@_max.jpg" width="64" height="18" alt="[@ max]" border="0"></a></p>
-          </td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#export"><img src="images/@export.jpg" width="56" height="19" alt="[@export]" border="0"></a></td>
-          <td><a href="#xx"><img src="images/@_xx.jpg" width="59" height="18" alt="[@ **]" border="0"></a></td>
-          <td> 
-            <p><a href="#16"><img src="images/@_equals.jpg" width="64" height="18" alt="[@ ==]" border="0"></a></p>
-          </td>
-          <td> 
-            <h5><a href="#compound_objects">Compound Objects</a></h5>
-          </td>
-        </tr>
-        <tr> 
-          <td colspan="3">&nbsp;</td>
-          <td> 
-            <p><a href="#5"><img src="images/@_division.jpg" width="64" height="18" alt="[@ /]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#17"><img src="images/@_not_equal.jpg" width="64" height="18" alt="[@ !=]" border="0"></a></p>
-          </td>
-          <td><a href="#contrast"><img src="images/@contrast.jpg" width="64" height="18" alt="[@contrast]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"> 
-            <h5><a href="#transformation">Transformation</a></h5>
-          </td>
-          <td> 
-            <p><a href="#6"><img src="images/@_invx.jpg" width="61" height="18" alt="[@ inv*]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#18"><img src="images/@_greater_than.jpg" width="64" height="18" alt="[@ &gt;]" border="0"></a></p>
-          </td>
-          <td><a href="#identity"><img src="images/@identity_transform.jpg" width="117" height="18" alt="[@identity_transform]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#fold"><img src="images/@fold_%2B.jpg" width="64" height="18" alt="[@fold +]" border="0"></a></td>
-          <td> 
-            <p><a href="#7"><img src="images/@_modulo.jpg" width="60" height="18" alt="[@ %]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#19"><img src="images/@_smaller_or_equal.jpg" width="64" height="18" alt="[@ &lt;=]" border="0"></a></p>
-          </td>
-          <td><a href="#posterize"><img src="images/@posterize.jpg" width="64" height="18" alt="[@posterize]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#redim"><img src="images/@redim.jpg" width="65" height="18" border="0" alt="[@redim 2]"></a></td>
-          <td> 
-            <p><a href="#8"><img src="images/@_swap.jpg" width="71" height="18" alt="[@  swap%]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#20"><img src="images/@_smaller_than.jpg" width="64" height="18" alt="[@ &lt;]" border="0"></a></p>
-          </td>
-          <td><a href="#scale"><img src="images/@scale_to.jpg" width="64" height="18" alt="[@scale_to]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#store"><img src="images/@store.jpg" width="64" height="19" alt="[@store]" border="0"></a></td>
-          <td> 
-            <p><a href="#9"><img src="images/@_a_or_b_bitwise.jpg" width="64" height="18" alt="[@ |]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#21"><img src="images/@_larger_or_equal_to.jpg" width="64" height="18" alt="[@ &gt;=]" border="0"></a></p>
-          </td>
-          <td><a href="#spread"><img src="images/@spread.jpg" width="64" height="18" alt="[@spread]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#outer"><img src="images/@outer.jpg" width="64" height="19" alt="[@outer +]" border="0"></a></td>
-          <td><a href="#if_then_else"><img src="images/@_if_then_else.jpg" width="64" height="19" border="0" alt="[@ ||]"></a></td>
-          <td><a href="#22"><img src="images/@_comp.jpg" width="64" height="18" alt="[@ cmp]" border="0"></a></td>
-          <td><a href="#three"><img src="images/@three.jpg" width="64" height="18" alt="[@three]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"> </td>
-          <td> 
-            <p><a href="#10"><img src="images/@_xor_bitwise.jpg" width="64" height="18" alt="[@ ^]" border="0"></a></p>
-          </td>
-          <td> 
-            <p><a href="#23"><img src="images/@_sin.jpg" width="64" height="19" alt="[@ sin*]" border="0"></a></p>
-          </td>
-          <td><a href="#two"><img src="images/@two.jpg" width="64" height="18" alt="[@two]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3"> 
-            <h5><a href="#reporting">Reporting</a></h5>
-          </td>
-          <td> 
-            <p><a href="#11"><img src="images/@_and.jpg" width="64" height="18" alt="[@ &amp;]" border="0"></a></p>
-          </td>
-          <td><a href="#24"><img src="images/@_cos.jpg" width="64" height="18" alt="[@ cos*]" border="0"></a></td>
-          <td>&nbsp;</td>
-        </tr>
-        <tr> 
-          <td colspan="3"><a href="#protocol_basics"><img src="images/@dim.jpg" width="64" height="18" alt="[@ dim]" border="0"></a></td>
-          <td><a href="#and_and"><img src="images/@_&&.jpg" width="64" height="18" border="0" alt="[@ &amp;&amp;]"></a></td>
-          <td><a href="#tanh"><img src="images/@_tanh.jpg" width="64" height="18" border="0" alt="[@ tanh]"></a></td>
-          <td> 
-            <h5><a href="#picture">Picture Formats</a></h5>
-          </td>
-        </tr>
-        <tr> 
-          <td colspan="3">&nbsp;</td>
-          <td><a href="#gamma"><img src="images/@_gamma.jpg" width="64" height="18" border="0" alt="[@ gamma]"></a></td>
-          <td> 
-            <p><a href="#atan"><img src="images/@_atan.jpg" width="64" height="18" border="0" alt="[@ atan]"></a></p>
-          </td>
-          <td><a href="#videodev"><img src="images/open_videodev.jpg" width="161" height="17" alt="[open dev/video0 videodev]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3">&nbsp;</td>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td><a href="#ppm"><img src="images/open_ppm.jpg" width="113" height="17" alt="[open filename.ppm]" border="0"></a></td>
-        </tr>
-        <tr> 
-          <td colspan="3">&nbsp;</td>
-          <td> 
-            <p>&nbsp;</p>
-          </td>
-          <td>&nbsp;</td>
-          <td><a href="#tga"><img src="images/open_tga.jpg" width="104" 
-height="17" alt="[open filename.tga tga]" border="0"></a></td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4" height="16"> 
-      <h4><a name="grid"></a>Grid Protocol</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td width="10%">&nbsp;</td>
-    <td width="10%">&nbsp;</td>
-    <td width="100%"> 
-      <p> each element of a grid is an integer. the range of allowed integer values 
-        is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
-        is -2<sup>31</sup> to 2<sup>31</sup>-1). 
-      <p> There is a sequence in which elements of a Grid are stored and transmitted. 
-      <p> Dimension 0 is called "outer" or "first" and dimension N-1 is called 
-        "inner" or "last". This inner/outer relationship may also be thought of 
-        this way: a Grid is an array of array of array of...; for example, a picture 
-        is an array of lines; a line is an array of pixels; a pixel is an array 
-        of integers. 
-      <p> At each such level, elements are sent/stored in their numeric order, 
-        and are numbered using natural numbers starting at 0. This ordering usually 
-        does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, 
-        <kbd>@export</kbd> and <kbd>@redim</kbd> care about it. 
-      <p> On the other hand, order of dimensions usually does matter; this is 
-        what distinguishes rows from columns and channels, for example. Most objects 
-        care about the distinction. 
-    </td>
-  </tr>
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4" height="16"> 
-      <h4><a name="picture"></a>Picture Protocol</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-    <td> 
-      <p> A picture is a three-dimensional Grid: 
-      <ul>
-        <li> <b>0</b> : rows 
-        <li> <b>1</b> : columns 
-        <li> <b>2</b> : channels 
-      </ul>
-      <p> Channels for the RGB color model are: 
-      <ul>
-        <li> <b>0</b> : red 
-        <li> <b>1</b> : green 
-        <li> <b>2</b> : blue 
-      </ul>
-      <p> Because Grids are made of 32-bit integers, a three-channel picture uses 
-        96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
-        for display. That huge amount of slack is there because when you create 
-        your own effects you often have intermediate results that need to be of 
-        higher precision than a normal picture. Especially, results of multiplications 
-        are big and should not overflow before you divide them back to normal; 
-        and similarly, you can have negative values all over, as long as you take 
-        care of them before they get to the display. 
-      <p> In the final conversion, high bits are just truncated. The black value 
-        is 0 and the maximum intensity value is 255; negative values are wrapped 
-        and values above 255 are wrapped too. If you want to clip them, you may 
-        use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. 
-    </td>
-  </tr>
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4" height="16"> 
-      <h4><a name="input"></a>Objects for Input/Output</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h5><a name="video_out"></a>@video_out</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="48">&nbsp;</td>
-    <td width="123" height="48"><img src="images/video_out_240_320.jpg" width="123" height="18" alt="[@video_out 240 320]"></td>
-    <td height="230" rowspan="3"> 
-      <p>Each @video_out object creates a window when it is created. It is constructed 
-        with two parameters. If you want to create a window that is 240 pixels 
-        high and 320 pixels wide: @video_out 240 320. @video_out will use three 
-        channels in RGB with values ranging 0-255. 
-      <p><b>grid(<i>rows,columns,channels</i>)</b><br>
-        will be displayed if channels = 3 (RGB color model is assumed) The picture's 
-        height and width <b>must</b> match the window's. 
-      <p><b>bang</b><br>
-        asks for a repaint of the window. Usually not needed, as windows normally 
-        repaint automatically. (<i>normally.</i>) 
-      <p><b>autodraw</b> <i>integer</i><br>
-        sets the drawing mode: 
-      <ul>
-        <li><b>0</b> makes all drawing manually activated (by <b>bang</b>). 
-        <li><b>1</b> displays when a whole picture has been received. (default) 
-        <li><b>2</b> displays every line as it comes. (but buffering may cause 
-          lines to come in groups anyway) 
-      </ul>
-      <p><b>Notes:</b> @video_out sends a bang on its outlet when it has finished 
-        receiving a picture. Destroying the object should close the window. Because 
-        of how jMax works, this may be delayed until you do something else. Closing 
-        the window yourself will make jMax crash. </p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="48">&nbsp;</td>
-    <td width="123" height="48"> 
-      <h5><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" width="100" height="60" border="0" align="top" alt="video_out_patch"></a></h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="115">&nbsp;</td>
-    <td width="123" height="115">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="video_out_file"></a>@video_out_file</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="41">&nbsp;</td>
-    <td width="123" height="41"><img src="images/video_out_file.jpg" width="94" height="19" alt="[@video_out_file]"></td>
-    <td rowspan="3"> 
-      <p><b>grid(<i>rows,columns,channels</i>)</b><br>
-        will be written to file if channels = 3 (RGB color model is assumed). 
-        the file must be open first. 
-      <p><b>open</b> <i>filename</i> <i>[format]</i><br>
-        you must open a file first. You do this by sending the message "open" 
-        with a filename parameter. you may append the symbol "targa" for .tga 
-        files, or "videodev" for video4linux 1.x digitalizer input, or "ppm" (but 
-        ppm is the default) 
-      <p><b>close </b><br>
-        you can send a "close" to close the file, but it's usually not necessary. 
-        Sending a 2nd picture overwrites the first, like what happens to the video 
-        buffer inside a @video_out object. <br>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="41">&nbsp;</td>
-    <td width="123" height="41"><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" width="100" height="64" border="0" alt="[@video_out_file]"></a></td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="video_in_file"></a>@video_in_file</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/video_in_file.jpg" width="86" height="18" alt="[@ import 240 320 3]"></td>
-    <td rowspan="2"> 
-      <p>This class is similar to @video_out_file in that it operates on files. 
-        However some aspects of it are backwards because it's reading, not writing. 
-        Objects of this class don't have a grid inlet, they have a grid outlet 
-        instead. <br>
-      <p><b> open </b> <i>filename</i> <i>[format]</i><br>
-        as for @video_out_file. 
-      <p><b> close </b><br>
-        close may be necessary if you operate on "/dev/video", which can only 
-        be read by one at a time. otherwise it's not necessary. 
-      <p><b> bang </b><br>
-        causes the object to send the picture from an open file through its outlet. 
-        Several bangs reread the same picture over and over. 
-      <p><b> size </b> <i>height</i> <i>width</i></p>
-      sets the input size, especially when using a video digitalizer device. 
-      <p><b> option </b> <i>property</i> <i>value</i></p>
-      for special options. for example, the VideoDev format (really a device type) 
-      has seven options: 
-      <ul>
-        <li><b>channel</b> <i>integer</i> 
-        <li><b>tuner</b> <i>integer</i> 
-        <li><b>brightness</b> <i>integer</i> 
-        <li><b>hue</b> <i>integer</i> 
-        <li><b>colour</b> <i>integer</i> 
-        <li><b>contrast</b> <i>integer</i> 
-        <li><b>whiteness</b> <i>integer</i> 
-      </ul>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" width="100" height="89" border="0" alt="[@ import 240 320 3]" align="top"></a></td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="import"></a>@import</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/@import_240_320_3.jpg" width="115" height="18" alt="[@ import 240 320 3]"></td>
-    <td rowspan="3"> 
-      <p>Objects of this class have an inlet that can receive integers and reset 
-        as well as Grid outlet. You specify the dimensions (all of them) in the 
-        constructor. For a 240-row 320-column picture you'd say: @import 240 320 
-        3 </p>
-      <p>An import object accumulates the integers you send to it. They should 
-        be in the 0-255 range. When you send 3 of them, they represent the red, 
-        green and blue values of one pixel. Successive pixels are ordered left 
-        to right and when there are enough of them they form a line. Successive 
-        lines are ordered top to bottom and when there are enough of them they 
-        form a frame. After a frame is completed a new frame begins replacing 
-        the previous one.</p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" width="100" height="72" border="0" alt="[@ import 240 320 3]"></a></td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="export"></a>@export</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/@export.jpg" width="56" height="19" alt="[@export]"></td>
-    <td rowspan="2"> 
-      <p>Objects of this class have a Grid inlet and a 0.1-compatible outlet. 
-        They do the opposite of @import and take no parameters. </p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"> 
-      <p><a href="images/grab_export.png"><img src="images/ic_grab_export.jpg" width="100" height="75" border="0" alt="[@export]"></a></p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h4><a name="transformation"></a>Transformation Objects</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="fold"></a>@fold</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/@fold_%2B.jpg" width="64" height="18" alt="[@fold +]"></td>
-    <td rowspan="2"> 
-      <p>@fold makes the last dimension of a grid disappear by combining elements<br>
-        together in each innermost array. For example, @fold + 0 on a RGB image<br>
-        will output a channelless image in which every value is the sum of<br>
-        red/green/blue values in a pixel. The zero is the starting value, so that<br>
-        is actually 0+r+g+b. You can get the number of values in a grid by passing<br>
-        it through @dim and then through @fold * 1.</p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_fold.png"><img src="images/ic_grab_fold.jpg" width="100" height="93" border="0" alt="[@fold +]"></a></td>
-  </tr>
-  <tr> 
-    <td colspan="3">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="redim"></a>@redim</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" rowspan="2">&nbsp;</td>
-    <td width="123"><img src="images/@redim.jpg" width="65" height="18" alt="[@redim 2]"></td>
-    <td rowspan="3"> 
-      <p>@redim outputs a grid of the dimensions provided in the constructor, 
-        based<br>
-        on serializing the input grid and reserializing it to those dimensions. 
-        If<br>
-        the new grid is bigger, incoming data is repeated to fill the grid; if 
-        the<br>
-        new grid is smaller, extra data is dropped. </p>
-      <p>ex: with a 240 320 RGB image, @redim 120 640 3 will visually separate 
-        the<br>
-        even lines (left) from the odd lines (right). contrary to this, @redim 
-        640<br>
-        120 3 will split every line and put its left half on a even line and the<br>
-        right half on the following odd line. @redim 480 320 3 will repeat the<br>
-        input image twice in the output image. @redim 240 50 3 will only keep 
-        the<br>
-        50 top lines.</p>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2"> <a href="images/grab_redim.png"><img src="images/ic_grab_redim.jpg" width="100" height="81" border="0" alt="[@redim 2]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <p> </p>
-      <h5><a name="store"></a>@store</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/@store.jpg" width="64" height="19" alt="[@store]"></td>
-    <td rowspan="3"> 
-      <p>A @store object can store exactly one Grid. You store it via its right 
-        inlet. You fetch it by sending a bang through its left inlet, which sends 
-        the Grid on the outlet. You may also perform all kinds of coordinate transforms 
-        with @store. You send in the left inlet a Grid whose two channels are 
-        Y and X coordinates of pixels of the stored grid. Values too large or 
-        too small are wrapped around (using uniform modulo). @store is even more 
-        flexible than that: you can address whole lines and pixel parts too, by 
-        sending appropriately-sized grids (non-3D). Advanced users can figure 
-        it out; beginners should simply ignore it. </p>
-      <p>If you send to @store a grid of 2 dimensions consisting of rows (y) and 
-        channels, in which the channel ... see the example</p>
-      <p>TODO @store takes one argument specifying its size, int32 (default) or 
-        uint8 (native format for ppm or tga formats) </p>
-      <p>&nbsp;</p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_cross_fade.png"><img src="images/ic_grab_cross_fade.jpg" width="100" height="103" border="0" alt="[@store]"></a></td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="outer"></a>@outer</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td><img src="images/@outer.jpg" width="64" height="19" alt="[@outer +]"></td>
-    <td rowspan="2"> 
-      <p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will produce 
-        a grid of Dim(3,5) with the selected binary operation applied on each 
-        of the possible pairs combinations between numbers from the left grid 
-        and the ones from the right. for example : (10,20,30) [@outer +] (1,2,3) 
-        will give : ((11,12,13),(21,22,23),(31,32,33)) </p>
-    </td>
-  </tr>
-  <tr> 
-    <td> <a href="images/grab_outer.png"><img src="images/ic_grab_outer.jpg" width="100" height="92" border="0" alt="[@dim]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <p> </p>
-      <h5>&nbsp;</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h4><a name="reporting"></a>Reporting Objects</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="protocol_basics"></a>@dim</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><img src="images/@dim.jpg" width="64" height="18" alt="[@dim]"></td>
-    <td rowspan="2"> 
-      <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
-        @dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" width="100" height="88" border="0"></a></td>
-  </tr>
-  <tr> 
-    <td colspan="3">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h4><a name="binary_operations"></a>Binary Operators</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5><a name="at"></a>@</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123">&nbsp;</td>
-    <td>&nbsp;</td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" width="100" height="95" border="0" alt="binary operators 1"></a></td>
-    <td> 
-      <p>This object computes a Grid by combining each of its elements with an 
-        integer in its right inlet. This is not unlike built-in arithmetic objects, 
-        except that the left inlet, and the outlet, work with Grids. This runs 
-        up to 10 times faster than equivalent built-ins (but still probably slower 
-        than equivalent DSP built-ins. Construction takes 2 parameters: a first 
-        one is the operation's symbol, and a second optional one is the default 
-        value for the right inlet. Operations provided are listed below in the 
-        &quot;binary operations&quot; section. Many of them have no equivalent 
-        in "plain jMax". 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td width="41">&nbsp;</td>
-    <td width="123"><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" width="100" height="95" border="0" alt="binary operators 1"></a></td>
-    <td rowspan="2"> 
-      <p>where A is the left value, and B is the right value. </p>
-      <table width="100%" border="1" cellspacing="1">
-        <tr> 
-          <td width="19%"> 
-            <h5>operator</h5>
-          </td>
-          <td width="67%"> 
-            <h5>meaning</h5>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="1"></a><img src="images/@_%2B.jpg" width="64" height="18" alt="[@ +]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A + B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="2"></a><img src="images/@_-.jpg" width="64" height="18" alt="[@ -]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A - B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="3"></a><img src="images/@_inv%2B.jpg" width="72" height="18" alt="[@ inv+]"></p>
-          </td>
-          <td width="67%"> 
-            <p>B - A</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="4"></a><img src="images/@_x.jpg" width="64" height="18" alt="[@ *]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A * B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"><a name="xx"></a><img src="images/@_xx.jpg" width="59" height="18"></td>
-          <td width="67%">&nbsp;</td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="5"></a><img src="images/@_division.jpg" width="64" height="18" alt="[@ /]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A / B, rounded downwards</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="6"></a><img src="images/@_invx.jpg" width="61" height="18" alt="[@ inv*]"></p>
-          </td>
-          <td width="67%"> 
-            <p>B / A, rounded downwards</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="7"></a><img src="images/@_modulo.jpg" width="60" height="18" alt="[@ %]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A % B, non-negative remainder</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="8"></a><img src="images/@_swap.jpg" width="71" height="18" alt="[@  swap%]"></p>
-          </td>
-          <td width="67%"> 
-            <p>B % A, non-negative remainder</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="9"></a><img src="images/@_a_or_b_bitwise.jpg" width="64" height="18" alt="[@ |]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A or B, bitwise</p>
-          </td>
-        </tr>
-        <tr> 
-          <td><a name="if_then_else"></a><img src="images/@_if_then_else.jpg" width="64" height="19" alt="[@ ||]"></td>
-          <td> 
-            <p>if A is zero then B else A</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="10"></a><img src="images/@_xor_bitwise.jpg" width="64" height="18" alt="[@ ^]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A xor B, bitwise</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="11"></a><img src="images/@_and.jpg" width="64" height="18" alt="[@ &amp;]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A and B, bitwise</p>
-          </td>
-        </tr>
-        <tr> 
-          <td><a name="and_and"></a><img src="images/@_&&.jpg" width="64" height="18" alt="[@ &amp;&amp;]"></td>
-          <td> 
-            <p>if A is zero then zero else B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="12"></a><img src="images/@_shift_bits_left.jpg" width="64" height="18" alt="[@ &lt;&lt;]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A * (2**(B % 32)), which is left-shifting</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="13"></a><img src="images/@_shift_bits_right.jpg" width="64" height="18" alt="[@ &gt;&gt;]"></p>
-          </td>
-          <td width="67%"> 
-            <p>A / (2**(B % 32)), which is right-shifting</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="14"></a><img src="images/@_min.jpg" width="64" height="18" alt="[@ min]"></p>
-          </td>
-          <td width="67%"> 
-            <p>the lowest value in A,B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="15"></a><img src="images/@_max.jpg" width="64" height="18" alt="[@ max]"></p>
-          </td>
-          <td width="67%"> 
-            <p>the highest value in A,B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="16"></a><img src="images/@_equals.jpg" width="64" height="18" alt="[@ ==]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A equal to B ? 1=true, 0=false</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="17"></a><img src="images/@_not_equal.jpg" width="64" height="18" alt="[@ !=]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A not equal to B ?</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="18"></a><img src="images/@_greater_than.jpg" width="64" height="18" alt="[@ &gt;]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A greater than B ?</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="19"></a><img src="images/@_smaller_or_equal.jpg" width="64" height="18" alt="[@ &lt;=]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A not greater than B ?</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="20"></a><img src="images/@_smaller_than.jpg" width="64" height="18" alt="[@ &lt;]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A less than B ?</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="21"></a><img src="images/@_larger_or_equal_to.jpg" width="64" height="18" alt="[@ &gt;=]"></p>
-          </td>
-          <td width="67%"> 
-            <p>is A not less than B ?</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"><a name="22"></a><img src="images/@_comp.jpg" width="64" height="18" alt="[@ cmp]"></td>
-          <td width="67%"> 
-            <p>cmp gives -1 if A&lt;B; 0 if A=B; 1 if A&gt;B</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="23"></a><img src="images/@_sin.jpg" width="64" height="19" alt="[@ sin*]"></p>
-          </td>
-          <td width="67%"> 
-            <p>B * sin(A), where A is in hundredths of degrees</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="24"></a><img src="images/@_cos.jpg" width="64" height="18" alt="[@ cos*]"></p>
-          </td>
-          <td width="67%"> 
-            <p>B * cos(A)</p>
-          </td>
-        </tr>
-        <tr> 
-          <td><a name="atan"></a><img src="images/@_atan.jpg" width="64" height="18" alt="[@ atan]"></td>
-          <td></td>
-        </tr>
-        <tr> 
-          <td><a name="tanh"></a><img src="images/@_tanh.jpg" width="64" height="18" alt="[@ tanh]"></td>
-          <td> 
-            <p>tanh(A) where A is in hundredths of degrees (yes, really)</p>
-          </td>
-        </tr>
-        <tr> 
-          <td><a name="gamma"></a><img src="images/@_gamma.jpg" width="64" height="18" alt="[@ gamma]"></td>
-          <td> 
-            <p>floor(pow(a/256.0,256.0/b)*256.0)</p>
-          </td>
-        </tr>
-        <tr> 
-          <td> 
-            <p>pow</p>
-          </td>
-          <td></td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="535">&nbsp;</td>
-    <td width="123" height="535">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td height="22">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h4><a name="unary_operations"></a>Unary Operators</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td height="80" width="41">&nbsp;</td>
-    <td height="80" width="123">&nbsp;</td>
-    <td height="80"> 
-      <table width="100%" border="1" cellspacing="1">
-        <tr> 
-          <td width="19%"> 
-            <h5>operator</h5>
-          </td>
-          <td width="67%"> 
-            <h5>meaning</h5>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="abs"></a><img src="images/@!_abs.jpg" width="64" height="18" alt="[@!  abs]"></p>
-          </td>
-          <td width="67%"> 
-            <p>absolute value of A</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"><a name="rand"></a><img src="images/@!_rand.jpg" width="64" height="20" alt="[@! rand]"></td>
-          <td width="67%"> 
-            <p>produces an random number between 0 and A-1</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="sqrt"></a><img src="images/@!_sqrt.jpg" width="64" height="18" alt="[@! sqrt]"></p>
-          </td>
-          <td width="67%"> 
-            <p>square root of A, rounded downwards</p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr> 
-    <td height="22">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td height="22">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <h4><a name="compound_objects"></a>Compound Objects</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @contrast</h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td height="25"><a name="contrast"></a><a href="#contrast"><img src="images/@contrast.jpg" width="64" height="18" alt="[@contrast]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@contrast adjusts the intensity in an image. values outside 0-255 are<br>
-        automatically trimmed. </p>
-      <blockquote>
-        <p> Sending an integer to inlet 2 sets the intensity of incoming white 
-          to a certain fraction between output black and output white. normal 
-          value is 256; may be set smaller or bigger.</p>
-        <p> Sending an integer to inlet 1 sets the intensity of incoming black 
-          to a certain fraction between output black and inlet 2 value. normal 
-          value is 256; may be set smaller or bigger.</p>
-        <p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td height="51"> <a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" width="100" height="95" border="0" alt="[@contrast]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @identity_transform </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td height="24"><a name="identity"></a><a href="#identity"><img src="images/@identity_transform.jpg" width="117" height="18" alt="[@identity_transform]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@identity_transform builds a pixel-level transform grid suitable for 
-        using with inlet 0 of @store. </p>
-      <blockquote>
-        <p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
-        <p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
-        <p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
-          0. Not guaranteed to be fast (use an intermediate @store as a cache 
-          if needed)</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td height="98"> <a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" width="100" height="105" border="0" alt="[@identity_transform]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @posterize </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td height="5"><a name="posterize"></a><a href="#posterize"><img src="images/@posterize.jpg" width="64" height="18" alt="[@posterize]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@posterize reduces the number of intensities in an image. </p>
-      <blockquote>
-        <p> Sending an integer to inlet 1 sets the number of possible levels. 
-          Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
-          depth with 32. The effect is mostly apparent with small values.</p>
-        <p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td> <a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" width="100" height="91" border="0" alt="[@posterize]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @scale_to </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td><a name="scale"></a><a href="#scale"><img src="images/@scale_to.jpg" width="64" height="18" alt="[@scale_to]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
-        and chained from @identity_transform and to @store. This will scale an 
-        image of any size to the size specified in inlets 1,2. If it doesn't correspond 
-        the values of @identity_transform, part of the image will be trimmed and/or 
-        duplicated.</p>
-    </td>
-  </tr>
-  <tr> 
-    <td height="89"> <a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" width="100" height="103" border="0" alt="[@scale_to]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @spread </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td><a name="spread"></a><a href="#spread"><img src="images/@spread.jpg" width="64" height="18" alt="[@spread]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@spread scatters the pixels in an image. Not all original pixels will 
-        appear, and some may get duplicated (triplicated, etc) randomly. Some 
-        wrap-around effect will occur close to the edges. </p>
-      <blockquote> 
-        <p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
-          number of pixels + 1. even values translate the whole image by half 
-          a pixel due to rounding.</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td height="75"> <a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" width="100" height="96" border="0" alt="[@spread]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5> @three </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2">&nbsp;</td>
-    <td><a name="three"></a><a href="#three"><img src="images/@three.jpg" width="64" height="18" alt="[@three]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
-      <blockquote> 
-        <p>Sending an integer guarantees an update to outlet 0 (currently it's 
-          doing redundant updates -- sorry)</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td> <a href="images/grab_three.png"><img src="images/ic_grab_three.jpg" width="100" height="106" border="0" alt="[@three]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h5>@two </h5>
-    </td>
-  </tr>
-  <tr> 
-    <td rowspan="2"> 
-      <h5>&nbsp; </h5>
-    </td>
-    <td><a name="two"></a><a href="#two"><img src="images/@two.jpg" width="64" height="18" alt="[@two]" border="0"></a></td>
-    <td rowspan="2" valign="top"> 
-      <p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
-      <blockquote> 
-        <p>Sending an integer guarantees an update to outlet 0 (currently it's 
-          doing redundant updates -- sorry)</p>
-      </blockquote>
-    </td>
-  </tr>
-  <tr> 
-    <td> <a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" width="100" height="104" border="0" alt="[@two]"></a> 
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="3"> 
-      <h4><a name="picture"></a>External Picture Formats</h4>
-    </td>
-  </tr>
-  <tr> 
-    <td width="41" height="115">&nbsp;</td>
-    <td width="123" height="115">&nbsp;</td>
-    <td height="115"> 
-      <table width="100%" border="1" cellspacing="1">
-        <tr> 
-          <td width="19%"> 
-            <h5>format</h5>
-          </td>
-          <td width="67%"> 
-            <h5>description</h5>
-          </td>
-          <td width="14%"> 
-            <h5>status</h5>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%" height="28"> 
-            <p><a name="videodev"></a><img src="images/open_videodev.jpg" width="161" height="17" alt="[open dev/video0 videodev]" border="0" align="top"></p>
-          </td>
-          <td width="67%" height="28"> 
-            <p>VideoDev: Video4Linux-1 devices, RGB-24 only. Variable picture 
-              size. should work for bttv based cards and the dc1 from miro, possibly 
-              dc10plus.</p>
-          </td>
-          <td width="14%" height="28"> 
-            <p>&nbsp;</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="ppm"></a><img src="images/open_ppm.jpg" width="113" height="17" alt="[open filename.ppm]" border="0"></p>
-          </td>
-          <td width="67%"> 
-            <p>PPM:Read+Write. Subformat P6 only. RGB-24 only.</p>
-          </td>
-          <td width="14%"> 
-            <p>&nbsp;</p>
-          </td>
-        </tr>
-        <tr> 
-          <td width="19%"> 
-            <p><a name="tga"></a><img src="images/open_tga.jpg" width="104" 
-height="17" alt="[open filename.tga tga]" border="0"></p>
-          </td>
-          <td width="67%"> 
-            <p>Targa: Read Only. RGB-24 only. (ARGB-32 is temporarily disabled) 
-            </p>
-          </td>
-          <td width="14%"> 
-            <p>Experimental</p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <tr> 
-    <td height="22">&nbsp;</td>
-  </tr>
-  <tr> 
-    <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-  </tr>
-  <tr> 
-    <td colspan="4"> 
-      <p><font size="-1">Video4jmax 0.3.0 Documentation<br>
-        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
-        and<br>
-        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-    </td>
-  </tr>
+
+
+
+
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Conventions of this Manual</h4></td></tr>
+
+<tr><td></td><td></td><td>
+
+	(In this section, usage of Bold, Italic, Courier, etc. would be explained.
+
+	eventually I'd like those to have precise meanings consistent throughout
+
+	the whole documentation)
+
+</td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Grid Protocol</h4></td></tr>
+
+<tr><td></td><td></td><td>
+
+	<p><i>This section is useful is you want to do more than just pictures
+
+	with GridFlow.
+
+	</i></p>
+
+	<p>
+
+	each element of a grid is an integer. the range of allowed integer values 
+
+	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
+
+	is -2<sup>31</sup> to 2<sup>31</sup>-1).
+
+	</p>
+
+	<p>
+
+	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a
+
+	three-dimensional grid of 240 rows of 320 columns of triplets is called
+
+	dim(240,320,3).
+
+	</p>
+
+	<p>
+
+	There is a sequence in which elements of a Grid are stored and
+
+	transmitted.  Dimension 0 is called "outer" or "first" and dimension N-1 is
+
+	called  "inner" or "last". They are called so because if you select a
+
+	position in the first dimension of a grid, the selected part is of the same
+
+	shape minus the first dimension; so in dim(240,320,3) if you select
+
+	row 51 (or whichever valid row number), you get a dim(320,3). if you select
+
+	a subpart two more times you get to a single number.
+
+	</p>
+
+	<p>
+
+	At each such level, elements are sent/stored in their numeric order, 
+
+	and are numbered using natural numbers starting at 0. This ordering usually 
+
+	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, 
+
+	<kbd>@export</kbd> and <kbd>@redim</kbd> care about it. 
+
+	</p>
+
+	<p>
+
+	On the other hand, order of dimensions usually does matter; this is 
+
+	what distinguishes rows from columns and channels, for example.
+
+	Most objects care about the distinction.
+
+	</p>
+
+	<p>
+
+	A grid with only 1 element in a given dimension is different from one
+
+	lacking that dimension; it won't have the same meaning. You can use this
+
+	property to your advantage sometimes.
+
+	</p>
+
+	<p>
+
+	Zero-dimensional grids exist. They are called dim(). They can only contain
+
+	a single number.
+
+	</p>
+
+</td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Picture Protocol</h4></td></tr>
+
+<tr><td></td><td></td><td>
+
+	<p><i>This section is useful if you want to know what a picture is
+
+	in terms of a grid.
+
+	</i></p>
+
+
+
+	<p>A picture is a three-dimensional Grid: 
+
+	<ul>
+
+		<li><b>0</b> : rows</li>
+
+		<li><b>1</b> : columns</li>
+
+		<li><b>2</b> : channels</li>
+
+	</ul>
+
+	</p>
+
+	<p>Channels for the RGB color model are:
+
+	<ul>
+
+		<li><b>0</b> : red</li>
+
+		<li><b>1</b> : green</li>
+
+		<li><b>2</b> : blue</li>
+
+	</ul>
+
+	</p>
+
+	<p>
+
+	Because Grids are made of 32-bit integers, a three-channel picture uses 
+
+	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
+
+	for display. That huge amount of slack is there because when you create 
+
+	your own effects you often have intermediate results that need to be of 
+
+	higher precision than a normal picture. Especially, results of multiplications 
+
+	are big and should not overflow before you divide them back to normal; 
+
+	and similarly, you can have negative values all over, as long as you take 
+
+	care of them before they get to the display.
+
+	</p>
+
+	<p>
+
+	In the final conversion, high bits are just ignored. This means: black is
+
+	0, maximum is 255, and values wrap like with <kbd>% 256</kbd>. If you want to
+
+	clip them, you may use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. 
+
+	</p>
+
+</td></tr>
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Objects for Input/Output</h4></td></tr>
+
+	<tr><td colspan="4"><h5><a name="@video_out">@video_out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_out_240_320.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a></td><td>
+
+		
+
+
+
+		<p>note: this object is obsolete, for the most part, as it now just
+
+		creates a @out object under the hood and opens a window in x11
+
+		format with it. See section "External Picture Formats".</p>
+
+
+
+		<br><b>method</b> init <b>(</b>rows<b>,</b>columns<b>)</b>
+
+			
+
+			
+
+			Each @video_out object creates a window when it is created.
+
+			It will accept dim(rows,columns,3) grids.
+
+			If you want to create a window that is 240 pixels high and 320
+
+			pixels wide: [@video_out 240 320]. @video_out will use three
+
+			channels in RGB with values ranging 0-255.
+
+		<br><br>
+
+		
+
+		
+
+			<br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b>
+
+				resizes the window to the size of the grid;
+
+				encodes that grid in the display's pixel format;
+
+				also displays it if autodraw > 0
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				see format x11's option draw.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> autodraw <b>(</b><b>)</b>
+
+				
+
+				see format x11's option autodraw.
+
+			<br><br>
+
+		
+
+
+
+		
+
+			<br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				sent when a complete grid has been received.
+
+			<br><br>
+
+		
+
+
+
+		<p>
+
+		Destroying the object should close the window.
+
+		Because of how jMax works,
+
+		this may be delayed until you do something else.
+
+		Closing the window yourself will make jMax crash.
+
+		</p>
+
+
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@out">@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_out_file.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a></td><td>
+
+		
+
+		
+
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>filename<b>,</b>format<b>)</b>
+
+				
+
+				
+
+				you must open a file first. You do this by sending the message
+
+				"open" with a filename parameter. you may append the symbol "targa"
+
+				for .tga files, or "videodev" for video4linux 1.x digitalizer input,
+
+				or "ppm" (but ppm is the default)
+
+			<br><br>
+
+			<br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b>
+
+				writes a grid to file.
+
+				the file must be open first.
+
+				Sending a 2nd picture overwrites the first, like what
+
+				happens to the video buffer inside a @video_out object.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>
+
+				closes the file.
+
+				usually not necessary.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>name<b>,</b>value<b>)</b>
+
+				
+
+				
+
+				for format-specific functionality.
+
+				see section "External Picture Formats".
+
+			<br><br>
+
+		
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@in">@in</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_in_file.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a></td><td>
+
+		
+
+		This class is similar to @out in that it operates on
+
+		files. However some aspects of it are backwards because it's reading,
+
+		not writing. Objects of this class don't have a grid inlet, they have
+
+		a grid outlet instead.
+
+		
+
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>filename<b>,</b>format<b>)</b>
+
+				
+
+				
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>
+
+				close may be necessary if you operate on "/dev/video", which can
+
+				only be read by one at a time. otherwise it's not necessary.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				causes the object to send the picture from an open file through its
+
+				outlet. Several bangs reread the same picture over and over.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> size <b>(</b>height<b>,</b>width<b>)</b>
+
+				
+
+				
+
+				sets the input size, especially when using a video digitalizer
+
+				device
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>property<b>,</b>value<b>)</b>
+
+				
+
+				
+
+				for format-specific options.
+
+				(usually in devices that masquerade as formats).
+
+			<br><br>
+
+		
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@import">@import</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@import_240_320_3.jpg"><br clear="left"><br><br><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" border="0"></a></td><td>
+
+		
+
+		<p>Objects of this class have an inlet that can receive integers and reset 
+
+as well as Grid outlet. You specify the dimensions (all of them) in the 
+
+constructor. For a 240-row 320-column picture you'd say: @import 240 320 
+
+3 </p>
+
+<p>An import object accumulates the integers you send to it. They should 
+
+be in the 0-255 range. When you send 3 of them, they represent the red, 
+
+green and blue values of one pixel. Successive pixels are ordered left 
+
+to right and when there are enough of them they form a line. Successive 
+
+lines are ordered top to bottom and when there are enough of them they 
+
+form a frame. After a frame is completed a new frame begins replacing 
+
+the previous one.</p>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b>
+
+				begins a new grid if there is no current grid.
+
+				puts that integer in the current grid.
+
+				ends the grid if it is full.
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> reset <b>(</b><b>)</b>
+
+				aborts the current grid if there is one.
+
+			<br><br>
+
+		
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@export">@export</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@export.jpg"><br clear="left"><br><br><a href="images/grab_export.png"><img src="images/ic_grab_export.jpg" border="0"></a></td><td>
+
+		
+
+<p>Objects of this class have a Grid inlet and a 0.1-compatible outlet. 
+
+They do the opposite of @import and take no parameters. </p>
+
+		
+
+
+
+		
+
+		
+
+	
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Transformation Objects</h4></td></tr>
+
+	<tr><td colspan="4"><h5><a name="@fold">@fold</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@fold_%2B.jpg"><br clear="left"><br><br><a href="images/grab_fold.png"><img src="images/ic_grab_fold.jpg" border="0"></a></td><td>
+
+		
+
+		<p>
+
+
+
+		@fold makes the last dimension of a grid disappear by combining elements
+
+		together in each innermost array. For example, @fold + 0 on a RGB image
+
+		will output a channelless image in which every value is the sum of
+
+		red/green/blue values in a pixel. The zero is the starting value, so that
+
+		is actually 0+r+g+b. You can get the number of values in a grid by passing
+
+		it through @dim and then through @fold * 1.
+
+		</p>
+
+
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@redim">@redim</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@redim.jpg"><br clear="left"><br><br><a href="images/grab_redim.png"><img src="images/ic_grab_redim.jpg" border="0"></a></td><td>
+
+		
+
+
+
+		<p> @redim outputs a grid of the dimensions provided in the
+
+constructor,  based on serializing the input grid and reserializing it to those
+
+dimensions.  If the new grid is bigger, incoming data is repeated to fill the
+
+grid; if  the new grid is smaller, extra data is dropped. </p>
+
+
+
+<p>ex: with a 240 320 RGB image, @redim 120 640 3 will visually separate  the
+
+even lines (left) from the odd lines (right). contrary to this, @redim  640 120
+
+3 will split every line and put its left half on a even line and the right half
+
+on the following odd line. @redim 480 320 3 will repeat the input image twice
+
+in the output image. @redim 240 50 3 will only keep  the 50 top lines.</p>
+
+
+
+	
+
+	
+
+	<tr><td colspan="4"><h5><a name="@store">@store</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@store.jpg"><br clear="left"><br><br><a href="images/grab_cross_fade.png"><img src="images/ic_grab_cross_fade.jpg" border="0"></a></td><td>
+
+		
+
+
+
+		<p>A @store object can store exactly one Grid. You store it via its
+
+right  inlet. You fetch it by sending a bang through its left inlet, which
+
+sends  the Grid on the outlet. You may also perform all kinds of coordinate
+
+transforms  with @store. You send in the left inlet a Grid whose two channels
+
+are  Y and X coordinates of pixels of the stored grid. Values too large or  too
+
+small are wrapped around (using uniform modulo). @store is even more  flexible
+
+than that: you can address whole lines and pixel parts too, by  sending
+
+appropriately-sized grids (non-3D). Advanced users can figure  it out;
+
+beginners should simply ignore it. </p>
+
+
+
+		<p>If you send to @store a grid of 2 dimensions consisting of rows (y)
+
+and  channels, in which the channel ... see the example</p>
+
+
+
+		<p>TODO @store takes one argument specifying its size, int32 (default)
+
+or  uint8 (native format for ppm or tga formats) </p>
+
+
+
+		
+
+	
+
+	<tr><td colspan="4"><h5><a name="@outer">@outer</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@outer.jpg"><br clear="left"><br><br><a href="images/grab_outer.png"><img src="images/ic_grab_outer.jpg" border="0"></a></td><td>
+
+		
+
+		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will produce 
+
+		a grid of Dim(3,5) with the selected binary operation applied on each 
+
+		of the possible pairs combinations between numbers from the left grid 
+
+		and the ones from the right. for example : (10,20,30) [@outer +] (1,2,3) 
+
+		will give : ((11,12,13),(21,22,23),(31,32,33)) </p>
+
+		
+
+	
+
+
+
+	<tr><td colspan="4"><h5><a name="@!">@!</a></h5></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br></td><td>
+
+	
+
+	
+
+
+
+	<tr><td colspan="4"><h5><a name="@">@</a></h5></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" border="0"></a></td><td>
+
+		<p>This object computes a Grid by combining each of its elements with an 
+
+		integer in its right inlet. This is not unlike built-in arithmetic objects, 
+
+		except that the left inlet, and the outlet, work with Grids. This runs 
+
+		up to 10 times faster than equivalent built-ins (but still probably slower 
+
+		than equivalent DSP built-ins. Construction takes 2 parameters: a first 
+
+		one is the operation's symbol, and a second optional one is the default 
+
+		value for the right inlet. Operations provided are listed below in the 
+
+		"binary operations" section. Many of them have no equivalent 
+
+		in "plain jMax". 
+
+		</p>
+
+	
+
+		
+
+	
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Reporting Objects</h4></td></tr>
+
+	<tr><td colspan="4"><h5><a name="@dim">@dim</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@dim.jpg"><br clear="left"><br><br><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" border="0"></a></td><td>
+
+		
+
+		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
+
+		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+
+		
+
+	
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Special Objects</h4></td></tr>
+
+	<tr><td colspan="4"><h5><a name="rtmetro">rtmetro</a></h5></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br></td><td>
+
+		future use.
+
+	
+
+	<tr><td colspan="4"><h5><a name="@global">@global</a></h5></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br></td><td>
+
+		objects of this class do nothing by themselves and are just
+
+		an access point to features that don't belong to any object in
+
+		particular.
+
+		<br><b>method</b> profiler_reset <b>(</b><b>)</b>
+
+			resets all the time counters.
+
+		<br><br>
+
+		<br><b>method</b> profiler_dump <b>(</b><b>)</b>
+
+			displays the time counters in decreasing order, with
+
+			the names of the classes those objects are in. this is
+
+			an experimental feature. like most statistics,
+
+			it could be vaguely relied upon if
+
+			only you knew to which extent it is unreliable. more on this
+
+			in a future section called "profiling".
+
+		<br><br>
+
+	
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Compound Objects</h4></td></tr>
+
+	<tr><td colspan="4"><h5><a name="@contrast">@contrast</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@contrast.jpg"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" border="0"></a></td><td>
+
+		
+
+
+
+		<p>@contrast adjusts the intensity in an image.
+
+		values outside 0-255 are automatically trimmed. </p>
+
+
+
+		<p> Sending an integer to inlet 2 sets the intensity of incoming
+
+		white to a certain fraction between output black and output white.
+
+		normal value is 256; may be set smaller or bigger.</p>
+
+
+
+		<p> Sending an integer to inlet 1 sets the intensity of incoming
+
+		black to a certain fraction between output black and inlet 2 value.
+
+		normal value is 256; may be set smaller or bigger.</p>
+
+
+
+		<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+
+
+
+		 
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@identity_transform">@identity_transform</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a></td><td>
+
+	
+
+<p>@identity_transform builds a pixel-level transform grid suitable for 
+
+using with inlet 0 of @store. </p>
+
+<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
+
+<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
+
+<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
+
+0. Not guaranteed to be fast (use an intermediate @store as a cache 
+
+if needed)</p>
+
+
+
+	
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@posterize">@posterize</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@posterize.jpg"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" border="0"></a></td><td>
+
+	
+
+<p>@posterize reduces the number of intensities in an image. </p>
+
+<p> Sending an integer to inlet 1 sets the number of possible levels. 
+
+Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
+
+depth with 32. The effect is mostly apparent with small values.</p>
+
+<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+
+	
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@scale_to">@scale_to</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@scale_to.jpg"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" border="0"></a></td><td>
+
+	
+
+<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
+
+and chained from @identity_transform and to @store. This will scale an 
+
+image of any size to the size specified in inlets 1,2. If it doesn't correspond 
+
+the values of @identity_transform, part of the image will be trimmed and/or 
+
+duplicated.</p>
+
+
+
+	
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@spread">@spread</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@spread.jpg"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" border="0"></a></td><td>
+
+	
+
+<p>@spread scatters the pixels in an image. Not all original pixels will 
+
+appear, and some may get duplicated (triplicated, etc) randomly. Some 
+
+wrap-around effect will occur close to the edges. </p>
+
+<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
+
+number of pixels + 1. even values translate the whole image by half 
+
+a pixel due to rounding.</p>
+
+	
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@three">@three</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@three.jpg"><br clear="left"><br><br></td><td>
+
+	
+
+<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
+
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+
+doing redundant updates -- sorry)</p>
+
+
+
+
+
+<tr><td colspan="4"><h5><a name="@two">@two</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/@two.jpg"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" border="0"></a></td><td>
+
+
+
+<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
+
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+
+doing redundant updates -- sorry)</p>
+
+
+
+
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Unary Operators</h4></td></tr>
+
+
+
+	
+
+
+
+	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/@!_abs.jpg" border="0"></td><td>
+
+		absolute value of A
+
+	</td></tr>
+
+	<tr><td><img src="images/@!_rand.jpg" border="0"></td><td>
+
+		produces an random number between 0 and A-1
+
+	</td></tr>
+
+	<tr><td><img src="images/@!_sqrt.jpg" border="0"></td><td>
+
+		square root of A, rounded downwards
+
+	</td></tr>
+
+<tr><td>&nbsp;</td></tr></table>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Binary Operators</h4></td></tr>
+
+	<tr><td></td><td></td><td><p>where A is the left value, and B is the right value.</p></td></tr>
+
+
+
+	
+
+	
+
+
+
+	
+
+	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/@_%2B.jpg" border="0"></td><td>
+
+		A + B
+
+	</td></tr>
+
+	<tr><td><img src="images/@_-.jpg" border="0"></td><td>
+
+		A - B
+
+	</td></tr>
+
+	<tr><td><img src="images/@_inv%2B.jpg" border="0"></td><td>
+
+		B - A
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/@_x.jpg" border="0"></td><td>
+
+		A * B
+
+	</td></tr>
+
+	<tr><td><img src="images/@_division.jpg" border="0"></td><td>
+
+		A / B, rounded downwards
+
+	</td></tr>
+
+	<tr><td><img src="images/@_invx.jpg" border="0"></td><td>
+
+		B / A, rounded downwards
+
+	</td></tr>
+
+	<tr><td><img src="images/@_modulo.jpg" border="0"></td><td>
+
+		A % B, non-negative remainder
+
+	</td></tr>
+
+	<tr><td><img src="images/@_swap.jpg" border="0"></td><td>
+
+		B % A, non-negative remainder
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/@_a_or_b_bitwise.jpg" border="0"></td><td>
+
+		A or B, bitwise
+
+	</td></tr>
+
+	<tr><td><img src="images/@_xor_bitwise.jpg" border="0"></td><td>
+
+		A xor B, bitwise
+
+	</td></tr>
+
+	<tr><td><img src="images/@_and.jpg" border="0"></td><td>
+
+		A and B, bitwise
+
+	</td></tr>
+
+	<tr><td><img src="images/@_shift_bits_left.jpg" border="0"></td><td>
+
+		A * (2**(B % 32)), which is left-shifting
+
+	</td></tr>
+
+	<tr><td><img src="images/@_shift_bits_right.jpg" border="0"></td><td>
+
+		A / (2**(B % 32)), which is right-shifting
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/@_if_then_else.jpg" border="0"></td><td>
+
+		if A is zero then B else A
+
+	</td></tr>
+
+	<tr><td><img src="images/@_&&.jpg" border="0"></td><td>
+
+		if A is zero then zero else B
+
+	</td></tr>
+
+	<tr><td><img src="images/@_min.jpg" border="0"></td><td>
+
+		the lowest value in A,B
+
+	</td></tr>
+
+	<tr><td><img src="images/@_max.jpg" border="0"></td><td>
+
+		the highest value in A,B
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/@_comp.jpg" border="0"></td><td>
+
+		-1 when A<B; 0 when A=B; 1 when A>B.
+
+	</td></tr>
+
+	<tr><td><img src="images/@_equals.jpg" border="0"></td><td>
+
+		is A equal to B ? 1=true, 0=false
+
+	</td></tr>
+
+	<tr><td><img src="images/@_not_equal.jpg" border="0"></td><td>
+
+		is A not equal to B ?
+
+	</td></tr>
+
+	<tr><td><img src="images/@_greater_than.jpg" border="0"></td><td>
+
+		is A greater than B ?
+
+	</td></tr>
+
+	<tr><td><img src="images/@_smaller_or_equal.jpg" border="0"></td><td>
+
+		is A not greater than B ?
+
+	</td></tr>
+
+	<tr><td><img src="images/@_smaller_than.jpg" border="0"></td><td>
+
+		is A less than B ?
+
+	</td></tr>
+
+	<tr><td><img src="images/@_larger_or_equal_to.jpg" border="0"></td><td>
+
+		is A not less than B ?
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/@_sin.jpg" border="0"></td><td>
+
+		B * sin(A), where A is in hundredths of degrees
+
+	</td></tr>
+
+	<tr><td><img src="images/@_cos.jpg" border="0"></td><td>
+
+		B * cos(A)
+
+	</td></tr>
+
+	<tr><td><img src="images/@_atan.jpg" border="0"></td><td>
+
+		arctan(A/B)
+
+	</td></tr>
+
+	<tr><td><img src="images/@_tanh.jpg" border="0"></td><td>
+
+		tanh(A) where A is in hundredths of degrees (yes, really)
+
+	</td></tr>
+
+	<tr><td><img src="images/@_gamma.jpg" border="0"></td><td>
+
+		floor(pow(a/256.0,256.0/b)*256.0)
+
+	</td></tr>
+
+	<tr><td><img src="images/@_xx.jpg" border="0"></td><td>
+
+		A raised to power B
+
+	</td></tr>
+
+<tr><td>&nbsp;</td></tr></table>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>External Picture Formats</h4></td></tr>
+
+
+
+	<tr><td colspan="4"><h5><a name="format ppm @in/@out">format ppm @in/@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/open_ppm.jpg"><br clear="left"><br><br></td><td>
+
+		
+
+		Subformat P6 only.
+
+		Max number 255 (24-bit RGB).
+
+	
+
+
+
+	<tr><td colspan="4"><h5><a name="format targa @in">format targa @in</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/open_tga.jpg"><br clear="left"><br><br></td><td>
+
+		
+
+		<p>Support for RGB-24 (3 channels).</p>
+
+		<p>If you bug me a bit you'll get ARGB-32 too.</p>
+
+	
+
+
+
+	<tr><td colspan="4"><h5><a name="format videodev @in">format videodev @in</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/open_videodev.jpg"><br clear="left"><br><br></td><td>
+
+		
+
+
+
+		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
+
+		should work for bttv based cards and the dc1 from miro, possibly 
+
+		dc10plus.</p>
+
+
+
+		<p>If you suffer from color inversion, you may feed the list
+
+		"<kbd>0 0 1 0 1 0 1 0 0</kbd>" to a [@redim 3 3] and feed that to the
+
+		right side of a <kbd>[@inner * + 0]</kbd>. Use that @inner object as a
+
+		RGB-BGR converter.</p>
+
+
+
+		<p>color adjustments:
+
+		<ul>
+
+		<li><b>1</b> : <kbd>brightness</kbd> <i>integer</i></li>
+
+		<li><b>2</b> : <kbd>hue</kbd> <i>integer</i></li>
+
+		<li><b>3</b> : <kbd>colour</kbd> <i>integer</i></li>
+
+		<li><b>4</b> : <kbd>contrast</kbd> <i>integer</i></li>
+
+		<li><b>5</b> : <kbd>whiteness</kbd> <i>integer</i></li>
+
+		</ul></p>
+
+
+
+		<p>other options:
+
+		<ul>
+
+		<li><b>1</b> : <kbd>channel</kbd> <i>integer</i></li>
+
+		<li><b>2</b> : <kbd>tuner</kbd> <i>integer</i></li>
+
+		<li><b>3</b> : <kbd>norm</kbd> <i>integer</i></li>
+
+		</ul></p>
+
+
+
+	
+
+
+
+	<tr><td colspan="4"><h5><a name="format x11 @in/@out">format x11 @in/@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src=""><br clear="left"><br><br></td><td>
+
+		
+
+		<p>This is the replacement for the @video_out object.</p>
+
+
+
+		<p>default connection: the destination must be <kbd>here</kbd>.</p>
+
+		
+
+		<p>connecting locally (unix sockets): the destination must be
+
+		like <kbd>local/display</kbd>, where display is the display number; for
+
+		example, <kbd>local/0</kbd>.</p>
+
+		
+
+		<p>connecting to remote display using TCP (or locally using TCP):
+
+	the destination must be like <kbd>remote/host/display</kbd>; for example,
+
+	<kbd>remote/artengine.ca/0</kbd> will try to connect to hostname.2y.net
+
+	on port 6000, which is display 0.</p>
+
+
+
+		<p>because of the design of Xlib, if any of the connections involved
+
+		crashes, then the whole program (fts) has to be terminated. (don't
+
+		you love xlib)</p>
+
+
+
+		<p>only one window may be open per connection (to simplify matters;
+
+		this doesn't reduce flexibility). you may send to a new
+
+		toplevel window (by default); if you append "/root" to your
+
+		destination you can write in root window (the "wallpaper"); if you
+
+		append a window number, e.g. <kbd>0x28003ff</kbd>, you may connect to
+
+		an existing window; you can find out the number of a window by using
+
+		a tool like <kbd>xwininfo</kbd>, part of X11 standard tools.</p>
+
+
+
+		<p>option out_size(height,width): changes the window's size, just
+
+		like sending a grid dim(height,width,3) would.</p>
+
+
+
+		<p>option draw(): forces a redraw of the window's contents.</p>
+
+
+
+		<p>option autodraw(level): when level=0, option draw() is never
+
+		automatically invoked; with level=1, option draw() is invoked after
+
+		each grid is finished; with level=2, option draw() is invoked
+
+		incrementally after each row is received. (but buffering may cause
+
+		lines to come in groups anyway)</p>
+
+
+
+		<p>option timelog(status): when status=1, current time (unix
+
+		clock) and time since last frame-end are printed in the console.
+
+		when status=0, it is off. default is 0.</p>
+
+
+
+	
+
+
+
+<tr><td>&nbsp;</td></tr>
+
 </table>
 </body>
 </html>
+
+

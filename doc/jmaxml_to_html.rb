@@ -26,19 +26,31 @@ require "xmlparser"
 
 =begin todo
 
+	[ ] make it use the mk() function as much as possible.
 	[ ] make it validate
 	[ ] make it find the size of the pictures (and insert width/height attrs)
 	[ ] tune the output
 
 =end
 
+def mk(tag,*values,&block)
+	raise "value-list's length must be even" if values.length % 2 != 0
+	print "<#{tag}"
+	i=0
+	while i<values.length
+		print " #{values[i]}=\"#{values[i+1]}\""
+		i+=2
+	end
+	print ">"
+	(block[]; mke tag) if block
+end
+def mke(tag)
+	print "</#{tag}>"
+end
+
 class DTDParser < XMLParser
-	def elementDecl(*args)
-		print "elementDecl: "; p args
-	end
-	def attlistDecl(*args)
-		print "attlistDecl: "; p args
-	end
+	def elementDecl(*args); print "elementDecl: "; p args; end
+	def attlistDecl(*args); print "attlistDecl: "; p args; end
 end
 
 class XNode
@@ -76,13 +88,26 @@ class XNode
 	def [] i; contents[i] end
 
 	def print_index
-		if tag=="section" then
-			print "<h5><a href='\##{att['name']}'>#{att['name']}</a></h5>"
+		e=nil
+		case tag
+		when "section"
+			mk(:h5) { mk(:a,:href,att["name"]) { print att["name"] }}
+			print "<blockquote>"
+			e="</blockquote>"
+		when "jmax_class"
+			icon = contents.find {|x| XNode===x && x.tag == "icon" }
+			if icon
+				mk(:img,:src,icon.att["image"],:alt,icon.att["text"])
+				mk(:br)
+			end
 		end
+
 		contents.each {|x|
 			next unless XNode===x
 			x.print_index
 		}
+
+		print e if e
 	end
 
 	$counters=[]
@@ -93,7 +118,7 @@ class XNode
 		when "jmax_doc"; #nothing
 		when "section"
 			black_ruler
-			print "<tr><td colspan='4'><h4>#{att['name']}</h4></td></tr>"
+			mk(:tr) { mk(:td,:colspan,4) { mk(:h4) { print att["name"] }}}
 			e="<tr><td>&nbsp;</td></tr>"
 			$section={}
 		when "p", "i", "u", "b", "sup", "k"
@@ -109,26 +134,33 @@ class XNode
 			$counters[-1] += 1
 			e="</li>"
 		when "prose"
-			print "<tr><td></td><td></td><td>"
+			print "<tr>"
+			mk(:td) {}
+			mk(:td) {}
+			print "<td>"
 			e="</td></tr>"
 		when "jmax_class"
 			name = att['name'] or raise
-			print "<tr><td colspan='4'>"
-			print "<h5><a name='#{name}'></a>#{name}</h5>"
-			print "</td></tr>"
-			print "<tr><td></td><td valign='top'><br>"
+			mk(:tr) {
+			  mk(:td,:colspan,4) {
+			    mk(:h5) { mk(:a,:name,name) { print name }}}}
+			print "<tr>"
+			mk(:td) {}
+			print "<td valign='top'><br>"
 			icon   = contents.find {|x| XNode===x and x.tag == 'icon'   }
 			sample = contents.find {|x| XNode===x and x.tag == 'sample' }
 			if icon
-				print "<img src='#{icon.att['image']}'>"
+				mk(:img,:src,icon.att["image"])
 			end
-			print "<br clear='left'><br><br>"
+			mk(:br,:clear,"left")
+			mk(:br)
+			mk(:br)
 			if sample
 				big = sample.att['image']
 				small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
-				print "<a href='#{big}'>"
-				print "<img src='#{small}' border='0'>"
-				print "</a>"
+				mk(:a,:href,big) {
+					mk(:img,:src,small,:border,0)
+				}
 			end
 			print "</td><td>"
 		when "method"
@@ -153,12 +185,21 @@ class XNode
 			return
 		when "grid", "dim"
 			print "[#{tag}]"; e="[/#{tag}]"
-		when "operator_1", "operator_2", "format"
+		when "operator_1", "operator_2"
 			$section[:table] ||= (
-				print "<tr><td></td><td></td><td>"
+				print "<tr>"
+				mk(:td) {}
+				mk(:td) {}
+				print "<td>"
 				print "<table border='1'>"
 			;0)
-			print "<tr><td>#{att['name']}</td><td>"
+			print "<tr>"
+			mk(:td) {
+				icon = contents.find {|x| XNode===x && x.tag == "icon" }
+				mk(:img,:src,icon.att["image"],:border,0) if icon
+				# print att["name"]
+			}
+			print "<td>"
 			e="</td></tr>"
 		else
 			raise "crap in #{tag}"
@@ -321,10 +362,10 @@ puts <<EOF
     <h4>GridFlow 0.4.0 - reference index</h4>
 </td></tr>
 <tr> 
-  <td rowspan="2" width="12%">&nbsp;</td>
-  <td width="30%" height="23">&nbsp;</td>
-  <td width="50%" height="23">&nbsp;</td>
-  <td width="10%" height="23">&nbsp;</td>
+  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="25%" height="23">&nbsp;</td>
+  <td width="66%" height="23">&nbsp;</td>
+  <td width="5%"  height="23">&nbsp;</td>
 </tr>
 EOF
 end
@@ -363,7 +404,7 @@ begin
 	STDERR.puts "reading standard input..."
 	parser.parse(STDIN.readlines.join("\n"), true)
 	nodes = parser.instance_eval{@stack}[0][0]
-	puts "<tr><td>"
+	puts "<tr><td colspan='2'>"
 	nodes.print_index
 	puts "<br><br></td></tr>"
 	nodes.print_contents

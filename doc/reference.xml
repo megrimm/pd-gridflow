@@ -9,11 +9,17 @@
 
 <section name="Conventions of this Manual">
 <prose>
+	(In this section, usage of Bold, Italic, Courier, etc. would be explained.
+	eventually I'd like those to have precise meanings consistent throughout
+	the whole documentation)
 </prose>
 </section>
 
 <section name="Grid Protocol">
 <prose>
+	<p><i>This section is useful is you want to do more than just pictures
+	with GridFlow.
+	</i></p>
 	<p>
 	each element of a grid is an integer. the range of allowed integer values 
 	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
@@ -58,6 +64,10 @@
 
 <section name="Picture Protocol">
 <prose>
+	<p><i>This section is useful if you want to know what a picture is
+	in terms of a grid.
+	</i></p>
+
 	<p>A picture is a three-dimensional Grid: 
 	<list start="0">
 		<li>rows</li>
@@ -614,7 +624,7 @@ doing redundant updates -- sorry)</p>
 
 	<!-- comparison -->
 	<operator-2 name="cmp" cname="cmp"><icon image="images/@_comp.jpg"/>
-		cmp gives -1 if A&lt;B; 0 if A=B; 1 if A&gt;B
+		-1 when A&lt;B; 0 when A=B; 1 when A&gt;B.
 	</operator-2>
 	<operator-2 name="==" cname="eq"><icon image="images/@_equals.jpg"/>
 		is A equal to B ? 1=true, 0=false
