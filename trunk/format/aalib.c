@@ -25,6 +25,15 @@
 #define aa_hardwareparams aa_hardware_params
 #include <aalib.h>
 
+/* MINNOR is a typo in aalib.h, sorry */
+typedef 
+#if AA_LIB_MINNOR == 2
+      int
+#else
+      enum aa_attribute
+#endif
+AAAttr;
+
 struct FormatAALib : Format {
 	aa_context *context;
 //	aa_hardwareparams *hparams;
@@ -90,7 +99,7 @@ METHOD3(FormatAALib,option) {
 		VALUE foo = rb_str_new2("");
 //		for (int i=3; i<argc; i++)
 //			foo
-		aa_puts(context,y,x,(enum aa_attribute)a,rb_sym_name(argv[4]));
+		aa_puts(context,y,x,(AAAttr)a,(char *)rb_sym_name(argv[4]));
 		aa_flush(context);
 	} else
 		return rb_call_super(argc,argv);
