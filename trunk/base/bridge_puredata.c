@@ -254,7 +254,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 
 static void BFObject_delete_1 (FMessage *fm) {
 	if (fm->self->rself) {
-		post("BFObject_delete is handling object at %08x",(int)fm->self);
+		//post("BFObject_delete is handling object at %08x",(int)fm->self);
 		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
 		post("BFObject_delete is NOT handling BROKEN object at %08x",(int)fm);

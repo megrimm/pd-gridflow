@@ -442,12 +442,36 @@ struct Dim {
 	}
 };
 
-/*
-struct DimPattern {
-	const char *s;
-	DimPattern(const char *_s) { s=_s; }
+/* **************************************************************** */
+
+#define OBJECT_MAGIC 1618033989
+
+/* base class for C++ classes that get exported to Ruby */
+struct Object {
+	int32 magic;
+	Ruby rself; /* point to Ruby peer */
+
+	Object() : magic(OBJECT_MAGIC), rself(0) {}
+
+	void check_magic () {
+		if (magic != OBJECT_MAGIC) {
+			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
+			raise(11);
+		}
+	}
+
+	/*
+	  part of the purpose of this is to cause the virtual-table-field
+	  to be created in FObject and not GridObject, because else gdb pretends
+	  the virtual table is after FObject when it's actually before, and then
+	  ((GridObject *)a)->foo != ((FObject *)a)->foo
+	  PS: I've heard this is not a hack, this is the only way, as in:
+	  Even dynamic_cast<> relies on this.
+	*/
+
+	virtual ~Object() { magic = 0xDEADBEEF; }
+	virtual void mark() {} /* not used for now */
 };
-*/
 
 /* **************************************************************** */
 
@@ -469,9 +493,7 @@ struct Unpacker {
 //	void (*as_float32)(BitPacking *self, int n, Pt<uint8> in, Pt<float32> out);
 };
 
-#define BITPACKING_MAGIC 31415926
-struct BitPacking {
-	int magic;
+struct BitPacking : Object {
 	Packer *packer;
 	Unpacker *unpacker;
 	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
@@ -492,14 +514,6 @@ struct BitPacking {
 	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
 	DECL3(pack2);
 	DECL3(unpack2);
-
-
-	void check_magic () {
-		if (magic != BITPACKING_MAGIC) {
-			fprintf(stderr,"FObject memory corruption! (ask the debugger)\n");
-			raise(11);
-		}
-	}
 };
 
 int high_bit(uint32 n);
@@ -908,40 +922,16 @@ private:
 };
 
 /* **************************************************************** */
-/* the <Ruby/C++/Other> mapping of GridObjects is not too clear, sorry */
 
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
-#define FOBJECT_MAGIC 1618033989
-
-struct FObject {
-	int32 magic;
-	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
+/* represents objects that have inlets/outlets */
+struct FObject : Object {
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
 	uint64 profiler_last;
 
-	FObject() : magic(FOBJECT_MAGIC), rself(0), bself(0),
-	profiler_cumul(0), profiler_last(0) {}
-
-	void check_magic () {
-		if (magic != FOBJECT_MAGIC) {
-			fprintf(stderr,"FObject memory corruption! (ask the debugger)\n");
-			raise(11);
-		}
-	}
-
-	/*
-	  part of the purpose of this is to cause the virtual-table-field
-	  to be created in FObject and not GridObject, because else gdb pretends
-	  the virtual table is after FObject when it's actually before, and then
-	  ((GridObject *)a)->foo != ((FObject *)a)->foo
-	  PS: I've heard this is not a hack, this is the only way, as in:
-	  Even dynamic_cast<> relies on this.
-	*/
-
-	virtual ~FObject() { magic = 0xDEADBEEF; }
-	virtual void mark(){} /* not used for now */
+	FObject() : bself(0), profiler_cumul(0), profiler_last(0) {}
 
 	const char *args() {
 		Ruby s=rb_funcall(rself,SI(args),0);
@@ -998,9 +988,6 @@ struct GridObject : FObject {
 /* **************************************************************** */
 
 typedef struct GridObject Format;
-
-#define FF_W   (1<<1)
-#define FF_R   (1<<2)
 
 struct GFBridge {
 	/* bridge identification string */
