@@ -281,6 +281,7 @@ GRID_INLET(GridStore,0) {
 	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
 	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
 	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
+	/* !@#$ should optimise "mod" by "&" */
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
 	int size = r.dim->prod(nc);
@@ -1402,7 +1403,7 @@ METHOD3(DrawPolygon,initialize) {
 }
 
 GRCLASS(DrawPolygon,"@draw_polygon",inlets:3,outlets:1,startup:0,
-LIST(GRINLET(DrawPolygon,0,4),GRINLET(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
+LIST(GRINLET2(DrawPolygon,0,4),GRINLET2(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
 	DECL(DrawPolygon,initialize))
 
 /* **************************************************************** */
