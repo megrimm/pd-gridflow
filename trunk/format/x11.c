@@ -139,12 +139,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	Ruby argv[5] = {
 		INT2NUM(0), SYM(position),
 		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
-	/* HACK */
-//	if (!rb_ivar_defined(rself,SI(@parent))) {
-//		IEVAL(rself,"@parent ||= @outlets[0][0][0]");
-//	}
 	Ruby parent = rb_ivar_get(rself,SI(@parent));
-//	gfpost("parent = %08x",(int)parent);
 	if (parent!=Qnil) FObject_send_out(COUNT(argv),argv,parent);
 }
 
@@ -355,13 +350,12 @@ GRID_INLET(FormatX11,0) {
 	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_factor(sxc);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
-}
-
-GRID_FLOW {
+} GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
+	int oy = y;
 
 	assert((in->dex % sxc) == 0);
 	assert((n       % sxc) == 0);
@@ -370,14 +364,12 @@ GRID_FLOW {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
 		bit_packing->pack(sx, data, image+y*bypl);
-		if (autodraw==2) show_section(0,y,sx,1);
 		y++;
 		data += sxc;
 		n -= sxc;
 	}
-}
-
-GRID_FINISH {
+	if (autodraw==2) show_section(0,oy,sx,y-oy);
+} GRID_FINISH {
 	if (autodraw==1) {
 		int sx = in->dim->get(1);
 		int sy = in->dim->get(0);
@@ -385,9 +377,7 @@ GRID_FINISH {
 	}
 	/* calling this here because the clock problem is annoying */
 	alarm();
-}
-
-GRID_END
+} GRID_END
 
 METHOD3(FormatX11,close) {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
@@ -415,7 +405,7 @@ METHOD3(FormatX11,option) {
 		int autodraw = INT(argv[1]);
 		if (autodraw<0 || autodraw>2)
 			RAISE("autodraw=%d is out of range",autodraw);
-		autodraw = autodraw;
+		this->autodraw = autodraw;
 	} else if (sym == SYM(setcursor)) {
 		int shape = 2*(INT(argv[1])&63);
 		Cursor c = XCreateFontCursor(display,shape);
