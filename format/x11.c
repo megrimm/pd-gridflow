@@ -70,6 +70,7 @@ struct FormatX11 : Format {
 	BitPacking *bit_packing;
 	Dim *dim;
 	bool lock_size;
+	bool override_redirect;
 
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
@@ -80,7 +81,7 @@ struct FormatX11 : Format {
 
 	FormatX11 () : use_stripes(false), 
 	autodraw(1), window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
-	verbose(false), dim(0), lock_size(false)
+	verbose(false), dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
@@ -108,6 +109,7 @@ struct FormatX11 : Format {
 	\decl void initialize (...);
 	\decl void delete_m ();
 	\decl void set_geometry (int y, int x, int sy, int sx);
+/*	void override_redirect (int flag=1); */
 	\decl void fall_thru (int flag);
 	GRINLET3(0);
 };
@@ -374,12 +376,14 @@ void FormatX11::resize_window (int sx, int sy) {
 	if (window) {
 		if (is_owner && !lock_size) XResizeWindow(display,window,sx,sy);
 	} else {
-		window = XCreateSimpleWindow(display,
-			parent, pos_x, pos_y, sx, sy, 0, white, black);
-		if(!window) RAISE("can't create window");
 		XSetWindowAttributes xswa;
-		xswa.do_not_propagate_mask = 0;
-		XChangeWindowAttributes(display, window, CWDontPropagate, &xswa);
+		xswa.do_not_propagate_mask = 0; //?
+		xswa.override_redirect = override_redirect; //#!@#$
+		window = XCreateWindow(display,
+			parent, pos_x, pos_y, sx, sy, 0,
+			CopyFromParent, InputOutput, CopyFromParent,
+			CWOverrideRedirect|CWDontPropagate, &xswa);
+		if(!window) RAISE("can't create window");
 		//set_wm_hints(sx,sy);
 		if (is_owner) {
 			/* fall_thru 0 */
@@ -480,7 +484,6 @@ fprintf(stderr,"pack y=%d out=%08lx,%08lx,%08lx im=%08lx,%08lx,%08lx\n", y,
 }
 
 \def void setcursor (int shape) {
-	if (argc<2) RAISE("not enough args");
 	shape = 2*(shape&63);
 	Cursor c = XCreateFontCursor(display,shape);
 	XDefineCursor(display,window,c);
@@ -601,6 +604,14 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
+/*\def void override_redirect (int flag=1) {
+	XSetWindowAttributes xswa;
+	xswa.override_redirect = !!flag;
+	XChangeWindowAttributes(display, window, CWOverrideRedirect, &xswa);
+	XFlush(display);
+}
+*/
+
 \def void set_geometry (int y, int x, int sy, int sx) {
 	pos_x = x;
 	pos_y = y;
@@ -633,12 +644,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 
-	if (domain==SYM(verbose)) {
-		verbose = true;
-		argv++, argc--;
-		domain = argc<1 ? SYM(here) : argv[0];
-	}
-
 	int i;
 	if (domain==SYM(here)) {
 		if (verbose) gfpost("mode `here'");
@@ -667,16 +672,22 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		strcpy(host,rb_sym_name(argv[1]));
 		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
 		//if (verbose)
-		gfpost("mode `remote', DISPLAY=`%s'",host);
+		gfpost("mode `display', DISPLAY=`%s'",host);
 		open_display(host);
 		i=2;
 	} else {
 		RAISE("x11 destination syntax error");
 	}
 
-	if (i<argc && argv[i]==SYM(use_stripes)) {
-		use_stripes = true;
-		i++;
+	for(;i<argc;i++) {
+		Ruby a=argv[i];
+		if (a==SYM(verbose)) {
+			verbose = true;
+		} else if (a==SYM(override_redirect)) {
+			override_redirect = true;
+		} else if (a==SYM(use_stripes)){
+			use_stripes = true;
+		}
 	}
 
 	pos_x=pos_y=0;
