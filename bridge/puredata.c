@@ -83,7 +83,7 @@ static t_class *find_bfclass (t_symbol *sym) {
 //	if (v==Qnil) RAISE("class not found: '%s'",sym->s_name);
 	if (v==Qnil) {
 		post("class not found: '%s'",sym->s_name);
-		return Qnil;
+		return 0;
 	}
 	return FIX2PTR(t_class,v);
 }
@@ -198,7 +198,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
-	if (!qlass) return Qnil;
+	if (!qlass) return 0;
 	BFObject *bself = (BFObject *)pd_new(qlass);
 	bself->magic = OBJECT_MAGIC;
 	bself->check_magic();
