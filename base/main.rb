@@ -135,7 +135,7 @@ class FObject
 		@outlets[outlet].push [object, inlet]
 	end
 	def send_in(inlet, *m)
-		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
+		m=GridFlow.parse(m[0]) if m.length==1 and String===m[0] and m[0] =~ / /
 		sym = if m.length==0 then :bang
 		elsif Symbol===m[0] then m.shift
 		elsif String===m[0] then m.shift.intern
@@ -640,12 +640,13 @@ def GridFlow.find_file s
 end
 
 def GridFlow.tick
+begin
 	$mainloop.one(0)
 #	self.routine
 #	GC.start
 rescue Exception => e
 	GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
-end
+end end
 
 end # module GridFlow
 #----------------------------------------------------------------#
