@@ -383,7 +383,7 @@ METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	ObjectSet_add(gridflow_object_set,$);
+	Dict_put(gridflow_object_set,$,0);
 	$->profiler_cumul = 0;
 }
 
@@ -405,7 +405,7 @@ void GridObject_delete(GridObject *$) {
 /*		GridOutlet_delete($->out[i]); */
 		FREE($->out[i]);
 	}
-	ObjectSet_del(gridflow_object_set,$);
+	Dict_del(gridflow_object_set,$);
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
@@ -432,10 +432,13 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
 	Format *$ = (Format *) NEW(char,qlass->object_size);
 	$->cl = qlass;
+	$->parent = parent;
+	$->chain = 0;
+	$->mode = mode;
 	$->stream = -1;
 	$->bstream = 0;
-	$->mode = mode;
-	$->parent = parent;
+	$->bit_packing = 0;
+	$->dim = 0;
 
 	/* FF_W, FF_R, FF_RW */
 	if (mode==2 || mode==4 || mode==6) {

@@ -42,9 +42,6 @@
 #include <X11/extensions/XShm.h>
 #endif
 
-static fts_alarm_t *x11_alarm;
-static ObjectSet *format_x11_object_set = 0;
-
 extern FormatClass class_FormatX11;
 typedef struct FormatX11 {
 	Format_FIELDS;
@@ -72,11 +69,11 @@ typedef struct FormatX11 {
 
 static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-	if ($->display->use_shm) {
-		XSync(d->display,False);
+	if ($->use_shm) {
+		XSync($->display,False);
 		if (sy>Dim_get($->dim,0)) sy=Dim_get($->dim,0);
 		if (sx>Dim_get($->dim,1)) sx=Dim_get($->dim,1);
-		XShmPutImage(d->display, $->window,
+		XShmPutImage($->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
 		/* should completion events be waited for? looks like a bug */
 	} else
@@ -119,27 +116,22 @@ static fts_symbol_t button_sym(int i) {
 	return fts_new_symbol(foo);
 }
 
-void FormatX11_alarm(FormatX11 *$);
-void FormatX11_set_alarm(void);
-
 void FormatX11_alarm(FormatX11 *$) {
 	fts_atom_t at[4];
 	XEvent e;
 	int xpending;
-	FormatX11 *vout;
 
-	while (1) {
+	for (;;) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
 		if (!xpending) break;
 		XNextEvent($->display,&e);
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			vout = $;
 			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
-			if (vout && vout->mode == 2) {
-				FormatX11_show_section(vout, ex->x, ex->y, ex->width,
+			if ($->mode == 2) {
+				FormatX11_show_section($, ex->x, ex->y, ex->width,
 				ex->height);
 			}
 		}break;
@@ -150,7 +142,7 @@ void FormatX11_alarm(FormatX11 *$) {
 			fts_set_symbol(at+1,button_sym(eb->button));
 			fts_set_int(at+2,eb->y);
 			fts_set_int(at+3,eb->x);
-			//fts_outlet_send(OBJ(vout->out->parent),0,4,at);
+			//fts_outlet_send(OBJ($->out->parent),0,4,at);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
@@ -168,7 +160,7 @@ void FormatX11_alarm(FormatX11 *$) {
 			fts_set_int(at+2,em->x);
 		}break;
 		case DestroyNotify:{
-			/* should notify vout->parent here */
+			/* should notify $->parent here */
 		}break;
 		case ConfigureNotify:{
 			/* like we care */
@@ -177,25 +169,6 @@ void FormatX11_alarm(FormatX11 *$) {
 			whine("received event of type # %d", e.type);
 		}
 	}
-	FormatX11_set_alarm();
-}
-
-void FormatX11_global_alarm(fts_alarm_t *foo, void *obj) {
-	ObjectSet *oset = format_x11_object_set;
-	int i;
-	if (!oset) return;
-	for (i=0; i<oset->len; i++) {
-		FormatX11_alarm((FormatX11 *)(oset->buf[i]));
-	}
-}
-
-void FormatX11_set_alarm(void) {
-	if (!x11_alarm) {
-		fts_clock_t *clock = fts_sched_get_clock();
-		x11_alarm = fts_alarm_new(clock, FormatX11_global_alarm, 0);
-	}
-	fts_alarm_set_delay(x11_alarm, 75.0);
-	fts_alarm_arm(x11_alarm);
 }
 
 /* ---------------------------------------------------------------- */
@@ -248,10 +221,10 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
-	if (d->use_shm) {
+	if ($->use_shm) {
 		XShmSegmentInfo *shm_info = NEW(XShmSegmentInfo,1);
-		$->ximage = XShmCreateImage(d->display, d->visual,
-			d->depth, ZPixmap, 0, shm_info, sx, sy);
+		$->ximage = XShmCreateImage($->display, $->visual,
+			$->depth, ZPixmap, 0, shm_info, sx, sy);
 		assert($->ximage);
 		shm_info->shmid = shmget(
 			IPC_PRIVATE,
@@ -264,11 +237,11 @@ bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 		$->ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
 		shm_info->readOnly = False;
-		if (!XShmAttach(d->display, shm_info)) {
+		if (!XShmAttach($->display, shm_info)) {
 			whine("ERROR: XShmAttach: big problem");
 			goto err;
 		}
-		XSync(d->display,0);
+		XSync($->display,0);
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl(shm_info->shmid,IPC_RMID,0);
 	} else
@@ -393,7 +366,7 @@ GRID_END(FormatX11,0) {
 }
 
 void FormatX11_close (FormatX11 *$) {
-	ObjectSet_del(format_x11_object_set,(void *)$);
+	Dict_del(gridflow_alarm_set,$);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
@@ -470,7 +443,6 @@ FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	whine("setting use_shm = 0 because it's buggy");
 */
 
-	FormatX11_set_alarm();
 	return $;
 err:;
 	return 0;
@@ -575,10 +547,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	}
 
 	BitPacking_whine($->bit_packing);
-
-	if (!format_x11_object_set) format_x11_object_set = ObjectSet_new();
-	ObjectSet_add(format_x11_object_set,(void *)$);
-
+	Dict_put(gridflow_alarm_set,$,FormatX11_alarm);
 	return (Format *)$;
 err:;
 	$->cl->close((Format *)$);

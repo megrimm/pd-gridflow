@@ -38,6 +38,11 @@
 #define MAKE_TMP_LOG
 /* #define MAKE_TMP_LOG_ALLOC */
 
+const char *whine_header = "[whine] ";
+Dict *gridflow_object_set = 0;
+Dict *gridflow_alarm_set = 0;
+fts_alarm_t *gridflow_alarm = 0;
+
 FILE *whine_f;
 
 /* **************************************************************** */
@@ -81,8 +86,10 @@ static void disable_signal_handlers (void) {
 	}
 }
 
+void gridflow_alarm_handler (fts_alarm_t *foo, void *obj);
 void gridflow_module_init (void) {
 	disable_signal_handlers();
+	srandom(time(0));
 
 #ifdef MAKE_TMP_LOG
 	whine_f = fopen("/tmp/gridflow.log","w");
@@ -102,16 +109,19 @@ void gridflow_module_init (void) {
 	DEF_SYM(autodraw);
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
+	DEF_SYM(grid_flow2);
 	DEF_SYM(grid_end);
 
-	gridflow_object_set = ObjectSet_new();
+	gridflow_object_set = Dict_new(0);
+	gridflow_alarm_set  = Dict_new(0);
+	gridflow_alarm = fts_alarm_new(fts_sched_get_clock(), gridflow_alarm_handler, 0);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
 
 	post("--- GridFlow startup: end ---\n");
 
-	srandom(time(0));
+	gridflow_alarm_handler(0,0); /* bootstrap the event loop */
 }
 
 /* this is the entry point for all of the above */
@@ -158,7 +168,7 @@ void whine(char *fmt, ...) {
 		va_start(args,fmt);
 		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
 		post_s[sizeof(post_s)-1]=0; /* safety */
-		post("[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
 #ifdef MAKE_TMP_LOG
 		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
 		fflush(whine_f);
@@ -238,52 +248,6 @@ FILE *gf_file_fopen(const char *name, int mode) {
 }
 
 /* **************************************************************** */
-
-ObjectSet *ObjectSet_new(void) {
-	ObjectSet *$ = NEW(ObjectSet,1);
-	$->capa = 1;
-	$->len = 0;
-	$->buf = NEW(GridObject*,1);
-	return $;
-}
-
-void ObjectSet_add(ObjectSet *$, GridObject *obj) {
-	if ($->len >= $->capa) {
-		GridObject **buf;
-		$->capa *= 2;
-		buf = NEW(GridObject*,$->capa);
-		memcpy(buf,$->buf,$->len*sizeof(GridObject *));
-		FREE($->buf);
-		$->buf = buf;
-	}
-	$->buf[$->len++] = obj;
-	whine("added   %p (objects=%d)",obj,$->len);
-}
-
-void ObjectSet_del(ObjectSet *$, GridObject *obj) {
-	int i;
-	for (i=0; i<$->len; i++) {
-		if ($->buf[i]==obj) {
-			$->len--;
-			$->buf[i] = $->buf[$->len];
-			whine("deleted %p (objects=%d)",obj,$->len);
-			return;
-		}
-	}
-	whine("not deleting %p",obj);
-}
-
-/*
-void ObjectSet_each(ObjectSet *$, void(*)(GridObject *,void*),void*data) {}
-*/
-
-/* the set of all profilable objects (well, we hope so) */
-/* I assume no-one uses more than about 1000 objects at once, which
-   justifies the lousy algorithms above.
-*/
-ObjectSet *gridflow_object_set;
-
-/* **************************************************************** */
 /* [rtmetro] */
 
 static fts_alarm_t *rtmetro_alarm = 0;
@@ -340,37 +304,45 @@ typedef struct GFGlobal {
 	fts_object_t o;
 } GFGlobal;
 
-METHOD2(GFGlobal,profiler_reset) {
-	ObjectSet *os = gridflow_object_set;
-	int i;
-	for(i=0;i<os->len;i++)  {
-		os->buf[i]->profiler_cumul = 0;
-	}
+static void profiler_reset$1(void*d,void*k,void*v) {
+	((GridObject *)v)->profiler_cumul = 0;
 }
 
-static int by_profiler_cumul(const void *a, const void *b) {
+METHOD2(GFGlobal,profiler_reset) {
+	Dict *os = gridflow_object_set;
+	int i;
+	Dict_each(os,profiler_reset$1,0);
+}
+
+static int by_profiler_cumul(void **a, void **b) {
 	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
 	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
 	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
+}
+
+static void profiler_dump$1(void*d,void*k,void*v) {
+	List_push((List *)d,k);
 }
 
 METHOD2(GFGlobal,profiler_dump) {
         /* if you blow 256 chars it's your own fault */
 	char buf[256];
 
-	ObjectSet *os = gridflow_object_set;
+	Dict *os = gridflow_object_set;
+	List *ol = List_new(0);
 	uint64 total=0;
 	int i;
 	whine("--------------------------------");
 	whine("         clock-ticks percent pointer  constructor");
-	qsort(os->buf,os->len,sizeof(GridObject*),by_profiler_cumul);
-	for(i=0;i<os->len;i++) {
-		GridObject *o = os->buf[i];
+	Dict_each(gridflow_object_set,profiler_dump$1,ol);
+	List_sort(ol,by_profiler_cumul);
+	for(i=0;i<List_size(ol);i++) {
+		GridObject *o = List_get(ol,i);
 		total += o->profiler_cumul;
 	}
 	if (total<1) total=1;
-	for(i=0;i<os->len;i++) {
-		GridObject *o = os->buf[i];
+	for(i=0;i<List_size(ol);i++) {
+		GridObject *o = List_get(ol,i);
 		int ppm = o->profiler_cumul * 1000000 / total;
 		sprintf_atoms(buf,o->o.argc,o->o.argv);
 		whine("%20lld %2d.%04d %08x [%s]\n",
@@ -406,6 +378,19 @@ CLASS(GFGlobal) {
 
 #define INSTALL(_sym_,_name_) \
 	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+
+void gridflow_alarm_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
+	whine("%08x",o);
+	callback(o);
+}
+
+void gridflow_alarm_handler (fts_alarm_t *foo, void *obj) {
+	whine("gridflow_alarm_handler");
+	Dict_each(gridflow_alarm_set,
+		(void(*)(void*,void*,void*))gridflow_alarm_handler$1,0);
+	fts_alarm_set_delay(gridflow_alarm, 1000.0);
+	fts_alarm_arm(gridflow_alarm);
+}
 
 void startup_gridflow (void) {
 	INSTALL("rtmetro", RtMetro);
