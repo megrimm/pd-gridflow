@@ -55,7 +55,7 @@ void FormatSDL::resize_window (int sx, int sy) {
 	//???
 }
 
-GRID_BEGIN(FormatSDL,0) {
+GRID_INLET(FormatSDL,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
@@ -67,7 +67,7 @@ GRID_BEGIN(FormatSDL,0) {
 //	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 }
 
-GRID_FLOW(FormatSDL,0) {
+GRID_FLOW {
 	int bypl = screen->pitch;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
@@ -94,11 +94,12 @@ GRID_FLOW(FormatSDL,0) {
     }
 }
 
-GRID_END(FormatSDL,0) {
+GRID_FINISH {
 	int sy = in->dim->get(0);
 	int sx = in->dim->get(1);
     SDL_UpdateRect(screen, 0, 0, sx, sy);
 }
+GRID_END
 
 METHOD3(FormatSDL,close) {
 	return Qnil;
@@ -136,8 +137,8 @@ METHOD3(FormatSDL,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 2,'sdl','Simple Directmedia Layer'");
 }
 

@@ -35,7 +35,7 @@ struct FormatAALib : Format {
 	GRINLET3(0);
 };
 
-GRID_BEGIN(FormatAALib,0) {
+GRID_INLET(FormatAALib,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 1)
@@ -45,7 +45,7 @@ GRID_BEGIN(FormatAALib,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 }
 
-GRID_FLOW(FormatAALib,0) {
+GRID_FLOW {
 /*
 	int sx = min(in->factor,context->imgwidth);
 	int y = in->dex/in->factor;
@@ -59,13 +59,15 @@ GRID_FLOW(FormatAALib,0) {
 */
 }
 
-GRID_END(FormatAALib,0) {
+GRID_FINISH {
 	aa_palette pal;
 	for (int i=0; i<256; i++) aa_setpalette(pal,i,i,i,i);
 	aa_renderpalette(context,pal,renderparams,0,0,
 		aa_scrwidth(context),aa_scrheight(context));
 	aa_flush(context);
 }
+GRID_END
+
 
 METHOD3(FormatAALib,close) {
 	return Qnil;
@@ -89,19 +91,19 @@ METHOD3(FormatAALib,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	Ruby drivers = rb_ivar_set($->rubyclass,SI(@drivers),rb_hash_new());
+static void startup (GridClass *self) {
+	Ruby drivers = rb_ivar_set(self->rubyclass,SI(@drivers),rb_hash_new());
 	const aa_driver * const *p = aa_drivers;
 	while (*p) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)),
 			PTR2FIX(*p));
 		p++;
 	}
-	IEVAL($->rubyclass,
+	IEVAL(self->rubyclass,
 		"GridFlow.post('aalib supports: %s', "
 		"@drivers.keys.join(' ,'))");
 
-	IEVAL($->rubyclass,
+	IEVAL(self->rubyclass,
 	"conf_format 2,'aalib','Ascii Art Library'");
 }
 

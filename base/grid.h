@@ -41,28 +41,26 @@
 /* **************************************************************** */
 /* general-purpose macros */
 
-#define $ self
 #define LIST(args...) args
-#define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
-#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
-#define RAISE(args...) rb_raise(rb_eArgError,args)
-#define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
+#define RAISE(args...)    rb_raise(rb_eArgError,args)
+#define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
 #define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
-#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
-#define EVAL(s) rb_eval_string(s)
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
 
-/*
-  we're gonna override this,
-  so load it first, to avoid conflicts
-*/
+/* these should be inline functions */
+#define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
+#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
+#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
+#define EVAL(s) rb_eval_string(s)
+
+/* we're gonna override assert, so load it first, to avoid conflicts */
 #include <assert.h>
 
 #undef assert
@@ -88,10 +86,10 @@
 
 /* those are helpers for profiling. OBSOLETE */
 #ifdef HAVE_PROFILING
-#define ENTER $->profiler_last = rdtsc();
-#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
-#define ENTER_P $->parent->profiler_last = rdtsc();
-#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
+#define ENTER self->profiler_last = rdtsc();
+#define LEAVE self->profiler_cumul += rdtsc() - self->profiler_last;
+#define ENTER_P self->parent->profiler_last = rdtsc();
+#define LEAVE_P self->parent->profiler_cumul += rdtsc()-self->parent->profiler_last;
 #else
 #define ENTER
 #define LEAVE
@@ -99,34 +97,23 @@
 #define LEAVE_P
 #endif
 
-/*
-#define PTR2FIX(ptr) ( \
-	(((long)ptr)&3?RAISE("pointer alignment error"):0), \
-	INT2NUM(((long)ptr)/4))
-*/
-
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
 #define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
-
 //#define PTR2FIX(ptr) Pointer_new((void *)ptr)
 //#define FIX2PTR(v) Pointer_get(v)
-
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
 
 #define DEF(_class_,_name_,_argc_) \
 	rb_define_method(c##_class_,#_name_,(RFunc)_class_##_##_name_,_argc_)
-
 #define DEF2(_class_,_name2_,_name_,_argc_) \
 	rb_define_method(c##_class_,_name2_,(RFunc)_class_##_##_name_,_argc_)
-
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
 
 #define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
 #define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
-#define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
 #define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
 	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
@@ -195,10 +182,10 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 #define METHOD3(_class_,_name_) \
 	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); return $->_name_(argc,argv); } \
+		DGS(_class_); return self->_name_(argc,argv); } \
 	Ruby _class_::_name_(int argc, Ruby *argv)
 
-typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
+typedef Ruby (*RMethod)(Ruby rself, ...); /* !@#$ */
 
 #define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_startup_,_handlers_,args...) \
 	static void *_name_##_allocate () { return new _name_; } \
@@ -244,35 +231,11 @@ typedef struct MethodDecl {
 	}
 } MethodDecl;
 
-void define_many_methods(Ruby/*Class*/ $, int n, MethodDecl *methods);
+void define_many_methods(Ruby/*Class*/ rself, int n, MethodDecl *methods);
 
 /* **************************************************************** */
-/* limits */
-
-/* maximum size of any grid (256 megs in 32-bit, 64 megs in 8-bit) */
-#define MAX_NUMBERS 64*1024*1024
-
-/* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 1024*1024
-
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
-
-/* maximum number of grid cords per outlet per cord type */
-#define MAX_CORDS 8
-
-/* 1 + maximum id of last grid-aware inlet/outlet */
-#define MAX_INLETS 4
-#define MAX_OUTLETS 4
-
-/* number of #send_out calls allowed at once (not used yet) */
-#define GF_STACK_DEPTH 1024
-
-/* number of (maximum,ideal) Numbers to send at once */
-/* this should remain a constant throughout execution
-   because code still expect it to be constant. */
-extern int gf_max_packet_length;
-
 /* **************************************************************** */
 
 /*
@@ -402,8 +365,8 @@ struct BitPacking;
 
 /* those are the types of the optimised loops of conversion */ 
 /* inputs are const */
-typedef void (*  Packer)(BitPacking *$, int n, Pt<Number> in, Pt< uint8> out);
-typedef void (*Unpacker)(BitPacking *$, int n, Pt< uint8> in, Pt<Number> out);
+typedef void (*  Packer)(BitPacking *self, int n, Pt<Number> in, Pt< uint8> out);
+typedef void (*Unpacker)(BitPacking *self, int n, Pt< uint8> in, Pt<Number> out);
 
 struct BitPacking {
 	Packer packer;
@@ -539,49 +502,47 @@ struct Grid {
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
 
-#define GRID_BEGIN(_cl_,_inlet_) \
-	static void _cl_##__##_inlet_##_begin(_cl_ *$, GridInlet *in) { \
-		$->_##_inlet_##_begin(in); } \
-	void _cl_::_##_inlet_##_begin(GridInlet *in)
-
-#define  GRID_FLOW(_cl_,_inlet_) \
-	static void _cl_##__##_inlet_##_flow(_cl_ *$, GridInlet *in, int n, \
-	Pt<Number> data) { $->_##_inlet_##_flow(in,n,data); } \
-	void _cl_::_##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data)
-
-#define   GRID_END(_cl_,_inlet_) \
-	static void _cl_##__##_inlet_##_end(_cl_ *$, GridInlet *in) { \
-		$->_##_inlet_##_end(in); } \
-	void _cl_::_##_inlet_##_end(GridInlet *in)
-
+/* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
-	void _##_inlet_##_begin(GridInlet *in); \
 	void _##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data); \
-	void _##_inlet_##_end(GridInlet *in);
 
+/* macro for declaring an inlet inside GRCLASS() */
 #define GRINLET(_class_,_winlet_,_mode_) {_winlet_, _mode_, \
-	(void (*)(GridObject *, GridInlet *))_class_##__##_winlet_##_begin, \
-	(void (*)(GridObject *, GridInlet *, int, Pt<int32>))_class_##__##_winlet_##_flow, \
-	(void (*)(GridObject *, GridInlet *))_class_##__##_winlet_##_end, }
+	(void (*)(GridInlet *, int, Pt<int32>)) \
+	 _class_##__##_winlet_##_flow }
 
+/* four-part macro for defining the behaviour of a gridinlet in a class */
+#define GRID_INLET(_cl_,_inlet_) \
+	static void _cl_##__##_inlet_##_flow\
+	(GridInlet *in, int n, Pt<Number> data) { \
+		((_cl_*)in->parent)->_##_inlet_##_flow(in,n,data); } \
+	void _cl_::_##_inlet_##_flow \
+	(GridInlet *in, int n, Pt<Number> data) { \
+	if (n==-1)
+#define GRID_FLOW else if (n>=0)
+#define GRID_FINISH else
+#define GRID_END }
+
+/* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
-	GRID_BEGIN(_class_,_inlet_) { \
+	GRID_INLET(_class_,_inlet_) { \
 		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
-	GRID_FLOW(_class_,_inlet_) { \
+	GRID_FLOW { \
 		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
-	GRID_END(_class_,_inlet_)
+	GRID_FINISH
 
-typedef struct GridObject GridObject;
 typedef struct  GridInlet  GridInlet;
-
 typedef struct GridHandler {
 	int winlet;
 	int mode; /* 0=ignore; 4=ro; 6=rw */
-	void (*begin)(GridObject *, GridInlet *);
-	void  (*flow)(GridObject *, GridInlet *, int n, Pt<Number>data);
-	void   (*end)(GridObject *, GridInlet *);
+	/* It used to be three different function pointers here (begin,flow,end)
+	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
+	end-marker for inlet definitions... sorry for the confusion */
+
+	void  (*flow)(GridInlet *, int n, Pt<Number>data);
 } GridHandler;
 
+typedef struct  GridObject GridObject;
 struct GridInlet {
 /* context information */
 	GridObject *parent;
@@ -593,7 +554,7 @@ struct GridInlet {
 	int dex;
 
 /* grid receptor */
-	int factor; /* flow's n will be multiple of $->factor */
+	int factor; /* flow's n will be multiple of self->factor */
 	int bufn;
 	Pt<Number> buf; /* factor-chunk buffer */
 
@@ -640,7 +601,7 @@ struct GridClass /*: FClass */ {
 
 struct GridOutlet {
 /* these are set only once, at outlet creation */
-	GridObject * parent;
+	GridObject *parent;
 	int woutlet;
 
 /* those are set at every beginning of a transmission */
@@ -683,6 +644,10 @@ struct FObject {
 	uint64 profiler_cumul, profiler_last;
 };
 
+/* 1 + maximum id of last grid-aware inlet/outlet */
+#define MAX_INLETS 4
+#define MAX_OUTLETS 4
+
 struct GridObject : FObject {
 	bool freed; /* paranoia */
 	GridInlet  * in[MAX_INLETS];
@@ -713,29 +678,21 @@ struct GridObject : FObject {
 };
 
 inline BFObject *FObject_peer(Ruby rself) {
-	DGS(GridObject); return $->foreign_peer;
+	DGS(GridObject); return self->foreign_peer;
 }
 
-void GridObject_conf_class(Ruby $, GridClass *grclass);
+void GridObject_conf_class(Ruby rself, GridClass *grclass);
 
 /* **************************************************************** */
 
-struct GFStack {
-	GridObject *obj;
-	GFStack *next;
-};
-
-/* GridFlow is not threadable and this is one reason for it */
-extern GFStack *gf_call_stack;
-
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
-#define FF_RW  (1<<3)
 
 struct Format : GridObject {
 	/*
 	  "parent","mode" fields have been moved to GridObject temporarily
-	  as a hack around a memory corruption bug
+	  as a hack around a memory corruption bug that would be somewhat
+	  tricky to fix now.
 	*/	
 
 	DECL3(init);
@@ -759,10 +716,10 @@ struct Format : GridObject {
 
 typedef struct GFBridge {
 	/* send message */
-	/* pre: outlet number is valid; $ has a foreign_peer */
-	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $);
+	/* pre: outlet number is valid; self has a foreign_peer */
+	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby rself);
 	/* add new class */
-	Ruby (*class_install)(Ruby $, char *name);
+	Ruby (*class_install)(Ruby rself, char *name);
 	/* to write to the console */
 	void (*post)(const char *, ...);
 	/* PD adds a newline; jMax doesn't. */
@@ -779,9 +736,9 @@ extern Ruby cFormat;
 
 uint64 RtMetro_now();
 
-Ruby gf_post_string (Ruby $, Ruby s);
-Ruby FObject_send_out(int argc, Ruby *argv, Ruby $);
-Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets, Ruby outlets);
+Ruby gf_post_string (Ruby rself, Ruby s);
+Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself);
+Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets, Ruby outlets);
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);
 const char *rb_sym_name(Ruby sym);
 

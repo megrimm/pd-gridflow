@@ -48,21 +48,21 @@ int low_bit(uint32 n) {
 	(((in[2] << hb[2]) >> 7) & mask[2])
 
 #define CONVERT2 \
-	for (t=0,i=0; i<$->size; i++) t |= (((in[i] << hb[i]) >> 7) & mask[i]);
+	for (t=0,i=0; i<self->size; i++) t |= (((in[i] << hb[i]) >> 7) & mask[i]);
 
 #define CONVERT3 \
-	for (t=0,i=0; i<$->size; i++) { \
+	for (t=0,i=0; i<self->size; i++) { \
 		t |= ((in[i]>>(7-hb[i]))|(in[i]<<(hb[i]-7))) & mask[i]; \
 	}
 
 #define WRITE_LE { \
-	int bytes = $->bytes; \
+	int bytes = self->bytes; \
 	while (bytes--) { *out++ = t; t >>= 8; }}
 
 #define WRITE_BE { \
-	int bytes = $->bytes; \
+	int bytes = self->bytes; \
 	while (bytes--) { out[bytes] = t; t >>= 8; } \
-	out += $->bytes; }
+	out += self->bytes; }
 
 /* those macros would be faster if the _increment_
    were done only once every loop. or maybe gcc does it, i dunno */
@@ -72,19 +72,19 @@ int low_bit(uint32 n) {
 	while (n>3) { FOURTIMES(_x_) n-=4; } \
 	while (n--) { _x_ }
 
-static void default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	register uint32 t;
 	int i;
 	int hb[4];
 	uint32 mask[4];
-	int sameorder = $->endian==2 || $->endian==::is_le();
-	int size = $->size;
+	int sameorder = self->endian==2 || self->endian==::is_le();
+	int size = self->size;
 
-	for (i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
-	memcpy(mask,$->mask,size*sizeof(uint32));
+	for (i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
+	memcpy(mask,self->mask,size*sizeof(uint32));
 
 	if (sameorder && size==3) {
-		switch($->bytes) {
+		switch(self->bytes) {
 		case 2:
 			NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;)
 			return;
@@ -94,7 +94,7 @@ static void default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 		}
 	}
 	
-	if ($->is_le()) {
+	if (self->is_le()) {
 		if (size==3)
 			while (n--) {CONVERT1; WRITE_LE; in+=3;}
 		else if (size==4) {
@@ -113,36 +113,36 @@ static void default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 
 #define LOOP_UNPACK(_reader_) \
 	while (n--) { int bytes=0; uint32 temp=0; _reader_; \
-		for (int i=0; i<$->size; i++) { \
-			uint32 t=temp&$->mask[i]; *out++ = (t<<(7-hb[i]))|(t>>(hb[i]-7));} \
+		for (int i=0; i<self->size; i++) { \
+			uint32 t=temp&self->mask[i]; *out++ = (t<<(7-hb[i]))|(t>>(hb[i]-7));} \
 	}
 
-//			*out++ = ((temp & $->mask[i]) << 7) >> hb[i];
+//			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
-static void default_unpack(BitPacking *$, int n, Pt</*const*/ uint8> in,
+static void default_unpack(BitPacking *self, int n, Pt</*const*/ uint8> in,
 Pt<Number> out) {
 	int hb[4];
-	for (int i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
+	for (int i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
 
 	if (is_le()) {
 		/* smallest byte first */
-		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
+		LOOP_UNPACK(while(self->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
 	} else {
 		/* biggest byte first */
-		LOOP_UNPACK(bytes=$->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
+		LOOP_UNPACK(bytes=self->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
 	}
 }
 
 /* **************************************************************** */
 
-static void pack2_565(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void pack2_565(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 }
 
-static void pack3_888(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void pack3_888(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
@@ -229,16 +229,16 @@ void swap16 (int n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
-static Ruby String_swap32_f (Ruby $) {
-	swap32(rb_str_len($)/4,
-		Pt<uint32>((uint32 *)rb_str_ptr($),rb_str_len($)/4));
-	return $;
+static Ruby String_swap32_f (Ruby rself) {
+	int n = rb_str_len(rself)/4;
+	swap32(n,Pt<uint32>((uint32 *)rb_str_ptr(rself),n));
+	return rself;
 }
 
-static Ruby String_swap16_f (Ruby $) {
-	swap16(rb_str_len($)/2,
-		Pt<uint16>((uint16 *)rb_str_ptr($),rb_str_len($)/2));
-	return $;
+static Ruby String_swap16_f (Ruby rself) {
+	int n = rb_str_len(rself)/2;
+	swap16(n,Pt<uint16>((uint16 *)rb_str_ptr(rself),n));
+	return rself;
 }
 
 /* **************************************************************** */
@@ -273,14 +273,11 @@ METHOD3(BitPacking,unpack2) {
 	return out;
 }
 
-void BitPacking_free (Ruby *$) {
-//	fprintf(stderr,"freeing BitPacking %p\n",$);
-}
+void BitPacking_free (void *foo) {}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
 	BitPacking *c_peer;
-	Ruby $; /* ruby_peer */
 
 	if (argc!=3) RAISE("bad args");
 	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
@@ -295,10 +292,10 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
 	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
-	$ = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
-	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
-	rb_funcall2($,SI(initialize),argc,argv);
-	return $;
+	Ruby rself = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
+	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) */
+	rb_funcall2(rself,SI(initialize),argc,argv);
+	return rself;
 }
 
 GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
@@ -309,6 +306,7 @@ LIST(),
 
 /* **************************************************************** */
 
+#define MAX_INDICES 1024*1024
 void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	for (int i=0; i<n; i++)

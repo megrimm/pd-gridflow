@@ -41,7 +41,7 @@ tries to call a Ruby method of the proper name.
 
 struct BFObject;
 struct FMessage {
-	BFObject *$;
+	BFObject *self;
 	int winlet;
 	t_symbol *selector;
 	int ac;
@@ -59,6 +59,7 @@ static bool is_in_ruby = false;
 /* **************************************************************** */
 /* BFObject */
 
+#define MAX_OUTLETS 4
 struct BFObject : t_object {
 	Ruby peer;
 	t_outlet *out[MAX_OUTLETS];
@@ -97,8 +98,7 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 //	} else if (rb_obj_class(arg)==Pointer_class2) {
 //		SETPOINTER(at,Pointer_get(arg));
 	} else {
-		/* can't use EARG here */
-		rb_raise(rb_eArgError, "cannot convert argument of class '%s'",
+		RAISE("cannot convert argument of class '%s'",
 			rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 	}
 }
@@ -109,10 +109,8 @@ static Ruby Bridge_import_value(const t_atom *at) {
 		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
 	} else if (t==A_FLOAT) {
 		return rb_float_new(at->a_w.w_float);
-/*
-	} else if (t==A_POINTER) {
-		return Pointer_new(at->a_w.w_gpointer);
-*/
+//	} else if (t==A_POINTER) {
+//		return Pointer_new(at->a_w.w_gpointer);
 		} else {
 		return Qnil; /* unknown */
 	}
@@ -155,10 +153,9 @@ int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv, int level=0) {
 	return argc;
 }
 
-static Ruby BFObject_method_missing$1 (FMessage *fm) {
+static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	const char *s = fm->selector->s_name;
 	char buf[strlen(s)+4];
-	Ruby $ = fm->$->peer;
 	assert(fm->winlet<10);
 	strcpy(buf+3,s);
 	buf[0] = buf[2] = '_';
@@ -168,7 +165,7 @@ static Ruby BFObject_method_missing$1 (FMessage *fm) {
 	Ruby argv[fm->ac];
 	int argc = Bridge_import_list(fm->ac,fm->at,argv);
 
-	rb_funcall2($,sel,argc,argv);
+	rb_funcall2(fm->self->peer,sel,argc,argv);
 	return Qnil;
 }
 
@@ -179,41 +176,41 @@ static Ruby BFObject_rescue (FMessage *fm) {
 //	for (int i=0; i<rb_ary_len(error_array); i++)
 //		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	//!@#$leak
-	if (fm->$) pd_error(fm->$,"%s",strdup(rb_str_ptr(
+	if (fm->self) pd_error(fm->self,"%s",strdup(rb_str_ptr(
 		rb_funcall(error_array,SI(join),0))));
-	if (fm->$ && fm->is_init) fm->$ = 0;
+	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
 
-static void BFObject_method_missing (BFObject *$,
+static void BFObject_method_missing (BFObject *self,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
-//	post("%p %d %s %d\n",$,winlet,selector->s_name,ac);
-	FMessage fm = { $: $, winlet: winlet, selector: selector, ac: ac, at: at,
+//	post("%p %d %s %d\n",self,winlet,selector->s_name,ac);
+	FMessage fm = { self: self, winlet: winlet, selector: selector, ac: ac, at: at,
 		is_init: false };
-	if (!$->peer) {
-		pd_error($,"you are trying to send a message to a dead object. \
+	if (!self->peer) {
+		pd_error(self,"you are trying to send a message to a dead object. \
 			the precise reason was given when you last tried to create \
 			the object. fix the contents of that box and try again.");
 		return;
 	}
 	rb_rescue2(
-		(RFunc)BFObject_method_missing$1,(Ruby)&fm,
+		(RFunc)BFObject_method_missing_1,(Ruby)&fm,
 		(RFunc)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
-static void BFObject_method_missing0 (BFObject *$,
+static void BFObject_method_missing0 (BFObject *self,
 t_symbol *s, int argc, t_atom *argv) {
-	BFObject_method_missing($,0,s,argc,argv);
+	BFObject_method_missing(self,0,s,argc,argv);
 }
 
-static void BFProxy_method_missing(BFProxy *$,
+static void BFProxy_method_missing(BFProxy *self,
 t_symbol *s, int argc, t_atom *argv) {
 //	post("BFProxy_method_missing: Hello World!");
-	BFObject_method_missing($->parent,$->inlet,s,argc,argv);
+	BFObject_method_missing(self->parent,self->inlet,s,argc,argv);
 }
 	
-static Ruby BFObject_init$1 (FMessage *fm) {
+static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac];
 //	post("ac=%d at=%d\n",fm->ac,(int)fm->at);
 	int argc = Bridge_import_list(fm->ac,fm->at,argv);
@@ -222,8 +219,8 @@ static Ruby BFObject_init$1 (FMessage *fm) {
 	Ruby qlass = BFObject::find_fclass(fm->selector);
 	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
 	DGS(GridObject);
-	$->foreign_peer = fm->$;
-	$->foreign_peer->peer = rself;
+	self->foreign_peer = fm->self;
+	self->foreign_peer->peer = rself;
 
 	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
@@ -235,55 +232,55 @@ static Ruby BFObject_init$1 (FMessage *fm) {
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = $->foreign_peer;
+		p->parent = self->foreign_peer;
 		p->inlet = i;
-		inlet_new($->foreign_peer, &p->ob_pd, 0,0);
+		inlet_new(self->foreign_peer, &p->ob_pd, 0,0);
 	}
 
 	for (int i=0; i<noutlets; i++) {
 		assert(i<=MAX_OUTLETS); /* TROUBLE */
-		$->foreign_peer->out[i] = outlet_new($->foreign_peer,&s_anything);
+		self->foreign_peer->out[i] = outlet_new(self->foreign_peer,&s_anything);
 	}
 	return rself;
 }
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = BFObject::find_bfclass(classsym);
-	BFObject *$ = (BFObject *)pd_new(qlass);
-	FMessage fm = { $: $, winlet:-1, selector: classsym,
+	BFObject *self = (BFObject *)pd_new(qlass);
+	FMessage fm = { self: self, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
 	rb_rescue2(
-		(RFunc)BFObject_init$1,(Ruby)&fm,
+		(RFunc)BFObject_init_1,(Ruby)&fm,
 		(RFunc)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 	/* now what do i do with constructors that raised exception? */
-	return (void *)$;
+	return (void *)self;
 }
 
-static void BFObject_delete$1 (FMessage *fm) {
-	if (fm->$->peer) {
-		post("BFObject_delete is handling object at %08x",(int)fm->$);
-		rb_funcall(fm->$->peer,SI(delete),0);
+static void BFObject_delete_1 (FMessage *fm) {
+	if (fm->self->peer) {
+		post("BFObject_delete is handling object at %08x",(int)fm->self);
+		rb_funcall(fm->self->peer,SI(delete),0);
 	} else {
 		post("BFObject_delete is NOT handling BROKEN object at %08x",(int)fm);
 	}
 }
 
-static void BFObject_delete (BFObject *$) {
-	FMessage fm = { $: $, winlet:-1, selector: gensym("delete"),
+static void BFObject_delete (BFObject *self) {
+	FMessage fm = { self: self, winlet:-1, selector: gensym("delete"),
 		ac: 0, at: 0, is_init: false };
 	rb_rescue2(
-		(RFunc)BFObject_delete$1,(Ruby)&fm,
+		(RFunc)BFObject_delete_1,(Ruby)&fm,
 		(RFunc)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
-static void BFObject_class_init$1 (t_class *qlass) {
-	Ruby $ = BFObject::find_fclass(gensym(class_getname(qlass)));
+static void BFObject_class_init_1 (t_class *qlass) {
+//	Ruby rself = BFObject::find_fclass(gensym(class_getname(qlass)));
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
-static Ruby FObject_s_install_2(Ruby $, char *name) {
+static Ruby FObject_s_install_2(Ruby rself, char *name) {
 	t_class *qlass = class_new(gensym(name),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject),
@@ -295,15 +292,16 @@ static Ruby FObject_s_install_2(Ruby $, char *name) {
 
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(
-		(RFunc)BFObject_class_init$1,(Ruby)qlass,
+		(RFunc)BFObject_class_init_1,(Ruby)qlass,
 		(RFunc)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 	return Qnil;
 }
 
-static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
-	BFObject *jo = FObject_peer($);
-	Ruby qlass = rb_funcall($,SI(class),0);
+static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet,
+Ruby rself) {
+	BFObject *jo = FObject_peer(rself);
+	Ruby qlass = rb_funcall(rself,SI(class),0);
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
@@ -330,11 +328,11 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 }       
 
 Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
-	GFBridge *$ = gf_bridge2 = FIX2PTR(GFBridge,p);
-	$->class_install = FObject_s_install_2;
-	$->send_out = FObject_send_out_2;
-	$->post = (void (*)(const char *, ...))post;
-	$->post_does_ln = true;
+	GFBridge *self = gf_bridge2 = FIX2PTR(GFBridge,p);
+	self->class_install = FObject_s_install_2;
+	self->send_out = FObject_send_out_2;
+	self->post = (void (*)(const char *, ...))post;
+	self->post_does_ln = true;
 	mGridFlow2 = EVAL("GridFlow");
 	cPointer2 = EVAL("GridFlow::Pointer");
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());

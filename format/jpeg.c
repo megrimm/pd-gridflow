@@ -42,7 +42,7 @@ struct FormatJPEG : Format {
 	GRINLET3(0);
 };
 
-GRID_BEGIN(FormatJPEG,0) {
+GRID_INLET(FormatJPEG,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
@@ -59,7 +59,7 @@ GRID_BEGIN(FormatJPEG,0) {
 	jpeg_start_compress(&cjpeg,TRUE);
 }
 
-GRID_FLOW(FormatJPEG,0) {
+GRID_FLOW {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
@@ -71,10 +71,11 @@ GRID_FLOW(FormatJPEG,0) {
 	}
 }
 
-GRID_END(FormatJPEG,0) {
+GRID_FINISH {
 	jpeg_finish_compress(&cjpeg);
 	jpeg_destroy_compress(&cjpeg);
 }
+GRID_END
 
 METHOD3(FormatJPEG,frame) {
 	GridOutlet *o = out[0];
@@ -117,8 +118,8 @@ METHOD3(FormatJPEG,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
 }
 

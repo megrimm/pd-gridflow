@@ -53,9 +53,9 @@ static Ruby Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, ptr);
 }
 
-static void *Pointer_get (Ruby $) {
+static void *Pointer_get (Ruby rself) {
 	void *p;
-	Data_Get_Struct($,void *,p);
+	Data_Get_Struct(rself,void *,p);
 	return p;
 }
 */

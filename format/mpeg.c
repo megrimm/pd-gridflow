@@ -66,9 +66,10 @@ METHOD3(FormatMPEG,frame) {
 	return Qnil;
 }
 
-GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
-GRID_FLOW(FormatMPEG,0) {}
-GRID_END(FormatMPEG,0) {}
+GRID_INLET(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
+GRID_FLOW {}
+GRID_FINISH {}
+GRID_END
 
 METHOD3(FormatMPEG,close) {
 	if (bit_packing) delete bit_packing;
@@ -104,8 +105,8 @@ METHOD3(FormatMPEG,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using Ward\\'s)'");
 }

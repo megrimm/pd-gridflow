@@ -112,19 +112,19 @@ static const char *video_mode_choice[] = {
 #define TAB "    "
 
 #define WH(_field_,_spec_) \
-	gfpost(TAB "%s: " _spec_, #_field_, $->_field_);
+	gfpost(TAB "%s: " _spec_, #_field_, self->_field_);
 
 #define WHYX(_name_,_fieldy_,_fieldx_) \
-	gfpost(TAB "%s: y=%d, x=%d", #_name_, $->_fieldy_, $->_fieldx_);
+	gfpost(TAB "%s: y=%d, x=%d", #_name_, self->_fieldy_, self->_fieldx_);
 
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
+	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
 	delete[] foo;}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
+	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	delete[] foo;}
 
 static char *flags_to_s(int value, int n, const char **table) {
@@ -149,7 +149,7 @@ static char *choice_to_s(int value, int n, const char **table) {
 	}
 }
 
-static void VideoChannel_gfpost(VideoChannel *$) {
+static void gfpost(VideoChannel *self) {
 	gfpost("VideoChannel:");
 	WH(channel,"%d");
 	WH(name,"%-32s");
@@ -159,7 +159,7 @@ static void VideoChannel_gfpost(VideoChannel *$) {
 	WH(norm,"%d");
 }
 
-static void VideoTuner_gfpost(VideoTuner *$) {
+static void gfpost(VideoTuner *self) {
 	gfpost("VideoTuner:");
 	WH(tuner,"%d");
 	WH(name,"%-32s");
@@ -170,7 +170,7 @@ static void VideoTuner_gfpost(VideoTuner *$) {
 	WH(signal,"%d");
 }
 
-static void VideoCapability_gfpost(VideoCapability *$) {
+static void gfpost(VideoCapability *self) {
 	gfpost("VideoCapability:");
 	WH(name,"%-20s");
 	WHFLAGS(type,video_type_flags);
@@ -180,7 +180,7 @@ static void VideoCapability_gfpost(VideoCapability *$) {
 	WHYX(minsize,minheight,minwidth);
 }
 
-static void VideoWindow_gfpost(VideoWindow *$) {
+static void gfpost(VideoWindow *self) {
 	gfpost("VideoWindow:");
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
@@ -189,7 +189,7 @@ static void VideoWindow_gfpost(VideoWindow *$) {
 	WH(clipcount,"%d");
 }
 
-static void VideoPicture_gfpost(VideoPicture *$) {
+static void gfpost(VideoPicture *self) {
 	gfpost("VideoPicture:");
 	WH(brightness,"%d");
 	WH(hue,"%d");
@@ -199,17 +199,14 @@ static void VideoPicture_gfpost(VideoPicture *$) {
 	WHCHOICE(palette,video_palette_choice);
 }
 
-static void video_mbuf_gfpost(VideoMbuf *$) {
+static void gfpost(VideoMbuf *self) {
 	gfpost("VideoMBuf:");
 	WH(size,"%d");
 	WH(frames,"%d");
-	WH(offsets[0],"%d");
-	WH(offsets[1],"%d");
-	WH(offsets[2],"%d");
-	WH(offsets[3],"%d");
+	for (int i=0; i<4; i++) WH(offsets[i],"%d");
 }
 
-static void video_mmap_gfpost(VideoMmap *$) {
+static void gfpost(VideoMmap *self) {
 	gfpost("VideoMMap:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
@@ -276,17 +273,17 @@ METHOD3(FormatVideoDev,size) {
 	if (dim) delete dim;
 	dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	VideoWindow_gfpost(&grab_win);
+	gfpost(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	if (v[0] && v[1]) {
 		grab_win.height = v[0];
 		grab_win.width  = v[1];
 	}
-	VideoWindow_gfpost(&grab_win);
+	gfpost(&grab_win);
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	VideoWindow_gfpost(&grab_win);
+	gfpost(&grab_win);
 	return Qnil;
 }
 
@@ -309,7 +306,7 @@ METHOD3(FormatVideoDev,alloc_image) {
 	//RAISE("hello");
 	int fd = GETFD;
 	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-	video_mbuf_gfpost(&vmbuf);
+	gfpost(&vmbuf);
 	image = Pt<uint8>((uint8 *) mmap(
 		0,vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,
@@ -329,10 +326,10 @@ METHOD3(FormatVideoDev,frame_ask) {
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
 //	gfpost("will try:");
-//	video_mmap_gfpost(&vmmap);
+//	gfpost(&vmmap);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
 //	gfpost("driver gave us:");
-//	video_mmap_gfpost(&vmmap);
+//	gfpost(&vmmap);
 	next_frame = (pending_frames[1]+1) % vmbuf.frames;
 	return Qnil;
 }
@@ -353,7 +350,7 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	o->end();
 }
 
-static int read2(int fd,uint8 *image,int n) {
+static int read2(int fd, uint8 *image, int n) {
 	int r=0;
 	while (n>0) {
 		int rr=read(fd,image,n);
@@ -363,7 +360,7 @@ static int read2(int fd,uint8 *image,int n) {
 	return r;
 }
 
-static int read3(int fd,uint8 *image,int n) {
+static int read3(int fd, uint8 *image, int n) {
 	int r=0;
 	int rr=read(fd,image,n);
 	if (rr<0) return rr;
@@ -375,7 +372,7 @@ METHOD3(FormatVideoDev,frame) {
 	if (!image) rb_funcall(peer,SI(alloc_image),0);
 	int fd = GETFD;
 	if (!use_mmap) {
-//		gfpost("$=%p; image=%p",$,image);
+//		gfpost("self=%p; image=%p",self,image);
 		/* picture is read at once by frame() to facilitate debugging. */
 		int tot = dim->prod(0,1) * bit_packing->bytes;
 
@@ -391,8 +388,7 @@ METHOD3(FormatVideoDev,frame) {
 	int finished_frame;
 	if (pending_frames[0] < 0) {
 		next_frame = 0;
-		rb_funcall(peer,SI(frame_ask),0);
-		rb_funcall(peer,SI(frame_ask),0);
+		for (int i=0; i<2; i++) rb_funcall(peer,SI(frame_ask),0);
 	}
 	vmmap.frame = finished_frame = pending_frames[0];
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
@@ -401,9 +397,10 @@ METHOD3(FormatVideoDev,frame) {
 	return Qnil;
 }
 
-GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
-GRID_FLOW(FormatVideoDev,0) {}
-GRID_END(FormatVideoDev,0) {}
+GRID_INLET(FormatVideoDev,0) { RAISE("can't write."); }
+GRID_FLOW {}
+GRID_FINISH {}
+GRID_END
 
 METHOD3(FormatVideoDev,norm) {
 	int value = INT(argv[0]);
@@ -415,7 +412,7 @@ METHOD3(FormatVideoDev,norm) {
 		gfpost("no tuner #%d", value);
 	} else {
 		vtuner.mode = value;
-		VideoTuner_gfpost(&vtuner);
+		gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 	return Qnil;
@@ -425,11 +422,10 @@ METHOD3(FormatVideoDev,tuner) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	VideoTuner vtuner;
-	vtuner.tuner = value;
-	current_tuner = value;
+	vtuner.tuner = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
 	vtuner.mode = VIDEO_MODE_NTSC;
-	VideoTuner_gfpost(&vtuner);
+	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	return Qnil;
 }
@@ -441,7 +437,7 @@ METHOD3(FormatVideoDev,channel) {
 	vchan.channel = value;
 	current_channel = value;
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
-	VideoChannel_gfpost(&vchan);
+	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	rb_funcall(peer,SI(tuner),1,INT2NUM(0));
 	return Qnil;
@@ -501,7 +497,6 @@ METHOD3(FormatVideoDev,option) {
 	PICTURE_ATTR(whiteness)
 
 	} else {
-		RAISE("crap");
 		rb_call_super(argc,argv);
 	}
 	return Qnil;
@@ -521,21 +516,21 @@ METHOD3(FormatVideoDev,init2) {
 	VideoPicture *gp = new VideoPicture;
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	VideoCapability_gfpost(&vcaps);
+	gfpost(&vcaps);
 	rb_funcall(peer,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost("original settings:");
-	VideoPicture_gfpost(gp);
+	gfpost(gp);
 	gp->depth = 24;
 	gp->palette = VIDEO_PALETTE_RGB24;
 
 	gfpost("trying settings:");
-	VideoPicture_gfpost(gp);
+	gfpost(gp);
 	WIOCTL(fd, VIDIOCSPICT, gp);
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost("driver gave us settings:");
-	VideoPicture_gfpost(gp);
+	gfpost(gp);
 
 	switch(gp->palette) {
 	case VIDEO_PALETTE_RGB24:{
@@ -590,8 +585,8 @@ METHOD3(FormatVideoDev,init) {
 
 /* **************************************************************** */
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 4,'videodev','Video4linux 1.x'");
 }
 
