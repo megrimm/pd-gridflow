@@ -79,6 +79,13 @@ struct FormatQuickTimeHW : Format {
 	}
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
+	int sz = quicktime_video_depth(anim,track);
+	channels = sz/8; // hack. how do i get the video's native colormodel ?
+	switch (sz) {
+	case 24: colorspace=BC_RGB888; break;
+	case 32: colorspace=BC_RGBA8888; break;
+	default: gfpost("strange quicktime. ask matju."); break;
+	}
 	if (force) {
 		sy = force->get(0);
 		sx = force->get(1);
@@ -113,8 +120,8 @@ struct FormatQuickTimeHW : Format {
 }
 
 GRID_INLET(FormatQuickTimeHW,0) {
-	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	if (in->dim->n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2)!=channels) RAISE("expecting %d channels (got %d)",channels,in->dim->get(2));
 	in->set_factor(in->dim->prod());
 	if (dim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
@@ -123,6 +130,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		dim = in->dim;
 		quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
 		quicktime_set_cmodel(anim,colorspace);
+		quicktime_set_depth(anim,8*channels,track);
 	}
 } GRID_FLOW {
 	int sx = quicktime_video_width(anim,track);
