@@ -1,0 +1,132 @@
+<html><head>
+<!-- $Id$ -->
+<title>GridFlow 0.7.3 - reference</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="jmax.css" type="text/css">
+</head>
+<body bgcolor="#FFFFFF"
+  leftmargin="0" topmargin="0"
+  marginwidth="0" marginheight="0">
+<table width="100%" bgcolor="white" border="0" cellspacing="2">
+<tr><td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23">
+</td></tr><tr><td>&nbsp;</td></tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4" height="16"> 
+    <h4>GridFlow 0.7.3 - index of this page:</h4>
+</td></tr>
+<tr> 
+  <td width="5%"  rowspan="2">&nbsp;</td>
+  <td width="15%" height="23">&nbsp;</td>
+  <td width="80%" height="23">&nbsp;</td>
+  <td width="5%"  height="23">&nbsp;</td>
+</tr>
+<tr><td colspan="2"><div cols="1"><h4><a href="#Software_(and_Hardware)_you_Probably_Need">Software (and Hardware) you Probably Need</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(for_jMax_2.5)">Installation process (for jMax 2.5)</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(with_PureData_0.35_and_compatible)">Installation process (with PureData 0.35 and compatible)</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(without_jMax)">Installation process (without jMax)</a></h4><ul>
+</ul>
+<br><br>
+</div></td></tr> <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Software_(and_Hardware)_you_Probably_Need"></a><h4>Software (and Hardware) you Probably Need</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Required Hardware (One of...):<ul> <li><b>1</b> : i386 : "old" IBM PC, or "new" IBM PC with old compiler</li> <li><b>2</b> : i686 : "new" IBM PC with recent compiler</li> <li><b>3</b> : ppc : "new" Macintosh</li> <li><b>4</b> : armv4l : Corel Netwinder</li> <li><b>5</b> : mips : Silicon Graphics, non-PC</li> <li><b>6</b> : sparc : Sun SparcStation</li> </ul>(but we only test i686 ourselves)</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.6.2 or more recent (language interpreter)</li> <li><b>2</b> : GNU C Compiler (gcc)</li> <li><b>3</b> : GNU Make (gmake)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Very Recommended:<ul> <li><b>1</b> : jMax 2.5</li> <li><b>2</b> : jMax 4.0 support in the works</li> <li><b>3</b> : X11 Display Server and MIT-Xlib (already in linux)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Optional:<ul> <li><b>1</b> : PureData 0.35 or 0.36 (support is experimental)</li> <li><b>2</b> : Simple Directmedia Layer (sdl)</li> <li><b>3</b> : Ascii Art Library (aalib)</li> <li><b>4</b> : HeroineWarrior's libmpeg3.so</li> <li><b>5</b> : HeroineWarrior's libquicktime.so</li> <li><b>6</b> : Greg Ward's libmpeg.so ("Berkeley/MNI")</li> <li><b>7</b> : a digitizer card with a Video4linux 1.x driver (videodev.h)</li> <li><b>8</b> : Ruby add-on "xmlparser" (for editing documentation)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's 
+extensive help file at <a href=''>nil</a> 
+as well as the jMax docs.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Also Useful:<ul> <li><b>1</b> : Pentium-compatible CPU (for profiling)</li> <li><b>2</b> : CVS (for live update)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>NOTE: 
+There are several different incompatible libmpeg's from different authors; 
+I found four of them, some numbered 2 and 3 as if they were version numbers 
+(but it seems they are not). </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>NOTE: if one of your libraries are only available in .a format, you will not 
+be able to compile GridFlow. All libraries GridFlow uses must be in .so format. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td>&nbsp;</td></tr>
+ <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Installation_process_(for_jMax_2.5)"></a><h4>Installation process (for jMax 2.5)</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><ul> <li><b>1</b> : if you don't have jMax, get it at <a href=''> 
+	jMax's site </a>. 
+	If have only the RPM, you will need to install this: <a href=''> 
+		jmax headers </a> 
+	in whichever directory as long as you tell it to GridFlow's 
+	configurator. </li> <li><b>2</b> : Install Ruby 1.6.6 or any version released in 2002 or later (the 
+latest from the 1.7/1.8 series work and are faster)  You will need either <kbd>libruby.so</kbd> or <kbd>libruby.a</kbd> or <kbd>libruby-static.a</kbd> 
+If you're using an installer and you're missing those files, 
+then look for another package of a 
+similar name that may contain extra files (eg: "ruby-dev"). If you're 
+installing from source code you have to configure with the <kbd>--enable-shared</kbd> option. If you install into a system directory, you 
+have to recreate the library index using the <kbd>ldconfig</kbd> command too 
+(auto-installers normally do this for you). </li> <li><b>3</b> : Download the latest version of GridFlow 
+      and download the images pack (gridflow-images-0.5.tar.gz). 
+      The download site is <a href=''>artengine.ca</a>. 
+      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice), 
+      which will create a directory called 'gridflow'; 
+      unpack the images pack into that directory, which will create 
+	 another one called 'images'. </li> <li><b>4</b> : Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. You must have 
+  jMax's include files in <kbd>/usr/include</kbd> (or anywhere covered by <kbd>C_INCLUDE_PATH</kbd>). <kbd>./configure</kbd> will try to detect some optional 
+  components (libmpeg, pentium clock, etc). In the end, the files <kbd>config.make</kbd>, <kbd>config.h</kbd> and <kbd>Makefile</kbd> will be generated. </li> <li><b>5</b> : If you are not running Linux on a PentiumPro-compatible computer, you 
+  will have to specify a jMax Makefile using the <kbd>--jmax-arch</kbd> option. 
+  This is the one you use when installing jMax (or other jMax plugins other 
+  than GridFlow) manually. On MacOS 10, this would be <kbd>ppc-macosx</kbd>.</li> <li><b>6</b> : Stay in the same directory and do: <ul> <li><b>1</b> : <kbd>make</kbd></li> <li><b>2</b> : <kbd>make install</kbd></li> <li><b>3</b> : <kbd>make test</kbd></li> </ul> 
+      but if one stops because of "Error" you shouldn't try the next one. </li> <li><b>7</b> : Load <kbd>~/.jmaxrc</kbd> (text). Go to the <kbd>when start</kbd> section. 
+  Add a line that says <kbd>package require gridflow</kbd>. 
+  Add this line that says <kbd>dataDirectory </kbd><i>gridflow-directory</i><kbd>/images</kbd> </li> <li><b>8</b> : (Re)start jMax.</li> </ul></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Note: you can do <kbd>./configure --help</kbd> to get a list of supported 
+  options. You can use them to ignore the presence of troublesome libraries 
+  and select debugging level.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>--use-compiler <i>compiler</i> normally would be one of: <kbd>g++ g++-2.95 g++-3.2 g++-3.3</kbd>. 
+Do not use something with <kbd>gcc</kbd> in the name, as it results in <kbd>undefined symbol</kbd> problems. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td>&nbsp;</td></tr>
+ <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Installation_process_(with_PureData_0.35_and_compatible)"></a><h4>Installation process (with PureData 0.35 and compatible)</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><ul> <li><b>1</b> : make sure <kbd>m_pd.h</kbd> is installed and can be seen by the compiler. 
+you may have to change the C_INCLUDE_PATH environment variable.</li> <li><b>2</b> : go in GridFlow's source directory.</li> <li><b>3</b> : run <kbd>./configure</kbd></li> <li><b>4</b> : run <kbd>make</kbd></li> <li><b>5</b> : run <kbd>make install</kbd></li> <li><b>6</b> : run <kbd>make test</kbd></li> <li><b>7</b> : run pd with the <kbd>-path</kbd> to the extras directory and <kbd>-lib 
+gridflow</kbd>, or put those options in your <kbd>~/.pdrc</kbd> file. (this part is 
+essentially the same as GEM's and PDP's)</li> </ul></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td>&nbsp;</td></tr>
+ <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Installation_process_(without_jMax)"></a><h4>Installation process (without jMax)</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><ul><li><b>1</b> :  
+	If you don't have jMax installed it won't be detected. Installation 
+	will proceed normally except that the Ruby-for-jMax bridge won't be 
+	installed. Try running 'make test'. Look at 'tests/test.rb' for 
+	an example of how you may use GridFlow without jMax. </li></ul></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td>&nbsp;</td></tr>
+ <td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"> 
+<p><font size="-1">
+GridFlow 0.7.3 Documentation<br>
+by Mathieu Bouchard
+<a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
+and<br>
+Alexandre Castonguay
+<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
+</font></p>
+</td></tr></table></body></html>
+
+

@@ -1,0 +1,52 @@
+#N canvas 247 296 848 397 10;
+#X obj 28 83 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+-1;
+#X obj 19 100 @in;
+#X obj 19 366 @out;
+#X msg 44 345 open x11 here;
+#X msg 19 64 open jpeg file /home/uix/planet.jpg;
+#X obj 19 271 @contrast;
+#X text 14 15 @contrast;
+#X obj 44 324 loadbang;
+#X obj 58 101 metro 100;
+#X obj 19 45 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
+;
+#X obj 19 125 @store;
+#X obj 138 131 hsl 128 15 0 256 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 0 1;
+#X obj 139 197 hsl 128 15 0 256 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 0 1;
+#X text 85 15 adjusts the intensity in an image. resulting values outside
+0-255 are automatically clipped.;
+#X text 277 199 master contrast;
+#X text 273 135 secondary contrast;
+#X floatatom 48 232 5 0 0 0 - - -;
+#X floatatom 77 252 5 0 0 0 - - -;
+#X text 416 135 makes the incoming black correspond to a certain fraction
+between output black and the master contrast value. no effect is 256
+this is also the default.;
+#X text 417 199 makes the incoming white correspond to a certain fraction
+between output black and output white. no effect is 256 this is also
+the default.;
+#X msg 148 345 close;
+#X text 765 12 gridflow;
+#X text 308 349 see also:;
+#X obj 379 353 @convolve;
+#X obj 524 353 @solarize;
+#X obj 593 353 @layer;
+#X obj 448 353 @posterize;
+#X connect 0 0 1 0;
+#X connect 1 0 10 1;
+#X connect 3 0 2 0;
+#X connect 4 0 1 0;
+#X connect 4 0 0 0;
+#X connect 5 0 2 0;
+#X connect 7 0 3 0;
+#X connect 8 0 10 0;
+#X connect 9 0 8 0;
+#X connect 10 0 5 0;
+#X connect 11 0 16 0;
+#X connect 12 0 17 0;
+#X connect 16 0 5 1;
+#X connect 17 0 5 2;
+#X connect 20 0 2 0;
