@@ -1,0 +1,17 @@
+include ../config.make
+
+all:
+	(cd src; $(MAKE) -k all)
+.PHONY: all
+
+clean:
+	(cd src; $(MAKE) clean)
+.PHONY: clean
+
+install:
+	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt
+	( \
+		cd lib/$(ARCH)/opt ; \
+		$(INSTALL_LIB) lib$(PNAME).so $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt/lib$(PNAME).so ;\
+	)
+.PHONY: install

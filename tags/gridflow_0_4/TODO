@@ -1,0 +1,146 @@
+/* $Id$ */
+
+"!" is planned for "real soon now"
+
+Distribution
+[ ] send mail about name change
+[ ] open anonymous cvs
+[ ] rearrange both web sites
+[ ] prepare gridflow-images-0.4
+
+Installation
+[ ] add --fast switch to turn  on all optimizations
+[ ] add --slow switch to turn off all optimizations
+[ ] add --no-profiler and non-pentium autodetect
+
+Documentation / Help / HelpScreenshot Update
+[x| | ] @in, @video_in_file
+[x| | ] @out, @video_out_file, @video_out
+[x| | ] @scale_by
+[x| | ] @import, @export, @redim
+[x| | ] @store, @convolve
+[x| | ] @, @!
+[x| | ] @fold, @inner, @outer
+[x| | ] @for, @dim
+[x| | ] @print, @global
+[x| | ] @two, @three, @four
+[x| | ] @contrast, @posterize
+[x| | ] @identity_transform, @spread, @scale_to
+[x| | ] format ppm
+[x| | ] format targa
+[x| | ] format videodev
+[x| | ] format x11
+[x| | ] format grid
+
+Documentation
+[!] project_policy.xml
+[ ] validate samples/outside
+[ ] specify policy for <sample>, <icon>, etc.
+[ ] add credits
+[ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
+[ ] document internals
+[ ] add explanation of gridflow vs videodsp
+[ ] things you type verbatim are all in KBD blocks
+[ ] placeholders for your own values are all in I blocks
+[ ] find a good XML editor
+[ ] document use of [route grid_end], [route grid_begin]
+[ ] document our own release procedures, how our CVS works
+[ ] document how to report bugs, basic troubleshooting
+[ ] improve protocol description
+[ ] ascii conventions: [foo] vs "foo", etc.
+[ ] document asymptotic cpu+memory usage
+[ ] document gridflow-for-C
+[ ] scan for unused/useless images
+
+General
+[ ] make FREE() handle #delete as possible
+[ ] better error handling
+[ ] @print
+[x] how can I write unit tests or contracts?
+[ ] MMX memcpy() ?
+[ ] runtime configurable packet_length
+
+Computation Objects
+[ ] @cartprod (?), @slice (@splice ?)
+[ ] black option in @store (?)
+[!] @export_list
+[ ] @import~, @export~, @import*, @export*
+[ ] see APL/J/NArray/PDL reference
+[ ] @queue, as a replacement for double-@store feedback, and such. (?)
+[ ] @matrix_inverse, @matrix_solve
+[ ] @transpose (dimension swapping and/or index reversing)
+[ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
+	will replace @two, @three, @four.
+
+Effects
+[!] overlay using alpha channel
+[ ] pinch
+[ ] pixelize, despeckle
+[ ] hue change
+[ ] abyss effect
+[ ] image-sur-image
+[ ] n-frame delaying
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
+[ ] HSL <-> HSV <-> RGB <-> YUV
+[ ] blinds, 
+[ ] split channels, join channels
+[ ] see gimp for ideas
+[ ] there's a way to double (?) the speed of the cross-fade.
+	try interleaving the data and using [@inner]
+
+Structure & Protocol
+[ ] change the protocol completely:
+	not based on messages, but rather a push/pull combination,
+	add GridStream objects, allow them to be passed in other
+	messages; etc... (?!?)
+[ ] unary ops: sq
+[ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+
+Input/Output
+[ ] in-place editing (rw mode)
+[ ] implement byte-order support in BitPacking
+[ ] add Hermes support
+[ ] add messages "load", "save" as open,bang,close combos.
+[x] add NTSC<->PAL option
+[ ] allow to select tv channels (this is "freq")
+[ ] fix RGB<->BGR<->??? palette issues
+[!] should disable x11 shared memory on remote displays.
+[!] arguments to @in,@out could be a auto-open.
+
+File Formats
+[!] Targa write support
+[ ] JPEG support
+[!] PPM P3    support
+[!] PGM P2,P5 support
+[ ] PBM P1,P4 support
+[ ] XBM support
+[ ] XPM support
+[ ] PNG support (and register ourselves in libpng.org's app list)
+[ ] QuickTime support
+[!] MPEG support
+[x] TCP server
+[!] VDSP support
+[!] multi-image (seq) (createable by cat, ar, tar or zip)
+[ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
+[!] rewinding file
+[!] FileFormat base class + inheritance + pre-written open() code, etc
+
+Java/Swing
+[ ] color picker
+[ ] gridbox (akin to intbox) or grid edition dialog, etc.
+[ ] embedded display
+[ ] vector slider (n parallel sliders in one, Dim(n))
+[ ] 2d slider
+[ ] radial slider (angle chooser)
+
+UnitTesting/Bugs
+[ ] @out causes delayed crash when closing its associated window
+[ ] distinguish "mod" and "%" properly (re: rounding)
+[ ] leak in all FileFormat#close
+[ ] add alloc-tracing to find all leaks
+[ ] TCP server socket busy even after kill
+[!] TCP server blocks fts on accept()
+[!] TCP connection blocks on read()
+
+Misc
+[ ] find out what channel the small cam goes on and why it isn't displaying.

@@ -1,0 +1,147 @@
+<html>
+<head>
+<title>GridFlow 0.4.0 - install</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="jmax.css" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<br>
+<table width="100%" border="0" cellspacing="5">
+  <tr><td colspan="4" bgcolor="#082069">
+	<img src="images/titre_gridflow.png" width="253" height="23"></td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="3" height="16">
+      <h4>GridFlow 0.4.0 - installation</h4>
+  </td></tr>
+
+  <tr> 
+    <td rowspan="3" width="12%">&nbsp;</td>
+    <td colspan="2" width="80%">&nbsp;</td>
+    <td rowspan="10" width="12%">&nbsp;</td>
+  </tr>
+
+  <tr>
+    <td width="50%">
+      <h5>Requirements </h5>
+      <p>i). jMax 2.5 (should work under jMax 2.4.12)<br>
+        ii). an X11 Display Server </p>
+      <p><font size="-1">note: you will need to have a version of jMax running,
+        for help on installing and compiling jMax, please see Christian Klippel's
+        extensive help file at <a href="http://www.mamalala.de">http://www.mamalala.de</a>
+        as well as the jMax docs.</font></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="56%">
+      <h5><br>
+        Installation process (for jMax 2.5)</h5>
+      <p>1. Untar the archive with
+	 	<kbd>tar -xvtf gridflow_current_version.tgz</kbd> in
+        your <kbd>packages</kbd> directory. This will create the gridflow directory and
+        place all the files within. </p>
+      <p>2. Run <kbd>./configure --jmax25</kbd> from the gridflow directory. That should
+        take care of adjusting the Makefiles to your current version and point
+        to the right header for fts. <br>
+      </p>
+      <p>Files changed by configure: <br>
+	<kbd>
+        gridflow/Makefile <br>
+        gridflow/c/Makefile <br>
+        gridflow/c/src/Makefile<br>
+        gridflow/c/src/config.h<br>
+        gridflow/c/src/Sources<br>
+        gridflow/config.make</kbd></p>
+
+
+      <p><br>
+        3. From the packages/gridflow directory, do this:</p>
+      <ul>
+        <li><kbd>make all ARCH=i686-linux</kbd></li>
+        <li><kbd>make install ARCH=i686-linux</kbd></li>
+      </ul>
+      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
+      </p>
+
+      <br>
+     <p>
+      4. Get the images for the examples from <a
+	 href="http://www.artengine.ca/jmax/gridflow/download">artengine.ca </a> or
+       <a href="http://hostname.2y.net/gridflow/download">hostname.2y.net</a> 
+	  Place the archive in /usr/local/jmax/packages/gridflow
+        (or the path of your choice) and untar with <kbd>tar -xvzf
+	   gridflow-images-0.4.tar.gz</kbd>.
+       </p>
+
+	<p>
+	5. Add <kbd>package require gridflow</kbd> within the <kbd>when start</kbd> section of
+        <kbd>~/.jmaxrc</kbd></p>
+      <p>6. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
+        <kbd>dataDirectory /usr/local/jmax/packages/gridflow/images</kbd> (or any
+        path to the directory where you will place the images).</p>
+      <p>7. Restart jMax. </p>
+      <p>&nbsp;</p>
+      <h5>Installation process (for jMax 2.4)</h5>
+      <p>1. Untar the archive with tar -xvtf gridflow_current_version.tgz in
+        your 'packages' directory. This will create the gridflow directory and
+        place all the files within. </p>
+      <p>2. Run './configure --jmax24' from the gridflow directory. That should
+        take care of adjusting the Makefiles to your current version and point
+        to the right header for fts. <br>
+      </p>
+         <p>Files changed by configure: <br><kbd>
+        gridflow/Makefile <br>
+        gridflow/c/Makefile <br>
+        gridflow/c/src/Makefile<br>
+        gridflow/c/src/config.h<br>
+        gridflow/c/src/Sources<br>
+        gridflow/config.make</kbd></p>
+
+      <p><br>
+        3. In file packages/Makefile change the <kbd>C_PACKAGES</kbd> list to
+	   include <kbd>gridflow</kbd>
+        (remove the old <kbd>video</kbd> directory if you upgrade).</p>
+      <p><br>
+        4. From the toplevel directory (above <kbd>packages</kbd>), do this:</p>
+      <ul>
+        <li><kbd>make all ARCH=i686-linux</kbd></li>
+        <li><kbd>make install ARCH=i686-linux</kbd></li>
+      </ul>
+      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
+      </p>
+      <p><br>
+         5. Get the images for the examples from <a
+	    href="http://www.artengine.ca/jmax/gridflow/download"> artengine.ca </a> or
+       <a href="http://hostname.2y.net/gridflow/download"> hostname.2y.net</a>.
+	  Place the archive in /usr/local/jmax/packages/gridflow
+        (or the path of your choice) and untar with <kbd>tar -xvzf
+	   gridflow-images-0.4.tar.gz</kbd>.
+
+       </p>
+
+       <p>6. Add <kbd>package require gridflow</kbd> within the <kbd>when start</kbd> section of
+        <kbd>~/.jmaxrc</kbd></p>
+        <p>7. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
+        <kbd>dataDirectory /usr/local/jmax/packages/gridflow/images</kbd> (or any
+        path to the directory where you will place the images).</p>
+      <p>8. Restart jMax. </p>
+
+    </td>
+  </tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="4">
+	<p><font size="-1">GridFlow 0.4.0 Documentation<br>
+        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+        and<br>
+        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
