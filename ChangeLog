@@ -5,19 +5,32 @@ cvspserver stream tcp nowait root /usr/bin/env - /usr/bin/cvs -f
 
 version 0.7.7 (head):
 
- * pd_examples/:
-    updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
-    added waves.pd, spectrogram.pd, photo_pianoroll.pd
-    added color_detect.pd (supersedes chroma_key.pd)
+ * updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
+ * updated feedback_fractal.pd (added morphing)
+ * added pd_examples/waves.pd, pd_examples/sand.pd
+ * added pd_examples/color_detect.pd (supersedes chroma_key.pd)
+ * added pd_examples/spectrogram.pd, pd_examples/photo_pianoroll.pd
+ * removed [rtmetro] (obsolete)
  * [@store]: added methods: put_at, reassign
+ * [pingpong]: added $1
  * fixed bugs in: [@camera_control]
  * [demux] renamed to [shunt] and extra optional arg added (for initial value)
  * new object classes:
    [range], [@mouse], [@pack], [@color], [bindpatcher]
+ * videodev: added method "get"
+ * [@out quartz] now works properly
+ * [@downscale_by smoothly] accepts any number of channels
+ * [@inner2] removed; instead use [@transpose] with [@inner]
+
+ * videodev: added option for queue length (PFOAC)
+ * detects dc1394, simd, ...
+ 
+=======
  * videodev: "transfer" message allows to change the queue's length
  * videodev: warning when "bang" message takes too long to process
  * removed [rtmetro] (obsolete)
 
+>>>>>>> 1.89
 version 0.7.6 (2004.03.22):
 
  * GridFlow runs on MacOS 10.2 (only with jMax 2.5)

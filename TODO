@@ -1,5 +1,24 @@
 /* $Id$ */
 
+ClaudiusMaximus reports that allocating a 197M grid causes a crash (turns out C++
+throws exception, can't allocate, signal ABRT)
+
+<alx2> matju: iSight on linux :
+http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
+<alx2> matju: apparently it needs something called 'coriander'...I'm checking into it
+<alx2> matju: the person who got it working mentions libdc1394
+<alx2> matju: ah coriander is a GUI for firewire
+<alx2> matju: on this page :
+http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
+<alx2> matju: I learn that the iSight is compliant with version 1.30 of IIDC
+<alx2> matju: the docs for coriander mention that the author needed to create a major and minor device for the camera.
+<alx2> matju: retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
+<alx2> matju: raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
+<matju> thanks
+<alx2> matju: any useful info?
+<matju> i'll see, doing something else at the moment
+<alx2> matju: having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
+
 -mfpmath=sse2
 
 --- make the development process more test-driven:
@@ -11,33 +30,15 @@
 <MiS> yes you can
 <MiS> and specify -helppath to add a path to help.  So selecting 'Help' in the pop-up on an abstraction will open a help fiel for that abstraction
 
-* notes on PPC RDTSC:
-<Ahruman> But remember, the speed of UpTime varies by machine anyway.
-AbsoluteToNanoseconds() is a Good Thing
-<mmaddin> "The PowerPC has a similar instruction. QuickTime exposes a massaged version
-<mmaddin> of it using the Microseconds() routine."
-http://www.simdtech.org/apps/group_public/email/altivec/msg01956.html
-<arwyn> on OS X you can use time = mach_absolute_time(),
-and mach_timebase_info(&info), then ns = (time * info.numer) / info.denom;
-<matju> arwyn: what's the header to include for that?
-<arwyn> and the timebase_info is constant, so you really only need to query it at app startup and then just treat them as constants
-<arwyn> #include <mach/mach_time.h>
-<arwyn> #include <mach/mach.h>
-<matju> cool
-<arwyn> then whenever I want ns accuracy, I just (double)mach_absolute_time * gTimeBaseToNS
-<arwyn> that invovles an int->double conversion, and then another double->int conserver on the way back... but not doing having to do the division (or 64bit math on a 32bit machine) more than makes up for that several times over
-<arwyn> and the precision of a double is enough that you won't loose any accuracy
-<arwyn> least not until we have buses that are several orders of magnitude faster
-* FDj *yawns* and *sneezes*
-<arwyn> and even then, you'll still get ns resolutions out of it
-
-for 0.7.7: we're switching to PD for abstractions, instead of Ruby / jMax. Or something.
-Make a new bunch of them. Add a video latency patch (in examples)
-consider including [mysql] [renamefile] [ls] [shell]
-abstractions shouldn't use [s]/[r] without $0-.
-new policy: minimum supported gcc version: 3.0
-
-GF with Pd 0.36 : undefined pd_newest
+for 0.7.7:
+[ ] we're switching to PD for abstractions, instead of Ruby.
+    Make a new bunch of them. Add a video latency patch (in examples)
+[ ] consider including [mysql] [renamefile] [ls] [shell]
+[ ] abstractions shouldn't use [s]/[r] without $0-.
+[ ] new policy: minimum supported gcc version: 3.0
+[ ] [#reverse]
+[ ] [#change]
+[ ] GF with Pd 0.36 : undefined pd_newest
 
 for 0.7.8: ?
 
@@ -45,35 +46,51 @@ for 0.7.9: ?
 
 for 0.8.0:
 
- * added @matrix_solve, @slice
+ * added #matrix_solve, #slice
  * Copy-on-Write (COW)
  * Numop API exposed to Ruby
  * < 10 bugs in buglist
  * Fully hyperlinked manual
  * internals documentation
  * internal grid protocol redesigned
- * [@export~]
+ * [#export~]
  * raise limit of in/outlets from 10 to 100 or unlimited.
+
+for 0.8.1:
+
+ * wrap Pd API completely.
+ * drop the :whatever part.
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
-pick a number: [133]
+pick a number: [141]
 
-[132] <MiS> @redim crashes when given negative sizes
-[130] numop ** can freeze GF
+[140] is [@convolve] actually anti-convolution?
+	that is, convolves with a mirror image of the convolution matrix.
+[139] [#peephole]
+	<mis> matju: BUG-ALERT - peephole does not delete until a screen refresh
+	<mis> matju: I was just about to do that
+	<mis> matju: it works... almost
+	<mis> matju: if you try to move the GOPed abstraction the peepholes don't move along
+	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not move up or to the left of the low right corner of the peephole it contains.  Instead it will resize itself as you move it around.  
+[138] [#peephole] crash
+[137] [gf] peeperr: #<ArgumentError: ERROR: shmget failed: No space left on device>
+[136] fix C_INCLUDE_PATH vs CPLUS_INCLUDE_PATH
+[135] document GridFlow.data_path
+[134] #import with zero size crashes?
+[133] numop ** can freeze GF
 [129] [display] should be translated to [messageprepend set] -> ""
 [128] loadbang-messages (comma) don't get translated to .pd ??
 [127] $(bindir) is not defined in Ruby 1.6
-[123] doesn't compile with old versions of usb.h
-[121] @downscale_by still craps on RGBA images?
+[121] #downscale_by still craps on RGBA images?
 [120] osx: -bundle_loader stuff fails if Pd is not in $PATH
 [119] osx: SDL doesn't work here
-[118] error messages can be unclear (eg. file not open... is it @in's, or @out's?)
-[117] osx: [@store] crash instead of raising
-[115] x11: dual display does not work
+[118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
+[117] osx: [#store] crash instead of raising
+[115] x11: dual display does not work (screens .0 vs .1; but xinerama works fine)
 [112] Pt<T>: some casts aren't done properly
 [111] images/movies/gt.mov (penguin in raw codec) still doesn't load (why? 16 bpp?)
-[109] @import ugly bug (what was it?)
+[109] #import ugly bug (what was it?)
 [108] encoding quicktime without uint8: does it really work?
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
@@ -90,15 +107,12 @@ pick a number: [133]
 [087] maybe write a script that automatically gets the backtrace from GDB.
 [086] I need better aborting of grids right fucking now.
 [078] "unsupported codec" bogus errors.
-[072] [sl] in .pd patches should actually be a slider.
-[073] static libraries don't link with gridflow.so
 [097] bin/backtrace does not detect scripts
-[004] bug in automatic type conversion (eg: @in quicktime -> ...)
+[004] bug in automatic type conversion (eg: #in quicktime -> ...)
 [005] can't open "": Success; loading a nonquicktime file using quicktime
-[006] @in#open problem with String argument.
+[006] #in#open problem with String argument.
 [010] separate bridge makefiles from other makefiles!!!
 [011] research bugs in nonblock IO with Ruby. (eg. serial port)
-[014] recursive message-loop not detected.
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
 [030] FormatGrid: not properly tested (crashes sometimes)
@@ -112,7 +126,6 @@ pick a number: [133]
 [040] GRID_FINISH triggered while backstore ???
 
 Bugs (Low Priority)
-[016] @for int64 fails on machine "lcd".
 [079] can trap segfaults in codecs of libquicktime.
 [090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
 [076] EINTR not handled properly in a lot of code?
@@ -125,13 +138,10 @@ Bugs (Low Priority)
 [050] BitPacking has trouble with masks that extend beyond int25be
 [051] remove the crap given by -w of ruby
 [054] it's possible to crash by sending data in two inlets of a same object at once
-[056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
 [059] mess with options in format grid
 [060] look for "!@#$" in source
-[029] @join on small chunks is way too slow
+[029] #join on small chunks is way too slow
 [009] T_DATA #dup #clone ???
-[069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
-[130] jmax2pd: inline expressions like (1000/29.97) don't work
 [131] "open x11 10.0.0.5:0.1" -> ERROR: opening X11 display: Success
 
 ===================
@@ -214,7 +224,7 @@ Architecture
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
-[ ] add reflection (@global#classes, @global#methods, ...)
+[ ] add reflection (#global:classes, #global:methods, ...)
 [ ] use C++ destructor for C++ fields...
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
@@ -240,13 +250,12 @@ Architecture
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] add a deprecation system
-[ ] is "pluglet" a good common word for inlet and outlet? (or "port")
 [ ] interpret nested lists as n-dimensional.
 
 Operators
 [ ] User-defined operators; compound operators... e.g.
-	[@ {{* 7} + {>> 3}}]
-[ ] n-ary operators... make [@] variable-inlet
+	[# {{* 7} + {>> 3}}]
+[ ] n-ary operators... make [#] variable-inlet
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
 [ ] op2: abs- (absolute difference), avg (average), erf, rol, ror, weight
 [ ] remove fold/scan for ops for which it makes no sense.
@@ -259,54 +268,54 @@ Bridge
 [ ] GFBridge object visible from Ruby
 
 Computation Objects
-[ ] @counter (similar to @for)
-[ ] @inner inlet 2 -> 1, and other incompatibilities i wanted to introduce
-[ ] @for "step" argument should have default {1...}
-[ ] zero option in @convolve (?)
-[ ] @convolve2 (simpler)
-[ ] @convolve rewritten as combination of @convolve2+@border ?
-[ ] @convolve(2): should allow n-D convolution
-[ ] @complex_sq is backwards
-[ ] @store: option zero (?)
-[ ] @import~, @export~
-[ ] @fold, @scan: option reverse (right-to-left)
-[ ] @,@join: option swap (?)
-[ ] @matrix_inverse, @matrix_solve
-[ ] @reverse (on given dimension number)
-[ ] @timeline (or rtmetro): sequencing of events from grid
-[ ] @replace_if, @random_select, @markov_chain, @unpack, @sort, @slice, @splice
-[ ] @polygon_perimeter, @polygon_area, @draw_polygon smoothly
-[ ] fuzzy @store (interpolate)
+[ ] #counter (similar to #for)
+[ ] #inner inlet 2 -> 1, and other incompatibilities i wanted to introduce
+[ ] #for "step" argument should have default {1...}
+[ ] zero option in #convolve (?)
+[ ] #convolve2 (simpler)
+[ ] #convolve rewritten as combination of #convolve2+#border ?
+[ ] #convolve(2): should allow n-D convolution
+[ ] #complex_sq is backwards
+[ ] #store: option zero (?)
+[ ] #import~, #export~
+[ ] #fold, #scan: option reverse (right-to-left)
+[ ] #,#join: option swap (?)
+[ ] #matrix_inverse, #matrix_solve
+[ ] #reverse (on given dimension number)
+[ ] #timeline (or rtmetro): sequencing of events from grid
+[ ] #replace_if, #random_select, #markov_chain, #unpack, #sort, #slice, #splice
+[ ] #polygon_perimeter, #polygon_area, #draw_polygon smoothly
+[ ] fuzzy #store (interpolate)
 [ ] write a complete benchmark script
 [ ] spatial biquads (ask Tom)
 [ ] string operations to compensate for the feebleness of PD in that area.
-	this includes [@sprintf].
-[ ] @pack should become type-conscious (cast option, like @import)
+	this includes [#sprintf].
+[ ] #pack should become type-conscious (cast option, like #import)
 --- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
 
 Effects
-[ ] @mosaic
-[ ] @gaussian_blur, @sobel, @centroid, @pixelize, @despeckle (median)
-[ ] @dither, @draw_lines, @draw_points, @fire, @border, @queue
-[ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
-        with fuzzy flag; (don't call it @chroma_key though)
-	maybe @mask...
+[ ] #mosaic
+[ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
+[ ] #dither, #draw_lines, #draw_points, #fire, #border, #queue
+[ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
+        with fuzzy flag; (don't call it #chroma_key though)
+	maybe #mask...
 [ ] turtle (logo style)
 [ ] effectv
 [ ] create templates for usage patterns
 [ ] see gimp for ideas
 [ ] kaleidoscopes
 [ ] FFTW
-[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (@scale_by smoothly?)
-[ ] @scale_by/@downscale_by fractional values
+[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
+[ ] #scale_by/#downscale_by fractional values
 [ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
-[ ] @daltonism
+[ ] #daltonism
 
 Input/Output
 [ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
 [ ] videodev: is it possible to reach 60 fps ?
-[ ] a @store that is persistent (saved in .pd) ?
+[ ] a #store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format (?)
@@ -323,8 +332,7 @@ Input/Output
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
 [ ] shell object?
-[ ] @import, 'grid tcp': option: sudden vs gradual transmission through
-	gridflow.
+[ ] #import, 'grid tcp': option: sudden vs gradual transmission through gridflow.
 [ ] HPGL, [unixtime]
 [ ] x11: support dual heads
 [ ] [parallel_port], [serial_port], [usb_mouse]
@@ -356,7 +364,7 @@ User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] peephole:
-    [x] auto-@scale_by for very small images
+    [x] auto-#scale_by for very small images
     [ ] works with Pd
     [ ] works without x11 (for osx...)
     [ ] appear _over_ pulldowns ? (and popups, even?)
