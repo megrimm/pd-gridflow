@@ -22,9 +22,8 @@
 */
 
 #include <stdlib.h>
-
-#include "grid.h"
 #include <math.h>
+#include "grid.h"
 
 /* **************************************************************** */
 /*
@@ -100,9 +99,9 @@ struct GridExport {
 	GridObject_FIELDS;
 };
 
-void GridExport_0_begin(GridInlet *$) { /* nothing to do */ }
+GRID_BEGIN(GridExport,0) { /* nothing to do */ }
 
-void GridExport_0_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
 		fts_atom_t a[1];
@@ -162,7 +161,7 @@ struct GridStore {
 	int bufn;
 };
 
-void GridStore_0_begin(GridInlet *$) {
+GRID_BEGIN(GridStore,0) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int na = Dim_count($->dim);
 	int nb;
@@ -205,7 +204,7 @@ err:
 	GridInlet_abort($);
 }
 
-void GridStore_0_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridStore,0) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	GridOutlet *out = parent->out[0];
 	int na = Dim_count($->dim);
@@ -243,7 +242,7 @@ void GridStore_0_flow(GridInlet *$, int n, const Number *data) {
 	GridOutlet_flush(parent->out[0]);
 }
 
-void GridStore_1_begin(GridInlet *$) {
+GRID_BEGIN(GridStore,1) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
@@ -254,7 +253,7 @@ void GridStore_1_begin(GridInlet *$) {
 	parent->data = NEW2(Number,length);
 }
 
-void GridStore_1_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridStore,1) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(Number)*n);
@@ -401,13 +400,13 @@ struct GridOp2 {
 	Dim *dim;
 };
 
-void GridOp2_0_begin(GridInlet *$) {
+GRID_BEGIN(GridOp2,0) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	GridOutlet_begin(parent->out[0],$->dim);
 	$->dex = 0;
 }
 
-void GridOp2_0_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridOp2,0) {
 	int i;
 	Number *data2 = NEW2(Number,n);
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
@@ -431,7 +430,7 @@ void GridOp2_0_flow(GridInlet *$, int n, const Number *data) {
 */
 }
 
-void GridOp2_1_begin(GridInlet *$) {
+GRID_BEGIN(GridOp2,1) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
@@ -442,7 +441,7 @@ void GridOp2_1_begin(GridInlet *$) {
 	parent->data = NEW2(Number,length);
 }
 
-void GridOp2_1_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridOp2,1) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
@@ -533,7 +532,7 @@ struct GridFold {
 */
 };
 
-void GridFold_0_begin(GridInlet *$) {
+GRID_BEGIN(GridFold,0) {
 	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int n = Dim_count($->dim);
 	Dim *foo;
@@ -544,7 +543,7 @@ err:
 	GridInlet_abort($);
 }
 
-void GridFold_0_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(GridFold,0) {
 	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int wrap = Dim_get($->dim,Dim_count($->dim)-1);
 	int i;
