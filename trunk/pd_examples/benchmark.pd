@@ -1,48 +1,59 @@
 #N canvas 547 247 472 473 10;
-#X obj 70 274 @contrast ;
-#X obj 92 236 @store ;
-#X obj 291 89 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
-#X obj 256 213 hsl 164 23 0 384 0 0 empty empty empty -2 -6 0 8 -262144 -1 -1 0 1;
-#X obj 71 102 toggle ;
+#X obj 70 274 @contrast;
+#X obj 92 236 @store;
+#X obj 291 89 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 256 213 hsl 164 23 0 384 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 11291 1;
+#X obj 71 102 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
 #X obj 8 123 demux 2;
 #X text 194 119 step 1;
-#X obj 83 173 @in ;
+#X obj 83 173 @in;
 #X obj 313 161 % 257;
 #X obj 268 161 % 257;
-#X obj 313 140 + ;
-#X obj 256 253 hsl 164 24 0 384 0 0 empty empty empty -2 -6 0 8 -262144 -1 -1 0 1;
+#X obj 313 140 +;
+#X obj 256 253 hsl 164 24 0 384 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 5985 1;
 #X obj 21 211 demux 2;
-#X floatatom 201 256 5 0 0 0 - - -;;
+#X floatatom 201 256 5 0 0 0 - - -;
 #X obj 70 389 fork 2;
-#X text 206 301 those are three variants of contrast. the third one is faster.;
-#X obj 106 382 toggle ;
-#X obj 147 33 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X text 206 301 those are three variants of contrast. the third one
+is faster.;
+#X obj 106 382 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 147 33 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
 #X text 356 236 ||;
 #X obj 313 182 + 128;
-#X obj 114 116 loadbang ;
+#X obj 114 116 loadbang;
 #X obj 179 75 demux 2;
-#X obj 77 79 fork ;
-#X obj 83 148 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X obj 77 79 fork;
+#X obj 83 148 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
 #X msg 313 119 71;
-#X obj 77 3 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X obj 77 3 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1
+;
 #X msg 268 121 42;
 #X obj 70 451 @out window;
-#X obj 21 266 fork ;
-#X obj 227 52 toggle ;
-#N canvas 698 308 189 327 10;
-#X obj 105 197 inv+ ;
+#X obj 21 266 fork;
+#X obj 227 52 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#N canvas 698 308 189 327 @contrast 0;
+#X obj 105 197 inv+;
 #X obj 24 222 @ *>>8 ( int16 # 0 );
 #X obj 109 3 inlet;
 #X obj 24 268 @ +;
 #X obj 24 312 @ max ( int16 # 0 );
 #X obj 114 28 @cast int16;
 #X obj 24 290 @ min ( int16 # 255 );
-#X obj 72 103 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X obj 72 103 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
 #X obj 35 96 inlet;
-#X obj 109 57 fork ;
+#X obj 109 57 fork;
 #X obj 56 175 @cast s;
 #X obj 95 244 @cast s;
-#X obj 72 127 * ;
+#X obj 72 127 *;
 #X obj 72 147 >> 8;
 #X obj 24 335 outlet 0;
 #X obj 24 147 inlet;
@@ -65,17 +76,18 @@
 #X connect 13 0 10 0;
 #X connect 15 0 1 0;
 #X restore 100 331 pd @contrast 3;
-#X obj 8 9 toggle ;
+#X obj 8 9 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1;
 #X text 420 207 reverse whiteness;
-#X obj 78 50 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X obj 78 50 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
 #X text 313 236 <100%;
 #X obj 268 181 + 128;
 #X text 421 256 intensity;
-#X msg 107 139 open teapot.png  \, cast int16;
-#X obj 72 495 print ;
+#X msg 107 139 open teapot.png \, cast int16;
+#X obj 72 495 print;
 #X obj 77 28 for 0 101 1;
 #X text 168 33 step 2;
-#N canvas 1 60 156 240 10;
+#N canvas 1 60 156 240 @contrast 0;
 #X obj 9 8 inlet;
 #X obj 9 32 @ inv+ 255;
 #X obj 9 97 @ inv+ 255;
@@ -102,15 +114,15 @@
 #X restore 87 301 pd @contrast 2;
 #X msg 106 406 option timelog \$1;
 #X text 371 236 >100%;
-#X obj 268 141 + ;
+#X obj 268 141 +;
 #X obj 71 473 fps detailed;
+#X floatatom 201 216 5 0 0 0 - - -;
 #X obj 8 34 metro 1;
-#X floatatom 201 216 5 0 0 0 - - -;;
 #X connect 0 0 14 0;
 #X connect 1 0 28 0;
 #X connect 2 0 26 0;
 #X connect 2 0 24 0;
-#X connect 3 0 47 0;
+#X connect 3 0 46 0;
 #X connect 4 0 12 1;
 #X connect 4 0 5 1;
 #X connect 5 0 23 0;
@@ -143,7 +155,7 @@
 #X connect 28 1 30 0;
 #X connect 29 0 21 1;
 #X connect 30 0 14 0;
-#X connect 31 0 46 0;
+#X connect 31 0 47 0;
 #X connect 33 0 22 0;
 #X connect 35 0 3 0;
 #X connect 37 0 7 0;
@@ -152,7 +164,7 @@
 #X connect 42 0 27 0;
 #X connect 44 0 9 0;
 #X connect 45 0 38 0;
-#X connect 46 0 22 0;
-#X connect 47 0 0 1;
-#X connect 47 0 41 1;
-#X connect 47 0 30 1;
+#X connect 46 0 0 1;
+#X connect 46 0 41 1;
+#X connect 46 0 30 1;
+#X connect 47 0 22 0;
