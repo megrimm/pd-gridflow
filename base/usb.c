@@ -219,85 +219,148 @@ static Ruby usb_scan_bus (usb_bus *bus) {
 	Ruby rbus = rb_ary_new();
 	for (struct usb_device *dev=bus->devices; dev; dev=dev->next) {
 		struct usb_device_descriptor *devd = &dev->descriptor;
+		Ruby config = rb_ary_new();
+		for (int i=0; i<devd->bNumConfigurations; i++) {
+			rb_ary_push(config,usb_get_config(&dev->config[i]));
+		}
 #define MANGLE(X) INT2NUM(devd->X)
 		rb_ary_push(rbus, rb_funcall(rb_const_get(cUSB,SI(Device)),SI(new),14+3,
 			USB_DEVICE_DESCRIPTOR(MANGLE,COMMA),
 			rb_str_new2(dev->filename),
 			PTR2FIX(dev),
-			usb_get_config(dev->config)));
+			config));
 #undef MANGLE
 	}
 	return rbus;
 }
 
-/*
-class USB {
+\class USB < Object
+class USB : public Object {
+	usb_dev_handle *h;
 public:
+	\decl void initialize (Ruby dev);
+	\decl int close ();
+	\decl int bulk_write (int ep, String s, int timeout);
+	\decl int bulk_read (int ep, String s, int timeout);
+	\decl int claim_interface(int interface);
+	\decl int release_interface(int interface);
+	\decl int set_configuration(int configuration);
+	\decl int set_altinterface(int alternate);
+	\decl int control_msg(int requesttype, int request, int value, int index, String s, int timeout);
+	\decl int resetep(int ep);
+	\decl int clear_halt(int ep);
+	\decl int reset();
+	//\decl int get_string(int index, int langid, String s);
+	//\decl int get_string_simple(int index, String s);
 };
-*/
 
-Ruby USB_initialize (Ruby self, Ruby dev) {
+\def void initialize (Ruby dev) {
 	Ruby ptr = rb_funcall(dev,SI(ptr),0);
-	rb_ivar_set(self, SI(@dev), ptr);
-	usb_dev_handle *h = usb_open(FIX2PTR(struct usb_device,ptr));
+	rb_ivar_set(rself, SI(@dev), ptr);
+	h = usb_open(FIX2PTR(struct usb_device,ptr));
 	if (!h) RAISE("usb_open returned null handle");
-	rb_ivar_set(self, SI(@handle), PTR2FIX(h));
-	return Qnil;
 }
 
-Ruby USB_close (Ruby self) {
-	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+\def int close () {
 	if (!h) RAISE("USB closed");
 	int r = usb_close(h);
-	rb_ivar_set(self, SI(@handle), PTR2FIX(0));
-	return INT2NUM(r);
+	h=0;
+	return r;
 }
 
-Ruby USB_bulk_write (Ruby self, Ruby ep, Ruby s, Ruby timeout) {
-	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+\def int bulk_write (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
-	int r = usb_bulk_write(h, INT(ep), rb_str_ptr(s), rb_str_len(s), INT(timeout));
-	return INT2NUM(r);
+	int r = usb_bulk_write(h, ep, rb_str_ptr(s), rb_str_len(s), timeout);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
 }
 
-Ruby USB_bulk_read (Ruby self, Ruby ep, Ruby s, Ruby timeout) {
-	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+\def int bulk_read (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
-	int r = usb_bulk_read(h, INT(ep), rb_str_ptr(s), rb_str_len(s), INT(timeout));
-	return INT2NUM(r);
+	int r = usb_bulk_read(h, ep, rb_str_ptr(s), rb_str_len(s), timeout);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
 }
+
+\def int claim_interface(int interface) {
+	int r = usb_claim_interface(h, interface);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int release_interface(int interface) {
+	int r = usb_release_interface(h, interface);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int set_configuration(int configuration) {
+	int r = usb_set_configuration(h, configuration);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int set_altinterface(int alternate) {
+	int r = usb_set_altinterface(h, alternate);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int control_msg(int requesttype, int request, int value, int index, String s, int timeout) {
+	int r = usb_control_msg(h, requesttype, request, value, index, rb_str_ptr(s), rb_str_len(s), timeout);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int resetep(int ep) {
+	int r = usb_resetep(h, ep);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int clear_halt(int ep) {
+	int r = usb_clear_halt(h, ep);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+\def int reset() {
+	int r = usb_reset(h);
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}
+
+/*\def int get_string(int index, int langid, String s) {
+	int r = usb_get_string(h, index, langid, rb_str_ptr(s), rb_str_len(s));
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}*/
+
+/*\def int get_string_simple(int index, String s) {
+	int r = usb_get_string_simple(h, index, rb_str_ptr(s), rb_str_len(s));
+	if (r<0) RAISE("%s", usb_strerror()); else return r;
+}*/
 
 // not handled yet:
 // struct usb_string_descriptor
 // struct usb_hid_descriptor
-/*
-int usb_control_msg(USB dev, int requesttype, int request, int value,
-	int index, char *bytes, int size, int timeout);
-int usb_set_configuration(USB dev, int configuration);
-int usb_claim_interface(USB dev, int interface);
-int usb_release_interface(USB dev, int interface);
-int usb_set_altinterface(USB dev, int alternate);
-int usb_resetep(USB dev, unsigned int ep);
-int usb_clear_halt(USB dev, unsigned int ep);
-int usb_reset(USB dev);
-int usb_get_string(USB dev, int index, int langid, char *buf, size_t buflen);
-int usb_get_string_simple(USB dev, int index, char *buf, size_t buflen);
-char *usb_strerror();
-void usb_init();
-void usb_set_debug(int level);
-int usb_find_busses();
-int usb_find_devices();
-Device usb_device(USB dev);
-*/
+// void usb_set_debug(int level);
+// Device usb_device(USB dev);
+// get_string and get_string_simple (not present in libusb 0.1.4)
 
+GRCLASS(USB,LIST(),
+	\grdecl
+){}
 
+\end class USB
+
+static Ruby USB_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
+	USB *self = new USB();
+	Ruby rself = Data_Wrap_Struct(qlass, 0, Object_free, self);
+	self->rself = rself;
+	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
+	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) (!@#$ WHAT??) */
+	rb_funcall2(rself,SI(initialize),argc,argv);
+	return rself;
+}
+
+#define SDEF(_class_,_name_,_argc_) \
+	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 void startup_usb () {
 	cUSB = rb_define_class_under(mGridFlow, "USB", rb_cObject);
 	//rb_define_singleton_method(cUSB, "new", USB_new, 1);
-	rb_define_method(cUSB, "initialize", (RMethod)USB_initialize, 1);
-	rb_define_method(cUSB, "close", (RMethod)USB_close, 0);
-	rb_define_method(cUSB, "bulk_write", (RMethod)USB_bulk_write, 3);
-	rb_define_method(cUSB, "buik_read", (RMethod)USB_bulk_read, 3);
+
+	SDEF(USB,new,-1);
+	define_many_methods(cUSB, ciUSB.methodsn, ciUSB.methods);
 #define MANGLE(X) SYM(X)
 	rb_const_set(cUSB, SI(Device), rb_funcall(EVAL("Struct"),SI(new),14+3,
 		USB_DEVICE_DESCRIPTOR(MANGLE,COMMA), SYM(filename), SYM(ptr), SYM(config)));
