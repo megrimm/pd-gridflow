@@ -33,6 +33,17 @@ LOG.puts "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
 LOG.puts "-"*64
 
+puts
+if not File.exist?("./configure")
+	puts "Run me from the right directory please."
+	exit 1
+end
+
+begin
+  Dir.mkdir "tmp"
+rescue Errno::EEXIST
+end
+
 #----------------------------------------------------------------#
 
 class Or
@@ -127,14 +138,14 @@ class Feature
 				/framework/ =~ (uses_so||[]).join(" ") or
 				raise "where is #{h} ?"
 		} if uses_h
-		ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
+		ENV["LD_LIBRARY_PATH"] = ldlpath ? "./tmp:#{ldlpath}" : "./tmp"
 		link[0,0]=$conf[:LDSOFLAGS].find_all {|x| String===x and /^-L/ =~ x }.flatten
 		code=code.gsub(/#include#/) {
 			uses_h.map {|inc| "#include <#{inc}>\n" }.join""
 		}	
 		log = ""
 		log << code << "\n"
-		binname = "/tmp/#{$$}"
+		binname = "tmp/#{$$}"
 		sourcename = binname+".cpp"
 		File.open(sourcename,"w") {|f| f.puts code }
 		command = ["/usr/bin/env", $conf[:CC]] +
@@ -148,7 +159,7 @@ class Feature
 			errs = errs[0].gsub(pat,"")
 			raise "gcc: #{errs}"
 		end
-		if not launch2 log,"/tmp/#{$$}"
+		if not launch2 log,"tmp/#{$$}"
 			raise "runtime error"
 		end
 		return true
@@ -160,13 +171,13 @@ class Feature
 	def asm_test code, *link
 		log = ""
 		log << code << "\n"
-		File.open("/tmp/#{$$}.asm","w") {|f| f.puts code }
+		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
 		command = ["/usr/bin/env", "nasm",
-		"/tmp/#{$$}.asm", "-f", "elf", "-o", "/tmp/#{$$}.o"]
+		"tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"]
 		launch2 log,*command or return false
-		command = ["#{$conf[:CC]}","-o","/tmp/#{$$}","/tmp/#{$$}.o",*link]
+		command = ["#{$conf[:CC]}","-o","tmp/#{$$}","tmp/#{$$}.o",*link]
 		launch2 log,*command or return false
-		command = ["/tmp/#{$$}"]
+		command = ["tmp/#{$$}"]
 		launch2 log,*command or return false
 		true
 	ensure
@@ -280,7 +291,7 @@ Feature.new {
 	uses_bridge_so ["-lruby"]
 	#uses_h ["ruby.h"] # is in special directory
 	defines :RUBY_STACK_END => proc {
-		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("/tmp/#{$$}","r"){|f| f.read })
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
 		m[1]
 	}
 	test proc {
@@ -307,7 +318,7 @@ Feature.new {
 		[lib]
 	}
 	defines :RUBY_STACK_END => proc {
-		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("/tmp/#{$$}","r"){|f| f.read })
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
 		m[1]
 	}
 	test proc {
@@ -747,12 +758,6 @@ def usage
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
 end
 
-puts
-if not File.exist?("./configure")
-	puts "Run me from the right directory please."
-	exit 1
-end
-
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
@@ -910,7 +915,7 @@ begin
   $features.each {|feature| try feature }
 ensure
   #!@#$ note: see END{} (duplication)
-  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c /tmp/#{$$}.o /tmp/#{$$}.asm"
+  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
 end
 
 $conf[:LDSOFLAGS].uniq!
@@ -1179,5 +1184,5 @@ for z in [
 =end
 
 END {
-  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c /tmp/#{$$}.o /tmp/#{$$}.asm"
+  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
 }
