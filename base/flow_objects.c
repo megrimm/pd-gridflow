@@ -31,6 +31,7 @@ Operator2 *op2_mul;
 Operator2 *op2_shl;
 Operator2 *op2_mod;
 Operator2 *op2_and;
+Operator2 *op2_div;
 
 /* **************************************************************** */
 
@@ -233,6 +234,7 @@ GRCLASS(GridImport,LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
 
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
+\class GridExport < GridObject
 struct GridExport : GridObject {
 	GRINLET3(0);
 };
@@ -255,11 +257,13 @@ GRID_INLET(GridExport,0) {
 /* outlet 0 not used for grids */
 GRCLASS(GridExport,LIST(GRINLET4(GridExport,0,4)))
 { IEVAL(rself,"install '@export',1,1"); }
+\end class GridExport
 
 /* **************************************************************** */
 
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
+\class GridExportList < GridObject
 struct GridExportList : GridObject {
 	Ruby /*Array*/ list;
 	int n;
@@ -287,6 +291,7 @@ GRID_INLET(GridExportList,0) {
 GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 /* outlet 0 not used for grids */
 { IEVAL(rself,"install '@export_list',1,1"); }
+\end class GridExportList
 
 /* **************************************************************** */
 /*
@@ -346,12 +351,6 @@ GRID_INLET(GridStore,0) {
 	out[0]->begin(new Dim(nd,v),r.nt);
 	if (nc>0) in->set_factor(nc);
 } GRID_FLOW {
-	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
-	static Operator2 *op_and = 0; if (!op_and) op_and = OP2(SYM(&));
-	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
-	static Operator2 *op_shl = 0; if (!op_shl) op_shl = OP2(SYM(<<));
-	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
-	/* !@#$ should optimise "mod" by "&" */
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
 	int size = r.dim->prod(nc);
@@ -364,17 +363,17 @@ GRID_INLET(GridStore,0) {
 		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
 		if (i) {
 			if (is_power_of_two) {
-				op_shl->map(nd,v,(int32)highest_bit(wrap));
+				op2_shl->map(nd,v,(int32)highest_bit(wrap));
 			} else {
-				op_mul->map(nd,v,wrap);
+				op2_mul->map(nd,v,wrap);
 			}
 		}
 		if (is_power_of_two) {
-			op_and->map(nd,v+nd*i,wrap-1);
+			op2_and->map(nd,v+nd*i,wrap-1);
 		} else {
-			op_mod->map(nd,v+nd*i,wrap);
+			op2_mod->map(nd,v+nd*i,wrap);
 		}
-		if (i) op_add->zip(nd,v,v+nd*i);
+		if (i) op2_add->zip(nd,v,v+nd*i);
 	}
 
 #define FOO(type) { \
@@ -1028,6 +1027,7 @@ GRCLASS(GridFor,LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFo
 
 /*{ Dim[*As] -> Dim[B] }*/
 
+\class GridDim < GridObject
 struct GridDim : GridObject {
 	GRINLET3(0);
 };
@@ -1042,9 +1042,11 @@ GRID_INLET(GridDim,0) {
 
 GRCLASS(GridDim,LIST(GRINLET4(GridDim,0,0)))
 { IEVAL(rself,"install '@dim',1,1"); }
+\end class GridDim
 
 /* **************************************************************** */
 
+\class GridType < GridObject
 struct GridType : GridObject {
 	GRINLET3(0);
 };
@@ -1058,6 +1060,7 @@ GRID_INLET(GridType,0) {
 
 GRCLASS(GridType,LIST(GRINLET4(GridType,0,0)))
 { IEVAL(rself,"install '@type',1,1"); }
+\end class GridType
 
 /* **************************************************************** */
 
@@ -1430,13 +1433,11 @@ GRID_INLET(GridPerspective,0) {
 	in->set_factor(in->dim->get(in->dim->n-1));
 	out[0]->begin(new Dim(n,v),in->nt);
 } GRID_FLOW {
-	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
-	static Operator2 *op_div = 0; if (!op_div) op_div = OP2(SYM(/));
 	int m = in->factor;
 	STACK_ARRAY(T,foo,m);
 	for (;n;n-=m,data+=m) {
-		op_mul->map(m-1,data,(T)z);
-		op_div->map(m-1,data,data[m-1]);
+		op2_mul->map(m-1,data,(T)z);
+		op2_div->map(m-1,data,data[m-1]);
 		out[0]->send(m-1,data);
 	}	
 } GRID_FINISH {
@@ -1849,35 +1850,6 @@ void startup_flow_objects () {
 	op2_shl = OP2(SYM(<<));
 	op2_mod = OP2(SYM(%));
 	op2_and = OP2(SYM(&));
-
-	fclass_install(&ciGridCast);
-	fclass_install(&ciGridImport);
-	fclass_install(&ciGridExport);
-	fclass_install(&ciGridExportList);
-	fclass_install(&ciGridStore);
-	fclass_install(&ciGridOp1);
-	fclass_install(&ciGridOp2);
-	fclass_install(&ciGridFold);
-	fclass_install(&ciGridScan);
-	fclass_install(&ciGridInner);
-	fclass_install(&ciGridInner2);
-	fclass_install(&ciGridOuter);
-	fclass_install(&ciGridConvolve);
-	fclass_install(&ciGridFor);
-	fclass_install(&ciGridDim);
-	fclass_install(&ciGridType);
-	fclass_install(&ciGridRedim);
-	fclass_install(&ciGridScaleBy);
-	fclass_install(&ciGridDownscaleBy);
-	fclass_install(&ciGridLayer);
-	fclass_install(&ciGridFinished);
-	fclass_install(&ciGridJoin);
-	fclass_install(&ciGridPerspective);
-	fclass_install(&ciGridGrade);
-	fclass_install(&ciDrawPolygon);
-	fclass_install(&ciRtMetro);
-/*
-	fclass_install(&ciGridRGBtoHSV);
-	fclass_install(&ciGridHSVtoRGB);
-*/
+	op2_div = OP2(SYM(/));
+	\startup
 }

@@ -33,6 +33,7 @@ struct FormatMPEG3 : Format {
 	BitPacking *bit_packing;
 	int track;
 
+	FormatMPEG3 () : track(0) {}
 	\decl void initialize (Symbol mode, Symbol source, Symbol filename);
 	\decl void seek (int frame);
 	\decl Ruby frame ();
@@ -58,44 +59,31 @@ struct FormatMPEG3 : Format {
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 
 	int32 v[] = { sy, sx, channels };
-	o->begin(new Dim(3,v),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-
+	o->begin(new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
-	
 	for(int y=0; y<sy; y++) {
 		bit_packing->unpack(sx,buf+channels*sx*y,b2);
 		o->send(bs,b2);
 	}
-
 	delete[] (uint8 *)buf;
-
 	return INT2NUM(nframe);
 }
 
 \def void close () {
-	if (bit_packing) delete bit_packing;
-	if (mpeg) {
-		mpeg3_close(mpeg);
-		mpeg=0;
-	}
+	if (bit_packing) { delete bit_packing; bit_packing=0; }
+	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
 	rb_call_super(argc,argv);
 }
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-\def void initialize (Symbol mode, Symbol source, Symbol filename) {
+\def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
-	const char *filename2 = rb_str_ptr(
-		rb_funcall(mGridFlow,SI(find_file),1,
-			rb_funcall(argv[1],SI(to_s),0)));
-
-	mpeg = mpeg3_open(strdup(filename2));
+	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+	mpeg = mpeg3_open(rb_str_ptr(filename));
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
-	track = 0;
-
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }

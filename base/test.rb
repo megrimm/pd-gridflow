@@ -939,9 +939,8 @@ def test_outer
 end
 
 def test_jmax_patch filename
-#	require "gridflow/extra/jmax_format.rb"
-	require "extra/jmax_format.rb"
-	require "extra/puredata_format.rb"
+	require "gridflow/extra/jmax_format.rb"
+	require "gridflow/extra/puredata_format.rb"
 	jfr = JMaxFileReader.new(File.open(filename),FObject)
 	FObject.broken_ok = true
 	my_patcher = jfr.parse

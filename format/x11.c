@@ -71,6 +71,13 @@ struct FormatX11 : Format {
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
 
+	FormatX11 () : dim(0), window(0), is_owner(true), image(Pt<uint8>()),
+		ximage(0), autodraw(1), use_stripes(false)
+#ifdef HAVE_X11_SHARED_MEMORY
+		, shm_info(0)
+#endif
+	{}
+
 	void show_section(int x, int y, int sx, int sy);
 	void set_wm_hints (int sx, int sy);
 	void dealloc_image ();
@@ -304,41 +311,19 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
-/* !@#$ this code is sort of meaningless now
-	if (parent && parent->in[0]->dex > 0) {
-		gfpost("resizing while receiving picture (ignoring)");
-		return;
-	}
-*/
-	if (sy<16) sy=16;
-	if (sx<16) sx=16;
-	if (sy>4000) RAISE("height too big");
-	if (sx>4000) RAISE("width too big");
-
-/* ximage */
-
+	if (sy<16) sy=16; if (sy>4000) RAISE("height too big");
+	if (sx<16) sx=16; if (sx>4000) RAISE("width too big");
 	alloc_image(sx,sy);
-
-/* window */
-	
 	name = strdup("GridFlow");
-
 	if (window) {
-		if (is_owner) {
-			//gfpost("About to resize window: %s",dim->to_s());
-			XResizeWindow(display,window,sx,sy);
-		}
+		if (is_owner) XResizeWindow(display,window,sx,sy);
 	} else {
-		//gfpost("About to create window: %s",dim->to_s());
 		window = XCreateSimpleWindow(display,
 			root_window, 0, 0, sx, sy, 0, white, black);
 		if(!window) RAISE("can't create window");
 	}
-
 /*	set_wm_hints(sx,sy); */
-
 	imagegc = XCreateGC(display, window, 0, NULL);
-	//gfpost("is_owner: %d\n", is_owner);
 	if (is_owner) {
 		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask |
@@ -367,35 +352,22 @@ GRID_INLET(FormatX11,0) {
 	int bypl = ximage->bytes_per_line;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
-	int y = in->dex / sxc;
+	int y = in->dex/sxc;
 	int oy = y;
-
-	assert((in->dex % sxc) == 0);
-	assert((n       % sxc) == 0);
-
-	while (n>0) {
-		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
+	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
 		if (use_stripes) {
-			int k=y%3;
 			int o=y*bypl;
-			for (int x=0, i=0; x<sx; x++, i+=3, k=(k+1)%3) {
+			for (int x=0, i=0, k=y%3; x<sx; x++, i+=3, k=(k+1)%3) {
 				image[o+x] = (k<<6) | data[i+k]>>2;
 			}
 		} else {
 			bit_packing->pack(sx, data, image+y*bypl);
 		}
-		y++;
-		data += sxc;
-		n -= sxc;
 	}
 	if (autodraw==2) show_section(0,oy,sx,y-oy);
 } GRID_FINISH {
-	if (autodraw==1) {
-		int sx = in->dim->get(1);
-		int sy = in->dim->get(0);
-		show_section(0,0,sx,sy);
-	}
+	if (autodraw==1) show_section(0,0,in->dim->get(1),in->dim->get(0));
 	/* calling this here because the clock problem is annoying */
 	alarm();
 } GRID_END
@@ -523,20 +495,7 @@ METHOD3(FormatX11,initialize) {
 	int sx = 320;
 
 	rb_call_super(argc,argv);
-
 	argv++, argc--;
-
-	dim     = 0;
-	window  = 0;
-	is_owner= true;
-	image   = Pt<uint8>();
-	ximage  = 0;
-	autodraw= 1;
-#ifdef HAVE_X11_SHARED_MEMORY
-	shm_info= 0;
-#endif
-	use_stripes = false;
-
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 
 	if (domain==SYM(verbose)) {

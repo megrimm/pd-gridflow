@@ -55,20 +55,18 @@ int lowest_bit(uint32 n) {
 		t |= ((in[i]>>(7-hb[i]))|(in[i]<<(hb[i]-7))) & mask[i]; \
 	}
 
-#define WRITE_LE { \
-	int bytes = self->bytes; \
-	while (bytes--) { *out++ = t; t >>= 8; }}
+#define WRITE_LE \
+	for (int bytes = self->bytes; bytes; bytes--, t>>=8) *out++ = t;
 
-#define WRITE_BE { \
-	int bytes = self->bytes; \
-	while (bytes--) { out[bytes] = t; t >>= 8; } \
+#define WRITE_BE { int bytes; \
+	for (bytes = self->bytes; bytes; bytes--, t>>=8) out[bytes] = t; \
 	out += self->bytes; }
 
 /* this macro would be faster if the _increment_
    was done only once every loop. or maybe gcc does it, i dunno */
 #define NTIMES(_x_) \
-	while (n>3) { _x_ _x_ _x_ _x_ n-=4; } \
-	while (n--) { _x_ }
+	for (; n>3; n-=4) { _x_ _x_ _x_ _x_ } \
+	for (; n; n--) { _x_ }
 
 template <class T>
 static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
@@ -95,25 +93,28 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	
 	if (self->is_le()) {
 		if (size==3)
-			while (n--) {CONVERT1; WRITE_LE; in+=3;}
+			for (; n--; in+=3) {CONVERT1; WRITE_LE;}
 		else if (size==4) {
-			while (n--) {CONVERT3; WRITE_LE; in+=4;}
+			for (; n--; in+=4) {CONVERT3; WRITE_LE;}
 		} else
-			while (n--) {CONVERT2; WRITE_LE; in+=size;}
+			for (; n--; in+=size) {CONVERT2; WRITE_LE;}
 	} else {
 		if (size==3)	
-			while (n--) {CONVERT1; WRITE_BE; in+=3;}
+			for (; n--; in+=3) {CONVERT1; WRITE_BE;}
 		else if (size==4)
-			while (n--) {CONVERT3; WRITE_BE; in+=4;}
+			for (; n--; in+=4) {CONVERT3; WRITE_BE;}
 		else
-			while (n--) {CONVERT2; WRITE_BE; in+=size;}
+			for (; n--; in+=size) {CONVERT2; WRITE_BE;}
 	}
 }
 
 #define LOOP_UNPACK(_reader_) \
-	while (n--) { int bytes=0; uint32 temp=0; _reader_; \
-		for (int i=0; i<self->size; i++) { \
-			uint32 t=temp&self->mask[i]; *out++ = (t<<(7-hb[i]))|(t>>(hb[i]-7));} \
+	for (; n; n--) { \
+		int bytes=0; uint32 temp=0; _reader_; \
+		for (int i=0; i<self->size; i++, out++) { \
+			uint32 t=temp&self->mask[i]; \
+			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7)); \
+		} \
 	}
 
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
@@ -125,10 +126,14 @@ static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 
 	if (is_le()) {
 		/* smallest byte first */
-		LOOP_UNPACK(while(self->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
+		LOOP_UNPACK(
+			for(; self->bytes>bytes; bytes++, in++) temp |= *in<<(8*bytes);
+		)
 	} else {
 		/* biggest byte first */
-		LOOP_UNPACK(bytes=self->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
+		LOOP_UNPACK(
+			bytes=self->bytes; for (; bytes; bytes--, in++) temp=(temp<<8)|*in;
+		)
 	}
 }
 
@@ -284,33 +289,43 @@ NUMBER_TYPES(FOO)
 
 /* **************************************************************** */
 
-#define DEF_OP1(_name_,_expr_) \
-	\
-	template <class T> \
-	static void op1_map_##_name_ (int n, T *as) { \
-		while ((n&3)!=0) { T a = *as; *as++ = _expr_; n--; } \
-		while (n) { \
-			{ T a=as[0]; as[0]= _expr_; } \
-			{ T a=as[1]; as[1]= _expr_; } \
-			{ T a=as[2]; as[2]= _expr_; } \
-			{ T a=as[3]; as[3]= _expr_; } \
-		as+=4; n-=4; } }
+template <class T>
+class Op1 {public: static T f(T); };
 
-#define DECL_OP1ON(_name_) \
-	{ &op1_map_##_name_ }
+template <class O>
+class Op1Loops {
+public:
+	template <class T>
+	static void op_map (int n, T *as) {
+		for (; (n&3)!=0; n--, as++) *as=O::f(*as);
+		for (; n; as+=4, n-=4) {
+			as[0]=O::f(as[0]);
+			as[1]=O::f(as[1]);
+			as[2]=O::f(as[2]);
+			as[3]=O::f(as[3]);
+		} 
+	}
+};
 
-#define DECL_OP1(_op_,_sym_) { 0, _sym_, \
-	DECL_OP1ON(_op_), \
-	DECL_OP1ON(_op_), \
-	DECL_OP1ON(_op_), \
-	DECL_OP1ON(_op_), \
+#define DEF_OP1(op,expr) \
+	template <class T> class Y1##op : Op1<T> { public: \
+		inline static T f(T a) { return expr; } };
+
+#define DECL_OP1ON(base,op,type) { \
+	&base<Y1##op<type> >::op_map }
+
+#define DECL_OP1(op,sym,props) { 0, sym, \
+	DECL_OP1ON(Op1Loops,op,uint8), \
+	DECL_OP1ON(Op1Loops,op,int16), \
+	DECL_OP1ON(Op1Loops,op,int32), \
+	DECL_OP1ON(Op1Loops,op,float32), \
 }
 
-#define DECL_OP1_NOU(_op_,_sym_) { 0, _sym_, \
+#define DECL_OP1_NOU(op,sym,props) { 0, sym, \
 	{0}, \
-	DECL_OP1ON(_op_), \
-	DECL_OP1ON(_op_), \
-	DECL_OP1ON(_op_), \
+	DECL_OP1ON(Op1Loops,op,int16), \
+	DECL_OP1ON(Op1Loops,op,int32), \
+	DECL_OP1ON(Op1Loops,op,float32), \
 }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
@@ -320,11 +335,10 @@ DEF_OP1(rand, a==0 ? 0 : random()%(int32)a)
 DEF_OP1(sq, a*a)
 
 Operator1 op1_table[] = {
-	DECL_OP1_NOU(abs, "abs"),
-//	DECL_OP1(abs, "abs"),
-	DECL_OP1(sqrt,"sqrt"), 
-	DECL_OP1(rand,"rand"),
-	DECL_OP1(sq,"sq"),
+	DECL_OP1_NOU(abs, "abs",""),
+	DECL_OP1(sqrt,"sqrt",""), 
+	DECL_OP1(rand,"rand",""),
+	DECL_OP1(sq,"sq",""),
 };
 
 /* **************************************************************** */
@@ -336,63 +350,54 @@ Operator1 op1_table[] = {
 */
 
 template <class T>
-class Op2 {public: static T foo(T,T); };
+class Op2 {public: static T f(T,T); };
 
 template <class O>
 class Op2Loops {
 public:
 	template <class T>
 	static void op_map (int n, T *as, T b) {
-		while ((n&3)!=0) { *as++ = O::foo(*as,b); n--; }
-		while (n) {
-			as[0] = O::foo(as[0],b);
-			as[1] = O::foo(as[1],b);
-			as[2] = O::foo(as[2],b);
-			as[3] = O::foo(as[3],b);
-			as+=4; n-=4;
+		for (; (n&3)!=0; as++, n--) *as=O::f(*as,b);
+		for (; n; as+=4, n-=4) {
+			as[0]=O::f(as[0],b);
+			as[1]=O::f(as[1],b);
+			as[2]=O::f(as[2],b);
+			as[3]=O::f(as[3],b);
 		}
 	}
 	template <class T>
 	static void op_zip (int n, T *as, T *bs) {
-		while ((n&3)!=0) { *as++ = O::foo(*as,*bs++); n--; }
-		while (n) {
-			as[0]= O::foo(as[0],bs[0]);
-			as[1]= O::foo(as[1],bs[1]);
-			as[2]= O::foo(as[2],bs[2]);
-			as[3]= O::foo(as[3],bs[3]);
-			as+=4; bs+=4; n-=4;
+		for (; (n&3)!=0; as++,bs++,n-- ) *as=O::f(*as,*bs);
+		for (; n; as+=4, bs+=4, n-=4) {
+			as[0]= O::f(as[0],bs[0]);
+			as[1]= O::f(as[1],bs[1]);
+			as[2]= O::f(as[2],bs[2]);
+			as[3]= O::f(as[3],bs[3]);
 		}
 	}
 	template <class T>
 	static void op_fold (int an, int n, T *as, T *bs) {
 		if (an==1) {
-		while ((n&3)!=0) { *as = O::foo(*as,*bs++); n--; }
-		while (n) {
-			*as = O::foo(*as,bs[0]);
-			*as = O::foo(*as,bs[1]);
-			*as = O::foo(*as,bs[2]);
-			*as = O::foo(*as,bs[3]);
-			bs+=4; n-=4;
-		}} else {
-		while (n--) {
-			int i=0;
-			while (i<(an&-4)) {
-				as[i+0] = O::foo(as[i+0],*bs++);
-				as[i+1] = O::foo(as[i+1],*bs++);
-				as[i+2] = O::foo(as[i+2],*bs++);
-				as[i+3] = O::foo(as[i+3],*bs++);
-				i+=4;
+			for (; (n&3)!=0; bs++, n--) *as=O::f(*as,*bs);
+			for (; n; bs+=4, n-=4)
+				*as=O::f(O::f(O::f(O::f(*as,bs[0]),bs[1]),bs[2]),bs[3]);
+		} else {
+			for (; n--; ) {
+				int i=0;
+				for (; i<(an&-4); i+=4, bs+=4) {
+					as[i+0]=O::f(as[i+0],bs[0]);
+					as[i+1]=O::f(as[i+1],bs[1]);
+					as[i+2]=O::f(as[i+2],bs[2]);
+					as[i+3]=O::f(as[i+3],bs[3]);
+				}
+				for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);
 			}
-			while (i<an) {
-				as[i++] = O::foo(as[i],*bs++);
-			}
-		}}
+		}
 	}
 	template <class T>
 	static void op_scan (int an, int n, T *as, T *bs) {
-		while (n--) {
-			for (int i=0; i<an; i++, as++, bs++) *bs = O::foo(*as,*bs);
-			as=bs-an;
+		for (; n--; as=bs-an) {
+			for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
 		}
 	}
 };
@@ -403,13 +408,12 @@ public:
 /*
 	template <class T>
 	static void op_map (int n, T *as, T b) {
-		while ((n&3)!=0) { T a = *as; *as++ = O::foo(a,b); n--; }
-		while (n) {
-			{ T a=as[0]; as[0]= O::foo(a,b); }
-			{ T a=as[1]; as[1]= O::foo(a,b); }
-			{ T a=as[2]; as[2]= O::foo(a,b); }
-			{ T a=as[3]; as[3]= O::foo(a,b); }
-			as+=4; n-=4;
+		for (; (n&3)!=0; as++, n--) *as=O::f(*as,b);
+		for (; n; as+=4, n-=4) {
+			as[0]=O::f(as[0],b);
+			as[1]=O::f(as[1],b);
+			as[2]=O::f(as[2],b);
+			as[3]=O::f(as[3],b);
 		}
 	}
 */
@@ -417,13 +421,13 @@ public:
 
 #define DEF_OP2(op,expr) \
 	template <class T> class Y##op : Op2<T> { public: \
-		inline static T foo (T a, T b) { return expr; } };
+		inline static T f(T a, T b) { return expr; } };
 
 #define DEF_OP2F(op,expr,expr2) \
 	template <class T> class Y##op : Op2<T> { public: \
-		inline static T foo (T a, T b) { return expr; } }; \
+		inline static T f(T a, T b) { return expr; } }; \
 	class Y##op<float32> : Op2<float32> { public: \
-		inline static float32 foo (float32 a, float32 b) { return expr2; } };
+		inline static float32 f(float32 a, float32 b) { return expr2; } };
 
 #define DECL_OP2ON(base,op,type) { \
 	&base<Y##op<type> >::op_map, \
@@ -582,13 +586,12 @@ Operator2 op2_table[] = {
 template <class T>
 static void quick_mod_map (int n, T *as, T b) {
 	if (!b) return;
-	while ((n&3)!=0) { T a = *as; *as++ = mod(a,b); n--; }
-	while (n) {
-		{ as[0]=mod(as[0],b); }
-		{ as[1]=mod(as[1],b); }
-		{ as[2]=mod(as[2],b); }
-		{ as[3]=mod(as[3],b); }
-		as+=4; n-=4;
+	for (; (n&3)!=0; n--, as++) *as=mod(*as,b);
+	for (; n; as+=4, n+=4) {
+		as[0]=mod(as[0],b);
+		as[1]=mod(as[1],b);
+		as[2]=mod(as[2],b);
+		as[3]=mod(as[3],b);
 	}
 }
 

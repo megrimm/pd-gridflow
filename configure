@@ -783,9 +783,11 @@ common_dependencies =
 
 mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp=$1
+	comp.sub!(/\$</,'$<.fcs')
+	comp << " -o $@" if not comp =~ /-o\s*\$@/
 	"%.o: %.c #{common_dependencies}\n"+
 	"\truby base/source_filter.rb $< $<.fcs\n"+
-	"\t#{comp.sub(/\$</,'$<.fcs')}\n"
+	"\t#{comp}\n"
 }
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"

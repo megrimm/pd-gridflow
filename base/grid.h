@@ -891,7 +891,7 @@ struct GridInlet {
 	~GridInlet();
 	void abort();
 	void set_factor(int factor);
-	bool is_busy();
+	bool is_busy() { return !!dim; }
 	void begin( int argc, Ruby *argv);
 	template <class T>
 	void flow(int mode, int n, Pt<T> data);

@@ -78,30 +78,23 @@ GRID_END
 	if (mpeg_id) {
 		CloseMPEG();
 		delete mpeg_id;
+		mpeg_id=0;
 	}
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
-	argv++, argc--;
 	if (source != SYM(file)) RAISE("usage: mpeg file <filename>");
-
 	if (mpeg_id) RAISE("libmpeg.so is busy (you must close the other mpeg file)");
-
-	filename = rb_funcall(mGridFlow,SI(find_file),1,filename)
-
+	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	mpeg_id = new ImageDesc;
 	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
 	VALUE f = rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r"));
-	FILE *f2 = RFILE(f)->fptr->f;
-	if (!OpenMPEG(f2,mpeg_id))
+	if (!OpenMPEG(RFILE(f)->fptr->f,mpeg_id))
 		RAISE("libmpeg: can't open mpeg file `%s': %s", filename, strerror(errno));
-
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),4,3,mask);
-	return Qnil;
 }
 
 GRCLASS(FormatMPEG,LIST(GRINLET2(FormatMPEG,0,4)),

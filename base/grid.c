@@ -63,9 +63,7 @@ void Grid::init(Dim *dim, NumberTypeE nt) {
 	this->nt = nt;
 	this->dim = dim;
 	int size = dim->prod()*number_type_table[nt].size/8;
-//	fprintf(stderr,"allocating grid: %d bytes\n",size);
 	data = dim ? new char[size] : 0;
-//	for (int i=0; i<size; i++) ((char*)data)[i]=(i&3)*85;
 }
 
 void Grid::init_clear(Dim *dim, NumberTypeE nt) {
@@ -102,15 +100,11 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 				goto fill;
 			}
 		}
-		{
-			if (n!=0 && TYPE(a[0])==T_SYMBOL) {
-				nt = NumberTypeE_find(a[0]);
-				a++;
-				n--;
-			}
-			int32 v[1]={n};
-			init(new Dim(1,v),nt);
+		if (n!=0 && TYPE(a[0])==T_SYMBOL) {
+			nt = NumberTypeE_find(a[0]);
+			a++, n--;
 		}
+		{int32 v[1]={n}; init(new Dim(1,v),nt);}
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -165,11 +159,6 @@ GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 
 GridInlet::~GridInlet() {
 	delete dim;
-}
-
-bool GridInlet::is_busy() {
-	assert(this);
-	return !!dim;
 }
 
 void GridInlet::set_factor(int factor) {
@@ -343,13 +332,6 @@ void GridInlet::end() {
 	dex = 0;
 }
 
-#define WATCH2(n,ar) { \
-	char foo[16*1024], *p=foo; \
-	p += sprintf(p,"%s: ",#ar); \
-	for (int i=0; i<n; i++) p += sprintf(p,"%ld ",ar[i]); \
-	gfpost("%s",foo); \
-}
-
 template <class T>
 void GridInlet::grid2(Grid *g, T foo) {
 	assert(gh);
@@ -382,36 +364,23 @@ void GridInlet::grid2(Grid *g, T foo) {
 	delete dim;
 	dim = 0;
 	dex = 0;
-
-	/* hack */
-/*
-	GridObject
-	GridOutlet *go = new GridOutlet(parent,0);
-	go->begin(g->dim->dup(),g->nt);
-	go->send(g->dim->prod(),(Pt<T>)*g);
-*/
 }
 
 void GridInlet::grid(Grid *g) {
 	if (!supports_type(g->nt))
 		RAISE("%s: number type %s not supported here",
 			parent->info(), number_type_table[g->nt].name);
-
 #define FOO(T) grid2(g,(T)0);
 	TYPESWITCH(g->nt,FOO,)
 #undef FOO
 }
 
 void GridInlet::list(int argc, Ruby *argv) {
-	Grid t;
-	t.init_from_ruby_list(argc,argv);
-	grid(&t);
+	Grid t;	t.init_from_ruby_list(argc,argv); grid(&t);
 }
 
 void GridInlet::int_(int argc, Ruby *argv) {
-	Grid t;
-	t.init_from_ruby(argv[0]);
-	grid(&t);
+	Grid t; t.init_from_ruby(argv[0]); grid(&t);
 }
 
 void GridInlet::float_(int argc, Ruby *argv) {int_(argc,argv);}
@@ -474,18 +443,16 @@ template <class T>
 void GridOutlet::send_direct(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	CHECK_TYPE(*data);
-	while (n>0) {
+	for (; n>0; ) {
 		int pn = min(n,MAX_PACKET_SIZE);
 		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
-		data += pn;
-		n -= pn;
+		data+=pn, n-=pn;
 	}
 }
 
 void GridOutlet::flush() {
 	TRACE;
 	if (!bufi) return;
-//	fprintf(stderr,"%s, %s\n", buf.dim->to_s(), number_type_table[buf.nt].name);
 #define FOO(T) send_direct(bufi,(Pt<T>)buf);
 	TYPESWITCH(buf.nt,FOO,)
 #undef FOO
@@ -505,11 +472,6 @@ void GridOutlet::send(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
-/*
-		gfpost("HAVE TO CONVERT %s INTO %s",
-			number_type_table[NumberTypeE_type_of(*data)].name,
-			number_type_table[nt].name);
-*/
 #define FOO(T) { \
 	STACK_ARRAY(T,data2,bs); \
 	for (;n>=bs;n-=bs,data+=bs) { \
@@ -574,16 +536,9 @@ GridObject::GridObject() {
 }
 
 GridObject::~GridObject() {
-//	fprintf(stderr,"GridObject::~GridObject: %08x\n",(int)this);
 	check_magic();
-	for (int i=0; i<MAX_INLETS;  i++) {
-		//fprintf(stderr,"GridObject::~GridObject: inlet #%d=%08x\n",i,(int)in[i]);
-		if (in[i]) delete in[i], in[i]=0;
-	}
-	for (int i=0; i<MAX_OUTLETS; i++) {
-		//fprintf(stderr,"GridObject::~GridObject: outlet #%d=%08x\n",i,(int)out[i]);
-		if (out[i]) delete out[i], out[i]=0;
-	}
+	for (int i=0; i<MAX_INLETS;  i++) if (in[i]) delete in[i], in[i]=0;
+	for (int i=0; i<MAX_OUTLETS; i++) if (out[i]) delete out[i], out[i]=0;
 }
 
 \class GridObject < FObject
