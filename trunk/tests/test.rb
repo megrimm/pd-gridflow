@@ -1,7 +1,7 @@
 # $Id$
 
 def test_load
-	require "c/lib/i686-linux/gridflow.so"
+	require "gridflow"
 end
 
 test_load
@@ -98,26 +98,30 @@ def test_tcp
 	if fork
 		# client
 		GridFlow.whine_header = "[client] "
-		in1 = FObject["@in"]
+		$in_client = in1 = FObject["@in"]
 		out = FObject["@out 240 320"]
 		in1.connect 0,out,0
-		out.send_in 0,"option autodraw 2"
-		GridFlow.whine "test: waiting 2 seconds"
-		sleep 2
+		out.send_in 0,"option timelog 1"
+		GridFlow.whine "test: waiting 1 seconds"
+		sleep 1
 		in1.send_in 0,"open grid tcp localhost #{$port}"
 
-		$mainloop.timers.after(1) {
-			GridFlow.whine "tick"
-			in1.send_in 0 unless out.inlet_busy?(0)
-		}
+		test_tcp = GridFlow::FObject.new
+		def test_tcp._0_bang
+			# GridFlow.whine "tick"
+			# avoid recursion
+			$mainloop.timers.after(0) {$in_client.send_in 0}
+		end
+		out.connect 0,test_tcp,0
+
 		in1.send_in 0
 		GridFlow.whine "entering mainloop..."
 		$mainloop.loop
 	else
 		# server
 		GridFlow.whine_header = "[server] "
-		in1 = FObject["@in"]
-		in2 = FObject["@in"]
+		$in1_server = in1 = FObject["@in"]
+		$in2_server = in2 = FObject["@in"]
 		out = FObject["@out"]
 		toggle = 0
 		in1.connect 0,out,0
@@ -126,19 +130,18 @@ def test_tcp
 		in2.send_in 0,"open ppm file #{$imdir}/b001.ppm"
 		out.send_in 0,"open grid tcpserver #{$port}"
 		out.send_in 0,"option type uint8"
-		GridFlow.whine "now setting up timer"
-		$mainloop.timers.after(1) {
-			GridFlow.whine "tick1"
-			unless out.inlet_busy?(0)
-				GridFlow.whine "tick2"
-				if toggle==0
-					in1.send_in 0
-				else
-					in2.send_in 0
-				end
-			end
-			toggle ^= 1
-		}
+		test_tcp = GridFlow::FObject.new
+		def test_tcp._0_bang
+			# GridFlow.whine "tick"
+			@toggle ||= 0
+			# avoid recursion
+			$mainloop.timers.after(0) {
+				if @toggle==0; $in1_server else $in2_server end.send_in 0
+				@toggle ^= 1
+			}
+		end
+		out.connect 0,test_tcp,0
+		test_tcp.send_in 0
 		GridFlow.whine "entering mainloop..."
 		$mainloop.loop
 	end
@@ -184,7 +187,6 @@ end
 #test_videodev
 #test_anim2
 #test_anim3
-#test_formats
-test_tcp
-
-$mainloop.loop
+test_formats
+#test_tcp
+#$mainloop.loop
