@@ -25,6 +25,9 @@
 /* for dataflow objects, please see grid.c */
 /* this file contains nothing fts-specific. */
 
+#ifdef STANDALONE
+#define post printf
+#endif
 #include "lang.h"
 #include <assert.h>
 #include <limits.h>
