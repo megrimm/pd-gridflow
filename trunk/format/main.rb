@@ -103,7 +103,7 @@ module GridIO
 	def _0_close
 		check_file_open
 		@format.close
-		@format = 0
+		@format = nil
 	end
 end
 
@@ -129,7 +129,7 @@ class GridIn < GridObject
 
 	def delete
 		@format.close if @format
-		@format = 0
+		@format = nil
 		super
 	end
 
@@ -197,7 +197,7 @@ class GridOut < GridObject
 
 	def delete
 		@format.close if @format
-		@format = 0
+		@format = nil
 		super
 	end
 
@@ -237,13 +237,15 @@ module EventIO
 #		while @action
 #		p @chunksize-@buffer.length
 		n = @chunksize-(if @buffer then @buffer.length else 0 end)
-		t = @stream.read n
-#		p t
+#		puts "tell: #{@stream.tell}"
+		t = @stream.read(n) # or raise EOFError
 		if not t
 			raise "heck" if not @stream.eof?
 			rewind
-			t = @stream.read n
+			t = @stream.read(n) or raise "can't read any of #{n} bytes?"
 		end
+#		p t
+		#return if not t
 		if @buffer then @buffer << t else @buffer = t end
 		if @buffer.length == @chunksize
 			action,buffer = @action,@buffer
@@ -286,7 +288,7 @@ module EventIO
 			end
 			def self.rewind
 				@stream.close
-				raw_open *@raw_open_args
+				raw_open(*@raw_open_args)
 			end
 		when :tcp
 			if VERSION < "1.6.6"
@@ -341,7 +343,10 @@ class FormatGrid < Format; include EventIO
 
 	def initialize(mode,source,*args)
 		super
+		# bits-per-value
 		@bpv = 32
+		# nil=headerful; array=assumed dimensions of received grids
+		@headerless = nil
 		raw_open mode,source,*args
 	end
 
@@ -354,9 +359,28 @@ class FormatGrid < Format; include EventIO
 			raise "already waiting for input"
 		end
 		rewind_if_needed
-		on_read(8) {|data| frame1 data }
+		if @headerless then
+			@n_dim=@headerless.length
+			@dim = @headerless
+			@dex = 0
+			set_bufsize
+			send_out_grid_begin 0, @dim
+			on_read(bufsize) {|data| frame3 data }
+		else
+			on_read(8) {|data| frame1 data }
+		end
 		(try_read nil while read_wait?) if not TCPSocket===@stream
 #		GridFlow.post "frame: finished"
+	end
+
+	def set_bufsize
+		@prod = 1
+		@dim.each {|x| @prod *= x }
+		n = @prod/@dim[0]
+		k = GridFlow.max_packet / n
+		k=1 if k<1
+		@bufsize = k*n*@bpv/8
+		@bufsize = @prod if @bufsize > @prod
 	end
 
 	# the header
@@ -391,21 +415,13 @@ class FormatGrid < Format; include EventIO
 	def frame2 data
 		@dim = data.unpack(if @is_le then "V*" else "N*" end)
 #		GridFlow.post "dim=#{@dim.inspect}"
-		@prod = 1
-		@dim.each {|x| @prod *= x }
+		set_bufsize
 		if @prod > GridFlow.max_size
 			raise "dimension list: invalid prod (#{@prod})"
 		end
 		p @dim
 		p self.class.instance_variables
 		send_out_grid_begin 0, @dim
-
-		prod = 1
-		@dim.each {|x| prod *= x }
-		n = prod/@dim[0]
-		k = GridFlow.max_packet / n
-		k=1 if k<1
-		@bufsize = k*n*@bpv/8
 
 		on_read(bufsize) {|data| frame3 data }
 		@dex = 0
@@ -420,11 +436,12 @@ class FormatGrid < Format; include EventIO
 		case @bpv
 		when 8
 			@bp = BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-			# send_out_grid_flow 0, data.unpack("c*").pack("i*")
 			send_out_grid_flow(0, @bp.unpack(data))
 			@dex += data.length
 		when 16
-			raise "not now."
+			@bp = BitPacking.new(ENDIAN_LITTLE,2,[0xffff])
+			send_out_grid_flow(0, @bp.unpack(data))
+			@dex += data.length
 		when 32
 			# hope for a multiple of 4 #!@#$
 			if (@is_le ? 1 : 0)==OurByteOrder then
@@ -448,6 +465,7 @@ class FormatGrid < Format; include EventIO
 		end
 		@dim = inlet_dim 0
 		GridFlow.post "@dim=#{@dim.inspect}"
+		return if @headerless
 		# header
 		@stream.write(
 			[if OurByteOrder==ENDIAN_LITTLE then "\x7fgrid" else "\x7fGRID" end,
@@ -479,6 +497,15 @@ class FormatGrid < Format; include EventIO
 
 	def option(name,*args)
 		case name
+		when :headerless
+			args=args[0] if Array===args[0]
+			#raise "expecting dimension list..."
+			args.each {|a|
+				Integer===a or raise "expecting dimension list..."
+			}
+			@headerless = args
+		when :headerful
+			@headerless = nil
 		when :type
 		# bug: should not be able to modify this _during_ a transfer
 			case args[0]
@@ -621,11 +648,6 @@ targa header is like:
 end
 
 =begin
-class FormatRaw < Format
-	install_rgrid 0
-	install_format "FormatRaw", 1, 1, FF_R|FF_W, "raw", "direct file data"
-end
-
 class FormatMulti < Format
 	install_rgrid 0
 	install_format "FormatMulti", 1, 1, FF_R, "multi", "joining multiple files"
