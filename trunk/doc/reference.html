@@ -1,5 +1,6 @@
 <html>
 <head>
+<!-- $Id$ -->
 <title>GridFlow 0.4.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
@@ -34,25 +35,27 @@
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
-<tr><td colspan="2"><h5><a href="Conventions of this Manual">Conventions of this Manual</a></h5><blockquote></blockquote>
-<h5><a href="Grid Protocol">Grid Protocol</a></h5><blockquote></blockquote>
-<h5><a href="Picture Protocol">Picture Protocol</a></h5><blockquote></blockquote>
-<h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote>
-<h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote>
-<h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/@in.jpg" alt="[@import 240 320 3]"><br>
+<tr><td colspan="2"><h4><a href="Conventions of this Manual">Conventions of this Manual</a></h4><blockquote></blockquote>
+<h4><a href="Grid Protocol">Grid Protocol</a></h4><blockquote></blockquote>
+<h4><a href="Picture Protocol">Picture Protocol</a></h4><blockquote></blockquote>
+<h4><a href="Unary Operators">Unary Operators</a></h4><blockquote></blockquote>
+<h4><a href="Binary Operators">Binary Operators</a></h4><blockquote></blockquote>
+<h4><a href="Objects for Input/Output">Objects for Input/Output</a></h4><blockquote><img src="images/@in.jpg" alt="[@import 240 320 3]"><br>
 <img src="images/@out.jpg" alt="[@out]"><br>
 <img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br>
 <img src="images/@export.jpg" alt="[@export]"><br>
 </blockquote>
-<h5><a href="Transformation Objects">Transformation Objects</a></h5><blockquote><img src="images/@fold_%2B.jpg" alt="[@fold +]"><br>
+<h4><a href="Transformation Objects">Transformation Objects</a></h4><blockquote><img src="images/@for.jpg" alt="[@for 0 320 1]"><br>
+<img src="images/@fold_%2B.jpg" alt="[@fold +]"><br>
+<img src="images/@outer.jpg" alt="[@outer +]"><br>
+<img src="images/@inner.jpg" alt="[@inner * + 0]"><br>
 <img src="images/@redim.jpg" alt="[@redim 2]"><br>
 <img src="images/@store.jpg" alt="[@store]"><br>
-<img src="images/@outer.jpg" alt="[@outer +]"><br>
 </blockquote>
-<h5><a href="Reporting Objects">Reporting Objects</a></h5><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br>
+<h4><a href="Reporting Objects">Reporting Objects</a></h4><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br>
 </blockquote>
-<h5><a href="Special Objects">Special Objects</a></h5><blockquote></blockquote>
-<h5><a href="Compound Objects">Compound Objects</a></h5><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br>
+<h4><a href="Special Objects">Special Objects</a></h4><blockquote></blockquote>
+<h4><a href="Compound Objects">Compound Objects</a></h4><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br>
 <img src="images/@identity_transform.jpg" alt="[@identity_transform]"><br>
 <img src="images/@posterize.jpg" alt="[@posterize]"><br>
 <img src="images/@scale_to.jpg" alt="[@scale_to]"><br>
@@ -60,7 +63,7 @@
 <img src="images/@three.jpg" alt="[@three]"><br>
 <img src="images/@two.jpg" alt="[@two]"><br>
 </blockquote>
-<h5><a href="External Picture Formats">External Picture Formats</a></h5><blockquote><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]"><br>
+<h4><a href="External Picture Formats">External Picture Formats</a></h4><blockquote><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]"><br>
 <img src="images/format/tga.jpg" alt="[open targa file filename.tga]"><br>
 <img src="images/format/videodev.jpg" alt="[open videodev /dev/video0]"><br>
 <img src="images/format/x11.jpg" alt="[open x11 here]"><br>
@@ -445,7 +448,7 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@in">&nbsp;&nbsp;@in</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@in.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@in">@in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@in.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -469,7 +472,7 @@
 
 		
 
-			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b> ... format_specific_part<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b>format_specific_part...<b>)</b>
 
 				
 
@@ -529,7 +532,7 @@
 
 			<br>
 
-			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b> ... stuff<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b>stuff...<b>)</b>
 
 				
 
@@ -553,7 +556,7 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@out">&nbsp;&nbsp;@out</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@out.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@out">@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@out.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -587,7 +590,7 @@
 
 		
 
-			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b> ... format_specific_part<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b>format_specific_part...<b>)</b>
 
 				
 
@@ -629,7 +632,7 @@
 
 			<br>
 
-			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b> ... stuff<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b>stuff...<b>)</b>
 
 				
 
@@ -677,7 +680,7 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@import">&nbsp;&nbsp;@import</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@import_240_320_3.jpg"><br clear="left"><br><br><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@import">@import</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@import_240_320_3.jpg"><br clear="left"><br><br><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -693,7 +696,7 @@
 
 
 
-		<br><b>method</b> init <b>(</b> ... dims<b>)</b>
+		<br><b>method</b> init <b>(</b>dims...<b>)</b>
 
 			
 
@@ -727,7 +730,7 @@
 
 			<br>
 
-			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
 
 				this is the equivalent of filtering this grid through
 
@@ -769,7 +772,7 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@export">&nbsp;&nbsp;@export</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@export.jpg"><br clear="left"><br><br><a href="images/grab_export.png"><img src="images/ic_grab_export.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@export">@export</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@export.jpg"><br clear="left"><br><br><a href="images/grab_export.png"><img src="images/ic_grab_export.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -785,7 +788,7 @@
 
 		
 
-			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
 
 				transforms this grid in a series of integers.
 
@@ -816,13 +819,201 @@
 </tr>
 <tr><td colspan="4"><h4>Transformation Objects</h4></td></tr>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@fold">&nbsp;&nbsp;@fold</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@fold_%2B.jpg"><br clear="left"><br><br><a href="images/grab_fold.png"><img src="images/ic_grab_fold.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@for.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		
+
+		<p>works like a regular [for] object plugged to a [@import] tuned
+
+		for a dim(size) where size is the number of values produced by a bang
+
+		to that [for].</p>
+
+		<br><b>method</b> init <b>(</b>from<b>,</b>to<b>,</b>step<b>)</b>
+
+			
+
+			
+
+			
+
+		<br>
+
+		<br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b>
+
+			replaces the "from" value and produces output.
+
+		<br>
+
+		<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+			replaces the "to" value.
+
+		<br>
+
+		<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>
+
+			replaces the "step" value.
+
+		<br>
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>size<b>)</b>
+
+				where size is floor((to-from+1)/step)
+
+			<br><br>
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@">@</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		<p>This object computes a grid by computing "in parallel" a same
+
+		operation on each left-hand element with its corresponding right-hand
+
+		element. This is a massively parallel version of jMax's builtin
+
+		arithmetic operators. In case you wonder, it's only parallel in the
+
+		sense that all those computations are independent; there's no
+
+		guarantee about how many of them will actually be computed at once.
+
+		</p>
+
+
+
+		<br><b>method</b> init <b>(</b>operator<b>,</b>value<b>)</b>
+
+			
+
+			
+
+			the operator is one picked in the table of the 30 binary
+
+			operators. the value (optional, zero by default) becomes
+
+			the initial value of the right inlet.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
+
+				on each element of this grid, perform the operation
+
+				together with the corresponding element of inlet 1.
+
+				in the table of operators (at the top of this document)
+
+				elements of inlet 0 are called "A" and elements of inlet 1
+
+				are called "B". the resulting grid is the same size as the
+
+				one in inlet 0.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
+
+				any grid, preferably shaped like the one that will be put
+
+				in the left inlet, or like a subpart of it (the contents
+
+				will be redim'ed on the fly to fit the grid of inlet-0,
+
+				but the stored grid will not be modified itself)
+
+			<br><br>
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+				stores a single int in the right inlet; the same int will
+
+				be applied in all computations; this is like sending a
+
+				dim(1) or dim() grid with that number in it.
+
+			<br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> 
+
+			<br><br>
+
+		
+
+	
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@!">@!</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<p>This object computes a grid by computing "in parallel" a same
+
+		operation on each element of the grid.
+
+		</p>
+
+		
+
+		<br><b>method</b> init <b>(</b>operator<b>)</b>
+
+			
+
+			the operator is one picked in the table of the 3 unary
+
+			operators. they are "unary" because they take only one
+
+			value.
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> 
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> 
+
+			<br><br>
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@fold">@fold</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@fold_%2B.jpg"><br clear="left"><br><br><a href="images/grab_fold.png"><img src="images/ic_grab_fold.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
 		<p>
-
-
 
 		@fold makes the last dimension of a grid disappear by combining elements
 
@@ -840,17 +1031,229 @@
 
 
 
+		<br><b>method</b> init <b>(</b>operator<b>,</b>base<b>)</b>
+
+			
+
+			
+
+			the base value is optional and defaults to 0.
+
+			the operator is one from the table of binary operators.
+
+		<br>
+
+		
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., last<b>)</b>
+
+				produces a dim(dims) grid (the last dimension is removed).
+
+				the incoming grid is split into dim(last) subparts; from
+
+				each of those parts a result is produced by cascading the
+
+				specified operation from the base value (specified in
+
+				inlet 1) to all the elements in that subpart. (see examples
+
+				below)
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+				changes the base value to use.
+
+			<br>
+
+		
+
+		
+
+		
+
+
+
+		<p>examples: [@fold +] is a sum of all elements (on the last
+
+		dimensions); similarly, [@fold inv+] is an alternated sum, and [@fold
+
+		* 1] is a product; [@fold & 1] can be used to mean "for all";
+
+		[@fold | 0] can be used to mean "there exists (at least one)";
+
+		[@fold ^ 0] can be used to mean "there exists an odd number of..."
+
+		and [@fold ^ 1] "there exists an even number of...".</p>
+
+
+
 		
 
 	<br></td>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@redim">&nbsp;&nbsp;@redim</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@redim.jpg"><br clear="left"><br><br><a href="images/grab_redim.png"><img src="images/ic_grab_redim.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@outer">@outer</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@outer.jpg"><br clear="left"><br><br><a href="images/grab_outer.png"><img src="images/ic_grab_outer.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
 
 
-		<br><b>method</b> init <b>(</b> ... dims<b>)</b>
+		<br><b>method</b> init <b>(</b>operator<b>)</b>
+
+			
+
+			the operator must be picked from the table of binary operators.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA...<b>)</b><br><br>
+
+			produces a grid of size dim(anyA..., anyB...), where numbers
+
+			are the results of the operation on every element of A and
+
+			every element of B. the resulting array can be very big. Don't
+
+			try this on two pictures (the result will have 6 dimensions)
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>anyB...<b>)</b><br><br>
+
+			stores the specified grid, to be used when inlet 0 is activated.
+
+		
+
+		
+
+		
+
+
+
+		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will
+
+		produce  a grid of Dim(3,5) with the selected binary operation
+
+		applied on each  of the possible pairs combinations between numbers
+
+		from the left grid  and the ones from the right. for example :
+
+		(10,20,30) [@outer +] (1,2,3)  will give :
+
+		((11,12,13),(21,22,23),(31,32,33)) </p>
+
+
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner">@inner</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@inner.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<p>think of this one as a special combination of [@outer], [@],
+
+		and [@fold]. this is one of the most complex operations. It is very
+
+		useful for performing linear transforms like rotations, scalings,
+
+		tilts, and color remappings.
+
+		</p>
+
+
+
+		<br><b>method</b> init <b>(</b>op_para<b>,</b>op_fold<b>,</b>base<b>)</b>
+
+			
+
+			
+
+			
+
+			op_para and op_fold are two operators picked from the table
+
+			of binary operators.
+
+			the base value has to be specified (has no default value yet).
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA..., lastA<b>)</b>
+
+				creates a dim(anyA...,anyB...) grid by splitting the
+
+				left-hand grid into dim(lastA) pieces, the right-hand grid
+
+				into dim(lastB) pieces, doing an [@] on them with the
+
+				specified op_para operator, and then a [@fold] on that with
+
+				the specified op_fold operator and base value. lastA must be
+
+				equal to lastB.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+				changes the base value to that.
+
+			<br>
+
+		
+
+		
+
+			<br><b>inlet 2</b> <b>grid</b> <b>dim(</b>anyB..., lastB<b>)</b>
+
+				changes the right-hand side grid to that.
+
+			<br><br>
+
+		
+
+		
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@redim">@redim</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@redim.jpg"><br clear="left"><br><br><a href="images/grab_redim.png"><img src="images/ic_grab_redim.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<br><b>method</b> init <b>(</b>dims...<b>)</b>
 
 			
 
@@ -864,7 +1267,7 @@
 
 		
 
-			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
 
 			the elements of this grid are serialized. if the resulting grid
 
@@ -922,7 +1325,7 @@
 
 	<br></td>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@store">&nbsp;&nbsp;@store</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@store.jpg"><br clear="left"><br><br><a href="images/grab_cross_fade.png"><img src="images/ic_grab_cross_fade.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@store">@store</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@store.jpg"><br clear="left"><br><br><a href="images/grab_cross_fade.png"><img src="images/ic_grab_cross_fade.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -960,7 +1363,7 @@
 
 			<br>
 
-			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>..., indices<b>)</b>
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., indices<b>)</b>
 
 				in this grid, the last dimension refers to subparts of
 
@@ -992,7 +1395,7 @@
 
 		
 
-			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
 
 				the received grid is stored. if the storage type is uint8,
 
@@ -1016,62 +1419,6 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@outer">&nbsp;&nbsp;@outer</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@outer.jpg"><br clear="left"><br><br><a href="images/grab_outer.png"><img src="images/ic_grab_outer.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-		
-
-		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will produce 
-
-		a grid of Dim(3,5) with the selected binary operation applied on each 
-
-		of the possible pairs combinations between numbers from the left grid 
-
-		and the ones from the right. for example : (10,20,30) [@outer +] (1,2,3) 
-
-		will give : ((11,12,13),(21,22,23),(31,32,33)) </p>
-
-		
-
-	<br></td>
-
-
-
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@!">&nbsp;&nbsp;@!</a></b></font></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
-
-		undocumented.
-
-	<br></td>
-
-
-
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@">&nbsp;&nbsp;@</a></b></font></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-		<p>This object computes a Grid by combining each of its elements with an 
-
-		integer in its right inlet. This is not unlike built-in arithmetic objects, 
-
-		except that the left inlet, and the outlet, work with Grids. This runs 
-
-		up to 10 times faster than equivalent built-ins (but still probably slower 
-
-		than equivalent DSP built-ins. Construction takes 2 parameters: a first 
-
-		one is the operation's symbol, and a second optional one is the default 
-
-		value for the right inlet. Operations provided are listed below in the 
-
-		"binary operations" section. Many of them have no equivalent 
-
-		in "plain jMax". 
-
-		</p>
-
-	
-
-		
-
-	<br></td>
-
 <tr><td>&nbsp;</td></tr>
 
 
@@ -1081,13 +1428,45 @@
 </tr>
 <tr><td colspan="4"><h4>Reporting Objects</h4></td></tr>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@dim">&nbsp;&nbsp;@dim</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@dim.jpg"><br clear="left"><br><br><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@dim">@dim</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@dim.jpg"><br clear="left"><br><br><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 
 		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b>
+
+				ignores any data contained within.
+
+				sends a grid dim(length of dims) containing dims.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rank<b>)</b>
+
+				the list of dimensions of the incoming grid.
+
+			<br><br>
+
+		
+
+
 
 		
 
@@ -1102,13 +1481,13 @@
 </tr>
 <tr><td colspan="4"><h4>Special Objects</h4></td></tr>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="rtmetro">&nbsp;&nbsp;rtmetro</a></b></font></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rtmetro">rtmetro</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		future use.
 
 	<br></td>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@global">&nbsp;&nbsp;@global</a></b></font></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		<p>
 
@@ -1153,7 +1532,7 @@
 </tr>
 <tr><td colspan="4"><h4>Compound Objects</h4></td></tr>
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@contrast">&nbsp;&nbsp;@contrast</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@contrast.jpg"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@contrast.jpg"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
@@ -1191,7 +1570,7 @@
 
 
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@identity_transform">&nbsp;&nbsp;@identity_transform</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 	
 
@@ -1217,7 +1596,7 @@ if needed)</p>
 
 
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@posterize">&nbsp;&nbsp;@posterize</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@posterize.jpg"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" border="0"></a><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@posterize">@posterize</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@posterize.jpg"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 	
 
@@ -1237,7 +1616,7 @@ depth with 32. The effect is mostly apparent with small values.</p>
 
 
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@scale_to">&nbsp;&nbsp;@scale_to</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@scale_to.jpg"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" border="0"></a><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@scale_to.jpg"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 	
 
@@ -1259,7 +1638,7 @@ duplicated.</p>
 
 
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@spread">&nbsp;&nbsp;@spread</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@spread.jpg"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" border="0"></a><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@spread.jpg"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 	
 
@@ -1281,7 +1660,7 @@ a pixel due to rounding.</p>
 
 
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@three">&nbsp;&nbsp;@three</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@three.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@three.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 	
 
@@ -1295,7 +1674,7 @@ doing redundant updates -- sorry)</p>
 
 <br></td>
 
-<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@two">&nbsp;&nbsp;@two</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@two.jpg"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" border="0"></a><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@two.jpg"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 
 
@@ -1320,7 +1699,7 @@ doing redundant updates -- sorry)</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="format ppm @in/@out">&nbsp;&nbsp;format ppm @in/@out</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/format/ppm.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format ppm @in/@out">format ppm @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/ppm.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -1348,7 +1727,7 @@ doing redundant updates -- sorry)</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="format targa @in">&nbsp;&nbsp;format targa @in</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/format/tga.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in">format targa @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/tga.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -1372,7 +1751,7 @@ doing redundant updates -- sorry)</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="format videodev @in">&nbsp;&nbsp;format videodev @in</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/format/videodev.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/videodev.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -1440,7 +1819,7 @@ doing redundant updates -- sorry)</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="format x11 @in/@out">&nbsp;&nbsp;format x11 @in/@out</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/format/x11.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/x11.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 
 
@@ -1614,7 +1993,7 @@ doing redundant updates -- sorry)</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="format grid @in/@out">&nbsp;&nbsp;format grid @in/@out</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/format/grid.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format grid @in/@out">format grid @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/grid.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 

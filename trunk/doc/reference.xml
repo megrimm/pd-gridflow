@@ -338,7 +338,7 @@
 			<method name="reset">
 				aborts the current grid if there is one.
 			</method>
-			<grid><dim>...</dim>
+			<grid><dim>dims...</dim>
 				this is the equivalent of filtering this grid through
 				an @export object and sending the resulting integers
 				to this @import object, except that it's about
@@ -373,7 +373,7 @@
 			anything that could possibly be configured here.
 		</method>
 		<inlet id="0">
-			<grid><dim>...</dim>
+			<grid><dim>dims...</dim>
 				transforms this grid in a series of integers.
 			</grid>
 		</inlet>
@@ -390,13 +390,113 @@
 </section>
 
 <section name="Transformation Objects">
+	<jmax-class name="@for">
+		<icon
+			image="images/@for.jpg"
+			text="[@for 0 320 1]"
+		/>
+		<p>works like a regular [for] object plugged to a [@import] tuned
+		for a dim(size) where size is the number of values produced by a bang
+		to that [for].</p>
+		<method name="init">
+			<arg name="from" type="integer"/>
+			<arg name="to" type="integer"/>
+			<arg name="step" type="integer"/>
+		</method>
+		<inlet id="0"><method name="int">
+			replaces the "from" value and produces output.
+		</method></inlet>
+		<inlet id="1"><method name="int">
+			replaces the "to" value.
+		</method></inlet>
+		<inlet id="2"><method name="int">
+			replaces the "step" value.
+		</method></inlet>
+		<outlet id="0">
+			<grid><dim>size</dim>
+				where size is floor((to-from+1)/step)
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@">
+		<p>This object computes a grid by computing "in parallel" a same
+		operation on each left-hand element with its corresponding right-hand
+		element. This is a massively parallel version of jMax's builtin
+		arithmetic operators. In case you wonder, it's only parallel in the
+		sense that all those computations are independent; there's no
+		guarantee about how many of them will actually be computed at once.
+		</p>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="value" type="integer"/>
+			the operator is one picked in the table of the 30 binary
+			operators. the value (optional, zero by default) becomes
+			the initial value of the right inlet.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				on each element of this grid, perform the operation
+				together with the corresponding element of inlet 1.
+				in the table of operators (at the top of this document)
+				elements of inlet 0 are called "A" and elements of inlet 1
+				are called "B". the resulting grid is the same size as the
+				one in inlet 0.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>dims...</dim>
+				any grid, preferably shaped like the one that will be put
+				in the left inlet, or like a subpart of it (the contents
+				will be redim'ed on the fly to fit the grid of inlet-0,
+				but the stored grid will not be modified itself)
+			</grid>
+			<method name="int">
+				stores a single int in the right inlet; the same int will
+				be applied in all computations; this is like sending a
+				dim(1) or dim() grid with that number in it.
+			</method>
+		</inlet>
+		<outlet id="0">
+			<grid>
+			</grid>
+		</outlet>
+	
+		<sample
+			image="images/grab_binary_operations.png"
+			text="binary operators 1"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@!">
+		<p>This object computes a grid by computing "in parallel" a same
+		operation on each element of the grid.
+		</p>
+		
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			the operator is one picked in the table of the 3 unary
+			operators. they are "unary" because they take only one
+			value.
+		</method>
+		<inlet id="0">
+			<grid>
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid>
+			</grid>
+		</outlet>
+	</jmax-class>
+
 	<jmax-class name="@fold">
 		<icon
 			image="images/@fold_%2B.jpg"
 			text="[@fold +]"
 		/>
 		<p>
-
 		@fold makes the last dimension of a grid disappear by combining elements
 		together in each innermost array. For example, @fold + 0 on a RGB image
 		will output a channelless image in which every value is the sum of
@@ -405,11 +505,126 @@
 		it through @dim and then through @fold * 1.
 		</p>
 
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="base" type="integer"/>
+			the base value is optional and defaults to 0.
+			the operator is one from the table of binary operators.
+		</method>
+		
+		<inlet id="0">
+			<grid><dim>dims..., last</dim>
+				produces a dim(dims) grid (the last dimension is removed).
+				the incoming grid is split into dim(last) subparts; from
+				each of those parts a result is produced by cascading the
+				specified operation from the base value (specified in
+				inlet 1) to all the elements in that subpart. (see examples
+				below)
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to use.
+			</method>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+
+		<p>examples: [@fold +] is a sum of all elements (on the last
+		dimensions); similarly, [@fold inv+] is an alternated sum, and [@fold
+		* 1] is a product; [@fold &amp; 1] can be used to mean "for all";
+		[@fold | 0] can be used to mean "there exists (at least one)";
+		[@fold ^ 0] can be used to mean "there exists an odd number of..."
+		and [@fold ^ 1] "there exists an even number of...".</p>
+
 		<sample
 			image="images/grab_fold.png"
 			text="[@fold +]"
 		/>
 	</jmax-class>
+
+	<jmax-class name="@outer">
+		<icon
+			image="images/@outer.jpg"
+			text="[@outer +]"
+		/>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			the operator must be picked from the table of binary operators.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>anyA...</dim></grid>
+			produces a grid of size dim(anyA..., anyB...), where numbers
+			are the results of the operation on every element of A and
+			every element of B. the resulting array can be very big. Don't
+			try this on two pictures (the result will have 6 dimensions)
+		</inlet>
+		<inlet id="1">
+			<grid><dim>anyB...</dim></grid>
+			stores the specified grid, to be used when inlet 0 is activated.
+		</inlet>
+		<outlet id="0">
+		</outlet>
+
+		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will
+		produce  a grid of Dim(3,5) with the selected binary operation
+		applied on each  of the possible pairs combinations between numbers
+		from the left grid  and the ones from the right. for example :
+		(10,20,30) [@outer +] (1,2,3)  will give :
+		((11,12,13),(21,22,23),(31,32,33)) </p>
+
+		<sample
+			image="images/grab_outer.png"
+			text="[@dim]"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@inner">
+		<icon
+			image="images/@inner.jpg"
+			text="[@inner * + 0]"
+		/>
+
+		<p>think of this one as a special combination of [@outer], [@],
+		and [@fold]. this is one of the most complex operations. It is very
+		useful for performing linear transforms like rotations, scalings,
+		tilts, and color remappings.
+		</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"    type="integer"/>
+			op_para and op_fold are two operators picked from the table
+			of binary operators.
+			the base value has to be specified (has no default value yet).
+		</method>
+		<inlet id="0">
+			<grid><dim>anyA..., lastA</dim>
+				creates a dim(anyA...,anyB...) grid by splitting the
+				left-hand grid into dim(lastA) pieces, the right-hand grid
+				into dim(lastB) pieces, doing an [@] on them with the
+				specified op_para operator, and then a [@fold] on that with
+				the specified op_fold operator and base value. lastA must be
+				equal to lastB.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to that.
+			</method>
+		</inlet>
+		<inlet id="2">
+			<grid><dim>anyB..., lastB</dim>
+				changes the right-hand side grid to that.
+			</grid>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+	</jmax-class>
+
 	<jmax-class name="@redim">
 		<icon
 			image="images/@redim.jpg"
@@ -423,7 +638,7 @@
 			(same as with @import)
 		</method>
 		<inlet id="0">
-			<grid><dim>...</dim>
+			<grid><dim>dims...</dim>
 			the elements of this grid are serialized. if the resulting grid
 			must be larger, the sequence is repeated as much as necessary.
 			if the resulting grid must be smaller, the sequence is truncated.
@@ -477,7 +692,7 @@
 			<method name="bang">
 				the stored grid is fully sent to the outlet.
 			</method>
-			<grid><dim>..., indices</dim>
+			<grid><dim>dims..., indices</dim>
 				in this grid, the last dimension refers to subparts of
 				the stored grid. sending a dim(200,200,2) on a @store
 				that holds a dim(240,320,3) will cause the @store to handle
@@ -493,7 +708,7 @@
 			</grid>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>...</dim>
+			<grid><dim>dims...</dim>
 				the received grid is stored. if the storage type is uint8,
 				the input is filtered to fit 0..255.
 			</grid>
@@ -508,43 +723,6 @@
 		/>
 	</jmax-class>
 
-	<jmax-class name="@outer">
-		<icon
-			image="images/@outer.jpg"
-			text="[@outer +]"
-		/>
-		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will produce 
-		a grid of Dim(3,5) with the selected binary operation applied on each 
-		of the possible pairs combinations between numbers from the left grid 
-		and the ones from the right. for example : (10,20,30) [@outer +] (1,2,3) 
-		will give : ((11,12,13),(21,22,23),(31,32,33)) </p>
-		<sample
-			image="images/grab_outer.png"
-			text="[@dim]"
-		/>
-	</jmax-class>
-
-	<jmax-class name="@!">
-		undocumented.
-	</jmax-class>
-
-	<jmax-class name="@">
-		<p>This object computes a Grid by combining each of its elements with an 
-		integer in its right inlet. This is not unlike built-in arithmetic objects, 
-		except that the left inlet, and the outlet, work with Grids. This runs 
-		up to 10 times faster than equivalent built-ins (but still probably slower 
-		than equivalent DSP built-ins. Construction takes 2 parameters: a first 
-		one is the operation's symbol, and a second optional one is the default 
-		value for the right inlet. Operations provided are listed below in the 
-		&quot;binary operations&quot; section. Many of them have no equivalent 
-		in "plain jMax". 
-		</p>
-	
-		<sample
-			image="images/grab_binary_operations.png"
-			text="binary operators 1"
-		/>
-	</jmax-class>
 </section>
 
 <section name="Reporting Objects">
@@ -552,6 +730,22 @@
 		<icon image="images/@dim.jpg" text="[@dim]"/>
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+
+		<method name="init">
+			no arguments.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				ignores any data contained within.
+				sends a grid dim(length of dims) containing dims.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>rank</dim>
+				the list of dimensions of the incoming grid.
+			</grid>
+		</outlet>
+
 		<sample image="images/grab_dim.png"/>
 	</jmax-class>
 </section>

@@ -92,7 +92,7 @@ class XNode
 		e=nil
 		case tag
 		when "section"
-			mk(:h5) { mk(:a,:href,att["name"]) { print att["name"] }}
+			mk(:h4) { mk(:a,:href,att["name"]) { print att["name"] }}
 			print "<blockquote>"
 			e="</blockquote>\n"
 		when "jmax_class"
@@ -145,8 +145,10 @@ class XNode
 			name = att['name'] or raise
 			mk(:tr) {
 			  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
-			    mk(:font,:size,-1) {
-			      mk(:b) { mk(:a,:name,name) { print "&nbsp;"*2, name }}}}}
+			    mk(:b) { print "&nbsp;"*2, "class " }
+			    mk(:a,:name,name) { print name }
+			  }
+			}
 			print "<tr>"
 			mk(:td) {}
 			print "<td valign='top'><br>"
@@ -179,7 +181,7 @@ class XNode
 				when "arg"
 					x.att["name"]
 				when "rest"
-					" ... " + x.att["name"]
+					x.att["name"] + "..."
 				end
 			}.compact.join "<b>,</b>"
 			print "<b>)</b>"
@@ -354,6 +356,7 @@ def header
 puts <<EOF
 <html>
 <head>
+<!-- #{"$"}Id#{"$"} -->
 <title>GridFlow 0.4.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
