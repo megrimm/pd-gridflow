@@ -209,7 +209,7 @@ Feature.new {
 Feature.new {
 	tag :mmx
 	uses_feature [:pentium]
-	status :disabled
+#	status :disabled
 	uses_o ["cpu/mmx.o"]
 	name "MMX-compatible CPU"
 	test proc {
@@ -583,7 +583,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.6.5 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.0 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
