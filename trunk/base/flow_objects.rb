@@ -831,7 +831,8 @@ end
 
 # jMax List Classes
 
-unless GridFlow.bridge_name == "jmax"
+LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
+
 	class List < FObject
 		def initialize(*a) @a=a end
 		def _0_list(*a) @a=a; _0_bang end
@@ -857,7 +858,7 @@ unless GridFlow.bridge_name == "jmax"
 				send_out 0, e
 			end
 		end
-		install "listelement", 2, 1
+		install "#{LPrefix}listelement", 2, 1
 	end
 
 	class ListSublist < FObject
@@ -865,7 +866,7 @@ unless GridFlow.bridge_name == "jmax"
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
 		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-		install "listsublist", 2, 1
+		install "#{LPrefix}listsublist", 2, 1
 	end
 
 	class ListPrepend < FObject
@@ -878,16 +879,15 @@ unless GridFlow.bridge_name == "jmax"
 			GridFlow.post "%s", @b.inspect
 			send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
-		install "listprepend", 2, 1
+		install "#{LPrefix}listprepend", 2, 1
 	end
 
 	class ListAppend < FObject
 		def initialize(*b) super; @b=b end
 		def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
-		install "listappend", 2, 1
+		install "#{LPrefix}listappend", 2, 1
 	end
-end
 
 unless GridFlow.bridge_name =~ /jmax/
 # this is the demo and test for Ruby->jMax bridge
