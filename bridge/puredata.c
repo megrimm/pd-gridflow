@@ -414,18 +414,28 @@ int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	post("bf_clickfn: expected Fixnum");
 	return 0;
 }
-/*  save to a binbuf */
 
+/* save to a binbuf */
 void bf_savefn(t_gobj *x, t_binbuf *b) {
 	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
 }
-/*  open properties dialog */
 
+/* open properties dialog */
 void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
-/* ... and later, resizing; getting/setting font or color... */
+
+/* get keypresses during focus */
+void bf_keyfn(void *x, t_floatarg fkey) {
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
+}
+
+/* get motion diff during focus */
+void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_motion),2,
+		INT2NUM((int)dx), INT2NUM((int)dy));
+}
 
 /* **************************************************************** */
 
@@ -525,6 +535,24 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	//wb->w_savefn       = bf_savefn;
 	//wb->w_propertiesfn = bf_propertiesfn;
 	class_setwidget(FIX2PTR(t_class,qlassid),wb);
+	return Qnil;
+}
+
+static Ruby FObject_focus (Ruby rself, Ruby canvas_, Ruby x_, Ruby y_) {
+	DGS(FObject);
+	t_glist *canvas = FIX2PTR(t_glist,canvas_);
+	t_gobj  *bself = (t_gobj *)(self->bself);
+	int x = INT(x_);
+	int y = INT(y_);
+	glist_grab(canvas,bself, bf_motionfn, bf_keyfn, x,y);
+	return Qnil;
+}
+
+// doesn't use rself but still is aside FObject_focus for symmetry reasons.
+static Ruby FObject_unfocus (Ruby rself, Ruby canvas_) {
+	DGS(FObject);
+	t_glist *canvas = FIX2PTR(t_glist,canvas_);
+	glist_grab(canvas,0,0,0,0,0);
 	return Qnil;
 }
 
@@ -642,11 +670,13 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_singleton_method(fo,"gui_enable", (RMethod)FObject_s_gui_enable, 0);
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
-	rb_define_method(fo,"send_out2",(RMethod)FObject_send_out2,-1);
-	rb_define_method(fo,"send_out2",(RMethod)FObject_send_out2,-1);
+	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
+	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
-	
+	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
+	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   1);
+
 	SDEF("clock_tick",clock_tick,0);
 	SDEF("clock_tick=",clock_tick_set,1);
 	SDEF("post_string",post_string,1);
