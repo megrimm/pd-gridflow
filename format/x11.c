@@ -519,10 +519,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		unsigned char *prop_r;
 		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
 		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
-		fprintf(stderr,"%*s0x%08x -> %s\n",level*2,"",(int)children_r[i],prop_r);
-		bool match = prop_r && strcmp((char *)prop_r,value)==0;
+		fprintf(stderr,"%*s0x%08x -> %s (%lu)\n",level*2,"",(int)children_r[i],prop_r,nitems_r);
+		int value_l = strlen(value);
+		bool match = prop_r && strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
 		XFree(prop_r);
-		if (match) { target=children_r[i]; break; }
+		if (match) {
+			target=children_r[i];
+			gfpost("x11 embed: 0x%08x -> %s (%lu)",(int)children_r[i],prop_r,nitems_r);
+			break;
+		}
 		target = search_window_tree(children_r[i],key,value,level+1);
 		if (target != 0xDeadBeef) break;
 	}
@@ -596,7 +601,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			if (verbose) gfpost("will use root window (0x%x)", window);
 			is_owner = false;
 		} else if (winspec==SYM(embed)) {
-			char *title = strdup(rb_str_ptr(argv[i+1]));
+			Ruby title_s = rb_funcall(argv[i+1],SI(to_s),0);
+			char *title = strdup(rb_str_ptr(title_s));
 			//pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
 			//sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
 			sy = sx = pos_y = pos_x = 0;
@@ -604,7 +610,9 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			pos_x = 0;
 			//lock_size = true;
 
+			gfpost("embed: will be searching for title ending in '%s'",title);
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
+			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
 
 		} else {
