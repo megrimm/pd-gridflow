@@ -89,19 +89,18 @@ static Ruby Bridge_import_value(const fts_atom_t *at) {
 		return ID2SYM(rb_intern(fts_get_symbol(at)));
 	} else if (fts_is_float(at)) {
 		return rb_float_new(fts_get_float(at));
-/*	} else if (fts_is_list(at)) {
-		fts_list_t *l = fts_get_list(at);
-		int n = fts_list_get_size(l);
-		fts_atom_t *p = fts_list_get_ptr(l);
+	} else if (fts_is_tuple(at)) {
+		fts_tuple_t *l = (fts_tuple_t *)fts_get_object(at);
+		int n = fts_tuple_get_size(l);
+		fts_atom_t *p = fts_tuple_get_array(l)->atoms; /* cheating encapsulation */
 		Ruby a = rb_ary_new2(n);
 		for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(p+i));
 		return a;
-*/
 //	} else if (fts_is_ptr(at)) {
 //		return Pointer_new(fts_get_ptr(at));
 	}
 	else {
-		post("warning: type \"%s\" not supported\n",fts_get_class_name(at));
+		fts_post("warning: type \"%s\" not supported\n",fts_get_class_name(at));
 		return Qnil; /* unknown */
 	}
 }
@@ -110,10 +109,17 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	const char *s = fm->selector;
 	char buf[256];
 	Ruby argv[fm->ac];
-	strcpy(buf+3,s?s:"value");
+	if (s) strcpy(buf+3,s);
+	else if (fm->ac==0) strcpy(buf+3,"bang");
+	else if (fm->ac>1) strcpy(buf+3,"list");
+	else if (fts_is_int(fm->at)) strcpy(buf+3,"int");
+	else if (fts_is_float(fm->at)) strcpy(buf+3,"float");
+	else if (fts_is_tuple(fm->at)) strcpy(buf+3,"list");
+	else strcpy(buf+3,"value");
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + fm->winlet;
 	ID sel = rb_intern(buf);
+	fts_post("incoming: selector=%s\n", buf);
 	for (int i=0; i<fm->ac; i++) argv[i] = Bridge_import_value(fm->at+i);
 	rb_funcall2(fm->self->rself,sel,fm->ac,argv);
 	return Qnil;
@@ -122,7 +128,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
 	for (int i=0; i<rb_ary_len(error_array); i++)
-		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+		fts_post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	if (fm->self) fts_object_error(fm->self,"%s",
 		rb_str_ptr(rb_funcall(error_array,SI(join),0)));
 	return Qnil;
@@ -158,7 +164,7 @@ static void BFObject_init (BFObject *self,
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	post("BFObject_delete_1: deleting object # %08x\n",(int)fm->self);
+	fts_post("BFObject_delete_1: deleting object # %08x\n",(int)fm->self);
 	rb_funcall(fm->self->rself,SI(delete),0);
 }
 
@@ -172,9 +178,9 @@ static void BFObject_delete (BFObject *self) {
 }
 
 #define RETIFFAIL(r,r2,fmt,args...) \
-		if (r) { \
-				post(fmt " failed: %s\n", args, fts_status_get_description(r)); \
-				return r2;}
+	if (r) { \
+		fts_post(fmt " failed: %s\n", args, fts_status_get_description(r)); \
+		return r2;}
 
 static void BFObject_class_init_1 (fts_class_t *qlass) 
 {
@@ -238,7 +244,7 @@ static GFBridge gf_bridge3 = {
 	name: "jmax4",
 	send_out: FObject_send_out_2,
 	class_install: FObject_s_install_2,
-	post: post,
+	post: fts_post,
 	post_does_ln: false,
 	clock_tick: 10.0,
 	whatever: 0
@@ -265,7 +271,7 @@ static Ruby gf_find_file(Ruby rself, Ruby s) {
 void gridflow_config() {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
-	post("setting up Ruby-for-jMax...\n");
+	fts_post("setting up Ruby-for-jMax...\n");
 
 	ruby_init();
 	Init_stack(localize_sysstack());
@@ -275,13 +281,13 @@ void gridflow_config() {
 	rb_ivar_set(rb_const_get(rb_cObject,SI(Data)),SI(@gf_bridge),PTR2FIX(gf_bridge2));
 	rb_define_singleton_method(rb_const_get(rb_cObject,SI(Data)),"gf_bridge_init",
 		(RMethod)gf_bridge_init,0);
-	post("(done)\n");
+	fts_post("(done)\n");
 
 	if (!
 		EVAL("begin require 'gridflow'; true; rescue Exception => e;\
 				STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
 	{
-		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
+		fts_post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
 	}
 
