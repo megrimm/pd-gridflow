@@ -117,7 +117,8 @@ extern "C" void Init_stack(VALUE *addr);
 static VALUE *localize_sysstack () {
 	// get any stack address
 	volatile long * volatile bp = (volatile long *)&bp;
-	sighandler_t old = signal(11,trap_segfault);
+	//sighandler_t old = signal(11,trap_segfault); // g++-2.95 doesn't take it
+	void (*old)(int) = signal(11,trap_segfault);
 	// read stack until segfault; segfault is redefined as a break.
 	if (!sigsetjmp(rescue_segfault,0)) for (;;bp-=STACK_GROW_DIRECTION) bogus += *bp;
 	// restore signal handler
