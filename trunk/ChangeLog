@@ -1,7 +1,6 @@
 /* $Id$ */
 
-
-version 0.3.1 (head):
+version 0.4.0 (head):
  * added (timewise) profiler
  * added @scale_by for quick scaling by integer factors.
  * @identity_transform, @scale_to are much faster.
@@ -10,6 +9,11 @@ version 0.3.1 (head):
  * Formats: @video_out merged into @out.
  * added format "grid" for storing any kind of grid to disk.
  * added TCP client socket support (in "grid" format only)
+ * added X11 Shared Memory support (faster image transfer locally)
+ * format videodev can now do full framerate (instead of just half)
+ * many other accelerations
+ * can now compile without jmax/fts (if you need quicker testing...)
+ * package name changed from "video4jmax" to "gridflow"
 
 version 0.3.0 (2001.11.04):
  * reworked File Format API

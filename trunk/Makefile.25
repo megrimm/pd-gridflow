@@ -1,8 +1,9 @@
-PNAME=video4jmax
+PNAME=gridflow
 include config.make
 
 all:
 	(cd c; $(MAKE) -k all)
+	(cd java; $(MAKE) -k all)
 .PHONY: all
 
 clean:
@@ -15,6 +16,7 @@ install:
 	$(INSTALL_DATA) $(PNAME).scm $(lib_install_dir)/packages/$(PNAME)/$(PNAME).scm
 	(cd help; $(MAKE) $@)
 	(cd templates; $(MAKE) $@)
+	(cd java; $(MAKE) $@)
 	(cd c; $(MAKE) $@)
 .PHONY: install
 
