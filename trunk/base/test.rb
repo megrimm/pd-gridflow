@@ -543,6 +543,22 @@ def test_polygon
 	poly.send_in 0, "240 320 # 0"
 end
 
+def test_store2
+	o = [
+		FObject["@for {0 0} {240 320} {1 1}"],
+		FObject["@ / 2"],
+		FObject["@ + 0"],
+		FObject["@ + 0"],
+		FObject["@store"],
+		FObject["@out x11"]]
+	(0..4).each {|x| o[x].connect 0,o[x+1],0 }
+	q = FObject["@in ppm file images/r001.ppm"]
+	q.connect 0,o[4],1
+	q.send_in 0
+	o[0].send_in 0
+	$mainloop.loop
+end
+
 def test_metro
 	o1 = RtMetro.new(1000,:geiger)
 	o2 = RubyPrint.new(:time)

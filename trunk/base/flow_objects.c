@@ -249,33 +249,33 @@ GRID_INLET(GridStore,0) {
 	if (nc>0) in->set_factor(nc);
 }
 
+/*!@#$ i should ensure that n is not exceedingly large */
+/*!@#$ worse: the size of the foo buffer may still be too large */
 GRID_FLOW {
-//	static Operator2 *op_mod = 0;
-//	if (!op_mod) op_mod = OP2(rb_str_new2("%"));
+	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
+	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
+	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
 	int na = in->dim->n;
-	int nb = r.dim->n;
 	int nc = in->dim->get(na-1);
 	int size = r.dim->prod(nc);
-	int v[nb];
 	assert((n % nc) == 0);
-
-	for (int i=nc; i<nb; i++) v[i] = 0;
-
-	//!@#$ accelerate me.
+	int nd = n/nc;
+	STACK_ARRAY(int32,v,n);
+	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
+	for (int i=0; i<nc; i++) {
+		if (i) op_mul->on_int32.op_array(nd,v,r.dim->v[i]);
+		op_mod->on_int32.op_array(nd,v+nd*i,r.dim->v[i]);
+		if (i) op_add->on_int32.op_array2(nd,v,v+nd*i);
+	}
 	if (r.nt==int32_type_i) {
 		Pt<int32> p = (Pt<int32>)r;
-		while (n>0) {
-			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,r.dim->v[i]);
-			out[0]->send(size,p+r.dim->calc_dex(v));
-			n -= nc;
-		}
+//		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
+		STACK_ARRAY(int32,foo,nd*size);
+		for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size);
+		out[0]->send(size*nd,foo);
 	} else if (r.nt==uint8_type_i) {
 		Pt<uint8> p = (Pt<uint8>)r;
-		while (n>0) {
-			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,r.dim->v[i]);
-			out[0]->send(size,p+r.dim->calc_dex(v));
-			n -= nc;
-		}
+		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
 	} else RAISE("unsupported type");
 }
 

@@ -64,12 +64,10 @@ int low_bit(uint32 n) {
 	while (bytes--) { out[bytes] = t; t >>= 8; } \
 	out += self->bytes; }
 
-/* those macros would be faster if the _increment_
-   were done only once every loop. or maybe gcc does it, i dunno */
-#define FOURTIMES(_x_) _x_ _x_ _x_ _x_
-
+/* this macro would be faster if the _increment_
+   was done only once every loop. or maybe gcc does it, i dunno */
 #define NTIMES(_x_) \
-	while (n>3) { FOURTIMES(_x_) n-=4; } \
+	while (n>3) { _x_ _x_ _x_ _x_ n-=4; } \
 	while (n--) { _x_ }
 
 static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
@@ -360,9 +358,6 @@ NumberTypeIndex NumberType_find (Ruby sym) {
 #define DEF_OP1(_name_,_expr_) \
 	\
 	template <class T> \
-	static T op1_##_name_ (T a) { return _expr_; } \
-	\
-	template <class T> \
 	static void op1_array_##_name_ (int n, Pt<T> as) { \
 		while ((n&3)!=0) { T a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
@@ -372,14 +367,14 @@ NumberTypeIndex NumberType_find (Ruby sym) {
 			{ T a=as[3]; as[3]= _expr_; } \
 		as+=4; n-=4; } }
 
+#define DECL_OP1(_name_,_sym_) \
+	{ 0, _sym_, { &op1_array_##_name_ } }
+
 DEF_OP1(abs,  a>=0 ? a : -a)
 DEF_OP1(sqrt, (T)(0+floor(sqrt(a))))
 /*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
 DEF_OP1(rand, a==0 ? 0 : random()%a)
 DEF_OP1(sq, a*a)
-
-#define DECL_OP1(_name_,_sym_) \
-	{ 0, _sym_, { &op1_##_name_, &op1_array_##_name_ } }
 
 Operator1 op1_table[] = {
 	DECL_OP1(abs, "abs"),
@@ -391,9 +386,6 @@ Operator1 op1_table[] = {
 /* **************************************************************** */
 
 #define DEF_OP2(_name_,_expr_) \
-	\
-	template <class T> \
-	static T op_##_name_ (T a, T b) { return _expr_; } \
 	\
 	template <class T> \
 	static void op_array_##_name_ (int n, Pt<T> as, T b) { \
@@ -417,7 +409,14 @@ Operator1 op1_table[] = {
 	\
 	template <class T> \
 	static T op_fold_##_name_ (T a, int n, Pt<T> bs) { \
-		while (n--) { T b = *bs++; a = _expr_; } return a; } \
+		while ((n&3)!=0) { T b = *bs++; a = _expr_; n--; } \
+		while (n) { \
+			{ T b = bs[0]; a = _expr_; } \
+			{ T b = bs[1]; a = _expr_; } \
+			{ T b = bs[2]; a = _expr_; } \
+			{ T b = bs[3]; a = _expr_; } \
+		bs+=4; n-=4; } \
+		return a; } \
 	\
 	template <class T> \
 	static void op_fold2_##_name_ (int an, Pt<T> as, int n, Pt<T> bs) {\
@@ -436,6 +435,15 @@ Operator1 op1_table[] = {
 			for (int i=0; i<an; i++) { \
 				T a = *as++, b = *bs; *bs++ = a = _expr_; } \
 			as=bs-an; } }
+
+#define DECL_OP2(_name_,_sym_,_props_) { \
+	0, _sym_, { \
+	&op_array_##_name_, \
+	&op_array2_##_name_, \
+	&op_fold_##_name_, \
+	&op_fold2_##_name_, \
+	&op_scan_##_name_, \
+	&op_scan2_##_name_ } }
 
 DEF_OP2(add, a+b)
 DEF_OP2(sub, a-b)
@@ -476,16 +484,6 @@ DEF_OP2(tanh, (T)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 DEF_OP2(pow, ipow(a,b))
 DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))))
-
-#define DECL_OP2(_name_,_sym_,_props_) { \
-	0, _sym_, \
-	{ &op_##_name_, \
-	&op_array_##_name_, \
-	&op_array2_##_name_, \
-	&op_fold_##_name_, \
-	&op_fold2_##_name_, \
-	&op_scan_##_name_, \
-	&op_scan2_##_name_ } }
 
 /*
 Algebraic Properties (not used yet)

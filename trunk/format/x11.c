@@ -140,16 +140,16 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		INT2NUM(0), SYM(position),
 		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
 	/* HACK */
-	if (!rb_ivar_defined(rself,SI(@parent))) {
-		IEVAL(rself,"@parent ||= @outlets[0][0][0]");
-	}
-	FObject_send_out(COUNT(argv),argv,rb_ivar_get(rself,SI(@parent)));
+//	if (!rb_ivar_defined(rself,SI(@parent))) {
+//		IEVAL(rself,"@parent ||= @outlets[0][0][0]");
+//	}
+	Ruby parent = rb_ivar_get(rself,SI(@parent));
+//	gfpost("parent = %08x",(int)parent);
+	if (parent!=Qnil) FObject_send_out(COUNT(argv),argv,parent);
 }
 
 void FormatX11::alarm() {
 	XEvent e;
-
-//	gfpost("X11 HELLO? (%lld)",RtMetro_now());
 
 	for (;;) {
 		int xpending = XEventsQueued(display, QueuedAfterReading);

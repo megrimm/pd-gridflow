@@ -309,14 +309,9 @@ struct Dim {
 
 	void check();
 
-	Dim(int n) {
+	Dim(int n, int32 *v=0) {
 		this->n = n;
-	}
-
-	Dim(int n, int32 *v) {
-		this->n = n;
-		memcpy(this->v,v,n*sizeof(int));
-		check();
+		if (v) memcpy(this->v,v,n*sizeof(int)), check();
 	}
 
 	Dim *dup() { return new Dim(n,v); }
@@ -327,13 +322,13 @@ struct Dim {
 		assert(i<n);
 		return v[i];
 	}
-	int32 prod(int start=0,int end=-1) {
+	int32 prod(int start=0, int end=-1) {
 		if (end<0) end+=n;
 		int32 tot=1;
 		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	int32 calc_dex(int *v,int end=-1) {
+	int32 calc_dex(int32 *v, int end=-1) {
 		if (end<0) end+=n;
 		int32 dex=0;
 		for (int i=0; i<=end; i++) dex = dex * this->v[i] + v[i];
@@ -428,7 +423,6 @@ struct Operator1On {
 	bool has_neutral;
 	T neutral;
 */
-	Number (*op)(T);
 	void   (*op_array)(int,Pt<T>);
 };
 
@@ -444,7 +438,6 @@ struct Operator2On {
 	bool has_neutral;
 	Number neutral;
 */
-	T (*op)(T,T);
 	void   (*op_array)(int,Pt<T>,T);
 	void   (*op_array2)(int,Pt<T>, Pt</*const*/ T>);
 	T (*op_fold)(T,int,Pt</*const*/ T>);
