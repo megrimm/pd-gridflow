@@ -325,10 +325,10 @@ static Ruby USB_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 void startup_usb () {
 	cUSB = rb_define_class_under(mGridFlow, "USB", rb_cObject);
 	//rb_define_singleton_method(cUSB, "new", USB_new, 1);
-
+	EVAL("class Symbol; def decap; x=to_s; x[0..0]=x[0..0].downcase; x.intern end end");
 	SDEF(USB,new,-1);
 	define_many_methods(cUSB, ciUSB.methodsn, ciUSB.methods);
-#define MANGLE(X) SYM(X)
+#define MANGLE(X) rb_funcall(SYM(X),SI(decap),0)
 	rb_const_set(cUSB, SI(Device), rb_funcall(EVAL("Struct"),SI(new),14+3,
 		USB_DEVICE_DESCRIPTOR(MANGLE,COMMA), SYM(filename), SYM(ptr), SYM(config)));
 	rb_const_set(cUSB, SI(Endpoint), rb_funcall(EVAL("Struct"),SI(new),8,
