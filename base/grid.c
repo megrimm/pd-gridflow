@@ -41,7 +41,7 @@ int gf_max_packet_length = 1024*2;
 
 /* result should be printed immediately as the GC may discard it anytime */
 static const char *INFO(GridObject *foo) {
-	Ruby z = rb_funcall(foo->peer,SI(args),0);
+	Ruby z = rb_funcall(foo->rself,SI(args),0);
 /*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
 	if (z==Qnil) return "(argh)";
 	return rb_str_ptr(z);
@@ -379,7 +379,7 @@ void GridOutlet::begin(Dim *dim) {
 	a[3] = PTR2FIXB(this);
 	a[4] = int32_type_i;
 	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
-	FObject_send_out(COUNT(a),a,parent->peer);
+	FObject_send_out(COUNT(a),a,parent->rself);
 	frozen = 1;
 /*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
@@ -488,7 +488,7 @@ GridObject::~GridObject() {
 	}
 }
 
-METHOD3(GridObject,init) {
+METHOD3(GridObject,initialize) {
 	for (int i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		in[gh->winlet] = new GridInlet(this,gh);
@@ -504,12 +504,12 @@ METHOD3(GridObject,init) {
 void GridObject_r_flow(GridInlet *in, int n, Pt<Number>data) {
 	GridObject *self = in->parent;
 	if (n==-1) {
-		rb_funcall(self->peer,SI(_0_rgrid_begin),0);
+		rb_funcall(self->rself,SI(_0_rgrid_begin),0);
 	} else if (n>=0) {
 		Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(Number));
-		rb_funcall(self->peer,SI(_0_rgrid_flow),1,buf); // hack
+		rb_funcall(self->rself,SI(_0_rgrid_flow),1,buf); // hack
 	} else {
-		rb_funcall(self->peer,SI(_0_rgrid_end),0);
+		rb_funcall(self->rself,SI(_0_rgrid_end),0);
 	}
 }
 
@@ -638,7 +638,7 @@ METHOD3(GridObject,del) {
 
 GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,startup:0,
 LIST(),
-	DECL(GridObject,init),
+	DECL(GridObject,initialize),
 	DECL(GridObject,del),
 	DECL(GridObject,send_out_grid_begin),
 	DECL(GridObject,send_out_grid_flow),
@@ -664,39 +664,6 @@ GridClass *format_classes[] = { FORMAT_LIST(&,ci,) };
 GridClass *format_classes[] = {};
 #endif
 
-METHOD3(Format,init) {
-	int flags = INT(rb_ivar_get(rb_obj_class(peer),SI(@flags)));
-	rb_call_super(argc,argv);
-	mode = argv[0];
-	parent = 0;
-	/* FF_W, FF_R, FF_RW */
-	if (mode==SYM(in)) {
-		if ((flags & 4)==0) goto err;
-	} else if (mode==SYM(out)) {
-		if ((flags & 2)==0) goto err;
-	} else {
-		RAISE("Format opening mode is incorrect");
-	}
-	return Qnil;
-err:
-	RAISE("Format '%s' does not support mode '%s'",
-		RSTRING(rb_ivar_get(rb_obj_class(peer),
-			SI(@symbol_name)))->ptr, rb_sym_name(mode));
-}
-
-METHOD3(Format,close) {
-/* Actually this shall be done later; #close and c++destructor shall
-   be distinguished from each other.
-*/
-//	delete this;
-	return Qnil;
-}
-
-GRCLASS(Format,"Format",inlets:0,outlets:0,startup:0,
-LIST(),
-	DECL(Format,init),
-	DECL(Format,close))
-
 /* **************************************************************** */
 
 Ruby cFormat;
@@ -710,16 +677,16 @@ void startup_formats () {
 
 void startup_grid () {
 	ruby_c_install(&ciGridObject, cFObject);
-	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
-	ruby_c_install(&ciFormat, cGridObject);
-	cFormat = rb_const_get(mGridFlow,SI(Format));
-	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
-
 	EVAL(
-	"module GridFlow; def Format.conf_format(flags,symbol_name,description)"
+	"module GridFlow; "
+	"class Format < GridObject; end; "
+	"def Format.conf_format(flags,symbol_name,description)"
 	"@flags = flags;"
 	"@symbol_name = symbol_name;"
 	"@description = description;"
 	"GridFlow.instance_eval{@formats}[symbol_name.intern]=self;"
 	"end;end");
+	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
+	cFormat = rb_const_get(mGridFlow,SI(Format));
+	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
 }

@@ -31,7 +31,7 @@ struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	BitPacking *bit_packing;
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(seek);
 	DECL3(frame);
 	DECL3(close);
@@ -96,7 +96,7 @@ METHOD3(FormatMPEG3,close) {
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-METHOD3(FormatMPEG3,init) {
+METHOD3(FormatMPEG3,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
@@ -120,7 +120,7 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatMPEG3,"FormatMPEG3",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG3,0,4)),
-DECL(FormatMPEG3,init),
+DECL(FormatMPEG3,initialize),
 DECL(FormatMPEG3,seek),
 DECL(FormatMPEG3,frame),
 DECL(FormatMPEG3,close))

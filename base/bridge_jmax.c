@@ -123,9 +123,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 }
 
 static Ruby BFObject_rescue (FMessage *fm) {
-//	EVAL("STDERR.puts $!.inspect");
-//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
-	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\"]");
+	Ruby error_array = make_error_message();
 	for (int i=0; i<rb_ary_len(error_array); i++)
 		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	//!@#$leak

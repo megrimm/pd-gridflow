@@ -88,11 +88,11 @@ static int object_count=0;
 static void FObject_free (void *foo) {
 	GridObject *self = (GridObject *)foo;
 //	fprintf(stderr,"Say farewell to %08x\n",(int)self);
-	if (!self->peer) {
-		fprintf(stderr,"attempt to free object that has no peer\n");
+	if (!self->rself) {
+		fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();
 	}
-	self->peer = 0; /* paranoia */
+	self->rself = 0; /* paranoia */
 	delete self;
 	/* a silly bug was on this line before. watch out. */
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
@@ -164,7 +164,7 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
 	c_peer->foreign_peer = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
-	c_peer->peer = rself;
+	c_peer->rself = rself;
 	c_peer->grid_class = gc;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
 	rb_funcall2(rself,SI(initialize),argc,argv);
@@ -250,7 +250,6 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		const char *buf =
-			strcmp(md->selector,"init")==0 ? "initialize" :
 			strcmp(md->selector,"del")==0 ? "delete" :
 			md->selector;
 		rb_define_method(rself,buf,(Ruby(*)(...))md->method,-1);
@@ -341,6 +340,8 @@ void startup_grid();
 void startup_flow_objects();
 void startup_formats();
 
+#define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RFunc)b,c)
+
 /* Ruby's entrypoint. */
 void Init_gridflow () {
 	signal(11,SIG_DFL);
@@ -352,7 +353,6 @@ void Init_gridflow () {
 	sym_outlets=SYM(@outlets);
 
 	mGridFlow = rb_define_module("GridFlow");
-#define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RFunc)b,c)
 	SDEF2("clock_tick",GridFlow_clock_tick,0);
 	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
 	SDEF2("exec",GridFlow_exec,2);

@@ -24,7 +24,6 @@
 #define __BRIDGE_C
 
 #include <sys/time.h>
-#include "grid.h"
 
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
@@ -59,6 +58,14 @@ static void *Pointer_get (Ruby rself) {
 	return p;
 }
 */
+
+static Ruby make_error_message () {
+//	EVAL("STDERR.puts $!.inspect");
+//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
+	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",$!.backtrace[0]]");
+//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\"]");
+	return error_array;
+}
 
 static void bridge_common_init () {
 	sym_ninlets  = rb_intern("@ninlets");

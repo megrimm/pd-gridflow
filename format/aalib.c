@@ -31,7 +31,7 @@ struct FormatAALib : Format {
 	Dim *dim;
 
 	DECL3(close);
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -73,7 +73,7 @@ METHOD3(FormatAALib,close) {
 	return Qnil;
 }
 
-METHOD3(FormatAALib,init) {
+METHOD3(FormatAALib,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	dim = 0;
@@ -109,6 +109,6 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatAALib,"FormatAALib",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatAALib,0,4)),
-DECL(FormatAALib,init),
+DECL(FormatAALib,initialize),
 DECL(FormatAALib,close))
 

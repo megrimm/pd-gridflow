@@ -243,7 +243,7 @@ static Ruby String_swap16_f (Ruby rself) {
 
 /* **************************************************************** */
 
-METHOD3(BitPacking,init) {
+METHOD3(BitPacking,initialize) {
 	return Qnil;
 }
 
@@ -300,7 +300,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 
 GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
 LIST(),
-	DECL(BitPacking,init),
+	DECL(BitPacking,initialize),
 	DECL(BitPacking,pack2),
 	DECL(BitPacking,unpack2));
 

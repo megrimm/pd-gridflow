@@ -49,8 +49,35 @@ OurByteOrder = case [1].pack("L")
         when "\1\0\0\0"; ENDIAN_LITTLE  # Intel
         else raise "Cannot determine byte order" end
 
-class Format
+class Format #< GridObject
 	FF_R,FF_W = 4,2
+
+=begin
+	NEW FORMAT API (0.6.x)
+	mode is :in or :out
+	def initialize(mode,*args) : open a file handler (do it via .new of class)
+	def frame() : read one frame, send through outlet 0
+	def seek(Integer i) : select one frame to be read next (by number)
+	def length() : ^Integer number of frames
+	def option(Symbol name, *args) : miscellaneous options
+	def close() : close a handler
+=end
+
+	def initialize(mode,*)
+		super
+		@mode = mode
+		@parent = nil
+		flags = self.class.instance_eval{@flags}
+		# FF_W, FF_R, FF_RW
+		case mode
+		when  :in; flags[2]==1
+		when :out; flags[1]==1
+		else raise "Format opening mode is incorrect"
+		end or raise "Format '%s' does not support mode '%s'",
+			self.class.instance_eval{@symbol_name}, mode
+	end
+
+	def close; end
 
 	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
 		install(name,inlets,outlets)

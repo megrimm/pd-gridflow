@@ -38,7 +38,7 @@ struct FormatJPEG : Format {
 
 	DECL3(close);
 	DECL3(frame);
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -79,7 +79,7 @@ GRID_END
 
 METHOD3(FormatJPEG,frame) {
 	GridOutlet *o = out[0];
-	rb_funcall(peer,SI(rewind_if_needed),0);
+	rb_funcall(rself,SI(rewind_if_needed),0);
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
 	jpeg_stdio_src(&djpeg,f);
@@ -104,14 +104,14 @@ METHOD3(FormatJPEG,close) {
 	return Qnil;
 }
 
-METHOD3(FormatJPEG,init) {
+METHOD3(FormatJPEG,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: jpeg file <filename>");
-	if (mode!=SYM(in) && mode!=SYM(out)) RAISE("AAARGH!");
-	rb_funcall(peer,SI(raw_open),3,mode,argv[0],argv[1]);
+	if (mode()!=SYM(in) && mode()!=SYM(out)) RAISE("AAARGH!");
+	rb_funcall(rself,SI(raw_open),3,mode(),argv[0],argv[1]);
 	OpenFile *foo;
-	GetOpenFile(rb_ivar_get(peer,SI(@stream)),foo);
+	GetOpenFile(rb_ivar_get(rself,SI(@stream)),foo);
 	f = foo->f;
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
@@ -125,7 +125,7 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatJPEG,"FormatJPEG",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatJPEG,0,4)),
-DECL(FormatJPEG,init),
+DECL(FormatJPEG,initialize),
 DECL(FormatJPEG,frame),
 DECL(FormatJPEG,close))
 

@@ -37,8 +37,8 @@
 
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
-#define IV(s) rb_ivar_get(peer,SI(s))
-#define IVS(s,v) rb_ivar_set(peer,SI(s),v)
+#define IV(s) rb_ivar_get(rself,SI(s))
+#define IVS(s,v) rb_ivar_set(rself,SI(s),v)
 
 Operator1 *OP1(Ruby x) {
 	Ruby s = rb_hash_aref(op1_dict,x);
@@ -104,7 +104,7 @@ struct GridImport : GridObject {
 	Dim *dim; /* size of grids to send */
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() { if (dim) delete dim; }
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(_0_reset);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -128,7 +128,7 @@ GRID_END
 
 GRID_INPUT(GridImport,1,dim_grid) {	dim = dim_grid.to_dim(); } GRID_END
 
-METHOD3(GridImport,init) {
+METHOD3(GridImport,initialize) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
 	dim_grid.init_from_ruby(argv[0]);
@@ -143,7 +143,7 @@ METHOD3(GridImport,_0_reset) {
 
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridImport,0,4),GRINLET(GridImport,1,4)),
-	DECL(GridImport,init),
+	DECL(GridImport,initialize),
 	DECL(GridImport,_0_reset))
 
 /* **************************************************************** */
@@ -162,7 +162,7 @@ GRID_INLET(GridExport,0) {}
 GRID_FLOW {
 	for (int i=0; i<n; i++) {
 		Ruby a[] = { INT2NUM(0), sym_int, INT2NUM(data[i]) };
-		FObject_send_out(COUNT(a),a,peer);
+		FObject_send_out(COUNT(a),a,rself);
 	}
 }
 GRID_FINISH {}
@@ -190,7 +190,7 @@ GRID_INLET(GridExportList,0) {
 	if (n>250000) RAISE("list too big (%d elements)", n);
 	list = rb_ary_new2(n+2);
 	this->n = n;
-	rb_ivar_set(peer,SI(@list),list); /* keep */
+	rb_ivar_set(rself,SI(@list),list); /* keep */
 	rb_ary_store(list,0,INT2NUM(0));
 	rb_ary_store(list,1,sym_list);
 }
@@ -199,9 +199,9 @@ GRID_FLOW {
 		rb_ary_store(list,in->dex+i+2,INT2NUM(*data));
 }
 GRID_FINISH {
-	FObject_send_out(rb_ary_len(list),rb_ary_ptr(list),peer);
+	FObject_send_out(rb_ary_len(list),rb_ary_ptr(list),rself);
 	list = 0;
-	rb_ivar_set(peer,SI(@list),Qnil); /* unkeep */
+	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
 }
 GRID_END
 
@@ -221,7 +221,7 @@ LIST(GRINLET(GridExportList,0,4)))
 
 struct GridStore : GridObject {
 	Grid r;
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(_0_bang);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -314,20 +314,20 @@ GRID_FINISH {}
 
 GRID_END
 
-METHOD3(GridStore,init) {
+METHOD3(GridStore,initialize) {
 	rb_call_super(argc,argv);
 	r.init(0, NumberType_find(argc==0 ? SYM(int32) : argv[0]));
 	return Qnil;
 }
 
 METHOD3(GridStore,_0_bang) {
-	rb_funcall(peer,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
+	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 	return Qnil;
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridStore,0,4),GRINLET(GridStore,1,4)),
-	DECL(GridStore,init),
+	DECL(GridStore,initialize),
 	DECL(GridStore,_0_bang))
 
 /* **************************************************************** */
@@ -336,7 +336,7 @@ LIST(GRINLET(GridStore,0,4),GRINLET(GridStore,1,4)),
 
 struct GridOp1 : GridObject {
 	const Operator1 *op;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -351,7 +351,7 @@ GRID_FINISH { out[0]->end(); }
 
 GRID_END
 
-METHOD3(GridOp1,init) {
+METHOD3(GridOp1,initialize) {
 	rb_call_super(argc,argv);
 	op = OP1(argv[0]);
 	return Qnil;
@@ -359,7 +359,7 @@ METHOD3(GridOp1,init) {
 
 GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridOp1,0,6)),
-	DECL(GridOp1,init))
+	DECL(GridOp1,initialize))
 
 /* **************************************************************** */
 /*
@@ -371,7 +371,7 @@ LIST(GRINLET(GridOp1,0,6)),
 struct GridOp2 : GridObject {
 	const Operator2 *op;
 	Grid r;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -411,7 +411,7 @@ GRID_END
 GRID_INPUT(GridOp2,1,r) {}
 GRID_END
 
-METHOD3(GridOp2,init) {
+METHOD3(GridOp2,initialize) {
 	rb_call_super(argc,argv);
 	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
@@ -426,7 +426,7 @@ METHOD3(GridOp2,init) {
 
 GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
-	DECL(GridOp2,init))
+	DECL(GridOp2,initialize))
 
 /* **************************************************************** */
 /*
@@ -440,7 +440,7 @@ LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
 struct GridFold : GridObject {
 	const Operator2 *op;
 	Grid r;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -486,7 +486,7 @@ GRID_END
 GRID_INPUT(GridFold,1,r) {}
 GRID_END
 
-METHOD3(GridFold,init) {
+METHOD3(GridFold,initialize) {
 	rb_call_super(argc,argv);
 	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
@@ -501,7 +501,7 @@ METHOD3(GridFold,init) {
 
 GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridFold,0,4)),
-	DECL(GridFold,init))
+	DECL(GridFold,initialize))
 
 /* **************************************************************** */
 /*
@@ -513,7 +513,7 @@ LIST(GRINLET(GridFold,0,4)),
 /*{ Dim[*As,*Bs],Dim[*Bs] -> Dim[*As,*Bs] }*/
 
 struct GridScan : GridFold {
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -553,7 +553,7 @@ GRID_END
 GRID_INPUT(GridScan,1,r) {}
 GRID_END
 
-METHOD3(GridScan,init) {
+METHOD3(GridScan,initialize) {
 	rb_call_super(argc,argv);
 	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
@@ -568,7 +568,7 @@ METHOD3(GridScan,init) {
 
 GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridScan,0,4)),
-	DECL(GridScan,init))
+	DECL(GridScan,initialize))
 
 /* **************************************************************** */
 /* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
@@ -583,7 +583,7 @@ struct GridInner : GridObject {
 	const Operator2 *op_fold;
 	Number rint;
 	Grid r;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(2);
 };
@@ -640,7 +640,7 @@ GRID_FLOW { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 GRID_FINISH {}
 GRID_END
 
-METHOD3(GridInner,init) {
+METHOD3(GridInner,initialize) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
 	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
@@ -653,14 +653,14 @@ METHOD3(GridInner,init) {
 
 GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridInner,0,4),GRINLET(GridInner,2,4)),
-	DECL(GridInner,init))
+	DECL(GridInner,initialize))
 
 /* **************************************************************** */
 
 /*{ Dim[*As,C],Dim[*Bs,C] -> Dim[*As,*Bs] }*/
 
 struct GridInner2 : GridInner {
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(2);
 };
@@ -714,7 +714,7 @@ GRID_FLOW { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 GRID_FINISH {}
 GRID_END
 
-METHOD3(GridInner2,init) {
+METHOD3(GridInner2,initialize) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
 	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
@@ -727,7 +727,7 @@ METHOD3(GridInner2,init) {
 
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridInner2,0,4),GRINLET(GridInner2,2,4)),
-	DECL(GridInner2,init))
+	DECL(GridInner2,initialize))
 
 /* **************************************************************** */
 
@@ -736,7 +736,7 @@ LIST(GRINLET(GridInner2,0,4),GRINLET(GridInner2,2,4)),
 struct GridOuter : GridObject {
 	Grid r;
 	const Operator2 *op;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -777,7 +777,7 @@ GRID_FLOW { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 GRID_FINISH {}
 GRID_END
 
-METHOD3(GridOuter,init) {
+METHOD3(GridOuter,initialize) {
 	rb_call_super(argc,argv);
 	op = OP2(argv[0]);
 	r.init(0);
@@ -789,7 +789,7 @@ METHOD3(GridOuter,init) {
 
 GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridOuter,0,4),GRINLET(GridOuter,1,4)),
-	DECL(GridOuter,init))
+	DECL(GridOuter,initialize))
 
 /* **************************************************************** */
 /* the incoming grid is stored as "c" with a margin on the four sides
@@ -803,7 +803,7 @@ struct GridConvolve : GridObject {
 	const Operator2 *op_para, *op_fold;
 	Number rint;
 	int margx,margy; /* margins */
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -900,7 +900,7 @@ GRID_FLOW { COPY(&((Pt<int32>)b)[in->dex], data, n); }
 GRID_FINISH {}
 GRID_END
 
-METHOD3(GridConvolve,init) {
+METHOD3(GridConvolve,initialize) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
 	op_para = OP2(argc<1 ? SYM(*) : argv[0]);
@@ -914,7 +914,7 @@ METHOD3(GridConvolve,init) {
 
 GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridConvolve,0,4),GRINLET(GridConvolve,1,4)),
-	DECL(GridConvolve,init))
+	DECL(GridConvolve,initialize))
 
 /* **************************************************************** */
 
@@ -922,7 +922,7 @@ struct GridFor : GridObject {
 	Grid from;
 	Grid to;
 	Grid step;
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(_0_set);
 	DECL3(_0_bang);
 	GRINLET3(0);
@@ -934,7 +934,7 @@ struct GridFor : GridObject {
   or
   { Dim[B],Dim[B],Dim[B] -> Dim[*As,B] }*/
 
-METHOD3(GridFor,init) {
+METHOD3(GridFor,initialize) {
 	from.constrain(expect_max_one_dim);
 	to  .constrain(expect_max_one_dim);
 	step.constrain(expect_max_one_dim);
@@ -1000,7 +1000,7 @@ GRID_END
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
-	DECL(GridFor,init),
+	DECL(GridFor,initialize),
 	DECL(GridFor,_0_bang),
 	DECL(GridFor,_0_set))
 
@@ -1039,7 +1039,7 @@ struct GridRedim : GridObject {
 	~GridRedim() {
 		if (dim) delete dim;
 	}
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -1083,7 +1083,7 @@ GRID_END
 GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid.to_dim(); }
 GRID_END
 
-METHOD3(GridRedim,init) {
+METHOD3(GridRedim,initialize) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
 	Grid t;
@@ -1095,7 +1095,7 @@ METHOD3(GridRedim,init) {
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
-	DECL(GridRedim,init))
+	DECL(GridRedim,initialize))
 
 /* ---------------------------------------------------------------- */
 /* "@scale_by" does quick scaling of pictures by integer factors */
@@ -1106,7 +1106,7 @@ struct GridScaleBy : GridObject {
 	Grid scale; /* integer scale factor */
 	int scaley;
 	int scalex;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1162,7 +1162,7 @@ static void expect_scale_factor (Dim *dim) {
 
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
-METHOD3(GridScaleBy,init) {
+METHOD3(GridScaleBy,initialize) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
 	scaley = ((Pt<int32>)scale)[0];
@@ -1178,7 +1178,7 @@ METHOD3(GridScaleBy,init) {
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridScaleBy,0,4)),
-	DECL(GridScaleBy,init))
+	DECL(GridScaleBy,initialize))
 
 /* ---------------------------------------------------------------- */
 /* "@downscale_by" does quick downscaling of pictures by integer factors */
@@ -1191,7 +1191,7 @@ struct GridDownscaleBy : GridObject {
 	int scalex;
 	bool smoothly;
 	Grid temp;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1256,7 +1256,7 @@ GRID_FLOW {
 GRID_FINISH { out[0]->end(); }
 GRID_END
 
-METHOD3(GridDownscaleBy,init) {
+METHOD3(GridDownscaleBy,initialize) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
 	scaley = ((Pt<int32>)scale)[0];
@@ -1272,7 +1272,7 @@ METHOD3(GridDownscaleBy,init) {
 
 GRCLASS(GridDownscaleBy,"@downscale_by",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridDownscaleBy,0,4)),
-	DECL(GridDownscaleBy,init))
+	DECL(GridDownscaleBy,initialize))
 
 /* **************************************************************** */
 
@@ -1281,7 +1281,7 @@ struct GridJoin : GridObject {
 	int which_dim;
 	GRINLET3(0);
 	GRINLET3(1);
-	DECL3(init);
+	DECL3(initialize);
 };
 
 GRID_INLET(GridJoin,0) {
@@ -1296,7 +1296,7 @@ GRID_END
 GRID_INPUT(GridJoin,1,r) {}
 GRID_END
 
-METHOD3(GridJoin,init) {
+METHOD3(GridJoin,initialize) {
 	which_dim = argc<1 ? -1 : INT(argv[0]);
 	r.init_from_ruby(argv[1]);
 	return Qnil;
@@ -1304,7 +1304,7 @@ METHOD3(GridJoin,init) {
 
 GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridJoin,0,4),GRINLET(GridJoin,1,4)),
-	DECL(GridJoin,init))
+	DECL(GridJoin,initialize))
 
 /* **************************************************************** */
 
@@ -1315,7 +1315,7 @@ struct GridLayer : GridObject {
 	}
 	GRINLET3(0);
 	GRINLET3(1);
-	DECL3(init);
+	DECL3(initialize);
 };
 
 GRID_INLET(GridLayer,0) {
@@ -1344,38 +1344,38 @@ GRID_END
 GRID_INPUT(GridLayer,1,r) {}
 GRID_END
 
-METHOD3(GridLayer,init) {
+METHOD3(GridLayer,initialize) {
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
 GRCLASS(GridLayer,"@layer",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridLayer,0,4),GRINLET(GridLayer,1,4)),
-	DECL(GridLayer,init))
+	DECL(GridLayer,initialize))
 
 /* **************************************************************** */
 
 struct GridFinished : GridObject {
 	GRINLET3(0);
-	DECL3(init);
+	DECL3(initialize);
 };
 
 GRID_INLET(GridFinished,0) {}
 GRID_FLOW { RAISE("BLAH"); }
 GRID_FINISH {
 	Ruby a[] = { INT2NUM(0), sym_bang };
-	FObject_send_out(COUNT(a),a,peer);
+	FObject_send_out(COUNT(a),a,rself);
 }
 GRID_END
 
-METHOD3(GridFinished,init) {
+METHOD3(GridFinished,initialize) {
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
 GRCLASS(GridFinished,"@finished",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridFinished,0,0)),
-	DECL(GridFinished,init))
+	DECL(GridFinished,initialize))
 
 /* **************************************************************** */
 /*
@@ -1396,7 +1396,7 @@ LIST(GRINLET(GridFinished,0,0)),
 struct GridPolygon : GridObject {
 	Grid polygon;
 	Grid color;
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
@@ -1414,12 +1414,12 @@ GRID_END
 GRID_INPUT(GridPolygon,2,polygon) {}
 GRID_INPUT(GridPolygon,1,color) {}
 
-METHOD3(GridPolygon,init) {
+METHOD3(GridPolygon,initialize) {
 }
 
 GRCLASS(GridPolygon,"@polygon",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4)),
-	DECL(GridPolygon,init))
+	DECL(GridPolygon,initialize))
 */
 
 /* **************************************************************** */
@@ -1427,7 +1427,7 @@ LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4))
 /*{ Dim[*As,3] -> Dim[*As,3] }*/
 
 struct GridRGBtoHSV : GridObject {
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1469,7 +1469,7 @@ GRID_FINISH {
 }
 GRID_END
 
-METHOD3(GridRGBtoHSV,init) {
+METHOD3(GridRGBtoHSV,initialize) {
 	rb_call_super(argc,argv);
 	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
@@ -1477,14 +1477,14 @@ METHOD3(GridRGBtoHSV,init) {
 
 GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridRGBtoHSV,0,4)),
-	DECL(GridRGBtoHSV,init))
+	DECL(GridRGBtoHSV,initialize))
 
 /* **************************************************************** */
 
 /*{ Dim[*As,3] -> Dim[*As,3] }*/
 
 struct GridHSVtoRGB : GridObject {
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1514,7 +1514,7 @@ GRID_FLOW {
 GRID_FINISH { out[0]->end(); }
 GRID_END
 
-METHOD3(GridHSVtoRGB,init) {
+METHOD3(GridHSVtoRGB,initialize) {
 	rb_call_super(argc,argv);
 	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
@@ -1522,7 +1522,7 @@ METHOD3(GridHSVtoRGB,init) {
 
 GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridHSVtoRGB,0,4)),
-	DECL(GridHSVtoRGB,init))
+	DECL(GridHSVtoRGB,initialize))
 
 /* **************************************************************** */
 /* [rtmetro] */
@@ -1536,7 +1536,7 @@ struct RtMetro : GridObject {
 
 	uint64 delay();
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(_0_int);
 	DECL3(_1_int);
 };
@@ -1588,11 +1588,13 @@ METHOD3(RtMetro,_0_int) {
 	on = !! FIX2INT(argv[0]);
 	gfpost("on = %d",on);
 	if (oon && !on) {
-		gfpost("deleting rtmetro alarm for self=%08x rself=%08x",(long)this,(long)peer);
-		MainLoop_remove((void *)peer);
+		gfpost("deleting rtmetro alarm for self=%08x rself=%08x",
+			(long)this,(long)rself);
+		MainLoop_remove((void *)rself);
 	} else if (!oon && on) {
-		gfpost("creating rtmetro alarm for self=%08x rself=%08x",(long)this,(long)peer);
-		MainLoop_add((void *)peer,(void(*)(void*))RtMetro_alarm);
+		gfpost("creating rtmetro alarm for self=%08x rself=%08x",
+			(long)this,(long)rself);
+		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
 		next_time = RtMetro_now();
 	}
 	return Qnil;
@@ -1604,7 +1606,7 @@ METHOD3(RtMetro,_1_int) {
 	return Qnil;
 }
 
-METHOD3(RtMetro,init) {
+METHOD3(RtMetro,initialize) {
 	rb_call_super(argc,argv);
 	ms = FIX2INT(argv[0]);
 	on = 0;
@@ -1624,7 +1626,7 @@ GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,startup:0,
 LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
-	DECL(RtMetro,init))
+	DECL(RtMetro,initialize))
 
 /* **************************************************************** */
 /* [@global] */

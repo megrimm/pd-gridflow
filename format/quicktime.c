@@ -32,7 +32,7 @@ struct FormatQuickTime : Format {
 	quicktime_t *anim;
 	BitPacking *bit_packing;
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(close);
 	DECL3(frame);
 //	DECL3(seek);
@@ -87,7 +87,7 @@ METHOD3(FormatQuickTime,close) {
 
 /* note: will not go through jMax data paths */
 /* libquicktime may be nice, but it won't take a filehandle, only filename */
-METHOD3(FormatQuickTime,init) {
+METHOD3(FormatQuickTime,initialize) {
 	rb_call_super(argc,argv);
 	argc--; argv++;
 
@@ -119,7 +119,7 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatQuickTime,"FormatQuickTime",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatQuickTime,0,4)),
-DECL(FormatQuickTime,init),
+DECL(FormatQuickTime,initialize),
 //DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),
 DECL(FormatQuickTime,close))

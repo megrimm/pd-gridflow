@@ -79,7 +79,7 @@ struct FormatX11 : Format {
 	DECL3(frame);
 	DECL3(close);
 	DECL3(option);
-	DECL3(init);
+	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -140,12 +140,10 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		INT2NUM(0), SYM(position),
 		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
 	/* HACK */
-	if (!parent) {
-		VALUE rself = IEVAL(peer,"@outlets[0][0][0]");
-		DGS(GridObject);
-		parent = self;
+	if (!rb_ivar_defined(rself,SI(@parent))) {
+		IEVAL(rself,"@parent ||= @outlets[0][0][0]");
 	}
-	FObject_send_out(COUNT(argv),argv,parent->peer);
+	FObject_send_out(COUNT(argv),argv,rb_ivar_get(rself,SI(parent)));
 }
 
 void FormatX11::alarm() {
@@ -162,7 +160,7 @@ void FormatX11::alarm() {
 			XExposeEvent *ex = (XExposeEvent *)&e;
 			/*gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
-			if (mode == SYM(out)) {
+			if (mode() == SYM(out)) {
 				show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
@@ -473,7 +471,7 @@ void FormatX11::open_display(const char *disp_string) {
 #endif
 }
 
-METHOD3(FormatX11,init) {
+METHOD3(FormatX11,initialize) {
 	/* defaults */
 	int sy = 240;
 	int sx = 320;
@@ -568,7 +566,7 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatX11,"FormatX11",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatX11,0,4)),
-DECL(FormatX11,init),
+DECL(FormatX11,initialize),
 DECL(FormatX11,frame),
 DECL(FormatX11,option),
 DECL(FormatX11,close))
