@@ -55,10 +55,6 @@ struct GFBridge gf_bridge = {
 	post: default_post,
 };
 
-void startup_number(void);
-void startup_grid(void);
-void startup_flow_objects(void);
-
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
 
@@ -78,8 +74,8 @@ void FObject_mark (void *z) {
 }
 
 static void FObject_free (void *$) {
-	fprintf(stderr,"Say farewell to %08x\n",(int)$);
-	delete $; /* !@#$ what about virtual~ ? */
+//	fprintf(stderr,"Say farewell to %08x\n",(int)$);
+	delete (GridObject *)$; /* !@#$ what about virtual~ ? */
 }
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
@@ -135,10 +131,7 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 VALUE FObject_delete(VALUE argc, VALUE *argv, VALUE $) {
 	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,$);
-	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
-	if (rb_funcall(keep,SI(size),0)==0) {
-		rb_funcall(GridFlow_module,0,SI(leakage_dump));
-	}
+//	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	return Qnil;
 }
 
@@ -185,6 +178,16 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
 	if (gf_bridge.class_install)
 		gf_bridge.class_install($,RSTRING(name2)->ptr,inlets2,outlets2);
 	return Qnil;
+}
+
+VALUE FObject_profiler_cumul(VALUE rself) {
+	DGS(GridObject);
+	return LL2NUM($->profiler_cumul);
+}
+
+VALUE FObject_profiler_cumul_assign(VALUE rself, VALUE arg) {
+	DGS(GridObject);
+	$->profiler_cumul = NUM2LL(arg);
 }
 
 /* ---------------------------------------------------------------- */
@@ -271,6 +274,8 @@ VALUE ruby_c_install(GridClass *gc, VALUE super) {
 		INT2NUM(gc->inlets),
 		INT2NUM(gc->outlets));
 	GridObject_conf_class($,gc);
+	gc->rubyclass = $;
+	if (gc->startup) gc->startup(gc);
 	return Qnil;
 }
 
@@ -295,6 +300,10 @@ void *Pointer_get (VALUE self) {
 /* ---------------------------------------------------------------- */
 
 #include <signal.h>
+
+void startup_number(void);
+void startup_grid(void);
+void startup_flow_objects(void);
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
@@ -324,6 +333,8 @@ void Init_gridflow () {
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	DEF(FObject, send_out, -1);
 	DEF(FObject, delete, -1);
+	DEF(FObject, profiler_cumul, 0);
+	DEF(FObject, profiler_cumul_assign, 1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
@@ -338,8 +349,6 @@ void Init_gridflow () {
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-//	rb_require("gridflow/base/main.rb");
-//	rb_require("gridflow/format/main.rb");
 	EVAL("STDERR.puts $:");
 	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do \
 		require	f end");

@@ -55,10 +55,7 @@ class Format
 
 	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
 		install(name,inlets,outlets)
-		@flags = flags
-		@symbol_name = symbol_name
-		@description = description
-		GridFlow.formats[symbol_name.intern]=self
+		conf_format(flags,symbol_name,description)
 		nil
 	end
 end

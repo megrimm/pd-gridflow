@@ -59,7 +59,7 @@ METHOD(FormatMPEG3,frame) {
 		o->send(bs,b2);
 	}
 
-	delete buf;
+	delete[] buf;
 	o->end();
 }
 
@@ -94,8 +94,14 @@ METHOD(FormatMPEG3,init) {
 	$->bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-FMTCLASS(FormatMPEG3,"mpeg","Motion Picture Expert Group Format (using HeroineWarrior's)",FF_R,
-inlets:1,outlets:1,LIST(GRINLET(FormatMPEG3,0)),
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 4,'mpeg','Motion Picture Expert Group Format (using "
+	"HeroineWarrior\\'s)'");
+}
+
+GRCLASS(FormatMPEG3,"FormatMPEG3",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG3,0)),
 DECL(FormatMPEG3,init),
 DECL(FormatMPEG3,seek),
 DECL(FormatMPEG3,frame),

@@ -120,9 +120,14 @@ METHOD(FormatSDL,init) {
 		break;
 	}
 }
-						   
-FMTCLASS(FormatSDL,"sdl","Simple Directmedia Layer",FF_W,
-inlets:1,outlets:1,LIST(GRINLET(FormatSDL,0)),
+
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 2,'sdl','Simple Directmedia Layer'");
+}
+
+GRCLASS(FormatSDL,"FormatSDL",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatSDL,0)),
 DECL(FormatSDL,init),
 DECL(FormatSDL,close))
 

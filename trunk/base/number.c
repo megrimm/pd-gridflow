@@ -288,7 +288,7 @@ METHOD2(BitPacking,delete) {
 	return Qnil;
 }
 
-GRCLASS(BitPacking,"",inlets:0,outlets:0,
+GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(BitPacking,init),
 	DECL(BitPacking,delete),

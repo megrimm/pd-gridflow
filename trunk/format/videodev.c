@@ -120,12 +120,12 @@ static const char *video_mode_choice[] = {
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
 	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
-	delete foo;}
+	delete[] foo;}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
 	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
-	delete foo;}
+	delete[] foo;}
 
 static char *flags_to_s(int value, int n, const char **table) {
 	char foo[256];
@@ -228,9 +228,20 @@ struct FormatVideoDev : Format {
 	bool use_mmap;
 };
 
+#define IOCTL(_f_,_name_,_arg_) \
+	(gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+		ioctl(_f_,_name_,_arg_))
+
 #define WIOCTL(_f_,_name_,_arg_) \
-	((ioctl(_f_,_name_,_arg_) < 0) && \
-		(gfpost("ioctl %s: %s",#_name_,strerror(errno)),1))
+	(gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+	ioctl(_f_,_name_,_arg_) < 0) && \
+		(gfpost("ioctl %s: %s",#_name_,strerror(errno)),1)
+
+#define WIOCTL2(_f_,_name_,_arg_) \
+	((gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+	ioctl(_f_,_name_,_arg_) < 0) && \
+		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
+		 RAISE("ioctl error"), 0))
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
@@ -260,7 +271,7 @@ METHOD(FormatVideoDev,size) {
 METHOD(FormatVideoDev,dealloc_image) {
 	if (!$->image) return;
 	if (!$->use_mmap) {
-		delete $->image;
+		delete[] $->image;
 	} else {
 		munmap($->image, $->vmbuf.size);
 		$->image = 0;
@@ -272,8 +283,9 @@ METHOD(FormatVideoDev,alloc_image) {
 		$->image = new uint8[$->dim->prod(0,1)*$->bit_packing->bytes];
 		return;
 	}
+	RAISE("hello");
 	int fd = GETFD;
-	if (WIOCTL(fd, VIDIOCGMBUF, &$->vmbuf)) RAISE("ioctl error");
+	WIOCTL2(fd, VIDIOCGMBUF, &$->vmbuf);
 	video_mbuf_gfpost(&$->vmbuf);
 	$->image = (uint8 *) mmap(
 		0,$->vmbuf.size,
@@ -294,7 +306,7 @@ METHOD(FormatVideoDev,frame_ask) {
 	$->vmmap.height = $->dim->get(0);
 //	gfpost("will try:");
 //	video_mmap_gfpost(&$->vmmap);
-	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) RAISE("ioctl error");
+	WIOCTL2(fd, VIDIOCMCAPTURE, &$->vmmap);
 //	gfpost("driver gave us:");
 //	video_mmap_gfpost(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
@@ -315,14 +327,36 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 	out->end();
 }
 
+int read2(int fd,uint8 *image,int n) {
+	int r=0;
+	while (n>0) {
+		int rr=read(fd,image,n);
+		if (rr<0) return rr;
+		r+=rr, image+=rr, n-=rr;
+	}
+	return r;
+}
+
+int read3(int fd,uint8 *image,int n) {
+	int r=0;
+	int rr=read(fd,image,n);
+	if (rr<0) return rr;
+	return n;
+}
+
 METHOD(FormatVideoDev,frame) {
 	if (!$->bit_packing) RAISE("no bit_packing");
 	if (!$->image) rb_funcall(rself,SI(alloc_image),0);
 	int fd = GETFD;
 	if (!$->use_mmap) {
+//		gfpost("$=%p; $->image=%p",$,$->image);
 		/* picture is read at once by frame() to facilitate debugging. */
-		int tot = $->dim->prod() * $->bit_packing->bytes;
-		int n = (int) read(fd,$->image,tot);
+		int tot = $->dim->prod(0,1) * $->bit_packing->bytes;
+
+//		memset($->image,0,tot);
+//		int n = tot;
+
+		int n = (int) read3(fd,$->image,tot);
 		if (n==tot) FormatVideoDev_frame_finished($,$->out[0],$->image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
@@ -335,7 +369,7 @@ METHOD(FormatVideoDev,frame) {
 		rb_funcall(rself,SI(frame_ask),0);
 	}
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
-	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) RAISE("wioctl");
+	WIOCTL2(fd, VIDIOCSYNC, &$->vmmap);
 	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
 	rb_funcall(rself,SI(frame_ask),0);
 }
@@ -350,7 +384,7 @@ METHOD(FormatVideoDev,norm) {
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
 	if (value<0 || value>3) RAISE("norm must be in range 0..3");
-	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
+	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {
 		gfpost("no tuner #%d", value);
 	} else {
 		vtuner.mode = value;
@@ -365,7 +399,7 @@ METHOD(FormatVideoDev,tuner) {
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	$->current_tuner = value;
-	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
+	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
 	vtuner.mode = VIDEO_MODE_NTSC;
 	VideoTuner_gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
@@ -377,7 +411,7 @@ METHOD(FormatVideoDev,channel) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	$->current_channel = value;
-	if (0> ioctl(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
+	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	VideoChannel_gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
@@ -386,15 +420,20 @@ METHOD(FormatVideoDev,channel) {
 METHOD(FormatVideoDev,frequency) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
-	if (0> ioctl(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
+	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
 }
 
 METHOD(FormatVideoDev,transfer) {
 	VALUE sym = argv[0];
+	gfpost("transfer %s",rb_sym_name(argv[0]));
 	if (sym == SYM(read)) {
+		rb_funcall(rself,SI(dealloc_image),0);
 		$->use_mmap = false;
+		gfpost("transfer read");
 	} else if (sym == SYM(mmap)) {
+		rb_funcall(rself,SI(dealloc_image),0);
 		$->use_mmap = true;
+		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
 }
 
@@ -402,6 +441,7 @@ METHOD(FormatVideoDev,option) {
 	int fd = GETFD;
 	VALUE sym = argv[0];
 	int value = argv[1];
+	gfpost("option %s %08x",rb_sym_name(sym),value);
 	if (sym == SYM(channel)) {
 		rb_funcall(rself,SI(channel),1,value);
 	} else if (sym == SYM(tuner)) {
@@ -429,6 +469,7 @@ METHOD(FormatVideoDev,option) {
 	PICTURE_ATTR(whiteness)
 
 	} else {
+		RAISE("crap");
 		rb_call_super(argc,argv);
 	}
 }
@@ -446,13 +487,6 @@ METHOD(FormatVideoDev,init2) {
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	VideoCapability_gfpost(&vcaps);
-
-/*
-	PUT(0,symbol,SYM(size));
-	PUT(1,int,vcaps.maxheight);
-	PUT(2,int,vcaps.maxwidth);
-	$->cl->option((Format *)$,3,at);
-*/
 	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
@@ -497,22 +531,34 @@ METHOD(FormatVideoDev,init) {
 	$->pending_frames[1] = -1;
 	$->image = 0;
 	$->use_mmap = true;
-	if (argc!=1) RAISE("usage: videodev <devicename>");
+	if (argc<1) RAISE("usage: videodev <devicename>");
 	const char *filename = rb_sym_name(argv[0]);
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
 	rb_ivar_set(rself,SI(@stream),file);
 	rb_p(file);
 	rb_p(rb_ivar_get(rself,SI(@stream)));
-	rb_funcall(rself,SI(init2),0);
+	if (argc>1 && argv[1]==SYM(noinit)) {
+		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+		$->bit_packing = new BitPacking(is_le(),3,3,masks);
+		int v[]={288,352,3};
+		$->dim = new Dim(3,v);
+	} else {
+		rb_funcall(rself,SI(init2),0);
+	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
 }
 
 /* **************************************************************** */
 
-FMTCLASS(FormatVideoDev,"videodev","Video4linux 1.x",FF_R,
-inlets:1,outlets:1,LIST(GRINLET(FormatVideoDev,0)),
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 4,'videodev','Video4linux 1.x'");
+}
+
+GRCLASS(FormatVideoDev,"FormatVideoDev",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatVideoDev,0)),
 DECL(FormatVideoDev,init),
 DECL(FormatVideoDev,init2),
 DECL(FormatVideoDev,alloc_image),
@@ -523,6 +569,7 @@ DECL(FormatVideoDev,norm),
 DECL(FormatVideoDev,tuner),
 DECL(FormatVideoDev,channel),
 DECL(FormatVideoDev,frequency),
+DECL(FormatVideoDev,transfer), // for some reason there's a method blackhole...
 DECL(FormatVideoDev,frame),
 DECL(FormatVideoDev,option),
 DECL(FormatVideoDev,close))

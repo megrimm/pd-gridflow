@@ -62,7 +62,7 @@ METHOD(FormatQuickTime,frame) {
 		o->send(bs,b2);
 	}
 
-	delete buf;
+	delete[] buf;
 	o->end();
 }
 
@@ -100,8 +100,14 @@ METHOD(FormatQuickTime,init) {
 	$->bit_packing = new BitPacking(is_le(),4,3,masks);
 }
 
-FMTCLASS(FormatQuickTime,"quicktime","Apple Quicktime (using HeroineWarrior's)",FF_R,
-inlets:1,outlets:1,LIST(GRINLET(FormatQuickTime,0)),
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 4,'quicktime','Apple Quicktime (using "
+	"HeroineWarrior\\'s)'");
+}
+
+GRCLASS(FormatQuickTime,"FormatQuickTime",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatQuickTime,0)),
 DECL(FormatQuickTime,init),
 //DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),
