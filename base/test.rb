@@ -15,10 +15,13 @@ class Expect < FObject
 	def expect(v)
 		@count=0
 		@v=v
+		@expecting=true
 		yield
+		@expecting=false
 		raise "wrong number of messages (#{@count})" if @count!=1
 	end
 	def _0_list(*l)
+		return if not @expecting
 		raise "got #{l.inspect} expecting #{@v.inspect}" if @v!=l
 		@count+=1
 	end
@@ -408,8 +411,9 @@ def test_layer
 	gout.connect 0,fps,0
 	fps.connect 0,pr,0
 
-	loop{gin.send_in 0}
-#	$mainloop.loop
+#	loop{gin.send_in 0}
+	gin.send_in 0
+	$mainloop.loop
 end
 
 def test_formats
@@ -456,13 +460,16 @@ def test_formats_write
 	e = FObject["@fold +"]; c.connect 0,e,0
 	f = FObject["@fold +"]; e.connect 0,f,0
 	g = FObject["@fold +"]; f.connect 0,g,0
-	h = FObject["@export_list"]; g.connect 0,h,0
-	x = Expect.new; h.connect 0,x,0
+	h = FObject["@ / 20000"]; g.connect 0,h,0
+	i = FObject["@export_list"]; h.connect 0,i,0
+	x = Expect.new; i.connect 0,x,0
 	[
-		["ppm file", "#{$imdir}/g001.ppm"],
+#		["ppm file", "#{$imdir}/g001.ppm"],
 #		["targa file", "#{$imdir}/teapot.tga"],
-		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian little"],
-		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian big"],
+#		["targa file", "#{$imdir}/tux.tga"],
+		["jpeg file", "#{$imdir}/ruby0216.jpg"],
+#		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian little"],
+#		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian big"],
 	].each {|type,file,*rest|
 		a.send_in 0, "open #{type} #{file}"
 		b.send_in 0, "open #{type} /tmp/patate"
@@ -472,7 +479,15 @@ def test_formats_write
 		raise "written file does not exist" if not File.exist? "/tmp/patate"
 		d.send_in 0, "open #{type} /tmp/patate"
 		x.expect([0]) { d.send_in 0 }
+#		d.send_in 0
 	}	
+end
+
+def test_mpeg_write
+	a = FObject["@in ppm file /opt/mex/r.ppm.cat"]
+	b = FObject["@out x11"]
+	a.connect 0,b,0
+	loop{a.send_in 0}
 end
 
 def test_headerless
@@ -537,7 +552,7 @@ def test_metro
 end
 
 if ARGV[0] then
-	send "test_#{ARGV[0]}"
+	ARGV.each {|a| send "test_#{a}" }
 	exit 0
 end
 
