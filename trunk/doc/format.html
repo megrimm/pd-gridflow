@@ -86,12 +86,10 @@
 				it will rewind and send the first picture again. 
 				see section "External Picture Formats". <br>
  <br><b>inlet 0</b> <b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
-				for format-specific options. 
-				(usually in devices that masquerade as formats). 
-				see section "External Picture Formats". <br>
- <br><b>inlet 0</b> <b>method</b> option rewind <b>(</b><b>)</b>  
+				Obsolete. the word "option" is optional now. <br>
+ <br><b>inlet 0</b> <b>method</b> rewind <b>(</b><b>)</b>  
 				rewinds to beginning of file if applicable. <br>
- <br><b>inlet 0</b> <b>method</b> option loop <b>(</b><i>bool</i> flag<b>)</b>   
+ <br><b>inlet 0</b> <b>method</b> loop <b>(</b><i>bool</i> flag<b>)</b>   
 				controls the automatic looping of movies. <br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
 				frame number of frame just sent, 
@@ -111,7 +109,7 @@
 			0-255 values. (Most.) <br>
  <br><b>method</b> init <b>(</b><i>integer</i> rows<b>, </b><i>integer</i> columns<b>)</b>    
 			This alternate way to create an @out automatically calls 
-			"open x11 here" and "option out_size <i>rows columns</i>". <br>
+			"open x11 here" and "out_size <i>rows columns</i>". <br>
   <br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 				This is the command that gives a particular resource 
 				to a @out object. This is done through a "format" 
@@ -127,14 +125,12 @@
  <br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>  
 				closes the file. usually not necessary. <br>
  <br><b>inlet 0</b> <b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
-				for format-specific options. 
-				(usually in devices that masquerade as formats). 
-				see section "External Picture Formats". <br>
- <br><b>inlet 0</b> <b>method</b> option timelog <b>(</b><i>0,1</i> status<b>)</b>   
+				Obsolete. Omit the word "option" now. <br>
+ <br><b>inlet 0</b> <b>method</b> timelog <b>(</b><i>0,1</i> status<b>)</b>   
 				when status=1, current time (unix clock) and time since last 
 				frame-end are printed in the console. when status=0, it is off. 
 				default is 0. <br>
- <br><b>inlet 0</b> <b>method</b> option rewind <b>(</b><b>)</b>  
+ <br><b>inlet 0</b> <b>method</b> rewind <b>(</b><b>)</b>  
 				rewinds to beginning of file if applicable. 
 				will overwrite the previous data. <br>
    <br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
@@ -174,7 +170,7 @@
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <p>uses the HeroineWarrior-Quicktime library (libquicktime.so)</p> <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
- <br><b>method</b> option codec <b>(</b><i>symbol</i> codec<b>)</b>   
+ <br><b>method</b> codec <b>(</b><i>symbol</i> codec<b>)</b>   
 			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4. 
 			Must be set before the first frame is written. 
 			only applies to @out. Choosing a codec is important 
@@ -211,28 +207,26 @@
 			waits for a call (and answers) for this port on the 
 			local machine via InterNet or compatible network. 
 			Answers the call. <br>
- <br><b>method</b> option type int32 <b>(</b><b>)</b>  
+ <br><b>method</b> type int32 <b>(</b><b>)</b>  
 			output will be as 32 bit signed integers. <br>
- <br><b>method</b> option type uint8 <b>(</b><b>)</b>  
+ <br><b>method</b> type uint8 <b>(</b><b>)</b>  
 			output will be as 8 bit unsigned integers. <br>
- <br><b>method</b> option headerful <b>(</b><b>)</b>  
-			cancels option headerless (and back to reading .grid) <br>
- <br><b>method</b> option headerless <b>(</b>dimensions...<b>)</b>   
+ <br><b>method</b> headerful <b>(</b><b>)</b>  
+			cancels "headerless" (and back to reading .grid) <br>
+ <br><b>method</b> headerless <b>(</b>dimensions...<b>)</b>   
 			instead of reading .grid files with header, will read raw data, 
 			faking a .grid header to itself. It will use the hereby specified 
-			dimension list, as well as two other settings: <kbd>option type</kbd> and <kbd>option endian</kbd>. <br>
+			dimension list, as well as two other settings: <kbd>type</kbd> and <kbd>endian</kbd>. <br>
  <p>When writing "raw" data, a file may be considered a long string of 
 		base 256 digits (called bytes), but different computers have different 
-		conventions for dealing with them: <br><b>method</b> option endian big <b>(</b><b>)</b>  
+		conventions for dealing with them: <br><b>method</b> endian <b>(</b><b>)</b>  <ul><li><b>1</b> : big: 
 			A number will be written starting with the biggest digit. 
-			This is the natural way on the Macintosh, Sun, Amiga, and so on. <br>
- <br><b>method</b> option endian little <b>(</b><b>)</b>  
+			This is the natural way on the Macintosh, Sun, Amiga, and so on. </li> <li><b>2</b> : little: 
 			A number will be written starting with the smallest digit. 
-			This is the natural way on the Intel 386/Pentium. <br>
- <br><b>method</b> option endian same <b>(</b><b>)</b>  
+			This is the natural way on the Intel 386/Pentium. </li> <li><b>3</b> : same: 
 			A number will be written in whichever way is more natural 
 			on this computer. The natural way is slightly faster to handle. 
-			This is the default setting. <br>
+			This is the default setting. </li> </ul> <br>
  </p> <br></td> 
 <tr><td>&nbsp;</td></tr>
  
@@ -248,21 +242,20 @@
  <p>Video4Linux-1 devices, RGB-24 only. Variable picture size. 
 		should work for bttv based cards and the dc1/dc10plus from Miro.</p> <p>If you suffer from color inversion, you may feed the list 
 		"<kbd>3 3 # 0 0 1 0 1 0 1 0 0</kbd>" to the right side of a <kbd>[@inner2 * + 0]</kbd>. 
-		Use that @inner2 object as a RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b> option brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
- <br><b>method</b> option hue <b>(</b><i>0-65535</i> level<b>)</b> <br>
- <br><b>method</b> option colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
- <br><b>method</b> option contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
- <br><b>method</b> option whiteness <b>(</b><i>0-65535</i> level<b>)</b> <br>
- </p> <p>other options: <br><b>method</b> option channel <b>(</b><i>integer</i> <b>)</b> <br>
- <br><b>method</b> option tuner <b>(</b><i>integer</i> <b>)</b> <br>
- <br><b>method</b> option norm <b>(</b><i>integer</i> <b>)</b> <br>
- <br><b>method</b> option frequency <b>(</b><i>integer</i> <b>)</b> <br>
- <br><b>method</b> option transfer mmap <b>(</b><b>)</b>  
+		Use that @inner2 object as a RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b> brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
+ <br><b>method</b> hue <b>(</b><i>0-65535</i> level<b>)</b> <br>
+ <br><b>method</b> colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
+ <br><b>method</b> contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
+ <br><b>method</b> whiteness <b>(</b><i>0-65535</i> level<b>)</b> <br>
+ </p> <p>other options: <br><b>method</b> channel <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> tuner <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> norm <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> frequency <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> transfer <b>(</b><b>)</b>  <ul> <li><b>1</b> : mmap: 
 			This is the normal (and fast) way of transferring pictures 
-			from the camera. <br>
- <br><b>method</b> option transfer read <b>(</b><b>)</b>  
-			Some cameras/drivers only support this instead of mmap. <br>
- <br><b>method</b> option size <b>(</b>height<b>, </b>width<b>)</b>    
+			from the camera. </li> <li><b>2</b> : read: 
+			Some cameras/drivers only support this instead of mmap. </li></ul> <br>
+ <br><b>method</b> size <b>(</b>height<b>, </b>width<b>)</b>    
 			sets the input size, especially when using a video digitalizer 
 			device <br>
  </p> <br></td> 
@@ -314,21 +307,21 @@
 		(it may fail to work with some popular window managers). You can also 
 		put a window number, e.g. <kbd>0x28003ff</kbd>, you may connect to 
 		an existing window; you can find out the number of a window by using 
-		a tool like <kbd>xwininfo</kbd>, part of X11 standard tools.</p> <br><b>method</b> option out_size <b>(</b><i>integer</i> height<b>, </b><i>integer</i> width<b>)</b>    
+		a tool like <kbd>xwininfo</kbd>, part of X11 standard tools.</p> <br><b>method</b> out_size <b>(</b><i>integer</i> height<b>, </b><i>integer</i> width<b>)</b>    
 			changes the window's size, just like sending a grid 
 			dim(height,width,3) would. 
 			this affects the size of screen captures too. <br>
- <br><b>method</b> option draw <b>(</b><b>)</b>  
+ <br><b>method</b> draw <b>(</b><b>)</b>  
 			forces a redraw of the window's contents. <br>
- <br><b>method</b> option autodraw <b>(</b><i>0,1,2</i> level<b>)</b>   <ul> <li><b>0</b> : option draw() is never automatically invoked</li> <li><b>1</b> : option draw() is invoked after each grid is finished</li> <li><b>2</b> : option draw() is invoked incrementally after each row is 
+ <br><b>method</b> autodraw <b>(</b><i>0,1,2</i> level<b>)</b>   <ul> <li><b>0</b> : draw() is never automatically invoked</li> <li><b>1</b> : draw() is invoked after each grid is finished</li> <li><b>2</b> : draw() is invoked incrementally after each row is 
 			received. (but buffering may cause lines to come in groups 
 			anyway)</li> </ul> <br>
- <br><b>method</b> option setcursor <b>(</b><i>0..63</i> cursor<b>)</b>   
+ <br><b>method</b> setcursor <b>(</b><i>0..63</i> cursor<b>)</b>   
 			Selects one of the 64 predefined cursors of X11. (Note that if 
 			your cursor table has them numbered from 0 to 126 using only even 
 			numbers, then those cursor numbers are all doubled compared to 
 			the ones GridFlow uses.) <br>
- <br><b>method</b> option hidecursor <b>(</b><b>)</b>  
+ <br><b>method</b> hidecursor <b>(</b><b>)</b>  
 			This makes the cursor invisible. <br>
   <br><b>outlet 0</b> <b>method</b> position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     
 				This is emitted every time the cursor moves inside 
@@ -356,15 +349,15 @@
 			displays it. note that the image is typically downscaled by 
 			a factor of 2 by aalib itself. <br>
  <br><b>grid</b> <b>dim(</b>rows columns {ascii attr}<b>)</b> 
-			the inverse of "option dump". Both together in a loop allow to 
+			the inverse of "dump". Both together in a loop allow to 
 			post-process aalib's buffer before displaying. Goes well 
-			with "option draw", "option autodraw". <br>
- <br><b>method</b> option print <b>(</b><i>int</i> y<b>, </b><i>int</i> x<b>, </b><i>int</i> attr<b>, </b><i>symbol</i> text<b>)</b>      <br>
- <br><b>method</b> option autodraw <b>(</b><b>)</b>  
-			like X11's option autodraw. <br>
- <br><b>method</b> option draw <b>(</b><b>)</b>  
-			like X11's option draw. <br>
- <br><b>method</b> option dump <b>(</b><b>)</b>  
+			with "draw", "autodraw". <br>
+ <br><b>method</b> print <b>(</b><i>int</i> y<b>, </b><i>int</i> x<b>, </b><i>int</i> attr<b>, </b><i>symbol</i> text<b>)</b>      <br>
+ <br><b>method</b> autodraw <b>(</b><b>)</b>  
+			like X11's autodraw. <br>
+ <br><b>method</b> draw <b>(</b><b>)</b>  
+			like X11's draw. <br>
+ <br><b>method</b> dump <b>(</b><b>)</b>  
 			produces a Dim[y,x,2] grid whose two channels are 
 			ascii character codes and character attributes. <br>
  <br></td> 

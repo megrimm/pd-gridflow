@@ -28,7 +28,8 @@ Compatibility:
 Release steps (<b>OPERATE WITH CAUTION</b>):
 
 <list>
-	<li>cvs tag gridflow_0_7_1 .
+	<li>ruby base/test.rb formats
+	</li><li>cvs tag gridflow_0_7_1 .
 	</li><li>mkdir gridflow
 	</li><li>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow
 			export -r gridflow_0_7_1 -d gridflow .
