@@ -1,7 +1,8 @@
 # $Id$
 # This is an annex that covers what is not covered by the generated Makefile
 
-INSTALL_DATA = install --mode 644
+SYSTEM = $(shell uname -s)
+INSTALL_DATA = install -m 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
@@ -9,12 +10,12 @@ CC = g++
 
 all2:: gridflow-for-jmax gridflow-for-puredata # doc-all
 
-# suffixes
+# suffixes (not properly used)
 ifeq (1,1) # Linux, MSWindows with Cygnus, etc
 OSUF = .o
 LSUF = .so
 ESUF =
-else # MSWindows without Cygnus
+else # MSWindows without Cygnus (not supported yet)
 OSUF = .OBJ
 LSUF = .DLL
 ESUF = .EXE
@@ -162,10 +163,17 @@ endif # HAVE_JMAX_2_5
 ifeq ($(HAVE_PUREDATA),yes)
 # pd_linux pd_nt pd_irix5 pd_irix6
 
-OS = LINUX
-# OS = WINNT
-# OS = IRIX5
-# OS = IRIX6
+ifeq (${SYSTEM},Darwin)
+  OS = DARWIN
+  PDSUF = .pd_darwin
+  PDBUNDLEFLAGS = -bundle_loader $(shell which pd)
+else
+  OS = LINUX
+  PDSUF = .pd_linux
+endif
+# OS = WINNT # PDSUF = .dll
+# OS = IRIX5 # PDSUF = .pd_irix5
+# OS = IRIX6 # PDSUF = .pd_irix6
 
 #pd_nt: foo1.dll foo2.dll dspobj~.dll
 #PDNTCFLAGS = /W3 /WX /DNT /DPD /nologo
@@ -180,10 +188,6 @@ OS = LINUX
 #	cl $(PDNTCFLAGS) $(PDNTINCLUDE) /c $*.c
 #	link /dll /export:$*_setup $*.obj $(PDNTLIB)
 
-PDSUF = .pd_linux
-# PDSUF = .dll
-# PDSUF = .pd_irix5
-# PDSUF = .pd_irix6
 
 # PDCFLAGS = -o32 -DPD -DUNIX -DIRIX -O2
 # PDLDFLAGS = -elf -shared -rdata_shared 
@@ -201,7 +205,7 @@ PD_LIB = $(OBJDIR)/gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	$(CC) $(LDSOFLAGS) $(CFLAGS) $< \
+	$(CC) $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
