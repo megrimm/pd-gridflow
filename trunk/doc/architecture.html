@@ -22,7 +22,9 @@
   <td width="80%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
-<tr><td colspan="2"><div cols="1"><h4><a href="#Numbers">Numbers</a></h4><ul>
+<tr><td colspan="2"><div cols="1"><h4><a href="#User-level_Overview">User-level Overview</a></h4><ul>
+</ul>
+<h4><a href="#Numbers">Numbers</a></h4><ul>
 </ul>
 <h4><a href="#Grid_Literals">Grid Literals</a></h4><ul>
 </ul>
@@ -34,12 +36,25 @@
 </ul>
 <h4><a href="#Two-Input_Operators">Two-Input Operators</a></h4><ul>
 </ul>
+<h4><a href="#Programmer-level_Overview">Programmer-level Overview</a></h4><ul>
+</ul>
 <h4><a href="#Bridges">Bridges</a></h4><ul>
 </ul>
 <h4><a href="#Synchronisation">Synchronisation</a></h4><ul>
 </ul>
+<h4><a href="#Naming_Conventions">Naming Conventions</a></h4><ul>
+</ul>
 <br><br>
 </div></td></tr> 
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="User-level_Overview"></a><h4>User-level Overview</h4></td></tr><tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p>(this section is for all users)</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+ 
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Numbers"></a><h4>Numbers</h4></td></tr><tr><td></td><td></td><td> </td></tr>
@@ -56,18 +71,14 @@
 	be written. when it is signed, one bit indicates whether the number 
 	is positive or negative.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>In GridFlow, there are two kinds of numbers:</p></td></tr>
+<tr><td></td><td></td><td><p>In GridFlow, there are six kinds of numbers:</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p><b>int32</b>, signed 32-bit integer. 
-	values from -2147483648 to 2147483647 
-	(which is from -2<sup>31</sup> to 2<sup>31</sup>-1). 
-	this is used for most computations. </p></td></tr>
-<tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p><b>uint8</b>, unsigned 8-bit integer. 
-	values from 0 to 255 
-	(which is from 0 to 255). 
-	this is the usual size of numbers taken from files and cameras, and 
-	written to files and to windows. </p></td></tr>
+<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="0" bgcolor="black" cellspacing="1"><tr><td valign="top" align="left"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1"><tr><td><b>name</b></td><td><b>aliases</b></td><td><b>range</b></td><td><b>precision</b></td><td><b>description</b></td></tr>      <tr><td>uint8</td><td>u8 b</td><td>0..255</td><td>1</td><td> 
+			unsigned 8-bit integer. 
+			this is the usual size of numbers taken from files and cameras, and 
+			written to files and to windows. </td></tr> <tr><td>int16</td><td>i16 s</td><td>-32768..32767</td><td>1</td><td>...</td></tr> <tr><td>int32</td><td>i32 i</td><td>-2147483648..2147483647</td><td>1</td><td> 
+			signed 32-bit integer. (which is from -2<sup>31</sup> to 2<sup>31</sup>-1). 
+			this is used for most computations. </td></tr> <tr><td>int16</td><td>i16 s</td><td>(huge!)</td><td>1</td><td>...</td></tr> <tr><td>float32</td><td>f32 f</td><td>±10<sup>±38</sup></td><td>~7 digits (23 bits)</td><td>...</td></tr> <tr><td>float64</td><td>f32 f</td><td>±10<sup>±308</sup></td><td>~15 digits (52 bits)</td><td>...</td></tr> </table></td></tr></table></td></tr></td></tr>
 <tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -168,12 +179,12 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr><tr><td></td><td></td><td> 
 </td></tr>
-<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="1"><tr><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr> <tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="0" bgcolor="black" cellspacing="1"><tr><td valign="top" align="left"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1"><tr></tr> <tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> randomly produces a non-negative number below A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> square root of A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/sq.png" border="0" alt="sq"></td><td> A times A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  
-</table></td></tr></td></tr>
+</table></td></tr></table></td></tr></td></tr>
 <tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -193,7 +204,7 @@
 		same conversions apply.</p></td></tr>
 <tr><td></td><td></td><td> 
 </td></tr>
-<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="1"><tr><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr> <tr><td><img src="images/op/ignore.png" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
+<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="0" bgcolor="black" cellspacing="1"><tr><td valign="top" align="left"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1"><tr><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr>     <tr><td><img src="images/op/ignore.png" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
  <tr><td><img src="images/op/put.png" border="0" alt="put"></td><td> B </td><td>replace by</td><td>replace by</td></tr>
  <tr><td><img src="images/op/add.jpg" border="0" alt="+"></td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr>
  <tr><td><img src="images/op/sub.jpg" border="0" alt="-"></td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr>
@@ -235,8 +246,19 @@
  <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/pow.jpg" border="0" alt="**"></td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>&nbsp;</td></tr>
  
-</table></td></tr></td></tr>
+</table></td></tr></table></td></tr></td></tr>
 <tr><td></td><td></td><td> 
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+ 
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Programmer-level_Overview"></a><h4>Programmer-level Overview</h4></td></tr><tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p>(this section is for people who want to mess with the internals or at least 
+understand them a bit)</p></td></tr>
+<tr><td></td><td></td><td> 
+(move this section down?) 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
@@ -276,6 +298,12 @@ should make many circuits simpler.
 </td></tr>
 <tr><td></td><td></td><td><p>(more to come)</p></td></tr>
 <tr><td></td><td></td><td> 
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+ 
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="Naming_Conventions"></a><h4>Naming Conventions</h4></td></tr><tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  

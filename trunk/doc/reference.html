@@ -449,11 +449,7 @@
 <img src="images/@store.png" alt="[@store]" border="0"><br clear="left"><br><br><a href="images/help_@store.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>A @store object can store exactly one grid, using the right 
 		inlet. You fetch it back, or selected subparts thereof, using the left 
-		inlet.</p> <br><b>method</b>&nbsp;init <b>(</b><i>int32 | uint8</i> number_type<b>)</b>   
-			The number type argument is optional and by default is int32, 
-			which allows the usual range of plus/minus two billions. With 
-			uint8, values are wrapped into the 0..255 interval, and stored 
-			in four times less memory. <br>
+		inlet.</p> <br><b>method</b>&nbsp;init <b>(</b><i>grid</i> contents<b>)</b>   <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b>  
 				the stored grid is fully sent to the outlet. <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims..., indices)</i> grid<b>)</b>  
@@ -469,9 +465,7 @@
 				be logically used in the same way for many purposes 
 				including color palettes, tables of probabilities, tables 
 				of statistics, whole animations, etc. <br>
-   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b>  
-				the received grid is stored. if the storage type is uint8, 
-				the input is filtered to fit 0..255. <br>
+   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b> <br>
    
 			grids as stored, as indexed, or as assembled from multiple 
 			indexings.  <br></td></tr><tr><td></td><td></td><td> </td></tr>
@@ -700,7 +694,12 @@
    <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(vertices {y x})</i> grid<b>)</b>   
 				vertices of the polygon. <br>
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>   
-				modified picture <br>
+				modified picture. 
+				note: starting with 0.7.2, drawing a 1-by-1 
+				square really generates a 1-by-1 square, and 
+				so on. This is because the right-hand border of a 
+				polygon is excluded, whereas it was included 
+				before, leading to slightly-wider-than-expected polygons. <br>
   <br></td></tr><tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>

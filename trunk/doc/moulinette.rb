@@ -125,7 +125,13 @@ class XNode
 	end
 
 	# may crash in ruby 1.8 (bug in interpreter)
-	def display; contents.each {|x| x.display } end
+	def display
+		# STDERR.puts contents.inspect
+		contents.each {|x| x.display }
+	end
+
+	def inspect; "#<XNode #{tag}>"; end
+	alias to_s inspect
 end
 
 XNode.register("documentation") {}
@@ -165,7 +171,7 @@ XNode.register("section") {
 
 
 # basic text formatting nodes.
-XNode.register (*%w( p i u b k sup )) {
+XNode.register(*%w( p i u b k sup )) {
 	def display
 		t = if tag=="k" then "kbd" else tag end
 		print "<#{t}>"
@@ -332,12 +338,11 @@ XNode.register("table") {
 		mk(:tr) {
 		2.times { mk(:td) {} }
 		mk(:td) {
-		mk(:table,:border,1) {
+		nice_table {
 			mk(:tr) {
-				columns = ["name","description",
-					"meaning in pixel context (pictures, palettes)",
-					"meaning in spatial context (indexmaps, polygons)"]
-				columns.each {|x| mk(:td) { mk(:b) { print x }}}
+				columns = contents.find_all {|x| XNode===x && x.tag=="column" }
+				columns.each {|x| mk(:td) { mk(:b) {
+					x.contents.each {|y| y.display }}}}
 			}
 			super
 		}}}
@@ -345,7 +350,19 @@ XNode.register("table") {
 }
 
 XNode.register("column") {
-	# write me!
+	def display; end
+}
+
+XNode.register("row") {
+	def display
+		columns = parent.contents.find_all {|x| XNode===x && x.tag=="column" }
+		mk(:tr) { columns.each {|x| mk(:td) {
+			id = x.att["id"]
+			if id==""
+				then contents.each {|x| x.display }
+				else print att[id] end
+		}}}
+	end
 }
 
 XNode.register("operator-1", "operator-2") {
