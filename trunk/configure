@@ -270,8 +270,6 @@ Feature.new {
 Feature.new {
 	tag :pentium
 	name "Pentium-compatible CPU"
-	# todo: -mcpu=pentiumpro, and so on.
-	#action proc { $CFLAGS += " -mcpu=pentium" }
 	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
 	test proc {
 		(CONFIG["arch"] =~ /i\d86/) and
@@ -616,7 +614,6 @@ while ARGV.length>0 do
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-cpu"
-		# $CFLAGS += " -mcpu="+ARGV.shift
 		$conf[:DEFINES][:CPU] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
@@ -809,7 +806,8 @@ if Config::CONFIG["arch"] =~ /darwin/ then
 else
 	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
 end
-$CFLAGS += " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU]
+$CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU]
+$CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
 f.puts "CFLAGS += " + $CFLAGS
 
 for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
@@ -887,7 +885,7 @@ end
 
 
 puts "",
-"please see ./config.log for the details of the configuration tests",
+"\e[1mplease see ./config.log for the details of the configuration tests\e[0m",
 ""
 
 #--------------------------------#
