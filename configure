@@ -793,6 +793,7 @@ common_dependencies =
 mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp=$1
 	comp.sub!(/\$</,'$<.fcs')
+	comp.sub!(/\(CC\)/,'(CXX)')
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
 	"%.o: %.c #{common_dependencies}\n"+
 	"\truby base/source_filter.rb $< $<.fcs\n"+
@@ -804,13 +805,13 @@ mf.sub! /^install:.*/, "install: install2 site-install"
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
-mf.sub! /CC = gcc\n/, "CC = #{$conf[:CC]}\n"
+mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
 #	(if Config::CONFIG["arch"] =~ /darwin/
 #		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
-#		else "$(CC)" end)
+#		else "$(CXX)" end)
 
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
 
