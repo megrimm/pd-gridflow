@@ -36,11 +36,12 @@
 #include "grid.h"
 
 #define MAKE_TMP_LOG
-/* #define MAKE_TMP_LOG_ALLOC */
+#define MAKE_LEAK_DUMP
 
 const char *whine_header = "[whine] ";
 Dict *gf_object_set = 0;
 Dict *gf_alarm_set = 0;
+Dict *gf_alloc_set = 0;
 fts_alarm_t *gf_alarm = 0;
 
 FILE *whine_f;
@@ -114,6 +115,7 @@ void gridflow_module_init (void) {
 
 	gf_object_set = Dict_new(0);
 	gf_alarm_set  = Dict_new(0);
+	gf_alloc_set  = Dict_new(0);
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(), gf_alarm_handler, 0);
 
 	/* run startup of every source file */
@@ -183,8 +185,8 @@ void whine_time(const char *s) {
 }
 
 /* to help find uninitialized values */
-void *qalloc(size_t n) {
-	long *data = (long *) qalloc2(n);
+void *qalloc(size_t n, const char *file, int line) {
+	long *data = (long *) qalloc2(n,file,line);
 	int i;
 	int nn = (int) n/4;
 	#ifndef NO_DEADBEEF
@@ -194,11 +196,23 @@ void *qalloc(size_t n) {
 
 }
 
-void *qalloc2(size_t n) {
+typedef struct AllocTrace {
+	size_t n;
+	const char *file;
+	int line;
+} AllocTrace;
+
+void *qalloc2(size_t n, const char *file, int line) {
 	void *data = malloc(n);
 	assert(data);
-#ifdef MAKE_TMP_LOG_ALLOC
-	fprintf(whine_f, "[alloc] + *%p (%d)\n", data, n);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		AllocTrace *al = (AllocTrace *) malloc(sizeof(AllocTrace));
+		al->n    = n   ;
+		al->file = file;
+		al->line = line;
+		Dict_put(gf_alloc_set,data,al);
+	}
 #endif
 	return data;
 }
@@ -206,8 +220,12 @@ void *qalloc2(size_t n) {
 /* to help find dangling references */
 void qfree(void *data) {
 	assert(data);
-#ifdef MAKE_TMP_LOG_ALLOC
-	fprintf(whine_f, "[alloc] - *%p\n", data);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		void *a = Dict_get(gf_alloc_set,data);
+		if (a) free(a);
+		Dict_del(gf_alloc_set,data);
+	}
 #endif
 	{
 		int n=8;
@@ -222,6 +240,16 @@ void qfree(void *data) {
 		}
 	}
 	free(data);
+}
+
+void qdump$1(void *obj, void *k, void *v) {
+	AllocTrace *al = (AllocTrace *)v;
+	whine("warning: %d bytes leak allocated at file %s line %d",
+		al->n,al->file,al->line);
+}
+
+void qdump(void) {
+	Dict_each(gf_alloc_set,qdump$1,0);
 }
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {

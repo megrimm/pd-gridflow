@@ -24,22 +24,24 @@
 #ifndef __GRIDFLOW_LANG_H
 #define __GRIDFLOW_LANG_H
 #include <stdlib.h>
+#include "config.h"
 
 #define $ self
 
 #define NEW(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_)))
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),__FILE__,__LINE__))
 
 #define NEW2(_type_,_count_) \
-	((_type_ *)qalloc2(sizeof(_type_)*(_count_)))
+	((_type_ *)qalloc2(sizeof(_type_)*(_count_),__FILE__,__LINE__))
 
 #define FREE(_var_) \
 	_var_ ? (qfree(_var_), _var_=0) : 0
 
-void *qalloc2(size_t n);
-void *qalloc(size_t n); /*0xdeadbeef*/
+void *qalloc2(size_t n, const char *file, int line);
+void *qalloc(size_t n, const char *file, int line); /*0xdeadbeef*/
 void qfree2(void *data);
 void qfree(void *data); /*0xfadedf00*/
+void qdump(void);
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -69,6 +71,7 @@ typedef struct Dict Dict; /* Dictionary (void * -> void *) */
 typedef struct DictEntry DictEntry;
 typedef int (*HashFunc)(void *k);
 Dict *Dict_new(HashFunc hf);
+int Dict_size(Dict *$);
 long Dict_hash(Dict *$, void *k);
 DictEntry *Dict_has_key(Dict *$, void *k);
 void *Dict_get(Dict *$, void *k);

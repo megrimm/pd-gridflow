@@ -406,6 +406,10 @@ void GridObject_delete(GridObject *$) {
 		FREE($->out[i]);
 	}
 	Dict_del(gf_object_set,$);
+	if (Dict_size(gf_object_set)==0) {
+		whine("all objects freed");
+		qdump();
+	}
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
