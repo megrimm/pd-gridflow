@@ -1102,6 +1102,7 @@ METHOD(GridFor,bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
 	Number x;
 	ENTER;
+	if (v<0) v=0;
 	GridOutlet_begin($->out[0],Dim_new(1,&v));
 	if ($->step > 0) {
 		for (x=$->from; x<$->to; x+=$->step) {
