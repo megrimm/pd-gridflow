@@ -1,4 +1,4 @@
-# Copyright 2001 by Mathieu Bouchard
+# $Id$
 
 require "socket"
 require "smpte" # in this folder
@@ -7,7 +7,7 @@ picture = "\x7fGRID \000\003"
 picture << [240,320,3].pack("N*")
 make_smpte(picture) {|*rgb| rgb.pack "N*" }
 
-File.open("blah.grid","w") {|f| f.write picture }
+# File.open("blah.grid","w") {|f| f.write picture }
 
 serv = TCPServer.new 4242
 loop {

@@ -1,4 +1,5 @@
 # Copyright 2001 by Mathieu Bouchard
+# $Id$
 
 # The standard SMPTE color test pattern.
 # AS SEEN ON TV !!! (but this is a cheap plastic imitation)
