@@ -829,6 +829,11 @@ class Peephole < GridFlow::FPatcher
 		@fy,@fx = sy,sx
 		set_geometry_for_real_now
 	end
+	def delete
+		GridFlow.post "deleting peephole"
+		@fobjects[3].send_in 0, :close
+		super
+	end
 	install "peephole", 1, 1
 end
 
