@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.4 - reference</title>
+<title>GridFlow 0.6.5 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.4 - reference index</h4>
+    <h4>GridFlow 0.6.5 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -162,16 +162,20 @@
 		by multiplying by 100. You convert from radians to our angles by 
 		multiplying by 18000/pi.</p> <p>Hyperbolic functions (tanh) work with our angles too, so the 
 		same conversions apply.</p> </td></tr>
- <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>add</td><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr>
+ <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>ignore</td><td><img src="images/op/ignore.jpg" border="0" alt="ignore"></td><td> A </td></tr>
+ <tr><td>put</td><td><img src="images/op/put.jpg" border="0" alt="put"></td><td> B </td></tr>
+ <tr><td>add</td><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr>
  <tr><td>sub</td><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr>
  <tr><td>bus</td><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr>
  <tr><td>mul</td><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr>
- <tr><td>div</td><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr>
- <tr><td>vid</td><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr>
- <tr><td>mod</td><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, modulo </td></tr>
- <tr><td>dom</td><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, modulo </td></tr>
- <tr><td>rem</td><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder </td></tr>
- <tr><td>mer</td><td><img src="images/op/mer.jpg" border="0" alt="mer"></td><td> B % A, remainder </td></tr>
+ <tr><td>div</td><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded towards zero </td></tr>
+ <tr><td>div2</td><td><img src="images/op/div2.jpg" border="0" alt="div2"></td><td> A / B, rounded downwards </td></tr>
+ <tr><td>vid</td><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded towards zero </td></tr>
+ <tr><td>vid2</td><td><img src="images/op/vid2.jpg" border="0" alt="vid2"></td><td> B / A, rounded downwards </td></tr>
+ <tr><td>mod</td><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, modulo (goes with div) </td></tr>
+ <tr><td>dom</td><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, modulo (goes with div) </td></tr>
+ <tr><td>rem</td><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td></tr>
+ <tr><td>mer</td><td><img src="images/op/mer.jpg" border="0" alt="mer"></td><td> B % A, remainder (goes with /) </td></tr>
  <tr><td>or</td><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise </td></tr>
  <tr><td>xor</td><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr>
  <tr><td>and</td><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr>
@@ -196,7 +200,7 @@
  <tr><td>tanh*</td><td><img src="images/op/tanh*.jpg" border="0" alt="tanh*"></td><td> B * tanh(A) </td></tr>
  <tr><td>log*</td><td><img src="images/op/log*.jpg" border="0" alt="log*"></td><td> B * log(A) (in base e) </td></tr>
  <tr><td>gamma</td><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr>
- <tr><td>pow</td><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A raised to power B </td></tr>
+ <tr><td>pow</td><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A**B, that is, A raised to power B </td></tr>
  
 <tr><td>&nbsp;</td></tr>
 </table> 
@@ -219,7 +223,7 @@ with the main part.
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.4 Documentation<br>
+<p><font size="-1">GridFlow 0.6.5 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

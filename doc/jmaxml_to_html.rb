@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.6.4"
+GF_VERSION = "0.6.5"
 
 require "xmlparser"
 
@@ -121,6 +121,9 @@ class XNode
 
 	def prx_jmax_class
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
+		if not att["name"] then
+			raise "name tag missing?"
+		end
 		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
 			if icon
 				icon.att['image'] ||= att['name']
