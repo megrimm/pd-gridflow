@@ -332,7 +332,7 @@ Feature.new {
 		#include <ruby.h>
 		int main () {
 			void *bp;
-			printf("#define RUBY_STACK_END 0x%08x",&bp);
+			printf("#define RUBY_STACK_END 0x%08lx",(long)&bp);
 			return rb_rescue==0;
 		}}, uses_bridge_so
 	}
