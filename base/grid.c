@@ -662,12 +662,7 @@ GridClass *format_classes[] = {};
 
 METHOD3(Format,init) {
 	int flags = INT(rb_ivar_get(rb_obj_class(peer),SI(@flags)));
-//	printf("this=%08x, peer=%08x\n",(int)this,peer);
 	rb_call_super(argc,argv);
-//	rb_p(peer);
-//	rb_p(rb_obj_class(peer));
-//	printf("this=%08x, peer=%08x, &mode=%08x, &parent=%08x\n",
-//		(int)this, peer, (int)&mode, (int)&parent);
 	mode = argv[0];
 	parent = 0;
 	/* FF_W, FF_R, FF_RW */
@@ -680,8 +675,6 @@ METHOD3(Format,init) {
 	}
 	return Qnil;
 err:
-//	rb_p(peer);
-//	IEVAL(peer,"p self.class.instance_variables");
 	RAISE("Format '%s' does not support mode '%s'",
 		RSTRING(rb_ivar_get(rb_obj_class(peer),
 			SI(@symbol_name)))->ptr, rb_sym_name(mode));
@@ -695,20 +688,9 @@ METHOD3(Format,close) {
 	return Qnil;
 }
 
-METHOD3(Format,open_file) {
-	if (argc<1) RAISE("expect filename");
-	rb_ivar_set(peer,SI(@stream),
-		rb_funcall(EVAL("File"),SI(open),2,
-			rb_funcall(mGridFlow,SI(find_file),1,
-			rb_any_to_s(argv[0])),
-			rb_str_new2(mode==4?"r":mode==2?"w":(RAISE("argh"),""))));
-	return Qnil;
-}
-
 GRCLASS(Format,"Format",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(Format,init),
-	DECL(Format,open_file),
 	DECL(Format,close))
 
 /* **************************************************************** */

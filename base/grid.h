@@ -538,19 +538,6 @@ struct Grid {
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
-/* Kids, remember that C++ can't even do typedef templates */
-
-typedef struct GridInlet  GridInlet;
-typedef struct GridOutlet GridOutlet;
-typedef struct GridObject GridObject;
-
-typedef void (*GridBegin)(GridObject *, GridInlet *);
-//template <class T>
-//typedef void (*GridFlow)(GridObject *, GridInlet *, int n, Pt<T>data);
-typedef void (*GridFlow)(GridObject *, GridInlet *, int n, Pt<Number>data);
-typedef void   (*GridEnd)(GridObject *, GridInlet *);
-
-/* C++ */
 
 #define GRID_BEGIN(_cl_,_inlet_) \
 	static void _cl_##__##_inlet_##_begin(_cl_ *$, GridInlet *in) { \
@@ -572,10 +559,10 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 	void _##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data); \
 	void _##_inlet_##_end(GridInlet *in);
 
-#define GRINLET(_class_,_winlet_,_mode_) {_winlet_,\
-	((GridBegin)&_class_##__##_winlet_##_begin), \
-	 ((GridFlow)&_class_##__##_winlet_##_flow), \
-	  ((GridEnd)&_class_##__##_winlet_##_end), _mode_ }
+#define GRINLET(_class_,_winlet_,_mode_) {_winlet_, _mode_, \
+	(void (*)(GridObject *, GridInlet *))_class_##__##_winlet_##_begin, \
+	(void (*)(GridObject *, GridInlet *, int, Pt<int32>))_class_##__##_winlet_##_flow, \
+	(void (*)(GridObject *, GridInlet *))_class_##__##_winlet_##_end, }
 
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_BEGIN(_class_,_inlet_) { \
@@ -584,13 +571,15 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
 	GRID_END(_class_,_inlet_)
 
+typedef struct GridObject GridObject;
+typedef struct  GridInlet  GridInlet;
+
 typedef struct GridHandler {
-	int       winlet;
-	GridBegin begin;
-//	GridFlow<int32> flow;
-	GridFlow flow;
-	GridEnd   end;
-	int       mode; /* 0=ignore; 4=ro; 6=rw */
+	int winlet;
+	int mode; /* 0=ignore; 4=ro; 6=rw */
+	void (*begin)(GridObject *, GridInlet *);
+	void  (*flow)(GridObject *, GridInlet *, int n, Pt<Number>data);
+	void   (*end)(GridObject *, GridInlet *);
 } GridHandler;
 
 struct GridInlet {
