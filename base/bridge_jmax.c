@@ -25,13 +25,11 @@
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
+#include <sys/time.h>
+#undef post
 
 /* **************************************************************** */
-/* FObject */
-
-/* for garbage collection */
-void FObject_mark (VALUE *$) {}
-void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
+/* BFObject */
 
 struct BFObject {
 	fts_object_t _o;
@@ -56,8 +54,8 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 		fprintf(stderr,"1: %s\n",name);
 		fts_set_symbol(at,fts_new_symbol(name));
 		free(name);
-//	} else if (FLOAT_P(arg)) {
-//		fts_set_float(at,RFLOAT(arg)->value);
+	} else if (FLOAT_P(arg)) {
+		fts_set_float(at,RFLOAT(arg)->value);
 	} else {
 		/* can't use EARG here */
 		rb_raise(rb_eArgError, "cannot convert argument of class %s", CLASS_OF(arg));
@@ -69,10 +67,10 @@ VALUE jr_convert(const fts_atom_t *at) {
 		return INT2NUM(fts_get_int(at));
 	} else if (fts_is_symbol(at)) {
 		return ID2SYM(rb_intern(fts_symbol_name(fts_get_symbol(at))));
-//	} else if (fts_is_float(at)) {
-//		return rb_float_new(fts_get_float(at));
-//	} else if (fts_is_ptr(at)) {
-//		return Qnil; /* not supported */
+	} else if (fts_is_float(at)) {
+		return rb_float_new(fts_get_float(at));
+	} else if (fts_is_ptr(at)) {
+		return Qnil; /* not supported */
 	} else {
 		return Qnil; /* unknown */
 	}
@@ -87,28 +85,28 @@ typedef struct {
 	const fts_atom_t *at;
 } kludge;
 
-static VALUE BFObject_method_missing$1 (kludge *z2) {
-	const char *s = fts_symbol_name(z2->selector);
+static VALUE BFObject_method_missing$1 (kludge *k) {
+	const char *s = fts_symbol_name(k->selector);
 	char buf[256];
-	VALUE argv[z2->ac];
-	VALUE $ = BFObject_peer(z2->$);
+	VALUE argv[k->ac];
+	VALUE $ = BFObject_peer(k->$);
 	ID sel;
 	strcpy(buf+3,s);
 	buf[0] = buf[2] = '_';
-	buf[1] = '0' + z2->winlet;
+	buf[1] = '0' + k->winlet;
 	sel = rb_intern(buf);
-	{ int i; for (i=0; i<z2->ac; i++) argv[i] = jr_convert(z2->at+i); }
-	rb_funcall2($,sel,z2->ac,argv);
+	{ int i; for (i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i); }
+	rb_funcall2($,sel,k->ac,argv);
 	return Qnil;
 }
 
-static VALUE BFObject_rescue (kludge *z2) {
+static VALUE BFObject_rescue (kludge *k) {
 	VALUE es = rb_eval_string("\"ruby #{$!.class}: #{$!}: #{$!.backtrace}\"");
-//	VALUE $ = BFObject_peer(z2->$);
-	post("jmaxobject = %p\n", z2->$);
+//	VALUE $ = BFObject_peer(k->$);
+	post("jmaxobject = %p\n", k->$);
 //	post("rubyobject = %p\n", $);
 	post("%s\n",RSTRING(es)->ptr);
-	if (z2->$) fts_object_set_error(z2->$,"%s",RSTRING(es)->ptr);
+	if (k->$) fts_object_set_error(k->$,"%s",RSTRING(es)->ptr);
 	return Qnil;
 }
 
@@ -116,27 +114,27 @@ typedef VALUE (*RFunc)();
 
 static void BFObject_method_missing (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
-	kludge z2;
-	z2.$ = $;
-	z2.winlet = winlet;
-	z2.selector = selector;
-	z2.ac = ac;
-	z2.at = at;
+	kludge k;
+	k.$ = $;
+	k.winlet = winlet;
+	k.selector = selector;
+	k.ac = ac;
+	k.at = at;
 	rb_rescue2(
-		(RFunc)BFObject_method_missing$1,&z2,
-		(RFunc)BFObject_rescue,&z2,
+		(RFunc)BFObject_method_missing$1,&k,
+		(RFunc)BFObject_rescue,&k,
 		rb_eException,0);
 }
 
-static VALUE BFObject_init$1 (kludge *z2) {
-	VALUE argv[z2->ac];
-	z2->ac--;
-	z2->at++;
-	{ int i; for (i=0; i<z2->ac; i++) argv[i] = jr_convert(z2->at+i); }
+static VALUE BFObject_init$1 (kludge *k) {
+	VALUE argv[k->ac];
+	k->ac--;
+	k->at++;
+	{ int i; for (i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i); }
 	{
-		BFObject *j_peer = (BFObject *)z2->$;
-		VALUE qlass = (VALUE)z2->$->head.cl->user_data;
-		VALUE rself = FObject_s_new(z2->ac,argv,qlass);
+		BFObject *j_peer = (BFObject *)k->$;
+		VALUE qlass = (VALUE)k->$->head.cl->user_data;
+		VALUE rself = rb_funcall2(qlass,rb_intern("new"),k->ac,argv);
 		j_peer->peer = rself;
 		{
 			DGS(GridObject);
@@ -149,15 +147,15 @@ static VALUE BFObject_init$1 (kludge *z2) {
 static void BFObject_init (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	int r;
-	kludge z2;
-	z2.$ = $;
-	z2.winlet = winlet;
-	z2.ac = ac;
-	z2.at = at;
+	kludge k;
+	k.$ = $;
+	k.winlet = winlet;
+	k.ac = ac;
+	k.at = at;
 
 	r = rb_rescue2(
-		(RFunc)BFObject_init$1,&z2,
-		(RFunc)BFObject_rescue,&z2,rb_eException,0);
+		(RFunc)BFObject_init$1,&k,
+		(RFunc)BFObject_rescue,&k,rb_eException,0);
 }
 
 #define RETIFFAIL(name,r) \
@@ -181,7 +179,7 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 
 	post("name=%s\n",fts_symbol_name(qlass->mcl->name));
 
-	$ = rb_hash_aref(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
+	$ = rb_hash_aref(rb_ivar_get(rb_eval_string("GridFlow"),rb_intern("@fclasses_set")),
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
 	methods = rb_funcall($, rb_intern("instance_methods"), 0);
@@ -228,50 +226,23 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 static fts_status_t BFObject_class_init (fts_class_t *qlass,
 int ac, const fts_atom_t *at) {
 	VALUE r;
-	kludge z2;
-	z2.$ = 0;
+	kludge k;
+	k.$ = 0;
 	r = rb_rescue2(
 		(RFunc)BFObject_class_init$1,qlass,
-		(RFunc)BFObject_rescue,&z2,
+		(RFunc)BFObject_rescue,&k,
 		rb_eException,0);
 	return r==Qnil;
 }
 
-VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
-	int inlets;
-	int outlets;
-
-	VALUE name2;
-	if (SYMBOL_P(name)) {
-		name2 = rb_funcall(name,rb_intern("dup"),0);
-	} else if (TYPE(name) == T_STRING) {
-		name2 = rb_funcall(name,rb_intern("to_s"),0);
-	} else {
-		EARG("expect symbol or string");
-	}
-	inlets = NUM2INT(inlets2);
-	if (inlets<0 || inlets>9) EARG("...");
-	outlets = NUM2INT(outlets2);
-	if (outlets<0 || outlets>9) EARG("...");
-	post("class will be called: %s\n",RSTRING(name2)->ptr);
-	rb_ivar_set($,rb_intern("@inlets"),inlets);
-	rb_ivar_set($,rb_intern("@outlets"),outlets);
-	rb_ivar_set($,rb_intern("@foreign_name"),name2);
-	rb_hash_aset(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
-		name2, $);
-	{
-		fts_status_t r = fts_class_install(
-			fts_new_symbol(RSTRING(name2)->ptr),BFObject_class_init);
-		RETIFFAIL2("fts_class_install",r);
-	}			
-		
+VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
+	fts_status_t r = fts_class_install(
+		fts_new_symbol(name2),BFObject_class_init);
+	RETIFFAIL2("fts_class_install",r);
 	return Qnil;
 }
 
-VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $) {
-	VALUE sym;
-	int outlet;
-	FObject_send_out_3(&argc,&argv,&sym,&outlet);
+VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) {
 	post("%d\n",FObject_peer($));
 	if (outlet<0 || outlet>=fts_object_get_outlets_number(FObject_peer($))) {
 		EARG("outlet %d does not exist",outlet);
@@ -288,16 +259,13 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $) {
 	return Qnil;
 }
 
-void gf_install_bridge (void) {
-	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
-	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
-	DEF(FObject, send_out, -1);
-	SDEF(FObject, install, 3);
-	SDEF(FObject, new, 3);
-	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
-}
-
 static fts_alarm_t *gf_alarm;
+
+static uint64 RtMetro_now(void) {
+	struct timeval nowtv;
+	gettimeofday(&nowtv,0);
+	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
+}
 
 void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 	long long time = RtMetro_now();
@@ -309,21 +277,28 @@ void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 //	whine("tick was: %lld\n",RtMetro_now()-time);
 }       
 
+void gridflow_bridge_init (VALUE rself, VALUE p) {
+	GFBridge *$ = FIX2PTR(p);
+	$->class_install = FObject_s_install_2;
+	$->send_out = FObject_send_out_2;
+	$->post = post;
+}
+
 void gridflow_module_init (void) {
 	char *foo[] = {"jmax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
+	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
+		gridflow_bridge_init,1);
 	post("(done)\n");
-	gf_init();
-	{
-		gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
-		gf_timer_handler(gf_alarm,0);
-	}
+	rb_eval_string("require 'gridflow'");
+	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
+	gf_timer_handler(gf_alarm,0);
 }
 
 fts_module_t gridflow_module = {
-	"video",
-	"GridFlow: n-dimensional array streaming, pictures, video, etc.",
+	"gridflow",
+	"GridFlow: video, multidimensional arrays, Ruby scripting, etc.",
 	gridflow_module_init, 0, 0};
 
