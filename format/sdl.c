@@ -48,7 +48,7 @@ struct FormatSDL : Format {
 
 	\decl void initialize (Symbol mode);
 	\decl void close ();
-	GRINLET3(0);
+	\grin 0 int
 };
 
 static void FormatSDL_alarm(FormatSDL *self) { self->alarm(); }
@@ -124,7 +124,7 @@ GRID_INLET(FormatSDL,0) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatSDL_alarm));
 }
 
-GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0)),
+GRCLASS(FormatSDL,
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatSDL',1,1;"

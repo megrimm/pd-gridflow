@@ -110,7 +110,7 @@ struct FormatX11 : Format {
 	\decl void delete_m ();
 	\decl void set_geometry (int y, int x, int sy, int sx);
 	\decl void fall_thru (int flag);
-	GRINLET3(0);
+	\grin 0 int
 };
 
 /* ---------------------------------------------------------------- */
@@ -739,7 +739,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 \def void delete_m () {
 }
 
-GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0)),
+GRCLASS(FormatX11,
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatX11',1,1;"

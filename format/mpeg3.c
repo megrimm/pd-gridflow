@@ -88,7 +88,7 @@ struct FormatMPEG3 : Format {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatMPEG3,LIST(),
+GRCLASS(FormatMPEG3,
 \grdecl
 ) {
 	IEVAL(rself,"install 'FormatMPEG3',1,1;"

@@ -39,7 +39,7 @@ struct FormatPNG : Format {
 	\decl void close ();
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	GRINLET3(0);
+	\grin 0 int
 };
 
 GRID_INLET(FormatPNG,0) {
@@ -135,7 +135,7 @@ GRID_INLET(FormatPNG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatPNG,LIST(GRINLET2(FormatPNG,0)),
+GRCLASS(FormatPNG,
 \grdecl
 ) {
 	IEVAL(rself,
