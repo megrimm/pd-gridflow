@@ -91,9 +91,9 @@ class FPS < GridObject
 			sum/length
 		end
 	end
-	def method_missing(*)
-		# ignore
-	end
+	def _0_position(*); end
+	def method_missing(*a) GridFlow.post "%s", a.inspect end
+	def _0_period x; GridFlow.post "period = %d", x; @period = x end
 	def _0_bang
 		t = case @mode
 		when :real; Time.new.to_f

@@ -52,6 +52,23 @@
 	for (; n>3; n-=4) { _x_ _x_ _x_ _x_ } \
 	for (; n; n--) { _x_ }
 
+/* this could be faster (use asm) */
+void swap32 (int n, Pt<uint32> data) {
+	NTIMES({
+		uint32 x = *data;
+		x = (x<<16) | (x>>16);
+		x = ((x&0xff00ff)<<8) | ((x>>8)&0xff00ff);
+		*data++ = x;
+	})
+}
+
+/* this could be faster (use asm or do it in int32 chunks) */
+void swap16 (int n, Pt<uint16> data) {
+	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
+}
+
+/* **************************************************************** */
+
 template <class T>
 static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	uint32 t;
@@ -135,6 +152,19 @@ template <class T>
 static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
+template <class T>
+static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+	Pt<int32> o32 = (Pt<int32>)out;
+	while (n>=4) {
+		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];
+		o32[1] = (in[3]<<16) | (in[4]<<8) | in[5];
+		o32[2] = (in[6]<<16) | (in[7]<<8) | in[8];
+		o32[3] = (in[9]<<16) | (in[10]<<8) | in[11];
+		o32+=4; in+=12;
+		n-=4;
+	}
+	NTIMES( o32[0] = (in[0]<<16) | (in[1]<<8) | in[2]; o32++; in+=3; )
+}
 
 static uint32 bp_masks[][4] = {
 	{0x0000f800,0x000007e0,0x0000001f,0},
@@ -145,6 +175,7 @@ static Packer bp_packers[] = {
 	{default_pack, default_pack, default_pack},
 	{pack2_565, pack2_565, pack2_565},
 	{pack3_888, pack3_888, pack3_888},
+	{pack3_888b, pack3_888b, pack3_888b},
 };
 
 static Unpacker bp_unpackers[] = {
@@ -154,6 +185,7 @@ static Unpacker bp_unpackers[] = {
 static BitPacking builtin_bitpackers[] = {
 	BitPacking(2, 2, 3, bp_masks[0], &bp_packers[1], &bp_unpackers[0]),
 	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[0]),
+	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
 };
 
 /* **************************************************************** */
@@ -162,7 +194,7 @@ bool BitPacking::eq(BitPacking *o) {
 	if (!(bytes == o->bytes)) return false;
 	if (!(size == o->size)) return false;
 	for (int i=0; i<size; i++) {
-		if (!(mask[0] == o->mask[0])) return false;
+		if (!(mask[i] == o->mask[i])) return false;
 	}
 	if (endian==o->endian) return true;
 	/* same==little on a little-endian; same==big on a big-endian */
@@ -180,17 +212,26 @@ Packer *packer, Unpacker *unpacker) {
 		this->unpacker = unpacker;
 		return;
 	}
+	int packeri=-1;
 	this->packer = &bp_packers[0];
 	this->unpacker = &bp_unpackers[0];
 
 	for (int i=0; i<(int)(sizeof(builtin_bitpackers)/sizeof(BitPacking)); i++) {
-		BitPacking *bp = builtin_bitpackers+i;
+		BitPacking *bp = &builtin_bitpackers[i];
 		if (this->eq(bp)) {
 			this->packer = bp->packer;
 			this->unpacker = bp->unpacker;
-			//::gfpost("Bitpacking: will be using special packer (#%d)",i);
+			packeri=i;
+			goto end;
 		}
 	}
+end:;
+/*
+	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
+		endian, bytes, size, packeri);
+	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
+	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
+*/
 }
 
 bool BitPacking::is_le() {
@@ -216,22 +257,6 @@ void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
 	default: RAISE("argh");
 	}
 }
-
-/* this could be faster (use asm) */
-void swap32 (int n, Pt<uint32> data) {
-	NTIMES({
-		uint32 x = *data;
-		x = (x<<16) | (x>>16);
-		x = ((x&0xff00ff)<<8) | ((x>>8)&0xff00ff);
-		*data++ = x;
-	})
-}
-
-/* this could be faster (use asm or do it in int32 chunks) */
-void swap16 (int n, Pt<uint16> data) {
-	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
-}
-
 
 /* i'm sorry... see the end of grid.c for an explanation... */
 //static
