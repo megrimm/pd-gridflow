@@ -8,7 +8,7 @@
 -->
 
 <section name="Objects for making grids and breaking them down">
-	<class name="@import">
+	<class name="#import">
 		<icon text="[#import {240 320 3}]"/>
 		<help text="[#import {240 320 3}]" image="#importexport" />
 		<p>This object allows you to produce grids from non-grid data, such as
@@ -66,7 +66,7 @@
 		</outlet>
 	</class>
 
-	<class name="@export">
+	<class name="#export">
 		<icon text="[#export]"/>
 		<help text="[#export]" image="#importexport" />
 
@@ -87,7 +87,7 @@
 		</outlet>
 	</class>
 
-	<class name="@export_list">
+	<class name="#export_list">
 		<icon text="[#export_list]"/>
 		<help text="[#export_list]" image="#importexport" />
 
@@ -107,8 +107,8 @@
 		</outlet>
 	</class>
 
-	<class name="@export_symbol">
-		<p>this object is another opposite of @import, which constructs a symbol
+	<class name="#export_symbol">
+		<p>this object is another opposite of #import, which constructs a symbol
 		from its input. The values are expected to be valid ASCII codes, but no check
 		will be performed for that, and additionally, no check will be made that the generated
 		symbol only contains characters that can be put in a symbol.</p>
@@ -155,7 +155,7 @@
 	</class>
 
 <!--NYI
-	<class name="@unpack">
+	<class name="#unpack">
 		<method name="init">
 			<arg name="outputs" type="integer">
 				how many outlets the object should have.
@@ -173,7 +173,7 @@
 	</class>
 -->
 
-	<class name="@for">
+	<class name="#for">
 		<icon text="[#for 0 320 1]"/>
 		<help text="[#for 0 320 1]"/>
 
@@ -213,7 +213,7 @@
 </section>
 
 <section name="Objects for Computing">
-	<class name="@">
+	<class name="#">
 		<icon text="[# +]" image="op/add.png" />
 		<help text="two-input operators"/>
 
@@ -262,30 +262,7 @@
 	
 	</class>
 
-	<class name="@!">
-		<icon text="[#!]"/>
-		<help text="[#!]"/>
-
-		<p>This object computes a grid by computing "in parallel" a same
-		operation on each element of the grid.
-		</p>
-		
-		<method name="init">
-			<arg name="operator" type="numop2"/>
-			the operator is one picked in the table of the 4 one-input
-			operators.
-		</method>
-		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid"/>
-			</method>
-		</inlet>
-		<outlet id="0">
-			<method name="grid"><arg name="grid" type="grid"/>
-			</method>
-		</outlet>
-	</class>
-
-	<class name="@complex_sq">
+	<class name="#complex_sq">
 		<p>this object computes the square of complex numbers.
 		If seeing imaginary as Y and real as X, then this operation squares
 		the distance of a point from origin and doubles the angle between it
@@ -301,7 +278,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@fold">
+	<class name="#fold">
 		<icon text="[#fold +]"/>
 		<help text="[#fold +]" image="#foldinnerouter"/>
 
@@ -334,7 +311,7 @@
 		<outlet id="0"></outlet>
 	</class>
 
-	<class name="@scan">
+	<class name="#scan">
 		<!-- <icon text="[#scan +]"/> -->
 		<!-- <help text="[#scan +]"/> -->
 
@@ -367,7 +344,7 @@
 
 	</class>
 
-	<class name="@outer">
+	<class name="#outer">
 		<icon text="[#outer +]"/>
 		<help text="[#outer +]" image="#foldinnerouter"/>
 
@@ -396,12 +373,12 @@
 		produce  a grid of Dim(3,5) with the selected two-input operation
 		applied on each  of the possible pairs combinations between numbers
 		from the left grid  and the ones from the right. for example :
-		(10,20,30) [@outer +] (1,2,3)  will give :
+		(10,20,30) [#outer +] (1,2,3)  will give :
 		((11,12,13),(21,22,23),(31,32,33)) </p>
 
 	</class>
 
-	<class name="@inner">
+	<class name="#inner">
 		<icon text="[#inner * + 0]"/>
 		<help text="[#inner * + 0]" image="#foldinnerouter" />
 
@@ -459,11 +436,11 @@
 		</outlet>
 	</class>
 
-	<class name="@inner2">
+	<class name="#inner2">
 		 <k>[#inner2]</k> removed; instead use <k>[#transpose]</k> with <k>[#inner]</k>
 	</class>
 	
-	<class name="@join">
+	<class name="#join">
 		<method name="init">
 			<arg name="which_dim"/>
 
@@ -492,7 +469,7 @@
 		</outlet>
 	</class>
 
-	<class name="@finished">
+	<class name="#finished">
 		<inlet id="0">
 			<method name="grid"><arg name="grid" type="grid"/>any grid</method>
 		</inlet>
@@ -501,7 +478,7 @@
 		</outlet>
 	</class>
 
-	<class name="@cast">
+	<class name="#cast">
 		<method name="init">
 			<arg name="numbertype" type="numbertype"/>
 		</method>
@@ -516,7 +493,7 @@
 		</outlet>
 	</class>
 
-	<class name="@ravel">
+	<class name="#ravel">
 		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
 		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
 			like <k>[#redim]</k> but always produce a 1-D grid
@@ -524,14 +501,14 @@
 		</method></outlet>
 	</class>
 
-	<class name="@grade">
+	<class name="#grade">
 		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
 		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
 			<p>splits a Dim[A...,B] grid into Dim[B] vectors,
 			producing new Dim[B] vectors that each contain numbers from
 			0 to B-1 indicating the ordering of the values. The result is
 			a Dim[A...,B] grid.</p>
-			<p>for example, connecting a [@grade] to a <k>[#outer ignore {0}]</k>
+			<p>for example, connecting a [#grade] to a <k>[#outer ignore {0}]</k>
 			to a <k>[#store]</k> object, storing a single vector into <k>[#store]</k>, and
 			sending the same vector to <k>[#grade]</k>, will sort the values of the
 			vector. however for higher-dimensional grids, what should go
@@ -546,7 +523,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@perspective">
+	<class name="#perspective">
 		<method name="init">
 			<arg name="depth" type="integer"/>
 		</method>
@@ -564,7 +541,7 @@
 		</method></outlet>
 	</class>			
 
-	<class name="@transpose">
+	<class name="#transpose">
 		<method name="init">
 			<arg name="dim1" type="integer"/>
 			<arg name="dim2" type="integer"/>
@@ -602,7 +579,7 @@
 </section>
 
 <section name="Objects for Coordinate Transforms">
-	<class name="@redim">
+	<class name="#redim">
 		<icon text="[#redim {2}]"/>
 		<help text="[#redim 2]"/>
 
@@ -641,7 +618,7 @@
 		<k>[#redim]</k> 240 50 3 will only keep the 50 top lines.</p>
 
 	</class>
-	<class name="@store">
+	<class name="#store">
 		<icon text="[#store]"/>
 		<help text="[#store]"/>
 
@@ -679,11 +656,11 @@
 		</inlet>
 		<inlet id="1">
 			<method name="reassign">(Future Use): 
-				makes it so that sending a grid to inlet 1 detaches the old buffer from [@store]
+				makes it so that sending a grid to inlet 1 detaches the old buffer from [#store]
 				and attaches a new one instead.  This is the default.
 			</method>
 			<method name="put_at"><rest name="indices"/>(Future Use): 
-				makes it so that sending a grid to inlet 1 writes into the existing buffer of [@store].
+				makes it so that sending a grid to inlet 1 writes into the existing buffer of [#store].
 				<p>
 				example: suppose you have <k>[#store {10 240 320 3}]</k>. then "put_at 3"
 				will allow to write a Dim[240,320,3] grid in indices (3,y,x,c) where y,x,c are indices of the incoming grid;
@@ -692,7 +669,7 @@
 				replacing frame #3, #4, ... up to #3+n-1. Here n is at most 7 because the last frame in the buffer is #9.
 				</p>
 				<p>that way of working extends to other kinds of data you'd put in Grids, in any numbers of dimensions;
-				because, as usual, [@store] wouldn't know the difference.
+				because, as usual, [#store] wouldn't know the difference.
 				</p>
 			</method>
 		</inlet>
@@ -702,7 +679,7 @@
 		</outlet>
 	</class>
 
-	<class name="@scale_to">
+	<class name="#scale_to">
 		<icon text="[#scale_to]"/>
 		<help text="[#scale_to]"/>
 
@@ -721,7 +698,7 @@
 		</outlet>
 	</class>
 
-	<class name="@scale_by">
+	<class name="#scale_by">
 		<icon text="[#scale_by]"/>
 		<help text="[#scale_by]"/>
 
@@ -746,7 +723,7 @@
 		</outlet>
 	</class>
 
-	<class name="@downscale_by">
+	<class name="#downscale_by">
 		<method name="init">
 			<arg name="factor" type="+integer"/>
 			<arg name="how" type="optional symbol(smoothly)"/>
@@ -768,7 +745,7 @@
 		</outlet>
 	</class>
 
-	<class name="@spread">
+	<class name="#spread">
 		<icon text="[#spread]"/>
 		<help text="[#spread]"/>
 
@@ -806,7 +783,7 @@
 
 	</class>
 
-	<class name="@rotate">
+	<class name="#rotate">
 		<p>performs rotations on indexmaps and polygons and such.</p>
 		
 		<method name="init">
@@ -821,7 +798,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@remap_image">
+	<class name="#remap_image">
 		<p>if you chain indexmap (coordinate) transformations from outlet 1
 		to inlet 1, then sending an image in inlet 0 will emit its
 		deformation out of outlet 0.</p>
@@ -834,7 +811,7 @@
 </section>
 
 <section name="Objects for Reporting">
-	<class name="@dim">
+	<class name="#dim">
 		<icon text="[#dim]"/>
 		<help text="[#dim]"/>
 
@@ -857,13 +834,13 @@
 		</outlet>
 	</class>
 
-	<class name="@type">
+	<class name="#type">
 		<p>gives a symbol representing the numeric type of the grid received.
 		</p>
 		<outlet id="0"><method name="&lt;numeric type symbol&gt;"/></outlet>
 	</class>
 
-	<class name="@print">
+	<class name="#print">
 		<method name="init"/>
 		<inlet id="0">
 			<method name="grid"><arg name="grid" type="grid(dims...)"/>
@@ -893,7 +870,7 @@
 </section>
 
 <section name="Objects for Color Conversion">
-	<class name="@apply_colormap_channelwise">
+	<class name="#apply_colormap_channelwise">
 		<p>This object is useful for color correction. For each pixel
 		it takes it apart, looks up each part separately in the colormap,
 		and constructs a new pixel from that. You may also color-correct
@@ -902,7 +879,7 @@
 		<p>Only works for things that have 3 channels.</p>
 
 		<p>Note: if you just need to apply a palette on an indexed-color
-		picture, you don't need this. Just use @store instead.</p>
+		picture, you don't need this. Just use #store instead.</p>
 		
 		<inlet id="0"><method name="grid">
 			<arg name="grid" type="grid(rows columns channels)"/>
@@ -919,7 +896,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@rgb_to_greyscale">
+	<class name="#rgb_to_greyscale">
 		<inlet id="0"><method name="grid">
 		<arg name="grid" type="grid(rows columns {red green blue})"/>
 		</method></inlet>
@@ -928,7 +905,7 @@
 		</outlet>
 	</class>
 
-	<class name="@greyscale_to_rgb">
+	<class name="#greyscale_to_rgb">
 		<inlet id="0"><method name="grid">
 		<arg name="grid" type="grid(rows columns {white})"/></method>
 		</inlet>
@@ -937,7 +914,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@yuv_to_rgb">
+	<class name="#yuv_to_rgb">
 		<p>note: may change slightly to adapt to actual video standards.</p>
 		<inlet id="0"><method name="grid">
 		<arg name="grid" type="grid(rows columns {y u v})"/></method>
@@ -947,7 +924,7 @@
 		</method></outlet>
 	</class>
 
-	<class name="@rgb_to_yuv">
+	<class name="#rgb_to_yuv">
 		<p>note: may change slightly to adapt to actual video standards.</p>
 		<inlet id="0"><method name="grid">
 		<arg name="grid" type="grid(rows columns {red green blue})"/></method>
@@ -959,7 +936,7 @@
 </section>
 
 <section name="Objects for Miscellaneous Picture Processing">
-	<class name="@convolve">
+	<class name="#convolve">
 		<icon text="[#convolve * + 0]"/>
 		<help text="[#convolve * + 0]"/>
 
@@ -1009,7 +986,7 @@
 		</outlet>
 	</class>
 
-	<class name="@contrast">
+	<class name="#contrast">
 		<icon text="[#contrast]"/>
 		<help text="[#contrast]"/> 
 
@@ -1049,7 +1026,7 @@
 		</outlet>
 	</class>
 
-	<class name="@posterize">
+	<class name="#posterize">
 		<icon text="[#posterize]"/>
 		<help text="[#posterize]"/>
 
@@ -1084,7 +1061,7 @@
 		simulate a 15-bit display using 32 levels.</p>
 	</class>
 
-	<class name="@solarize">
+	<class name="#solarize">
 		<p>makes medium intensities brightest; formerly brightest colours
 		become darkest; formerly darkest stays darkest. This filter is linear:
 		it's like a 200% contrast except that overflows are <i>mirrored</i>
@@ -1099,7 +1076,7 @@
 		</outlet>
 	</class>
 
-	<class name="@checkers">
+	<class name="#checkers">
 		<inlet id="0">
 			<method name="grid">
 				<arg name="grid" type="grid(y x {y x})"/>
@@ -1115,7 +1092,7 @@
 		</outlet>
 	</class>
 
-	<class name="@layer">
+	<class name="#layer">
 		<inlet id="0">
 			<method name="grid">
 				<arg name="grid" type="grid(y x {r g b a})"/>
@@ -1141,7 +1118,7 @@
 		</outlet>
 	</class>
 
-	<class name="@draw_image">
+	<class name="#draw_image">
 		<method name="init">
 			<arg name="operator" type="numop2">
 				Normally you would use the "put" operator here;
@@ -1185,7 +1162,7 @@
 		</outlet>
 	</class>
 
-	<class name="@draw_polygon">
+	<class name="#draw_polygon">
 		<method name="init">
 			<arg name="operator" type="numop2">
 				Normally you would use the "put" operator here;
@@ -1254,7 +1231,7 @@
 		</inlet>
 	</class>
 
-	<class name="@global">
+	<class name="#global">
 		<icon text="[#global]" />
 		<help text="[#global]" />
 

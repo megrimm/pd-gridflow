@@ -9,7 +9,7 @@
 
 <section name="Objects for Input/Output">
 
-	<class name="@in">
+	<class name="#in">
 		<icon text="[#in]"/>
 		<help text="[#in]" image="#inout"/>
 
@@ -104,7 +104,7 @@
 		</outlet>
 	</class>
 
-	<class name="@out">
+	<class name="#out">
 		<icon text="[#out]"/>
 		<help text="[#out]" image="#inout"/>
 
@@ -363,7 +363,7 @@
 		</method>
 	</class>
 
-	<class name="format mpeg @in">
+	<class name="format mpeg #in">
 		<icon image="format_mpeg" text="[open mpeg file filename.mpeg]"/>
 		<p>support for .mpeg files</p>
 		<p>this format supports frame-seek and frame-tell.</p>
