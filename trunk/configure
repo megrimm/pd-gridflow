@@ -76,8 +76,8 @@ end
 def c_test code, *link
 	log = ""
 	log << code << "\n"
-	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
-	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
+	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
+	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]
 	launch2 log,*command or return false
 	command = ["/tmp/#{$$}"]
 	launch2 log,*command or return false
@@ -220,7 +220,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <SDL/SDL.h>
-		int main (void) {return !SDL_MapRGB;}
+		int main (void) {return SDL_MapRGB==0;}
 		", *uses_so
 	}
 	formats ["SDL"]
@@ -233,10 +233,28 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <aalib.h>
-		int main (void) {return !aa_init;}
+		int main (void) {return aa_init==0;}
 		", *uses_so
 	}
 	formats ["AALib"]
+},
+Feature.new {
+	tag :jpeg
+	name "JPEG Library"
+	uses_so ["-ljpeg"]
+	uses_h ["jpeglib.h"]
+	test proc {
+		c_test "
+		extern \"C\" {
+		#include <stdio.h>
+		#include <jpeglib.h>
+		};
+		int main (void) {
+		printf(\"jpeg_write_scanlines: %08x\n\",(int)jpeg_write_scanlines);
+		return jpeg_write_scanlines==0;}
+		", *uses_so
+	}
+	formats ["JPEG"]
 },
 Feature.new {
 	tag :videodev
@@ -259,7 +277,7 @@ Feature.new {
 	test proc {|h|
 		c_test "
 		#include <#{h.uses_h}>
-		int main (void) { return !mpeg3_open; }
+		int main (void) { return mpeg3_open==0; }
 		", *uses_so
 	}
 	formats ["MPEG3"]
@@ -272,7 +290,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <mpeg.h>
-		int main (void) { return !GetMPEGFrame; }
+		int main (void) { return GetMPEGFrame==0; }
 		", *uses_so
 	}
 	formats ["MPEG"]
@@ -284,7 +302,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <quicktime/quicktime.h>
-		int main (void) { return !quicktime_open; }
+		int main (void) { return quicktime_open==0; }
 		", *uses_so
 	}
 	formats ["QuickTime"]
@@ -419,7 +437,7 @@ def try feature
 		end
 		return false
 	end
-	LOG.puts "-"*64, ""
+	LOG.puts "", "-"*64
 	DUAL.print "[#{feature.tag}] #{feature.name}: "
 	(feature.uses_feature||[]).find {|f|
 		if Or===f
@@ -606,8 +624,10 @@ File.open("config.h","w") {|f| f.puts "
 
 #{foo}
 
+extern \"C\" {
 \#include \"#{$conf[:RUBY_H]}\"
 \#include \"#{$conf[:RUBYIO_H]}\"
+};
 \#ifndef RUBY_H
 \#error \"Can't do anything without ruby.h\"
 \#endif
