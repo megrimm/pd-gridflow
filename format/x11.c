@@ -179,11 +179,9 @@ static void FormatX11_alarm(FormatX11 *$) {
 /* ---------------------------------------------------------------- */
 
 METHOD(FormatX11,frame) {
-	{
-		char *s = $->dim->to_s();
-		whine("$->dim = %s",s);
-		FREE(s);
-	}
+	char *s = $->dim->to_s();
+	whine("$->dim = %s",s);
+	FREE(s);
 
 	XGetSubImage($->display, $->window,
 		0, 0, $->dim->get(1), $->dim->get(0),
@@ -191,17 +189,13 @@ METHOD(FormatX11,frame) {
 
 	$->out[0]->begin($->dim->dup());
 
-	{
-		int sy = $->dim->get(0);
-		int sx = $->dim->get(1);
-		int y;
-		int bs = $->dim->prod(1);
-		Number b2[bs];
-		for(y=0; y<sy; y++) {
-			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
-			$->bit_packing->unpack(sx,b1,b2);
-			$->out[0]->send(bs,b2);
-		}
+	int sy=$->dim->get(0), sx=$->dim->get(1);
+	int bs=$->dim->prod(1);
+	Number b2[bs];
+	for(int y=0; y<sy; y++) {
+		uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
+		$->bit_packing->unpack(sx,b1,b2);
+		$->out[0]->send(bs,b2);
 	}
 
 	$->out[0]->end();
@@ -340,11 +334,10 @@ GRID_BEGIN(FormatX11,0) {
 	int sx = in->dim->get(1), osx = $->dim->get(1);
 	int sy = in->dim->get(0), osy = $->dim->get(0);
 	in->set_factor(sxc);
-	if (in->dim->count() != 3) {
+	if (in->dim->count() != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
-	} else if (in->dim->get(2) != 3) {
+	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
-	}
 	if (sx != osx || sy != osy) FormatX11_resize_window($,sx,sy);
 }
 
@@ -472,55 +465,53 @@ METHOD(FormatX11,init) {
 		{remote relayer 0}
 	*/
 
-	{
-		VALUE domain = argv[0];
-		int i;
-		// assert (ac>0);
-		if (domain==SYM(here)) {
-			whine("mode `here'");
-			FormatX11_open_display($,0);
-			i=1;
-		} else if (domain==SYM(local)) {
-			char host[256];
-			int dispnum = NUM2INT(argv[1]);
-			whine("mode `local', display_number `%d'",dispnum);
-			sprintf(host,":%d",dispnum);
-			FormatX11_open_display($,host);
-			i=2;
-		} else if (domain==SYM(remote)) {
-			char host[256];
-			int dispnum = 0;
-			strcpy(host,rb_sym_name(argv[1]));
-			dispnum = NUM2INT(argv[2]);
-			sprintf(host+strlen(host),":%d",dispnum);
-			whine("mode `remote', host `%s', display_number `%d'",host,dispnum);
-			FormatX11_open_display($,host);
-			i=3;
-		} else {
-			RAISE("x11 destination syntax error");
-		}
+	VALUE domain = argv[0];
+	int i;
+	// assert (ac>0);
+	if (domain==SYM(here)) {
+		whine("mode `here'");
+		FormatX11_open_display($,0);
+		i=1;
+	} else if (domain==SYM(local)) {
+		char host[256];
+		int dispnum = NUM2INT(argv[1]);
+		whine("mode `local', display_number `%d'",dispnum);
+		sprintf(host,":%d",dispnum);
+		FormatX11_open_display($,host);
+		i=2;
+	} else if (domain==SYM(remote)) {
+		char host[256];
+		int dispnum = 0;
+		strcpy(host,rb_sym_name(argv[1]));
+		dispnum = NUM2INT(argv[2]);
+		sprintf(host+strlen(host),":%d",dispnum);
+		whine("mode `remote', host `%s', display_number `%d'",host,dispnum);
+		FormatX11_open_display($,host);
+		i=3;
+	} else {
+		RAISE("x11 destination syntax error");
+	}
 
-		if (i>=argc) {
-			whine("will create new window");
+	if (i>=argc) {
+		whine("will create new window");
+	} else {
+		VALUE winspec = argv[i];
+		if (winspec==SYM(root)) {
+			$->window = $->root_window;
+			whine("will use root window (0x%x)", $->window);
+			$->is_owner = false;
 		} else {
-			VALUE winspec = argv[i];
-			if (winspec==SYM(root)) {
-				$->window = $->root_window;
-				whine("will use root window (0x%x)", $->window);
-				$->is_owner = false;
+			const char *winspec2 = rb_sym_name(winspec);
+			if (strncmp(winspec2,"0x",2)==0) {
+				$->window = strtol(winspec2+2,0,16);
 			} else {
-				const char *winspec2 = rb_sym_name(winspec);
-				if (strncmp(winspec2,"0x",2)==0) {
-					$->window = strtol(winspec2+2,0,16);
-				} else {
-					$->window = atoi(winspec2);
-				}
-				if ($->window) {
-					$->is_owner = false;
-					whine("will use specified window (0x%x)", $->window);
-				} else {
-					whine("bad window specification");
-				}
+				$->window = atoi(winspec2);
+			}
+			if ($->window) {
+				$->is_owner = false;
+				whine("will use specified window (0x%x)", $->window);
+			} else {
+				whine("bad window specification");
 			}
 		}
 	}
@@ -528,15 +519,13 @@ METHOD(FormatX11,init) {
 	/* "resize" also takes care of creation */
 	FormatX11_resize_window($,sx,sy);
 
-	{
-		Visual *v = $->visual;
-		int disp_is_le = !ImageByteOrder($->display);
-		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
-		whine("is_le = %d",is_le());
-		whine("disp_is_le = %d", disp_is_le);
-		$->bit_packing = new BitPacking(
-			disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
-	}
+	Visual *v = $->visual;
+	int disp_is_le = !ImageByteOrder($->display);
+	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
+	whine("is_le = %d",is_le());
+	whine("disp_is_le = %d", disp_is_le);
+	$->bit_packing = new BitPacking(
+		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
 
 	$->bit_packing->whine();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);

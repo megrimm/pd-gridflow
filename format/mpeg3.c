@@ -40,6 +40,7 @@ METHOD(FormatMPEG3,seek) {
 }
 
 METHOD(FormatMPEG3,frame) {
+	GridOutlet *o = $->out[0];
 	int sx = mpeg3_video_width($->mpeg,0);
 	int sy = mpeg3_video_height($->mpeg,0);
 	int npixels = sx*sy;
@@ -49,24 +50,20 @@ METHOD(FormatMPEG3,frame) {
 	uint8 *rows[sy];
 	for (i=0; i<sy; i++) rows[i]=buf+i*sx*3;
 	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
-	{
-		int v[] = { sy, sx, 3 };
-		$->out[0]->begin(new Dim(3,v));
+
+	int v[] = { sy, sx, 3 };
+	o->begin(new Dim(3,v));
+
+	int bs = o->dim->prod(1);
+	Number b2[bs];
+	for(int y=0; y<sy; y++) {
+		uint8 *b1 = buf + 3*sx*y;
+		$->bit_packing->unpack(sx,b1,b2);
+		o->send(bs,b2);
 	}
-	{
-		int y;
-		int sy = $->out[0]->dim->get(0);
-		int sx = $->out[0]->dim->get(1);
-		int bs = $->out[0]->dim->prod(1);
-		Number b2[bs];
-		for(y=0; y<sy; y++) {
-			uint8 *b1 = buf + 3*sx*y;
-			$->bit_packing->unpack(sx,b1,b2);
-			$->out[0]->send(bs,b2);
-		}
-	}
+
 	FREE(buf);
-	$->out[0]->end();
+	o->end();
 }
 
 GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
