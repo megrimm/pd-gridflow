@@ -29,9 +29,18 @@ require "ftools"
 include Config
 DESTDIR = "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
 RUBY = "ruby"
-LIBRUBY_A = "#{CONFIG['libdir']}/ruby/" +
-	"#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/" +
-	"#{CONFIG['arch']}/libruby.a"
+
+def make_expand(x)
+  y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
+  if x!=y then make_expand y else y end end
+
+# Ruby 1.8 is the latter case; Ruby 1.6, 1.7 the former case
+for x in ["#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
+"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}",
+"#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"] do
+	$LIBRUBY_A = make_expand x
+	break if File.exist? $LIBRUBY_A
+end
 
 $CFLAGS += " -xc++ -fno-operator-names"
 
@@ -152,14 +161,13 @@ Feature.new {
 	unless_feature [:libruby]
 	name "Ruby as a static library"
 	test proc {
-#		p "",l,File.exist?(l)
 		c_test "
 		#include <#{$conf[:RUBY_H]}>
 		int main () { return rb_rescue==0; }
-		", LIBRUBY_A, *(CONFIG['LIBS'].split)
+		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
 	options ["HAVE_STATIC_RUBY"]
-	defines [["PATH_LIBRUBY_A",LIBRUBY_A],
+	defines [["PATH_LIBRUBY_A",$LIBRUBY_A],
 		["LIBS_LIBRUBY_A",CONFIG['LIBS']]]
 },
 Feature.new {
@@ -525,6 +533,8 @@ end
 
 $conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
 $conf[:RUBYIO_H] = Config::CONFIG["archdir"] + "/rubyio.h"
+
+DUAL.puts "This is the GridFlow 0.6.5 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
