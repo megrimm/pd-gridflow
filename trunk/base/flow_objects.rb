@@ -830,7 +830,7 @@ class Demux < FObject
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
 		send_out @i,$2.intern,*args
 	end
-	def _1_int i; @i=i end
+	def _1_int i; @i=i.to_i end
 	alias :_1_float :_1_int
 	if GridFlow.bridge_name != "jmax"
 		install "demux", 2, N
@@ -897,14 +897,14 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def initialize(*a) @a=a end
 		def _0_list(*a) @a=a; _0_bang end
 		def _1_list(*a) @a=a end
-		def _0_bang(*a) send_out 0, :list, *a end
-		install "list", 2, 1
-	end if false # disabled
+		def _0_bang; send_out 0, :list, *@a end
+		install "#{LPrefix}listmake", 2, 1
+	end # if false # disabled
 
 	class ListLength < FObject
 		def initialize() super end
 		def _0_list(*a) send_out 0, a.length end
-		install "listlength", 1, 1
+		install "#{LPrefix}listlength", 1, 1
 	end if false # disabled
 
 	class ListElement < FObject
@@ -926,7 +926,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
 		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-		install "#{LPrefix}listsublist", 2, 1
+		install "#{LPrefix}listsublist", 3, 1
 	end
 
 	class ListPrepend < FObject
@@ -1028,6 +1028,28 @@ class Peephole < GridFlow::FPatcher
 		@y,@x = 0,0     # topleft of the peephole widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 	end
+	def pd_show(can)
+		@can=".x%x.c"%(can*4)
+		GridFlow.whatever :gui, %{
+			#{@can} create rectangle #{@x} #{@y} #{@sx} #{@sy} -fill #600040 -tags GF#{id}
+		}
+	end
+	def pd_displace(can,x,y)
+		GridFlow.whatever :gui, "#{@can} move GF#{id} #{x} #{y}\n"
+		@x+=x
+		@y+=y
+	end
+	def pd_getrect(can)
+		#GridFlow.post "%d %d %d %d", @x, @y, @sx, @sy
+		[@x/2,@y/2,@x+@sx,@y+@sy]
+	end
+	def pd_vis(can,flag)
+		pd_show(can) if not @can
+	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
+		GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
+		return 0
+	end
 	def set_geometry_for_real_now
 		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
 		if @fx>@sx or @fy>@sx then
@@ -1048,10 +1070,6 @@ class Peephole < GridFlow::FPatcher
 		@fobjects[3].send_in 0, :set_geometry,
 			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
 	end
-#	def method_missing(*args)
-#		return super if :_0_grid==args[0]
-#		GridFlow.post "Peephole#method_missing: #{args.inspect}"
-#	end
 	def _0_open(wid,use_subwindow)
 		GridFlow.post "%s", [wid,use_subwindow].inspect
 		@use_subwindow = use_subwindow==0 ? false : true
@@ -1093,6 +1111,12 @@ class Peephole < GridFlow::FPatcher
 		@fobjects[3].send_in 0, :close
 		super
 	end
+
+	def method_missing(s,*a)
+		GridFlow.post "%s: %s", s.to_s, a.inspect
+		super rescue NameError
+	end
+
 	install "peephole", 1, 1
 end
 
