@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 // returns the highest bit set in a word, or 0 if none.
-int high_bit(uint32 n) {
+int highest_bit(uint32 n) {
 	int i=0;
 	if (n&0xffff0000) { n>>=16; i+=16; }
 	if (n&0x0000ff00) { n>>= 8; i+= 8; }
@@ -38,8 +38,8 @@ int high_bit(uint32 n) {
 }
 
 // returns the lowest bit set in a word, or 0 if none.
-int low_bit(uint32 n) {
-	return high_bit((~n+1)&n);
+int lowest_bit(uint32 n) {
+	return highest_bit((~n+1)&n);
 }
 
 #define CONVERT1 t = \
@@ -79,7 +79,7 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	int sameorder = self->endian==2 || self->endian==::is_le();
 	int size = self->size;
 
-	for (i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
+	for (i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	memcpy(mask,self->mask,size*sizeof(uint32));
 
 	if (sameorder && size==3) {
@@ -121,7 +121,7 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 template <class T>
 static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 	int hb[4];
-	for (int i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
+	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 
 	if (is_le()) {
 		/* smallest byte first */
@@ -210,7 +210,7 @@ void BitPacking::gfpost() {
 	::gfpost("    bytes: %d", bytes);
 	for (int i=0;i<size;i++)
 		::gfpost("    mask[%5s]: %08x (bits from %2d up to %2d)",
-			colour_name[i], mask[i], low_bit(mask[i]), high_bit(mask[i]));
+			colour_name[i], mask[i], lowest_bit(mask[i]), highest_bit(mask[i]));
 }
 
 bool BitPacking::is_le() {
@@ -414,19 +414,6 @@ public:
 	}
 };
 
-template <class T>
-static void quick_mod_map (int n, T *as, T b) {
-	if (!b) return;
-	while ((n&3)!=0) { T a = *as; *as++ = mod(a,b); n--; }
-	while (n) {
-		{ as[0]=mod(as[0],b); }
-		{ as[1]=mod(as[1],b); }
-		{ as[2]=mod(as[2],b); }
-		{ as[3]=mod(as[3],b); }
-		as+=4; n-=4;
-	}
-}
-
 template <class O>
 class Op2LoopsBitwise : Op2Loops<O> {
 public:
@@ -587,6 +574,32 @@ Operator2 op2_table[] = {
 	DECL_OP2(log, "log*", ""),
 };
 
+template <class T>
+static void quick_mod_map (int n, T *as, T b) {
+	if (!b) return;
+	while ((n&3)!=0) { T a = *as; *as++ = mod(a,b); n--; }
+	while (n) {
+		{ as[0]=mod(as[0],b); }
+		{ as[1]=mod(as[1],b); }
+		{ as[2]=mod(as[2],b); }
+		{ as[3]=mod(as[3],b); }
+		as+=4; n-=4;
+	}
+}
+
+template <class T>
+static void quick_ign_map (int n, T *as, T b) {
+}
+
+template <class T>
+static void quick_ign_zip (int n, T *as, T *bs) {
+}
+
+template <class T>
+static void quick_put_zip (int n, T *as, T *bs) {
+	gfmemcopy(as,bs,n);
+}
+
 Ruby op1_dict = Qnil;
 Ruby op2_dict = Qnil;
 Ruby number_type_dict = Qnil;
@@ -602,11 +615,21 @@ void startup_number () {
 	INIT_TABLE(op1_dict,op1_table)
 	INIT_TABLE(op2_dict,op2_table)
 	INIT_TABLE(number_type_dict,number_type_table)
+
+#define OVERRIDE_INT(_name_,_mode_,_func_) { \
+	Operator2 *foo = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(_name_))); \
+	foo->on_uint8.op_##_mode_ = _func_; \
+	foo->on_int16.op_##_mode_ = _func_; \
+	foo->on_int32.op_##_mode_ = _func_; }
+
 /*
-	Operator2 *mod = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(%)));
-	mod = quick_mod
-	->op
+	OVERRIDE_INT(ignore,map,quick_ign_map);
+	OVERRIDE_INT(ignore,zip,quick_ign_zip);
+	OVERRIDE_INT(put,map,quick_put_zip);
 */
+
+	/* !@#$ does that make an improvement at all? (suspect) */
+//	OVERRIDE_INT(mod,map,quick_mod_map);
 }
 
 static void make_hocus_pocus () {

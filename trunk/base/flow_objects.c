@@ -140,31 +140,61 @@ struct GridImport : GridObject {
 	~GridImport() { if (dim) delete dim; }
 	DECL3(initialize);
 	DECL3(_0_reset);
+	DECL3(_0_symbol);
+	DECL3(_1_per_message);
 	GRINLET3(0);
 	GRINLET3(1);
+
+	template <class T> void process (int n, Pt<T> data) {
+		GridOutlet *o = out[0];
+		while (n) {
+			if (dim && !o->is_busy()) o->begin(dim->dup(),nt);
+			int n2 = min((long)n,o->dim->prod()-o->dex);
+			o->send(n2,data);
+			n -= n2;
+			data += n2;
+		}
+	}
 };
 
 GRID_INLET(GridImport,0) {
+	if (!dim) out[0]->begin(in->dim->dup(),nt);
 } GRID_FLOW {
-	GridOutlet *o = out[0];
-	while (n) {
-		if (!o->is_busy()) o->begin(dim->dup(),nt);
-		int n2 = min((long)n,o->dim->prod()-o->dex);
-		o->send(n2,data);
-		n -= n2;
-		data += n2;
-	}
+	process(n,data);
 } GRID_FINISH {
 } GRID_END
 
-GRID_INPUT(GridImport,1,dim_grid) {	dim = dim_grid.to_dim(); } GRID_END
+GRID_INPUT(GridImport,1,dim_grid) {
+	if (dim) delete dim;
+	dim = dim_grid.to_dim();
+} GRID_END
+
+METHOD3(GridImport,_0_symbol) {
+	if (argc!=1 || !SYMBOL_P(argv[0])) RAISE("bad args");
+	const char *name = rb_sym_name(argv[0]);
+	int32 v[] = { strlen(name) };
+	if (!dim) out[0]->begin(new Dim(1,v));
+	process(v[0],Pt<uint8>((uint8 *)name,v[0]));
+	return Qnil;
+}
+
+METHOD3(GridImport,_1_per_message) {
+	dim_grid.del();
+	if (dim) delete dim;
+	dim = 0;
+	return Qnil;
+}
 
 METHOD3(GridImport,initialize) {
 	rb_call_super(argc,argv);
 	if (argc<1 || argc>2) RAISE("wrong number of args");
 	nt = argc==2 ? NumberTypeIndex_find(argv[1]) : int32_type_i;
-	dim_grid.init_from_ruby(argv[0]);
-	dim = dim_grid.to_dim();
+	if (argv[0]!=SYM(per_message)) {
+		dim_grid.init_from_ruby(argv[0]);
+		dim = dim_grid.to_dim();
+	} else {
+		dim = 0;
+	}
 	return Qnil;
 }
 
@@ -176,7 +206,9 @@ METHOD3(GridImport,_0_reset) {
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
 LIST(GRINLET2(GridImport,0,4),GRINLET(GridImport,1,4)),
 	DECL(GridImport,initialize),
-	DECL(GridImport,_0_reset))
+	DECL(GridImport,_0_reset),
+	DECL(GridImport,_0_symbol),
+	DECL(GridImport,_1_per_message))
 
 /* **************************************************************** */
 /*
@@ -279,6 +311,7 @@ GRID_INLET(GridStore,0) {
 	if (nc>0) in->set_factor(nc);
 } GRID_FLOW {
 	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
+	static Operator2 *op_and = 0; if (!op_and) op_and = OP2(SYM(&));
 	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
 	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
 	/* !@#$ should optimise "mod" by "&" */
@@ -290,8 +323,13 @@ GRID_INLET(GridStore,0) {
 	STACK_ARRAY(T,v,n);
 	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
-		if (i) op_mul->map(nd,v,r.dim->v[i]);
-		op_mod->map(nd,v+nd*i,r.dim->v[i]);
+		int32 wrap = r.dim->v[i];
+		if (i) op_mul->map(nd,v,wrap);
+		if (lowest_bit(wrap)==highest_bit(wrap)) {
+			op_and->map(nd,v+nd*i,wrap-1);
+		} else {
+			op_mod->map(nd,v+nd*i,wrap);
+		}
 		if (i) op_add->zip(nd,v,v+nd*i);
 	}
 #define EMIT(type) { \
@@ -1056,6 +1094,13 @@ struct GridScaleBy : GridObject {
 	int scalex;
 	DECL3(initialize);
 	GRINLET3(0);
+	GRINLET3(1);
+	void prepare_scale_factor () {
+		scaley = ((Pt<int32>)scale)[0];
+		scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
+		if (scaley<1) scaley=1;
+		if (scalex<1) scalex=1;
+	}
 };
 
 /* processing a grid coming from inlet 0 */
@@ -1104,23 +1149,21 @@ static void expect_scale_factor (Dim *dim) {
 		RAISE("expecting only one or two numbers");
 }
 
+GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
+
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD3(GridScaleBy,initialize) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	scaley = ((Pt<int32>)scale)[0];
-	scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
-	if (scaley<1) scaley=1;
-	if (scalex<1) scalex=1;
-
+	prepare_scale_factor();
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
-GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridScaleBy,0,4)),
+GRCLASS(GridScaleBy,"@scale_by",inlets:2,outlets:1,startup:0,
+LIST(GRINLET2(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 	DECL(GridScaleBy,initialize))
 
 /* ---------------------------------------------------------------- */
@@ -1136,6 +1179,13 @@ struct GridDownscaleBy : GridObject {
 	Grid temp;
 	DECL3(initialize);
 	GRINLET3(0);
+	GRINLET3(1);
+	void prepare_scale_factor () {
+		scaley = ((Pt<int32>)scale)[0];
+		scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
+		if (scaley<1) scaley=1;
+		if (scalex<1) scalex=1;
+	}
 };
 
 GRID_INLET(GridDownscaleBy,0) {
@@ -1190,6 +1240,8 @@ GRID_INLET(GridDownscaleBy,0) {
 } GRID_FINISH {
 } GRID_END
 
+GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
+
 METHOD3(GridDownscaleBy,initialize) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
@@ -1204,7 +1256,7 @@ METHOD3(GridDownscaleBy,initialize) {
 }
 
 GRCLASS(GridDownscaleBy,"@downscale_by",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridDownscaleBy,0,4)),
+LIST(GRINLET2(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
 	DECL(GridDownscaleBy,initialize))
 
 /* **************************************************************** */
@@ -1218,16 +1270,59 @@ struct GridJoin : GridObject {
 };
 
 GRID_INLET(GridJoin,0) {
+	if (r.is_empty()) RAISE("no grid in right inlet");
+	SAME_TYPE(*in,r);
+	Dim *d = in->dim;
+	if (d->n != r.dim->n) RAISE("wrong number of dimensions");
+	int w = which_dim;
+	if (w<0) w+=d->n;
+	if (w<0 || w>=d->n)
+		RAISE("can't join on dim number %d on %d-dimensional grids",
+			which_dim,d->n);
+	int32 v[d->n];
+	for (int i=0; i<d->n; i++) {
+		v[i] = d->get(i);
+		if (i==w) {
+			v[i]+=r.dim->v[i];
+		} else {
+			if (v[i]!=r.dim->v[i]) RAISE("dimensions mismatch");
+		}
+	}
+	out[0]->begin(new Dim(d->n,v));
+	in->set_factor(d->prod(w));
 } GRID_FLOW {
+	Dim *d = in->dim;
+	int w = which_dim;
+	if (w<0) w+=d->n;
+	int a = in->factor;
+	int b = r.dim->prod(w);
+	Pt<T> data2 = (Pt<T>)r + in->dex*b/a;
+	if (a+b<=16) {
+		int m = n+n*b/a;
+		STACK_ARRAY(T,data3,m);
+		int i=0;
+		while (n) {
+			COPY(data3+i,data,a); data+=a; i+=a; n-=a;
+			COPY(data3+i,data2,b); data2+=b; i+=b;
+		}
+		out[0]->send(m,data3);
+	} else {
+		while (n) {
+			out[0]->send(a,data);
+			out[0]->send(b,data2);
+			data+=a; data2+=b; n-=a;
+		}
+	}
 } GRID_FINISH {
 } GRID_END
 
-GRID_INPUT(GridJoin,1,r) {}
-GRID_END
+GRID_INPUT(GridJoin,1,r) {} GRID_END
 
 METHOD3(GridJoin,initialize) {
+	rb_call_super(argc,argv);
+	if (argc>2) RAISE("bad args");
 	which_dim = argc<1 ? -1 : INT(argv[0]);
-	r.init_from_ruby(argv[1]);
+	if (argc>=2) r.init_from_ruby(argv[1]);
 	return Qnil;
 }
 
@@ -1527,6 +1622,17 @@ struct RtMetro : GridObject {
 	DECL3(initialize);
 	DECL3(_0_int);
 	DECL3(_1_int);
+	DECL3(del);
+
+	~RtMetro() {
+		if (on) {
+			gfpost("~RtMetro: deleting rtmetro alarm for self=%08x rself=%08x",
+				(long)this,(long)rself);
+			MainLoop_remove((void *)rself);
+		} else {
+			gfpost("~RtMetro: nothing to do");
+		}
+	}
 };
 
 uint64 RtMetro_now() {
@@ -1574,11 +1680,11 @@ METHOD3(RtMetro,_0_int) {
 	on = !! FIX2INT(argv[0]);
 	gfpost("on = %d",on);
 	if (oon && !on) {
-		gfpost("deleting rtmetro alarm for self=%08x rself=%08x",
+		gfpost("_0_int: deleting rtmetro alarm for self=%08x rself=%08x",
 			(long)this,(long)rself);
 		MainLoop_remove((void *)rself);
 	} else if (!oon && on) {
-		gfpost("creating rtmetro alarm for self=%08x rself=%08x",
+		gfpost("_0_int: creating rtmetro alarm for self=%08x rself=%08x",
 			(long)this,(long)rself);
 		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
 		next_time = RtMetro_now();
@@ -1608,11 +1714,18 @@ METHOD3(RtMetro,initialize) {
 	return Qnil;
 }
 
+METHOD3(RtMetro,del) {
+	gfpost("RtMetro#del");
+	rb_funcall(rself,SI(_0_int),1,INT2NUM(0));
+	return Qnil;
+}
+
 GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,startup:0,
 LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
-	DECL(RtMetro,initialize))
+	DECL(RtMetro,initialize),
+	DECL(RtMetro,del))
 
 /* **************************************************************** */
 
@@ -1637,7 +1750,7 @@ void startup_flow_objects () {
 	INSTALL(GridDownscaleBy);
 	INSTALL(GridLayer);
 	INSTALL(GridFinished);
-//	INSTALL(GridJoin);
+	INSTALL(GridJoin);
 	INSTALL(DrawPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
