@@ -598,10 +598,15 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 
 #define FC(s) ((FormatClass *)s->grid_class)
 
+#ifdef FORMAT_LIST
 extern GridClass FORMAT_LIST( ,_classinfo);
 extern FormatInfo FORMAT_LIST( ,_formatinfo);
 GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
 FormatInfo *format_infos[] = { FORMAT_LIST(&,_formatinfo) };
+#else
+GridClass *format_classes[] = {};
+FormatInfo *format_infos[] = {};
+#endif
 
 METHOD(Format,init) {
 	int flags = INT(rb_ivar_get(CLASS_OF(rself),SI(@flags)));
