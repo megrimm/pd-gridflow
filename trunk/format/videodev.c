@@ -152,7 +152,7 @@ static char *choice_to_s(int value, int n, const char **table) {
 static void gfpost(VideoChannel *self) {
 	char buf[256] = "[VideoChannel] ";
 	WH(channel,"%d");
-	WH(name,"%-32s");
+	WH(name,"%.32s");
 	WH(tuners,"%d");
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
@@ -163,7 +163,7 @@ static void gfpost(VideoChannel *self) {
 static void gfpost(VideoTuner *self) {
 	char buf[256] = "[VideoTuner] ";
 	WH(tuner,"%d");
-	WH(name,"%-32s");
+	WH(name,"%.32s");
 	WH(rangelow,"%lu");
 	WH(rangehigh,"%lu");
 	WHFLAGS(flags,tuner_flags);
@@ -174,7 +174,7 @@ static void gfpost(VideoTuner *self) {
 
 static void gfpost(VideoCapability *self) {
 	char buf[256] = "[VideoCapability] ";
-	WH(name,"%-20s");
+	WH(name,"%.20s");
 	WHFLAGS(type,video_type_flags);
 	WH(channels,"%d");
 	WH(audios,"%d");
@@ -228,13 +228,14 @@ struct FormatVideoDev : Format {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	Pt<uint8> image;
+	int palette;
 	int pending_frames[2], next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap;
 	BitPacking *bit_packing;
 	Dim *dim;
 
-	FormatVideoDev () :	use_mmap(true), dim(0) {}
+	FormatVideoDev () :	use_mmap(true), bit_packing(0), dim(0) {}
 	void frame_finished (Pt<uint8> buf);
 
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
@@ -249,6 +250,7 @@ struct FormatVideoDev : Format {
 	\decl void channel (int value);
 	\decl void frequency (int value);
 	\decl void transfer (Symbol sym);
+	\decl void colorspace (Symbol c);
 	\decl void initialize2 ();
 	GRINLET3(0);
 
@@ -331,7 +333,7 @@ struct FormatVideoDev : Format {
 	int fd = GETFD;
 	pending_frames[0] = pending_frames[1];
 	vmmap.frame = pending_frames[1] = next_frame;
-	vmmap.format = VIDEO_PALETTE_RGB24;
+	vmmap.format = palette;
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
 //	gfpost(&vmmap);
@@ -341,17 +343,33 @@ struct FormatVideoDev : Format {
 }
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
-	GridOutlet *o = out[0];
-	o->begin(dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	out[0]->begin(dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
-	STACK_ARRAY(uint8,b2,bs);
-	for(int y=0; y<sy; y++) {
-		Pt<uint8> b1 = buf + bit_packing->bytes * sx * y;
-		bit_packing->unpack(sx,b1,b2);
-		o->send(bs,b2);
+	if (palette==VIDEO_PALETTE_YUV420P) {
+		STACK_ARRAY(uint8,b2,bs);
+		for(int y=0; y<sy; y++) {
+			Pt<uint8> bufy = buf+sx*y;
+			Pt<uint8> bufu = buf+sx*sy    +(sx/2)*(y/2);
+			Pt<uint8> bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+			for (int x=0; x<sx; x++) {
+				b2[x*3+0]=bufy[x];
+				b2[x*3+1]=bufu[x/2];
+				b2[x*3+2]=bufv[x/2];
+			}
+			out[0]->send(bs,b2);
+		}
+	} else if (bit_packing) {
+		STACK_ARRAY(uint8,b2,bs);
+		for(int y=0; y<sy; y++) {
+			Pt<uint8> buf2 = buf+bit_packing->bytes*sx*y;
+			bit_packing->unpack(sx,buf2,b2);
+			out[0]->send(bs,b2);
+		}
+	} else {
+		out[0]->send(sy*bs,buf);
 	}
 }
 
@@ -372,7 +390,6 @@ static int read3(int fd, uint8 *image, int n) {
 }
 
 \def void frame () {
-	if (!bit_packing) RAISE("no bit_packing");
 	if (!image) rb_funcall(rself,SI(alloc_image),0);
 	int fd = GETFD;
 	if (!use_mmap) {
@@ -480,6 +497,31 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_call_super(argc,argv);
 }
 
+\def void colorspace (Symbol c) {
+	if (c==SYM(RGB24)) palette=VIDEO_PALETTE_RGB24;
+	else if (c==SYM(YUV420P)) palette=VIDEO_PALETTE_YUV420P;
+	else RAISE("supported: RGB24, YUV420P");
+
+	int fd = GETFD;
+	VideoPicture *gp = new VideoPicture;
+	WIOCTL(fd, VIDIOCGPICT, gp);
+	gp->palette = palette;
+	WIOCTL(fd, VIDIOCSPICT, gp);
+	WIOCTL(fd, VIDIOCGPICT, gp);
+	switch(palette) {
+	case VIDEO_PALETTE_RGB24:{
+		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+		bit_packing = new BitPacking(is_le(),3,3,masks);
+	}break;
+	case VIDEO_PALETTE_YUV420P:{
+		/* woops, special case already, can't do that with bit_packing */
+	}
+	default:
+		gfpost("can't handle palette %d", gp->palette);
+	}
+	delete gp;
+}
+
 \def void initialize2 () {
 	int fd = GETFD;
 	VideoPicture *gp = new VideoPicture;
@@ -489,39 +531,22 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
-	gfpost("original settings:");
 	gfpost(gp);
-	gp->depth = 24;
-	gp->palette = VIDEO_PALETTE_RGB24;
-
-	gfpost("trying settings:");
-	gfpost(gp);
-	WIOCTL(fd, VIDIOCSPICT, gp);
-	WIOCTL(fd, VIDIOCGPICT, gp);
-	gfpost("driver gave us settings:");
-	gfpost(gp);
-
-	switch(gp->palette) {
-	case VIDEO_PALETTE_RGB24:{
-//		uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
-		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		bit_packing = new BitPacking(is_le(),3,3,masks);
-	}break;
-	case VIDEO_PALETTE_RGB565:{
-		/* I think the BTTV card is lying. */
-		/* BIG_HACK_FIX_ME */
-//			uint32 masks[3] = { 0xf800,0x07e0,0x001f };
-//			uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
-			uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-//			uint32 masks[3] = { 0xff000000,0x00ff0000,0x0000ff00 };
-		bit_packing = new BitPacking(is_le(),3,3,masks);
-	}break;
-	default:
-		gfpost("can't handle palette %d", gp->palette);
+	char buf[1024] = "";
+	for (int i=0; i<COUNT(video_palette_choice); i++) {
+		gp->palette = i;
+		ioctl(fd, VIDIOCSPICT, gp);
+		ioctl(fd, VIDIOCGPICT, gp);
+		if (gp->palette == i) {
+			if (*buf) strcpy(buf+strlen(buf),", ");
+			strcpy(buf+strlen(buf),video_palette_choice[i]);
+		}
 	}
+	gfpost("This card supports palettes: %s", buf);
+
+	colorspace(0,0,SYM(RGB24));
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
-	//what the hell was this line doing?
-	//rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
+	delete gp;
 }
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
