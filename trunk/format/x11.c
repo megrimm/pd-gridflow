@@ -236,6 +236,9 @@ void FormatX11::dealloc_image () {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
+	int32 v[3] = {sy, sx, 3};
+	if (dim) delete dim;
+	dim = new Dim(3,v);
 top:
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
@@ -252,7 +255,7 @@ top:
 		ximage->data = shm_info->shmaddr =
 			(char *)shmat(shm_info->shmid,0,0);
 		image = Pt<uint8>((uint8 *)ximage->data,
-			ximage->bytes_per_line*dim->get(0));
+			ximage->bytes_per_line*sy);
 		shm_info->readOnly = False;
 
 		current_x11 = this;
@@ -278,7 +281,7 @@ top:
 		/* int pixel_size = BitPacking_bytes(bit_packing); */
 		int pixel_size = 4;
 		image = Pt<uint8>((uint8 *)calloc(sx*sy, pixel_size),
-			ximage->bytes_per_line*dim->get(0));
+			ximage->bytes_per_line*sy);
 		ximage = XCreateImage(
 			display,visual,depth,ZPixmap,0,(int8 *)image,sx,sy,8,0);
 	}
@@ -298,10 +301,6 @@ void FormatX11::resize_window (int sx, int sy) {
 	if (sx<16) sx=16;
 	if (sy>4000) RAISE("height too big");
 	if (sx>4000) RAISE("width too big");
-
-	int32 v[3] = {sy, sx, 3};
-	if (dim) delete dim;
-	dim = new Dim(3,v);
 
 /* ximage */
 
