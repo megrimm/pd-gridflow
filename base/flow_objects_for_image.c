@@ -59,9 +59,11 @@ struct GridConvolve : GridObject {
 	Grid c,b;
 	Operator2 *op_para, *op_fold;
 	int32 rint;
+	bool mode;
 	int margx,margy,margx2,margy2; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); }	
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
+	\decl void mode_m (int m);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -76,7 +78,7 @@ GRID_INLET(GridConvolve,0) {
 		da->get(0), db->get(0));
 	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d",
 		da->get(1), db->get(1));
-	int32 v[da->n];
+	STACK_ARRAY(int32,v,da->n);
 	COPY(v,da->v,da->n);
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
@@ -116,8 +118,9 @@ GRID_INLET(GridConvolve,0) {
 	/* finishing building c from a */
 	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
 	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,    margy2*ll);
-
-	/* the real stuff */
+	switch (mode) {
+	case 0:{
+		
 	STACK_ARRAY(T,buf3,l);
 	STACK_ARRAY(T,buf2,l*dbx*dby);
 	STACK_ARRAY(T,buf ,l*dbx*dby);
@@ -134,9 +137,39 @@ GRID_INLET(GridConvolve,0) {
 			out[0]->send(l,buf3);
 		}
 	}
+	
+	}break;
+	case 1:{
+
+	int n = da->prod(1);
+	STACK_ARRAY(T,buf,n);
+	STACK_ARRAY(T,buf2,n);
+	for (int iy=0; iy<day; iy++) {
+		for (int i=0; i<n; i++) buf[i]=rint;
+		for (int jy=0; jy<dby; jy++) {
+			for (int jx=0; jx<dbx; jx++) {
+				Pt<T> p = ((Pt<T>)c) + (iy+jy)*ll + jx*l;
+				COPY(buf2,p,n);
+				op_para->map(n,buf2,((Pt<T>)b)[jy*dbx+jx]);
+				op_fold->zip(n,buf,buf2);
+			}
+		}
+		out[0]->send(n,buf);
+	}
+	
+	}break;
+	}
+	
 	c.del();
 } GRID_END
 
+\def void mode_m (int m) {
+	if (m<0) m=0;
+	if (m>1) m=1;
+	gfpost("convolution mode = %d",m);
+	mode = m;
+}
+	
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
 \def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
@@ -144,6 +177,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	this->rint = rint;
+	this->mode = 1;
 	if (r) this->b.swallow(r);
 }
 
@@ -424,7 +458,7 @@ void DrawPolygon::init_lines () {
 		j=(j+2)%(2*nl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
-		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
+		if (ld[i].y1>ld[i].y2) memswap(Pt<int32>(ld+i)+0,Pt<int32>(ld+i)+2,2);
 	}
 }
 
@@ -458,7 +492,7 @@ GRID_INLET(DrawPolygon,0) {
 		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
 		for (int i=lines_start; i<lines_stop; i++) {
 			if (ld[i].y2<=y) {
-				memswap(ld.p+i,ld.p+lines_start,1);
+				memswap(ld+i,ld+lines_start,1);
 				lines_start++;
 			}
 		}
