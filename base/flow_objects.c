@@ -26,9 +26,6 @@
 #include <math.h>
 #include "grid.h"
 
-/*!@#$ HACK */
-typedef int32 Number;
-
 /* **************************************************************** */
 
 Operator1 *OP1(Ruby x) {
@@ -80,11 +77,37 @@ static void expect_rgba_picture (Dim *d) {
 	} \
 	GRID_FLOW { \
 		if (dim) delete _member_, _member_=0; \
-		_member_ = new Dim(n,(int *)(Number *)data); \
+		_member_ = new Dim(n,(int *)(T *)data); \
 		this->in[0]->abort(); \
 		out[0]->abort(); \
 	} \
 	GRID_FINISH {}
+
+/* **************************************************************** */
+
+struct GridCast : GridObject {
+	NumberTypeIndex nt;
+	DECL3(initialize);
+	GRINLET3(0);
+};
+
+GRID_INLET(GridCast,0) {
+	out[0]->begin(in->dim->dup(),nt);
+} GRID_FLOW {
+	out[0]->send(n,data);
+} GRID_FINISH {
+} GRID_END
+
+METHOD3(GridCast,initialize) {
+	rb_call_super(argc,argv);
+	if (argc!=1) RAISE("wrong number of args");
+	nt = NumberType_find(argv[0]);
+	return Qnil;
+}
+
+GRCLASS(GridCast,"@cast",inlets:1,outlets:1,startup:0,
+LIST(GRINLET2(GridCast,0,4)),
+	DECL(GridCast,initialize))
 
 /* **************************************************************** */
 /*
@@ -93,7 +116,7 @@ static void expect_rgba_picture (Dim *d) {
 */
 
 /*{ ?,Dim[B] -> Dim[*Cs] }*/
-
+/* out0 nt to be specified explicitly */
 struct GridImport : GridObject {
 	Grid dim_grid;
 	Dim *dim; /* size of grids to send */
@@ -146,7 +169,7 @@ LIST(GRINLET(GridImport,0,4),GRINLET(GridImport,1,4)),
 */
 
 /*{ Dim[*As] -> ? }*/
-
+/* in0: integer nt */
 struct GridExport : GridObject {
 	GRINLET3(0);
 };
@@ -162,13 +185,13 @@ GRID_FINISH {}
 GRID_END
 
 GRCLASS(GridExport,"@export",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridExport,0,4)))
+LIST(GRINLET2(GridExport,0,4)))
 /* outlet 0 not used for grids */
 
 /* **************************************************************** */
 
 /*{ Dim[*As] -> ? }*/
-
+/* in0: integer nt */
 struct GridExportList : GridObject {
 	Ruby /*Array*/ list;
 	int n;
@@ -206,7 +229,9 @@ LIST(GRINLET(GridExportList,0,4)))
 */
 
 /*{ Dim[*As,B],Dim[*Cs,*Ds] -> Dim[*As,*Ds] }*/
-
+/* in0: integer nt */
+/* in1: whatever nt */
+/* out0: same nt as in1 */
 struct GridStore : GridObject {
 	Grid r;
 	DECL3(initialize);
@@ -215,6 +240,8 @@ struct GridStore : GridObject {
 	GRINLET3(1);
 };
 
+/*!@#$ i should ensure that n is not exceedingly large */
+/*!@#$ worse: the size of the foo buffer may still be too large */
 GRID_INLET(GridStore,0) {
 	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
 
@@ -235,11 +262,7 @@ GRID_INLET(GridStore,0) {
 	COPY(v+na-1,r.dim->v+nc,nb-nc);
 	out[0]->begin(new Dim(nd,v));
 	if (nc>0) in->set_factor(nc);
-}
-
-/*!@#$ i should ensure that n is not exceedingly large */
-/*!@#$ worse: the size of the foo buffer may still be too large */
-GRID_FLOW {
+} GRID_FLOW {
 	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
 	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
 	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
@@ -251,9 +274,9 @@ GRID_FLOW {
 	STACK_ARRAY(int32,v,n);
 	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
-		if (i) op_mul->on_int32.op_map(nd,(Number*)v,r.dim->v[i]);
-		op_mod->on_int32.op_map(nd,(Number*)v+nd*i,r.dim->v[i]);
-		if (i) op_add->on_int32.op_zip(nd,(Number*)v,(Number*)v+nd*i);
+		if (i) op_mul->map(nd,v,r.dim->v[i]);
+		op_mod->map(nd,v+nd*i,r.dim->v[i]);
+		if (i) op_add->zip(nd,v,v+nd*i);
 	}
 	if (r.nt==int32_type_i) {
 		Pt<int32> p = (Pt<int32>)r;
@@ -268,9 +291,7 @@ GRID_FLOW {
 		Pt<uint8> p = (Pt<uint8>)r;
 		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
 	} else RAISE("unsupported type");
-}
-
-GRID_FINISH {
+} GRID_FINISH {
 	GridOutlet *o = out[0];
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
@@ -309,24 +330,27 @@ METHOD3(GridStore,_0_bang) {
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridStore,0,4),GRINLET(GridStore,1,4)),
+LIST(GRINLET(GridStore,0,4),GRINLET2(GridStore,1,4)),
 	DECL(GridStore,initialize),
 	DECL(GridStore,_0_bang))
 
 /* **************************************************************** */
 
-/*{ Dim[*As] -> Dim[*As] }*/
+/*{ Dim[*As]<T> -> Dim[*As]<T> }*/
 
 struct GridOp1 : GridObject {
-	const Operator1 *op;
+	Operator1 *op;
 	DECL3(initialize);
 	GRINLET3(0);
 };
 
-GRID_INLET(GridOp1,0) { out[0]->begin(in->dim->dup()); }
-GRID_FLOW {	op->on_int32.op_map(n,(Number*)data); out[0]->give(n,data); }
-GRID_FINISH {}
-GRID_END
+GRID_INLET(GridOp1,0) {
+	out[0]->begin(in->dim->dup(),in->nt);
+} GRID_FLOW {
+	op->map(n,data);
+	out[0]->give(n,data);
+} GRID_FINISH {
+} GRID_END
 
 METHOD3(GridOp1,initialize) {
 	rb_call_super(argc,argv);
@@ -335,7 +359,7 @@ METHOD3(GridOp1,initialize) {
 }
 
 GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridOp1,0,6)),
+LIST(GRINLET2(GridOp1,0,6)),
 	DECL(GridOp1,initialize))
 
 /* **************************************************************** */
@@ -346,26 +370,27 @@ LIST(GRINLET(GridOp1,0,6)),
 */
 
 struct GridOp2 : GridObject {
-	const Operator2 *op;
+	Operator2 *op;
 	Grid r;
 	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 };
 
-/*{ Dim[*As],Dim[*Bs] -> Dim[*As] }*/
+/*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
 GRID_INLET(GridOp2,0) {
-	out[0]->begin(in->dim->dup());
+	out[0]->begin(in->dim->dup(),in->nt);
 } GRID_FLOW {
 	if (r.is_empty()) RAISE("ARGH");
-	Pt<int32> rdata = (Pt<int32>)r;
+	if (in->nt!=r.nt) RAISE("same type please");
+	Pt<T> rdata = (Pt<T>)r;
 	int loop = r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			op->on_int32.op_zip(n,(Number*)data,(Number*)rdata+in->dex);
+			op->zip(n,data,rdata+in->dex);
 		} else {
-			STACK_ARRAY(Number,data2,n);
+			STACK_ARRAY(T,data2,n);
 			//!@#$ accelerate me
 			for (int i=0; i<n;) {
 				int ii = (in->dex+i)%loop;
@@ -373,10 +398,10 @@ GRID_INLET(GridOp2,0) {
 				COPY(data2+i,rdata+ii,m);
 				i+=m;
 			}
-			op->on_int32.op_zip(n,(Number*)data,(Number*)data2);
+			op->zip(n,data,data2);
 		}
 	} else {
-		op->on_int32.op_map(n,(Number*)data,*rdata);
+		op->map(n,data,*rdata);
 	}
 	out[0]->give(n,data);
 } GRID_FINISH {
@@ -398,7 +423,7 @@ METHOD3(GridOp2,initialize) {
 }
 
 GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
+LIST(GRINLET2(GridOp2,0,6),GRINLET2(GridOp2,1,4)),
 	DECL(GridOp2,initialize))
 
 /* **************************************************************** */
@@ -408,10 +433,10 @@ LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
   doing [@fold + 42] each new Ruby is computed like 42+a+b+c+...
 */
 
-/*{ Dim[*As,*Bs],Dim[*Bs] -> Dim[*As] }*/
+/*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
 struct GridFold : GridObject {
-	const Operator2 *op;
+	Operator2 *op;
 	Grid r;
 	DECL3(initialize);
 	GRINLET3(0);
@@ -420,6 +445,7 @@ struct GridFold : GridObject {
 
 /* fold: dim(*X,Y,*Z) x dim(*Z) -> dim(*X,*Z) */
 GRID_INLET(GridFold,0) {
+	if (in->nt!=r.nt) RAISE("same type please");
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
@@ -429,7 +455,7 @@ GRID_INLET(GridFold,0) {
 	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
 	for (int i=yi+1; i<an; i++)
 		if (r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
-	out[0]->begin(new Dim(COUNT(v),v));
+	out[0]->begin(new Dim(COUNT(v),v),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
 } GRID_FLOW {
 	int an = in->dim->n;
@@ -437,13 +463,13 @@ GRID_INLET(GridFold,0) {
 	int yn = in->dim->v[an-bn-1];
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
-	STACK_ARRAY(Number,buf,n/yn);
+	STACK_ARRAY(T,buf,n/yn);
 	assert (n % factor == 0);
 	int i=0;
 	int nn=n;
 	while (n) {
-		COPY(buf+i,((Pt<int32>)r),zn);
-		op->on_int32.op_fold2(zn,(Number*)buf+i,yn,(Number*)data);
+		COPY(buf+i,((Pt<T>)r),zn);
+		op->fold2(zn,buf+i,yn,data);
 		i += zn;
 		data += yn*zn;
 		n -= yn*zn;
@@ -468,7 +494,7 @@ METHOD3(GridFold,initialize) {
 }
 
 GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridFold,0,4)),
+LIST(GRINLET2(GridFold,0,4)),
 	DECL(GridFold,initialize))
 
 /* **************************************************************** */
@@ -478,7 +504,7 @@ LIST(GRINLET(GridFold,0,4)),
   size as the input (unlike @fold).
 */
 
-/*{ Dim[*As,*Bs],Dim[*Bs] -> Dim[*As,*Bs] }*/
+/*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
 struct GridScan : GridFold {
 	DECL3(initialize);
@@ -487,13 +513,14 @@ struct GridScan : GridFold {
 };
 
 GRID_INLET(GridScan,0) {
+	if (in->nt!=r.nt) RAISE("same type please");
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	int yi = an-bn-1;
 	if (an<=bn) RAISE("dimension mismatch");
 	for (int i=yi+1; i<an; i++)
 		if (r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
-	out[0]->begin(in->dim->dup());
+	out[0]->begin(in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
 } GRID_FLOW {
 	int an = in->dim->n;
@@ -501,12 +528,12 @@ GRID_INLET(GridScan,0) {
 	int yn = in->dim->v[an-bn-1];
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
-	STACK_ARRAY(Number,buf,n);
+	STACK_ARRAY(T,buf,n);
 	assert (n % factor == 0);
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
-		op->on_int32.op_scan2(zn,(Number*)r,yn,(Number*)buf);
+		op->scan2(zn,(Pt<T>)r,yn,buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
@@ -530,7 +557,7 @@ METHOD3(GridScan,initialize) {
 }
 
 GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridScan,0,4)),
+LIST(GRINLET2(GridScan,0,4)),
 	DECL(GridScan,initialize))
 
 /* **************************************************************** */
@@ -539,12 +566,12 @@ LIST(GRINLET(GridScan,0,4)),
    c = map((*As,*Bs),fold(op_fold,rint,zip(op_para,...... whatever
 */
 
-/*{ Dim[*As,C],Dim[C,*Bs] -> Dim[*As,*Bs] }*/
+/*{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
 struct GridInner : GridObject {
-	const Operator2 *op_para;
-	const Operator2 *op_fold;
-	Number rint;
+	Operator2 *op_para;
+	Operator2 *op_fold;
+	int32 rint;
 	Grid r;
 	DECL3(initialize);
 	GRINLET3(0);
@@ -552,6 +579,7 @@ struct GridInner : GridObject {
 };
 
 GRID_INLET(GridInner,0) {
+	if (in->nt!=r.nt) RAISE("same type please");
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
@@ -565,23 +593,23 @@ GRID_INLET(GridInner,0) {
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
-	out[0]->begin(new Dim(n,v));
+	out[0]->begin(new Dim(n,v),in->nt);
 	in->set_factor(a_last);
 } GRID_FLOW {
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = r.dim->prod();
 	int chunks = b_prod/factor;
-	STACK_ARRAY(Number,buf2,b_prod/factor);
-	STACK_ARRAY(Number,buf,factor);
-	STACK_ARRAY(Number,bufr,factor);
+	STACK_ARRAY(T,buf2,b_prod/factor);
+	STACK_ARRAY(T,buf,factor);
+	STACK_ARRAY(T,bufr,factor);
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0; j<chunks; j++) {
 			COPY(buf,&data[i],factor);
-			for (int k=0; k<factor; k++) bufr[k]=((Pt<int32>)r)[chunks*k+j];
-			op_para->on_int32.op_zip(factor,(Number*)buf,(Number*)bufr);
-			buf2[j] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
+			for (int k=0; k<factor; k++) bufr[k]=((Pt<T>)r)[chunks*k+j];
+			op_para->zip(factor,buf,bufr);
+			buf2[j] = op_fold->fold((T)rint,factor,buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
 	}
@@ -603,12 +631,12 @@ METHOD3(GridInner,initialize) {
 }
 
 GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
-LIST(GRINLET(GridInner,0,4),GRINLET(GridInner,2,4)),
+LIST(GRINLET2(GridInner,0,4),GRINLET2(GridInner,2,4)),
 	DECL(GridInner,initialize))
 
 /* **************************************************************** */
 
-/*{ Dim[*As,C],Dim[*Bs,C] -> Dim[*As,*Bs] }*/
+/*{ Dim[*As,C]<T>,Dim[*Bs,C]<T> -> Dim[*As,*Bs]<T> }*/
 
 struct GridInner2 : GridInner {
 	DECL3(initialize);
@@ -617,6 +645,7 @@ struct GridInner2 : GridInner {
 };
 
 GRID_INLET(GridInner2,0) {
+	if (in->nt!=r.nt) RAISE("same type please");
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
@@ -629,20 +658,20 @@ GRID_INLET(GridInner2,0) {
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v,b->n-1);
-	out[0]->begin(new Dim(n,v));
+	out[0]->begin(new Dim(n,v),in->nt);
 	in->set_factor(a_last);
 } GRID_FLOW {
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = r.dim->prod();
-	STACK_ARRAY(Number,buf2,b_prod/factor);
-	STACK_ARRAY(Number,buf,factor);
+	STACK_ARRAY(T,buf2,b_prod/factor);
+	STACK_ARRAY(T,buf,factor);
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
 			COPY(buf,&data[i],factor);
-			op_para->on_int32.op_zip(factor,buf,(Number*)r+j);
-			buf2[k] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
+			op_para->zip(factor,buf,(Pt<T>)r+j);
+			buf2[k] = op_fold->fold((T)rint,factor,buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
 	}
@@ -664,16 +693,16 @@ METHOD3(GridInner2,initialize) {
 }
 
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
-LIST(GRINLET(GridInner2,0,4),GRINLET(GridInner2,2,4)),
+LIST(GRINLET2(GridInner2,0,4),GRINLET2(GridInner2,2,4)),
 	DECL(GridInner2,initialize))
 
 /* **************************************************************** */
 
-/*{ Dim[*As],Dim[*Bs] -> Dim[*As,*Bs] }*/
+/*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
 struct GridOuter : GridObject {
 	Grid r;
-	const Operator2 *op;
+	Operator2 *op;
 	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -683,17 +712,18 @@ GRID_INLET(GridOuter,0) {
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
+	if (in->nt!=r.nt) RAISE("same type please");
 	int n = a->n+b->n;
 	int32 v[n];
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
-	out[0]->begin(new Dim(n,v));
+	out[0]->begin(new Dim(n,v),in->nt);
 } GRID_FLOW {
 	int b_prod = r.dim->prod();
-	STACK_ARRAY(Number,buf,b_prod);
+	STACK_ARRAY(T,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		op->on_int32.op_zip(b_prod,buf,(Number*)r);
+		op->zip(b_prod,buf,(Pt<T>)r);
 		out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -713,7 +743,7 @@ METHOD3(GridOuter,initialize) {
 }
 
 GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridOuter,0,4),GRINLET(GridOuter,1,4)),
+LIST(GRINLET2(GridOuter,0,4),GRINLET2(GridOuter,1,4)),
 	DECL(GridOuter,initialize))
 
 /* **************************************************************** */
@@ -721,12 +751,12 @@ LIST(GRINLET(GridOuter,0,4),GRINLET(GridOuter,1,4)),
    of it. the margin is the size of the "b" grid minus one then split in two.
 */   
 
-/*{ Dim[A,B,*Cs],Dim[D,E] -> Dim[A,B,*Cs] }*/
+/*{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }*/
 
 struct GridConvolve : GridObject {
 	Grid c,b;
-	const Operator2 *op_para, *op_fold;
-	Number rint;
+	Operator2 *op_para, *op_fold;
+	int32 rint;
 	int margx,margy; /* margins */
 	DECL3(initialize);
 	GRINLET3(0);
@@ -738,6 +768,7 @@ GRID_INLET(GridConvolve,0) {
 	if (!db) RAISE("right inlet has no grid");
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
+	if (in->nt!=b.nt) RAISE("same type please");
 	/* bug: da[0]>=db[0] and da[1]>=db[1] are also conditions */
 	int32 v[da->n];
 	COPY(v,da->v,da->n);
@@ -745,7 +776,7 @@ GRID_INLET(GridConvolve,0) {
 	margx = db->get(1)/2;
 	v[0] += 2*margy;
 	v[1] += 2*margx;
-	c.init(new Dim(da->n,v));
+	c.init(new Dim(da->n,v),in->nt);
 	out[0]->begin(da->dup());
 	in->set_factor(da->prod(1));
 } GRID_FLOW {
@@ -757,7 +788,7 @@ GRID_INLET(GridConvolve,0) {
 	int l  = dc->prod(2); /* "pixel" length of a,c */
 	int oy = ll*(my/2), ox = l*(mx/2);
 	int i = in->dex / factor; /* line number of a */
-	Pt<Number> base = ((Pt<int32>)c)+(i+margy)*ll+margx*l;
+	Pt<T> base = ((Pt<T>)c)+(i+margy)*ll+margx*l;
 	
 	/* building c from a */
 	while (n) {
@@ -772,7 +803,7 @@ GRID_INLET(GridConvolve,0) {
 	int dbx = db->get(1), dax = da->get(1);
 	int l  = dc->prod(2);
 	int ll = dc->prod(1);
-	Pt<Number> cp = ((Pt<int32>)c);
+	Pt<T> cp = (Pt<T>)c;
 
 	/* finishing building c from a */
 	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
@@ -780,20 +811,20 @@ GRID_INLET(GridConvolve,0) {
 
 	/* the real stuff */
 
-	STACK_ARRAY(Number,buf3,l);
-	STACK_ARRAY(Number,buf2,l*dbx*dby);
-	STACK_ARRAY(Number,buf ,l*dbx*dby);
-	Pt<Number> q=buf2;
-	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=((Pt<int32>)b)[i];
+	STACK_ARRAY(T,buf3,l);
+	STACK_ARRAY(T,buf2,l*dbx*dby);
+	STACK_ARRAY(T,buf ,l*dbx*dby);
+	Pt<T> q=buf2;
+	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=((Pt<T>)b)[i];
 
 	for (int iy=0; iy<day; iy++) {
 		for (int ix=0; ix<dax; ix++) {
-			Pt<Number> p = ((Pt<int32>)c) + iy*ll + ix*l;
-			Pt<Number> r = buf;
+			Pt<T> p = ((Pt<T>)c) + iy*ll + ix*l;
+			Pt<T> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=rint;
-			op_para->on_int32.op_zip(l*dbx*dby,(Number*)buf,(Number*)buf2);
-			op_fold->on_int32.op_fold2(l,(Number*)buf3,dbx*dby,(Number*)buf);
+			op_para->zip(l*dbx*dby,buf,buf2);
+			op_fold->fold2(l,buf3,dbx*dby,buf);
 			out[0]->send(l,buf3);
 		}
 	}
@@ -820,7 +851,7 @@ METHOD3(GridConvolve,initialize) {
 }
 
 GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridConvolve,0,4),GRINLET(GridConvolve,1,4)),
+LIST(GRINLET2(GridConvolve,0,4),GRINLET2(GridConvolve,1,4)),
 	DECL(GridConvolve,initialize))
 
 /* **************************************************************** */
@@ -837,9 +868,9 @@ struct GridFor : GridObject {
 	GRINLET3(2);
 };
 
-/*{ Dim[],Dim[],Dim[] -> Dim[A] }
+/*{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> }
   or
-  { Dim[B],Dim[B],Dim[B] -> Dim[*As,B] }*/
+  { Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }*/
 
 METHOD3(GridFor,initialize) {
 	from.constrain(expect_max_one_dim);
@@ -856,10 +887,10 @@ METHOD3(GridFor,initialize) {
 METHOD3(GridFor,_0_bang) {
 	int n = from.dim->prod();
 	int32 nn[n+1];
-	STACK_ARRAY(Number,x,n);
-	Pt<Number> fromb = ((Pt<int32>)from);
-	Pt<Number>   tob = ((Pt<int32>)to  );
-	Pt<Number> stepb = ((Pt<int32>)step);
+	STACK_ARRAY(int32,x,n);
+	Pt<int32> fromb = ((Pt<int32>)from);
+	Pt<int32>   tob = ((Pt<int32>)to  );
+	Pt<int32> stepb = ((Pt<int32>)step);
 	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
 		RAISE("dimension mismatch");
 	for (int i=step.dim->prod()-1; i>=0; i--)
@@ -918,17 +949,17 @@ struct GridDim : GridObject {
 GRID_INLET(GridDim,0) {
 	int32 v[1] = {in->dim->n};
 	out[0]->begin(new Dim(1,v));
-	out[0]->send(v[0],Pt<Number>((Number *)in->dim->v,in->dim->n));
+	out[0]->send(v[0],Pt<int32>((int32 *)in->dim->v,in->dim->n));
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
 
 GRCLASS(GridDim,"@dim",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridDim,0,0)))
+LIST(GRINLET2(GridDim,0,0)))
 
 /* **************************************************************** */
 
-/*{ Dim[*As],Dim[B] -> Dim[*Cs] }*/
+/*{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }*/
 
 struct GridRedim : GridObject {
 	Grid dim_grid;
@@ -980,18 +1011,19 @@ METHOD3(GridRedim,initialize) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	dim = new Dim(t.dim->prod(),(Number *)(Pt<int32>)t);
+	dim = new Dim(t.dim->prod(),(int32 *)(Pt<int32>)t);
 	return Qnil;
 }
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
+LIST(GRINLET2(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 	DECL(GridRedim,initialize))
 
 /* ---------------------------------------------------------------- */
 /* "@scale_by" does quick scaling of pictures by integer factors */
 
-/*{ Dim[A,B,3] -> Dim[C,D,3] }*/
+/*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
+/*!@#$ should support N channels */
 
 struct GridScaleBy : GridObject {
 	Grid scale; /* integer scale factor */
@@ -1018,7 +1050,7 @@ GRID_INLET(GridScaleBy,0) {
 } GRID_FLOW {
 /* this section processes one packet of grid content */
 	int rowsize = in->dim->prod(1);
-	STACK_ARRAY(Number,buf,rowsize*scalex);
+	STACK_ARRAY(T,buf,rowsize*scalex);
 
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
@@ -1063,13 +1095,13 @@ METHOD3(GridScaleBy,initialize) {
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridScaleBy,0,4)),
+LIST(GRINLET2(GridScaleBy,0,4)),
 	DECL(GridScaleBy,initialize))
 
 /* ---------------------------------------------------------------- */
 /* "@downscale_by" does quick downscaling of pictures by integer factors */
 
-/*{ Dim[A,B,3] -> Dim[C,D,3] }*/
+/*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
 struct GridDownscaleBy : GridObject {
 	Grid scale;
@@ -1093,7 +1125,7 @@ GRID_INLET(GridDownscaleBy,0) {
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp.dim->prod();
-	Pt<Number> buf = ((Pt<int32>)temp);
+	Pt<T> buf = (Pt<T>)temp;
 
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
@@ -1111,7 +1143,7 @@ GRID_INLET(GridDownscaleBy,0) {
 			}
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
-				OP2(SYM(/))->on_int32.op_map(rowsize2,(Number*)buf,scalex*scaley);
+				OP2(SYM(/))->map(rowsize2,buf,(T)(scalex*scaley));
 				out[0]->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}
@@ -1147,7 +1179,7 @@ METHOD3(GridDownscaleBy,initialize) {
 }
 
 GRCLASS(GridDownscaleBy,"@downscale_by",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridDownscaleBy,0,4)),
+LIST(GRINLET2(GridDownscaleBy,0,4)),
 	DECL(GridDownscaleBy,initialize))
 
 /* **************************************************************** */
@@ -1175,7 +1207,7 @@ METHOD3(GridJoin,initialize) {
 }
 
 GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridJoin,0,4),GRINLET(GridJoin,1,4)),
+LIST(GRINLET2(GridJoin,0,4),GRINLET2(GridJoin,1,4)),
 	DECL(GridJoin,initialize))
 
 /* **************************************************************** */
@@ -1193,13 +1225,14 @@ struct GridLayer : GridObject {
 GRID_INLET(GridLayer,0) {
 	Dim *a = in->dim;
 	expect_rgba_picture(a);
+	if (in->nt!=r.nt) RAISE("same type please");
 	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
 	in->set_factor(a->prod(1));
 	out[0]->begin(r.dim->dup());
 } GRID_FLOW {
-	Pt<Number> rr = ((Pt<int32>)r) + in->dex*3/4;
-	STACK_ARRAY(Number,foo,n*3/4);
+	Pt<T> rr = ((Pt<T>)r) + in->dex*3/4;
+	STACK_ARRAY(T,foo,n*3/4);
 	for (int i=0,j=0; i<n; i+=4,j+=3) {
 		foo[j+0] = (data[i+0]*data[i+3] + rr[j+0]*(256-data[i+3])) >> 8;
 		foo[j+1] = (data[i+1]*data[i+3] + rr[j+1]*(256-data[i+3])) >> 8;
@@ -1217,7 +1250,7 @@ METHOD3(GridLayer,initialize) {
 }
 
 GRCLASS(GridLayer,"@layer",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridLayer,0,4),GRINLET(GridLayer,1,4)),
+LIST(GRINLET2(GridLayer,0,4),GRINLET2(GridLayer,1,4)),
 	DECL(GridLayer,initialize))
 
 /* **************************************************************** */
@@ -1227,6 +1260,7 @@ struct GridFinished : GridObject {
 	DECL3(initialize);
 };
 
+/* nt N/A */
 GRID_INLET(GridFinished,0) {
 } GRID_FLOW {
 } GRID_FINISH {
@@ -1240,7 +1274,7 @@ METHOD3(GridFinished,initialize) {
 }
 
 GRCLASS(GridFinished,"@finished",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridFinished,0,0)),
+LIST(GRINLET2(GridFinished,0,0)),
 	DECL(GridFinished,initialize))
 
 /* **************************************************************** */
@@ -1271,14 +1305,14 @@ void DrawPolygon::init_lines () {
 	int32 v[] = {nl,8};
 	lines.init(new Dim(2,v));
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
-	Pt<Number> pd = (Pt<int32>)polygon;
+	Pt<int32> pd = (Pt<int32>)polygon;
 	for (int i=0,j=0; i<nl; i++) {
 		ld[i].y1 = pd[j+0];
 		ld[i].x1 = pd[j+1];
 		j=(j+2)%(2*nl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
-		if (ld[i].y1>ld[i].y2) memswap((Number *)(ld+i)+0,(Number *)(ld+i)+2,2);
+		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
 	}
 }
 
@@ -1293,14 +1327,15 @@ static int order_by_column (const void *a, const void *b) {
 GRID_INLET(DrawPolygon,0) {
 	if (polygon.is_empty()) RAISE("no polygon?");
 	if (lines.is_empty()) RAISE("no lines???");
+	if (in->nt!=color.nt) RAISE("same type please");
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
 	if (in->dim->get(2)!=color.dim->get(0))
 		RAISE("image does not have same	number of channels as stored color");
-	out[0]->begin(in->dim->dup());
+	out[0]->begin(in->dim->dup(),in->nt);
 	lines_start = lines_stop = 0;
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int nl = polygon.dim->get(0);
-	qsort((Number *)lines,nl,sizeof(Line),order_by_starting_scanline);
+	qsort((int32 *)lines,nl,sizeof(Line),order_by_starting_scanline);
 } GRID_FLOW {
 	int nl = polygon.dim->get(0);
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
@@ -1314,12 +1349,12 @@ GRID_INLET(DrawPolygon,0) {
 				lines_start++;
 			}
 		}
-		Pt<Number> cd = (Pt<Number>)color;
+		Pt<T> cd = (Pt<T>)color;
 		int cn = color.dim->prod();
 		if (lines_start == lines_stop) {
 			out[0]->send(in->factor,data);
 		} else {
-			Pt<Number> data2 = ARRAY_NEW(Number,in->factor);
+			Pt<T> data2 = ARRAY_NEW(T,in->factor);
 			COPY(data2,data,in->factor);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
@@ -1329,7 +1364,7 @@ GRID_INLET(DrawPolygon,0) {
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
 				int xs = ld[i].x, xe = ld[i+1].x;
-				while (xs<=xe) op->on_int32.op_zip(cn,(int32*)data2+cn*xs++,(int32*)cd);
+				while (xs<=xe) op->zip(cn,data2+cn*xs++,cd);
 			}
 			out[0]->give(in->factor,data2);
 		}
@@ -1363,7 +1398,7 @@ LIST(GRINLET(DrawPolygon,0,4),GRINLET(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4))
 
 /* **************************************************************** */
 
-/*{ Dim[*As,3] -> Dim[*As,3] }*/
+/*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
 
 struct GridRGBtoHSV : GridObject {
 	DECL3(initialize);
@@ -1386,8 +1421,8 @@ GRID_INLET(GridRGBtoHSV,0) {
 	out[0]->begin(in->dim->dup());
 	in->set_factor(3);
 } GRID_FLOW {
-	STACK_ARRAY(Number,buf,n);
-	Pt<Number> p=buf;
+	STACK_ARRAY(T,buf,n);
+	Pt<T> p=buf;
 	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int r=data[0], g=data[1], b=data[2];
 		int v=p[2]=max(max(r,g),b);
@@ -1414,7 +1449,7 @@ LIST(GRINLET(GridRGBtoHSV,0,4)),
 
 /* **************************************************************** */
 
-/*{ Dim[*As,3] -> Dim[*As,3] }*/
+/*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
 
 struct GridHSVtoRGB : GridObject {
 	DECL3(initialize);
@@ -1427,8 +1462,8 @@ GRID_INLET(GridHSVtoRGB,0) {
 	out[0]->begin(in->dim->dup());
 	in->set_factor(3);
 } GRID_FLOW {
-	STACK_ARRAY(Number,buf,n);
-	Pt<Number> p = buf;
+	STACK_ARRAY(T,buf,n);
+	Pt<T> p = buf;
 	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int h=mod(data[0],252), s=data[1], v=data[2];
 		int j=h%42;
@@ -1557,6 +1592,7 @@ LIST(),
 /* **************************************************************** */
 
 void startup_flow_objects () {
+	INSTALL(GridCast);
 	INSTALL(GridImport);
 	INSTALL(GridExport);
 	INSTALL(GridExportList);

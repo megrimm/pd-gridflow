@@ -33,12 +33,13 @@ class Expect < FObject
 end
 
 def test_math
+for nt in [:int32, :int16] do
 	e = FObject["@export_list"]
 	x = Expect.new
 	e.connect 0,x,0
 
-	x.expect([2,3,5,7]) { e.send_in 0,"2 3 5 7" }
-	x.expect([42]*10000) { e.send_in 0,"10000 # 42" }
+	x.expect([2,3,5,7]) { e.send_in 0,"4 #{nt} # 2 3 5 7" }
+	x.expect([42]*10000) { e.send_in 0,"10000 #{nt} # 42" }
 
 	(a = FObject["@two"]).connect 0,e,0
 	x.expect([42,0]) { a.send_in 0,42 }
@@ -192,6 +193,22 @@ def test_math
 	x.expect([8,0]) { a.send_in 0, 2, 2 }
 	x.expect([0,9]) { a.send_in 0, 0, 3 }
 end
+end
+
+def test_int16
+	a = FObject["@cast int16"]
+	b = FObject["@ + {int16 # 42}"]
+	c = FObject["@cast int32"]
+#	d = FObject["@print"]
+	e = FObject["@export_list"]
+	x = Expect.new
+	e.connect 0,x,0
+
+	a.connect 0,b,0
+	b.connect 0,c,0
+	c.connect 0,e,0
+	x.expect((43..52).to_a) { a.send_in 0,(1..10).to_a }
+end
 
 def test_rtmetro
 	rt = FObject["rtmetro 1000"]
@@ -314,6 +331,7 @@ def test_foo
 end
 
 def test_anim msgs
+	GridFlow.verbose = false
 	gin = FObject["@in"]
 #	gout1 = FObject["@out x11"]
 #proc{
@@ -329,7 +347,7 @@ def test_anim msgs
 	msgs.each {|m| gin.send_in 0,m }
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=300
+	frames=100
 	frames.times { gin.send_in 0 }
 #	loop { gin.send_in 0 }
 #	metro = FObject["rtmetro 80"]
@@ -345,36 +363,47 @@ def test_anim msgs
 	global.send_in 0,"profiler_dump"
 end
 
+class TestTCP < FObject
+	attr_accessor :idle
+	def initialize
+		@idle = true
+	end
+	def _0_bang
+		# GridFlow.gfpost "tick"
+		# avoid recursion
+		$mainloop.timers.after(0) {
+			($in_client.send_in 0; @idle=false) if @idle
+		}
+	end
+	install "tcptest",1,1
+end
+
 def test_tcp
 	if fork
-		# client
-		GridFlow.gfpost_header = "[client] "
+		# client (is receiving)
+		GridFlow.post_header = "[client] "
 		$in_client = in1 = FObject["@in"]
 		out = FObject["@out x11"]
 		in1.connect 0,out,0
 		out.send_in 0,"option timelog 1"
 		out.send_in 0,"option autodraw 2"
-		GridFlow.gfpost "test: waiting 1 seconds"
+		GridFlow.post "test: waiting 1 second"
 		sleep 1
 		p "HI"
 		#in1.send_in 0,"open grid tcp localhost #{$port}"
 		in1.send_in 0,"open grid tcp 127.0.0.1 #{$port}"
 		p "HI"
 
-		test_tcp = GridFlow::FObject.new
-		def test_tcp._0_bang
-			# GridFlow.gfpost "tick"
-			# avoid recursion
-			$mainloop.timers.after(0) {$in_client.send_in 0}
-		end
-		out.connect 0,test_tcp,0
+		test_tcp = TestTCP.new
 
-		in1.send_in 0
-		GridFlow.gfpost "entering mainloop..."
+		out.connect 0,test_tcp,0
+		test_tcp.connect 0,in1,0
+
+		GridFlow.post "entering mainloop..."
 		$mainloop.loop
 	else
-		# server
-		GridFlow.gfpost_header = "[server] "
+		# server (is sending)
+		GridFlow.post_header = "[server] "
 		$in1_server = in1 = FObject["@in"]
 		$in2_server = in2 = FObject["@in"]
 		$out = out = FObject["@out"]
@@ -387,7 +416,7 @@ def test_tcp
 		out.send_in 0,"option type uint8"
 		test_tcp = GridFlow::FObject.new
 		def test_tcp._0_bang
-			# GridFlow.gfpost "tick"
+			# GridFlow.post "tick"
 			@toggle ||= 0
 			# avoid recursion
 			$mainloop.timers.after(0.01) {
@@ -400,7 +429,7 @@ def test_tcp
 		end
 		out.connect 0,test_tcp,0
 		test_tcp.send_in 0
-		GridFlow.gfpost "entering mainloop..."
+		GridFlow.post "entering mainloop..."
 		$mainloop.loop
 	end
 end
@@ -590,7 +619,7 @@ if false
 	out2 = FObject["@out x11"]; out1.connect 0,out2,0
 else
 	out1 = FObject["@out x11"]
-	fps = FObject["fps detailed"]
+	fps = FObject["fps detailed cpu"]
 	out1.connect 0,fps,0
 	pr = FObject["rubyprint"]
 	fps.connect 0,pr,0
@@ -622,6 +651,50 @@ end
 	$mainloop.loop
 end
 
+class FRoute2 < FObject
+	def initialize(selector)
+		@selector = selector.to_s
+	end
+	def method_missing(sym,*a)
+		sym=sym.to_s
+		if sym =~ /^_0_(.*)/
+			send_out((if $1==@selector then 0 else 1 end), $1.intern, *a)
+		else super end
+	end
+	install "route2", 1, 2
+end
+
+def test_aalib
+#	gin = FObject["@in ppm file #{$imdir}/r001.ppm"]
+	gin = FObject["@in ppm file #{$animdir}/b.ppm.cat"]
+	grey = FObject["@rgb_to_greyscale"]
+	cont = FObject["@ << 1"]
+	clip = FObject["@ min 255"]
+	gout = FObject["@out aalib X11"]
+	sto = FObject["@store"]
+	op = FObject["aa_fill_with_text {localhost 4242}"]
+	filt = FObject["route2 grid"]
+	gin.connect 0,grey,0
+	grey.connect 0,cont,0
+	cont.connect 0,clip,0
+	clip.connect 0,gout,0
+	gout.connect 0,filt,0
+	filt.connect 0,sto,1
+	sto.connect 0,op,0
+	op.connect 0,gout,0
+	gout.send_in 0, :option, :autodraw, 0
+	GridFlow.verbose = false
+	task=proc{
+		gin.send_in 0
+		gout.send_in 0, :option, :dump
+		sto.send_in 0
+		gout.send_in 0, :option, :draw
+		$mainloop.timers.after(0.1,&task)
+	}
+	task[]
+	$mainloop.loop
+end
+
 def test_store2
 	o = [
 		FObject["@for {0 0} {240 320} {1 1}"],
@@ -647,14 +720,20 @@ def test_asm
 	a.connect 0,d,1
 	a.send_in 0
 	c = FObject["@ +"]
-	d.connect 0,c,1 # for map2
-	d.send_in 0
 	t0 = Time.new; 1000.times {b.send_in 0}; t1 = Time.new-t0
 	b.connect 0,c,0
-	3.times{
-	t0 = Time.new; 1000.times {b.send_in 0}; t2 = Time.new-t0
-	GridFlow.post "   %f   %f   %f", t1, t2, t2-t1
+	stuff=proc{
+		3.times{
+			t0 = Time.new; 1000.times {b.send_in 0}; t2 = Time.new-t0
+			GridFlow.post "   %f   %f   %f", t1, t2, t2-t1
+		}
 	}
+	puts "map:"
+	stuff[]
+	d.connect 0,c,1 # for zip
+	d.send_in 0
+	puts "zip:"
+	stuff[]	
 end
 
 def test_metro
@@ -680,7 +759,7 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim ["open ppm file #{$imdir}/g001.ppm"]
+test_anim ["open ppm file #{$imdir}/g001.ppm"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]

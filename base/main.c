@@ -57,7 +57,7 @@ static void default_post(const char *fmt, ...) {
 	va_end(args);
 }
 
-struct GFBridge gf_bridge = {
+GFBridge gf_bridge = {
 	send_out: 0,
 	class_install: 0,
 	post: default_post,
@@ -338,6 +338,15 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
 		rb_enable_super(rself,buf);
 	}
+}
+
+NumberTypeIndex NumberType_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
+	if (sym==SYM(uint8)) return uint8_type_i;
+	if (sym==SYM(int16)) return int16_type_i;
+	if (sym==SYM(int32)) return int32_type_i;
+	if (sym==SYM(float32)) return float32_type_i;
+	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
 }
 
 Ruby GridFlow_clock_tick (Ruby rself) {
