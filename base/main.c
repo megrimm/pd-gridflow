@@ -351,14 +351,13 @@ VALUE gf_post_string (VALUE $, VALUE s) {
 	return Qnil;
 }
 
-VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
-VALUE super) {
-	VALUE $ = rb_define_class_under(GridFlow_module, rname, super);
+VALUE ruby_c_install(GridClass *gc, VALUE super) {
+	VALUE $ = rb_define_class_under(GridFlow_module, gc->name, super);
 	rb_ivar_set($,SI(@grid_class),PTR2FIX(gc));
 	define_many_methods($,gc->methodsn,gc->methods);
 //remember to take care of delete
 	rb_funcall($,SI(install),3,
-		rb_str_new2(jname),
+		rb_str_new2(gc->jname),
 		INT2NUM(gc->inlets),
 		INT2NUM(gc->outlets));
 	GridObject_conf_class($,gc);
