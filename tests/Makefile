@@ -7,7 +7,7 @@ ARCH_CFLAGS += -fdollars-in-identifiers
 LDSOFLAGS = $(GRIDFLOW_LDSOFLAGS)
 
 ### for hardcore malloc debugging; standalone only
-# LDSOFLAGS += -lefence
+#LDSOFLAGS += -lefence
 
 LIB=../c/lib2/lib$(PNAME).so
 

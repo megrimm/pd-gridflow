@@ -18,12 +18,12 @@ void test_dict$1(void *foo, void *k, void *v) {
 }
 
 void test_gen(void) {
-	fts_object_t *f0 = fts_object_new3("@for 0 64 1");
-	fts_object_t *f1 = fts_object_new3("@for 0 64 1");
-	fts_object_t *f2 = fts_object_new3("@for 1 4 1");
-	fts_object_t *t0 = fts_object_new3("@outer ^");
-	fts_object_t *t1 = fts_object_new3("@outer *");
-	fts_object_t *out = fts_object_new3("@out 256 256");
+	FObject *f0 = fts_object_new3("@for 0 64 1");
+	FObject *f1 = fts_object_new3("@for 0 64 1");
+	FObject *f2 = fts_object_new3("@for 1 4 1");
+	FObject *t0 = fts_object_new3("@outer ^");
+	FObject *t1 = fts_object_new3("@outer *");
+	FObject *out = fts_object_new3("@out 256 256");
 	fts_connect(f0,0,t0,0);
 	fts_connect(f1,0,t0,1);
 	fts_connect(t0,0,t1,0);
@@ -35,7 +35,7 @@ void test_gen(void) {
 }
 
 void test_dict(void) {
-	Dict *d = Dict_new(0);
+	Dict *d = Dict_new(0,0);
 	Dict_put(d,(void *)(0+SYM(apples)),"oranges");
 	Dict_put(d,(void *)(0+SYM(monty)),"python");
 	Dict_put(d,(void *)(0+SYM(luby)),"is not engrish");
@@ -45,8 +45,8 @@ void test_dict(void) {
 }
 
 void test_view_ppm1(void) {
-	fts_object_t *in = fts_object_new3("@in");
-	fts_object_t *out = fts_object_new3("@out 256 256");
+	FObject *in = fts_object_new3("@in");
+	FObject *out = fts_object_new3("@out 256 256");
 	fts_connect(in,0,out,0);
 //	fts_send3(in,0,"open ppm file "DIR"/g001.ppm");
 	fts_send3(in,0,"open grid file "DIR"/foo.grid");
@@ -54,12 +54,12 @@ void test_view_ppm1(void) {
 }
 
 void test_view_ppm2(void) {
-	fts_object_t *in = fts_object_new3("@in");
-	fts_object_t *pa = fts_object_new3("@convolve << + 0");
-	fts_object_t *pb = fts_object_new3("@ / 9");
-	fts_object_t *ra = fts_object_new3("@redim 3 3");
-	fts_object_t *out = fts_object_new3("@out 256 256");
-	fts_object_t *v4j = fts_object_new3("@global");
+	FObject *in = fts_object_new3("@in");
+	FObject *pa = fts_object_new3("@convolve << + 0");
+	FObject *pb = fts_object_new3("@ / 9");
+	FObject *ra = fts_object_new3("@redim 3 3");
+	FObject *out = fts_object_new3("@out 256 256");
+	FObject *v4j = fts_object_new3("@global");
 	fts_connect(in,0,pa,0);
 	fts_connect(pa,0,pb,0);
 	fts_connect(pb,0,out,0);
@@ -73,10 +73,10 @@ void test_view_ppm2(void) {
 }
 
 void test_view_anim(void) {
-	fts_object_t *in = fts_object_new3("@in");
-/*	fts_object_t *pa = fts_object_new3("@scale_by"); */
-	fts_object_t *out = fts_object_new3("@out 256 256");
-	fts_object_t *v4j = fts_object_new3("@global");
+	FObject *in = fts_object_new3("@in");
+/*	FObject *pa = fts_object_new3("@scale_by"); */
+	FObject *out = fts_object_new3("@out 256 256");
+	FObject *v4j = fts_object_new3("@global");
 /*
 	fts_connect(in,0,pa,0);
 	fts_connect(pa,0,out,0);
@@ -92,8 +92,8 @@ void test_view_anim(void) {
 }
 
 void test_view_anim2(void) {
-	fts_object_t *in = fts_object_new3("@in");
-	fts_object_t *out = fts_object_new3("@out 256 256");
+	FObject *in = fts_object_new3("@in");
+	FObject *out = fts_object_new3("@out 256 256");
 	fts_connect(in,0,out,0);
 	fts_send3(in,0,"open mpeg file /home/matju/net/washington_zoom_in.mpeg");
 //	printf("here...\n");
@@ -102,26 +102,31 @@ void test_view_anim2(void) {
 }
 
 typedef struct TestTCP {
-	fts_object_t *in1, *in2, *out;
+	FObject *in1, *in2, *out;
 	int toggle;
 } TestTCP;
 
 void test_tcp$1(TestTCP *$) {
+	whine("tick1");
 	if (GridInlet_busy(((GridObject *)$->out)->in[0])) return;
+	whine("tick2");
 	if ($->toggle==0) {
 		fts_send3($->in1,0,"bang");
 	} else {
 		fts_send3($->in2,0,"bang");
 	}
+	whine("tick3");
 	$->toggle ^= 1;
 }
 
 void test_tcp$2(TestTCP *$) {
+	whine("tick");
 	if (GridInlet_busy(((GridObject *)$->out)->in[0])) return;
 	fts_send3($->in1,0,"bang");
 }
 
 void test_tcp(void) {
+#define MYPORT "4243"
 	if (fork()) {
 		/* client */
 		TestTCP *$ = NEW(TestTCP,1);
@@ -132,9 +137,9 @@ void test_tcp(void) {
 		fts_send3($->out,0,"option autodraw 2");
 		whine("test: waiting 2 seconds");
 		sleep(2);
-		fts_send3($->in1,0,"open grid tcp localhost 4247");
+		fts_send3($->in1,0,"open grid tcp localhost " MYPORT);
 
-//		Dict_put(gridflow_alarm_set,$,test_tcp$2);
+		Dict_put(gf_timer_set,$,test_tcp$2);
 		fts_send3($->in1,0,"bang");
 	} else {
 		/* server */
@@ -148,20 +153,21 @@ void test_tcp(void) {
 		fts_connect($->in2,0,$->out,0);
 		fts_send3($->in1,0,"open ppm file "DIR"/r001.ppm");
 		fts_send3($->in2,0,"open ppm file "DIR"/b001.ppm");
-		fts_send3($->out,0,"open grid tcpserver 4247");
-//		Dict_put(gridflow_alarm_set,$,test_tcp$1);
-		fts_send3($->in1,0,"bang");
+		fts_send3($->out,0,"open grid tcpserver " MYPORT);
+		whine("now setting up timer");
+		Dict_put(gf_timer_set,$,test_tcp$1);
+		Timer_loop();
 	}		
 }
 
 void test_foo(void) {
-	fts_object_t *in  = fts_object_new3("@in");
-	fts_object_t *out = fts_object_new3("@out");
+	FObject *in  = fts_object_new3("@in");
+	FObject *out = fts_object_new3("@out");
 	fts_send3(out,0,"open videodev /dev/video0");
 }
 
 int main(void) {
-	Dict *tests = Dict_new(0);
+	Dict *tests = Dict_new(0,0);
 	int i;
 	gridflow_init_standalone();
 #define TEST(_x_) Dict_put(tests,#_x_,test_##_x_);
@@ -175,9 +181,9 @@ int main(void) {
 	TEST(gen)
 
 //	((void(*)(void))Dict_get(tests,"dict"))();
-	((void(*)(void))Dict_get(tests,"gen"))();
+	((void(*)(void))Dict_get(tests,"tcp"))();
 
-	fts_loop();
+	Timer_loop();
 /*	{int i; for(i=0;;i++) printf("%3d = %s\n", i, Symbol_name(i)); } */
 	return 0;
 }
