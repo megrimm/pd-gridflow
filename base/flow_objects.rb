@@ -98,7 +98,6 @@ class FPS < GridObject
 			when :real,:user,:system,:cpu; @mode=o
 			end
 		}
-		!!detailed
 		def @history.moment(n=1)
 			sum = 0
 			each {|x| sum += x**n }
@@ -106,8 +105,8 @@ class FPS < GridObject
 		end
 	end
 	def _0_position(*); end
-	def method_missing(*a) GridFlow.post "%s", a.inspect end
-	def _0_period x; GridFlow.post "period = %d", x; @period = x end
+	def method_missing(*a) end # ignore non-bangs
+	def _0_period x; @period=x end
 	def _0_bang
 		t = case @mode
 		when :real; Time.new.to_f
@@ -278,25 +277,27 @@ end
 
 class GridPack < GridObject
 	class<<self;attr_reader :ninlets;end
-	def initialize(n=nil)
+	def initialize(n=nil,cast=:int32)
 		n||=self.class.ninlets
 		n>=16 and raise "too many inlets"
 		super
 		@data=[0]*n
+		@cast=cast
 	end
 	def initialize2
 		return if self.class!=GridPack
 		GridFlow.whatever :addinlets, self, @data.length-1
 	end
+	def _0_cast(cast) @cast=cast end
 	def self.define_inlet i
 		module_eval "
-			def _#{i}_int   x; @data[#{i}]=x     ; _0_bang; end
-			def _#{i}_float x; @data[#{i}]=x.to_i; _0_bang; end
+			def _#{i}_int   x; @data[#{i}]=x; _0_bang; end
+			def _#{i}_float x; @data[#{i}]=x; _0_bang; end
 		"
 	end
 	(0...15).each {|x| define_inlet x }
 	def _0_bang
-		send_out_grid_begin 0, [@data.length]
+		send_out_grid_begin 0, [@data.length], @cast
 		send_out_grid_flow 0, @data.pack("l*")
 	end
 	install_rgrid 0
