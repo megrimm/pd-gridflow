@@ -58,9 +58,7 @@ GRID_BEGIN(GridImport,1) {
 	int n;
 	if (Dim_count(in->dim)!=1) return false;
 	n = Dim_get(in->dim,0);
-	if (n>MAX_DIMENSIONS) {
-		whine("too many dimensions");
-	}
+	if (n>MAX_DIMENSIONS) { whine("too many dimensions"); return false; }
 	GridInlet_set_factor(in,n);
 	return true;
 }
@@ -237,10 +235,7 @@ GRID_BEGIN(GridStore,0) {
 		return false;
 	}
 	nd = nb - nc + na - 1;
-	if (nd > MAX_DIMENSIONS) {
-		whine("too many dimensions!");
-		return false;
-	}
+	if (nd > MAX_DIMENSIONS) { whine("too many dimensions!"); return false; }
 	for (i=0; i<na-1; i++) v[i] = Dim_get(in->dim,i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
 	GridOutlet_begin($->out[0],Dim_new(nd,v));
@@ -869,35 +864,68 @@ GRID_BEGIN(GridConvolve,0) {
 		whine("left grid has less dimensions than right grid");
 		return false;
 	}
-	$->diml = Dim_dup(a);
-	$->datal = NEW(Number,Dim_prod(a));
+	if (Dim_count(a) < 2) {
+		whine("left grid has less than two dimensions");
+		return false;
+	}
+	
+	{
+		int v[MAX_DIMENSIONS];
+		int i;
+		for (i=0; i<Dim_count(a); i++) v[i]=a->v[i];
+		v[0] += Dim_get($->dim,0)/2*2;
+		v[1] += Dim_get($->dim,1)/2*2;
+		$->diml = Dim_new(Dim_count(a),v);
+	}
+	$->datal = NEW2(Number,Dim_prod($->diml));
 	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	GridInlet_set_factor(in,Dim_prod_start(a,1));
 	return true;
 }
 
 GRID_FLOW(GridConvolve,0) {
-	memcpy(&$->datal[in->dex], data, n*sizeof(Number));
-	in->dex += n;
+	int my = Dim_get($->dim,0), ny = Dim_get($->diml,0) - my/2*2;
+	int mx = Dim_get($->dim,1);
+	int oy = Dim_prod_start($->diml,1) * (my/2);
+	int ox = Dim_prod_start($->diml,2) * (mx/2);
+	int factor = in->factor;
+	int ll = Dim_prod_start($->diml,1);
+	int l = Dim_prod_start($->diml,2);
+	
+	while (n) {
+		int i = in->dex / factor;
+		Number *p = $->datal+oy+i*ll;
+		memcpy(p+ox,data,factor*sizeof(Number));
+		memcpy(p+ox+factor,data,(mx/2)*l*sizeof(Number));
+		memcpy(p,data+factor-ox,(mx/2)*l*sizeof(Number));
+		if (i<    my/2) memcpy(p+ny*ll,p,ll*sizeof(Number));
+		if (i>=ny-my/2) memcpy(p-ny*ll,p,ll*sizeof(Number));
+		in->dex += factor;
+		data += factor;
+		n -= factor;
+	}
 }
 
 GRID_END(GridConvolve,0) {
-	int k;
-	int iy, ix, ny = Dim_get($->diml,0), nx = Dim_get($->diml,1);
-	int jy, jx, my = Dim_get($->dim ,0), mx = Dim_get($->dim ,1);
-	int l = Dim_prod_start($->diml,2);
-	Number buf[l];
+	int iy,ix,jy,jx,k;
+	int my = Dim_get($->dim,0), ny = Dim_get($->diml,0) - my/2*2;
+	int mx = Dim_get($->dim,1), nx = Dim_get($->diml,1) - mx/2*2;
+	int l  = Dim_prod_start($->diml,2);
+	int ll = Dim_prod_start($->diml,1);
+	Number buf[l],buf2[l];
 	Number as[l];
-	
+
+	for (k=0; k<l; k++) buf2[k]=$->rint;
+
 	for (iy=0; iy<ny; iy++) {
 		for (ix=0; ix<nx; ix++) {
 			Number *d = $->data;
-			for (k=0; k<l; k++) { buf[k] = $->rint; }
-			for (jy=0; jy<my; jy++) {
-				int pos1 = ((iy+jy-my/2+ny)%ny) * nx;
-				for (jx=0; jx<mx; jx++) {
+			Number *p = $->datal + iy*ll + ix*l;
+			memcpy(buf,buf2,l*sizeof(Number));
+			for (jy=my; jy; jy--,p+=ll-mx*l) {
+				for (jx=mx; jx; jx--,p+=l) {
 					Number b = *d++;
-					int pos = pos1 + (ix+jx-mx/2+nx)%nx;
-					memcpy(as,&$->datal[pos*l],l*sizeof(Number));
+					memcpy(as,p,l*sizeof(Number));
 					$->op_para->op_array(l,as,b);
 					$->op_fold->op_array2(l,buf,as);
 				}
@@ -918,14 +946,6 @@ GRID_BEGIN(GridConvolve,1) {
 		whine("only exactly two dimensions allowed for now");
 		return false;
 	}
-/*
-	for (i=0; i<count; i++) {
-		if ((Dim_get(in->dim,i) & 1) == 0) {
-			whine("even number of elements");
-			return false;
-		}
-	}
-*/
 	/* because odd * odd = odd */
 	if ((length & 1) == 0) {
 		whine("even number of elements");
@@ -940,12 +960,6 @@ GRID_BEGIN(GridConvolve,1) {
 }
 
 GRID_FLOW(GridConvolve,1) {
-/*
-	whine("in->dim = %s",Dim_to_s(in->dim));
-	whine("in->dex = %d", in->dex);
-	whine("n = %d", n);
-	whine("$->data = %p", $->data);
-*/
 	memcpy(&$->data[in->dex], data, n*sizeof(Number));
 }
 
@@ -966,7 +980,7 @@ METHOD(GridConvolve,init) {
 
 	$->op_para = op2_table_find(sym_para);
 	$->op_fold = op2_table_find(sym_fold);
-	/* $->rint = GET(3,int,0); */
+	$->rint = GET(3,int,0);
 
 	if (!$->op_para) {
 		fts_object_set_error(OBJ($),
@@ -1181,10 +1195,7 @@ GRID_BEGIN(GridRedim,1) {
 		return false;
 	}
 	n = Dim_get(in->dim,0);
-	if (n>MAX_DIMENSIONS) {
-		whine("dimension list has too many elements");
-		return false;
-	}
+	if (n>MAX_DIMENSIONS) { whine("too many dimensions"); return false; }
 	if (n) GridInlet_set_factor(in,n);
 	return true;
 }
