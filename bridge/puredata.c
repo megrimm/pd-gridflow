@@ -284,6 +284,7 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 	} else {
 		RAISE("don't know how to do that");
 	}
+	return Qundef; /* what? */
 }
 
 static t_clock *gf_alarm;
