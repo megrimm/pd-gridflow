@@ -3,6 +3,10 @@
 "!" is planned for next release
 starting with 1.0, backwards compatibility will be kept
 
+Community
+[ ] make website
+[ ] make IRC channel #dataflow
+
 Distribution (0.6.1)
 [ ] make demo app(s) in Ruby/Tk
 [ ] add test plan
@@ -130,6 +134,8 @@ Input/Output
 [ ] PureData bridge
 [ ] Max bridge
 [ ] Gimp bridge
+[ ] read/write PureData files
+[ ] read/write jMax files
 [ ] Gnome/Gstreamer bridge
 [ ] TCP: non-blocking write
 [ ] TCP Socket Buffering
@@ -169,6 +175,9 @@ jMax-UI
 [ ] 2d slider
 [ ] radial slider (angle chooser)
 
+Misc
+[ ] world domination
+
 Bugs
 [ ] format_x11 causes delayed crash when closing its associated window
 [ ] format_x11 causes crash (resizing + shm, sometimes)
@@ -187,6 +196,7 @@ Bugs
 [ ] compiling without jMax nor PD should not require libruby.so
 [ ] issues with fork and X11 ?
 [ ] bug when FORMAT_LIST is empty
+[ ] GridObject#method_missing clobbers RubyPrint#method_missing
 
 Feature Requests
 

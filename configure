@@ -265,6 +265,7 @@ Feature.new {
 Feature.new {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
+	status :disabled
 	uses_feature [:libruby]
 	options ["HAVE_PUREDATA"]
 	test proc {
