@@ -174,7 +174,7 @@ class XNode
 
 	def prc_documentation; end
 	def prc_section
-		black_ruler
+		write_black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
 			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
 			mk(:h4) { print att["name"] }}}
@@ -403,7 +403,7 @@ end
 
 #----------------------------------------------------------------#
 
-def header
+def write_header
 puts <<EOF
 <html>
 <head>
@@ -431,7 +431,7 @@ puts <<EOF
 <td>&nbsp;</td>
 </tr>
 EOF
-black_ruler
+write_black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
     <h4>GridFlow #{GF_VERSION} - reference index</h4>
@@ -445,7 +445,7 @@ puts <<EOF
 EOF
 end
 
-def black_ruler
+def write_black_ruler
 puts <<EOF
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -453,15 +453,7 @@ puts <<EOF
 EOF
 end
 
-def section_header(name)
-puts %{<tr><td>&nbsp;</<td></tr>}
-black_ruler
-puts %{<tr><td colspan="4" height="16"> 
-	<h4><a name="grid"></a>#{name}</h4>
-</td></tr>}
-end
-
-def footer
+def write_footer
 puts <<EOF
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
@@ -481,19 +473,15 @@ end
 
 #----------------------------------------------------------------#
 
-def process_one_page file
-	data = File.open(file) {|f| f.readlines }.join("\n")
-	header
-	parser = GFDocParser.new "ISO-8859-1"
+$nodes = {}
+
+def read_one_page file
 	begin
-		STDERR.puts "reading standard input..."
+		STDERR.puts "reading #{file}"
+		data = File.open(file) {|f| f.readlines }.join("\n")
+		parser = GFDocParser.new "ISO-8859-1"
 		parser.parse(data, true)
-		nodes = parser.instance_eval{@stack}[0][0]
-		mk(:tr) { mk(:td,:colspan,2) {
-			nodes.print_index
-			puts "<br><br>"
-		}}
-		nodes.print_contents
+		$nodes[file] = parser.instance_eval{@stack}[0][0]
 	rescue XMLParserError => e
 		puts ""
 		puts ""
@@ -510,22 +498,31 @@ def process_one_page file
 
 		raise "why don't you fix the documentation"
 	end
-	footer
+end
+
+def write_one_page file
+	output_name = file.sub(/\.xml/,".html")
+	STDERR.puts "writing #{output_name}"
+	STDOUT.reopen output_name, "w"
+	write_header
+	mk(:tr) { mk(:td,:colspan,2) {
+		$nodes[file].print_index
+		puts "<br><br>"
+	}}
+	$nodes[file].print_contents
+	write_footer
 	puts ""
 	puts ""
 end
 
-%w(
+$files = %w(
 	install.xml
 	project_policy.xml
 	reference.xml
 	format.xml
 	internals.xml
 	architecture.xml
-).each {|input_name|
-	output_name = input_name.sub(/\.xml/,".html")
-	STDERR.puts "will transform #{input_name} into #{output_name}"
-	STDOUT.reopen output_name, "w"
-	process_one_page input_name
-}
-	
+)
+
+$files.each {|input_name| read_one_page input_name }
+$files.each {|input_name| write_one_page input_name }
