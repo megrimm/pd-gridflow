@@ -819,12 +819,13 @@ class Fork < FObject
 end
 
 class Demux < FObject
-	N=5
 	def initialize(n)
 		super
 		@n=n
 		@i=0
-		raise "sorry, maximum #{N}" if n>N
+	end
+	def initialize2
+		GridFlow.whatever :addoutlets, self, @n
 	end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
@@ -833,9 +834,7 @@ class Demux < FObject
 	def _1_int i; @i=i.to_i end
 	alias :_1_float :_1_int
 	if GridFlow.bridge_name != "jmax"
-		install "demux", 2, N
-	else
-		install "demux_", 2, N # hack
+		install "demux", 2, 0
 	end
 end
 
