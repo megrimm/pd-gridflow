@@ -540,6 +540,44 @@ class JMaxUDPSend < FObject
 	install "jmax_udpsend", 1, 0
 end
 
+class JMax4UDPSend < FObject
+	def initialize(host,port)
+		super
+		@socket = UDPSocket.new
+		@host,@port = host.to_s,port.to_i
+		@symbols = {}
+	end
+
+	def encode(x)
+		case x
+		when Integer; "\x01" + [x].pack("N")
+		when Float; "\x02" + [x].pack("G")
+		when Symbol, String
+			x = x.to_s
+			y = x.intern
+			if not @symbols[y]
+				@symbols[y]=true
+				"\x04" + [y].pack("N") + x + "\0"
+			else
+				"\x03" + [y].pack("N")
+			end
+		end
+	end
+
+	def method_missing(sel,*args)
+		sel=sel.to_s.sub(/^_\d_/, "")
+		@socket.send encode(sel) +
+			args.map{|arg| encode(arg) }.join("") + "\x0f",
+			0, @host, @port
+	end
+
+	def delete
+		@socket.close
+	end
+
+	install "jmax4_udpsend", 1, 0
+end
+
 class JMaxUDPReceive < FObject
 	def initialize(port)
 		super
