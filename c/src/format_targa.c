@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	file: TGA format support
@@ -150,7 +150,7 @@ Format *FormatTarga_open (FormatClass *class, ATOMLIST, int mode) {
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->bstream = v4j_file_fopen(filename,mode);
+	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;

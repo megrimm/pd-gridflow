@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -104,6 +104,11 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 
 /* if (!GridInlet_idle($)) { then what do i do? } */
 
+	if (ac-1>MAX_DIMENSIONS) {
+		whine("too many dimensions (aborting grid)");
+		goto err;
+	}
+
 	for (i=0; i<ac-1; i++) v[i] = GET(i+1,int,0);
 	$->dim = Dim_new(ac-1,v);
 	FREE(v);
@@ -111,9 +116,12 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 /*	whine("%s:i%d: grid_begin: %s",INFO($),Dim_to_s($->dim)); */
 	$->dex = 0;
 	assert($->begin);
-	if (!$->begin((GridObject *)$->parent,$)) { GridInlet_abort($); }
+	if (!$->begin((GridObject *)$->parent,$)) goto err;
 
 	GridOutlet_callback((GridOutlet *)back_out,$,$->mode);
+	return;
+err:
+	GridInlet_abort($);
 }
 
 void GridInlet_flow(GridInlet *$, ATOMLIST) {
@@ -373,7 +381,7 @@ METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	ObjectSet_add(video4jmax_object_set,$);
+	ObjectSet_add(gridflow_object_set,$);
 	$->profiler_cumul = 0;
 }
 
@@ -395,7 +403,7 @@ void GridObject_delete(GridObject *$) {
 /*		GridOutlet_delete($->out[i]); */
 		FREE($->out[i]);
 	}
-	ObjectSet_del(video4jmax_object_set,$);
+	ObjectSet_del(gridflow_object_set,$);
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
