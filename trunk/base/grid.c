@@ -65,9 +65,12 @@ static const char *INFO(GridObject *foo) {
 void Grid::init(Dim *dim, NumberTypeIndex nt) {
 	if (dc && dim) dc(dim);
 	del();
+	if (!dim) RAISE("hell");
 	this->nt = nt;
 	this->dim = dim;
-	this->data = dim ? new char[dim->prod()*number_type_table[nt].size/8] : 0;
+	int size = dim->prod()*number_type_table[nt].size/8;
+//	fprintf(stderr,"allocating grid: %d bytes\n",size);
+	this->data = dim ? new char[size] : 0;
 }
 
 void Grid::init_from_ruby_list(int n, Ruby *a) {
@@ -148,7 +151,6 @@ Grid::~Grid() {
 GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	this->parent = parent;
 	this->gh    = gh;
-	assert(gh->flow);
 	dim   = 0;
 	nt    = int32_type_i;
 	dex   = 0;

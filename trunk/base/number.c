@@ -393,9 +393,15 @@ public:
 	static void op_fold2 (int an, T *as, int n, T *bs) {
 		while (n--) {
 			int i=0;
+			while (i<(an&-4)) {
+				as[i+0] = O::foo(as[i+0],*bs++);
+				as[i+1] = O::foo(as[i+1],*bs++);
+				as[i+2] = O::foo(as[i+2],*bs++);
+				as[i+3] = O::foo(as[i+3],*bs++);
+				i+=4;
+			}
 			while (i<an) {
-				as[i] = O::foo(as[i],*bs++);
-				i++;
+				as[i++] = O::foo(as[i],*bs++);
 			}
 		}
 	}

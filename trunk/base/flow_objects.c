@@ -614,9 +614,14 @@ LIST(GRINLET2(GridScan,0,4)),
    c = map((*As,*Bs),fold(op_fold,rint,zip(op_para,...... whatever
 */
 
+/* transpose=false: */
 /*{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
+/* transpose=true: */
+/*{ Dim[*As,C]<T>,Dim[*Bs,C]<T> -> Dim[*As,*Bs]<T> }*/
+
 struct GridInner : GridObject {
+	bool transpose;
 	Operator2 *op_para;
 	Operator2 *op_fold;
 	int32 rint;
@@ -624,6 +629,9 @@ struct GridInner : GridObject {
 	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(2);
+
+	GridInner() { transpose=false; }
+	template <class T> void process_right(T bogus);
 };
 
 GRID_INLET(GridInner,0) {
@@ -644,27 +652,65 @@ GRID_INLET(GridInner,0) {
 	out[0]->begin(new Dim(n,v),in->nt);
 	in->set_factor(a_last);
 } GRID_FLOW {
-	int factor = in->dim->get(in->dim->n-1);
-	int b_prod = r.dim->prod();
-	int chunks = b_prod/factor;
-	STACK_ARRAY(T,buf2,b_prod/factor);
-	STACK_ARRAY(T,buf,factor);
-	STACK_ARRAY(T,bufr,factor);
-	assert (n % factor == 0);
+	int rrows = in->factor;
+	int rsize = r.dim->prod();
+	int rcols = rsize/rrows;
+//	gfpost("rrows=%d rcols=%d rsize=%d",rrows,rcols,rsize);
 
-	for (int i=0; i<n; i+=factor) {
-		for (int j=0; j<chunks; j++) {
-			COPY(buf,&data[i],factor);
-			for (int k=0; k<factor; k++) bufr[k]=((Pt<T>)r)[chunks*k+j];
-			op_para->zip(factor,buf,bufr);
-			buf2[j] = op_fold->fold((T)rint,factor,buf);
-		}
-		out[0]->send(b_prod/factor,buf2);
+	Pt<T> rdata = (Pt<T>)r;
+
+	STACK_ARRAY(T,buf2,rcols);
+	STACK_ARRAY(T,buf,rsize);
+
+	while (n) {
+//		gfpost("n=%d",n);
+		for (int i=0,k=0; i<rrows; i++)
+			for (int j=0; j<rcols; j++) buf[k++]=data[i];
+
+		for (int j=0; j<rcols; j++) buf2[j] = (T)rint;
+//		WATCH(rrows,buf2);
+//		WATCH(rsize,buf);
+//		WATCH(rsize,rdata);
+		op_para->zip(rsize,buf,rdata);
+//		WATCH(rsize,buf);
+		op_fold->fold2(rcols,buf2,rrows,buf);
+//		WATCH(rrows,buf2);
+		out[0]->send(rcols,buf2);
+		n-=rrows;
+		data+=rrows;
 	}
 } GRID_FINISH {
 } GRID_END
 
-GRID_INPUT(GridInner,2,r) {} GRID_END
+template <class T> void GridInner::process_right(T bogus) {
+	if (!transpose) return;
+
+	int n = r.dim->n;
+	int rrows = r.dim->get(n-1);
+	int rsize = r.dim->prod();
+	int rcols = rsize/rrows;
+
+	int32 v[n];
+	for (int i=0; i<n-1; i++) v[i+1]=r.dim->v[i];
+	v[0]=r.dim->v[n-1];
+	Pt<T> rdata = (Pt<T>)r;
+	STACK_ARRAY(T,r2data,r.dim->prod());
+	for (int i=0; i<rrows; i++) {
+		for (int j=0; j<rcols; j++) {
+			r2data[i*rcols+j] = rdata[j*rrows+i];
+		}
+	}
+//	WATCH(rsize,rdata);
+//	WATCH(rsize,r2data);
+	r.init(new Dim(n,v),r.nt);
+	COPY((Pt<T>)r,r2data,rsize);
+//	WATCH(rsize,rdata);
+//	fprintf(stderr,"rdata=%d\n",(int)(T*)rdata);
+}
+
+GRID_INPUT(GridInner,2,r) {
+	process_right((T)0);
+} GRID_END
 
 METHOD3(GridInner,initialize) {
 	rb_call_super(argc,argv);
@@ -673,8 +719,16 @@ METHOD3(GridInner,initialize) {
 	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
 	op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
 	rint = argc<3 ? 0 : INT(argv[2]);
-	r.init(0);
-	if (argc==4) r.init_from_ruby(argv[3]);
+	if (argc==4) {
+		r.init_from_ruby(argv[3]);
+		switch (r.nt) {
+		case uint8_type_i: process_right((uint8)0); break;
+		case int16_type_i: process_right((int16)0); break;
+		case int32_type_i: process_right((int32)0); break;
+		case float32_type_i: process_right((float32)0); break;
+		default: RAISE("boo");
+		}
+	}
 	return Qnil;
 }
 
@@ -684,65 +738,14 @@ LIST(GRINLET2(GridInner,0,4),GRINLET2(GridInner,2,4)),
 
 /* **************************************************************** */
 
-/*{ Dim[*As,C]<T>,Dim[*Bs,C]<T> -> Dim[*As,*Bs]<T> }*/
-
 struct GridInner2 : GridInner {
+	GridInner2() { transpose=true; }
 	DECL3(initialize);
-	GRINLET3(0);
-	GRINLET3(2);
 };
 
-GRID_INLET(GridInner2,0) {
-	SAME_TYPE(*in,r);
-	Dim *a = in->dim;
-	Dim *b = r.dim;
-	if (!b) RAISE("right inlet has no grid");
-	if (a->n<1) RAISE("minimum 1 dimension");
-	int a_last = a->get(a->n-1);
-	int b_last = b->get(b->n-1);
-	int n = a->n+b->n-2;
-	if (a_last != b_last)
-		RAISE("last dimension of each grid must have same size");
-	int32 v[n];
-	COPY(v,a->v,a->n-1);
-	COPY(v+a->n-1,b->v,b->n-1);
-	out[0]->begin(new Dim(n,v),in->nt);
-	in->set_factor(a_last);
-} GRID_FLOW {
-	int factor = in->dim->get(in->dim->n-1);
-	int b_prod = r.dim->prod();
-	STACK_ARRAY(T,buf2,b_prod/factor);
-	STACK_ARRAY(T,buf,factor);
-	assert (n % factor == 0);
-
-	for (int i=0; i<n; i+=factor) {
-		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
-			COPY(buf,&data[i],factor);
-			op_para->zip(factor,buf,(Pt<T>)r+j);
-			buf2[k] = op_fold->fold((T)rint,factor,buf);
-		}
-		out[0]->send(b_prod/factor,buf2);
-	}
-} GRID_FINISH {
-} GRID_END
-
-GRID_INPUT(GridInner2,2,r) {} GRID_END
-
-METHOD3(GridInner2,initialize) {
-	rb_call_super(argc,argv);
-	r.constrain(expect_min_one_dim);
-	if (argc>4) RAISE("too many args");
-	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
-	op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
-	rint = argc<3 ? 0 : INT(argv[2]);
-	r.init(0);
-	if (argc==4) r.init_from_ruby(argv[3]);
-	return Qnil;
-}
-
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
-LIST(GRINLET2(GridInner2,0,4),GRINLET2(GridInner2,2,4)),
-	DECL(GridInner2,initialize))
+LIST(GRINLET2(GridInner,0,4),GRINLET2(GridInner,2,4)),
+	DECL(GridInner,initialize))
 
 /* **************************************************************** */
 
@@ -792,7 +795,6 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 METHOD3(GridOuter,initialize) {
 	rb_call_super(argc,argv);
 	op = OP2(argv[0]);
-	r.init(0);
 	if (argc<1) RAISE("not enough args");
 	if (argc>2) RAISE("too many args");
 	if (argc==2) r.init_from_ruby(argv[1]);
