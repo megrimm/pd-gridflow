@@ -197,7 +197,7 @@ class GridPrint < GridFlow::GridObject
 		(0..240)===x or raise "out of range (not in 0..240 range)"
 		@trunc = x
 	end
-	def _0_maxrows(x) @maxlines = x.to_i end
+	def _0_maxrows(x) @maxrows = x.to_i end
 	def make_columns udata
 		min = udata.min
 		max = udata.max
@@ -231,18 +231,18 @@ class GridPrint < GridFlow::GridObject
 			udata = unpack @data
 			make_columns udata
 			sz = udata.length/@dim[0]
-			@rown = 1
+			rown = 1
 			for row in 0...@dim[0] do
 				post trunc(dump(udata[sz*row,sz]))
-				@rown += 1
-				(post "..."; break) if @rown>@maxrows
+				rown += 1
+				(post "..."; break) if rown>@maxrows
 			end
 		elsif @dim.length == 3 then
 			post head
 			make_columns unpack(@data)
 			sz = @data.length/@dim[0]
 			sz2 = sz/@dim[1]
-			@rown = 1
+			rown = 1
 			for row in 0...@dim[0]
 				column=0; str=""
 				for col in 0...@dim[1]
@@ -250,8 +250,8 @@ class GridPrint < GridFlow::GridObject
 					break if str.length>@trunc
 				end
 				post trunc(str)
-				@rown += 1
-				(post "..."; break) if @rown>@maxrows
+				rown += 1
+				(post "..."; break) if rown>@maxrows
 			end
 		end
 		@data,@dim,@nt = nil
@@ -988,7 +988,7 @@ class Display < FObject
 		pd_show nil
 	end
 	def quote(text) # for tcl
-		text=text.gsub(/(\{|\})/) {|x| "\\"+x }
+		#text=text.gsub(/[\{\}]/) {|x| "\\"+x }
 		"{#{text}}"
 	end
 	def pd_show(can)
@@ -1003,6 +1003,7 @@ class Display < FObject
 		@bg = "#6774A0"
 		@fg = "#ffff80"
 		@font = "Courier -12"
+		GridFlow.post "would show %s", quote(@text)
 		GridFlow.gui %{
 			set canvas #{@can}
 			$canvas delete #{@rsym}TEXT
@@ -1020,7 +1021,7 @@ class Display < FObject
 				#{@x} #{@y} [expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} -tags #{@rsym}
 				global current_x current_y tooltip
 			$canvas lower #{@rsym} #{@rsym}TEXT
-			pd \"#{@rsym} set_size $sx $sy;\n\";
+			pd \"#{@rsym} set_size $sy $sx;\n\";
 		}
 	end
 	def pd_displace(can,x,y)
@@ -1038,7 +1039,7 @@ class Display < FObject
 	end
 	def pd_vis(can,flag) pd_show(can) if flag!=0 end
 	def pd_select(*a) GridFlow.post "pd_select "+a.join(", ") end
-	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} }; super end
+	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT }; super end
 
 	def _0_grid(*foo) # big hack!
 		# hijacking a [#print]
@@ -1048,8 +1049,8 @@ class Display < FObject
 		gp.instance_eval { @overlord = overlord }
 		def gp.post(fmt,*args) @overlord.text << sprintf(fmt,*args) << "\n" end
 		def gp.end_hook; @overlord.instance_eval{@text.chomp!}; @overlord.pd_show nil end
-		gp.send_in 0, :trunc, 30
-		gp.send_in 0, :maxrows, 30
+		#gp.send_in 0, :trunc, 70
+		gp.send_in 0, :maxrows, 20
 		gp.send_in 0, :grid, *foo
 	end
 
