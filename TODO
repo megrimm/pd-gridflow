@@ -3,40 +3,40 @@
 "!" is planned for version 0.4.0
 
 Distribution
-[ ] prepare gridflow-images-0.4
+[ ] send mail about name change
+[ ] open anonymous cvs
 [ ] rearrange both web sites
+[ ] prepare gridflow-images-0.4
 
 Installation
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
 
-Documentation Update
-[ ] @in, @video_in_file
-[ ] @out, @video_out_file
-[ ] @video_out
-[ ] @scale_by
-[ ] @import, @export, @redim, @store
-[ ] @, @!
-[ ] @fold, @inner, @outer
-[ ] @for, @dim, @redim
-[ ] @print, rtmetro, @global
-
-Help Files Update
-[ ] @in, @video_in_file
-[ ] @out, @video_out_file
-[ ] @video_out
-[ ] @scale_by
-[ ] @import, @export, @redim, @store
-[ ] @, @!
-[ ] @fold, @inner, @outer
-[ ] @for, @dim, @redim
-[ ] @print, rtmetro, @global
+Documentation / Help / HelpScreenshot Update
+[x| | ] @in, @video_in_file
+[x| | ] @out, @video_out_file, @video_out
+[x| | ] @scale_by
+[x| | ] @import, @export, @redim
+[x| | ] @store, @convolve
+[x| | ] @, @!
+[x| | ] @fold, @inner, @outer
+[x| | ] @for, @dim
+[x| | ] @print, @global
+[x| | ] @two, @three, @four
+[x| | ] @contrast, @posterize
+[x| | ] @identity_transform, @spread, @scale_to
+[x| | ] format ppm
+[x| | ] format targa
+[x| | ] format videodev
+[x| | ] format x11
+[x| | ] format grid
 
 Documentation
-[ ] XMLize reference section
-[ ] create JMAXML->HTML converter
+[x] XMLize reference section
+[x] create JMAXML->HTML converter
 [ ] validate samples/outside
-[ ] validate samples/020
+[x] validate samples/020
+[x] validate samples/vid
 [ ] specify policy for <sample>, <icon>, etc.
 [ ] op2: relative speeds
 [ ] add credits
@@ -46,11 +46,10 @@ Documentation
 [ ] add explanation of gridflow vs videodsp
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
-[ ] H5 font-size is smaller than regular P font-size ?
-[ ] make real documentation for templates
-[ ] recategorize objects+templates together
+[x] make real documentation for templates
+[x] recategorize objects+templates together
 [ ] find a good XML editor
-[ ] create a good DTD/Schema for jMax/GF/C
+[x] create a good DTD/Schema for jMax/GF/C
 [ ] document use of [route grid_end], [route grid_begin]
 [ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
@@ -58,12 +57,13 @@ Documentation
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
 [ ] document gridflow-for-C
+[ ] scan for unused/useless images
 
 General
 [ ] make FREE() handle #delete as possible
 [ ] better error handling
 [ ] @print
-[ ] how can I write unit tests or contracts?
+[x] how can I write unit tests or contracts?
 [ ] MMX memcpy() ?
 [ ] runtime configurable packet_length
 
@@ -112,6 +112,7 @@ Input/Output
 [ ] add NTSC<->PAL option
 [ ] fix RGB<->BGR<->??? palette issues
 [ ] should disable x11 shared memory on remote displays.
+[ ] arguments to @in,@out could be a auto-open.
 
 File Formats
 [ ] Targa write support
@@ -143,28 +144,4 @@ UnitTesting/Bugs
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
-
-================
-vin_file_test_2.jmax / benchmark.jmax
-
-0.2.0.pre3      :   20 frames in 30   seconds :  0.66 fps
-0.2.0.pre8 ps=16:   20 frames in  8   seconds :  2.50 fps
-0.2.0      ps=1k:   20 frames in  4   seconds :  5.00 fps
-0.3.0.pre1 ps=1k:  100 frames in 16.5 seconds :  6.06 fps
-0.3.0.pre2 ps=1k:  100 frames in 11.4 seconds :  8.77 fps
-0.3.0.pre3 ps=1k:  100 frames in  6.5 seconds : 15.38 fps
-
-================
-feedback_fractal.jmax
-
-	28,36,128
-	336,557,140
-	179,15,183
-
-================
-
-#003f69
-#400077
-
-(cd doc; for z in images/*.*; do fgrep -q $z *.html || echo "$z"; done)
 
