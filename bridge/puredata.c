@@ -277,6 +277,10 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 		t_class *qlass = FIX2PTR(t_class,qlassid);
 		class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
 		return Qnil;
+	} else if (argv[0] == SYM(gui)) {
+		if (argc!=2) RAISE("bad args");
+		Ruby command = rb_funcall(argv[1],SI(to_s),0);
+		sys_gui(rb_str_ptr(command));
 	} else {
 		RAISE("don't know how to do that");
 	}
