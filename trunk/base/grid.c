@@ -512,12 +512,13 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 	gh->flow_int32 = GridObject_r_flow;
+	//IEVAL(rself,"self.class_eval { def _0_grid(*a) ___grid(0,*a) end }");
 	rb_funcall(handlers,SI([]=),2,INT2NUM(INT(argv[0])),PTR2FIX(gh));
 	return Qnil;
 }
 
 static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
-	static const char *names[] = {"grid","list","int","float"};
+	static const char *names[] = {"grid","list","float"};
 	Ruby list = rb_class_instance_methods(argc,argv,rself);
 	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
 	if (handlers==Qnil) return list;
@@ -534,21 +535,35 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	return list;
 }
 
+// this does auto-conversion of list/float to grid
+// this also (will) do grid inputs for ruby stuff.
 \def Ruby method_missing (...) {
+    {
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	const char *name = rb_sym_name(argv[0]);
-	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
-		int i = name[1]-'0';
-		char foo[42];
-		sprintf(foo,"_%d_grid",i);
-		if (strcmp(name+3,"grid" )==0) goto hell;
-		P<GridInlet> inl = FIX2PTR(GridInlet,rb_funcall(rself,rb_intern(foo),0));
-		if (strcmp(name+3,"list" )==0) return inl->from_ruby_list(argc-1,argv+1), Qnil;
-		if (strcmp(name+3,"int"  )==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
-		if (strcmp(name+3,"float")==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
+	char *endp;
+	if (*name++!='_') goto hell;
+	int i = strtol(name,&endp,10);
+	if (name==endp) goto hell;
+	if (*endp++!='_') goto hell;
+	if (strcmp(endp,"grid")==0) {
+		Ruby handlers = rb_ivar_get(rb_obj_class(rself),SI(@handlers));
+		if (i>=rb_ary_len(handlers)) RAISE("BORK");
+		GridHandler *gh = FIX2PTR(GridHandler, rb_ary_ptr(handlers)[i]);
+		if (in.size()<=(uint32)i) in.resize(i+1);
+		if (!in[i]) in[i]=new GridInlet((GridObject *)this,gh);
+		return in[i]->begin(argc-1,argv+1);
 	}
-	hell: return rb_call_super(argc,argv);
+	// we call the grid method recursively to ask it its GridInlet*
+	// don't do this before checking the missing method is exactly that =)
+	char foo[42];
+	sprintf(foo,"_%d_grid",i);
+	P<GridInlet> inl = FIX2PTR(GridInlet,rb_funcall(rself,rb_intern(foo),0));
+	if (strcmp(endp,"list" )==0) return inl->from_ruby_list(argc-1,argv+1), Qnil;
+	if (strcmp(endp,"float")==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
+    }
+    hell: return rb_call_super(argc,argv);
 }
 
 \classinfo {
@@ -568,9 +583,11 @@ void startup_grid () {
 }
 
 // never call this. this is a hack to make some things work.
+// i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
 	GridOutlet foo(0,0,0);
 #define FOO(S) foo.give(0,Pt<S>());
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }
+
