@@ -193,14 +193,31 @@ Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
+/* begin Ruby 1.6 compatibility */
+
+static uint64 num2ull(Ruby val) {
+    if (FIXNUM_P(val)) return (LONG_LONG)FIX2LONG(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	uint64 v =
+		(uint64)NUM2LONG(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2LONG(rb_funcall(val,SI(&),1,ULONG2NUM(0xffffffff)));
+}
+
+static Ruby ull2num(uint64 val) {
+	return rb_funcall(rb_funcall(UINT2NUM((uint32)val),SI(<<),1,INT2FIX(32)),
+		SI(+),1,UINT2NUM(val>>32));
+}
+
+/* end */
+
 Ruby FObject_profiler_cumul(Ruby rself) {
 	DGS(GridObject);
-	return LL2NUM($->profiler_cumul);
+	return ull2num($->profiler_cumul);
 }
 
 Ruby FObject_profiler_cumul_assign(Ruby rself, Ruby arg) {
 	DGS(GridObject);
-	$->profiler_cumul = NUM2LL(arg);
+	$->profiler_cumul = num2ull(arg);
 	return arg;
 }
 
