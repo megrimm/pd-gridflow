@@ -137,7 +137,7 @@ class Format < GridObject
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
 
-	def headerless(*args) #!@#$ goes in FormatGrid ?
+	def _0_headerless(*args) #!@#$ goes in FormatGrid ?
 		args=args[0] if Array===args[0]
 		#raise "expecting dimension list..."
 		args.map! {|a|
@@ -147,12 +147,11 @@ class Format < GridObject
 		@headerless = args
 	end
 
-	def headerful #!@#$ goes in FormatGrid ?
+	def _0_headerful #!@#$ goes in FormatGrid ?
 		@headerless = nil
 	end
 
-	def type arg
-		#!@#$ name collision?
+	def _0_type arg
 		#!@#$ goes in FormatGrid ?
 		#!@#$ bug: should not be able to modify this _during_ a transfer
 		case arg
@@ -165,7 +164,7 @@ class Format < GridObject
 		end
 	end
 
-	def cast arg
+	def _0_cast arg
 		case arg
 		when :uint8, :int16, :int32, :int64, :float32, :float64
 			@cast = arg
@@ -286,7 +285,7 @@ class GridOut < GridObject
 		return if a.length==0
 		if Integer===a[0] or Float===a[0]
 			_0_open :x11,:here
-			_0_option :out_size,a[0],a[1]
+			_0_out_size a[0],a[1]
 		else
 			_0_open(*a)
 		end
