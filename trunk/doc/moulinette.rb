@@ -261,28 +261,67 @@ XNode.register("class") {
 	end
 }
 
+def nice_table
+	mk(:table,:border,0,:bgcolor,:black,:cellspacing,1) {
+		mk(:tr) {
+			mk(:td,:valign,:top,:align,:left) {
+				mk(:table,:bgcolor,:white,:border,0,
+				:cellpadding,4,:cellspacing,1) {
+					yield }}}}
+end
+
 XNode.register("method") {
 	def display
 		print "<br>"
 		if parent.tag == "inlet" or parent.tag == "outlet"
 			mk(:b) {
-				print "#{parent.tag} #{parent.att['id']} "
+				print "#{parent.tag}&nbsp;#{parent.att['id']} "
 				
 			}
 		end
-		print "<b>method</b> #{escape_html att['name']} <b>(</b>"
+		print "<b>method</b>&nbsp;"
+#=begin
+		print "#{escape_html att['name']} <b>(</b>"
 		print contents.map {|x|
 			next unless XNode===x
 			case x.tag
 			when "arg"
-				s=x.att["name"]
-				s="<i>#{x.att['type']}</i> #{escape_html s}" if x.att['type']
+				s=escape_html(x.att["name"])
+				s="<i>#{x.att['type']}</i> #{s}" if x.att['type']
 				s
 			when "rest"
 				x.att["name"] + "..."
 			end
 		}.compact.join("<b>, </b>")
 		print "<b>)</b> "
+#=end
+=begin
+		nice_table { mk(:tr) {
+			mk(:td,:width,1) { print escape_html(att['name']) }
+			contents.each {|x|
+				next unless XNode===x
+				case x.tag
+				when "arg"
+					mk(:td,:bgcolor,:pink) {
+						s = ""
+						if x.att["type"]
+							s << "<i>" << escape_html(x.att["type"]) << "</i>"
+						end
+						if x.att["name"]
+							s << " " << escape_html(x.att["name"])
+						end
+						s<<"&nbsp;" if s.length==0
+						mk(:b) { puts s }
+					}
+				when "rest"
+					mk(:td,:bgcolor,:pink) {
+						mk(:b) { print escape_html(x.att["name"]), "..."}
+					}
+				end
+			}
+		}}
+		print "<br>"
+=end
 		super
 		print "<br>\n"
 	end
