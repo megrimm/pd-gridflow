@@ -1,4 +1,4 @@
-PNAME=video4jmax
+PNAME=gridflow
 
 all:
 	(cd c ; $(MAKE) all)
