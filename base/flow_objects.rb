@@ -523,6 +523,20 @@ class GridRemapImage < FPatcher
 	install "@remap_image", 2, 2
 end
 
+class ForEach < FObject
+	def initialize() super end
+	def _0_list(*a)
+		a.each {|e|
+			if Symbol===e then
+				send_out 0,:symbol,e
+			else
+				send_out 0,e
+			end
+		}
+	end
+	install "foreach", 1, 1
+end
+
 #-------- fClasses for: jMax compatibility
 
 class JMaxUDPSend < FObject
