@@ -352,11 +352,12 @@ class GridPack < GridObject
 	end
 	def self.define_inlet i
 		module_eval "
-			def _#{i}_int x; @data[#{i}]=x; trigger; end
-			def _#{i}_float x; @data[#{i}]=x.to_i; trigger; end
+			def _#{i}_int x; @data[#{i}]=x; _0_bang; end
+			def _#{i}_float x; @data[#{i}]=x.to_i; _0_bang; end
 		"
 	end
-	def trigger
+
+	def _0_bang
 		send_out_grid_begin 0, [self.class.ninlets]
 		send_out_grid_flow 0, @data.pack("l*")
 	end
