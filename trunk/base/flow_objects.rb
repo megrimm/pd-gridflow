@@ -547,7 +547,7 @@ class Sprintf < GridFlow::FObject
   alias _0_float _0_list
   alias _0_symbol _0_list
   def _1_symbol(format) @format = format.to_s end
-  install "sprintf", 2, 1
+  install "rubysprintf", 2, 1
 end
 
 #-------- fClasses for: jMax compatibility
