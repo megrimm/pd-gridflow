@@ -931,7 +931,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def _0_(*a) a[0,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
 		def method_missing(sym,a)
-			m = /(_\d_)(.*)/.match sym.to_s or return super
+			(m = /(_\d_)(.*)/.match sym.to_s) or return super
 			send m[1].intern, m[2], *a
 		end
 		install "messageprepend", 2, 1
@@ -942,7 +942,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
 		def method_missing(sym,a)
-			m = /(_\d_)(.*)/.match sym.to_s or return super
+			(m = /(_\d_)(.*)/.match sym.to_s) or return super
 			send m[1].intern, m[2], *a
 		end
 		install "messageappend", 2, 1

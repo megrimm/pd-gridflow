@@ -37,8 +37,10 @@ for 0.8.0:
  * [@export~]
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
-pick a number: [118]
+pick a number: [121]
 
+[120] osx: -bundle_loader stuff fails if pd is not in $PATH
+[119] osx: SDL doesn't work here
 [118] error messages can be unclear (eg. file not open... is it @in's, or @out's?)
 [117] osx: [@store] crash instead of raising
 [116] [@out quartz]: alx says he can't unminimize the window
