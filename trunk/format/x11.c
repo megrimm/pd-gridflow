@@ -202,6 +202,18 @@ void FormatX11::alarm() {
 			eb->state &= ~(128<<eb->button);
 			report_pointer(eb->y,eb->x,eb->state);
 		}break;
+		case KeyPress:
+		case KeyRelease:{
+			XKeyEvent *ek = (XKeyEvent *)&e;
+			//XLookupString(ek, buf, 63, 0, 0);
+			char *kss = XKeysymToString(XLookupKeysym(ek, 0));
+			Ruby argv[6] = {
+				INT2NUM(0), e.type==KeyPress ? SYM(keypress) : SYM(keyrelease),
+				INT2NUM(ek->y), INT2NUM(ek->x), INT2NUM(ek->state),
+				rb_funcall(rb_str_new2(kss),SI(intern),0) };
+			send_out(COUNT(argv),argv);
+			//XFree(kss);
+		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
 			if (verbose)
@@ -365,7 +377,8 @@ void FormatX11::resize_window (int sx, int sy) {
 			XSelectInput(display, window,
 				ExposureMask | StructureNotifyMask |
 				PointerMotionMask |
-				ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+				ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
+				KeyPressMask | KeyReleaseMask);
 			XMapRaised(display, window);
 		} else {
 			/* fall_thru 1 */
@@ -501,12 +514,9 @@ void FormatX11::open_display(const char *disp_string) {
 	display = XOpenDisplay(disp_string);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
+	/* btw don't expect too much from Xlib error handling.
+	   Xlib, you are so free of the ravages of intelligence... */
 	XSetErrorHandler(FormatX11_error_handler);
-
-	/*
-	  btw don't expect too much from X11 error handling system.
-	  it sucks big time and it won't work.
-	*/
 
 	screen   = DefaultScreenOfDisplay(display);
 	screen_num = DefaultScreen(display);

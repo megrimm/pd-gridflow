@@ -315,8 +315,12 @@ class GridOut < GridObject
 	end
 
 	def _0_list(*a) @format._0_list(*a) end
+
+	# hacks
 	def _1_grid(*a) send_out 0,:grid,*a end # for aalib
 	def _1_position(*a) send_out 0,:position,*a end
+	def _1_keypress(*a) send_out 0,:keypress,*a end
+	def _1_keyrelease(*a) send_out 0,:keyrelease,*a end
 
 	def _0_grid(*a)
 		check_file_open
