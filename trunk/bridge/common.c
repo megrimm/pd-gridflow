@@ -70,11 +70,14 @@ static void *Pointer_get (Ruby rself) {
 */
 
 static Ruby make_error_message () {
-//	EVAL("STDERR.puts $!.inspect");
-//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
-	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",$!.backtrace[0]]");
-//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\"]");
-	return error_array;
+	char buf[1000];
+	sprintf(buf,"%s: %s",rb_class2name(rb_obj_class(ruby_errinfo)),
+		rb_str_ptr(rb_funcall(ruby_errinfo,SI(to_s),0)));
+	Ruby ary = rb_ary_new2(2);
+	rb_ary_push(ary,rb_str_new2(buf));
+	rb_ary_push(ary,rb_funcall(
+		rb_funcall(ruby_errinfo,SI(backtrace),0),SI([]),1,INT2NUM(0)));
+	return ary;
 }
 
 static void bridge_common_init () {
