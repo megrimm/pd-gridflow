@@ -1,0 +1,317 @@
+#!/bin/bash
+# this script by Mathieu Bouchard, 2001, 2002.
+
+# readd support for no jmax
+# test with jmax 3.x
+
+ARCH=unknown
+JMAX_VERSION=unknown
+
+append () {
+	var=$1
+	shift
+	eval "$var=\"\$$var $@\""
+}
+
+usage () { cat << TEXT
+usage: ./configure --arch architecture [--jmax-dist-dir directory]
+	[--fast]
+TEXT
+}
+
+echo
+if [ ! -f configure ]
+then
+	echo "Run me from the right directory please."
+	exit 1
+fi
+
+argc=$#
+while [ 0 != $# ]
+do
+	case $1 in
+		--no-x11)
+			HAVE_X11=off
+			echo "won't check for libX11"
+		;;
+		--no-mpeg)
+			HAVE_MPEG=off
+			echo "won't check for libmpeg"
+		;;
+		--fast)
+			echo "Fast Mode (less error checking)"
+			append OPTIONS HAVE_SPEED BLAH
+		;;
+		--no-profiling)
+			echo "No Profiling"
+			HAVE_PROFILING=no
+		;;
+		--arch)
+			ARCH=$2
+			shift
+		;;
+		--jmax-dist-dir)
+			JMAXROOTDIR=$2
+			shift
+		;;
+		*)
+			echo "unknown option \`$1'"
+			exit 1
+		;;
+	esac
+	shift
+done
+
+if [ ! "z$JMAX_VERSION" = "znone" ]; then
+	if [ "z$JMAXROOTDIR" == "z" ]; then
+		JMAXROOTDIR=`(cd ../..; echo $PWD)`
+		if [ -d $JMAXROOTDIR/Makefiles ]; then
+			echo "assuming --jmax-dist-dir $JMAXROOTDIR"
+		else
+			usage; exit 1
+		fi
+	fi
+fi
+
+if [ "z$ARCH" = "zunknown" ]; then
+	usage; exit 1
+fi
+
+exec 5> ./config.log
+
+#--------------------------------#
+
+log () {
+  echo "$@"
+  $@
+}
+
+say () {
+  echo -n "$1"
+  shift
+  (($@ 1>&5 2>&5) && echo "yes") || (echo "no" && false)
+}
+
+has-libmpeg () {
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <mpeg.h>
+	int main (void) { return !GetMPEGFrame; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
+}
+
+LIBMPEG3=-lmpeg3
+
+has-libmpeg3 () {
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <$1>
+	int main (void) { return !mpeg3_open; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ $LIBMPEG3 -lpthread -lm
+}
+
+has-libquicktime () {
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <quicktime/quicktime.h>
+	int main (void) { return !quicktime_open; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -lquicktime -lpthread -lpng -ldl -lglib
+}
+
+has-jmax () {
+cat > /tmp/$$.c <<TEST
+	#include "fts/fts.h"
+/*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
+	int main (void) { return 0; }
+TEST
+log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
+&& /tmp/$$
+}
+
+has-jmax-2-5 () {
+cat ${JMAXROOTDIR}/include/fts/lang/mess.h >/dev/null && has-jmax
+}
+
+has-jmax-3-0 () {
+cat ${JMAXROOTDIR}/include/ftsconfig.h >/dev/null && has-jmax
+}
+
+has-videodev () {
+cat > /tmp/$$.c <<TEST
+	#include <stdlib.h>
+	#include <linux/videodev.h>
+	int main (void) { struct video_window foo; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$
+}
+
+has-x11 () {
+	if [ "z$HAVE_X11" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <X11/Xlib.h>
+	int main (void) {return 0;}
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
+}
+
+has-x11-shared-memory () {
+cat > /tmp/$$.c <<TEST
+	#include <X11/Xlib.h>
+	#include <X11/Xutil.h>
+	#include <X11/StringDefs.h>
+	#include <sys/ipc.h>
+	#include <sys/shm.h>
+	#include <X11/extensions/XShm.h>
+	int main (void) {return 0;}
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
+}
+
+# this is very "heuristic" to say the least. sorry.
+has-pentium-compatible () {
+cat > /tmp/$$.c <<TEST
+	typedef unsigned long long uint64;
+	int main(void) { uint64 x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return 0;}
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
+}
+
+has-profiling () {
+	[ ! "z$HAVE_PROFILING" = "zno" ]
+}
+
+#--------------------------------#
+
+FORMATS='PPM Targa Grid'
+LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
+
+if say "looking for jMax 2.5: " has-jmax-2-5; then
+	JMAX_VERSION="25"
+else
+	if say "looking for jMax 3.0: " has-jmax-3-0; then
+		JMAX_VERSION="30"
+	else
+		echo "(not compiling for jmax)"
+		JMAX_VERSION="none"
+	fi
+fi
+
+if say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3 <libmpeg3/libmpeg3.h>: " has-libmpeg3 libmpeg3/libmpeg3.h; then
+	append FORMATS MPEG3
+	append LDSOFLAGS $LIBMPEG3 -lpthread -lm
+	LIBMPEG_INCLUDE=libmpeg3/libmpeg3.h
+elif say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3 <libmpeg3.h>: " has-libmpeg3 libmpeg3.h; then
+	append FORMATS MPEG3
+	append LDSOFLAGS $LIBMPEG3 -lpthread -lm
+	LIBMPEG_INCLUDE=libmpeg3.h
+elif say "looking for Ward's LibMPEG as -lwardsmpeg: " has-libmpeg wardsmpeg; then
+	append FORMATS MPEG
+	append LDSOFLAGS -lwardsmpeg
+elif say "looking for Ward's LibMPEG as -lmpeg: " has-libmpeg mpeg; then
+	append FORMATS MPEG
+	append LDSOFLAGS -lmpeg
+fi
+
+#if say "looking for HeroineWarrior's LibQuicktime as -lquicktime: " has-libquicktime; then
+#	append FORMATS Quicktime
+#	append LDSOFLAGS -lquicktime -lpthread -lpng -ldl -lglib
+#fi
+
+if say "looking for videodev (video4linux 1.x digitizer drivers): " has-videodev; then
+	append FORMATS VideoDev
+fi
+
+if say "looking for x11 video protocol: " has-x11; then
+	append FORMATS X11
+	append LDSOFLAGS -L/usr/X11R6/lib -lX11
+	echo -n "looking for x11 shared memory (acceleration): "
+	if say has-x11-shared-memory; then
+		append OPTIONS HAVE_X11_SHARED_MEMORY
+	fi
+fi
+
+if say "looking for pentium-compatible CPU: " has-pentium-compatible; then
+	append OPTIONS HAVE_PENTIUM
+	if say "enable profiling: " has-profiling; then
+		append OPTIONS HAVE_TSC_PROFILING
+	fi
+fi
+
+#--------------------------------#
+
+echo
+echo "our format list: $FORMATS"
+echo
+echo "our option list: $OPTIONS"
+echo
+
+#--------------------------------#
+echo "generating ./config.make"
+(
+	echo ifndef ARCH
+	echo ARCH=$ARCH
+	echo endif
+	echo JMAX_VERSION=$JMAX_VERSION
+	echo PNAME=gridflow
+	if [ ! "z$JMAX_VERSION" = "znone" ]; then
+		echo JMAXROOTDIR=$JMAXROOTDIR
+		echo JMAXDISTDIR=$JMAXROOTDIR
+		echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
+	fi
+	if [ "z$LDSOFLAGS" != "z" ]; then
+		echo "GRIDFLOW_LDSOFLAGS += $LDSOFLAGS"
+	fi
+) > config.make
+
+#--------------------------------#
+echo "generating c/src/Sources"
+(
+	echo "SOURCES = \\"
+	echo "lang.c dim.c bitpacking.c operator.c grid.c main.c \\"
+	echo "grid_basic.c grid_extra.c io.c \\"
+	for format in $FORMATS; do
+		lc_format=`echo $format | tr A-Z a-z`
+		echo "format_$lc_format.c \\"
+	done
+	echo ""
+) > c/src/Sources
+
+#--------------------------------#
+echo "generating c/src/config.h"
+(
+echo "
+#ifndef __CONFIG_H
+#define __CONFIG_H
+/* this file was auto-generated by gridflow/configure */
+
+#ifdef LIBMPEG_INCLUDE_HERE
+#include <$LIBMPEG_INCLUDE>
+#endif
+
+#ifdef STANDALONE
+#include \"bridge_none.h\"
+#else
+#include \"bridge_jmax.h\"
+#endif
+
+#define FORMAT_LIST(_pre1_,_pre2_) \\"
+for format in $FORMATS; do
+	echo "  _pre1_ _pre2_##Format$format,\\"
+done
+echo "_pre1_ _pre2_##FormatPPM" # twice... hack.
+echo
+for z in $OPTIONS; do
+	echo "#define $z"
+done
+echo
+echo "#endif"
+) > c/src/config.h
+
+echo
+echo 'please see ./config.log for the details of the configuration tests'
+echo

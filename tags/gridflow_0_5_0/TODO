@@ -1,0 +1,174 @@
+/* $Id$ */
+
+"5" is planned for 0.5
+"6" is planned for 0.6
+"7" is planned for 0.7
+
+Distribution (0.5.0)
+[5] upload on both web sites
+[5] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
+
+Distribution (0.6.0)
+[6] review all documentation
+[6] review all patches
+
+Installation
+[6] de-jmax-ify the build process; installable doc; installable includes
+[ ] replace --fast by opposite --debug option
+[ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
+[ ] add macos 10.x support (i need access to a mac)
+[ ] detect and reject .a linkage
+[ ] remove hostname.2y.net cvs repository
+[ ] bring hostname.2y.net back up if possible
+[ ] matju homepage on artengine.ca ?
+[ ] less compile-time checks and more run-time checks
+
+Documentation
+[ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
+    mode x11 non-supporté
+[ ] mention v4l_compat.o in docs
+[ ] project_policy.xml
+[ ] validate samples/outside
+[ ] specify policy for <help>, <icon>, etc.
+[ ] add credits
+[ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
+[ ] add explanation of gridflow vs videodsp
+[ ] things you type verbatim are all in KBD blocks
+[ ] placeholders for your own values are all in I blocks
+[ ] find a good XML editor
+[ ] document our own release procedures, how our CVS works
+[ ] document how to report bugs, basic troubleshooting
+[ ] document our distribution of the archives
+[ ] improve protocol description
+[ ] ascii conventions: [foo] vs "foo", etc.
+[ ] document asymptotic cpu+memory usage
+[ ] document internals
+[ ] document gridflow-for-C
+[ ] document gridflow-for-Ruby
+[ ] document backward compatibility issues
+[ ] typical uses: <typical></typical>
+--- remember to keep doc/help/screenshots/samples up to date
+
+Architecture
+[6] 0. Design the GF-1.0 architecture (new internals documentation)
+[6] 1. Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
+	identify streams by ids given at grid msg
+	(may allow for cancelling rejected grids?)
+	(add cancel option to the r/rw choice in callback of grid msg ?)
+[6] 2. Replace Object/Class/List/Dict/Stream by libruby.so
+[6] 3. Publish interfaces to Ruby side (scriptability)
+[6] 4. Abstract out jMax support
+[ ] better error handling
+[ ] @print
+[ ] MMX memcpy() ?
+[ ] runtime configurable packet_length
+[ ] change the protocol completely:
+	not based on messages, but rather a push/pull combination,
+	add GridStream objects, allow them to be passed in other
+	messages; etc... (?!?)
+[ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+[ ] make @store loopable
+[ ] MMX autodetection
+[ ] MMX computations integration
+[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] more profiling?
+[ ] allow lists to appear in object constructors
+[ ] add special list syntax allowing for automatic @redim to n-d grid
+	{3 3 | 1 0 0 0} will create unit matrix, etc.
+
+Computation Objects
+[ ] @type, @cast
+[ ] @cartprod (?), @slice (@splice ?)
+[ ] black option in @store (?)
+[ ] @import~, @export~
+[ ] @import*, @export*
+[ ] see APL/J/NArray/PDL reference
+[ ] @queue, as a replacement for double-@store feedback, and such. (?)
+[ ] @scan
+[ ] @foldr, @scanr
+[ ] @inner is broken but useful; rename to @inner2; add real @inner
+[ ] @polygon
+[ ] @matrix_inverse, @matrix_solve
+[ ] @sort ?
+[ ] @transpose: dimension swapping
+[ ] @reverse (on given dimension number)
+[ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
+	will replace @two, @three, @four.
+[ ] timelines as in MM-Director
+
+Effects
+[ ] improve
+[ ] overlay using alpha channel
+[ ] pinch
+[ ] pixelize, despeckle
+[ ] abyss effect
+[ ] @dither
+[ ] image-sur-image
+[ ] n-frame delaying
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
+[ ] HSV<->RGB; hue shifting
+[ ] HSV<->HSL
+[ ] RGB<->YUV
+[ ] blinds, ...
+[ ] create templates for usage patterns
+[ ] split channels, join channels
+[ ] see gimp for ideas
+[ ] there's a way to double (?) the speed of the cross-fade.
+	try interleaving the data and using [@inner]
+
+Input/Output
+[ ] in-place editing (rw mode)
+[ ] implement byte-order support in BitPacking
+[ ] add Hermes support
+[ ] add messages "load", "save" as open,bang,close combos.
+[ ] arguments to @in,@out could be a auto-open.
+[ ] Pixonix bridge
+[6] Ruby bridge
+[6] PureData bridge
+[ ] Max bridge
+[ ] Gimp bridge
+[ ] TCP: move out of Grid
+[ ] TCP: non-blocking write
+[ ] TCP: non-blocking listen
+[ ] TCP Socket Buffering
+[ ] Grid: bpv 1,2,4,16,64
+[ ] Grid: signed/unsigned
+[ ] MacOSX-Quartz output
+[ ] Win32-GDI output
+
+Format
+[ ] all: possibly get rid of the "format" notion ?
+[ ] all: rewinding file (or not)
+[ ] seq: multi-image (createable by cat, ar, tar or zip)
+[ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
+[ ] Targa: RGBA-32 and write support
+[ ] GZ: support
+[ ] PNM: P1,P2,P3,P4,P5 support
+[ ] XBM, XPM
+[ ] GIF, JPEG, PNG support (+ reg ourselves in libpng.org's applist)
+[ ] libquicktime.so, more libmpeg3.so
+[ ] fork: is a new format, for e.g. multiple MPEG drivers
+[ ] Videodev: allow to select tv channels (this is "freq")
+[ ] Videodev: fix RGB<->BGR<->??? palette issues
+[ ] Videodev: find out what channel the small cam goes on and why it isn't displaying.
+[ ] Raw: a new format for reading arbitrary data.
+[ ] X11: mouse input
+[ ] /dev/dsp
+
+jMax-UI
+[ ] color picker
+[ ] gridbox (akin to intbox) or grid edition dialog, etc.
+[ ] embedded display
+[ ] vector slider (n parallel sliders in one, Dim(n))
+[ ] 2d slider
+[ ] radial slider (angle chooser)
+
+UnitTesting/Bugs
+[ ] format_x11 causes delayed crash when closing its associated window
+[ ] format_x11 causes crash (resizing + shm, sometimes)
+[ ] distinguish "mod" and "%" properly (re: rounding)
+[ ] TCP server socket busy even after kill
+[ ] make better detection of libmpeg version
+[ ] libmpeg fubar on SuSE
+[ ] Dict_each limitation
+[ ] possibly remove Number and sizeof(Number) (often does not make sense)
