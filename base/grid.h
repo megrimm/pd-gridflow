@@ -279,8 +279,8 @@ public:
 #ifdef HAVE_DEBUG_HARDER
 		if (p<start || p>start+n) {
 			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p,(long)start,(long)start+n);
+				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
 			::raise(11);
 		}		
 #endif
@@ -289,8 +289,8 @@ public:
 #ifdef HAVE_DEBUG_HARDER
 		if (p<start || p>start+n) {
 			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p,(long)start,(long)start+n);
+				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
 			::raise(11);
 		}		
 #endif
@@ -307,9 +307,8 @@ public:
 	T &operator[](int i) {
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n)) {
-			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p, (long)i, (long)p+i,(long)start,(long)(start+n));
+			fprintf(stderr, "%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
+				__PRETTY_FUNCTION__, (long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
 			::raise(11);
 		}
 #endif
@@ -321,15 +320,15 @@ public:
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p>=start && p<start+n)) {
 			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p,(long)start,(long)(start+n));
+				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
 			::raise(11);
 		}
 		T *q = p+k-1;
 		if (!(q>=start && q<start+n)) {
 			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)q,(long)start,(long)(start+n));
+				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				__PRETTY_FUNCTION__, (long)q,(long)start,(long)(start+n));
 			::raise(11);
 		}
 #endif
@@ -703,6 +702,7 @@ struct Operator2On : Object {
 	/* Function Vectorisations */
 	typedef void (*Map)(int n, T *as, T b);
 	typedef void (*Zip)(int n, T *as, T *bs);
+	//typedef void (*Zip2)(int n, T *as, T *bs, T *cs);
 	typedef void (*Fold)(int an, int n, T *as, T *bs);
 	typedef void (*Scan)(int an, int n, T *as, T *bs);
 	Map op_map;
@@ -759,7 +759,14 @@ EACH_NUMBER_TYPE(FOO)
 		as.will_use(n);
 		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
+/*
+		template <class T> inline void zip2(int n, Pt<T> as, Pt<T> bs, Pt<T> cs) {
+		as.will_use(n);
+		bs.will_use(n);
+		cs.will_use(n);
+		on(*as)->op_zip2(n,(T *)as,(T *)bs,(T *)cs);}
+*/
+		template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		on(*as)->op_fold(an,n,(T *)as,(T *)bs);}
