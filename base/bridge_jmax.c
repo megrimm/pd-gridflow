@@ -296,8 +296,7 @@ static uint64 RtMetro_now2(void) {
 void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 	long long time = RtMetro_now2();
 //	post("tick\n");
-	rb_eval_string("begin $mainloop.one(0); rescue Exception => e;\
-		GridFlow.gfpost \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+	rb_funcall(GridFlow_module2,SI(tick),0);
 	fts_alarm_set_delay(gf_alarm,GF_TIMER_GRANULARITY);
 	fts_alarm_arm(gf_alarm);
 //	post("tick was: %lld\n",RtMetro_now2()-time);

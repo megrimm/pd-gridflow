@@ -220,9 +220,10 @@ class PrintArgs < GridFlow::GridObject
 end
 
 class GridPrint < GridFlow::GridObject
-#	def initialize(*)
-#		super # don't forget super!!!
-#	end
+	def initialize(name=nil)
+		super # don't forget super!!!
+		if name then @name = name+": " else @name="" end
+	end
 
 	def make_columns data
 		min = data.unpack("l*").min
@@ -234,7 +235,7 @@ class GridPrint < GridFlow::GridObject
 	def _0_rgrid_flow data; @data << data end
 	def _0_rgrid_end
 		make_columns @data
-		GridFlow.gfpost("dim(#{@dim.join','}): " + case @dim.length
+		GridFlow.gfpost("#{name}dim(#{@dim.join','}): " + case @dim.length
 		when 0,1; dump @data
 		when 2;   ""
 		else      "(not printed)"
@@ -301,6 +302,12 @@ end
 def GridFlow.find_file s
 	gfpost "find_file: #{s}"
 	s
+end
+
+def GridFlow.tick
+	$mainloop.one(0)
+rescue Exception => e
+	GridFlow.gfpost "ruby #{e.class}: #{e}: #{e.backtrace}"
 end
 
 end # module GridFlow

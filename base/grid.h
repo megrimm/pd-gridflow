@@ -361,6 +361,12 @@ struct Dim {
 		return dex;
 	}
 	char *to_s();
+
+	bool equal(Dim *o) {
+		if (n!=o->n) return false;
+		for (int i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
+		return true;
+	}
 };
 
 /* **************************************************************** */
