@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.7.5 (2003.09.16):
+version 0.7.5 (2003.09.28):
 
  * type aliases: int32,i32,i; int16,i16,s; uint8,u8,b; float32,f32,f
  * added support for float64 (alias f64, d)
