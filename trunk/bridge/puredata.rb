@@ -38,7 +38,7 @@
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
-		x = GridFlow.fclasses_set[name]
+		x = GridFlow.fclasses[name]
 		x.set_help "gridflow/flow_classes/#{file}-help.pd"
 	rescue Exception => e
 		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
@@ -58,7 +58,7 @@
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
-		GridFlow.fclasses_set[name].set_help "gridflow/#{file}.pd"
+		GridFlow.fclasses[name].set_help "gridflow/#{file}.pd"
 	rescue Exception => e
 		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
 	end
