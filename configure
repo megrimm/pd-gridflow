@@ -379,6 +379,21 @@ Feature.new {
 	options ["HAVE_USB"]
 },
 Feature.new {
+	tag :firewire
+	name "FireWire Libraries for Linux (raw1394/dc1394)"
+	status :disabled
+	uses_o ["base/firewire.o"]
+	uses_so ["-lraw1394","-ldc1394_control"]
+	test proc {
+		c_test "
+		#include <libraw1394/raw1394.h>
+		#include <libdc1394/dc1394_control.h>
+		int main () {return raw1394_get_libversion==0 || dc1394_get_camera_info;}
+		", uses_so
+	}
+	options ["HAVE_FIREWIRE"]
+},
+Feature.new {
 	tag :x11
 	name "X11 Display Protocol"
 	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
@@ -672,6 +687,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] "
+	log << "[--use-compiler-option option]* "
 	log << "[--use-cpu cpu] "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
@@ -721,6 +737,8 @@ while ARGV.length>0 do
 		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift+"/lib/ruby/site_ruby"
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
+	when "--use-compiler-option"
+		$CFLAGS += " "+ARGV.shift
 	when "--use-cpu"
 		$conf[:DEFINES][:CPU] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
