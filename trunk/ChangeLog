@@ -21,10 +21,6 @@ version 0.7.2 (2003.04.08):
  * new classes: @rgb_to_yuv, @yuv_to_rgb
  * @rotate now works with multiple axis (can work on 3D points, etc)
 
-delayed features:
-
- * added bridge_jmax4.c (does not work yet)
-
 version 0.7.1 (2003.03.24):
 
  * fixed important bugs (crashes and such)

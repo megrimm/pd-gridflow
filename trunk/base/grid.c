@@ -466,6 +466,12 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 
 template <class T>
 void GridOutlet::send(int n, Pt<T> data) {
+	if (!n) return;
+/*
+	fprintf(stderr,"GridOutlet::send: sending %d elements (dex=%d/%d)\n",
+		n,dex,dim?dim->prod():0);
+	if (!n) RAISE("a-ha");
+*/
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
@@ -605,6 +611,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	Ruby *p = rb_ary_ptr(buf);
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
+	if (!out[outlet]) RAISE("outlet not found");
 	out[outlet]->begin(new Dim(n,v),nt);
 }
 
@@ -612,6 +619,10 @@ template <class T>
 void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 	int n = rb_str_len(s) / sizeof(T);
 	Pt<T> p = rb_str_pt(s,T);
+/*
+	fprintf(stderr,"send_out_grid_flow_2: sending %d elements (dex=%d/%d)\n",
+		n,go->dex,go->dim->prod());
+*/
 	go->send(n,p);
 }
 

@@ -76,7 +76,11 @@ class PureDataFileWriter
 		when "messbox"
 			@f.print(list_to_s(o.argv[0]))
 		when "slider"
-			@f.print "#{case pr[:orientation]; when 1; 'h'; when 2; 'v'end}sl "+
+			name = case pr[:orientation]
+				when 1; 'h'
+				when 2; 'v'
+				else raise "bogus slider orientation?" end
+			@f.print "#{name}sl "+
 			"128 15 #{pr[:minValue]} #{pr[:maxValue]} 0 0 "+
 			"empty empty empty -2 -6 0 8 -262144 -1 -1 0 1"
 		when "intbox"

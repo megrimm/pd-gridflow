@@ -94,6 +94,12 @@ Architecture
 [ ] number type aliases: int32 -> int -> i, float32 -> float -> f
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] memory profiling
+[ ] compare Ruby API with both flext/pyext
+[ ] add a "query" class for debugging other objects?
+    (would be able to extract extra info from each object/class)
+[ ] add a GridFlow::LaterException or something
+    (which tells to retry later with the same packet because another
+    grid reception is not completed yet.) 
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
@@ -126,9 +132,14 @@ Computation Objects
 [ ] @draw_polygon smoothly
 [ ] @sort
 [ ] @slice
+[ ] string operations to compensate for the feebleness of jMax/PD
+    in that area. this includes [@sprintf].
 
 Effects
 [ ] pinch
+[ ] turtle (logo style)
+[ ] gaussian blur
+[ ] @controid
 [ ] pixelize, despeckle
 [ ] abyss effect
 [ ] @dither
@@ -142,6 +153,7 @@ Effects
 [ ] blinds, ...
 [ ] create templates for usage patterns
 [ ] see gimp for ideas
+[ ] kaleidoscopes
 [ ] @fire
 [ ] @border
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
@@ -153,11 +165,11 @@ Input/Output
 [ ] Grid: bpv 1,2,4
 [ ] Grid: text version of the format (?)
 [ ] jMax4, Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
-[ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX
+[ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC
 [ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
+[ ] get subtitling of tv channels
 [ ] in-place editing (rw mode)
-[ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] use 1.8.0's IO#read(Integer,String)->String
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
@@ -177,6 +189,7 @@ Format
 [ ] fork: is a new format, for e.g. multiple singleton drivers
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
+[ ] videodev: choose number of buffered frames
 [ ] Unix-for-jMax
 [ ] "open grid pipe" and such.
 [ ] TCP: non-blocking write
@@ -238,7 +251,6 @@ Bugs
 [ ] it's possible to crash by sending data in two inlets of a same object at once
 [ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
 [ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
-    this was long ago. look at new figures.
 [ ] latency is not that good. (GC ?)
 [ ] RtMetro crashes if deleted while turned on.
 [ ] RtMetro isn't reliably working
@@ -254,6 +266,10 @@ Bugs
 	(this is one error message from HELL; makes no sense at all)
 [ ] is there still a problem with videodev rgb vs bgr ?
 [ ] mess with options in format grid
+[ ] look for "!@#$" in source
+[ ] @draw_polygon off-by-one
+[ ] FormatGrid: not properly tested (crashes sometimes)
+[ ] look for bugs in @yuv_to_rgb ?
 
 how about creating aliases like "open window" = "open x11 here" (or arbitrary
 user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
@@ -279,10 +295,6 @@ From: Alexandre Castonguay <acastonguay@artengine.ca>
       streams
   [ ] support for audio in the mpeg streams
 
-From: Margit Hideg <mhideg@rogers.com>
-  [ ] I wish to see server side jmax to handle multiple incoming
-      commands, audio + video streams
-
 <matju> alx_away:
  je viens d'avoir une idée géniale
  tab completion dans jMax
@@ -301,8 +313,6 @@ saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un
 message "help" au inlet 0 enverrait une description de la classe dans le log.
  (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout
 ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
-<alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
-avoir le même output que hasciicam? 
 
 alx1->matju: détection de plusieurs personnes; détection avec deux caméras
 (?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots
@@ -317,14 +327,6 @@ add it to gridflow itself.
 
 > http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
-
-<matju> alx:
-what do you think of the following idea:
-[@foo bar, baz, blah 42, zzz]
-would be like:
-[loadbang] -> "baz, blah 42, zzz" -> [@foo bar]
-where "baz, blah 42, zzz" is 3 msgs in a msgbox (sent in order upon bang)
-
 
 
 

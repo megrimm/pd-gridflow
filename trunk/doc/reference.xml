@@ -8,16 +8,13 @@
 -->
 
 <section name="Objects for making grids and breaking them down">
-
 	<class name="@import">
 		<icon text="[@import {240 320 3}]"/>
 		<help text="[@import 240 320 3]" image="@importexport" />
-
 		<p>This object allows you to import non-grid jMax data, such as
 		integers and lists of integers. This object also reframes/resyncs
 		integers and grids so that multiple grids may be joined together, or
 		single grids may be split.</p>
-
 		<method name="init">
 			<arg name="dims" type="list(+integer)|symbol(per_message)">
 			a list specifying a grid shape that the numbers
