@@ -149,6 +149,7 @@ public:
 			as[7]=O::f(as[7],bs[7]);
 		}
 	}
+	// disabled
 	template <class T>
 	static void op_zip2 (int n, T *as, T *bs, T *cs) {
 		for (; (n&7)!=0; as++,bs++,cs++,n--) *cs=O::f(*as,*bs);
@@ -315,7 +316,7 @@ DEF_OP2(sub, a-b, side==at_right && x==0, false)
 DEF_OP2(bus, b-a, side==at_left  && x==0, false)
 
 DEF_OP2(mul, a*b, x==1, x==0)
-DEF_OP2(mulshr8, ((int32)a*(int32)b)>>8, x==256, x==0)
+DEF_OP2(mulshr8, ((int32)a*(int32)b)>>8, (int64)x==256, x==0) //!@#$ bug with int64
 DEF_OP2(div, b==0 ? 0 : a/b, side==at_right && x==1, false)
 DEF_OP2(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
 DEF_OP2(vid, a==0 ? 0 : b/a, side==at_left && x==1, false)
@@ -337,9 +338,9 @@ DEF_OP2(mer, a==0 ? 0 : b%a,
 DEF_OP2(gcd, gcd(a,b), x==0, x==1)
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
 
-DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==-1) // !@#$ uint8?
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, (int64)x==-1)
 DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
-DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), x==-1, x==0) // !@#$ uint8?
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), (int64)x==-1, x==0)
 DEF_OP2F(shl, a<<b, a*pow(2.0,+b), side==at_right && x==0, false)
 DEF_OP2F(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
 
