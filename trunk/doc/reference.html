@@ -44,18 +44,23 @@
 <li><a href="#@out"><img src="images/@out.jpg" alt="[@out]" border="0"></a></li>
 <li><a href="#@import"><img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]" border="0"></a></li>
 <li><a href="#@export"><img src="images/@export.jpg" alt="[@export]" border="0"></a></li>
-<li><a href="#@two">@two</a></li>
-<li><a href="#@three">@three</a></li>
+<li><a href="#@two"><img src="images/@two.jpg" alt="[@two]" border="0"></a></li>
+<li><a href="#@three"><img src="images/@three.jpg" alt="[@three]" border="0"></a></li>
 <li><a href="#@four">@four</a></li>
 </ul>
-<h4><a href="#Transformation_Objects">Transformation Objects</a></h4><ul><li><a href="#@for"><img src="images/@for.jpg" alt="[@for 0 320 1]" border="0"></a></li>
-<li><a href="#@">@</a></li>
+<h4><a href="#Objects_for_Generating">Objects for Generating</a></h4><ul><li><a href="#@for"><img src="images/@for.jpg" alt="[@for 0 320 1]" border="0"></a></li>
+</ul>
+<h4><a href="#Objects_for_Computing">Objects for Computing</a></h4><ul><li><a href="#@">@</a></li>
 <li><a href="#@!">@!</a></li>
 <li><a href="#@fold"><img src="images/@fold_%2B.jpg" alt="[@fold +]" border="0"></a></li>
 <li><a href="#@outer"><img src="images/@outer.jpg" alt="[@outer +]" border="0"></a></li>
 <li><a href="#@inner"><img src="images/@inner.jpg" alt="[@inner * + 0]" border="0"></a></li>
-<li><a href="#@redim"><img src="images/@redim.jpg" alt="[@redim 2]" border="0"></a></li>
+</ul>
+<h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul><li><a href="#@redim"><img src="images/@redim.jpg" alt="[@redim 2]" border="0"></a></li>
 <li><a href="#@store"><img src="images/@store.jpg" alt="[@store]" border="0"></a></li>
+<li><a href="#@identity_transform"><img src="images/@identity_transform.jpg" alt="[@identity_transform]" border="0"></a></li>
+<li><a href="#@scale_to"><img src="images/@scale_to.jpg" alt="[@scale_to]" border="0"></a></li>
+<li><a href="#@spread"><img src="images/@spread.jpg" alt="[@spread]" border="0"></a></li>
 </ul>
 <h4><a href="#Reporting_Objects">Reporting Objects</a></h4><ul><li><a href="#@dim"><img src="images/@dim.jpg" alt="[@dim]" border="0"></a></li>
 <li><a href="#@print">@print</a></li>
@@ -67,12 +72,6 @@
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul><li><a href="#rtmetro">rtmetro</a></li>
 <li><a href="#@global">@global</a></li>
-</ul>
-<h4><a href="#Compound_Objects">Compound Objects</a></h4><ul><li><a href="#@identity_transform"><img src="images/@identity_transform.jpg" alt="[@identity_transform]" border="0"></a></li>
-<li><a href="#@scale_to"><img src="images/@scale_to.jpg" alt="[@scale_to]" border="0"></a></li>
-<li><a href="#@spread"><img src="images/@spread.jpg" alt="[@spread]" border="0"></a></li>
-<li><a href="#@three"><img src="images/@three.jpg" alt="[@three]" border="0"></a></li>
-<li><a href="#@two"><img src="images/@two.jpg" alt="[@two]" border="0"></a></li>
 </ul>
 <h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul><li><a href="#format ppm @in/@out"><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]" border="0"></a></li>
 <li><a href="#format targa @in"><img src="images/format/tga.jpg" alt="[open targa file filename.tga]" border="0"></a></li>
@@ -823,7 +822,9 @@
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@two.jpg"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
 
 		<p> holds two values, defaulting to (0,0). each time one is
 
@@ -839,11 +840,15 @@
 
 		<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>2<b>)</b><br><br>
 
+		
+
 	<br></td>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@three.jpg"><br clear="left"><br><br><a href="images/grab_three.png"><img src="images/ic_grab_three.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
 
 		<p> holds three values, defaulting to (0,0,0). each time one is
 
@@ -860,6 +865,8 @@
 		<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
 
 		<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>3<b>)</b><br><br>
+
+		
 
 	<br></td>
 
@@ -894,7 +901,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><a name="Transformation_Objects"></a><h4>Transformation Objects</h4></td></tr>
+<tr><td colspan="4"><a name="Objects_for_Generating"></a><h4>Objects for Generating</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@for.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
@@ -946,7 +953,14 @@
 
 	<br></td>
 
+<tr><td>&nbsp;</td></tr>
 
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Objects_for_Computing"></a><h4>Objects for Computing</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@">@</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -1322,7 +1336,14 @@
 
 	<br></td>
 
+<tr><td>&nbsp;</td></tr>
 
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Objects_for_Coordinate_Transforms"></a><h4>Objects for Coordinate Transforms</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@redim">@redim</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@redim.jpg"><br clear="left"><br><br><a href="images/grab_redim.png"><img src="images/ic_grab_redim.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -1495,6 +1516,198 @@
 	<br></td>
 
 
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>creates a coordinate map that can
+
+			be fed into the left input of @store to give the same result
+
+			as a bang in that input; that coordinate map is
+
+			dim(height,width,2), where each dim(2) is a (y,x) pair indexing
+
+			a pixel.<br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>a height.<br>
+
+		
+
+		
+
+			<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>a width.<br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> a coordinate map.<br><br>
+
+		
+
+
+
+<p>@identity_transform builds a pixel-level transform grid suitable for 
+
+using with inlet 0 of @store. </p>
+
+<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
+
+<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
+
+<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
+
+0. Not guaranteed to be fast (use an intermediate @store as a cache 
+
+if needed)</p>
+
+
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@scale_to.jpg"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> a picture to be scaled.<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>a height.<br>
+
+		
+
+		
+
+			<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>a width.<br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> a scaled picture.<br><br>
+
+		
+
+
+
+
+
+<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
+
+and chained from @identity_transform and to @store. This will scale an 
+
+image of any size to the size specified in inlets 1,2. If it doesn't correspond 
+
+the values of @identity_transform, part of the image will be trimmed and/or 
+
+duplicated.</p>
+
+
+
+		
+
+	<br></td>
+
+	
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@spread.jpg"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<p>typically you plug a @identity_transform into this object,
+
+		and you plug this object into the left side of a @store. it will
+
+		scatter pixels around, giving an "unpolished glass" effect.</p>
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> a coordinate map.<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>a spread factor.<br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> a coordinate map.<br><br>
+
+		
+
+
+
+
+
+	<p>@spread scatters the pixels in an image. Not all original pixels will 
+
+	appear, and some may get duplicated (triplicated, etc) randomly. Some 
+
+	wrap-around effect will occur close to the edges. </p>
+
+	<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
+
+	number of pixels + 1. even values translate the whole image by half 
+
+	a pixel due to rounding.</p>
+
+
+
+		
+
+	<br></td>
 
 <tr><td>&nbsp;</td></tr>
 
@@ -1878,113 +2091,6 @@
 		<br>
 
 	<br></td>
-
-<tr><td>&nbsp;</td></tr>
-
-
-
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><a name="Compound_Objects"></a><h4>Compound Objects</h4></td></tr>
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-	
-
-<p>@identity_transform builds a pixel-level transform grid suitable for 
-
-using with inlet 0 of @store. </p>
-
-<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
-
-<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
-
-<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
-
-0. Not guaranteed to be fast (use an intermediate @store as a cache 
-
-if needed)</p>
-
-
-
-	
-
-<br></td>
-
-
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@scale_to.jpg"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/ic_grab_scale_to.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-	
-
-<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
-
-and chained from @identity_transform and to @store. This will scale an 
-
-image of any size to the size specified in inlets 1,2. If it doesn't correspond 
-
-the values of @identity_transform, part of the image will be trimmed and/or 
-
-duplicated.</p>
-
-
-
-	
-
-<br></td>
-
-
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@spread.jpg"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/ic_grab_spread.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-	
-
-<p>@spread scatters the pixels in an image. Not all original pixels will 
-
-appear, and some may get duplicated (triplicated, etc) randomly. Some 
-
-wrap-around effect will occur close to the edges. </p>
-
-<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
-
-number of pixels + 1. even values translate the whole image by half 
-
-a pixel due to rounding.</p>
-
-	
-
-<br></td>
-
-
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@three.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-
-	
-
-<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
-
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-
-doing redundant updates -- sorry)</p>
-
-
-
-<br></td>
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@two.jpg"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/ic_grab_two.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-
-
-<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
-
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-
-doing redundant updates -- sorry)</p>
-
-
-
-<br></td>
 
 <tr><td>&nbsp;</td></tr>
 
