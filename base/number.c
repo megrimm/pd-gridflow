@@ -324,7 +324,7 @@ DEF_OP2(mer, a==0 ? 0 : b%a,
 	false, side==at_left && x==0 || side==at_right && x==1)
 
 DEF_OP2(gcd, gcd(a,b), x==0, x==1)
-DEF_OP2(gcd2, gcd2(a,b), x==0, x==1) /* should test those and pick one of the two */
+DEF_OP2(gcd2, gcd2(a,b), x==0, x==1) // should test those and pick one of the two
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
 
 DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==nt_all_ones(&x))
@@ -354,6 +354,15 @@ DEF_OP2(tanh, (T)(b * tanh(a * (M_PI / 18000))), false, x==0)
 DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
 DEF_OP2(pow, ipow(a,b), false, false) // "RN=1"
 DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
+
+// 0.7.8
+//DEF_OP2(clipadd, min(nt_greatest(&a),max(nt_smallest(&a),a+b)), x==0, false)
+//DEF_OP2(clipsub, min(nt_greatest(&a),max(nt_smallest(&a),a-b)), side==at_right && x==0, false)
+DEF_OP2(abssub,  abs(a-b), false, false)
+DEF_OP2(sqsub, (a-b)*(a-b), false, false)
+DEF_OP2(avg, (a-b)/2, false, false)
+//DEF_OP2(erf,"erf*", 0)
+DEF_OP2(hypot, (T)(0+floor(sqrt(a*a+b*b))), false, false)
 
 Numop2 op2_table[] = {
 	DECL_OP2(ignore, "ignore", OP2_ASSOC),
@@ -404,6 +413,14 @@ Numop2 op2_table[] = {
 	DECL_OP2_NOFOLD(gamma, "gamma", 0),
 	DECL_OP2_NOFOLD(pow, "**", 0),
 	DECL_OP2_NOFOLD(log, "log*", 0),
+// 0.7.8
+	//DECL_OP2(clipadd,"clip+", OP2_ASSOC|OP2_COMM),
+	//DECL_OP2(clipsub,"clip-", 0),
+	DECL_OP2_NOFOLD(abssub,"abs-", OP2_COMM),
+	DECL_OP2_NOFOLD(sqsub,"sq-", OP2_COMM),
+	DECL_OP2_NOFOLD(avg,"avg", OP2_COMM),
+	DECL_OP2_NOFOLD(hypot,"hypot", OP2_COMM),
+	//DECL_OP2_NOFOLD(erf,"erf*", 0),
 };
 
 Ruby op1_dict = Qnil;
