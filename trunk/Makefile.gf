@@ -32,7 +32,7 @@ CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
 else
-	CFLAGS += -O6 -funroll-loops # speed
+	CFLAGS += -O3 -funroll-loops # speed
 	CFLAGS += -mpentium
 endif
 
@@ -87,7 +87,7 @@ test::
 
 vtest::
 	rm -f core
-	(valgrind ruby       -w $(TEST) &> gf.valgrind) || $(BACKTRACE)
+	(valgrind --suppressions=extra/ruby.valgrind -v ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
 
 test16:: test
 	(ruby-1.6.7 -w $(TEST)) || $(BACKTRACE)
@@ -114,7 +114,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 #	echo $(LDSOFLAGS)
 #	echo $(CFLAGS)
 
-$(JMAX_LIB): base/bridge_jmax.c base/grid.h $(CONF) $(RUBYA1)
+$(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
 	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
@@ -185,7 +185,7 @@ PDSUF = .pd_linux
 
 PD_LIB = $(OBJDIR)/gridflow$(PDSUF)
 
-$(PD_LIB): base/bridge_puredata.c base/grid.h $(CONF) $(RUBYA1)
+$(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
 	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@

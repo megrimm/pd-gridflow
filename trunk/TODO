@@ -216,7 +216,9 @@ Bugs
 [ ] tanh should be called tanh*
 [ ] probable memory corruption during initialization of GridFlow
 [ ] [@export_list] blows up with >=125 elements (alx)
-
+[ ] Format#init stopped initializing dim,bit_packing
+	(there may be bugs dating back to that change)
+[ ] implement IO#read_into
 
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
@@ -246,7 +248,10 @@ From: Margit Hideg <mhideg@rogers.com>
  bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques. ça marcherait pour les object boxes mais pas pour le reste
  le tab completion ne donnerait pas seulement les noms possibles pour le prochain argument dans le objectbox; il donnerait aussi une description de l'argument (surtout dans le cas où l'argument a beaucoup de valeurs possibles)
  je pense que le help de jMax est une bonne idée (le concept hands-on) mais ça pourrait aller plus loin.
- j'ai pensé intégrer le manuel de référence de gridflow directement dans le programme, disponible au runtime, dans l'éventualité d'un GUI qui saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un message "help" au inlet 0 enverrait une description de la classe dans le log.
+ j'ai pensé intégrer le manuel de référence de gridflow directement dans le programme, disponible au runtime, dans l'éventualité d'un GUI qui saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un message "help" au inlet 0 enverrait un
+
+
+e description de la classe dans le log.
  (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ?
 
 <alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
