@@ -90,8 +90,6 @@ void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 		whine("%s:i%d: no begin()",INFO($));
 	} else {
 		if (!$->begin((GridObject *)$->parent,$)) {
-			/* ok */
-		} else {
 			GridInlet_abort($);
 		}
 	}
