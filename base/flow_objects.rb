@@ -62,8 +62,14 @@ class GridGlobal < FObject
 		GridFlow.post "-"*32
 		GridFlow.post "sum of accounted microseconds: #{total_us}"
 		if GridFlow.respond_to? :memcpy_calls then
-			GridFlow.post "memcpy_calls: #{GridFlow.memcpy_calls}"
-			GridFlow.post "memcpy_bytes: #{GridFlow.memcpy_bytes}"
+			GridFlow.post "memcpy calls: #{GridFlow.memcpy_calls} "+
+				"; bytes: #{GridFlow.memcpy_bytes}"+
+				"; time: #{GridFlow.memcpy_time}"
+		end
+		if GridFlow.respond_to? :malloc_calls then
+			GridFlow.post "malloc calls: #{GridFlow.malloc_calls} "+
+				"; bytes: #{GridFlow.malloc_bytes}"+
+				"; time: #{GridFlow.malloc_time}"
 		end
 		GridFlow.post "-"*32
 	end
@@ -75,10 +81,12 @@ class GridGlobal < FObject
 		GridFlow.post "returns: %s", eval(s).inspect end
 
 	install "@global", 1, 1
-	if GridFlow.bridge_name == "puredata"
+	begin
+#	if GridFlow.bridge_name == "puredata"
 		GridFlow.whatever :bind, "@global", "gridflow"
 		# GridFlow.whatever :bind, self, "gridflow"
 		# GridFlow.whatever :bind, self.new, "gridflow"
+	rescue Exception
 	end
 end
 
