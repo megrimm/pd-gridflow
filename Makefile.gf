@@ -127,6 +127,28 @@ foo::
 
 #----------------------------------------------------------------#
 
+ifeq ($(HAVE_JMAX_4),yes)
+JMAX_LIB = $(OBJDIR)/libgridflow$(LSUF)
+gridflow-for-jmax:: $(JMAX_LIB)
+
+# the -DLINUXPC part is suspect. sorry.
+$(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
+	@mkdir -p $(OBJDIR)
+	$(CC) $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
+
+jmax-install::
+	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
+	$(INSTALL_LIB) $(OBJDIR)/libgridflow$(LSUF) \
+		$(GFID)/c/lib/$(ARCH)/opt/libgridflow$(LSUF)
+	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
+	$(INSTALL_DATA) gridflow.scm $(GFID)/gridflow.scm
+	$(INSTALL_DIR) $(lib_install_dir)/packages/gridflow/templates
+	$(INSTALL_DIR) $(lib_install_dir)/packages/gridflow/help
+	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
+		$(INSTALL_DATA) $$f $(lib_install_dir)/packages/gridflow/$$f; \
+	done
+else
 ifeq ($(HAVE_JMAX_2_5),yes)
 JMAX_LIB = $(OBJDIR)/libgridflow$(LSUF)
 gridflow-for-jmax:: $(JMAX_LIB)
@@ -163,6 +185,7 @@ gridflow-for-jmax::
 jmax-install::
 
 endif # HAVE_JMAX_2_5
+endif # HAVE_JMAX_4
 
 #----------------------------------------------------------------#
 
