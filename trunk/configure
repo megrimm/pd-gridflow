@@ -34,7 +34,7 @@ def make_expand(x)
 
 def read_ld_so_conf
 	return [] unless File.exist?("/etc/ld.so.conf")
-	x = File.read("/etc/ld.so.conf").split("\s")
+	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
 	x.delete_if { x.length==0 }
 	x
 end
