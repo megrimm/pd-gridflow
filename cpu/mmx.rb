@@ -75,20 +75,31 @@ $asm_type = {
 	:int64 => "qword",
 }
 
+# in the following, the opcode "_" means no such thing seems available.
+# also >> for x86 ought to be shr in the uint8 case.
+# btw, i got all of the MMX information from the NASM manual, Appendix B.
 $opcodes = {
-#                      x86    mmx u8  i16     i32     i64
-	:add => ["+",  "add", "paddb","paddw","paddd","paddq"],
-	:sub => ["-",  "sub", "psubb","psubw","psubd","psubq"],
-	:and => ["&",  "and", "pand", "pand", "pand" ,"pand" ],
-	:xor => ["^",  "xor", "pxor", "pxor", "pxor" ,"pxor" ],
-	:or  => ["|",  "or",  "por",  "por",  "por"  ,"por"  ],
-#	:eq  => ["==", nil,   "pcmpeqb","pcmpeqw","pcmpeqd",nil],
-#	:gt  => [">",  nil,   "pcmpgtb","pcmpgtw","pcmpgtd",nil],
-#	:shl => ["<<", "shl", nil,    "psllw","pslld","psllq"], # noncommutative
-#	:shr => [">>", "sar", nil,    "psraw","psrad"], # noncommutative
-#	:addclamp => [nil,nil,"paddusb","paddsw",nil,nil,nil],
-#	:subclamp => [nil,nil,"psubusb","psubsw",nil,nil,nil],
-#	:andnot => [nil,nil,"pandn","pandn","pandn","pandn"],
+#                     [--GF--|--x86--|--mmx-et-al----------------------------------------]
+#                     [      |       |-uint8-|-int16-|-int32-|-int64-|-float32-|-float64-]
+	:add     => %w[ +      add    paddb   paddw   paddd   paddq                      ],
+	:sub     => %w[ -      sub    psubb   psubw   psubd   psubq                      ],
+	:and     => %w[ &      and    pand    pand    pand    pand                       ],
+	:xor     => %w[ ^      xor    pxor    pxor    pxor    pxor                       ],
+	:or      => %w[ |      or     por     por     por     por                        ],
+#	:max     => %w[ max    _      pmaxub  pmaxsw  _       _                          ], # not plain MMX !!! (req.Katmai)
+#	:min     => %w[ min    _      pminub  pminsw  _       _                          ], # not plain MMX !!! (req.Katmai)
+#	:eq      => %w[ ==     _      pcmpeqb pcmpeqw pcmpeqd _                          ],
+#	:gt      => %w[ >      _      pcmpgtb pcmpgtw pcmpgtd _                          ],
+#	:shl     => %w[ <<     shl    _       psllw   pslld   psllq                      ], # noncommutative
+#	:shr     => %w[ >>     sar    _       psraw   psrad   _                          ], # noncommutative
+#	:clipadd => %w[ clip+  _      paddusb paddsw  _       _                          ], # future use
+#	:clipsub => %w[ clip-  _      psubusb psubsw  _       _                          ], # future use
+#	:andnot  => %w[ &not   _      pandn   pandn   pandn   pandn                      ], # not planned
+}
+
+$opcodes.each {|k,op|
+	op.map! {|x| if x=="_" then nil else x end }
+	STDERR.puts op.inspect
 }
 
 $decls = ""
