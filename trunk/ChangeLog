@@ -1,24 +1,28 @@
 /* $Id$ */
 
 version 0.6.1 (head):
- * rewrote the C code as C++
+
+ * now compiling GridFlow as C++ (replacing C)
  * now you can use Ruby 1.7, which is faster
-	note: make sure your version is dated 2002
- * new objects:
-	rubyprint, @print, @scan, @inner
- * objects rewritten in Ruby:
-	@in, @out
- * new formats:
-	quicktime (using libquicktime.so)
+	note: if you do so, make sure your version is dated 2002
+ * new objects: rubyprint, printargs, @print, @scan, @inner
+ * objects rewritten in Ruby: @in, @out
+ * new format: apple quicktime (using libquicktime.so)
  * @in gzip support (example: "open ppm gzfile teapot.ppm.gz")
 	also works with targa and grid
  * BitPacking now supports 1 to 4 channels instead of just 3
  * using mkmf.rb makefile generation; some MSWindows support thru Cygwin
  * added geiger counter simulator in [rtmetro]
  * libruby.so is only needed when using GridFlow through jMax
+ * now can do grid literals in @ and @outer, like [@ + {0 1}]
+ * syntax of @redim,@import changed from [@redim 2 3] to [@redim {2 3}]
+ * "3 3 # 1 0 0 1" into inlet does automatic @redim, for all objects
+ * grid literals accept {2 3 # 1 4 5} as an implicit [@redim {2 3}]
+ * updated samples, templates, documentation.
  * fixed bugs
 
 version 0.6.0 (2002.07.31):
+
  * THIS IS AN EXPERIMENTAL BRANCH (VERY BUGGY)
      REAL PROJECTS SHOULD USE VERSION 0.5.0 INSTEAD
  * GridFlow rewritten as a plugin for Ruby instead of jMax.
@@ -32,6 +36,7 @@ version 0.6.0 (2002.07.31):
  * will read ~/.gridflow_startup if it exists
 
 version 0.5.0 (2002.06.08):
+
  * big changes to the internals (especially use of macros)
  * can compile without X11; added --no-x11 in ./configure
  * removed support for jMax 2.4
@@ -49,6 +54,7 @@ version 0.5.0 (2002.06.08):
  * updated samples
 
 version 0.4.1 (2002.01.02):
+
  * cvs repository now has public access
  * now can run configure without jmax/fts being present
  * standalone version now works on Silicon Graphics and Corel Netwinder.
@@ -62,6 +68,7 @@ version 0.4.1 (2002.01.02):
  * fts emulation moved to c/src/ and tests moved to tests/
 
 version 0.4.0 (2001.11.28):
+
  * package name changed from "video4jmax" to "gridflow"
  * documentation *rewritten*, more precise, more structured
  * documentation format is now XML (includes HTMLized version)
@@ -81,6 +88,7 @@ version 0.4.0 (2001.11.28):
  * many other accelerations
 
 version 0.3.0 (2001.11.04):
+
  * reworked File Format API
  * grid objects now all accept lists of integers (auto-convert to 1D grid)
  * many accelerations (incl large speedup on chains of binary operations)
@@ -100,6 +108,7 @@ version 0.3.0 (2001.11.04):
  * videodev: added option norm 0=pal 1=ntsc 2=secam 3=auto
 
 version 0.2.2 (2001.08.15):
+
  * @video_out auto-updates on X11 ExposeEvent
  * updated documentation and help
  * fixed installation/config of help and summary
@@ -114,6 +123,7 @@ version 0.2.2 (2001.08.15):
 	@identity_transform, @scale_to, @spread
 
 version 0.2.1 (2001.08.01):
+
  * added private CVS repository on hostname.2y.net
  * added configuration script (detects video4linux 1.x)
  * added documentation in HTML format
@@ -129,6 +139,7 @@ version 0.2.1 (2001.08.01):
  * now there are 20 binary operators
 
 version 0.2.0 (2001.05.05):
+
  * package name changed from "video" to "video4jmax"
  * new kind of post() cancels repetitive log entries
  * major modifications to existing objects
