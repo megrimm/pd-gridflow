@@ -291,19 +291,25 @@ void FormatX11::dealloc_image () {
 	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
 		shmdt(ximage->data);
+		XShmDetach(display,shm_info);
 		if (shm_info) {delete shm_info; shm_info=0;}
-//		ximage->data = new char[1]; // bogus
-		ximage->data = 0;
-//		XDestroyImage(ximage);
-//		ximage = 0;
+		//ximage->data = new char[1]; // bogus
+		//ximage->data = 0;
+		//XDestroyImage(ximage);
+		XFree(ximage);
+		ximage = 0;
+		image = Pt<uint8>();
 	#endif	
 	} else {
-//		XDestroyImage(ximage);
-//		ximage = 0; 
+		//XDestroyImage(ximage);
+		XFree(ximage);
+		ximage = 0;
+		image = Pt<uint8>();
 	}
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
+	fprintf(stderr,"sx=%d sy=%d\n",sx,sy);
 	int32 v[3] = {sy, sx, 3};
 	if (dim) delete dim;
 	dim = new Dim(3,v);
