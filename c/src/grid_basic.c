@@ -550,7 +550,6 @@ typedef struct GridFold {
 	GridObject_FIELDS;
 	const Operator2 *op;
 	int rint;
-	Number accum;
 } GridFold;
 
 GRID_BEGIN(GridFold,0) {
@@ -561,21 +560,25 @@ GRID_BEGIN(GridFold,0) {
 	foo = Dim_new(n-1,in->dim->v);
 /*	whine("fold dimension = %s",Dim_to_s(foo)); */
 	GridOutlet_begin($->out[0],foo);
+	GridInlet_set_factor(in,Dim_get(in->dim,Dim_count(in->dim)-1));
 	return true;
 }
 
 GRID_FLOW(GridFold,0) {
-	int wrap = Dim_get(in->dim,Dim_count(in->dim)-1);
-	int i;
+	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int i=0;
 	GridOutlet *out = $->out[0];
-	for (i=0; i<n; i++) {
-		if (((in->dex+i) % wrap) == 0) $->accum = $->rint;
-		$->accum = $->op->op_fold($->accum,1,&data[i]);
-		if (((in->dex+i) % wrap) == wrap-1) {
-			GridOutlet_send(out,1,&$->accum);
-		}
+	int bs = n/factor;
+	Number buf[bs];
+
+	assert (n % factor == 0);
+
+	while (n) {
+		buf[i++] = $->op->op_fold($->rint,factor,data);
+		data += factor;
+		n -= factor;
 	}
-	in->dex += n;
+	GridOutlet_send(out,bs,buf);
 }
 
 GRID_END(GridFold,0) { GridOutlet_end($->out[0]); }
