@@ -28,6 +28,9 @@
 
 /* **************************************************************** */
 
+#define IV(s) rb_ivar_get(rself,SYM(s))
+#define IVS(s,v) rb_ivar_set(rself,SYM(s),v)
+
 Operator1 *OP1(VALUE x) {
 	VALUE s = rb_hash_aref(op1_dict,x);
 	if (s==Qnil) RAISE("expected one-input-operator");
@@ -1122,65 +1125,30 @@ LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,1)),
 	DECL(GridRedim,init),
 	DECL(GridRedim,delete))
 
-/* **************************************************************** */
-
-typedef struct GridPrint GridPrint;
-struct GridPrint {
-	GridObject_FIELDS;
-};
-
-GRID_BEGIN(GridPrint,0) {
-	if (Dim_count(in->dim)>1) {
-		char *s = Dim_to_s(in->dim);
-		whine("Grid %s: %s",s);
-		FREE(s);
-	}
-	return true;
-}
-
-GRID_FLOW(GridPrint,0) {
-	if (Dim_count(in->dim)<=1) { /* write me */ }
-	/* write me */
-}
-
-GRID_END(GridPrint,0) {}
-
-METHOD(GridPrint,init)   { rb_call_super(argc,argv); }
-METHOD(GridPrint,delete) { rb_call_super(argc,argv); }
-
-GRCLASS(GridPrint,inlets:1,outlets:0,
-LIST(GRINLET(GridPrint,0)),
-	DECL(GridPrint,init),
-	DECL(GridPrint,delete))
-
 /* ---------------------------------------------------------------- */
 /* some data/type decls */
 
 typedef struct GridIn {
 	GridObject_FIELDS;
-	VALUE /*GridFlow::Format*/ ff; /* a file reader object */
 	bool timelog; /* future use */
 	struct timeval tv; /* future use */
 	int framecount;
+	/* GridFlow::Format @format */ /* a file reader object */
 } GridIn;
 
 typedef struct GridOut {
 	GridObject_FIELDS;
-	VALUE /*GridFlow::Format*/ ff; /* a file writer object */
 	bool timelog;
 	struct timeval tv;   /* time of the last grid_end */
 	int framecount;
+	/* GridFlow::Format @format */ /* a file writer object */
 } GridOut;
 
 /* ---------------------------------------------------------------- */
 
 /* return and complain when file not open */
 #define CHECK_FILE_OPEN \
-	if (!$->ff) { whine("can't do that: file not open"); return; }
-
-/* same with false return */
-#define CHECK_FILE_OPEN2 \
-	if (!$->ff) RAISE("can't do that: file not open");
+	if (IV(@format)==Qnil) { RAISE("can't do that: file not open"); return; }
 
 /* ---------------------------------------------------------------- */
 
@@ -1188,69 +1156,70 @@ typedef struct GridOut {
 
 METHOD(GridIn,_0_close) {
 	CHECK_FILE_OPEN
-	rb_funcall($->ff,SI(close),0);
-	$->ff = 0;
+	rb_funcall(IV(@format),SI(close),0);
+	IVS(@format,0);
 }
 
 METHOD(GridIn,_0_reset) {
 	GridOutlet_abort($->out[0]);
 	CHECK_FILE_OPEN
-	/* $->ff->cl->frame($->ff,-1); */
+	/* IV(@format)->cl->frame(IV(@format),-1); */
 }
 
 void GridIn_frame(GridIn *$, int frame) {
+	VALUE rself = $->peer;
 	CHECK_FILE_OPEN
 	/* this is not a sufficient check. see format_grid.c */
 	if (GridOutlet_busy($->out[0]))
 		RAISE("ignoring frame request: already waiting for a frame");
 	if (frame!=-1) {
-		rb_funcall($->ff,SI(seek),1,INT2NUM(frame));
+		rb_funcall(IV(@format),SI(seek),1,INT2NUM(frame));
 	}
-	rb_funcall($->ff,SI(frame),0);
+	rb_funcall(IV(@format),SI(frame),0);
 }
 
 METHOD(GridIn,_0_open) {
 	VALUE qlass;
-	qlass = rb_hash_aref(format_classes_dex,argv[0]);
+	qlass = rb_hash_aref(rb_ivar_get(GridFlow_module,SI(@formats)),argv[0]);
 	if (qlass==Qnil) RAISE("unknown file format identifier: %s",
 		rb_sym_name(argv[0]));
 
 //	whine("file format: %s (%s)",qlass->symbol_name, qlass->description);
 
-	if ($->ff) rb_funcall($->ff,SI(close),0);
+	if (IV(@format)!=Qnil) rb_funcall(IV(@format),SI(close),0);
 	argv[0] = SYM(in);
-	$->ff = rb_funcall2(qlass,SI(new),argc,argv);
-	rb_funcall($->ff,SI(connect),3,INT2NUM(0),rself,INT2NUM(1));
+	IVS(@format,rb_funcall2(qlass,SI(new),argc,argv));
+	rb_funcall(IV(@format),SI(connect),3,INT2NUM(0),rself,INT2NUM(1));
 }
 
 METHOD(GridIn,_0_bang) {
 	CHECK_FILE_OPEN
-	rb_funcall($->ff,SI(frame),0);
+	rb_funcall(IV(@format),SI(frame),0);
 }
 
 METHOD(GridIn,_0_int) {
 	int frame = INT(argv[0]);
 	CHECK_FILE_OPEN
-	rb_funcall($->ff,SI(seek),1,frame);
-	rb_funcall($->ff,SI(frame),0);
+	rb_funcall(IV(@format),SI(seek),1,frame);
+	rb_funcall(IV(@format),SI(frame),0);
 }
 
 METHOD(GridIn,_0_option) {
 	CHECK_FILE_OPEN
-	rb_funcall2($->ff,SI(option),argc,argv);
+	rb_funcall2(IV(@format),SI(option),argc,argv);
 }
 
 METHOD(GridIn,init) {
 	rb_call_super(argc,argv);
-	$->ff = 0;
+	IVS(@format,Qnil);
 	$->timelog = 0; /* not used in @in yet */
 	$->framecount = 0;
 	gettimeofday(&$->tv,0);
 }
 
 METHOD(GridIn,delete) {
-	if ($->ff!=Qnil) rb_funcall2($->ff,SI(close),argc,argv);
-	$->ff = Qnil;
+	if (IV(@format)!=Qnil) rb_funcall2(IV(@format),SI(close),argc,argv);
+	IVS(@format,Qnil);
 	rb_call_super(argc,argv);
 }
 
@@ -1281,6 +1250,7 @@ METHOD(GridIn,_1_grid_end  ) {
 	FObject_send_out(argc+2,a,rself);
 }
 
+/* uses hidden inlet */
 GRCLASS(GridIn,inlets:1,outlets:1,
 LIST(),
 	DECL(GridIn,init),
@@ -1299,15 +1269,15 @@ LIST(),
 
 /* virtual gridinlet */
 METHOD(GridOut,_0_grid_begin) {
-	rb_funcall2($->ff,SI(_0_grid_begin),argc,argv);
+	rb_funcall2(IV(@format),SI(_0_grid_begin),argc,argv);
 }
 
 METHOD(GridOut,_0_grid_flow) {
-	rb_funcall2($->ff,SI(_0_grid_flow),argc,argv);
+	rb_funcall2(IV(@format),SI(_0_grid_flow),argc,argv);
 }
 
 METHOD(GridOut,_0_grid_end) {
-	rb_funcall2($->ff,SI(_0_grid_end),argc,argv);
+	rb_funcall2(IV(@format),SI(_0_grid_end),argc,argv);
 	LEAVE;
 	{
 		VALUE a[] = { INT2NUM(0), sym_bang };
@@ -1328,7 +1298,7 @@ METHOD(GridOut,_0_grid_end) {
 }
 
 METHOD(GridOut,_0_list) {
-	rb_funcall2($->ff,SI(_0_list),argc,argv);
+	rb_funcall2(IV(@format),SI(_0_list),argc,argv);
 }
 
 METHOD(GridOut,_0_option) {
@@ -1338,33 +1308,33 @@ METHOD(GridOut,_0_option) {
 		$->timelog = !! INT(argv[1]);
 		whine("timelog = %d",$->timelog);
 	} else {
-		rb_funcall2($->ff,SI(option),argc,argv);
+		rb_funcall2(IV(@format),SI(option),argc,argv);
 	}
 }
 
 METHOD(GridOut,_0_close) {
 	CHECK_FILE_OPEN
 /*	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]); */
-	rb_funcall($->ff,SI(close),0);
+	rb_funcall(IV(@format),SI(close),0);
 }
 
 METHOD(GridOut,_0_open) {
 	VALUE qlass;
-	qlass = rb_hash_aref(format_classes_dex,argv[0]);
+	qlass = rb_hash_aref(rb_ivar_get(GridFlow_module,SI(@formats)),argv[0]);
 	if (qlass==Qnil) RAISE("unknown file format identifier: %s",
 		rb_sym_name(argv[0]));
 
 //	whine("file format: %s (%s)",qlass->symbol_name, qlass->description);
 
-	if ($->ff) rb_funcall($->ff,SI(close),0);
+	if (IV(@format)!=Qnil) rb_funcall(IV(@format),SI(close),0);
 	argv[0] = SYM(out);
-	$->ff = rb_funcall2(qlass,SI(new),argc,argv);
+	IVS(@format,rb_funcall2(qlass,SI(new),argc,argv));
 }
 
 METHOD(GridOut,init) {
 	$->framecount = 0;
 	$->timelog = 0;
-	$->ff = 0;
+	IVS(@format,Qnil);
 	gettimeofday(&$->tv,0);
 	rb_call_super(argc,argv);
 	if (argc>0) {
@@ -1374,7 +1344,7 @@ METHOD(GridOut,init) {
 }
 
 METHOD(GridOut,delete) {
-	if ($->ff) rb_funcall($->ff,SI(close),0);
+	if (IV(@format)!=Qnil) rb_funcall(IV(@format),SI(close),0);
 	rb_call_super(argc,argv);
 }
 
@@ -1737,12 +1707,11 @@ void startup_flow_objects (void) {
 	INSTALL("@for",        GridFor);
 	INSTALL("@dim",        GridDim);
 	INSTALL("@redim",      GridRedim);
-	INSTALL("@print",      GridPrint);
 	INSTALL("@in",         GridIn);
 	INSTALL("@out",        GridOut);
 	INSTALL("@scale_by",   GridScaleBy);
-	INSTALL("@rgb_to_hsv", GridRGBtoHSV);
-	INSTALL("@hsv_to_rgb", GridHSVtoRGB);
+	INSTALL("@rgb_to_hsv", GridRGBtoHSV); /* buggy */
+	INSTALL("@hsv_to_rgb", GridHSVtoRGB); /* buggy */
 	INSTALL("@rtmetro",    RtMetro);
 	INSTALL("@global",     GridGlobal);
 }
