@@ -145,6 +145,9 @@
 
 #define SYM(_sym_) fts_new_symbol(#_sym_)
 
+#define FREE(_var_) \
+	qfree(_var_), _var_=0
+
 /* ************************************ junk */
 
 /*

@@ -35,7 +35,18 @@ typedef struct GridImport GridImport;
 struct GridImport {
 	GridObject_FIELDS;
 	Dim *dim; /* size of grids to send */
+	int *v;
 };
+
+GRID_BEGIN(GridImport,1) {
+	return false;
+}
+
+GRID_FLOW(GridImport,1) {
+}
+
+GRID_END(GridImport,1) {
+}
 
 METHOD(GridImport,init) {
 	int i;
@@ -49,6 +60,11 @@ METHOD(GridImport,init) {
 	}
 	$->dim = Dim_new(ac-1,v);
 	whine("Importing Grid %s",Dim_to_s($->dim));
+/*	$->in[0] = GridInlet_new((GridObject *)$, 0,
+		(GridBegin)GridImport_0_begin, (GridFlow)GridImport)_0_flow, 0);
+*/
+	$->in[1] = GridInlet_new((GridObject *)$, 0,
+		(GridBegin)GridImport_1_begin, (GridFlow)GridImport_1_flow, 0);
 }
 
 METHOD(GridImport,delete) { /* write me */ }
@@ -58,7 +74,6 @@ METHOD(GridImport,int) {
 	Number data[] = { GET(0,int,0) };
 	if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
 	GridOutlet_send(out,COUNT(data),data);
-	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
 }
 
 METHOD(GridImport,reset) {
@@ -79,7 +94,7 @@ CLASS(GridImport) {
 	{int i; for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;}
 
 	/* initialize the class */
-	fts_class_init(class, sizeof(GridImport), 1, 1, 0);
+	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 
 	/* define the methods */
@@ -113,11 +128,9 @@ GRID_FLOW(GridExport,0) {
 METHOD(GridExport,init) {
 	int i;
 	int v[ac-1];
-	GridInlet *in;
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->in[0] = in = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridExport_0_begin,
-		(GridFlow)GridExport_0_flow);
+	$->in[0] = GridInlet_new((GridObject *)$, 0,
+		(GridBegin)GridExport_0_begin, (GridFlow)GridExport_0_flow, 0);
 }
 
 METHOD(GridExport,delete) { /* write me */ }
@@ -226,7 +239,7 @@ GRID_FLOW(GridStore,0) {
 			}
 			pos = Dim_calc_dex(parent->dim,v);
 			size = Dim_prod_start(parent->dim,nc);
-			GridOutlet_send_buffered(parent->out[0],size,&parent->data[pos]);
+			GridOutlet_send(parent->out[0],size,&parent->data[pos]);
 
 			parent->bufn=0;
 		}
@@ -239,7 +252,7 @@ GRID_BEGIN(GridStore,1) {
 	int length = Dim_prod(in->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
-		free(parent->data);
+		FREE(parent->data);
 	}
 	parent->dim = Dim_dup(in->dim);
 	parent->data = NEW2(Number,length);
@@ -250,15 +263,14 @@ GRID_FLOW(GridStore,1) {
 	int i;
 	memcpy(&parent->data[in->dex], data, sizeof(Number)*n);
 	in->dex += n;
-	if (in->dex >= Dim_prod(in->dim)) GridInlet_finish(in); /* ? */
 }
 
 METHOD(GridStore,init) {
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridStore_0_begin, (GridFlow)GridStore_0_flow);
+		(GridBegin)GridStore_0_begin, (GridFlow)GridStore_0_flow, 0);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		(GridBegin)GridStore_1_begin, (GridFlow)GridStore_1_flow);
+		(GridBegin)GridStore_1_begin, (GridFlow)GridStore_1_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->data = 0;
@@ -319,7 +331,7 @@ GRID_FLOW(GridOp1,0) {
 	parent->op->op_array(n,data2);
 	in->dex += n;
 	GridOutlet_send(out,n,data2);
-	free(data2);
+	FREE(data2);
 }
 
 METHOD(GridOp1,init) {
@@ -327,7 +339,7 @@ METHOD(GridOp1,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridOp1_0_begin, (GridFlow)GridOp1_0_flow);
+		(GridBegin)GridOp1_0_begin, (GridFlow)GridOp1_0_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op1_table_find(sym);
@@ -395,17 +407,14 @@ GRID_FLOW(GridOp2,0) {
 	}
 	in->dex += n;
 	GridOutlet_send(out,n,data2);
-	free(data2);
-/*
-	if ($->dex >= Dim_prod($->dim)) { GridInlet_end($); }
-*/
+	FREE(data2);
 }
 
 GRID_BEGIN(GridOp2,1) {
 	int length = Dim_prod(in->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
-		free(parent->data);
+		FREE(parent->data);
 	}
 	parent->dim = Dim_dup(in->dim);
 	parent->data = NEW2(Number,length);
@@ -424,9 +433,9 @@ METHOD(GridOp2,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridOp2_0_begin, (GridFlow)GridOp2_0_flow);
+		(GridBegin)GridOp2_0_begin, (GridFlow)GridOp2_0_flow, 0);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow);
+		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op2_table_find(sym);
@@ -439,8 +448,8 @@ METHOD(GridOp2,init) {
 METHOD(GridOp2,delete) { /* write me */ }
 
 METHOD(GridOp2,rint) {
-	free($->data);
-	if ($->dim) { free($->dim); $->dim = 0; }
+	FREE($->data);
+	if ($->dim) FREE($->dim);
 	$->rint = GET(0,int,-42);
 }
 
@@ -510,7 +519,7 @@ METHOD(GridFold,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridFold_0_begin, (GridFlow)GridFold_0_flow);
+		(GridBegin)GridFold_0_begin, (GridFlow)GridFold_0_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op2_table_find(sym);
@@ -582,8 +591,7 @@ METHOD(GridDim,init) {
 	int v[ac-1];
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridDim_0_begin,
-		(GridFlow)GridDim_0_flow);
+		(GridBegin)GridDim_0_begin, (GridFlow)GridDim_0_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
@@ -612,9 +620,11 @@ struct GridPrint {
 };
 
 GRID_BEGIN(GridPrint,0) {
-	char *foo = Dim_to_s(in->dim);
-	whine("Grid %s",foo);
-	free(foo);
+	if (Dim_count(in->dim)>1) {
+		char *foo = Dim_to_s(in->dim);
+		whine("Grid %s: %s",foo);
+		FREE(foo);
+	}
 	return true;
 }
 
@@ -627,8 +637,7 @@ METHOD(GridPrint,init) {
 	int v[ac-1];
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)GridDim_0_begin,
-		(GridFlow)GridDim_0_flow);
+		(GridBegin)GridDim_0_begin, (GridFlow)GridDim_0_flow, 0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
@@ -662,7 +671,7 @@ void startup_grid_basic (void) {
 //	fts_class_install(fts_new_symbol("@outer"),       GridOuter_class_init);
 //	fts_class_install(fts_new_symbol("@convolve"), GridConvolve_class_init);
 //	fts_class_install(fts_new_symbol("@vec"),           GridVec_class_init);
-//	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
 //	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
 	fts_class_install(fts_new_symbol("@dim"),           GridDim_class_init);
+	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
 }

@@ -118,7 +118,7 @@ METHOD(VideoInFile,bang) {
 		}
 		n -= bs;
 		GridOutlet_send($->out[0],bs,data);
-		free(data);
+		FREE(data);
 	}
 	return;
 err:

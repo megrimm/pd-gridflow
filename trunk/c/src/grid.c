@@ -30,14 +30,18 @@ static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
 
 /* **************** GridInlet ************************************* */
 
-GridInlet *GridInlet_new(GridObject *parent, int winlet, GridBegin b, GridFlow f) {
+GridInlet *GridInlet_new(
+	GridObject *parent, int winlet,
+	GridBegin b, GridFlow f, GridEnd e
+) {
 	GridInlet *$ = NEW(GridInlet,1);
 	$->parent = parent;
 	$->winlet = winlet;
-	$->dim = 0;
-	$->dex = 0;
+	$->dim   = 0;
+	$->dex   = 0;
 	$->begin = b;
-	$->flow = f;
+	$->flow  = f;
+	$->end   = e;
 	return $;
 }
 
@@ -48,15 +52,6 @@ GridObject *GridInlet_parent(GridInlet *$) {
 void GridInlet_abort(GridInlet *$) {
 	if ($->dim) {
 		whine("%s:i%d: aborting grid: %d of %d", INFO($),
-			$->dex, Dim_prod($->dim));
-	}
-	$->dim = 0;
-	$->dex = 0;
-}
-
-void GridInlet_finish(GridInlet *$) {
-	if ($->dim && Dim_prod($->dim) != $->dex) {
-		whine("%s:i%d: finish: short end: %d of %d", INFO($),
 			$->dex, Dim_prod($->dim));
 	}
 	$->dim = 0;
@@ -78,11 +73,9 @@ int GridInlet_idle_verbose(GridInlet *$, const char *where) {
 void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	int i;
 	int *v = NEW(int,ac);
-
 	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
-
 	$->dim = Dim_new(ac,v);
-	free(v);
+	FREE(v);
 
 /*	whine("%s:i%d: grid_begin: %s",INFO($),Dim_to_s($->dim)); */
 	$->dex = 0;
@@ -101,10 +94,10 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
 	$->flow((GridObject *)$->parent,$,n,data);
-	/* insert a "finish" here? or implement GridInlet_end() ? */
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
+	whine("%s:i%d: GridInlet_end()", INFO($));
 	if (GridInlet_idle_verbose($,"end")) return;
 	if (Dim_prod($->dim) != $->dex) {
 		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
@@ -137,14 +130,17 @@ int GridOutlet_idle(GridOutlet *$) {
 
 void GridOutlet_abort(GridOutlet *$) {
 	assert($);
-	free($->dim);
+	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
+	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
 }
 
 void GridOutlet_end(GridOutlet *$) {
 	assert($);
-	free($->dim);
+	GridOutlet_flush($);
+	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
 }
@@ -181,12 +177,6 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
 	$->dex += n;
-	GridOutlet_send_direct($,n,data);
-}
-
-void GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data) {
-	assert(!GridOutlet_idle($));
-	$->dex += n;
 	if ($->bufn + n >= PACKET_LENGTH) {
 		GridOutlet_flush($);
 	}
@@ -197,7 +187,7 @@ void GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data) {
 		$->bufn += n;
 	}
 	if ($->dex >= Dim_prod($->dim)) {
-		GridOutlet_flush($);
+		GridOutlet_end($);
 	}
 }
 
@@ -241,10 +231,11 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	fts_type_t int_alone[] = { fts_t_int };
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol, };
 	fts_type_t packet[] = { fts_t_symbol, fts_t_int, fts_t_ptr };
+	fts_type_t rien[] = { fts_t_symbol };
 	MethodDecl methods[] = {
 		{winlet,sym_grid_begin,METHOD_PTR(GridObject,grid_begin),ARRAY(int_dims),-1},
 		{winlet,sym_grid_flow, METHOD_PTR(GridObject,grid_flow), ARRAY(packet),-1},
-		{winlet,sym_grid_end,  METHOD_PTR(GridObject,grid_end),  0,0,0},
+		{winlet,sym_grid_end,  METHOD_PTR(GridObject,grid_end), ARRAY(rien),-1},
 	};
 	int i;
 	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;

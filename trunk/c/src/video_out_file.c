@@ -88,7 +88,7 @@ METHOD(VideoOutFile,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)VideoOutFile_0_begin, (GridFlow)VideoOutFile_0_flow);
+		(GridBegin)VideoOutFile_0_begin, (GridFlow)VideoOutFile_0_flow, 0);
 }
 
 static void VideoOutFile_p_close(VideoOutFile *$) {
