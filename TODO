@@ -5,14 +5,12 @@
 "7" is planned for 0.7
 
 Distribution (0.5.0)
-[5] prepare gridflow-images-0.5
 [5] upload on both web sites
 [5] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
-[5] review all documentation
-[5] review all patches
-[5] after all, gridflow-images-0.5 is a good idea
 
 Distribution (0.6.0)
+[6] review all documentation
+[6] review all patches
 
 Installation
 [6] de-jmax-ify the build process; installable doc; installable includes

@@ -6,6 +6,7 @@ all::
 
 clean::
 	(cd src; $(MAKE) clean)
+	(cd src; $(MAKE) clean-standalone)
 
 standalone::
 	(cd src; $(MAKE) standalone)
