@@ -119,7 +119,13 @@ end
 class FObject
 	attr_writer :args # String
 	attr_reader :outlets
-	def args; @args || "[#{self.class} ...]"; end
+	def args
+		if defined? @args
+			@args
+		else
+			"[#{self.class} ...]"
+		end
+	end
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets[outlet] ||= []
@@ -342,10 +348,8 @@ class GridCheckers < GridObject
 		(0..@chain.length-2).each {|i| @chain[i].connect 0,@chain[i+1],0 }
 		@chain[-1].connect 0,self,1
 	end
-	def _0_grid_begin(*a) @chain[0]._0_grid_begin *a; end
-	def _0_grid_end  (*a) @chain[0]._0_grid_end   *a; end
-	def _1_grid_begin(*a) send_out 0, :grid_begin, *a; end
-	def _1_grid_end  (*a) send_out 0, :grid_end, *a; end
+	def _0_grid(*a) @chain[0]._0_grid *a; end
+	def _1_grid(*a) send_out 0, :grid, *a; end
 	install "@checkers", 1, 1
 end
 
@@ -377,6 +381,41 @@ class GridGlobal
 		}
 		GridFlow.post "-"*32
 	end
+end
+
+class FPS < GridObject
+	def initialize(detailed=false)
+		@history = []   # list of delays between incoming messages
+		@last = 0.0     # when was last time
+		@duration = 0.0 # how much delay since last summary
+		@period = 1     # minimum delay between summaries
+		@detailed = !!detailed
+	end
+	def method_missing(*)
+		t = Time.new.to_f
+		@history.push t-@last
+		@duration += t-@last
+		@last = t
+		return if @duration<@period
+		n=@history.length
+		fps = n/@duration
+		@duration = 0
+		GridFlow.post "n=%d", n
+		if fps>.001 then
+			if @detailed
+				@history.sort!
+
+				send_out 0, fps, 1000/fps,
+					1000*@history.min,
+					500*(@history[n/2]+@history[(n+1)/2]),
+					1000*@history.max
+			else
+				send_out 0, fps
+			end
+		end
+		@history.clear
+	end
+	install "fps", 1, 1
 end
 
 #class RtMetro < GridFlow::FObject

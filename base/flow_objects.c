@@ -844,8 +844,8 @@ GRID_END(GridConvolve,0) {
 	Pt<Number> cp = c.as_int32();
 
 	/* finishing building c from a */
-	COPY(cp                         ,cp+da->get(0)*ll,margy*ll);
-	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,  margy*ll);
+	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
+	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,     margy*ll);
 
 	/* the real stuff */
 
@@ -1006,7 +1006,7 @@ GRID_FLOW(GridDim,0) {}
 GRID_END(GridDim,0) {}
 
 GRCLASS(GridDim,"@dim",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridDim,0,4)))
+LIST(GRINLET(GridDim,0,0)))
 
 /* **************************************************************** */
 
@@ -1253,6 +1253,36 @@ LIST(GRINLET(GridDownscaleBy,0,4)),
 
 /* **************************************************************** */
 
+struct GridJoin : GridObject {
+	Grid r;
+	int which_dim;
+	GRINLET3(0);
+	GRINLET3(1);
+	DECL3(init);
+};
+
+GRID_BEGIN(GridJoin,0) {
+}
+
+GRID_FLOW(GridJoin,0) {
+}
+
+GRID_END(GridJoin,0) { out[0]->end(); }
+
+GRID_INPUT(GridJoin,1,r) {}
+
+METHOD3(GridJoin,init) {
+	which_dim = argc<1 ? -1 : INT(argv[0]);
+	r.init_from_ruby(argv[1]);
+	return Qnil;
+}
+
+GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
+LIST(GRINLET(GridJoin,0,4),GRINLET(GridJoin,1,4)),
+	DECL(GridJoin,init))
+
+/* **************************************************************** */
+
 struct GridLayer : GridObject {
 	Grid r;
 	GridLayer() {
@@ -1297,6 +1327,27 @@ LIST(GRINLET(GridLayer,0,4),GRINLET(GridLayer,1,4)),
 	DECL(GridLayer,init))
 
 /* **************************************************************** */
+
+struct GridFinished : GridObject {
+	GRINLET3(0);
+	DECL3(init);
+};
+
+GRID_BEGIN(GridFinished,0) {}
+GRID_FLOW(GridFinished,0) { RAISE("BLAH"); }
+GRID_END(GridFinished,0) {
+	Ruby a[] = { INT2NUM(0), sym_bang };
+	FObject_send_out(COUNT(a),a,peer);
+}
+
+METHOD3(GridFinished,init) {
+	rb_call_super(argc,argv);
+	return Qnil;
+}
+
+GRCLASS(GridFinished,"@finished",inlets:1,outlets:1,startup:0,
+LIST(GRINLET(GridFinished,0,0)),
+	DECL(GridFinished,init))
 
 /* **************************************************************** */
 /*
@@ -1577,6 +1628,7 @@ void startup_flow_objects () {
 	INSTALL(GridScaleBy);
 	INSTALL(GridDownscaleBy);
 	INSTALL(GridLayer);
+	INSTALL(GridFinished);
 //	INSTALL(GridPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */

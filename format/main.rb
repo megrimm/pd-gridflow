@@ -119,6 +119,14 @@ module GridIO
 
 	attr_reader :format
 
+	def _0_open(sym,*a)
+		qlass = GridFlow.formats[sym]
+		if not qlass then raise "unknown file format identifier: #{sym}" end
+		@format.close if @format
+		@format = qlass.new @mode, *a
+		@format.connect 0,self,1
+	end
+
 	def _0_option(*a)
 		check_file_open
 		case a[0]
@@ -134,6 +142,12 @@ module GridIO
 		@format.close
 		@format = nil
 	end
+
+	def delete
+		@format.close if @format
+		@format = nil
+		super
+	end
 end
 
 class GridIn < GridObject
@@ -145,47 +159,21 @@ class GridIn < GridObject
 		@timelog = false
 		@framecount = 0
 		@time = Time.new
+		@mode = :in
 		return if a.length==0
 		_0_open(*a)
 	end
 
-	def _0_open(sym,*a)
-		p [sym,*a]
-		qlass = GridFlow.formats[sym]
-		if not qlass then raise "unknown file format identifier: #{sym}" end
-		@format.close if @format
-		@format = qlass.new :in, *a
-		@format.connect 0,self,1
-	end
+	def _0_bang;      check_file_open;                     @format.frame end
+	def _0_int frame; check_file_open; @format.seek frame; @format.frame end
+	def _0_reset;     check_file_open; @format.seek 0 end
 
-	def delete
-		@format.close if @format
-		@format = nil
-		super
+	def _1_grid(*a)
+		send_out 0,:grid,*a
 	end
-
-	def _0_bang
-		check_file_open
-		@format.frame
-	end
-
-	def _0_int frame
-		check_file_open
-		@format.seek frame
-		@format.frame
-	end
-
-	def _0_reset
-		check_file_open
-		@format.seek 0
-	end
-
-	def _1_grid_begin(*a); send_out 0,:grid_begin,*a end
-	def _1_grid_flow (*a); send_out 0,:grid_flow, *a end
-	def _1_grid_end  (*a); send_out 0,:grid_end,  *a end
 
 	install_rgrid 0
-	install "@in", 1, 1
+	install "@in", 3, 1
 end
 
 class GridOut < GridObject
@@ -197,6 +185,7 @@ class GridOut < GridObject
 		@timelog = false
 		@framecount = 0
 		@time = Time.new
+		@mode = :out
 		return if a.length==0
 		if Integer===a[0] or Float===a[0]
 			_0_open :x11,:here
@@ -206,33 +195,23 @@ class GridOut < GridObject
 		end
 	end
 
-	def _0_open(sym,*a)
-		qlass = GridFlow.formats[sym]
-		if not qlass then raise "unknown file format identifier: #{sym}" end
-		@format.close if @format
-		@format = qlass.new :out, *a
-		@format.connect 0,self,1
+	def _0_list(*a)
+		@format._0_list(*a)
 	end
 
-	def _0_list      (*a); @format._0_list(      *a) end
-	def _0_grid_begin(*a); @format._0_grid_begin(*a) end
-	def _0_grid_flow (*a); @format._0_grid_flow( *a) end
-	def _0_grid_end  (*a); @format._0_grid_end(  *a)
+	def _0_grid(*a)
+		@format._0_grid(*a)
 		send_out 0,:bang
-		if @timelog
-			time = Time.new
-			GridFlow.post(
-				"@out: frame#%04d time: %10.3f s; diff: %5d ms",
-				@framecount, time, ((time-@time)*1000).to_i)
-			@time = time
-		end
+		log if @timelog
 		@framecount+=1
 	end
 
-	def delete
-		@format.close if @format
-		@format = nil
-		super
+	def log
+		time = Time.new
+		GridFlow.post(
+			"@out: frame#%04d time: %10.3f s; diff: %5d ms",
+			@framecount, time, ((time-@time)*1000).to_i)
+		@time = time
 	end
 
 	install_rgrid 0
@@ -659,12 +638,13 @@ targa header is like:
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
-		GridFlow.post "tga: comment: \"#{comment}\""
+#		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
+#		GridFlow.post "tga: comment: \"#{comment}\""
 
 		@bp = case depth
 		when 24
-			BitPacking.new(ENDIAN_BIG,3,[0x0000ff,0x00ff00,0xff0000])
+			# endian here doesn't seem to be changing much ?
+			BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
 		when 32
 #			BitPacking.new(ENDIAN_BIG,4,
 			BitPacking.new(ENDIAN_LITTLE,4,

@@ -190,6 +190,10 @@ void GridInlet::begin(int argc, Ruby *argv) {
 void GridInlet::flow(int argc, Ruby *argv) {
 	int n = NUM2INT(argv[0]);
 	int mode = NUM2INT(argv[2]);
+	if (gh->mode==0) {
+		dex += n;
+		return; /* ignore data */
+	}
 	if (n==0) return;
 	Pt<Number> data = Pt<Number>(FIX2PTR(Number,argv[1]),n);
 	if (!is_busy_verbose("flow")) return;

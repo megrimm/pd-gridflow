@@ -2,7 +2,7 @@
 
 require "gridflow"
 include GridFlow
-GridFlow.verbose=true
+#GridFlow.verbose=true
 
 $imdir = "./images"
 $animdir = "/opt/mex"
@@ -404,9 +404,16 @@ def test_layer
 	gfor.connect 0,gche,0
 	gche.connect 0,gove,1
 	gove.connect 0,gout,0
+
 	gfor.send_in 0
-	gin.send_in 0
-	$mainloop.loop
+
+	fps = FObject["fps detailed"]
+	pr = FObject["rubyprint"]
+	gout.connect 0,fps,0
+	fps.connect 0,pr,0
+
+	loop{gin.send_in 0}
+#	$mainloop.loop
 end
 
 def test_formats
