@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.6.2 (head):
+version 0.6.2 (2002.09.17):
 
  * jMax objects written in (or using) Ruby now can work in PureData too.
  * new format: SDL (portable output to window)
@@ -17,6 +17,7 @@ version 0.6.2 (head):
 	[@for ( 0 0 ) ( 240 320 ) ( 1 1 )] with all those spaces
  * @inner,@inner2,@convolve can take right inlet grid as 4th argument
  * re-enabled and improved the memory leak detector (use --debug)
+ * fixed many bugs and leaks
  * fixed bugs in @store
  * added sample: zoom.pd
 
