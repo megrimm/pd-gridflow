@@ -265,7 +265,7 @@ Feature.new {
 	tag :gcc3
 	name "GNU C++ Compiler 3"
 	test proc {
-		pi=File.popen "gcc -v 2>&1", "r"
+		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
 		version = $1
 		pi.close
@@ -799,7 +799,6 @@ CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
 CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
 
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
-$CFLAGS += " -falign-functions=4"
 
 #--------------------------------#
 
@@ -910,11 +909,13 @@ end
 $conf[:LDSOFLAGS].uniq!
 $conf[:BRIDGE_LDFLAGS].uniq!
 
-if not $conf[:FEATURES][:gcc3]
-  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
-  puts "(you might use --force-gcc3 to pretend at your own risk)"
-  exit 1
-end
+$CFLAGS += " -falign-functions=4" if $conf[:FEATURES][:gcc3]
+
+#if not $conf[:FEATURES][:gcc3]
+#  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
+#  puts "(you might use --force-gcc3 to pretend at your own risk)"
+#  exit 1
+#end
 
 #--------------------------------#
 
