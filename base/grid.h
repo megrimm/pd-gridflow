@@ -237,12 +237,6 @@ typedef struct MethodDecl {
 void define_many_methods(Ruby/*Class*/ rself, int n, MethodDecl *methods);
 
 /* **************************************************************** */
-
-/*
-  what kind of number a Grid contains.
-*/
-typedef long Number;
-
 /*
   hook into pointer manipulation.
   will help find memory corruption bugs.
@@ -498,6 +492,9 @@ struct Grid {
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
 
+/* what kind of number a Grid contains. */
+typedef int32 Number;
+
 /* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
 	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<int32>data); \
@@ -522,7 +519,7 @@ struct Grid {
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
-		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
+		_member_.init(in->dim->dup(),int32_type_i); } \
 	GRID_FLOW { \
 		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
 	GRID_FINISH
@@ -616,7 +613,8 @@ struct GridOutlet {
 /* methods */
 	GridOutlet(GridObject *parent, int woutlet);
 	~GridOutlet();
-	bool is_busy();
+	bool is_busy() { return !!dim; }
+
 	void begin(Dim *dim);
 	void abort();
 	/* give: data must be dynamic. it should not be used by the caller
@@ -628,10 +626,15 @@ struct GridOutlet {
 	   unbuffered mode, flush() must be called */
 	void send(int n, Pt<uint8>data);
 	void send(int n, Pt<int32>data);
-	void send_direct(int n, Pt<int32>data);
-	void flush();
-	void end();
+	void flush() { send_direct(bufn,buf); bufn = 0; }
 	void callback(GridInlet *in);
+private:
+	void send_direct(int n, Pt<int32>data);
+	void end() {
+		flush();
+		for (int i=0; i<ninlets; i++) inlets[i]->end();
+		delete dim; dim = 0; dex = 0;
+	}
 };
 
 /* **************************************************************** */
@@ -679,7 +682,7 @@ struct GridObject : FObject {
 	DECL3(del);
 	DECL3(send_out_grid_begin);
 	DECL3(send_out_grid_flow);
-	DECL3(send_out_grid_end);
+	DECL3(send_out_grid_abort);
 };
 
 typedef struct GridObject Format;

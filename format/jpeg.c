@@ -96,7 +96,6 @@ METHOD3(FormatJPEG,frame) {
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);
-	o->end();
 	return Qnil;
 }
 

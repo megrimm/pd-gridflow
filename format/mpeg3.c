@@ -68,7 +68,6 @@ METHOD3(FormatMPEG3,frame) {
 	}
 
 	delete[] (uint8 *)buf;
-	o->end();
 	return Qnil;
 }
 

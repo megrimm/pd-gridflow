@@ -62,7 +62,6 @@ METHOD3(FormatMPEG,frame) {
 		o->send(bs,b2);
 	}
 	delete[] buf;
-	o->end();
 	return Qnil;
 }
 

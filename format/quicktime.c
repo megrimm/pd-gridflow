@@ -69,7 +69,6 @@ METHOD3(FormatQuickTime,frame) {
 	}
 
 	delete[] (Number *)buf;
-	o->end();
 	return Qnil;
 }
 

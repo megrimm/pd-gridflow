@@ -213,8 +213,6 @@ METHOD3(FormatX11,frame) {
 		bit_packing->unpack(sx,b1,b2);
 		out[0]->send(bs,b2);
 	}
-
-	out[0]->end();
 	return Qnil;
 }
 
@@ -290,7 +288,7 @@ top:
 			display,visual,depth,ZPixmap,0,(int8 *)image,sx,sy,8,0);
 	}
 	int status = XInitImage(ximage);
-	gfpost("XInitImage returned: %d", status);
+	if (status!=1) gfpost("XInitImage returned: %d", status);
 	return true;
 }
 
@@ -333,7 +331,7 @@ void FormatX11::resize_window (int sx, int sy) {
 /*	set_wm_hints(sx,sy); */
 
 	imagegc = XCreateGC(display, window, 0, NULL);
-	gfpost("is_owner: %d\n", is_owner);
+	//gfpost("is_owner: %d\n", is_owner);
 	if (is_owner) {
 		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask |

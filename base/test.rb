@@ -12,17 +12,18 @@ $port = 4200+rand(100)
 def pressakey; puts "press return to continue."; readline; end
 
 class Expect < FObject
-	def expect(v)
+	def expect(*v)
 		@count=0
 		@v=v
 		@expecting=true
 		yield
 		@expecting=false
-		raise "wrong number of messages (#{@count})" if @count!=1
+		raise "wrong number of messages (#{@count})" if @count!=@v.length
 	end
 	def _0_list(*l)
 		return if not @expecting
-		raise "got #{l.inspect} expecting #{@v.inspect}" if @v!=l
+		raise "wrong number of messages (#{@count})" if @count==@v.length
+		raise "got #{l.inspect} expecting #{@v.inspect}" if @v[@count]!=l
 		@count+=1
 	end
 	def method_missing(s,*a)
@@ -136,6 +137,9 @@ def test_math
 	(a = FObject["@import {4}"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
 		[2,3,5,7].each {|v| a.send_in 0,v }}
+	x.expect([1,2,3],[4,5,6],[7,8,9]) {
+		a.send_in 1, :list, 3
+		a.send_in 0, :list, *(1..9).to_a}
 
 	for o in ["@store", "@store uint8"]
 		(a = FObject[o]).connect 0,e,0
@@ -418,10 +422,11 @@ end
 
 def test_formats
 	gin = FObject["@in"]
-	gs = FObject["@downscale_by {3 2} smoothly"]
+	gs = FObject["@downscale_by {2 2} smoothly"]
 	gout = FObject["@out x11"]
 	gin.connect 0,gs,0
 	gs.connect 0,gout,0
+	GridFlow.verbose=false
 	[
 		"jpeg file #{$imdir}/ruby0216.jpg",
 		"ppm file #{$imdir}/g001.ppm",
@@ -431,8 +436,13 @@ def test_formats
 #		"targa file #{$imdir}/tux.tga",
 	].each {|command|
 		gin.send_in 0,"open #{command}"
-		2.times { gin.send_in 0 } # test for load, rewind, load
-		STDIN.readline
+		# test for load, rewind, load
+		t0 = Time.new
+		10.times {gin.send_in 0}
+		t1 = Time.new - t0
+		p t1
+		sleep 1
+#		STDIN.readline
 	}
 	
 #	gin.delete

@@ -109,7 +109,7 @@ class Format #< GridObject
 
 	# "ideal" buffer size or something
 	# the buffer may be bigger than this but usually not by much.
-	BufferSize = 16384
+	def self.buffersize; 16384 end
 
 	def option(name,*args)
 		case name
@@ -480,8 +480,6 @@ class FormatGrid < Format; include EventIO
 		if @prod > GridFlow.max_size
 			raise "dimension list: invalid prod (#{@prod})"
 		end
-		p @dim
-		p self.class.instance_variables
 		send_out_grid_begin 0, @dim
 
 		on_read(bufsize) {|data| frame3 data }
@@ -510,7 +508,6 @@ class FormatGrid < Format; include EventIO
 			@dex += data.length/4
 		end
 		if @dex == @prod
-			send_out_grid_end 0
 			$tasks.delete self
 		else
 			on_read(bufsize) {|data| frame3 data }
@@ -583,11 +580,30 @@ class FormatGrid < Format; include EventIO
 	install_format "FormatPPM", 1, 1, FF_R|FF_W, "grid", "GridFlow file format"
 end
 
-class FormatPPM < Format; include EventIO
+module PPMandTarga
+	def frame_read_body height, width, channels
+		bs = width*channels
+		n = bs*height
+		bs = (self.class.buffersize/bs)*bs+bs # smallest multiple of bs over BufferSize
+		buf = ""
+#		if VERSION >= "1.8.0"
+#		else
+			nothing = ""
+			while n>0 do
+				bs=n if bs>n
+				data = @stream.read(bs) or raise EOFError
+				send_out_grid_flow 0, @bp.unpack(data,buf)
+	#			data.replace nothing # prevent clogging memory
+				n-=bs
+			end
+#		end
+	end
+end
+
+class FormatPPM < Format; include EventIO, PPMandTarga
 	def initialize(mode,source,*args)
 		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		super
-		GridFlow.post "%s", [mode,source,*args].inspect
 		raw_open mode,source,*args
 	end
 
@@ -607,20 +623,7 @@ class FormatPPM < Format; include EventIO
 			raise "Wrong color depth (max_value=#{metrics[2]} instead of 255)"
 
 		send_out_grid_begin 0, [metrics[1], metrics[0], 3]
-
-		bs = metrics[0]*3
-		n = bs*metrics[1]
-		bs = (BufferSize/bs)*bs+bs # smallest multiple of bs over BufferSize
-		buf = ""
-		nothing = ""
-		while n>0 do
-			bs=n if bs>n
-			data = @stream.read(bs) or raise EOFError
-			send_out_grid_flow 0, @bp.unpack(data,buf)
-			data.replace nothing # prevent clogging memory
-			n-=bs
-		end
-		send_out_grid_end 0
+		frame_read_body metrics[1], metrics[0], 3
 	end
 
 	def _0_rgrid_begin
@@ -643,7 +646,7 @@ class FormatPPM < Format; include EventIO
 	install_format "FormatGrid", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap"
 end
 
-class FormatTarga < Format; include EventIO
+class FormatTarga < Format; include EventIO, PPMandTarga
 
 =begin
 targa header is like:
@@ -691,21 +694,7 @@ targa header is like:
 
 		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ]
-
-		bs = w*depth/8
-
-		n = bs*h
-		bs = (BufferSize/bs)*bs+bs # smallest multiple of bs over BufferSize
-		buf = ""
-		nothing = ""
-		while n>0 do
-			bs=n if bs>n
-			data = @stream.read(bs) or raise EOFError
-			send_out_grid_flow 0, @bp.unpack(data,buf)
-			data.replace nothing # prevent clogging memory
-			n-=bs
-		end
-		send_out_grid_end 0
+		frame_read_body h, w, depth/8
 	end
 
 	def _0_rgrid_begin
