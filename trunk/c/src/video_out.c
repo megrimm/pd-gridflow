@@ -199,7 +199,7 @@ void display_init(VideoDisplay *$) {
 	#endif
 
 	display_set_alarm($);
-err:
+err:;
 }
 
 /* ---------------------------------------------------------------- */
@@ -236,7 +236,7 @@ GRID_FLOW(VideoOut,0) {
 
 		int size = linesize - $->bufn;
 		if (size > n) size = n;
-		memcpy(&$->buf[$->bufn],data,sizeof(int)*size);
+		memcpy(&$->buf[$->bufn],data,size*sizeof(Number));
 		$->bufn += size;
 		data += size;
 		n -= size;
@@ -337,11 +337,11 @@ METHOD(VideoOut,init) {
 	} else {
 	#endif
 		/* this buffer may be too big, but at least it won't be too small */
-		$->image = calloc(
+		$->image = (uint8 *)calloc(
 			Dim_get($->dim,1) * Dim_get($->dim,0), sizeof(int));
 
 		$->ximage = XCreateImage(d->display, d->visual,
-			d->depth, ZPixmap, 0, $->image,
+			d->depth, ZPixmap, 0, (int8 *) $->image,
 			Dim_get($->dim,1), Dim_get($->dim,0),
 			8, 0);
 
@@ -391,7 +391,7 @@ METHOD(VideoOut,init) {
 	}
 
 	BitPacking_whine($->bit_packing);
-err:
+err:;
 }
 
 METHOD(VideoOut,delete) {

@@ -24,6 +24,16 @@
 #define __GRID_PROTOCOL_H
 
 #include <pthread.h>
+
+#ifdef __cplusplus
+extern "C" {
+#define      new q_new
+#define     this q_this
+#define    class q_class
+#define operator q_operator
+#define template q_template
+#endif
+
 #include "config.h"
 #include "macros.h"
 
@@ -60,11 +70,13 @@ void qfree(void *data); /*0xfadedf00*/
 static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
 
 /*
-  integer powers. (most useful values of b are 2 and 3)
+  integer powers.
+  very bad algorithm, but still avoids using floats.
+  (most useful values of b are 2 and 3)
 */
 static inline int ipow(int a, int b) {
 	int r=1;
-	if (b>10) return floor(pow(a,b));
+	if (b>10) return (int)(0+floor(pow(a,b)));
 	while(b-->0) r *= a;
 	return r;
 }	
@@ -73,7 +85,7 @@ static inline int ipow(int a, int b) {
 #undef max
 static inline int min(int a, int b) { return a<b?a:b; }
 static inline int max(int a, int b) { return a>b?a:b; }
-
+static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 /* **************************************************************** */
 /* jMax specific */
 
@@ -138,7 +150,7 @@ DECL_SYM(grid_end)
 #define MAX_DIMENSIONS 4
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
-#define MAX_INLETS 2
+#define MAX_INLETS 4
 #define MAX_OUTLETS 2
 
 /*
@@ -148,7 +160,9 @@ DECL_SYM(grid_end)
 */
 typedef long Number;
 
+#ifndef __cplusplus
 typedef enum { false, true } bool;
+#endif
 
 /* number of (maximum,ideal) Numbers to send at once */
 #define PACKET_LENGTH (1*1024)
@@ -425,5 +439,9 @@ struct FileFormat {
 extern FileFormatClass FILE_FORMAT_LIST( );
 extern FileFormatClass *file_format_classes[];
 FileFormatClass *FileFormatClass_find(const char *name);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* __GRID_PROTOCOL_H */

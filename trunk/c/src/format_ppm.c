@@ -151,6 +151,6 @@ err:
 }
 
 FileFormatClass FormatPPM = {
-	"ppm", "Portable PixMap", 0,
+	"ppm", "Portable PixMap", (FileFormatFlags)0,
 	FormatPPM_open, 0, 0,
 };

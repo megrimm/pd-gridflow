@@ -291,10 +291,12 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	if (WIOCTL($->stream_raw, VIDIOCSYNC,     &vmmap)) goto err2;
 
 	/* success goes here */
+	/* something wrong, missing sizeof(sometype) */
+/*	memcpy($->stuff,buffer,$->left * BitPacking_bytes($->bit_packing)); */
 	memcpy($->stuff,buffer,$->left);
 
 err2:
-	munmap (buffer, vmbuf.size);
+	munmap(buffer, vmbuf.size);
 err1:
 	return $->dim;
 }
@@ -462,7 +464,7 @@ err:
 }
 
 FileFormatClass FormatVideoDev = {
-	"videodev", "Video4linux 1.x", 0,
+	"videodev", "Video4linux 1.x", (FileFormatFlags)0,
 	FormatVideoDev_open, 0, 0,
 };
 

@@ -31,7 +31,7 @@
 		while (n--) { Number a = *as; *as++ = _expr_; } }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
-DEF_OP1(sqrt, floor(sqrt(a)))
+DEF_OP1(sqrt, (Number)(0+floor(sqrt(a))))
 /*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
 DEF_OP1(rand, a==0 ? 0 : random()%a)
 
@@ -80,10 +80,10 @@ DEF_OP2(shr, a>>b)
 DEF_OP2(sc_and, a ? b : a)
 DEF_OP2(sc_or,  a ? a : b)
 
-DEF_OP2(min, a<b?a:b)
-DEF_OP2(max, a>b?a:b)
+DEF_OP2(min, min(a,b))
+DEF_OP2(max, max(a,b))
 
-DEF_OP2(cmp, a < 0 ? -1 : a > 0)
+DEF_OP2(cmp, cmp(a,b))
 DEF_OP2(eq,  a == b)
 DEF_OP2(ne,  a != b)
 DEF_OP2(gt,  a >  b)
@@ -91,11 +91,11 @@ DEF_OP2(le,  a <= b)
 DEF_OP2(lt,  a <  b)
 DEF_OP2(ge,  a >= b)
 
-DEF_OP2(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
-DEF_OP2(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
+DEF_OP2(sin, (Number)(b * sin(a * 2 * M_PI / 36000)))
+DEF_OP2(cos, (Number)(b * cos(a * 2 * M_PI / 36000)))
 DEF_OP2(pow, ipow(a,b))
 
-DEF_OP2(gamma, floor(pow(a/256.0,b/256.0)*256.0))
+DEF_OP2(gamma, b<=0 ? 0 : (Number)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 
 #define DECL_OP2(_name_,_sym_) \
 	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
