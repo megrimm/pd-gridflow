@@ -78,15 +78,14 @@
 			text="[@video_out 240 320]"
 		/>
 
-		Each @video_out object creates a window when it is created.
-		It is constructed with two parameters. If you want to create
-		a window that is 240 pixels high and 320 pixels wide:
-		@video_out 240 320. @video_out will use three channels in RGB
-		with values ranging 0-255.
-
 		<method name="init">
 			<arg name="rows" type="integer"/>
 			<arg name="columns" type="integer"/>
+			Each @video_out object creates a window when it is created.
+			It is constructed with two parameters. If you want to create
+			a window that is 240 pixels high and 320 pixels wide:
+			@video_out 240 320. @video_out will use three channels in RGB
+			with values ranging 0-255.
 		</method>
 		
 		<inlet id="0">
@@ -517,7 +516,7 @@ doing redundant updates -- sorry)</p>
 </section>
 
 <section name="Binary Operators">
-	<p>where A is the left value, and B is the right value.</p>
+	<prose><p>where A is the left value, and B is the right value.</p></prose>
 
 	<!-- todo: text attr in those icons could be auto-generated -->
 

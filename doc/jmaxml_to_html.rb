@@ -90,11 +90,42 @@ class XNode
 			print "<tr><td colspan='4'>"
 			print "<h5><a name='#{name}'></a>#{name}</h5>"
 			print "</td></tr>"
-			print "<tr><td></td><td></td><td>"
-		when "icon", "sample"
+			print "<tr><td></td><td valign='top'><br>"
+			icon   = contents.find {|x| XNode===x and x.tag == 'icon'   }
+			sample = contents.find {|x| XNode===x and x.tag == 'sample' }
+			if icon
+				print "<img src='#{icon.att['image']}'>"
+			end
+			print "<br clear='left'><br><br>"
+			if sample
+				big = sample.att['image']
+				small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
+				print "<a href='#{big}'>"
+				print "<img src='#{small}' border='0'>"
+				print "</a>"
+			end
+			print "</td><td>"
+		when "method"
+			print "<br>"
+			print "<b>", $portnum.join(" "), "</b> " if $portnum
+			print "<b>method</b> #{att['name']} <b>(</b>"
+			args = contents.find_all {|x| XNode===x and x.tag == 'arg' }
+			print args.map {|x| x.att['name'] }.join "<b>,</b>"
+			print "<b>)</b>"
+			e="<br><br>"
+		when "grid"
+			print "<br><b>grid</b> "
+			e="<br><br>"
+		when "dim"
+			print "<b>dim(</b>"
+			e="<b>)</b>"
+		when "inlet", "outlet"
+			# hidden
+			$portnum = [tag,att['id']]
+		when "icon", "sample", "arg"
 			# hidden
 			return
-		when "method", "arg", "inlet", "grid", "dim", "outlet"
+		when "grid", "dim"
 			print "[#{tag}]"; e="[/#{tag}]"
 		when "operator_1", "operator_2", "format"
 			$section[:table] ||= (
@@ -120,6 +151,8 @@ class XNode
 		when "section"
 			print "</table>" if $section[:table]
 			$section=nil
+		when "inlet", "outlet"
+			$portnum = nil
 		end
 	end
 end
