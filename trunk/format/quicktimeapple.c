@@ -338,10 +338,13 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 } GRID_END
 
 \classinfo {
-	IEVAL(rself,"install 'FormatQuickTimeCamera',1,1;"
-	"conf_format 4,'quicktimecamera','Apple Quicktime (using Apple\\'s)','mov'"
-	);
-}
+	IEVAL(rself,
+\ruby
+    install '#in:quicktimecamera',1,1
+    @comment="Apple Quicktime (CAMERA MODULE)"
+    @flags=4
+\end ruby
+);}
 \end class FormatQuickTimeCamera
 
 \class FormatQuickTimeApple < Format
@@ -489,11 +492,6 @@ IEVAL(rself,
   def self.new(mode,source,filename)
     if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
   end
-  FormatQuickTimeCamera.instance_eval{
-    install '#in:quicktime_camera',1,1
-    @comment="Apple Quicktime (using Apple's) (CAMERA MODULE)"
-    @flags=4
-  }
 \end ruby
 );}
 \end class FormatQuickTimeApple
