@@ -117,6 +117,11 @@ static sigjmp_buf rescue_segfault;
 static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
 static VALUE *localize_sysstack () {
+	/* that's good enough for both Linux and OSX */
+	return (VALUE *) 0xBFFFFFFC;
+	/* the following is a bit risky... well, not so much, but
+	   there's interference with gdb/osx and this trick, and such.
+	*//*
 	// get any stack address
 	volatile long * volatile bp = (volatile long *)&bp;
 	//sighandler_t old = signal(11,trap_segfault); // g++-2.95 doesn't take it
@@ -132,6 +137,7 @@ static VALUE *localize_sysstack () {
 	signal(SIGBUS, SIG_DFL); // because i've had problems with segfaults being ignored.(!?)
 	//fprintf(stderr,"new = %08lx\n",(uint32)(bp+STACK_GROW_DIRECTION));
 	return (VALUE *)(bp+STACK_GROW_DIRECTION);
+	*/
 }
 
 #endif /* __BRIDGE_C */
