@@ -78,7 +78,6 @@ GRID_INLET(FormatJPEG,0) {
 } GRID_END
 
 \def Ruby frame () {
-	GridOutlet *o = out[0];
 	if (feof(f)) return Qfalse;
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
@@ -86,14 +85,14 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_read_header(&djpeg,TRUE);
 	int sx = djpeg.image_width, sy = djpeg.image_height;
 	int32 v[] = { sy, sx, 3 };
-	o->begin(new Dim(3,v),
+	out[0]->begin(new Dim(3,v),
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*3];
 	uint8 *rows[1] = { row };
 	for (int n=0; n<sy; n++) {
 		jpeg_read_scanlines(&djpeg,rows,1);
-		o->send(sx*3,Pt<uint8>(row,sx*3));
+		out[0]->send(sx*3,Pt<uint8>(row,sx*3));
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);
@@ -106,7 +105,6 @@ GRID_INLET(FormatJPEG,0) {
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: jpeg file <filename>");
-	if (mode!=SYM(in) && mode!=SYM(out)) RAISE("AAARGH!");
 	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
 	OpenFile *foo;
 	GetOpenFile(rb_ivar_get(rself,SI(@stream)),foo);

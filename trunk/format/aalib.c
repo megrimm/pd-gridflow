@@ -37,10 +37,11 @@ AAAttr;
 \class FormatAALib < Format
 struct FormatAALib : Format {
 	aa_context *context;
-//	aa_hardwareparams *hparams;
 	aa_renderparams *rparams;
 	int autodraw; /* as for X11 */
 	bool raw_mode;
+
+	FormatAALib () : context(0), autodraw(1) {}
 
 	\decl void hidecursor ();
 	\decl void print (int y, int x, int a, Symbol text);
@@ -140,24 +141,18 @@ GRID_INLET(FormatAALib,0) {
 /* !@#$ varargs missing here */
 \def void initialize (Symbol mode, Symbol target) {
 	rb_call_super(argc,argv);
-	context = 0;
-	autodraw = 1;
-	int argc2=0;
-	char *argv2[argc2];
-/*
-	for (int i=0; i<argc2; i++)
-		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i+1],SI(to_s),0)));
+	argc-=2; argv+=2;
+	char *argv2[argc];
+	for (int i=0; i<argc; i++)
+		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
 	aa_parseoptions(0,0,&argc,argv2);
-	for (int i=0; i<argc2; i++) free(argv2[i]);
-*/
-
+	for (int i=0; i<argc; i++) free(argv2[i]);
 	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
 	Ruby driver_address = rb_hash_aref(drivers,target);
 	if (driver_address==Qnil)
 		RAISE("unknown aalib driver '%s'",rb_sym_name(target));
 	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
 	context = aa_init(driver,&aa_defparams,0);
-
 	rparams = aa_getrenderparams();
 	if (!context) RAISE("opening aalib didn't work");
 	int32 v[]={context->imgheight,context->imgwidth,1};
@@ -169,11 +164,9 @@ LIST(GRINLET2(FormatAALib,0,4)),
 \grdecl
 ){
 	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
-	const aa_driver * const *p = aa_drivers;
-	while (*p) {
-		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)),
-			PTR2FIX(*p));
-		p++;
+	const aa_driver *const *p = aa_drivers;
+	for (; *p; p++) {
+		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
 	}
 // IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
 	IEVAL(rself,"install 'FormatAALib',1,1;"

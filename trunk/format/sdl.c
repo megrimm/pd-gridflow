@@ -28,8 +28,6 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <signal.h>
-
-//#include <SDL/SDL_video.h>
 #include <SDL/SDL.h>
 
 static bool in_use = false;
@@ -89,13 +87,9 @@ GRID_FLOW {
 		if (SDL_LockSurface(screen) < 0) return; //???
 	}
 
-	while (n>0) {
-		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
+	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
 		bit_packing->pack(sx, data, pixels()+y*bypl);
-		y++;
-		data += sxc;
-		n -= sxc;
 	}
 
     if (SDL_MUSTLOCK(screen)) {
@@ -112,13 +106,15 @@ GRID_END
 
 \def void close () {
 	MainLoop_remove(this);
+	in_use=false;
 }
 
 \def void initialize (Symbol mode) {
 	rb_call_super(argc,argv);
+	if (in_use) RAISE("only one FormatSDL object at a time; sorry");
+	in_use=true;
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 		RAISE("SDL_Init() error: %s",SDL_GetError());
-//	signal(11,SIG_DFL); // leave me alone
 	atexit(SDL_Quit);
 	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
 	if (!screen)

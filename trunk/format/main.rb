@@ -214,7 +214,7 @@ module GridIO
 			if @format.respond_to? "_0_#{message[0]}" #hack
 				@format.send_in 0, :option, *message
 			elsif @format.respond_to? "#{message[0]}" #hack
-				@format.send *message
+				@format.send(*message)
 			else
 				@format.option(*message)
 			end

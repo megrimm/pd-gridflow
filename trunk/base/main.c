@@ -33,7 +33,6 @@
 #include <unistd.h>
 
 #include "grid.h"
-
 #include "../config.h"
 #include <assert.h>
 #include <limits.h>
@@ -87,9 +86,8 @@ static void FObject_mark (void *z) {
 
 static int object_count=0;
 
-static void FObject_free (void *foo) {
-	FObject *self = (FObject *)foo;
-	//gfpost("FObject_free: %08x",(int)self);
+static void Object_free (void *foo) {
+	Object *self = (Object *)foo;
 	self->check_magic();
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
@@ -97,8 +95,6 @@ static void FObject_free (void *foo) {
 	}
 	self->rself = 0; /* paranoia */
 	delete self;
-	/* a silly bug was on this line before. watch out. */
-//	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
@@ -125,27 +121,23 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 
 METHOD3(FObject,send_in) {
 	ENTER(this);
-	Ruby sym;
 
 	if (argc<1) RAISE("not enough args");
 	int inlet = INT(*argv);
 	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
 		RAISE("invalid inlet number");
 	argc--, argv++;
-
 	Ruby foo;
 	if (argc==1 && TYPE(argv[0])==T_STRING /* && argv[0] =~ / / */) {
 		foo = rb_funcall(mGridFlow,SI(parse),1,argv[0]);
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
 	}
-
+	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
-
 	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
 		/* GridFlow.post "%s",m.inspect if GridFlow.verbose */
 	}
-
 	char buf[256];
 	sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(rself,rb_intern(buf),argc,argv);
@@ -155,14 +147,13 @@ METHOD3(FObject,send_in) {
 }
 
 METHOD3(FObject,send_out) {
-	Ruby sym;
-
+	int n=0;
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
 	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
 		RAISE("invalid outlet number");
 	argc--, argv++;
-
+	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
 	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
 	if (TYPE(noutlets2)!=T_FIXNUM) {
@@ -183,19 +174,17 @@ METHOD3(FObject,send_out) {
 	ary = rb_ary_fetch(ary,outlet);
 	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
-	{
-	int n = rb_ary_len(ary);
+	n = rb_ary_len(ary);
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
-
 		Ruby argv2[argc+2];
 		for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
 		argv2[0] = INT2NUM(inl);
 		argv2[1] = sym;
 		rb_funcall2(rec,SI(send_in),argc+2,argv2);
-	}}
+	}
 end:
 	ENTER(this);
 	return Qnil;
@@ -215,11 +204,10 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	}
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	self->bself = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, self);
+	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, Object_free, self);
 	self->rself = rself;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
 	rb_funcall2(rself,SI(initialize),argc,argv);
-//	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
 	return rself;
 }
 
@@ -288,6 +276,11 @@ const char *FObject::info() {
 	return rb_str_ptr(z);
 }
 
+MethodDecl FObject_methods[] = {
+	DECL(FObject,send_out),
+	DECL(FObject,send_in),
+	\grdecl
+};
 \end class FObject
 
 /* ---------------------------------------------------------------- */
@@ -334,20 +327,10 @@ static Ruby String_swap16_f (Ruby rself) {
 	return out;
 }
 
-void BitPacking_free (void *foo) {
-	BitPacking *self = (BitPacking *)foo;
-	//gfpost("BitPacking_free: %08x",(int)self);
-	self->check_magic();
-	delete self;
-}
-
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
-	BitPacking *c_peer;
-
 	if (argc!=3) RAISE("bad args");
 	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
-
 	int endian = INT(argv[0]);
 	int bytes = INT(argv[1]);
 	Ruby *masks = rb_ary_ptr(argv[2]);
@@ -356,9 +339,9 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	if (size<1) RAISE("not enough masks");
 	if (size>4) RAISE("too many masks (%d)",size);
 	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
-	c_peer = new BitPacking(endian,bytes,size,masks2);
-	
-	Ruby rself = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
+	BitPacking *self = new BitPacking(endian,bytes,size,masks2);
+	Ruby rself = Data_Wrap_Struct(qlass, 0, Object_free, self);
+	self->rself = rself;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) */
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
@@ -385,33 +368,6 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
 }
 
-Ruby GridFlow_clock_tick (Ruby rself) {
-	return rb_float_new(gf_bridge->clock_tick);
-}
-
-Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
-	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
-	gf_bridge->clock_tick = RFLOAT(tick)->value;
-	return tick;
-}
-
-Ruby GridFlow_security_set (Ruby rself, Ruby level) {
-	int security = INT(level);
-	if (security<0 || security>4) RAISE("expecting 0..4");
-	gf_security = security;
-	return INT2NUM(gf_security);
-}
-
-Ruby GridFlow_security (Ruby rself) {
-	return INT2NUM(gf_security);
-}
-
-Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
-
-Ruby GridFlow_bridge_name (Ruby rself) {
-	return gf_bridge->name ? rb_str_new2(gf_bridge->name) : Qnil;
-}
-
 void MainLoop_add(void *data, void (*func)(void*)) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX(func));
 }
@@ -424,7 +380,7 @@ void gfpost(const char *fmt, ...) {
 	va_list args;
 	int length;
 	va_start(args,fmt);
-	const int n=2000;
+	const int n=4096;
 	char post_s[n];
 	length = vsnprintf(post_s,n,fmt,args);
 	if (length<0 || length>=n) sprintf(post_s+n-6,"[...]"); /* safety */
@@ -440,7 +396,6 @@ void gfpost(const char *fmt, ...) {
 Ruby gf_post_string (Ruby rself, Ruby s) {
 	if (TYPE(s) != T_STRING) RAISE("not a String");
 	char *p = rb_str_ptr(s);
-//	bool has_ln = p[rb_str_len(p)-1]=='\n';
 	gf_bridge->post(gf_bridge->post_does_ln?"%s":"%s\n",p);
 	return Qnil;
 }
@@ -468,22 +423,10 @@ Ruby fclass_install(FClass *fc, Ruby super) {
 	return Qnil;
 }
 
-/*
-  The following code is not used. It was supposed to exist for passing
-  buffer-pointers and function-pointers of C++, but in the end I can't
-  make this work with the limitations of PureData.
-*/
-Ruby cPointer;
+/* ---------------------------------------------------------------- */
+/* GridFlow.class */
 
-Ruby Pointer_new (void *ptr) {
-	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
-}
-
-void *Pointer_get (Ruby self) {
-	void *p;
-	Data_Get_Struct(self,void *,p);
-	return p;
-}
+//\class GridFlow_s < patate
 
 typedef void (*Callback)(void*);
 static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
@@ -491,6 +434,33 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 	Callback func2 = (Callback) FIX2PTR(void,func);
 	func2(data2);
 	return Qnil;
+}
+
+Ruby GridFlow_clock_tick (Ruby rself) {
+	return rb_float_new(gf_bridge->clock_tick);
+}
+
+Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
+	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
+	gf_bridge->clock_tick = RFLOAT(tick)->value;
+	return tick;
+}
+
+Ruby GridFlow_security_set (Ruby rself, Ruby level) {
+	int security = INT(level);
+	if (security<0 || security>4) RAISE("expecting 0..4");
+	gf_security = security;
+	return INT2NUM(gf_security);
+}
+
+Ruby GridFlow_security (Ruby rself) {
+	return INT2NUM(gf_security);
+}
+
+Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
+
+Ruby GridFlow_bridge_name (Ruby rself) {
+	return gf_bridge->name ? rb_str_new2(gf_bridge->name) : Qnil;
 }
 
 /*
@@ -538,24 +508,36 @@ Ruby GridFlow_profiler_reset2 (Ruby rself) {
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	memcpy_calls++;
 	memcpy_bytes+=n;
-	while (n>16) {
+	for (; n>16; in+=16, out+=16, n-=16) {
 		((int32*)out)[0] = ((int32*)in)[0];
 		((int32*)out)[1] = ((int32*)in)[1];
 		((int32*)out)[2] = ((int32*)in)[2];
 		((int32*)out)[3] = ((int32*)in)[3];
-		in+=16; out+=16; n-=16;
 	}
-	while (n>4) { *(int32*)out = *(int32*)in; in+=4; out+=4; n-=4; }
-	while (n) { *out = *in; in++; out++; n--; }
+	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
+	for (; n; in++, out++, n--) { *out = *in; }
 }
 
 /* ---------------------------------------------------------------- */
 
+/*
+  The following code is not used. It was supposed to exist for passing
+  buffer-pointers and function-pointers of C++, but in the end I can't
+  make this work with the limitations of PureData.
+*/
+Ruby cPointer;
 
+Ruby Pointer_new (void *ptr) {
+	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
+}
+
+void *Pointer_get (Ruby self) {
+	void *p;
+	Data_Get_Struct(self,void *,p);
+	return p;
+}
 
 /* ---------------------------------------------------------------- */
-
-#include <signal.h>
 
 void startup_number();
 void startup_grid();
@@ -565,19 +547,9 @@ void startup_cpu();
 
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
 
-MethodDecl FObject_methods[] = {
-	DECL(FObject,profiler_cumul_get),
-	DECL(FObject,profiler_cumul_set),
-	DECL(FObject,send_out),
-	DECL(FObject,send_in),
-	DECL(FObject,del),
-};
-
 /* Ruby's entrypoint. */
 void Init_gridflow () {
 	signal(11,SIG_DFL);
-//	setenv("RUBY_VERBOSE_GC","yes",1);
-
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO

@@ -9,6 +9,10 @@ version 0.7.2 (head):
  * ported some .jmax examples to .pd (automated) (1 out of 21)
  * added motion_detect.pd
  * new classes: demux, and more jmax emulations
+ * @in,@out: keyword "option" may be omitted
+ * configure: added --ruby-prefix
+ * adding custom C++ pre-preprocessor
+ * better type checking of message arguments (better error reporting too)
 
 delayed features:
 

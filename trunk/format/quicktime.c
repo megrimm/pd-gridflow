@@ -36,6 +36,7 @@ struct FormatQuickTime : Format {
 	Dim *dim;
 	char *codec;
 
+	FormatQuickTime() : track(0), dim(0), codec(QUICKTIME_RAW) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (Symbol c);
@@ -135,20 +136,10 @@ GRID_INLET(FormatQuickTime,0) {
 /* libquicktime may be nice, but it won't take a filehandle, only filename */
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
-
-	const char *filename2 = rb_str_ptr(
-		rb_funcall(mGridFlow,SI(find_file),1,
-			rb_funcall(filename,SI(to_s),0)));
-
-	anim = quicktime_open(strdup(filename2),
-		mode==SYM(in),
-		mode==SYM(out));
-
+	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
+	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
 	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
-	track = 0;
-	dim = 0;
-	codec = QUICKTIME_RAW;
-
 	if (mode==SYM(in)) {
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec");
