@@ -311,7 +311,7 @@ static inline uint64 rdtsc() {return 0;}
 		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
-/* **************************************************************** */
+//****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
 
 template <class T> class Pt {
@@ -386,6 +386,21 @@ EACH_NUMBER_TYPE(FOO)
 	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
 #endif
+};
+
+//template <class T> class P : Pt<T> {};
+//a reference counting pointer class
+template <class T> class P {
+public:
+	T *p;
+	P() : p(0) {}
+	P(T *_p) : p(_p) { p->refcount++; }
+	P<T> &operator =(T *_p) {
+		if (p) {p->refcount--; if (!p->refcount) delete p;}
+		p=_p;
+		if (p) p->refcount++;
+		return *this;
+	}
 };
 
 #ifndef IS_BRIDGE
@@ -503,8 +518,9 @@ BUILTIN_SYMBOLS(FOO)
 struct CObject {
 #define OBJECT_MAGIC 1618033989
 	int32 magic;
+	int32 refcount;
 	Ruby rself; /* point to Ruby peer */
-	CObject() : magic(OBJECT_MAGIC), rself(0) {}
+	CObject() : magic(OBJECT_MAGIC), refcount(0), rself(0) {}
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
 			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
@@ -854,22 +870,27 @@ typedef void (*DimConstraint)(Dim *d);
 
 \class Grid < CObject
 struct Grid : CObject {
-	Grid *next;
-	DimConstraint dc;
 	Dim *dim;
 	NumberTypeE nt;
 	void *data;
 
-	Grid() : next(0), dc(0), dim(0), nt(int32_e), data(0) {}
-	void constrain(DimConstraint dc_) { dc=dc_; }
-	void init      (Dim *dim, NumberTypeE nt);
-	void init_clear(Dim *dim, NumberTypeE nt);
-	void init_from_ruby(Ruby x);
-	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
-	void del();
+	Grid(Dim *dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
+		//if (dc && dim) dc(dim);
+		if (!dim) RAISE("hell");
+		this->nt = nt;
+		this->dim = dim;
+		data = dim ? new char[bytes()] : 0;
+		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
+	}
+	Grid(Ruby x) : dim(0), nt(int32_e), data(0) {
+		init_from_ruby(x);
+	}
+	Grid(int n, Ruby *a, NumberTypeE nt=int32_e) : dim(0), nt(int32_e), data(0) {
+		init_from_ruby_list(n,a,nt);
+	}
 	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
-	inline bool is_empty() { return !dim; }
-	Dim *to_dim ();
+	Dim *to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
+
 
 #define FOO(type) \
 	operator type *() { return (type *)data; } \
@@ -877,20 +898,36 @@ struct Grid : CObject {
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	
-	void operator= (Grid &foo) {
-		dc = foo.dc;
-		init(foo.dim->dup(),foo.nt);
-		COPY(Pt<uint8>((uint8 *)    data,bytes()),
-		     Pt<uint8>((uint8 *)foo.data,bytes()),bytes());
-	}
 	Grid *dup () {
-		Grid *foo = new Grid;
+		Grid *foo = new Grid(dim,nt);
+		assert(false);
 		*foo = *this;
 		return foo;
 	}
+	~Grid() {
+		if (dim) delete dim;
+		if (data) delete[] (uint8 *)data;
+		dim=0;
+		data=0;
+	}
+private:
+	void init      (Dim *dim, NumberTypeE nt);
+	void init_clear(Dim *dim, NumberTypeE nt);
+	void init_from_ruby(Ruby x);
+	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
+	void del() { if (dim) delete dim; if (data) delete[] (uint8 *)data; dim=0; data=0; }
+	inline bool is_empty() { return !dim; }
+	void operator= (Grid &foo) {
+		//dc = foo.dc;
+		assert(false);
+		//init(foo.dim->dup(),foo.nt);
+		COPY(Pt<uint8>((uint8 *)    data,bytes()),
+		     Pt<uint8>((uint8 *)foo.data,bytes()),bytes());
+	}
 	// almost like assignment, but also destroys the grid being assigned.
+	/*
 	void swallow (Grid *victim) {
-		if (dc) dc(victim->dim);
+		//if (dc) dc(victim->dim);
 		if (dim) delete dim;
 		if (data) delete[] (uint8 *)data;
 		nt = victim->nt;
@@ -898,16 +935,33 @@ EACH_NUMBER_TYPE(FOO)
 		data = victim->data; victim->data = 0;
 		delete victim;
 	}
-	~Grid() {del();}
+	*/
 };
 \end class Grid
 
 static inline Grid *convert (Ruby r, Grid **bogus) {
-	if (!r) return 0;
-	Grid *foo = new Grid;
-	foo->init_from_ruby(r);
-	return foo;
+	return r ? new Grid(r) : 0;
 }
+
+struct PtrGrid : public P<Grid> {
+	DimConstraint dc;
+	void constrain(DimConstraint dc_) { dc=dc_; }
+	Grid *next;
+//hacks
+	PtrGrid() : P<Grid>(), next(0) {}
+	PtrGrid &operator =(Grid *_p) {
+		if (p) {p->refcount--; if (!p->refcount) delete p;}
+		p=_p;
+		if (p) p->refcount++;
+		return *this;
+	}
+	~PtrGrid() {
+		if (p) { p->refcount--; p=0; }
+	}
+	Grid &operator *()  { return *p; }
+	Grid *operator ->() { return  p; }
+	bool operator !()   { return !p; }
+};
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
@@ -954,28 +1008,25 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 #define GRID_END }
 
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
-#define GRID_INPUT(_class_,_inlet_,_member_) \
+// V is a PtrGrid instance-var
+#define GRID_INPUT(_class_,_inlet_,V) \
 GRID_INLET(_class_,_inlet_) { \
-_member_.init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
+V=new Grid(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 GRID_FLOW { \
-COPY((Pt<T>)(_member_)+in->dex, data, n); } \
+COPY((Pt<T>)*(V)+in->dex, data, n); } \
 GRID_FINISH
 
-/* macro for defining a gridinlet's behaviour as just storage (with backstore) */
-#define GRID_INPUT2(_class_,_inlet_,_member_) \
+// macro for defining a gridinlet's behaviour as just storage (with backstore)
+// V is a PtrGrid instance-var
+#define GRID_INPUT2(_class_,_inlet_,V) \
 	GRID_INLET(_class_,_inlet_) { \
 		if (is_busy_except(in)) { \
-			if (_member_.next != &_member_) delete _member_.next; \
-			_member_.next = new Grid(); \
-			_member_.next->dc = _member_.dc; \
-		} \
-		(_member_.next ? _member_.next : &_member_) \
-		->init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
-	GRID_FLOW { \
-		COPY(((Pt<T>)* \
-		(_member_.next ? _member_.next : &_member_) \
-		)+in->dex, data, n); } \
-	GRID_FINISH
+			if (V.next != &*V) delete V.next; \
+			V.next = new Grid(in->dim->dup(),NumberTypeE_type_of(*data)); \
+		} else V=new Grid(in->dim->dup(),NumberTypeE_type_of(*data)); \
+	} GRID_FLOW { \
+		COPY(((Pt<T>)*(V.next?V.next:&*V))+in->dex, data, n); \
+	} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
@@ -995,21 +1046,21 @@ EACH_NUMBER_TYPE(FOO)
 typedef struct  GridObject GridObject;
 \class GridInlet < CObject
 struct GridInlet : CObject {
-/* context information */
+// context information
 	GridObject *parent;
 	const GridHandler *gh;
-/* grid progress info */
+// grid progress info
 	Dim *dim;
 	NumberTypeE nt;
 	int dex;
-/* grid receptor */
-/*	Pt<int32> (*get_target)(GridInlet *self); */
-	int factor; /* flow's n will be multiple of self->factor */
-	Grid buf; /* factor-chunk buffer */
-	int bufi; /* buffer index: how much of buf is filled */
-/* extra */
+// grid receptor
+	//Pt<int32> (*get_target)(GridInlet *self);
+	int factor; // flow's n will be multiple of self->factor
+	PtrGrid buf;// factor-chunk buffer
+	int bufi;   // buffer index: how much of buf is filled
+// extra
 	GridObject *sender;
-/* methods */
+// methods
 	GridInlet(GridObject *parent, const GridHandler *gh);
 	~GridInlet() {delete dim; dim=0;}
 	void set_factor(int factor);
@@ -1068,7 +1119,7 @@ struct GridOutlet : CObject {
 // those are set at every beginning of a transmission
 	NumberTypeE nt;
 	Dim *dim;    // dimensions of the grid being sent
-	Grid buf;    // temporary buffer
+	PtrGrid buf; // temporary buffer
 	bool frozen; // is the "begin" phase finished?
 	Pt<GridInlet *> inlets; // which inlets are we connected to
 	int ninlets; // how many of them
@@ -1171,12 +1222,12 @@ void gfpost(const char *fmt, ...);
 extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
 
 #define SAME_TYPE(_a_,_b_) \
-	if ((_a_).nt != (_b_).nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
+	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
 		this->info(), \
-		#_a_, number_type_table[(_a_).nt].name, \
-		#_b_, number_type_table[(_b_).nt].name);
+		#_a_, number_type_table[(_a_)->nt].name, \
+		#_b_, number_type_table[(_b_)->nt].name);
 
-#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
+#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
 
 static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
