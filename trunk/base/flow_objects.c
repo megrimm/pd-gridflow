@@ -709,6 +709,7 @@ GRID_INLET(GridInner,0) {
 	int a_last = a->get(a->n-1);
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
+//	fprintf(stderr,"GridInner: n=%d\n",n);
 	SAME_DIM(1,a,a->n-1,b,0);
 	STACK_ARRAY(int32,v,n);
 	COPY(v,a->v,a->n-1);
@@ -721,8 +722,8 @@ GRID_INLET(GridInner,0) {
 	int rcols = rsize/rrows;
 	Pt<T> rdata = (Pt<T>)r;
 	int chunk = MAX_PACKET_SIZE/rsize;
-	v[0] = chunk*rsize;
-	r2.init(new Dim(1,v),r.nt);
+	int32 rv = chunk*rsize;
+	r2.init(new Dim(1,&rv),r.nt);
 	Pt<T> buf3 = (Pt<T>)r2;
 	for (int i=0; i<rrows; i++)
 		for (int j=0; j<chunk; j++)
