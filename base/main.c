@@ -193,14 +193,24 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	}
 }
 
+struct Helper {
+	int argc;
+	Ruby *argv;
+	FObject *self;
+	Ruby rself;
+	int n; /* stack level */
+};
+
 /*
   inlet #-1 is reserved for SystemInlet messages
   inlet #-2 is for inlet #0 messages that happen at start time
 */
-\def void send_in (...) {
+static void send_in_2 (Helper *h) { PROF(h->self) {
 	bool record = false;
-	PROF(this) {
-	if (argc<1) RAISE("not enough args");
+
+	int argc = h->argc;
+	Ruby *argv = h->argv;
+	if (h->argc<1) RAISE("not enough args");
 	int inlet = INT(argv[0]);
 	argc--, argv++;
 	Ruby foo;
@@ -210,7 +220,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 		argv = rb_ary_ptr(foo);
 	}
 	if (inlet==-2) {
-		Array init_messages = rb_ivar_get(rself,SI(@init_messages));
+		Array init_messages = rb_ivar_get(h->rself,SI(@init_messages));
 		rb_ary_push(init_messages, rb_ary_new4(argc,argv));
 		inlet=0;
 	}
@@ -224,9 +234,24 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	char buf[256];
 	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
 	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-	rb_funcall2(rself,rb_intern(buf),argc,argv);
+	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
+} /* PROF */ }
 
-	} /* PROF */
+static void send_in_3 (Helper *h) {
+//	gfpost("send_in_3: ensuring cleanup: %d -> %d", gf_stack.n, h->n);
+	while (gf_stack.n > h->n) gf_stack.pop();
+}
+
+\def void send_in (...) {
+	Helper h;
+	h.argc = argc;
+	h.argv = argv;
+	h.self = this;
+	h.rself = rself;
+	h.n = gf_stack.n;
+	rb_ensure(
+		(RMethod)send_in_2,(Ruby)&h,
+		(RMethod)send_in_3,(Ruby)&h);
 }
 
 \def void send_out (...) {
