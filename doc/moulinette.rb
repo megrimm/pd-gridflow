@@ -153,12 +153,13 @@ XNode.register("section") {
 		mk(:tr) { mk(:td) { print "&nbsp;" }}
 		puts ""
 	end
-	def prx
+	def display_index
 		mk(:h4) {
 			mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
 				print att["name"] }}
 		print "<ul>\n"
-		proc { print "</ul>\n" }
+		super
+		print "</ul>\n"
 	end
 }
 
@@ -242,7 +243,7 @@ XNode.register("class") {
 		}#/td
 		}#/tr
 	end
-	def prx
+	def display_index
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
 		if not att["name"] then
 			raise "name tag missing?"
@@ -256,6 +257,7 @@ XNode.register("class") {
 			end
 		}}
 		puts
+		super
 	end
 }
 
@@ -390,8 +392,8 @@ puts <<EOF
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
-  <td width="25%" height="23">&nbsp;</td>
-  <td width="66%" height="23">&nbsp;</td>
+  <td width="15%" height="23">&nbsp;</td>
+  <td width="80%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
 EOF
