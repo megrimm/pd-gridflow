@@ -1,16 +1,21 @@
 # $Id$
 include config.make
 
-all:: c-all # doc-all java-all
+all:: c-src-all # doc-all java-all
 
-standalone:: c-standalone
+standalone:: c-src-standalone
 
 test::
 	(cd tests; $(MAKE) -k test)
 
-clean:: c-clean
+clean:: c-src-clean c-src-clean-standalone
 
-install:: c-install
+install::
+	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt
+	( \
+		cd c/lib/$(ARCH)/opt ; \
+		$(INSTALL_LIB) lib$(PNAME).so $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt/lib$(PNAME).so ;\
+	)
 	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)
 	$(INSTALL_DATA) $(PNAME).jpk $(lib_install_dir)/packages/$(PNAME)/$(PNAME).jpk
 	$(INSTALL_DATA) $(PNAME).scm $(lib_install_dir)/packages/$(PNAME)/$(PNAME).scm
@@ -20,22 +25,6 @@ install:: c-install
 
 kloc::
 	wc c/src/*.[ch] configure extra/*.rb
-
-
-
-
-c-all:: c-src-all
-
-c-clean:: c-src-clean c-src-clean-standalone
-
-c-standalone:: c-src-standalone
-
-c-install::
-	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt
-	( \
-		cd c/lib/$(ARCH)/opt ; \
-		$(INSTALL_LIB) lib$(PNAME).so $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt/lib$(PNAME).so ;\
-	)
 
 
 
@@ -85,12 +74,12 @@ TOCLEAN = $(PACKAGELIB)
 c-src-all:: $(LIBDIR) $(OBJDIR) $(PACKAGELIB)
 
 c-src-cleanobjs::
-	rm -f $(OBJECTS)
+	rm -f $(OBJS1)
 
 c-src-clean:: c-src-cleanobjs
 	rm -f $(TOCLEAN)
 
-$(OBJDIR)/%.o : $(SRCDIR)/%.c
+$(OBJDIR)/c_src_%.o : $(SRCDIR)/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
 .PRECIOUS: $(OBJDIR)/%.o
 
@@ -110,26 +99,11 @@ LDSOFLAGS += -rdynamic $(GRIDFLOW_LDSOFLAGS)
 ### for hardcore malloc debugging; standalone only
 # LDSOFLAGS += -lefence
 
-OBJS1 = $(addprefix $(OBJDIR)/,$(subst .c,.o,$(SOURCES)))
+OBJS1 = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,.o,$(SOURCES))))
+OBJS1 += $(OBJDIR)/c_src_bridge_jmax.o
 
-$(PACKAGELIB): $(OBJS1) $(OBJDIR)/bridge_jmax.o
-	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1) $(OBJDIR)/bridge_jmax.o
-
-else
-ifeq ($($JMAX_VERSION),30)
-
-# then i don't know (yet)
-
-else # JMAX_VERSION = none
-endif #30
-endif #25
-
-### standalone stuff ####################################################
-
-OBJS2 = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
-FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
-LIB = ../lib2/lib$(PNAME).so
-# LIB2 = /home/matju/lib/$(LIB)
+$(PACKAGELIB): $(OBJS1)
+	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
 
 ARCH_CFLAGS += -Wall # for cleanliness
 ARCH_CFLAGS += -Wno-unused # it's normal to have unused parameters
@@ -138,6 +112,15 @@ ARCH_CFLAGS += -O6 -funroll-loops # optimisation
 ARCH_CFLAGS += -g # gdb info
 ARCH_CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 ARCH_CFLAGS += -fpic # some OSes need that for .so files
+
+endif #25
+
+### standalone stuff ####################################################
+
+OBJS2 = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
+FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
+LIB = ../lib2/lib$(PNAME).so
+# LIB2 = /home/matju/lib/$(LIB)
 
 c-src-standalone:: $(LIB)
 
@@ -156,4 +139,3 @@ $(LIB): $(OBJS2) ../obj2/bridge_none.o Makefile
 	@mkdir -p ../lib2
 	gcc -shared $(LDSOFLAGS) $(OBJS2) ../obj2/bridge_none.o -o $@
 
-c-src-test:: test
