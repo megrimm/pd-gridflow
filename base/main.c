@@ -169,6 +169,8 @@ void Object_free (void *foo) {
 	delete self;
 }
 
+static bool has_int = true;
+
 \class FObject < CObject
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
@@ -177,7 +179,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
 		sym = bsym._list;
 	} else if (INTEGER_P(*argv)) {
-		sym = bsym._int;
+		sym = has_int ? bsym._int : bsym._float;
 	} else if (FLOAT_P(*argv)) {
 		sym = bsym._float;
 	} else if (SYMBOL_P(*argv)) {
@@ -695,6 +697,12 @@ BUILTIN_SYMBOLS(FOO)
 	if (!gf_bridge->whatever) gf_bridge->whatever = bridge_whatever_default;
 	SDEF2("whatever",gf_bridge->whatever,-1);
 
+	switch (EVAL("!!(/jmax/ =~ GridFlow.bridge_name)")) {
+		case Qfalse: has_int = false; break;
+		case Qtrue:  has_int = true;  break;
+		default: abort(); /*???*/
+	}
+	
 	Ruby cBitPacking =
 		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
 	define_many_methods(cBitPacking,
