@@ -10,8 +10,8 @@ HTML = $(subst .xml,.html,$(XML))
 
 all:: $(HTML)
 
-%.html: %.xml jmax.dtd jmaxml_to_html.rb
-	ruby jmaxml_to_html.rb < $< > $@ \
+%.html: %.xml moulinette.rb
+	ruby moulinette.rb < $< > $@ \
 		|| (rm $@ && false)
 
 clean::

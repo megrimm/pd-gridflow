@@ -1,6 +1,6 @@
 =begin
 	$Id$
-	convert jMax-XML to HTML with our formatting.
+	convert GridFlow Documentation XML to HTML with special formatting.
 
 	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
@@ -105,9 +105,9 @@ class XNode
 		arg rest method
 		dim grid
 		inlet outlet
-		jmax_class
+		class
 		operator_1 operator_2
-		jmax_doc
+		documentation
 		format
 		prose
 		part link
@@ -130,7 +130,7 @@ class XNode
 		proc { print "</ul>\n" }
 	end
 
-	def prx_jmax_class
+	def prx_class
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
 		if not att["name"] then
 			raise "name tag missing?"
@@ -178,7 +178,7 @@ class XNode
 
 #----------------------------------------------------------------#
 
-	def prc_jmax_doc; end
+	def prc_documentation; end
 	def prc_section
 		black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
@@ -222,9 +222,8 @@ class XNode
 		proc { print "</td></tr>\n" }
 	end
 
-	def prc_jmax_class
+	def prc_class
 		tag = self.tag
-		if tag=="jmax_class" then tag="class" end # another hack
 		name = att['name'] or raise
 		mk(:tr) {
 		  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
@@ -357,16 +356,15 @@ class XNode
 		}
 	end
 
-	alias prc_macro prc_jmax_class
-	alias prc_class prc_jmax_class
-	alias prc_enum prc_jmax_class
+	alias prc_macro prc_class
+	alias prc_enum prc_class
 
 end
 
-class JmaxmlParser < XMLParser
+class GFDocParser < XMLParser
 	def initialize(*a)
 		super
-		@jmax_lists = []
+		@xml_lists = []
 		@stack = [[]]
 	end
 
@@ -403,26 +401,26 @@ class JmaxmlParser < XMLParser
 
 	def begin_list t,a
 		raise "start is missing" if not attrs["start"]
-		@jmax_lists << attrs["start"]
+		@xml_lists << attrs["start"]
 	end
 	def end_list t
-		@jmax_lists.pop
+		@xml_lists.pop
 	end
 
 	def begin_li t,a
-		raise "no list" if not @jmax_lists.last
-		produce "#{@jmax_lists.last}. "
+		raise "no list" if not @xml_lists.last
+		produce "#{@xml_lists.last}. "
 	end
 	def end_li t
 	end
 
 	def begin_section t,a
-		raise "can't nest sections" if @jmax_section
+		raise "can't nest sections" if @xml_section
 		raise "name is missing" if not attrs["name"]
-		@jmax_section = attrs["name"]
+		@xml_section = attrs["name"]
 	end
 	def end_section t
-		@jmax_section = nil
+		@xml_section = nil
 	end
 
 	def begin_method t,a
@@ -548,7 +546,7 @@ end
 
 header
 
-parser = JmaxmlParser.new "ISO-8859-1"
+parser = GFDocParser.new "ISO-8859-1"
 
 begin
 	STDERR.puts "reading standard input..."
@@ -565,9 +563,10 @@ rescue XMLParserError => e
 	STDERR.puts e.inspect
 
 	# strange that line numbers are doubled.
+	# also the byte count is offset by the line count !?!?!?
 	STDERR.puts "  line: #{parser.line/2 + 1}"
 	STDERR.puts "column: #{parser.column}"
-	STDERR.puts "  byte: #{parser.byteIndex}"
+	STDERR.puts "  byte: #{parser.byteIndex - parser.line/2}"
 end
 
 footer
