@@ -35,10 +35,6 @@ end
 # in case of bug in Ruby ("Error: Success")
 module Errno; class E000 < StandardError; end; end
 
-require "gridflow/base/MainLoop.rb"
-$mainloop = MainLoop.new
-$tasks = {}
-
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
@@ -284,20 +280,6 @@ rescue
 	GridFlow.post $!
 end
 
-def self.routine
-	$tasks.each {|k,v|
-		case v
-		when Integer; GridFlow.exec k,v
-		when Proc; v[k]
-		else raise "problem"
-		end
-	}
-	#!@#$ mainloop is not used as much as it could.
-	# it should eventually play a more central role,
-	# but for now I rely on GridFlow.routine
-	$mainloop.timers.after(0.025) { routine }
-end
-
 def GridFlow.find_file s
 	s=s.to_s
 	if s==File.basename(s) then
@@ -310,37 +292,22 @@ def GridFlow.find_file s
 	end
 end
 
-def GridFlow.tick
-begin
-	$mainloop.one(0)
-rescue Exception => e
-	GridFlow.post "GridFlow.clock_tick: %s: %s:", e.class, e
-	b = e.backtrace
-	GridFlow.post "%s", b[0]
-	GridFlow.post "%s", b[1] if b.length>=2
-	GridFlow.post "ruby stack depth = %d", b.length
-end end
-
 def GridFlow.macerr(i)
-	begin
-		f=File.open("/System/Library/Frameworks/CoreServices.framework/"+
-		"Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/"+
-		"MacErrors.h")
-		while f.gets
-			m = /^\s*(\w+)\s*=\s*(-\d+),\s*\/\*\s*(.*)\s*\*\/$/ \
-				.match $_
-			next if not m
-			if m[2].to_i == i then
-				return "#{m[2]}: \"#{m[3]}\""
-			end
-		end
-		return "no error message available for this error number"
-	rescue FileError
-		return "Can't find Apple's precious copyrighted "+
-		"list of error messages on this system."
-	ensure
-		f.close if f	
-	end
+  begin
+    f=File.open("/System/Library/Frameworks/CoreServices.framework/"+
+      "Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/"+
+      "MacErrors.h")
+    while f.gets
+      m = /^\s*(\w+)\s*=\s*(-\d+),\s*\/\*\s*(.*)\s*\*\/$/.match $_
+      next if not m
+      if m[2].to_i == i then return "#{m[2]}: \"#{m[3]}\"" end
+    end
+    return "no error message available for this error number"
+  rescue FileError
+    return "Can't find Apple's precious copyrighted list of error messages on this system."
+  ensure
+    f.close if f	
+  end
 end
 
 end # module GridFlow
@@ -372,14 +339,6 @@ def GridFlow.load_user_config
 	end
 end
 
-END {
-	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
-	GridFlow.fobjects_set.clear
-	GC.start
-}
-
-GridFlow.routine
-
 require "gridflow/base/flow_objects.rb"
 require "gridflow/format/main.rb"
 
@@ -392,3 +351,10 @@ require "gridflow/format/main.rb"
 ).each {|k|
 	GridFlow::FObject.name_lookup(k).add_creator k.gsub(/#/,"@")
 }
+
+END {
+	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
+	GridFlow.fobjects_set.clear
+	GC.start
+}
+
