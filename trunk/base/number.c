@@ -41,8 +41,8 @@ template <class T> class Op {
 public:
 	// I call abort() on those because I can't say they're purevirtual.
 	static T f(T a, T b) {abort();}
-	static bool is_neutral(T x, LeftRight side)   {abort();}
-	static bool is_absorbent(T x, LeftRight side) {abort();}
+	static bool is_neutral(T x, LeftRight side)   {assert(!"Op::is_neutral called?");}
+	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?");}
 };
 
 template <class O> class OpLoops {
