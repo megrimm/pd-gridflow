@@ -168,7 +168,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->op_para = op_mul;
 	this->op_fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
-	this->b= r ? r : new Grid(new Dim(),int32_e,true);
+	this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
 }
 
 \classinfo { IEVAL(rself,"install '#convolve',2,1"); }
