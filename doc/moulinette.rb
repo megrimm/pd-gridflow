@@ -206,7 +206,9 @@ XNode.register(*%w( p i u b k sup )) {public
 # explicit hyperlink on the web.
 XNode.register("link") {public
 	def show
-		print "<a href='#{att[:to]}'>"
+		STDERR.puts "att = #{att.inspect}"
+		raise if not att['to']
+		print "<a href='#{att['to']}'>"
 		super
 		print att[:to] if contents.length==0
 		print "</a>"
