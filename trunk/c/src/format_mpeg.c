@@ -1,0 +1,153 @@
+/*
+	$Id$
+
+	GridFlow
+	Copyright (c) 2001 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file ../../COPYING for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*/
+
+#include "grid.h"
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <mpeg.h>
+
+/*
+  i allow myself to make this global because
+  libmpeg.so is broken by design.
+*/
+ImageDesc *mpeg_id = 0;
+
+extern FormatClass class_FormatMPEG;
+/*
+typedef struct FormatMPEG {
+	Format_FIELDS;
+} FormatMPEG;
+*/
+
+typedef Format FormatMPEG;
+
+bool FormatMPEG_frame (Format *$, GridOutlet *out, int frame) {
+	char *buf = NEW(char,mpeg_id->Size);
+	int npixels = mpeg_id->Height * mpeg_id->Width;
+/*	SetMPEGOption(MPEG_QUIET,1); */
+	if (!GetMPEGFrame(buf)) {
+		whine("libmpeg: can't fetch frame");
+		return 1;
+	}
+
+	{
+		int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
+		GridOutlet_begin(out, Dim_new(3,v));
+	}
+
+	{
+		int y;
+		int sy = Dim_get(out->dim,0);
+		int sx = Dim_get(out->dim,1);
+		int bs = Dim_prod_start(out->dim,1);
+		Number b2[bs];
+		for(y=0; y<sy; y++) {
+			uint8 *b1 = buf + 4*sx*y;
+			BitPacking_unpack($->bit_packing,sx,b1,b2);
+			GridOutlet_send(out,bs,b2);
+		}
+	}
+
+	FREE(buf);
+
+	GridOutlet_end(out);
+	return true;
+err:
+	return false;
+}
+
+GRID_BEGIN(FormatMPEG,0) {
+	whine("libmpeg.so can't write MPEG");
+	return false;
+}
+
+GRID_FLOW(FormatMPEG,0) {}
+GRID_END(FormatMPEG,0) {}
+
+void FormatMPEG_close (Format *$) {
+	if (mpeg_id) FREE(mpeg_id);
+	if ($->bstream) fclose($->bstream);
+	FREE($);
+}
+
+Format *FormatMPEG_open (FormatClass *qlass, ATOMLIST, int mode) {
+	const char *filename;
+	Format *$ = NEW(FormatMPEG,1);
+	$->cl     = &class_FormatMPEG;
+
+	$->stream = -1;
+	$->bstream = 0;
+
+	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
+		whine("usage: mpeg file <filename>"); goto err;
+	}
+	filename = fts_symbol_name(fts_get_symbol(at+1));
+
+	switch(mode) {
+	case 4: break;
+	default: whine("unsupported mode (#%d)", mode); goto err;
+	}
+
+	$->bstream = gf_file_fopen(filename,mode);
+	if (!$->bstream) {
+		whine("can't open file `%s': %s", filename, strerror(errno));
+		goto err;
+	}
+
+	if (mpeg_id) {
+		whine("libmpeg.so is busy (you must close the other mpeg file)");
+		goto err;
+	}
+
+	mpeg_id = NEW(ImageDesc,1);
+
+	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
+	if (!OpenMPEG($->bstream,mpeg_id)) {
+		whine("libmpeg: can't open mpeg file");
+		goto err;
+	}
+
+	$->bit_packing = BitPacking_new(4,0x0000ff,0x00ff00,0xff0000);
+
+	return $;
+err:
+	$->cl->close((Format *)$);
+	return 0;
+}
+
+FormatClass class_FormatMPEG = {
+	symbol_name: "mpeg",
+	long_name: "Motion Picture Expert Group Format",
+	flags: (FormatFlags)0,
+
+	open: FormatMPEG_open,
+	frames: 0,
+	frame:  FormatMPEG_frame,
+	begin:  GRID_BEGIN_PTR(FormatMPEG,0),
+	flow:    GRID_FLOW_PTR(FormatMPEG,0),
+	end:      GRID_END_PTR(FormatMPEG,0),
+	option: 0,
+	close:  FormatMPEG_close,
+};
+
