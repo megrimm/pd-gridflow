@@ -63,6 +63,9 @@ int low_bit(uint32 n) {
 	(((in[0] << hb[0]) >> 7) & mask[0]) | \
 	(((in[1] << hb[1]) >> 7) & mask[1]) | \
 	(((in[2] << hb[2]) >> 7) & mask[2])
+
+#define FOURTIMES(_x_) _x_ _x_ _x_ _x_
+
 uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	register uint32 t;
 	int hb[3] = {
@@ -71,44 +74,46 @@ uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 		high_bit($->mask[2])};
 	int mask[3];
 	memcpy(mask,$->mask,3*sizeof(int));
-	if ($->bytes==2) {
+	if ($->is_le && $->bytes==2) {
 		while (n>3) {
-			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
+			FOURTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 			n-=4;
 		}
 		while (n--) {
 			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
 		}
-	} else if ($->bytes==3) {
-		while (n > 3) {
-			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
-			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
-			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
-			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
+	} else if ($->is_le && $->bytes==3) {
+		while (n>3) {
+			FOURTIMES(
+				t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3; )
 			n-=4;
 		}
 		while (n--) {
 			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
 		}
-	} else if ($->bytes==4) {
-		while (n > 3) {
-			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
-			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
-			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
-			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
+	} else if ($->is_le && $->bytes==4) {
+		while (n>3) {
+			FOURTIMES( t=CONVERT1; *((long *)out)=t; out+=4; in+=3; )
 			n-=4;
 		}
 		while (n--) {
 			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
 		}
-	} else {
+	} else if ($->is_le) {
+		/* smallest byte first (like the above) */
 		while (n--) {
 			int bytes = $->bytes;
 			t = CONVERT1;
 			while (bytes--) { *out++ = t; t >>= 8; }
+			in+=3;
+		}
+	} else {
+		/* largest byte first */
+		while (n--) {
+			int bytes = $->bytes;
+			t = CONVERT1;
+			while (bytes--) { out[bytes] = t; t >>= 8; }
+			out += $->bytes;
 			in+=3;
 		}
 	}
@@ -122,10 +127,7 @@ uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
 	const int mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
 	while (n>3) {
-		t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-		t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-		t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-		t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
+		FOURTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 		n-=4;
 	}
 	while (n--) {
@@ -139,10 +141,7 @@ uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
 	const int mask[3] = {0x00ff0000,0x0000ff00,0x000000ff};
 	register uint32 t;
 	while (n>3) {
-		out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3;
-		out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3;
-		out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3;
-		out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3;
+		FOURTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 		n-=4;
 	}
 	while (n--) {
