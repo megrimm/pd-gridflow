@@ -320,76 +320,132 @@ Operator1 op1_table[] = {
 };
 
 /* **************************************************************** */
+/*
+  those are bogus classes. this design is to make C++ happy with
+  templating, because it doesn't do template-by-function nor
+  template-of-typedef. I think the STL has that kind of pattern in it,
+  but I don't use the STL so I couldn't tell exactly.
+*/
+
+template <class T>
+class Op2 {public: static T foo(T,T); };
+
+template <class O>
+class Op2Loops {
+public:
+	template <class T>
+	static void op_map (int n, T *as, T b) {
+		while ((n&3)!=0) { T a = *as; *as++ = O::foo(a,b); n--; }
+		while (n) {
+			{ T a=as[0]; as[0]= O::foo(a,b); }
+			{ T a=as[1]; as[1]= O::foo(a,b); }
+			{ T a=as[2]; as[2]= O::foo(a,b); }
+			{ T a=as[3]; as[3]= O::foo(a,b); }
+			as+=4; n-=4;
+		}
+	}
+	template <class T>
+	static void op_zip (int n, T *as, T *bs) {
+		while ((n&3)!=0) {
+			T a = *as, b = *bs++; *as++ = O::foo(a,b); n--;
+		}
+		while (n) {
+			{ T a=as[0], b=bs[0]; as[0]= O::foo(a,b); }
+			{ T a=as[1], b=bs[1]; as[1]= O::foo(a,b); }
+			{ T a=as[2], b=bs[2]; as[2]= O::foo(a,b); }
+			{ T a=as[3], b=bs[3]; as[3]= O::foo(a,b); }
+			as+=4; bs+=4; n-=4;
+		}
+	}
+	template <class T>
+	static T op_fold (T a, int n, T *bs) {
+		while ((n&3)!=0) {
+			T b = *bs++; a = O::foo(a,b); n--;
+		}
+		while (n) {
+			{ T b = bs[0]; a = O::foo(a,b); }
+			{ T b = bs[1]; a = O::foo(a,b); }
+			{ T b = bs[2]; a = O::foo(a,b); }
+			{ T b = bs[3]; a = O::foo(a,b); }
+			bs+=4; n-=4;
+		}
+		return a;
+	}
+	template <class T>
+	static void op_fold2 (int an, T *as, int n, T *bs) {
+		while (n--) {
+			int i=0;
+			while (i<an) {
+				{ T a = as[i], b = *bs++; as[i] = O::foo(a,b); }
+				i++;
+			}
+		}
+	}
+	template <class T>
+	static void op_scan (T a, int n, T *bs) {
+		while (n--) { T b = *bs; *bs++ = a = O::foo(a,b); }
+	}
+	template <class T>
+	static void op_scan2 (int an, T *as, int n, T *bs) {
+		while (n--) {
+			for (int i=0; i<an; i++) {
+				T a = *as++, b = *bs; *bs++ = a = O::foo(a,b);
+			}
+			as=bs-an;
+		}
+	}
+};
+
+template <class O>
+class Op2LoopsBitwise : Op2Loops<O> {
+public:
+/*
+	template <class T>
+	static void op_map (int n, T *as, T b) {
+		while ((n&3)!=0) { T a = *as; *as++ = O::foo(a,b); n--; }
+		while (n) {
+			{ T a=as[0]; as[0]= O::foo(a,b); }
+			{ T a=as[1]; as[1]= O::foo(a,b); }
+			{ T a=as[2]; as[2]= O::foo(a,b); }
+			{ T a=as[3]; as[3]= O::foo(a,b); }
+			as+=4; n-=4;
+		}
+	}
+*/
+};
 
 #define DEF_OP2(op,expr) \
-	\
-	template <class T> \
-	static inline T Z##op (T a, T b) { return expr; } \
-	\
-	template <class T> \
-	static void op_map_##op (int n, T *as, T b) { \
-		while ((n&3)!=0) { T a = *as; *as++ = Z##op(a,b); n--; } \
-		while (n) { \
-			{ T a=as[0]; as[0]= Z##op(a,b); } \
-			{ T a=as[1]; as[1]= Z##op(a,b); } \
-			{ T a=as[2]; as[2]= Z##op(a,b); } \
-			{ T a=as[3]; as[3]= Z##op(a,b); } \
-		as+=4; n-=4; } } \
-	\
-	template <class T> \
-	static void op_zip_##op (int n, T *as, T *bs) { \
-		while ((n&3)!=0) { T a = *as, b = *bs++; *as++ = Z##op(a,b); n--; } \
-		while (n) { \
-			{ T a=as[0], b=bs[0]; as[0]= Z##op(a,b); } \
-			{ T a=as[1], b=bs[1]; as[1]= Z##op(a,b); } \
-			{ T a=as[2], b=bs[2]; as[2]= Z##op(a,b); } \
-			{ T a=as[3], b=bs[3]; as[3]= Z##op(a,b); } \
-		as+=4; bs+=4; n-=4; } } \
-	\
-	template <class T> \
-	static T op_fold_##op (T a, int n, T *bs) { \
-		while ((n&3)!=0) { T b = *bs++; a = Z##op(a,b); n--; } \
-		while (n) { \
-			{ T b = bs[0]; a = Z##op(a,b); } \
-			{ T b = bs[1]; a = Z##op(a,b); } \
-			{ T b = bs[2]; a = Z##op(a,b); } \
-			{ T b = bs[3]; a = Z##op(a,b); } \
-		bs+=4; n-=4; } \
-		return a; } \
-	\
-	template <class T> \
-	static void op_fold2_##op (int an, T *as, int n, T *bs) {\
-		while (n--) { \
-			int i=0; \
-			while (i<an) { \
-				{ T a = as[i], b = *bs++; as[i] = Z##op(a,b); } i++; } } } \
-	\
-	template <class T> \
-	static void op_scan_##op (T a, int n, T *bs) { \
-		while (n--) { T b = *bs; *bs++ = a = Z##op(a,b); } } \
-	\
-	template <class T> \
-	static void op_scan2_##op (int an, T *as, int n, T *bs) { \
-		while (n--) { \
-			for (int i=0; i<an; i++) { \
-				T a = *as++, b = *bs; *bs++ = a = Z##op(a,b); } \
-			as=bs-an; } }
+	template <class T> class Y##op : Op2<T> { public: \
+		inline static T foo (T a, T b) { return expr; } };
 
-#define DECL_OP2ON(_op_) { \
-	&op_map_##_op_, &op_zip_##_op_, &op_fold_##_op_, &op_fold2_##_op_, \
-	&op_scan_##_op_, &op_scan2_##_op_ }
+#define DECL_OP2ON(base,op,type) { \
+	&base<Y##op<type> >::op_map, \
+	&base<Y##op<type> >::op_zip, \
+	&base<Y##op<type> >::op_fold, \
+	&base<Y##op<type> >::op_fold2, \
+	&base<Y##op<type> >::op_scan, \
+	&base<Y##op<type> >::op_scan2 }
 
-#define DECL_OP2(_op_,_sym_,_props_) { 0, _sym_, \
-	DECL_OP2ON(_op_), \
-	DECL_OP2ON(_op_), \
-	DECL_OP2ON(_op_), \
-	DECL_OP2ON(_op_), \
+#define DECL_OP2(op,sym,props) { 0, sym, \
+	DECL_OP2ON(Op2Loops,op,uint8), \
+	DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), \
+	DECL_OP2ON(Op2Loops,op,float32), \
 }
 
-#define DECL_OP2_NOFLOAT(_op_,_sym_,_props_) { 0, _sym_, \
-	DECL_OP2ON(_op_), \
-	DECL_OP2ON(_op_), \
-	DECL_OP2ON(_op_), \
+/*
+#define DECL_OP2_BITWISE(op,sym,props) { 0, sym, \
+	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
+	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
+	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
+	DECL_OP2ON(Op2LoopsBitwise,op,float32), \
+}
+*/
+
+#define DECL_OP2_NOFLOAT(op,sym,props) { 0, sym, \
+	DECL_OP2ON(Op2Loops,op,uint8), \
+	DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), \
 	{0,0,0,0,0,0}, \
 }
 
