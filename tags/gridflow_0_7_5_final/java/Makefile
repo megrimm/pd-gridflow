@@ -1,0 +1,38 @@
+#!/usr/bin/make
+
+# JMAX = /opt/lib/jmax
+JMAX = /usr/lib/jmax
+CLASSPATH=".:$(JMAX)/java/classes/jmax.jar:$(JMAX)/packages/guiobj/java/classes/guiobj.jar:$(JMAX)/java/lib/jacl/jacl.jar:$(JMAX)/java/lib/jacl/tcljava.jar"
+
+#include ../bundled/jmax/Makefiles/Makefile.$(ARCH)
+#include ../bundled/jmax/Makefiles/Makefile.package
+
+OBJS = \
+gridflow/FtsPeepholeObject.class \
+gridflow/Peephole.class \
+gridflow/PeepholeControlPanel.class \
+gridflow/GridFlowExtension.class \
+gridflow/PeepholeControlPanel\$1.class \
+gridflow/PathInfo.class
+
+SRC = \
+FtsPeepholeObject.java \
+Peephole.java \
+PeepholeControlPanel.java \
+GridFlowExtension.java \
+PathInfo.java
+
+# libPeephole.so
+
+JC = javac -classpath $(CLASSPATH) -O
+
+all: gridflow.jar
+
+clean::
+	rm -f $(OBJS) gridflow.jar PathInfo.java
+
+gridflow.jar: $(SRC)
+	mkdir gridflow || true
+	$(JC) -d . $(SRC)
+	/bin/rm -f gridflow.jar
+	jar -cvf gridflow.jar gridflow/*.class

@@ -1,0 +1,219 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE documentation SYSTEM 'jmax.dtd'>
+<documentation>
+<!-- $Id$ -->
+<!--
+        GridFlow Installation
+        Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+-->
+<section name="Software (and Hardware) you Probably Need">
+<p>Required Hardware (One of...):<list>
+	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>
+	<li>i686 : "new" IBM PC with recent compiler</li>
+	<li>ppc : "new" Macintosh</li>
+	<li>armv4l : Corel Netwinder</li>
+	<li>mips : Silicon Graphics, non-PC</li>
+	<li>sparc : Sun SparcStation</li>
+</list>(but we only test i686 ourselves)</p>
+<p>Required Software:<list>
+	<li>Ruby 1.6.6 or more recent (1.8.0 recommended)</li>
+	<li>GNU C Compiler (gcc)</li>
+	<li>GNU Make (gmake)</li>
+</list></p>
+<p>Very Recommended:<list>
+	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
+	<li>one of:
+		<list>
+		<li>jMax 2.5</li>
+		<li>jMax 4.1</li>
+		<li>PureData</li>
+	</list></li>
+</list></p>
+<p>Optional:<list>
+	<li>PureData 0.35 or 0.36 (support is experimental)</li>
+	<li>Simple Directmedia Layer (sdl)</li>
+	<li>Ascii Art Library (aalib)</li>
+	<li>HeroineWarrior's libmpeg3.so</li>
+	<li>HeroineWarrior's libquicktime.so</li>
+	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
+	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
+	<li>Ruby add-on "xmlparser" (for editing documentation)</li>
+</list></p>
+<p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's
+extensive help file at <link to="http://www.mamalala.de"/>
+as well as the jMax docs.</p>
+<p>Also Useful:<list>
+	<li>Pentium-compatible CPU (for profiling)</li>
+	<li>CVS (for live update)</li>
+</list></p>
+<p>NOTE:
+There are several different incompatible libmpeg's from different authors;
+I found four of them, some numbered 2 and 3 as if they were version numbers
+(but it seems they are not).
+</p>
+
+<p>NOTE: if one of your libraries are only available in .a format, you will not
+be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
+</p>
+</section>
+
+<section name="Installation process (for jMax 2.5.1 and compatible)">
+<list>
+  <li>if you don't have jMax, get it at
+	<link to="http://www.ircam.fr/equipes/temps-reel/jmax/en/index.php3">
+	jMax's site
+	</link>.
+  </li>
+  <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
+latest from the 1.7/1.8 series work and are faster)  You will need either
+<k>libruby.so</k> or <k>libruby.a</k> or <k>libruby-static.a</k>
+If you're using an installer and you're missing those files,
+then look for another package of a
+similar name that may contain extra files (eg: "ruby-dev"). If you're
+installing from source code you have to configure with the
+<k>--enable-shared</k> option. If you install into a system directory, you
+have to recreate the library index using the <k>ldconfig</k> command too
+(auto-installers normally do this for you).
+  </li>
+
+  <li>Download the latest version of GridFlow
+      and download the images pack (gridflow-images-0.5.tar.gz).
+      The download site is
+	 <link to="http://www.artengine.ca/jmax/gridflow/download"><k>artengine.ca</k></link>.
+      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice),
+      which will create a directory called 'gridflow';
+      unpack the images pack into that directory, which will create
+	 another one called 'images'.
+  </li>
+
+  <li>Run <k>./configure</k> from the <k>gridflow</k> directory.
+  <k>./configure</k> will try to detect some optional
+  components (libmpeg, pentium clock, etc). In the end, the files
+  <k>config.make</k>, <k>config.h</k> and <k>Makefile</k> will be generated.
+  </li>
+
+  <li>If you are not running Linux on a PentiumPro-compatible computer, you
+  will have to specify a jMax Makefile using the <k>--jmax-arch</k> option.
+  This is the one you use when installing jMax (or other jMax plugins other
+  than GridFlow) manually. On MacOS 10, this would be <k>ppc-macosx</k>.</li>
+
+  <li>Stay in the same directory and do:
+      <list>
+        <li><k>make</k></li>
+        <li><k>make install</k></li>
+        <li><k>make test</k></li>
+      </list>
+      but if one stops because of "Error" you shouldn't try the next one.
+  </li>
+
+  <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
+  Add a line that says <k>package require gridflow</k>.
+  Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
+  </li>
+
+  <li>(Re)start jMax.</li>
+
+</list>
+
+  <p>Note: you can do <k>./configure --help</k> to get a list of supported
+  options. You can use them to ignore the presence of troublesome libraries
+  and select debugging level.</p>
+
+<p>--use-compiler <i>compiler</i> normally would be one of: <k>g++ g++-2.95 g++-3.2 g++-3.3</k>.
+Do not use something with <k>gcc</k> in the name, as it results in <k>undefined symbol</k> problems.
+</p>
+
+</section>
+
+<section name="Installation process (with jMax 4.1.0 and compatible)">
+
+Same as above: [write me]
+
+</section>
+
+<section name="Installation process (with PureData 0.35 and compatible)">
+
+<list>
+<li>make sure <k>m_pd.h</k> is installed and can be seen by the compiler.
+you may have to change the C_INCLUDE_PATH environment variable.</li>
+<li>go in GridFlow's source directory.</li>
+<li>run <k>./configure</k></li>
+<li>run <k>make</k></li>
+<li>run <k>make install</k></li>
+<li>run <k>make test</k></li>
+<li>run pd with the <k>-path</k> to the extras directory and <k>-lib
+gridflow</k>, or put those options in your <k>~/.pdrc</k> file. (this part is
+essentially the same as GEM's and PDP's)</li>
+</list>
+
+</section>
+
+<section name="Installation process (without jMax nor PureData)">
+<list><li>
+	If you don't have jMax installed it won't be detected. Installation
+	will proceed normally except that the Ruby-for-jMax bridge won't be
+	installed. Try running 'make test'. Look at 'tests/test.rb' for
+	an example of how you may use GridFlow without jMax.
+</li></list>
+</section>
+<section name="Other Tips">
+<list>
+
+<li>you just did a CVS update and now the program does not compile, or
+crashes, or changes didn't go through. 
+	<list>
+	<li>Did you forget the "make install" step?</li>
+	<li>If a new directory is created, you need to do <k>cvs update -d</k>.
+	  Many people just add that option to their configuration of the CVS software.</li>
+	<li>When some kinds of changes have happen, you may have to rerun the <k>configure</k>
+	program before redoing <k>make</k>. If you had previously reconfigured with specific options,
+	don't forget to use them again in this case.</li>
+	<li>Maybe matju forgot to checkin part of an important change. Tell him.</li>
+	</list></li>
+
+
+<li>Crashing:
+
+	<list>
+	<li>you should know where the FTS executable file is. Its filename looks
+	like "/usr/lib/jmax/fts/bin/i686-linux/opt/fts". we'll call it $FTS now.</li>
+	<li>if you want to prevent a complete machine crash, you should not run
+	fts as "root" user, and you should do chmod u-s on the $FTS file. I
+	recommend that you work that way until the fts crash problem is fixed, and
+	only run it again as root only when you have a good reason to do so.</li>
+	<li>by running the command "ulimit -c unlimited" before starting jmax
+	(from the same shell) will cause a crash to write the program's RAM into
+	a file named "<k>core</k>" in the current directory. The filename may vary slightly,
+	for example it may be suffixed with a unique number.</li>
+	<li>you can read this file in a semi-friendly way by doing
+	"gdb $FTS core" right after that. what you need to do with that is usually
+	just to type "backtrace" and then "quit". the first command will print a
+	list of functions active during the crash. the bug is usually in one close
+	to the top of the list.</li>
+	</list></li>
+
+<li>Corrupted jMax file:
+
+	<list>
+	<li>remember that FTP transfers in ASCII mode only work on certain kind of files,
+	to transform them from Windows flavour to Unix flavour and back. It is completely
+	irrelevant to .jmax files (as well as most image/sound/movie files) and if used in such a
+	case it is harmful. You have to redownload using the other mode called <k>binary</k>
+	which does not change the file at all.</li>
+	
+	<li>files saved by jMax 4 cannot be reloaded in jMax 2.5; I currently have no cure for this
+	other than to still edit with jMax 2.5. I estimate that it would be rather easy to
+	create a converter from one variant to another. Contact me (matju) if you need
+	to convert from version 4 to version 2.5.</li>
+
+	<li>CVS conflict: CVS may try to merge differences between jmax files as if they were text
+	files, if CVS is not aware that it shouldn't do anything special with them. Same may happen with
+	other kinds of files. Fortunately, your previously working file is renamed as hidden
+	file with a "<k>.#</k>" prefix. The new working file is available by removing the corrupted one
+	and doing cvs update again.</li>
+	</list></li>
+</list>
+</section>
+</documentation>
+
