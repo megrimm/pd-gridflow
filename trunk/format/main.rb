@@ -328,22 +328,22 @@ class FormatGrid < Format; include EventIO
 		rewind_if_needed if not TCPSocket===@stream
 		on_read(8) {|data| frame1 data }
 		(try_read nil while read_wait?) if not TCPSocket===@stream
-		GridFlow.whine "frame: finished"
+#		GridFlow.whine "frame: finished"
 	end
 
 	# the header
 	def frame1 data
-		GridFlow.whine("we are " + if OurByteOrder == ENDIAN_LITTLE
-			then "smallest digit first"
-			else "biggest digit first" end)
+#		GridFlow.whine("we are " + if OurByteOrder == ENDIAN_LITTLE
+#			then "smallest digit first"
+#			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
 		@is_le = case head
 			when "\x7fGRID"; false
 			when "\x7fgrid"; @is_le = true
 			else raise "grid header: invalid (#{data.inspect})" end
-		GridFlow.whine("this file is " + if @is_le
-			then "biggest digit first"
-			else "smallest digit first" end)
+#		GridFlow.whine("this file is " + if @is_le
+#			then "biggest digit first"
+#			else "smallest digit first" end)
 
 		case bpv
 		when 8, 32; # ok
@@ -352,7 +352,7 @@ class FormatGrid < Format; include EventIO
 		if reserved!=0
 			raise "reserved field is not zero"
 		end
-		GridFlow.whine "@n_dim=#{@n_dim}"
+#		GridFlow.whine "@n_dim=#{@n_dim}"
 		if @n_dim > GridFlow.max_rank
 			raise "too many dimensions (#{@n_dim})"
 		end
@@ -362,7 +362,7 @@ class FormatGrid < Format; include EventIO
 	# the dimension list
 	def frame2 data
 		@dim = data.unpack(if @is_le then "V*" else "N*" end)
-		GridFlow.whine "dim=#{@dim.inspect}"
+#		GridFlow.whine "dim=#{@dim.inspect}"
 		@prod = 1
 		@dim.each {|x| @prod *= x }
 		if @prod > GridFlow.max_size
@@ -389,12 +389,17 @@ class FormatGrid < Format; include EventIO
 		nn = n*8/@bpv
 		case @bpv
 		when 8
-			send_out_grid_flow 0, data.unpack("c*").pack("i*")
+			@bp = BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+			# send_out_grid_flow 0, data.unpack("c*").pack("i*")
+			send_out_grid_flow(0, @bp.unpack(data))
 			@dex += data.length
 		when 32
 			# hope for a multiple of 4 #!@#$
-			send_out_grid_flow 0, data.unpack(
-				if @is_le then "V*" else "N*" end).pack("i*")
+			if (@is_le ? 1 : 0)==OurByteOrder then
+				send_out_grid_flow 0, data
+			else
+				send_out_grid_flow 0, data.swap32!
+			end
 			@dex += data.length/4
 		end
 		if @dex == @prod

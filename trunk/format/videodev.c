@@ -473,20 +473,20 @@ METHOD(FormatVideoDev,init2) {
 	VideoPicture_whine(gp);
 
 	switch(gp->palette) {
-	case VIDEO_PALETTE_RGB24:
-		$->bit_packing = 
-//			BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
-			BitPacking_new(is_le(),3,0xff0000,0x00ff00,0x0000ff);
-	break;
-	case VIDEO_PALETTE_RGB565:
+	case VIDEO_PALETTE_RGB24:{
+//		uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
+		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+		$->bit_packing = BitPacking_new(is_le(),3,3,masks);
+	}break;
+	case VIDEO_PALETTE_RGB565:{
 		/* I think the BTTV card is lying. */
 		/* BIG_HACK_FIX_ME */
-		$->bit_packing =
-//			BitPacking_new(is_le(),2,0xf800,0x07e0,0x001f);
-//			BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
-			BitPacking_new(is_le(),3,0xff0000,0x00ff00,0x0000ff);
-//			BitPacking_new(is_le(),3,0xff000000,0x00ff0000,0x0000ff00);
-	break;
+//			uint32 masks[3] = { 0xf800,0x07e0,0x001f };
+//			uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
+			uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+//			uint32 masks[3] = { 0xff000000,0x00ff0000,0x0000ff00 };
+		$->bit_packing = BitPacking_new(is_le(),3,3,masks);
+	}break;
 	default:
 		whine("can't handle palette %d", gp->palette);
 	}

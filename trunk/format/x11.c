@@ -535,14 +535,11 @@ METHOD(FormatX11,init) {
 	{
 		Visual *v = $->visual;
 		int disp_is_le = !ImageByteOrder($->display);
+		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 		whine("is_le = %d",is_le());
 		whine("disp_is_le = %d", disp_is_le);
 		$->bit_packing = BitPacking_new(
-			disp_is_le,
-			$->ximage->bits_per_pixel/8,
-			v->red_mask,
-			v->green_mask,
-			v->blue_mask);
+			disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
 	}
 
 	BitPacking_whine($->bit_packing);
