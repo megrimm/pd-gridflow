@@ -335,8 +335,7 @@ public:
 
 #define DECL_SYM(_sym_) extern "C" Ruby/*Symbol*/ sym_##_sym_;
 
-DECL_SYM(grid_begin)
-DECL_SYM(grid_end)
+DECL_SYM(grid)
 DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
@@ -584,7 +583,7 @@ typedef struct GridHandler {
 	GridBegin begin;
 	GridFlow  flow; /* or GridFlow2 */
 	GridEnd   end;
-	int       mode; /* 4=ro=flow; 6=rw=flow2 */
+	int       mode; /* 0=ignoreflow; 4=ro=flow; 6=rw=flow2 */
 } GridHandler;
 
 struct GridInlet {
@@ -617,6 +616,7 @@ struct GridInlet {
 	void list(  int argc, Ruby *argv);
 	void int_(  int argc, Ruby *argv);
 	void float_(int argc, Ruby *argv);
+	void grid(Grid *g);
 };
 
 struct FClass {
@@ -643,23 +643,22 @@ struct GridClass /*: FClass */ {
 /* GridOutlet represents a grid-aware outlet */
 
 struct GridOutlet {
-/* context information */
-	GridObject *parent;
+/* these are set only once, at outlet creation */
+	GridObject * parent;
 	int woutlet;
 
-/* grid progress info */
-	Dim *dim;
-	int dex;
+/* those are set at every beginning of a transmission */
+	Dim *dim; /* dimensions of the grid being sent */
+	Pt<Number>buf; /* temporary buffer */
+	bool frozen; /* is the "begin" phase finished? */
+	Pt<GridInlet *> inlets; /* which inlets are we connected to */
+	int ninlets; /* how many of them */
 
-/* buffering */
-	Pt<Number>buf;
-	int bufn;
+/* those are updated during transmission */
+	int dex; /* how many numbers were already sent in this connection */
+	int bufn; /* number of bytes used in the buffer */
 
 /* transmission accelerator */
-	int frozen;
-/* !@#$ Pt<GridInlet *> */
-	int ron; GridInlet **ro; /* want Pt<const Number> shown to */
-	int rwn; GridInlet **rw; /* want (Pt<Number>) given to */
 
 /* methods */
 	GridOutlet(GridObject *parent, int woutlet);
@@ -673,7 +672,7 @@ struct GridOutlet {
 	void send_direct(int n, Pt</*const*/ Number>data);
 	void flush();
 	void end();
-	void callback(GridInlet *in, int mode);
+	void callback(GridInlet *in);
 };
 
 /* **************************************************************** */
