@@ -1,5 +1,7 @@
 /* $Id$ */
 
+-mfpmath=sse2
+
 --- make the development process more test-driven:
     * file every feature request and bug report into base/test.rb so
       that gridflow fails those tests;
@@ -55,17 +57,13 @@ for 0.8.0:
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
-pick a number: [130]
+pick a number: [133]
 
+[132] <MiS> @redim crashes when given negative sizes
 [130] numop ** can freeze GF
 [129] [display] should be translated to [messageprepend set] -> ""
 [128] loadbang-messages (comma) don't get translated to .pd ??
 [127] $(bindir) is not defined in Ruby 1.6
-
-[124] on OSX (10.3 ?):
-      <_peter> Program received signal EXC_BAD_ACCESS, Could not access memory.
-      <_peter> 0x0042d050 in _Z17localize_sysstackv () at bridge/common.c:128
-
 [123] doesn't compile with old versions of usb.h
 [121] @downscale_by still craps on RGBA images?
 [120] osx: -bundle_loader stuff fails if Pd is not in $PATH
@@ -98,7 +96,6 @@ pick a number: [130]
 [004] bug in automatic type conversion (eg: @in quicktime -> ...)
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] @in#open problem with String argument.
-[008] Greyscale JPEG does not work
 [010] separate bridge makefiles from other makefiles!!!
 [011] research bugs in nonblock IO with Ruby. (eg. serial port)
 [014] recursive message-loop not detected.
@@ -131,11 +128,11 @@ Bugs (Low Priority)
 [056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
 [059] mess with options in format grid
 [060] look for "!@#$" in source
-[061] @store should support other integer types in inlet 0 (would speedup beast.pd)
 [029] @join on small chunks is way too slow
-[130] inline expressions like (1000/29.97) don't work
 [009] T_DATA #dup #clone ???
 [069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
+[130] jmax2pd: inline expressions like (1000/29.97) don't work
+[131] "open x11 10.0.0.5:0.1" -> ERROR: opening X11 display: Success
 
 ===================
 
