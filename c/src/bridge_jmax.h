@@ -23,7 +23,7 @@
 
 #ifndef __BRIDGE_JMAX_H
 #define __BRIDGE_JMAX_H
-
+#include "lang.h"
 #include <fts/fts.h>
 
 /* **************************************************************** */
@@ -32,6 +32,7 @@
 typedef fts_atom_t Var;
 typedef fts_symbol_t Symbol;
 typedef fts_alarm_t Timer;
+typedef fts_object_t FObject;
 
 #define Object_send_thru(_self_,_outlet_,_selector_,ac,at) \
 		fts_outlet_send(OBJ(_self_),_outlet_,_selector_,ac,at)

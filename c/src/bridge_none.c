@@ -37,7 +37,7 @@ typedef struct symbol_entry_t {
 } symbol_entry_t;
 
 typedef struct Dest {
-	fts_object_t *obj;
+	FObject *obj;
 	int inlet;
 } Dest;
 
@@ -143,7 +143,7 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 /* **************************************************************** */
 /* Object */
 
-void fts_object_set_error(fts_object_t *o, const char *s, ...) {
+void fts_object_set_error(FObject *o, const char *s, ...) {
 	char buf[256];
 	va_list rest;
 	va_start(rest,s);
@@ -153,7 +153,7 @@ void fts_object_set_error(fts_object_t *o, const char *s, ...) {
 	va_end(rest);
 }
 
-fts_object_t *fts_object_new(int ac, Var *at) {
+FObject *fts_object_new(int ac, Var *at) {
 	Symbol classname = Var_get_symbol(at);
 	fts_class_t *class = symbols[classname].c;
 	if (!class) {
@@ -163,11 +163,11 @@ fts_object_t *fts_object_new(int ac, Var *at) {
 	return fts_object_new2(class,ac,at);
 }
 
-fts_object_t *fts_object_new2(fts_class_t *class, int ac, Var *at) {
+FObject *fts_object_new2(fts_class_t *class, int ac, Var *at) {
 	int i;
-	fts_object_t *$;
+	FObject *$;
 	assert(class->object_size > 0);
-	$ = (fts_object_t *)NEW(char,class->object_size);
+	$ = (FObject *)NEW(char,class->object_size);
 	$->head.cl = class;
 	$->argc = ac;
 	$->argv = NEW(Var,ac?ac:1);
@@ -190,7 +190,7 @@ fts_object_t *fts_object_new2(fts_class_t *class, int ac, Var *at) {
 	return $;
 }
 
-void fts_object_delete(fts_object_t *$) {
+void fts_object_delete(FObject *$) {
 	int i,j;
 	fts_send3($,-1,"delete");
 	for (i=0; i<$->head.cl->n_outlets; i++) {
@@ -207,7 +207,7 @@ void fts_object_delete(fts_object_t *$) {
 	FREE($);
 }
 
-void fts_send2(fts_object_t *o, int inlet, int ac, const Var *at) {
+void fts_send2(FObject *o, int inlet, int ac, const Var *at) {
 	Symbol sel;
 	assert(ac>0);
 	if (Var_has_symbol(at)) {
@@ -218,7 +218,7 @@ void fts_send2(fts_object_t *o, int inlet, int ac, const Var *at) {
 	}
 }
 
-void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const Var *at) {
+void fts_send(FObject *o, int inlet, Symbol sel, int ac, const Var *at) {
 	Dict *d = o->head.cl->method_table[inlet+1];
 	MethodDecl *md = (MethodDecl *) Dict_get(d,(void *)sel);
 	if (md) {
@@ -230,14 +230,14 @@ void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const Var *at) {
 	}
 }
 
-void fts_connect(fts_object_t *oo, int outlet, fts_object_t *oi, int inlet) {
+void fts_connect(FObject *oo, int outlet, FObject *oi, int inlet) {
 	Dest *d = NEW(Dest,1);
 	d->obj = oi;
 	d->inlet = inlet;
 	List_push(oo->outlets[outlet],d);
 }
 
-void Object_send_thru(fts_object_t *o, int outlet, Symbol sel,
+void Object_send_thru(FObject *o, int outlet, Symbol sel,
 int ac, const Var *at) {
 	List *l = o->outlets[outlet];
 	int i;
@@ -345,13 +345,13 @@ int silly_parse(const char *s, Var *a) {
 	return n;
 }
 
-fts_object_t *fts_object_new3(const char *foo) {
+FObject *fts_object_new3(const char *foo) {
 	Var a[10];
 	int n = silly_parse(foo,a);
 	return fts_object_new(n,a);
 }
 
-void fts_send3(fts_object_t *o, int woutlet, const char *foo) {
+void fts_send3(FObject *o, int woutlet, const char *foo) {
 	Var a[10];
 	int n = silly_parse(foo,a);
 	return fts_send2(o,woutlet,n,a);

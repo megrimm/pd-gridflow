@@ -320,6 +320,17 @@ FILE *gf_file_fopen(const char *name, int mode) {
 	return fdopen(fd,mode==4?"r":mode==2?"w":"");
 }
 
+char *FObject_to_s(FObject *$) {
+	char *buf = NEW2(char,256);
+	sprintf_vars(buf,
+/*		((fts_object_t)$->twin)->o.argc,
+		((fts_object_t)$->twin)->o.argv);
+*/
+		$->argc,
+		$->argv);
+	return buf;
+}
+
 /* **************************************************************** */
 /* [rtmetro] */
 
@@ -386,13 +397,12 @@ static int by_profiler_cumul(void **a, void **b) {
 	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
 }
 
-static void profiler_dump$1(void*d,void*k,void*v) {
+static void profiler_dump$1(void *d,void *k,void *v) {
 	List_push((List *)d,k);
 }
 
 METHOD(GFGlobal,profiler_dump) {
 	/* if you blow 256 chars it's your own fault */
-	char buf[256];
 	List *ol = List_new(0);
 
 	uint64 total=0;
@@ -409,7 +419,7 @@ METHOD(GFGlobal,profiler_dump) {
 	for(i=0;i<List_size(ol);i++) {
 		GridObject *o = List_get(ol,i);
 		int ppm = o->profiler_cumul * 1000000 / total;
-		sprintf_vars(buf,o->o.argc,o->o.argv);
+		char *buf = FObject_to_s(o);
 		whine("%20lld %2d.%04d %08x [%s]\n",
 			o->profiler_cumul,
 			ppm/10000,
@@ -417,6 +427,7 @@ METHOD(GFGlobal,profiler_dump) {
 			o,
 			buf);
 		/* Symbol_new(fts_get_class_name(o->o.head.cl)) */
+		FREE(buf);
 	}
 	whine("--------------------------------");
 }

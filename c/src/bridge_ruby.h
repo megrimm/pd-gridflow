@@ -23,7 +23,7 @@
 
 #ifndef __BRIDGE_RUBY_H
 #define __BRIDGE_RUBY_H
-#include "bridge.h"
+#include "lang.h"
 
 
 #endif /* __BRIDGE_RUBY_H */

@@ -54,9 +54,9 @@ typedef struct Var {
 	} v;
 } Var;
 
-typedef struct fts_object_t fts_object_t;
+typedef struct FObject FObject;
 
-typedef void (*fts_method_t)(fts_object_t *,int,Symbol,int,const Var *);
+typedef void (*fts_method_t)(FObject *,int,Symbol,int,const Var *);
 
 typedef struct fts_class_t {
 	Symbol name;
@@ -67,7 +67,7 @@ typedef struct fts_class_t {
 	void *user_data;
 } fts_class_t;
 
-struct fts_object_t {
+struct FObject {
 	struct {
 		fts_class_t *cl;
 	} head;
@@ -97,9 +97,6 @@ typedef struct Timer {
 
 #define post printf
 #define fts_SystemInlet (-1)
-
-Symbol Symbol_new(const char *s);
-const char *Symbol_name(Symbol sym);
 
 void fts_method_define_optargs(fts_class_t *, int winlet, Symbol
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
@@ -138,9 +135,9 @@ void sprintf_vars(char *buf, int ac, Var *at);
 void fts_class_install(Symbol sym,
 	fts_status_t (*p)(fts_class_t *class, int ac, const Var *at));
 
-void Object_send_thru(fts_object_t *o, int woutlet, Symbol selector, int ac, const Var *at);
+void Object_send_thru(FObject *o, int woutlet, Symbol selector, int ac, const Var *at);
 
-void fts_object_set_error(fts_object_t *o, const char *s, ...);
+void fts_object_set_error(FObject *o, const char *s, ...);
 fts_clock_t *fts_sched_get_clock(void);
 Timer *Timer_new(fts_clock_t *foo,
 	void (*f)(Timer *foo, void *), void *);
@@ -152,17 +149,19 @@ int gridflow_init_standalone(void);
 
 /* **************************************************************** */
 
-fts_object_t *fts_object_new(int ac, Var *at);
-fts_object_t *fts_object_new2(fts_class_t *class, int ac, Var *at);
-void fts_object_delete(fts_object_t *$);
-void fts_send2(fts_object_t *o, int winlet, int ac, const Var *at);
-void fts_send(fts_object_t *o, int winlet, Symbol sel, int ac, const Var *at);
-void fts_connect(fts_object_t *oo, int woutlet, fts_object_t *oi, int winlet);
+FObject *fts_object_new(int ac, Var *at);
+FObject *fts_object_new2(fts_class_t *class, int ac, Var *at);
+void fts_object_delete(FObject *$);
+void fts_send2(FObject *o, int winlet, int ac, const Var *at);
+void fts_send(FObject *o, int winlet, Symbol sel, int ac, const Var *at);
+void fts_connect(FObject *oo, int woutlet, FObject *oi, int winlet);
 
 int strsplit(char *victim, int max, char **witnesses);
 int silly_parse(const char *s, Var *a);
-fts_object_t *fts_object_new3(const char *foo);
-void fts_send3(fts_object_t *o, int woutlet, const char *foo);
+FObject *fts_object_new3(const char *foo);
+void fts_send3(FObject *o, int woutlet, const char *foo);
 
+Symbol Symbol_new(const char *s);
+const char *Symbol_name(Symbol sym);
 
 #endif /* __BRIDGE_NONE_H */

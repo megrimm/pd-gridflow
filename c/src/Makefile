@@ -16,8 +16,8 @@ LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 
 OBJS1 = $(addprefix $(OBJDIR)/,$(subst .c,.o,$(SOURCES)))
 
-$(PACKAGELIB): $(OBJS1)
-	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
+$(PACKAGELIB): $(OBJS1) $(OBJDIR)/bridge_jmax.o
+	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1) $(OBJDIR)/bridge_jmax.o
 
 else
 ifeq ($($JMAX_VERSION),30)
@@ -55,9 +55,6 @@ clean-standalone::
 $(LIB): $(OBJS2) ../obj2/bridge_none.o Makefile
 	@mkdir -p ../lib2
 	gcc -shared $(OBJS2) ../obj2/bridge_none.o -o $@ $(LDSOFLAGS)
-
-#$(LIB2): $(LIB)
-#	install --mode=755 $(LIB) $(LIB2)
 
 test::
 	(cd ../..; make test)
