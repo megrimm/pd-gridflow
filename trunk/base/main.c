@@ -38,9 +38,115 @@
 #define MAKE_TMP_LOG
 #define MAKE_LEAK_DUMP
 
+#include "../config.h"
+#include <assert.h>
+#include <limits.h>
+
+/* **************************************************************** */
+/* Allocation */
+
+VALUE gf_alloc_set = Qnil;
+
+/* to help find uninitialized values */
+void *qalloc(size_t n, const char *file, int line) {
+	long *data = (long *) qalloc2(n,file,line);
+	#ifndef NO_DEADBEEF
+	{
+		int i;
+		int nn = (int) n/4;
+		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
+	}
+	#endif
+	return data;	
+
+}
+
+typedef struct AllocTrace {
+	size_t n;
+	const char *file;
+	int line;
+} AllocTrace;
+
+void *qalloc2(size_t n, const char *file, int line) {
+	void *data = malloc(n);
+	assert(data);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		AllocTrace *al = (AllocTrace *) malloc(sizeof(AllocTrace));
+		al->n    = n   ;
+		al->file = file;
+		al->line = line;
+/*		Dict_put(gf_alloc_set,data,al); */
+	}
+#endif
+	return data;
+}
+
+void *qrealloc(void *data, int n) {
+	void *data2 = realloc(data,n);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+/*
+		void *a = Dict_get(gf_alloc_set,data);
+		Dict_del(gf_alloc_set,data);
+		Dict_put(gf_alloc_set,data2,a);
+*/
+	}
+#endif
+	return data2;
+}
+
+/* to help find dangling references */
+void qfree(void *data) {
+	assert(data);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+/*
+		void *a = Dict_get(gf_alloc_set,data);
+		if (a) free(a);
+		Dict_del(gf_alloc_set,data);
+*/
+	}
+#endif
+	{
+		int n=8;
+		data = realloc(data,n);
+#ifndef NO_DEADBEEF
+		{
+			long *data2 = (long *) data;
+			int i;
+			int nn = (int) n/4;
+			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+		}
+#endif
+	}
+	free(data);
+}
+
+void post(const char *,...);
+
+static void qdump$1(void *obj, void *k, void *v) {
+	AllocTrace *al = (AllocTrace *)v;
+	post("warning: %d bytes leak allocated at file %s line %d",
+		al->n,al->file,al->line);
+}
+
+void qdump(void) {
+	post("(leak detection disabled)");
+/*
+	post("checking for memory leaks...");
+	VALUE ary;
+	ary = rb_funcall(gf_alloc_set,rb_intern("
+	Dict_each(gf_alloc_set,qdump$1,0);
+	if (Dict_size(gf_alloc_set)==0) {
+		post("no leaks (yet)");
+	}
+*/
+}
+
 const char *whine_header = "[whine] ";
-Dict *gf_object_set = 0;
-Dict *gf_timer_set = 0;
+VALUE gf_object_set = 0;
+VALUE gf_timer_set = 0;
 Timer *gf_timer = 0;
 
 FILE *whine_f;
@@ -157,9 +263,9 @@ void gf_init (void) {
 	DEF_SYM(int);
 	DEF_SYM(list);
 
-	gf_alloc_set  = Dict_new(0,0);
-	gf_object_set = Dict_new(0,0);
-	gf_timer_set  = Dict_new(0,0);
+	gf_alloc_set  = rb_hash_new();
+	gf_object_set = rb_hash_new();
+	gf_timer_set  = rb_hash_new();
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
@@ -238,22 +344,13 @@ char *FObject_to_s(FObject *$) {
 }
 */
 
-void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
-	callback(o);
-}
-
 void gf_timer_handler$2 (void *foo) {
 //	rb_eval_string("STDERR.puts \"ruby-tick\"");
 //	rb_eval_string("protect{$esm.tick}");
 }
 
 void gf_timer_handler (Timer *foo, void *obj) {
-	uint64 now = RtMetro_now();
-//	fprintf(stderr,"tick-start @ %llu\n",now);
-	Dict_each(gf_timer_set,
-		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-	gf_timer_handler$2(0);
-//	fprintf(stderr,"tick-end (%llu)\n", RtMetro_now()-now);
+	rb_eval_string("$mainloop.tick");
 	Timer_set_delay(gf_timer, 100.0);
 	Timer_arm(gf_timer);
 }
