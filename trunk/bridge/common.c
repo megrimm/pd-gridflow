@@ -47,13 +47,12 @@ static uint64 time_now() {
 static void count_tick () {
 	static uint64 start_time = time_now();
 	static int count = 0;
-	static int next = 1000;
+	static int next = 10000;
 	int32 duration = (time_now() - start_time) / 1000;
 	if (count>=next) {
 		gf_bridge2->post("GF clock ticks: %d in %d ms (%.2f ms/tick)%s",
 			count, duration, duration*1.0/count,
 			gf_bridge2->post_does_ln ? "" : "\n");
-		//next = (next*15+9)/10; /* next notice when 50% bigger */
 		next *= 2;
 	}
 	count++;
@@ -80,13 +79,11 @@ static Ruby make_error_message () {
 	rb_ary_push(ary,rb_str_new2(buf));
 	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++)
 		rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
-	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
+//	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
 	return ary;
 }
 
-static void bridge_common_init () {
-
-}
+static void bridge_common_init () {}
 
 static int ninlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_ninlets))) RAISE("no inlet count");
@@ -109,35 +106,22 @@ static void gf_same_version () {
 
 /* -------- This is the big hack for what Ruby can't do for itself -------- */
 
-volatile long bogus_variable = 0; /* just even *try* to optimise me out of existence! */
-
-sigjmp_buf rescue_segfault;
-
-static void trap_segfault (int patate) {
-	fprintf(stderr,"THIS IS INSIDE A SIGHANDLER!\n");
-	siglongjmp(rescue_segfault,11);
-}
-
+static volatile long bogus_variable = 0; /* just even *try* to optimise me out of existence! */
+static sigjmp_buf rescue_segfault;
+static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
-
-static void bridge_localize_sysstack () {
+static VALUE *bridge_localize_sysstack () {
 	volatile long * volatile bp = (volatile long *)&bp; /* get any stack address */
-	fprintf(stderr,"sysstack top is at 0x%08lx\n",(long)bp);
-	post("sysstack top is at 0x%08lx\n",(long)bp);
+	//fprintf(stderr,"sysstack top is at 0x%08lx\n",(long)bp);
 	signal(11,trap_segfault);
 	// in this loop, segfault is overridden to mean breaking out of the for-loop.
 	if (!sigsetjmp(rescue_segfault,0)) {
-		for (;;) {
-			//fprintf(stderr,"sysstack: trying 0x%08lx\n",(long)bp);
-			bp+=1;
-			bogus_variable += *bp;
-		}
+		for (;;bp++) bogus_variable += *bp;
 	}
-	bp-=1;
+	bp--;
 	signal(11,SIG_DFL); /* can't really restore it. don't know where it was. */
-	fprintf(stderr,"sysstack starts at 0x%08lx\n",(long)bp);
-	post("sysstack starts at 0x%08lx\n",(long)bp);
-	Init_stack((VALUE *)bp);
+	//fprintf(stderr,"sysstack starts at 0x%08lx\n",(long)bp);
+	return bp;
 }
 
 #endif /* __BRIDGE_C */

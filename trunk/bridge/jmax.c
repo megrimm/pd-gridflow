@@ -313,12 +313,20 @@ static Ruby gf_find_file(Ruby rself, Ruby s) {
 	}
 }
 
+void sig_sprofiler (int bogus) {
+	int *bp = (int *)&bp;
+	fprintf(stderr,"top:%08x",(int)bp);
+	for (int i=1; bp+i<(int*)0xc0000000; i++) if (bp[i]>>24 == 0x40 || bp[i]>>24 == 0x08) fprintf(stderr," [%i]:%08x",i,bp[i]);
+	fprintf(stderr,"\n");
+}
+
 void gridflow_module_init () {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("Loading Ruby-for-jMax (from GridFlow " GF_VERSION ")\n");
+	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	bridge_localize_sysstack();
+	Init_stack(bp);
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
 	rb_ivar_set(rb_const_get(rb_cObject,SI(Data)),SI(@gf_bridge),PTR2FIX(gf_bridge2));
@@ -336,6 +344,7 @@ void gridflow_module_init () {
 //	post("gridflow clock DISABLED (sorry. connect a [metro] to [@global] instead)\n");
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);
+//	signal(12,sig_sprofiler);
 }
 
 fts_module_t gridflow_module = {

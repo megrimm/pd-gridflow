@@ -266,9 +266,12 @@ void gridflow_config() {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
+
+	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	bridge_localize_sysstack();
+	Init_stack(bp);
 	ruby_options(COUNT(foo),foo);
+
 	bridge_common_init();
 	rb_ivar_set(rb_const_get(rb_cObject,SI(Data)),SI(@gf_bridge),PTR2FIX(gf_bridge2));
 	rb_define_singleton_method(rb_const_get(rb_cObject,SI(Data)),"gf_bridge_init",
