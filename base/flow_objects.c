@@ -1117,8 +1117,8 @@ GRID_INLET(GridCentroid2,0) {
 	}
 } GRID_FINISH {
 	STACK_ARRAY(int32,blah,2);
-	blah[0] = sumy/sum;
-	blah[1] = sumx/sum;
+	blah[0] = sum ? sumy/sum : 0;
+	blah[1] = sum ? sumx/sum : 0;
 	out->send(2,blah);
 } GRID_END
 
