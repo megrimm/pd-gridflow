@@ -156,7 +156,59 @@ VALUE gf_timer_set = 0;
 
 FILE *whine_f;
 
-/* **************************************************************** */
+/* ---------------------------------------------------------------- */
+/* FObject */
+
+VALUE rb_ary_fetch(VALUE $, int i) {
+	VALUE argv[] = { INT2NUM(i) };
+	return rb_ary_aref(COUNT(argv),argv,$);
+}
+
+void whinep(VALUE $) {
+/*
+	rb_funcall(rb_eval_string("STDERR"),rb_intern("puts"),1,
+		rb_funcall($,rb_intern("inspect"),0));
+*/
+	whine(RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr);
+}
+
+VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $) {
+	VALUE ary = rb_ivar_get($,rb_intern("@outlets"));
+	int i, n = RARRAY(ary)->len;
+	for (i=0; i<n; i++) {
+		VALUE conn = rb_ary_fetch(ary,i);
+		VALUE rec = rb_ary_fetch(conn,0);
+		int inl = NUM2INT(rb_ary_fetch(conn,1));
+		VALUE a[argc+2];
+		char buf[256];
+		sprintf(buf,"_%d_%s",inl,argc<1?"bang":rb_id2name(SYM2ID(argv[0])));
+		rb_funcall(rec,rb_intern(buf),argc<1?0:argc-1,argv+1);
+	}
+	return Qnil;
+}
+
+VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
+	BFObject *foreign_peer = 0; /* for now */
+	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
+	VALUE $; /* ruby_peer */
+	c_peer->foreign_peer = foreign_peer;
+	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
+	c_peer->peer = $;
+	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
+
+	whinep($);
+	{
+		int i;
+		for (i=0; i<argc; i++) whinep(argv[i]);
+	}
+	whine("argc = %d",argc);
+	whine("argv = %p",argv);
+	rb_funcall2($,rb_intern("initialize"),argc,argv);
+	return $;
+}
+
+/* ---------------------------------------------------------------- */
 /* The setup part */
 
 #define DECL_SYM2(_sym_) \
@@ -202,7 +254,8 @@ VALUE gf_ruby_init$1 (void *foo) {
 	rb_define_method(GridFlow_module,"exec",GridFlow_exec,2);
 	rb_eval_string(
 		"begin\n"
-			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n"
+/*			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n" */
+			"require 'base/main.rb'\n"
 			"require '/home/projects/gridflow/extra/eval_server.rb'\n"
 			"$esm = EvalServerManager.new\n"
 /*
@@ -224,7 +277,31 @@ VALUE gf_ruby_init$2 (void *foo) {
 	return Qnil;
 }
 
+#define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
+
+/* at this point, Ruby should already be started */
+/* this part will load GridFlow _into_ Ruby */
 void gf_init (void) {
+	DEF_SYM(grid_begin);
+	DEF_SYM(grid_flow);
+	DEF_SYM(grid_end);
+	DEF_SYM(bang);
+	DEF_SYM(int);
+	DEF_SYM(list);
+
+	/* !@#$ mark */
+	gf_alloc_set  = rb_hash_new();
+	gf_object_set = rb_hash_new();
+
+	rb_eval_string("module GridFlow; end");
+	GridFlow_module = rb_eval_string("GridFlow");
+
+	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
+	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
+	DEF(FObject, send_thru, -1);
+	SDEF(FObject, install, 3);
+	SDEF(FObject, new, -1);
+
 	disable_signal_handlers();
 	srandom(time(0));
 
@@ -242,32 +319,12 @@ void gf_init (void) {
 	showenv("PATH");
 	showenv("DISPLAY");
 
-	{
-	char *foo[] = {"/bin/false","/dev/null"};
-	whine("starting Ruby...");
-	ruby_init();
-	rb_eval_string("module GridFlow; end");
-	ruby_options(COUNT(foo),foo);
-	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
-	}
-
-#define DEF_SYM(_sym_) \
-	sym_##_sym_ = SYM(_sym_);
-
-	DEF_SYM(grid_begin);
-	DEF_SYM(grid_flow);
-	DEF_SYM(grid_end);
-	DEF_SYM(bang);
-	DEF_SYM(int);
-	DEF_SYM(list);
-
-	gf_alloc_set  = rb_hash_new();
-	gf_object_set = rb_hash_new();
-
 	/* run startup of every source file */
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
+
+	gf_ruby_init$1(0);
 
 	whine("--- GridFlow startup: end ---");
 }
@@ -349,25 +406,6 @@ void MainLoop_remove(void *data) {
 		PTR2FIX(data));
 }
 
-VALUE rb_ary_fetch(VALUE $, int i) {
-	VALUE argv[] = { INT2NUM(i) };
-	return rb_ary_aref(COUNT(argv),argv,$);
-}
-
-VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $) {
-	VALUE ary = rb_ivar_get($,rb_intern("@outlets"));
-	int i, n = RARRAY(ary)->len;
-	for (i=0; i<n; i++) {
-		VALUE conn = rb_ary_fetch(ary,i);
-		VALUE rec = rb_ary_fetch(conn,0);
-		int inl = NUM2INT(rb_ary_fetch(conn,1));
-		VALUE a[argc+2];
-		char buf[256];
-		sprintf(buf,"_%d_%s",inl,argc<1?"bang":rb_id2name(SYM2ID(argv[0])));
-		rb_funcall(rec,rb_intern(buf),argc<1?0:argc-1,argv+1);
-	}
-}
-
 /*
 	a slightly friendlier version of post(...)
 	it removes redundant messages.
@@ -410,7 +448,18 @@ void whine(const char *fmt, ...) {
 	}
 }
 
+VALUE gf_post_string (VALUE $, VALUE s) {
+	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
+
+	post("%s",RSTRING(s)->ptr);
+//	fprintf(stderr,"%s",RSTRING(s)->ptr);
+	return Qnil;
+}
+
+/* ---------------------------------------------------------------- */
+
 /* Ruby's entrypoint. */
 void Init_gridflow (void) {
 	gf_init();
 }
+
