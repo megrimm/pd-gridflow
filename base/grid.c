@@ -417,7 +417,7 @@ METHOD(GridObject,init) {
 
 	{
 		GridClass *cl = $->grid_class;
-		whine("cl=%p\n",cl);
+		//whine("cl=%p\n",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = GridInlet_new($,gh);
@@ -527,9 +527,9 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 		sprintf(buf,"_%d_grid_end",inl);   rb_ary_push(list,rb_str_new2(buf));
 		sprintf(buf,"_%d_list",inl);       rb_ary_push(list,rb_str_new2(buf));
 	}
-	fprintf(stderr,"%s: instance_methods: %s\n",
+	/* fprintf(stderr,"%s: instance_methods: %s\n",
 		grid_class->name,
-		RSTRING(rb_funcall(list,SI(inspect),0))->ptr);
+		RSTRING(rb_funcall(list,SI(inspect),0))->ptr); */
 	return list;
 }
 

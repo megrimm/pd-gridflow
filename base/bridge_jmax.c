@@ -187,17 +187,13 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
 	post("$=%p\n",$);
-/*
-	post("$=%s\n",RSTRING(rb_funcall($, rb_intern("inspect"), 0))->ptr);
-*/
+/*  post("$=%s\n",RSTRING(rb_funcall($, rb_intern("inspect"), 0))->ptr); */
 
 	methods = rb_funcall($, rb_intern("instance_methods"), 1, Qtrue);
 	n = RARRAY(methods)->len;
 
-/*
-	post("instance_methods(true)=%s\n",
-		RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr);
-*/
+/* post("instance_methods(true)=%s\n",
+RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr); */
 
 	inlets = rb_ivar_get($,rb_intern("@inlets"));
 	outlets = rb_ivar_get($,rb_intern("@outlets"));

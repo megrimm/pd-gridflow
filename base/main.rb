@@ -29,15 +29,18 @@ require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
-module GridFlow; GF_VERSION = "0.6.0"; end
-
-require "gridflow/extra/eval_server.rb"
-$esm = EvalServerManager.new
-def esmtick
-	$esm.tick
-	$mainloop.timers.after(0.1) { esmtick }
+module GridFlow
+	GF_VERSION = "0.6.0"
+	def esmtick
+		$esm.tick
+		$mainloop.timers.after(0.1) { esmtick }
+	end
+	def start_eval_server
+		require "gridflow/extra/eval_server.rb"
+		$esm = EvalServerManager.new
+		esmtick
+	end
 end
-esmtick
 
 if true
 	$whine_log = File.open "/tmp/gridflow.log", "w"
@@ -234,5 +237,8 @@ def GridFlow.find_file s
 	whine "find_file: #{s}"
 	s
 end
+
+user_config_file = ENV["HOME"] + "/.gridflow_startup"
+require user_config_file if File.exist? user_config_file
 
 routine
