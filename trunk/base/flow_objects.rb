@@ -1503,5 +1503,39 @@ class PlotterControl < GridFlow::FObject
   install "plotter_control", 1, 1
 end
 
+(begin
+   require "linux/ParallelPort"
+   true
+ rescue LoadError
+   false end) and
+class ParallelPort < FObject
+  def initialize(port,manually=0)
+    @f = File.open(port.to_s,"r+")
+    @f.extend Linux::ParallelPort
+    @status = nil
+    @flags = nil
+    @manually = manually!=0
+    @clock = (if @manually then nil else Clock.new self end)
+    @clock.delay 0 if @clock
+  end
+  def delete; @clock.unset unless @manually; @f.close end
+  def _0_int(x) @f.write x.to_i.chr; @f.flush end
+  alias _0_float _0_int
+  def call
+    flags = @f.port_flags
+    send_out 2, flags if @flags != flags
+    @flags = flags
+    status = @f.port_status
+    send_out 1, status if @status != status
+    @status = status
+    @clock.delay 20 if @clock
+  end
+  def _0_bang
+    @status = @flags = nil
+    call
+  end
+  # outlet 0 reserved (future use)
+  install "parallel_port", 1, 3
+end
 
 end # module GridFlow
