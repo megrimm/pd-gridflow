@@ -38,6 +38,9 @@
 #include <stdarg.h>
 #include <sys/time.h>
 
+/* sorry. memory leaks must be found by hand in this module */
+#undef strdup
+
 /* can't even refer to the other GridFlow_module before ruby loads gridflow */
 static VALUE GridFlow_module2=0;
 static VALUE Pointer_class2=0;
@@ -348,13 +351,8 @@ void gridflow_module_init () {
 		(RFunc)gridflow_bridge_init,1);
 	post("(done)\n");
 
-	if (!
-	rb_eval_string("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
-	{
-		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
-		return;
-	}
+	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
+		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
 
 	rb_define_singleton_method(GridFlow_module2,"find_file",(RFunc)gf_find_file,1);
 	/* if exception occurred above, will crash soon */

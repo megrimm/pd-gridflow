@@ -26,6 +26,9 @@
 #include <stdarg.h>
 #include <sys/time.h>
 
+/* sorry. memory leaks must be found by hand in this module */
+#undef strdup
+
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #include <m_pd.h>
@@ -426,15 +429,8 @@ extern "C" void gridflow_setup () {
 		(RFunc)gridflow_bridge_init,1);
 
 	post("(done)");
-
-	if (!
-	rb_eval_string("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
-	{
-		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
-		return;
-	}
-
+	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
+		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
 //	rb_define_singleton_method(GridFlow_module2,"find_file",gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 	gf_alarm = clock_new(0,(void(*)())gf_timer_handler);

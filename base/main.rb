@@ -28,7 +28,6 @@
 class NotImplementedError
 	def initialize(*)
 		GridFlow.gfpost "HELLO"
-		Process.kill $$, 6
 	end
 end
 
@@ -83,8 +82,6 @@ class<<self
 	attr_reader :fobjects_set
 end
 
-@verbose=false
-
 self.post_header = "[gf] "
 
 def self.gfpost2(fmt,s); post("%s",s) end
@@ -118,9 +115,8 @@ end
 
 # adding some functionality to that:
 class FObject
-	alias profiler_cumul= profiler_cumul_assign
 	attr_writer :args
-	def args; @args || "[#{self.class} ...]"; end
+	def args; args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]
@@ -144,7 +140,7 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
-		p m if GridFlow.verbose
+		p m
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.name_lookup sym
@@ -279,24 +275,24 @@ end
 
 class GridGlobal
 	def _0_profiler_reset
-		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
+		gf_object_set.each {|o| o.profiler_cumul = 0 }
 	end
 	def _0_profiler_dump
 		ol = []
 		total=0
-		GridFlow.gfpost "-"*32
-		GridFlow.gfpost "         clock-ticks percent pointer  constructor"
-		GridFlow.fobjects_set.each {|o,*| ol.push o }
+		gfpost "-"*32
+		gfpost "         clock-ticks percent pointer  constructor"
+		gf_object_set.each {|o| ol.push o }
 		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
 		ol.each {|o|
 			int ppm = o.profiler_cumul * 1000000 / total
-			GridFlow.gfpost "%20d %2d.%04d %08x %s",
+			gfpost "%20lld %2d.%04d %08x [%s]\n",
 				o.profiler_cumul, ppm/10000, ppm%10000,
-				o.id, o.args
+				o, o.info
 		}
-		GridFlow.gfpost "-"*32
+		gfpost "-"*32
 	end
 end
 
@@ -333,6 +329,32 @@ rescue Exception => e
 	GridFlow.gfpost "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
 end
 
+AllocTrace = Struct.new(:v,:ptr,:size,:type,:file,:line)
+
+def self.leakage_dump
+	as = GridFlow.alloc_set
+	(gfpost "can't dump leakage list without --debug"; return) if not as
+	gfpost "forcing garbage-collection..."
+	GC.start
+	gfpost "list of remaining non-Ruby allocations:"
+	gfpost ""
+	gfpost "trace     pointer   size      type            file:line"
+	totsize=0
+	n=0
+	as2 = {}
+	as.each {|k,v| as2[k] = AllocTrace.new(v,*(GridFlow.alloctrace_to_a v)) }
+	keys = as.keys.sort {|a,b| as2[a].type <=> as2[b].type }
+	keys.each {|k|
+		v = as2[k]
+#		gfpost v.inspect
+		gfpost "%08x  %08x  %8d  %-16s %s:%d",
+			v.v*4, v.ptr*4, v.size, v.type, v.file, v.line
+		totsize+=v.size
+		n+=1
+	}
+	gfpost "total %d lost bytes in %d allocations", totsize, n
+end
+
 end # module GridFlow
 #----------------------------------------------------------------#
 
@@ -340,9 +362,10 @@ user_config_file = ENV["HOME"] + "/.gridflow_startup"
 load user_config_file if File.exist? user_config_file
 
 END {
-#	puts "This is an END block"
+	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v| k.delete }
 	GridFlow.fobjects_set.clear
+	GridFlow.leakage_dump
 }
 
 GridFlow.routine
