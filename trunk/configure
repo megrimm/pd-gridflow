@@ -205,7 +205,7 @@ $features = [
 Feature.new {
 	tag :libruby
 	name "Ruby as a dynamic library"
-	uses_so ["-lruby"]
+	uses_bridge_so ["-lruby"]
 	test proc {
 		c_test "
 		#include <ruby.h>
