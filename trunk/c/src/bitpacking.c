@@ -80,7 +80,7 @@ int BitPacking_bytes(BitPacking *$) {
   This piece of code is little-endian specific, sorry.
   Will fix it when I get asked for it.
 */
-uint8 *BitPacking_pack(BitPacking *$, int n, Number *in, uint8 *out) {
+uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	while (n--) {
 		unsigned int temp =
 			(((in[0] << $->high_bit[0]) >> 7) & $->mask[0]) |
@@ -93,7 +93,7 @@ uint8 *BitPacking_pack(BitPacking *$, int n, Number *in, uint8 *out) {
 	return out;
 }
 
-Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out) {
+Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
 	while (n--) {
 		int bytes=0, temp=0;
 		/* while(bytes--) { temp = (temp<<8) | *in++; } *//* BE */

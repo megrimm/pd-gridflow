@@ -114,11 +114,11 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
 	{
-		int newdex = $->dex + n;
-		if (newdex > Dim_prod($->dim)) {
+		int d = $->dex + $->bufn;
+		if (d+n > Dim_prod($->dim)) {
 			whine("%s:i%d: grid input overflow: %d of %d",
-				INFO($), newdex, Dim_prod($->dim));
-			n = Dim_prod($->dim) - $->dex;
+				INFO($), d+n, Dim_prod($->dim));
+			n = Dim_prod($->dim) - d;
 			if (n<=0) return;
 		}
 		if ($->buf && $->bufn) {
@@ -127,13 +127,18 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 				n--;
 			}
 			if ($->bufn == $->factor) {
+				int newdex = $->dex + $->factor;
 				$->flow((GridObject *)$->parent,$,$->factor,$->buf);
+				$->dex = newdex;
 				$->bufn = 0;
 			}
 		}
 		{
 			int m = (n / $->factor) * $->factor;
+			int newdex = $->dex + m;
 			if (m) $->flow((GridObject *)$->parent,$,m,data);
+			$->dex = newdex;
+			data += m;
 			n -= m;
 		}
 		if ($->buf) {
@@ -142,7 +147,6 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 				n--;
 			}
 		}
-		$->dex = newdex;
 	}
 }
 
@@ -317,8 +321,14 @@ METHOD(GridObject,list) {
 
 void GridObject_delete(GridObject *$) {
 	int i;
-	for (i=0; i<MAX_INLETS;  i++) FREE($->in[i]);
-	for (i=0; i<MAX_OUTLETS; i++) FREE($->out[i]);
+	for (i=0; i<MAX_INLETS;  i++) {
+/*		GridInlet_delete($->in[i]); */
+		FREE($->in[i]);
+	}
+	for (i=0; i<MAX_OUTLETS; i++) {
+/*		GridOutlet_delete($->out[i]); */
+		FREE($->out[i]);
+	}
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
@@ -343,6 +353,8 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 FileFormatClass *FileFormatClass_find(const char *name) {
 	int i;
 	for (i=0; i<COUNT(file_format_classes); i++) {
+		/* whine("comparing `%s' with `%s'", name,
+			file_format_classes[i]->symbol_name); */
 		if (strcmp(file_format_classes[i]->symbol_name,name)==0) {
 			return file_format_classes[i];
 		}

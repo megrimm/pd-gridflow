@@ -128,7 +128,7 @@ DECL_SYM(grid_end)
 
 
 /* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 2000
+#define MAX_INDICES 2048
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 4
@@ -202,8 +202,8 @@ typedef struct BitPacking BitPacking;
 	int low_bit(uint32 n);
 	BitPacking *BitPacking_new(int bytes, uint32 r, uint32 g, uint32 b);
 	void    BitPacking_whine(BitPacking *$);
-	uint8  *BitPacking_pack(BitPacking *$, int n, Number *data, uint8 *target);
-	Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out);
+	uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
+	Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
 
 #define DECL_TYPE(_name_,_size_) \
@@ -391,10 +391,10 @@ struct FileFormatClass {
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	FileFormat *(*open)(FileFormatClass *$, const char *filename, int mode);
+	FileFormat *(*open   )(FileFormatClass *$, const char *filename, int mode);
+	FileFormat *(*connect)(FileFormatClass *$, const char *target,   int mode);
 
 	/* for future use */
-	FileFormat *(*connect)(FileFormatClass *$, const char *proto, const char *target, int mode);
 	FileFormat *(*chain_to)(FileFormatClass *$, FileFormat *other);
 
 /* methods on objects of this class */
@@ -431,7 +431,8 @@ struct FileFormatClass {
 	FILE *bstream; \
 	FileFormat *chain; \
 	BitPacking *bit_packing; \
-	Dim *dim;
+	Dim *dim; \
+	void *extra;
 
 struct FileFormat {
 	FileFormat_FIELDS;
