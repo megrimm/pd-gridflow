@@ -567,6 +567,7 @@ extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 typedef void (*DimConstraint)(Dim *d);
 
 struct Grid {
+	Grid *next;
 	DimConstraint dc;
 	Dim *dim;
 	NumberTypeIndex nt;
@@ -574,6 +575,7 @@ struct Grid {
 	/*GridType *constraint; */
 
 	Grid() {
+		next = this;
 		dc = 0;
 		dim = 0;
 		nt = int32_type_i;
@@ -642,9 +644,19 @@ struct Grid {
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
-		_member_.init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+		if (is_busy()) { \
+			if (_member_.next == &_member_) { \
+				gfpost("object busy (backstoring data)"); \
+				_member_.next = new Grid(); \
+				_member_.next->dc = _member_.dc; \
+			} else { \
+				gfpost("object busy and backstore busy (aborting)"); \
+				in->abort(); \
+			} \
+		} \
+		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
 	GRID_FLOW { \
-		COPY(&((Pt<T>)_member_)[in->dex], data, n); } \
+		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
 	GRID_FINISH
 
 typedef struct GridInlet GridInlet;
@@ -826,6 +838,12 @@ struct GridObject : FObject {
 		Ruby s=rb_funcall(rself,SI(args),0);
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
+	}
+
+	bool is_busy_except(GridInlet *gin) {
+		for (int i=0; i<MAX_INLETS; i++)
+			if (in[i] && in[i]!=gin && in[i]->is_busy()) return true;
+		return false;
 	}
 
 	/* for Formats */
