@@ -102,6 +102,8 @@ def handle_def(line)
 			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
 			STDERR.puts "#{n.where}: \\def #{n.inspect}"
 		end
+	else
+		qlass.methods[m.selector] = m
 	end
 
 	Out.print "static Ruby #{classname}_#{m.selector}_wrap"+
