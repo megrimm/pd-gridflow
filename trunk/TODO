@@ -53,11 +53,8 @@ Documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
-[ ] replace current macro system by SWIG or Inline.rb ?
-[ ] Add simple C preprocessor to allow multi-line strings
-    (because of rb_eval_string ?)
-[ ] dimension list pattern matching system
-[ ] argument list processing system
+[ ] add \ruby \end blocks (multiline inlined rubyscripts)
+[ ] add preprocessing of grid.h
 [ ] inlet-variables (variables associated to inlets)
 [ ] better error handling
 [ ] MMX memcpy() ?
@@ -167,6 +164,8 @@ Input/Output
 [ ] shell object?
 [ ] @import, 'grid tcp': option: sudden vs gradual transmission through
 	gridflow.
+[ ] HPGL
+[ ] unixtime
 
 Format
 [ ] remaining number type support in formats
@@ -206,6 +205,7 @@ Extra/Samples/Etc
 [ ] .jmax(bma2): read, write
 [ ] samples/generique.jmax
 [ ] rename samples -> examples
+[ ] add examples from the workshop
 
 Bugs
 [ ] format_x11 causes delayed crash when closing its associated window
@@ -237,9 +237,7 @@ Bugs
 [ ] @in needs 2 inlets to work but should have only one.
 [ ] it's possible to crash by sending data in two inlets of a same object at once
 [ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
-[ ] make test:
-	[gf] total 31476 lost bytes in 445 allocations
-	[gf] total 18604 lost bytes in 445 allocations
+[ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
     this was long ago. look at new figures.
 [ ] latency is not that good. (GC ?)
 [ ] RtMetro crashes if deleted while turned on.
@@ -255,6 +253,7 @@ Bugs
 	(trying to load ~/.gridflow_startup)
 	(this is one error message from HELL; makes no sense at all)
 [ ] is there still a problem with videodev rgb vs bgr ?
+[ ] mess with options in format grid
 
 how about creating aliases like "open window" = "open x11 here" (or arbitrary
 user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
