@@ -6,6 +6,15 @@
 require "socket"
 require "fcntl"
 
+# in case of Ruby bug ("Error: Success")
+module Errno; class E000 < StandardError; end; end
+
+if Object.constants.include? :GridFlow
+  def log s; GridFlow.whine "%s", s; end
+else
+  def log s; STDERR.puts s; end
+end
+
 class IO
   def nonblock= flag
     bit = Fcntl::O_NONBLOCK
@@ -39,9 +48,11 @@ class EvalServerManager
     for s in @conns.keys do
       begin s.tick
       rescue Errno::EWOULDBLOCK
-      rescue EOFError
+      rescue EOFError, Errno::EPIPE
+        STDERR.puts "DEAD CONNECTION"
         @conns.delete(s)
       rescue Errno::E000
+        STDERR.puts "DEAD CONNECTION"
         @conns.delete(s)
         STDERR.puts "Error: Success (this is a bug in Ruby)"
       end
@@ -62,7 +73,7 @@ class EvalServer
     begin
       @sock.puts "\e[0;1;32m#{eval(line).inspect}"
     rescue Exception => e
-      @sock.print "\e[0;1;33m"+["#{e.class}: #{e}",*e.backtrace].join("\n")
+      @sock.puts "\e[0;1;33m"+["#{e.class}: #{e}",*e.backtrace].join("\n")
     end
   end
 end
