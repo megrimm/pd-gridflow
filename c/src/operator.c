@@ -115,7 +115,7 @@ Operator1 *op1_table_find(fts_symbol_t sym) {
 			{ Number a=as[1], b=bs[1]; as[1]= _expr_; } \
 			{ Number a=as[2], b=bs[2]; as[2]= _expr_; } \
 			{ Number a=as[3], b=bs[3]; as[3]= _expr_; } \
-		as+=4; n-=4; } } \
+		as+=4; bs+=4; n-=4; } } \
 	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
 		while (n--) { Number b = *as++; a = _expr_; } return a; }
 
@@ -149,9 +149,9 @@ DEF_OP2(le,  a <= b)
 DEF_OP2(lt,  a <  b)
 DEF_OP2(ge,  a >= b)
 
-DEF_OP2(sin, (Number)(b * sin(a * 2 * M_PI / 36000)))
-DEF_OP2(cos, (Number)(b * cos(a * 2 * M_PI / 36000)))
-DEF_OP2(atan, (Number)(0+atan2(a,b)))
+DEF_OP2(sin, (Number)(b * sin(a * M_PI / 18000)))
+DEF_OP2(cos, (Number)(b * cos(a * M_PI / 18000)))
+DEF_OP2(atan, (Number)(atan2(a,b) * 18000 / M_PI))
 DEF_OP2(tanh, (Number)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (Number)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 DEF_OP2(pow, ipow(a,b))

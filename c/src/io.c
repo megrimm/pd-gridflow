@@ -190,8 +190,11 @@ CLASS(GridIn) {
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(GridOut,0) {
-	int v[] = { Dim_get(in->dim,0), Dim_get(in->dim,1), 3 };
-	Dim *dim = Dim_new(ARRAY(v));
+	Dim *dim = Dim_dup(in->dim);
+	if (Dim_count(dim) != 3) {
+		whine("supports only exactly three dimensions");
+		return false;
+	}
 	if (Dim_equal_verbose_hwc(in->dim,dim)) {
 		CHECK_FILE_OPEN2
 		in->dex=0;
@@ -311,8 +314,11 @@ CLASS(GridOut) {
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(VideoOut,0) {
-	int v[] = { Dim_get(in->dim,0), Dim_get(in->dim,1), 3 };
-	Dim *dim = Dim_new(ARRAY(v));
+	Dim *dim = Dim_dup(in->dim);
+	if (Dim_count(dim) != 3) {
+		whine("supports only exactly three dimensions");
+		return false;
+	}
 	if (Dim_equal_verbose_hwc(in->dim,dim)) {
 		CHECK_FILE_OPEN2
 		in->dex=0;

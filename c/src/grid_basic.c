@@ -646,12 +646,31 @@ GRID_BEGIN(GridInner,0) {
 		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
 		for (  j=0; j<Dim_count(b)  ; i++,j++) { v[i] = Dim_get(b,j); }
 		GridOutlet_begin($->out[0],Dim_new(n,v));
+		GridInlet_set_factor(in,a_last);
 	}	
 	return true;
 }
 
 GRID_FLOW(GridInner,0) {
-	/* write me */
+	GridOutlet *out = $->out[0];
+	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int i,j;
+	int b_prod = Dim_prod($->dim);
+	Number *buf2 = NEW(Number,b_prod/factor);
+	Number *buf = NEW(Number,n/factor);
+	assert (n % factor == 0);
+
+	for (i=0; i<n; i+=factor) {
+		for (j=0; j<b_prod/factor; j+=factor) {
+			int k;
+			memcpy(buf,&$->data[i],factor*sizeof(Number));
+			$->op_para->op_array2(factor,buf,&data[j]);
+			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
+		}
+		GridOutlet_send(out,b_prod/factor,buf);
+	}
+	FREE(buf);
+	FREE(buf2);
 }
 
 GRID_END(GridInner,0) {
@@ -746,14 +765,14 @@ GRID_BEGIN(GridOuter,0) {
 }
 
 GRID_FLOW(GridOuter,0) {
-	int i,j;
 	int b_prod = Dim_prod($->dim);
 	Number *buf = NEW(Number,b_prod);
-	for (i=0; i<n; i++) {
-		for (j=0; j<b_prod; j++) {
-			buf[j] = $->op->op(data[i],$->data[j]);
-		}
+	while (n) {
+		int j;
+		for (j=0; j<b_prod; j++) buf[j] = *data;
+		$->op->op_array2(b_prod,buf,$->data);
 		GridOutlet_send($->out[0],b_prod,buf);
+		data++; n--;
 	}
 	FREE(buf);
 }
