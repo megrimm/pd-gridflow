@@ -531,15 +531,7 @@ GRID_INLET(FormatVideoDev,0) {
 	image = Pt<uint8>();
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
-	if (option==SYM(noinit)) {
-		/* hack for a Logitech Quickcam at 288*352 with a flaky driver */
-		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		bit_packing = new BitPacking(is_le(),3,3,masks);
-		int32 v[]={288,352,3};
-		dim = new Dim(3,v);
-	} else {
-		rb_funcall(rself,SI(initialize2),0);
-	}
+	rb_funcall(rself,SI(initialize2),0);
 	/* Sometimes a pause is needed here (?) */
 	usleep(200000);
 }
