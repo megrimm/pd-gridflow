@@ -179,6 +179,7 @@ void GridInlet::set_factor(int factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
+/*
 	switch (self->nt) {
 	case uint8_type_i: self->gh->flow(self,-1,Pt<uint8>()); break;
 	case int16_type_i: self->gh->flow(self,-1,Pt<int16>()); break;
@@ -186,6 +187,12 @@ static Ruby GridInlet_begin_1(GridInlet *self) {
 	case float32_type_i: self->gh->flow(self,-1,Pt<float32>()); break;
 	default: RAISE("argh");
 	}
+*/
+
+#define FOO(T) case T##_type_i: self->gh->flow(self,-1,Pt<T>()); break;
+	switch (self->nt) { FOO(uint8) FOO(int16) FOO(int32) FOO(float32)
+	default: RAISE("argh");}
+
 	return Qnil;
 }
 
@@ -620,10 +627,10 @@ METHOD3(GridObject,initialize) {
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
 		RAISE("not a GridObject subclass ???");
 	int noutlets = INT(rb_ivar_get(qlass,SI(@noutlets)));
-	if (!grid_class) RAISE("C++ grid_class is null in Ruby class %s",
-		rb_str_ptr(rb_funcall(rself,SI(inspect),0)));
-	for (int i=0; i<grid_class->handlersn; i++) {
-		GridHandler *gh = &grid_class->handlers[i];
+	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
+	if (handlers==Qnil) RAISE("BLETCH");
+	for (int i=0; i<rb_ary_len(handlers); i++) {
+		GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
 		in[gh->winlet] = new GridInlet(this,gh);
 	}
 	for (int i=0; i<noutlets; i++) out[i] = new GridOutlet(this,i);
@@ -726,10 +733,9 @@ static void *GridObject_allocate ();
 
 /* install_rgrid(Integer inlet, Boolean multi_type? = true) */
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
-	GridHandler *gh = new GridHandler;
-	GridClass *gc = new GridClass;
 	if (argc<1 || argc>2) RAISE("er...");
 	if (INT(argv[0])!=0) RAISE("not yet");
+	GridHandler *gh = new GridHandler;
 	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
 	gh->mode = 4;
@@ -743,24 +749,19 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 		gh->flow_int16 = 0;
 		gh->flow_float32 = 0;
 	}
-	gc->allocate = GridObject_allocate;
-	gc->methodsn = 0;
-	gc->methods = 0;
-	gc->handlersn = 1; /* hack, crack */
-	gc->handlers = gh;
-	gc->name = "hello";
-	rb_ivar_set(rself,SI(@grid_class),PTR2FIX(gc));
+	Ruby handlers = rb_ary_new();
+	rb_ary_push(handlers,PTR2FIX(gh));
+	rb_ivar_set(rself,SI(@handlers),handlers);
 	return Qnil;
 }
 
 static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	static const char *names[] = {"grid","list","int","float"};
 	Ruby list = rb_class_instance_methods(argc,argv,rself);
-	Ruby v = rb_ivar_get(rself,SI(@grid_class));
-	if (v==Qnil) return list;
-	GridClass *grid_class = FIX2PTR(GridClass,v);
-	for (int i=0; i<grid_class->handlersn; i++) {
-		GridHandler *gh = &grid_class->handlers[i];
+	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
+	if (handlers==Qnil) return list;
+	for (int i=0; i<rb_ary_len(handlers); i++) {
+		GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
 		char buf[256];
 		int inl = gh->winlet;
 		for (int j=0; j<COUNT(names); j++) {
@@ -815,7 +816,7 @@ LIST(),
 	DECL(GridObject,method_missing))
 { IEVAL(rself,"install 'GridObject',0,0"); }
 
-void GridObject_conf_class(Ruby rself, GridClass *grclass) {
+void GridObject_conf_class(Ruby rself, FClass *fclass) {
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
@@ -826,16 +827,15 @@ void GridObject_conf_class(Ruby rself, GridClass *grclass) {
 /* this is an abstract base class for file formats, network protocols, etc */
 
 #ifdef FORMAT_LIST
-extern GridClass FORMAT_LIST( ,ci,);
-GridClass *format_classes[] = { FORMAT_LIST(&,ci,) };
+extern FClass FORMAT_LIST( ,ci,);
+FClass *format_classes[] = { FORMAT_LIST(&,ci,) };
 #else
-GridClass *format_classes[] = {};
+FClass *format_classes[] = {};
 #endif
 
 /* **************************************************************** */
 
-Ruby cFormat;
-Ruby cGridObject;
+Ruby cGridObject, cFormat;
 
 void startup_formats () {
 	for (int i=0; i<COUNT(format_classes); i++) {

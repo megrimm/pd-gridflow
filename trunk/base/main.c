@@ -39,7 +39,7 @@
 #include <limits.h>
 
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
-Ruby cFObject;
+Ruby c;
 static Ruby sym_outlets=0;
 
 static void default_post(const char *fmt, ...) {
@@ -75,7 +75,7 @@ const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 static void FObject_mark (void *z) {
 /*
-	GridObject *self = (GridObject *)z;
+	FObject *self = (FObject *)z;
 //	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",self,self->peer);
 	self->mark();
 */
@@ -84,7 +84,7 @@ static void FObject_mark (void *z) {
 static int object_count=0;
 
 static void FObject_free (void *foo) {
-	GridObject *self = (GridObject *)foo;
+	FObject *self = (FObject *)foo;
 //	fprintf(stderr,"Say farewell to %08x\n",(int)self);
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
@@ -211,15 +211,21 @@ Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby rself) {
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby gc2 = rb_ivar_defined(qlass,SI(@grid_class)) ?
-		rb_ivar_get(qlass,SI(@grid_class)) : Qnil;
-	GridClass *gc = (gc2==Qnil ? 0 : FIX2PTR(GridClass,gc2));
+	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ?
+		rb_ivar_get(qlass,SI(@allocator)) : Qnil;
+	/* !@#$ GridObject is in FObject constructor (ugly) */
+	GridObject *self;
+	if (allocator==Qnil) {
+		/* this is a pure-ruby FObject/GridObject */
+		self = new GridObject;
+	} else {
+		/* this is a C++ FObject/GridObject */
+		self = (GridObject *)((void*(*)())FIX2PTR(void,allocator))();
+	}
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
-	GridObject *self = gc ? (GridObject *)gc->allocate() : new GridObject();
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, self);
 	self->rself = rself;
-	self->grid_class = gc;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
 	rb_funcall2(rself,SI(initialize),argc,argv);
 //	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
@@ -267,12 +273,12 @@ static Ruby ull2num(uint64 val) {
 /* end */
 
 Ruby FObject_profiler_cumul(Ruby rself) {
-	DGS(GridObject);
+	DGS(FObject);
 	return ull2num(self->profiler_cumul);
 }
 
 Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
-	DGS(GridObject);
+	DGS(FObject);
 	self->profiler_cumul = num2ull(arg);
 	return arg;
 }
@@ -378,17 +384,6 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
-	for (int i=0; i<n; i++) {
-		MethodDecl *md = &methods[i];
-		const char *buf =
-			strcmp(md->selector,"del")==0 ? "delete" :
-			md->selector;
-		rb_define_method(rself,buf,(RMethod)md->method,-1);
-		rb_enable_super(rself,buf);
-	}
-}
-
 NumberTypeIndex NumberTypeIndex_find (Ruby sym) {
 	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
 	if (sym==SYM(uint8)) return uint8_type_i;
@@ -447,13 +442,26 @@ Ruby gf_post_string (Ruby rself, Ruby s) {
 	return Qnil;
 }
 
-Ruby ruby_c_install(GridClass *gc, Ruby super) {
-	Ruby rself = rb_define_class_under(mGridFlow, gc->name, super);
-	rb_ivar_set(rself,SI(@grid_class),PTR2FIX(gc));
-	define_many_methods(rself,gc->methodsn,gc->methods);
-	GridObject_conf_class(rself,gc);
-	gc->rclass = rself;
-	if (gc->startup) gc->startup(rself);
+void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
+	for (int i=0; i<n; i++) {
+		MethodDecl *md = &methods[i];
+		const char *buf =
+			strcmp(md->selector,"del")==0 ? "delete" : md->selector;
+		rb_define_method(rself,buf,(RMethod)md->method,-1);
+		rb_enable_super(rself,buf);
+	}
+}
+
+Ruby ruby_c_install(FClass *fc, Ruby super) {
+	Ruby rself = rb_define_class_under(mGridFlow, fc->name, super);
+	Ruby handlers = rb_ary_new();
+	rb_ivar_set(rself,SI(@handlers),handlers);
+	for (int i=0; i<fc->handlersn; i++)
+		rb_ary_push(handlers,PTR2FIX(&fc->handlers[i]));
+	define_many_methods(rself,fc->methodsn,fc->methods);
+	rb_ivar_set(rself,SI(@allocator),PTR2FIX(fc->allocator));
+	GridObject_conf_class(rself,fc);
+	if (fc->startup) fc->startup(rself);
 	return Qnil;
 }
 
@@ -511,6 +519,8 @@ void startup_formats();
 void startup_cpu();
 
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
+
+Ruby cFObject;
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {

@@ -35,6 +35,7 @@ tries to call a Ruby method of the proper name.
 #include "grid.h"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
+#undef EXTERN
 #include <m_pd.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -208,7 +209,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 	Ruby qlass = find_fclass(fm->selector);
 	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
-	DGS(GridObject);
+	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
 

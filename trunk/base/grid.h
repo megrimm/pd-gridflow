@@ -234,38 +234,6 @@ static inline T lcm (T a, T b) {
 int highest_bit(uint32 n);
 int lowest_bit(uint32 n);
 
-/* **************************************************************** */
-
-/* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
-
-#define DECL(_class_,_name_) \
-	{ #_class_,#_name_,(RMethod) _class_##_##_name_##_wrap }
-
-#define DECL3(_name_) \
-	Ruby _name_(int argc, Ruby *argv);
-
-#define METHOD3(_class_,_name_) \
-	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); return self->_name_(argc,argv); } \
-	Ruby _class_::_name_(int argc, Ruby *argv)
-
-/* !@#$ */
-typedef Ruby (*RMethod)(...);
-//typedef Ruby (*RMethod)();
-
-
-#define GRCLASS(_name_,_handlers_,args...) \
-	static void *_name_##_allocate () { return new _name_; } \
-	static MethodDecl _name_ ## _methods[] = { args }; \
-	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	static void _name_ ## _startup (Ruby rself); \
-	GridClass ci ## _name_ = { \
-		0, _name_##_allocate, _name_ ## _startup, #_name_, \
-		COUNT(_name_##_methods), _name_##_methods, \
-		COUNT(_name_##_handlers),_name_##_handlers, \
-	}; \
-	static void _name_ ## _startup (Ruby rself)
-
 #ifdef HAVE_PENTIUM
 static inline uint64 rdtsc() {
 	uint64 x;
@@ -282,17 +250,33 @@ static inline bool is_le() {
 	return ((char *)&x)[0];
 }
 
-/* **************************************************************** */
-
 void gfpost(const char *fmt, ...);
 
-typedef struct MethodDecl {
+/* **************************************************************** */
+
+typedef Ruby (*RMethod)(...); /* !@#$ fishy */
+
+/* you shouldn't use MethodDecl directly */
+struct MethodDecl {
 	const char *qlass;
 	const char *selector;
 	RMethod method;
-} MethodDecl;
+};
 
-void define_many_methods(Ruby/*Class*/ rself, int n, MethodDecl *methods);
+/* declare a method in GRCLASS() */
+#define DECL(_class_,_name_) \
+	{ #_class_,#_name_,(RMethod) _class_##_##_name_##_wrap }
+
+/* declare a method inside a class{}; */
+#define DECL3(_name_) \
+	Ruby _name_(int argc, Ruby *argv);
+
+/* define a method body */
+#define METHOD3(_class_,_name_) \
+	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); return self->_name_(argc,argv); } \
+	Ruby _class_::_name_(int argc, Ruby *argv)
+
 
 /* **************************************************************** */
 /*
@@ -307,8 +291,9 @@ public:
 
 	Pt() : p(0), start(0), n(0) {}
 	Pt(T *q, int _n) : p(q), start(q), n(_n) {
+/* should this be >= or > ? */
 #ifdef HAVE_DEBUG_HARDER
-		if (p<start || p>=start+n) {
+		if (p<start || p>start+n) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p,(long)start,(long)start+n);
@@ -318,7 +303,7 @@ public:
 	}
 	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {
 #ifdef HAVE_DEBUG_HARDER
-		if (p<start || p>=start+n) {
+		if (p<start || p>start+n) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p,(long)start,(long)start+n);
@@ -802,19 +787,37 @@ private:
 	void grid2(Grid *g, T foo);
 };
 
-struct FClass {
-};
+/* **************************************************************** */
+/* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
 
-/* !@#$ should move some of this stuff over to FClass */
-/* but can't right now (C++ weirdness) */
-struct GridClass /*: FClass */ {
-	Ruby rclass;
-	void *(*allocate)();
-	void (*startup)(Ruby rself);
-	const char *name;
-	int methodsn; MethodDecl *methods;
+/*
+  FClass is to be used only at initialization,
+  starting with GF-0.7.1; relevant contents are now copied over
+  to ruby classes. In any case you shouldn't use it directly.
+*/
+struct FClass {
+	void *(*allocator)(); /* returns a new C++ object */
+	void (*startup)(Ruby rself); /* initializer for the Ruby class */
+	const char *name; /* C++/Ruby name (not jMax/PD name) */
+	int methodsn; MethodDecl *methods; /* C++ -> Ruby methods */
+	 /* GridFlow inlet handlers (!@#$ hack) */
 	int handlersn; GridHandler *handlers;
 };
+
+/* RMethod,MethodDecl,DECL,DECL3 should go here */
+
+#define GRCLASS(_name_,_handlers_,_args_...) \
+	static void *_name_##_allocator () { return new _name_; } \
+	static MethodDecl _name_ ## _methods[] = { _args_ }; \
+	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	static void _name_ ## _startup (Ruby rself); \
+	FClass ci ## _name_ = { \
+		_name_##_allocator, _name_ ## _startup, #_name_, \
+		COUNT(_name_##_methods), _name_##_methods, \
+		COUNT(_name_##_handlers),_name_##_handlers, \
+	}; \
+	static void _name_ ## _startup (Ruby rself)
+
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware outlet */
@@ -876,12 +879,24 @@ private:
 
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
+#define FOBJECT_MAGIC 1618033989
+
 struct FObject {
+	long magic;
 	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
-	GridClass *grid_class;
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
 	uint64 profiler_last;
+
+	FObject() : magic(FOBJECT_MAGIC), rself(0), bself(0),
+	profiler_cumul(0), profiler_last(0) {}
+
+	void check_magic () {
+		if (magic != FOBJECT_MAGIC) {
+			fprintf(stderr,"FObject memory corruption! (ask the debugger)\n");
+			raise(11);
+		}
+	}
 
 	/*
 	  part of the purpose of this is to cause the virtual-table-field
@@ -942,7 +957,7 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_abort);
 };
 
-void GridObject_conf_class(Ruby rself, GridClass *grclass);
+void GridObject_conf_class(Ruby rself, FClass *fclass);
 
 /* **************************************************************** */
 
@@ -987,7 +1002,7 @@ void MainLoop_remove(void *data);
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 
-Ruby ruby_c_install(GridClass *gc, Ruby super);
+Ruby ruby_c_install(FClass *fc, Ruby super);
 
 extern "C" GFBridge gf_bridge;
 extern "C" void Init_gridflow () /*throws Exception*/;
