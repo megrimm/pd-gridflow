@@ -210,7 +210,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0,4)),
+GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0)),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"

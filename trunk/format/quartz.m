@@ -226,7 +226,7 @@ GRID_INLET(FormatQuartz,0) {
 	[window close];
 }
 
-GRCLASS(FormatQuartz,LIST(GRINLET2(FormatQuartz,0,4)),
+GRCLASS(FormatQuartz,LIST(GRINLET2(FormatQuartz,0)),
 \grdecl
 ){
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
