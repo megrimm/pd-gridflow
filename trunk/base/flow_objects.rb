@@ -899,13 +899,13 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def _1_list(*a) @a=a end
 		def _0_bang; send_out 0, :list, *@a end
 		install "#{LPrefix}listmake", 2, 1
-	end # if false # disabled
+	end
 
 	class ListLength < FObject
 		def initialize() super end
 		def _0_list(*a) send_out 0, a.length end
 		install "#{LPrefix}listlength", 1, 1
-	end if false # disabled
+	end
 
 	class ListElement < FObject
 		def initialize(i=0) super; @i=i.to_i end
@@ -953,9 +953,9 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def initialize(*b) super; @b=b end
 		def _0_(*a) a[0,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
-		def method_missing(sym,a)
+		def method_missing(sym,*a)
 			(m = /(_\d_)(.*)/.match sym.to_s) or return super
-			send m[1].intern, m[2], *a
+			_0_ m[2].intern, *a
 		end
 		install "messageprepend", 2, 1
 	end
@@ -964,9 +964,9 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def initialize(*b) super; @b=b end
 		def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
-		def method_missing(sym,a)
+		def method_missing(sym,*a)
 			(m = /(_\d_)(.*)/.match sym.to_s) or return super
-			send m[1].intern, m[2], *a
+			_0_ m[2].intern, *a
 		end
 		install "messageappend", 2, 1
 	end
