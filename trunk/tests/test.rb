@@ -2,6 +2,7 @@
 
 require "gridflow"
 include GridFlow
+GridFlow.verbose=true
 
 $imdir = "./images"
 $animdir = "/opt/mex"
@@ -20,6 +21,9 @@ class Expect < FObject
 	def _0_list(*l)
 		raise "got #{l.inspect} expecting #{@v.inspect}" if @v!=l
 		@count+=1
+	end
+	def method_missing(s,*a)
+		raise "stray message: #{s}: #{a.inspect}"
 	end
 	install "expect", 1, 0
 end
@@ -54,6 +58,12 @@ def test_math
 	x.expect([210]) { a.send_in 0, 2,3,5,7 }
 	x.expect([128]) { a.send_in 0, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
 
+	(a = FObject["@fold + {0 0}"]).connect 0,e,0
+	x.expect([18,23]) { a.send_in 0, 3,2,"#".intern,2,3,5,7,11,13 }
+
+	(a = FObject["@scan + {0 0}"]).connect 0,e,0
+	x.expect([2,3,7,10,18,23]) { a.send_in 0, 3,2,"#".intern,2,3,5,7,11,13 }
+
 	(a = FObject["@scan * 1"]).connect 0,e,0
 	x.expect([2,6,30,210]) { a.send_in 0, 2,3,5,7 }
 	x.expect([1,1,2,2,4,8,16,16,16,32,32,64,128]) {
@@ -64,19 +74,21 @@ def test_math
 		a.send_in 1, 1,2,4
 		a.send_in 0, 8,16,32 }
 
-	(a = FObject["@inner2 * + 0"]).connect 0,e,0
+	(a = FObject["@outer",:%,[3,-3]]).connect 0,e,0
+	x.expect([0,0,1,-2,2,-1,0,0,1,-2,2,-1,0,0]) {
+		a.send_in 0, -30,-20,-10,0,+10,+20,+30 }
+
+	(a = FObject["@outer","swap%".intern,[3,-3]]).connect 0,e,0
+	x.expect([-27,-3,-17,-3,-7,-3,0,0,3,7,3,17,3,27]) {
+		a.send_in 0, -30,-20,-10,0,+10,+20,+30 }
+
+	(a = FObject["@inner2 * + 0 {2 2 # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	(i1 = FObject["@redim {2 2}"]).connect 0,a,2
-	x.expect([8,19,32,76]) {
-		i1.send_in 0, 2,3,5,7
-		i0.send_in 0, 1,2,4,8 }
+	x.expect([8,19,32,76]) { i0.send_in 0, 1,2,4,8 }
 	
-	(a = FObject["@inner * + 0"]).connect 0,e,0
+	(a = FObject["@inner * + 0 {2 2 # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	(i1 = FObject["@redim {2 2}"]).connect 0,a,2
-	x.expect([12,17,48,68]) {
-		i1.send_in 0, 2,3,5,7
-		i0.send_in 0, 1,2,4,8 }
+	x.expect([12,17,48,68]) { i0.send_in 0, 1,2,4,8 }
 
 	a = FObject["@print"]
 	a.send_in 0, "3 3 # 1 0 0 0"
@@ -98,14 +110,49 @@ def test_math
 	(a = FObject["@convolve"]).connect 0,b,0
 	(i0 = FObject["@redim {5 5 1}"]).connect 0,a,0
 	(i1 = FObject["@redim {3 1}"]).connect 0,a,1
-#	i1.send_in 0, 0,1,0
-#	i0.send_in 0, 1,1,1,0,0,0
-#	i1.send_in 0, 1,0,0
-#	i0.send_in 0, 1,1,1,0,0,0
 	i1.send_in 1, 3,3
 	x.expect([5,6,5,4,4,4,6,7,6,4,3,3,6,7,5,4,2,3,6,6,5,4,3,4,5]) {
 		i1.send_in 0, 1,1,1,1,1,1,1,1,1
 		i0.send_in 0, 1,1,1,0,0,0 }
+
+	(a = FObject["@import {4}"]).connect 0,e,0
+	x.expect([2,3,5,7]) {
+		[2,3,5,7].each {|v| a.send_in 0,v }}
+
+	for o in ["@store", "@store uint8"]
+		(a = FObject[o]).connect 0,e,0
+		a.send_in 1, 5, 4, "#".intern, 1,2,3,4,5
+		x.expect([1,2,3,4,4,5,1,2,2,3,4,5]) {
+			a.send_in 0, 3,1, "#".intern, 0,2,4 }
+		x.expect([1,2,3,4,5]*24) { a.send_in 0, 2,3,0, "#".intern }
+		x.expect([1,2,3,4,5]*4)  { a.send_in 0, 0, "#".intern }
+		x.expect([1,2,3,4,5]*4)  { a.send_in 0 }
+	end
+
+	b = FObject["@dim"]
+	c = FObject["@export_list"]
+	a.connect 0,b,0
+	y = Expect.new
+	b.connect 0,c,0
+	c.connect 0,y,0
+
+	(a = FObject["@for 0 10 1"]).connect 0,e,0
+	a.connect 0,b,0
+	y.expect([10]) {
+		x.expect((0...10).to_a) {
+			a.send_in 0 } }
+
+	(a = FObject["@for {0} {10} {1}"]).connect 0,e,0
+	a.connect 0,b,0
+	y.expect([10,1]) {
+		x.expect((0...10).to_a) {
+			a.send_in 0 } }
+
+	(a = FObject["@for {2 3} {5 7} {1 1}"]).connect 0,e,0
+	a.connect 0,b,0
+	y.expect([3,4,2]) {
+		x.expect([2,3,2,4,2,5,2,6,3,3,3,4,3,5,3,6,4,3,4,4,4,5,4,6]) {
+			a.send_in 0 } }
 end
 
 def test_print
@@ -146,7 +193,8 @@ def test_nonsense
 	p b.inlet_dim(0)
 end
 
-def test_gen
+# generates recursive checkerboard pattern (munchies) in bluish colours.     
+def test_munchies
 	f0,f1 = (0..1).map { FObject["@for 0 64 1"] } # two identical objects
 	f2 = FObject["@for 2 5 1"] # make vector (2,3,4)
 	t0 = FObject["@outer ^"] # for combining all rows and columns
@@ -161,6 +209,7 @@ def test_gen
 	t1.connect 0,gout,0
 
 	[f2,f1,f0].each {|o| o.send_in 0 } # sending three bangs
+	$mainloop.loop
 end
 
 def test_image command
@@ -173,17 +222,21 @@ def test_image command
 		gin.send_in 0
 	}
 	FObject["@global"].send_in 0, "profiler_dump"
-#	$mainloop.loop
+	$mainloop.loop
 end
 
 def test_ppm2
 	gin = FObject["@in"]
+	store = FObject["@store"]
 	pa = FObject["@convolve << + 0"]
 	pb = FObject["@ / 9"]
 	ra = FObject["@redim {3 3}"]
-	gout = FObject["@out 256 256"]
-	v4j = FObject["@global"]
-	gin.connect 0,pa,0
+#	gout = FObject["@out 256 256"]
+	gout = FObject["@out"]
+#	gout.send_in 0, "open sdl"
+	gout.send_in 0, "open x11 here"
+	gin.connect 0,store,1
+	store.connect 0,pa,0
 	pa.connect 0,pb,0
 	pb.connect 0,gout,0
 	ra.connect 0,pa,1
@@ -191,8 +244,11 @@ def test_ppm2
 	gout.send_in 0,"option timelog 1"
 	gin.send_in 0,"open ppm file #{$imdir}/teapot.ppm"
 #	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
-	30.times { gin.send_in 0 }
+	gin.send_in 0
+	30.times { store.send_in 0 }
+	v4j = FObject["@global"]
 	v4j.send_in 0,"profiler_dump"
+	$mainloop.loop
 end
 
 def test_anim msgs
@@ -209,7 +265,7 @@ def test_anim msgs
 	d=Time.new
 	frames=125
 	frames.times { gin.send_in 0 }
-#	loop { gin.send_in 0 }
+	loop { gin.send_in 0 }
 	d=Time.new-d
 	printf "%d frames in %.6f seconds (avg %.6f ms, %.6f fps)\n",
 		frames, d, 1000*d/frames, frames/d
@@ -318,8 +374,13 @@ def test_metro
 	$mainloop.loop
 end
 
-test_math
-test_gen
+if ARGV[0] then
+	send "test_#{ARGV[0]}"
+	exit
+end
+
+#test_math
+#test_munchies
 #test_image "ppm file #{$imdir}/g001.ppm"
 #test_image "ppm gzfile #{$imdir}/g001.ppm.gz"
 #test_image "grid file #{$imdir}/foo.grid"
@@ -329,7 +390,10 @@ test_gen
 #test_ppm2
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
-#test_anim ["open videodev /dev/video","option channel 1","option size 240 320"]
+test_anim ["open videodev /dev/video10",
+	"option transfer read",
+	"option channel 1",
+	"option size 240 320"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
