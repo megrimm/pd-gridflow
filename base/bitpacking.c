@@ -155,7 +155,6 @@ static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 
 template <class T>
 static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
-if (sizeof(T)!=1) {default_pack(self,n,in,out); return;}
 	Pt<int32> o32 = (Pt<int32>)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];

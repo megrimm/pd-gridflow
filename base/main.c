@@ -66,6 +66,9 @@ static Ruby ull2num(uint64 val) {
 extern "C"{
 void rb_raise0(
 	const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
+
+//	raise(11);
+
 	va_list args;
 	char buf[BUFSIZ];
 	va_start(args,fmt);
@@ -567,6 +570,15 @@ Ruby GridFlow_profiler_reset2 (Ruby rself) {
 	memcpy_calls = 0;
 	memcpy_bytes = 0;
 	return Qnil;
+}
+
+// don't touch.
+static void gfmemcopy32(int32 *as, int32 *bs, int n) {
+	int32 ba = bs-as;
+#define FOO(I) as[I] = (as+ba)[I];
+		UNROLL_8(FOO,n,as)
+#undef FOO
+
 }
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {

@@ -138,7 +138,9 @@ def handle_def(line)
 		end
 	}
 
-	Out.print "return " if m.rettype!="void"
+#	Out.print "return " if m.rettype!="void"
+	Out.print "VALUE foo = " if m.rettype!="void" ###
+
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
 		if arg.default then
@@ -148,7 +150,9 @@ def handle_def(line)
 		end
 	}
 	Out.print ");"
+	Out.print "self->check_magic();"
 	Out.print "return Qnil;" if m.rettype=="void"
+	Out.print "return foo;" if m.rettype!="void" ###
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
 	Out.puts "#{unparse_arglist m.arglist, false}){//FCS"

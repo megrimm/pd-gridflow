@@ -1206,7 +1206,7 @@ struct RtMetro : GridObject {
 
 	uint64 delay();
 
-	\decl void initialize (int ms, Symbol mode);
+	\decl void initialize (int ms=1000, Symbol mode=Qnil);
 	\decl void _0_int (int x);
 	\decl void _1_int (int x);
 	\decl void delete_m();
