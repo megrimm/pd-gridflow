@@ -480,7 +480,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeIndex nt) {
 	a[3] = PTR2FIXB(this);
 	a[4] = INT2NUM(nt);
 	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
-	FObject_send_out(COUNT(a),a,parent->rself);
+	parent->send_out(COUNT(a),a);
 	frozen = 1;
 }
 
@@ -814,14 +814,13 @@ LIST(),
 	DECL(GridObject,inlet_dim),
 	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))
-{ IEVAL(rself,"install 'GridObject',0,0"); }
-
-void GridObject_conf_class(Ruby rself, FClass *fclass) {
+{
+	IEVAL(rself,"install 'GridObject',0,0");
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
 	rb_enable_super(rb_singleton_class(rself),"instance_methods");
-}  
+}
 
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */

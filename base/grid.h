@@ -921,6 +921,18 @@ struct FObject {
 	*/
 	virtual ~FObject() {}
 	virtual void mark(){} /* not used for now */
+
+	const char *args() {
+		Ruby s=rb_funcall(rself,SI(args),0);
+		if (s==Qnil) return 0;
+		return rb_str_ptr(s);
+	}
+
+	DECL3(profiler_cumul_get);
+	DECL3(profiler_cumul_set);
+	DECL3(send_in);
+	DECL3(send_out);
+	DECL3(del);
 };
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
@@ -940,12 +952,6 @@ struct GridObject : FObject {
 	GridObject();
 	~GridObject();
 	void mark(); /* not used for now */
-
-	const char *args() {
-		Ruby s=rb_funcall(rself,SI(args),0);
-		if (s==Qnil) return 0;
-		return rb_str_ptr(s);
-	}
 
 	/* result should be printed immediately as the GC may discard it anytime */
 	const char *info();
@@ -969,8 +975,6 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_flow);
 	DECL3(send_out_grid_abort);
 };
-
-void GridObject_conf_class(Ruby rself, FClass *fclass);
 
 /* **************************************************************** */
 
@@ -1003,7 +1007,6 @@ extern Ruby cFormat;
 
 uint64 RtMetro_now();
 
-Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself);
 Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets, Ruby outlets);
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);
 const char *rb_sym_name(Ruby sym);
@@ -1015,6 +1018,7 @@ void MainLoop_remove(void *data);
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 
+//void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 Ruby ruby_c_install(FClass *fc, Ruby super);
 
 extern "C" GFBridge gf_bridge;

@@ -39,7 +39,8 @@
 #include <limits.h>
 
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
-Ruby c;
+Ruby cFObject;
+
 static Ruby sym_outlets=0;
 
 static void default_post(const char *fmt, ...) {
@@ -85,7 +86,7 @@ static int object_count=0;
 
 static void FObject_free (void *foo) {
 	FObject *self = (FObject *)foo;
-	gfpost("FObject_free: %08x",(int)self);
+	//gfpost("FObject_free: %08x",(int)self);
 	self->check_magic();
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
@@ -95,12 +96,6 @@ static void FObject_free (void *foo) {
 	delete self;
 	/* a silly bug was on this line before. watch out. */
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
-}
-
-void GFStack_push(FObject *g) {
-}
-
-void GFStack_pop(FObject *g) {
 }
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
@@ -125,8 +120,8 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	}
 }
 
-Ruby FObject_send_in(int argc, Ruby *argv, Ruby rself) {
-	if (TYPE(rself)==T_DATA) { DGS(FObject); ENTER(self); }
+METHOD3(FObject,send_in) {
+	ENTER(this);
 	Ruby sym;
 
 	if (argc<1) RAISE("not enough args");
@@ -151,12 +146,12 @@ Ruby FObject_send_in(int argc, Ruby *argv, Ruby rself) {
 	char buf[256];
 	sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(rself,rb_intern(buf),argc,argv);
-	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
+
+	LEAVE(this);
 	return Qnil;
 }
 
-Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
-	DGS(FObject);
+METHOD3(FObject,send_out) {
 	Ruby sym;
 
 	if (argc<1) RAISE("not enough args");
@@ -173,17 +168,20 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	}
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
-	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
-	if (gf_bridge.send_out && self->bself)
+
+	LEAVE(this);
+
+	if (gf_bridge.send_out && bself)
 		gf_bridge.send_out(argc,argv,sym,outlet,rself);
 	Ruby ary = rb_ivar_defined(rself,SYM2ID(sym_outlets)) ?
 		rb_ivar_get(rself,SYM2ID(sym_outlets)) : Qnil;
-	if (ary==Qnil) return Qnil;
+	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
-	if (ary==Qnil) return Qnil;
+	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
-	int n = RARRAY(ary)->len;
+	{
+	int n = rb_ary_len(ary);
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
@@ -194,20 +192,9 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 		argv2[0] = INT2NUM(inl);
 		argv2[1] = sym;
 		rb_funcall2(rec,SI(send_in),argc+2,argv2);
-/*
-		char buf[256];
-		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
-		rb_funcall2(rec,rb_intern(buf),argc,argv);
-*/
-	}
-	if (TYPE(rself)==T_DATA) { DGS(FObject); ENTER(self); }
-	return Qnil;
-}
-
-Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby rself) {
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
-	rb_funcall(keep,SI(delete),1,rself);
-//	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
+	}}
+end:
+	ENTER(this);
 	return Qnil;
 }
 
@@ -273,15 +260,20 @@ static Ruby ull2num(uint64 val) {
 
 /* end */
 
-Ruby FObject_profiler_cumul(Ruby rself) {
-	DGS(FObject);
-	return ull2num(self->profiler_cumul);
+METHOD3(FObject,profiler_cumul_get) {
+	return ull2num(profiler_cumul);
 }
 
-Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
-	DGS(FObject);
-	self->profiler_cumul = num2ull(arg);
-	return arg;
+METHOD3(FObject,profiler_cumul_set) {
+	if (argc<1) RAISE("");
+	profiler_cumul = num2ull(argv[0]);
+	return argv[0];
+}
+
+METHOD3(FObject,del) {
+	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
+	rb_funcall(keep,SI(delete),1,rself);
+	return Qnil;
 }
 
 /* ---------------------------------------------------------------- */
@@ -331,7 +323,7 @@ METHOD3(BitPacking,unpack2) {
 
 void BitPacking_free (void *foo) {
 	BitPacking *self = (BitPacking *)foo;
-	gfpost("BitPacking_free: %08x",(int)self);
+	//gfpost("BitPacking_free: %08x",(int)self);
 	self->check_magic();
 	delete self;
 }
@@ -465,7 +457,6 @@ Ruby ruby_c_install(FClass *fc, Ruby super) {
 		rb_ary_push(handlers,PTR2FIX(&fc->handlers[i]));
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX(fc->allocator));
-	GridObject_conf_class(rself,fc);
 	if (fc->startup) fc->startup(rself);
 	return Qnil;
 }
@@ -525,7 +516,13 @@ void startup_cpu();
 
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
 
-Ruby cFObject;
+MethodDecl FObject_methods[] = {
+	DECL(FObject,profiler_cumul_get),
+	DECL(FObject,profiler_cumul_set),
+	DECL(FObject,send_out),
+	DECL(FObject,send_in),
+	DECL(FObject,del),
+};
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
@@ -557,11 +554,7 @@ void Init_gridflow () {
 	DEF(Pointer, get, 0);
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	DEF(FObject, send_out, -1);
-	DEF(FObject, send_in, -1);
-	DEF(FObject, delete, -1);
-	DEF(FObject, profiler_cumul, 0);
-	DEF2(FObject, "profiler_cumul=", profiler_cumul_set, 1);
+	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 

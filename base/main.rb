@@ -137,6 +137,8 @@ end
 
 # adding some functionality to that:
 class FObject
+	alias :profiler_cumul :profiler_cumul_get
+	alias :profiler_cumul= :profiler_cumul_set
 	attr_writer :args # String
 	attr_reader :outlets
 	def args
