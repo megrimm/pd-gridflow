@@ -78,30 +78,31 @@ GRID_BEGIN(GridImport,1) {
 	return true;
 }
 
-/* !@#$ this could blow up */
 GRID_FLOW(GridImport,1) {
 	int i;
-	int *dim = NEW(int,n);
+	int dim[n];
 	FREE($->dim);
-	for(i=0;i<n;i++) { dim[i]=data[i]; COERCE_INT_INTO_RANGE(dim[i],1,MAX_INDICES); }
+	for(i=0;i<n;i++) {
+		dim[i]=data[i];
+		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
+	}
 	$->dim = Dim_new(n,dim);
 	GridInlet_abort($->in[0]);
 	GridOutlet_abort($->out[0]);
-	FREE(dim);
 }
 
 GRID_END(GridImport,1) {}
 
 METHOD(GridImport,init) {
 	int i;
-	int v[argc];
+	int dim[argc];
 	rb_call_super(argc,argv);
 
 	for (i=0; i<argc; i++) {
-		v[i] = INT(argv[i]);
-		if (v[i]<1 || v[i]>MAX_INDICES) rb_raise(rb_eArgError,"dim out of bounds");
+		dim[i] = INT(argv[i]);
+		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(argc,v);
+	$->dim = Dim_new(argc,dim);
 }
 
 METHOD(GridImport,delete) {
@@ -1081,30 +1082,32 @@ GRID_BEGIN(GridRedim,1) {
 	return true;
 }
 
-/* !@#$ this could blow up */
 GRID_FLOW(GridRedim,1) {
 	int i;
-	int *dim = NEW(int,n);
+	int dim[n];
 	FREE($->dim);
-	for(i=0;i<n;i++) { dim[i]=data[i]; COERCE_INT_INTO_RANGE(dim[i],1,MAX_INDICES); }
+	for(i=0;i<n;i++) {
+		dim[i]=data[i];
+		if (dim[i]<1 || dim[i]>MAX_INDICES)
+			RAISE("dim[%d]=%d is out of range",i,dim[i]);
+	}
 	$->dim = Dim_new(n,dim);
 	GridInlet_abort($->in[0]);
 	GridOutlet_abort($->out[0]);
-	FREE(dim);
 }
 
 GRID_END(GridRedim,1) {}
 
 METHOD(GridRedim,init) {
 	int i;
-	int v[argc];
+	int dim[argc];
 	rb_call_super(argc,argv);
 
 	for (i=0; i<argc; i++) {
-		v[i] = INT(argv[i]);
-		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
+		dim[i] = INT(argv[i]);
+		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(argc,v);
+	$->dim = Dim_new(argc,dim);
 	$->data = 0;
 }
 
@@ -1332,8 +1335,7 @@ METHOD(GridOut,_0_option) {
 	VALUE sym = argv[0];
 	CHECK_FILE_OPEN
 	if (sym == SYM(timelog)) {
-		$->timelog = INT(argv[1]);
-		COERCE_INT_INTO_RANGE($->timelog,0,1);
+		$->timelog = !! INT(argv[1]);
 		whine("timelog = %d",$->timelog);
 	} else {
 		rb_funcall2($->ff,SI(option),argc,argv);

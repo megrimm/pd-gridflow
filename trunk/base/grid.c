@@ -311,10 +311,8 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->dim = dim;
 	$->dex = 0;
 	$->frozen = 0;
-	$->ron = 0;
-	$->ro  = 0;
-	$->rwn = 0;
-	$->rw  = 0;
+	$->ron = 0; $->ro  = 0;
+	$->rwn = 0; $->rw  = 0;
 	{
 		VALUE a[n+3];
 		a[0] = INT2NUM($->woutlet);

@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,7 +30,7 @@ $mainloop = MainLoop.new
 $tasks = {}
 
 module GridFlow
-	GF_VERSION = "0.6.0"
+	GF_VERSION = "0.6.1"
 	def esmtick
 		$esm.tick
 		$mainloop.timers.after(0.1) { esmtick }
@@ -239,6 +239,6 @@ def GridFlow.find_file s
 end
 
 user_config_file = ENV["HOME"] + "/.gridflow_startup"
-require user_config_file if File.exist? user_config_file
+load user_config_file if File.exist? user_config_file
 
 routine
