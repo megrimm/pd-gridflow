@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.6.3"
+GF_VERSION = "0.6.4"
 
 require "xmlparser"
 
@@ -172,7 +172,7 @@ class XNode
 			mk(:h4) { print att["name"] }}}
 		$section={}
 		proc {
-			print "<tr><td>&nbsp;</td></tr>"
+			print "<tr><td>&nbsp;</td></tr>\n"
 			print "</table>" if $section[:table]
 			$section=nil
 		}
@@ -205,7 +205,7 @@ class XNode
 		mk(:td) {}
 		mk(:td) {}
 		print "<td>"
-		proc { print "</td></tr>" }
+		proc { print "</td></tr>\n" }
 	end
 
 	def prc_jmax_class
@@ -297,7 +297,7 @@ class XNode
 		mk(:td) { print att["who"]   }
 		mk(:td) { print att["files"] }
 		print "<td>"
-		proc { print "</td></tr>" }
+		proc { print "</td></tr>\n" }
 	end
 
 	def prc_operator_1
@@ -323,7 +323,7 @@ class XNode
 			# print att["name"]
 		}
 		print "<td>"
-		proc { print "</td></tr>" }
+		proc { print "</td></tr>\n" }
 	end
 	alias prc_operator_2 prc_operator_1
 
