@@ -22,6 +22,7 @@
 */
 
 #include "../base/grid.h"
+#define aa_hardwareparams aa_hardware_params
 #include <aalib.h>
 
 struct FormatAALib : Format {
