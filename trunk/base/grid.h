@@ -307,8 +307,13 @@ static inline bool is_le() {
 
 /* **************************************************************** */
 
+#ifdef HAVE_LITE
+#define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32)
+#define EACH_FLOAT_TYPE(MACRO)
+#else
 #define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32) MACRO(int64)
 #define EACH_FLOAT_TYPE(MACRO) MACRO(float32) MACRO(float64)
+#endif
 #define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
 
 // note: loop unrolling macros assume N!=0
@@ -675,6 +680,11 @@ NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL
 NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 
+#ifdef HAVE_LITE
+#define NT_NOTLITE NT_UNSUPPORTED
+#else
+#define NT_NOTLITE 0
+#endif
 #define NUMBER_TYPES(MACRO) \
 	MACRO(     uint8,  8, NT_UNSIGNED, "u8,b") \
 	MACRO(      int8,  8, NT_UNSUPPORTED, "i8") \
@@ -683,9 +693,9 @@ NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 	MACRO(    uint32, 32, NT_UNSIGNED | NT_UNSUPPORTED, "u32") \
 	MACRO(     int32, 32, 0, "i32,i") \
 	MACRO(    uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED, "u64") \
-	MACRO(     int64, 64, NT_UNSUPPORTED, "i64,l") \
-	MACRO(   float32, 32, NT_FLOAT, "f32,f") \
-	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED, "f64,d")
+	MACRO(     int64, 64, NT_NOTLITE, "i64,l") \
+	MACRO(   float32, 32, NT_NOTLITE | NT_FLOAT, "f32,f") \
+	MACRO(   float64, 64, NT_NOTLITE | NT_FLOAT, "f64,d")
 
 enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_type_i,
@@ -722,21 +732,26 @@ struct NumberType : CObject {
 
 NumberTypeE NumberTypeE_find (Ruby sym);
 
-#define TYPESWITCH(T,C,E) switch (T) { \
-	case uint8_type_i: C(uint8) break; \
-	case int16_type_i: C(int16) break; \
-	case int32_type_i: C(int32) break; \
-	case int64_type_i: C(int64) break; \
-	case float32_type_i: C(float32) break; \
-	case float64_type_i: C(float64) break; \
-	default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-
-#define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
-	case uint8_type_i: C(uint8) break; \
-	case int16_type_i: C(int16) break; \
-	case int32_type_i: C(int32) break; \
-	case int64_type_i: C(int64) break; \
-	default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+#ifdef HAVE_LITE
+  #define TYPESWITCH(T,C,E) switch (T) { \
+    case uint8_type_i: C(uint8) break; case int16_type_i: C(int16) break; \
+    case int32_type_i: C(int32) break; \
+    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+  #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
+    case uint8_type_i: C(uint8) break; case int16_type_i: C(int16) break; \
+    case int32_type_i: C(int32) break; \
+    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+#else
+  #define TYPESWITCH(T,C,E) switch (T) { \
+    case uint8_type_i: C(uint8) break; case int16_type_i: C(int16) break; \
+    case int32_type_i: C(int32) break; case int64_type_i: C(int64) break; \
+    case float32_type_i: C(float32) break; case float64_type_i: C(float64) break; \
+    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+  #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
+    case uint8_type_i: C(uint8) break; case int16_type_i: C(int16) break; \
+    case int32_type_i: C(int32) break; case int64_type_i: C(int64) break; \
+    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+#endif /*HAVE_LITE*/
 
 /* Operator objects encapsulate optimised loops of simple operations */
 
@@ -963,36 +978,40 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
-/*
-   sorry for the header file pollution.
-   with all the new C++ templating (v0.7) i don't exactly know what
-   should go where.
-*/
 
 /* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
 	template <class T> \
 	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<T> data); \
 
+#ifndef HAVE_LITE
 /* macro for declaring an inlet inside GRCLASS() (int32 only) */
 #define GRINLET(_class_,i,mode) {i, mode, \
 	0, 0, _class_##_grid_inlet_##i, 0, 0, 0 }
-
 /* same for inlets that support all types */
 #define GRINLET4(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
-
 /* same except float unsupported by that inlet */
 #define GRINLET2(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	0, 0 }
-
 /* same except int unsupported by that inlet */
 #define GRINLETF(_class_,i,mode) {i, mode, \
 	0, 0, 0, 0, _class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
+#else
+#define GRINLET(_class_,i,mode) {i, mode, \
+	0, 0, _class_##_grid_inlet_##i }
+#define GRINLET4(_class_,i,mode) {i, mode, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i }
+#define GRINLET2(_class_,i,mode) {i, mode, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i }
+#define GRINLETF(_class_,i,mode) {i, mode, 0, 0, 0 }
+#endif /* HAVE_LITE */
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \

@@ -58,30 +58,25 @@ public:
 #define DECL_OP1ON(base,op,T) Numop1On<T>( \
 	&base<Y1##op<T> >::op_map )
 
+#ifdef HAVE_LITE
 #define DECL_OP1(op,sym,props) Numop1( 0, sym, \
-	DECL_OP1ON(Op1Loops,op,uint8), \
-	DECL_OP1ON(Op1Loops,op,int16), \
-	DECL_OP1ON(Op1Loops,op,int32), \
-	DECL_OP1ON(Op1Loops,op,int64), \
-	DECL_OP1ON(Op1Loops,op,float32), \
-	DECL_OP1ON(Op1Loops,op,float64))
+	DECL_OP1ON(Op1Loops,op,uint8), DECL_OP1ON(Op1Loops,op,int16), \
+	DECL_OP1ON(Op1Loops,op,int32))
+#else
+#define DECL_OP1(op,sym,props) Numop1( 0, sym, \
+	DECL_OP1ON(Op1Loops,op,uint8), DECL_OP1ON(Op1Loops,op,int16), \
+	DECL_OP1ON(Op1Loops,op,int32), DECL_OP1ON(Op1Loops,op,int64), \
+	DECL_OP1ON(Op1Loops,op,float32), DECL_OP1ON(Op1Loops,op,float64))
+#endif
 
-#define DECL_OP1_NOU(op,sym,props) Numop1(0, sym, \
-	Numop1On<uint8>(0), \
-	DECL_OP1ON(Op1Loops,op,int16), \
-	DECL_OP1ON(Op1Loops,op,int32), \
-	DECL_OP1ON(Op1Loops,op,int64), \
-	DECL_OP1ON(Op1Loops,op,float32), \
-	DECL_OP1ON(Op1Loops,op,float64))
-
-DEF_OP1(abs,  a>=0 ? a : -a)
+DEF_OP1(abs, a>=0 ? a : -a)
 DEF_OP1(sqrt, (T)(0+floor(sqrt(a))))
 /*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
 DEF_OP1(rand, a==0 ? 0 : random()%(int32)a)
 DEF_OP1(sq, a*a)
 
 Numop1 op1_table[] = {
-	DECL_OP1_NOU(abs, "abs",""),
+	DECL_OP1(abs, "abs",""),
 	DECL_OP1(sqrt,"sqrt",""), 
 	DECL_OP1(rand,"rand",""),
 	DECL_OP1(sq,"sq",""),
@@ -223,17 +218,6 @@ static void quick_put_zip (int n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
-// the following is almost useless if you have MMX enabled.
-template <class O>
-class Op2LoopsBitwise : Op2Loops<O> {
-public:
-/*
-	template <class T>
-	static void op_map (int n, T *as, T b) {
-		...
-*/
-};
-
 /* classic two-input operator */
 #define DEF_OP2(op,expr,neutral,absorbent) \
 	template <class T> class Y##op : Op2<T> { public: \
@@ -243,10 +227,7 @@ public:
 
 /* this macro is for operators that have different code for the float version */
 #define DEF_OP2F(op,expr,expr2,neutral,absorbent) \
-	template <class T> class Y##op : Op2<T> { public: \
-		inline static T f(T a, T b) { return expr; } \
-		inline static bool is_neutral(T x, LeftRight side) { return neutral; } \
-		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } }; \
+	DEF_OP2( op,expr,      neutral,absorbent) \
 	class Y##op<float32> : Op2<float32> { public: \
 		inline static float32 f(float32 a, float32 b) { return expr2; } \
 		inline static bool is_neutral(float32 x, LeftRight side) { return neutral; } \
@@ -265,23 +246,33 @@ public:
 	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, 0,0, \
 	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
 
+#ifdef HAVE_LITE
+#define DECL_OP2(op,sym,flags) Numop2(0, sym, \
+	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), flags)
+#define DECL_OP2_NOFLOAT(op,sym,flags) Numop2(0, sym, \
+	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), flags)
+#define DECL_OP2_NOFOLD(op,sym,flags) Numop2(0, sym, \
+	DECL_OP2ON_NOFOLD(Op2Loops,op,uint8), DECL_OP2ON_NOFOLD(Op2Loops,op,int16), \
+	DECL_OP2ON_NOFOLD(Op2Loops,op,int32), flags)
+#else
 #define DECL_OP2(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), DECL_OP2ON(Op2Loops,op,int64), \
 	DECL_OP2ON(Op2Loops,op,float32), DECL_OP2ON(Op2Loops,op,float64), \
 	flags)
-
 #define DECL_OP2_NOFLOAT(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), DECL_OP2ON(Op2Loops,op,int64), \
 	Numop2On<float32>(0,0,0,0,0,0), Numop2On<float64>(0,0,0,0,0,0), \
 	flags)
-
 #define DECL_OP2_NOFOLD(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON_NOFOLD(Op2Loops,op,uint8), DECL_OP2ON_NOFOLD(Op2Loops,op,int16), \
 	DECL_OP2ON_NOFOLD(Op2Loops,op,int32), DECL_OP2ON_NOFOLD(Op2Loops,op,int64), \
 	DECL_OP2ON_NOFOLD(Op2Loops,op,float32), DECL_OP2ON_NOFOLD(Op2Loops,op,float64), \
 	flags)
+#endif
 
 template <class T>
 static inline T gf_floor (T a) {
