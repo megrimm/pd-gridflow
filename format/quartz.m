@@ -168,22 +168,34 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 
 GRID_INLET(FormatQuartz,0) {
 	if (in->dim->n!=3) RAISE("expecting 3 dims, not %d", in->dim->n);
-	if (in->dim->get(2)!=3) RAISE("expecting 3 channels, not %d", in->dim->get(2));
+	int c=in->dim->get(2);
+	if (c!=3&&c!=4) RAISE("expecting 3 or 4 channels, not %d", in->dim->get(2));
 //	[widget imageHeight: in->dim->get(0) width: in->dim->get(1) ];
 	GFView_imageHeight_width(widget,in->dim->get(0),in->dim->get(1));
 	in->set_factor(in->dim->prod(1));
 } GRID_FLOW {
 	int off = in->dex/in->dim->prod(2);
+	int c=in->dim->get(2);
 //	gfpost("off=%d n=%d",off,n);
 	NSView *w = widget;
 	Pt<uint8> data2 = GFView_imageData(w)+off*4;
 //	convert_number_type(n,data2,data);
-	while(n) {
-		data2[0]=255;
-		data2[1]=data[0];
-		data2[2]=data[1];
-		data2[3]=data[2];
-		data+=3; data2+=4; n-=3;
+	if (c==3) {
+		while(n) {
+			data2[0]=255;
+			data2[1]=data[0];
+			data2[2]=data[1];
+			data2[3]=data[2];
+			data+=3; data2+=4; n-=3;
+		}
+	} else {
+		while(n) {
+			data2[0]=255;
+			data2[1]=data[0];
+			data2[2]=data[1];
+			data2[3]=data[2];
+			data+=4; data2+=4; n-=4;
+		}
 	}
 } GRID_FINISH {
 	GFView_display(widget);
