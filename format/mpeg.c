@@ -106,14 +106,13 @@ METHOD3(FormatMPEG,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
+GRCLASS(FormatMPEG,LIST(GRINLET2(FormatMPEG,0,4)),
+DECL(FormatMPEG,initialize),
+DECL(FormatMPEG,frame),
+DECL(FormatMPEG,close))
+{
+	IEVAL(rself,"install 'FormatMPEG',1,1;"
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using Ward\\'s)'");
 }
 
-GRCLASS(FormatMPEG,"FormatMPEG",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatMPEG,0,4)),
-DECL(FormatMPEG,initialize),
-DECL(FormatMPEG,frame),
-DECL(FormatMPEG,close))

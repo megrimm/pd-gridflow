@@ -616,13 +616,17 @@ const char *GridObject::info() {
 }
 
 METHOD3(GridObject,initialize) {
+	Ruby qlass = rb_obj_class(rself);
+	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
+		RAISE("not a GridObject subclass ???");
+	int noutlets = INT(rb_ivar_get(qlass,SI(@noutlets)));
 	if (!grid_class) RAISE("C++ grid_class is null in Ruby class %s",
 		rb_str_ptr(rb_funcall(rself,SI(inspect),0)));
 	for (int i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		in[gh->winlet] = new GridInlet(this,gh);
 	}
-	for (int i=0; i<grid_class->outlets; i++) out[i] = new GridOutlet(this,i);
+	for (int i=0; i<noutlets; i++) out[i] = new GridOutlet(this,i);
 	rb_call_super(argc,argv);
 	return Qnil;
 }
@@ -742,8 +746,6 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	gc->allocate = GridObject_allocate;
 	gc->methodsn = 0;
 	gc->methods = 0;
-	gc->inlets = MAX_INLETS; /* hack */
-	gc->outlets = MAX_OUTLETS; /* hack */
 	gc->handlersn = 1; /* hack, crack */
 	gc->handlers = gh;
 	gc->name = "hello";
@@ -800,7 +802,7 @@ METHOD3(GridObject,del) {
 	return Qnil;
 }
 
-GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,startup:0,
+GRCLASS(GridObject,
 LIST(),
 	DECL(GridObject,initialize),
 	DECL(GridObject,del),
@@ -811,6 +813,7 @@ LIST(),
 	DECL(GridObject,inlet_dim),
 	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))
+{ IEVAL(rself,"install 'GridObject',0,0"); }
 
 void GridObject_conf_class(Ruby rself, GridClass *grclass) {
 	/* define in Ruby-metaclass */

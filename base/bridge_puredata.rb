@@ -15,3 +15,8 @@
 		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
 	end
 }
+
+GridFlow.post "because of problems between GridFlow and PureData,"
+GridFlow.post "GridFlow.clock_tick set to 1000 ms (instead of 10 ms)"
+GridFlow.post "you may override that youself in ~/.gridflow_startup"
+GridFlow.clock_tick = 1000.0

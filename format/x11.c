@@ -610,15 +610,14 @@ METHOD3(FormatX11,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
-	"conf_format 6,'x11','X Window System Version 11.5'");
-}
 
-GRCLASS(FormatX11,"FormatX11",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatX11,0,4)),
+GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),
 DECL(FormatX11,initialize),
 DECL(FormatX11,frame),
 DECL(FormatX11,option),
 DECL(FormatX11,close))
+{
+	IEVAL(rself,"install 'FormatX11',1,1;"
+	"conf_format 6,'x11','X Window System Version 11.5'");
+}
 

@@ -104,16 +104,12 @@ METHOD3(FormatMPEG3,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
-	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
-	" (using HeroineWarrior\\'s)'");
-}
-
-GRCLASS(FormatMPEG3,"FormatMPEG3",
-inlets:1,outlets:1,startup:startup,LIST(),
+GRCLASS(FormatMPEG3,LIST(),
 DECL(FormatMPEG3,initialize),
 DECL(FormatMPEG3,seek),
 DECL(FormatMPEG3,frame),
-DECL(FormatMPEG3,close))
-
+DECL(FormatMPEG3,close)) {
+	IEVAL(rself,"install 'FormatMPEG3',1,1;"
+	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
+	" (using HeroineWarrior\\'s)'");
+}
