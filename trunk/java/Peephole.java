@@ -71,6 +71,8 @@ implements FtsIntValueListener//, ImageObserver
 	public boolean dragging;
 	public boolean createdSubwindow;
 	public boolean wasLocked;
+
+	public static final boolean useSubwindow = true;
 	
 	public Peephole( ErmesSketchPad theSketchPad, FtsObject theFtsObject) {
 		super(theSketchPad, theFtsObject);
@@ -88,19 +90,20 @@ implements FtsIntValueListener//, ImageObserver
 	}
 
 	public void setGeometry () {
-		if (dragging || !createdSubwindow) return;
-		FtsAtom a[] = new FtsAtom[4];
-		for (int i=0; i<4; i++) a[i] = new FtsAtom();
-		//int y = getY()-getHeight()/2+BORDER;
+		/* find absolute positions relative to the X11 window */
 		int y = getY()+BORDER;
 		int x = getX()+BORDER;
-		
 		for (java.awt.Container ct=sketchpad; ct!=null; ct=ct.getParent()) {
 			if (ct.getParent()==null) break; // hack
 			if (ct.getParent().getParent()==null) break; // hack hack
 			x += ct.getX();
 			y += ct.getY();
 		}
+		/* actually setting geometry */
+		// if (!useSubwindow) return;
+		if (dragging || useSubwindow && !createdSubwindow) return;
+		FtsAtom a[] = new FtsAtom[4];
+		for (int i=0; i<4; i++) a[i] = new FtsAtom();
 		a[0].setInt(y);
 		a[1].setInt(x);
 		a[2].setInt(getHeight()-2*BORDER);
@@ -159,12 +162,13 @@ implements FtsIntValueListener//, ImageObserver
 		((Frame)window).setTitle(title);
 		windowid = Integer.valueOf(title.substring(title.indexOf("\t\t\t")+3)).intValue();
 
-		FtsAtom a[] = new FtsAtom[1];
-		a[0] = new FtsAtom();
+		FtsAtom a[] = new FtsAtom[2];
+		for (int i=0; i<2; i++) a[i] = new FtsAtom();
 		// apparently you can't pass symbols in those arglists???
 		// a[0].setSymbol(new FtsSymbol("patate"));
 		a[0].setInt(windowid);
-		ftsObject.sendMessage(0, "open", 1, a);
+		a[1].setInt(useSubwindow?1:0);
+		ftsObject.sendMessage(0, "open", 2, a);
 		} catch (Throwable e) {
 			System.out.println("Peephole exception: "+e.toString()+": "+e.getMessage());
 			e.printStackTrace();
@@ -207,6 +211,10 @@ implements FtsIntValueListener//, ImageObserver
 		g.fill3DRect(x+1, y+1, w-2, h-2, true);
 		super.paint(g);
 		wasLocked = itsSketchPad.isLocked();
+		if (!useSubwindow) {
+			FtsAtom a[] = new FtsAtom[0];
+			ftsObject.sendMessage(0, "paint", 0, a);
+		}
 	}
 
 	public void updatePaint(Graphics g) { paint(g); }
