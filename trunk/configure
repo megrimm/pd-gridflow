@@ -79,7 +79,7 @@ def c_test code, *link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
-	command = ["/usr/bin/env", "gcc"]
+	command = ["/usr/bin/env", "g++"]
 	command.concat $CFLAGS.split(/ /).reject{|x| x.length==0 }
 	command.concat ["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]
 	launch2 log,*command or return false
@@ -234,6 +234,7 @@ Feature.new {
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
+	status :disabled
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
@@ -694,6 +695,7 @@ mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++"
 mf.sub! /LDSHARED = gcc/, "LDSHARED = $(CC)"
+mf.sub! /^.c.o:/, ".c.o: base/grid.h config.make Makefile Makefile.gf"
 
 #jMax conflict resolution
 mf.gsub!(/prefix/,'rubyprefix')
@@ -721,3 +723,7 @@ for z in [
 :$exec_prefix,
 ] do puts "#{z} = #{eval z.to_s}" end
 =end
+
+END {
+	system "rm /tmp/#{$$}.cpp /tmp/#{$$}"
+}

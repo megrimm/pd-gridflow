@@ -3,22 +3,27 @@
 "!" is planned for next release
 starting with 1.0, backwards compatibility will be kept
 
+
+> http://redshift.sourceforge.net/debugging-GC/
+> [ruby-talk:53835]
+> You might also want to search the web for "malloc debugger".
+
+
 Community
-[ ] make IRC channel #dataflow
 [ ] put new samples on website
 [ ] add on website:
 	[ ] looking for someone to take care of win32 port
 	[ ] looking for someone to take care of macosx port
 
-Distribution (0.6.3)
+Distribution (0.6.4)
 [ ] add test plan
 [ ] follow test plan
-[ ] review all documentation
-[ ] review all patches
-[!] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
+[!] review all documentation
+[!] review all samples
+[ ] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 
 Installation
-[ ] installable doc
+[!] installable doc
 [ ] installable includes ?
 [ ] produce binaries (.tar.gz .rpm .deb ?)
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
@@ -48,8 +53,13 @@ Documentation
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
 [ ] document internals
+[ ] operator list: add columns for meaning as pixmap, indexmap
+[ ] describe indexmap in doc
 [ ] document backward compatibility issues
 [ ] typical uses: <typical></typical>
+[ ] architecture: class->type->use->shape->role
+[ ] it should be indicated whether an object is supported by jmax/pd/ruby/c++
+[ ] rework the DTD/documentation system at whole
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
@@ -72,6 +82,8 @@ Architecture
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+[ ] mode 0 for inlets that don't even read their buffer
+[ ] [@finished] replaces [route grid_end]
 [ ] make @store loopable
 [ ] MMX autodetection
 [ ] MMX computations integration
@@ -85,11 +97,10 @@ Architecture
 [ ] UnknownAtom class
 [ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
-[ ] add log*
+[ ] jMax does not support literal lists in messages...
 
 Computation Objects
 [ ] @type, @cast
-[ ] @cartprod (?)
 [ ] @slice (@splice ?)
 [ ] zero option in @store (?)
 [ ] zero option in @convolve (?)
@@ -101,22 +112,24 @@ Computation Objects
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @foldr, @scanr
 [ ] @polygon
+[ ] @perspective
 [ ] @matrix_inverse, @matrix_solve
 [ ] @sort ?
-[ ] op_fold2 ?
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
-[ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
-	will replace @two, @three, @four.
 [ ] timelines as in MM-Director
 [ ] @replace_if
 [ ] @random_select, @markov_chain
 [ ] @two,@three,@four -> [@pack n] using metaclass
 [ ] @unpack
+[ ] @join
 
 Effects
-[ ] improve
-[ ] overlay using alpha channel
+[ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
+	with fuzzy flag
+[ ] @apply_palette
+[ ] @apply_splitted_palette (color_correction.jmax)
+[ ] @fire
 [ ] pinch
 [ ] pixelize, despeckle
 [ ] abyss effect
@@ -130,12 +143,12 @@ Effects
 [ ] effectv
 [ ] blinds, ...
 [ ] create templates for usage patterns
-[ ] split channels, join channels
 [ ] see gimp for ideas
 [ ] there's a way to double (?) the speed of the cross-fade.
 	try interleaving the data and using [@inner]
 
 Input/Output
+[ ] [fps]
 [ ] in-place editing (rw mode)
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
@@ -152,23 +165,23 @@ Input/Output
 [ ] Grid: signed/unsigned
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
 [ ] PTC, TinyPTC ?
-[ ] adjustable gf_clock
 [ ] Grid: text version of the format
 
 Format
 [ ] all: possibly get rid of the "format" notion ?
-[ ] all: rewinding file (or not)
-[ ] seq: multi-image (createable by cat, ar, tar or zip)
+[ ] all: rewinding file (or not) on WRITE
+[ ] seq: multi-image (createable by cat, ar, tar or zip) (!?!?!?!?)
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
 [ ] Targa: RGBA-32 and write support
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM
-[ ] GIF, JPEG, PNG support (+ reg ourselves in libpng.org's applist)
+[ ] GIF, PNG support (+ reg ourselves in libpng.org's applist)
 [ ] libquicktime.so, more libmpeg3.so
 [ ] fork: is a new format, for e.g. multiple MPEG drivers
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
 [ ] Raw: a new format for reading arbitrary data.
 [ ] Common message-passing format (includes other things than grid)
+[ ] implement IO#read_into
 [ ] libaa
 [ ] /dev/dsp
 [ ] /dev/mixer
@@ -191,11 +204,10 @@ Extra/Samples/Etc
 Bugs
 [ ] format_x11 causes delayed crash when closing its associated window
 [ ] format_x11 causes crash (resizing + shm, sometimes)
-[ ] distinguish "mod" and "%" properly (re: rounding)
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
-[ ] detect and reject .a linkage
-[ ] possibly remove Number and sizeof(Number) (often does not make sense)
+[!] detect and reject .a linkage
+[!] possibly remove Number and sizeof(Number) (often does not make sense)
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
 [ ] Window does not close when @out is destroyed
@@ -203,22 +215,25 @@ Bugs
 [ ] format/mpeg.c seems to crash more often?
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [!] tcp test is broken
-[ ] issues with fork() and X11 ?
-[ ] memory corruption when running GridFlow/PD for too long
-[ ] @scale_to is broken
-[ ] rtmetro does not stop
-[ ] method_missing does blackholing
-[ ] warning: -Wno-strict-prototypes is not supported in C++
-[ ] BitPacking should not be a GridObject.
-[ ] undefined method `delete' for false (@fobjects_set)
-[ ] if @out#open fails, then a segfault might occur during next #open (?)
+[ ] potential issues between fork() and X11 ?
+[!] @scale_to is broken
+[!] method_missing does blackholing ?
+[!] warning: -Wno-strict-prototypes is not supported in C++
+[ ] BitPacking should not be a GridObject nor a FObject.
 [ ] don't try resizing the window before it opens (???) (loadbang?)
-[ ] tanh should be called tanh*
-[ ] probable memory corruption during initialization of GridFlow
-[ ] [@export_list] blows up with >=125 elements (alx)
+[!] [@export_list] blows up with >=125 elements (alx)
 [ ] Format#init stopped initializing dim,bit_packing
 	(there may be bugs dating back to that change)
-[ ] implement IO#read_into
+[ ] cvs is not listed in the manual itself
+[ ] recurrent bug: stdout SHALL NOT be used outside of debugging
+    because it interferes with normal functioning
+[ ] <fts.h> does not work with g++ 3.2
+[ ] non-existent filename STILL garbles find_file() result !
+[ ] using find_file() on write is WRONG
+[ ] format_grid: write test for other bpv's
+[ ] problem in @for with zero-sized grids?
+[ ] BitPacking has trouble with masks that extend beyond int25be
+[ ] remove the crap given by -w of ruby
 
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
@@ -245,14 +260,19 @@ From: Margit Hideg <mhideg@rogers.com>
  je viens d'avoir une idée géniale
  tab completion dans jMax
  hum
- bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques. ça marcherait pour les object boxes mais pas pour le reste
- le tab completion ne donnerait pas seulement les noms possibles pour le prochain argument dans le objectbox; il donnerait aussi une description de l'argument (surtout dans le cas où l'argument a beaucoup de valeurs possibles)
- je pense que le help de jMax est une bonne idée (le concept hands-on) mais ça pourrait aller plus loin.
- j'ai pensé intégrer le manuel de référence de gridflow directement dans le programme, disponible au runtime, dans l'éventualité d'un GUI qui saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un message "help" au inlet 0 enverrait un
-
-
-e description de la classe dans le log.
- (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ?
-
+ bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques.
+ça marcherait pour les object boxes mais pas pour le reste
+ le tab completion ne donnerait pas seulement les noms possibles pour le
+prochain argument dans le objectbox; il donnerait aussi une description de
+l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
+possibles) 
+ je pense que le help de jMax est une bonne idée (le concept hands-on)
+mais ça pourrait aller plus loin. 
+ j'ai pensé intégrer le manuel de référence de gridflow directement dans
+le programme, disponible au runtime, dans l'éventualité d'un GUI qui
+saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un
+message "help" au inlet 0 enverrait une description de la classe dans le log.
+ (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout
+ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
 <alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
 avoir le même output que hasciicam? 
