@@ -246,17 +246,20 @@ struct FormatVideoDev : Format {
 	GRINLET3(0);
 };
 
+#define DEBUG(args...) 42
+//#define DEBUG(args...) gfpost
+
 #define IOCTL(_f_,_name_,_arg_) \
-	(gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+	(DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
 		ioctl(_f_,_name_,_arg_))
 
 #define WIOCTL(_f_,_name_,_arg_) \
-	(gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+	(DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
 	ioctl(_f_,_name_,_arg_) < 0) && \
 		(gfpost("ioctl %s: %s",#_name_,strerror(errno)),1)
 
 #define WIOCTL2(_f_,_name_,_arg_) \
-	((gfpost("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
+	((DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
 	ioctl(_f_,_name_,_arg_) < 0) && \
 		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
 		 RAISE("ioctl error"), 0))
