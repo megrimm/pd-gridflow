@@ -642,7 +642,8 @@ void startup_usb();
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
-	signal(11,SIG_DFL);
+//	signal(11,SIG_DFL);
+//	signal(6,SIG_DFL);
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
