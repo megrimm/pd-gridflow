@@ -22,6 +22,7 @@
 */
 
 #include <math.h>
+#include <stdlib.h>
 #include "grid.h"
 
 #define DEF_OP1(_name_,_expr_) \
@@ -31,6 +32,8 @@
 
 DEF_OP1(abs,  a>=0 ? a : -a)
 DEF_OP1(sqrt, floor(sqrt(a)))
+/*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
+DEF_OP1(rand, a==0 ? 0 : random()%a)
 
 #define DECL_OP1(_name_,_sym_) \
 	{ 0, _sym_, &op1_##_name_, &op1_array_##_name_ }
@@ -38,6 +41,7 @@ DEF_OP1(sqrt, floor(sqrt(a)))
 Operator1 op1_table[] = {
 	DECL_OP1(abs, "abs"),
 	DECL_OP1(sqrt,"sqrt"),
+	DECL_OP1(rand,"rand"),
 };
 
 Operator1 *op1_table_find(fts_symbol_t sym) {
@@ -76,6 +80,7 @@ DEF_OP2(shr, a>>b)
 DEF_OP2(min, a<b?a:b)
 DEF_OP2(max, a>b?a:b)
 
+DEF_OP2(cmp, a < 0 ? -1 : a > 0)
 DEF_OP2(eq,  a == b)
 DEF_OP2(ne,  a != b)
 DEF_OP2(gt,  a >  b)
@@ -116,6 +121,7 @@ Operator2 op2_table[] = {
 	DECL_OP2(le,  "<="),
 	DECL_OP2(lt,  "<"),
 	DECL_OP2(ge,  ">="),
+	DECL_OP2(cmp, "cmp"),
 
 	DECL_OP2(sin, "sin*"),
 	DECL_OP2(cos, "cos*"),
