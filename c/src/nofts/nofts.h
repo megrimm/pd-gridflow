@@ -53,22 +53,47 @@ typedef struct fts_atom_t {
 	} v;
 } fts_atom_t;
 
+typedef struct List List; /* List ([0...n] -> void *) */
+
+List *List_new(int size);
+void List_push(List *$, void *v);
+void *List_get(List *$, int i);
+void List_put(List *$, int i, void *v);
+int List_size(List *$);
+void *List_pop(List *$);
+
+typedef struct Dict Dict; /* Dictionary (Symbol -> void *) */
+typedef struct DictEntry DictEntry;
+
+Dict *Dict_new(void);
+long Dict_hash(Dict *$, fts_symbol_t k);
+DictEntry *Dict_has_key(Dict *$, fts_symbol_t k);
+void *Dict_get(Dict *$, fts_symbol_t k);
+void Dict_put(Dict *$, fts_symbol_t k, void *v);
+void Dict_each(Dict *$, void (*proc)(void* data,fts_symbol_t k,void* v), void *data);
+
+typedef struct fts_object_t fts_object_t;
+
+typedef void (*fts_method_t)(fts_object_t *,int,fts_symbol_t,int,const fts_atom_t *);
+
 typedef struct fts_class_t {
 	fts_symbol_t name;
 	int object_size;
 	int n_inlets;
 	int n_outlets;
 	int stuff;
+	Dict **method_table; /* by inlet */
 } fts_class_t;
 
-typedef struct fts_object_t {
+struct fts_object_t {
 	struct {
 		fts_class_t *cl;
 	} head;
 	int argc;
 	fts_atom_t *argv;
 	const char *error;
-} fts_object_t;
+	List **outlets;
+};
 
 typedef struct fts_module_t {
 	const char *foo1;
@@ -82,8 +107,9 @@ typedef struct fts_clock_t {
 
 typedef struct fts_alarm_t {
 	fts_clock_t *clock;
-	void (*f)(struct fts_alarm_t *, void *);
-	float delay;
+	void (*f)(struct fts_alarm_t *$, void *data);
+	void *data;
+	double time;
 	int armed;
 } fts_alarm_t;
 
@@ -93,7 +119,6 @@ typedef struct fts_alarm_t {
 fts_symbol_t fts_new_symbol(const char *s);
 const char *fts_symbol_name(fts_symbol_t sym);
 
-typedef void (*fts_method_t)();
 void fts_method_define_optargs(fts_class_t *, int winlet, fts_symbol_t
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
 int fts_file_open(const char *name, const char *mode);
@@ -137,5 +162,14 @@ void fts_alarm_set_delay(fts_alarm_t *, float);
 void fts_alarm_arm(fts_alarm_t *);
 
 int video4jmax_init_standalone(void);
+
+/* **************************************************************** */
+
+fts_object_t *fts_object_new(int ac, fts_atom_t *at);
+fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at);
+void fts_send2(fts_object_t *o, int winlet, int ac, const fts_atom_t *at);
+void fts_send(fts_object_t *o, int winlet, fts_symbol_t sel, int ac, const fts_atom_t *at);
+void fts_connect(fts_object_t *oo, int woutlet, fts_object_t *oi, int winlet);
+void fts_loop(void);
 
 #endif /* __STANDALONE_H */

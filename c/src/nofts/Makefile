@@ -24,7 +24,7 @@ format_grid.o \
 format_videodev.o
 
 LIB = libvideo4jmax.so
-LIB2 = /home/matju/lib/$(LIB)
+# LIB2 = /home/matju/lib/$(LIB)
 all:: test1
 
 nofts.o: nofts.c
@@ -36,11 +36,14 @@ nofts.o: nofts.c
 $(LIB): $(OBJS) nofts.o
 	gcc -shared $(OBJS) nofts.o -o $@ $(LDSOFLAGS)
 
-$(LIB2): $(LIB)
-	install --mode=755 $(LIB) $(LIB2)
+#$(LIB2): $(LIB)
+#	install --mode=755 $(LIB) $(LIB2)
 
-test1: test1.c $(LIB2)
-	gcc $(ARCH_CFLAGS) test1.c -lvideo4jmax -o $@
+test1: test1.c $(LIB)
+	gcc $(ARCH_CFLAGS) test1.c libvideo4jmax.so -o $@
 
 clean::
 	rm libvideo4jmax.so nofts.o $(OBJS)
+
+test:: test1
+	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./test1
