@@ -3,14 +3,20 @@
 version 0.7.8 (head):
 
  * removed support for jMax 2.5 and jMax 4.1
+ * 13 object-classes rewritten from Ruby to Pd abstractions
+ * new two-input ops: clip+ clip- abs- sq- avg hypot sqrt rand (soon erf*)
+ * merged [@],[@!] -> [#] and added message "op"
+ * [#fold],[#scan] : removed seed argument and right outlet
+ * [#fold],[#scan] : added messages "op" and "seed"
  * major changes to the bridge API (Ruby<->PureData)
  * source code cleanup
  * internals: split Grid into Grid+GridPtr
  * internals: GridObject no longer manages GridOutlet
  * internals: added classes P,PtrGrid,...
  * internals: beginning to use C++'s Standard Template Library (sometimes)
- * 13 object-classes rewritten from Ruby to Pd abstractions
- * new two-input ops: clip+ clip- abs- sq- avg hypot (soon erf* rand)
+upcoming:
+ * new object classes:
+   [#unpack],
 
 version 0.7.7 (2004.08.24):
 
@@ -29,7 +35,7 @@ version 0.7.7 (2004.08.24):
    [#camera], [#fade_lin], [#peephole]
  * videodev: added method "get"
  * [@out quartz] now works properly
- * [@downscale_by smoothly] accepts any number of channels
+ * [@downscale_by] accepts any number of channels
  * [@inner2] removed; instead use [@transpose] with [@inner]
  * videodev: "transfer" message allows to change the queue's length
  * quicktime(hw): added messages "parameter", "framerate", "size"
