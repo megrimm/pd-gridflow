@@ -31,7 +31,7 @@ extern "C" {
 
 \class FormatPNG < Format
 struct FormatPNG : Format {
-	BitPacking *bit_packing;
+	P<BitPacking> bit_packing;
 	png_structp png;
 	png_infop info;
 	FILE *f;

@@ -35,8 +35,8 @@ static bool in_use = false;
 \class FormatSDL < Format
 struct FormatSDL : Format {
 	SDL_Surface *screen;
-	BitPacking *bit_packing;
-	Dim *dim;
+	P<BitPacking> bit_packing;
+	P<Dim> dim;
 
 	void resize_window (int sx, int sy);
 	void alarm ();
@@ -60,7 +60,6 @@ void FormatSDL::alarm() {
 
 void FormatSDL::resize_window (int sx, int sy) {
 //	gfpost("switching to size (%d,%d)",sy,sx);
-	delete dim;
 	int32 v[] = {sy,sx,3};
 	dim = new Dim(3,v);
 	screen = SDL_SetVideoMode(v[1],v[0],0,SDL_SWSURFACE);

@@ -67,8 +67,8 @@ struct FormatX11 : Format {
 	bool verbose;
 	int pos_x, pos_y;
 
-	BitPacking *bit_packing;
-	Dim *dim;
+	P<BitPacking> bit_packing;
+	P<Dim> dim;
 	bool lock_size;
 	bool override_redirect;
 
@@ -256,7 +256,7 @@ void FormatX11::alarm() {
 	XGetSubImage(display, window,
 		0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
-	GridOutlet out(this,0,dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1);
 	int bs=dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
@@ -304,7 +304,6 @@ void FormatX11::dealloc_image () {
 
 bool FormatX11::alloc_image (int sx, int sy) {
 	int32 v[3] = {sy, sx, 3};
-	if (dim) delete dim;
 	dim = new Dim(3,v);
 top:
 	dealloc_image();
@@ -414,11 +413,10 @@ GRID_INLET(FormatX11,0) {
 	in->set_factor(sxc);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in->dim->get(2)!=bit_packing->size) {
-		BitPacking *o = bit_packing;
-		o->mask[3]=0;
+		bit_packing->mask[3]=0;
 		bit_packing = new BitPacking(
-			o->endian, o->bytes, in->dim->get(2), o->mask);
-		delete o;
+			bit_packing->endian, bit_packing->bytes,
+			in->dim->get(2), bit_packing->mask);
 	}
 } GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
@@ -445,7 +443,7 @@ GRID_INLET(FormatX11,0) {
 
 \def void close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
-	if (bit_packing) delete bit_packing;
+	bit_packing=0;
 	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
 	if (is_owner) XDestroyWindow(display,window);
 	XSync(display,0);

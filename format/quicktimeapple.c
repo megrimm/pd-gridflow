@@ -175,7 +175,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 
 \class FormatQuickTimeCamera < Format
 struct FormatQuickTimeCamera : Format {
-  Dim *dim;
+  P<Dim> dim;
   Pt<uint8> buf;
   VDC vdc;
   int m_newFrame; 
@@ -355,7 +355,7 @@ struct FormatQuickTimeApple : Format {
 	short movie_file;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
 	Pt<uint8> buffer;
-	Dim *dim;
+	P<Dim> dim;
 	int nframe, nframes;
 
 	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
