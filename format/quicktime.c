@@ -37,14 +37,14 @@ METHOD(FormatQuickTime,frame) {
 	int sx = quicktime_video_width($->anim,0);
 	int sy = quicktime_video_height($->anim,0);
 	int npixels = sx*sy;
-	int result;
-	int i;
 	uint8 *buf = NEW(uint8,sy*sx*4+16);
 	uint8 *rows[sy];
-	for (i=0; i<sy; i++) rows[i]=buf+i*sx*4;
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*4;
 	gfpost("pos = %d", quicktime_byte_position($->anim));
 //	quicktime_reads_cmodel($->anim,BC_RGB888,0);
 //	gfpost("size=%d",quicktime_frame_size($->anim,0,0));
+
+	int result;
 //	result = quicktime_read_frame($->anim,buf,0);
 //	result = quicktime_decode_video($->anim,rows,0);
 	result = quicktime_decode_scaled($->anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,0);
@@ -78,15 +78,15 @@ METHOD(FormatQuickTime,close) {
 /* note: will not go through jMax data paths */
 /* libquicktime may be nice, but it won't take a filehandle, only filename */
 METHOD(FormatQuickTime,init) {
-	const char *filename;
 	rb_call_super(argc,argv);
 	argc--; argv++;
 
 	if (argc!=2 || argv[0] != SYM(file))
 		RAISE("usage: quicktime file <filename>");
 
-	filename = rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
-		rb_funcall(argv[1],SI(to_s),0)));
+	const char *filename = rb_str_ptr(
+		rb_funcall(GridFlow_module,SI(find_file),1,
+			rb_funcall(argv[1],SI(to_s),0)));
 
 	$->anim = quicktime_open(strdup(filename),1,0);
 	if (!$->anim)

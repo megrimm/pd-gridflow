@@ -168,7 +168,7 @@ class GridOut < GridObject
 		if @timelog
 			time = Time.new
 			GridFlow.gfpost(
-				"@out:0:end: frame#%03d time: %9.3f s; minus last: %5d ms\n",
+				"@out: frame#%04d time: %10.3f s; diff: %5d ms",
 				@framecount, time, ((time-@time)*1000).to_i)
 			@time = time
 		end

@@ -33,13 +33,13 @@
 
 /* **************************************************************** */
 
-typedef struct video_capability VideoCapability;
-typedef struct video_channel    VideoChannel   ;
-typedef struct video_tuner      VideoTuner     ;
-typedef struct video_window     VideoWindow    ;
-typedef struct video_picture    VideoPicture   ;
-typedef struct video_mbuf       VideoMbuf      ;
-typedef struct video_mmap       VideoMmap      ;
+typedef video_capability VideoCapability;
+typedef video_channel    VideoChannel   ;
+typedef video_tuner      VideoTuner     ;
+typedef video_window     VideoWindow    ;
+typedef video_picture    VideoPicture   ;
+typedef video_mbuf       VideoMbuf      ;
+typedef video_mmap       VideoMmap      ;
 
 #define FLAG(_num_,_name_,_desc_) #_name_,
 #define  OPT(_num_,_name_,_desc_) #_name_,
@@ -258,14 +258,10 @@ METHOD(FormatVideoDev,size) {
 /* picture is read at once by frame() to facilitate debugging. */
 /*
 static Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
-
-	int n;
 	if (frame != -1) return 0;
 	$->left = $->dim->prod();
-
 	$->stuff = NEW2(uint8,$->left);
-
-	n = (int) read($->stream,$->stuff,$->left);
+	int n = (int) read($->stream,$->stuff,$->left);
 	if (0> n) {
 		gfpost("error reading: %s", strerror(errno));
 	} else if (n < $->left) {
@@ -310,19 +306,15 @@ METHOD(FormatVideoDev,frame_ask) {
 
 static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
 	out->begin($->dim->dup());
-
 	/* picture is converted here. */
-	{
-		int sy = $->dim->get(0);
-		int sx = $->dim->get(1);
-		int y;
-		int bs = $->dim->prod(1);
-		Number b2[bs];
-		for(y=0; y<sy; y++) {
-			uint8 *b1 = buf + $->bit_packing->bytes * sx * y;
-			$->bit_packing->unpack(sx,b1,b2);
-			out->send(bs,b2);
-		}
+	int sy = $->dim->get(0);
+	int sx = $->dim->get(1);
+	int bs = $->dim->prod(1);
+	Number b2[bs];
+	for(int y=0; y<sy; y++) {
+		uint8 *b1 = buf + $->bit_packing->bytes * sx * y;
+		$->bit_packing->unpack(sx,b1,b2);
+		out->send(bs,b2);
 	}
 	out->end();
 }
@@ -330,22 +322,15 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 METHOD(FormatVideoDev,frame) {
 	int fd = GETFD;
 	int finished_frame;
-
 	if (!$->bit_packing) RAISE("no bit_packing");
-
-	if (!$->image) {
-		rb_funcall(rself,SI(alloc_image),0);
-	}
-
+	if (!$->image) rb_funcall(rself,SI(alloc_image),0);
 	if ($->pending_frames[0] < 0) {
 		$->next_frame = 0;
 		rb_funcall(rself,SI(frame_ask),0);
 		rb_funcall(rself,SI(frame_ask),0);
 	}
-
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
 	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) RAISE("wioctl");
-
 	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
 	rb_funcall(rself,SI(frame_ask),0);
 }
@@ -359,10 +344,7 @@ METHOD(FormatVideoDev,norm) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
-	if (value<0 || value>3) {
-		gfpost("norm must be in range 0..3");
-		return;
-	}
+	if (value<0 || value>3) RAISE("norm must be in range 0..3");
 	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
 		gfpost("no tuner #%d", value);
 	} else {
@@ -378,13 +360,10 @@ METHOD(FormatVideoDev,tuner) {
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	$->current_tuner = value;
-	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
-		gfpost("no tuner #%d", value);
-	} else {
-		vtuner.mode = VIDEO_MODE_NTSC;
-		VideoTuner_gfpost(&vtuner);
-		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
-	}
+	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
+	vtuner.mode = VIDEO_MODE_NTSC;
+	VideoTuner_gfpost(&vtuner);
+	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 }
 
 METHOD(FormatVideoDev,channel) {
@@ -393,13 +372,10 @@ METHOD(FormatVideoDev,channel) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	$->current_channel = value;
-	if (0> ioctl(fd, VIDIOCGCHAN, &vchan)) {
-		gfpost("no channel #%d", value);
-	} else {
-		VideoChannel_gfpost(&vchan);
-		WIOCTL(fd, VIDIOCSCHAN, &vchan);
-		rb_funcall(rself,SI(tuner),1,INT2NUM(0));
-	}
+	if (0> ioctl(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
+	VideoChannel_gfpost(&vchan);
+	WIOCTL(fd, VIDIOCSCHAN, &vchan);
+	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 }
 
 METHOD(FormatVideoDev,option) {
@@ -443,7 +419,6 @@ METHOD(FormatVideoDev,close) {
 METHOD(FormatVideoDev,init2) {
 	int fd = GETFD;
 	VideoCapability vcaps;
-//	char *s;
 	VideoPicture *gp = NEW(VideoPicture,1);
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
@@ -463,7 +438,6 @@ METHOD(FormatVideoDev,init2) {
 	gp->depth = 24;
 	gp->palette = VIDEO_PALETTE_RGB24;
 
-//	FREE(s);
 	gfpost("trying settings:");
 	VideoPicture_gfpost(gp);
 	WIOCTL(fd, VIDIOCSPICT, gp);
@@ -493,22 +467,18 @@ METHOD(FormatVideoDev,init2) {
 }
 
 METHOD(FormatVideoDev,init) {
-	const char *filename;
-	int stream;
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	$->pending_frames[0] = -1;
 	$->pending_frames[1] = -1;
 	$->image = 0;
 	if (argc!=1) RAISE("usage: videodev <devicename>");
-	filename = rb_sym_name(argv[0]);
-	{
-		VALUE file = rb_funcall(EVAL("File"),SI(open),2,
-			rb_str_new2(filename), rb_str_new2("r+"));
-		rb_ivar_set(rself,SI(@stream),file);
-		rb_p(file);
-		rb_p(rb_ivar_get(rself,SI(@stream)));
-	}
+	const char *filename = rb_sym_name(argv[0]);
+	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
+		rb_str_new2(filename), rb_str_new2("r+"));
+	rb_ivar_set(rself,SI(@stream),file);
+	rb_p(file);
+	rb_p(rb_ivar_get(rself,SI(@stream)));
 	rb_funcall(rself,SI(init2),0);
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
