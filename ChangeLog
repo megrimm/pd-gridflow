@@ -2,17 +2,24 @@
 
 version 0.7.2 (head):
 
+ * fixes bugs in: make install, jpeg reading
  * added support for float32
  * added direct .jmax decoding
  * added direct .pd encoding
  * pd examples moved to separate directory
- * ported some .jmax examples to .pd (automated) (1 out of 21)
+ * ported some .jmax examples to .pd (automated) (5 out of 21)
  * added motion_detect.pd
  * new classes: demux, and more jmax emulations
  * @in,@out: keyword "option" may be omitted
  * configure: added --ruby-prefix
  * adding custom C++ pre-preprocessor
  * better type checking of message arguments (better error reporting too)
+ * @print supports 3 dimensions, and msg "base" with arg 2,8,10,16
+ * can now write loadbang-messages into an object box using the comma
+ * major cleanup of the source code
+ * added operator *>>8 (multiplication by value then division by 256)
+ * new classes: @rgb_to_yuv, @yuv_to_rgb
+ * @rotate now works with multiple axis (can work on 3D points, etc)
 
 delayed features:
 
