@@ -50,6 +50,7 @@ typedef struct FormatGrid {
 	bool is_le; /* little endian: smallest digit first, like i386 */
 	int bpv;    /* bits per value: 32 only */
 	bool is_socket; /* future use */
+	int listener;
 } FormatGrid;
 
 static void swap32 (int n, uint32 *data) {
@@ -150,7 +151,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 				goto err;
 			}
 			i+=r;
-			whine("got %d bytes; %d bytes left", r, n-i);
+//			whine("got %d bytes; %d bytes left", r, n-i);
 		}
 		if ($->is_le != is_le()) swap32(prod,data);
 
@@ -274,24 +275,54 @@ bool FormatGrid_open_tcp (FormatGrid *$, ATOMLIST, int mode) {
 	}
 	return true;
 err:
+	if ($->stream>0) close($->stream);
 	return false;
 }
 
 bool FormatGrid_open_tcpserver (FormatGrid *$, ATOMLIST, int mode) {
 	struct sockaddr_in address;
+	struct sockaddr address2;
 	$->is_socket = true;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
-	if (!fts_is_int(at+1)) {
+	if (!fts_is_int(at+0)) {
 		whine("bad arguments"); goto err;
 	}
 
-	$->stream = socket(AF_INET,SOCK_STREAM,0);
+	$->stream = -1;
+	$->listener = socket(AF_INET,SOCK_STREAM,0);
 
-	/* add server side code here */
-	return 42;
+	address.sin_family = AF_INET;
+	address.sin_port = htons(fts_get_int(at+0));
+	address.sin_addr.s_addr = INADDR_ANY;  /* whatever */
+
+	if (0> bind($->listener,(struct sockaddr *)&address,sizeof(address))) {
+		printf("open_tcpserver(bind): %s\n", strerror(errno));
+		goto err;
+	}
+
+	if (0> listen($->listener,0)) {
+		printf("open_tcpserver(listen): %s\n", strerror(errno));
+		goto err;
+	}
+
+	$->stream = accept($->listener,0,0);
+	if (0> $->stream) {
+		$->stream = -1;
+		printf("open_tcpserver(accept): %s\n", strerror(errno));
+		goto err;
+	}
+
+	close($->listener);
+	$->listener = -1;
+
+	return true;
 err:
+	if ($->listener>0) {
+		close($->listener);
+		$->listener = -1;
+	}
 	return false;
 }
 
@@ -302,7 +333,7 @@ Format *FormatGrid_open (FormatClass *qlass, ATOMLIST, int mode) {
 	const char *filename;
 	$->cl     = &class_FormatGrid;
 
-	$->stream = 0;
+	$->stream = -1;
 	$->bstream = 0;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
@@ -314,12 +345,15 @@ Format *FormatGrid_open (FormatClass *qlass, ATOMLIST, int mode) {
 
 	{
 		int result;
-		if (fts_get_symbol(at+0) == SYM(file)) {
+		fts_symbol_t sym = fts_get_symbol(at+0);
+		if (sym == SYM(file)) {
 			result = FormatGrid_open_file($,ac-1,at+1,mode);
-		} else if (fts_get_symbol(at+0) == SYM(tcp)) {
+		} else if (sym == SYM(tcp)) {
 			result = FormatGrid_open_tcp($,ac-1,at+1,mode);
+		} else if (sym == SYM(tcpserver)) {
+			result = FormatGrid_open_tcpserver($,ac-1,at+1,mode);
 		} else {
-			whine("unknown access method");
+			whine("unknown access method '%s'",fts_symbol_name(sym));
 			goto err;
 		}
 		if (!result) goto err;
