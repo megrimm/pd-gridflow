@@ -27,6 +27,7 @@
 #include "grid.h"
 
 Operator2 *op2_add;
+Operator2 *op2_sub;
 Operator2 *op2_mul;
 Operator2 *op2_shl;
 Operator2 *op2_mod;
@@ -283,7 +284,7 @@ GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 
 /* **************************************************************** */
 /*
-  grid_store ("@store") is the class for storing a grid and restituting
+  GridStore ("@store") is the class for storing a grid and restituting
   it on demand. The right inlet receives the grid. The left inlet receives
   either a bang (which forwards the whole image) or a grid describing what to
   send.
@@ -316,7 +317,7 @@ GRID_INLET(GridStore,0) {
 	/* snap_backstore must be done before *anything* else */
 	snap_backstore(r);
 
-	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
+	if (r.is_empty()) RAISE("@store: can't look into empty buffer");
 
 	int na = in->dim->n;
 	int nb = r.dim->n;
@@ -1354,12 +1355,14 @@ struct GradeFunction {
 	}
 };
 
-struct GradeFunction<float32> {
-	static int comparator (const void *a, const void *b) {
-		float32 x = **(float32**)a - **(float32**)b;
-		return x<0 ? -1 : x>0;
-	}
-};
+#define FOO(S) \
+struct GradeFunction<S> { \
+	static int comparator (const void *a, const void *b) { \
+		S x = **(S**)a - **(S**)b; \
+		return x<0 ? -1 : x>0;}};
+FOO(float32)
+FOO(float64)
+#undef FOO
 
 GRID_INLET(GridGrade,0) {
 	out[0]->begin(in->dim->dup(),in->nt);
@@ -1432,6 +1435,8 @@ struct GridLayer : GridObject {
 };
 
 GRID_INLET(GridLayer,0) {
+	if (!in) RAISE("!!!!!!!");
+	if (r.is_empty()) RAISE("no righthand");
 	Dim *a = in->dim;
 	expect_rgba_picture(a);
 	SAME_TYPE(*in,r);
@@ -1546,7 +1551,7 @@ GRID_INLET(DrawPolygon,0) {
 	SAME_TYPE(*in,color);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
 	if (in->dim->get(2)!=color.dim->get(0))
-		RAISE("image does not have same	number of channels as stored color");
+		RAISE("image does not have same number of channels as stored color");
 	out[0]->begin(in->dim->dup(),in->nt);
 	lines_start = lines_stop = 0;
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
@@ -1612,88 +1617,69 @@ GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRI
 
 /* **************************************************************** */
 
-/*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
+static void expect_position(Dim *d) {
+	if (d->n!=1) RAISE("huh?");
+	if (d->v[0]!=2) RAISE("huh?");
+}
 
-\class GridRGBtoHSV < GridObject
-struct GridRGBtoHSV : GridObject {
+\class DrawImage < GridObject
+struct DrawImage : GridObject {
+	Operator2 *op;
+	Grid image;
+	Grid position;
+
+	DrawImage() {
+		position.constrain(expect_position);
+	}
+
+	\decl void initialize (Operator2 *op, Grid *image=0, Grid *position=0);
 	GRINLET3(0);
+	GRINLET3(1);
+	GRINLET3(2);
 };
 
-/*
-  h=42*0: red
-  h=42*1: yellow
-  h=42*2: green
-  h=42*3: cyan
-  h=42*4: blue
-  h=42*5: magenta
-  h=42*6: crap
-*/
-
-GRID_INLET(GridRGBtoHSV,0) {
-	if (in->dim->n<1) RAISE("at least 1 dim please");
-	if (in->dim->get(in->dim->n-1)!=3) RAISE("3 chans please");
-	out[0]->begin(in->dim->dup());
-	in->set_factor(3);
+GRID_INLET(DrawImage,0) {
+	if (image.is_empty()) RAISE("no image?");
+	if (position.is_empty()) RAISE("no position?");
+	SAME_TYPE(*in,image);
+	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
+	if (in->dim->get(2)!=image.dim->get(0))
+	RAISE("incoming image does not have same number of channels as stored image");
+	in->set_factor(in->dim->get(1)*in->dim->get(2));
 } GRID_FLOW {
-	STACK_ARRAY(T,buf,n);
-	Pt<T> p=buf;
-	for (int i=0; i<n; i+=3, p+=3, data+=3) {
-		int r=data[0], g=data[1], b=data[2];
-		int v=p[2]=max(max(r,g),b);
-		int m=min(min(r,g),b);
-		int d=(v-m)?(v-m):1;
-		p[1]=255*(v-m)/(v?v:1);
-		p[0] = 
-			b==m ? 42*1+(g-r)*42/d :
-			r==m ? 42*3+(b-g)*42/d :
-			g==m ? 42*5+(r-b)*42/d : 0;
+	int y = in->dex/in->factor;
+	int py = ((int32*)position)[0];
+	int px = ((int32*)position)[1];
+	int sy = image.dim->v[0];
+	int sx = image.dim->v[1];
+	if (y>=py && y<py+sy) {
+		Pt<T> data2 = ARRAY_NEW(T,in->factor);
+		COPY(data2,data,in->factor);
+		int xs = max(0,px);
+		int xe = min(in->dim->get(1),px+sx);
+		int cn = image.dim->prod(2);
+		Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*(y-py) + cn*(xs-px);
+		while (xs<xe) op->zip(cn,data2+in->dim->get(2)*xs++,cd);
+		out[0]->give(in->factor,data2);
 	}
-	out[0]->give(n,buf);
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridRGBtoHSV,LIST(GRINLET2(GridRGBtoHSV,0,4)),
+GRID_INPUT(DrawImage,1,image) {} GRID_END
+GRID_INPUT(DrawImage,2,position) {} GRID_END
+
+\def void initialize (Operator2 *op, Grid *image, Grid *position) {
+	rb_call_super(argc,argv);
+	this->op = op;
+	if (image) this->image.swallow(image);
+	if (position) this->image.swallow(position);
+}
+
+GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0,4),GRINLET4(DrawImage,1,4),GRINLET(DrawImage,2,4)),
 	\grdecl
-) { IEVAL(rself,"install '@rgb_to_hsv',1,1"); }
+) { IEVAL(rself,"install '@draw_image',3,1"); }
 
-\end class GridRGBtoHSV
-
-/* **************************************************************** */
-
-/*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
-
-\class GridHSVtoRGB < GridObject
-struct GridHSVtoRGB : GridObject {
-	GRINLET3(0);
-};
-
-GRID_INLET(GridHSVtoRGB,0) {
-	if (in->dim->n<1) RAISE("at least 1 dim please");
-	if (in->dim->get(in->dim->n-1)!=3) RAISE("3 chans please");
-	out[0]->begin(in->dim->dup());
-	in->set_factor(3);
-} GRID_FLOW {
-	STACK_ARRAY(T,buf,n);
-	Pt<T> p = buf;
-	for (int i=0; i<n; i+=3, p+=3, data+=3) {
-		int h=mod(data[0],252), s=data[1], v=data[2];
-		int j=h%42;
-		int k=h/42;
-		int m=(255-s)*v/255;
-		int d=s*v/255;
-		p[0]=(k==4?j:k==5||k==0?42:k==1?42-j:0)*d/42+m;
-		p[1]=(k==0?j:k==1||k==2?42:k==3?42-j:0)*d/42+m;
-		p[2]=(k==2?j:k==3||k==4?42:k==5?42-j:0)*d/42+m;
-	}
-	out[0]->give(n,buf);
-} GRID_FINISH {
-} GRID_END
-
-GRCLASS(GridHSVtoRGB,LIST(GRINLET2(GridHSVtoRGB,0,4)),
-	\grdecl
-) { IEVAL(rself,"install '@hsv_to_rgb',1,1"); }
-
-\end class GridHSVtoRGB
+\end class DrawImage
 
 /* **************************************************************** */
 /* [rtmetro] */
@@ -1728,10 +1714,6 @@ uint64 RtMetro_now() {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
-}
-
-static double drand() {
-	return 1.0*rand()/(RAND_MAX+1.0);
 }
 
 uint64 RtMetro::delay() {
@@ -1812,6 +1794,58 @@ GRCLASS(RtMetro,LIST(),
 \end class RtMetro
 
 /* **************************************************************** */
+/* produce an upper triangular matrix with ones on the diagonal */
+/* will also affect any additional columns using the same row-operations */
+
+void expect_complete_matrix (Dim *d) {
+	if (d->n!=2) RAISE("bletch");
+	if (d->get(0)>d->get(1)) RAISE("argh");
+}
+
+\class GridMatrixSolve < GridObject
+struct GridMatrixSolve : GridObject {
+	Operator2 *op_sub;
+	Operator2 *op_mul;
+	Operator2 *op_div;
+	Grid matrix;
+	GridMatrixSolve() {
+		matrix.constrain(expect_complete_matrix);
+	}
+	\decl void initialize ();
+	GRINLET3(0);
+};
+
+GRID_INPUT(GridMatrixSolve,0,matrix) {
+	int n = matrix.dim->get(0); /* # rows */
+	int m = matrix.dim->get(1); /* # columns */
+	Pt<T> mat = (Pt<T>)matrix;
+	for (int j=0; j<n; j++) {
+		op_div->map(m,mat+j*m,mat[j*m+j]);
+		for (int i=j+1; i<n; i++) {
+			STACK_ARRAY(T,row,m);
+			COPY(row,mat+j,m);
+			op_mul->map(m,row,mat[i*m+j]);
+			op_sub->zip(m,mat+i*m,row);
+		}
+	}
+	out[0]->begin(matrix.dim->dup());
+	out[0]->send(n*m,mat);
+} GRID_END
+
+\def void initialize () {
+	rb_call_super(argc,argv);
+	op_sub = op2_sub;
+	op_mul = op2_mul;
+	op_div = op2_div;
+}
+
+GRCLASS(GridMatrixSolve,LIST(GRINLETF(GridMatrixSolve,0,4)),
+	\grdecl
+) { IEVAL(rself,"install '@matrix_solve',1,1"); }
+
+\end class
+
+/* **************************************************************** */
 
 static Operator2 *OP2(Ruby x) {
 	return FIX2PTR(Operator2,rb_hash_aref(op2_dict,x));
@@ -1819,6 +1853,7 @@ static Operator2 *OP2(Ruby x) {
 
 void startup_flow_objects () {
 	op2_add = OP2(SYM(+));
+	op2_sub = OP2(SYM(-));
 	op2_mul = OP2(SYM(*));
 	op2_shl = OP2(SYM(<<));
 	op2_mod = OP2(SYM(%));

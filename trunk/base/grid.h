@@ -74,6 +74,7 @@ typedef /*volatile*/ VALUE Ruby;
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
+
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
 /* because of older versions of Ruby (1.6.?) */
@@ -122,8 +123,6 @@ typedef /*volatile*/ VALUE Ruby;
 
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
 #define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
-//#define PTR2FIX(ptr) Pointer_new((void *)ptr)
-//#define FIX2PTR(v) Pointer_get(v)
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
@@ -132,8 +131,6 @@ typedef /*volatile*/ VALUE Ruby;
 	rb_define_method(c##_class_,#_name_,(RMethod)_class_##_##_name_,_argc_)
 #define DEF2(_class_,_name2_,_name_,_argc_) \
 	rb_define_method(c##_class_,_name2_,(RMethod)_class_##_##_name_,_argc_)
-#define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 
 const char *rb_sym_name(Ruby sym);
 
@@ -146,6 +143,7 @@ typedef unsigned long long uint64;
 typedef char  int8;
 typedef short int16;
 typedef long  int32;
+typedef long long int64;
 typedef float  float32;
 typedef double float64;
 
@@ -169,7 +167,9 @@ static inline int div2(int a, int b) {
 }
 
 static inline int32   abs(  int32 a) { return a>0?a:-a; }
+static inline int64   abs(  int64 a) { return a>0?a:-a; }
 static inline float32 abs(float32 a) { return fabs(a); }
+static inline float64 abs(float64 a) { return fabs(a); }
 
 /* integer powers in log(b) time */
 template <class T> /* where T is integral type */
@@ -185,6 +185,7 @@ static inline T ipow(T a, T b) {
 
 /* kludge */
 static inline float32 ipow(float32 a, float32 b) { return pow(a,b); }
+static inline float64 ipow(float64 a, float64 b) { return pow(a,b); }
 
 #undef min
 #undef max
@@ -221,8 +222,23 @@ static inline T lcm (T a, T b) {
 	return a*b/gcd(a,b);
 }
 
-int highest_bit(uint32 n);
-int lowest_bit(uint32 n);
+// returns the highest bit set in a word, or 0 if none.
+template <class T>
+int highest_bit(T n) {
+	int i=0;
+	if (n&0xffff0000) { n>>=16; i+=16; }
+	if (n&0x0000ff00) { n>>= 8; i+= 8; }
+	if (n&0x000000f0) { n>>= 4; i+= 4; }
+	if (n&0x0000000c) { n>>= 2; i+= 2; }
+	if (n&0x00000002) { n>>= 1; i+= 1; }
+	return i;
+}
+
+// returns the lowest bit set in a word, or 0 if none.
+template <class T>
+int lowest_bit(T n) {
+	return highest_bit((~n+1)&n);
+}
 
 #ifdef HAVE_PENTIUM
 static inline uint64 rdtsc() {
@@ -240,7 +256,13 @@ static inline bool is_le() {
 	return ((char *)&x)[0];
 }
 
-void gfpost(const char *fmt, ...);
+static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
+
+/* **************************************************************** */
+
+#define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32) MACRO(int64)
+#define EACH_FLOAT_TYPE(MACRO) MACRO(float32) MACRO(float64)
+#define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
 
 /* **************************************************************** */
 /*
@@ -316,23 +338,22 @@ public:
 
 	operator bool   () { return (bool   )p; }
 	operator void  *() { return (void  *)p; }
-	operator uint8 *() { return (uint8 *)p; }
 	operator int8  *() { return (int8  *)p; }
-	operator int16 *() { return (int16 *)p; }
-	operator int32 *() { return (int32 *)p; }
-	operator float32 *() { return (float32 *)p; }
+#define FOO(S) operator S *() { return (S *)p; }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	int operator-(Pt x) { return p-x.p; }
 
 #ifdef HAVE_DEBUG
-	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8	*)start); }
-	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16	*)start); }
-	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32	*)start); }
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 #else
-	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,0); }
-	operator Pt<int16>() { return Pt<int16>((int16 *)p,0); }
-	operator Pt<int32>() { return Pt<int32>((int32 *)p,0); }
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
 #endif
@@ -509,16 +530,14 @@ struct BitPacking;
 /* those are the types of the optimised loops of conversion */ 
 /* inputs are const */
 struct Packer {
-	void (*as_uint8  )(BitPacking *self, int n, Pt<uint8> in,   Pt<uint8> out);
-	void (*as_int16  )(BitPacking *self, int n, Pt<int16> in,   Pt<uint8> out);
-	void (*as_int32  )(BitPacking *self, int n, Pt<int32> in,   Pt<uint8> out);
-//	void (*as_float32)(BitPacking *self, int n, Pt<float32> in, Pt<uint8> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<S> in,   Pt<uint8> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
 };
 struct Unpacker {
-	void (*as_uint8  )(BitPacking *self, int n, Pt<uint8> in, Pt<uint8> out);
-	void (*as_int16  )(BitPacking *self, int n, Pt<uint8> in, Pt<int16> out);
-	void (*as_int32  )(BitPacking *self, int n, Pt<uint8> in, Pt<int32> out);
-//	void (*as_float32)(BitPacking *self, int n, Pt<uint8> in, Pt<float32> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<uint8> in, Pt<S> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
 };
 
 //\class BitPacking < Object
@@ -557,18 +576,18 @@ void swap16 (int n, Pt<uint16> data);
 #define NT_UNSUPPORTED (1<<2)
 
 #define NUMBER_TYPES(MACRO) \
-	MACRO(     uint8,  8, NT_UNSIGNED) \
-	MACRO(      int8,  8, NT_UNSUPPORTED) \
-	MACRO(    uint16, 16, NT_UNSIGNED | NT_UNSUPPORTED) \
-	MACRO(     int16, 16, 0) \
-	MACRO(    uint32, 32, NT_UNSIGNED | NT_UNSUPPORTED) \
-	MACRO(     int32, 32, 0) \
-	MACRO(    uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED) \
-	MACRO(     int64, 64, NT_UNSUPPORTED) \
-	MACRO(   float32, 32, NT_FLOAT) \
-	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED) \
-	MACRO( complex64, 64, NT_FLOAT | NT_UNSUPPORTED) \
-	MACRO(complex128,128, NT_FLOAT | NT_UNSUPPORTED)
+	MACRO(     uint8,  8, NT_UNSIGNED, "u8,b") \
+	MACRO(      int8,  8, NT_UNSUPPORTED, "i8") \
+	MACRO(    uint16, 16, NT_UNSIGNED | NT_UNSUPPORTED, "u16") \
+	MACRO(     int16, 16, 0, "i16,s") \
+	MACRO(    uint32, 32, NT_UNSIGNED | NT_UNSUPPORTED, "u32") \
+	MACRO(     int32, 32, 0, "i32,i") \
+	MACRO(    uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED, "u64") \
+	MACRO(     int64, 64, NT_UNSUPPORTED, "i64,l") \
+	MACRO(   float32, 32, NT_FLOAT, "f32,f") \
+	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED, "f64,d") \
+	MACRO( complex64, 64, NT_FLOAT | NT_UNSUPPORTED, "") \
+	MACRO(complex128,128, NT_FLOAT | NT_UNSUPPORTED, "")
 
 enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_type_i,
@@ -577,20 +596,19 @@ NUMBER_TYPES(FOO)
 	number_type_table_end
 };
 
-#define NTI_MAKE(_type_) \
+#define FOO(_type_) \
 inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 	return _type_##_type_i; }
-NTI_MAKE(uint8)
-NTI_MAKE(int16)
-NTI_MAKE(int32)
-NTI_MAKE(float32)
-#undef NTI_MAKE
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 
 struct NumberType {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int size;
 	int flags;
+	const char *aliases;
+	NumberTypeE index;
 };
 
 NumberTypeE NumberTypeE_find (Ruby sym);
@@ -599,13 +617,16 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 	case uint8_type_i: C(uint8) break; \
 	case int16_type_i: C(int16) break; \
 	case int32_type_i: C(int32) break; \
+	case int64_type_i: C(int64) break; \
 	case float32_type_i: C(float32) break; \
+	case float64_type_i: C(float64) break; \
 	default: E; RAISE("argh");}
 
 #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
 	case uint8_type_i: C(uint8) break; \
 	case int16_type_i: C(int16) break; \
 	case int32_type_i: C(int32) break; \
+	case int64_type_i: C(int64) break; \
 	default: E; RAISE("argh");}
 
 /* Operator objects encapsulate optimised loops of simple operations */
@@ -619,16 +640,13 @@ struct Operator1 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
-#define MAKE_TYPE_ENTRY(type) \
+#define FOO(type) \
 		Operator1On<type> on_##type; \
 		Operator1On<type> *on(type &foo) { \
 			if (!on_##type.op_map) RAISE("operator does not support this type"); \
 			return &on_##type;}
-	MAKE_TYPE_ENTRY(uint8)
-	MAKE_TYPE_ENTRY(int16)
-	MAKE_TYPE_ENTRY(int32)
-	MAKE_TYPE_ENTRY(float32)
-#undef MAKE_TYPE_ENTRY
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 //public:
 	template <class T> inline void map(int n, Pt<T> as) {
 		as.will_use(n);
@@ -647,16 +665,13 @@ struct Operator2 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
-#define MAKE_TYPE_ENTRY(type) \
+#define FOO(type) \
 		Operator2On<type> on_##type; \
 		Operator2On<type> *on(type &foo) { \
 			if (!on_##type.op_map) RAISE("operator does not support this type"); \
 			return &on_##type;}
-	MAKE_TYPE_ENTRY(uint8)
-	MAKE_TYPE_ENTRY(int16)
-	MAKE_TYPE_ENTRY(int32)
-	MAKE_TYPE_ENTRY(float32)
-#undef MAKE_TYPE_ENTRY
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 //public:
 	template <class T> inline void map(int n, Pt<T> as, T b) {
 		as.will_use(n);
@@ -734,14 +749,11 @@ struct Grid {
 	}
 
 	~Grid();
-#define DEFCAST(type) \
+#define FOO(type) \
 	operator type *() { return (type *)data; } \
 	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
-	DEFCAST(uint8)
-	DEFCAST(int16)
-	DEFCAST(int32)
-	DEFCAST(float32)
-#undef DEFCAST
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	inline bool is_empty() { return !dim; }
 	Dim *to_dim ();
 };
@@ -771,21 +783,32 @@ static Grid *convert (Ruby r, Grid **bogus) {
 	0, \
 	0, \
 	_class_##_grid_inlet_##i, \
-	0, }
+	0, \
+	0, \
+	0 }
 
 /* same for inlets that support all four types */
 #define GRINLET4(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i }
 
-/* same except float32 unsupported by that inlet */
+/* same except float unsupported by that inlet */
 #define GRINLET2(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
-	0 }
+	_class_##_grid_inlet_##i, \
+	0, 0 }
+
+/* same except int unsupported by that inlet */
+#define GRINLETF(_class_,i,mode) {i, mode, \
+	0, 0, 0, 0, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
@@ -831,16 +854,13 @@ typedef struct GridHandler {
 	/* It used to be three different function pointers here (begin,flow,end)
 	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
 	end-marker for inlet definitions... sorry for the confusion */
-#define DEFFLOW(_type_) \
+#define FOO(_type_) \
 	void (*flow_##_type_)(GridInlet *in, int n, Pt<_type_> data); \
 	void flow(GridInlet *in, int n, Pt<_type_> data) const { \
 		assert(flow_##_type_); \
 		flow_##_type_(in,n,data); }
-	DEFFLOW(uint8);
-	DEFFLOW(int16);
-	DEFFLOW(int32);
-	DEFFLOW(float32);
-#undef DEFFLOW
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 } GridHandler;
 
 typedef struct  GridObject GridObject;
@@ -1001,7 +1021,7 @@ struct GridObject : FObject {
 	/* Make sure you distinguish #close/#delete, and C++'s delete. The first
 	two are quite equivalent and should never make an object "crashable".
 	C++ is called by Ruby's garbage collector or by jMax/PureData's delete.
-    */
+	*/
 
 	GridObject();
 	~GridObject();
@@ -1071,5 +1091,7 @@ extern int gf_security; /* unused */
 
 extern "C" GFBridge *gf_bridge;
 extern "C" void Init_gridflow ();
+
+void gfpost(const char *fmt, ...);
 
 #endif /* __GF_GRID_H */

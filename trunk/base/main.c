@@ -362,11 +362,9 @@ GRCLASS(BitPacking,LIST(),
 NumberTypeE NumberTypeE_find (Ruby sym) {
 	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
 		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
-	if (sym==SYM(uint8)) return uint8_type_i;
-	if (sym==SYM(int16)) return int16_type_i;
-	if (sym==SYM(int32)) return int32_type_i;
-	if (sym==SYM(float32)) return float32_type_i;
-	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
+	Ruby v = rb_hash_aref(number_type_dict,sym);
+	if (v!=Qnil) return FIX2PTR(NumberType,v)->index;
+	RAISE("unknown number type \"%s\"", rb_sym_name(sym));
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
@@ -521,32 +519,16 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 
 /* ---------------------------------------------------------------- */
 
-/*
-  The following code is not used. It was supposed to exist for passing
-  buffer-pointers and function-pointers of C++, but in the end I can't
-  make this work with the limitations of PureData.
-*/
-Ruby cPointer;
-
-Ruby Pointer_new (void *ptr) {
-	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
-}
-
-void *Pointer_get (Ruby self) {
-	void *p;
-	Data_Get_Struct(self,void *,p);
-	return p;
-}
-
-/* ---------------------------------------------------------------- */
-
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
 void startup_formats();
 void startup_cpu();
 
-#define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
+#define SDEF(_class_,_name_,_argc_) \
+	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
+#define SDEF2(_name1_,_name2_,_argc_) \
+	rb_define_singleton_method(mGridFlow,_name1_,(RMethod)_name2_,_argc_)
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
@@ -574,8 +556,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
-	cPointer = rb_define_class_under(mGridFlow, "Pointer", rb_cObject);
-	DEF(Pointer, get, 0);
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);

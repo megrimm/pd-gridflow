@@ -190,7 +190,8 @@ class GridPrint < GridFlow::GridObject
 		when :int16; data.unpack("s*")
 		when :int32; data.unpack("l*")
 		when :float32; data.unpack("f*")
-		else raise "#{self.class} doesn't know how to decode this"
+		when :float64; data.unpack("d*")
+		else raise "#{self.class} doesn't know how to decode #{@nt}"
 		end
 	end
 

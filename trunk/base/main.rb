@@ -77,12 +77,12 @@ end
 
 module GridFlow #------------------
 
-def esmtick
+def self.esmtick
 	$esm.tick
 	$mainloop.timers.after(0.1) { esmtick }
 end
 
-def start_eval_server
+def self.start_eval_server
 	require "gridflow/extra/eval_server.rb"
 	$esm = EvalServerManager.new
 	esmtick
@@ -302,6 +302,7 @@ def self.routine
 end
 
 def GridFlow.find_file s
+	s=s.to_s
 	if s==File.basename(s) then
 		dir = GridFlow.data_path.find {|x| File.exist?("#{x}/#{s}") }
 		if dir then "#{dir}/#{s}" else s end
@@ -335,7 +336,7 @@ def GridFlow.load_user_config
 end
 
 END {
-#	puts "This is an END block"
+	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
 	GridFlow.fobjects_set.clear
 	GC.start

@@ -36,11 +36,20 @@ static GFBridge *gf_bridge2;
 static Ruby mGridFlow2=0;
 static Ruby cPointer2=0;
 
+static uint64 time_now() {
+	struct timeval nowtv;
+	gettimeofday(&nowtv,0);
+	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
+}
+
 static void count_tick () {
+	static uint64 start_time = time_now();
 	static int count = 0;
-	static int next = 500;
+	static int next = 1000;
+	int32 duration = (time_now() - start_time) / 1000;
 	if (count>=next) {
-		gf_bridge2->post("survived to %d clock ticks%s",count,
+		gf_bridge2->post("GF clock ticks: %d in %d ms (%d ms/tick)%s",
+			count, duration, duration/count,
 			gf_bridge2->post_does_ln ? "" : "\n");
 		//next = (next*15+9)/10; /* next notice when 50% bigger */
 		next *= 2;
