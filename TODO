@@ -1,5 +1,14 @@
 /* $Id$ */
 
+<ClaudiusMaximus> hmm, sending a [reassign( message to the right inlet of a [#store] segfaults Pd
+
+<alx1> matju: for the ./configure, I often get an error from aalib since common installs do not put the headers
+<alx1> matju: would it be possible to make it a user defined choice like --with-aalib and turn it off by default?
+<alx1> matju: not noticing that configure returns an error leads to an error when compiling
+<alx1> back to the [display] object, it lingers for a moment after deletion
+<alx1> and returns a 'pd_activate' error after I move it
+<alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
+
 for 0.8.0:
 
 drag_rectangle.pd is fucked (x11 error)
@@ -18,19 +27,20 @@ test with waves.pd, 24 by 32.
 ==1673==    by 0x42093152: convert(unsigned long, Grid**) (base/grid.h.fcs:921)
 ==1673==    by 0x4208F72B: GridOuter::initialize_wrap(int, unsigned long*, unsigned long) (base/flow_objects.c.fcs:862)
 
-[ ] we're switching to PD for abstractions, instead of Ruby.
-    Make a new bunch of them. Add a video latency patch (in examples)
-[ ] drop :whatever
-[ ] wrap Dim
-[ ] wrap GridInlet
-[ ] wrap GridOutlet
-[ ] wrap Grid
+[ ] optional args don't work in source_filter.rb
+[ ] deprecation warnings
+[ ] Add a video latency patch (in examples)
+[ ] #store mysteriously doesn't use ( # ) as a default argument
+[ ] can't have FPatcher and GridObject behaviour at once ??
+[ ] [rubysprintf] contains a nonsense line of code (a.each...)
+[ ] wrap Dim (?)
+[ ] wrap GridInlet (?)
+[ ] wrap GridOutlet (?)
+[ ] wrap Grid (?)
+[ ] wrap Numop
 [ ] reenable DimConstraints
 [ ] remove GridInlet* ?
-[ ] ruby-based send_out_grid_begin is pretty fucked
-[ ] [#reverse]
-[ ] [#]
-[ ] [#unpack]
+[ ] configure chokes if GCC3 doesn't have the C++ plugin
 [ ] [#change]
 [ ] [#import~]
 [ ] [#export~]
@@ -38,11 +48,10 @@ test with waves.pd, 24 by 32.
 [ ] 8-align STACK_ARRAY and ARRAY_NEW ?
 [ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
-[ ] Numop API exposed to Ruby
 [ ] re-enable int64,float64
 [ ] <alx_> #define RUBY_STACK_END "0xbfffd5c0" (!?!?!?)
 [ ] remove GridFlow.routine
-[ ] remember who i am supposed to credit for making pd_help back in march 2003...
+[ ] remember who i am supposed to credit for making pd_help back in march 2003... alx knows
 [ ] added #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
 [ ] < 10 bugs in buglist
@@ -50,10 +59,12 @@ test with waves.pd, 24 by 32.
 [ ] internals documentation
 [ ] internal grid protocol redesigned
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
+[ ] unbork make test and plain ruby mode.
 
 for 0.8.1:
 
  * wrap Pd API completely.
+ * test.rb should become much more serious. (the @pack bug really sucked)
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 

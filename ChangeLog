@@ -3,9 +3,11 @@
 version 0.7.8 (head):
 
  * removed support for jMax 2.5 and jMax 4.1
+ * added GCC 3.4 support
  * 13 object-classes rewritten from Ruby to Pd abstractions
- * new two-input ops: clip+ clip- abs- sq- avg hypot sqrt rand (soon erf*)
  * merged [@],[@!] -> [#] and added message "op"
+ * removed all one-input ops (see next...)
+ * new two-input ops: abs- sq- avg hypot sqrt rand (soon erf* clip+ clip-)
  * [#fold],[#scan] : removed seed argument and right outlet
  * [#fold],[#scan] : added messages "op" and "seed"
  * major changes to the bridge API (Ruby<->PureData)
@@ -14,9 +16,11 @@ version 0.7.8 (head):
  * internals: GridObject no longer manages GridOutlet
  * internals: added classes P,PtrGrid,...
  * internals: beginning to use C++'s Standard Template Library (sometimes)
-upcoming:
+ * [gridflow] now has "formats" msg (to list available formats)
  * new object classes:
-   [#unpack],
+   [display], [#reverse], [#unpack], [#centroid2]
+Upcoming:
+   [#edit]
 
 version 0.7.7 (2004.08.24):
 
