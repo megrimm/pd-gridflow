@@ -220,8 +220,13 @@ void video_mmap_whine(VideoMmap *$) {
 /* **************************************************************** */
 
 extern FileFormatClass class_FormatVideoDev;
-typedef FileFormat FormatVideoDev;
-
+typedef struct FormatVideoDev {
+	FileFormat_FIELDS;
+	VideoMbuf vmbuf;
+	VideoMmap vmmap;
+	uint8 *image;
+	int pending_frame;
+} FormatVideoDev;
 /*
 typedef struct FormatVideoDev {
 	FileFormat_FIELDS
@@ -233,10 +238,10 @@ typedef struct FormatVideoDev {
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
 void FormatVideoDev_size (FileFormat *$, int height, int width) {
-	int v[] = { height, width, 3 };
+	int v[] = {height, width, 3};
 	VideoWindow grab_win;
-	$->dim = Dim_new(3,v);
 
+	$->dim = Dim_new(3,v);
 	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
@@ -269,57 +274,85 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 }
 */
 
-bool FormatVideoDev_frame (FileFormat *$, GridOutlet *out, int frame) {
-	VideoMbuf vmbuf;
-	VideoMmap vmmap;
-	void *buffer;
+void FormatVideoDev_dealloc_image (FormatVideoDev *$) {
+	munmap($->image, $->vmbuf.size);
+}
+
+bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
+	if (WIOCTL($->stream, VIDIOCGMBUF, &$->vmbuf)) return false;
+	video_mbuf_whine(&$->vmbuf);
+	$->image = (uint8 *) mmap(
+		0,$->vmbuf.size,
+		PROT_READ|PROT_WRITE,MAP_SHARED,
+		$->stream,0);
+	if (((int)$->image)<=0) {
+		$->image=0;
+		whine("mmap: %s", strerror(errno));
+		return false;
+	}
+
+	return true;
+}
+
+bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
+	int frame_id;
 
 	if (frame != -1) return 0;
-
 	if (!$->bit_packing) {
 		whine("no bit_packing");
 		return false;
 	}
 
-	if (WIOCTL($->stream, VIDIOCGMBUF, &vmbuf)) goto err1;
-/*	video_mbuf_whine(&vmbuf); */
-
-	buffer = mmap(0,vmbuf.size,
-		PROT_READ|PROT_WRITE,MAP_SHARED,$->stream,0);
-	if (((int)buffer)==-1) {
-		whine("mmap: %s", strerror(errno));
-		goto err1;
+	if (!$->image) {
+		if (!FormatVideoDev_alloc_image($)) {
+			return false;
+		}
 	}
-	vmmap.frame = 0;
-	vmmap.format = VIDEO_PALETTE_RGB24;
-	vmmap.width  = Dim_get($->dim,1);
-	vmmap.height = Dim_get($->dim,0);
-	if (WIOCTL($->stream, VIDIOCMCAPTURE, &vmmap)) goto err2;
-	if (WIOCTL($->stream, VIDIOCSYNC,     &vmmap)) goto err2;
+
+	if ($->pending_frame < 0) {
+		$->pending_frame = 0;
+		$->vmmap.frame = $->pending_frame;
+		$->vmmap.format = VIDEO_PALETTE_RGB24;
+		$->vmmap.width  = Dim_get($->dim,1);
+		$->vmmap.height = Dim_get($->dim,0);
+		if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
+	}
+	frame_id = $->vmmap.frame;
+	if (WIOCTL($->stream, VIDIOCSYNC, &$->vmmap)) return false;
+
+	/* $->pending_frame = ($->pending_frame+1) % $->vmbuf.frames; */
+	$->pending_frame = ($->pending_frame+1) % $->vmbuf.frames;
+	/* $->pending_frame = ($->pending_frame+1) % 2; */
+
+	$->vmmap.frame = $->pending_frame;
+	$->vmmap.format = VIDEO_PALETTE_RGB24;
+	$->vmmap.width  = Dim_get($->dim,1);
+	$->vmmap.height = Dim_get($->dim,0);
+	if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
 
 	/* success goes here */
 
 	/* something wrong, missing sizeof(sometype) */
 	GridOutlet_begin(out,Dim_dup($->dim));
 
+
 	/* picture is converted here. assuming RGB 8:8:8 (RGB24) */
 	{
+		int sy = Dim_get($->dim,0);
+		int sx = Dim_get($->dim,1);
 		int y;
 		int bs = Dim_prod_start($->dim,1);
 		Number b2[bs];
-		for(y=0; y < $->dim->v[0]; y++) {
-			uint8 *b1 = (uint8 *)buffer + BitPacking_bytes($->bit_packing) * Dim_get($->dim,1) * y;
-			BitPacking_unpack($->bit_packing,Dim_get($->dim,1),b1,b2);
+		for(y=0; y<sy; y++) {
+			uint8 *b1 = $->image + $->vmbuf.offsets[frame_id] +
+				BitPacking_bytes($->bit_packing) * sx * y;
+			BitPacking_unpack($->bit_packing,sx,b1,b2);
 			GridOutlet_send(out,bs,b2);
 		}
 	}
 	GridOutlet_end(out);
-	munmap(buffer, vmbuf.size);
 	return true;
-
-err2:
-	munmap(buffer, vmbuf.size);
-err1:
+err:
 	return false;
 }
 
@@ -385,14 +418,17 @@ void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
 	}
 }
 
-void FormatVideoDev_close (FileFormat *$) {
+void FormatVideoDev_close (FormatVideoDev *$) {
+	if ($->image) FormatVideoDev_dealloc_image($);
 	if ($->stream>=0) close($->stream);
 	FREE($);
 }
 
 FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, int mode) {
-	FileFormat *$ = NEW(FileFormat,1);
+	FormatVideoDev *$ = NEW(FormatVideoDev,1);
 	$->cl = &class_FormatVideoDev;
+	$->pending_frame = -1;
+	$->image = 0;
 
 	switch(mode) {
 	case 4: break;
@@ -415,7 +451,7 @@ FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, i
 		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
 	/*	$->cl->size($,vcaps.minheight,vcaps.minwidth); */
-		$->cl->size($,vcaps.maxheight,vcaps.maxwidth);
+		$->cl->size((FileFormat *)$,vcaps.maxheight,vcaps.maxwidth);
 	}
 
 	{
@@ -444,14 +480,14 @@ FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, i
 		}
 	}
 
-	FormatVideoDev_channel($,0);
+	FormatVideoDev_channel((FileFormat *)$,0);
 
 	/* Sometimes a pause is needed here */
 	usleep(500000);
 
-	return $;
+	return (FileFormat *)$;
 err:
-	$->cl->close($);
+	$->cl->close((FileFormat *)$);
 	return 0;
 }
 
