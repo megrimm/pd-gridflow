@@ -94,6 +94,8 @@ template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x)
 	}
 }
 
+static Operator2 *OP2(Ruby x) {return FIX2PTR(Operator2,rb_hash_aref(op2_dict,x));}
+
 template <class T> void GridConvolve::make_plan (T bogus) {
 	Dim *da = a.dim, *db = b.dim;
 	int dby = db->get(0);
@@ -146,6 +148,7 @@ GRID_INLET(GridConvolve,0) {
 } GRID_FLOW {
 	COPY((Pt<T>)a+in->dex, data, n);
 } GRID_FINISH {
+	Operator2 *op2_put = OP2(SYM(put));
 	make_plan((T)0);
 	int dbx = b.dim->get(1);
 	int day = a.dim->get(0);
@@ -158,7 +161,8 @@ GRID_INLET(GridConvolve,0) {
 //	fprintf(stderr,"plann=%d\n",plann);
 	T orh=0;
 	for (int iy=0; iy<day; iy++) {
-		for (int i=0; i<n; i++) buf[i]=*(T *)seed; // !@#$ redo this with OP2(put)
+		op2_put->map(n,buf,*(T *)seed);
+		//for (int i=0; i<sx; i++) buf[i]=*(T *)seed; // !@#$ redo this with OP2(put)
 		for (int i=0; i<plann; i++) {
 			int jy = plan[i].y;
 			int jx = plan[i].x;
@@ -433,6 +437,7 @@ struct DrawPolygon : GridObject {
 	\attr Operator2 *op;
 	\attr Grid color;
 	\attr Grid polygon;
+	Grid color2;
 	Grid lines;
 	int lines_start;
 	int lines_stop;
@@ -488,11 +493,19 @@ GRID_INLET(DrawPolygon,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int nl = polygon.dim->get(0);
 	qsort((int32 *)lines,nl,sizeof(Line),order_by_starting_scanline);
+	STACK_ARRAY(int32,v,1);
+	int cn = color.dim->prod();
+	v[0] = cn*16;
+	color2.init(new Dim(1,v), color.nt);
+	for (int i=0; i<16; i++) COPY((Pt<T>)color2+cn*i,(Pt<T>)color,cn);
 } GRID_FLOW {
 	int nl = polygon.dim->get(0);
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 
 	int y = in->dex / in->factor;
+	int cn = color.dim->prod();
+	Pt<T> cd = (Pt<T>)color2;
+	
 	while (n) {
 		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
 		for (int i=lines_start; i<lines_stop; i++) {
@@ -501,8 +514,6 @@ GRID_INLET(DrawPolygon,0) {
 				lines_start++;
 			}
 		}
-		Pt<T> cd = (Pt<T>)color;
-		int cn = color.dim->prod();
 		if (lines_start == lines_stop) {
 			out[0]->send(in->factor,data);
 		} else {
@@ -516,10 +527,11 @@ GRID_INLET(DrawPolygon,0) {
 			qsort(ld+lines_start,lines_stop-lines_start,
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
-				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl-1);
-				//int xn = xe-xs;
-				/* !@#$ could be faster! */
-				while (xs<xe) op->zip(cn,data2+cn*xs++,cd);
+				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl);
+				//fprintf(stderr,"xs=%d xe=%d xl=%d\n",xs,xe,xl);
+				if (xs>=xe) continue; /* !@#$ WHAT? */
+				while (xe-xs>=16) { op->zip(16*cn,data2+cn*xs,cd); xs+=16; }
+				op->zip((xe-xs)*cn,data2+cn*xs,cd);
 			}
 			out[0]->give(in->factor,data2);
 		}
