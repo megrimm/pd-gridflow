@@ -14,21 +14,23 @@ argc=$#
 while [ 0 != $# ]
 do
 	case $1 in
-		--jmax24) JMAX_VERSION=24
+		--jmax24)
+			JMAX_VERSION=24
 			echo "Using jMax 2.4.x"
 			JMAX_INCLUDE='"fts.h"'
 		;;
-		--jmax25) JMAX_VERSION=25
+		--jmax25)
+			JMAX_VERSION=25
 			echo "Using jMax 2.5.x"
 			JMAX_INCLUDE='<fts/fts.h>'
 		;;
-		--jmax30) JMAX_VERSION=30
+		--jmax30)
+			JMAX_VERSION=30
 			echo "Using jMax 3.0.x (bêta)"
 		;;
-		--nojmax) JMAX_VERSION=none
+		--nojmax)
+			JMAX_VERSION=none
 			echo "Not using jMax"
-			echo "Error: not supported yet!"
-			exit 1
 		;;
 		--fast)
 			echo "Fast Mode (less error checking)"
@@ -53,13 +55,15 @@ then
 	exit 1
 fi
 
-if [ "z$JMAXROOTDIR" == "z" ]; then
-	JMAXROOTDIR=`(cd ../..; echo $PWD)`
-	if [ -d $JMAXROOTDIR/Makefiles ]; then
-		echo "assuming --jmax-dist-dir $JMAXROOTDIR"
-	else
-		echo "please specify --jmax-dist-dir <pathname>"
-		exit 1
+if [ ! "z$JMAX_VERSION" = "znone" ]; then
+	if [ "z$JMAXROOTDIR" == "z" ]; then
+		JMAXROOTDIR=`(cd ../..; echo $PWD)`
+		if [ -d $JMAXROOTDIR/Makefiles ]; then
+			echo "assuming --jmax-dist-dir $JMAXROOTDIR"
+		else
+			echo "please specify --jmax-dist-dir <pathname>"
+			exit 1
+		fi
 	fi
 fi
 
@@ -109,6 +113,7 @@ gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 #--------------------------------#
 
 FORMATS='X11 PPM Targa Grid'
+LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
 
 echo -n "looking for LibMPEG: "
 if has-libmpeg; then
@@ -160,9 +165,11 @@ echo "generating ./config.make"
 	echo endif
 	echo JMAX_VERSION=$JMAX_VERSION
 	echo PNAME=gridflow
-	echo JMAXROOTDIR=$JMAXROOTDIR
-	echo JMAXDISTDIR=$JMAXROOTDIR
-	echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
+	if [ ! "z$JMAX_VERSION" = "znone" ]; then
+		echo JMAXROOTDIR=$JMAXROOTDIR
+		echo JMAXDISTDIR=$JMAXROOTDIR
+		echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
+	fi
 	if [ "z$LDSOFLAGS" != "z" ]; then
 		echo "GRIDFLOW_LDSOFLAGS += $LDSOFLAGS"
 	fi
