@@ -269,26 +269,36 @@
 		<icon text="[@for 0 320 1]"/>
 		<help text="[@for 0 320 1]"/>
 
-		<p>works like a regular [for] object plugged to a [@import] tuned
-		for a Dim(size) where size is the number of values produced by a bang
-		to that [for].</p>
+		<p>when given scalar bounds, works like a regular [for] object plugged
+		to a [@import] tuned for a Dim(size) where size is the number of values
+		produced by a bang to that [for].</p>
+
+		<p>when given vector bounds, will work like any number of [for] objects
+		producing all possible combinations of their values in the proper order.
+		This replaces the old [@identity_transform] object.</p>
+
 		<method name="init">
 			<arg name="from" type="integer"/>
 			<arg name="to" type="integer"/>
 			<arg name="step" type="integer"/>
 		</method>
-		<inlet id="0"><method name="int">
+		<inlet id="0"><grid><dim>index</dim>
 			replaces the "from" value and produces output.
-		</method></inlet>
-		<inlet id="1"><method name="int">
+		</grid></inlet>
+		<inlet id="1"><grid><dim>index</dim>
 			replaces the "to" value.
-		</method></inlet>
-		<inlet id="2"><method name="int">
+		</grid></inlet>
+		<inlet id="2"><grid><dim>index_steps</dim>
 			replaces the "step" value.
-		</method></inlet>
+		</grid></inlet>
 		<outlet id="0">
 			<grid><dim>size</dim>
 				where size is floor((to-from+1)/step)
+				[for scalar bounds]
+			</grid>
+			<grid><dim>*size,dimension</dim>
+				where *size is floor((to-from+1)/step)
+				[for vector bounds]
 			</grid>
 		</outlet>
 	</jmax-class>
@@ -385,6 +395,7 @@
 		<method name="init">
 			<arg name="operator" type="symbol"/>
 			<arg name="base" type="integer"/>
+			<arg name="right_hand" type="grid"/>
 			the base value is optional and defaults to 0.
 			the operator is one from the table of two-input operators.
 		</method>
@@ -491,6 +502,7 @@
 			<arg name="op_para" type="symbol"/>
 			<arg name="op_fold" type="symbol"/>
 			<arg name="base"    type="integer"/>
+			<arg name="right_hand" type="grid"/>
 			op_para and op_fold are two operators picked from the table
 			of two-input operators.
 			the base value has to be specified (has no default value yet).
@@ -539,6 +551,7 @@
 			<arg name="op_para" type="symbol"/>
 			<arg name="op_fold" type="symbol"/>
 			<arg name="base"    type="integer"/>
+			<arg name="right_hand" type="grid"/>
 			op_para and op_fold are two operators picked from the table
 			of two-input operators.
 			the base value has to be specified (has no default value yet).
@@ -667,38 +680,9 @@
 	<jmax-class name="@identity_transform">
 		<icon text="[@identity_transform]"/>
 		<help text="[@identity_transform]"/>
-
-		<method name="init">
-			no arguments.
-		</method>
-
-		<inlet id="0">
-			<method name="bang">creates a coordinate map that can
-			be fed into the left input of @store to give the same result
-			as a bang in that input; that coordinate map is
-			Dim(height,width,2), where each Dim(2) is a (y,x) pair indexing
-			a pixel.</method>
-		</inlet>
-		<inlet id="1">
-			<method name="int">set the height.</method>
-		</inlet>
-		<inlet id="2">
-			<method name="int">set the width.</method>
-		</inlet>
-		<outlet id="0">
-			<grid>a coordinate map.</grid>
-		</outlet>
-
-		<p>@identity_transform builds a pixel-level transform grid suitable
-		for using with inlet 0 of @store. </p>
-
-		<p> Sending an integer to inlet 1 sets the height of the resulting
-		picture.</p>
-
-		<p> Sending a grid to inlet 0 generates said grid and sends it to
-		inlet 0. Not guaranteed to be fast (use an intermediate @store as a
-		cache if needed)</p>
-
+		<p>
+			OBSOLETE AND REMOVED. USE @for INSTEAD.
+		</p>
 	</jmax-class>
 
 	<jmax-class name="@scale_to">
@@ -816,7 +800,29 @@
 	</jmax-class>
 
 	<jmax-class name="@print">
-		<p>future use</p>
+		<method name="init"/>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+			prints the dimensions of the grid.
+			prints all the grid data if there are 2 dimensions or less.
+			</grid>
+		</inlet>
+	</jmax-class>
+
+	<jmax-class name="rubyprint">
+		<method name="init"/>
+		<inlet id="0">
+			<method name="&lt;any&gt;">
+			prints the message to the console.
+			</method>
+		</inlet>
+	</jmax-class>
+
+	<jmax-class name="printargs">
+		<method name="init">
+			<rest name="any"/>
+			prints everything.
+		</method>
 	</jmax-class>
 </section>
 
@@ -832,6 +838,7 @@
 			<arg name="op_para" type="symbol"/>
 			<arg name="op_fold" type="symbol"/>
 			<arg name="base"   type="integer"/>
+			<arg name="right_hand" type="grid" default="none"/>
 		</method>
 		<inlet id="0">
 			<grid><dim>rows columns rest...</dim>
@@ -1077,8 +1084,7 @@
 		<icon image="format_videodev" text="[open videodev /dev/video0]"/>
 
 		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
-		should work for bttv based cards and the dc1 from miro, possibly 
-		dc10plus.</p>
+		should work for bttv based cards and the dc1/dc10plus from Miro.</p>
 
 		<p>If you suffer from color inversion, you may feed the list
 		"<k>3 3 # 0 0 1 0 1 0 1 0 0</k>" to the right side of a <k>[@inner2 * + 0]</k>.
@@ -1104,6 +1110,15 @@
 			sets the input size, especially when using a video digitalizer
 			device
 		</method>
+	</jmax-class>
+
+	<jmax-class name="format sdl @out">
+		<method name="open">
+			opens a dim(480,640,3) rgb window.
+		</method>
+		<grid><dim>rows columns {red green blue}</dim>
+			sends frame to screen. window is NOT resized.
+		</grid>
 	</jmax-class>
 
 	<jmax-class name="format x11 @in/@out">
@@ -1190,6 +1205,45 @@
 			</list>
 		</method>
 
+	</jmax-class>
+</section>
+
+<section name="Objects for Scripting">
+	<jmax-class name="ruby class FObject extending Data">
+		Provides inlets and outlets to Ruby Objects.
+	</jmax-class>
+	<jmax-class name="ruby class GridObject extending FObject">
+		Provides grid support to FObjects.
+	</jmax-class>
+	<jmax-class name="ruby class BitPacking">
+		A BitPacking is a simple two-way converter between different
+		numeric layouts.
+	</jmax-class>
+</section>
+<section name="Objects for Internals">
+	<jmax-class name="C++ class GridInlet">
+		GridInlets represent inlets that accept grids.
+	</jmax-class>
+	<jmax-class name="C++ class GridOutlet">
+		GridOutlets represent outlets that send grids.
+	</jmax-class>
+	<jmax-class name="C++ class Dim">
+		Dim represents a list of dimensions.
+	</jmax-class>
+	<jmax-class name="C++ class Grid">
+		Grid represents a grid that is fully stored in memory.
+	</jmax-class>
+	<jmax-class name="C++ class Operator1">
+		This represents a one-input operator.
+	</jmax-class>
+	<jmax-class name="C++ class Operator2">
+		This represents a two-input operator.
+	</jmax-class>
+	<jmax-class name="C++ class GridClass">
+		This represents a class of GridObjects.
+	</jmax-class>
+	<jmax-class name="C++ class GFBridge">
+		This holds linkage information about jMax and PureData and such.
 	</jmax-class>
 </section>
 </jmax-doc>
