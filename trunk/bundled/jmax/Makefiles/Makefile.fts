@@ -1,0 +1,110 @@
+# 
+# jMax
+# Copyright (C) 1994, 1995, 1998, 1999 by IRCAM-Centre Georges Pompidou, Paris, France.
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# See file LICENSE for further informations on licensing terms.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 
+# Based on Max/ISPW by Miller Puckette.
+#
+# Authors: Maurizio De Cecco, Francois Dechelle, Enzo Maggi, Norbert Schnell.
+
+ifndef MODE
+MODE=opt
+endif
+
+##
+## includes
+##
+include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
+include $(JMAXDISTDIR)/Makefiles/Makefile.$(MODE)
+-include Sources
+
+##
+## Definitions
+##
+
+FTSROOTDIR=$(JMAXDISTDIR)
+
+ifeq ($(strip $(OBJDIR)),)
+OBJDIR = $(FTSROOTDIR)/fts/obj/$(ARCH)/$(MODE)
+endif
+
+ifeq ($(strip $(LIBDIR)),)
+LIBDIR  = $(FTSROOTDIR)/fts/lib/$(ARCH)/$(MODE)
+endif
+
+ifeq ($(strip $(BINDIR)),)
+BINDIR  = $(FTSROOTDIR)/fts/bin/$(ARCH)/$(MODE)
+endif
+
+OBJECTS = $(addprefix $(OBJDIR)/, $(addsuffix .o , $(basename $(SOURCES))))
+
+CFLAGS = -I$(JMAXDISTDIR)/include -I$(JMAXDISTDIR)/fts/src $(MODULE_CFLAGS) $(MODE_CFLAGS) $(ARCH_CFLAGS) 
+ARFLAGS = rc $(MODE_ARFLAGS) $(ARCH_ARFLAGS)
+LDFLAGS =  $(MODULE_LDFLAGS) $(MODE_LDFLAGS) $(ARCH_LDFLAGS) 
+OBJCFLAGS = 
+
+FTS_LDFLAGS = $(MODULE_LDFLAGS) $(MODE_LDFLAGS) $(ARCH_LDFLAGS) $(FTS_ARCH_LDFLAGS) 
+FTS_SOFLAGS = $(MODULE_SOFLAGS) $(MODE_SOFLAGS) $(ARCH_SOFLAGS) $(FTS_ARCH_SOFLAGS) 
+
+FTS_LIB=$(LIBDIR)/libfts.a
+
+##
+## Rules
+##
+
+lib: $(OBJDIR) $(LIBDIR) $(OBJECTS) $(FTS_LIB)($(addsuffix .o, $(basename $(SOURCES))))
+.PHONY: lib
+
+ifdef RANLIB
+$(FTS_LIB)(%.o): $(OBJDIR)/%.o
+	$(AR) $(ARFLAGS) $(FTS_LIB) $(OBJDIR)/$*.o
+	$(RANLIB) $(LIBDIR)/libfts.a
+else
+$(FTS_LIB)(%.o): $(OBJDIR)/%.o
+	$(AR) $(ARFLAGS) $(FTS_LIB) $(OBJDIR)/$*.o
+endif
+
+$(OBJDIR)/%.o : %.c
+	$(CC) -c  $(CFLAGS) $< -o $@
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+$(LIBDIR):
+	mkdir -p $(LIBDIR)
+
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+cleanobjs:
+	rm -f $(OBJECTS)
+.PHONY: cleanobjs
+
+clean-local:
+	rm -f $(OBJECTS)
+	rm -f $(TOCLEAN)
+
+cleanall:
+	rm -f $(TODELETE)
+	rm -f $(TOCLEAN)
+	rm -f $(OBJECTS)
+
+
+
+
+
