@@ -69,7 +69,7 @@ $conf={
 	:OBJS => [],
 }
 
-def c_test_old code, *link
+def c_test_old code, link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
@@ -84,7 +84,7 @@ ensure
 	LOG.puts log
 end
 
-def c_test code, *link
+def c_test code, link, options=[]
 	ldlpath = ENV["LD_LIBRARY_PATH"]
 	ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
 	link[0,0]=$conf[:LDSOFLAGS].find_all {|x| /^-L/ =~ x }
@@ -106,8 +106,8 @@ i've had before involving .a's that didn't want to link. but it seems to be a g+
 	  return true
 =end
 
-	# test for .a when .so not found
-	launch2 log,*(command+["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]) and
+	# test for .a when .so not found... well, not really
+	launch2 log,*(command+options+["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]) and
 	  launch2 log,"/tmp/#{$$}" and
 #	  return "static" # true
 	  return true
@@ -257,7 +257,7 @@ Feature.new {
 		c_test "
 		#include <ruby.h>
 		int main () { return rb_rescue==0; }
-		", "-lruby"
+		", ["-lruby"]
 	}
 },
 Feature.new {
@@ -271,7 +271,7 @@ Feature.new {
 		c_test "
 		#include <ruby.h>
 		int main () { return rb_rescue==0; }
-		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
+		", ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)]
 	}
 	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
 },
@@ -298,7 +298,7 @@ Feature.new {
 			result[12]=0;
 	                fprintf(stderr,"cpuid: name=\"%12s\", flags=0x%08x\n",
 	                        result,code);
-			return 0;}'
+			return 0;}', []
 	}
 	options ["HAVE_PENTIUM"]
 },
@@ -348,7 +348,7 @@ Feature.new {
 		c_test "
 		#include <usb.h>
 		int main () {return usb_open==0;}
-		", *uses_so
+		", uses_so
 	}
 	options ["HAVE_USB"]
 },
@@ -360,7 +360,7 @@ Feature.new {
 		c_test "
 		#include <X11/Xlib.h>
 		int main () {return XSetErrorHandler==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["X11"]
 },
@@ -378,7 +378,7 @@ Feature.new {
 		#include <sys/shm.h>
 		#include <X11/extensions/XShm.h>
 		int main () {return XShmPutImage==0;}
-		", *uses_so
+		", uses_so
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
 },
@@ -392,7 +392,7 @@ Feature.new {
 		c_test "
 		#include <GL/glut.h>
 		int main () {return glutInit==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["OpenGL"]
 },
@@ -406,17 +406,30 @@ Feature.new {
 		c_test "
 		#include <SDL/SDL.h>
 		int main () {return SDL_MapRGB==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["SDL"]
 },
 Feature.new {
-	tag :quartz
-	status :disabled
-	name "Apple Quartz/Cocoa Display"
-	#uses_so [""]
+	tag :objcpp
+	name "GNU/Apple ObjectiveC++ Compiler"
 	test proc {
-	
+		c_test "
+		#include <objc/Object.h>
+		int main () { [[Object alloc] init]; }
+		", ["-lobjc"], ["-xobjective-c++"]
+	}
+},
+Feature.new {
+	tag :quartz
+	name "Apple Quartz/Cocoa Display"
+	uses_so ["-lobjc","-framework","Cocoa"]
+	uses_feature [:objcpp]
+	test proc {
+		c_test "
+		#include <cocoa/cocoa.h>
+		int main () {return CGImageRelease==0;}
+		", uses_so, ["-xobjective-c++"]
 	}
 	formats ["Quartz"]
 },
@@ -433,7 +446,7 @@ Feature.new {
 		#include <aalib.h>
 		};
 		int main () {return aa_init==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["AALib"]
 },
@@ -450,7 +463,7 @@ Feature.new {
 		};
 		int main () {
 		return jpeg_write_scanlines==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["JPEG"]
 },
@@ -467,7 +480,7 @@ Feature.new {
 		};
 		int main () {
 		return png_check_sig==0;}
-		", *uses_so
+		", uses_so
 	}
 	formats ["PNG"]
 },
@@ -480,7 +493,7 @@ Feature.new {
 		#include <stdlib.h>
 		#include <linux/videodev.h>
 		int main () { struct video_window foo; return 0; }
-		"
+		", []
 	}
 	formats ["VideoDev"]
 },
@@ -494,7 +507,7 @@ Feature.new {
 		c_test "
 		#include <#{f.uses_h}>
 		int main () { return mpeg3_open==0; }
-		", *uses_so
+		", uses_so
 	}
 	formats ["MPEG3"]
 },
@@ -507,7 +520,7 @@ Feature.new {
 		c_test "
 		#include <mpeg.h>
 		int main () { return GetMPEGFrame==0; }
-		", *uses_so
+		", uses_so
 	}
 	formats ["MPEG"]
 },
@@ -529,7 +542,7 @@ Feature.new {
 			"(undefined)"
 		#endif
 		); return quicktime_open==0; }
-		`, *f.uses_so
+		`, f.uses_so
 	}
 	formats ["QuickTime"]
 },
@@ -547,7 +560,7 @@ Feature.new {
 		#define class class_
 		#include <fts/fts.h>
 		int main () { return 0; }
-		', "-DLINUXPC" and #!@#$ nonportable
+		', ["-DLINUXPC"] and #!@#$ nonportable? (no)
 		$C_INCLUDE_PATH.find {|dir|
 			File.exist?(dir+"/fts/lang/mess.h")
 		}
@@ -570,7 +583,7 @@ Feature.new {
 		#define class class_
 		#include <fts/fts.h>
 		int main () { return 0; }
-		', "-DLINUXPC" and #!@#$ nonportable
+		', ["-DLINUXPC"] and #!@#$ nonportable?
 		$C_INCLUDE_PATH.find {|dir|
 			#STDERR.puts dir
 			File.exist?(dir+"/fts/client/version.h")
@@ -590,7 +603,7 @@ Feature.new {
 		c_test "
 			\#include <m_pd.h>
 			int main () { return 0; }
-		" and $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
+		", [] and $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
 	}
 },
 Feature.new {
@@ -676,7 +689,7 @@ CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
 CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
 
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
-$CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", "-falign-functions=4"
+$CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", ["-falign-functions=4"]
 
 # making it easier for everybody I hope:
 ["/sw","/usr/local",ENV["home"]].each do|base|
@@ -885,7 +898,10 @@ base/flow_objects_for_image.c
 base/flow_objects_for_matrix.c
 )
 for format in $conf[:FORMATS] do
-	$sources << "format/#{format.downcase}.c"
+	x = "format/#{format.downcase}.c"
+	x = "format/#{format.downcase}.m" if not File.exist?(x)
+	raise "woops, missing file format/#{format.downcase}.*" if not File.exist?(x)
+	$sources << x
 end
 f.puts "SOURCES = #{$sources.join(" ")} \\"
 f.puts ""
