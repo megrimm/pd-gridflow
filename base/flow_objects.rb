@@ -446,6 +446,12 @@ class GreyscaleToRGB < FPatcher
 	install "@greyscale_to_rgb", 1, 1
 end
 
+#<vektor> told me to:
+# RGBtoYUV : @fobjects = ["@inner * + 0 {3 3 # 66 -38 112 128 -74 -94 25 112 -18}",
+#	"@ >> 8","@ + {16 128 128}"]
+# YUVtoRGB : @fobjects = ["@ - {16 128 128}",
+#	"@inner * + 0 {3 3 # 298 298 298 0 -100 516 409 -208 0}","@ >> 8"]
+
 class RGBtoYUV < FPatcher
 	@fobjects = ["@inner * + 0 {3 3 # 76 -44 128 150 -85 -108 29 128 -21}",
 	"@ >> 8","@ + {0 128 128}"]
@@ -701,30 +707,33 @@ class Broken < FObject
 	install "broken", 0, 0
 end
 
-if GridFlow.bridge_name != "jmax"
-	class Fork < FObject
-	  def method_missing(sel,*args)
-	    sel.to_s =~ /^_(\d)_(.*)$/ or super
-		send_out 1,$2.intern,*args
-		send_out 0,$2.intern,*args
-	  end
-	  install "fork", 1, 2
+class Fork < FObject
+  def method_missing(sel,*args)
+    sel.to_s =~ /^_(\d)_(.*)$/ or super
+	send_out 1,$2.intern,*args
+	send_out 0,$2.intern,*args
+  end
+  install "fork", 1, 2 if GridFlow.bridge_name != "jmax"
+end
+
+class Demux < FObject
+	N=5
+	def initialize(n)
+		super
+		@n=n
+		@i=0
+		raise "sorry, maximum #{N}" if n>N
 	end
-	class Demux < FObject
-		N=5
-		def initialize(n)
-			super
-			@n=n
-			@i=0
-			raise "sorry, maximum #{N}" if n>N
-		end
-		def method_missing(sel,*args)
-			sel.to_s =~ /^_(\d)_(.*)$/ or super
-			send_out @i,$2.intern,*args
-		end
-		def _1_int i; @i=i end
-		alias :_1_float :_1_int
+	def method_missing(sel,*args)
+		sel.to_s =~ /^_(\d)_(.*)$/ or super
+		send_out @i,$2.intern,*args
+	end
+	def _1_int i; @i=i end
+	alias :_1_float :_1_int
+	if GridFlow.bridge_name != "jmax"
 		install "demux", 2, N
+	else
+		install "demux_", 2, N # hack
 	end
 end
 
@@ -806,25 +815,36 @@ end # if not =~ jmax
 #-------- fClasses for: GUI
 
 class Peephole < GridFlow::FPatcher
-	@fobjects = ["@dim","@export_list","@downscale_by 1 smoothly","@out"]
-	@wires = [-1,0,0,0, 0,0,1,0, -1,0,2,0, 2,0,3,0, 3,0,-1,0]
-	# 1,0,-1,2, 
+	@fobjects = ["@dim","@export_list","@downscale_by 1 smoothly","@out","@scale_by 1",
+	proc{Demux.new(2)}]
+	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
 	def initialize(*args)
 		super
 		@fobjects[1].connect 0,self,2
 		GridFlow.post "Peephole#init: #{args.inspect}"
 		@scale = 1
+		@down = false
 		@sy,@sx = 16,16 # size of the peephole widget
 		@y,@x = 0,0     # topleft of the peephole widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 	end
 	def set_geometry_for_real_now
 		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
-		@scale = [(@fy+@sy-1)/@sy,(@fx+@sx-1)/@sx].max
-		@scale=1 if @scale<1 # what???
-		@fobjects[2].send_in 1, @scale
-		sy2 = @fy/@scale
-		sx2 = @fx/@scale
+		if @fx>@sx or @fy>@sx then
+			@down = true
+			@scale = [(@fy+@sy-1)/@sy,(@fx+@sx-1)/@sx].max
+			@scale=1 if @scale<1 # what???
+			@fobjects[2].send_in 1, @scale
+			sy2 = @fy/@scale
+			sx2 = @fx/@scale
+		else
+			@down = false
+			@scale = [@sy/@fy,@sx/@fx].min
+			@fobjects[4].send_in 1, @scale
+			sy2 = @fy*@scale
+			sx2 = @fx*@scale
+		end
+		@fobjects[5].send_in 1, (if @down then 0 else 1 end)
 		@fobjects[3].send_in 0, :set_geometry,
 			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
 	end
@@ -832,12 +852,18 @@ class Peephole < GridFlow::FPatcher
 #		return super if :_0_grid==args[0]
 #		GridFlow.post "Peephole#method_missing: #{args.inspect}"
 #	end
-	def _0_open(*args)
-		GridFlow.post "%s", args.inspect
-		@fobjects[3].send_in 0, :open,:x11,:here,:embed,args[0]
+	def _0_open(wid,use_subwindow)
+		GridFlow.post "%s", [wid,use_subwindow].inspect
+		@use_subwindow = use_subwindow==0 ? false : true
+		if @use_subwindow then
+			@fobjects[3].send_in 0, :open,:x11,:here,:embed, wid
+		else
+			@fobjects[3].send_in 0, :open,:x11,:here, wid
+		end
 	end
 	def _0_set_geometry(y,x,sy,sx)
-		# GridFlow.post "inlet 0: set_geometry %d %d %d %d", y,x,sy,sx
+		GridFlow.post "peephole \#0x%08x: inlet 0: set_geometry %d %d %d %d",
+			id,y,x,sy,sx
 		@sy,@sx = sy,sx
 		@y,@x = y,x
 		set_geometry_for_real_now
@@ -847,10 +873,20 @@ class Peephole < GridFlow::FPatcher
 		@fobjects[3].send_in 0, :fall_thru, flag
 	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
-	def _1_position(y,x,b) send_out 0,:position,y*@scale,x*@scale,b end
+	def _1_position(y,x,b)
+		if @down then
+			send_out 0,:position,y*@scale,x*@scale,b
+		else
+			send_out 0,:position,y/@scale,x/@scale,b
+		end
+	end
 	def _2_list(sy,sx,chans)
 		@fy,@fx = sy,sx
 		set_geometry_for_real_now
+	end
+	def _0_paint()
+		GridFlow.post "paint()"
+		@fobjects[3].send_in 0, "draw"
 	end
 	def delete
 		GridFlow.post "deleting peephole"
