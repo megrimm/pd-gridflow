@@ -40,6 +40,12 @@ GridFlow.whine "This is the Ruby interpreter, version #{VERSION}"
 GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
+for victim in [TCPSocket, TCPServer]
+	def victim.new
+		raise NotImplementedError, "before Ruby 1.6.6 there's a bug in sockets"
+	end
+end if VERSION < "1.6.6"
+
 for victim in [Thread, Continuation]
 	def victim.new
 		raise NotImplementedError, "disabled because of jMax incompatibility"

@@ -39,26 +39,19 @@ int gf_max_packet_length = 1024;
 
 #define INFO(_self_) \
 	Symbol_name(fts_get_class_name((_self_)->parent->_o.head.cl)), \
-	(_self_)->winlet
+	(_self_)->gh->winlet
 
 /* **************** GridInlet ************************************* */
 
-GridInlet *GridInlet_new(GridObject *parent, int winlet,
-	GridBegin b, GridFlow f, GridEnd e, int mode
-) {
+GridInlet *GridInlet_new(GridObject *parent, const GridHandler *gh) {
 	GridInlet *$ = NEW(GridInlet,1);
 	$->parent = parent;
-	$->winlet = winlet;
+	$->gh    = gh;
 	$->dim   = 0;
 	$->dex   = 0;
-	$->begin = b;
-	$->flow  = mode==4 ? f : 0;
-	$->flow2 = (GridFlow2)(mode==6 ? f : 0);
-	$->end   = e;
 	$->factor= 1;
 	$->buf   = 0;
 	$->bufn  = 0;
-	$->mode  = mode;
 	return $;
 }
 
@@ -90,7 +83,7 @@ bool GridInlet_busy_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
 		whine("%s:i%d(%s): no dim", INFO($), where);
-	} else if (!$->flow && !$->flow2) {
+	} else if (!$->gh->flow) {
 		whine("%s:i%d(%s): no flow()", INFO($), where);
 	} else {
 		return 1;
@@ -129,10 +122,10 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 	FREE(v);
 
 	$->dex = 0;
-	assert($->begin);
-	if (!$->begin((GridObject *)$->parent,$)) goto err;
+	assert($->gh->begin);
+	if (!$->gh->begin((GridObject *)$->parent,$)) goto err;
 
-	GridOutlet_callback((GridOutlet *)back_out,$,$->mode);
+	GridOutlet_callback((GridOutlet *)back_out,$,$->gh->mode);
 	return;
 err:
 	GridInlet_abort($);
@@ -140,6 +133,10 @@ err:
 
 void GridInlet_flow(GridInlet *$, ATOMLIST) {
 	int n = GET(0,int,-1);
+	int mode = GET(2,int,-1);
+
+if (mode==4) {
+
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
@@ -155,12 +152,12 @@ void GridInlet_flow(GridInlet *$, ATOMLIST) {
 			while (n && $->bufn<$->factor) { $->buf[$->bufn++] = *data++; n--; }
 			if ($->bufn == $->factor) {
 				int newdex = $->dex + $->factor;
-				if ($->flow2) {
+				if ($->gh->mode==6 && $->gh->flow) {
 					Number *data2 = NEW2(Number,$->factor);
 					memcpy(data2,$->buf,$->factor*sizeof(Number));
-					$->flow2((GridObject *)$->parent,$,$->factor,data2);
+					((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,$->factor,data2);
 				} else {
-					$->flow((GridObject *)$->parent,$,$->factor,$->buf);
+					$->gh->flow((GridObject *)$->parent,$,$->factor,$->buf);
 				}
 				$->dex = newdex;
 				$->bufn = 0;
@@ -170,12 +167,12 @@ void GridInlet_flow(GridInlet *$, ATOMLIST) {
 			int m = (n / $->factor) * $->factor;
 			int newdex = $->dex + m;
 			if (m) {
-				if ($->flow2) {
+				if ($->gh->mode==6 && $->gh->flow) {
 					Number *data2 = NEW2(Number,m);
 					memcpy(data2,data,m*sizeof(Number));
-					$->flow2((GridObject *)$->parent,$,m,data2);
+					((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,m,data2);
 				} else {
-					$->flow((GridObject *)$->parent,$,m,data);
+					$->gh->flow((GridObject *)$->parent,$,m,data);
 				}
 			}
 			$->dex = newdex;
@@ -184,22 +181,21 @@ void GridInlet_flow(GridInlet *$, ATOMLIST) {
 		}
 		if ($->buf) { while (n) { $->buf[$->bufn++] = *data++; n--; }}
 	}
-}
-
-void GridInlet_flow2(GridInlet *$, ATOMLIST) {
-	int n = GET(0,int,-1);
+} else if (mode==6) {
 	Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
-	if (!GridInlet_busy_verbose($,"flow2")) return;
+	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
 	assert($->factor==1);
-	assert($->flow || $->flow2);
-	if ($->flow2) {
-		$->flow2((GridObject *)$->parent,$,n,data);
-	} else if ($->flow) {
-		$->flow((GridObject *)$->parent,$,n,data);
+	assert($->gh->flow);
+	if ($->gh->mode==6) {
+		((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,n,data);
+	} else if ($->gh->mode==4) {
+		$->gh->flow((GridObject *)$->parent,$,n,data);
 		FREE(data);
 	}
-}
+} else {
+	assert(0);
+}}
 
 void GridInlet_end(GridInlet *$, ATOMLIST) {
 	if (!GridInlet_busy_verbose($,"end")) return;
@@ -208,7 +204,7 @@ void GridInlet_end(GridInlet *$, ATOMLIST) {
 		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
 			$->dex, Dim_prod($->dim));
 	}
-	if ($->end) { $->end((GridObject *)$->parent,$); }
+	if ($->gh->end) { $->gh->end((GridObject *)$->parent,$); }
 	FREE($->dim);
 	$->dex = 0;
 }
@@ -220,10 +216,10 @@ void GridInlet_list(GridInlet *$, ATOMLIST) {
 	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
 	$->dim = Dim_new(1,&n);
 
-	assert($->begin);
-	if ($->begin((GridObject *)$->parent,$)) {
-		$->flow((GridObject *)$->parent,$,n,v);
-		if ($->end) { $->end((GridObject *)$->parent,$); }
+	assert($->gh->begin);
+	if ($->gh->begin((GridObject *)$->parent,$)) {
+		$->gh->flow((GridObject *)$->parent,$,n,v);
+		if ($->gh->end) { $->gh->end((GridObject *)$->parent,$); }
 	} else {
 		GridInlet_abort($);
 	}
@@ -318,9 +314,10 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	assert(GridOutlet_busy($));
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
-		Var a[2];
+		Var a[3];
 		Var_put_int(a+0,pn);
 		Var_put_ptr(a+1,(void*)(long)data); /* explicitly removing const */
+		Var_put_int(a+2,4); /* mode ro */
 		LEAVE_P;
 		Object_send_thru(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
 		ENTER_P;
@@ -351,11 +348,12 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 	GridOutlet_flush($);
 	if ($->ron == 0 && $->rwn == 1) {
 		/* this is the copyless buffer passing */
-		Var a[2];
+		Var a[3];
 		Var_put_int(a+0,n);
 		Var_put_ptr(a+1,(void*)data);
+		Var_put_int(a+2,6); /* mode rw */
 		LEAVE_P;
-		Object_send_thru(OBJ($->parent),0,sym_grid_flow2,COUNT(a),a);
+		Object_send_thru(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
 		ENTER_P;
 	} else {
 		/* normal stuff */
@@ -395,9 +393,8 @@ void GridObject_init(GridObject *$) {
 	{
 		GridClass *cl = (GridClass *) $->_o.head.cl->user_data;
 		for (i=0; i<cl->handlersn; i++) {
-			GridHandler *h = &cl->handlers[i];
-			$->in[h->winlet] = GridInlet_new($,h->winlet,
-				h->begin,h->flow,h->end,h->mode);
+			GridHandler *gh = &cl->handlers[i];
+			$->in[gh->winlet] = GridInlet_new($,gh);
 		}
 		for (i=0; i<cl->outlets; i++) {
 			$->out[i] = GridOutlet_new($,i);
@@ -409,7 +406,6 @@ void GridObject_init(GridObject *$) {
 
 METHOD(GridObject,grid_begin){GridInlet_begin($->in[winlet],ac,at);}
 METHOD(GridObject,grid_flow ){GridInlet_flow( $->in[winlet],ac,at);}
-METHOD(GridObject,grid_flow2){GridInlet_flow2($->in[winlet],ac,at);}
 METHOD(GridObject,grid_end  ){GridInlet_end(  $->in[winlet],ac,at);}
 METHOD(GridObject,list      ){GridInlet_list( $->in[winlet],ac,at);}
 
@@ -438,7 +434,6 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	MethodDecl methods[] = {
 		DECL(GridObject,winlet,grid_begin,"spi+"),
 		DECL(GridObject,winlet,grid_flow, "sip"),
-		DECL(GridObject,winlet,grid_flow2,"sip"),
 		DECL(GridObject,winlet,grid_end,  ""),
 		DECL(GridObject,winlet,list,      "l"),
 	};
