@@ -143,6 +143,7 @@ void Dict_put(Dict *$, void *k, void *v);
 void Dict_del(Dict *$, void *k);
 void Dict_each(Dict *$, void (*proc)(void *data, void *k, void *v), void *data);
 void Dict_capa_is(Dict *$, int capa);
+int HashFunc_string(void *k);
 
 /* **************************************************************** */
 /* FObject: flow object */

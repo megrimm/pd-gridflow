@@ -86,11 +86,7 @@ typedef struct fts_module_t {
 	int foo4, foo5;
 } fts_module_t;
 
-typedef struct fts_clock_t {
-} fts_clock_t;
-
 typedef struct Timer {
-	fts_clock_t *clock;
 	void (*f)(struct Timer *$, void *data);
 	void *data;
 	double time;
@@ -140,14 +136,12 @@ void fts_class_install(Symbol sym,
 void Object_send_thru(FObject *o, int woutlet, Symbol selector, int ac, const Var *at);
 
 void fts_object_set_error(FObject *o, const char *s, ...);
-fts_clock_t *fts_sched_get_clock(void);
-Timer *Timer_new(fts_clock_t *foo,
-	void (*f)(Timer *foo, void *), void *);
+Timer *Timer_new(void (*f)(Timer *foo, void *), void *);
 void Timer_set_delay(Timer *, float);
 void Timer_arm(Timer *);
 void Timer_loop(void);
 
-int gridflow_init_standalone(void);
+int gf_init_standalone(void);
 
 /* **************************************************************** */
 

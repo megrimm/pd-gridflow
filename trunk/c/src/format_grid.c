@@ -77,6 +77,7 @@ static bool FormatGrid_frame3 (FormatGrid *$, int n, char *buf) {
 	FREE(buf);
 	if (out->dex == Dim_prod(out->dim)) {
 		GridOutlet_end(out);
+		Dict_del(gf_timer_set,$->st);
 	} else {
 		Stream_on_read_do($->st,bufsize($,out),(OnRead)FormatGrid_frame3,$);
 	}
@@ -154,7 +155,12 @@ err: return false;
 static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	int fd = Stream_get_fd($->st);
 	if (frame!=-1) return 0;
+	if (Stream_is_waiting($->st)) {
+		whine("frame: Stream %p in ff %p is already waiting.",$->st,$);
+		return false;
+	}
 	whine("frame: $->is_socket: %d",$->is_socket);
+
 	/* rewind when at end of file. */
 	if (!$->is_socket) {
 		off_t thispos = lseek(fd,0,SEEK_CUR);
@@ -169,7 +175,11 @@ static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	}
 
 	Stream_on_read_do($->st,8,(OnRead)FormatGrid_frame1,$);
-	if (!$->is_socket) {
+	if ($->is_socket) {
+		/* non-blocking */
+		Dict_put(gf_timer_set,$->st,Stream_try_read);
+	} else {
+		/* blocking */
 		while (Stream_is_waiting($->st)) Stream_try_read($->st);
 		whine("frame: finished");
 	}
@@ -220,10 +230,8 @@ GRID_END(FormatGrid,0) {
 }
 
 void FormatGrid_close (FormatGrid *$) {
-	int fd = Stream_get_fd($->st);
-	close(fd);
+	if ($->st) Stream_close($->st);
 	if ($->is_socket) Dict_del(gf_timer_set,$);
-	$->st = 0;
 	FREE($);
 }
 
@@ -365,10 +373,7 @@ static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode
 			goto err;
 		}
 		if (!result) goto err;
-		whine("open: $->is_socket = %d", $->is_socket);
 	}
-
-	if ($->is_socket) Dict_put(gf_timer_set,$,Stream_try_read);
 
 	return (Format *)$;
 err:

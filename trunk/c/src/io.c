@@ -83,6 +83,7 @@ int Stream_read(Stream *$, int n, char *buf) {
 }
 
 void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
+	whine("on_read_do");
 	FREE($->buf);
 	$->buf = NEW(char,n);
 	$->buf_i = 0;
@@ -92,23 +93,29 @@ void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
 }
 
 bool Stream_try_read(Stream *$) {
-	if (!$->buf) return true;
-	whine("frame: try read");
+	whine("Stream_try_read(%p)",$);
+	if (!$->buf) {
+		whine("Stream_try_read has nothing to do",$);
+		return true;
+	}
 	while ($->buf) {
 		int n = read($->fd,$->buf+$->buf_i,$->buf_n-$->buf_i);
-		if (n<0) {
-			whine("try_read: %s", strerror(errno));
-			/* fix this */
+		whine("%d bytes read",n);
+		if (n<=0) {
+			if (n==0 || errno==EAGAIN || errno==EWOULDBLOCK) {
+				whine("(trying again later)");
+			} else {
+				whine("Stream_try_read: %s", strerror(errno));
+			}
+			return true;
 		} else {
 			$->buf_i += n;
 		}
 		if ($->buf_i == $->buf_n) {
 			char *buf = $->buf;
-			int r;
+			whine("read all %d bytes",$->buf_n);
 			$->buf = 0;
 			if (!$->on_read($->target,$->buf_n,buf)) return false;
-		} else {
-			return true;
 		}
 	}
 	return true;
@@ -128,6 +135,7 @@ void Stream_close(Stream *$) {
 /* this is an abstract base class for file formats, network protocols, etc */
 
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
+Dict *format_classes_dex;
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
 	Format *$ = (Format *) NEW(char,qlass->object_size);
@@ -162,18 +170,6 @@ void Format_close(Format *$) {
 }
 
 /* **************** FormatClass *********************************** */
-
-FormatClass *FormatClass_find(const char *name) {
-	int i;
-	for (i=0; i<COUNT(format_classes); i++) {
-		/* whine("comparing `%s' with `%s'", name,
-			format_classes[i]->symbol_name); */
-		if (strcmp(format_classes[i]->symbol_name,name)==0) {
-			return format_classes[i];
-		}
-	}
-	return 0; /* fail */
-}
 
 const char *format_flags_names[] = {
 	"(0<<1)",
@@ -223,7 +219,7 @@ METHOD(GridIn,reset) {
 
 METHOD(GridIn,open) {
 	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
-	FormatClass *qlass = FormatClass_find(format);
+	FormatClass *qlass = Dict_get(format_classes_dex,format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -243,13 +239,14 @@ METHOD(GridIn,open) {
 
 METHOD(GridIn,bang) {
 	CHECK_FILE_OPEN
+	/* this is not a sufficient check. see format_grid.c */
 	if (GridOutlet_busy($->out[0])) {
-		whine("ignorine frame request: already waiting for a frame");
+		whine("ignoring frame request: already waiting for a frame");
 		return;
 	}
 
 	if (! $->ff->cl->frame($->ff,$->out[0],-1)) {
-		whine("file format says: no, no, no");
+		whine("file format package '%s' reported error",$->ff->cl->symbol_name);
 		goto err;
 	}
 	return;
@@ -359,7 +356,7 @@ METHOD(GridOut,open) {
 	return;
 */
 	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
-	FormatClass *qlass = FormatClass_find(format);
+	FormatClass *qlass = Dict_get(format_classes_dex,format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -415,6 +412,13 @@ LIST(GRINLET(GridOut,0)),
 	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
 void startup_io (void) {
+	int i;
+	format_classes_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
+	for (i=0; i<COUNT(format_classes); i++) {
+		Dict_put(format_classes_dex,
+			format_classes[i]->symbol_name,
+			format_classes[i]);
+	}
 	INSTALL("@in",GridIn);
 	INSTALL("@out",GridOut);
 }

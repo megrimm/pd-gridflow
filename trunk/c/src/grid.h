@@ -600,7 +600,7 @@ struct Format {
 
 extern FormatClass FORMAT_LIST( ,class_);
 extern FormatClass *format_classes[];
-FormatClass *FormatClass_find(const char *name);
+extern Dict *format_classes_dex;
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 void Format_close(Format *$);

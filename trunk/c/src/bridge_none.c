@@ -50,13 +50,6 @@ static Dict *classes;
 /* **************************************************************** */
 /* Symbol */
 
-int HashFunc_string(void *k) {
-	const char *s = k;
-	int h=0;
-	while (*s) h = (h<<13)^(h>>19)^(*s++);
-	return h;
-}
-
 Symbol Symbol_new (const char *s) {
 	void *k = strdup(s);
 	if (!Dict_has_key(sym_dex,k)) {
@@ -248,19 +241,12 @@ int ac, const Var *at) {
 }
 
 /* **************************************************************** */
-/* Clock, Timer */
+/* Timer */
 
-static fts_clock_t fts_main_clock = {};
 static List *timers = 0;
 
-fts_clock_t *fts_sched_get_clock(void) {
-	return &fts_main_clock;
-}
-
-Timer *Timer_new(fts_clock_t *clock,
-void (*f)(Timer *, void *), void *data) {
+Timer *Timer_new(void (*f)(Timer *, void *), void *data) {
 	Timer *$ = NEW(Timer,1);
-	$->clock = clock;
 	$->f = f;
 	$->data = data;
 	$->armed = false;
@@ -371,12 +357,12 @@ int fts_file_open(const char *name, const char *mode) {
 
 extern fts_module_t gridflow_module;
 
-int gridflow_init_standalone (void) {
+int gf_init_standalone (void) {
 	symbols = List_new(0);
 	sym_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
 	classes = Dict_new(0,0);
 	timers = List_new(0);
-	fprintf(stdout,"< gridflow_init_standalone\n");
+	fprintf(stdout,"< gf_init_standalone\n");
 
 	Symbol_new("symbol");
 	Symbol_new("int");
@@ -389,6 +375,6 @@ int gridflow_init_standalone (void) {
 	Symbol_new("set");
 
 	gridflow_module.foo3();
-	whine("> gridflow_init_standalone\n");
+	whine("> gf_init_standalone\n");
 	return true;
 }
