@@ -588,13 +588,16 @@ struct GridInner : GridObject {
 	Grid r;
 
 	bool transpose;
-
+	Grid r2;
+	
 	GridInner() { transpose=false; }
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
 	template <class T> void process_right(T bogus);
 };
+
+#define MAX_PACKET_SIZE (1<<11)
 
 GRID_INLET(GridInner,0) {
 	NOTEMPTY(r);
@@ -615,24 +618,43 @@ GRID_INLET(GridInner,0) {
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out[0]->begin(new Dim(n,v),in->nt);
 	in->set_factor(a_last);
-} GRID_FLOW {
+
 	int rrows = in->factor;
 	int rsize = r.dim->prod();
 	int rcols = rsize/rrows;
 	Pt<T> rdata = (Pt<T>)r;
-	STACK_ARRAY(T,buf2,rcols);
-	STACK_ARRAY(T,buf,rsize);
+	int chunk = MAX_PACKET_SIZE/rsize;
+	v[0] = chunk*rsize;
+	r2.init(new Dim(1,v),r.nt);
+	Pt<T> buf3 = (Pt<T>)r2;
+	for (int i=0; i<rrows; i++)
+		for (int j=0; j<chunk; j++)
+			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
+} GRID_FLOW {
+	Operator2 *op2_put = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(put)));
+	int rrows = in->factor;
+	int rsize = r.dim->prod();
+	int rcols = rsize/rrows;
+	Pt<T> rdata = (Pt<T>)r;
+	int chunk = MAX_PACKET_SIZE/rsize;
+	STACK_ARRAY(T,buf ,chunk*rcols);
+	STACK_ARRAY(T,buf2,chunk*rcols);
+	int off = chunk;
 	while (n) {
-		for (int i=0,k=0; i<rrows; i++)
-			for (int j=0; j<rcols; j++) buf[k++]=data[i];
-		for (int j=0; j<rcols; j++) buf2[j] = *(T *)seed;
-		op_para->zip(rsize,buf,rdata);
-		op_fold->fold(rcols,rrows,buf2,buf);
-		out[0]->send(rcols,buf2);
-		n-=rrows;
-		data+=rrows;
+		if (chunk*rrows>n) chunk=n/rrows;
+		op2_put->map(chunk*rcols,buf2,*(T *)seed);
+		for (int i=0; i<rrows; i++) {
+			for (int j=0; j<chunk; j++)
+				op2_put->map(rcols,buf+j*rcols,data[i+j*rrows]);
+			op_para->zip(chunk*rcols,buf,(Pt<T>)r2+i*off*rcols);
+			op_fold->zip(chunk*rcols,buf2,buf);
+		}
+		out[0]->send(chunk*rcols,buf2);
+		n-=chunk*rrows;
+		data+=chunk*rrows;
 	}
 } GRID_FINISH {
+	r2.del();
 } GRID_END
 
 template <class T> void GridInner::process_right(T bogus) {
