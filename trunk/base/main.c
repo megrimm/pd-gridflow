@@ -131,7 +131,7 @@ char *Dim::to_s() {
 //----------------------------------------------------------------
 \class FObject < CObject
 
-static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
+static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *foo=0) {
 	if (argc<1) {
 		sym = bsym._bang;
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
@@ -148,7 +148,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
 	} else {
-		RAISE("bad message: argc=%d; argv[0]=%s",argc,
+		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?foo->info():"", argc,
 			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
 	}
 }
@@ -191,7 +191,7 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
-	FObject_prepare_message(argc,argv,sym);
+	FObject_prepare_message(argc,argv,sym,h->self);
 //	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) gfpost m.inspect
 	char buf[256];
 	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
@@ -218,7 +218,7 @@ static void send_in_3 (Helper *h) {
 		RAISE("invalid outlet number: %d",outlet);
 	argc--, argv++;
 	Ruby sym;
-	FObject_prepare_message(argc,argv,sym);
+	FObject_prepare_message(argc,argv,sym,this);
 	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
 	if (TYPE(noutlets2)!=T_FIXNUM) {
 		IEVAL(rself,"STDERR.puts inspect");
