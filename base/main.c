@@ -34,8 +34,6 @@
 
 #include "grid.h"
 
-#define MAKE_LEAK_DUMP
-
 #include "../config.h"
 #include <assert.h>
 #include <limits.h>
@@ -66,92 +64,83 @@ void startup_flow_objects(void);
 
 VALUE gf_alloc_set = Qnil;
 
-/* to help find uninitialized values */
-void *qalloc(size_t n, const char *file, int line) {
-	long *data = (long *) qalloc2(n,file,line);
-	#ifndef NO_DEADBEEF
-	int nn = (int) n/4;
-	for (int i=0; i<nn; i++) data[i] = 0xDEADBEEF;
-	#endif
-	return data;	
-}
-
 typedef struct AllocTrace {
+	void *data;
 	size_t n;
+	const char *type;
 	const char *file;
 	int line;
 } AllocTrace;
 
-void *qalloc2(size_t n, const char *file, int line) {
+void *qalloc(
+size_t n, const char *type, const char *file, int line, bool deadbeef) {
 	assert(n>=0);
 	if (n>4000000) gfpost("hey. %d is a large buffer size!",n);
 	void *data = malloc(n);
 	assert(data);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
+#ifdef HAVE_LEAKAGE_DUMP
+	if (gf_alloc_set && gf_alloc_set!=Qnil) {
 		AllocTrace *al = (AllocTrace *) malloc(sizeof(AllocTrace));
+		al->data = data;
 		al->n    = n   ;
+		al->type = type;
 		al->file = file;
 		al->line = line;
-/*		Dict_put(gf_alloc_set,data,al); */
+		rb_funcall(gf_alloc_set,SI([]=),2,PTR2FIX(data),PTR2FIX(al));
 	}
+#endif
+#ifdef HAVE_DEADBEEF
+	long *data2 = (long *)data;
+	int nn = (int) n/4;
+	for (int i=0; i<nn; i++) data2[i] = 0xDEADBEEF;
 #endif
 	return data;
 }
 
 void *qrealloc(void *data, int n) {
 	void *data2 = realloc(data,n);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
-/*
-		void *a = Dict_get(gf_alloc_set,data);
-		Dict_del(gf_alloc_set,data);
-		Dict_put(gf_alloc_set,data2,a);
-*/
+#ifdef HAVE_LEAKAGE_DUMP
+	if (gf_alloc_set && gf_alloc_set!=Qnil) {
+		rb_funcall(gf_alloc_set,SI([]=),2,PTR2FIX(data2),
+			rb_funcall(gf_alloc_set,SI(delete),1,PTR2FIX(data)));
 	}
 #endif
 	return data2;
 }
 
 /* to help find dangling references */
-void qfree(void *data) {
+void qfree(void *data, bool fadedfoo) {
 	assert(data);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
-/*
-		void *a = Dict_get(gf_alloc_set,data);
-		if (a) free(a);
-		Dict_del(gf_alloc_set,data);
-*/
+#ifdef HAVE_LEAKAGE_DUMP
+	if (gf_alloc_set && gf_alloc_set!=Qnil) {
+		VALUE a = rb_funcall(gf_alloc_set,SI(delete),1,PTR2FIX(data));
+		if (a==Qnil)
+			gfpost("warning: qfree() on unregistered pointer %08x",(long)data);
+		else
+			free(FIX2PTR(a));
 	}
 #endif
 	int n=8;
 	data = realloc(data,n);
-#ifndef NO_DEADBEEF
-	long *data2 = (long *) data;
-	int nn = (int) n/4;
-	for (int i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+#ifdef HAVE_DEADBEEF
+	if (fadedfoo) {
+		long *data2 = (long *) data;
+		int nn = (int) n/4;
+		for (int i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+	}
 #endif
 	free(data);
 }
 
-static void qdump$1(void *obj, void *k, void *v) {
-	AllocTrace *al = (AllocTrace *)v;
-	gfpost("warning: %d bytes leak allocated at file %s line %d",
-		al->n,al->file,al->line);
-}
-
-void qdump(void) {
-	gfpost("(leak detection disabled)");
-/*
-	post("checking for memory leaks...");
-	VALUE ary;
-	ary = rb_funcall(gf_alloc_set,SI(
-	Dict_each(gf_alloc_set,qdump$1,0);
-	if (Dict_size(gf_alloc_set)==0) {
-		post("no leaks (yet)");
-	}
-*/
+static VALUE GridFlow_alloctrace_to_s (VALUE self, VALUE p) {
+	AllocTrace *al = (AllocTrace *)FIX2PTR(p);
+	VALUE a = rb_ary_new2(3);
+	rb_ary_push(a,PTR2FIX(al->data));
+	rb_ary_push(a,INT2NUM(al->n));
+	rb_ary_push(a,rb_str_new2(al->type));
+	rb_ary_push(a,rb_str_new2(al->file));
+	rb_ary_push(a,INT2NUM(al->line));
+	return a;
 }
 
 /* ---------------------------------------------------------------- */
@@ -162,12 +151,15 @@ VALUE rb_ary_fetch(VALUE $, int i) {
 	return rb_ary_aref(COUNT(argv),argv,$);
 }
 
-char *rb_sym_name(VALUE sym) {
-	return strdup(rb_id2name(SYM2ID(sym)));
-}
+const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
 
-void FObject_mark (VALUE *$) {}
-//void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
+void FObject_mark (void *z) {
+/*
+	GridObject *$ = (GridObject *)z;
+//	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",$,$->peer);
+	$->mark();
+*/
+}
 void FObject_sweep (VALUE *$) {}
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
@@ -217,6 +209,17 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
 	}
+	return Qnil;
+}
+
+VALUE FObject_delete(VALUE argc, VALUE *argv, VALUE $) {
+	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
+	rb_funcall(keep,SI(delete),1,$);
+/*
+	if (rb_funcall(keep,SI(size),0)==0) {
+		rb_funcall(GridFlow_module,0,SI(leakage_dump));
+	}
+*/
 	return Qnil;
 }
 
@@ -375,7 +378,7 @@ void *Pointer_get (VALUE self) {
 #include <signal.h>
 
 /* Ruby's entrypoint. */
-void Init_gridflow (void) /*throws Exception*/ {
+void Init_gridflow () {
 	signal(11,SIG_DFL);
 
 	DEF_SYM(grid_begin);
@@ -386,14 +389,18 @@ void Init_gridflow (void) /*throws Exception*/ {
 	DEF_SYM(list);
 	sym_outlets=SYM(@outlets);
 
-	/* !@#$ mark */
-	gf_alloc_set  = rb_hash_new();
-
 	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 	GridFlow_module = rb_define_module("GridFlow");
 	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 
+#ifdef HAVE_LEAKAGE_DUMP
+	rb_ivar_set(GridFlow_module, SI(@alloc_set), gf_alloc_set=rb_hash_new());
+#else
+	rb_ivar_set(GridFlow_module, SI(@alloc_set), Qnil);
+#endif
+
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
+	rb_define_singleton_method(GridFlow_module,"alloctrace_to_s",(RFunc)GridFlow_alloctrace_to_s,1);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
 	rb_ivar_set(GridFlow_module, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(GridFlow_module, SI(@fclasses_set), rb_hash_new());
@@ -404,6 +411,7 @@ void Init_gridflow (void) /*throws Exception*/ {
 
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	DEF(FObject, send_out, -1);
+	DEF(FObject, delete, -1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
@@ -423,5 +431,7 @@ void Init_gridflow (void) /*throws Exception*/ {
 	EVAL("STDERR.puts $:");
 	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do \
 		require	f end");
+
+	signal(11,SIG_DFL); /* paranoia */
 }
 
