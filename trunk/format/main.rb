@@ -63,6 +63,7 @@ class Format #< GridObject
 	mode is :in or :out
 	def initialize(mode,*args) : open a file handler (do it via .new of class)
 	def frame() : read one frame, send through outlet 0
+		in 0.7.1 : should return frame number.
 	def seek(Integer i) : select one frame to be read next (by number)
 	def length() : ^Integer number of frames
 	def option(Symbol name, *args) : miscellaneous options
@@ -80,8 +81,9 @@ class Format #< GridObject
 		when  :in; flags[2]==1
 		when :out; flags[1]==1
 		else raise "Format opening mode is incorrect"
-		end or raise "Format '%s' does not support mode '%s'",
-			self.class.instance_eval{@symbol_name}, mode
+		end or raise \
+			"Format '#{self.class.instance_eval{@symbol_name}}'"\
+			" does not support mode '#{mode}'"
 	end
 
 	def close; end
@@ -207,16 +209,32 @@ class GridIn < GridObject
 		_0_open(*a)
 	end
 
-	def _0_bang;      check_file_open;                     @format.frame end
-	def _0_int frame; check_file_open; @format.seek frame; @format.frame end
-	def _0_reset;     check_file_open; @format.seek 0 end
+	def _0_bang
+		check_file_open
+		framenum = @format.frame
+#		(GridFlow.post "warning: frame number is nil"; return) if not framenum
+		return if not framenum
+		send_out 1, framenum
+	end
+	def _0_int frame
+		check_file_open
+		@format.seek frame
+		framenum = @format.frame
+#		(GridFlow.post "warning: frame number is nil"; return) if not framenum
+		return if not framenum
+		send_out 1, framenum
+	end
+	def _0_reset
+		check_file_open
+		@format.seek 0
+	end
 
 	def _1_grid(*a)
 		send_out 0,:grid,*a
 	end
 
 	install_rgrid 0
-	install "@in", 1, 1
+	install "@in", 1, 2
 end
 
 class GridOut < GridObject
@@ -242,6 +260,7 @@ class GridOut < GridObject
 	def _1_grid(*a) send_out 0,:grid,*a end # for aalib
 
 	def _0_grid(*a)
+		check_file_open
 		@format._0_grid(*a)
 		send_out 0,:bang
 		log if @timelog
