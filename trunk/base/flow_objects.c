@@ -84,7 +84,7 @@ static void expect_rgba_picture (Dim *d) {
 		if (in->dim->n) in->set_factor(in->dim->n); \
 	} \
 	GRID_FLOW { \
-		if (dim) delete _member_, _member_=0; \
+		if (dim) { delete _member_; _member_=0; } \
 		_member_ = new Dim(n,(int *)(T *)data); \
 		this->in[0]->abort(); \
 		out[0]->abort(); \
@@ -319,10 +319,7 @@ struct GridStore : GridObject {
    replace has not finished being used.
 */
 static void snap_backstore (Grid &r) {
-	if (r.next != &r) {
-		r.swallow(r.next);
-		r.next = &r;
-	}
+	if (r.next != &r) { r.swallow(r.next); r.next = &r; }
 }
 
 /*!@#$ i should ensure that n is not exceedingly large */
@@ -603,13 +600,8 @@ GRID_INLET(GridScan,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	STACK_ARRAY(T,buf,n);
-	//fprintf(stderr,"an=%d bn=%d yn=%d zn=%d n=%d\n",an,bn,yn,zn,n);
 	COPY(buf,data,n);
-	for (int i=0; i<n; i+=factor) {
-		//WATCH(n,buf);
-		op->scan(zn,yn,(Pt<T>)r,buf+i);
-	}
-	//WATCH(n,buf);
+	for (int i=0; i<n; i+=factor) op->scan(zn,yn,(Pt<T>)r,buf+i);
 	out[0]->send(n,buf);
 } GRID_FINISH {
 } GRID_END
@@ -648,11 +640,10 @@ struct GridInner : GridObject {
 	int32 rint;
 	Grid r;
 
+	GridInner() { transpose=false; }
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
-
-	GridInner() { transpose=false; }
 	template <class T> void process_right(T bogus);
 };
 
@@ -676,16 +667,12 @@ GRID_INLET(GridInner,0) {
 	int rrows = in->factor;
 	int rsize = r.dim->prod();
 	int rcols = rsize/rrows;
-
 	Pt<T> rdata = (Pt<T>)r;
-
 	STACK_ARRAY(T,buf2,rcols);
 	STACK_ARRAY(T,buf,rsize);
-
 	while (n) {
 		for (int i=0,k=0; i<rrows; i++)
 			for (int j=0; j<rcols; j++) buf[k++]=data[i];
-
 		for (int j=0; j<rcols; j++) buf2[j] = (T)rint;
 		op_para->zip(rsize,buf,rdata);
 		op_fold->fold(rcols,rrows,buf2,buf);
@@ -698,21 +685,17 @@ GRID_INLET(GridInner,0) {
 
 template <class T> void GridInner::process_right(T bogus) {
 	if (!transpose) return;
-
 	int n = r.dim->n;
 	int rrows = r.dim->get(n-1);
 	int rsize = r.dim->prod();
 	int rcols = rsize/rrows;
-
 	int32 v[n];
 	for (int i=0; i<n-1; i++) v[i+1]=r.dim->v[i];
 	v[0]=r.dim->v[n-1];
 	Pt<T> rdata = (Pt<T>)r;
 	STACK_ARRAY(T,r2data,r.dim->prod());
 	for (int i=0; i<rrows; i++) {
-		for (int j=0; j<rcols; j++) {
-			r2data[i*rcols+j] = rdata[j*rrows+i];
-		}
+		for (int j=0; j<rcols; j++) r2data[i*rcols+j] = rdata[j*rrows+i];
 	}
 	r.init(new Dim(n,v),r.nt);
 	COPY((Pt<T>)r,r2data,rsize);
@@ -895,13 +878,11 @@ GRID_INLET(GridConvolve,0) {
 	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,     margy*ll);
 
 	/* the real stuff */
-
 	STACK_ARRAY(T,buf3,l);
 	STACK_ARRAY(T,buf2,l*dbx*dby);
 	STACK_ARRAY(T,buf ,l*dbx*dby);
 	Pt<T> q=buf2;
 	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=((Pt<T>)b)[i];
-
 	for (int iy=0; iy<day; iy++) {
 		for (int ix=0; ix<dax; ix++) {
 			Pt<T> p = ((Pt<T>)c) + iy*ll + ix*l;
@@ -939,6 +920,11 @@ struct GridFor : GridObject {
 	Grid from;
 	Grid to;
 	Grid step;
+	GridFor () {
+		from.constrain(expect_max_one_dim);
+		to  .constrain(expect_max_one_dim);
+		step.constrain(expect_max_one_dim);
+	}
 	\decl void initialize (Grid *from, Grid *to, Grid *step);
 	\decl void _0_set (Grid *r=0);
 	\decl void _0_bang ();
@@ -953,9 +939,6 @@ struct GridFor : GridObject {
   { Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }*/
 
 \def void initialize (Grid *from, Grid *to, Grid *step) {
-	this->from.constrain(expect_max_one_dim);
-	this->to  .constrain(expect_max_one_dim);
-	this->step.constrain(expect_max_one_dim);
 	rb_call_super(argc,argv);
 	this->from.swallow(from);
 	this->to  .swallow(to  );
@@ -1052,8 +1035,8 @@ struct GridType : GridObject {
 };
 
 GRID_INLET(GridType,0) {
-		Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
-		send_out(COUNT(a),a);
+	Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
+	send_out(COUNT(a),a);
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
@@ -1072,9 +1055,7 @@ struct GridRedim : GridObject {
 	Dim *dim;
 	Grid temp; /* temp.dim is not of the same shape as dim */
 
-	~GridRedim() {
-		if (dim) delete dim;
-	}
+	~GridRedim() { if (dim) delete dim; }
 	\decl void initialize (Grid *d);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -1100,11 +1081,7 @@ GRID_INLET(GridRedim,0) {
 } GRID_FINISH {
 	if (!temp.is_empty()) {
 		int a = in->dim->prod(), b = dim->prod();
-		int i = a;
-		while (i<b) {
-			out[0]->send(min(a,b-i),(Pt<T>)temp);
-			i += a;
-		}
+		for (int i=a; i<b; i+=a) out[0]->send(min(a,b-i),(Pt<T>)temp);
 	}
 	temp.del();
 } GRID_END
@@ -1403,7 +1380,7 @@ GRID_INLET(GridGrade,0) {
 	int m = in->factor;
 	STACK_ARRAY(T*,foo,m);
 	STACK_ARRAY(T,bar,m);
-	for (;n;n-=m,data+=m) {
+	for (; n; n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
 		qsort(foo,m,sizeof(T),GradeFunction<T>::comparator);
 		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
@@ -1437,7 +1414,7 @@ GRID_INLET(GridPerspective,0) {
 } GRID_FLOW {
 	int m = in->factor;
 	STACK_ARRAY(T,foo,m);
-	for (;n;n-=m,data+=m) {
+	for (; n; n-=m,data+=m) {
 		op2_mul->map(m-1,data,(T)z);
 		op2_div->map(m-1,data,data[m-1]);
 		out[0]->send(m-1,data);
@@ -1477,10 +1454,12 @@ GRID_INLET(GridLayer,0) {
 } GRID_FLOW {
 	Pt<T> rr = ((Pt<T>)r) + in->dex*3/4;
 	STACK_ARRAY(T,foo,n*3/4);
+#define COMPUTE_ALPHA(c,a) \
+	foo[j+c] = (data[i+c]*data[i+a] + rr[j+c]*(256-data[i+a])) >> 8
 	for (int i=0,j=0; i<n; i+=4,j+=3) {
-		foo[j+0] = (data[i+0]*data[i+3] + rr[j+0]*(256-data[i+3])) >> 8;
-		foo[j+1] = (data[i+1]*data[i+3] + rr[j+1]*(256-data[i+3])) >> 8;
-		foo[j+2] = (data[i+2]*data[i+3] + rr[j+2]*(256-data[i+3])) >> 8;
+		COMPUTE_ALPHA(0,3);
+		COMPUTE_ALPHA(1,3);
+		COMPUTE_ALPHA(2,3);
 	}
 	out[0]->send(n*3/4,foo);
 } GRID_FINISH {
