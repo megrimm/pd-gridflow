@@ -33,12 +33,13 @@ typedef Format FormatPPM;
 static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 	char buf[256];
 	int metrics[6],n=0;
+	FILE *f = Stream_get_file($->st);
 
 	if (frame!=-1) return 0;
-	fgets(buf,256,$->bstream);
-	if (feof($->bstream)) {
-		fseek($->bstream,0,SEEK_SET);
-		fgets(buf,256,$->bstream);
+	fgets(buf,256,f);
+	if (feof(f)) {
+		fseek(f,0,SEEK_SET);
+		fgets(buf,256,f);
 	}
 
 	if(strcmp("P6\n",buf)!=0) {
@@ -46,10 +47,10 @@ static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 		goto err;
 	}
 	while (n<3) {
-		fgets(buf,256,$->bstream);
+		fgets(buf,256,f);
 		if (*buf=='#') continue; /* skipping a comment line */
 		n += sscanf(buf,"%d%d%d",metrics+n,metrics+n+1,metrics+n+2);
-		if (feof($->bstream)) {
+		if (feof(f)) {
 			whine("unexpected end of file in header");
 			goto err;
 		}
@@ -71,7 +72,7 @@ static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 		Number b2[bs];
 		for (y=0; y<metrics[1]; y++) {
 			int i;
-			int bs2 = (int) fread(b1,1,bs,$->bstream);
+			int bs2 = (int) fread(b1,1,bs,f);
 			if (bs2 < bs) {
 				whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
 			}
@@ -87,7 +88,8 @@ err:
 }
 
 GRID_BEGIN(FormatPPM,0) {
-	fprintf($->bstream,
+	FILE *f = Stream_get_file($->st);
+	fprintf(f,
 		"P6\n"
 		"# generated using GridFlow " GF_VERSION "\n"
 		"%d %d\n"
@@ -95,25 +97,28 @@ GRID_BEGIN(FormatPPM,0) {
 		Dim_get(in->dim,1),
 		Dim_get(in->dim,0));
 
-	fflush($->bstream);
+	fflush(f);
 	return true;
 }
 
 /* !@#$ use BitPacking here */
 GRID_FLOW(FormatPPM,0) {
+	FILE *f = Stream_get_file($->st);
 	uint8 data2[n];
 	int i;
 	for (i=0; i<n; i++) data2[i] = data[i];
-	fwrite(data2,1,n,$->bstream);
+	fwrite(data2,1,n,f);
 }
 
 GRID_END(FormatPPM,0) {
-	fflush($->bstream);
-	fseek($->bstream,0,SEEK_SET);
+	FILE *f = Stream_get_file($->st);
+	fflush(f);
+	fseek(f,0,SEEK_SET);
 }
 
 static void FormatPPM_close (Format *$) {
-	if ($->bstream) fclose($->bstream);
+	FILE *f = Stream_get_file($->st);
+	if (f) fclose(f);
 	FREE($);
 }
 
@@ -128,8 +133,8 @@ static Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode,
 	}
 	filename = Symbol_name(Var_get_symbol(at+1));
 
-	$->bstream = gf_file_fopen(filename,mode);
-	if (!$->bstream) {
+	$->st = Stream_open_file(filename,mode);
+	if (!$->st) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}

@@ -235,6 +235,7 @@ typedef struct FormatVideoDev {
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
 static void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
+	int fd = Stream_get_fd($->st);
 	int v[] = {height, width, 3};
 	VideoWindow grab_win;
 
@@ -242,15 +243,15 @@ static void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 
 	FREE($->dim);
 	$->dim = Dim_new(3,v);
-	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
+	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	grab_win.height = height;
 	grab_win.width  = width;
 	VideoWindow_whine(&grab_win);
-	WIOCTL($->stream, VIDIOCSWIN, &grab_win);
-	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
+	WIOCTL(fd, VIDIOCSWIN, &grab_win);
+	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 }
 
@@ -279,12 +280,13 @@ static void FormatVideoDev_dealloc_image (FormatVideoDev *$) {
 }
 
 static bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
-	if (WIOCTL($->stream, VIDIOCGMBUF, &$->vmbuf)) return false;
+	int fd = Stream_get_fd($->st);
+	if (WIOCTL(fd, VIDIOCGMBUF, &$->vmbuf)) return false;
 	video_mbuf_whine(&$->vmbuf);
 	$->image = (uint8 *) mmap(
 		0,$->vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,
-		$->stream,0);
+		fd,0);
 	if (((int)$->image)<=0) {
 		$->image=0;
 		whine("mmap: %s", strerror(errno));
@@ -295,6 +297,7 @@ static bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
 }
 
 static bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
+	int fd = Stream_get_fd($->st);
 	$->pending_frames[0] = $->pending_frames[1];
 	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
@@ -302,7 +305,7 @@ static bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
 	$->vmmap.height = Dim_get($->dim,0);
 	whine("will try:");
 	video_mmap_whine(&$->vmmap);
-	if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
+	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) return false;
 	whine("driver gave us:");
 	video_mmap_whine(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
@@ -329,6 +332,7 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 }
 
 static bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
+	int fd = Stream_get_fd($->st);
 	int finished_frame;
 
 	if (frame != -1) return 0;
@@ -345,7 +349,7 @@ static bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame)
 	}
 
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
-	if (WIOCTL($->stream, VIDIOCSYNC, &$->vmmap)) goto err;
+	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) goto err;
 
 	FormatVideoDev_frame_finished($,out,$->image+$->vmbuf.offsets[finished_frame]);
 	if (!FormatVideoDev_frame_ask($)) goto err;
@@ -359,48 +363,52 @@ GRID_FLOW(FormatVideoDev,0) {}
 GRID_END(FormatVideoDev,0) {}
 
 static void FormatVideoDev_norm (FormatVideoDev *$, int value) {
+	int fd = Stream_get_fd($->st);
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
 	if (value<0 || value>3) {
 		whine("norm must be in range 0..3");
 		return;
 	}
-	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
+	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
 		whine("no tuner #%d", value);
 	} else {
 		vtuner.mode = value;
 		VideoTuner_whine(&vtuner);
-		WIOCTL($->stream, VIDIOCSTUNER, &vtuner);
+		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }
 
 static void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
+	int fd = Stream_get_fd($->st);
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	$->current_tuner = value;
-	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
+	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
 		whine("no tuner #%d", value);
 	} else {
 		vtuner.mode = VIDEO_MODE_NTSC;
 		VideoTuner_whine(&vtuner);
-		WIOCTL($->stream, VIDIOCSTUNER, &vtuner);
+		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }
 
 static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
+	int fd = Stream_get_fd($->st);
 	VideoChannel vchan;
 	vchan.channel = value;
 	$->current_channel = value;
-	if (0> ioctl($->stream, VIDIOCGCHAN, &vchan)) {
+	if (0> ioctl(fd, VIDIOCGCHAN, &vchan)) {
 		whine("no channel #%d", value);
 	} else {
 		VideoChannel_whine(&vchan);
-		WIOCTL($->stream, VIDIOCSCHAN, &vchan);
+		WIOCTL(fd, VIDIOCSCHAN, &vchan);
 		FormatVideoDev_tuner($,0);
 	}
 }
 
 static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
+	int fd = Stream_get_fd($->st);
 	Symbol sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
@@ -416,9 +424,9 @@ static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
 		VideoPicture vp; \
-		WIOCTL($->stream, VIDIOCGPICT, &vp); \
+		WIOCTL(fd, VIDIOCGPICT, &vp); \
 		vp._name_ = value; \
-		WIOCTL($->stream, VIDIOCSPICT, &vp); \
+		WIOCTL(fd, VIDIOCSPICT, &vp); \
 
 	PICTURE_ATTR(brightness)
 	PICTURE_ATTR(hue)
@@ -433,13 +441,64 @@ static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 
 static void FormatVideoDev_close (FormatVideoDev *$) {
 	if ($->image) FormatVideoDev_dealloc_image($);
-	if ($->stream>=0) close($->stream);
+	if ($->st) Stream_close($->st);
 	Format_close((Format *)$);
+}
+
+static void FormatVideoDev_init (FormatVideoDev *$) {
+	int fd = Stream_get_fd($->st);
+	VideoCapability vcaps;
+	Var at[3];
+//	char *s;
+	VideoPicture *gp = NEW(VideoPicture,1);
+
+	WIOCTL(fd, VIDIOCGCAP, &vcaps);
+	VideoCapability_whine(&vcaps);
+
+/*
+	PUT(0,symbol,SYM(size));
+	PUT(1,int,vcaps.maxheight);
+	PUT(2,int,vcaps.maxwidth);
+	$->cl->option((Format *)$,3,at);
+*/
+	FormatVideoDev_size($,vcaps.maxheight,vcaps.maxwidth);
+
+	WIOCTL(fd, VIDIOCGPICT, gp);
+	whine("original settings:");
+	VideoPicture_whine(gp);
+	gp->depth = 24;
+	gp->palette = VIDEO_PALETTE_RGB24;
+
+//	FREE(s);
+	whine("trying settings:");
+	VideoPicture_whine(gp);
+	WIOCTL(fd, VIDIOCSPICT, gp);
+	WIOCTL(fd, VIDIOCGPICT, gp);
+	whine("driver gave us settings:");
+	VideoPicture_whine(gp);
+
+	switch(gp->palette) {
+	case VIDEO_PALETTE_RGB24:
+		$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
+	break;
+	case VIDEO_PALETTE_RGB565:
+		/* I think the BTTV card is lying. */
+		/* BIG_HACK_FIX_ME */
+//		$->bit_packing = BitPacking_new(is_le(),2,0xf800,0x07e0,0x001f);
+//		$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
+		$->bit_packing = BitPacking_new(is_le(),3,0xff0000,0x00ff00,0x0000ff);
+//		$->bit_packing = BitPacking_new(is_le(),3,0xff000000,0x00ff0000,0x0000ff00);
+	break;
+	default:
+		whine("can't handle palette %d", gp->palette);
+	}
+	FormatVideoDev_channel($,0);
 }
 
 static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
 	FormatVideoDev *$ = (FormatVideoDev *)Format_open(&class_FormatVideoDev,parent,mode);
 	const char *filename;
+	int stream;
 
 	if (!$) return 0;
 
@@ -452,62 +511,15 @@ static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int 
 
 	whine("will try opening file");
 
-	$->stream = open(filename, O_RDWR);
-	if (0> $->stream) {
+	stream = open(filename, O_RDWR);
+	if (0> stream) {
 		whine("can't open file: %s", filename);
 		goto err;
 	}
 
-	{
-		VideoCapability vcaps;
-		Var at[3];
-		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
-		VideoCapability_whine(&vcaps);
+	$->st = Stream_open_fd(stream,mode);
 
-/*
-		PUT(0,symbol,SYM(size));
-		PUT(1,int,vcaps.maxheight);
-		PUT(2,int,vcaps.maxwidth);
-		$->cl->option((Format *)$,3,at);
-*/
-		FormatVideoDev_size($,vcaps.maxheight,vcaps.maxwidth);
-	}
-
-	{
-//		char *s;
-		VideoPicture *gp = NEW(VideoPicture,1);
-		WIOCTL($->stream, VIDIOCGPICT, gp);
-		whine("original settings:");
-		VideoPicture_whine(gp);
-		gp->depth = 24;
-		gp->palette = VIDEO_PALETTE_RGB24;
-
-//		FREE(s);
-		whine("trying settings:");
-		VideoPicture_whine(gp);
-		WIOCTL($->stream, VIDIOCSPICT, gp);
-		WIOCTL($->stream, VIDIOCGPICT, gp);
-		whine("driver gave us settings:");
-		VideoPicture_whine(gp);
-
-		switch(gp->palette) {
-		case VIDEO_PALETTE_RGB24:
-			$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
-		break;
-		case VIDEO_PALETTE_RGB565:
-			/* I think the BTTV card is lying. */
-			/* BIG_HACK_FIX_ME */
-//			$->bit_packing = BitPacking_new(is_le(),2,0xf800,0x07e0,0x001f);
-//			$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
-			$->bit_packing = BitPacking_new(is_le(),3,0xff0000,0x00ff00,0x0000ff);
-//			$->bit_packing = BitPacking_new(is_le(),3,0xff000000,0x00ff0000,0x0000ff00);
-		break;
-		default:
-			whine("can't handle palette %d", gp->palette);
-		}
-	}
-
-	FormatVideoDev_channel($,0);
+	FormatVideoDev_init($);
 
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);

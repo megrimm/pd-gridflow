@@ -318,17 +318,6 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 	}
 }
 
-int gf_file_open(const char *name, int mode) {
-	return fts_file_open(name,mode==4?"r":mode==2?"w":"");
-/*	return open(name,mode); */
-}
-
-FILE *gf_file_fopen(const char *name, int mode) {
-	int fd = gf_file_open(name,mode);
-	if (fd<0) return 0;
-	return fdopen(fd,mode==4?"r":mode==2?"w":"");
-}
-
 char *FObject_to_s(FObject *$) {
 	char *buf = NEW2(char,256);
 	sprintf_vars(buf,

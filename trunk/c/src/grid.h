@@ -215,8 +215,6 @@ static inline bool is_le(void) {
 
 void whine(char *fmt, ...);
 void whine_time(const char *s);
-int    gf_file_open(const char *name, int mode);
-FILE *gf_file_fopen(const char *name, int mode); 
 
 typedef struct MethodDecl {
 	int winlet;
@@ -506,7 +504,37 @@ struct GridObject {
 	void GridObject_conf_class2(fts_class_t *class, GridClass *grclass);
 
 /* **************************************************************** */
-/* grid.c (part 4: formats) */
+/* io.c (part 1: streams) */
+
+typedef bool (*OnRead)(void *target,int n,char *buf);
+
+typedef struct Stream {
+	Object _o; /* inherit */
+	int fd; /* kernel interface (unbuffered) */
+	FILE *file; /* stdio.h interface (buffered) */
+/* async stuff */
+	char *buf;
+	int buf_i;
+	int buf_n;
+	OnRead on_read;
+	void *target;
+} Stream;
+
+Stream *Stream_open_file(const char *name, int mode);
+Stream *Stream_open_fd(int fd, int mode);
+
+void Stream_nonblock(Stream *$);
+int Stream_get_fd(Stream *$);
+FILE *Stream_get_file(Stream *$);
+int Stream_read(Stream *$, int n, char *buf);
+void Stream_on_read_do(Stream *$,  int n, OnRead on_read, void *target);
+bool Stream_try_read(Stream *$);
+bool Stream_is_waiting(Stream *$);
+void Stream_close(Stream *$); /* does free too */
+/*int Stream_write(Stream *$, int n, char *buf);*/
+
+/* **************************************************************** */
+/* io.c (part 2: formats) */
 
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
@@ -557,12 +585,12 @@ struct FormatClass {
 };
 
 #define Format_FIELDS \
+	Object _o; \
 	FormatClass *cl; \
 	GridObject *parent; \
 	Format *chain; \
 	int mode; \
-	int stream; \
-	FILE *bstream; \
+	Stream *st; \
 	BitPacking *bit_packing; \
 	Dim *dim;
 
