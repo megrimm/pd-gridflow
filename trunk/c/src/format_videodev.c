@@ -145,7 +145,7 @@ void video_channel_whine(struct video_channel *$) {
 	whine(TAB "flags: %s", foo=channel_flags_to_s($->flags)); free(foo);
 //	WH(flags,"0x%08x");
 	WH(type,"0x%04x");
-	WH(norm,"0x%04x");
+	WH(norm,"%d");
 }
 
 void video_tuner_whine(struct video_tuner *$) {
@@ -157,7 +157,7 @@ void video_tuner_whine(struct video_tuner *$) {
 	WH(rangehigh,"%u");
 	whine(TAB "flags: %s", foo=tuner_flags_to_s($->flags)); free(foo);
 //	WH(flags,"0x%08x");
-	WH(mode,"0x%04x");
+	WH(mode,"%d");
 	WH(signal,"%d");
 }
 
@@ -272,19 +272,11 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 
 	whine("will read %d bytes", $->left);
 
+	if ($->stuff) free($->stuff);
 	$->stuff = NEW2(uint8,$->left);
 
-/*
-	n = (int) read($->stream_raw,$->stuff,$->left);
-	if (0> n) {
-		whine("error reading: %s", strerror(errno));
-	} else if (n < $->left) {
-		whine("unexpectedly short picture: %d of %d",n,$->left);
-	}
-*/
-
 	if (WIOCTL($->stream_raw, VIDIOCGMBUF, &vid_buf)) goto err1;
-	video_mbuf_whine(&vid_buf);
+/*	video_mbuf_whine(&vid_buf); */
 
 	buffer = mmap(0,vid_buf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,$->stream_raw,0);
@@ -312,11 +304,16 @@ err1:
 Number *FormatVideoDev_read (FileFormat *$, int n) {
 	int i;
 	int bs = $->left;
-	uint8 *b1 = (uint8 *)$->stuff + Dim_prod($->dim) - $->left;
+	uint8 *b1 = (uint8 *)$->stuff +
+		BitPacking_bytes($->bit_packing) * (Dim_prod($->dim) - $->left)/3;
 	Number *b2 = NEW2(Number,n);
 
 	if (!$->dim) return 0;
-	for (i=0; i<n; i++) b2[i] = b1[i];
+	if ($->bit_packing) {
+		BitPacking_unpack($->bit_packing,n/3,b1,b2);
+	} else {
+		whine("no bit_packing");
+	}
 	$->left -= n;
 	return b2;
 }
@@ -351,6 +348,7 @@ void FormatVideoDev_option (FileFormat *$, fts_symbol_t sym, int value) {
 			whine("no tuner #%d", value);
 		} else {
 			video_tuner_whine(&vtuner);
+			vtuner.mode = VIDEO_MODE_NTSC;
 			WIOCTL($->stream_raw, VIDIOCSTUNER, &vtuner);
 		}
 	} else {
@@ -377,6 +375,8 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	$->option = FormatVideoDev_option;
 	$->close  = FormatVideoDev_close;
 
+	$->stuff = 0;
+
 	switch(mode) {
 	case 4: break;
 	default: whine("unsupported mode (#%d)", mode); goto err;
@@ -393,14 +393,6 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 		goto err;
 	}
 
-/*
-	{
-		int v = fcntl($->stream_raw, F_SETFL);
-		v |= O_NONBLOCK;
-		fcntl($->stream_raw, F_SETFL, v);
-	}
-*/
-
 	{
 		struct video_capability vcaps;
 		WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);
@@ -410,15 +402,29 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	}
 
 	{
-		struct video_picture gp;
-		WIOCTL($->stream_raw, VIDIOCGPICT, &gp);
-		video_picture_whine(&gp);
-		gp.depth = 24;
-		gp.palette = VIDEO_PALETTE_RGB24;
-		video_picture_whine(&gp);
-		WIOCTL($->stream_raw, VIDIOCSPICT, &gp);
-		WIOCTL($->stream_raw, VIDIOCGPICT, &gp);
-		video_picture_whine(&gp);
+		struct video_picture *gp = NEW(struct video_picture,1);
+		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
+		video_picture_whine(gp);
+		gp->depth = 24;
+		gp->palette = VIDEO_PALETTE_RGB24;
+		video_picture_whine(gp);
+		WIOCTL($->stream_raw, VIDIOCSPICT, gp);
+		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
+		video_picture_whine(gp);
+		switch(gp->palette) {
+		case VIDEO_PALETTE_RGB24:
+			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
+		break;
+		case VIDEO_PALETTE_RGB565:
+//			$->bit_packing = BitPacking_new(2,0xf800,0x07e0,0x001f);
+			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
+			$->bit_packing = BitPacking_new(3,0xff0000,0x00ff00,0x0000ff);
+//			$->bit_packing = BitPacking_new(3,0xff000000,0x00ff0000,0x0000ff00);
+		break;
+		default:
+			whine("can't handle palette %d", gp->palette);
+			$->bit_packing = 0;
+		}
 	}
 
 	$->option($,SYM(channel),0);

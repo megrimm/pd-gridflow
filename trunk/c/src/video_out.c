@@ -55,11 +55,6 @@ struct VideoDisplay {
 	int white_pixel; 
 	int black_pixel;
 	int depth;
-	int bytes;
-	int big_error; //!@#$
-	int low_bit[3];
-	int high_bit[3];
-	int mask[3];
 	int use_shm;	   /* should use shared memory? */
 	VideoOut **vouts;
 	int vouts_n;
@@ -81,11 +76,12 @@ struct VideoOut {
 /* fields for: x window system */
 
 	VideoDisplay *display; /* our own display struct (see above) */
-	uint window;       /* window number */
-	GC imagegc;       /* graphics context (like java.awt.Graphics) */
-	XImage *ximage;   /* image descriptor */
+	uint window;      /* X11 window number */
+	GC imagegc;       /* X11 graphics context (like java.awt.Graphics) */
+	XImage *ximage;   /* X11 image descriptor */
 	char *name;       /* window name (for use by window manager) */
 	uint8 *image;     /* the real data (that XImage binds to) */
+	BitPacking *bit_packing; /* pixel format */
 };
 
 static void VideoOut_show_section(VideoOut *$, int x, int y, int sx, int sy);
@@ -178,7 +174,7 @@ void display_init(VideoDisplay *$) {
 	$->display = XOpenDisplay(0);
 	if(!$->display) {
 		whine("ERROR: opening X11 display");
-		$->big_error=1; return;
+		goto err;
 	}
 	screen      = DefaultScreenOfDisplay($->display);
 	screen_num  = DefaultScreen($->display);
@@ -190,28 +186,12 @@ void display_init(VideoDisplay *$) {
 
 	whine("depth = %d",$->depth);
 
+	/* !@#$ check for visual type instead */
 	if ($->depth != 16 && $->depth != 24 && $->depth != 32) {
 		whine("ERROR: depth %d not supported.", $->depth);
-		$->big_error=1; return;
+		goto err;
 	}
 
-	$->mask[0] = $->visual->red_mask;
-	$->mask[1] = $->visual->green_mask;
-	$->mask[2] = $->visual->blue_mask;
-
-	for(i=0;i<3;i++) {
-		$->low_bit[i] = low_bit ($->mask[i]);
-		$->high_bit[i] = high_bit($->mask[i]);
-	}
-
-	for (i=0;i<3;i++) {
-		static const char *colour_name[] = {"red","green","blue"};
-		whine("mask[%5s] = %08x (bits from %2d up to %2d)",
-			colour_name[i],
-			$->mask[i],
-			$->low_bit[i],
-			$->high_bit[i]);
-	}
 	#ifdef VIDEO_OUT_SHM
 		$->use_shm = 1;
 	#else
@@ -219,6 +199,7 @@ void display_init(VideoDisplay *$) {
 	#endif
 
 	display_set_alarm($);
+err:
 }
 
 /* ---------------------------------------------------------------- */
@@ -236,32 +217,6 @@ static void VideoOut_show_section(
 			$->imagegc, $->ximage, x, y, x, y, sx, sy);
 
 	XFlush($->display->display);
-}
-
-/*
-  This piece of code is non-portable.
-  Will fix it when I get hardware to test it.
-*/
-static uint8 *VideoOut_convert(
-	GridInlet *$, int n, Number *data, uint8 *target
-) {
-	VideoOut *parent = (VideoOut *) GridInlet_parent($);
-	VideoDisplay *d = parent->display;
-	while (n--) {
-		unsigned int temp =
-			(((data[0] << d->high_bit[0]) >> 7) & d->mask[0]) |
-			(((data[1] << d->high_bit[1]) >> 7) & d->mask[1]) |
-			(((data[2] << d->high_bit[2]) >> 7) & d->mask[2]);
-		//int bytes = parent->display->depth/8;
-		int bytes = parent->ximage->bits_per_pixel/8;
-
-		while(bytes--) {
-			*target++ = temp;
-			temp >>= 8;
-		}
-		data += 3;
-	}
-	return target;
 }
 
 GRID_BEGIN(VideoOut,0) {
@@ -290,11 +245,15 @@ GRID_FLOW(VideoOut,0) {
 		if (parent->bufn<linesize) break;
 
 		/* convert line */
-		VideoOut_convert($,sx,parent->buf,
+/*		VideoOut_convert($,sx,parent->buf,
 			&parent->image[line_num * sx * bytes_per_pixel]);
+*/
+		BitPacking_pack(parent->bit_packing,sx,parent->buf,
+			&parent->image[line_num * sx * bytes_per_pixel]);
+
 		parent->bufn = 0;
 		if (parent->autodraw==2) {
-				VideoOut_show_section(parent,0,line_num,sx,1);
+			VideoOut_show_section(parent,0,line_num,sx,1);
 		}
 		$->dex += linesize;
 		if ($->dex >= Dim_prod($->dim)) {
@@ -408,8 +367,7 @@ METHOD(VideoOut,init) {
 
 	if(!$->window) {
 		whine("ERROR: can't create window");
-		d->big_error = 1;
-		return;
+		goto err;
 	}
 
 	$->imagegc = XCreateGC(d->display, $->window, 0, NULL);
@@ -423,6 +381,18 @@ METHOD(VideoOut,init) {
 	XSync(d->display,0);
 
 	display_vout_add($->display, $);
+
+	{
+		Visual *v = $->display->visual;
+		$->bit_packing = BitPacking_new(
+			$->ximage->bits_per_pixel/8,
+			v->red_mask,
+			v->green_mask,
+			v->blue_mask);
+	}
+
+	BitPacking_whine($->bit_packing);
+err:
 }
 
 METHOD(VideoOut,delete) {
