@@ -22,6 +22,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+GF_VERSION = "0.6.1"
+
 require "xmlparser"
 
 =begin todo
@@ -441,7 +443,7 @@ puts <<EOF
 <html>
 <head>
 <!-- #{"$"}Id#{"$"} -->
-<title>GridFlow 0.5.0 - reference</title>
+<title>GridFlow #{GF_VERSION} - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -467,7 +469,7 @@ EOF
 black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.5.0 - reference index</h4>
+    <h4>GridFlow #{GF_VERSION} - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -500,7 +502,7 @@ puts <<EOF
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.5.0 Documentation<br>
+<p><font size="-1">GridFlow #{GF_VERSION} Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
