@@ -603,8 +603,8 @@ GRID_BEGIN(GridInner,0) {
 			whine("last dimension of each grid must have same size");
 			return false;
 		}
-		for (i=j=0; i<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; i<Dim_count(b)  ; i++,j++) { v[i] = Dim_get(b,j); }
+		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
+		for (  j=0; j<Dim_count(b)  ; i++,j++) { v[i] = Dim_get(b,j); }
 		GridOutlet_begin($->out[0],Dim_new(n,v));
 	}	
 	return true;
@@ -640,6 +640,8 @@ METHOD(GridInner,init) {
 	fts_symbol_t sym_para = GET(1,symbol,op2_table[0].sym);
 	fts_symbol_t sym_fold = GET(2,symbol,op2_table[0].sym);
 	$->rint = GET(3,int,0);
+	$->dim = 0;
+	$->data = 0;
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridInner,0);
@@ -696,8 +698,8 @@ GRID_BEGIN(GridOuter,0) {
 		int n = Dim_count(a)+Dim_count(b);
 		int v[n];
 		int i,j;
-		for (i=j=0; i<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; i<Dim_count(b)  ; i++,j++) { v[i] = Dim_get(b,j); }
+		for (i=j=0; j<Dim_count(a); i++,j++) { v[i] = Dim_get(a,j); }
+		for (  j=0; j<Dim_count(b); i++,j++) { v[i] = Dim_get(b,j); }
 		GridOutlet_begin($->out[0],Dim_new(n,v));
 	}
 	return true;
@@ -744,6 +746,9 @@ METHOD(GridOuter,init) {
 	$->in[0] = GridInlet_NEW3($,GridOuter,0);
 	$->in[1] = GridInlet_NEW3($,GridOuter,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+
+	$->dim = 0;
+	$->data = 0;
 
 	$->op = op2_table_find(sym);
 	if (!$->op) {
@@ -827,6 +832,10 @@ METHOD(GridConvolve,init) {
 	$->in[0] = GridInlet_NEW3($,GridConvolve,0);
 	$->in[1] = GridInlet_NEW3($,GridConvolve,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+	$->dim = 0;
+	$->data = 0;
+	$->diml = 0;
+	$->datal = 0;
 }
 
 METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
@@ -861,9 +870,9 @@ typedef struct GridFor {
 
 METHOD(GridFor,init) {
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->from = GET(0,int,0);
-	$->to   = GET(1,int,0);
-	$->step = GET(2,int,0);
+	$->from = GET(1,int,0);
+	$->to   = GET(2,int,0);
+	$->step = GET(3,int,0);
 	if (!$->step) $->step=1;
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
@@ -871,11 +880,11 @@ METHOD(GridFor,init) {
 METHOD(GridFor,delete) { GridObject_delete((GridObject *)$); }
 
 METHOD(GridFor,from) { $->from = GET(0,int,0); }
-METHOD(GridFor,to  ) { $->to   = GET(1,int,0); }
-METHOD(GridFor,step) { $->step = GET(2,int,0); if (!$->step) $->step=1; }
+METHOD(GridFor,to  ) { $->to   = GET(0,int,0); }
+METHOD(GridFor,step) { $->step = GET(0,int,0); if (!$->step) $->step=1; }
 
 METHOD(GridFor,bang) {
-	int v = ($->to - $->from) / $->step;
+	int v = ($->to - $->from + $->step - 1) / $->step;
 	Number x;
 	GridOutlet_begin($->out[0],Dim_new(1,&v));
 	if ($->step > 0) {
@@ -912,7 +921,7 @@ CLASS(GridFor) {
 	};
 
 	/* initialize the class */
-	fts_class_init(class, sizeof(GridFor), 1, 1, 0);
+	fts_class_init(class, sizeof(GridFor), 3, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	return fts_Success;
 }
@@ -1152,7 +1161,7 @@ void startup_grid_basic (void) {
 	fts_class_install(fts_new_symbol("@outer"),       GridOuter_class_init);
 //	fts_class_install(fts_new_symbol("@convolve"), GridConvolve_class_init);
 //	fts_class_install(fts_new_symbol("@vec"),           GridVec_class_init);
-	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
+//	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
 	fts_class_install(fts_new_symbol("@dim"),           GridDim_class_init);
 	fts_class_install(fts_new_symbol("@redim"),       GridRedim_class_init);
 	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);

@@ -186,7 +186,7 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 
 	assert($);
 
-	whine("%s:o%d: beginning a %s",INFO((GridInlet *)$), Dim_to_s(dim));
+/*	whine("%s:o%d: beginning a %s",INFO((GridInlet *)$), Dim_to_s(dim)); */
 
 	/* if (!GridOutlet_idle($)) GridOutlet_abort($); */
 
