@@ -361,7 +361,7 @@ __END__
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">Video4jmax 0.2.2 Documentation<br>
+<p><font size="-1">Video4jmax 0.3.0 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
