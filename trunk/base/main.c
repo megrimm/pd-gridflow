@@ -81,14 +81,12 @@ static int object_count=0;
 
 static void FObject_free (void *foo) {
 	GridObject *$ = (GridObject *)foo;
-/*	fprintf(stderr,"Say farewell to %08x: %s\n",(int)$,
-		rb_str_ptr(rb_funcall($->peer,SI(args),0)));
-*/
+//	fprintf(stderr,"Say farewell to %08x\n",(int)$);
 	if (!$->peer) {
 		fprintf(stderr,"attempt to free object that has no peer\n");
 		abort();
 	}
-	$->peer = 0; /* useless? what was this for? */
+	$->peer = 0; /* paranoia */
 	delete $;
 	/* a silly bug was on this line before. watch out. */
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);

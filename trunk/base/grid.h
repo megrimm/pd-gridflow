@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 /* current version number as string literal */
-#define GF_VERSION "0.6.3"
+#define GF_VERSION "0.6.4"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -653,6 +653,7 @@ struct GridOutlet {
 
 /* transmission accelerator */
 	int frozen;
+/* !@#$ Pt<GridInlet *> */
 	int ron; GridInlet **ro; /* want Pt<const Number> shown to */
 	int rwn; GridInlet **rw; /* want (Pt<Number>) given to */
 
@@ -687,6 +688,10 @@ struct GridObject : FObject {
 	bool freed; /* paranoia */
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
+
+	/* Those are really specific to Formats. Should fix that someday. */
+	GridObject *parent;
+	Ruby /*Symbol*/ mode;
 
 	GridObject();
 	virtual void mark(); /* not used for now */
@@ -728,8 +733,10 @@ extern GFStack *gf_call_stack;
 #define FF_RW  (1<<3)
 
 struct Format : GridObject {
-	GridObject *parent;
-	Ruby /*Symbol*/ mode;
+	/*
+	  "parent","mode" fields have been moved to GridObject temporarily
+	  as a hack around a memory corruption bug
+	*/	
 
 	DECL3(init);
 	DECL3(option);

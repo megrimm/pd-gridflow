@@ -469,6 +469,7 @@ GridObject::GridObject() {
 }
 
 GridObject::~GridObject() {
+//	fprintf(stderr,"GridObject::~GridObject: %08x\n",(int)this);
 	if (freed) fprintf(stderr,"GridObject being deleted twice???\n");
 	freed=true;
 	for (int i=0; i<MAX_INLETS;  i++) {
@@ -651,10 +652,12 @@ GridClass *format_classes[] = {};
 
 METHOD3(Format,init) {
 	int flags = INT(rb_ivar_get(rb_obj_class(peer),SI(@flags)));
-//	printf("self=%08x\n",(int)this);
+//	printf("this=%08x, peer=%08x\n",(int)this,peer);
 	rb_call_super(argc,argv);
-//	printf("self=%08x\n",(int)this);
-//	fprintf(stderr,"index(mode)=%08x\n",(char*)(&mode)-(char*)this);
+//	rb_p(peer);
+//	rb_p(rb_obj_class(peer));
+//	printf("this=%08x, peer=%08x, &mode=%08x, &parent=%08x\n",
+//		(int)this, peer, (int)&mode, (int)&parent);
 	mode = argv[0]; /* VG: Invalid write of size 4 */
 	parent = 0;
 	/* FF_W, FF_R, FF_RW */
@@ -681,7 +684,10 @@ METHOD3(Format,option) {
 }
 
 METHOD3(Format,close) {
-	delete this; // caution...
+/* Actually this shall be done later; #close and c++destructor shall
+   be distinguished from each other.
+*/
+//	delete this;
 	return Qnil;
 }
 

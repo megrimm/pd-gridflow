@@ -255,7 +255,9 @@ METHOD3(BitPacking,unpack2) {
 	return out;
 }
 
-void BitPacking_sweep (Ruby *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
+void BitPacking_free (Ruby *$) {
+//	fprintf(stderr,"freeing BitPacking %p\n",$);
+}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
@@ -275,7 +277,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
 	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
-	$ = Data_Wrap_Struct(qlass, 0, BitPacking_sweep, c_peer);
+	$ = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;
