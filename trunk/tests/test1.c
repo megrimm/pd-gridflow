@@ -14,7 +14,7 @@ void pressakey(void) {
 }
 
 void test_dict$1(void *foo, void *k, void *v) {
-	printf("%s : %s\n", fts_symbol_name((fts_symbol_t)k), (const char *)v);
+	printf("%s : %s\n", Symbol_name((Symbol)k), (const char *)v);
 }
 
 void test_gen(void) {
@@ -178,6 +178,6 @@ int main(void) {
 	((void(*)(void))Dict_get(tests,"gen"))();
 
 	fts_loop();
-/*	{int i; for(i=0;;i++) printf("%3d = %s\n", i, fts_symbol_name(i)); } */
+/*	{int i; for(i=0;;i++) printf("%3d = %s\n", i, Symbol_name(i)); } */
 	return 0;
 }
