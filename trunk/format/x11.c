@@ -74,7 +74,7 @@ struct FormatX11 : Format {
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
-	#ifdef HAVE_X11_SHARED_MEMORY
+#ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		XSync(display,False);
 		if (sy>dim->get(0)) sy=dim->get(0);
@@ -83,7 +83,7 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		/* should completion events be waited for? looks like a bug */
 	} else
-	#endif
+#endif
 		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
 	XFlush(display);
 }
@@ -214,6 +214,7 @@ void FormatX11::dealloc_image () {
 	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
 		FREE(shm_info);
+		/* and what do i do to ximage? */
 	#endif	
 	} else {
 		XDestroyImage(ximage);
@@ -225,7 +226,7 @@ void FormatX11::dealloc_image () {
 bool FormatX11::alloc_image (int sx, int sy) {
 top:
 	dealloc_image();
-	#ifdef HAVE_X11_SHARED_MEMORY
+#ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		shm_info = NEW(XShmSegmentInfo,());
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
@@ -254,7 +255,7 @@ top:
 
 		if (!use_shm) RAISE("shm got disabled, retrying...");
 	} else
-	#endif
+#endif
 	{
 		/* let's overestimate the pixel size */
 		/* int pixel_size = BitPacking_bytes($->bit_packing); */
@@ -463,6 +464,7 @@ METHOD(FormatX11,init) {
 		$->open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
+		if (argc<2) RAISE("open local: not enough args");
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
 		gfpost("mode `local', display_number `%d'",dispnum);
@@ -470,10 +472,10 @@ METHOD(FormatX11,init) {
 		$->open_display(host);
 		i=2;
 	} else if (domain==SYM(remote)) {
+		if (argc<3) RAISE("open remote: not enough args");
 		char host[256];
-		int dispnum = 0;
 		strcpy(host,rb_sym_name(argv[1]));
-		dispnum = NUM2INT(argv[2]);
+		int dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
 		gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
 		$->open_display(host);
