@@ -236,9 +236,9 @@ struct Operator2 {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *parent, GridInlet *in)
-#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *parent, GridInlet *in, int n, const Number *data)
-#define   GRID_END_(_class_,_name_) void _name_(_class_ *parent, GridInlet *in)
+#define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *$, GridInlet *in)
+#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, const Number *data)
+#define   GRID_END_(_class_,_name_) void _name_(_class_ *$, GridInlet *in)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
@@ -247,6 +247,10 @@ typedef   GRID_END_(GridObject, (*GridEnd));
 #define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_,_class_##_##_inlet_##_begin)
 #define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_,_class_##_##_inlet_##_flow)
 #define   GRID_END(_class_,_inlet_)   GRID_END_(_class_,_class_##_##_inlet_##_end)
+
+#define PGRID_BEGIN(_class_,_inlet_) ((GridBegin)_class_##_##_inlet_##_begin)
+#define  PGRID_FLOW(_class_,_inlet_)  ((GridFlow)_class_##_##_inlet_##_flow)
+#define   PGRID_END(_class_,_inlet_)   ((GridEnd)_class_##_##_inlet_##_end)
 
 struct GridInlet {
 	GridObject *parent;
@@ -271,9 +275,11 @@ struct GridInlet {
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 
-/*
-#define GridInlet_NEW((GridObject *)parent, winlet, (GridBegin)a, (GridFlow)b);
-*/
+#define GridInlet_NEW3(_parent_,_class_,_winlet_) \
+	GridInlet_new((GridObject *)_parent_, _winlet_, \
+		PGRID_BEGIN(_class_,_winlet_), \
+		 PGRID_FLOW(_class_,_winlet_), \
+		  PGRID_END(_class_,_winlet_));
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware jmax outlet */
@@ -341,6 +347,7 @@ struct GridObject {
 	METHOD(GridObject,grid_begin);
 	METHOD(GridObject,grid_flow);
 	METHOD(GridObject,grid_end);
+	void GridObject_delete(GridObject *$);
 
 /* **************************************************************** */
 

@@ -120,12 +120,12 @@ const char *video_mode_choice[] = {
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
 	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,ARRAY(_table_))); \
-	free(foo);}
+	FREE(foo);}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
 	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,ARRAY(_table_)));\
-	free(foo);}
+	FREE(foo);}
 
 char *flags_to_s(int value, int n, const char **table) {
 	int i;
@@ -271,7 +271,7 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	if (frame != -1) return 0;
 	$->left = Dim_prod($->dim);
 
-	if ($->stuff) free($->stuff);
+	if ($->stuff) FREE($->stuff);
 	$->stuff = NEW2(uint8,$->left);
 
 	if (WIOCTL($->stream_raw, VIDIOCGMBUF, &vmbuf)) goto err1;
@@ -381,7 +381,7 @@ void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
 
 void FormatVideoDev_close (FileFormat *$) {
 	if ($->stream_raw>=0) close($->stream_raw);
-	free($);
+	FREE($);
 }
 
 FileFormat *FormatVideoDev_open (const char *filename, int mode) {

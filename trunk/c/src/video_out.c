@@ -220,12 +220,12 @@ static void VideoOut_show_section(
 }
 
 GRID_BEGIN(VideoOut,0) {
-	parent->bufn = 0;
-	return Dim_equal_verbose_hwc(in->dim,parent->dim);
+	$->bufn = 0;
+	return Dim_equal_verbose_hwc(in->dim,$->dim);
 }
 
 GRID_FLOW(VideoOut,0) {
-	int bytes_per_pixel = parent->ximage->bits_per_pixel/8;
+	int bytes_per_pixel = $->ximage->bits_per_pixel/8;
 	int linesize = Dim_get(in->dim,1) * 3;
 
 	while (n>0) {
@@ -234,35 +234,37 @@ GRID_FLOW(VideoOut,0) {
 		int line_num = pixel_num / sx;
 		int incr, on=n;
 
-		int size = linesize - parent->bufn;
+		int size = linesize - $->bufn;
 		if (size > n) size = n;
-		memcpy(&parent->buf[parent->bufn],data,sizeof(int)*size);
-		parent->bufn += size;
+		memcpy(&$->buf[$->bufn],data,sizeof(int)*size);
+		$->bufn += size;
 		data += size;
 		n -= size;
-		if (parent->bufn<linesize) break;
+		if ($->bufn<linesize) break;
 
 		/* convert line */
-/*		VideoOut_convert($,sx,parent->buf,
-			&parent->image[line_num * sx * bytes_per_pixel]);
+/*		VideoOut_convert($,sx,$->buf,
+			&$->image[line_num * sx * bytes_per_pixel]);
 */
-		BitPacking_pack(parent->bit_packing,sx,parent->buf,
-			&parent->image[line_num * sx * bytes_per_pixel]);
+		BitPacking_pack($->bit_packing,sx,$->buf,
+			&$->image[line_num * sx * bytes_per_pixel]);
 
-		parent->bufn = 0;
-		if (parent->autodraw==2) {
-			VideoOut_show_section(parent,0,line_num,sx,1);
+		$->bufn = 0;
+		if ($->autodraw==2) {
+			VideoOut_show_section($,0,line_num,sx,1);
 		}
 		in->dex += linesize;
 		if (in->dex >= Dim_prod(in->dim)) {
-			if (parent->autodraw==1) {
+			if ($->autodraw==1) {
 				int sy = Dim_get(in->dim,0);
-				VideoOut_show_section(parent,0,0,sx,sy);
+				VideoOut_show_section($,0,0,sx,sy);
 			}
-			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
+			fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
 		}
 	}
 }
+
+GRID_END(VideoOut,0) {}
 
 /* ---------------------------------------------------------------- */
 
@@ -297,8 +299,7 @@ METHOD(VideoOut,init) {
 	int width  = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)VideoOut_0_begin, (GridFlow)VideoOut_0_flow, 0);
+	$->in[0] = GridInlet_NEW3($,VideoOut,0);
 
 	COERCE_INT_INTO_RANGE(height,1,MAX_INDICES);
 	COERCE_INT_INTO_RANGE(width, 1,MAX_INDICES);

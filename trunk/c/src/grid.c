@@ -24,9 +24,9 @@
 
 static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
 
-#define INFO(__self) \
-	fts_symbol_name(fts_get_class_name((__self)->parent->o.head.cl)), \
-	(__self)->winlet
+#define INFO(_self_) \
+	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
+	(_self_)->winlet
 
 /* **************** GridInlet ************************************* */
 
@@ -93,16 +93,26 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
-	$->flow((GridObject *)$->parent,$,n,data);
+	{
+		int newdex = $->dex + n;
+		assert(newdex <= Dim_prod($->dim));
+		$->flow((GridObject *)$->parent,$,n,data);
+		$->dex = newdex;
+	}
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
-	whine("%s:i%d: GridInlet_end()", INFO($));
 	if (GridInlet_idle_verbose($,"end")) return;
+/*	whine("%s:i%d: GridInlet_end()", INFO($)); */
 	if (Dim_prod($->dim) != $->dex) {
 		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
-			Dim_prod($->dim), $->dex);
+			$->dex, Dim_prod($->dim));
 	}
+	if ($->end) {
+		$->end((GridObject *)$->parent,$);
+	}
+	FREE($->dim);
+	$->dex = 0;
 }
 
 /* **************** GridOutlet ************************************ */
@@ -177,7 +187,8 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
 	$->dex += n;
-	if ($->bufn + n >= PACKET_LENGTH) {
+	assert($->dex <= Dim_prod($->dim));
+	if ($->bufn + n > PACKET_LENGTH) {
 		GridOutlet_flush($);
 	}
 	if (n >= PACKET_LENGTH) {
@@ -185,9 +196,6 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	} else {
 		memcpy(&$->buf[$->bufn],data,sizeof(Number)*n);
 		$->bufn += n;
-	}
-	if ($->dex >= Dim_prod($->dim)) {
-		GridOutlet_end($);
 	}
 }
 
@@ -209,22 +217,28 @@ void GridOutlet_flush(GridOutlet *$) {
 
 METHOD(GridObject,init) {
 	int i;
-	for (i=0; i<MAX_INLETS;  i++) self->in[i]  = 0;
-	for (i=0; i<MAX_OUTLETS; i++) self->out[i] = 0;
+	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
+	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
 }
 
 /* category: input */
 
 METHOD(GridObject,grid_begin) {
-	GridInlet_begin(self->in[winlet],ac,at);
+	GridInlet_begin($->in[winlet],ac,at);
 }
 
 METHOD(GridObject,grid_flow) {
-	GridInlet_flow(self->in[winlet],ac,at);
+	GridInlet_flow($->in[winlet],ac,at);
 }
 
 METHOD(GridObject,grid_end) {
-	GridInlet_end(self->in[winlet],ac,at);
+	GridInlet_end($->in[winlet],ac,at);
+}
+
+void GridObject_delete(GridObject *$) {
+	int i;
+	for (i=0; i<MAX_INLETS;  i++) FREE($->in[i]);
+	for (i=0; i<MAX_OUTLETS; i++) FREE($->out[i]);
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {

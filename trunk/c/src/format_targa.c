@@ -65,7 +65,7 @@ Dim *FormatTarga_frame (FileFormat *$, int frame) {
 	comment = NEW2(char,comment_length+1);
 	fread(comment, 1, comment_length, $->stream);
 	whine("tga: comment: %s", comment);
-	free(comment);
+	FREE(comment);
 
 /*	if (depth != 24 && depth != 32) { */
 
@@ -120,7 +120,7 @@ void FormatTarga_end (FileFormat *$) {
 
 void FormatTarga_close (FileFormat *$) {
 	if ($->stream) fclose($->stream);
-	free($);
+	FREE($);
 }
 
 FileFormat *FormatTarga_open (const char *filename, int mode) {
