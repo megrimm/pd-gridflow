@@ -86,7 +86,7 @@ METHOD(GridIn,open) {
 	}
 
 	if ($->ff) $->ff->cl->close($->ff);
-	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
+	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
 	if (qlass->open) {
 		$->ff = qlass->open(qlass,(GridObject *)$,4,ac-1,at+1);
 	} else {
@@ -96,7 +96,7 @@ METHOD(GridIn,open) {
 
 METHOD(GridIn,bang) {
 	CHECK_FILE_OPEN
-	if (!GridOutlet_idle($->out[0])) {
+	if (GridOutlet_busy($->out[0])) {
 		whine("ignorine frame request: already waiting for a frame");
 		return;
 	}
@@ -107,7 +107,7 @@ METHOD(GridIn,bang) {
 	}
 	return;
 err:
-	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
+	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
 	return;
 }
 
@@ -212,7 +212,7 @@ METHOD(GridOut,option) {
 
 METHOD(GridOut,close) {
 	CHECK_FILE_OPEN
-	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
+	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
 	$->ff->cl->close($->ff);
 }
 
