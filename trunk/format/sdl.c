@@ -37,7 +37,7 @@ struct FormatSDL : Format {
 	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	void _0_resize_window (int sx, int sy);
+	void resize_window (int sx, int sy);
 	void alarm ();
 	Pt<uint8> pixels () {
 		return Pt<uint8>((uint8 *)screen->pixels,
@@ -55,7 +55,7 @@ void FormatSDL::alarm() {
 	while(SDL_PollEvent(&event)) {}
 }
 
-void FormatSDL::_0_resize_window (int sx, int sy) {
+void FormatSDL::resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
 	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
 	if (!screen)
