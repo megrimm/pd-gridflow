@@ -31,6 +31,3 @@
 
 DEFAULT /opt/bin/ruby $CVSROOT/CVSROOT/loginfo.rb $CVSROOT $USER %s 'matju@sympatico.ca, acastonguay@artengine.ca'
 
-
-
-
