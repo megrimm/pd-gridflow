@@ -19,7 +19,7 @@ contrast 8 8 0 8 -260818 -1 -1 0 1;
 #X obj 88 245 hsl 128 15 0 65635 0 0 \$0-whiteness_s \$0-whiteness_r
 whiteness 8 8 0 8 -260818 -1 -1 0 1;
 #X text 121 337 <-- open to access more camera controls;
-#N canvas 170 0 656 624 camera 1;
+#N canvas 170 0 656 624 camera 0;
 #X msg 9 59 open videodev /dev/video0;
 #X obj 9 312 outlet;
 #X obj 9 8 inlet;
