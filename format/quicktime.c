@@ -33,8 +33,10 @@ struct FormatQuickTime : Format {
 	int track;
 	BitPacking *bit_packing;
 	Dim *dim;
+	char *codec;
 
 	DECL3(initialize);
+	DECL3(option);
 	DECL3(close);
 	DECL3(frame);
 	DECL3(seek);
@@ -102,7 +104,7 @@ GRID_INLET(FormatQuickTime,0) {
 		/* first frame: have to do setup */
 		dim = in->dim->dup();
 		quicktime_set_video(anim,1,dim->get(1),dim->get(0),
-			15,QUICKTIME_YUV4);
+			15,codec);
 	}
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
@@ -117,6 +119,29 @@ GRID_INLET(FormatQuickTime,0) {
 	delete[] (uint8 *)buf;
 } GRID_FINISH {
 } GRID_END
+
+METHOD3(FormatQuickTime,option) {
+	VALUE sym = argv[0];
+	if (sym == SYM(codec)) {
+		struct { Ruby sym; char *codec; } codecs[] = {
+			{SYM(raw), QUICKTIME_RAW},
+			{SYM(jpeg), QUICKTIME_JPEG},
+			{SYM(png), QUICKTIME_PNG},
+			{SYM(mjpa), QUICKTIME_MJPA},
+			{SYM(yuv2), QUICKTIME_YUV2},
+			{SYM(yuv4), QUICKTIME_YUV4},
+		};
+		Ruby c = argv[1];
+		int i;
+		for (i=0; i<COUNT(codecs); i++) {
+			if (argv[1]==codecs[i].sym) break;
+		}
+		if (i==COUNT(codecs)) RAISE("unknown codec name");
+		codec = codecs[i].codec;
+	} else
+		rb_call_super(argc,argv);
+	return Qnil;
+}
 
 METHOD3(FormatQuickTime,close) {
 	if (bit_packing) delete bit_packing;
@@ -145,6 +170,7 @@ METHOD3(FormatQuickTime,initialize) {
 	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	track = 0;
 	dim = 0;
+	codec = QUICKTIME_RAW;
 
 	if (mode()==SYM(in)) {
 		if (!quicktime_supported_video(anim,track))
@@ -168,6 +194,7 @@ static void startup (GridClass *self) {
 GRCLASS(FormatQuickTime,"FormatQuickTime",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatQuickTime,0,4)),
 DECL(FormatQuickTime,initialize),
+DECL(FormatQuickTime,option),
 DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),
 DECL(FormatQuickTime,close))
