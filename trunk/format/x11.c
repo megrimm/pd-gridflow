@@ -95,12 +95,12 @@ struct FormatX11 : Format {
 	void open_display(const char *disp_string);
 	void report_pointer(int y, int x, int state);
 	void prepare_colormap();
-	void alarm();
 	Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level=0);
 
 	\decl void initialize (...);
 	\decl void frame ();
 	\decl void close ();
+	\decl void call ();
 	\decl void _0_out_size (int sy, int sx);
 	\decl void _0_draw ();
 	\decl void _0_autodraw (int autodraw);
@@ -149,8 +149,6 @@ void FormatX11::set_wm_hints (int sx, int sy) {
 		&window_name, &icon_name, NULL, 0, &hints, &wmhints, NULL);
 }
 
-static void FormatX11_alarm(FormatX11 *self) { self->alarm(); }
-
 void FormatX11::report_pointer(int y, int x, int state) {
 	Ruby argv[5] = {
 		INT2NUM(0), SYM(position),
@@ -158,9 +156,8 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	send_out(COUNT(argv),argv);
 }
 
-void FormatX11::alarm() {
+\def void call() {
 	XEvent e;
-
 	for (;;) {
 		int xpending = XEventsQueued(display, QueuedAfterFlush);
 		if (!xpending) break;
@@ -232,6 +229,7 @@ void FormatX11::alarm() {
 			if (verbose) gfpost("received event of type # %d", e.type);
 		}
 	}
+	IEVAL(rself,"@clock.delay 20");
 }
 
 \def void frame () {
@@ -412,13 +410,12 @@ GRID_INLET(FormatX11,0) {
 	if (autodraw==2) show_section(0,oy,sx,y-oy);
 } GRID_FINISH {
 	if (autodraw==1) show_section(0,0,in->dim->get(1),in->dim->get(0));
-	alarm(); // calling this here because the clock problem is annoying
 } GRID_END
 
 \def void close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
 	bit_packing=0;
-	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
+	IEVAL(rself,"@clock.unset");
 	if (is_owner) XDestroyWindow(display,window);
 	XSync(display,0);
 	dealloc_image();
@@ -694,7 +691,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
 	} break;
 	}
-	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatX11_alarm));
+	IEVAL(rself,"@clock = Clock.new self");
+	IEVAL(rself,"@clock.delay 0");
 }
 
 \classinfo {

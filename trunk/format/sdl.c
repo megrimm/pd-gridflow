@@ -38,7 +38,7 @@ struct FormatSDL : Format {
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	void resize_window (int sx, int sy);
-	void alarm ();
+	void call ();
 	Pt<uint8> pixels () {
 		return Pt<uint8>((uint8 *)screen->pixels,
 			dim->prod(0,1)*bit_packing->bytes);
@@ -48,11 +48,10 @@ struct FormatSDL : Format {
 	\grin 0 int
 };
 
-static void FormatSDL_alarm(FormatSDL *self) { self->alarm(); }
-
-void FormatSDL::alarm() {
+void FormatSDL::call() {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {}
+	IEVAL(rself,"@clock.delay 20");
 }
 
 void FormatSDL::resize_window (int sx, int sy) {
@@ -90,7 +89,7 @@ GRID_INLET(FormatSDL,0) {
 } GRID_END
 
 \def void close () {
-	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
+	IEVAL(rself,"@clock.unset");
 	in_use=false;
 }
 
@@ -112,7 +111,7 @@ GRID_INLET(FormatSDL,0) {
 		break;
 	default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 	}
-	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatSDL_alarm));
+	IEVAL(rself,"@clock = Clock.new self");
 }
 
 \classinfo {
