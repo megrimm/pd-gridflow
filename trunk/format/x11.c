@@ -245,6 +245,7 @@ void FormatX11::dealloc_image () {
 bool FormatX11::alloc_image (int sx, int sy) {
 top:
 	dealloc_image();
+	if (sx==0 || sy==0) return false;
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		shm_info = new XShmSegmentInfo;
@@ -291,6 +292,11 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
+	if (sy<16) sy=16;
+	if (sx<16) sx=16;
+	if (sy>MAX_INDICES) RAISE("height too big");
+	if (sx>MAX_INDICES) RAISE("width too big");
+
 	int v[3] = {sy, sx, 3};
 	Window oldw;
 /* !@#$ this code is sort of meaningless now
@@ -399,10 +405,6 @@ METHOD3(FormatX11,option) {
 	if (sym == SYM(out_size)) {
 		int sy = INT(argv[1]);
 		int sx = INT(argv[2]);
-		if (sy<16) sy=16;
-		if (sx<16) sx=16;
-		if (sy>MAX_INDICES) RAISE("height too big");
-		if (sx>MAX_INDICES) RAISE("width too big");
 		resize_window(sx,sy);
 	} else if (sym == SYM(draw)) {
 		int sy = dim->get(0);
@@ -485,15 +487,8 @@ METHOD3(FormatX11,init) {
 	shm_info= 0;
 #endif
 
-	if (argc<1) RAISE("not enough arguments");
+	VALUE domain = argc<1 ? SYM(here) : argv[0];
 
-	/*
-		{here}
-		{local 0}
-		{remote relayer 0}
-	*/
-
-	VALUE domain = argv[0];
 	int i;
 	// assert (ac>0);
 	if (domain==SYM(here)) {

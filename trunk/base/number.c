@@ -50,9 +50,14 @@ int low_bit(uint32 n) {
 #define CONVERT2 \
 	for (t=0,i=0; i<$->size; i++) t |= (((in[i] << hb[i]) >> 7) & mask[i]);
 
-#define WRITE_LE while (bytes--) { *out++ = t; t >>= 8; }
+#define WRITE_LE { \
+	int bytes = $->bytes; \
+	while (bytes--) { *out++ = t; t >>= 8; }}
 
-#define WRITE_BE while (bytes--) { out[bytes] = t; t >>= 8; } out += $->bytes;
+#define WRITE_BE { \
+	int bytes = $->bytes; \
+	while (bytes--) { out[bytes] = t; t >>= 8; } \
+	out += $->bytes; }
 
 /* those macros would be faster if the _increment_
    were done only once every loop. or maybe gcc does it, i dunno */
@@ -86,14 +91,14 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 		}
 	} else if ($->is_le()) {
 		if ($->size==3)
-			while (n--) {int bytes = $->bytes; CONVERT1; WRITE_LE; in+=3;}
+			while (n--) {CONVERT1; WRITE_LE; in+=3;}
 		else
-			while (n--) {int bytes = $->bytes; CONVERT2; WRITE_LE; in+=$->size;}
+			while (n--) {CONVERT2; WRITE_LE; in+=$->size;}
 	} else {
 		if ($->size==3)	
-			while (n--) {int bytes = $->bytes; CONVERT1; WRITE_BE; in+=3;}
+			while (n--) {CONVERT1; WRITE_BE; in+=3;}
 		else
-			while (n--) {int bytes = $->bytes; CONVERT2; WRITE_BE; in+=$->size;}
+			while (n--) {CONVERT2; WRITE_BE; in+=$->size;}
 	}
 	return out;
 }
@@ -331,14 +336,6 @@ NumberType number_type_table[] = {
 	DECL_TYPE(complex128,128),
 */
 };
-
-/* **************************************************************** */
-
-/* future use, put in grid.h */
-/* would be for optimising out stuff like "* 0" in convolution matrices... */
-#define RHAND_NULL 0
-#define RHAND_IDENTITY 1
-#define RHAND_OTHER 2
 
 /* **************************************************************** */
 
