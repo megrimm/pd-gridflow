@@ -39,7 +39,7 @@ extern "C" {
 
 #include "config.h"
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.2.3"
+#define VIDEO4JMAX_VERSION "0.3.0"
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef VIDEO4JMAX_FAST
