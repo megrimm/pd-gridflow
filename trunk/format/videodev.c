@@ -191,27 +191,27 @@ struct FormatVideoDev : Format {
 	void frame_finished (Pt<uint8> buf);
 
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
+	\decl void initialize2 ();
 	\decl void close ();
-	\decl void size (int sy, int sx);
 	\decl void alloc_image ();
 	\decl void dealloc_image ();
 	\decl void frame ();
 	\decl void frame_ask ();
-	\decl void norm (int value);
-	\decl void tuner (int value);
-	\decl void channel (int value);
-	\decl void frequency (int value);
-	\decl void transfer (Symbol sym, int queuemax=2);
-	\decl void colorspace (Symbol c);
-	\decl void initialize2 ();
 	\grin 0 int
 
-	\decl void get        (Symbol attr=0);
-	\decl void brightness (uint16 value);
-	\decl void hue        (uint16 value);
-	\decl void colour     (uint16 value);
-	\decl void contrast   (uint16 value);
-	\decl void whiteness  (uint16 value);
+	\decl void _0_size (int sy, int sx);
+	\decl void _0_norm (int value);
+	\decl void _0_tuner (int value);
+	\decl void _0_channel (int value);
+	\decl void _0_frequency (int value);
+	\decl void _0_transfer (Symbol sym, int queuemax=2);
+	\decl void _0_colorspace (Symbol c);
+	\decl void _0_get        (Symbol attr=0);
+	\decl void _0_brightness (uint16 value);
+	\decl void _0_hue        (uint16 value);
+	\decl void _0_colour     (uint16 value);
+	\decl void _0_contrast   (uint16 value);
+	\decl void _0_whiteness  (uint16 value);
 };
 
 #define DEBUG(args...) 42
@@ -234,7 +234,7 @@ struct FormatVideoDev : Format {
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
-\def void size (int sy, int sx) {
+\def void _0_size (int sy, int sx) {
 	int fd = GETFD;
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
@@ -368,7 +368,7 @@ GRID_INLET(FormatVideoDev,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void norm (int value) {
+\def void _0_norm (int value) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner;
@@ -382,7 +382,7 @@ GRID_INLET(FormatVideoDev,0) {
 	}
 }
 
-\def void tuner (int value) {
+\def void _0_tuner (int value) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
@@ -392,7 +392,7 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 }
 
-\def void channel (int value) {
+\def void _0_channel (int value) {
 	int fd = GETFD;
 	VideoChannel vchan;
 	vchan.channel = value;
@@ -403,12 +403,12 @@ GRID_INLET(FormatVideoDev,0) {
 	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 }
 
-\def void frequency (int value) {
+\def void _0_frequency (int value) {
 	int fd = GETFD;
 	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
 }
 
-\def void transfer (Symbol sym, int queuemax=2) {
+\def void _0_transfer (Symbol sym, int queuemax=2) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
@@ -431,11 +431,11 @@ GRID_INLET(FormatVideoDev,0) {
 	vp._name_ = value; \
 	WIOCTL(fd, VIDIOCSPICT, &vp);}
 
-\def void brightness (uint16 value) {PICTURE_ATTR(brightness)}
-\def void hue      (uint16 value)   {PICTURE_ATTR(hue)}
-\def void colour (uint16 value)     {PICTURE_ATTR(colour)}
-\def void contrast (uint16 value)   {PICTURE_ATTR(contrast)}
-\def void whiteness (uint16 value)  {PICTURE_ATTR(whiteness)}
+\def void _0_brightness (uint16 value) {PICTURE_ATTR(brightness)}
+\def void _0_hue      (uint16 value)   {PICTURE_ATTR(hue)}
+\def void _0_colour (uint16 value)     {PICTURE_ATTR(colour)}
+\def void _0_contrast (uint16 value)   {PICTURE_ATTR(contrast)}
+\def void _0_whiteness (uint16 value)  {PICTURE_ATTR(whiteness)}
 
 #define PICTURE_ATTR_GET(_name_) { \
 	int fd = GETFD; \
@@ -444,14 +444,14 @@ GRID_INLET(FormatVideoDev,0) {
 	Ruby argv[3] = {INT2NUM(1), SYM(_name_), INT2NUM(vp._name_)}; \
 	send_out(COUNT(argv),argv);}
 
-\def void get (Symbol attr) {
+\def void _0_get (Symbol attr) {
 	if (!attr) {
-		get(0,0,SYM(brightness));
-		get(0,0,SYM(hue       ));
-		get(0,0,SYM(colour    ));
-		get(0,0,SYM(contrast  ));
-		get(0,0,SYM(whiteness ));
-		get(0,0,SYM(frequency ));
+		_0_get(0,0,SYM(brightness));
+		_0_get(0,0,SYM(hue       ));
+		_0_get(0,0,SYM(colour    ));
+		_0_get(0,0,SYM(contrast  ));
+		_0_get(0,0,SYM(whiteness ));
+		_0_get(0,0,SYM(frequency ));
 	} else if (attr==SYM(brightness)) { PICTURE_ATTR_GET(brightness);
 	} else if (attr==SYM(hue       )) { PICTURE_ATTR_GET(hue       );
 	} else if (attr==SYM(colour    )) { PICTURE_ATTR_GET(colour    );
@@ -470,7 +470,7 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void colorspace (Symbol c) {
+\def void _0_colorspace (Symbol c) {
 	if (c==SYM(RGB24)) palette=VIDEO_PALETTE_RGB24;
 	else if (c==SYM(YUV420P)) palette=VIDEO_PALETTE_YUV420P;
 	else RAISE("supported: RGB24, YUV420P");
@@ -522,7 +522,7 @@ GRID_INLET(FormatVideoDev,0) {
 		}
 	}
 	gfpost("This card supports palettes: %s", buf);
-	colorspace(0,0,SYM(RGB24));
+	_0_colorspace(0,0,SYM(RGB24));
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
 	delete gp;
 }

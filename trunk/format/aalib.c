@@ -43,13 +43,13 @@ struct FormatAALib : Format {
 
 	FormatAALib () : context(0), autodraw(1) {}
 
-	\decl void hidecursor ();
-	\decl void print (int y, int x, int a, Symbol text);
-	\decl void draw ();
-	\decl void close ();
-	\decl void autodraw_m (int autodraw);
-	\decl void dump ();
 	\decl void initialize (Symbol mode, Symbol target);
+	\decl void close ();
+	\decl void _0_hidecursor ();
+	\decl void _0_print (int y, int x, int a, Symbol text);
+	\decl void _0_draw ();
+	\decl void _0_autodraw (int autodraw);
+	\decl void _0_dump ();
 	\grin 0 int
 };
 
@@ -107,26 +107,18 @@ GRID_INLET(FormatAALib,0) {
 	}
 }
 
-\def void hidecursor () {
-	aa_hidemouse(context);
-}
-
-\def void print (int y, int x, int a, Symbol text) {
+\def void _0_hidecursor () { aa_hidemouse(context); }
+\def void _0_draw () { aa_flush(context); }
+\def void _0_print (int y, int x, int a, Symbol text) {
 	aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(text));
 	if (autodraw==1) aa_flush(context);
 }
-
-\def void draw () {
-	aa_flush(context);
-}
-
-\def void autodraw_m (int autodraw) {
+\def void _0_autodraw (int autodraw) {
 	if (autodraw<0 || autodraw>1)
 		RAISE("autodraw=%d is out of range",autodraw);
 	this->autodraw = autodraw;
 }
-
-\def void dump () {
+\def void _0_dump () {
 	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
 	GridOutlet out(this,0,new Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
