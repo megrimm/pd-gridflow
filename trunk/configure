@@ -600,7 +600,7 @@ end
 
 f.puts "GRIDFLOW_LDSOFLAGS  = " + $conf[:LDSOFLAGS].join(" ")
 f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
-f.puts "CFLAGS += -I#{$conf[:JMAX_SOURCES]}/include " + $CFLAGS
+f.puts "CFLAGS += " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
 	f.puts "#{z}=yes"
@@ -666,12 +666,6 @@ f.puts "
 \#ifdef LIBMPEG_INCLUDE_HERE
 \#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
 \#endif
-\#ifdef JMAX_INCLUDE_HERE
-\#include \"#{$conf[:JMAX_SOURCES]}/include/fts/fts.h\"
-\#endif
-\#ifdef PUREDATA_INCLUDE_HERE
-\#include <m_pd.h>
-\#endif
 "
 end
 
@@ -692,15 +686,14 @@ create_makefile("gridflow")
 #p $rubylibdir
 mf = File.readlines("Makefile").join""
 #p mf.length
-mf.gsub!(/-c \$<$/,"-c \$< -o $@")
-mf.gsub!(/\*\.o/,"*.o */*.o")
-mf.sub!(/^install:.*/,"install: install2 site-install")
-mf.sub!(/^all:/,"all: all2 ")
-mf.sub!(/^clean:/,"clean: clean2 ")
-mf.gsub!(/^(site-)?install:\n\n/,"")
-
-#HACK
-#mf.gsub!(/.c.o:\n\t\$\(CC\)/,".c.o:\n\t\$\(CC\) -xc++")
+mf.gsub! /-c \$<$/, "-c \$< -o $@"
+mf.gsub! /\*\.o/, "*.o */*.o"
+mf.sub! /^install:.*/, "install: install2 site-install"
+mf.sub! /^all:/,"all: all2 "
+mf.sub! /^clean:/,"clean: clean2 "
+mf.gsub! /^(site-)?install:\n\n/,""
+mf.sub! /CC = gcc\n/, "CC = g++"
+mf.sub! /LDSHARED = gcc/, "LDSHARED = $(CC)"
 
 #jMax conflict resolution
 mf.gsub!(/prefix/,'rubyprefix')
@@ -713,7 +706,7 @@ f.puts "include Makefile.gf"
 make_makefile f
 f.close
 
-puts "$CFLAGS = #{$CFLAGS.inspect}"
+# puts "$CFLAGS = #{$CFLAGS.inspect}"
 
 =begin
 for z in [
