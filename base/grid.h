@@ -467,6 +467,7 @@ static bool  convert(Ruby x, bool  *foo) {
 	switch (TYPE(x)) {
 		case T_FIXNUM: return INT(x);
 		/*...*/
+		default: RAISE("can't convert to bool");
 	}
 }
 
@@ -709,23 +710,23 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 /* Operator objects encapsulate optimised loops of simple operations */
 
 template <class T>
-struct Operator1On : Object {
+struct Numop1On : Object {
 	typedef void (*Map)(int,T*);
 	Map op_map;
-	Operator1On(Map m) : op_map(m) {}
-	Operator1On() {}
-	Operator1On(const Operator1On &z) {
+	Numop1On(Map m) : op_map(m) {}
+	Numop1On() {}
+	Numop1On(const Numop1On &z) {
 		op_map = z.op_map; }
 };
 
-\class Operator1 < Object
-struct Operator1 : Object {
+\class Numop1 < Object
+struct Numop1 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
 #define FOO(T) \
-		Operator1On<T> on_##T; \
-		Operator1On<T> *on(T &foo) { \
+		Numop1On<T> on_##T; \
+		Numop1On<T> *on(T &foo) { \
 			if (!on_##T.op_map) RAISE("operator does not support this type"); \
 			return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
@@ -735,8 +736,8 @@ EACH_NUMBER_TYPE(FOO)
 		as.will_use(n);
 		on(*as)->op_map(n,(T *)as);}
 
-	Operator1(Ruby /*Symbol*/ sym_, const char *name_,
-#define FOO(T) Operator1On<T> op_##T, 
+	Numop1(Ruby /*Symbol*/ sym_, const char *name_,
+#define FOO(T) Numop1On<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	bool bogosity=0) : sym(sym_), name(name_) {
@@ -857,10 +858,10 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
 }
 
 #ifndef IS_BRIDGE
-static Operator1 *convert(Ruby x, Operator1 **bogus) {
+static Numop1 *convert(Ruby x, Numop1 **bogus) {
 	Ruby s = rb_hash_aref(op1_dict,x);
 	if (s==Qnil) RAISE("expected one-input-operator");
-	return FIX2PTR(Operator1,s);
+	return FIX2PTR(Numop1,s);
 }
 
 static Numop2 *convert(Ruby x, Numop2 **bogus) {
