@@ -116,6 +116,7 @@ Dict *Dict_new(HashFunc hf) {
 }
 
 int Dict_size(Dict *$) {
+	assert($->size>=0);
 	return $->size;
 }
 

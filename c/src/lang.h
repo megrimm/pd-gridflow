@@ -24,7 +24,6 @@
 #ifndef __GRIDFLOW_LANG_H
 #define __GRIDFLOW_LANG_H
 #include <stdlib.h>
-#include "config.h"
 
 #define $ self
 

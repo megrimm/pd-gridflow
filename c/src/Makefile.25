@@ -1,9 +1,10 @@
-ifndef ARCH
-ARCH=i686-linux
-endif
-
 include ../../config.make
 DISTDIR = $(JMAXROOTDIR)/fts
+
+# DISTDIR = $(JMAXROOTDIR)/fts
+# PACKAGEROOT = ..
+# PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
+# include $(JMAXDISTDIR)/Makefiles/Makefile.package
 
 PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
@@ -11,6 +12,52 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.package
 LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
 LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 
+### for hardcore malloc debugging; standalone only
+# LDSOFLAGS += -lefence
+
 ARCH_CFLAGS += -Wall -Wno-unused
 ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
 
+### standalone stuff
+include Sources
+OBJS = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
+FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
+LIB = ../lib2/libgridflow.so
+# LIB2 = /home/matju/lib/$(LIB)
+
+standalone: $(LIB)
+.PHONY: standalone
+
+clean-standalone:
+	rm -f ../lib2/* ../obj2/*
+.PHONY: standalone
+
+../obj2/nofts.o: nofts.c nofts.h grid.h lang.h config.h
+	[ -e ../obj2 ] || mkdir ../obj2
+	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
+
+../obj2/%.o: %.c grid.h lang.h config.h nofts.h ../obj2
+	[ -e ../obj2 ] || mkdir ../obj2
+	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
+
+$(LIB): $(OBJS) ../obj2/nofts.o ../lib2
+	[ -e ../lib2 ] || mkdir ../lib2
+	gcc -shared $(OBJS) ../obj2/nofts.o -o $@ $(LDSOFLAGS)
+
+#$(LIB2): $(LIB)
+#	install --mode=755 $(LIB) $(LIB2)
+
+test1: test1.c $(LIB)
+	gcc $(ARCH_CFLAGS) -DSTANDALONE test1.c $(LIB) -o $@
+
+test2: test2.c $(LIB)
+	gcc $(ARCH_CFLAGS) -DSTANDALONE test2.c $(LIB) -o $@
+
+#clean::
+#	rm libgridflow.so nofts.o $(OBJS)
+
+test:: test2
+	$(FIX_LD) ./test2
+
+mpeg_test: mpeg_test.c
+	gcc $(ARCH_CFLAGS) mpeg_test.c $(LIB) -o $@ -lmpeg
