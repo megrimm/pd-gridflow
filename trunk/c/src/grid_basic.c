@@ -60,7 +60,7 @@ METHOD(GridImport,delete) {
 METHOD(GridImport,int) {
 	Number data[] = { GET(0,int,0) };
 	GridOutlet *out = $->out[0];
-	if (GridOutlet_idle(out)) GridOutlet_propose(out,$->dim);
+	if (GridOutlet_idle(out)) GridOutlet_begin(out,$->dim);
 	GridOutlet_send(out,COUNT(data),data);
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_abort(out);
 }
@@ -104,11 +104,11 @@ struct GridExport {
 	Dim *dim;
 };
 
-void GridExport_acceptor(GridInlet *$) {
+void GridExport_0_begin(GridInlet *$) {
 	/* norhing to do */
 }
 
-void GridExport_processor(GridInlet *$, int n, const Number *data) {
+void GridExport_0_flow(GridInlet *$, int n, const Number *data) {
 	int i;
 /*	whine("grfunction(%p,%d,%p): %d",$,n,data,*data);*/
 	for (i=0; i<n; i++) {
@@ -126,8 +126,8 @@ METHOD(GridExport,init) {
 	GridInlet *in;
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = in = GridInlet_new((GridObject *)$, 0,
-		GridExport_acceptor,
-		GridExport_processor);
+		GridExport_0_begin,
+		GridExport_0_flow);
 
 	for (i=0; i<ac-1; i++) {
 		v[i] = GET(i+1,int,0);
@@ -180,7 +180,7 @@ struct GridStore {
 	int bufn;
 };
 
-void GridStore_acceptor0(GridInlet *$) {
+void GridStore_0_begin(GridInlet *$) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int na = Dim_count($->dim);
 	int nb;
@@ -214,7 +214,7 @@ void GridStore_acceptor0(GridInlet *$) {
 	}
 	for (i=0; i<na-1; i++) v[i] = Dim_get($->dim,i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get(parent->dim,i);
-	GridOutlet_propose(parent->out[0],Dim_new(nd,v));
+	GridOutlet_begin(parent->out[0],Dim_new(nd,v));
 	parent->buf = NEW2(Number,nc);
 	parent->bufn = 0;
 	whine("[r] %s",Dim_to_s(parent->out[0]->dim));
@@ -223,16 +223,7 @@ err:
 	GridInlet_abort($);
 }
 
-static inline int mod(int a, int b) {
-	if (a<0) a += b * (1-(a/b));
-	return a%b;
-/*
-	int r = a%b;
-	r += (-( (r<0) ^ (b<0) )) & y;
-*/
-}
-
-void GridStore_processor0(GridInlet *$, int n, const Number *data) {
+void GridStore_0_flow(GridInlet *$, int n, const Number *data) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	GridOutlet *out = parent->out[0];
 	int na = Dim_count($->dim);
@@ -270,7 +261,7 @@ void GridStore_processor0(GridInlet *$, int n, const Number *data) {
 	GridOutlet_flush(parent->out[0]);
 }
 
-void GridStore_acceptor1(GridInlet *$) {
+void GridStore_1_begin(GridInlet *$) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
@@ -281,7 +272,7 @@ void GridStore_acceptor1(GridInlet *$) {
 	parent->data = NEW2(Number,length);
 }
 
-void GridStore_processor1(GridInlet *$, int n, const Number *data) {
+void GridStore_1_flow(GridInlet *$, int n, const Number *data) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(Number)*n);
@@ -291,9 +282,9 @@ void GridStore_processor1(GridInlet *$, int n, const Number *data) {
 METHOD(GridStore,init) {
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridStore_acceptor0, GridStore_processor0);
+		GridStore_0_begin, GridStore_0_flow);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridStore_acceptor1, GridStore_processor1);
+		GridStore_1_begin, GridStore_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->data = 0;
@@ -308,7 +299,7 @@ METHOD(GridStore,bang) {
 		whine("empty buffer, better luck next time.");
 		return;
 	}
-	GridOutlet_propose($->out[0],$->dim);
+	GridOutlet_begin($->out[0],$->dim);
 	GridOutlet_send($->out[0],Dim_prod($->dim),$->data);
 }
 
@@ -426,13 +417,13 @@ struct GridOp2 {
 	Dim *dim;
 };
 
-void GridOp2_acceptor0(GridInlet *$) {
+void GridOp2_0_begin(GridInlet *$) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
-	GridOutlet_propose(parent->out[0],$->dim);
+	GridOutlet_begin(parent->out[0],$->dim);
 	$->dex = 0;
 }
 
-void GridOp2_processor0(GridInlet *$, int n, const Number *data) {
+void GridOp2_0_flow(GridInlet *$, int n, const Number *data) {
 	int i;
 	Number *data2 = NEW2(Number,n);
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
@@ -453,12 +444,12 @@ void GridOp2_processor0(GridInlet *$, int n, const Number *data) {
 	free(data2);
 /*
 	if ($->dex >= Dim_prod($->dim)) {
-		GridInlet_finish($);
+		GridInlet_end($);
 	}
 */
 }
 
-void GridOp2_acceptor1(GridInlet *$) {
+void GridOp2_1_begin(GridInlet *$) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
@@ -469,7 +460,7 @@ void GridOp2_acceptor1(GridInlet *$) {
 	parent->data = NEW2(Number,length);
 }
 
-void GridOp2_processor1(GridInlet *$, int n, const Number *data) {
+void GridOp2_1_flow(GridInlet *$, int n, const Number *data) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
@@ -483,9 +474,9 @@ METHOD(GridOp2,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridOp2_acceptor0, GridOp2_processor0);
+		GridOp2_0_begin, GridOp2_0_flow);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridOp2_acceptor1, GridOp2_processor1);
+		GridOp2_1_begin, GridOp2_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for(i=0; i<COUNT(optable); i++) {
@@ -516,7 +507,7 @@ METHOD(GridOp2,bang) {
 		whine("empty buffer, better luck next time.");
 		return;
 	}
-	GridOutlet_propose($->out[0],$->dim);
+	GridOutlet_begin($->out[0],$->dim);
 	GridOutlet_send($->out[0],Dim_prod($->dim),$->data);
 }
 

@@ -75,8 +75,17 @@ DECL_SYM(close)
 DECL_SYM(reset)
 DECL_SYM(autodraw)
 DECL_SYM(grid_begin)
-DECL_SYM(grid_packet)
+DECL_SYM(grid_flow)
 DECL_SYM(grid_end)
+
+static inline int mod(int a, int b) {
+	if (a<0) a += b * (1-(a/b));
+	return a%b;
+/*
+	int r = a%b;
+	r += (-( (r<0) ^ (b<0) )) & y;
+*/
+}
 
 /* not used for now
 typedef enum {

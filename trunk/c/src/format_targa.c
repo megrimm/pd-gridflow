@@ -101,13 +101,13 @@ Number *FormatTarga_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatTarga_accept (FileFormat *$, Dim *dim) {
+void FormatTarga_begin (FileFormat *$, Dim *dim) {
 }
 
-void FormatTarga_process (FileFormat *$, int n, const Number *data) {
+void FormatTarga_flow (FileFormat *$, int n, const Number *data) {
 }
 
-void FormatTarga_finish (FileFormat *$) {
+void FormatTarga_end (FileFormat *$) {
 }
 
 void FormatTarga_close (FileFormat *$) {
@@ -118,16 +118,16 @@ void FormatTarga_close (FileFormat *$) {
 FileFormat *FormatTarga_open (const char *filename, int mode) {
 	const char *modestr;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass   = &FormatTarga;
-	$->frames  = 0;
-	$->frame   = FormatTarga_frame;
-	$->size    = 0;
-	$->read    = FormatTarga_read;
-	$->accept  = FormatTarga_accept;
-	$->process = FormatTarga_process;
-	$->finish  = FormatTarga_finish;
-	$->close   = FormatTarga_close;
-	$->stuff = NEW(int,4);
+	$->qlass  = &FormatTarga;
+	$->frames = 0;
+	$->frame  = FormatTarga_frame;
+	$->size   = 0;
+	$->read   = FormatTarga_read;
+	$->begin  = FormatTarga_begin;
+	$->flow   = FormatTarga_flow;
+	$->end    = FormatTarga_end;
+	$->close  = FormatTarga_close;
+	$->stuff  = NEW(int,4);
 
 	switch(mode) {
 //	case 4: case 2: break;

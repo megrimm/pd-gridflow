@@ -87,7 +87,7 @@ Number *FormatPPM_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatPPM_accept (FileFormat *$, Dim *dim) {
+void FormatPPM_begin (FileFormat *$, Dim *dim) {
 	$->dim = dim;
 	fprintf($->stream,
 		"P6\n"
@@ -100,14 +100,14 @@ void FormatPPM_accept (FileFormat *$, Dim *dim) {
 	fflush($->stream);
 }
 
-void FormatPPM_process (FileFormat *$, int n, const Number *data) {
+void FormatPPM_flow (FileFormat *$, int n, const Number *data) {
 	uint8 data2[n];
 	int i;
 	for (i=0; i<n; i++) data2[i] = data[i];
 	fwrite(data2,1,n,$->stream);
 }
 
-void FormatPPM_finish (FileFormat *$) {
+void FormatPPM_end (FileFormat *$) {
 	fflush($->stream);
 	fseek($->stream,0,SEEK_SET);
 }
@@ -120,15 +120,15 @@ void FormatPPM_close (FileFormat *$) {
 FileFormat *FormatPPM_open (const char *filename, int mode) {
 	const char *modestr;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass   = &FormatPPM;
-	$->frames  = 0;
-	$->frame   = FormatPPM_frame;
-	$->size    = 0;
-	$->read    = FormatPPM_read;
-	$->accept  = FormatPPM_accept;
-	$->process = FormatPPM_process;
-	$->finish  = FormatPPM_finish;
-	$->close   = FormatPPM_close;
+	$->qlass  = &FormatPPM;
+	$->frames = 0;
+	$->frame  = FormatPPM_frame;
+	$->size   = 0;
+	$->read   = FormatPPM_read;
+	$->begin  = FormatPPM_begin;
+	$->flow   = FormatPPM_flow;
+	$->end    = FormatPPM_end;
+	$->close  = FormatPPM_close;
 
 	$->stuff = NEW(int,3); /* huh? */
 

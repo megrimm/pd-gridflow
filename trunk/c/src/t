@@ -22,9 +22,10 @@ SRC='video_out.c grid_basic.c grid.c grid.h'
 #FILE=$SAM/vin_file_test_1.jmax
 #FILE=$SAM/vin_file_test_2.jmax
 #FILE=$SAM/outside/linear_transform.jmax
- FILE=$SAM/outside/feedback_fractal_2.jmax
+#FILE=$SAM/outside/feedback_fractal_2.jmax
 #FILE=$SAM/feedback_fractal.jmax
 #FILE=$SAM/cross_fade.jmax
+ FILE=$SAM/binary_operations.jmax
 
 #export DISPLAY=:1
 ulimit -c unlimited
