@@ -60,3 +60,7 @@
 # WINDOWS FILES
 *.lnk -k 'b'
 
+# JMAX/PD FILES (matju)
+*.jmax -k 'b'
+*.pd -k 'b'
+
