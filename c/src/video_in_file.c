@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "video4jmax.h"
 #include "grid.h"
 
 /* return and complain when file not open */
