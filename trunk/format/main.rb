@@ -149,8 +149,9 @@ class Format #< GridObject
 	def headerless(*args) #!@#$ goes in FormatGrid ?
 		args=args[0] if Array===args[0]
 		#raise "expecting dimension list..."
-		args.each {|a|
-			Integer===a or raise "expecting dimension list..."
+		args.map! {|a|
+			Numeric===a or raise "expecting dimension list..."
+			a.to_i
 		}
 		@headerless = args
 	end
@@ -693,8 +694,9 @@ class FormatGrid < Format; include EventIO
 	def headerless(*args)
 		args=args[0] if Array===args[0]
 		#raise "expecting dimension list..."
-		args.each {|a|
-			Integer===a or raise "expecting dimension list..."
+		args.map! {|a|
+			Numeric===a or raise "expecting dimension list..."
+			a.to_i
 		}
 		@headerless = args
 	end
