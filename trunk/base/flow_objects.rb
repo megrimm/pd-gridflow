@@ -27,6 +27,9 @@ module GridFlow
 
 # a dummy class that gives access to any stuff global to GridFlow.
 class GridGlobal < FObject
+	def _0_bang
+		GridFlow.tick
+	end
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.total_time = 0 }
 		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
@@ -566,11 +569,11 @@ class JMax4UDPSend < FObject
 
 	def method_missing(sel,*args)
 		sel=sel.to_s.sub(/^_\d_/, "")
-		@socket.send (case sel
+		@socket.send((case sel
 			when "int","float"; ""
 			else encode(sel) end) +
 			args.map{|arg| encode(arg) }.join("") + "\x0f",
-			0, @host, @port
+			0, @host, @port)
 	end
 
 	def delete
@@ -621,6 +624,59 @@ class JMaxUDPReceive < FObject
 	end
 
 	install "jmax_udpreceive", 0, 2
+end
+
+class JMax4UDPReceive < FObject
+	def initialize(port)
+		super
+		@socket = UDPSocket.new
+		@port = port.to_i
+		@socket.bind "localhost", @port
+#		@socket.nonblock = true
+		$tasks[self] = proc {tick}
+		@symbols = {}
+	end
+
+	def decode s
+		n = s.length
+		i=0
+		m = []
+		case s[i]
+		when 1; i+=5; m << s[i-4,4].unpack("N")[0]
+		when 2; i+=9; m << s[i-8,8].unpack("G")[0]
+		when 3
+			i+=5; sid = s[i-4,4].unpack("N")[0]
+			m << @symbols[sid]
+		when 4
+			i+=5; sid = s[i-4,4].unpack("N")[0]
+			i2=s.index("\x00",i)
+			@symbols[sid] = s[i..i2-1].intern
+			m << @symbols[sid]
+			i=i2+1
+		when 15; break
+		#else raise "unknown code in udp packet"
+		else GridFlow.post "unknown code %d in udp packet %s", s[i], s.inspect; return m
+		end while i<n
+		m
+	end
+
+	def tick
+		ready_to_read = IO.select [@socket],[],[],0
+		return if not ready_to_read
+#		GridFlow.post "recvfrom: before"
+		data,sender = @socket.recvfrom 1024
+#		GridFlow.post "recvfrom: after"
+		return if not data
+#		GridFlow.post "#{data.inspect}"
+		send_out 1, sender.map {|x| x=x.intern if String===x; x }
+		send_out 0, *(decode data)
+	end
+
+	def delete
+		@socket.close
+	end
+
+	install "jmax4_udpreceive", 0, 2
 end
 
 class Broken < FObject
