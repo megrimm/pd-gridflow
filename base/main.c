@@ -44,26 +44,6 @@ static bool has_int = true;
 Ruby mGridFlow;
 Ruby cFObject;
 
-uint64 gf_num2ull(Ruby val) {
-    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
-	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-int64 gf_num2ll(Ruby val) {
-    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
-	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-
-Ruby gf_ull2num(uint64 val) {
-    return rb_funcall(
-	rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
-	SI(+),1,UINT2NUM((uint32)val));}
-Ruby gf_ll2num(int64 val) {
-    return rb_funcall(
-	rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
-	SI(+),1,UINT2NUM((uint32)val));}
-
 extern "C"{
 void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
@@ -123,7 +103,7 @@ char *Dim::to_s() {
 	char buf[256];
 	char *s = buf;
 	s += sprintf(s,"Dim[");
-	for(int i=0; i<n; i++) s += sprintf(s,"%s%ld", ","+!i, v[i]);
+	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
 	s += sprintf(s,"]");
 	return strdup(buf);
 }
@@ -419,9 +399,8 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
+static Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
 	FClass *fc = FIX2PTR(FClass,fc_);
-	//printf("fclass_install %s\n",fc->name);
 	Ruby rself = super!=Qnil ?
 		rb_define_class_under(mGridFlow, fc->name, super) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
