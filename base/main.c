@@ -132,7 +132,7 @@ bool qfree(void *data, bool fadedfoo) {
 
 static VALUE GridFlow_alloctrace_to_a (VALUE self, VALUE p) {
 	AllocTrace *al = (AllocTrace *)FIX2PTR(p);
-	VALUE a = rb_ary_new2(3);
+	VALUE a = rb_ary_new2(5);
 	rb_ary_push(a,PTR2FIX(al->data));
 	rb_ary_push(a,INT2NUM(al->n));
 	rb_ary_push(a,rb_str_new2(al->type));
@@ -295,10 +295,8 @@ static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 /* Procs of somewhat general utility */
 
 void define_many_methods(VALUE $, int n, MethodDecl *methods) {
-	VALUE args[16]; /* not really used anymore */
-	int i;
 /*	fprintf(stderr,"here are %d methods:\n",n); */
-	for (i=0; i<n; i++) {
+	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		const char *buf = strcmp(md->selector,"init")==0 ?
 			"initialize" : md->selector;

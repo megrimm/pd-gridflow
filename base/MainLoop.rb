@@ -59,7 +59,7 @@ to reschedule themselves without hogging resources.
 =end
 
 class TimerQueue
-	TimerEntry = Struct.new("TimerEntry",:time,:message)
+	TimerEntry = Struct.new(:time,:message)
 	def initialize(message_queue)
 		@queue = []
 		@message_queue = message_queue
