@@ -41,10 +41,12 @@ typedef video_picture    VideoPicture   ;
 typedef video_mbuf       VideoMbuf      ;
 typedef video_mmap       VideoMmap      ;
 
-#define FLAG(_num_,_name_,_desc_) #_name_,
-#define  OPT(_num_,_name_,_desc_) #_name_,
+/* !@#$ all those consts should be made available to the Ruby side... see usb.c */
+struct named_int {const char *name; int v;};
+#define FLAG(_num_,_name_,_desc_) {#_name_,   _num_},
+#define  OPT(_num_,_name_,_desc_) {#_name_,1<<_num_},
 
-static const char *video_type_flags[] = {
+static named_int video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
 	FLAG( 2,TELETEXT,      "Does teletext")
@@ -61,7 +63,7 @@ static const char *video_type_flags[] = {
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
 };
 
-static const char *tuner_flags[] = {
+static named_int tuner_flags[] = {
 	FLAG(0,PAL,      "")
 	FLAG(1,NTSC,     "")
 	FLAG(2,SECAM,    "")
@@ -74,13 +76,13 @@ static const char *tuner_flags[] = {
 	FLAG(9,MBS_ON,   "Tuner is seeing an MBS datastream")
 };
 
-static const char *channel_flags[] = {
+static named_int channel_flags[] = {
 	FLAG(0,TUNER,"")
 	FLAG(1,AUDIO,"")
 	FLAG(2,NORM ,"")
 };
 
-static const char *video_palette_choice[] = {
+static named_int video_palette_choice[] = {
 	OPT( 0,NIL,     "(nil)")
 	OPT( 1,GREY,    "Linear greyscale")
 	OPT( 2,HI240,   "High 240 cube (BT848)")
@@ -100,7 +102,7 @@ static const char *video_palette_choice[] = {
 	OPT(16,YUV410P, "YUV 4:1:0 Planar")
 };
 
-static const char *video_mode_choice[] = {
+static named_int video_mode_choice[] = {
 	OPT( 0,PAL,  "pal")
 	OPT( 1,NTSC, "ntsc")
 	OPT( 2,SECAM,"secam")
@@ -127,25 +129,25 @@ static const char *video_mode_choice[] = {
 		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	delete[] foo;}
 
-static char *flags_to_s(int value, int n, const char **table) {
+static char *flags_to_s(int value, int n, named_int *table) {
 	char foo[256];
 	*foo = 0;
 	for(int i=0; i<n; i++) {
 		if ((value & (1<<i)) == 0) continue;
 		if (*foo) strcat(foo," | ");
-		strcat(foo,table[i]);
+		strcat(foo,table[i].name);
 	}
 	if (!*foo) strcat(foo,"0");
 	return strdup(foo);
 }
 
-static char *choice_to_s(int value, int n, const char **table) {
+static char *choice_to_s(int value, int n, named_int *table) {
 	if (value < 0 || value >= n) {
 		char foo[64];
 		sprintf(foo,"(Unknown #%d)",value);
 		return strdup(foo);
 	} else {
-		return strdup(table[value]);
+		return strdup(table[value].name);
 	}
 }
 
@@ -254,6 +256,7 @@ struct FormatVideoDev : Format {
 	\decl void initialize2 ();
 	GRINLET3(0);
 
+	\decl void get        (Symbol attr=0);
 	\decl void brightness (uint16 value);
 	\decl void hue        (uint16 value);
 	\decl void colour     (uint16 value);
@@ -488,6 +491,27 @@ GRID_INLET(FormatVideoDev,0) {
 \def void whiteness (uint16 value) {
 	PICTURE_ATTR(whiteness)}
 
+#define PICTURE_ATTR_GET(_name_) \
+	int fd = GETFD; \
+	VideoPicture vp; \
+	WIOCTL(fd, VIDIOCGPICT, &vp); \
+	{Ruby argv[3] = {INT2NUM(1), SYM(_name_), INT2NUM(vp._name_)}; send_out(COUNT(argv),argv);}
+
+\def void get (Symbol attr) {
+	if (!attr) {
+		get(0,0,SYM(brightness));
+		get(0,0,SYM(hue       ));
+		get(0,0,SYM(colour    ));
+		get(0,0,SYM(contrast  ));
+		get(0,0,SYM(whiteness ));
+	} else if (attr==SYM(brightness)) { PICTURE_ATTR_GET(brightness);
+	} else if (attr==SYM(hue))        { PICTURE_ATTR_GET(hue       );
+	} else if (attr==SYM(colour))     { PICTURE_ATTR_GET(colour    );
+	} else if (attr==SYM(contrast))   { PICTURE_ATTR_GET(contrast  );
+	} else if (attr==SYM(whiteness))  { PICTURE_ATTR_GET(whiteness );
+	} else { RAISE("What you say?"); }
+}
+
 \def void close () {
 	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
@@ -539,7 +563,7 @@ GRID_INLET(FormatVideoDev,0) {
 		ioctl(fd, VIDIOCGPICT, gp);
 		if (gp->palette == i) {
 			if (*buf) strcpy(buf+strlen(buf),", ");
-			strcpy(buf+strlen(buf),video_palette_choice[i]);
+			strcpy(buf+strlen(buf),video_palette_choice[i].name);
 		}
 	}
 	gfpost("This card supports palettes: %s", buf);
@@ -557,8 +581,6 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
 	rb_funcall(rself,SI(initialize2),0);
-	/* Sometimes a pause is needed here (?) */
-	usleep(200000);
 }
 
 /* **************************************************************** */

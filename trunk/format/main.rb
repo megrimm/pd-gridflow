@@ -204,7 +204,7 @@ module GridIO
 		_0_close if @format
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
-		#@format.connect 1,self,2
+		@format.connect 1,self,2
 		@format.parent = self
 		@loop = true
 	end
@@ -232,9 +232,16 @@ module GridIO
 
 	def method_missing(*message)
 		sel = message[0].to_s
-		sel =~ /^_0_/ or return super
-		message[0] = sel.sub(/^_0_/,"").intern
-		_0_option(*message)
+		if sel =~ /^_0_/
+			message[0] = sel.sub(/^_0_/,"").intern
+			_0_option(*message)
+		elsif sel =~ /^_2_/
+			sel = sel.sub(/^_2_/,"").intern
+			message.shift
+			send_out 1, sel, *message
+		else
+			return super
+		end
 	end
 
 	def _0_close
@@ -459,7 +466,7 @@ module EventIO
 			end unless @rewind_redefined
 			@rewind_redefined = true
 		when :tcp
-			if VERSION < "1.6.6"
+			if RUBY_VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
 			end
 			GridFlow.post "-----------"
@@ -728,7 +735,7 @@ module PPMandTarga
 		n = bs*height
 		bs = (self.class.buffersize/bs)*bs+bs # smallest multiple of bs over BufferSize
 		buf = ""
-		if VERSION >= "1.8.0" and false
+		if RUBY_VERSION >= "1.8.0" and false
 			data = "x"*bs # must preallocate (bug in 1.8.0.pre1-3)
 			while n>0 do
 				bs=n if bs>n
