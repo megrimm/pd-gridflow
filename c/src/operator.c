@@ -77,6 +77,9 @@ DEF_OP2(and, a&b)
 DEF_OP2(shl, a<<b)
 DEF_OP2(shr, a>>b)
 
+DEF_OP2(sc_and, a ? b : a)
+DEF_OP2(sc_or,  a ? a : b)
+
 DEF_OP2(min, a<b?a:b)
 DEF_OP2(max, a>b?a:b)
 
@@ -111,6 +114,9 @@ Operator2 op2_table[] = {
 	DECL_OP2(and, "&"),
 	DECL_OP2(shl, "<<"),
 	DECL_OP2(shr, ">>"),
+
+	DECL_OP2(sc_and,"&&"),
+	DECL_OP2(sc_or, "||"),
 
 	DECL_OP2(min, "min"),
 	DECL_OP2(max, "max"),

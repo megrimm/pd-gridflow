@@ -171,6 +171,7 @@ void *qalloc(size_t n) {
 
 }
 
+/* not used yet */
 void *qalloc2(size_t n) {
 	void *data = malloc(n);
 #ifdef MAKE_TMP_LOG_ALLOC
