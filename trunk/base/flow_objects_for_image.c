@@ -75,8 +75,8 @@ struct GridConvolve : GridObject {
 	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
-	GRINLET3(0);
-	GRINLET3(1);
+	\grin 0
+	\grin 1
 };
 
 template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x) {
@@ -186,7 +186,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	if (r) this->b=r;
 }
 
-GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0),GRINLET4(GridConvolve,1)),
+GRCLASS(GridConvolve,
 	\grdecl
 ) { IEVAL(rself,"install '@convolve',2,1"); }
 
@@ -201,8 +201,8 @@ struct GridScaleBy : GridObject {
 	int scaley;
 	int scalex;
 	\decl void initialize (Grid *factor=0);
-	GRINLET3(0);
-	GRINLET3(1);
+	\grin 0
+	\grin 1
 	void prepare_scale_factor () {
 		scaley = ((Pt<int32>)*scale)[0];
 		scalex = ((Pt<int32>)*scale)[scale->dim->prod()==1 ? 0 : 1];
@@ -270,7 +270,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0),GRINLET(GridScaleBy,1)),
+GRCLASS(GridScaleBy,
 	\grdecl
 ) { IEVAL(rself,"install '@scale_by',2,1"); }
 
@@ -288,8 +288,8 @@ struct GridDownscaleBy : GridObject {
 	int scalex;
 	PtrGrid temp;
 	\decl void initialize (Grid *factor=0, Symbol option=Qnil);
-	GRINLET3(0);
-	GRINLET3(1);
+	\grin 0
+	\grin 1
 	void prepare_scale_factor () {
 		scaley = ((Pt<int32>)*scale)[0];
 		scalex = ((Pt<int32>)*scale)[scale->dim->prod()==1 ? 0 : 1];
@@ -397,7 +397,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0),GRINLET(GridDownscaleBy,1)),
+GRCLASS(GridDownscaleBy,
 	\grdecl
 ) { IEVAL(rself,"install '@downscale_by',2,1"); }
 
@@ -409,8 +409,8 @@ GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0),GRINLET(GridDownscaleBy
 struct GridLayer : GridObject {
 	PtrGrid r;
 	GridLayer() { r.constrain(expect_rgb_picture); }
-	GRINLET3(0);
-	GRINLET3(1);
+	\grin 0 int
+	\grin 1 int
 };
 
 GRID_INLET(GridLayer,0) {
@@ -440,7 +440,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-GRCLASS(GridLayer,LIST(GRINLET2(GridLayer,0),GRINLET2(GridLayer,1)),
+GRCLASS(GridLayer,
 	\grdecl
 ) { IEVAL(rself,"install '@layer',2,1"); }
 
@@ -470,10 +470,9 @@ struct DrawPolygon : GridObject {
 		polygon.constrain(expect_polygon);
 	}
 	\decl void initialize (Numop2 *op, Grid *color=0, Grid *polygon=0);
-	GRINLET3(0);
-	GRINLET3(1);
-	GRINLET3(2);
-
+	\grin 0
+	\grin 1
+	\grin 2 int32
 	void init_lines();
 
 };
@@ -572,7 +571,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0),GRINLET4(DrawPolygon,1),GRINLET(DrawPolygon,2)),
+GRCLASS(DrawPolygon,
 	\grdecl
 ) { IEVAL(rself,"install '@draw_polygon',3,1"); }
 
@@ -602,10 +601,9 @@ struct DrawImage : GridObject {
 	\decl void initialize (Numop2 *op, Grid *image=0, Grid *position=0);
 	\decl void _0_alpha (bool v=true);
 	\decl void _0_tile (bool v=true);
-	GRINLET3(0);
-	GRINLET3(1);
-	GRINLET3(2);
-
+	\grin 0
+	\grin 1
+	\grin 2 int32
 	/* draw row # ry of right image in row buffer buf, starting at xs */
 	/* overflow on both sides has to be handled automatically by this method */
 	template <class T> void draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0);
@@ -714,7 +712,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0),GRINLET4(DrawImage,1),GRINLET(DrawImage,2)),
+GRCLASS(DrawImage,
 	\grdecl
 ) { IEVAL(rself,"install '@draw_image',3,1"); }
 

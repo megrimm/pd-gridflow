@@ -163,8 +163,11 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-void GridInlet::begin(int argc, Ruby *argv) {
+Ruby GridInlet::begin(int argc, Ruby *argv) {
 	TRACE;
+	assert(this);
+	//for (int i=0; i<argc; i++) gfpost("%s",rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
+	if (!argc) return PTR2FIX(this);
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
 	nt = (NumberTypeE) INT(argv[2]);
 	argc-=3, argv+=3;
@@ -188,10 +191,11 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	int r = rb_ensure(
 		(RMethod)GridInlet_begin_1,(Ruby)this,
 		(RMethod)GridInlet_begin_2,(Ruby)this);
-	if (!r) {abort(); return;}
+	if (!r) {abort(); goto hell;}
 	this->dim = dim;
 	back_out->callback(this);
-	} // PROF
+	hell:;} // PROF
+	return Qnil;
 }
 
 template <class T>
@@ -504,13 +508,13 @@ GridObject::~GridObject() {check_magic();}
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
 		RAISE("not a GridObject subclass ???");
 	int noutlets = convert(rb_ivar_get(qlass,SI(@noutlets)),(int*)0);
-	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
+/*	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
 	if (handlers!=Qnil) {
 		for (int i=0; i<rb_ary_len(handlers); i++) {
 			GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
 			in[gh->winlet] = new GridInlet(this,gh);
 		}
-	}
+	}*/
 	rb_call_super(argc,argv);
 }
 
@@ -627,31 +631,23 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 }
 
 \def Ruby method_missing (...) {
-	static const char *names[] = {"grid","list","int","float"};
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	const char *name = rb_sym_name(argv[0]);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
-		P<GridInlet> inl = in[i];
-		int m;
-		for (m=0; m<COUNT(names); m++)
-			if (strcmp(name+3,names[m])==0) break;
-		if (m==COUNT(names)) goto hell;
-		if (!inl) RAISE("inlet #%d missing for object %s",i,args());
-		argc--, argv++;
-		switch(m) {
-		case 0: return inl->begin(         argc,argv), Qnil;
-		case 1: return inl->from_ruby_list(argc,argv), Qnil;
-		case 2: return inl->from_ruby(     argc,argv), Qnil;
-		case 3: return inl->from_ruby(     argc,argv), Qnil;
-		}
-		return Qnil;
+		char foo[42];
+		sprintf(foo,"_%d_grid",i);
+		if (strcmp(name+3,"grid" )==0) goto hell;
+		P<GridInlet> inl = FIX2PTR(GridInlet,rb_funcall(rself,rb_intern(foo),0));
+		if (strcmp(name+3,"list" )==0) return inl->from_ruby_list(argc-1,argv+1), Qnil;
+		if (strcmp(name+3,"int"  )==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
+		if (strcmp(name+3,"float")==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
 	}
 	hell: return rb_call_super(argc,argv);
 }
 
-GRCLASS(GridObject,LIST(),
+GRCLASS(GridObject,
 	\grdecl
 ){
 	IEVAL(rself,"install 'GridObject',0,0");

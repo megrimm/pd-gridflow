@@ -339,7 +339,7 @@ public:
 // Device usb_device(USB dev);
 // get_string and get_string_simple (not present in libusb 0.1.4)
 
-GRCLASS(USB,LIST(),
+GRCLASS(USB,
 	\grdecl
 ){}
 
