@@ -2,7 +2,7 @@ $keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
 
-ClassDecl = Struct.new(:name,:supername,:methods,:grins)
+ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
 Arg = Struct.new(:type,:name,:default)
 
@@ -28,7 +28,7 @@ def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	#STDERR.puts "class: #{line}"
 	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
-	q=ClassDecl.new($1,$2,{},{})
+	q=ClassDecl.new($1,$2.length>0?$2:"FObject",{},{},{})
 	$stack << q
 	$classes << q
 	Out.puts ""
@@ -70,6 +70,7 @@ def where
 end
 
 def handle_attr(line)
+	fields = line.split(/\s+/)
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	#$stack[-1].attrs[]
@@ -77,7 +78,6 @@ def handle_attr(line)
 end
 
 def handle_decl(line)
-	#STDERR.puts "decl: #{line}"
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	classname = $stack[-1].name
@@ -86,13 +86,12 @@ def handle_decl(line)
 
 	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
-	Out.puts "#{unparse_arglist m.arglist});//FCS"
+	Out.print "#{unparse_arglist m.arglist});"
 	Out.puts "static Ruby #{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself);//FCS"
 end
 
 def handle_def(line)
-	#STDERR.puts "def: #{line}"
 	m = parse_methoddecl(line,"{?.*$")
 	term = line[/\{.*/]
 	qlass = $stack[-1]
@@ -184,7 +183,6 @@ def handle_grin(line)
 	Out.print "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);"
 	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, int n, Pt<T> data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
-#		((C*)(in->parent))->grin_##I(in,n,data); }
 	handle_decl "Ruby _#{i}_grid(...);"
 	$stack[-1].grins[i] = fields.dup
 end
@@ -208,6 +206,7 @@ def handle_end(line)
 			else raise 'BORK BORK BORK' end
 			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN#{k}(#{cl},#{i});"
 			handle_def "Ruby _#{i}_grid(...) {"+
+				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
 				"return in[#{i}]->begin(argc,argv);}"
 		}
@@ -220,7 +219,7 @@ def handle_end(line)
 end
 
 def handle_startall(line)
-	$classes.each {|q| Out.print "fclass_install(&ci#{q.name});" }
+	$classes.each {|q| Out.print "fclass_install(&ci#{q.name},EVAL(\"GridFlow::#{q.supername}\"));" }
 	Out.puts ""
 end
 
