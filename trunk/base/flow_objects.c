@@ -1354,9 +1354,9 @@ GRID_INLET(GridGrade,0) {
 	STACK_ARRAY(T,bar,m);
 	for (;n;n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
-		qsort(foo,in->factor,sizeof(T),GradeFunction<T>::comparator);
-		for (int i=0; i<m; i++) bar[i] = foo[i]-foo[0];
-		out[0]->send(in->factor,bar);
+		qsort(foo,m,sizeof(T),GradeFunction<T>::comparator);
+		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
+		out[0]->send(m,bar);
 	}
 } GRID_FINISH {
 } GRID_END

@@ -164,7 +164,7 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	post("BFObject_delete_1 says hello %08x\n",(int)fm->self);
+	post("BFObject_delete_1: deleting object # %08x\n",(int)fm->self);
 	rb_funcall(fm->self->peer,SI(delete),0);
 }
 

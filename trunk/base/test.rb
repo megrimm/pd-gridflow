@@ -264,6 +264,15 @@ def test_new_classes
 	a.connect 0,e,0
 	x.expect([0,2,4,6,8,9,7,5,3,1]) { a.send_in 0, 0,9,1,8,2,7,3,6,4,5 }
 	x.expect([0,9,1,8,2,7,3,6,4,5]) { a.send_in 0, 0,2,4,6,8,9,7,5,3,1 }
+	x.expect([7,6,5,4,3,2,1,0]) { a.send_in 0, 7,6,5,4,3,2,1,0 }
+
+	a = FObject["@grade"]
+	b = FObject["@fold +"]
+	a.connect 0,b,0
+	b.connect 0,e,0
+	x.expect([100*99/2]) { a.send_in 0, (0...100).map { (rand*0x10000).to_i }}
+	x.expect([100*99/2]) { a.send_in 0, (0...100).map { (rand*0x10).to_i }}
+	x.expect([100*99/2]) { a.send_in 0, (0...100).map { 0 }}
 end
 
 def test_rtmetro
