@@ -44,7 +44,7 @@ typedef enum Symbol {
 
 typedef Symbol fts_type_t;
 
-typedef struct fts_atom_t {
+typedef struct Var {
 	fts_type_t type;
 	union {
 		int i;
@@ -52,11 +52,11 @@ typedef struct fts_atom_t {
 		Symbol s;
 		void *p;
 	} v;
-} fts_atom_t;
+} Var;
 
 typedef struct fts_object_t fts_object_t;
 
-typedef void (*fts_method_t)(fts_object_t *,int,Symbol,int,const fts_atom_t *);
+typedef void (*fts_method_t)(fts_object_t *,int,Symbol,int,const Var *);
 
 typedef struct fts_class_t {
 	Symbol name;
@@ -72,7 +72,7 @@ struct fts_object_t {
 		fts_class_t *cl;
 	} head;
 	int argc;
-	fts_atom_t *argv;
+	Var *argv;
 	char *error;
 	List **outlets;
 };
@@ -87,13 +87,13 @@ typedef struct fts_module_t {
 typedef struct fts_clock_t {
 } fts_clock_t;
 
-typedef struct fts_alarm_t {
+typedef struct Timer {
 	fts_clock_t *clock;
-	void (*f)(struct fts_alarm_t *$, void *data);
+	void (*f)(struct Timer *$, void *data);
 	void *data;
 	double time;
 	int armed;
-} fts_alarm_t;
+} Timer;
 
 #define post printf
 #define fts_SystemInlet (-1)
@@ -105,58 +105,61 @@ void fts_method_define_optargs(fts_class_t *, int winlet, Symbol
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
 int fts_file_open(const char *name, const char *mode);
 
-int fts_is_int(const fts_atom_t *);
-int fts_is_float(const fts_atom_t *);
-int fts_is_symbol(const fts_atom_t *);
+bool Var_has_int(const Var *);
+bool Var_has_float(const Var *);
+bool Var_has_symbol(const Var *);
+bool Var_has_ptr(const Var *);
 
-int fts_get_int(const fts_atom_t *);
-int fts_get_float(const fts_atom_t *);
-int fts_get_symbol(const fts_atom_t *);
-void *fts_get_ptr(const fts_atom_t *);
+int Var_get_int(const Var *);
+float Var_get_float(const Var *);
+Symbol Var_get_symbol(const Var *);
+void *Var_get_ptr(const Var *);
 
-void fts_set_int(fts_atom_t *, int);
-void fts_set_symbol(fts_atom_t *, Symbol);
-void fts_set_ptr(fts_atom_t *, void *);
+void Var_put_int(Var *, int);
+void Var_put_symbol(Var *, Symbol);
+void Var_put_ptr(Var *, void *);
 
+/*
 #define fts_get_int_arg(AC, AT, N, DEF) \
 ((N) < (AC) ? (fts_is_int(&(AT)[N]) ? fts_get_int(&(AT)[N]) : \
               (fts_is_float(&(AT)[N]) ? (int) fts_get_float(&(AT)[N]) : (DEF))) : (DEF))
 
 #define fts_get_symbol_arg(AC, AT, N, DEF) ((N) < (AC) ? fts_get_symbol(&(AT)[N]) : (DEF))
 #define fts_get_ptr_arg(AC, AT, N, DEF)    ((N) < (AC) ? fts_get_ptr(&(AT)[N]) : (DEF))
+*/
 
 void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, void *user_data);
 
 Symbol fts_get_class_name(fts_class_t *class);
 
-void sprintf_atoms(char *buf, int ac, fts_atom_t *at);
+void sprintf_vars(char *buf, int ac, Var *at);
 
 void fts_class_install(Symbol sym,
-	fts_status_t (*p)(fts_class_t *class, int ac, const fts_atom_t *at));
+	fts_status_t (*p)(fts_class_t *class, int ac, const Var *at));
 
-void fts_outlet_send(fts_object_t *o, int woutlet, Symbol selector, int ac, const fts_atom_t *at);
+void Object_send_thru(fts_object_t *o, int woutlet, Symbol selector, int ac, const Var *at);
 
 void fts_object_set_error(fts_object_t *o, const char *s, ...);
 fts_clock_t *fts_sched_get_clock(void);
-fts_alarm_t *fts_alarm_new(fts_clock_t *foo,
-	void (*f)(fts_alarm_t *foo, void *), void *);
-void fts_alarm_set_delay(fts_alarm_t *, float);
-void fts_alarm_arm(fts_alarm_t *);
+Timer *Timer_new(fts_clock_t *foo,
+	void (*f)(Timer *foo, void *), void *);
+void Timer_set_delay(Timer *, float);
+void Timer_arm(Timer *);
+void Timer_loop(void);
 
 int gridflow_init_standalone(void);
 
 /* **************************************************************** */
 
-fts_object_t *fts_object_new(int ac, fts_atom_t *at);
-fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at);
+fts_object_t *fts_object_new(int ac, Var *at);
+fts_object_t *fts_object_new2(fts_class_t *class, int ac, Var *at);
 void fts_object_delete(fts_object_t *$);
-void fts_send2(fts_object_t *o, int winlet, int ac, const fts_atom_t *at);
-void fts_send(fts_object_t *o, int winlet, Symbol sel, int ac, const fts_atom_t *at);
+void fts_send2(fts_object_t *o, int winlet, int ac, const Var *at);
+void fts_send(fts_object_t *o, int winlet, Symbol sel, int ac, const Var *at);
 void fts_connect(fts_object_t *oo, int woutlet, fts_object_t *oi, int winlet);
-void fts_loop(void);
 
 int strsplit(char *victim, int max, char **witnesses);
-int silly_parse(const char *s, fts_atom_t *a);
+int silly_parse(const char *s, Var *a);
 fts_object_t *fts_object_new3(const char *foo);
 void fts_send3(fts_object_t *o, int woutlet, const char *foo);
 

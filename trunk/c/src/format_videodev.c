@@ -448,7 +448,7 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 	$->image = 0;
 
 	if (ac!=1) { whine("usage: videodev filename"); goto err; }
-	filename = Symbol_name(fts_get_symbol(at+0));
+	filename = Symbol_name(Var_get_symbol(at+0));
 
 	whine("will try opening file");
 
@@ -460,14 +460,14 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 
 	{
 		VideoCapability vcaps;
-		fts_atom_t at[3];
+		Var at[3];
 		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
 
 /*
-		fts_set_symbol(at+0,SYM(size));
-		fts_set_int(at+1,vcaps.maxheight);
-		fts_set_int(at+2,vcaps.maxwidth);
+		PUT(0,symbol,SYM(size));
+		PUT(1,int,vcaps.maxheight);
+		PUT(2,int,vcaps.maxwidth);
 		$->cl->option((Format *)$,3,at);
 */
 		FormatVideoDev_size($,vcaps.maxheight,vcaps.maxwidth);

@@ -69,12 +69,19 @@ typedef struct {
 #define DEF_OP1(_name_,_expr_) \
 	static Number op1_##_name_ (Number a) { return _expr_; } \
 	static void op1_array_##_name_ (int n, Number *as) { \
-		while (n--) { Number a = *as; *as++ = _expr_; } }
+		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; } \
+		while (n) { \
+			{ Number a = as[0]; as[0] = _expr_; } \
+			{ Number a = as[1]; as[1] = _expr_; } \
+			{ Number a = as[2]; as[2] = _expr_; } \
+			{ Number a = as[3]; as[3] = _expr_; } \
+		as+=4; n-=4; } }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
 DEF_OP1(sqrt, (Number)(0+floor(sqrt(a))))
 /*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
 DEF_OP1(rand, a==0 ? 0 : random()%a)
+DEF_OP1(sq, a*a)
 
 #define DECL_OP1(_name_,_sym_) \
 	{ 0, _sym_, &op1_##_name_, &op1_array_##_name_ }
@@ -83,6 +90,7 @@ Operator1 op1_table[] = {
 	DECL_OP1(abs, "abs"),
 	DECL_OP1(sqrt,"sqrt"),
 	DECL_OP1(rand,"rand"),
+	DECL_OP1(sq,"sq"),
 };
 
 Operator1 *op1_table_find(Symbol sym) {

@@ -69,35 +69,29 @@ Symbol Symbol_new (const char *s) {
 const char *Symbol_name(Symbol sym) { return symbols[sym].s; }
 
 /* **************************************************************** */
-/* Atom */
+/* Var */
 
-int fts_is_int(   const fts_atom_t *$) {return $->type == fts_t_int;}
-int fts_is_float( const fts_atom_t *$) {return $->type == fts_t_float;}
-int fts_is_symbol(const fts_atom_t *$) {return $->type == fts_t_symbol;}
-int fts_is_ptr(   const fts_atom_t *$) {return $->type == fts_t_ptr;}
+bool Var_has_int(   const Var *$) {return $->type == fts_t_int;}
+bool Var_has_float( const Var *$) {return $->type == fts_t_float;}
+bool Var_has_symbol(const Var *$) {return $->type == fts_t_symbol;}
+bool Var_has_ptr(   const Var *$) {return $->type == fts_t_ptr;}
 
-int fts_get_int(   const fts_atom_t *$) {assert(fts_is_int($)); return $->v.i;}
-int fts_get_float( const fts_atom_t *$) {assert(fts_is_float($)); return $->v.f;}
-int fts_get_symbol(const fts_atom_t *$) {assert(fts_is_symbol($)); return $->v.s;}
-void *fts_get_ptr( const fts_atom_t *$) {assert(fts_is_ptr($)); return $->v.p;}
+int Var_get_int(   const Var *$) {assert(Var_has_int($)); return $->v.i;}
+float Var_get_float( const Var *$) {assert(Var_has_float($)); return $->v.f;}
+Symbol Var_get_symbol(const Var *$) {assert(Var_has_symbol($)); return $->v.s;}
+void *Var_get_ptr( const Var *$) {assert(Var_has_ptr($)); return $->v.p;}
 
-void fts_set_int(   fts_atom_t *$, int v) {
-	$->type = fts_t_int;
-	$->v.i = v;}
-void fts_set_symbol(fts_atom_t *$, Symbol v) {
-	$->type = fts_t_symbol;
-	$->v.s = v;}
-void fts_set_ptr(   fts_atom_t *$, void *v) {
-	$->type = fts_t_ptr;
-	$->v.p = v;}
+void Var_put_int(   Var *$, int v) {    $->type = fts_t_int;    $->v.i = v;}
+void Var_put_symbol(Var *$, Symbol v) { $->type = fts_t_symbol; $->v.s = v;}
+void Var_put_ptr(   Var *$, void *v) {  $->type = fts_t_ptr;    $->v.p = v;}
 
-void sprintf_atoms(char *buf, int ac, fts_atom_t *at) {
+void sprintf_vars(char *buf, int ac, Var *at) {
 	int i;
 	for (i=0; i<ac; i++) {
-		if (fts_is_int(at+i)) {
-			buf += sprintf(buf,"%d",fts_get_int(at+i));
-		} else if (fts_is_symbol(at+i)) {
-			buf += sprintf(buf,"%s",Symbol_name(fts_get_symbol(at+i)));
+		if (Var_has_int(at+i)) {
+			buf += sprintf(buf,"%d",Var_get_int(at+i));
+		} else if (Var_has_symbol(at+i)) {
+			buf += sprintf(buf,"%s",Symbol_name(Var_get_symbol(at+i)));
 		} else {
 			buf += sprintf(buf,"<%s>",Symbol_name(at[i].type));
 		}
@@ -120,7 +114,7 @@ n_outlets, void *user_data) {
 }
 
 void fts_class_install(Symbol sym,
-fts_status_t (*p)(fts_class_t *class, int ac, const fts_atom_t *at)) {
+fts_status_t (*p)(fts_class_t *class, int ac, const Var *at)) {
 	fts_class_t *$ = NEW(fts_class_t,1);
 	p($,0,0);
 	symbols[sym].c = $;
@@ -158,8 +152,8 @@ void fts_object_set_error(fts_object_t *o, const char *s, ...) {
 	va_end(rest);
 }
 
-fts_object_t *fts_object_new(int ac, fts_atom_t *at) {
-	Symbol classname = fts_get_symbol(at);
+fts_object_t *fts_object_new(int ac, Var *at) {
+	Symbol classname = Var_get_symbol(at);
 	fts_class_t *class = symbols[classname].c;
 	if (!class) {
 		printf("ERROR: class not found: %s\n",Symbol_name(classname));
@@ -168,24 +162,24 @@ fts_object_t *fts_object_new(int ac, fts_atom_t *at) {
 	return fts_object_new2(class,ac,at);
 }
 
-fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at) {
+fts_object_t *fts_object_new2(fts_class_t *class, int ac, Var *at) {
 	int i;
 	fts_object_t *$;
 	assert(class->object_size > 0);
 	$ = (fts_object_t *)NEW(char,class->object_size);
 	$->head.cl = class;
 	$->argc = ac;
-	$->argv = NEW(fts_atom_t,ac?ac:1);
-	memcpy($->argv,at,ac*sizeof(fts_atom_t));
+	$->argv = NEW(Var,ac?ac:1);
+	memcpy($->argv,at,ac*sizeof(Var));
 	$->error = 0;
 	$->outlets = NEW(List *, class->n_outlets);
 	for (i=0; i<class->n_outlets; i++) {
 		$->outlets[i] = List_new(0);
 	}
 	{
-		fts_atom_t a[10];
-		memcpy(a,at,ac*sizeof(fts_atom_t));
-		fts_set_symbol(a+0,SYM(init));
+		Var a[10];
+		memcpy(a,at,ac*sizeof(Var));
+		Var_put_symbol(a+0,SYM(init));
 		fts_send($,-1,SYM(init),ac,a);
 		if ($->error) {
 			printf("ERROR: %s\n",$->error);
@@ -212,18 +206,18 @@ void fts_object_delete(fts_object_t *$) {
 	FREE($);
 }
 
-void fts_send2(fts_object_t *o, int inlet, int ac, const fts_atom_t *at) {
+void fts_send2(fts_object_t *o, int inlet, int ac, const Var *at) {
 	Symbol sel;
 	assert(ac>0);
-	if (fts_is_symbol(at)) {
-		sel = fts_get_symbol(at);
+	if (Var_has_symbol(at)) {
+		sel = Var_get_symbol(at);
 		fts_send(o,inlet,sel,ac-1,at+1);
 	} else {
 		fts_send(o,inlet,SYM(list),ac,at);
 	}
 }
 
-void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const fts_atom_t *at) {
+void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const Var *at) {
 	Dict *d = o->head.cl->method_table[inlet+1];
 	MethodDecl *md = (MethodDecl *) Dict_get(d,(void *)sel);
 	if (md) {
@@ -242,8 +236,8 @@ void fts_connect(fts_object_t *oo, int outlet, fts_object_t *oi, int inlet) {
 	List_push(oo->outlets[outlet],d);
 }
 
-void fts_outlet_send(fts_object_t *o, int outlet, Symbol sel,
-int ac, const fts_atom_t *at) {
+void Object_send_thru(fts_object_t *o, int outlet, Symbol sel,
+int ac, const Var *at) {
 	List *l = o->outlets[outlet];
 	int i;
 	for (i=0; i<List_size(l); i++) {
@@ -253,18 +247,18 @@ int ac, const fts_atom_t *at) {
 }
 
 /* **************************************************************** */
-/* Clock, Alarm */
+/* Clock, Timer */
 
 static fts_clock_t fts_main_clock = {};
-static List *alarms = 0;
+static List *timers = 0;
 
 fts_clock_t *fts_sched_get_clock(void) {
 	return &fts_main_clock;
 }
 
-fts_alarm_t *fts_alarm_new(fts_clock_t *clock,
-void (*f)(fts_alarm_t *, void *), void *data) {
-	fts_alarm_t *$ = NEW(fts_alarm_t,1);
+Timer *Timer_new(fts_clock_t *clock,
+void (*f)(Timer *, void *), void *data) {
+	Timer *$ = NEW(Timer,1);
 	$->clock = clock;
 	$->f = f;
 	$->data = data;
@@ -272,41 +266,41 @@ void (*f)(fts_alarm_t *, void *), void *data) {
 	return $;
 }
 
-void fts_alarm_set_delay(fts_alarm_t *$, float delay) {
+void Timer_set_delay(Timer *$, float delay) {
 	struct timeval tv;
 	gettimeofday(&tv,0);
 	$->time = tv.tv_sec * 1000.0 + tv.tv_usec / 1000.0 + delay;
 }
 
-void fts_alarm_arm(fts_alarm_t *$) {
+void Timer_arm(Timer *$) {
 	if (!$->armed) {
 		$->armed = true;
-		List_push(alarms,$);
+		List_push(timers,$);
 	}
 }
 
-void fts_loop(void) {
+void Timer_loop(void) {
 	struct timeval tv;
 	double time;
 	int i;
 	while (1) {
 		int delay = 1000000;
 		gettimeofday(&tv,0);
-/*		printf("alarms size = %d\n",List_size(alarms)); */
+/*		printf("timers size = %d\n",List_size(timers)); */
 		time = tv.tv_sec * 1000.0 + tv.tv_usec / 1000.0;
-		for (i=0; i<List_size(alarms); i++) {
-			fts_alarm_t *a = List_get(alarms,i);
+		for (i=0; i<List_size(timers); i++) {
+			Timer *a = List_get(timers,i);
 			int delay2 = (a->time - time) * 1000;
 			if (delay>delay2) delay=delay2;
 		}
 /*		printf("delay = %d\n",delay); */
 		if (delay>0) usleep(delay);
-		for (i=0; i<List_size(alarms);) {
-			fts_alarm_t *a = List_get(alarms,i);
+		for (i=0; i<List_size(timers);) {
+			Timer *a = List_get(timers,i);
 			if (a->time <= time) {
 				a->armed = false;
-				List_put(alarms,i,List_get(alarms,List_size(alarms)-1));
-				List_pop(alarms);
+				List_put(timers,i,List_get(timers,List_size(timers)-1));
+				List_pop(timers);
 				a->f(a,a->data);
 			} else i++;
 		}
@@ -333,16 +327,16 @@ static bool isnumber(const char *s) {
 	return isdigit(*s) ||
 		((*s=='+' || *s=='-') && isdigit(s[1]));}
 
-int silly_parse(const char *s, fts_atom_t *a) {
+int silly_parse(const char *s, Var *a) {
 	char *b = strdup(s);
 	char *p[10];
 	int i, n = strsplit(b,10,p);
 	for (i=0; i<n; i++) {
 		if (isnumber(p[i])) {
-			fts_set_int(a+i,atoi(p[i]));
+			Var_put_int(a+i,atoi(p[i]));
 			//printf("%i: '%s' is int\n",i,p[i]);
 		} else {
-			fts_set_symbol(a+i,Symbol_new(p[i]));
+			Var_put_symbol(a+i,Symbol_new(p[i]));
 			//printf("%i: '%s' is symbol\n",i,p[i]);
 		}
 	}
@@ -351,13 +345,13 @@ int silly_parse(const char *s, fts_atom_t *a) {
 }
 
 fts_object_t *fts_object_new3(const char *foo) {
-	fts_atom_t a[10];
+	Var a[10];
 	int n = silly_parse(foo,a);
 	return fts_object_new(n,a);
 }
 
 void fts_send3(fts_object_t *o, int woutlet, const char *foo) {
-	fts_atom_t a[10];
+	Var a[10];
 	int n = silly_parse(foo,a);
 	return fts_send2(o,woutlet,n,a);
 }
@@ -377,7 +371,7 @@ int fts_file_open(const char *name, const char *mode) {
 extern fts_module_t gridflow_module;
 
 int gridflow_init_standalone (void) {
-	alarms = List_new(0);
+	timers = List_new(0);
 	fprintf(stdout,"< gridflow_init_standalone\n");
 
 	Symbol_new("symbol");

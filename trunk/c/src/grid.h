@@ -30,10 +30,6 @@
 #include "config.h"
 #include "lang.h"
 
-#ifndef STANDALONE
-#include "over_fts.h"
-#endif
-
 /* current version number as string literal */
 #define GF_VERSION "0.5.0"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
@@ -48,7 +44,7 @@
 #endif
 
 /* lots of macros follow */
-/* i'm not going to explain to you why macros are a good thing. */
+/* i'm not going to explain to you why macros *ARE* a good thing. */
 /* **************************************************************** */
 
 /*
@@ -121,7 +117,7 @@
 
 /* **************************************************************** */
 
-#define ATOMLIST int ac, const fts_atom_t *at
+#define ATOMLIST int ac, const Var *at
 
 /*
   lists the arguments suitable for any method of a given class.
@@ -196,7 +192,10 @@ typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
   string (const char *), ptr (void *)
 */
 #define GET(_i_,_type_,_default_) \
-	fts_get_##_type_##_arg (ac,at,_i_,_default_)
+	(_i_>=0 && _i_<ac ? Var_get_##_type_ (at+_i_) : _default_)
+
+#define PUT(_i_,_type_,_value_) \
+	Var_put_##_type_ (at+_i_,_value_)
 
 #define SYM(_sym_) (Symbol_new(#_sym_))
 
@@ -212,14 +211,26 @@ static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
 
 /*
   integer powers.
+*/
+static inline int ipow(int a, int b) {
+/*
   very bad algorithm, but still avoids using floats.
   (most useful values of b are 2 and 3)
 */
-static inline int ipow(int a, int b) {
+/*
 	int r=1;
 	if (b>10) return (int)(0+floor(pow(a,b)));
 	while(b-->0) r *= a;
 	return r;
+*/
+/* better algorithm */
+	int r=1;
+	while(1) {
+		if (b&1) r*=a;
+		b>>=1;
+		if (!b) return r;
+		a*=a;
+	}
 }	
 
 #undef min
@@ -303,6 +314,9 @@ DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
 DECL_SYM(grid_flow2)
 DECL_SYM(grid_end)
+DECL_SYM(bang)
+DECL_SYM(int)
+DECL_SYM(list)
 
 /* **************************************************************** */
 /* dim.c */
@@ -613,8 +627,8 @@ void Format_close(Format *$);
 /* **************************************************************** */
 
 extern Dict *gf_object_set;
-extern Dict *gf_alarm_set;
-extern fts_alarm_t *gf_alarm;
+extern Dict *gf_timer_set;
+extern Timer *gf_timer;
 extern const char *whine_header;
 
 #endif /* __GF_GRID_H */

@@ -117,7 +117,7 @@ static Symbol button_sym(int i) {
 }
 
 void FormatX11_alarm(FormatX11 *$) {
-	fts_atom_t at[4];
+	Var at[4];
 	XEvent e;
 
 	for (;;) {
@@ -137,26 +137,26 @@ void FormatX11_alarm(FormatX11 *$) {
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			fts_set_symbol(at+0,SYM(press));
-			fts_set_symbol(at+1,button_sym(eb->button));
-			fts_set_int(at+2,eb->y);
-			fts_set_int(at+3,eb->x);
-			//fts_outlet_send(OBJ($->out->parent),0,4,at);
+			PUT(0,symbol,SYM(press));
+			PUT(1,symbol,button_sym(eb->button));
+			PUT(2,int,eb->y);
+			PUT(3,int,eb->x);
+			//Object_send_thru(OBJ($->out->parent),0,4,at);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			fts_set_symbol(at+0,SYM(release));
-			fts_set_symbol(at+1,button_sym(eb->button));
-			fts_set_int(at+2,eb->y);
-			fts_set_int(at+3,eb->x);
+			PUT(0,symbol,SYM(release));
+			PUT(1,symbol,button_sym(eb->button));
+			PUT(2,int,eb->y);
+			PUT(3,int,eb->x);
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
 			//whine("drag at (y=%d,x=%d)",em->y,em->x);
-			fts_set_symbol(at+0,SYM(motion));
-			fts_set_int(at+1,em->y);
-			fts_set_int(at+2,em->x);
+			PUT(0,symbol,SYM(motion));
+			PUT(1,int,em->y);
+			PUT(2,int,em->x);
 		}break;
 		case DestroyNotify:{
 			/* should notify $->parent here */
@@ -397,7 +397,7 @@ GRID_END(FormatX11,0) {
 }
 
 void FormatX11_close (FormatX11 *$) {
-	Dict_del(gf_alarm_set,$);
+	Dict_del(gf_timer_set,$);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
@@ -497,7 +497,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	*/
 
 	{
-		Symbol domain = fts_get_symbol(at+0);
+		Symbol domain = Var_get_symbol(at+0);
 		int i;
 		// assert (ac>0);
 		if (domain==SYM(here)) {
@@ -506,7 +506,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 			i=1;
 		} else if (domain==SYM(local)) {
 			char host[64];
-			int dispnum = fts_get_int(at+1);
+			int dispnum = Var_get_int(at+1);
 			whine("mode `local'");
 			whine("display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
@@ -515,8 +515,8 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		} else if (domain==SYM(remote)) {
 			char host[64];
 			int dispnum = 0;
-			strcpy(host,Symbol_name(fts_get_symbol(at+1)));
-				dispnum = fts_get_int(at+2);
+			strcpy(host,Symbol_name(Var_get_symbol(at+1)));
+				dispnum = Var_get_int(at+2);
 			sprintf(host+strlen(host),":%d",dispnum);
 			whine("mode `remote'");
 			whine("host `%s'",host);
@@ -537,7 +537,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		if (i>=ac) {
 			whine("will create new window");
 		} else {
-			Symbol winspec = fts_get_symbol(at+i);
+			Symbol winspec = Var_get_symbol(at+i);
 			if (winspec==SYM(root)) {
 				$->window = $->root_window;
 				whine("will use root window (0x%x)", $->window);
@@ -576,7 +576,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	}
 
 	BitPacking_whine($->bit_packing);
-	Dict_put(gf_alarm_set,$,FormatX11_alarm);
+	Dict_put(gf_timer_set,$,FormatX11_alarm);
 	return (Format *)$;
 err:;
 	$->cl->close((Format *)$);

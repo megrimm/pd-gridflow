@@ -31,11 +31,12 @@ typedef struct GridScaleBy {
 } GridScaleBy;
 
 GRID_BEGIN(GridScaleBy,0) {
+	int scale = $->rint;
 	Dim *a = in->dim;
 	if (Dim_count(a)!=3) RAISE("(height,width,chans) please");
 	if (Dim_get(a,2)!=3) RAISE("3 chans please");
 	{
-		int v[3]={ Dim_get(a,0)*2, Dim_get(a,1)*2, Dim_get(a,2) };
+		int v[3]={ Dim_get(a,0)*scale, Dim_get(a,1)*scale, Dim_get(a,2) };
 		GridOutlet_begin($->out[0],Dim_new(3,v));
 		GridInlet_set_factor(in,3*Dim_get(a,1));
 	}
@@ -43,7 +44,7 @@ GRID_BEGIN(GridScaleBy,0) {
 }
 
 GRID_FLOW(GridScaleBy,0) {
-	int scale=2;//$->rint;
+	int scale = $->rint;
 	int line = Dim_get(in->dim,1)*3;
 	int i,j,k;
 	while(n>0) {
@@ -78,7 +79,7 @@ METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridScaleBy,inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
-	DECL(GridScaleBy,-1,init,  "s"),
+	DECL(GridScaleBy,-1,init,  "si"),
 	DECL(GridScaleBy,-1,delete,""))
 
 /* **************************************************************** */

@@ -40,9 +40,9 @@
 
 const char *whine_header = "[whine] ";
 Dict *gf_object_set = 0;
-Dict *gf_alarm_set = 0;
+Dict *gf_timer_set = 0;
 Dict *gf_alloc_set = 0;
-fts_alarm_t *gf_alarm = 0;
+Timer *gf_timer = 0;
 
 FILE *whine_f;
 
@@ -56,6 +56,9 @@ DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
 DECL_SYM2(grid_flow2)
 DECL_SYM2(grid_end)
+DECL_SYM2(bang)
+DECL_SYM2(int)
+DECL_SYM2(list)
 
 #define STARTUP_LIST(_begin_,_end_) \
 	_begin_## operator       _end_ \
@@ -83,7 +86,7 @@ static void disable_signal_handlers (void) {
 	}
 }
 
-void gf_alarm_handler (fts_alarm_t *foo, void *obj);
+void gf_timer_handler (Timer *foo, void *obj);
 void gridflow_module_init (void) {
 	disable_signal_handlers();
 	srandom(time(0));
@@ -105,16 +108,20 @@ void gridflow_module_init (void) {
 	DEF_SYM(grid_flow2);
 	DEF_SYM(grid_end);
 
+	DEF_SYM(bang);
+	DEF_SYM(int);
+	DEF_SYM(list);
+
 	gf_object_set = Dict_new(0);
-	gf_alarm_set  = Dict_new(0);
-	gf_alarm = fts_alarm_new(fts_sched_get_clock(), gf_alarm_handler, 0);
+	gf_timer_set  = Dict_new(0);
+	gf_timer = Timer_new(fts_sched_get_clock(), gf_timer_handler, 0);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
 
 	post("--- GridFlow startup: end ---\n");
 
-	gf_alarm_handler(0,0); /* bootstrap the event loop */
+	gf_timer_handler(0,0); /* bootstrap the event loop */
 
 	gf_alloc_set  = Dict_new(0);
 }
@@ -316,7 +323,7 @@ FILE *gf_file_fopen(const char *name, int mode) {
 /* **************************************************************** */
 /* [rtmetro] */
 
-static fts_alarm_t *rtmetro_alarm = 0;
+static Timer *rtmetro_timer = 0;
 
 typedef struct RtMetro {
 	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
@@ -402,7 +409,7 @@ METHOD(GFGlobal,profiler_dump) {
 	for(i=0;i<List_size(ol);i++) {
 		GridObject *o = List_get(ol,i);
 		int ppm = o->profiler_cumul * 1000000 / total;
-		sprintf_atoms(buf,o->o.argc,o->o.argv);
+		sprintf_vars(buf,o->o.argc,o->o.argv);
 		whine("%20lld %2d.%04d %08x [%s]\n",
 			o->profiler_cumul,
 			ppm/10000,
@@ -433,15 +440,15 @@ LIST(),
 #define INSTALL(_sym_,_name_) \
 	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
-void gf_alarm_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
+void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 	callback(o);
 }
 
-void gf_alarm_handler (fts_alarm_t *foo, void *obj) {
-	Dict_each(gf_alarm_set,
-		(void(*)(void*,void*,void*))gf_alarm_handler$1,0);
-	fts_alarm_set_delay(gf_alarm, 75.0);
-	fts_alarm_arm(gf_alarm);
+void gf_timer_handler (Timer *foo, void *obj) {
+	Dict_each(gf_timer_set,
+		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
+	Timer_set_delay(gf_timer, 75.0);
+	Timer_arm(gf_timer);
 }
 
 void startup_gridflow (void) {
