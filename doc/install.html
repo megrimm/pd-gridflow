@@ -1,85 +1,85 @@
 <html>
 <head>
-<title>video4jmax</title>
+<title>video4jmax - install</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
 
 <body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 <br>
-<table width="100%" border="0" cellspacing="1">
-  <tr bgcolor="#00283c"> 
-    <td colspan="3"><img src="images/jmax_titre.jpg" width="253" height="23"></td>
+<table width="100%" border="0" cellspacing="5">
+  <tr><td colspan="4" bgcolor="#082069">
+	<img src="images/jmax_titre.jpg" width="253" height="23"></td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="3" height="16">
+      <h4>Video4jmax 0.2.2 - installation</h4>
+  </td></tr>
+
+  <tr> 
+    <td rowspan="3" width="12%">&nbsp;</td>
+    <td colspan="2" width="80%">&nbsp;</td>
+    <td rowspan="10" width="12%">&nbsp;</td>
   </tr>
+
   <tr>
-    <td width="13%" height="7">&nbsp;</td>
-    <td width="56%" height="7">&nbsp;</td>
-    <td width="31%" height="7">&nbsp;</td>
-  </tr>
-  <tr>
-    <td colspan="2" height="6">
-      <h4>video4jmax
- - installation help</h4>
-    </td>
-    <td width="31%" height="6">&nbsp;</td>
-  </tr>
-  <tr>
-    <td width="13%">&nbsp;</td>
-    <td width="56%">
-      <p>&nbsp;</p>
+    <td width="50%">
       <h5>Requirements </h5>
-      <p>i). jmax 2.5 (should work under jmax 2.4.12)<br>
-        ii). an X11 display server </p>
-      <p><font size="-1">note: you will need to have a version of jmax running,
-        for help on installing and compiling jmax, please see Christian Klippel's
+      <p>i). jMax 2.5 (should work under jMax 2.4.12)<br>
+        ii). an X11 Display Server </p>
+      <p><font size="-1">note: you will need to have a version of jMax running,
+        for help on installing and compiling jMax, please see Christian Klippel's
         extensive help file at <a href="http://www.mamalala.de">http://www.mamalala.de</a>
-        as well as the jmax docs.</font></p>
+        as well as the jMax docs.</font></p>
     </td>
-    <td width="31%">&nbsp;</td>
   </tr>
   <tr>
-    <td width="13%">&nbsp;</td>
     <td width="56%">
       <h5><br>
         Installation process (for jMax 2.5)</h5>
-      <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in
-        your 'packages' directory. This will create the video4jmax directory and
+      <p>1. Untar the archive with
+	 	<kbd>tar -xvtf video4jmax_current_version.tgz</kbd> in
+        your <kbd>packages</kbd> directory. This will create the video4jmax directory and
         place all the files within. </p>
-      <p>2. Run './configure  --jmax25' from the video4jmax directory. That should
+      <p>2. Run <kbd>./configure --jmax25</kbd> from the video4jmax directory. That should
         take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
       <p>Files changed by configure: <br>
+	<kbd>
         video4jmax/Makefile <br>
         video4jmax/c/Makefile <br>
-        c/src/Makefile<br>
-        c/src/config.h<br>
-        c/src/Sources<br>
-        config.make</p>
+        video4jmax/c/src/Makefile<br>
+        video4jmax/c/src/config.h<br>
+        video4jmax/c/src/Sources<br>
+        video4jmax/config.make</kbd></p>
 
 
       <p><br>
         3. From the packages/video4jmax directory, do this:</p>
       <ul>
-        <li>make all ARCH=i686-linux</li>
-        <li>make install ARCH=i686-linux</li>
+        <li><kbd>make all ARCH=i686-linux</kbd></li>
+        <li><kbd>make install ARCH=i686-linux</kbd></li>
       </ul>
-      <p>Where you replace i686-linux by your architecture name (e.g. ppc-macosx).
+      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
       </p>
 
       <br>
-      <p>
-      5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download">artengine.ca </a> or
+     <p>
+      4. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download">artengine.ca </a> or
        <a href="http://hostname.2y.net/video4jmax/download">hostname.2y.net</a>  Place the archive in /usr/local/jmax/packages/video4jmax
-        (or the path of your choice) and untar with 'tar -xvzf video4jmax-images-0.2.tar.gz'.
+        (or the path of your choice) and untar with <kbd>tar -xvzf video4jmax-images-0.2.tar.gz</kbd>.
        </p>
 
-        <p>6. Add "package require video4jmax" within the "when start" section of
-        ~/.jmaxrc</p>
-      <p>7. Add this line to your ~/.jmaxrc file:<br>
-        dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
+	<p>
+	5. Add <kbd>package require video4jmax</kbd> within the <kbd>when start</kbd> section of
+        <kbd>~/.jmaxrc</kbd></p>
+      <p>6. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
+        <kbd>dataDirectory /usr/local/jmax/packages/video4jmax/images</kbd> (or any
         path to the directory where you will place the images).</p>
-      <p>8. Restart jmax. </p>
+      <p>7. Restart jMax. </p>
       <p>&nbsp;</p>
       <h5>Installation process (for jMax 2.4)</h5>
       <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in
@@ -89,50 +89,52 @@
         take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
-         <p>Files changed by configure: <br>
+         <p>Files changed by configure: <br><kbd>
         video4jmax/Makefile <br>
         video4jmax/c/Makefile <br>
-        c/src/Makefile<br>
-        c/src/config.h<br>
-        c/src/Sources<br>
-        config.make</p>
-
+        video4jmax/c/src/Makefile<br>
+        video4jmax/c/src/config.h<br>
+        video4jmax/c/src/Sources<br>
+        video4jmax/config.make</kbd></p>
 
       <p><br>
-        3. In file packages/Makefile change the C_PACKAGES list to include video4jmax
-        (remove the old 'video' if you upgrade).</p>
+        3. In file packages/Makefile change the <kbd>C_PACKAGES</kbd> list to include <kbd>video4jmax</kbd>
+        (remove the old <kbd>video</kbd> directory if you upgrade).</p>
       <p><br>
-        4. From the toplevel directory (above 'packages'), do this:</p>
+        4. From the toplevel directory (above <kbd>packages</kbd>), do this:</p>
       <ul>
-        <li>make all ARCH=i686-linux</li>
-        <li>make install ARCH=i686-linux</li>
+        <li><kbd>make all ARCH=i686-linux</kbd></li>
+        <li><kbd>make install ARCH=i686-linux</kbd></li>
       </ul>
-      <p>Where you replace i686-linux by your architecture name (e.g. ppc-macosx).
+      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
       </p>
       <p><br>
          5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download"> artengine.ca </a> or
        <a href="http://hostname.2y.net/video4jmax/download"> hostname.2y.net</a>. Place the archive in /usr/local/jmax/packages/video4jmax
-        (or the path of your choice) and untar with 'tar -xvzf video4jmax-images-0.2.tar.gz'.
+        (or the path of your choice) and untar with <kbd>tar -xvzf video4jmax-images-0.2.tar.gz</kbd>.
 
        </p>
 
-       <p>6. Add "package require video4jmax" within the "when start" section of
-        ~/.jmaxrc</p>
-        <p>7. Add this line to your ~/.jmaxrc file:<br>
-        dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
+       <p>6. Add <kbd>package require video4jmax</kbd> within the <kbd>when start</kbd> section of
+        <kbd>~/.jmaxrc</kbd></p>
+        <p>7. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
+        <kbd>dataDirectory /usr/local/jmax/packages/video4jmax/images</kbd> (or any
         path to the directory where you will place the images).</p>
-      <p>8. Restart jmax. </p>
+      <p>8. Restart jMax. </p>
 
-      <p>&nbsp;</p>
-      <p>Thank you to Christian Klippel who provided Makefiles <br>
-      </p>
     </td>
-    <td width="31%">&nbsp;</td>
   </tr>
-  <tr>
-    <td colspan="3">&nbsp;</td>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="4">
+	<p><font size="-1">Video4jmax 0.2.2 Documentation<br>
+        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+        and<br>
+        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+    </td>
   </tr>
 </table>
-<p>&nbsp;</p>
 </body>
 </html>
