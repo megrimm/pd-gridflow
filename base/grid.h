@@ -99,7 +99,7 @@ extern "C" {
 #endif
 
 #ifdef HAVE_DEBUG
-#define HAVE_DEBUG_HARDER
+//#define HAVE_DEBUG_HARDER
 #endif
 
 #ifdef HAVE_TSC_PROFILING

@@ -42,13 +42,20 @@ for victim in [TCPSocket, TCPServer]
 	end
 end if VERSION < "1.6.6"
 
-# this should be done in base/bridge_jmax.c
+# this should be done in base/bridge.c
 for victim in [Thread, Continuation]
 	def victim.new
 		raise NotImplementedError, "class #{self} disabled because of jMax incompatibility"
 	end
 end
 #$VERBOSE=verbose
+
+# because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
+unless Object.instance_methods(true).include? "object_id"
+	class Object
+		alias object_id id
+	end
+end
 
 require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
@@ -469,13 +476,6 @@ class GridPosterize < FPatcher
 		send_in 1, factor
 	end
 	install "@posterize", 2, 1
-end
-
-# because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
-unless Object.instance_methods(true).include? "object_id"
-	class Object
-		alias object_id id
-	end
 end
 
 begin

@@ -655,7 +655,6 @@ GRID_INLET(GridInner,0) {
 	int rrows = in->factor;
 	int rsize = r.dim->prod();
 	int rcols = rsize/rrows;
-//	gfpost("rrows=%d rcols=%d rsize=%d",rrows,rcols,rsize);
 
 	Pt<T> rdata = (Pt<T>)r;
 
@@ -663,18 +662,12 @@ GRID_INLET(GridInner,0) {
 	STACK_ARRAY(T,buf,rsize);
 
 	while (n) {
-//		gfpost("n=%d",n);
 		for (int i=0,k=0; i<rrows; i++)
 			for (int j=0; j<rcols; j++) buf[k++]=data[i];
 
 		for (int j=0; j<rcols; j++) buf2[j] = (T)rint;
-//		WATCH(rrows,buf2);
-//		WATCH(rsize,buf);
-//		WATCH(rsize,rdata);
 		op_para->zip(rsize,buf,rdata);
-//		WATCH(rsize,buf);
 		op_fold->fold2(rcols,buf2,rrows,buf);
-//		WATCH(rrows,buf2);
 		out[0]->send(rcols,buf2);
 		n-=rrows;
 		data+=rrows;
@@ -700,12 +693,8 @@ template <class T> void GridInner::process_right(T bogus) {
 			r2data[i*rcols+j] = rdata[j*rrows+i];
 		}
 	}
-//	WATCH(rsize,rdata);
-//	WATCH(rsize,r2data);
 	r.init(new Dim(n,v),r.nt);
 	COPY((Pt<T>)r,r2data,rsize);
-//	WATCH(rsize,rdata);
-//	fprintf(stderr,"rdata=%d\n",(int)(T*)rdata);
 }
 
 GRID_INPUT(GridInner,2,r) {
