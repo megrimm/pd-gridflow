@@ -684,4 +684,23 @@ class RubyFor < GridFlow::FObject
 end
 end # if not =~ jmax
 
+#-------- fClasses for: GUI
+
+class Peephole < GridFlow::FObject
+	def initialize(*args)
+		GridFlow.post "Peephole#init: #{args.inspect}"
+	end
+	def method_missing(*args)
+		GridFlow.post "Peephole#method_missing: #{args.inspect}"
+	end
+	def _0_open(window,y,x,height,width)
+		@target = FObject[:@out,:x11,:here,:embed,"MyTitle",y,x,height,width]
+	end
+	def _0_grid(*a)
+		@target.send_in 0,:grid,*a if @target
+		send_out 0,:grid,*a
+	end
+	install "peephole", 1, 1
+end
+
 end # module GridFlow

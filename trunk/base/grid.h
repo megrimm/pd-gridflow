@@ -108,18 +108,31 @@ typedef /*volatile*/ VALUE Ruby;
 #endif
 
 #ifdef HAVE_PROFILING
-//	if ((_self_)->profiler_last)
-//		fprintf(stderr,"%s: profiler inaccuracy warning\n", _self_->info());
+#ifdef HAVE_DEBUG
+#define ENTER(_self_) { \
+	if ((_self_)->profiler_last) { \
+		fprintf(stderr,"%s: caught profiler bug OR recursive message-passing\n", _self_->info()); \
+		raise(11); abort(); } \
+	(_self_)->profiler_last = rdtsc(); }
+#define LEAVE(_self_) { \
+	if ((_self_)->profiler_last) \
+		(_self_)->profiler_cumul += rdtsc() - (_self_)->profiler_last; \
+	else { \
+		fprintf(stderr,"%s: LEAVE without ENTER\n", _self_->info()); \
+		raise(11); abort(); } \
+	(_self_)->profiler_last = 0; }
+#else
 #define ENTER(_self_) { \
 	(_self_)->profiler_last = rdtsc(); }
 #define LEAVE(_self_) { \
 	if ((_self_)->profiler_last) \
 		(_self_)->profiler_cumul += rdtsc() - (_self_)->profiler_last; \
 	(_self_)->profiler_last = 0; }
+#endif /* HAVE_DEBUG */
 #else
 #define ENTER(_self_)
 #define LEAVE(_self_)
-#endif
+#endif /* HAVE_PROFILING */
 
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
 #define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
@@ -1093,5 +1106,26 @@ extern "C" GFBridge *gf_bridge;
 extern "C" void Init_gridflow ();
 
 void gfpost(const char *fmt, ...);
+
+extern Operator2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
+extern Operator2 *op2_shl, *op2_and;
+
+#define SAME_TYPE(_a_,_b_) \
+	if ((_a_).nt != (_b_).nt) RAISE("%s(%s): same type please (%s versus %s)", \
+		this->info(), __PRETTY_FUNCTION__, \
+		number_type_table[(_a_).nt].name, \
+		number_type_table[(_b_).nt].name);
+
+static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
+	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
+	if (bi+n > b->n) RAISE("right hand: not enough dimensions");
+	for (int i=0; i<n; i++) {
+		if (a->v[ai+i] != b->v[bi+i]) {
+			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
+				ai+i, a->v[ai+i],
+				bi+i, b->v[bi+i]);
+		}
+	}
+}
 
 #endif /* __GF_GRID_H */

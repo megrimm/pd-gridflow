@@ -139,6 +139,10 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	}
 }
 
+/*
+  inlet #-1 is reserved for SystemInlet messages
+  inlet #-2 is for inlet #0 messages that happen at start time
+*/
 \def void send_in (...) {
 	bool record = false;
 	ENTER(this);
@@ -157,14 +161,15 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 		inlet=0;
 	}
 	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
-		RAISE("invalid inlet number");
+		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number");
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
 	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
 		/* GridFlow.post "%s",m.inspect if GridFlow.verbose */
 	}
 	char buf[256];
-	sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
+	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
+	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(rself,rb_intern(buf),argc,argv);
 
 	LEAVE(this);
@@ -272,7 +277,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 }
 
 const char *FObject::info() {
-	if (!this) return "(nil GridObject!?)";
+	if (!this) return "(nil FObject!?)";
 	Ruby z = rb_funcall(this->rself,SI(args),0);
 /*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
 	if (z==Qnil) return "(nil args!?)";
@@ -522,6 +527,8 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
+void startup_flow_objects_for_image();
+void startup_flow_objects_for_matrix();
 void startup_formats();
 void startup_cpu();
 
@@ -589,6 +596,8 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
+	startup_flow_objects_for_image();
+	startup_flow_objects_for_matrix();
 
 	EVAL("begin require 'gridflow/base/main.rb'\n"
 		"rescue Exception => e; "
