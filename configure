@@ -263,6 +263,9 @@ FILES = [
 	[:ruby, "jmax_format.rb"],
 	[:ruby, "puredata_format.rb"],
   ],
+  [:directory, "bin/",
+	[:ruby, "jmax2pd"],
+  ],
 ]
 
 #----------------------------------------------------------------#
@@ -422,6 +425,7 @@ Feature.new {
 	uses_so {
 		a=["-lSDL","-lpthread"]
 		a<<"-lobjc" if Config::CONFIG["arch"] =~ /darwin/
+		a
 	}
 	#uses_h ["SDL/SDL.h"]
 	test proc {
