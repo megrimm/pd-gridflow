@@ -645,7 +645,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
-		if (argc<2) RAISE("open local: not enough args");
+		if (argc<2) RAISE("open x11 local: not enough args");
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
 		if (verbose) gfpost("mode `local', display_number `%d'",dispnum);
@@ -653,7 +653,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		open_display(host);
 		i=2;
 	} else if (domain==SYM(remote)) {
-		if (argc<3) RAISE("open remote: not enough args");
+		if (argc<3) RAISE("open x11 remote: not enough args");
 		char host[256];
 		strcpy(host,rb_sym_name(argv[1]));
 		int dispnum = NUM2INT(argv[2]);
@@ -661,6 +661,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		if (verbose) gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
 		open_display(host);
 		i=3;
+	} else if (domain==SYM(display)) {
+		if (argc<2) RAISE("open x11 display: not enough args");
+		char host[256];
+		strcpy(host,rb_sym_name(argv[1]));
+		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
+		//if (verbose)
+		gfpost("mode `remote', DISPLAY=`%s'",host);
+		open_display(host);
+		i=2;
 	} else {
 		RAISE("x11 destination syntax error");
 	}
