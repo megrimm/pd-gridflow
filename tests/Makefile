@@ -14,9 +14,15 @@ LIB=../c/lib2/lib$(PNAME).so
 $(LIB)::
 	(cd ../c/src; $(MAKE) -k standalone)
 
-test: test1 test2
-	$(FIX_LD) ./test1 anim2
-.PHONY: test
+test3: test3.c
+	gcc $(ARCH_CFLAGS) $(LDSOFLAGS) test3.c -o test3 -ldl
+
+test: test3
+	(cd ../c/src; $(MAKE) -k)
+	./test3
+
+#test:: test1 test2
+#	$(FIX_LD) ./test1 anim2
 
 test1: test1.c $(LIB)
 	gcc $(ARCH_CFLAGS) $(LDSOFLAGS) -DSTANDALONE test1.c $(LIB) -o $@
