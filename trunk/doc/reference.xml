@@ -372,8 +372,8 @@
 		<help image="images/grab_two.png" text="[@two]"/>
 
 		<p> holds two values, defaulting to (0,0). each time one is
-		changed (by sending an integer in that inlet), a dim(2) grid is
-		sent through the outlet.</p>
+		changed (by sending an integer in that inlet), a dim(2) grid
+		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
 		<inlet id="0"><method name="int"/></inlet>
 		<inlet id="1"><method name="int"/></inlet>
@@ -385,8 +385,8 @@
 		<help image="images/grab_three.png" text="[@three]"/>
 
 		<p> holds three values, defaulting to (0,0,0). each time one is
-		changed (by sending an integer in that inlet), a dim(3) grid is
-		sent through the outlet.</p>
+		changed (by sending an integer in that inlet), a Dim(3) grid 
+		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
 		<inlet id="0"><method name="int"/></inlet>
 		<inlet id="1"><method name="int"/></inlet>
@@ -398,8 +398,8 @@
 		<icon text="[@four]"/>
 
 		<p> holds four values, defaulting to (0,0,0,0). each time one is
-		changed (by sending an integer in that inlet), a dim(4) grid is
-		sent through the outlet.</p>
+		changed (by sending an integer in that inlet), a Dim(4) grid
+		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
 		<inlet id="0"><method name="int"/></inlet>
 		<inlet id="1"><method name="int"/></inlet>
@@ -413,7 +413,7 @@
 	<jmax-class name="@for">
 		<icon text="[@for 0 320 1]"/>
 		<p>works like a regular [for] object plugged to a [@import] tuned
-		for a dim(size) where size is the number of values produced by a bang
+		for a Dim(size) where size is the number of values produced by a bang
 		to that [for].</p>
 		<method name="init">
 			<arg name="from" type="integer"/>
@@ -478,7 +478,7 @@
 			<method name="int">
 				stores a single int in the right inlet; the same int will
 				be applied in all computations; this is like sending a
-				dim(1) or dim() grid with that number in it.
+				Dim(1) or Dim() grid with that number in it.
 			</method>
 		</inlet>
 		<outlet id="0">
@@ -532,8 +532,8 @@
 		
 		<inlet id="0">
 			<grid><dim>dims..., last</dim>
-				produces a dim(dims) grid (the last dimension is removed).
-				the incoming grid is split into dim(last) subparts; from
+				produces a Dim(dims) grid (the last dimension is removed).
+				the incoming grid is split into Dim(last) subparts; from
 				each of those parts a result is produced by cascading the
 				specified operation from the base value (specified in
 				inlet 1) to all the elements in that subpart. (see examples
@@ -568,7 +568,7 @@
 
 		<inlet id="0">
 			<grid><dim>anyA...</dim></grid>
-			produces a grid of size dim(anyA..., anyB...), where numbers
+			produces a grid of size Dim(anyA..., anyB...), where numbers
 			are the results of the operation on every element of A and
 			every element of B. the resulting array can be very big. Don't
 			try this on two pictures (the result will have 6 dimensions)
@@ -609,9 +609,9 @@
 		</method>
 		<inlet id="0">
 			<grid><dim>anyA..., lastA</dim>
-				creates a dim(anyA...,anyB...) grid by splitting the
-				left-hand grid into dim(lastA) pieces, the right-hand grid
-				into dim(lastB) pieces, doing an [@] on them with the
+				creates a Dim(anyA...,anyB...) grid by splitting the
+				left-hand grid into Dim(lastA) pieces, the right-hand grid
+				into Dim(lastB) pieces, doing an [@] on them with the
 				specified op_para operator, and then a [@fold] on that with
 				the specified op_fold operator and base value. lastA must be
 				equal to lastB.
@@ -694,12 +694,12 @@
 			</method>
 			<grid><dim>dims..., indices</dim>
 				in this grid, the last dimension refers to subparts of
-				the stored grid. sending a dim(200,200,2) on a @store
-				that holds a dim(240,320,3) will cause the @store to handle
-				the incoming grid as a dim(200,200) of dim(2)'s, where each
-				dim(2) represents a position in a dim(240,320) of dim(3)'s.
-				therefore the resulting grid will be a dim(200,200) of
-				dim(3) which is a dim(200,200,3). in practice this example
+				the stored grid. sending a Dim(200,200,2) on a @store
+				that holds a Dim(240,320,3) will cause the @store to handle
+				the incoming grid as a Dim(200,200) of Dim(2)'s, where each
+				Dim(2) represents a position in a Dim(240,320) of Dim(3)'s.
+				therefore the resulting grid will be a Dim(200,200) of
+				Dim(3) which is a Dim(200,200,3). in practice this example
 				would be used for generating a 200*200 RGB picture from a
 				200*200 XY map and a 240*320 RGB picture. this object can
 				be logically used in the same way for many purposes
@@ -731,7 +731,7 @@
 			<method name="bang">creates a coordinate map that can
 			be fed into the left input of @store to give the same result
 			as a bang in that input; that coordinate map is
-			dim(height,width,2), where each dim(2) is a (y,x) pair indexing
+			Dim(height,width,2), where each Dim(2) is a (y,x) pair indexing
 			a pixel.</method>
 		</inlet>
 		<inlet id="1">
