@@ -240,7 +240,7 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 		if (gc2==Qnil) RAISE("@grid_class not found in %s",
 			RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
 		*/
-		c_peer->grid_class = gc2==Qnil ? 0 : FIX2PTR(gc2);
+		c_peer->grid_class = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
 	}
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 	rb_funcall2($,SI(initialize),argc,argv);
@@ -286,7 +286,7 @@ DECL_SYM2(list)
 
 static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 	void *data2 = FIX2PTR(data);
-	void (*func2)() = FIX2PTR(func);
+	void (*func2)(void*) = (void(*)(void*))FIX2PTR(func);
 	func2(data2);
 	return Qnil;
 }
@@ -319,7 +319,7 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	}
 }
 
-void MainLoop_add(void *data, void (*func)(void)) {
+void MainLoop_add(void *data, void (*func)(void*)) {
 	rb_funcall(rb_eval_string("$tasks"),rb_intern("[]="), 2,
 		PTR2FIX(data), PTR2FIX(func));
 }
@@ -391,8 +391,8 @@ void Init_gridflow (void) /*throws Exception*/ {
 	gf_object_set = rb_hash_new();
 
 	GridFlow_module = rb_define_module("GridFlow");
-	rb_define_singleton_method(GridFlow_module,"exec",GridFlow_exec,2);
-	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
+	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
+	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
 	rb_ivar_set(GridFlow_module, rb_intern("@fclasses_set"), rb_hash_new());
 

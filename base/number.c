@@ -78,7 +78,7 @@ int low_bit(uint32 n) {
 	while (n>3) { FOURTIMES(_x_) n-=4; } \
 	while (n--) { _x_ }
 
-uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
+static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	register uint32 t;
 	int i;
 	int hb[4];
@@ -116,7 +116,7 @@ uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 
 /* **************************************************************** */
 
-uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
+static uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
 	const int hb[3] = {15,10,4};
 	const int mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
@@ -124,7 +124,7 @@ uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return out;
 }
 
-uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
+static uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 	return out;
 }
@@ -227,12 +227,12 @@ void swap16 (int n, uint16 *data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
-VALUE String_swap32_f (VALUE $) {
+static VALUE String_swap32_f (VALUE $) {
 	swap32(rb_str_len($)/4,(uint32 *)rb_str_ptr($));
 	return $;
 }
 
-VALUE String_swap16_f (VALUE $) {
+static VALUE String_swap16_f (VALUE $) {
 	swap16(rb_str_len($)/2,(uint16 *)rb_str_ptr($));
 	return $;
 }
@@ -274,7 +274,7 @@ METHOD2(BitPacking,unpack2) {
 void BitPacking_mark (VALUE *$) {}
 void BitPacking_sweep (VALUE *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
 
-VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
+static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
 	BitPacking *c_peer;
 	VALUE $; /* ruby_peer */
@@ -309,77 +309,14 @@ LIST(),
 
 /* **************************************************************** */
 
-#define Dim_invariant(_self_) \
-	assert(_self_); \
-	assert_range(_self_->n,0,MAX_DIMENSIONS);
-
-Dim *Dim_new2(int n, int *v, const char *file, int line) {
-	Dim *$ = (Dim *) NEW3(int,n+1,file,line);
-
-	int i;
-	assert_range(n,0,MAX_DIMENSIONS);
-	assert(v);
-	$->n = n;
-	for (i=0; i<n; i++) {
-		assert_range(v[i],0,MAX_INDICES);
-		$->v[i] = v[i];
-	}
-	Dim_invariant($);
-	return $;
-}
-
-Dim *Dim_dup2(Dim *$, const char *file, int line) {
-	return Dim_new2($->n,$->v,file,line);
-}
-
-int Dim_count(Dim *$) {
-	Dim_invariant($);
-	return $->n;
-}
-
-int Dim_get(Dim *$, int i) {
-	Dim_invariant($);
-	assert_range(i,0,$->n-1);
-	assert_range($->v[i],0,MAX_INDICES);
-	return $->v[i];
-}
-
-int Dim_prod(Dim *$) {
-	int v=1;
-	int i;
-	Dim_invariant($);
-	for (i=0; i<$->n; i++) v *= $->v[i];
-	return v;
-}
-
-int Dim_prod_start(Dim *$, int start) {
-	int v=1;
-	int i;
-	Dim_invariant($);
-	for (i=start; i<$->n; i++) v *= $->v[i];
-	return v;
-}
-
-int Dim_calc_dex(Dim *$, int *v) {
-	int dex=0;
-	int i;
-	for (i=0; i<$->n; i++) {
-		dex = dex * $->v[i] + v[i];
-	}
-	return dex;
-}
-
-/* ******************************************************** */
-
 /* returns a string like "Dim(240,320,3)" */
-char *Dim_to_s(Dim *$) {
+char *Dim::to_s() {
 	/* if you blow 256 chars it's your own fault */
 	char *bottom = NEW(char,256);
 	char *s = bottom;
-	int i=0;
-	Dim_invariant($);
+	invariant();
 	s += sprintf(s,"Dim(");
-	for(; i<$->n; i++) s += sprintf(s,"%s%d", ","+!i, $->v[i]);
+	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
 	s += sprintf(s,")");
 	return (char *)REALLOC(bottom,strlen(bottom)+1);
 }
@@ -389,7 +326,7 @@ char *Dim_to_s(Dim *$) {
 #define DECL_TYPE(_name_,_size_) \
 	{ 0, #_name_, _size_ }
 
-static NumberType numeric_type_table[] = {
+NumberType number_type_table[] = {
 	DECL_TYPE(     uint8,  8),
 	DECL_TYPE(      int8,  8),
 	DECL_TYPE(    uint16, 16),
@@ -561,18 +498,22 @@ VALUE op2_dict = Qnil;
 
 void startup_number (void) {
 	int i;
+	int foo = PTR2FIX("hello");
+
 	rb_define_readonly_variable("$op1_dict",&op1_dict);
-	rb_define_readonly_variable("$op2_dict",&op2_dict);
 	op1_dict = rb_hash_new();
-	op2_dict = rb_hash_new();
 	for(i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
-		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX(&op1_table[i]));
+		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX((op1_table+i)));
 	} 
+
+	rb_define_readonly_variable("$op2_dict",&op2_dict);
+	op2_dict = rb_hash_new();
 	for(i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
-		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX(&op2_table[i]));
+		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
 	} 
+
 	{
 		VALUE BitPacking_class =
 			rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
@@ -581,6 +522,6 @@ void startup_number (void) {
 			BitPacking_classinfo.methods);
 		SDEF(BitPacking,new,-1);
 	}
-	rb_define_method(rb_cString, "swap32!", String_swap32_f, 0);
-	rb_define_method(rb_cString, "swap16!", String_swap16_f, 0);
+	rb_define_method(rb_cString, "swap32!", (RFunc)String_swap32_f, 0);
+	rb_define_method(rb_cString, "swap16!", (RFunc)String_swap16_f, 0);
 }
