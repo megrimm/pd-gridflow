@@ -35,7 +35,7 @@
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
 <tr><td colspan='2'>
-<h5><a href="Conventions of this Manual">Conventions of this Manual</a></h5><blockquote></blockquote><h5><a href="Grid Protocol">Grid Protocol</a></h5><blockquote></blockquote><h5><a href="Picture Protocol">Picture Protocol</a></h5><blockquote></blockquote><h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/video_out_240_320.jpg" alt="[@video_out 240 320]"><br><img src="images/video_out_file.jpg" alt="[@out]"><br><img src="images/video_in_file.jpg" alt="[@ import 240 320 3]"><br><img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br><img src="images/@export.jpg" alt="[@export]"><br></blockquote><h5><a href="Transformation Objects">Transformation Objects</a></h5><blockquote><img src="images/@fold_%2B.jpg" alt="[@fold +]"><br><img src="images/@redim.jpg" alt="[@redim 2]"><br><img src="images/@store.jpg" alt="[@store]"><br><img src="images/@outer.jpg" alt="[@outer +]"><br></blockquote><h5><a href="Reporting Objects">Reporting Objects</a></h5><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br></blockquote><h5><a href="Special Objects">Special Objects</a></h5><blockquote></blockquote><h5><a href="Compound Objects">Compound Objects</a></h5><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br><img src="images/@identity_transform.jpg" alt="[@identity_transform]"><br><img src="images/@posterize.jpg" alt="[@posterize]"><br><img src="images/@scale_to.jpg" alt="[@scale_to]"><br><img src="images/@spread.jpg" alt="[@spread]"><br><img src="images/@three.jpg" alt="[@three]"><br><img src="images/@two.jpg" alt="[@two]"><br></blockquote><h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote><h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote><h5><a href="External Picture Formats">External Picture Formats</a></h5><blockquote><img src="images/open_ppm.jpg" alt="[open filename.ppm]"><br><img src="images/open_tga.jpg" alt="[open filename.tga targa]"><br><img src="images/open_videodev.jpg" alt="[open /dev/video0 videodev]"><br><img src="" alt="[connect here x11]"><br></blockquote><br><br></td></tr>
+<h5><a href="Conventions of this Manual">Conventions of this Manual</a></h5><blockquote></blockquote><h5><a href="Grid Protocol">Grid Protocol</a></h5><blockquote></blockquote><h5><a href="Picture Protocol">Picture Protocol</a></h5><blockquote></blockquote><h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/video_in_file.jpg" alt="[@ import 240 320 3]"><br><img src="images/out.jpg" alt="[@out]"><br><img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br><img src="images/@export.jpg" alt="[@export]"><br></blockquote><h5><a href="Transformation Objects">Transformation Objects</a></h5><blockquote><img src="images/@fold_%2B.jpg" alt="[@fold +]"><br><img src="images/@redim.jpg" alt="[@redim 2]"><br><img src="images/@store.jpg" alt="[@store]"><br><img src="images/@outer.jpg" alt="[@outer +]"><br></blockquote><h5><a href="Reporting Objects">Reporting Objects</a></h5><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br></blockquote><h5><a href="Special Objects">Special Objects</a></h5><blockquote></blockquote><h5><a href="Compound Objects">Compound Objects</a></h5><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br><img src="images/@identity_transform.jpg" alt="[@identity_transform]"><br><img src="images/@posterize.jpg" alt="[@posterize]"><br><img src="images/@scale_to.jpg" alt="[@scale_to]"><br><img src="images/@spread.jpg" alt="[@spread]"><br><img src="images/@three.jpg" alt="[@three]"><br><img src="images/@two.jpg" alt="[@two]"><br></blockquote><h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote><h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote><h5><a href="External Picture Formats">External Picture Formats</a></h5><blockquote><img src="images/open_ppm.jpg" alt="[open filename.ppm]"><br><img src="images/open_tga.jpg" alt="[open filename.tga targa]"><br><img src="images/open_videodev.jpg" alt="[open /dev/video0 videodev]"><br><img src="" alt="[open x11 here]"><br></blockquote><br><br></td></tr>
 
 
 
@@ -244,149 +244,101 @@
 </tr>
 <tr><td colspan="4"><h4>Objects for Input/Output</h4></td></tr>
 
-	<tr><td colspan="4"><h5><a name="@video_out">@video_out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_out_240_320.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a></td><td>
+	<tr><td colspan="4"><h5><a name="@in">@in</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_in_file.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a></td><td>
 
 		
 
 
 
-		<p>note: this object is obsolete, for the most part, as it now just
+		<br><b>method</b> init <b>(</b><b>)</b>
 
-		creates a @out object under the hood and opens a window in x11
+			Creates an input object for an unspecified format. You
 
-		format with it. See section "External Picture Formats".</p>
+			need to use the <kbd>open</kbd> command to decide that.
 
 
 
-		<br><b>method</b> init <b>(</b>rows<b>,</b>columns<b>)</b>
+			Remember that most formats produce dim(rows,columns,3) grids with
 
-			
-
-			
-
-			Each @video_out object creates a window when it is created.
-
-			It will accept dim(rows,columns,3) grids.
-
-			If you want to create a window that is 240 pixels high and 320
-
-			pixels wide: [@video_out 240 320]. @video_out will use three
-
-			channels in RGB with values ranging 0-255.
+			0-255 values. (Most.)
 
 		<br><br>
 
-		
-
-		
-
-			<br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b>
-
-				resizes the window to the size of the grid;
-
-				encodes that grid in the display's pixel format;
-
-				also displays it if autodraw > 0
-
-			<br><br>
-
-			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
-
-				see format x11's option draw.
-
-			<br><br>
-
-			<br><b>inlet 0</b> <b>method</b> autodraw <b>(</b><b>)</b>
-
-				
-
-				see format x11's option autodraw.
-
-			<br><br>
-
-		
-
 
 
 		
 
-			<br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
-
-				sent when a complete grid has been received.
-
-			<br><br>
-
-		
-
-
-
-		<p>
-
-		Destroying the object should close the window.
-
-		Because of how jMax works,
-
-		this may be delayed until you do something else.
-
-		Closing the window yourself will make jMax crash.
-
-		</p>
-
-
-
-		
-
-	
-
-	<tr><td colspan="4"><h5><a name="@out">@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_out_file.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a></td><td>
-
-		
-
-		
-
-			<br><b>inlet 0</b> <b>method</b> open <b>(</b>filename<b>,</b>format<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b> ... format_specific_part<b>)</b>
 
 				
 
 				
 
-				you must open a file first. You do this by sending the message
+				This is the command that gives a particular resource
 
-				"open" with a filename parameter. you may append the symbol "targa"
+				to a @out object. This is done through a "format"
 
-				for .tga files, or "videodev" for video4linux 1.x digitalizer input,
+				(there is a list of formats in this manual). The other
 
-				or "ppm" (but ppm is the default)
+				arguments depend on the chosen format. The format may
 
-			<br><br>
-
-			<br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b>
-
-				writes a grid to file.
-
-				the file must be open first.
-
-				Sending a 2nd picture overwrites the first, like what
-
-				happens to the video buffer inside a @video_out object.
+				be a file format or a protocol or a hardware device, etc.
 
 			<br><br>
 
 			<br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>
 
-				closes the file.
+				close may be necessary if you operate on "/dev/video",
+
+				which can only be read by one at a time. otherwise it's
 
 				usually not necessary.
 
 			<br><br>
 
-			<br><b>inlet 0</b> <b>method</b> option <b>(</b>name<b>,</b>value<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				sends a grid through the outlet. the grid may be the
+
+				result of reading from a file, acquiring from a device,
+
+				capturing from the screen etc.
+
+
+
+				this is format-specific. most formats
+
+				produce <b>dim(</b>rows columns {red green blue}<b>)</b>.
+
+
+
+				In formats that read from a file, reading another picture
+
+				will continue if several pictures are concatenated in the
+
+				file, but if the end of file is reached instead, it will
+
+				rewind and send the first picture again.
+
+
+
+				see section "External Picture Formats".
+
+
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b> ... stuff<b>)</b>
 
 				
 
 				
 
-				for format-specific functionality.
+				for format-specific options.
+
+				(usually in devices that masquerade as formats).
+
+
 
 				see section "External Picture Formats".
 
@@ -398,57 +350,83 @@
 
 	
 
-	<tr><td colspan="4"><h5><a name="@in">@in</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/video_in_file.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a></td><td>
+	<tr><td colspan="4"><h5><a name="@out">@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src="images/out.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a></td><td>
 
 		
 
-		This class is similar to @out in that it operates on
+		<br><b>method</b> init <b>(</b><b>)</b>
 
-		files. However some aspects of it are backwards because it's reading,
+			Creates an output object for an unspecified format. You
 
-		not writing. Objects of this class don't have a grid inlet, they have
+			need to use the <kbd>open</kbd> command to decide that.
 
-		a grid outlet instead.
+
+
+			Remember that most formats expect dim(rows,columns,3) grids with
+
+			0-255 values. (Most.)
+
+		<br><br>
+
+		<br><b>method</b> init <b>(</b>rows<b>,</b>columns<b>)</b>
+
+			
+
+			
+
+
+
+			This alternate way to create an @out automatically calls
+
+			"open x11 here" and "option out_size <i>rows columns</i>".
+
+		<br><br>
 
 		
 
-			<br><b>inlet 0</b> <b>method</b> open <b>(</b>filename<b>,</b>format<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>,</b> ... format_specific_part<b>)</b>
 
 				
 
 				
+
+				This is the command that gives a particular resource
+
+				to a @out object. This is done through a "format"
+
+				(there is a list of formats in this manual). The other
+
+				arguments depend on the chosen format. The format may
+
+				be a file format or a protocol or a hardware device, etc.
+
+			<br><br>
+
+			<br><b>grid</b> 
+
+				this is format-specific. most formats
+
+				expect <b>dim(</b>rows columns {red green blue}<b>)</b>.
+
+
+
+				In formats that write to a file, sending a 2nd picture
+
+				overwrites the first.
+
+
+
+				see section "External Picture Formats".
 
 			<br><br>
 
 			<br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>
 
-				close may be necessary if you operate on "/dev/video", which can
-
-				only be read by one at a time. otherwise it's not necessary.
+				closes the file. usually not necessary.
 
 			<br><br>
 
-			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
-
-				causes the object to send the picture from an open file through its
-
-				outlet. Several bangs reread the same picture over and over.
-
-			<br><br>
-
-			<br><b>inlet 0</b> <b>method</b> size <b>(</b>height<b>,</b>width<b>)</b>
-
-				
-
-				
-
-				sets the input size, especially when using a video digitalizer
-
-				device
-
-			<br><br>
-
-			<br><b>inlet 0</b> <b>method</b> option <b>(</b>property<b>,</b>value<b>)</b>
+			<br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b> ... stuff<b>)</b>
 
 				
 
@@ -457,6 +435,34 @@
 				for format-specific options.
 
 				(usually in devices that masquerade as formats).
+
+
+
+				see section "External Picture Formats".
+
+			<br><br>
+
+			<br><b>inlet 0</b> <b>method</b> option timelog <b>(</b>status<b>)</b>
+
+				
+
+				when status=1, current time (unix clock) and time since last
+
+				frame-end are printed in the console. when status=0, it is off.
+
+				default is 0.
+
+			<br><br>
+
+
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				sent when a complete grid has been received.
 
 			<br><br>
 
@@ -1281,57 +1287,141 @@ doing redundant updates -- sorry)</p>
 
 
 
+			<br><b>method</b> option size <b>(</b>height<b>,</b>width<b>)</b>
+
+				
+
+				
+
+				sets the input size, especially when using a video digitalizer
+
+				device
+
+			<br><br>
+
+
+
 	
 
 
 
-	<tr><td colspan="4"><h5><a name="format x11 @in/@out">format x11 @in/@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src=""><br clear="left"><br><br></td><td>
+	<tr><td colspan="4"><h5><a name="format x11 @in/@out">format x11 @in/@out</a></h5></td></tr><tr><td></td><td valign='top'><br><img src=""><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a></td><td>
+
+
 
 		
 
-		<p>This is the replacement for the @video_out object.</p>
+
+
+		<br><b>method</b> open x11 here <b>(</b><b>)</b>
+
+			connects to the default X11 server,
+
+			according to your environment variable "DISPLAY".
+
+		<br><br>
 
 
 
-		<p>default connection: the destination must be <kbd>here</kbd>.</p>
+		<br><b>method</b> open x11 local <b>(</b>display_number<b>)</b>
+
+			
+
+			connects to a display server on this machine.
+
+		<br><br>
 
 		
 
-		<p>connecting locally (unix sockets): the destination must be
+		<br><b>method</b> open x11 remote <b>(</b>host_name<b>,</b>display_number<b>)</b>
 
-		like <kbd>local/display</kbd>, where display is the display number; for
+			
 
-		example, <kbd>local/0</kbd>.</p>
+			
+
+			connects to a remote X11 display server using TCP.
+
+			Sorry, IP addresses are not supported (jMax limitation).
+
+			Port number will be 6000 plus the display number, because
+
+			of the X11 standard.
+
+		<br><br>
 
 		
 
-		<p>connecting to remote display using TCP (or locally using TCP):
+		<br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b>
 
-	the destination must be like <kbd>remote/host/display</kbd>; for example,
+			resizes the window to the size of the grid;
 
-	<kbd>remote/artengine.ca/0</kbd> will try to connect to hostname.2y.net
+			encodes that grid in the display's pixel format;
 
-	on port 6000, which is display 0.</p>
+			also displays it if autodraw > 0
 
+			the values must be in range 0-255,
 
+			or else they will be "wrapped".
 
-		<p>because of the design of Xlib, if any of the connections involved
-
-		crashes, then the whole program (fts) has to be terminated. (don't
-
-		you love xlib)</p>
+		<br><br>
 
 
 
-		<p>only one window may be open per connection (to simplify matters;
+		<br><b>method</b> bang <b>(</b><b>)</b>
 
-		this doesn't reduce flexibility). you may send to a new
+			see format x11's option draw.
 
-		toplevel window (by default); if you append "/root" to your
+		<br><br>
 
-		destination you can write in root window (the "wallpaper"); if you
 
-		append a window number, e.g. <kbd>0x28003ff</kbd>, you may connect to
+
+		<br><b>method</b> autodraw <b>(</b><b>)</b>
+
+			
+
+			see format x11's option autodraw.
+
+		<br><br>
+
+
+
+		<p>
+
+		Destroying the object (or sending "close") should close the window.
+
+		Because of how jMax works,
+
+		this may be delayed until you do something else.
+
+		</p>
+
+
+
+		<p>because of the design of Xlib, or if any of the connections
+
+		involved crashes, then the whole program (fts) has to be terminated.
+
+		(don't you love xlib). Something similar happens if you close any
+
+		of the windows yourself, but IIRC this could be fixed.</p>
+
+
+
+		<p>only one window may be used per connection (to simplify matters;
+
+		this doesn't reduce flexibility).</p>
+
+
+
+		<p>there is an additional argument that may be added to every
+
+		"open" message; if you don't put it, a new toplevel window is created.
+
+		if you put "root" then the screen's wallpaper will be used instead
+
+		(it may fail to work with some popular window managers). You can also
+
+		put a window number, e.g. <kbd>0x28003ff</kbd>, you may connect to
 
 		an existing window; you can find out the number of a window by using
 
@@ -1339,35 +1429,51 @@ doing redundant updates -- sorry)</p>
 
 
 
-		<p>option out_size(height,width): changes the window's size, just
+		<br><b>method</b> option out_size <b>(</b>height<b>,</b>width<b>)</b>
 
-		like sending a grid dim(height,width,3) would.</p>
+			
 
+			
 
+			changes the window's size, just like sending a grid
 
-		<p>option draw(): forces a redraw of the window's contents.</p>
+			dim(height,width,3) would.
 
+		<br><br>
 
+		
 
-		<p>option autodraw(level): when level=0, option draw() is never
+		<br><b>method</b> option draw <b>(</b><b>)</b>
 
-		automatically invoked; with level=1, option draw() is invoked after
+			forces a redraw of the window's contents.
 
-		each grid is finished; with level=2, option draw() is invoked
-
-		incrementally after each row is received. (but buffering may cause
-
-		lines to come in groups anyway)</p>
-
-
-
-		<p>option timelog(status): when status=1, current time (unix
-
-		clock) and time since last frame-end are printed in the console.
-
-		when status=0, it is off. default is 0.</p>
+		<br><br>
 
 
+
+		<br><b>method</b> option autodraw <b>(</b>level<b>)</b>
+
+			
+
+			<ul>
+
+			<li><b>0</b> : option draw() is never automatically invoked</li>
+
+			<li><b>1</b> : option draw() is invoked after each grid is finished</li>
+
+			<li><b>2</b> : option draw() is invoked incrementally after each row is
+
+			received. (but buffering may cause lines to come in groups
+
+			anyway)</li>
+
+			</ul>
+
+		<br><br>
+
+
+
+		
 
 	
 

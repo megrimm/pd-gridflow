@@ -67,6 +67,7 @@ class XNode
 		"list" => 1,
 		"icon" => 1,
 		"arg" => 1,
+		"rest" => 1,
 		"method" => 1,
 		"dim" => 1,
 		"grid" => 1,
@@ -167,8 +168,15 @@ class XNode
 			print "<br>"
 			print "<b>", $portnum.join(" "), "</b> " if $portnum
 			print "<b>method</b> #{att['name']} <b>(</b>"
-			args = contents.find_all {|x| XNode===x and x.tag == 'arg' }
-			print args.map {|x| x.att['name'] }.join "<b>,</b>"
+			print contents.map {|x|
+				next unless XNode===x
+				case x.tag
+				when "arg"
+					x.att["name"]
+				when "rest"
+					" ... " + x.att["name"]
+				end
+			}.compact.join "<b>,</b>"
 			print "<b>)</b>"
 			e="<br><br>"
 		when "grid"
@@ -180,7 +188,7 @@ class XNode
 		when "inlet", "outlet"
 			# hidden
 			$portnum = [tag,att['id']]
-		when "icon", "sample", "arg"
+		when "icon", "sample", "arg", "rest"
 			# hidden
 			return
 		when "grid", "dim"

@@ -101,133 +101,130 @@
 </section>
 
 <section name="Objects for Input/Output">
-	<jmax-class name="@video_out">
-		<icon
-			image="images/video_out_240_320.jpg"
-			text="[@video_out 240 320]"
-		/>
-
-		<p>note: this object is obsolete, for the most part, as it now just
-		creates a @out object under the hood and opens a window in x11
-		format with it. See section "External Picture Formats".</p>
-
-		<method name="init">
-			<arg name="rows" type="integer"/>
-			<arg name="columns" type="integer"/>
-			Each @video_out object creates a window when it is created.
-			It will accept dim(rows,columns,3) grids.
-			If you want to create a window that is 240 pixels high and 320
-			pixels wide: [@video_out 240 320]. @video_out will use three
-			channels in RGB with values ranging 0-255.
-		</method>
-		
-		<inlet id="0">
-			<grid><dim>rows columns {red green blue}</dim>
-				resizes the window to the size of the grid;
-				encodes that grid in the display's pixel format;
-				also displays it if autodraw &gt; 0
-			</grid>
-			<method name="bang">
-				see format x11's option draw.
-			</method>
-			<method name="autodraw">
-				<arg type="integer"/>
-				see format x11's option autodraw.
-			</method>
-		</inlet>
-
-		<outlet id="0">
-			<method name="bang">
-				sent when a complete grid has been received.
-			</method>
-		</outlet>
-
-		<p>
-		Destroying the object should close the window.
-		Because of how jMax works,
-		this may be delayed until you do something else.
-		Closing the window yourself will make jMax crash.
-		</p>
-
-		<sample
-			image="images/grab_video_out.png"
-			text="video_out_patch"
-		/>
-	</jmax-class>
-	<jmax-class name="@out">
-		<icon
-			image="images/video_out_file.jpg"
-			text="[@out]"
-		/>
-		<inlet id="0">
-			<method name="open" min="1">
-				<arg name="filename"/>
-				<arg name="format"/>
-				you must open a file first. You do this by sending the message
-				"open" with a filename parameter. you may append the symbol "targa"
-				for .tga files, or "videodev" for video4linux 1.x digitalizer input,
-				or "ppm" (but ppm is the default)
-			</method>
-			<grid><dim>rows columns {red green blue}</dim>
-				writes a grid to file.
-				the file must be open first.
-				Sending a 2nd picture overwrites the first, like what
-				happens to the video buffer inside a @video_out object.
-			</grid>
-			<method name="close">
-				closes the file.
-				usually not necessary.
-			</method>
-			<method name="option">
-				<arg name="name"/>
-				<arg name="value"/>
-				for format-specific functionality.
-				see section "External Picture Formats".
-			</method>
-		</inlet>
-		<sample
-			image="images/grab_video_out_file.png"
-			text="[@out]"
-		/>
-	</jmax-class>
 	<jmax-class name="@in">
 		<icon
 			image="images/video_in_file.jpg"
 			text="[@ import 240 320 3]"
 		/>
-		This class is similar to @out in that it operates on
-		files. However some aspects of it are backwards because it's reading,
-		not writing. Objects of this class don't have a grid inlet, they have
-		a grid outlet instead.
+
+		<method name="init">
+			Creates an input object for an unspecified format. You
+			need to use the <k>open</k> command to decide that.
+
+			Remember that most formats produce dim(rows,columns,3) grids with
+			0-255 values. (Most.)
+		</method>
+
 		<inlet id="0">
 			<method name="open" min="1">
-				<arg name="filename"/>
 				<arg name="format"/>
+				<rest name="format_specific_part"/>
+				This is the command that gives a particular resource
+				to a @out object. This is done through a "format"
+				(there is a list of formats in this manual). The other
+				arguments depend on the chosen format. The format may
+				be a file format or a protocol or a hardware device, etc.
 			</method>
 			<method name="close">
-				close may be necessary if you operate on "/dev/video", which can
-				only be read by one at a time. otherwise it's not necessary.
+				close may be necessary if you operate on "/dev/video",
+				which can only be read by one at a time. otherwise it's
+				usually not necessary.
 			</method>
 			<method name="bang">
-				causes the object to send the picture from an open file through its
-				outlet. Several bangs reread the same picture over and over.
-			</method>
-			<method name="size">
-				<arg name="height"/>
-				<arg name="width"/>
-				sets the input size, especially when using a video digitalizer
-				device
+				sends a grid through the outlet. the grid may be the
+				result of reading from a file, acquiring from a device,
+				capturing from the screen etc.
+
+				this is format-specific. most formats
+				produce <dim>rows columns {red green blue}</dim>.
+
+				In formats that read from a file, reading another picture
+				will continue if several pictures are concatenated in the
+				file, but if the end of file is reached instead, it will
+				rewind and send the first picture again.
+
+				see section "External Picture Formats".
+
 			</method>
 			<method name="option">
-				<arg name="property"/>
-				<arg name="value"/>
+				<arg name="selector" type="symbol"/>
+				<rest name="stuff"/>
 				for format-specific options.
 				(usually in devices that masquerade as formats).
+
+				see section "External Picture Formats".
 			</method>
 		</inlet>
 		<sample
 			image="images/grab_video_in.png"
 			text="[@ import 240 320 3]"
+		/>
+	</jmax-class>
+	<jmax-class name="@out">
+		<icon
+			image="images/out.jpg"
+			text="[@out]"
+		/>
+		<method name="init">
+			Creates an output object for an unspecified format. You
+			need to use the <k>open</k> command to decide that.
+
+			Remember that most formats expect dim(rows,columns,3) grids with
+			0-255 values. (Most.)
+		</method>
+		<method name="init">
+			<arg name="rows" type="integer"/>
+			<arg name="columns" type="integer"/>
+
+			This alternate way to create an @out automatically calls
+			"open x11 here" and "option out_size <i>rows columns</i>".
+		</method>
+		<inlet id="0">
+			<method name="open" min="1">
+				<arg name="format"/>
+				<rest name="format_specific_part"/>
+				This is the command that gives a particular resource
+				to a @out object. This is done through a "format"
+				(there is a list of formats in this manual). The other
+				arguments depend on the chosen format. The format may
+				be a file format or a protocol or a hardware device, etc.
+			</method>
+			<grid>
+				this is format-specific. most formats
+				expect <dim>rows columns {red green blue}</dim>.
+
+				In formats that write to a file, sending a 2nd picture
+				overwrites the first.
+
+				see section "External Picture Formats".
+			</grid>
+			<method name="close">
+				closes the file. usually not necessary.
+			</method>
+			<method name="option">
+				<arg name="selector" type="symbol"/>
+				<rest name="stuff"/>
+				for format-specific options.
+				(usually in devices that masquerade as formats).
+
+				see section "External Picture Formats".
+			</method>
+			<method name="option timelog">
+				<arg name="status" type="0,1"/>
+				when status=1, current time (unix clock) and time since last
+				frame-end are printed in the console. when status=0, it is off.
+				default is 0.
+			</method>
+
+		</inlet>
+		<outlet id="0">
+			<method name="bang">
+				sent when a complete grid has been received.
+			</method>
+		</outlet>
+		<sample
+			image="images/grab_video_out_file.png"
+			text="[@out]"
 		/>
 	</jmax-class>
 	<jmax-class name="@import">
@@ -717,50 +714,103 @@ doing redundant updates -- sorry)</p>
 		<li><k>norm</k> <i>integer</i></li>
 		</list></p>
 
+			<method name="option size">
+				<arg name="height"/>
+				<arg name="width"/>
+				sets the input size, especially when using a video digitalizer
+				device
+			</method>
+
 	</jmax-class>
 
 	<jmax-class name="format x11 @in/@out">
-		<icon text="[connect here x11]"/>
-		<p>This is the replacement for the @video_out object.</p>
 
-		<p>default connection: the destination must be <k>here</k>.</p>
+		<icon text="[open x11 here]"/>
+
+		<method name="open x11 here">
+			connects to the default X11 server,
+			according to your environment variable "DISPLAY".
+		</method>
+
+		<method name="open x11 local">
+			<arg name="display_number" type="integer"/>
+			connects to a display server on this machine.
+		</method>
 		
-		<p>connecting locally (unix sockets): the destination must be
-		like <k>local/display</k>, where display is the display number; for
-		example, <k>local/0</k>.</p>
+		<method name="open x11 remote">
+			<arg name="host_name" type="symbol"/>
+			<arg name="display_number" type="integer"/>
+			connects to a remote X11 display server using TCP.
+			Sorry, IP addresses are not supported (jMax limitation).
+			Port number will be 6000 plus the display number, because
+			of the X11 standard.
+		</method>
 		
-		<p>connecting to remote display using TCP (or locally using TCP):
-	the destination must be like <k>remote/host/display</k>; for example,
-	<k>remote/artengine.ca/0</k> will try to connect to hostname.2y.net
-	on port 6000, which is display 0.</p>
+		<grid><dim>rows columns {red green blue}</dim>
+			resizes the window to the size of the grid;
+			encodes that grid in the display's pixel format;
+			also displays it if autodraw &gt; 0
+			the values must be in range 0-255,
+			or else they will be "wrapped".
+		</grid>
 
-		<p>because of the design of Xlib, if any of the connections involved
-		crashes, then the whole program (fts) has to be terminated. (don't
-		you love xlib)</p>
+		<method name="bang">
+			see format x11's option draw.
+		</method>
 
-		<p>only one window may be open per connection (to simplify matters;
-		this doesn't reduce flexibility). you may send to a new
-		toplevel window (by default); if you append "/root" to your
-		destination you can write in root window (the "wallpaper"); if you
-		append a window number, e.g. <k>0x28003ff</k>, you may connect to
+		<method name="autodraw">
+			<arg type="integer"/>
+			see format x11's option autodraw.
+		</method>
+
+		<p>
+		Destroying the object (or sending "close") should close the window.
+		Because of how jMax works,
+		this may be delayed until you do something else.
+		</p>
+
+		<p>because of the design of Xlib, or if any of the connections
+		involved crashes, then the whole program (fts) has to be terminated.
+		(don't you love xlib). Something similar happens if you close any
+		of the windows yourself, but IIRC this could be fixed.</p>
+
+		<p>only one window may be used per connection (to simplify matters;
+		this doesn't reduce flexibility).</p>
+
+		<p>there is an additional argument that may be added to every
+		"open" message; if you don't put it, a new toplevel window is created.
+		if you put "root" then the screen's wallpaper will be used instead
+		(it may fail to work with some popular window managers). You can also
+		put a window number, e.g. <k>0x28003ff</k>, you may connect to
 		an existing window; you can find out the number of a window by using
 		a tool like <k>xwininfo</k>, part of X11 standard tools.</p>
 
-		<p>option out_size(height,width): changes the window's size, just
-		like sending a grid dim(height,width,3) would.</p>
+		<method name="option out_size">
+			<arg name="height" type="integer"/>
+			<arg name="width"  type="integer"/>
+			changes the window's size, just like sending a grid
+			dim(height,width,3) would.
+		</method>
+		
+		<method name="option draw">
+			forces a redraw of the window's contents.
+		</method>
 
-		<p>option draw(): forces a redraw of the window's contents.</p>
+		<method name="option autodraw">
+			<arg name="level" type="0,1,2"/>
+			<list start="0">
+			<li>option draw() is never automatically invoked</li>
+			<li>option draw() is invoked after each grid is finished</li>
+			<li>option draw() is invoked incrementally after each row is
+			received. (but buffering may cause lines to come in groups
+			anyway)</li>
+			</list>
+		</method>
 
-		<p>option autodraw(level): when level=0, option draw() is never
-		automatically invoked; with level=1, option draw() is invoked after
-		each grid is finished; with level=2, option draw() is invoked
-		incrementally after each row is received. (but buffering may cause
-		lines to come in groups anyway)</p>
-
-		<p>option timelog(status): when status=1, current time (unix
-		clock) and time since last frame-end are printed in the console.
-		when status=0, it is off. default is 0.</p>
-
+		<sample
+			image="images/grab_video_out.png"
+			text="video_out_patch"
+		/>
 	</jmax-class>
 
 </section>
