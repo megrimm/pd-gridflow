@@ -98,7 +98,7 @@ $conf={
 	:FEATURES => {},
 	:FORMATS => [],
 	:OPTIONS => [],
-	:DEFINES => [[:JMAX_ARCH,"i686-linux"]],
+	:DEFINES => {:JMAX_ARCH => "i686-linux", :RUBY_PREFIX => CONFIG['sitedir']},
 	:OBJS => [],
 }
 
@@ -424,7 +424,7 @@ Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
-	defines [[:JMAXDISTDIR,`pwd`.chomp + "/bundled/jmax"]]
+	defines :JMAXDISTDIR => `pwd`.chomp + "/bundled/jmax"
 	test proc {
 		c_test '
 		#define new new_
@@ -447,7 +447,7 @@ Feature.new {
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
-	defines {[["JMAX4_INSTALL_DIR",`jmax-config --package-dir`.chomp]]}
+	defines :JMAX4_INSTALL_DIR => `jmax-config --package-dir`.chomp
 	test proc {
 		c_test '
 		#define new new_
@@ -471,7 +471,7 @@ Feature.new {
 	options ["HAVE_PUREDATA"]
 	defines {
 		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
-		[[:PUREDATA_PATH, File.dirname(path)+"/lib/pd" ]]}
+		{:PUREDATA_PATH => File.dirname(path)+"/lib/pd" }}
 	test proc {
 		c_test "
 			\#include <m_pd.h>
@@ -489,7 +489,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
-	log << "[--debug] [--debug-harder] "
+	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -529,8 +529,10 @@ while ARGV.length>0 do
 		puts "Debug Harder Mode (even more error checking; even less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
 		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
-	when "--jmax-arch"; $conf[:DEFINES].find{|x| x[0]==:JMAX_ARCH }[1]=ARGV.shift
+	when "--jmax-arch"; $conf[:DEFINES][:JMAX_ARCH]=ARGV.shift
 	when "--help"; usage; exit 0
+	when "--prefix", "--ruby-prefix"
+		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift+"/lib/ruby/site_ruby"
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -630,7 +632,7 @@ def try feature
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
-	$conf[:DEFINES].concat(feature.defines||[])
+	for k,v in feature.defines||{} do $conf[:DEFINES][k]=v end
 	true
 end
 
@@ -656,7 +658,6 @@ puts ""
 #--------------------------------#
 # extconf.rb
 
-DESTDIR = make_expand "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
 RUBY = "ruby"
 
 def my_install_files(f,base,entries)
@@ -683,7 +684,9 @@ def my_uninstall_files(f,base,entries)
 end
 
 def make_makefile f
-    f.puts "RUBYDESTDIR = #{DESTDIR}", ""
+    f.puts "RUBYDESTDIR = " + make_expand(sprintf("%s/%s.%s",
+		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
+	puts ""
     f.puts "RUBY = #{RUBY}"
     f.puts "ruby-all::", ""
 #   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
@@ -711,8 +714,8 @@ else
 end
 f.puts "CFLAGS += " + $CFLAGS
 
-for z in $conf[:OPTIONS] do f.puts "#{z}=yes" end
-for z in $conf[:DEFINES] do	f.puts "#{z[0]}=#{z[1]}" end
+for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
+for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
 
 $sources = %w(base/grid.c base/main.c base/flow_objects.c base/number.c)
 for format in $conf[:FORMATS] do
@@ -739,8 +742,8 @@ if $conf[:FORMATS]!=[] then
 	}.join(",\\\n")
 end
 
-for z in $conf[:OPTIONS] do f.puts "\#define #{z}" end
-for z in $conf[:DEFINES] do	f.puts "\#define #{z[0]} \"#{z[1]}\"" end
+for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
+for k,v in $conf[:DEFINES] do f.puts "\#define #{k} \"#{v}\"" end
 
 if $conf[:FEATURES][:mpeg3]
 f.puts "
@@ -768,14 +771,17 @@ create_makefile("gridflow")
 #p $rubylibdir
 mf = File.readlines("Makefile").join""
 #p mf.length
-mf.gsub! /-c \$<$/, "-c \$< -o $@"
+mf.gsub!(/\t(.*)-c \$<$/) {
+	"\truby base/source_filter.rb < $< > $<.fcs\n" +
+	"\t#{$1} -c $<.fcs -o $@"
+}
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++\n"
-mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf"
+mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf base/source_filter.rb"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
