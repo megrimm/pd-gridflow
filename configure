@@ -85,7 +85,7 @@ $conf={
 def launch stdin,stdout,stderr,*command # -> returncode
 	child = fork
 	if not child then
-		STDIN.reopen stdin if stdin
+		STDIN .reopen stdin  if stdin
 		STDOUT.reopen stdout if stdout
 		STDERR.reopen stderr if stderr
 		exec *command
@@ -313,7 +313,7 @@ Feature.new {
 	#uses_h ["ruby.h"] # is in special directory
 	uses_bridge_so {
 		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
-		unless Config::CONFIG["arch"] =~ /darwin/
+		unless CONFIG["arch"] =~ /darwin/
 			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive"
 		end
 		[lib]
@@ -473,6 +473,7 @@ Feature.new {
 Feature.new {
 	tag :opengl
 	name "OpenGL (only as framebuffer)"
+	status :disabled
 	uses_so ["-L/usr/X11R6/lib","-lglut","-lGL","-lGLU"]
 	uses_h ["GL/glut.h"]
 	test proc {
@@ -489,7 +490,7 @@ Feature.new {
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
 		a=["-lSDL","-lpthread"]
-		a<<"-lobjc" if Config::CONFIG["arch"] =~ /darwin/
+		a<<"-lobjc" if CONFIG["arch"] =~ /darwin/
 		a
 	}
 	uses_h ["SDL/SDL.h"]
@@ -659,7 +660,7 @@ Feature.new {
 	name "Xine movie decoder"
 	uses_so ["-lxine"]
 	uses_h ["xine.h"]
-#	status :disabled
+	status :disabled
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -718,13 +719,19 @@ Feature.new {
 	options ["HAVE_PUREDATA"]
 	defines {
 		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
-		{:PUREDATA_PATH => File.dirname(path)+"/lib/pd" }}
+		m = /PD_VERSION_INT\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		{:PUREDATA_PATH => File.dirname(path)+"/lib/pd", :PD_VERSION_INT => m[1].to_i}
+	}
 	uses_h ["m_pd.h"]
 	test proc {
-		c_test "
+		c_test %`
 			#include#
-			int main () { return 0; }
-		"
+			#include <stdio.h>
+			int main () {
+			printf("#define PD_VERSION_INT %d\\n",(int)(PD_VERSION*100));
+			return 0;
+			}
+		`
 	}
 },
 Feature.new {
@@ -994,7 +1001,7 @@ RUBYARCH=#{CONFIG['arch']}
 
 f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
 
-if Config::CONFIG["arch"] =~ /darwin/ then
+if CONFIG["arch"] =~ /darwin/ then
 	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
 else
 	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
@@ -1044,7 +1051,7 @@ if $conf[:FORMATS]!=[] then
 end
 
 for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
-for k,v in $conf[:DEFINES] do f.puts "\#define #{k} \"#{v}\"" end
+for k,v in $conf[:DEFINES] do f.puts "\#define #{k} "+v.inspect end
 
 if $conf[:FEATURES][:mpeg3]
 f.puts "
@@ -1145,7 +1152,7 @@ mf.sub!(/^site-install:\s*install/,"site-install: ")
 mf.sub! /^prefix = .*$/, "prefix = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
-#	(if Config::CONFIG["arch"] =~ /darwin/
+#	(if CONFIG["arch"] =~ /darwin/
 #		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
 #		else "$(CXX)" end)
 
