@@ -63,6 +63,7 @@ typedef struct FormatX11 {
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
 	bool is_owner;
+	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 } FormatX11;
 
 /* ---------------------------------------------------------------- */
@@ -209,7 +210,7 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 	if (!$->ximage) return;
 	if ($->use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-		/* ??? */
+		FREE($->shm_info);
 	#endif	
 	} else {
 		XDestroyImage($->ximage);
@@ -222,28 +223,29 @@ bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if ($->use_shm) {
-		XShmSegmentInfo *shm_info = NEW(XShmSegmentInfo,1);
+		$->shm_info = NEW(XShmSegmentInfo,1);
 		$->ximage = XShmCreateImage($->display, $->visual,
-			$->depth, ZPixmap, 0, shm_info, sx, sy);
+			$->depth, ZPixmap, 0, $->shm_info, sx, sy);
 		assert($->ximage);
-		shm_info->shmid = shmget(
+		$->shm_info->shmid = shmget(
 			IPC_PRIVATE,
 			$->ximage->bytes_per_line * $->ximage->height,
 			IPC_CREAT|0777);
-		if(shm_info->shmid < 0) {
+		if($->shm_info->shmid < 0) {
 			whine("ERROR: shmget failed: %s",strerror(errno));
 			goto err;
 		}
-		$->ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
+		$->ximage->data = $->shm_info->shmaddr =
+			(char *)shmat($->shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
-		shm_info->readOnly = False;
-		if (!XShmAttach($->display, shm_info)) {
+		$->shm_info->readOnly = False;
+		if (!XShmAttach($->display, $->shm_info)) {
 			whine("ERROR: XShmAttach: big problem");
 			goto err;
 		}
 		XSync($->display,0);
 		/* yes, this can be done now. should cause auto-cleanup. */
-		shmctl(shm_info->shmid,IPC_RMID,0);
+		shmctl($->shm_info->shmid,IPC_RMID,0);
 	} else
 	#endif
 	{
@@ -372,8 +374,7 @@ void FormatX11_close (FormatX11 *$) {
 	XSync($->display,0);
 	FormatX11_dealloc_image($);
 	XCloseDisplay($->display);
-	FREE($->dim);
-	FREE($);
+	Format_close((Format *)$);
 }
 
 void FormatX11_option (FormatX11 *$, ATOMLIST) {
@@ -438,11 +439,6 @@ FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	whine("x11 shared memory is not compiled in");
 #endif
 
-/*
-	$->use_shm = false;
-	whine("setting use_shm = 0 because it's buggy");
-*/
-
 	return $;
 err:;
 	return 0;
@@ -463,7 +459,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	$->ximage  = 0;
 	$->autodraw= 1;
 	$->mode    = mode;
-	$->dim     = 0;
+	$->shm_info= 0;
 
 	/*
 		{here}

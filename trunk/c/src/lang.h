@@ -34,6 +34,9 @@
 #define NEW2(_type_,_count_) \
 	((_type_ *)qalloc2(sizeof(_type_)*(_count_),__FILE__,__LINE__))
 
+#define NEW3(_type_,_count_,_file_,_line_) \
+	((_type_ *)qalloc2(sizeof(_type_)*(_count_),_file_,_line_))
+
 #define FREE(_var_) \
 	_var_ ? (qfree(_var_), _var_=0) : 0
 

@@ -161,18 +161,14 @@ CLASS(GridIn) {
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(GridOut,0) {
-	Dim *dim = Dim_dup(in->dim);
-	if (Dim_count(dim) != 3) {
+	if (Dim_count(in->dim) != 3) {
 		whine("supports only exactly three dimensions");
 		return false;
 	}
-	if (Dim_equal_verbose_hwc(in->dim,dim)) {
+	{
 		CHECK_FILE_OPEN2
 		in->dex=0;
-		$->ff->cl->begin($->ff, in);
-		return true;
-	} else {
-		return false;
+		return $->ff->cl->begin($->ff, in);
 	}
 }
 

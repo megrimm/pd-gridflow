@@ -324,8 +324,13 @@ typedef struct Dim {
 	int v[1];
 } Dim;
 
-	Dim *Dim_new(int n, int *v);
-	Dim *Dim_dup(Dim *$);
+
+	Dim *Dim_new2(int n, int *v, const char *file, int line);
+/*	Dim *Dim_new(int n, int *v); */
+#define Dim_new(_n_,_v_) Dim_new2(_n_,_v_,__FILE__,__LINE__)
+	Dim *Dim_dup2(Dim *$, const char *file, int line);
+/*	Dim *Dim_dup(Dim *$); */
+#define Dim_dup(_$_) Dim_dup2(_$_,__FILE__,__LINE__)
 	int Dim_count(Dim *$);
 	int Dim_get(Dim *$, int i);
 	int Dim_prod(Dim *$);
@@ -603,6 +608,7 @@ extern FormatClass *format_classes[];
 FormatClass *FormatClass_find(const char *name);
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
+void Format_close(Format *$);
 
 /* **************************************************************** */
 

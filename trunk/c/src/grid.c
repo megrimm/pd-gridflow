@@ -66,8 +66,9 @@ void GridInlet_abort(GridInlet *$) {
 	if ($->dim) {
 		whine("%s:i%d: aborting grid: %d of %d", INFO($),
 			$->dex, Dim_prod($->dim));
+		FREE($->dim);
+		FREE($->buf);
 	}
-	$->dim = 0;
 	$->dex = 0;
 }
 
@@ -104,7 +105,10 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 	int *v = NEW(int,ac-1);
 	GridOutlet *back_out = (GridOutlet *) GET(0,ptr,(void *)0xDeadBeef);
 
-/* if (!GridInlet_idle($)) { then what do i do? } */
+	if (!GridInlet_idle($)) {
+		whine("grid inlet not idle (aborting previous grid)");
+		GridInlet_abort($);
+	}
 
 	if (ac-1>MAX_DIMENSIONS) {
 		whine("too many dimensions (aborting grid)");
@@ -398,12 +402,16 @@ METHOD(GridObject,list      ){ENTER;GridInlet_list( $->in[winlet],ac,at);LEAVE;}
 void GridObject_delete(GridObject *$) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) {
-/*		GridInlet_delete($->in[i]); */
-		FREE($->in[i]);
+		if ($->in[i]) {
+			GridInlet_delete($->in[i]);
+			FREE($->in[i]);
+		}
 	}
 	for (i=0; i<MAX_OUTLETS; i++) {
-/*		GridOutlet_delete($->out[i]); */
-		FREE($->out[i]);
+		if ($->out[i]) {
+			GridOutlet_delete($->out[i]);
+			FREE($->out[i]);
+		}
 	}
 	Dict_del(gf_object_set,$);
 	if (Dict_size(gf_object_set)==0) {
@@ -458,6 +466,12 @@ Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
 	}
 
 	return $;
+}
+
+void Format_close(Format *$) {
+	FREE($->bit_packing);
+	FREE($->dim);
+	FREE($);
 }
 
 /* **************** FormatClass *********************************** */
