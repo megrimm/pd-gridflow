@@ -450,7 +450,7 @@ static uint64 convert(Ruby val, uint64 *foo) {
 	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
 static int64 convert(Ruby val, int64 *foo) {
-	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
+	if (FIXNUM_P(val)) return (int64)FIX2LONG(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
@@ -738,7 +738,8 @@ struct Numop : CObject {
 #define FOO(T) \
 	NumopOn<T> on_##T; \
 	NumopOn<T> *on(T &foo) { \
-		if (!on_##T.op_map) RAISE("operator does not support this type"); \
+		if (!on_##T.op_map) \
+			RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
 		return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -753,11 +754,15 @@ EACH_NUMBER_TYPE(FOO)
 	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
-		on(*as)->op_fold(an,n,(T *)as,(T *)bs);}
+		typename NumopOn<T>::Fold f = on(*as)->op_fold;
+		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
+		f(an,n,(T *)as,(T *)bs);}
 	template <class T> inline void scan(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
-		on(*as)->op_scan(an,n,(T *)as,(T *)bs);}
+		typename NumopOn<T>::Scan f = on(*as)->op_scan;
+		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
+		f(an,n,(T *)as,(T *)bs);}
 
 	\decl void map_m  (NumberTypeE nt, int n, String as, String b);
 	\decl void zip_m  (NumberTypeE nt, int n, String as, String bs);
@@ -960,16 +965,15 @@ private:
 // GRIN2 : integers only; no floats
 // GRINF : floats only; no integers
 #ifndef HAVE_LITE
-#define GRIN1(C,I) {0,0,C::grinw_##I,0,0,0}
-#define GRIN4(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I}
-#define GRIN2(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0}
-#define GRINF(C,I) {0,0,0,0,C::grinw_##I,C::grinw_##I}
+#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TL,TF,TD}
 #else
-#define GRIN1(C,I) {0,0,C::grinw_##I}
-#define GRIN4(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I}
-#define GRIN2(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I}
-#define GRINF(C,I) {0,0,0}
+#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI}
 #endif // HAVE_LITE
+
+#define GRIN1(C,I) GRIN(0,0,C::grinw_##I,0,0,0)
+#define GRIN4(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I)
+#define GRIN2(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0)
+#define GRINF(C,I) GRIN(0,0,0,0,C::grinw_##I,C::grinw_##I)
 
 struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 	void *(*allocator)(); // returns a new C++ object
