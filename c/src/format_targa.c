@@ -43,7 +43,7 @@ typedef struct Format FormatTarga;
 	[:comment, String8Unpadded, :data],
 */
 
-Dim *FormatTarga_read_header (Format *$) {
+static Dim *FormatTarga_read_header (Format *$) {
 	int i;
 	short w,h;
 	char *comment;
@@ -84,7 +84,7 @@ err:
 	return 0;
 }
 
-bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
+static bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
 	Dim *dim;
 	if (frame!=-1) return false;
 	dim = FormatTarga_read_header($);
@@ -119,12 +119,12 @@ GRID_BEGIN(FormatTarga,0) { RAISE("not implemented"); }
 GRID_FLOW(FormatTarga,0) {}
 GRID_END(FormatTarga,0) {}
 
-void FormatTarga_close (Format *$) {
+static void FormatTarga_close (Format *$) {
 	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
 	FormatTarga *$ = (FormatTarga *)Format_open(&class_FormatTarga,parent,mode);
 	const char *filename;
 

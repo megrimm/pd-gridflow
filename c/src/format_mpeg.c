@@ -42,7 +42,7 @@ typedef struct FormatMPEG {
 
 typedef Format FormatMPEG;
 
-bool FormatMPEG_frame (Format *$, GridOutlet *out, int frame) {
+static bool FormatMPEG_frame (Format *$, GridOutlet *out, int frame) {
 	char *buf = NEW(char,mpeg_id->Size);
 	int npixels = mpeg_id->Height * mpeg_id->Width;
 /*	SetMPEGOption(MPEG_QUIET,1); */
@@ -81,13 +81,13 @@ GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
 GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
-void FormatMPEG_close (Format *$) {
+static void FormatMPEG_close (Format *$) {
 	if (mpeg_id) FREE(mpeg_id);
 	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatMPEG *$ = (FormatMPEG *)Format_open(&class_FormatMPEG,parent,mode);
 	const char *filename;
 

@@ -30,7 +30,7 @@ extern FormatClass class_FormatPPM;
 
 typedef Format FormatPPM;
 
-bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
+static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 	char buf[256];
 	int metrics[6],n=0;
 
@@ -112,12 +112,12 @@ GRID_END(FormatPPM,0) {
 	fseek($->bstream,0,SEEK_SET);
 }
 
-void FormatPPM_close (Format *$) {
+static void FormatPPM_close (Format *$) {
 	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatPPM *$ = (FormatPPM *)Format_open(&class_FormatPPM,parent,mode);
 	const char *filename;
 

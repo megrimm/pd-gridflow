@@ -116,7 +116,7 @@ static Symbol button_sym(int i) {
 	return Symbol_new(foo);
 }
 
-void FormatX11_alarm(FormatX11 *$) {
+static void FormatX11_alarm(FormatX11 *$) {
 	Var at[4];
 	XEvent e;
 
@@ -172,7 +172,7 @@ void FormatX11_alarm(FormatX11 *$) {
 
 /* ---------------------------------------------------------------- */
 
-bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
+static bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 	if (frame != -1) return 0;
 
 	{
@@ -208,7 +208,7 @@ err:
 
 /* ---------------------------------------------------------------- */
 
-void FormatX11_dealloc_image (FormatX11 *$) {
+static void FormatX11_dealloc_image (FormatX11 *$) {
 	if (!$->ximage) return;
 	if ($->use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
@@ -226,13 +226,13 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
-int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
+static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	current_x11->use_shm = false;
 	whine("caught X11 error (should be \"BadAccess: can't find shm\")");
 	return 42; /* it seems that the return value is ignored. */
 }
 
-bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
+static bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 top:
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
@@ -294,7 +294,7 @@ err:
 	return false;
 }
 
-void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
+static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	int v[3] = {sy, sx, 3};
 	Window oldw;
 
@@ -396,7 +396,7 @@ GRID_END(FormatX11,0) {
 	}
 }
 
-void FormatX11_close (FormatX11 *$) {
+static void FormatX11_close (FormatX11 *$) {
 	Dict_del(gf_timer_set,$);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
@@ -406,7 +406,7 @@ void FormatX11_close (FormatX11 *$) {
 	Format_close((Format *)$);
 }
 
-void FormatX11_option (FormatX11 *$, ATOMLIST) {
+static void FormatX11_option (FormatX11 *$, ATOMLIST) {
 	Symbol sym = GET(0,symbol,SYM(foo));
 	if (sym == SYM(out_size)) {
 		int sy = GET(1,int,0);
@@ -427,7 +427,7 @@ void FormatX11_option (FormatX11 *$, ATOMLIST) {
 	}
 }
 
-FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
+static FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	int screen_num;
 	Screen *screen;
 
@@ -473,7 +473,7 @@ err:;
 	return 0;
 }
 
-Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatX11 *$ = (FormatX11 *)Format_open(&class_FormatX11,parent,mode);
 
 	/* defaults */

@@ -44,7 +44,7 @@ typedef struct video_mmap       VideoMmap      ;
 #define FLAG(_num_,_name_,_desc_) #_name_,
 #define  OPT(_num_,_name_,_desc_) #_name_,
 
-const char *video_type_flags[] = {
+static const char *video_type_flags[] = {
 	FLAG( 0,CAPTURE,       "Can capture")
 	FLAG( 1,TUNER,         "Can tune")
 	FLAG( 2,TELETEXT,      "Does teletext")
@@ -61,7 +61,7 @@ const char *video_type_flags[] = {
 	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
 };
 
-const char *tuner_flags[] = {
+static const char *tuner_flags[] = {
 	FLAG(0,PAL,      "")
 	FLAG(1,NTSC,     "")
 	FLAG(2,SECAM,    "")
@@ -74,13 +74,13 @@ const char *tuner_flags[] = {
 	FLAG(9,MBS_ON,   "Tuner is seeing an MBS datastream")
 };
 
-const char *channel_flags[] = {
+static const char *channel_flags[] = {
 	FLAG(0,TUNER,"")
 	FLAG(1,AUDIO,"")
 	FLAG(2,NORM ,"")
 };
 
-const char *video_palette_choice[] = {
+static const char *video_palette_choice[] = {
 	OPT( 0,NIL,     "(nil)")
 	OPT( 1,GREY,    "Linear greyscale")
 	OPT( 2,HI240,   "High 240 cube (BT848)")
@@ -100,7 +100,7 @@ const char *video_palette_choice[] = {
 	OPT(16,YUV410P, "YUV 4:1:0 Planar")
 };
 
-const char *video_mode_choice[] = {
+static const char *video_mode_choice[] = {
 	OPT( 0,PAL,  "pal")
 	OPT( 1,NTSC, "ntsc")
 	OPT( 2,SECAM,"secam")
@@ -127,7 +127,7 @@ const char *video_mode_choice[] = {
 	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,ARRAY(_table_)));\
 	FREE(foo);}
 
-char *flags_to_s(int value, int n, const char **table) {
+static char *flags_to_s(int value, int n, const char **table) {
 	int i;
 	char *foo = NEW(char,256);
 	*foo = 0;
@@ -140,7 +140,7 @@ char *flags_to_s(int value, int n, const char **table) {
 	return foo;
 }
 
-char *choice_to_s(int value, int n, const char **table) {
+static char *choice_to_s(int value, int n, const char **table) {
 	if (value < 0 || value >= n) {
 		char *foo = NEW(char,64);
 		sprintf(foo,"(Unknown #%d)",value);
@@ -150,7 +150,7 @@ char *choice_to_s(int value, int n, const char **table) {
 	}
 }
 
-void VideoChannel_whine(VideoChannel *$) {
+static void VideoChannel_whine(VideoChannel *$) {
 	whine("VideoChannel:");
 	WH(channel,"%d");
 	WH(name,"%-32s");
@@ -160,7 +160,7 @@ void VideoChannel_whine(VideoChannel *$) {
 	WH(norm,"%d");
 }
 
-void VideoTuner_whine(VideoTuner *$) {
+static void VideoTuner_whine(VideoTuner *$) {
 	whine("VideoTuner:");
 	WH(tuner,"%d");
 	WH(name,"%-32s");
@@ -171,7 +171,7 @@ void VideoTuner_whine(VideoTuner *$) {
 	WH(signal,"%d");
 }
 
-void VideoCapability_whine(VideoCapability *$) {
+static void VideoCapability_whine(VideoCapability *$) {
 	whine("VideoCapability:");
 	WH(name,"%-20s");
 	WHFLAGS(type,video_type_flags);
@@ -181,7 +181,7 @@ void VideoCapability_whine(VideoCapability *$) {
 	WHYX(minsize,minheight,minwidth);
 }
 
-void VideoWindow_whine(VideoWindow *$) {
+static void VideoWindow_whine(VideoWindow *$) {
 	whine("VideoWindow:");
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
@@ -190,7 +190,7 @@ void VideoWindow_whine(VideoWindow *$) {
 	WH(clipcount,"%d");
 }
 
-void VideoPicture_whine(VideoPicture *$) {
+static void VideoPicture_whine(VideoPicture *$) {
 	whine("VideoPicture:");
 	WH(brightness,"%d");
 	WH(hue,"%d");
@@ -200,7 +200,7 @@ void VideoPicture_whine(VideoPicture *$) {
 	WHCHOICE(palette,video_palette_choice);
 }
 
-void video_mbuf_whine(VideoMbuf *$) {
+static void video_mbuf_whine(VideoMbuf *$) {
 	whine("VideoMBuf:");
 	WH(size,"%d");
 	WH(frames,"%d");
@@ -210,7 +210,7 @@ void video_mbuf_whine(VideoMbuf *$) {
 	WH(offsets[3],"%d");
 }
 
-void video_mmap_whine(VideoMmap *$) {
+static void video_mmap_whine(VideoMmap *$) {
 	whine("VideoMMap:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
@@ -234,7 +234,7 @@ typedef struct FormatVideoDev {
 	((ioctl(_f_,_name_,_arg_) < 0) && \
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
-void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
+static void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 	int v[] = {height, width, 3};
 	VideoWindow grab_win;
 
@@ -256,7 +256,7 @@ void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 
 /* picture is read at once by frame() to facilitate debugging. */
 /*
-Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
+static Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 
 	int n;
 	if (frame != -1) return 0;
@@ -274,11 +274,11 @@ Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 }
 */
 
-void FormatVideoDev_dealloc_image (FormatVideoDev *$) {
+static void FormatVideoDev_dealloc_image (FormatVideoDev *$) {
 	munmap($->image, $->vmbuf.size);
 }
 
-bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
+static bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
 	if (WIOCTL($->stream, VIDIOCGMBUF, &$->vmbuf)) return false;
 	video_mbuf_whine(&$->vmbuf);
 	$->image = (uint8 *) mmap(
@@ -294,7 +294,7 @@ bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
 	return true;
 }
 
-bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
+static bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
 	$->pending_frames[0] = $->pending_frames[1];
 	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
@@ -309,7 +309,7 @@ bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
 	return true;
 }
 
-void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
+static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
 	GridOutlet_begin(out,Dim_dup($->dim));
 
 	/* picture is converted here. */
@@ -328,7 +328,7 @@ void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *b
 	GridOutlet_end(out);
 }
 
-bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
+static bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
 	int finished_frame;
 
 	if (frame != -1) return 0;
@@ -358,7 +358,7 @@ GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
 GRID_FLOW(FormatVideoDev,0) {}
 GRID_END(FormatVideoDev,0) {}
 
-void FormatVideoDev_norm (FormatVideoDev *$, int value) {
+static void FormatVideoDev_norm (FormatVideoDev *$, int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
 	if (value<0 || value>3) {
@@ -374,7 +374,7 @@ void FormatVideoDev_norm (FormatVideoDev *$, int value) {
 	}
 }
 
-void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
+static void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	$->current_tuner = value;
@@ -387,7 +387,7 @@ void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
 	}
 }
 
-void FormatVideoDev_channel (FormatVideoDev *$, int value) {
+static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	$->current_channel = value;
@@ -400,7 +400,7 @@ void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	}
 }
 
-void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
+static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	Symbol sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
@@ -431,13 +431,13 @@ void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	}
 }
 
-void FormatVideoDev_close (FormatVideoDev *$) {
+static void FormatVideoDev_close (FormatVideoDev *$) {
 	if ($->image) FormatVideoDev_dealloc_image($);
 	if ($->stream>=0) close($->stream);
 	Format_close((Format *)$);
 }
 
-Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
 	FormatVideoDev *$ = (FormatVideoDev *)Format_open(&class_FormatVideoDev,parent,mode);
 	const char *filename;
 

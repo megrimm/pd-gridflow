@@ -118,7 +118,7 @@ static int bufsize (FormatGrid *$, GridOutlet *out) {
 }
 
 /* for each slice of the body */
-bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 	int nn = n*8/$->bpv;
 	Number *data = (Number *)buf;
 //	whine("out->dex = %d",out->dex);
@@ -134,7 +134,7 @@ bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 }
 
 /* the dimension list */
-bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 	int prod;
 	int n_dim = n/sizeof(int);
 	int v[n_dim];
@@ -160,7 +160,7 @@ err: return false;
 }
 
 /* the header */
-bool FormatGrid_frame1 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame1 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 	int n_dim;
 	if (is_le()) {
 		whine("we are smallest digit first");
@@ -199,7 +199,7 @@ err: return false;
 }
 
 /* rewinding and starting */
-bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
+static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	if (frame!=-1) return 0;
 	whine("frame: $->is_socket: %d",$->is_socket);
 	/* rewind when at end of file. */
@@ -273,7 +273,7 @@ void FormatGrid_close (FormatGrid *$) {
 
 /* **************************************************************** */
 
-bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 	const char *filename;
 	$->is_socket = false;
 
@@ -307,7 +307,7 @@ static void nonblock (int fd) {
 	fcntl(fd,F_SETFL,flags);
 }
 
-bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -343,7 +343,7 @@ err:
 	return false;
 }
 
-bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -391,7 +391,7 @@ err:
 
 /* **************************************************************** */
 
-Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
 
 	if (!$) return 0;
