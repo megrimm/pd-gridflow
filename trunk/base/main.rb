@@ -156,6 +156,7 @@ module GridFlow; class FObject
 		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
+		p sym
 		qlass = case sym
 			when "@"; GridFlow::GridOp2
 			when "@!"; GridFlow::GridOp1
@@ -214,8 +215,13 @@ end
 
 def routine
 	$tasks.each {|k,v| GridFlow.exec k,v }
-	$mainloop.timers.after(1.0) { routine }
+	$mainloop.timers.after(0.025) { routine }
 	GC.start
+end
+
+def GridFlow.find_file s
+	whine "find_file: #{s}"
+	s
 end
 
 routine

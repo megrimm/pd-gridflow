@@ -45,7 +45,6 @@ struct BFObject {
 
 fts_object_t *FObject_peer(VALUE rself) {
 	DGS(GridObject);
-	assert($->foreign_peer);
 	return $->foreign_peer;
 }
 
@@ -258,8 +257,12 @@ VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 }
 
 VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) {
+	fts_object_t *jo = FObject_peer($);
 /*	post("%d\n",FObject_peer($));*/
-	if (outlet<0 || outlet>=fts_object_get_outlets_number(FObject_peer($))) {
+
+	if (!jo) return Qnil; /* Ruby-only object */
+
+	if (outlet<0 || outlet>=fts_object_get_outlets_number(jo)) {
 		EARG("outlet %d does not exist",outlet);
 	}
 	{
@@ -269,7 +272,7 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 		rj_convert(sym,&sel);
 		for (i=0; i<argc; i++) rj_convert(argv[i],at+i);
 		/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
-		fts_outlet_send(FObject_peer($),outlet,fts_get_symbol(&sel),argc,at);
+		fts_outlet_send(jo,outlet,fts_get_symbol(&sel),argc,at);
 	}
 	return Qnil;
 }
@@ -302,6 +305,14 @@ VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
 	return Qnil;
 }
 
+static VALUE gf_find_file(VALUE $, VALUE s) {
+	char buf[1024];
+	if (TYPE(s)!=T_STRING) RAISE("expected string");
+	/* unlikely buffer overflow ahead */
+	fts_file_get_read_path(RSTRING(s)->ptr,buf);
+	return rb_str_new2(buf);
+}
+
 void gridflow_module_init (void) {
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
@@ -312,6 +323,7 @@ void gridflow_module_init (void) {
 	post("(done)\n");
 	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
 		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+	rb_define_singleton_method(GridFlow_module,"find_file",gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);

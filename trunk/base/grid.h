@@ -187,25 +187,13 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 
 /* **************************************************************** */
 
-/*
-  lists the arguments suitable for any method of a given class.
-  this includes a class-specific class name so you don't have to
-  write inane stuff like SomeClass* self = (SomeClass *) o;
-  at the beginning of every method body. This is a trade-off because
-  it means you have to cast to (FObject *) sometimes.
-  see METHOD_PTR, METHOD, OBJ
-*/
-
 #define METHOD_ARGS(_class_) int argc, VALUE *argv, VALUE rself
-
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 
 /* 0.5.0: shortcuts for MethodDecl */
 
-#define DECL(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym_),args}
-#define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
-	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym2_),args}
+#define DECL(_cl_,_sym_) \
+	{#_sym_,METHOD_PTR(_cl_,_sym_)}
 
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
 
@@ -243,7 +231,8 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
 		#_name_ };
 
-#define SYM(_sym_) (ID2SYM(rb_intern(#_sym_)))
+#define SI(_sym_) (rb_intern(#_sym_))
+#define SYM(_sym_) (ID2SYM(SI(_sym_)))
 
 /* */
 static inline uint64 rdtsc(void) {
@@ -264,10 +253,8 @@ void whine(const char *fmt, ...);
 void whine_time(const char *s);
 
 typedef struct MethodDecl {
-	int winlet;
 	const char *selector;
 	RMethod method;
-	const char *signature;
 } MethodDecl;
 
 void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
@@ -472,6 +459,7 @@ typedef struct GridClass {
 
 #define LIST(args...) args
 
+/* should merge those two together */
 #define GRINLET(_class_,_winlet_) {_winlet_,\
 	((GridBegin)_class_##_##_winlet_##_begin), \
 	 ((GridFlow)_class_##_##_winlet_##_flow), \
@@ -557,14 +545,14 @@ typedef struct Stream {
 	void *target;
 } Stream;
 
-Stream *Stream_open_file(const char *name, int mode);
-Stream *Stream_open_fd(int fd, int mode);
+Stream *Stream_open_file(const char *name, VALUE mode);
+Stream *Stream_open_fd(int fd, VALUE mode);
 
 void Stream_nonblock(Stream *$);
 int Stream_get_fd(Stream *$);
 FILE *Stream_get_file(Stream *$);
 int Stream_read(Stream *$, int n, char *buf);
-void Stream_on_read_do(Stream *$,  int n, OnRead on_read, void *target);
+void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target);
 bool Stream_try_read(Stream *$);
 bool Stream_is_waiting(Stream *$);
 void Stream_close(Stream *$); /* does free too */
@@ -581,78 +569,56 @@ extern const char *format_flags_names[];
 typedef struct FormatClass FormatClass;
 typedef struct Format Format;
 
-/* methods on objects of this class */
-/* for reading, to outlet */
-	/* frames - how many frames there are (optional) */
-typedef int (*Format_frames_m)(Format *$);
-	/*
-	  read a frame, sending to outlet
-	  if frame number is -1, pick up next frame (reloop after last)
-	  (if frames() is not implemented, only -1 is valid)
-	*/
-typedef bool (*Format_frame_m)(Format *$, GridOutlet *out, int frame);
-/* both in read and write mode */
-	/* all additional functionality */
-typedef void (*Format_option_m)(Format *$, int argc, VALUE *argv);
-	/* destroys this object */
-typedef void (*Format_close_m)(Format *$);
-
 struct FormatClass {
-	int object_size;
+	GridClass grid_class;
 	const char *symbol_name; /* short identifier */
 	const char *long_name; /* long identifier */
 	int flags;
-
-	/*
-	  mode=4 is reading; mode=2 is writing;
-	  other values are not used yet (not even 6)
-	*/
-	Format *(*open)(FormatClass *$, GridObject *parent, int mode, int argc,
-	VALUE *argv);
-
-	Format_frames_m frames;
-	Format_frame_m frame;
-
-/* for writing, from inlet */
-	GridHandler *handler;
-
-/* for both */
-	/* for misc options */
-	Format_option_m option;
-	Format_close_m close;
 };
 
 #define Format_FIELDS \
-	FormatClass *cl; \
+	GridObject_FIELDS; \
+	FormatClass *fc; \
 	GridObject *parent; \
-	Format *chain; \
-	int mode; \
+	VALUE /*Symbol*/ mode; \
 	Stream *st; \
 	BitPacking *bit_packing; \
 	Dim *dim;
+
+#define FMTCLASS(_name_,symbol_name,long_name,flags,_inlets_,_outlets_,_handlers_,args...) \
+	static MethodDecl _name_ ## _methods[] = { args }; \
+	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	FormatClass _name_ ## _class = { { \
+		sizeof(_name_), \
+		COUNT(_name_##_methods),\
+		_name_##_methods,\
+		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
+		#_name_ }, \
+		symbol_name, long_name, flags };
 
 struct Format {
 	Format_FIELDS;
 };
 
-extern FormatClass FORMAT_LIST( ,class_);
+extern FormatClass FORMAT_LIST( ,_class);
 extern FormatClass *format_classes[];
 extern VALUE /*Hash*/ format_classes_dex;
 
-Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
-void Format_close(Format *$);
-
-/* keyed on data */
-void MainLoop_add(void *data, void (*func)());
-void MainLoop_remove(void *data);
-void MainLoop_run(void);
+/*
+	NEW FORMAT API
+	mode is :in or :out
+	def initialize(mode,*args) : open a file handler (do it via .new of class)
+	def frame() : read one frame, send through outlet 0
+	def seek(Integer i) : select one frame to be read next (by number)
+	def length() : ^Integer number of frames
+	def option(Symbol name, *args) : miscellaneous options
+	def close() : close a handler
+*/
 
 /* **************************************************************** */
 
 extern VALUE /*Hash*/ gf_object_set;
 extern const char *whine_header;
-
-//char *FObject_to_s(FObject *$);
 
 /* **************************************************************** */
 /* 0.6.0 */
@@ -667,7 +633,7 @@ typedef struct GFBridge {
 
 extern GFBridge gf_bridge;
 
-extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
+extern VALUE GridFlow_module;
 extern VALUE FObject_class;
 
 uint64 RtMetro_now(void);
@@ -681,6 +647,10 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
 char *rb_sym_name(VALUE sym);
 void post(const char *,...);
+
+/* keyed on data */
+void MainLoop_add(void *data, void (*func)());
+void MainLoop_remove(void *data);
 
 void gf_init (void);
 #define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
@@ -697,10 +667,11 @@ void gf_init (void);
 #define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
 #define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
+#define INSTALL(jname,rname) \
+	ruby_c_install(jname, #rname, &rname##_class, FObject_class);
 
-
-/* hack */
-int gf_winlet(void);
+VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
+VALUE super);
 
 #undef post
 #define post(args...) gf_bridge.post(args)
