@@ -378,6 +378,12 @@ METHOD(FormatVideoDev,channel) {
 	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 }
 
+METHOD(FormatVideoDev,frequency) {
+	int value = INT(argv[0]);
+	int fd = GETFD;
+	if (0> ioctl(fd, VIDIOCSFREQ, value)) RAISE("can't set frequency to %d",value);
+}
+
 METHOD(FormatVideoDev,option) {
 	int fd = GETFD;
 	VALUE sym = argv[0];
@@ -388,6 +394,8 @@ METHOD(FormatVideoDev,option) {
 		rb_funcall(rself,SI(tuner),1,INT2NUM(value));
 	} else if (sym == SYM(norm)) {
 		rb_funcall(rself,SI(norm),1,INT2NUM(value));
+	} else if (sym == SYM(frequency)) {
+		rb_funcall(rself,SI(frequency),1,INT2NUM(value));
 	} else if (sym == SYM(size)) {
 		int value2 = NUM2INT(argv[2]);
 		rb_funcall(rself,SI(size),2,INT2NUM(value),INT2NUM(value2));
@@ -497,6 +505,7 @@ DECL(FormatVideoDev,size),
 DECL(FormatVideoDev,norm),
 DECL(FormatVideoDev,tuner),
 DECL(FormatVideoDev,channel),
+DECL(FormatVideoDev,frequency),
 DECL(FormatVideoDev,frame),
 DECL(FormatVideoDev,option),
 DECL(FormatVideoDev,close))
