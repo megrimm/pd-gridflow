@@ -152,7 +152,7 @@ FormatX11 *X11Display_vout_find(X11Display *$, Window wid) {
 		/*whine("found vout [%p] at index %d", $->vouts[i], i);*/
 		return $->vouts[i];
 	}
-	whine("vout not found!");
+	whine("vout (wid=%d) not found!",wid);
 	return 0;
 }
 
@@ -477,6 +477,7 @@ GRID_END(FormatX11,0) {
 
 void FormatX11_close (FormatX11 *$) {
 	X11Display *d = $->display;
+	if (!d) {whine("stupid error: trying to close display NULL. =)"); return;}
 	X11Display_vout_remove(d,$);
 	if ($->is_owner) XDestroyWindow(d->display,$->window);
 	XSync(d->display,0);
@@ -547,11 +548,6 @@ Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 		fts_symbol_t domain = fts_get_symbol(at+0);
 		int i;
 		// assert (ac>0);
-		for(i=0; i<ac; i++) {
-			char buf[256];
-			sprintf_atoms(buf,ac,at);
-			whine("field[%d] is `%s'",i,buf);
-		}
 		if (domain==SYM(here)) {
 			whine("mode `here'");
 			$->display = X11Display_new(0);
