@@ -454,12 +454,15 @@ void startup_formats();
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
 
 #ifdef HAVE_MMX
+extern "C" void mmx_uint8_map_add(int,uint8*,uint8);
+extern "C" void mmx_int16_map_add(int,int16*,int16);
 extern "C" void mmx_int32_map_add(int,int32*,int32);
-extern "C" void mmx_int32_zip_add(int,int32*,int32*);
 void startup_cpu () {
 	gfpost("startup_cpu: using MMX optimisations");
-	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_map =
-	mmx_int32_map_add;
+	Operator2 *op = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)));
+	op->on_uint8.op_map = mmx_uint8_map_add;
+	op->on_int16.op_map = mmx_int16_map_add;
+	op->on_int32.op_map = mmx_int32_map_add;
 //	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_zip =
 //	mmx_int32_zip_add;
 }
@@ -527,7 +530,7 @@ void Init_gridflow () {
 	startup_formats();
 
 #ifdef HAVE_MMX
-	startup_cpu();
+	if (!getenv("NO_MMX")) startup_cpu();
 #endif
 
 	signal(11,SIG_DFL); /* paranoia */
