@@ -44,8 +44,8 @@ OBJDIR = .
 #----------------------------------------------------------------#
 
 ifeq ($(HAVE_STATIC_RUBY),yes)
-	RUBYA1 = libruby.a/object.o
-	RUBYA2 = libruby.a/*.o
+	RUBYA1 = static/libruby.a
+	RUBYA2 = static/libruby.a/*.o
 endif
 
 cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
@@ -54,9 +54,9 @@ cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
-libruby.a/object.o:
-	mkdir -p libruby.a
-	(cd libruby.a; ar x $(PATH_LIBRUBY_A) || rm -f *.o)
+static/libruby.a: config.make
+	mkdir -p static/libruby.a
+	(cd static/libruby.a; ar x $(PATH_LIBRUBY_A) || (rm -f *.o && false))
 
 clean2::
 	rm -f $(JMAX_LIB) \
@@ -68,6 +68,9 @@ install2:: ruby-install jmax-install
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
+
+unskew::
+	find . -mtime -0 -ls -exec touch '{}' ';'
 
 kloc::
 	wc base/*.[ch] base/*.rb format/*.[ch] format/*.rb \
