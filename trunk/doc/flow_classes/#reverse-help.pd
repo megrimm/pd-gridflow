@@ -1,0 +1,14 @@
+#N canvas 536 67 1089 795 10;
+#X text 428 11 GridFlow 0.8.0;
+#X obj 324 67 #color;
+#X obj 354 207 #color;
+#X obj 324 141 #reverse;
+#X obj 325 292 display;
+#X text 15 37 [#reverse];
+#X obj 324 175 t a a;
+#X text 15 67 Swaps the values of incoming grids while preserving the
+number of Dimensions between incoming and outgoing grids.;
+#X connect 1 0 3 0;
+#X connect 3 0 6 0;
+#X connect 6 0 4 0;
+#X connect 6 1 2 0;
