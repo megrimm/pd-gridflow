@@ -96,17 +96,21 @@ def mke(tag)
 	print "</#{tag}>"
 end
 
-def mkimg(icon,alt=nil,subdir="images")
-	icon.tag == 'icon' or raise "need icon"
-	url = icon.att["image"] || icon.parent.att["name"]
-	url = url.sub(/,.*$/,"")
-	raise icon.att.to_s if not url
-	url = subdir+"/"+url if url !~ /^images\//
-	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
-	warn "#{url} not found" if not File.exist? url
-	mk(:img, :src, url,
-		:alt, alt || icon.att["text"],
-		:border, 0)
+def mkimg(parent,alt=nil,prefix=nil)
+	#STDERR.puts parent.to_s
+	icon = parent.contents.find {|x| XNode===x and x.tag == 'icon' }
+	name = parent.att["name"]
+	url = prefix+"/"+name+"-icon.png"
+	if icon and icon.att["src"]
+		url = icon.att["src"]
+		STDERR.puts "overriding #{url} with #{icon.att["src"]}"
+	end
+	url = url.sub(/,.*$/,"") # what's this for again?
+	warn "icon #{url} not found" if not File.exist? url
+	url = url.gsub(%r"#") {|x| sprintf "%%%02x", x[0] }
+	alt = icon.att["text"] if icon and not alt
+	alt = "[#{name}]"
+	mk(:img, :src, url, :alt, alt, :border, 0)
 end
 
 class XString < String
@@ -264,15 +268,14 @@ XNode.register("class") {public
 		mk(:td) {}
 		mk(:td,:valign,:top) {
 		print "<br>\n"
-		icon = contents.find {|x| XNode===x and x.tag == 'icon' }
 		help = contents.find {|x| XNode===x and x.tag == 'help' }
-		mkimg(icon,nil,"images/flow_classes") if icon
+		mkimg(self,nil,"flow_classes") if /reference|format/ =~ $file
 		mk(:br,:clear,"left")
 		2.times { mk(:br) }
 		if help
 			big = help.att['image'] || att['name']
 			if big[0]==?@ then big="images/help_#{big}.png" end
-			warn "#{big} not found" if not File.exist?(big)
+			warn "help #{big} not found" if not File.exist?(big)
 			#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
 			mk(:a,:href,big) {
 				#mk(:img,:src,small,:border,0)
@@ -295,12 +298,7 @@ XNode.register("class") {public
 			raise "name tag missing?"
 		end
 		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
-			if icon
-				icon.att['image'] ||= att['name']
-				mkimg(icon,att["cname"])
-			else
-				print att["name"]
-			end
+			mkimg(self,att["cname"],"flow_classes")
 		}}
 		puts
 		super
@@ -587,6 +585,7 @@ end
 
 def write_one_page file
 	begin
+		$file = file
 		output_name = file.sub(/\.xml/,".html")
 		STDERR.puts "writing #{output_name}"
 		STDOUT.reopen output_name, "w"
