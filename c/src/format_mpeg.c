@@ -121,7 +121,7 @@ Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 		goto err;
 	}
 
-	$->bit_packing = BitPacking_new(4,0x0000ff,0x00ff00,0xff0000);
+	$->bit_packing = BitPacking_new(is_le(),4,0x0000ff,0x00ff00,0xff0000);
 
 	return $;
 err:

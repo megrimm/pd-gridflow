@@ -21,15 +21,21 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+/*
+  NOTE: most essential code in this file is used very often, and
+  so most of the rest of the code is special-case accelerations of it.
+*/
+
 #include "grid.h"
 
 typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
 typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
 
 struct BitPacking {
-	uint32 mask[3];
-	int bytes;
 	Packer pack;
+	bool is_le;
+	int bytes;
+	uint32 mask[3];
 };
 
 // returns the highest bit set in a word
@@ -146,15 +152,16 @@ uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
 }
 
 BitPacking builtin_bitpacks[] = {
-	{ {0x0000f800,0x000007e0,0x0000001f}, 2, pack_5652 },
-	{ {0x00ff0000,0x0000ff00,0x000000ff}, 3, pack_8883 },
+	{ pack_5652, true, 2, {0x0000f800,0x000007e0,0x0000001f} },
+	{ pack_8883, true, 3, {0x00ff0000,0x0000ff00,0x000000ff} },
 };
 
 /* **************************************************************** */
 
-BitPacking *BitPacking_new(int bytes, uint32 r, uint32 g, uint32 b) {
+BitPacking *BitPacking_new(bool is_le, int bytes, uint32 r, uint32 g, uint32 b) {
 	int i;
 	BitPacking *$ = NEW(BitPacking,1);
+	$->is_le = is_le;
 	$->bytes = bytes;
 	$->mask[0] = r;
 	$->mask[1] = g;
@@ -186,9 +193,8 @@ void BitPacking_whine(BitPacking *$) {
 	}
 }
 
-int BitPacking_bytes(BitPacking *$) {
-	return $->bytes;
-}
+int  BitPacking_bytes(BitPacking *$) { return $->bytes; }
+bool BitPacking_is_le(BitPacking *$) { return $->is_le; }
 
 uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return $->pack($,n,in,out);
@@ -199,13 +205,21 @@ Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
 	hb[0] = high_bit($->mask[0]);
 	hb[1] = high_bit($->mask[1]);
 	hb[2] = high_bit($->mask[2]);
-	while (n--) {
-		int bytes=0, temp=0;
-		/* while(bytes--) { temp = (temp<<8) | *in++; } *//* BE */
-		while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; } /* LE */
-		*out++ = ((temp & $->mask[0]) << 7) >> hb[0];
-		*out++ = ((temp & $->mask[1]) << 7) >> hb[1];
-		*out++ = ((temp & $->mask[2]) << 7) >> hb[2];
+#define LOOP_UNPACK(_reader_) \
+	while (n--) { \
+		int bytes=0, temp=0; \
+		_reader_; \
+		*out++ = ((temp & $->mask[0]) << 7) >> hb[0]; \
+		*out++ = ((temp & $->mask[1]) << 7) >> hb[1]; \
+		*out++ = ((temp & $->mask[2]) << 7) >> hb[2]; \
+	}
+
+	if ($->is_le) {
+		/* smallest byte first */
+		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
+	} else {
+		/* biggest byte first */
+		LOOP_UNPACK(while(bytes--) { temp = (temp<<8) | *in++; })
 	}
 	return out;
 }

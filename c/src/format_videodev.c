@@ -492,15 +492,15 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 		VideoPicture_whine(gp);
 		switch(gp->palette) {
 		case VIDEO_PALETTE_RGB24:
-			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
+			$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
 		break;
 		case VIDEO_PALETTE_RGB565:
 			/* I think the BTTV card is lying. */
 			/* BIG_HACK_FIX_ME */
-//			$->bit_packing = BitPacking_new(2,0xf800,0x07e0,0x001f);
-//			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
-			$->bit_packing = BitPacking_new(3,0xff0000,0x00ff00,0x0000ff);
-//			$->bit_packing = BitPacking_new(3,0xff000000,0x00ff0000,0x0000ff00);
+//			$->bit_packing = BitPacking_new(is_le(),2,0xf800,0x07e0,0x001f);
+//			$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
+			$->bit_packing = BitPacking_new(is_le(),3,0xff0000,0x00ff00,0x0000ff);
+//			$->bit_packing = BitPacking_new(is_le(),3,0xff000000,0x00ff0000,0x0000ff00);
 		break;
 		default:
 			whine("can't handle palette %d", gp->palette);
