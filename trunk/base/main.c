@@ -46,7 +46,7 @@ Ruby cFObject;
 
 /* begin Ruby 1.6 compatibility */
 
-static uint64 num2ull(Ruby val) {
+uint64 gf_num2ull(Ruby val) {
     if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	uint64 v =
@@ -54,9 +54,23 @@ static uint64 num2ull(Ruby val) {
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
 }
 
-static Ruby ull2num(uint64 val) {
+Ruby gf_ull2num(uint64 val) {
 	return rb_funcall(
 		rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
+		SI(+),1,UINT2NUM((uint32)val));
+}
+
+int64 gf_num2ll(Ruby val) {
+    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	int64 v =
+		(int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
+}
+
+Ruby gf_ll2num(int64 val) {
+	return rb_funcall(
+		rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
 		SI(+),1,UINT2NUM((uint32)val));
 }
 
@@ -90,8 +104,6 @@ Ruby rb_ary_fetch(Ruby rself, int i) {
 	Ruby argv[] = { INT2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
-
-const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 /* ---------------------------------------------------------------- */
 /* Dim */
@@ -305,12 +317,12 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 }
 
 \def Ruby total_time_get () {
-	return ull2num(total_time);
+	return gf_ull2num(total_time);
 }
 
 \def Ruby total_time_set (Ruby x) {
 	if (argc<1) RAISE("");
-	total_time = num2ull(x);
+	total_time = gf_num2ull(x);
 	return argv[0];
 }
 
@@ -465,7 +477,7 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	return INT2NUM((int)arg);
 }
 
-Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
+Ruby GridFlow_rdtsc (Ruby rself) { return gf_ull2num(rdtsc()); }
 
 /* This code handles nested lists because PureData doesn't do it
 and jMax only does it when it feels like it. */
@@ -497,10 +509,10 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 
 /* ---------------------------------------------------------------- */
 
-static uint64 memcpy_calls = 0;
+static uint32 memcpy_calls = 0;
 static uint64 memcpy_bytes = 0;
 static uint64 memcpy_time  = 0;
-static uint64 malloc_calls = 0; /* only new not delete */
+static uint32 malloc_calls = 0; /* only new not delete */
 static uint64 malloc_bytes = 0; /* only new not delete */
 static uint64 malloc_time  = 0; /* in cpu ticks */
 
@@ -544,12 +556,12 @@ void gffree(void *p) {
 	malloc_time+=t;
 }};
 
-Ruby GridFlow_memcpy_calls (Ruby rself) { return ull2num(memcpy_calls); }
-Ruby GridFlow_memcpy_bytes (Ruby rself) { return ull2num(memcpy_bytes); }
-Ruby GridFlow_memcpy_time  (Ruby rself) { return ull2num(memcpy_time); }
-Ruby GridFlow_malloc_bytes (Ruby rself) { return ull2num(malloc_bytes); }
-Ruby GridFlow_malloc_calls (Ruby rself) { return ull2num(malloc_calls); }
-Ruby GridFlow_malloc_time  (Ruby rself) { return ull2num(malloc_time); }
+Ruby GridFlow_memcpy_calls (Ruby rself) { return   LONG2NUM(memcpy_calls); }
+Ruby GridFlow_memcpy_bytes (Ruby rself) { return gf_ull2num(memcpy_bytes); }
+Ruby GridFlow_memcpy_time  (Ruby rself) { return gf_ull2num(memcpy_time); }
+Ruby GridFlow_malloc_calls (Ruby rself) { return   LONG2NUM(malloc_calls); }
+Ruby GridFlow_malloc_bytes (Ruby rself) { return gf_ull2num(malloc_bytes); }
+Ruby GridFlow_malloc_time  (Ruby rself) { return gf_ull2num(malloc_time); }
 
 Ruby GridFlow_profiler_reset2 (Ruby rself) {
 	memcpy_calls = memcpy_bytes = memcpy_time = 0;
@@ -603,6 +615,10 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("malloc_bytes",GridFlow_malloc_bytes,0);
 	SDEF2("malloc_time", GridFlow_malloc_time,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
+
+#define FOO(A) fprintf(stderr,"sizeof("#A")=%d\n",sizeof(A));
+FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
+#undef FOO
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());

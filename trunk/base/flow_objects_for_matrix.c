@@ -28,7 +28,7 @@
 // produce an upper triangular matrix with ones on the diagonal
 // will also affect any additional columns using the same row-operations
 
-void expect_complete_matrix (Dim *d) {
+void expect_complete_matrix (P<Dim> d) {
 	if (d->n!=2) RAISE("bletch");
 	if (d->get(0)>d->get(1)) RAISE("argh");
 }
@@ -59,7 +59,7 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 			op_sub->zip(m,mat+i*m,row);
 		}
 	}
-	GridOutlet out(this,0,matrix->dim->dup());
+	GridOutlet out(this,0,matrix->dim);
 	out.send(n*m,mat);
 } GRID_END
 
