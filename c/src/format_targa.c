@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "grid.h"
+#include "../../base/grid.h"
 
 extern FormatClass class_FormatTarga;
 typedef struct Format FormatTarga;

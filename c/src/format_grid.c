@@ -32,7 +32,7 @@
 	raw data goes there.
 */
 
-#include "grid.h"
+#include "../../base/grid.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
