@@ -351,7 +351,7 @@ GRCLASS(GridStore,LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
 
 \class GridOp1 < GridObject
 struct GridOp1 : GridObject {
-	\attr Operator1 *op;
+	\attr Numop1 *op;
 	\decl void initialize (Operator1 *op);
 	GRINLET3(0);
 };
@@ -364,7 +364,7 @@ GRID_INLET(GridOp1,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void initialize (Operator1 *op) {
+\def void initialize (Numop1 *op) {
 	rb_call_super(argc,argv);
 	this->op = op;
 }
