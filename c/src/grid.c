@@ -30,8 +30,7 @@ FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 
 /* **************** GridInlet ************************************* */
 
-GridInlet *GridInlet_new(
-	GridObject *parent, int winlet,
+GridInlet *GridInlet_new(GridObject *parent, int winlet,
 	GridBegin b, GridFlow f, GridEnd e
 ) {
 	GridInlet *$ = NEW(GridInlet,1);
@@ -212,7 +211,7 @@ int GridOutlet_idle(GridOutlet *$) {
 
 void GridOutlet_abort(GridOutlet *$) {
 	assert($);
-	assert(!GridOutlet_idle($));
+	if (GridOutlet_idle($)) return;
 	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
@@ -278,6 +277,15 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	}
 }
 
+void GridOutlet_give(GridOutlet *$, int n, Number *data) {
+	assert(!GridOutlet_idle($));
+	$->dex += n;
+	assert($->dex <= Dim_prod($->dim));
+	GridOutlet_flush($);
+	GridOutlet_send_direct($,n,data);
+	FREE(data);
+}
+
 void GridOutlet_flush(GridOutlet *$) {
 	assert(!GridOutlet_idle($));
 	GridOutlet_send_direct($,$->bufn,$->buf);
@@ -303,17 +311,9 @@ METHOD(GridObject,init) {
 
 /* category: input */
 
-METHOD(GridObject,grid_begin) {
-	GridInlet_begin($->in[winlet],ac,at);
-}
-
-METHOD(GridObject,grid_flow) {
-	GridInlet_flow($->in[winlet],ac,at);
-}
-
-METHOD(GridObject,grid_end) {
-	GridInlet_end($->in[winlet],ac,at);
-}
+METHOD(GridObject,grid_begin) { GridInlet_begin($->in[winlet],ac,at); }
+METHOD(GridObject,grid_flow ) { GridInlet_flow( $->in[winlet],ac,at); }
+METHOD(GridObject,grid_end  ) { GridInlet_end(  $->in[winlet],ac,at); }
 
 METHOD(GridObject,list) {
 	GridInlet_list($->in[winlet],ac,at);
@@ -349,7 +349,7 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 }
 
 /* **************** Format **************************************** */
-
+/* this is an abstract base class for file formats, network protocols, etc */
 
 /* **************** FormatClass *********************************** */
 

@@ -34,8 +34,6 @@
 typedef struct GridImport {
 	GridObject_FIELDS;
 	Dim *dim; /* size of grids to send */
-	int n;
-	int *v;
 } GridImport;
 
 GRID_BEGIN(GridImport,0) { /* nothing to do */ return true; }
@@ -54,30 +52,29 @@ GRID_FLOW(GridImport,0) {
 }
 GRID_END(GridImport,0) { /* nothing to do */ }
 
+/* same inlet 1 as @redim */
+
 GRID_BEGIN(GridImport,1) {
-	if (Dim_count(in->dim) != 1) return false;
-	$->n = Dim_get(in->dim,0);
-	if ($->n < 0 || $->n > MAX_DIMENSIONS) return false;
-	$->v = NEW(int,Dim_get(in->dim,0));
+	int n;
+	if (Dim_count(in->dim)!=1) return false;
+	n = Dim_get(in->dim,0);
+	if (n<0 || n>MAX_DIMENSIONS) return false;
+	GridInlet_set_factor(in,n);
 	return true;
 }
 
 GRID_FLOW(GridImport,1) {
 	int i;
-	for(i=0;i<n;i++) { $->v[in->dex+i] = data[in->dex+i]; }
+	int *dim = NEW(int,n);
+	FREE($->dim);
+	for(i=0;i<n;i++) { dim[i]=data[i]; COERCE_INT_INTO_RANGE(dim[i],1,MAX_INDICES); }
+	$->dim = Dim_new(n,dim);
+	GridInlet_abort($->in[0]);
+	GridOutlet_abort($->out[0]);
+	FREE(dim);
 }
 
-GRID_END(GridImport,1) {
-	int i;
-/*	GridInlet_abort($->in[0]); */
-	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
-	FREE($->dim);
-	for(i=0;i<$->n;i++) {
-		COERCE_INT_INTO_RANGE($->v[i],1,MAX_INDICES);
-	}
-	$->dim = Dim_new($->n, $->v);
-	FREE($->v);
-}
+GRID_END(GridImport,1) {}
 
 METHOD(GridImport,init) {
 	int i;
@@ -92,12 +89,10 @@ METHOD(GridImport,init) {
 		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
 	}
 	$->dim = Dim_new(ac-1,v);
-	$->v = 0;
 }
 
 METHOD(GridImport,delete) {
 	FREE($->dim);
-	FREE($->v);
 	GridObject_delete((GridObject *)$);
 }
 
@@ -827,10 +822,8 @@ CLASS(GridOuter) {
 
 typedef struct GridConvolve {
 	GridObject_FIELDS;
-	Dim *dim;
-	Number *data;
-	Dim *diml;
-	Number *datal;
+	Dim *dim;  Number *data;
+	Dim *diml; Number *datal;
 	const Operator2 *op_para;
 	const Operator2 *op_fold;
 } GridConvolve;
@@ -892,11 +885,18 @@ GRID_BEGIN(GridConvolve,1) {
 		whine("only exactly two dimensions allowed for now");
 		return false;
 	}
+/*
 	for (i=0; i<count; i++) {
 		if ((Dim_get(in->dim,i) & 1) == 0) {
 			whine("even number of elements");
 			return false;
 		}
+	}
+*/
+	/* because odd * odd = odd */
+	if ((length & 1) == 0) {
+		whine("even number of elements");
+		return false;
 	}
 	GridInlet_abort($->in[0]);
 	FREE($->dim);
@@ -907,8 +907,13 @@ GRID_BEGIN(GridConvolve,1) {
 }
 
 GRID_FLOW(GridConvolve,1) {
+/*
+	whine("in->dim = %s",Dim_to_s(in->dim));
+	whine("in->dex = %d", in->dex);
+	whine("n = %d", n);
+	whine("$->data = %p", $->data);
+*/
 	memcpy(&$->data[in->dex], data, n*sizeof(Number));
-	in->dex += n;
 }
 
 GRID_END(GridConvolve,1) {}
@@ -1069,8 +1074,6 @@ typedef struct GridRedim {
 	GridObject_FIELDS;
 	Dim *dim;
 	Number *data;
-	int n;
-	int *v;
 } GridRedim;
 
 GRID_BEGIN(GridRedim,0) {
@@ -1122,29 +1125,32 @@ GRID_END(GridRedim,0) {
 /* same inlet 1 as @import */
 
 GRID_BEGIN(GridRedim,1) {
-	if (Dim_count(in->dim) != 1) return false;
-	$->n = Dim_get(in->dim,0);
-	if ($->n < 0 || $->n > MAX_DIMENSIONS) return false;
-	$->v = NEW(int,Dim_get(in->dim,0));
+	int n;
+	if (Dim_count(in->dim)!=1) {
+		whine("dimension list must have 1 dimension");
+		return false;
+	}
+	n = Dim_get(in->dim,0);
+	if (n>MAX_DIMENSIONS) {
+		whine("dimension list has too many elements");
+		return false;
+	}
+	if (n) GridInlet_set_factor(in,n);
 	return true;
 }
 
 GRID_FLOW(GridRedim,1) {
 	int i;
-	for(i=0;i<n;i++) {
-		int v = data[in->dex+i];
-		COERCE_INT_INTO_RANGE(v,1,MAX_INDICES);
-		$->v[in->dex+i] = v;
-	}
-}
-
-GRID_END(GridRedim,1) {
+	int *dim = NEW(int,n);
+	FREE($->dim);
+	for(i=0;i<n;i++) { dim[i]=data[i]; COERCE_INT_INTO_RANGE(dim[i],1,MAX_INDICES); }
+	$->dim = Dim_new(n,dim);
 	GridInlet_abort($->in[0]);
 	GridOutlet_abort($->out[0]);
-	FREE($->dim);
-	$->dim = Dim_new($->n, $->v);
-	FREE($->v);
+	FREE(dim);
 }
+
+GRID_END(GridRedim,1) {}
 
 METHOD(GridRedim,init) {
 	int i;
@@ -1159,13 +1165,11 @@ METHOD(GridRedim,init) {
 		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
 	}
 	$->dim = Dim_new(ac-1,v);
-	$->v = 0;
 }
 
 METHOD(GridRedim,delete) {
 	FREE($->dim);
 	FREE($->data);
-	FREE($->v);
 }
 
 CLASS(GridRedim) {
