@@ -156,8 +156,6 @@ static void BFObject_method_missing (BFObject *self,
 
 static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac];
-	fm->ac--;
-	fm->at++;
 	for (int i=0; i<fm->ac; i++) 
 		argv[i] = Bridge_import_value(fm->at+i);
 	Ruby qlass = rb_hash_aref(rb_ivar_get(mGridFlow2,
