@@ -43,54 +43,49 @@ module GridFlow
 end
 
 if true
-	$whine_log = File.open "/tmp/gridflow.log", "w"
+	$post_log = File.open "/tmp/gridflow.log", "w"
 end
-
-p GridFlow::GridOuter.instance_methods
 
 def GridFlow.post(s,*a)
 #	printf s,*a
 	GridFlow.post_string(sprintf(s,*a))
-	($whine_log << sprintf(s,*a); $whine_log.flush) if $whine_log
+	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
 end
 
-class<<GridFlow; attr_accessor :whine_header end
-GridFlow.whine_header = "[gf] "
+class<<GridFlow; attr_accessor :post_header end
+GridFlow.post_header = "[gf] "
 
-def GridFlow.whine2(fmt,s)
-	@whine_last ||= ""
-	@whine_count ||= 0
+def GridFlow.gfpost2(fmt,s)
+	@post_last ||= ""
+	@post_count ||= 0
 
-	if @whine_last==fmt
-		@whine_count+=1
-		#if @whine_count >= 64 and @whine_count/(@whine_count&-@whine_count)<4
-		#	post "[too many similar posts. this is # %d]\n", @whine_count
+	if @post_last==fmt
+		@post_count+=1
+		#if @post_count >= 64 and @post_count/(@post_count&-@post_count)<4
+		#	post "[too many similar posts. this is # %d]\n", @post_count
 		#	return
 		#end
 	else
-		@whine_last = fmt
-		@whine_count += 1
+		@post_last = fmt
+		@post_count += 1
 	end
 
 	s<<"\n" if s[-1]!=10
-	post(GridFlow.whine_header)
+	post(GridFlow.post_header)
 	post(s)
 end
 
 # a slightly friendlier version of post(...)
 # it removes redundant messages.
 # it also ensures that a \n is added at the end.
-def GridFlow.whine(fmt,*a)
+def GridFlow.gfpost(fmt,*a)
 	fmt=fmt.to_s
-	whine2(fmt,(sprintf fmt, *a))
+	GridFlow.gfpost2(fmt,(sprintf fmt, *a))
 end
 
-GridFlow.whine "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
-GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
+GridFlow.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
+GridFlow.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
-
-GridFlow.whine "hello???"
-GridFlow.whine GridFlow.constants.inspect
 
 for victim in [TCPSocket, TCPServer]
 	def victim.new
@@ -204,13 +199,13 @@ class RubyFor < GridFlow::FObject
 	# FObject.install(name, inlets, outlets)
 	# no support for metaclasses yet
 	install "rubyfor", 3, 1
+end
 
 # FObject features I want to see:
 #
 #	self.ninlets #=> 3
 #	self.noutlets #=> 1
 #	self.external_name #=> "rubyfor"
-end
 
 # to see what the messages look like when they get on the Ruby side.
 class RubyPrint < GridFlow::GridObject
@@ -224,7 +219,7 @@ class RubyPrint < GridFlow::GridObject
 		s=s.to_s
 		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
 		case s
-		when /^_0_/; GridFlow.whine "#{pre}#{s[3..-1]}: #{a.inspect}"
+		when /^_0_/; GridFlow.gfpost "#{pre}#{s[3..-1]}: #{a.inspect}"
 		else super
 		end
 	end
@@ -237,10 +232,18 @@ class GridPrint < GridFlow::GridObject
 #	def initialize(*)
 #		super # don't forget super!!!
 #	end
+
+	def make_columns data
+		min = data.unpack("l*").min
+		max = data.unpack("l*").max
+		@columns = [sprintf("%d",min).length,sprintf("%d",max).length].max
+	end
+
 	def _0_rgrid_begin; @dim = inlet_dim 0; @data = ""; end
 	def _0_rgrid_flow data; @data << data end
 	def _0_rgrid_end
-		GridFlow.whine("dim(#{@dim.join','}): " + case @dim.length
+		make_columns @data
+		GridFlow.gfpost("dim(#{@dim.join','}): " + case @dim.length
 		when 0,1; dump @data
 		when 2;   ""
 		else      "(not printed)"
@@ -249,12 +252,14 @@ class GridPrint < GridFlow::GridObject
 		when 2
 			sz = @data.length/@dim[0]
 			for row in 0...@dim[0]
-				GridFlow.whine dump(@data[sz*row,sz])
+				GridFlow.gfpost dump(@data[sz*row,sz])
 			end
 		end
 	end
 	def dump data
-		data.unpack("l*").join(",")
+		# data.unpack("l*").join(",")
+		f = "%#{@columns}d"
+		data.unpack("l*").map{|x| sprintf f,x }.join(" ")
 	end
 	install_rgrid 0
 	install "@print", 1, 0
@@ -266,7 +271,7 @@ end
 #end
 
 def self.routine
-#	GridFlow.whine "hello"
+#	GridFlow.gfpost "hello"
 	$tasks.each {|k,v|
 		case v
 		when Integer; GridFlow.exec k,v
@@ -276,11 +281,11 @@ def self.routine
 	}
 	$mainloop.timers.after(0.025) { routine }
 #	GC.start
-#	GridFlow.whine "bye"
+#	GridFlow.gfpost "bye"
 end
 
 def GridFlow.find_file s
-	whine "find_file: #{s}"
+	gfpost "find_file: #{s}"
 	s
 end
 
@@ -289,5 +294,13 @@ end # module GridFlow
 
 user_config_file = ENV["HOME"] + "/.gridflow_startup"
 load user_config_file if File.exist? user_config_file
+
+END {
+	puts "This is an END block"
+}
+
+at_exit {
+	puts "This is an at_exit block"
+}
 
 GridFlow.routine

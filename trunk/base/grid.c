@@ -54,7 +54,7 @@ GridInlet::~GridInlet() {
 
 void GridInlet::abort() {
 	if (dim) {
-		whine("%s: aborting grid: %d of %d", INFO(this), dex, dim->prod());
+		gfpost("%s: aborting grid: %d of %d", INFO(this), dex, dim->prod());
 		FREE(dim);
 		FREE(buf);
 	}
@@ -69,9 +69,9 @@ bool GridInlet::is_busy() {
 bool GridInlet::is_busy_verbose(const char *where) {
 	assert(this);
 	if (!dim) {
-		whine("%s: (%s): no dim", INFO(this), where);
+		gfpost("%s: (%s): no dim", INFO(this), where);
 	} else if (!gh->flow) {
-		whine("%s: (%s): no flow()", INFO(this), where);
+		gfpost("%s: (%s): no flow()", INFO(this), where);
 	} else {
 		return 1;
 	}
@@ -96,7 +96,7 @@ static VALUE GridInlet_begin$1(GridInlet *$) {
 
 static VALUE GridInlet_begin$2(GridInlet *$) {
 	$->dim = 0; /* hack */
-//	whine("ensure: %p,%p",$,$->dim);
+//	gfpost("ensure: %p,%p",$,$->dim);
 	return (VALUE) 0;
 }
 
@@ -108,12 +108,12 @@ void GridInlet::begin(int argc, VALUE *argv) {
 	argc--, argv++;
 
 	if (is_busy()) {
-		whine("grid inlet busy (aborting previous grid)");
+		gfpost("grid inlet busy (aborting previous grid)");
 		abort();
 	}
 
 	if (argc-1>MAX_DIMENSIONS) {
-		whine("too many dimensions (aborting grid)");
+		gfpost("too many dimensions (aborting grid)");
 		goto err;
 	}
 
@@ -130,7 +130,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 		if (!v) goto err;
 	}
 
-//	whine("setting back dim...");
+//	gfpost("setting back dim...");
 	this->dim = dim;
 	((GridOutlet *)back_out)->callback(this,gh->mode);
 	return;
@@ -150,7 +150,7 @@ if (mode==4) {
 	{
 		int d = dex + bufn;
 		if (d+n > dim->prod()) {
-			whine("%s: grid input overflow: %d of %d",INFO($), d+n, dim->prod());
+			gfpost("%s: grid input overflow: %d of %d",INFO($), d+n, dim->prod());
 			n = dim->prod() - d;
 			if (n<=0) return;
 		}
@@ -205,9 +205,9 @@ if (mode==4) {
 
 void GridInlet::end(int argc, VALUE *argv) {
 	if (!is_busy_verbose("end")) return;
-/*	whine("%s: GridInlet_end()", INFO(this)); */
+/*	gfpost("%s: GridInlet_end()", INFO(this)); */
 	if (dim->prod() != dex) {
-		whine("%s: incomplete grid: %d of %d", INFO(this),
+		gfpost("%s: incomplete grid: %d of %d", INFO(this),
 			dex, dim->prod());
 	}
 	if (gh->end) { gh->end(parent->peer,(GridObject *)parent,this); }
@@ -219,14 +219,14 @@ void GridInlet::list(int argc, VALUE *argv) {
 	int i;
 	Number *v = NEW(Number,argc);
 	int n = argc;
-/*	whine("$=%p argc=%d",this,n); */
+/*	gfpost("$=%p argc=%d",this,n); */
 	for (i=0; i<argc; i++) {
 		/*
-		whine("argv[%d]=%ld",i,argv[i],
+		gfpost("argv[%d]=%ld",i,argv[i],
 			RSTRING(rb_funcall(argv[i],SI(inspect),0))->ptr);
 		*/
 		v[i] = NUM2INT(argv[i]);
-		/*whine("v[%d]=%ld",i,v[i]);*/
+		/*gfpost("v[%d]=%ld",i,v[i]);*/
 	}
 	dim = new Dim(1,&n);
 
@@ -252,10 +252,8 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	buf = NEW2(Number,gf_max_packet_length);
 	bufn = 0;
 	frozen = 0;
-	ron = 0;
-	ro = 0;
-	rwn = 0;
-	rw = 0;
+	ron = 0; ro = 0;
+	rwn = 0; rw = 0;
 }
 
 GridOutlet::~GridOutlet() {
@@ -322,7 +320,7 @@ void GridOutlet::begin(Dim *dim) {
 //		ENTER_P;
 	}
 	frozen = 1;
-/*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
+/*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
 
 void GridOutlet::send_direct(int n, const Number *data) {
@@ -393,7 +391,7 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 	assert(is_busy());
 	assert(!frozen);
 	assert(mode==6 || mode==4);
-	/* whine("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
+	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
 	/* not using ->ro, ->rw yet */
 	if (mode==4) ron += 1;
 	if (mode==6) rwn += 1;
@@ -413,7 +411,7 @@ METHOD(GridObject,init) {
 
 	{
 		GridClass *cl = $->grid_class;
-		//whine("cl=%p\n",cl);
+		//gfpost("cl=%p\n",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = new GridInlet($,gh);
@@ -423,7 +421,7 @@ METHOD(GridObject,init) {
 		}
 	}
 
-//	for (i=0; i<MAX_INLETS; i++) whine("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
+//	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
 	rb_call_super(0,0);
 }
 
@@ -449,7 +447,7 @@ METHOD2(GridObject,inlet_dim) {
 {
 	int i, n=in->dim->count();
 	VALUE a = rb_ary_new2(n);
-//	whine("inlet_dim: %p,%p",in,in->dim);
+//	gfpost("inlet_dim: %p,%p",in,in->dim);
 	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
 	return a;
 }}
@@ -527,7 +525,7 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 
 METHOD(GridObject,method_missing) {
 	char *name;
-	//whine("argc=%d,argv=%p,self=%p",argc,argv,self);
+	//gfpost("argc=%d,argv=%p,self=%p",argc,argv,self);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	//rb_p(argv[0]);
@@ -536,7 +534,7 @@ METHOD(GridObject,method_missing) {
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
-		//whine("$=%p; inl=%p",$,inl);
+		//gfpost("$=%p; inl=%p",$,inl);
 		int m;
 		if      (strcmp(name+3,"grid_begin")==0) m=0;
 		else if (strcmp(name+3,"grid_flow" )==0) m=1;
@@ -592,8 +590,6 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */
 
-#define FC(s) ((FormatClass *)s->grid_class)
-
 #ifdef FORMAT_LIST
 extern GridClass FORMAT_LIST( ,_classinfo);
 extern FormatInfo FORMAT_LIST( ,_formatinfo);
@@ -614,7 +610,7 @@ METHOD(Format,init) {
 	$->bit_packing = 0;
 	$->dim = 0;
 
-	whine("flags=%d",flags);
+	gfpost("flags=%d",flags);
 	/* FF_W, FF_R, FF_RW */
 	if ($->mode==SYM(in)) {
 		if ((flags & 4)==0) goto err;
