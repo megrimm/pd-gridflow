@@ -3,11 +3,6 @@
 #X obj 11 77 @out window;
 #X text 342 55 OR;
 #X text 238 30 global saturation;
-#X floatatom 148 100 5 0 0 0 - - -;
-#X obj 199 115 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
--228992 -62784 -1 7900 1;
-#X obj 199 85 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8 -261689
--258699 -1 7900 1;
 #N canvas 0 0 441 339 @saturation 0;
 #X obj 63 88 @ inv+ 255;
 #X obj 14 219 @ +;
@@ -56,35 +51,25 @@
 #X obj 11 98 fps detailed;
 #X text 203 68 per-channel saturation;
 #X msg 194 25 0;
-#X obj 199 100 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
--225271 -24198 -1 7900 1;
 #X obj 194 4 loadbang;
 #X obj 197 46 hsl 137 20 -256 512 0 0 empty empty empty -2 -6 0 8 -233017
--128992 -1 7900 1;
-#X floatatom 148 130 5 0 0 0 - - -;
-#X floatatom 148 115 5 0 0 0 - - -;
+-128992 -1 9200 1;
 #X floatatom 155 47 5 0 0 0 - - -;
 #X obj 11 10 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
 #X obj 29 9 metro 33.3667;
-#X obj 104 147 @pack 3;
 #X obj 11 30 @in teapot.png;
-#X connect 1 0 8 0;
-#X connect 4 0 19 0;
-#X connect 5 0 14 0;
-#X connect 6 0 4 0;
-#X connect 7 0 1 0;
-#X connect 8 0 0 0;
-#X connect 10 0 13 0;
-#X connect 11 0 15 0;
-#X connect 12 0 10 0;
-#X connect 13 0 16 0;
-#X connect 14 0 19 2;
-#X connect 15 0 19 1;
-#X connect 16 0 6 0;
-#X connect 16 0 11 0;
-#X connect 16 0 5 0;
-#X connect 17 0 18 0;
-#X connect 18 0 20 0;
-#X connect 19 0 7 1;
-#X connect 20 0 7 0;
+#X obj 163 95 @color -256 512 1;
+#X msg 147 69 3 # \$1;
+#X connect 1 0 5 0;
+#X connect 4 0 1 0;
+#X connect 5 0 0 0;
+#X connect 7 0 9 0;
+#X connect 8 0 7 0;
+#X connect 9 0 10 0;
+#X connect 9 0 15 0;
+#X connect 11 0 12 0;
+#X connect 12 0 13 0;
+#X connect 13 0 4 0;
+#X connect 14 0 4 1;
+#X connect 15 0 14 0;
