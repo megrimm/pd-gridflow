@@ -219,6 +219,8 @@ end # for nt
 	x.expect([42,0,0,0]) { a.send_in 0,42 }
 	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
 
+	glob = FObject["@global"]
+	glob.send_in 0, "profiler_dump"
 end
 
 def test_new_classes

@@ -175,6 +175,7 @@ void GridInlet::set_factor(int factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
+	ENTER(self->parent);
 	switch (self->nt) {
 	case uint8_type_i: self->gh->flow(self,-1,Pt<uint8>()); break;
 	case int16_type_i: self->gh->flow(self,-1,Pt<int16>()); break;
@@ -182,6 +183,7 @@ static Ruby GridInlet_begin_1(GridInlet *self) {
 	case float32_type_i: self->gh->flow(self,-1,Pt<float32>()); break;
 	default: RAISE("argh");
 	}
+	LEAVE(self->parent);
 	return Qnil;
 }
 
@@ -240,6 +242,7 @@ template <class T>
 void GridInlet::flow(int mode, int n, Pt<T> data) {
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
+	ENTER(parent);
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
@@ -296,6 +299,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	} else {
 		RAISE("%s: unknown inlet mode",INFO(parent));
 	}
+	LEAVE(parent);
 }
 
 /* !@#$ this is not correct */
@@ -316,6 +320,7 @@ void GridInlet::end() {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
+	ENTER(parent);
 	switch (nt) {
 	case uint8_type_i: gh->flow(this,-2,Pt<uint8>()); break;
 	case int16_type_i: gh->flow(this,-2,Pt<int16>()); break;
@@ -323,6 +328,7 @@ void GridInlet::end() {
 	case float32_type_i: gh->flow(this,-2,Pt<float32>()); break;
 	default: RAISE("argh");
 	}
+	LEAVE(parent);
 	if (dim) {delete dim; dim=0;}
 	buf.del();
 	dex = 0;
@@ -536,6 +542,7 @@ void GridObject::mark() {}
 GridObject::GridObject() {
 	freed = false;
 	profiler_cumul = 0;
+	profiler_last  = 0;
 	for (int i=0; i<MAX_INLETS;  i++) in[i]  = 0;
 	for (int i=0; i<MAX_OUTLETS; i++) out[i] = 0;
 }

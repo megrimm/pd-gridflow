@@ -54,22 +54,21 @@ require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
-module GridFlow
-	def esmtick
-		$esm.tick
-		$mainloop.timers.after(0.1) { esmtick }
-	end
-	def start_eval_server
-		require "gridflow/extra/eval_server.rb"
-		$esm = EvalServerManager.new
-		esmtick
-	end
-end
-
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
 module GridFlow #------------------
+
+def esmtick
+	$esm.tick
+	$mainloop.timers.after(0.1) { esmtick }
+end
+
+def start_eval_server
+	require "gridflow/extra/eval_server.rb"
+	$esm = EvalServerManager.new
+	esmtick
+end
 
 def self.post(s,*a)
 	post_string(sprintf("%s"+s,post_header,*a))
@@ -81,6 +80,7 @@ class<<self
 	attr_accessor :verbose
 	attr_reader :alloc_set
 	attr_reader :fobjects_set
+	attr_reader :cpu_hertz
 	alias gfpost post
 end
 
@@ -134,6 +134,7 @@ class FObject
 		@outlets[outlet] ||= []
 		@outlets[outlet].push [object, inlet]
 	end
+=begin
 	def send_in(inlet, *m)
 		m=GridFlow.parse(m[0]) if m.length==1 and String===m[0] and m[0] =~ / /
 		sym = if m.length==0 then :bang
@@ -148,6 +149,7 @@ class FObject
 		GridFlow.post "%s",m.inspect if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
+=end
 	def self.name_lookup sym
 		qlasses = GridFlow.instance_eval{@fclasses_set}
 		qlass = qlasses[sym.to_s]
@@ -455,32 +457,50 @@ class GridPosterize < FPatcher
 	install "@posterize", 2, 1
 end
 
+# because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
+unless Object.instance_methods(true).include? "object_id"
+	class Object
+		alias object_id id
+	end
+end
+
+begin
+	u0,t0=GridFlow.rdtsc,Time.new.to_f
+	sleep .01
+	u1,t1=GridFlow.rdtsc,Time.new.to_f
+	@cpu_hertz = (u1-u0)/(t1-t0)
+	GridFlow.post "estimating cpu clock at #{@cpu_hertz} Hz"
+rescue
+	p $!
+end
+
 # a dummy class that gives access to any stuff global to GridFlow.
 class GridGlobal < FObject
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
 	end
 	def _0_profiler_dump
-		GridFlow.post "sorry, the profiler is broken. please someone fix it."
-		return
+#		GridFlow.post "sorry, the profiler is broken. please someone fix it."
+#		return
 
 		ol = []
 		total=0
 		GridFlow.post "-"*32
-		GridFlow.post "         clock-ticks percent pointer  constructor"
+		GridFlow.post "microseconds percent pointer  constructor"
 		GridFlow.fobjects_set.each {|o,*| ol.push o }
 
 		# HACK: BitPacking is not a real gridobject
 		ol.delete_if {|o| not o.respond_to? :profiler_cumul }
 
-		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
+		ol.sort! {|a,b| a.profiler_cumul <=> b.profiler_cumul }
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
 		ol.each {|o|
 			ppm = o.profiler_cumul * 1000000 / total
-			GridFlow.post "%20d %2d.%04d %08x %s",
-				o.profiler_cumul, ppm/10000, ppm%10000,
-				o.id, o.args
+			us = (o.profiler_cumul*1E6/GridFlow.cpu_hertz).to_i
+			GridFlow.post "%12d %2d.%04d %08x %s", us,
+				ppm/10000, ppm%10000,
+				o.object_id, o.args
 		}
 		GridFlow.post "-"*32
 	end
@@ -508,13 +528,6 @@ class FPS < GridObject
 			each {|x| sum += x**n }
 			sum/length
 		end
-		if @mode==:cpu
-			u0,t0=GridFlow.rdtsc,Time.new.to_f
-			sleep .01
-			u1,t1=GridFlow.rdtsc,Time.new.to_f
-			@hertz = (u1-u0)/(t1-t0)
-			GridFlow.post "estimating cpu clock at #{@hertz} Hz"
-		end
 	end
 	def method_missing(*)
 		# ignore
@@ -524,7 +537,7 @@ class FPS < GridObject
 		when :real; Time.new.to_f
 		when :user; Process.times.utime
 		when :system; Process.times.stime
-		when :cpu; GridFlow.rdtsc/@hertz
+		when :cpu; GridFlow.rdtsc/GridFlow.cpu_hertz
 		end
 		@history.push t-@last
 		@duration += t-@last

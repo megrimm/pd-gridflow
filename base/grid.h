@@ -102,17 +102,15 @@ extern "C" {
 #define HAVE_PROFILING
 #endif
 
-/* those are helpers for profiling. OBSOLETE */
 #ifdef HAVE_PROFILING
-#define ENTER self->profiler_last = rdtsc();
-#define LEAVE self->profiler_cumul += rdtsc() - self->profiler_last;
-#define ENTER_P self->parent->profiler_last = rdtsc();
-#define LEAVE_P self->parent->profiler_cumul += rdtsc()-self->parent->profiler_last;
+#define ENTER(_self_) { _self_->profiler_last = rdtsc(); }
+#define LEAVE(_self_) { \
+	if (_self_->profiler_last) \
+		_self_->profiler_cumul += rdtsc() - _self_->profiler_last; \
+	_self_->profiler_last = 0; }
 #else
-#define ENTER
-#define LEAVE
-#define ENTER_P
-#define LEAVE_P
+#define ENTER(_self_)
+#define LEAVE(_self_)
 #endif
 
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
@@ -804,7 +802,8 @@ struct FObject {
 	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
 	GridClass *grid_class;
 	BFObject *foreign_peer; /* point to jMax/PD peer */
-	uint64 profiler_cumul, profiler_last;
+	uint64 profiler_cumul;
+	uint64 profiler_last;
 };
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
