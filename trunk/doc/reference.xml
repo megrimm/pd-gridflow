@@ -1,10 +1,14 @@
-<?xml version="1.0" ?><document>
-
-
-<!-- Video4jmax Reference Manual -->
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
 <!-- $Id$ -->
+<!--
+	Video4jmax Reference Manual
+	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+-->
 
 <section name="Grid Protocol">
+<prose>
 	<p>
 	each element of a grid is an integer. the range of allowed integer values 
 	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
@@ -21,17 +25,19 @@
 	<p>
 	At each such level, elements are sent/stored in their numeric order, 
 	and are numbered using natural numbers starting at 0. This ordering usually 
-	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, 
-	<kbd>@export</kbd> and <kbd>@redim</kbd> care about it. 
+	does not matter, but sometimes it does. Most notably, <k>@import</k>, 
+	<k>@export</k> and <k>@redim</k> care about it. 
 	</p>
 	<p>
 	On the other hand, order of dimensions usually does matter; this is 
 	what distinguishes rows from columns and channels, for example.
 	Most objects care about the distinction.
 	</p>
+</prose>
 </section>
 
 <section name="Picture Protocol">
+<prose>
 	<p>A picture is a three-dimensional Grid: 
 	<list start="0">
 		<li>rows</li>
@@ -60,12 +66,13 @@
 	In the final conversion, high bits are just truncated. The black value 
 	is 0 and the maximum intensity value is 255; negative values are wrapped 
 	and values above 255 are wrapped too. If you want to clip them, you may 
-	use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. 
+	use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
 	</p>
+</prose>
 </section>
 
 <section name="Objects for Input/Output">
-	<jmax-class name="video_out">
+	<jmax-class name="@video_out">
 		<icon
 			image="images/video_out_240_320.jpg"
 			text="[@video_out 240 320]"
@@ -125,10 +132,10 @@
 			text="video_out_patch"
 		/>
 	</jmax-class>
-	<jmax-class name="video_out_file">
+	<jmax-class name="@out">
 		<icon
 			image="images/video_out_file.jpg"
-			text="[@video_out_file]"
+			text="[@out]"
 		/>
 		<inlet id="0">
 			<method name="open" min="1">
@@ -152,15 +159,15 @@
 		</inlet>
 		<sample
 			image="images/grab_video_out_file.png"
-			text="[@video_out_file]"
+			text="[@out]"
 		/>
 	</jmax-class>
-	<jmax-class name="@video_in_file">
+	<jmax-class name="@in">
 		<icon
 			image="images/video_in_file.jpg"
 			text="[@ import 240 320 3]"
 		/>
-		This class is similar to @video_out_file in that it operates on
+		This class is similar to @out in that it operates on
 		files. However some aspects of it are backwards because it's reading,
 		not writing. Objects of this class don't have a grid inlet, they have
 		a grid outlet instead.
@@ -236,7 +243,7 @@ the previous one.</p>
 			text="[@ import 240 320 3]"
 		/>
 	</jmax-class>
-	<jmax-class name="export">
+	<jmax-class name="@export">
 		<icon
 			image="images/@export.jpg"
 			text="[@export]"
@@ -371,6 +378,129 @@ or  uint8 (native format for ppm or tga formats) </p>
 	</jmax-class>
 </section>
 
+<section name="Compound Objects">
+	<jmax-class name="@contrast">
+		<icon
+			image="images/@contrast.jpg"
+			text="[@contrast]"
+		/>
+
+		<p>@contrast adjusts the intensity in an image.
+		values outside 0-255 are automatically trimmed. </p>
+
+		<p> Sending an integer to inlet 2 sets the intensity of incoming
+		white to a certain fraction between output black and output white.
+		normal value is 256; may be set smaller or bigger.</p>
+
+		<p> Sending an integer to inlet 1 sets the intensity of incoming
+		black to a certain fraction between output black and inlet 2 value.
+		normal value is 256; may be set smaller or bigger.</p>
+
+		<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+
+		<sample
+			image="images/grab_contrast.png"
+			text="[@contrast]"
+		/> 
+</jmax-class>
+
+<jmax-class name="@identity_transform">
+	<icon
+		image="images/@identity_transform.jpg"
+		text="[@identity_transform]"
+	/>
+<p>@identity_transform builds a pixel-level transform grid suitable for 
+using with inlet 0 of @store. </p>
+<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
+<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
+<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
+0. Not guaranteed to be fast (use an intermediate @store as a cache 
+if needed)</p>
+
+	<sample
+		image="images/grab_identity_transform.png"
+		text="[@identity_transform]"
+	/>
+</jmax-class>
+
+<jmax-class name="@posterize">
+	<icon
+		image="images/@posterize.jpg"
+		text="[@posterize]"
+	/>
+<p>@posterize reduces the number of intensities in an image. </p>
+<p> Sending an integer to inlet 1 sets the number of possible levels. 
+Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
+depth with 32. The effect is mostly apparent with small values.</p>
+<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+	<sample
+		image="images/grab_posterize.png"
+		text="[@posterize]"
+	/>
+</jmax-class>
+
+<jmax-class name="@scale_to">
+	<icon
+		image="images/@scale_to.jpg"
+		text="[@scale_to]"
+	/>
+<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
+and chained from @identity_transform and to @store. This will scale an 
+image of any size to the size specified in inlets 1,2. If it doesn't correspond 
+the values of @identity_transform, part of the image will be trimmed and/or 
+duplicated.</p>
+
+	<sample
+		image="images/grab_scale_to.png"
+		text="[@scale_to]"
+	/>
+</jmax-class>
+
+<jmax-class name="@spread">
+	<icon
+		image="images/@spread.jpg"
+		text="[@spread]"
+	/>
+<p>@spread scatters the pixels in an image. Not all original pixels will 
+appear, and some may get duplicated (triplicated, etc) randomly. Some 
+wrap-around effect will occur close to the edges. </p>
+<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
+number of pixels + 1. even values translate the whole image by half 
+a pixel due to rounding.</p>
+	<sample
+		image="images/grab_spread.png"
+		text="[@spread]"
+	/>
+</jmax-class>
+
+<jmax-class name="@three">
+	<icon
+		image="images/@three.jpg"
+		text="[@three]"
+	/>
+<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+doing redundant updates -- sorry)</p>
+<icon
+	image="images/grab_three.png"
+	text="[@three]"
+/>
+</jmax-class>
+<jmax-class name="@two">
+<icon
+	image="images/@two.jpg"
+	text="[@two]"
+/>
+<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+doing redundant updates -- sorry)</p>
+<sample
+	image="images/grab_two.png"
+	text="[@two]"
+/>
+</jmax-class>
+</section>
+
 <section name="Unary Operators">
 
 	<!-- todo: text attr in those icons could be auto-generated -->
@@ -485,136 +615,6 @@ or  uint8 (native format for ppm or tga formats) </p>
 	</operator-2>
 </section>
 
-<section name="Compound Objects">
-	<jmax-class name="@contrast">
-		<icon
-			image="images/@contrast.jpg"
-			text="[@contrast]"
-		/>
-		<p>@contrast adjusts the intensity in an image.
-		values outside 0-255 are automatically trimmed. </p>
-
-<blockquote>
-<p> Sending an integer to inlet 2 sets the intensity of incoming white 
-to a certain fraction between output black and output white. normal 
-value is 256; may be set smaller or bigger.</p>
-<p> Sending an integer to inlet 1 sets the intensity of incoming black 
-to a certain fraction between output black and inlet 2 value. normal 
-value is 256; may be set smaller or bigger.</p>
-<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-</blockquote>
-		<sample
-			image="images/grab_contrast.png"
-			text="[@contrast]"
-		/> 
-</jmax-class>
-
-<jmax-class name="@identity_transform">
-	<icon
-		image="images/@identity_transform.jpg"
-		text="[@identity_transform]"
-	/>
-<p>@identity_transform builds a pixel-level transform grid suitable for 
-using with inlet 0 of @store. </p>
-<blockquote>
-<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
-<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
-<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
-0. Not guaranteed to be fast (use an intermediate @store as a cache 
-if needed)</p>
-</blockquote>
-	<sample
-		image="images/grab_identity_transform.png"
-		text="[@identity_transform]"
-	/>
-</jmax-class>
-
-<jmax-class name="@posterize">
-	<icon
-		image="images/@posterize.jpg"
-		text="[@posterize]"
-	/>
-<p>@posterize reduces the number of intensities in an image. </p>
-<blockquote>
-<p> Sending an integer to inlet 1 sets the number of possible levels. 
-Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
-depth with 32. The effect is mostly apparent with small values.</p>
-<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-</blockquote>
-	<sample
-		image="images/grab_posterize.png"
-		text="[@posterize]"
-	/>
-</jmax-class>
-
-<jmax-class name="@scale_to">
-	<icon
-		image="images/@scale_to.jpg"
-		text="[@scale_to]"
-	/>
-<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
-and chained from @identity_transform and to @store. This will scale an 
-image of any size to the size specified in inlets 1,2. If it doesn't correspond 
-the values of @identity_transform, part of the image will be trimmed and/or 
-duplicated.</p>
-
-	<sample
-		image="images/grab_scale_to.png"
-		text="[@scale_to]"
-	/>
-</jmax-class>
-
-<jmax-class name="@spread">
-	<icon
-		image="images/@spread.jpg"
-		text="[@spread]"
-	/>
-<p>@spread scatters the pixels in an image. Not all original pixels will 
-appear, and some may get duplicated (triplicated, etc) randomly. Some 
-wrap-around effect will occur close to the edges. </p>
-<blockquote> 
-<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
-number of pixels + 1. even values translate the whole image by half 
-a pixel due to rounding.</p>
-</blockquote>
-	<sample
-		image="images/grab_spread.png"
-		text="[@spread]"
-	/>
-</jmax-class>
-
-<jmax-class name="@three">
-	<icon
-		image="images/@three.jpg"
-		text="[@three]"
-	/>
-<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
-<blockquote> 
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-doing redundant updates -- sorry)</p>
-</blockquote>
-<icon
-	image="images/grab_three.png"
-	text="[@three]"
-/>
-</jmax-class>
-<jmax-class name="@two">
-<icon
-	image="images/@two.jpg"
-	text="[@two]"
-/>
-<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
-<blockquote> 
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-doing redundant updates -- sorry)</p>
-</blockquote>
-<sample
-	image="images/grab_two.png"
-	text="[@two]"
-/>
-</jmax-class>
-</section>
-
 <section name="External Picture Formats">
 	<format name="ppm" long-name="">
 		<icon
@@ -628,9 +628,9 @@ doing redundant updates -- sorry)</p>
 			image="images/open_tga.jpg"
 			text="[open filename.tga targa]"
 		/>
-<p>Targa: Read Only. RGB-24 only. (ARGB-32 is temporarily disabled) 
-</p>
-<p>Experimental</p>
+		<p>Targa: Read Only. RGB-24 only. (ARGB-32 is temporarily disabled) 
+		</p>
+		<p>Experimental.</p>
 	</format>
 	<format name="x11" long-name="">
 	</format>
@@ -644,5 +644,4 @@ doing redundant updates -- sorry)</p>
 		dc10plus.</p>
 	</format>
 </section>
-
-</document>
+</jmax-doc>

@@ -1,7 +1,11 @@
-<?xml version="1.0"?>
+<?xml version='1.0' ?>
 <!--
 	XML DTD for documenting classes of C, jMax, and video4jmax.
 	Copyright (c) 2001 by Mathieu Bouchard
+
+	BY THE WAY, THIS THING DOES NOT PARSE WELL.
+	I don't care, I don't use it, and XML sucks.
+	See "jmaxml_to_html.rb" for more info.
 -->
 
 <!-- Declarations for generic documentation -->
