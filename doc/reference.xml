@@ -45,26 +45,27 @@
 			<method name="reset">
 				aborts the current grid if there is one.
 			</method>
-			<grid><dim>dims...</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(dims...)"/>
 				this is the equivalent of filtering this grid through
 				an @export object and sending the resulting integers
 				to this @import object, except that it's over
 				10 times faster.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>rank</dim>
+			<method name="grid"><arg name="grid" type="grid(rank)"/>
 				this grid is a dimension list that replaces the one
 				specified in the constructor.
-			</grid>
+			</method>
 			<method name="per_message">
 				sets the per-message option described above.
 			</method>
 		</inlet>
 		<outlet id="0">
-			<grid>
+			<method name="grid"><arg name="grid" type="grid"/>
 				the grid produced from incoming integers and/or grids.
-			</grid>
+			</method>
 		</outlet>
 	</class>
 
@@ -78,9 +79,9 @@
 			anything that could possibly be configured here.
 		</method>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				transforms this grid into a sequence of integer messages.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
 			<method name="int">
@@ -100,10 +101,10 @@
 			anything that could possibly be configured here.
 		</method>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				transforms this grid into a single message containing
 				a list of integers.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
 			<method name="list">
@@ -120,10 +121,10 @@
 			anything that could possibly be configured here.
 		</method>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				transforms this grid into a single message containing
 				a list of integers.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
 			<method name="list">
@@ -145,7 +146,7 @@
 			<method name="bang">resend the grid without change</method>
 		</inlet>
 		<inlet id="1"><method name="int"/></inlet>
-		<outlet id="0"><grid><dim>2</dim></grid></outlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid(2)"/></method></outlet>
 	</class>
 
 	<class name="@three">
@@ -162,7 +163,7 @@
 		</inlet>
 		<inlet id="1"><method name="int"/></inlet>
 		<inlet id="2"><method name="int"/></inlet>
-		<outlet id="0"><grid><dim>3</dim></grid></outlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid(3)"/></method></outlet>
 	</class>
 
 	<class name="@four">
@@ -180,7 +181,7 @@
 		<inlet id="1"><method name="int"/></inlet>
 		<inlet id="2"><method name="int"/></inlet>
 		<inlet id="3"><method name="int"/></inlet>
-		<outlet id="0"><grid><dim>4</dim></grid></outlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid(4)"/></method></outlet>
 	</class>
 
 	<class name="@for">
@@ -200,24 +201,24 @@
 			<arg name="to" type="integer"/>
 			<arg name="step" type="integer"/>
 		</method>
-		<inlet id="0"><grid><dim>index</dim>
+		<inlet id="0"><method name="grid"><arg name="grid" type="grid(index)"/>
 			replaces the "from" value and produces output.
-		</grid></inlet>
-		<inlet id="1"><grid><dim>index</dim>
+		</method></inlet>
+		<inlet id="1"><method name="grid"><arg name="grid" type="grid(index)"/>
 			replaces the "to" value.
-		</grid></inlet>
-		<inlet id="2"><grid><dim>index_steps</dim>
+		</method></inlet>
+		<inlet id="2"><method name="grid"><arg name="grid" type="grid(index_steps)"/>
 			replaces the "step" value.
-		</grid></inlet>
+		</method></inlet>
 		<outlet id="0">
-			<grid><dim>size</dim>
+			<method name="grid"><arg name="grid" type="grid(size)"/>
 				where size is floor((to-from+1)/step)
 				[for scalar bounds]
-			</grid>
-			<grid><dim>*size,dimension</dim>
+			</method>
+			<method name="grid"><arg name="grid" type="grid(*size,dimension)"/>
 				where *size is floor((to-from+1)/step)
 				[for vector bounds]
-			</grid>
+			</method>
 		</outlet>
 	</class>
 </section>
@@ -244,22 +245,22 @@
 		</method>
 
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				on each element of this grid, perform the operation
 				together with the corresponding element of inlet 1.
 				in the table of operators (at the top of this document)
 				elements of inlet 0 are called "A" and elements of inlet 1
 				are called "B". the resulting grid is the same size as the
 				one in inlet 0.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				any grid, preferably shaped like the one that will be put
 				in the left inlet, or like a subpart of it (the contents
 				will be redim'ed on the fly to fit the grid of inlet-0,
 				but the stored grid will not be modified itself)
-			</grid>
+			</method>
 			<method name="int">
 				stores a single int in the right inlet; the same int will
 				be applied in all computations; this is like sending a
@@ -267,8 +268,8 @@
 			</method>
 		</inlet>
 		<outlet id="0">
-			<grid>
-			</grid>
+			<method name="grid"><arg name="grid" type="grid"/>
+			</method>
 		</outlet>
 	
 	</class>
@@ -287,12 +288,12 @@
 			operators.
 		</method>
 		<inlet id="0">
-			<grid>
-			</grid>
+			<method name="grid"><arg name="grid" type="grid"/>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid>
-			</grid>
+			<method name="grid"><arg name="grid" type="grid"/>
+			</method>
 		</outlet>
 	</class>
 
@@ -304,10 +305,12 @@
 		</p>
 		<p>used on an indexmap, this makes each thing appear twice,
 		spanning half of the original angle.</p>
-		<inlet id="0"><grid><dim>dims... {imaginary real}</dim>
-		</grid></inlet>
-		<outlet id="0"><grid><dim>dims... {imaginary real}</dim>
-		</grid></outlet>
+		<inlet id="0"><method name="grid">
+			<arg name="grid" type="grid(dims... {imaginary real})"/>
+		</method></inlet>
+		<outlet id="0"><method name="grid">
+			<arg name="grid" type="grid(dims... {imaginary real})"/>
+		</method></outlet>
 	</class>
 
 	<class name="@fold">
@@ -333,13 +336,13 @@
 		</method>
 		
 		<inlet id="0">
-			<grid><dim>dims..., last</dim>
+			<method name="grid"><arg name="grid" type="grid(dims..., last)"/>
 				replaces every Dim(last) subgrid by the result of a cascade on that subgrid.
 				Doing that
 				with base value 0 and operation + on grid "2 3 5 7" will compute
 				((((0+2)+3)+5)+7) find the total "17".
 				produces a Dim(dims) grid.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
 			<method name="int">
@@ -367,7 +370,7 @@
 		</method>
 
 		<inlet id="0">
-			<grid><dim>dims..., last</dim>
+			<method name="grid"><arg name="grid" type="grid(dims..., last)"/>
 
 				replaces every Dim(last) subgrid by all the results of
 				cascading the operator on that subgrid,
@@ -377,7 +380,7 @@
 				7" will compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and give the
 				subtotals "2 5 10 17".
 
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
 			<method name="int">
@@ -401,14 +404,14 @@
 		</method>
 
 		<inlet id="0">
-			<grid><dim>anyA...</dim></grid>
+			<method name="grid"><arg name="grid" type="grid(anyA...)"/></method>
 			produces a grid of size Dim(anyA..., anyB...), where numbers
 			are the results of the operation on every element of A and
 			every element of B. the resulting array can be very big. Don't
 			try this on two pictures (the result will have 6 dimensions)
 		</inlet>
 		<inlet id="1">
-			<grid><dim>anyB...</dim></grid>
+			<method name="grid"><arg name="grid" type="grid(anyB...)"/></method>
 			stores the specified grid, to be used when inlet 0 is activated.
 		</inlet>
 		<outlet id="0">
@@ -449,7 +452,7 @@
 			the base value has to be specified (has no default value yet).
 		</method>
 		<inlet id="0">
-			<grid><dim>anyA..., lastA</dim>
+			<method name="grid"><arg name="grid" type="grid(anyA..., lastA)"/>
 
 				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...)
 				pieces of Dim(lastA) size.
@@ -465,7 +468,7 @@
 				the results together.
 
 				(note: lastA must be equal to firstB.)
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
 			<method name="int">
@@ -473,9 +476,9 @@
 			</method>
 		</inlet>
 		<inlet id="2">
-			<grid><dim>anyB..., lastB</dim>
+			<method name="grid"><arg name="grid" type="grid(anyB..., lastB)"/>
 				changes the right-hand side grid to that.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
 		</outlet>
@@ -497,7 +500,7 @@
 			which N will be added.
 		</method>
 		<inlet id="0">
-			<grid>
+			<method name="grid"><arg name="grid" type="grid"/>
 				The left grid and right grid must have the same number
 				of elements in all dimensions except the one specified.
 				The result will have the same number of elements in all
@@ -509,16 +512,16 @@
 				make a RGBA picture Dim[y,x,4] in which the greyscale image
 				becomes the opacity channel.
 				</p>
-			</grid>
+			</method>
 		</inlet>
-		<inlet id="1"><grid></grid></inlet>
+		<inlet id="1"><method name="grid"><arg name="grid" type="grid"/></method></inlet>
 		<outlet id="0">
 		</outlet>
 	</class>
 
 	<class name="@finished">
 		<inlet id="0">
-			<grid>any grid</grid>
+			<method name="grid"><arg name="grid" type="grid"/>any grid</method>
 		</inlet>
 		<outlet id="0">
 			a bang is emitted every time a grid transmission ends.
@@ -530,27 +533,27 @@
 			<arg name="numbertype" type="numbertype"/>
 		</method>
 		<inlet id="0">
-			<grid>any grid</grid>
+			<method name="grid"><arg name="grid" type="grid"/>any grid</method>
 		</inlet>
 		<outlet id="0">
-			<grid>a grid of the same shape containing all the same
+			<method name="grid"><arg name="grid" type="grid"/>a grid of the same shape containing all the same
 			values after type conversion. note that while casting to
 			a smaller type, values that are overflowing will be truncated.
-			</grid>
+			</method>
 		</outlet>
 	</class>
 
 	<class name="@ravel">
-		<inlet id="0"><grid>any grid</grid></inlet>
-		<outlet id="0"><grid>
+		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
 			like @redim but always produce a 1-D grid
 			with the same total number of elements.
-		</grid></outlet>
+		</method></outlet>
 	</class>
 
 	<class name="@grade">
-		<inlet id="0"><grid>any grid</grid></inlet>
-		<outlet id="0"><grid>
+		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
 			<p>splits a Dim[A...,B] grid into Dim[B] vectors,
 			producing new Dim[B] vectors that each contain numbers from
 			0 to B-1 indicating the ordering of the values. The result is
@@ -567,15 +570,15 @@
 			get the inverse arrangement, which allows to take the sorted values
 			and make them unsorted in the original way. note that this is really
 			not the same as just listing the values backwards.</p>
-		</grid></outlet>
+		</method></outlet>
 	</class>
 
 	<class name="perspective">
 		<method name="init">
 			<arg name="depth" type="integer"/>
 		</method>
-		<inlet id="0"><grid>any grid</grid></inlet>
-		<outlet id="0"><grid>
+		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
+		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
 			<p>transforms a Dim[A...,B] grid into a Dim[A...,B-1] grid.
 			There is a projection plane perpendicular to the last axis and
 			whose position is given by the "depth" parameter. Each vector's
@@ -585,7 +588,7 @@
 			<p>useful for converting from 3-D geometry to 2-D geometry. Also
 			useful for converting homogeneous 3-D into regular 3-D, as
 			homogeneous 3-D is really just regular 4-D...(!)</p>
-		</grid></outlet>
+		</method></outlet>
 	</class>			
 </section>
 
@@ -601,24 +604,24 @@
 			(same as with @import)
 		</method>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 			the elements of this grid are serialized. if the resulting grid
 			must be larger, the sequence is repeated as much as necessary.
 			if the resulting grid must be smaller, the sequence is truncated.
 			then the elements are deserialized to form the resulting grid.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>rank</dim>
+			<method name="grid"><arg name="grid" type="grid(rank)"/>
 				this grid is a dimension list that replaces the one
 				specified in the constructor.
 				(same as with @import)
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid>
+			<method name="grid"><arg name="grid" type="grid"/>
 				redimensioned grid potentially containing repeating data.
-			</grid>
+			</method>
 		</outlet>
 
 		<p>example: with a 240 320 RGB image, @redim 120 640 3 will visually
@@ -649,7 +652,7 @@
 			<method name="bang">
 				the stored grid is fully sent to the outlet.
 			</method>
-			<grid><dim>dims..., indices</dim>
+			<method name="grid"><arg name="grid" type="grid(dims..., indices)"/>
 				in this grid, the last dimension refers to subparts of
 				the stored grid. sending a Dim(200,200,2) on a @store
 				that holds a Dim(240,320,3) will cause the @store to handle
@@ -662,13 +665,13 @@
 				be logically used in the same way for many purposes
 				including color palettes, tables of probabilities, tables
 				of statistics, whole animations, etc.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				the received grid is stored. if the storage type is uint8,
 				the input is filtered to fit 0..255.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
 			grids as stored, as indexed, or as assembled from multiple
@@ -693,13 +696,13 @@
 		</method>
 
 		<inlet id="0">
-			<grid>a 3-channel picture to be scaled.</grid>
+			<method name="grid"><arg name="grid" type="grid"/>a 3-channel picture to be scaled.</method>
 		</inlet>
 		<inlet id="1">
 			<method name="int">a {height width} pair.</method>
 		</inlet>
 		<outlet id="0">
-			<grid>a scaled 3-channel picture.</grid>
+			<method name="grid"><arg name="grid" type="grid"/>a scaled 3-channel picture.</method>
 		</outlet>
 
 		<p>@scale_to is normally fed the same inlet 1,2 values as
@@ -722,14 +725,16 @@
 			for both rows and columns.
 		</method>
 		<inlet id="0">
-			<grid><dim>y x {r g b}</dim>
+			<method name="grid"><arg name="grid" type="grid(y x {r g b})"/>
 			identical to @scale_to with arguments that are exactly
 			twice those of the incoming grid. It is several times faster.
-			</grid>
+			</method>
 		</inlet>
-		<inlet id="1"><grid><dim>1 or 2</dim>sets factor</grid></inlet>
+		<inlet id="1"><method name="grid"><arg name="grid" type="grid(1 or 2)"/>sets factor</method></inlet>
 		<outlet id="0">
-			<grid><dim>(factor*y) (factor*x) {r g b}</dim></grid>
+			<method name="grid">
+				<arg name="grid" type="grid((factor*y) (factor*x) {r g b})"/>
+			</method>
 		</outlet>
 	</class>
 
@@ -742,13 +747,16 @@
 			for both rows and columns.
 		</method>
 		<inlet id="0">
-			<grid><dim>y x {r g b}</dim>
+			<method name="grid"><arg name="grid" type="grid(y x {r g b})"/>
 			Scales down picture by specified amount.
-			</grid>
+			</method>
 		</inlet>
-		<inlet id="1"><grid><dim>1 or 2</dim>sets factor</grid></inlet>
+		<inlet id="1"><method name="grid">
+			<arg name="grid" type="grid(1 or 2)"/>sets factor</method></inlet>
 		<outlet id="0">
-			<grid><dim>(factor/y) (factor/x) {r g b}</dim></grid>
+			<method name="grid">
+				<arg name="grid" type="grid((factor/y) (factor/x) {r g b})"/>
+		</method>
 		</outlet>
 	</class>
 
@@ -769,13 +777,13 @@
 		</method>
 
 		<inlet id="0">
-			<grid>a coordinate map.</grid>
+			<method name="grid"><arg name="grid" type="grid"/>a coordinate map.</method>
 		</inlet>
 		<inlet id="1">
 			<method name="int">a spread factor.</method>
 		</inlet>
 		<outlet id="0">
-			<grid>a coordinate map.</grid>
+			<method name="grid"><arg name="grid" type="grid"/>a coordinate map.</method>
 		</outlet>
 
 
@@ -796,10 +804,13 @@
 		<method name="init">
 			<arg name="angle" type="0...35999"/>
 		</method>
-		<inlet id="0"><grid><dim>{anyA 2}</dim></grid></inlet>
+		<inlet id="0"><method name="grid">
+			<arg name="grid" type="grid(anyA 2)"/></method></inlet>
 		<inlet id="1"><method name="int">rotation angle; 0...36000</method>
 		</inlet>
-		<outlet id="0"><grid><dim>{anyA 2}</dim></grid></outlet>
+		<outlet id="0"><method name="grid">
+			<arg name="grid" type="grid(anyA 2)"/>
+		</method></outlet>
 	</class>
 
 	<class name="@remap_image">
@@ -826,15 +837,15 @@
 			no arguments.
 		</method>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 				ignores any data contained within.
 				sends a grid dim(length of dims) containing dims.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>rank</dim>
+			<method name="grid"><arg name="grid" type="grid(rank)"/>
 				the list of dimensions of the incoming grid.
-			</grid>
+			</method>
 		</outlet>
 	</class>
 
@@ -847,10 +858,10 @@
 	<class name="@print">
 		<method name="init"/>
 		<inlet id="0">
-			<grid><dim>dims...</dim>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
 			prints the dimensions of the grid.
 			prints all the grid data if there are 2 dimensions or less.
-			</grid>
+			</method>
 		</inlet>
 	</class>
 
@@ -885,29 +896,37 @@
 		<p>Note: if you just need to apply a palette on an indexed-color
 		picture, you don't need this. Just use @store instead.</p>
 		
-		<inlet id="0"><grid><dim>rows columns channels</dim>
+		<inlet id="0"><method name="grid">
+			<arg name="grid" type="grid(rows columns channels)"/>
 			picture
-		</grid></inlet>
-		<inlet id="1"><grid><dim>intensities channels</dim>
+		</method></inlet>
+		<inlet id="1">
+			<method name="grid">
+			<arg name="grid" type="grid(intensities channels)"/>
 			colormap ("palette")
-		</grid></inlet>
-		<outlet id="0"><grid><dim>rows columns channels</dim>
+		</method></inlet>
+		<outlet id="0"><method name="grid">
+			<arg name="grid" type="grid(rows columns channels)"/>
 			picture
-		</grid></outlet>
+		</method></outlet>
 	</class>
 
 	<class name="@rgb_to_greyscale">
-		<inlet id="0"><grid><dim>rows columns {red green blue}</dim>
-		</grid></inlet>
-		<outlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		<inlet id="0"><method name="grid">
+		<arg name="grid" type="grid(rows columns {red green blue})"/>
+		</method></inlet>
+		<outlet id="0"><method name="grid">
+		<arg name="grid" type="grid(rows columns {white})"/></method>
 		</outlet>
 	</class>
 
 	<class name="@greyscale_to_rgb">
-		<inlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		<inlet id="0"><method name="grid">
+		<arg name="grid" type="grid(rows columns {white})"/></method>
 		</inlet>
-		<outlet id="0"><grid><dim>rows columns {red green blue}</dim>
-		</grid></outlet>
+		<outlet id="0"><method name="grid">
+			<arg name="grid" type="grid(rows columns {red green blue})"/>
+		</method></outlet>
 	</class>
 </section>
 
@@ -926,7 +945,8 @@
 			<arg name="right_hand" type="grid" default="none"/>
 		</method>
 		<inlet id="0">
-			<grid><dim>rows columns rest...</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns rest...)"/>
 				splits the incoming grid into dim(rest...) parts.
 				for each of those parts at (y,x), a rectangle of such
 				parts, centered around (y,x), is combined with the
@@ -937,17 +957,19 @@
 				the grid, coordinates wrap around. this means the whole grid
 				has to be received before production of the next grid
 				starts.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>rows2 columns2</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(rows2 columns2)"/>
 				this is the convolution grid and it gets stored in
 				the object. rows2 and columns2 must be odd numbers.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>rows columns rest...</dim>
-			</grid>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns rest...)"/>
+			</method>
 		</outlet>
 	</class>
 
@@ -961,10 +983,11 @@
 		</method>
 		
 		<inlet id="0">
-			<grid><dim>rows columns channels</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns channels)"/>
 			produces a grid like the incoming grid but with
 			different constrast.
-			</grid>
+			</method>
 			<p>@contrast adjusts the intensity in an image.
 			resulting values outside 0-255 are automatically clipped.</p>
 		</inlet>
@@ -984,8 +1007,9 @@
 			</method>	
 		</inlet>
 		<outlet>
-			<grid><dim>rows columns channels</dim>
-			</grid>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns channels)"/>
+			</method>
 		</outlet>
 	</class>
 
@@ -1002,9 +1026,10 @@
 		</method>
 
 		<inlet id="0">
-			<grid><dim>rows columns channels</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns channels)"/>
 				produces a posterized picture from the input picture.
-			</grid>
+			</method>
 		</inlet>
 
 		<inlet id="1">
@@ -1029,47 +1054,54 @@
 		it's like a 200% contrast except that overflows are <i>mirrored</i>
 		instead of clipped or wrapped.</p>
 		<inlet id="0">
-			<grid><dim>rows columns channels</dim></grid>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns channels)"/></method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>rows columns channels</dim></grid>
+			<method name="grid">
+				<arg name="grid" type="grid(rows columns channels)"/></method>
 		</outlet>
 	</class>
 
 	<class name="@checkers">
 		<inlet id="0">
-			<grid><dim>y x {y x}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x {y x})"/>
 				result from a [@for {0 0} {height width} {1 1}]
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>y x {r g b}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x {r g b})"/>
 				checkered pattern of 50%/75% greys
 				in 8x8 squares
-			</grid>
+			</method>
 		</outlet>
 	</class>
 
 	<class name="@layer">
 		<inlet id="0">
-			<grid><dim>y x {r g b a}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x {r g b a})"/>
 				a picture that has an opacity channel.
 				will be used as foreground.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>y x {r g b}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x {r g b})"/>
 				a picture that has NO opacity channel.
 				will be used as background.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>y x {r g b}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x {r g b})"/>
 				a picture that has NO opacity channel.
 				the opacity channel of the foreground is used as
 				a weighting of how much of either picture is seen
 				in the result.
-			</grid>
+			</method>
 		</outlet>
 	</class>
 
@@ -1083,24 +1115,27 @@
 			<arg name="vertices" type="grid(vertices,{y x})"/>
 		</method>
 		<inlet id="0">
-			<grid><dim>y x channels</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x channels)"/>
 				picture on which the polygon will be superimposed.
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="1">
-			<grid><dim>channels</dim>
+			<method name="grid"><arg name="grid" type="grid(channels)"/>
 				color of each pixel
-			</grid>
+			</method>
 		</inlet>
 		<inlet id="2">
-			<grid><dim>vertices {y x}</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(vertices {y x})"/>
 				vertices of the polygon.
-			</grid>
+			</method>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>y x channels</dim>
+			<method name="grid">
+				<arg name="grid" type="grid(y x channels)"/>
 				modified picture
-			</grid>
+			</method>
 		</outlet>
 	</class>
 

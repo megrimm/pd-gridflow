@@ -59,7 +59,7 @@
 				capturing from the screen etc.
 
 				this is format-specific. most formats
-				produce <dim>rows columns {red green blue}</dim>.
+				produce grid(rows columns {red green blue}).
 
 				In formats that read from a file, reading another picture
 				will continue if there are several pictures in the
@@ -132,15 +132,15 @@
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
 			</method>
-			<grid>
+			<method name="grid"><arg name="grid" type="grid"/>
 				this is format-specific. most formats
-				expect <dim>rows columns {red green blue}</dim>.
+				expect grid(rows columns {red green blue}).
 
 				In formats that write to a file, sending a 2nd picture
 				overwrites the first.
 
 				see section "External Picture Formats".
-			</grid>
+			</method>
 			<method name="close">
 				closes the file. usually not necessary.
 			</method>
@@ -188,9 +188,10 @@
 			same but for .ppm.gz files
 		</method>
 
-		<grid><dim>rows columns 3</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {r g b})"/>
 			values 0-255
-		</grid>
+		</method>
 	</class>
 
 	<class name="format targa @in/@out">
@@ -208,9 +209,10 @@
 			same but for .tga.gz files
 		</method>
 
-		<grid><dim>rows columns 3</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns 3)"/>
 			values 0-255
-		</grid>
+		</method>
 	</class>
 
 	<class name="format jpeg @in/@out">
@@ -223,9 +225,10 @@
 			directory or one of the jMax-specified data directories.
 		</method>
 
-		<grid><dim>rows columns 3</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns 3)"/>
 			values 0-255
-		</grid>	
+		</method>	
 	</class>
 
 	<class name="format quicktime @in/@out">
@@ -451,13 +454,14 @@
 			of the X11 standard.
 		</method>
 		
-		<grid><dim>rows columns {red green blue}</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {red green blue})"/>
 			resizes the window to the size of the grid;
 			encodes that grid in the display's pixel format;
 			also displays it if autodraw &gt; 0
 			the values must be in range 0-255,
 			or else they will be "wrapped".
-		</grid>
+		</method>
 
 		<p>
 		Destroying the object (or sending "close") should close the window.
@@ -554,9 +558,10 @@
 		<method name="open">
 			opens a dim(480,640,3) rgb window.
 		</method>
-		<grid><dim>rows columns {red green blue}</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {red green blue})"/>
 			sends frame to screen. window is NOT resized.
-		</grid>
+		</method>
 	</class>
 
 	<class name="aalib @out">
@@ -569,16 +574,18 @@
 				You can pass "commandline options" of AALib here.
 			</rest>
 		</method>
-		<grid><dim>rows columns {white}</dim>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {white})"/>
 			converts a greyscale image to an ascii image and possibly
 			displays it. note that the image is typically downscaled by
 			a factor of 2 by aalib itself.
-		</grid>
-		<grid><dim>rows columns {ascii attr}</dim>
+		</method>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {ascii attr})"/>
 			the inverse of "dump". Both together in a loop allow to
 			post-process aalib's buffer before displaying. Goes well
 			with "draw", "autodraw".
-		</grid>
+		</method>
 		<method name="print">
 			<arg name="y" type="int"/>
 			<arg name="x" type="int"/>

@@ -79,7 +79,7 @@
 				result of reading from a file, acquiring from a device, 
 				capturing from the screen etc. 
 				this is format-specific. most formats 
-				produce <b>dim(</b>rows columns {red green blue}<b>)</b>. 
+				produce grid(rows columns {red green blue}). 
 				In formats that read from a file, reading another picture 
 				will continue if there are several pictures in the 
 				same file, but if the end of file is reached instead, 
@@ -116,9 +116,9 @@
 				(there is a list of formats in this manual). The other 
 				arguments depend on the chosen format. The format may 
 				be a file format or a protocol or a hardware device, etc. <br>
- <br><b>inlet 0</b> <b>grid</b>  
+ <br><b>inlet 0</b> <b>method</b> grid <b>(</b><i>grid</i> grid<b>)</b>  
 				this is format-specific. most formats 
-				expect <b>dim(</b>rows columns {red green blue}<b>)</b>. 
+				expect grid(rows columns {red green blue}). 
 				In formats that write to a file, sending a 2nd picture 
 				overwrites the first. 
 				see section "External Picture Formats". <br>
@@ -149,7 +149,7 @@
 			directory or one of the jMax-specified data directories. <br>
  <br><b>method</b> open ppm gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
 			same but for .ppm.gz files <br>
- <br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns {r g b})</i> grid<b>)</b>   
 			values 0-255 <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in/@out">format targa @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -158,14 +158,14 @@
 			directory or one of the jMax-specified data directories. <br>
  <br><b>method</b> open targa gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
 			same but for .tga.gz files <br>
- <br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
 			values 0-255 <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in/@out">format jpeg @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Support for RGB non-progressive</p> <br><b>method</b> open jpeg file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
- <br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
 			values 0-255 <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -288,7 +288,7 @@
 			Sorry, IP addresses are not supported (jMax limitation). 
 			Port number will be 6000 plus the display number, because 
 			of the X11 standard. <br>
- <br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns {red green blue})</i> grid<b>)</b>   
 			resizes the window to the size of the grid; 
 			encodes that grid in the display's pixel format; 
 			also displays it if autodraw &gt; 0 
@@ -336,7 +336,7 @@
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> open <b>(</b><b>)</b>  
 			opens a dim(480,640,3) rgb window. <br>
- <br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns {red green blue})</i> grid<b>)</b>   
 			sends frame to screen. window is NOT resized. <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="aalib @out">aalib @out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -344,11 +344,11 @@
 				Normally "X11" with uppercase X; else consult 
 				the AALib manual.   
 				You can pass "commandline options" of AALib here.  <br>
- <br><b>grid</b> <b>dim(</b>rows columns {white}<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns {white})</i> grid<b>)</b>   
 			converts a greyscale image to an ascii image and possibly 
 			displays it. note that the image is typically downscaled by 
 			a factor of 2 by aalib itself. <br>
- <br><b>grid</b> <b>dim(</b>rows columns {ascii attr}<b>)</b> 
+ <br><b>method</b> grid <b>(</b><i>grid(rows columns {ascii attr})</i> grid<b>)</b>   
 			the inverse of "dump". Both together in a loop allow to 
 			post-process aalib's buffer before displaying. Goes well 
 			with "draw", "autodraw". <br>
