@@ -21,6 +21,8 @@
 #X obj 222 63 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 192 38 float \$1;
+#X text 231 9 <-- bang this to reset;
+#X obj 219 -11 inlet;
 #X connect 0 0 2 0;
 #X connect 0 0 12 0;
 #X connect 1 0 3 0;
@@ -39,3 +41,4 @@
 #X connect 14 0 17 0;
 #X connect 16 0 2 0;
 #X connect 17 0 2 0;
+#X connect 19 0 14 0;
