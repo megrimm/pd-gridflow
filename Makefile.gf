@@ -124,7 +124,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 $(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
-		-xnone $(LIBRUBY_A) -o $@
+		-xnone -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c
@@ -154,7 +154,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 $(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
-		-xnone $(LIBRUBY_A) -o $@
+		-xnone -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
@@ -227,7 +227,7 @@ PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
-		$< -xnone $(LIBRUBY_A) -o $@
+		$< -xnone -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
 
