@@ -1,6 +1,10 @@
 /* $Id$ */
 
 version 0.6.1 (head):
+ * now you can use Ruby 1.7, which is faster
+	note: make sure your version is dated 2002
+ * new objects:
+	rubyprint, @print
 
 version 0.6.0 (2002.07.31):
  * THIS IS AN EXPERIMENTAL BRANCH (VERY BUGGY)
