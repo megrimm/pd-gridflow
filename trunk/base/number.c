@@ -56,12 +56,16 @@ class Op1Loops {
 public:
 	template <class T>
 	static void op_map (int n, T *as) {
-		for (; (n&3)!=0; n--, as++) *as=O::f(*as);
-		for (; n; as+=4, n-=4) {
+		for (; (n&7)!=0; n--, as++) *as=O::f(*as);
+		for (; n; as+=8, n-=8) {
 			as[0]=O::f(as[0]);
 			as[1]=O::f(as[1]);
 			as[2]=O::f(as[2]);
 			as[3]=O::f(as[3]);
+			as[4]=O::f(as[4]);
+			as[5]=O::f(as[5]);
+			as[6]=O::f(as[6]);
+			as[7]=O::f(as[7]);
 		} 
 	}
 };
@@ -133,12 +137,30 @@ public:
 	}
 	template <class T>
 	static void op_zip (int n, T *as, T *bs) {
-		for (; (n&3)!=0; as++,bs++,n-- ) *as=O::f(*as,*bs);
-		for (; n; as+=4, bs+=4, n-=4) {
-			as[0]= O::f(as[0],bs[0]);
-			as[1]= O::f(as[1],bs[1]);
-			as[2]= O::f(as[2],bs[2]);
-			as[3]= O::f(as[3],bs[3]);
+		for (; (n&7)!=0; as++,bs++,n--) *as=O::f(*as,*bs);
+		for (; n; as+=8, bs+=8, n-=8) {
+			as[0]=O::f(as[0],bs[0]);
+			as[1]=O::f(as[1],bs[1]);
+			as[2]=O::f(as[2],bs[2]);
+			as[3]=O::f(as[3],bs[3]);
+			as[4]=O::f(as[4],bs[4]);
+			as[5]=O::f(as[5],bs[5]);
+			as[6]=O::f(as[6],bs[6]);
+			as[7]=O::f(as[7],bs[7]);
+		}
+	}
+	template <class T>
+	static void op_zip2 (int n, T *as, T *bs, T *cs) {
+		for (; (n&7)!=0; as++,bs++,cs++,n--) *cs=O::f(*as,*bs);
+		for (; n; as+=8, bs+=8, cs+=8, n-=8) {
+			cs[0]=O::f(as[0],bs[0]);
+			cs[1]=O::f(as[1],bs[1]);
+			cs[2]=O::f(as[2],bs[2]);
+			cs[3]=O::f(as[3],bs[3]);
+			cs[4]=O::f(as[4],bs[4]);
+			cs[5]=O::f(as[5],bs[5]);
+			cs[6]=O::f(as[6],bs[6]);
+			cs[7]=O::f(as[7],bs[7]);
 		}
 	}
 	template <class T>
