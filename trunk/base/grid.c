@@ -186,8 +186,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	return Qnil;
 }
 
-template <class T>
-void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
+template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);

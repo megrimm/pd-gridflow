@@ -24,7 +24,6 @@
 #include <math.h>
 #include "grid.h.fcs"
 
-/* **************************************************************** */
 // produce an upper triangular matrix with ones on the diagonal
 // will also affect any additional columns using the same row-operations
 
@@ -35,9 +34,9 @@ void expect_complete_matrix (P<Dim> d) {
 
 \class GridMatrixSolve < GridObject
 struct GridMatrixSolve : GridObject {
-	Numop2 *op_sub;
-	Numop2 *op_mul;
-	Numop2 *op_div;
+	Numop *op_sub;
+	Numop *op_mul;
+	Numop *op_div;
 	PtrGrid matrix;
 	GridMatrixSolve() {
 		matrix.constrain(expect_complete_matrix);
@@ -65,9 +64,9 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 
 \def void initialize () {
 	rb_call_super(argc,argv);
-	op_sub = op2_sub;
-	op_mul = op2_mul;
-	op_div = op2_div;
+	this->op_sub = op_sub;
+	this->op_mul = op_mul;
+	this->op_div = op_div;
 }
 
 \classinfo { IEVAL(rself,"install '@matrix_solve',1,1"); }

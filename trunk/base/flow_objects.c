@@ -41,7 +41,7 @@ public: template <class T>
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
 
-Numop2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod, *op2_shl, *op2_and;
+Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and;
 
 static void expect_dim_dim_list (P<Dim> d) {
 	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());}
@@ -235,12 +235,12 @@ template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
 		int32 wrap = r->dim->v[i];
 		bool fast = lowest_bit(wrap)==highest_bit(wrap); // is power of two?
 		if (i) {
-			if (fast) op2_shl->map(nd,v,(T)highest_bit(wrap));
-			else      op2_mul->map(nd,v,(T)wrap);
+			if (fast) op_shl->map(nd,v,(T)highest_bit(wrap));
+			else      op_mul->map(nd,v,(T)wrap);
 		}
-		if (fast) op2_and->map(nd,v+nd*i,(T)(wrap-1));
-		else      op2_mod->map(nd,v+nd*i,(T)(wrap));
-		if (i) op2_add->zip(nd,v,v+nd*i);
+		if (fast) op_and->map(nd,v+nd*i,(T)(wrap-1));
+		else      op_mod->map(nd,v+nd*i,(T)(wrap));
+		if (i) op_add->zip(nd,v,v+nd*i);
 	}
 }
 
@@ -391,38 +391,19 @@ GRID_INLET(GridStore,1) {
 \end class GridStore
 
 //****************************************************************
-//{ Dim[*As]<T> -> Dim[*As]<T> }
-\class GridOp1 < GridObject
-struct GridOp1 : GridObject {
-	\attr Numop1 *op;
-	\decl void initialize (Numop1 *op);
-	\grin 0
-};
-
-GRID_INLET(GridOp1,0) {
-	out=new GridOutlet(this,0,in->dim,in->nt);
-	in->set_mode(6);
-} GRID_FLOW {
-	op->map(n,data);
-	out->give(n,data);
-} GRID_END
-
-\def void initialize (Numop1 *op) { rb_call_super(argc,argv); this->op=op;}
-\classinfo { IEVAL(rself,"install '@!',1,1"); }
-\end class GridOp1
-
-//****************************************************************
+//{ Dim[*As]<T> -> Dim[*As]<T> } or
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
-\class GridOp2 < GridObject
-struct GridOp2 : GridObject {
-	\attr Numop2 *op;
+\class GridOp < GridObject
+struct GridOp : GridObject {
+	\attr Numop *op;
 	PtrGrid r;
-	\decl void initialize(Numop2 *op, Grid *r=0);
+	\decl void initialize(Numop *op, Grid *r=0);
 	\grin 0
 	\grin 1
+	\decl void _0_op(Numop *op);
 };
 
-GRID_INLET(GridOp2,0) {
+GRID_INLET(GridOp,0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
@@ -459,24 +440,25 @@ GRID_INLET(GridOp2,0) {
 	out->give(n,data);
 } GRID_END
 
-GRID_INPUT2(GridOp2,1,r) {} GRID_END
+GRID_INPUT2(GridOp,1,r) {} GRID_END
+\def void _0_op(Numop *op) { this->op=op; }
 
-\def void initialize(Numop2 *op, Grid *r=0) {
+\def void initialize(Numop *op, Grid *r=0) {
 	rb_call_super(argc,argv);
-	this->op = op;
-	this->r = r ? r : new Grid(new Dim(),int32_e,true);
+	this->op=op;
+	this->r = r?r:new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '@',2,1"); }
-\end class GridOp2
+\classinfo { IEVAL(rself,"install '#',2,1"); }
+\end class GridOp
 
 //****************************************************************
 //{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,*Cs]<T> }
 \class GridFold < GridObject
 struct GridFold : GridObject {
-	\attr Numop2 *op;
+	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop2 *op, Grid *seed=0);
+	\decl void initialize (Numop *op, Grid *seed=0);
 	\grin 0
 	\grin 1
 };
@@ -511,7 +493,7 @@ GRID_INLET(GridFold,0) {
 
 GRID_INPUT(GridFold,1,seed) {} GRID_END
 
-\def void initialize (Numop2 *op, Grid *seed=0) {
+\def void initialize (Numop *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
@@ -524,9 +506,9 @@ GRID_INPUT(GridFold,1,seed) {} GRID_END
 //{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,B,*Cs]<T> }
 \class GridScan < GridObject
 struct GridScan : GridObject {
-	\attr Numop2 *op;
+	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop2 *op, Grid *seed=0);
+	\decl void initialize (Numop *op, Grid *seed=0);
 	\grin 0
 	\grin 1
 };
@@ -553,7 +535,7 @@ GRID_INLET(GridScan,0) {
 
 GRID_INPUT(GridScan,1,seed) {} GRID_END
 
-\def void initialize (Numop2 *op, Grid *seed=0) {
+\def void initialize (Numop *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
@@ -566,13 +548,13 @@ GRID_INPUT(GridScan,1,seed) {} GRID_END
 //{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }
 \class GridInner < GridObject
 struct GridInner : GridObject {
-	\attr Numop2 *op_para;
-	\attr Numop2 *op_fold;
+	\attr Numop *op_para;
+	\attr Numop *op_fold;
 	\attr PtrGrid seed;
 	PtrGrid r;
 	PtrGrid r2;
 	GridInner() {}
-	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Numop *op_para=op_mul, Numop *op_fold=op_add, Grid *seed=0, Grid *r=0);
 	\grin 0
 	\grin 2
 };
@@ -607,7 +589,7 @@ GRID_INLET(GridInner,0) {
 		for (int j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
 } GRID_FLOW {
-	Numop2 *op2_put = FIX2PTR(Numop2,rb_hash_aref(op2_dict,SYM(put)));
+	Numop *op_put = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(put)));
 	int rrows = in->factor();
 	int rsize = r->dim->prod();
 	int rcols = rsize/rrows;
@@ -617,10 +599,10 @@ GRID_INLET(GridInner,0) {
 	int off = chunk;
 	while (n) {
 		if (chunk*rrows>n) chunk=n/rrows;
-		op2_put->map(chunk*rcols,buf2,*(T *)*seed);
+		op_put->map(chunk*rcols,buf2,*(T *)*seed);
 		for (int i=0; i<rrows; i++) {
 			for (int j=0; j<chunk; j++)
-				op2_put->map(rcols,buf+j*rcols,data[i+j*rrows]);
+				op_put->map(rcols,buf+j*rcols,data[i+j*rrows]);
 			op_para->zip(chunk*rcols,buf,(Pt<T>)*r2+i*off*rcols);
 			op_fold->zip(chunk*rcols,buf2,buf);
 		}
@@ -634,7 +616,7 @@ GRID_INLET(GridInner,0) {
 
 GRID_INPUT(GridInner,2,r) {} GRID_END
 
-\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Numop *op_para, Numop *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
@@ -649,9 +631,9 @@ GRID_INPUT(GridInner,2,r) {} GRID_END
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 \class GridOuter < GridObject
 struct GridOuter : GridObject {
-	\attr Numop2 *op;
+	\attr Numop *op;
 	PtrGrid r;
-	\decl void initialize (Numop2 *op, Grid *r=0);
+	\decl void initialize (Numop *op, Grid *r=0);
 	\grin 0
 	\grin 1
 };
@@ -699,7 +681,7 @@ GRID_INLET(GridOuter,0) {
 
 GRID_INPUT(GridOuter,1,r) {} GRID_END
 
-\def void initialize (Numop2 *op, Grid *r) {
+\def void initialize (Numop *op, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
@@ -901,7 +883,6 @@ struct GridJoin : GridObject {
 };
 
 GRID_INLET(GridJoin,0) {
-	L
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	P<Dim> d = in->dim;
@@ -923,7 +904,6 @@ GRID_INLET(GridJoin,0) {
 	out=new GridOutlet(this,0,new Dim(d->n,v),in->nt);
 	if (d->prod(w)) in->set_factor(d->prod(w));
 } GRID_FLOW {
-	L
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
 	int a = in->factor();
@@ -955,7 +935,6 @@ GRID_INLET(GridJoin,0) {
 		}
 	}
 } GRID_FINISH {
-	L
 	if (in->dim->prod()==0) out->send(r->dim->prod(),(Pt<T>)*r);
 } GRID_END
 
@@ -1081,8 +1060,8 @@ GRID_INLET(GridPerspective,0) {
 } GRID_FLOW {
 	int m = in->factor();
 	for (; n; n-=m,data+=m) {
-		op2_mul->map(m-1,data,(T)z);
-		op2_div->map(m-1,data,data[m-1]);
+		op_mul->map(m-1,data,(T)z);
+		op_div->map(m-1,data,data[m-1]);
 		out->send(m-1,data);
 	}	
 } GRID_END
@@ -1091,17 +1070,15 @@ GRID_INLET(GridPerspective,0) {
 \classinfo { IEVAL(rself,"install '@perspective',1,1"); }
 \end class GridPerspective
 
-static Numop2 *OP2(Ruby x) {
-	return FIX2PTR(Numop2,rb_hash_aref(op2_dict,x));
-}
+static Numop *OP(Ruby x) { return FIX2PTR(Numop,rb_hash_aref(op_dict,x)); }
 
 void startup_flow_objects () {
-	op2_add = OP2(SYM(+));
-	op2_sub = OP2(SYM(-));
-	op2_mul = OP2(SYM(*));
-	op2_shl = OP2(SYM(<<));
-	op2_mod = OP2(SYM(%));
-	op2_and = OP2(SYM(&));
-	op2_div = OP2(SYM(/));
+	op_add = OP(SYM(+));
+	op_sub = OP(SYM(-));
+	op_mul = OP(SYM(*));
+	op_shl = OP(SYM(<<));
+	op_mod = OP(SYM(%));
+	op_and = OP(SYM(&));
+	op_div = OP(SYM(/));
 	\startall
 }
