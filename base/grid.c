@@ -537,32 +537,30 @@ METHOD(GridObject,method_missing) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
 		//whine("$=%p; inl=%p",$,inl);
-		assert(inl);
+		int m;
+		if      (strcmp(name+3,"grid_begin")==0) m=0;
+		else if (strcmp(name+3,"grid_flow" )==0) m=1;
+		else if (strcmp(name+3,"grid_end"  )==0) m=2;
+		else if (strcmp(name+3,"list"      )==0) m=3;
+		else { rb_call_super(argc,argv); return; }
+
+		if (!inl) RAISE("inlet #%d missing for object %s",i,$->args());
+		
 		argc--, argv++;
-		if      (strcmp(name+3,"grid_begin")==0) return inl->begin(argc,argv);
-		else if (strcmp(name+3,"grid_flow" )==0) return inl->flow( argc,argv);
-		else if (strcmp(name+3,"grid_end"  )==0) return inl->end(  argc,argv);
-		else if (strcmp(name+3,"list"      )==0) return inl->list( argc,argv);
-		argc++, argv--;
+		switch(m) {
+		case 0: return inl->begin(argc,argv);
+		case 1: return inl->flow( argc,argv);
+		case 2: return inl->end(  argc,argv);
+		case 3: return inl->list( argc,argv);
+		}
 	}
-	rb_call_super(argc,argv);
 }
 
 METHOD(GridObject,delete) {
-	int i;
-	for (i=0; i<MAX_INLETS;  i++) {
+	for (int i=0; i<MAX_INLETS;  i++)
 		if ($->in[i])  { delete $->in[i]; $->in[i]=0; }
-	}
-	for (i=0; i<MAX_OUTLETS; i++) {
+	for (int i=0; i<MAX_OUTLETS; i++)
 		if ($->out[i]) { delete $->out[i]; $->out[i]=0; }
-	}
-/*
-	Dict_del(gf_object_set,$);
-	if (Dict_size(gf_object_set)==0) {
-		whine("all objects freed");
-		qdump();
-	}
-*/
 }
 
 GRCLASS(GridObject,inlets:0,outlets:0,
@@ -576,12 +574,10 @@ LIST(),
 	DECL(GridObject,method_missing))
 
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
-	{
-		MethodDecl methods[] = {
-			DECL(GridObject,method_missing),
-		};
-		define_many_methods($,COUNT(methods),methods);
-	}
+	MethodDecl methods[] = {
+		DECL(GridObject,method_missing),
+	};
+	define_many_methods($,COUNT(methods),methods);
 
 	rb_enable_super($,"method_missing");
 //	ruby_c_install(gc->name, gc->name, gc, Format_class2);

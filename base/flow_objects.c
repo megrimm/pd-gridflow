@@ -555,11 +555,16 @@ LIST(GRINLET(GridScan,0)),
 	DECL(GridScan,_1_int))
 
 /* **************************************************************** */
+/* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
+          -> c in dim(*As,*Bs)
+   c = map((*As,*Bs),fold(op_fold,rint,map2(op_para,...... whatever
+*/
+
 struct GridInner : GridObject {
-	Grid r;
-	Number rint;
 	const Operator2 *op_para;
 	const Operator2 *op_fold;
+	Number rint;
+	Grid r;
 };
 
 GRID_BEGIN(GridInner,0) {
@@ -569,14 +574,14 @@ GRID_BEGIN(GridInner,0) {
 	if (a->count()<1) RAISE("minimum 1 dimension");
 	{
 		int a_last = a->get(a->count()-1);
-		int b_last = b->get(b->count()-1);
+		int b_first = b->get(b->count()-1);
 		int n = a->count()+b->count()-2;
 		int v[n];
 		int i,j;
-		if (a_last != b_last)
-			RAISE("last dimension of each grid must have same size");
+		if (a_last != b_first)
+			RAISE("last dim of left side should be same size as first dim of right side");
 		for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
-		for (  j=0; j<b->count()-1; i++,j++) { v[i] = b->get(j); }
+		for (  j=1; j<b->count(); i++,j++) { v[i] = b->get(j); }
 		$->out[0]->begin(new Dim(n,v));
 		in->set_factor(a_last);
 	}	
@@ -587,18 +592,20 @@ GRID_FLOW(GridInner,0) {
 	int factor = in->dim->get(in->dim->count()-1);
 	int b_prod = $->r.dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
-	Number *buf = NEW(Number,n/factor);
+	Number buf[factor], bufr[factor];
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
-		for (int j=0; j<b_prod; j+=factor) {
+		for (int j=0; j<b_prod/factor; j++) {
 			memcpy(buf,&data[i],factor*sizeof(Number));
-			$->op_para->op_array2(factor,buf,$->r.as_int32()+j);
-			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
+			for (int k=0; k<factor; k++) bufr[k]=$->r.as_int32()[b_prod/factor*k+j];
+//			for (int k=0; k<factor; k++) printf("%d ",buf[k]); puts("");
+//			for (int k=0; k<factor; k++) printf("%d ",bufr[k]); puts("");
+			$->op_para->op_array2(factor,buf,bufr);
+			buf2[j] = $->op_fold->op_fold($->rint,factor,buf);
 		}
 		out->send(b_prod/factor,buf2);
 	}
-	FREE(buf);
 	FREE(buf2);
 }
 
@@ -665,7 +672,7 @@ GRID_FLOW(GridInner2,0) {
 	int factor = in->dim->get(in->dim->count()-1);
 	int b_prod = $->r.dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
-	Number *buf = NEW(Number,n/factor);
+	Number buf[factor];
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
@@ -676,7 +683,6 @@ GRID_FLOW(GridInner2,0) {
 		}
 		out->send(b_prod/factor,buf2);
 	}
-	FREE(buf);
 	FREE(buf2);
 }
 
@@ -1235,14 +1241,38 @@ LIST(GRINLET(GridHSVtoRGB,0)),
 struct RtMetro : GridObject {
 	int ms; /* millisecond time interval */
 	bool on;
-	uint64 next_time; /* next time an event occurred */
-	uint64 last;
+	uint64 next_time; /* microseconds since epoch: next time an event occurs */
+	uint64 last;      /* microseconds since epoch: last time we checked */
+	int mode; /* 0=equal; 1=geiger */
 };
 
 uint64 RtMetro_now(void) {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
+}
+
+static double drand() {
+	return 1.0*rand()/(RAND_MAX+1.0);
+}
+
+static uint64 RtMetro_delay(VALUE rself) {
+	DGS(RtMetro);
+	switch ($->mode) {
+		case 0:
+			return 1000LL*$->ms;
+		case 1:
+			/* Bangs in a geiger counter have a l*dt probability of occuring
+			in a dt time interval. Therefore the time till the next event
+			follows a Exp(l) law, for which:
+			f(t) = l*exp(-l*t)
+			F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
+			F^-1(p) = -log(1-p)/l
+			*/
+			return (uint64)(1000LL*$->ms*-log(1-drand()));
+		default:
+			abort();
+	}
 }
 
 static void RtMetro_alarm(VALUE rself) {
@@ -1257,7 +1287,7 @@ static void RtMetro_alarm(VALUE rself) {
 		VALUE a[] = { INT2NUM(0), sym_bang };
 		FObject_send_out(COUNT(a),a,rself);
 		/* $->next_time = now; */ /* jmax style, less realtime */
-		$->next_time += 1000*$->ms;
+		$->next_time += RtMetro_delay(rself);
 	}
 	$->last = now;
 }
@@ -1286,8 +1316,15 @@ METHOD(RtMetro,init) {
 	rb_call_super(argc,argv);
 	$->ms = FIX2INT(argv[0]);
 	$->on = 0;
+	$->mode = 0;
+	if (argc>=2) {
+		if (argv[1]==SYM(equal)) $->mode=0;
+		else if (argv[1]==SYM(geiger)) $->mode=1;
+		else RAISE("this is not a known mode");
+	}		
 	whine("ms = %d",$->ms);
 	whine("on = %d",$->on);
+	whine("mode = %d",$->mode);
 }
 
 GRCLASS(RtMetro,inlets:2,outlets:1,
@@ -1376,7 +1413,7 @@ void startup_flow_objects (void) {
 	INSTALL("@",           GridOp2);
 	INSTALL("@fold",       GridFold);
 	INSTALL("@scan",       GridScan);
-/*	INSTALL("@inner",      GridInner); */
+	INSTALL("@inner",      GridInner);
 	INSTALL("@inner2",     GridInner2);
 	INSTALL("@outer",      GridOuter);
 	INSTALL("@convolve",   GridConvolve);

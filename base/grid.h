@@ -256,6 +256,12 @@ static inline bool is_le(void) {
 	return ((char *)&x)[0];
 }
 
+#define EVAL(s) rb_eval_string(s)
+#define rb_str_len(s) (RSTRING(s)->len)
+#define rb_str_ptr(s) (RSTRING(s)->ptr)
+#define rb_ary_len(s) (RARRAY(s)->len)
+#define rb_ary_ptr(s) (RARRAY(s)->ptr)
+
 /* **************************************************************** */
 /* general purpose but Ruby/jMax specific */
 
@@ -559,6 +565,7 @@ struct GridOutlet {
 	int ron; GridInlet **ro; /* want (const Number *) shown to */
 	int rwn; GridInlet **rw; /* want (Number *) given to */
 
+/* methods */
 	GridOutlet(GridObject *parent, int woutlet);
 	~GridOutlet();
 	bool is_busy();
@@ -583,6 +590,12 @@ struct GridObject {
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
+
+	const char *args() {
+		VALUE s=rb_funcall(peer,SI(args),0);
+		if (s==Qnil) return 0;
+		return rb_str_ptr(s);
+	}
 };
 
 void GridObject_conf_class(VALUE $, GridClass *grclass);
@@ -683,13 +696,6 @@ VALUE super);
 
 #undef post
 #define post(args...) gf_bridge.post(args)
-
-#define EVAL(s) rb_eval_string(s)
-
-#define rb_str_len(s) (RSTRING(s)->len)
-#define rb_str_ptr(s) (RSTRING(s)->ptr)
-#define rb_ary_len(s) (RARRAY(s)->len)
-#define rb_ary_ptr(s) (RARRAY(s)->ptr)
 
 typedef VALUE (*RFunc)();
 
