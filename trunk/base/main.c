@@ -237,8 +237,6 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 		c_peer->grid_class = gc2==Qnil ? 0 : FIX2PTR(gc2);
 	}
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
-
-	GridObject_init(c_peer);
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;
 }
@@ -309,13 +307,15 @@ void whine_time(const char *s) {
 void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	VALUE args[16]; /* not really used anymore */
 	int i;
-	fprintf(stderr,"here are %d methods:\n",n);
+/*	fprintf(stderr,"here are %d methods:\n",n); */
 	for (i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		const char *buf = strcmp(md->selector,"init")==0 ?
 			"initialize" : md->selector;
+/*
 		fprintf(stderr,"%s: adding method #%s\n",
 			RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr,buf);
+*/
 		rb_define_method($,buf,(VALUE(*)())md->method,-1);
 		rb_enable_super($,buf);
 	}
