@@ -61,7 +61,7 @@ struct FormatQuickTimeHW : Format {
 	\decl void framerate_m (float64 f);
 	\decl void size (int32 height, int32 width);
 	
-	GRINLET3(0);
+	\grin 0 int
 };
 
 \def void force_size (int32 height, int32 width) {
@@ -210,7 +210,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0)),
+GRCLASS(FormatQuickTimeHW,
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"

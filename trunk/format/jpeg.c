@@ -44,7 +44,7 @@ struct FormatJPEG : Format {
 	\decl void close ();
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	GRINLET3(0);
+	\grin 0 int
 };
 
 GRID_INLET(FormatJPEG,0) {
@@ -113,7 +113,7 @@ GRID_INLET(FormatJPEG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0)),
+GRCLASS(FormatJPEG,
 \grdecl
 ) {
 	IEVAL(rself,

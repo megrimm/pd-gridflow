@@ -204,7 +204,7 @@ struct FormatVideoDev : Format {
 	\decl void transfer (Symbol sym, int queuemax=2);
 	\decl void colorspace (Symbol c);
 	\decl void initialize2 ();
-	GRINLET3(0);
+	\grin 0 int
 
 	\decl void get        (Symbol attr=0);
 	\decl void brightness (uint16 value);
@@ -542,7 +542,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 /* **************************************************************** */
 
-GRCLASS(FormatVideoDev,LIST(GRINLET2(FormatVideoDev,0)),
+GRCLASS(FormatVideoDev,
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatVideoDev',1,1;"

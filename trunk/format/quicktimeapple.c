@@ -193,7 +193,7 @@ struct FormatQuickTimeCamera : Format {
   \decl void initialize (Symbol mode, Symbol source, String filename);
   \decl void frame ();
   \decl void close ();
-  GRINLET3(0);
+  \grin 0 int
 };
 
 // /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Components.h
@@ -499,7 +499,7 @@ err:
 		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
 }
 
-GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0)),
+GRCLASS(FormatQuickTimeApple,
 \grdecl
 ){
 	IEVAL(rself,
