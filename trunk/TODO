@@ -3,9 +3,26 @@
 --- make the development process more test-driven.
     --- *Especially* the debugging process.
 
-Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
-pick a number: [090]
+for 0.8.0:
 
+ * added @matrix_solve, @slice
+ * Numop API exposed to Ruby
+ * < 10 bugs in buglist
+ * Fully hyperlinked manual
+ * internals documentation
+ * internal grid protocol redesigned
+ * [@pack], [@unpack]
+ * [@export~]
+
+Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
+pick a number: [098]
+
+[097] bin/backtrace does not detect scripts
+[096] @draw_image does segfault... see beast.jmax
+[095] didn't SDL just get slower?
+[094] number.c takes too much time and ram to compile
+[093] make jmaxtopd a real program, and have a jmax4tojmax25 program, and so on
+[092] ./configure --lite to disable 64-bit types? and maybe float32 ?
 [091] check with alx whether peephole works for him
 [090] doesn't check whether ruby/version.h matches .so / .a
 [027] tcp test is broken
@@ -18,14 +35,6 @@ pick a number: [090]
 
 [072] [sl] in patches is actually slider.
 [073] static libraries don't link with gridflow.so
-
-[071] high latency problem seems to be coming from:
-#0  0x40079cc6 in sendto () from /lib/i686/libpthread.so.0
-#1  0x080c89aa in udp_dev_flush ()
-#2  0x080c320e in fts_client_poll ()
-#3  0x080b8975 in fts_sched_run ()
-#4  0x0805b5e0 in main () ./fts/src/tiles/main.c:40
-#5  0x400d47f7 in __libc_start_main () from /lib/i686/libc.so.6
 
 [069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
 
@@ -83,6 +92,14 @@ Bugs (Low Priority)
 [064] @draw_image has (had?) problems (or revealed problems of grid.c) see sand.jmax
 [029] @join on small chunks is way too slow
 
+[071] high latency problem seems to be coming from:
+#0  0x40079cc6 in sendto () from /lib/i686/libpthread.so.0
+#1  0x080c89aa in udp_dev_flush ()
+#2  0x080c320e in fts_client_poll ()
+#3  0x080b8975 in fts_sched_run ()
+#4  0x0805b5e0 in main () ./fts/src/tiles/main.c:40
+#5  0x400d47f7 in __libc_start_main () from /lib/i686/libc.so.6
+
 Bugs (Cannot reproduce)
 [062] ruby SecurityError: Insecure operation - exist?
 	(trying to load ~/.gridflow_startup)
@@ -100,6 +117,11 @@ Distribution
 [ ] make CDs
 
 Installation
+[ ] make the installer help the user more:
+      * .h was found
+      * compiled with .h correctly
+      * .so|.a was found
+      * linked with .so|.a correctly
 [ ] installable doc
 [ ] installable includes ?
 [ ] produce linux binaries ("static")
@@ -268,9 +290,11 @@ Input/Output
 [ ] in-place editing (rw mode)
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] use 1.8.0's IO#read(Integer,String)->String
+[ ] SDL: should support multiple windows
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
+[!] x11: keyboard messages, outlet 0
 [ ] shell object?
 [ ] @import, 'grid tcp': option: sudden vs gradual transmission through
 	gridflow.
@@ -279,6 +303,7 @@ Input/Output
 [ ] try low-latency kernelpatch
 [ ] try preemption kernelpatch
 [ ] x11: support dual heads
+[ ] [joystick_port], [parallel_port], [serial_port]
 
 Format
 [ ] remaining number type support in formats
@@ -309,6 +334,7 @@ User Interface
     [ ] works without x11
     [ ] appear _over_ pulldowns ? (and popups, even?)
     [x] is it possible to make it borderless? not with x11
+    [ ] does it really work with something other than 3 channels ?
     [ ] add a popup menu that makes sense
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
