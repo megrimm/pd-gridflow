@@ -1162,7 +1162,7 @@ struct FObject : Object {
 		return rb_str_ptr(s);
 	}
 
-	/* result should be printed immediately as the GC may discard it anytime */
+	/* result should be printed or copied immediately as the GC may discard it anytime */
 	const char *info();
 
 	\decl Ruby total_time_get();
@@ -1280,7 +1280,7 @@ static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 }
 
 /* a stack for the profiler, etc. */
-#define GF_STACK_MAX 100
+#define GF_STACK_MAX 256
 struct GFStack {
 	struct GFStackFrame {
 		FObject *o;
