@@ -6,204 +6,111 @@
         GridFlow Installation
         Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 -->
-<section name="Software (and Hardware) you Probably Need">
-<p>Required Hardware (One of...):<list>
-	<li>i386 : "old" PC, or "new" PC with old compiler</li>
-	<li>i686 : "new" PC with recent compiler (that's the one we mostly test with)</li>
-	<li>ppc : Macintosh (we are beginning to test with this too)</li>
-	<li>armv4l : Corel Netwinder (unsupported, but got it to work long ago)</li>
-	<li>mips : Silicon Graphics, non-PC (unsupported, but got it to work long ago)</li>
-	<li>sparc : Sun SparcStation (unsupported, but got it to work some time ago)</li>
+<section name="Hardware and Software you Probably Need">
+<p>Required Computer/Processor (one of...):<list>
+	<li>PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li>
+	<li>Macintosh : G3/G4/G5</li>
+	<li>Corel Netwinder : StrongARM V4L</li>
+	<li>HP iPaq : StrongARM V4L</li>
+	<li>could work on SiliconGraphics and SPARCstation with a little nurture.</li>
+</list></p>
+<p>Required OS (one of...):<list>
+	<li>Linux (most any variant) (recommended)</li>
+	<li>MacOS 10.2 or later (experimental)</li>
+	<li>Windows with MinGW (very experimental)</li>
 </list></p>
 <p>Required Software:<list>
-	<li>Ruby 1.6.6 or more recent (1.8.0 recommended)</li>
-	<li>GNU C Compiler (gcc)</li>
-	<li>GNU Make (gmake)</li>
+	<li>Ruby 1.6.6 or more recent (1.8.0 recommended) (make sure you have the *.so and *.h files)
+	(on MacOS you may have to remove or hide the existing one and install a more complete package)</li>
 </list></p>
-<p>Very Recommended:<list>
-	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
-	<li>one of:
-		<list>
-		<li>jMax 2.5</li>
-		<li>jMax 4.1</li>
-		<li>PureData 0.35 or 0.36 or 0.37 or 0.37.devel or 0.37.impd</li>
-	</list></li>
+<p>Dataflow Software (one of...):<list>
+	<li>PureData 0.36 or later (recommended)</li>
+	<li>jMax 2.5 (obsolete but working)</li>
+	<li>jMax 4.1 (not recommended)</li>
 </list></p>
-<p>Optional:<list>
-	<li>Simple Directmedia Layer (sdl)</li>
+<p>Multimedia Components (optional):<list>
+	<li>libSDL (Simple Directmedia Layer)</li>
+	<li>libjpeg</li>
+	<li>libpng</li>
+	<li>libmpeg3 (.mpg reader, HeroineWarrior's)</li>
+	<li>libquicktime (.mov reader/writer, Burkhard Plaum's or HeroineWarrior's) </li>
+	<li>libmpeg (.mpg reader, Greg Ward's, old)</li>
+	<li>Apple QuickTime (.mov reader/writer)</li>
 	<li>Ascii Art Library (aalib)</li>
-	<li>HeroineWarrior's libmpeg3.so</li>
-	<li>HeroineWarrior's libquicktime.so</li>
-	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
-	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
-	<li>Ruby add-on "xmlparser" (for editing documentation)</li>
+	<li>PCI video digitizer card  (and Video4linux 1 driver)</li>
+	<li>USB camera (and Video4linux 1 driver)</li>
 </list></p>
-<p>NOTE: 
-for help on installing and compiling jMax, please see Christian Klippel's
-extensive help file at <link to="http://www.mamalala.de"/>
-as well as the jMax docs.</p>
-<p>Also Useful:<list>
-	<li>Pentium-compatible CPU (for profiling)</li>
-	<li>CVS (for live update)</li>
+<p>Developer Tools (roll-your-own):<list>
+	<li>GNU C++ Compiler (gcc/g++) version 3.x or maybe 2.95</li>
+	<li>GNU Make (gmake)</li>
+	<li>CVS (for upgrading/collaboration)</li>
+	<li>Ruby library "xmlparser" (optional, for editing documentation)</li>
+	<li>Developer Tools CD dec 2002 (if MacOS 10.2)</li>
+	<li>XCODE (if MacOS 10.3)</li>
+	<li>FINK (if MacOS 10)</li>
 </list></p>
-<p>NOTE:
-There are several different incompatible libmpeg's from different authors;
-I found four of them, some numbered 2 and 3 as if they were version numbers
-(but it seems they are not).
-</p>
-
-<p>NOTE: if one of your libraries are only available in .a format, you will not
-be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
-</p>
+<p>NOTE: Apparently GCC 2.x has problems dealing with *.a components; if that
+affects you, use *.so files instead.</p>
 </section>
 
 <section name="Downloading from CVS">
 <p>The CVS has the absolute latest version of GridFlow, but it's not guaranteed to be working, whereas
 the actual releases are more tested.</p>
 <p>However you may have various reasons to use the CVS edition, so here's how:</p>
-<p>Make sure you have the <k>cvs</k> and <k>ssh</k> programs installed.
-(On MacOS, they are part of the DevTools CD)</p>
+<p>Make sure you have the <k>cvs</k> program installed.</p>
 <p><k>mkdir -p ~/src/gridflow</k> (make a directory; it could be called otherwise if you like)</p>
 <p><k>cd ~/src/gridflow</k> (go in that directory)</p>
-<p><k>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow login</k> (the password is blank)</p>
-<p><k>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow checkout .</k> (download the first time)</p>
+<p><k>cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow login</k> (the password is blank)</p>
+<p><k>cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow checkout .</k> (download the first time)</p>
 <p>And the subsequent times, you only do this:</p>
 <p><k>cd ~/src/gridflow</k></p>
 <p><k>cvs update -dP</k></p>
 </section>
 
-<section name="Installation process (for jMax 2.5.1 and compatible)">
+<section name="Installation instructions (incl. compilation)">
 <list>
-  <li>if you don't have jMax, get it at
-	<link to="http://www.ircam.fr/equipes/temps-reel/jmax/en/index.php3">
-	jMax's site
-	</link>.
-  </li>
-  <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
-latest from the 1.7/1.8 series work and are faster)  You will need either
-<k>libruby.so</k> or <k>libruby.a</k> or <k>libruby-static.a</k>
-If you're using an installer and you're missing those files,
-then look for another package of a
-similar name that may contain extra files (eg: "ruby-dev"). If you're
-installing from source code you have to configure with the
-<k>--enable-shared</k> option. If you install into a system directory, you
-have to recreate the library index using the <k>ldconfig</k> command too
-(auto-installers normally do this for you).
-  </li>
+<li>Install Ruby. Make sure it contains <k>ruby.h</k> and <k>intern.h</k> and related files. It's also
+recommended to have <k>libruby.so</k>. Those extra files may be in a package called <k>ruby-dev</k>
+if you are using RPM or DEB/FINK. If you are building Ruby yourself, it's better to configure ruby with
+<k>--enable-shared</k>. If you install into a system directory, you may have to run <k>ldconfig</k>
+after installing Ruby.</li>
 
-  <li>Download the latest version of GridFlow
-      and download the images pack (gridflow-images-0.5.tar.gz).
-      The download site is
-	 <link to="http://www.artengine.ca/jmax/gridflow/download"><k>artengine.ca</k></link>.
-      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice),
-      which will create a directory called 'gridflow';
-      unpack the images pack into that directory, which will create
-	 another one called 'images'.
-  </li>
+<li>Download GridFlow from the website and uncompress it, or get it from the CVS server.</li>
 
-  <li>Run <k>./configure</k> from the <k>gridflow</k> directory.
-  <k>./configure</k> will try to detect some optional
-  components (libmpeg, pentium clock, etc). In the end, the files
-  <k>config.make</k>, <k>config.h</k> and <k>Makefile</k> will be generated.
-  </li>
-
-  <li>If you are not running Linux on a PentiumPro-compatible computer, you
-  will have to specify a jMax Makefile using the <k>--jmax-arch</k> option.
-  This is the one you use when installing jMax (or other jMax plugins other
-  than GridFlow) manually. On MacOS 10, this would be <k>ppc-macosx</k>.</li>
-
-  <li>Stay in the same directory and do:
-      <list>
-        <li><k>make</k></li>
-        <li><k>make install</k></li>
-        <li><k>make test</k></li>
-      </list>
-      but if one stops because of "Error" you shouldn't try the next one.
-  </li>
-
-  <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
-  Add a line that says <k>package require gridflow</k>.
-  Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
-  </li>
-
-  <li>(Re)start jMax.</li>
-
-</list>
-
-  <p>Note: you can do <k>./configure --help</k> to get a list of supported
-  options. You can use them to ignore the presence of troublesome libraries
-  and select debugging level.</p>
-
-<p>--use-compiler <i>compiler</i> normally would be one of: <k>g++ g++-2.95 g++-3.2 g++-3.3</k>.
-Do not use something with <k>gcc</k> in the name, as it results in <k>undefined symbol</k> problems.
-</p>
-
-</section>
-
-<section name="Installation process (with jMax 4.1.0 and compatible)">
-
-Same as above: [write me]
-
-</section>
-
-<section name="Installation process (with PureData 0.35 and compatible)">
-
-<list>
-<li>make sure <k>m_pd.h</k> is installed and can be seen by the compiler.
-you may have to change the C_INCLUDE_PATH environment variable.</li>
-<li>go in GridFlow's source directory.</li>
-<li>run <k>./configure</k></li>
-<li>run <k>make</k></li>
-<li>run <k>make install</k></li>
-<li>run <k>make test</k></li>
-<li>run pd with the <k>-path</k> to the extras directory and <k>-lib
-gridflow</k>, or put those options in your <k>~/.pdrc</k> file. (this part is
-essentially the same as GEM's and PDP's)</li>
-<li>to be able to access the images (<k>gridflow/images</k>), create a 
-<k>~/.gridflow_startup</k> file and put a command like this in it:
-<k>GridFlow.data_path &lt;&lt; "/mydir/gridflow/images"</k>
+<li>Run <k>./configure</k> from the <k>gridflow</k> directory. Make sure it detects all the components
+you want to use with GridFlow. In MacOS you would normally use FINK to install:
+	<k>libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</k>
 </li>
+
+<li>Note: you may have to set <k>CPLUS_INCLUDE_PATH</k> to indicate where to find *.h files, and you
+may have to set both <k>LIBRARY_PATH</k> and <k>LD_LIBRARY_PATH</k> to indicate where to find
+*.so  or *.aor *.dylib or *.bundle or *.dll or *.lib files.</li>
+
+<li>Note: you can do <k>./configure --help</k> to get a list of supported
+options. You can use them to ignore the presence of troublesome libraries
+and select debugging level. With <k>--use-compiler</k> you should use a version of <k>g++</k>, not
+directly a version of <k>gcc</k>, else you get <k>undefined symbol</k> problems. Some versions of gcc/g++
+are troublesome.</li>
+
+<li>Run <k>make</k> to produce the executables <k>gridflow.so</k> and <k>gridflow.pd_linux</k> or similar</li>
+<li>Run <k>make install</k> to copy those executables and related files to their final locations.</li>
+<li>Run <k>make test</k> just to verify that GridFlow isn't working too bad.</li>
+<li>With a text editor, create <k>~/.gridflow_startup</k> and write something like
+<k>GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</k> to tell GridFlow where to find the
+images used in the examples. You may add more lines like that one if you have folders containing images
+or movies you want to use with GridFlow.</li>
+<li>Loading GridFlow:<list>
+	<li>PureData : With a text editor, modify or create <k>~/.pdrc</k> and write <k>-lib gridflow</k>. </li>
+	<li>ImpureData : In the ".pdrc editor", add <k>gridflow</k> to the list of libraries.</li>
+	<li>jMax 2.5 : With a text editor, modify <k>~/.jmaxrc</k> and write a line <k>package require gridflow</k>
+		inside of the <k>when start</k> section.</li>
+	<li>jMax 4.1 : In the Default Project, add <k>gridflow</k> to the list of plugins.</li>
+	<li>plain Ruby : the command <k>require "gridflow"</k> will load gridflow.so.</li>
 </list>
-
-</section>
-
-<section name="Installation process (without jMax nor PureData)">
-<list><li>
-	If you don't have jMax installed it won't be detected. Installation
-	will proceed normally except that the Ruby-for-jMax bridge won't be
-	installed. Try running 'make test'. Look at 'tests/test.rb' for
-	an example of how you may use GridFlow without jMax.
-</li></list>
-</section>
-
-<section name="Installation process (MacOS 10.2)">
-	<p>DevTools: you need the DevTools CD. I tried the december 2002 edition. You can
-	download that from Apple.</p>
-	<p>I've had a strange problem, in that the header files of Ruby
-	(<k>/usr/lib/ruby/powerpc-darwin6.0/*.h</k>) didn't install at first, and when
-	I tried reinstalling, the installer told me there was some more megs of files left to install, and
-	then installed the header files of Ruby among other things.</p>
-	<p>Even then, that version of Ruby is missing the static library <i>and</i> the shared library,
-	or in other words you can't build a jMax/PD plugin that uses Ruby with that. So I had to install
-	Ruby myself. I picked some 1.8 version and configured with <k>--enable-shared</k> which
-	is an essential option in this case it seems.</p>
-	<p>To be able to open a window in GF/OSX you need to do one of these:<list>
-		<li>Install Apple X11 from <k>http://www.apple.com/macosx/x11/</k></li>
-		<li>Install FINK from <k>http://fink.sourceforge.net/</k>. Start the FinkCommander.
-		Select <k>xfree86-rootless</k> and click on +A and +H. To start X11 in rootless mode 
-		on OSX, run this command: <k>X :0 -rootless &amp;</k>. This version of X11 will
-		require a "window manager", while Apple's X11 does not. The bundled one is <k>twm</k>,
-		but if you're not into retro, you better download a better one.</li>
-	</list></p>
-	<p>If [@out window] doesn't work ("no such file or directory" ??) then you may have to set
-	the DISPLAY environment variable. This is done by adding <k>export DISPLAY=:0</k> in
-	<k>~/.bashrc</k> or <k>setenv DISPLAY :0</k> in <k>~/.cshrc</k>.</p>
-	<p>Additional support packages you could install from Fink before installing GridFlow:
-	<k>libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</k></p>
-	<p>Note: Fink installs stuff in directory <k>/sw</k>, which should be added to
-	C_INCLUDE_PATH and LD_LIBRARY_PATH and such.</p>
-	<p>GridFlow should be configured with option <k>--jmax-arch=ppc-macosx</k> if you are
-	going to use jMax.</p>
+Note that on MacOS the dot-files are invisible in the Finder but you do
+<k>cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</k> to make an alias on the Desktop.
+Note also that on Windows the dot-files are even more trouble.</li>
+</list>
 </section>
 
 <section name="Other Tips">
@@ -218,11 +125,23 @@ crashes, or changes didn't go through.
 	<li>When some kinds of changes have happen, you may have to rerun the <k>configure</k>
 	program before redoing <k>make</k>. If you had previously reconfigured with specific options,
 	don't forget to use them again in this case.</li>
-	<li>Maybe matju forgot to checkin part of an important change. Tell him.</li>
+	<li>Maybe matju forgot to upload part of an important change. Tell him.</li>
 	</list></li>
 
 
-<li>Crashing:
+<li>PureData Crashing:
+	<list>
+	<li>you can start the debugger like <k>gdb `which pd` core.24255</k> where the latter part
+	is the name of a RAM dump file. You can enable those dumps using the shell command
+	<k>ulimit -c unlimited</k>. To avoid dumping, you can also start Pd from within the debugger
+	using <k>gdb `which pd`</k> then <k>run</k> then causing the crash.</li>
+	<li>In GDB, after a crash, you can use the <k>where</k> to find out what Pd was doing at the moment
+	of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal.
+	</li>
+	<li>To quit GDB use the <k>quit</k> command. (really.)</li>
+</list></li>
+
+<li>jMax Crashing:
 
 	<list>
 	<li>you should know where the FTS executable file is. Its filename looks
@@ -231,15 +150,8 @@ crashes, or changes didn't go through.
 	fts as "root" user, and you should do chmod u-s on the $FTS file. I
 	recommend that you work that way until the fts crash problem is fixed, and
 	only run it again as root only when you have a good reason to do so.</li>
-	<li>by running the command "ulimit -c unlimited" before starting jmax
-	(from the same shell) will cause a crash to write the program's RAM into
-	a file named "<k>core</k>" in the current directory. The filename may vary slightly,
-	for example it may be suffixed with a unique number.</li>
-	<li>you can read this file in a semi-friendly way by doing
-	"gdb $FTS core" right after that. what you need to do with that is usually
-	just to type "backtrace" and then "quit". the first command will print a
-	list of functions active during the crash. the bug is usually in one close
-	to the top of the list.</li>
+	<li>The rest is pretty much as with PureData except you must do something more like
+	"gdb $FTS core.24255", as the <k>which</k> command cannot be used with FTS.</li>
 	</list></li>
 
 <li>Corrupted jMax file:
