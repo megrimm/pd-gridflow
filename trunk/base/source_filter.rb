@@ -91,7 +91,7 @@ end
 
 def handle_def(line)
 	#STDERR.puts "def: #{line}"
-	m = parse_methoddecl(line,"{?")
+	m = parse_methoddecl(line,"\{?")
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
