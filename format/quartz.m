@@ -228,7 +228,7 @@ GRID_INLET(FormatQuartz,0) {
 	[NSApplication sharedApplication];
 	IEVAL(rself,
 \ruby
-	install '#in:quartz',1,1
+	install '#io:quartz',1,1
 	@comment = "Apple Quartz/Cocoa"
 	@flags = 2
 \end ruby
