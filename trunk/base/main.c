@@ -344,9 +344,14 @@ Ruby GridFlow_clock_tick (Ruby rself) {
 	return rb_float_new(gf_bridge.clock_tick);
 }
 
-void GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
+Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
 	gf_bridge.clock_tick = RFLOAT(tick)->value;
+	return tick;
+}
+
+Ruby GridFlow_rdtsc (Ruby rself) {
+	return ULL2NUM(rdtsc());
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
@@ -416,6 +421,20 @@ void *Pointer_get (Ruby self) {
 
 /* ---------------------------------------------------------------- */
 
+void gfmemcopy(uint8 *out, const uint8 *in, int n) {
+	while (n>16) {
+		((int32*)out)[0] = ((int32*)in)[0];
+		((int32*)out)[1] = ((int32*)in)[1];
+		((int32*)out)[2] = ((int32*)in)[2];
+		((int32*)out)[3] = ((int32*)in)[3];
+		in+=16; out+=16; n-=16;
+	}
+	while (n>4) { *(int32*)out = *(int32*)in; in+=4; out+=4; n-=4; }
+	while (n) { *out = *in; in++; out++; n--; }
+}
+
+/* ---------------------------------------------------------------- */
+
 #include <signal.h>
 
 void startup_number();
@@ -425,23 +444,22 @@ void startup_formats();
 
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
 
-#ifdef HAVE_PENTIUM
-/*
-extern "C" void pentium_int32_map_add(int,int32*,int32);
-extern "C" void pentium_int32_map2_add(int,int32*,int32*);
+#ifdef HAVE_MMX
+extern "C" void mmx_int32_map_add(int,int32*,int32);
+extern "C" void mmx_int32_zip_add(int,int32*,int32*);
 void startup_cpu () {
-	gfpost("startup_cpu: using 386/Pentium optimisations");
+	gfpost("startup_cpu: using MMX optimisations");
 	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_map =
-	pentium_int32_map_add;
-	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_map2 =
-	pentium_int32_map2_add;
+	mmx_int32_map_add;
+//	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_zip =
+//	mmx_int32_zip_add;
 }
-*/
 #endif
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
 	signal(11,SIG_DFL);
+//	setenv("RUBY_VERBOSE_GC","yes",1);
 
 	DEF_SYM(grid);
 	DEF_SYM(bang);
@@ -454,6 +472,8 @@ void Init_gridflow () {
 	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("post_string",gf_post_string,1);
+	SDEF2("rdtsc",GridFlow_rdtsc,0);
+
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
@@ -497,8 +517,8 @@ void Init_gridflow () {
 
 	startup_formats();
 
-#ifdef HAVE_PENTIUM
-//	startup_cpu();
+#ifdef HAVE_MMX
+	startup_cpu();
 #endif
 
 	signal(11,SIG_DFL); /* paranoia */

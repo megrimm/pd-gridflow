@@ -21,6 +21,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+# ENV["RUBY_VERBOSE_GC"]="yes"
+
 # this file gets loaded by main.c upon startup
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
@@ -43,7 +45,7 @@ end if VERSION < "1.6.6"
 # this should be done in base/bridge_jmax.c
 for victim in [Thread, Continuation]
 	def victim.new
-		raise NotImplementedError, "disabled because of jMax incompatibility"
+		raise NotImplementedError, "class #{self} disabled because of jMax incompatibility"
 	end
 end
 #$VERBOSE=verbose
@@ -169,7 +171,7 @@ class FObject
 		r
 	end
 	def inspect
-		if @args then "#<#{self.class} #{args}>" else super end
+		if args then "#<#{self.class} #{args}>" else super end
 	end
 	def initialize
 		super
@@ -487,26 +489,44 @@ class GridGlobal < FObject
 end
 
 class FPS < GridObject
-	def initialize(detailed=false)
+	def initialize(*options)
 		@history = []   # list of delays between incoming messages
 		@last = 0.0     # when was last time
 		@duration = 0.0 # how much delay since last summary
 		@period = 1     # minimum delay between summaries
-		@detailed = !!detailed
+		@detailed = false
+		@mode = :real
+		options.each {|o|
+			case o
+			when :detailed; @detailed=true
+			when :user,:system,:cpu; @mode=o
+			end
+		}
+		!!detailed
 		def @history.moment(n=1)
 			sum = 0
 			each {|x| sum += x**n }
-			p sum
-			p length
-			p sum/length
 			sum/length
+		end
+		if @mode==:cpu
+			u0,t0=GridFlow.rdtsc,Time.new.to_f
+			sleep .01
+			u1,t1=GridFlow.rdtsc,Time.new.to_f
+			p u0,t0,u1,t1
+			@hertz = (u1-u0)/(t1-t0)
+			GridFlow.post "estimating cpu clock at #{@hertz} Hz"
 		end
 	end
 	def method_missing(*)
 		# ignore
 	end
 	def _0_bang
-		t = Time.new.to_f
+		t = case @mode
+		when :real; Time.new.to_f
+		when :user; Process.times.utime
+		when :system; Process.times.stime
+		when :cpu; GridFlow.rdtsc/@hertz
+		end
 		@history.push t-@last
 		@duration += t-@last
 		@last = t
@@ -631,6 +651,7 @@ end
 end # module GridFlow
 #----------------------------------------------------------------#
 
+#!@#$ this should be done _after_ formats/main.rb is loaded
 user_config_file = ENV["HOME"] + "/.gridflow_startup"
 load user_config_file if File.exist? user_config_file
 
