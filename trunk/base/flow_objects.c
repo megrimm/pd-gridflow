@@ -782,7 +782,7 @@ GRID_INPUT(GridInner,2,r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->seed.swallow(seed); // this->seed = *seed;
+	if (seed) this->seed.swallow(seed); // this->seed = *seed;
 	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
@@ -807,7 +807,7 @@ struct GridInner2 : GridInner {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->seed.swallow(seed); // this->seed = *seed;
+	if (seed) this->seed.swallow(seed); // this->seed = *seed;
 	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
