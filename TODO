@@ -3,33 +3,19 @@
 --- make the development process more test-driven.
     --- *Especially* the debugging process.
 
-("I am Jack's Overwritten Stack Pointer...")
-
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
-pick a number: [083]
+pick a number: [090]
 
-[083] don't work in jmax 4.1:
-	cross_fade.jmax
-	drag_rectangle.jmax
-	fire.jmax
-	linear_transform.jmax
-	[fps detailed, period 5]
-
-[082] problem with tuners
-	<gray_> something about not having a tuner #0.
-
-[081] .mov: SVQ1: unsupported colormodel
-	<g-rhum> codec SVQ1 h:256 w 320 d 24 fram... 25 000 000
-
-[079] can trap segfaults in codecs of libquicktime.
+[091] check with alx whether peephole works for him
+[090] doesn't check whether ruby/version.h matches .so / .a
+[027] tcp test is broken
+[089] is LINK TO="..." not properly handled? see part of install.xml that uses it.
+[088] FIX MOULINETTE.RB ! <attr name type default>
+[087] maybe write a script that automatically gets the backtrace from GDB.
+[086] I need better aborting of grids right fucking now.
 
 [078] "unsupported codec" bogus errors.
 
-[075] I don't know well this area of the code, but I think that right now, you
-have to write a Java class that derives from ircam.jmax.editors.patcher.objects.Standard
-and implements popUpUpdate. -- François.
-
-[074] -march
 [072] [sl] in patches is actually slider.
 [073] static libraries don't link with gridflow.so
 
@@ -41,36 +27,19 @@ and implements popUpUpdate. -- François.
 #4  0x0805b5e0 in main () ./fts/src/tiles/main.c:40
 #5  0x400d47f7 in __libc_start_main () from /lib/i686/libc.so.6
 
-[018] "make install" doesn't work properly with ruby-1.6
-[023] I messed with the installation (site-install vs install)
-
-[070] [peephole] doesn't work with transparency
 [069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
 
 [004] bug in automatic type conversion (eg: @in quicktime -> ...)
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] @in#open problem with String argument.
-[007] #0  BFObject_rescue (fm=0xbffff660) at bridge/jmax.c:112
-112                     post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 [008] Greyscale JPEG does not work
 [009] T_DATA #dup #clone ???
 [010] separate bridge makefiles from other makefiles!!!
 [011] research bugs in ASIO with Ruby. (eg. serial port)
-[012] again, problem with find_file...
-[013] remove "option" completely...
 [014] recursive message-loop not detected.
-[016] @for int64 fails on machine "lcd".
-[021] PD:
-error: NoMethodError: undefined method `intern' for nil
-/opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:591:in `method_missing'
-[022] base/test.rb (default):
-    2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
-    (makes no sense whatsoever!)
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
-[027] tcp test is broken
 [028] @export doesn't work in pd
-[029] @join on small chunks is way too slow
 [030] FormatGrid: not properly tested (crashes sometimes)
 [031] stdout should be redirected if bridge is present
 [032] error handling sometimes leads to crash
@@ -80,9 +49,20 @@ error: NoMethodError: undefined method `intern' for nil
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
 [040] GRID_FINISH triggered while backstore ???
-[063] "make" on my nfs is all fucked up re dates
 
 Bugs (Low Priority)
+[016] @for int64 fails on machine "lcd".
+[063] "make" on my nfs is all fucked up re dates
+[081] .mov: SVQ1: unsupported colormodel
+	<g-rhum> codec SVQ1 h:256 w 320 d 24 fram... 25 000 000
+[083] don't work in jmax 4.1:
+	cross_fade.jmax
+	drag_rectangle.jmax
+	fire.jmax
+	linear_transform.jmax
+	[fps detailed, period 5]
+[079] can trap segfaults in codecs of libquicktime.
+[090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
 [076] EINTR not handled properly in a lot of code?
 [041] what would be a way to make GF work well with PD's idea of a list?
 [043] TCP server socket busy even after kill
@@ -94,7 +74,6 @@ Bugs (Low Priority)
 [049] [@export_list] blows up with >=125 elements (alx)
 [050] BitPacking has trouble with masks that extend beyond int25be
 [051] remove the crap given by -w of ruby
-[052] make: Dépendance circulaire site-install <- install abandonnée. (with ruby 1.8)
 [054] it's possible to crash by sending data in two inlets of a same object at once
 [056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
 [057] RtMetro crashes if deleted while turned on; and isn't reliably working
@@ -102,6 +81,7 @@ Bugs (Low Priority)
 [060] look for "!@#$" in source
 [061] @store should support other integer types in inlet 0 (would speedup beast.jmax)
 [064] @draw_image has (had?) problems (or revealed problems of grid.c) see sand.jmax
+[029] @join on small chunks is way too slow
 
 Bugs (Cannot reproduce)
 [062] ruby SecurityError: Insecure operation - exist?
@@ -136,6 +116,7 @@ Installation
 [ ] make ./configure's 'test' method work using exceptions
     for meaningful error reporting in config.log.
 [ ] make uninstall
+[ ] have option for gprof
 
 Documentation
 [ ] make a short feature list as a promo
@@ -323,15 +304,11 @@ User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] peephole:
-    [ ] auto-@scale_by for very small images
+    [x] auto-@scale_by for very small images
     [ ] works with jmax4
     [ ] works without x11
     [ ] appear _over_ pulldowns ? (and popups, even?)
-    [ ] race condition upon creation
-    [ ] problem with vertical offset (compare "vasarely" vs "karelia")
-    [ ] alx would prefer it black instead of powder blue
-    [ ] wouldn't it be better if it were borderless?
-    [ ] maybe the window could become insensitive while in edit mode
+    [x] is it possible to make it borderless? not with x11
     [ ] add a popup menu that makes sense
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
@@ -423,4 +400,13 @@ stepi
 ----------------------
 
 p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
+
+
+
+
+
+
+
+
+... I am Jack's Overwritten Stack Pointer...
 
