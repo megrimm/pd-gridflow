@@ -796,7 +796,7 @@ mf = File.readlines("Makefile").join""
 #p mf.length
 
 common_dependencies =
-"base/grid.h config.make Makefile Makefile.gf"#base/source_filter.rb"
+"base/grid.h config.make Makefile Makefile.gf base/source_filter.rb"
 
 mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp=$1
