@@ -1010,6 +1010,7 @@ f.puts "
 end
 
 f.puts "
+#define RUBY_BINDIR #{make_expand(CONFIG['bindir']).inspect}
 #endif /* __CONFIG_H */"
 }
 
