@@ -11,7 +11,7 @@ Out = File.open ARGV[1], "w"
 
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
-	STDERR.puts "class: #{line}"
+	#STDERR.puts "class: #{line}"
 	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
 	q=ClassDecl.new($1,$2,{})
 	$stack << q
@@ -55,7 +55,7 @@ def where
 end
 
 def handle_decl(line)
-	STDERR.puts "decl: #{line}"
+	#STDERR.puts "decl: #{line}"
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	classname = $stack[-1].name
@@ -68,7 +68,7 @@ def handle_decl(line)
 end
 
 def handle_def(line)
-	STDERR.puts "def: #{line}"
+	#STDERR.puts "def: #{line}"
 	mdef = parse_methoddecl(line,"{?")
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
