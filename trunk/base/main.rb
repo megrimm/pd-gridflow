@@ -309,7 +309,7 @@ class GridPrint < GridFlow::GridObject
 
 	def initialize(name=nil)
 		super # don't forget super!!!
-		if name then @name = name+": " else @name="" end
+		if name then @name = name.to_s+": " else @name="" end
 	end
 
 	def make_columns data
@@ -610,6 +610,23 @@ class GridComplexSq < FPatcher
   Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
   def initialize() super(FObjects,Wires,1) end
   install "@complex_sq", 1, 1
+end
+
+class GridRotate < FPatcher
+  FObjects = ["@outer + {2 2 # 0 9000 -9000 0}","@ cos* 256",
+  "@inner * + 0","@ >> 8"]
+  Wires = [-1,0,2,0, 2,0,3,0, 3,0,-1,0, -1,1,0,0, 0,0,1,0, 1,0,2,2]
+  def initialize(rot=0) super(FObjects,Wires,2); send_in 1, rot end
+  install "@rotate", 2, 1
+end
+
+class GridRemapImage < FPatcher
+  FObjects = ["@dim","@inner * + 0 {3 2 # 1 0 0}","@for {0 0} {0 0} {1 1}",
+  "@store","@finished"]
+  Wires = [-1,0,3,1, -1,0,0,0, 0,0,1,0, 1,0,2,1,
+  -1,0,4,0, 4,0,2,0, 2,0,-1,1, -1,1,3,0, 3,0,-1,0]
+  def initialize() super(FObjects,Wires,2) end
+  install "@remap_image", 2, 2
 end
 
 class GridExportSymbol < GridObject
