@@ -475,9 +475,6 @@ GRID_INLET(FormatVideoDev,0) {
 \def void close () {
 	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
-/*	IEVAL(rself,"GridFlow.post \"VideoDev#close: #{self.inspect}\"; 
-	@stream.close if @stream");
-*/
 	rb_call_super(argc,argv);
 }
 
@@ -499,7 +496,7 @@ GRID_INLET(FormatVideoDev,0) {
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	case VIDEO_PALETTE_YUV420P:{
-		/* woops, special case already, can't do that with bit_packing */
+		// woops, special case already, can't do that with bit_packing
 	}
 	default:
 		RAISE("can't handle palette %d", gp->palette);
@@ -510,18 +507,14 @@ GRID_INLET(FormatVideoDev,0) {
 \def void initialize2 () {
 	int fd = GETFD;
 	VideoPicture *gp = new VideoPicture;
-
-/*
-	long flags;
+/*	long flags;
 	fcntl(fd,F_GETFL,&flags);
 	flags |= O_NONBLOCK;
-	fcntl(fd,F_SETFL,&flags);
-*/
+	fcntl(fd,F_SETFL,&flags); */
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
 	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
-
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost(gp);
 	char buf[1024] = "";
@@ -537,7 +530,6 @@ GRID_INLET(FormatVideoDev,0) {
 		}
 	}
 	gfpost("This card supports palettes: %s", buf);
-
 	colorspace(0,0,SYM(RGB24));
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
 	delete gp;

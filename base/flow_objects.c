@@ -168,7 +168,6 @@ GRID_INPUT(GridImport,1,dim_grid) {
 }
 
 \def void _0_list(...) {
-	//fprintf(stderr,"GridImport#_0_list(...): type=%d\n",cast);
 	in[0]->from_ruby_list(argc,argv,cast);
 }
 
@@ -214,8 +213,7 @@ struct GridExport : GridObject {
 };
 
 template <class T>
-static Ruby INTORFLOAT2NUM(T value) {return INT2NUM(value);}
-
+static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
 static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
 
@@ -241,7 +239,6 @@ GRCLASS(GridExport,LIST(GRINLET4(GridExport,0,4)))
 struct GridExportList : GridObject {
 	Ruby /*Array*/ list;
 	int n;
-
 	GRINLET3(0);
 };
 
@@ -367,25 +364,6 @@ GRID_INLET(GridStore,0) {
 		for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 		compute_indices(v,nc,nd);
 	}
-/*
-#define FOO(type) { \
-	Pt<type> p = (Pt<type>)r; \
-	if (size<=16) { \
-		Pt<type> foo = ARRAY_NEW(type,nd*size); \
-		switch (size) { \
-		case 1: for (int i=0; i<nd; i++, foo+=size) SCOPY<1>::f(foo,p+1*v[i]); break; \
-		case 2: for (int i=0; i<nd; i++, foo+=size) SCOPY<2>::f(foo,p+2*v[i]); break; \
-		case 3: for (int i=0; i<nd; i++, foo+=size) SCOPY<3>::f(foo,p+3*v[i]); break; \
-		case 4: for (int i=0; i<nd; i++, foo+=size) SCOPY<4>::f(foo,p+4*v[i]); break; \
-		default: for (int i=0; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
-		}; \
-		out[0]->give(size*nd,foo-size*nd); \
-	} else { \
-		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
-	} \
-}
-*/
-
 #define FOO(type) { \
 	Pt<type> p = (Pt<type>)r; \
 	if (size<=16) { \
@@ -408,47 +386,6 @@ GRID_INLET(GridStore,0) {
 		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
 	} \
 }
-
-/*
-#define FOO(type) { \
-	Pt<type> p = (Pt<type>)r; \
-	if (size<=16) { \
-		Pt<type> foo = ARRAY_NEW(type,nd*size); \
-		int i=0; \
-		switch (size) { \
-		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
-			foo[0] = p[v[i+0]]; \
-			foo[1] = p[v[i+1]]; \
-			foo[2] = p[v[i+2]]; \
-			foo[3] = p[v[i+3]]; \
-		} break; \
-		case 2: for (; i<nd&-4; i+=4, foo+=4*2) { \
-			SCOPY<2>::f(foo+0,p+2*v[i+0]); \
-			SCOPY<2>::f(foo+2,p+2*v[i+1]); \
-			SCOPY<2>::f(foo+4,p+2*v[i+2]); \
-			SCOPY<2>::f(foo+6,p+2*v[i+3]); \
-		} break; \
-		case 3: for (; i<nd&-4; i+=4, foo+=4*3) { \
-			SCOPY<3>::f(foo+0,p+3*v[i+0]); \
-			SCOPY<3>::f(foo+3,p+3*v[i+1]); \
-			SCOPY<3>::f(foo+6,p+3*v[i+2]); \
-			SCOPY<3>::f(foo+9,p+3*v[i+3]); \
-		} break; \
-		case 4: for (; i<nd&-4; i+=4, foo+=4*4) { \
-			SCOPY<4>::f(foo+0,p+4*v[i+0]); \
-			SCOPY<4>::f(foo+4,p+4*v[i+1]); \
-			SCOPY<4>::f(foo+8,p+4*v[i+2]); \
-			SCOPY<4>::f(foo+12,p+4*v[i+3]); \
-		} break; \
-		default:; }; \
-		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
-		out[0]->give(size*nd,foo-size*nd); \
-	} else { \
-		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
-	} \
-}
-*/
-
 	TYPESWITCH(r.nt,FOO,)
 #undef FOO
 } GRID_FINISH {
@@ -482,8 +419,8 @@ GRID_INLET(GridStore,1) {
 	COPY(Pt<int32>(sizeb,nn)+nn-nb,(Pt<int32>)in->dim->v,nb);
 	for (int i=0; i<nn; i++) to2[i] = fromb[i]+sizeb[i];
 	d=0;
-	/* find out when we can skip computing indices */
-	lsd=nn; /* lsd = Last Same Dimension */
+	// find out when we can skip computing indices
+	lsd=nn; // lsd = Last Same Dimension
 	while (lsd>=nn-in->dim->n) {
 		//!@#$ should actually also stop before blowing up packet size
 		lsd--;
@@ -494,8 +431,6 @@ GRID_INLET(GridStore,1) {
 	lsd++;
 	int cs = in->dim->prod(lsd-nn+in->dim->n);
 	in->set_factor(cs);
-	//fprintf(stderr,"lsd=%d, cs=%d\n",lsd,cs);
-	//WATCH(nn,fromb);WATCH(nn,sizeb);WATCH(nn,to2);
 } GRID_FLOW {
 	if (put_at.is_empty()) { // reassign
 		COPY(((Pt<T>)*(r.next ? r.next : &r))+in->dex, data, n);
@@ -503,18 +438,15 @@ GRID_INLET(GridStore,1) {
 	}
 	// put_at ( ... )
 	int nn=r.dim->n;
-	//WATCH(nn,fromb);
-	//WATCH(nn,to2);
 	int cs = in->factor; // chunksize
 	STACK_ARRAY(int32,v,lsd);
 	Pt<int32> x = Pt<int32>(wdex,nn);
 	while (n) {
-		/* here d is the dim# to reset; d=n for none */
+		// here d is the dim# to reset; d=n for none
 		for(;d<lsd;d++) x[d]=fromb[d];
-		/* do stuff here */
+		// do stuff here
 		COPY(v,x,lsd);
 		compute_indices(v,lsd,1);
-		//fprintf(stderr,"x[0]=%ld x[1]=%ld *v=%ld d=%d\n",x[0],x[1],*v,d);
 		COPY(((Pt<T>)r)+v[0]*cs,data,cs);
 		data+=cs;
 		n-=cs;
@@ -525,10 +457,10 @@ GRID_INLET(GridStore,1) {
 			x[d]++;
 			if (x[d]<to2[d]) break;
 		}
-		end:; /* why here ??? or why at all? */
+		end:; // why here ??? or why at all?
 		d++;
 	}
-	//end:; /* why not here ??? */
+	//end:; // why not here ???
 } GRID_FINISH {
 } GRID_END
 
@@ -616,7 +548,7 @@ GRID_INLET(GridOp2,0) {
 		if (in->dex+n <= loop) {
 			op->zip(n,data,rdata+in->dex);
 		} else {
-			/* !@#$ should prebuild and reuse this array when "loop" is small */
+			// !@#$ should prebuild and reuse this array when "loop" is small
 			STACK_ARRAY(T,data2,n);
 			int ii = mod(in->dex,loop);
 			int m = min(loop-ii,n);
@@ -864,7 +796,6 @@ GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 \end class GridInner
 
 /* **************************************************************** */
-
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
 \class GridOuter < GridObject
@@ -1112,9 +1043,7 @@ GRCLASS(GridType,LIST(GRINLET4(GridType,0,0)))
 struct GridRedim : GridObject {
 	\attr Dim *dim;
 	Grid dim_grid;
-
 	Grid temp; /* temp.dim is not of the same shape as dim */
-
 	~GridRedim() { if (dim) delete dim; }
 	\decl void initialize (Grid *d);
 	GRINLET3(0);
@@ -1172,7 +1101,6 @@ GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 \class GridJoin < GridObject
 struct GridJoin : GridObject {
 	\attr int which_dim;
-
 	Grid r;
 	GRINLET3(0);
 	GRINLET3(1);
@@ -1210,14 +1138,9 @@ GRID_INLET(GridJoin,0) {
 		int m = n+n*b/a;
 		STACK_ARRAY(T,data3,m);
 		Pt<T> data4 = data3;
-/*		if (sizeof(T)==1 && is_le()) {
-			while (n) {
-				*(int32*)data4 = (0x00ffffff & data) | (*(uint8*)data2 << 24);
-				n-=3; data+=3; data2+=1; data4+=4;
-			}
-		}
-*/		while (n) {
-			SCOPY<3>::f(data4,data); SCOPY<1>::f(data4+3,data2); n-=3; data+=3; data2+=1; data4+=4;
+		while (n) {
+			SCOPY<3>::f(data4,data); SCOPY<1>::f(data4+3,data2);
+			n-=3; data+=3; data2+=1; data4+=4;
 		}
 		out[0]->send(m,data3);
 	} else if (a+b<=16) {
@@ -1337,14 +1260,13 @@ GRID_INLET(GridTranspose,0) {
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
-	//fprintf(stderr,"d1=%d d2=%d na=%d nb=%d nc=%d nd=%d n=%d\n",d1,d2,na,nb,nc,nd,n);
 	STACK_ARRAY(T,res,na*nb*nc*nd);
 	if (dim1==dim2) { out[0]->send(n,data); return; }
 	for (; n; n-=na*nb*nc*nd, data+=na*nb*nc*nd) {
 		for (int a=0; a<na; a++) {
 			for (int b=0; b<nb; b++) {
 				for (int c=0; c<nc; c++) {
-					COPY(res+((c*nb+b)*na+a)*nd,
+					COPY(res +((c*nb+b)*na+a)*nd,
 					     data+((a*nb+b)*nc+c)*nd,nd);
 				}
 			}
@@ -1404,20 +1326,6 @@ GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0,4)),
 ) { IEVAL(rself,"install '@perspective',1,1"); }
 
 \end class GridPerspective
-
-/* **************************************************************** */
-/* [rtmetro] */
-/* This class has been removed. The following is an interesting comment: */
-/* Bangs in a geiger counter have a l*dt probability of occuring
-in a dt time interval. Therefore the time till the next event
-follows a Exp(l) law, for which:
-f(t) = l*exp(-l*t)
-F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
-F^-1(p) = -log(1-p)/l
-*/
-//return (uint64)(1000LL*ms*-log(1-drand()));
-
-/* **************************************************************** */
 
 static Numop2 *OP2(Ruby x) {
 	return FIX2PTR(Numop2,rb_hash_aref(op2_dict,x));

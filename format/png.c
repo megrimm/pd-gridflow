@@ -71,23 +71,17 @@ GRID_INLET(FormatPNG,0) {
 	if (!png) RAISE("!png");
 	info = png_create_info_struct(png);
 	if (!info) {
-		png_destroy_read_struct(&png, NULL, NULL);
-		RAISE("!info");
+		png_destroy_read_struct(&png, NULL, NULL); RAISE("!info");
 	}
 	if (setjmp(png_jmpbuf(png))) {
-	barf_out:
-		png_destroy_read_struct(&png, &info, NULL);
-		RAISE("png read error");
+		png_destroy_read_struct(&png, &info, NULL); RAISE("png read error");
 	}
 	png_init_io(png, f);
-	png_set_sig_bytes(png, 8);  /* we already read the 8 signature bytes */
-	png_read_info(png, info);  /* read all PNG info up to image data */
+	png_set_sig_bytes(png, 8);  // we already read the 8 signature bytes
+	png_read_info(png, info);   // read all PNG info up to image data
 	uint32 width, height;
 	int bit_depth, color_type;
-	png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type,
-		NULL, NULL, NULL);
-
-/////////////////////////////////////////////////////// part 2
+	png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type, 0,0,0);
 
 	png_bytepp row_pointers = 0;
 	if (color_type == PNG_COLOR_TYPE_PALETTE

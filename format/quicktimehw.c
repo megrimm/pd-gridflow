@@ -82,9 +82,9 @@ struct FormatQuickTimeHW : Format {
 		return Qfalse;
 	}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
-/*	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
+	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
 		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
-	}*/
+	}
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
 	if (force) {
@@ -115,7 +115,7 @@ struct FormatQuickTimeHW : Format {
 
 \def void size (int32 height, int32 width) {
 	if (dim) RAISE("video size already set!");
-	/* first frame: have to do setup */
+	// first frame: have to do setup
 	int32 v[] = {height, width, 3};
 	dim = new Dim(3,v);
 	quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
@@ -131,7 +131,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	if (dim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
 	} else {
-		/* first frame: have to do setup */
+		// first frame: have to do setup
 		dim = in->dim->dup();
 		quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
 		quicktime_set_cmodel(anim,colorspace);
@@ -184,8 +184,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	rb_call_super(argc,argv);
 }
 
-/* note: will not go through jMax data paths */
-/* libquicktime may be nice, but it won't take a filehandle, only filename */
+// libquicktime may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");

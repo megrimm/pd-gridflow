@@ -55,7 +55,7 @@ static void expect_convolution_matrix (Dim *d) {
 }
 
 struct PlanEntry {
-	int y,x; /* offset */
+	int y,x; // offset
 	bool neutral;
 };
 
@@ -115,9 +115,6 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 				op_para->map(1,foo,rh);
 				absorbent = op_fold->on(rh)->is_neutral(foo[0],at_right);
 			}
-			//fprintf(stderr,"2: rh=%f, foo[0]=%f, neutral=%s, absorbent=%s\n",
-			//	0.0+rh,0.0+foo[0], boo[neutral?1:0],boo[absorbent?1:0]);
-
 			if (absorbent) continue;
 			plan[i].y = y;
 			plan[i].x = x;
@@ -157,18 +154,14 @@ GRID_INLET(GridConvolve,0) {
 	int n2 = sx*a.dim->prod(2);
 	STACK_ARRAY(T,buf,n);
 	STACK_ARRAY(T,buf2,n2);
-//	gfpost("%s",info());
-//	fprintf(stderr,"plann=%d\n",plann);
 	T orh=0;
 	for (int iy=0; iy<day; iy++) {
 		op2_put->map(n,buf,*(T *)seed);
-		//for (int i=0; i<sx; i++) buf[i]=*(T *)seed; // !@#$ redo this with OP2(put)
 		for (int i=0; i<plann; i++) {
 			int jy = plan[i].y;
 			int jx = plan[i].x;
 			T rh = ((Pt<T>)b)[jy*dbx+jx];
 			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
-				//copy_row(buf2,sx,iy+jy-margy,jx-margx);
 				copy_row(buf2,sx,iy+jy-margy,-margx);
 				if (!plan[i].neutral) op_para->map(n2,buf2,rh);
 			}
@@ -219,28 +212,21 @@ struct GridScaleBy : GridObject {
 	}
 };
 
-/* processing a grid coming from inlet 0 */
 GRID_INLET(GridScaleBy,0) {
-/* this section processes the header and accepts or rejects the grid */
 	Dim *a = in->dim;
 	expect_picture(a);
-	/* computing the output's size */
+	// computing the output's size
 	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
 
-	/* configuring the input format */
+	// configuring the input format
 	in->set_factor(a->get(1)*a->get(2));
 } GRID_FLOW {
-/* this section processes one packet of grid content */
 	int rowsize = in->dim->prod(1);
 	STACK_ARRAY(T,buf,rowsize*scalex);
-
 	int chans = in->dim->get(2);
-	
-	/* for every picture row in this packet... */
+	// for every picture row in this packet...
 	for (; n>0; data+=rowsize, n-=rowsize) {
-
-		/* scale the line x-wise */
 		int p=0;
 		switch (chans) {
 		case 3:
@@ -269,12 +255,9 @@ GRID_INLET(GridScaleBy,0) {
 				}
 			}
 		}
-		/* send the x-scaled line several times (thus y-scaling) */
 		for (int j=0; j<scaley; j++) out[0]->send(rowsize*scalex,buf);
 	}
 } GRID_FINISH {
-/* last section: things to do after the transmission. */
-/* nothing to do here */
 } GRID_END
 
 static void expect_scale_factor (Dim *dim) {
@@ -284,8 +267,6 @@ static void expect_scale_factor (Dim *dim) {
 
 GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
-/* the constructor accepts a scale factor as an argument */
-/* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 \def void initialize (Grid *factor) {
 	scale.constrain(expect_scale_factor);
 	rb_call_super(argc,argv);
@@ -294,7 +275,6 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-/* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 	\grdecl
 ) { IEVAL(rself,"install '@scale_by',2,1"); }
@@ -303,7 +283,6 @@ GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 
 /* ---------------------------------------------------------------- */
 /* "@downscale_by" does quick downscaling of pictures by integer factors */
-
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
 \class GridDownscaleBy < GridObject
@@ -327,7 +306,6 @@ struct GridDownscaleBy : GridObject {
 GRID_INLET(GridDownscaleBy,0) {
 	Dim *a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
-//	if (a->get(2)!=3 && a->get(2)!=4) RAISE("3 or 4 chans please");
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
@@ -577,7 +555,6 @@ GRID_INLET(DrawPolygon,0) {
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
 				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl);
-				//fprintf(stderr,"xs=%d xe=%d xl=%d\n",xs,xe,xl);
 				if (xs>=xe) continue; /* !@#$ WHAT? */
 				while (xe-xs>=16) { op->zip(16*cn,data2+cn*xs,cd); xs+=16; }
 				op->zip((xe-xs)*cn,data2+cn*xs,cd);
@@ -649,15 +626,11 @@ struct DrawImage : GridObject {
 
 template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0) {
 	count++;
-//	fprintf(stderr,"draw_segment(0x%08lx,0x%08lx,%d,%d)\n",
-//		(long)(T*)obuf, (long)(T*)ibuf, ry, x0);
-	if (ry<0 || ry>=image.dim->get(0)) return; /* outside of image */
+	if (ry<0 || ry>=image.dim->get(0)) return; // outside of image
 	int sx = in[0]->dim->get(1), rsx = image.dim->get(1);
 	int sc = in[0]->dim->get(2), rsc = image.dim->get(2);
 	Pt<T> rbuf = ((Pt<T>)image) + ry*rsx*rsc;
-	//if (x0<0) return; // GAAAH
-	//if (x0+rsx>sx) return; // GAAAH
-	if (x0>sx || x0<=-rsx) return; /* outside of buffer */
+	if (x0>sx || x0<=-rsx) return; // outside of buffer
 	int n=rsx;
 	if (x0+n>sx) n=sx-x0;
 	if (x0<0) { rbuf-=rsc*x0; n+=x0; x0=0; }
@@ -701,8 +674,6 @@ GRID_INLET(DrawImage,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
 	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
-//	fprintf(stderr,"rsy=%d rsx=%d sy=%d sx=%d py=%d px=%d\n",
-//		rsy,rsx,sy,sx,py,px);
 } GRID_FLOW {
 	int y = in->dex/in->factor;
 	if (position.nt != int32_e) RAISE("position has to be int32");
@@ -710,7 +681,6 @@ GRID_INLET(DrawImage,0) {
 	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
 	for (; n; y++, n-=in->factor, data+=in->factor) {
 		int ty = div2(y-py,rsy);
-		//fprintf(stderr,"y=%d py=%d ty=%d\n",y,py,ty);
 		if (tile || ty==0) {
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
 			COPY(data2,data,in->factor);
@@ -727,7 +697,6 @@ GRID_INLET(DrawImage,0) {
 		}
 	}
 } GRID_FINISH {
-//	fprintf(stderr,"draw_segment count = %d\n",count);
 } GRID_END
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END

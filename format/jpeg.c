@@ -21,8 +21,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* !@#$ not handling abort on compress */
-/* !@#$ not handling abort on decompress */
+//!@#$ not handling abort on compress
+//!@#$ not handling abort on decompress
 
 #include "../base/grid.h.fcs"
 /* removing macros (removing warnings) */
