@@ -61,7 +61,7 @@ $conf={
 	:OPTIONS => [],
 	:DEFINES => {
 		:JMAX_ARCH => "i686-linux",
-		:RUBY_PREFIX => CONFIG['sitedir'],
+		:RUBY_PREFIX => CONFIG['prefix'],
 		:PREFIX => "/usr/local",
 		:CPU => nil,
 	},
@@ -202,7 +202,7 @@ $LD_LIBRARY_PATH = (
 		["/usr/lib","/lib"]).uniq
 
 # making it easier for everybody I hope:
-["/sw","/usr/local",ENV["home"]].each do|base|
+["/Applications/Pd.app/Contents/Resources","/sw","/usr/local",ENV["home"]].each do|base|
 	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
 	   not $LIBRARY_PATH.include? "#{base}/lib" then
 		$conf[:LDSOFLAGS].unshift "-L#{base}/lib"
@@ -740,7 +740,6 @@ def usage
 	log << "[--use-cpu cpu] "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
-	log << "[--prefix directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -783,7 +782,7 @@ while ARGV.length>0 do
 	when "--jmax-arch"; $conf[:DEFINES][:JMAX_ARCH]=ARGV.shift
 	when "--help"; usage; exit 0
 	when "--prefix", "--ruby-prefix"
-		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift+"/lib/ruby/site_ruby"
+		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
@@ -1128,7 +1127,8 @@ mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"
 mf.sub!(/^site-install:\s*install/,"site-install: ")
-mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
+#mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
+mf.sub! /^prefix = .*$/, "prefix = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
 #	(if Config::CONFIG["arch"] =~ /darwin/
