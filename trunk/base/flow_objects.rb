@@ -320,13 +320,14 @@ class GridUnpack < GridObject
   end
   def _0_rgrid_begin
     inlet_dim(0)==[@n] or raise "expecting Dim[#{@n}], got Dim#{@dim}"
-    inlet_set_factor @n
+    inlet_set_factor 0,@n
   end
   def _0_rgrid_flow data
-    nt = inlet_nt
-    data.unpack("l*").each_with_index{|x,i| send_out i,x }
+    @ps = GridFlow.packstring_for_nt inlet_nt 0
+    data.unpack(@ps).each_with_index{|x,i| send_out i,x }
   end
-  install_rgrid 0
+  def _0_rgrid_end; end
+  install_rgrid 0, true
   install "#unpack", 1, 0
 end
 
