@@ -416,6 +416,9 @@ void FormatVideoDev_option (FormatVideoDev *$, int ac, const fts_atom_t *at) {
 		FormatVideoDev_tuner($,value);
 	} else if (sym == SYM(norm)) {
 		FormatVideoDev_norm($,value);
+	} else if (sym == SYM(size)) {
+		int value2 = GET(2,int,42424242);
+		FormatVideoDev_size($,value,value2);
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -473,10 +476,13 @@ Format *FormatVideoDev_open (FormatClass *class, int ac, const fts_atom_t *at, i
 		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
 
+/*
 		fts_set_symbol(at+0,SYM(size));
 		fts_set_int(at+1,vcaps.maxheight);
 		fts_set_int(at+2,vcaps.maxwidth);
 		$->cl->option((Format *)$,3,at);
+*/
+		FormatVideoDev_size($,vcaps.maxheight,vcaps.maxwidth);
 	}
 
 	{
