@@ -42,18 +42,18 @@
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
-		GridFlow.whatever(:help,name,"gridflow/#{file}.pd")
+		GridFlow.fclasses_set[name].set_help "gridflow/#{file}.pd"
 	rescue Exception => e
 		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
 	end
 }
 
-#GridFlow.whatever(:gui,"frame .controls.gridflow -relief ridge -borderwidth 2\n")
-#GridFlow.whatever(:gui,"button .controls.gridflow.button -text FOO\n")
-#GridFlow.whatever(:gui,"pack .controls.gridflow.button -side left\n")
-#GridFlow.whatever(:gui,"pack .controls.gridflow -side right\n")
+#GridFlow.gui "frame .controls.gridflow -relief ridge -borderwidth 2\n"
+#GridFlow.gui "button .controls.gridflow.button -text FOO\n"
+#GridFlow.gui "pack .controls.gridflow.button -side left\n"
+#GridFlow.gui "pack .controls.gridflow -side right\n"
 
-GridFlow.whatever(:gui,%q{
+GridFlow.gui %q{
 
 if {[catch {
 	# pd 0.37
@@ -62,11 +62,7 @@ if {[catch {
 	set gfmenu .mbar.gridflow
 }]} {
 	# pd 0.36
-	###the problem is that GridFlow.whatever:bind requires 0.37
-	#menubutton .mbar.gridflow -text "GridFlow" -menu .mbar.gridflow.menu
-	#menu .mbar.gridflow.menu
-	#pack .mbar.gridflow
-	#set gfmenu .mbar.gridflow.menu
+	###the problem is that GridFlow.bind requires 0.37
 }
 $gfmenu add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
 $gfmenu add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
@@ -154,19 +150,10 @@ if {[catch {
 	listener_new .ruby "Ruby" {ruby_eval}
 }
 
-})
-
-
-# enable Pd-specific code
-module GridFlow
-  class Peephole
-    GridFlow.whatever :setwidget, "#peephole"
-    #GridFlow.whatever :addtomenu, "#peephole"
-  end
-end
+} # GridFlow.gui
 
 if false
-GridFlow.whatever(:gui,%q{
+GridFlow.gui %q{
 catch {
 	if {[file exists ${pd_guidir}/lib/gridflow/icons/peephole.gif]} {
 		global pd_guidir
@@ -177,5 +164,5 @@ catch {
 		puts $stderr GAAAH
 	}
 }
-})
+} # GridFlow.gui
 end
