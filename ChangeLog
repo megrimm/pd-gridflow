@@ -1,5 +1,10 @@
 /* $Id$ */
 
+version 0.7.6 (head):
+
+ * GridFlow runs on MacOS 10.2
+ * file suffix detector is now extensible
+
 version 0.7.5 (2003.09.28):
 
  * type aliases: int32,i32,i; int16,i16,s; uint8,u8,b; float32,f32,f
@@ -34,6 +39,8 @@ version 0.7.5 (2003.09.28):
      pd_netreceive: receive from a pd system via UDP
      @eight: (like @four, but with eight of them ;-)
      peephole: like [@out x11] but as inset of a patcher (jMax 2.5 only)
+ * support for upcoming jMax 4.1        
+ * "open file" autodetects how to handle a file, by filename suffix
 
 version 0.7.2 (2003.04.24):
 
