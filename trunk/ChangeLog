@@ -1,16 +1,17 @@
 /* $Id$ */
 
 version 0.4.1 (head):
- * cvs -d :pserver:anonymous@hostname.2y.net:/home/cvs/gridflow co .
- * fts emulation moved to c/src/ and tests moved to tests/
+ * cvs repository now has public access
+ * now can run configure without jmax/fts being present
+ * standalone version now works on Silicon Graphics and Corel Netwinder.
  * MPEG format readonly (single file at a time; mpeg video layer only)
  * grid TCP: non-blocking read
  * fixed all known memory leaks
- * now can run ./configure without jmax/fts being present
  * X11 Shared Memory now disables itself properly on remote display
-
- * [todo] updated help files
- * [todo] updated help screenshots in the manual
+ * updated help files
+ * updated help screenshots in the manual
+ * fixed profiler bugs
+ * fts emulation moved to c/src/ and tests moved to tests/
 
 version 0.4.0 (2001.11.28):
  * package name changed from "video4jmax" to "gridflow"

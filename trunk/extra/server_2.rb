@@ -48,8 +48,7 @@ loop {
           puts "incoming connection (total: #{socks.length-1})"
 	else
           other = socks.find_all{|x|not TCPServer===x} - [s]
-          # stuff = s.read_at_most 16
-          stuff = s.bugfree_read_at_most 16
+          stuff = s.bugfree_read_at_most 1024
           p stuff
           (s.close; socks.delete s) if not stuff or stuff.length==0
           other.each {|x|

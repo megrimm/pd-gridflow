@@ -5,38 +5,41 @@
 Distribution (0.4.0)
 [x] send mail about name change
 [x] rearrange both web sites
-[ ] send announcement
+[x] send announcement (jmaxvideo,jmax,0xff,fm.net)
 
 Distribution (0.4.1)
 [x] open anonymous cvs
 [ ] rearrange both web sites
-[ ] send announcement
+[ ] send announcement (jmaxvideo,jmax,0xff,fm.net)
 
-Distribution (0.4.x)
-[ ] prepare gridflow-images-0.4
+Distribution (0.5.x)
+[ ] prepare gridflow-images-0.5
 
 Installation
+[!] "ARCH" moved into configure.
+[!] de-jmax-ify the build process.
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
 [x] add --no-profiler and non-pentium autodetect
 [ ] installable doc, installable includes
-[ ] can compile without jmax installed at all
+[x] can compile without jmax installed at all
 [ ] introduce jMax 3.0 support
 [ ] phase out jMax 2.4 support
 
 Documentation / Help / HelpScreenshot Update (all "!")
 [x|x|x] @in, @video_in_file
 [x|x|x] @out, @video_out_file, @video_out
-[x| | ] @scale_by
-[x| | ] @import, @export
-[x| | ] @store, @redim, @convolve
-[x| | ] @, @!
-[x| | ] @fold, @inner, @outer
-[x| | ] @for, @dim
-[x| | ] @print, @global
-[x| | ] @two, @three, @four
-[x| | ] @contrast, @posterize
-[x| | ] @identity_transform, @spread, @scale_to
+[x|x|x] @scale_to, @scale_by
+[x|x|x] @import, @export
+[x|x|x] @store, @redim
+[x|x|x] @, @!
+[x|x|x] @fold, @inner, @outer
+[x|x|x] @for, @dim
+[x|x|x] @global
+[x|x|x] @two, @three, @four
+[x|x|x] @contrast, @posterize
+[x|x|x] @identity_transform, @spread
+[x|x|x] @convolve
 [x|-|-] format ppm
 [x|-|-] format targa
 [x|-|-] format videodev
@@ -81,6 +84,7 @@ Computation Objects
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @pfold, @rfold, @prfold
+[ ] @polygons
 [ ] @matrix_inverse, @matrix_solve
 [ ] @transpose (dimension swapping and/or index reversing)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
@@ -163,6 +167,8 @@ UnitTesting/Bugs
 [x] leak in all FileFormat#close (?)
 [x] add alloc-tracing to find all leaks
 [ ] TCP server socket busy even after kill
+[ ] make better detection of libmpeg version
+[ ] libmpeg fubar on SuSE
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
