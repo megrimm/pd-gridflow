@@ -34,8 +34,6 @@
 #include <quicktime/lqt_codecinfo.h>
 #endif
 
-//#include <quicktime/qtprivate.h> // HACK
-
 \class FormatQuickTimeHW < Format
 struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
@@ -79,7 +77,6 @@ struct FormatQuickTimeHW : Format {
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
 	int length2 = quicktime_video_length(anim,track);
-//	gfpost("lengths: %3d %3d",length,length2);
 	if (nframe >= length) {
 //		gfpost("nframe=%d length=%d length2=%d",nframe,length,length2);
 		return Qfalse;
@@ -94,12 +91,10 @@ struct FormatQuickTimeHW : Format {
 		sy = force->get(0);
 		sx = force->get(1);
 	}
-//	quicktime_set_row_span(anim,sx);
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels);
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	int result;
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
-//	result = quicktime_decode_video (anim,                           rows,track);
 	int32 v[] = { sy, sx, channels };
 	out[0]->begin(new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out[0]->dim->prod(1);
@@ -110,7 +105,6 @@ struct FormatQuickTimeHW : Format {
 
 //!@#$ should also support symbol values (how?)
 \def void parameter (Symbol name, int32 value) {
-	//gfpost("parameter %s %d",(char*)rb_sym_name(name), value);
 	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
 }
 
@@ -216,10 +210,6 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	quicktime_set_cpus(anim,1);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
-//	quicktime_stsd_table_t *tb = 
-//		anim->moov.trak[0]->mdia.minf.stbl.stsd.table;
-//	gfpost("MOOV says size=(%d,%d) and dpi=(%f,%f)",
-//		tb->height,tb->width,tb->dpi_vertical,tb->dpi_horizontal);
 }
 
 GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0,4)),

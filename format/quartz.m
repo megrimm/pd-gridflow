@@ -74,9 +74,6 @@
 			*p++ = 0;
 		}
 	}
-//	NSRect r = [self frame];
-//	r.size.height=h;
-//	r.size.width=w;
 	NSSize s = {w,h};
 	[[self window] setContentSize: s];
 	return self;
@@ -91,9 +88,6 @@
 
 - (id) drawRect: (NSRect)rect {
 	[super drawRect: rect];
-//L	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
-//		rect.origin.x, rect.origin.y,
-//		rect.size.width, rect.size.height);
 	if (![self lockFocusIfCanDraw]) return self;
 	CGContextRef g = (CGContextRef)
 		[[NSGraphicsContext graphicsContextWithWindow: [self window]]
@@ -101,8 +95,6 @@
 	CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
 	CGDataProviderRef dp = CGDataProviderCreateWithData(
 		NULL, imdata, imheight*imwidth*4, NULL);
-//	fprintf(stderr,"imheight=%d imwidth=%d imdata=%08lx dp=%08lx\n",
-//		imheight,imwidth,(long)imdata,(long)dp);
 	CGImageRef image = CGImageCreate(imwidth, imheight, 8, 32, imwidth*4, 
 		cs, kCGImageAlphaFirst, dp, NULL, 0, kCGRenderingIntentDefault);
 	CGDataProviderRelease(dp);
@@ -155,9 +147,6 @@ void FormatQuartz_tick(FormatQuartz *self) {
 		[NSApp sendEvent: e];
 	}
 	[NSApp updateWindows];
-	//[self->widget setNeedsDisplay: YES];
-	//[self->window update];
-	//[self->widget display];
 	[self->window flushWindowIfNeeded];
 }
 
@@ -176,7 +165,6 @@ GRID_INLET(FormatQuartz,0) {
 } GRID_FLOW {
 	int off = in->dex/in->dim->prod(2);
 	int c=in->dim->get(2);
-//	gfpost("off=%d n=%d",off,n);
 	NSView *w = widget;
 	Pt<uint8> data2 = GFView_imageData(w)+off*4;
 //	convert_number_type(n,data2,data);
@@ -199,7 +187,6 @@ GRID_INLET(FormatQuartz,0) {
 	}
 } GRID_FINISH {
 	GFView_display(widget);
-//	[widget display];
 	FormatQuartz_tick(this);
 } GRID_END
 
@@ -208,26 +195,18 @@ GRID_INLET(FormatQuartz,0) {
 	NSRect r = {{0,0}, {320,240}};
 	window = [[NSWindow alloc]
 		initWithContentRect: r
-// NSBorderlessWindowMask for no border
 		styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
-//		backing: NSBackingStoreNonretained
-//		backing: NSBackingStoreRetained
 		backing: NSBackingStoreBuffered
 		defer: YES
 		];
 	widget = [[GFView alloc] initWithFrame: r];
 	[window setContentView: widget];
-//	[window setAutodisplay: YES];
 	[window setTitle: @"GridFlow"];
 	[window makeKeyAndOrderFront: NSApp];
-//	[NSApp finishLaunching];
-//	[NSApp activateIgnoringOtherApps: YES];
 	[window orderFrontRegardless];
 	wc = [[NSWindowController alloc]
 		initWithWindow: window];
-	MainLoop_add(this, (void(*)(void*)) FormatQuartz_tick);
-//	[window makeMainWindow]; //doesn't work
-//	[window makeKeyWindow];  //doesn't work
+	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatQuartz_tick));
 	[window makeFirstResponder: widget];
 	gfpost("mainWindow = %08lx",(long)[NSApp mainWindow]);
 	gfpost(" keyWindow = %08lx",(long)[NSApp keyWindow]);
@@ -236,15 +215,11 @@ GRID_INLET(FormatQuartz,0) {
 }
 
 \def void delete_m () {
-	//MainLoop_remove(this);
-	//[GFView freeAllocatedObjects];
 	[window autorelease];
 }
 
 \def void close () {
-	MainLoop_remove(this);
-	//[GFView freeAllocatedObjects];
-	//dealloc_image();
+	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
 	rb_call_super(argc,argv);
 	[window autorelease];
 	[window setReleasedWhenClosed: YES];
@@ -260,13 +235,6 @@ GRCLASS(FormatQuartz,LIST(GRINLET2(FormatQuartz,0,4)),
 	[NSApplication sharedApplication];
 	IEVAL(rself,"install 'FormatQuartz',1,1;"
 	"conf_format 6,'quartz','Apple Quartz/Cocoa'");
-
-//	id mainMenu = [[NSMenu alloc] initWithTitle: @"GridFlow"];
-//	[w makeFirstResponder: [w contentView]];//???
-//	[NSApp setMainMenu: mainMenu];
-//	[w orderFront: NSApp];
-//	[NSApp run];
-
 }
 
 \end class FormatQuartz

@@ -81,14 +81,17 @@ class<<self
 	attr_accessor :verbose
 	attr_reader :alloc_set
 	attr_reader :fobjects_set
+	attr_reader :fclasses_set
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
+	attr_reader :formats
 	alias gfpost post
 end
 
 @subprocesses={}
 @verbose=false
 @data_path=[]
+@formats={}
 
 def self.hunt_zombies
 	#STDERR.puts "GridFlow.hunt_zombies"
@@ -478,3 +481,4 @@ END {
 GridFlow.routine
 
 require "gridflow/base/flow_objects.rb"
+require 'gridflow/format/main.rb'

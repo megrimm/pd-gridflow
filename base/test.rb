@@ -443,7 +443,7 @@ def test_nonsense
 end
 
 def test_store
-	a = FObject["@in ppm file #{$imdir}/teapot.ppm"]
+	a = FObject["@in file #{$imdir}/teapot.png"]
 	b = FObject["@store"]
 	c = FObject["@out x11"]
 	a.connect 0,b,1
@@ -511,8 +511,8 @@ def test_ppm2
 	ra.connect 0,pa,1
 	ra.send_in 0,"0 0"
 	gout.send_in 0,"timelog 1"
-	gin.send_in 0,"open ppm file #{$imdir}/teapot.ppm"
-#	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
+	gin.send_in 0,"open file #{$imdir}/teapot.png"
+#	gin.send_in 0,"open file #{$imdir}/g001.jpg"
 	gin.send_in 0
 #	40.times { store.send_in 0 }
 	loop { store.send_in 0 }
@@ -671,7 +671,7 @@ end
 def test_layer
 	
 	gin = FObject["@in png file ShaunaKennedy/atmosphere-bleu.png"]
-#	gin1 = FObject["@in ppm file #{$imdir}/r001.ppm"]
+#	gin1 = FObject["@in file #{$imdir}/r001.jpg"]
 #	gin = FObject["@join 2 {240 320 1 # 128}"]
 #	gin1.connect 0,gin,0
 
@@ -710,9 +710,9 @@ Images = [
 #	"png file ShaunaKennedy/atmosphere.png",
 #	"targa file #{$imdir}/tux.tga",
 #	"png file #{$imdir}/lena.png",
-	"jpeg file #{$imdir}/ruby0216.jpg",
-	"ppm file #{$imdir}/g001.ppm",
-	"targa file #{$imdir}/teapot.tga",
+	"file #{$imdir}/ruby0216.jpg",
+	"file #{$imdir}/g001.jpg",
+	"file #{$imdir}/teapot.tga",
 	"grid gzfile #{$imdir}/foo.grid.gz",
 	"grid gzfile #{$imdir}/foo2.grid.gz",
 #	"videodev /dev/video0",
@@ -779,7 +779,7 @@ def test_formats_write
 	i = FObject["@export_list"]; h.connect 0,i,0
 	x = Expect.new; i.connect 0,x,0
 	[
-		["ppm file", "#{$imdir}/g001.ppm"],
+		["ppm file", "#{$imdir}/g001.jpg"],
 		["targa file", "#{$imdir}/teapot.tga"],
 		["targa file", "#{$imdir}/tux.tga"],
 		["jpeg file", "#{$imdir}/ruby0216.jpg"],
@@ -916,8 +916,8 @@ class FRoute2 < FObject
 end
 
 def test_aalib
-#	gin = FObject["@in ppm file #{$imdir}/r001.ppm"]
-	gin = FObject["@in ppm file #{$animdir}/b.ppm.cat"]
+#	gin = FObject["@in ppm file #{$imdir}/r001.jpg"]
+	gin = FObject["@in ppm file #{$animdir}/b.jpg.cat"]
 	grey = FObject["@rgb_to_greyscale"]
 	cont = FObject["@ << 1"]
 	clip = FObject["@ min 255"]
@@ -955,7 +955,7 @@ def test_store2
 		FObject["@store"],
 		FObject["@out x11"]]
 	(0..4).each {|x| o[x].connect 0,o[x+1],0 }
-	q = FObject["@in ppm file images/r001.ppm"]
+	q = FObject["@in ppm file images/r001.jpg"]
 	q.connect 0,o[4],1
 	q.send_in 0
 	o[0].send_in 0
@@ -967,7 +967,7 @@ def test_remap
 	rot = FObject["@rotate 4000"]
 	rem.connect 1,rot,0
 	rot.connect 0,rem,1
-	gin = FObject["@in ppm file #{$imdir}/teapot.ppm"]
+	gin = FObject["@in ppm file #{$imdir}/teapot.png"]
 	gout = FObject["@out x11"]
 	gin.connect 0,rem,0
 	rem.connect 0,gout,0
@@ -977,7 +977,7 @@ end
 
 def test_asm
 	GridFlow.verbose=false
-	a = FObject["@in ppm file images/r001.ppm"]
+	a = FObject["@in ppm file images/r001.jpg"]
 	aa = FObject["@cast uint8"]
 	b = FObject["@store"]
 	d = FObject["@store"]
@@ -1051,14 +1051,12 @@ end
 #test_polygon
 #test_math
 #test_munchies
-#test_image "ppm file #{$imdir}/g001.ppm"
-#test_image "ppm gzfile #{$imdir}/g001.ppm.gz"
 #test_image "grid file #{$imdir}/foo.grid"
 #test_image "grid gzfile #{$imdir}/foo.grid.gz"
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim "open ppm file #{$imdir}/g001.ppm"#,"loop 0"
+#test_anim "open file #{$imdir}/g001.jpg"#,"loop 0"
 #test_anim "open ppm file #{$animdir}/b.ppm.cat"
 #test_anim "open jpeg file #{$imdir}/rgb.jpeg.cat"
 #test_anim "open quicktime file BLAH"
