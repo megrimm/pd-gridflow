@@ -496,11 +496,12 @@ def write_one_page file
 	STDERR.puts "writing #{output_name}"
 	STDOUT.reopen output_name, "w"
 	write_header
-	mk(:tr) { mk(:td,:colspan,2) {
-		$nodes[file].display_index
+	tree = $nodes[file]
+	mk(:tr) { mk(:td,:colspan,2) { mk(:div,:cols,tree.att["indexcols"]||1) {
+		tree.display_index
 		puts "<br><br>"
-	}}
-	$nodes[file].display
+	}}}
+	tree.display
 	write_footer
 	puts ""
 	puts ""

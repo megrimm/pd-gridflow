@@ -34,6 +34,7 @@ class PureDataFileWriter
 		ol.each_with_index {|so,i|
 			next if not so.instance_eval{defined? @outlets}
 			so.outlets.each_with_index {|conns,outlet|
+				next if not conns
 				conns.each {|target,inlet|
 					@f.puts "#X connect #{i} #{outlet} #{ol.index target} #{inlet};"
 				}

@@ -67,7 +67,6 @@ Architecture
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] *>>8 operator
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
@@ -141,7 +140,6 @@ Effects
 [ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
 [ ] HSV<->RGB; hue shifting
 [ ] HSV<->HSL
-[ ] RGB<->YUV
 [ ] effectv
 [ ] @draw_lines, @draw_points
 [ ] blinds, ...
@@ -159,6 +157,8 @@ Input/Output
 [ ] Grid: text version of the format (?)
 [ ] jMax4, Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
 [ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX
+[ ] RubyX11 0.6
+[ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] in-place editing (rw mode)
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos. (?)
@@ -176,7 +176,6 @@ Format
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM, GIF, PNG support (+ reg ourselves in libpng.org's applist)
 [ ] fork: is a new format, for e.g. multiple singleton drivers
-[ ] Videodev: fix RGB<->BGR<->??? palette issues
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
 [ ] Unix-for-jMax
@@ -255,6 +254,7 @@ Bugs
 [ ] ruby SecurityError: Insecure operation - exist?
 	(trying to load ~/.gridflow_startup)
 	(this is one error message from HELL; makes no sense at all)
+[ ] is there still a problem with videodev rgb vs bgr ?
 
 how about creating aliases like "open window" = "open x11 here" (or arbitrary
 user-defined sequence of messages settable in ~/.gridflow_startup)  and "open

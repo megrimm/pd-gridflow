@@ -949,7 +949,7 @@ def test_outer
 	g.send_in 0, :profiler_dump
 end
 
-def test_jmax_patch filename
+def test_jmax_to_pd filename
 	require "gridflow/extra/jmax_format.rb"
 	require "gridflow/extra/puredata_format.rb"
 	jfr = JMaxFileReader.new(File.open(filename),FObject)

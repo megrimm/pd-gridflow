@@ -61,7 +61,8 @@ kloc::
 	configure Makefile.gf extra/*.rb
 
 edit::
-	(nedit base/grid.[ch] base/number.c base/flow_objects.c base/main.c \
+	(nedit base/grid.[ch] base/number.c base/flow_objects.c \
+	base/flow_objects.rb base/main.c \
 	*/main.rb base/test.rb &)
 
 CONF = config.make config.h Makefile
