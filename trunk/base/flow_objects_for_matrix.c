@@ -35,9 +35,9 @@ void expect_complete_matrix (Dim *d) {
 
 \class GridMatrixSolve < GridObject
 struct GridMatrixSolve : GridObject {
-	Operator2 *op_sub;
-	Operator2 *op_mul;
-	Operator2 *op_div;
+	Numop2 *op_sub;
+	Numop2 *op_mul;
+	Numop2 *op_div;
 	Grid matrix;
 	GridMatrixSolve() {
 		matrix.constrain(expect_complete_matrix);
