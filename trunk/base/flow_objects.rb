@@ -302,16 +302,16 @@ end
 #-------- fClasses for: math
 
 class GridComplexSq < FPatcher
-  FObjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
-  Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
-  def initialize() super(FObjects,Wires,1) end
+  @fobjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
+  @wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
+  def initialize() super end
   install "@complex_sq", 1, 1
 end
 
 class GridRavel < FPatcher
-	FObjects = ["@dim","@fold * 1","@redim {1}","@redim {42}"]
-	Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,3,1, -1,0,3,0, 3,0,-1,0]
-	def initialize; super(FObjects,Wires,1) end
+	@fobjects = ["@dim","@fold * 1","@redim {1}","@redim {42}"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,3,1, -1,0,3,0, 3,0,-1,0]
+	def initialize() super end
 	install "@ravel", 1, 1
 end
 
@@ -319,10 +319,10 @@ end
 
 # linear solarization
 class GridSolarize < FPatcher
-	FObjects = ["@ & 255","@ << 1","@ inv+ 255","@! abs","@ inv+ 255"]
-	Wires = [4,0,-1,0]
-	for i in 0..4 do Wires.concat [i-1,0,i,0] end
-	def initialize; super(FObjects,Wires,1) end
+	@fobjects = ["@ & 255","@ << 1","@ inv+ 255","@! abs","@ inv+ 255"]
+	@wires = [4,0,-1,0]
+	for i in 0..4 do @wires.concat [i-1,0,i,0] end
+	def initialize() super end
 	install "@solarize", 1, 1
 end		
 
@@ -342,7 +342,7 @@ class GridCheckers < GridObject
 end
 
 class GridScaleTo < FPatcher
-	FObjects = [
+	@fobjects = [
 			"@for {0 0} {42 42} {1 1}",
 			"@ *",
 			"@ /",
@@ -351,21 +351,21 @@ class GridScaleTo < FPatcher
 			"@redim {2}",
 			"@finished",
 	]
-	Wires = []
-	for i in 1..3 do Wires.concat [i-1,0,i,0] end
-	Wires.concat [3,0,-1,0, 4,0,5,0, 5,0,1,1, 6,0,0,0,
+	@wires = []
+	for i in 1..3 do @wires.concat [i-1,0,i,0] end
+	@wires.concat [3,0,-1,0, 4,0,5,0, 5,0,1,1, 6,0,0,0,
 		-1,0,4,0, -1,0,3,1, -1,0,6,0, -1,1,0,1, -1,1,2,1]
 	def initialize(size)
 		(size.length==2 and Numeric===size[0] and Numeric===size[1]) or
 			raise "expecting {height width}"
-		super(FObjects,Wires,2)
+		super
 		send_in 1, size
 	end
 	install "@scale_to", 2, 1
 end
 
 class GridContrast < FPatcher
-	FObjects = [
+	@fobjects = [
 		"@ inv+ 255",
 		"@ *",
 		"@ >> 8",
@@ -375,11 +375,11 @@ class GridContrast < FPatcher
 		"@ min 255",
 		"@ max 0",
 	] 
-	Wires = []
-	for i in 0..7 do Wires.concat [i-1,0,i,0] end
-	Wires.concat [7,0,-1,0, -1,1,1,1, -1,2,4,1]
+	@wires = []
+	for i in 0..7 do @wires.concat [i-1,0,i,0] end
+	@wires.concat [7,0,-1,0, -1,1,1,1, -1,2,4,1]
 	def initialize(iwhiteness=256,contrast=256)
-		super(FObjects,Wires,3)
+		super
 		send_in 1, iwhiteness
 		send_in 2, contrast
 	end
@@ -387,7 +387,7 @@ class GridContrast < FPatcher
 end
 
 class GridSpread < FPatcher
-	FObjects = [
+	@fobjects = [
 		"@ & 0",
 		"@ + 5",
 		"@! rand",
@@ -395,87 +395,114 @@ class GridSpread < FPatcher
 		"@ +",
 		"@ >> 1",
 	]
-	Wires = []
-	for i in 0..3 do Wires.concat [i-1,0,i,0] end
-	Wires.concat [3,0,4,1, -1,0,4,0, 4,0,-1,0, -1,1,1,1, -1,1,5,0, 5,0,3,1]
+	@wires = []
+	for i in 0..3 do @wires.concat [i-1,0,i,0] end
+	@wires.concat [3,0,4,1, -1,0,4,0, 4,0,-1,0, -1,1,1,1, -1,1,5,0, 5,0,3,1]
 	def initialize(factor)
-		super(FObjects,Wires,2)
+		super
 		send_in 1, factor
 	end
 	install "@spread", 2, 1
 end
 
 class GridPosterize < FPatcher
-	FObjects =  [
+	@fobjects =  [
 		"@ *",
 		"@ >> 8",
 		"@ * 255",
 		"@ /",
 		"@ - 1",
 	]
-	Wires = []
-	for i in 0..3 do Wires.concat [i-1,0,i,0] end
-	Wires.concat [3,0,-1,0, -1,1,0,1, -1,1,4,0, 4,0,3,1]
-	def initialize(factor=2)
-		super(FObjects,Wires,2)
-		send_in 1, factor
-	end
+	@wires = []
+	for i in 0..3 do @wires.concat [i-1,0,i,0] end
+	@wires.concat [3,0,-1,0, -1,1,0,1, -1,1,4,0, 4,0,3,1]
+	def initialize(factor=2) super; send_in 1, factor end
 	install "@posterize", 2, 1
 end
 
 class RGBtoGreyscale < FPatcher
-  FObjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
-  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-  def initialize() super(FObjects,Wires,1) end
-  install "@rgb_to_greyscale", 1, 1
+	@fobjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+	def initialize() super end
+	install "@rgb_to_greyscale", 1, 1
 end
 
 class GreyscaleToRGB < FPatcher
-  FObjects = ["@fold put 0","@outer ignore {0 0 0}"]
-  Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
-  def initialize() super(FObjects,Wires,1) end
-  install "@greyscale_to_rgb", 1, 1
+	@fobjects = ["@fold put 0","@outer ignore {0 0 0}"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
+	def initialize() super end
+	install "@greyscale_to_rgb", 1, 1
 end
 
 class RGBtoYUV < FPatcher
-  FObjects = ["@inner * + 0 {3 3 # 76 -44 128 150 -85 -108 29 128 -21}",
-  "@ >> 8","@ + {0 128 128}"]
-  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-  def initialize() super(FObjects,Wires,1) end
-  install "@rgb_to_yuv", 1, 1
+	@fobjects = ["@inner * + 0 {3 3 # 76 -44 128 150 -85 -108 29 128 -21}",
+	"@ >> 8","@ + {0 128 128}"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+	def initialize() super end
+	install "@rgb_to_yuv", 1, 1
 end
 
 class YUVtoRGB < FPatcher
-  FObjects = ["@ - {0 128 128}",
-  "@inner * + 0 {3 3 # 256 256 256 0 -88 454 358 -183 0}","@ >> 8"]
-  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-  def initialize() super(FObjects,Wires,1) end
-  install "@yuv_to_rgb", 1, 1
+	@fobjects = ["@ - {0 128 128}",
+	"@inner * + 0 {3 3 # 256 256 256 0 -88 454 358 -183 0}","@ >> 8"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+	def initialize() super end
+	install "@yuv_to_rgb", 1, 1
 end
 
 class GridApplyColormapChannelwise < FPatcher
-	FObjects = ["@outer & {-1 0}","@ + {3 2 # 0 0 0 1 0 2}","@store"]
-	Wires = [-1,1,2,1,2,0,-1,0]
-	for i in 0..2 do Wires.concat [i-1,0,i,0] end
-	def initialize; super(FObjects,Wires,2) end
+	@fobjects = ["@outer & {-1 0}","@ + {3 2 # 0 0 0 1 0 2}","@store"]
+	@wires = [-1,1,2,1,2,0,-1,0]
+	for i in 0..2 do @wires.concat [i-1,0,i,0] end
+	def initialize() super end
 	install "@apply_colormap_channelwise", 2, 1
 end
 
 class GridRotate < FPatcher
-  FObjects = ["@outer + {2 2 # 0 9000 -9000 0}","@ cos* 256",
-  "@inner * + 0","@ >> 8"]
-  Wires = [-1,0,2,0, 2,0,3,0, 3,0,-1,0, -1,1,0,0, 0,0,1,0, 1,0,2,2]
-  def initialize(rot=0) super(FObjects,Wires,2); send_in 1, rot end
-  install "@rotate", 2, 1
+	@fobjects = ["@inner * + 0","@ >> 8"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
+	def update_rotator
+		rotator = (0...@axis[2]).map {|i|
+			(0...@axis[2]).map {|j|
+				if i==j then 256 else 0 end
+			}
+		}
+		th = @angle * Math::PI / 18000
+		scale = 1<<8
+		(0...2).each {|i|
+			(0...2).each {|j|
+				rotator[@axis[i]][@axis[j]] =
+					(scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
+			}
+		}
+		@fobjects[0].send_in 2,
+			@axis[2], @axis[2], "#".intern, *rotator.flatten
+	end
+	def _0_axis(from,to,total)
+		total>=0 or raise "total-axis number incorrect"
+		from>=0 and from<total or raise "from-axis number incorrect"
+		to  >=0 and to  <total or raise   "to-axis number incorrect"
+		@axis = [from,to,total]
+		update_rotator
+	end
+	def initialize(rot=0,axis=[0,1,2])
+		super
+		@angle=0
+		_0_axis(*axis)
+		send_in 1, rot
+	end
+	def _1_int(angle) @angle = angle; update_rotator end
+	alias _1_float _1_int
+	install "@rotate", 2, 1
 end
 
 class GridRemapImage < FPatcher
-  FObjects = ["@dim","@inner * + 0 {3 2 # 1 0 0}","@for {0 0} {0 0} {1 1}",
-  "@store","@finished"]
-  Wires = [-1,0,3,1, -1,0,0,0, 0,0,1,0, 1,0,2,1,
-  -1,0,4,0, 4,0,2,0, 2,0,-1,1, -1,1,3,0, 3,0,-1,0]
-  def initialize() super(FObjects,Wires,2) end
-  install "@remap_image", 2, 2
+	@fobjects = ["@dim","@inner * + 0 {3 2 # 1 0 0}","@for {0 0} {0 0} {1 1}",
+	"@store","@finished"]
+	@wires = [-1,0,3,1, -1,0,0,0, 0,0,1,0, 1,0,2,1,
+	-1,0,4,0, 4,0,2,0, 2,0,-1,1, -1,1,3,0, 3,0,-1,0]
+	def initialize() super end
+	install "@remap_image", 2, 2
 end
 
 #-------- fClasses for: jMax compatibility

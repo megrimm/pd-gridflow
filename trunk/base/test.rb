@@ -242,6 +242,14 @@ end
 	(a = FObject["@complex_sq"]).connect 0,e,0
 	x.expect([8,0]) { a.send_in 0, 2, 2 }
 	x.expect([0,9]) { a.send_in 0, 0, 3 }
+
+	(a = FObject["@rotate 3000 {1 2 5}"]).connect 0,e,0
+	pr = GridPrint.new
+	a.connect 0,pr,0
+#	x.expect([]) { 
+	a.send_in 0, "5 5 # 1000 0 0 0 0 0" 
+#	}
+
 	GridFlow.gfpost "ending test for #{nt}"
 end # for nt
 

@@ -146,7 +146,11 @@ end
 class FObject
 	@broken_ok = false
 	class<<self
+		# global
 		attr_accessor :broken_ok
+		# per-class
+		attr_reader :ninlets
+		attr_reader :noutlets
 	end
 
 	alias :profiler_cumul :profiler_cumul_get
@@ -219,11 +223,17 @@ class FObject
 end
 
 class FPatcher < FObject
-	def initialize(fobjects,wires,ninlets)
-		super()
+	class << self
+		attr_reader :fobjects
+		attr_reader :wires
+	end
+	def initialize(*)
+		super
+		fobjects = self.class.fobjects
+		wires = self.class.wires
 		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
 		@inlets = []
-		@ninlets = ninlets
+		@ninlets = self.class.ninlets
 		i=0
 		@fobjects << self
 		while i<wires.length do
@@ -234,7 +244,7 @@ class FPatcher < FObject
 				@inlets[b] << [@fobjects[c],d]
 			else
 				if c==-1 then
-					@fobjects[a].connect b,self,d+ninlets
+					@fobjects[a].connect b,self,d+@ninlets
 				else
 					@fobjects[a].connect b,@fobjects[c],d
 				end
