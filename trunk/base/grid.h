@@ -151,14 +151,11 @@ static inline Ruby PTR2FIX (const void *ptr) {
 	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(long)(ptr));
 	return INT2NUM(p>>2);
 }
-#define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
-#define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
-#define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
-#define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
+#define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
 
 //****************************************************************
 
-/* int32 was long before, now int. */
+/* int32 was long before, now int, because of amd64 */
 typedef char  int8;     typedef unsigned char  uint8;
 typedef short int16;    typedef unsigned short uint16;
 typedef int   int32;    typedef unsigned int  uint32;
@@ -289,9 +286,7 @@ static inline uint64 rdtsc() {return 0;}
 // hook into pointer manipulation. will help find memory corruption bugs.
 
 template <class T> class Pt {
-typedef ptrdiff_t Z;
-//typedef long Z;
-//typedef int Z;
+typedef ptrdiff_t /* and not int nor long */ Z;
 public:
 	T *p;
 #ifdef HAVE_DEBUG
@@ -307,8 +302,8 @@ public:
 	T &operator *() { return *p; }
 	Pt operator+=(Z i) { p+=i; return *this; }
 	Pt operator-=(Z	i) { p-=i; return *this; }
-	Pt operator++(     ) { p++;  return *this; }
-	Pt operator--(     ) { p--;  return *this; }
+	Pt operator++(   ) { p++;  return *this; }
+	Pt operator--(   ) { p--;  return *this; }
 	Pt operator++(int) { Pt f(*this); ++*this; return f; }
 	Pt operator--(int) { Pt f(*this); --*this; return f; }
 	T &operator[](Z i) {
@@ -338,22 +333,8 @@ public:
 	operator void  *() { return (void  *)p; }
 	operator int8  *() { return (int8  *)p; }
 
-/* 0.7:
-#define FOO(S) operator S *() { return (S *)p; }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#ifdef HAVE_DEBUG
-#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#else
-#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#endif
-*/
-
-/* 0.8: */
+/* how do i make typecast operators that are not also default conversions??? */
+/* this should be found so i can clean up the following: */
 #define FOO(S) operator S *() { return (S *)p; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -435,16 +416,17 @@ struct Arg { Ruby a; };
 struct ArgList { int n; Pt<Arg> v; };
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
+#define INT(x) TO(int32,x)
+#define TO(t,x) convert(x,(t*)0)
 
 // not using NUM2INT because Ruby can convert Symbol to int
 // (by compatibility with Ruby 1.4)
-static inline int32 INT(Ruby x) {
+static inline int32 convert(Ruby x, int32 *foo) {
 	if (INTEGER_P(x)) return NUM2INT(x);
 	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
 	RAISE("expected Integer or Float (got %s)",
 		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
 }
-
 static int16 convert(Ruby x, int16 *foo) {
 	int v = INT(x);
 	if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
@@ -453,8 +435,6 @@ static uint16 convert(Ruby x, uint16 *foo) {
 	int v = INT(x);
 	if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
 	return v;}
-
-static int32 convert(Ruby x, int32 *foo) { return INT(x); }
 static bool  convert(Ruby x, bool  *foo) {
 	if (x==Qtrue) return true;
 	if (x==Qfalse) return false;
@@ -464,15 +444,43 @@ static bool  convert(Ruby x, bool  *foo) {
 	}
 }
 
+/*
 #ifndef IS_BRIDGE
 uint64 gf_num2ull(Ruby val);
 Ruby gf_ull2num(uint64 val);
 int64 gf_num2ll(Ruby val);
 Ruby gf_ll2num(int64 val);
-static  int64 convert(Ruby x,  int64 *foo) { return gf_num2ll(x); }
-static uint64 convert(Ruby x, uint64 *foo) { return gf_num2ull(x); }
 #endif
+*/
 
+static uint64 gf_num2ull(Ruby val) {
+    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
+static int64 gf_num2ll(Ruby val) {
+    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
+
+static Ruby gf_ull2num(uint64 val) {
+    return rb_funcall(
+	rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
+	SI(+),1,UINT2NUM((uint32)val));}
+static Ruby gf_ll2num(int64 val) {
+    return rb_funcall(
+	rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
+	SI(+),1,UINT2NUM((uint32)val));}
+
+static inline int64 convert(Ruby x,  int64 *foo) { return gf_num2ll(x); }
+static inline uint64 convert(Ruby x, uint64 *foo) { return gf_num2ull(x); }
+
+static  long  convert(Ruby x,   long *foo) {
+	return sizeof(long)==sizeof(int32) ?
+		convert(x,(int32 *)0) :
+		convert(x,(int64 *)0);
+}
 static float64 convert(Ruby x, float64 *foo) {
 	//if (INTEGER_P(x)) return gf_num2ll(x);
 	if (INTEGER_P(x)) return INT(x);
@@ -1077,8 +1085,6 @@ struct GridObject : FObject {
 
 typedef struct GridObject Format;
 uint64 gf_timeofday();
-Ruby Pointer_new (void *ptr);
-void *Pointer_get (Ruby self);
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
