@@ -279,7 +279,7 @@ static void send_in_3 (Helper *h) {
 		RAISE("don't know how many outlets this has");
 	}
 	int noutlets = INT(noutlets2);
-	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
+	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 
 	/* was PROF(0) a hack because of exception-handling problems? */
 	PROF(0) {
