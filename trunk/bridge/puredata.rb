@@ -33,8 +33,8 @@
 # NEW help files
 %w(
 	# #cast #dim #reverse
-	  #pack=#pack-#unpack
-	#unpack=#pack-#unpack
+	  #pack=#unpack-#pack
+	#unpack=#unpack-#pack
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
