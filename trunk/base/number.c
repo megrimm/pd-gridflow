@@ -297,7 +297,7 @@ LIST(),
 void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	for (int i=0; i<n; i++)
-		if (v[i]<1 || v[i]>MAX_INDICES)
+		if (v[i]<0 || v[i]>MAX_INDICES)
 			RAISE("dim[%d]=%d is out of range",i,v[i]);
 }
 
@@ -376,8 +376,7 @@ Operator1 op1_table[] = {
 
 /* **************************************************************** */
 
-//	static void op_array_##_name_ (int n, Number *as, Number b) {
-//		while (n--) { Number a = *as; *as++ = _expr_; } }
+/* i don't understand how fold2 is faster the way it is now... */
 
 #define DEF_OP2(_name_,_expr_) \
 	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
@@ -401,8 +400,9 @@ Operator1 op1_table[] = {
 		while (n--) { Number b = *bs++; a = _expr_; } return a; } \
 	static void op_fold2_##_name_ (int an, Number *as, int n, const Number *bs) {\
 		while (n--) { \
-			for (int i=0; i<an; i++) { \
-				Number a = as[i], b = *bs++; as[i] = _expr_; } } } \
+			int i=0; \
+			while (i<an) { \
+				{ Number a = as[i], b = *bs++; as[i] = _expr_; } i++; } } } \
 	static void op_scan_##_name_ (Number a, int n, Number *bs) { \
 		while (n--) { Number b = *bs; *bs++ = a = _expr_; } } \
 	static void op_scan2_##_name_ (int an, const Number *as, int n, Number *bs) { \
@@ -418,8 +418,10 @@ DEF_OP2(bus, b-a)
 DEF_OP2(mul, a*b)
 DEF_OP2(div, b==0 ? 0 : a/b)
 DEF_OP2(vid, a==0 ? 0 : b/a)
-DEF_OP2(mod, b==0 ? 0 : a%b)
-DEF_OP2(dom, a==0 ? 0 : b%a)
+DEF_OP2(mod, b==0 ? 0 : mod(a,b))
+DEF_OP2(dom, a==0 ? 0 : mod(b,a))
+DEF_OP2(rem, b==0 ? 0 : a%b)
+DEF_OP2(mer, a==0 ? 0 : b%a)
 
 DEF_OP2(or , a|b)
 DEF_OP2(xor, a^b)
@@ -468,6 +470,8 @@ Operator2 op2_table[] = {
 	DECL_OP2(vid, "inv*"),
 	DECL_OP2(mod, "%"),
 	DECL_OP2(dom, "swap%"),
+	DECL_OP2(rem, "rem"),
+	DECL_OP2(mer, "swaprem"),
 
 	DECL_OP2(or , "|"),
 	DECL_OP2(xor, "^"),
