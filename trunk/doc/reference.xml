@@ -1095,7 +1095,7 @@ duplicated.</p>
 
 	<jmax-class name="format ppm @in/@out">
 		<icon
-			image="images/format/ppm.jpg"
+			image="images/format_ppm.jpg"
 			text="[open ppm file filename.ppm]"
 		/>
 
@@ -1116,7 +1116,7 @@ duplicated.</p>
 
 	<jmax-class name="format targa @in">
 		<icon
-			image="images/format/tga.jpg"
+			image="images/format_targa.jpg"
 			text="[open targa file filename.tga]"
 		/>
 		<p>Support for RGB-24 (3 channels).
@@ -1135,11 +1135,11 @@ duplicated.</p>
 
 	<jmax-class name="format grid @in/@out">
 		<icon
-			image="images/format/grid.jpg"
+			image="images/format_grid.jpg"
 			text="[open grid file filename.grid]"
 		/>
 		<icon
-			image="images/format/grid_tcp.jpg"
+			image="images/format_grid_tcp.jpg"
 			text="[open grid tcp www.artengine.ca 4242]"
 		/>
 
@@ -1177,7 +1177,7 @@ duplicated.</p>
 
 	<jmax-class name="format videodev @in">
 		<icon
-			image="images/format/videodev.jpg"
+			image="images/format_videodev.jpg"
 			text="[open videodev /dev/video0]"
 		/>
 
@@ -1215,7 +1215,7 @@ duplicated.</p>
 	<jmax-class name="format x11 @in/@out">
 
 		<icon
-			image="images/format/x11.jpg"
+			image="images/format_x11.jpg"
 			text="[open x11 here]"/>
 
 		<method name="open x11 here">
