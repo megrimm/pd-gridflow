@@ -21,14 +21,25 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <fts/fts.h>
+#define new new_
+#define template template_
+#define this this_
+#define operator operator_
+#define class class_
+#include "fts/fts.h"
+#undef class
+#undef operator
+#undef this
+#undef template
+#undef new
+
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
 #include <sys/time.h>
 #undef post
 
-static VALUE GridFlow_module;
+static VALUE GridFlow_module2;
 
 #define rb_sym_name rb_sym_name_r4j
 static char *rb_sym_name(VALUE sym) {
@@ -45,7 +56,7 @@ struct BFObject {
 
 fts_object_t *FObject_peer(VALUE rself) {
 	DGS(GridObject);
-	return $->foreign_peer;
+	return (fts_object_t *) $->foreign_peer;
 }
 
 VALUE BFObject_peer(fts_object_t *$) {
@@ -183,7 +194,7 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 
 	post("name=%s\n",fts_symbol_name(qlass->mcl->name));
 
-	$ = rb_hash_aref(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
+	$ = rb_hash_aref(rb_ivar_get(GridFlow_module2,rb_intern("@fclasses_set")),
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
 	post("$=%p\n",$);
@@ -297,11 +308,11 @@ void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 }       
 
 VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
-	GFBridge *$ = FIX2PTR(p);
+	GFBridge *$ = (GFBridge *) FIX2PTR(p);
 	$->class_install = FObject_s_install_2;
 	$->send_out = FObject_send_out_2;
 	$->post = post;
-	GridFlow_module = rb_eval_string("GridFlow");
+	GridFlow_module2 = rb_eval_string("GridFlow");
 	return Qnil;
 }
 
@@ -319,11 +330,11 @@ void gridflow_module_init (void) {
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
-		gridflow_bridge_init,1);
+		(RFunc)gridflow_bridge_init,1);
 	post("(done)\n");
 	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
 		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
-	rb_define_singleton_method(GridFlow_module,"find_file",gf_find_file,1);
+	rb_define_singleton_method(GridFlow_module2,"find_file",(RFunc)gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);

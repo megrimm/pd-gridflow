@@ -23,9 +23,7 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -262,7 +260,6 @@ static inline bool is_le(void) {
 /* general purpose but Ruby/jMax specific */
 
 void whine(const char *fmt, ...);
-void whine_time(const char *s);
 
 typedef struct MethodDecl {
 	const char *selector;
@@ -319,8 +316,7 @@ DECL_SYM(list)
   and can do some calculations on positions in that grid.
 */
 
-#ifdef __cplusplus
-};
+}; /* extern "C" */
 
 struct Dim {
 	int n;
@@ -366,9 +362,6 @@ struct Dim {
 };
 
 extern "C" {
-#else
-typedef struct Dim { int n; int v[1]; } Dim;
-#endif
 
 /* **************************************************************** */
 /* BitPacking objects encapsulate optimised loops of conversion */
@@ -454,7 +447,7 @@ typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_cl_,_name_) bool _name_(VALUE rself,_cl_ *$, GridInlet *in)
+#define GRID_BEGIN_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
 #define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, const Number *data)
 #define GRID_FLOW2_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Number *data)
 #define   GRID_END_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
@@ -477,6 +470,8 @@ typedef struct GridHandler {
 	int       mode; /* 4=ro=flow; 6=rw=flow2 */
 } GridHandler;
 
+}; /* extern "C" */
+
 struct GridInlet {
 /* context information */
 	GridObject *parent;
@@ -491,14 +486,20 @@ struct GridInlet {
 	int factor; /* flow's n will be multiple of $->factor */
 	int bufn;
 	Number *buf; /* factor-chunk buffer */
+
+	GridInlet(GridObject *parent, const GridHandler *gh);
+	~GridInlet();
+	void abort();
+	void set_factor(int factor);
+	bool is_busy();
+	bool is_busy_verbose(const char *where);
+	void begin(int argc, VALUE *argv);
+	void flow(int argc, VALUE *argv);
+	void end(int argc, VALUE *argv);
+	void list(int argc, VALUE *argv);
 };
 
-GridInlet *GridInlet_new(GridObject *parent, const GridHandler *gh);
-void GridInlet_delete(GridInlet *$);
-GridObject *GridInlet_parent(GridInlet *$);
-void GridInlet_abort(GridInlet *$);
-void GridInlet_set_factor(GridInlet *$, int factor);
-bool GridInlet_busy(GridInlet *$);
+extern "C" {
 
 typedef struct GridClass {
 	int objectsize;
@@ -527,6 +528,8 @@ typedef struct GridClass {
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware outlet */
 
+}; /* extern "C" */
+
 struct GridOutlet {
 /* context information */
 	GridObject *parent;
@@ -544,47 +547,40 @@ struct GridOutlet {
 	int frozen;
 	int ron; GridInlet **ro; /* want (const Number *) shown to */
 	int rwn; GridInlet **rw; /* want (Number *) given to */
+
+	GridOutlet(GridObject *parent, int woutlet);
+	~GridOutlet();
+	bool is_busy();
+	void begin(Dim *dim);
+	void abort();
+	void give(int n, Number *data);
+	void send(int n, const Number *data);
+	void send_direct(int n, const Number *data);
+	void flush();
+	void end();
+	void callback(GridInlet *in, int mode);
 };
 
-GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
-void GridOutlet_delete(GridOutlet *$);
-GridObject *GridOutlet_parent(GridOutlet *$);
-bool GridOutlet_busy   (GridOutlet *$);
-void GridOutlet_begin  (GridOutlet *$, Dim *dim);
-void GridOutlet_abort  (GridOutlet *$);
-void GridOutlet_give       (GridOutlet *$, int n,       Number *data);
-void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
-void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
-void GridOutlet_flush  (GridOutlet *$);
-void GridOutlet_end    (GridOutlet *$);
-void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
+extern "C" {
 
 /* **************************************************************** */
-/* GridFlow::GridObject inherits from GridFlow::FObject */
 
-#define GridObject_FIELDS \
+struct GridObject {
 	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */ \
 	GridClass *grid_class; \
 	void *foreign_peer; /* point to jMax peer */ \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
-
-struct GridObject {
-	GridObject_FIELDS;
 };
 
 void GridObject_conf_class(VALUE $, GridClass *grclass);
 
 /* **************************************************************** */
-/* GridFlow::Format inherits from GridFlow::GridObject */
 
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
 #define FF_RW  (1<<3)
-
-typedef struct FormatInfo FormatInfo;
-typedef struct Format Format;
 
 struct FormatInfo {
 	const char *symbol_name; /* short identifier */
@@ -592,15 +588,11 @@ struct FormatInfo {
 	int flags;
 };
 
-#define Format_FIELDS \
-	GridObject_FIELDS; \
-	GridObject *parent; \
-	VALUE /*Symbol*/ mode; \
-	BitPacking *bit_packing; \
+struct Format : GridObject {
+	GridObject *parent;
+	VALUE /*Symbol*/ mode;
+	BitPacking *bit_packing;
 	Dim *dim;
-
-struct Format {
-	Format_FIELDS;
 };
 
 extern GridClass *format_classes[];
@@ -634,7 +626,6 @@ typedef struct GFBridge {
 
 extern GFBridge gf_bridge;
 extern VALUE GridFlow_module;
-extern VALUE FObject_class;
 extern VALUE FObject_class;
 extern VALUE GridObject_class;
 extern VALUE Format_class;
@@ -693,8 +684,6 @@ typedef VALUE (*RFunc)();
 
 void Init_gridflow (void) /*throws Exception*/;
 
-#ifdef __cplusplus
-};
-#endif
+}; /* extern "C" */
 
 #endif /* __GF_GRID_H */
