@@ -51,6 +51,8 @@ extern "C" {
 /* **************************************************************** */
 /* general-purpose macros */
 
+typedef /*volatile*/ VALUE Ruby;
+
 #define LIST(args...) args
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 #define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
@@ -138,13 +140,7 @@ extern "C" {
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 
-#define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
-#define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
-
-#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
-	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
-	(RAISE("expected Integer or Float (got %s)",\
-		rb_funcall(x,SI(inspect),0)),0))
+const char *rb_sym_name(Ruby sym);
 
 /* **************************************************************** */
 
@@ -157,8 +153,6 @@ typedef short int16;
 typedef long  int32;
 typedef float  float32;
 typedef double float64;
-
-typedef /*volatile*/ VALUE Ruby;
 
 /* three-way comparison */
 template <class T> /* where T is comparable */
@@ -257,6 +251,21 @@ void gfpost(const char *fmt, ...);
 
 /* **************************************************************** */
 
+static inline bool INTEGER_P(Ruby x) {
+	return FIXNUM_P(x) || TYPE(x)==T_BIGNUM;
+}
+
+static inline bool FLOAT_P(Ruby x) {
+	return TYPE(x)==T_FLOAT;
+}
+
+static inline long INT(Ruby x) {
+	if (INTEGER_P(x)) return NUM2INT(x);
+	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
+	RAISE("expected Integer or Float (got %s)",
+		rb_funcall(x,SI(inspect),0));
+}
+
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 
 /* you shouldn't use MethodDecl directly */
@@ -279,7 +288,6 @@ struct MethodDecl {
 	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
 		DGS(_class_); return self->_name_(argc,argv); } \
 	Ruby _class_::_name_(int argc, Ruby *argv)
-
 
 /* **************************************************************** */
 /*
@@ -538,6 +546,12 @@ NumberTypeIndex NumberTypeIndex_find (Ruby sym);
 	case int16_type_i: C(int16) break; \
 	case int32_type_i: C(int32) break; \
 	case float32_type_i: C(float32) break; \
+	default: E; RAISE("argh");}
+
+#define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
+	case uint8_type_i: C(uint8) break; \
+	case int16_type_i: C(int16) break; \
+	case int32_type_i: C(int32) break; \
 	default: E; RAISE("argh");}
 
 /* Operator objects encapsulate optimised loops of simple operations */
@@ -901,7 +915,7 @@ typedef struct BFObject BFObject; /* fts_object_t or something */
 #define FOBJECT_MAGIC 1618033989
 
 struct FObject {
-	long magic;
+	int32 magic;
 	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
@@ -925,7 +939,8 @@ struct FObject {
 	  PS: I've heard this is not a hack, this is the only way, as in:
 	  Even dynamic_cast<> relies on this.
 	*/
-	virtual ~FObject() {}
+
+	virtual ~FObject() { magic = 0xDEADBEEF; }
 	virtual void mark(){} /* not used for now */
 
 	const char *args() {
@@ -933,6 +948,9 @@ struct FObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
+
+	/* result should be printed immediately as the GC may discard it anytime */
+	const char *info();
 
 	DECL3(profiler_cumul_get);
 	DECL3(profiler_cumul_set);
@@ -946,7 +964,6 @@ struct FObject {
 #define MAX_OUTLETS 4
 
 struct GridObject : FObject {
-	bool freed; /* paranoia */
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
 
@@ -957,10 +974,6 @@ struct GridObject : FObject {
 
 	GridObject();
 	~GridObject();
-	void mark(); /* not used for now */
-
-	/* result should be printed immediately as the GC may discard it anytime */
-	const char *info();
 
 	bool is_busy_except(GridInlet *gin) {
 		for (int i=0; i<MAX_INLETS; i++)
@@ -1015,7 +1028,6 @@ uint64 RtMetro_now();
 
 Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets, Ruby outlets);
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);
-const char *rb_sym_name(Ruby sym);
 
 /* keyed on data */
 void MainLoop_add(void *data, void (*func)(void*));
@@ -1028,6 +1040,6 @@ void *Pointer_get (Ruby self);
 Ruby ruby_c_install(FClass *fc, Ruby super);
 
 extern "C" GFBridge gf_bridge;
-extern "C" void Init_gridflow () /*throws Exception*/;
+extern "C" void Init_gridflow ();
 
 #endif /* __GF_GRID_H */

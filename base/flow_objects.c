@@ -974,7 +974,7 @@ void GridFor::trigger (T bogus) {
 	for (int i=step.dim->prod()-1; i>=0; i--)
 		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
-		nn[i] = (int32)(tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
+		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
 	}
 	if (from.dim->n==0) {
@@ -1005,7 +1005,7 @@ METHOD3(GridFor,_0_bang) {
 	if (from.nt != to.nt || to.nt != step.nt)
 		RAISE("type mismatch");
 #define FOO(T) trigger((T)0);
-	TYPESWITCH(from.nt,FOO,);
+	TYPESWITCH_NOFLOAT(from.nt,FOO,);
 #undef FOO
 	return Qnil;
 }

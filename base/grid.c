@@ -551,10 +551,7 @@ void GridOutlet::callback(GridInlet *in) {
   abstract class for an FTS Object that has Grid-aware inlets/outlets
 */
 
-void GridObject::mark() {}
-
 GridObject::GridObject() {
-	freed = false;
 	profiler_cumul = 0;
 	profiler_last  = 0;
 	for (int i=0; i<MAX_INLETS;  i++) in[i]  = 0;
@@ -563,8 +560,7 @@ GridObject::GridObject() {
 
 GridObject::~GridObject() {
 //	fprintf(stderr,"GridObject::~GridObject: %08x\n",(int)this);
-	if (freed) fprintf(stderr,"GridObject being deleted twice???\n");
-	freed=true;
+	check_magic();
 	for (int i=0; i<MAX_INLETS;  i++) {
 		//fprintf(stderr,"GridObject::~GridObject: inlet #%d=%08x\n",i,(int)in[i]);
 		if (in[i]) delete in[i], in[i]=0;
@@ -573,14 +569,6 @@ GridObject::~GridObject() {
 		//fprintf(stderr,"GridObject::~GridObject: outlet #%d=%08x\n",i,(int)out[i]);
 		if (out[i]) delete out[i], out[i]=0;
 	}
-}
-
-const char *GridObject::info() {
-	if (!this) return "(nil GridObject!?)";
-	Ruby z = rb_funcall(this->rself,SI(args),0);
-/*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
-	if (z==Qnil) return "(nil args!?)";
-	return rb_str_ptr(z);
 }
 
 METHOD3(GridObject,initialize) {
