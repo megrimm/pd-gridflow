@@ -1,7 +1,8 @@
 1. SHELL OBJECT
 2. EMBEDDED WINDOWS (?)
 3. pd help files
-
+4. make gf work on "meg"
+5. workshop/workshop.htm
 
 
 /* $Id$ */
@@ -31,6 +32,7 @@ Installation
 [ ] --prefix (pour ruby)
 [ ] install vs site-install mess
 [ ] --whole-archive
+[ ] bridge should check that the gridflow.so file matches.
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un

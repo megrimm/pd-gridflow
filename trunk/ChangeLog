@@ -18,7 +18,9 @@ version 0.7.1 (head):
  * added bridge_jmax4.c (does not work yet)
  * added some support for float32 numbers in grids
  * configure: simpler config for jMax 2.5
- * PD help patches by Uli Berthold (not in cvs yet)
+ * PD help patches (by Uli Berthold)
+ * PD: "make install" takes care of help patches and library
+ * CVS web interface on artengine.ca (thanks to Alex)
 
 version 0.7.0 (2003.02.01):
 

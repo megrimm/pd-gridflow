@@ -57,7 +57,7 @@ clean2::
 	rm -f $(JMAX_LIB) \
 	$(OBJS)
 
-install2:: ruby-install jmax-install
+install2:: ruby-install jmax-install puredata-install
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
@@ -116,6 +116,10 @@ foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"
 
 #----------------------------------------------------------------#
+
+ifndef ARCH
+ARCH=$(JMAX_ARCH)
+endif
 
 ifeq ($(HAVE_JMAX_4),yes)
 
@@ -236,6 +240,9 @@ $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 gridflow-for-puredata:: $(PD_LIB)
 
 puredata-install::
+	mkdir -p $(PUREDATA_PATH)/doc/5.reference/gridflow
+	cp pd_help/*.pd $(PUREDATA_PATH)/doc/5.reference/gridflow
+	cp $(PD_LIB) $(PUREDATA_PATH)/externs
 
 else
 
