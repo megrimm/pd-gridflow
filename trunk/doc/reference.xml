@@ -1152,15 +1152,6 @@
 			or else they will be "wrapped".
 		</grid>
 
-		<method name="bang">
-			see format x11's option draw.
-		</method>
-
-		<method name="autodraw">
-			<arg type="integer"/>
-			see format x11's option autodraw.
-		</method>
-
 		<p>
 		Destroying the object (or sending "close") should close the window.
 		Because of how jMax works,
