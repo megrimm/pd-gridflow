@@ -59,10 +59,11 @@ METHOD3(FormatQuickTime,frame) {
 
 	int32 v[] = { sy, sx, 3 };
 //	gfpost("dim(%d,%d,%d)",sy,sx,3);
-	o->begin(new Dim(3,v));
+	o->begin(new Dim(3,v),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
-	STACK_ARRAY(int32,b2,bs);
+	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
 		bit_packing->unpack(sx,buf+4*sx*y,b2);
 		o->send(bs,b2);
@@ -117,7 +118,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatQuickTime,"FormatQuickTime",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatQuickTime,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatQuickTime,0,4)),
 DECL(FormatQuickTime,initialize),
 //DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),

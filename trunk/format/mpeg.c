@@ -42,6 +42,7 @@ struct FormatMPEG : Format {
 	GRINLET3(0);
 };
 
+
 METHOD3(FormatMPEG,frame) {
 	uint8 *buf = new uint8[mpeg_id->Size];
 	GridOutlet *o = out[0];
@@ -50,15 +51,16 @@ METHOD3(FormatMPEG,frame) {
 	if (!GetMPEGFrame((char *)buf)) RAISE("libmpeg: can't fetch frame");
 
 	int32 v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
-	o->begin(new Dim(3,v));
+	o->begin(new Dim(3,v),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 
 	int sy = o->dim->get(0);
 	int sx = o->dim->get(1);
 	int bs = o->dim->prod(1);
-	STACK_ARRAY(Number,b2,bs);
+	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = buf + 4*sx*y;
-		bit_packing->unpack(sx,Pt<uint8>(b1,4*sx*y),Pt<Number>(b2,sx*y));
+		bit_packing->unpack(sx,Pt<uint8>(b1,4*sx*y),Pt<uint8>(b2,sx*y));
 		o->send(bs,b2);
 	}
 	delete[] buf;
@@ -111,7 +113,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatMPEG,"FormatMPEG",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatMPEG,0,4)),
 DECL(FormatMPEG,initialize),
 DECL(FormatMPEG,frame),
 DECL(FormatMPEG,close))

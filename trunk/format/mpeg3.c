@@ -35,7 +35,6 @@ struct FormatMPEG3 : Format {
 	DECL3(seek);
 	DECL3(frame);
 	DECL3(close);
-	GRINLET3(0);
 };
 
 METHOD3(FormatMPEG3,seek) {
@@ -57,7 +56,8 @@ METHOD3(FormatMPEG3,frame) {
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 
 	int32 v[] = { sy, sx, 3 };
-	o->begin(new Dim(3,v));
+	o->begin(new Dim(3,v),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
@@ -70,18 +70,6 @@ METHOD3(FormatMPEG3,frame) {
 	delete[] (uint8 *)buf;
 	return Qnil;
 }
-
-GRID_INLET(FormatMPEG3,0) {
-	RAISE("write support not implemented");
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-}
-
-GRID_FLOW {}
-GRID_FINISH {}
-GRID_END
 
 METHOD3(FormatMPEG3,close) {
 	if (bit_packing) delete bit_packing;
@@ -118,7 +106,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatMPEG3,"FormatMPEG3",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG3,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(),
 DECL(FormatMPEG3,initialize),
 DECL(FormatMPEG3,seek),
 DECL(FormatMPEG3,frame),

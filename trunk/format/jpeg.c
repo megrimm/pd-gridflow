@@ -57,9 +57,7 @@ GRID_INLET(FormatJPEG,0) {
 	cjpeg.in_color_space = JCS_RGB;
 	jpeg_set_defaults(&cjpeg);
 	jpeg_start_compress(&cjpeg,TRUE);
-}
-
-GRID_FLOW {
+} GRID_FLOW {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
@@ -69,13 +67,10 @@ GRID_FLOW {
 		jpeg_write_scanlines(&cjpeg,rows,1);		
 		n-=rowsize; data+=rowsize;
 	}
-}
-
-GRID_FINISH {
+} GRID_FINISH {
 	jpeg_finish_compress(&cjpeg);
 	jpeg_destroy_compress(&cjpeg);
-}
-GRID_END
+} GRID_END
 
 METHOD3(FormatJPEG,frame) {
 	GridOutlet *o = out[0];
@@ -86,7 +81,8 @@ METHOD3(FormatJPEG,frame) {
 	jpeg_read_header(&djpeg,TRUE);
 	int sx = djpeg.image_width, sy = djpeg.image_height;
 	int32 v[] = { sy, sx, 3 };
-	o->begin(new Dim(3,v));
+	o->begin(new Dim(3,v),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*3];
 	uint8 *rows[1] = { row };
@@ -123,7 +119,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatJPEG,"FormatJPEG",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatJPEG,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatJPEG,0,4)),
 DECL(FormatJPEG,initialize),
 DECL(FormatJPEG,frame),
 DECL(FormatJPEG,close))
