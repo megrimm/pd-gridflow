@@ -124,12 +124,9 @@ METHOD(VideoOutFile,delete) {
 }
 
 METHOD(VideoOutFile,option) {
-	fts_symbol_t sym = GET(0,symbol,SYM(foo));
-	int value = GET(1,int,42424242);
-
 	CHECK_FILE_OPEN
 	if ($->ff->option) {
-		$->ff->option($->ff,sym,value);
+		$->ff->option($->ff,ac,at);
 	} else {
 		whine("this format has no options");
 	}
@@ -162,7 +159,7 @@ CLASS(VideoOutFile) {
 	return fts_Success;
 }
 
-void VideoOutFile_config (void) {
+void startup_video_out_file (void) {
 	fts_class_install(fts_new_symbol("@video_out_file"), VideoOutFile_class_init);
 }
 

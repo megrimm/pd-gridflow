@@ -138,12 +138,9 @@ METHOD(VideoInFile,size) {
 }
 
 METHOD(VideoInFile,option) {
-	fts_symbol_t sym = GET(0,symbol,SYM(foo));
-	int value = GET(1,int,42424242);
-
 	CHECK_FILE_OPEN
 	if ($->ff->option) {
-		$->ff->option($->ff,sym,value);
+		$->ff->option($->ff,ac,at);
 	} else {
 		whine("this format has no options");
 	}
@@ -177,7 +174,7 @@ CLASS(VideoInFile) {
 	return fts_Success;
 }
 
-void VideoInFile_config(void) {
+void startup_video_in_file (void) {
 	fts_class_install(fts_new_symbol("@video_in_file"), VideoInFile_class_init);
 }
 

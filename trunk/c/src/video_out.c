@@ -157,7 +157,7 @@ void display_set_alarm(VideoDisplay *$) {
 		fts_clock_t *clock = fts_sched_get_clock();
 		$->alarm = fts_alarm_new(clock, display_alarm, $);
 	}
-	fts_alarm_set_delay($->alarm, 500.0);
+	fts_alarm_set_delay($->alarm, 250.0);
 	fts_alarm_arm($->alarm);
 }
 
@@ -434,7 +434,7 @@ CLASS(VideoOut) {
 	return fts_Success;
 }
 
-void VideoOut_config (void) {
+void startup_video_out (void) {
 	display_init(&x11);
 	fts_class_install(fts_new_symbol("@video_out"), VideoOut_class_init);
 }

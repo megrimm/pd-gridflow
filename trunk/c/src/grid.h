@@ -187,10 +187,34 @@ typedef struct BitPacking BitPacking;
 	int high_bit(uint32 n);
 	int low_bit(uint32 n);
 	BitPacking *BitPacking_new(int bytes, uint32 r, uint32 g, uint32 b);
-	void BitPacking_whine(BitPacking *$);
-	uint8 *BitPacking_pack(BitPacking *$, int n, Number *data, uint8 *target);
+	void    BitPacking_whine(BitPacking *$);
+	uint8  *BitPacking_pack(BitPacking *$, int n, Number *data, uint8 *target);
 	Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out);
-	int BitPacking_bytes(BitPacking *$);
+	int     BitPacking_bytes(BitPacking *$);
+
+
+typedef struct Operator1 Operator1;
+struct Operator1 {
+	fts_symbol_t sym;
+	const char *name;
+	Number (*op)(Number);
+	void   (*op_array)(int,Number*);
+};
+
+	Operator1 *op1_table_find(fts_symbol_t sym);
+	extern Operator1 op1_table[];
+
+typedef struct Operator2 Operator2;
+struct Operator2 {
+	fts_symbol_t sym;
+	const char *name;
+	Number (*op)(Number,Number);
+	void   (*op_array)(int,Number *,Number);
+	Number (*op_fold)(Number,int,const Number *);
+};
+
+	Operator2 *op2_table_find(fts_symbol_t sym);
+	extern Operator2 op2_table[];
 
 /* **************************************************************** */
 
@@ -371,7 +395,7 @@ struct FileFormatClass {
 	void   (*end)   (FileFormat *$); \
 	\
 	void   (*color) (FileFormat *$, fts_symbol_t sym); \
-	void   (*option)(FileFormat *$, fts_symbol_t sym, int value); \
+	void   (*option)(FileFormat *$, int ac, const fts_atom_t *at); \
 	void   (*close) (FileFormat *$);
 
 struct FileFormat {

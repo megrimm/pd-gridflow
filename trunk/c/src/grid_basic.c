@@ -299,42 +299,10 @@ CLASS(GridStore) {
 
 /* **************************************************************** */
 
-#define DEF_OP1(_name_,_expr_) \
-	static Number op1_##_name_ (Number a) { return _expr_; } \
-	static void op1_array_##_name_ (int n, Number *as) { \
-		while (n--) { Number a = *as; *as++ = _expr_; } }
-
-DEF_OP1(abs, a>=0 ? a : -a)
-
-#define DECL_OP1(_name_,_sym_) \
-	{ 0, _sym_, &op1_##_name_, &op1_array_##_name_ }
-
-typedef struct Operation1 Operation1;
-struct Operation1 {
-	fts_symbol_t sym;
-	const char *name;
-	Number (*op)(Number);
-	void (*op_array)(int,Number*);
-};
-
-Operation1 op1_table[] = {
-	DECL_OP1(abs,"abs")
-};
-
-Operation1 *op1_table_find(fts_symbol_t sym) {
-	int i;
-	for(i=0; i<COUNT(op1_table); i++) {
-		if (op1_table[i].sym == sym) return &op1_table[i];
-	}
-	return 0;
-}
-
-/* **************************************************************** */
-
 typedef struct GridOp1 GridOp1;
 struct GridOp1 {
 	GridObject_FIELDS;
-	Operation1 *op;
+	Operator1 *op;
 };
 
 GRID_BEGIN(GridOp1,0) {
@@ -384,101 +352,11 @@ CLASS(GridOp1) {
 	};
 
 	/* initialize the class */
-	fts_class_init(class, sizeof(GridOp1), 2, 1, 0);
+	fts_class_init(class, sizeof(GridOp1), 1, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	GridObject_conf_class(class,0);
 
 	return fts_Success;
-}
-
-
-/* **************************************************************** */
-
-#define DEF_OP2(_name_,_expr_) \
-	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
-	static void op_array_##_name_ (int n, Number *as, Number b) { \
-		while (n--) { Number a = *as; *as++ = _expr_; } } \
-	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
-		while (n--) { Number b = *as; a = _expr_; } return a; }
-
-DEF_OP2(add, a+b)
-DEF_OP2(sub, a-b)
-DEF_OP2(bus, b-a)
-
-DEF_OP2(mul, a*b)
-DEF_OP2(div, b==0 ? 0 : a/b)
-DEF_OP2(vid, a==0 ? 0 : b/a)
-DEF_OP2(mod, b==0 ? 0 : a%b)
-DEF_OP2(dom, a==0 ? 0 : b%a)
-
-DEF_OP2(or , a|b)
-DEF_OP2(xor, a^b)
-DEF_OP2(and, a&b)
-DEF_OP2(shl, a<<b)
-DEF_OP2(shr, a>>b)
-
-DEF_OP2(min, a<b?a:b)
-DEF_OP2(max, a>b?a:b)
-
-DEF_OP2(eq,  a == b)
-DEF_OP2(ne,  a != b)
-DEF_OP2(gt,  a >  b)
-DEF_OP2(le,  a <= b)
-DEF_OP2(lt,  a <  b)
-DEF_OP2(ge,  a >= b)
-
-DEF_OP2(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
-DEF_OP2(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
-
-#define DECL_OP2(_name_,_sym_) \
-	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
-
-typedef struct Operation2 Operation2;
-struct Operation2 {
-	fts_symbol_t sym;
-	const char *name;
-	Number (*op)(Number,Number);
-	void (*op_array)(int,Number *,Number);
-	Number (*op_fold)(Number,int,const Number *);
-};
-
-Operation2 op2_table[] = {
-	DECL_OP2(add, "+"),
-	DECL_OP2(sub, "-"),
-	DECL_OP2(bus, "inv+"),
-
-	DECL_OP2(mul, "*"),
-	DECL_OP2(div, "/"),
-	DECL_OP2(vid, "inv*"),
-	DECL_OP2(mod, "%"),
-	DECL_OP2(dom, "swap%"),
-
-	DECL_OP2(or , "|"),
-	DECL_OP2(xor, "^"),
-	DECL_OP2(and, "&"),
-	DECL_OP2(shl, "<<"),
-	DECL_OP2(shr, ">>"),
-
-	DECL_OP2(min, "min"),
-	DECL_OP2(max, "max"),
-
-	DECL_OP2(eq,  "=="),
-	DECL_OP2(ne,  "!="), //!@#$
-	DECL_OP2(gt,  ">"),
-	DECL_OP2(le,  "<="), //!@#$
-	DECL_OP2(lt,  "<"),
-	DECL_OP2(ge,  ">="), //!@#$
-
-	DECL_OP2(sin, "sin*"),
-	DECL_OP2(cos, "cos*"),
-};
-
-Operation2 *op2_table_find(fts_symbol_t sym) {
-	int i;
-	for(i=0; i<COUNT(op2_table); i++) {
-		if (op2_table[i].sym == sym) return &op2_table[i];
-	}
-	return 0;
 }
 
 /* **************************************************************** */
@@ -491,7 +369,7 @@ Operation2 *op2_table_find(fts_symbol_t sym) {
 typedef struct GridOp2 GridOp2;
 struct GridOp2 {
 	GridObject_FIELDS;
-	Operation2 *op;
+	Operator2 *op;
 	int rint;
 	Number *data;
 	Dim *dim;
@@ -599,7 +477,7 @@ CLASS(GridOp2) {
 typedef struct GridFold GridFold;
 struct GridFold {
 	GridObject_FIELDS;
-	Operation2 *op;
+	Operator2 *op;
 	int rint;
 	Number accum;
 /*
@@ -695,16 +573,7 @@ CLASS(GridFold) {
 
 /* **************************************************************** */
 
-void grid_basic_config (void) {
-	int i;
-	for(i=0; i<COUNT(op1_table); i++) {
-		op1_table[i].sym = fts_new_symbol(op1_table[i].name);
-	} 
-
-	for(i=0; i<COUNT(op2_table); i++) {
-		op2_table[i].sym = fts_new_symbol(op2_table[i].name);
-	} 
-
+void startup_grid_basic (void) {
 	fts_class_install(fts_new_symbol("@import"), GridImport_class_init);
 	fts_class_install(fts_new_symbol("@export"), GridExport_class_init);
 	fts_class_install(fts_new_symbol("@store"),   GridStore_class_init);

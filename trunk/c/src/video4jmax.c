@@ -45,10 +45,15 @@ DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
 DECL_SYM2(grid_end)
 
-void grid_basic_config (void);
-void VideoOut_config (void);
-void VideoOutFile_config (void);
-void VideoInFile_config (void);
+#define STARTUP_LIST(_begin_,_end_) \
+	_begin_## operator       _end_ \
+	_begin_## grid_basic     _end_ \
+	_begin_## video_out      _end_ \
+	_begin_## video_out_file _end_ \
+	_begin_## video_in_file  _end_
+
+/* declare startup of every source file */
+STARTUP_LIST(void startup_,(void);)
 
 void video4jmax_module_init (void) {
 	post("Welcome to Video4jmax !\n");
@@ -67,10 +72,9 @@ void video4jmax_module_init (void) {
 	DEF_SYM(grid_flow);
 	DEF_SYM(grid_end);
 
-	grid_basic_config();
-	VideoOut_config();
-	VideoOutFile_config();
-	VideoInFile_config();
+	/* run startup of every source file */
+	STARTUP_LIST(startup_,();)
+
 	post("--- Video4jmax startup: end ---\n");
 
 	/*
