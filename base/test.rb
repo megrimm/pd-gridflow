@@ -260,7 +260,10 @@ def test_new_classes
 		}
 	}
 
-#	a = FObject["@grade"]
+	a = FObject["@grade"]
+	a.connect 0,e,0
+	x.expect([0,2,4,6,8,9,7,5,3,1]) { a.send_in 0, 0,9,1,8,2,7,3,6,4,5 }
+	x.expect([0,9,1,8,2,7,3,6,4,5]) { a.send_in 0, 0,2,4,6,8,9,7,5,3,1 }
 end
 
 def test_rtmetro

@@ -1113,7 +1113,7 @@ GRID_INLET(GridScaleBy,0) {
 
 	/* computing the output's size */
 	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
-	out[0]->begin(new Dim(3,v));
+	out[0]->begin(new Dim(3,v),in->nt);
 
 	/* configuring the input format */
 	in->set_factor(a->get(1)*a->get(2));
@@ -1193,7 +1193,7 @@ GRID_INLET(GridDownscaleBy,0) {
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	if (a->get(2)!=3) RAISE("3 chans please");
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
-	out[0]->begin(new Dim(3,v));
+	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
 	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
 	temp.init(new Dim(2,w));
@@ -1329,6 +1329,46 @@ METHOD3(GridJoin,initialize) {
 GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
 LIST(GRINLET2(GridJoin,0,4),GRINLET2(GridJoin,1,4)),
 	DECL(GridJoin,initialize))
+
+/* **************************************************************** */
+
+struct GridGrade : GridObject {
+	GRINLET3(0);
+	DECL3(initialize);
+};
+
+template <class T>
+class GradeFunction {
+public:
+	static int comparator (const void *a, const void *b) {
+		return **(T**)a - **(T**)b;
+	}
+};
+
+GRID_INLET(GridGrade,0) {
+	out[0]->begin(in->dim->dup(),in->nt);
+	in->set_factor(in->dim->get(in->dim->n-1));
+} GRID_FLOW {
+	int m = in->factor;
+	STACK_ARRAY(T*,foo,m);
+	STACK_ARRAY(T,bar,m);
+	for (;n;n-=m,data+=m) {
+		for (int i=0; i<m; i++) foo[i] = &data[i];
+		qsort(foo,in->factor,sizeof(T),GradeFunction<T>::comparator);
+		for (int i=0; i<m; i++) bar[i] = foo[i]-foo[0];
+		out[0]->send(in->factor,bar);
+	}
+} GRID_FINISH {
+} GRID_END
+
+METHOD3(GridGrade,initialize) {
+	rb_call_super(argc,argv);
+	return Qnil;
+}
+
+GRCLASS(GridGrade,"@grade",inlets:1,outlets:1,startup:0,
+LIST(GRINLET2(GridGrade,0,4)),
+	DECL(GridGrade,initialize))
 
 /* **************************************************************** */
 
@@ -1751,6 +1791,7 @@ void startup_flow_objects () {
 	INSTALL(GridLayer);
 	INSTALL(GridFinished);
 	INSTALL(GridJoin);
+	INSTALL(GridGrade);
 	INSTALL(DrawPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
