@@ -658,15 +658,17 @@ end
 class PDNetSocket < FObject
 	def initialize(host,port,protocol=:udp,*options)
 		super
-		GridFlow.post "#{self.class} init"
-		host = host.to_s
-		port = port.to_i
-		@host,@port,@protocol = host.to_s,port.to_i,protocol
+		_1_connect(host,port,protocol)
 		@options = {}
 		options.each {|k|
 			k=k.intern if String===k
 			@options[k]=true
 		}
+	end
+	def _1_connect(host,port,protocol=:udp)
+		host = host.to_s
+		port = port.to_i
+		@host,@port,@protocol = host.to_s,port.to_i,protocol
 		case protocol
 		when :udp
 			@socket = UDPSocket.new
@@ -706,7 +708,9 @@ class PDNetSocket < FObject
 		s.chomp!("\n")
 		s.chomp!("\r")
 		s.chomp!(";")
-		s.split(" ").map {|x|
+		a=s.split(/[\s\0]+/)
+		a.shift if a[0]==""
+		a.map {|x|
 			case x
 			when /-?\d+$/; x.to_i
 			when /-?\d/; x.to_f
@@ -740,7 +744,7 @@ class PDNetSocket < FObject
 			end
 		end
 	end
-	install "pd_netsocket", 1, 2
+	install "pd_netsocket", 2, 2
 end
 
 class PDNetReceive < PDNetSocket
