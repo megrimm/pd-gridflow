@@ -456,24 +456,19 @@ GRID_BEGIN(GridOp2,0) {
 
 GRID_FLOW2(GridOp2,0) {
 	GridOutlet *out = $->out[0];
-/*
-	Number *data2 = NEW(Number,n);
-	memcpy(data2,data,n*sizeof(Number));
-*/
-
 	if ($->dim) {
 		int loop = Dim_prod($->dim);
 		int i;
+		Number data2[n];
 		for (i=0; i<n; i++) {
-			int rint = $->data[(in->dex+i)%loop];
-			data[i] = $->op->op(data[i],rint);
+			data2[i] = $->data[(in->dex+i)%loop];
 		}
+		$->op->op_array2(n,data,data2);
 	} else {
 		$->op->op_array(n,data,$->rint);
 	}
 	in->dex += n;
 	GridOutlet_give(out,n,data);
-/*	GridOutlet_send(out,n,data); */
 }
 
 GRID_END(GridOp2,0) { GridOutlet_end($->out[0]); }
@@ -1020,7 +1015,7 @@ METHOD(GridFor,to  ) { $->to   = GET(0,int,0); }
 METHOD(GridFor,step) { $->step = GET(0,int,0); if (!$->step) $->step=1; }
 
 METHOD(GridFor,bang) {
-	int v = ($->to - $->from + $->step - 1) / $->step;
+	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
 	Number x;
 	GridOutlet_begin($->out[0],Dim_new(1,&v));
 	if ($->step > 0) {
