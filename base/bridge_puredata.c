@@ -282,6 +282,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 }       
 
 Ruby gf_bridge_init (Ruby rself) {
+	gf_same_version();
 	mGridFlow2 = EVAL("GridFlow");
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
 	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));

@@ -78,8 +78,9 @@ test::
 	rm -f core
 	(ruby       -w $(TEST)) || $(BACKTRACE)
 
-VALG = valgrind --suppressions=extra/ruby.valgrind -v
+VALG = NO_MMX=1 valgrind --suppressions=extra/ruby.valgrind -v
 VALG += --num-callers=8
+VALG += --show-reachable=yes
 # VALG += --gdb-attach=yes
 
 vtest::

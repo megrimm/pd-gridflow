@@ -233,7 +233,7 @@ class FPatcher < FObject
 		wires = self.class.wires
 		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
 		@inlets = []
-		@ninlets = self.class.ninlets
+		@ninlets = self.class.ninlets or raise "oops"
 		i=0
 		@fobjects << self
 		while i<wires.length do

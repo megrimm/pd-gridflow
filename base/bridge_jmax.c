@@ -256,6 +256,7 @@ static GFBridge gf_bridge3 = {
 };
 
 static Ruby gf_bridge_init (Ruby rself) {
+	gf_same_version();
 	mGridFlow2 = EVAL("GridFlow");
 	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
 	return Qnil;

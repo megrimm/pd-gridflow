@@ -82,4 +82,13 @@ static int noutlets_of (Ruby qlass) {
 	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_noutlets)));
 }
 
+static void gf_same_version () {
+	Ruby ver = EVAL("GridFlow::GF_VERSION");
+	if (strcmp(rb_str_ptr(ver), GF_VERSION) != 0) {
+		RAISE("GridFlow version mismatch: "
+			"main library is '%s'; bridge is '%s'",
+			rb_str_ptr(ver), GF_VERSION);
+	}
+}
+
 #endif /* __BRIDGE_C */

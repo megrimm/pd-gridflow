@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.7.2 (head):
+version 0.7.2 (2003.04.08):
 
  * fixed bugs in: make install, jpeg reading
  * added support for float32

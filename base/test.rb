@@ -412,22 +412,21 @@ def test_store
 	}
 end
 
-# generates recursive checkerboard pattern (munchies) in bluish colours.     
+# generates recursive checkerboard pattern (munchies) in bluish colours.
+class Munchies < FPatcher
+	@fobjects = ["fork","fork","@for 0 64 1","@for 0 64 1","@for 2 5 1",
+	"@outer ^","@outer *"]
+	@wires = [-1,0,0,0, 0,0,1,0, 1,1,4,0, 4,0,6,1,
+	1,0,3,0, 3,0,5,1, 0,0,2,0, 2,0,5,0, 5,0,6,0, 6,0,-1,0 ]
+	def initialize() super end
+	install "munchies",1,1
+end
+
 def test_munchies
-	f0,f1 = (0..1).map { FObject["@for 0 64 1"] } # two identical objects
-	f2 = FObject["@for 2 5 1"] # make vector (2,3,4)
-	t0 = FObject["@outer ^"] # for combining all rows and columns
-	t1 = FObject["@outer *"] # for generating colours
-	gout = FObject["@out x11"] # open window
-
-	# syntax: source.connect outlet,destination,inlet
-	f0.connect 0,t0,0
-	f1.connect 0,t0,1
-	t0.connect 0,t1,0
-	f2.connect 0,t1,1
-	t1.connect 0,gout,0
-
-	[f2,f1,f0].each {|o| o.send_in 0 } # sending three bangs
+	m=Munchies.new
+	gout = FObject["@out x11"]
+	m.connect 0,gout,0
+	m.send_in 0
 	$mainloop.loop
 end
 
@@ -705,16 +704,16 @@ def test_formats_write
 	e = FObject["@fold +"]; c.connect 0,e,0
 	f = FObject["@fold +"]; e.connect 0,f,0
 	g = FObject["@fold +"]; f.connect 0,g,0
-	h = FObject["@ / 20000"]; g.connect 0,h,0
+	h = FObject["@ / 15000"]; g.connect 0,h,0
 	i = FObject["@export_list"]; h.connect 0,i,0
 	x = Expect.new; i.connect 0,x,0
 	[
-#		["ppm file", "#{$imdir}/g001.ppm"],
-#		["targa file", "#{$imdir}/teapot.tga"],
-#		["targa file", "#{$imdir}/tux.tga"],
+		["ppm file", "#{$imdir}/g001.ppm"],
+		["targa file", "#{$imdir}/teapot.tga"],
+		["targa file", "#{$imdir}/tux.tga"],
 		["jpeg file", "#{$imdir}/ruby0216.jpg"],
-#		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian little"],
-#		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian big"],
+		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian little"],
+		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian big"],
 	].each {|type,file,*rest|
 		a.send_in 0, "open #{type} #{file}"
 		b.send_in 0, "open #{type} /tmp/patate"
