@@ -170,21 +170,19 @@ end
 
 class GridPrint < GridFlow::GridObject
 	attr_accessor :name
-
 	def initialize(name=nil)
 		super # don't forget super!!!
 		if name then @name = name.to_s+": " else @name="" end
-		@base=10; @format="d"
-		@trunc=70
+		@base=10; @format="d"; @trunc=70; @maxrows=50
 	end
-
+	def post(*foo) GridFlow.post(*foo) end # so that it's hijackable by [display]
+	def end_hook; end # other hijackability
 	def format
 		case @nt
 		when :float32; '%6.6f'
 		when :float64; '%14.14f'
 		else "%#{@columns}#{@format}" end
 	end
-
 	def _0_base(x)
 		@format = (case x
 		when 2; "b"
@@ -194,12 +192,12 @@ class GridPrint < GridFlow::GridObject
 		else raise "base #{x} not supported" end)
 		@base = x
 	end
-
 	def _0_trunc(x)
-		0..240===x or raise "out of range (not in 0..240 range)"
+		x=x.to_f
+		(0..240)===x or raise "out of range (not in 0..240 range)"
 		@trunc = x
 	end
-
+	def _0_maxrows(x) @maxlines = x.to_i end
 	def make_columns udata
 		min = udata.min
 		max = udata.max
@@ -208,65 +206,64 @@ class GridPrint < GridFlow::GridObject
 			sprintf(format,min).length,
 			sprintf(format,max).length].max
 	end
-
 	def unpack data
 		ps = GridFlow.packstring_for_nt @nt
 		data.unpack ps
 	end
-
 	def _0_rgrid_begin
 		@dim = inlet_dim 0
 		@nt = inlet_nt 0
 		@data = ""
 	end
-
 	def _0_rgrid_flow(data) @data << data end
-
 	def _0_rgrid_end
 		head = "#{name}Dim[#{@dim.join','}]"
 		head << "(#{@nt})" if @nt!=:int32
 		head << ": "
 		if @dim.length > 3 then
-			GridFlow.post head+" (not printed)"
+			post head+" (not printed)"
 		elsif @dim.length < 2 then
 			udata = unpack @data
 			make_columns udata
-			GridFlow.post trunc(head + dump(udata))
+			post trunc(head + dump(udata))
 		elsif @dim.length == 2 then
-			GridFlow.post head
+			post head
 			udata = unpack @data
 			make_columns udata
 			sz = udata.length/@dim[0]
-			for row in 0...@dim[0]
-				GridFlow.post trunc(dump(udata[sz*row,sz]))
+			@rown = 1
+			for row in 0...@dim[0] do
+				post trunc(dump(udata[sz*row,sz]))
+				@rown += 1
+				(post "..."; break) if @rown>@maxrows
 			end
 		elsif @dim.length == 3 then
-			GridFlow.post head
+			post head
 			make_columns unpack(@data)
 			sz = @data.length/@dim[0]
 			sz2 = sz/@dim[1]
+			@rown = 1
 			for row in 0...@dim[0]
 				column=0; str=""
 				for col in 0...@dim[1]
 					str << "{" << dump(unpack(@data[sz*row+sz2*col,sz2])) << "}"
 					break if str.length>@trunc
 				end
-				GridFlow.post trunc(str)
-				(GridFlow.post "[...]"; break) if row>100
+				post trunc(str)
+				@rown += 1
+				(post "..."; break) if @rown>@maxrows
 			end
 		end
 		@data,@dim,@nt = nil
+		end_hook
 	end
-
 	def dump(udata,sep=" ")
 		f = format
 		udata.map{|x| sprintf f,x }.join sep
 	end
-
 	def trunc s
 		if s.length>@trunc then s[0...@trunc]+" [...]" else s end
 	end
-
 	install_rgrid 0, true
 	install "#print", 1, 0
 end
@@ -959,6 +956,7 @@ end
 #-------- fClasses for: GUI
 
 class Display < FObject
+	attr_accessor :text
 	def initialize()
 		@sel = nil; @args = [] # contents of last received message
 		@text = "..."
@@ -971,7 +969,7 @@ class Display < FObject
 		@rsym = "display#{self.id}".intern
 		GridFlow.whatever :bind, self, @rsym.to_s
 	end
-	def _0_set_width(sx) @sx=sx end
+	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
 		case a
 		when Float; (sprintf "%.5f", a).gsub /\.?0+$/, ""
@@ -1002,21 +1000,27 @@ class Display < FObject
 			@can=".x%x.c"%(can*4)
 		end
 		return if not @can # can't show for now...
-		bg = "#6774A0"
-		fg = "#ffff80"
+		@bg = "#6774A0"
+		@fg = "#ffff80"
+		@font = "Courier -12"
 		GridFlow.gui %{
 			set canvas #{@can}
 			$canvas delete #{@rsym}TEXT
-			$canvas create text #{@x+2} #{@y+2} -fill #{fg} \
-				-text #{quote @text} -anchor nw -tag #{@rsym}TEXT
+			set y #{@y+2}
+			foreach line [split #{quote @text} \\n] {
+				$canvas create text #{@x+2} $y -fill #{@fg} -font #{quote @font}\
+					-text $line -anchor nw -tag #{@rsym}TEXT
+				set y [expr $y+14]
+			}
 			foreach {x1 y1 x2 y2} [$canvas bbox #{@rsym}TEXT] {}
 			set sx [expr $x2-$x1+1]
+			set sy [expr $y2-$y1+3]
 			$canvas delete #{@rsym}
 			$canvas create rectangle \
-				#{@x} #{@y} [expr #{@x}+$sx] #{@y+@sy} -fill #{bg} -tags #{@rsym}
+				#{@x} #{@y} [expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} -tags #{@rsym}
 				global current_x current_y tooltip
 			$canvas lower #{@rsym} #{@rsym}TEXT
-			pd \"#{@rsym} set_width $sx;\n\";
+			pd \"#{@rsym} set_size $sx $sy;\n\";
 		}
 	end
 	def pd_displace(can,x,y)
@@ -1035,6 +1039,20 @@ class Display < FObject
 	def pd_vis(can,flag) pd_show(can) if flag!=0 end
 	def pd_select(*a) GridFlow.post "pd_select "+a.join(", ") end
 	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} }; super end
+
+	def _0_grid(*foo) # big hack!
+		# hijacking a [#print]
+		gp = GridPrint.new
+		@text = ""
+		overlord = self
+		gp.instance_eval { @overlord = overlord }
+		def gp.post(fmt,*args) @overlord.text << sprintf(fmt,*args) << "\n" end
+		def gp.end_hook; @overlord.instance_eval{@text.chomp!}; @overlord.pd_show nil end
+		gp.send_in 0, :trunc, 30
+		gp.send_in 0, :maxrows, 30
+		gp.send_in 0, :grid, *foo
+	end
+
 	install "display", 1, 1
 	if GridFlow.bridge_name =~ /puredata/
 		GridFlow.whatever :setwidget, "display"
