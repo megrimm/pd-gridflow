@@ -41,7 +41,7 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
 	} else {
 		EARG("expect symbol or string");
 	}
-	whine("class will be called: %s",RSTRING(name2)->ptr);
+//	whine("class will be called: %s",RSTRING(name2)->ptr);
 	kludge.inlets = NUM2INT(inlets);
 	if (kludge.inlets<0 || kludge.inlets>9) EARG("...");
 	kludge.outlets = NUM2INT(outlets);

@@ -95,6 +95,7 @@ class TimerQueue
 		return delay_no_next if @queue.length == 0
 		delay = @queue[0].time - Time.new
 		delay = 0 if delay < 0
+		delay
 	end
 
 	def consume
@@ -200,9 +201,11 @@ def initialize
 end
 
 def one(delay=nil)
+	p @timers.delay_until_next
 	while @timers.delay_until_next == 0
 		@timers.consume
 	end
+	@messages.length.times { @messages.consume }
 	@streams.make_messages(delay || @timers.delay_until_next).each {|m|
 		m.call
 		# @messages.add m
