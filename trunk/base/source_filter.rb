@@ -3,13 +3,13 @@ $stack = []
 $classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods)
-MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs)
+MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
 Arg = Struct.new(:type,:name,:default)
 
 class MethodDecl
 	def ==(o)
 		return false unless rettype==o.rettype &&
-		minargs==o.minargs && maxargs==o.maxargs
+		maxargs==o.maxargs # && minargs==o.minargs 
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
@@ -39,7 +39,7 @@ def parse_methoddecl(line,term)
 		raise "syntax error #{where}"
 	rettype,selector,arglist = $1,$2,$3
 	arglist,minargs,maxargs = parse_arglist arglist
-	MethodDecl.new(rettype,selector,arglist,minargs,maxargs)
+	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where)
 end
 
 def parse_arglist(arglist)
@@ -98,7 +98,9 @@ def handle_def(line)
 	if qlass.methods[m.selector]
 		n = m; m = qlass.methods[m.selector]
 		if m!=n then
-			STDERR.puts "warning: def #{n.inspect} does not match decl #{m.inspect}"
+			STDERR.puts "warning: def does not match decl:"
+			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
+			STDERR.puts "#{n.where}: \\def #{n.inspect}"
 		end
 	end
 
