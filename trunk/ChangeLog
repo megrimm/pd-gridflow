@@ -18,17 +18,18 @@ version 0.7.6 (2004.03.20):
    (warning: not complete yet)
  * support for nested lists in incoming messages
  * new object classes:
-   delcom_usb: support for Delcom USB I/O controller
-   joystick_port: support for linux joystick drivers
+   [delcom_usb]: support for Delcom USB I/O controller
+   [joystick_port]: support for linux joystick drivers
    [foreach], [rubysprintf], [listflatten]
    [messageprepend], [messageappend], [@transpose]
    [@fade], [@centroid]
    jMax emulation: [listmake], [listlength], [listelement], [listsublist]
    jMax emulation: [listprepend], [listappend], [listreverse], [oneshot]
    jMax emulation: [inv+], [inv*]
+   [messageprepend], [messageappend], [@transpose]
  * Pd main window: adding GridFlow menu, Ruby/Tcl evaluators (with command-history)
  * added bin/jmax2pd (converts .jmax files to .pd files)
- * ported some .jmax examples to .pd (automated) (14 out of 20)
+ * ported all .jmax examples to .pd (using jmax2pd) (20 out of 20)
  * support for variable number of inlets/outlets (only with PureData)
 
 version 0.7.5 (2003.09.28):
