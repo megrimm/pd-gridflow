@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.2 - reference</title>
+<title>GridFlow 0.6.3 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.2 - reference index</h4>
+    <h4>GridFlow 0.6.3 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -115,7 +115,7 @@
    <br><b>method</b> init <b>(</b><b>)</b>  
 			Creates an input object for an unspecified format. You 
 			need to use the <kbd>open</kbd> command to decide that. 
-			Remember that most formats produce dim(rows,columns,3) grids with 
+			Remember that most formats produce Dim[rows,columns,3] grids with 
 			0-255 values. (Most.) <br>
   <br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 				This is the command that gives a particular resource 
@@ -738,7 +738,23 @@
  <br><b>method</b> option autodraw <b>(</b><i>0,1,2</i> level<b>)</b>   <ul> <li><b>0</b> : option draw() is never automatically invoked</li> <li><b>1</b> : option draw() is invoked after each grid is finished</li> <li><b>2</b> : option draw() is invoked incrementally after each row is 
 			received. (but buffering may cause lines to come in groups 
 			anyway)</li> </ul> <br>
- <br></td> 
+ <br><b>method</b> option setcursor <b>(</b><i>0..63</i> cursor<b>)</b>   
+			Selects one of the 64 predefined cursors of X11. (Note that if 
+			your cursor table has them numbered from 0 to 126 using only even 
+			numbers, then those cursor numbers are all doubled compared to 
+			the ones GridFlow uses.) <br>
+ <br><b>method</b> option hidecursor <b>(</b><b>)</b>  
+			This makes the cursor invisible. <br>
+  <br><b>outlet 0</b> <b>method</b> position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     
+				This is emitted every time the cursor moves inside 
+				the window connected to this format handler. This is also 
+				emitted when the cursor is dragging from inside to outside 
+				the window. The y and x coordinates are relative to the upper 
+				right corner of the window. Specific button states may be 
+				extracted from the button value by applying [>> 
+				buttonnumber] and then checking whether the result is odd. 
+				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul> <br>
+  <br></td> 
 <tr><td>&nbsp;</td></tr> 
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -788,7 +804,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.2 Documentation<br>
+<p><font size="-1">GridFlow 0.6.3 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

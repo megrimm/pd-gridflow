@@ -17,7 +17,7 @@
 			Creates an input object for an unspecified format. You
 			need to use the <k>open</k> command to decide that.
 
-			Remember that most formats produce dim(rows,columns,3) grids with
+			Remember that most formats produce Dim[rows,columns,3] grids with
 			0-255 values. (Most.)
 		</method>
 
@@ -1204,6 +1204,50 @@
 			anyway)</li>
 			</list>
 		</method>
+
+		<method name="option setcursor">
+			<arg name="cursor" type="0..63"/>
+			Selects one of the 64 predefined cursors of X11. (Note that if
+			your cursor table has them numbered from 0 to 126 using only even
+			numbers, then those cursor numbers are all doubled compared to
+			the ones GridFlow uses.)
+		</method>
+		
+		<method name="option hidecursor">
+			This makes the cursor invisible.
+		</method>
+
+		<outlet id="0">
+			<method name="position">
+				<arg name="y" type="integer"/>
+				<arg name="x" type="integer"/>
+				<arg name="buttons" type="integer"/>
+				
+				This is emitted every time the cursor moves inside
+				the window connected to this format handler. This is also
+				emitted when the cursor is dragging from inside to outside
+				the window. The y and x coordinates are relative to the upper
+				right corner of the window. Specific button states may be
+				extracted from the button value by applying [&gt;&gt;
+				buttonnumber] and then checking whether the result is odd.
+				Button numbers normally are:
+				<list start="0">
+				<li>Shift</li>
+				<li>CapsLock</li>
+				<li>Control</li>
+				<li>Alternate</li>
+				<li>NumLock</li>
+				<li>???</li>
+				<li>Meta</li>
+				<li>ScrollLock</li>
+				<li>Left Button</li>
+				<li>Middle Button</li>
+				<li>Right Button</li>
+				<li>Wheel Up</li>
+				<li>Wheel Down</li>
+				</list>
+			</method>
+		</outlet>
 
 	</jmax-class>
 </section>
