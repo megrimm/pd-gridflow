@@ -1,0 +1,32 @@
+#N canvas 449 187 546 331 10;
+#X text 14 15 @dim;
+#X obj 26 83 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+-1;
+#X obj 18 103 @in;
+#X obj 18 127 @dim;
+#X obj 140 179 @export;
+#X obj 140 200 print dimension;
+#X obj 18 201 @dim;
+#X obj 18 221 @export;
+#X obj 18 241 print number_of_dimensions;
+#X text 138 100 dim receives a grid \, doesn't look at the data within
+but only the list of dimensions and turns it into a one dimension grid.
+given a grid sized like dim(240 \, 320 \, 4) @dim will return a grid
+like dim(3) whose values are 240 \, 320 \, 4;
+#X text 475 12 gridflow;
+#X text 18 278 see also:;
+#X obj 87 283 @print;
+#X obj 136 283 rubyprint;
+#X obj 206 283 printargs;
+#X obj 276 283 @export;
+#X obj 332 283 @export_list;
+#X msg 18 63 open jpeg file 1.jpg;
+#X connect 1 0 2 0;
+#X connect 2 0 3 0;
+#X connect 3 0 4 0;
+#X connect 3 0 6 0;
+#X connect 4 0 5 0;
+#X connect 6 0 7 0;
+#X connect 7 0 8 0;
+#X connect 17 0 2 0;
+#X connect 17 0 1 0;
