@@ -210,7 +210,7 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
 /* greatest common divisor, by euclid's algorithm */
-/* this runs in log(a+b) */
+/* this runs in log(a+b) number operations */
 template <class T>
 static T gcd (T a, T b) {
 	while (b) {
@@ -219,6 +219,22 @@ static T gcd (T a, T b) {
 		b=c;
 	}
 	return a;
+}
+
+/* greatest common divisor, the binary algorithm. haven't tried yet. */
+template <class T>
+static T gcd2 (T a, T b) {
+	int s=0;
+	while ((a|b)&1==0) { a>>=1; b>>=1; s++; }
+	while (a) {
+		if (a&1==0) a>>=1;
+		else if (b&1==0) b>>=1;
+		else {
+			T t=abs(a-b);
+			if (a<b) b=t; else a=t;
+		}
+	}
+	return b<<s;
 }
 
 /* least common multiple */
@@ -246,6 +262,10 @@ int lowest_bit(T n) {
 	return highest_bit((~n+1)&n);
 }
 
+static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
+
+/* **************************************************************** */
+
 #ifdef HAVE_PENTIUM
 static inline uint64 rdtsc() {
 	uint64 x;
@@ -262,13 +282,34 @@ static inline bool is_le() {
 	return ((char *)&x)[0];
 }
 
-static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
-
 /* **************************************************************** */
 
 #define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32) MACRO(int64)
 #define EACH_FLOAT_TYPE(MACRO) MACRO(float32) MACRO(float64)
 #define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
+
+// note: loop unrolling macros assume N!=0
+#define UNROLL_8(MACRO,N,PTR,ARGS...) \
+	int n__=(-N)&7; PTR-=n__; N+=n__; \
+	switch (n__) { start: \
+		case 0: MACRO(0); \
+		case 1: MACRO(1); \
+		case 2: MACRO(2); \
+		case 3: MACRO(3); \
+		case 4: MACRO(4); \
+		case 5: MACRO(5); \
+		case 6: MACRO(6); \
+		case 7: MACRO(7); \
+		PTR+=8; N-=8; ARGS; if (N) goto start; }
+
+#define UNROLL_4(MACRO,N,PTR,ARGS...) \
+	int n__=(-N)&3; PTR-=n__; N+=n__; \
+	switch (n__) { start: \
+		case 0: MACRO(0); \
+		case 1: MACRO(1); \
+		case 2: MACRO(2); \
+		case 3: MACRO(3); \
+		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
 /* **************************************************************** */
 /*
@@ -420,8 +461,14 @@ static inline int32 INT(Ruby x) {
 		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
 }
 
-static int32 convert(Ruby x, int   *foo) { return INT(x); }
+static int   convert(Ruby x, int   *foo) { return INT(x); }
 static int32 convert(Ruby x, int32 *foo) { return INT(x); }
+static bool  convert(Ruby x, bool  *foo) {
+	switch (TYPE(x)) {
+		case T_FIXNUM: return INT(x);
+		/*...*/
+	}
+}
 
 typedef Ruby Symbol;
 typedef Ruby Array;
@@ -706,7 +753,7 @@ EACH_NUMBER_TYPE(FOO)
 enum LeftRight { at_left, at_right };
 
 template <class T>
-struct Operator2On : Object {
+struct Numop2On : Object {
 	/* Function Vectorisations */
 	typedef void (*Map)(int n, T *as, T b);
 	typedef void (*Zip)(int n, T *as, T *bs);
@@ -726,13 +773,13 @@ struct Operator2On : Object {
 	AlgebraicCheck is_absorbent;
 	
 	/* Constructors */
-	Operator2On(Map m, Zip z, Fold f, Scan s,
+	Numop2On(Map m, Zip z, Fold f, Scan s,
 		AlgebraicCheck n,
 		AlgebraicCheck a) :
 			op_map(m), op_zip(z), op_fold(f), op_scan(s),
 			is_neutral(n), is_absorbent(a) {}
-	Operator2On() {}
-	Operator2On(const Operator2On &z) {
+	Numop2On() {}
+	Numop2On(const Numop2On &z) {
 		op_map = z.op_map;
 		op_zip = z.op_zip;
 		op_fold = z.op_fold;
@@ -746,15 +793,15 @@ struct Operator2On : Object {
 /* abelian property: commutativity: f(a,b)=f(b,a) */
 #define OP2_COMM (1<<1)
 
-\class Operator2 < Object
-struct Operator2 : Object {
+\class Numop2 < Object
+struct Numop2 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
 //private:
 #define FOO(T) \
-		Operator2On<T> on_##T; \
-		Operator2On<T> *on(T &foo) { \
+		Numop2On<T> on_##T; \
+		Numop2On<T> *on(T &foo) { \
 			if (!on_##T.op_map) RAISE("operator does not support this type"); \
 			return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
@@ -774,7 +821,7 @@ EACH_NUMBER_TYPE(FOO)
 		cs.will_use(n);
 		on(*as)->op_zip2(n,(T *)as,(T *)bs,(T *)cs);}
 */
-		template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		on(*as)->op_fold(an,n,(T *)as,(T *)bs);}
@@ -783,13 +830,13 @@ EACH_NUMBER_TYPE(FOO)
 		bs.will_use(an*n);
 		on(*as)->op_scan(an,n,(T *)as,(T *)bs);}
 
-	\decl void map_m (NumberTypeE nt, int n, String as, String b);
-	\decl void zip_m (NumberTypeE nt, int n, String as, String bs);
+	\decl void map_m  (NumberTypeE nt, int n, String as, String b);
+	\decl void zip_m  (NumberTypeE nt, int n, String as, String bs);
 	\decl void fold_m (NumberTypeE nt, int n, String as, String bs);
 	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
 
-	Operator2(Ruby /*Symbol*/ sym_, const char *name_,
-#define FOO(T) Operator2On<T> op_##T, 
+	Numop2(Ruby /*Symbol*/ sym_, const char *name_,
+#define FOO(T) Numop2On<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	int flags_) : sym(sym_), name(name_), flags(flags_) {
@@ -816,10 +863,10 @@ static Operator1 *convert(Ruby x, Operator1 **bogus) {
 	return FIX2PTR(Operator1,s);
 }
 
-static Operator2 *convert(Ruby x, Operator2 **bogus) {
+static Numop2 *convert(Ruby x, Numop2 **bogus) {
 	Ruby s = rb_hash_aref(op2_dict,x);
 	if (s==Qnil) RAISE("expected two-input-operator");
-	return FIX2PTR(Operator2,s);
+	return FIX2PTR(Numop2,s);
 }
 #endif
 
@@ -840,8 +887,8 @@ struct Grid : Object {
 
 	Grid() : next(0), dc(0), dim(0), nt(int32_type_i), data(0) {}
 	void constrain(DimConstraint dc_) { dc=dc_; }
-	void init(Dim *dim, NumberTypeE nt=int32_type_i);
-	void init_clear(Dim *dim, NumberTypeE nt=int32_type_i);
+	void init(Dim *dim, NumberTypeE nt);
+	void init_clear(Dim *dim, NumberTypeE nt);
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
@@ -874,11 +921,9 @@ EACH_NUMBER_TYPE(FOO)
 		if (dc) dc(victim->dim);
 		if (dim) delete dim;
 		if (data) delete[] (uint8 *)data;
-		dim = victim->dim;
 		nt = victim->nt;
-		data = victim->data;
-		victim->dim = 0;
-		victim->data = 0;
+		dim = victim->dim;   victim->dim = 0;
+		data = victim->data; victim->data = 0;
 		delete victim;
 	}
 
@@ -911,7 +956,7 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 	_class_##_grid_inlet_##i, 0, \
 	0, 0 }
 
-/* same for inlets that support all four types */
+/* same for inlets that support all types */
 #define GRINLET4(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
@@ -954,9 +999,7 @@ GRID_FINISH
 #define GRID_INPUT2(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
 		if (is_busy_except(in)) { \
-			if (_member_.next != &_member_) { \
-				delete _member_.next; \
-			} \
+			if (_member_.next != &_member_) delete _member_.next; \
 			_member_.next = new Grid(); \
 			_member_.next->dc = _member_.dc; \
 		} \
@@ -1212,8 +1255,8 @@ extern "C" void Init_gridflow ();
 
 void gfpost(const char *fmt, ...);
 
-extern Operator2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
-extern Operator2 *op2_shl, *op2_and;
+extern Numop2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
+extern Numop2 *op2_shl, *op2_and;
 
 #define SAME_TYPE(_a_,_b_) \
 	if ((_a_).nt != (_b_).nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
@@ -1245,9 +1288,7 @@ struct GFStack {
 	};
 	GFStackFrame s[GF_STACK_MAX];
 	int n;
-	
 	GFStack() { n = 0; }
-
 	void push (FObject *o);
 	void pop ();
 };
