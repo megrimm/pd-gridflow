@@ -158,6 +158,16 @@ void *qalloc(size_t n) {
 	return data;	
 }
 
+/* to help find dangling references */
+void qfree(void *data, size_t n) {
+	long *data2 = (long *) data;
+	int i;
+	int nn = (int) n/4;
+	#ifndef NO_DEADBEEF
+		for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+	#endif
+}
+
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 	int i;
 	for (i=0; i<n; i++) {
