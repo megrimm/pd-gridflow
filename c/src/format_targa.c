@@ -120,6 +120,7 @@ GRID_BEGIN(FormatTarga,0) {
 	return false;
 }
 
+/* !@#$ use BitPacking here */
 GRID_FLOW(FormatTarga,0) {
 }
 
@@ -138,8 +139,10 @@ Format *FormatTarga_open (FormatClass *class, int ac, const fts_atom_t *at, int 
 	$->stream = 0;
 	$->bstream = 0;
 
-	if (ac!=1) { whine("usage: targa filename"); goto err; }
-	filename = fts_symbol_name(fts_get_symbol(at+0));
+	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
+		whine("usage: targa file <filename>"); goto err;
+	}
+	filename = fts_symbol_name(fts_get_symbol(at+1));
 
 	switch(mode) {
 //	case 4: case 2: break;
@@ -164,7 +167,6 @@ FormatClass class_FormatTarga = {
 	flags: (FormatFlags)0,
 
 	open: FormatTarga_open,
-	chain_to: 0,
 
 	frames: 0,
 	frame:  FormatTarga_frame,

@@ -244,6 +244,10 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
+#ifndef __cplusplus
+typedef enum { false, true } bool;
+#endif
+
 void *qalloc2(size_t n);
 void *qalloc(size_t n); /*0xdeadbeef*/
 void qfree2(void *data);
@@ -284,6 +288,11 @@ static inline uint64 rdtsc(void) {
   uint64 x;
   __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
   return x;}
+
+static inline bool is_le(void) {
+	int x=1;
+	return ((char *)&x)[0];
+}
 
 /* **************************************************************** */
 /* general purpose but jMax specific */
@@ -344,10 +353,6 @@ DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
 DECL_SYM(grid_flow2)
 DECL_SYM(grid_end)
-
-#ifndef __cplusplus
-typedef enum { false, true } bool;
-#endif
 
 /* **************************************************************** */
 /* dim.c */
@@ -591,12 +596,10 @@ struct FormatClass {
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	Format *(*open    )(FormatClass *$, int ac, const fts_atom_t *at, int mode);
-
-	/* for future use */
-	Format *(*chain_to)(FormatClass *$, int ac, const fts_atom_t *at, int mode, Format *other);
+	Format *(*open)(FormatClass *$, int ac, const fts_atom_t *at, int mode);
 
 /* methods on objects of this class */
+
 /* for reading, to outlet */
 	/* frames - how many frames there are (optional) */
 	int  (*frames)(Format *$);
@@ -622,9 +625,9 @@ struct FormatClass {
 #define Format_FIELDS \
 	FormatClass *cl; \
 	GridObject *parent; \
+	Format *chain; \
 	int stream; \
 	FILE *bstream; \
-	Format *chain; \
 	BitPacking *bit_packing; \
 	Dim *dim;
 

@@ -25,11 +25,15 @@
 	This is the Grid format I defined:
 	1 uint8: 0x7f
 	4 uint8: "GRID" big endian | "grid" little endian
-	1 uint8: bits per value (supported: 8, 32)
+	1 uint8: bits per value (supported: 32)
 	1 uint8: reserved (supported: 0)
 	1 uint8: number of dimensions N (supported: at least 0..4)
 	N uint32: number of elements per dimension D[0]..D[N-1]
 	raw data goes there.
+
+	future plans:
+	additional bpv values 1,2,4,8,16
+	reserved field will become number type or something
 */
 
 #include "grid.h"
