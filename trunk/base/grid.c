@@ -485,20 +485,19 @@ GridObject::~GridObject() {
 //	fprintf(stderr,"GridObject::~GridObject says hello %08x\n",(int)this);
 }
 
-METHOD(GridObject,init) {
-	int i;
-	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
-	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	$->profiler_cumul = 0;
+METHOD3(GridObject,init) {
+	for (int i=0; i<MAX_INLETS;  i++) in[i]  = 0;
+	for (int i=0; i<MAX_OUTLETS; i++) out[i] = 0;
+	profiler_cumul = 0;
 
-	GridClass *cl = $->grid_class;
+	GridClass *cl = grid_class;
 	//gfpost("cl=%p\n",cl);
-	for (i=0; i<cl->handlersn; i++) {
+	for (int i=0; i<cl->handlersn; i++) {
 		GridHandler *gh = &cl->handlers[i];
-		$->in[gh->winlet] = new GridInlet($,gh);
+		in[gh->winlet] = new GridInlet(this,gh);
 	}
-	for (i=0; i<cl->outlets; i++) $->out[i] = new GridOutlet($,i);
-//	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
+	for (int i=0; i<cl->outlets; i++) out[i] = new GridOutlet(this,i);
+//	for (int i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d in[i]=%p",this,i,in[i]);
 	rb_call_super(0,0);
 	return Qnil;
 }
@@ -518,18 +517,20 @@ GRID_END_(GridObject,GridObject_r_end) {
 	rb_funcall($->peer,SI(_0_rgrid_end),0); // hack
 }
 
-METHOD(GridObject,inlet_dim) {
-	GridInlet *in = $->in[INT(argv[0])];
-	if (!in) RAISE("no such inlet #%d");
-	if (!in->dim) return Qnil;
-	int n=in->dim->count();
+METHOD3(GridObject,inlet_dim) {
+	int inln = INT(argv[0]);
+	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	GridInlet *inl = in[inln];
+	if (!inl) RAISE("no such inlet #%d");
+	if (!inl->dim) return Qnil;
+	int n=inl->dim->count();
 	Ruby a = rb_ary_new2(n);
-//	gfpost("inlet_dim: %p,%p",in,in->dim);
-	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
+//	gfpost("inlet_dim: %p,%p",inl,inl->dim);
+	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(inl->dim->v[i]));
 	return a;
 }
 
-METHOD(GridObject,send_out_grid_begin) {
+METHOD3(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
 	int n = rb_ary_len(argv[1]);
@@ -537,24 +538,24 @@ METHOD(GridObject,send_out_grid_begin) {
 	Ruby *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
-	$->out[outlet]->begin(new Dim(n,v));
+	out[outlet]->begin(new Dim(n,v));
 	return Qnil;
 }
 
-METHOD(GridObject,send_out_grid_flow) {
+METHOD3(GridObject,send_out_grid_flow) {
 	if (argc!=2 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int outlet = INT(argv[0]);
 	int n = rb_str_len(argv[1]) / sizeof(Number);
 	Pt<Number> p = rb_str_pt(argv[1],Number);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
-	$->out[outlet]->send(n,p);
+	out[outlet]->send(n,p);
 	return Qnil;
 }
 
-METHOD(GridObject,send_out_grid_end) {
+METHOD3(GridObject,send_out_grid_end) {
 	int outlet = INT(argv[0]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
-	$->out[outlet]->end();
+	out[outlet]->end();
 	return Qnil;
 }
 
@@ -602,7 +603,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	return list;
 }
 
-METHOD(GridObject,method_missing) {
+METHOD3(GridObject,method_missing) {
 	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
 //	gfpost("argc=%d,argv=%p,self=%p,rself=%p",argc,argv,self,rself);
 	if (argc<1) RAISE("not enough arguments");
@@ -612,13 +613,13 @@ METHOD(GridObject,method_missing) {
 	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
-		GridInlet *inl = $->in[i];
+		GridInlet *inl = in[i];
 		//gfpost("$=%p; inl=%p",$,inl);
 		int m;
 		for (m=0; m<COUNT(names); m++)
 			if (strcmp(name+3,names[m])==0) break;
 		if (m==COUNT(names)) goto hell;
-		if (!inl) RAISE("inlet #%d missing for object %s",i,$->args());
+		if (!inl) RAISE("inlet #%d missing for object %s",i,args());
 		argc--, argv++;
 		switch(m) {
 		case 0: return inl->begin(  argc,argv), Qnil;
@@ -632,20 +633,19 @@ METHOD(GridObject,method_missing) {
 	hell: return rb_call_super(argc,argv);
 }
 
-METHOD(GridObject,delete) {
-	GridObject *parent=$;
+METHOD3(GridObject,del) {
 	//gfpost("%s: GridObject#delete",INFO(this));
-	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) delete $->in[i], $->in[i]=0;
-	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) delete $->out[i], $->out[i]=0;
+	for (int i=0; i<MAX_INLETS;  i++) if (in[i]) delete in[i], in[i]=0;
+	for (int i=0; i<MAX_OUTLETS; i++) if (out[i]) delete out[i], out[i]=0;
 	rb_call_super(argc,argv);
-//	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)$);
+//	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)this);
 	return Qnil;
 }
 
 GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(GridObject,init),
-	DECL(GridObject,delete),
+	DECL(GridObject,del),
 	DECL(GridObject,send_out_grid_begin),
 	DECL(GridObject,send_out_grid_flow),
 	DECL(GridObject,send_out_grid_end),
@@ -669,18 +669,18 @@ GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
 GridClass *format_classes[] = {};
 #endif
 
-METHOD(Format,init) {
-	int flags = INT(rb_ivar_get(CLASS_OF($->peer),SI(@flags)));
+METHOD3(Format,init) {
+	int flags = INT(rb_ivar_get(CLASS_OF(peer),SI(@flags)));
 	rb_call_super(argc,argv);
-	$->mode = argv[0];
-	$->parent = 0;
-	$->bit_packing = 0;
-	$->dim = 0;
+	mode = argv[0];
+	parent = 0;
+	bit_packing = 0;
+	dim = 0;
 	//gfpost("flags=%d",flags);
 	/* FF_W, FF_R, FF_RW */
-	if ($->mode==SYM(in)) {
+	if (mode==SYM(in)) {
 		if ((flags & 4)==0) goto err;
-	} else if ($->mode==SYM(out)) {
+	} else if (mode==SYM(out)) {
 		if ((flags & 2)==0) goto err;
 	} else {
 		RAISE("Format opening mode is incorrect");
@@ -688,29 +688,29 @@ METHOD(Format,init) {
 	return Qnil;
 err:
 	RAISE("Format %s does not support mode '%s'",
-		RSTRING(rb_ivar_get($->peer,SI(@symbol_name)))->ptr, rb_sym_name($->mode));
+		RSTRING(rb_ivar_get(peer,SI(@symbol_name)))->ptr, rb_sym_name(mode));
 }
 
-METHOD(Format,option) {
+METHOD3(Format,option) {
 	if (argc<1) RAISE("not enough arguments");
 	RAISE("option %s not supported",rb_sym_name(argv[0]));
 	return Qnil;
 }
 
-METHOD(Format,close) {
-	delete $->bit_packing;
-	delete $->dim;
-	delete $; // caution...
+METHOD3(Format,close) {
+	delete bit_packing;
+	delete dim;
+	delete this; // caution...
 	return Qnil;
 }
 
-METHOD(Format,open_file) {
+METHOD3(Format,open_file) {
 	if (argc<1) RAISE("expect filename");
-	rb_ivar_set($->peer,SI(@stream),
+	rb_ivar_set(peer,SI(@stream),
 		rb_funcall(rb_eval_string("File"),SI(open),2,
 			rb_funcall(GridFlow_module,SI(find_file),1,
 			rb_any_to_s(argv[0])),
-			rb_str_new2($->mode==4?"r":$->mode==2?"w":(RAISE("argh"),""))));
+			rb_str_new2(mode==4?"r":mode==2?"w":(RAISE("argh"),""))));
 	return Qnil;
 }
 

@@ -28,19 +28,16 @@
 #define GF_VERSION "0.6.3"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
+#include <new>
 #include <stdlib.h>
+#include <string.h>
+#include <signal.h>
 #include <stdio.h>
 #include <math.h>
 #include "../config.h"
 
-#include <stdlib.h>
-#include <new>
-
 #define $ self
-
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
-
-#include <string.h>
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -51,10 +48,6 @@ typedef short int16;
 typedef long  int32;
 typedef float  float32;
 typedef double float64;
-
-#ifndef __cplusplus
-typedef enum { false, true } bool;
-#endif
 
 typedef /*volatile*/ VALUE Ruby;
 
@@ -150,11 +143,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 
-/* 0.5.0: shortcuts for MethodDecl */
-
-#define DECL(_class_,_name_) \
-	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
-
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
 
 /*
@@ -169,23 +157,18 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 		return _class_##_##_name_($,argc,argv); } \
 	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
 
-/* C++ style */
+#define DECL(_class_,_name_) \
+	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
 
-#define DECL3(_class_,_name_) \
-	void _name_(int argc, Ruby *argv); \
-	static Ruby _name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); \
-		Ruby result = $->_name_(argc,argv); \
-		return result; }
+/* same, C++ style */
+
+#define DECL3(_name_) \
+	Ruby _name_(int argc, Ruby *argv);
 
 #define METHOD3(_class_,_name_) \
-	MethodDecl _class_##_##_name_##_kludge_ \
-	(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap); \
-	void _class_::_name_(int argc, Ruby *argv)
-
-/* urgh? */
-#define DECL4(_class_,_name_) \
-	MethodDecl(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap)
+	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); return $->_name_(argc,argv); } \
+	Ruby _class_::_name_(int argc, Ruby *argv)
 
 typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 
@@ -301,7 +284,7 @@ public:
 	Pt operator+=(int i) { p+=i; return *this; }
 	Pt operator++(int  ) { Pt f(*this); ++*this; return f; }
 	T &operator[](int i) {
-#ifdef HAVE_DEBUG
+#ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n)) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
@@ -408,6 +391,10 @@ struct BitPacking {
 	Pt<Number> unpack(int n, Pt</*const*/ uint8> in, Pt<Number> out);
 	bool is_le();
 	bool eq(BitPacking *o);
+
+	DECL3(pack2);
+	DECL3(unpack2);
+	DECL3(init);
 };
 
 int high_bit(uint32 n);
@@ -495,6 +482,7 @@ struct Grid {
 	Dim *dim;
 	NumberTypeIndex nt;
 	void *data;
+	/*GridType *constraint; */
 
 	Grid() {
 		dim = 0;
@@ -647,6 +635,14 @@ struct GridObject {
 
 	virtual void mark(); /* not used for now */
 	virtual ~GridObject();
+
+	DECL3(init);
+	DECL3(inlet_dim);
+	DECL3(method_missing);
+	DECL3(del);
+	DECL3(send_out_grid_begin);
+	DECL3(send_out_grid_flow);
+	DECL3(send_out_grid_end);
 };
 
 void GridObject_conf_class(Ruby $, GridClass *grclass);
@@ -670,6 +666,11 @@ struct Format : GridObject {
 	Ruby /*Symbol*/ mode;
 	BitPacking *bit_packing;
 	Dim *dim;
+
+	DECL3(init);
+	DECL3(option);
+	DECL3(close);
+	DECL3(open_file);
 };
 
 /*

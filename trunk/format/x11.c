@@ -69,6 +69,11 @@ struct FormatX11 : Format {
 	bool alloc_image (int sx, int sy);
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
+
+	DECL3(frame);
+	DECL3(close);
+	DECL3(option);
+	DECL3(init);
 };
 
 /* ---------------------------------------------------------------- */
@@ -176,26 +181,26 @@ static void FormatX11_alarm(FormatX11 *$) {
 
 /* ---------------------------------------------------------------- */
 
-METHOD(FormatX11,frame) {
-//	gfpost("$->dim = %s",$->dim->to_s());
+METHOD3(FormatX11,frame) {
+//	gfpost("dim = %s",dim->to_s());
 
-	XGetSubImage($->display, $->window,
-		0, 0, $->dim->get(1), $->dim->get(0),
-		(unsigned)-1, ZPixmap, $->ximage, 0, 0);
+	XGetSubImage(display, window,
+		0, 0, dim->get(1), dim->get(0),
+		(unsigned)-1, ZPixmap, ximage, 0, 0);
 
-	$->out[0]->begin($->dim->dup());
+	out[0]->begin(dim->dup());
 
-	int sy=$->dim->get(0), sx=$->dim->get(1);
-	int bs=$->dim->prod(1);
+	int sy=dim->get(0), sx=dim->get(1);
+	int bs=dim->prod(1);
 	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
-		Pt<uint8> b1 = Pt<uint8>($->image,$->ximage->bytes_per_line*$->dim->get(0))
-			+ $->ximage->bytes_per_line * y;
-		$->bit_packing->unpack(sx,b1,b2);
-		$->out[0]->send(bs,b2);
+		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
+			+ ximage->bytes_per_line * y;
+		bit_packing->unpack(sx,b1,b2);
+		out[0]->send(bs,b2);
 	}
 
-	$->out[0]->end();
+	out[0]->end();
 	return Qnil;
 }
 
@@ -358,18 +363,18 @@ GRID_END(FormatX11,0) {
 	}
 }
 
-METHOD(FormatX11,close) {
-	if (!$) RAISE("stupid error: trying to close display NULL. =)");
-	MainLoop_remove($);
-	if ($->is_owner) XDestroyWindow($->display,$->window);
-	XSync($->display,0);
-	$->dealloc_image();
-	XCloseDisplay($->display);
+METHOD3(FormatX11,close) {
+	if (!this) RAISE("stupid error: trying to close display NULL. =)");
+	MainLoop_remove(this);
+	if (is_owner) XDestroyWindow(display,window);
+	XSync(display,0);
+	dealloc_image();
+	XCloseDisplay(display);
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
-METHOD(FormatX11,option) {
+METHOD3(FormatX11,option) {
 	VALUE sym = argv[0];
 	if (sym == SYM(out_size)) {
 		int sy = INT(argv[1]);
@@ -378,16 +383,16 @@ METHOD(FormatX11,option) {
 		if (sx<16) sx=16;
 		if (sy>MAX_INDICES) RAISE("height too big");
 		if (sx>MAX_INDICES) RAISE("width too big");
-		$->resize_window(sx,sy);
+		resize_window(sx,sy);
 	} else if (sym == SYM(draw)) {
-		int sy = $->dim->get(0);
-		int sx = $->dim->get(1);
-		$->show_section(0,0,sx,sy);
+		int sy = dim->get(0);
+		int sx = dim->get(1);
+		show_section(0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
 		int autodraw = INT(argv[1]);
 		if (autodraw<0 || autodraw>2)
 			RAISE("autodraw=%d is out of range",autodraw);
-		$->autodraw = autodraw;
+		autodraw = autodraw;
 	} else
 		rb_call_super(argc,argv);
 	return Qnil;
@@ -430,7 +435,7 @@ void FormatX11::open_display(const char *disp_string) {
 #endif
 }
 
-METHOD(FormatX11,init) {
+METHOD3(FormatX11,init) {
 	/* defaults */
 	int sy = 240;
 	int sx = 320;
@@ -439,13 +444,13 @@ METHOD(FormatX11,init) {
 
 	argv++, argc--;
 
-	$->window  = 0;
-	$->is_owner= true;
-	$->image   = Pt<uint8>();
-	$->ximage  = 0;
-	$->autodraw= 1;
+	window  = 0;
+	is_owner= true;
+	image   = Pt<uint8>();
+	ximage  = 0;
+	autodraw= 1;
 #ifdef HAVE_X11_SHARED_MEMORY
-	$->shm_info= 0;
+	shm_info= 0;
 #endif
 
 	if (argc<1) RAISE("not enough arguments");
@@ -461,7 +466,7 @@ METHOD(FormatX11,init) {
 	// assert (ac>0);
 	if (domain==SYM(here)) {
 		gfpost("mode `here'");
-		$->open_display(0);
+		open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		if (argc<2) RAISE("open local: not enough args");
@@ -469,7 +474,7 @@ METHOD(FormatX11,init) {
 		int dispnum = NUM2INT(argv[1]);
 		gfpost("mode `local', display_number `%d'",dispnum);
 		sprintf(host,":%d",dispnum);
-		$->open_display(host);
+		open_display(host);
 		i=2;
 	} else if (domain==SYM(remote)) {
 		if (argc<3) RAISE("open remote: not enough args");
@@ -478,7 +483,7 @@ METHOD(FormatX11,init) {
 		int dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
 		gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
-		$->open_display(host);
+		open_display(host);
 		i=3;
 	} else {
 		RAISE("x11 destination syntax error");
@@ -489,19 +494,19 @@ METHOD(FormatX11,init) {
 	} else {
 		VALUE winspec = argv[i];
 		if (winspec==SYM(root)) {
-			$->window = $->root_window;
-			gfpost("will use root window (0x%x)", $->window);
-			$->is_owner = false;
+			window = root_window;
+			gfpost("will use root window (0x%x)", window);
+			is_owner = false;
 		} else {
 			const char *winspec2 = rb_sym_name(winspec);
 			if (strncmp(winspec2,"0x",2)==0) {
-				$->window = strtol(winspec2+2,0,16);
+				window = strtol(winspec2+2,0,16);
 			} else {
-				$->window = atoi(winspec2);
+				window = atoi(winspec2);
 			}
-			if ($->window) {
-				$->is_owner = false;
-				gfpost("will use specified window (0x%x)", $->window);
+			if (window) {
+				is_owner = false;
+				gfpost("will use specified window (0x%x)", window);
 			} else {
 				gfpost("bad window specification");
 			}
@@ -509,18 +514,18 @@ METHOD(FormatX11,init) {
 	}
 
 	/* "resize" also takes care of creation */
-	$->resize_window(sx,sy);
+	resize_window(sx,sy);
 
-	Visual *v = $->visual;
-	int disp_is_le = !ImageByteOrder($->display);
+	Visual *v = visual;
+	int disp_is_le = !ImageByteOrder(display);
 	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 	gfpost("is_le = %d",is_le());
 	gfpost("disp_is_le = %d", disp_is_le);
-	$->bit_packing = new BitPacking(
-		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
+	bit_packing = new BitPacking(
+		disp_is_le, ximage->bits_per_pixel/8, 3, masks);
 
-	$->bit_packing->gfpost();
-	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
+	bit_packing->gfpost();
+	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
 	return Qnil;
 }
 

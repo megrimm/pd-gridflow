@@ -250,8 +250,10 @@ void define_many_methods(Ruby $, int n, MethodDecl *methods) {
 /*	fprintf(stderr,"here are %d methods:\n",n); */
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
-		const char *buf = strcmp(md->selector,"init")==0 ?
-			"initialize" : md->selector;
+		const char *buf =
+			strcmp(md->selector,"init")==0 ? "initialize" :
+			strcmp(md->selector,"del")==0 ? "delete" :
+			md->selector;
 /*
 		fprintf(stderr,"%s: adding method #%s\n",
 			RSTRING(rb_funcall($,SI(inspect),0))->ptr,buf);
