@@ -61,7 +61,8 @@ $LD_LIBRARY_PATH = (
 # Ruby 1.8 is the latter case; Ruby 1.6, 1.7 the former case
 for x in ["#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
 "#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}",
-"#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"] do
+"#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
+] do
 	$LIBRUBY_A = make_expand x
 	break if File.exist? $LIBRUBY_A
 end
@@ -222,8 +223,10 @@ Feature.new {
 		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
 	options ["HAVE_STATIC_RUBY"]
-	defines [[:PATH_LIBRUBY_A,$LIBRUBY_A],
-		["LIBS_LIBRUBY_A",CONFIG['LIBS']]]
+	defines [[:LIBRUBY_A,
+		"-Wl,--whole-archive " +
+		$LIBRUBY_A + " " + CONFIG['LIBS'] +
+		" -Wl,--no-whole-archive"]]
 },
 Feature.new {
 	tag :fast
