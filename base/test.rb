@@ -1,6 +1,7 @@
 # $Id$
 
 require "gridflow"
+
 include GridFlow
 GridFlow.verbose=true
 
@@ -18,7 +19,7 @@ class Expect < FObject
 		@expecting=true
 		yield
 		@expecting=false
-		raise "wrong number of messages (#{@count})" if @count!=@v.length
+		raise "wrong number of messages (#{@count}), expecting #{@v.inspect}" if @count!=@v.length
 	end
 	def _0_list(*l)
 		return if not @expecting
@@ -221,8 +222,28 @@ end # for nt
 end
 
 def test_new_classes
+	hm = "#".intern
 	x = Expect.new
-	a = FObject["@grade"]
+	e = FObject["@export_list"]
+	e.connect 0,x,0
+
+	a = FObject["@import per_message"]
+	a.connect 0,e,0
+	x.expect([1,2,3]) { a.send_in 0,1,2,3 }
+	x.expect([102,111,111]) { a.send_in 0,:symbol,:foo }
+	x.expect([ 70, 79, 79]) { a.send_in 0,:symbol,:FOO }
+
+	a = FObject["@join 1"]
+	a.connect 0,e,0
+	a.send_in 1,2,2,hm,11,13,17,19
+	x.expect([2,3,11,13,5,7,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
+
+	a = FObject["@join 0"]
+	a.connect 0,e,0
+	a.send_in 1,2,2,hm,11,13,17,19
+	x.expect([2,3,5,7,11,13,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
+
+#	a = FObject["@grade"]
 end
 
 def test_rtmetro
@@ -274,6 +295,29 @@ def test_nonsense
 	  raise "Expected StandardError"
 	end
 	p b.inlet_dim(0)
+end
+
+def test_store
+	a = FObject["@in ppm file #{$imdir}/teapot.ppm"]
+	b = FObject["@store"]
+	c = FObject["@out x11"]
+	a.connect 0,b,1
+	a.send_in 0,"option cast uint8"
+	a.send_in 0
+	b.connect 0,c,0
+	d = FObject["@for {0 0} {256 256} {1 1}"]
+	e = FObject["@ ^ 85"]
+	d.connect 0,e,0
+	e.connect 0,b,0
+	f = FObject["fps detailed"]
+	c.connect 0,f,0
+	pr = FObject["rubyprint"]
+	f.connect 0,pr,0
+	GridFlow.verbose = false
+	256.times {|t|
+		e.send_in 1,t
+		d.send_in 0
+	}
 end
 
 # generates recursive checkerboard pattern (munchies) in bluish colours.     
@@ -455,15 +499,21 @@ def test_tcp
 end
 
 def test_layer
-	gin = FObject["@in targa file #{$imdir}/tux.tga"]
-	gfor = FObject["@for {0 0} {120 160} {1 1}"]
+#	gin = FObject["@in targa file #{$imdir}/tux.tga"]
+	gin1 = FObject["@in ppm file #{$imdir}/r001.ppm"]
+	gin = FObject["@join 2 {240 320 1 # 128}"]
+	gin1.connect 0,gin,0
+
+#	gfor = FObject["@for {0 0} {120 160} {1 1}"]
+	gfor = FObject["@for {0 0} {240 320} {1 1}"]
 	gche = FObject["@checkers"]
 
 	gove = FObject["@layer"]
 #	gove = FObject["@fold + {0 0 0 0}"]
 #	gout = FObject["@print"]
 #	gove = FObject["@inner2 * + 0 {3 4 # 1 0 0 0 0}"]
-	gout = FObject["@out sdl"]
+#	gout = FObject["@out sdl"]
+	gout = FObject["@out x11"]
 
 	gin.connect 0,gove,0
 	gfor.connect 0,gche,0
@@ -477,8 +527,9 @@ def test_layer
 	gout.connect 0,fps,0
 	fps.connect 0,pr,0
 
-#	loop{gin.send_in 0}
-	gin.send_in 0
+	loop{gin1.send_in 0}
+#	gin.send_in 0
+#	gin1.send_in 0
 	$mainloop.loop
 end
 

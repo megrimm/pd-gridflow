@@ -206,6 +206,9 @@ static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
+int highest_bit(uint32 n);
+int lowest_bit(uint32 n);
+
 /* **************************************************************** */
 
 /* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
