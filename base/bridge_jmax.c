@@ -40,28 +40,60 @@
 #undef post
 
 /* can't even refer to the other GridFlow_module before ruby loads gridflow */
-static VALUE GridFlow_module2;
+static VALUE GridFlow_module2=0;
+static VALUE Pointer_class2=0;
+static VALUE sym_ninlets=0, sym_noutlets=0;
 
 #define rb_sym_name rb_sym_name_r4j
 static char *rb_sym_name(VALUE sym) {
 	return strdup(rb_id2name(SYM2ID(sym)));
 }
 
+static VALUE Pointer_new (void *ptr) {
+	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
+}
+
+static void *Pointer_get (VALUE self) {
+	void *p;
+	Data_Get_Struct(self,void *,p);
+	return p;
+}
+
 /* **************************************************************** */
 /* BFObject */
 
-struct BFObject {
-	fts_object_t _o;
+struct BFObject : fts_object_t {
 	VALUE peer;
+
+	static fts_class_t *find_bfclass (fts_symbol_t sym) {
+		VALUE v = rb_hash_aref(
+			rb_ivar_get(GridFlow_module2, SI(@bfclasses_set)),
+			rb_str_new2(fts_symbol_name(sym)));
+		if (v==Qnil) RAISE("class not found");
+		return (fts_class_t *) FIX2PTR(v);
+	}
+	static VALUE find_fclass (fts_symbol_t sym) {
+		VALUE v = rb_hash_aref(
+			rb_ivar_get(GridFlow_module2, SI(@fclasses_set)),
+			rb_str_new2(fts_symbol_name(sym)));
+		if (v==Qnil) RAISE("class not found");
+		return v;
+	}
 };
 
-fts_object_t *FObject_peer(VALUE rself) {
-	DGS(GridObject);
-	return (fts_object_t *) $->foreign_peer;
+int ninlets_of (VALUE qlass) {
+	if (!rb_ivar_defined(qlass,SYM2ID(sym_ninlets))) RAISE("no inlet count");
+	return INT(rb_ivar_get(qlass,SYM2ID(sym_ninlets)));
 }
 
-VALUE BFObject_peer(fts_object_t *$) {
-	return ((BFObject *)$)->peer;
+int noutlets_of (VALUE qlass) {
+	if (!rb_ivar_defined(qlass,SYM2ID(sym_noutlets))) RAISE("no outlet count");
+	return INT(rb_ivar_get(qlass,SYM2ID(sym_noutlets)));
+}
+
+BFObject *FObject_peer(VALUE rself) {
+	DGS(GridObject);
+	return (BFObject *) $->foreign_peer;
 }
 
 void rj_convert(VALUE arg, fts_atom_t *at) {
@@ -73,9 +105,12 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 		fts_set_symbol(at,fts_new_symbol_copy(name));
 	} else if (FLOAT_P(arg)) {
 		fts_set_float(at,RFLOAT(arg)->value);
+//	} else if (CLASS_OF(arg)==Pointer_class2) {
+//		fts_set_ptr(at,Pointer_get(arg));
 	} else {
 		/* can't use EARG here */
-		rb_raise(rb_eArgError, "cannot convert argument of class %s", CLASS_OF(arg));
+		rb_raise(rb_eArgError, "cannot convert argument of class '%s'",
+			rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 	}
 }
 
@@ -93,9 +128,8 @@ VALUE jr_convert(const fts_atom_t *at) {
 		VALUE a = rb_ary_new2(n);
 		for (int i=0; i<n; i++) rb_ary_push(a,jr_convert(p+i));
 		return a;
-	} else if (fts_is_ptr(at)) {
-		post("warning: ptr type not supported\n");
-		return Qnil; /* not supported */
+//	} else if (fts_is_ptr(at)) {
+//		return Pointer_new(fts_get_ptr(at));
 	} else {
 		post("warning: type \"%s\" not supported\n",fts_symbol_name(at->type));
 		return Qnil; /* unknown */
@@ -104,7 +138,7 @@ VALUE jr_convert(const fts_atom_t *at) {
 
 // kludge
 typedef struct {
-	fts_object_t *$;
+	BFObject *$;
 	int winlet;
 	fts_symbol_t selector;
 	int ac;
@@ -115,13 +149,12 @@ static VALUE BFObject_method_missing$1 (kludge *k) {
 	const char *s = fts_symbol_name(k->selector);
 	char buf[256];
 	VALUE argv[k->ac];
-	VALUE $ = BFObject_peer(k->$);
-	ID sel;
+	VALUE $ = k->$->peer;
 	strcpy(buf+3,s);
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + k->winlet;
-	sel = rb_intern(buf);
-	{ int i; for (i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i); }
+	ID sel = rb_intern(buf);
+	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
 	rb_funcall2($,sel,k->ac,argv);
 	return Qnil;
 }
@@ -143,7 +176,7 @@ static VALUE BFObject_rescue (kludge *k) {
 static void BFObject_method_missing (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	kludge k;
-	k.$ = $;
+	k.$ = (BFObject *)$;
 	k.winlet = winlet;
 	k.selector = selector;
 	k.ac = ac;
@@ -171,7 +204,7 @@ static VALUE BFObject_init$1 (kludge *k) {
 static void BFObject_init (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	kludge k;
-	k.$ = $;
+	k.$ = (BFObject *)$;
 	k.winlet = winlet;
 	k.ac = ac;
 	k.at = at;
@@ -192,32 +225,23 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 		post(name " failed: %s\n", fts_status_get_description(r)); \
 		return Qnil;}
 
-static VALUE sym_inlets=0, sym_outlets=0;
-
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 	VALUE $ = rb_hash_aref(rb_ivar_get(GridFlow_module2,
 		rb_intern("@fclasses_set")),
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
-	if (!sym_inlets)  sym_inlets =rb_intern("@inlets");
-	if (!sym_outlets) sym_outlets=rb_intern("@outlets");
-	int inlets = rb_ivar_defined($,sym_inlets) ?
-		rb_ivar_get($,sym_inlets) : INT2NUM(0);
-	int outlets = rb_ivar_defined($,sym_outlets) ?
-		rb_ivar_get($,sym_outlets) : INT2NUM(0);
-
-	post("name=%s, inlets=%d, outlets=%d, rubyclass=%p\n",
-		fts_symbol_name(qlass->mcl->name), inlets, outlets, qlass);
+	int ninlets = ninlets_of($);
+	int noutlets = noutlets_of($);
 
 	fts_status_t r;
-	r = fts_class_init(qlass, sizeof(BFObject), inlets, outlets, (void *)$);
+	r = fts_class_init(qlass, sizeof(BFObject), ninlets, noutlets, (void *)$);
 	RETIFFAIL("fts_class_init",r);
 	
 	r = fts_method_define_varargs(
 		qlass,fts_SystemInlet,fts_s_init,BFObject_init);
 	RETIFFAIL("define_varargs (for constructor)",r);
 
-	for (int i=0; i<inlets; i++)
+	for (int i=0; i<ninlets; i++)
 		fts_method_define_varargs(qlass, i, fts_s_anything, BFObject_method_missing);
 
 	return fts_Success;
@@ -233,7 +257,7 @@ int ac, const fts_atom_t *at) {
 		(RFunc)BFObject_rescue,(VALUE)&k,
 		rb_eException,0);
 	return (VALUE)r==Qnil ? 
-		fts_new_status("Exception in BF_Object_class_init") : r;
+		fts_new_status("Exception in BFObject_class_init$1") : r;
 }
 
 VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
@@ -285,6 +309,7 @@ VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
 	$->class_install = FObject_s_install_2;
 	$->send_out = FObject_send_out_2;
 	$->post = post;
+	$->post_does_ln = false;
 	GridFlow_module2 = rb_eval_string("GridFlow");
 	return Qnil;
 }
@@ -292,7 +317,7 @@ VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
 static VALUE gf_find_file(VALUE $, VALUE s) {
 	char buf[1024];
 	if (TYPE(s)!=T_STRING) RAISE("expected string");
-	/* unlikely buffer overflow ahead */
+	// unlikely buffer overflow ahead
 	fts_file_get_read_path(RSTRING(s)->ptr,buf);
 	return rb_str_new2(buf);
 }
@@ -302,6 +327,8 @@ void gridflow_module_init (void) {
 	post("setting up Ruby-for-jMax...\n");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
+	sym_ninlets =SYM(@ninlets);
+	sym_noutlets=SYM(@noutlets);
 	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
 		(RFunc)gridflow_bridge_init,1);
 	post("(done)\n");

@@ -47,41 +47,15 @@ if true
 end
 
 def GridFlow.post(s,*a)
-#	printf s,*a
-	GridFlow.post_string(sprintf(s,*a))
+	GridFlow.post_string(sprintf("%s"+s,GridFlow.post_header,*a))
 	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
 end
 
 class<<GridFlow; attr_accessor :post_header end
 GridFlow.post_header = "[gf] "
 
-def GridFlow.gfpost2(fmt,s)
-	@post_last ||= ""
-	@post_count ||= 0
-
-	if @post_last==fmt
-		@post_count+=1
-		#if @post_count >= 64 and @post_count/(@post_count&-@post_count)<4
-		#	post "[too many similar posts. this is # %d]\n", @post_count
-		#	return
-		#end
-	else
-		@post_last = fmt
-		@post_count += 1
-	end
-
-	s<<"\n" if s[-1]!=10
-	post(GridFlow.post_header)
-	post(s)
-end
-
-# a slightly friendlier version of post(...)
-# it removes redundant messages.
-# it also ensures that a \n is added at the end.
-def GridFlow.gfpost(fmt,*a)
-	fmt=fmt.to_s
-	GridFlow.gfpost2(fmt,(sprintf fmt, *a))
-end
+def GridFlow.gfpost2(fmt,s); post("%s",s) end
+def GridFlow.gfpost(fmt,*a); post(fmt,*a) end
 
 GridFlow.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
 GridFlow.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
@@ -107,7 +81,7 @@ def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
 		when Integer, Symbol; x
-		when /^[0-9]+$/; x.to_i
+		when /^[+-]?[0-9]+$/; x.to_i
 		when String; x.intern
 		end
 	}

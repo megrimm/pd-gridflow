@@ -196,7 +196,7 @@ struct GridStore : GridObject {
 GRID_BEGIN(GridStore,0) {
 	assert(in->dim);
 	int na = in->dim->count();
-	int nb,nc,nd,i;
+	int nb,nc,nd;
 	int v[MAX_DIMENSIONS];
 	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
 
@@ -210,6 +210,8 @@ GRID_BEGIN(GridStore,0) {
 			"got %d, expecting <= %d", nc, nb);
 	nd = nb - nc + na - 1;
 	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
+
+	int i;
 	for (i=0; i<na-1; i++) v[i] = in->dim->get(i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = $->r.dim->get(i);
 	$->out[0]->begin(new Dim(nd,v));
@@ -225,18 +227,20 @@ GRID_FLOW(GridStore,0) {
 	assert((n % nc) == 0);
 	assert($->data);
 
-	while (n>0) {
-		int pos;
-		int i;
-		for (i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
-		while (i<nb) v[i++] = 0;
-		pos = $->r.dim->calc_dex(v);
-		switch ($->r.nt) {
-		case int32_type_i: {
+	for (int i=nc; i<nb; i++) v[i] = 0;
+
+	if ($->r.nt==int32_type_i) {
+		while (n>0) {
+			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
+			int pos = $->r.dim->calc_dex(v);
 			Number *data2 = $->r.as_int32() + pos;
 			$->out[0]->send(size,data2);
-		 	break;}
-		case uint8_type_i: {
+			n -= nc;
+		}
+	} else if ($->r.nt==uint8_type_i) {
+		while (n>0) {
+			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
+			int pos = $->r.dim->calc_dex(v);
 			int bs = gf_max_packet_length;
 			Number data3[bs];
 			uint8 *data2 = $->r.as_uint8() + pos;
@@ -252,11 +256,9 @@ GRID_FLOW(GridStore,0) {
 				$->out[0]->send(1,data3);
 				left--;
 			}
-			break;}
-		default: assert(0);
+			n -= nc;
 		}
-		n -= nc;
-	}
+	} else RAISE("unsupported type");
 }
 
 GRID_END(GridStore,0) { $->out[0]->end(); }
@@ -269,16 +271,13 @@ GRID_BEGIN(GridStore,1) {
 }
 
 GRID_FLOW(GridStore,1) {
-	switch ($->r.nt) {
-	case int32_type_i:{
+	if ($->r.nt==int32_type_i) {
 		Number *data2 = $->r.as_int32() + in->dex;
-		memcpy(data2, data, n*sizeof(Number)); break;}
-	case uint8_type_i:{
+		memcpy(data2, data, n*sizeof(Number));
+	} else if ($->r.nt==uint8_type_i) {
 		uint8 *data2 = $->r.as_uint8() + in->dex;
 		for(int i=0; i<n; i++) data2[i] = data[i];
-		break;}
-	default: assert(0);
-	}
+	} else RAISE("unsupported type");
 	in->dex += n;
 }
 
