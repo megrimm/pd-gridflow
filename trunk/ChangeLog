@@ -1,10 +1,16 @@
 /* $Id$ */
 
 version 0.6.1 (head):
+ * now compiling the C code as C++ (and beginning to use C++ features)
  * now you can use Ruby 1.7, which is faster
 	note: make sure your version is dated 2002
  * new objects:
 	rubyprint, @print
+ * objects rewritten in Ruby:
+	@in, @out
+ * @in gzip support (example: "open ppm gzfile teapot.ppm.gz")
+	also works with targa and grid
+ * BitPacking now supports 1 to 4 channels instead of just 3
 
 version 0.6.0 (2002.07.31):
  * THIS IS AN EXPERIMENTAL BRANCH (VERY BUGGY)

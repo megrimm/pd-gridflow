@@ -282,7 +282,7 @@ $features.each {|f| $features_h[f.tag]=f }
 #--------------------------------#
 
 $conf={
-	:ARCH => nil,
+	:JMAX_ARCH => nil,
 	:LDSOFLAGS => ["-lm"],
 	:FEATURES => {},
 #	:FORMATS => ["PPM","Targa","Grid"],
@@ -295,8 +295,9 @@ $conf={
 
 def usage
 	log = ""
-	log << "usage: ./configure --arch architecture "
-	log << "[--jmax-dist-dir directory] [--puredata-dist-dir directory] "
+	log << "usage: ./configure "
+	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
+	log << "[--puredata-dist-dir directory] "
 	log << "[--debug] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	puts
@@ -320,10 +321,11 @@ while ARGV.length>0 do
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
-	when "--arch"; $conf[:ARCH]=ARGV.shift
+	when "--jmax-arch"; $conf[:JMAX_ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
 	when "--puredata-dist-dir"; $conf[:PUREDATA_SOURCES]=ARGV.shift
-	else puts "unknown option \"#{arg}\""; exit 1
+	when "--help"; usage; exit 0
+	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
 
@@ -346,8 +348,6 @@ if not $conf[:PUREDATA_SOURCES]
 		puts "PureData disabled (otherwise use the --puredata-dist-dir option)"
 	end
 end
-
-if not $conf[:ARCH]; usage; exit 1; end
 
 LOG = File.open "./config.log", "w"
 
@@ -422,7 +422,7 @@ $conf[:LDSOFLAGS].uniq!
 #--------------------------------#
 
 puts ""
-for z in [:ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
+for z in [:JMAX_ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
   puts "#{z}: #{$conf[z].inspect}"
 end
 puts ""
@@ -483,7 +483,7 @@ File.open("./config.make","w") {|f| f.puts "
 RUBYARCH=#{CONFIG["arch"]}
 
 ifndef ARCH
-ARCH=#{$conf[:ARCH]}
+ARCH=#{$conf[:JMAX_ARCH]}
 endif
 "
 if $conf[:OPTIONS].include? "HAVE_JMAX_2_5"
@@ -496,7 +496,7 @@ end
 
 f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
 f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
-f.puts "CFLAGS += " + $CFLAGS
+f.puts "CFLAGS += -xc++ " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
 	f.puts "#{z}=yes"
@@ -573,6 +573,10 @@ mf.sub!(/^install:.*/,"install: install2 site-install")
 mf.sub!(/^all:/,"all: all2 ")
 mf.sub!(/^clean:/,"clean: clean2 ")
 mf.gsub!(/^(site-)?install:\n\n/,"")
+
+#HACK
+mf.gsub!(/.c.o:\n\t\$\(CC\)/,".c.o:\n\t\$\(CC\) -xc++")
+
 #p mf.length
 f = File.open("Makefile","w")
 f.puts "include config.make"
