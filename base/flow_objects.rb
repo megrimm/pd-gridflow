@@ -566,7 +566,9 @@ class JMax4UDPSend < FObject
 
 	def method_missing(sel,*args)
 		sel=sel.to_s.sub(/^_\d_/, "")
-		@socket.send encode(sel) +
+		@socket.send (case sel
+			when "int","float"; ""
+			else encode(sel) end) +
 			args.map{|arg| encode(arg) }.join("") + "\x0f",
 			0, @host, @port
 	end
