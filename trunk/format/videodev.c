@@ -243,7 +243,7 @@ struct FormatVideoDev : Format {
 		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
 		 RAISE("ioctl error"), 0))
 
-#define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
+#define GETFD NUM2INT(rb_funcall(rb_ivar_get($->peer,SI(@stream)),SI(fileno),0))
 
 METHOD(FormatVideoDev,size) {
 	int fd = GETFD;
@@ -347,7 +347,7 @@ int read3(int fd,uint8 *image,int n) {
 
 METHOD(FormatVideoDev,frame) {
 	if (!$->bit_packing) RAISE("no bit_packing");
-	if (!$->image) rb_funcall(rself,SI(alloc_image),0);
+	if (!$->image) rb_funcall($->peer,SI(alloc_image),0);
 	int fd = GETFD;
 	if (!$->use_mmap) {
 //		gfpost("$=%p; $->image=%p",$,$->image);
@@ -366,13 +366,13 @@ METHOD(FormatVideoDev,frame) {
 	int finished_frame;
 	if ($->pending_frames[0] < 0) {
 		$->next_frame = 0;
-		rb_funcall(rself,SI(frame_ask),0);
-		rb_funcall(rself,SI(frame_ask),0);
+		rb_funcall($->peer,SI(frame_ask),0);
+		rb_funcall($->peer,SI(frame_ask),0);
 	}
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
 	WIOCTL2(fd, VIDIOCSYNC, &$->vmmap);
 	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
-	rb_funcall(rself,SI(frame_ask),0);
+	rb_funcall($->peer,SI(frame_ask),0);
 }
 
 GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
@@ -415,7 +415,7 @@ METHOD(FormatVideoDev,channel) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	VideoChannel_gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
+	rb_funcall($->peer,SI(tuner),1,INT2NUM(0));
 }
 
 METHOD(FormatVideoDev,frequency) {
@@ -428,11 +428,11 @@ METHOD(FormatVideoDev,transfer) {
 	VALUE sym = argv[0];
 	gfpost("transfer %s",rb_sym_name(argv[0]));
 	if (sym == SYM(read)) {
-		rb_funcall(rself,SI(dealloc_image),0);
+		rb_funcall($->peer,SI(dealloc_image),0);
 		$->use_mmap = false;
 		gfpost("transfer read");
 	} else if (sym == SYM(mmap)) {
-		rb_funcall(rself,SI(dealloc_image),0);
+		rb_funcall($->peer,SI(dealloc_image),0);
 		$->use_mmap = true;
 		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
@@ -444,17 +444,17 @@ METHOD(FormatVideoDev,option) {
 	int value = argv[1];
 	gfpost("option %s %08x",rb_sym_name(sym),value);
 	if (sym == SYM(channel)) {
-		rb_funcall(rself,SI(channel),1,value);
+		rb_funcall($->peer,SI(channel),1,value);
 	} else if (sym == SYM(tuner)) {
-		rb_funcall(rself,SI(tuner),1,value);
+		rb_funcall($->peer,SI(tuner),1,value);
 	} else if (sym == SYM(norm)) {
-		rb_funcall(rself,SI(norm),1,value);
+		rb_funcall($->peer,SI(norm),1,value);
 	} else if (sym == SYM(frequency)) {
-		rb_funcall(rself,SI(frequency),1,value);
+		rb_funcall($->peer,SI(frequency),1,value);
 	} else if (sym == SYM(transfer)) {
-		rb_funcall(rself,SI(transfer),1,value);
+		rb_funcall($->peer,SI(transfer),1,value);
 	} else if (sym == SYM(size)) {
-		rb_funcall(rself,SI(size),2,value,argv[2]);
+		rb_funcall($->peer,SI(size),2,value,argv[2]);
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -476,7 +476,7 @@ METHOD(FormatVideoDev,option) {
 }
 
 METHOD(FormatVideoDev,close) {
-	if ($->image) rb_funcall(rself,SI(dealloc_image),0);
+	if ($->image) rb_funcall($->peer,SI(dealloc_image),0);
 	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
 }
@@ -488,7 +488,7 @@ METHOD(FormatVideoDev,init2) {
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	VideoCapability_gfpost(&vcaps);
-	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
+	rb_funcall($->peer,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost("original settings:");
@@ -521,8 +521,8 @@ METHOD(FormatVideoDev,init2) {
 	default:
 		gfpost("can't handle palette %d", gp->palette);
 	}
-	rb_funcall(rself,SI(channel),1,INT2NUM(0));
-	rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
+	rb_funcall($->peer,SI(channel),1,INT2NUM(0));
+	rb_funcall($->peer,SI(size),2,INT2NUM(0),INT2NUM(0));
 }
 
 METHOD(FormatVideoDev,init) {
@@ -536,16 +536,16 @@ METHOD(FormatVideoDev,init) {
 	const char *filename = rb_sym_name(argv[0]);
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
-	rb_ivar_set(rself,SI(@stream),file);
+	rb_ivar_set($->peer,SI(@stream),file);
 	rb_p(file);
-	rb_p(rb_ivar_get(rself,SI(@stream)));
+	rb_p(rb_ivar_get($->peer,SI(@stream)));
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 		int v[]={288,352,3};
 		$->dim = new Dim(3,v);
 	} else {
-		rb_funcall(rself,SI(init2),0);
+		rb_funcall($->peer,SI(init2),0);
 	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
