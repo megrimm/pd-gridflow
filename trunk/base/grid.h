@@ -361,25 +361,36 @@ struct Dim {
 	char *to_s();
 };
 
-extern "C" {
-
 /* **************************************************************** */
 /* BitPacking objects encapsulate optimised loops of conversion */
 
-typedef struct BitPacking BitPacking;
+struct BitPacking;
 
-int high_bit(uint32 n);
-int low_bit(uint32 n);
-BitPacking *BitPacking_new(int endian, int bytes, int size, uint32 *mask);
-void    BitPacking_whine(BitPacking *$);
-uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
-Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
-int     BitPacking_bytes(BitPacking *$);
-bool    BitPacking_is_le(BitPacking *$);
+typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
+typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
+
+struct BitPacking {
+	Packer packer;
+	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
+	int bytes;
+	int size;
+	uint32 mask[4];
+
+	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer packer=0);
+	void whine();
+	uint8 *pack(int n, const Number *data, uint8 *target);
+	Number *unpack(int n, const uint8 *in, Number *out);
+	bool is_le();
+	bool eq(BitPacking *o);
+};
 
 extern int builtin_bitpacks_n;
 extern BitPacking builtin_bitpacks[];
 
+extern "C" {
+
+int high_bit(uint32 n);
+int low_bit(uint32 n);
 void swap32 (int n, uint32 *data);
 void swap16 (int n, uint16 *data);
 
