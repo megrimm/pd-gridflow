@@ -189,7 +189,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
-		int main (void) {return !XSetErrorHandler;}
+		int main (void) {return XSetErrorHandler==0;}
 		", *uses_so
 	}
 	formats ["X11"]
@@ -207,7 +207,7 @@ Feature.new {
 		#include <sys/ipc.h>
 		#include <sys/shm.h>
 		#include <X11/extensions/XShm.h>
-		int main (void) {return !XShmPutImage;}
+		int main (void) {return XShmPutImage==0;}
 		", *uses_so
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
@@ -232,7 +232,10 @@ Feature.new {
 	uses_h ["aalib.h"]
 	test proc {
 		c_test "
+		#define aa_hardwareparams aa_hardware_params
+		extern \"C\" {
 		#include <aalib.h>
+		};
 		int main (void) {return aa_init==0;}
 		", *uses_so
 	}
@@ -250,7 +253,6 @@ Feature.new {
 		#include <jpeglib.h>
 		};
 		int main (void) {
-		printf(\"jpeg_write_scanlines: %08x\n\",(int)jpeg_write_scanlines);
 		return jpeg_write_scanlines==0;}
 		", *uses_so
 	}
@@ -274,9 +276,9 @@ Feature.new {
 	uses_so ["-lmpeg3","-lpthread","-lm",
 		"-L/usr/X11R6/lib","-I/usr/X11R6/include"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
-	test proc {|h|
+	test proc {|f|
 		c_test "
-		#include <#{h.uses_h}>
+		#include <#{f.uses_h}>
 		int main (void) { return mpeg3_open==0; }
 		", *uses_so
 	}
@@ -298,12 +300,14 @@ Feature.new {
 Feature.new {
 	tag :quicktime
 	name "HeroineWarrior's QuickTime file reader"
-	uses_so ["-lquicktime","-lpthread","-lpng","-ldl","-lglib"]
-	test proc {
+	uses_so Or[
+		["-lquicktime","-lpthread","-lpng","-ldl","-lglib"],
+		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2"]]
+	test proc {|f|
 		c_test "
 		#include <quicktime/quicktime.h>
 		int main (void) { return quicktime_open==0; }
-		", *uses_so
+		", *f.uses_so
 	}
 	formats ["QuickTime"]
 },
@@ -409,6 +413,11 @@ LOG = File.open "./config.log", "w"
 #--------------------------------#
 
 def has_jmax(*link); c_test '
+	#define new new_
+	#define template template_
+	#define this this_
+	#define operator operator_
+	#define class class_
 	#include "fts/fts.h"
 /*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
 	int main (void) { return 0; }
@@ -427,6 +436,18 @@ DUAL.instance_eval {
 }
 
 def try feature
+	if Or===feature.uses_so
+		k=1
+		for i in feature.uses_so.a do
+			e=feature.dup
+			e.uses_so i
+			e.name(e.name+" (try \##{k})")
+			r=try e
+			return r if r
+			k+=1
+		end
+		return false
+	end
 	if Or===feature.uses_h
 		for i in feature.uses_h.a do
 			e=feature.dup
