@@ -253,7 +253,9 @@ static inline T lcm (T a, T b) {
 	return a*b/gcd(a,b);
 }
 
-// returns the highest bit set in a word, or 0 if none.
+/* returns the highest bit set in an int, or 0 if none.
+   doesn't work with int64
+*/
 template <class T>
 int highest_bit(T n) {
 	int i=0;
@@ -275,13 +277,25 @@ static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 
 /* **************************************************************** */
 
-#ifdef HAVE_PENTIUM
+#if defined(HAVE_PENTIUM)
 static inline uint64 rdtsc() {
 	uint64 x;
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-	return x;}
+	return x;
+}
+#elif defined(HAVE_PPC)
+static inline uint64 rdtsc() {
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+/* see AbsoluteToNanoseconds(), Microseconds()
+http://www.simdtech.org/apps/group_public/email/altivec/msg01956.html
+and mach_absolute_time() and mach_timebase_info(&info),
+then ns=(time*info.numer)/info.denom;
+and the timebase_info is constant
+(double)mach_absolute_time*gTimeBaseToNS*/
+return 0;
+}
 #else
-/* Toto, we're not in Pentium(tm) anymore */
 static inline uint64 rdtsc() {return 0;}
 #endif
 
@@ -301,23 +315,16 @@ static inline bool is_le() {
 #define UNROLL_8(MACRO,N,PTR,ARGS...) \
 	int n__=(-N)&7; PTR-=n__; N+=n__; \
 	switch (n__) { start: \
-		case 0: MACRO(0); \
-		case 1: MACRO(1); \
-		case 2: MACRO(2); \
-		case 3: MACRO(3); \
-		case 4: MACRO(4); \
-		case 5: MACRO(5); \
-		case 6: MACRO(6); \
-		case 7: MACRO(7); \
+		case 0: MACRO(0); case 1: MACRO(1); \
+		case 2: MACRO(2); case 3: MACRO(3); \
+		case 4: MACRO(4); case 5: MACRO(5); \
+		case 6: MACRO(6); case 7: MACRO(7); \
 		PTR+=8; N-=8; ARGS; if (N) goto start; }
-
 #define UNROLL_4(MACRO,N,PTR,ARGS...) \
 	int n__=(-N)&3; PTR-=n__; N+=n__; \
 	switch (n__) { start: \
-		case 0: MACRO(0); \
-		case 1: MACRO(1); \
-		case 2: MACRO(2); \
-		case 3: MACRO(3); \
+		case 0: MACRO(0); case 1: MACRO(1); \
+		case 2: MACRO(2); case 3: MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
 /* **************************************************************** */
@@ -332,31 +339,8 @@ public:
 	T *start;
 	int n;
 	Pt() : p(0), start(0), n(0) {}
-	Pt(T *q, int _n) : p(q), start(q), n(_n) {
-/* should this be >= or > ? */
-#ifdef HAVE_DEBUG_HARDER
-/*
-		if (p<start || p>start+n) {
-			fprintf(stderr,
-				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);//assert(!"segfault ignored???");
-		}		
-*/
-		#endif
-	}
-	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {
-#ifdef HAVE_DEBUG_HARDER
-/*
-		if (p<start || p>start+n) {
-			fprintf(stderr,
-				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);//assert(!"segfault ignored???");
-		}		
-*/
-		#endif
-	}
+	Pt(T *q, int _n) : p(q), start(q), n(_n) {}
+	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {}
 #else
 	Pt() : p(0) {}
 	Pt(T *q, int _n, T *_start=0) : p(q) {}
@@ -381,8 +365,8 @@ public:
 	}
 
 	void will_use(int k) {
-		if (k==0) return;
 #ifdef HAVE_DEBUG_HARDER
+		if (k==0) return;
 		if (!(p>=start && p<start+n)) {
 			fprintf(stderr,
 				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
@@ -495,24 +479,18 @@ static int   convert(Ruby x, int   *foo) { return INT(x); }
 static int32 convert(Ruby x, int32 *foo) { return INT(x); }
 static bool  convert(Ruby x, bool  *foo) {
 	switch (TYPE(x)) {
-		case T_FIXNUM: return INT(x);
+		case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!INT(x);
 		/*...*/
 		default: RAISE("can't convert to bool");
 	}
 }
 
-typedef Ruby Symbol;
-typedef Ruby Array;
-typedef Ruby String;
-typedef Ruby Integer;
-static Ruby convert(Ruby x, Ruby *bogus) {
-	return x;
-}
-
+typedef Ruby Symbol, Array, String, Integer;
+static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 
-/* you shouldn't use MethodDecl directly */
+/* you shouldn't use MethodDecl directly (used by source_filter.rb) */
 struct MethodDecl {
 	const char *selector;
 	RMethod method;
@@ -803,7 +781,6 @@ struct Numop2On : CObject {
 	/* Function Vectorisations */
 	typedef void (*Map)(int n, T *as, T b);
 	typedef void (*Zip)(int n, T *as, T *bs);
-	//typedef void (*Zip2)(int n, T *as, T *bs, T *cs);
 	typedef void (*Fold)(int an, int n, T *as, T *bs);
 	typedef void (*Scan)(int an, int n, T *as, T *bs);
 	Map op_map;
@@ -860,13 +837,6 @@ EACH_NUMBER_TYPE(FOO)
 		as.will_use(n);
 		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-/*
-		template <class T> inline void zip2(int n, Pt<T> as, Pt<T> bs, Pt<T> cs) {
-		as.will_use(n);
-		bs.will_use(n);
-		cs.will_use(n);
-		on(*as)->op_zip2(n,(T *)as,(T *)bs,(T *)cs);}
-*/
 	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
@@ -1092,7 +1062,6 @@ struct GridInlet {
 /* methods */
 	GridInlet(GridObject *parent, const GridHandler *gh);
 	~GridInlet();
-	void abort();
 	void set_factor(int factor);
 	bool is_busy() { return !!dim; }
 	void begin( int argc, Ruby *argv);
@@ -1158,14 +1127,11 @@ struct GridOutlet {
 	int dex; /* how many numbers were already sent in this connection */
 	int bufi; /* number of bytes used in the buffer */
 
-/* transmission accelerator */
-
 /* methods */
 	GridOutlet(GridObject *parent, int woutlet);
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
 	void begin(Dim *dim, NumberTypeE nt=int32_type_i);
-	void abort();
 	/* give: data must be dynamic. it should not be used by the caller
 	   beyond the call to give() */
 	template <class T> void give(int n, Pt<T> data);
@@ -1225,7 +1191,7 @@ struct GridObject : FObject {
 
 	/* Make sure you distinguish #close/#delete, and C++'s delete. The first
 	two are quite equivalent and should never make an object "crashable".
-	C++ is called by Ruby's garbage collector or by jMax/PureData's delete.
+	C++'s delete is called by Ruby's garbage collector or by jMax/PureData's delete.
 	*/
 
 	GridObject();
@@ -1249,7 +1215,6 @@ struct GridObject : FObject {
 
 \decl void send_out_grid_begin(int outlet, Array buf, NumberTypeE nt=int32_type_i);
 \decl void send_out_grid_flow(int outlet, String buf, NumberTypeE nt=int32_type_i);
-\decl void send_out_grid_abort(int outlet);
 };
 \end class GridObject
 
@@ -1274,10 +1239,7 @@ struct GFBridge {
 	Ruby (*whatever)(int argc, Ruby *argv, Ruby rself);
 };
 
-extern Ruby mGridFlow;
-extern Ruby cFObject;
-extern Ruby cGridObject;
-extern Ruby cFormat;
+extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
 uint64 RtMetro_now();
 

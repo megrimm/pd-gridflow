@@ -197,10 +197,16 @@ loop{
 	x = In.gets
 	break if not x
 	if /^\s*\\(\w+)\s*(.*)$/.match x then
-		send("handle_#{$1}",$2)
+		begin
+			send("handle_#{$1}",$2)
+		rescue StandardError => e
+			STDERR.puts e.inspect
+			STDERR.puts "at line #{$linenumber}"
+			exit 1
+		end
 	else
 		if $stack[-1]==:ruby then
-			x.gsub!(/\\""/,'\\\1')
+			x.gsub!(/[\\\"]/,'\\\1')
 			x="\"#{x.chomp}\"\n"
 		end
 		Out.puts x

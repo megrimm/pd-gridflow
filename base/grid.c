@@ -311,18 +311,6 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	}} /* PROF */
 }
 
-/* !@#$ this is not correct */
-void GridInlet::abort() {
-	if (dim) {
-		if (dim->prod())
-		gfpost("aborting grid: %d of %d from [%s] to [%s]",
-			dex, dim->prod(), sender->info(), parent->info());
-		delete dim; dim=0;
-	}
-	buf.del();
-	dex = 0;
-}
-
 void GridInlet::end() {
 	if (!is_busy()) RAISE("%s: inlet not busy",parent->info());
 	if (dim->prod() != dex) {
@@ -408,12 +396,6 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 GridOutlet::~GridOutlet() {
 	if (dim) delete dim;
 	if (inlets) delete[] inlets.p;
-}
-
-void GridOutlet::abort() {
-	if (!is_busy()) RAISE("%s: outlet not busy",parent->info());
-	for (int i=0; i<ninlets; i++) inlets[i]->abort();
-	delete dim; dim = 0; dex = 0;
 }
 
 void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
@@ -664,11 +646,6 @@ void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 #define FOO(T) send_out_grid_flow_2(go,argv[1],(T)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
-}
-
-\def void send_out_grid_abort (int outlet) {
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
-	out[outlet]->abort();
 }
 
 static void *GridObject_allocate ();
