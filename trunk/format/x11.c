@@ -69,11 +69,13 @@ struct FormatX11 : Format {
 	bool alloc_image (int sx, int sy);
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
+	void alarm();
 
 	DECL3(frame);
 	DECL3(close);
 	DECL3(option);
 	DECL3(init);
+	GRINLET3(0);
 };
 
 /* ---------------------------------------------------------------- */
@@ -124,23 +126,25 @@ static VALUE button_sym(int i) {
 	return SYM(foo);
 }
 
-static void FormatX11_alarm(FormatX11 *$) {
+static void FormatX11_alarm(FormatX11 *$) { $->alarm(); }
+
+void FormatX11::alarm() {
 	VALUE argv[4];
 	XEvent e;
 
 //	gfpost("X11 HELLO? (%lld)",RtMetro_now());
 
 	for (;;) {
-		int xpending = XEventsQueued($->display, QueuedAfterReading);
+		int xpending = XEventsQueued(display, QueuedAfterReading);
 		if (!xpending) break;
-		XNextEvent($->display,&e);
+		XNextEvent(display,&e);
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
 			/*gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
-			if ($->mode == SYM(out)) {
-				$->show_section(ex->x,ex->y,ex->width,ex->height);
+			if (mode == SYM(out)) {
+				show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
 		case ButtonPress:{
@@ -150,7 +154,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 			argv[1] = button_sym(eb->button);
 			argv[2] = INT2NUM(eb->y);
 			argv[3] = INT2NUM(eb->x);
-			//FObject_send_thru($->out->parent,0,4,at);
+			//FObject_send_thru(out->parent,0,4,at);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
@@ -168,7 +172,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 			argv[2] = INT2NUM(em->x);
 		}break;
 		case DestroyNotify:{
-			/* should notify $->parent here */
+			/* should notify parent here */
 		}break;
 		case ConfigureNotify:{
 			/* like we care */
@@ -224,7 +228,7 @@ void FormatX11::dealloc_image () {
 	} else {
 		XDestroyImage(ximage);
 		ximage = 0; 
-		/* delete $->image; */
+		/* delete image; */
 	}
 }
 
@@ -264,7 +268,7 @@ top:
 #endif
 	{
 		/* let's overestimate the pixel size */
-		/* int pixel_size = BitPacking_bytes($->bit_packing); */
+		/* int pixel_size = BitPacking_bytes(bit_packing); */
 		int pixel_size = 4;
 		image = Pt<uint8>((uint8 *)calloc(sx*sy, pixel_size),
 			ximage->bytes_per_line*dim->get(0));
@@ -329,14 +333,14 @@ GRID_BEGIN(FormatX11,0) {
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 	int sxc = in->dim->prod(1);
-	int sx = in->dim->get(1), osx = $->dim->get(1);
-	int sy = in->dim->get(0), osy = $->dim->get(0);
+	int sx = in->dim->get(1), osx = dim->get(1);
+	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_factor(sxc);
-	if (sx!=osx || sy!=osy) $->resize_window(sx,sy);
+	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 }
 
 GRID_FLOW(FormatX11,0) {
-	int bypl = $->ximage->bytes_per_line;
+	int bypl = ximage->bytes_per_line;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
@@ -347,8 +351,8 @@ GRID_FLOW(FormatX11,0) {
 	while (n>0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		$->bit_packing->pack(sx, data, $->image+y*bypl);
-		if ($->autodraw==2) $->show_section(0,y,sx,1);
+		bit_packing->pack(sx, data, image+y*bypl);
+		if (autodraw==2) show_section(0,y,sx,1);
 		y++;
 		data += sxc;
 		n -= sxc;
@@ -356,10 +360,10 @@ GRID_FLOW(FormatX11,0) {
 }
 
 GRID_END(FormatX11,0) {
-	if ($->autodraw==1) {
+	if (autodraw==1) {
 		int sx = in->dim->get(1);
 		int sy = in->dim->get(0);
-		$->show_section(0,0,sx,sy);
+		show_section(0,0,sx,sy);
 	}
 }
 

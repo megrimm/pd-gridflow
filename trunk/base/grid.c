@@ -504,16 +504,16 @@ METHOD3(GridObject,init) {
 
 /* category: input */
 
-GRID_BEGIN_(GridObject,GridObject_r_begin) {
+CGRID_BEGIN_(GridObject,GridObject_r_begin) {
 	rb_funcall($->peer,SI(_0_rgrid_begin),0); // hack
 }
 
-GRID_FLOW_(GridObject,GridObject_r_flow) {
+CGRID_FLOW_(GridObject,GridObject_r_flow) {
 	Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(Number));
 	rb_funcall($->peer,SI(_0_rgrid_flow),1,buf); // hack
 }
 
-GRID_END_(GridObject,GridObject_r_end) {
+CGRID_END_(GridObject,GridObject_r_end) {
 	rb_funcall($->peer,SI(_0_rgrid_end),0); // hack
 }
 
