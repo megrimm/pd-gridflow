@@ -20,12 +20,12 @@ Installation
 [ ] produce cygwin32 binaries
 [ ] produce macosx binaries
 [ ] produce linux rpm/deb
-[ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] reintroduce --puredata-dist-dir ?
 [ ] --ruby-prefix
+[ ] install vs site-install mess
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -88,9 +88,21 @@ Architecture
 [ ] use C++ destructor for C++ fields...
 [ ] jMax does not support literal lists in messages...
 [ ] sizeof(Pt<>) could be 4 instead of 12 for speed increase?
+[ ] DEF_OP2_BITWISE
+[ ] use MétaRuby typing to make things friendlier.
+[ ] transmitting grids by diffs?
+[ ] bin op "avg" (average)
+[ ] dispatch on _n_-prefixed methods (one selector any inlet)
+	and     _#{i}_-named methods (any selector one inlet)
+[ ] security modes:
+	<=0 : can run arbitrary programs and ruby scripts ?
+	<=1 : can write files
+	<=2 : can read files
+	<=3 : can open windows ?
+[ ] GRID_INLET/DIM_INLET could use a second buffer,
+	Grid *next inside Grid objects.
 
 Computation Objects
-[ ] operators: set, none
 [ ] @type, @cast
 [ ] @splice
 [ ] zero option in @store (?)
@@ -111,6 +123,9 @@ Computation Objects
 [ ] @two,@three,@four -> [@pack n] using metaclass
 [ ] @unpack
 [ ] @import_symbol
+[ ] make a class that is a color equivalent of aalib
+[ ] merge @inner and @inner2 again (@inner2 would be alias)
+	(option transposed)
 
 Effects
 [ ] pinch
@@ -130,18 +145,22 @@ Effects
 [ ] see gimp for ideas
 [ ] there's a way to double (?) the speed of the cross-fade.
 	try interleaving the data and using [@inner]
+	or use @join and @layer.
 
 Input/Output
 [ ] in-place editing (rw mode)
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
+[ ] jMax 4 bridge
 [ ] support: Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC ?
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
 [ ] Grid: bpv 1,2,4
 [ ] Grid: text version of the format
 [ ] use 1.8.0's IO#read(Integer,String)->String
+[ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 
 Format
+[ ] x11: draw with optional arguments on part of picture to redraw
 [ ] all: possibly get rid of the "format" notion ?
 [ ] TAR, ZIP, CAT with seeking
 [ ] PNM: P1,P2,P3,P4,P5 support
@@ -155,6 +174,7 @@ Format
 [ ] Generic MMAP Driver
 [ ] Unix-for-jMax
 [ ] "open grid pipe" and such.
+[ ] x11: colormap support
 
 jMax-UI
 [ ] color picker
@@ -167,6 +187,8 @@ jMax-UI
 Extra/Samples/Etc
 [ ] make demo app(s) in Ruby/Tk
 [ ] world domination
+[ ] read/write PureData files
+[ ] read/write jMax files
 
 Bugs
 [ ] format_x11 causes delayed crash when closing its associated window
@@ -174,7 +196,6 @@ Bugs
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
 [!] detect and reject .a linkage
-[!] possibly remove Number and sizeof(Number) (often does not make sense)
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
 [ ] Window does not close when @out is destroyed
@@ -209,6 +230,11 @@ Bugs
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
 	[gf] total 18604 lost bytes in 445 allocations
+[ ] latency is not that good. (GC ?)
+[ ] RtMetro crashes if deleted while turned on.
+[ ] RtMetro isn't reliably working
+[ ] jpeg file cat crashes on second file (jpeglib buffering?)
+[ ] gcc 3.2 fails to instantiate templates
 
 SOON:
  
@@ -218,7 +244,6 @@ SOON:
 [ ] @border
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it @chroma_key though)
-[ ] @perspective
 
 <matju> mais je pourrais faire @perspective
 <matju> inlet 0: dim(n,3)
@@ -226,20 +251,22 @@ SOON:
 <matju> outlet 0: dim(n,2)
 */
 
+[ ] remaining number type support in formats
+[ ] produce linux binaries ("static")
 [ ] @sort
-[ ] @join / @cat / @slice
+[ ] @slice
 [ ] improve cross_fade.jmax
 [ ] Grid: bpv 8,16,signed/unsigned
 [ ] samples/generique.jmax
-[ ] profiler is back and fully working
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] memory profiling
 [ ] TCP: non-blocking write
-[ ] TCP Socket Buffering
+[ ] TCP Socket Buffering   
 [ ] read/write PureData files
 [ ] read/write jMax files
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
-[ ] make gridflow.pd_linux install in the proper spot
+[ ] make gridflow.pd_linux install in the proper spot  
+
 
 Feature Requests
 
