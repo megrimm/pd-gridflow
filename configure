@@ -97,6 +97,22 @@ ensure
 	LOG.puts log
 end
 
+def asm_test code, *link
+	log = ""
+	log << code << "\n"
+	File.open("/tmp/#{$$}.asm","w") {|f| f.puts code }
+	command = ["/usr/bin/env", "nasm",
+	"/tmp/#{$$}.asm", "-f", "elf", "-o", "/tmp/#{$$}.o"]
+	launch2 log,*command or return false
+	command = ["gcc","-o","/tmp/#{$$}","/tmp/#{$$}.o",*link]
+	launch2 log,*command or return false
+	command = ["/tmp/#{$$}"]
+	launch2 log,*command or return false
+	true
+ensure
+	LOG.puts log
+end
+
 def launch stdin,stdout,stderr,*command # -> returncode
 	child = fork
 	if not child then
@@ -189,6 +205,37 @@ Feature.new {
 		return 0;}'
 	}
 	options ["HAVE_PENTIUM"]
+},
+Feature.new {
+	tag :mmx
+	uses_feature [:pentium]
+	status :disabled
+	uses_o ["cpu/mmx.o"]
+	name "MMX-compatible CPU"
+	test proc {
+		asm_test '
+		global main
+		extern exit
+		align 16
+		SECTION .data
+		foo: dd 42,0
+		SECTION .text
+		main:
+		lea esi,[foo]
+		movq mm0,qword[esi]
+		paddd mm0,qword[esi]
+		movq qword [esi],mm0
+		emms
+		cmp dword [foo], 84
+		je yes
+		push 1
+		call exit
+		yes:
+		push 0
+		call exit
+		', '-lc'
+	}
+	options ["HAVE_MMX"]
 },
 Feature.new {
 	tag :profiler
@@ -426,7 +473,11 @@ if not $conf[:JMAX_SOURCES]
 	end
 end
 
+# the ||= lines are patches for old versions of ruby.
+CONFIG["ruby_version"] ||= "$(MAJOR).$(MINOR)"
+CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
 CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
+
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
 
 LOG = File.open "./config.log", "w"
