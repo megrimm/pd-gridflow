@@ -492,6 +492,7 @@ end
 class GridGlobal < FObject
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
+		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
 	end
 	def _0_profiler_dump
 #		GridFlow.post "sorry, the profiler is broken. please someone fix it."
@@ -509,12 +510,20 @@ class GridGlobal < FObject
 		ol.sort! {|a,b| a.profiler_cumul <=> b.profiler_cumul }
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
+		total_us = 0
 		ol.each {|o|
 			ppm = o.profiler_cumul * 1000000 / total
 			us = (o.profiler_cumul*1E6/GridFlow.cpu_hertz).to_i
+			total_us += us
 			GridFlow.post "%12d %2d.%04d %08x %s", us,
 				ppm/10000, ppm%10000, o.object_id, o.args
 		}
+		GridFlow.post "-"*32
+		GridFlow.post "sum of accounted microseconds: #{total_us}"
+		if GridFlow.respond_to? :memcpy_calls then
+			GridFlow.post "memcpy_calls: #{GridFlow.memcpy_calls}"
+			GridFlow.post "memcpy_bytes: #{GridFlow.memcpy_bytes}"
+		end
 		GridFlow.post "-"*32
 	end
 

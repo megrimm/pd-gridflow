@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 /* current version number as string literal */
-#define GF_VERSION "0.7.0"
+#define GF_VERSION "0.7.1"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -248,8 +248,8 @@ static inline uint64 rdtsc() {
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return x;}
 #else
-static inline uint64 rdtsc() {
-	RAISE("Toto, we're not in Pentium(tm) anymore");}
+/* Toto, we're not in Pentium(tm) anymore */
+static inline uint64 rdtsc() {return 0;}
 #endif
 
 /* is little-endian */
@@ -644,20 +644,21 @@ struct Grid {
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
-		if (is_busy()) { \
+		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
+		if (is_busy_except(in)) { \
 			if (_member_.next == &_member_) { \
-				gfpost("object busy (backstoring data)"); \
+				/*gfpost("object busy (backstoring data)"); */\
 				_member_.next = new Grid(); \
 				_member_.next->dc = _member_.dc; \
 			} else { \
-				gfpost("object busy and backstore busy (aborting)"); \
-				in->abort(); \
+				RAISE("object busy and backstore busy (aborting)"); \
 			} \
 		} \
 		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
 	GRID_FLOW { \
 		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
 	GRID_FINISH
+
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
@@ -772,7 +773,7 @@ struct GridOutlet {
 	/* give: data must be dynamic. it should not be used by the caller
 	   beyond the call to give() */
 	template <class T>
-	void GridOutlet::give(int n, Pt<T> data);
+	void give(int n, Pt<T> data);
 
 	/* send/send_direct: data belongs to caller, may be stack-allocated,
 	   receiver doesn't modify the data; in send(), there is buffering;

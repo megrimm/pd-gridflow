@@ -412,9 +412,7 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	return tick;
 }
 
-Ruby GridFlow_rdtsc (Ruby rself) {
-	return ull2num(rdtsc());
-}
+Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX(func));
@@ -483,7 +481,18 @@ void *Pointer_get (Ruby self) {
 
 /* ---------------------------------------------------------------- */
 
+static uint64 memcpy_calls = 0;
+static uint64 memcpy_bytes = 0;
+Ruby GridFlow_memcpy_calls (Ruby rself) { return ull2num(memcpy_calls); }
+Ruby GridFlow_memcpy_bytes (Ruby rself) { return ull2num(memcpy_bytes); }
+Ruby GridFlow_profiler_reset2 (Ruby rself) {
+	memcpy_calls = 0;
+	memcpy_bytes = 0;
+}
+
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
+	memcpy_calls++;
+	memcpy_bytes+=n;
 	while (n>16) {
 		((int32*)out)[0] = ((int32*)in)[0];
 		((int32*)out)[1] = ((int32*)in)[1];
@@ -524,6 +533,9 @@ void Init_gridflow () {
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("post_string",gf_post_string,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
+	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);
+	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
+	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
