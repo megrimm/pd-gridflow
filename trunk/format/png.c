@@ -116,8 +116,8 @@ GRID_INLET(FormatPNG,0) {
 	int channels = (int)png_get_channels(png, info);
 	Pt<uint8> image_data = ARRAY_NEW(uint8,rowbytes*height);
 	row_pointers = new png_bytep[height];
-	gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
-		color_type, channels, width, rowbytes, height, gamma);
+	//gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
+	//	color_type, channels, width, rowbytes, height, gamma);
 	for (int i=0; i<(int)height; i++) row_pointers[i] = image_data + i*rowbytes;
 	if ((uint32)rowbytes != width*channels)
 		RAISE("rowbytes mismatch: %d is not %d*%d=%d",
