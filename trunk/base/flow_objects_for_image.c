@@ -101,6 +101,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	int dby = db->get(0);
 	int dbx = db->get(1);
 	if (plan) delete[] plan;
+
 	plan = new PlanEntry[dbx*dby];
 	int i=0;
 	for (int y=0; y<dby; y++) {
@@ -185,7 +186,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	if (r) this->b=r;
 }
 
-GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4)),
+GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0),GRINLET4(GridConvolve,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@convolve',2,1"); }
 
@@ -219,7 +220,6 @@ GRID_INLET(GridScaleBy,0) {
 	int rowsize = in->dim->prod(1);
 	STACK_ARRAY(T,buf,rowsize*scalex);
 	int chans = in->dim->get(2);
-	// for every picture row in this packet...
 	for (; n>0; data+=rowsize, n-=rowsize) {
 		int p=0;
 		switch (chans) {
@@ -270,7 +270,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
+GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0),GRINLET(GridScaleBy,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@scale_by',2,1"); }
 
@@ -397,7 +397,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
+GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0),GRINLET(GridDownscaleBy,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@downscale_by',2,1"); }
 
@@ -440,7 +440,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-GRCLASS(GridLayer,LIST(GRINLET2(GridLayer,0,4),GRINLET2(GridLayer,1,4)),
+GRCLASS(GridLayer,LIST(GRINLET2(GridLayer,0),GRINLET2(GridLayer,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@layer',2,1"); }
 
@@ -572,7 +572,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
+GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0),GRINLET4(DrawPolygon,1),GRINLET(DrawPolygon,2)),
 	\grdecl
 ) { IEVAL(rself,"install '@draw_polygon',3,1"); }
 
@@ -714,7 +714,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0,4),GRINLET4(DrawImage,1,4),GRINLET(DrawImage,2,4)),
+GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0),GRINLET4(DrawImage,1),GRINLET(DrawImage,2)),
 	\grdecl
 ) { IEVAL(rself,"install '@draw_image',3,1"); }
 

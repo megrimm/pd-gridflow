@@ -938,21 +938,21 @@ struct PtrGrid : public P<Grid> {
 	template <class T> void grin_##I(GridInlet *in, int n, Pt<T> data);
 
 //// macros for declaring an inlet inside GRCLASS() (GridHandler)
-// C is for class, I for inlet number, M is for mode
+// C is for class, I for inlet number
 // GRINLET  : int32 only
 // GRINLET4 : all types
 // GRINLET2 : integers only; no floats
 // GRINLETF : floats only; no integers
 #ifndef HAVE_LITE
-#define GRINLET(C,I,M)  {I,M, 0,0,C##_grin_##I,0,0,0 }
-#define GRINLET4(C,I,M) {I,M, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLET2(C,I,M) {I,M, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,0,0 }
-#define GRINLETF(C,I,M) {I,M, 0,0,0,0,C##_grin_##I,C##_grin_##I }
+#define GRINLET(C,I)  {I, 0,0,C##_grin_##I,0,0,0 }
+#define GRINLET4(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I }
+#define GRINLET2(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,0,0 }
+#define GRINLETF(C,I) {I, 0,0,0,0,C##_grin_##I,C##_grin_##I }
 #else
-#define GRINLET( C,I,M) {I,M, 0,0,C##_grin_##I }
-#define GRINLET4(C,I,M) {I,M, C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLET2(C,I,M) {I,M, C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLETF(C,I,M) {I,M, 0,0,0 }
+#define GRINLET( C,I) {I, 0,0,C##_grin_##I }
+#define GRINLET4(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I }
+#define GRINLET2(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I }
+#define GRINLETF(C,I) {I, 0,0,0 }
 #endif /* HAVE_LITE */
 
 // four-part macro for defining the behaviour of a gridinlet in a class
@@ -976,12 +976,8 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
-//		gfpost("this=%p n=%d",this,n);
-//		gfpost("V.p=%p V.next.p=%p in=%p",V.p,V.next.p,in);
-//		gfpost("in->dim=%p",in->dim.p);
-//		gfpost("V.p=%p V.next.p=%p in=%p data=%p",V.p,V.next.p,in,data.p);
-#define GRID_INPUT2(_class_,_inlet_,V) \
-	GRID_INLET(_class_,_inlet_) { \
+#define GRID_INPUT2(C,I,V) \
+	GRID_INLET(C,I) { \
 		if (is_busy_except(in)) { \
 			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
 		} else V=new Grid(in->dim,NumberTypeE_type_of(*data)); \
@@ -992,9 +988,6 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 	int winlet;
-	int mode; // 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet
-	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
-	// as an end-marker for inlet definitions... sorry for the confusion
 #define FOO(_type_) \
 	void (*flow_##_type_)(GridInlet *in, int n, Pt<_type_> data); \
 	void flow(GridInlet *in, int n, Pt<_type_> data) const { \
@@ -1011,20 +1004,25 @@ struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
 	GridObject *sender;
+
 // grid progress info
 	P<Dim> dim;
 	NumberTypeE nt;
 	int dex;
-// buffering
+// buffering/transmission
 	//Pt<int32> (*get_target)(GridInlet *self);
 	PtrGrid buf;// factor-chunk buffer
 	int bufi;   // buffer index: how much of buf is filled
+	int mode; // 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet
+	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
+	// as an end-marker for inlet definitions... sorry for the confusion
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
-		dim(0), nt(int32_e), dex(0), buf(), bufi(0) {}
+		dim(0), nt(int32_e), dex(0), buf(), bufi(0), mode(4) {}
 	~GridInlet() {}
 	void set_factor(int factor);
+	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	bool is_busy() {return !!dim;}
 	void begin( int argc, Ruby *argv);
