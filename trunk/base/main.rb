@@ -55,7 +55,7 @@ def GridFlow.post(s,*a)
 end
 
 class<<GridFlow; attr_accessor :whine_header end
-GridFlow.whine_header = "[whine] "
+GridFlow.whine_header = "[gf] "
 
 def GridFlow.whine2(fmt,s)
 	@whine_last ||= ""
@@ -106,7 +106,9 @@ for victim in [Thread, Continuation]
 	end
 end
 
-def GridFlow.parse(m)
+module GridFlow #------------------
+
+def self.parse(m)
 	m = m.split(/\s+/)
 	m.map! {|x| case x
 		when Integer, Symbol; x
@@ -117,10 +119,9 @@ def GridFlow.parse(m)
 	m
 end
 
-module GridFlow #------------------
-
 # adding some functionality to that:
 class FObject
+	attr_accessor :args
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]
@@ -133,7 +134,7 @@ class FObject
 			m.shift
 		elsif String===m[0]
 			m.shift.intern
-		elsif m.length>1 and String===m[0]
+		elsif m.length>1 and String===m[0] #???
 			m.shift.intern
 		elsif m.length>1
 			:list
@@ -147,7 +148,14 @@ class FObject
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.[](*m)
-		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
+		o=nil
+		if m.length==1 and m[0] =~ / /
+			o="[#{m[0]}]"
+			m=GridFlow.parse(m[0]) 
+		else
+			o=m.inspect
+		end
+			
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		p sym
@@ -160,7 +168,9 @@ class FObject
 				# raise ArgumentError, "GF names begin with @"
 			end
 		p qlass
-		qlass.new(*m)
+		r = qlass.new(*m)
+		r.args = o
+		r
 	end
 end
 
@@ -255,10 +265,7 @@ end
 #
 #end
 
-end # module GridFlow
-#----------------------------------------------------------------#
-
-def routine
+def self.routine
 #	GridFlow.whine "hello"
 	$tasks.each {|k,v|
 		case v
@@ -277,7 +284,10 @@ def GridFlow.find_file s
 	s
 end
 
+end # module GridFlow
+#----------------------------------------------------------------#
+
 user_config_file = ENV["HOME"] + "/.gridflow_startup"
 load user_config_file if File.exist? user_config_file
 
-routine
+GridFlow.routine
