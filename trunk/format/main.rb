@@ -50,8 +50,7 @@ OurByteOrder = case [1].pack("L")
         else raise "Cannot determine byte order" end
 
 class Format
-	FF_R = 4
-	FF_W = 2
+	FF_R,FF_W = 4,2
 
 	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
 		install(name,inlets,outlets)
@@ -71,10 +70,10 @@ class Format
 	# (one read has to fail before the eof flag is set)
 	# don't call this in nonblocking mode!!! (why again?)
 	def rewind_if_needed
-		thispos = @stream.seek 0,IO::SEEK_CUR
-		lastpos = @stream.seek 0,IO::SEEK_END
-		if thispos == lastpos then thispos = 0 end
-		nextpos = @stream.seek 0,IO::SEEK_SET
+		thispos = (@stream.seek 0,IO::SEEK_CUR; @stream.tell)
+		lastpos = (@stream.seek 0,IO::SEEK_END; @stream.tell)
+		thispos = 0 if thispos == lastpos
+		@stream.seek thispos,IO::SEEK_SET
 	rescue Errno::ESPIPE # just ignore if seek is not possible
 	end
 
