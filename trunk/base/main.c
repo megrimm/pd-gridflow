@@ -164,6 +164,10 @@ VALUE rb_ary_fetch(VALUE $, int i) {
 	return rb_ary_aref(COUNT(argv),argv,$);
 }
 
+char *rb_sym_name(VALUE sym) {
+	return rb_id2name(SYM2ID(sym));
+}
+
 void whinep(VALUE $) {
 /*
 	rb_funcall(rb_eval_string("STDERR"),rb_intern("puts"),1,
@@ -172,17 +176,46 @@ void whinep(VALUE $) {
 	whine(RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr);
 }
 
-VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $) {
+void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
+//	rb_funcall2(rb_cObject,rb_intern("p"),*argc,*argv);
+	if (*argc<1) RAISE("not enough args");
+	*outlet = NUM2INT(**argv);
+	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
+		RAISE("invalid outlet number");
+	(*argc)--, (*argv)++;
+	if (*argc<1) {
+		*sym = SYM(bang);
+	} else if (*argc>1 && !SYMBOL_P(**argv)) {
+		*sym = SYM(list);
+	} else if (INTEGER_P(**argv)) {
+		*sym = SYM(int);
+	} else if (FLOAT_P(**argv)) {
+		*sym = SYM(float);
+	} else if (SYMBOL_P(**argv)) {
+		*sym = **argv;
+		(*argc)--, (*argv)++;
+	} else {
+		RAISE("bad message");
+	}
+}
+
+VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	VALUE ary = rb_ivar_get($,rb_intern("@outlets"));
-	int i, n = RARRAY(ary)->len;
+	VALUE sym;
+	int outlet;
+	int i, n;
+	FObject_send_out_2(argc,argv,$);
+	FObject_send_out_3(&argc,&argv,&sym,&outlet);
+	whine("message: %s",rb_sym_name(sym));
+	if (ary==Qnil) return Qnil;
+	n = RARRAY(ary)->len;
 	for (i=0; i<n; i++) {
 		VALUE conn = rb_ary_fetch(ary,i);
 		VALUE rec = rb_ary_fetch(conn,0);
 		int inl = NUM2INT(rb_ary_fetch(conn,1));
-		VALUE a[argc+2];
 		char buf[256];
-		sprintf(buf,"_%d_%s",inl,argc<1?"bang":rb_id2name(SYM2ID(argv[0])));
-		rb_funcall(rec,rb_intern(buf),argc<1?0:argc-1,argv+1);
+		sprintf(buf,"_%d_%s",inl,rb_id2name(SYM2ID(sym)));
+		rb_funcall2(rec,rb_intern(buf),argc,argv);
 	}
 	return Qnil;
 }
@@ -195,6 +228,7 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->foreign_peer = foreign_peer;
 	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
 	c_peer->peer = $;
+	c_peer->grid_class = FIX2PTR(rb_ivar_get(qlass,rb_intern("@grid_class")));
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 
 	whinep($);
@@ -298,7 +332,7 @@ void gf_init (void) {
 
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
-	DEF(FObject, send_thru, -1);
+	DEF(FObject, send_out, -1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
