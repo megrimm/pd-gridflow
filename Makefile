@@ -7,6 +7,7 @@ all:: gridflow-for-ruby gridflow-for-jmax # doc-all
 
 # GridFlow Installation Directory
 GFID = $(lib_install_dir)/packages/gridflow/
+LDSOFLAGS = -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
 OBJS = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,.o,$(SOURCES))))
 LIB = $(LIBDIR)/gridflow.so
@@ -51,7 +52,10 @@ install::
 	(cd templates; $(MAKE) $@)
 
 kloc::
-	wc base/*.[ch] format/*.[ch] configure extra/*.rb
+	wc base/*.[ch] base/*.rb format/*.[ch] configure Makefile extra/*.rb
+
+edit::
+	(nedit base/*.rb base/*.[ch] Makefile configure tests/test.rb &)
 
 CONF = config.make config.h Makefile
 
@@ -90,7 +94,6 @@ ifeq ($(HAVE_JMAX_2_5),yes)
 DISTDIR = $(JMAXROOTDIR)/fts
 JMAX_OBJS = $(OBJS) $(OBJDIR)/base_bridge_jmax.o
 JMAX_LIB = $(LIBDIR)/libgridflow.so
-LDSOFLAGS += -rdynamic $(GRIDFLOW_LDSOFLAGS)
 gridflow-for-jmax:: $(LIBDIR) $(OBJDIR) $(JMAX_LIB)
 
 $(OBJDIR)/base_bridge_jmax.o: base/bridge_jmax.c base/grid.h $(CONF)
