@@ -42,9 +42,8 @@ cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
-clean2::
-	rm -f $(JMAX_LIB) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
-	(cd java; make clean)
+clean2:: jmax-clean
+	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 install2:: ruby-install jmax-install puredata-install
 
@@ -113,6 +112,9 @@ ARCH=$(JMAX_ARCH)
 endif
 
 ifeq ($(HAVE_JMAX_4),yes)
+
+jmax-clean::
+	@#nothing
 
 # GridFlow/jMax4 Installation Directory
 GFID = $(JMAX4_INSTALL_DIR)/gridflow
@@ -192,12 +194,19 @@ jmax-install:: jmax-install-java
 		$(INSTALL_DATA) $$f $(GFID)/$$f; \
 	done
 
+jmax-clean::
+	rm -f $(JMAX_LIB) 
+	(cd java; make clean)
+
 else
 
 $(JMAX_LIB):
 	@#nothing
 
 gridflow-for-jmax::
+	@#nothing
+
+jmax-clean::
 	@#nothing
 
 jmax-install::
