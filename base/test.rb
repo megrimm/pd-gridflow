@@ -257,8 +257,9 @@ end
 
 def test_anim msgs
 	gin = FObject["@in"]
-#	gout = FObject["@out 256 256"]
+	gout = FObject["@out 256 256"]
 
+proc{
 	gout = FObject["@fold + 0"]
 	gout2 = FObject["@ / 3"]
 	gout3 = FObject["@outer + {0}"]
@@ -267,6 +268,7 @@ def test_anim msgs
 	gout.connect 0,gout2,0
 	gout2.connect 0,gout3,0
 	gout3.connect 0,gout4,0
+}
 
 	gin.connect 0,gout,0
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
