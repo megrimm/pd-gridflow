@@ -126,7 +126,6 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid.to_dim(); }
 METHOD3(GridImport,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
-	dim_grid.constrain(expect_dim_dim_list);
 	dim_grid.init_from_ruby(argv[0]);
 	dim = dim_grid.to_dim();
 	return Qnil;
@@ -911,6 +910,9 @@ struct GridFor : GridObject {
   { Dim[B],Dim[B],Dim[B] -> Dim[*As,B] }*/
 
 METHOD3(GridFor,init) {
+	from.constrain(max_one_dim);
+	to  .constrain(max_one_dim);
+	step.constrain(max_one_dim);
 	rb_call_super(argc,argv);
 	if (argc<3) RAISE("not enough arguments");
 	from.init_from_ruby(argv[0]);
@@ -961,9 +963,6 @@ METHOD3(GridFor,_0_bang) {
 
 METHOD3(GridFor,_0_set) {
 	from.init_from_ruby(argv[0]);
-	from.constrain(max_one_dim);
-	to  .constrain(max_one_dim);
-	step.constrain(max_one_dim);
 	return Qnil;
 }
 
@@ -1073,7 +1072,7 @@ LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 /*{ Dim[A,B,3] -> Dim[C,D,3] }*/
 
 struct GridScaleBy : GridObject {
-	int rint; /* integer scale factor (r as in right inlet, which does not exist yet) */
+	Grid scale; /* integer scale factor */
 	DECL3(init);
 	GRINLET3(0);
 };
@@ -1082,7 +1081,9 @@ struct GridScaleBy : GridObject {
 /* one needs three special methods for that; they are declared using macros */
 /* this one processes the header and accepts or rejects the grid */
 GRID_BEGIN(GridScaleBy,0) {
-	int scale = rint;
+	int scaley = scale.as_int32()[0];
+	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	gfpost("scale = {%d, %d}",scaley,scalex);
 	Dim *a = in->dim;
 
 	/* there are restrictions on grid sizes for efficiency reasons */
@@ -1090,7 +1091,7 @@ GRID_BEGIN(GridScaleBy,0) {
 	if (a->get(2)!=3) RAISE("3 chans please");
 
 	/* computing the output's size */
-	int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
+	int v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v));
 
 	/* configuring the input format */
@@ -1099,9 +1100,10 @@ GRID_BEGIN(GridScaleBy,0) {
 
 /* this method processes one packet of grid content */
 GRID_FLOW(GridScaleBy,0) {
-	int scale = rint;
+	int scaley = scale.as_int32()[0];
+	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
 	int rowsize = in->dim->prod(1);
-	STACK_ARRAY(Number,buf,rowsize*scale);
+	STACK_ARRAY(Number,buf,rowsize*scalex);
 
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
@@ -1109,7 +1111,7 @@ GRID_FLOW(GridScaleBy,0) {
 		/* scale the line x-wise */
 		int p=0;
 		for (int i=0; i<rowsize; i+=3) {
-			for (int k=0; k<scale; k++) {
+			for (int k=0; k<scalex; k++) {
 				buf[p+0]=data[i+0];
 				buf[p+1]=data[i+1];
 				buf[p+2]=data[i+2];
@@ -1118,17 +1120,23 @@ GRID_FLOW(GridScaleBy,0) {
 		}
 
 		/* send the x-scaled line several times (thus y-scaling) */
-		for (int j=0; j<scale; j++) out[0]->send(rowsize*scale,buf);
+		for (int j=0; j<scaley; j++) out[0]->send(rowsize*scalex,buf);
 	}
 }
 
 /* not much to do here: when the input is done, the output is done too */
 GRID_END(GridScaleBy,0) { out[0]->end(); }
 
+static void expect_one_or_two (Dim *dim) {
+	if (dim->prod()!=1 && dim->prod()!=2)
+		RAISE("expecting only one or two numbers");
+}
+
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD3(GridScaleBy,init) {
-	rint = argc<1 ? 2 : INT(argv[0]);
+	scale.constrain(expect_one_or_two);
+	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
 	rb_call_super(argc,argv);
 	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
@@ -1292,6 +1300,8 @@ struct RtMetro : GridObject {
 	uint64 last;      /* microseconds since epoch: last time we checked */
 	int mode; /* 0=equal; 1=geiger */
 
+	uint64 delay();
+
 	DECL3(init);
 	DECL3(_0_int);
 	DECL3(_1_int);
@@ -1307,11 +1317,10 @@ static double drand() {
 	return 1.0*rand()/(RAND_MAX+1.0);
 }
 
-static uint64 RtMetro_delay(Ruby rself) {
-	DGS(RtMetro);
-	switch ($->mode) {
+uint64 RtMetro::delay() {
+	switch (mode) {
 		case 0:
-			return 1000LL*$->ms;
+			return 1000LL*ms;
 		case 1:
 			/* Bangs in a geiger counter have a l*dt probability of occuring
 			in a dt time interval. Therefore the time till the next event
@@ -1320,7 +1329,7 @@ static uint64 RtMetro_delay(Ruby rself) {
 			F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
 			F^-1(p) = -log(1-p)/l
 			*/
-			return (uint64)(1000LL*$->ms*-log(1-drand()));
+			return (uint64)(1000LL*ms*-log(1-drand()));
 		default:
 			abort();
 	}
@@ -1335,7 +1344,7 @@ static void RtMetro_alarm(Ruby rself) {
 		Ruby a[] = { INT2NUM(0), sym_bang };
 		FObject_send_out(COUNT(a),a,rself);
 		/* $->next_time = now; */ /* jmax style, less realtime */
-		$->next_time += RtMetro_delay(rself);
+		$->next_time += $->delay();
 	}
 	$->last = now;
 }

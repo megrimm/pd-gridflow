@@ -167,7 +167,25 @@ class FObject
 		r.args = o
 		r
 	end
+	def initialize
+		super
+		self.args ||= "[#{self.class} ;-)]"
+	end
 end
+
+# Those would be equivalent of PD/jMax patchers/abstractions
+# except that they'd work at the Ruby level only.
+
+#class FPatcher
+#	def initialize(fobjects)
+#		
+#	end
+#	def self.make_chain
+#	end
+#end
+
+#class FAbstraction
+#end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -311,6 +329,23 @@ class GridFour < GridPack
 	(0...4).each {|x| define_inlet x }
 	install_rgrid 0
 	install "@four", 4, 1
+end
+
+class GridCheckers < GridObject
+	def initialize
+		@chain =
+		["@ >> 3","@ & 1","@fold ^","@ inv+ 0","@ & 63",
+		"@ + 128","@outer + {0 0 0}"].map {|o|
+			FObject[o]
+		}
+		(0..@chain.length-2).each {|i| @chain[i].connect 0,@chain[i+1],0 }
+		@chain[-1].connect 0,self,1
+	end
+	def _0_grid_begin(*a) @chain[0]._0_grid_begin *a; end
+	def _0_grid_end  (*a) @chain[0]._0_grid_end   *a; end
+	def _1_grid_begin(*a) send_out 0, :grid_begin, *a; end
+	def _1_grid_end  (*a) send_out 0, :grid_end, *a; end
+	install "@checkers", 1, 1
 end
 
 class GridGlobal

@@ -282,11 +282,16 @@ def test_ppm2
 end
 
 def test_foo
-	foo = FObject["@for {0 234} {0 345} {1 1}"]
+	foo = FObject["@for {0 0} {64 64} {1 1}"]
 	che = FObject["@checkers"]
-	out = FObject["@out x11"]
+	sca = FObject["@scale_by {5 3}"]
+	out = FObject["@out"]
 	foo.connect 0,che,0
-	che.connect 0,out,0
+	che.connect 0,sca,0
+	sca.connect 0,out,0
+	out.send_in 0, "open x11"
+	foo.send_in 0
+	$mainloop.loop
 end
 
 def test_anim msgs

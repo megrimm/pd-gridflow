@@ -194,9 +194,12 @@ class GridOut < GridObject
 		@timelog = false
 		@framecount = 0
 		@time = Time.new
-		if a.length>0
+		return if a.length==0
+		if Integer===a[0]
 			_0_open :x11,:here
 			_0_option :out_size,a[0],a[1]
+		else
+			_0_open(*a)
 		end
 	end
 
