@@ -1,15 +1,17 @@
 # $Id$
 
-set pname video4jmax
+set pname gridflow
 
 package provide $pname 
 package require reftype
 global jmaxArch jmaxMode
 ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
+# java::load -classpath "$dir/java/classes" gridflow.GridFlowExtension
 
 templateDirectory $dir/templates
 
 sourceFile $dir/help/${pname}.help.index.tcl
 
-post "package: Video4jmax"
+post "package: GridFlow"
+
 
