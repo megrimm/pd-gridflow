@@ -128,6 +128,8 @@ FileFormat *FormatPPM_open (const char *filename, int mode) {
 	$->begin  = FormatPPM_begin;
 	$->flow   = FormatPPM_flow;
 	$->end    = FormatPPM_end;
+	$->color  = 0;
+	$->option = 0;
 	$->close  = FormatPPM_close;
 
 	$->stuff = NEW(int,3); /* huh? */

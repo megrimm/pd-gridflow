@@ -126,6 +126,8 @@ FileFormat *FormatTarga_open (const char *filename, int mode) {
 	$->begin  = FormatTarga_begin;
 	$->flow   = FormatTarga_flow;
 	$->end    = FormatTarga_end;
+	$->color  = 0;
+	$->option = 0;
 	$->close  = FormatTarga_close;
 	$->stuff  = NEW(int,4);
 

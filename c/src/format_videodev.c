@@ -103,6 +103,25 @@ const char *video_palette_s(int palette) {
 	}
 }
 
+void video_channel_whine(struct video_channel *$) {
+	WH(channel,"%d");
+	WH(name,"%32s");
+	WH(tuners,"%d");
+	WH(flags,"0x%08x");
+	WH(type,"0x%04x");
+	WH(norm,"0x%04x");
+}
+
+void video_tuner_whine(struct video_tuner *$) {
+	WH(tuner,"%d");
+	WH(name,"%32s");
+	WH(rangelow,"%d");
+	WH(rangehigh,"%d");
+	WH(flags,"0x%08x");
+	WH(mode,"0x%04x");
+	WH(signal,"%d");
+}
+
 void video_capability_whine(struct video_capability *$) {
 	char *foo;
 	whine("VideoCapability:");
@@ -212,13 +231,27 @@ void FormatVideoDev_end (FileFormat *$) {
 
 }
 
+void FormatVideoDev_option (FileFormat *$, fts_symbol_t sym, int value) {
+	if (sym == SYM(channel)) {
+		struct video_channel vchan;
+		vchan.channel = value;
+		if (0> ioctl($->stream_raw, VIDIOCGCHAN, &vchan)) {
+			whine("no channel #%d", value);
+		} else {
+			video_channel_whine(&vchan);
+			WIOCTL($->stream_raw, VIDIOCSCHAN, &vchan);
+		}
+	} else {
+		whine("unknown option: %s", fts_symbol_name(sym));
+	}
+}
+
 void FormatVideoDev_close (FileFormat *$) {
 	if ($->stream_raw>=0) close($->stream_raw);
 	free($);
 }
 
 FileFormat *FormatVideoDev_open (const char *filename, int mode) {
-	struct video_capability vcaps;
 	FileFormat *$ = NEW(FileFormat,1);
 	$->qlass  = &FormatVideoDev;
 	$->frames = 0;
@@ -228,6 +261,8 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	$->begin  = FormatVideoDev_begin;
 	$->flow   = FormatVideoDev_flow;
 	$->end    = FormatVideoDev_end;
+	$->color  = 0;
+	$->option = FormatVideoDev_option;
 	$->close  = FormatVideoDev_close;
 
 	switch(mode) {
@@ -251,10 +286,23 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 		fcntl($->stream_raw, F_SETFL, v);
 	}
 
-	WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);
-	video_capability_whine(&vcaps);
-/*	$->size($,vcaps.minheight,vcaps.minwidth); */
-	$->size($,vcaps.maxheight,vcaps.maxwidth);
+	{
+		struct video_capability vcaps;
+		WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);
+		video_capability_whine(&vcaps);
+	/*	$->size($,vcaps.minheight,vcaps.minwidth); */
+		$->size($,vcaps.maxheight,vcaps.maxwidth);
+	}
+
+	$->option($,SYM(channel),0);
+
+/*
+	{
+		struct video_tuner vtuner;
+		WIOCTL($->stream_raw, VIDIOCGTUNER, &vtuner);
+		video_tuner_whine(&vtuner);
+	}
+*/
 
 	/* Sometimes a pause is needed here */
 	sleep(1);

@@ -224,6 +224,10 @@ struct GridInlet {
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 
+/*
+#define GridInlet_NEW((GridObject *)parent, winlet, (GridBegin)a, (GridFlow)b);
+*/
+
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware jmax outlet */
 
@@ -346,17 +350,18 @@ struct FileFormatClass {
 	int left; \
 	void *stuff; \
 	\
-	int    (*frames) (FileFormat *$); \
-	Dim   *(*frame)  (FileFormat *$, int frame); \
-	void   (*size)   (FileFormat *$, int height, int width); \
-	Number*(*read)   (FileFormat *$, int n); \
+	int    (*frames)(FileFormat *$); \
+	Dim   *(*frame) (FileFormat *$, int frame); \
+	void   (*size)  (FileFormat *$, int height, int width); \
+	Number*(*read)  (FileFormat *$, int n); \
 	\
-	void   (*begin)(FileFormat *$, Dim *dim); \
-	void   (*flow) (FileFormat *$, int n, const Number *data); \
-	void   (*end)  (FileFormat *$); \
+	void   (*begin) (FileFormat *$, Dim *dim); \
+	void   (*flow)  (FileFormat *$, int n, const Number *data); \
+	void   (*end)   (FileFormat *$); \
 	\
-	void   (*config) (FileFormat *$, fts_symbol_t *sym, int value); \
-	void   (*close)  (FileFormat *$);
+	void   (*color) (FileFormat *$, fts_symbol_t sym); \
+	void   (*option)(FileFormat *$, fts_symbol_t sym, int value); \
+	void   (*close) (FileFormat *$);
 
 struct FileFormat {
 	FileFormat_FIELDS;
