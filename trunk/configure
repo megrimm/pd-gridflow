@@ -56,6 +56,7 @@ class Or
 	attr_reader :a
 	class<<self; alias [] new end
 	def initialize(*a) @a=a end
+	def to_s; @a.join " or "; end
 end
 
 def launch2(log,*command)
@@ -525,7 +526,7 @@ puts "generating ./config.make"
 
 File.open("./config.make","w") {|f| f.puts "
 
-RUBYARCH=#{CONFIG["arch"]}
+RUBYARCH=#{CONFIG['arch']}
 
 ifndef ARCH
 ARCH=#{$conf[:JMAX_ARCH]}
@@ -641,6 +642,9 @@ mf.gsub!(/^(site-)?install:\n\n/,"")
 #HACK
 mf.gsub!(/.c.o:\n\t\$\(CC\)/,".c.o:\n\t\$\(CC\) -xc++")
 
+#jMax conflict resolution
+mf.gsub!(/prefix/,'rubyprefix')
+
 #p mf.length
 f = File.open("Makefile","w")
 f.puts "include config.make"
@@ -649,7 +653,7 @@ f.puts "include Makefile.gf"
 make_makefile f
 f.close
 
-=begin
+#=begin
 for z in [
 :$srcdir,
 :$libdir,
@@ -658,5 +662,7 @@ for z in [
 :$sitedir,
 :$sitelibdir,
 :$sitearchdir,
+:$prefix,
+:$exec_prefix,
 ] do puts "#{z} = #{eval z.to_s}" end
-=end
+#=end
