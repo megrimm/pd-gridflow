@@ -64,8 +64,8 @@ contains only one argument.
 
 classes in jMax:
 
-	<!ELEMENT fts-class (init,inlet*,outlet*,method*)>
-	<!ATTLIST fts-class
+	<!ELEMENT jmax-class (init,inlet*,outlet*,method*)>
+	<!ATTLIST jmax-class
 		name		CDATA	#REQUIRED
 		meta		CDATA	#IMPLIED
 		inlets	CDATA	#REQUIRED
