@@ -209,6 +209,21 @@ $LD_LIBRARY_PATH = (
 		read_ld_so_conf +
 		["/usr/lib","/lib"]).uniq
 
+# making it easier for everybody I hope:
+["/sw","/usr/local",ENV["home"]].each do|base|
+	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
+	   not $LIBRARY_PATH.include? "#{base}/lib" then
+		$conf[:LDSOFLAGS] << "-L#{base}/lib"
+		$LD_LIBRARY_PATH << "#{base}/lib"
+		$LIBRARY_PATH << "#{base}/lib"
+	end
+	#and not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
+	if not $C_INCLUDE_PATH.include? "#{base}/include" then
+		$CFLAGS += " -I#{base}/include"
+		$C_INCLUDE_PATH << "#{base}/include"
+	end
+end
+
 for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
 end
@@ -707,21 +722,6 @@ CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
 
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
 $CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", ["-falign-functions=4"]
-
-# making it easier for everybody I hope:
-["/sw","/usr/local",ENV["home"]].each do|base|
-	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
-	   not $LIBRARY_PATH.include? "#{base}/lib" then
-		$conf[:LDSOFLAGS] << "-L#{base}/lib"
-		$LD_LIBRARY_PATH << "#{base}/lib"
-		$LIBRARY_PATH << "#{base}/lib"
-	end
-	#and not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
-	if not $C_INCLUDE_PATH.include? "#{base}/include" then
-		$CFLAGS += " -I#{base}/include"
-		$C_INCLUDE_PATH << "#{base}/include"
-	end
-end
 
 #--------------------------------#
 
