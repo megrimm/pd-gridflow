@@ -58,7 +58,7 @@ $LD_LIBRARY_PATH = (
 #	puts "#{var}: #{eval(var.to_s).inspect}"
 #end
 
-$CFLAGS += " -xc++ -fno-operator-names"
+$CFLAGS += " -xc++ -fno-operator-names -falign-functions=4"
 
 ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
 "#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
@@ -465,7 +465,7 @@ Feature.new {
 },
 Feature.new {
 	tag :jmax4
-	status :disabled
+#	status :disabled
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
@@ -481,7 +481,8 @@ Feature.new {
 		int main () { return 0; }
 		', "-DLINUXPC" and #!@#$ nonportable
 		$C_INCLUDE_PATH.find {|dir|
-			File.exist?(dir+"/client/version.h")
+			#STDERR.puts dir
+			File.exist?(dir+"/fts/client/version.h")
 		}
 	}
 	options ["HAVE_JMAX_4"]
