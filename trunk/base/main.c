@@ -60,11 +60,10 @@ DECL_SYM2(int)
 DECL_SYM2(list)
 
 #define STARTUP_LIST(_begin_,_end_) \
-	_begin_## operator       _end_ \
-	_begin_## grid_basic     _end_ \
-	_begin_## grid_extra     _end_ \
-	_begin_## io             _end_ \
-	_begin_## gridflow       _end_
+	_begin_## number        _end_ \
+	_begin_## flow_objects  _end_ \
+	_begin_## grid          _end_ \
+	_begin_## gridflow      _end_
 
 /* declare startup of every source file */
 STARTUP_LIST(void startup_,(void);)
@@ -91,13 +90,41 @@ void showenv(const char *s) {
 
 void gf_timer_handler (Timer *foo, void *obj);
 
-void gridflow_ruby_init (void) {
+VALUE gf_ruby_init$1 (void *foo) {
+	rb_eval_string(
+		"begin\n"
+			"Thread.abort_on_exception = true\n"
+			"require '/home/projects/gridflow/extra/DRbServer.rb\n"
+/*
+			"require '/home/projects/gridflow/extra/TkRubyListener.rb'\n"
+			"$root = TkRoot.new { title 'GridFlow console' }\n"
+			"def foo; STDERR.puts \"ruby-loop-tick\"; Tk.after(1000) { foo }; end; foo\n"
+			"Thread.new {STDERR.puts \"TK-HELLO\"; Tk.mainloop}\n"
+			"$listener = TkRubyListener.new($root,60,8)\n"
+			"$listener.frame.pack\n"
+*/
+		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e} #{e.backtrace}\"\n"
+		"end\n"
+	);
+	return Qnil;
+}
+
+VALUE gf_ruby_init$2 (void *foo) {
+	whine("ruby exception occurred loading gridflow-console");
+	return Qnil;
+}
+
+void gf_ruby_init (void) {
+	char *foo[] = {"/bin/false","/dev/null"};
 	whine("starting Ruby...");
 	ruby_init();
+	ruby_options(ARRAY(foo));
+//	ruby_run();
 	{
 		VALUE foo = rb_eval_string("VERSION");
 		whine("Ruby VERSION = %s",RSTRING(foo)->ptr);
 	}
+	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
 }
 
 void gridflow_module_init (void) {
@@ -119,7 +146,7 @@ void gridflow_module_init (void) {
 	showenv("PATH");
 	showenv("DISPLAY");
 
-	gridflow_ruby_init();
+//	gf_ruby_init();
 
 	#define DEF_SYM(_sym_) \
 		sym_##_sym_ = Symbol_new(#_sym_);
@@ -135,12 +162,12 @@ void gridflow_module_init (void) {
 	gf_alloc_set  = Dict_new(0,0);
 	gf_object_set = Dict_new(0,0);
 	gf_timer_set  = Dict_new(0,0);
-	gf_timer = Timer_new(gf_timer_handler, 0);
-//	Dict_put(gf_timer_set,0,RtMetro_alarm);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
 
+	gf_timer = Timer_new(gf_timer_handler, 0);
+//	Dict_put(gf_timer_set,0,RtMetro_alarm);
 	gf_timer_handler(0,0); /* bootstrap the event loop */
 
 	whine("--- GridFlow startup: end ---");
@@ -405,10 +432,19 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 	callback(o);
 }
 
+void gf_timer_handler$2 (void *foo) {
+//	rb_eval_string("STDERR.puts \"ruby-tick\"");
+	rb_eval_string("begin Thread.pass; "
+		"rescue Exception => e; STDERR.puts \"2: Ruby Exception: #{e} #{e.backtrace}\" end");
+}
+
 void gf_timer_handler (Timer *foo, void *obj) {
+//	whine("tick-start");
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-	Timer_set_delay(gf_timer, 10.0);
+//	gf_timer_handler$2(0);
+//	whine("tick-end");
+	Timer_set_delay(gf_timer, 100.0);
 	Timer_arm(gf_timer);
 }
 
