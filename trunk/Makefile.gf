@@ -129,8 +129,6 @@ $(JMAX_LIB): bridge/jmax4.c bridge/common.c base/grid.h $(CONF)
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c
 	$(INSTALL_LIB) libgridflow$(LSUF) $(GFID)/c/libgridflow$(LSUF)
-	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
-	$(INSTALL_DATA) gridflow.scm $(GFID)/gridflow.scm
 	$(INSTALL_DIR) $(GFID)/templates
 	$(INSTALL_DIR) $(GFID)/help
 	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
