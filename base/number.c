@@ -138,11 +138,11 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 // this macro is for operators that have different code for the float version
 #define DEF_OPF(op,expr,expr2,neutral,absorbent) \
 	DEF_OP( op,expr,      neutral,absorbent) \
-	class Y##op<float32> : Op<float32> { public: \
+	template <> class Y##op<float32> : Op<float32> { public: \
 		inline static float32 f(float32 a, float32 b) { return expr2; } \
 		inline static bool is_neutral(float32 x, LeftRight side) { return neutral; } \
 		inline static bool is_absorbent(float32 x, LeftRight side) { return absorbent; } }; \
-	class Y##op<float64> : Op<float64> { public: \
+	template <> class Y##op<float64> : Op<float64> { public: \
 		inline static float64 f(float64 a, float64 b) { return expr2; } \
 		inline static bool is_neutral(float64 x, LeftRight side) { return neutral; } \
 		inline static bool is_absorbent(float64 x, LeftRight side) { return absorbent; } }; \

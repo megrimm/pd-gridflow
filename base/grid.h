@@ -882,7 +882,7 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
 		} else V=        new Grid(in->dim,NumberTypeE_type_of(*data)); \
 	} GRID_FLOW { \
-		COPY(((Pt<T>)*(V.next?V.next:&*V))+in->dex, data, n); \
+		COPY(((Pt<T>)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
 	} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
