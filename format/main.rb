@@ -203,7 +203,7 @@ module GridIO
 	end
 
 	def _0_timelog flag; @timelog = Integer(flag)!=0 end
-	def _0_loop flag; @loop = a[1].to_i != 0 end
+	def _0_loop flag; @loop = Integer(flag)!=0 end
 
 	def _0_option(*message)
 		case message[0]
