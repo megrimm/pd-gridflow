@@ -593,7 +593,7 @@
 		<icon text="[@inner * + 0]"/>
 		<help image="@foldinnerouter" text="[@inner]"/>
 
-		<p>think of this one as a special combination of [@outer]
+		<p>think of this one as a special combination of [@outer], [@]
 		and [@fold]. this is one of the most complex operations. It is very
 		useful for performing linear transforms like rotations, scalings,
 		tilts, and color remappings.
@@ -609,12 +609,21 @@
 		</method>
 		<inlet id="0">
 			<grid><dim>anyA..., lastA</dim>
-				creates a Dim(anyA...,anyB...) grid by splitting the
-				left-hand grid into Dim(lastA) pieces, the right-hand grid
-				into Dim(lastB) pieces, doing an [@] on them with the
-				specified op_para operator, and then a [@fold] on that with
-				the specified op_fold operator and base value. lastA must be
-				equal to lastB.
+
+				Splits the left-hand grid into Dim(anyA...) pieces
+				of Dim(lastA) size.
+
+				Splits the right-hand grid into Dim(anyB...) pieces
+				of Dim(lastB) size.
+
+				On every piece pair, does [@] using the specified
+				op_para operation, followed by a [@fold] using
+				the specified op_fold operator and base value.
+			
+				creates a Dim(anyA...,anyB...) grid by assembling all
+				the results together.
+
+				(note: The lastA must be equal to the lastB.)
 			</grid>
 		</inlet>
 		<inlet id="1">

@@ -60,6 +60,7 @@ def mkimg(icon,alt=nil)
 	url = icon.att["image"]
 	url = "images/" + url if url !~ /^images\//
 	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
+	raise "#{url} not found" if not File.exist? url
 	mk(:img, :src, url,
 		:alt, alt || icon.att["text"],
 		:border, 0)
@@ -97,6 +98,7 @@ class XNode
 		"jmax_doc" => 1,
 		"format" => 1,
 		"prose" => 1,
+		"part" => 1,
 	}
 	def initialize tag, att, *contents
 		@tag,@att,@contents =
@@ -117,6 +119,7 @@ class XNode
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			mk(:li) { mk(:a,:href,"\#"+att["name"]) {
 				if icon
+					icon.att['image'] ||= att['name']
 					mkimg(icon,att["cname"])
 				else
 					print att["name"]
@@ -183,9 +186,12 @@ class XNode
 			mk(:br)
 			if help
 				big = help.att['image']
-				small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
+				if big[0]==?@ then big="images/help_#{big}.png" end
+				raise "#{big} not found" if not File.exist?(big)
+				#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
 				mk(:a,:href,big) {
-					mk(:img,:src,small,:border,0)
+					#mk(:img,:src,small,:border,0)
+					mk(:img,:src,"images/see_screenshot.png",:border,0)
 				}
 			end
 			mk(:br,:clear,"left")
@@ -223,11 +229,24 @@ class XNode
 			return
 		when "grid", "dim"
 			print "[#{tag}]"; e="[/#{tag}]"
+		when "part"
+			$section[:table] ||= (
+				print "<tr>"
+				2.times { mk(:td) {}}
+				print "<td>"
+				print "<table border='1'>"
+			;0)
+			print "<tr>"
+			mk(:td) { print att["name"]  }
+			mk(:td) { print att["who"]   }
+			mk(:td) { print att["files"] }
+			print "<td>"
+			e="</td></tr>"
+		
 		when "operator_1", "operator_2"
 			$section[:table] ||= (
 				print "<tr>"
-				mk(:td) {}
-				mk(:td) {}
+				2.times { mk(:td) {}}
 				print "<td>"
 				print "<table border='1'>"
 			;0)
@@ -380,7 +399,7 @@ puts <<EOF
 <html>
 <head>
 <!-- #{"$"}Id#{"$"} -->
-<title>GridFlow 0.4.0 - reference</title>
+<title>GridFlow 0.4.1 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -406,7 +425,7 @@ EOF
 black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.4.0 - reference index</h4>
+    <h4>GridFlow 0.4.1 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -439,7 +458,7 @@ puts <<EOF
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.4.0 Documentation<br>
+<p><font size="-1">GridFlow 0.4.1 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
