@@ -1012,14 +1012,14 @@ class RubyFor < GridFlow::FObject
 end
 
 class InvPlus < FObject
-  def initialize(b) @b=b end
+  def initialize(b=0) @b=b end
   def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, b-a end
   install "inv+", 2, 1
 end
 
 class InvTimes < FObject
-  def initialize(b) @b=b end
+  def initialize(b=0) @b=b end
   def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, b/a end
   install "inv*", 2, 1
