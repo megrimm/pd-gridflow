@@ -219,7 +219,11 @@ void video_mmap_whine(VideoMmap *$) {
 
 /* **************************************************************** */
 
-extern FileFormatClass FormatVideoDev;
+extern FileFormatClass class_FormatVideoDev;
+
+typedef struct FormatVideoDev {
+	FileFormat_FIELDS
+} FormatVideoDev;
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
@@ -319,15 +323,15 @@ Number *FormatVideoDev_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatVideoDev_begin (FileFormat *$, Dim *dim) {
+GRID_BEGIN(FormatVideoDev,0) {
+	return false;
+}
+
+GRID_FLOW(FormatVideoDev,0) {
 
 }
 
-void FormatVideoDev_flow (FileFormat *$, int n, const Number *data) {
-
-}
-
-void FormatVideoDev_end (FileFormat *$) {
+GRID_END(FormatVideoDev,0) {
 
 }
 
@@ -388,14 +392,14 @@ void FormatVideoDev_close (FileFormat *$) {
 
 FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass  = &FormatVideoDev;
+	$->qlass  = &class_FormatVideoDev;
 	$->frames = 0;
 	$->frame  = FormatVideoDev_frame;
 	$->size   = FormatVideoDev_size;
 	$->read   = FormatVideoDev_read;
-	$->begin  = FormatVideoDev_begin;
-	$->flow   = FormatVideoDev_flow;
-	$->end    = FormatVideoDev_end;
+	$->begin  = (GRID_BEGIN_(FileFormat,(*)))FormatVideoDev_0_begin;
+	$->flow   =  (GRID_FLOW_(FileFormat,(*)))FormatVideoDev_0_flow;
+	$->end    =   (GRID_END_(FileFormat,(*)))FormatVideoDev_0_end;
 	$->color  = 0;
 	$->option = FormatVideoDev_option;
 	$->close  = FormatVideoDev_close;
@@ -463,7 +467,7 @@ err:
 	return 0;
 }
 
-FileFormatClass FormatVideoDev = {
+FileFormatClass class_FormatVideoDev = {
 	"videodev", "Video4linux 1.x", (FileFormatFlags)0,
 	FormatVideoDev_open, 0, 0,
 };

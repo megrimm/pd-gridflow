@@ -40,12 +40,10 @@
 
 /* some data/type decls */
 
-typedef struct VideoOutFile VideoOutFile;
-
-struct VideoOutFile {
+typedef struct VideoOutFile {
 	GridObject_FIELDS;
 	FileFormat *ff; /* a file writer object */
-};
+} VideoOutFile;
 
 /* ---------------------------------------------------------------- */
 
@@ -55,7 +53,7 @@ GRID_BEGIN(VideoOutFile,0) {
 	if (Dim_equal_verbose_hwc(in->dim,dim)) {
 		CHECK_FILE_OPEN2
 		in->dex=0;
-		$->ff->begin($->ff, in->dim);
+		$->ff->begin($->ff, in);
 		return true;
 	} else {
 		return false;
@@ -69,19 +67,18 @@ GRID_FLOW(VideoOutFile,0) {
 		int incr;
 		int max = Dim_prod(in->dim) - in->dex;
 		int bs = n<max?n:max;
-		$->ff->flow($->ff, bs, data);
+		$->ff->flow($->ff, in, bs, data);
 		
 		data += bs;
 		in->dex += bs;
 		n -= bs;
-		if (in->dex >= Dim_prod(in->dim)) {
-			$->ff->end($->ff);
-			fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
-		}
 	}
 }
 
-GRID_END(VideoOutFile,0) {}
+GRID_END(VideoOutFile,0) {
+	$->ff->end($->ff,in);
+	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
+}
 
 /* ---------------------------------------------------------------- */
 

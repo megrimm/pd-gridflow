@@ -34,12 +34,10 @@
 
 /* some data/type decls */
 
-typedef struct VideoInFile VideoInFile;
-
-struct VideoInFile {
+typedef struct VideoInFile {
 	GridObject_FIELDS;
 	FileFormat *ff; /* a file reader object */
-};
+} VideoInFile;
 
 /* ---------------------------------------------------------------- */
 

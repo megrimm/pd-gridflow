@@ -424,9 +424,9 @@ struct FileFormatClass {
 	void   (*size)  (FileFormat *$, int height, int width); \
 	Number*(*read)  (FileFormat *$, int n); \
 	\
-	void   (*begin) (FileFormat *$, Dim *dim); \
-	void   (*flow)  (FileFormat *$, int n, const Number *data); \
-	void   (*end)   (FileFormat *$); \
+	GRID_BEGIN_(FileFormat,(*begin)); \
+	 GRID_FLOW_(FileFormat,(*flow)); \
+	  GRID_END_(FileFormat,(*end)); \
 	\
 	void   (*color) (FileFormat *$, fts_symbol_t sym); \
 	void   (*option)(FileFormat *$, int ac, const fts_atom_t *at); \
@@ -436,7 +436,7 @@ struct FileFormat {
 	FileFormat_FIELDS;
 };
 
-extern FileFormatClass FILE_FORMAT_LIST( );
+extern FileFormatClass FILE_FORMAT_LIST( ,class_);
 extern FileFormatClass *file_format_classes[];
 FileFormatClass *FileFormatClass_find(const char *name);
 
