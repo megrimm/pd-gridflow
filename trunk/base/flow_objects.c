@@ -233,7 +233,7 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nb = r.dim->n;
 	int nc = in->dim->get(na-1);
-	int v[MAX_DIMENSIONS];
+	int32 v[MAX_DIMENSIONS];
 
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 
@@ -450,7 +450,7 @@ GRID_INLET(GridFold,0) {
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
-	int v[an-1];
+	int32 v[an-1];
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
 	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
@@ -598,7 +598,7 @@ GRID_INLET(GridInner,0) {
 	int n = a->n+b->n-2;
 	if (a_last != b_first)
 		RAISE("last dim of left side should be same size as first dim of right side");
-	int v[n];
+	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out[0]->begin(new Dim(n,v));
@@ -675,7 +675,7 @@ GRID_INLET(GridInner2,0) {
 	int n = a->n+b->n-2;
 	if (a_last != b_last)
 		RAISE("last dimension of each grid must have same size");
-	int v[n];
+	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v,b->n-1);
 	out[0]->begin(new Dim(n,v));
@@ -746,7 +746,7 @@ GRID_INLET(GridOuter,0) {
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	int n = a->n+b->n;
-	int v[n];
+	int32 v[n];
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
 	out[0]->begin(new Dim(n,v));
@@ -814,7 +814,7 @@ GRID_INLET(GridConvolve,0) {
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
 	/* bug: da[0]>=db[0] and da[1]>=db[1] are also conditions */
-	int v[da->n];
+	int32 v[da->n];
 	COPY(v,da->v,da->n);
 	margy = db->get(0)/2;
 	margx = db->get(1)/2;
@@ -948,7 +948,7 @@ METHOD3(GridFor,initialize) {
 
 METHOD3(GridFor,_0_bang) {
 	int n = from.dim->prod();
-	int nn[n+1];
+	int32 nn[n+1];
 	STACK_ARRAY(Number,x,n);
 	Pt<Number> fromb = ((Pt<int32>)from);
 	Pt<Number>   tob = ((Pt<int32>)to  );
@@ -1013,9 +1013,9 @@ struct GridDim : GridObject {
 };
 
 GRID_INLET(GridDim,0) {
-	int n = in->dim->n;
-	out[0]->begin(new Dim(1,&n));
-	out[0]->send(n,Pt<Number>((Number *)in->dim->v,in->dim->n));
+	int32 v[1] = {in->dim->n};
+	out[0]->begin(new Dim(1,v));
+	out[0]->send(v[0],Pt<Number>((Number *)in->dim->v,in->dim->n));
 	out[0]->end();
 }
 
@@ -1047,7 +1047,7 @@ struct GridRedim : GridObject {
 GRID_INLET(GridRedim,0) {
 	temp.del();
 	int a = in->dim->prod(), b = dim->prod();
-	if (a<b) temp.init(new Dim(1,&a));
+	if (a<b) {int32 v[1]={a}; temp.init(new Dim(1,v));}
 	out[0]->begin(dim->dup());
 }
 
@@ -1089,7 +1089,7 @@ METHOD3(GridRedim,initialize) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	dim = new Dim(t.dim->prod(),(int *)(Number *)(Pt<int32>)t);
+	dim = new Dim(t.dim->prod(),(Number *)(Pt<int32>)t);
 	return Qnil;
 }
 
@@ -1120,7 +1120,7 @@ GRID_INLET(GridScaleBy,0) {
 	expect_rgb_picture(a);
 
 	/* computing the output's size */
-	int v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
+	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v));
 
 	/* configuring the input format */
@@ -1201,13 +1201,13 @@ GRID_INLET(GridDownscaleBy,0) {
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	if (a->get(2)!=3) RAISE("3 chans please");
 
-	int v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
+	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v));
 
 	in->set_factor(a->get(1)*a->get(2));
 
 	temp.del();
-	int w[]={in->dim->get(1)/scalex,in->dim->get(2)};
+	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
 	temp.init(new Dim(2,w));
 }
 

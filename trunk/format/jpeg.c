@@ -85,7 +85,7 @@ METHOD3(FormatJPEG,frame) {
 	jpeg_stdio_src(&djpeg,f);
 	jpeg_read_header(&djpeg,TRUE);
 	int sx = djpeg.image_width, sy = djpeg.image_height;
-	int v[] = { sy, sx, 3 };
+	int32 v[] = { sy, sx, 3 };
 	o->begin(new Dim(3,v));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*3];

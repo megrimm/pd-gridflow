@@ -321,7 +321,7 @@ char *Dim::to_s() {
 	char buf[256];
 	char *s = buf;
 	s += sprintf(s,"Dim[");
-	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
+	for(int i=0; i<n; i++) s += sprintf(s,"%s%ld", ","+!i, v[i]);
 	s += sprintf(s,"]");
 	return strdup(buf);
 }

@@ -171,11 +171,11 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 
 static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
-	for (int i=0; i<rb_ary_len(error_array); i++)
-		post("%s",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+//	for (int i=0; i<rb_ary_len(error_array); i++)
+//		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	//!@#$leak
 	if (fm->self) pd_error(fm->self,"%s",strdup(rb_str_ptr(
-		rb_funcall(error_array,SI(join),0))));
+		rb_funcall(error_array,SI(join),1,rb_str_new2("\n")))));
 	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
