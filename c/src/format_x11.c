@@ -22,6 +22,7 @@
 */
 
 #include "grid.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -68,12 +69,86 @@ struct FormatX11 {
 	struct timeval tv;   /* time of the last grid_end */
 	bool not_ours;
 	int mode;
+	bool timelog;
 };
 
 /* default connection (not used for now) */
 static X11Display *x11 = 0;
 
 /* ---------------------------------------------------------------- */
+
+/*
+  error handler, loosely adapted from XFree86's,
+  minus the exit(), the extension stuff, and the stderr.
+*/
+static int X11Display_error_handler (Display *$, XErrorEvent *event) {
+	char buffer[BUFSIZ];
+	char mesg[BUFSIZ];
+	char number[32];
+	char *mtype = "XlibMessage";
+	XGetErrorText($, event->error_code, buffer, BUFSIZ);
+	XGetErrorDatabaseText($,mtype,"XError","X Error",mesg,BUFSIZ);
+	whine("---- Xlib Error Handler ----");
+	whine("%s:  %s\n  ", mesg, buffer);
+	XGetErrorDatabaseText($,mtype,"MajorCode","Request Major code %d",mesg,BUFSIZ);
+	whine(mesg, event->request_code);
+	if (event->request_code < 128) {
+		sprintf(number, "%d", event->request_code);
+		XGetErrorDatabaseText($, "XRequest", number, "", buffer, BUFSIZ);
+	} else {
+		strcpy(buffer,"(extension)");
+	}
+	whine(" (%s)\n", buffer);
+	if (event->request_code >= 128) {
+		XGetErrorDatabaseText($,mtype,"MinorCode","Request Minor code %d",
+			      mesg, BUFSIZ);
+		/*fputs("  ", fp); */
+		whine(mesg, event->minor_code);
+		/*fputs("\n", fp); */
+	}
+
+	switch (event->error_code) {
+	case BadWindow: case BadPixmap:
+	case BadCursor: case BadFont:
+	case BadDrawable: case BadColor:
+	case BadGC: case BadIDChoice:
+	case BadValue: case BadAtom:
+		if (event->error_code == BadValue)
+			XGetErrorDatabaseText($,mtype,"Value","Value 0x%x",
+				mesg, BUFSIZ);
+		else if (event->error_code == BadAtom)
+			XGetErrorDatabaseText($,mtype,"AtomID","AtomID 0x%x",
+				mesg, BUFSIZ);
+		else
+			XGetErrorDatabaseText($,mtype,"ResourceID","ResourceID 0x%x",
+				mesg, BUFSIZ);
+		break;
+		/*fputs("  ", fp);*/
+		whine(mesg, event->resourceid);
+		/*fputs("\n", fp);*/
+	}
+	XGetErrorDatabaseText($,mtype,"ErrorSerial","Error Serial #%d", 
+		mesg, BUFSIZ);
+	/*fputs("  ", fp);*/
+	whine(mesg, event->serial);
+	XGetErrorDatabaseText($,mtype,"CurrentSerial","Current Serial #%d",
+		mesg, BUFSIZ);
+	/*fputs("\n  ", fp); */
+	whine(mesg, ((_XPrivDisplay)$)->request);
+	/*fputs("\n", fp);*/
+	if (event->error_code == BadImplementation) return 0;
+	whine("---- end ----");
+	return 1;
+}
+
+/*
+static int X11Display_io_error_handler(Display *$) {
+	whine("this is Xlib IO Error Handler.");
+	whine("Xlib should be trying to sink the ship now (it won't stop us.)");
+	// dialing for help
+	longjmp(911);
+}
+*/
 
 static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	X11Display *d = $->display;
@@ -204,6 +279,12 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 			fts_set_int(at+1,em->y);
 			fts_set_int(at+2,em->x);
 		}break;
+		case DestroyNotify:{
+			/* should notify vout->parent here */
+		}break;
+		case ConfigureNotify:{
+			/* like we care */
+		}break;
 		default:
 			whine("received event of type # %d", e.type);
 		}
@@ -227,15 +308,16 @@ void X11Display_abort(Display *d, XErrorEvent *e) {
 */
 
 X11Display *X11Display_new(const char *disp_string) {
+/*	jmp_buf rescue;*/
 	X11Display *$ = NEW(X11Display,1);
-	
-	int i;
 	int screen_num;
 	Screen *screen;
 
 	$->alarm = 0;
 	$->vouts = NEW2(FormatX11 *, 1);
 	$->vouts_n = 0;
+
+/*	if (setjmp(rescue)) goto err;*/
 
 	/* Open an X11 connection */
 	$->display = XOpenDisplay(disp_string);
@@ -244,7 +326,12 @@ X11Display *X11Display_new(const char *disp_string) {
 		goto err;
 	}
 
-	/* XSetErrorHandler(X11Display_abort); */
+	/*
+	  note that unlike other things, the Xlib error handler really is
+	  global, and has to be shared among the connections.
+	*/
+	XSetErrorHandler(X11Display_error_handler);
+	/* XSetIOErrorHandler(X11Display_io_error_handler); */
 
 	screen      = DefaultScreenOfDisplay($->display);
 	screen_num  = DefaultScreen($->display);
@@ -302,6 +389,7 @@ bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 	GridOutlet_end(out);
 
 	return true;
+err:
 }
 
 /* ---------------------------------------------------------------- */
@@ -453,6 +541,7 @@ GRID_END(FormatX11,0) {
 		int sy = Dim_get(in->dim,0);
 		FormatX11_show_section($,0,0,sx,sy);
 	}
+	if (!$->timelog) return;
 /*	whine_time("FormatX11:0:end"); */
 	{
 		struct timeval t;
@@ -497,6 +586,10 @@ void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 		$->autodraw = GET(1,int,0);
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
 		whine("autodraw = %d",$->autodraw);
+	} else if (sym == SYM(timelog)) {
+		$->timelog = GET(1,int,0);
+		COERCE_INT_INTO_RANGE($->timelog,0,1);
+		whine("timelog = %d",$->timelog);
 	} else {
 		whine("unknown option: %s", fts_symbol_name(sym));
 	}
@@ -523,7 +616,7 @@ Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
 	int sy = 240;
 	int sx = 320;
 
-	$->cl     = &class_FormatX11;
+	$->cl      = &class_FormatX11;
 	$->stream  = 0;
 	$->bstream = 0;
 	$->window  = 0;
@@ -531,8 +624,9 @@ Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
 	$->image   = 0;
 	$->ximage  = 0;
 	$->autodraw= 1;
-	$->mode = mode;
-	$->dim = 0;
+	$->mode    = mode;
+	$->dim     = 0;
+	$->timelog = 0;
 
 	gettimeofday(&$->tv,0);
 
