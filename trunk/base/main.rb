@@ -31,6 +31,7 @@ class NotImplementedError
 	end
 end
 
+#verbose,$VERBOSE=$VERBOSE,false
 for victim in [TCPSocket, TCPServer]
 	def victim.new
 		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
@@ -44,6 +45,7 @@ for victim in [Thread, Continuation]
 		raise NotImplementedError, "disabled because of jMax incompatibility"
 	end
 end
+#$VERBOSE=verbose
 
 require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
@@ -300,8 +302,8 @@ end
 #end
 
 def self.routine
-#	GridFlow.gfpost "hello"
 	$tasks.each {|k,v|
+#		puts "#{k} #{v}"
 		case v
 		when Integer; GridFlow.exec k,v
 		when Proc; v[k]
@@ -309,8 +311,10 @@ def self.routine
 		end
 	}
 	$mainloop.timers.after(0.025) { routine }
-#	GC.start
-#	GridFlow.gfpost "bye"
+#	if not @nextgc or Time.new > @nextgc then
+#		GC.start
+#		@nextgc = Time.new + 5
+#	end
 end
 
 def GridFlow.find_file s
@@ -320,8 +324,9 @@ end
 
 def GridFlow.tick
 	$mainloop.one(0)
+#	GC.start
 rescue Exception => e
-	GridFlow.gfpost "ruby #{e.class}: #{e}: #{e.backtrace}"
+	GridFlow.gfpost "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
 end
 
 AllocTrace = Struct.new(:v,:ptr,:size,:type,:file,:line)
@@ -364,3 +369,4 @@ END {
 }
 
 GridFlow.routine
+

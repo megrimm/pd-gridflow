@@ -47,14 +47,14 @@ extern "C" {
 	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_ "[]",__FILE__,__LINE__,false))
 
 #define FREE(_var_) \
-	_var_ ? (qfree(_var_, true), delete _var_, _var_=0) : 0
+	(_var_ ? ((qfree(_var_, true) && (delete _var_, 0)), _var_=0) : 0)
 
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 
 void *qalloc(
 	size_t n, const char *type, const char *file, int line, bool deadbeef);
 
-void qfree(void *data, bool fadedfoo);
+bool qfree(void *data, bool fadedfoo);
 void *qrealloc(void *data, int n);
 
 #include <string.h>
@@ -471,10 +471,17 @@ struct Grid {
 	NumberTypeIndex nt;
 	void *data;
 
+	Grid() {
+		dim = 0;
+		nt = int32_type_i;
+		data = 0;
+	}
+
 	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
 	void init_from_ruby(VALUE x);
 	void init_from_ruby_list(int n, VALUE *a);
 	void del();
+	~Grid();
 	inline int32 *as_int32() { return (int32 *)data; }
 	inline uint8 *as_uint8() { return (uint8 *)data; }
 	inline bool is_empty() { return !dim; }
@@ -612,7 +619,6 @@ extern "C" {
 /* **************************************************************** */
 
 struct GridObject {
-	virtual void mark(); /* not used for now */
 	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */
 	GridClass *grid_class;
 	void *foreign_peer; /* point to jMax peer */
@@ -625,6 +631,9 @@ struct GridObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
+
+	virtual void mark(); /* not used for now */
+	virtual ~GridObject();
 };
 
 void GridObject_conf_class(VALUE $, GridClass *grclass);
@@ -733,7 +742,8 @@ void *Pointer_get (VALUE self);
 
 VALUE ruby_c_install(GridClass *gc, VALUE super);
 
-typedef VALUE (*RFunc)();
+//typedef VALUE (*RFunc)();
+typedef VALUE (*RFunc)(...);
 
 void Init_gridflow (void) /*throws Exception*/;
 
