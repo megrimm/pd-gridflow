@@ -154,7 +154,7 @@ def asm_test code, *link
 	command = ["/usr/bin/env", "nasm",
 	"/tmp/#{$$}.asm", "-f", "elf", "-o", "/tmp/#{$$}.o"]
 	launch2 log,*command or return false
-	command = ["gcc","-o","/tmp/#{$$}","/tmp/#{$$}.o",*link]
+	command = ["#{$conf[:CC]}","-o","/tmp/#{$$}","/tmp/#{$$}.o",*link]
 	launch2 log,*command or return false
 	command = ["/tmp/#{$$}"]
 	launch2 log,*command or return false
