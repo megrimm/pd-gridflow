@@ -86,7 +86,7 @@ METHOD3(FormatAALib,initialize) {
 	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
 	context = aa_init(driver,&aa_defparams,0);
 	if (!context) RAISE("opening aalib didn't work");
-	int v[]={context->imgheight,context->imgwidth,1};
+	int32 v[]={context->imgheight,context->imgwidth,1};
 	gfpost("aalib image size: %s",(new Dim(3,v))->to_s());
 	return Qnil;
 }

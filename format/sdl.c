@@ -116,7 +116,7 @@ METHOD3(FormatSDL,initialize) {
 	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
 	if (!screen)
 		RAISE("Can't switch to (%d,%d,%dbpp): %s", 480, 640, 16, SDL_GetError());
-	int v[] = {480,640,3};
+	int32 v[] = {480,640,3};
 	dim = new Dim(3,v);
 
 	SDL_PixelFormat *f = screen->format;

@@ -49,7 +49,7 @@ METHOD3(FormatMPEG,frame) {
 /*	SetMPEGOption(MPEG_QUIET,1); */
 	if (!GetMPEGFrame((char *)buf)) RAISE("libmpeg: can't fetch frame");
 
-	int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
+	int32 v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
 	o->begin(new Dim(3,v));
 
 	int sy = o->dim->get(0);

@@ -56,7 +56,7 @@ METHOD3(FormatMPEG3,frame) {
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 
-	int v[] = { sy, sx, 3 };
+	int32 v[] = { sy, sx, 3 };
 	o->begin(new Dim(3,v));
 
 	int bs = o->dim->prod(1);

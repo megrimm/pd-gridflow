@@ -265,7 +265,7 @@ struct FormatVideoDev : Format {
 
 METHOD3(FormatVideoDev,size) {
 	int fd = GETFD;
-	int v[] = {NUM2INT(argv[0]), NUM2INT(argv[1]), 3};
+	int32 v[] = {NUM2INT(argv[0]), NUM2INT(argv[1]), 3};
 	VideoWindow grab_win;
 
 	/* bug here: won't flush the frame queue */
@@ -573,7 +573,7 @@ METHOD3(FormatVideoDev,initialize) {
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
-		int v[]={288,352,3};
+		int32 v[]={288,352,3};
 		dim = new Dim(3,v);
 	} else {
 		rb_funcall(rself,SI(initialize2),0);

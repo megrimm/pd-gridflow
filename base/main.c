@@ -125,7 +125,10 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	int outlet;
 	FObject_prepare_message(argc,argv,sym,outlet);
 	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
-	if (TYPE(noutlets2)!=T_FIXNUM) RAISE("don't know how many outlet this has");
+	if (TYPE(noutlets2)!=T_FIXNUM) {
+		IEVAL(rself,"STDERR.puts inspect");
+		RAISE("don't know how many outlets this has");
+	}
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 	if (gf_bridge.send_out && FObject_peer(rself))

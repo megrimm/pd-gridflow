@@ -127,7 +127,7 @@ void FormatX11::set_wm_hints (int sx, int sy) {
 
 /* ---------------------------------------------------------------- */
 
-static VALUE button_sym(int i) {
+static Ruby button_sym(int i) {
 	char foo[42];
 	sprintf(foo,"button%d",i);
 	return SYM(foo);
@@ -136,14 +136,14 @@ static VALUE button_sym(int i) {
 static void FormatX11_alarm(FormatX11 *self) { self->alarm(); }
 
 void FormatX11::report_pointer(int y, int x, int state) {
-	VALUE argv[5] = {
+	Ruby argv[5] = {
 		INT2NUM(0), SYM(position),
 		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
 	/* HACK */
 	if (!rb_ivar_defined(rself,SI(@parent))) {
 		IEVAL(rself,"@parent ||= @outlets[0][0][0]");
 	}
-	FObject_send_out(COUNT(argv),argv,rb_ivar_get(rself,SI(parent)));
+	FObject_send_out(COUNT(argv),argv,rb_ivar_get(rself,SI(@parent)));
 }
 
 void FormatX11::alarm() {
@@ -295,18 +295,18 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
-	if (sy<16) sy=16;
-	if (sx<16) sx=16;
-	if (sy>4000) RAISE("height too big");
-	if (sx>4000) RAISE("width too big");
-
-	int v[3] = {sy, sx, 3};
 /* !@#$ this code is sort of meaningless now
 	if (parent && parent->in[0]->dex > 0) {
 		gfpost("resizing while receiving picture (ignoring)");
 		return;
 	}
 */
+	if (sy<16) sy=16;
+	if (sx<16) sx=16;
+	if (sy>4000) RAISE("height too big");
+	if (sx>4000) RAISE("width too big");
+
+	int32 v[3] = {sy, sx, 3};
 	if (dim) delete dim;
 	dim = new Dim(3,v);
 

@@ -64,14 +64,14 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		del();
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
-				int v[i];
+				int32 v[i];
 				for (int j=0; j<i; j++) v[j] = INT(a[j]);
 				init(new Dim(i,v));
 				i++; a+=i; n-=i;
 				goto fill;
 			}
 		}
-		init(new Dim(1,&n));
+		{int32 v[1]={n}; init(new Dim(1,v));}
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -94,7 +94,7 @@ void Grid::init_from_ruby(Ruby x) {
 }
 
 Dim *Grid::to_dim() {
-	return new Dim(dim->prod(),(int *)(Number *)(Pt<int32>)*this);
+	return new Dim(dim->prod(),(Number *)(Pt<int32>)*this);
 }
 
 void Grid::del() {
@@ -172,7 +172,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 
 	if (argc>MAX_DIMENSIONS) RAISE("too many dimensions (aborting grid)");
 
-	int v[argc];
+	int32 v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	Dim *dim = this->dim = new Dim(argc,v);
 
@@ -541,7 +541,7 @@ METHOD3(GridObject,send_out_grid_begin) {
 	int n = rb_ary_len(argv[1]);
 	Ruby *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
-	int v[n];
+	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	out[outlet]->begin(new Dim(n,v));
 	return Qnil;

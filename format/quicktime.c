@@ -57,7 +57,7 @@ METHOD3(FormatQuickTime,frame) {
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,0);
 //	gfpost("result = %x", result);
 
-	int v[] = { sy, sx, 3 };
+	int32 v[] = { sy, sx, 3 };
 //	gfpost("dim(%d,%d,%d)",sy,sx,3);
 	o->begin(new Dim(3,v));
 

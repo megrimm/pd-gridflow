@@ -305,7 +305,7 @@ DECL_SYM(list)
 /* a Dim is a list of dimensions that describe the shape of a grid */
 struct Dim {
 	int n;
-	int v[MAX_DIMENSIONS];
+	int32 v[MAX_DIMENSIONS];
 
 	void check();
 
@@ -313,7 +313,7 @@ struct Dim {
 		this->n = n;
 	}
 
-	Dim(int n, int *v) {
+	Dim(int n, int32 *v) {
 		this->n = n;
 		memcpy(this->v,v,n*sizeof(int));
 		check();
@@ -327,15 +327,15 @@ struct Dim {
 		assert(i<n);
 		return v[i];
 	}
-	int prod(int start=0,int end=-1) {
+	int32 prod(int start=0,int end=-1) {
 		if (end<0) end+=n;
-		int tot=1;
+		int32 tot=1;
 		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	int calc_dex(int *v,int end=-1) {
+	int32 calc_dex(int *v,int end=-1) {
 		if (end<0) end+=n;
-		int dex=0;
+		int32 dex=0;
 		for (int i=0; i<=end; i++) dex = dex * this->v[i] + v[i];
 		return dex;
 	}
