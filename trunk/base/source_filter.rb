@@ -36,7 +36,7 @@ end
 
 def parse_methoddecl(line,term)
 	/^(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
-		raise "syntax error #{where}"
+		raise "syntax error #{where} #{line}"
 	rettype,selector,arglist = $1,$2,$3
 	arglist,minargs,maxargs = parse_arglist arglist
 	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where)
@@ -70,11 +70,14 @@ def where
 end
 
 def handle_attr(line)
-	fields = line.split(/\s+/)
+	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
+	name = type.slice!(/\w+$/)
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
-	#$stack[-1].attrs[]
-	Out.puts line
+	$stack[-1].attrs[name]=Arg.new(type,name,nil)
+	Out.print line
+	Out.puts "//FCS"
+	handle_decl "void _0_#{name}_m (#{type} #{name});"
 end
 
 def handle_decl(line)
@@ -197,6 +200,11 @@ def handle_end(line)
 		(n>1 and fields[1]!=cl)
 		then raise "end not matching #{where}" end
 		$stack.push frame
+		frame.attrs.each {|name,attr|
+			type,name,default = attr.to_a
+			#STDERR.puts "type=#{type} name=#{name} default=#{default}"
+			handle_def "void _0_#{name}_m (#{type} #{name}) { this->#{name}=#{name}; }"
+		}
 		frame.grins.each {|i,v|
 			k = case v[1]
 			when nil; '4'
@@ -209,6 +217,7 @@ def handle_end(line)
 				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
 				"return in[#{i}]->begin(argc,argv);}"
+
 		}
 		$stack.pop
 	end
