@@ -1,13 +1,15 @@
+/* $Id$ */
+
 General
-[ ] autoconf
+[ ] ./configure
 [ ] INCLUDE UP-TO-DATE DOC!!!
 [ ] UPDATE "samples/" !!!!
 [ ] remove memory leaks, segmentation faults
 [ ] better error handling
 
 Computation Objects
-[ ] @@ (binary op with array right-operand) (???)
-[ ] @fold
+[ ] @! (unary ops)
+[ ] @inner, @outer, @fold
 [ ] @convolution
 [ ] @redim, @dim (APL rho)
 [ ] @slice (@splice ?)
@@ -21,31 +23,28 @@ Effects
 [ ] abyss effect, fractals
 [ ] image-sur-image
 [ ] n-frame delaying
-[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) ???
-[ ] alpha channel overlays
-[ ] RGB <-> RGBA
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits)
 
 Structure & Protocol
 [x] packets: output buffering
-[ ] grid_end message
+[ ] grid_end message (triads: begin,packet,end -> accept,process,finish)
 [ ] check for too-short / too-long data vs. proposed dims.
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; GridInlet,GridOutlet have redundant info, like the
 	element counter, etc.
-[ ] binary ops: ** rev%
+[ ] angles will be 0<=x<36000
+[ ] unary ops: sq sqrt abs
+[ ] binary ops: **
 [ ] binary ops: mod revmod
-[ ] binary ops: < == > <= != >= << >>
-[ ] binary ops: *sin (a * sin(b / big_constant))
+[ ] binary ops: <= != >=
+[ ] binary ops: *sin -> b * sin(a * 2 * pi / 36000)
+[ ] binary ops: atan2
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] copy-on-write and similar tricks
-[ ] conditional binary ops ?
 
 Input/Output
-[x] remove "int" feature from @video_in_file
-[ ] remove perror()
-[ ] remove size from constructor of @video_out_file, @video_in_file
 [ ] in-place editing
 [ ] implement byte-order, bit-order support in @video_out
 	(need alternate hardware to test that)
@@ -53,12 +52,18 @@ Input/Output
 [ ] x11 shared memory working
 [ ] x11 screen capture
 [ ] Expose events
-[ ] Window close events
 [ ] Video4linux support
 [ ] files: multi-image (seq), multi-file (multi)
 [ ] Targa support
 [ ] JPEG support
 [ ] QuickTime support
+
+Misc
+[ ] @print
+[ ] @literal
+
+Bugs
+[ ] @video_out causes delayed crash when closing its associated window
 
 From: Aeldrik Pander <aeldrik@metachaos.demon.nl>
 

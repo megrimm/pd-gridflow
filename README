@@ -1,5 +1,24 @@
-Video4jmax 0.1.0
+Designed to work with JMAX 2.5.1, should work with JMAX 2.4.12
+
+Run ./configure from the video4jmax directory and specify --jmax24 or 
+--jmax--25, that should take care of adjusting the Makefiles to your
+current version and point to the right header for fts. 
+ 
+Files Changed:
+
+	video4jmax/Makefile
+  	video4jmax/c/Makefile
+        video4jmax/c/src/Makefile
+	video4jmax/c/src/fts_redirect.h
+
+Christian Klippel provided Makefiles
+Docs by Alexandre Castonguay
+
+##############################################################
+
+Video4jmax 0.2.1
 Copyright (c) 2001 by Mathieu Bouchard
+
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -17,14 +36,3 @@ Copyright (c) 2001 by Mathieu Bouchard
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
-Designed to work with JMAX 2.4.12
-
-Note for JMAX 2.5 users:
-
-	Christian Klippel provided Makefiles. By default this package is
-	for JMAX 2.4; if you have JMAX 2.5, you must take all files
-	named *.25 and remove the ".25" suffix. This will overwrite the
-	2.4 versions of the files with 2.5 versions.
-
-matju

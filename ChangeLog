@@ -1,13 +1,16 @@
+/* $Id$ */
+
 version 0.2.1:
  * configuration script
  * some cleanups
  * @store no longer slowing down everything it touches
  * many things work faster
- * @video_out supports sharing memory with the display (NOT!)
  * added File Format API
- * added Video4jmax support
+ * File Format "ppm": PPM support read-write
+ * File Format "videodev": Video4linux read (only works with dc1plus.o)
  * Tuple -> Dim, Index -> (removed)
  * Grid element type is typedef Number
+ * @ seems to be supporting grids in right inlet
 
 version 0.2.0:
  * package name changed from "video" to "video4jmax"

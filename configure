@@ -6,6 +6,9 @@ GREEN="\e[0;1;32m"
 GREY="\e[0m"
 YELL="\e[0;1;33m"
 
+# no color.
+BLUE=$GREY; GREEN=$GREY; YELL=$GREY
+
 JMAX=unknown
 
 echo
