@@ -26,15 +26,10 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include "grid.h"
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
 #include <ctype.h>
-#include "grid.h"
 
 int gf_max_packet_length = 1024*2;
 
@@ -65,7 +60,7 @@ GridObject *GridInlet_parent(GridInlet *$) {
 
 void GridInlet_abort(GridInlet *$) {
 	if ($->dim) {
-		whine("%s: aborting grid: %d of %d", INFO($), $->dex, Dim_prod($->dim));
+		whine("%s: aborting grid: %d of %d", INFO($), $->dex, $->dim->prod());
 		FREE($->dim);
 		FREE($->buf);
 	}
@@ -100,11 +95,11 @@ void GridInlet_set_factor(GridInlet *$, int factor) {
 	}
 }
 
-VALUE GridInlet_begin$1(GridInlet *$) {
+static VALUE GridInlet_begin$1(GridInlet *$) {
 	return (VALUE) $->gh->begin($->parent->peer,(GridObject *)$->parent,$);
 }
 
-VALUE GridInlet_begin$2(GridInlet *$) {
+static VALUE GridInlet_begin$2(GridInlet *$) {
 	$->dim = 0; /* hack */
 //	whine("ensure: %p,%p",$,$->dim);
 	return (VALUE) 0;
@@ -128,7 +123,7 @@ void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 	}
 
 	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	dim = $->dim = Dim_new(argc,v);
+	dim = $->dim = new Dim(argc,v);
 	FREE(v);
 
 	$->dex = 0;
@@ -159,10 +154,9 @@ if (mode==4) {
 	assert(n>0);
 	{
 		int d = $->dex + $->bufn;
-		if (d+n > Dim_prod($->dim)) {
-			whine("%s: grid input overflow: %d of %d",
-				INFO($), d+n, Dim_prod($->dim));
-			n = Dim_prod($->dim) - d;
+		if (d+n > $->dim->prod()) {
+			whine("%s: grid input overflow: %d of %d",INFO($), d+n, $->dim->prod());
+			n = $->dim->prod() - d;
 			if (n<=0) return;
 		}
 		if ($->buf && $->bufn) {
@@ -199,7 +193,7 @@ if (mode==4) {
 		if ($->buf) { while (n) { $->buf[$->bufn++] = *data++; n--; }}
 	}
 } else if (mode==6) {
-	Number *data = FIX2PTR(argv[1]);
+	Number *data = (Number *)FIX2PTR(argv[1]);
 	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
 	assert($->factor==1);
@@ -217,9 +211,9 @@ if (mode==4) {
 void GridInlet_end(GridInlet *$, int argc, VALUE *argv) {
 	if (!GridInlet_busy_verbose($,"end")) return;
 /*	whine("%s: GridInlet_end()", INFO($)); */
-	if (Dim_prod($->dim) != $->dex) {
+	if ($->dim->prod() != $->dex) {
 		whine("%s: incomplete grid: %d of %d", INFO($),
-			$->dex, Dim_prod($->dim));
+			$->dex, $->dim->prod());
 	}
 	if ($->gh->end) { $->gh->end($->parent->peer,(GridObject *)$->parent,$); }
 	FREE($->dim);
@@ -239,7 +233,7 @@ void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 		v[i] = NUM2INT(argv[i]);
 		/*whine("v[%d]=%ld",i,v[i]);*/
 	}
-	$->dim = Dim_new(1,&n);
+	$->dim = new Dim(1,&n);
 
 	assert($->gh->begin);
 	if ($->gh->begin($->parent->peer,(GridObject *)$->parent,$)) {
@@ -318,11 +312,11 @@ void GridOutlet_end(GridOutlet *$) {
 
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
-	int n = Dim_count(dim);
+	int n = dim->count();
 
 	assert($);
 
-	dim = Dim_dup(dim); /* leak */
+	dim = dim->dup(); /* leak */
 
 	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
 
@@ -336,7 +330,7 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 		a[0] = INT2NUM($->woutlet);
 		a[1] = sym_grid_begin;
 		a[2] = PTR2FIX($);
-		for(i=0; i<n; i++) a[3+i] = INT2NUM(Dim_get($->dim,i));
+		for(i=0; i<n; i++) a[3+i] = INT2NUM($->dim->get(i));
 		LEAVE_P;
 		FObject_send_out(n+3,a,$->parent->peer);
 		ENTER_P;
@@ -468,7 +462,7 @@ METHOD2(GridObject,inlet_dim) {
 	if (!in) RAISE("no such inlet #%d");
 	if (!in->dim) return Qnil;
 {
-	int i, n=Dim_count(in->dim);
+	int i, n=in->dim->count();
 	VALUE a = rb_ary_new2(n);
 //	whine("inlet_dim: %p,%p",in,in->dim);
 	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
@@ -485,7 +479,7 @@ METHOD(GridObject,send_out_grid_begin) {
 	VALUE *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	for (i=0; i<n; i++) v[i] = INT(p[i]);
-	GridOutlet_begin($->out[outlet],Dim_new(n,v));
+	GridOutlet_begin($->out[outlet],new Dim(n,v));
 }}
 
 METHOD(GridObject,send_out_grid_flow) {
@@ -530,7 +524,7 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	int i;
 //	VALUE list = rb_call_super(argc,argv);
 	VALUE list = rb_class_instance_methods(argc,argv,rself);
-	GridClass *grid_class = FIX2PTR(rb_ivar_get(rself,SI(@grid_class)));
+	GridClass *grid_class = (GridClass *)FIX2PTR(rb_ivar_get(rself,SI(@grid_class)));
 	for (i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		char buf[256];
@@ -608,9 +602,9 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 //	ruby_c_install(gc->name, gc->name, gc, Format_class2);
 
 	/* define in Ruby-metaclass */
-	rb_define_singleton_method($,"instance_methods",GridObject_s_instance_methods,-1);
-	rb_define_singleton_method($,"install_rgrid",GridObject_s_install_rgrid,-1);
-//	rb_define_singleton_method($,"install_format",GridObject_s_install_format,6);
+	rb_define_singleton_method($,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
+	rb_define_singleton_method($,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
+//	rb_define_singleton_method($,"install_format",(RFunc)GridObject_s_install_format,6);
 	rb_enable_super(rb_singleton_class($),"instance_methods");
 }  
 

@@ -319,21 +319,56 @@ DECL_SYM(list)
   and can do some calculations on positions in that grid.
 */
 
-typedef struct Dim {
-	int n;
-	int v[1];
-} Dim;
+#ifdef __cplusplus
+};
 
-Dim *Dim_new2(int n, int *v, const char *file, int line);
-#define Dim_new(_n_,_v_) Dim_new2(_n_,_v_,__FILE__,__LINE__)
-Dim *Dim_dup2(Dim *$, const char *file, int line);
-#define Dim_dup(_$_) Dim_dup2(_$_,__FILE__,__LINE__)
-int Dim_count(Dim *$);
-int Dim_get(Dim *$, int i);
-int Dim_prod(Dim *$);
-int Dim_prod_start(Dim *$, int start);
-char *Dim_to_s(Dim *$);
-int Dim_calc_dex(Dim *$, int *v);
+struct Dim {
+	int n;
+	int v[MAX_DIMENSIONS];
+
+	inline void invariant() {
+		assert(this);
+		assert_range(this->n,0,MAX_DIMENSIONS);
+	}
+
+	Dim(int n, int *v) {
+		assert_range(n,0,MAX_DIMENSIONS);
+		assert(v);
+		this->n = n;
+		for (int i=0; i<n; i++) {
+			assert_range(v[i],0,MAX_INDICES);
+			this->v[i] = v[i];
+		}
+		invariant();
+	}
+
+	Dim *dup() { return new Dim(n,v); }
+
+	int count() { invariant(); return n; }
+	int get(int i) {
+		invariant();
+		assert_range(i,0,n-1);
+		assert_range(v[i],0,MAX_INDICES);
+		return v[i];
+	}
+	int prod(int start=0) {
+		int tot=1;
+		invariant();
+		for (int i=start; i<n; i++) tot *= v[i];
+		return tot;
+	}
+	int calc_dex(int *v) {
+		int dex=0;
+		for (int i=0; i<n; i++) dex = dex * this->v[i] + v[i];
+		return dex;
+	}
+	char *to_s();
+};
+
+extern "C" {
+#else
+typedef struct Dim { int n; int v[1]; } Dim;
+#endif
 
 /* **************************************************************** */
 /* BitPacking objects encapsulate optimised loops of conversion */
@@ -395,6 +430,7 @@ typedef struct Operator2 {
 	void   (*op_scan)(Number,int,Number *);
 } Operator2;
 
+extern NumberType number_type_table[];
 extern Operator1 op1_table[];
 extern Operator2 op2_table[];
 extern VALUE /*Hash*/ op1_dict;
@@ -615,18 +651,22 @@ char *rb_sym_name(VALUE sym);
 void post(const char *,...);
 
 /* keyed on data */
-void MainLoop_add(void *data, void (*func)());
+void MainLoop_add(void *data, void (*func)(void*));
 void MainLoop_remove(void *data);
 
-void gf_init (void);
-#define PTR2FIX(ptr) ((((long)ptr)&3?RAISE("pointer alignment error"):0),INT2NUM(((int)ptr)/4))
+/*
+#define PTR2FIX(ptr) ( \
+	(((long)ptr)&3?RAISE("pointer alignment error"):0), \
+	INT2NUM(((long)ptr)/4))
+*/
+#define PTR2FIX(ptr) INT2NUM(((long)ptr)/4)
 #define FIX2PTR(value) (void *)(FIX2INT(value)*4)
 
 #define DEF(_class_,_name_,_argc_) \
-	rb_define_method(_class_##_class,#_name_,_class_##_##_name_,_argc_)
+	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
 
 #define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(_class_##_class,#_name_,_class_##_s_##_name_,_argc_)
+	rb_define_singleton_method(_class_##_class,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
 
 #define INTEGER_P(_value_) (FIXNUM_P(_value_) || TYPE(_value_)==T_BIGNUM)
 #define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
@@ -650,6 +690,8 @@ VALUE super);
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
 
 typedef VALUE (*RFunc)();
+
+void Init_gridflow (void) /*throws Exception*/;
 
 #ifdef __cplusplus
 };

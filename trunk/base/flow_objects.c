@@ -27,6 +27,32 @@
 #include "grid.h"
 
 /* **************************************************************** */
+/* Grid buffers */
+
+struct Grid {
+	Dim *dim;
+	NumberTypeIndex nt;
+	void *data;
+
+	void init(Dim *dim, NumberTypeIndex nt);
+	void del();
+	inline int32 *as_int32() { return (int32 *)data; }
+	inline uint8 *as_uint8() { return (uint8 *)data; }
+	inline bool is_empty() { return !!dim; }
+};
+
+void Grid::init(Dim *dim, NumberTypeIndex nt) {
+	this->nt = nt;
+	this->dim = dim;
+	this->data = dim ? NEW(char,dim->prod()*number_type_table[nt].size/8) : 0;
+}
+
+void Grid::del() {
+	FREE(dim);
+	FREE(data);
+}
+
+/* **************************************************************** */
 
 #define IV(s) rb_ivar_get(rself,SI(s))
 #define IVS(s,v) rb_ivar_set(rself,SI(s),v)
@@ -59,11 +85,11 @@ GRID_FLOW(GridImport,0) {
 	GridOutlet *out = $->out[0];
 	while (n) {
 		int n2;
-		if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
-		n2 = Dim_prod(out->dim) - out->dex;
+		if (!GridOutlet_busy(out)) GridOutlet_begin(out,$->dim->dup());
+		n2 = out->dim->prod() - out->dex;
 		if (n2 > n) n2 = n;
 		GridOutlet_send(out,n,data);
-		if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
+		if (out->dex >= out->dim->prod()) GridOutlet_end(out);
 		n -= n2;
 		data += n2;
 	}
@@ -74,8 +100,8 @@ GRID_END(GridImport,0) {}
 
 GRID_BEGIN(GridImport,1) {
 	int n;
-	if (Dim_count(in->dim)!=1) RAISE("expected 1 dim");
-	n = Dim_get(in->dim,0);
+	if (in->dim->count()!=1) RAISE("expected 1 dim");
+	n = in->dim->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too big");
 	GridInlet_set_factor(in,n);
 	return true;
@@ -89,7 +115,7 @@ GRID_FLOW(GridImport,1) {
 		dim[i]=data[i];
 		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(n,dim);
+	$->dim = new Dim(n,dim);
 	GridInlet_abort($->in[0]);
 	GridOutlet_abort($->out[0]);
 }
@@ -105,7 +131,7 @@ METHOD(GridImport,init) {
 		dim[i] = INT(argv[i]);
 		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(argc,dim);
+	$->dim = new Dim(argc,dim);
 }
 
 METHOD(GridImport,delete) {
@@ -116,9 +142,9 @@ METHOD(GridImport,delete) {
 METHOD(GridImport,_0_int) {
 	GridOutlet *out = $->out[0];
 	Number data[] = { INT(argv[0]) };
-	if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
+	if (!GridOutlet_busy(out)) GridOutlet_begin(out,$->dim->dup());
 	GridOutlet_send(out,COUNT(data),data);
-	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
+	if (out->dex >= out->dim->prod()) GridOutlet_end(out);
 }
 
 METHOD(GridImport,_0_reset) {
@@ -169,7 +195,7 @@ typedef struct GridExportList {
 } GridExportList;
 
 GRID_BEGIN(GridExportList,0) {
-	int n = Dim_prod(in->dim);
+	int n = in->dim->prod();
 	if (n>1000) RAISE("list too big (%d elements)", n);
 	$->list = rb_ary_new();
 	$->n = n;
@@ -205,39 +231,37 @@ LIST(GRINLET(GridExportList,0)))
 
 typedef struct GridStore {
 	GridObject_FIELDS;
-	int nt; /* number type */
-	void *data;
-	Dim *dim;
+	Grid r;
 } GridStore;
 
 GRID_BEGIN(GridStore,0) {
-	int na = Dim_count(in->dim);
+	int na = in->dim->count();
 	int nb,nc,nd,i;
 	int v[MAX_DIMENSIONS];
-	if (!$->dim) RAISE("empty buffer, better luck next time.");
+	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
 
-	nb = Dim_count($->dim);
+	nb = $->r.dim->count();
 
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 
-	nc = Dim_get(in->dim,na-1);
+	nc = in->dim->get(na-1);
 	if (nc > nb)
 		RAISE("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
 	nd = nb - nc + na - 1;
 	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
-	for (i=0; i<na-1; i++) v[i] = Dim_get(in->dim,i);
-	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
-	GridOutlet_begin($->out[0],Dim_new(nd,v));
+	for (i=0; i<na-1; i++) v[i] = in->dim->get(i);
+	for (i=nc; i<nb; i++) v[na-1+i-nc] = $->r.dim->get(i);
+	GridOutlet_begin($->out[0],new Dim(nd,v));
 	GridInlet_set_factor(in,nc);
 	return true;
 }
 
 GRID_FLOW(GridStore,0) {
-	int na = Dim_count(in->dim);
-	int nb = Dim_count($->dim);
-	int nc = Dim_get(in->dim,na-1);
-	int size = Dim_prod_start($->dim,nc);
+	int na = in->dim->count();
+	int nb = $->r.dim->count();
+	int nc = in->dim->get(na-1);
+	int size = $->r.dim->prod(nc);
 	int i;
 	int v[nb];
 	assert((n % nc) == 0);
@@ -245,18 +269,18 @@ GRID_FLOW(GridStore,0) {
 
 	while (n>0) {
 		int pos;
-		for (i=0; i<nc; i++,data++) v[i] = mod(*data,$->dim->v[i]);
+		for (i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
 		while (i<nb) v[i++] = 0;
-		pos = Dim_calc_dex($->dim,v);
-		switch ($->nt) {
+		pos = $->r.dim->calc_dex(v);
+		switch ($->r.nt) {
 		case int32_type_i: {
-			Number *data2 = ((Number *)$->data) + pos;
+			Number *data2 = $->r.as_int32() + pos;
 			GridOutlet_send($->out[0],size,data2);
 		 	break;}
 		case uint8_type_i: {
 			int bs = gf_max_packet_length;
 			Number data3[bs];
-			uint8 *data2 = ((uint8 *)$->data) + pos;
+			uint8 *data2 = $->r.as_uint8() + pos;
 			int left = size;
 			while (left>=bs) {
 				for (i=0; i<bs; i++) { data3[i] = data2[i]; }
@@ -279,27 +303,22 @@ GRID_FLOW(GridStore,0) {
 GRID_END(GridStore,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridStore,1) {
-	int length = Dim_prod(in->dim);
+	int length = in->dim->prod();
 	GridInlet_abort($->in[0]);
-	FREE($->dim);
-	FREE($->data);
-	$->dim = Dim_dup(in->dim);
-	switch ($->nt) {
-	case int32_type_i: $->data = NEW2(Number,length); break;
-	case uint8_type_i: $->data = NEW2(uint8,length); break;
-	default: assert(0);
-	}
+	NumberTypeIndex nt = $->r.nt;
+	$->r.del();
+	$->r.init(in->dim->dup(),nt);
 	return true;
 }
 
 GRID_FLOW(GridStore,1) {
 	int i;
-	switch ($->nt) {
+	switch ($->r.nt) {
 	case int32_type_i:{
-		Number *data2 = (Number *)$->data + in->dex;
+		Number *data2 = $->r.as_int32() + in->dex;
 		memcpy(data2, data, n*sizeof(Number)); break;}
 	case uint8_type_i:{
-		uint8 *data2 = (uint8 *)$->data + in->dex;
+		uint8 *data2 = $->r.as_uint8() + in->dex;
 		for(i=0; i<n; i++) data2[i] = data[i];
 		break;}
 	default: assert(0);
@@ -312,30 +331,21 @@ GRID_END(GridStore,1) {}
 METHOD(GridStore,init) {
 	VALUE t = argc==0 ? SYM(int32) : argv[0];
 	rb_call_super(argc,argv);
-	$->data = 0;
-	$->dim  = 0;
-	if (t==SYM(int32)) {
-		$->nt = int32_type_i;
-	} else if (t==SYM(uint8)) {
-		$->nt = uint8_type_i;
-	} else {
-		RAISE("unknown element type \"%s\"", t);
-	}
+	$->r.init(0,
+		t==SYM(int32) ? int32_type_i :
+		t==SYM(uint8) ? uint8_type_i :
+		(RAISE("unknown element type \"%s\"", t),int32_type_i));
 }
 
 METHOD(GridStore,delete) {
-	FREE($->data);
-	FREE($->dim);
+	$->r.del();
 	rb_call_super(argc,argv);
 }
 
 METHOD(GridStore,_0_bang) {
-	if (! $->dim || ! $->data) {
-		whine("empty buffer, better luck next time.");
-		return;
-	}
-	GridOutlet_begin($->out[0],Dim_dup($->dim));
-	GridOutlet_send( $->out[0],Dim_prod($->dim),$->data);
+	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
+	GridOutlet_begin($->out[0],$->r.dim->dup());
+	GridOutlet_send( $->out[0],$->r.dim->prod(),$->r.as_int32());
 	GridOutlet_end(  $->out[0]);
 }
 
@@ -353,7 +363,7 @@ typedef struct GridOp1 {
 } GridOp1;
 
 GRID_BEGIN(GridOp1,0) {
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	GridOutlet_begin($->out[0],in->dim->dup());
 	in->dex = 0;
 	return true;
 }
@@ -389,33 +399,32 @@ LIST(GRINLET(GridOp1,0)),
 typedef struct GridOp2 {
 	GridObject_FIELDS;
 	const Operator2 *op;
-	int rint;
-	Number *data;
-	Dim *dim;
+	Grid r;
 } GridOp2;
 
 GRID_BEGIN(GridOp2,0) {
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	GridOutlet_begin($->out[0],in->dim->dup());
 	in->dex = 0;
 	return true;
 }
 
 GRID_FLOW2(GridOp2,0) {
 	GridOutlet *out = $->out[0];
-	if ($->dim) {
-		int loop = Dim_prod($->dim);
+	int32 *rdata = $->r.as_int32();
+	int loop = $->r.dim->prod();
+	if (loop>1) {
 		if (in->dex+n <= loop) {
-			$->op->op_array2(n,data,$->data+in->dex);
+			$->op->op_array2(n,data,rdata+in->dex);
 		} else {
 			int i;
 			Number data2[n];
 			for (i=0; i<n; i++) {
-				data2[i] = $->data[(in->dex+i)%loop];
+				data2[i] = rdata[(in->dex+i)%loop];
 			}
 			$->op->op_array2(n,data,data2);
 		}
 	} else {
-		$->op->op_array(n,data,$->rint);
+		$->op->op_array(n,data,*rdata);
 	}
 	in->dex += n;
 	GridOutlet_give(out,n,data);
@@ -424,17 +433,13 @@ GRID_FLOW2(GridOp2,0) {
 GRID_END(GridOp2,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridOp2,1) {
-	int length = Dim_prod(in->dim);
-	if ($->data) GridInlet_abort($->in[0]); /* bug? */
-	FREE($->data);
-	FREE($->dim);
-	$->dim = Dim_dup(in->dim);
-	$->data = NEW2(Number,length);
+	$->r.del();
+	$->r.init(in->dim->dup(),int32_type_i);
 	return true;
 }
 
 GRID_FLOW(GridOp2,1) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
 	in->dex += n;
 }
 
@@ -443,21 +448,19 @@ GRID_END(GridOp2,1) {}
 METHOD(GridOp2,init) {
 	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
-	$->rint = argc<2 ? 0 : INT(argv[1]);
-	$->data = 0;
-	$->dim = 0;
+	$->r.init(new Dim(0,0),int32_type_i);
+	*$->r.as_int32() = argc<2 ? 0 : INT(argv[1]);
 }
 
 METHOD(GridOp2,delete) {
-	FREE($->data);
-	FREE($->dim);
+	$->r.del();
 	rb_call_super(argc,argv);
 }
 
 METHOD(GridOp2,_1_int) {
-	FREE($->data);
-	if ($->dim) FREE($->dim);
-	$->rint = INT(argv[0]);
+	$->r.del();
+	$->r.init(new Dim(0,0),int32_type_i);
+	*$->r.as_int32() = INT(argv[0]);
 }
 
 GRCLASS(GridOp2,inlets:2,outlets:1,
@@ -480,18 +483,18 @@ typedef struct GridFold {
 } GridFold;
 
 GRID_BEGIN(GridFold,0) {
-	int n = Dim_count(in->dim);
+	int n = in->dim->count();
 	if (n<1) RAISE("minimum 1 dimension");
 	{
-		Dim *foo = Dim_new(n-1,in->dim->v);
+		Dim *foo = new Dim(n-1,in->dim->v);
 		GridOutlet_begin($->out[0],foo);
 	}
-	GridInlet_set_factor(in,Dim_get(in->dim,Dim_count(in->dim)-1));
+	GridInlet_set_factor(in,in->dim->get(in->dim->count()-1));
 	return true;
 }
 
 GRID_FLOW(GridFold,0) {
-	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int factor = in->dim->get(in->dim->count()-1);
 	GridOutlet *out = $->out[0];
 	int bs = n/factor;
 	Number buf[bs];
@@ -534,15 +537,15 @@ LIST(GRINLET(GridFold,0)),
 typedef struct GridFold GridScan;
 
 GRID_BEGIN(GridScan,0) {
-	int n = Dim_count(in->dim);
+	int n = in->dim->count();
 	if (n<1) RAISE("minimum 1 dimension");
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
-	GridInlet_set_factor(in,Dim_get(in->dim,Dim_count(in->dim)-1));
+	GridOutlet_begin($->out[0],in->dim->dup());
+	GridInlet_set_factor(in,in->dim->get(in->dim->count()-1));
 	return true;
 }
 
 GRID_FLOW(GridScan,0) {
-	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int factor = in->dim->get(in->dim->count()-1);
 	GridOutlet *out = $->out[0];
 	Number buf[n];
 	int i=0;
@@ -591,18 +594,18 @@ GRID_BEGIN(GridInner,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
 	if (!b) RAISE("right inlet has no grid");
-	if (Dim_count(a)<1) RAISE("minimum 1 dimension");
+	if (a->count()<1) RAISE("minimum 1 dimension");
 	{
-		int a_last = Dim_get(a,Dim_count(a)-1);
-		int b_last = Dim_get(b,Dim_count(b)-1);
-		int n = Dim_count(a)+Dim_count(b)-2;
+		int a_last = a->get(a->count()-1);
+		int b_last = b->get(b->count()-1);
+		int n = a->count()+b->count()-2;
 		int v[n];
 		int i,j;
 		if (a_last != b_last)
 			RAISE("last dimension of each grid must have same size");
-		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; j<Dim_count(b)-1; i++,j++) { v[i] = Dim_get(b,j); }
-		GridOutlet_begin($->out[0],Dim_new(n,v));
+		for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
+		for (  j=0; j<b->count()-1; i++,j++) { v[i] = b->get(j); }
+		GridOutlet_begin($->out[0],new Dim(n,v));
 		GridInlet_set_factor(in,a_last);
 	}	
 	return true;
@@ -610,9 +613,9 @@ GRID_BEGIN(GridInner,0) {
 
 GRID_FLOW(GridInner,0) {
 	GridOutlet *out = $->out[0];
-	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int factor = in->dim->get(in->dim->count()-1);
 	int i,j;
-	int b_prod = Dim_prod($->dim);
+	int b_prod = $->dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
 	Number *buf = NEW(Number,n/factor);
 	assert (n % factor == 0);
@@ -632,12 +635,12 @@ GRID_FLOW(GridInner,0) {
 GRID_END(GridInner,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridInner,2) {
-	int length = Dim_prod(in->dim);
+	int length = in->dim->prod();
 	GridInlet_abort($->in[0]);
-	if (Dim_count(in->dim)<1) RAISE("minimum 1 dimension");
+	if (in->dim->count()<1) RAISE("minimum 1 dimension");
 	FREE($->dim);
 	FREE($->data);
-	$->dim = Dim_dup(in->dim);
+	$->dim = in->dim->dup();
 	$->data = NEW2(Number,length);
 	return true;
 }
@@ -683,18 +686,18 @@ GRID_BEGIN(GridInner2,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
 	if (!b) RAISE("right inlet has no grid");
-	if (Dim_count(a)<1) RAISE("minimum 1 dimension");
+	if (a->count()<1) RAISE("minimum 1 dimension");
 	{
-		int a_last = Dim_get(a,Dim_count(a)-1);
-		int b_last = Dim_get(b,Dim_count(b)-1);
-		int n = Dim_count(a)+Dim_count(b)-2;
+		int a_last = a->get(a->count()-1);
+		int b_last = b->get(b->count()-1);
+		int n = a->count()+b->count()-2;
 		int v[n];
 		int i,j;
 		if (a_last != b_last)
 			RAISE("last dimension of each grid must have same size");
-		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; j<Dim_count(b)-1; i++,j++) { v[i] = Dim_get(b,j); }
-		GridOutlet_begin($->out[0],Dim_new(n,v));
+		for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
+		for (  j=0; j<b->count()-1; i++,j++) { v[i] = b->get(j); }
+		GridOutlet_begin($->out[0],new Dim(n,v));
 		GridInlet_set_factor(in,a_last);
 	}	
 	return true;
@@ -702,9 +705,9 @@ GRID_BEGIN(GridInner2,0) {
 
 GRID_FLOW(GridInner2,0) {
 	GridOutlet *out = $->out[0];
-	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int factor = in->dim->get(in->dim->count()-1);
 	int i,j;
-	int b_prod = Dim_prod($->dim);
+	int b_prod = $->dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
 	Number *buf = NEW(Number,n/factor);
 	assert (n % factor == 0);
@@ -724,12 +727,12 @@ GRID_FLOW(GridInner2,0) {
 GRID_END(GridInner2,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridInner2,2) {
-	int length = Dim_prod(in->dim);
+	int length = in->dim->prod();
 	GridInlet_abort($->in[0]);
-	if (Dim_count(in->dim)<1) RAISE("minimum 1 dimension");
+	if (in->dim->count()<1) RAISE("minimum 1 dimension");
 	FREE($->dim);
 	FREE($->data);
-	$->dim = Dim_dup(in->dim);
+	$->dim = in->dim->dup();
 	$->data = NEW2(Number,length);
 	return true;
 }
@@ -775,18 +778,18 @@ GRID_BEGIN(GridOuter,0) {
 	Dim *b = $->dim;
 	if (!b) RAISE("right inlet has no grid");
 	{
-		int n = Dim_count(a)+Dim_count(b);
+		int n = a->count()+b->count();
 		int v[n];
 		int i,j;
-		for (i=j=0; j<Dim_count(a); i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; j<Dim_count(b); i++,j++) { v[i] = Dim_get(b,j); }
-		GridOutlet_begin($->out[0],Dim_new(n,v));
+		for (i=j=0; j<a->count(); i++,j++) { v[i] = a->get(j); }
+		for (  j=0; j<b->count(); i++,j++) { v[i] = b->get(j); }
+		GridOutlet_begin($->out[0],new Dim(n,v));
 	}
 	return true;
 }
 
 GRID_FLOW(GridOuter,0) {
-	int b_prod = Dim_prod($->dim);
+	int b_prod = $->dim->prod();
 	Number *buf = NEW(Number,b_prod);
 	while (n) {
 		int j;
@@ -801,11 +804,11 @@ GRID_FLOW(GridOuter,0) {
 GRID_END(GridOuter,0) { GridOutlet_end($->out[0]); }
 
 GRID_BEGIN(GridOuter,1) {
-	int length = Dim_prod(in->dim);
+	int length = in->dim->prod();
 	GridInlet_abort($->in[0]);
 	FREE($->dim);
 	FREE($->data);
-	$->dim = Dim_dup(in->dim);
+	$->dim = in->dim->dup();
 	$->data = NEW2(Number,length);
 	return true;
 }
@@ -850,33 +853,33 @@ GRID_BEGIN(GridConvolve,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
 	if (!b) RAISE("right inlet has no grid");
-	if (Dim_count(a) < Dim_count(b))
+	if (a->count() < b->count())
 		RAISE("left grid has less dimensions than right grid");
-	if (Dim_count(a) < 2)
+	if (a->count() < 2)
 		RAISE("left grid has less than two dimensions");
 	
 	{
 		int v[MAX_DIMENSIONS];
 		int i;
-		for (i=0; i<Dim_count(a); i++) v[i]=a->v[i];
-		v[0] += Dim_get($->dim,0)/2*2;
-		v[1] += Dim_get($->dim,1)/2*2;
-		$->diml = Dim_new(Dim_count(a),v);
+		for (i=0; i<a->count(); i++) v[i]=a->v[i];
+		v[0] += $->dim->get(0)/2*2;
+		v[1] += $->dim->get(1)/2*2;
+		$->diml = new Dim(a->count(),v);
 	}
-	$->datal = NEW2(Number,Dim_prod($->diml));
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
-	GridInlet_set_factor(in,Dim_prod_start(a,1));
+	$->datal = NEW2(Number,$->diml->prod());
+	GridOutlet_begin($->out[0],in->dim->dup());
+	GridInlet_set_factor(in,a->prod(1));
 	return true;
 }
 
 GRID_FLOW(GridConvolve,0) {
-	int my = Dim_get($->dim,0), ny = Dim_get($->diml,0) - my/2*2;
-	int mx = Dim_get($->dim,1);
-	int oy = Dim_prod_start($->diml,1) * (my/2);
-	int ox = Dim_prod_start($->diml,2) * (mx/2);
+	int my = $->dim->get(0), ny = $->diml->get(0) - my/2*2;
+	int mx = $->dim->get(1);
+	int oy = $->diml->prod(1) * (my/2);
+	int ox = $->diml->prod(2) * (mx/2);
 	int factor = in->factor;
-	int ll = Dim_prod_start($->diml,1);
-	int l = Dim_prod_start($->diml,2);
+	int ll = $->diml->prod(1);
+	int l = $->diml->prod(2);
 	
 	while (n) {
 		int i = in->dex / factor;
@@ -894,10 +897,10 @@ GRID_FLOW(GridConvolve,0) {
 
 GRID_END(GridConvolve,0) {
 	int iy,ix,jy,jx,k;
-	int my = Dim_get($->dim,0), ny = Dim_get($->diml,0) - my/2*2;
-	int mx = Dim_get($->dim,1), nx = Dim_get($->diml,1) - mx/2*2;
-	int l  = Dim_prod_start($->diml,2);
-	int ll = Dim_prod_start($->diml,1);
+	int my = $->dim->get(0), ny = $->diml->get(0) - my/2*2;
+	int mx = $->dim->get(1), nx = $->diml->get(1) - mx/2*2;
+	int l  = $->diml->prod(2);
+	int ll = $->diml->prod(1);
 	Number buf[l],buf2[l];
 	Number as[l];
 
@@ -925,15 +928,15 @@ GRID_END(GridConvolve,0) {
 }
 
 GRID_BEGIN(GridConvolve,1) {
-	int length = Dim_prod(in->dim);
-	int count = Dim_count(in->dim);
+	int length = in->dim->prod();
+	int count = in->dim->count();
 	if (count != 2) RAISE("only exactly two dimensions allowed for now");
 	/* because odd * odd = odd */
 	if ((length & 1) == 0) RAISE("even number of elements");
 	GridInlet_abort($->in[0]);
 	FREE($->dim);
 	FREE($->data);
-	$->dim = Dim_dup(in->dim);
+	$->dim = in->dim->dup();
 	$->data = NEW2(Number,length);
 	return true;
 }
@@ -991,7 +994,7 @@ METHOD(GridFor,_0_bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
 	Number x;
 	if (v<0) v=0;
-	GridOutlet_begin($->out[0],Dim_new(1,&v));
+	GridOutlet_begin($->out[0],new Dim(1,&v));
 	if ($->step > 0) {
 		for (x=$->from; x<$->to; x+=$->step) {
 			GridOutlet_send($->out[0],1,&x);
@@ -1025,13 +1028,13 @@ typedef struct GridDim {
 } GridDim;
 
 GRID_BEGIN(GridDim,0) {
-	int n = Dim_count(in->dim);
+	int n = in->dim->count();
 	int i;
-	Dim *foo = Dim_new(1,&n);
+	Dim *foo = new Dim(1,&n);
 	Number v[n];
 	GridOutlet_begin($->out[0],foo);
 	for (i=0; i<n; i++) {
-		v[i] = Dim_get(in->dim,i);
+		v[i] = in->dim->get(i);
 	}
 	GridOutlet_send($->out[0],n,v);
 	GridOutlet_end($->out[0]);
@@ -1054,25 +1057,25 @@ typedef struct GridRedim {
 } GridRedim;
 
 GRID_BEGIN(GridRedim,0) {
-	int a = Dim_prod(in->dim);
-	int b = Dim_prod($->dim);
+	int a = in->dim->prod();
+	int b = $->dim->prod();
 	if (a==0) {
-		/* int v=1; $->dim = Dim_new(1,&v); */
+		/* int v=1; $->dim = new Dim(1,&v); */
 		$->data = NEW2(Number,1);
 		$->data[0] = 0;
 	} else if (a<b) {
-		/* $->dim = Dim_dup(in->dim); */
-		$->data = NEW2(Number,Dim_prod(in->dim));
+		/* $->dim = in->dim->dup(); */
+		$->data = NEW2(Number,in->dim->prod());
 	} else {
 		/* nothing */
 	}
-	GridOutlet_begin($->out[0],Dim_dup($->dim));
+	GridOutlet_begin($->out[0],$->dim->dup());
 	return true;
 }
 
 GRID_FLOW(GridRedim,0) {
-	int a = Dim_prod(in->dim);
-	int b = Dim_prod($->dim);
+	int a = in->dim->prod();
+	int b = $->dim->prod();
 	int i = in->dex;
 	if ($->data) {
 		int n2 = min(n,a-i);
@@ -1086,8 +1089,8 @@ GRID_FLOW(GridRedim,0) {
 }
 
 GRID_END(GridRedim,0) {
-	int a = Dim_prod(in->dim);
-	int b = Dim_prod($->dim);
+	int a = in->dim->prod();
+	int b = $->dim->prod();
 	int i = a;
 	if ($->data) {
 		while (i<b) {
@@ -1104,9 +1107,9 @@ GRID_END(GridRedim,0) {
 
 GRID_BEGIN(GridRedim,1) {
 	int n;
-	if (Dim_count(in->dim)!=1)
+	if (in->dim->count()!=1)
 		RAISE("dimension list must have 1 dimension");
-	n = Dim_get(in->dim,0);
+	n = in->dim->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	if (n) GridInlet_set_factor(in,n);
 	return true;
@@ -1121,7 +1124,7 @@ GRID_FLOW(GridRedim,1) {
 		if (dim[i]<1 || dim[i]>MAX_INDICES)
 			RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(n,dim);
+	$->dim = new Dim(n,dim);
 	GridInlet_abort($->in[0]);
 	GridOutlet_abort($->out[0]);
 }
@@ -1137,7 +1140,7 @@ METHOD(GridRedim,init) {
 		dim[i] = INT(argv[i]);
 		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
-	$->dim = Dim_new(argc,dim);
+	$->dim = new Dim(argc,dim);
 	$->data = 0;
 }
 
@@ -1168,16 +1171,16 @@ GRID_BEGIN(GridScaleBy,0) {
 	Dim *a = in->dim;
 
 	/* there are restrictions on grid sizes for efficiency reasons */
-	if (Dim_count(a)!=3) RAISE("(height,width,chans) please");
-	if (Dim_get(a,2)!=3) RAISE("3 chans please");
+	if (a->count()!=3) RAISE("(height,width,chans) please");
+	if (a->get(2)!=3) RAISE("3 chans please");
 
 	{
 		/* computing the output's size */
-		int v[3]={ Dim_get(a,0)*scale, Dim_get(a,1)*scale, Dim_get(a,2) };
-		GridOutlet_begin($->out[0],Dim_new(3,v));
+		int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
+		GridOutlet_begin($->out[0],new Dim(3,v));
 
 		/* configuring the input format */
-		GridInlet_set_factor(in,Dim_get(a,1)*Dim_get(a,2));
+		GridInlet_set_factor(in,a->get(1)*a->get(2));
 	}
 	return true;
 }
@@ -1185,7 +1188,7 @@ GRID_BEGIN(GridScaleBy,0) {
 /* this method processes one packet of grid content */
 GRID_FLOW(GridScaleBy,0) {
 	int scale = $->rint;
-	int rowsize = Dim_get(in->dim,1)*Dim_get(in->dim,2);
+	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int i,j,k;
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
@@ -1233,9 +1236,9 @@ typedef struct GridRGBtoHSV {
 } GridRGBtoHSV;
 
 GRID_BEGIN(GridRGBtoHSV,0) {
-	if (Dim_count(in->dim)<1) RAISE("at least 1 dim please");
-	if (Dim_get(in->dim,Dim_count(in->dim)-1)!=3) RAISE("3 chans please");
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	if (in->dim->count()<1) RAISE("at least 1 dim please");
+	if (in->dim->get(in->dim->count()-1)!=3) RAISE("3 chans please");
+	GridOutlet_begin($->out[0],in->dim->dup());
 	GridInlet_set_factor(in,3);
 	return true;
 }
@@ -1288,9 +1291,9 @@ typedef struct GridHSVtoRGB {
 } GridHSVtoRGB;
 
 GRID_BEGIN(GridHSVtoRGB,0) {
-	if (Dim_count(in->dim)<1) RAISE("at least 1 dim please");
-	if (Dim_get(in->dim,Dim_count(in->dim)-1)!=3) RAISE("3 chans please");
-	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	if (in->dim->count()<1) RAISE("at least 1 dim please");
+	if (in->dim->get(in->dim->count()-1)!=3) RAISE("3 chans please");
+	GridOutlet_begin($->out[0],in->dim->dup());
 	GridInlet_set_factor(in,3);
 	return true;
 }
@@ -1366,7 +1369,7 @@ METHOD(RtMetro,_0_int) {
 		MainLoop_remove($);
 	} else if (!oon && $->on) {
 		whine("creating rtmetro alarm...");
-		MainLoop_add($,RtMetro_alarm);
+		MainLoop_add($,(void(*)(void*))RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}
 }
@@ -1457,7 +1460,6 @@ METHOD(GridGlobal,_0_profiler_dump) {
 
 GRCLASS(GridGlobal,inlets:1,outlets:1,
 LIST(),
-	DECL(GridGlobal,init),
 	DECL(GridGlobal,_0_profiler_reset),
 	DECL(GridGlobal,_0_profiler_dump))
 
