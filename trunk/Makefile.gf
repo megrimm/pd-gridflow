@@ -127,7 +127,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -143,6 +143,8 @@ jmax-install::
 else
 ifeq ($(HAVE_JMAX_2_5),yes)
 
+include bundled/jmax/Makefiles/Makefile.$(ARCH)
+
 # GridFlow/jMax25 Installation Directory
 GFID = $(lib_install_dir)/packages/gridflow/
 
@@ -154,7 +156,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -228,7 +230,7 @@ endif
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $< \
+	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
