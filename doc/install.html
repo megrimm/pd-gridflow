@@ -62,20 +62,26 @@
       </ul>
       <p>Where you replace i686-linux by your architecture name (e.g. ppc-macosx). 
       </p>
-      <p><br>
-        5. Add "package require video4jmax" within the "when start" section of 
+
+      <br>
+      <p>
+      5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download"> artengine.ca </a> or
+       <a href="http://hostname.2y.net/~matju/Video4jmax/video4jmax-images-0.2.tar.gz"> hostname.2y.net/~matju </a>
+       </p>
+
+        6. Add "package require video4jmax" within the "when start" section of
         ~/.jmaxrc</p>
-      <p>6. Add this line to your ~/.jmaxrc file:<br>
+      <p>7. Add this line to your ~/.jmaxrc file:<br>
         dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
         path to the directory where you will place the images).</p>
-      <p>7. Restart jmax. </p>
+      <p>8. Restart jmax. </p>
       <p>&nbsp;</p>
       <h5>Installation process (for jMax 2.4)</h5>
-      <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in 
-        your 'packages' directory. This will create the video4jmax directory and 
+      <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in
+        your 'packages' directory. This will create the video4jmax directory and
         place all the files within. </p>
-      <p>2. Run './configure --jmax24' from the video4jmax directory. That should 
-        take care of adjusting the Makefiles to your current version and point 
+      <p>2. Run './configure --jmax24' from the video4jmax directory. That should
+        take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
       <p>Files Changed by configure: <br>
@@ -84,7 +90,7 @@
         video4jmax/c/src/Makefile <br>
         video4jmax/c/src/fts_redirect.h </p>
       <p><br>
-        3. In file packages/Makefile change the C_PACKAGES list to include video4jmax 
+        3. In file packages/Makefile change the C_PACKAGES list to include video4jmax
         (remove the old 'video' if you upgrade).</p>
       <p><br>
         4. From the toplevel directory (above 'packages'), do this:</p>
@@ -92,15 +98,19 @@
         <li>make all ARCH=i686-linux</li>
         <li>make install ARCH=i686-linux</li>
       </ul>
-      <p>Where you replace i686-linux by your architecture name (e.g. ppc-macosx). 
+      <p>Where you replace i686-linux by your architecture name (e.g. ppc-macosx).
       </p>
       <p><br>
-        5. Add "package require video4jmax" within the "when start" section of 
+         5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download"> artengine.ca </a> or
+       <a href="http://hostname.2y.net/~matju/Video4jmax/video4jmax-images-0.2.tar.gz"> hostname.2y.net/~matju </a>
+       </p>
+
+        6. Add "package require video4jmax" within the "when start" section of
         ~/.jmaxrc</p>
-        <p>6. Add this line to your ~/.jmaxrc file:<br>
+        <p>7. Add this line to your ~/.jmaxrc file:<br>
         dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
         path to the directory where you will place the images).</p>
-      <p>7. Restart jmax. </p>
+      <p>8. Restart jmax. </p>
 
       <p>&nbsp;</p>
       <p>Thank you to Christian Klippel who provided Makefiles <br>
