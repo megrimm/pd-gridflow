@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.7.5"
+GF_VERSION = "0.7.6"
 
 #$use_rexml = true
 $use_rexml = false
@@ -194,12 +194,19 @@ XNode.register("section") {public
 }
 
 # basic text formatting nodes.
-XNode.register(*%w( p i u b k sup )) {public
+XNode.register(*%w( p i u b sup )) {public
 	def show
-		t = if tag=="k" then "kbd" else tag end
-		print "<#{t}>"
+		print "<#{tag}>"
 		super
-		print "</#{t}>"
+		print "</#{tag}>"
+	end
+}
+
+XNode.register("k") {public
+	def show
+		print "<kbd><font color=\"#007777\">" # oughta be in stylesheet?
+		super
+		print "</font></kbd>"
 	end
 }
 

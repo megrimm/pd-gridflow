@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.5 - Reference Manual: Architecture</title>
+<title>GridFlow 0.7.6 - Reference Manual: Architecture</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.5 - Reference Manual: Architecture</h4>
+    <h4>GridFlow 0.7.6 - Reference Manual: Architecture</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -68,7 +68,7 @@
 <tr><td></td><td></td><td><tr><td></td><td></td><td><table border="0" bgcolor="black" cellspacing="1"><tr><td valign="top" align="left"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1"><tr><td bgcolor="#808080"><font color="#ffffff"><b>name</b></font></td><td bgcolor="#808080"><font color="#ffffff"><b>aliases</b></font></td><td bgcolor="#808080"><font color="#ffffff"><b>range</b></font></td><td bgcolor="#808080"><font color="#ffffff"><b>size (bytes)</b></font></td><td bgcolor="#808080"><font color="#ffffff"><b>precision</b></font></td><td bgcolor="#808080"><font color="#ffffff"><b>description</b></font></td></tr>       <tr><td bgcolor="#ffffff">uint8</td><td bgcolor="#ffffff">u8 b</td><td bgcolor="#ffffff">0..255</td><td bgcolor="#ffffff">1</td><td bgcolor="#ffffff">1</td><td bgcolor="#ffffff"> 
 			unsigned 8-bit integer. 
 			this is the usual size of numbers taken from files and cameras, and 
-			written to files and to windows. (however this gets converted to <kbd>int32</kbd> 
+			written to files and to windows. (however this gets converted to <kbd><font color="#007777">int32</font></kbd> 
 			unless otherwise specified.) </td></tr> <tr><td bgcolor="#f0f8ff">int16</td><td bgcolor="#f0f8ff">i16 s</td><td bgcolor="#f0f8ff">±2<sup>15</sup> = -32768..32767</td><td bgcolor="#f0f8ff">2</td><td bgcolor="#f0f8ff">1</td><td bgcolor="#f0f8ff">...</td></tr> <tr><td bgcolor="#ffffff">int32</td><td bgcolor="#ffffff">i32 i</td><td bgcolor="#ffffff">±2<sup>31</sup> = -2147483648..2147483647</td><td bgcolor="#ffffff">4</td><td bgcolor="#ffffff">1</td><td bgcolor="#ffffff"> 
 			signed 32-bit integer. 
 			this is used for most computations. </td></tr> <tr><td bgcolor="#f0f8ff">int64</td><td bgcolor="#f0f8ff">i64 l</td><td bgcolor="#f0f8ff">±2<sup>63</sup></td><td bgcolor="#f0f8ff">8</td><td bgcolor="#f0f8ff">1</td><td bgcolor="#f0f8ff">...</td></tr> <tr><td bgcolor="#ffffff">float32</td><td bgcolor="#ffffff">f32 f</td><td bgcolor="#ffffff">±10<sup>±38</sup></td><td bgcolor="#ffffff">4</td><td bgcolor="#ffffff">23 bits = 0.000012% (about 7 digits)</td><td bgcolor="#ffffff">...</td></tr> <tr><td bgcolor="#f0f8ff">float64</td><td bgcolor="#f0f8ff">f64 d</td><td bgcolor="#f0f8ff">±10<sup>±308</sup></td><td bgcolor="#f0f8ff">8</td><td bgcolor="#f0f8ff">52 bits (about 15 digits)</td><td bgcolor="#f0f8ff">...</td></tr> </table></td></tr></table></td></tr></td></tr>
@@ -114,7 +114,7 @@
 <tr><td></td><td></td><td><p> 
 	At each such level, elements are sent/stored in their numeric order, 
 	and are numbered using natural numbers starting at 0. This ordering usually 
-	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, <kbd>@export</kbd> and <kbd>@redim</kbd> care about it. </p></td></tr>
+	does not matter, but sometimes it does. Most notably, <kbd><font color="#007777">@import</font></kbd>, <kbd><font color="#007777">@export</font></kbd> and <kbd><font color="#007777">@redim</font></kbd> care about it. </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p> 
 	On the other hand, order of dimensions usually does matter; this is 
@@ -153,8 +153,8 @@
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p> 
 	In the final conversion, high bits are just ignored. This means: black is 
-	0, maximum is 255, and values wrap like with <kbd>% 256</kbd>. If you want to 
-	clip them, you may use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. </p></td></tr>
+	0, maximum is 255, and values wrap like with <kbd><font color="#007777">% 256</font></kbd>. If you want to 
+	clip them, you may use <kbd><font color="#007777">"@ max 0"</font></kbd> and <kbd><font color="#007777">"@ min 255"</font></kbd> objects. </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -214,7 +214,7 @@ with the main part. </p></td></tr>
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.5 Documentation<br>
+GridFlow 0.7.6 Documentation<br>
 Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>

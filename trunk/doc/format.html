@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.5 - Reference Manual: Format Classes</title>
+<title>GridFlow 0.7.6 - Reference Manual: Format Classes</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.5 - Reference Manual: Format Classes</h4>
+    <h4>GridFlow 0.7.6 - Reference Manual: Format Classes</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -53,9 +53,9 @@
 <img src="images/@in.png" alt="[@in]" border="0"><br clear="left"><br><br><a href="images/help_@inout.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b>&nbsp;init <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 			If no arguments given, creates an input object for an unspecified 
-			format. You then need to use the <kbd>open</kbd> command to link 
+			format. You then need to use the <kbd><font color="#007777">open</font></kbd> command to link 
 			a format handler to it. 
-			If arguments given, the <kbd>open</kbd> command is immediately called 
+			If arguments given, the <kbd><font color="#007777">open</font></kbd> command is immediately called 
 			with those arguments. 
 			Remember that most formats produce Dim[rows,columns,3] grids with 
 			0-255 values. (Most.) <br>
@@ -108,9 +108,9 @@
 <img src="images/@out.png" alt="[@out]" border="0"><br clear="left"><br><br><a href="images/help_@inout.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b>&nbsp;init <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 			If no arguments given, creates an output object for an unspecified 
-			format. You then need to use the <kbd>open</kbd> command to link 
+			format. You then need to use the <kbd><font color="#007777">open</font></kbd> command to link 
 			a format handler to it. 
-			If arguments given, the <kbd>open</kbd> command is immediately called 
+			If arguments given, the <kbd><font color="#007777">open</font></kbd> command is immediately called 
 			with those arguments. 
 			Remember that most formats expect dim(rows,columns,3) grids with 
 			0-255 values. (Most.) <br>
@@ -260,7 +260,7 @@
  <br><b>method</b>&nbsp;headerless <b>(</b>dimensions...<b>)</b>   
 			instead of reading .grid files with header, will read raw data, 
 			faking a .grid header to itself. It will use the hereby specified 
-			dimension list, as well as two other settings: <kbd>type</kbd> and <kbd>endian</kbd>. <br>
+			dimension list, as well as two other settings: <kbd><font color="#007777">type</font></kbd> and <kbd><font color="#007777">endian</font></kbd>. <br>
  <p>When writing "raw" data, a file may be considered a long string of 
 		base 256 digits (called bytes), but different computers have different 
 		conventions for dealing with them: <br><b>method</b>&nbsp;endian <b>(</b><b>)</b>  <ul><li><b>1</b> : big: 
@@ -280,13 +280,13 @@
 <img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <br><b>method</b>&nbsp;open <b>(</b>device<b>)</b>   <br>
  <p>Video4Linux-1 devices, RGB-24 only. Variable picture size.</p> <p>We have been testing it using cards of the BT-848 family, 
-		such as Miro DC10plus and Hauppauge WinTV, using the <kbd>bttv.o</kbd> linux driver. 
+		such as Miro DC10plus and Hauppauge WinTV, using the <kbd><font color="#007777">bttv.o</font></kbd> linux driver. 
 		Also we have been testing using Logitech QuickCam (and similar Labtec hardware), 
-		but don't use the <kbd>qce-ga</kbd> driver, which is buggy and obsolete: the <kbd>qc-usb</kbd> 
+		but don't use the <kbd><font color="#007777">qce-ga</font></kbd> driver, which is buggy and obsolete: the <kbd><font color="#007777">qc-usb</font></kbd> 
 		works better.</p> <p>Some hardware doesn't support RGB, so you may have to select a YUV colorspace 
-		(see below) and then use <kbd>[@yuv_to_rgb]</kbd>. Don't forget to also do <kbd>[@ min 255]</kbd> and <kbd>[@ max 0]</kbd>. </p> <p>If for some reason there's a bug that causes a driver to produce BGR instead of RGB, 
+		(see below) and then use <kbd><font color="#007777">[@yuv_to_rgb]</font></kbd>. Don't forget to also do <kbd><font color="#007777">[@ min 255]</font></kbd> and <kbd><font color="#007777">[@ max 0]</font></kbd>. </p> <p>If for some reason there's a bug that causes a driver to produce BGR instead of RGB, 
 		so that red and blue are swapped, you can swap them back by filtering through a RGB-BGR 
-		converter, such as <kbd>[@inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</kbd>.</p> <p>color adjustments: <br><b>method</b>&nbsp;brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
+		converter, such as <kbd><font color="#007777">[@inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</font></kbd>.</p> <p>color adjustments: <br><b>method</b>&nbsp;brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;hue <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
@@ -351,9 +351,9 @@
 		"open" message; if you don't put it, a new toplevel window is created. 
 		if you put "root" then the screen's wallpaper will be used instead 
 		(it may fail to work with some popular window managers). You can also 
-		put a window number, e.g. <kbd>0x28003ff</kbd>, you may connect to 
+		put a window number, e.g. <kbd><font color="#007777">0x28003ff</font></kbd>, you may connect to 
 		an existing window; you can find out the number of a window by using 
-		a tool like <kbd>xwininfo</kbd>, part of X11 standard tools.</p> <br><b>method</b>&nbsp;out_size <b>(</b><i>integer</i> height<b>, </b><i>integer</i> width<b>)</b>    
+		a tool like <kbd><font color="#007777">xwininfo</font></kbd>, part of X11 standard tools.</p> <br><b>method</b>&nbsp;out_size <b>(</b><i>integer</i> height<b>, </b><i>integer</i> width<b>)</b>    
 			changes the window's size, just like sending a grid 
 			dim(height,width,3) would. 
 			this affects the size of screen captures too. <br>
@@ -410,7 +410,7 @@
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b>&nbsp;open window <b>(</b><b>)</b>  
 			Equivalent to "open x11", but this can be set by putting a line like 
-			this in the config file: <kbd>GridFlow.formats[:window] = GridFlow.formats[:x11]</kbd> 
+			this in the config file: <kbd><font color="#007777">GridFlow.formats[:window] = GridFlow.formats[:x11]</font></kbd> 
 			(and similarly other aliases can be created too) <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
@@ -418,7 +418,7 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.5 Documentation<br>
+GridFlow 0.7.6 Documentation<br>
 Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
