@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.3 - reference</title>
+<title>GridFlow 0.8.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.3 - index of this page:</h4>
+    <h4>GridFlow 0.8.0 - index of this page:</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -30,6 +30,7 @@
 <li><a href="#format ppm @in/@out"><img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"></a></li>
 <li><a href="#format targa @in/@out"><img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"></a></li>
 <li><a href="#format jpeg @in/@out">format jpeg @in/@out</a></li>
+<li><a href="#format png @in">format png @in</a></li>
 <li><a href="#format quicktime @in/@out">format quicktime @in/@out</a></li>
 <li><a href="#format mpeg @in"><img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"></a></li>
 <li><a href="#format grid @in/@out"><img src="images/format_grid.png" alt="[open grid file filename.grid]" border="0"></a></li>
@@ -89,10 +90,10 @@
 				rewinds to beginning of file if applicable. <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;loop <b>(</b><i>bool</i> flag<b>)</b>   
 				controls the automatic looping of movies. <br>
-   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><b>)</b>  
+   <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><b>)</b>  
 				frame number of frame just sent, 
 				for formats that have frame numbers. <br>
- <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b>  
+ <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b>  
 				tried to read a frame that does not exist 
 				(signals end of file) <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
@@ -157,22 +158,36 @@
 			directory or one of the jMax-specified data directories. <br>
  <br><b>method</b>&nbsp;open targa gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
 			same but for .tga.gz files <br>
- <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
-			values 0-255 <br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b> RGB-24<br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 4)</i> grid<b>)</b> RGBA-32<br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in/@out">format jpeg @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Support for RGB non-progressive</p> <br><b>method</b>&nbsp;open jpeg file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
- <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
-			values 0-255 <br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>  RGB-24 <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format png @in">format png @in</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>Support for RGB non-progressive</p> <br><b>method</b>&nbsp;open png file <b>(</b><i>symbol</i> filename<b>)</b>   
+			opens the specified file, taken from the current 
+			directory or one of the jMax-specified data directories. <br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 1)</i> grid<b>)</b> Y-8<br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 2)</i> grid<b>)</b> YA-16<br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b> RGB-24<br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns 4)</i> grid<b>)</b> RGBA-32<br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <p>uses the HeroineWarrior-Quicktime library (libquicktime.so)</p> <br><b>method</b>&nbsp;open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
+ <p>Support for .mov files.</p> <p>This format supports frame-seek and frame-tell.</p> <p>Uses the HeroineWarrior-QuickTime library aka QuickTime4Linux 
+		(libquicktime.so). There is also a variant on the same library and that project 
+		is just called LibQuickTime.</p> <p>Some versions of those libraries may include support for different codecs, 
+		and some also may support entirely different wrapper formats such as AVI.</p> <br><b>method</b>&nbsp;open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
  <br><b>method</b>&nbsp;codec <b>(</b><i>symbol</i> codec<b>)</b>   
-			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4. 
+			Allowed values are at least: raw, jpeg, png, mjpa, yuv2, yuv4. 
+			Some other values may allowed, depending on the version of the library 
+			and other things. 
 			Must be set before the first frame is written. 
 			only applies to @out. Choosing a codec is important 
 			because codecs influence greatly the speed of 
@@ -180,6 +195,9 @@
 			the size of the written file, and its fidelity to the 
 			original content. Note that there exist other Apple-QuickTime 
 			codecs that are not supported by HeroineWarrior-QuickTime. <br>
+ <br><b>method</b>&nbsp;colorspace <b>(</b><i>symbol</i> colorspace<b>)</b>   
+			Allowed values are rgb, rgba, bgr, bgra, yuv, yuva. 
+			Normally you don't need this. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -202,7 +220,7 @@
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
  <br><b>method</b>&nbsp;open grid gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
-			same but for .ppm.gz files <br>
+			same but for .grid.gz files <br>
  <br><b>method</b>&nbsp;open grid tcp <b>(</b><i>symbol</i> hostname<b>, </b><i>integer</i> port<b>)</b>    
 			dials an specified hostname/port on the InterNet or 
 			compatible network. the TCP protocol is used. <br>
@@ -237,14 +255,15 @@
 <tr><td colspan="4"><a name="Acquisition_Devices"></a><h4>Acquisition Devices</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <br><b>method</b>&nbsp;open <b>(</b>device<b>, </b><i>'noinit'</i> noinit<b>)</b>    
-			Noinit makes this format handler gentle with bad-tempered drivers 
-			(such as the qce-ga webcam driver). <br>
- <br><b>method</b>&nbsp;open noinit <b>(</b>device<b>)</b>   <br>
- <p>Video4Linux-1 devices, RGB-24 only. Variable picture size. 
-		should work for bttv based cards and the dc1/dc10plus from Miro.</p> <p>If you suffer from color inversion, you may feed the list 
-		"<kbd>3 3 # 0 0 1 0 1 0 1 0 0</kbd>" to the right side of a <kbd>[@inner2 * + 0]</kbd>. 
-		Use that @inner2 object as a RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b>&nbsp;brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
+  <br><b>method</b>&nbsp;open <b>(</b>device<b>)</b>   <br>
+ <p>Video4Linux-1 devices, RGB-24 only. Variable picture size.</p> <p>We have been testing it using cards of the BT-848 family, 
+		such as Miro DC10plus and Hauppauge WinTV, using the <kbd>bttv.o</kbd> linux driver. 
+		Also we have been testing using Logitech QuickCam (and similar Labtec hardware), 
+		but don't use the <kbd>qce-ga</kbd> driver, which is buggy and obsolete: the <kbd>qc-usb</kbd> 
+		works better.</p> <p>Some hardware doesn't support RGB, so you may have to select a YUV colorspace 
+		(see below) and then use <kbd>[@yuv_to_rgb]</kbd>. Don't forget to also do <kbd>[@ min 255]</kbd> and <kbd>[@ max 0]</kbd>. </p> <p>If for some reason there's a bug that causes a driver to produce BGR instead of RGB, 
+		so that red and blue are swapped, you can swap them back by filtering through a RGB-BGR 
+		converter, such as <kbd>[@inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</kbd>.</p> <p>color adjustments: <br><b>method</b>&nbsp;brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;hue <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
@@ -257,9 +276,12 @@
 			This is the normal (and fast) way of transferring pictures 
 			from the camera. </li> <li><b>2</b> : read: 
 			Some cameras/drivers only support this instead of mmap. </li></ul> <br>
+ <br><b>method</b>&nbsp;colorspace <b>(</b><i>symbol</i> colorspace<b>)</b>   
+			Allowed values are: RGB24, YUV420P. 
+			Use this if your driver doesn't support RGB24. <br>
  <br><b>method</b>&nbsp;size <b>(</b>height<b>, </b>width<b>)</b>    
 			sets the input size, especially when using a video digitalizer 
-			device <br>
+			device. <br>
  </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -366,12 +388,9 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.3 Documentation<br>
-by Mathieu Bouchard
+GridFlow 0.8.0 Documentation<br>
+Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
-and<br>
-Alexandre Castonguay
-<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
 
