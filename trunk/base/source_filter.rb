@@ -6,6 +6,21 @@ ClassDecl = Struct.new(:name,:supername,:methods)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs)
 Arg = Struct.new(:type,:name,:default)
 
+class MethodDecl
+	def ==(o)
+		return false unless rettype==o.rettype &&
+		minargs==o.minargs && maxargs==o.maxargs
+		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
+		return true
+	end
+end
+
+class Arg
+	def ==(o)
+		type==o.type && name==o.name # && default==o.default
+	end
+end
+
 In = File.open ARGV[0], "r"
 Out = File.open ARGV[1], "w"
 
@@ -76,12 +91,16 @@ end
 
 def handle_def(line)
 	#STDERR.puts "def: #{line}"
-	mdef = parse_methoddecl(line,"{?")
+	m = parse_methoddecl(line,"{?")
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
-	qlass.methods[mdef.selector] ||= mdef
-	m = qlass.methods[mdef.selector]
+	if qlass.methods[m.selector]
+		n = m; m = qlass.methods[m.selector]
+		if m!=n then
+			STDERR.puts "warning: def #{n.inspect} does not match decl #{m.inspect}"
+		end
+	end
 
 	Out.print "static Ruby #{classname}_#{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself) {"+
