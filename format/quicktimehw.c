@@ -51,18 +51,19 @@ struct FormatQuickTimeHW : Format {
 		started(false), force(0), framerate(29.97), bit_packing(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
-	\decl void codec_m (String c);
-	\decl void colorspace_m (Symbol c);
 	\decl Ruby frame ();
 	\decl void seek (int frame);
-	\decl void force_size (int32 height, int32 width);
-	\decl void parameter (Symbol name, int32 value);
-	\decl void framerate_m (float64 f);
-	\decl void size (int32 height, int32 width);
+
+	\decl void _0_force_size (int32 height, int32 width);
+	\decl void _0_codec (String c);
+	\decl void _0_colorspace (Symbol c);
+	\decl void _0_parameter (Symbol name, int32 value);
+	\decl void _0_framerate (float64 f);
+	\decl void _0_size (int32 height, int32 width);
 	\grin 0 int
 };
 
-\def void force_size (int32 height, int32 width) { force = new Dim(height, width); }
+\def void _0_force_size (int32 height, int32 width) { force = new Dim(height, width); }
 \def void seek (int frame) {quicktime_set_video_position(anim,frame,track);}
 
 \def Ruby frame () {
@@ -94,16 +95,16 @@ struct FormatQuickTimeHW : Format {
 }
 
 //!@#$ should also support symbol values (how?)
-\def void parameter (Symbol name, int32 value) {
+\def void _0_parameter (Symbol name, int32 value) {
 	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
 }
 
-\def void framerate_m (float64 f) {
+\def void _0_framerate (float64 f) {
 	framerate=f;
 	quicktime_set_framerate(anim, f);
 }
 
-\def void size (int32 height, int32 width) {
+\def void _0_size (int32 height, int32 width) {
 	if (dim) RAISE("video size already set!");
 	// first frame: have to do setup
 	dim = new Dim(height, width, 3);
@@ -139,7 +140,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void codec_m (String c) {
+\def void _0_codec (String c) {
 	//fprintf(stderr,"codec = %s\n",rb_str_ptr(rb_inspect(c)));
 #ifdef LQT_VERSION
 	char buf[5];
@@ -154,7 +155,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	codec = strdup(buf);
 }
 
-\def void colorspace_m (Symbol c) {
+\def void _0_colorspace (Symbol c) {
 	if (0) {
 	} else if (c==SYM(rgb))     { channels=3; colorspace=BC_RGB888; 
 	} else if (c==SYM(rgba))    { channels=4; colorspace=BC_RGBA8888;
@@ -192,7 +193,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 			      quicktime_video_compressor(anim,track));
 */
 	}
-	colorspace_m(0,0,SYM(rgb));
+	_0_colorspace(0,0,SYM(rgb));
 	quicktime_set_cpus(anim,1);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
