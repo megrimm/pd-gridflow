@@ -586,9 +586,14 @@ def test_polygon
 	poly = FObject["@draw_polygon + {3 # 255}"]
 if false
 	out1 = FObject["@solarize"]
+#	out1 = FObject["@downscale_by 2 smoothly"]
 	out2 = FObject["@out x11"]; out1.connect 0,out2,0
 else
 	out1 = FObject["@out x11"]
+	fps = FObject["fps detailed"]
+	out1.connect 0,fps,0
+	pr = FObject["rubyprint"]
+	fps.connect 0,pr,0
 end
 	store = FObject["@store"]; store.send_in 1, "240 320 3 # 0"
 	store2 = FObject["@store"]

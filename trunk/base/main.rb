@@ -256,9 +256,7 @@ end
 # to see what the messages look like when they get on the Ruby side.
 class RubyPrint < GridFlow::GridObject
 	def initialize(*a)
-		if a.length and a[0]==:time then
-			@time=true
-		end	
+		@time = !!(a.length and a[0]==:time)
 	end
 
 	def method_missing(s,*a)
@@ -495,6 +493,14 @@ class FPS < GridObject
 		@duration = 0.0 # how much delay since last summary
 		@period = 1     # minimum delay between summaries
 		@detailed = !!detailed
+		def @history.moment(n=1)
+			sum = 0
+			each {|x| sum += x**n }
+			p sum
+			p length
+			p sum/length
+			sum/length
+		end
 	end
 	def method_missing(*)
 		# ignore
@@ -511,10 +517,12 @@ class FPS < GridObject
 		if fps>.001 then
 			if @detailed
 				@history.sort!
-				send_out 0, fps, 1000/fps,
+				send_out 0, fps,
 					1000*@history.min,
 					500*(@history[n/2]+@history[(n-1)/2]),
-					1000*@history.max
+					1000*@history.max,
+					1000/fps,
+					1000*(@history.moment(2) - @history.moment(1)**2)**.5
 			else
 				send_out 0, fps
 			end

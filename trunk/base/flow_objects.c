@@ -1244,21 +1244,6 @@ LIST(GRINLET(GridFinished,0,0)),
 	DECL(GridFinished,initialize))
 
 /* **************************************************************** */
-/*
-<matju> @polygon
-<matju> inlet 0: image sur laquelle superposer un polygone
-<matju> inlet 1: couleur
-<matju> inlet 2: coords de polygone, dim(n,2)
-<matju> outlet 0: polygone uni-sur-transparent par dessus l'image, sans antialias, recoupements en odd-even rule
-
-<matju> mais je pourrais faire @perspective
-<matju> inlet 0: dim(n,3)
-<matju> inlet 1: facteur k (l'oeil est au point 0,0,0; l'écran est le plan z=k)
-<matju> outlet 0: dim(n,2)
-*/
-
-/* { Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] } */
-
 //template <class T>
 struct Line {
 	int32 y1,x1,y2,x2,x,m,pad1,pad2;
