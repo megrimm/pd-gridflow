@@ -29,6 +29,8 @@ require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
+module GridFlow; GF_VERSION = "0.6.0"; end
+
 require "gridflow/extra/eval_server.rb"
 $esm = EvalServerManager.new
 def esmtick
@@ -58,10 +60,10 @@ def GridFlow.whine2(fmt,s)
 
 	if @whine_last==fmt
 		@whine_count+=1
-		if @whine_count >= 64 and @whine_count/(@whine_count&-@whine_count)<4
-			post "[too many similar posts. this is # %d]\n", @whine_count
-			return
-		end
+		#if @whine_count >= 64 and @whine_count/(@whine_count&-@whine_count)<4
+		#	post "[too many similar posts. this is # %d]\n", @whine_count
+		#	return
+		#end
 	else
 		@whine_last = fmt
 		@whine_count += 1
@@ -160,7 +162,8 @@ module GridFlow; class FObject
 		qlass = case sym
 			when "@"; GridFlow::GridOp2
 			when "@!"; GridFlow::GridOp1
-			when /^@/; GridFlow.const_get("Grid"+sym[1..1].upcase+sym[2..-1])
+			when /^@/; GridFlow.const_get("Grid"+
+				("_"+sym[1..-1]).gsub("_[a-z]") {|s| s[1..1].upcase})
 			else
 				raise ArgumentError, "GF names begin with @"
 			end
@@ -214,9 +217,17 @@ end
 #----------------------------------------------------------------#
 
 def routine
-	$tasks.each {|k,v| GridFlow.exec k,v }
+#	GridFlow.whine "hello"
+	$tasks.each {|k,v|
+		case v
+		when Integer; GridFlow.exec k,v
+		when Proc; v[k]
+		else raise "problem"
+		end
+	}
 	$mainloop.timers.after(0.025) { routine }
-	GC.start
+#	GC.start
+#	GridFlow.whine "bye"
 end
 
 def GridFlow.find_file s

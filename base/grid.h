@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -214,6 +214,17 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 	} \
 	static void _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv)
 
+/* should be merged with the preceding one someday */
+#define METHOD2(_class_,_name_) \
+	static VALUE _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv); \
+	static VALUE _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
+		VALUE result; \
+		DGS(_class_); \
+		result = _class_##_##_name_($,rself,argc,argv); \
+		return result; \
+	} \
+	static VALUE _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv)
+
 #define METHOD_PTR(_class_,_name_) \
 	((RMethod) _class_##_##_name_##_wrap)
 
@@ -222,6 +233,17 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 /* class constructor */
 
 #define GRCLASS(_name_,_inlets_,_outlets_,_handlers_,args...) \
+	static MethodDecl _name_ ## _methods[] = { args }; \
+	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	GridClass _name_ ## _classinfo = { \
+		sizeof(_name_), \
+		COUNT(_name_##_methods),\
+		_name_##_methods,\
+		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
+		#_name_ };
+
+#define FMTCLASS(_name_,symbol_name,description,flags,_inlets_,_outlets_,_handlers_,args...) \
+	FormatInfo _name_ ## _formatinfo = { symbol_name,description,flags }; \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
@@ -324,7 +346,7 @@ char *Dim_to_s(Dim *$);
 int Dim_calc_dex(Dim *$, int *v);
 
 /* **************************************************************** */
-/* bitpacking.c */
+/* BitPacking objects encapsulate optimised loops of conversion */
 
 typedef struct BitPacking BitPacking;
 
@@ -344,7 +366,7 @@ void swap32 (int n, uint32 *data);
 void swap16 (int n, uint16 *data);
 
 /* **************************************************************** */
-/* operator.c */
+/* Operator objects encapsulate optimised loops of simple operations */
 
 #define DECL_TYPE(_name_,_size_) \
 	_name_##_type_i
@@ -398,6 +420,7 @@ typedef struct Grid {
 } Grid;
 */
 
+/* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
 
 typedef struct GridInlet  GridInlet;
@@ -475,7 +498,6 @@ typedef struct GridClass {
 	  ((GridEnd)_class_##_##_winlet_##_end), 6 }
 
 /* **************************************************************** */
-/* grid.c (part 2: outlet objects) */
 /* GridOutlet represents a grid-aware outlet */
 
 struct GridOutlet {
@@ -511,11 +533,11 @@ void GridOutlet_end    (GridOutlet *$);
 void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
 
 /* **************************************************************** */
-/* grid.c (part 3: processor objects) */
+/* GridFlow::GridObject inherits from GridFlow::FObject */
 
 #define GridObject_FIELDS \
-	GridClass *grid_class; \
 	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */ \
+	GridClass *grid_class; \
 	void *foreign_peer; /* point to jMax peer */ \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
@@ -528,78 +550,34 @@ struct GridObject {
 void GridObject_conf_class(VALUE $, GridClass *grclass);
 
 /* **************************************************************** */
-/* io.c (part 1: streams) */
-
-typedef bool (*OnRead)(void *target,int n,char *buf);
-
-typedef struct Stream {
-	int fd; /* kernel interface (unbuffered) */
-	FILE *file; /* stdio.h interface (buffered) */
-/* async stuff */
-	char *buf;
-	int buf_i;
-	int buf_n;
-	OnRead on_read;
-	void *target;
-} Stream;
-
-Stream *Stream_open_file(const char *name, VALUE mode);
-Stream *Stream_open_fd(int fd, VALUE mode);
-
-void Stream_nonblock(Stream *$);
-int Stream_get_fd(Stream *$);
-FILE *Stream_get_file(Stream *$);
-int Stream_read(Stream *$, int n, char *buf);
-void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target);
-bool Stream_try_read(Stream *$);
-bool Stream_is_waiting(Stream *$);
-void Stream_close(Stream *$); /* does free too */
-/*int Stream_write(Stream *$, int n, char *buf);*/
-
-/* **************************************************************** */
-/* io.c (part 2: formats) */
+/* GridFlow::Format inherits from GridFlow::GridObject */
 
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
 #define FF_RW  (1<<3)
 extern const char *format_flags_names[];
 
-typedef struct FormatClass FormatClass;
+typedef struct FormatInfo FormatInfo;
 typedef struct Format Format;
 
-struct FormatClass {
-	GridClass grid_class;
+struct FormatInfo {
 	const char *symbol_name; /* short identifier */
-	const char *long_name; /* long identifier */
+	const char *description; /* long identifier */
 	int flags;
 };
 
 #define Format_FIELDS \
 	GridObject_FIELDS; \
-	FormatClass *fc; \
 	GridObject *parent; \
 	VALUE /*Symbol*/ mode; \
-	Stream *st; \
 	BitPacking *bit_packing; \
 	Dim *dim;
-
-#define FMTCLASS(_name_,symbol_name,long_name,flags,_inlets_,_outlets_,_handlers_,args...) \
-	static MethodDecl _name_ ## _methods[] = { args }; \
-	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	FormatClass _name_ ## _classinfo = { { \
-		sizeof(_name_), \
-		COUNT(_name_##_methods),\
-		_name_##_methods,\
-		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
-		#_name_ }, \
-		symbol_name, long_name, flags };
 
 struct Format {
 	Format_FIELDS;
 };
 
-extern FormatClass FORMAT_LIST( ,_classinfo);
-extern FormatClass *format_classes[];
+extern GridClass *format_classes[];
 extern VALUE /*Hash*/ format_classes_dex;
 
 /*
@@ -674,5 +652,12 @@ VALUE super);
 
 #undef post
 #define post(args...) gf_bridge.post(args)
+
+#define EVAL(s) rb_eval_string(s)
+
+#define rb_str_len(s) (RSTRING(s)->len)
+#define rb_str_ptr(s) (RSTRING(s)->ptr)
+#define rb_ary_len(s) (RARRAY(s)->len)
+#define rb_ary_ptr(s) (RARRAY(s)->ptr)
 
 #endif /* __GF_GRID_H */
