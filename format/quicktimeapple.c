@@ -207,7 +207,7 @@ static int nn(int c) {return c?c:' ';}
   dim = new Dim(240,320,4);
   OSErr e;
   rect.top=rect.left=0;
-  rect.bottom=v[0]; rect.right=v[1];
+  rect.bottom=dim->v[0]; rect.right=dim->v[1];
   int n=0;
   Component c = 0;
   ComponentDescription cd;
@@ -251,15 +251,15 @@ static int nn(int c) {return c?c:' ';}
     case 2: e=SGSetChannelPlayFlags(m_vc, channelPlayFast); break;
     case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
   }
-  int dataSize = v[0]*v[1]*4;
+  int dataSize = dim->prod();
   buf = ARRAY_NEW(uint8,dataSize); 
-  m_rowBytes = v[1]*4;
+  m_rowBytes = dim->prod(1);
   e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,
     &rect,NULL,NULL,0,buf,m_rowBytes);
   if (0/*yuv*/) {
-    int dataSize = v[0]*v[1]*2;
+    int dataSize = dim->prod()*2/4;
     buf = ARRAY_NEW(uint8,dataSize); 
-    m_rowBytes = v[1]*2;
+    m_rowBytes = dim->prod(1)*2/4;
     e=QTNewGWorldFromPtr (&m_srcGWorld,k422YpCbCr8CodecType,
       &rect,NULL,NULL,0,buf,m_rowBytes);
   }
@@ -303,7 +303,7 @@ void pix_videoDarwin :: DoVideoSettings(){
 */
 
 \def void frame () {
-    GridOutlet out(this,0,dim->dup());
+    GridOutlet out(this,0,dim);
     out.send(dim->prod(),buf);
 L}
 
@@ -362,7 +362,7 @@ struct FormatQuickTimeApple : Format {
 	\decl void colorspace_m (Symbol c);
 	\decl Ruby frame ();
 	\decl void seek (int frame);
-	GRINLET3(0);
+	\grin 0
 };
 
 \def void seek (int frame) {
@@ -390,7 +390,7 @@ struct FormatQuickTimeApple : Format {
 //	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
-	GridOutlet out(this,0,dim->dup());
+	GridOutlet out(this,0,dim);
 	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
 	int n = dim->prod()/4;
 	int i;
