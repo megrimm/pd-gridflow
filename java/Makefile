@@ -1,42 +1,38 @@
-# this makefile is not threadsafe, sorry.
-# so don't use the -j option on this one.
-# (however you can on the main makefile.)
+#!/usr/bin/make
 
-CLASSPATH = .:/opt/lib/jmax/java/classes/jmax.jar:/opt/lib/jmax/packages/guiobj/java/classes/guiobj.jar:/opt/lib/jmax/java/lib/jacl/jacl.jar:/opt/lib/jmax/java/lib/jacl/tcljava.jar
+# JMAX = /opt/lib/jmax
+JMAX = /usr/lib/jmax
+CLASSPATH=".:$(JMAX)/java/classes/jmax.jar:$(JMAX)/packages/guiobj/java/classes/guiobj.jar:$(JMAX)/java/lib/jacl/jacl.jar:$(JMAX)/java/lib/jacl/tcljava.jar"
+
+#include ../bundled/jmax/Makefiles/Makefile.$(ARCH)
+#include ../bundled/jmax/Makefiles/Makefile.package
 
 OBJS = \
-Peephole.class PeepholeControlPanel.class GridFlowExtension.class \
-PathInfo.class
+gridflow/FtsPeepholeObject.class \
+gridflow/Peephole.class \
+gridflow/PeepholeControlPanel.class \
+gridflow/GridFlowExtension.class \
+gridflow/PeepholeControlPanel$1.class \
+gridflow/PathInfo.class
+
+SRC = \
+FtsPeepholeObject.java \
+Peephole.java \
+PeepholeControlPanel.java \
+GridFlowExtension.java \
+PathInfo.java
 
 # libPeephole.so
 
-JC = $(JAVA_HOME)/bin/javac -classpath $(CLASSPATH)
+JC = $(JAVA_HOME)/bin/javac -classpath $(CLASSPATH) -O
 
-all:: gridflow.jar
+all: gridflow.jar
 
 clean::
 	rm -f $(OBJS)
 	
-#libPeephole.so: Peephole_linux.c Peephole.h
-#	gcc -g -I$(JAVA_HOME)/include \
-#	-I$(JAVA_HOME)/include/genunix -I$(JAVA_HOME)/include/linux \
-#	-L/usr/X11R6/lib -lX11 -shared -o $@ Peephole_linux.c
-#
-#Peephole.h: Peephole.class
-#	-rm Peephole.h
-#	$(JAVA_HOME)/bin/javah -jni -classpath $(CLASSPATH) Peephole
-
-Peephole.class PeepholeControlPanel.class GridFlowExtension.class: Peephole.java PeepholeControlPanel.java GridFlowExtension.java PathInfo.class
-	$(JC) PathInfo.java FtsPeepholeObject.java Peep*.java GridFlowExtension.java
-
-#GridFlowExtension.class: GridFlowExtension.java FtsPeepholeObject.class
-#	$(JC) GridFlowExtension.java
-
-gridflow.jar: $(OBJS)
+gridflow.jar: $(SRC)
+	-mkdir gridflow
+	$(JC) -d . $(SRC)
 	/bin/rm -f gridflow.jar
-	-ln -s . gridflow
-	jar -cvf gridflow.jar gridflow/*.class # gridflow/*.so
-
-PathInfo.class: PathInfo.java
-	$(JC) PathInfo.java
-
+	jar -cvf gridflow.jar gridflow/*.class

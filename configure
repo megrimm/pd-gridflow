@@ -386,6 +386,23 @@ Feature.new {
 	formats ["JPEG"]
 },
 Feature.new {
+	tag :png
+	name "PNG Library"
+	uses_so ["-lpng","-lz"]
+	uses_h ["libpng12/png.h"]
+	test proc {
+		c_test "
+		extern \"C\" {
+		#include <stdio.h>
+		#include <png.h>
+		};
+		int main () {
+		return png_check_sig==0;}
+		", *uses_so
+	}
+	formats ["PNG"]
+},
+Feature.new {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	test proc {
@@ -426,7 +443,7 @@ Feature.new {
 },
 Feature.new {
 	tag :quicktime
-	name "HeroineWarrior's QuickTime file reader"
+	name "HeroineWarrior's QuickTime4Linux (or LibQuickTime)"
 	uses_so Or[
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
@@ -505,6 +522,18 @@ Feature.new {
 			int main () { return 0; }
 		" and $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
 	}
+},
+Feature.new {
+	tag :javac
+	name "Java Compiler"
+	options ["HAVE_JAVAC"]
+	test proc { `which javac` != "" }
+},
+Feature.new {
+	tag :jmax25guiext
+	name "jMax 2.5 GridFlow GUI extensions"
+	uses_feature [:jmax25,:javac]
+	options ["HAVE_JMAX25_GUIEXT"]
 }]
 
 $features_h = {}
@@ -839,7 +868,7 @@ mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
-mf << "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb"
+mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"
 
 mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 
