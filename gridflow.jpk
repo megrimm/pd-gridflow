@@ -2,15 +2,15 @@
 
 set pname gridflow
 
+package require guiobj
+
 package provide $pname 
 global jmaxArch jmaxMode
 ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
-# java::load -classpath "$dir/java/classes" gridflow.GridFlowExtension
+java::load -classpath "$dir/java/classes" gridflow.GridFlowExtension
 
 templateDirectory $dir/templates
 
 sourceFile $dir/help/${pname}.help.index.tcl
 
-post "package: GridFlow"
-
-
+post "package: GridFlow (with Java stuff)"
