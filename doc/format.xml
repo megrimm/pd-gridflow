@@ -48,6 +48,11 @@
 				selects one picture from a multi-picture format
 				and then does the same as a bang.
 			</method>
+			<method name="set">
+				<arg name="frame_number"/>
+				selects one picture from a multi-picture format,
+				to be displayed by the next bang.
+			</method>
 			<method name="bang">
 				sends a grid through the outlet. the grid may be the
 				result of reading from a file, acquiring from a device,
@@ -75,6 +80,23 @@
 			<method name="option rewind">
 				rewinds to beginning of file if applicable.
 			</method>
+			<method name="option loop">
+				<arg name="flag" type="bool"/>
+				controls the automatic looping of movies.
+			</method>
+		</inlet>
+
+		<inlet id="1">
+			<method name="int">
+				frame number of frame just sent,
+				for formats that have frame numbers.
+			</method>
+			
+			<method name="bang">
+				tried to read a frame that does not exist
+				(signals end of file)
+			</method>
+		
 		</inlet>
 	</class>
 
@@ -213,19 +235,27 @@
 	</class>
 
 	<class name="format quicktime @in/@out">
+		<p>support for .mov files.</p>
+		<p>this format supports frame-seek and frame-tell.</p>
+
 		<method name="open quicktime file">
 			<arg name="filename" type="symbol" />
 		</method>
 		<method name="option codec">
 			<arg name="codec" type="symbol"/>
 			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4.
-			must be set before the first frame is written.
-			only applies to @out.
+			Must be set before the first frame is written.
+			only applies to @out. Choosing a codec is important
+			because codecs influence greatly the speed of
+			encoding, the size of the written file, and its
+			fidelity.
 		</method>
 	</class>
 
 	<class name="format mpeg @in">
 		<icon image="format_mpeg" text="[open mpeg file filename.mpeg]"/>
+		<p>support for .mpeg files</p>
+		<p>this format supports frame-seek and frame-tell.</p>
 		<p>Two different libraries are available for dealing with
 		MPEG files. Those have different details, capabilities and quirks.</p>
 		<p>In any case, GridFlow does not support importing audio from

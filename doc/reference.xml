@@ -140,7 +140,10 @@
 		changed (by sending an integer in that inlet), a Dim(2) grid
 		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
-		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="0">
+			<method name="int"/>
+			<method name="bang">resend the grid without change</method>
+		</inlet>
 		<inlet id="1"><method name="int"/></inlet>
 		<outlet id="0"><grid><dim>2</dim></grid></outlet>
 	</class>
@@ -153,7 +156,10 @@
 		changed (by sending an integer in that inlet), a Dim(3) grid 
 		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
-		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="0">
+			<method name="int"/>
+			<method name="bang">resend the grid without change</method>
+		</inlet>
 		<inlet id="1"><method name="int"/></inlet>
 		<inlet id="2"><method name="int"/></inlet>
 		<outlet id="0"><grid><dim>3</dim></grid></outlet>
@@ -167,7 +173,10 @@
 		changed (by sending an integer in that inlet), a Dim(4) grid
 		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
-		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="0">
+			<method name="int"/>
+			<method name="bang">resend the grid without change</method>
+		</inlet>
 		<inlet id="1"><method name="int"/></inlet>
 		<inlet id="2"><method name="int"/></inlet>
 		<inlet id="3"><method name="int"/></inlet>
@@ -346,7 +355,9 @@
 		<!-- <icon text="[@scan +]"/> -->
 		<!-- <help text="[@scan +]"/> -->
 
-		<p>[@scan +] computes subtotals.</p>
+		<p>[@scan +] computes subtotals; this can be used, for example,
+		to convert a regular probability distribution into a cumulative one.
+		</p>
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
@@ -357,10 +368,15 @@
 
 		<inlet id="0">
 			<grid><dim>dims..., last</dim>
-				replaces every Dim(last) subgrid by all the result of a cascade on that
-				subgrid. Doing that with base value 0 and operation + on grid "2 3 5 7" will
-				compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and gives the subtotals "2 5 10 17".
-				produces a Dim(dims,last) grid.
+
+				replaces every Dim(last) subgrid by all the results of
+				cascading the operator on that subgrid,
+				producing a Dim(dims,last) grid.
+
+				For example, with base value 0 and operation + on grid "2 3 5
+				7" will compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and give the
+				subtotals "2 5 10 17".
+
 			</grid>
 		</inlet>
 		<inlet id="1">
@@ -407,19 +423,21 @@
 
 	</class>
 
-	<class name="@inner">
+	<class name="@inner,@inner2">
 		<icon text="[@inner * + 0]"/>
 		<help text="[@inner * + 0]" image="@foldinnerouter" />
 
-		<p>think of this one as a special combination of [@outer], [@]
-		and [@fold]. this is one of the most complex operations. It is very
-		useful for performing linear transforms like rotations, scalings,
-		tilts, and color remappings. A linear transform is done by something called matrix
-		multiplication, which happens to be [@inner * + 0].
-		</p>
+		<p>think of this one as a special combination of [@outer], [@] and
+		[@fold]. this is one of the most complex operations. It is very useful
+		for performing linear transforms like rotations, scalings, shearings,
+		and some kinds of color remappings. A linear transform is done by
+		something called matrix multiplication, which happens to be [@inner * +
+		0]. @inner also does dot product and other funny operations.</p>
 
-		<p>This object has been renamed from @inner to @inner2 because a
-		different @inner object will be added in the future.</p>
+		<p>@inner2 is a variant on @inner; used to be called @inner (GF-0.4.1
+		and before); the right-hand "matrix" is transposed upon reception (the
+		last dimension is swapped with the rest of the dimensions, so that the
+		last becomes first and the others stay in order)</p>
 
 		<method name="init">
 			<arg name="op_para" type="symbol"/>
@@ -462,56 +480,13 @@
 		<outlet id="0">
 		</outlet>
 	</class>
+
 	<class name="@inner2">
 		<icon text="[@inner2 * + 0]"/>
 		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
 
-		<p>a variant on @inner.</p>
-
-		<p>This object used to be called @inner.</p>
-
-		<method name="init">
-			<arg name="op_para" type="symbol"/>
-			<arg name="op_fold" type="symbol"/>
-			<arg name="base"    type="integer"/>
-			<arg name="right_hand" type="grid"/>
-			op_para and op_fold are two operators picked from the table
-			of two-input operators.
-			the base value has to be specified (has no default value yet).
-		</method>
-		<inlet id="0">
-			<grid><dim>anyA..., lastA</dim>
-
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...)
-				pieces of Dim(lastA) size.
-
-				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...)
-				pieces of Dim(lastB) size.
-
-				On every piece pair, does [@] using the specified
-				op_para operation, followed by a [@fold] using
-				the specified op_fold operator and base value.
-			
-				creates a Dim(anyA...,anyB...) grid by assembling all
-				the results together.
-
-				(note: lastA must be equal to lastB.)
-			</grid>
-		</inlet>
-		<inlet id="1">
-			<method name="int">
-				changes the base value to that.
-			</method>
-		</inlet>
-		<inlet id="2">
-			<grid><dim>anyB..., lastB</dim>
-				changes the right-hand side grid to that.
-			</grid>
-		</inlet>
-		<outlet id="0">
-		</outlet>
 	</class>
-
+	
 	<class name="@join">
 		<method name="init">
 			<arg name="which_dim"/>
@@ -815,34 +790,27 @@
 
 	</class>
 
-	<class name="@apply_colormap_channelwise">
-		<p>This object is useful for color correction. For each pixel
-		it takes it apart, looks up each part separately in the colormap,
-		and constructs a new pixel from that</p>
+	<class name="@rotate">
+		<p>performs rotations on indexmaps and polygons and such.</p>
 		
-		<inlet id="0"><grid><dim>rows columns channels</dim>
-			picture
-		</grid></inlet>
-		<inlet id="1"><grid><dim>intensities channels</dim>
-			colormap ("palette")
-		</grid></inlet>
-		<outlet id="0"><grid><dim>rows columns channels</dim>
-			picture
-		</grid></outlet>
-	</class>
-
-	<class name="@rgb_to_greyscale">
-		<inlet id="0"><grid><dim>rows columns {red green blue}</dim>
-		</grid></inlet>
-		<outlet id="0"><grid><dim>rows columns {white}</dim></grid>
-		</outlet>
-	</class>
-
-	<class name="@greyscale_to_rgb">
-		<inlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		<method name="init">
+			<arg name="angle" type="0...35999"/>
+		</method>
+		<inlet id="0"><grid><dim>{anyA 2}</dim></grid></inlet>
+		<inlet id="1"><method name="int">rotation angle; 0...36000</method>
 		</inlet>
-		<outlet id="0"><grid><dim>rows columns {red green blue}</dim>
-		</grid></outlet>
+		<outlet id="0"><grid><dim>{anyA 2}</dim></grid></outlet>
+	</class>
+
+	<class name="@remap_image">
+		<p>if you chain indexmap (coordinate) transformations from outlet 1
+		to inlet 1, then sending an image in inlet 0 will emit its
+		deformation out of outlet 0.</p>
+
+		<inlet id="0"/>
+		<inlet id="1"/>
+		<outlet id="0"/>
+		<outlet id="1"/>
 	</class>
 </section>
 
@@ -868,7 +836,12 @@
 				the list of dimensions of the incoming grid.
 			</grid>
 		</outlet>
+	</class>
 
+	<class name="@type">
+		<p>gives a symbol representing the numeric type of the grid received.
+		</p>
+		<outlet id="0"><method type="numeric type symbol"/></outlet>
 	</class>
 
 	<class name="@print">
@@ -900,7 +873,45 @@
 	</class>
 </section>
 
-<section name="Objects for Picture Processing">
+<section name="Objects for Color Conversion">
+	<class name="@apply_colormap_channelwise">
+		<p>This object is useful for color correction. For each pixel
+		it takes it apart, looks up each part separately in the colormap,
+		and constructs a new pixel from that. You may also color-correct
+		colormaps themselves.</p>
+
+		<p>Only works for things that have 3 channels.</p>
+
+		<p>Note: if you just need to apply a palette on an indexed-color
+		picture, you don't need this. Just use @store instead.</p>
+		
+		<inlet id="0"><grid><dim>rows columns channels</dim>
+			picture
+		</grid></inlet>
+		<inlet id="1"><grid><dim>intensities channels</dim>
+			colormap ("palette")
+		</grid></inlet>
+		<outlet id="0"><grid><dim>rows columns channels</dim>
+			picture
+		</grid></outlet>
+	</class>
+
+	<class name="@rgb_to_greyscale">
+		<inlet id="0"><grid><dim>rows columns {red green blue}</dim>
+		</grid></inlet>
+		<outlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		</outlet>
+	</class>
+
+	<class name="@greyscale_to_rgb">
+		<inlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		</inlet>
+		<outlet id="0"><grid><dim>rows columns {red green blue}</dim>
+		</grid></outlet>
+	</class>
+</section>
+
+<section name="Objects for Miscellaneous Picture Processing">
 	<class name="@convolve">
 		<icon text="[@convolve * + 0]"/>
 		<help text="[@convolve * + 0]"/>
@@ -1176,6 +1187,49 @@
 			(the average happens to be simply 1000 divided by the
 			messages-per-second, but it is convenient to have it anyway)
 			</method>
+		</outlet>
+	</class>
+</section>
+
+<section name="jMax emulation">
+	<p>those classes emulate jMax functionality,
+	for use within PureData and Ruby.</p>
+
+	<class name="fork">
+		<p>Every incoming message is sent to inlet 1 and then sent to
+		inlet 0 as well. Messages remain completely unaltered. Contrast
+		with PureData's "t a a" objects, which have the same purpose but
+		transform bangs into zeros and such.</p>
+
+		<inlet id="0"><method name="&lt;any&gt;"/></inlet>
+		<outlet id="0"/>
+		<outlet id="1"/>
+	</class>
+	<class name="jmax_udpsend">
+		Sends messages (but not grids nor dspsignals) via UDP (which
+		does not involve a connection, and may lose packets in case of
+		network overload or noise or etc)
+
+		<method name="init">
+			<arg name="host" type="host"/>
+			<arg name="port" type="integer"/>
+		</method>
+
+		<inlet id="0"><method name="&lt;any&gt;"/></inlet>
+	</class>
+	<class name="jmax_udpreceive">
+		<p>Counterpart of jmax_udpsend</p>
+
+		<method name="init">
+			<arg name="port" type="integer"/>
+		</method>
+		<outlet id="0"><method name="&lt;any&gt;"/></outlet>
+		<outlet id="1"/><method name="list">
+			<arg name="protocol_name"/>
+			<arg name="sender_port"/>
+			<arg name="sender_host"/>
+			<arg name="sender_ip_address"/>
+		</method>
 		</outlet>
 	</class>
 </section>

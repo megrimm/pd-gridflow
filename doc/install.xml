@@ -11,29 +11,30 @@
 <p>Required Hardware (One of...):<list>
 	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>
 	<li>i686 : "new" IBM PC with recent compiler</li>
-	<li>ppc : "new" Macintosh (IS NOT SUPPORTED YET - HELP US)</li>
-	<li>armv4l : Corel Netwinder (but jMax does not run on this)</li>
-	<li>mips : Silicon Graphics, non-PC (only tested without jMax)</li>
-</list></p>
+	<li>ppc : "new" Macintosh</li>
+	<li>armv4l : Corel Netwinder</li>
+	<li>mips : Silicon Graphics, non-PC</li>
+	<li>sparc : Sun SparcStation</li>
+</list>(but we only test i686 ourselves)</p>
 <p>Required Software:<list>
-	<li>Ruby 1.6 (language interpreter)</li>
+	<li>Ruby 1.6 or more recent (language interpreter)</li>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
-	<li>GNU Bash</li>
 </list></p>
 <p>Very Recommended:<list>
 	<li>jMax 2.5</li>
-	<li>jMax 3.0 support coming soon</li>
-	<li>jMax 2.4 support removed</li>
+	<li>jMax 4.0 support in the works</li>
 	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
-	<li>instead of X11 you may use SDL.</li>
 </list></p>
 <p>Optional:<list>
+	<li>PureData 0.35 or 0.36</li>
+	<li>Simple Directmedia Layer (sdl)</li>
+	<li>Ascii Art Library (aalib)</li>
 	<li>HeroineWarrior's libmpeg3.so</li>
 	<li>HeroineWarrior's libquicktime.so</li>
 	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
 	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
-	<li>Ruby 1.6 with package "xmlparser" (for editing documentation)</li>
+	<li>Ruby add-on "xmlparser" (for editing documentation)</li>
 </list></p>
 <p>NOTE: 
 for help on installing and compiling jMax, please see Christian Klippel's
@@ -70,9 +71,10 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 
   </li>
   <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
-latest from the 1.7 series work and are faster)  You will need the file
-<k>libruby.so</k>, which is not always included. If you're using an
-installer and you're missing the file, then look for another package of a
+latest from the 1.7/1.8 series work and are faster)  You will need either
+<k>libruby.so</k> or <k>libruby.a</k> or <k>libruby-static.a</k>
+If you're using an installer and you're missing those files,
+then look for another package of a
 similar name that may contain extra files (eg: "ruby-dev"). If you're
 installing from source code you have to configure with the
 <k>--enable-shared</k> option. If you install into a system directory, you
@@ -90,36 +92,25 @@ have to recreate the library index using the <k>ldconfig</k> command too
 	 another one called 'images'.
   </li>
 
-  <li>Find your jMax ARCH value. This is the one you use when installing
-  jMax (or other jMax plugins other than GridFlow) manually. For K6,
-  PentiumPro and such, on Linux, this is <k>i686-linux</k>. If you are
-  trying to run it on a Macintosh, this would be <k>ppc-macosx</k> or
-  <k>ppc-linux</k>.</li>
-
-  <li>Run <k>./configure --jmax-arch <i>your-ARCH</i></k> from the
-  <k>gridflow</k> directory. 
-  note: if you didn't install GridFlow in the <k>jmax/packages</k>
-  directory, then you have to add the option <k>--jmax-dist-dir
-  <i>your-jmax-source-directory-goes-here</i></k>. Giving
-  <k>/usr/lib/jmax</k> will not do because it wants <k>include</k> and
-  <k>Makefiles</k> subdirectories, which do not get installed with
-  jMax.</li>
-
-  <li><k>./configure</k> will try to detect some optional components (libmpeg,
-  pentium clock, etc); error messages may appear in case of a <k>no</k>.
-  usually a <k>yes</k> will not show anything else. In the end, the files
-  <k>config.make</k>,
-  <k>c/src/Sources</k> and
-  <k>c/src/config.h</k> will be generated.
+  <li>Run <k>./configure</k> from the <k>gridflow</k> directory. You must have
+  jMax's include files in <k>/usr/include</k> (or anywhere covered by
+  <k>C_INCLUDE_PATH</k>). <k>./configure</k> will try to detect some optional
+  components (libmpeg, pentium clock, etc). In the end, the files
+  <k>config.make</k>, <k>config.h</k> and <k>Makefile</k> will be generated.
   </li>
+
+  <li>If you are not running Linux on a PentiumPro-compatible computer, you
+  will have to specify a jMax Makefile using the <k>--jmax-arch</k> option.
+  This is the one you use when installing jMax (or other jMax plugins other
+  than GridFlow) manually. On MacOS 10, this would be <k>ppc-macosx</k>.</li>
 
   <li>Stay in the same directory and do:
       <list>
-        <li><k>make all</k></li>
+        <li><k>make</k></li>
         <li><k>make install</k></li>
+        <li><k>make test</k></li>
       </list>
-      but if the first one stops because of "Error" you shouldn't try the second
-	 one.
+      but if one stops because of "Error" you shouldn't try the next one.
   </li>
 
   <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
@@ -127,18 +118,29 @@ have to recreate the library index using the <k>ldconfig</k> command too
   Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
   </li>
 
-  <li>(Re)start jMax. </li>
+  <li>(Re)start jMax.</li>
 
 </list>
 
-  <p>Note: If there's a problem with libmpeg anywhere in the process,
-  you can add the option --no-mpeg to the configurator.</p>
+  <p>Note: you can do <k>./configure --help</k> to get a list of supported
+  options. You can use them to ignore the presence of troublesome libraries
+  and select debugging level.</p>
 
-  <p>Note: If you want more speed, you can configure with the --fast
-  switch, which turns off many error-detection mechanisms; if you want
-  more speed, you could configure with --no-profiling too, but if you do
-  that, you can no longer find out which of the objects consume the most
-  time.</p>
+</prose></section>
+
+<section name="Installation process (with PureData 0.35 and compatible)"><prose>
+
+<list>
+<li>make sure <k>m_pd.h</k> is installed.</li>
+<li>go in GridFlow's source directory.</li>
+<li>run <k>./configure</k></li>
+<li>run <k>make</k></li>
+<li>run <k>make install</k></li>
+<li>run <k>make test</k></li>
+<li>run pd with the <k>-path</k> to the extras directory and <k>-lib
+gridflow</k>, or put those options in your <k>~/.pdrc</k> file. (this part is
+essentially the same as GEM's and PDP's)</li>
+</list>
 
 </prose></section>
 
