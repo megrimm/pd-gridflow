@@ -700,7 +700,7 @@ mf.sub!(/^clean:/,"clean: clean2 ")
 mf.gsub!(/^(site-)?install:\n\n/,"")
 
 #HACK
-mf.gsub!(/.c.o:\n\t\$\(CC\)/,".c.o:\n\t\$\(CC\) -xc++")
+#mf.gsub!(/.c.o:\n\t\$\(CC\)/,".c.o:\n\t\$\(CC\) -xc++")
 
 #jMax conflict resolution
 mf.gsub!(/prefix/,'rubyprefix')
