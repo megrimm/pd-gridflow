@@ -103,7 +103,7 @@
 <section name="Objects for Input/Output">
 	<jmax-class name="@in">
 		<icon
-			image="images/video_in_file.jpg"
+			image="images/@in.jpg"
 			text="[@ import 240 320 3]"
 		/>
 
@@ -157,12 +157,11 @@
 		</inlet>
 		<sample
 			image="images/grab_video_in.png"
-			text="[@ import 240 320 3]"
 		/>
 	</jmax-class>
 	<jmax-class name="@out">
 		<icon
-			image="images/out.jpg"
+			image="images/@out.jpg"
 			text="[@out]"
 		/>
 		<method name="init">
@@ -363,7 +362,7 @@ or  uint8 (native format for ppm or tga formats) </p>
 	</jmax-class>
 
 	<jmax-class name="@!">
-	
+		undocumented.
 	</jmax-class>
 
 	<jmax-class name="@">
@@ -543,13 +542,13 @@ doing redundant updates -- sorry)</p>
 
 	<!-- todo: text attr in those icons could be auto-generated -->
 
-	<operator-1 name="abs"><icon image="images/@!_abs.jpg"/>
+	<operator-1 name="abs" cname="abs">
 		absolute value of A
 	</operator-1>
-	<operator-1 name="rand"><icon image="images/@!_rand.jpg"/>
-		produces an random number between 0 and A-1
+	<operator-1 name="rand" cname="rand">
+		randomly produces a non-negative number below A
 	</operator-1>
-	<operator-1 name="sqrt"><icon image="images/@!_sqrt.jpg"/>
+	<operator-1 name="sqrt" cname="sqrt">
 		square root of A, rounded downwards
 	</operator-1>
 </section>
@@ -561,104 +560,88 @@ doing redundant updates -- sorry)</p>
 	<!-- todo: make CNAME a column in html -->
 
 	<!-- category: additive -->
-	<operator-2 name="+" cname="add"><icon image="images/@_%2B.jpg"/>
-		A + B
-	</operator-2>
-	<operator-2 name="-" cname="sub"><icon image="images/@_-.jpg"/>
-		A - B
-	</operator-2>
-	<operator-2 name="inv+" cname="bus"><icon image="images/@_inv%2B.jpg"/>
-		B - A
-	</operator-2>
+	<operator-2 name="+"    cname="add"> A + B </operator-2>
+	<operator-2 name="-"    cname="sub"> A - B </operator-2>
+	<operator-2 name="inv+" cname="bus"> B - A </operator-2>
 
 	<!-- category: multiplicative -->
-	<operator-2 name="*" cname="mul"><icon image="images/@_x.jpg"/>
-		A * B
-	</operator-2>
-	<operator-2 name="/" cname="div"><icon image="images/@_division.jpg"/>
-		A / B, rounded downwards
-	</operator-2>
-	<operator-2 name="inv*" cname="vid"><icon image="images/@_invx.jpg"/>
-		B / A, rounded downwards
-	</operator-2>
-	<operator-2 name="%" cname="mod"><icon image="images/@_modulo.jpg"/>
-		A % B, non-negative remainder
-	</operator-2>
-	<operator-2 name="swap%" cname="dom"><icon image="images/@_swap.jpg"/>
-		B % A, non-negative remainder
-	</operator-2>
+	<operator-2 name="*"     cname="mul"> A * B </operator-2>
+	<operator-2 name="/"     cname="div"> A / B, rounded downwards </operator-2>
+	<operator-2 name="inv*"  cname="vid"> B / A, rounded downwards </operator-2>
+	<operator-2 name="%"     cname="mod"> A % B, non-negative remainder </operator-2>
+	<operator-2 name="swap%" cname="dom"> B % A, non-negative remainder </operator-2>
 
 	<!-- bits -->
-	<operator-2 name="|" cname="or"><icon image="images/@_a_or_b_bitwise.jpg"/>
+	<operator-2 name="|" cname="or">
 		A or B, bitwise
 	</operator-2>
-	<operator-2 name="^" cname="xor"><icon image="images/@_xor_bitwise.jpg"/>
+	<operator-2 name="^" cname="xor">
 		A xor B, bitwise
 	</operator-2>
-	<operator-2 name="&amp;" cname="and"><icon image="images/@_and.jpg"/>
+	<operator-2 name="&amp;" cname="and">
 		A and B, bitwise
 	</operator-2>
-	<operator-2 name="&lt;&lt;" cname="shl"><icon image="images/@_shift_bits_left.jpg"/>
+	<operator-2 name="&lt;&lt;" cname="shl">
 		A * (2**(B % 32)), which is left-shifting
 	</operator-2>
-	<operator-2 name="&gt;&gt;" cname="shr"><icon image="images/@_shift_bits_right.jpg"/>
+	<operator-2 name="&gt;&gt;" cname="shr">
 		A / (2**(B % 32)), which is right-shifting
 	</operator-2>
 
 	<!-- decision -->
-	<operator-2 name="||" cname="sc_or"><icon image="images/@_if_then_else.jpg"/>
+	<operator-2 name="||" cname="sc_or">
 		if A is zero then B else A
 	</operator-2>
-	<operator-2 name="&amp;&amp;" cname="sc_and"><icon image="images/@_&amp;&amp;.jpg"/>
+	<operator-2 name="&amp;&amp;" cname="sc_and">
 		if A is zero then zero else B
 	</operator-2>
-	<operator-2 name="min" cname="min"><icon image="images/@_min.jpg"/>
+	<operator-2 name="min" cname="min">
 		the lowest value in A,B
 	</operator-2>
-	<operator-2 name="max" cname="max"><icon image="images/@_max.jpg"/>
+	<operator-2 name="max" cname="max">
 		the highest value in A,B
 	</operator-2>
 
 	<!-- comparison -->
-	<operator-2 name="cmp" cname="cmp"><icon image="images/@_comp.jpg"/>
+	<operator-2 name="cmp" cname="cmp">
 		-1 when A&lt;B; 0 when A=B; 1 when A&gt;B.
 	</operator-2>
-	<operator-2 name="==" cname="eq"><icon image="images/@_equals.jpg"/>
+	<operator-2 name="==" cname="eq">
 		is A equal to B ? 1=true, 0=false
 	</operator-2>
-	<operator-2 name="!=" cname="ne"><icon image="images/@_not_equal.jpg"/>
+	<operator-2 name="!=" cname="ne">
 		is A not equal to B ?
 	</operator-2>
-	<operator-2 name="&gt;" cname="gt"><icon image="images/@_greater_than.jpg"/>
+	<operator-2 name="&gt;" cname="gt">
 		is A greater than B ?
 	</operator-2>
-	<operator-2 name="&lt;=" cname="le"><icon image="images/@_smaller_or_equal.jpg"/>
+	<operator-2 name="&lt;=" cname="le">
 		is A not greater than B ?
 	</operator-2>
-	<operator-2 name="&lt;" cname="lt"><icon image="images/@_smaller_than.jpg"/>
+	<operator-2 name="&lt;" cname="lt">
 		is A less than B ?
 	</operator-2>
-	<operator-2 name="&gt;=" cname="ge"><icon image="images/@_larger_or_equal_to.jpg"/>
+	<operator-2 name="&gt;=" cname="ge">
 		is A not less than B ?
 	</operator-2>
 
 	<!-- other -->
-	<operator-2 name="sin*" cname="sin"><icon image="images/@_sin.jpg"/>
+	<operator-2 name="sin*" cname="sin">
 		B * sin(A), where A is in hundredths of degrees
 	</operator-2>
-	<operator-2 name="cos*" cname="cos"><icon image="images/@_cos.jpg"/>
+	<operator-2 name="cos*" cname="cos">
 		B * cos(A)
 	</operator-2>
-	<operator-2 name="atan" cname="atan"><icon image="images/@_atan.jpg"/>
+	<operator-2 name="atan" cname="atan">
 		arctan(A/B)
 	</operator-2>
-	<operator-2 name="tanh" cname="tanh"><icon image="images/@_tanh.jpg"/>
+	<operator-2 name="tanh" cname="tanh">
 		tanh(A) where A is in hundredths of degrees (yes, really)
 	</operator-2>
-	<operator-2 name="gamma" cname="gamma"><icon image="images/@_gamma.jpg"/>
+	<operator-2 name="gamma" cname="gamma">
 		floor(pow(a/256.0,256.0/b)*256.0)
 	</operator-2>
-	<operator-2 name="**" cname="pow"><icon image="images/@_xx.jpg"/>
+	<operator-2 name="**" cname="pow">
 		A raised to power B
 	</operator-2>
 </section>
@@ -667,26 +650,40 @@ doing redundant updates -- sorry)</p>
 
 	<jmax-class name="format ppm @in/@out">
 		<icon
-			image="images/open_ppm.jpg"
-			text="[open filename.ppm]"
+			image="images/format/ppm.jpg"
+			text="[open ppm file filename.ppm]"
 		/>
-		Subformat P6 only.
-		Max number 255 (24-bit RGB).
+
+		<p>Subformat P6 only.
+		Max-number can only be 255 (24-bit RGB).
+		</p>
+
+		<method name="open ppm file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
 	</jmax-class>
 
 	<jmax-class name="format targa @in">
 		<icon
-			image="images/open_tga.jpg"
-			text="[open filename.tga targa]"
+			image="images/format/tga.jpg"
+			text="[open targa file filename.tga]"
 		/>
-		<p>Support for RGB-24 (3 channels).</p>
-		<p>If you bug me a bit you'll get ARGB-32 too.</p>
+		<p>Support for RGB-24 (3 channels).
+		If you bug me a bit you'll get ARGB-32 too.</p>
+
+		<method name="open ppm file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
 	</jmax-class>
 
 	<jmax-class name="format videodev @in">
 		<icon
-			image="images/open_videodev.jpg"
-			text="[open /dev/video0 videodev]"
+			image="images/format/videodev.jpg"
+			text="[open videodev /dev/video0]"
 		/>
 
 		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
@@ -699,33 +696,32 @@ doing redundant updates -- sorry)</p>
 		RGB-BGR converter.</p>
 
 		<p>color adjustments:
-		<list>
-		<li><k>brightness</k> <i>integer</i></li>
-		<li><k>hue</k> <i>integer</i></li>
-		<li><k>colour</k> <i>integer</i></li>
-		<li><k>contrast</k> <i>integer</i></li>
-		<li><k>whiteness</k> <i>integer</i></li>
-		</list></p>
-
+		<method name="option brightness"><arg name="level" type="0-65535"/></method>
+		<method name="option hue"       ><arg name="level" type="0-65535"/></method>
+		<method name="option colour"    ><arg name="level" type="0-65535"/></method>
+		<method name="option contrast"  ><arg name="level" type="0-65535"/></method>
+		<method name="option whiteness" ><arg name="level" type="0-65535"/></method>
+		</p>
+		
 		<p>other options:
-		<list>
-		<li><k>channel</k> <i>integer</i></li>
-		<li><k>tuner</k> <i>integer</i></li>
-		<li><k>norm</k> <i>integer</i></li>
-		</list></p>
+		<method name="option channel"   ><arg name="level" type="integer"/></method>
+		<method name="option tuner"     ><arg name="level" type="integer"/></method>
+		<method name="option norm"      ><arg name="level" type="integer"/></method>
+		</p>
 
-			<method name="option size">
-				<arg name="height"/>
-				<arg name="width"/>
-				sets the input size, especially when using a video digitalizer
-				device
-			</method>
-
+		<method name="option size">
+			<arg name="height"/>
+			<arg name="width"/>
+			sets the input size, especially when using a video digitalizer
+			device
+		</method>
 	</jmax-class>
 
 	<jmax-class name="format x11 @in/@out">
 
-		<icon text="[open x11 here]"/>
+		<icon
+			image="images/format/x11.jpg"
+			text="[open x11 here]"/>
 
 		<method name="open x11 here">
 			connects to the default X11 server,
@@ -811,6 +807,28 @@ doing redundant updates -- sorry)</p>
 			image="images/grab_video_out.png"
 			text="video_out_patch"
 		/>
+	</jmax-class>
+
+	<jmax-class name="format grid @in/@out">
+		<icon
+			image="images/format/grid.jpg"
+			text="[open grid file filename.grid]"
+		/>
+		<icon
+			image="images/format/grid_tcp.jpg"
+			text="[open grid tcp www.artengine.ca 4242]"
+		/>
+		<p>
+		This is GridFlow's special file format. This is the only I/O
+		format that can hold absolutely anything that the [@store] object can.
+		However this can only be stored in 32 bits-per-value.
+		</p>
+		<p>
+		This is the only picture format that currently supports TCP
+		connections. This is still somewhat clunky: the socket only
+		opens in client mode only; and upon bang, jMax freezes until
+		the whole grid is received.
+		</p>
 	</jmax-class>
 
 </section>
