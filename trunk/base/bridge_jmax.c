@@ -96,7 +96,7 @@ BFObject *FObject_peer(VALUE rself) {
 	return (BFObject *) $->foreign_peer;
 }
 
-void rj_convert(VALUE arg, fts_atom_t *at) {
+void Bridge_export_value(VALUE arg, fts_atom_t *at) {
 	if (INTEGER_P(arg)) {
 		fts_set_int(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
@@ -114,7 +114,7 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 	}
 }
 
-VALUE jr_convert(const fts_atom_t *at) {
+VALUE Bridge_import_value(const fts_atom_t *at) {
 	if (fts_is_int(at)) {
 		return INT2NUM(fts_get_int(at));
 	} else if (fts_is_symbol(at)) {
@@ -126,7 +126,7 @@ VALUE jr_convert(const fts_atom_t *at) {
 		int n = fts_list_get_size(l);
 		fts_atom_t *p = fts_list_get_ptr(l);
 		VALUE a = rb_ary_new2(n);
-		for (int i=0; i<n; i++) rb_ary_push(a,jr_convert(p+i));
+		for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(p+i));
 		return a;
 //	} else if (fts_is_ptr(at)) {
 //		return Pointer_new(fts_get_ptr(at));
@@ -154,7 +154,7 @@ static VALUE BFObject_method_missing$1 (kludge *k) {
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + k->winlet;
 	ID sel = rb_intern(buf);
-	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
+	for (int i=0; i<k->ac; i++) argv[i] = Bridge_import_value(k->at+i);
 	rb_funcall2($,sel,k->ac,argv);
 	return Qnil;
 }
@@ -191,7 +191,7 @@ static VALUE BFObject_init$1 (kludge *k) {
 	VALUE argv[k->ac];
 	k->ac--;
 	k->at++;
-	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
+	for (int i=0; i<k->ac; i++) argv[i] = Bridge_import_value(k->at+i);
 	BFObject *j_peer = (BFObject *)k->$;
 	VALUE qlass = (VALUE)k->$->head.cl->user_data;
 	VALUE rself = rb_funcall2(qlass,SI(new),k->ac,argv);
@@ -277,8 +277,8 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 	}
 	fts_atom_t at[argc];
 	fts_atom_t sel;
-	rj_convert(sym,&sel);
-	for (int i=0; i<argc; i++) rj_convert(argv[i],at+i);
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
 	fts_outlet_send(jo,outlet,fts_get_symbol(&sel),argc,at);
 	return Qnil;

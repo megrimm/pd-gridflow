@@ -37,6 +37,7 @@
 static VALUE GridFlow_module2=0;
 static VALUE Pointer_class2=0;
 static VALUE sym_ninlets=0, sym_noutlets=0;
+static VALUE sym_lparen=0, sym_rparen=0;
 
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
@@ -96,7 +97,7 @@ BFObject *FObject_peer(VALUE rself) {
 	return (BFObject *) $->foreign_peer;
 }
 
-void rj_convert(VALUE arg, t_atom *at) {
+void Bridge_export_value(VALUE arg, t_atom *at) {
 	if (INTEGER_P(arg)) {
 		SETFLOAT(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
@@ -114,7 +115,7 @@ void rj_convert(VALUE arg, t_atom *at) {
 	}
 }
 
-VALUE jr_convert(const t_atom *at) {
+VALUE Bridge_import_value(const t_atom *at) {
 	t_atomtype t = at->a_type;
 	if (t==A_SYMBOL) {
 		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
@@ -127,6 +128,41 @@ VALUE jr_convert(const t_atom *at) {
 	}
 }
 
+/*
+  Yes, I really have to do that myself.
+  PureData is not very sophisticated: it does not have a parser.
+*/
+#include<unistd.h>
+int Bridge_import_list(int &ac, const t_atom *&at, VALUE *argv,
+int level=0) {
+	int argc=0;
+	while (ac) {
+		t_atomtype t = at->a_type;
+//		fprintf(stderr,"ac=%d at=%08x t=%08x\n",ac,(long)at,(long)t);
+		if (t==A_SYMBOL) {
+			const char *s=at->a_w.w_symbol->s_name;
+			if (strcmp(s,"(")==0) {
+				ac--; at++;
+				VALUE ary = rb_ary_new();
+				VALUE argv2[ac];
+				int argc2 = Bridge_import_list(ac,at,argv2,level+1);
+				for (int i=0; i<argc2; i++) rb_ary_push(ary,argv2[i]);
+				argv[argc++] = ary;
+				continue;
+			}
+			if (strcmp(s,")")==0) {
+				ac--; at++;
+				if (level>0) return argc;
+				RAISE("closing parenthese without opening");
+			}
+		}
+		argv[argc++]=Bridge_import_value(at);
+		ac--; at++;
+	}
+	if (level) RAISE("opening %d parenthese(s) without closing",level);
+	return argc;
+}
+
 // kludge
 typedef struct {
 	BFObject *$;
@@ -134,19 +170,22 @@ typedef struct {
 	t_symbol *selector;
 	int ac;
 	const t_atom *at;
+	bool is_init;
 } kludge;
 
 static VALUE BFObject_method_missing$1 (kludge *k) {
 	const char *s = k->selector->s_name;
 	char buf[256];
-	VALUE argv[k->ac];
 	VALUE $ = k->$->peer;
 	strcpy(buf+3,s);
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + k->winlet;
 	ID sel = rb_intern(buf);
-	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
-	rb_funcall2($,sel,k->ac,argv);
+
+	VALUE argv[k->ac];
+	int argc = Bridge_import_list(k->ac,k->at,argv);
+
+	rb_funcall2($,sel,argc,argv);
 	return Qnil;
 }
 
@@ -161,6 +200,9 @@ static VALUE BFObject_rescue (kludge *k) {
 	//!@#$leak
 	if (k->$) pd_error(k->$,"%s",strdup(rb_str_ptr(
 		rb_funcall(error_array,SI(join),0))));
+	if (k->$ && k->is_init) {
+		k->$ = 0;
+	}
 	return Qnil;
 }
 
@@ -173,6 +215,13 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 	k.selector = selector;
 	k.ac = ac;
 	k.at = at;
+	k.is_init = false;
+	if (!$->peer) {
+		pd_error($,"you are trying to send a message to a dead object. \
+			the precise reason was given when you last tried to create \
+			the object. fix the contents of that box and try again.");
+		return;
+	}
 	rb_rescue2(
 		(RFunc)BFObject_method_missing$1,(VALUE)&k,
 		(RFunc)BFObject_rescue,(VALUE)&k,
@@ -195,11 +244,13 @@ t_symbol *s, int argc, t_atom *argv) {
 
 static VALUE BFObject_init$1 (kludge *k) {
 	VALUE argv[k->ac];
-	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
+//	fprintf(stderr,"k->ac=%d k->at=%d\n",k->ac,(int)k->at);
+	int argc = Bridge_import_list(k->ac,k->at,argv);
+//	fprintf(stderr,"argc=%d\n",argc);
 
 	BFObject *j_peer = (BFObject *)k->$;
 	VALUE qlass = BFObject::find_fclass(k->selector);
-	VALUE rself = rb_funcall2(qlass,SI(new),k->ac,argv);
+	VALUE rself = rb_funcall2(qlass,SI(new),argc,argv);
 	j_peer->peer = rself;
 	DGS(GridObject);
 	$->foreign_peer = (void *)j_peer;
@@ -218,12 +269,10 @@ static VALUE BFObject_init$1 (kludge *k) {
 		p->parent = j_peer;
 		p->inlet = i;
 		inlet_new(j_peer, &p->ob_pd, 0,0);
-		L
 	}
 
 	for (int i=0; i<noutlets; i++) {
 		j_peer->out[i] = outlet_new(j_peer,&s_anything);
-		L
 	}
 	return rself;
 }
@@ -233,6 +282,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	BFObject *self = (BFObject *)pd_new(qlass);
 
 	kludge k;
+	k.is_init = true;
 	k.$ = (BFObject *)$;
 	k.selector = classsym;
 	k.ac = ac;
@@ -265,6 +315,7 @@ VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 
 	kludge k;
 	k.$ = 0;
+	k.is_init = false;
 	rb_rescue2(
 		(RFunc)BFObject_class_init$1,(VALUE)qlass,
 		(RFunc)BFObject_rescue,(VALUE)&k,
@@ -281,8 +332,8 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 	}
 	t_atom at[argc];
 	t_atom sel;
-	rj_convert(sym,&sel);
-	for (int i=0; i<argc; i++) rj_convert(argv[i],at+i);
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	t_outlet *out = jo->te_outlet;
 	outlet_anything(jo->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
@@ -334,6 +385,8 @@ extern "C" void gridflow_setup () {
 	ruby_options(COUNT(foo),foo);
 	sym_ninlets =SYM(@ninlets);
 	sym_noutlets=SYM(@noutlets);
+//	sym_lparen=ID2SYM(rb_intern("("));
+//	sym_rparen=ID2SYM(rb_intern(")"));
 
 	BFProxy_class = class_new(gensym("ruby_proxy"),
 		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
