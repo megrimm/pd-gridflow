@@ -3,7 +3,7 @@
 <jmax-doc>
 <!-- $Id$ -->
 <!--
-	Video4jmax Reference Manual
+	GridFlow Reference Manual
 	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
 -->
 
@@ -391,7 +391,7 @@ or  uint8 (native format for ppm or tga formats) </p>
 	<jmax-class name="rtmetro">
 		future use.
 	</jmax-class>
-	<jmax-class name="video4jmax">
+	<jmax-class name="@global">
 		objects of this class do nothing by themselves and are just
 		an access point to features that don't belong to any object in
 		particular.

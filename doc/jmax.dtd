@@ -1,6 +1,6 @@
 <?xml version='1.0' ?>
 <!--
-	XML DTD for documenting classes of C, jMax, and video4jmax.
+	XML DTD for documenting classes of C, jMax, and GridFlow.
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	BY THE WAY, THIS THING DOES NOT PARSE WELL.
@@ -71,7 +71,7 @@ classes in jMax:
 		inlets	CDATA	#REQUIRED
 		outlets	CDATA	#REQUIRED>
 
-<!-- Declarations for video4jmax -->
+<!-- Declarations for GridFlow -->
 
 Description of a grid's shape.
 
