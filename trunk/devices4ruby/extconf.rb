@@ -28,7 +28,7 @@ def install_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\tinstall --mode 644 #{base+name} $(DESTDIR)/#{base+name}"
+      f.puts "\tinstall -m644 #{base+name} $(DESTDIR)/#{base+name}"
     when :directory
       f.puts "\t@mkdir $(DESTDIR)/#{base+name} || true"
       install_files(f,base+name,rest) 
