@@ -59,7 +59,7 @@
 #X msg 333 170 put_at ( \$1 0 0 0 );
 #X obj 42 125 float;
 #X text 221 282 the buffer size decides the maximum loop length;
-#X obj 42 194 demux 4;
+#X obj 42 194 shunt 4;
 #X obj 42 218 bang;
 #X obj 42 276 int;
 #X obj 163 168 vradio 15 1 0 4 empty empty empty 0 -6 0 8 -241291 -1
@@ -87,8 +87,8 @@
 #X obj 154 406 @ + 128;
 #X obj 154 426 @ max 0;
 #X obj 98 446 @ min 255;
-#X obj 42 363 demux 4;
-#X obj 137 358 demux 4;
+#X obj 42 363 shunt 4;
+#X obj 137 358 shunt 4;
 #X text 291 389 mix 50%;
 #X obj 52 426 @ >> 1;
 #X obj 56 393 @ +;

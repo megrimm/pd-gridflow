@@ -13,7 +13,7 @@
 #X floatatom 251 284 5 0 0 0 - - -;
 #X obj 251 151 vsl 15 128 0 256 0 0 empty empty empty 0 -8 0 8 -262144
 -1 -1 0 1;
-#X obj 26 88 demux 2;
+#X obj 26 88 shunt 2;
 #X obj 40 462 @out window;
 #X text 6 149 simple per-channel threshold;
 #X text 316 116 bluescreen luma threshold;

@@ -3,7 +3,7 @@
 #X obj 134 412 @out window;
 #X text 361 150 linear (contrast);
 #X obj 29 51 @outer + ( 0 0 0 );
-#X obj 134 343 demux 2;
+#X obj 134 343 shunt 2;
 #X obj 134 390 @apply_colormap_channelwise;
 #N canvas 1 96 188 188 color 0;
 #X obj 55 134 @ inv+;
@@ -84,7 +84,7 @@
 #X text 277 32 regular;
 #X text 276 47 solarize;
 #X text 277 61 solarize 2;
-#X obj 29 70 demux 3;
+#X obj 29 70 shunt 3;
 #X obj 29 142 t a;
 #X obj 122 125 @ sin* 255;
 #X obj 123 106 @ / 255;

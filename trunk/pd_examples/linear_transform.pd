@@ -35,7 +35,7 @@
 #X text 364 164 rotozoomer;
 #X obj 11 286 @inner * + 0;
 #X obj 549 161 @ sin* 100;
-#X obj 388 12 demux 2;
+#X obj 388 12 shunt 2;
 #X msg 74 360 open teapot.png \, bang;
 #X msg 549 233 set \$1;
 #X obj 11 41 metro 33.3667;
