@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <ctype.h>
 
 typedef struct symbol_entry_t {
 	const char *s;
@@ -216,7 +217,17 @@ void fts_set_ptr(   fts_atom_t *$, void *v) {
 	$->v.p = v;}
 
 void sprintf_atoms(char *buf, int ac, fts_atom_t *at) {
-	sprintf(buf,"(can't sprintf atoms yet)");
+	int i;
+	for (i=0; i<ac; i++) {
+		if (fts_is_int(at+i)) {
+			buf += sprintf(buf,"%d",fts_get_int(at+i));
+		} else if (fts_is_symbol(at+i)) {
+			buf += sprintf(buf,"%s",fts_symbol_name(fts_get_symbol(at+i)));
+		} else {
+			buf += sprintf(buf,"<%s>",fts_symbol_name(at[i].type));
+		}
+		*buf++ = i==ac-1 ? 0 : ' '; /* separate by space */
+	}
 }
 
 /* **************************************************************** */
@@ -406,6 +417,51 @@ void fts_loop(void) {
 			} else i++;
 		}
 	}	
+}
+
+/* **************************************************************** */
+
+int strsplit(char *victim, int max, char **witnesses) {
+	int n=0;
+	for (;;) {
+		*witnesses++ = victim;
+		n++;   
+		if (n==max) return n;
+		while (*victim != ' ') {
+			if (!*victim) return n;
+			victim++;
+		}
+		*victim++ = 0;
+	}
+}
+
+int silly_parse(const char *s, fts_atom_t *a) {
+	char *b = strdup(s);
+	char *p[10];
+	int i, n = strsplit(b,10,p);
+	for (i=0; i<n; i++) {
+		if (isdigit(p[i][0])) {
+			fts_set_int(a+i,atoi(p[i]));
+			//printf("%i: '%s' is int\n",i,p[i]);
+		} else {
+			fts_set_symbol(a+i,fts_new_symbol(p[i]));
+			//printf("%i: '%s' is symbol\n",i,p[i]);
+		}
+	}
+	FREE(b);
+	return n;
+}
+
+fts_object_t *fts_object_new3(const char *foo) {
+	fts_atom_t a[10];
+	int n = silly_parse(foo,a);
+	return fts_object_new(n,a);
+}
+
+void fts_send3(fts_object_t *o, int woutlet, const char *foo) {
+	fts_atom_t a[10];
+	int n = silly_parse(foo,a);
+	return fts_send2(o,woutlet,n,a);
 }
 
 /* **************************************************************** */

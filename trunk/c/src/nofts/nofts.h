@@ -91,7 +91,7 @@ struct fts_object_t {
 	} head;
 	int argc;
 	fts_atom_t *argv;
-	const char *error;
+	char *error;
 	List **outlets;
 };
 
@@ -171,5 +171,11 @@ void fts_send2(fts_object_t *o, int winlet, int ac, const fts_atom_t *at);
 void fts_send(fts_object_t *o, int winlet, fts_symbol_t sel, int ac, const fts_atom_t *at);
 void fts_connect(fts_object_t *oo, int woutlet, fts_object_t *oi, int winlet);
 void fts_loop(void);
+
+int strsplit(char *victim, int max, char **witnesses);
+int silly_parse(const char *s, fts_atom_t *a);
+fts_object_t *fts_object_new3(const char *foo);
+void fts_send3(fts_object_t *o, int woutlet, const char *foo);
+
 
 #endif /* __STANDALONE_H */
