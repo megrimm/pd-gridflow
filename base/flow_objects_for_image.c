@@ -242,7 +242,8 @@ GRID_INLET(GridScaleBy,0) {
 
 		/* scale the line x-wise */
 		int p=0;
-		if (chans==3) {
+		switch (chans==3) {
+		case 3:
 			for (int i=0; i<rowsize; i+=3) {
 				for (int k=0; k<scalex; k++, p+=3) {
 					buf[p+0]=data[i+0];
@@ -250,7 +251,18 @@ GRID_INLET(GridScaleBy,0) {
 					buf[p+2]=data[i+2];
 				}
 			}
-		} else {
+		break;
+		case 4:
+			for (int i=0; i<rowsize; i+=4) {
+				for (int k=0; k<scalex; k++, p+=4) {
+					buf[p+0]=data[i+0];
+					buf[p+1]=data[i+1];
+					buf[p+2]=data[i+2];
+					buf[p+3]=data[i+3];
+				}
+			}
+		break;
+		default:
 			for (int i=0; i<rowsize; i+=chans) {
 				for (int k=0; k<scalex; k++, p+=chans) {
 					for (int c=0; c<chans; c++) buf[p+c]=data[i+c];
