@@ -32,7 +32,7 @@
 	@apply_colormap_channelwise @cast @checkers @complex_sq @contrast
 	@convolve @dim @downscale_by @draw_polygon @export=@importexport
 	@finished @fold @for @four=@twothreefour @global @grade
-	@greyscale_to_rgb @import=@importexport @inner2 @inner=@foldinnerouter
+	@greyscale_to_rgb @import=@importexport @inner=@foldinnerouter
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
 	@! @ @perspective @posterize printargs @print @ravel @redim
 	@rgb_to_greyscale rubyprint @scale_by @scale_to @scan @solarize
@@ -56,6 +56,10 @@ menu .mbar.gridflow -tearoff $pd_tearoff
 .mbar add cascade -label "GridFlow" -menu .mbar.gridflow
 .mbar.gridflow add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
 .mbar.gridflow add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
+
+if {[string length [info command post]] == 0} {
+	proc post {x} {puts $x}
+}
 
 # if not running Impd:
 if {[string length [info command listener_new]] == 0} {
@@ -104,7 +108,8 @@ proc listener_append {self v} {
 
 proc tcl_eval {} {
 	set l [.tcl.entry get]
-	post_to_gui "tcl: $l\nreturns: [eval $l]\n"
+	post "tcl: $l"
+	post "returns: [eval $l]"
 	listener_append .tcl [.tcl.entry get]
 	.tcl.entry delete 0 end
 
@@ -141,8 +146,8 @@ if {[catch {
 # enable Pd-specific code
 module GridFlow
   class Peephole
-    GridFlow.whatever :setwidget, "peephole"
-    #GridFlow.whatever :addtomenu, "peephole"
+    GridFlow.whatever :setwidget, "#peephole"
+    #GridFlow.whatever :addtomenu, "#peephole"
   end
 end
 
