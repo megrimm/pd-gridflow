@@ -340,6 +340,19 @@ Feature.new {
 	options ["HAVE_TSC_PROFILING"]
 },
 Feature.new {
+	tag :usb
+	name "USB Library"
+	uses_o ["base/usb.o"]
+	uses_so ["-lusb"]
+	test proc {
+		c_test "
+		#include <usb.h>
+		int main () {return usb_open==0;}
+		", *uses_so
+	}
+	options ["HAVE_USB"]
+},
+Feature.new {
 	tag :x11
 	name "X11 Display Protocol"
 	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
@@ -396,6 +409,16 @@ Feature.new {
 		", *uses_so
 	}
 	formats ["SDL"]
+},
+Feature.new {
+	tag :quartz
+	status :disabled
+	name "Apple Quartz/Cocoa Display"
+	#uses_so [""]
+	test proc {
+	
+	}
+	formats ["Quartz"]
 },
 Feature.new {
 	tag :aalib
@@ -768,7 +791,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.7.5 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.6 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -927,7 +950,11 @@ end
 
 
 puts "",
-"\e[1mplease see ./config.log for the details of the configuration tests\e[0m",
+"\e[1mSee ./config.log if you want the details of the configuration tests.\e[0m",
+"\e[1mIf you are satisfied with that configuration, you may go on,\e[0m",
+"\e[1m  and do \"make\" and then \"make install\".\e[0m",
+"\e[1mIf you get stuck, you could contact the author about it,\e[0m",
+"\e[1m  but first make sure you read \"doc/install.html\". \e[0m",
 ""
 
 #--------------------------------#
