@@ -48,8 +48,8 @@ static void count_tick () {
 	static int next = 1000;
 	int32 duration = (time_now() - start_time) / 1000;
 	if (count>=next) {
-		gf_bridge2->post("GF clock ticks: %d in %d ms (%d ms/tick)%s",
-			count, duration, duration/count,
+		gf_bridge2->post("GF clock ticks: %d in %d ms (%.2f ms/tick)%s",
+			count, duration, duration*1.0/count,
 			gf_bridge2->post_does_ln ? "" : "\n");
 		//next = (next*15+9)/10; /* next notice when 50% bigger */
 		next *= 2;
