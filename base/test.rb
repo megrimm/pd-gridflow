@@ -461,7 +461,8 @@ end
 def test_formats
 	gin = FObject["@in"]
 #	gs = FObject["@downscale_by {2 2} smoothly"]
-	gs = FObject["@posterize"]
+#	gs = FObject["@posterize"]
+	gs = FObject["@solarize"]
 #	gs = FObject["@scale_to {288 288}"]
 #	gs = FObject["@contrast 256 512"]
 #	gs = FObject["@spread {32 0 0}"]
@@ -474,7 +475,8 @@ def test_formats
 	Images.each {|command|
 		gin.send_in 0,"open #{command}"
 		# test for load, rewind, load
-		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
+#		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
+		gin.send_in 0
 		sleep 1
 	}
 	p t1	
@@ -582,7 +584,12 @@ def test_polygon
 	o5 = FObject["@ cos* 112"]
 	o6 = FObject["@ + {120 160}"]
 	poly = FObject["@draw_polygon + {3 # 255}"]
-	out = FObject["@out x11"]
+if false
+	out1 = FObject["@solarize"]
+	out2 = FObject["@out x11"]; out1.connect 0,out2,0
+else
+	out1 = FObject["@out x11"]
+end
 	store = FObject["@store"]; store.send_in 1, "240 320 3 # 0"
 	store2 = FObject["@store"]
 	store.connect 0,poly,0
@@ -594,7 +601,7 @@ def test_polygon
 	o4.connect 0,o5,0
 	o5.connect 0,o6,0
 	o6.connect 0,poly,2
-	poly.connect 0,out,0
+	poly.connect 0,out1,0
 	x=0
 	GridFlow.verbose=false
 	task=proc {

@@ -560,6 +560,33 @@ class GridExportSymbol < GridObject
 	install "@export_symbol", 1, 1
 end
 
+# linear solarization
+class GridSolarize < FPatcher
+	FObjects = ["@ & 255","@ << 1","@ inv+ 255","@! abs","@ inv+ 255"]
+	Wires = [4,0,-1,0]
+	for i in 0..4 do Wires.concat [i-1,0,i,0] end
+	def initialize; super(FObjects,Wires,1) end
+	install "@solarize", 1, 1
+end		
+
+=begin
+class GridApplyColormap < FPatcher
+	FObjects = ["@outer + {0}","@store"]
+	Wires = [-1,1,2,1,1,0,-1,0]
+	for i in 0..1 do Wires.concat [i-1,0,i,0] end
+	def initialize; super(FObjects,Wires,2) end
+	install "@apply_colormap", 2, 1
+end
+=end
+
+class GridApplyColormapChannelwise < FPatcher
+	FObjects = ["@outer & {-1 0}","@ + {3 2 # 0 0 0 1 0 2}","@store"]
+	Wires = [-1,1,2,1,2,0,-1,0]
+	for i in 0..2 do Wires.concat [i-1,0,i,0] end
+	def initialize; super(FObjects,Wires,2) end
+	install "@apply_colormap_channelwise", 2, 1
+end
+
 def self.routine
 #	post "hello"
 	$tasks.each {|k,v|
