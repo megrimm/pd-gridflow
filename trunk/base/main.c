@@ -70,6 +70,7 @@ typedef struct AllocTrace {
 	const char *type;
 	const char *file;
 	int line;
+	bool freed;
 } AllocTrace;
 
 void *qalloc(
@@ -86,6 +87,7 @@ size_t n, const char *type, const char *file, int line, bool deadbeef) {
 		al->type = type;
 		al->file = file;
 		al->line = line;
+		al->freed = false;
 		rb_funcall(gf_alloc_set,SI([]=),2,PTR2FIX(data),PTR2FIX(al));
 	}
 #endif
@@ -98,7 +100,7 @@ size_t n, const char *type, const char *file, int line, bool deadbeef) {
 }
 
 /* to help find dangling references */
-void qfree(void *data, bool fadedfoo) {
+bool qfree(void *data, bool fadedfoo) {
 	static int warncount=0;
 	assert(data);
 #ifdef HAVE_LEAKAGE_DUMP
@@ -109,21 +111,23 @@ void qfree(void *data, bool fadedfoo) {
 				(long)data,warncount++);
 		else
 			free(FIX2PTR(a));
-	}
-#endif
-#ifdef HAVE_DEADBEEF
 /*
-	int n=8;
-	data = realloc(data,n);
-	if (fadedfoo) {
-		long *data2 = (long *) data;
-		int nn = (int) n/4;
-		for (int i=0; i<nn; i++) data2[i] = 0xFADEDF00;
-	}
+		VALUE a = rb_funcall(gf_alloc_set,SI([]),1,PTR2FIX(data));
+		AllocTrace *at = (AllocTrace *)FIX2PTR(a);
+		if (a==Qnil)
+			gfpost("warning: qfree() on unregistered pointer %08x (#%d)",
+				(long)data,warncount++);
+		else if (at->freed) {
+			gfpost("warning: qfree() on already freed pointer %08x (#%d)",
+				(long)data,warncount++);
+			raise(11);
+		}
+		at->freed = true;
+		return !at->freed;
 */
+	}
 #endif
-//	free(data);
-//	delete data;
+	return true;
 }
 
 static VALUE GridFlow_alloctrace_to_a (VALUE self, VALUE p) {
@@ -154,7 +158,11 @@ void FObject_mark (void *z) {
 	$->mark();
 */
 }
-void FObject_sweep (VALUE *$) {}
+
+static void FObject_free (void *$) {
+	fprintf(stderr,"Say farewell to %08x\n",(int)$);
+	FREE($);
+}
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
@@ -209,11 +217,10 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 VALUE FObject_delete(VALUE argc, VALUE *argv, VALUE $) {
 	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,$);
-/*
+	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	if (rb_funcall(keep,SI(size),0)==0) {
 		rb_funcall(GridFlow_module,0,SI(leakage_dump));
 	}
-*/
 	return Qnil;
 }
 
@@ -226,15 +233,14 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 
 	GridClass *gc = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
 
-	BFObject *foreign_peer = 0;
 	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : NEW(GridObject,());
-	VALUE $; /* ruby_peer */
-	c_peer->foreign_peer = foreign_peer;
-	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
+	c_peer->foreign_peer = 0;
+	VALUE $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
 	c_peer->peer = $;
 	c_peer->grid_class = gc;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
+	fprintf(stderr,"new: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;
 }

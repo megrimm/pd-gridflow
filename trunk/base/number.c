@@ -284,9 +284,14 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	return $;
 }
 
+METHOD2(BitPacking,delete) {
+	return Qnil;
+}
+
 GRCLASS(BitPacking,"",inlets:0,outlets:0,
 LIST(),
 	DECL(BitPacking,init),
+	DECL(BitPacking,delete),
 	DECL(BitPacking,pack2),
 	DECL(BitPacking,unpack2));
 
