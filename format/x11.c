@@ -256,8 +256,7 @@ void FormatX11::alarm() {
 	XGetSubImage(display, window,
 		0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
-	out[0]->begin(dim->dup(),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1);
 	int bs=dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
@@ -265,7 +264,7 @@ void FormatX11::alarm() {
 		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
 			+ ximage->bytes_per_line * y;
 		bit_packing->unpack(sx,b1,b2);
-		out[0]->send(bs,b2);
+		out.send(bs,b2);
 	}
 }
 

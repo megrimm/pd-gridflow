@@ -96,9 +96,9 @@ struct FormatQuickTimeHW : Format {
 	int result;
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
 	int32 v[] = { sy, sx, channels };
-	out[0]->begin(new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	int bs = out[0]->dim->prod(1);
-	out[0]->give(sy*sx*channels,buf);
+	GridOutlet out(this,0,new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	int bs = out.dim->prod(1);
+	out.give(sy*sx*channels,buf);
 	started=true;
 	return INT2NUM(nframe);
 }

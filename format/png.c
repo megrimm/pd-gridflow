@@ -113,9 +113,8 @@ GRID_INLET(FormatPNG,0) {
 	png_read_end(png, 0);
 
 	int32 v[] = { height, width, channels };
-	out[0]->begin(new Dim(3,v),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	out[0]->send(rowbytes*height,image_data);
+	GridOutlet out(this,0,new Dim(3,v),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	out.send(rowbytes*height,image_data);
 	free(image_data);
 	png_destroy_read_struct(&png, &info, NULL);
 	return Qnil;
