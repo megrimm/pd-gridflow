@@ -17,6 +17,13 @@ version 0.7.6 (head):
  * now includes the pictures used in the examples
      (not a separate download anymore)
  * [@out x11 here override_redirect] (override window manager; be careful with this)
+ * support for nested lists in incoming messages
+
+ * new object classes:
+   [foreach], [rubysprintf], [listflatten]
+   TEST-ME: [messageprepend], [messageappend], [@transpose]
+   jMax emulation: [list], [listlength], [listelement], [listsublist]
+   jMax emulation: [listprepend], [listappend], [listreverse]
 
 version 0.7.5 (2003.09.28):
 
