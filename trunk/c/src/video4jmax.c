@@ -50,6 +50,7 @@ DECL_SYM2(reset)
 DECL_SYM2(autodraw)
 DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
+DECL_SYM2(grid_flow2)
 DECL_SYM2(grid_end)
 
 #define STARTUP_LIST(_begin_,_end_) \
