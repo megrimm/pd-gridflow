@@ -979,6 +979,7 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 	end
 
 unless GridFlow.bridge_name =~ /jmax/
+
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
 # _0_bang means bang message on inlet 0
@@ -1208,8 +1209,43 @@ class DelcomUSB < GridFlow::FObject
 			dataM*0x100+dataL,
 			extension, 5000)
 	end
-	def close; @usb.close; end
+	def close; @usb.close; end # wouldn't that be def delete ?
 	install "delcomusb", 1, 1
+end
+
+# Klippeltronics
+class IOBox < GridFlow::FObject
+	Vendor,Product=0xDEAD,0xBEEF
+	def self.find
+	  r=[]
+	  USB.busses.each {|dir,bus|
+	    bus.each {|dev|
+	      GridFlow.post "dir=#{dir}, vendor=#{dev.idVendor}, product=#{dev.idProduct}"
+	      r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
+	    }
+	  }
+	  r
+	end
+	def initialize
+		r=self.class.find
+		raise "no such device" if r.length<1
+		raise "#{r.length} such devices (which one???)" if r.length>1
+		$iobox=@usb=USB.new(r[0])
+		if_num=nil
+		r[0].config.each {|config|
+			config.interface.each {|interface|
+				interface.each {|altsetting|
+					if_num = interface.bInterfaceNumber
+				}
+			}
+		}
+		# GridFlow.post "Interface # %i\n", if_num
+		@usb.set_configuration 0
+		@usb.claim_interface if_num
+		@usb.set_altinterface 0 rescue ArgumentError
+	end
+	def close; @usb.close; end # wouldn't that be def delete ?
+	install "iobox", 1, 1
 end
 
 end # if const_defined? :USB
