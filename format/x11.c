@@ -400,7 +400,7 @@ GRID_END(FormatX11,0) {
 }
 
 static void FormatX11_close (FormatX11 *$) {
-	Dict_del(gf_timer_set,$);
+	MainLoop_remove($);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
@@ -582,7 +582,7 @@ int argc, VALUE *argv) {
 	}
 
 	BitPacking_whine($->bit_packing);
-	Dict_put(gf_timer_set,$,FormatX11_alarm);
+	MainLoop_add($,FormatX11_alarm);
 	return (Format *)$;
 err:;
 	$->cl->close((Format *)$);

@@ -184,7 +184,7 @@ static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	Stream_on_read_do($->st,8,(OnRead)FormatGrid_frame1,$);
 	if ($->is_socket) {
 		/* non-blocking */
-		Dict_put(gf_timer_set,$->st,Stream_try_read);
+		MainLoop_add($->st,(void(*)())Stream_try_read);
 	} else {
 		/* blocking */
 		while (Stream_is_waiting($->st)) Stream_try_read($->st);
@@ -245,7 +245,7 @@ GRID_END(FormatGrid,0) {
 
 void FormatGrid_close (FormatGrid *$) {
 	if ($->st) Stream_close($->st);
-	if ($->is_socket) Dict_del(gf_timer_set,$);
+	if ($->is_socket) MainLoop_remove($);
 	FREE($);
 }
 

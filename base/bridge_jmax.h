@@ -23,7 +23,6 @@
 
 #ifndef __BRIDGE_JMAX_H
 #define __BRIDGE_JMAX_H
-#include "lang.h"
 #include <fts/fts.h>
 
 #endif /* __BRIDGE_JMAX_H */

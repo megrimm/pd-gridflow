@@ -373,8 +373,8 @@ VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $) {
 	it removes redundant messages.
 	it also ensures that a \n is added at the end.
 */
-void whine(char *fmt, ...) {
-	static char *last_format = 0;
+void whine(const char *fmt, ...) {
+	static const char *last_format = 0;
 	static int format_count = 0;
 
 	if (last_format && strcmp(last_format,fmt)==0) {
