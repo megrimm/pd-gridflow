@@ -149,7 +149,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
 	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(long)(ptr));
-	return INT2NUM(p>>2);
+	return LONG2NUM(p>>2);
 }
 #define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
 
@@ -444,21 +444,12 @@ static bool  convert(Ruby x, bool  *foo) {
 	}
 }
 
-/*
-#ifndef IS_BRIDGE
-uint64 gf_num2ull(Ruby val);
-Ruby gf_ull2num(uint64 val);
-int64 gf_num2ll(Ruby val);
-Ruby gf_ll2num(int64 val);
-#endif
-*/
-
-static uint64 gf_num2ull(Ruby val) {
+static uint64 convert(Ruby val, uint64 *foo) {
     if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-static int64 gf_num2ll(Ruby val) {
+static int64 convert(Ruby val, int64 *foo) {
     if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
@@ -472,9 +463,6 @@ static Ruby gf_ll2num(int64 val) {
     return rb_funcall(
 	rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
 	SI(+),1,UINT2NUM((uint32)val));}
-
-static inline int64 convert(Ruby x,  int64 *foo) { return gf_num2ll(x); }
-static inline uint64 convert(Ruby x, uint64 *foo) { return gf_num2ull(x); }
 
 static  long  convert(Ruby x,   long *foo) {
 	return sizeof(long)==sizeof(int32) ?
