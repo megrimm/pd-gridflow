@@ -74,6 +74,7 @@ class Format #< GridObject
 		super
 		@cast = :int32
 		@mode = mode
+		@frame = 0
 		@parent = nil
 		flags = self.class.instance_eval{@flags}
 		# FF_W, FF_R, FF_RW
@@ -100,6 +101,7 @@ class Format #< GridObject
 	def rewind
 		raise "Nothing to rewind about..." if not @stream
 		@stream.seek 0,IO::SEEK_SET
+		@frame = 0
 	end
 
 	# rewind if at end-of-file
@@ -109,7 +111,7 @@ class Format #< GridObject
 	def rewind_if_needed
 		thispos = (@stream.seek 0,IO::SEEK_CUR; @stream.tell)
 		lastpos = (@stream.seek 0,IO::SEEK_END; @stream.tell)
-		thispos = 0 if thispos == lastpos
+		(@frame = 0; thispos = 0) if thispos == lastpos
 		@stream.seek thispos,IO::SEEK_SET
 	rescue Errno::ESPIPE # just ignore if seek is not possible
 	end
@@ -151,6 +153,11 @@ class Format #< GridObject
 		else
 			raise "option #{name} not supported"
 		end
+	end
+
+	def frame
+		@frame += 1
+		@frame-1
 	end
 end
 
@@ -386,6 +393,7 @@ module EventIO
 			def self.rewind
 				@stream.close
 				raw_open(*@raw_open_args)
+				@frame = 0
 			end unless singleton_methods.include? "rewind"
 		when :tcp
 			if VERSION < "1.6.6"
@@ -471,6 +479,7 @@ class FormatGrid < Format; include EventIO
 		end
 		(try_read nil while read_wait?) if not TCPSocket===@stream
 #		GridFlow.post "frame: finished"
+		super
 	end
 
 	def set_bufsize
@@ -685,6 +694,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 
 		send_out_grid_begin 0, [metrics[1], metrics[0], 3], @cast
 		frame_read_body metrics[1], metrics[0], 3
+		super
 	end
 
 	def _0_rgrid_begin
@@ -756,6 +766,7 @@ targa header is like:
 		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
 		frame_read_body h, w, depth/8
+		super
 	end
 
 	def _0_rgrid_begin

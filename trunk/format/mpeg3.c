@@ -30,6 +30,7 @@
 struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	BitPacking *bit_packing;
+	int track;
 
 	DECL3(initialize);
 	DECL3(seek);
@@ -39,23 +40,22 @@ struct FormatMPEG3 : Format {
 
 METHOD3(FormatMPEG3,seek) {
 	int frame = INT(argv[0]);
-	gfpost("attempting to seek frame # %d",frame);
-	int result = mpeg3_set_frame(mpeg, frame, 0);
-	gfpost("seek result: %d", result);
+	int result = mpeg3_set_frame(mpeg,frame,track);
 	return Qnil;
 }
 
 METHOD3(FormatMPEG3,frame) {
 	GridOutlet *o = out[0];
-	int sx = mpeg3_video_width(mpeg,0);
-	int sy = mpeg3_video_height(mpeg,0);
+	int sx = mpeg3_video_width(mpeg,track);
+	int sy = mpeg3_video_height(mpeg,track);
 	int npixels = sx*sy;
-	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*3+16);
+	int channels = 3;
+	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels+16);
 	uint8 *rows[sy];
-	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
-	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
+	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 
-	int32 v[] = { sy, sx, 3 };
+	int32 v[] = { sy, sx, channels };
 	o->begin(new Dim(3,v),
 		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 
@@ -63,12 +63,16 @@ METHOD3(FormatMPEG3,frame) {
 	STACK_ARRAY(int32,b2,bs);
 	
 	for(int y=0; y<sy; y++) {
-		bit_packing->unpack(sx,buf+3*sx*y,b2);
+		bit_packing->unpack(sx,buf+channels*sx*y,b2);
 		o->send(bs,b2);
 	}
 
 	delete[] (uint8 *)buf;
-	return Qnil;
+
+	long nframe = min(
+		mpeg3_get_frame(mpeg,track),
+		mpeg3_video_frames(mpeg,track));
+	return INT2NUM(nframe);
 }
 
 METHOD3(FormatMPEG3,close) {
@@ -93,6 +97,7 @@ METHOD3(FormatMPEG3,initialize) {
 
 	mpeg = mpeg3_open(strdup(filename));
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
+	track = 0;
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
