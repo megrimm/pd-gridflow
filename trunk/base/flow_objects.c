@@ -1252,6 +1252,62 @@ GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0,4)),
 
 /* **************************************************************** */
 
+//\class GridMedian < GridObject
+
+/* **************************************************************** */
+
+\class GridTranspose < GridObject
+struct GridTranspose : GridObject {
+	int dim1;
+	int dim2;
+	int na,nb,nc,nd;
+	\decl void initialize (int dim1=0, int dim2=1);
+	GRINLET3(0);
+};
+
+GRID_INLET(GridTranspose,0) {
+	STACK_ARRAY(int32,v,in->dim->n);
+	COPY(v,in->dim->v,in->dim->n);
+	if (dim1>=in->dim->n || dim2>=in->dim->n)
+		RAISE("not enough dimensions");
+	memswap(v+dim1,v+dim2,1);
+	nd = in->dim->prod(1+max(dim1,dim2));
+	nc = in->dim->v[max(dim1,dim2)];
+	nb = in->dim->prod(1+min(dim1,dim2))/nc/nd;
+	na = in->dim->v[min(dim1,dim2)];
+	out[0]->begin(new Dim(in->dim->n,v), in->nt);
+	in->set_factor(na*nb*nc*nd);
+	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
+} GRID_FLOW {
+	STACK_ARRAY(T,res,na*nb*nc*nd);
+	for (; n; n-=na*nb*nc*nd) {
+		for (int a=0; a<na; a++) {
+			for (int b=0; b<nb; b++) {
+				for (int c=0; c<nc; c++) {
+					COPY(res+((c*nb+b)*na+a)*nd,
+					     data+((a*nb+b)*nc+c)*nd,nd);
+				}
+			}
+		}
+	}
+	out[0]->send(na*nb*nc*nd,res);
+} GRID_FINISH {
+} GRID_END
+
+\def void initialize (int dim1=0, int dim2=1) {
+	rb_call_super(argc,argv);
+	this->dim1 = dim1;
+	this->dim2 = dim2;
+}
+
+GRCLASS(GridTranspose,LIST(GRINLET4(GridTranspose,0,4)),
+	\grdecl
+) { IEVAL(rself,"install '@transpose',1,1"); }
+
+\end class GridTranspose
+
+/* **************************************************************** */
+
 \class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	\attr int32 z;
