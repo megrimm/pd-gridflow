@@ -409,10 +409,12 @@ Feature.new {
 		#define this this_
 		#define operator operator_
 		#define class class_
-		#include "fts/fts.h"
+		#include <fts/fts.h>
 		int main () { return 0; }
 		', "-DLINUXPC" and #!@#$ nonportable
-		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
+		$C_INCLUDE_PATH.find {|dir|
+			File.exist?(dir+"/fts/lang/mess.h")
+		}
 	}
 	options ["HAVE_JMAX_2_5"]
 },
@@ -428,13 +430,12 @@ Feature.new {
 		#define this this_
 		#define operator operator_
 		#define class class_
-		#include "fts/fts.h"
+		#include <fts/fts.h>
 		int main () { return 0; }
 		', "-DLINUXPC" and #!@#$ nonportable
-		true
-#		$C_INCLUDE_PATH.find {|d|
-#			File.exist?("#{d}/include/ftsconfig.h")
-#		}
+		$C_INCLUDE_PATH.find {|dir|
+			File.exist?(dir+"/client/version.h")
+		}
 	}
 	options ["HAVE_JMAX_4"]
 },
@@ -472,7 +473,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
-	log << "[--debug] "
+	log << "[--debug] [--debug-harder] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -484,6 +485,11 @@ if not File.exist?("./configure")
 	puts "Run me from the right directory please."
 	exit 1
 end
+
+# default values for jmax conf
+# [could also use Dir.pwd or ENV['PWD'] to get the path...]
+$conf[:JMAX_SOURCES]= `pwd`.chomp + "/bundled/jmax"
+$JMAX_ARCH = "i686-linux"
 
 while ARGV.length>0 do
 	arg=ARGV.shift
@@ -517,16 +523,6 @@ while ARGV.length>0 do
 		$CFLAGS += " -I#{$conf[:JMAX_SOURCES]}/include"
 	when "--help"; usage; exit 0
 	else puts "unknown option \"#{arg}\""; usage; exit 1
-	end
-end
-
-if not $conf[:JMAX_SOURCES]
-	$conf[:JMAX_SOURCES]=`(cd ../..; echo $PWD)`.chomp
-	if FileTest.directory? $conf[:JMAX_SOURCES]+"/Makefiles"
-		puts "assuming --jmax-dist-dir #{$conf[:JMAX_SOURCES]}"
-	else
-		#!@#$ should really disable.
-		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
 	end
 end
 
@@ -708,7 +704,6 @@ if $conf[:OPTIONS].include? "HAVE_JMAX_2_5"
 f.puts "
 JMAXROOTDIR=#{$conf[:JMAX_SOURCES]}
 JMAXDISTDIR=#{$conf[:JMAX_SOURCES]}
-include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 "
 end
 
@@ -716,11 +711,12 @@ if $conf[:OPTIONS].include? "HAVE_JMAX_4"
 f.puts "JMAX4_INSTALL_DIR="+`jmax-config --package-dir`
 end
 
-f.puts "LDSOFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
+f.puts "BRIDGE_LDFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
+
 if Config::CONFIG["arch"] =~ /darwin/ then
-	f.puts "LDSOFLAGS += -bundle -flat_namespace"
+	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
 else
-	f.puts "LDSOFLAGS += -rdynamic -shared"
+	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
 end
 f.puts "CFLAGS += " + $CFLAGS
 
@@ -778,7 +774,10 @@ puts "",
 ""
 
 #--------------------------------#
-$LOCAL_LIBS = "$(LDSOFLAGS)"
+$LOCAL_LIBS = " -Wl,--whole-archive " +
+	$conf[:LDSOFLAGS].join(" ") +
+	" -Wl,--no-whole-archive "
+
 $objs = $sources.collect{|i| i.sub(/.c$/,".o") }
 dir_config("gridflow")
 #p $rubylibdir
@@ -834,5 +833,5 @@ for z in [
 =end
 
 END {
-	system "rm /tmp/#{$$}.cpp /tmp/#{$$}"
+	system "rm -f /tmp/#{$$}.cpp /tmp/#{$$}"
 }
