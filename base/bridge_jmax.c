@@ -51,6 +51,10 @@ typedef Var fts_atom_t;
 VALUE FObject_class;
 VALUE GridFlow_module;
 
+static int gf_winlet2;
+int gf_winlet (void) { return gf_winlet2; }
+
+
 /* **************************************************************** */
 /* FObject */
 
@@ -145,7 +149,7 @@ typedef VALUE (*RFunc)();
 static void BFObject_method_missing (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	z2.$ = $;
-	z2.winlet = winlet;
+	gf_winlet2 = z2.winlet = winlet;
 	z2.selector = selector;
 	z2.ac = ac;
 	z2.at = at;

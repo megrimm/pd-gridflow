@@ -37,9 +37,7 @@
 
 int gf_max_packet_length = 1024;
 
-#define INFO(_self_) \
-	Symbol_name(fts_get_class_name((_self_)->parent->_o.head.cl)), \
-	(_self_)->gh->winlet
+#define INFO(foo) "!@#$"
 
 /* **************** GridInlet ************************************* */
 
@@ -66,8 +64,7 @@ GridObject *GridInlet_parent(GridInlet *$) {
 
 void GridInlet_abort(GridInlet *$) {
 	if ($->dim) {
-		whine("%s:i%d: aborting grid: %d of %d", INFO($),
-			$->dex, Dim_prod($->dim));
+		whine("%s: aborting grid: %d of %d", INFO($), $->dex, Dim_prod($->dim));
 		FREE($->dim);
 		FREE($->buf);
 	}
@@ -82,9 +79,9 @@ bool GridInlet_busy(GridInlet *$) {
 bool GridInlet_busy_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
-		whine("%s:i%d(%s): no dim", INFO($), where);
+		whine("%s: (%s): no dim", INFO($), where);
 	} else if (!$->gh->flow) {
-		whine("%s:i%d(%s): no flow()", INFO($), where);
+		whine("%s: (%s): no flow()", INFO($), where);
 	} else {
 		return 1;
 	}
@@ -102,28 +99,28 @@ void GridInlet_set_factor(GridInlet *$, int factor) {
 	}
 }
 
-void GridInlet_begin(GridInlet *$, ATOMLIST) {
+void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 	int i;
-	int *v = NEW(int,ac-1);
-	GridOutlet *back_out = (GridOutlet *) GET(0,ptr,(void *)0xDeadBeef);
+	int *v = NEW(int,argc-1);
+	GridOutlet *back_out = (GridOutlet *) FIX2PTR(argv[0]);
 
 	if (GridInlet_busy($)) {
 		whine("grid inlet busy (aborting previous grid)");
 		GridInlet_abort($);
 	}
 
-	if (ac-1>MAX_DIMENSIONS) {
+	if (argc-1>MAX_DIMENSIONS) {
 		whine("too many dimensions (aborting grid)");
 		goto err;
 	}
 
-	for (i=0; i<ac-1; i++) v[i] = GET(i+1,int,0);
-	$->dim = Dim_new(ac-1,v);
+	for (i=0; i<argc-1; i++) v[i] = NUM2INT(argv[1]);
+	$->dim = Dim_new(argc-1,v);
 	FREE(v);
 
 	$->dex = 0;
 	assert($->gh->begin);
-	if (!$->gh->begin((GridObject *)$->parent,$)) goto err;
+	if (!$->gh->begin($->parent->peer,(GridObject *)$->parent,$)) goto err;
 
 	GridOutlet_callback((GridOutlet *)back_out,$,$->gh->mode);
 	return;
@@ -131,19 +128,19 @@ err:
 	GridInlet_abort($);
 }
 
-void GridInlet_flow(GridInlet *$, ATOMLIST) {
-	int n = GET(0,int,-1);
-	int mode = GET(2,int,-1);
+void GridInlet_flow(GridInlet *$, int argc, VALUE *argv) {
+	int n = NUM2INT(argv[0]);
+	int mode = NUM2INT(argv[2]);
 
 if (mode==4) {
 
-	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
+	const Number *data = (Number *) FIX2PTR(argv[1]);
 	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
 	{
 		int d = $->dex + $->bufn;
 		if (d+n > Dim_prod($->dim)) {
-			whine("%s:i%d: grid input overflow: %d of %d",
+			whine("%s: grid input overflow: %d of %d",
 				INFO($), d+n, Dim_prod($->dim));
 			n = Dim_prod($->dim) - d;
 			if (n<=0) return;
@@ -155,9 +152,9 @@ if (mode==4) {
 				if ($->gh->mode==6 && $->gh->flow) {
 					Number *data2 = NEW2(Number,$->factor);
 					memcpy(data2,$->buf,$->factor*sizeof(Number));
-					((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,$->factor,data2);
+					((GridFlow2)$->gh->flow)($->parent->peer,(GridObject *)$->parent,$,$->factor,data2);
 				} else {
-					$->gh->flow((GridObject *)$->parent,$,$->factor,$->buf);
+					$->gh->flow($->parent->peer,(GridObject *)$->parent,$,$->factor,$->buf);
 				}
 				$->dex = newdex;
 				$->bufn = 0;
@@ -170,9 +167,9 @@ if (mode==4) {
 				if ($->gh->mode==6 && $->gh->flow) {
 					Number *data2 = NEW2(Number,m);
 					memcpy(data2,data,m*sizeof(Number));
-					((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,m,data2);
+					((GridFlow2)$->gh->flow)($->parent->peer,(GridObject *)$->parent,$,m,data2);
 				} else {
-					$->gh->flow((GridObject *)$->parent,$,m,data);
+					$->gh->flow($->parent->peer,(GridObject *)$->parent,$,m,data);
 				}
 			}
 			$->dex = newdex;
@@ -182,44 +179,44 @@ if (mode==4) {
 		if ($->buf) { while (n) { $->buf[$->bufn++] = *data++; n--; }}
 	}
 } else if (mode==6) {
-	Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
+	Number *data = FIX2PTR(argv[1]);
 	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
 	assert($->factor==1);
 	assert($->gh->flow);
 	if ($->gh->mode==6) {
-		((GridFlow2)$->gh->flow)((GridObject *)$->parent,$,n,data);
+		((GridFlow2)$->gh->flow)($->parent->peer,(GridObject *)$->parent,$,n,data);
 	} else if ($->gh->mode==4) {
-		$->gh->flow((GridObject *)$->parent,$,n,data);
+		$->gh->flow($->parent->peer,(GridObject *)$->parent,$,n,data);
 		FREE(data);
 	}
 } else {
 	assert(0);
 }}
 
-void GridInlet_end(GridInlet *$, ATOMLIST) {
+void GridInlet_end(GridInlet *$, int argc, VALUE *argv) {
 	if (!GridInlet_busy_verbose($,"end")) return;
-/*	whine("%s:i%d: GridInlet_end()", INFO($)); */
+/*	whine("%s: GridInlet_end()", INFO($)); */
 	if (Dim_prod($->dim) != $->dex) {
-		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
+		whine("%s: incomplete grid: %d of %d", INFO($),
 			$->dex, Dim_prod($->dim));
 	}
-	if ($->gh->end) { $->gh->end((GridObject *)$->parent,$); }
+	if ($->gh->end) { $->gh->end($->parent->peer,(GridObject *)$->parent,$); }
 	FREE($->dim);
 	$->dex = 0;
 }
 
-void GridInlet_list(GridInlet *$, ATOMLIST) {
+void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 	int i;
-	Number *v = NEW(Number,ac);
-	int n = ac;
-	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
+	Number *v = NEW(Number,argc);
+	int n = argc;
+	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	$->dim = Dim_new(1,&n);
 
 	assert($->gh->begin);
-	if ($->gh->begin((GridObject *)$->parent,$)) {
-		$->gh->flow((GridObject *)$->parent,$,n,v);
-		if ($->gh->end) { $->gh->end((GridObject *)$->parent,$); }
+	if ($->gh->begin($->parent->peer,(GridObject *)$->parent,$)) {
+		$->gh->flow($->parent->peer,(GridObject *)$->parent,$,n,v);
+		if ($->gh->end) { $->gh->end($->parent->peer,(GridObject *)$->parent,$); }
 	} else {
 		GridInlet_abort($);
 	}
@@ -269,7 +266,10 @@ void GridOutlet_abort(GridOutlet *$) {
 	$->dim = 0;
 	$->dex = 0;
 	LEAVE_P;
-	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	{
+		VALUE a[] = { INT2NUM($->woutlet), sym_grid_end };
+		FObject_send_thru(COUNT(a),a,$->parent->peer);
+	}
 	ENTER_P;
 }
 
@@ -278,7 +278,10 @@ void GridOutlet_end(GridOutlet *$) {
 	assert(GridOutlet_busy($));
 	GridOutlet_flush($);
 	LEAVE_P;
-	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	{
+		VALUE a[] = { INT2NUM($->woutlet), sym_grid_end };
+		FObject_send_thru(COUNT(a),a,$->parent->peer);
+	}
 	ENTER_P;
 	FREE($->dim);
 	$->dim = 0;
@@ -288,7 +291,7 @@ void GridOutlet_end(GridOutlet *$) {
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
 	int n = Dim_count(dim);
-	Var a[MAX_DIMENSIONS+1];
+	VALUE a[MAX_DIMENSIONS+3];
 
 	assert($);
 
@@ -301,10 +304,12 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->ro  = 0;
 	$->rwn = 0;
 	$->rw  = 0;
-	Var_put_ptr(a,$);
-	for(i=0; i<n; i++) Var_put_int(&a[i+1],Dim_get($->dim,i));
+	a[0] = INT2NUM($->woutlet);
+	a[1] = sym_grid_begin;
+	a[2] = PTR2FIX($);
+	for(i=0; i<n; i++) a[i+1] = INT2NUM(Dim_get($->dim,i));
 	LEAVE_P;
-	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_begin,n+1,a);
+	FObject_send_thru(n+3,a,$->parent->peer);
 	ENTER_P;
 	$->frozen = 1;
 /*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
@@ -314,12 +319,15 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	assert(GridOutlet_busy($));
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
-		Var a[3];
-		Var_put_int(a+0,pn);
-		Var_put_ptr(a+1,(void*)(long)data); /* explicitly removing const */
-		Var_put_int(a+2,4); /* mode ro */
+		VALUE a[] = {
+			INT2NUM(0),
+			sym_grid_flow,
+			pn,
+			PTR2FIX(data), /* explicitly removing const */
+			INT2NUM(4), /* mode ro */
+		};
 		LEAVE_P;
-		Object_send_thru(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
+		FObject_send_thru(COUNT(a),a,$->parent->peer);
 		ENTER_P;
 		data += pn;
 		n -= pn;
@@ -348,12 +356,15 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 	GridOutlet_flush($);
 	if ($->ron == 0 && $->rwn == 1) {
 		/* this is the copyless buffer passing */
-		Var a[3];
-		Var_put_int(a+0,n);
-		Var_put_ptr(a+1,(void*)data);
-		Var_put_int(a+2,6); /* mode rw */
+		VALUE a[] = {
+			INT2NUM(0),
+			sym_grid_flow,
+			INT2NUM(n),
+			PTR2FIX(data),
+			INT2NUM(6), /* mode rw */
+		};
 		LEAVE_P;
-		Object_send_thru(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
+		FObject_send_thru(COUNT(a),a,$->parent->peer);
 		ENTER_P;
 	} else {
 		/* normal stuff */
@@ -387,11 +398,11 @@ void GridObject_init(GridObject *$) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	Dict_put(gf_object_set,$,0);
+	/* Dict_put(gf_object_set,$,0); */
 	$->profiler_cumul = 0;
 
 	{
-		GridClass *cl = (GridClass *) $->_o.head.cl->user_data;
+		GridClass *cl = $->gclass;
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = GridInlet_new($,gh);
@@ -404,10 +415,10 @@ void GridObject_init(GridObject *$) {
 
 /* category: input */
 
-METHOD(GridObject,grid_begin){GridInlet_begin($->in[winlet],ac,at);}
-METHOD(GridObject,grid_flow ){GridInlet_flow( $->in[winlet],ac,at);}
-METHOD(GridObject,grid_end  ){GridInlet_end(  $->in[winlet],ac,at);}
-METHOD(GridObject,list      ){GridInlet_list( $->in[winlet],ac,at);}
+METHOD(GridObject,grid_begin){GridInlet_begin($->in[gf_winlet()],argc,argv);}
+METHOD(GridObject,grid_flow ){GridInlet_flow( $->in[gf_winlet()],argc,argv);}
+METHOD(GridObject,grid_end  ){GridInlet_end(  $->in[gf_winlet()],argc,argv);}
+METHOD(GridObject,list      ){GridInlet_list( $->in[gf_winlet()],argc,argv);}
 
 void GridObject_delete(GridObject *$) {
 	int i;
@@ -423,41 +434,30 @@ void GridObject_delete(GridObject *$) {
 			FREE($->out[i]);
 		}
 	}
+/*
 	Dict_del(gf_object_set,$);
 	if (Dict_size(gf_object_set)==0) {
 		whine("all objects freed");
 		qdump();
 	}
+*/
 }
 
-void GridObject_conf_class(fts_class_t *class, int winlet) {
+void GridObject_conf_class(VALUE $, int winlet) {
 	MethodDecl methods[] = {
 		DECL(GridObject,winlet,grid_begin,"spi+"),
 		DECL(GridObject,winlet,grid_flow, "sip"),
 		DECL(GridObject,winlet,grid_end,  ""),
 		DECL(GridObject,winlet,list,      "l"),
 	};
-	define_many_methods(class,COUNT(methods),methods);
-}
-
-void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {
-	int i;
-	fts_class_init(class,
-		grclass->objectsize,
-		grclass->inlets,
-		grclass->outlets,
-		grclass);
-	define_many_methods(class,grclass->methodsn,grclass->methods);
-	for (i=0; i<grclass->handlersn; i++) {
-		GridObject_conf_class(class,grclass->handlers[i].winlet);
-	}
+	define_many_methods($,COUNT(methods),methods);
 }
 
 /* **************** Stream **************************************** */
 
 Stream *Stream_open_file(const char *filename, int mode) {
 	Stream *$;
-	int fd = fts_file_open(filename,mode==4?"r":mode==2?"w":"");
+	int fd = fileno(fopen(filename,mode==4?"r":mode==2?"w":""));
 	if (fd<0) return 0;
 	$ = NEW(Stream,1);
 	$->fd = fd;
@@ -546,7 +546,7 @@ void Stream_close(Stream *$) {
 /* this is an abstract base class for file formats, network protocols, etc */
 
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
-Dict *format_classes_dex;
+VALUE format_classes_dex;
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
 	Format *$ = (Format *) NEW(char,qlass->object_size);
@@ -596,11 +596,12 @@ int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
 void startup_grid (void) {
 	int i;
 	whine("format-list-begin");
-	format_classes_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
+	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatClass *fc = format_classes[i];
 		whine("  %10s %s",fc->symbol_name, fc->long_name);
-		Dict_put(format_classes_dex, fc->symbol_name, fc);
+		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fc->symbol_name)),
+			PTR2FIX(fc));
 	}
 	whine("format-list-end");
 }

@@ -28,10 +28,87 @@
 #include <stdio.h>
 #include <math.h>
 #include "../config.h"
-#include "lang.h"
+
+#include <stdlib.h>
+
+#define $ self
+
+#define NEW(_type_,_count_) \
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),__FILE__,__LINE__))
+
+#define NEW2(_type_,_count_) \
+	((_type_ *)qalloc2(sizeof(_type_)*(_count_),__FILE__,__LINE__))
+
+#define NEW3(_type_,_count_,_file_,_line_) \
+	((_type_ *)qalloc2(sizeof(_type_)*(_count_),_file_,_line_))
+
+#define FREE(_var_) \
+	_var_ ? (qfree(_var_), _var_=0) : 0
+
+#define REALLOC(_val_,_count_) \
+	(qrealloc(_val_,_count_))
+
+void *qalloc2(size_t n, const char *file, int line);
+void *qalloc(size_t n, const char *file, int line); /*0xdeadbeef*/
+void qfree2(void *data);
+void qfree(void *data); /*0xfadedf00*/
+void *qrealloc(void *data, int n);
+void qdump(void);
+
+typedef unsigned char  uint8;
+typedef unsigned short uint16;
+typedef unsigned long  uint32;
+typedef unsigned long long uint64;
+typedef char  int8;
+typedef short int16;
+typedef long  int32;
+typedef float  float32;
+typedef double float64;
+
+#ifndef __cplusplus
+typedef enum { false, true } bool;
+#endif
+
+void gf_lang_init (void);
+
+/* three-way comparison */
+static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
+
+/* **************************************************************** */
+/* other general purpose stuff */
+
+/*
+  a remainder function such that floor(a/b)*b+mod(a,b) = a
+  in contrast to C-language builtin a%b,
+  this one has uniform behaviour around zero.
+*/
+static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
+
+/* integer powers in log(b) time */
+static inline int ipow(int a, int b) {
+	int r=1;
+	while(1) {
+		if (b&1) r*=a;
+		b>>=1;
+		if (!b) return r;
+		a*=a;
+	}
+}	
+
+#undef min
+#undef max
+
+/* minimum/maximum functions */
+
+static inline int min(int a, int b) { return a<b?a:b; }
+static inline int max(int a, int b) { return a>b?a:b; }
+/*
+static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
+static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
+*/
 
 /* current version number as string literal */
-#define GF_VERSION "0.5.0"
+#define GF_VERSION "0.6.0"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef HAVE_SPEED
@@ -192,7 +269,7 @@ typedef struct MethodDecl {
 	const char *signature;
 } MethodDecl;
 
-void define_many_methods(VALUE $, int n, MethodDecl *methods);
+void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
 
 /* **************************************************************** */
 /* limits */
@@ -225,7 +302,7 @@ typedef long Number;
 /* **************************************************************** */
 
 #define DECL_SYM(_sym_) \
-	extern VALUE sym_##_sym_;
+	extern VALUE/*Symbol*/ sym_##_sym_;
 
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
@@ -312,9 +389,6 @@ typedef struct Operator1 {
 	void   (*op_array)(int,Number*);
 } Operator1;
 
-	extern Operator1 op1_table[];
-	extern Dict *op1_dict;
-
 typedef struct Operator2 {
 	VALUE /*Symbol*/ sym;
 	const char *name;
@@ -324,8 +398,10 @@ typedef struct Operator2 {
 	Number (*op_fold)(Number,int,const Number *);
 } Operator2;
 
-	extern Operator2 op2_table[];
-	extern Dict *op2_dict;
+extern Operator1 op1_table[];
+extern Operator2 op2_table[];
+extern VALUE /*Hash*/ op1_dict;
+extern VALUE /*Hash*/ op2_dict;
 
 /* **************************************************************** */
 /* grid.c (part 1: inlet objects) */
@@ -448,7 +524,8 @@ struct GridOutlet {
 /* grid.c (part 3: processor objects) */
 
 #define GridObject_FIELDS \
-	void *peer; /* point to peer */ \
+	VALUE peer; /* point to Ruby peer */ \
+	GridClass *gclass; \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
@@ -468,7 +545,6 @@ struct GridObject {
 typedef bool (*OnRead)(void *target,int n,char *buf);
 
 typedef struct Stream {
-	Object _o; /* inherit */
 	int fd; /* kernel interface (unbuffered) */
 	FILE *file; /* stdio.h interface (buffered) */
 /* async stuff */
@@ -545,10 +621,8 @@ struct FormatClass {
 };
 
 #define Format_FIELDS \
-	Object _o; \
 	FormatClass *cl; \
 	GridObject *parent; \
-	VALUE parent2; \
 	Format *chain; \
 	int mode; \
 	Stream *st; \
@@ -561,7 +635,7 @@ struct Format {
 
 extern FormatClass FORMAT_LIST( ,class_);
 extern FormatClass *format_classes[];
-extern Dict *format_classes_dex;
+extern VALUE /*Hash*/ format_classes_dex;
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 void Format_close(Format *$);
@@ -574,8 +648,8 @@ void Timer_loop(void);
 
 /* **************************************************************** */
 
-extern Dict *gf_object_set;
-extern Dict *gf_timer_set;
+extern VALUE /*Hash*/ gf_object_set;
+extern VALUE /*Hash*/ gf_timer_set;
 extern Timer *gf_timer;
 extern const char *whine_header;
 
@@ -591,5 +665,10 @@ extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 extern VALUE FObject_class;
 VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $);
 void gf_init (void);
+#define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
+#define FIX2PTR(value) (void *)(FIX2INT(value)*4)
+
+/* hack */
+int gf_winlet(void);
 
 #endif /* __GF_GRID_H */
