@@ -285,7 +285,7 @@ class GridPack < GridObject
 		@cast=cast
 	end
 	def initialize2
-		return if self.class!=GridPack
+		return if self.class.ninlets>1
 		GridFlow.whatever :addinlets, self, @data.length-1
 	end
 	def _0_cast(cast) @cast=cast end #!@#$ typecheck
@@ -302,6 +302,11 @@ class GridPack < GridObject
 	end
 	install_rgrid 0
 	install "@pack", 1, 1
+end
+
+class GridPack2 < GridPack
+	install_rgrid 0
+	install "#pack", 1, 1
 end
 
 # the install_rgrids in the following are hacks so that
@@ -1158,7 +1163,7 @@ class Peephole < GridFlow::FPatcher
 			GridFlow.post "peeperr: %s", e.inspect
 		end
 		GridFlow.post "set_geometry_for_real_now (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)",
-			@x,@y,@sx,@sy,@fx,@fy,sx2,sy2,x2,y2
+			@x+1,@y+1,@sx,@sy,@fx,@fy,sx2,sy2,x2,y2
 	end
 	def _0_open(wid,use_subwindow)
 		GridFlow.post "%s", [wid,use_subwindow].inspect
