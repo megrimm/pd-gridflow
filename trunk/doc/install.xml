@@ -26,6 +26,7 @@
 	<li>jMax 3.0 support coming soon</li>
 	<li>jMax 2.4 support removed</li>
 	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
+	<li>instead of X11 you may use SDL.</li>
 </list></p>
 <p>Optional:<list>
 	<li>HeroineWarrior's libmpeg3.so</li>

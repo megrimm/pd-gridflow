@@ -13,9 +13,16 @@
 		<icon text="[@in]"/>
 		<help text="[@in]" image="@inout"/>
 
-		<method name="init">
-			Creates an input object for an unspecified format. You
-			need to use the <k>open</k> command to decide that.
+		<method name="init" min="0">
+				<arg name="format"/>
+				<rest name="format_specific_part"/>
+
+			If no arguments given, creates an input object for an unspecified
+			format. You then need to use the <k>open</k> command to link
+			a format handler to it.
+
+			If arguments given, the <k>open</k> command is immediately called
+			with those arguments.
 
 			Remember that most formats produce Dim[rows,columns,3] grids with
 			0-255 values. (Most.)
@@ -65,6 +72,9 @@
 
 				see section "External Picture Formats".
 			</method>
+			<method name="option rewind">
+				rewinds to beginning of file if applicable.
+			</method>
 		</inlet>
 	</jmax-class>
 
@@ -72,9 +82,16 @@
 		<icon text="[@out]"/>
 		<help text="[@out]" image="@inout"/>
 
-		<method name="init">
-			Creates an output object for an unspecified format. You
-			need to use the <k>open</k> command to decide that.
+		<method name="init" min="0">
+				<arg name="format"/>
+				<rest name="format_specific_part"/>
+
+			If no arguments given, creates an output object for an unspecified
+			format. You then need to use the <k>open</k> command to link
+			a format handler to it.
+
+			If arguments given, the <k>open</k> command is immediately called
+			with those arguments.
 
 			Remember that most formats expect dim(rows,columns,3) grids with
 			0-255 values. (Most.)
@@ -122,7 +139,10 @@
 				frame-end are printed in the console. when status=0, it is off.
 				default is 0.
 			</method>
-
+			<method name="option rewind">
+				rewinds to beginning of file if applicable.
+				will overwrite the previous data.
+			</method>
 		</inlet>
 		<outlet id="0">
 			<method name="bang">
@@ -720,13 +740,10 @@
 		<help text="[@scale_by]"/>
 
 		<method name="init">
-			<arg name="factor" type="+integer"/>
-			factor is optional (2 by default).
-		</method>
-		<method name="init">
-			<arg name="factor_y"/>
-			<arg name="factor_x"/>
-			future use: will scale by those factors.
+			<arg name="factor" type="grid dim() or dim(2)"/>
+			factor is optional (default is 2).
+			if it's a single value, then that factor is to be used
+			for both rows and columns.
 		</method>
 		<inlet id="0">
 			<grid><dim>y x {r g b}</dim>
@@ -736,6 +753,24 @@
 		</inlet>
 		<outlet id="0">
 			<grid><dim>(factor*y) (factor*x) {r g b}</dim></grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@scale_down_by">
+		<method name="init">
+			<arg name="factor" type="+integer"/>
+			<arg name="how" type="optional symbol(smoothly)"/>
+			factor is optional (default is 2).
+			if it's a single value, then that factor is to be used
+			for both rows and columns.
+		</method>
+		<inlet id="0">
+			<grid><dim>y x {r g b}</dim>
+			Scales down picture by specified amount.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>(factor/y) (factor/x) {r g b}</dim></grid>
 		</outlet>
 	</jmax-class>
 
@@ -936,6 +971,43 @@
 		simulate a 15-bit display using 32 levels.</p>
 	</jmax-class>
 
+	<jmax-class name="@checkers">
+		<inlet id="0">
+			<grid><dim>y x {y x}</dim>
+				result from a [@for {0 0} {height width} {1 1}]
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>y x {r g b}</dim>
+				checkered pattern of 50%/75% greys
+				in 8x8 squares
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@layer">
+		<inlet id="0">
+			<grid><dim>y x {r g b a}</dim>
+				a picture that has an opacity channel.
+				will be used as foreground.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>y x {r g b}</dim>
+				a picture that has NO opacity channel.
+				will be used as background.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>y x {r g b}</dim>
+				a picture that has NO opacity channel.
+				the opacity channel of the foreground is used as
+				a weighting of how much of either picture is seen
+				in the result.
+			</grid>
+		</outlet>
+	</jmax-class>
+
 </section>
 
 <section name="Special Objects">
@@ -993,6 +1065,11 @@
 			directory or one of the jMax-specified data directories.
 		</method>
 
+		<method name="open ppm gzfile">
+			<arg name="filename" type="symbol"/>
+			same but for .ppm.gz files
+		</method>
+
 		<grid><dim>rows columns 3</dim>
 			values 0-255
 		</grid>
@@ -1000,8 +1077,7 @@
 
 	<jmax-class name="format targa @in">
 		<icon image="format_targa" text="[open targa file filename.tga]"/>
-		<p>Support for RGB-24 (3 channels).
-		If you bug me a bit you'll get ARGB-32 too.</p>
+		<p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p>
 
 		<method name="open ppm file">
 			<arg name="filename" type="symbol"/>
@@ -1009,9 +1085,29 @@
 			directory or one of the jMax-specified data directories.
 		</method>
 
+		<method name="open ppm gzfile">
+			<arg name="filename" type="symbol"/>
+			same but for .tga.gz files
+		</method>
+
 		<grid><dim>rows columns 3</dim>
 			values 0-255
 		</grid>
+	</jmax-class>
+
+	<jmax-class name="format jpeg @in">
+		<!--<icon image="format_jpeg" text="[open jpeg file foo.jpg]"/>-->
+		<p>Support for RGB non-progressive</p>
+		
+		<method name="open jpeg file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+
+		<grid><dim>rows columns 3</dim>
+			values 0-255
+		</grid>	
 	</jmax-class>
 
 	<jmax-class name="format mpeg @in">
@@ -1043,18 +1139,34 @@
 		<icon image="format_grid_tcp" text="[open grid tcp artengine.ca 4242]"/>
 		<icon image="format_grid_tcpserver" text="[open grid tcpserver 4242]"/>
 
-		<method name="open file">
+		<p>
+		This is GridFlow's special file format. This is the only I/O
+		format that can hold absolutely anything that the [@store] object can.
+		However this can only be stored in 32 bits-per-value.
+		</p>
+		<p>
+		This is the only picture format that currently supports TCP
+		connections. This is still somewhat clunky: the socket only
+		opens in client mode only; and upon bang, jMax freezes until
+		the whole grid is received.
+		</p>
+
+		<method name="open grid file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
 			directory or one of the jMax-specified data directories.
 		</method>
-		<method name="open tcp">
+		<method name="open grid gzfile">
+			<arg name="filename" type="symbol"/>
+			same but for .ppm.gz files
+		</method>
+		<method name="open grid tcp">
 			<arg name="hostname" type="symbol"/>
 			<arg name="port" type="integer"/>
 			dials an specified hostname/port on the InterNet or
 			compatible network. the TCP protocol is used.
 		</method>
-		<method name="open tcpserver">
+		<method name="open grid tcpserver">
 			<arg name="port" type="integer"/>
 			waits for a call (and answers) for this port on the
 			local machine via InterNet or compatible network.
@@ -1066,17 +1178,34 @@
 		<method name="option type uint8">
 			output will be as 8 bit unsigned integers.
 		</method>
+		<method name="option headerful">
+			cancels option headerless (and back to reading .grid)
+		</method>
+		<method name="option headerless">
+			<rest name="dimensions" type="integer"/>
+			instead of reading .grid files with header, will read raw data,
+			faking a .grid header to itself. It will use the hereby specified
+			dimension list, as well as two other settings:
+			<k>option type</k> and <k>option endian</k>.
+		</method>
 
-		<p>
-		This is GridFlow's special file format. This is the only I/O
-		format that can hold absolutely anything that the [@store] object can.
-		However this can only be stored in 32 bits-per-value.
-		</p>
-		<p>
-		This is the only picture format that currently supports TCP
-		connections. This is still somewhat clunky: the socket only
-		opens in client mode only; and upon bang, jMax freezes until
-		the whole grid is received.
+		<p>When writing "raw" data, a file may be considered a long string of
+		base 256 digits (called bytes), but different computers have different
+		conventions for dealing with them:
+
+		<method name="option endian big">
+			A number will be written starting with the biggest digit.
+			This is the natural way on the Macintosh, Sun, Amiga, and so on.
+		</method>
+		<method name="option endian little">
+			A number will be written starting with the smallest digit.
+			This is the natural way on the Intel 386/Pentium.
+		</method>
+		<method name="option endian same">
+			A number will be written in whichever way is more natural
+			on this computer. The natural way is slightly faster to handle.
+			This is the default setting.
+		</method>
 		</p>
 	</jmax-class>
 
@@ -1141,6 +1270,10 @@
 	<jmax-class name="format x11 @in/@out">
 		<icon image="format_x11" text="[open x11 here]"/>
 		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
+
+		<method name="open x11">
+			synonym of "open x11 here".
+		</method>
 
 		<method name="open x11 here">
 			connects to the default X11 server,

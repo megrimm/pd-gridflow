@@ -42,20 +42,21 @@ Compatibility:
 Release steps (<b>OPERATE WITH CAUTION</b>):
 
 <list>
-	<li>cvs tag gridflow_0_6_3 .
+	<li>cvs tag gridflow_0_6_4 .
 	</li><li>mkdir gridflow
-	</li><li>
-cvs -d gridflow@artengine.ca:/home/cvs/gridflow export -r gridflow_0_6_3 -d
-gridflow .
+	</li><li>cvs -d :pserver:gridflow@artengine.ca:/home/cvs/gridflow
+			export -r gridflow_0_6_4 -d gridflow .
 	</li><li>cd gridflow
 	</li><li>rm -rf CVS CVSROOT
 	</li><li>chmod -R go=u-w .
 	</li><li>cd ..
-	</li><li>tar cfzvv gridflow-0.6.3.tar.gz gridflow
+	</li><li>tar cfzvv gridflow-0.6.4.tar.gz gridflow
 	</li><li>rm -rf gridflow # caution!!!
-	</li><li>scp gridflow*gz root@artengine.ca:/home/matju/gridflow/download
+	</li><li>scp gridflow*gz
+			matju@artengine.ca:/home/members/matju/gridflow/download
 	</li><li>mv gridflow*gz /home/matju/net/gridflow
-	</li><li>artengine.ca : expand tarball into jmax/gridflow/latest
+	</li><li>ssh matju@artengine.ca :
+		expand tarball into jmax/gridflow/latest
 	</li><li>jmax/pd/0xff/ruby-talk mlists : post release
 	</li><li>freshmeat.net : post release
 	</li><li>RAA : post release
