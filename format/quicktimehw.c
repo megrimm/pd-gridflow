@@ -47,9 +47,11 @@ struct FormatQuickTimeHW : Format {
 	bool started;
 	Dim *force;
 	int length; /* in frames */
+	float64 framerate;
+	BitPacking *bit_packing;
 
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
-		started(false), force(0) {}
+		started(false), force(0), framerate(29.997), bit_packing(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -58,13 +60,14 @@ struct FormatQuickTimeHW : Format {
 	\decl void seek (int frame);
 	\decl void force_size (int32 height, int32 width);
 	\decl void parameter (Symbol name, int32 value);
-	\decl void framerate (double f);
+	\decl void framerate_m (float64 f);
+	\decl void size (int32 height, int32 width);
 	
 	GRINLET3(0);
 };
 
 \def void force_size (int32 height, int32 width) {
-	if (force) delete force;
+	delete force;
 	int32 v[] = { height, width };
 	force = new Dim(2,v);
 }
@@ -107,11 +110,22 @@ struct FormatQuickTimeHW : Format {
 
 //!@#$ should also support symbol values (how?)
 \def void parameter (Symbol name, int32 value) {
+	//gfpost("parameter %s %d",(char*)rb_sym_name(name), value);
 	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
 }
 
-\def void framerate (float64 f) {
+\def void framerate_m (float64 f) {
+	framerate=f;
 	quicktime_set_framerate(anim, f);
+}
+
+\def void size (int32 height, int32 width) {
+	if (dim) RAISE("video size already set!");
+	/* first frame: have to do setup */
+	int32 v[] = {height, width, 3};
+	dim = new Dim(3,v);
+	quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
+	quicktime_set_cmodel(anim,colorspace);
 }
 
 GRID_INLET(FormatQuickTimeHW,0) {
@@ -120,19 +134,27 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->prod());
-} GRID_FLOW {
 	if (dim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
 	} else {
 		/* first frame: have to do setup */
 		dim = in->dim->dup();
-		quicktime_set_video(anim,1,dim->get(1),dim->get(0),30,codec);
+		quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
 		quicktime_set_cmodel(anim,colorspace);
 	}
+} GRID_FLOW {
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
-	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=data+i*sx*channels;
-	quicktime_encode_video(anim,rows,track);
+	uint8 *rows[sy];
+	if (sizeof(T)>1) {
+		uint8 data2[n];
+		bit_packing->pack(sx*sy,data,Pt<uint8>(data2,n));
+		for (int i=0; i<sy; i++) rows[i]=data2+i*sx*channels;
+		quicktime_encode_video(anim,rows,track);
+	} else {
+		for (int i=0; i<sy; i++) rows[i]=data+i*sx*channels;
+		quicktime_encode_video(anim,rows,track);
+	}
 } GRID_FINISH {
 } GRID_END
 
@@ -192,6 +214,8 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	}
 	colorspace_m(0,0,SYM(rgb));
 	quicktime_set_cpus(anim,1);
+	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+	bit_packing = new BitPacking(is_le(),3,3,mask);
 //	quicktime_stsd_table_t *tb = 
 //		anim->moov.trak[0]->mdia.minf.stbl.stsd.table;
 //	gfpost("MOOV says size=(%d,%d) and dpi=(%f,%f)",
