@@ -1059,7 +1059,6 @@ typedef struct GridObject Format;
 uint64 gf_timeofday();
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
-Ruby fclass_install(FClass *fc, Ruby super);
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
