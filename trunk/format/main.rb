@@ -142,11 +142,7 @@ class Format #< GridObject
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
 
-	def option(name,*args)
-		rewind
-	end
-	
-	def headerless #!@#$ goes in FormatGrid ?
+	def headerless(*args) #!@#$ goes in FormatGrid ?
 		args=args[0] if Array===args[0]
 		#raise "expecting dimension list..."
 		args.each {|a|
@@ -159,23 +155,25 @@ class Format #< GridObject
 		@headerless = nil
 	end
 
-	def type #!@#$ name collision? #!@#$ goes in FormatGrid ?
+	def type arg
+		#!@#$ name collision?
+		#!@#$ goes in FormatGrid ?
 		#!@#$ bug: should not be able to modify this _during_ a transfer
-		case args[0]
+		case arg
 		when :uint8; @bpv=8
 			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
 		when :int16; @bpv=16
 			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
 		when :int32; @bpv=32
-		else raise "unsupported number type"
+		else raise "unsupported number type: #{arg}"
 		end
 	end
 
-	def cast
-		case args[0]
+	def cast arg
+		case arg
 		when :uint8, :int16, :int32, :int64, :float32, :float64
-			@cast = args[0]
-		else raise "unsupported number type"
+			@cast = arg
+		else raise "unsupported number type: #{arg}"
 		end
 	end
 
