@@ -1,0 +1,123 @@
+#N canvas 413 106 685 493 10;
+#X text 230 4 click here to go in manual mode;
+#X obj 452 337 fork;
+#X floatatom 131 202 5 0 0 0 - - -;
+#X obj 12 303 @ >> 11;
+#X obj 16 419 fps detailed;
+#X obj 354 58 tgl 20 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 16 149 @store;
+#X obj 546 88 @import ( 1 );
+#X obj 187 190 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -262144 -1 -1 0 1;
+#X obj 120 343 @in;
+#X obj 546 67 * 3;
+#X obj 546 130 @export;
+#X obj 422 420 @ sin*;
+#X obj 187 209 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -262144 -1 -1 0 1;
+#X obj 120 303 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X floatatom 131 148 5 0 0 0 - - -;
+#X obj 91 234 @four;
+#X obj 422 363 @import ( 1 );
+#X msg 452 155 10000;
+#X floatatom 380 337 5 0 0 0 - - -;
+#X obj 10 21 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 16 377 @store;
+#X obj 16 398 @out x11;
+#X text 142 302 step 1;
+#X obj 16 130 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 187 152 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -262144 -1 -1 0 1;
+#X obj 109 13 loadbang;
+#X obj 422 384 @outer + ( 9000 18000 0 9000 );
+#X obj 91 255 @redim ( 2 2 );
+#X msg 297 79 100;
+#X obj 541 265 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 197 371 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X text 184 133 linear transform;
+#X obj 16 86 fork;
+#X obj 109 34 @for ( -128 -128 ) ( 128 128 ) ( 1 1 );
+#X obj 12 324 @ + 128;
+#X floatatom 131 166 5 0 0 0 - - -;
+#X floatatom 131 184 5 0 0 0 - - -;
+#X obj 187 171 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -262144 -1 -1 0 1;
+#X obj 16 440 print;
+#X obj 426 186 vsl 15 128 0 35999 0 0 empty empty empty 0 -8 0 8 -262144
+-1 -1 1235 1;
+#X obj 457 192 vsl 15 128 -10000 10000 0 0 empty empty empty 0 -8 0
+8 -262144 -1 -1 7011 1;
+#X obj 297 100 +;
+#X obj 297 121 % 36000;
+#X obj 452 134 loadbang;
+#X text 364 164 rotozoomer;
+#X obj 12 282 @inner * + 0;
+#X text 32 20 step 2;
+#X obj 546 109 @ sin* 100;
+#X obj 297 58 demux 2;
+#X msg 120 322 open teapot.png \, bang;
+#X msg 200 435 option timelog \$1;
+#X obj 546 151 inv* 100000;
+#X floatatom 138 99 5 0 0 0 - - -;
+#X msg 509 185 set \$1;
+#X obj 11 41 metro 33.3667;
+#X connect 1 0 30 0;
+#X connect 1 1 12 1;
+#X connect 2 0 16 3;
+#X connect 3 0 35 0;
+#X connect 4 0 39 0;
+#X connect 5 0 49 1;
+#X connect 6 0 46 0;
+#X connect 7 0 48 0;
+#X connect 8 0 37 0;
+#X connect 9 0 21 1;
+#X connect 10 0 7 0;
+#X connect 11 0 52 0;
+#X connect 12 0 28 0;
+#X connect 13 0 2 0;
+#X connect 14 0 50 0;
+#X connect 15 0 16 0;
+#X connect 16 0 28 0;
+#X connect 17 0 27 0;
+#X connect 18 0 41 0;
+#X connect 19 0 17 0;
+#X connect 20 0 55 0;
+#X connect 21 0 22 0;
+#X connect 22 0 4 0;
+#X connect 24 0 6 0;
+#X connect 25 0 15 0;
+#X connect 26 0 34 0;
+#X connect 27 0 12 0;
+#X connect 28 0 46 2;
+#X connect 29 0 42 0;
+#X connect 30 0 40 0;
+#X connect 31 0 51 0;
+#X connect 33 0 24 0;
+#X connect 33 1 49 0;
+#X connect 34 0 6 1;
+#X connect 35 0 21 0;
+#X connect 36 0 16 1;
+#X connect 37 0 16 2;
+#X connect 38 0 36 0;
+#X connect 40 0 17 0;
+#X connect 40 0 42 1;
+#X connect 41 0 1 0;
+#X connect 42 0 43 0;
+#X connect 43 0 40 0;
+#X connect 43 0 10 0;
+#X connect 44 0 18 0;
+#X connect 46 0 3 0;
+#X connect 48 0 11 0;
+#X connect 49 0 29 0;
+#X connect 50 0 9 0;
+#X connect 51 0 22 0;
+#X connect 52 0 54 0;
+#X connect 52 0 1 0;
+#X connect 54 0 41 0;
+#X connect 55 0 33 0;

@@ -1,0 +1,33 @@
+#N canvas 435 101 690 277 10;
+#X text 14 15 @cast;
+#X floatatom 26 223 5 0 0 0 - - -;
+#X floatatom 157 104 5 0 0 0 - - -;
+#X obj 26 139 @import ( 1 );
+#X obj 26 195 @export_list;
+#X obj 26 168 @cast uint8;
+#X text 143 14 returns a grid of the same dimensions containing all
+the same values after type conversion. note that while casting to a
+smaller type \, overflowing values will be truncated.;
+#X text 626 13 gridflow;
+#X obj 288 167 @cast float32;
+#X obj 157 168 @cast int32;
+#X floatatom 157 224 5 0 0 0 - - -;
+#X obj 157 140 @import ( 1 );
+#X obj 157 196 @export_list;
+#X floatatom 288 224 5 0 0 0 - - -;
+#X obj 288 196 @export_list;
+#X text 142 58 numbertypes are: uint8 \, int16 \, int32 \, int64 \,
+float32 \, float64;
+#X msg 288 137 1 f # \$1;
+#X connect 2 0 3 0;
+#X connect 2 0 11 0;
+#X connect 2 0 16 0;
+#X connect 3 0 5 0;
+#X connect 4 0 1 0;
+#X connect 5 0 4 0;
+#X connect 8 0 14 0;
+#X connect 9 0 12 0;
+#X connect 11 0 9 0;
+#X connect 12 0 10 0;
+#X connect 14 0 13 0;
+#X connect 16 0 8 0;

@@ -1,0 +1,83 @@
+#N canvas 617 0 576 419 10;
+#X obj 58 36 bng 15 250 50 0 empty \$0-camera_r empty 0 -6 0 8 -262144
+-1 -1;
+#X obj 17 414 outlet;
+#X obj 94 81 hradio 15 1 0 3 \$0-size_s \$0-size_r empty 0 -6 0 8 -260818
+-1 -1 0;
+#X obj 94 137 hradio 15 1 0 4 \$0-channel_s \$0-channel_r empty 0 -6
+0 8 -241291 -1 -1 0;
+#X floatatom 115 159 5 0 0 0 - - -;
+#X floatatom 111 100 5 0 0 0 - - -;
+#X text 81 38 <-- 1 initialise the camera;
+#X text 144 81 <-- 2 select the size (120 160)(240 320)(480 640);
+#X text 164 135 <-- 3 select the channel (0-3);
+#X obj 131 199 hsl 128 15 0 65635 0 0 \$0-brightness_s \$0-brightness_r
+empty -2 -6 0 8 -260818 -1 -1 100 1;
+#X obj 131 222 hsl 128 15 0 65635 0 0 \$0-hue_s \$0-hue_r empty -2
+-6 0 8 -260818 -1 -1 0 1;
+#X obj 131 246 hsl 128 15 0 65635 0 0 \$0-contrast_s \$0-contrast_r
+empty -2 -6 0 8 -260818 -1 -1 0 1;
+#X obj 131 268 hsl 128 15 0 65635 0 0 \$0-whiteness_s \$0-whiteness_r
+empty -2 -6 0 8 -260818 -1 -1 0 1;
+#X text 137 199 brightness;
+#X text 137 221 hue;
+#X text 136 247 contrast;
+#X text 143 269 whiteness;
+#X text 137 199 brightness;
+#X text 129 361 <-- open to access more camera controls;
+#N canvas 170 0 656 624 camera 0;
+#X msg 33 133 open videodev /dev/video0;
+#X obj 227 278 outlet;
+#X obj 33 82 inlet;
+#X msg 341 150 hue \$1;
+#X msg 340 201 contrast \$1;
+#X msg 341 259 whiteness \$1;
+#X msg 341 87 brightness \$1;
+#X msg 12 439 size 120 160;
+#X msg 94 465 size 240 320;
+#X msg 138 437 size 480 640;
+#X obj 42 404 sel 0;
+#X obj 92 408 sel 1;
+#X obj 138 405 sel 2;
+#X msg 194 202 channel \$1;
+#X obj 376 52 r \$0-brightness_s;
+#X obj 395 121 r \$0-hue_s;
+#X obj 397 165 r \$0-contrast_s;
+#X obj 417 232 r \$0-whiteness_s;
+#X obj 44 354 r \$0-size_s;
+#X obj 193 167 r \$0-channel_S;
+#X obj 42 109 r \$0-video_s;
+#X connect 0 0 1 0;
+#X connect 2 0 0 0;
+#X connect 3 0 1 0;
+#X connect 4 0 1 0;
+#X connect 5 0 1 0;
+#X connect 6 0 1 0;
+#X connect 7 0 1 0;
+#X connect 8 0 1 0;
+#X connect 9 0 1 0;
+#X connect 10 0 7 0;
+#X connect 11 0 8 0;
+#X connect 12 0 9 0;
+#X connect 13 0 1 0;
+#X connect 14 0 6 0;
+#X connect 15 0 3 0;
+#X connect 16 0 4 0;
+#X connect 17 0 5 0;
+#X connect 18 0 10 0;
+#X connect 18 0 11 0;
+#X connect 18 0 12 0;
+#X connect 19 0 13 0;
+#X connect 20 0 0 0;
+#X restore 58 362 pd camera;
+#X msg 128 293 colorspace YUV420P;
+#X text 277 293 <-- click here if your webcam uses this colorspace
+;
+#X obj 281 316 @yuv_to_rgb;
+#X text 366 318 <-- add this after [@in] to translate the colorspaces
+;
+#X connect 0 0 19 0;
+#X connect 2 0 5 0;
+#X connect 3 0 4 0;
+#X connect 19 0 1 0;
+#X connect 20 0 19 0;
