@@ -127,26 +127,21 @@ class FObject
 		end
 	end
 	def connect outlet, object, inlet
+		#puts "connect: #{self} #{outlet} #{object} #{inlet}"
 		@outlets ||= []
 		@outlets[outlet] ||= []
 		@outlets[outlet].push [object, inlet]
 	end
 	def send_in(inlet, *m)
 		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
-		sym = if m.length==0
-			:bang
-		elsif Symbol===m[0]
-			m.shift
-		elsif String===m[0]
-			m.shift.intern
-		elsif m.length>1
-			:list
-		elsif Integer===m[0]
-			:int
-		elsif Float===m[0]
-			:float
-		else
-			raise "don't know how to deal with #{m.inspect}"
+		sym = if m.length==0 then :bang
+		elsif Symbol===m[0] then m.shift
+		elsif String===m[0] then m.shift.intern
+		elsif m.length>1 then :list
+		elsif Integer===m[0] then :int
+		elsif Float===m[0] then :float
+		elsif Array===m[0] then m=m[0];:list
+		else raise "don't know how to deal with #{m.inspect}"
 		end
 		GridFlow.post "%s",m.inspect if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
@@ -173,6 +168,9 @@ class FObject
 		r.args = o
 		r
 	end
+	def inspect
+		if @args then "#<#{self.class} #{args}>" else super end
+	end
 	def initialize
 		super
 		self.args ||= "[#{self.class} ;-)]"
@@ -181,14 +179,45 @@ end
 
 # Those would be equivalent of PD/jMax patchers/abstractions
 # except that they'd work at the Ruby level only.
-
-#class FPatcher
-#	def initialize(fobjects)
-#		
-#	end
+class FPatcher < FObject
+	def initialize(fobjects,wires,ninlets)
+		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
+		@inlets = []
+		@ninlets = ninlets
+		i=0
+		@fobjects << self
+		while i<wires.length do
+			a,b,c,d = wires[i,4]
+			if a==-1 then
+				a=self
+				@inlets[b]||=[]
+				@inlets[b] << [@fobjects[c],d]
+			else
+				if c==-1 then
+					@fobjects[a].connect b,self,d+ninlets
+				else
+					@fobjects[a].connect b,@fobjects[c],d
+				end
+			end
+			i+=4
+		end
+	end
+	def method_missing(sym,*args)
+		sym=sym.to_s
+		if sym =~ /^_(\d)_(.*)/ then
+			inl = Integer $1
+			sym = $2.intern
+			if inl<@ninlets then
+				for x in @inlets[inl] do
+				 x[0].send_in x[1],sym,*args end
+			else
+				send_out(inl-@ninlets,sym,*args)
+			end
+		else super end
+	end
 #	def self.make_chain
 #	end
-#end
+end
 
 #class FAbstraction
 #end
@@ -340,10 +369,10 @@ end
 class GridCheckers < GridObject
 	def initialize
 		@chain =
-		["@ >> 3","@ & 1","@fold ^","@ inv+ 0","@ & 63",
-		"@ + 128","@outer + {0 0 0}"].map {|o|
-			FObject[o]
-		}
+		[
+			"@ >> 3","@ & 1","@fold ^","@ inv+ 0","@ & 63",
+			"@ + 128","@outer + {0 0 0}"
+		].map {|o| FObject[o] }
 		(0..@chain.length-2).each {|i| @chain[i].connect 0,@chain[i+1],0 }
 		@chain[-1].connect 0,self,1
 	end
@@ -352,8 +381,90 @@ class GridCheckers < GridObject
 	install "@checkers", 1, 1
 end
 
+class GridScaleTo < FPatcher
+	FObjects = [
+			"@for {0 0} {42 42} {1 1}",
+			"@ *",
+			"@ /",
+			"@store",
+			"@dim",
+			"@redim {2}",
+			"@finished",
+	]
+	Wires = []
+	for i in 1..3 do Wires.concat [i-1,0,i,0] end
+	Wires.concat [3,0,-1,0, 4,0,5,0, 5,0,1,1, 6,0,0,0,
+		-1,0,4,0, -1,0,3,1, -1,0,6,0, -1,1,0,1, -1,1,2,1]
+	def initialize(size)
+		(size.length==2 and Numeric===size[0] and Numeric===size[1]) or
+			raise "expecting {height width}"
+		super(FObjects,Wires,2)
+		send_in 1, size
+	end
+	install "@scale_to", 2, 1
+end
+
+class GridContrast < FPatcher
+	FObjects = [
+		"@ inv+ 255",
+		"@ *",
+		"@ >> 8",
+		"@ inv+ 255",
+		"@ *",
+		"@ >> 8",
+		"@ min 255",
+		"@ max 0",
+	] 
+	Wires = []
+	for i in 0..7 do Wires.concat [i-1,0,i,0] end
+	Wires.concat [7,0,-1,0, -1,1,1,1, -1,2,4,1]
+	def initialize(iwhiteness=256,contrast=256)
+		super(FObjects,Wires,3)
+		send_in 1, iwhiteness
+		send_in 2, contrast
+	end
+	install "@contrast", 3, 1
+end
+
+class GridSpread < FPatcher
+	FObjects = [
+		"@ & 0",
+		"@ + 5",
+		"@! rand",
+		"@ - 2",
+		"@ +",
+		"@ >> 1",
+	]
+	Wires = []
+	for i in 0..3 do Wires.concat [i-1,0,i,0] end
+	Wires.concat [3,0,4,1, -1,0,4,0, 4,0,-1,0, -1,1,1,1, -1,1,5,0, 5,0,3,1]
+	def initialize(factor)
+		super(FObjects,Wires,2)
+		send_in 1, factor
+	end
+	install "@spread", 2, 1
+end
+
+class GridPosterize < FPatcher
+	FObjects =  [
+		"@ *",
+		"@ >> 8",
+		"@ * 255",
+		"@ /",
+		"@ - 1",
+	]
+	Wires = []
+	for i in 0..3 do Wires.concat [i-1,0,i,0] end
+	Wires.concat [3,0,-1,0, -1,1,0,1, -1,1,4,0, 4,0,3,1]
+	def initialize(factor=2)
+		super(FObjects,Wires,2)
+		send_in 1, factor
+	end
+	install "@posterize", 2, 1
+end
+
 # a dummy class that gives access to any stuff global to GridFlow.
-class GridGlobal < GridObject
+class GridGlobal < FObject
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
 	end

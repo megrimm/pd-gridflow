@@ -420,33 +420,51 @@ def test_layer
 	$mainloop.loop
 end
 
+Images = [
+	"jpeg file #{$imdir}/ruby0216.jpg",
+	"ppm file #{$imdir}/g001.ppm",
+	"targa file #{$imdir}/teapot.tga",
+	"grid gzfile #{$imdir}/foo.grid.gz",
+	"grid gzfile #{$imdir}/foo2.grid.gz",
+#	"targa file #{$imdir}/tux.tga",
+]
+
+def test_formats_speed
+	gin = FObject["@in"]
+	gout = FObject["@out x11"]
+	gin.connect 0,gout,0
+	GridFlow.verbose=false
+	t1=[]
+	Images.each {|command|
+		gin.send_in 0,"open #{command}"
+		t0 = Time.new
+		10.times {gin.send_in 0}
+		t1 << (Time.new - t0)
+		sleep 1
+	}
+	p t1
+end
+
 def test_formats
 	gin = FObject["@in"]
-	gs = FObject["@downscale_by {2 2} smoothly"]
+#	gs = FObject["@downscale_by {2 2} smoothly"]
+	gs = FObject["@posterize"]
+#	gs = FObject["@scale_to {288 288}"]
+#	gs = FObject["@contrast 256 512"]
+#	gs = FObject["@spread {32 0 0}"]
+#	gout = FObject["@print"]
 	gout = FObject["@out x11"]
 	gin.connect 0,gs,0
 	gs.connect 0,gout,0
-	GridFlow.verbose=false
-	[
-		"jpeg file #{$imdir}/ruby0216.jpg",
-		"ppm file #{$imdir}/g001.ppm",
-		"targa file #{$imdir}/teapot.tga",
-		"grid gzfile #{$imdir}/foo.grid.gz",
-		"grid gzfile #{$imdir}/foo2.grid.gz",
-#		"targa file #{$imdir}/tux.tga",
-	].each {|command|
+#	GridFlow.verbose=false
+	t1=[]
+	Images.each {|command|
 		gin.send_in 0,"open #{command}"
 		# test for load, rewind, load
-		t0 = Time.new
-		10.times {gin.send_in 0}
-		t1 = Time.new - t0
-		p t1
+		2.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
 		sleep 1
-#		STDIN.readline
 	}
-	
-#	gin.delete
-#	gout.delete
+	p t1	
 end
 
 def test_rewind
