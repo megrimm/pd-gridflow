@@ -68,10 +68,10 @@
 	uint8 *p = imdata;
 	for (int y=0; y<h; y++) {
 		for (int x=0; x<w; x++) {
-			*p++ = 128;
-			*p++ = 128;
-			*p++ = 128;
-			*p++ = 128;
+			*p++ = 255;
+			*p++ = 255;
+			*p++ = 255;
+			*p++ = 0;
 		}
 	}
 //	NSRect r = [self frame];
@@ -193,7 +193,9 @@ GRID_INLET(FormatQuartz,0) {
 	window = [[NSWindow alloc]
 		initWithContentRect: r
 		styleMask: (NSTitledWindowMask |
-		NSMiniaturizableWindowMask | NSResizableWindowMask)
+		NSMiniaturizableWindowMask
+//		| NSResizableWindowMask // can't make this one to work
+		)
 //		backing: NSBackingStoreNonretained
 		backing: NSBackingStoreRetained
 		defer: NO];
