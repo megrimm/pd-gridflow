@@ -63,7 +63,7 @@ void Grid::init_from_ruby_list(int n, VALUE *a) {
 		n = min(n,nn);
 		Number *p = as_int32();
 		for (int i=0; i<n; i++) p[i] = INT(a[i]);
-		for (int i=n; i<nn; i+=n) memcpy(p+i,p,min(n,nn-i)*sizeof(Number));
+		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i));
 }
 
 void Grid::init_from_ruby(VALUE x) {
@@ -194,13 +194,13 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		}
 		if (buf && bufn) {
 			int k = min(n,factor-bufn);
-			memcpy(buf+bufn,data,k*sizeof(Number));
+			COPY(buf+bufn,data,k);
 			bufn+=k; data+=k; n-=k;
 			if (bufn == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
 					Number *data2 = NEW2(Number,factor);
-					memcpy(data2,buf,factor*sizeof(Number));
+					COPY(data2,buf,factor);
 					((GridFlow2)gh->flow)(parent->peer,parent,this,factor,data2);
 				} else {
 					gh->flow(parent->peer,parent,this,factor,buf);
@@ -214,7 +214,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			int newdex = dex + m;
 			if (gh->mode==6) {
 				Number *data2 = NEW2(Number,m);
-				memcpy(data2,data,m*sizeof(Number));
+				COPY(data2,data,m);
 				((GridFlow2)gh->flow)(parent->peer,parent,this,m,data2);
 			} else {
 				gh->flow(parent->peer,parent,this,m,data);
@@ -223,7 +223,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		}
 		data += m;
 		n -= m;
-		if (buf) memcpy(buf+bufn,data,n*sizeof(Number)), bufn+=n;
+		if (buf) COPY(buf+bufn,data,n), bufn+=n;
 	} else if (mode==6) {
 		Number *data = (Number *)FIX2PTR(argv[1]);
 		if (!is_busy_verbose("flow")) return;
@@ -384,9 +384,21 @@ void GridOutlet::send(int n, const Number *data) {
 	if (n > gf_max_packet_length/2) {
 		send_direct(n,data);
 	} else {
-		memcpy(&buf[bufn],data,n*sizeof(Number));
+		COPY(buf+bufn,data,n);
 		bufn += n;
 	}
+}
+
+/* should use BitPacking */
+void GridOutlet::send8(int n, const uint8 *data) {
+	int bs = gf_max_packet_length;
+	Number data2[bs];
+	for (;n>=bs;n-=bs) {
+		for (int i=0; i<bs; i++) data2[i] = *data++;
+		send(bs,data2);
+	}
+	for (int i=0; i<n; i++) data2[i] = *data++;
+	send(n,data2);
 }
 
 void GridOutlet::give(int n, Number *data) {
