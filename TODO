@@ -4,11 +4,10 @@
 starting with 1.0, backwards compatibility will be kept
 
 Community
-[ ] make website
 [ ] make IRC channel #dataflow
+[ ] put new samples on website
 
-Distribution (0.6.1)
-[ ] make demo app(s) in Ruby/Tk
+Distribution (0.6.2)
 [ ] add test plan
 [ ] follow test plan
 [ ] review all documentation
@@ -16,13 +15,12 @@ Distribution (0.6.1)
 [!] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 
 Installation
-[ ] de-jmax-ify the build process; installable doc; installable includes
+[ ] installable doc
+[ ] installable includes ?
 [ ] produce binaries (.tar.gz .rpm .deb ?)
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
 [ ] less compile-time checks and more run-time checks
-[ ] remove /tmp/$$.c, /tmp/$$
-[ ] prevent CVS write access for anonymous account
 [ ] should GridFlow be bundled with some of its own dependencies?
 
 Documentation
@@ -34,7 +32,7 @@ Documentation
 [ ] specify policy for <help>, <icon>, etc.
 [ ] add credits
 [ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
-[ ] add explanation of gridflow vs videodsp
+[ ] add explanation of gridflow vs pixonix
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
 [ ] find a good XML editor
@@ -50,13 +48,16 @@ Documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
-[ ] Add simple C preprocessor to add multi-line strings
+[ ] Add simple C preprocessor to allow multi-line strings
     (because of rb_eval_string ?)
 [ ] Design the GF-1.0 architecture (new internals documentation)
-[ ] Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
-	identify streams by ids given at grid msg
-	(may allow for cancelling rejected grids?)
-	(add cancel option to the r/rw choice in callback of grid msg ?)
+[ ] obsolete grid_end; rename grid_begin -> grid
+[ ] identify streams by ids given at grid msg
+    (may allow for cancelling rejected grids?)
+    (add cancel option to the r/rw choice in callback of grid msg ?)
+[ ] dimension list pattern matching system
+[ ] argument list processing system
+[ ] passive inlets (associated to variables)
 [ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
 [ ] MMX memcpy() ?
@@ -71,7 +72,6 @@ Architecture
 [ ] MMX computations integration
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] more profiling?
-[ ] allow lists to appear in object constructors
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
@@ -82,9 +82,10 @@ Computation Objects
 [ ] @type, @cast
 [ ] @cartprod (?)
 [ ] @slice (@splice ?)
-[ ] black option in @store (?)
-[ ] @import~, @export~
-[ ] @import*, @export*
+[ ] zero option in @store (?)
+[ ] zero option in @convolve (?)
+[ ] shrink option in @convolve (?)
+[ ] @import~, @export~, @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
@@ -173,7 +174,8 @@ jMax-UI
 [ ] 2d slider
 [ ] radial slider (angle chooser)
 
-Misc
+Extra/Samples/Etc
+[ ] make demo app(s) in Ruby/Tk
 [ ] world domination
 
 Bugs
@@ -191,10 +193,12 @@ Bugs
 [ ] format/mpeg.c seems to crash more often?
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [!] tcp test is broken
-[ ] compiling without jMax nor PD should not require libruby.so
-[ ] issues with fork and X11 ?
+[ ] issues with fork() and X11 ?
 [ ] memory corruption when running GridFlow/PD for too long
-[ ] dangling pointers due to missing mark-funcs and such
+[ ] @scale_to is broken
+[ ] make test:
+	[gf] total 31476 lost bytes in 445 allocations
+	[gf] total 18604 lost bytes in 445 allocations
 
 Feature Requests
 
@@ -208,9 +212,6 @@ From: Alexandre Castonguay <acastonguay@artengine.ca>
   [ ] server side jmax to handle multiple incoming commands, audio + video 
       streams
   [ ] support for audio in the mpeg streams
-
-From: CK <x@meta.lo-res.org>
-  [ ] a pd port ;)
 
 From: Margit Hideg <mhideg@rogers.com>
   [ ] I wish to see server side jmax to handle multiple incoming
