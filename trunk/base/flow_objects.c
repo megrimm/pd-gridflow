@@ -804,8 +804,6 @@ GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
 static void expect_convolution_matrix (Dim *d) {
 	if (d->n != 2) RAISE("only exactly two dimensions allowed for now (got %d)",
 		d->n);
-	/* because odd * odd = odd */
-	if (d->prod()&1 == 0) RAISE("even number of elements");
 }
 
 \class GridConvolve < GridObject
@@ -813,7 +811,7 @@ struct GridConvolve : GridObject {
 	Grid c,b;
 	Operator2 *op_para, *op_fold;
 	int32 rint;
-	int margx,margy; /* margins */
+	int margx,margy,margx2,margy2; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); }	
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
 	GRINLET3(0);
@@ -829,10 +827,18 @@ GRID_INLET(GridConvolve,0) {
 	/* bug: da[0]>=db[0] and da[1]>=db[1] are also conditions */
 	int32 v[da->n];
 	COPY(v,da->v,da->n);
-	margy = db->get(0)/2;
-	margx = db->get(1)/2;
-	v[0] += 2*margy;
-	v[1] += 2*margx;
+//	fprintf(stderr,"db=%s\n",db->to_s());
+	margy = (db->get(0)-1)/2;
+	margx = (db->get(1)-1)/2;
+	margy2 = db->get(0)-1-margy;
+	margx2 = db->get(1)-1-margx;
+//	fprintf(stderr,"margy1=%d margx1=%d\n",margy,margx);
+//	fprintf(stderr,"margy2=%d margx2=%d\n",margy2,margx2);
+//	margy = db->get(0)/2;
+//	margx = db->get(1)/2;
+//	fprintf(stderr,"margyo=%d margxo=%d\n",margy,margx);
+	v[0] += db->get(0)-1;
+	v[1] += db->get(1)-1;
 	c.init(new Dim(da->n,v),in->nt);
 	out[0]->begin(da->dup(),in->nt);
 	in->set_factor(da->prod(1));
@@ -850,7 +856,7 @@ GRID_INLET(GridConvolve,0) {
 	/* building c from a */
 	while (n) {
 		COPY(base,data,factor);
-		COPY(base+factor,data,margx*l);
+		COPY(base+factor,data,margx2*l);
 		COPY(base-margx*l,data+factor-margx*l,margx*l);
 		base += ll; data += factor; n -= factor; i++;
 	}
@@ -864,7 +870,7 @@ GRID_INLET(GridConvolve,0) {
 
 	/* finishing building c from a */
 	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
-	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,     margy*ll);
+	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,    margy2*ll);
 
 	/* the real stuff */
 	STACK_ARRAY(T,buf3,l);

@@ -200,6 +200,11 @@ end
 		a.send_in 1,:list,3,3,nt,hm, 1,1,1,1,1,1,1,1,1
 		i0.send_in 0,:list,nt, 1,1,1,0,0,0 }
 
+	(a = FObject["@convolve * + 0"]).connect 0,e,0
+	x.expect([1,3,6,4,0]) {
+		a.send_in 1, 1,2,nt,hm, 1,1
+		a.send_in 0, 1,5,nt,hm, 0,1,2,4,0 }
+
 	(a = FObject["@import {4}"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
 		[2,3,5,7].each {|v| a.send_in 0,v }}
