@@ -239,13 +239,6 @@ FILE *gf_file_fopen(const char *name, int mode) {
 
 /* **************************************************************** */
 
-/* a set of objects */
-struct ObjectSet {
-	int capa;
-	int len;
-	GridObject **buf;
-};
-
 ObjectSet *ObjectSet_new(void) {
 	ObjectSet *$ = NEW(ObjectSet,1);
 	$->capa = 1;

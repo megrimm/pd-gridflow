@@ -645,11 +645,18 @@ Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 
 /* **************************************************************** */
 
-typedef struct ObjectSet ObjectSet;
+/* a set of gridobjects */
+typedef struct ObjectSet {
+	int capa;
+	int len;
+	GridObject **buf;
+} ObjectSet;
 
 ObjectSet *ObjectSet_new(void);
 void ObjectSet_add(ObjectSet *$, GridObject *obj);
 void ObjectSet_del(ObjectSet *$, GridObject *obj);
+
 extern ObjectSet *gridflow_object_set;
+extern ObjectSet *format_x11_object_set;
 
 #endif /* __GRID_H */
