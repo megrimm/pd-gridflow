@@ -29,12 +29,15 @@ LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 ### for hardcore malloc debugging; standalone only
 # LDSOFLAGS += -lefence
 
+$(PACKAGELIB): $(OBJS)
+	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS)
+
 else
 ifeq ($(JMAX_VERSION),none)
 
-endif
-endif
-endif
+endif #none
+endif #25
+endif #24
 
 ### standalone stuff
 include Sources
