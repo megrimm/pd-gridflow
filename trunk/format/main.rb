@@ -236,7 +236,10 @@ module EventIO
 			else raise "bad mode" end
 		case source
 		when :file
-			filename = GridFlow.find_file args[0].to_s
+			filename = args[0].to_s
+			GridFlow.gfpost "filename before: '#{filename}'"
+			filename = GridFlow.find_file filename
+			GridFlow.gfpost "filename after: '#{filename}'"
 			@stream = File.open filename, mode
 		when :gzfile
 			raise "gzip is read-only" if mode == "w"
