@@ -1,0 +1,20 @@
+PNAME=video4jmax
+
+DISTDIR = ../../../../fts
+PACKAGEROOT = ..
+
+include $(DISTDIR)/Makefiles/Makefile.lib
+include Sources
+
+PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
+
+all: $(LIBDIR) $(OBJDIR)  $(PACKAGELIB)
+
+TOCLEAN = $(PACKAGELIB)
+
+include $(DISTDIR)/Makefiles/Makefile.lib.end
+
+MODULE_SOFLAGS += -L/usr/X11R6/lib -lX11 -lXext
+
+
+ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g
