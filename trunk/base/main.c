@@ -158,7 +158,7 @@ static void FObject_mark (void *z) {
 
 static int object_count=0;
 
-static void Object_free (void *foo) {
+void Object_free (void *foo) {
 	Object *self = (Object *)foo;
 	self->check_magic();
 	if (!self->rself) {
@@ -432,7 +432,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	BitPacking *self = new BitPacking(endian,bytes,size,masks2);
 	Ruby rself = Data_Wrap_Struct(qlass, 0, Object_free, self);
 	self->rself = rself;
-	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) */
+	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) (!@#$ WHAT???) */
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
 }
@@ -633,6 +633,7 @@ void startup_flow_objects_for_image();
 void startup_flow_objects_for_matrix();
 void startup_formats();
 void startup_cpu();
+void startup_usb();
 
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
@@ -702,6 +703,10 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects_for_image();
 	startup_flow_objects_for_matrix();
 
+#ifdef HAVE_USB
+	startup_usb();
+#endif
+
 	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
@@ -716,12 +721,12 @@ BUILTIN_SYMBOLS(FOO)
 
 	startup_formats();
 
-	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
-	EVAL("GridFlow.load_user_config");
-
 #ifdef HAVE_MMX
 	if (!getenv("NO_MMX")) startup_cpu();
 #endif
+
+	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
+	EVAL("GridFlow.load_user_config");
 
 	signal(11,SIG_DFL); /* paranoia */
 }
