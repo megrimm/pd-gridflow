@@ -122,8 +122,10 @@ const char *video_mode_choice[] = {
 	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,ARRAY(_table_))); \
 	free(foo);}
 
-#define WHCHOICE(_field_,_table_) \
-	whine(TAB "%s: %s", #_field_, choice_to_s($->_field_,ARRAY(_table_)));
+#define WHCHOICE(_field_,_table_) { \
+	char *foo; \
+	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,ARRAY(_table_)));\
+	free(foo);}
 
 char *flags_to_s(int value, int n, const char **table) {
 	int i;
@@ -138,8 +140,14 @@ char *flags_to_s(int value, int n, const char **table) {
 	return foo;
 }
 
-const char *choice_to_s(int value, int n, const char **table) {
-	return (value < 0 || value >= COUNT(table)) ? "(Unknown)" : table[value];
+char *choice_to_s(int value, int n, const char **table) {
+	if (value < 0 || value >= n) {
+		char *foo = NEW(char,64);
+		sprintf(foo,"(Unknown #%d)",value);
+		return foo;
+	} else {
+		return strdup(table[value]);
+	}
 }
 
 void VideoChannel_whine(VideoChannel *$) {
@@ -189,7 +197,7 @@ void VideoPicture_whine(VideoPicture *$) {
 	WH(contrast,"%d");
 	WH(whiteness,"%d");
 	WH(depth,"%d");
-	WHCHOICE(palette,video_palette_choice)
+	WHCHOICE(palette,video_palette_choice);
 }
 
 void video_mbuf_whine(VideoMbuf *$) {
@@ -206,20 +214,12 @@ void video_mmap_whine(VideoMmap *$) {
 	whine("VideoMBuf:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
-	WHCHOICE(format,video_palette_choice)
+	WHCHOICE(format,video_palette_choice);
 };
 
 /* **************************************************************** */
 
 extern FileFormatClass FormatVideoDev;
-
-/*
-#define WIOCTL(_f_,_name_,_arg_) do { \
-	if (ioctl(_f_,_name_,_arg_) < 0) { \
-		whine("ioctl %s: %s",#_name_,strerror(errno)); \
-	} \
-} while(0)
-*/
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
@@ -243,13 +243,12 @@ void FormatVideoDev_size (FileFormat *$, int height, int width) {
 }
 
 /* picture is read at once by frame() to facilitate debugging. */
+/*
 Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 
 	int n;
 	if (frame != -1) return 0;
 	$->left = Dim_prod($->dim);
-
-/*	whine("will read %d bytes", $->left); */
 
 	$->stuff = NEW2(uint8,$->left);
 
@@ -261,6 +260,7 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 	}
 	return $->dim;
 }
+*/
 
 Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	VideoMbuf vmbuf;
@@ -270,8 +270,6 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	int n;
 	if (frame != -1) return 0;
 	$->left = Dim_prod($->dim);
-
-	whine("will read %d bytes", $->left);
 
 	if ($->stuff) free($->stuff);
 	$->stuff = NEW2(uint8,$->left);
@@ -362,6 +360,20 @@ void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
 		FormatVideoDev_channel($,value);
 	} else if (sym == SYM(tuner)) {
 		FormatVideoDev_tuner($,value);
+
+#define PICTURE_ATTR(_name_) \
+	} else if (sym == SYM(_name_)) { \
+		VideoPicture vp; \
+		WIOCTL($->stream_raw, VIDIOCGPICT, &vp); \
+		vp._name_ = value; \
+		WIOCTL($->stream_raw, VIDIOCSPICT, &vp); \
+
+	PICTURE_ATTR(brightness)
+	PICTURE_ATTR(hue)
+	PICTURE_ATTR(colour)
+	PICTURE_ATTR(contrast)
+	PICTURE_ATTR(whiteness)
+
 	} else {
 		whine("unknown option: %s", fts_symbol_name(sym));
 	}
