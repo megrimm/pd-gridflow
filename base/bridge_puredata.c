@@ -305,7 +305,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete$1 (kludge *k) {
-	post("BFObject_delete$1 says hello %08x\n",(int)k->$);
+	post("BFObject_delete$1 says hello %08x",(int)k->$);
 	rb_funcall(k->$->peer,SI(delete),0);
 }
 

@@ -68,7 +68,7 @@ kloc::
 	configure Makefile.gf extra/*.rb
 
 edit::
-	(nedit base/*.rb base/*.[ch] format/main.rb tests/test.rb &)
+	(nedit base/*.rb base/*.[ch] format/main.rb &)
 
 CONF = config.make config.h Makefile
 
@@ -78,7 +78,7 @@ export-config::
 EFENCE = /usr/lib/libefence$(LSUF)
 #	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
-TEST = tests/test.rb math
+TEST = base/test.rb math
 BACKTRACE = ([ -f core ] && gdb `which ruby` core)
 
 test::
@@ -99,7 +99,7 @@ testpd::
 	(pd -path . -lib gridflow test.pd || gdb `which pd` core)
 
 munchies::
-	ruby tests/test.rb munchies
+	ruby base/test.rb munchies
 
 foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"
