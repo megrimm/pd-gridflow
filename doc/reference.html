@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.1 - reference</title>
+<title>GridFlow 0.6.2 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.1 - reference index</h4>
+    <h4>GridFlow 0.6.2 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -68,6 +68,8 @@
 <h4><a href="#Objects_for_Reporting">Objects for Reporting</a></h4><ul>
 <li><a href="#@dim"><img src="images/@dim.png" alt="[@dim]" border="0"></a></li>
 <li><a href="#@print">@print</a></li>
+<li><a href="#rubyprint">rubyprint</a></li>
+<li><a href="#printargs">printargs</a></li>
 </ul>
 <h4><a href="#Objects_for_Picture_Processing">Objects for Picture Processing</a></h4><ul>
 <li><a href="#@convolve"><img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"></a></li>
@@ -85,7 +87,23 @@
 <li><a href="#format mpeg @in"><img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"></a></li>
 <li><a href="#format grid @in/@out"><img src="images/format_grid.png" alt="[open grid file filename.grid]" border="0"></a></li>
 <li><a href="#format videodev @in"><img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"></a></li>
+<li><a href="#format sdl @out">format sdl @out</a></li>
 <li><a href="#format x11 @in/@out"><img src="images/format_x11.png" alt="[open x11 here]" border="0"></a></li>
+</ul>
+<h4><a href="#Objects_for_Scripting">Objects for Scripting</a></h4><ul>
+<li><a href="#ruby class FObject extending Data">ruby class FObject extending Data</a></li>
+<li><a href="#ruby class GridObject extending FObject">ruby class GridObject extending FObject</a></li>
+<li><a href="#ruby class BitPacking">ruby class BitPacking</a></li>
+</ul>
+<h4><a href="#Objects_for_Internals">Objects for Internals</a></h4><ul>
+<li><a href="#C++ class GridInlet">C++ class GridInlet</a></li>
+<li><a href="#C++ class GridOutlet">C++ class GridOutlet</a></li>
+<li><a href="#C++ class Dim">C++ class Dim</a></li>
+<li><a href="#C++ class Grid">C++ class Grid</a></li>
+<li><a href="#C++ class Operator1">C++ class Operator1</a></li>
+<li><a href="#C++ class Operator2">C++ class Operator2</a></li>
+<li><a href="#C++ class GridClass">C++ class GridClass</a></li>
+<li><a href="#C++ class GFBridge">C++ class GFBridge</a></li>
 </ul>
 <br><br>
 </td></tr> 
@@ -242,17 +260,23 @@
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Generating"></a><h4>Objects for Generating</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><a href="images/help_@for.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p>works like a regular [for] object plugged to a [@import] tuned 
-		for a Dim(size) where size is the number of values produced by a bang 
-		to that [for].</p> <br><b>method</b> init <b>(</b><i>integer</i> from<b>, </b><i>integer</i> to<b>, </b><i>integer</i> step<b>)</b>     <br>
- <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b>  
+   <p>when given scalar bounds, works like a regular [for] object plugged 
+		to a [@import] tuned for a Dim(size) where size is the number of values 
+		produced by a bang to that [for].</p> <p>when given vector bounds, will work like any number of [for] objects 
+		producing all possible combinations of their values in the proper order. 
+		This replaces the old [@identity_transform] object.</p> <br><b>method</b> init <b>(</b><i>integer</i> from<b>, </b><i>integer</i> to<b>, </b><i>integer</i> step<b>)</b>     <br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>index<b>)</b> 
 			replaces the "from" value and produces output. <br>
- <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
+ <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>index<b>)</b> 
 			replaces the "to" value. <br>
- <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>  
+ <br><b>inlet 2</b> <b>grid</b> <b>dim(</b>index_steps<b>)</b> 
 			replaces the "step" value. <br>
   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>size<b>)</b> 
-				where size is floor((to-from+1)/step) <br>
+				where size is floor((to-from+1)/step) 
+				[for scalar bounds] <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>*size,dimension<b>)</b> 
+				where *size is floor((to-from+1)/step) 
+				[for vector bounds] <br>
   <br></td> 
 <tr><td>&nbsp;</td></tr> 
 <tr> 
@@ -296,7 +320,7 @@
    <br><b>outlet 0</b> <b>grid</b>  <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@fold">@fold</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@fold.png" alt="[@fold +]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p><ul> <li><b>1</b> : [@fold +] computes totals</li> <li><b>2</b> : [@fold inv+] is an alternated sum (+/-)</li> <li><b>3</b> : [@fold * 1] can compute the size of a grid using its dimension list</li> <li><b>4</b> : [@fold & 1] can mean "for all"</li> <li><b>5</b> : [@fold | 0] can mean "there exists (at least one)"</li> <li><b>6</b> : [@fold ^ 0] can mean "there exists an odd number of..."</li> <li><b>7</b> : [@fold ^ 1] can mean "there exists an even number of...".</li> </ul></p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>)</b>    
+   <p><ul> <li><b>1</b> : [@fold +] computes totals</li> <li><b>2</b> : [@fold inv+] is an alternated sum (+/-)</li> <li><b>3</b> : [@fold * 1] can compute the size of a grid using its dimension list</li> <li><b>4</b> : [@fold & 1] can mean "for all"</li> <li><b>5</b> : [@fold | 0] can mean "there exists (at least one)"</li> <li><b>6</b> : [@fold ^ 0] can mean "there exists an odd number of..."</li> <li><b>7</b> : [@fold ^ 1] can mean "there exists an even number of...".</li> </ul></p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>     
 			the base value is optional and defaults to 0. 
 			the operator is one from the table of two-input operators. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., last<b>)</b> 
@@ -343,7 +367,7 @@
 		useful for performing linear transforms like rotations, scalings, 
 		tilts, and color remappings. A linear transform is done by something called matrix 
 		multiplication, which happens to be [@inner * + 0]. </p> <p>This object has been renamed from @inner to @inner2 because a 
-		different @inner object will be added in the future.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>)</b>     
+		different @inner object will be added in the future.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
 			op_para and op_fold are two operators picked from the table 
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
@@ -364,7 +388,7 @@
 				changes the right-hand side grid to that. <br>
     <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner2">@inner2</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p>a variant on @inner.</p> <p>This object used to be called @inner.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>)</b>     
+   <p>a variant on @inner.</p> <p>This object used to be called @inner.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
 			op_para and op_fold are two operators picked from the table 
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
@@ -441,21 +465,8 @@
 			grids as stored, as indexed, or as assembled from multiple 
 			indexings.  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@identity_transform.png" alt="[@identity_transform]" border="0"><br clear="left"><br><br><a href="images/help_@identity_transform.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <br><b>method</b> init <b>(</b><b>)</b>  
-			no arguments. <br>
-  <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b> creates a coordinate map that can 
-			be fed into the left input of @store to give the same result 
-			as a bang in that input; that coordinate map is 
-			Dim(height,width,2), where each Dim(2) is a (y,x) pair indexing 
-			a pixel.<br>
-   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> set the height.<br>
-   <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b> set the width.<br>
-   <br><b>outlet 0</b> <b>grid</b> a coordinate map.<br>
-  <p>@identity_transform builds a pixel-level transform grid suitable 
-		for using with inlet 0 of @store. </p> <p> Sending an integer to inlet 1 sets the height of the resulting 
-		picture.</p> <p> Sending a grid to inlet 0 generates said grid and sends it to 
-		inlet 0. Not guaranteed to be fast (use an intermediate @store as a 
-		cache if needed)</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br>
+   <p> 
+			OBSOLETE AND REMOVED. USE @for INSTEAD. </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@scale_to.png" alt="[@scale_to]" border="0"><br clear="left"><br><br><a href="images/help_@scale_to.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b><b>)</b>  
 			no arguments. <br>
@@ -508,7 +519,20 @@
 				the list of dimensions of the incoming grid. <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@print">@print</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>future use</p> <br></td> 
+ <br><b>method</b> init <b>(</b><b>)</b> <br>
+  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
+			prints the dimensions of the grid. 
+			prints all the grid data if there are 2 dimensions or less. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rubyprint">rubyprint</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b><b>)</b> <br>
+  <br><b>inlet 0</b> <b>method</b> <any> <b>(</b><b>)</b>  
+			prints the message to the console. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="printargs">printargs</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b>any...<b>)</b>   
+			prints everything. <br>
+ <br></td> 
 <tr><td>&nbsp;</td></tr> 
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -516,7 +540,7 @@
 <tr><td colspan="4"><a name="Objects_for_Picture_Processing"></a><h4>Objects for Picture Processing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@convolve.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>this is the object for blurring, sharpening, finding edges, 
-		embossing, and many other uses.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>)</b>     <br>
+		embossing, and many other uses.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b> 
 				splits the incoming grid into dim(rest...) parts. 
 				for each of those parts at (y,x), a rectangle of such 
@@ -652,8 +676,7 @@
 		the whole grid is received. </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>Video4Linux-1 devices, RGB-24 only. Variable picture size. 
-		should work for bttv based cards and the dc1 from miro, possibly 
-		dc10plus.</p> <p>If you suffer from color inversion, you may feed the list 
+		should work for bttv based cards and the dc1/dc10plus from Miro.</p> <p>If you suffer from color inversion, you may feed the list 
 		"<kbd>3 3 # 0 0 1 0 1 0 1 0 0</kbd>" to the right side of a <kbd>[@inner2 * + 0]</kbd>. 
 		Use that @inner2 object as a RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b> option brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b> option hue <b>(</b><i>0-65535</i> level<b>)</b> <br>
@@ -666,6 +689,12 @@
  </p> <br><b>method</b> option size <b>(</b>height<b>, </b>width<b>)</b>    
 			sets the input size, especially when using a video digitalizer 
 			device <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> open <b>(</b><b>)</b>  
+			opens a dim(480,640,3) rgb window. <br>
+ <br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> 
+			sends frame to screen. window is NOT resized. <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_x11.png" alt="[open x11 here]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
    <br><b>method</b> open x11 here <b>(</b><b>)</b>  
@@ -711,11 +740,55 @@
 			anyway)</li> </ul> <br>
  <br></td> 
 <tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Objects_for_Scripting"></a><h4>Objects for Scripting</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby class FObject extending Data">ruby class FObject extending Data</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Provides inlets and outlets to Ruby Objects. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby class GridObject extending FObject">ruby class GridObject extending FObject</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Provides grid support to FObjects. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby class BitPacking">ruby class BitPacking</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		A BitPacking is a simple two-way converter between different 
+		numeric layouts. <br></td> 
+<tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Objects_for_Internals"></a><h4>Objects for Internals</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridInlet">C++ class GridInlet</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		GridInlets represent inlets that accept grids. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridOutlet">C++ class GridOutlet</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		GridOutlets represent outlets that send grids. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Dim">C++ class Dim</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Dim represents a list of dimensions. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Grid">C++ class Grid</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Grid represents a grid that is fully stored in memory. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator1">C++ class Operator1</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		This represents a one-input operator. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator2">C++ class Operator2</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		This represents a two-input operator. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridClass">C++ class GridClass</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		This represents a class of GridObjects. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GFBridge">C++ class GFBridge</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		This holds linkage information about jMax and PureData and such. <br></td> 
+<tr><td>&nbsp;</td></tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.1 Documentation<br>
+<p><font size="-1">GridFlow 0.6.2 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

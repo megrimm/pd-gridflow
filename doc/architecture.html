@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.1 - reference</title>
+<title>GridFlow 0.6.2 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.1 - reference index</h4>
+    <h4>GridFlow 0.6.2 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -46,6 +46,8 @@
 <h4><a href="#One-Input_Operators">One-Input Operators</a></h4><ul>
 </ul>
 <h4><a href="#Two-Input_Operators">Two-Input Operators</a></h4><ul>
+</ul>
+<h4><a href="#Bridges">Bridges</a></h4><ul>
 </ul>
 <br><br>
 </td></tr> 
@@ -72,12 +74,18 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Grid_Literals"></a><h4>Grid Literals</h4></td></tr><tr><td></td><td></td><td> 
-	In every inlet that accepts a grid, a list may be sent instead; if 
+<p> 
+	In every grid-accepting inlet, a list may be sent instead; if 
 	it consists only of integers, it will be converted to a 
 	one-dimensional grid. Else it may contain a single "#" sign and 
 	integers on both sides of it, where the ones to the left of it are 
 	fed as arguments to an imaginary [@redim] object and the one to the 
 	right of it are fed through that [@redim]. 
+</p> 
+<p> 
+	In every grid-accepting inlet, an integer or float may also be sent; 
+	it will be converted to a zero-dimensional grid (a <b>scalar</b>). 
+</p> 
 </td></tr><tr><td>&nbsp;</td></tr> 
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -140,15 +148,28 @@
 		(two pi radians) is 36000. You convert from degrees to our angles 
 		by multiplying by 100. You convert from radians to our angles by 
 		multiplying by 18000/pi.</p> <p>Hyperbolic functions (tanh) work with our angles too, so the 
-		same conversions apply.</p> </td></tr> <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>add</td><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr> <tr><td>sub</td><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr> <tr><td>bus</td><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr> <tr><td>mul</td><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr> <tr><td>div</td><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr> <tr><td>vid</td><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr> <tr><td>mod</td><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, non-negative remainder </td></tr> <tr><td>dom</td><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, non-negative remainder </td></tr> <tr><td>or</td><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise </td></tr> <tr><td>xor</td><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr> <tr><td>and</td><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr> <tr><td>shl</td><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td> 
+		same conversions apply.</p> </td></tr> <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>add</td><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr> <tr><td>sub</td><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr> <tr><td>bus</td><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr> <tr><td>mul</td><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr> <tr><td>div</td><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr> <tr><td>vid</td><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr> <tr><td>mod</td><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, modulo </td></tr> <tr><td>dom</td><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, modulo </td></tr> <tr><td>rem</td><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder </td></tr> <tr><td>mer</td><td><img src="images/op/mer.jpg" border="0" alt="mer"></td><td> B % A, remainder </td></tr> <tr><td>or</td><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise </td></tr> <tr><td>xor</td><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr> <tr><td>and</td><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr> <tr><td>shl</td><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td> 
 		A * (2**(B % 32)), which is left-shifting </td></tr> <tr><td>shr</td><td><img src="images/op/shr.jpg" border="0" alt="shr"></td><td> 
 		A / (2**(B % 32)), which is right-shifting </td></tr> <tr><td>sc_or</td><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td> if A is zero then B else A </td></tr> <tr><td>sc_and</td><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td> if A is zero then zero else B</td></tr> <tr><td>min</td><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td></tr> <tr><td>max</td><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td></tr> <tr><td>cmp</td><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A<B; 0 when A=B; 1 when A>B. </td></tr> <tr><td>eq</td><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td> is A equal to B ? 1=true, 0=false </td></tr> <tr><td>ne</td><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td> is A not equal to B ? </td></tr> <tr><td>gt</td><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td> is A greater than B ? </td></tr> <tr><td>le</td><td><img src="images/op/le.jpg" border="0" alt="le"></td><td> is A not greater than B ? </td></tr> <tr><td>lt</td><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td> is A less than B ? </td></tr> <tr><td>ge</td><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>is A not less than B ? </td></tr> <tr><td>sin</td><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td> B * sin(A) </td></tr> <tr><td>cos</td><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td> B * cos(A) </td></tr> <tr><td>atan</td><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td></tr> <tr><td>tanh</td><td><img src="images/op/tanh.jpg" border="0" alt="tanh"></td><td> B * tanh(A) </td></tr> <tr><td>gamma</td><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr> <tr><td>pow</td><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A raised to power B </td></tr> 
 <tr><td>&nbsp;</td></tr></table> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Bridges"></a><h4>Bridges</h4></td></tr><tr><td></td><td></td><td> 
+<p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric. 
+jMax support has been added back as a <b>Bridge</b>.</p> 
+<p>Bridges, for the most part, plug into the FObject class, which is the common 
+root of most of GridFlow's classes. Under the current design, the bridge is 
+compiled separately, and is directly loaded by the host software; then the 
+bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks 
+with the main part. 
+</p> 
+</td></tr><tr><td>&nbsp;</td></tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.1 Documentation<br>
+<p><font size="-1">GridFlow 0.6.2 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

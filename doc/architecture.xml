@@ -50,12 +50,18 @@
 </prose></section>
 
 <section name="Grid Literals"><prose>
-	In every inlet that accepts a grid, a list may be sent instead; if
+<p>
+	In every grid-accepting inlet, a list may be sent instead; if
 	it consists only of integers, it will be converted to a
 	one-dimensional grid. Else it may contain a single "#" sign and
 	integers on both sides of it, where the ones to the left of it are
 	fed as arguments to an imaginary [@redim] object and the one to the
 	right of it are fed through that [@redim].
+</p>
+<p>
+	In every grid-accepting inlet, an integer or float may also be sent;
+	it will be converted to a zero-dimensional grid (a <b>scalar</b>).
+</p>
 </prose></section>
 
 <section name="Grid Protocol"><prose>
@@ -178,8 +184,10 @@
 	<operator-2 name="*"     cname="mul"> A * B </operator-2>
 	<operator-2 name="/"     cname="div"> A / B, rounded downwards </operator-2>
 	<operator-2 name="inv*"  cname="vid"> B / A, rounded downwards </operator-2>
-	<operator-2 name="%"     cname="mod"> A % B, non-negative remainder </operator-2>
-	<operator-2 name="swap%" cname="dom"> B % A, non-negative remainder </operator-2>
+	<operator-2 name="%"     cname="mod"> A % B, modulo </operator-2>
+	<operator-2 name="swap%" cname="dom"> B % A, modulo </operator-2>
+	<operator-2 name="rem"     cname="rem"> A % B, remainder </operator-2>
+	<operator-2 name="swaprem" cname="mer"> B % A, remainder </operator-2>
 
 	<!-- bits -->
 	<operator-2 name="|"     cname="or" > A or B, bitwise  </operator-2>
@@ -215,5 +223,18 @@
 	<operator-2 name="gamma" cname="gamma"> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
 	<operator-2 name="**" cname="pow"> A raised to power B </operator-2>
 </section>
+
+<section name="Bridges"><prose>
+<p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric.
+jMax support has been added back as a <b>Bridge</b>.</p>
+
+<p>Bridges, for the most part, plug into the FObject class, which is the common
+root of most of GridFlow's classes. Under the current design, the bridge is
+compiled separately, and is directly loaded by the host software; then the
+bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks
+with the main part.
+</p>
+
+</prose></section>
 
 </jmax-doc>
