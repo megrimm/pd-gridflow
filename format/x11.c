@@ -71,12 +71,13 @@ struct FormatX11 : Format {
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
 
-	FormatX11 () : dim(0), window(0), use_stripes(false), 
-	autodraw(1), ximage(0), image(Pt<uint8>()), is_owner(true)
+	FormatX11 () : use_stripes(false), 
+	autodraw(1), window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
+	verbose(false), dim(0)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
-	, verbose(false) {}
+	{}
 
 	void show_section(int x, int y, int sx, int sy);
 	void set_wm_hints (int sx, int sy);
@@ -96,7 +97,7 @@ struct FormatX11 : Format {
 	\decl void setcursor (int shape);
 	\decl void hidecursor ();
 	\decl void verbose_m (int verbose);
-	DECL3(initialize);
+	\decl void initialize (...);
 	GRINLET3(0);
 };
 
@@ -489,7 +490,7 @@ void FormatX11::open_display(const char *disp_string) {
 #endif
 }
 
-METHOD3(FormatX11,initialize) {
+\def void initialize (...) {
 	/* defaults */
 	int sy = 240;
 	int sx = 320;
@@ -505,7 +506,6 @@ METHOD3(FormatX11,initialize) {
 	}
 
 	int i;
-	// assert (ac>0);
 	if (domain==SYM(here)) {
 		if (verbose) gfpost("mode `here'");
 		open_display(0);
@@ -582,12 +582,10 @@ METHOD3(FormatX11,initialize) {
 
 	if (verbose) bit_packing->gfpost();
 	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
-	return Qnil;
 }
 
 
 GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),
-DECL(FormatX11,initialize),
 \grdecl
 ){
 	IEVAL(rself,"install 'FormatX11',1,1;"
