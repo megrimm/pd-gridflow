@@ -21,6 +21,9 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+require "socket"
+require "fcntl"
+
 class IO
   def nonblock= flag
     bit = Fcntl::O_NONBLOCK
@@ -236,6 +239,21 @@ module EventIO
 		when :file
 			filename = GridFlow.find_file args[0].to_s
 			@stream = File.open filename, mode
+		when :gzfile
+			raise "gzip is read-only" if mode == "w"
+			filename = GridFlow.find_file args[0].to_s
+			@stream = File.open filename, mode
+			r,w = IO.pipe
+			if fork
+				w.close
+				@stream = r
+			else
+				r.close
+				STDOUT.reopen w
+				STDIN.reopen @stream
+				@stream = File.open filename, mode
+				exec "gzip", "-dc"
+			end
 		when :tcp
 			if VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
@@ -296,6 +314,7 @@ class FormatGrid < Format; include EventIO
 		lastpos = @stream.seek 0,IO::SEEK_END
 		if thispos == lastpos then thispos = 0 end
 		nextpos = @stream.seek 0,IO::SEEK_SET
+	rescue Errno::ESPIPE # ignore if can't seek
 	end
 
 	# rewinding and starting
@@ -314,22 +333,18 @@ class FormatGrid < Format; include EventIO
 
 	# the header
 	def frame1 data
-		if is_le #!@#$ bug
-			GridFlow.whine "we are smallest digit first"
-		else
-			GridFlow.whine "we are biggest digit first"
-		end
+		GridFlow.whine("we are " + if OurByteOrder == ENDIAN_LITTLE
+			then "smallest digit first"
+			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
-		case head
-		when "\x7fGRID"
-			@is_le = false
-			GridFlow.whine "this file is biggest digit first"
-		when "\x7fgrid"	
-			@is_le = true
-			GridFlow.whine "this file is smallest digit first"
-		else
-			raise "grid header: invalid (#{data.inspect})"
-		end
+		@is_le = case head
+			when "\x7fGRID"; false
+			when "\x7fgrid"; @is_le = true
+			else raise "grid header: invalid (#{data.inspect})" end
+		GridFlow.whine("this file is " + if @is_le
+			then "biggest digit first"
+			else "smallest digit first" end)
+
 		case bpv
 		when 8, 32; # ok
 		else raise "unsupported bpv (#{@bpv})"
