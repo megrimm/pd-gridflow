@@ -27,7 +27,6 @@ class Or
 	def initialize(*a) @a=a end
 end
 
-# future use
 class Feature
 	def initialize(&b)
 		instance_eval(&b)
@@ -59,7 +58,7 @@ Feature.new {
 Feature.new {
 	tag :pentium
 	name "Pentium-compatible CPU"
-	uses_so "-mpentium"
+	uses_so ["-mpentium"]
 	test proc {
 		# this is very "heuristic" to say the least. sorry.
 		c_test '
@@ -79,7 +78,7 @@ Feature.new {
 Feature.new {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so ["-L/usr/X11R6/lib","-lX11"]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
@@ -87,7 +86,6 @@ Feature.new {
 		", *uses_so
 	}
 	formats "X11"
-	options "HAVE_X11_SHARED_MEMORY"
 },
 Feature.new {
 	tag :x11_shm
@@ -105,14 +103,16 @@ Feature.new {
 		int main (void) {return !XShmPutImage;}
 		", *uses_so
 	}
+	options "HAVE_X11_SHARED_MEMORY"
 },
 Feature.new {
 	tag :videodev
+	name "Video4linux Digitizer Driver Interface"
 	test proc {
 		c_test "
 		#include <stdlib.h>
 		#include <linux/videodev.h>
-		int main (void) { struct video_window foo; }
+		int main (void) { struct video_window foo; return 0; }
 		"
 	}
 	formats "VideoDev"
@@ -144,6 +144,7 @@ Feature.new {
 },
 Feature.new {
 	tag :quicktime
+	name "HeroineWarrior's QuickTime file reader"
 	status :disabled
 	uses_so ["-lquicktime","-lpthread","-lpng","-ldl","-lglib"]
 	test proc {
@@ -187,9 +188,7 @@ Feature.new {
 $conf={
 	:ARCH => nil,
 	:JMAX_VERSION => :unknown,
-	#!@#$ Xext ???
-	#!@#$ X11 is supposed to be optional
-	:LDSOFLAGS => ["-lm", "-L/usr/X11R6/lib", "-lX11", "-lXext"],
+	:LDSOFLAGS => ["-lm","-lruby"],
 	:FEATURES => {},
 	:FORMATS => ["PPM","Targa","Grid"],
 	:OPTIONS => [],
@@ -212,17 +211,17 @@ end
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
-	when "--no-x11"
+	when "--no-x11" #!@#$
 		$conf[:HAVE_X11]=false
 		puts "won't check for libX11"
-	when "--no-mpeg"
+	when "--no-mpeg" #!@#$
 		$conf[:HAVE_MPEG]=false
 		puts "won't check for libmpeg"
-	when "--fast"
+	when "--fast" #!@#$
 		puts "Fast Mode (less error checking)"
 		$conf[:OPTIONS].push :HAVE_SPEED, :BLAH
 		#!@#$ what is BLAH ?
-	when "--no-profiling"
+	when "--no-profiling" #!@#$
 		puts "No Profiling"
 		$conf[:HAVE_PROFILING]=false
 	when "--arch"
@@ -235,7 +234,7 @@ while ARGV.length>0 do
 	end
 end
 
-if $conf[:JMAXROOTDIR] == nil
+if not $conf[:JMAXROOTDIR]
 	$conf[:JMAXROOTDIR]=`(cd ../..; echo $PWD)`
 	if FileTest.directory? $conf[:JMAXROOTDIR]+"/Makefiles"
 		puts "assuming --jmax-dist-dir $JMAXROOTDIR"
@@ -252,26 +251,25 @@ LOG = File.open "./config.log", "w"
 
 #--------------------------------#
 
+def launch2(log,*command)
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch(nil,w,w,*command)
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid child
+	log << "error \##{ret}\n" if ret>0
+	return ret<=0
+end
+
 def c_test code, *link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
 	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
-	log << command.join(" ") << "\n"
-	r,w = IO.pipe
-	child = launch nil,w,w,*command
-	w.close
-	log << r.readlines.join << "\n"
-	ret = join_pid child
-	(log << "error \##{ret}\n"; return false) if ret>0
+	launch2 log,*command or return false
 	command = ["/tmp/#{$$}"]
-	log << command.join(" ") << "\n"
-	r,w = IO.pipe
-	child = launch nil,w,w,*command
-	w.close
-	log << r.readlines.join << "\n"
-	ret = join_pid child
-	(log << "error \##{ret}\n"; return false) if ret>0
+	launch2 log,*command or return false
 	true
 ensure
 	LOG.puts log
@@ -302,43 +300,76 @@ def join_pid pid
 	Process.waitpid2(pid)[1]
 end
 
+DUAL = Object.new
+DUAL.instance_eval {
+	def self.print x
+		LOG   .puts  x; LOG   .flush
+		STDERR.print x; STDERR.flush
+	end
+	def self.puts x
+		self.print x+"\n"
+	end
+}
+
 def try feature
-  if Or===feature.uses_h
-    a=feature.uses_h.a
-    for i in a do
-      e = feature.dup
-      e.uses_h i
-      r = try e
-	 return r if r
-    end
-    return false
-  end
-  if feature.test
-    line = "trying [#{feature.tag}] #{feature.name}: "
-    LOG.puts line
-    STDERR.print line
-    STDERR.flush
-    if feature.test.call(feature)
-      feature.action.call if feature.action
-      $conf[:FEATURES][feature.tag] = feature
-      STDERR.puts "yes"; true
-    else
-      STDERR.puts "no"; false
-    end
-  else
-    puts "[#{feature.tag}] #{feature.name}: enabled"
-    $conf[:FEATURES][feature.tag] = feature
-    feature.action.call if feature.action
-    true
-  end
+	if Or===feature.uses_h
+		a=feature.uses_h.a
+		for i in a do
+			e=feature.dup
+			e.uses_h i
+			e.name(e.name+" <#{e.uses_h}>")
+			r=try e
+			return r if r
+		end
+		return false
+	end
+	DUAL.print "[#{feature.tag}] #{feature.name}: "
+	if feature.status == :disabled
+		DUAL.puts "disabled"
+		return
+	end
+	if feature.test
+		if feature.test.call(feature)
+			DUAL.puts "found"
+		else
+			DUAL.puts "missing"
+			return false
+		end
+	else
+		puts "enabled"
+		$conf[:FEATURES][feature.tag] = feature
+		feature.action.call if feature.action
+	end
+	feature.action.call if feature.action
+	$conf[:FEATURES][feature.tag] = feature
+	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	true
 end
+
+require "rbconfig"
+$conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
+STDERR.print "looking for libruby.so: "
+STDERR.flush
+c_test "
+#include <#{$conf[:RUBY_H]}>
+int main (void) { return !rb_rescue; }
+", "-lruby" or (
+	puts "no"
+	puts "can't continue: libruby.so is required"
+	exit 1)
+puts "yes"
 
 $features.each {|feature| try feature }
 
+$conf[:LDSOFLAGS].uniq!
+
 #--------------------------------#
 
-puts "", "our format list: " + $conf[:FORMATS].join(" ")
-puts "", "our option list: " + $conf[:OPTIONS].join(" ")
+puts ""
+for z in [:ARCH, :JMAX_VERSION, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
+  puts "#{z}: #{$conf[z].inspect}"
+end
+puts ""
 
 #--------------------------------#
 puts "generating ./config.make"
@@ -355,18 +386,14 @@ JMAXDISTDIR=#{$conf[:JMAXROOTDIR]}
 include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 " if $conf[:JMAX_VERSION]
 f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
-}
 
-#--------------------------------#
-puts "generating c/src/Sources"
-File.open("c/src/Sources","w") {|f|
-	sources = %w( lang.c dim.c bitpacking.c operator.c grid.c main.c
-		grid_basic.c grid_extra.c io.c )
-	f.puts "SOURCES = #{sources.join(" ")} \\"
-	for format in $conf[:FORMATS] do
-		f.puts "format_#{format.downcase}.c \\"
-	end
-	f.puts ""
+sources = %w( lang.c dim.c bitpacking.c operator.c grid.c main.c
+	grid_basic.c grid_extra.c io.c )
+f.puts "SOURCES = #{sources.join(" ")} \\"
+for format in $conf[:FORMATS] do
+	f.puts "format_#{format.downcase}.c \\"
+end
+f.puts ""
 }
 
 #--------------------------------#
@@ -390,6 +417,9 @@ for z in $conf[:OPTIONS] do
 end
 if $conf[:FEATURES][:mpeg3]
 f.puts "
+
+#include <#{$conf[:RUBY_H]}>
+
 #ifdef LIBMPEG_INCLUDE_HERE
 #include <#{$conf[:FEATURES][:mpeg3].uses_h}>
 #endif
