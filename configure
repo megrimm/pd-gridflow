@@ -1041,10 +1041,13 @@ f.puts "
 #endif /* __CONFIG_H */"
 }
 
-#--------------------------------#
+#----------------------------------------------------------------#
+# Some fairly nontrivial abuse of black magic.
+
 $LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
 
 $objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
+$objs[$objs.index("base/number.o"),1] = (1..3).map {|i| "base/number.#{i}.o" }
 dir_config("gridflow")
 create_makefile("gridflow")
 mf = File.readlines("Makefile").join""
@@ -1057,10 +1060,14 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp.sub!(/\(CC\)/,'(CXX)')
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
 	comp2 = comp.gsub /-c/,'-xobjective-c++ -c'
+	
 	"%.h.fcs: %.h #{common_deps1}\n\truby -w base/source_filter.rb $< $@\n\n"+
 	"%.c.fcs: %.c #{common_deps2}\n\truby -w base/source_filter.rb $< $@\n\n"+
 	"%.m.fcs: %.m #{common_deps2}\n\truby -w base/source_filter.rb $< $@\n\n"+
 	"%.o: %.c.fcs #{common_deps2}\n\t#{comp}\n"+
+	"%.1.o: %.c.fcs #{common_deps2}\n\t#{comp.gsub /-c/,'-DPASS1 -c'}\n"+
+	"%.2.o: %.c.fcs #{common_deps2}\n\t#{comp.gsub /-c/,'-DPASS2 -c'}\n"+
+	"%.3.o: %.c.fcs #{common_deps2}\n\t#{comp.gsub /-c/,'-DPASS3 -c'}\n"+
 	"%.o: %.m.fcs #{common_deps2}\n\t#{comp2}\n"
 }
 mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
