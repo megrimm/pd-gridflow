@@ -167,7 +167,7 @@ class GridOut < GridObject
 		send_out 0,:bang
 		if @timelog
 			time = Time.new
-			GridFlow.whine(
+			GridFlow.gfpost(
 				"@out:0:end: frame#%03d time: %9.3f s; minus last: %5d ms\n",
 				@framecount, time, ((time-@time)*1000).to_i)
 			@time = time
@@ -228,7 +228,7 @@ module EventIO
 		end
 #		end#while
 	rescue Errno::EWOULDBLOCK
-		GridFlow.whine "read would block"
+		GridFlow.gfpost "read would block"
 	end
 
 	def raw_open(mode,source,*args)
@@ -259,21 +259,21 @@ module EventIO
 			if VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
 			end
-			GridFlow.whine "-----------"
+			GridFlow.gfpost "-----------"
 			time = Time.new
 			TCPSocket.do_not_reverse_lookup = true # hack
 			@stream = TCPSocket.open(args[0].to_s,args[1])
-			GridFlow.whine "----------- #{Time.new-time}"
+			GridFlow.gfpost "----------- #{Time.new-time}"
 			@stream.nonblock = true
 			@stream.sync = true
 			$tasks[self] = proc {self.try_read}
 		when :tcpserver
 			TCPSocket.do_not_reverse_lookup = true # hack
 			TCPServer.do_not_reverse_lookup = true # hack
-			GridFlow.whine "-----------"
+			GridFlow.gfpost "-----------"
 			time = Time.new
 			@acceptor = TCPServer.open(args[0].to_s)
-			GridFlow.whine "----------- #{Time.new-time}"
+			GridFlow.gfpost "----------- #{Time.new-time}"
 			@acceptor.nonblock = true
 			$tasks[self] = proc {self.try_accept}
 		else
@@ -331,12 +331,12 @@ class FormatGrid < Format; include EventIO
 		rewind_if_needed if not TCPSocket===@stream
 		on_read(8) {|data| frame1 data }
 		(try_read nil while read_wait?) if not TCPSocket===@stream
-#		GridFlow.whine "frame: finished"
+#		GridFlow.gfpost "frame: finished"
 	end
 
 	# the header
 	def frame1 data
-#		GridFlow.whine("we are " + if OurByteOrder == ENDIAN_LITTLE
+#		GridFlow.gfpost("we are " + if OurByteOrder == ENDIAN_LITTLE
 #			then "smallest digit first"
 #			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
@@ -344,7 +344,7 @@ class FormatGrid < Format; include EventIO
 			when "\x7fGRID"; false
 			when "\x7fgrid"; @is_le = true
 			else raise "grid header: invalid (#{data.inspect})" end
-#		GridFlow.whine("this file is " + if @is_le
+#		GridFlow.gfpost("this file is " + if @is_le
 #			then "biggest digit first"
 #			else "smallest digit first" end)
 
@@ -355,7 +355,7 @@ class FormatGrid < Format; include EventIO
 		if reserved!=0
 			raise "reserved field is not zero"
 		end
-#		GridFlow.whine "@n_dim=#{@n_dim}"
+#		GridFlow.gfpost "@n_dim=#{@n_dim}"
 		if @n_dim > GridFlow.max_rank
 			raise "too many dimensions (#{@n_dim})"
 		end
@@ -365,7 +365,7 @@ class FormatGrid < Format; include EventIO
 	# the dimension list
 	def frame2 data
 		@dim = data.unpack(if @is_le then "V*" else "N*" end)
-#		GridFlow.whine "dim=#{@dim.inspect}"
+#		GridFlow.gfpost "dim=#{@dim.inspect}"
 		@prod = 1
 		@dim.each {|x| @prod *= x }
 		if @prod > GridFlow.max_size
@@ -418,7 +418,7 @@ class FormatGrid < Format; include EventIO
 			raise "can't send frame when there is no connection"
 		end
 		@dim = inlet_dim 0
-		GridFlow.whine "@dim=#{@dim.inspect}"
+		GridFlow.gfpost "@dim=#{@dim.inspect}"
 		# header
 		@stream.write(
 			[if OurByteOrder==ENDIAN_LITTLE then "\x7fgrid" else "\x7fGRID" end,
@@ -541,8 +541,8 @@ targa header is like:
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.whine sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
-		GridFlow.whine sprintf("tga: comment: %s", comment)
+		GridFlow.gfpost sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
+		GridFlow.gfpost sprintf("tga: comment: %s", comment)
 
 		if depth != 24 and depth != 32
 			raise sprintf("tga: wrong colour depth: %i\n", depth)

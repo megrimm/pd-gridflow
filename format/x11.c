@@ -35,10 +35,6 @@
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
 
-/*
-	Note: sending images through shared memory doesn't work yet.
-*/
-
 #ifdef HAVE_X11_SHARED_MEMORY
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -76,7 +72,7 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 		XSync($->display,False);
 		if (sy>$->dim->get(0)) sy=$->dim->get(0);
 		if (sx>$->dim->get(1)) sx=$->dim->get(1);
-//		whine("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
+//		gfpost("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
 		XShmPutImage($->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
 		/* should completion events be waited for? looks like a bug */
@@ -124,7 +120,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 	VALUE argv[4];
 	XEvent e;
 
-//	whine("X11 HELLO? (%lld)",RtMetro_now());
+//	gfpost("X11 HELLO? (%lld)",RtMetro_now());
 
 	for (;;) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
@@ -133,16 +129,16 @@ static void FormatX11_alarm(FormatX11 *$) {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
+			/*gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
-			if ($->mode == 2) {
+			if ($->mode == SYM(out)) {
 				FormatX11_show_section($, ex->x, ex->y, ex->width,
 				ex->height);
 			}
 		}break;
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			//whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			//gfpost("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			argv[0] = SYM(press);
 			argv[1] = button_sym(eb->button);
 			argv[2] = INT2NUM(eb->y);
@@ -151,7 +147,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			//whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			//gfpost("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			argv[0] = SYM(release);
 			argv[1] = button_sym(eb->button);
 			argv[2] = INT2NUM(eb->y);
@@ -159,7 +155,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
-			//whine("drag at (y=%d,x=%d)",em->y,em->x);
+			//gfpost("drag at (y=%d,x=%d)",em->y,em->x);
 			argv[0] = SYM(motion);
 			argv[1] = INT2NUM(em->y);
 			argv[2] = INT2NUM(em->x);
@@ -171,7 +167,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 			/* like we care */
 		}break;
 		default:
-			whine("received event of type # %d", e.type);
+			gfpost("received event of type # %d", e.type);
 		}
 	}
 }
@@ -180,7 +176,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 
 METHOD(FormatX11,frame) {
 	char *s = $->dim->to_s();
-	whine("$->dim = %s",s);
+	gfpost("$->dim = %s",s);
 	FREE(s);
 
 	XGetSubImage($->display, $->window,
@@ -220,7 +216,7 @@ static void FormatX11_dealloc_image (FormatX11 *$) {
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	current_x11->use_shm = false;
-	whine("caught X11 error (should be \"BadAccess: can't find shm\")");
+	gfpost("caught X11 error (should be \"BadAccess: can't find shm\")");
 	return 42; /* it seems that the return value is ignored. */
 }
 
@@ -271,7 +267,7 @@ top:
 	}
 	{
 		int status = XInitImage($->ximage);
-		whine("XInitImage returned: %d", status);
+		gfpost("XInitImage returned: %d", status);
 	}
 	return true;
 }
@@ -281,7 +277,7 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	Window oldw;
 
 	if ($->parent && $->parent->in[0]->dex > 0) {
-		whine("resizing while receiving picture (ignoring)");
+		gfpost("resizing while receiving picture (ignoring)");
 		return;
 	}
 
@@ -300,22 +296,23 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	if (oldw) {
 		if ($->is_owner) {
 			char *s = $->dim->to_s();
-			whine("About to resize window: %s",s);
+			gfpost("About to resize window: %s",s);
 			FREE(s);
 			XResizeWindow($->display,$->window,sx,sy);
 		}
 	} else {
 		char *s = $->dim->to_s();
-		whine("About to create window: %s",s);
+		gfpost("About to create window: %s",s);
 		FREE(s);
 		$->window = XCreateSimpleWindow($->display,
 			$->root_window, 0, 0, sx, sy, 0, $->white, $->black);
 		if(!$->window) RAISE("can't create window");
 	}
 
-	/* FormatX11_set_wm_hints($,sx,sy); */
+/*	FormatX11_set_wm_hints($,sx,sy); */
 
 	$->imagegc = XCreateGC($->display, $->window, 0, NULL);
+	printf("$->is_owner: %d\n", $->is_owner);
 	if ($->is_owner) {
 		XSelectInput($->display, $->window,
 			ExposureMask | StructureNotifyMask |
@@ -351,7 +348,7 @@ GRID_FLOW(FormatX11,0) {
 	assert((n       % sxc) == 0);
 
 	while (n>0) {
-		/* whine("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
+		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
 		$->bit_packing->pack(sx, data, &$->image[y*bypl]);
 		if ($->autodraw==2) FormatX11_show_section($,0,y,sx,1);
@@ -371,7 +368,7 @@ GRID_END(FormatX11,0) {
 
 METHOD(FormatX11,close) {
 	MainLoop_remove($);
-	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
+	if (!$) {gfpost("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
 	FormatX11_dealloc_image($);
@@ -423,7 +420,7 @@ static void FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	$->root_window = DefaultRootWindow($->display);
 	$->depth    = DefaultDepthOfScreen(screen);
 
-	whine("depth = %d",$->depth);
+	gfpost("depth = %d",$->depth);
 
 	/* !@#$ check for visual type instead */
 	if ($->depth != 16 && $->depth != 24 && $->depth != 32)
@@ -432,10 +429,10 @@ static void FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 #ifdef HAVE_X11_SHARED_MEMORY
 	/* what do i do with remote windows? */
 	$->use_shm = !! XShmQueryExtension($->display);
-	whine("x11 shared memory compiled in; use_shm = %d",$->use_shm);
+	gfpost("x11 shared memory compiled in; use_shm = %d",$->use_shm);
 #else
 	$->use_shm = false;
-	whine("x11 shared memory is not compiled in");
+	gfpost("x11 shared memory is not compiled in");
 #endif
 }
 
@@ -469,13 +466,13 @@ METHOD(FormatX11,init) {
 	int i;
 	// assert (ac>0);
 	if (domain==SYM(here)) {
-		whine("mode `here'");
+		gfpost("mode `here'");
 		FormatX11_open_display($,0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
-		whine("mode `local', display_number `%d'",dispnum);
+		gfpost("mode `local', display_number `%d'",dispnum);
 		sprintf(host,":%d",dispnum);
 		FormatX11_open_display($,host);
 		i=2;
@@ -485,7 +482,7 @@ METHOD(FormatX11,init) {
 		strcpy(host,rb_sym_name(argv[1]));
 		dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
-		whine("mode `remote', host `%s', display_number `%d'",host,dispnum);
+		gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
 		FormatX11_open_display($,host);
 		i=3;
 	} else {
@@ -493,12 +490,12 @@ METHOD(FormatX11,init) {
 	}
 
 	if (i>=argc) {
-		whine("will create new window");
+		gfpost("will create new window");
 	} else {
 		VALUE winspec = argv[i];
 		if (winspec==SYM(root)) {
 			$->window = $->root_window;
-			whine("will use root window (0x%x)", $->window);
+			gfpost("will use root window (0x%x)", $->window);
 			$->is_owner = false;
 		} else {
 			const char *winspec2 = rb_sym_name(winspec);
@@ -509,9 +506,9 @@ METHOD(FormatX11,init) {
 			}
 			if ($->window) {
 				$->is_owner = false;
-				whine("will use specified window (0x%x)", $->window);
+				gfpost("will use specified window (0x%x)", $->window);
 			} else {
-				whine("bad window specification");
+				gfpost("bad window specification");
 			}
 		}
 	}
@@ -522,12 +519,12 @@ METHOD(FormatX11,init) {
 	Visual *v = $->visual;
 	int disp_is_le = !ImageByteOrder($->display);
 	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
-	whine("is_le = %d",is_le());
-	whine("disp_is_le = %d", disp_is_le);
+	gfpost("is_le = %d",is_le());
+	gfpost("disp_is_le = %d", disp_is_le);
 	$->bit_packing = new BitPacking(
 		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
 
-	$->bit_packing->whine();
+	$->bit_packing->gfpost();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
 }
 

@@ -112,19 +112,19 @@ static const char *video_mode_choice[] = {
 #define TAB "    "
 
 #define WH(_field_,_spec_) \
-	whine(TAB "%s: " _spec_, #_field_, $->_field_);
+	gfpost(TAB "%s: " _spec_, #_field_, $->_field_);
 
 #define WHYX(_name_,_fieldy_,_fieldx_) \
-	whine(TAB "%s: y=%d, x=%d", #_name_, $->_fieldy_, $->_fieldx_);
+	gfpost(TAB "%s: y=%d, x=%d", #_name_, $->_fieldy_, $->_fieldx_);
 
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
+	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
 	FREE(foo);}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
+	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
 	FREE(foo);}
 
 static char *flags_to_s(int value, int n, const char **table) {
@@ -150,8 +150,8 @@ static char *choice_to_s(int value, int n, const char **table) {
 	}
 }
 
-static void VideoChannel_whine(VideoChannel *$) {
-	whine("VideoChannel:");
+static void VideoChannel_gfpost(VideoChannel *$) {
+	gfpost("VideoChannel:");
 	WH(channel,"%d");
 	WH(name,"%-32s");
 	WH(tuners,"%d");
@@ -160,8 +160,8 @@ static void VideoChannel_whine(VideoChannel *$) {
 	WH(norm,"%d");
 }
 
-static void VideoTuner_whine(VideoTuner *$) {
-	whine("VideoTuner:");
+static void VideoTuner_gfpost(VideoTuner *$) {
+	gfpost("VideoTuner:");
 	WH(tuner,"%d");
 	WH(name,"%-32s");
 	WH(rangelow,"%u");
@@ -171,8 +171,8 @@ static void VideoTuner_whine(VideoTuner *$) {
 	WH(signal,"%d");
 }
 
-static void VideoCapability_whine(VideoCapability *$) {
-	whine("VideoCapability:");
+static void VideoCapability_gfpost(VideoCapability *$) {
+	gfpost("VideoCapability:");
 	WH(name,"%-20s");
 	WHFLAGS(type,video_type_flags);
 	WH(channels,"%d");
@@ -181,8 +181,8 @@ static void VideoCapability_whine(VideoCapability *$) {
 	WHYX(minsize,minheight,minwidth);
 }
 
-static void VideoWindow_whine(VideoWindow *$) {
-	whine("VideoWindow:");
+static void VideoWindow_gfpost(VideoWindow *$) {
+	gfpost("VideoWindow:");
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
 	WH(chromakey,"0x%08x");
@@ -190,8 +190,8 @@ static void VideoWindow_whine(VideoWindow *$) {
 	WH(clipcount,"%d");
 }
 
-static void VideoPicture_whine(VideoPicture *$) {
-	whine("VideoPicture:");
+static void VideoPicture_gfpost(VideoPicture *$) {
+	gfpost("VideoPicture:");
 	WH(brightness,"%d");
 	WH(hue,"%d");
 	WH(contrast,"%d");
@@ -200,8 +200,8 @@ static void VideoPicture_whine(VideoPicture *$) {
 	WHCHOICE(palette,video_palette_choice);
 }
 
-static void video_mbuf_whine(VideoMbuf *$) {
-	whine("VideoMBuf:");
+static void video_mbuf_gfpost(VideoMbuf *$) {
+	gfpost("VideoMBuf:");
 	WH(size,"%d");
 	WH(frames,"%d");
 	WH(offsets[0],"%d");
@@ -210,8 +210,8 @@ static void video_mbuf_whine(VideoMbuf *$) {
 	WH(offsets[3],"%d");
 }
 
-static void video_mmap_whine(VideoMmap *$) {
-	whine("VideoMMap:");
+static void video_mmap_gfpost(VideoMmap *$) {
+	gfpost("VideoMMap:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
@@ -230,7 +230,7 @@ struct FormatVideoDev : Format {
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
-		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
+		(gfpost("ioctl %s: %s",#_name_,strerror(errno)),1))
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
@@ -244,15 +244,15 @@ METHOD(FormatVideoDev,size) {
 	FREE($->dim);
 	$->dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	VideoWindow_whine(&grab_win);
+	VideoWindow_gfpost(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	grab_win.height = v[0];
 	grab_win.width  = v[1];
-	VideoWindow_whine(&grab_win);
+	VideoWindow_gfpost(&grab_win);
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	VideoWindow_whine(&grab_win);
+	VideoWindow_gfpost(&grab_win);
 }
 
 /* picture is read at once by frame() to facilitate debugging. */
@@ -267,9 +267,9 @@ static Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 
 	n = (int) read($->stream,$->stuff,$->left);
 	if (0> n) {
-		whine("error reading: %s", strerror(errno));
+		gfpost("error reading: %s", strerror(errno));
 	} else if (n < $->left) {
-		whine("unexpectedly short picture: %d of %d",n,$->left);
+		gfpost("unexpectedly short picture: %d of %d",n,$->left);
 	}
 	return $->dim;
 }
@@ -282,7 +282,7 @@ METHOD(FormatVideoDev,dealloc_image) {
 METHOD(FormatVideoDev,alloc_image) {
 	int fd = GETFD;
 	if (WIOCTL(fd, VIDIOCGMBUF, &$->vmbuf)) RAISE("ioctl error");
-	video_mbuf_whine(&$->vmbuf);
+	video_mbuf_gfpost(&$->vmbuf);
 	$->image = (uint8 *) mmap(
 		0,$->vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,
@@ -300,11 +300,11 @@ METHOD(FormatVideoDev,frame_ask) {
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
 	$->vmmap.width  = $->dim->get(1);
 	$->vmmap.height = $->dim->get(0);
-//	whine("will try:");
-//	video_mmap_whine(&$->vmmap);
+//	gfpost("will try:");
+//	video_mmap_gfpost(&$->vmmap);
 	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) RAISE("ioctl error");
-//	whine("driver gave us:");
-//	video_mmap_whine(&$->vmmap);
+//	gfpost("driver gave us:");
+//	video_mmap_gfpost(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
 }
 
@@ -360,14 +360,14 @@ METHOD(FormatVideoDev,norm) {
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
 	if (value<0 || value>3) {
-		whine("norm must be in range 0..3");
+		gfpost("norm must be in range 0..3");
 		return;
 	}
 	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
-		whine("no tuner #%d", value);
+		gfpost("no tuner #%d", value);
 	} else {
 		vtuner.mode = value;
-		VideoTuner_whine(&vtuner);
+		VideoTuner_gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }
@@ -379,10 +379,10 @@ METHOD(FormatVideoDev,tuner) {
 	vtuner.tuner = value;
 	$->current_tuner = value;
 	if (0> ioctl(fd, VIDIOCGTUNER, &vtuner)) {
-		whine("no tuner #%d", value);
+		gfpost("no tuner #%d", value);
 	} else {
 		vtuner.mode = VIDEO_MODE_NTSC;
-		VideoTuner_whine(&vtuner);
+		VideoTuner_gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
 }
@@ -394,9 +394,9 @@ METHOD(FormatVideoDev,channel) {
 	vchan.channel = value;
 	$->current_channel = value;
 	if (0> ioctl(fd, VIDIOCGCHAN, &vchan)) {
-		whine("no channel #%d", value);
+		gfpost("no channel #%d", value);
 	} else {
-		VideoChannel_whine(&vchan);
+		VideoChannel_gfpost(&vchan);
 		WIOCTL(fd, VIDIOCSCHAN, &vchan);
 		rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 	}
@@ -447,7 +447,7 @@ METHOD(FormatVideoDev,init2) {
 	VideoPicture *gp = NEW(VideoPicture,1);
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
-	VideoCapability_whine(&vcaps);
+	VideoCapability_gfpost(&vcaps);
 
 /*
 	PUT(0,symbol,SYM(size));
@@ -458,18 +458,18 @@ METHOD(FormatVideoDev,init2) {
 	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
-	whine("original settings:");
-	VideoPicture_whine(gp);
+	gfpost("original settings:");
+	VideoPicture_gfpost(gp);
 	gp->depth = 24;
 	gp->palette = VIDEO_PALETTE_RGB24;
 
 //	FREE(s);
-	whine("trying settings:");
-	VideoPicture_whine(gp);
+	gfpost("trying settings:");
+	VideoPicture_gfpost(gp);
 	WIOCTL(fd, VIDIOCSPICT, gp);
 	WIOCTL(fd, VIDIOCGPICT, gp);
-	whine("driver gave us settings:");
-	VideoPicture_whine(gp);
+	gfpost("driver gave us settings:");
+	VideoPicture_gfpost(gp);
 
 	switch(gp->palette) {
 	case VIDEO_PALETTE_RGB24:{
@@ -487,7 +487,7 @@ METHOD(FormatVideoDev,init2) {
 		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	default:
-		whine("can't handle palette %d", gp->palette);
+		gfpost("can't handle palette %d", gp->palette);
 	}
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
 }
