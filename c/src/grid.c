@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -368,7 +370,6 @@ METHOD(GridObject,init) {
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
 	ObjectSet_add(video4jmax_object_set,$);
 	$->profiler_cumul = 0;
-	$->profiler_last = 0;
 }
 
 /* category: input */

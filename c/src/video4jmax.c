@@ -354,10 +354,6 @@ METHOD2(Video4jmax,profiler_reset) {
 	}
 }
 
-static void whine_line (void) {
-	whine("--------------------------------");
-}
-
 static int by_profiler_cumul(const void *a, const void *b) {
 	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
 	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
@@ -365,18 +361,33 @@ static int by_profiler_cumul(const void *a, const void *b) {
 }
 
 METHOD2(Video4jmax,profiler_dump) {
+        /* if you blow 256 chars it's your own fault */
+	char buf[256];
+
 	ObjectSet *os = video4jmax_object_set;
+	uint64 total=0;
 	int i;
-	whine_line();
+	whine("--------------------------------");
+	whine("         clock-ticks percent pointer  constructor");
      qsort(os->buf,os->len,sizeof(GridObject*),by_profiler_cumul);
 	for(i=0;i<os->len;i++) {
 		GridObject *o = os->buf[i];
-		whine("%20lld : %p (%s)\n",
-			o->profiler_cumul,
-			o,
-			fts_symbol_name(fts_get_class_name(o->o.head.cl)));
+		total += o->profiler_cumul;
 	}
-	whine_line();
+	for(i=0;i<os->len;i++) {
+		GridObject *o = os->buf[i];
+		int ppm = o->profiler_cumul * 1000000 / total;
+		if (!ppm) ppm=1;
+		sprintf_atoms(buf,o->o.argc,o->o.argv);
+		whine("%20lld %2d.%04d %08x [%s]\n",
+			o->profiler_cumul,
+			ppm/10000,
+			ppm%10000,
+			o,
+			buf);
+		/* fts_symbol_name(fts_get_class_name(o->o.head.cl)) */
+	}
+	whine("--------------------------------");
 }
 
 METHOD2(Video4jmax,init) {}

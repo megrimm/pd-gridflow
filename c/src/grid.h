@@ -24,6 +24,8 @@
 #ifndef __GRID_PROTOCOL_H
 #define __GRID_PROTOCOL_H
 
+#define VIDEO4JMAX_PROFILING
+
 /* #include <pthread.h> */
 
 /* a few C++ decls just in case you want to compile C++ code with this */
@@ -40,7 +42,7 @@ extern "C" {
 
 #include "config.h"
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.3.0"
+#define VIDEO4JMAX_VERSION "0.3.1"
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef VIDEO4JMAX_FAST
@@ -78,10 +80,17 @@ extern "C" {
 */
 
 /* those are helpers for profiling. */
+#ifdef VIDEO4JMAX_PROFILING
 #define ENTER $->profiler_last = rdtsc();
 #define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
 #define ENTER_P $->parent->profiler_last = rdtsc();
 #define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
+#else
+#define ENTER
+#define LEAVE
+#define ENTER_P
+#define LEAVE_P
+#endif
 
 /*
   lists the arguments suitable for any method of a given class.
@@ -102,6 +111,7 @@ extern "C" {
 /*
   a header for a given method in a given class.
 */
+#ifdef VIDEO4JMAX_PROFILING
 #define METHOD(_class_,_name_) \
 	void _class_##_##_name_(METHOD_ARGS(_class_)); \
 	void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
@@ -110,6 +120,10 @@ extern "C" {
 		LEAVE; \
 	} \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
+#else
+#define METHOD(_class_,_name_) \
+	void _class_##_##_name_(METHOD_ARGS(_class_))
+#endif
 
 /*
   now (0.3.1) using a separate macro for some things like decls
@@ -125,8 +139,13 @@ extern "C" {
   cannot inherit from another struct, and so a pointer of one type cannot be
   considered as a pointer to a similar, more elementary type.
 */
+#ifdef VIDEO4JMAX_PROFILING
 #define METHOD_PTR(_class_,_name_) \
 	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
+#else
+#define METHOD_PTR(_class_,_name_) \
+	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
+#endif
 
 /* this is old-style METHOD_PTR */
 #define METHOD2PTR(_class_,_name_) \
