@@ -187,19 +187,32 @@ class GridPrint < GridFlow::GridObject
 		head = "#{name}Dim[#{@dim.join','}]"
 		head << "(#{@nt})" if @nt!=:int32
 		head << ": "
-		if @dim.length > 2 then
+		if @dim.length > 3 then
 			GridFlow.post head+" (not printed)"
 		elsif @dim.length < 2 then
 			udata = unpack @data
 			make_columns udata
 			GridFlow.post trunc(head + dump(udata))
-		else
+		elsif @dim.length == 2 then
 			GridFlow.post head
 			udata = unpack @data
 			make_columns udata
 			sz = udata.length/@dim[0]
 			for row in 0...@dim[0]
 				GridFlow.post trunc(dump(udata[sz*row,sz]))
+			end
+		elsif @dim.length == 3 then
+			GridFlow.post head
+			udata = unpack @data
+			make_columns udata
+			sz = udata.length/@dim[0]
+			sz2 = sz/@dim[1]
+			for row in 0...@dim[0]
+				column=0; str=""
+				for column in 0...@dim[1]
+					str << "{" << dump(udata[sz*row+sz2*column,sz2]) << "} "
+				end
+				GridFlow.post trunc(str)
 			end
 		end
 		@data,@dim,@nt = nil
