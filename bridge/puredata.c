@@ -98,8 +98,6 @@ static Ruby make_error_message () {
 	return ary;
 }
 
-static void bridge_common_init () {}
-
 static int ninlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_ninlets))) RAISE("no inlet count");
 	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_ninlets)));
@@ -137,9 +135,6 @@ static VALUE *localize_sysstack () {
 	fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
 	return (VALUE *)bp;
 }
-
-// reentrancy check
-static bool is_in_ruby = false;
 
 //****************************************************************
 // BFObject
@@ -670,39 +665,6 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 
 //****************************************************************
 
-static t_clock *gf_alarm;
-
-static void gf_timer_handler_1 (VALUE blah) {
-	rb_funcall(mGridFlow2,SI(tick),0);
-}
-
-double clock_tick = 10.0;
-
-void gf_timer_handler (t_clock *alarm, void *obj) {
-	if (is_in_ruby) {
-		post("warning: ruby is not signal-reentrant (is this a signal?)\n");
-		return;
-	}
-	is_in_ruby = true;
-	FMessage fm; fm.self = 0;
-	rb_rescue2(
-		(RMethod)gf_timer_handler_1,(Ruby)&fm,
-		(RMethod)BFObject_rescue,(Ruby)&fm,
-		rb_eException,0);
-	clock_delay(gf_alarm,clock_tick);
-	is_in_ruby = false;
-}       
-
-Ruby GridFlow_s_clock_tick (Ruby rself) {
-	return rb_float_new(clock_tick);
-}
-
-Ruby GridFlow_s_clock_tick_set (Ruby rself, Ruby tick) {
-	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
-	clock_tick = RFLOAT(tick)->value;
-	return tick;
-}
-
 Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 	if (TYPE(string)!=T_STRING) RAISE("not a string!");
 	post("%s",rb_str_ptr(string));
@@ -727,8 +689,6 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 
-	SDEF("clock_tick",clock_tick,0);
-	SDEF("clock_tick=",clock_tick_set,1);
 	SDEF("post_string",post_string,1);
 	SDEF("add_creator_2",add_creator_2,1);
 	SDEF("gui",gui,-1);
@@ -763,7 +723,6 @@ extern "C" void gridflow_setup () {
 	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
-	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
 	BFProxy_class = class_new(gensym("ruby_proxy"),
 		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
@@ -782,9 +741,6 @@ extern "C" void gridflow_setup () {
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
 	}
-
-	gf_alarm = clock_new(0,(void(*)())gf_timer_handler);
-	gf_timer_handler(gf_alarm,0);
 	bindpatcher = class_new(gensym("bindpatcher"),
 		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 }
