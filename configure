@@ -1,0 +1,51 @@
+#!/bin/bash
+# this script by Mathieu Bouchard, 2001.
+
+BLUE="\e[0;1;34m"
+GREEN="\e[0;1;32m"
+GREY="\e[0m"
+YELL="\e[0;1;33m"
+
+JMAX=unknown
+
+echo
+if [ ! -f configure ]
+then
+	echo -e "${YELL}Run me from the right directory please.${GREY}"
+	exit 1
+fi
+
+argc=$#
+while [ 0 != $(( $argc > 0 )) ]
+do
+	case $1 in
+		--jmax24) JMAX=24
+			echo -e "Using ${GREEN}jMax 2.4${GREY}"
+		;;
+		--jmax25) JMAX=25
+			echo -e "Using ${GREEN}jMax 2.5${GREY}"
+		;;
+	esac
+	shift
+	argc=$(( $argc - 1 ))
+done
+
+if [ "z$JMAX" = "zunknown" ]
+then
+	echo -e "${YELL}Please specify --jmax24 or --jmax25.${GREY}"
+	exit
+fi
+
+symlink () {
+	rm $1
+	ln -s $1.$JMAX $1
+	echo -e "${BLUE}`pwd`$GREY: updating $1"
+}
+
+symlink Makefile
+(cd c
+	symlink Makefile
+	(cd src
+		symlink Makefile
+		symlink fts_redirect.h))
+
