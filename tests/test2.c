@@ -12,6 +12,12 @@ void test_formats(void) {
 	fts_send3(in,0,"open ppm file "DIR"g001.ppm");
 	fts_send3(in,0,"bang");
 	sleep(1);
+	fts_send3(in,0,"open ppm file "DIR"b001.ppm");
+	fts_send3(in,0,"bang");
+	sleep(1);
+	fts_send3(in,0,"open ppm file "DIR"r001.ppm");
+	fts_send3(in,0,"bang");
+	sleep(1);
 	fts_send3(in,0,"open targa file "DIR"teapot.tga");
 	fts_send3(in,0,"bang");
 	sleep(1);
