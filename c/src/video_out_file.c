@@ -53,9 +53,9 @@ GRID_BEGIN(VideoOutFile,0) {
 	int v[] = { Dim_get(in->dim,0), Dim_get(in->dim,1), 3 };
 	Dim *dim = Dim_new(ARRAY(v));
 	if (Dim_equal_verbose_hwc(in->dim,dim)) {
-		{ VideoOutFile *$ = parent; CHECK_FILE_OPEN2 }
+		CHECK_FILE_OPEN2
 		in->dex=0;
-		parent->ff->begin(parent->ff, in->dim);
+		$->ff->begin($->ff, in->dim);
 		return true;
 	} else {
 		return false;
@@ -63,23 +63,25 @@ GRID_BEGIN(VideoOutFile,0) {
 }
 
 GRID_FLOW(VideoOutFile,0) {
-	FileFormat *f = parent->ff;
-	{ VideoOutFile *$ = parent; CHECK_FILE_OPEN }
+	FileFormat *f = $->ff;
+	CHECK_FILE_OPEN
 	while(n > 0) {
 		int incr;
 		int max = Dim_prod(in->dim) - in->dex;
 		int bs = n<max?n:max;
-		parent->ff->flow(parent->ff, bs, data);
+		$->ff->flow($->ff, bs, data);
 		
 		data += bs;
 		in->dex += bs;
 		n -= bs;
 		if (in->dex >= Dim_prod(in->dim)) {
-			parent->ff->end(parent->ff);
-			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
+			$->ff->end($->ff);
+			fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
 		}
 	}
 }
+
+GRID_END(VideoOutFile,0) {}
 
 /* ---------------------------------------------------------------- */
 
@@ -87,8 +89,7 @@ METHOD(VideoOutFile,init) {
 	whine("VideoOutFile#init");
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)VideoOutFile_0_begin, (GridFlow)VideoOutFile_0_flow, 0);
+	$->in[0] = GridInlet_NEW3($,VideoOutFile,0);
 }
 
 static void VideoOutFile_p_close(VideoOutFile *$) {

@@ -113,7 +113,7 @@ void FormatPPM_end (FileFormat *$) {
 
 void FormatPPM_close (FileFormat *$) {
 	if ($->stream) fclose($->stream);
-	free($);
+	FREE($);
 }
 
 FileFormat *FormatPPM_open (const char *filename, int mode) {

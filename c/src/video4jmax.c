@@ -31,6 +31,11 @@
 
 #include "grid.h"
 
+#define MAKE_TMP_LOG
+//#define MAKE_TMP_LOG_ALLOC
+
+FILE *whine_f;
+
 /* **************************************************************** */
 /* The setup part */
 
@@ -55,7 +60,30 @@ DECL_SYM2(grid_end)
 /* declare startup of every source file */
 STARTUP_LIST(void startup_,(void);)
 
+static void disable_signal_handlers (void) {
+	/*
+		this is for debugging only and should be turned off in
+		the normal distribution. this code ensures that crashes are
+		not trapped by jmax itself so i can have something to inspect.
+	*/
+	static int signals[] = {
+		SIGBUS, SIGSEGV, SIGTERM,
+		SIGHUP, SIGINT, SIGQUIT, SIGABRT,
+	};
+	int i;
+	for(i=0; i<COUNT(signals); i++) {
+		signal(signals[i],SIG_DFL);
+	}
+}
+
 void video4jmax_module_init (void) {
+	disable_signal_handlers();
+
+#ifdef MAKE_TMP_LOG
+	whine_f = fopen("/tmp/video4jmax.whine","w");
+	if (!whine_f) whine_f = fopen("/dev/null","w");
+#endif
+
 	post("Welcome to Video4jmax !\n");
 	post("Version: " VIDEO4JMAX_VERSION "\n");
 	post("Compiled on: " VIDEO4JMAX_COMPILE_TIME "\n");
@@ -78,22 +106,6 @@ void video4jmax_module_init (void) {
 	post("--- Video4jmax startup: end ---\n");
 
 	srandom(time(0));
-
-	/*
-		this is for debugging only and should be turned off in
-		the normal distribution. this code ensures that crashes are
-		not trapped by jmax itself so i can have something to inspect.
-	*/
-	if (1) {
-		static int signals[] = {
-			SIGBUS, SIGSEGV, SIGTERM,
-			SIGHUP, SIGINT, SIGQUIT, SIGABRT,
-		};
-		int i;
-		for(i=0; i<COUNT(signals); i++) {
-			signal(signals[i],SIG_DFL);
-		}
-	}
 }
 
 /* this is the entry point for all of the above */
@@ -117,9 +129,13 @@ void whine(char *fmt, ...) {
 
 	if (last_format && strcmp(last_format,fmt)==0) {
 		format_count++;
-		if (format_count >= 64) {
+		if (format_count >= 256) {
 			if (high_bit(format_count)-low_bit(format_count) < 3)
 			post("[too many similar posts. this is # %d]\n",format_count);
+#ifdef MAKE_TMP_LOG
+			fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
+			fflush(whine_f);
+#endif
 			return;
 		}
 	} else {
@@ -136,6 +152,10 @@ void whine(char *fmt, ...) {
 		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
 		post_s[sizeof(post_s)-1]=0; /* safety */
 		post("[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+#ifdef MAKE_TMP_LOG
+		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+		fflush(whine_f);
+#endif
 	}
 }
 
@@ -148,20 +168,35 @@ void *qalloc(size_t n) {
 		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
 	#endif
 	return data;	
+
+}
+
+void *qalloc2(size_t n) {
+	void *data = malloc(n);
+#ifdef MAKE_TMP_LOG_ALLOC
+	fprintf(whine_f, "[alloc] + %08x (%d)\n", data, n);
+#endif
+	return data;
 }
 
 /* to help find dangling references */
 void qfree(void *data) {
-	int n=8;
-	data = realloc(data,n);
+#ifdef MAKE_TMP_LOG_ALLOC
+	fprintf(whine_f, "[alloc] - %08x\n", data, n);
+#endif
 	{
-	long *data2 = (long *) data;
-	int i;
-	int nn = (int) n/4;
-	#ifndef NO_DEADBEEF
-//		for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
-	#endif
+		int n=8;
+		data = realloc(data,n);
+		{
+			long *data2 = (long *) data;
+			int i;
+			int nn = (int) n/4;
+#ifndef NO_DEADBEEF
+//			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+#endif
+		}
 	}
+	free(data);
 }
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
