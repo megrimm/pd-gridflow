@@ -27,18 +27,34 @@
 
 #!@#$ DON'T PUT ABSTRACTIONS IN THE %w() !!!
 # @mouse=help_mouse @motion_detection=help_motion_detect @fade=help_fade
-
 # @apply_colormap_channelwise @checkers @complex_sq @contrast
 # @posterize @ravel @greyscale_to_rgb @rgb_to_greyscale @solarize @spread
+
+# NEW help files
+%w(
+	# #cast #dim #reverse
+	  #pack=#pack-#unpack
+	#unpack=#pack-#unpack
+).each {|name|
+	if name =~ /=/ then name,file = name.split(/=/) else file = name end
+	begin
+		x = GridFlow.fclasses_set[name]
+		x.set_help "gridflow/flow_classes/#{file}-help.pd"
+	rescue Exception => e
+		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+	end
+}
+
+# OLD help files
 %w(
 	@cast
-	@convolve @dim @downscale_by @draw_polygon @export=@importexport
-	@finished @fold @for @four=@twothreefour @global @grade
+	@convolve @downscale_by @draw_polygon @export=@importexport
+	@finished @fold @for @global @grade
 	@import=@importexport @inner=@foldinnerouter
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
-	@! #=@ @perspective printargs @print @redim
+	@! @perspective printargs @print @redim
 	rubyprint @scale_by @scale_to @scan
-	@store @three=@twothreefour @two=@twothreefour
+	@store
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
@@ -64,8 +80,11 @@ if {[catch {
 	# pd 0.36
 	###the problem is that GridFlow.bind requires 0.37
 }
-$gfmenu add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
+catch {
+$gfmenu add command -label "profiler_dump"  -command {pd "gridflow profiler_dump;"}
 $gfmenu add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
+$gfmenu add command -label "formats"        -command {pd "gridflow formats;"}
+}
 
 if {[string length [info command post]] == 0} {
 	proc post {x} {puts $x}
