@@ -225,7 +225,6 @@ GRID_FLOW(GridStore,0) {
 	int size = $->r.dim->prod(nc);
 	int v[nb];
 	assert((n % nc) == 0);
-	assert($->data);
 
 	for (int i=nc; i<nb; i++) v[i] = 0;
 
