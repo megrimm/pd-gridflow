@@ -4,8 +4,8 @@
 -1;
 #X msg 33 111 200;
 #X text 125 129 abort output of grid \, if any;
-#X text 14 15 @import \, @export \, @export_list converts integers
-to grids and back;
+#X text 14 9 @import \, @export \, @export_list converts integers to
+grids and back;
 #X obj 41 239 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 33 283 @dim;
