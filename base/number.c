@@ -512,9 +512,9 @@ DEF_OP2(mer, a==0 ? 0 : b%a)
 DEF_OP2(gcd, gcd(a,b))
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b))
 
-DEF_OP2F(or , a|b, (T)((int32)a | (int32)b))
-DEF_OP2F(xor, a^b, (T)((int32)a ^ (int32)b))
-DEF_OP2F(and, a&b, (T)((int32)a & (int32)b))
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b))
+DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b))
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b))
 DEF_OP2F(shl, a<<b, a*pow(2.0,+b))
 DEF_OP2F(shr, a>>b, a*pow(2.0,-b))
 
