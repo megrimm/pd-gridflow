@@ -223,7 +223,18 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 	}
 }
 
+/* X11 Error Handler type */
+typedef int (*XEH)(Display *, XErrorEvent *);
+
+/* loathe Xlib's error handlers */
+static FormatX11 *current_x11;
+int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
+	current_x11->use_shm = false;
+	whine("caught X11 error (should be \"BadAccess: can't find shm\")");
+}
+
 bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
+top:
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if ($->use_shm) {
@@ -243,13 +254,25 @@ bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 			(char *)shmat($->shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
 		$->shm_info->readOnly = False;
+
+		current_x11 = $;
+		XSetErrorHandler(FormatX11_error_handler);
 		if (!XShmAttach($->display, $->shm_info)) {
 			whine("ERROR: XShmAttach: big problem");
 			goto err;
 		}
+		/* make sure the server picks it up */
 		XSync($->display,0);
+
+		XSetErrorHandler(0);
+
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl($->shm_info->shmid,IPC_RMID,0);
+
+		if (!$->use_shm) {
+			whine("shm got disabled, retrying...");
+			goto top;
+		}
 	} else
 	#endif
 	{
