@@ -100,6 +100,7 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
 	$->flow((GridObject *)$->parent,$,n,data);
+	/* insert a "finish" here? or implement GridInlet_end() ? */
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
@@ -140,6 +141,13 @@ void GridOutlet_abort(GridOutlet *$) {
 	$->dex = 0;
 }
 
+void GridOutlet_end(GridOutlet *$) {
+	assert($);
+	free($->dim);
+	$->dim = 0;
+	$->dex = 0;
+}
+
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
 	int n = Dim_count(dim);
@@ -150,8 +158,7 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->dim = dim;
 	$->dex = 0;
 	for(i=0; i<n; i++) fts_set_int(&a[i],Dim_get($->dim,i));
-	fts_outlet_send(
-		OBJ($->parent),$->woutlet,sym_grid_begin,n,a);
+	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_begin,n,a);
 }
 
 void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
@@ -170,33 +177,27 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	}
 }
 
-int GridOutlet_send(GridOutlet *$, int n, const Number *data) {
-	int incr;
-
+void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
-	incr = Dim_dex_add($->dim,n,&$->dex);
+	$->dex += n;
 	GridOutlet_send_direct($,n,data);
-	return incr;
 }
 
-int GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data) {
-	int incr;
-
+void GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
-	incr = Dim_dex_add($->dim,n,&$->dex);
-	if ($->bufn + n > PACKET_LENGTH) {
+	$->dex += n;
+	if ($->bufn + n >= PACKET_LENGTH) {
 		GridOutlet_flush($);
 	}
-	if (n > PACKET_LENGTH) {
+	if (n >= PACKET_LENGTH) {
 		GridOutlet_send_direct($,n,data);
 	} else {
-		memcpy(&$->buf[$->bufn],data,sizeof(int)*n);
+		memcpy(&$->buf[$->bufn],data,sizeof(Number)*n);
 		$->bufn += n;
 	}
-	if (incr==0) {
+	if ($->dex >= Dim_prod($->dim)) {
 		GridOutlet_flush($);
 	}
-	return incr;
 }
 
 void GridOutlet_flush(GridOutlet *$) {

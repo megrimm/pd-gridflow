@@ -35,7 +35,7 @@ static inline void Dim_invariant(Dim *$) {
 	assert_range($->n,0,MAX_DIMENSIONS);
 }
 
-Dim *Dim_new (int n, int *v) {
+Dim *Dim_new(int n, int *v) {
 	Dim *$ = (Dim *) NEW(int,n+1);
 
 	int i;
@@ -49,12 +49,16 @@ Dim *Dim_new (int n, int *v) {
 	return $;
 }
 
-int Dim_count (Dim *$) {
+Dim *Dim_dup(Dim *$) {
+	return Dim_new($->n,$->v);
+}
+
+int Dim_count(Dim *$) {
 	Dim_invariant($);
 	return $->n;
 }
 
-int Dim_get (Dim *$, int i) {
+int Dim_get(Dim *$, int i) {
 	Dim_invariant($);
 	assert_range(i,0,$->n-1);
 	assert_range($->v[i],0,MAX_INDICES);
@@ -69,7 +73,7 @@ int Dim_prod(Dim *$) {
 	return v;
 }
 
-int Dim_prod_start(Dim *$, int start) {
+int Dim_prod_start (Dim *$, int start) {
 	int v=1;
 	int i;
 	Dim_invariant($);
@@ -87,9 +91,9 @@ char *Dim_to_s(Dim *$) {
 
 	Dim_invariant($);
 	
-	s += sprintf(s,"Dim");
+	s += sprintf(s,"Dim(");
 	while(i<$->n) {
-		s += sprintf(s,"%c%d", "(,"[!!i], $->v[i]);
+		s += sprintf(s,"%s%d", ","+!i, $->v[i]);
 		i++;
 	}
 	s += sprintf(s,")");
@@ -138,28 +142,6 @@ int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
 }
 
 /* ******************************************************** */
-
-/*
-  add n to the counter and return the number of the outermost index that
-  wrapped around, or the number of dimensions if none.
-*/
-PROC int Dim_dex_add(Dim *$, int n, int *dex) {
-	int k;
-	int old = *dex;
-	int new = *dex + n;
-	Dim_invariant($);
-
-	k = $->n-1;
-	*dex = new;
-	if (*dex > Dim_prod($)) { *dex %= Dim_prod($); return 0; }
-	while(k>=0) {
-		if (old%$->v[k] == new%$->v[k]) return k+1;
-		old /= $->v[k];
-		new /= $->v[k];
-		k--;
-	}
-	return 0;
-}
 
 PROC int Dim_calc_dex(Dim *$, int *v) {
 	int dex=0;
