@@ -667,6 +667,7 @@ def test_formats
 		# test for load, rewind, load
 #		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
 		gin.send_in 0
+		gin.send_in 0
 		sleep 1
 	}
 	p t1	
