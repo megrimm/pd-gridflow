@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
 
 #include "grid.h.fcs"
 #include "../config.h"
@@ -62,6 +63,25 @@ static Ruby ull2num(uint64 val) {
 }
 
 /* end */
+extern "C"{
+void rb_raise0(
+	const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
+	va_list args;
+	char buf[BUFSIZ];
+	va_start(args,fmt);
+	vsnprintf(buf, BUFSIZ, fmt, args);
+	buf[BUFSIZ - 1] = '\0';
+	va_end(args);
+
+	VALUE e = rb_exc_new2(exc, buf);
+	char buf2[BUFSIZ];
+	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
+	buf2[BUFSIZ-1]=0;
+	VALUE ary = rb_funcall(e,SI(caller),0);
+	rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
+	rb_funcall(e,SI(set_backtrace),1,ary);
+	rb_exc_raise(e);
+}};
 
 static void default_post(const char *fmt, ...) {
 	va_list args;
@@ -85,6 +105,32 @@ GFBridge gf_bridge_default = {
 };
 
 GFBridge *gf_bridge = &gf_bridge_default;
+
+/* ---------------------------------------------------------------- */
+/* Dim */
+
+void Dim::check() {
+	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
+	for (int i=0; i<n; i++) {
+		if (v[i]<0) {
+			fprintf(stderr,"negative index???\n");
+			::raise(11);
+		}
+	}
+}
+
+
+/* !@#$ big leak machine? */
+/* returns a string like "Dim[240,320,3]" */
+char *Dim::to_s() {
+	/* if you blow 256 chars it's your own fault */
+	char buf[256];
+	char *s = buf;
+	s += sprintf(s,"Dim[");
+	for(int i=0; i<n; i++) s += sprintf(s,"%s%ld", ","+!i, v[i]);
+	s += sprintf(s,"]");
+	return strdup(buf);
+}
 
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
@@ -629,3 +675,25 @@ BUILTIN_SYMBOLS(FOO)
 
 	signal(11,SIG_DFL); /* paranoia */
 }
+
+void GFStack::push (FObject *o) {
+	if (n>=GF_STACK_MAX) RAISE("stack overflow");
+	uint64 t = rdtsc();
+	if (n) s[n-1].time = t - s[n-1].time;
+	s[n].o = o;
+	s[n].time = t;
+	n++;
+}
+
+void GFStack::pop () {
+	uint64 t = rdtsc();
+	if (!n) {
+		fprintf(stderr,"gf stack underflow\n");
+		::abort();
+	}
+	n--;
+	//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);
+	if (s[n].o) s[n].o->total_time += t - s[n].time;
+	if (n) s[n-1].time = t - s[n-1].time;
+}
+
