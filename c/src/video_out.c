@@ -42,8 +42,10 @@
 /* ---------------------------------------------------------------- */
 
 typedef struct VideoDisplay VideoDisplay;
+typedef struct VideoOut VideoOut;
 
 struct VideoDisplay {
+	fts_alarm_t *alarm;
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	int root_window;
@@ -56,15 +58,118 @@ struct VideoDisplay {
 	int high_bit[3];
 	int mask[3];
 	int use_shm;	   /* should use shared memory? */
+	VideoOut **vouts;
+	int vouts_n;
 };
 
 /* support for only one x11 connection at the moment */
 static VideoDisplay x11;
 
+struct VideoOut {
+	GridObject_FIELDS;
+
+/* fields for: general purpose */
+
+	Dim *dim;     /* what the constructor said we would get */
+	Number *buf;     /* buffer for values of the next line */
+	int bufn;     /* buffer portion used */
+	int autodraw; /* how much to actually send to the display at once */
+
+/* fields for: x window system */
+
+	VideoDisplay *display; /* our own display struct (see above) */
+	uint window;       /* window number */
+	GC imagegc;       /* graphics context (like java.awt.Graphics) */
+	XImage *ximage;   /* image descriptor */
+	char *name;       /* window name (for use by window manager) */
+	uint8 *image;     /* the real data (that XImage binds to) */
+};
+
+static void VideoOut_show_section(VideoOut *$, int x, int y, int sx, int sy);
+
+/* ---------------------------------------------------------------- */
+
+void display_vout_add(VideoDisplay *$, VideoOut *vout) {
+	VideoOut **vouts = $->vouts;
+	whine("adding [%p] to vout list", vout);
+	$->vouts_n += 1;
+	$->vouts = NEW2(VideoOut *, $->vouts_n);
+	memcpy($->vouts,vouts,$->vouts_n*sizeof(VideoOut *));
+	$->vouts[$->vouts_n-1] = vout;
+	whine("vout count: %d", $->vouts_n);
+}
+
+void display_vout_remove(VideoDisplay *$, VideoOut *vout) {
+	int i;
+	whine("looking for vout [%p]", vout);
+	for (i=0; i<$->vouts_n; i++) {
+		if ($->vouts[i] != vout) continue;
+		whine("removing [%p] from vout list (index %d)", vout, i);
+		$->vouts[i] = $->vouts[$->vouts_n-1];
+		$->vouts_n--;
+		whine("vout count: %d", $->vouts_n);
+		return;
+	}
+}
+
+VideoOut *display_vout_find(VideoDisplay *$, Window wid) {
+	int i;
+	whine("looking for vout that has ->window == %ld", wid);
+	for (i=0; i<$->vouts_n; i++) {
+		whine("i=%d vout=%p ->window=%p", i, $->vouts[i], $->vouts[i]->window);
+		if ($->vouts[i]->window != wid) continue;
+		whine("found vout [%p] at index %d", $->vouts[i], i);
+		return $->vouts[i];
+	}
+	whine("vout not found!");
+	return 0;
+}
+
+void display_set_alarm(VideoDisplay *$);
+
+void display_alarm(fts_alarm_t *foo, void *obj) {
+	VideoDisplay *$ = (VideoDisplay *)obj;
+	XEvent e;
+/*	int xpending = XPending($->display); */
+	int xpending = XEventsQueued($->display, QueuedAfterReading);
+	while (xpending) {
+		XNextEvent($->display,&e);
+		whine("received event of type # %d", e.type);
+		if (e.type == Expose) {
+			XExposeEvent *ex = (XExposeEvent *)&e;
+			VideoOut *vout;
+			whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
+				ex->y,ex->x,ex->height,ex->width);
+			vout = display_vout_find($,ex->window);
+			if (vout) {
+				VideoOut_show_section(vout, ex->x, ex->y, ex->width,
+				ex->height);
+			}
+			
+		}
+		xpending--;
+	}
+	display_set_alarm($);
+}
+
+void display_set_alarm(VideoDisplay *$) {
+	if (!$->alarm) {
+		fts_clock_t *clock = fts_sched_get_clock();
+		$->alarm = fts_alarm_new(clock, display_alarm, $);
+	}
+	fts_alarm_set_delay($->alarm, 1000.0);
+	fts_alarm_arm($->alarm);
+}
+
 void display_init(VideoDisplay *$) {
 	int i;
 	int screen_num;
 	Screen *screen;
+
+	$->alarm = 0;
+	$->vouts = NEW2(VideoOut *, 1);
+	$->vouts_n = 0;
+
 	/* Open an X11 connection */
 	$->display = XOpenDisplay(0);
 	if(!$->display) {
@@ -108,31 +213,11 @@ void display_init(VideoDisplay *$) {
 	#else
 		$->use_shm = 0;
 	#endif
+
+	display_set_alarm($);
 }
 
 /* ---------------------------------------------------------------- */
-
-typedef struct VideoOut VideoOut;
-
-struct VideoOut {
-	GridObject_FIELDS;
-
-/* fields for: general purpose */
-
-	Dim *dim;     /* what the constructor said we would get */
-	Number *buf;     /* buffer for values of the next line */
-	int bufn;     /* buffer portion used */
-	int autodraw; /* how much to actually send to the display at once */
-
-/* fields for: x window system */
-
-	VideoDisplay *display; /* our own display struct (see above) */
-	int window;       /* window number */
-	GC imagegc;       /* graphics context (like java.awt.Graphics) */
-	XImage *ximage;   /* image descriptor */
-	char *name;       /* window name (for use by window manager) */
-	uint8 *image;     /* the real data (that XImage binds to) */
-};
 
 static void VideoOut_show_section(
 	VideoOut *$, int x, int y, int sx, int sy
@@ -342,9 +427,12 @@ METHOD(VideoOut,init) {
 	XNextEvent(d->display, &event);
 
 	XSync(d->display,0);
+
+	display_vout_add($->display, $);
 }
 
 METHOD(VideoOut,delete) {
+	display_vout_remove($->display, $);
 	XDestroyWindow($->display->display,$->window);
 }
 
