@@ -106,6 +106,7 @@ struct FormatX11 : Format {
 	\decl void verbose_m (int verbose);
 	\decl void initialize (...);
 	\decl void set_geometry (int y, int x, int sy, int sx);
+	\decl void fall_thru (int flag);
 	GRINLET3(0);
 };
 
@@ -355,20 +356,25 @@ void FormatX11::resize_window (int sx, int sy) {
 		window = XCreateSimpleWindow(display,
 			parent, pos_x, pos_y, sx, sy, 0, white, black);
 		if(!window) RAISE("can't create window");
+		XSetWindowAttributes xswa;
+		xswa.do_not_propagate_mask = 0;
+		XChangeWindowAttributes(display, window, CWDontPropagate, &xswa);
+		//set_wm_hints(sx,sy);
+		if (is_owner) {
+			/* fall_thru 0 */
+			XSelectInput(display, window,
+				ExposureMask | StructureNotifyMask |
+				PointerMotionMask |
+				ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+			XMapRaised(display, window);
+		} else {
+			/* fall_thru 1 */
+			XSelectInput(display, window,
+				ExposureMask | StructureNotifyMask);
+		}
+		imagegc = XCreateGC(display, window, 0, NULL);
+		if (visual->c_class == PseudoColor) prepare_colormap(); 
 	}
-	//set_wm_hints(sx,sy);
-	imagegc = XCreateGC(display, window, 0, NULL);
-	if (is_owner) {
-		XSelectInput(display, window,
-			ExposureMask | StructureNotifyMask |
-			PointerMotionMask |
-			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-		XMapRaised(display, window);
-	} else {
-		XSelectInput(display, window,
-			ExposureMask | StructureNotifyMask);
-	}
-	if (visual->c_class == PseudoColor) prepare_colormap(); 
 	XSync(display,0);
 }
 
@@ -571,6 +577,21 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	pos_y = y;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
+	XFlush(display);
+}
+
+\def void fall_thru (int flag) {
+	if (flag) {
+		gfpost("falling through!");
+		XSelectInput(display, window,
+			ExposureMask | StructureNotifyMask);
+	} else {
+		gfpost("NOT falling through!");
+		XSelectInput(display, window,
+			ExposureMask | StructureNotifyMask |
+			PointerMotionMask |
+			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+	}
 	XFlush(display);
 }
 
