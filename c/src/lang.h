@@ -63,13 +63,17 @@ typedef double float64;
 typedef enum { false, true } bool;
 #endif
 
+/* **************************************************************** */
+/* Object/Class */
+
 typedef struct Class Class;
 typedef struct Object {
-	Class *_class;
+	Class *_class; /* or fts_class_t */
 } Object;
 struct Class {
 	Object _o;
 	Class *_super;
+	int objectsize;
 	int magic; /* 0x600df00d */
 };
 

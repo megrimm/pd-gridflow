@@ -129,9 +129,9 @@ GRID_BEGIN(GridExport,0) { return true; }
 GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
-		fts_atom_t a[1];
-		fts_set_int(a+0,*data);
-		fts_outlet_send(OBJ($),0,fts_s_int,1,a);
+		Var a[1];
+		Var_put_int(a+0,*data);
+		Object_send_thru(OBJ($),0,sym_int,1,a);
 		data++;
 	}
 }
@@ -151,25 +151,25 @@ LIST(GRINLET(GridExport,0)),
 
 typedef struct GridExportList {
 	GridObject_FIELDS;
-	fts_atom_t *list;
+	Var *list;
 	int n;
 } GridExportList;
 
 GRID_BEGIN(GridExportList,0) {
 	int n = Dim_prod(in->dim);
 	if (n>1000) RAISE("list too big (%d elements)", n);
-	$->list = NEW(fts_atom_t,n);
+	$->list = NEW(Var,n);
 	$->n = n;
 	return true;
 }
 
 GRID_FLOW(GridExportList,0) {
 	int i;
-	for (i=0; i<n; i++, data++) fts_set_int($->list+in->dex+i,*data);
+	for (i=0; i<n; i++, data++) Var_put_int($->list+in->dex+i,*data);
 }
 
 GRID_END(GridExportList,0) {
-	fts_outlet_send(OBJ($),0,fts_s_list,$->n,$->list);
+	Object_send_thru(OBJ($),0,sym_list,$->n,$->list);
 	FREE($->list);
 }
 
@@ -529,7 +529,6 @@ LIST(GRINLET(GridFold,0)),
 	DECL(GridFold, 1,int,   ""),/*why zero?*/)
 
 /* **************************************************************** */
-
 typedef struct GridInner {
 	GridObject_FIELDS;
 	Dim *dim;
@@ -539,6 +538,7 @@ typedef struct GridInner {
 	const Operator2 *op_fold;
 } GridInner;
 
+/*
 GRID_BEGIN(GridInner,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
@@ -626,6 +626,98 @@ GRCLASS(GridInner,inlets:3,outlets:1,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,-1,init,  "sss;i"),
 	DECL(GridInner,-1,delete,""))
+*/
+/* **************************************************************** */
+
+typedef struct GridInner GridInner2;
+
+GRID_BEGIN(GridInner2,0) {
+	Dim *a = in->dim;
+	Dim *b = $->dim;
+	if (!b) RAISE("right inlet has no grid");
+	if (Dim_count(a)<1) RAISE("minimum 1 dimension");
+	{
+		int a_last = Dim_get(a,Dim_count(a)-1);
+		int b_last = Dim_get(b,Dim_count(b)-1);
+		int n = Dim_count(a)+Dim_count(b)-2;
+		int v[n];
+		int i,j;
+		if (a_last != b_last)
+			RAISE("last dimension of each grid must have same size");
+		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
+		for (  j=0; j<Dim_count(b)-1; i++,j++) { v[i] = Dim_get(b,j); }
+		GridOutlet_begin($->out[0],Dim_new(n,v));
+		GridInlet_set_factor(in,a_last);
+	}	
+	return true;
+}
+
+GRID_FLOW(GridInner2,0) {
+	GridOutlet *out = $->out[0];
+	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	int i,j;
+	int b_prod = Dim_prod($->dim);
+	Number *buf2 = NEW(Number,b_prod/factor);
+	Number *buf = NEW(Number,n/factor);
+	assert (n % factor == 0);
+
+	for (i=0; i<n; i+=factor) {
+		for (j=0; j<b_prod; j+=factor) {
+			memcpy(buf,&data[i],factor*sizeof(Number));
+			$->op_para->op_array2(factor,buf,&$->data[j]);
+			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
+		}
+		GridOutlet_send(out,b_prod/factor,buf2);
+	}
+	FREE(buf);
+	FREE(buf2);
+}
+
+GRID_END(GridInner2,0) { GridOutlet_end($->out[0]); }
+
+GRID_BEGIN(GridInner2,2) {
+	int length = Dim_prod(in->dim);
+	GridInlet_abort($->in[0]);
+	if (Dim_count(in->dim)<1) RAISE("minimum 1 dimension");
+	FREE($->dim);
+	FREE($->data);
+	$->dim = Dim_dup(in->dim);
+	$->data = NEW2(Number,length);
+	return true;
+}
+
+GRID_FLOW(GridInner2,2) {
+	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	in->dex += n;
+}
+
+GRID_END(GridInner2,2) {}
+
+METHOD(GridInner2,init) {
+	Symbol sym_para = GET(1,symbol,op2_table[0].sym);
+	Symbol sym_fold = GET(2,symbol,op2_table[0].sym);
+	$->rint = GET(3,int,0);
+	$->dim = 0;
+	$->data = 0;
+
+	GridObject_init((GridObject *)$);
+
+	$->op_para = op2_table_find(sym_para);
+	$->op_fold = op2_table_find(sym_fold);
+	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
+	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
+}
+
+METHOD(GridInner2,delete) {
+	FREE($->dim);
+	FREE($->data);
+	GridObject_delete((GridObject *)$);
+}
+
+GRCLASS(GridInner2,inlets:3,outlets:1,
+LIST(GRINLET(GridInner2,0),GRINLET(GridInner2,2)),
+	DECL(GridInner2,-1,init,  "sss;i"),
+	DECL(GridInner2,-1,delete,""))
 
 /* **************************************************************** */
 
@@ -1082,7 +1174,8 @@ void startup_grid_basic (void) {
 	INSTALL("@!",          GridOp1);
 	INSTALL("@",           GridOp2);
 	INSTALL("@fold",       GridFold);
-	INSTALL("@inner",      GridInner);
+/*	INSTALL("@inner",      GridInner); */
+	INSTALL("@inner2",     GridInner2);
 	INSTALL("@outer",      GridOuter);
 	INSTALL("@convolve",   GridConvolve);
 	INSTALL("@for",        GridFor);

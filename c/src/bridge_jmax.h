@@ -31,7 +31,27 @@
 
 typedef fts_atom_t Var;
 typedef fts_symbol_t Symbol;
+typedef fts_alarm_t Timer;
+
+#define Object_send_thru(_self_,_outlet_,_selector_,ac,at) \
+		fts_outlet_send(OBJ(_self_),_outlet_,_selector_,ac,at)
+
 #define Symbol_new(x) fts_new_symbol(x)
 #define Symbol_name(x) fts_symbol_name(x)
+
+#define Var_has_symbol(a)   fts_is_symbol(a)
+#define Var_has_int(a)      fts_is_int(a)
+#define Var_get_symbol(a)   fts_get_symbol(a)
+#define Var_get_int(a)      fts_get_int(a)
+#define Var_get_ptr(a)      fts_get_ptr(a)
+#define Var_put_symbol(a,b) fts_set_symbol(a,b)
+#define Var_put_int(a,b)    fts_set_int(a,b)
+#define Var_put_ptr(a,b)    fts_set_ptr(a,b)
+
+#define Timer_new(a,b,c) fts_alarm_new(a,b,c)
+#define Timer_set_delay(a,b) fts_alarm_set_delay(a,b)
+#define Timer_arm(a) fts_alarm_arm(a)
+
+#define sprintf_vars(buf,ac,at) sprintf_atoms(buf,ac,at)
 
 #endif /* __BRIDGE_JMAX_H */

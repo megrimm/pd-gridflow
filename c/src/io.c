@@ -164,7 +164,7 @@ GRID_FLOW(GridOut,0) {
 GRID_END(GridOut,0) {
 	$->ff->cl->handler->end((GridObject *)($->ff),in);
 	LEAVE;
-	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
+	Object_send_thru(OBJ($),0,sym_bang,0,0);
 	if (!$->timelog) return;
 	{
 		struct timeval t;
@@ -236,13 +236,13 @@ METHOD(GridOut,init) {
 	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$);
 	if (ac>1) {
-		fts_atom_t at2[3];
-		fts_set_symbol(at2+0,SYM(x11));
-		fts_set_symbol(at2+1,SYM(here));
+		Var at2[3];
+		Var_put_symbol(at2+0,SYM(x11));
+		Var_put_symbol(at2+1,SYM(here));
 		GridOut_open($,winlet,selector,2,at2);
-		fts_set_symbol(at2+0,SYM(out_size));
-		fts_set_int(at2+1,GET(1,int,0));
-		fts_set_int(at2+2,GET(2,int,0));
+		Var_put_symbol(at2+0,SYM(out_size));
+		Var_put_int(at2+1,GET(1,int,0));
+		Var_put_int(at2+2,GET(2,int,0));
 		GridOut_option($,winlet,selector,3,at2);
 	}
 }

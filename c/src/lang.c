@@ -30,6 +30,15 @@
 #include <limits.h>
 
 /* **************************************************************** */
+/* Object/Class/Method */
+
+Object *Object_new(Class *_class) {
+	Object *$ = (Object *) NEW2(char,_class->objectsize);
+	$->_class = _class;
+	return $;
+}
+
+/* **************************************************************** */
 /* List */
 
 struct List {

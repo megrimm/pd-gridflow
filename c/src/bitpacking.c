@@ -33,7 +33,7 @@ typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
 
 struct BitPacking {
 	Packer pack;
-	int endian; /* 0=big, 1=little, 2=same, 3=different */
+	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
 	int bytes;
 	uint32 mask[3];
 };

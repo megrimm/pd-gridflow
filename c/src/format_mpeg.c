@@ -93,10 +93,10 @@ Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 
 	if (!$) return 0;
 
-	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
+	if (ac!=2 || Var_get_symbol(at+0) != SYM(file)) {
 		whine("usage: mpeg file <filename>"); goto err;
 	}
-	filename = Symbol_name(fts_get_symbol(at+1));
+	filename = Symbol_name(Var_get_symbol(at+1));
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {

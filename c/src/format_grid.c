@@ -43,7 +43,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static fts_alarm_t *grid_alarm;
 static Dict *format_grid_object_set = 0;
 
 extern FormatClass class_FormatGrid;
@@ -67,7 +66,6 @@ struct FormatGrid {
 	int buf_i;
 	int buf_n;
 	FGWaiter do_stuff;
-	fts_alarm_t *alarm;
 };
 
 static void read_do(FormatGrid *$, int n, FGWaiter stuff) {
@@ -266,7 +264,7 @@ GRID_END(FormatGrid,0) {
 }
 
 void FormatGrid_close (FormatGrid *$) {
-	if ($->is_socket) Dict_del(gf_alarm_set,$);
+	if ($->is_socket) Dict_del(gf_timer_set,$);
 /*	if ($->bstream) fclose($->bstream); */
 	$->bstream = 0;
 	if (0 <= $->stream) close($->stream);
@@ -281,11 +279,11 @@ bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
-	if (!fts_is_symbol(at+0)) {
+	if (!Var_has_symbol(at+0)) {
 		whine("bad argument"); goto err;
 	}
 
-	filename = Symbol_name(fts_get_symbol(at+0));
+	filename = Symbol_name(Var_get_symbol(at+0));
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
@@ -315,17 +313,17 @@ bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 
 	if (ac<2) { whine("not enough arguments"); goto err; }
 
-	if (!fts_is_symbol(at+0) || !fts_is_int(at+1)) {
+	if (!Var_has_symbol(at+0) || !Var_has_int(at+1)) {
 		whine("bad arguments"); goto err;
 	}
 
 	$->stream = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
-	address.sin_port = htons(fts_get_int(at+1));
+	address.sin_port = htons(Var_get_int(at+1));
 
 	{
-		struct hostent *h = gethostbyname(Symbol_name(fts_get_symbol(at+0)));
+		struct hostent *h = gethostbyname(Symbol_name(Var_get_symbol(at+0)));
 		if (!h) {
 			whine("open_tcp(gethostbyname): %s",strerror(errno));
 			goto err;
@@ -351,14 +349,14 @@ bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
-	if (!fts_is_int(at+0)) {
+	if (!Var_has_int(at+0)) {
 		whine("bad arguments"); goto err;
 	}
 
 	$->listener = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
-	address.sin_port = htons(fts_get_int(at+0));
+	address.sin_port = htons(Var_get_int(at+0));
 	address.sin_addr.s_addr = INADDR_ANY;  /* whatever */
 
 	if (0> bind($->listener,(struct sockaddr *)&address,sizeof(address))) {
@@ -403,7 +401,7 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 
 	{
 		int result;
-		Symbol sym = fts_get_symbol(at+0);
+		Symbol sym = Var_get_symbol(at+0);
 		if (sym == SYM(file)) {
 			result = FormatGrid_open_file($,mode,ac-1,at+1);
 		} else if (sym == SYM(tcp)) {
@@ -418,7 +416,7 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 		whine("open: $->is_socket = %d", $->is_socket);
 	}
 
-	if ($->is_socket) Dict_put(gf_alarm_set,$,try_read);
+	if ($->is_socket) Dict_put(gf_timer_set,$,try_read);
 
 	return (Format *)$;
 err:

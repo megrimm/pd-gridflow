@@ -264,7 +264,7 @@ void GridOutlet_abort(GridOutlet *$) {
 	$->dim = 0;
 	$->dex = 0;
 	LEAVE_P;
-	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
 	ENTER_P;
 }
 
@@ -273,7 +273,7 @@ void GridOutlet_end(GridOutlet *$) {
 	assert(GridOutlet_busy($));
 	GridOutlet_flush($);
 	LEAVE_P;
-	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
 	ENTER_P;
 	FREE($->dim);
 	$->dim = 0;
@@ -283,7 +283,7 @@ void GridOutlet_end(GridOutlet *$) {
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
 	int n = Dim_count(dim);
-	fts_atom_t a[MAX_DIMENSIONS+1];
+	Var a[MAX_DIMENSIONS+1];
 
 	assert($);
 
@@ -296,10 +296,10 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->ro  = 0;
 	$->rwn = 0;
 	$->rw  = 0;
-	fts_set_ptr(a,$);
-	for(i=0; i<n; i++) fts_set_int(&a[i+1],Dim_get($->dim,i));
+	Var_put_ptr(a,$);
+	for(i=0; i<n; i++) Var_put_int(&a[i+1],Dim_get($->dim,i));
 	LEAVE_P;
-	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_begin,n+1,a);
+	Object_send_thru(OBJ($->parent),$->woutlet,sym_grid_begin,n+1,a);
 	ENTER_P;
 	$->frozen = 1;
 /*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
@@ -309,11 +309,11 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	assert(GridOutlet_busy($));
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
-		fts_atom_t a[2];
-		fts_set_int(a+0,pn);
-		fts_set_ptr(a+1,(void*)(long)data); /* explicitly removing const */
+		Var a[2];
+		Var_put_int(a+0,pn);
+		Var_put_ptr(a+1,(void*)(long)data); /* explicitly removing const */
 		LEAVE_P;
-		fts_outlet_send(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
+		Object_send_thru(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
 		ENTER_P;
 		data += pn;
 		n -= pn;
@@ -342,11 +342,11 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 	GridOutlet_flush($);
 	if ($->ron == 0 && $->rwn == 1) {
 		/* this is the copyless buffer passing */
-		fts_atom_t a[2];
-		fts_set_int(a+0,n);
-		fts_set_ptr(a+1,(void*)data);
+		Var a[2];
+		Var_put_int(a+0,n);
+		Var_put_ptr(a+1,(void*)data);
 		LEAVE_P;
-		fts_outlet_send(OBJ($->parent),0,sym_grid_flow2,COUNT(a),a);
+		Object_send_thru(OBJ($->parent),0,sym_grid_flow2,COUNT(a),a);
 		ENTER_P;
 	} else {
 		/* normal stuff */
