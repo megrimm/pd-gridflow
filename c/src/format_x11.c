@@ -88,6 +88,7 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 		if (sx>Dim_get($->dim,1)) sx=Dim_get($->dim,1);
 		XShmPutImage(d->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
+		/* should completion events be waited for? looks like a bug */
 	} else
 	#endif
 		XPutImage(d->display, $->window,
@@ -233,12 +234,6 @@ void X11Display_set_alarm(X11Display *$) {
 	fts_alarm_arm($->alarm);
 }
 
-/*
-void X11Display_abort(Display *d, XErrorEvent *e) {
-	kill(getpid(),4);
-}
-*/
-
 X11Display *X11Display_new(const char *disp_string) {
 	X11Display *$ = NEW(X11Display,1);
 	int screen_num;
@@ -343,7 +338,7 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 	}
 }
 
-void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
+bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	X11Display *d = $->display;
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
@@ -358,22 +353,23 @@ void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 			IPC_CREAT|0777);
 		if(shm_info->shmid < 0) {
 			whine("ERROR: shmget failed: %s",strerror(errno));
-			return;
+			goto err;
 		}
 		$->ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
 		shm_info->readOnly = False;
 		if (!XShmAttach(d->display, shm_info)) {
 			whine("ERROR: XShmAttach: big problem");
-			return;
+			goto err;
 		}
 		XSync(d->display,0);
-/*		shmctl(shm_info.shmid,IPC_RMID,0); */
+		/* yes, this can be done now. should cause auto-cleanup. */
+		shmctl(shm_info->shmid,IPC_RMID,0);
 	} else
 	#endif
 	{
 		/* this buffer may be too big, but at least it won't be too small */
-		$->image = (uint8 *)calloc(sx * sy, sizeof(long));
+		$->image = (uint8 *)calloc(sx * sy, BitPacking_bytes($->bit_packing));
 
 		$->ximage = XCreateImage(d->display, d->visual,
 			d->depth, ZPixmap, 0, (int8 *) $->image,
@@ -383,6 +379,9 @@ void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 		int status = XInitImage($->ximage);
 		whine("XInitImage returned: %d", status);
 	}
+	return true;
+err:
+	return false;
 }
 
 void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
@@ -496,7 +495,7 @@ void FormatX11_close (FormatX11 *$) {
 	FormatX11_dealloc_image($);
 	FREE($->dim);
 	FREE($);
-	/* X11-socket leakage going on here */
+	/* XCloseDisplay(d->display); */
 }
 
 void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
