@@ -5,6 +5,10 @@ version 0.5.0 (head):
  * can compile without X11; added --no-x11 in ./configure
  * removed support for jMax 2.4
  * auto-detects jMax 2.5 and jMax 3.0
+ * @inner renamed to @inner2 (new, proper @inner coming soon)
+ * faster unary operators
+ * added unary operator: sq (faster squaring)
+ * further separation of GridFlow from jMax
 
 version 0.4.1 (2002.01.02):
  * cvs repository now has public access
