@@ -326,6 +326,27 @@ rescue Exception => e
 	GridFlow.post "ruby stack depth = %d", b.length
 end end
 
+def GridFlow.macerr(i)
+	begin
+		f=File.open("/System/Library/Frameworks/CoreServices.framework/"+
+		"Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/"+
+		"MacErrors.h")
+		while f.gets
+			m = /^\s*(\w+)\s*=\s*(-\d+),\s*\/\*\s*(.*)\s*\*\/$/.match $_
+			next if not m
+			if m[2].to_i == i then
+				return m[3]
+			end
+		end
+		return "no error message available for this error number"
+	rescue
+		return "Can't find Apple's precious copyrighted "+
+		"list of error messages on this system."
+	ensure
+		f.close if f	
+	end
+end
+
 end # module GridFlow
 
 #----------------------------------------------------------------#
