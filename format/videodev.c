@@ -252,11 +252,11 @@ struct FormatVideoDev : Format {
 	\decl void initialize2 ();
 	GRINLET3(0);
 
-	\decl void brightness (short value);
-	\decl void hue        (short value);
-	\decl void colour     (short value);
-	\decl void contrast   (short value);
-	\decl void whiteness  (short value);
+	\decl void brightness (uint16 value);
+	\decl void hue        (uint16 value);
+	\decl void colour     (uint16 value);
+	\decl void contrast   (uint16 value);
+	\decl void whiteness  (uint16 value);
 };
 
 #define DEBUG(args...) 42
@@ -460,15 +460,15 @@ GRID_INLET(FormatVideoDev,0) {
 	vp._name_ = value; \
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 
-\def void brightness (short value) {
+\def void brightness (uint16 value) {
 	PICTURE_ATTR(brightness)}
-\def void hue      (short value) {
+\def void hue      (uint16 value) {
 	PICTURE_ATTR(hue)}
-\def void colour (short value) {
+\def void colour (uint16 value) {
 	PICTURE_ATTR(colour)}
-\def void contrast (short value) {
+\def void contrast (uint16 value) {
 	PICTURE_ATTR(contrast)}
-\def void whiteness (short value) {
+\def void whiteness (uint16 value) {
 	PICTURE_ATTR(whiteness)}
 
 \def void close () {
