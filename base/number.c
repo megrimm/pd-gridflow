@@ -374,7 +374,7 @@ Operator1 op1_table[] = {
 	DECL_OP1(sq,"sq"),
 };
 
-Dict *op1_dict;
+VALUE op1_dict;
 
 /* **************************************************************** */
 
@@ -481,18 +481,18 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**"),
 };
 
-Dict *op2_dict;
+VALUE op2_dict;
 
 void startup_number (void) {
 	int i;
-	op1_dict = Dict_new(0,0);
-	op2_dict = Dict_new(0,0);
+	op1_dict = rb_hash_new();
+	op2_dict = rb_hash_new();
 	for(i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
-		Dict_put(op1_dict,(void *)(int)op1_table[i].sym,&op1_table[i]);
+		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX(&op1_table[i]));
 	} 
 	for(i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
-		Dict_put(op2_dict,(void *)(int)op2_table[i].sym,&op2_table[i]);
+		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX(&op2_table[i]));
 	} 
 }

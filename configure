@@ -380,7 +380,6 @@ ifndef ARCH
 ARCH=#{$conf[:ARCH]}
 endif
 JMAX_VERSION=#{$conf[:JMAX_VERSION]}
-PNAME=gridflow
 "
 f.puts "
 JMAXROOTDIR=#{$conf[:JMAXROOTDIR]}
@@ -389,8 +388,11 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 " if $conf[:JMAX_VERSION]
 f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
 
+for z in $conf[:OPTIONS] do
+	f.puts "#{z}=yes"
+end
+
 sources = %w(
-	base/lang.c
 	base/number.c
 	base/grid.c
 	base/main.c

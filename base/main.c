@@ -21,7 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -41,6 +40,13 @@
 #include "../config.h"
 #include <assert.h>
 #include <limits.h>
+
+VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
+VALUE FObject_class;
+
+void startup_number(void);
+void startup_grid(void);
+void startup_flow_objects(void);
 
 /* **************************************************************** */
 /* Allocation */
@@ -147,7 +153,6 @@ void qdump(void) {
 const char *whine_header = "[whine] ";
 VALUE gf_object_set = 0;
 VALUE gf_timer_set = 0;
-Timer *gf_timer = 0;
 
 FILE *whine_f;
 
@@ -163,15 +168,6 @@ DECL_SYM2(grid_end)
 DECL_SYM2(bang)
 DECL_SYM2(int)
 DECL_SYM2(list)
-
-#define STARTUP_LIST(_begin_,_end_) \
-	_begin_## number        _end_ \
-	_begin_## flow_objects  _end_ \
-	_begin_## grid          _end_ \
-	_begin_## gridflow      _end_
-
-/* declare startup of every source file */
-STARTUP_LIST(void startup_,(void);)
 
 static void disable_signal_handlers (void) {
 	/*
@@ -193,11 +189,17 @@ void showenv(const char *s) {
 	whine("%s = %s\n", s, getenv(s));
 }
 
-void gf_timer_handler (Timer *foo, void *obj);
+static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
+	void *data2 = FIX2PTR(data);
+	void (*func2)() = FIX2PTR(func);
+	func2(data2);
+	return Qnil;
+}
 
 VALUE gf_ruby_init$1 (void *foo) {
 	gf_install_bridge();
 	disable_signal_handlers(); /* paranoid; help me with gdb */
+	rb_define_method(GridFlow_module,"exec",GridFlow_exec,2);
 	rb_eval_string(
 		"begin\n"
 			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n"
@@ -222,18 +224,7 @@ VALUE gf_ruby_init$2 (void *foo) {
 	return Qnil;
 }
 
-void gf_ruby_init (void) {
-	char *foo[] = {"/bin/false","/dev/null"};
-	whine("starting Ruby...");
-	ruby_init();
-
-	rb_eval_string("module GridFlow; end");
-	ruby_options(COUNT(foo),foo);
-	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
-}
-
 void gf_init (void) {
-
 	disable_signal_handlers();
 	srandom(time(0));
 
@@ -251,7 +242,14 @@ void gf_init (void) {
 	showenv("PATH");
 	showenv("DISPLAY");
 
-	gf_ruby_init();
+	{
+	char *foo[] = {"/bin/false","/dev/null"};
+	whine("starting Ruby...");
+	ruby_init();
+	rb_eval_string("module GridFlow; end");
+	ruby_options(COUNT(foo),foo);
+	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
+	}
 
 #define DEF_SYM(_sym_) \
 	sym_##_sym_ = SYM(_sym_);
@@ -265,14 +263,11 @@ void gf_init (void) {
 
 	gf_alloc_set  = rb_hash_new();
 	gf_object_set = rb_hash_new();
-	gf_timer_set  = rb_hash_new();
 
 	/* run startup of every source file */
-	STARTUP_LIST(startup_,();)
-
-	gf_timer = Timer_new(gf_timer_handler, 0);
-//	Dict_put(gf_timer_set,0,RtMetro_alarm);
-	gf_timer_handler(0,0); /* bootstrap the event loop */
+	startup_number();
+	startup_grid();
+	startup_flow_objects();
 
 	whine("--- GridFlow startup: end ---");
 }
@@ -344,16 +339,78 @@ char *FObject_to_s(FObject *$) {
 }
 */
 
-void gf_timer_handler$2 (void *foo) {
-//	rb_eval_string("STDERR.puts \"ruby-tick\"");
-//	rb_eval_string("protect{$esm.tick}");
+void MainLoop_add(void *data, void (*func)(void)) {
+	rb_funcall(rb_eval_string("$tasks"),rb_intern("[]="), 2,
+		PTR2FIX(data), PTR2FIX(func));
 }
 
-void gf_timer_handler (Timer *foo, void *obj) {
-	rb_eval_string("$mainloop.tick");
-	Timer_set_delay(gf_timer, 100.0);
-	Timer_arm(gf_timer);
+void MainLoop_remove(void *data) {
+	rb_funcall(rb_eval_string("$tasks"),rb_intern("remove"), 1,
+		PTR2FIX(data));
 }
 
-void startup_gridflow (void) {
+VALUE rb_ary_fetch(VALUE $, int i) {
+	VALUE argv[] = { INT2NUM(i) };
+	return rb_ary_aref(COUNT(argv),argv,$);
+}
+
+VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $) {
+	VALUE ary = rb_ivar_get($,rb_intern("@outlets"));
+	int i, n = RARRAY(ary)->len;
+	for (i=0; i<n; i++) {
+		VALUE conn = rb_ary_fetch(ary,i);
+		VALUE rec = rb_ary_fetch(conn,0);
+		int inl = NUM2INT(rb_ary_fetch(conn,1));
+		VALUE a[argc+2];
+		char buf[256];
+		sprintf(buf,"_%d_%s",inl,argc<1?"bang":rb_id2name(SYM2ID(argv[0])));
+		rb_funcall(rec,rb_intern(buf),argc<1?0:argc-1,argv+1);
+	}
+}
+
+/*
+	a slightly friendlier version of post(...)
+	it removes redundant messages.
+	it also ensures that a \n is added at the end.
+*/
+void whine(char *fmt, ...) {
+	static char *last_format = 0;
+	static int format_count = 0;
+
+	if (last_format && strcmp(last_format,fmt)==0) {
+		format_count++;
+		if (format_count >= 64) {
+			if (high_bit(format_count)-low_bit(format_count) < 3) {
+				post("[too many similar posts. this is # %d]\n",format_count);
+#ifdef MAKE_TMP_LOG
+				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
+				fflush(whine_f);
+#endif
+			}
+			return;
+		}
+	} else {
+		last_format = strdup(fmt);
+		format_count = 1;
+	}
+
+	/* do the real stuff now */
+	{
+		va_list args;
+		char post_s[256*4];
+		int length;
+		va_start(args,fmt);
+		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
+		post_s[sizeof(post_s)-1]=0; /* safety */
+		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
+#ifdef MAKE_TMP_LOG
+		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+		fflush(whine_f);
+#endif
+	}
+}
+
+/* Ruby's entrypoint. */
+void Init_gridflow (void) {
+	gf_init();
 }
