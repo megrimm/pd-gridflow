@@ -7,12 +7,22 @@ require "rbconfig"
 require "ftools"
 include Config
 
-#$DESTDIR = "#{CONFIG["sitedir"]}/#{CONFIG["MAJOR"]}.#{CONFIG["MINOR"]}"
-$DESTDIR = "/home/matju/lib/ruby/#{RUBY_VERSION[0,3]}"
-$DESTDIR += "/linux"
-
+$DESTDIR = "#{CONFIG["sitedir"]}/#{CONFIG["MAJOR"]}.#{CONFIG["MINOR"]}"
+#$DESTDIR = "/home/matju/lib/ruby/#{RUBY_VERSION[0,3]}"
 $RUBY = "ruby"
-#$RUBY = "ruby-1.7"
+
+while ARGV.length>0
+  arg=ARGV.shift
+  case arg
+  when /=/
+    i=arg.index '='
+    ARGV.unshift arg[0..i-1], arg[i+1..-1]
+  when "--prefix"
+    $DESTDIR = ARGV.shift + "/lib/ruby/#{CONFIG["MAJOR"]}.#{CONFIG["MINOR"]}"
+  end
+end
+
+
 
 def install_files(f,base,entries)
   entries.each {|type,name,*rest|
@@ -61,12 +71,15 @@ end
 
 #----------------------------------------------------------------#
 
+$DESTDIR += "/linux/" #(HACK!)
+
 FILES = [
+#  [:directory, "linux/",
     [:ruby, "ioctl.rb"],
-    [:ruby, "SoundDSP.rb"],
     [:ruby, "SoundPCM.rb"],
     [:ruby, "ParallelPort.rb"],
     [:ruby, "SoundMixer.rb"],
+#  ]
 ]
 
 make_makefile
