@@ -21,12 +21,13 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
-
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
 #include <sys/time.h>
+
+/* sorry. memory leaks must be found by hand in this module */
+#undef strdup
 
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
@@ -38,9 +39,7 @@ static VALUE Pointer_class2=0;
 static VALUE sym_ninlets=0, sym_noutlets=0;
 
 #define rb_sym_name rb_sym_name_r4j
-static char *rb_sym_name(VALUE sym) {
-	return strdup(rb_id2name(SYM2ID(sym)));
-}
+static const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
 
 static VALUE Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
@@ -101,7 +100,7 @@ void rj_convert(VALUE arg, t_atom *at) {
 	if (INTEGER_P(arg)) {
 		SETFLOAT(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
-		char *name = rb_sym_name(arg);
+		const char *name = rb_sym_name(arg);
 		/*fprintf(stderr,"1: %s\n",name);*/
 		SETSYMBOL(at,gensym(strdup(name)));
 	} else if (FLOAT_P(arg)) {

@@ -107,6 +107,7 @@ GRID_FLOW(GridImport,1) {
 
 GRID_END(GridImport,1) {}
 
+//METHOD3(GridImport,init,void,Grid t) {
 METHOD(GridImport,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
@@ -159,7 +160,7 @@ LIST(GRINLET(GridExport,0)))
 /* **************************************************************** */
 
 struct GridExportList : GridObject {
-	VALUE /*Array*/ list; //!@#$mark
+	VALUE /*Array*/ list;
 	int n;
 };
 
@@ -168,6 +169,7 @@ GRID_BEGIN(GridExportList,0) {
 	if (n>1000) RAISE("list too big (%d elements)", n);
 	$->list = rb_ary_new2(n+2);
 	$->n = n;
+	rb_ivar_set(rself,SI(@list),$->list); /* keep */
 	rb_ary_store($->list,0,INT2NUM(0));
 	rb_ary_store($->list,1,sym_list);
 }
@@ -181,6 +183,7 @@ GRID_FLOW(GridExportList,0) {
 GRID_END(GridExportList,0) {
 	FObject_send_out(rb_ary_len($->list),rb_ary_ptr($->list),rself);
 	$->list = 0;
+	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
 }
 
 GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,
@@ -222,7 +225,7 @@ GRID_BEGIN(GridStore,0) {
 	COPY(v+na-1,$->r.dim->v+nc,nb-nc);
 //	gfpost("%s",(new Dim(nd,v))->to_s());
 	$->out[0]->begin(new Dim(nd,v));
-	in->set_factor(nc);
+	if (nc>0) in->set_factor(nc);
 
 //	gfpost("c=%s",$->out[0]->dim->to_s());
 }
@@ -626,7 +629,7 @@ LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 
 /* **************************************************************** */
 
-typedef struct GridInner GridInner2;
+struct GridInner2 : GridInner {};
 
 GRID_BEGIN(GridInner2,0) {
 	Dim *a = in->dim;

@@ -130,6 +130,7 @@ bool GridInlet::is_busy_verbose(const char *where) {
 }
 
 void GridInlet::set_factor(int factor) {
+	assert(dim);
 	assert(factor > 0);
 	assert(dim->prod() % factor == 0);
 	this->factor = factor;
@@ -256,11 +257,13 @@ void GridInlet::end(int argc, VALUE *argv) {
 
 void GridInlet::list(int argc, VALUE *argv) {
 	Grid t;
+//	for (int i=0; i<argc; i++) gfpost("%08x.inlet_list: %02d: %08x\n",this,i,argv[i]);
 	t.init_from_ruby_list(argc,argv);
 	assert(gh);
 	dim = t.dim->dup();
+	int n = t.dim->prod();
 	gh->begin(parent->peer,parent,this);
-	gh->flow( parent->peer,parent,this,t.dim->prod(),t.as_int32());
+	if (n>0) gh->flow( parent->peer,parent,this,n,t.as_int32());
 	gh->end(  parent->peer,parent,this);
 	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
@@ -441,6 +444,8 @@ void GridOutlet::callback(GridInlet *in, int mode) {
   abstract class for an FTS Object that has Grid-aware inlets/outlets
 */
 
+void GridObject::mark() {}
+
 METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
@@ -554,12 +559,11 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 
 METHOD(GridObject,method_missing) {
 	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
-	char *name;
 //	gfpost("argc=%d,argv=%p,self=%p,rself=%p",argc,argv,self,rself);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 //	rb_p(argv[0]);
-	name = rb_sym_name(argv[0]);
+	const char *name = rb_sym_name(argv[0]);
 	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
@@ -591,6 +595,7 @@ METHOD(GridObject,delete) {
 		if ($->in[i])  { delete $->in[i]; $->in[i]=0; }
 	for (int i=0; i<MAX_OUTLETS; i++)
 		if ($->out[i]) { delete $->out[i]; $->out[i]=0; }
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,
@@ -677,7 +682,7 @@ LIST(),
 VALUE Format_class;
 VALUE GridObject_class;
 
-void startup_grid (void) {
+void startup_grid () {
 	int i;
 	ruby_c_install(&GridObject_classinfo, FObject_class);
 	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
