@@ -30,6 +30,14 @@
 
 /* ---------------------------------------------------------------- */
 
+static uint64 rdtsc(void) {
+  uint64 x;
+  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+  return x;}
+
+#define ENTER $->profiler_last = rdtsc();
+#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
+
 /* return and complain when file not open */
 #define CHECK_FILE_OPEN \
 	if (!$->ff) { whine("can't do that: file not open"); return; }
@@ -213,7 +221,9 @@ GRID_FLOW(GridOut,0) {
 
 GRID_END(GridOut,0) {
 	$->ff->cl->end($->ff,in);
+	LEAVE;
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
+	ENTER;
 }
 
 METHOD(GridOut,init) {
@@ -334,7 +344,9 @@ GRID_FLOW(VideoOut,0) {
 
 GRID_END(VideoOut,0) {
 	$->ff->cl->end($->ff,in);
+	LEAVE;
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
+	ENTER;
 }
 
 METHOD(VideoOut,close) {
