@@ -1,6 +1,7 @@
 <html>
+<!-- $Id$ -->
 <head>
-<title>video4jmax - install</title>
+<title>Video4jmax 0.3.1 - Profiling Performance</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -15,7 +16,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="3" height="16">
-      <h4>Video4jmax 0.3.1 - Profiling</h4>
+      <h4>Video4jmax 0.3.1 - Profiling Performance</h4>
   </td></tr>
 
   <tr> 
@@ -30,21 +31,23 @@
 
 	<h4>What is profiling?</h4>
 	<p>
-		It is about getting empiric metrics about the execution of a program.
-		For example, find out which parts of a program consume the most time
-		and/or memory. Usually it's about the time, and this is what
-		video4jmax (0.3.1) now allows you to measure.
+	It is about getting empiric metrics about the execution of a program.
+	For example, find out which parts of a program consume the most time
+	and/or memory. Usually it's about the time, and this is what
+	video4jmax (0.3.1) now allows you to measure.
 	</p>
 
 	<h4>How to get those stats from video4jmax?</h4>
 	<ul>
 	<li>create a "video4jmax" object (yes, really) and connect two
-	messageboxes to it, "profiler_dump" and "profiler_reset". See the
-	reference manual for more details.</li>
+	messageboxes to it, "profiler_reset" and "profiler_dump". The first
+	one resets all counters to zero. The second one gives a top of
+	the busiest objects, with percentages.</li>
 	<li>note that those results are global to a fts process. That is, if you
 	start jMax only once at a time, *all* objects in all patches may be
 	monitored (actually, only the video4jmax ones).
 	</li>
+	<h4>How do i interpret those stats?</h4>
 	<li>Note that some operations may not be monitored, and some of the
 	monitoring may be buggy. I think it's not buggy, but I may be wrong.
 	</li>
@@ -54,6 +57,11 @@
 	may come from the fact that an ordinary multitasking OS will run other
 	tasks without stopping/resuming the clock. This may happen randomly;
 	however, it has a much bigger chance of happening in [@in] or [@out].
+	</li>
+	<li>
+	If you make sure that only the bare minimum is actively running on your
+	computer, then [@out] (using x11) would include the time spent in the x11
+	server, except in some conditions.
 	</li>
 	<li>
 	The profiler has an impact on the results of the profiler. The profiler
@@ -83,6 +91,28 @@
 	</li>
 	</ul>
 	</p>
+
+	<h4>Getting a frames-per-second measure</h4>
+	<ul>
+	<li>Make sure no other programs are actively running.</li>
+	<li>Set your [metro] to the lowest possible delay (for example, 1).</li>
+	<li>hide your jMax console.</li>
+	<li>Send an "option timelog 1" message to your [@out].</li>
+	<li>Activate your circuit.</li>
+	<li>Wait for over 20 frames or 10 seconds, the longest of the two.
+	waiting for even longer gives more accurate results.</li>
+	<li>Deactivate your circuit.</li>
+	<li>unhide your jMax console. Find the series of measurements at the
+	end of the log. If one of the time differences (except the first one)
+	is much larger than the others, you should redo the test from the
+	beginning.</li>
+	<li>the overall time difference is the end time minus the start time.</li>
+	<li>the overall number of frames is the end frame number minus the start
+	frame number.</li>
+	<li>the FPS (frames/second) value is the number of frames divided by
+	the overall time difference.</li>
+	</li>
+	</ul>
 </td>
 
   <tr><td>&nbsp;</td></tr>
