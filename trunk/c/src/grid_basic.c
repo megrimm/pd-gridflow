@@ -264,7 +264,7 @@ GRID_FLOW(GridStore,0) {
 			GridOutlet_send($->out[0],size,data2);
 		 	break;}
 		case uint8_type_i: {
-			int bs = PACKET_LENGTH;
+			int bs = gf_max_packet_length;
 			Number data3[bs];
 			uint8 *data2 = ((uint8 *)$->data) + pos;
 			int left = size;

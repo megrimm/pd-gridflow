@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include "grid.h"
 
+int gf_max_packet_length = 1024;
+
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 
 #define INFO(_self_) \
@@ -227,7 +229,7 @@ GridOutlet *GridOutlet_new(GridObject *parent, int woutlet) {
 	$->woutlet = woutlet;
 	$->dim = 0;
 	$->dex = 0;
-	$->buf = NEW2(Number,PACKET_LENGTH);
+	$->buf = NEW2(Number,gf_max_packet_length);
 	$->bufn = 0;
 	$->frozen = 0;
 	$->ron = 0;
@@ -307,8 +309,8 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	int incr;
 
 	assert(!GridOutlet_idle($));
-	while(n>0) {
-		int pn = n > PACKET_LENGTH ? PACKET_LENGTH : n;
+	while (n>0) {
+		int pn = min(n,gf_max_packet_length);
 		fts_atom_t a[2];
 		int i;
 		fts_set_int(a+0,pn);
@@ -325,10 +327,10 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
 	$->dex += n;
 	assert($->dex <= Dim_prod($->dim));
-	if (n > PACKET_LENGTH/2 || $->bufn + n > PACKET_LENGTH) {
+	if (n > gf_max_packet_length/2 || $->bufn + n > gf_max_packet_length) {
 		GridOutlet_flush($);
 	}
-	if (n > PACKET_LENGTH/2) {
+	if (n > gf_max_packet_length/2) {
 		GridOutlet_send_direct($,n,data);
 	} else {
 		memcpy(&$->buf[$->bufn],data,n*sizeof(Number));
