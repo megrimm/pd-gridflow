@@ -55,6 +55,16 @@ def mke(tag)
 	print "</#{tag}>"
 end
 
+def mkimg(icon,alt=nil)
+	icon.tag == 'icon' or raise "need icon"
+	url = icon.att["image"]
+	url = "images/" + url if url !~ /^images\//
+	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
+	mk(:img, :src, url,
+		:alt, alt || icon.att["text"],
+		:border, 0)
+end
+
 class DTDParser < XMLParser
 	def elementDecl(*args); print "elementDecl: "; p args; end
 	def attlistDecl(*args); print "attlistDecl: "; p args; end
@@ -73,6 +83,7 @@ class XNode
 		"li" => 1,
 		"list" => 1,
 		"icon" => 1,
+		"help" => 1,
 		"arg" => 1,
 		"rest" => 1,
 		"method" => 1,
@@ -80,7 +91,6 @@ class XNode
 		"grid" => 1,
 		"inlet" => 1,
 		"outlet" => 1,
-		"sample" => 1,
 		"jmax_class" => 1,
 		"operator_1" => 1,
 		"operator_2" => 1,
@@ -101,15 +111,13 @@ class XNode
 		when "section"
 			mk(:h4) { mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
 				print att["name"] }}
-			print "<ul>"
+			print "<ul>\n"
 			e="</ul>\n"
 		when "jmax_class"
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			mk(:li) { mk(:a,:href,"\#"+att["name"]) {
 				if icon
-					mk(:img,:src,icon.att["image"],
-						:alt,icon.att["text"],
-						:border,0)
+					mkimg(icon,att["cname"])
 				else
 					print att["name"]
 				end
@@ -167,16 +175,14 @@ class XNode
 			print "<tr>"
 			mk(:td) {}
 			print "<td valign='top'><br>\n"
-			icon   = contents.find {|x| XNode===x and x.tag == 'icon'   }
-			sample = contents.find {|x| XNode===x and x.tag == 'sample' }
-			if icon
-				mk(:img,:src,icon.att["image"])
-			end
+			icon = contents.find {|x| XNode===x and x.tag == 'icon' }
+			help = contents.find {|x| XNode===x and x.tag == 'help' }
+			mkimg(icon) if icon
 			mk(:br,:clear,"left")
 			mk(:br)
 			mk(:br)
-			if sample
-				big = sample.att['image']
+			if help
+				big = help.att['image']
 				small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
 				mk(:a,:href,big) {
 					mk(:img,:src,small,:border,0)
@@ -212,7 +218,7 @@ class XNode
 		when "inlet", "outlet"
 			# hidden
 			$portnum = [tag,att['id']]
-		when "icon", "sample", "arg", "rest"
+		when "icon", "help", "arg", "rest"
 			# hidden
 			return
 		when "grid", "dim"
@@ -229,8 +235,7 @@ class XNode
 			mk(:td) {
 				icon = contents.find {|x| XNode===x && x.tag == "icon" }
 				if icon then
-					mk(:img,:src,icon.att["image"],
-						:border,0,:alt,att["cname"])
+					mkimg icon
 				else
 					mk(:img,:src,"images/op/#{att['cname']}.jpg",
 						:border,0,:alt,att["cname"])
@@ -244,10 +249,11 @@ class XNode
 		end
 		contents.each {|x|
 			case x
-			when String;
+			when String
 				x.gsub!(/[\r\n\t ]+$/," ")
 				print x
-			when XNode; x.print_contents
+			when XNode
+				x.print_contents
 			else raise "crap"
 			end
 		}
