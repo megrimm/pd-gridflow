@@ -43,9 +43,9 @@ struct FormatMPEG : Format {
 };
 
 METHOD3(FormatMPEG,frame) {
-	uint8 *buf = NEW(uint8,mpeg_id->Size);
+	uint8 *buf = new uint8[mpeg_id->Size];
 	GridOutlet *o = out[0];
-	int npixels = mpeg_id->Height * mpeg_id->Width;
+//	int npixels = mpeg_id->Height * mpeg_id->Width;
 /*	SetMPEGOption(MPEG_QUIET,1); */
 	if (!GetMPEGFrame((char *)buf)) RAISE("libmpeg: can't fetch frame");
 
@@ -55,14 +55,15 @@ METHOD3(FormatMPEG,frame) {
 	int sy = o->dim->get(0);
 	int sx = o->dim->get(1);
 	int bs = o->dim->prod(1);
-	Number b2[bs];
+	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = buf + 4*sx*y;
-		bit_packing->unpack(sx,b1,b2);
+		bit_packing->unpack(sx,Pt<uint8>(b1,4*sx*y),Pt<Number>(b2,sx*y));
 		o->send(bs,b2);
 	}
-	FREE(buf);
+	delete[] buf;
 	o->end();
+	return Qnil;
 }
 
 GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
@@ -73,9 +74,10 @@ METHOD3(FormatMPEG,close) {
 	if (bit_packing) delete bit_packing;
 	if (mpeg_id) {
 		CloseMPEG();
-		FREE(mpeg_id);
+		delete mpeg_id;
 	}
 	rb_call_super(argc,argv);
+	return Qnil;
 }
 
 METHOD3(FormatMPEG,init) {
@@ -86,10 +88,10 @@ METHOD3(FormatMPEG,init) {
 	if (mpeg_id) RAISE("libmpeg.so is busy (you must close the other mpeg file)");
 
 	const char *filename =
-		rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
+		rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
-	mpeg_id = NEW(ImageDesc,1);
+	mpeg_id = new ImageDesc;
 	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
 	VALUE f = rb_funcall(rb_cFile,SI(open),2,
 		rb_str_new2(filename),rb_str_new2("r"));
@@ -99,11 +101,17 @@ METHOD3(FormatMPEG,init) {
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),4,3,mask);
+	return Qnil;
 }
 
-FMTCLASS(FormatMPEG,"mpeg","Motion Picture Expert Group Format (using Ward's)",FF_R,
-inlets:1,outlets:1,LIST(GRINLET(FormatMPEG,0)),
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
+	" (using Ward\\'s)'");
+}
+
+GRCLASS(FormatMPEG,"FormatMPEG",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG,0,4)),
 DECL(FormatMPEG,init),
 DECL(FormatMPEG,frame),
 DECL(FormatMPEG,close))
-
