@@ -30,6 +30,11 @@
 #ifndef PROC
 #define PROC
 
+static inline void Dim_invariant(Dim *$) {
+	assert($);
+	assert_range($->n,0,MAX_DIMENSIONS);
+}
+
 Dim *Dim_new (int n, int *v) {
 	Dim *$ = (Dim *) NEW(int,n+1);
 
@@ -45,13 +50,12 @@ Dim *Dim_new (int n, int *v) {
 }
 
 int Dim_count (Dim *$) {
-	assert($);
-	assert_range($->n,0,MAX_DIMENSIONS);
+	Dim_invariant($);
 	return $->n;
 }
 
 int Dim_get (Dim *$, int i) {
-	assert($);
+	Dim_invariant($);
 	assert_range(i,0,$->n-1);
 	assert_range($->v[i],0,MAX_INDICES);
 	return $->v[i];
@@ -60,7 +64,7 @@ int Dim_get (Dim *$, int i) {
 int Dim_prod(Dim *$) {
 	int v=1;
 	int i;
-	assert($);
+	Dim_invariant($);
 	for (i=0; i<$->n; i++) v *= $->v[i];
 	return v;
 }
@@ -68,7 +72,7 @@ int Dim_prod(Dim *$) {
 int Dim_prod_start(Dim *$, int start) {
 	int v=1;
 	int i;
-	assert($);
+	Dim_invariant($);
 	for (i=start; i<$->n; i++) v *= $->v[i];
 	return v;
 }
@@ -81,7 +85,7 @@ char *Dim_to_s(Dim *$) {
 
 	int i=0;
 
-	assert($);
+	Dim_invariant($);
 	
 	s += sprintf(s,"Dim");
 	while(i<$->n) {
@@ -94,8 +98,8 @@ char *Dim_to_s(Dim *$) {
 
 int Dim_equal_verbose(Dim *$, Dim *other) {
 	int i;
-	assert($);
-	assert(other);
+	Dim_invariant($);
+	Dim_invariant(other);
 	if ($->n != other->n) {
 		whine("Got %d dimensions, but should be %d, "
 			"as in (height,width,channels)", $->n, other->n);
@@ -113,8 +117,8 @@ int Dim_equal_verbose(Dim *$, Dim *other) {
 
 /* here, "other" better be a (height,width,channels) with channels=3 (rgb) */
 int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
-	assert($);
-	assert(other);
+	Dim_invariant($);
+	Dim_invariant(other);
 	if ($->n != other->n) {
 		whine("Got %d dimensions, but should be %d, "
 			"as in (height,width,channels)", $->n, other->n);
@@ -143,18 +147,18 @@ PROC int Dim_dex_add(Dim *$, int n, int *dex) {
 	int k;
 	int old = *dex;
 	int new = *dex + n;
-	assert($);
-	assert(n>=0);
+	Dim_invariant($);
+
 	k = $->n-1;
 	*dex = new;
 	if (*dex > Dim_prod($)) { *dex %= Dim_prod($); return 0; }
-	while (old%$->v[k] != new%$->v[k]) {
+	while(k>=0) {
+		if (old%$->v[k] == new%$->v[k]) return k+1;
 		old /= $->v[k];
 		new /= $->v[k];
 		k--;
-		if (k<0) return 0;
 	}
-	return k+1;
+	return 0;
 }
 
 PROC int Dim_calc_dex(Dim *$, int *v) {
