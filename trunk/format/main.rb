@@ -89,6 +89,7 @@ class Format #< GridObject
 	def initialize(mode,*)
 		super
 		@cast = :int32
+		@colorspace = :rgb
 		@mode = mode
 		@frame = 0
 		@parent = nil
