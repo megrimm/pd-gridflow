@@ -206,7 +206,7 @@ loop{
 		end
 	else
 		if $stack[-1]==:ruby then
-			x.gsub!(/[\\\"]/,'\\\1')
+			x.gsub!(/([\\\"])/) { "\\"+$1 }
 			x="\"#{x.chomp}\\n\"\n"
 		end
 		Out.puts x
