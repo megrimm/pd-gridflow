@@ -59,8 +59,8 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 			op_sub->zip(m,mat+i*m,row);
 		}
 	}
-	out[0]->begin(matrix.dim->dup());
-	out[0]->send(n*m,mat);
+	GridOutlet out(this,0,matrix.dim->dup());
+	out.send(n*m,mat);
 } GRID_END
 
 \def void initialize () {
