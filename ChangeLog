@@ -1,8 +1,9 @@
 /* $Id$ */
 
-version 0.2.2:
- * @video_out auto-updates upon X11 ExposeEvents
- * fixed help (and summary)
+version 0.2.2 (2001.08.15):
+ * @video_out auto-updates on X11 ExposeEvent
+ * updated documentation and help
+ * fixed installation/config of help and summary
  * split BitPacking module from @video_out
  * added support for BTTV input (that is, using mmap() command)
  * new videodev options: channel,tuner,contrast,hue,etc.
@@ -10,10 +11,10 @@ version 0.2.2:
  * added many new samples
  * new objects:
 	@!, @fold, @outer, @dim, @redim,
-	@posterize, @scale_to, @contrast, @spread,
-	@two, @three, @identity_transform
+	@posterize, @contrast, @two, @three,
+	@identity_transform, @scale_to, @spread
 
-version 0.2.1:
+version 0.2.1 (2001.08.01):
  * added private CVS repository on hostname.2y.net
  * added configuration script (detects video4linux 1.x)
  * added documentation in HTML format
@@ -28,7 +29,7 @@ version 0.2.1:
  * @ supports grids in right inlet
  * now there are 20 binary operators
 
-version 0.2.0:
+version 0.2.0 (2001.05.05):
  * package name changed from "video" to "video4jmax"
  * new kind of post() cancels repetitive log entries
  * major modifications to existing objects
@@ -40,25 +41,26 @@ version 0.2.0:
  * added @import, @export
  * added @, @store
 
-version 0.1.1:
+version 0.1.1 (2001.04.03):
+
  * removed vout's grab
  * vout width and height parameters swapped
  * vout_file class is mostly like vout but writes to a file in PPM format.
 
-version 0.1.0:
+version 0.1.0 (2001.03.14):
 
  * fixed the bits_per_pixel bug
  * merged in some other variations on the main sample
  * included Christian's makefiles for jmax 2.5
 
-version 0.0.7:
+version 0.0.7 (2001.03.08):
 
  * vout should support most types of RGB visuals now
  * autodraw now works: 0=none; 1=page; 2=line; 3=pixel
  * less global variables
  * putting all of this under the GPL
 
-version 0.0.5:
+version 0.0.5 (2001.03.05):
 
  * vout class, two params: width, height; 24-bit BGR only; refresh by
 finishing scanline or sending bang; "grab" (hack); "reset" for resetting

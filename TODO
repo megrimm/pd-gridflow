@@ -5,19 +5,15 @@ Installation
 [ ] add --slow switch to turn off all optimizations
 
 Documentation
-[ ] update install.html for new "configure" script.
-[ ] review reference.html
-[ ] review images of reference.html
-[ ] add some context info: what is jmax and where to get it
-	and where are the mailing-lists and irc channels.
-[ ] add explanation of video4jmax vs jmax-videodsp
 [ ] add credits
-[ ] things you type verbatim are in KBD blocks
-[ ] placeholders for your own values are in I blocks
-[ ] change title bar
+[ ] add explanation of video4jmax vs jmax-videodsp
+[ ] things you type verbatim are all in KBD blocks
+[ ] placeholders for your own values are all in I blocks
 [ ] validate samples/outside
 [ ] validate samples/020
-[ ] add doc for: ** tanh atan gamma
+[ ] H5 font-size is smaller than regular P font-size ?
+[ ] make real documentation for templates
+[ ] recategorize objects+templates together
 
 General
 [!] remove memory leaks, segmentation faults
@@ -28,7 +24,7 @@ General
 [ ] how can I write unit tests?
 
 Computation Objects
-[!] @inner, @outer, @fold, @cartprod (?)
+[!] @inner, @cartprod (?)
 [!] @convolution
 [!] @redim (APL bin rho)
 [ ] @iota and/or @for
