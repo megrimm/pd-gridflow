@@ -21,27 +21,26 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#define T_DATA T_COCOA_DATA
+#include <Quicktime/quicktime.h>
+#undef T_DATA
 #include "../base/grid.h.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <quicktime/quicktime.h>
-#include <quicktime/colormodels.h>
-
-#include <quicktime/lqt_version.h>
-#ifdef LQT_VERSION
-#include <quicktime/lqt.h>
-#include <quicktime/lqt_codecinfo.h>
-#endif
 
 \class FormatQuickTimeApple < Format
 struct FormatQuickTimeApple : Format {
-	short anim;
+	Movie movie;
+	TimeValue time;
+	short movie_file;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
 	Pt<uint8> buffer;
 	Dim *dim;
+	int nframe, nframes;
 
-	FormatQuickTimeApple() : track(0), dim(0), codec(QUICKTIME_RAW), started(false) {}
+	FormatQuickTimeApple() : movie(0), movie_file(0), gw(0),
+		buffer(), dim(0), nframe(0), nframes(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -61,21 +60,21 @@ struct FormatQuickTimeApple : Format {
 	GetGWorld(&savedPort, &savedDevice);
 	SetGWorld(gw, NULL);
 	Rect r;
-	GetMovieBox(m_movie, &r);
+	GetMovieBox(movie,&r);
 	PixMapHandle pixmap = GetGWorldPixMap(gw);
 	Ptr baseAddr = GetPixBaseAddr(pixmap);
 	short flags = nextTimeStep;
-	if (nframe>=nframes) return Qfalse;
-	if (nframe==0) flags |= nextTimeEdgeOK;
+//	if (nframe>=nframes) return Qfalse;
+//	if (nframe==0) flags |= nextTimeEdgeOK;
 	TimeValue duration;       
 	OSType mediaType = VisualMediaCharacteristic;
-	GetMovieNextInterestingTime(anim, 
+	GetMovieNextInterestingTime(movie, 
 		flags,1,&mediaType,time,0,&time,&duration);
-	post("quicktime frame # %d",nframe);
-	SetMovieTimeValue(m_movie, time); 
-	MoviesTask(anim,0);
+	gfpost("quicktime frame # %d",index);
+	SetMovieTimeValue(movie, time); 
+	MoviesTask(movie,0);
 	out[0]->begin(dim->dup());
-	out[0]->send(buffer);
+	out[0]->send(dim->prod(),buffer);
 	return INT2NUM(nframe);
 }
 
@@ -88,43 +87,18 @@ GRID_INLET(FormatQuickTimeApple,0) {
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
-//!@#$
-	if (dim) {
-		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
-	} else {
-		/* first frame: have to do setup */
-		dim = in->dim->dup();
-		quicktime_set_video(anim,1,dim->get(1),dim->get(0),15,codec);
-		quicktime_set_cmodel(anim,colorspace);
-	}
-	int sx = quicktime_video_width(anim,track);
-	int sy = quicktime_video_height(anim,track);
-	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=data+i*sx*channels;
-	quicktime_encode_video(anim,rows,track);
 } GRID_FINISH {
 } GRID_END
 
 \def void codec_m (String c) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
-	//fprintf(stderr,"codec = %s\n",rb_str_ptr(rb_inspect(c)));
-#ifdef LQT_VERSION
-	char buf[5];
-	strncpy(buf,rb_str_ptr(c),4);
-	for (int i=rb_str_len(c); i<4; i++) buf[i]=' ';
-	buf[4]=0;
-	Ruby fourccs = rb_ivar_get(rb_obj_class(rself),SI(@fourccs));
-	if (Qnil==rb_hash_aref(fourccs,rb_str_new2(buf)))
-		RAISE("warning: unknown fourcc '%s' (%s)",
-			buf, rb_str_ptr(rb_inspect(rb_funcall(fourccs,SI(keys),0))));
-#endif	
-	codec = strdup(buf);
 }
 
 \def void colorspace_m (Symbol c) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
-	if (0) {
+/*	if (0) {
 	} else if (c==SYM(rgb))  { colorspace=BC_RGB888; channels=3;
 	} else if (c==SYM(rgba)) { colorspace=BC_RGBA8888; channels=4;
 	} else if (c==SYM(bgr))  { colorspace=BC_BGR888; channels=3;
@@ -132,11 +106,17 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	} else if (c==SYM(yuv))  { colorspace=BC_YUV888; channels=3;
 	} else if (c==SYM(yuva)) { colorspace=BC_YUVA8888; channels=4;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
+*/
 }
 
 \def void close () {
 //!@#$
-	if (anim) { CloseMovieFile(anim); anim=0; }
+	if (movie) { 
+		DisposeMovie(movie);
+		DisposeGWorld(gw);
+		CloseMovieFile(movie_file);
+		movie_file=0;
+	}
 	rb_call_super(argc,argv);
 }
 
@@ -146,26 +126,37 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
-	int err = OpenMovieFile(rb_str_ptr(filename),&anim,fsRdPerm);
-	if (err) RAISE("can't open file `%s': error #%d", rb_str_ptr(filename), err);
+	FSSpec fss;
+	FSRef fsr;
+	int err = FSPathMakeRef((const UInt8 *)rb_str_ptr(filename), &fsr, NULL);
+	if (err) goto err;
+	err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
+	if (err) goto err;
+	err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
+	if (err) goto err;
 	//colorspace_m(0,0,SYM(rgb));
 	gfpost("OpenMovieFile:");
-	int r;
-	GetMovieBox(m_movie, &r);
-	gfpost("handle=%d tracks=%d timescale=%d rect=((%d..%d),(%d..%d))",anim,
-		GetMovieTrackCount(m_movie)
-		(long)GetMovieDuration(m_movie),
-		(long)GetMovieTimeScale(m_movie),
+	Rect r;
+	NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
+	GetMovieBox(movie, &r);
+	gfpost("handle=%d movie=%d tracks=%d timescale=%d rect=((%d..%d),(%d..%d))",
+		movie_file, movie,
+		GetMovieTrackCount(movie),
+		(long)GetMovieDuration(movie),
+		(long)GetMovieTimeScale(movie),
 		r.top, r.bottom, r.left, r.right);
 	OffsetRect(&r, -r.left, -r.top);
-	SetMovieBox(anim, &r);
-	int v[] = { r.bottom-r.top, r.right-r.left, 4 };
-	dim = new Dim(3,v);
-	SetMoviePlayHints(anim, hintsHighQuality, hintsHighQuality);
+	SetMovieBox(movie, &r);
+	{int32 v[] = { r.bottom-r.top, r.right-r.left, 4 };
+		dim = new Dim(3,v);}
+	SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 	buffer = ARRAY_NEW(uint8,dim->prod());
 	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r,
 		NULL, NULL, 0, buffer, dim->prod(1));
 
+	return;
+err:
+	RAISE("can't open file `%s': error #%d", rb_str_ptr(filename), err);
 }
 
 GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0,4)),
