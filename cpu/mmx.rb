@@ -86,7 +86,6 @@ $opcodes = {
 #	:gt  => [">",  nil,   "pcmpgtb","pcmpgtw","pcmpgtd",nil],
 #	:shl => ["<<", "shl", nil,    "psllw","pslld","psllq"], # noncommutative
 #	:shr => [">>", "sar", nil,    "psraw","psrad"], # noncommutative
-#	:mulshr8 => [">>", ["imul",...], nil,    "psraw","psrad"],
 #	:addclamp => [nil,nil,"paddusb","paddsw",nil,nil,nil],
 #	:subclamp => [nil,nil,"psubusb","psubsw",nil,nil,nil],
 #	:andnot => [nil,nil,"pandn","pandn","pandn","pandn"],
@@ -129,7 +128,7 @@ def make_fun_map(op,type)
 		puts "emms"
 	}
 	$decls << "void #{s}(int,#{type}*,#{type});\n"
-	$install << "FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(#{sym})))"
+	$install << "FIX2PTR(Numop2,rb_hash_aref(op2_dict,SYM(#{sym})))"
 	$install << "->on_#{type}.op_map = #{s};\n"
 	$count += 1
 end
@@ -180,7 +179,7 @@ s="mmx_#{type}_zip_#{op}"
 	}
 	#$decls << "void #{s}(int,#{type}*,#{type}*,#{type}*);\n"
 	$decls << "void #{s}(int,#{type}*,#{type}*);\n"
-	$install << "FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(#{sym})))"
+	$install << "FIX2PTR(Numop2,rb_hash_aref(op2_dict,SYM(#{sym})))"
 	$install << "->on_#{type}.op_zip = #{s};\n"
 	$count += 1
 end
