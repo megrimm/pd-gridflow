@@ -26,9 +26,11 @@ and mach_timebase_info(&info), then ns = (time * info.numer) / info.denom;
 <arwyn> and even then, you'll still get ns resolutions out of it
 
 for 0.7.6: switch focus to PD instead of jMax; have OSX support that makes sense, if
-possible; fix as many bugs as possible
+possible; fix as many bugs as possible; review all examples.
 
-for 0.7.7: ?
+for 0.7.7: we're switching to PD for abstractions, instead of Ruby / jMax. Or something.
+Make a new bunch of them. Add a video latency patch (in examples)
+consider including 'mysql','renamefile', 'ls', 'shell'
 
 for 0.7.8: ?
 
@@ -397,6 +399,7 @@ User Interface
     [x] is it possible to make it borderless? not with x11
     [ ] does it really work with something other than 3 channels ?
     [ ] add a popup menu that makes sense
+[ ] make ruby/tcl evaluator boxes retractable
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
@@ -491,3 +494,8 @@ p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
 seem to find Tcl_GetErrorInfo (maybe I dreamed it up)) 
 <ircbridge> <GPS> matju: BTW CatchObjCmd might help too
 <ircbridge> <GPS> I see that the new Tcl_Dict commands have taken over the HEAD's CatchObjCmd
+
+
+Changes to Pd itself:
+ * [graph] is too slow (gui) for real big arrays
+ * add scale, zoom, theme

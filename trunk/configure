@@ -898,7 +898,7 @@ def make_makefile f
 #   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
     f.puts "ruby-install::"
     my_install_files(f,"",FILES)
-    f.puts "\t$(INSTALL_DATA) bin/jmax2pd $(bindir)\n"
+    f.puts "\tinstall -m755 bin/jmax2pd $(bindir)\n"
     f.puts
     f.puts "ruby-uninstall::"
     my_uninstall_files(f,"",FILES)
