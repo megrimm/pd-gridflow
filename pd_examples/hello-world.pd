@@ -1,16 +1,16 @@
 #N canvas 71 172 390 353 10;
-#X obj 11 109 @ / 320;
-#X obj 11 176 @outer & ( 2 4 1 );
-#X obj 11 229 @ * 255;
-#X obj 11 195 @ != 0;
+#X obj 11 109 # / 320;
+#X obj 11 176 #outer & ( 2 4 1 );
+#X obj 11 229 # * 255;
+#X obj 11 195 # != 0;
 #X obj 11 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 11 313 @out window;
-#X obj 11 141 @ inv+ 7;
-#X obj 11 57 @for 0 320 1;
-#X obj 11 90 @ * 7;
+#X obj 11 313 #out window;
+#X obj 11 141 # inv+ 7;
+#X obj 11 57 #for 0 320 1;
+#X obj 11 90 # * 7;
 #X obj 11 11 loadbang;
-#X obj 11 293 @redim ( 240 320 3 );
+#X obj 11 293 #redim ( 240 320 3 );
 #X text 31 30 make one line:;
 #X text 19 73 numbers 0 to 319;
 #X text 20 126 numbers 0 to 6 repeated 45 or 46 times;
