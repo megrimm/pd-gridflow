@@ -250,7 +250,7 @@ void define_many_methods(Ruby $, int n, MethodDecl *methods) {
 			strcmp(md->selector,"init")==0 ? "initialize" :
 			strcmp(md->selector,"del")==0 ? "delete" :
 			md->selector;
-		rb_define_method($,buf,(Ruby(*)())md->method,-1);
+		rb_define_method($,buf,(Ruby(*)(...))md->method,-1);
 		rb_enable_super($,buf);
 	}
 }
