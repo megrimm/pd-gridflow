@@ -100,7 +100,7 @@ GRID_INLET(GridCast,0) {
 	this->nt = nt;
 }
 
-GRCLASS(GridCast,LIST(GRINLET4(GridCast,0,4)),
+GRCLASS(GridCast,LIST(GRINLET4(GridCast,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@cast',1,1"); }
 
@@ -183,7 +183,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	while (out->is_busy()) out->send(1,foo);
 }
 
-GRCLASS(GridImport,LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
+GRCLASS(GridImport,LIST(GRINLET4(GridImport,0),GRINLET(GridImport,1)),
 	\grdecl
 ){ IEVAL(rself,"install '@import',2,1"); }
 
@@ -221,7 +221,7 @@ GRID_INLET(GridExport,0) {
 } GRID_END
 
 /* outlet 0 not used for grids */
-GRCLASS(GridExport,LIST(GRINLET4(GridExport,0,4)))
+GRCLASS(GridExport,LIST(GRINLET4(GridExport,0)))
 { IEVAL(rself,"install '@export',1,1"); }
 \end class GridExport
 
@@ -253,7 +253,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); // unkeep
 } GRID_END
 
-GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
+GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0)))
 /* outlet 0 not used for grids */
 { IEVAL(rself,"install '@export_list',1,1"); }
 \end class GridExportList
@@ -473,7 +473,7 @@ GRID_INLET(GridStore,1) {
 	put_at=index;
 }
 
-GRCLASS(GridStore,LIST(GRINLET2(GridStore,0,4),GRINLET4(GridStore,1,4)),
+GRCLASS(GridStore,LIST(GRINLET2(GridStore,0),GRINLET4(GridStore,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@store',2,1"); }
 
@@ -492,6 +492,7 @@ struct GridOp1 : GridObject {
 
 GRID_INLET(GridOp1,0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
+	in->set_mode(6);
 } GRID_FLOW {
 	op->map(n,data);
 	out->give(n,data);
@@ -504,7 +505,7 @@ GRID_INLET(GridOp1,0) {
 	this->op = op;
 }
 
-GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0,6)),
+GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0)),
 	\grdecl
 ){ IEVAL(rself,"install '@!',1,1"); }
 
@@ -532,6 +533,7 @@ GRID_INLET(GridOp2,0) {
 	snap_backstore(r);
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
+	in->set_mode(6);
 } GRID_FLOW {
 	NOTEMPTY(r);
 	Pt<T> rdata = (Pt<T>)*r;
@@ -577,7 +579,7 @@ GRID_INPUT2(GridOp2,1,r) {} GRID_END
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
+GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0),GRINLET4(GridOp2,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@',2,1"); }
 
@@ -641,7 +643,7 @@ GRID_INPUT(GridFold,1,r) {} GRID_END
 	if (seed) this->seed=seed; else this->seed=new Grid(new Dim(),int32_e,true);
 }
 
-GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
+GRCLASS(GridFold,LIST(GRINLET4(GridFold,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@fold',2,1"); }
 
@@ -694,7 +696,7 @@ GRID_INPUT(GridScan,1,r) {} GRID_END
 	if (seed) this->seed=seed; else this->seed=new Grid(new Dim(),int32_e,true);
 }
 
-GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
+GRCLASS(GridScan,LIST(GRINLET4(GridScan,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@scan',2,1"); }
 
@@ -795,7 +797,7 @@ GRID_INPUT(GridInner,2,r) {} GRID_END
 	if (r) this->r=r; else this->r=new Grid(new Dim(),int32_e,true);
 }
 
-GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
+GRCLASS(GridInner,LIST(GRINLET4(GridInner,0),GRINLET4(GridInner,2)),
 	\grdecl
 ) { IEVAL(rself,"install '@inner',3,1"); }
 
@@ -870,7 +872,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	if (r) this->r=r; else this->r=new Grid(new Dim(),int32_e,true);
 }
 
-GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
+GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0),GRINLET4(GridOuter,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@outer',2,1"); }
 
@@ -978,7 +980,7 @@ GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
-GRCLASS(GridFor,LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFor,2,4)),
+GRCLASS(GridFor,LIST(GRINLET4(GridFor,0),GRINLET4(GridFor,1),GRINLET4(GridFor,2)),
 	\grdecl
 ) { IEVAL(rself,"install '@for',3,1"); }
 
@@ -993,13 +995,14 @@ struct GridFinished : GridObject {
 
 /* nt N/A */
 GRID_INLET(GridFinished,0) {
+	in->set_mode(0);
 } GRID_FLOW {
 } GRID_FINISH {
 	Ruby a[] = { INT2NUM(0), bsym._bang };
 	send_out(COUNT(a),a);
 } GRID_END
 
-GRCLASS(GridFinished,LIST(GRINLET4(GridFinished,0,0)),
+GRCLASS(GridFinished,LIST(GRINLET4(GridFinished,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@finished',1,1"); }
 
@@ -1016,11 +1019,12 @@ struct GridDim : GridObject {
 GRID_INLET(GridDim,0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
 	out.send(in->dim->n,Pt<int32>((int32 *)in->dim->v,in->dim->n));
+	in->set_mode(0);
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridDim,LIST(GRINLET4(GridDim,0,0)))
+GRCLASS(GridDim,LIST(GRINLET4(GridDim,0)))
 { IEVAL(rself,"install '@dim',1,1"); }
 \end class GridDim
 
@@ -1034,11 +1038,12 @@ struct GridType : GridObject {
 GRID_INLET(GridType,0) {
 	Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
 	send_out(COUNT(a),a);
+	in->set_mode(0);
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridType,LIST(GRINLET4(GridType,0,0)))
+GRCLASS(GridType,LIST(GRINLET4(GridType,0)))
 { IEVAL(rself,"install '@type',1,1"); }
 \end class GridType
 
@@ -1098,7 +1103,7 @@ GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	dim = dim_grid->to_dim();
 }
 
-GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
+GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0),GRINLET(GridRedim,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@redim',2,1"); }
 
@@ -1183,7 +1188,7 @@ GRID_INPUT(GridJoin,1,r) {L} GRID_END
 	if (r) this->r=r;
 }
 
-GRCLASS(GridJoin,LIST(GRINLET4(GridJoin,0,4),GRINLET4(GridJoin,1,4)),
+GRCLASS(GridJoin,LIST(GRINLET4(GridJoin,0),GRINLET4(GridJoin,1)),
 	\grdecl
 ) { IEVAL(rself,"install '@join',2,1"); }
 
@@ -1229,7 +1234,7 @@ GRID_INLET(GridGrade,0) {
 	out=0;
 } GRID_END
 
-GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0,4)),
+GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@grade',1,1"); }
 
@@ -1296,7 +1301,7 @@ GRID_INLET(GridTranspose,0) {
 	this->dim2 = dim2;
 }
 
-GRCLASS(GridTranspose,LIST(GRINLET4(GridTranspose,0,4)),
+GRCLASS(GridTranspose,LIST(GRINLET4(GridTranspose,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@transpose',3,1"); }
 
@@ -1336,7 +1341,7 @@ GRID_INLET(GridPerspective,0) {
 	this->z = z;
 }
 
-GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0,4)),
+GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@perspective',1,1"); }
 

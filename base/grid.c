@@ -201,7 +201,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
 	PROF(parent) {
-	if (gh->mode==0) {
+	if (this->mode==0) {
 		dex += n;
 		return; /* ignore data */
 	}
@@ -223,7 +223,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
 				int newdex = dex+bufn;
-				if (gh->mode==6) {
+				if (this->mode==6) {
 					Pt<T> data2 = ARRAY_NEW(T,bufn);
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
@@ -239,7 +239,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		int m = (n/bufn)*bufn;
 		if (m) {
 			int newdex = dex + m;
-			if (gh->mode==6) {
+			if (this->mode==6) {
 				Pt<T> data2 = ARRAY_NEW(T,m);
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
@@ -257,7 +257,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		assert(!buf);
 		int newdex = dex + n;
 		gh->flow(this,n,data);
-		if (gh->mode==4) delete[] (T *)data;
+		if (this->mode==4) delete[] (T *)data;
 		dex = newdex;
 	}break;
 	case 0: break; /* nothing happens */
@@ -290,11 +290,11 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	dim = g->dim;
 	int n = g->dim->prod();
 	gh->flow(this,-1,Pt<T>());
-	if (n>0 && gh->mode!=0) {
+	if (n>0 && this->mode!=0) {
 		Pt<T> data = (Pt<T>)*g;
 		CHECK_ALIGN(data);
 		int size = g->dim->prod();
-		if (gh->mode==6) {
+		if (this->mode==6) {
 			Pt<T> d = data;
 			data = ARRAY_NEW(T,size);  // problem with int64,float64 here.
 			COPY(data,d,size);
@@ -468,7 +468,7 @@ void GridOutlet::give(int n, Pt<T> data) {
 		delete[] (T *)data;
 		return;
 	}
-	if (ninlets==1 && inlets[0]->gh->mode == 6) {
+	if (ninlets==1 && inlets[0]->mode == 6) {
 		/* this is the copyless buffer passing */
 		flush();
 		inlets[0]->flow(6,n,data);
@@ -485,7 +485,7 @@ void GridOutlet::give(int n, Pt<T> data) {
 void GridOutlet::callback(GridInlet *in) {
 	assert(this);
 	TRACE; CHECK_BUSY(outlet); assert(!frozen);
-	int mode = in->gh->mode;
+	int mode = in->mode;
 	assert(mode==6 || mode==4 || mode==0);
 	assert(ninlets<MAX_CORDS);
 	inlets[ninlets++]=in;
@@ -593,7 +593,6 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	GridHandler *gh = new GridHandler;
 	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
-	gh->mode = 4;
 	if (mt) {
 #define FOO(S) gh->flow_##S = GridObject_r_flow;
 EACH_NUMBER_TYPE(FOO)

@@ -70,7 +70,7 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 	op_div = op2_div;
 }
 
-GRCLASS(GridMatrixSolve,LIST(GRINLETF(GridMatrixSolve,0,4)),
+GRCLASS(GridMatrixSolve,LIST(GRINLETF(GridMatrixSolve,0)),
 	\grdecl
 ) { IEVAL(rself,"install '@matrix_solve',1,1"); }
 
