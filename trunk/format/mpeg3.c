@@ -78,8 +78,7 @@ struct FormatMPEG3 : Format {
 	fprintf(stderr, "end mpeg3_close...\n");
 }
 
-/* note: will not go through jMax data paths */
-/* libmpeg3 may be nice, but it won't take a filehandle, only filename */
+// libmpeg3 may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");

@@ -109,7 +109,6 @@ struct FormatX11 : Format {
 	\decl void initialize (...);
 	\decl void delete_m ();
 	\decl void set_geometry (int y, int x, int sy, int sx);
-/*	void override_redirect (int flag=1); */
 	\decl void fall_thru (int flag);
 	GRINLET3(0);
 };
@@ -429,29 +428,20 @@ GRID_INLET(FormatX11,0) {
 	int y = in->dex/sxc;
 	int oy = y;
 	for (; n>0; y++, data+=sxc, n-=sxc) {
-		/* convert line */
+		// convert line
 		if (use_stripes) {
 			int o=y*bypl;
 			for (int x=0, i=0, k=y%3; x<sx; x++, i+=3, k=(k+1)%3) {
 				image[o+x] = (k<<6) | data[i+k]>>2;
 			}
 		} else {
-
-/*			Pt<uint8> out = image+y*bypl;
-fprintf(stderr,"pack y=%d out=%08lx,%08lx,%08lx im=%08lx,%08lx,%08lx\n", y,
-	(long)out.p, (long)out.start, (long)(out.start+out.n),
-	(long)(image+y*bypl).p, (long)(image+y*bypl).start,
-		(long)((image+y*bypl).start+(image+y*bypl).n));
-			bit_packing->pack(sx, data, out);
-*/
 			bit_packing->pack(sx, data, image+y*bypl);
 		}
 	}
 	if (autodraw==2) show_section(0,oy,sx,y-oy);
 } GRID_FINISH {
 	if (autodraw==1) show_section(0,0,in->dim->get(1),in->dim->get(0));
-	/* calling this here because the clock problem is annoying */
-	alarm();
+	alarm(); // calling this here because the clock problem is annoying
 } GRID_END
 
 \def void close () {
@@ -531,12 +521,12 @@ void FormatX11::open_display(const char *disp_string) {
 	int screen_num;
 	Screen *screen;
 
-	/* Open an X11 connection */
+	// Open an X11 connection
 	display = XOpenDisplay(disp_string);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
-	/* btw don't expect too much from Xlib error handling.
-	   Xlib, you are so free of the ravages of intelligence... */
+	// btw don't expect too much from Xlib error handling.
+	// Xlib, you are so free of the ravages of intelligence...
 	XSetErrorHandler(FormatX11_error_handler);
 
 	screen   = DefaultScreenOfDisplay(display);
@@ -561,7 +551,7 @@ void FormatX11::open_display(const char *disp_string) {
 	}
 
 #ifdef HAVE_X11_SHARED_MEMORY
-	/* what do i do with remote windows? */
+	// what do i do with remote windows?
 	use_shm = !! XShmQueryExtension(display);
 	if (verbose) gfpost("x11 shared memory compiled in; use_shm = %d",use_shm);
 #else
@@ -600,14 +590,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
-/*\def void override_redirect (int flag=1) {
-	XSetWindowAttributes xswa;
-	xswa.override_redirect = !!flag;
-	XChangeWindowAttributes(display, window, CWOverrideRedirect, &xswa);
-	XFlush(display);
-}
-*/
-
 \def void set_geometry (int y, int x, int sy, int sx) {
 	pos_x = x;
 	pos_y = y;
@@ -632,7 +614,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \def void initialize (...) {
-	/* defaults */
+	// defaults
 	int sy = 240;
 	int sx = 320;
 
@@ -729,7 +711,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		}
 	}
 
-	/* "resize" also takes care of creation */
+	// "resize" also takes care of creation
 	resize_window(sx,sy);
 
 	if (is_owner) {

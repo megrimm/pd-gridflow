@@ -84,29 +84,20 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 
 	if (sameorder && size==3) {
 		switch(self->bytes) {
-		case 2:
-			NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;)
-			return;
-		case 4:
-			NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;)
-			return;
+		case 2:	NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;) return;
+		case 4:	NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;) return;
 		}
 	}
-	
 	if (self->is_le()) {
-		if (size==3)
-			for (; n--; in+=3) {CONVERT1; WRITE_LE;}
-		else if (size==4) {
-			for (; n--; in+=4) {CONVERT3; WRITE_LE;}
-		} else
-			for (; n--; in+=size) {CONVERT2; WRITE_LE;}
+		switch (size) {
+		case 3: for (; n--; in+=3) {CONVERT1; WRITE_LE;} break;
+		case 4:	for (; n--; in+=4) {CONVERT3; WRITE_LE;} break;
+		default:for (; n--; in+=size) {CONVERT2; WRITE_LE;}}
 	} else {
-		if (size==3)	
-			for (; n--; in+=3) {CONVERT1; WRITE_BE;}
-		else if (size==4)
-			for (; n--; in+=4) {CONVERT3; WRITE_BE;}
-		else
-			for (; n--; in+=size) {CONVERT2; WRITE_BE;}
+		switch (size) {
+		case 3: for (; n--; in+=3) {CONVERT1; WRITE_BE;} break;
+		case 4: for (; n--; in+=4) {CONVERT3; WRITE_BE;} break;
+		default:for (; n--; in+=size) {CONVERT2; WRITE_BE;}}
 	}
 }
 
@@ -118,21 +109,17 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 			*out = (t<<(7-hb[i]))|(t>>(hb[i]-7)); \
 		} \
 	}
-
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
 template <class T>
 static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
-
-	if (is_le()) {
-		/* smallest byte first */
+	if (is_le()) { // smallest byte first
 		LOOP_UNPACK(
 			for(; self->bytes>bytes; bytes++, in++) temp |= *in<<(8*bytes);
 		)
-	} else {
-		/* biggest byte first */
+	} else { // biggest byte first
 		LOOP_UNPACK(
 			bytes=self->bytes; for (; bytes; bytes--, in++) temp=(temp<<8)|*in;
 		)
@@ -310,7 +297,7 @@ void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
 	}
 }
 
-/* i'm sorry... see the end of grid.c for an explanation... */
+// i'm sorry... see the end of grid.c for an explanation...
 //static
 void make_hocus_pocus () {
 //	exit(1);
