@@ -40,7 +40,7 @@
 <tr><td colspan="4"><a name="Software_(and_Hardware)_you_Probably_Need"></a><h4>Software (and Hardware) you Probably Need</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Required Hardware (One of...):<ul> <li><b>1</b> : i386 : "old" IBM PC, or "new" IBM PC with old compiler</li> <li><b>2</b> : i686 : "new" IBM PC with recent compiler</li> <li><b>3</b> : ppc : "new" Macintosh</li> <li><b>4</b> : armv4l : Corel Netwinder</li> <li><b>5</b> : mips : Silicon Graphics, non-PC</li> <li><b>6</b> : sparc : Sun SparcStation</li> </ul>(but we only test i686 ourselves)</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.6.2 or more recent (a language interpreter)</li> <li><b>2</b> : GNU C Compiler (gcc)</li> <li><b>3</b> : GNU Make (gmake)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.6.6 or more recent (1.8.0 recommended)</li> <li><b>2</b> : GNU C Compiler (gcc)</li> <li><b>3</b> : GNU Make (gmake)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Very Recommended:<ul> <li><b>1</b> : X11 Display Server and MIT-Xlib (already in linux)</li> <li><b>2</b> : one of: <ul> <li><b>1</b> : jMax 2.5</li> <li><b>2</b> : jMax 4.1</li> <li><b>3</b> : PureData</li> </ul></li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -79,8 +79,7 @@ have to recreate the library index using the <kbd>ldconfig</kbd> command too
       Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice), 
       which will create a directory called 'gridflow'; 
       unpack the images pack into that directory, which will create 
-	 another one called 'images'. </li> <li><b>4</b> : Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. You must have 
-  jMax's include files in <kbd>/usr/include</kbd> (or anywhere covered by <kbd>C_INCLUDE_PATH</kbd>). <kbd>./configure</kbd> will try to detect some optional 
+	 another one called 'images'. </li> <li><b>4</b> : Run <kbd>./configure</kbd> from the <kbd>gridflow</kbd> directory. <kbd>./configure</kbd> will try to detect some optional 
   components (libmpeg, pentium clock, etc). In the end, the files <kbd>config.make</kbd>, <kbd>config.h</kbd> and <kbd>Makefile</kbd> will be generated. </li> <li><b>5</b> : If you are not running Linux on a PentiumPro-compatible computer, you 
   will have to specify a jMax Makefile using the <kbd>--jmax-arch</kbd> option. 
   This is the one you use when installing jMax (or other jMax plugins other 
@@ -100,7 +99,7 @@ Do not use something with <kbd>gcc</kbd> in the name, as it results in <kbd>unde
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Installation_process_(with_jMax_4.1.0_and_compatible)"></a><h4>Installation process (with jMax 4.1.0 and compatible)</h4></td></tr><tr><td></td><td></td><td> 
-[write me] </td></tr>
+Same as above: [write me] </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>

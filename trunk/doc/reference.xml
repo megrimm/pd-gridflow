@@ -121,12 +121,17 @@
 		</inlet>
 		<outlet id="0"><method name="symbol">generated symbol</method></outlet>
 	</class>
-<!--NYI
+
 	<class name="@pack">
+		<p><b>NOT AVAILABLE YET</b></p>
 		<p>Similar to [@join], but takes individual integers, and builds a Dim(N) vector out of it.
 		</p>
 
-		<attr name="trigger_by" type="TriggerBy" default="any" />
+		<attr name="trigger_by" type="TriggerBy" default="any">
+			The value "any" (and the only available value for now) causes an output
+			to produced when an integer is received thru any inlet, contrary to most
+			other object classes, that only act upon reception of a value thru inlet 0.
+		</attr>
 
 		<method name="init">
 			<arg name="inputs" type="integer">
@@ -140,9 +145,10 @@
 		<outlet id="0"><method name="grid">
 			combination of inputs given in all inlets.
 			this is produced according to the value of the trigger attribute.
-		</outlet>
+		</method></outlet>
 	</class>
 
+<!--NYI
 	<class name="@unpack">
 		<method name="init">
 			<arg name="outputs" type="integer">
@@ -163,19 +169,25 @@
 	<class name="@two">
 		<icon text="[@two]"/>
 		<help text="[@two]" image="@twothreefour"/>
-		<p> [@two] is now an alias for [@pack 2] </p>
+		<p> [@two] will soon become an alias for [@pack 2] </p>
 	</class>
 
 	<class name="@three">
 		<icon text="[@three]"/>
 		<help text="[@three]" image="@twothreefour"/>
-		<p> [@three] is now an alias for [@pack 3] </p>
+		<p> [@three] will soon become an alias for [@pack 3] </p>
 	</class>
 
 	<class name="@four">
 		<icon text="[@four]"/>
 		<help text="[@four]" image="@twothreefour"/>
-		<p> [@four] is now an alias for [@pack 4] </p>
+		<p> [@four] will soon become an alias for [@pack 4] </p>
+	</class>
+
+	<class name="@eight">
+		<!--<icon text="[@eight]"/>-->
+		<help text="[@eight]" image="@twothreefour"/>
+		<p> [@eight] will soon become an alias for [@pack 8] </p>
 	</class>
 
 	<class name="@for">
@@ -685,15 +697,16 @@
 			for both rows and columns.
 		</method>
 		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(y x {r g b})"/>
-			identical to @scale_to with arguments that are exactly
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
+			duplicates each pixel several times in width and several times in height,
+			where the number of times is determined by the factor described above.
 			twice those of the incoming grid. It is several times faster.
 			</method>
 		</inlet>
 		<inlet id="1"><method name="grid"><arg name="grid" type="grid(1 or 2)"/>sets factor</method></inlet>
 		<outlet id="0">
 			<method name="grid">
-				<arg name="grid" type="grid((factor*y) (factor*x) {r g b})"/>
+				<arg name="grid" type="grid((factor*y) (factor*x) channels)"/>
 			</method>
 		</outlet>
 	</class>
@@ -707,15 +720,15 @@
 			for both rows and columns.
 		</method>
 		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(y x {r g b})"/>
-			Scales down picture by specified amount.
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
+			Scales down picture by specified amount. (See scale factor above)
 			</method>
 		</inlet>
 		<inlet id="1"><method name="grid">
 			<arg name="grid" type="grid(1 or 2)"/>sets factor</method></inlet>
 		<outlet id="0">
 			<method name="grid">
-				<arg name="grid" type="grid((factor/y) (factor/x) {r g b})"/>
+				<arg name="grid" type="grid((factor/y) (factor/x) channels)"/>
 		</method>
 		</outlet>
 	</class>
@@ -1093,6 +1106,50 @@
 		</outlet>
 	</class>
 
+	<class name="@draw_image">
+		<method name="init">
+			<arg name="operator" type="numop2">
+				Normally you would use the "put" operator here;
+				but abnormally I recommend + and ^ for psychedelic effects.
+			</arg>
+			<arg name="picture" type="grid(y,x,channels)"/>
+			<arg name="position" type="grid({y x})"/>
+		</method>
+		<inlet id="0">
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
+				picture onto which another picture will be superimposed.
+			</method>
+			<method name="tile"><arg name="flag" type="0 or 1"/>
+				if enabled, inlet 1 picture will be repeated to cover the inlet 0 picture.
+			</method>
+			<method name="alpha"><arg name="flag" type="0 or 1"/>
+				if enabled, inlet 1 picture will be combined with inlet 0 picture using
+				the selected operator,
+				and then blended with inlet 0 picture according to transparency of
+				the inlet 1 picture, and then inserted in the result.
+				if disabled, the blending doesn't occur, as the transparency level
+				is considered to be "opaque". note that with alpha enabled,
+				the last channel of inlet 1 picture is considered to represent transparency.
+			</method>
+		</inlet>
+		<inlet id="1">
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
+				picture that will be superimposed onto another picture.
+			</method>
+		</inlet>
+		<inlet id="2">
+			<method name="grid"><arg name="grid" type="grid({y x})"/>
+				position of the inlet 0 picture corresponding to top-left corner
+				of inlet 1 picture.
+			</method>
+		</inlet>
+		<outlet id="0">
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
+				resulting picture.
+			</method>
+		</outlet>
+	</class>
+
 	<class name="@draw_polygon">
 		<method name="init">
 			<arg name="operator" type="numop2">
@@ -1103,8 +1160,7 @@
 			<arg name="vertices" type="grid(vertices,{y x})"/>
 		</method>
 		<inlet id="0">
-			<method name="grid">
-				<arg name="grid" type="grid(y x channels)"/>
+			<method name="grid"><arg name="grid" type="grid(y x channels)"/>
 				picture on which the polygon will be superimposed.
 			</method>
 		</inlet>
@@ -1114,8 +1170,7 @@
 			</method>
 		</inlet>
 		<inlet id="2">
-			<method name="grid">
-				<arg name="grid" type="grid(vertices {y x})"/>
+			<method name="grid"><arg name="grid" type="grid(vertices {y x})"/>
 				vertices of the polygon.
 			</method>
 		</inlet>
@@ -1131,7 +1186,6 @@
 			</method>
 		</outlet>
 	</class>
-
 </section>
 
 <section name="Special Objects">
@@ -1236,7 +1290,9 @@
 	<class name="jmax_udpsend">
 		Sends messages (but not grids nor dspsignals) via UDP (which
 		does not involve a connection, and may lose packets in case of
-		network overload or noise or etc)
+		network overload or noise or etc).
+
+		<p>This works with jMax 2.5 and 4.1 but not 4.0.</p>
 
 		<method name="init">
 			<arg name="host" type="host"/>
@@ -1247,6 +1303,8 @@
 	</class>
 	<class name="jmax_udpreceive">
 		<p>Counterpart of jmax_udpsend</p>
+
+		<p>This works with jMax 2.5 and 4.1 but not 4.0.</p>
 
 		<method name="init">
 			<arg name="port" type="integer"/>
@@ -1259,6 +1317,21 @@
 			<arg name="sender_ip_address"/>
 		</method>
 		</outlet>
+	</class>
+	<class name="jmax4_udpsend">
+		same as jmax_udpsend but for jMax 4.0.x UDP connections.
+	</class>
+	<class name="jmax4_udpreceive">
+		same as jmax_udpreceive but for jMax 4.0.x UDP connections.
+	</class>
+</section>
+
+<section name="PureData emulation">
+	<class name="pd_netsend">
+		same as jmax_udpsend but for PureData UDP connections.
+	</class>
+	<class name="pd_netreceive">
+		same as jmax_udpreceive but for PureData UDP connections.
 	</class>
 </section>
 

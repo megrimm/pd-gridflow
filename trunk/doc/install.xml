@@ -16,7 +16,7 @@
 	<li>sparc : Sun SparcStation</li>
 </list>(but we only test i686 ourselves)</p>
 <p>Required Software:<list>
-	<li>Ruby 1.6.2 or more recent (a language interpreter)</li>
+	<li>Ruby 1.6.6 or more recent (1.8.0 recommended)</li>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 </list></p>
@@ -87,9 +87,8 @@ have to recreate the library index using the <k>ldconfig</k> command too
 	 another one called 'images'.
   </li>
 
-  <li>Run <k>./configure</k> from the <k>gridflow</k> directory. You must have
-  jMax's include files in <k>/usr/include</k> (or anywhere covered by
-  <k>C_INCLUDE_PATH</k>). <k>./configure</k> will try to detect some optional
+  <li>Run <k>./configure</k> from the <k>gridflow</k> directory.
+  <k>./configure</k> will try to detect some optional
   components (libmpeg, pentium clock, etc). In the end, the files
   <k>config.make</k>, <k>config.h</k> and <k>Makefile</k> will be generated.
   </li>
@@ -129,7 +128,7 @@ Do not use something with <k>gcc</k> in the name, as it results in <k>undefined 
 
 <section name="Installation process (with jMax 4.1.0 and compatible)">
 
-[write me]
+Same as above: [write me]
 
 </section>
 

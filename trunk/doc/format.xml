@@ -37,6 +37,14 @@
 				(there is a list of formats in this manual). The other
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
+				
+				The format called "file" is a special shortcut that autodetects the
+				type of file (by name suffix) and picks up the appropriate handler.
+			</method>
+			<method name="open">
+				<arg name="filename"/>
+				This is a shortcut for "open file" followed by a filename.
+				The filename must contain a dot, else it will be seen as a handler name.
 			</method>
 			<method name="close">
 				close may be necessary if you operate on "/dev/video",
@@ -131,6 +139,15 @@
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
 			</method>
+			<method name="open file">
+				The format called "file" is a special shortcut that autodetects the
+				type of file (by name suffix) and picks up the appropriate handler.
+			</method>
+			<method name="open">
+				<arg name="filename"/>
+				This is a shortcut for "open file" followed by a filename.
+				The filename must contain a dot, else it will be seen as a handler name.
+			</method>
 			<method name="grid"><arg name="grid" type="grid"/>
 				this is format-specific. most formats
 				expect grid(rows columns {red green blue}).
@@ -164,6 +181,16 @@
 				sent when a complete grid has been received.
 			</method>
 		</outlet>
+	</class>
+	
+	<class name="peephole">
+		Similar to [@out x11] and [@out window], except it creates an inset in the patch you put it
+		in, and a scaled version of the picture appears in the inset. It also emits the same messages
+		as [@out x11] and automatically scales cursor position according to the current scale factor.
+		The scale factor is decided automatically. DO NOT create an objectbox with "peephole"
+		written in it: instead drag one from the toolbar (it is the red-green-blue striped icon).
+		This object class only works with jMax 2.5 together with a X11 version of Java/SWING
+		(e.g. on Linux, BSD, but not MacOS X).
 	</class>
 </section>
 
@@ -237,10 +264,10 @@
 			directory or one of the jMax-specified data directories.
 		</method>
 
-		<method name="grid"><arg name="grid" type="grid(rows columns 1)"/>Y-8</method>
-		<method name="grid"><arg name="grid" type="grid(rows columns 2)"/>YA-16</method>
-		<method name="grid"><arg name="grid" type="grid(rows columns 3)"/>RGB-24</method>
-		<method name="grid"><arg name="grid" type="grid(rows columns 4)"/>RGBA-32</method>
+		<method name="grid"><arg name="grid" type="grid(rows columns 1)"/>Y-8 (greyscale)</method>
+		<method name="grid"><arg name="grid" type="grid(rows columns 2)"/>YA-16 (greyscale and transparency)</method>
+		<method name="grid"><arg name="grid" type="grid(rows columns 3)"/>RGB-24 (colour)</method>
+		<method name="grid"><arg name="grid" type="grid(rows columns 4)"/>RGBA-32 (colour and transparency)</method>
 	</class>
 
 	<class name="format quicktime @in/@out">
@@ -633,6 +660,14 @@
 		<method name="dump">
 			produces a Dim[y,x,2] grid whose two channels are
 			ascii character codes and character attributes.
+		</method>
+	</class>
+
+	<class name="format window @out">
+		<method name="open window">
+			Equivalent to "open x11", but this can be set by putting a line like
+			this in the config file: <k>GridFlow.formats[:window] = GridFlow.formats[:x11]</k>
+			(and similarly other aliases can be created too)
 		</method>
 	</class>
 </section>
