@@ -106,8 +106,8 @@ METHOD3(FormatMPEG3,init) {
 
 static void startup (GridClass *$) {
 	IEVAL($->rubyclass,
-	"conf_format 4,'mpeg','Motion Picture Expert Group Format (using "
-	"HeroineWarrior\\'s)'");
+	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
+	" (using HeroineWarrior\\'s)'");
 }
 
 GRCLASS(FormatMPEG3,"FormatMPEG3",

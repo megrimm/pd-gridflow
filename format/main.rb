@@ -80,6 +80,34 @@ class Format
 	# "ideal" buffer size or something
 	# the buffer may be bigger than this but usually not by much.
 	BufferSize = 16384
+
+	def option(name,*args)
+		case name
+		when :rewind
+
+		when :headerless
+			args=args[0] if Array===args[0]
+			#raise "expecting dimension list..."
+			args.each {|a|
+				Integer===a or raise "expecting dimension list..."
+			}
+			@headerless = args
+		when :headerful
+			@headerless = nil
+		when :type
+		# bug: should not be able to modify this _during_ a transfer
+			case args[0]
+			when :uint8; @bpv=8
+				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+			when :int16; @bpv=16
+				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
+			when :int32; @bpv=32
+			else raise "unsupported number type"
+			end
+		else
+			super
+		end
+	end
 end
 
 # common parts between GridIn and GridOut
@@ -260,31 +288,44 @@ module EventIO
 
 	def raw_open(mode,source,*args)
 		@raw_open_args = mode,source,*args
-		mode = case mode
+		fmode = case mode
 			when :in; "r"
 			when :out; "w"
 			else raise "bad mode" end
 		case source
 		when :file
 			filename = args[0].to_s
-			GridFlow.post "filename before: '%s'", filename
-			filename = GridFlow.find_file filename
-			GridFlow.post "filename after: '%s'", filename
-			@stream = File.open filename, mode
+			filename = GridFlow.find_file filename if mode==:in
+			@stream = File.open filename, fmode
 		when :gzfile
-			raise "gzip is read-only" if mode == "w"
-			filename = GridFlow.find_file args[0].to_s
-			@stream = File.open filename, mode
-			r,w = IO.pipe
-			if fork
-				w.close
-				@stream = r
-			else
-				r.close
-				STDOUT.reopen w
-				STDIN.reopen @stream
-				@stream = File.open filename, mode
-				exec "gzip", "-dc"
+			#raise "gzip is read-only" if fmode == "w"
+			filename = args[0].to_s
+			filename = GridFlow.find_file filename if mode==:in
+			@stream = File.open filename, fmode
+			if mode==:in then
+				r,w = IO.pipe
+				if fork
+					w.close
+					@stream = r
+				else
+					r.close
+					STDOUT.reopen w
+					STDIN.reopen @stream
+					@stream = File.open filename, "r"
+					exec "gzip", "-dc"
+				end
+			else # mode==:out
+				r,w = IO.pipe
+				if fork
+					r.close
+					@stream = w
+				else
+					w.close
+					STDIN.reopen r
+					STDOUT.reopen @stream
+					@stream = File.open filename, "w"
+					exec "gzip", "-c"
+				end
 			end
 			def self.rewind
 				@stream.close
@@ -333,20 +374,23 @@ class FormatGrid < Format; include EventIO
 	raw data goes there.
 =end
 
-	# little endian: smallest digit first, like i386
-	attr_accessor :is_le
-
 	# bits per value: 32 only
-	attr_accessor :bpv # Fixnum
+	attr_accessor :bpv # Fixnum: bits-per-value
 
+	# endianness
+	attr_accessor :endian # ENDIAN_LITTLE or ENDIAN_BIG
+
+	# IO or File or TCPSocket
 	attr_reader :stream
+
+	# nil=headerful; array=assumed dimensions of received grids
+	attr_accessor :headerless
 
 	def initialize(mode,source,*args)
 		super
-		# bits-per-value
 		@bpv = 32
-		# nil=headerful; array=assumed dimensions of received grids
 		@headerless = nil
+		@endian = OurByteOrder
 		raw_open mode,source,*args
 	end
 
@@ -389,11 +433,11 @@ class FormatGrid < Format; include EventIO
 #			then "smallest digit first"
 #			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
-		@is_le = case head
-			when "\x7fGRID"; false
-			when "\x7fgrid"; @is_le = true
+		@endian = case head
+			when "\x7fGRID"; ENDIAN_BIG
+			when "\x7fgrid"; ENDIAN_LITTLE
 			else raise "grid header: invalid (#{data.inspect})" end
-#		GridFlow.post("this file is " + if @is_le
+#		GridFlow.post("this file is " + if @endian
 #			then "biggest digit first"
 #			else "smallest digit first" end)
 
@@ -413,7 +457,7 @@ class FormatGrid < Format; include EventIO
 
 	# the dimension list
 	def frame2 data
-		@dim = data.unpack(if @is_le then "V*" else "N*" end)
+		@dim = data.unpack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end)
 #		GridFlow.post "dim=#{@dim.inspect}"
 		set_bufsize
 		if @prod > GridFlow.max_size
@@ -433,22 +477,19 @@ class FormatGrid < Format; include EventIO
 	def frame3 data
 		n = data.length
 		nn = n*8/@bpv
+		# is/was there a problem with the size of the data being read?
 		case @bpv
 		when 8
-			@bp = BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+			@bp = BitPacking.new(@endian,1,[0xff])
 			send_out_grid_flow(0, @bp.unpack(data))
 			@dex += data.length
 		when 16
-			@bp = BitPacking.new(ENDIAN_LITTLE,2,[0xffff])
+			@bp = BitPacking.new(@endian,2,[0xffff])
 			send_out_grid_flow(0, @bp.unpack(data))
 			@dex += data.length
 		when 32
-			# hope for a multiple of 4 #!@#$
-			if (@is_le ? 1 : 0)==OurByteOrder then
-				send_out_grid_flow 0, data
-			else
-				send_out_grid_flow 0, data.swap32!
-			end
+			data.swap32! if @endian!=OurByteOrder
+			send_out_grid_flow 0, data
 			@dex += data.length/4
 		end
 		if @dex == @prod
@@ -477,21 +518,17 @@ class FormatGrid < Format; include EventIO
 	def _0_rgrid_flow data
 		case @bpv
 		when 8
-			@stream.write data.unpack("i*").pack("c*")
-#			@stream.write @bp.pack(data)
+			@stream.write @bp.pack(data)
 		when 16
-#			data.swap16! if GridFlow::OurByteOrder != (is_le ? 1 : 0)
-			@stream.write data.unpack("i*").pack("s*")
+			#data.swap16! if GridFlow::OurByteOrder != @endian
+			@stream.write @bp.pack(data)
 		when 32
-			data.swap32! if GridFlow::OurByteOrder != (is_le ? 1 : 0)
+			data.swap32! if GridFlow::OurByteOrder != @endian
 			@stream.write data
 		end
 	end
 
 	def _0_rgrid_end
-#		case @stream
-#		when File; @stream.seek 0,IO::SEEK_SET # should be an option
-#		end
 
 	end
 
@@ -570,15 +607,15 @@ class FormatPPM < Format; include EventIO
 		@stream.write "P6\n" \
 		"# generated using GridFlow #{GF_VERSION}\n#{dim[1]} #{dim[0]}\n255\n"
 		@stream.flush
+		inlet_set_factor 0, 3
 	end
 	def _0_rgrid_flow data
-		# !@#$ use BitPacking here
-		@stream.write data.unpack("i*").pack("c*")
-		#@stream.write @bp.unpack data
+		pa = @bp.pack(data)
+		#puts "#{data.length}/4 = #{data.length/4} -> #{pa.length}"
+		@stream.write pa
 	end
 	def _0_rgrid_end
 		@stream.flush
-		@stream.seek 0,SEEK_SET
 	end
 
 	install_rgrid 0

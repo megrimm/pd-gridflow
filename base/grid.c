@@ -525,6 +525,16 @@ METHOD3(GridObject,inlet_dim) {
 	return a;
 }
 
+METHOD3(GridObject,inlet_set_factor) {
+	int inln = INT(argv[0]);
+	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	GridInlet *inl = in[inln];
+	if (!inl) RAISE("no such inlet #%d");
+	if (!inl->dim) RAISE("inlet not active");
+	inl->set_factor(INT(argv[1]));
+	return Qnil;
+}
+
 METHOD3(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
@@ -637,6 +647,7 @@ LIST(),
 	DECL(GridObject,send_out_grid_flow),
 	DECL(GridObject,send_out_grid_end),
 	DECL(GridObject,inlet_dim),
+	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))
 
 void GridObject_conf_class(Ruby $, GridClass *grclass) {
