@@ -1,12 +1,17 @@
 /* $Id$ */
 
+version 0.7.2 (delayed features):
+
+ * added support for float32
+ * added bridge_jmax4.c (does not work yet)
+
 version 0.7.1 (head):
 
  * fixed important bugs (crashes and such)
  * @store,@ can now receive in inlet 1 while sending from outlet 0.
  * @, when inlet 1 grid size is small but not 1, is now much faster.
  * added memcpy() usage logging (see profiler_dump)
- * added examples: drag_rectangle.jmax, plot.jmax, cellular_1d.pd
+ * added examples: drag_rectangle.jmax, plot.jmax, cellular_1d.pd, eclipse.jmax
  * added classes: fork, jmax_udpsend, jmax_udpreceive
  * added classes: @rotate, @remap_image, @type
  * added operators: gcd,lcm (common divisors/multiples)
@@ -15,8 +20,6 @@ version 0.7.1 (head):
  * @in: added: set, option loop (controlling auto-rewind)
  * updated cross_fade.jmax (much faster)
  * @two,@three,@four allow inlet 0 bang trigger
- * added bridge_jmax4.c (does not work yet)
- * added some support for float32 numbers in grids
  * configure: simpler config for jMax 2.5
  * PD help patches (by Uli Berthold)
  * PD: "make install" takes care of help patches and library
