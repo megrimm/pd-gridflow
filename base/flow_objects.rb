@@ -335,7 +335,9 @@ class GridUnpack < GridObject
   end
   def _0_rgrid_flow data
     @ps = GridFlow.packstring_for_nt inlet_nt(0)
-    data.unpack(@ps).each_with_index{|x,i| send_out i,x }
+    duh = data.unpack(@ps)
+    i=duh.size-1
+    until i<0 do send_out i,duh[i]; i-=1 end
   end
   def _0_rgrid_end; end
   install_rgrid 0, true
