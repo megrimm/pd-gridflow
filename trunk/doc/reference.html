@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.5 - reference</title>
+<title>GridFlow 0.7.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.5 - reference index</h4>
+    <h4>GridFlow 0.7.0 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -60,6 +60,10 @@
 <li><a href="#@inner2"><img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"></a></li>
 <li><a href="#@join">@join</a></li>
 <li><a href="#@finished">@finished</a></li>
+<li><a href="#@cast">@cast</a></li>
+<li><a href="#@ravel">@ravel</a></li>
+<li><a href="#@grade">@grade</a></li>
+<li><a href="#perspective">perspective</a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="#@redim"><img src="images/@redim.png" alt="[@redim {2}]" border="0"></a></li>
@@ -211,9 +215,10 @@
    <p>This object allows you to import non-grid jMax data, such as 
 		integers and lists of integers. This object also reframes/resyncs 
 		integers and grids so that multiple grids may be joined together, or 
-		single grids may be split.</p> <br><b>method</b> init <b>(</b><i>list(+integer)</i> dims<b>)</b>   
+		single grids may be split.</p> <br><b>method</b> init <b>(</b><i>list(+integer)|symbol(per_message)</i> dims<b>, </b><i>numbertype</i> numbertype<b>)</b>   
 			a list specifying a grid shape that the numbers 
-			will fit into. <br>
+			will fit into; or "per_message" indicating each incoming message 
+			will be turned into a vector.  (default=int32) <br>
   <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b>  
 				begins a new grid if there is no current grid. 
 				puts that integer in the current grid. 
@@ -221,16 +226,23 @@
 				the constructed grid is not stored: it is streamed. 
 				the stream is buffered, so the output is in packets 
 				of about a thousand numbers. <br>
+ <br><b>inlet 0</b> <b>method</b> list <b>(</b><b>)</b>  
+				just like a sequence of ints sent one after another, 
+				except in a single message. <br>
+ <br><b>inlet 0</b> <b>method</b> symbol <b>(</b><b>)</b>  
+				considered as a list of ascii characters. <br>
  <br><b>inlet 0</b> <b>method</b> reset <b>(</b><b>)</b>  
 				aborts the current grid if there is one. <br>
  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
 				this is the equivalent of filtering this grid through 
 				an @export object and sending the resulting integers 
-				to this @import object, except that it's about 
+				to this @import object, except that it's over 
 				10 times faster. <br>
    <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>rank<b>)</b> 
 				this grid is a dimension list that replaces the one 
 				specified in the constructor. <br>
+ <br><b>inlet 1</b> <b>method</b> per_message <b>(</b><b>)</b>  
+				sets the per-message option described above. <br>
    <br><b>outlet 0</b> <b>grid</b>  
 				the grid produced from incoming integers and/or grids. <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@export">@export</a></td></tr><tr><td></td><td valign='top'><br>
@@ -420,10 +432,10 @@
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA..., lastA<b>)</b> 
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces 
-				of Dim(lastA) size. 
-				Splits the Dim(firstB,anyB...) right-hand grid into Dim(anyB...) pieces 
-				of Dim(firstB) size. 
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) 
+				pieces of Dim(lastA) size. 
+				Splits the Dim(firstB,anyB...) right-hand grid into 
+				Dim(anyB...) pieces of Dim(firstB) size. 
 				On every piece pair, does [@] using the specified 
 				op_para operation, followed by a [@fold] using 
 				the specified op_fold operator and base value. 
@@ -441,10 +453,10 @@
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA..., lastA<b>)</b> 
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces 
-				of Dim(lastA) size. 
-				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) pieces 
-				of Dim(lastB) size. 
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) 
+				pieces of Dim(lastA) size. 
+				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) 
+				pieces of Dim(lastB) size. 
 				On every piece pair, does [@] using the specified 
 				op_para operation, followed by a [@fold] using 
 				the specified op_fold operator and base value. 
@@ -457,15 +469,66 @@
 				changes the right-hand side grid to that. <br>
     <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p><b>NOT IMPLEMENTED</b></p> <br><b>method</b> init <b>(</b>which_dim<b>)</b>   
-			which dim is the number of the dimension by which the join will occur. 
-			0 means first dimension; -1 means last dimension. <br>
-  <br><b>inlet 0</b> <b>grid</b> <br>
-      <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@finished">@finished</a></td></tr><tr><td></td><td valign='top'><br>
+ <br><b>method</b> init <b>(</b>which_dim<b>)</b>   
+			Which_dim is the number of the dimension by which the join will 
+			occur. For N-dimensional grids, the dimensions are numbered from 0 
+			to N-1. In addition, negative numbers from -N to -1 may be used, to 
+			which N will be added. <br>
+  <br><b>inlet 0</b> <b>grid</b>  
+				The left grid and right grid must have the same number 
+				of elements in all dimensions except the one specified. 
+				The result will have the same number of elements in all 
+				dimensions except the one specified, which will be the 
+				sum of the two corresponding one. <p>For example, joining a RGB picture Dim[y,x,3] and a 
+				greyscale picture Dim[y,x,1] on dimension 2 (or -1) could 
+				make a RGBA picture Dim[y,x,4] in which the greyscale image 
+				becomes the opacity channel. </p> <br>
+  <br><b>inlet 1</b> <b>grid</b> <br>
+   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@finished">@finished</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
   <br><b>inlet 0</b> <b>grid</b> any grid<br>
    
-			a bang is emitted every time a grid transmission ends.  <br></td> 
+			a bang is emitted every time a grid transmission ends.  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@cast">@cast</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b><i>numbertype</i> numbertype<b>)</b>   <br>
+  <br><b>inlet 0</b> <b>grid</b> any grid<br>
+   <br><b>outlet 0</b> <b>grid</b> a grid of the same shape containing all the same 
+			values after type conversion. note that while casting to 
+			a smaller type, values that are overflowing will be truncated. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@ravel">@ravel</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> any grid<br>
+ <br><b>outlet 0</b> <b>grid</b>  
+			like @redim but always produce a 1-D grid 
+			with the same total number of elements. <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@grade">@grade</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> any grid<br>
+ <br><b>outlet 0</b> <b>grid</b>  <p>splits a Dim[A...,B] grid into Dim[B] vectors, 
+			producing new Dim[B] vectors that each contain numbers from 
+			0 to B-1 indicating the ordering of the values. The result is 
+			a Dim[A...,B] grid.</p> <p>for example, connecting a [@grade] to a [@outer ignore {0}] 
+			to a [@store] object, storing a single vector into [@store], and 
+			sending the same vector to [@grade], will sort the values of the 
+			vector. however for higher-dimensional grids, what should go 
+			between [@store] and [@grade] to achieve the same result would 
+			be more complex.</p> <p>you may achieve different kinds of sorting by applying various 
+			filters before [@grade]. the possibilities are unlimited.</p> <p>if you plug [@grade] directly into another [@grade], you will 
+			get the inverse arrangement, which allows to take the sorted values 
+			and make them unsorted in the original way. note that this is really 
+			not the same as just listing the values backwards.</p> <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="perspective">perspective</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b><i>integer</i> depth<b>)</b>   <br>
+ <br><b>inlet 0</b> <b>grid</b> any grid<br>
+ <br><b>outlet 0</b> <b>grid</b>  <p>transforms a Dim[A...,B] grid into a Dim[A...,B-1] grid. 
+			There is a projection plane perpendicular to the last axis and 
+			whose position is given by the "depth" parameter. Each vector's 
+			length is adjusted so that it lies onto that plane. Then the 
+			last dimension of each vector is dropped.</p> <p>useful for converting from 3-D geometry to 2-D geometry. Also 
+			useful for converting homogeneous 3-D into regular 3-D, as 
+			homogeneous 3-D is really just regular 4-D...(!)</p> <br>
+ <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -545,7 +608,8 @@
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b> 
 			identical to @scale_to with arguments that are exactly 
 			twice those of the incoming grid. It is several times faster. <br>
-   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor*y) (factor*x) {r g b}<b>)</b><br>
+  <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>1 or 2<b>)</b>sets factor<br>
+  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor*y) (factor*x) {r g b}<b>)</b><br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@downscale_by">@downscale_by</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> init <b>(</b><i>+integer</i> factor<b>, </b><i>optional symbol(smoothly)</i> how<b>)</b>    
@@ -554,7 +618,8 @@
 			for both rows and columns. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b> 
 			Scales down picture by specified amount. <br>
-   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor/y) (factor/x) {r g b}<b>)</b><br>
+  <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>1 or 2<b>)</b>sets factor<br>
+  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor/y) (factor/x) {r g b}<b>)</b><br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@spread.png" alt="[@spread]" border="0"><br clear="left"><br><br><a href="images/help_@spread.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>typically you plug a @for into this object, 
@@ -748,7 +813,12 @@
 			in a future section called "profiling". <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="fps">fps</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>method</b> init <b>(</b><b>)</b>  <br>
+ <br><b>method</b> init <b>(</b><i>symbol(real|user|system|cpu)</i> clocktype<b>, </b><i>symbol(detailed)</i> detailed<b>)</b>   
+				which clock to use. "real" uses wallclock time. "user" uses 
+				the amount of time spent in the process. "system" uses the 
+				amount of time spent in the kernel on behalf of the process. 
+				"cpu" uses the Pentium clock, which is like a more precise 
+				version of "real" if you have a Pentium.  optional <br>
  <br><b>method</b> init detailed <b>(</b><b>)</b>  <br>
   <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
 			Times at which bangs are received are stored until a large 
@@ -885,7 +955,17 @@
 			sends frame to screen. window is NOT resized. <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_x11.png" alt="[open x11 here]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-   <br><b>method</b> open x11 <b>(</b><b>)</b>  
+   <p>supports 15,16,24,32-bit truecolor displays</p> <p>now also support 8-bit indexed displays, using a private colormap 
+		configured as 3:3:2 RGB. When using 8-bit you can specify the 
+		"use_stripes" option to use a completely different color scheme 
+		involving R,G,B diagonal stripes, a kind of 6:6:6 RGB spread over three 
+		pixels.</p> <p>If you are using Windows or MacOS 10: you will have to install 
+		a X11 server. This will emulate Unix display on your OS. (note: 
+		Unix systems also need a X11 server, but it's built-in and handles 
+		the video driver directly). In the case of MacOS 10 and QNX that both 
+		use non-X11 display technology on top of a basically Unix OS, the 
+		OS comes with a X11 server, but it may be on a "bundled software" 
+		CD.</p> <br><b>method</b> open x11 <b>(</b><b>)</b>  
 			synonym of "open x11 here". <br>
  <br><b>method</b> open x11 here <b>(</b><b>)</b>  
 			connects to the default X11 server, 
@@ -946,8 +1026,22 @@
 				Normally "X11" with uppercase X; else consult 
 				the AALib manual.   
 				You can pass "commandline options" of AALib here.  <br>
- <br><b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+ <br><b>grid</b> <b>dim(</b>rows columns {white}<b>)</b> 
+			converts a greyscale image to an ascii image and possibly 
+			displays it. note that the image is typically downscaled by 
+			a factor of 2 by aalib itself. <br>
+ <br><b>grid</b> <b>dim(</b>rows columns {ascii attr}<b>)</b> 
+			the inverse of "option dump". Both together in a loop allow to 
+			post-process aalib's buffer before displaying. Goes well 
+			with "option draw", "option autodraw". <br>
  <br><b>method</b> option print <b>(</b><i>int</i> y<b>, </b><i>int</i> x<b>, </b><i>int</i> attr<b>, </b><i>symbol</i> text<b>)</b>      <br>
+ <br><b>method</b> option autodraw <b>(</b><b>)</b>  
+			like X11's option autodraw. <br>
+ <br><b>method</b> option draw <b>(</b><b>)</b>  
+			like X11's option draw. <br>
+ <br><b>method</b> option dump <b>(</b><b>)</b>  
+			produces a Dim[y,x,2] grid whose two channels are 
+			ascii character codes and character attributes. <br>
  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
@@ -1018,7 +1112,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.5 Documentation<br>
+<p><font size="-1">GridFlow 0.7.0 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

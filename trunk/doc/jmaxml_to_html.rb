@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.6.5"
+GF_VERSION = "0.7.0"
 
 require "xmlparser"
 

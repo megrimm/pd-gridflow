@@ -161,9 +161,12 @@
 		single grids may be split.</p>
 
 		<method name="init">
-			<arg name="dims" type="list(+integer)"/>
+			<arg name="dims" type="list(+integer)|symbol(per_message)">
 			a list specifying a grid shape that the numbers
-			will fit into.
+			will fit into; or "per_message" indicating each incoming message
+			will be turned into a vector.
+			</arg>
+			<arg name="numbertype" type="numbertype">(default=int32)</arg>
 		</method>
 		<inlet id="0">
 			<method name="int">
@@ -174,13 +177,20 @@
 				the stream is buffered, so the output is in packets
 				of about a thousand numbers.
 			</method>
+			<method name="list">
+				just like a sequence of ints sent one after another,
+				except in a single message.
+			</method>
+			<method name="symbol">
+				considered as a list of ascii characters.
+			</method>
 			<method name="reset">
 				aborts the current grid if there is one.
 			</method>
 			<grid><dim>dims...</dim>
 				this is the equivalent of filtering this grid through
 				an @export object and sending the resulting integers
-				to this @import object, except that it's about
+				to this @import object, except that it's over
 				10 times faster.
 			</grid>
 		</inlet>
@@ -189,6 +199,9 @@
 				this grid is a dimension list that replaces the one
 				specified in the constructor.
 			</grid>
+			<method name="per_message">
+				sets the per-message option described above.
+			</method>
 		</inlet>
 		<outlet id="0">
 			<grid>
@@ -564,11 +577,11 @@
 		<inlet id="0">
 			<grid><dim>anyA..., lastA</dim>
 
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
-				of Dim(lastA) size.
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...)
+				pieces of Dim(lastA) size.
 
-				Splits the Dim(firstB,anyB...) right-hand grid into Dim(anyB...) pieces
-				of Dim(firstB) size.
+				Splits the Dim(firstB,anyB...) right-hand grid into
+				Dim(anyB...) pieces of Dim(firstB) size.
 
 				On every piece pair, does [@] using the specified
 				op_para operation, followed by a [@fold] using
@@ -613,11 +626,11 @@
 		<inlet id="0">
 			<grid><dim>anyA..., lastA</dim>
 
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
-				of Dim(lastA) size.
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...)
+				pieces of Dim(lastA) size.
 
-				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) pieces
-				of Dim(lastB) size.
+				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...)
+				pieces of Dim(lastB) size.
 
 				On every piece pair, does [@] using the specified
 				op_para operation, followed by a [@fold] using
@@ -644,18 +657,30 @@
 	</jmax-class>
 
 	<jmax-class name="@join">
-		<p><b>NOT IMPLEMENTED</b></p>
 		<method name="init">
 			<arg name="which_dim"/>
 
-			which dim is the number of the dimension by which the join will occur.
-			0 means first dimension; -1 means last dimension.
+			Which_dim is the number of the dimension by which the join will
+			occur. For N-dimensional grids, the dimensions are numbered from 0
+			to N-1. In addition, negative numbers from -N to -1 may be used, to
+			which N will be added.
 		</method>
 		<inlet id="0">
-			<grid></grid>
+			<grid>
+				The left grid and right grid must have the same number
+				of elements in all dimensions except the one specified.
+				The result will have the same number of elements in all
+				dimensions except the one specified, which will be the
+				sum of the two corresponding one.
+				
+				<p>For example, joining a RGB picture Dim[y,x,3] and a
+				greyscale picture Dim[y,x,1] on dimension 2 (or -1) could
+				make a RGBA picture Dim[y,x,4] in which the greyscale image
+				becomes the opacity channel.
+				</p>
+			</grid>
 		</inlet>
-		<inlet id="1">
-		</inlet>
+		<inlet id="1"><grid></grid></inlet>
 		<outlet id="0">
 		</outlet>
 	</jmax-class>
@@ -668,6 +693,69 @@
 			a bang is emitted every time a grid transmission ends.
 		</outlet>
 	</jmax-class>
+
+	<jmax-class name="@cast">
+		<method name="init">
+			<arg name="numbertype" type="numbertype"/>
+		</method>
+		<inlet id="0">
+			<grid>any grid</grid>
+		</inlet>
+		<outlet id="0">
+			<grid>a grid of the same shape containing all the same
+			values after type conversion. note that while casting to
+			a smaller type, values that are overflowing will be truncated.
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@ravel">
+		<inlet id="0"><grid>any grid</grid></inlet>
+		<outlet id="0"><grid>
+			like @redim but always produce a 1-D grid
+			with the same total number of elements.
+		</grid></outlet>
+	</jmax-class>
+
+	<jmax-class name="@grade">
+		<inlet id="0"><grid>any grid</grid></inlet>
+		<outlet id="0"><grid>
+			<p>splits a Dim[A...,B] grid into Dim[B] vectors,
+			producing new Dim[B] vectors that each contain numbers from
+			0 to B-1 indicating the ordering of the values. The result is
+			a Dim[A...,B] grid.</p>
+			<p>for example, connecting a [@grade] to a [@outer ignore {0}]
+			to a [@store] object, storing a single vector into [@store], and
+			sending the same vector to [@grade], will sort the values of the
+			vector. however for higher-dimensional grids, what should go
+			between [@store] and [@grade] to achieve the same result would
+			be more complex.</p>
+			<p>you may achieve different kinds of sorting by applying various
+			filters before [@grade]. the possibilities are unlimited.</p>
+			<p>if you plug [@grade] directly into another [@grade], you will
+			get the inverse arrangement, which allows to take the sorted values
+			and make them unsorted in the original way. note that this is really
+			not the same as just listing the values backwards.</p>
+		</grid></outlet>
+	</jmax-class>
+
+	<jmax-class name="perspective">
+		<method name="init">
+			<arg name="depth" type="integer"/>
+		</method>
+		<inlet id="0"><grid>any grid</grid></inlet>
+		<outlet id="0"><grid>
+			<p>transforms a Dim[A...,B] grid into a Dim[A...,B-1] grid.
+			There is a projection plane perpendicular to the last axis and
+			whose position is given by the "depth" parameter. Each vector's
+			length is adjusted so that it lies onto that plane. Then the
+			last dimension of each vector is dropped.</p>
+			
+			<p>useful for converting from 3-D geometry to 2-D geometry. Also
+			useful for converting homogeneous 3-D into regular 3-D, as
+			homogeneous 3-D is really just regular 4-D...(!)</p>
+		</grid></outlet>
+	</jmax-class>			
 </section>
 
 <section name="Objects for Coordinate Transforms">
@@ -808,6 +896,7 @@
 			twice those of the incoming grid. It is several times faster.
 			</grid>
 		</inlet>
+		<inlet id="1"><grid><dim>1 or 2</dim>sets factor</grid></inlet>
 		<outlet id="0">
 			<grid><dim>(factor*y) (factor*x) {r g b}</dim></grid>
 		</outlet>
@@ -826,6 +915,7 @@
 			Scales down picture by specified amount.
 			</grid>
 		</inlet>
+		<inlet id="1"><grid><dim>1 or 2</dim>sets factor</grid></inlet>
 		<outlet id="0">
 			<grid><dim>(factor/y) (factor/x) {r g b}</dim></grid>
 		</outlet>
@@ -1188,6 +1278,14 @@
 
 	<jmax-class name="fps">
 		<method name="init">
+			<arg name="clocktype" type="symbol(real|user|system|cpu)">
+				which clock to use. "real" uses wallclock time. "user" uses
+				the amount of time spent in the process. "system" uses the
+				amount of time spent in the kernel on behalf of the process.
+				"cpu" uses the Pentium clock, which is like a more precise
+				version of "real" if you have a Pentium.
+			</arg>
+			<arg name="detailed" type="symbol(detailed)">optional</arg>
 		</method>
 		<method name="init detailed">
 		</method>
@@ -1440,6 +1538,22 @@
 		<icon image="format_x11" text="[open x11 here]"/>
 		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
 
+		<p>supports 15,16,24,32-bit truecolor displays</p>
+
+		<p>now also support 8-bit indexed displays, using a private colormap
+		configured as 3:3:2 RGB. When using 8-bit you can specify the
+		"use_stripes" option to use a completely different color scheme
+		involving R,G,B diagonal stripes, a kind of 6:6:6 RGB spread over three
+		pixels.</p>
+
+		<p>If you are using Windows or MacOS 10: you will have to install
+		a X11 server. This will emulate Unix display on your OS. (note:
+		Unix systems also need a X11 server, but it's built-in and handles
+		the video driver directly). In the case of MacOS 10 and QNX that both
+		use non-X11 display technology on top of a basically Unix OS, the
+		OS comes with a X11 server, but it may be on a "bundled software"
+		CD.</p>
+	
 		<method name="open x11">
 			synonym of "open x11 here".
 		</method>
@@ -1571,12 +1685,31 @@
 				You can pass "commandline options" of AALib here.
 			</rest>
 		</method>
-		<grid><dim>rows columns {white}</dim></grid>
+		<grid><dim>rows columns {white}</dim>
+			converts a greyscale image to an ascii image and possibly
+			displays it. note that the image is typically downscaled by
+			a factor of 2 by aalib itself.
+		</grid>
+		<grid><dim>rows columns {ascii attr}</dim>
+			the inverse of "option dump". Both together in a loop allow to
+			post-process aalib's buffer before displaying. Goes well
+			with "option draw", "option autodraw".
+		</grid>
 		<method name="option print">
 			<arg name="y" type="int"/>
 			<arg name="x" type="int"/>
 			<arg name="attr" type="int"/>
 			<arg name="text" type="symbol"/>
+		</method>
+		<method name="option autodraw">
+			like X11's option autodraw.
+		</method>
+		<method name="option draw">
+			like X11's option draw.
+		</method>
+		<method name="option dump">
+			produces a Dim[y,x,2] grid whose two channels are
+			ascii character codes and character attributes.
 		</method>
 	</jmax-class>
 </section>
