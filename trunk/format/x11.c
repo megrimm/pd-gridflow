@@ -119,12 +119,14 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 static VALUE button_sym(int i) {
 	char foo[42];
 	sprintf(foo,"button%d",i);
-	return ID2SYM(rb_intern(foo));
+	return SYM(foo);
 }
 
 static void FormatX11_alarm(FormatX11 *$) {
 	VALUE argv[4];
 	XEvent e;
+
+//	whine("X11 HELLO? (%lld)",RtMetro_now());
 
 	for (;;) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
@@ -178,9 +180,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 
 /* ---------------------------------------------------------------- */
 
-static bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
-	if (frame != -1) return 0;
-
+METHOD(FormatX11,frame) {
 	{
 		char *s = Dim_to_s($->dim);
 		whine("$->dim = %s",s);
@@ -191,7 +191,7 @@ static bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 		0, 0, Dim_get($->dim,1), Dim_get($->dim,0),
 		-1, ZPixmap, $->ximage, 0, 0);
 
-	GridOutlet_begin(out,Dim_dup($->dim));
+	GridOutlet_begin($->out[0],Dim_dup($->dim));
 
 	{
 		int sy = Dim_get($->dim,0);
@@ -202,14 +202,11 @@ static bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send(out,bs,b2);
+			GridOutlet_send($->out[0],bs,b2);
 		}
 	}
 
-	GridOutlet_end(out);
-
-	return true;
-err:
+	GridOutlet_end($->out[0]);
 }
 
 /* ---------------------------------------------------------------- */
@@ -248,10 +245,7 @@ top:
 			IPC_PRIVATE,
 			$->ximage->bytes_per_line * $->ximage->height,
 			IPC_CREAT|0777);
-		if($->shm_info->shmid < 0) {
-			whine("ERROR: shmget failed: %s",strerror(errno));
-			goto err;
-		}
+		if($->shm_info->shmid < 0) RAISE("ERROR: shmget failed: %s",strerror(errno));
 		$->ximage->data = $->shm_info->shmaddr =
 			(char *)shmat($->shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
@@ -259,10 +253,8 @@ top:
 
 		current_x11 = $;
 		XSetErrorHandler(FormatX11_error_handler);
-		if (!XShmAttach($->display, $->shm_info)) {
-			whine("ERROR: XShmAttach: big problem");
-			goto err;
-		}
+		if (!XShmAttach($->display, $->shm_info)) RAISE("ERROR: XShmAttach: big problem");
+
 		/* make sure the server picks it up */
 		XSync($->display,0);
 
@@ -271,10 +263,7 @@ top:
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl($->shm_info->shmid,IPC_RMID,0);
 
-		if (!$->use_shm) {
-			whine("shm got disabled, retrying...");
-			goto top;
-		}
+		if (!$->use_shm) RAISE("shm got disabled, retrying...");
 	} else
 	#endif
 	{
@@ -293,15 +282,13 @@ top:
 		whine("XInitImage returned: %d", status);
 	}
 	return true;
-err:
-	return false;
 }
 
 static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	int v[3] = {sy, sx, 3};
 	Window oldw;
 
-	if ($->parent->in[0]->dex > 0) {
+	if ($->parent && $->parent->in[0]->dex > 0) {
 		whine("resizing while receiving picture (ignoring)");
 		return;
 	}
@@ -331,10 +318,7 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 		FREE(s);
 		$->window = XCreateSimpleWindow($->display,
 			$->root_window, 0, 0, sx, sy, 0, $->white, $->black);
-		if(!$->window) {
-			whine("can't create window");
-			goto err;
-		}
+		if(!$->window) RAISE("can't create window");
 	}
 
 	/* FormatX11_set_wm_hints($,sx,sy); */
@@ -350,8 +334,6 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 			ExposureMask | StructureNotifyMask);
 	}
 	XSync($->display,0);
-	return;
-err:
 	return;
 }
 
@@ -399,17 +381,17 @@ GRID_END(FormatX11,0) {
 	}
 }
 
-static void FormatX11_close (FormatX11 *$) {
+METHOD(FormatX11,close) {
 	MainLoop_remove($);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
 	FormatX11_dealloc_image($);
 	XCloseDisplay($->display);
-	Format_close((Format *)$);
+	rb_call_super(argc,argv);
 }
 
-static void FormatX11_option (FormatX11 *$, int argc, VALUE *argv) {
+METHOD(FormatX11,option) {
 	VALUE sym = argv[0];
 	if (sym == SYM(out_size)) {
 		int sy = NUM2INT(argv[1]);
@@ -424,22 +406,17 @@ static void FormatX11_option (FormatX11 *$, int argc, VALUE *argv) {
 	} else if (sym == SYM(autodraw)) {
 		$->autodraw = NUM2INT(argv[1]);
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
-		whine("autodraw = %d",$->autodraw);
-	} else {
-		whine("unknown option: %s", rb_id2name(SYM2ID(sym)));
-	}
+	} else
+		rb_call_super(argc,argv);
 }
 
-static FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
+static void FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	int screen_num;
 	Screen *screen;
 
 	/* Open an X11 connection */
 	$->display = XOpenDisplay(disp_string);
-	if(!$->display) {
-		whine("ERROR: opening X11 display: %s",strerror(errno));
-		goto err;
-	}
+	if(!$->display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
 	/*
 	  btw don't expect too much from X11 error handling system.
@@ -457,10 +434,8 @@ static FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) 
 	whine("depth = %d",$->depth);
 
 	/* !@#$ check for visual type instead */
-	if ($->depth != 16 && $->depth != 24 && $->depth != 32) {
-		whine("ERROR: depth %d not supported.", $->depth);
-		goto err;
-	}
+	if ($->depth != 16 && $->depth != 24 && $->depth != 32)
+		RAISE("ERROR: depth %d not supported.", $->depth);
 
 #ifdef HAVE_X11_SHARED_MEMORY
 	/* what do i do with remote windows? */
@@ -470,31 +445,27 @@ static FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) 
 	$->use_shm = false;
 	whine("x11 shared memory is not compiled in");
 #endif
-
-	return $;
-err:;
-	return 0;
 }
 
-static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
-int argc, VALUE *argv) {
-	FormatX11 *$ = (FormatX11 *)Format_open(&class_FormatX11,parent,mode);
-
+METHOD(FormatX11,init) {
 	/* defaults */
 	int sy = 240;
 	int sx = 320;
 
-	if (!$) return 0;
+	rb_call_super(argc,argv);
+
+	argv++, argc--;
 
 	$->window  = 0;
 	$->is_owner= true;
 	$->image   = 0;
 	$->ximage  = 0;
 	$->autodraw= 1;
-	$->mode    = mode;
 #ifdef HAVE_X11_SHARED_MEMORY
 	$->shm_info= 0;
 #endif
+
+	if (argc<1) RAISE("not enough arguments");
 
 	/*
 		{here}
@@ -508,36 +479,26 @@ int argc, VALUE *argv) {
 		// assert (ac>0);
 		if (domain==SYM(here)) {
 			whine("mode `here'");
-			if (!FormatX11_open_display($,0)) return 0;
+			FormatX11_open_display($,0);
 			i=1;
 		} else if (domain==SYM(local)) {
-			char host[64];
+			char host[256];
 			int dispnum = NUM2INT(argv[1]);
-			whine("mode `local'");
-			whine("display_number `%d'",dispnum);
+			whine("mode `local', display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
-			if (!FormatX11_open_display($,host)) return 0;
+			FormatX11_open_display($,host);
 			i=2;
 		} else if (domain==SYM(remote)) {
-			char host[64];
+			char host[256];
 			int dispnum = 0;
-			strcpy(host,rb_id2name(SYM2ID(argv[1])));
+			strcpy(host,rb_sym_name(argv[1]));
 			dispnum = NUM2INT(argv[2]);
 			sprintf(host+strlen(host),":%d",dispnum);
-			whine("mode `remote'");
-			whine("host `%s'",host);
-			whine("display_number `%d'",dispnum);
-			if (!FormatX11_open_display($,host)) return 0;
+			whine("mode `remote', host `%s', display_number `%d'",host,dispnum);
+			FormatX11_open_display($,host);
 			i=3;
 		} else {
-			whine("x11 destination syntax error");
-			return 0;
-		}
-
-		if (!$->display) {
-			// ???
-			whine("can't open x11 connection: %s", strerror(errno));
-			goto err;
+			RAISE("x11 destination syntax error");
 		}
 
 		if (i>=argc) {
@@ -549,7 +510,7 @@ int argc, VALUE *argv) {
 				whine("will use root window (0x%x)", $->window);
 				$->is_owner = false;
 			} else {
-				const char *winspec2 = rb_id2name(SYM2ID(winspec));
+				const char *winspec2 = rb_sym_name(winspec);
 				if (strncmp(winspec2,"0x",2)==0) {
 					$->window = strtol(winspec2+2,0,16);
 				} else {
@@ -583,24 +544,12 @@ int argc, VALUE *argv) {
 
 	BitPacking_whine($->bit_packing);
 	MainLoop_add($,FormatX11_alarm);
-	return (Format *)$;
-err:;
-	$->cl->close((Format *)$);
-	return 0;
 }
 
-static GridHandler FormatX11_handler = GRINLET(FormatX11,0);
-FormatClass class_FormatX11 = {
-	object_size: sizeof(FormatX11),
-	symbol_name: "x11",
-	long_name: "X Window System Version 11.5",
-	flags: FF_R | FF_W,
-
-	open: FormatX11_open,
-	frames: 0,
-	frame:  (Format_frame_m)FormatX11_frame,
-	handler: &FormatX11_handler,
-	option: (Format_option_m)FormatX11_option,
-	close:  (Format_close_m)FormatX11_close,
-};
+FMTCLASS(FormatX11,"x11","X Window System Version 11.5",FF_R | FF_W,
+inlets:1,outlets:1,LIST(GRINLET(FormatX11,0)),
+DECL(FormatX11,init),
+DECL(FormatX11,frame),
+DECL(FormatX11,option),
+DECL(FormatX11,close))
 

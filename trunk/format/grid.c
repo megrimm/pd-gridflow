@@ -97,18 +97,16 @@ static bool FormatGrid_frame2 (FormatGrid *$, int n, char *buf) {
 	int v[n_dim];
 	int i;
 	if ($->is_le != is_le()) swap32(n_dim,(uint32*)buf);
-	whine("there are %d dimensions",n_dim);
+//	whine("there are %d dimensions",n_dim);
 	for (i=0; i<n_dim; i++) {
 		v[i] = ((int*)buf)[i];
-		whine("dimension %d is %d indices",i,v[i]);
+//		whine("dimension %d is %d indices",i,v[i]);
 		COERCE_INT_INTO_RANGE(v[i],0,MAX_INDICES);
 	}
 	$->dim = Dim_new(n_dim,v);
 	prod = Dim_prod($->dim);
-	if (prod <= 0 || prod > MAX_NUMBERS) {
-		whine("dimension list: invalid prod (%d)",prod);
-		goto err;
-	}
+	if (prod <= 0 || prod > MAX_NUMBERS)
+		RAISE("dimension list: invalid prod (%d)",prod);
 	FREE(buf);
 	GridOutlet_begin(out, $->dim);
 	Stream_on_read_do($->st,bufsize($,out),(OnRead)FormatGrid_frame3,$);
@@ -118,21 +116,21 @@ err: return false;
 
 /* the header */
 static bool FormatGrid_frame1 (FormatGrid *$, int n, char *buf) {
-	GridOutlet *out = $->parent->out[0];
+	GridOutlet *out = $->out[0];
 	int n_dim;
-	if (is_le()) {
+/*
+	if (is_le())
 		whine("we are smallest digit first");
-	} else {
+	else
 		whine("we are biggest digit first");
-	}
+*/
 
 	if (strncmp("\x7fGRID",buf,5)==0) {
-		$->is_le = false; whine("this file is biggest digit first");
+		$->is_le = false; //whine("this file is biggest digit first");
 	} else if (strncmp("\x7fgrid",buf,5)==0) {
-		$->is_le = true; whine("this file is smallest digit first");
+		$->is_le = true; //whine("this file is smallest digit first");
 	} else {
-		whine("grid header: invalid");
-		goto err;
+		RAISE("grid header: invalid");
 	}
 
 	$->bpv = buf[5];
@@ -140,33 +138,23 @@ static bool FormatGrid_frame1 (FormatGrid *$, int n, char *buf) {
 	switch ($->bpv) {
 		case 8: case 32: break;
 		default:
-		whine("unsupported bpv (%d)", $->bpv);
-		goto err;
+		RAISE("unsupported bpv (%d)", $->bpv);
 	}
-	if (buf[6] != 0) {
-		whine("reserved field is not zero");
-		goto err;
-	}
-	if (n_dim > 4) {
-		whine("too many dimensions (%d)",n_dim);
-		goto err;
-	}
-	whine("bpv=%d; res=%d; n_dim=%d", $->bpv, buf[6], n_dim);
+	if (buf[6] != 0) RAISE("reserved field is not zero");
+	if (n_dim > MAX_DIMENSIONS) RAISE("too many dimensions (%d)",n_dim);
+
+	//whine("bpv=%d; res=%d; n_dim=%d", $->bpv, buf[6], n_dim);
 	FREE(buf);
 	Stream_on_read_do($->st,n_dim*sizeof(int),(OnRead)FormatGrid_frame2,$);
 	return true;
-err: return false;
 }
 
 /* rewinding and starting */
-static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
+METHOD(FormatGrid,frame) {
 	int fd = Stream_get_fd($->st);
-	if (frame!=-1) return 0;
-	if (Stream_is_waiting($->st)) {
-		whine("frame: Stream %p in ff %p is already waiting.",$->st,$);
-		return false;
-	}
-	whine("frame: $->is_socket: %d",$->is_socket);
+	if (Stream_is_waiting($->st))
+		RAISE("frame: Stream %p in ff %p is already waiting.",$->st,$);
+	//whine("frame: $->is_socket: %d",$->is_socket);
 
 	/* rewind when at end of file. */
 	if (!$->is_socket) {
@@ -190,9 +178,6 @@ static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 		while (Stream_is_waiting($->st)) Stream_try_read($->st);
 		whine("frame: finished");
 	}
-
-	return true;
-err: return false;
 }
 
 GRID_BEGIN(FormatGrid,0) {
@@ -243,13 +228,13 @@ GRID_END(FormatGrid,0) {
 	lseek(fd,0,SEEK_SET); /* it's bad to rewind here */
 }
 
-void FormatGrid_close (FormatGrid *$) {
+METHOD(FormatGrid,close) {
 	if ($->st) Stream_close($->st);
 	if ($->is_socket) MainLoop_remove($);
-	FREE($);
+	rb_call_super(argc,argv);
 }
 
-static void FormatGrid_option (FormatGrid *$, int argc, VALUE *argv) {
+METHOD(FormatGrid,option) {
 	int fd = Stream_get_fd($->st);
 	VALUE sym = argv[0];
 	if (sym == SYM(type)) {
@@ -259,47 +244,38 @@ static void FormatGrid_option (FormatGrid *$, int argc, VALUE *argv) {
 		else if (value==SYM(int32)) { $->bpv=32; }
 		whine("$->bpv = %d",$->bpv);
 	} else {
-		RAISE("unknown option: %s", sym);
+		rb_call_super(argc,argv);
 	}
 }
 
 /* **************************************************************** */
 
-static bool FormatGrid_open_file (FormatGrid *$, int mode, int argc, VALUE *argv) {
+static bool FormatGrid_open_file (FormatGrid *$, int argc, VALUE *argv) {
 	const char *filename;
 	$->is_socket = false;
 
-	if (argc<1) { whine("not enough arguments"); goto err; }
+	if (argc<1) RAISE("not enough arguments");
 
 	if (TYPE(argv[0])!=T_SYMBOL) RAISE("bad argument");
-	filename = rb_id2name(SYM2ID(argv[0]));
-	$->st = Stream_open_file(filename,mode);
-	if (!$->st) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
-	}
+	filename = rb_sym_name(argv[0]);
+	$->st = Stream_open_file(filename,$->mode);
+	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	return true;
-err: return false;
 }
 
 /* **************************************************************** */
-
-static void FormatGrid_init (FormatGrid *$) {
-	$->bpv = 32;
-}
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 
-static bool FormatGrid_open_tcp (FormatGrid *$, int mode, int argc, VALUE *argv) {
+static bool FormatGrid_open_tcp (FormatGrid *$, int argc, VALUE *argv) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
-	FormatGrid_init($);
 
-	if (argc<2) { whine("not enough arguments"); goto err; }
+	if (argc<2) RAISE("not enough arguments");
 
 	if (TYPE(argv[0])!=T_SYMBOL || TYPE(argv[1])!=T_FIXNUM) RAISE("bad arguments");
 
@@ -310,34 +286,25 @@ static bool FormatGrid_open_tcp (FormatGrid *$, int mode, int argc, VALUE *argv)
 
 	{
 		struct hostent *h = gethostbyname(rb_id2name(SYM2ID(argv[0])));
-		if (!h) {
-			whine("open_tcp(gethostbyname): %s",strerror(errno));
-			goto err;
-		}
+		if (!h) RAISE("open_tcp(gethostbyname): %s",strerror(errno));
 		memcpy(&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
 	}
 
-	if (0>connect(stream,(struct sockaddr *)&address,sizeof(address))) {
-		whine("open_tcp(connect): %s",strerror(errno));
-		goto err;
-	}
+	if (0>connect(stream,(struct sockaddr *)&address,sizeof(address)))
+		RAISE("open_tcp(connect): %s",strerror(errno));
 
 	$->st = Stream_open_fd(stream,$->mode);
 	if ($->mode==4 && $->is_socket) Stream_nonblock($->st);
 	return true;
-err:
-	if (0<= stream) close(stream);
-	return false;
 }
 
-static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, int argc, VALUE
+static bool FormatGrid_open_tcpserver (FormatGrid *$, int argc, VALUE
 *argv) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
-	FormatGrid_init($);
 
-	if (argc<1) { whine("not enough arguments"); goto err; }
+	if (argc<1) RAISE("not enough arguments");
 
 	if (TYPE(argv[0])!=T_FIXNUM) RAISE("bad arguments");
 
@@ -347,82 +314,53 @@ static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, int argc, VALUE
 	address.sin_port = htons(NUM2INT(argv[0]));
 	address.sin_addr.s_addr = INADDR_ANY;  /* whatever */
 
-	if (0> bind($->listener,(struct sockaddr *)&address,sizeof(address))) {
-		printf("open_tcpserver(bind): %s\n", strerror(errno));
-		goto err;
-	}
+	if (0> bind($->listener,(struct sockaddr *)&address,sizeof(address)))
+		RAISE("open_tcpserver(bind): %s\n", strerror(errno));
 
-	if (0> listen($->listener,0)) {
-		printf("open_tcpserver(listen): %s\n", strerror(errno));
-		goto err;
-	}
+	if (0> listen($->listener,0)) RAISE("open_tcpserver(listen): %s\n", strerror(errno));
 
 	stream = accept($->listener,0,0);
-	if (0> stream) {
-		printf("open_tcpserver(accept): %s\n", strerror(errno));
-		goto err;
-	}
+	if (0> stream) RAISE("open_tcpserver(accept): %s\n", strerror(errno));
 
 	close($->listener);
 	$->listener = -1;
 
-	$->st = Stream_open_fd(stream,mode);
+	$->st = Stream_open_fd(stream,$->mode);
 
 	if ($->mode==4) Stream_nonblock($->st);
 	return true;
-err:
-	if ($->listener>0) {
-		close($->listener);
-		$->listener = -1;
-	}
-	return false;
 }
 
 /* **************************************************************** */
 
-static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int
-mode, int argc, VALUE *argv) {
-	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
-	if (!$) return 0;
-
-	FormatGrid_init($);
+METHOD(FormatGrid,init) {
+	rb_call_super(argc,argv);
+	argv++, argc--;
+	$->bpv = 32;
 
 	if (argc<1) RAISE("not enough arguments");
 
 	{
 		int result;
 		VALUE sym = argv[0];
+		argv++, argc--;
 		if (sym == SYM(file)) {
-			result = FormatGrid_open_file($,mode,argc-1,argv+1);
+			result = FormatGrid_open_file($,argc,argv);
 		} else if (sym == SYM(tcp)) {
-			result = FormatGrid_open_tcp($,mode,argc-1,argv+1);
+			result = FormatGrid_open_tcp($,argc,argv);
 		} else if (sym == SYM(tcpserver)) {
-			result = FormatGrid_open_tcpserver($,mode,argc-1,argv+1);
+			result = FormatGrid_open_tcpserver($,argc,argv);
 		} else {
 			RAISE("unknown access method '%s'",sym);
 		}
-		if (!result) goto err;
 	}
-
-	return (Format *)$;
-err:
-	$->cl->close((Format *)$);
-	return 0;
 }
 
 /* **************************************************************** */
 
-static GridHandler FormatGrid_handler = GRINLET(FormatGrid,0);
-FormatClass class_FormatGrid = {
-	object_size: sizeof(FormatGrid),
-	symbol_name: "grid",
-	long_name: "GridFlow file format",
-	flags: FF_R|FF_W,
-
-	open: FormatGrid_open,
-	frames: 0,
-	frame:  (Format_frame_m)FormatGrid_frame,
-	handler: &FormatGrid_handler,
-	option: (Format_option_m)FormatGrid_option,
-	close:  (Format_close_m)FormatGrid_close,
-};
+FMTCLASS(FormatGrid,"grid","GridFlow file format",FF_R|FF_W,
+inlets:1,outlets:1,LIST(GRINLET(FormatGrid,0)),
+DECL(FormatGrid,init),
+DECL(FormatGrid,frame),
+DECL(FormatGrid,option),
+DECL(FormatGrid,close))

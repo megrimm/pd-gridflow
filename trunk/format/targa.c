@@ -54,10 +54,7 @@ static Dim *FormatTarga_read_header (Format *$) {
 	getc(f); /* skip */
 	{
 		int colors = (uint8)getc(f);
-		if (colors != 2) {
-			whine("unsupported color format: %d", colors);
-			goto err;
-		}
+		if (colors != 2) RAISE("unsupported color format: %d", colors);
 	}
 	for (i=0;i<9;i++) getc(f); /* skip */
 	fread(&w,1,2,f); /* !@#$ byte order problem */
@@ -73,28 +70,20 @@ static Dim *FormatTarga_read_header (Format *$) {
 /*	if (depth != 24 && depth != 32) { */
 
 	/* temporary limitation of Format: only 3 channels */
-	if (depth != 24) {
-		whine("tga: wrong colour depth: %i\n", depth);
-		goto err;
-	}
+	if (depth != 24) RAISE("tga: wrong colour depth: %i\n", depth);
 	{
 		int v[] = { h, w, depth/8 };
 		return Dim_new(3,v);
 	}
-err:
-	return 0;
 }
 
-static bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
+METHOD(FormatTarga,frame) {
 	FILE *f = Stream_get_file($->st);
-	Dim *dim;
-	if (frame!=-1) return false;
-	dim = FormatTarga_read_header($);
-	if (!dim) return false;
-	GridOutlet_begin(out,dim);
+	Dim *dim = FormatTarga_read_header($);
+	GridOutlet_begin($->out[0],dim);
 
 	{
-		int bs = Dim_prod_start(out->dim,1);
+		int bs = Dim_prod_start($->out[0]->dim,1);
 		int y;
 		uint8 b1[bs];
 		Number b2[bs];
@@ -110,52 +99,38 @@ static bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
 				b2[i+1] = b1[i+1];
 				b2[i+2] = b1[i+0];
 			}
-			GridOutlet_send(out,bs,b2);
+			GridOutlet_send($->out[0],bs,b2);
 		}
 	}
-	GridOutlet_end(out);
-	return true;
+	GridOutlet_end($->out[0]);
 }
 
 GRID_BEGIN(FormatTarga,0) { RAISE("not implemented"); }
 GRID_FLOW(FormatTarga,0) {}
 GRID_END(FormatTarga,0) {}
 
-static void FormatTarga_close (Format *$) {
-        if ($->st) Stream_close($->st);
-	FREE($);
+METHOD(FormatTarga,close) {
+	if ($->st) Stream_close($->st);
+	rb_call_super(argc,argv);
 }
 
-static Format *FormatTarga_open (FormatClass *class, GridObject *parent, int
-mode, int argc, VALUE *argv) {
-	FormatTarga *$ = (FormatTarga *)Format_open(&class_FormatTarga,parent,mode);
+METHOD(FormatTarga,init) {
 	const char *filename;
-
-	if (!$) return 0;
+	rb_call_super(argc,argv);
+	argv++, argc--;
 
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: targa file <filename>");
-	filename = rb_id2name(SYM2ID(argv[1]));
+	filename = rb_sym_name(argv[1]);
 
-	$->st = Stream_open_file(filename,mode);
+	$->st = Stream_open_file(filename,$->mode);
 	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
-	return $;
-err:
-	$->cl->close($);
-	return 0;
 }
 
-static GridHandler FormatTarga_handler = GRINLET(FormatTarga,0);
-FormatClass class_FormatTarga = {
-	object_size: sizeof(FormatTarga),
-	symbol_name: "targa",
-	long_name: "TrueVision Targa",
-	flags: FF_R,
+/* **************************************************************** */
 
-	open: FormatTarga_open,
-	frames: 0,
-	frame:  FormatTarga_frame,
-	handler: &FormatTarga_handler,
-	option: 0,
-	close:  FormatTarga_close,
-};
+FMTCLASS(FormatTarga,"targa","TrueVision Targa",FF_R,
+inlets:1,outlets:1,LIST(GRINLET(FormatTarga,0)),
+DECL(FormatTarga,init),
+DECL(FormatTarga,frame),
+DECL(FormatTarga,close))
 
