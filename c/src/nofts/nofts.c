@@ -40,143 +40,6 @@ static symbol_entry_t *symbols;
 static int symbols_n = 0;
 
 /* **************************************************************** */
-/* List */
-
-struct List {
-	int size;
-	int capa;
-	void **ptr;
-};
-
-List *List_new(int size) {
-	List *$ = NEW(List,1);
-	$->size = size;
-	$->capa = size ? size : 1;
-	$->ptr = NEW(void *,$->capa);
-	{ int i; for (i=0; i<size; i++) $->ptr[i] = 0; }
-	return $;
-}
-
-void List_push(List *$, void *v) {
-	if ($->size >= $->capa) {
-		void **ptr;
-		$->capa = (7*$->capa+4)/5;
-		ptr = NEW(void *,$->capa);
-		memcpy(ptr,$->ptr,$->size*sizeof(void *));
-		FREE($->ptr);
-		$->ptr = ptr;
-	}
-	$->ptr[$->size]=v;
-	$->size += 1;
-}
-
-void *List_get(List *$, int i) {
-	return $->ptr[i];
-}
-
-void List_put(List *$, int i, void *v) {
-	$->ptr[i] = v;
-}
-
-int List_size(List *$) {
-	return $->size;
-}
-
-void *List_pop(List *$) {
-	assert($->size>0);
-	$->size--;
-	return $->ptr[$->size];
-}
-
-/* **************************************************************** */
-/* Dict */
-
-struct DictEntry {
-	fts_symbol_t k;
-	void *v;
-	struct DictEntry *next;
-};
-
-struct Dict {
-	int capa;
-	DictEntry **table;
-};
-
-Dict *Dict_new(void) {
-	int i;
-	Dict *$ = NEW(Dict,1);
-	$->capa = 7;
-	$->table = NEW(DictEntry *,$->capa);
-	for (i=0; i<$->capa; i++) $->table[i] = 0;
-	return $;
-}
-
-long Dict_hash(Dict *$, fts_symbol_t k) {
-	int k2 = (k<<3)-k;
-	int k3 = (k2<<3)-k2;
-	return k^k2^k3;
-}
-
-DictEntry *Dict_has_key(Dict *$, fts_symbol_t k) {
-	int h = Dict_hash($,k) % $->capa;
-	DictEntry *de = $->table[h];
-	while (de) {
-		if (de->k == k) return de;
-		de = de->next;
-	}
-	return 0;
-}
-
-void *Dict_get(Dict *$, fts_symbol_t k) {
-	DictEntry *de = Dict_has_key($,k);
-	if (de) return de->v; else return 0;
-}
-
-void Dict_put(Dict *$, fts_symbol_t k, void *v) {
-	DictEntry *de = Dict_has_key($,k);
-	if (de) {
-		de->v = v;
-	} else {
-		int h = Dict_hash($,k) % $->capa;
-		DictEntry *de = NEW(DictEntry,1);
-		de->k = k;
-		de->v = v;
-		de->next = $->table[h];
-		$->table[h] = de;
-	}
-}
-
-void Dict_each(Dict *$, void (*proc)(void*,fts_symbol_t,void*), void
-*data) {
-	int i;
-	for (i=0; i<$->capa; i++) {
-		DictEntry *de = $->table[i];
-		while (de) {
-			proc(data,de->k,de->v);
-			de = de->next;
-		}
-	}
-}
-
-/* not used/tested yet */
-void Dict_capa_is(Dict *$) {
-	int i;
-	DictEntry **l = $->table;
-	int capa1 = $->capa;
-	$->capa = (7*$->capa+4)/5;
-	$->table = NEW(DictEntry *,$->capa);
-	for (i=0; i<$->capa; i++) $->table[i] = 0;
-	for (i=0; i<capa1; i++) {
-		DictEntry *de = l[i];
-		while (de) {
-			int h = Dict_hash($,de->k) % $->capa;
-			de->next = $->table[h];
-			$->table[h] = de;
-		}
-	}
-}
-
-/* **************************************************************** */
 /* Symbol */
 
 fts_symbol_t fts_new_symbol (const char *s) {
@@ -185,7 +48,7 @@ fts_symbol_t fts_new_symbol (const char *s) {
 	for (i=0; i<symbols_n; i++) {
 		if (strcmp(symbols[i].s,s)==0) return i;
 	}
-	if (symbols_n >= 1024) assert(0);
+	if (symbols_n >= 1024) { assert(0); }
 	symbols[symbols_n].s = strdup(s);
 	symbols[symbols_n].c = 0;
 	return symbols_n++;
@@ -241,7 +104,7 @@ n_outlets, int stuff) {
 	class->n_outlets = n_outlets;
 	class->stuff = stuff;
 	class->method_table = NEW(Dict *,n_inlets+1);
-	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new();
+	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0);
 }
 
 void fts_class_install(fts_symbol_t sym,
@@ -264,7 +127,7 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	md->args = NEW(fts_type_t,n_args?n_args:1);
 	memcpy(md->args,args,n_args*sizeof(fts_type_t));
 	md->min_args = min_args;
-	Dict_put($->method_table[winlet+1],selector,md);
+	Dict_put($->method_table[winlet+1],(void *)selector,md);
 }
 
 /* **************************************************************** */
@@ -330,7 +193,7 @@ void fts_send2(fts_object_t *o, int inlet, int ac, const fts_atom_t *at) {
 
 void fts_send(fts_object_t *o, int inlet, fts_symbol_t sel, int ac, const fts_atom_t *at) {
 	Dict *d = o->head.cl->method_table[inlet+1];
-	MethodDecl *md = (MethodDecl *) Dict_get(d,sel);
+	MethodDecl *md = (MethodDecl *) Dict_get(d,(void *)sel);
 	if (md) {
 /*		printf("object %08lx inlet %d selector %s argc
 		%d\n",(uint32)o,inlet,fts_symbol_name(sel),ac); */
