@@ -201,6 +201,8 @@ struct Helper {
 	int n; /* stack level */
 };
 
+static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
+
 /*
   inlet #-1 is reserved for SystemInlet messages
   inlet #-2 is for inlet #0 messages that happen at start time
@@ -216,6 +218,12 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 	Ruby foo;
 	if (argc==1 && TYPE(argv[0])==T_STRING /* && argv[0] =~ / / */) {
 		foo = rb_funcall(mGridFlow,SI(parse),1,argv[0]);
+		argc = rb_ary_len(foo);
+		argv = rb_ary_ptr(foo);
+	}
+	if (argc>1) {
+		foo = rb_ary_new4(argc,argv);
+		GridFlow_handle_braces(0,foo);
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
 	}
