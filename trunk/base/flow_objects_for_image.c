@@ -56,24 +56,29 @@ static void expect_convolution_matrix (Dim *d) {
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
+	\attr Operator2 *op_para;
+	\attr Operator2 *op_fold;
+	\attr Grid seed;
+
 	Grid c,b;
-	Operator2 *op_para, *op_fold;
-	int32 rint;
 	bool mode;
 	int margx,margy,margx2,margy2; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); }	
-	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
+	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	\decl void mode_m (int m);
 	GRINLET3(0);
 	GRINLET3(1);
 };
 
 GRID_INLET(GridConvolve,0) {
+	SAME_TYPE(*in,b);
+	SAME_TYPE(*in,seed);
 	Dim *da = in->dim, *db = b.dim;
 	if (!db) RAISE("right inlet has no grid");
+	if (seed.is_empty()) RAISE("seed missing");
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
-	SAME_TYPE(*in,b);
+	if (seed.dim->n != 0) RAISE("seed must be scalar");
 	if (da->get(0) < db->get(0)) RAISE("grid too small (y): %d < %d",
 		da->get(0), db->get(0));
 	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d",
@@ -131,7 +136,7 @@ GRID_INLET(GridConvolve,0) {
 			Pt<T> p = ((Pt<T>)c) + iy*ll + ix*l;
 			Pt<T> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
-			for (int i=l-1; i>=0; i--) buf3[i]=rint;
+			for (int i=l-1; i>=0; i--) buf3[i]=*(T *)seed;
 			op_para->zip(l*dbx*dby,buf,buf2);
 			op_fold->fold(l,dbx*dby,buf3,buf);
 			out[0]->send(l,buf3);
@@ -145,7 +150,7 @@ GRID_INLET(GridConvolve,0) {
 	STACK_ARRAY(T,buf,n);
 	STACK_ARRAY(T,buf2,n);
 	for (int iy=0; iy<day; iy++) {
-		for (int i=0; i<n; i++) buf[i]=rint;
+		for (int i=0; i<n; i++) buf[i]=*(T *)seed;
 		for (int jy=0; jy<dby; jy++) {
 			for (int jx=0; jx<dbx; jx++) {
 				Pt<T> p = ((Pt<T>)c) + (iy+jy)*ll + jx*l;
@@ -172,11 +177,11 @@ GRID_INLET(GridConvolve,0) {
 	
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
+\def void initialize (Operator2 *op_para, Operator2 *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->rint = rint;
+	this->seed = *seed;
 	this->mode = 1;
 	if (r) this->b.swallow(r);
 }
@@ -195,7 +200,7 @@ GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4))
 
 \class GridScaleBy < GridObject
 struct GridScaleBy : GridObject {
-	Grid scale; /* integer scale factor */
+	\attr Grid scale; /* integer scale factor */
 	int scaley;
 	int scalex;
 	\decl void initialize (Grid *factor=0);
@@ -286,10 +291,10 @@ GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 
 \class GridDownscaleBy < GridObject
 struct GridDownscaleBy : GridObject {
-	Grid scale;
+	\attr Grid scale;
+	\attr bool smoothly;
 	int scaley;
 	int scalex;
-	bool smoothly;
 	Grid temp;
 	\decl void initialize (Grid *factor=0, Symbol option=Qnil);
 	GRINLET3(0);
@@ -382,11 +387,10 @@ struct GridLayer : GridObject {
 };
 
 GRID_INLET(GridLayer,0) {
-	if (!in) RAISE("!!!!!!!");
-	if (r.is_empty()) RAISE("no righthand");
+	NOTEMPTY(r);
+	SAME_TYPE(*in,r);
 	Dim *a = in->dim;
 	expect_rgba_picture(a);
-	SAME_TYPE(*in,r);
 	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
 	in->set_factor(a->prod(1));
@@ -425,9 +429,9 @@ static void expect_polygon (Dim *d) {
 
 \class DrawPolygon < GridObject
 struct DrawPolygon : GridObject {
-	Operator2 *op;
-	Grid color;
-	Grid polygon;
+	\attr Operator2 *op;
+	\attr Grid color;
+	\attr Grid polygon;
 	Grid lines;
 	int lines_start;
 	int lines_stop;
@@ -471,9 +475,9 @@ static int order_by_column (const void *a, const void *b) {
 }
 
 GRID_INLET(DrawPolygon,0) {
-	if (color.is_empty()) RAISE("no color?");
-	if (polygon.is_empty()) RAISE("no polygon?");
-	if (lines.is_empty()) RAISE("no lines???");
+	NOTEMPTY(color);
+	NOTEMPTY(polygon);
+	NOTEMPTY(lines);
 	SAME_TYPE(*in,color);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
 	if (in->dim->get(2)!=color.dim->get(0))
@@ -550,12 +554,13 @@ static void expect_position(Dim *d) {
 
 \class DrawImage < GridObject
 struct DrawImage : GridObject {
-	Operator2 *op;
-	Grid image;
-	Grid position;
+	\attr Operator2 *op;
+	\attr Grid image;
+	\attr Grid position;
 
 	DrawImage() {
 		position.constrain(expect_position);
+		image.constrain(expect_picture);
 	}
 
 	\decl void initialize (Operator2 *op, Grid *image=0, Grid *position=0);
@@ -565,12 +570,13 @@ struct DrawImage : GridObject {
 };
 
 GRID_INLET(DrawImage,0) {
-	if (image.is_empty()) RAISE("no image?");
-	if (position.is_empty()) RAISE("no position?");
+	NOTEMPTY(image);
+	NOTEMPTY(position);
 	SAME_TYPE(*in,image);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
-	if (in->dim->get(2)!=image.dim->get(0))
-	RAISE("incoming image does not have same number of channels as stored image");
+	if (in->dim->get(2)!=image.dim->get(2))
+		RAISE("incoming image does not have same number of channels as stored image");
+	out[0]->begin(in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 } GRID_FLOW {
 	int y = in->dex/in->factor;
@@ -578,15 +584,20 @@ GRID_INLET(DrawImage,0) {
 	int px = ((int32*)position)[1];
 	int sy = image.dim->v[0];
 	int sx = image.dim->v[1];
-	if (y>=py && y<py+sy) {
-		Pt<T> data2 = ARRAY_NEW(T,in->factor);
-		COPY(data2,data,in->factor);
-		int xs = max(0,px);
-		int xe = min(in->dim->get(1),px+sx);
-		int cn = image.dim->prod(2);
-		Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*(y-py) + cn*(xs-px);
-		while (xs<xe) op->zip(cn,data2+in->dim->get(2)*xs++,cd);
-		out[0]->give(in->factor,data2);
+	for (; n; y++, n-=in->factor, data+=in->factor) {
+		if (y>=py && y<py+sy) {
+			Pt<T> data2 = ARRAY_NEW(T,in->factor);
+			COPY(data2,data,in->factor);
+			int xs = max(0,px);
+			int xe = min(in->dim->get(1),px+sx);
+			int cn = image.dim->prod(2);
+			Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*(y-py) + cn*(xs-px);
+			//!@#$ optimise
+			for (; xs<xe; cd+=cn) op->zip(cn,data2+in->dim->get(2)*xs++,cd);
+			out[0]->give(in->factor,data2);
+		} else {
+			out[0]->send(in->factor,data);
+		}
 	}
 } GRID_FINISH {
 } GRID_END
@@ -598,7 +609,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	rb_call_super(argc,argv);
 	this->op = op;
 	if (image) this->image.swallow(image);
-	if (position) this->image.swallow(position);
+	if (position) this->position.swallow(position);
 }
 
 GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0,4),GRINLET4(DrawImage,1,4),GRINLET(DrawImage,2,4)),
