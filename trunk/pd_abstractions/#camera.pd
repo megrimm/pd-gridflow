@@ -2,11 +2,11 @@
 #X obj 198 94 hradio 18 1 0 4 \$0-channel \$0-channel _0__1__2__3_
 0 -4 0 8 -241291 -258699 -1 0;
 #X obj 359 35 hsl 128 15 0 65535 0 0 \$0-brightness \$0-brightness
-brightness 8 8 0 8 -260818 -1 -1 6350 1;
+brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X obj 359 75 hsl 128 15 0 65535 0 0 \$0-hue \$0-hue hue 8 8 0 8 -260818
--1 -1 6350 1;
+-1 -1 0 1;
 #X obj 359 15 hsl 128 15 0 65535 0 0 \$0-contrast \$0-contrast contrast
-8 8 0 8 -260818 -1 -1 6058 1;
+8 8 0 8 -260818 -1 -1 0 1;
 #X obj 359 95 hsl 128 15 0 65635 0 0 \$0-whiteness \$0-whiteness whiteness
 8 8 0 8 -260818 -1 -1 0 1;
 #N canvas 170 20 420 404 camera 0;
@@ -70,7 +70,7 @@ brightness 8 8 0 8 -260818 -1 -1 6350 1;
 #X msg 202 205 colorspace YUV420P;
 #X obj 54 228 @yuv_to_rgb;
 #X obj 359 55 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour 8
-8 0 8 -260818 -1 -1 6300 1;
+8 0 8 -260818 -1 -1 0 1;
 #X obj 200 23 vradio 15 1 0 3 \$0-size \$0-size empty 0 -6 0 8 -241291
 -258699 -1 0;
 #X text 218 23 120 \, 160;
@@ -79,13 +79,13 @@ brightness 8 8 0 8 -260818 -1 -1 6350 1;
 #X text 198 8 select size;
 #X text 198 71 select channel;
 #X obj 300 16 nbx 5 14 0 65535 0 0 \$0-contrast \$0-contrast empty
-0 -6 0 10 -260818 -1 -1 31261 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 300 36 nbx 5 14 0 65535 0 0 \$0-brightness \$0-brightness empty
-0 -6 0 10 -260818 -1 -1 32768 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 300 56 nbx 5 14 0 65535 0 0 \$0-colour \$0-colour empty 0 -6
-0 10 -260818 -1 -1 32512 256;
+0 10 -260818 -1 -1 0 256;
 #X obj 300 76 nbx 5 14 0 65535 0 0 \$0-hue \$0-hue empty 0 -6 0 10
--260818 -1 -1 32768 256;
+-260818 -1 -1 0 256;
 #X obj 300 96 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
 0 -6 0 10 -260818 -1 -1 0 256;
 #X text 17 6 Select a camera;
@@ -105,6 +105,7 @@ brightness 8 8 0 8 -260818 -1 -1 6350 1;
 -1 0;
 #X text 222 243 YUV->RGB;
 #X text 222 227 no conversion;
+#X obj 84 90 inlet;
 #X connect 5 0 26 0;
 #X connect 6 0 5 0;
 #X connect 7 0 27 0;
@@ -120,3 +121,4 @@ brightness 8 8 0 8 -260818 -1 -1 6350 1;
 #X connect 30 1 7 0;
 #X connect 31 0 5 0;
 #X connect 32 0 30 1;
+#X connect 35 0 26 0;
