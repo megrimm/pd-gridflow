@@ -96,9 +96,6 @@ METHOD3(FormatAALib,option) {
 		int y = INT(argv[1]);
 		int x = INT(argv[2]);
 		int a = INT(argv[3]);
-		VALUE foo = rb_str_new2("");
-//		for (int i=3; i<argc; i++)
-//			foo
 		aa_puts(context,y,x,(AAAttr)a,(char *)rb_sym_name(argv[4]));
 		aa_flush(context);
 	} else
