@@ -554,6 +554,7 @@ extern "C" void gridflow_setup () {
 	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 
+post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
 	rb_ivar_set(cData,SI(@gf_bridge),PTR2FIX(gf_bridge2));
