@@ -75,7 +75,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
-		Pt<Number> p = (Pt<int32>)*this;
+		Pt<int32> p = (Pt<int32>)*this;
 		for (int i=0; i<n; i++) p[i] = INT(a[i]);
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i));
 }
@@ -94,7 +94,7 @@ void Grid::init_from_ruby(Ruby x) {
 }
 
 Dim *Grid::to_dim() {
-	return new Dim(dim->prod(),(Number *)(Pt<int32>)*this);
+	return new Dim(dim->prod(),(int32 *)(Pt<int32>)*this);
 }
 
 void Grid::del() {
@@ -118,7 +118,7 @@ GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	nt    = int32_type_i;
 	dex   = 0;
 	factor= 1;
-	buf   = Pt<Number>();
+	buf   = Pt<int32>();
 	bufn  = 0;
 	sender = 0;
 }

@@ -26,6 +26,9 @@
 #include <math.h>
 #include "grid.h"
 
+/*!@#$ HACK */
+typedef int32 Number;
+
 /* **************************************************************** */
 
 #define WATCH(n,ar) { \
