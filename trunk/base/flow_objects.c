@@ -94,8 +94,7 @@ struct GridImport : GridObject {
 	\grin 1 int32
 	template <class T> void process (int n, Pt<T> data) {
 		while (n) {
-			if (!out || !out->is_busy())
-				out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
+			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
 			int n2 = min((long)n,out->dim->prod()-out->dex);
 			out->send(n2,data);
 			n-=n2; data+=n2;
@@ -116,7 +115,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 \def void _0_cast(NumberTypeE cast) { this->cast = cast; }
 
 \def void _0_list(...) {
-	if (!in[0]) _0_grid(0,0); //HACK: enable grid inlet...
+	if (in.size()<1 || !in[0]) _0_grid(0,0); //HACK: enable grid inlet...
 	in[0]->from_ruby_list(argc,argv,cast);
 }
 
@@ -135,7 +134,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 
 \def void _0_reset() {
 	STACK_ARRAY(int32,foo,1); *foo=0;
-	while (out->is_busy()) out->send(1,foo);
+	while (out->dim) out->send(1,foo);
 }
 
 \classinfo { IEVAL(rself,"install '@import',2,1"); }
@@ -209,9 +208,9 @@ GRID_INLET(GridExportList,0) {
 struct GridStore : GridObject {
 	PtrGrid r; //\attr
 	PtrGrid put_at; //\attr
-	int32 wdex [MAX_DIMENSIONS]; // temporary buffer, copy of put_at
-	int32 fromb[MAX_DIMENSIONS];
-	int32 to2  [MAX_DIMENSIONS];
+	int32 wdex [Dim::MAX_DIMENSIONS]; // temporary buffer, copy of put_at
+	int32 fromb[Dim::MAX_DIMENSIONS];
+	int32 to2  [Dim::MAX_DIMENSIONS];
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
@@ -254,7 +253,7 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nb = r->dim->n;
 	int nc = in->dim->get(na-1);
-	STACK_ARRAY(int32,v,MAX_DIMENSIONS);
+	STACK_ARRAY(int32,v,Dim::MAX_DIMENSIONS);
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 	int lastindexable = r->dim->prod()/r->dim->prod(nc) - 1;
 	int ngreatest = nt_greatest((T *)0);
@@ -322,7 +321,7 @@ GRID_INLET(GridStore,0) {
 GRID_INLET(GridStore,1) {
 	NumberTypeE nt = NumberTypeE_type_of(*data);
 	if (!put_at) { // reassign
-		if (in[0].is_busy())
+		if (in[0].dim)
 			r.next = new Grid(in->dim,nt);
 		else
 			r = new Grid(in->dim,nt);
@@ -429,7 +428,6 @@ GRID_INLET(GridOp2,0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_mode(6);
 } GRID_FLOW {
-	NOTEMPTY(r);
 	Pt<T> rdata = (Pt<T>)*r;
 	int loop = r->dim->prod();
 	if (sizeof(T)==8) {
@@ -484,7 +482,6 @@ struct GridFold : GridObject {
 };
 
 GRID_INLET(GridFold,0) {
-	NOTEMPTY(seed);
 	SAME_TYPE(in,seed);
 	int an = in->dim->n;
 	int bn = seed->dim->n;
@@ -535,7 +532,6 @@ struct GridScan : GridObject {
 };
 
 GRID_INLET(GridScan,0) {
-	NOTEMPTY(seed);
 	SAME_TYPE(in,seed);
 	int an = in->dim->n;
 	int bn = seed->dim->n;
@@ -584,8 +580,8 @@ struct GridInner : GridObject {
 #define MAX_PACKET_SIZE (1<<11)
 
 GRID_INLET(GridInner,0) {
-	NOTEMPTY(r);    SAME_TYPE(in,r);
-	NOTEMPTY(seed); SAME_TYPE(in,seed);
+	SAME_TYPE(in,r);
+	SAME_TYPE(in,seed);
 	P<Dim> a = in->dim;
 	P<Dim> b = r->dim;
 	if (a->n<1) RAISE("a: minimum 1 dimension");
@@ -661,7 +657,6 @@ struct GridOuter : GridObject {
 };
 
 GRID_INLET(GridOuter,0) {
-	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	P<Dim> a = in->dim;
 	P<Dim> b = r->dim;
@@ -1042,7 +1037,7 @@ GRID_INLET(GridTranspose,0) {
 		nc = in->dim->v[max(d1,d2)];
 		nb = in->dim->prod(1+min(d1,d2))/nc/nd;
 		na = in->dim->v[min(d1,d2)];
-		out->begin(new Dim(in->dim->n,v), in->nt);
+		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
 		in->set_factor(na*nb*nc*nd);
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].

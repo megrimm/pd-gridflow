@@ -29,6 +29,7 @@
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
+#include <vector>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -55,6 +56,8 @@ extern "C" {
 #define sigjmp_buf jmp_buf
 #define siglongjmp longjmp
 #endif
+
+#define BUG(args...) {fprintf(stderr,args); ::raise(11);}
 
 // !@#$ what am I going to do about this? should this be changed?
 // should I wrap all of the Ruby API for C++-style convenience?
@@ -95,16 +98,14 @@ __attribute__ ((noreturn));
 // warning: does not work with STACK_ARRAY()
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
-// !@#$ could these be inline functions?
-inline long rb_str_len(Ruby s) {return RSTRING(s)->len;}
-//#define rb_str_len(s) (RSTRING(s)->len)
-inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
-//#define rb_str_ptr(s) (RSTRING(s)->ptr)
+static inline long rb_str_len(Ruby s) {return RSTRING(s)->len;}
+static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
+static inline long rb_ary_len(Ruby s) {return RARRAY(s)->len;}
+static inline Ruby *rb_ary_ptr(Ruby s) {return RARRAY(s)->ptr;}
+static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
-inline long rb_ary_len(Ruby s) {return RARRAY(s)->len;}
-//#define rb_ary_len(s) (RARRAY(s)->len)
-inline Ruby *rb_ary_ptr(Ruby s) {return RARRAY(s)->ptr;}
-//#define rb_ary_ptr(s) (RARRAY(s)->ptr)
+
+// shorthands
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
@@ -147,18 +148,13 @@ inline Ruby *rb_ary_ptr(Ruby s) {return RARRAY(s)->ptr;}
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) {
-		fprintf(stderr,"unaligned pointer: %08x\n",(int)(ptr));
-		::raise(11);
-	}
+	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(int)(ptr));
 	return INT2NUM(p>>2);
 }
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
 #define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
-
-static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 //****************************************************************
 
@@ -228,9 +224,7 @@ template <class T> static T gcd2 (T a, T b) {
 }
 
 // least common multiple; this runs in log(a+b) like gcd.
-template <class T> static inline T lcm (T a, T b) {
-	return a*b/gcd(a,b);
-}
+template <class T> static inline T lcm (T a, T b) {return a*b/gcd(a,b);}
 
 // returns the position (0..31) of highest bit set in a word, or 0 if none.
 static int highest_bit(int n) {
@@ -244,9 +238,7 @@ static int highest_bit(int n) {
 }
 
 // returns the position (0..31) of lowest bit set in a word, or 0 if none.
-static int lowest_bit(int n) {
-	return highest_bit((~n+1)&n);
-}
+static int lowest_bit(int n) { return highest_bit((~n+1)&n); }
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 
@@ -283,6 +275,7 @@ static inline uint64 rdtsc() {return 0;}
 #define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
 
 // note: loop unrolling macros assume N!=0
+// btw this may cause alignment problems when 8 does not divide N
 #define UNROLL_8(MACRO,N,PTR,ARGS...) \
 	int n__=(-N)&7; PTR-=n__; N+=n__; \
 	switch (n__) { start: \
@@ -311,7 +304,6 @@ public:
 	Pt() : p(0) {}
 	Pt(T *q, int _n, T *_start=0) : p(q) {}
 #endif
-
 	T &operator *() { return *p; }
 	Pt operator+=(int i) { p+=i; return *this; }
 	Pt operator-=(int i) { p-=i; return *this; }
@@ -321,11 +313,9 @@ public:
 	Pt operator--(int  ) { Pt f(*this); --*this; return f; }
 	T &operator[](int i) {
 #ifdef HAVE_DEBUG_HARDER
-		if (!(p+i>=start && p+i<start+n)) {
-			fprintf(stderr, "%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
+		if (!(p+i>=start && p+i<start+n))
+			BUG("%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
-			::raise(11);
-		}
 #endif
 		return p[i];
 	}
@@ -333,19 +323,13 @@ public:
 	void will_use(int k) {
 #ifdef HAVE_DEBUG_HARDER
 		if (k==0) return;
-		if (!(p>=start && p<start+n)) {
-			fprintf(stderr,
-				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+		if (!(p>=start && p<start+n))
+			BUG("%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);
-		}
 		T *q = p+k-1;
-		if (!(q>=start && q<start+n)) {
-			fprintf(stderr,
-				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+		if (!(q>=start && q<start+n))
+			BUG("%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)q,(long)start,(long)(start+n));
-			::raise(11);
-		}
 #endif
 	}
 
@@ -410,29 +394,20 @@ inline void  ::operator delete[] (void *p) { gffree(p); }
 #define ARRAY_NEW(_type_,_count_) \
 	(Pt<_type_>((_type_ *)new _type_[_count_],_count_))
 
-/* **************************************************************** */
-/* some basic memory handling */
-
-template <class T>
-inline void COPY(Pt<T> dest, Pt<T> src, int n) {
-	src.will_use(n);
-	dest.will_use(n);
+void gfmemcopy(uint8 *out, const uint8 *in, int n);
+template <class T> inline void COPY(Pt<T> dest, Pt<T> src, int n) {
+	src.will_use(n); dest.will_use(n);
 	gfmemcopy((uint8*)dest,(uint8*)src,n*sizeof(T));
 }
-
-template <class T>
-inline void CLEAR(Pt<T> dest, int n) {
+template <class T> inline void CLEAR(Pt<T> dest, int n) {
 	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
-
-void gfmemcopy(uint8 *out, const uint8 *in, int n);
-
 template <class T> static void memswap (Pt<T> a, Pt<T> b, int n) {
 	STACK_ARRAY(T,c,n); COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
 }
 
-/* **************************************************************** */
+//****************************************************************
 // my own little Ruby <-> C++ layer
 
 struct Arg { Ruby a; };
@@ -538,13 +513,11 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
-/* **************************************************************** */
-
+//****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 \class Dim < CObject
 struct Dim : CObject {
-	// maximum number of dimensions in a grid
-	#define MAX_DIMENSIONS 16
+	static const int MAX_DIMENSIONS=16; // maximum number of dimensions in a grid
 	int n;
 	Pt<int32> v; // safe pointer
 	int32 v2[MAX_DIMENSIONS]; // real stuff
@@ -604,7 +577,6 @@ struct BitPacking : CObject {
 	int bytes;
 	int size;
 	uint32 mask[4];
-
 	BitPacking(){::abort();} // don't call, but don't remove. sorry.
 	BitPacking(int endian, int bytes, int size, uint32 *mask,
 		Packer *packer=0, Unpacker *unpacker=0);
@@ -758,22 +730,15 @@ enum LeftRight { at_left, at_right };
 template <class T>
 struct Numop2On : CObject {
 	// Function Vectorisations
-	typedef void (*Map )(        int n, T *as, T  b );
-	typedef void (*Zip )(        int n, T *as, T *bs);
-	typedef void (*Fold)(int an, int n, T *as, T *bs);
-	typedef void (*Scan)(int an, int n, T *as, T *bs);
-	Map  op_map;
-	Zip  op_zip;
-	Fold op_fold;
-	Scan op_scan;
-
-	// Algebraic Properties (those involving numeric types)
+	typedef void (*Map )(        int n, T *as, T  b ); Map  op_map;
+	typedef void (*Zip )(        int n, T *as, T *bs); Zip  op_zip;
+	typedef void (*Fold)(int an, int n, T *as, T *bs); Fold op_fold;
+	typedef void (*Scan)(int an, int n, T *as, T *bs); Scan op_scan;
+	// Algebraic Properties (those involving simply numeric types)
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
-	AlgebraicCheck is_neutral;
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
-	AlgebraicCheck is_absorbent;
-	
+	AlgebraicCheck is_neutral, is_absorbent;
 	Numop2On(Map m, Zip z, Fold f, Scan s, AlgebraicCheck n, AlgebraicCheck a) :
 		op_map(m), op_zip(z), op_fold(f), op_scan(s),
 		is_neutral(n), is_absorbent(a) {}
@@ -784,9 +749,9 @@ struct Numop2On : CObject {
 		is_neutral = z.is_neutral; is_absorbent = z.is_absorbent; }
 };
 
-/* semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c) */
+// semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c)
 #define OP2_ASSOC (1<<0)
-/* abelian property: commutativity: f(a,b)=f(b,a) */
+// abelian property: commutativity: f(a,b)=f(b,a)
 #define OP2_COMM  (1<<1)
 
 \class Numop2 < CObject
@@ -916,10 +881,11 @@ struct PtrGrid : public P<Grid> {
 	DimConstraint dc;
 	void constrain(DimConstraint dc_) { dc=dc_; }
 	P<Grid> next;
-//hacks
 	PtrGrid() : P<Grid>(), dc(0), next(0) {}
-	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {p=_p.p; INCR;}
-	PtrGrid &operator =(Grid *_p) {DECR; p=_p; INCR; return *this;}
+	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
+	PtrGrid &operator =(  Grid *_p) {if(dc)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
+	PtrGrid &operator =(P<Grid> _p) {if(dc)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
+	PtrGrid &operator =(PtrGrid _p) {if(dc)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
 
 //****************************************************************
@@ -955,7 +921,6 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
-	int winlet;
 #define FOO(T) \
 	void (*flow_##T)(GridInlet *in, int n, Pt<T> data); \
 	void flow(GridInlet *in, int n, Pt<T> data) const { \
@@ -967,35 +932,36 @@ EACH_NUMBER_TYPE(FOO)
 typedef struct  GridObject GridObject;
 \class GridInlet < CObject
 struct GridInlet : CObject {
-// context information
 	GridObject *parent;
 	const GridHandler *gh;
 	GridObject *sender;
-// grid progress info
 	P<Dim> dim;
 	NumberTypeE nt;
 	int dex;
-// buffering/transmission
 	//Pt<int32> (*get_target)(GridInlet *self);
 	PtrGrid buf;// factor-chunk buffer
 	int bufi;   // buffer index: how much of buf is filled
 	int mode; // 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet
-	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
-	// as an end-marker for inlet definitions... sorry for the confusion
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
-		dim(0), nt(int32_e), dex(0), buf(), bufi(0), mode(4) {}
+		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
 	void set_factor(int factor);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
-	bool is_busy() {return !!dim;}
 	Ruby begin(int argc, Ruby *argv);
+
+	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
+	// as an end-marker for inlet definitions... sorry for the confusion
 	template <class T> void flow(int mode, int n, Pt<T> data);
-	void end();
-	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e);
-	void from_ruby(int argc, Ruby *argv);
+	void end(); // this one ought to be called finish().
+	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
+		Grid t(argc,argv,nt); from_grid(&t);
+	}
+	void from_ruby(int argc, Ruby *argv) {
+		Grid t(argv[0]); from_grid(&t);
+	}
 	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);
 private:
@@ -1012,15 +978,15 @@ private:
 // GRIN2 : integers only; no floats
 // GRINF : floats only; no integers
 #ifndef HAVE_LITE
-#define GRIN1(C,I) {I, 0,0,C::grinw_##I,0,0,0 }
-#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0 }
-#define GRINF(C,I) {I, 0,0,0,0,C::grinw_##I,C::grinw_##I }
+#define GRIN1(C,I) {0,0,C::grinw_##I,0,0,0}
+#define GRIN4(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I}
+#define GRIN2(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0}
+#define GRINF(C,I) {0,0,0,0,C::grinw_##I,C::grinw_##I}
 #else
-#define GRIN1(C,I) {I, 0,0,C::grinw_##I }
-#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRINF(C,I) {I, 0,0,0 }
+#define GRIN1(C,I) {0,0,C::grinw_##I}
+#define GRIN4(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I}
+#define GRIN2(C,I) {C::grinw_##I,C::grinw_##I,C::grinw_##I}
+#define GRINF(C,I) {0,0,0}
 #endif // HAVE_LITE
 
 struct FClass { // 0.7.8: removed all GridObject-specific stuff.
@@ -1034,24 +1000,26 @@ struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 // GridOutlet represents a grid-aware outlet
 \class GridOutlet < CObject
 struct GridOutlet : CObject {
-// these are set only once, at outlet creation
+// number of (minimum,maximum) numbers to send at once
+	static const int MIN_PACKET_SIZE = 1<<9;
+	static const int MAX_PACKET_SIZE = 1<<11;
+// those are set only once
 	GridObject *parent; // not a P<> because of circular refs
-	int woutlet;
-// those are set at every beginning of a transmission
+	P<Dim> dim; // dimensions of the grid being sent
 	NumberTypeE nt;
-	P<Dim> dim;    // dimensions of the grid being sent
 	PtrGrid buf; // temporary buffer
 	bool frozen; // is the "begin" phase finished?
-	Pt<GridInlet *> inlets; // which inlets are we connected to
-	int ninlets; // how many of them
+	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
 	int dex;  // how many numbers were already sent in this connection
 	int bufi; // number of bytes used in the buffer
 // methods
-	GridOutlet(GridObject *parent, int woutlet, P<Dim> dim=0, NumberTypeE nt=int32_e);
-	void begin(P<Dim> dim, NumberTypeE nt=int32_e);
-	~GridOutlet();
-	bool is_busy() { return !!dim; }
+	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
+	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
+		buf=new Grid(new Dim(MAX_PACKET_SIZE), nt);
+		begin(woutlet,dim,nt);
+	}
+	~GridOutlet() {}
 	// give: data must be dynamic. it should not be used by the caller
 	// beyond the call to give()
 	template <class T> void give(int n, Pt<T> data);
@@ -1063,11 +1031,11 @@ struct GridOutlet : CObject {
 	void flush();
 	void callback(GridInlet *in);
 private:
+	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(int n, Pt<T> data);
 	void end() {
 		flush();
-		for (int i=0; i<ninlets; i++) inlets[i]->end();
-		dex=0;
+		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->end();
 		dim=0;
 	}
 };
@@ -1100,21 +1068,16 @@ struct FObject : CObject {
 
 \class GridObject < FObject
 struct GridObject : FObject {
-	// NEW: 0.7.8:
-	//   'out' is now not handled by GridFlow itself.
-	//   it is also not an array anymore, and left there just for convenience.
-	// MAX_INLETS = 1 + maximum id of last grid-aware inlet/outlet
-	#define MAX_INLETS 4 /*!@#$shouldn't have a limit*/
-	P<GridInlet>  in[MAX_INLETS];
+	std::vector<P<GridInlet> >  in;
 	P<GridOutlet> out;
 	// Make sure you distinguish #close/#delete, and C++'s delete. The first
 	// two are quite equivalent and should never make an object "crashable".
 	// C++'s delete is called by Ruby's garbage collector or by PureData's delete.
-	GridObject();
-	~GridObject();
+	GridObject() {}
+	~GridObject() {check_magic();}
 	bool is_busy_except(P<GridInlet> gin) {
-		for (int i=0; i<MAX_INLETS; i++)
-			if (in[i] && in[i]!=gin && in[i]->is_busy()) return true;
+		for (uint32 i=0; i<in.size(); i++)
+			if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
 	\decl Ruby method_missing(...);
@@ -1130,7 +1093,7 @@ typedef struct GridObject Format;
 uint64 gf_timeofday();
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
-Ruby fclass_install(FClass *fc, Ruby super=0); // super=cGridObject
+Ruby fclass_install(FClass *fc, Ruby super);
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
@@ -1180,4 +1143,4 @@ struct GFStackMarker {
 	}
 };
 
-#endif /* __GF_GRID_H */
+#endif // __GF_GRID_H
