@@ -57,15 +57,22 @@ $sizeof = {
 	:uint8 => 1,
 	:int16 => 2,
 	:int32 => 4,
-#	:int64 => 8,
-#	:float32 => 4,
-#	:float64 => 8,
+	:int64 => 8,
+	:float32 => 4,
+	:float64 => 8,
 }
 
 $accum = {
 	:uint8 => "al",
 	:int16 => "ax",
 	:int32 => "eax",
+}
+
+$asm_type = {
+	:uint8 => "byte",
+	:int16 => "word",
+	:int32 => "dword",
+	:int64 => "qword",
 }
 
 $opcodes = {
@@ -75,8 +82,14 @@ $opcodes = {
 	:and => ["&",  "and", "pand", "pand", "pand" ,"pand" ],
 	:xor => ["^",  "xor", "pxor", "pxor", "pxor" ,"pxor" ],
 	:or  => ["|",  "or",  "por",  "por",  "por"  ,"por"  ],
-#	:shl => ["<<", "shl", nil,    "psllw","pslld","psllq"],
-#	:shr => [">>", "sar", nil,    "psraw","psrad"],
+#	:eq  => ["==", nil,   "pcmpeqb","pcmpeqw","pcmpeqd",nil],
+#	:gt  => [">",  nil,   "pcmpgtb","pcmpgtw","pcmpgtd",nil],
+#	:shl => ["<<", "shl", nil,    "psllw","pslld","psllq"], # noncommutative
+#	:shr => [">>", "sar", nil,    "psraw","psrad"], # noncommutative
+#	:mulshr8 => [">>", ["imul",...], nil,    "psraw","psrad"],
+#	:addclamp => [nil,nil,"paddusb","paddsw",nil,nil,nil],
+#	:subclamp => [nil,nil,"psubusb","psubsw",nil,nil,nil],
+#	:andnot => [nil,nil,"pandn","pandn","pandn","pandn"],
 }
 
 $decls = ""
@@ -89,23 +102,28 @@ def make_fun_map(op,type)
 	sym = $opcodes[op][0]
 	opcode = $opcodes[op][1]
 	mopcode = $opcodes[op][size+(size<4 ? 1 : 0)]
+	return if not mopcode
 	AsmFunction.make(s) {|a|
 		puts "mov ecx,[ebp+8]", "mov esi,[ebp+12]", "mov eax,[ebp+16]"
 		puts "mov dx,ax", "shl eax,8", "mov al,dl" if size==1
 		puts "mov edx,eax", "shl eax,16", "mov ax,dx" if size<=2
 		puts "push eax", "push eax", "movq mm7,[esp]", "add esp,8"
 		foo = proc {|n|
-			a.make_until("cmp ecx,#{8/size*n}","jb") {
-				for i in 0...n do puts "movq mm#{i},[esi+#{8*i}]" end
-				for i in 0...n do puts "#{mopcode} mm#{i},mm7" end
-				for i in 0...n do puts "movq [esi+#{8*i}],mm#{i}" end
+			a.make_until("cmp ecx,#{8/size*n}","jb near") {
+				0.step(n,4) {|k|
+				nn=[n-k,4].min
+				o=(0..3).map{|x| 8*(x+k) }
+				for i in 0...nn do puts "movq mm#{i},[esi+#{o[i]}]" end
+				for i in 0...nn do puts "#{mopcode} mm#{i},mm7" end
+				for i in 0...nn do puts "movq [esi+#{o[i]}],mm#{i}" end
+				}
 				puts "lea esi,[esi+#{8*n}]", "lea ecx,[ecx-#{8/size*n}]"
 			}
 		}
 		foo.call 4
 		foo.call 1
 		a.make_until("test ecx,ecx", "jz") {
-			puts "#{opcode} [esi],#{accum}", "lea esi,[esi+#{size}]"
+			puts "#{opcode} #{$asm_type[type]} [esi],#{accum}", "lea esi,[esi+#{size}]"
 			puts "dec ecx"
 		}
 		puts "emms"
@@ -123,15 +141,20 @@ s="mmx_#{type}_zip_#{op}"
 	sym = $opcodes[op][0]
 	opcode = $opcodes[op][1]
 	mopcode = $opcodes[op][size+(size<4 ? 1 : 0)]
+	return if not mopcode
 	AsmFunction.make(s) {|a|
 		puts "mov ecx,[ebp+8]",  "mov edi,[ebp+12]",
 		     "mov esi,[ebp+16]"#, "mov ebx,[ebp+20]"
 		foo = proc {|n|
-			a.make_until("cmp ecx,#{8/size*n}","jb") {
-				for i in 0...n do puts "movq mm#{i},[edi+#{8*i}]" end
-				for i in 0...n do puts "movq mm#{i+4},[esi+#{8*i}]" end
-				for i in 0...n do puts "#{mopcode} mm#{i},mm#{i+4}" end
-				for i in 0...n do puts "movq [edi+#{8*i}],mm#{i}" end
+			a.make_until("cmp ecx,#{8/size*n}","jb near") {
+				0.step(n,4) {|k|
+				nn=[n-k,4].min
+				o=(0..3).map{|x| 8*(x+k) }
+				for i in 0...nn do puts "movq mm#{i},[edi+#{o[i]}]" end
+				for i in 0...nn do puts "movq mm#{i+4},[esi+#{o[i]}]" end
+				for i in 0...nn do puts "#{mopcode} mm#{i},mm#{i+4}" end
+				for i in 0...nn do puts "movq [edi+#{o[i]}],mm#{i}" end
+				}
 				#for i in 0...n do puts "movq [ebx+#{8*i}],mm#{i}" end
 				puts "lea edi,[edi+#{8*n}]"
 				puts "lea esi,[esi+#{8*n}]"
@@ -142,8 +165,9 @@ s="mmx_#{type}_zip_#{op}"
 		foo.call 4
 		foo.call 1
 		a.make_until("test ecx,ecx", "jz") {
+			# requires commutativity ??? fails with shl, shr
 			puts "mov #{accum},[esi]"
-			puts "#{opcode} [edi],#{accum}"
+			puts "#{opcode} #{$asm_type[type]} [edi],#{accum}"
 			#puts "mov #{accum},[edi]"
 			#puts "#{opcode} #{accum},[esi]"
 			#puts "mov [ebx],#{accum}"
@@ -183,11 +207,7 @@ STDERR.puts "automatically generated #{$count} MMX asm functions"
 =begin notes:
 CPUID has a bit for detecting MMX
 PACKSSDW PACKSSWB PACKUSWB = saturation-casting
-PADDSB, PADDSW: Add Packed Signed Integers With Saturation
-PADDUSB, PADDUSW: Add Packed Unsigned Integers With Saturation
-PAND, PANDN: MMX Bitwise AND and AND-NOT
 PCMPxx: Compare Packed Integers
 PMULHW, PMULLW: Multiply Packed _unsigned_ 16-bit Integers, and Store
-PSUBSxx, PSUBUSx: Subtract Packed Integers With Saturation
 PUNPCKxxx: Unpack and Interleave Data
 =end
