@@ -246,6 +246,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 
+	/* was PROF(0) a hack because of exception-handling problems? */
 	PROF(0) {
 
 	if (gf_bridge->send_out && bself)
@@ -723,10 +724,7 @@ void GFStack::push (FObject *o) {
 
 void GFStack::pop () {
 	uint64 t = rdtsc();
-	if (!n) {
-		fprintf(stderr,"gf stack underflow\n");
-		::raise(11);
-	}
+	if (!n) RAISE("stack underflow (WHAT?)");
 	n--;
 	//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);
 	if (s[n].o) s[n].o->total_time += t - s[n].time;
