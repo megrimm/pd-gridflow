@@ -284,7 +284,7 @@ struct FormatVideoDev : Format {
 	int32 v[] = {sy,sx,3};
 	VideoWindow grab_win;
 
-	/* bug here: won't flush the frame queue */
+	/* !@#$ bug here: won't flush the frame queue */
 	if (dim) delete dim;
 	dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
@@ -334,7 +334,9 @@ struct FormatVideoDev : Format {
 	vmmap.format = VIDEO_PALETTE_RGB24;
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
+//	gfpost(&vmmap);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
+//	gfpost(&vmmap);
 	next_frame = (pending_frames[1]+1) % vmbuf.frames;
 }
 
@@ -518,7 +520,8 @@ GRID_INLET(FormatVideoDev,0) {
 		gfpost("can't handle palette %d", gp->palette);
 	}
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
-	rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
+	//what the hell was this line doing?
+	//rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
 }
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
@@ -529,6 +532,7 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
 	if (option==SYM(noinit)) {
+		/* hack for a Logitech Quickcam at 288*352 with a flaky driver */
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 		int32 v[]={288,352,3};
@@ -537,7 +541,7 @@ GRID_INLET(FormatVideoDev,0) {
 		rb_funcall(rself,SI(initialize2),0);
 	}
 	/* Sometimes a pause is needed here (?) */
-	usleep(250000);
+	usleep(200000);
 }
 
 /* **************************************************************** */
