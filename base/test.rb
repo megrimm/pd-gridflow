@@ -181,10 +181,6 @@ end
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([12,17,48,68]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 
-	(a = FObject["@inner2 * + {#{nt} # 0} {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
-	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
-	
 #if nt!=:int64
 if false
 	a = FObject["@print"]
@@ -228,9 +224,7 @@ end
 		a.send_in 1, :list, 3
 		a.send_in 0, :list, *(1..9).to_a}
 
-	for o in ["@store",
-		#"@store uint8"
-	]
+	for o in ["@store"]
 		(a = FObject[o]).connect 0,e,0
 		a.send_in 1, 5, 4, nt, hm, 1,2,3,4,5
 		x.expect([1,2,3,4,4,5,1,2,2,3,4,5]) {
@@ -238,6 +232,15 @@ end
 		x.expect([1,2,3,4,5]*24) { a.send_in 0, 2,3,0,hm }
 		x.expect([1,2,3,4,5]*4)  { a.send_in 0, 0,hm }
 		x.expect([1,2,3,4,5]*4)  { a.send_in 0 }
+		x.expect([1,2,3,4]) { a.send_in 0,[0] }
+		a.send_in 1,:put_at,[0,0]
+		a.send_in 1,2,2,nt,hm,6,7,8,9
+		x.expect([6,7,3,4, 8,9,2,3, 4,5,1,2, 3,4,5,1, 2,3,4,5]) { a.send_in 0 }
+		x.expect([6,7,3,4]) { a.send_in 0,[0] }
+		x.expect([8,9,2,3]) { a.send_in 0,[1] }
+		a.send_in 1,:put_at,[1,1]
+		a.send_in 1,2,2,nt,hm,11,13,17,19
+		x.expect([6,7,3,4, 8,11,13,3, 4,17,19,2, 3,4,5,1, 2,3,4,5]) { a.send_in 0 }
 	end
 
 	b = FObject["@dim"]
@@ -641,8 +644,8 @@ def test_tcp
 		toggle = 0
 		in1.connect 0,out,0
 		in2.connect 0,out,0
-		in1.send_in 0,"open ppm file #{$imdir}/r001.ppm"
-		in2.send_in 0,"open ppm file #{$imdir}/b001.ppm"
+		in1.send_in 0,"open #{$imdir}/r001.jpg"
+		in2.send_in 0,"open #{$imdir}/b001.jpg"
 		out.send_in 0,"open grid tcpserver #{$port}"
 		out.send_in 0,"type uint8"
 		test_tcp = GridFlow::FObject.new
