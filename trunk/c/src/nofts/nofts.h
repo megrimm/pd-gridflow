@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -21,10 +21,10 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* this file is for allowing video4jmax to be compiled without jMax. */
+/* this file is for allowing GridFlow to be compiled without jMax. */
 
-#ifndef __STANDALONE_H
-#define __STANDALONE_H
+#ifndef __NOFTS_H
+#define __NOFTS_H
 
 typedef int fts_status_t;
 #define fts_Success 1
@@ -161,7 +161,7 @@ fts_alarm_t *fts_alarm_new(fts_clock_t *foo,
 void fts_alarm_set_delay(fts_alarm_t *, float);
 void fts_alarm_arm(fts_alarm_t *);
 
-int video4jmax_init_standalone(void);
+int gridflow_init_standalone(void);
 
 /* **************************************************************** */
 
@@ -178,4 +178,4 @@ fts_object_t *fts_object_new3(const char *foo);
 void fts_send3(fts_object_t *o, int woutlet, const char *foo);
 
 
-#endif /* __STANDALONE_H */
+#endif /* __NOFTS_H */
