@@ -102,6 +102,7 @@ end
 # adding some functionality to that:
 class FObject
 	attr_accessor :args
+	def args; args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]

@@ -28,6 +28,10 @@
 
 /* **************************************************************** */
 
+#define WATCH(ar) for (int i=0; i<COUNT(ar); i++) fprintf(stderr,"%d ",ar[i]); fprintf(stderr,"\n");
+#define WATCH2(n,ar) for (int i=0; i<n; i++) fprintf(stderr,"%d ",ar[i]); fprintf(stderr,"\n");
+#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
+
 #define IV(s) rb_ivar_get(rself,SI(s))
 #define IVS(s,v) rb_ivar_set(rself,SI(s),v)
 
@@ -53,8 +57,7 @@ static void expect_dim_dim_list (Dim *d) {
 	GRID_BEGIN(_class_,_inlet_) { \
 		$->_member_.del(); $->_member_.init(in->dim->dup(),int32_type_i); } \
 	GRID_FLOW(_class_,_inlet_) { \
-		memcpy(&$->_member_.as_int32()[in->dex], data, n*sizeof(Number)); \
-		in->dex += n; } \
+		memcpy(&$->_member_.as_int32()[in->dex], data, n*sizeof(Number)); } \
 	GRID_END(_class_,_inlet_) {}
 
 /* **************************************************************** */
@@ -112,17 +115,6 @@ METHOD(GridImport,delete) {
 	rb_call_super(argc,argv);
 }
 
-// useless?
-/*
-METHOD(GridImport,_0_int) {
-	GridOutlet *out = $->out[0];
-	Number data[] = { INT(argv[0]) };
-	if (!out->is_busy()) out->begin($->dim->dup());
-	out->send(COUNT(data),data);
-	if (out->dex >= out->dim->prod()) out->end();
-}
-*/
-
 METHOD(GridImport,_0_reset) {
 	GridOutlet *out = $->out[0];
 	if (out->is_busy()) out->abort();
@@ -132,7 +124,6 @@ GRCLASS(GridImport,"@import",inlets:2,outlets:1,
 LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
 	DECL(GridImport,init),
 	DECL(GridImport,delete),
-//	DECL(GridImport,_0_int),
 	DECL(GridImport,_0_reset))
 
 /* **************************************************************** */
@@ -170,21 +161,20 @@ struct GridExportList : GridObject {
 GRID_BEGIN(GridExportList,0) {
 	int n = in->dim->prod();
 	if (n>1000) RAISE("list too big (%d elements)", n);
-	$->list = rb_ary_new();
+	$->list = rb_ary_new2(n+2);
 	$->n = n;
+	rb_ary_store($->list,0,INT2NUM(0));
+	rb_ary_store($->list,1,sym_list);
 }
 
 GRID_FLOW(GridExportList,0) {
+//	WATCH2(n,data);
 	for (int i=0; i<n; i++, data++)
-		rb_ary_store($->list,in->dex+i,INT2NUM(*data));
+		rb_ary_store($->list,in->dex+i+2,INT2NUM(*data));
 }
 		
 GRID_END(GridExportList,0) {
-	VALUE a[$->n+2];
-	a[0] = INT2NUM(0);
-	a[1] = sym_list;
-	memcpy(a+2,RARRAY($->list)->ptr,$->n*sizeof(void*));
-	FObject_send_out(COUNT(a),a,rself);
+	FObject_send_out(rb_ary_len($->list),rb_ary_ptr($->list),rself);
 	$->list = 0;
 }
 
@@ -211,6 +201,9 @@ GRID_BEGIN(GridStore,0) {
 	int v[MAX_DIMENSIONS];
 	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
 
+	gfpost("a=%s",in->dim->to_s());
+	gfpost("b=%s",$->r.dim->to_s());
+
 	nb = $->r.dim->n;
 
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
@@ -225,8 +218,23 @@ GRID_BEGIN(GridStore,0) {
 	int i;
 	for (i=0; i<na-1; i++) v[i] = in->dim->get(i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = $->r.dim->get(i);
+//	gfpost("%s",(new Dim(nd,v))->to_s());
 	$->out[0]->begin(new Dim(nd,v));
 	in->set_factor(nc);
+
+	gfpost("c=%s",$->out[0]->dim->to_s());
+}
+
+void GridOutlet_send8(GridOutlet *$, int n, const uint8 *data) {
+	int bs = gf_max_packet_length;
+	Number data2[bs];
+	while(n>=bs) {
+		for (int i=0; i<bs; i++) data2[i] = *data++;
+		$->send(bs,data2);
+		n-=bs;
+	}
+	for (int i=0; i<n; i++) data2[i] = *data++;
+	$->send(n,data2);
 }
 
 GRID_FLOW(GridStore,0) {
@@ -242,36 +250,32 @@ GRID_FLOW(GridStore,0) {
 	if ($->r.nt==int32_type_i) {
 		while (n>0) {
 			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
-			int pos = $->r.dim->calc_dex(v);
-			Number *data2 = $->r.as_int32() + pos;
-			$->out[0]->send(size,data2);
+			$->out[0]->send(size,$->r.as_int32()+$->r.dim->calc_dex(v));
 			n -= nc;
 		}
 	} else if ($->r.nt==uint8_type_i) {
 		while (n>0) {
 			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
-			int pos = $->r.dim->calc_dex(v);
-			int bs = gf_max_packet_length;
-			Number data3[bs];
-			uint8 *data2 = $->r.as_uint8() + pos;
-			int left = size;
-			while (left>=bs) {
-				for (int i=0; i<bs; i++) { data3[i] = data2[i]; }
-				$->out[0]->send(bs,data3);
-				data2+=bs;
-				left-=bs;
-			}
-			while (left) {
-				data3[0] = *data2++;
-				$->out[0]->send(1,data3);
-				left--;
-			}
+			GridOutlet_send8($->out[0],size,$->r.as_uint8()+$->r.dim->calc_dex(v));
 			n -= nc;
 		}
 	} else RAISE("unsupported type");
 }
 
-GRID_END(GridStore,0) { $->out[0]->end(); }
+GRID_END(GridStore,0) {
+	GridOutlet *o = $->out[0];
+	if (in->dim->prod()==0) {
+		int n = in->dim->prod(0,-2);
+		int size = $->r.dim->prod();
+		gfpost("n=%d",n);
+		if ($->r.nt==int32_type_i) {
+			while (n--) o->send(size,$->r.as_int32());
+		} else if ($->r.nt==uint8_type_i) {
+			while (n--) GridOutlet_send8(o,size,$->r.as_uint8());
+		} else RAISE("unsupported type");
+	}
+	o->end();
+}
 
 GRID_BEGIN(GridStore,1) {
 	$->in[0]->abort();
@@ -282,8 +286,7 @@ GRID_BEGIN(GridStore,1) {
 
 GRID_FLOW(GridStore,1) {
 	if ($->r.nt==int32_type_i) {
-		Number *data2 = $->r.as_int32() + in->dex;
-		memcpy(data2, data, n*sizeof(Number));
+		memcpy($->r.as_int32() + in->dex, data, n*sizeof(Number));
 	} else if ($->r.nt==uint8_type_i) {
 		uint8 *data2 = $->r.as_uint8() + in->dex;
 		for(int i=0; i<n; i++) data2[i] = data[i];
@@ -308,10 +311,7 @@ METHOD(GridStore,delete) {
 }
 
 METHOD(GridStore,_0_bang) {
-	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
-	$->out[0]->begin($->r.dim->dup());
-	$->out[0]->send($->r.dim->prod(),$->r.as_int32());
-	$->out[0]->end();
+	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,
@@ -328,17 +328,13 @@ struct GridOp1 : GridObject {
 
 GRID_BEGIN(GridOp1,0) {
 	$->out[0]->begin(in->dim->dup());
-	in->dex = 0;
 }
 
 GRID_FLOW(GridOp1,0) {
-	Number *data2 = NEW2(Number,n);
-	GridOutlet *out = $->out[0];
+	Number data2[n];
 	memcpy(data2,data,n*sizeof(Number));
 	$->op->op_array(n,data2);
-	in->dex += n;
-	out->send(n,data2);
-	FREE(data2);
+	$->out[0]->send(n,data2);
 }
 
 GRID_END(GridOp1,0) { $->out[0]->end(); }
@@ -366,7 +362,6 @@ struct GridOp2 : GridObject {
 
 GRID_BEGIN(GridOp2,0) {
 	$->out[0]->begin(in->dim->dup());
-	in->dex = 0;
 }
 
 GRID_FLOW2(GridOp2,0) {
@@ -388,7 +383,6 @@ GRID_FLOW2(GridOp2,0) {
 	} else {
 		$->op->op_array(n,data,*rdata);
 	}
-	in->dex += n;
 	out->give(n,data);
 }
 
@@ -456,10 +450,7 @@ GRID_FLOW(GridFold,0) {
 	Number buf[n/yn];
 	assert (n % factor == 0);
 	int i=0;
-//	fprintf(stderr,"an=%d bn=%d yn=%d zn=%d\n",an,bn,yn,zn);
 	while (n) {
-//		fprintf(stderr,"data[0..3]=(%d,%d,%d,%d)\n",
-//			data[0],data[1],data[2],data[3]);
 		memcpy(buf+i,$->r.as_int32(),zn*sizeof(Number));
 		$->op->op_fold2(zn,buf+i,yn,data);
 		i += zn;
@@ -623,7 +614,6 @@ GRID_BEGIN(GridInner,2) {
 
 GRID_FLOW(GridInner,2) {
 	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
-	in->dex += n;
 }
 
 GRID_END(GridInner,2) {}
@@ -698,7 +688,6 @@ GRID_BEGIN(GridInner2,2) {
 
 GRID_FLOW(GridInner2,2) {
 	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
-	in->dex += n;
 }
 
 GRID_END(GridInner2,2) {}
@@ -762,7 +751,6 @@ GRID_BEGIN(GridOuter,1) {
 
 GRID_FLOW(GridOuter,1) {
 	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
-	in->dex += n;
 }
 
 GRID_END(GridOuter,1) {}
@@ -815,8 +803,6 @@ GRID_BEGIN(GridConvolve,0) {
 	in->set_factor(da->prod(1));
 }
 
-#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
-
 GRID_FLOW(GridConvolve,0) {
 	int factor = in->factor; /* line length of a */
 	Dim *da = in->dim, *dc = $->c.dim, *db = $->b.dim;
@@ -836,11 +822,9 @@ GRID_FLOW(GridConvolve,0) {
 		memcpy(base,data,factor*sizeof(Number));
 		memcpy(base+factor,data,$->margx*l*sizeof(Number));
 		memcpy(base-$->margx*l,data+factor-$->margx*l,$->margx*l*sizeof(Number));
-		in->dex += factor; base += ll; data += factor; n -= factor; i++;
+		base += ll; data += factor; n -= factor; i++;
 	}
 }
-
-#define WATCH(ar) for (int i=0; i<COUNT(ar); i++) fprintf(stderr,"%d ",ar[i]); fprintf(stderr,"\n");
 
 GRID_END(GridConvolve,0) {
 	Dim *da = in->dim, *dc = $->c.dim, *db = $->b.dim;
@@ -848,23 +832,15 @@ GRID_END(GridConvolve,0) {
 	int dbx = db->get(1), dax = da->get(1);
 	int l  = dc->prod(2);
 	int ll = dc->prod(1);
-//	Number buf[l],buf2[l],as[l];
 	Number *cp = $->c.as_int32();
 
 	/* finishing building c from a */
 	memcpy(cp                         ,cp+da->get(0)*ll,$->margy*ll*sizeof(Number));
 	memcpy(cp+($->margy+da->get(0))*ll,cp+$->margy*ll,  $->margy*ll*sizeof(Number));
 
-//	for (int k=0; k<l; k++) buf2[k]=$->rint;
-
-//	fprintf(stderr,"dby=%d dbx=%d day=%d dax=%d l=%d ll=%d\n",dby,dbx,day,dax,l,ll);
-
 	/* the real stuff */
 
-	Number buf3[l];
-	Number buf2[l*dbx*dby];
-	Number buf[l*dbx*dby];
-
+	Number buf3[l], buf2[l*dbx*dby], buf[l*dbx*dby];
 	Number *q=buf2;
 	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=$->b.as_int32()[i];
 
@@ -872,12 +848,10 @@ GRID_END(GridConvolve,0) {
 		for (int ix=0; ix<dax; ix++) {
 			Number *p = $->c.as_int32() + iy*ll + ix*l;
 			Number *r = buf;
-			for (int jy=dby; jy; jy--,p+=ll-dbx*l) {
-				for (int jx=dbx; jx; jx--,p+=l,r+=l) {
-					memcpy(r,p,l*sizeof(Number));
-				}
+			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) {
+				memcpy(r,p,dbx*l*sizeof(Number));
 			}
-			for (int i=0; i<l; i++) buf3[i]=$->rint;
+			for (int i=l-1; i>=0; i--) buf3[i]=$->rint;
 			$->op_para->op_array2(l*dbx*dby,buf,buf2);
 			$->op_fold->op_fold2(l,buf3,dbx*dby,buf);
 			$->out[0]->send(l,buf3);
@@ -1179,7 +1153,6 @@ GRID_FLOW(GridRGBtoHSV,0) {
 			r==m ? 42*3+(b-g)*42/d :
 			g==m ? 42*5+(r-b)*42/d : 0;
 	}
-	in->dex += n;
 	out->give(n,buf2);
 }
 
@@ -1221,7 +1194,6 @@ GRID_FLOW(GridHSVtoRGB,0) {
 		buf[1]=(k==0?j:k==1||k==2?42:k==3?42-j:0)*d/42+m;
 		buf[2]=(k==2?j:k==3||k==4?42:k==5?42-j:0)*d/42+m;
 	}
-	in->dex += n;
 	out->give(n,buf2);
 }
 
@@ -1279,8 +1251,6 @@ static uint64 RtMetro_delay(VALUE rself) {
 static void RtMetro_alarm(VALUE rself) {
 	uint64 now = RtMetro_now();
 	unsigned int *r = (unsigned int*)rself;
-//	fprintf(stderr,"%08x\n",(unsigned int)r);
-//	fprintf(stderr,"%08x %08x %08x %08x %08x\n",r[0],r[1],r[2],r[3],r[4]);
 	DGS(RtMetro);
 	//gfpost("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {
@@ -1302,7 +1272,6 @@ METHOD(RtMetro,_0_int) {
 		MainLoop_remove($);
 	} else if (!oon && $->on) {
 		gfpost("creating rtmetro alarm for $=%08x rself=%08x",(long)$,(long)rself);
-//		MainLoop_add($,(void(*)(void*))RtMetro_alarm);
 		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}

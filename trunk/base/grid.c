@@ -33,6 +33,7 @@
 
 int gf_max_packet_length = 1024*2;
 
+//#define INFO(foo) rb_str_ptr(rb_funcall(parent->peer,SI(args),0))
 #define INFO(foo) "!@#$"
 
 /* **************** Grid ****************************************** */
@@ -177,6 +178,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 }
 
 void GridInlet::flow(int argc, VALUE *argv) {
+//	gfpost("inlet=%08p dex=%06d prod=%06d",this,dex,dim->prod());
 	int n = NUM2INT(argv[0]);
 	int mode = NUM2INT(argv[2]);
 	if (mode==4) {
@@ -205,8 +207,8 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			}
 		}
 		int m = (n / factor) * factor;
-		int newdex = dex + m;
 		if (m) {
+			int newdex = dex + m;
 			if (gh->mode==6 && gh->flow) {
 				Number *data2 = NEW2(Number,m);
 				memcpy(data2,data,m*sizeof(Number));
@@ -214,8 +216,8 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			} else {
 				gh->flow(parent->peer,(GridObject *)parent,this,m,data);
 			}
+			dex = newdex;
 		}
-		dex = newdex;
 		data += m;
 		n -= m;
 		if (buf) { while (n) { buf[bufn++] = *data++; n--; }}
@@ -225,12 +227,14 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		assert(n>0);
 		assert(factor==1);
 		assert(gh->flow);
+		int newdex = dex + n;
 		if (gh->mode==6) {
 			((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,n,data);
 		} else if (gh->mode==4) {
 			gh->flow(parent->peer,(GridObject *)parent,this,n,data);
 			FREE(data);
 		}
+		dex = newdex;
 	} else {
 		assert(0);
 	}
@@ -401,7 +405,6 @@ void GridOutlet::give(int n, Number *data) {
 			INT2NUM(0),
 			sym_grid_flow,
 			INT2NUM(n),
-			PTR2FIX(data),
 			PTR2FIX(data),
 			INT2NUM(6), /* mode rw */
 		};
@@ -585,6 +588,7 @@ METHOD(GridObject,method_missing) {
 }
 
 METHOD(GridObject,delete) {
+	GridObject *parent=$;
 	gfpost("%s: GridObject#delete",INFO(foo));
 	for (int i=0; i<MAX_INLETS;  i++)
 		if ($->in[i])  { delete $->in[i]; $->in[i]=0; }
