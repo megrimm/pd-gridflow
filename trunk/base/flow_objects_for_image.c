@@ -441,8 +441,6 @@ struct DrawPolygon : GridObject {
 	Grid lines;
 	int lines_start;
 	int lines_stop;
-	Pt<int32> lines_current;
-	int lines_current_n;
 	DrawPolygon() {
 		color.constrain(expect_max_one_dim);
 		polygon.constrain(expect_polygon);

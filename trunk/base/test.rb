@@ -170,7 +170,8 @@ end
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 	
-if nt!=:int64
+#if nt!=:int64
+if false
 	a = FObject["@print"]
 	a.send_in 0, "3 3 #{nt} # 1 0 0 0"
 	a.send_in 0, "3 3 3 #{nt} # 1 2 3 4"
@@ -264,8 +265,8 @@ end
 	x.expect([0,9]) { a.send_in 0, 0, 3 }
 
 	(a = FObject["@rotate 3000 {1 2 5}"]).connect 0,e,0
-	pr = GridPrint.new
-	a.connect 0,pr,0
+#	pr = GridPrint.new
+#	a.connect 0,pr,0
 #	x.expect([]) { 
 	a.send_in 0, "5 5 # 1000 0 0 0 0 0" 
 #	}
@@ -505,7 +506,7 @@ def test_foo
 	$mainloop.loop
 end
 
-def test_anim msgs
+def test_anim(*msgs)
 	GridFlow.verbose = false
 	gin = FObject["@in"]
 	gout1 = FObject["@out x11"]
@@ -514,7 +515,7 @@ def test_anim msgs
 	fps = FObject["fps detailed"]
 	rpr = FObject["rubyprint"]
 	gout1.connect 0,fps,0
-	fps.connect 0,rpr,0
+	#fps.connect 0,rpr,0
 =begin
 	gout1 = FObject["@downscale_by {3 2}"]
 	gout2 = FObject["@rgb_to_greyscale"]
@@ -524,7 +525,7 @@ def test_anim msgs
 =end
 
 	rpr = FObject["rubyprint"]
-	gin.connect 1,rpr,0
+#	gin.connect 1,rpr,0
 
 	gin.connect 0,gout1,0
 #	scale = FObject["@scale_by 3"]
@@ -1013,20 +1014,21 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim ["open ppm file #{$imdir}/g001.ppm","loop 0"]
-#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
-#test_anim ["open jpeg file #{$imdir}/rgb.jpeg.cat"]
-#test_anim ["open quicktime file test.mov"]
-#test_anim ["open quicktime file #{$imdir}/rgb_uncompressed.mov"]
-#test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
-#test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
-#test_anim ["open videodev /dev/video","channel 1","size 480 640"]
-#test_anim ["open videodev /dev/video1 noinit","transfer read"]
-#test_anim ["open videodev /dev/video","channel 1","size 120 160"]
-test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
-#test_anim ["open quicktime file #{$imdir}/gt.mov"]
-#test_anim ["open quicktime file /home/matju/pics/domopers_hi.mov"]
-#test_anim ["open quicktime file /home/matju/net/c.mov"]
+#test_anim "open ppm file #{$imdir}/g001.ppm","loop 0"
+#test_anim "open ppm file #{$animdir}/b.ppm.cat"
+#test_anim "open jpeg file #{$imdir}/rgb.jpeg.cat"
+#test_anim "open quicktime file test.mov"
+#test_anim "open quicktime file #{$imdir}/rgb_uncompressed.mov"
+#test_anim "open quicktime file #{$imdir}/test_mjpega.mov"
+#test_anim "open ppm gzfile motion_tracking.ppm.cat.gz"
+#test_anim "open videodev /dev/video","channel 1","size 480 640"
+#test_anim "open videodev /dev/video1 noinit","transfer read"
+#test_anim "open videodev /dev/video","channel 1","size 120 160"
+#test_anim "open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"
+test_anim "open quicktime file /home/matju/Shauna/part_1.mov"
+#test_anim "open quicktime file #{$imdir}/gt.mov"
+#test_anim "open quicktime file /home/matju/pics/domopers_hi.mov"
+#test_anim "open quicktime file /home/matju/net/c.mov"
 #test_formats
 #test_tcp
 #test_sound

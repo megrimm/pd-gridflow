@@ -315,7 +315,7 @@ DEF_OP2(sub, a-b, side==at_right && x==0, false)
 DEF_OP2(bus, b-a, side==at_left  && x==0, false)
 
 DEF_OP2(mul, a*b, x==1, x==0)
-DEF_OP2(mulshr8, (a*b)>>8, x==256, x==0)
+DEF_OP2(mulshr8, ((int32)a*(int32)b)>>8, x==256, x==0)
 DEF_OP2(div, b==0 ? 0 : a/b, side==at_right && x==1, false)
 DEF_OP2(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
 DEF_OP2(vid, a==0 ? 0 : b/a, side==at_left && x==1, false)
