@@ -23,6 +23,8 @@
 
 module GridFlow
 
+def GridFlow.gui(*a) GridFlow.whatever:gui,*a end
+
 #-------- fClasses for: control + misc
 
 # a dummy class that gives access to any stuff global to GridFlow.
@@ -752,11 +754,9 @@ class Shunt < FObject
 end
 
 # hack: this is an alias.
-if GridFlow.bridge_name != "jmax"
-	class Demux < Shunt; install "demux", 2, 0; end
-end
+class Demux < Shunt; install "demux", 2, 0; end
 
-unless GridFlow.bridge_name =~ /jmax/
+#-------- fClasses for: jMax conversion shit
 	class Button < FObject
 		def method_missing(*) send_out 0 end
 		install "button", 1, 1
@@ -804,9 +804,8 @@ unless GridFlow.bridge_name =~ /jmax/
 		def _1_bang; @state=true end
 		install "oneshot", 2, 1
 	end
-end
 
-# jMax List Classes
+#-------- fClasses for: list manipulation (jMax-compatible)
 
 LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 
@@ -888,8 +887,6 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		install "messageappend", 2, 1
 	end
 
-unless GridFlow.bridge_name =~ /jmax/
-
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
 # _0_bang means bang message on inlet 0
@@ -943,15 +940,15 @@ class InvTimes < FObject
   install "inv*", 2, 1
 end
 
-class JMaxRange<GridFlow::FObject
+class JMaxRange < FObject
   def initialize(*a) @a=a end
   def initialize2
     GridFlow.whatever  :addinlets, self, @a.length
     GridFlow.whatever :addoutlets, self, @a.length
   end
   def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
-  def method_missing(sym,*a)
-    m = /^(_\d+_)(.*)/.match(sym.to_s) or return super
+  def method_missing(sel,*a)
+    m = /^(_\d+_)(.*)/.match(sel.to_s) or return super
     m[2]=="float" or return super
     @a[m[1].to_i-1] = a[0]
     GridFlow.post "setting a[#{m[1].to_i-1}] = #{a[0]}"
@@ -959,11 +956,92 @@ class JMaxRange<GridFlow::FObject
   install "range", 1, 1
 end
 
-end # if not =~ jmax
-
 #-------- fClasses for: GUI
 
-class Peephole < GridFlow::FPatcher
+class Display < FObject
+	def initialize()
+		@sel = nil; @args = [] # contents of last received message
+		@text = "..."
+		@sy,@sx = 16,80 # default size of the widget
+		@y,@x = 0,0     # topleft of the widget
+	end
+	def initialize2()
+		GridFlow.post "Display#initialize2: #{args.inspect}"
+		return if GridFlow.bridge_name!="puredata"
+		@rsym = "display#{self.id}".intern
+		GridFlow.whatever :bind, self, @rsym.to_s
+	end
+	def _0_set_width(sx) @sx=sx end
+	def atom_to_s a
+		case a
+		when Float; (sprintf "%.5f", a).gsub /\.?0+$/, ""
+		else a.to_s
+		end
+	end
+	def method_missing(sel,*args)
+		m = /^(_\d+_)(.*)/.match(sel.to_s) or return super
+		@sel,@args = m[2].intern,args
+		GridFlow.post "sel=%s", @sel.inspect
+		@text = case @sel
+			when nil; "..."
+			when :float; atom_to_s @args[0]
+			else @sel.to_s + ": " + @args.map{|a| atom_to_s a }.join(' ')
+			end
+		pd_show nil
+	end
+	def quote(text) # for tcl
+		text=text.gsub(/(\{|\})/) {|x| "\\"+x }
+		"{#{text}}"
+	end
+	def pd_show(can)
+		GridFlow.post "pd_show %d",can
+		if can
+			a=GridFlow.whatever:getpos,self,can
+			GridFlow.post "getpos -> [%s]",a.inspect
+			@x,@y=a
+			@can=".x%x.c"%(can*4)
+		end
+		return if not @can # can't show for now...
+		bg = "#6774A0"
+		fg = "#ffff80"
+		GridFlow.gui %{
+			set canvas #{@can}
+			$canvas delete #{@rsym}TEXT
+			$canvas create text #{@x+2} #{@y+2} -fill #{fg} \
+				-text #{quote @text} -anchor nw -tag #{@rsym}TEXT
+			foreach {x1 y1 x2 y2} [$canvas bbox #{@rsym}TEXT] {}
+			set sx [expr $x2-$x1+1]
+			$canvas delete #{@rsym}
+			$canvas create rectangle \
+				#{@x} #{@y} [expr #{@x}+$sx] #{@y+@sy} -fill #{bg} -tags #{@rsym}
+				global current_x current_y tooltip
+			$canvas lower #{@rsym} #{@rsym}TEXT
+			pd \"#{@rsym} set_width $sx;\n\";
+		}
+	end
+	def pd_displace(can,x,y)
+		GridFlow.gui "#{@can} move #{@rsym} #{x} #{y}\n"
+		@x+=x; @y+=y; pd_show(can)
+	end
+	def pd_getrect(can)
+		x,y=GridFlow.whatever :getpos,self,can
+		if @x!=x or @y!=y then @x,@y=x,y end
+		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
+	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
+		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
+		return 0
+	end
+	def pd_vis(can,flag) pd_show(can) if flag!=0 end
+	def pd_select(*a) GridFlow.post "pd_select "+a.join(", ") end
+	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} }; super end
+	install "display", 1, 1
+	if GridFlow.bridge_name =~ /puredata/
+		GridFlow.whatever :setwidget, "display"
+	end
+end
+
+class Peephole < FPatcher
 	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","@out","#scale_by 1",
 	proc{Demux.new(2)}]
 	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
@@ -973,8 +1051,8 @@ class Peephole < GridFlow::FPatcher
 		GridFlow.post "Peephole#initialize: #{sx} #{sy} #{args.inspect}"
 		@scale = 1
 		@down = false
-		@sy,@sx = sy,sx # size of the peephole widget
-		@y,@x = 0,0     # topleft of the peephole widget
+		@sy,@sx = sy,sx # size of the widget
+		@y,@x = 0,0     # topleft of the widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 	end
 	def initialize2(*args)
@@ -991,40 +1069,32 @@ class Peephole < GridFlow::FPatcher
 		@can=".x%x.c"%(can*4) if can
 		if not @open
 			can2=@can.gsub(/\.c$/,"")
-			GridFlow.whatever :gui, %{
+			GridFlow.gui %{
 				pd \"#{@rsym} open [eval list [winfo id #{@can}]] 1;\n\";
 			}
 			@open=true
 		end
 		# round-trip to ensure this is done after the open
-		GridFlow.whatever :gui, %{
+		GridFlow.gui %{
 			pd \"#{@rsym} set_geometry #{@y} #{@x} #{@sy} #{@sx};\n\";
 		}
 		color = "#A07467"
-		GridFlow.whatever :gui, %{
+		GridFlow.gui %{
 			#{@can} delete #{@rsym}
 			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} -fill #{color} -tags #{@rsym}
 		}
 		set_geometry_for_real_now
 	end
 	def pd_displace(can,x,y)
-		GridFlow.post "pd_displace %d %d %d",can,x,y
-		GridFlow.whatever :gui, "#{@can} move #{@rsym} #{x} #{y}\n"
-		@x+=x
-		@y+=y
-		pd_show(can)
+		GridFlow.gui "#{@can} move #{@rsym} #{x} #{y}\n"
+		@x+=x; @y+=y; pd_show(can)
 	end
 	def pd_getrect(can)
 		x,y=GridFlow.whatever :getpos,self,can
-	#	GridFlow.post "pd_getrect %d %d %d",can,x,y
 		if @x!=x or @y!=y then @x,@y=x,y end
-		#GridFlow.post "%d %d %d %d", @x, @y, @sx, @sy
 		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
 	end
-	def pd_vis(can,flag)
-		GridFlow.post "pd_vis"
-		pd_show(can) if flag!=0
-	end
+	def pd_vis(can,flag) pd_show(can) if flag!=0 end
 	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
 		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
 		return 0
@@ -1096,19 +1166,20 @@ class Peephole < GridFlow::FPatcher
 	end
 	def delete
 		GridFlow.post "deleting peephole"
-		GridFlow.whatever :gui, %{
-			#{@can} delete #{@rsym}
-		}
+		GridFlow.gui %{ #{@can} delete #{@rsym} }
 		@fobjects[3].send_in 0, :close
 		super
 	end
-
 	def method_missing(s,*a)
 		#GridFlow.post "%s: %s", s.to_s, a.inspect
 		super rescue NameError
 	end
 
 	install "#peephole", 1, 1
+	if GridFlow.bridge_name =~ /puredata/
+		GridFlow.whatever :setwidget, "#peephole"
+		#GridFlow.whatever :addtomenu, "#peephole" # was this IMPD-specific ?
+	end
 end
 
 #-------- fClasses for: Hardware
