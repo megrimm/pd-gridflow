@@ -200,9 +200,11 @@ $LD_LIBRARY_PATH = (
 		read_ld_so_conf +
 		["/usr/lib","/lib"]).uniq
 
-#for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
-#	puts "#{var}: #{eval(var.to_s).inspect}"
-#end
+for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
+end
+
+LOG.puts "-"*64
 
 $CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
  
@@ -361,9 +363,24 @@ Feature.new {
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
 },
+=begin
+Feature.new {
+	tag :opengl
+	name "OpenGL (only as framebuffer)"
+	uses_so ["-L/usr/X11R6/lib","-lglut","-lGL","-lGLU"]
+	uses_h ["GL/glut.h"]
+	test proc {
+		c_test "
+		#include <GL/glut.h>
+		int main () {return glutInit==0;}
+		", *uses_so
+	}
+	formats ["OpenGL"]
+},
+=end
 Feature.new {
 	tag :sdl
-	name "Simple Directmedia Layer"
+	name "Simple Directmedia Layer (experimental support)"
 	uses_so ["-lSDL","-lpthread"]
 	#uses_h ["SDL/SDL.h"]
 	test proc {
