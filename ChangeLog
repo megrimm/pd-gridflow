@@ -11,6 +11,7 @@ version 0.6.0 (2002.07.31):
  * merged all Makefiles together, etc.
  * sources are in base/ and format/ instead of c/src/
  * many bugs removed, many bugs added.
+ * will read ~/.gridflow_startup if it exists
 
 version 0.5.0 (2002.06.08):
  * big changes to the internals (especially use of macros)
