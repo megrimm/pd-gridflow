@@ -777,9 +777,15 @@ create_makefile("gridflow")
 #p $rubylibdir
 mf = File.readlines("Makefile").join""
 #p mf.length
-mf.gsub!(/\t(.*)-c \$<$/) {
-	"\truby base/source_filter.rb $< $<.fcs\n" +
-	"\t#{$1} -c $<.fcs -o $@"
+
+common_dependencies =
+"base/grid.h config.make Makefile Makefile.gf"#base/source_filter.rb"
+
+mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
+	comp=$1
+	"%.o: %.c #{common_dependencies}\n"+
+	"\truby base/source_filter.rb $< $<.fcs\n"+
+	"\t#{comp.sub(/\$</,'$<.fcs')}\n"
 }
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
@@ -787,8 +793,6 @@ mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++\n"
-mf.sub! /^.c.o:/,
-"%.o: %.c base/grid.h config.make Makefile Makefile.gf"#base/source_filter.rb"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
