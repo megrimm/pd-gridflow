@@ -44,7 +44,7 @@ typedef struct VideoInFile {
 static void VideoInFile_p_reset(VideoInFile *$) {
 	GridOutlet_abort($->out[0]);
 	CHECK_FILE_OPEN
-	$->ff->frame($->ff,-1);
+	/* $->ff->cl->frame($->ff,-1); */
 }
 
 /* ---------------------------------------------------------------- */
@@ -57,7 +57,7 @@ METHOD(VideoInFile,init) {
 
 METHOD(VideoInFile,close) {
 	CHECK_FILE_OPEN
-	$->ff->close($->ff);
+	$->ff->cl->close($->ff);
 	$->ff = 0;
 }
 
@@ -77,50 +77,26 @@ METHOD(VideoInFile,open) {
 		return;
 	}
 
-	if ($->ff) $->ff->close($->ff);
+	if ($->ff) $->ff->cl->close($->ff);
 	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
-	$->ff = qlass->open(fts_symbol_name(filename),4);
+	$->ff = qlass->open(qlass,fts_symbol_name(filename),4);
 }
 
 METHOD(VideoInFile,delete) {
 	CHECK_FILE_OPEN
-	$->ff->close($->ff);
+	$->ff->cl->close($->ff);
 }
 
 METHOD(VideoInFile,bang) {
-	Number *data;
-	int i,n;
-	Dim *dim;
-
 	CHECK_FILE_OPEN
 
-	dim = $->ff->frame($->ff,-1);
-	if (!dim) {
+	if (! $->ff->cl->frame($->ff,$->out[0],-1)) {
 		whine("file format says: no, no, no");
 		goto err;
 	}
-	whine("file format handler says: %s", Dim_to_s(dim));
-	GridOutlet_begin($->out[0],Dim_dup(dim));
-
-	n = Dim_prod(dim);
-	while (n>0) {
-		int maxbs = 16*1024;
-		int bs = Dim_prod($->out[0]->dim) - $->out[0]->dex;
-		if (bs > maxbs) bs = maxbs;
-		if (bs > n) bs = n;
-		bs = (bs/3)*3; /* hack for videodev and later Targa */
-		data = $->ff->read($->ff,bs);
-		if (!data) {
-			whine("Frame data error?");
-			goto err;
-		}
-		n -= bs;
-		GridOutlet_send($->out[0],bs,data);
-		FREE(data);
-	}
-	GridOutlet_end($->out[0]);
 	return;
 err:
+	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
 	return;
 }
 
@@ -129,8 +105,8 @@ METHOD(VideoInFile,size) {
 	int width = GET(1,int,240);
 
 	CHECK_FILE_OPEN
-	if ($->ff->size) {
-		$->ff->size($->ff,height,width);
+	if ($->ff->cl->size) {
+		$->ff->cl->size($->ff,height,width);
 	} else {
 		whine("can't set input size on this kind of format");
 	}
@@ -138,8 +114,8 @@ METHOD(VideoInFile,size) {
 
 METHOD(VideoInFile,option) {
 	CHECK_FILE_OPEN
-	if ($->ff->option) {
-		$->ff->option($->ff,ac,at);
+	if ($->ff->cl->option) {
+		$->ff->cl->option($->ff,ac,at);
 	} else {
 		whine("this format has no options");
 	}
