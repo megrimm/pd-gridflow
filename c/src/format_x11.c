@@ -32,6 +32,9 @@
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
 
+/* X11 Error Handler type */
+typedef int (*XEH)(Display *, XErrorEvent *);
+
 /*
 	Note: sending images through shared memory doesn't work yet.
 */
@@ -73,6 +76,7 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 		XSync($->display,False);
 		if (sy>Dim_get($->dim,0)) sy=Dim_get($->dim,0);
 		if (sx>Dim_get($->dim,1)) sx=Dim_get($->dim,1);
+//		whine("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
 		XShmPutImage($->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
 		/* should completion events be waited for? looks like a bug */
@@ -220,9 +224,6 @@ static void FormatX11_dealloc_image (FormatX11 *$) {
 		/* FREE($->image); */
 	}
 }
-
-/* X11 Error Handler type */
-typedef int (*XEH)(Display *, XErrorEvent *);
 
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
