@@ -21,14 +21,15 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef __GRID_H
-#define __GRID_H
+#ifndef __GRIDFLOW_GRID_H
+#define __GRIDFLOW_GRID_H
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
 #include "config.h"
+#include "lang.h"
+
 /* current version number as string literal */
 #define GRIDFLOW_VERSION "0.4.0"
 #define GRIDFLOW_COMPILE_TIME __DATE__ ", " __TIME__
@@ -40,15 +41,6 @@
 
 #ifdef HAVE_TSC_PROFILING
 #define HAVE_PROFILING
-#endif
-
-/* options */
-
-#if 0
-  /* don't use this, doesn't work yet */
-  #define VIDEO_OUT_SHM
-  /* don't use this, does not work yet. */
-  #define GRID_USE_INLINE
 #endif
 
 /* **************************************************************** */
@@ -185,19 +177,11 @@
 		(_var_) = (_upper_); \
 	}
 
-#define $ self
-
 #define assert_range(_var_,_lower_,_upper_) \
 	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
 		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
 			__FILE__, __LINE__, #_var_, (_var_), (_lower_), (_upper_)); \
 		abort(); }
-
-#define NEW(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_)))
-
-#define NEW2(_type_,_count_) \
-	((_type_ *)qalloc2(sizeof(_type_)*(_count_)))
 
 #undef assert
 #define assert(_expr_) \
@@ -206,10 +190,7 @@
 			__FILE__, __LINE__, #_expr_); \
 		abort(); }
 
-#define SYM(_sym_) fts_new_symbol(#_sym_)
-
-#define FREE(_var_) \
-	_var_ ? (qfree(_var_), _var_=0) : 0
+#define SYM(_sym_) (fts_new_symbol(#_sym_))
 
 #ifdef NO_ASSERT
 	/* disabling assertion checking */
@@ -221,26 +202,6 @@
 
 /* **************************************************************** */
 /* other general purpose stuff */
-
-typedef unsigned char  uint8;
-typedef unsigned short uint16;
-typedef unsigned long  uint32;
-typedef unsigned long long uint64;
-
-typedef char  int8;
-typedef short int16;
-typedef long  int32;
-typedef float  float32;
-typedef double float64;
-
-#ifndef __cplusplus
-typedef enum { false, true } bool;
-#endif
-
-void *qalloc2(size_t n);
-void *qalloc(size_t n); /*0xdeadbeef*/
-void qfree2(void *data);
-void qfree(void *data); /*0xfadedf00*/
 
 /*
   a remainder function such that floor(a/b)*b+mod(a,b) = a
@@ -645,18 +606,9 @@ Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 
 /* **************************************************************** */
 
-/* a set of gridobjects */
-typedef struct ObjectSet {
-	int capa;
-	int len;
-	GridObject **buf;
-} ObjectSet;
+extern Dict *gridflow_object_set;
+extern Dict *gridflow_alarm_set;
+extern fts_alarm_t *gridflow_alarm;
+extern const char *whine_header;
 
-ObjectSet *ObjectSet_new(void);
-void ObjectSet_add(ObjectSet *$, GridObject *obj);
-void ObjectSet_del(ObjectSet *$, GridObject *obj);
-
-extern ObjectSet *gridflow_object_set;
-extern ObjectSet *format_x11_object_set;
-
-#endif /* __GRID_H */
+#endif /* __GRIDFLOW_GRID_H */

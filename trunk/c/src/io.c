@@ -88,7 +88,7 @@ METHOD(GridIn,open) {
 	if ($->ff) $->ff->cl->close($->ff);
 	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,self,4,ac-1,at+1);
+		$->ff = qlass->open(qlass,(GridObject *)$,4,ac-1,at+1);
 	} else {
 		whine("file format has no `open'");
 	}
@@ -96,6 +96,10 @@ METHOD(GridIn,open) {
 
 METHOD(GridIn,bang) {
 	CHECK_FILE_OPEN
+	if (!GridOutlet_idle($->out[0])) {
+		whine("ignorine frame request: already waiting for a frame");
+		return;
+	}
 
 	if (! $->ff->cl->frame($->ff,$->out[0],-1)) {
 		whine("file format says: no, no, no");
@@ -240,7 +244,7 @@ METHOD(GridOut,open) {
 
 	if ($->ff) $->ff->cl->close($->ff);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,self,2,ac-1,at+1);
+		$->ff = qlass->open(qlass,(GridObject *)$,2,ac-1,at+1);
 	} else {
 		whine("file format has no `open'");
 	}

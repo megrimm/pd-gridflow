@@ -42,16 +42,62 @@
 #include <errno.h>
 #include <unistd.h>
 
+static fts_alarm_t *grid_alarm;
+static Dict *format_grid_object_set = 0;
+
 extern FormatClass class_FormatGrid;
 
-typedef struct FormatGrid {
+typedef struct FormatGrid FormatGrid;
+typedef bool (*FGWaiter)(FormatGrid*,GridOutlet*,int n,char *buf);
+
+struct FormatGrid {
 	Format_FIELDS;
-	/* properties of currently recv'd image */
+
+/* properties of currently recv'd image */
 	bool is_le; /* little endian: smallest digit first, like i386 */
 	int bpv;    /* bits per value: 32 only */
-	bool is_socket; /* future use */
+	bool is_socket;
+
+/* socket stuff */
 	int listener;
-} FormatGrid;
+
+/* async stuff */
+
+	char *buf;
+	int buf_i;
+	int buf_n;
+	FGWaiter do_stuff;
+	fts_alarm_t *alarm;
+};
+
+static void read_do(FormatGrid *$, int n, FGWaiter stuff) {
+	FREE($->buf);
+	$->buf = NEW(char,n);
+	$->buf_i = 0;
+	$->buf_n = n;
+	$->do_stuff = stuff;
+}
+
+static bool try_read(FormatGrid *$) {
+	int n;
+	if (!$->buf) {
+		whine("frame: try_read (nothing to do)");
+		return true;
+	}
+	whine("frame: try_read");
+	n = read($->stream,$->buf+$->buf_i,$->buf_n-$->buf_i);
+	if (n>0) $->buf_i += n;
+	if (n<0) {
+		whine("try_read: %s", strerror(errno));
+	}
+	if ($->buf_i == $->buf_n) {
+		char *buf = $->buf;
+		bool status;
+		$->buf = 0;
+		if (!$->do_stuff($,$->parent->out[0],$->buf_n,buf)) return false;
+	}
+	return true;
+}
 
 static void swap32 (int n, uint32 *data) {
 	while(n--) {
@@ -62,12 +108,96 @@ static void swap32 (int n, uint32 *data) {
 	}
 }
 
+/* for each slice of the body */
+bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+	int nn = n*8/$->bpv;
+	Number *data = (Number *)buf;
+	whine("out->dex = %d",out->dex);
+	if ($->is_le != is_le()) swap32(nn,data);
+	GridOutlet_send(out,nn,data);
+	FREE(buf);
+	if (out->dex == Dim_prod(out->dim)) {
+		GridOutlet_end(out);
+	} else {
+		read_do($,Dim_prod_start($->dim,1)*$->bpv/8,FormatGrid_frame3);
+	}
+	return 0;
+}
+
+/* the dimension list */
+bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+	int prod;
+	int n_dim = n/sizeof(int);
+	int v[n_dim];
+	int i;
+	whine("buf: %08x",((long*)buf)[0]);
+	whine("buf: %08x",((long*)buf)[1]);
+	whine("buf: %08x",((long*)buf)[2]);
+	if ($->is_le != is_le()) swap32(n_dim,(uint32 *)v);
+	whine("there are %d dimensions",n_dim);
+	for (i=0; i<n_dim; i++) {
+		v[i] = ((int*)buf)[i];
+		whine("dimension %d is %d indices",i,v[i]);
+		COERCE_INT_INTO_RANGE(v[i],0,MAX_INDICES);
+	}
+	$->dim = Dim_new(n_dim,v);
+	prod = Dim_prod($->dim);
+	if (prod <= 0 || prod > MAX_NUMBERS) {
+		whine("dimension list: invalid prod (%d)",n_dim,prod);
+		goto err;
+	}
+	FREE(buf);
+	GridOutlet_begin(out, $->dim);
+	read_do($,Dim_prod_start($->dim,1)*$->bpv/8,FormatGrid_frame3);
+	return true;
+err: return false;
+}
+
+/* the header */
+bool FormatGrid_frame1 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+	int n_dim;
+	whine("buf: %08x",((long*)buf)[0]);
+	whine("buf: %08x",((long*)buf)[1]);
+	if (is_le()) {
+		whine("we are smallest digit first");
+	} else {
+		whine("we are biggest digit first");
+	}
+
+	if (strncmp("\x7fGRID",buf,5)==0) {
+		$->is_le = false; whine("this file is biggest digit first");
+	} else if (strncmp("\x7fgrid",buf,5)==0) {
+		$->is_le = true; whine("this file is smallest digit first");
+	} else {
+		whine("grid header: invalid");
+		goto err;
+	}
+
+	$->bpv = buf[5];
+	n_dim  = buf[7];
+	if ($->bpv != 32) {
+		whine("unsupported bpv (%d)", $->bpv);
+		goto err;
+	}
+	if (buf[6] != 0) {
+		whine("reserved field is not zero");
+		goto err;
+	}
+	if (n_dim > 4) {
+		whine("too many dimensions (%d)",n_dim);
+		goto err;
+	}
+	whine("bpv=%d; res=%d; n_dim=%d", $->bpv, buf[6], n_dim);
+	FREE(buf);
+	read_do($,n_dim*sizeof(int),FormatGrid_frame2);
+	return true;
+err: return false;
+}
+
+/* rewinding and starting */
 bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
-	int n_dim, prod;
 	if (frame!=-1) return 0;
-
-	whine("$->is_socket: %d",$->is_socket);
-
+	whine("frame: $->is_socket: %d",$->is_socket);
 	/* rewind when at end of file. */
 	if (!$->is_socket) {
 		off_t thispos = lseek($->stream,0,SEEK_CUR);
@@ -81,85 +211,13 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 		}
 	}
 
-	/* header */
-	{
-		char buf[8];
-		if (8>read($->stream,buf,sizeof(buf))) {
-			whine("grid header: read error: %s",strerror(errno));
-			goto err;
-		}
-		if (is_le()) {
-			whine("we are smallest digit first");
-		} else {
-			whine("we are biggest digit first");
-		}
-		if (strncmp("\x7fGRID",buf,5)==0) {
-			$->is_le = false; whine("this file is biggest digit first");
-		} else if (strncmp("\x7fgrid",buf,5)==0) {
-			$->is_le = true; whine("this file is smallest digit first");
-		} else {
-			whine("grid header: invalid");
-			goto err;
-		}
-		$->bpv = buf[5];
-		n_dim  = buf[7];
-		if ($->bpv != 32) {
-			whine("unsupported bpv (%d)", $->bpv);
-			goto err;
-		}
-		if (buf[6] != 0) {
-			whine("reserved field is not zero");
-			goto err;
-		}
-		if (n_dim > 4) {
-			whine("too many dimensions (%d)",n_dim);
-			goto err;
-		}
+	if ($->is_socket) {
+		read_do($,8,FormatGrid_frame1);
+	} else {
+		while ($->buf) try_read($);
+		whine("frame: finished");
 	}
 
-	/* dimension list */
-	{
-		int v[n_dim],i;
-		if ((int)sizeof(v)>read($->stream,v,sizeof(v))) {
-			whine("dimension list: read error: %s",strerror(errno));
-			goto err;
-		}
-		if ($->is_le != is_le()) swap32(n_dim,(uint32 *)v);
-		whine("there are %d dimensions",n_dim);
-		for (i=0; i<n_dim; i++) {
-			whine("dimension %d is %d indices",i,v[i]);
-			COERCE_INT_INTO_RANGE(v[i],0,MAX_INDICES);
-		}
-		$->dim = Dim_new(n_dim,v);
-		prod = Dim_prod($->dim);
-		if (prod <= 0 || prod > MAX_NUMBERS) {
-			whine("dimension list: invalid prod (%d)",n_dim,prod);
-			goto err;
-		}
-	}
-
-	/* body */
-	{
-		Number *data = NEW2(Number,prod);
-		char *data2 = (char *)data;
-		int n=prod*sizeof(Number);
-		int i=0;
-		while (i<n) {
-			int r = read($->stream,data2+i,n-i);
-			if (r<0) {
-				whine("body: read error: %s",strerror(errno));
-				goto err;
-			}
-			i+=r;
-			whine("got %d bytes; %d bytes left", r, n-i);
-		}
-		if ($->is_le != is_le()) swap32(prod,data);
-
-		GridOutlet_begin(out, $->dim);
-		GridOutlet_send(out,prod,data);
-		GridOutlet_end(out);
-		FREE(data);
-	}
 	return true;
 err:
 	return false;
@@ -203,7 +261,8 @@ GRID_END(FormatGrid,0) {
 	lseek($->stream,0,SEEK_SET);
 }
 
-void FormatGrid_close (Format *$) {
+void FormatGrid_close (FormatGrid *$) {
+	if ($->is_socket) Dict_del(gridflow_alarm_set,$);
 /*	if ($->bstream) fclose($->bstream); */
 	$->bstream = 0;
 	if (0 <= $->stream) close($->stream);
@@ -330,6 +389,7 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 	const char *filename;
 
 	if (!$) return 0;
+	$->buf = 0;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
@@ -349,6 +409,8 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 		if (!result) goto err;
 		whine("open: $->is_socket = %d", $->is_socket);
 	}
+
+	if ($->is_socket) Dict_put(gridflow_alarm_set,$,try_read);
 
 	return (Format *)$;
 err:
