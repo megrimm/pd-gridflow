@@ -23,6 +23,9 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -515,8 +518,8 @@ struct GridOutlet {
 
 /* transmission accelerator */
 	int frozen;
-	int ron; GridInlet *ro; /* want (const Number *) shown to */
-	int rwn; GridInlet *rw; /* want (Number *) given to */
+	int ron; GridInlet **ro; /* want (const Number *) shown to */
+	int rwn; GridInlet **rw; /* want (Number *) given to */
 };
 
 GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
@@ -630,7 +633,7 @@ void MainLoop_add(void *data, void (*func)());
 void MainLoop_remove(void *data);
 
 void gf_init (void);
-#define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
+#define PTR2FIX(ptr) ((((long)ptr)&3?RAISE("pointer alignment error"):0),INT2NUM(((int)ptr)/4))
 #define FIX2PTR(value) (void *)(FIX2INT(value)*4)
 
 #define DEF(_class_,_name_,_argc_) \
@@ -659,5 +662,9 @@ VALUE super);
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* __GF_GRID_H */
