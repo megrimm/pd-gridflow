@@ -29,15 +29,15 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 
 <list>
 	<li>ruby base/test.rb formats
-	</li><li>cvs tag gridflow_0_7_1 .
+	</li><li>cvs tag gridflow_0_7_2 .
 	</li><li>mkdir gridflow
 	</li><li>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow
-			export -r gridflow_0_7_1 -d gridflow .
+			export -r gridflow_0_7_2 -d gridflow .
 	</li><li>cd gridflow
 	</li><li>rm -rf CVS CVSROOT
 	</li><li>chmod -R go=u-w .
 	</li><li>cd ..
-	</li><li>tar cfzvv gridflow-0.7.1.tar.gz gridflow
+	</li><li>tar cfzvv gridflow-0.7.2.tar.gz gridflow
 	</li><li>rm -rf gridflow # caution!!!
 	</li><li>scp gridflow*gz jmax@artengine.ca'#2222':\
 			/home/organisations/jmax/public_html/gridflow/download

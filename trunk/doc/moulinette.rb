@@ -103,7 +103,6 @@ class XNode
 		list li
 		icon help
 		arg rest method
-		dim grid
 		inlet outlet
 		class
 		operator_1 operator_2
@@ -272,18 +271,6 @@ class XNode
 		}.compact.join("<b>, </b>")
 		print "<b>)</b> "
 		proc { print "<br>\n" }
-	end
-
-	def prc_grid
-		print "<br>"
-		print "<b>", $portnum.join(" "), "</b> " if $portnum
-		print "<b>grid</b> "
-		proc { print "<br>\n" }
-	end
-
-	def prc_dim
-		print "<b>dim(</b>"
-		proc { print "<b>)</b>" }
 	end
 
 	def prc_inlet
