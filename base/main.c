@@ -166,7 +166,7 @@ VALUE rb_ary_fetch(VALUE $, int i) {
 }
 
 char *rb_sym_name(VALUE sym) {
-	return rb_id2name(SYM2ID(sym));
+	return strdup(rb_id2name(SYM2ID(sym)));
 }
 
 void FObject_mark (VALUE *$) {}
@@ -174,10 +174,12 @@ void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
+/*
 	{int i; for(i=0; i<(*argc); i++)
 		fprintf(stderr,"%s\n",
 			RSTRING(rb_funcall((*argv)[i],rb_intern("inspect"),0))->ptr);}
-	*outlet = NUM2INT(**argv);
+*/
+	*outlet = INT(**argv);
 	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
 		RAISE("invalid outlet number");
 	(*argc)--, (*argv)++;
@@ -205,15 +207,14 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
-//	whine("message: %s",rb_sym_name(sym));
 	if (ary==Qnil) return Qnil;
 	n = RARRAY(ary)->len;
 	for (i=0; i<n; i++) {
 		VALUE conn = rb_ary_fetch(ary,i);
 		VALUE rec = rb_ary_fetch(conn,0);
-		int inl = NUM2INT(rb_ary_fetch(conn,1));
+		int inl = INT(rb_ary_fetch(conn,1));
 		char buf[256];
-		sprintf(buf,"_%d_%s",inl,rb_id2name(SYM2ID(sym)));
+		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
 	}
 	return Qnil;
@@ -249,9 +250,9 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
 	} else {
 		EARG("expect symbol or string");
 	}
-	inlets = NUM2INT(inlets2);
+	inlets = INT(inlets2);
 	if (inlets<0 || inlets>9) EARG("...");
-	outlets = NUM2INT(outlets2);
+	outlets = INT(outlets2);
 	if (outlets<0 || outlets>9) EARG("...");
 	rb_ivar_set($,rb_intern("@inlets"),inlets);
 	rb_ivar_set($,rb_intern("@outlets"),outlets);
