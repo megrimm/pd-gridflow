@@ -327,7 +327,7 @@ GRID_INLET(GridStore,0) {
 		goto skip;
 	}
 	COPY(v,data,n);
-	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j]; break;
+	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
 		int32 wrap = r.dim->v[i];
 		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
