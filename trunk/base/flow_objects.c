@@ -760,7 +760,7 @@ GRID_INLET(GridOuter,0) {
 	}
 	n*=b_prod;
 	Pt<T> buf = ARRAY_NEW(T,n);
-	Pt<T> buf2 = ARRAY_NEW(T,b_prod*64);
+	STACK_ARRAY(T,buf2,b_prod*64);
 	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(Pt<T>)r,b_prod);
 	switch (b_prod) {
 	case 1:	for (int i=0,k=0; k<n; i++) {buf[k++]=data[i];}
