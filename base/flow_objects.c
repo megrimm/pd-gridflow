@@ -63,9 +63,8 @@ GRID_BEGIN(GridImport,0) {}
 GRID_FLOW(GridImport,0) {
 	GridOutlet *out = $->out[0];
 	while (n) {
-		int n2;
 		if (!out->is_busy()) out->begin($->dim->dup());
-		n2 = out->dim->prod() - out->dex;
+		int n2 = out->dim->prod() - out->dex;
 		if (n2 > n) n2 = n;
 		out->send(n,data);
 		if (out->dex >= out->dim->prod()) out->end();
@@ -442,10 +441,8 @@ struct GridFold : GridObject {
 GRID_BEGIN(GridFold,0) {
 	int n = in->dim->count();
 	if (n<1) RAISE("minimum 1 dimension");
-	{
-		Dim *foo = new Dim(n-1,in->dim->v);
-		$->out[0]->begin(foo);
-	}
+	Dim *foo = new Dim(n-1,in->dim->v);
+	$->out[0]->begin(foo);
 	in->set_factor(in->dim->get(in->dim->count()-1));
 }
 
@@ -551,19 +548,17 @@ GRID_BEGIN(GridInner,0) {
 	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	if (a->count()<1) RAISE("minimum 1 dimension");
-	{
-		int a_last = a->get(a->count()-1);
-		int b_first = b->get(b->count()-1);
-		int n = a->count()+b->count()-2;
-		int v[n];
-		int i,j;
-		if (a_last != b_first)
-			RAISE("last dim of left side should be same size as first dim of right side");
-		for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
-		for (  j=1; j<b->count(); i++,j++) { v[i] = b->get(j); }
-		$->out[0]->begin(new Dim(n,v));
-		in->set_factor(a_last);
-	}	
+	int a_last = a->get(a->count()-1);
+	int b_first = b->get(0);
+	int n = a->count()+b->count()-2;
+	int v[n];
+	int i,j;
+	if (a_last != b_first)
+		RAISE("last dim of left side should be same size as first dim of right side");
+	for (i=j=0; j<a->count()-1; i++,j++) v[i] = a->get(j);
+	for (  j=1; j<b->count()  ; i++,j++) v[i] = b->get(j);
+	$->out[0]->begin(new Dim(n,v));
+	in->set_factor(a_last);
 }
 
 GRID_FLOW(GridInner,0) {
@@ -578,8 +573,6 @@ GRID_FLOW(GridInner,0) {
 		for (int j=0; j<b_prod/factor; j++) {
 			memcpy(buf,&data[i],factor*sizeof(Number));
 			for (int k=0; k<factor; k++) bufr[k]=$->r.as_int32()[b_prod/factor*k+j];
-//			for (int k=0; k<factor; k++) printf("%d ",buf[k]); puts("");
-//			for (int k=0; k<factor; k++) printf("%d ",bufr[k]); puts("");
 			$->op_para->op_array2(factor,buf,bufr);
 			buf2[j] = $->op_fold->op_fold($->rint,factor,buf);
 		}
@@ -631,19 +624,17 @@ GRID_BEGIN(GridInner2,0) {
 	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	if (a->count()<1) RAISE("minimum 1 dimension");
-	{
-		int a_last = a->get(a->count()-1);
-		int b_last = b->get(b->count()-1);
-		int n = a->count()+b->count()-2;
-		int v[n];
-		int i,j;
-		if (a_last != b_last)
-			RAISE("last dimension of each grid must have same size");
-		for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
-		for (  j=0; j<b->count()-1; i++,j++) { v[i] = b->get(j); }
-		$->out[0]->begin(new Dim(n,v));
-		in->set_factor(a_last);
-	}	
+	int a_last = a->get(a->count()-1);
+	int b_last = b->get(b->count()-1);
+	int n = a->count()+b->count()-2;
+	int v[n];
+	int i,j;
+	if (a_last != b_last)
+		RAISE("last dimension of each grid must have same size");
+	for (i=j=0; j<a->count()-1; i++,j++) { v[i] = a->get(j); }
+	for (  j=0; j<b->count()-1; i++,j++) { v[i] = b->get(j); }
+	$->out[0]->begin(new Dim(n,v));
+	in->set_factor(a_last);
 }
 
 GRID_FLOW(GridInner2,0) {
@@ -707,7 +698,6 @@ struct GridOuter : GridObject {
 };
 
 GRID_BEGIN(GridOuter,0) {
-	gfpost("hello");
 	Dim *a = in->dim;
 	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
@@ -992,13 +982,12 @@ GRID_FLOW(GridRedim,0) {
 }
 
 GRID_END(GridRedim,0) {
-	int a = in->dim->prod(), b = $->dim->prod();
-	int i = a;
 	if ($->data) {
+		int a = in->dim->prod(), b = $->dim->prod();
+		int i = a;
 		while (i<b) {
-			int n = min(a,b-i);
-			$->out[0]->send(n,$->data);
-			i += n;
+			$->out[0]->send(min(a,b-i),$->data);
+			i += a;
 		}
 	}
 	$->out[0]->end();
@@ -1060,14 +1049,12 @@ GRID_BEGIN(GridScaleBy,0) {
 	if (a->count()!=3) RAISE("(height,width,chans) please");
 	if (a->get(2)!=3) RAISE("3 chans please");
 
-	{
-		/* computing the output's size */
-		int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
-		$->out[0]->begin(new Dim(3,v));
+	/* computing the output's size */
+	int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
+	$->out[0]->begin(new Dim(3,v));
 
-		/* configuring the input format */
-		in->set_factor(a->get(1)*a->get(2));
-	}
+	/* configuring the input format */
+	in->set_factor(a->get(1)*a->get(2));
 }
 
 /* this method processes one packet of grid content */
