@@ -38,6 +38,10 @@ tries to call a Ruby method of the proper name.
 #include <m_pd.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <unistd.h>
+
+static const char *list_begin = "(";
+static const char *list_end = ")";
 
 struct BFObject;
 struct FMessage {
@@ -63,22 +67,23 @@ static bool is_in_ruby = false;
 struct BFObject : t_object {
 	Ruby rself;
 	t_outlet *out[MAX_OUTLETS];
-
-	static t_class *find_bfclass (t_symbol *sym) {
-		Ruby v = rb_hash_aref(
-			rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
-			rb_str_new2(sym->s_name));
-		if (v==Qnil) RAISE("class not found");
-		return FIX2PTR(t_class,v);
-	}
-	static Ruby find_fclass (t_symbol *sym) {
-		Ruby v = rb_hash_aref(
-			rb_ivar_get(mGridFlow2, SI(@fclasses_set)),
-			rb_str_new2(sym->s_name));
-		if (v==Qnil) RAISE("class not found");
-		return v;
-	}
 };
+
+static t_class *find_bfclass (t_symbol *sym) {
+	Ruby v = rb_hash_aref(
+		rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
+		rb_str_new2(sym->s_name));
+	if (v==Qnil) RAISE("class not found");
+	return FIX2PTR(t_class,v);
+}
+
+static Ruby find_fclass (t_symbol *sym) {
+	Ruby v = rb_hash_aref(
+		rb_ivar_get(mGridFlow2, SI(@fclasses_set)),
+		rb_str_new2(sym->s_name));
+	if (v==Qnil) RAISE("class not found");
+	return v;
+}
 
 static t_class *BFProxy_class;
 
@@ -117,21 +122,16 @@ static Ruby Bridge_import_value(const t_atom *at) {
 }
 
 /*
-  Yes, I really have to do that myself.
-  PureData is not very sophisticated: it does not have a parser.
-  So this code handles the parentheses by making nested lists out of
-  their contents. This does not happen in the jMax bridge because jMax
-  already parses braces as list delimiters.
+  This code handles nested lists because PureData doesn't do it
+  and jMax only does it when it feels like it.
 */
-#include <unistd.h>
 int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv, int level=0) {
 	int argc=0;
 	while (ac) {
 		t_atomtype t = at->a_type;
-//		post("ac=%d at=%08x t=%08x\n",ac,(long)at,(long)t);
 		if (t==A_SYMBOL) {
 			const char *s=at->a_w.w_symbol->s_name;
-			if (strcmp(s,"(")==0) {
+			if (strcmp(s,list_begin)==0) {
 				ac--; at++;
 				Ruby ary = rb_ary_new();
 				Ruby argv2[ac];
@@ -140,32 +140,25 @@ int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv, int level=0) {
 				argv[argc++] = ary;
 				continue;
 			}
-			if (strcmp(s,")")==0) {
+			if (strcmp(s,list_end)==0) {
 				ac--; at++;
 				if (level>0) return argc;
-				RAISE("closing parenthese without opening");
+				RAISE("closing list without opening");
 			}
 		}
 		argv[argc++]=Bridge_import_value(at);
 		ac--; at++;
 	}
-	if (level) RAISE("opening %d parenthese(s) without closing",level);
+	if (level) RAISE("opening %d list(s) without closing",level);
 	return argc;
 }
 
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
-	const char *s = fm->selector->s_name;
-	char buf[strlen(s)+4];
-	assert(fm->winlet<10);
-	strcpy(buf+3,s);
-	buf[0] = buf[2] = '_';
-	buf[1] = '0' + fm->winlet;
-	ID sel = rb_intern(buf);
-
-	Ruby argv[fm->ac];
-	int argc = Bridge_import_list(fm->ac,fm->at,argv);
-
-	rb_funcall2(fm->self->rself,sel,argc,argv);
+	Ruby argv[fm->ac+2];
+	argv[0] = INT2NUM(fm->winlet);
+	argv[1] = ID2SYM(rb_intern(fm->selector->s_name));
+	int argc = Bridge_import_list(fm->ac,fm->at,argv+2);
+	rb_funcall2(fm->self->rself,SI(send_in),argc+2,argv);
 	return Qnil;
 }
 
@@ -214,7 +207,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = Bridge_import_list(fm->ac,fm->at,argv);
 //	post("argc=%d\n",argc);
 
-	Ruby qlass = BFObject::find_fclass(fm->selector);
+	Ruby qlass = find_fclass(fm->selector);
 	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
 	DGS(GridObject);
 	self->bself = fm->self;
@@ -243,7 +236,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 }
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
-	t_class *qlass = BFObject::find_bfclass(classsym);
+	t_class *qlass = find_bfclass(classsym);
 	BFObject *self = (BFObject *)pd_new(qlass);
 	FMessage fm = { self: self, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
@@ -317,7 +310,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 		return;
 	}
 	is_in_ruby = true;
-	long long time = RtMetro_now2();
+//	uint64 time = RtMetro_now2();
 //	gfpost("tick");
 	rb_funcall(mGridFlow2,SI(tick),0);
 	clock_delay(gf_alarm,gf_bridge2->clock_tick/10);
