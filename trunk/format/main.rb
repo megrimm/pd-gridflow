@@ -103,7 +103,9 @@ class Format #< GridObject
 			" does not support mode '#{mode}'"
 	end
 
-	def close; end
+	def close
+		@stream.close if defined? @stream and @stream
+	end
 
 	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
 		install(name,inlets,outlets)
