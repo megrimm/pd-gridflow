@@ -28,9 +28,6 @@
 #include <sys/time.h>
 #include "grid.h"
 
-#define DECL(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
-
 /* ---------------------------------------------------------------- */
 
 /* return and complain when file not open */
@@ -138,26 +135,18 @@ METHOD(GridIn,delete) {
 }
 
 CLASS(GridIn) {
-	fts_type_t rien[]       = { fts_t_symbol };
-	fts_type_t open_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_list };
-	fts_type_t frame_args[] = { fts_t_symbol, fts_t_int };
-	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int };
-
 	MethodDecl methods[] = {
-		DECL(GridIn,-1,init,  ARRAY(rien),-1),
-		DECL(GridIn,-1,delete,0,0,0),
-		DECL(GridIn, 0,bang,  ARRAY(rien),-1),
-		DECL(GridIn, 0,reset, ARRAY(rien),-1),
-		DECL(GridIn, 0,open,  ARRAY(open_args),-1),
-		DECL(GridIn, 0,close, 0,0,0),
-//		DECL(GridIn, 0,frame, ARRAY(frame_args),-1),
-		DECL(GridIn, 0,option,ARRAY(option_args),-1),
+		DECL(GridIn,-1,init,  "s"),
+		DECL(GridIn,-1,delete,""),
+		DECL(GridIn, 0,bang,  "s"),
+		DECL(GridIn, 0,reset, "s"),
+		DECL(GridIn, 0,open,  "ssl"),
+		DECL(GridIn, 0,close, ""),
+//		DECL(GridIn, 0,frame, "si"),
+		DECL(GridIn, 0,option,"ssi"),
 	};
-
-	/* initialize the class */
 	fts_class_init(class, sizeof(GridIn), 1, 1, 0);
 	define_many_methods(class,ARRAY(methods));
-
 	return fts_Success;
 }
 
@@ -279,12 +268,12 @@ CLASS(GridOut) {
 	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int, fts_t_int };
 
 	MethodDecl methods[] = {
-		DECL(GridOut,-1,init,   ARRAY(init_args),1),
-		DECL(GridOut,-1,delete, 0,0,0 ),
-		DECL(GridOut, 0,open,   ARRAY(open_args),1),
-		DECL(GridOut, 0,close,  0,0,0 ),
-//		DECL(GridOut, 0,frame,  ARRAY(frame_args),-1),
-		DECL(GridOut, 0,option, ARRAY(option_args),1),
+		DECL(GridOut,-1,init,  "sii"),
+		DECL(GridOut,-1,delete,""),
+		DECL(GridOut, 0,open,  "s;sss"),
+		DECL(GridOut, 0,close, ""),
+//		DECL(GridOut, 0,frame, "si"),
+		DECL(GridOut, 0,option,"ssii"),
 	};
 
 	/* initialize the class */

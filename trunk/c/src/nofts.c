@@ -128,10 +128,13 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	md->winlet = winlet;
 	md->selector = selector;
 	md->method = method;
+	md->signature = "?";
+/*
 	md->n_args = n_args;
 	md->args = NEW(fts_type_t,n_args?n_args:1);
 	memcpy(md->args,args,n_args*sizeof(fts_type_t));
 	md->min_args = min_args;
+*/
 	Dict_put($->method_table[winlet+1],(void *)selector,md);
 }
 

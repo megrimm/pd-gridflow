@@ -25,9 +25,6 @@
 #include <math.h>
 #include "grid.h"
 
-#define DECL(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
-
 typedef struct GridScaleBy {
 	GridObject_FIELDS;
 	int rint;
@@ -35,15 +32,13 @@ typedef struct GridScaleBy {
 
 GRID_BEGIN(GridScaleBy,0) {
 	Dim *a = in->dim;
-	int v[3];
-	int i;
 	if (Dim_count(a)!=3) {whine("(height,width,chans) please"); return false;}
 	if (Dim_get(a,2)!=3) {whine("3 chans please"); return false;}
-	v[0]=Dim_get(a,0)*2;
-	v[1]=Dim_get(a,1)*2;
-	v[2]=Dim_get(a,2);
-	GridOutlet_begin($->out[0],Dim_new(3,v));
-	GridInlet_set_factor(in,3*Dim_get(a,1));
+	{
+		int v[3]={ Dim_get(a,0)*2, Dim_get(a,1)*2, Dim_get(a,2) };
+		GridOutlet_begin($->out[0],Dim_new(3,v));
+		GridInlet_set_factor(in,3*Dim_get(a,1));
+	}
 	return true;
 }
 
@@ -83,15 +78,10 @@ METHOD(GridScaleBy,init) {
 METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
 CLASS(GridScaleBy) {
-	int i;
-	fts_type_t int_alone[]  = {fts_t_int};
-	fts_type_t init_args[] = {fts_t_symbol};
 	MethodDecl methods[] = { 
-		DECL(GridScaleBy,-1,init,  ARRAY(init_args),-1),
-		DECL(GridScaleBy,-1,delete,0,0,0),
+		DECL(GridScaleBy,-1,init,  "s"),
+		DECL(GridScaleBy,-1,delete,""),
 	};
-
-	/* initialize the class */
 	fts_class_init(class, sizeof(GridScaleBy), 1, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	GridObject_conf_class(class,0);

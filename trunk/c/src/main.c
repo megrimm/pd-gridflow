@@ -269,15 +269,40 @@ void qdump(void) {
 	}
 }
 
+/* Key for method signature codes:
+	s Symbol
+	i Fixnum (int)
+	l List (???)
+	p void *
+	+ more of the same
+	; begin optional section
+*/
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
+	fts_type_t args[16];
 	int i;
 	for (i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
+		int j;
+		int min_args=-1;
+		int n_args=0;
+		const char *s = md->signature;
+		for (j=0; s[j]; j++) {
+			switch(s[j]) {
+			case 's': args[n_args++]=fts_t_symbol; break;
+			case 'i': args[n_args++]=fts_t_int;    break;
+			case 'p': args[n_args++]=fts_t_ptr;    break;
+			case 'l': args[n_args++]=fts_t_list;   break;
+			case '+': while(n_args<16) {
+				args[n_args]=args[n_args-1]; n_args++; }
+				break;
+			case ';': min_args = n_args; break;
+			default: assert(0);
+			}
+		}
 		fts_method_define_optargs(class,
 			md->winlet == -1 ? fts_SystemInlet : md->winlet,
 			md->selector, md->method,
-			md->n_args, md->args,
-			md->min_args == -1 ? md->n_args : md->min_args);
+			n_args, args, min_args == -1 ? n_args : min_args);
 	}
 }
 
@@ -323,19 +348,14 @@ METHOD2(RtMetro,init) {
 METHOD2(RtMetro,delete) {}
 
 CLASS(RtMetro) {
-	fts_type_t int_args[]  = { fts_t_int };
-	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{  0, fts_s_int,    METHOD2PTR(RtMetro,int),    ARRAY(int_args),0 },
-		{  1, fts_s_int,    METHOD2PTR(RtMetro,rint),   ARRAY(int_args),0 },
-		{ -1, fts_s_init,   METHOD2PTR(RtMetro,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD2PTR(RtMetro,delete), 0,0,0 },
+		DECL22(RtMetro, 0,int,   int,   "i"),
+		DECL22(RtMetro, 1,int,   rint,  "i"),
+		DECL22(RtMetro,-1,init,  init,  "s"),
+		DECL22(RtMetro,-1,delete,delete,""),
 	};
-
-	/* initialize the class */
 	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
-/*	GridObject_conf_class(class,0); */
 	return fts_Success;
 }
 
@@ -406,16 +426,12 @@ METHOD2(GFGlobal,init) {}
 METHOD2(GFGlobal,delete) {}
 
 CLASS(GFGlobal) {
-	fts_type_t   no_args[]  = { };
-	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD2PTR(GFGlobal,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD2PTR(GFGlobal,delete), 0,0,0 },
-		{  0, SYM(profiler_reset), METHOD2PTR(GFGlobal,profiler_reset),ARRAY(no_args),-1},
-		{  0, SYM(profiler_dump),  METHOD2PTR(GFGlobal,profiler_dump), ARRAY(no_args),-1},
-
+		DECL22(GFGlobal,-1,init,          init,          "s"),
+		DECL22(GFGlobal,-1,delete,        delete,        ""),
+		DECL22(GFGlobal, 0,profiler_reset,profiler_reset,""),
+		DECL22(GFGlobal, 0,profiler_dump, profiler_dump, ""),
 	};
-
 	fts_class_init(class, sizeof(GFGlobal), 1, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	return fts_Success;

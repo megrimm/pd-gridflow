@@ -418,20 +418,13 @@ void GridObject_delete(GridObject *$) {
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
-	fts_type_t int_alone[] = { fts_t_int };
-	fts_type_t int_dims[MAX_DIMENSIONS+2] = { fts_t_symbol, fts_t_ptr, };
-	fts_type_t packet[] = { fts_t_symbol, fts_t_int, fts_t_ptr };
-	fts_type_t rien[] = { fts_t_symbol };
-	fts_type_t list[] = { fts_t_list };
 	MethodDecl methods[] = {
-		{winlet,sym_grid_begin,METHOD2PTR(GridObject,grid_begin),ARRAY(int_dims),2},
-		{winlet,sym_grid_flow, METHOD2PTR(GridObject,grid_flow), ARRAY(packet),-1},
-		{winlet,sym_grid_flow2,METHOD2PTR(GridObject,grid_flow2),ARRAY(packet),-1},
-		{winlet,sym_grid_end,  METHOD2PTR(GridObject,grid_end), ARRAY(rien),-1},
-		{winlet,fts_s_list,    METHOD2PTR(GridObject,list),ARRAY(list),-1},
+		DECL12(GridObject,winlet,grid_begin,"spi+"),
+		DECL12(GridObject,winlet,grid_flow, "sip"),
+		DECL12(GridObject,winlet,grid_flow2,"sip"),
+		DECL12(GridObject,winlet,grid_end,  ""),
+		DECL12(GridObject,winlet,list,      "l"),
 	};
-	int i;
-	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+2] = fts_t_int;
 	define_many_methods(class,ARRAY(methods));
 }
 

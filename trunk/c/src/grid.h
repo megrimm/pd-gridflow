@@ -98,6 +98,17 @@
 #define METHOD_ARGS(_class_) \
 	_class_ *self, int winlet, Symbol selector, ATOMLIST
 
+/* 0.5.0: shortcuts for MethodDecl */
+
+#define DECL(_cl_,_inlet_,_sym_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
+#define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym2_),args}
+#define DECL12(_cl_,_inlet_,_sym_,args...) \
+	{_inlet_,SYM(_sym_),METHOD2PTR(_cl_,_sym_),args}
+#define DECL22(_cl_,_inlet_,_sym_,_sym2_,args...) \
+	{_inlet_,SYM(_sym_),METHOD2PTR(_cl_,_sym2_),args}
+
 /*
   now (0.3.1) using a separate macro for some things like decls
   and for methods that should not be profiled.
@@ -266,9 +277,7 @@ struct MethodDecl {
 	int winlet;
 	Symbol selector;
 	void (*method)(METHOD_ARGS(fts_object_t));
-	int n_args;
-	fts_type_t *args;
-	int min_args;
+	const char *signature;
 };
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);

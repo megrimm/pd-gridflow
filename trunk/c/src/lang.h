@@ -70,7 +70,7 @@ typedef struct Object {
 struct Class {
 	Object _o;
 	Class *_super;
-	int sig; /* 0x600df00d */
+	int magic; /* 0x600df00d */
 };
 
 typedef struct List List; /* List ([0...n] -> void *) */
@@ -94,5 +94,6 @@ void *Dict_get(Dict *$, void *k);
 void Dict_put(Dict *$, void *k, void *v);
 void Dict_del(Dict *$, void *k);
 void Dict_each(Dict *$, void (*proc)(void* data, void *k, void* v), void *data);
+void Dict_capa_is(Dict *$, int capa);
 
 #endif /* __GRIDFLOW_LANG_H */
