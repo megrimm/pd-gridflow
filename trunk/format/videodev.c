@@ -344,7 +344,7 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
-	STACK_ARRAY(Number,b2,bs);
+	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> b1 = buf + bit_packing->bytes * sx * y;
 		bit_packing->unpack(sx,b1,b2);

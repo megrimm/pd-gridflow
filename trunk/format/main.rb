@@ -156,6 +156,7 @@ module GridIO
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
 		@format.close if @format
+		@format = nil
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
 		@format.parent = self
@@ -263,13 +264,15 @@ module EventIO
 	def initialize(*)
 		@acceptor = nil
 		@buffer = nil
+		@action = nil
+		@chunksize = nil
 		super
 	end
 
 	def on_read(n,&action)
 		@action = action
 		@chunksize = n
-		$tasks[self] = proc { self.try_read(n) }
+		$tasks[self] = proc { self.try_read }
 	end
 
 	def try_accept
@@ -285,7 +288,7 @@ module EventIO
 #		p "wouldblock"
 	end
 
-	def try_read dummy
+	def try_read(dummy=nil)
 #		while @action
 #		p @chunksize-@buffer.length
 		n = @chunksize-(if @buffer then @buffer.length else 0 end)
