@@ -28,3 +28,6 @@
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail matju@sympatico.ca acastonguay@artengine.ca
+
+ALL mail -s %s matju@sympatico.ca
+
