@@ -829,6 +829,32 @@ f.puts "
 #endif /* __CONFIG_H */"
 }
 
+#--------------------------------#
+
+if $conf[:OPTIONS].index("HAVE_JMAX_2_5")
+	puts "generating gridflow.jpk"
+	File.open("gridflow.jpk","w") {|f|
+		f.puts "
+set pname gridflow
+package require guiobj
+package provide $pname 
+global jmaxArch jmaxMode
+ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
+templateDirectory $dir/templates
+sourceFile $dir/help/${pname}.help.index.tcl
+"
+		if $conf[:OPTIONS].index("HAVE_JMAX25_GUIEXT")
+			f.puts 'java::load -classpath "$dir/java/classes/gridflow.jar" gridflow.GridFlowExtension'
+			f.puts %{post "package: GridFlow (with GUI extensions)"}
+		else
+			f.puts %{post "package: GridFlow (without GUI extensions)"}
+		end
+	}
+end
+
+#--------------------------------#
+
+
 puts "",
 "please see ./config.log for the details of the configuration tests",
 ""
