@@ -76,9 +76,10 @@ class GridGlobal < FObject
 		GridFlow.post "ruby: %s", s
 		GridFlow.post "returns: %s", eval(s).inspect
 	end
-	install "@global", 1, 1
+	install "gridflow", 1, 1
+	addcreator "@global"
 	begin
-		GridFlow.whatever :bind, "@global", "gridflow"
+		GridFlow.whatever :bind, "gridflow", "gridflow"
 	rescue Exception
 	end
 end
@@ -271,7 +272,7 @@ class GridPrint < GridFlow::GridObject
 	end
 
 	install_rgrid 0, true
-	install "@print", 1, 0
+	install "#print", 1, 0
 end
 
 class GridPack < GridObject
@@ -299,11 +300,6 @@ class GridPack < GridObject
 		send_out_grid_begin 0, [@data.length], @cast
 		send_out_grid_flow 0, @data.pack("l*")
 	end
-	install_rgrid 0
-	install "@pack", 1, 1
-end
-
-class GridPack2 < GridPack
 	install_rgrid 0
 	install "#pack", 1, 1
 end
@@ -337,7 +333,7 @@ class GridExportSymbol < GridObject
 		send_out 0, :symbol, @data.unpack("I*").pack("c*").intern
 	end
 	install_rgrid 0
-	install "@export_symbol", 1, 1
+	install "#export_symbol", 1, 1
 end
 
 #-------- fClasses for: math
@@ -350,7 +346,7 @@ class Messagebox<FPatcher
 end
 
 class GridOp1<FPatcher
-  @fobjects = ["# +","@type","gfmessagebox list $1 #"]
+  @fobjects = ["# +","#type","gfmessagebox list $1 #"]
   @wires = [-1,0,1,0, 1,0,2,0, 2,0,0,1, -1,0,0,0, 0,0,-1,0]
   def initialize(sym)
 	super
@@ -367,7 +363,7 @@ end
 class GridScaleTo < FPatcher
 	@fobjects = [
 		"@for {0 0} {42 42} {1 1}","@ *","@ /",
-		"@store","@dim","@redim {2}","@finished",
+		"@store","#dim","@redim {2}","#finished",
 	]
 	@wires = []
 	for i in 1..3 do @wires.concat [i-1,0,i,0] end
@@ -423,7 +419,7 @@ class GridRotate < FPatcher
 	end
 	def _1_int(angle) @angle = angle; update_rotator end
 	alias _1_float _1_int
-	install "@rotate", 2, 1
+	install "#rotate", 2, 1
 end
 
 class ForEach < FObject
@@ -932,7 +928,7 @@ end # if not =~ jmax
 #-------- fClasses for: GUI
 
 class Peephole < GridFlow::FPatcher
-	@fobjects = ["@dim","@export_list","@downscale_by 1 smoothly","@out","@scale_by 1",
+	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","@out","#scale_by 1",
 	proc{Demux.new(2)}]
 	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
 	def initialize(sy=32,sx=32,*args)
