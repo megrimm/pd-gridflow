@@ -132,6 +132,7 @@ GRID_INLET(FormatPNG,0) {
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	out[0]->send(rowbytes*height,image_data);
 	free(image_data);
+	png_destroy_read_struct(&png, &info, NULL);
 	return Qnil;
 }
 
