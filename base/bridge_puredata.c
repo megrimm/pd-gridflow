@@ -24,9 +24,9 @@
 /* matju to rfigura:
 'bridge_puredata.c' becomes 'gridflow.pd_linux' which loads Ruby and tells
 Ruby to load the other 90% of Gridflow. GridFlow creates the FObject class
-and then subclasses it many times, each time calling FObject.install(),   
-which tells the bridge to register a class in puredata or jmax. Puredata  
-objects have proxies for each of the non-first inlets so that any inlet   
+and then subclasses it many times, each time calling FObject.install(),
+which tells the bridge to register a class in puredata or jmax. Puredata
+objects have proxies for each of the non-first inlets so that any inlet
 may receive any distinguished message. All inlets are typed as 'anything',
 and the 'anything' method translates the whole message to Ruby objects and
 tries to call a Ruby method of the proper name.
@@ -61,7 +61,7 @@ static bool is_in_ruby = false;
 
 #define MAX_OUTLETS 4
 struct BFObject : t_object {
-	Ruby peer;
+	Ruby rself;
 	t_outlet *out[MAX_OUTLETS];
 
 	static t_class *find_bfclass (t_symbol *sym) {
@@ -165,7 +165,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	Ruby argv[fm->ac];
 	int argc = Bridge_import_list(fm->ac,fm->at,argv);
 
-	rb_funcall2(fm->self->peer,sel,argc,argv);
+	rb_funcall2(fm->self->rself,sel,argc,argv);
 	return Qnil;
 }
 
@@ -180,13 +180,13 @@ static Ruby BFObject_rescue (FMessage *fm) {
 	return Qnil;
 }
 
-static void BFObject_method_missing (BFObject *self,
+static void BFObject_method_missing (BFObject *bself,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
 //	post("%p %d %s %d\n",self,winlet,selector->s_name,ac);
-	FMessage fm = { self: self, winlet: winlet, selector: selector, ac: ac, at: at,
+	FMessage fm = { self: bself, winlet: winlet, selector: selector, ac: ac, at: at,
 		is_init: false };
-	if (!self->peer) {
-		pd_error(self,"you are trying to send a message to a dead object. \
+	if (!bself->rself) {
+		pd_error(bself,"you are trying to send a message to a dead object. \
 			the precise reason was given when you last tried to create \
 			the object. fix the contents of that box and try again.");
 		return;
@@ -217,8 +217,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby qlass = BFObject::find_fclass(fm->selector);
 	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
 	DGS(GridObject);
-	self->foreign_peer = fm->self;
-	self->foreign_peer->peer = rself;
+	self->bself = fm->self;
+	self->bself->rself = rself;
 
 	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
@@ -230,14 +230,14 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = self->foreign_peer;
+		p->parent = self->bself;
 		p->inlet = i;
-		inlet_new(self->foreign_peer, &p->ob_pd, 0,0);
+		inlet_new(self->bself, &p->ob_pd, 0,0);
 	}
 
 	for (int i=0; i<noutlets; i++) {
 		assert(i<=MAX_OUTLETS); /* TROUBLE */
-		self->foreign_peer->out[i] = outlet_new(self->foreign_peer,&s_anything);
+		self->bself->out[i] = outlet_new(self->bself,&s_anything);
 	}
 	return rself;
 }
@@ -256,9 +256,9 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	if (fm->self->peer) {
+	if (fm->self->rself) {
 		post("BFObject_delete is handling object at %08x",(int)fm->self);
-		rb_funcall(fm->self->peer,SI(delete),0);
+		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
 		post("BFObject_delete is NOT handling BROKEN object at %08x",(int)fm);
 	}
@@ -298,13 +298,14 @@ static Ruby FObject_s_install_2(Ruby rself, char *name) {
 
 static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet,
 Ruby rself) {
-	BFObject *jo = FObject_peer(rself);
+	DGS(FObject);
+	BFObject *bself = self->bself;
 	Ruby qlass = rb_funcall(rself,SI(class),0);
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	t_outlet *out = jo->te_outlet;
-	outlet_anything(jo->out[outlet],atom_getsymbol(&sel),argc,at);
+	t_outlet *out = bself->te_outlet;
+	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
 }
 
