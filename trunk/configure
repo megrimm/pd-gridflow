@@ -730,7 +730,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.7.4 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.5 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -808,6 +808,10 @@ else
 end
 $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU]
 $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
+#$CFLAGS += " -fforce-addr"
+#$CFLAGS += " -fprefetch-loop-arrays"
+#$CFLAGS += " -falign-jumps=4"
+#$CFLAGS += " -falign-loops=4"
 f.puts "CFLAGS += " + $CFLAGS
 
 for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
