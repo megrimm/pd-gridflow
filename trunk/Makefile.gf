@@ -43,7 +43,7 @@ cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
 clean2::
-	rm -f $(JMAX_LIB) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
+	rm -f $(JMAX_LIB) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs java/PathInfo.java
 
 install2:: ruby-install jmax-install puredata-install
 
@@ -152,8 +152,16 @@ public class PathInfo { \
 public static String jmax_path = \"$(GFID)\";} \
 " > java/PathInfo.java
 
+ifeq ($(HAVE_JMAX25_GUIEXT),yes)
+
 gridflow-for-jmax:: $(JMAX_LIB) java/PathInfo.java
 	(cd java; make)
+
+else
+
+gridflow-for-jmax:: $(JMAX_LIB)
+
+endif
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): bridge/jmax.c bridge/common.c base/grid.h $(CONF)
