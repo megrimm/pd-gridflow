@@ -60,10 +60,9 @@ static bool is_in_ruby = false;
 /* **************************************************************** */
 /* BFObject */
 
-#define MAX_OUTLETS 4
 struct BFObject : t_object {
 	Ruby rself;
-	t_outlet *out[MAX_OUTLETS];
+	t_outlet **out;
 };
 
 static t_class *find_bfclass (t_symbol *sym) {
@@ -176,8 +175,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		inlet_new(self->bself, &p->ob_pd, 0,0);
 	}
 
+	self->bself->out = new t_outlet*[noutlets];
 	for (int i=0; i<noutlets; i++) {
-		assert(i<=MAX_OUTLETS); /* TROUBLE */
 		self->bself->out[i] = outlet_new(self->bself,&s_anything);
 	}
 	return rself;
