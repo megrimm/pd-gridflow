@@ -1,46 +1,20 @@
 /* $Id$ */
 
-ClaudiusMaximus reports that allocating a 197M grid causes a crash (turns out C++
-throws exception, can't allocate, signal ABRT)
-
-<alx2> matju: iSight on linux :
-http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
-<alx2> matju: apparently it needs something called 'coriander'...I'm checking into it
-<alx2> matju: the person who got it working mentions libdc1394
-<alx2> matju: ah coriander is a GUI for firewire
-<alx2> matju: on this page :
-http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
-<alx2> matju: I learn that the iSight is compliant with version 1.30 of IIDC
-<alx2> matju: the docs for coriander mention that the author needed to create a major and minor device for the camera.
-<alx2> matju: retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
-<alx2> matju: raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
-<matju> thanks
-<alx2> matju: any useful info?
-<matju> i'll see, doing something else at the moment
-<alx2> matju: having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
-
--mfpmath=sse2
-
 --- make the development process more test-driven:
     * file every feature request and bug report into base/test.rb so
       that gridflow fails those tests;
     * THEN make gridflow pass those tests.
 
-<MiS> <matju> alx2: btw you cannot set helpfiles explicitly on _abstractions_... 
-<MiS> yes you can
-<MiS> and specify -helppath to add a path to help.  So selecting 'Help' in the pop-up on an abstraction will open a help fiel for that abstraction
-
 for 0.7.7:
+[ ] GF with Pd 0.36 : undefined pd_newest
+
+for 0.7.8:
+
+[ ] [#reverse]
+[ ] [#change]
 [ ] we're switching to PD for abstractions, instead of Ruby.
     Make a new bunch of them. Add a video latency patch (in examples)
 [ ] consider including [mysql] [renamefile] [ls] [shell]
-[ ] abstractions shouldn't use [s]/[r] without $0-.
-[ ] new policy: minimum supported gcc version: 3.0
-[ ] [#reverse]
-[ ] [#change]
-[ ] GF with Pd 0.36 : undefined pd_newest
-
-for 0.7.8: ?
 
 for 0.7.9: ?
 
@@ -63,8 +37,10 @@ for 0.8.1:
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
-pick a number: [141]
+pick a number: [142]
 
+[142] big leak in PNG reader
+[141] shouldn't be able to call Pd from a non-main Ruby thread.
 [140] is [@convolve] actually anti-convolution?
 	that is, convolves with a mirror image of the convolution matrix.
 [139] [#peephole]
@@ -459,4 +435,34 @@ p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
 seem to find Tcl_GetErrorInfo (maybe I dreamed it up)) 
 <ircbridge> <GPS> matju: BTW CatchObjCmd might help too
 <ircbridge> <GPS> I see that the new Tcl_Dict commands have taken over the HEAD's CatchObjCmd
+
+ClaudiusMaximus reports that allocating a 197M grid causes a crash (turns out C++
+throws exception, can't allocate, signal ABRT)
+
+ClaudiusMaximus says: I want to be able to send output from Pd+Gridflow to a video4linux
+loopback device so that other v4l programs can access the stream.
+I found the video loopback device here: http://motion.sourceforge.net/vloopback/
+
+<alx2> matju: iSight on linux :
+http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
+<alx2> matju: apparently it needs something called 'coriander'...I'm checking into it
+<alx2> matju: the person who got it working mentions libdc1394
+<alx2> matju: ah coriander is a GUI for firewire
+<alx2> matju: on this page :
+http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
+<alx2> matju: I learn that the iSight is compliant with version 1.30 of IIDC
+<alx2> matju: the docs for coriander mention that the author needed to create a major and minor device for the camera.
+<alx2> matju: retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
+<alx2> matju: raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
+<matju> thanks
+<alx2> matju: any useful info?
+<matju> i'll see, doing something else at the moment
+<alx2> matju: having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
+
+-mfpmath=sse2
+
+<MiS> <matju> alx2: btw you cannot set helpfiles explicitly on _abstractions_... 
+<MiS> yes you can
+<MiS> and specify -helppath to add a path to help.  So selecting 'Help'
+      in the pop-up on an abstraction will open a help fiel for that abstraction
 
