@@ -17,7 +17,7 @@
 
 <section name="Grid Protocol">
 <prose>
-	<p><i>This section is useful is you want to do more than just pictures
+	<p><i>This section is useful if you want to do more than just pictures
 	with GridFlow.
 	</i></p>
 	<p>
@@ -100,7 +100,7 @@
 </prose>
 </section>
 
-<section name="Unary Operators">
+<section name="One-Input Operators">
 
 	<!-- todo: text attr in those icons could be auto-generated -->
 
@@ -115,7 +115,7 @@
 	</operator-1>
 </section>
 
-<section name="Binary Operators">
+<section name="Two-Input Operators">
 	<prose>
 		<p>In the following table, A is the value entered to the
 		left, and B is the value entered to the right.</p>
@@ -185,7 +185,7 @@
 
 	<jmax-class name="@in">
 		<icon image="@in" text="[@in]"/>
-		<help image="images/grab_video_in.png"/>
+		<help image="@inout" text="[@in]"/>
 
 		<method name="init">
 			Creates an input object for an unspecified format. You
@@ -239,7 +239,7 @@
 
 	<jmax-class name="@out">
 		<icon image="@out" text="[@out]"/>
-		<help image="images/grab_video_out_file.png" text="[@out]"/>
+		<help image="@inout" text="[@out]"/>
 
 		<method name="init">
 			Creates an output object for an unspecified format. You
@@ -301,8 +301,8 @@
 	</jmax-class>
 
 	<jmax-class name="@import">
-		<icon image="images/@import.jpg" text="[@ import 240 320 3]"/>
-		<help image="images/grab_import.png" text="[@import 240 320 3]"/>
+		<icon text="[@ import 240 320 3]"/>
+		<help image="@importexport" text="[@import 240 320 3]"/>
 
 		<p>This object allows you to import non-grid jMax data, such as
 		integers and lists of integers. This object also reframes/resyncs
@@ -347,8 +347,8 @@
 	</jmax-class>
 
 	<jmax-class name="@export">
-		<icon image="images/@export.jpg" text="[@export]"/>
-		<help image="images/grab_export.png" text="[@export]"/>
+		<icon text="[@export]"/>
+		<help image="@importexport" text="[@export]"/>
 
 		<p>this object is the opposite of @import.</p>
 		<method name="init">
@@ -368,7 +368,7 @@
 	</jmax-class>
 
 	<jmax-class name="@two">
-		<icon image="images/@two.jpg" text="[@two]"/>
+		<icon text="[@two]"/>
 		<help image="images/grab_two.png" text="[@two]"/>
 
 		<p> holds two values, defaulting to (0,0). each time one is
@@ -381,7 +381,7 @@
 	</jmax-class>
 
 	<jmax-class name="@three">
-		<icon image="images/@three.jpg" text="[@three]"/>
+		<icon text="[@three]"/>
 		<help image="images/grab_three.png" text="[@three]"/>
 
 		<p> holds three values, defaulting to (0,0,0). each time one is
@@ -395,7 +395,7 @@
 	</jmax-class>
 
 	<jmax-class name="@four">
-		<icon image="images/@four.png" text="[@four]"/>
+		<icon text="[@four]"/>
 
 		<p> holds four values, defaulting to (0,0,0,0). each time one is
 		changed (by sending an integer in that inlet), a dim(4) grid is
@@ -411,7 +411,7 @@
 
 <section name="Objects for Generating">
 	<jmax-class name="@for">
-		<icon image="images/@for.png" text="[@for 0 320 1]"/>
+		<icon text="[@for 0 320 1]"/>
 		<p>works like a regular [for] object plugged to a [@import] tuned
 		for a dim(size) where size is the number of values produced by a bang
 		to that [for].</p>
@@ -439,8 +439,8 @@
 
 <section name="Objects for Computing">
 	<jmax-class name="@">
-		<icon image="images/op/add.jpg" text="[@ +]"/>
-		<help image="images/grab_binary_operations.png" text="binary operators 1"/>
+		<icon image="op/add.jpg" text="[@ +]"/>
+		<help image="images/grab_binary_operations.png" text="two-input operators 1"/>
 	
 		<p>This object outputs a grid by computing "in parallel" a same
 		operation on each left-hand element with its corresponding right-hand
@@ -453,7 +453,7 @@
 		<method name="init">
 			<arg name="operator" type="symbol"/>
 			<arg name="value" type="integer"/>
-			the operator is one picked in the table of the 30 binary
+			the operator is one picked in the table of the 30 two-input
 			operators. the value (optional, zero by default) becomes
 			the initial value of the right inlet.
 		</method>
@@ -497,9 +497,8 @@
 		
 		<method name="init">
 			<arg name="operator" type="symbol"/>
-			the operator is one picked in the table of the 3 unary
-			operators. they are "unary" because they take only one
-			value.
+			the operator is one picked in the table of the 3 one-input
+			operators.
 		</method>
 		<inlet id="0">
 			<grid>
@@ -512,8 +511,8 @@
 	</jmax-class>
 
 	<jmax-class name="@fold">
-		<icon image="images/@fold.jpg" text="[@fold +]"/>
-		<help image="images/grab_fold.png" text="[@fold +]"/>
+		<icon text="[@fold +]"/>
+		<help image="@foldinnerouter" text="[@fold +]"/>
 
 		<p>
 		@fold makes the last dimension of a grid disappear by combining elements
@@ -528,7 +527,7 @@
 			<arg name="operator" type="symbol"/>
 			<arg name="base" type="integer"/>
 			the base value is optional and defaults to 0.
-			the operator is one from the table of binary operators.
+			the operator is one from the table of two-input operators.
 		</method>
 		
 		<inlet id="0">
@@ -559,12 +558,12 @@
 	</jmax-class>
 
 	<jmax-class name="@outer">
-		<icon image="images/@outer.jpg" text="[@outer +]"/>
-		<help image="images/grab_outer.png" text="[@dim]"/>
+		<icon text="[@outer +]"/>
+		<help image="@foldinnerouter" text="[@outer]"/>
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
-			the operator must be picked from the table of binary operators.
+			the operator must be picked from the table of two-input operators.
 		</method>
 
 		<inlet id="0">
@@ -582,7 +581,7 @@
 		</outlet>
 
 		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will
-		produce  a grid of Dim(3,5) with the selected binary operation
+		produce  a grid of Dim(3,5) with the selected two-input operation
 		applied on each  of the possible pairs combinations between numbers
 		from the left grid  and the ones from the right. for example :
 		(10,20,30) [@outer +] (1,2,3)  will give :
@@ -591,9 +590,10 @@
 	</jmax-class>
 
 	<jmax-class name="@inner">
-		<icon image="images/@inner.png" text="[@inner * + 0]"/>
+		<icon text="[@inner * + 0]"/>
+		<help image="@foldinnerouter" text="[@inner]"/>
 
-		<p>think of this one as a special combination of [@outer], [@],
+		<p>think of this one as a special combination of [@outer]
 		and [@fold]. this is one of the most complex operations. It is very
 		useful for performing linear transforms like rotations, scalings,
 		tilts, and color remappings.
@@ -604,7 +604,7 @@
 			<arg name="op_fold" type="symbol"/>
 			<arg name="base"    type="integer"/>
 			op_para and op_fold are two operators picked from the table
-			of binary operators.
+			of two-input operators.
 			the base value has to be specified (has no default value yet).
 		</method>
 		<inlet id="0">
@@ -634,7 +634,7 @@
 
 <section name="Objects for Coordinate Transforms">
 	<jmax-class name="@redim">
-		<icon image="images/@redim.jpg" text="[@redim 2]"/>
+		<icon text="[@redim 2]"/>
 		<help image="images/grab_redim.png" text="[@redim 2]"/>
 
 		<method name="init">
@@ -673,7 +673,7 @@
 
 	</jmax-class>
 	<jmax-class name="@store">
-		<icon image="images/@store.jpg" text="[@store]"/>
+		<icon text="[@store]"/>
 		<help image="images/grab_cross_fade.png" text="[@store]"/>
 
 		<p>A @store object can store exactly one grid, using the right
@@ -720,7 +720,7 @@
 	</jmax-class>
 
 	<jmax-class name="@identity_transform">
-		<icon image="images/@identity_transform.jpg" text="[@identity_transform]"/>
+		<icon text="[@identity_transform]"/>
 		<help image="images/grab_identity_transform.png" text="[@identity_transform]"/>
 
 		<method name="init">
@@ -757,7 +757,7 @@
 	</jmax-class>
 
 	<jmax-class name="@scale_to">
-		<icon image="images/@scale_to.jpg" text="[@scale_to]"/>
+		<icon text="[@scale_to]"/>
 		<help image="images/grab_scale_to.png" text="[@scale_to]"/>
 
 		<method name="init">
@@ -786,9 +786,34 @@
 		duplicated.</p>
 
 	</jmax-class>
-	
+
+	<jmax-class name="@scale_by">
+		<icon text="[@scale_by]"/>
+		<method name="init">
+			no arguments. scales by 2.
+		</method>
+		<method name="init">
+			<arg name="factor"/>
+			future use: will scale by that factor.
+		</method>
+		<method name="init">
+			<arg name="factor_y"/>
+			<arg name="factor_x"/>
+			future use: will scale by those factors.
+		</method>
+		<inlet id="0">
+			<grid><dim>y x {r g b}</dim>
+			identical to @scale_to with arguments that are exactly
+			twice those of the incoming grid. It is several times faster.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>y x {r g b}</dim></grid>
+		</outlet>
+	</jmax-class>
+
 	<jmax-class name="@spread">
-		<icon image="images/@spread.jpg" text="[@spread]"/>
+		<icon text="[@spread]"/>
 		<help image="images/grab_spread.png" text="[@spread]"/>
 
 		<p>typically you plug a @identity_transform into this object,
@@ -822,9 +847,9 @@
 	</jmax-class>
 </section>
 
-<section name="Reporting Objects">
+<section name="Objects for Reporting">
 	<jmax-class name="@dim">
-		<icon image="images/@dim.jpg" text="[@dim]"/>
+		<icon text="[@dim]"/>
 		<help image="images/grab_dim.png"/>
 
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
@@ -852,9 +877,9 @@
 	</jmax-class>
 </section>
 
-<section name="Objects intended for Picture Processing">
+<section name="Objects for Picture Processing">
 	<jmax-class name="@convolve">
-		<icon image="images/@convolve.png" text="[@convolve * + 0]"/>
+		<icon text="[@convolve * + 0]"/>
 
 		<p>this is the object for blurring, sharpening, finding edges,
 		embossing, and many other uses.</p>
@@ -890,33 +915,8 @@
 		</outlet>
 	</jmax-class>
 
-	<jmax-class name="@scale_by">
-		<icon image="images/@scale_by.png" text="[@scale_by]"/>
-		<method name="init">
-			no arguments. scales by 2.
-		</method>
-		<method name="init">
-			<arg name="factor"/>
-			future use: will scale by that factor.
-		</method>
-		<method name="init">
-			<arg name="factor_y"/>
-			<arg name="factor_x"/>
-			future use: will scale by those factors.
-		</method>
-		<inlet id="0">
-			<grid><dim>y x {r g b}</dim>
-			identical to @scale_to with arguments that are exactly
-			twice those of the incoming grid. It is several times faster.
-			</grid>
-		</inlet>
-		<outlet id="0">
-			<grid><dim>y x {r g b}</dim></grid>
-		</outlet>
-	</jmax-class>
-
 	<jmax-class name="@contrast">
-		<icon image="images/@contrast.jpg" text="[@contrast]"/>
+		<icon image="@contrast" text="[@contrast]"/>
 		<help image="images/grab_contrast.png" text="[@contrast]"/> 
 
 		<method name="init">
@@ -952,7 +952,7 @@
 	</jmax-class>
 
 	<jmax-class name="@posterize">
-		<icon image="images/@posterize.jpg" text="[@posterize]"/>
+		<icon image="@posterize" text="[@posterize]"/>
 		<help image="images/grab_posterize.png" text="[@posterize]"/>
 
 		<p>@posterize reduces the number of possible intensities in an image;
@@ -1048,6 +1048,30 @@
 		</grid>
 	</jmax-class>
 
+	<jmax-class name="format mpeg @in">
+		<icon image="format_mpeg" text="[open mpeg file filename.mpeg]"/>
+		<p>Support for MPEG Video Stream only.
+		Does not support MPEG System Stream (that is,
+		files that contain both audio and video).
+		</p>
+		<p>Can only open one file at once (libmpeg.so limitation).
+		May scream error messages in a rude way.
+		</p>
+		<p>By opposition to PPM and TARGA, this format driver only
+		allows a single MPEG stream per file (you cannot "cat"
+		several MPEG files together).
+		</p>
+		<p>Rewind / Frame Select not supported.
+		</p>
+
+		<method name="open mpeg file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+	</jmax-class>
+
+
 	<jmax-class name="format grid @in/@out">
 		<icon image="format_grid" text="[open grid file filename.grid]"/>
 		<icon image="format_grid_tcp" text="[open grid tcp artengine.ca 4242]"/>
@@ -1121,7 +1145,6 @@
 	<jmax-class name="format x11 @in/@out">
 		<icon image="format_x11" text="[open x11 here]"/>
 		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
-		<help image="images/grab_video_out.png" text="video_out_patch"/>
 
 		<method name="open x11 here">
 			connects to the default X11 server,
