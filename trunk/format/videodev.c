@@ -243,7 +243,7 @@ METHOD(FormatVideoDev,size) {
 	/* bug here: won't flush the frame queue */
 
 	FREE($->dim);
-	$->dim = Dim_new(3,v);
+	$->dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
@@ -262,7 +262,7 @@ static Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 
 	int n;
 	if (frame != -1) return 0;
-	$->left = Dim_prod($->dim);
+	$->left = $->dim->prod();
 
 	$->stuff = NEW2(uint8,$->left);
 
@@ -299,8 +299,8 @@ METHOD(FormatVideoDev,frame_ask) {
 	$->pending_frames[0] = $->pending_frames[1];
 	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
-	$->vmmap.width  = Dim_get($->dim,1);
-	$->vmmap.height = Dim_get($->dim,0);
+	$->vmmap.width  = $->dim->get(1);
+	$->vmmap.height = $->dim->get(0);
 //	whine("will try:");
 //	video_mmap_whine(&$->vmmap);
 	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) RAISE("ioctl error");
@@ -310,14 +310,14 @@ METHOD(FormatVideoDev,frame_ask) {
 }
 
 static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
-	GridOutlet_begin(out,Dim_dup($->dim));
+	GridOutlet_begin(out,$->dim->dup());
 
 	/* picture is converted here. */
 	{
-		int sy = Dim_get($->dim,0);
-		int sx = Dim_get($->dim,1);
+		int sy = $->dim->get(0);
+		int sx = $->dim->get(1);
 		int y;
-		int bs = Dim_prod_start($->dim,1);
+		int bs = $->dim->prod(1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + BitPacking_bytes($->bit_packing) * sx * y;

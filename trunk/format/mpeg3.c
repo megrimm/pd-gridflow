@@ -52,13 +52,13 @@ METHOD(FormatMPEG3,frame) {
 	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 	{
 		int v[] = { sy, sx, 3 };
-		GridOutlet_begin($->out[0], Dim_new(3,v));
+		GridOutlet_begin($->out[0], new Dim(3,v));
 	}
 	{
 		int y;
-		int sy = Dim_get($->out[0]->dim,0);
-		int sx = Dim_get($->out[0]->dim,1);
-		int bs = Dim_prod_start($->out[0]->dim,1);
+		int sy = $->out[0]->dim->get(0);
+		int sx = $->out[0]->dim->get(1);
+		int bs = $->out[0]->dim->prod(1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + 3*sx*y;
