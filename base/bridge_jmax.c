@@ -281,7 +281,7 @@ static Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
 static Ruby gf_find_file(Ruby rself, Ruby s) {
 	char buf[1024];
 	if (TYPE(s)!=T_STRING) RAISE("expected string");
-	/* unlikely buffer overflow ahead (blame jMax) */
+	/* unlikely buffer overflow ahead (apparently a bug in jMax API) */
 	if (fts_file_get_read_path(RSTRING(s)->ptr,buf)) {
 		return rb_str_new2(buf);
 	} else {

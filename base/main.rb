@@ -667,7 +667,7 @@ end
 class RubyUDPSend < FObject
 	def initialize(host,port)
 		@socket = UDPSocket.new
-		@host,@port = host,port
+		@host,@port = host.to_s,port.to_i
 	end
 
 	def encode(x)
@@ -684,6 +684,7 @@ class RubyUDPSend < FObject
 			args.map{|arg| encode(arg) }.join("") + "\x0b",
 			0, @host, @port
 	end
+
 	install "ruby_udpsend", 1, 0
 end
 

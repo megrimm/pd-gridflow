@@ -489,6 +489,7 @@ Ruby GridFlow_memcpy_bytes (Ruby rself) { return ull2num(memcpy_bytes); }
 Ruby GridFlow_profiler_reset2 (Ruby rself) {
 	memcpy_calls = 0;
 	memcpy_bytes = 0;
+	return Qnil;
 }
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
