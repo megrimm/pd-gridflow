@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no" ?>
 <!DOCTYPE documentation SYSTEM 'jmax.dtd'>
-<documentation>
+<documentation title="Installation">
 <!-- $Id$ -->
 <!--
         GridFlow Installation
@@ -26,11 +26,10 @@
 		<list>
 		<li>jMax 2.5</li>
 		<li>jMax 4.1</li>
-		<li>PureData</li>
+		<li>PureData 0.35 or 0.36 or 0.37 or 0.37.devel or 0.37.impd</li>
 	</list></li>
 </list></p>
 <p>Optional:<list>
-	<li>PureData 0.35 or 0.36 (support is experimental)</li>
 	<li>Simple Directmedia Layer (sdl)</li>
 	<li>Ascii Art Library (aalib)</li>
 	<li>HeroineWarrior's libmpeg3.so</li>
