@@ -3,6 +3,9 @@
 
         MetaRuby
         file: Main Loop
+		This is GridFlow's edition (faster and possibly less buggy)
+		This should be retested properly
+		And I should write unit tests for this one.
 
         Copyright (c) 2001,2002 by Mathieu Bouchard
         Licensed under the same license as Ruby.
@@ -59,7 +62,13 @@ to reschedule themselves without hogging resources.
 =end
 
 class TimerQueue
-	TimerEntry = Struct.new(:time,:message)
+# using Structs seem to cause big segfault problems but i don't know why
+#	TimerEntry = Struct.new(:time,:message)
+	class TimerEntry
+		attr_accessor :time,:message
+		def initialize(time,message) @time,@message=time,message end
+	end
+
 	def initialize(message_queue)
 		@queue = []
 		@message_queue = message_queue
@@ -133,43 +142,51 @@ event-type mask):
 =end
 
 class StreamMap
-	StreamEntry = Struct.new(:stream,:stream_observer,:type_mask)
-	READ = 4
-	WRITE = 2
-	EXCEPT = 1
+# using Structs seem to cause big segfault problems but i don't know why
+#	StreamEntry = Struct.new(:stream,:stream_observer,:type_mask)
+	class StreamEntry
+		attr_accessor :stream,:stream_observer,:type_mask
+		def initialize(time,message)
+			STDERR.puts "hello"
+			@stream,@stream_observer,@type_mask=
+			 stream, stream_observer, type_mask
+		end
+	end
+
+	EXCEPT,WRITE,READ = 1,2,4
+	Selectors = [:ready_to_read,:ready_to_write,:stream_exception]
+	Flags =     [          READ,          WRITE,        EXCEPT   ]
+	Nothing = [[]]*3
 
 	def initialize
-		@streams = {}
+		@streams = {EXCEPT=>{},WRITE=>{},READ=>{}}
+		# cache so that #select does not create too many objects
+		@streamlists = {}
 	end
 
 	# why do i use #to_s again?
 	def add_stream(stream,observer,type_mask)
-		@streams[stream.to_s] =
-			StreamEntry.new(stream,observer,type_mask)
+		@streams.each {|k,v|
+			next unless type_mask&k != 0
+			v[stream.to_s] = StreamEntry.new(stream,observer,type_mask)
+			@streamlists.remove k
+		}
 	end
 
 	def remove_stream(stream)
-		@streams.remove(stream.to_s)
-	end
-
-	def streams_by_mask(mask)
-		@streams.values.
-			find_all {|a| a.type_mask & mask }.
-			map      {|a| a.stream }
+		@streams.each {|k,v| v.remove(stream.to_s) and @streamlists.remove k }
 	end
 
 	# like IO.select, but using this object's lists, and
 	# returning always a three element array.
 	def select(time=nil)
+		Flags.each {|f| @streamlists[f] ||= @streams[f].to_a }
 		IO.select(
-			streams_by_mask(READ),
-			streams_by_mask(WRITE),
-			streams_by_mask(EXCEPT),
-			time) || [[]]*3
+			@streamlists[READ],
+			@streamlists[WRITE],
+			@streamlists[EXCEPT],
+			time) || Nothing
 	end
-
-	Selectors = [:ready_to_read,:ready_to_write,:stream_exception]
-	Flags =     [          READ,          WRITE,        EXCEPT   ]
 
 	def make_messages(time=nil)
 		lists = select(time)
@@ -177,7 +194,7 @@ class StreamMap
 		messages = []
 		lists.each_with_index {|l,i|
 			l.each{|s|
-				se = @streams[s.to_s]
+				se = @streams[Flags[i]][s.to_s]
 				observer = se.stream_observer
 				messages << Message.new(observer,Selectors[i],s) \
 					if se.type_mask & Flags[i] > 0
