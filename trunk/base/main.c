@@ -81,8 +81,9 @@ static int object_count=0;
 
 static void FObject_free (void *foo) {
 	GridObject *$ = (GridObject *)foo;
-	fprintf(stderr,"Say farewell to %08x: %s\n",(int)$,
+/*	fprintf(stderr,"Say farewell to %08x: %s\n",(int)$,
 		rb_str_ptr(rb_funcall($->peer,SI(args),0)));
+*/
 	if (!$->peer) {
 		fprintf(stderr,"attempt to free object that has no peer\n");
 		abort();
@@ -119,15 +120,12 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
 	Ruby sym;
 	int outlet;
 	FObject_prepare_message(argc,argv,sym,outlet);
-
-	int noutlets = INT(rb_ivar_get(CLASS_OF($),SYM2ID(SYM(@noutlets))));
-	if (outlet<0 || outlet>=noutlets) {
-		EARG("outlet %d does not exist",outlet);
-	}
-
+	Ruby noutlets2 = rb_ivar_get(rb_obj_class($),SYM2ID(SYM(@noutlets)));
+	if (TYPE(noutlets2)!=T_FIXNUM) EARG("don't know how many outlet this has");
+	int noutlets = INT(noutlets2);
+	if (outlet<0 || outlet>=noutlets) EARG("outlet %d does not exist",outlet);
 	if (gf_bridge.send_out && FObject_peer($))
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
-
 	Ruby ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
 		rb_ivar_get($,SYM2ID(sym_outlets)) : Qnil;
 	if (ary==Qnil) return Qnil;
@@ -362,9 +360,7 @@ void Init_gridflow () {
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
-
-	cPointer = rb_define_class_under(mGridFlow, "Pointer",
-	rb_cObject);
+	cPointer = rb_define_class_under(mGridFlow, "Pointer", rb_cObject);
 	DEF(Pointer, get, 0);
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
@@ -382,11 +378,14 @@ void Init_gridflow () {
 	}
 
 	/* run startup of every source file */
+
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do \
-		require	f end rescue STDERR.puts \"can't load: #{$!}\n$: = #{$:}\"");
+
+	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do "
+//	EVAL("for f in %w(gridflow/base/main.rb) do "
+		"require f end rescue STDERR.puts \"can't load: #{$!}\n$: = #{$:}; "
+		"backtrace: #{$!.backtrace}\"");
 	signal(11,SIG_DFL); /* paranoia */
 }
-

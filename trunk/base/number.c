@@ -206,7 +206,7 @@ void swap32 (int n, Pt<uint32> data) {
 	})
 }
 
-/* this could be faster (use asm) */
+/* this could be faster (use asm or do it in int32 chunks) */
 void swap16 (int n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
@@ -272,7 +272,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	int size = rb_ary_len(argv[2]);
 	if (size<1) RAISE("not enough masks");
 	if (size>4) RAISE("too many masks (%d)",size);
-	for (int i=0; i<size; i++) masks2[i] = INT(masks[i]);
+	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
 	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
 	$ = Data_Wrap_Struct(qlass, 0, BitPacking_sweep, c_peer);
