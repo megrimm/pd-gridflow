@@ -42,7 +42,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 #endif
 
 struct FormatX11 : Format {
-
+	template <class T> void frame_by_type (T bogus);
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
@@ -194,17 +194,14 @@ void FormatX11::alarm() {
 /* ---------------------------------------------------------------- */
 
 METHOD3(FormatX11,frame) {
-//	gfpost("dim = %s",dim->to_s());
-
 	XGetSubImage(display, window,
 		0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
-
-	out[0]->begin(dim->dup());
-
+	out[0]->begin(dim->dup(),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1);
 	int bs=dim->prod(1);
-	STACK_ARRAY(int32,b2,bs);
+	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
 			+ ximage->bytes_per_line * y;

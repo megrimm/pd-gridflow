@@ -71,6 +71,7 @@ class Format #< GridObject
 
 	def initialize(mode,*)
 		super
+		@cast = :int32
 		@mode = mode
 		@parent = nil
 		flags = self.class.instance_eval{@flags}
@@ -130,12 +131,19 @@ class Format #< GridObject
 			@headerless = nil
 		when :type
 		# bug: should not be able to modify this _during_ a transfer
+		# bug: does not exist for formats other than "grid".
 			case args[0]
 			when :uint8; @bpv=8
 				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
 			when :int16; @bpv=16
 				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
 			when :int32; @bpv=32
+			else raise "unsupported number type"
+			end
+		when :cast
+			case args[0]
+			when :uint8, :int16, :int32, :float32
+				@cast = args[0]
 			else raise "unsupported number type"
 			end
 		else
@@ -492,7 +500,7 @@ class FormatGrid < Format; include EventIO
 		if @prod > GridFlow.max_size
 			raise "dimension list: invalid prod (#{@prod})"
 		end
-		send_out_grid_begin 0, @dim
+		send_out_grid_begin 0, @dim, @cast
 
 		on_read(bufsize) {|data| frame3 data }
 		@dex = 0
@@ -605,7 +613,11 @@ module PPMandTarga
 			while n>0 do
 				bs=n if bs>n
 				@stream.read(bs,data) or raise EOFError
-				send_out_grid_flow 0, @bp.unpack(data,buf)
+				if @bp then
+					send_out_grid_flow 0, @bp.unpack(data,buf)
+				else
+					send_out_grid_flow 0, data, :uint8
+				end
 				n-=bs
 			end
 		else
@@ -613,7 +625,11 @@ module PPMandTarga
 			while n>0 do
 				bs=n if bs>n
 				data = @stream.read(bs) or raise EOFError
-				send_out_grid_flow 0, @bp.unpack(data,buf)
+				if @bp then
+					send_out_grid_flow 0, @bp.unpack(data,buf)
+				else
+					send_out_grid_flow 0, data, :uint8
+				end
 				data.replace nothing and false # prevent clogging memory
 				n-=bs
 			end
@@ -623,7 +639,11 @@ end
 
 class FormatPPM < Format; include EventIO, PPMandTarga
 	def initialize(mode,source,*args)
-		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
+		if mode==:out
+			@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
+		else
+			@bp = nil
+		end
 		super
 		raw_open mode,source,*args
 	end
@@ -643,7 +663,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 		metrics[2]==255 or
 			raise "Wrong color depth (max_value=#{metrics[2]} instead of 255)"
 
-		send_out_grid_begin 0, [metrics[1], metrics[0], 3]
+		send_out_grid_begin 0, [metrics[1], metrics[0], 3], @cast
 		frame_read_body metrics[1], metrics[0], 3
 	end
 
@@ -714,7 +734,7 @@ targa header is like:
 #		GridFlow.post "tga: comment: \"#{comment}\""
 
 		set_bitpacking depth
-		send_out_grid_begin 0, [ h, w, depth/8 ]
+		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
 		frame_read_body h, w, depth/8
 	end
 

@@ -339,12 +339,13 @@ METHOD3(FormatVideoDev,frame_ask) {
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	GridOutlet *o = out[0];
-	o->begin(dim->dup());
+	o->begin(dim->dup(),
+		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
-	STACK_ARRAY(int32,b2,bs);
+	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> b1 = buf + bit_packing->bytes * sx * y;
 		bit_packing->unpack(sx,b1,b2);
@@ -399,10 +400,11 @@ METHOD3(FormatVideoDev,frame) {
 	return Qnil;
 }
 
-GRID_INLET(FormatVideoDev,0) { RAISE("can't write."); }
-GRID_FLOW {}
-GRID_FINISH {}
-GRID_END
+GRID_INLET(FormatVideoDev,0) {
+	RAISE("can't write.");
+} GRID_FLOW {
+} GRID_FINISH {
+} GRID_END
 
 METHOD3(FormatVideoDev,norm) {
 	int value = INT(argv[0]);
@@ -593,7 +595,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatVideoDev,"FormatVideoDev",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatVideoDev,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatVideoDev,0,4)),
 DECL(FormatVideoDev,initialize),
 DECL(FormatVideoDev,initialize2),
 DECL(FormatVideoDev,alloc_image),

@@ -185,7 +185,7 @@ static void startup (GridClass *self) {
 }
 
 GRCLASS(FormatAALib,"FormatAALib",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatAALib,0,4)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatAALib,0,4)),
 DECL(FormatAALib,initialize),
 DECL(FormatAALib,option),
 DECL(FormatAALib,close))
