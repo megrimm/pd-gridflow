@@ -61,7 +61,7 @@ METHOD(FormatMPEG3,frame) {
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + 3*sx*y;
-			BitPacking_unpack($->bit_packing,sx,b1,b2);
+			$->bit_packing->unpack(sx,b1,b2);
 			$->out[0]->send(bs,b2);
 		}
 	}
@@ -98,7 +98,7 @@ METHOD(FormatMPEG3,init) {
 
 	{
 		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-		$->bit_packing = BitPacking_new(is_le(),3,3,mask);
+		$->bit_packing = new BitPacking(is_le(),3,3,mask);
 	}
 }
 

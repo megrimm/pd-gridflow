@@ -319,8 +319,8 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 		int bs = $->dim->prod(1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
-			uint8 *b1 = buf + BitPacking_bytes($->bit_packing) * sx * y;
-			BitPacking_unpack($->bit_packing,sx,b1,b2);
+			uint8 *b1 = buf + $->bit_packing->bytes * sx * y;
+			$->bit_packing->unpack(sx,b1,b2);
 			out->send(bs,b2);
 		}
 	}
@@ -475,7 +475,7 @@ METHOD(FormatVideoDev,init2) {
 	case VIDEO_PALETTE_RGB24:{
 //		uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		$->bit_packing = BitPacking_new(is_le(),3,3,masks);
+		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	case VIDEO_PALETTE_RGB565:{
 		/* I think the BTTV card is lying. */
@@ -484,7 +484,7 @@ METHOD(FormatVideoDev,init2) {
 //			uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 			uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 //			uint32 masks[3] = { 0xff000000,0x00ff0000,0x0000ff00 };
-		$->bit_packing = BitPacking_new(is_le(),3,3,masks);
+		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	default:
 		whine("can't handle palette %d", gp->palette);
