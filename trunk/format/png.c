@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -35,9 +35,7 @@ struct FormatPNG : Format {
 	png_structp png;
 	png_infop info;
 	FILE *f;
-
 	FormatPNG () : bit_packing(0), png(0), f(0) {}
-	
 	\decl void close ();
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
@@ -76,21 +74,14 @@ GRID_INLET(FormatPNG,0) {
 		png_destroy_read_struct(&png, NULL, NULL);
 		RAISE("!info");
 	}
-
 	if (setjmp(png_jmpbuf(png))) {
 	barf_out:
 		png_destroy_read_struct(&png, &info, NULL);
 		RAISE("png read error");
 	}
-
 	png_init_io(png, f);
 	png_set_sig_bytes(png, 8);  /* we already read the 8 signature bytes */
 	png_read_info(png, info);  /* read all PNG info up to image data */
-
-	/* alternatively, could make separate calls to png_get_image_width(),
-	* etc., but want bit_depth and color_type for later [don't care about
-	* compression_type and filter_type => NULLs] */
-
 	uint32 width, height;
 	int bit_depth, color_type;
 	png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type,
