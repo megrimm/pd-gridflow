@@ -75,8 +75,8 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if ($->use_shm) {
 		XSync($->display,False);
-		if (sy>Dim_get($->dim,0)) sy=Dim_get($->dim,0);
-		if (sx>Dim_get($->dim,1)) sx=Dim_get($->dim,1);
+		if (sy>$->dim->get(0)) sy=$->dim->get(0);
+		if (sx>$->dim->get(1)) sx=$->dim->get(1);
 //		whine("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
 		XShmPutImage($->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
@@ -181,22 +181,22 @@ static void FormatX11_alarm(FormatX11 *$) {
 
 METHOD(FormatX11,frame) {
 	{
-		char *s = Dim_to_s($->dim);
+		char *s = $->dim->to_s();
 		whine("$->dim = %s",s);
 		FREE(s);
 	}
 
 	XGetSubImage($->display, $->window,
-		0, 0, Dim_get($->dim,1), Dim_get($->dim,0),
-		-1, ZPixmap, $->ximage, 0, 0);
+		0, 0, $->dim->get(1), $->dim->get(0),
+		(unsigned)-1, ZPixmap, $->ximage, 0, 0);
 
-	GridOutlet_begin($->out[0],Dim_dup($->dim));
+	GridOutlet_begin($->out[0],$->dim->dup());
 
 	{
-		int sy = Dim_get($->dim,0);
-		int sx = Dim_get($->dim,1);
+		int sy = $->dim->get(0);
+		int sx = $->dim->get(1);
 		int y;
-		int bs = Dim_prod_start($->dim,1);
+		int bs = $->dim->prod(1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
@@ -293,7 +293,7 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	}
 
 	FREE($->dim);
-	$->dim = Dim_new(3,v);
+	$->dim = new Dim(3,v);
 
 /* ximage */
 
@@ -306,13 +306,13 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	oldw = $->window;
 	if (oldw) {
 		if ($->is_owner) {
-			char *s = Dim_to_s($->dim);
+			char *s = $->dim->to_s();
 			whine("About to resize window: %s",s);
 			FREE(s);
 			XResizeWindow($->display,$->window,sx,sy);
 		}
 	} else {
-		char *s = Dim_to_s($->dim);
+		char *s = $->dim->to_s();
 		whine("About to create window: %s",s);
 		FREE(s);
 		$->window = XCreateSimpleWindow($->display,
@@ -337,15 +337,15 @@ static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 }
 
 GRID_BEGIN(FormatX11,0) {
-	int sxc = Dim_prod_start(in->dim,1);
-	int sx = Dim_get(in->dim,1), osx = Dim_get($->dim,1);
-	int sy = Dim_get(in->dim,0), osy = Dim_get($->dim,0);
+	int sxc = in->dim->prod(1);
+	int sx = in->dim->get(1), osx = $->dim->get(1);
+	int sy = in->dim->get(0), osy = $->dim->get(0);
 	GridInlet_set_factor(in,sxc);
-	if (Dim_count(in->dim) != 3) {
+	if (in->dim->count() != 3) {
 		whine("expecting 3 dimensions: rows,columns,channels");
 		return false;
-	} else if (Dim_get(in->dim,2) != 3) {
-		whine("expecting 3 channels: red,green,blue");
+	} else if (in->dim->get(2) != 3) {
+		whine("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 		return false;
 	}
 	if (sx != osx || sy != osy) FormatX11_resize_window($,sx,sy);
@@ -354,8 +354,8 @@ GRID_BEGIN(FormatX11,0) {
 
 GRID_FLOW(FormatX11,0) {
 	int bypl = $->ximage->bytes_per_line;
-	int sxc = Dim_prod_start(in->dim,1);
-	int sx = Dim_get(in->dim,1);
+	int sxc = in->dim->prod(1);
+	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
 
 	assert((in->dex % sxc) == 0);
@@ -374,8 +374,8 @@ GRID_FLOW(FormatX11,0) {
 
 GRID_END(FormatX11,0) {
 	if ($->autodraw==1) {
-		int sx = Dim_get(in->dim,1);
-		int sy = Dim_get(in->dim,0);
+		int sx = in->dim->get(1);
+		int sy = in->dim->get(0);
 		FormatX11_show_section($,0,0,sx,sy);
 	}
 }
@@ -401,8 +401,8 @@ METHOD(FormatX11,option) {
 		if (sx>MAX_INDICES) RAISE("width too big");
 		FormatX11_resize_window($,sx,sy);
 	} else if (sym == SYM(draw)) {
-		int sy = Dim_get($->dim,0);
-		int sx = Dim_get($->dim,1);
+		int sy = $->dim->get(0);
+		int sx = $->dim->get(1);
 		FormatX11_show_section($,0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
 		int autodraw = INT(argv[1]);
@@ -543,7 +543,7 @@ METHOD(FormatX11,init) {
 	}
 
 	BitPacking_whine($->bit_packing);
-	MainLoop_add($,FormatX11_alarm);
+	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
 }
 
 FMTCLASS(FormatX11,"x11","X Window System Version 11.5",FF_R | FF_W,

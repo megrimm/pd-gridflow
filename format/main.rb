@@ -39,7 +39,7 @@ class<<self
 	attr_reader :formats
 	def max_rank; 16; end
 	def max_size; 64*1024**2; end
-	def max_packet; 1024; end
+	def max_packet; 1024*2; end
 end
 
 ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
@@ -68,6 +68,8 @@ module GridIO
 	def check_file_open
 		if not @format then raise "can't do that: file not open" end
 	end
+
+	attr_reader :format
 
 	def _0_option(*a)
 		check_file_open
@@ -170,7 +172,7 @@ class GridOut < GridObject
 				@framecount, time, ((time-@time)*1000).to_i)
 			@time = time
 		end
-		@framecount
+		@framecount+=1
 	end
 
 	def delete
@@ -213,12 +215,11 @@ module EventIO
 
 	def try_read dummy
 #		while @action
-		@buffer ||= ""
 #		p @chunksize-@buffer.length
-		t = @stream.read(@chunksize-@buffer.length)
+		t = @stream.read(@chunksize-(if @buffer then @buffer.length else 0 end))
 #		p t
 		raise if not t
-		@buffer << t
+		if @buffer then @buffer << t else @buffer = t end
 		if @buffer.length == @chunksize
 			action,buffer = @action,@buffer
 			@action,@buffer = nil,""
@@ -303,6 +304,8 @@ class FormatGrid < Format; include EventIO
 	# bits per value: 32 only
 	attr_accessor :bpv # Fixnum
 
+	attr_reader :stream
+
 	def initialize(mode,source,*args)
 		super
 		@bpv = 32
@@ -373,7 +376,7 @@ class FormatGrid < Format; include EventIO
 		prod = 1
 		@dim.each {|x| prod *= x }
 		n = prod/@dim[0]
-		k = 1 * GridFlow.max_packet / n
+		k = GridFlow.max_packet / n
 		k=1 if k<1
 		@bufsize = k*n*@bpv/8
 
@@ -431,12 +434,8 @@ class FormatGrid < Format; include EventIO
 #			@stream.write BitPacking.new(ENDIAN_LITTLE,3,
 #				data.pack "c*"
 		when 32
-			if GridFlow::OurByteOrder == is_le
-				@stream.write data
-			else
-#				@stream.write data.swap32 #!@#$
-				@stream.write data.unpack("N*").pack("V*")
-			end
+			data.swap32! if GridFlow::OurByteOrder != (is_le ? 1 : 0)
+			@stream.write data
 		end
 	end
 
