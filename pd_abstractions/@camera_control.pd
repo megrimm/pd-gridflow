@@ -1,25 +1,19 @@
-#N canvas 287 295 576 419 10;
-#X obj 50 12 bng 15 250 50 0 empty \$0-camera_r empty 0 -6 0 8 -262144
+#N canvas 287 295 576 286 10;
+#X obj 50 12 bng 15 250 50 0 empty \$0-camera_r empty 0 -6 0 8 -241291
 -1 -1;
-#X obj 50 358 outlet;
-#X obj 86 57 hradio 15 1 0 3 \$0-size_s \$0-size_r empty 0 -6 0 8 -260818
--1 -1 0;
-#X obj 86 113 hradio 15 1 0 4 \$0-channel_s \$0-channel_r empty 0 -6
-0 8 -241291 -1 -1 0;
-#X floatatom 86 130 5 0 0 0 - - -;
-#X floatatom 86 74 5 0 0 0 - - -;
-#X text 136 57 <-- 2 select the size (120 160)(240 320)(480 640);
-#X text 156 111 <-- 3 select the channel (0-3);
-#X obj 88 185 hsl 128 15 0 65535 0 0 \$0-brightness_s \$0-brightness_r
+#X obj 50 236 outlet;
+#X obj 86 130 hradio 18 1 0 4 \$0-channel_s \$0-channel_r _0__1__2__3_
+0 -4 0 8 -241291 -258699 -1 0;
+#X obj 413 63 hsl 128 15 0 65535 0 0 \$0-brightness_s \$0-brightness_r
 brightness 8 8 0 8 -260818 -1 -1 0 1;
-#X obj 88 225 hsl 128 15 0 65535 0 0 \$0-hue_s \$0-hue_r hue 8 8 0
+#X obj 413 103 hsl 128 15 0 65535 0 0 \$0-hue_s \$0-hue_r hue 8 8 0
 8 -260818 -1 -1 0 1;
-#X obj 88 165 hsl 128 15 0 65535 0 0 \$0-contrast_s \$0-contrast_r
+#X obj 413 43 hsl 128 15 0 65535 0 0 \$0-contrast_s \$0-contrast_r
 contrast 8 8 0 8 -260818 -1 -1 0 1;
-#X obj 88 245 hsl 128 15 0 65635 0 0 \$0-whiteness_s \$0-whiteness_r
+#X obj 413 123 hsl 128 15 0 65635 0 0 \$0-whiteness_s \$0-whiteness_r
 whiteness 8 8 0 8 -260818 -1 -1 0 1;
-#X text 121 337 <-- open to access more camera controls;
-#N canvas 170 0 656 624 camera 0;
+#X text 119 216 <-- open to access more camera controls;
+#N canvas 170 0 388 415 camera 1;
 #X msg 9 59 open videodev /dev/video0;
 #X obj 9 312 outlet;
 #X obj 9 8 inlet;
@@ -63,20 +57,25 @@ whiteness 8 8 0 8 -260818 -1 -1 0 1;
 #X connect 20 0 6 0;
 #X connect 20 1 7 0;
 #X connect 20 2 8 0;
-#X restore 50 338 pd camera;
-#X msg 70 279 colorspace YUV420P;
-#X text 219 279 <-- click here if your webcam uses this colorspace
+#X restore 50 216 pd camera;
+#X msg 64 161 colorspace YUV420P;
+#X text 199 161 <-- click here if your webcam uses this colorspace
 ;
-#X obj 93 302 @yuv_to_rgb;
-#X text 178 304 <-- add this after [@in] to translate the colorspaces
+#X obj 84 187 @yuv_to_rgb;
+#X text 166 187 <-- add this after [@in] to translate the colorspaces
 ;
-#X obj 88 205 hsl 128 15 0 65535 0 0 \$0-colour_s \$0-colour_r colour
+#X obj 413 83 hsl 128 15 0 65535 0 0 \$0-colour_s \$0-colour_r colour
 8 8 0 8 -260818 -1 -1 0 1;
-#X text 98 359 plug this to @in;
+#X text 98 237 plug this to @in;
 #X text 73 14 <-- 1 initialise the camera (hardcoded to /dev/video0)
 ;
-#X connect 0 0 13 0;
-#X connect 2 0 5 0;
-#X connect 3 0 4 0;
-#X connect 13 0 1 0;
-#X connect 14 0 13 0;
+#X obj 87 46 vradio 15 1 0 3 \$0-size_s \$0-size_r empty 0 -6 0 8 -241291
+-258699 -1 0;
+#X text 105 46 120 \, 160;
+#X text 105 62 240 \, 320;
+#X text 105 77 480 \, 640;
+#X text 85 31 select size;
+#X text 86 107 select channel;
+#X connect 0 0 8 0;
+#X connect 8 0 1 0;
+#X connect 9 0 8 0;
