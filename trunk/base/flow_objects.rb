@@ -1032,6 +1032,22 @@ class InvTimes < FObject
   install "inv*", 2, 1
 end
 
+class JMaxRange<GridFlow::FObject
+  def initialize(*a) @a=a end
+  def initialize2
+    GridFlow.whatever  :addinlets, self, @a.length
+    GridFlow.whatever :addoutlets, self, @a.length
+  end
+  def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
+  def method_missing(sym,*a)
+    m = /^(_\d+_)(.*)/.match(sym.to_s) or return super
+    m[2]=="float" or return super
+    @a[m[1].to_i-1] = a[0]
+    GridFlow.post "setting a[#{m[1].to_i-1}] = #{a[0]}"
+  end
+  install "range", 1, 1
+end
+
 end # if not =~ jmax
 
 #-------- fClasses for: GUI
@@ -1201,7 +1217,7 @@ end # if const_defined? :USB
 # requires Ruby 1.8.0 because of bug in Ruby 1.6.x
 class JoystickPort < FObject
   def initialize(port)
-    raise "sorry, requires Ruby 1.8" if VERSION<"1.8"
+    raise "sorry, requires Ruby 1.8" if RUBY_VERSION<"1.8"
     @f = File.open(port.to_s,"r+")
     @status = nil
     $tasks[self] = proc {tick}
