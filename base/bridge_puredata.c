@@ -26,9 +26,6 @@
 #include <stdarg.h>
 #include <sys/time.h>
 
-/* sorry. memory leaks must be found by hand in this module */
-#undef strdup
-
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #include <m_pd.h>

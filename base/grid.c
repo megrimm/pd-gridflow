@@ -39,27 +39,27 @@ int gf_max_packet_length = 1024*2;
 /* **************** Grid ****************************************** */
 
 void Grid::init(Dim *dim, NumberTypeIndex nt) {
-	FREE(this->dim);
-	FREE(this->data);
+	delete this->dim;
+	delete[] this->data;
 	this->nt = nt;
 	this->dim = dim;
-	this->data = dim ? NEWA(char,dim->prod()*number_type_table[nt].size/8) : 0;
+	this->data = dim ? new char[dim->prod()*number_type_table[nt].size/8] : 0;
 }
 
 void Grid::init_from_ruby_list(int n, VALUE *a) {
 		int dims = 1;
 		VALUE delim = SYM(#);
-		init(NEW(Dim,(0,0)));
+		init(new Dim(0,0));
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
 				int v[i];
 				for (int j=0; j<i; j++) v[j] = INT(a[j]);
-				init(NEW(Dim,(i,v)));
+				init(new Dim(i,v));
 				i++; a+=i; n-=i;
 				goto fill;
 			}
 		}
-		init(NEW(Dim,(1,&n)));
+		init(new Dim(1,&n));
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -72,7 +72,7 @@ void Grid::init_from_ruby(VALUE x) {
 	if (TYPE(x)==T_ARRAY) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
-		init(NEW(Dim,(0,0)));
+		init(new Dim(0,0));
 		as_int32()[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -83,8 +83,8 @@ void Grid::init_from_ruby(VALUE x) {
 
 void Grid::del() {
 //	fprintf(stderr,"Grid::del() : %08x\n",(int)this);
-	FREE(dim);
-	FREE(data);
+	delete dim; dim=0;
+	delete[] data; data=0;
 }
 
 Grid::~Grid() {
@@ -105,16 +105,16 @@ GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 }
 
 GridInlet::~GridInlet() {
-	FREE(dim);
-	FREE(buf);
+	delete dim;
+	delete[] buf;
 }
 
 void GridInlet::abort() {
 	if (dim) {
 		if (dim->prod())
 		gfpost("%s: aborting grid: %d of %d", INFO(this), dex, dim->prod());
-		FREE(dim);
-		FREE(buf);
+		delete dim; dim=0;
+		delete buf; buf=0;
 	}
 	dex = 0;
 }
@@ -141,9 +141,9 @@ void GridInlet::set_factor(int factor) {
 	assert(factor > 0);
 	assert(dim->prod() % factor == 0);
 	this->factor = factor;
-	FREE(buf);
+	delete[] buf; buf=0;
 	if (factor > 1) {
-		buf = NEWA(Number,factor);
+		buf = new Number[factor];
 		bufn = 0;
 	}
 }
@@ -173,7 +173,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 
 	int v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	Dim *dim = this->dim = NEW(Dim,(argc,v));
+	Dim *dim = this->dim = new Dim(argc,v);
 
 	dex = 0;
 	int r = rb_ensure(
@@ -207,7 +207,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			if (bufn == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
-					Number *data2 = NEWA(Number,factor);
+					Number *data2 = new Number[factor];
 					COPY(data2,buf,factor);
 					((GridFlow2)gh->flow)(parent->peer,parent,this,factor,data2);
 				} else {
@@ -221,7 +221,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		if (m) {
 			int newdex = dex + m;
 			if (gh->mode==6) {
-				Number *data2 = NEWA(Number,m);
+				Number *data2 = new Number[m];
 				COPY(data2,data,m);
 				((GridFlow2)gh->flow)(parent->peer,parent,this,m,data2);
 			} else {
@@ -242,7 +242,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			((GridFlow2)gh->flow)(parent->peer,parent,this,n,data);
 		} else if (gh->mode==4) {
 			gh->flow(parent->peer,parent,this,n,data);
-			FREE(data);
+			delete data;
 		}
 		dex = newdex;
 	} else {
@@ -258,7 +258,8 @@ void GridInlet::end(int argc, VALUE *argv) {
 			dex, dim->prod());
 	}
 	gh->end(parent->peer,parent,this);
-	FREE(dim);
+	delete dim;
+	dim = 0;
 	dex = 0;
 }
 
@@ -275,7 +276,7 @@ void GridInlet::list(int argc, VALUE *argv) {
 		if (gh->mode==6) {
 			Number *d = data;
 			int size = t.dim->prod()*number_type_table[t.nt].size/8;
-			data = (Number *)NEWA(char,size);
+			data = (Number *)new char[size];
 			memcpy(data,d,size);
 		}
 		gh->flow( parent->peer,parent,this,n,data);
@@ -283,7 +284,8 @@ void GridInlet::list(int argc, VALUE *argv) {
 	gh->end(  parent->peer,parent,this);
 	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
-	FREE(dim);
+	delete dim;
+	dim = 0;
 	dex = 0;
 }
 
@@ -297,7 +299,8 @@ void GridInlet::int_(int argc, VALUE *argv) {
 	gh->end(  parent->peer,parent,this);
 	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
-	FREE(dim);
+	delete dim;
+	dim = 0;
 	dex = 0;
 }
 
@@ -310,7 +313,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	this->woutlet = woutlet;
 	dim = 0;
 	dex = 0;
-	buf = NEWA(Number,gf_max_packet_length);
+	buf = new Number[gf_max_packet_length];
 	bufn = 0;
 	frozen = 0;
 	ron = 0; ro = 0;
@@ -318,10 +321,10 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 }
 
 GridOutlet::~GridOutlet() {
-	FREE(dim);
-	FREE(buf);
-	FREE(ro);
-	FREE(rw);
+	delete dim;
+	delete[] buf;
+	delete[] ro;
+	delete[] rw;
 }
 
 bool GridOutlet::is_busy() {
@@ -332,7 +335,8 @@ bool GridOutlet::is_busy() {
 void GridOutlet::abort() {
 	assert(this);
 	if (!is_busy()) return;
-	FREE(dim);
+	delete dim;
+	dim = 0;
 	dex = 0;
 //	LEAVE_P;
 	VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
@@ -348,7 +352,7 @@ void GridOutlet::end() {
 	VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
 	FObject_send_out(COUNT(a),a,parent->peer);
 //	ENTER_P;
-	FREE(dim);
+	delete dim;
 	dim = 0;
 	dex = 0;
 }
@@ -364,8 +368,8 @@ void GridOutlet::begin(Dim *dim) {
 	this->dim = dim;
 	dex = 0;
 	frozen = 0;
-	ron = 0; FREE(ro); ro = NEWA(GridInlet*,8);
-	rwn = 0; FREE(rw); rw = NEWA(GridInlet*,8);
+	ron = 0; if (ro) delete[] ro; ro = new GridInlet*[MAX_CORDS];
+	rwn = 0; if (rw) delete[] rw; rw = new GridInlet*[MAX_CORDS];
 	VALUE a[n+4];
 	a[0] = INT2NUM(woutlet);
 	a[1] = sym_grid_begin;
@@ -437,7 +441,7 @@ void GridOutlet::give(int n, Number *data) {
 	} else {
 		/* normal stuff */
 		send_direct(n,data);
-		FREE(data);
+		delete[] data;
 	}
 }
 
@@ -452,7 +456,7 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 	assert(is_busy());
 	assert(!frozen);
 	assert(mode==6 || mode==4);
-	assert(ron<8 && rwn<8);
+	assert(ron<MAX_CORDS && rwn<MAX_CORDS);
 	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
 	/* not using ->ro, ->rw yet */
 	if (mode==4) ro[ron++]=in;
@@ -480,9 +484,9 @@ METHOD(GridObject,init) {
 	//gfpost("cl=%p\n",cl);
 	for (i=0; i<cl->handlersn; i++) {
 		GridHandler *gh = &cl->handlers[i];
-		$->in[gh->winlet] = NEW(GridInlet,($,gh));
+		$->in[gh->winlet] = new GridInlet($,gh);
 	}
-	for (i=0; i<cl->outlets; i++) $->out[i] = NEW(GridOutlet,($,i));
+	for (i=0; i<cl->outlets; i++) $->out[i] = new GridOutlet($,i);
 //	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
 	rb_call_super(0,0);
 }
@@ -521,7 +525,7 @@ METHOD(GridObject,send_out_grid_begin) {
 	VALUE *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
-	$->out[outlet]->begin(NEW(Dim,(n,v)));
+	$->out[outlet]->begin(new Dim(n,v));
 }
 
 METHOD(GridObject,send_out_grid_flow) {
@@ -542,8 +546,8 @@ METHOD(GridObject,send_out_grid_end) {
 static void *GridObject_allocate ();
 
 static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
-	GridHandler *gh = NEW(GridHandler,());
-	GridClass *gc = NEW(GridClass,());
+	GridHandler *gh = new GridHandler;
+	GridClass *gc = new GridClass;
 	if (argc!=1) RAISE("er...");
 	if (INT(argv[0])!=0) RAISE("not yet");
 	gh->winlet = INT(argv[0]);
@@ -617,8 +621,8 @@ METHOD(GridObject,method_missing) {
 METHOD(GridObject,delete) {
 	GridObject *parent=$;
 	//gfpost("%s: GridObject#delete",INFO(foo));
-	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) FREE($->in[i]);
-	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) FREE($->out[i]);
+	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) delete $->in[i], $->in[i]=0;
+	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) delete $->out[i], $->out[i]=0;
 	rb_call_super(argc,argv);
 	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)$);
 }
@@ -681,9 +685,9 @@ METHOD(Format,option) {
 }
 
 METHOD(Format,close) {
-	FREE($->bit_packing);
-	FREE($->dim);
-	FREE($);
+	delete $->bit_packing;
+	delete $->dim;
+	delete $; // caution...
 }
 
 METHOD(Format,open_file) {

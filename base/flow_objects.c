@@ -74,6 +74,9 @@ static void expect_dim_dim_list (Dim *d) {
 
 struct GridImport : GridObject {
 	Dim *dim; /* size of grids to send */
+	~GridImport() {
+		if (dim) delete dim;
+	}
 };
 
 GRID_BEGIN(GridImport,0) {}
@@ -99,8 +102,8 @@ GRID_BEGIN(GridImport,1) {
 }
 
 GRID_FLOW(GridImport,1) {
-	FREE($->dim);
-	$->dim = NEW(Dim,(n,(int *)data));
+	if ($->dim) delete $->dim, $->dim=0;
+	$->dim = new Dim(n,(int *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -114,12 +117,7 @@ METHOD(GridImport,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = NEW(Dim,(t.dim->prod(),(int *)t.as_int32()));
-}
-
-METHOD(GridImport,delete) {
-	FREE($->dim);
-	rb_call_super(argc,argv);
+	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
 }
 
 METHOD(GridImport,_0_reset) {
@@ -130,7 +128,6 @@ METHOD(GridImport,_0_reset) {
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,
 LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
 	DECL(GridImport,init),
-	DECL(GridImport,delete),
 	DECL(GridImport,_0_reset))
 
 /* **************************************************************** */
@@ -223,8 +220,8 @@ GRID_BEGIN(GridStore,0) {
 
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,$->r.dim->v+nc,nb-nc);
-//	gfpost("%s",NEW(Dim,(nd,v))->to_s());
-	$->out[0]->begin(NEW(Dim,(nd,v)));
+//	gfpost("%s",new Dim(nd,v)->to_s();
+	$->out[0]->begin(new Dim(nd,v));
 	if (nc>0) in->set_factor(nc);
 
 //	gfpost("c=%s",$->out[0]->dim->to_s());
@@ -301,11 +298,6 @@ METHOD(GridStore,init) {
 		(RAISE("unknown element type \"%s\"", t),int32_type_i));
 }
 
-METHOD(GridStore,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 METHOD(GridStore,_0_bang) {
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
@@ -313,7 +305,6 @@ METHOD(GridStore,_0_bang) {
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,
 LIST(GRINLET(GridStore,0),GRINLET(GridStore,1)),
 	DECL(GridStore,init),
-	DECL(GridStore,delete),
 	DECL(GridStore,_0_bang))
 
 /* **************************************************************** */
@@ -389,22 +380,16 @@ METHOD(GridOp2,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(NEW(Dim,(0,0)),int32_type_i);
+		$->r.init(new Dim(0,0),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
 }
 
-METHOD(GridOp2,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridOp2,"@",inlets:2,outlets:1,
 LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
-	DECL(GridOp2,init),
-	DECL(GridOp2,delete))
+	DECL(GridOp2,init))
 
 /* **************************************************************** */
 /*
@@ -429,7 +414,7 @@ GRID_BEGIN(GridFold,0) {
 	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
 	for (int i=yi+1; i<an; i++)
 		if ($->r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
-	$->out[0]->begin(NEW(Dim,(COUNT(v),v)));
+	$->out[0]->begin(new Dim(COUNT(v),v));
 	in->set_factor(in->dim->get(yi)*$->r.dim->prod());
 }
 
@@ -462,22 +447,16 @@ METHOD(GridFold,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(NEW(Dim,(0,0)),int32_type_i);
+		$->r.init(new Dim(0,0),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
 }
 
-METHOD(GridFold,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridFold,"@fold",inlets:2,outlets:1,
 LIST(GRINLET(GridFold,0)),
-	DECL(GridFold,init),
-	DECL(GridFold,delete))
+	DECL(GridFold,init))
 
 /* **************************************************************** */
 /*
@@ -526,22 +505,16 @@ METHOD(GridScan,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(NEW(Dim,(0,0)),int32_type_i);
+		$->r.init(new Dim(0,0),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
 }
 
-METHOD(GridScan,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridScan,"@scan",inlets:2,outlets:1,
 LIST(GRINLET(GridScan,0)),
 	DECL(GridScan,init))
-//	DECL(GridScan,delete))
 
 /* **************************************************************** */
 /* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
@@ -569,7 +542,7 @@ GRID_BEGIN(GridInner,0) {
 	int v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
-	$->out[0]->begin(NEW(Dim,(n,v)));
+	$->out[0]->begin(new Dim(n,v));
 	in->set_factor(a_last);
 }
 
@@ -616,15 +589,9 @@ METHOD(GridInner,init) {
 	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
-METHOD(GridInner,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridInner,"@inner",inlets:3,outlets:1,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
-	DECL(GridInner,init),
-	DECL(GridInner,delete))
+	DECL(GridInner,init))
 
 /* **************************************************************** */
 
@@ -643,7 +610,7 @@ GRID_BEGIN(GridInner2,0) {
 	int v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v,b->n-1);
-	$->out[0]->begin(NEW(Dim,(n,v)));
+	$->out[0]->begin(new Dim(n,v));
 	in->set_factor(a_last);
 }
 
@@ -688,15 +655,9 @@ METHOD(GridInner2,init) {
 	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
-METHOD(GridInner2,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,
 LIST(GRINLET(GridInner2,0),GRINLET(GridInner2,2)),
-	DECL(GridInner2,init),
-	DECL(GridInner2,delete))
+	DECL(GridInner2,init))
 
 /* **************************************************************** */
 
@@ -713,7 +674,7 @@ GRID_BEGIN(GridOuter,0) {
 	int v[n];
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
-	$->out[0]->begin(NEW(Dim,(n,v)));
+	$->out[0]->begin(new Dim(n,v));
 }
 
 GRID_FLOW(GridOuter,0) {
@@ -748,15 +709,9 @@ METHOD(GridOuter,init) {
 	if (argc==2) $->r.init_from_ruby(argv[1]);
 }
 
-METHOD(GridOuter,delete) {
-	$->r.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,
 LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
-	DECL(GridOuter,init),
-	DECL(GridOuter,delete))
+	DECL(GridOuter,init))
 
 /* **************************************************************** */
 /* the incoming grid is stored as "c" with a margin on the four sides
@@ -782,7 +737,7 @@ GRID_BEGIN(GridConvolve,0) {
 	$->margx = db->get(1)/2;
 	v[0] += 2*$->margy;
 	v[1] += 2*$->margx;
-	$->c.init(NEW(Dim,(da->n,v)));
+	$->c.init(new Dim(da->n,v));
 	$->out[0]->begin(da->dup());
 	in->set_factor(da->prod(1));
 }
@@ -869,16 +824,9 @@ METHOD(GridConvolve,init) {
 	if (argc==4) $->b.init_from_ruby(argv[3]);
 }
 
-METHOD(GridConvolve,delete) {
-	$->c.del();
-	$->b.del();
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,
 LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
-	DECL(GridConvolve,init),
-	DECL(GridConvolve,delete))
+	DECL(GridConvolve,init))
 
 /* **************************************************************** */
 
@@ -915,10 +863,10 @@ METHOD(GridFor,_0_bang) {
 		if (nn[i]<0) nn[i]=0;
 	}
 	if ($->from.dim->n==0) {
-		$->out[0]->begin(NEW(Dim,(1,nn)));
+		$->out[0]->begin(new Dim(1,nn));
 	} else {
 		nn[n]=n;
-		$->out[0]->begin(NEW(Dim,(n+1,nn)));
+		$->out[0]->begin(new Dim(n+1,nn));
 	}
 	for(int d=0;;) {
 		/* here d is the dim# to reset; d=n for none */
@@ -967,7 +915,7 @@ struct GridDim : GridObject {};
 
 GRID_BEGIN(GridDim,0) {
 	int n = in->dim->n;
-	$->out[0]->begin(NEW(Dim,(1,&n)));
+	$->out[0]->begin(new Dim(1,&n));
 	$->out[0]->send(n,(Number *)in->dim->v);
 	$->out[0]->end();
 }
@@ -984,17 +932,22 @@ LIST(GRINLET(GridDim,0)))
 struct GridRedim : GridObject {
 	Dim *dim;
 	Number *data; /* data not always used. so not using Grid here */
+
+	~GridRedim() {
+		if (dim) delete dim;
+		if (data) delete data;
+	}
 };
 
 GRID_BEGIN(GridRedim,0) {
-	FREE($->data);
+	if ($->data) delete $->data;
 	int a = in->dim->prod(), b = $->dim->prod();
 	if (a==0) {
 		//!@#$wrong
-		$->data = NEWA(Number,1);
+		$->data = new Number[1];
 		$->data[0] = 0;
 	} else if (a<b) {
-		$->data = NEWA(Number,a);
+		$->data = new Number[a];
 	}
 	$->out[0]->begin($->dim->dup());
 }
@@ -1024,7 +977,7 @@ GRID_END(GridRedim,0) {
 		}
 	}
 	$->out[0]->end();
-	FREE($->data);
+	if ($->data) delete[] $->data;
 }
 
 /* same inlet 1 as @import */
@@ -1035,8 +988,8 @@ GRID_BEGIN(GridRedim,1) {
 }
 
 GRID_FLOW(GridRedim,1) {
-	FREE($->dim);
-	$->dim = NEW(Dim,(n,(int *)data));
+	if ($->dim) delete $->dim;
+	$->dim = new Dim(n,(int *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -1049,20 +1002,13 @@ METHOD(GridRedim,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = NEW(Dim,(t.dim->prod(),(int *)t.as_int32()));
+	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
 	$->data = 0;
-}
-
-METHOD(GridRedim,delete) {
-	FREE($->dim);
-	FREE($->data);
-	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,
 LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,1)),
-	DECL(GridRedim,init),
-	DECL(GridRedim,delete))
+	DECL(GridRedim,init))
 
 /* ---------------------------------------------------------------- */
 
@@ -1084,7 +1030,7 @@ GRID_BEGIN(GridScaleBy,0) {
 
 	/* computing the output's size */
 	int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
-	$->out[0]->begin(NEW(Dim,(3,v)));
+	$->out[0]->begin(new Dim(3,v));
 
 	/* configuring the input format */
 	in->set_factor(a->get(1)*a->get(2));
@@ -1123,7 +1069,7 @@ GRID_END(GridScaleBy,0) { $->out[0]->end(); }
 METHOD(GridScaleBy,init) {
 	$->rint = argc<1 ? 2 : INT(argv[0]);
 	rb_call_super(argc,argv);
-	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0)); // wtf?
+	$->out[0] = new GridOutlet((GridObject *)$, 0); // wtf?
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
@@ -1175,7 +1121,7 @@ GRID_END(GridRGBtoHSV,0) {
 
 METHOD(GridRGBtoHSV,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0));
+	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
 GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,
@@ -1214,7 +1160,7 @@ GRID_END(GridHSVtoRGB,0) { $->out[0]->end(); }
 
 METHOD(GridHSVtoRGB,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0));
+	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
 GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,
