@@ -200,8 +200,9 @@ GRID_INLET(FormatQuickTimeHW,0) {
 
 \classinfo {
 	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"
-	"conf_format 6,'quicktime','Apple Quicktime (using "
-	"HeroineWarrior\\'s)', 'mov'");
+	"conf_format 6,'quicktime',"
+	"%[Burkhard Plaum's (or HeroineWarrior's) libquicktime], 'mov';"
+	"def self.info; %[codecs: #{@codecs.keys.join' '}] end");
 
 #ifdef LQT_VERSION
 	lqt_registry_init();
