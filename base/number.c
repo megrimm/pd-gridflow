@@ -22,11 +22,14 @@
 */
 
 /*
-  NOTE: most essential code in this file is used very often, and
-  so most of the rest of the code is special-case accelerations of it.
+  NOTE: most essential code of BitPacking is used very often;
+  the rest of the related code is special-case accelerations of it.
 */
 
 #include "grid.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
 typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
@@ -234,32 +237,7 @@ void swap16 (int n, uint16 *data) {
 	}
 }
 
-/*
-	$Id$
-
-	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	See file ../../COPYING for further informations on licensing terms.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
-
-#include <stdlib.h>
-#include <stdio.h>
-#include "grid.h"
+/* **************************************************************** */
 
 #define Dim_invariant(_self_) \
 	assert(_self_); \
@@ -381,33 +359,6 @@ int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
 	}
 	return 0;
 }
-
-/*
-	$Id$
-
-	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	See file ../../COPYING for further informations on licensing terms.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
-
-#include <math.h>
-#include <stdlib.h>
-#include "grid.h"
 
 /* **************************************************************** */
 
@@ -586,7 +537,7 @@ Operator2 op2_table[] = {
 
 Dict *op2_dict;
 
-void startup_operator (void) {
+void startup_number (void) {
 	int i;
 	op1_dict = Dict_new(0,0);
 	op2_dict = Dict_new(0,0);
