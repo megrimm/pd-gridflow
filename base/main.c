@@ -38,6 +38,8 @@
 #include <assert.h>
 #include <limits.h>
 
+GFStack *gf_call_stack = 0;
+
 Ruby GridFlow_module; /* not the same as jMax's gridflow_module */
 Ruby FObject_class;
 static Ruby sym_outlets=0;

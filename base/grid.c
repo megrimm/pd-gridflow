@@ -504,16 +504,16 @@ METHOD(GridObject,init) {
 /* category: input */
 
 GRID_BEGIN_(GridObject,GridObject_r_begin) {
-	rb_funcall(rself,SI(_0_rgrid_begin),0); // hack
+	rb_funcall($->peer,SI(_0_rgrid_begin),0); // hack
 }
 
 GRID_FLOW_(GridObject,GridObject_r_flow) {
 	Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(Number));
-	rb_funcall(rself,SI(_0_rgrid_flow),1,buf); // hack
+	rb_funcall($->peer,SI(_0_rgrid_flow),1,buf); // hack
 }
 
 GRID_END_(GridObject,GridObject_r_end) {
-	rb_funcall(rself,SI(_0_rgrid_end),0); // hack
+	rb_funcall($->peer,SI(_0_rgrid_end),0); // hack
 }
 
 METHOD2(GridObject,inlet_dim) {
@@ -665,7 +665,7 @@ GridClass *format_classes[] = {};
 #endif
 
 METHOD(Format,init) {
-	int flags = INT(rb_ivar_get(CLASS_OF(rself),SI(@flags)));
+	int flags = INT(rb_ivar_get(CLASS_OF($->peer),SI(@flags)));
 	rb_call_super(argc,argv);
 	$->mode = argv[0];
 	$->parent = 0;
@@ -683,7 +683,7 @@ METHOD(Format,init) {
 	return;
 err:
 	RAISE("Format %s does not support mode '%s'",
-		RSTRING(rb_ivar_get(rself,SI(@symbol_name)))->ptr, rb_sym_name($->mode));
+		RSTRING(rb_ivar_get($->peer,SI(@symbol_name)))->ptr, rb_sym_name($->mode));
 }
 
 METHOD(Format,option) {
@@ -699,7 +699,7 @@ METHOD(Format,close) {
 
 METHOD(Format,open_file) {
 	if (argc<1) RAISE("expect filename");
-	rb_ivar_set(rself,SI(@stream),
+	rb_ivar_set($->peer,SI(@stream),
 		rb_funcall(rb_eval_string("File"),SI(open),2,
 			rb_funcall(GridFlow_module,SI(find_file),1,
 			rb_any_to_s(argv[0])),

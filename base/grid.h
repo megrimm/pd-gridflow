@@ -112,12 +112,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 #include <assert.h>
 
-#define assert_range(_var_,_lower_,_upper_) \
-	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
-			__FILE__, __LINE__, #_var_, (_var_), (_lower_), (_upper_)); \
-		abort(); }
-
 #undef assert
 #define assert(_expr_) \
 	if (!(_expr_)) { \
@@ -129,8 +123,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 	/* disabling assertion checking */
 #undef assert
 #define assert(_foo_)
-#undef assert_range
-#define assert_range(_foo_,_a_,_b_)
 #endif
 
 /* **************************************************************** */
@@ -156,7 +148,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 /* **************************************************************** */
 
-#define METHOD_ARGS(_class_) int argc, Ruby *argv, Ruby rself
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 
 /* 0.5.0: shortcuts for MethodDecl */
@@ -174,39 +165,36 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
   all its variants should be merged together eventually...
 */
 
-/* returns no Ruby; is profilable */
+/* returns no Ruby value; is profilable */
 #define METHOD(_class_,_name_) \
-	static void _class_##_##_name_(_class_ *$, Ruby rself, int argc, Ruby *argv); \
-	static Ruby _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
-		Ruby result; DGS(_class_); \
-		ENTER; result = Qnil; _class_##_##_name_($,rself,argc,argv); LEAVE; \
+	static void _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
+	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); \
+		ENTER; Ruby result = Qnil; _class_##_##_name_($,argc,argv); LEAVE; \
 		return result; \
 	} \
-	static void _class_##_##_name_(_class_ *$, Ruby rself, int argc, Ruby *argv)
+	static void _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
 
 /* C++ style */
 #define DECL3(_class_,_name_) \
 	void _name_(int argc, Ruby *argv); \
-	static Ruby _name_##_wrap(METHOD_ARGS(_class_)) { \
-		Ruby result; DGS(_class_); \
-		ENTER; result = Qnil; $->_name_(argc,argv); LEAVE; \
-		return result; \
-	}
+	static Ruby _name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); \
+		ENTER; Ruby result = $->_name_(argc,argv); LEAVE; \
+		return result; }
 
 #define METHOD3(_class_,_name_) \
 	MethodDecl _class_##_##_name_##_kludge_ \
 	(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap); \
 	void _class_::_name_(int argc, Ruby *argv)
 
-/* returns a Ruby; is not profilable */
+/* returns a Ruby value; is not profilable */
 #define METHOD2(_class_,_name_) \
-	static Ruby _class_##_##_name_(_class_ *$, Ruby rself, int argc, Ruby *argv); \
-	static Ruby _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
-		Ruby result; DGS(_class_); \
-		result = _class_##_##_name_($,rself,argc,argv); \
-		return result; \
-	} \
-	static Ruby _class_##_##_name_(_class_ *$, Ruby rself, int argc, Ruby *argv)
+	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
+	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); \
+		return _class_##_##_name_($,argc,argv); } \
+	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
 
 typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 
@@ -384,7 +372,8 @@ struct Dim {
 	int count() {return n;}
 
 	int get(int i) {
-		assert_range(i,0,n-1);
+		assert(i>=0);
+		assert(i<n);
 		return v[i];
 	}
 	int prod(int start=0,int end=-1) {
@@ -457,24 +446,42 @@ typedef struct NumberType {
 
 /* Operator objects encapsulate optimised loops of simple operations */
 
-typedef struct Operator1 {
-	Ruby /*Symbol*/ sym;
-	const char *name;
-	Number (*op)(Number);
-	void   (*op_array)(int,Pt<Number>);
-} Operator1;
+template <class T>
+struct Operator1On {
+/*
+	bool has_neutral;
+	T neutral;
+*/
+	Number (*op)(T);
+	void   (*op_array)(int,Pt<T>);
+};
 
-typedef struct Operator2 {
+struct Operator1 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
-	Number (*op)(Number,Number);
-	void   (*op_array)(int,Pt<Number>,Number);
-	void   (*op_array2)(int,Pt<Number>, Pt</*const*/ Number>);
-	Number (*op_fold)(Number,int,Pt</*const*/ Number>);
-	void   (*op_fold2)(int,Pt<Number>,int,Pt</*const*/ Number>);
-	void   (*op_scan)(Number,int,Pt<Number>);
-	void   (*op_scan2)(int,Pt</*const*/ Number>,int,Pt<Number>);
-} Operator2;
+	Operator1On<int32> on_int32;
+};
+
+template <class T>
+struct Operator2On {
+/*
+	bool has_neutral;
+	Number neutral;
+*/
+	T (*op)(T,T);
+	void   (*op_array)(int,Pt<T>,T);
+	void   (*op_array2)(int,Pt<T>, Pt</*const*/ T>);
+	T (*op_fold)(T,int,Pt</*const*/ T>);
+	void   (*op_fold2)(int,Pt<T>,int,Pt</*const*/ T>);
+	void   (*op_scan)(T,int,Pt<T>);
+	void   (*op_scan2)(int,Pt</*const*/ T>,int,Pt<T>);
+};
+
+struct Operator2 {
+	Ruby /*Symbol*/ sym;
+	const char *name;
+	Operator2On<int32> on_int32;
+};
 
 extern NumberType number_type_table[];
 extern Operator1 op1_table[];
@@ -482,6 +489,15 @@ extern Operator2 op2_table[];
 extern Ruby op1_dict; /* GridFlow.@op1_dict={} */
 extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
+/* **************************************************************** */
+/*
+
+new GridType(SYM(A),MANY(SYM(B)))
+
+struct GridType {
+};
+
+*/
 /* **************************************************************** */
 
 struct Grid {
@@ -645,6 +661,14 @@ struct GridObject {
 void GridObject_conf_class(Ruby $, GridClass *grclass);
 
 /* **************************************************************** */
+
+struct GFStack {
+	GridObject *obj;
+	GFStack *next;
+};
+
+/* GridFlow is not threadable and this is one reason for it */
+extern GFStack *gf_call_stack;
 
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)

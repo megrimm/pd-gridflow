@@ -297,7 +297,7 @@ METHOD(GridStore,init) {
 }
 
 METHOD(GridStore,_0_bang) {
-	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
+	rb_funcall($->peer,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
@@ -314,7 +314,7 @@ struct GridOp1 : GridObject {
 GRID_BEGIN(GridOp1,0) { $->out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW(GridOp1,0) {
-	$->op->op_array(n,data);
+	$->op->on_int32.op_array(n,data);
 	$->out[0]->give(n,data);
 }
 
@@ -349,7 +349,7 @@ GRID_FLOW(GridOp2,0) {
 	int loop = $->r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			$->op->op_array2(n,data,rdata+in->dex);
+			$->op->on_int32.op_array2(n,data,rdata+in->dex);
 		} else {
 			STACK_ARRAY(Number,data2,n);
 			//!@#$ accelerate me
@@ -359,10 +359,10 @@ GRID_FLOW(GridOp2,0) {
 				COPY(data2+i,rdata+ii,m);
 				i+=m;
 			}
-			$->op->op_array2(n,data,data2);
+			$->op->on_int32.op_array2(n,data,data2);
 		}
 	} else {
-		$->op->op_array(n,data,*rdata);
+		$->op->on_int32.op_array(n,data,*rdata);
 	}
 	$->out[0]->give(n,data);
 }
@@ -427,7 +427,7 @@ GRID_FLOW(GridFold,0) {
 	int nn=n;
 	while (n) {
 		COPY(buf+i,$->r.as_int32(),zn);
-		$->op->op_fold2(zn,buf+i,yn,data);
+		$->op->on_int32.op_fold2(zn,buf+i,yn,data);
 		i += zn;
 		data += yn*zn;
 		n -= yn*zn;
@@ -487,7 +487,7 @@ GRID_FLOW(GridScan,0) {
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
-		$->op->op_scan2(zn,$->r.as_int32(),yn,buf);
+		$->op->on_int32.op_scan2(zn,$->r.as_int32(),yn,buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
@@ -558,8 +558,8 @@ GRID_FLOW(GridInner,0) {
 		for (int j=0; j<chunks; j++) {
 			COPY(buf,&data[i],factor);
 			for (int k=0; k<factor; k++) bufr[k]=$->r.as_int32()[chunks*k+j];
-			$->op_para->op_array2(factor,buf,bufr);
-			buf2[j] = $->op_fold->op_fold($->rint,factor,buf);
+			$->op_para->on_int32.op_array2(factor,buf,bufr);
+			buf2[j] = $->op_fold->on_int32.op_fold($->rint,factor,buf);
 		}
 		out->send(b_prod/factor,buf2);
 	}
@@ -624,8 +624,8 @@ GRID_FLOW(GridInner2,0) {
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
 			COPY(buf,&data[i],factor);
-			$->op_para->op_array2(factor,buf,$->r.as_int32()+j);
-			buf2[k] = $->op_fold->op_fold($->rint,factor,buf);
+			$->op_para->on_int32.op_array2(factor,buf,$->r.as_int32()+j);
+			buf2[k] = $->op_fold->on_int32.op_fold($->rint,factor,buf);
 		}
 		out->send(b_prod/factor,buf2);
 	}
@@ -681,7 +681,7 @@ GRID_FLOW(GridOuter,0) {
 	STACK_ARRAY(Number,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		$->op->op_array2(b_prod,buf,$->r.as_int32());
+		$->op->on_int32.op_array2(b_prod,buf,$->r.as_int32());
 		$->out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -790,8 +790,8 @@ GRID_END(GridConvolve,0) {
 			Pt<Number> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=$->rint;
-			$->op_para->op_array2(l*dbx*dby,buf,buf2);
-			$->op_fold->op_fold2(l,buf3,dbx*dby,buf);
+			$->op_para->on_int32.op_array2(l*dbx*dby,buf,buf2);
+			$->op_fold->on_int32.op_fold2(l,buf3,dbx*dby,buf);
 			$->out[0]->send(l,buf3);
 		}
 	}
@@ -897,7 +897,7 @@ METHOD(GridFor,_0_set) { $->from.init_from_ruby(argv[0]); }
 
 GRID_INPUT_2(GridFor,2,step) {}
 GRID_INPUT_2(GridFor,1,to) {}
-GRID_INPUT_2(GridFor,0,from) {GridFor__0_bang($,rself,0,0);}
+GRID_INPUT_2(GridFor,0,from) {GridFor__0_bang($,0,0);}
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
@@ -1217,11 +1217,11 @@ METHOD(RtMetro,_0_int) {
 	$->on = !! FIX2INT(argv[0]);
 	gfpost("on = %d",$->on);
 	if (oon && !$->on) {
-		gfpost("deleting rtmetro alarm for $=%08x rself=%08x",(long)$,(long)rself);
+		gfpost("deleting rtmetro alarm for $=%08x rself=%08x",(long)$,(long)$->peer);
 		MainLoop_remove($);
 	} else if (!oon && $->on) {
-		gfpost("creating rtmetro alarm for $=%08x rself=%08x",(long)$,(long)rself);
-		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
+		gfpost("creating rtmetro alarm for $=%08x rself=%08x",(long)$,(long)$->peer);
+		MainLoop_add((void *)$->peer,(void(*)(void*))RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}
 }
