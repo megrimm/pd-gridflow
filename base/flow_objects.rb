@@ -1536,6 +1536,7 @@ end
 
 (begin require "linux/SoundMixer"; true; rescue LoadError; false end) and
 class SoundMixer < GridFlow::FObject
+  # BUG? i may have the channels (left,right) backwards
   def initialize(filename)
     super
     @file = File.open filename.to_s, 0
@@ -1556,9 +1557,9 @@ class SoundMixer < GridFlow::FObject
       raise if not @@vars_h.include? sel.to_s
       begin
         x = @file.send sel
-        send_out 0, sel, (x>>8)&255, x&255
+        send_out 0, sel, "(".intern, (x>>8)&255, x&255, ")".intern
       rescue
-        send_out 0, sel, -1
+        send_out 0, sel, "(".intern, -1, -1, ")".intern
       end
     else
       @@vars.each {|var| _0_get var }
