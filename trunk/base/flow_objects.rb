@@ -306,25 +306,32 @@ end
 
 # the install_rgrids in the following are hacks so that
 # outlets can work. (install_rgrid is supposed to be for receiving)
+# maybe GF-0.8 doesn't need that.
 class GridTwo   < GridPack; install_rgrid 0; install "@two",   2, 1 end
 class GridThree < GridPack; install_rgrid 0; install "@three", 3, 1 end
 class GridFour  < GridPack; install_rgrid 0; install "@four",  4, 1 end
 class GridEight < GridPack; install_rgrid 0; install "@eight", 8, 1 end
 
-### actually this is like [@export_list] -> [unpack]
-#class GridUnpack < GridObject
-#  def initialize(n)
-#    @n=n
-#    n>=16 and raise "too many outlets"
-#    super
-#  end
-#  def _0_rgrid_begin
-#    @dim = inlet_dim 0
-#    ...
-#  end
-#  install_rgrid 0
-#  install "@unpack", 1, 1
-#end
+class GridUnpack < GridObject
+  def initialize(n)
+    @n=n
+    n>=10 and raise "too many outlets"
+    super
+  end
+  def initialize2
+    GridFlow.whatever :addoutlets, self, @n
+  end
+  def _0_rgrid_begin
+    inlet_dim(0)==[@n] or raise "expecting Dim[#{@n}], got Dim#{@dim}"
+    inlet_set_factor @n
+  end
+  def _0_rgrid_flow data
+    nt = inlet_nt
+    data.unpack("l*").each_with_index{|x,i| send_out i,x }
+  end
+  install_rgrid 0
+  install "#unpack", 1, 0
+end
 
 class GridExportSymbol < GridObject
 	def _0_rgrid_begin; @data="" end
@@ -356,6 +363,50 @@ class GridOp1<FPatcher
 		else raise "bork BORK bork" end
   end
   install "@!", 1, 1
+end
+class OldFold<FPatcher
+  @fobjects = ["#fold +","gfmessagebox seed $1"]
+  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
+  def initialize(op,seed=0)
+	super
+	@fobjects[0].send_in 0, :op, op
+	@fobjects[0].send_in 0, :seed, seed
+  end
+  install "@fold", 2, 1
+end
+class OldScan<FPatcher
+  @fobjects = ["#scan +","gfmessagebox seed $1"]
+  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
+  def initialize(op,seed=0)
+	super
+	@fobjects[0].send_in 0, :op, op
+	@fobjects[0].send_in 0, :seed, seed
+  end
+  install "@scan", 2, 1
+end
+class OldInner<FPatcher
+  @fobjects = ["#inner","gfmessagebox seed $1"]
+  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,0, 0,0,-1,0, -1,2,0,1]
+  def initialize(op=:*,fold=:+,seed=0,r=0)
+        super
+	@fobjects[0].send_in 0, :op, op
+	@fobjects[0].send_in 0, :fold, fold
+	@fobjects[0].send_in 0, :seed, seed
+	@fobjects[0].send_in 1, r
+  end
+  install "@inner", 3, 1
+end
+class OldConvolve<FPatcher
+  @fobjects = ["#convolve"]
+  @wires = [-1,0,0,0, -1,2,0,1]
+  def initialize(op=:*,fold=:+,seed=0,r=0)
+        super
+	@fobjects[0].send_in 0, :op, op
+	@fobjects[0].send_in 0, :fold, fold
+	@fobjects[0].send_in 0, :seed, seed
+	@fobjects[0].send_in 1, r
+  end
+  install "@convolve", 2, 1
 end
 
 #-------- fClasses for: video
