@@ -57,6 +57,9 @@ menu .mbar.gridflow -tearoff $pd_tearoff
 .mbar.gridflow add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
 .mbar.gridflow add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
 
+# if not running Impd:
+if {[string length [info command listener_new]] == 0} {
+# start of part duplicated from Impd
 proc listener_new {self name} {
 	global _
 	set _($self:hist) {}
@@ -99,6 +102,19 @@ proc listener_append {self v} {
 	set _($self:histi) [llength $_($self:hist)]
 }
 
+proc tcl_eval {} {
+	set l [.tcl.entry get]
+	post_to_gui "tcl: $l\nreturns: [eval $l]\n"
+	listener_append .tcl [.tcl.entry get]
+	.tcl.entry delete 0 end
+
+}
+listener_new .tcl "Tcl"
+bind .tcl.entry <Return> {tcl_eval}
+
+}
+# end of part duplicated from Impd
+
 proc ruby_eval {} {
 	set l {}
 	foreach c [split [.ruby.entry get] ""] {lappend l [scan $c %c]}
@@ -110,15 +126,6 @@ proc ruby_eval {} {
 listener_new .ruby "Ruby"
 bind .ruby.entry <Return> {ruby_eval}
 
-proc tcl_eval {} {
-	set l [.tcl.entry get]
-	post_to_gui "tcl: $l\nreturns: [eval $l]\n"
-	listener_append .tcl [.tcl.entry get]
-	.tcl.entry delete 0 end
-
-}
-listener_new .tcl "Tcl"
-bind .tcl.entry <Return> {tcl_eval}
 })
 
 
