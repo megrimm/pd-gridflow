@@ -971,6 +971,9 @@ mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
 # Adam Lindsay's Mac attempts.
 mf.sub! /-no-precomp/, "-no-cpp-precomp"
 
+# for proper operation on Cygwin
+mf.sub! /--driver-name=gcc/, "--driver-name=#{$conf[:CC]}"
+
 # remove gcc3.2 warning about -I/usr/include
 mf.sub!(/^CPPFLAGS = (.*)$/) {
 	cpp = "CPPFLAGS = " +
