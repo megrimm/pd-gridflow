@@ -45,9 +45,13 @@
 
 	<p>Another notation, called floating point (or float) stores numbers using
 	a fixed number of significant digits, and a scale factor that allows for huge numbers
-	and tiny fractions at once. Note that 1/3 is periodic, but even 0.1 is periodic, in binary coding;
-	so expect some slight roundings; the precision offered should be sufficient for most purposes.
-	Make sure the errors of rounding don't accumulate, though.</p>
+	and tiny fractions at once. Note that 1/3 has periodic digits, but even 0.1 has periodic digits,
+	in binary coding; so expect some slight roundings; the precision offered should be
+	sufficient for most purposes. Make sure the errors of rounding don't accumulate, though.</p>
+
+	<p>This little program of mine prints 1/3 in base 2 (only digits after the period):
+		<k>ruby -e 'x=1/3.0;for i in 0..52 do x*=2;y=x.floor;print y;x-=y end;puts'</k></p>
+
 
 	<p>In GridFlow, there are six kinds of numbers:</p>
 
