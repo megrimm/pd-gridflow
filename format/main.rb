@@ -206,7 +206,6 @@ module GridIO
 		when :timelog
 			@timelog = Integer(a[1])!=0
 		when :loop
-			GridFlow.post "loop = #{a[1]}"
 			@loop = a[1].to_i != 0
 		else
 			@format.option(*a)
@@ -254,11 +253,11 @@ class GridIn < GridObject
 		end
 		send_out 1, framenum if framenum
 	end
-	def _0_int frame
-		check_file_open
-		@format.seek frame
-		_0_bang
-	end
+
+	def _0_int frame; _0_set frame; _0_bang end
+	def _0_set frame; check_file_open; @format.seek frame end
+	alias _0_float _0_int
+
 	def _0_reset
 		check_file_open
 		@format.seek 0
