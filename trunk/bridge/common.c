@@ -121,7 +121,7 @@ static VALUE *bridge_localize_sysstack () {
 	bp--;
 	signal(11,SIG_DFL); /* can't really restore it. don't know where it was. */
 	//fprintf(stderr,"sysstack starts at 0x%08lx\n",(long)bp);
-	return bp;
+	return (VALUE *)bp;
 }
 
 #endif /* __BRIDGE_C */
