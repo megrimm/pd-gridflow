@@ -101,7 +101,7 @@ extern "C" {
 /*
   returns a pointer to a method of a class as an fts_object_t* instead
   of a pointer to an object of your class. This is because in C, structs
-  cannot be inherited from each other, and so a pointer of one type cannot be
+  cannot inherit from another struct, and so a pointer of one type cannot be
   considered as a pointer to a similar, more elementary type.
 */
 #define METHOD_PTR(_class_,_name_) \
@@ -181,7 +181,7 @@ extern "C" {
 	#undef assert
 	#define assert(_foo_)
 	#undef assert_range
-	#define assert_range(_foo_,_a,_b_)
+	#define assert_range(_foo_,_a_,_b_)
 #endif
 
 /* **************************************************************** */
@@ -222,8 +222,14 @@ static inline int ipow(int a, int b) {
 
 #undef min
 #undef max
+
 static inline int min(int a, int b) { return a<b?a:b; }
 static inline int max(int a, int b) { return a>b?a:b; }
+/*
+static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
+static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
+*/
+
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 /* **************************************************************** */
 /* general purpose but jMax specific */

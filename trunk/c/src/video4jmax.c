@@ -56,7 +56,8 @@ DECL_SYM2(grid_end)
 #define STARTUP_LIST(_begin_,_end_) \
 	_begin_## operator       _end_ \
 	_begin_## grid_basic     _end_ \
-	_begin_## io             _end_
+	_begin_## io             _end_ \
+	_begin_## video4jmax     _end_
 
 /* declare startup of every source file */
 STARTUP_LIST(void startup_,(void);)
@@ -230,4 +231,56 @@ FILE *v4j_file_fopen(const char *name, int mode) {
 	return fdopen(fd,mode==4?"r":mode==2?"w":"");
 }
 
+/* **************************************************************** */
+/* [rtmetro] */
 
+static fts_alarm_t *rtmetro_alarm = 0;
+
+typedef struct RtMetro {
+	fts_object_t o;
+	int ms; /* millisecond time */
+	int on;
+} RtMetro;
+
+METHOD(RtMetro,int) {
+	$->on = !! GET(0,int,0);
+	whine("on = %d",$->on);
+}
+
+METHOD(RtMetro,rint) {
+	$->ms = GET(0,int,0);
+	whine("ms = %d",$->ms);
+}
+
+METHOD(RtMetro,init) {
+	$->ms = GET(1,int,0);
+	$->on = 0;
+	whine("ms = %d",$->ms);
+	whine("on = %d",$->on);
+}
+
+METHOD(RtMetro,delete) {}
+
+CLASS(RtMetro) {
+	fts_type_t int_args[]  = { fts_t_int };
+	fts_type_t init_args[]  = { fts_t_symbol };
+	MethodDecl methods[] = {
+		{  0, fts_s_int,    METHOD_PTR(RtMetro,int),    ARRAY(int_args),0 },
+		{  1, fts_s_int,    METHOD_PTR(RtMetro,rint),   ARRAY(int_args),0 },
+		{ -1, fts_s_init,   METHOD_PTR(RtMetro,init),   ARRAY(init_args),0 },
+		{ -1, fts_s_delete, METHOD_PTR(RtMetro,delete), 0,0,0 },
+	};
+
+	/* initialize the class */
+	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
+	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
+	return fts_Success;
+}
+
+#define INSTALL(_sym_,_name_) \
+	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+
+void startup_video4jmax (void) {
+	INSTALL("rtmetro", RtMetro);
+}
