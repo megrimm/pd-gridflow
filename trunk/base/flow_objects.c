@@ -1125,7 +1125,7 @@ METHOD(GridRedim,delete) {
 }
 
 GRCLASS(GridRedim,inlets:2,outlets:1,
-LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,0)),
+LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,1)),
 	DECL(GridRedim,-1,init,  "si+"),
 	DECL(GridRedim,-1,delete,""))
 
@@ -1179,6 +1179,16 @@ typedef struct GridOut {
 	struct timeval tv;   /* time of the last grid_end */
 	int framecount;
 } GridOut;
+
+/* ---------------------------------------------------------------- */
+
+/* return and complain when file not open */
+#define CHECK_FILE_OPEN \
+	if (!$->ff) { whine("can't do that: file not open"); return; }
+
+/* same with false return */
+#define CHECK_FILE_OPEN2 \
+	if (!$->ff) RAISE("can't do that: file not open");
 
 /* ---------------------------------------------------------------- */
 
@@ -1399,70 +1409,6 @@ LIST(GRINLET(GridOut,0)),
 
 /* ---------------------------------------------------------------- */
 
-#define INSTALL(_sym_,_name_) \
-	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
-
-void startup_io (void) {
-	int i;
-	format_classes_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
-	for (i=0; i<COUNT(format_classes); i++) {
-		Dict_put(format_classes_dex,
-			format_classes[i]->symbol_name,
-			format_classes[i]);
-	}
-	INSTALL("@in",GridIn);
-	INSTALL("@out",GridOut);
-}
-
-/* **************************************************************** */
-
-#define INSTALL(_sym_,_name_) \
-	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
-
-void startup_grid_basic (void) {
-	INSTALL("@import",     GridImport);
-	INSTALL("@export",     GridExport);
-	INSTALL("@export_list",GridExportList);
-	INSTALL("@store",      GridStore);
-	INSTALL("@!",          GridOp1);
-	INSTALL("@",           GridOp2);
-	INSTALL("@fold",       GridFold);
-/*	INSTALL("@inner",      GridInner); */
-	INSTALL("@inner2",     GridInner2);
-	INSTALL("@outer",      GridOuter);
-	INSTALL("@convolve",   GridConvolve);
-	INSTALL("@for",        GridFor);
-	INSTALL("@dim",        GridDim);
-	INSTALL("@redim",      GridRedim);
-	INSTALL("@print",      GridPrint);
-}
-/*
-	$Id$
-
-	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	See file ../../COPYING for further informations on licensing terms.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-*/
-
-#include <stdlib.h>
-#include <math.h>
-#include "grid.h"
-
 /* "@scale_by" does quick scaling of pictures by integer factors */
 typedef struct GridScaleBy {
 	GridObject_FIELDS; /* inherit from GridObject */
@@ -1652,8 +1598,30 @@ LIST(GRINLET(GridHSVtoRGB,0)),
 #define INSTALL(_sym_,_name_) \
 	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
-void startup_grid_extra (void) {
-	INSTALL("@scale_by",     GridScaleBy);
-	INSTALL("@rgb_to_hsv",   GridRGBtoHSV);
-	INSTALL("@hsv_to_rgb",   GridHSVtoRGB);
+/* **************************************************************** */
+
+#define INSTALL(_sym_,_name_) \
+	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
+
+void startup_flow_objects (void) {
+	INSTALL("@import",     GridImport);
+	INSTALL("@export",     GridExport);
+	INSTALL("@export_list",GridExportList);
+	INSTALL("@store",      GridStore);
+	INSTALL("@!",          GridOp1);
+	INSTALL("@",           GridOp2);
+	INSTALL("@fold",       GridFold);
+/*	INSTALL("@inner",      GridInner); */
+	INSTALL("@inner2",     GridInner2);
+	INSTALL("@outer",      GridOuter);
+	INSTALL("@convolve",   GridConvolve);
+	INSTALL("@for",        GridFor);
+	INSTALL("@dim",        GridDim);
+	INSTALL("@redim",      GridRedim);
+	INSTALL("@print",      GridPrint);
+	INSTALL("@in",         GridIn);
+	INSTALL("@out",        GridOut);
+	INSTALL("@scale_by",   GridScaleBy);
+	INSTALL("@rgb_to_hsv", GridRGBtoHSV);
+	INSTALL("@hsv_to_rgb", GridHSVtoRGB);
 }
