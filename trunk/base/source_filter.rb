@@ -1,5 +1,6 @@
 $keywords = %w(class decl def end grdecl)
 $stack = []
+$classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods)
 MethodDecl = Struct.new(:rettype,:selector,:arglist)
@@ -12,7 +13,9 @@ def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	STDERR.puts "class: #{line}"
 	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
-	$stack.push ClassDecl.new($1,$2,{})
+	q=ClassDecl.new($1,$2,{})
+	$stack << q
+	$classes << q
 	Out.puts ""
 end
 
@@ -25,6 +28,14 @@ def parse_arglist(arglist)
 	}
 end
 
+def unparse_arglist(arglist,with_default=true)
+	arglist.map {|arg|
+		x="#{arg.type} #{arg.name} "
+		x<<'='<<arg.default if with_default and arg.default
+		x
+	}.join(", ")
+end
+
 def where
   "[#{ARGV[0]}:#{$linenumber}]"
 end
@@ -33,8 +44,8 @@ def handle_decl(line)
 	STDERR.puts "decl: #{line}"
 	/^(\w+)\s+(\w+)\s*\((.*)\)\s*;\s*$/.match line or
 		raise "syntax error #{where}"
-	rettype,selector,arglist1 = $1,$2,$3
-	arglist = parse_arglist arglist1
+	rettype,selector,arglist = $1,$2,$3
+	arglist = parse_arglist arglist
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	classname = $stack[-1].name
@@ -42,15 +53,15 @@ def handle_decl(line)
 
 	Out.print "#{rettype} #{selector}(int argc, Ruby *argv"
 	Out.print "," if arglist.length>0
-	Out.puts "#{arglist1});//FCS"
+	Out.puts "#{unparse_arglist arglist});//FCS"
 end
 
 def handle_def(line)
 	STDERR.puts "def: #{line}"
 	/^(\w+)\s+(\w+)\s*\((.*)\)(\s*{?\s*)$/.match line or
 		raise "syntax error #{where}"
-	rettype,selector,arglist1,brace = $1,$2,$3,$4
-	arglist = parse_arglist arglist1
+	rettype,selector,arglist,brace = $1,$2,$3,$4
+	arglist = parse_arglist arglist
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
@@ -67,7 +78,7 @@ end
 	Out.print "static Ruby #{classname}_#{method.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself) {"+
 	"static const char *methodspec = "+
-	"\"#{qlass.name}::#{method.selector}(#{arglist1})\";"+
+	"\"#{qlass.name}::#{method.selector}(#{unparse_arglist arglist,false})\";"+
 	"DGS(#{classname});"
 
 	Out.print "if (argc<#{minargs}||argc>#{maxargs}) "+
@@ -108,7 +119,7 @@ end
 	Out.print "return Qnil;" if rettype=="void"
 	Out.print "} #{rettype} #{classname}::#{method.selector}(int argc, Ruby *argv"
 	Out.print "," if arglist.length>0
-	Out.puts "#{arglist1})#{brace}//FCS"
+	Out.puts "#{unparse_arglist arglist, false})#{brace}//FCS"
 end
 
 def handle_grdecl(line)
@@ -127,6 +138,11 @@ def handle_end(line)
 		(n>1 and fields[1]!=frame.name)
 		then raise "end not matching #{where}" end
 	end
+	Out.puts ""
+end
+
+def handle_startup(line)
+	$classes.each {|q| Out.print "fclass_install(&ci#{q.name});" }
 	Out.puts ""
 end
 
