@@ -276,6 +276,14 @@ METHOD3(FObject,del) {
 	return Qnil;
 }
 
+const char *FObject::info() {
+	if (!this) return "(nil GridObject!?)";
+	Ruby z = rb_funcall(this->rself,SI(args),0);
+/*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
+	if (z==Qnil) return "(nil args!?)";
+	return rb_str_ptr(z);
+}
+
 /* ---------------------------------------------------------------- */
 /* C++<->Ruby bridge for classes/functions in base/number.c */
 
