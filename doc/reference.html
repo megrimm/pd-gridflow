@@ -37,7 +37,9 @@
 <tr><td colspan="2"><h5><a href="Conventions of this Manual">Conventions of this Manual</a></h5><blockquote></blockquote>
 <h5><a href="Grid Protocol">Grid Protocol</a></h5><blockquote></blockquote>
 <h5><a href="Picture Protocol">Picture Protocol</a></h5><blockquote></blockquote>
-<h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/@in.jpg" alt="[@ import 240 320 3]"><br>
+<h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote>
+<h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote>
+<h5><a href="Objects for Input/Output">Objects for Input/Output</a></h5><blockquote><img src="images/@in.jpg" alt="[@import 240 320 3]"><br>
 <img src="images/@out.jpg" alt="[@out]"><br>
 <img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br>
 <img src="images/@export.jpg" alt="[@export]"><br>
@@ -58,8 +60,6 @@
 <img src="images/@three.jpg" alt="[@three]"><br>
 <img src="images/@two.jpg" alt="[@two]"><br>
 </blockquote>
-<h5><a href="Unary Operators">Unary Operators</a></h5><blockquote></blockquote>
-<h5><a href="Binary Operators">Binary Operators</a></h5><blockquote></blockquote>
 <h5><a href="External Picture Formats">External Picture Formats</a></h5><blockquote><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]"><br>
 <img src="images/format/tga.jpg" alt="[open targa file filename.tga]"><br>
 <img src="images/format/videodev.jpg" alt="[open videodev /dev/video0]"><br>
@@ -273,7 +273,177 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
+<tr><td colspan="4"><h4>Unary Operators</h4></td></tr>
+
+
+
+	
+
+
+
+	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td>
+
+		absolute value of A
+
+	</td></tr>
+
+	<tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td>
+
+		randomly produces a non-negative number below A
+
+	</td></tr>
+
+	<tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td>
+
+		square root of A, rounded downwards
+
+	</td></tr>
+
+<tr><td>&nbsp;</td></tr></table>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><h4>Binary Operators</h4></td></tr>
+
+	<tr><td></td><td></td><td>
+
+		<p>In the following table, A is the value entered to the
+
+		left, and B is the value entered to the right.</p>
+
+
+
+		<p>Angles are in hundredths of degrees. This means a full circle
+
+		(two pi radians) is 36000. You convert from degrees to our angles
+
+		by multiplying by 100. You convert from radians to our angles by
+
+		multiplying by 18000/pi.</p>
+
+
+
+		<p>Hyperbolic functions (tanh) work with our angles too, so the
+
+		same conversions apply. In case you wonder, there's a hidden link
+
+		between Trigonometric and Hyperbolic functions that motivated me
+
+		to use the same unit.</p>
+
+	</td></tr>
+
+
+
+	
+
+	
+
+
+
+	
+
+	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr>
+
+	<tr><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr>
+
+	<tr><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr>
+
+	<tr><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr>
+
+	<tr><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr>
+
+	<tr><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, non-negative remainder </td></tr>
+
+	<tr><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, non-negative remainder </td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise  </td></tr>
+
+	<tr><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr>
+
+	<tr><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr>
+
+	<tr><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td>
+
+		A * (2**(B % 32)), which is left-shifting
+
+	</td></tr>
+
+	<tr><td><img src="images/op/shr.jpg" border="0" alt="shr"></td><td>
+
+		A / (2**(B % 32)), which is right-shifting
+
+	</td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td> if A is zero then B else A </td></tr>
+
+	<tr><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td> if A is zero then zero else B</td></tr>
+
+	<tr><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td></tr>
+
+	<tr><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A<B; 0 when A=B; 1 when A>B. </td></tr>
+
+	<tr><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td> is A equal to B ? 1=true, 0=false </td></tr>
+
+	<tr><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td> is A not equal to B ? </td></tr>
+
+	<tr><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td> is A greater than B ? </td></tr>
+
+	<tr><td><img src="images/op/le.jpg" border="0" alt="le"></td><td> is A not greater than B ? </td></tr>
+
+	<tr><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td> is A less than B ? </td></tr>
+
+	<tr><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>is A not less than B ? </td></tr>
+
+
+
+	
+
+	<tr><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td> B * sin(A) </td></tr>
+
+	<tr><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td> B * cos(A) </td></tr>
+
+	<tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td></tr>
+
+	<tr><td><img src="images/op/tanh.jpg" border="0" alt="tanh"></td><td> tanh(A) </td></tr>
+
+	<tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr>
+
+	<tr><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A raised to power B </td></tr>
+
+<tr><td>&nbsp;</td></tr></table>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
 <tr><td colspan="4"><h4>Objects for Input/Output</h4></td></tr>
+
+
 
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@in">&nbsp;&nbsp;@in</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@in.jpg"><br clear="left"><br><br><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -381,6 +551,8 @@
 
 	<br></td>
 
+
+
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@out">&nbsp;&nbsp;@out</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@out.jpg"><br clear="left"><br><br><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
@@ -433,7 +605,7 @@
 
 			<br>
 
-			<br><b>grid</b> 
+			<br><b>inlet 0</b> <b>grid</b> 
 
 				this is format-specific. most formats
 
@@ -503,33 +675,33 @@
 
 	<br></td>
 
+
+
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@import">&nbsp;&nbsp;@import</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@import_240_320_3.jpg"><br clear="left"><br><br><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
-		<p>Objects of this class have an inlet that can receive integers and reset 
-
-as well as Grid outlet. You specify the dimensions (all of them) in the 
-
-constructor. For a 240-row 320-column picture you'd say: @import 240 320 
-
-3 </p>
-
-<p>An import object accumulates the integers you send to it. They should 
-
-be in the 0-255 range. When you send 3 of them, they represent the red, 
-
-green and blue values of one pixel. Successive pixels are ordered left 
-
-to right and when there are enough of them they form a line. Successive 
-
-lines are ordered top to bottom and when there are enough of them they 
-
-form a frame. After a frame is completed a new frame begins replacing 
-
-the previous one.</p>
 
 
+		<p>This object allows you to import non-grid jMax data, such as
+
+		integers and lists of integers. This object also reframes/resyncs
+
+		integers and grids so that multiple grids may be joined together, or
+
+		single grids may be split.</p>
+
+
+
+		<br><b>method</b> init <b>(</b> ... dims<b>)</b>
+
+			
+
+			the argument list specifies a grid shape that the numbers
+
+			will fit into.
+
+		<br>
 
 		
 
@@ -541,6 +713,12 @@ the previous one.</p>
 
 				ends the grid if it is full.
 
+				the constructed grid is not stored: it is streamed.
+
+				the stream is buffered, so the output is in packets
+
+				of about a thousand numbers.
+
 			<br>
 
 			<br><b>inlet 0</b> <b>method</b> reset <b>(</b><b>)</b>
@@ -549,23 +727,79 @@ the previous one.</p>
 
 			<br>
 
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+
+				this is the equivalent of filtering this grid through
+
+				an @export object and sending the resulting integers
+
+				to this @import object, except that it's about
+
+				10 times faster.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>rank<b>)</b>
+
+				this grid is a dimension list that replaces the one
+
+				specified in the constructor.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> 
+
+				the grid produced from incoming integers and/or grids.
+
+			<br><br>
+
 		
 
 		
 
 	<br></td>
 
+
+
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@export">&nbsp;&nbsp;@export</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@export.jpg"><br clear="left"><br><br><a href="images/grab_export.png"><img src="images/ic_grab_export.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 		
 
-<p>Objects of this class have a Grid inlet and a 0.1-compatible outlet. 
+		<p>this object is the opposite of @import.</p>
 
-They do the opposite of @import and take no parameters. </p>
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			this object is not configurable because there isn't
+
+			anything that could possibly be configured here.
+
+		<br>
 
 		
 
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
 
+				transforms this grid in a series of integers.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>method</b> int <b>(</b><b>)</b>
+
+				elements of the incoming grid.
+
+			<br>
 
 		
 
@@ -616,29 +850,75 @@ They do the opposite of @import and take no parameters. </p>
 
 
 
-		<p> @redim outputs a grid of the dimensions provided in the
+		<br><b>method</b> init <b>(</b> ... dims<b>)</b>
 
-constructor,  based on serializing the input grid and reserializing it to those
+			
 
-dimensions.  If the new grid is bigger, incoming data is repeated to fill the
+			the argument list specifies a grid shape that the numbers
 
-grid; if  the new grid is smaller, extra data is dropped. </p>
+			will fit into.
+
+			(same as with @import)
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+
+			the elements of this grid are serialized. if the resulting grid
+
+			must be larger, the sequence is repeated as much as necessary.
+
+			if the resulting grid must be smaller, the sequence is truncated.
+
+			then the elements are deserialized to form the resulting grid.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>rank<b>)</b>
+
+				this grid is a dimension list that replaces the one
+
+				specified in the constructor.
+
+				(same as with @import)
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> 
+
+				redimensioned grid potentially containing repeating data.
+
+			<br><br>
+
+		
 
 
 
-<p>ex: with a 240 320 RGB image, @redim 120 640 3 will visually separate  the
+		<p>example: with a 240 320 RGB image, @redim 120 640 3 will visually
 
-even lines (left) from the odd lines (right). contrary to this, @redim  640 120
+		separate the even lines (left) from the odd lines (right). contrary
 
-3 will split every line and put its left half on a even line and the right half
+		to this, @redim 640 120 3 will split every line and put its left half
 
-on the following odd line. @redim 480 320 3 will repeat the input image twice
+		on a even line and the right half on the following odd line. @redim
 
-in the output image. @redim 240 50 3 will only keep  the 50 top lines.</p>
+		480 320 3 will repeat the input image twice in the output image.
+
+		@redim 240 50 3 will only keep the 50 top lines.</p>
 
 
 
-	
+		
 
 	<br></td>
 
@@ -648,41 +928,93 @@ in the output image. @redim 240 50 3 will only keep  the 50 top lines.</p>
 
 
 
-		<p>A @store object can store exactly one Grid. You store it via its
+		<p>A @store object can store exactly one grid, using the right
 
-right  inlet. You fetch it by sending a bang through its left inlet, which
+		inlet. You fetch it back, or selected subparts thereof, using the left
 
-sends  the Grid on the outlet. You may also perform all kinds of coordinate
-
-transforms  with @store. You send in the left inlet a Grid whose two channels
-
-are  Y and X coordinates of pixels of the stored grid. Values too large or  too
-
-small are wrapped around (using uniform modulo). @store is even more  flexible
-
-than that: you can address whole lines and pixel parts too, by  sending
-
-appropriately-sized grids (non-3D). Advanced users can figure  it out;
-
-beginners should simply ignore it. </p>
+		inlet.</p>
 
 
 
-		<p>If you send to @store a grid of 2 dimensions consisting of rows (y)
+		<br><b>method</b> init <b>(</b>number_type<b>)</b>
 
-and  channels, in which the channel ... see the example</p>
+			
 
+			The number type argument is optional and by default is int32,
 
+			which allows the usual range of plus/minus two billions. With
 
-		<p>TODO @store takes one argument specifying its size, int32 (default)
+			uint8, values are wrapped into the 0..255 interval, and stored
 
-or  uint8 (native format for ppm or tga formats) </p>
+			in four times less memory.
+
+		<br>
 
 
 
 		
 
+			<br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>
+
+				the stored grid is fully sent to the outlet.
+
+			<br>
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>..., indices<b>)</b>
+
+				in this grid, the last dimension refers to subparts of
+
+				the stored grid. sending a dim(200,200,2) on a @store
+
+				that holds a dim(240,320,3) will cause the @store to handle
+
+				the incoming grid as a dim(200,200) of dim(2)'s, where each
+
+				dim(2) represents a position in a dim(240,320) of dim(3)'s.
+
+				therefore the resulting grid will be a dim(200,200) of
+
+				dim(3) which is a dim(200,200,3). in practice this example
+
+				would be used for generating a 200*200 RGB picture from a
+
+				200*200 XY map and a 240*320 RGB picture. this object can
+
+				be logically used in the same way for many purposes
+
+				including color palettes, tables of probabilities, tables
+
+				of statistics, whole animations, etc.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>...<b>)</b>
+
+				the received grid is stored. if the storage type is uint8,
+
+				the input is filtered to fit 0..255.
+
+			<br><br>
+
+		
+
+		
+
+			grids as stored, as indexed, or as assembled from multiple
+
+			indexings.
+
+		
+
+		
+
 	<br></td>
+
+
 
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@outer">&nbsp;&nbsp;@outer</a></b></font></td></tr><tr><td></td><td valign='top'><br><img src="images/@outer.jpg"><br clear="left"><br><br><a href="images/grab_outer.png"><img src="images/ic_grab_outer.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -778,11 +1110,15 @@ or  uint8 (native format for ppm or tga formats) </p>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><font size="-1"><b><a name="@global">&nbsp;&nbsp;@global</a></b></font></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
+		<p>
+
 		objects of this class do nothing by themselves and are just
 
 		an access point to features that don't belong to any object in
 
 		particular.
+
+		</p>
 
 		<br><b>method</b> profiler_reset <b>(</b><b>)</b>
 
@@ -974,228 +1310,6 @@ doing redundant updates -- sorry)</p>
 <br></td>
 
 <tr><td>&nbsp;</td></tr>
-
-
-
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><h4>Unary Operators</h4></td></tr>
-
-
-
-	
-
-
-
-	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td>
-
-		absolute value of A
-
-	</td></tr>
-
-	<tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td>
-
-		randomly produces a non-negative number below A
-
-	</td></tr>
-
-	<tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td>
-
-		square root of A, rounded downwards
-
-	</td></tr>
-
-<tr><td>&nbsp;</td></tr></table>
-
-
-
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><h4>Binary Operators</h4></td></tr>
-
-	<tr><td></td><td></td><td><p>where A is the left value, and B is the right value.</p></td></tr>
-
-
-
-	
-
-	
-
-
-
-	
-
-	<tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr>
-
-	<tr><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr>
-
-	<tr><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr>
-
-
-
-	
-
-	<tr><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr>
-
-	<tr><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr>
-
-	<tr><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr>
-
-	<tr><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, non-negative remainder </td></tr>
-
-	<tr><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, non-negative remainder </td></tr>
-
-
-
-	
-
-	<tr><td><img src="images/op/or.jpg" border="0" alt="or"></td><td>
-
-		A or B, bitwise
-
-	</td></tr>
-
-	<tr><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td>
-
-		A xor B, bitwise
-
-	</td></tr>
-
-	<tr><td><img src="images/op/and.jpg" border="0" alt="and"></td><td>
-
-		A and B, bitwise
-
-	</td></tr>
-
-	<tr><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td>
-
-		A * (2**(B % 32)), which is left-shifting
-
-	</td></tr>
-
-	<tr><td><img src="images/op/shr.jpg" border="0" alt="shr"></td><td>
-
-		A / (2**(B % 32)), which is right-shifting
-
-	</td></tr>
-
-
-
-	
-
-	<tr><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td>
-
-		if A is zero then B else A
-
-	</td></tr>
-
-	<tr><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td>
-
-		if A is zero then zero else B
-
-	</td></tr>
-
-	<tr><td><img src="images/op/min.jpg" border="0" alt="min"></td><td>
-
-		the lowest value in A,B
-
-	</td></tr>
-
-	<tr><td><img src="images/op/max.jpg" border="0" alt="max"></td><td>
-
-		the highest value in A,B
-
-	</td></tr>
-
-
-
-	
-
-	<tr><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td>
-
-		-1 when A<B; 0 when A=B; 1 when A>B.
-
-	</td></tr>
-
-	<tr><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td>
-
-		is A equal to B ? 1=true, 0=false
-
-	</td></tr>
-
-	<tr><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td>
-
-		is A not equal to B ?
-
-	</td></tr>
-
-	<tr><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td>
-
-		is A greater than B ?
-
-	</td></tr>
-
-	<tr><td><img src="images/op/le.jpg" border="0" alt="le"></td><td>
-
-		is A not greater than B ?
-
-	</td></tr>
-
-	<tr><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td>
-
-		is A less than B ?
-
-	</td></tr>
-
-	<tr><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>
-
-		is A not less than B ?
-
-	</td></tr>
-
-
-
-	
-
-	<tr><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td>
-
-		B * sin(A), where A is in hundredths of degrees
-
-	</td></tr>
-
-	<tr><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td>
-
-		B * cos(A)
-
-	</td></tr>
-
-	<tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td>
-
-		arctan(A/B)
-
-	</td></tr>
-
-	<tr><td><img src="images/op/tanh.jpg" border="0" alt="tanh"></td><td>
-
-		tanh(A) where A is in hundredths of degrees (yes, really)
-
-	</td></tr>
-
-	<tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td>
-
-		floor(pow(a/256.0,256.0/b)*256.0)
-
-	</td></tr>
-
-	<tr><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td>
-
-		A raised to power B
-
-	</td></tr>
-
-<tr><td>&nbsp;</td></tr></table>
 
 
 
