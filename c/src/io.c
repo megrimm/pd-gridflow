@@ -249,6 +249,7 @@ METHOD(GridOut,open) {
 METHOD(GridOut,init) {
 	$->framecount = 0;
 	$->timelog = 0;
+	$->ff = 0;
 	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridOut,0);
