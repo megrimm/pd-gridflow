@@ -672,7 +672,6 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $);
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
-//VALUE FObject_s_new(BFObject *foo, VALUE qlass, VALUE argc, VALUE *argv);
 char *rb_sym_name(VALUE sym);
 void post(const char *,...);
 
@@ -688,7 +687,7 @@ void gf_init (void);
 
 #define INTEGER_P(_value_) (FIXNUM_P(_value_) || TYPE(_value_)==T_BIGNUM)
 #define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
-#define EARG(_reason_) rb_raise(rb_eArgError, _reason_)
+#define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
 /* hack */
 int gf_winlet(void);
