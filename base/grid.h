@@ -281,7 +281,7 @@ void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
 #define MAX_NUMBERS 64*1024*1024
 
 /* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 32767
+#define MAX_INDICES 65535
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
@@ -310,6 +310,12 @@ typedef long Number;
 
 /* **************************************************************** */
 
+//template <class T> class Pt {
+//	
+//};
+
+/* **************************************************************** */
+
 #define DECL_SYM(_sym_) \
 	extern VALUE/*Symbol*/ sym_##_sym_;
 
@@ -321,13 +327,6 @@ DECL_SYM(int)
 DECL_SYM(list)
 
 }; /* extern "C" */
-
-/*
-inline void *operator new(size_t nbytes) {
-	fprintf(stderr,"new: %d bytes\n",nbytes);
-	return qalloc(nbytes);
-}
-*/
 
 /* a Dim is a const array that holds dimensions of a grid
   and can do some calculations on positions in that grid. */
@@ -480,19 +479,15 @@ typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
 #define GRID_BEGIN_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
-#define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, const Number *data)
-#define GRID_FLOW2_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Number *data)
+#define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Number *data)
 #define   GRID_END_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
-
-typedef GRID_BEGIN_(GridObject, (*GridBegin));
-typedef  GRID_FLOW_(GridObject, (*GridFlow));
-typedef GRID_FLOW2_(GridObject, (*GridFlow2));
-typedef   GRID_END_(GridObject, (*GridEnd));
-
 #define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
 #define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
-#define GRID_FLOW2(_cl_,_inlet_) static GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow)
 #define   GRID_END(_cl_,_inlet_) static   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
+typedef GRID_BEGIN_(GridObject,(*GridBegin));
+typedef  GRID_FLOW_(GridObject,(*GridFlow));
+typedef   GRID_END_(GridObject,(*GridEnd));
+
 
 typedef struct GridHandler {
 	int       winlet;
