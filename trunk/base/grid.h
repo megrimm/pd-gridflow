@@ -36,8 +36,96 @@
 #include <math.h>
 #include "../config.h"
 
+/* lots of macros follow */
+/* i'm not going to explain to you why macros *ARE* a good thing. */
+/* **************************************************************** */
+/* general-purpose macros */
+
 #define $ self
+#define LIST(args...) args
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
+#define RAISE(args...) rb_raise(rb_eArgError,args)
+#define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
+#define INSTALL(rname) ruby_c_install(&rname##_classinfo, GridObject_class);
+#define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
+#define SI(_sym_) (rb_intern(#_sym_))
+#define SYM(_sym_) (ID2SYM(SI(_sym_)))
+#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
+#define EVAL(s) rb_eval_string(s)
+#define rb_str_len(s) (RSTRING(s)->len)
+#define rb_str_ptr(s) (RSTRING(s)->ptr)
+#define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
+#define rb_ary_len(s) (RARRAY(s)->len)
+#define rb_ary_ptr(s) (RARRAY(s)->ptr)
+
+/*
+  we're gonna override this,
+  so load it first, to avoid conflicts
+*/
+#include <assert.h>
+
+#undef assert
+#define assert(_expr_) \
+	if (!(_expr_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
+			__FILE__, __LINE__, #_expr_); \
+		abort(); }
+
+#ifndef HAVE_DEBUG
+	/* disabling assertion checking */
+#undef assert
+#define assert(_foo_)
+#endif
+
+/* returns the size of a statically defined array */
+#define COUNT(_array_) \
+	((int)(sizeof(_array_) / sizeof((_array_)[0])))
+
+#ifdef HAVE_TSC_PROFILING
+#define HAVE_PROFILING
+#endif
+
+/* those are helpers for profiling. OBSOLETE */
+#ifdef HAVE_PROFILING
+#define ENTER $->profiler_last = rdtsc();
+#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
+#define ENTER_P $->parent->profiler_last = rdtsc();
+#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
+#else
+#define ENTER
+#define LEAVE
+#define ENTER_P
+#define LEAVE_P
+#endif
+
+/*
+#define PTR2FIX(ptr) ( \
+	(((long)ptr)&3?RAISE("pointer alignment error"):0), \
+	INT2NUM(((long)ptr)/4))
+*/
+
+#define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
+#define FIX2PTR(Ruby) (void *)(INT(Ruby)<<2)
+
+#define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
+#define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
+#define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
+
+#define DEF(_class_,_name_,_argc_) \
+	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
+
+#define SDEF(_class_,_name_,_argc_) \
+	rb_define_singleton_method(_class_##_class,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
+
+#define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
+#define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
+#define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
+
+#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
+	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
+	(RAISE("expected Integer or Float"),0))
+
+/* **************************************************************** */
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -50,9 +138,6 @@ typedef float  float32;
 typedef double float64;
 
 typedef /*volatile*/ VALUE Ruby;
-
-/* **************************************************************** */
-/* other general purpose stuff */
 
 /* three-way comparison */
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
@@ -91,64 +176,9 @@ static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
-#ifdef HAVE_TSC_PROFILING
-#define HAVE_PROFILING
-#endif
-
-/* lots of macros follow */
-/* i'm not going to explain to you why macros *ARE* a good thing. */
 /* **************************************************************** */
 
-/*
-  we're gonna override this,
-  so load it first, to avoid conflicts
-*/
-#include <assert.h>
-
-#undef assert
-#define assert(_expr_) \
-	if (!(_expr_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
-			__FILE__, __LINE__, #_expr_); \
-		abort(); }
-
-#ifndef HAVE_DEBUG
-	/* disabling assertion checking */
-#undef assert
-#define assert(_foo_)
-#endif
-
-/* **************************************************************** */
-
-/* returns the size of a statically defined array */
-#define COUNT(_array_) \
-	((int)(sizeof(_array_) / sizeof((_array_)[0])))
-
-/* **************************************************************** */
-
-/* those are helpers for profiling. OBSOLETE */
-#ifdef HAVE_PROFILING
-#define ENTER $->profiler_last = rdtsc();
-#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
-#define ENTER_P $->parent->profiler_last = rdtsc();
-#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
-#else
-#define ENTER
-#define LEAVE
-#define ENTER_P
-#define LEAVE_P
-#endif
-
-/* **************************************************************** */
-
-#define RAISE(args...) rb_raise(rb_eArgError,args)
-
-#define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
-
-/*
-  METHOD is a header for a given method in a given class.
-  all its variants should be merged together eventually...
-*/
+/* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
 
 #define DECL(_class_,_name_) \
 	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
@@ -163,8 +193,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 
-/* class constructor */
-
 #define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_startup_,_handlers_,args...) \
 	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
@@ -176,31 +204,19 @@ typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
 		#_name_, _jname_ };
 
-#define SI(_sym_) (rb_intern(#_sym_))
-#define SYM(_sym_) (ID2SYM(SI(_sym_)))
-
 /* pentium-only, wtf? */
-static inline uint64 rdtsc(void) {
+static inline uint64 rdtsc() {
   uint64 x;
   __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
   return x;}
 
 /* is little-endian */
-static inline bool is_le(void) {
+static inline bool is_le() {
 	int x=1;
 	return ((char *)&x)[0];
 }
 
-#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
-#define EVAL(s) rb_eval_string(s)
-#define rb_str_len(s) (RSTRING(s)->len)
-#define rb_str_ptr(s) (RSTRING(s)->ptr)
-#define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
-#define rb_ary_len(s) (RARRAY(s)->len)
-#define rb_ary_ptr(s) (RARRAY(s)->ptr)
-
 /* **************************************************************** */
-/* general purpose but Ruby/jMax specific */
 
 void gfpost(const char *fmt, ...);
 
@@ -209,7 +225,6 @@ typedef struct MethodDecl {
 	const char *selector;
 	RMethod method;
 //	MethodDecl *next;
-
 //	static MethodDecl *gf_all_methods;
 
 	MethodDecl(const char *qlass, const char *selector, RMethod method) {
@@ -307,33 +322,38 @@ public:
 
 /* **************************************************************** */
 
-#define DECL_SYM(_sym_) \
-	extern "C" Ruby/*Symbol*/ sym_##_sym_;
+#define DECL_SYM(_sym_) extern "C" Ruby/*Symbol*/ sym_##_sym_;
 
 DECL_SYM(grid_begin)
-DECL_SYM(grid_flow)
+//DECL_SYM(grid_flow)
 DECL_SYM(grid_end)
 DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
 
-/* a Dim is a const array that holds dimensions of a grid
-  and can do some calculations on positions in that grid. */
+struct DimPattern {};
 
-struct Dim {
+/* a Dim is a list of dimensions that describe the shape of a grid */
+struct Dim : DimPattern {
+	bool free;
 	int n;
 	int v[MAX_DIMENSIONS];
 
 	void check();
 
+	Dim(int n) {
+		free = true;
+		this->n = n;
+	}
+
 	Dim(int n, int *v) {
+		free = false;
 		this->n = n;
 		memcpy(this->v,v,n*sizeof(int));
 		check();
 	}
 
 	Dim *dup() { return new Dim(n,v); }
-
 	int count() {return n;}
 
 	int get(int i) {
@@ -361,6 +381,20 @@ struct Dim {
 		return true;
 	}
 };
+
+struct DimVar : DimPattern {
+	int n; /* -1 = any; 0+ = exact number */
+	Dim *dim;
+};
+
+struct GridType : DimPattern {
+	int n; /* subparts */
+	DimPattern *pats;
+};
+
+/* new GridType(SYM(A),MANY(SYM(B))) */
+
+/* **************************************************************** */
 
 /* BitPacking objects encapsulate optimised loops of conversion */
 struct BitPacking;
@@ -453,20 +487,9 @@ struct Operator2 {
 };
 
 extern NumberType number_type_table[];
-extern Operator1 op1_table[];
-extern Operator2 op2_table[];
 extern Ruby op1_dict; /* GridFlow.@op1_dict={} */
 extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
-/* **************************************************************** */
-/*
-
-new GridType(SYM(A),MANY(SYM(B)))
-
-struct GridType {
-};
-
-*/
 /* **************************************************************** */
 
 struct Grid {
@@ -498,20 +521,9 @@ typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
-#define CGRID_BEGIN_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
-#define  CGRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Pt<Number>data)
-#define   CGRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
-#define CGRID_BEGIN(_cl_,_inlet_) static CGRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
-#define  CGRID_FLOW(_cl_,_inlet_) static  CGRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
-#define   CGRID_END(_cl_,_inlet_) static   CGRID_END_(_cl_,_cl_##_##_inlet_##_end)
-typedef CGRID_BEGIN_(GridObject,(*GridBegin));
-typedef  CGRID_FLOW_(GridObject,(*GridFlow));
-typedef   CGRID_END_(GridObject,(*GridEnd));
-
-#define CGRINLET(_class_,_winlet_,_mode_) {_winlet_,\
-	((GridBegin)_class_##_##_winlet_##_begin), \
-	 ((GridFlow)_class_##_##_winlet_##_flow), \
-	  ((GridEnd)_class_##_##_winlet_##_end), _mode_ }
+typedef void (*GridBegin)(GridObject *, GridInlet *);
+typedef void  (*GridFlow)(GridObject *, GridInlet *, int n, Pt<Number>data);
+typedef void   (*GridEnd)(GridObject *, GridInlet *);
 
 /* C++ */
 
@@ -584,7 +596,10 @@ struct GridInlet {
 	void float_(int argc, Ruby *argv);
 };
 
-typedef struct GridClass {
+struct FClass {
+};
+
+struct GridClass /*: FClass*/ {
 	Ruby rubyclass;
 	int objectsize;
 	void *(*allocate)();
@@ -597,9 +612,7 @@ typedef struct GridClass {
 	GridHandler *handlers;
 	const char *name;
 	const char *jname;
-} GridClass;
-
-#define LIST(args...) args
+};
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware outlet */
@@ -629,7 +642,7 @@ struct GridOutlet {
 	void begin(Dim *dim);
 	void abort();
 	void give(int n, Pt<Number>data);
-	void send8(int n, Pt</*const*/ uint8>data);
+	void send(int n, Pt</*const*/ uint8>data);
 	void send(int n, Pt</*const*/ Number>data);
 	void send_direct(int n, Pt</*const*/ Number>data);
 	void flush();
@@ -638,12 +651,16 @@ struct GridOutlet {
 };
 
 /* **************************************************************** */
+/* the <Ruby/C++/Other> mapping of GridObjects is not too clear, sorry */
 
-struct GridObject {
+struct FObject {
 	Ruby /*GridFlow::FObject*/ peer; /* point to Ruby peer */
 	GridClass *grid_class;
 	void *foreign_peer; /* point to jMax peer */
 	uint64 profiler_cumul, profiler_last;
+};
+
+struct GridObject : FObject {
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
 
@@ -684,8 +701,6 @@ extern GFStack *gf_call_stack;
 struct Format : GridObject {
 	GridObject *parent;
 	Ruby /*Symbol*/ mode;
-	BitPacking *bit_packing;
-	Dim *dim;
 
 	DECL3(init);
 	DECL3(option);
@@ -705,7 +720,6 @@ struct Format : GridObject {
 */
 
 /* **************************************************************** */
-/* 0.6.0 */
 
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
@@ -742,50 +756,16 @@ const char *rb_sym_name(Ruby sym);
 void MainLoop_add(void *data, void (*func)(void*));
 void MainLoop_remove(void *data);
 
-/*
-#define PTR2FIX(ptr) ( \
-	(((long)ptr)&3?RAISE("pointer alignment error"):0), \
-	INT2NUM(((long)ptr)/4))
-*/
-
-#define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
-#define FIX2PTR(Ruby) (void *)(INT(Ruby)<<2)
-
-#define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
-#define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
-#define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
-
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 
 //#define PTR2FIX(ptr) Pointer_new((void *)ptr)
-//#define FIX2PTR(Ruby) Pointer_get(Ruby)
-
-#define DEF(_class_,_name_,_argc_) \
-	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
-
-#define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(_class_##_class,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
-
-#define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
-#define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
-#define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
-
-//#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
-
-#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
-	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
-	(RAISE("expected Integer or Float"),0))
-
-#define INSTALL(rname) ruby_c_install(&rname##_classinfo, GridObject_class);
+//#define FIX2PTR(v) Pointer_get(v)
 
 Ruby ruby_c_install(GridClass *gc, Ruby super);
 
-//typedef Ruby (*RFunc)();
 typedef Ruby (*RFunc)(...);
 
 extern "C" void Init_gridflow (void) /*throws Exception*/;
-
-#define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 
 #endif /* __GF_GRID_H */

@@ -259,7 +259,6 @@ METHOD3(BitPacking,unpack2) {
 	return out;
 }
 
-void BitPacking_mark (Ruby *$) {}
 void BitPacking_sweep (Ruby *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -280,7 +279,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	for (int i=0; i<size; i++) masks2[i] = INT(masks[i]);
 	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
-	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
+	$ = Data_Wrap_Struct(qlass, 0, BitPacking_sweep, c_peer);
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;

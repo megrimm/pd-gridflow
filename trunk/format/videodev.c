@@ -227,6 +227,9 @@ struct FormatVideoDev : Format {
 	int current_tuner;
 	bool use_mmap;
 
+	BitPacking *bit_packing;
+	Dim *dim;
+
 	void frame_finished (GridOutlet *o, Pt<uint8> buf);
 
 	DECL3(init);
@@ -504,6 +507,7 @@ METHOD3(FormatVideoDev,option) {
 }
 
 METHOD3(FormatVideoDev,close) {
+	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(peer,SI(dealloc_image),0);
 	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
