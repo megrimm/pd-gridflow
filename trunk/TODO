@@ -1,3 +1,9 @@
+1. SHELL OBJECT
+2. EMBEDDED WINDOWS (?)
+3. pd help files
+
+
+
 /* $Id$ */
 
 Community
@@ -6,21 +12,19 @@ Community
 	[ ] looking for someone to take care of win32 port
 	[ ] looking for someone to take care of macosx port
 
-Distribution (0.6.5)
+Distribution
 [ ] add test plan
 [ ] follow test plan
-[!] review all documentation
-[!] review all samples
-[ ] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
+[ ] review all documentation
+[ ] review all samples
 
 Installation
-[!] installable doc
+[ ] installable doc
 [ ] installable includes ?
 [ ] produce linux binaries ("static")
 [ ] produce cygwin32 binaries
 [ ] produce macosx binaries
 [ ] produce linux rpm/deb
-[ ] add macos 10.x support (i need access to a mac)
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] reintroduce --puredata-dist-dir ?
@@ -31,54 +35,42 @@ Installation
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
     mode x11 non-supporté
-[ ] mention v4l_compat.o in docs
 [ ] project_policy.xml
 [ ] validate samples/outside
 [ ] specify policy for <help>, <icon>, etc.
 [ ] add credits
-[ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
-[ ] add explanation of gridflow vs pixonix
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
-[ ] find a good XML editor
 [ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
-[ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
-[ ] document asymptotic cpu+memory usage
 [ ] document internals
-[ ] operator list: add columns for meaning as pixmap, indexmap
 [ ] describe indexmap in doc
 [ ] document backward compatibility issues
 [ ] typical uses: <typical></typical>
-[ ] architecture: class->type->use->shape->role
+[ ] architecture: class->type/shape->use->role
 [ ] it should be indicated whether an object is supported by jmax/pd/ruby/c++
-[ ] rework the DTD/documentation system at whole
+[ ] heavily hyperlink documentation
+[ ] automate more parts of the documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
+[ ] replace current macro system by SWIG or Inline.rb ?
 [ ] Add simple C preprocessor to allow multi-line strings
     (because of rb_eval_string ?)
-[ ] Design the GF-1.0 architecture (new internals documentation)
-[ ] identify streams by ids given at grid msg
-    (may allow for cancelling rejected grids?)
-    (add cancel option to the r/rw choice in callback of grid msg ?)
 [ ] dimension list pattern matching system
 [ ] argument list processing system
 [ ] inlet-variables (variables associated to inlets)
-[ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
 [ ] MMX memcpy() ?
+[ ] MMX _runtime_ autodetection
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
-[ ] MMX _runtime_ autodetection
-[ ] MMX computations integration
 [ ] pull mode (functional-style)
-[ ] remove all uses of assert() (replace by RAISE())
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (@global#classes, @global#methods, ...)
@@ -92,8 +84,6 @@ Architecture
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
 [ ] bin op "avg" (average)
-[ ] bin op "gcd" (greatest common divisor)
-[ ] bin op "lcm" (least common multiple)
 [ ] dispatch on _n_-prefixed methods (one selector any inlet)
 	and     _#{i}_-named methods (any selector one inlet)
 [ ] security modes:
@@ -119,10 +109,9 @@ Computation Objects
 [ ] zero option in @convolve (?)
 [ ] shrink option in @convolve (?)
 [ ] @import~, @export~, @import*, @export*
-[ ] see APL/J/NArray/PDL/Aplus reference
-[ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
-[ ] http://www.dai.ed.ac.uk/HIPR2/wksheets.htm
-[ ] @foldr, @scanr
+[ ] see APL/J/NArray/PDL/Aplus/Yorick reference
+[ ] see Image Processing Operator Worksheets
+[ ] @fold, @scan: option reverse
 [ ] @matrix_inverse, @matrix_solve
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
@@ -131,7 +120,6 @@ Computation Objects
 [ ] @random_select, @markov_chain
 [ ] @two,@three,@four -> [@pack n] using metaclass
 [ ] @unpack
-[ ] @import_symbol
 [ ] make a class that is a color equivalent of aalib
 [ ] polygon operators (@perimeter, @area, ...)
 
@@ -161,11 +149,15 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] jMax 4 bridge
 [ ] support: Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC ?
+[ ] support: GEM, PDP, FreeFrame ?
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
 [ ] Grid: bpv 1,2,4
 [ ] Grid: text version of the format
 [ ] use 1.8.0's IO#read(Integer,String)->String
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
+[ ] shell object?
+[ ] ruby_udpsend -> jmax_udpsend
+[ ] add jmax_udpreceive
 
 Format
 [ ] x11: draw with optional arguments on part of picture to redraw
@@ -184,6 +176,9 @@ Format
 [ ] "open grid pipe" and such.
 [ ] quicktime write
 [ ] AVI
+
+[ ] Follow new rewind/loop policy :
+   jpeg.c  mpeg3.c  mpeg.c  quicktime.c
 
 [ ] <alx1> a bang when the video file is done playing so you could loop it
 easily or go to another clip... 
@@ -211,13 +206,11 @@ Bugs
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
 [ ] Window does not close when @out is destroyed
-[ ] profiler is severely broken
+[ ] profiler very often gives wrong results
 [ ] format/mpeg.c seems to crash more often?
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [!] tcp test is broken
 [ ] potential issues between fork() and X11 ?
-[!] method_missing does blackholing ?
-[!] warning: -Wno-strict-prototypes is not supported in C++
 [ ] BitPacking should not be a GridObject nor a FObject.
 [ ] don't try resizing the window before it opens (???) (loadbang?)
 [!] [@export_list] blows up with >=125 elements (alx)
@@ -230,9 +223,6 @@ Bugs
 [ ] problem in @for with zero-sized grids?
 [ ] BitPacking has trouble with masks that extend beyond int25be
 [ ] remove the crap given by -w of ruby
-[ ] @finished is not a proper replacement for [route grid_end] because
-	of [fork]. solution: make end() happen automatically, without
-	intervention from sender gridobject
 [ ] make: Dépendance circulaire site-install <- install abandonnée.
 	(with ruby 1.8)
 [ ] @in needs 2 inlets to work but should have only one.
@@ -246,7 +236,6 @@ Bugs
 [ ] RtMetro crashes if deleted while turned on.
 [ ] RtMetro isn't reliably working
 [ ] jpeg file cat crashes on second file (jpeglib buffering?)
-[ ] gcc 3.2 fails to instantiate templates
 [ ] videodev stays busy after closing patch ?
 [ ] GRID_FINISH triggered while backstore ???
 [ ] @for has a bug re negative step
@@ -254,20 +243,12 @@ Bugs
 
 SOON:
  
-[ ] aalib: option autodraw, option draw
 [ ] format grid: option headerless until 10
 [ ] @fire
 [ ] @border
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it @chroma_key though)
 	maybe @mask...
-
-<matju> mais je pourrais faire @perspective
-<matju> inlet 0: dim(n,3)
-<matju> inlet 1: facteur k (l'oeil est au point 0,0,0; l'écran est le plan z=k)
-<matju> outlet 0: dim(n,2)
-*/
-
 [ ] remaining number type support in formats
 [ ] produce linux binaries ("static")
 [ ] @sort
@@ -334,53 +315,14 @@ add it to gridflow itself.
 
 
 
-> http://redshift.sourceforge.net/debugging-GC/
-> [ruby-talk:53835]
+> http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
 
-paint.jmax: 380 ms -> 376 ms
-
-avec ruby 1.6.7, en vectorisant @store:
-ripple.jmax:              360 ms -> 350 ms -> 325 ms (320 ms)
-linear_transform.jmax:    220 ms -> 215 ms -> 205 ms (197 ms)
-color_correction.jmax(1): 430 ms -> 380 ms
-color_correction.jmax:    360 ms -> 320 ms -> 290 ms
-feedback_fractal.jmax:    110 ms -> 102 ms ->  95 ms (87 ms)
-
-puis [@ +] en asm:
-ripple.jmax: -> 272 ms ??? quoi??? (NON)
+<matju> alx:
+what do you think of the following idea:
+[@foo bar, baz, blah 42, zzz]
+would be like:
+[loadbang] -> "baz, blah 42, zzz" -> [@foo bar]
+where "baz, blah 42, zzz" is 3 msgs in a msgbox (sent in order upon bang)
 
 
-
-[@ +] map
-sans asm:   0.111250   6.670429   6.559179
-asm try1:   0.111536   7.856665   7.745129
-lowerbound: 0.110734   6.043598   5.932864
-
-[@ +] map2
-sans asm:   0.110466   12.729992   12.619526
-asm try1:   0.110560   14.325604   14.215044
-asm try2:   0.112791   13.945315   13.832524
-asm try3:   0.133181   13.049199   12.916018
-    [gf]    0.111542   12.892403   12.780861
-
-gf_packet_length:
-[gf]    0.110921   20.290029   20.179108 16k
-[gf]    0.116051   19.483183   19.367132 8k
-[gf]    0.109559   16.473426   16.363867 4k
-[gf]    0.112778   13.002092   12.889314 2k
-[gf]    0.115907   11.209400   11.093493 1k
-[gf]    0.126447   10.890584   10.764137 ½k
-[gf]    0.141884   11.934371   11.792487 ¼k
-
-gfmemcopy:
-ripple.jmax:           325 ms -> 265 ms
-linear_transform.jmax: 205 ms -> 130 ms
-color_correction.jmax: 290 ms -> 235 ms
-feedback_fractal.jmax:  95(87) ms -> 83 ms
-
-ruby 1.8 read:
-[2.141271, 0.641674, 0.547968, 1.637770, 1.488898] # plain
-[2.162294, 0.609760, 0.527717, 1.633222, 1.476583] # "replace nothing"
-[1.986047, 0.683468, 0.530780, 1.639136, 1.484244] # read into "x"*bs
-[2.142630, 0.605984, 0.516127, 1.636103, 1.478584] # read into ""
