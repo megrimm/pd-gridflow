@@ -1,12 +1,22 @@
 /* $Id$ */
 
-version 0.6.1 (head):
+version 0.6.2 (head):
+ * jMax objects written in Ruby now can also work in PureData.
+ * new format: SDL (portable output to window)
+ * can now compile bridges without libruby.so
+ * changed grid-protocol: added direct object-to-object streaming.
+ * bug: gridflow's clock tick back to a decent value (sorry)
+ * all inlets supporting grids also convert int/float as 0-D grids
+ * @fold and @scan now accept grids in right inlet and constructor
+ * @convolve is 2-3 times faster
+ * %,swap% are now called rem,swaprem; new %,swap% is the true modulo.
+
+version 0.6.1 (2002.08.29):
 
  * now compiling GridFlow as C++ (replacing C)
  * now you can use Ruby 1.7, which is faster
 	note: if you do so, make sure your version is dated 2002
  * new objects: rubyprint, printargs, @print, @scan, @inner
- * objects rewritten in Ruby: @in, @out
  * new format: apple quicktime (using libquicktime.so)
  * @in gzip support (example: "open ppm gzfile teapot.ppm.gz")
 	also works with targa and grid
@@ -18,6 +28,7 @@ version 0.6.1 (head):
  * syntax of @redim,@import changed from [@redim 2 3] to [@redim {2 3}]
  * "3 3 # 1 0 0 1" into inlet does automatic @redim, for all objects
  * grid literals accept {2 3 # 1 4 5} as an implicit [@redim {2 3}]
+ * objects rewritten in Ruby language: @in, @out
  * updated samples, templates, documentation.
  * fixed bugs
 

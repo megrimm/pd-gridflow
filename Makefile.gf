@@ -43,6 +43,15 @@ OBJDIR = .
 
 #----------------------------------------------------------------#
 
+ifeq ($(HAVE_STATIC_RUBY),yes)
+	RUBYA1 = libruby.a/object.o
+	RUBYA2 = libruby.a/*.o
+endif
+
+libruby.a/object.o:
+	mkdir -p libruby.a
+	(cd libruby.a; ar x $(PATH_LIBRUBY_A) || rm -f *.o)
+
 clean2::
 	rm -f $(JMAX_LIB) \
 	$(OBJDIR)/base_bridge_jmax$(OSUF) \
@@ -67,10 +76,24 @@ export-config::
 EFENCE = /usr/lib/libefence$(LSUF)
 #	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
-test:: install
-	ulimit -c unlimited; rm -f core; \
-	ruby -w tests/test.rb || \
-	([ -f core ] && gdb `which ruby` core)
+TEST = tests/test.rb math
+BACKTRACE = ([ -f core ] && gdb `which ruby` core)
+
+test::
+	rm -f core
+	(ruby       -w $(TEST)) || $(BACKTRACE)
+
+test16:: test
+	(ruby-1.6.7 -w $(TEST)) || $(BACKTRACE)
+
+testpd::
+	rm -f gridflow.pd_linux && make && \
+	rm -f /opt/lib/ruby/site_ruby/1.7/i586-linux/gridflow.so && \
+	make && make install && \
+	(pd -path . -lib gridflow test.pd || gdb `which pd` core)
+
+munchies::
+	ruby tests/test.rb munchies
 
 foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"
@@ -82,9 +105,13 @@ ifeq ($(HAVE_JMAX_2_5),yes)
 JMAX_LIB = $(OBJDIR)/libgridflow$(LSUF)
 gridflow-for-jmax:: $(JMAX_LIB)
 
-$(JMAX_LIB): base/bridge_jmax.c base/grid.h $(CONF)
+#	echo $(LDSOFLAGS)
+#	echo $(CFLAGS)
+
+$(JMAX_LIB): base/bridge_jmax.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
+	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
@@ -150,11 +177,12 @@ PDSUF = .pd_linux
 #    -Wall -W -Wshadow -Wstrict-prototypes -Werror \
 #    -Wno-unused -Wno-parentheses -Wno-switch
 
-PD_LIB = $(OBJDIR)/gridflow-pd$(PDSUF)
+PD_LIB = $(OBJDIR)/gridflow$(PDSUF)
 
-$(PD_LIB): base/bridge_puredata.c base/grid.h $(CONF)
+$(PD_LIB): base/bridge_puredata.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
+	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
 

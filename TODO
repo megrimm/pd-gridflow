@@ -72,12 +72,9 @@ Architecture
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] more profiling?
 [ ] allow lists to appear in object constructors
-[ ] add special list syntax allowing for automatic @redim to n-d grid
-	{3 3 | 1 0 0 0} will create unit matrix, etc.
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
-[ ] replace whine() by post() everywhere
 [ ] add reflection (@global#classes, @global#methods, ...)
 [ ] jMax metaclasses -> Ruby runtime subclass creation
 
@@ -103,6 +100,8 @@ Computation Objects
 [ ] timelines as in MM-Director
 [ ] @replace_if
 [ ] @random_select, @markov_chain
+[ ] @two,@three,@four -> [@pack n] using metaclass
+[ ] @unpack
 
 Effects
 [ ] improve
@@ -131,7 +130,6 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
 [ ] Pixonix bridge
-[ ] PureData bridge
 [ ] Max bridge
 [ ] Gimp bridge
 [ ] read/write PureData files
@@ -195,8 +193,8 @@ Bugs
 [!] tcp test is broken
 [ ] compiling without jMax nor PD should not require libruby.so
 [ ] issues with fork and X11 ?
-[ ] bug when FORMAT_LIST is empty
-[ ] GridObject#method_missing clobbers RubyPrint#method_missing
+[ ] memory corruption when running GridFlow/PD for too long
+[ ] dangling pointers due to missing mark-funcs and such
 
 Feature Requests
 
