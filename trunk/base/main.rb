@@ -25,11 +25,11 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-require "base/MainLoop.rb"
+require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
-require "/home/projects/gridflow/extra/eval_server.rb"
+require "gridflow/extra/eval_server.rb"
 $esm = EvalServerManager.new
 def esmtick
 	$esm.tick

@@ -658,17 +658,23 @@ extern const char *whine_header;
 
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
+typedef struct GFBridge {
+	VALUE (*send_out)(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $);
+	VALUE (*class_install)(VALUE $, char *name2, VALUE inlets2, VALUE outlets2);
+	void (*post)(const char *, ...);
+} GFBridge;
+
+extern GFBridge gf_bridge;
+
 extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 extern VALUE FObject_class;
 
 uint64 RtMetro_now(void);
 
-void gf_install_bridge(void);
 VALUE gf_post_string (VALUE $, VALUE s);
 void FObject_mark (VALUE *$);
 void FObject_sweep (VALUE *$);
 VALUE FObject_send_out(int argc, VALUE *argv, VALUE $);
-VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $);
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
@@ -691,5 +697,8 @@ void gf_init (void);
 
 /* hack */
 int gf_winlet(void);
+
+#undef post
+#define post(args...) gf_bridge.post(args)
 
 #endif /* __GF_GRID_H */
