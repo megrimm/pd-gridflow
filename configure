@@ -87,7 +87,7 @@ cat > /tmp/$$.c <<TEST
 	#include <mpeg.h>
 	int main (void) { return GetMPEGFrame==0; }
 TEST
-gcc /tmp/$$.c -o /tmp/$$ -lwardsmpeg
+gcc /tmp/$$.c -o /tmp/$$ -l"$1"
 }
 
 has-videodev () {
@@ -134,7 +134,7 @@ if say has-libmpeg wardsmpeg; then
 	LDSOFLAGS="$LDSOFLAGS -lwardsmpeg"
 else
 	echo -n "looking for Ward's LibMPEG as -lmpeg: "
-	if say has-libmpeg wardsmpeg; then
+	if say has-libmpeg mpeg; then
 		FORMATS="$FORMATS MPEG"
 		LDSOFLAGS="$LDSOFLAGS -lmpeg"
 	fi
