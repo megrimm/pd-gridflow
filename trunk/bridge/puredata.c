@@ -328,9 +328,8 @@ extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","/dev/null"};
 	post("setting up Ruby-for-PureData...");
 
-	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	Init_stack(bp);
+	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 
 	bridge_common_init();

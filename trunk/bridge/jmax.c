@@ -324,9 +324,8 @@ void gridflow_module_init () {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("Loading Ruby-for-jMax (from GridFlow " GF_VERSION ")\n");
-	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	Init_stack(bp);
+	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
 	rb_ivar_set(rb_const_get(rb_cObject,SI(Data)),SI(@gf_bridge),PTR2FIX(gf_bridge2));
