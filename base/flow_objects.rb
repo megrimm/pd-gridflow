@@ -178,9 +178,9 @@ class GridPrint < GridFlow::GridObject
 
 	def format
 		case @nt
-			when :float32; '%6.6f'
-			when :float64; '%14.14f'
-			else "%#{@columns}#{@format}" end
+		when :float32; '%6.6f'
+		when :float64; '%14.14f'
+		else "%#{@columns}#{@format}" end
 	end
 
 	def _0_base(x)
@@ -201,21 +201,15 @@ class GridPrint < GridFlow::GridObject
 	def make_columns udata
 		min = udata.min
 		max = udata.max
-		@columns = ""
+		@columns = "" # huh?
 		@columns = [
 			sprintf(format,min).length,
 			sprintf(format,max).length].max
 	end
 
 	def unpack data
-		case @nt
-		when :u, :u8,  :uint8; data.unpack("C*")
-		when :s, :i16, :int16; data.unpack("s*")
-		when :i, :i32, :int32; data.unpack("l*")
-		when :f, :f32, :float32; data.unpack("f*")
-		when :d, :f64, :float64; data.unpack("d*")
-		else raise "#{self.class} doesn't know how to decode #{@nt}"
-		end
+		ps = GridFlow.packstring_for_nt @nt
+		data.unpack ps
 	end
 
 	def _0_rgrid_begin
@@ -302,8 +296,7 @@ class GridPack < GridObject
 	(0...15).each {|x| define_inlet x }
 	def _0_bang
 		send_out_grid_begin 0, [@data.length], @cast
-		duhta = @data.pack(@ps)
-		send_out_grid_flow 0, duhta, @cast
+		send_out_grid_flow 0, @data.pack(@ps), @cast
 	end
 	install_rgrid 0
 	install "#pack", 1, 1
