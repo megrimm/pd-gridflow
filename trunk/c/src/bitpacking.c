@@ -80,15 +80,41 @@ int BitPacking_bytes(BitPacking *$) {
   This piece of code is little-endian specific, sorry.
   Will fix it when I get asked for it.
 */
+#define CONVERT1 \
+	(((in[0] << $->high_bit[0]) >> 7) & $->mask[0]) | \
+	(((in[1] << $->high_bit[1]) >> 7) & $->mask[1]) | \
+	(((in[2] << $->high_bit[2]) >> 7) & $->mask[2])
 uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
-	while (n--) {
-		unsigned int temp =
-			(((in[0] << $->high_bit[0]) >> 7) & $->mask[0]) |
-			(((in[1] << $->high_bit[1]) >> 7) & $->mask[1]) |
-			(((in[2] << $->high_bit[2]) >> 7) & $->mask[2]);
-		int bytes = $->bytes;
-		while(bytes--) { *out++ = temp; temp >>= 8; }
-		in += 3;
+	uint32 t;
+	if ($->bytes==2) {
+		while (n>3) {
+			t = CONVERT1; *((short *)out) = t; out+=2; in+=3;
+			t = CONVERT1; *((short *)out) = t; out+=2; in+=3;
+			t = CONVERT1; *((short *)out) = t; out+=2; in+=3;
+			t = CONVERT1; *((short *)out) = t; out+=2; in+=3;
+			n-=4;
+		}
+		while (n--) {
+			t = CONVERT1; *((short *)out) = t; out+=2; in+=3;
+		}
+	} else if ($->bytes==3) {
+		while (n > 3) {
+			t = CONVERT1; *((short *)out) = t; out[2] = t>>16; out+=3; in+=3;
+			t = CONVERT1; *((short *)out) = t; out[2] = t>>16; out+=3; in+=3;
+			t = CONVERT1; *((short *)out) = t; out[2] = t>>16; out+=3; in+=3;
+			t = CONVERT1; *((short *)out) = t; out[2] = t>>16; out+=3; in+=3;
+			n-=4;
+		}
+		while (n--) {
+			t = CONVERT1; *((short *)out) = t; out[2] = t>>16; out+=3; in+=3;
+		}
+	} else {
+		while (n--) {
+			int bytes = $->bytes;
+			t = CONVERT1;
+			while (bytes--) { *out++ = t; t >>= 8; }
+			in+=3;
+		}
 	}
 	return out;
 }
