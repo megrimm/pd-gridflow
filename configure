@@ -730,10 +730,12 @@ while ARGV.length>0 do
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
+		$CFLAGS += " -fno-inline"
 	when "--debug-harder"
 		puts "Debug Harder Mode (even more error checking; even less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
 		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
+		$CFLAGS += " -fno-inline"
 	when "--lite"
 		puts "Lite Mode (no float, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
