@@ -992,25 +992,30 @@ GRID_INLET(GridGrade,0) {
 //****************************************************************
 //\class GridMedian < GridObject
 //****************************************************************
+
 \class GridTranspose < GridObject
 struct GridTranspose : GridObject {
 	\attr int dim1;
 	\attr int dim2;
 	int d1,d2,na,nb,nc,nd; // temporaries
 	\decl void initialize (int dim1=0, int dim2=1);
+	\decl void _1_float (int dim1);
+	\decl void _2_float (int dim2);
 	\grin 0
 };
+
+\def void _1_float (int dim1) { this->dim1=dim1; }
+\def void _2_float (int dim2) { this->dim2=dim2; }
 
 GRID_INLET(GridTranspose,0) {
 	STACK_ARRAY(int32,v,in->dim->n);
 	COPY(v,in->dim->v,in->dim->n);
 	d1=dim1; d2=dim2;
-	if (d1>=in->dim->n || d2>=in->dim->n)
-		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
 	if (d1<0) d1+=in->dim->n;
 	if (d2<0) d2+=in->dim->n;
-	if (d1<0 || d2<0)
-		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
+	if (d1>=in->dim->n || d2>=in->dim->n || d1<0 || d2<0)
+		RAISE("would swap dimensions %d and %d but this grid has only %d dimensions",
+			dim1,dim2,in->dim->n);
 	memswap(v+d1,v+d2,1);
 	if (d1==d2) {
 		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
@@ -1044,6 +1049,45 @@ GRID_INLET(GridTranspose,0) {
 
 \classinfo { IEVAL(rself,"install '#transpose',3,1"); }
 \end class GridTranspose
+
+//****************************************************************
+\class GridReverse < GridObject
+struct GridReverse : GridObject {
+	\attr int dim1; // dimension to act upon
+	int d; // temporaries
+	\decl void initialize (int dim1=0);
+	\decl void _1_float (int dim1);
+	\grin 0
+};
+
+\def void _1_float (int dim1) { this->dim1=dim1; }
+
+GRID_INLET(GridReverse,0) {
+	d=dim1;
+	if (d<0) d+=in->dim->n;
+	if (d>=in->dim->n || d<0)
+		RAISE("would reverse dimension %d but this grid has only %d dimensions",
+			dim1,in->dim->n);
+	out=new GridOutlet(this,0,new Dim(in->dim->n,in->dim->v), in->nt);
+	in->set_factor(in->dim->prod(d));
+} GRID_FLOW {
+	int f1=in->factor(), f2=in->dim->prod(d+1);
+	Pt<T> data2 = data+f1-f2;
+	while (n) {
+		int hf1=f1/2;
+		for (int i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
+		out->send(f1,data);
+		data+=f1; n-=f1;
+	}
+} GRID_END
+
+\def void initialize (int dim1=0) {
+	rb_call_super(argc,argv);
+	this->dim1 = dim1;
+}
+
+\classinfo { IEVAL(rself,"install '#reverse',2,1"); }
+\end class GridReverse
 
 //****************************************************************
 \class GridPerspective < GridObject
