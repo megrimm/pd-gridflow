@@ -121,7 +121,7 @@ class JMaxFileReader < JMaxFileHandler
 				#STDERR.puts "WARNING: #{v} -> #{x}" if x<0
 				x
 			when :float
-				n=4; @code[@index,4].unpack("f")[0]
+				n=4; @code[@index,4].unpack("g")[0]
 			when :symbol
 				n=Size[op2]; @symbols[@code[@index,n].unpack(Packer[op2])[0]]
 			when nil
