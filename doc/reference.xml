@@ -1292,6 +1292,22 @@
 			</method>
 		</outlet>
 	</class>
+
+	<class name="unix_time">
+	</class>
+
+	<class name="ls">
+	</class>
+
+	<class name="exec">
+	</class>
+
+	<class name="renamefile">
+	</class>
+
+	<class name="plotter_control">
+	</class>
+
 </section>
 
 <section name="jMax emulation">

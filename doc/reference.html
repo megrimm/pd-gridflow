@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.8 - Reference Manual: Flow Classes</title>
+<title>GridFlow 0.8.0 - Reference Manual: Flow Classes</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.8 - Reference Manual: Flow Classes</h4>
+    <h4>GridFlow 0.8.0 - Reference Manual: Flow Classes</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -89,6 +89,11 @@
 <li><a href="#pingpong"><img src="flow_classes/pingpong-icon.png" alt="[pingpong]" border="0"></a></li>
 <li><a href="##global"><img src="flow_classes/%23global-icon.png" alt="[#global]" border="0"></a></li>
 <li><a href="#fps"><img src="flow_classes/fps-icon.png" alt="[fps]" border="0"></a></li>
+<li><a href="#unix_time"><img src="flow_classes/unix_time-icon.png" alt="[unix_time]" border="0"></a></li>
+<li><a href="#ls"><img src="flow_classes/ls-icon.png" alt="[ls]" border="0"></a></li>
+<li><a href="#exec"><img src="flow_classes/exec-icon.png" alt="[exec]" border="0"></a></li>
+<li><a href="#renamefile"><img src="flow_classes/renamefile-icon.png" alt="[renamefile]" border="0"></a></li>
+<li><a href="#plotter_control"><img src="flow_classes/plotter_control-icon.png" alt="[plotter_control]" border="0"></a></li>
 </ul>
 <h4><a href="#jMax_emulation">jMax emulation</a></h4><ul>
 <li><a href="#fork"><img src="flow_classes/fork-icon.png" alt="[fork]" border="0"></a></li>
@@ -155,7 +160,7 @@
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#export">#export</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23export-icon.png" alt="[#export]" border="0"><br clear="left"><br><br><a href="#importexport"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>this object is the opposite of #import.</p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b>  
+   <p>this object is the opposite of #import.</p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b>  
 			this object is not configurable because there isn't 
 			anything that could possibly be configured here. <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b>  
@@ -165,7 +170,7 @@
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#export_list">#export_list</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23export_list-icon.png" alt="[#export_list]" border="0"><br clear="left"><br><br><a href="#importexport"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>this object is another opposite of <kbd><font color="#007777">[#import]</font></kbd>, which puts 
+   <p>this object is another opposite of <kbd><font color="#007777">[#import]</font></kbd>, which puts 
 		all of its values in a list.</p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b> <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b>  
 				transforms this grid into a single message containing 
@@ -265,8 +270,8 @@
 				produces a Dim(dims) grid. <br>
     <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#scan">#scan</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="flow_classes/%23scan-icon.png" alt="[#scan]" border="0"><br clear="left"><br><br><a href="#scan"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p><kbd><font color="#007777">[#scan +]</font></kbd> computes subtotals; this can be used, for example, 
+<img src="flow_classes/%23scan-icon.png" alt="[#scan]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p><kbd><font color="#007777">[#scan +]</font></kbd> computes subtotals; this can be used, for example, 
 		to convert a regular probability distribution into a cumulative one. 
 		(or in general, discrete integration) </p> <br><b>method</b>&nbsp;init <b>(</b><i>numop2</i> operator<b>, </b><i>grid</i> seed<b>)</b>    <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims..., last)</i> grid<b>)</b>  
@@ -296,8 +301,8 @@
 		(10,20,30) [#outer +] (1,2,3)  will give : 
 		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#inner">#inner</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="flow_classes/%23inner-icon.png" alt="[#inner]" border="0"><br clear="left"><br><br><a href="#inner"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>think of this one as a special combination of <kbd><font color="#007777">[#outer]</font></kbd>, <kbd><font color="#007777">[#]</font></kbd> and <kbd><font color="#007777">[#fold]</font></kbd>. this is one of the most complex operations. It is very useful 
+<img src="flow_classes/%23inner-icon.png" alt="[#inner]" border="0"><br clear="left"><br><br><a href="#foldinnerouter"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p>think of this one as a special combination of <kbd><font color="#007777">[#outer]</font></kbd>, <kbd><font color="#007777">[#]</font></kbd> and <kbd><font color="#007777">[#fold]</font></kbd>. this is one of the most complex operations. It is very useful 
 		for performing linear transforms like rotations, scalings, shearings, 
 		and some kinds of color remappings. A linear transform is done by 
 		something called matrix multiplication, which happens to be <kbd><font color="#007777">[#inner * + 
@@ -445,7 +450,7 @@
 		480 320 3 will repeat the input image twice in the output image. <kbd><font color="#007777">[#redim]</font></kbd> 240 50 3 will only keep the 50 top lines.</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#store">#store</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23store-icon.png" alt="[#store]" border="0"><br clear="left"><br><br><a href="#store"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>A <kbd><font color="#007777">[#store]</font></kbd> object can store exactly one grid, using the right 
+   <p>A <kbd><font color="#007777">[#store]</font></kbd> object can store exactly one grid, using the right 
 		inlet. You fetch it back, or selected subparts thereof, using the left 
 		inlet.</p> <br><b>method</b>&nbsp;init <b>(</b><i>grid</i> contents<b>)</b>   <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b>  
@@ -481,14 +486,14 @@
 			indexings.  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#scale_to">#scale_to</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23scale_to-icon.png" alt="[#scale_to]" border="0"><br clear="left"><br><br><a href="#scale_to"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <br><b>method</b>&nbsp;init <b>(</b>size<b>)</b>   <br>
+   <br><b>method</b>&nbsp;init <b>(</b>size<b>)</b>   <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b> a 3-channel picture to be scaled.<br>
    <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><b>)</b> a {height width} pair.<br>
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b> a scaled 3-channel picture.<br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#scale_by">#scale_by</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23scale_by-icon.png" alt="[#scale_by]" border="0"><br clear="left"><br><br><a href="#scale_by"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <br><b>method</b>&nbsp;init <b>(</b><i>grid dim() or dim(2)</i> factor<b>)</b>   
+   <br><b>method</b>&nbsp;init <b>(</b><i>grid dim() or dim(2)</i> factor<b>)</b>   
 			factor is optional (default is 2). 
 			if it's a single value, then that factor is to be used 
 			for both rows and columns. <br>
@@ -512,7 +517,7 @@
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#spread">#spread</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23spread-icon.png" alt="[#spread]" border="0"><br clear="left"><br><br><a href="#spread"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>typically you plug a <kbd><font color="#007777">[#for]</font></kbd> into this object, 
+   <p>typically you plug a <kbd><font color="#007777">[#for]</font></kbd> into this object, 
 		and you plug this object into the left side of a <kbd><font color="#007777">[#store]</font></kbd>. it will 
 		scatter pixels around, giving an "unpolished glass" effect.</p> <p>if you put a picture in it, however, it will add noise. The 
 		resulting values may be out of range, so you may need to clip them 
@@ -543,7 +548,7 @@
 <tr><td colspan="4"><a name="Objects_for_Reporting"></a><h4>Objects for Reporting</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#dim">#dim</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23dim-icon.png" alt="[#dim]" border="0"><br clear="left"><br><br><a href="#dim"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), <kbd><font color="#007777">[#dim]</font></kbd> will return a grid like Dim(3), whose values are 240, 320, 4. </p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b>  
+   <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), <kbd><font color="#007777">[#dim]</font></kbd> will return a grid like Dim(3), whose values are 240, 320, 4. </p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b>  
 			no arguments. <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b>  
 				ignores any data contained within. 
@@ -618,7 +623,7 @@
 <tr><td colspan="4"><a name="Objects_for_Miscellaneous_Picture_Processing"></a><h4>Objects for Miscellaneous Picture Processing</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#convolve">#convolve</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23convolve-icon.png" alt="[#convolve]" border="0"><br clear="left"><br><br><a href="#convolve"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p>this is the object for blurring, sharpening, finding edges, 
+   <p>this is the object for blurring, sharpening, finding edges, 
 		embossing, cellular automata, and many other uses.</p> <br><b>method</b>&nbsp;init <b>(</b><i>numop2</i> op_para<b>, </b><i>numop2</i> op_fold<b>, </b><i>grid</i> seed<b>, </b><i>grid</i> right_hand<b>)</b>      <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns rest...)</i> grid<b>)</b>   
 				splits the incoming grid into dim(rest...) parts. 
@@ -642,7 +647,7 @@
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#contrast">#contrast</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23contrast-icon.png" alt="[#contrast]" border="0"><br clear="left"><br><br><a href="#contrast"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <br><b>method</b>&nbsp;init <b>(</b>iwhiteness<b>, </b>contrast<b>)</b>    <br>
+   <br><b>method</b>&nbsp;init <b>(</b>iwhiteness<b>, </b>contrast<b>)</b>    <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns channels)</i> grid<b>)</b>   
 			produces a grid like the incoming grid but with 
 			different constrast. <br>
@@ -660,7 +665,7 @@
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#posterize">#posterize</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23posterize-icon.png" alt="[#posterize]" border="0"><br clear="left"><br><br><a href="#posterize"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p><kbd><font color="#007777">[#posterize]</font></kbd> reduces the number of possible intensities in an image; 
+   <p><kbd><font color="#007777">[#posterize]</font></kbd> reduces the number of possible intensities in an image; 
 		it rounds the color values.The effect is mostly apparent with a low 
 		number of levels.</p> <br><b>method</b>&nbsp;init <b>(</b>levels<b>)</b>   <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns channels)</i> grid<b>)</b>   
@@ -767,7 +772,7 @@ This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </t
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#global">#global</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23global-icon.png" alt="[#global]" border="0"><br clear="left"><br><br><a href="#global"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p> 
+   <p> 
 		objects of this class do nothing by themselves and are just 
 		an access point to features that don't belong to any object in 
 		particular. </p> <br><b>method</b>&nbsp;profiler_reset <b>(</b><b>)</b>  
@@ -802,6 +807,21 @@ This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </t
 			(the average happens to be simply 1000 divided by the 
 			messages-per-second, but it is convenient to have it anyway) <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="unix_time">unix_time</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/unix_time-icon.png" alt="[unix_time]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ls">ls</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/ls-icon.png" alt="[ls]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="exec">exec</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/exec-icon.png" alt="[exec]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="renamefile">renamefile</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/renamefile-icon.png" alt="[renamefile]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="plotter_control">plotter_control</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/plotter_control-icon.png" alt="[plotter_control]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -964,7 +984,7 @@ This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </t
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.8 Documentation<br>
+GridFlow 0.8.0 Documentation<br>
 Copyright &copy; 2001,2002,2003,2004,2005 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
