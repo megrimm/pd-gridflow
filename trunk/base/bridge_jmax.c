@@ -158,18 +158,14 @@ static VALUE BFObject_init$1 (kludge *k) {
 	VALUE argv[k->ac];
 	k->ac--;
 	k->at++;
-	{ int i; for (i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i); }
-	{
-		BFObject *j_peer = (BFObject *)k->$;
-		VALUE qlass = (VALUE)k->$->head.cl->user_data;
-		VALUE rself = rb_funcall2(qlass,rb_intern("new"),k->ac,argv);
-		j_peer->peer = rself;
-		{
-			DGS(GridObject);
-			$->foreign_peer = (void *)j_peer;
-		}
-		return rself;
-	}
+	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
+	BFObject *j_peer = (BFObject *)k->$;
+	VALUE qlass = (VALUE)k->$->head.cl->user_data;
+	VALUE rself = rb_funcall2(qlass,rb_intern("new"),k->ac,argv);
+	j_peer->peer = rself;
+	DGS(GridObject);
+	$->foreign_peer = (void *)j_peer;
+	return rself;
 }
 
 static void BFObject_init (fts_object_t *$,
@@ -256,15 +252,12 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 	if (outlet<0 || outlet>=fts_object_get_outlets_number(jo)) {
 		EARG("outlet %d does not exist",outlet);
 	}
-	{
-		int i;
-		fts_atom_t at[argc];
-		fts_atom_t sel;
-		rj_convert(sym,&sel);
-		for (i=0; i<argc; i++) rj_convert(argv[i],at+i);
-		/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
-		fts_outlet_send(jo,outlet,fts_get_symbol(&sel),argc,at);
-	}
+	fts_atom_t at[argc];
+	fts_atom_t sel;
+	rj_convert(sym,&sel);
+	for (int i=0; i<argc; i++) rj_convert(argv[i],at+i);
+	/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
+	fts_outlet_send(jo,outlet,fts_get_symbol(&sel),argc,at);
 	return Qnil;
 }
 
