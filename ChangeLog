@@ -1,5 +1,15 @@
 /* $Id$ */
 
+version 0.3.1 (head):
+ * added (timewise) profiler
+ * added @scale_by for quick scaling by integer factors.
+ * @identity_transform, @scale_to are much faster.
+ * Format API changes again
+ * Formats: "connect" merged into "open"; "size" merged into "option".
+ * Formats: @video_out merged into @out.
+ * added format "grid" for storing any kind of grid to disk.
+ * added TCP client socket support (in "grid" format only)
+
 version 0.3.0 (2001.11.04):
  * reworked File Format API
  * grid objects now all accept lists of integers (auto-convert to 1D grid)
@@ -17,6 +27,7 @@ version 0.3.0 (2001.11.04):
  * more samples: Fire, Ripple, Game of Life, Chroma Key, Convolve, Saturation
  * much improved samples: Color Correction, Linear Transform.
  * use [@store uint8] for low-ram storage of values 0-255.
+ * videodev: added option norm 0=pal 1=ntsc 2=secam 3=auto
 
 version 0.2.2 (2001.08.15):
  * @video_out auto-updates on X11 ExposeEvent

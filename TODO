@@ -6,11 +6,24 @@ Installation
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
 
+Documentation Update
+[ ] @in, @video_in_file
+[ ] @out, @video_out_file
+[ ] @video_out
+[ ] @scale_by
+[ ] @import, @export, @redim, @store
+[ ] @, @!
+[ ] @fold, @inner, @outer
+[ ] @for, @dim, @redim
+[ ] @print, rtmetro, video4jmax
+
 Documentation
+[ ] remove "format"
 [ ] XMLize reference section
 [ ] create JMAXML->HTML converter
 [ ] validate samples/outside
 [ ] validate samples/020
+[ ] specify policy for <sample>, <icon>, etc.
 [ ] op2: relative speeds
 [ ] add credits
 [ ] split reference.html into:
@@ -30,12 +43,14 @@ Documentation
 [ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
+[ ] document videoNOT4jmax
 
 General
 [ ] make FREE() handle #delete as possible
 [ ] better error handling
 [ ] @print
 [ ] how can I write unit tests or contracts?
+[ ] MMX memcpy() ?
 
 Computation Objects
 [ ] @cartprod (?), @slice (@splice ?)
@@ -61,6 +76,8 @@ Effects
 [ ] blinds, 
 [ ] split channels, join channels
 [ ] see gimp for ideas
+[ ] there's a way to double (?) the speed of the cross-fade.
+	try interleaving the data and using [@inner]
 
 Structure & Protocol
 [ ] change the protocol completely:
@@ -86,10 +103,12 @@ File Formats
 [ ] JPEG support
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
-[ ] MPEG support
+[!] MPEG support
+[!] TCP support
+[!] VDSP support
 [ ] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[ ] install libmpeg
+[!] install libmpeg
 [ ] design generic grid format (.grid)
 [ ] rewinding file
 [ ] FileFormat base class + inheritance + pre-written open() code, etc
