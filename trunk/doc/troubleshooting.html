@@ -1,0 +1,30 @@
+<ul>
+<li>corrupted jMax file
+	<ul>
+	<li>FTP transfer in ASCII mode
+		<ul>
+		<li>this mode assumes you are passing plain-text files.
+			it filters out windows-style end-of-lines.
+			the jMax format (".jmax") is not plain-text,
+			and so, important bytes get removed from the file.
+		<li>solution: use binary mode.
+		</ul>
+	<li>CVS update
+		<ul>
+		<li>CVS assumes text files in which it makes sense to
+			merge file differences together. this normally
+			results in update-conflict and corruption on jMax
+			files.
+		<p>
+			Your previously working file is renamed as hidden
+			file with a ".#" prefix. The new working file is
+			available by removing the corrupted one and doing
+			cvs update again.
+		<p>
+			The worst thing you can do is actually check-in
+			a damaged file, in which case you'll have to peek
+			an older version and check-in that file.
+	</ul>
+
+
+</ul>
