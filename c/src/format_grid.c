@@ -141,7 +141,7 @@ bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 	int n_dim = n/sizeof(int);
 	int v[n_dim];
 	int i;
-	if ($->is_le != is_le()) swap32(n_dim,(uint32 *)v);
+	if ($->is_le != is_le()) swap32(n_dim,(uint32*)buf);
 	whine("there are %d dimensions",n_dim);
 	for (i=0; i<n_dim; i++) {
 		v[i] = ((int*)buf)[i];
@@ -151,7 +151,7 @@ bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
 	$->dim = Dim_new(n_dim,v);
 	prod = Dim_prod($->dim);
 	if (prod <= 0 || prod > MAX_NUMBERS) {
-		whine("dimension list: invalid prod (%d)",n_dim,prod);
+		whine("dimension list: invalid prod (%d)",prod);
 		goto err;
 	}
 	FREE(buf);
@@ -217,9 +217,8 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 		}
 	}
 
-	if ($->is_socket) {
-		read_do($,8,FormatGrid_frame1);
-	} else {
+	read_do($,8,FormatGrid_frame1);
+	if (!$->is_socket) {
 		while ($->buf) try_read($);
 		whine("frame: finished");
 	}
@@ -343,7 +342,7 @@ bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 		goto err;
 	}
 
-	if ($->mode==4) nonblock($->stream);
+	if ($->mode==4 && $->is_socket) nonblock($->stream);
 	return true;
 err:
 	if (0<= $->stream) close($->stream);
