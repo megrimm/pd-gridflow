@@ -4,37 +4,59 @@ Installation
 [ ]
 
 Documentation
+[ ] update install.html for new "configure" script.
 [ ] review reference.html
 [ ] review images of reference.html
+[ ] add some context info: what is jmax and where to get it
+	and where are the mailing-lists and irc channels.
+[ ] add explanation of video4jmax vs jmax-videodsp
+[ ] add credits
+[ ] things you type verbatim are in KBD blocks
+[ ] placeholders for your own values are in I blocks
 [ ] change title bar
-[ ] validate samples/inside
 [ ] validate samples/outside
 [ ] validate samples/020
+[ ] add doc for: **
 
 General
-[ ] remove memory leaks, segmentation faults
+[!] remove memory leaks, segmentation faults
 [ ] better error handling
+[ ] @print
+[ ] @literal
+[ ] how can I write unit tests?
 
 Computation Objects
-[ ] @! (unary ops)
-[ ] @inner, @outer, @fold
-[ ] @convolution
-[ ] @redim, @dim (APL rho)
+[!] @inner, @outer, @fold, @cartprod (?)
+[!] @convolution
+[!] @redim (APL bin rho)
+[ ] second inlet to @import
+[ ] @iota and/or @for
 [ ] @resync (fast version of @export followed by @import)
-[ ] @slice (@splice ?)
+[!] @slice (@splice ?)
 [ ] black option in @store
-[ ] uint8 option in @store
+[!] uint8 option in @store
 [ ] @import~, @export~ (note:
 	DSP->Control is feasible
 	Control->DSP would be *very* kludgy)
 
 Effects
-[ ] blur, emboss, find edges, solarize, pinch, waves
-[ ] see gimp for ideas
-[ ] abyss effect, fractals
+[!] blur
+[!] motion-blur (with or without feedback)
+[!] fire
+[!] ripple
+[!] overlay using alpha channel
+[ ] emboss, find edges, solarize, pinch, waves
+[ ] sharpen, pixelize, spread, despeckle
+[ ] gamma correction
+[ ] *real* saturation, and hue change
+[ ] abyss effect
 [ ] image-sur-image
 [ ] n-frame delaying
 [ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits)
+[ ] HSL <-> HSV <-> RGB <-> YUV
+[ ] blinds, 
+[ ] split channels, join channels
+[ ] see gimp for ideas
 
 Structure & Protocol
 [x] packets: output buffering
@@ -46,47 +68,41 @@ Structure & Protocol
 	messages; GridInlet,GridOutlet have redundant info, like the
 	element counter, etc.
 [ ] angles will be 0<=x<36000
-[ ] unary ops: sq sqrt abs
-[ ] binary ops: **
-[ ] binary ops: <= != >=
-[ ] binary ops: *sin -> b * sin(a * 2 * pi / 36000)
-[ ] binary ops: atan2
+[ ] unary ops: sq rand
+[!] binary ops: atan2
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] copy-on-write and similar tricks
-[ ] support 0-dimensional values
+[!] support 0-dimensional and 0-element grids
 
 Input/Output
-[ ] in-place editing
+[ ] in-place editing (rw mode)
 [ ] implement byte-order, bit-order support in BitPacking
 [ ] add PTC support
+[ ] add SDL support
 [ ] x11 shared memory working
 [ ] x11 screen capture
-[ ] multi-image (seq)
-[ ] multi-file (multi)
+[ ] x11 multi-display
+
+File Formats
 [ ] Targa write support
 [ ] JPEG support
+[ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
+[ ] MPEG support
+[!] multi-image (seq) (createable by cat, ar, tar or zip)
+[!] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
+[ ] install libmpeg, libquicktime
 
-Misc
-[ ] @print
-[ ] @literal
-[ ] how can I write unit tests?
+Java/Swing
+[ ] Color Picker
+[ ] Grid Editor
 
 Bugs
 [ ] @video_out causes delayed crash when closing its associated window
-[ ] @import bug with 0 dims
-[ ] @export bug with init arguments
+[ ] object sending too much data causes *another* object to crash.
 
-From: Aeldrik Pander <aeldrik@metachaos.demon.nl>
-
-> I noticed a small thing in the ./src/c/Makefile, It is better to use:
-> JMAXROOTDIR=../../../..
-> DISTDIR = $(JMAXROOTDIR)/fts
-> etc ...
-> Then it is possible to compile the package in any dir, you don't need to
-> put it in the jmax/packages dir. I use a compilation script wich passes
-> the JMAXROOTDIR parameter to the Makefile.
-
+Misc
+[ ] find out what channel the small cam goes on and why it isn't displaying.
 
 ================
 vin_file_test_2.jmax
@@ -98,9 +114,4 @@ store3:
 	28,36,128
 	336,557,140
 	179,15,183
-
-what if I wanted to delay the various parts of the frame differently ? ie.
-the pixels in the center are delayed 1 frame ......... and the pixels on
-the ourside are delayed 25 frames ........; everything in the middle is
-delayed discreetly between these 2 values. 
 
