@@ -1,10 +1,7 @@
 #N canvas 432 100 613 339 10;
-#X obj 34 93 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#X obj 20 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
-#X obj 20 111 @in;
-#X obj 20 309 @out;
-#X msg 51 256 open x11 here;
-#X msg 68 279 close;
+#X obj 20 138 @in;
 #X text 16 7 @solarize;
 #X obj 20 174 @solarize;
 #X text 98 7 makes medium intensities brightest. formerly brightest
@@ -17,11 +14,12 @@ instead of clipped or wrapped.;
 #X obj 487 309 @layer;
 #X obj 342 309 @contrast;
 #X obj 411 309 @posterize;
-#X msg 20 73 open jpeg file 2.jpg;
-#X connect 0 0 1 0;
-#X connect 1 0 6 0;
-#X connect 3 0 2 0;
-#X connect 4 0 2 0;
-#X connect 6 0 2 0;
-#X connect 14 0 1 0;
-#X connect 14 0 0 0;
+#X obj 20 222 @out window;
+#X msg 43 112 open bluemarble.jpg;
+#X obj 20 83 fork;
+#X connect 0 0 13 0;
+#X connect 1 0 3 0;
+#X connect 3 0 11 0;
+#X connect 12 0 1 0;
+#X connect 13 0 1 0;
+#X connect 13 1 12 0;
