@@ -348,13 +348,21 @@ void FormatX11::resize_window (int sx, int sy) {
 GRID_INLET(FormatX11,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
+	if (in->dim->get(2)!=3 && in->dim->get(2)!=4)
+		RAISE("expecting 3 or 4 channels: red,green,blue,ignored (got %d)",in->dim->get(2));
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1), osx = dim->get(1);
 	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_factor(sxc);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
+	if (in->dim->get(2)!=bit_packing->size) {
+		gfpost("changing bit_packing's number of channels");
+		BitPacking *o = bit_packing;
+		o->mask[3]=0;
+		bit_packing = new BitPacking(
+			o->endian, o->bytes, in->dim->get(2), o->mask);
+		delete o;
+	}
 } GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
 	int sxc = in->dim->prod(1);
