@@ -239,7 +239,7 @@ int lowest_bit(uint32 n);
 /* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
 
 #define DECL(_class_,_name_) \
-	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
+	{ #_class_,#_name_,(RMethod) _class_##_##_name_##_wrap }
 
 #define DECL3(_name_) \
 	Ruby _name_(int argc, Ruby *argv);
@@ -290,17 +290,6 @@ typedef struct MethodDecl {
 	const char *qlass;
 	const char *selector;
 	RMethod method;
-//	MethodDecl *next;
-//	static MethodDecl *gf_all_methods;
-
-	MethodDecl() {} /* unused but required. new C++ makes no sense */
-	MethodDecl(const char *qlass, const char *selector, RMethod method) {
-		this->qlass = qlass;
-		this->selector = selector;
-		this->method = method;
-//		this->next = gf_all_methods;
-//		gf_all_methods = this;
-	}
 } MethodDecl;
 
 void define_many_methods(Ruby/*Class*/ rself, int n, MethodDecl *methods);
@@ -317,8 +306,26 @@ public:
 	int n;
 
 	Pt() : p(0), start(0), n(0) {}
-	Pt(T *q, int _n) : p(q), start(q), n(_n) {}
-	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {}
+	Pt(T *q, int _n) : p(q), start(q), n(_n) {
+#ifdef HAVE_DEBUG_HARDER
+		if (p<start || p>=start+n) {
+			fprintf(stderr,
+				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)p,(long)start,(long)start+n);
+			raise(11);
+		}		
+#endif
+	}
+	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {
+#ifdef HAVE_DEBUG_HARDER
+		if (p<start || p>=start+n) {
+			fprintf(stderr,
+				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)p,(long)start,(long)start+n);
+			raise(11);
+		}		
+#endif
+	}
 
 //	Pt(char *q) : p((T *)q) {}
 	T &operator *() { return *p; }
@@ -329,8 +336,8 @@ public:
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n)) {
 			fprintf(stderr,
-				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p,(long)start,(long)start+n);
+				"BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)p, (long)i, (long)p+i,(long)start,(long)start+n);
 			raise(11);
 		}
 #endif
