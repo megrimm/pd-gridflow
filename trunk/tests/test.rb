@@ -1,6 +1,11 @@
 # $Id$
 
-require "c/lib/i686-linux/libgridflow.so"
+def test_load
+	require "c/lib/i686-linux/gridflow.so"
+end
+
+test_load
+
 include GridFlow
 
 $imdir = "../images/"

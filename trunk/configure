@@ -183,6 +183,9 @@ Feature.new {
 	options ["HAVE_PUREDATA"]
 }]
 
+$features_h = {}
+$features.each {|f| $features_h[f.tag]=f }
+
 #--------------------------------#
 
 $conf={
@@ -197,10 +200,14 @@ $conf={
 
 #--------------------------------#
 
-def usage; puts "\
-usage: ./configure --arch architecture [--jmax-dist-dir directory]
-	[--fast]
-"end
+def usage
+	log = ""
+	log << "usage: ./configure --arch architecture [--jmax-dist-dir directory] "
+	log << "[--fast] "
+	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
+	puts
+	while log.length>0 do puts log.slice!(/^.{1,70} /) end
+end
 
 puts
 if not File.exist?("./configure")
@@ -211,12 +218,11 @@ end
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
-	when "--no-x11" #!@#$
-		$conf[:HAVE_X11]=false
-		puts "won't check for libX11"
-	when "--no-mpeg" #!@#$
-		$conf[:HAVE_MPEG]=false
-		puts "won't check for libmpeg"
+	when /^--no-/
+		name = arg[5..-1].intern
+		puts "there is no feature called #{name}" if not $features_h[name]
+		puts "won't check for feature #{name}"
+		$features_h.delete name
 	when "--fast" #!@#$
 		puts "Fast Mode (less error checking)"
 		$conf[:OPTIONS].push :HAVE_SPEED, :BLAH
@@ -325,7 +331,11 @@ def try feature
 	end
 	DUAL.print "[#{feature.tag}] #{feature.name}: "
 	if feature.status == :disabled
-		DUAL.puts "disabled"
+		DUAL.puts "disabled (by author)"
+		return
+	end
+	if not $features_h[feature.tag]
+		DUAL.puts "disabled (by user)"
 		return
 	end
 	if feature.test
@@ -414,6 +424,8 @@ File.open("config.h","w") {|f| f.puts "
 
 #{`make export-config`}
 
+\#include <#{$conf[:RUBY_H]}>
+
 \#ifdef STANDALONE
 \#include \"base/bridge_none.h\"
 \#else
@@ -428,8 +440,6 @@ for z in $conf[:OPTIONS] do
 end
 if $conf[:FEATURES][:mpeg3]
 f.puts "
-
-\#include <#{$conf[:RUBY_H]}>
 
 \#ifdef LIBMPEG_INCLUDE_HERE
 \#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
