@@ -101,9 +101,9 @@ end
 module Future; end
 
 class Feature
-	def initialize(&b)
-		instance_eval(&b)
-	end
+	$features = []
+	def self.add(*a,&b) $features << Feature.new(*a,&b) end
+	def initialize(&b) instance_eval(&b) end
 	def self.attr2(sym,&b)
 		eval "def #{sym}(*args,&b)
 			raise args.inspect if args.length>1
@@ -273,9 +273,11 @@ FILES = [
 ]
 
 #----------------------------------------------------------------#
-
-$features = [
-Feature.new {
+Feature.add {
+	tag :fast
+	name "Compile for speed (and not debuggability)"
+}
+Feature.add {
 	tag :gcc3
 	name "GNU C++ Compiler 3"
 	options ["HAVE_GCC3"]
@@ -287,8 +289,8 @@ Feature.new {
 		if version < "3" then raise "version #{version} < 3" end
 		true
 	}
-},
-Feature.new {
+}
+Feature.add {
 	tag :stl
 	name "C++ Standard Template Library"
 	test proc {
@@ -298,8 +300,8 @@ Feature.new {
 			std::vector<int> foo;
 		}}
 	}
-},
-Feature.new {
+}
+Feature.add {
 	tag :gcc64
 	name "GNU C++ in 64-bit mode"
 	options ["GCC64"]
@@ -316,8 +318,20 @@ Feature.new {
 			return !( sizeof(void*)==8 );
 		}}
 	}
-},
-Feature.new {
+}
+
+#----------------------------------------------------------------#
+
+$stack_end_test = %{
+	#include <stdio.h>
+	#include <ruby.h>
+	int main () {
+		void *bp;
+		printf("#define RUBY_STACK_END 0x%08lx",(long)&bp);
+		return rb_rescue==0;
+	}
+}
+Feature.add {
 	tag :libruby
 	name "Ruby as a dynamic library"
 	uses_bridge_so ["-lruby"]
@@ -326,18 +340,9 @@ Feature.new {
 		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
 		m[1]
 	}
-	test proc {
-		c_test %{
-		#include <stdio.h>
-		#include <ruby.h>
-		int main () {
-			void *bp;
-			printf("#define RUBY_STACK_END 0x%08lx",(long)&bp);
-			return rb_rescue==0;
-		}}, uses_bridge_so
-	}
-},
-Feature.new {
+	test proc { c_test $stack_end_test, uses_bridge_so }
+}
+Feature.add {
 	tag :librubystatic
 	unless_feature [:libruby]
 	name "Ruby as a static library"
@@ -353,23 +358,11 @@ Feature.new {
 		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
 		m[1]
 	}
-	test proc {
-		c_test %{
-		#include <stdio.h>
-		#include <ruby.h>
-		int main () {
-			void *bp;
-			printf("#define RUBY_STACK_END 0x%08x",&bp);
-			return rb_rescue==0;
-		}}, ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)]
-	}
+	test proc { c_test $stack_end_test, ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)] }
 	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
-},
-Feature.new {
-	tag :fast
-	name "Compile for speed (and not debuggability)"
-},
-Feature.new {
+}
+#----------------------------------------------------------------#
+Feature.add {
 	tag :pentium
 	name "Pentium-compatible CPU"
 	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
@@ -391,8 +384,8 @@ Feature.new {
 			return 0;}'
 	}
 	options ["HAVE_PENTIUM"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :mmx
 	uses_feature [:pentium]
 	uses_o ["cpu/mmx.o","cpu/mmx_loader.o"]
@@ -421,8 +414,8 @@ Feature.new {
 		', '-lc'
 	}
 	options ["HAVE_MMX"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :simd
 	uses_feature [:pentium]
 	name "SIMD (MMX/SSE/Altivec) (using GCC)"
@@ -434,14 +427,15 @@ Feature.new {
 		int main () { return 0; }',nil,["-mmmx"]
 	}
 	options ["HAVE_SIMD"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :profiler
 	name "profiler (speed measurements)"
 	uses_feature [:pentium]
 	options ["HAVE_TSC_PROFILING"]
-},
-Feature.new {
+}
+#----------------------------------------------------------------#
+Feature.add {
 	tag :usb
 	name "USB Library"
 	uses_h ["usb.h"]
@@ -454,8 +448,9 @@ Feature.new {
 		"
 	}
 	options ["HAVE_USB"]
-},
-Feature.new {
+}
+#----------------------------------------------------------------#
+Feature.add {
 	tag :ieee1394
 	name "IEEE1394 Libraries for Linux (raw1394/dc1394)"
 	status :disabled
@@ -470,8 +465,8 @@ Feature.new {
 	}
 	options ["HAVE_1394"]
 	formats ["DC1394"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
 	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
@@ -483,8 +478,8 @@ Feature.new {
 		"
 	}
 	formats ["X11"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :x11_shm
 	name "X11 acceleration through shared memory"
 	uses_feature [:x11]
@@ -500,9 +495,9 @@ Feature.new {
 		"
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
-},
+}
 =begin
-Feature.new {
+Feature.add {
 	tag :opengl
 	name "OpenGL (only as framebuffer)"
 	status :disabled
@@ -515,9 +510,9 @@ Feature.new {
 		"
 	}
 	formats ["OpenGL"]
-},
+}
 =end
-Feature.new {
+Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
@@ -533,8 +528,8 @@ Feature.new {
 		"
 	}
 	formats ["SDL"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :objcpp
 	name "GNU/Apple ObjectiveC++ Compiler"
 	uses_h ["objc/Object.h"]
@@ -545,8 +540,8 @@ Feature.new {
 		int main () { [[Object alloc] init]; }
 		", nil, ["-xobjective-c++"]
 	}
-},
-Feature.new {
+}
+Feature.add {
 	tag :quartz
 	name "Apple Quartz/Cocoa Display"
 	uses_so ["-lobjc",["-framework","Cocoa"]]
@@ -559,8 +554,8 @@ Feature.new {
 		", nil, ["-xobjective-c++"]
 	}
 	formats ["Quartz"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :aalib
 	name "Ascii Art Library"
 	uses_so ["-laa"]
@@ -575,8 +570,8 @@ Feature.new {
 		"
 	}
 	formats ["AALib"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :jpeg
 	name "JPEG Library"
 	uses_so ["-ljpeg"]
@@ -592,8 +587,8 @@ Feature.new {
 		"
 	}
 	formats ["JPEG"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :png
 	name "PNG Library"
 	uses_so ["-lpng","-lz"]
@@ -612,8 +607,8 @@ Feature.new {
 		`
 	}
 	formats ["PNG"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	uses_h ["linux/videodev.h"]
@@ -624,8 +619,8 @@ Feature.new {
 		int main () { struct video_window foo; return 0; }"
 	}
 	formats ["VideoDev"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
 	uses_so ["-lmpeg3","-lpthread","-lm",
@@ -638,8 +633,8 @@ Feature.new {
 		"
 	}
 	formats ["MPEG3"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :quicktimeapple
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
@@ -651,8 +646,8 @@ Feature.new {
 		"
 	}
 	formats ["QuickTimeApple"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :quicktimehw
 	unless_feature :quicktimeapple
 	name "HeroineWarrior QuickTime4Linux (or LibQuickTime)"
@@ -675,8 +670,8 @@ Feature.new {
 		`
 	}
 	formats ["QuickTimeHW"]
-},
-Feature.new {
+}
+Feature.add {
 	tag :xine
 	name "Xine movie decoder"
 	uses_so ["-lxine"]
@@ -693,8 +688,8 @@ Feature.new {
 		return xine_new==0; }`
 	}
 	formats ["Xine"]
-},
-#Feature.new {
+}
+#Feature.add {
 #	tag :example
 #	name "example (example file optional/example.c)"
 #	uses_o ["optional/example.o"]
@@ -704,8 +699,9 @@ Feature.new {
 #		int main () {
 #		return 0 /* 0=ok, nonzero=bad */; }`
 #	}
-#},
-Feature.new {
+#}
+#----------------------------------------------------------------#
+Feature.add {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
 	uses_feature [Or[:libruby,:librubystatic]]
@@ -731,7 +727,7 @@ Feature.new {
 			}
 		`
 	}
-}]
+}
 
 $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
