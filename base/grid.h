@@ -363,9 +363,12 @@ public:
 #endif
 
 	T &operator *() { return *p; }
-	Pt operator++(     ) { p++;  return *this; }
 	Pt operator+=(int i) { p+=i; return *this; }
+	Pt operator-=(int i) { p-=i; return *this; }
+	Pt operator++(     ) { p++;  return *this; }
+	Pt operator--(     ) { p--;  return *this; }
 	Pt operator++(int  ) { Pt f(*this); ++*this; return f; }
+	Pt operator--(int  ) { Pt f(*this); --*this; return f; }
 	T &operator[](int i) {
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n)) {
@@ -569,6 +572,9 @@ struct Object {
 	virtual ~Object() { magic = 0xDEADBEEF; }
 	virtual void mark() {} /* not used for now */
 };
+
+void Object_free (void *);
+void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 
 /* **************************************************************** */
 
