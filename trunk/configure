@@ -599,14 +599,17 @@ Feature.new {
 	uses_so ["-lpng","-lz"]
 	uses_h Or[["libpng12/png.h"],["png.h"]]
 	test proc {|f|
-		f.c_test "
-		extern \"C\" {
+		f.c_test %`
+		extern "C" {
 		#include <stdio.h>
 		#include#
 		};
 		int main () {
-		return png_check_sig==0;}
-		"
+		#define T(a) printf("%s:%d; ",#a,sizeof(a));
+		T(png_uint_32)T(long)puts("");
+		if (!png_check_sig) return 1;
+		return 0;}
+		`
 	}
 	formats ["PNG"]
 },
@@ -694,6 +697,7 @@ Feature.new {
 Feature.new {
 	tag :example
 	name "example (example file optional/example.c)"
+	uses_o ["optional/example.o"]
 	test proc {|f|
 		c_test %`
 		#include <stdio.h>
@@ -1042,16 +1046,6 @@ f.puts "
 }
 
 #--------------------------------#
-
-puts "",
-"\e[1mSee ./config.log if you want the details of the configuration tests.\e[0m",
-"\e[1mIf you are satisfied with that configuration, you may go on,\e[0m",
-"\e[1m  and do \"make\" and then \"make install\".\e[0m",
-"\e[1mIf you get stuck, you could contact the author about it,\e[0m",
-"\e[1m  but first make sure you read \"doc/install.html\". \e[0m",
-""
-
-#--------------------------------#
 $LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
 
 $objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
@@ -1067,16 +1061,11 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp.sub!(/\(CC\)/,'(CXX)')
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
 	comp2 = comp.gsub /-c/,'-xobjective-c++ -c'
-	"%.h.fcs: %.h #{common_deps1}\n"+
-	"\truby -w base/source_filter.rb $< $@\n\n"+
-	"%.c.fcs: %.c #{common_deps2}\n"+
-	"\truby -w base/source_filter.rb $< $@\n\n"+
-	"%.m.fcs: %.m #{common_deps2}\n"+
-	"\truby -w base/source_filter.rb $< $@\n\n"+
-	"%.o: %.c.fcs #{common_deps2}\n"+
-	"\t#{comp}\n"+
-	"%.o: %.m.fcs #{common_deps2}\n"+
-	"\t#{comp2}\n"
+	"%.h.fcs: %.h #{common_deps1}\n\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.c.fcs: %.c #{common_deps2}\n\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.m.fcs: %.m #{common_deps2}\n\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.o: %.c.fcs #{common_deps2}\n\t#{comp}\n"+
+	"%.o: %.m.fcs #{common_deps2}\n\t#{comp2}\n"
 }
 mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
 mf << ".PRECIOUS: %.h.fcs %.c.fcs %.m.fcs\n"
@@ -1116,6 +1105,29 @@ f.puts mf
 f.puts "include Makefile.gf"
 make_makefile f
 f.close
+
+#--------------------------------#
+
+puts "delegating to: devices4ruby/extconf.rb"
+r=$conf[:DEFINES][:RUBY_PREFIX]
+a=[]
+a<<"--prefix"<<r if r
+Dir.chdir "devices4ruby"
+system "/usr/bin/env", "ruby", "extconf.rb", *a
+Dir.chdir ".."
+puts "(back)"
+
+#--------------------------------#
+
+puts "",
+"\e[1mSee ./config.log if you want the details of the configuration tests.\e[0m",
+"\e[1mIf you are satisfied with that configuration, you may go on,\e[0m",
+"\e[1m  and do \"make\" and then \"make install\".\e[0m",
+"\e[1mIf you get stuck, you could contact the author about it,\e[0m",
+"\e[1m  but first make sure you read \"doc/install.html\". \e[0m",
+""
+
+#--------------------------------#
 
 END {
   system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
