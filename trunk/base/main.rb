@@ -27,18 +27,13 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-# this should be done in base/bridge.c
-#for victim in [Thread, Continuation]
-#	def victim.new
-#		raise NotImplementedError, "class #{self} disabled because of jMax incompatibility"
-#	end
-#end
-#$VERBOSE=verbose
-
 # because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
 unless Object.instance_methods(true).include? "object_id"
 	class Object; alias object_id id end
 end
+
+# in case of bug in Ruby ("Error: Success")
+module Errno; class E000 < StandardError; end; end
 
 require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
@@ -169,7 +164,6 @@ class FObject
 		end
 	end
 	def connect outlet, object, inlet
-		#puts "connect: #{self} #{outlet} #{object} #{inlet}"
 		@outlets ||= []
 		@outlets[outlet] ||= []
 		@outlets[outlet].push [object, inlet]
@@ -267,10 +261,8 @@ class FPatcher < FObject
 end
 
 def GridFlow.estimate_cpu_clock
-	u0,t0=GridFlow.rdtsc,Time.new.to_f
-	sleep 0.01
-	u1,t1=GridFlow.rdtsc,Time.new.to_f
-	(u1-u0)/(t1-t0)
+	u0,t0=GridFlow.rdtsc,Time.new.to_f; sleep 0.01
+	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
 end
 
 begin
@@ -348,31 +340,7 @@ def GridFlow.macerr(i)
 	end
 end
 
-%w(
-  # #finished #type #dim #transpose #perspective
-  #grade #redim #import #export #export_list #cast
-  #scale_by #downscale_by #draw_polygon #draw_image #layer
-).each {|k|
-	FObject.name_lookup(k).addcreator k.gsub(/#/,"@")
-}
 end # module GridFlow
-
-#----------------------------------------------------------------#
-# this is a telnet-accessible line-oriented server for accessing
-# the ruby part of a running GridFlow.
-# it must not use threads because Ruby-threads don't work with jMax.
-
-require "socket"
-require "fcntl"
-
-# in case of Ruby bug ("Error: Success")
-module Errno; class E000 < StandardError; end; end
-
-if Object.constants.include? :GridFlow
-  def log s; GridFlow.postln "%s", s; end
-else
-  def log s; STDERR.puts s; end
-end
 
 class IO
   def nonblock= flag
@@ -390,13 +358,6 @@ rescue Exception => e
   STDERR.puts e.backtrace
 end
 
-if $0 == __FILE__
-  e = EvalServerManager.new
-  protect { loop { e.tick; sleep 0.1 }}
-end
-
-#----------------------------------------------------------------#
-
 def GridFlow.load_user_config
 	require "gridflow/bridge/puredata.rb" if GridFlow.bridge_name == "puredata"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
@@ -409,10 +370,7 @@ def GridFlow.load_user_config
 end
 
 END {
-	GridFlow.fobjects_set.each {|k,v|
-		p k
-		k.delete if k.respond_to? :delete
-	}
+	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
 	GridFlow.fobjects_set.clear
 	GC.start
 }
@@ -420,4 +378,14 @@ END {
 GridFlow.routine
 
 require "gridflow/base/flow_objects.rb"
-require 'gridflow/format/main.rb'
+require "gridflow/format/main.rb"
+
+%w(
+  # #for #finished #type #dim #transpose #perspective #store #outer
+  #grade #redim #import #export #export_list #cast
+  #scale_by #downscale_by #draw_polygon #draw_image #layer
+  #print #pack #export_symbol #rotate
+  #in #out
+).each {|k|
+	GridFlow::FObject.name_lookup(k).addcreator k.gsub(/#/,"@")
+}

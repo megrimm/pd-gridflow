@@ -247,7 +247,6 @@ template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
 GRID_INLET(GridStore,0) {
 	// snap_backstore must be done before *anything* else
 	snap_backstore(r);
-	NOTEMPTY(r);
 	int na = in->dim->n;
 	int nb = r->dim->n;
 	int nc = in->dim->get(na-1);
@@ -384,8 +383,11 @@ GRID_INLET(GridStore,1) {
 }
 \def void _1_reassign () { put_at=0; }
 \def void _1_put_at (Grid *index) { put_at=index; }
-\def void initialize (Grid *r) {rb_call_super(argc,argv); if (r) this->r=r;}
-\classinfo { IEVAL(rself,"install '@store',2,1"); }
+\def void initialize (Grid *r) {
+	rb_call_super(argc,argv);
+	if (r) this->r= r?r:new Grid(new Dim(),int32_e,true);
+}
+\classinfo { IEVAL(rself,"install '#store',2,1"); }
 \end class GridStore
 
 //****************************************************************
@@ -685,7 +687,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '@outer',2,1"); }
+\classinfo { IEVAL(rself,"install '#outer',2,1"); }
 \end class GridOuter
 
 //****************************************************************
@@ -772,7 +774,7 @@ void GridFor::trigger (T bogus) {
 GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
-\classinfo { IEVAL(rself,"install '@for',3,1"); }
+\classinfo { IEVAL(rself,"install '#for',3,1"); }
 \end class GridFor
 
 //****************************************************************

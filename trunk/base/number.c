@@ -128,14 +128,14 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
-/* classic two-input operator */
+// classic two-input operator
 #define DEF_OP(op,expr,neutral,absorbent) \
 	template <class T> class Y##op : Op<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
 		inline static bool is_neutral(T x, LeftRight side) { return neutral; } \
 		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } };
 
-/* this macro is for operators that have different code for the float version */
+// this macro is for operators that have different code for the float version
 #define DEF_OPF(op,expr,expr2,neutral,absorbent) \
 	DEF_OP( op,expr,      neutral,absorbent) \
 	class Y##op<float32> : Op<float32> { public: \
@@ -184,40 +184,22 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 	flags)
 #endif
 
-template <class T>
-static inline T gf_floor (T a) {
+template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
-
-template <class T>
-static inline T gf_trunc (T a) {
+template <class T> static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
 uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
 int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
 int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
 int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1);
-	return c<-0x4000000000000000?0x8000000000000000:
-		c>0x3fffffffffffffff?0x7fffffffffffffff:a+b; }
-
+	return c<-0x4000000000000000?0x8000000000000000:c>0x3fffffffffffffff?0x7fffffffffffffff:a+b; }
 uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
 int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
 int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
 int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
-	return c<-0x4000000000000000?0x8000000000000000:
-		c>0x3fffffffffffffff?0x7fffffffffffffff:a+b; }
+	return c<-0x4000000000000000?0x8000000000000000:c>0x3fffffffffffffff?0x7fffffffffffffff:a-b; }
 
-/*
-Algebraic Properties
-  RN: right neutral: { e in G | f(x,RN)=x }
-  LN: left neutral: { e in G | f(x,RN)=x } (left neutral)
-  N: both sides neutral: N=LN=RN
-  RA,LA,A: absorbence
-
-  LINV: left inverse: each a has a b like f(a,b) = the left neutral
-  RINV: right inverse: each b has a a like f(a,b) = the right neutral
-  INV: both sides inverse
-*/
-	
 DEF_OP(ignore, a, side==at_right, side==at_left)
 DEF_OP(put, b, side==at_left, side==at_right)
 DEF_OP(add, a+b, x==0, false)
