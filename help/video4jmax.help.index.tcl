@@ -24,6 +24,8 @@ foreach name {
 	@video_out
 	@video_out_file
 	@video_in_file
+	@dim
+	@fold
 } {
 	helpPatch $name $dir/$name.help.jmax
 }
