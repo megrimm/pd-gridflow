@@ -121,7 +121,7 @@ Format *FormatPPM_open (FormatClass *qlass, ATOMLIST, int mode) {
 	Format *$ = NEW(Format,1);
 	$->cl     = &class_FormatPPM;
 
-	$->stream = 0;
+	$->stream = -1;
 	$->bstream = 0;
 
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {

@@ -89,8 +89,7 @@ void gridflow_module_init (void) {
 	if (!whine_f) whine_f = fopen("/dev/null","w");
 #endif
 
-	post("Welcome to GridFlow !\n");
-	post("Version: " GRIDFLOW_VERSION "\n");
+	post("Welcome to GridFlow " GRIDFLOW_VERSION "\n");
 	post("Compiled on: " GRIDFLOW_COMPILE_TIME "\n");
 	post("--- GridFlow startup: begin ---\n");
 
@@ -187,6 +186,7 @@ void *qalloc(size_t n) {
 
 void *qalloc2(size_t n) {
 	void *data = malloc(n);
+	assert(data);
 #ifdef MAKE_TMP_LOG_ALLOC
 	fprintf(whine_f, "[alloc] + *%p (%d)\n", data, n);
 #endif
@@ -195,6 +195,7 @@ void *qalloc2(size_t n) {
 
 /* to help find dangling references */
 void qfree(void *data) {
+	assert(data);
 #ifdef MAKE_TMP_LOG_ALLOC
 	fprintf(whine_f, "[alloc] - *%p\n", data);
 #endif

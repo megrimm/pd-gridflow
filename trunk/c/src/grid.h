@@ -24,8 +24,6 @@
 #ifndef __GRID_H
 #define __GRID_H
 
-#define GRIDFLOW_PROFILING
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -35,11 +33,13 @@
 #define GRIDFLOW_VERSION "0.4.0"
 #define GRIDFLOW_COMPILE_TIME __DATE__ ", " __TIME__
 
-#define GRIDFLOW_FAST
-
-#ifdef GRIDFLOW_FAST
+#ifdef HAVE_SPEED
 #define NO_ASSERT
 #define NO_DEADBEEF
+#endif
+
+#ifdef HAVE_TSC_PROFILING
+#define HAVE_PROFILING
 #endif
 
 /* options */
@@ -72,7 +72,7 @@
 */
 
 /* those are helpers for profiling. */
-#ifdef GRIDFLOW_PROFILING
+#ifdef HAVE_PROFILING
 #define ENTER $->profiler_last = rdtsc();
 #define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
 #define ENTER_P $->parent->profiler_last = rdtsc();
@@ -113,7 +113,7 @@
 /*
   a header for a given method in a given class.
 */
-#ifdef GRIDFLOW_PROFILING
+#ifdef HAVE_PROFILING
 #define METHOD(_class_,_name_) \
 	void _class_##_##_name_(METHOD_ARGS(_class_)); \
 	void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
@@ -136,7 +136,7 @@
   cannot inherit from another struct, and so a pointer of one type cannot be
   considered as a pointer to a similar, more elementary type.
 */
-#ifdef GRIDFLOW_PROFILING
+#ifdef HAVE_PROFILING
 #define METHOD_PTR(_class_,_name_) \
 	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
 #else
