@@ -503,6 +503,7 @@ GRID_END(GridOp2,1) { /* nothing goes here */ }
 METHOD(GridOp2,init) {
 	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
+	$->dim = 0;
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW2($,GridOp2,0);
