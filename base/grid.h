@@ -283,9 +283,9 @@ public:
 	operator int16 *() { return (int16 *)p; }
 	operator int32 *() { return (int32 *)p; }
 //	operator Pt<const T>() { return Pt((const T *)p); }
-	Pt operator-(Pt x) { return Pt(p-x.p,n,start); }
-	Pt operator+(int x) { return Pt(p+x,n,start); }
-	Pt operator-(int x) { return Pt(p-x,n,start); }
+	int operator-(Pt x) { return p-x.p,n; }
+	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
+	template <class U> Pt operator-(int x) { return Pt(p-x,n,start); }
 };
 
 //template <class T> Pt<T>::operator Pt<const T>() { return Pt<const T>(*this); }
@@ -519,7 +519,7 @@ typedef int32 Number;
 	static void _cl_##_grid_inlet_##_inlet_\
 	(GridInlet *in, int n, Pt<Number> data) { \
 		((_cl_*)in->parent)->grid_inlet_##_inlet_(in,n,data); } \
-	void _cl_::##grid_inlet_##_inlet_ \
+	void _cl_::grid_inlet_##_inlet_ \
 	(GridInlet *in, int n, Pt<Number> data) { \
 	if (n==-1)
 #define GRID_FLOW else if (n>=0)
