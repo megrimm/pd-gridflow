@@ -83,10 +83,11 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	X11Display *d = $->display;
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if ($->display->use_shm) {
-		XSync(d->display, 0);
+		XSync(d->display,False);
+		if (sy>Dim_get($->dim,0)) sy=Dim_get($->dim,0);
+		if (sx>Dim_get($->dim,1)) sx=Dim_get($->dim,1);
 		XShmPutImage(d->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
-		XSync(d->display, 0);
 	} else
 	#endif
 		XPutImage(d->display, $->window,
@@ -284,8 +285,10 @@ X11Display *X11Display_new(const char *disp_string) {
 	whine("x11 shared memory is not compiled in");
 #endif
 
+/*
 	$->use_shm = false;
 	whine("setting use_shm = 0 because it's buggy");
+*/
 
 	X11Display_set_alarm($);
 	return $;
@@ -345,22 +348,22 @@ void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if (d->use_shm) {
-		XShmSegmentInfo shm_info;
+		XShmSegmentInfo *shm_info = NEW(XShmSegmentInfo,1);
 		$->ximage = XShmCreateImage(d->display, d->visual,
-			d->depth, ZPixmap, 0, &shm_info, sx, sy);
+			d->depth, ZPixmap, 0, shm_info, sx, sy);
 		assert($->ximage);
-		shm_info.shmid = shmget(
+		shm_info->shmid = shmget(
 			IPC_PRIVATE,
 			$->ximage->bytes_per_line * $->ximage->height,
 			IPC_CREAT|0777);
-		if(shm_info.shmid < 0) {
+		if(shm_info->shmid < 0) {
 			whine("ERROR: shmget failed: %s",strerror(errno));
 			return;
 		}
-		$->ximage->data = shm_info.shmaddr = (char *)shmat(shm_info.shmid,0,0);
+		$->ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		$->image = (uint8 *)$->ximage->data;
-		shm_info.readOnly = False;
-		if (!XShmAttach(d->display, &shm_info)) {
+		shm_info->readOnly = False;
+		if (!XShmAttach(d->display, shm_info)) {
 			whine("ERROR: XShmAttach: big problem");
 			return;
 		}
