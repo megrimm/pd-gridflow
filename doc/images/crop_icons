@@ -1,0 +1,6 @@
+for z in \@*.png format*.png; do \
+	echo $z
+	pngtopnm $z | pnmcrop | pnmtopng -compress 9 > $z.new
+	mv $z.new $z
+done
+
