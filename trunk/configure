@@ -104,7 +104,7 @@ echo "generating ./config.make"
 echo "generating c/src/Sources"
 (
 	echo "SOURCES = \\"
-	echo "dim.c bitpacking.c operator.c grid.c grid_basic.c video4jmax.c io.c \\"
+	echo "dim.c bitpacking.c operator.c grid.c grid_basic.c grid_extra.c video4jmax.c io.c \\"
 	for format in $FORMATS; do
 		lc_format=`echo $format | tr A-Z a-z`
 		echo "format_$lc_format.c \\"
