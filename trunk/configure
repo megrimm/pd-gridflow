@@ -60,10 +60,12 @@ symlink () {
 	echo -e "`pwd`: updating $1"
 }
 
+#--------------------------------#
+
 has-libmpeg () {
 (
 	echo '#include <mpeg.h>'
-	echo 'int main (void) { return 0; }'
+	echo 'int main (void) { return GetMPEGFrame==0; }'
 ) > /tmp/$$.c
 gcc /tmp/$$.c -o /tmp/$$ -lmpeg
 }
@@ -101,6 +103,8 @@ has-pentium-compatible () {
 gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
+#--------------------------------#
+
 FORMATS='X11 PPM Targa Grid'
 
 echo -n "looking for LibMPEG: "
@@ -136,6 +140,8 @@ if has-pentium-compatible; then
 else
 	echo "no"
 fi
+
+#--------------------------------#
 
 echo
 echo "our format list: $FORMATS"
