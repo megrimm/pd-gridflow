@@ -240,6 +240,8 @@ class PrintArgs < GridFlow::GridObject
 end
 
 class GridPrint < GridFlow::GridObject
+	attr_accessor :name
+
 	def initialize(name=nil)
 		super # don't forget super!!!
 		if name then @name = name+": " else @name="" end

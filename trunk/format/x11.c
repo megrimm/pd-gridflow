@@ -196,6 +196,7 @@ METHOD(FormatX11,frame) {
 	}
 
 	$->out[0]->end();
+	return Qnil;
 }
 
 /* ---------------------------------------------------------------- */
@@ -358,13 +359,14 @@ GRID_END(FormatX11,0) {
 }
 
 METHOD(FormatX11,close) {
+	if (!$) RAISE("stupid error: trying to close display NULL. =)");
 	MainLoop_remove($);
-	if (!$) {gfpost("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
 	$->dealloc_image();
 	XCloseDisplay($->display);
 	rb_call_super(argc,argv);
+	return Qnil;
 }
 
 METHOD(FormatX11,option) {
@@ -388,6 +390,7 @@ METHOD(FormatX11,option) {
 		$->autodraw = autodraw;
 	} else
 		rb_call_super(argc,argv);
+	return Qnil;
 }
 
 void FormatX11::open_display(const char *disp_string) {
@@ -518,6 +521,7 @@ METHOD(FormatX11,init) {
 
 	$->bit_packing->gfpost();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
+	return Qnil;
 }
 
 static void startup (GridClass *$) {

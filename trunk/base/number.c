@@ -229,11 +229,11 @@ static Ruby String_swap16_f (Ruby $) {
 
 /* **************************************************************** */
 
-METHOD2(BitPacking,init) {
+METHOD(BitPacking,init) {
 	return Qnil;
 }
 
-METHOD2(BitPacking,pack2) {
+METHOD(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
@@ -245,7 +245,7 @@ METHOD2(BitPacking,pack2) {
 	return out;
 }
 
-METHOD2(BitPacking,unpack2) {
+METHOD(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / $->bytes;
@@ -286,7 +286,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return $;
 }
 
-METHOD2(BitPacking,delete) {
+METHOD(BitPacking,delete) {
 	return Qnil;
 }
 
