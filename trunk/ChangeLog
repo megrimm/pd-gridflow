@@ -16,6 +16,9 @@ version 0.8.0 (head):
  * quicktime: support for pluggable codecs (eg: dv, divx, rpza, ...)
  * quicktime: fixed more bugs
  * quicktime: major speed increase
+ * videodev: fixed bugs
+ * videodev: removed obsolete option "noinit"
+ * videodev: added option "colormodel"
  * png: read support
  * jMax bridge: more stable than ever
  * PureData bridge: *much* more stable than ever
