@@ -34,36 +34,39 @@
 ImageDesc *mpeg_id = 0;
 
 struct FormatMPEG : Format {
+	DECL3(init),
+	DECL3(frame),
+	DECL3(close))
 };
 
-METHOD(FormatMPEG,frame) {
+METHOD3(FormatMPEG,frame) {
 	uint8 *buf = NEW(uint8,mpeg_id->Size);
-	GridOutlet *out = $->out[0];
+	GridOutlet *o = out[0];
 	int npixels = mpeg_id->Height * mpeg_id->Width;
 /*	SetMPEGOption(MPEG_QUIET,1); */
 	if (!GetMPEGFrame((char *)buf)) RAISE("libmpeg: can't fetch frame");
 
 	int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
-	out->begin(new Dim(3,v));
+	o->begin(new Dim(3,v));
 
-	int sy = out->dim->get(0);
-	int sx = out->dim->get(1);
-	int bs = out->dim->prod(1);
+	int sy = o->dim->get(0);
+	int sx = o->dim->get(1);
+	int bs = o->dim->prod(1);
 	Number b2[bs];
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = buf + 4*sx*y;
-		$->bit_packing->unpack(sx,b1,b2);
-		out->send(bs,b2);
+		bit_packing->unpack(sx,b1,b2);
+		o->send(bs,b2);
 	}
 	FREE(buf);
-	out->end();
+	o->end();
 }
 
 GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
 GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
-METHOD(FormatMPEG,close) {
+METHOD3(FormatMPEG,close) {
 	if (mpeg_id) {
 		CloseMPEG();
 		FREE(mpeg_id);
@@ -71,7 +74,7 @@ METHOD(FormatMPEG,close) {
 	rb_call_super(argc,argv);
 }
 
-METHOD(FormatMPEG,init) {
+METHOD3(FormatMPEG,init) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
@@ -91,7 +94,7 @@ METHOD(FormatMPEG,init) {
 		RAISE("libmpeg: can't open mpeg file `%s': %s", filename, strerror(errno));
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	$->bit_packing = new BitPacking(is_le(),4,3,mask);
+	bit_packing = new BitPacking(is_le(),4,3,mask);
 }
 
 FMTCLASS(FormatMPEG,"mpeg","Motion Picture Expert Group Format (using Ward's)",FF_R,

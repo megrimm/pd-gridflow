@@ -229,32 +229,32 @@ static Ruby String_swap16_f (Ruby $) {
 
 /* **************************************************************** */
 
-METHOD(BitPacking,init) {
+METHOD3(BitPacking,init) {
 	return Qnil;
 }
 
-METHOD(BitPacking,pack2) {
+METHOD3(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
+	int n = rb_str_len(argv[0]) / sizeof(Number) / size;
 	Pt<Number> in = Pt<Number>((Number *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
-	int bytes = n*$->bytes;
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
+	int bytes2 = n*bytes;
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	$->pack(n,Pt<Number>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes));
+	pack(n,Pt<Number>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
 	return out;
 }
 
-METHOD(BitPacking,unpack2) {
+METHOD3(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / $->bytes;
+	int n = rb_str_len(argv[0]) / bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
-	int bytes = n*$->size*sizeof(Number);
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
+	int bytes2 = n*size*sizeof(Number);
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	memset(rb_str_ptr(out),255,n*4*$->size);
-	$->unpack(n,Pt<uint8>((uint8 *)in,bytes),Pt<Number>((Number *)rb_str_ptr(out),n));
+	memset(rb_str_ptr(out),255,n*4*size);
+	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<Number>((Number *)rb_str_ptr(out),n));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;
 }
@@ -286,14 +286,9 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return $;
 }
 
-METHOD(BitPacking,delete) {
-	return Qnil;
-}
-
 GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(BitPacking,init),
-	DECL(BitPacking,delete),
 	DECL(BitPacking,pack2),
 	DECL(BitPacking,unpack2));
 

@@ -42,6 +42,9 @@ struct FormatSDL : Format {
 		return Pt<uint8>((uint8 *)screen->pixels,
 			dim->prod(0,1)*bit_packing->bytes);
 	}
+
+	DECL3(init);
+	DECL3(close);
 };
 
 void FormatSDL::resize_window (int sx, int sy) {
@@ -93,11 +96,11 @@ GRID_END(FormatSDL,0) {
     SDL_UpdateRect($->screen, 0, 0, sx, sy);
 }
 
-METHOD(FormatSDL,close) {
+METHOD3(FormatSDL,close) {
 	return Qnil;
 }
 
-METHOD(FormatSDL,init) {
+METHOD3(FormatSDL,init) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc>0) RAISE("too many arguments");
@@ -105,24 +108,24 @@ METHOD(FormatSDL,init) {
 		RAISE("SDL_Init() error: %s",SDL_GetError());
 	signal(11,SIG_DFL); // leave me alone
 	atexit(SDL_Quit);
-	$->screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
-	if (!$->screen)
+	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
+	if (!screen)
 		RAISE("Can't switch to (%d,%d,%dbpp): %s", 480, 640, 16, SDL_GetError());
 	int v[] = {480,640,3};
-	$->dim = new Dim(3,v);
+	dim = new Dim(3,v);
 
-	SDL_PixelFormat *f = $->screen->format;
+	SDL_PixelFormat *f = screen->format;
 	uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
-	switch ($->screen->format->BytesPerPixel) {
+	switch (screen->format->BytesPerPixel) {
 	case 1: RAISE("8 bpp not supported"); break;
 	case 2: /* Certainement 15 ou 16 bpp */
-		$->bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
 		break;
 	case 3: /* 24 bpp lent et généralement pas utilisé */
-		$->bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
 		break;
 	case 4: /* Probablement 32 bpp alors */
-		$->bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
 		break;
 	}
 	return Qnil;

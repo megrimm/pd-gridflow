@@ -29,25 +29,30 @@
 
 struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
+
+	DECL3(init);
+	DECL3(seek);
+	DECL3(frame);
+	DECL3(close);
 };
 
-METHOD(FormatMPEG3,seek) {
+METHOD3(FormatMPEG3,seek) {
 	int frame = INT(argv[0]);
 	gfpost("attempting to seek frame # %d",frame);
-	int result = mpeg3_set_frame($->mpeg, frame, 0);
+	int result = mpeg3_set_frame(mpeg, frame, 0);
 	gfpost("seek result: %d", result);
 	return Qnil;
 }
 
-METHOD(FormatMPEG3,frame) {
-	GridOutlet *o = $->out[0];
-	int sx = mpeg3_video_width($->mpeg,0);
-	int sy = mpeg3_video_height($->mpeg,0);
+METHOD3(FormatMPEG3,frame) {
+	GridOutlet *o = out[0];
+	int sx = mpeg3_video_width(mpeg,0);
+	int sy = mpeg3_video_height(mpeg,0);
 	int npixels = sx*sy;
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*3+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
-	int result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
+	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 
 	int v[] = { sy, sx, 3 };
 	o->begin(new Dim(3,v));
@@ -56,7 +61,7 @@ METHOD(FormatMPEG3,frame) {
 	STACK_ARRAY(Number,b2,bs);
 	
 	for(int y=0; y<sy; y++) {
-		$->bit_packing->unpack(sx,buf+3*sx*y,b2);
+		bit_packing->unpack(sx,buf+3*sx*y,b2);
 		o->send(bs,b2);
 	}
 
@@ -69,10 +74,10 @@ GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
 GRID_FLOW(FormatMPEG3,0) {}
 GRID_END(FormatMPEG3,0) {}
 
-METHOD(FormatMPEG3,close) {
-	if ($->mpeg) {
-		mpeg3_close($->mpeg);
-		$->mpeg=0;
+METHOD3(FormatMPEG3,close) {
+	if (mpeg) {
+		mpeg3_close(mpeg);
+		mpeg=0;
 	}
 	rb_call_super(argc,argv);
 	return Qnil;
@@ -80,7 +85,7 @@ METHOD(FormatMPEG3,close) {
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-METHOD(FormatMPEG3,init) {
+METHOD3(FormatMPEG3,init) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 
@@ -90,11 +95,11 @@ METHOD(FormatMPEG3,init) {
 		rb_funcall(GridFlow_module,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
-	$->mpeg = mpeg3_open(strdup(filename));
-	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
+	mpeg = mpeg3_open(strdup(filename));
+	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	$->bit_packing = new BitPacking(is_le(),3,3,mask);
+	bit_packing = new BitPacking(is_le(),3,3,mask);
 	return Qnil;
 }
 

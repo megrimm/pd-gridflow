@@ -77,6 +77,8 @@ struct GridImport : GridObject {
 	~GridImport() {
 		if (dim) delete dim;
 	}
+	DECL3(init);
+	DECL3(_0_reset);
 };
 
 GRID_BEGIN(GridImport,0) {}
@@ -110,19 +112,19 @@ GRID_FLOW(GridImport,1) {
 
 GRID_END(GridImport,1) {}
 
-METHOD(GridImport,init) {
+METHOD3(GridImport,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
 	return Qnil;
 }
 
-METHOD(GridImport,_0_reset) {
-	GridOutlet *out = $->out[0];
-	if (out->is_busy()) out->abort();
+METHOD3(GridImport,_0_reset) {
+	GridOutlet *o = out[0];
+	if (o->is_busy()) o->abort();
 	return Qnil;
 }
 
@@ -199,6 +201,8 @@ LIST(GRINLET(GridExportList,0,4)))
 
 struct GridStore : GridObject {
 	Grid r;
+	DECL3(init);
+	DECL3(_0_bang);
 };
 
 GRID_BEGIN(GridStore,0) {
@@ -291,18 +295,18 @@ GRID_FLOW(GridStore,1) {
 
 GRID_END(GridStore,1) {}
 
-METHOD(GridStore,init) {
+METHOD3(GridStore,init) {
 	Ruby t = argc==0 ? SYM(int32) : argv[0];
 	rb_call_super(argc,argv);
-	$->r.init(0,
+	r.init(0,
 		t==SYM(int32) ? int32_type_i :
 		t==SYM(uint8) ? uint8_type_i :
 		(RAISE("unknown element type \"%s\"", t),int32_type_i));
 	return Qnil;
 }
 
-METHOD(GridStore,_0_bang) {
-	rb_funcall($->peer,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
+METHOD3(GridStore,_0_bang) {
+	rb_funcall(peer,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 	return Qnil;
 }
 
@@ -315,6 +319,7 @@ LIST(GRINLET(GridStore,0,4),GRINLET(GridStore,1,4)),
 
 struct GridOp1 : GridObject {
 	const Operator1 *op;
+	DECL3(init);
 };
 
 GRID_BEGIN(GridOp1,0) { $->out[0]->begin(in->dim->dup()); }
@@ -326,9 +331,9 @@ GRID_FLOW(GridOp1,0) {
 
 GRID_END(GridOp1,0) { $->out[0]->end(); }
 
-METHOD(GridOp1,init) {
+METHOD3(GridOp1,init) {
 	rb_call_super(argc,argv);
-	$->op = OP1(argv[0]);
+	op = OP1(argv[0]);
 	return Qnil;
 }
 
@@ -346,6 +351,7 @@ LIST(GRINLET(GridOp1,0,6)),
 struct GridOp2 : GridObject {
 	const Operator2 *op;
 	Grid r;
+	DECL3(init);
 };
 
 GRID_BEGIN(GridOp2,0) { $->out[0]->begin(in->dim->dup()); }
@@ -378,15 +384,15 @@ GRID_END(GridOp2,0) { $->out[0]->end(); }
 
 GRID_INPUT(GridOp2,1,r)
 
-METHOD(GridOp2,init) {
+METHOD3(GridOp2,init) {
 	rb_call_super(argc,argv);
-	$->op = OP2(argv[0]);
+	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
-		$->r.as_int32()[0] = 0;
+		r.init(new Dim(0,0),int32_type_i);
+		r.as_int32()[0] = 0;
 	} else {
-		$->r.init_from_ruby(argv[1]);
+		r.init_from_ruby(argv[1]);
 	}
 	return Qnil;
 }
@@ -405,6 +411,7 @@ LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
 struct GridFold : GridObject {
 	const Operator2 *op;
 	Grid r;
+	DECL3(init);
 };
 
 /* fold: dim(*X,Y,*Z) x dim(*Z) -> dim(*X,*Z) */
@@ -447,15 +454,15 @@ GRID_END(GridFold,0) { $->out[0]->end(); }
 
 GRID_INPUT(GridFold,1,r)
 
-METHOD(GridFold,init) {
+METHOD3(GridFold,init) {
 	rb_call_super(argc,argv);
-	$->op = OP2(argv[0]);
+	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
-		$->r.as_int32()[0] = 0;
+		r.init(new Dim(0,0),int32_type_i);
+		r.as_int32()[0] = 0;
 	} else {
-		$->r.init_from_ruby(argv[1]);
+		r.init_from_ruby(argv[1]);
 	}
 	return Qnil;
 }
@@ -471,7 +478,9 @@ LIST(GRINLET(GridFold,0,4)),
   size as the input (unlike @fold).
 */
 
-struct GridScan : GridFold {};
+struct GridScan : GridFold {
+	DECL3(init);
+};
 
 GRID_BEGIN(GridScan,0) {
 	int an = in->dim->n;
@@ -507,15 +516,15 @@ GRID_END(GridScan,0) { $->out[0]->end(); }
 
 GRID_INPUT(GridScan,1,r)
 
-METHOD(GridScan,init) {
+METHOD3(GridScan,init) {
 	rb_call_super(argc,argv);
-	$->op = OP2(argv[0]);
+	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
-		$->r.as_int32()[0] = 0;
+		r.init(new Dim(0,0),int32_type_i);
+		r.as_int32()[0] = 0;
 	} else {
-		$->r.init_from_ruby(argv[1]);
+		r.init_from_ruby(argv[1]);
 	}
 	return Qnil;
 }
@@ -535,6 +544,7 @@ struct GridInner : GridObject {
 	const Operator2 *op_fold;
 	Number rint;
 	Grid r;
+	DECL3(init);
 };
 
 GRID_BEGIN(GridInner,0) {
@@ -588,14 +598,14 @@ GRID_FLOW(GridInner,2) { COPY(&$->r.as_int32()[in->dex], data, n); }
 
 GRID_END(GridInner,2) {}
 
-METHOD(GridInner,init) {
+METHOD3(GridInner,init) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
-	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
-	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
-	$->rint = argc<3 ? 0 : INT(argv[2]);
-	$->r.init(0);
-	if (argc==4) $->r.init_from_ruby(argv[3]);
+	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
+	op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
+	rint = argc<3 ? 0 : INT(argv[2]);
+	r.init(0);
+	if (argc==4) r.init_from_ruby(argv[3]);
 	return Qnil;
 }
 
@@ -605,7 +615,9 @@ LIST(GRINLET(GridInner,0,4),GRINLET(GridInner,2,4)),
 
 /* **************************************************************** */
 
-struct GridInner2 : GridInner {};
+struct GridInner2 : GridInner {
+	DECL3(init);
+};
 
 GRID_BEGIN(GridInner2,0) {
 	Dim *a = in->dim;
@@ -655,14 +667,14 @@ GRID_FLOW(GridInner2,2) { COPY(&$->r.as_int32()[in->dex], data, n); }
 
 GRID_END(GridInner2,2) {}
 
-METHOD(GridInner2,init) {
+METHOD3(GridInner2,init) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
-	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
-	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
-	$->rint = argc<3 ? 0 : INT(argv[2]);
-	$->r.init(0);
-	if (argc==4) $->r.init_from_ruby(argv[3]);
+	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
+	op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
+	rint = argc<3 ? 0 : INT(argv[2]);
+	r.init(0);
+	if (argc==4) r.init_from_ruby(argv[3]);
 	return Qnil;
 }
 
@@ -675,6 +687,7 @@ LIST(GRINLET(GridInner2,0,4),GRINLET(GridInner2,2,4)),
 struct GridOuter : GridObject {
 	Grid r;
 	const Operator2 *op;
+	DECL3(init);
 };
 
 GRID_BEGIN(GridOuter,0) {
@@ -711,13 +724,13 @@ GRID_FLOW(GridOuter,1) { COPY(&$->r.as_int32()[in->dex], data, n); }
 
 GRID_END(GridOuter,1) {}
 
-METHOD(GridOuter,init) {
+METHOD3(GridOuter,init) {
 	rb_call_super(argc,argv);
-	$->op = OP2(argv[0]);
-	$->r.init(0);
+	op = OP2(argv[0]);
+	r.init(0);
 	if (argc<1) RAISE("not enough args");
 	if (argc>2) RAISE("too many args");
-	if (argc==2) $->r.init_from_ruby(argv[1]);
+	if (argc==2) r.init_from_ruby(argv[1]);
 	return Qnil;
 }
 
@@ -735,6 +748,7 @@ struct GridConvolve : GridObject {
 	const Operator2 *op_para, *op_fold;
 	Number rint;
 	int margx,margy; /* margins */
+	DECL3(init);
 };
 
 GRID_BEGIN(GridConvolve,0) {
@@ -827,15 +841,15 @@ GRID_FLOW(GridConvolve,1) { COPY(&$->b.as_int32()[in->dex], data, n); }
 
 GRID_END(GridConvolve,1) {}
 
-METHOD(GridConvolve,init) {
+METHOD3(GridConvolve,init) {
 	rb_call_super(argc,argv);
 	if (argc>4) RAISE("too many args");
-	$->op_para = OP2(argc<1 ? SYM(*) : argv[0]);
-	$->op_fold = OP2(argc<2 ? SYM(+) : argv[1]);
-	$->rint = argc<3 ? 0 : INT(argv[2]);
-	$->c.init(0);
-	$->b.init(0);
-	if (argc==4) $->b.init_from_ruby(argv[3]);
+	op_para = OP2(argc<1 ? SYM(*) : argv[0]);
+	op_fold = OP2(argc<2 ? SYM(+) : argv[1]);
+	rint = argc<3 ? 0 : INT(argv[2]);
+	c.init(0);
+	b.init(0);
+	if (argc==4) b.init_from_ruby(argv[3]);
 	return Qnil;
 }
 
@@ -849,60 +863,63 @@ struct GridFor : GridObject {
 	Grid from;
 	Grid to;
 	Grid step;
+	DECL3(init);
+	DECL3(_0_set);
+	DECL3(_0_bang);
 };
 
-METHOD(GridFor,init) {
+METHOD3(GridFor,init) {
 	rb_call_super(argc,argv);
 	if (argc<3) RAISE("not enough arguments");
-	$->from.init_from_ruby(argv[0]);
-	$->to  .init_from_ruby(argv[1]);
-	$->step.init_from_ruby(argv[2]);
+	from.init_from_ruby(argv[0]);
+	to  .init_from_ruby(argv[1]);
+	step.init_from_ruby(argv[2]);
 	return Qnil;
 }
 
-METHOD(GridFor,_0_bang) {
-	int n = $->from.dim->prod();
+METHOD3(GridFor,_0_bang) {
+	int n = from.dim->prod();
 	int nn[n+1];
 	STACK_ARRAY(Number,x,n);
-	Pt<Number> from = $->from.as_int32();
-	Pt<Number>   to = $->to  .as_int32();
-	Pt<Number> step = $->step.as_int32();
-	if (!$->from.dim->equal($->to.dim) || !$->to.dim->equal($->step.dim))
+	Pt<Number> fromb = from.as_int32();
+	Pt<Number>   tob = to  .as_int32();
+	Pt<Number> stepb = step.as_int32();
+	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
 		RAISE("dimension mismatch");
-	for (int i=$->step.dim->prod()-1; i>=0; i--)
-		if (!$->step.as_int32()[i]) RAISE("step must not contain zeroes");
+	for (int i=step.dim->prod()-1; i>=0; i--)
+		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
-		nn[i] = (to[i] - from[i] + step[i] - cmp(step[i],0)) / step[i];
+		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
 	}
-	if ($->from.dim->n==0) {
-		$->out[0]->begin(new Dim(1,nn));
+	if (from.dim->n==0) {
+		out[0]->begin(new Dim(1,nn));
 	} else {
 		nn[n]=n;
-		$->out[0]->begin(new Dim(n+1,nn));
+		out[0]->begin(new Dim(n+1,nn));
 	}
 	for(int d=0;;) {
 		/* here d is the dim# to reset; d=n for none */
-		for(;d<n;d++) x[d]=from[d];
+		for(;d<n;d++) x[d]=fromb[d];
 		d--;
-		$->out[0]->send(n,x);
+		out[0]->send(n,x);
 		/* here d is the dim# to increment */
 		for(;;) {
 			if (d<0) goto end;
-//			fprintf(stderr,"d=%d x[d]=%d step[d]=%d\n",d,x[d],step[d]);
-			x[d]+=step[d];
-			if (x[d]<to[d]) break;
+//			fprintf(stderr,"d=%d x[d]=%d stepb[d]=%d\n",d,x[d],stepb[d]);
+			x[d]+=stepb[d];
+			if (x[d]<tob[d]) break;
 			d--;
 		}
 		d++;
 	}
 	end:
-	$->out[0]->end();
+	out[0]->end();
 	return Qnil;
 }
 
-METHOD(GridFor,_0_set) {
-	$->from.init_from_ruby(argv[0]);
+METHOD3(GridFor,_0_set) {
+	from.init_from_ruby(argv[0]);
 	return Qnil;
 }
 
@@ -916,7 +933,7 @@ METHOD(GridFor,_0_set) {
 
 GRID_INPUT_2(GridFor,2,step) {}
 GRID_INPUT_2(GridFor,1,to) {}
-GRID_INPUT_2(GridFor,0,from) {GridFor__0_bang($,0,0);}
+GRID_INPUT_2(GridFor,0,from) {$->_0_bang(0,0);}
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
@@ -951,6 +968,7 @@ struct GridRedim : GridObject {
 	~GridRedim() {
 		if (dim) delete dim;
 	}
+	DECL3(init);
 };
 
 GRID_BEGIN(GridRedim,0) {
@@ -1004,13 +1022,13 @@ GRID_FLOW(GridRedim,1) {
 
 GRID_END(GridRedim,1) {}
 
-METHOD(GridRedim,init) {
+METHOD3(GridRedim,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
 	return Qnil;
 }
 
@@ -1023,6 +1041,7 @@ LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 /* "@scale_by" does quick scaling of pictures by integer factors */
 struct GridScaleBy : GridObject {
 	int rint; /* integer scale factor (r as in right inlet, which does not exist yet) */
+	DECL3(init);
 };
 
 /* processing a grid coming from inlet 0 */
@@ -1074,10 +1093,10 @@ GRID_END(GridScaleBy,0) { $->out[0]->end(); }
 
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
-METHOD(GridScaleBy,init) {
-	$->rint = argc<1 ? 2 : INT(argv[0]);
+METHOD3(GridScaleBy,init) {
+	rint = argc<1 ? 2 : INT(argv[0]);
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0); // wtf?
+	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1089,6 +1108,7 @@ LIST(GRINLET(GridScaleBy,0,4)),
 /* **************************************************************** */
 
 struct GridRGBtoHSV : GridObject {
+	DECL3(init);
 };
 
 GRID_BEGIN(GridRGBtoHSV,0) {
@@ -1129,9 +1149,9 @@ GRID_END(GridRGBtoHSV,0) {
 	$->out[0]->end();
 }
 
-METHOD(GridRGBtoHSV,init) {
+METHOD3(GridRGBtoHSV,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1142,6 +1162,7 @@ LIST(GRINLET(GridRGBtoHSV,0,4)),
 /* **************************************************************** */
 
 typedef struct GridHSVtoRGB : GridObject {
+	DECL3(init);
 };
 
 GRID_BEGIN(GridHSVtoRGB,0) {
@@ -1170,9 +1191,9 @@ GRID_FLOW(GridHSVtoRGB,0) {
 
 GRID_END(GridHSVtoRGB,0) { $->out[0]->end(); }
 
-METHOD(GridHSVtoRGB,init) {
+METHOD3(GridHSVtoRGB,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1189,6 +1210,10 @@ struct RtMetro : GridObject {
 	uint64 next_time; /* microseconds since epoch: next time an event occurs */
 	uint64 last;      /* microseconds since epoch: last time we checked */
 	int mode; /* 0=equal; 1=geiger */
+
+	DECL3(init);
+	DECL3(_0_int);
+	DECL3(_1_int);
 };
 
 uint64 RtMetro_now(void) {
@@ -1235,40 +1260,40 @@ static void RtMetro_alarm(Ruby rself) {
 	$->last = now;
 }
 
-METHOD(RtMetro,_0_int) {
-	int oon = $->on;
-	$->on = !! FIX2INT(argv[0]);
-	gfpost("on = %d",$->on);
-	if (oon && !$->on) {
-		gfpost("deleting rtmetro alarm for $=%08x rself=%08x",(long)$,(long)$->peer);
-		MainLoop_remove($);
-	} else if (!oon && $->on) {
-		gfpost("creating rtmetro alarm for $=%08x rself=%08x",(long)$,(long)$->peer);
-		MainLoop_add((void *)$->peer,(void(*)(void*))RtMetro_alarm);
-		$->next_time = RtMetro_now();
+METHOD3(RtMetro,_0_int) {
+	int oon = on;
+	on = !! FIX2INT(argv[0]);
+	gfpost("on = %d",on);
+	if (oon && !on) {
+		gfpost("deleting rtmetro alarm for $=%08x rself=%08x",(long)this,(long)peer);
+		MainLoop_remove((void *)peer);
+	} else if (!oon && on) {
+		gfpost("creating rtmetro alarm for $=%08x rself=%08x",(long)this,(long)peer);
+		MainLoop_add((void *)peer,(void(*)(void*))RtMetro_alarm);
+		next_time = RtMetro_now();
 	}
 	return Qnil;
 }
 
-METHOD(RtMetro,_1_int) {
-	$->ms = FIX2INT(argv[0]);
-	gfpost("ms = %d",$->ms);
+METHOD3(RtMetro,_1_int) {
+	ms = FIX2INT(argv[0]);
+	gfpost("ms = %d",ms);
 	return Qnil;
 }
 
-METHOD(RtMetro,init) {
+METHOD3(RtMetro,init) {
 	rb_call_super(argc,argv);
-	$->ms = FIX2INT(argv[0]);
-	$->on = 0;
-	$->mode = 0;
+	ms = FIX2INT(argv[0]);
+	on = 0;
+	mode = 0;
 	if (argc>=2) {
-		if (argv[1]==SYM(equal)) $->mode=0;
-		else if (argv[1]==SYM(geiger)) $->mode=1;
+		if (argv[1]==SYM(equal)) mode=0;
+		else if (argv[1]==SYM(geiger)) mode=1;
 		else RAISE("this is not a known mode");
 	}		
-	gfpost("ms = %d",$->ms);
-	gfpost("on = %d",$->on);
-	gfpost("mode = %d",$->mode);
+	gfpost("ms = %d",ms);
+	gfpost("on = %d",on);
+	gfpost("mode = %d",mode);
 	return Qnil;
 }
 

@@ -226,6 +226,23 @@ struct FormatVideoDev : Format {
 	int current_channel;
 	int current_tuner;
 	bool use_mmap;
+
+	void frame_finished (GridOutlet *o, Pt<uint8> buf);
+
+	DECL3(init);
+	DECL3(close);
+	DECL3(size);
+	DECL3(option);
+	DECL3(alloc_image);
+	DECL3(dealloc_image);
+	DECL3(frame);
+	DECL3(frame_ask);
+	DECL3(norm);
+	DECL3(tuner);
+	DECL3(channel);
+	DECL3(frequency);
+	DECL3(transfer);
+	DECL3(init2);
 };
 
 #define IOCTL(_f_,_name_,_arg_) \
@@ -243,17 +260,17 @@ struct FormatVideoDev : Format {
 		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
 		 RAISE("ioctl error"), 0))
 
-#define GETFD NUM2INT(rb_funcall(rb_ivar_get($->peer,SI(@stream)),SI(fileno),0))
+#define GETFD NUM2INT(rb_funcall(rb_ivar_get(peer,SI(@stream)),SI(fileno),0))
 
-METHOD(FormatVideoDev,size) {
+METHOD3(FormatVideoDev,size) {
 	int fd = GETFD;
 	int v[] = {NUM2INT(argv[0]), NUM2INT(argv[1]), 3};
 	VideoWindow grab_win;
 
 	/* bug here: won't flush the frame queue */
 
-	if ($->dim) delete $->dim;
-	$->dim = new Dim(3,v);
+	if (dim) delete dim;
+	dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_gfpost(&grab_win);
 	grab_win.clipcount = 0;
@@ -269,70 +286,69 @@ METHOD(FormatVideoDev,size) {
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,dealloc_image) {
-	if (!$->image) return Qnil;
-	if (!$->use_mmap) {
-		delete[] (uint8 *)$->image;
+METHOD3(FormatVideoDev,dealloc_image) {
+	if (!image) return Qnil;
+	if (!use_mmap) {
+		delete[] (uint8 *)image;
 	} else {
-		munmap($->image, $->vmbuf.size);
-		$->image = Pt<uint8>();
+		munmap(image, vmbuf.size);
+		image = Pt<uint8>();
 	}
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,alloc_image) {
-	if (!$->use_mmap) {
-		$->image = ARRAY_NEW(uint8,$->dim->prod(0,1)*$->bit_packing->bytes);
+METHOD3(FormatVideoDev,alloc_image) {
+	if (!use_mmap) {
+		image = ARRAY_NEW(uint8,dim->prod(0,1)*bit_packing->bytes);
 		return Qnil;
 	}
 	RAISE("hello");
 	int fd = GETFD;
-	WIOCTL2(fd, VIDIOCGMBUF, &$->vmbuf);
-	video_mbuf_gfpost(&$->vmbuf);
-	$->image = Pt<uint8>((uint8 *) mmap(
-		0,$->vmbuf.size,
+	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
+	video_mbuf_gfpost(&vmbuf);
+	image = Pt<uint8>((uint8 *) mmap(
+		0,vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,
-		fd,0), $->vmbuf.size);
-	if (((int)$->image)<=0) {
-		$->image=Pt<uint8>();
+		fd,0), vmbuf.size);
+	if (((int)image)<=0) {
+		image=Pt<uint8>();
 		RAISE("mmap: %s", strerror(errno));
 	}
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,frame_ask) {
+METHOD3(FormatVideoDev,frame_ask) {
 	int fd = GETFD;
-	$->pending_frames[0] = $->pending_frames[1];
-	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
-	$->vmmap.format = VIDEO_PALETTE_RGB24;
-	$->vmmap.width  = $->dim->get(1);
-	$->vmmap.height = $->dim->get(0);
+	pending_frames[0] = pending_frames[1];
+	vmmap.frame = pending_frames[1] = next_frame;
+	vmmap.format = VIDEO_PALETTE_RGB24;
+	vmmap.width  = dim->get(1);
+	vmmap.height = dim->get(0);
 //	gfpost("will try:");
-//	video_mmap_gfpost(&$->vmmap);
-	WIOCTL2(fd, VIDIOCMCAPTURE, &$->vmmap);
+//	video_mmap_gfpost(&vmmap);
+	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
 //	gfpost("driver gave us:");
-//	video_mmap_gfpost(&$->vmmap);
-	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
+//	video_mmap_gfpost(&vmmap);
+	next_frame = (pending_frames[1]+1) % vmbuf.frames;
 	return Qnil;
 }
 
-static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out,
-Pt<uint8> buf) {
-	out->begin($->dim->dup());
+void FormatVideoDev::frame_finished (GridOutlet *o, Pt<uint8> buf) {
+	o->begin(dim->dup());
 	/* picture is converted here. */
-	int sy = $->dim->get(0);
-	int sx = $->dim->get(1);
-	int bs = $->dim->prod(1);
+	int sy = dim->get(0);
+	int sx = dim->get(1);
+	int bs = dim->prod(1);
 	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
-		Pt<uint8> b1 = buf + $->bit_packing->bytes * sx * y;
-		$->bit_packing->unpack(sx,b1,b2);
-		out->send(bs,b2);
+		Pt<uint8> b1 = buf + bit_packing->bytes * sx * y;
+		bit_packing->unpack(sx,b1,b2);
+		o->send(bs,b2);
 	}
-	out->end();
+	o->end();
 }
 
-int read2(int fd,uint8 *image,int n) {
+static int read2(int fd,uint8 *image,int n) {
 	int r=0;
 	while (n>0) {
 		int rr=read(fd,image,n);
@@ -342,41 +358,41 @@ int read2(int fd,uint8 *image,int n) {
 	return r;
 }
 
-int read3(int fd,uint8 *image,int n) {
+static int read3(int fd,uint8 *image,int n) {
 	int r=0;
 	int rr=read(fd,image,n);
 	if (rr<0) return rr;
 	return n;
 }
 
-METHOD(FormatVideoDev,frame) {
-	if (!$->bit_packing) RAISE("no bit_packing");
-	if (!$->image) rb_funcall($->peer,SI(alloc_image),0);
+METHOD3(FormatVideoDev,frame) {
+	if (!bit_packing) RAISE("no bit_packing");
+	if (!image) rb_funcall(peer,SI(alloc_image),0);
 	int fd = GETFD;
-	if (!$->use_mmap) {
-//		gfpost("$=%p; $->image=%p",$,$->image);
+	if (!use_mmap) {
+//		gfpost("$=%p; image=%p",$,image);
 		/* picture is read at once by frame() to facilitate debugging. */
-		int tot = $->dim->prod(0,1) * $->bit_packing->bytes;
+		int tot = dim->prod(0,1) * bit_packing->bytes;
 
-//		memset($->image,0,tot);
+//		memset(image,0,tot);
 //		int n = tot;
 
-		int n = (int) read3(fd,$->image,tot);
-		if (n==tot) FormatVideoDev_frame_finished($,$->out[0],$->image);
+		int n = (int) read3(fd,image,tot);
+		if (n==tot) frame_finished(out[0],image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
 		return Qnil;
 	}
 	int finished_frame;
-	if ($->pending_frames[0] < 0) {
-		$->next_frame = 0;
-		rb_funcall($->peer,SI(frame_ask),0);
-		rb_funcall($->peer,SI(frame_ask),0);
+	if (pending_frames[0] < 0) {
+		next_frame = 0;
+		rb_funcall(peer,SI(frame_ask),0);
+		rb_funcall(peer,SI(frame_ask),0);
 	}
-	$->vmmap.frame = finished_frame = $->pending_frames[0];
-	WIOCTL2(fd, VIDIOCSYNC, &$->vmmap);
-	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
-	rb_funcall($->peer,SI(frame_ask),0);
+	vmmap.frame = finished_frame = pending_frames[0];
+	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
+	frame_finished(out[0],image+vmbuf.offsets[finished_frame]);
+	rb_funcall(peer,SI(frame_ask),0);
 	return Qnil;
 }
 
@@ -384,11 +400,11 @@ GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
 GRID_FLOW(FormatVideoDev,0) {}
 GRID_END(FormatVideoDev,0) {}
 
-METHOD(FormatVideoDev,norm) {
+METHOD3(FormatVideoDev,norm) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	VideoTuner vtuner;
-	vtuner.tuner = $->current_tuner;
+	vtuner.tuner = current_tuner;
 	if (value<0 || value>3) RAISE("norm must be in range 0..3");
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {
 		gfpost("no tuner #%d", value);
@@ -400,12 +416,12 @@ METHOD(FormatVideoDev,norm) {
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,tuner) {
+METHOD3(FormatVideoDev,tuner) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = value;
-	$->current_tuner = value;
+	current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
 	vtuner.mode = VIDEO_MODE_NTSC;
 	VideoTuner_gfpost(&vtuner);
@@ -413,58 +429,58 @@ METHOD(FormatVideoDev,tuner) {
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,channel) {
+METHOD3(FormatVideoDev,channel) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	VideoChannel vchan;
 	vchan.channel = value;
-	$->current_channel = value;
+	current_channel = value;
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	VideoChannel_gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	rb_funcall($->peer,SI(tuner),1,INT2NUM(0));
+	rb_funcall(peer,SI(tuner),1,INT2NUM(0));
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,frequency) {
+METHOD3(FormatVideoDev,frequency) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,transfer) {
+METHOD3(FormatVideoDev,transfer) {
 	VALUE sym = argv[0];
 	gfpost("transfer %s",rb_sym_name(argv[0]));
 	if (sym == SYM(read)) {
-		rb_funcall($->peer,SI(dealloc_image),0);
-		$->use_mmap = false;
+		rb_funcall(peer,SI(dealloc_image),0);
+		use_mmap = false;
 		gfpost("transfer read");
 	} else if (sym == SYM(mmap)) {
-		rb_funcall($->peer,SI(dealloc_image),0);
-		$->use_mmap = true;
+		rb_funcall(peer,SI(dealloc_image),0);
+		use_mmap = true;
 		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,option) {
+METHOD3(FormatVideoDev,option) {
 	int fd = GETFD;
 	VALUE sym = argv[0];
 	int value = argv[1];
 	gfpost("option %s %08x",rb_sym_name(sym),value);
 	if (sym == SYM(channel)) {
-		rb_funcall($->peer,SI(channel),1,value);
+		rb_funcall(peer,SI(channel),1,value);
 	} else if (sym == SYM(tuner)) {
-		rb_funcall($->peer,SI(tuner),1,value);
+		rb_funcall(peer,SI(tuner),1,value);
 	} else if (sym == SYM(norm)) {
-		rb_funcall($->peer,SI(norm),1,value);
+		rb_funcall(peer,SI(norm),1,value);
 	} else if (sym == SYM(frequency)) {
-		rb_funcall($->peer,SI(frequency),1,value);
+		rb_funcall(peer,SI(frequency),1,value);
 	} else if (sym == SYM(transfer)) {
-		rb_funcall($->peer,SI(transfer),1,value);
+		rb_funcall(peer,SI(transfer),1,value);
 	} else if (sym == SYM(size)) {
-		rb_funcall($->peer,SI(size),2,value,argv[2]);
+		rb_funcall(peer,SI(size),2,value,argv[2]);
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -486,21 +502,21 @@ METHOD(FormatVideoDev,option) {
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,close) {
-	if ($->image) rb_funcall($->peer,SI(dealloc_image),0);
+METHOD3(FormatVideoDev,close) {
+	if (image) rb_funcall(peer,SI(dealloc_image),0);
 	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,init2) {
+METHOD3(FormatVideoDev,init2) {
 	int fd = GETFD;
 	VideoCapability vcaps;
 	VideoPicture *gp = new VideoPicture;
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	VideoCapability_gfpost(&vcaps);
-	rb_funcall($->peer,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
+	rb_funcall(peer,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost("original settings:");
@@ -519,7 +535,7 @@ METHOD(FormatVideoDev,init2) {
 	case VIDEO_PALETTE_RGB24:{
 //		uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		$->bit_packing = new BitPacking(is_le(),3,3,masks);
+		bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	case VIDEO_PALETTE_RGB565:{
 		/* I think the BTTV card is lying. */
@@ -528,37 +544,37 @@ METHOD(FormatVideoDev,init2) {
 //			uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 			uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 //			uint32 masks[3] = { 0xff000000,0x00ff0000,0x0000ff00 };
-		$->bit_packing = new BitPacking(is_le(),3,3,masks);
+		bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	default:
 		gfpost("can't handle palette %d", gp->palette);
 	}
-	rb_funcall($->peer,SI(channel),1,INT2NUM(0));
-	rb_funcall($->peer,SI(size),2,INT2NUM(0),INT2NUM(0));
+	rb_funcall(peer,SI(channel),1,INT2NUM(0));
+	rb_funcall(peer,SI(size),2,INT2NUM(0),INT2NUM(0));
 	return Qnil;
 }
 
-METHOD(FormatVideoDev,init) {
+METHOD3(FormatVideoDev,init) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
-	$->pending_frames[0] = -1;
-	$->pending_frames[1] = -1;
-	$->image = Pt<uint8>();
-	$->use_mmap = true;
+	pending_frames[0] = -1;
+	pending_frames[1] = -1;
+	image = Pt<uint8>();
+	use_mmap = true;
 	if (argc<1) RAISE("usage: videodev <devicename>");
 	const char *filename = rb_sym_name(argv[0]);
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
-	rb_ivar_set($->peer,SI(@stream),file);
+	rb_ivar_set(peer,SI(@stream),file);
 	rb_p(file);
-	rb_p(rb_ivar_get($->peer,SI(@stream)));
+	rb_p(rb_ivar_get(peer,SI(@stream)));
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		$->bit_packing = new BitPacking(is_le(),3,3,masks);
+		bit_packing = new BitPacking(is_le(),3,3,masks);
 		int v[]={288,352,3};
-		$->dim = new Dim(3,v);
+		dim = new Dim(3,v);
 	} else {
-		rb_funcall($->peer,SI(init2),0);
+		rb_funcall(peer,SI(init2),0);
 	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
