@@ -456,7 +456,7 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 void gf_timer_handler (Timer *foo, void *obj) {
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-	Timer_set_delay(gf_timer, 50.0);
+	Timer_set_delay(gf_timer, 25.0);
 	Timer_arm(gf_timer);
 }
 
