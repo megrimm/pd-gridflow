@@ -641,8 +641,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		i++;
 	}
 
-	pos_x=0;
-	pos_y=0;
+	pos_x=pos_y=0;
 	parent = root_window;
 	if (i>=argc) {
 		if (verbose) gfpost("will create new window");
@@ -658,28 +657,26 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			//pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
 			//sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
 			sy = sx = pos_y = pos_x = 0;
-			pos_y = 0;
-			pos_x = 0;
 			//lock_size = true;
 
 			gfpost("embed: will be searching for title ending in '%s'",title);
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
-
 		} else {
-			const char *winspec2 = rb_sym_name(winspec);
-			if (strncmp(winspec2,"0x",2)==0) {
-				window = strtol(winspec2+2,0,16);
+			if (TYPE(winspec)==T_SYMBOL) {
+				const char *winspec2 = rb_sym_name(winspec);
+				if (strncmp(winspec2,"0x",2)==0) {
+					window = strtol(winspec2+2,0,16);
+				} else {
+					window = atoi(winspec2); // huh?
+				}
 			} else {
-				window = atoi(winspec2);
+				window = INT(winspec);
 			}
-			if (window) {
-				is_owner = false;
-				if (verbose) gfpost("will use specified window (0x%x)", window);
-			} else {
-				if (verbose) gfpost("bad window specification");
-			}
+			is_owner = false;
+			if (verbose) gfpost("will use specified window (0x%x)", window);
+			sy = sx = pos_y = pos_x = 0;
 		}
 	}
 
