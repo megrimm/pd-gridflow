@@ -25,6 +25,14 @@
 #include <math.h>
 #include "grid.h"
 
+static uint64 rdtsc(void) {
+  uint64 x;
+  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+  return x;}
+
+#define ENTER $->profiler_last = rdtsc();
+#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
+
 /* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream
@@ -101,9 +109,11 @@ METHOD(GridImport,delete) {
 METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
 	Number data[] = { GET(0,int,0) };
+	ENTER;
 	if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
 	GridOutlet_send(out,ARRAY(data));
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
+	LEAVE;
 }
 
 METHOD(GridImport,reset) {
@@ -345,6 +355,7 @@ METHOD(GridStore,delete) {
 }
 
 METHOD(GridStore,bang) {
+	ENTER;
 	if (! $->dim || ! $->data) {
 		whine("empty buffer, better luck next time.");
 		return;
@@ -352,6 +363,7 @@ METHOD(GridStore,bang) {
 	GridOutlet_begin($->out[0],Dim_dup($->dim));
 	GridOutlet_send( $->out[0],Dim_prod($->dim),$->data);
 	GridOutlet_end(  $->out[0]);
+	LEAVE;
 }
 
 CLASS(GridStore) {
@@ -1017,6 +1029,7 @@ METHOD(GridFor,step) { $->step = GET(0,int,0); if (!$->step) $->step=1; }
 METHOD(GridFor,bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
 	Number x;
+	ENTER;
 	GridOutlet_begin($->out[0],Dim_new(1,&v));
 	if ($->step > 0) {
 		for (x=$->from; x<$->to; x+=$->step) {
@@ -1028,6 +1041,7 @@ METHOD(GridFor,bang) {
 		}
 	}
 	GridOutlet_end($->out[0]);
+	LEAVE;
 }
 
 METHOD(GridFor,from2) {
