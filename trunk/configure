@@ -219,11 +219,12 @@ Feature.new {
 	tag :mpeg
 	name "Greg Ward's LibMPEG"
 	unless_feature :mpeg3
+	uses_so ["-lmpeg"]
 	test proc {
 		c_test "
 		#include <mpeg.h>
 		int main (void) { return !GetMPEGFrame; }
-		"
+		", *uses_so
 	}
 	formats ["MPEG"]
 },
@@ -391,6 +392,16 @@ def try feature
 		DUAL.puts "disabled (by user)"
 		return
 	end
+
+	fu = feature.unless_feature || []
+	fu = [fu] if not Array===fu
+	for f in fu || [] do
+		if $conf[:FEATURES][f] then
+			DUAL.puts "disabled (using #{f} instead)"
+			return
+		end
+	end
+
 	if feature.test
 		if feature.test.call(feature)
 			DUAL.puts "found"
@@ -413,6 +424,7 @@ end
 
 require "rbconfig"
 $conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
+$conf[:RUBYIO_H] = Config::CONFIG["archdir"] + "/rubyio.h"
 
 $features.each {|feature| try feature }
 
@@ -525,6 +537,7 @@ File.open("config.h","w") {|f| f.puts "
 #{`make -f Makefile.gf export-config`}
 
 \#include \"#{$conf[:RUBY_H]}\"
+\#include \"#{$conf[:RUBYIO_H]}\"
 \#ifndef RUBY_H
 \#error \"Can't do anything without ruby.h\"
 \#endif
