@@ -256,6 +256,7 @@ FILES = [
   ],
   [:directory, "bridge/",
     [:ruby, "puredata.rb"],
+    [:ruby, "placebo.rb"],
   ],
   [:directory, "format/",
     [:ruby, "main.rb"],
