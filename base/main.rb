@@ -797,9 +797,13 @@ rescue Exception => e
 end end
 
 end # module GridFlow
+
+#----------------------------------------------------------------#
+
 #----------------------------------------------------------------#
 
 def GridFlow.load_user_config
+	require "gridflow/base/bridge_puredata.rb" if GridFlow.bridge_name == "puredata"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
 	load user_config_file if File.exist? user_config_file
 end
@@ -814,3 +818,6 @@ END {
 GridFlow.routine
 
 # set_trace_func proc {|a| STDERR.puts  }
+
+
+

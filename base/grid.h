@@ -140,7 +140,8 @@ extern "C" {
 
 #define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
 	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
-	(RAISE("expected Integer or Float"),0))
+	(RAISE("expected Integer or Float (got %s)",\
+		rb_funcall(x,SI(inspect),0)),0))
 
 /* **************************************************************** */
 
@@ -959,6 +960,8 @@ struct GFBridge {
 	bool post_does_ln;
 	/* milliseconds between refreshes of x11, rtmetro, tcp */
 	float clock_tick;
+	/* additional gimmickry: bridge-specific functions all-in-one */
+	Ruby (*whatever)(int argc, Ruby *argv, Ruby rself);
 };
 
 extern Ruby mGridFlow;
