@@ -151,11 +151,15 @@ class FObject
 		attr_reader :ninlets
 		attr_reader :noutlets
 		attr_accessor :do_loadbangs
-		def foreign_name
-			@foreign_name if defined? @foreign_name
-		end
+		attr_accessor :comment
+		def foreign_name; @foreign_name if defined? @foreign_name end
 	end
-
+	def post(*a) GridFlow.post(*a) end
+	def self.subclass(*args,&b)
+		qlass = Class.new self
+		qlass.install(*args)
+		qlass.module_eval(&b)
+	end
 	alias :total_time :total_time_get
 	alias :total_time= :total_time_set
 	attr_writer :args # String
@@ -210,7 +214,6 @@ class FObject
 	def inspect
 		if args then "#<#{self.class} #{args}>" else super end
 	end
-
 	def initialize(*argv)
 		s = GridFlow.stringify_list argv
 		@argv = argv

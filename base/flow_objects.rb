@@ -26,10 +26,7 @@ module GridFlow
 #-------- fClasses for: control + misc
 
 # a dummy class that gives access to any stuff global to GridFlow.
-class GridGlobal < FObject
-	def _0_bang
-		GridFlow.tick
-	end
+FObject.subclass("gridflow",1,1) {
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.total_time = 0 }
 		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
@@ -37,8 +34,8 @@ class GridGlobal < FObject
 	def _0_profiler_dump
 		ol = []
 		total=0
-		GridFlow.post "-"*32
-		GridFlow.post "microseconds percent pointer  constructor"
+		post "-"*32
+		post "microseconds percent pointer  constructor"
 		GridFlow.fobjects_set.each {|o,*| ol.push o }
 
 		# HACK: BitPacking is not a real fobject
@@ -53,53 +50,48 @@ class GridGlobal < FObject
 			ppm = o.total_time * 1000000 / total
 			us = (o.total_time*1E6/GridFlow.cpu_hertz).to_i
 			total_us += us
-			GridFlow.post "%12d %2d.%04d %08x %s", us,
+			post "%12d %2d.%04d %08x %s", us,
 				ppm/10000, ppm%10000, o.object_id, o.args
 		}
-		GridFlow.post "-"*32
-		GridFlow.post "sum of accounted microseconds: #{total_us}"
+		post "-"*32
+		post "sum of accounted microseconds: #{total_us}"
 		if GridFlow.respond_to? :memcpy_calls then
-			GridFlow.post "memcpy calls: #{GridFlow.memcpy_calls} "+
+			post "memcpy calls: #{GridFlow.memcpy_calls} "+
 				"; bytes: #{GridFlow.memcpy_bytes}"+
 				"; time: #{GridFlow.memcpy_time}"
 		end
 		if GridFlow.respond_to? :malloc_calls then
-			GridFlow.post "malloc calls: #{GridFlow.malloc_calls} "+
+			post "malloc calls: #{GridFlow.malloc_calls} "+
 				"; bytes: #{GridFlow.malloc_bytes}"+
 				"; time: #{GridFlow.malloc_time}"
 		end
-		GridFlow.post "-"*32
+		post "-"*32
 	end
 	def _0_formats
-		GridFlow.post "-"*32
+		post "-"*32
 		GridFlow.formats.each {|k,v|
 			modes = case v.flags
 			when 2; "#out"
 			when 4; "#in"
 			when 6; "#in/#out"
 			end
-			GridFlow.post "%s %s: %s", modes, k, v.description
+			post "%s %s: %s", modes, k, v.description
 			if v.respond_to? :info then
-				GridFlow.post "-> %s", v.info
+				post "-> %s", v.info
 			end
 		}
-		GridFlow.post "-"*32
+		post "-"*32
 	end
 	# security issue if patches shouldn't be allowed to do anything they want
 	def _0_eval(*l)
 		s = l.map{|x|x.to_i.chr}.join""
-		GridFlow.post "ruby: %s", s
-		GridFlow.post "returns: %s", eval(s).inspect
+		post "ruby: %s", s
+		post "returns: %s", eval(s).inspect
 	end
-	install "gridflow", 1, 1
 	add_creator "@global"
-	begin
-		GridFlow.bind "gridflow", "gridflow"
-	rescue Exception
-	end
-end
-
-class FPS < GridObject
+	GridFlow.bind "gridflow", "gridflow" rescue Exception
+}
+FObject.subclass("fps",1,1) {
 	def initialize(*options)
 		super
 		@history = []   # list of delays between incoming messages
@@ -120,7 +112,6 @@ class FPS < GridObject
 			sum/length
 		end
 	end
-	def _0_position(*); end
 	def method_missing(*a) end # ignore non-bangs
 	def _0_period x; @period=x end
 	def publish
@@ -151,11 +142,10 @@ class FPS < GridObject
 		@history.clear
 		@duration = 0
 	end
-	install "fps", 1, 1
-end
+}
 
 # to see what the messages look like when they get on the Ruby side.
-class RubyPrint < GridFlow::FObject
+FObject.subclass("rubyprint",1,0) {
 	def initialize(*a)
 		super
 		@time = !!(a.length and a[0]==:time)
@@ -165,30 +155,23 @@ class RubyPrint < GridFlow::FObject
 		s=s.to_s
 		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
 		case s
-		when /^_0_/; GridFlow.post "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
+		when /^_0_/; post "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
 		else super
 		end
 	end
-
-	install "rubyprint", 1, 0
-end
-
-class PrintArgs < GridFlow::FObject
-	def initialize(*a)
-		super
-		GridFlow.post(a.inspect)
-	end
-	install "printargs", 0, 0
-end
-
-class GridPrint < GridFlow::GridObject
+}
+FObject.subclass("printargs",0,0) {
+	def initialize(*a) super; post a.inspect end
+}
+GridObject.subclass("#print",1,0) {
+	install_rgrid 0, true
 	attr_accessor :name
 	def initialize(name=nil)
 		super # don't forget super!!!
 		if name then @name = name.to_s+": " else @name="" end
 		@base=10; @format="d"; @trunc=70; @maxrows=50
 	end
-	def post(*foo) GridFlow.post(*foo) end # so that it's hijackable by [display]
+	def post(*foo) post(*foo) end # so that it's hijackable by [display]
 	def end_hook; end # other hijackability
 	def format
 		case @nt
@@ -277,11 +260,10 @@ class GridPrint < GridFlow::GridObject
 	def trunc s
 		if s.length>@trunc then s[0...@trunc]+" [...]" else s end
 	end
-	install_rgrid 0, true
-	install "#print", 1, 0
-end
-
-class GridPack < GridObject
+}
+GridPack =
+GridObject.subclass("#pack",1,1) {
+	install_rgrid 0
 	class<<self;attr_reader :ninlets;end
 	def initialize(n=nil,cast=:int32)
 		n||=self.class.ninlets
@@ -310,19 +292,18 @@ class GridPack < GridObject
 		send_out_grid_begin 0, [@data.length], @cast
 		send_out_grid_flow 0, @data.pack(@ps), @cast
 	end
-	install_rgrid 0
-	install "#pack", 1, 1
-end
+	self
+}
 
 # the install_rgrids in the following are hacks so that
 # outlets can work. (install_rgrid is supposed to be for receiving)
 # maybe GF-0.8 doesn't need that.
-class GridTwo   < GridPack; install_rgrid 0; install "@two",   2, 1 end
-class GridThree < GridPack; install_rgrid 0; install "@three", 3, 1 end
-class GridFour  < GridPack; install_rgrid 0; install "@four",  4, 1 end
-class GridEight < GridPack; install_rgrid 0; install "@eight", 8, 1 end
-
-class GridUnpack < GridObject
+GridPack.subclass("@two",  2,1) { install_rgrid 0 }
+GridPack.subclass("@three",3,1) { install_rgrid 0 }
+GridPack.subclass("@four", 4,1) { install_rgrid 0 }
+GridPack.subclass("@eight",8,1) { install_rgrid 0 }
+GridObject.subclass("#unpack",1,0) {
+  install_rgrid 0, true
   def initialize(n)
     @n=n
     n>=10 and raise "too many outlets"
@@ -340,21 +321,18 @@ class GridUnpack < GridObject
     until i<0 do send_out i,duh[i]; i-=1 end
   end
   def _0_rgrid_end; end
-  install_rgrid 0, true
-  install "#unpack", 1, 0
-end
+}
 
-class GridExportSymbol < GridObject
+GridObject.subclass("#export_symbol",1,1) {
+	install_rgrid 0
 	def _0_rgrid_begin; @data="" end
 	def _0_rgrid_flow data; @data << data; end
 	def _0_rgrid_end
 		send_out 0, :symbol, @data.unpack("I*").pack("c*").intern
 	end
-	install_rgrid 0
-	install "#export_symbol", 1, 1
-end
-
-class UnixTime < GridFlow::GridObject
+}
+GridObject.subclass("unix_time",1,3) {
+  install_rgrid 0
   def _0_bang
     t = Time.new
     tt = t.to_s
@@ -363,43 +341,28 @@ class UnixTime < GridFlow::GridObject
     send_out 1, t.to_i
     send_out 2, t.to_f-t.to_f.floor
   end
-  install_rgrid 0
-  install "unix_time", 1, 3
-end
-
+}
 ### test with "shell xlogo &" -> [exec]
-class Exec<GridFlow::FObject;
-        def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" "))
-        end; install "exec", 1, 0;
-end
-
-class RenameFile < GridFlow::FObject;
-        def initialize;
-        end;
-        def _0_list(a,b)
-        File.rename(a.to_s,b.to_s) end;
-        install "renamefile", 1, 0 
-end
-
-
-class LS<GridFlow::FObject;
-        def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x|
-x.intern };
-         end; install "ls", 1, 1;
-end
-
- 
+FObject.subclass("exec",1,0) {
+        def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end
+}
+FObject.subclass("renamefile",1,0) {
+        def initialize; end
+        def _0_list(a,b) File.rename(a.to_s,b.to_s) end
+}
+FObject.subclass("ls",1,1) {
+        def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x| x.intern } end
+}
 
 #-------- fClasses for: math
 
-class Messagebox<FPatcher
+FPatcher.subclass("gfmessagebox",1,1) {
   def initialize(*a) @a=a end
   def _0_float(x)  send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
   def _0_symbol(x) send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
-  install "gfmessagebox", 1, 1
-end
+}
 
-class GridOp1<FPatcher
+FPatcher.subclass("@!",1,1) {
   @fobjects = ["# +","#type","gfmessagebox list $1 #"]
   @wires = [-1,0,1,0, 1,0,2,0, 2,0,0,1, -1,0,0,0, 0,0,-1,0]
   def initialize(sym)
@@ -409,43 +372,37 @@ class GridOp1<FPatcher
 		when :abs;  "op abs-"; when :sq;   "op sq-"
 		else raise "bork BORK bork" end
   end
-  install "@!", 1, 1
-end
-
-class OldFold<FPatcher
+}
+FPatcher.subclass("@fold",2,1) {
   @fobjects = ["#fold +","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
   def initialize(op,seed=0) super; o=@fobjects[0]
 	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
-  install "@fold", 2, 1
-end
-class OldScan<FPatcher
+}
+FPatcher.subclass("@scan",2,1) {
   @fobjects = ["#scan +","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
   def initialize(op,seed=0) super; o=@fobjects[0]
 	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
-  install "@scan", 2, 1
-end
-class OldInner<FPatcher
+}
+FPatcher.subclass("@inner",3,1) {
   @fobjects = ["#inner","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,0, 0,0,-1,0, -1,2,0,1]
   def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
 	o.send_in 0, :op, op; o.send_in 0, :fold, fold
 	o.send_in 0, :seed, seed; o.send_in 1, r end
-  install "@inner", 3, 1
-end
-class OldConvolve<FPatcher
+}
+FPatcher.subclass("@convolve",2,1) {
   @fobjects = ["#convolve"]
   @wires = [-1,0,0,0, -1,2,0,1, 0,0,-1,0]
   def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
 	o.send_in 0, :op, op; o.send_in 0, :fold, fold
 	o.send_in 0, :seed, seed; o.send_in 1, r end
-  install "@convolve", 2, 1
-end
+}
 
 #-------- fClasses for: video
 
-class GridScaleTo < FPatcher
+FPatcher.subclass("@scale_to",2,1) {
 	@fobjects = [
 		"@for {0 0} {42 42} {1 1}","@ *","@ /",
 		"@store","#dim","@redim {2}","#finished",
@@ -460,8 +417,7 @@ class GridScaleTo < FPatcher
 		super
 		send_in 1, size
 	end
-	install "@scale_to", 2, 1
-end
+}
 
 #<vektor> told me to:
 # RGBtoYUV : @fobjects = ["#inner ( 3 3 # 66 -38 112 128 -74 -94 25 112 -18 )",
@@ -469,7 +425,7 @@ end
 # YUVtoRGB : @fobjects = ["@ - ( 16 128 128 )",
 #	"#inner ( 3 3 # 298 298 298 0 -100 516 409 -208 0 )","@ >> 8"]
 
-class GridRotate < FPatcher
+FPatcher.subclass("#rotate",2,1) {
 	@fobjects = ["@inner * + 0","@ >> 8"]
 	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
 	def update_rotator
@@ -504,10 +460,9 @@ class GridRotate < FPatcher
 	end
 	def _1_int(angle) @angle = angle; update_rotator end
 	alias _1_float _1_int
-	install "#rotate", 2, 1
-end
+}
 
-class ForEach < FObject
+FObject.subclass("foreach",1,1) {
 	def initialize() super end
 	def _0_list(*a)
 		a.each {|e|
@@ -518,24 +473,19 @@ class ForEach < FObject
 			end
 		}
 	end
-	install "foreach", 1, 1
-end
-
-class ListFlatten < FObject
+}
+FObject.subclass("listflatten",1,1) {
 	def initialize() super end
 	def _0_list(*a) send_out 0,:list,*a.flatten end
-	install "listflatten", 1, 1
-end
-
-class Sprintf < FObject
+}
+FObject.subclass("rubysprintf",2,1) {
   def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
   alias _0_float _0_list
   alias _0_symbol _0_list
   def _1_list(*format) @format = format.join(" ") end
   alias _1_symbol _1_list
-  install "rubysprintf", 2, 1
-end
+}
 
 #-------- fClasses for: jMax compatibility
 
@@ -656,7 +606,7 @@ class JMax4UDPReceive < FObject
 			m << @symbols[sid]
 			i=i2+1
 		when 15; break
-		else GridFlow.post "unknown code %d in udp packet %s", s[i], s.inspect; return m
+		else post "unknown code %d in udp packet %s", s[i], s.inspect; return m
 		end while i<n
 		m
 	end
@@ -715,7 +665,7 @@ class PDNetSocket < FObject
 		sel=(case sel; when "int","float"; ""; else encode(sel) end)
 		msg = [sel,*args.map{|arg| encode(arg) }].join(" ")
 		if @options[:nosemicolon] then msg << "\n" else msg << ";\n" end
-		GridFlow.post "encoding as: %s", msg.inspect if @options[:debug]
+		post "encoding as: %s", msg.inspect if @options[:debug]
 		case @protocol
 		when :udp; @socket.send msg, 0, @host, @port
 		when :tcp; @socket.send msg, 0
@@ -723,7 +673,7 @@ class PDNetSocket < FObject
 	end
 	def delete; @clock.unset; @socket.close end
 	def decode s
-		GridFlow.post "decoding from: %s", s.inspect if @options[:debug]
+		post "decoding from: %s", s.inspect if @options[:debug]
 		s.chomp!("\n")
 		s.chomp!("\r")
 		s.chomp!(";")
@@ -765,31 +715,24 @@ class PDNetSocket < FObject
 	install "pd_netsocket", 2, 2
 end
 
-class PDNetReceive < PDNetSocket
+PDNetSocket.subclass("pd_netsend",1,0) {}
+PDNetSocket.subclass("pd_netreceive",0,2) {
 	def initialize(port) super("-",port) end
-	install "pd_netreceive", 0, 2
-end
-
-class PDNetSend < PDNetSocket
-	install "pd_netsend", 1, 0
-end
+}
 
 # bogus class for representing objects that have no recognized class.
-class Broken < FObject
+FObject.subclass("broken",0,0) {
 	def args; a=@args.dup; a[7,0] = " "+classname; a end
-	install "broken", 0, 0
-end
+}
 
-class Fork < FObject
+FObject.subclass("fork",1,2) {
   def method_missing(sel,*args)
     sel.to_s =~ /^_(\d)_(.*)$/ or super
 	send_out 1,$2.intern,*args
 	send_out 0,$2.intern,*args
   end
-  install "fork", 1, 2 if GridFlow.bridge_name != "jmax"
-end
-
-class Shunt < FObject
+}
+FObject.subclass("shunt",2,0) {
 	def initialize(n=2,i=0) super; @n=n; @i=i end
 	def initialize2; add_outlets @n end
 	def method_missing(sel,*args)
@@ -798,55 +741,45 @@ class Shunt < FObject
 	end
 	def _1_int i; @i=i.to_i % @n end
 	alias :_1_float :_1_int
-	install "shunt", 2, 0
-end
-
-# hack: this is an alias.
-class Demux < Shunt; install "demux", 2, 0; end
+	# hack: this is an alias.
+	class Demux < self; install "demux", 2, 0; end
+}
 
 #-------- fClasses for: jmax2pd
 
-	class Button < FObject
+	FObject.subclass("button",1,1) {
 		def method_missing(*) send_out 0 end
-		install "button", 1, 1
-	end
-	class Toggle < FObject
+	}
+	FObject.subclass("toggle",1,1) {
 		def _0_bang; @state ^= true; trigger end
 		def _0_int x; @state = x!=0; trigger end
 		def trigger; send_out 0, (if @state then 1 else 0 end) end
-		install "toggle", 1, 1
-	end
-	class JPatcher < FObject
+	}
+	FObject.subclass("jpatcher",0,0) {
 		def initialize(*a) super; @subobjects={} end
 		attr_accessor :subobjects
-		install "jpatcher", 0, 0
-	end
-	class JComment < FObject; install "jcomment", 0, 0; end
-	class LoadBang < FObject; def trigger; send_out 0 end; install "loadbang", 0, 1 end
-	class MessBox < FObject
+	}
+	FObject.subclass("jcomment",0,0) {}
+	FObject.subclass("loadbang",0,1) { def trigger; send_out 0 end }
+	FObject.subclass("messbox",1,1) {
 		def _0_bang; send_out 0, *@argv end
 		def clear; @argv=[]; end
 		def append(*argv) @argv<<argv; end
-		install "messbox", 1, 1
-	end
+	}
 
 #-------- fClasses for: list manipulation (jMax-compatible)
 
-	class List < FObject
+	FObject.subclass("listmake",2,1) {
 		def initialize(*a) @a=a end
 		def _0_list(*a) @a=a; _0_bang end
 		def _1_list(*a) @a=a end
 		def _0_bang; send_out 0, :list, *@a end
-		install "listmake", 2, 1
-	end
-
-	class ListLength < FObject
+	}
+	FObject.subclass("listlength",1,1) {
 		def initialize() super end
 		def _0_list(*a) send_out 0, a.length end
-		install "listlength", 1, 1
-	end
-
-	class ListElement < FObject
+	}
+	FObject.subclass("listelement",2,1) {
 		def initialize(i=0) super; @i=i.to_i end
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _0_list(*a)
@@ -857,38 +790,28 @@ class Demux < Shunt; install "demux", 2, 0; end
 				send_out 0, e
 			end
 		end
-		install "listelement", 2, 1
-	end
-
-	class ListSublist < FObject
+	}
+	FObject.subclass("listsublist",3,1) {
 		def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
 		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
 		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
 		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-		install "listsublist", 3, 1
-	end
-
-	class ListPrepend < FObject
+	}
+	FObject.subclass("listprepend",2,1) {
 		def initialize(*b) super; @b=b end
 		def _0_list(*a) a[0,0]=@b; send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
-		install "listprepend", 2, 1
-	end
-
-	class ListAppend < FObject
+	}
+	FObject.subclass("listappend",2,1) {
 		def initialize(*b) super; @b=b end
 		def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
-		install "listappend", 2, 1
-	end
-
-	class ListReverse < FObject
+	}
+	FObject.subclass("listreverse",1,1) {
 		def initialize() super end
 		def _0_list(*a) send_out 0,:list,*a.reverse end
-		install "listreverse", 1, 1
-	end
-
-	class MessagePrepend < FObject
+	}
+	FObject.subclass("messageprepend",2,1) {
 		def initialize(*b) super; @b=b end
 		def _0_(*a) a[0,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
@@ -896,10 +819,8 @@ class Demux < Shunt; install "demux", 2, 0; end
 			(m = /(_\d_)(.*)/.match sym.to_s) or return super
 			_0_ m[2].intern, *a
 		end
-		install "messageprepend", 2, 1
-	end
-
-	class MessageAppend < FObject
+	}
+	FObject.subclass("messageappend",2,1) {
 		def initialize(*b) super; @b=b end
 		def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
 		def _1_list(*b) @b=b end
@@ -907,14 +828,13 @@ class Demux < Shunt; install "demux", 2, 0; end
 			(m = /(_\d_)(.*)/.match sym.to_s) or return super
 			_0_ m[2].intern, *a
 		end
-		install "messageappend", 2, 1
-	end
+	}
 
 # this was the original demo for the Ruby/jMax/PureData bridges
 # FObjects are Ruby Objects that are exported to the PureData system.
 # _0_bang means bang message on inlet 0
 # FObject#send_out sends a message through an outlet
-class RubyFor < GridFlow::FObject
+FObject.subclass("for",3,1) {
 	attr_accessor :start, :stop, :step
 	def cast(key,val)
 		val = Integer(val) if Float===val
@@ -935,21 +855,11 @@ class RubyFor < GridFlow::FObject
 			(send_out 0, x; x += step) while x > stop
 		end
 	end
-	def _0_int(x)
-		self.start = x
-		_0_bang
-	end
-	alias _1_int stop=
-	alias _2_int step=
+	def _0_float(x) self.start=x; _0_bang end
 	alias _1_float stop=
 	alias _2_float stop=
-
-	# FObject.install(name, inlets, outlets)
-	# no support for metaclasses yet
-	install "for", 3, 1
-end
-
-class OneShot < FObject
+}
+FObject.subclass("oneshot",2,1) {
 	def initialize(state=true) @state=state!=0 end
 	def method_missing(sel,*a)
 		m = /^_0_(.*)$/.match(sel.to_s) or return super
@@ -959,22 +869,16 @@ class OneShot < FObject
 	def _1_int(state) @state=state!=0 end
 	alias _1_float _1_int
 	def _1_bang; @state=true end
-	install "oneshot", 2, 1
-end
-
-class InvPlus < FObject
+}
+FObject.subclass("inv+",2,1) {
   def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b-a end
-  install "inv+", 2, 1
-end
-
-class InvTimes < FObject
+}
+FObject.subclass("inv*",2,1) {
   def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b/a end
-  install "inv*", 2, 1
-end
-
-class JMaxRange < FObject
+}  
+FObject.subclass("range",1,1) {
   def initialize(*a) @a=a end
   def initialize2
     add_inlets  @a.length
@@ -985,10 +889,9 @@ class JMaxRange < FObject
     m = /^(_\d+_)(.*)/.match(sel.to_s) or return super
     m[2]=="float" or return super
     @a[m[1].to_i-1] = a[0]
-    GridFlow.post "setting a[#{m[1].to_i-1}] = #{a[0]}"
+    post "setting a[#{m[1].to_i-1}] = #{a[0]}"
   end
-  install "range", 1, 1
-end
+}
 
 #-------- fClasses for: GUI
 
@@ -1167,24 +1070,24 @@ class GridEdit < GridObject; include Gooey
 		@data = []
 		@dim = inlet_dim 2
 		@nt = inlet_nt 2
-		GridFlow.post "_2_rgrid_begin: dim=#{@dim.inspect} nt=#{@nt.inspect}"
+		post "_2_rgrid_begin: dim=#{@dim.inspect} nt=#{@nt.inspect}"
 		send_out_grid_begin 0, @dim, @nt
 	end
 	def _2_rgrid_flow data
 		ps = GridFlow.packstring_for_nt @nt
 		@data[@data.length,0] = data.unpack(ps)		
-		GridFlow.post "_2_rgrid_flow: data=#{@data.inspect}"
+		post "_2_rgrid_flow: data=#{@data.inspect}"
 		send_out_grid_flow 0, data
 	end
 	def _2_rgrid_end
-		GridFlow.post "_2_rgrid_end"
+		post "_2_rgrid_end"
 	end
 	def pd_click(can,x,y,shift,alt,dbl,doit)
-		GridFlow.post "pd_click: %s", [can,x,y,shift,alt,dbl,doit].inspect
+		post "pd_click: %s", [can,x,y,shift,alt,dbl,doit].inspect
 		return 0 if not doit!=0
 		i = (y-@y-1)/@cellsy
 		j = (x-@x-1)/@cellsx
-		GridFlow.post "%d,%d", i,j
+		post "%d,%d", i,j
 		ny = @dim[0] || 1
 		nx = @dim[1] || 1
 		if (0...ny)===i and (0...nx)===j then
@@ -1194,20 +1097,20 @@ class GridEdit < GridObject; include Gooey
 		return 0
 	end
 	def pd_key(key)
-		GridFlow.post "pd_key: %s", [key].inspect
+		post "pd_key: %s", [key].inspect
 		if key==0 then unfocus @can; return end
 	end
 	def pd_motion(dx,dy)
-		GridFlow.post "pd_motion: %s", [dx,dy].inspect
+		post "pd_motion: %s", [dx,dy].inspect
 		ny = @dim[0] || 1
 		nx = @dim[1] || 1
 		k = @i*nx+@j
-		GridFlow.post "@data[#{k}]=#{@data[k]} before"
+		post "@data[#{k}]=#{@data[k]} before"
 		@data[k]-=dy
 		@store.send_in 1, :put_at, [@i,@j]
 		@store.send_in 1, @data[k]
 		@store.send_in 0
-		GridFlow.post "@data[#{k}]=#{@data[k]} after"
+		post "@data[#{k}]=#{@data[k]} after"
 		update
 	end
 	def pd_show(can)
@@ -1250,7 +1153,7 @@ class Peephole < FPatcher; include Gooey
 	def initialize(sy=32,sx=32,*args)
 		super
 		@fobjects[1].connect 0,self,2
-		GridFlow.post "Peephole#initialize: #{sx} #{sy} #{args.inspect}"
+		post "Peephole#initialize: #{sx} #{sy} #{args.inspect}"
 		@scale = 1
 		@down = false
 		@sy,@sx = sy,sx # size of the widget
@@ -1300,13 +1203,13 @@ class Peephole < FPatcher; include Gooey
 			@fobjects[3].send_in 0, :set_geometry,
 				x2, y2, sy2, sx2
 		rescue StandardError => e
-			GridFlow.post "peeperr: %s", e.inspect
+			post "peeperr: %s", e.inspect
 		end
-		GridFlow.post "set_geometry_for_real_now (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)",
+		post "set_geometry_for_real_now (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)",
 			@x+1,@y+1,@sx,@sy,@fx,@fy,sx2,sy2,x2,y2
 	end
 	def _0_open(wid,use_subwindow)
-		GridFlow.post "%s", [wid,use_subwindow].inspect
+		post "%s", [wid,use_subwindow].inspect
 		@use_subwindow = use_subwindow==0 ? false : true
 		if @use_subwindow then
 			@fobjects[3].send_in 0, :open,:x11,:here,:embed_by_id,wid
@@ -1318,7 +1221,7 @@ class Peephole < FPatcher; include Gooey
 		set_geometry_for_real_now
 	end
 	def _0_fall_thru(flag) # never worked ?
-		GridFlow.post "fall_thru: #{flag}"
+		post "fall_thru: #{flag}"
 		@fobjects[3].send_in 0, :fall_thru, flag
 	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
@@ -1332,17 +1235,17 @@ class Peephole < FPatcher; include Gooey
 		set_geometry_for_real_now
 	end
 	def _0_paint()
-		GridFlow.post "paint()"
+		post "paint()"
 		@fobjects[3].send_in 0, "draw"
 	end
 	def delete
-		GridFlow.post "deleting peephole"
+		post "deleting peephole"
 		GridFlow.gui %{ #{canvas} delete #{@rsym} \n}
 		@fobjects[3].send_in 0, :close
 		super
 	end
 	def method_missing(s,*a)
-		#GridFlow.post "%s: %s", s.to_s, a.inspect
+		#post "%s: %s", s.to_s, a.inspect
 		super rescue NameError
 	end
 
@@ -1381,7 +1284,7 @@ class DelcomUSB < GridFlow::FObject
 				if_num = interface.bInterfaceNumber
 			}
 		}
-		# GridFlow.post "Interface # %i\n", if_num
+		# post "Interface # %i\n", if_num
 		@usb.set_configuration 1
 		@usb.claim_interface if_num
 		@usb.set_altinterface 0 rescue ArgumentError
@@ -1403,13 +1306,13 @@ class DelcomUSB < GridFlow::FObject
 end
 
 # Klippeltronics
-class IOBox < GridFlow::FObject
+FObject.subclass("multio",1,1) {
 	Vendor,Product=0xDEAD,0xBEEF
 	def self.find
 	  r=[]
 	  USB.busses.each {|dir,bus|
 	    bus.each {|dev|
-	      GridFlow.post "dir=%s, vendor=%x, product=%x",
+	      post "dir=%s, vendor=%x, product=%x",
 		      dir, dev.idVendor, dev.idProduct
 	      r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
 	    }
@@ -1424,11 +1327,11 @@ class IOBox < GridFlow::FObject
 		if_num=nil
 		r[0].config.each {|config|
 			config.interface.each {|interface|
-				#GridFlow.post "interface=%s", interface.to_s
+				#post "interface=%s", interface.to_s
 				if_num = interface.bInterfaceNumber
 			}
 		}
-		# GridFlow.post "Interface # %i\n", if_num
+		# post "Interface # %i\n", if_num
 		# @usb.set_configuration 0
 		@usb.claim_interface if_num
 		@usb.set_altinterface 0 rescue ArgumentError
@@ -1436,13 +1339,11 @@ class IOBox < GridFlow::FObject
 	#@usb.control_msg(0b10100001,0x01,0,0,"",1000)
 	#@usb.control_msg(0b10100001,0x01,0,1," ",0)
 	def delete; @usb.close; end
-	install "iobox", 1, 1
-end
-
+}
 end # if const_defined? :USB
 
 # requires Ruby 1.8.0 because of bug in Ruby 1.6.x
-class JoystickPort < FObject
+FObject.subclass("joystick_port",0,1) {
   def initialize(port)
     raise "sorry, requires Ruby 1.8" if RUBY_VERSION<"1.8"
     @f = File.open(port.to_s,"r+")
@@ -1465,38 +1366,29 @@ class JoystickPort < FObject
       send_out 0, *event.unpack("IsCC")
     }
   end
-  install "joystick_port", 0, 1
-end
+}
 
 # plotter control (HPGL)
-class PlotterControl < GridFlow::FObject
+FObject.subclass("plotter_control",1,1) {
   def puts(x)
     x<<"\n"
     x.each_byte {|b| send_out 0, b }
     send_out 0
   end
-
   def _0_pu; puts "PU;" end
   def _0_pd; puts "PD;" end
   def _0_pa x,y; puts "PA#{x},#{y};" end
   def _0_sp c; puts "SP#{c};"; end
-
   def _0_ip(*v) puts "IP#{v.join','};" end
   def _0_other(command,*v) puts "#{command.to_s.upcase}#{v.join','};" end
-
-  def _0_print(*text)
-    puts "LB#{text.join(' ')}\003;"
-  end
-
+  def _0_print(*text) puts "LB#{text.join(' ')}\003;" end
   def _0_print_from_ascii(*codes)
     _0_print codes.map{|code| code.chr }.join("")
   end
-
-  install "plotter_control", 1, 1
-end
+}
 
 (begin require "linux/ParallelPort"; true; rescue LoadError; false end) and
-class ParallelPort < FObject
+FObject.subclass("parallel_port",1,3) {
   def initialize(port,manually=0)
     @f = File.open(port.to_s,"r+")
     @f.extend Linux::ParallelPort
@@ -1523,11 +1415,10 @@ class ParallelPort < FObject
     call
   end
   # outlet 0 reserved (future use)
-  install "parallel_port", 1, 3
-end
+}
 
 (begin require "linux/SoundMixer"; true; rescue LoadError; false end) and
-class SoundMixer < GridFlow::FObject
+FObject.subclass("SoundMixer",1,1) {
   # BUG? i may have the channels (left,right) backwards
   def initialize(filename)
     super
@@ -1557,7 +1448,6 @@ class SoundMixer < GridFlow::FObject
       @@vars.each {|var| _0_get var }
     end
   end
-  install "SoundMixer", 1, 1
-end
+}
 
 end # module GridFlow
