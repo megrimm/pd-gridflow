@@ -104,11 +104,20 @@ log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
 has-libmpeg3 () {
 	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
 cat > /tmp/$$.c <<TEST
-	#include <mpeg3io.h>
+	#include <libmpeg3.h>
 	int main (void) { return !mpeg3io_sync_buffer; }
 TEST
 log gcc /tmp/$$.c -o /tmp/$$ -lmpeg3 -lpthread -lm
 }
+
+#has-libquicktime () {
+#	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+#cat > /tmp/$$.c <<TEST
+#	#include <quicktime/quicktime.h>
+#	int main (void) { return !quicktime_open; }
+#TEST
+#log gcc /tmp/$$.c -o /tmp/$$ -lquicktime -lpthread -lpng -ldl -lglib
+#}
 
 has-jmax () {
 cat > /tmp/$$.c <<TEST
@@ -171,7 +180,7 @@ log gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
 has-profiling () {
-	[ "z$HAVE_PROFILING" = "zno" ]
+	[ ! "z$HAVE_PROFILING" = "zno" ]
 }
 
 #--------------------------------#
@@ -201,6 +210,11 @@ elif say "looking for Ward's LibMPEG as -lmpeg: " has-libmpeg mpeg; then
 	append LDSOFLAGS -lmpeg
 fi
 
+if say "looking for HeroineWarrior's LibQuicktime as -lquicktime: " has-libquicktime; then
+	append FORMATS Quicktime
+	append LDSOFLAGS -lquicktime -lpthread -lpng -ldl -lglib
+fi
+
 if say "looking for videodev (video4linux 1.x digitizer drivers): " has-videodev; then
 	append FORMATS VideoDev
 fi
@@ -216,11 +230,7 @@ fi
 
 if say "looking for pentium-compatible CPU: " has-pentium-compatible; then
 	append OPTIONS HAVE_PENTIUM
-	echo -n "enable profiliing: "
 	if say "enable profiling: " has-profiling; then
-		echo "no"
-	else
-		echo "yes"
 		append OPTIONS HAVE_TSC_PROFILING
 	fi
 fi
