@@ -186,7 +186,7 @@ METHOD3(FormatQuickTime,initialize) {
 }
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 6,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)'");
 }

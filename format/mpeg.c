@@ -107,7 +107,7 @@ METHOD3(FormatMPEG,initialize) {
 }
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using Ward\\'s)'");
 }
