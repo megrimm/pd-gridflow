@@ -313,6 +313,7 @@ DEF_OP1(sq, a*a)
 
 Operator1 op1_table[] = {
 	DECL_OP1_NOU(abs, "abs"),
+//	DECL_OP1(abs, "abs"),
 	DECL_OP1(sqrt,"sqrt"), 
 	DECL_OP1(rand,"rand"),
 	DECL_OP1(sq,"sq"),

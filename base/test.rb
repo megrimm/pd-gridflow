@@ -34,7 +34,7 @@ end
 
 def test_math
 	hm = "#".intern
-for nt in [:int32, :int16] do
+for nt in [:int32, :int16, :uint8] do
 	e = FObject["@export_list"]
 	x = Expect.new
 	e.connect 0,x,0
@@ -57,6 +57,7 @@ for nt in [:int32, :int16] do
 		a.send_in 1, "list #{nt} # 10"
 		a.send_in 0,:list,nt, 1,2,4,8 }
 
+if nt!=:uint8
 	(a = FObject["@ / {#{nt} # 3}"]).connect 0,e,0
 	x.expect([-2,-1,-1,-1,0,0,0,0,0,1,1,1,2]) {
 		a.send_in(0,:list,nt, *(-6..6).to_a) }
@@ -64,16 +65,19 @@ for nt in [:int32, :int16] do
 	(a = FObject["@ div {#{nt} # 3}"]).connect 0,e,0
 	x.expect([-2,-2,-2,-1,-1,-1,0,0,0,1,1,1,2]) {
 		a.send_in(0, :list, nt, *(-6..6).to_a) }
+end
 
 	(a = FObject["@ ignore {#{nt} # 42}"]).connect 0,e,0
-	x.expect((-6..6).to_a) { a.send_in(0, :list, nt, *(-6..6).to_a) }
+	x.expect((42..52).to_a) { a.send_in(0, :list, nt, *(42..52).to_a) }
 
 	(a = FObject["@ put {#{nt} # 42}"]).connect 0,e,0
 	x.expect([42]*13) { a.send_in(0, :list, nt, *(-6..6).to_a) }
 
+if nt!=:uint8
 	(a = FObject["@! abs"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
 		a.send_in 0,:list,nt, -2,3,-5,7 }
+end
 
 	(a = FObject["@fold * {#{nt} # 1}"]).connect 0,e,0
 	x.expect([210]) { a.send_in 0,:list,nt, 2,3,5,7 }
@@ -95,6 +99,7 @@ for nt in [:int32, :int16] do
 		a.send_in 1,:list,nt, 1,2,4
 		a.send_in 0,:list,nt, 8,16,32 }
 
+if nt!=:uint8
 	(a = FObject["@outer",:%,[nt,3,-3]]).connect 0,e,0
 	x.expect([0,0,1,-2,2,-1,0,0,1,-2,2,-1,0,0]) {
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
@@ -102,6 +107,7 @@ for nt in [:int32, :int16] do
 	(a = FObject["@outer","swap%".intern,[nt,3,-3]]).connect 0,e,0
 	x.expect([-27,-3,-17,-3,-7,-3,0,0,3,7,3,17,3,27]) {
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
+end
 
 	(a = FObject["@inner2 * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0

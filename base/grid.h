@@ -479,7 +479,9 @@ struct Operator1 {
 //private:
 #define MAKE_TYPE_ENTRY(type) \
 		Operator1On<type> on_##type; \
-		Operator1On<type> *on(type &foo) {return &on_##type;}
+		Operator1On<type> *on(type &foo) { \
+			if (!on_##type.op_map) RAISE("operator does not support this type"); \
+			return &on_##type;}
 	MAKE_TYPE_ENTRY(uint8)
 	MAKE_TYPE_ENTRY(int16)
 	MAKE_TYPE_ENTRY(int32)
@@ -506,7 +508,9 @@ struct Operator2 {
 //private:
 #define MAKE_TYPE_ENTRY(type) \
 		Operator2On<type> on_##type; \
-		Operator2On<type> *on(type &foo) {return &on_##type;}
+		Operator2On<type> *on(type &foo) { \
+			if (!on_##type.op_map) RAISE("operator does not support this type"); \
+			return &on_##type;}
 	MAKE_TYPE_ENTRY(uint8)
 	MAKE_TYPE_ENTRY(int16)
 	MAKE_TYPE_ENTRY(int32)
@@ -601,7 +605,7 @@ struct Grid {
 
 /* same for inlets that support more than just int32. */
 #define GRINLET2(_class_,i,mode) {i, mode, \
-	0, \
+	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
 	0, }

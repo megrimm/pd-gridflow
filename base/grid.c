@@ -458,10 +458,8 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 }
 
 #define SEND_IN_CHUNKS(type) { \
-	gfpost("send_in_chunks..."); \
 	STACK_ARRAY(type,data2,bs); \
 	for (;n>=bs;n-=bs,data+=bs) { \
-		gfpost("n=%d",n); \
 		convert_number_type(bs,data2,data); send(bs,data2);} \
 	convert_number_type(n,data2,data); \
 	send(n,data2); }
