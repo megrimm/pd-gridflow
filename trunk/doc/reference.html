@@ -49,6 +49,7 @@
 <li><a href="#@ravel">@ravel</a></li>
 <li><a href="#@grade">@grade</a></li>
 <li><a href="#@perspective">@perspective</a></li>
+<li><a href="#@transpose">@transpose</a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="#@redim"><img src="images/@redim.png" alt="[@redim {2}]" border="0"></a></li>
@@ -96,6 +97,22 @@
 <li><a href="#jmax_udpreceive">jmax_udpreceive</a></li>
 <li><a href="#jmax4_udpsend">jmax4_udpsend</a></li>
 <li><a href="#jmax4_udpreceive">jmax4_udpreceive</a></li>
+<li><a href="#foreach">foreach</a></li>
+<li><a href="#rubysprintf">rubysprintf</a></li>
+<li><a href="#listflatten">listflatten</a></li>
+<li><a href="#listmake">listmake</a></li>
+<li><a href="#listlength">listlength</a></li>
+<li><a href="#listelement">listelement</a></li>
+<li><a href="#listsublist">listsublist</a></li>
+<li><a href="#listprepend">listprepend</a></li>
+<li><a href="#listappend">listappend</a></li>
+<li><a href="#listreverse">listreverse</a></li>
+<li><a href="#oneshot">oneshot</a></li>
+<li><a href="#inv+">inv+</a></li>
+<li><a href="#inv*">inv*</a></li>
+<li><a href="#messageprepend">messageprepend</a></li>
+<li><a href="#messageappend">messageappend</a></li>
+<li><a href="#demux">demux</a></li>
 </ul>
 <h4><a href="#PureData_emulation">PureData emulation</a></h4><ul>
 <li><a href="#pd_netsend">pd_netsend</a></li>
@@ -112,7 +129,7 @@
 		grids so that multiple grids may be joined together, or 
 		single grids may be split. That kind of operation is already done implicitly in many 
 		cases (e.g. sending an integer or list to a grid-receiving inlet), 
-		but using this object you have greater flexibility on the conversion.</p> <br><b>attr</b>&nbsp;shape <b>(</b><b><i>GridShape|symbol(per_message)</i> shape</b><b>)</b>  <br><b>attr</b>&nbsp;numbertype <b>(</b><b><i>NumberType</i> numbertype</b><b>)</b>  <br><b>method</b>&nbsp;init <b>(</b>shape<b>, </b>numbertype<b>)</b>    <br>
+		but using this object you have greater flexibility on the conversion.</p> <br><b>attr</b>&nbsp;shape <b>(</b><b><i>GridShape|symbol(per_message)</i> shape</b><b>)</b>  <br><b>attr</b>&nbsp;cast <b>(</b><b><i>NumberType</i> cast</b><b>)</b>  <br><b>method</b>&nbsp;init <b>(</b>shape<b>, </b>cast<b>)</b>    <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;int <b>(</b><b>)</b>  
 				begins a new grid if there is no current grid. 
 				puts that integer in the current grid. 
@@ -396,6 +413,12 @@
 			last dimension of each vector is dropped.</p> <p>useful for converting from 3-D geometry to 2-D geometry. Also 
 			useful for converting homogeneous 3-D into regular 3-D, as 
 			homogeneous 3-D is really just regular 4-D...(!)</p> <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@transpose">@transpose</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> dim1<b>, </b><i>integer</i> dim2<b>)</b>    <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b>  
+			swaps the two specified dimensions; dimension numbers are as in [@join]. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -806,6 +829,107 @@
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		same as jmax_udpreceive but for jMax 4.0.x UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="foreach">foreach</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs N messages, one per list element, in order. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rubysprintf">rubysprintf</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>symbol</i> format<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			Outputs the format string with %-codes replaced 
+			by elements of the list formatted as the %-codes say. 
+			To get a list of those codes, consult a Ruby manual 
+			(Equivalently, Perl, Python, Tcl and C all have equivalents of this, 
+			and it's almost always called sprintf, or the % operator, or both) <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listflatten">listflatten</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listmake">listmake</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Emulation of jMax's [list] (but there cannot be a class named [list] in Pd) <br><b>method</b>&nbsp;init <b>(</b>list...<b>)</b>   <br>
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b> send "list" to outlet 0<br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b><b>)</b> as sending to inlet 1 and then banging; that is, passes thru and remembers.<br>
+   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listlength">listlength</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			outputs the number of elements in the incoming list. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listelement">listelement</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>int</i> index<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs one element of the list, as selected by "index". 
+			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listsublist">listsublist</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>int</i> index<b>, </b><i>int</i> length<b>)</b>    <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs consecutive elements of the list, as selected by "index" and "length". 
+			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax. <br>
+   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listprepend">listprepend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b>list...<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs the stored list followed by the incoming list, all in one message. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listappend">listappend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b>list...<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs the incoming list followed by the stored list, all in one message. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listreverse">listreverse</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b>...<b>)</b>  
+			Outputs the incoming list, from last element to first element. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="oneshot">oneshot</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Like [spigot], but turns itself off after each message, so you have to turn it on 
+		again to making it pass another message. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="inv+">inv+</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>float</i> b<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;float <b>(</b><i>float</i> a<b>)</b>  
+			outputs b-a <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="inv*">inv*</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>float</i> b<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;float <b>(</b><i>float</i> a<b>)</b>  
+			outputs b/a <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="messageprepend">messageprepend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		(This is not in jMax, but is there to help port $* messageboxes) <br><b>method</b>&nbsp;init <b>(</b>list...<b>)</b> <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b>...<b>)</b>  
+			Like [listprepend], but operates on whole messages, that is, including the selector. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="messageappend">messageappend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		(This is not in jMax, but is there to help port $* messageboxes) <br><b>method</b>&nbsp;init <b>(</b>list...<b>)</b> <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b>...<b>)</b>  
+			Like [listappend], but operates on whole messages, that is, including the selector. <br>
+   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="demux">demux</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b>n<b>)</b> <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b>...<b>)</b>  
+			Routes a message to the active outlet. <br>
+ <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><i>int</i> i<b>)</b>  
+			Selects which outlet is active. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
