@@ -327,7 +327,7 @@ struct GridDownscaleBy : GridObject {
 GRID_INLET(GridDownscaleBy,0) {
 	Dim *a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
-	if (a->get(2)!=3 && a->get(2)!=4) RAISE("3 or 4 chans please");
+//	if (a->get(2)!=3 && a->get(2)!=4) RAISE("3 or 4 chans please");
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
@@ -342,10 +342,12 @@ GRID_INLET(GridDownscaleBy,0) {
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
 
+	int chans=in->dim->get(2);
 	if (smoothly) {
 		while (n>0) {
 			if (y%scaley==0) CLEAR(buf,rowsize2);
-			switch (in->dim->get(2)) {
+			switch (chans) {
+			// !@#$ how can i templatise all of those??? (cleanly)
 			case 3:
 			for (int i=0,p=0; p<rowsize2;) {
 				for (int j=0; j<scalex; j++,i+=3) {
@@ -364,6 +366,14 @@ GRID_INLET(GridDownscaleBy,0) {
 					buf[p+3]+=data[i+3];
 				}
 				p+=4;
+			}break;
+			default:
+			for (int i=0,p=0; p<rowsize2;) {
+				for (int j=0; j<scalex; j++,i+=chans) {
+					for (int k=0; k<chans; k++)
+						buf[p+k]+=data[i+k];
+				}
+				p+=chans;
 			}break;
 			}
 			y++;
@@ -391,6 +401,11 @@ GRID_INLET(GridDownscaleBy,0) {
 				buf[p+1]=data[i+1];
 				buf[p+2]=data[i+2];
 				buf[p+3]=data[i+3];
+			}break;
+			default:
+			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=chans) {
+				for (int k=0; k<chans; k++)
+					buf[p+k]=data[i+k];
 			}break;
 			}
 			out[0]->send(rowsize2,buf);
