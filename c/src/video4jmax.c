@@ -369,15 +369,15 @@ METHOD2(Video4jmax,profiler_dump) {
 	int i;
 	whine("--------------------------------");
 	whine("         clock-ticks percent pointer  constructor");
-     qsort(os->buf,os->len,sizeof(GridObject*),by_profiler_cumul);
+	qsort(os->buf,os->len,sizeof(GridObject*),by_profiler_cumul);
 	for(i=0;i<os->len;i++) {
 		GridObject *o = os->buf[i];
 		total += o->profiler_cumul;
 	}
+	if (total<1) total=1;
 	for(i=0;i<os->len;i++) {
 		GridObject *o = os->buf[i];
 		int ppm = o->profiler_cumul * 1000000 / total;
-		if (!ppm) ppm=1;
 		sprintf_atoms(buf,o->o.argc,o->o.argv);
 		whine("%20lld %2d.%04d %08x [%s]\n",
 			o->profiler_cumul,
