@@ -1,0 +1,109 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
+<!-- $Id$ -->
+<!--
+        GridFlow Installation
+        Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+-->
+
+<section name="Software (and Hardware) you Probably Need"><prose>
+<p>Required:<list>
+	<li>GNU C Compiler (gcc)</li>
+	<li>GNU Make (gmake)</li>
+	<li>GNU Bash</li>
+	<li>X11 Window System (Xserver and Xlib)</li>
+</list></p>
+<p>Recommended:<list>
+	<li>jMax 2.4 or 2.5 (we test using 2.5)</li>
+	<li>libmpeg</li>
+	<li>a digitizer card with Video4linux 1.x (videodev.h)</li>
+</list></p>
+<p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's
+extensive help file at <link to="http://www.mamalala.de"/>
+as well as the jMax docs.</p>
+<p>Also Useful:<list>
+	<li>Pentium-compatible CPU (for profiling)</li>
+	<li>CVS (for live update)</li>
+	<li>Ruby (for regenerating documentation)</li>
+</list></p>
+</prose></section>
+
+<section name="Installation process (for jMax 2.5)"><prose>
+<list>
+  <li>Find your system type (for AMD K6 and Pentium Pro and compatibles, 
+  on Linux, this is <k>i686-linux</k>; if you have a recent Macintosh, this
+  is <k>ppc-macosx</k> or <k>ppc-linux</k>)</li>
+  
+  <li>Untar the archive with <k>tar -xvtf gridflow_current_version.tgz</k>
+  in your <k>packages</k> directory (or elsewhere). This will create the
+  <k>gridflow</k> directory and place all the files within.</li>
+
+  <li>Run <k>./configure --jmax25</k> from the <k>gridflow</k> directory.
+  note: if you didn't install GridFlow in the <k>packages</k> directory,
+  then you have to do something like
+  <k> ./configure --jmax25 --jmax-dist-dir</k>
+  <i>your-jmax-source-directory-goes-here</i></li>
+
+	if there's a problem with libmpeg anywhere in the process,
+	you can add the option --no-mpeg to compile without mpeg.
+
+  <li><k>./configure</k> will try to detect some optional components (libmpeg,
+  pentium clock, etc); error messages may appear in case of a <k>no</k>.
+  usually a <k>yes</k> will not show anything else. In the end, the files
+  <k>config.make</k>,
+  <k>c/src/Sources</k> and
+  <k>c/src/config.h</k> will be generated.
+  </li>
+
+  <li>Stay in the same directory and do:
+      <list>
+        <li><k>make ARCH=</k><i>your-system-type</i><k> all</k></li>
+        <li><k>make ARCH=</k><i>your-system-type</i><k> install</k></li>
+      </list>
+      but if the first one stops because of "Error" you shouldn't try the second
+	 one.
+  </li>
+
+  <li>
+      Get the images for the examples from
+	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca
+	 </link> or
+	 <link
+	 to="http://hostname.2y.net/gridflow/download">hostname.2y.net</link>.
+	 Place the archive in /usr/local/jmax/packages/gridflow
+      (or the path of your choice) and untar with <k>tar -xvzf
+	 video4jmax-images-0.2.tar.gz</k>.
+  </li>
+
+  <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
+  Add a line that says <k>package require gridflow</k>.
+  Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
+  </li>
+
+  <li>(Re)start jMax. </li>
+
+</list>
+</prose></section>
+
+<section name="Installation process (for jMax 2.4)"><prose>
+Mostly the same as when installing with jMax 2.5; however: you <u>must</u>
+unpack the sources in the <k>packages</k> directory (this is optional with 2.5).
+When running the configuration script you must say <k>--jmax24</k> instead of
+<k>--jmax25</k>. Don't forget to modify <k>packages/Makefile</k> so that the
+<k>C_PACKAGES</k> contains <k>gridflow</k>. Then do a regular jMax 2.4
+compile/install.
+</prose></section>
+
+<section name="Installation process (without jMax)"><prose>
+	If you are not a C programmer you probably shouldn't do this.
+<list><li>
+	Use the <k>--nojmax</k> option instead of <k>--jmax25</k>.
+	Don't do the regular <k>make all</k>; you can only do a
+	<k>make standalone</k>. (note: You can also do <k>make standalone</k>
+	when installing with jMax. in any case that command creates 
+	<k>c/lib2/libgridflow.so</k> which can be used without jMax).
+</li></list>
+</prose></section>
+</jmax-doc>

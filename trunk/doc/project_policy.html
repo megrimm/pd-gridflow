@@ -43,6 +43,8 @@
 </ul>
 <h4><a href="#Documentation">Documentation</a></h4><ul>
 </ul>
+<h4><a href="#...">...</a></h4><ul>
+</ul>
 <br><br>
 </td></tr> 
 <tr> 
@@ -106,8 +108,8 @@ Release steps:
 	Distinguish "icons" from "thumbnails", the latter of which are <b>scaled-down</b> grabs, which should be encoded in JPEG. 
 </li> 
 <li><b>7</b> :  
-	Thumbnails should be auto-generated, but there is currently no 
-	such process, so it's still done manually. 
+	There are not help-thumbnails anymore in the reference manual 
+	because they were not helpful. 
 </li> 
 <li><b>8</b> :  
 	Large images should be kept out of the release. The release itself must 
@@ -119,6 +121,17 @@ Release steps:
 </td></tr> 
 in doc do: 
 for z in images/*.* images/*/*.*; do fgrep -q $z *.html || echo "$z"; done 
+<tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="..."></a><h4>...</h4></td></tr> 
+<tr><td></td><td></td><td> 
+	CVS Quick Reference: 
+	environment variables 
+		CVSEDITOR=pico 
+		CVS_RSH=ssh2 
+</td></tr> 
 <tr><td>&nbsp;</td></tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>

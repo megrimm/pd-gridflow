@@ -1,147 +1,123 @@
 <html>
 <head>
-<title>GridFlow 0.4.1 - install</title>
+<!-- $Id$ -->
+<title>GridFlow 0.4.1 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
-
-<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-<br>
-<table width="100%" border="0" cellspacing="5">
-  <tr><td colspan="4" bgcolor="#082069">
-	<img src="images/titre_gridflow.png" width="253" height="23"></td></tr>
-
-  <tr><td>&nbsp;</td></tr>
-  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
-
-  <tr><td colspan="3" height="16">
-      <h4>GridFlow 0.4.1 - installation</h4>
-  </td></tr>
-
-  <tr> 
-    <td rowspan="3" width="12%">&nbsp;</td>
-    <td colspan="2" width="80%">&nbsp;</td>
-    <td rowspan="10" width="12%">&nbsp;</td>
-  </tr>
-
-  <tr>
-    <td width="50%">
-      <h5>Requirements </h5>
-      <p>i). jMax 2.5 (should work under jMax 2.4.12)<br>
-        ii). an X11 Display Server </p>
-      <p><font size="-1">note: you will need to have a version of jMax running,
-        for help on installing and compiling jMax, please see Christian Klippel's
-        extensive help file at <a href="http://www.mamalala.de">http://www.mamalala.de</a>
-        as well as the jMax docs.</font></p>
-    </td>
-  </tr>
-  <tr>
-    <td width="56%">
-      <h5><br>
-        Installation process (for jMax 2.5)</h5>
-      <p>1. Untar the archive with
-	 	<kbd>tar -xvtf gridflow_current_version.tgz</kbd> in
-        your <kbd>packages</kbd> directory. This will create the gridflow directory and
-        place all the files within. </p>
-      <p>2. Run <kbd>./configure --jmax25</kbd> from the gridflow directory. That should
-        take care of adjusting the Makefiles to your current version and point
-        to the right header for fts. <br>
-      </p>
-      <p>Files changed by configure: <br>
-	<kbd>
-        gridflow/Makefile <br>
-        gridflow/c/Makefile <br>
-        gridflow/c/src/Makefile<br>
-        gridflow/c/src/config.h<br>
-        gridflow/c/src/Sources<br>
-        gridflow/config.make</kbd></p>
-
-
-      <p><br>
-        3. From the packages/gridflow directory, do this:</p>
-      <ul>
-        <li><kbd>make all ARCH=i686-linux</kbd></li>
-        <li><kbd>make install ARCH=i686-linux</kbd></li>
-      </ul>
-      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
-      </p>
-
-      <br>
-     <p>
-      4. Get the images for the examples from <a
-	 href="http://www.artengine.ca/jmax/gridflow/download">artengine.ca </a> or
-       <a href="http://hostname.2y.net/gridflow/download">hostname.2y.net</a> 
-	  Place the archive in /usr/local/jmax/packages/gridflow
-        (or the path of your choice) and untar with <kbd>tar -xvzf
-	   video4jmax-images-0.2.tar.gz</kbd>.
-       </p>
-
-	<p>
-	5. Add <kbd>package require gridflow</kbd> within the <kbd>when start</kbd> section of
-        <kbd>~/.jmaxrc</kbd></p>
-      <p>6. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
-        <kbd>dataDirectory /usr/local/jmax/packages/gridflow/images</kbd> (or any
-        path to the directory where you will place the images).</p>
-      <p>7. Restart jMax. </p>
-      <p>&nbsp;</p>
-      <h5>Installation process (for jMax 2.4)</h5>
-      <p>1. Untar the archive with tar -xvtf gridflow_current_version.tgz in
-        your 'packages' directory. This will create the gridflow directory and
-        place all the files within. </p>
-      <p>2. Run './configure --jmax24' from the gridflow directory. That should
-        take care of adjusting the Makefiles to your current version and point
-        to the right header for fts. <br>
-      </p>
-         <p>Files changed by configure: <br><kbd>
-        gridflow/Makefile <br>
-        gridflow/c/Makefile <br>
-        gridflow/c/src/Makefile<br>
-        gridflow/c/src/config.h<br>
-        gridflow/c/src/Sources<br>
-        gridflow/config.make</kbd></p>
-
-      <p><br>
-        3. In file packages/Makefile change the <kbd>C_PACKAGES</kbd> list to
-	   include <kbd>gridflow</kbd>
-        (remove the old <kbd>video</kbd> directory if you upgrade).</p>
-      <p><br>
-        4. From the toplevel directory (above <kbd>packages</kbd>), do this:</p>
-      <ul>
-        <li><kbd>make all ARCH=i686-linux</kbd></li>
-        <li><kbd>make install ARCH=i686-linux</kbd></li>
-      </ul>
-      <p>Where you replace <kbd>i686-linux</kbd> by your architecture name (e.g. <kbd>ppc-macosx</kbd>).
-      </p>
-      <p><br>
-         5. Get the images for the examples from <a
-	    href="http://www.artengine.ca/jmax/gridflow/download"> artengine.ca </a> or
-       <a href="http://hostname.2y.net/gridflow/download"> hostname.2y.net</a>.
-	  Place the archive in /usr/local/jmax/packages/gridflow
-        (or the path of your choice) and untar with <kbd>tar -xvzf
-	   gridflow-images-0.4.tar.gz</kbd>.
-
-       </p>
-
-       <p>6. Add <kbd>package require gridflow</kbd> within the <kbd>when start</kbd> section of
-        <kbd>~/.jmaxrc</kbd></p>
-        <p>7. Add this line to your <kbd>~/.jmaxrc</kbd> file:<br>
-        <kbd>dataDirectory /usr/local/jmax/packages/gridflow/images</kbd> (or any
-        path to the directory where you will place the images).</p>
-      <p>8. Restart jMax. </p>
-
-    </td>
-  </tr>
-
-  <tr><td>&nbsp;</td></tr>
-  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
-
-  <tr><td colspan="4">
-	<p><font size="-1">GridFlow 0.4.1 Documentation<br>
-        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
-        and<br>
-        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-    </td>
-  </tr>
+<body
+  bgcolor="#FFFFFF"
+  leftmargin="0"
+  topmargin="0"
+  marginwidth="0"
+  marginheight="0">
+<table
+  width="100%"
+  bgcolor="white"
+  border="0"
+  cellspacing="2">
+<tr> 
+<td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23"></td>
+</tr>
+<tr> 
+<td>&nbsp;</td>
+</tr>
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4" height="16"> 
+    <h4>GridFlow 0.4.1 - reference index</h4>
+</td></tr>
+<tr> 
+  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="25%" height="23">&nbsp;</td>
+  <td width="66%" height="23">&nbsp;</td>
+  <td width="5%"  height="23">&nbsp;</td>
+</tr>
+<tr><td colspan="2"><h4><a href="#Software_(and_Hardware)_you_Probably_Need">Software (and Hardware) you Probably Need</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(for_jMax_2.5)">Installation process (for jMax 2.5)</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(for_jMax_2.4)">Installation process (for jMax 2.4)</a></h4><ul>
+</ul>
+<h4><a href="#Installation_process_(without_jMax)">Installation process (without jMax)</a></h4><ul>
+</ul>
+<br><br>
+</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Software_(and_Hardware)_you_Probably_Need"></a><h4>Software (and Hardware) you Probably Need</h4></td></tr><tr><td></td><td></td><td> 
+<p>Required:<ul> <li><b>1</b> : GNU C Compiler (gcc)</li> <li><b>2</b> : GNU Make (gmake)</li> <li><b>3</b> : GNU Bash</li> <li><b>4</b> : X11 Window System (Xserver and Xlib)</li> 
+</ul></p> 
+<p>Recommended:<ul> <li><b>1</b> : jMax 2.4 or 2.5 (we test using 2.5)</li> <li><b>2</b> : libmpeg</li> <li><b>3</b> : a digitizer card with Video4linux 1.x (videodev.h)</li> 
+</ul></p> 
+<p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's 
+extensive help file at <a href=''>nil</a> 
+as well as the jMax docs.</p> 
+<p>Also Useful:<ul> <li><b>1</b> : Pentium-compatible CPU (for profiling)</li> <li><b>2</b> : CVS (for live update)</li> <li><b>3</b> : Ruby (for regenerating documentation)</li> 
+</ul></p> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Installation_process_(for_jMax_2.5)"></a><h4>Installation process (for jMax 2.5)</h4></td></tr><tr><td></td><td></td><td> 
+<ul> <li><b>1</b> : Find your system type (for AMD K6 and Pentium Pro and compatibles, 
+  on Linux, this is <kbd>i686-linux</kbd>; if you have a recent Macintosh, this 
+  is <kbd>ppc-macosx</kbd> or <kbd>ppc-linux</kbd>)</li> <li><b>2</b> : Untar the archive with <kbd>tar -xvtf gridflow_current_version.tgz</kbd> 
+  in your <kbd>packages</kbd> directory (or elsewhere). This will create the <kbd>gridflow</kbd> directory and place all the files within.</li> <li><b>3</b> : Run <kbd>./configure --jmax25</kbd> from the <kbd>gridflow</kbd> directory. 
+  note: if you didn't install GridFlow in the <kbd>packages</kbd> directory, 
+  then you have to do something like <kbd> ./configure --jmax25 --jmax-dist-dir</kbd> <i>your-jmax-source-directory-goes-here</i></li> 
+	if there's a problem with libmpeg anywhere in the process, 
+	you can add the option --no-mpeg to compile without mpeg. <li><b>4</b> : <kbd>./configure</kbd> will try to detect some optional components (libmpeg, 
+  pentium clock, etc); error messages may appear in case of a <kbd>no</kbd>. 
+  usually a <kbd>yes</kbd> will not show anything else. In the end, the files <kbd>config.make</kbd>, <kbd>c/src/Sources</kbd> and <kbd>c/src/config.h</kbd> will be generated. </li> <li><b>5</b> : Stay in the same directory and do: <ul> <li><b>1</b> : <kbd>make ARCH=</kbd><i>your-system-type</i><kbd> all</kbd></li> <li><b>2</b> : <kbd>make ARCH=</kbd><i>your-system-type</i><kbd> install</kbd></li> </ul> 
+      but if the first one stops because of "Error" you shouldn't try the second 
+	 one. </li> <li><b>6</b> :  
+      Get the images for the examples from <a href=''>artengine.ca </a> or <a href=''>hostname.2y.net</a>. 
+	 Place the archive in /usr/local/jmax/packages/gridflow 
+      (or the path of your choice) and untar with <kbd>tar -xvzf 
+	 video4jmax-images-0.2.tar.gz</kbd>. </li> <li><b>7</b> : Load <kbd>~/.jmaxrc</kbd> (text). Go to the <kbd>when start</kbd> section. 
+  Add a line that says <kbd>package require gridflow</kbd>. 
+  Add this line that says <kbd>dataDirectory </kbd><i>gridflow-directory</i><kbd>/images</kbd> </li> <li><b>8</b> : (Re)start jMax. </li> 
+</ul> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Installation_process_(for_jMax_2.4)"></a><h4>Installation process (for jMax 2.4)</h4></td></tr><tr><td></td><td></td><td> 
+Mostly the same as when installing with jMax 2.5; however: you <u>must</u> 
+unpack the sources in the <kbd>packages</kbd> directory (this is optional with 2.5). 
+When running the configuration script you must say <kbd>--jmax24</kbd> instead of 
+<kbd>--jmax25</kbd>. Don't forget to modify <kbd>packages/Makefile</kbd> so that the 
+<kbd>C_PACKAGES</kbd> contains <kbd>gridflow</kbd>. Then do a regular jMax 2.4 
+compile/install. 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Installation_process_(without_jMax)"></a><h4>Installation process (without jMax)</h4></td></tr><tr><td></td><td></td><td> 
+	If you are not a C programmer you probably shouldn't do this. 
+<ul><li><b>1</b> :  
+	Use the <kbd>--nojmax</kbd> option instead of <kbd>--jmax25</kbd>. 
+	Don't do the regular <kbd>make all</kbd>; you can only do a <kbd>make standalone</kbd>. (note: You can also do <kbd>make standalone</kbd> 
+	when installing with jMax. in any case that command creates <kbd>c/lib2/libgridflow.so</kbd> which can be used without jMax). 
+</li></ul> 
+</td></tr><tr><td>&nbsp;</td></tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr> 
+<td colspan="4"> 
+<p><font size="-1">GridFlow 0.4.1 Documentation<br>
+by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+and<br>
+Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+</td>
+</tr>
 </table>
 </body>
 </html>
+
+

@@ -57,7 +57,8 @@ end
 
 def mkimg(icon,alt=nil)
 	icon.tag == 'icon' or raise "need icon"
-	url = icon.att["image"]
+	url = icon.att["image"] || icon.parent.att["name"]
+	raise icon.att.to_s if not url
 	url = "images/" + url if url !~ /^images\//
 	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
 	raise "#{url} not found" if not File.exist? url
@@ -72,6 +73,10 @@ class DTDParser < XMLParser
 end
 
 class XNode
+	# note: in this class, methods starting with "prc_" are specializations
+	# of "print_contents", and starting with "prx_" are specializations of
+	# "print_index"
+
 	class<<self; attr_accessor :valid_tags; end
 	self.valid_tags = {
 		"p" => 1,
@@ -99,173 +104,50 @@ class XNode
 		"format" => 1,
 		"prose" => 1,
 		"part" => 1,
+		"link" => 1,
 	}
 	def initialize tag, att, *contents
 		@tag,@att,@contents =
 		 tag, att, contents
+		contents.each {|c| c.parent = self if XNode===c }
 	end
 	attr_reader :tag, :att, :contents
+	attr_accessor :parent
 	def [] i; contents[i] end
 
-	def print_index
-		e=nil
-		case tag
-		when "section"
-			mk(:h4) { mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
-				print att["name"] }}
-			print "<ul>\n"
-			e="</ul>\n"
-		when "jmax_class"
-			icon = contents.find {|x| XNode===x && x.tag == "icon" }
-			mk(:li) { mk(:a,:href,"\#"+att["name"]) {
-				if icon
-					icon.att['image'] ||= att['name']
-					mkimg(icon,att["cname"])
-				else
-					print att["name"]
-				end
-			}}
-			puts
-		end
+	def prx_section
+		mk(:h4) { mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
+			print att["name"] }}
+		print "<ul>\n"
+		proc { print "</ul>\n" }
+	end
 
-		contents.each {|x|
-			next unless XNode===x
-			x.print_index
-		}
-
-		print e if e
+	def prx_jmax_class
+		icon = contents.find {|x| XNode===x && x.tag == "icon" }
+		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
+			if icon
+				icon.att['image'] ||= att['name']
+				mkimg(icon,att["cname"])
+			else
+				print att["name"]
+			end
+		}}
+		puts
 	end
 
 	$counters=[]
 	$sections=nil
+	def print_index
+		pr = begin send("prx_#{tag}"); rescue NameError=>x; end
+		contents.each {|x|
+			next unless XNode===x
+			x.print_index
+		}
+		pr[] if Proc===pr
+	end
+
 	def print_contents
-		e=nil
-		case tag
-		when "jmax_doc"; #nothing
-		when "section"
-			black_ruler
-			mk(:tr) { mk(:td,:colspan,4) {
-				mk(:a,:name,att["name"].gsub(/ /,'_')) {}
-				mk(:h4) { print att["name"] }}}
-			e="<tr><td>&nbsp;</td></tr>"
-			$section={}
-		when "p", "i", "u", "b", "sup", "k"
-			t = if tag=="k" then "kbd" else tag end
-			print "<#{t}>"
-			e="</#{t}>"
-		when "list"
-			$counters << (att.fetch("start"){"1"}).to_i
-			print "<ul>"
-			e="</ul>"
-		when "li"
-			print "<li><b>#{$counters.last}</b> : "
-			$counters[-1] += 1
-			e="</li>"
-		when "prose"
-			print "<tr>"
-			mk(:td) {}
-			mk(:td) {}
-			print "<td>"
-			e="</td></tr>"
-		when "jmax_class"
-			name = att['name'] or raise
-			mk(:tr) {
-			  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
-			    mk(:b) { print "&nbsp;"*2, "class " }
-			    mk(:a,:name,name) { print name }
-			  }
-			}
-			print "<tr>"
-			mk(:td) {}
-			print "<td valign='top'><br>\n"
-			icon = contents.find {|x| XNode===x and x.tag == 'icon' }
-			help = contents.find {|x| XNode===x and x.tag == 'help' }
-			mkimg(icon) if icon
-			mk(:br,:clear,"left")
-			mk(:br)
-			mk(:br)
-			if help
-				big = help.att['image']
-				if big[0]==?@ then big="images/help_#{big}.png" end
-				raise "#{big} not found" if not File.exist?(big)
-				#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
-				mk(:a,:href,big) {
-					#mk(:img,:src,small,:border,0)
-					mk(:img,:src,"images/see_screenshot.png",:border,0)
-				}
-			end
-			mk(:br,:clear,"left")
-			mk(:br)
-			print "</td><td><br>\n"
-			e="<br></td>"
-		when "method"
-			print "<br>"
-			print "<b>", $portnum.join(" "), "</b> " if $portnum
-			print "<b>method</b> #{att['name']} <b>(</b>"
-			print contents.map {|x|
-				next unless XNode===x
-				case x.tag
-				when "arg"
-					x.att["name"]
-				when "rest"
-					x.att["name"] + "..."
-				end
-			}.compact.join "<b>,</b>"
-			print "<b>)</b>"
-			e="<br>\n"
-		when "grid"
-			print "<br>"
-			print "<b>", $portnum.join(" "), "</b> " if $portnum
-			print "<b>grid</b> "
-			e="<br>\n"
-		when "dim"
-			print "<b>dim(</b>"
-			e="<b>)</b>"
-		when "inlet", "outlet"
-			# hidden
-			$portnum = [tag,att['id']]
-		when "icon", "help", "arg", "rest"
-			# hidden
-			return
-		when "grid", "dim"
-			print "[#{tag}]"; e="[/#{tag}]"
-		when "part"
-			$section[:table] ||= (
-				print "<tr>"
-				2.times { mk(:td) {}}
-				print "<td>"
-				print "<table border='1'>"
-			;0)
-			print "<tr>"
-			mk(:td) { print att["name"]  }
-			mk(:td) { print att["who"]   }
-			mk(:td) { print att["files"] }
-			print "<td>"
-			e="</td></tr>"
-		
-		when "operator_1", "operator_2"
-			$section[:table] ||= (
-				print "<tr>"
-				2.times { mk(:td) {}}
-				print "<td>"
-				print "<table border='1'>"
-			;0)
-			print "<tr>"
-			mk(:td) {
-				icon = contents.find {|x| XNode===x && x.tag == "icon" }
-				if icon then
-					mkimg icon
-				else
-					mk(:img,:src,"images/op/#{att['cname']}.jpg",
-						:border,0,:alt,att["cname"])
-				end
-				# print att["name"]
-			}
-			print "<td>"
-			e="</td></tr>"
-		else
-			raise "crap in #{tag}"
-		end
+		pr = send("prc_#{tag}")
 		contents.each {|x|
 			case x
 			when String
@@ -276,16 +158,172 @@ class XNode
 			else raise "crap"
 			end
 		}
-		print e if e
-		case tag
-		when "list"
-			$counters.pop
-		when "section"
+		pr[] if Proc===pr
+	end
+
+#----------------------------------------------------------------#
+
+	def prc_jmax_doc; end
+	def prc_section
+		black_ruler
+		mk(:tr) { mk(:td,:colspan,4) {
+			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
+			mk(:h4) { print att["name"] }}}
+		$section={}
+		proc {
+			print "<tr><td>&nbsp;</td></tr>"
 			print "</table>" if $section[:table]
 			$section=nil
-		when "inlet", "outlet"
-			$portnum = nil
+		}
+	end
+	def prc_p
+		t = if tag=="k" then "kbd" else tag end
+		print "<#{t}>"
+		proc { print "</#{t}>" }
+	end
+	alias prc_i prc_p
+	alias prc_u prc_p
+	alias prc_b prc_p
+	alias prc_k prc_p
+	alias prc_sup prc_p
+
+	def prc_list
+		$counters << (att.fetch("start"){"1"}).to_i
+		print "<ul>"
+		proc { print "</ul>"; $counters.pop }
+	end
+
+	def prc_li
+		print "<li><b>#{$counters.last}</b> : "
+		$counters[-1] += 1
+		proc { print "</li>" }
+	end
+
+	def prc_prose
+		print "<tr>"
+		mk(:td) {}
+		mk(:td) {}
+		print "<td>"
+		proc { print "</td></tr>" }
+	end
+
+	def prc_jmax_class
+		name = att['name'] or raise
+		mk(:tr) {
+		  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
+		    mk(:b) { print "&nbsp;"*2, "class " }
+		    mk(:a,:name,name) { print name }
+		  }
+		}
+		print "<tr>"
+		mk(:td) {}
+		print "<td valign='top'><br>\n"
+		icon = contents.find {|x| XNode===x and x.tag == 'icon' }
+		help = contents.find {|x| XNode===x and x.tag == 'help' }
+		mkimg(icon) if icon
+		mk(:br,:clear,"left")
+		2.times { mk(:br) }
+		if help
+			big = help.att['image']
+			if big[0]==?@ then big="images/help_#{big}.png" end
+			raise "#{big} not found" if not File.exist?(big)
+			#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
+			mk(:a,:href,big) {
+				#mk(:img,:src,small,:border,0)
+				mk(:img,:src,"images/see_screenshot.png",:border,0)
+			}
 		end
+		mk(:br,:clear,"left")
+		mk(:br)
+		print "</td><td><br>\n"
+		proc { print "<br></td>" }
+	end
+		
+	def prc_method
+		print "<br>"
+		print "<b>", $portnum.join(" "), "</b> " if $portnum
+		print "<b>method</b> #{att['name']} <b>(</b>"
+		print contents.map {|x|
+			next unless XNode===x
+			case x.tag
+			when "arg"
+				x.att["name"]
+			when "rest"
+				x.att["name"] + "..."
+			end
+		}.compact.join "<b>,</b>"
+		print "<b>)</b>"
+		proc { print "<br>\n" }
+	end
+
+	def prc_grid
+		print "<br>"
+		print "<b>", $portnum.join(" "), "</b> " if $portnum
+		print "<b>grid</b> "
+		proc { print "<br>\n" }
+	end
+
+	def prc_dim
+		print "<b>dim(</b>"
+		proc { print "<b>)</b>" }
+	end
+
+	def prc_inlet
+		# hidden
+		$portnum = [tag,att['id']]
+		proc { $portnum = nil }
+	end
+	alias prc_outlet prc_inlet
+
+	def prc_icon; end
+	def prc_help; end
+	def prc_arg; end
+	def prc_rest; end
+
+	def prc_part
+		$section[:table] ||= (
+			print "<tr>"
+			2.times { mk(:td) {}}
+			print "<td>"
+			print "<table border='1'>"
+		;0)
+		print "<tr>"
+		mk(:td) { print att["name"]  }
+		mk(:td) { print att["who"]   }
+		mk(:td) { print att["files"] }
+		print "<td>"
+		proc { print "</td></tr>" }
+	end
+
+	def prc_operator_1
+		$section[:table] ||= (
+			print "<tr>"
+			2.times { mk(:td) {}}
+			print "<td>"
+			print "<table border='1'>"
+		;0)
+		print "<tr>"
+		mk(:td) {
+			icon = contents.find {|x| XNode===x && x.tag == "icon" }
+			if icon then
+				mkimg icon
+			else
+				mk(:img,:src,"images/op/#{att['cname']}.jpg",
+					:border,0,:alt,att["cname"])
+			end
+			# print att["name"]
+		}
+		print "<td>"
+		proc { print "</td></tr>" }
+	end
+	alias prc_operator_2 prc_operator_1
+
+	def prc_link
+		print "<a href='#{att[:to]}'>"
+		proc {
+			print att[:to] if contents.length==0
+			print "</a>"
+		}
 	end
 end
 
