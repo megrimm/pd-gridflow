@@ -280,7 +280,7 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nb = r.dim->n;
 	int nc = in->dim->get(na-1);
-	int32 v[MAX_DIMENSIONS];
+	STACK_ARRAY(int32,v,MAX_DIMENSIONS);
 
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 
@@ -478,12 +478,12 @@ GRID_INLET(GridFold,0) {
 	int bn = r.dim->n;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand "
 		"(%d vs %d)",an,bn);
-	int32 v[an-1];
+	STACK_ARRAY(int32,v,an-1);
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
 	COPY(v+yi,in->dim->v+an-bn,bn);
 	SAME_DIM(an-(yi+1),in->dim,(yi+1),r.dim,0);
-	out[0]->begin(new Dim(COUNT(v),v),in->nt);
+	out[0]->begin(new Dim(an-1,v),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
 } GRID_FLOW {
 	int an = in->dim->n;
@@ -605,7 +605,7 @@ GRID_INLET(GridInner,0) {
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
 	SAME_DIM(1,a,a->n-1,b,0);
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out[0]->begin(new Dim(n,v),in->nt);
@@ -635,8 +635,9 @@ template <class T> void GridInner::process_right(T bogus) {
 	int n = r.dim->n;
 	int rrows = r.dim->get(n-1);
 	int rsize = r.dim->prod();
+	if (rrows==0) RAISE("transpose: rows=0 ???");
 	int rcols = rsize/rrows;
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n-1; i++) v[i+1]=r.dim->v[i];
 	v[0]=r.dim->v[n-1];
 	Pt<T> rdata = (Pt<T>)r;
@@ -713,7 +714,7 @@ GRID_INLET(GridOuter,0) {
 	if (!b) RAISE("right inlet has no grid");
 	SAME_TYPE(*in,r);
 	int n = a->n+b->n;
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
 	out[0]->begin(new Dim(n,v),in->nt);
@@ -792,33 +793,39 @@ void GridFor::trigger (T bogus) {
 	Pt<T> fromb = ((Pt<T>)from);
 	Pt<T>   tob = ((Pt<T>)to  );
 	Pt<T> stepb = ((Pt<T>)step);
-
+	STACK_ARRAY(T,to2,n);
+	
 	for (int i=step.dim->prod()-1; i>=0; i--)
 		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
 		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
+		to2[i] = fromb[i]+stepb[i]*nn[i];
 	}
+	Dim *d;
 	if (from.dim->n==0) {
-		out[0]->begin(new Dim(1,(int32 *)nn), from.nt);
+		d = new Dim(1,(int32 *)nn);
 	} else {
 		nn[n]=n;
-		out[0]->begin(new Dim(n+1, (int32 *)nn), from.nt);
+		d = new Dim(n+1, (int32 *)nn);
 	}
-	for(int d=0;;) {
+	int total = d->prod();
+	out[0]->begin(d,from.nt);
+	if (total==0) return;
+	int k=0;
+	for(int d=0;;d++) {
 		/* here d is the dim# to reset; d=n for none */
 		for(;d<n;d++) x[d]=fromb[d];
 		d--;
-		out[0]->send(n,x);
+		out[0]->send(n,x); k++;
 		/* here d is the dim# to increment */
-		for(;;) {
-			if (d<0) return;
+		for(;;d--) {
+			if (d<0) goto end;
 			x[d]+=stepb[d];
-			if (x[d]<tob[d]) break;
-			d--;
+			if (x[d]!=to2[d]) break;
 		}
-		d++;
 	}
+	end:;
 }
 
 \def void _0_bang () {
@@ -960,7 +967,7 @@ GRID_INLET(GridJoin,0) {
 	if (w<0 || w>=d->n)
 		RAISE("can't join on dim number %d on %d-dimensional grids",
 			which_dim,d->n);
-	int32 v[d->n];
+	STACK_ARRAY(int32,v,d->n);
 	for (int i=0; i<d->n; i++) {
 		v[i] = d->get(i);
 		if (i==w) {
@@ -1067,7 +1074,7 @@ struct GridPerspective : GridObject {
 
 GRID_INLET(GridPerspective,0) {
 	int n = in->dim->n;
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	COPY(v,in->dim->v,n);
 	v[n-1]--;
 	in->set_factor(in->dim->get(in->dim->n-1));
