@@ -43,6 +43,24 @@ Ruby cFObject;
 
 int gf_security = 1;
 
+/* begin Ruby 1.6 compatibility */
+
+static uint64 num2ull(Ruby val) {
+    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	uint64 v =
+		(uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
+}
+
+static Ruby ull2num(uint64 val) {
+	return rb_funcall(
+		rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
+		SI(+),1,UINT2NUM((uint32)val));
+}
+
+/* end */
+
 static void default_post(const char *fmt, ...) {
 	va_list args;
 	va_start(args,fmt);
@@ -97,6 +115,8 @@ static void Object_free (void *foo) {
 	delete self;
 }
 
+\class FObject < Object
+
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	if (argc<1) {
 		sym = bsym._bang;
@@ -119,7 +139,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	}
 }
 
-METHOD3(FObject,send_in) {
+\def void send_in (...) {
 	bool record = false;
 	ENTER(this);
 	if (argc<1) RAISE("not enough args");
@@ -148,10 +168,9 @@ METHOD3(FObject,send_in) {
 	rb_funcall2(rself,rb_intern(buf),argc,argv);
 
 	LEAVE(this);
-	return Qnil;
 }
 
-METHOD3(FObject,send_out) {
+\def void send_out (...) {
 	int n=0;
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
@@ -192,7 +211,6 @@ METHOD3(FObject,send_out) {
 	}
 end:
 	ENTER(this);
-	return Qnil;
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -238,26 +256,6 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-/* begin Ruby 1.6 compatibility */
-
-static uint64 num2ull(Ruby val) {
-    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
-	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	uint64 v =
-		(uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
-}
-
-static Ruby ull2num(uint64 val) {
-	return rb_funcall(
-		rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
-		SI(+),1,UINT2NUM((uint32)val));
-}
-
-/* end */
-
-\class FObject < Object
-
 \def Ruby profiler_cumul_get () {
 	return ull2num(profiler_cumul);
 }
@@ -282,8 +280,6 @@ const char *FObject::info() {
 }
 
 MethodDecl FObject_methods[] = {
-	DECL(FObject,send_out),
-	DECL(FObject,send_in),
 	\grdecl
 };
 \end class FObject

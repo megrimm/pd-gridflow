@@ -127,7 +127,8 @@ end
 def handle_grdecl(line)
 	qlass = $stack[-1]
 	Out.puts qlass.methods.map {|foo,method|
-		"DECL(#{qlass.name},#{method.selector})"
+		c,s = qlass.name,method.selector
+		"{ \"#{s}\",(RMethod)#{c}_#{s}_wrap }"
 	}.join(",")
 end
 

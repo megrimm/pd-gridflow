@@ -406,22 +406,6 @@ struct MethodDecl {
 
 /* **************************************************************** */
 
-/* declare a method in GRCLASS() */
-#define DECL(_class_,_name_) \
-	{ #_name_,(RMethod) _class_##_##_name_##_wrap }
-
-/* declare a method inside a class{}; */
-#define DECL3(_name_) \
-	Ruby _name_(int argc, Ruby *argv);
-
-/* define a method body */
-#define METHOD3(_class_,_name_) \
-	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); return self->_name_(argc,argv); } \
-	Ruby _class_::_name_(int argc, Ruby *argv)
-
-/* **************************************************************** */
-
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") \
 	MACRO(_bang,"bang") \
@@ -1017,8 +1001,8 @@ struct FObject : Object {
 
 Ruby profiler_cumul_get(int argc, Ruby *argv); //FCS
 Ruby profiler_cumul_set(int argc, Ruby *argv,Ruby x);//FCS
-	DECL3(send_in);
-	DECL3(send_out);
+void send_in (int argc, Ruby *argv);//FCS
+void send_out (int argc, Ruby *argv);//FCS
 void del(int argc, Ruby *argv);//FCS
 };
 //\end class FObject
@@ -1049,10 +1033,8 @@ struct GridObject : FObject {
 	/* for Formats */
 	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
 
-	DECL3(method_missing);
-
-	DECL3(initialize);
-//void initialize(int argc, Ruby *argv);//FCS
+Ruby method_missing(int argc, Ruby *argv);//FCS
+void initialize(int argc, Ruby *argv);//FCS
 Array inlet_dim(int argc, Ruby *argv,int inln);//FCS
 Symbol inlet_nt(int argc, Ruby *argv,int inln);//FCS
 void inlet_set_factor(int argc, Ruby *argv,int inln, int factor);//FCS

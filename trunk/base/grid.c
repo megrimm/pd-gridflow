@@ -543,8 +543,7 @@ GridObject::~GridObject() {
 
 \class GridObject < FObject
 
-//\def void initialize () {
-METHOD3(GridObject,initialize) {
+\def void initialize (...) {
 	Ruby qlass = rb_obj_class(rself);
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
 		RAISE("not a GridObject subclass ???");
@@ -557,7 +556,6 @@ METHOD3(GridObject,initialize) {
 	}
 	for (int i=0; i<noutlets; i++) out[i] = new GridOutlet(this,i);
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
 /* category: input */
@@ -676,7 +674,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	return list;
 }
 
-METHOD3(GridObject,method_missing) {
+\def Ruby method_missing (...) {
 	static const char *names[] = {"grid","list","int","float"};
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
@@ -708,8 +706,6 @@ METHOD3(GridObject,method_missing) {
 
 GRCLASS(GridObject,LIST(),
 	\grdecl
-	,DECL(GridObject,initialize)
-	,DECL(GridObject,method_missing)
 ){
 	IEVAL(rself,"install 'GridObject',0,0");
 	/* define in Ruby-metaclass */

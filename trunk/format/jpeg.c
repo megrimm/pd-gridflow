@@ -114,9 +114,8 @@ GRID_INLET(FormatJPEG,0) {
 }
 
 GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0,4)),
-DECL(FormatJPEG,initialize),
-DECL(FormatJPEG,frame),
-DECL(FormatJPEG,close)) {
+\grdecl
+) {
 	IEVAL(rself,
 	"install 'FormatJPEG',1,1;"
 	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
