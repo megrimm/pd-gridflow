@@ -528,11 +528,12 @@ class ListFlatten < FObject
 end
 
 class Sprintf < FObject
-  def initialize(format) _1_symbol(format) end
+  def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
   alias _0_float _0_list
   alias _0_symbol _0_list
-  def _1_symbol(format) @format = format.to_s end
+  def _1_list(*format) @format = format.join(" ") end
+  alias _1_symbol _1_list
   install "rubysprintf", 2, 1
 end
 
@@ -1009,7 +1010,7 @@ module Gooey # to be included in any FObject class
 		@bgb = "#000000" # black border
 		@bgs = "#0000ff" # blue border when selected
 		@fg  = "#000000" # black foreground
-		@rsym = "#{self.class}#{self.id}".intern # unique id for use in Tcl
+		@rsym = "#{self.class}#{self.object_id}".intern # unique id for use in Tcl
 		@can = nil    # the canvas number
 		@canvas = nil # the canvas string
 		@y,@x = 0,0 # position on canvas
@@ -1475,9 +1476,7 @@ class JoystickPort < FObject
   install "joystick_port", 0, 1
 end
 
-# plotter control 
-GridFlow.post "loading #{__FILE__}..."
-
+# plotter control (HPGL)
 class PlotterControl < GridFlow::FObject
   def puts(x)
     x<<"\n"
