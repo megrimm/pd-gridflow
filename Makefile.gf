@@ -43,7 +43,7 @@ cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
 clean2::
-	rm -f $(JMAX_LIB) $(OBJS) base/*.fcs format/*.fcs
+	rm -f $(JMAX_LIB) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 install2:: ruby-install jmax-install puredata-install
 
