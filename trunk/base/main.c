@@ -775,3 +775,8 @@ void GFStack::pop () {
 	if (n) s[n-1].time = t - s[n-1].time;
 }
 
+uint64 gf_timeofday () {
+	timeval t;
+	gettimeofday(&t,0);
+	return t.tv_sec*1000000+t.tv_usec;
+}

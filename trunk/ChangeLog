@@ -1,18 +1,22 @@
 /* $Id$ */
 
+cvspserver stream tcp nowait root /usr/bin/env - /usr/bin/cvs -f
+ --allow-root=/home/cvs/gridflow pserver
+
 version 0.7.7 (head):
 
- * updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
- * added waves.pd
- * added pd_examples/color_detect.pd (supersedes chroma_key.pd)
- * added pd_examples/spectrogram.pd
- * added pd_examples/photo_pianoroll.pd
- * removed [rtmetro] (obsolete)
+ * pd_examples/:
+    updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
+    added waves.pd, spectrogram.pd, photo_pianoroll.pd
+    added color_detect.pd (supersedes chroma_key.pd)
  * [@store]: added methods: put_at, reassign
  * fixed bugs in: [@camera_control]
  * [demux] renamed to [shunt] and extra optional arg added (for initial value)
  * new object classes:
    [range], [@mouse], [@pack], [@color], [bindpatcher]
+ * videodev: "transfer" message allows to change the queue's length
+ * videodev: warning when "bang" message takes too long to process
+ * removed [rtmetro] (obsolete)
 
 version 0.7.6 (2004.03.22):
 
