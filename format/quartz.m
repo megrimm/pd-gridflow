@@ -21,6 +21,17 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+/*
+	This is written in Objective C++, which is the union of C++ and Objective C;
+	Their intersection is C or almost. They add quite different sets of features.
+	I need Objective C here because the Cocoa API is for Objective C and Java only,
+	and the Objective C one was the easiest to integrate in GridFlow.
+
+	The next best possibility may be using RubyCocoa, a port of the Cocoa API to Ruby;
+	However I haven't checked whether Quartz is wrapped, and how easy it is to
+	process images.
+*/
+
 #include <stdio.h>
 #include <objc/Object.h>
 
@@ -32,34 +43,38 @@
 #include "../base/grid.h.fcs"
 
 @interface GFView: NSView {
-	char *gfdata;
-	int gfwidth;
-	int gfheight;
+	uint8 *imdata;
+	int imwidth;
+	int imheight;
 }
 - (id) drawRect: (NSRect)rect;
+- (id) imageHeight: (int)w width: (int)h;
+- (uint8 *) imageData;
+- (int) imageDataSize;
 @end
 
 @implementation GFView
+
+- (uint8 *) imageData { return imdata; }
+- (int) imageDataSize { return imwidth*imheight*4; }
+
+- (id) imageHeight: (int)h width: (int)w {
+	imheight=h;
+	imwidth=w;
+	if (imdata) delete imdata;
+	imdata = ARRAY_NEW(uint8,[self imageDataSize]);
+	return self;
+}
+
 - (id) initWithFrame: (NSRect)r {
 	[super initWithFrame: r];
-	gfwidth=256;
-	gfheight=256;
-	char *p = gfdata = (char *) malloc(gfheight*gfwidth*4);
-	int i,j;
-	for (i=0; i<gfheight; i++) {
-		for (j=0; j<gfwidth; j++) {
-			*p++ = 255;
-			*p++ = i;
-			*p++ = i^j;
-			*p++ =   j;
-		}
-	}
+	imdata=0;
+	[self imageHeight: 240 width: 320];
 	return self;
 }	
 
 - (id) drawRect: (NSRect)rect {
-	fprintf(stderr,"drawRect: {%d,%d,%d,%d}\n",
-//	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
+	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
 		rect.origin.x, rect.origin.y,
 		rect.size.width, rect.size.height);
 	CGContextRef g = (CGContextRef)
@@ -67,13 +82,13 @@
 			graphicsPort];
 	CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
 	CGDataProviderRef dp = CGDataProviderCreateWithData(
-		NULL, gfdata, gfheight*gfwidth*4, NULL);
-	fprintf(stderr,"gfdata=%08lx dp=%08lx\n",(long)gfdata,(long)dp);
-	CGImageRef image = CGImageCreate(gfwidth, gfheight, 8, 32, gfwidth*4, 
+		NULL, imdata, imheight*imwidth*4, NULL);
+	fprintf(stderr,"imdata=%08lx dp=%08lx\n",(long)imdata,(long)dp);
+	CGImageRef image = CGImageCreate(imwidth, imheight, 8, 32, imwidth*4, 
 		cs, kCGImageAlphaFirst, dp, NULL, 0, kCGRenderingIntentDefault);
 	CGDataProviderRelease(dp);
 	CGColorSpaceRelease(cs);
-	CGRect rectangle = CGRectMake(0,0,gfwidth,gfheight);
+	CGRect rectangle = CGRectMake(0,0,imwidth,imheight);
 	CGContextDrawImage(g,rectangle,image);
 	CGImageRelease(image);
 	[super drawRect: rect];
@@ -84,16 +99,28 @@
 \class FormatQuartz < Format
 struct FormatQuartz : Format {
 	NSWindow *window;
+	GFView *widget; /* GridFlow's Cocoa widget */
 	NSDate *distantFuture;
 	\decl void initialize (Symbol mode);
 	\decl void tick ();
 	GRINLET3(0);
 };
 
-GRID_INLET(FormatQuartz,0) {
+template <class T, class S>
+static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
+	for (int i=0; i<n; i++) out[i]=(T)in[i];
+}
 
+GRID_INLET(FormatQuartz,0) {
+	if (in->dim->n!=3) RAISE("expecting 3 dims, not %d", in->dim->n);
+	if (in->dim->get(2)!=3) RAISE("expecting 3 channels, not %d", in->dim->get(2));
+	[widget imageHeight: in->dim->get(0) width: in->dim->get(1) ];
+	[widget imageData];
 } GRID_FLOW {
+	Pt<uint8> data2 = Pt<uint8>([widget imageData], [widget imageDataSize]);
+	convert_number_type(n,data2,data);
 } GRID_FINISH {
+	[self display];
 } GRID_END
 
 \def void tick () {
@@ -106,14 +133,15 @@ GRID_INLET(FormatQuartz,0) {
 
 \def void initialize (Symbol mode) {
 	rb_call_super(argc,argv);
-	NSRect r = {{0,0}, {256,256}};
+	NSRect r = {{0,0}, {320,240}};
 	window = [[NSWindow alloc]
 		initWithContentRect: r
 		styleMask: (NSTitledWindowMask |
 		NSMiniaturizableWindowMask | NSResizableWindowMask)
 		backing: NSBackingStoreNonretained
 		defer: NO];
-	[window setContentView: [[GFView alloc] initWithFrame: r]];
+	widget = [[GFView alloc] initWithFrame: r];
+	[window setContentView: widget];
 	[window setAutodisplay: YES];
 	[window setTitle: @"GridFlow"];
 	[window makeKeyAndOrderFront: NSApp];
