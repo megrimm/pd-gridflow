@@ -205,6 +205,10 @@ static Ruby usb_get_interface (struct usb_interface_descriptor *self) {
 }
 
 static Ruby usb_get_config (struct usb_config_descriptor *self) {
+	if (!self) {
+		fprintf(stderr,"warning: usb_get_config: null pointer\n");
+		return Qnil;
+	}
 #define MANGLE(X) INT2NUM(self->X)
 	Ruby interface = rb_ary_new();
 	for (int i=0; i<self->interface->num_altsetting; i++) {
@@ -355,6 +359,7 @@ static Ruby USB_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
+
 void startup_usb () {
 	cUSB = rb_define_class_under(mGridFlow, "USB", rb_cObject);
 	//rb_define_singleton_method(cUSB, "new", USB_new, 1);
