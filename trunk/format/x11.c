@@ -64,7 +64,6 @@ struct FormatX11 : Format {
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
-	bool verbose;
 	int pos_x, pos_y;
 
 	P<BitPacking> bit_packing;
@@ -81,7 +80,7 @@ struct FormatX11 : Format {
 
 	FormatX11 () : use_stripes(false), 
 	autodraw(1), window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
-	verbose(false), dim(0), lock_size(false), override_redirect(false)
+	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
@@ -106,7 +105,6 @@ struct FormatX11 : Format {
 	\decl void _0_autodraw (int autodraw);
 	\decl void _0_setcursor (int shape);
 	\decl void _0_hidecursor ();
-	\decl void _0_verbose (int verbose);
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
 	\decl void _0_fall_thru (int flag);
 	\grin 0 int
@@ -165,24 +163,17 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			if (verbose)
-				gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
-					ex->y,ex->x,ex->height,ex->width);
 			if (rb_ivar_get(rself,SI(@mode)) == SYM(out)) {
 				show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			if (verbose)
-				gfpost("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			eb->state |= 128<<eb->button;
 			report_pointer(eb->y,eb->x,eb->state);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			if (verbose)
-				gfpost("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			eb->state &= ~(128<<eb->button);
 			report_pointer(eb->y,eb->x,eb->state);
 		}break;
@@ -203,8 +194,6 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
-			if (verbose)
-				gfpost("drag at (y=%d,x=%d)",em->y,em->x);
 			report_pointer(em->y,em->x,em->state);
 		}break;
 		case DestroyNotify:{
@@ -225,8 +214,6 @@ void FormatX11::report_pointer(int y, int x, int state) {
 			}
 			*/
 		}break;
-		default:
-			if (verbose) gfpost("received event of type # %d", e.type);
 		}
 	}
 	IEVAL(rself,"@clock.delay 20");
@@ -448,8 +435,6 @@ GRID_INLET(FormatX11,0) {
 	XFlush(display);
 }
 
-\def void _0_verbose (int verbose) { this->verbose=!!verbose; }
-
 void FormatX11::prepare_colormap() {
 	Colormap colormap = XCreateColormap(display,window,visual,AllocAll);
 	XColor colors[256];
@@ -510,12 +495,9 @@ void FormatX11::open_display(const char *disp_string) {
 	}
 
 #ifdef HAVE_X11_SHARED_MEMORY
-	// what do i do with remote windows?
 	use_shm = !! XShmQueryExtension(display);
-	if (verbose) gfpost("x11 shared memory compiled in; use_shm = %d",use_shm);
 #else
 	use_shm = false;
-	if (verbose) gfpost("x11 shared memory is not compiled in");
 #endif
 }
 
@@ -579,14 +561,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 
 	int i;
 	if (domain==SYM(here)) {
-		if (verbose) gfpost("mode `here'");
 		open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		if (argc<2) RAISE("open x11 local: not enough args");
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
-		if (verbose) gfpost("mode `local', display_number `%d'",dispnum);
 		sprintf(host,":%d",dispnum);
 		open_display(host);
 		i=2;
@@ -596,7 +576,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		strcpy(host,rb_sym_name(argv[1]));
 		int dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
-		if (verbose) gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
 		open_display(host);
 		i=3;
 	} else if (domain==SYM(display)) {
@@ -613,9 +592,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 
 	for(;i<argc;i++) {
 		Ruby a=argv[i];
-		if (a==SYM(verbose)) {
-			verbose = true;
-		} else if (a==SYM(override_redirect)) {
+		if (a==SYM(override_redirect)) {
 			override_redirect = true;
 		} else if (a==SYM(use_stripes)){
 			use_stripes = true;
@@ -627,18 +604,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	pos_x=pos_y=0;
 	parent = root_window;
 	if (i>=argc) {
-		if (verbose) gfpost("will create new window");
 	} else {
 		VALUE winspec = argv[i];
 		if (winspec==SYM(root)) {
 			window = root_window;
-			if (verbose) gfpost("will use root window (0x%x)", window);
 			is_owner = false;
 		} else if (winspec==SYM(embed)) {
 			Ruby title_s = rb_funcall(argv[i+1],SI(to_s),0);
 			char *title = strdup(rb_str_ptr(title_s));
 			sy = sx = pos_y = pos_x = 0;
-			if (verbose) gfpost("embed: will be searching for title ending in '%s'",title);
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
@@ -661,7 +635,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 				window = INT(winspec);
 			}
 			is_owner = false;
-			if (verbose) gfpost("will use specified window (0x%x)", window);
 			sy = sx = pos_y = pos_x = 0;
 		}
 	}
@@ -677,8 +650,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
-	if (verbose) gfpost("is_le=%d, disp_is_le=%d",is_le(),disp_is_le);
-
 	switch(visual->c_class) {
 	case TrueColor: case DirectColor: {
 		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
