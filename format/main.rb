@@ -447,7 +447,7 @@ module EventIO
 				end
 			end
 			def self.rewind
-				GridFlow.post "self.rewind"
+			#	GridFlow.post "self.rewind"
 				raw_open(*@raw_open_args)
 				@frame = 0
 			end unless @rewind_redefined
