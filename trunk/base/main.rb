@@ -245,7 +245,7 @@ class FPatcher < FObject
 		super
 		fobjects = self.class.fobjects
 		wires = self.class.wires
-		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
+		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x.call end }
 		@inlets = []
 		@ninlets = self.class.ninlets or raise "oops"
 		i=0

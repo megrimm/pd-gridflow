@@ -206,15 +206,17 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 void GridInlet::begin(int argc, Ruby *argv) {
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
 	nt = (NumberTypeE) INT(argv[2]);
-	sender = back_out->parent;
 	argc-=3, argv+=3;
 
 	PROF(parent) {
 
 	if (is_busy()) {
-		gfpost("grid inlet busy (aborting previous grid)");
+		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
+			parent->info(), sender->info(), back_out->parent->info());
 		abort();
 	}
+
+	sender = back_out->parent;
 
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",parent->info());
@@ -258,7 +260,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		int d = dex + bufi;
 		if (d+n > dim->prod()) {
 			gfpost("grid input overflow: %d of %d from [%s] to [%s]",
-				d+n, dim->prod(), sender->info(), parent->info());
+				d+n, dim->prod(), sender->info(), 0);
 			n = dim->prod() - d;
 			if (n<=0) return;
 		}
