@@ -152,8 +152,10 @@ template <class T>
 static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
+
 template <class T>
 static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+if (sizeof(T)!=1) {default_pack(self,n,in,out); return;}
 	Pt<int32> o32 = (Pt<int32>)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];
@@ -166,6 +168,22 @@ static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	NTIMES( o32[0] = (in[0]<<16) | (in[1]<<8) | in[2]; o32++; in+=3; )
 }
 
+/* (R,G,B,?) -> B:8,G:8,R:8,0:8 */
+template <class T>
+static void pack3_bgrn8888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+/* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
+	Pt<int32> i32 = (Pt<int32>)in;
+	Pt<int32> o32 = (Pt<int32>)out;
+	while (n>=4) {
+		o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff);
+		o32[1] = ((i32[1]&0xff)<<16) | (i32[1]&0xff00) | ((i32[1]>>16)&0xff);
+		o32[2] = ((i32[2]&0xff)<<16) | (i32[2]&0xff00) | ((i32[2]>>16)&0xff);
+		o32[3] = ((i32[3]&0xff)<<16) | (i32[3]&0xff00) | ((i32[3]>>16)&0xff);
+		o32+=4; i32+=4; n-=4;
+	}
+	NTIMES( o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff); o32++; i32++; )
+}
+
 static uint32 bp_masks[][4] = {
 	{0x0000f800,0x000007e0,0x0000001f,0},
 	{0x00ff0000,0x0000ff00,0x000000ff,0},
@@ -175,7 +193,8 @@ static Packer bp_packers[] = {
 	{default_pack, default_pack, default_pack},
 	{pack2_565, pack2_565, pack2_565},
 	{pack3_888, pack3_888, pack3_888},
-	{pack3_888b, pack3_888b, pack3_888b},
+	{pack3_888b, default_pack, default_pack},
+	{pack3_bgrn8888, default_pack, default_pack},
 };
 
 static Unpacker bp_unpackers[] = {
@@ -186,6 +205,7 @@ static BitPacking builtin_bitpackers[] = {
 	BitPacking(2, 2, 3, bp_masks[0], &bp_packers[1], &bp_unpackers[0]),
 	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[0]),
 	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
+	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[0]),
 };
 
 /* **************************************************************** */
@@ -226,12 +246,10 @@ Packer *packer, Unpacker *unpacker) {
 		}
 	}
 end:;
-/*
 	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
 	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
 	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
-*/
 }
 
 bool BitPacking::is_le() {
