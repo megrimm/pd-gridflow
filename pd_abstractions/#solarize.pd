@@ -1,10 +1,10 @@
 #N canvas 0 0 450 300 10;
 #X obj 15 14 inlet;
-#X obj 15 34 @ & 255;
-#X obj 15 54 @ << 1;
-#X obj 15 74 @ inv+ 255;
-#X obj 15 94 @! abs;
-#X obj 15 114 @ inv+ 255;
+#X obj 15 34 # & 255;
+#X obj 15 54 # << 1;
+#X obj 15 74 # inv+ 255;
+#X obj 15 94 #! abs;
+#X obj 15 114 # inv+ 255;
 #X obj 15 134 outlet;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;

@@ -1,11 +1,11 @@
 #N canvas 0 0 450 300 10;
 #X obj 17 12 inlet;
-#X obj 17 52 @ & 0;
-#X obj 17 72 @ + 5;
-#X obj 17 92 @! rand;
-#X obj 17 112 @ - 2;
-#X obj 137 162 @ +;
-#X obj 124 68 @ >> 1;
+#X obj 17 52 # & 0;
+#X obj 17 72 # + 5;
+#X obj 17 92 #! rand;
+#X obj 17 112 # - 2;
+#X obj 137 162 # +;
+#X obj 124 68 # >> 1;
 #X obj 17 32 t a a;
 #X obj 137 182 outlet;
 #X obj 124 32 inlet;
