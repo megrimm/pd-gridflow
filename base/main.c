@@ -336,6 +336,7 @@ void *Pointer_get (Ruby self) {
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
+void startup_formats();
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
@@ -385,5 +386,7 @@ void Init_gridflow () {
 //	EVAL("for f in %w(gridflow/base/main.rb) do "
 		"require f end rescue STDERR.puts \"can't load: #{$!}\n$: = #{$:}; "
 		"backtrace: #{$!.backtrace}\"");
+
+	startup_formats();
 	signal(11,SIG_DFL); /* paranoia */
 }
