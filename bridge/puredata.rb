@@ -41,9 +41,3 @@ proc ruby_eval {} {
 bind .ruby.eval <Return> {ruby_eval}
 })
 
-#GridFlow.post "BLAH START"
-#GridFlow.whatever(:gui,"TEST\n")
-#GridFlow.whatever(:gui,".log.1 insert end {This is GridFlow\n}\n")
-#GridFlow.post "BLAH END"
-
-#Thread.new { loop { GridFlow.post "thread test"; sleep 1 }}
