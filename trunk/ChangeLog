@@ -1,5 +1,26 @@
 /* $Id$ */
 
+version 0.6.5 (head):
+
+ * can now encode Targa-24, Targa-32, JPEG-24
+ * can now output through aalib (ascii art library)
+ * fixed problems with libruby.a
+ * tested with the new version of Ruby (1.8)
+ * new classes:
+	fps, @rgb_to_greyscale, @greyscale_to_rgb, @solarize,
+	@complex_sq, @export_symbol, @draw_polygon,
+	@apply_colormap_channelwise
+ * new class FPatcher, a ruby patcher/abstraction system
+ * @scale_to,@contrast,@spread,@posterize now available in
+	PureData & Ruby; they also now accept arguments.
+ * [@scale_to]: back to working; inlets "height" and "width" merged
+ * [route grid_begin] replaced by [route grid]
+ * [route grid_end] replaced by [@finished]
+ * Most everything is 10-50% faster
+ * changes in the internal transmission of grids
+ * new two-input operators: div, swapdiv, put, ignore
+ * compilable on MacOS 10
+
 version 0.6.4 (2002.12.23):
 
  * can now decode JPEG (using libjpeg.so)

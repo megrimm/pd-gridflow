@@ -1,21 +1,12 @@
 /* $Id$ */
 
-"!" is planned for next release
-starting with 1.0, backwards compatibility will be kept
-
-
-> http://redshift.sourceforge.net/debugging-GC/
-> [ruby-talk:53835]
-> You might also want to search the web for "malloc debugger".
-
-
 Community
 [ ] put new samples on website
 [ ] add on website:
 	[ ] looking for someone to take care of win32 port
 	[ ] looking for someone to take care of macosx port
 
-Distribution (0.6.4)
+Distribution (0.6.5)
 [ ] add test plan
 [ ] follow test plan
 [!] review all documentation
@@ -25,7 +16,10 @@ Distribution (0.6.4)
 Installation
 [!] installable doc
 [ ] installable includes ?
-[ ] produce binaries (.tar.gz .rpm .deb ?)
+[ ] produce linux binaries ("static")
+[ ] produce cygwin32 binaries
+[ ] produce macosx binaries
+[ ] produce linux rpm/deb
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
 [ ] less compile-time checks and more run-time checks
@@ -66,30 +60,25 @@ Architecture
 [ ] Add simple C preprocessor to allow multi-line strings
     (because of rb_eval_string ?)
 [ ] Design the GF-1.0 architecture (new internals documentation)
-[ ] obsolete grid_end; rename grid_begin -> grid
 [ ] identify streams by ids given at grid msg
     (may allow for cancelling rejected grids?)
     (add cancel option to the r/rw choice in callback of grid msg ?)
 [ ] dimension list pattern matching system
 [ ] argument list processing system
-[ ] passive inlets (associated to variables)
+[ ] inlet-variables (variables associated to inlets)
 [ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
 [ ] MMX memcpy() ?
-[ ] runtime configurable packet_length
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
-[ ] mode 0 for inlets that don't even read their buffer
-[ ] [@finished] replaces [route grid_end]
 [ ] make @store loopable
 [ ] MMX autodetection
 [ ] MMX computations integration
-[ ] accounting: grids messages packets numbers bytes copybytes
-[ ] more profiling?
 [ ] pull mode (functional-style)
+[ ] remove all uses of assert() (replace by RAISE())
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (@global#classes, @global#methods, ...)
@@ -98,10 +87,12 @@ Architecture
 [ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
 [ ] jMax does not support literal lists in messages...
+[ ] sizeof(Pt<>) could be 4 instead of 12 for speed increase?
 
 Computation Objects
+[ ] operators: set, none
 [ ] @type, @cast
-[ ] @slice (@splice ?)
+[ ] @splice
 [ ] zero option in @store (?)
 [ ] zero option in @convolve (?)
 [ ] shrink option in @convolve (?)
@@ -111,10 +102,7 @@ Computation Objects
 [ ] http://www.dai.ed.ac.uk/HIPR2/wksheets.htm
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @foldr, @scanr
-[ ] @polygon
-[ ] @perspective
 [ ] @matrix_inverse, @matrix_solve
-[ ] @sort ?
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] timelines as in MM-Director
@@ -122,14 +110,9 @@ Computation Objects
 [ ] @random_select, @markov_chain
 [ ] @two,@three,@four -> [@pack n] using metaclass
 [ ] @unpack
-[ ] @join
+[ ] @import_symbol
 
 Effects
-[ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
-	with fuzzy flag
-[ ] @apply_palette
-[ ] @apply_splitted_palette (color_correction.jmax)
-[ ] @fire
 [ ] pinch
 [ ] pixelize, despeckle
 [ ] abyss effect
@@ -141,6 +124,7 @@ Effects
 [ ] HSV<->HSL
 [ ] RGB<->YUV
 [ ] effectv
+[ ] @draw_lines, @draw_points
 [ ] blinds, ...
 [ ] create templates for usage patterns
 [ ] see gimp for ideas
@@ -148,46 +132,29 @@ Effects
 	try interleaving the data and using [@inner]
 
 Input/Output
-[ ] [fps]
 [ ] in-place editing (rw mode)
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
-[ ] arguments to @in,@out could be a auto-open.
-[ ] Pixonix bridge
-[ ] Max bridge
-[ ] Gimp bridge
-[ ] read/write PureData files
-[ ] read/write jMax files
-[ ] Gnome/Gstreamer bridge
-[ ] TCP: non-blocking write
-[ ] TCP Socket Buffering
-[ ] Grid: bpv 1,2,4,16,64
-[ ] Grid: signed/unsigned
+[ ] support: Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC ?
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
-[ ] PTC, TinyPTC ?
+[ ] Grid: bpv 1,2,4
 [ ] Grid: text version of the format
+[ ] use 1.8.0's IO#read(Integer,String)->String
 
 Format
 [ ] all: possibly get rid of the "format" notion ?
-[ ] all: rewinding file (or not) on WRITE
-[ ] seq: multi-image (createable by cat, ar, tar or zip) (!?!?!?!?)
-[ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
-[ ] Targa: RGBA-32 and write support
+[ ] TAR, ZIP, CAT with seeking
 [ ] PNM: P1,P2,P3,P4,P5 support
-[ ] XBM, XPM
-[ ] GIF, PNG support (+ reg ourselves in libpng.org's applist)
-[ ] libquicktime.so, more libmpeg3.so
-[ ] fork: is a new format, for e.g. multiple MPEG drivers
+[ ] XBM, XPM, GIF, PNG support (+ reg ourselves in libpng.org's applist)
+[ ] fork: is a new format, for e.g. multiple singleton drivers
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
-[ ] Raw: a new format for reading arbitrary data.
 [ ] Common message-passing format (includes other things than grid)
-[ ] implement IO#read_into
-[ ] libaa
 [ ] /dev/dsp
 [ ] /dev/mixer
 [ ] Generic SHM Driver
 [ ] Generic MMAP Driver
 [ ] Unix-for-jMax
+[ ] "open grid pipe" and such.
 
 jMax-UI
 [ ] color picker
@@ -216,7 +183,6 @@ Bugs
 [ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [!] tcp test is broken
 [ ] potential issues between fork() and X11 ?
-[!] @scale_to is broken
 [!] method_missing does blackholing ?
 [!] warning: -Wno-strict-prototypes is not supported in C++
 [ ] BitPacking should not be a GridObject nor a FObject.
@@ -226,18 +192,54 @@ Bugs
 	(there may be bugs dating back to that change)
 [ ] cvs is not listed in the manual itself
 [ ] recurrent bug: stdout SHALL NOT be used outside of debugging
-    because it interferes with normal functioning
-[ ] <fts.h> does not work with g++ 3.2
-[ ] non-existent filename STILL garbles find_file() result !
-[ ] using find_file() on write is WRONG
+	because it interferes with normal functioning
 [ ] format_grid: write test for other bpv's
 [ ] problem in @for with zero-sized grids?
 [ ] BitPacking has trouble with masks that extend beyond int25be
 [ ] remove the crap given by -w of ruby
-
+[ ] @finished is not a proper replacement for [route grid_end] because
+	of [fork]. solution: make end() happen automatically, without
+	intervention from sender gridobject
+[ ] make: Dépendance circulaire site-install <- install abandonnée.
+	(with ruby 1.8)
+[ ] @in needs 2 inlets to work but should have only one.
+[ ] it's possible to crash by sending data in two inlets of a same object at once
+[ ] {42 | 5} is considered as a grid without error message
+[ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
 	[gf] total 18604 lost bytes in 445 allocations
+
+SOON:
+ 
+[ ] aalib: option autodraw, option draw
+[ ] format grid: option headerless until 10
+[ ] @fire
+[ ] @border
+[ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
+        with fuzzy flag; (don't call it @chroma_key though)
+[ ] @perspective
+
+<matju> mais je pourrais faire @perspective
+<matju> inlet 0: dim(n,3)
+<matju> inlet 1: facteur k (l'oeil est au point 0,0,0; l'écran est le plan z=k)
+<matju> outlet 0: dim(n,2)
+*/
+
+[ ] @sort
+[ ] @join / @cat / @slice
+[ ] improve cross_fade.jmax
+[ ] Grid: bpv 8,16,signed/unsigned
+[ ] samples/generique.jmax
+[ ] profiler is back and fully working
+[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] memory profiling
+[ ] TCP: non-blocking write
+[ ] TCP Socket Buffering
+[ ] read/write PureData files
+[ ] read/write jMax files
+[ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
+[ ] make gridflow.pd_linux install in the proper spot
 
 Feature Requests
 
@@ -276,3 +278,54 @@ message "help" au inlet 0 enverrait une description de la classe dans le log.
 ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
 <alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
 avoir le même output que hasciicam? 
+
+> http://redshift.sourceforge.net/debugging-GC/
+> [ruby-talk:53835]
+> You might also want to search the web for "malloc debugger".
+
+paint.jmax: 380 ms -> 376 ms
+
+avec ruby 1.6.7, en vectorisant @store:
+ripple.jmax:              360 ms -> 350 ms -> 325 ms (320 ms)
+linear_transform.jmax:    220 ms -> 215 ms -> 205 ms (197 ms)
+color_correction.jmax(1): 430 ms -> 380 ms
+color_correction.jmax:    360 ms -> 320 ms -> 290 ms
+feedback_fractal.jmax:    110 ms -> 102 ms ->  95 ms (87 ms)
+
+puis [@ +] en asm:
+ripple.jmax: -> 272 ms ??? quoi??? (NON)
+
+
+
+[@ +] map
+sans asm:   0.111250   6.670429   6.559179
+asm try1:   0.111536   7.856665   7.745129
+lowerbound: 0.110734   6.043598   5.932864
+
+[@ +] map2
+sans asm:   0.110466   12.729992   12.619526
+asm try1:   0.110560   14.325604   14.215044
+asm try2:   0.112791   13.945315   13.832524
+asm try3:   0.133181   13.049199   12.916018
+    [gf]    0.111542   12.892403   12.780861
+
+gf_packet_length:
+[gf]    0.110921   20.290029   20.179108 16k
+[gf]    0.116051   19.483183   19.367132 8k
+[gf]    0.109559   16.473426   16.363867 4k
+[gf]    0.112778   13.002092   12.889314 2k
+[gf]    0.115907   11.209400   11.093493 1k
+[gf]    0.126447   10.890584   10.764137 ½k
+[gf]    0.141884   11.934371   11.792487 ¼k
+
+gfmemcopy:
+ripple.jmax:           325 ms -> 265 ms
+linear_transform.jmax: 205 ms -> 130 ms
+color_correction.jmax: 290 ms -> 235 ms
+feedback_fractal.jmax:  95(87) ms -> 83 ms
+
+ruby 1.8 read:
+[2.141271, 0.641674, 0.547968, 1.637770, 1.488898] # plain
+[2.162294, 0.609760, 0.527717, 1.633222, 1.476583] # "replace nothing"
+[1.986047, 0.683468, 0.530780, 1.639136, 1.484244] # read into "x"*bs
+[2.142630, 0.605984, 0.516127, 1.636103, 1.478584] # read into ""
