@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <CoreServices/CoreServices.h>
 
 \class FormatQuickTimeApple < Format
 struct FormatQuickTimeApple : Format {
@@ -40,7 +41,7 @@ struct FormatQuickTimeApple : Format {
 	int nframe, nframes;
 
 	FormatQuickTimeApple() : movie(0), movie_file(0), gw(0),
-		buffer(), dim(0), nframe(0), nframes(0) {}
+		buffer(), dim(0), time(0), nframe(0), nframes(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -51,31 +52,45 @@ struct FormatQuickTimeApple : Format {
 };
 
 \def void seek (int frame) {
-//!@#$
+	nframe=frame;
 }
 
 \def Ruby frame () {
 	CGrafPtr savedPort;
 	GDHandle savedDevice;
-	GetGWorld(&savedPort, &savedDevice);
-	SetGWorld(gw, NULL);
+//	GetGWorld(&savedPort, &savedDevice);
+	SetMovieGWorld(movie,gw,GetGWorldDevice(gw));
 	Rect r;
 	GetMovieBox(movie,&r);
 	PixMapHandle pixmap = GetGWorldPixMap(gw);
-	Ptr baseAddr = GetPixBaseAddr(pixmap);
+//	Ptr baseAddr = GetPixBaseAddr(pixmap);
 	short flags = nextTimeStep;
-//	if (nframe>=nframes) return Qfalse;
-//	if (nframe==0) flags |= nextTimeEdgeOK;
-	TimeValue duration;       
+	if (nframe>=nframes) return Qfalse;
+	if (nframe==0) flags |= nextTimeEdgeOK;
+	TimeValue duration;
 	OSType mediaType = VisualMediaCharacteristic;
 	GetMovieNextInterestingTime(movie, 
 		flags,1,&mediaType,time,0,&time,&duration);
-	gfpost("quicktime frame # %d",index);
-	SetMovieTimeValue(movie, time); 
+	if (time<0) {
+		time=0;
+		return Qfalse;
+	}
+	gfpost("quicktime frame # %d",nframe);
+	gfpost("time=%d duration=%d", (long)time, (long)duration);
+	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
 	out[0]->begin(dim->dup());
+	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
+	int n = dim->prod()/4;
+	for (int i=0; i<n; i++) {
+		bufu32[i]=(bufu32[i]<<8)+(bufu32[i]>>24);
+	}
+//	gfpost("dim->prod=%d",dim->prod());
+//	swap32(dim->prod()/4,bufu32);
 	out[0]->send(dim->prod(),buffer);
-	return INT2NUM(nframe);
+	int nf=nframe;
+	nframe++;
+	return INT2NUM(nf);
 }
 
 GRID_INLET(FormatQuickTimeApple,0) {
@@ -139,11 +154,13 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	Rect r;
 	NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
 	GetMovieBox(movie, &r);
-	gfpost("handle=%d movie=%d tracks=%d timescale=%d rect=((%d..%d),(%d..%d))",
-		movie_file, movie,
-		GetMovieTrackCount(movie),
+	gfpost("handle=%d movie=%d tracks=%d",
+		movie_file, movie, GetMovieTrackCount(movie));
+	gfpost("duration=%d; timescale=%d cHz",
 		(long)GetMovieDuration(movie),
-		(long)GetMovieTimeScale(movie),
+		(long)GetMovieTimeScale(movie));
+	nframes = GetMovieDuration(movie); /* i don't think so */
+	gfpost("rect=((%d..%d),(%d..%d))",
 		r.top, r.bottom, r.left, r.right);
 	OffsetRect(&r, -r.left, -r.top);
 	SetMovieBox(movie, &r);
@@ -153,10 +170,12 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	buffer = ARRAY_NEW(uint8,dim->prod());
 	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r,
 		NULL, NULL, 0, buffer, dim->prod(1));
-
+	if (err) goto err;
 	return;
 err:
-	RAISE("can't open file `%s': error #%d", rb_str_ptr(filename), err);
+	RAISE("can't open file `%s': error #%d (%s)", rb_str_ptr(filename),
+		err,
+		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
 }
 
 GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0,4)),
