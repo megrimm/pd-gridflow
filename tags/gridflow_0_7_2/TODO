@@ -1,0 +1,349 @@
+/* $Id$ */
+
+Community
+[ ] put new samples on website
+[ ] add on website:
+	[ ] looking for someone to take care of win32 port
+	[ ] looking for someone to take care of macosx port
+
+Distribution
+[ ] should now plan which features are pre-1.0 and which are post-1.0
+[ ] add test plan
+[ ] follow test plan
+[ ] review all documentation
+[ ] review all samples
+[ ] make CDs
+
+Installation
+[ ] installable doc
+[ ] installable includes ?
+[ ] produce linux binaries ("static")
+[ ] produce cygwin32 binaries
+[ ] produce macosx binaries
+[ ] produce linux rpm/deb
+[ ] less compile-time checks and more run-time checks
+[ ] should GridFlow be bundled with some of its own dependencies?
+[ ] reintroduce --puredata-dist-dir ?
+[ ] --prefix (pour ruby)
+[ ] install vs site-install mess
+[ ] --whole-archive
+[ ] bridge should check that the gridflow.so file matches.
+
+Documentation
+[ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
+    mode x11 non-supporté
+[ ] project_policy.xml
+[ ] validate samples/outside
+[ ] specify policy for <help>, <icon>, etc.
+[ ] add credits
+[ ] things you type verbatim are all in KBD blocks
+[ ] placeholders for your own values are all in I blocks
+[ ] document our own release procedures, how our CVS works
+[ ] document how to report bugs, basic troubleshooting
+[ ] document our distribution of the archives
+[ ] ascii conventions: [foo] vs "foo", etc.
+[ ] document internals
+[ ] describe indexmap in doc
+[ ] document backward compatibility issues
+[ ] typical uses: <typical></typical>
+[ ] architecture: class->type/shape->use->role
+[ ] it should be indicated whether an object is supported by jmax/pd/ruby/c++
+[ ] heavily hyperlink documentation
+[ ] automate more parts of the documentation
+--- remember to keep doc/help/screenshots/samples up to date
+
+Architecture
+[ ] add \ruby \end blocks (multiline inlined rubyscripts)
+[ ] add preprocessing of grid.h
+[ ] inlet-variables (variables associated to inlets)
+[ ] better error handling
+[ ] MMX memcpy() ?
+[ ] MMX _runtime_ autodetection
+[ ] change the protocol completely:
+	not based on messages, but rather a push/pull combination,
+	add GridStream objects, allow them to be passed in other
+	messages; etc... (?!?)
+[ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
+[ ] pull mode (functional-style)
+[ ] bidirectional messages (constraint/relational-style)
+[ ] send-reply messages (imperative-style)
+[ ] add reflection (@global#classes, @global#methods, ...)
+[ ] GFBridge object visible from Ruby
+[ ] use C++ destructor for C++ fields...
+[ ] jMax/PD bridges should support list-literals inside messages
+[ ] DEF_OP2_BITWISE
+[ ] use MétaRuby typing to make things friendlier.
+[ ] transmitting grids by diffs?
+[ ] bin op "avg" (average)
+[ ] dispatch on _n_-prefixed methods (one selector any inlet)
+	and     _#{i}_-named methods (any selector one inlet)
+[ ] security modes:
+	<=0 : can run arbitrary programs and ruby scripts ?
+	<=1 : can write files
+	<=2 : can read files
+	<=3 : can open windows ?
+[ ] generalize the backstore
+[ ] Outlet#buffer should harmonise with the lcm of its
+	corresponding Inlet#factor's.
+[ ] User-defined operators; compound operators... e.g.
+	[@ {{* 7} + {>> 3}}]
+[ ] n-ary operators... make [@] a metaclass
+[ ] lazy grids: Grid#operator Pt<T> makes sure all the grid is received
+	and Grid#range(int start, int n, T bogus) makes sure the
+	specified part of the grid is received.
+[ ] number type aliases: int32 -> int -> i, float32 -> float -> f
+[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] memory profiling
+[ ] compare Ruby API with both flext/pyext
+[ ] add a "query" class for debugging other objects?
+    (would be able to extract extra info from each object/class)
+[ ] add a GridFlow::LaterException or something
+    (which tells to retry later with the same packet because another
+    grid reception is not completed yet.) 
+
+Bridge
+[ ] jMax metaclasses -> Ruby runtime subclass creation
+[ ] UnknownAtom class
+
+Computation Objects
+[ ] is @complex_sq backwards ?
+[ ] @splice
+[ ] zero option in @store (?)
+[ ] zero option in @convolve (?)
+[ ] @convolve2 (simpler)
+[ ] @convolve rewritten as combination of @convolve, @border
+[ ] @convolve(2): should allow n-D convolution
+[ ] @import~, @export~
+[ ] see APL/J/NArray/PDL/Aplus/Yorick reference
+[ ] see Image Processing Operator Worksheets
+[ ] @fold, @scan: option reverse (right-to-left)
+[ ] @,@join: option swap (?)
+[ ] @matrix_inverse, @matrix_solve
+[ ] @transpose: dimension swapping
+[ ] @reverse (on given dimension number)
+[ ] timelines as in MM-Director
+[ ] @replace_if
+[ ] @random_select, @markov_chain
+[ ] @two,@three,@four -> [@pack n] using metaclass
+[ ] @unpack
+[ ] make a class that is a color equivalent of aalib
+[ ] @polygon_perimeter, @polygon_area, ...
+[ ] write a complete benchmark script
+[ ] @draw_polygon smoothly
+[ ] @sort
+[ ] @slice
+[ ] string operations to compensate for the feebleness of jMax/PD
+    in that area. this includes [@sprintf].
+
+Effects
+[ ] pinch
+[ ] turtle (logo style)
+[ ] gaussian blur
+[ ] @controid
+[ ] pixelize, despeckle
+[ ] abyss effect
+[ ] @dither
+[ ] image-sur-image (@pip)
+[ ] n-frame delaying
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
+[ ] HSV<->RGB; hue shifting
+[ ] HSV<->HSL
+[ ] effectv
+[ ] @draw_lines, @draw_points
+[ ] blinds, ...
+[ ] create templates for usage patterns
+[ ] see gimp for ideas
+[ ] kaleidoscopes
+[ ] @fire
+[ ] @border
+[ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
+        with fuzzy flag; (don't call it @chroma_key though)
+	maybe @mask...
+
+Input/Output
+[ ] Grid: bpv 8,16,signed/unsigned
+[ ] Grid: bpv 1,2,4
+[ ] Grid: text version of the format (?)
+[ ] jMax4, Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
+[ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC
+[ ] RubyX11 0.6
+[ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
+[ ] get subtitling of tv channels
+[ ] in-place editing (rw mode)
+[ ] add messages "load", "save" as open,bang,close combos. (?)
+[ ] use 1.8.0's IO#read(Integer,String)->String
+[ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
+[ ] shell object?
+[ ] @import, 'grid tcp': option: sudden vs gradual transmission through
+	gridflow.
+[ ] HPGL
+[ ] unixtime
+
+Format
+[ ] remaining number type support in formats
+[ ] x11: draw with optional arguments on part of picture to redraw
+[ ] all: possibly get rid of the "format" notion ?
+[ ] TAR, ZIP, CAT with seeking
+[ ] PNM: P1,P2,P3,P4,P5 support
+[ ] XBM, XPM, GIF, PNG support (+ reg ourselves in libpng.org's applist)
+[ ] fork: is a new format, for e.g. multiple singleton drivers
+[ ] /dev/dsp, /dev/mixer
+[ ] Generic SHM/MMAP Drivers
+[ ] videodev: choose number of buffered frames
+[ ] Unix-for-jMax
+[ ] "open grid pipe" and such.
+[ ] TCP: non-blocking write
+[ ] TCP: buffer n grids
+[ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
+[ ] AVI
+[ ] format grid: "headerless until 10" (text files)
+[ ] settable buffer size in videodev
+
+User Interface
+[ ] color picker
+[ ] gridbox (akin to intbox) or grid edition dialog, etc.
+[ ] embedded display
+[ ] vector slider (n parallel sliders in one, Dim(n))
+[ ] 2d slider
+[ ] radial slider (angle chooser)
+[ ] drag-and-drop palette of object construction
+[ ] object construction menu specialized for each class
+	(generated from class reflection/metadata)
+
+Extra/Samples/Etc
+[ ] make demo app(s) in Ruby/Tk
+[ ] world domination
+[ ] .pd: read; write better
+[ ] .jmax: write
+[ ] .jmax(bma2): read, write
+[ ] samples/generique.jmax
+[ ] rename samples -> examples
+[ ] add examples from the workshop
+
+Bugs
+[ ] format_x11 causes delayed crash when closing its associated window
+[ ] format_x11 causes crash (resizing + shm, sometimes)
+[ ] TCP server socket busy even after kill
+[ ] make better detection of libmpeg version
+[!] detect and reject .a linkage
+[ ] write unit tests about required functionality
+[ ] write unit tests about error checking
+[ ] Window does not close when @out is destroyed
+[ ] profiler very often gives wrong results
+[ ] format/mpeg.c seems to crash more often?
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[!] tcp test is broken
+[ ] potential issues between fork() and X11 ?
+[ ] don't try resizing the window before it opens (???) (loadbang?)
+[!] [@export_list] blows up with >=125 elements (alx)
+[ ] Format#init stopped initializing dim,bit_packing
+	(there may be bugs dating back to that change)
+[ ] cvs is not listed in the manual itself
+[ ] recurrent bug: stdout SHALL NOT be used outside of debugging
+	because it interferes with normal functioning
+[ ] format_grid: write test for other bpv's
+[ ] problem in @for with zero-sized grids?
+[ ] BitPacking has trouble with masks that extend beyond int25be
+[ ] remove the crap given by -w of ruby
+[ ] make: Dépendance circulaire site-install <- install abandonnée.
+	(with ruby 1.8)
+[ ] @in needs 2 inlets to work but should have only one.
+[ ] it's possible to crash by sending data in two inlets of a same object at once
+[ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
+[ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
+[ ] latency is not that good. (GC ?)
+[ ] RtMetro crashes if deleted while turned on.
+[ ] RtMetro isn't reliably working
+[ ] jpeg file cat crashes on second file (jpeglib buffering?)
+[ ] videodev stays busy after closing patch ?
+[ ] GRID_FINISH triggered while backstore ???
+[ ] @for has a bug re negative step
+[ ] fts_class_install failed: Duplicated metaclass
+[ ] @export doesn't work in pd
+[ ] bridge_puredata sometimes ignore clock_tick ???
+[ ] ruby SecurityError: Insecure operation - exist?
+	(trying to load ~/.gridflow_startup)
+	(this is one error message from HELL; makes no sense at all)
+[ ] is there still a problem with videodev rgb vs bgr ?
+[ ] mess with options in format grid
+[ ] look for "!@#$" in source
+[ ] @draw_polygon off-by-one
+[ ] FormatGrid: not properly tested (crashes sometimes)
+[ ] look for bugs in @yuv_to_rgb ?
+
+how about creating aliases like "open window" = "open x11 here" (or arbitrary
+user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
+videodev" -> "open videodev /dev/video0, option channel 1, option size 240 320" 
+maybe there should be a separate ~/.gridflow_config that would be saveable from
+gridflow, and ~/.gridflow_startup would be edited only by the user but
+~/.gridflow_config would still be a text file.  i say that
+because the startup is a ruby script so gridflow couldn't just do
+search-and-replace in there, because the option could be inside a "if"
+expression and such... at most, gridflow could _append_ text to
+.gridflow_startup, to be non-intrusive... hrm... i'm late. i should go now. 
+
+Feature Requests
+
+From: Dave Bergevin <dabergevin@eisa.com> 
+  [ ] synchronized audio with the video when using mpeg1 & 2
+  [ ] full screen mode (without the menu bars or frames)
+
+From: Alexandre Castonguay <acastonguay@artengine.ca>
+  [ ] support for tcp/ip connections to control jmax objects (from a web 
+      interface)
+  [ ] server side jmax to handle multiple incoming commands, audio + video 
+      streams
+  [ ] support for audio in the mpeg streams
+
+<matju> alx_away:
+ je viens d'avoir une idée géniale
+ tab completion dans jMax
+ hum
+ bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques.
+ça marcherait pour les object boxes mais pas pour le reste
+ le tab completion ne donnerait pas seulement les noms possibles pour le
+prochain argument dans le objectbox; il donnerait aussi une description de
+l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
+possibles) 
+ je pense que le help de jMax est une bonne idée (le concept hands-on)
+mais ça pourrait aller plus loin. 
+ j'ai pensé intégrer le manuel de référence de gridflow directement dans
+le programme, disponible au runtime, dans l'éventualité d'un GUI qui
+saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un
+message "help" au inlet 0 enverrait une description de la classe dans le log.
+ (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout
+ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
+
+alx1->matju: détection de plusieurs personnes; détection avec deux caméras
+(?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots
+
+<alx1> matju: another feature for the summer : select file to load via a
+navigable menu as in 'file/open'
+<matju> alx1: this is not a feature i can put in gridflow. if you want it,
+then i can make one for pd or jmax or both, but it does not make sense to
+add it to gridflow itself. 
+
+
+
+> http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
+> You might also want to search the web for "malloc debugger".
+
+
+
+debugging:
+
+gdb `which ruby`
+----------------------
+break main
+run -rgridflow -e ';'
+set step-mode on
+break eval.c:5409
+cont
+add-symbol-file /usr/local/lib/ruby/site_ruby/1.6/i686-linux/gridflow.so
+rbreak ^_init
+
+stepi
+----------------------
+
+p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
+
