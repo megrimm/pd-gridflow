@@ -22,6 +22,7 @@ Installation
 [ ] bring hostname.2y.net back up if possible
 [ ] matju homepage on artengine.ca ?
 [ ] less compile-time checks and more run-time checks
+[ ] remove /tmp/$$.c, /tmp/$$
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
