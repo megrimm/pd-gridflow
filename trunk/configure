@@ -32,6 +32,31 @@ def make_expand(x)
   y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
   if x!=y then make_expand y else y end end
 
+def read_ld_so_conf
+	return [] unless File.exist?("/etc/ld.so.conf")
+	x = File.read("/etc/ld.so.conf").split("\s")
+	x.delete_if { x.length==0 }
+	x
+end
+
+$C_INCLUDE_PATH = (
+	ENV["CPLUS_INCLUDE_PATH"].split(":") +
+	ENV["C_INCLUDE_PATH"].split(":") +
+	["/usr/include"]).uniq
+
+$LIBRARY_PATH = (
+	ENV["LIBRARY_PATH"].split(":") +
+	["/usr/lib","/lib"]).uniq
+
+$LD_LIBRARY_PATH = (
+	ENV["LD_LIBRARY_PATH"].split(":") +
+		read_ld_so_conf +
+		["/usr/lib","/lib"]).uniq
+
+#for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+#	puts "#{var}: #{eval(var.to_s).inspect}"
+#end
+
 # Ruby 1.8 is the latter case; Ruby 1.6, 1.7 the former case
 for x in ["#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
 "#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}",
@@ -378,7 +403,15 @@ Feature.new {
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
 	test proc {
-		has_jmax "-DLINUXPC" and #!@#$ nonportable
+		c_test '
+		#define new new_
+		#define template template_
+		#define this this_
+		#define operator operator_
+		#define class class_
+		#include "fts/fts.h"
+		int main () { return 0; }
+		', "-DLINUXPC" and #!@#$ nonportable
 		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
 	}
 	options ["HAVE_JMAX_2_5"]
@@ -388,10 +421,20 @@ Feature.new {
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
-	status :disabled
 	test proc {
-		has_jmax "-DLINUXPC" and #!@#$ nonportable
-		File.exist?($conf[:JMAX_SOURCES]+"/include/ftsconfig.h")
+		c_test '
+		#define new new_
+		#define template template_
+		#define this this_
+		#define operator operator_
+		#define class class_
+		#include "fts/fts.h"
+		int main () { return 0; }
+		', "-DLINUXPC" and #!@#$ nonportable
+		true
+#		$C_INCLUDE_PATH.find {|d|
+#			File.exist?("#{d}/include/ftsconfig.h")
+#		}
 	}
 	options ["HAVE_JMAX_4"]
 },
@@ -451,13 +494,21 @@ while ARGV.length>0 do
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "won't check for feature #{name}"
 		$features_h.delete name
+	when "--static" #!@#$ not working.
+		raise "boo"
+		$conf[:STATIC]=true
+		$CFLAGS += " -static"
+#		ARGV.unshift "--no-libruby"
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
+	when "--debug-harder"
+		puts "Debug Harder Mode (even more error checking; even less speed)"
+		$conf[:OPTIONS].push :HAVE_DEBUG
+		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
 	when "--jmax-arch"; $conf[:JMAX_ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
 		$CFLAGS += " -I#{$conf[:JMAX_SOURCES]}/include"
-
 	when "--help"; usage; exit 0
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
@@ -483,18 +534,6 @@ $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
 LOG = File.open "./config.log", "w"
 
 #--------------------------------#
-
-def has_jmax(*link); c_test '
-	#define new new_
-	#define template template_
-	#define this this_
-	#define operator operator_
-	#define class class_
-	#include "fts/fts.h"
-/*	int main () { puts(FTS_VERSION_STRING); return 0; } */
-	int main () { return 0; }
-', *link
-end
 
 DUAL = Object.new
 DUAL.instance_eval {
