@@ -1,3 +1,6 @@
+# this file is no longer maintained
+# copy appropriate new options from Makefile.25
+
 PNAME=video4jmax
 
 DISTDIR = ../../../../fts

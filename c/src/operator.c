@@ -116,8 +116,8 @@ Operator1 *op1_table_find(fts_symbol_t sym) {
 			{ Number a=as[2], b=bs[2]; as[2]= _expr_; } \
 			{ Number a=as[3], b=bs[3]; as[3]= _expr_; } \
 		as+=4; bs+=4; n-=4; } } \
-	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
-		while (n--) { Number b = *as++; a = _expr_; } return a; }
+	static Number op_fold_##_name_ (Number a, int n, const Number *bs) { \
+		while (n--) { Number b = *bs++; a = _expr_; } return a; }
 
 DEF_OP2(add, a+b)
 DEF_OP2(sub, a-b)

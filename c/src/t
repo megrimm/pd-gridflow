@@ -17,14 +17,28 @@ SAM=../../samples
 # SRC='grid_basic.c grid.c grid.h index.c tuple.c'
 SRC='video_out.c grid_basic.c grid.c grid.h'
 
-#FILE=$SAM/outside/linear_transform.jmax
-#FILE=$SAM/outside/feedback_fractal_2.jmax
-#FILE=$SAM/feedback_fractal.jmax
-#FILE=$SAM/cross_fade.jmax
-#FILE=$SAM/binary_operations.jmax
-#FILE=$SAM/export_test.jmax
-#FILE=$SAM/videodev_diff_2.jmax
- FILE=$SAM/outside/sine_transform.jmax
+#FILE=linear_transform.jmax
+#FILE=outside/feedback_fractal_2.jmax
+#FILE=feedback_fractal.jmax
+#FILE=cross_fade.jmax
+#FILE=binary_operations.jmax
+#FILE=export_test.jmax
+#FILE=videodev_diff_2.jmax
+#FILE=outside/sine_transform.jmax
+#FILE=outside/scale_test.jmax
+#FILE=videodev_fade.jmax
+#FILE=color_correction.jmax
+#FILE=outside/convolve_test.jmax
+#FILE=benchmark.jmax
+#FILE=convolve.jmax
+#FILE=outside/bump_map.jmax
+ FILE=outside/anim_preload.jmax
+#FILE=image_stats.jmax
+#FILE=video_input.jmax
+#FILE=outside/game_of_life.jmax
+#FILE=ripple.jmax
+
+FILE=$SAM/$FILE
 
 #export DISPLAY=:1
 ulimit -c unlimited

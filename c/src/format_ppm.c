@@ -54,7 +54,7 @@ bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 			goto err;
 		}
 	}
-	whine("File metrics: %d %d %d",metrics[0],metrics[1],metrics[2]);
+/*	whine("File metrics: %d %d %d",metrics[0],metrics[1],metrics[2]); */
 	if(metrics[2] != 255) {
 		whine("Wrong color depth (max_value=%d instead of 255)",metrics[2]);
 		goto err;

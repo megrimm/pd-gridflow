@@ -72,7 +72,7 @@ int Dim_prod(Dim *$) {
 	return v;
 }
 
-int Dim_prod_start (Dim *$, int start) {
+int Dim_prod_start(Dim *$, int start) {
 	int v=1;
 	int i;
 	Dim_invariant($);
