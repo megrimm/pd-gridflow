@@ -2,7 +2,7 @@ $keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
 
-ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs)
+ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
 Arg = Struct.new(:type,:name,:default)
 
@@ -27,8 +27,8 @@ Out = File.open ARGV[1], "w"
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	#STDERR.puts "class: #{line}"
-	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
-	q=ClassDecl.new($1,$2.length>0?$2:"FObject",{},{},{})
+	/^(\w+)(?:\s*<\s*(\w+))?$/.match line or raise "syntax error #{where}"
+	q=ClassDecl.new($1,$2,{},{},{},false)
 	$stack << q
 	$classes << q
 	Out.puts ""
@@ -197,6 +197,7 @@ def handle_end(line)
 	fields = line.split(/\s+/)
 	n = fields.length
 	if ClassDecl===frame then
+		#handle_classinfo if not frame.info
 		cl = frame.name
 		if fields[0]!="class" or
 		(n>1 and fields[1]!=cl)
@@ -231,7 +232,14 @@ def handle_end(line)
 end
 
 def handle_startall(line)
-	$classes.each {|q| Out.print "fclass_install(&ci#{q.name},EVAL(\"GridFlow::#{q.supername}\"));" }
+	$classes.each {|q|
+		Out.print "rb_funcall(EVAL(\"GridFlow\"),SI(fclass_install),2,PTR2FIX(&ci#{q.name}),"
+		if q.supername then
+			Out.print "EVAL(\"GridFlow::#{q.supername}\"));"
+		else
+			Out.print "Qnil);"
+		end
+	}
 	Out.puts ""
 end
 
@@ -252,6 +260,7 @@ loop{
 			STDERR.puts e.inspect
 			STDERR.puts "at line #{$linenumber}"
 			STDERR.puts e.backtrace
+			File.unlink ARGV[1]
 			exit 1
 		end
 	else
