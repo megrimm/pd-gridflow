@@ -10,8 +10,8 @@
 <p>Required Computer/Processor (one of...):<list>
 	<li>PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li>
 	<li>Macintosh : G3/G4/G5</li>
-	<li>Corel Netwinder : StrongARM V4L</li>
-	<li>HP iPaq : StrongARM V4L</li>
+	<li>Corel NetWinder : StrongARM V4L</li>
+	<li>HP iPaq : some processor that works like the NetWinder</li>
 	<li>could work on SiliconGraphics and SPARCstation with a little nurture.</li>
 </list></p>
 <p>Required OS (one of...):<list>
@@ -122,7 +122,7 @@ crashes, or changes didn't go through.
 	<li>Did you forget the "make install" step?</li>
 	<li>If a new directory is created, you need to do <k>cvs update -d</k>.
 	  Many people just add that option to their configuration of the CVS software.</li>
-	<li>When some kinds of changes have happen, you may have to rerun the <k>configure</k>
+	<li>When some kinds of changes have happened, you may have to rerun the <k>configure</k>
 	program before redoing <k>make</k>. If you had previously reconfigured with specific options,
 	don't forget to use them again in this case.</li>
 	<li>Maybe matju forgot to upload part of an important change. Tell him.</li>
@@ -134,7 +134,7 @@ crashes, or changes didn't go through.
 	<li>you can start the debugger like <k>gdb `which pd` core.24255</k> where the latter part
 	is the name of a RAM dump file. You can enable those dumps using the shell command
 	<k>ulimit -c unlimited</k>. To avoid dumping, you can also start Pd from within the debugger
-	using <k>gdb `which pd`</k> then <k>run</k> then causing the crash.</li>
+	using <k>gdb `which pd`</k> then <k>run</k> then cause the crash.</li>
 	<li>In GDB, after a crash, you can use the <k>where</k> to find out what Pd was doing at the moment
 	of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal.
 	</li>
@@ -177,4 +177,3 @@ crashes, or changes didn't go through.
 </list>
 </section>
 </documentation>
-
