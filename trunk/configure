@@ -250,8 +250,14 @@ Feature.new {
 },
 Feature.new {
 	tag :puredata
-	status :disabled
+	name "Miller Puckette's Pure Data"
 	options ["HAVE_PUREDATA"]
+	test proc {
+		c_test "
+			\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
+			int main (void) { return 0; }
+		"
+	}
 }]
 
 $features_h = {}
@@ -273,7 +279,8 @@ $conf={
 
 def usage
 	log = ""
-	log << "usage: ./configure --arch architecture [--jmax-dist-dir directory] "
+	log << "usage: ./configure --arch architecture "
+	log << "[--jmax-dist-dir directory] [--puredata-dist-dir directory] "
 	log << "[--debug] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	puts
@@ -299,16 +306,28 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_DEBUG
 	when "--arch"; $conf[:ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
+	when "--puredata-dist-dir"; $conf[:PUREDATA_SOURCES]=ARGV.shift
 	else puts "unknown option \"#{arg}\""; exit 1
 	end
 end
 
 if not $conf[:JMAX_SOURCES]
-	$conf[:JMAX_SOURCES]=`(cd ../..; echo $PWD)`
+	$conf[:JMAX_SOURCES]=`(cd ../..; echo $PWD)`.chomp
 	if FileTest.directory? $conf[:JMAX_SOURCES]+"/Makefiles"
 		puts "assuming --jmax-dist-dir #{$conf[:JMAX_SOURCES]}"
 	else
+		#!@#$ should really disable.
 		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
+	end
+end
+
+if not $conf[:PUREDATA_SOURCES]
+	$conf[:PUREDATA_SOURCES]=`(cd ../..; echo $PWD)`.chomp
+	if FileTest.directory? $conf[:PUREDATA_SOURCES]+"/man/pd.1"
+		puts "assuming --puredata-dist-dir #{$conf[:PUREDATA_SOURCES]}"
+	else
+		#!@#$ should really disable.
+		puts "PureData disabled (otherwise use the --puredata-dist-dir option)"
 	end
 end
 
@@ -506,6 +525,9 @@ if $conf[:FEATURES][:mpeg3]
 f.puts "
 \#ifdef LIBMPEG_INCLUDE_HERE
 \#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
+\#endif
+\#ifdef PUREDATA_INCLUDE_HERE
+\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
 \#endif
 "
 end

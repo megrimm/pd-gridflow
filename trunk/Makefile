@@ -4,9 +4,17 @@ INSTALL_DATA = install --mode 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
-all:: ruby-all gridflow-for-ruby gridflow-for-jmax # doc-all
+all:: ruby-all gridflow-for-ruby gridflow-for-jmax gridflow-for-puredata # doc-all
 include config.make
 
+# suffixes
+OSUF = .o
+LSUF = .so
+ESUF =
+
+# OSUF = .OBJ
+# LSUF = .DLL
+# ESUF = .EXE
 
 #----------------------------------------------------------------#
 
@@ -14,8 +22,8 @@ include config.make
 GFID = $(lib_install_dir)/packages/gridflow/
 LDSOFLAGS = -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
-OBJS = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,.o,$(SOURCES))))
-LIB = $(OBJDIR)/gridflow.so
+OBJS = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,$(OSUF),$(SOURCES))))
+LIB = $(OBJDIR)/gridflow$(LSUF)
 
 CFLAGS += -Wall # for cleanliness
 CFLAGS += -Wno-unused # it's normal to have unused parameters
@@ -40,10 +48,12 @@ gridflow-for-ruby:: $(LIB)
 
 clean::
 	rm -f $(OBJS) $(LIB) $(JMAX_LIB) \
-	$(OBJDIR)/base_bridge_jmax.o
+	$(OBJDIR)/base_bridge_jmax$(OSUF) \
+	$(OBJDIR)/base_bridge_puredata$(OSUF)
 
 install:: all ruby-install jmax-install
-	$(INSTALL_LIB) $(OBJDIR)/gridflow.so $(RUBYDESTDIR)/$(RUBYARCH)/gridflow.so
+	$(INSTALL_LIB) $(OBJDIR)/gridflow$(LSUF) \
+		$(RUBYDESTDIR)/$(RUBYARCH)/gridflow$(LSUF)
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
@@ -56,11 +66,11 @@ edit::
 
 CONF = config.make config.h Makefile
 
-$(OBJDIR)/base_%.o: base/%.c base/grid.h $(CONF)
+$(OBJDIR)/base_%$(OSUF): base/%.c base/grid.h $(CONF)
 	@mkdir -p $(OBJDIR)
 	gcc $(CFLAGS) -c $< -o $@
 
-$(OBJDIR)/format_%.o: format/%.c base/grid.h $(CONF)
+$(OBJDIR)/format_%$(OSUF): format/%.c base/grid.h $(CONF)
 	@mkdir -p $(OBJDIR)
 	gcc $(CFLAGS) -c $< -o $@
 
@@ -73,7 +83,7 @@ $(LIB): $(RUBY_OBJS) $(CONF)
 export-config::
 	@echo "#define GF_INSTALL_DIR \"$(GFID)\""
 
-EFENCE = /usr/lib/libefence.so
+EFENCE = /usr/lib/libefence$(LSUF)
 #	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
 test:: install
@@ -88,21 +98,17 @@ foo::
 #----------------------------------------------------------------#
 
 ifeq ($(HAVE_JMAX_2_5),yes)
-JMAX_OBJS = $(OBJDIR)/base_bridge_jmax.o
-JMAX_LIB = $(OBJDIR)/libgridflow.so
+JMAX_LIB = $(OBJDIR)/libgridflow$(LSUF)
 gridflow-for-jmax:: $(JMAX_LIB)
 
-$(OBJDIR)/base_bridge_jmax.o: base/bridge_jmax.c base/grid.h $(CONF)
+$(JMAX_LIB): base/bridge_jmax.c base/grid.h $(CONF)
 	@mkdir -p $(OBJDIR)
-	gcc $(CFLAGS) -DLINUXPC -DOPTIMIZE -c $< -o $@
-
-$(JMAX_LIB): $(JMAX_OBJS) 
-	@mkdir -p $(OBJDIR)
-	gcc -shared -rdynamic $(LDSOFLAGS) $(JMAX_OBJS) -o $@
+	gcc -shared -rdynamic $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
-	$(INSTALL_LIB) $(OBJDIR)/libgridflow.so $(GFID)/c/lib/$(ARCH)/opt/libgridflow.so
+	$(INSTALL_LIB) $(OBJDIR)/libgridflow$(LSUF) \
+		$(GFID)/c/lib/$(ARCH)/opt/libgridflow$(LSUF)
 	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
 	$(INSTALL_DATA) gridflow.scm $(GFID)/gridflow.scm
 	$(INSTALL_DIR) $(lib_install_dir)/packages/gridflow/templates
@@ -122,3 +128,63 @@ gridflow-for-jmax::
 jmax-install::
 
 endif # HAVE_JMAX_2_5
+
+#----------------------------------------------------------------#
+
+ifeq ($(HAVE_PUREDATA),yes)
+# pd_linux pd_nt pd_irix5 pd_irix6
+
+OS = LINUX
+# OS = WINNT
+# OS = IRIX5
+# OS = IRIX6
+
+#pd_nt: foo1.dll foo2.dll dspobj~.dll
+#PDNTCFLAGS = /W3 /WX /DNT /DPD /nologo
+#VC="C:\Program Files\Microsoft Visual Studio\Vc98"
+#PDNTINCLUDE = /I. /I\tcl\include /I\ftp\pd\src /I$(VC)\include
+#PDNTLDIR = $(VC)\lib
+#PDNTLIB = $(PDNTLDIR)\libc.lib \
+#	$(PDNTLDIR)\oldnames.lib \
+#	$(PDNTLDIR)\kernel32.lib \
+#	\ftp\pd\bin\pd.lib 
+#.c.dll:
+#	cl $(PDNTCFLAGS) $(PDNTINCLUDE) /c $*.c
+#	link /dll /export:$*_setup $*.obj $(PDNTLIB)
+
+PDSUF = .pd_linux
+# PDSUF = .dll
+# PDSUF = .pd_irix5
+# PDSUF = .pd_irix6
+
+# PDCFLAGS = -o32 -DPD -DUNIX -DIRIX -O2
+# PDLDFLAGS = -elf -shared -rdata_shared 
+
+# PDCFLAGS = -n32 -DPD -DUNIX -DIRIX -DN32 -woff 1080,1064,1185 \
+#	-OPT:roundoff=3 -OPT:IEEE_arithmetic=3 -OPT:cray_ivdep=true \
+#	-Ofast=ip32
+# PDLDFLAGS = -IPA -n32 -shared -rdata_shared
+
+#PDCFLAGS = -DPD -O2 -funroll-loops -fomit-frame-pointer \
+#    -Wall -W -Wshadow -Wstrict-prototypes -Werror \
+#    -Wno-unused -Wno-parentheses -Wno-switch
+
+PD_LIB = $(OBJDIR)/gridflow-pd$(PDSUF)
+
+$(PD_LIB): base/bridge_puredata.c base/grid.h $(CONF)
+	@mkdir -p $(OBJDIR)
+	gcc -shared -rdynamic $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
+
+gridflow-for-puredata:: $(PD_LIB)
+
+puredata-install::
+
+else
+
+gridflow-for-puredata::
+	@#nothing
+
+puredata-install::
+	@#nothing
+
+endif # HAVE_PUREDATA

@@ -1,14 +1,15 @@
 /* $Id$ */
 
-version 0.6.0 (head):
+version 0.6.0 (2002.07.31):
+ * THIS IS AN EXPERIMENTAL BRANCH (VERY BUGGY)
+     REAL PROJECTS SHOULD USE VERSION 0.5.0 INSTEAD
  * GridFlow rewritten as a plugin for Ruby instead of jMax.
  * GridFlow now includes a Ruby-for-jMax bridge.
  * you need Ruby 1.6.6 (including libruby.so) or compatible
- * you don't need GNU Bash anymore (configurator rewritten in Ruby)
+ * you don't need GNU Bash anymore (configurator is now a Ruby program)
  * format handlers for .ppm, .tga, .grid rewritten in Ruby
  * merged all Makefiles together, etc.
  * sources are in base/ and format/ instead of c/src/
- * in general, many many changes to the source code.
  * many bugs removed, many bugs added.
 
 version 0.5.0 (2002.06.08):

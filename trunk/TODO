@@ -1,29 +1,25 @@
 /* $Id$ */
 
-"6" is planned for 0.6
-"7" is planned for 0.7
-"8" is planned for 0.8
+"!" is planned for next release
 starting with 1.0, backwards compatibility will be kept
 
 Distribution (0.6.0)
-[ ] add test plan
-[ ] follow test plan
-[6] test format/mpeg.c
-[6] review all documentation
-[6] review all patches
-[6] upload on both web sites
-[6] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
+[!] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 
 Distribution (0.6.1)
 [ ] make demo app(s) in Ruby/Tk
+[ ] add test plan
+[ ] follow test plan
+[ ] review all documentation
+[ ] review all patches
 
 Installation
-[6] de-jmax-ify the build process; installable doc; installable includes
+[ ] de-jmax-ify the build process; installable doc; installable includes
+[ ] produce binaries (.tar.gz .rpm .deb ?)
 [ ] replace --fast by opposite --debug option
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
 [ ] remove hostname.2y.net cvs repository
-[ ] bring hostname.2y.net back up if possible
 [ ] matju homepage on artengine.ca ?
 [ ] less compile-time checks and more run-time checks
 [ ] remove /tmp/$$.c, /tmp/$$
@@ -56,16 +52,11 @@ Documentation
 Architecture
 [ ] Add simple C preprocessor to add multi-line strings
     (because of rb_eval_string ?)
-[6] C Stream -> Ruby IO/File/TCPSocket
-[6] C GridHandler -> Ruby GridHandler
-[6] C Format -> Ruby GFFormat
-[6] 0. Design the GF-1.0 architecture (new internals documentation)
-[6] 1. Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
+[ ] Design the GF-1.0 architecture (new internals documentation)
+[ ] Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
 	identify streams by ids given at grid msg
 	(may allow for cancelling rejected grids?)
 	(add cancel option to the r/rw choice in callback of grid msg ?)
-[6] 2. Replace Object/Class/List/Dict/Stream by libruby.so
-[6] 3. Publish interfaces to Ruby side (scriptability)
 [ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
 [ ] @print
@@ -100,18 +91,19 @@ Computation Objects
 [ ] @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
-[7] @scan
+[ ] @scan
 [ ] @foldr, @scanr
-[7] @inner is broken but useful; rename to @inner2; add real @inner
+[ ] @inner is broken but useful; rename to @inner2; add real @inner
 [ ] @polygon
 [ ] @matrix_inverse, @matrix_solve
-[7] @sort ?
-[7] @transpose: dimension swapping
+[ ] @sort ?
+[ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
 [ ] timelines as in MM-Director
 [ ] @replace_if
+[ ] geiger_metro, @random_select, @markov_chain
 
 Effects
 [ ] improve
@@ -141,15 +133,15 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
 [ ] Pixonix bridge
-[7] PureData bridge
+[ ] PureData bridge
 [ ] Max bridge
 [ ] Gimp bridge
 [ ] Gnome/Gstreamer bridge
-[7] TCP: move out of Grid
-[7] TCP: non-blocking write
-[7] TCP Socket Buffering
-[7] Grid: bpv 1,2,4,16,64
-[7] Grid: signed/unsigned
+[ ] TCP: move out of Grid
+[ ] TCP: non-blocking write
+[ ] TCP Socket Buffering
+[ ] Grid: bpv 1,2,4,16,64
+[ ] Grid: signed/unsigned
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
 [ ] SDL, PTC, TinyPTC ?
 
@@ -195,8 +187,10 @@ Bugs
 [ ] possibly remove Number and sizeof(Number) (often does not make sense)
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
-[6] Window does not close when @out is destroyed
-[6] profiler is broken
+[ ] Window does not close when @out is destroyed
+[ ] profiler is broken
+[!] format/mpeg.c broken
+[!] tcp test is broken
 
 Feature Requests
 
