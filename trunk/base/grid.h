@@ -66,7 +66,7 @@ void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
 __attribute__ ((noreturn));
 };
-#define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
+#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
 #define DGS(_class_) \
@@ -126,10 +126,18 @@ __attribute__ ((noreturn));
 #define PROF(_self_)
 #endif /* HAVE_PROFILING */
 
-#define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
-#define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
+static inline Ruby PTR2FIX (const void *ptr) {
+	long p = (long)ptr;
+	//fprintf(stderr,"pointer&3==%d\n",p&3);
+	if ((p&3)!=0) {
+		fprintf(stderr,"unaligned pointer: %08x\n",(int)(ptr));
+		::raise(11);
+	}
+	return INT2NUM(p>>2);
+}
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
+#define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
 
 const char *rb_sym_name(Ruby sym);
