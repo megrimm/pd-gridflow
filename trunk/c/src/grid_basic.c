@@ -989,12 +989,11 @@ GRID_BEGIN(GridRedim,0) {
 	int a = Dim_prod(in->dim);
 	int b = Dim_prod($->dim);
 	if (a==0) {
-		int v=1;
-		$->dim = Dim_new(1,&v);
+		/* int v=1; $->dim = Dim_new(1,&v); */
 		$->data = NEW2(Number,1);
 		$->data[0] = 0;
 	} else if (a<b) {
-		$->dim = Dim_dup(in->dim);
+		/* $->dim = Dim_dup(in->dim); */
 		$->data = NEW2(Number,Dim_prod(in->dim));
 	} else {
 		/* nothing */
