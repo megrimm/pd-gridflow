@@ -1,4 +1,4 @@
-GridFlow 0.6.5
+GridFlow 0.7.0
 
 
 
@@ -6,7 +6,7 @@ Directory layout
 
   ./base:       object classes written in C++ and Ruby
   ./format:     format handlers written in C++ and Ruby
-  ./cpu:	cpu-specific code (not used yet)
+  ./cpu:	cpu-specific code
   ./doc:        complete documentation in HTML, with XML source
   ./doc/images: images that go with the HTML doc
   ./extra:      useful small programs (mostly in Ruby)

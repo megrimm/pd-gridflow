@@ -147,14 +147,24 @@ static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
-uint32 bitpacking_masks[][4] = {
+static uint32 bp_masks[][4] = {
 	{0x0000f800,0x000007e0,0x0000001f,0},
 	{0x00ff0000,0x0000ff00,0x000000ff,0},
 };
 
+static Packer bp_packers[] = {
+	{default_pack, default_pack, default_pack},
+	{pack2_565, pack2_565, pack2_565},
+	{pack3_888, pack3_888, pack3_888},
+};
+
+static Unpacker bp_unpackers[] = {
+	{default_unpack, default_unpack, default_unpack},
+};	
+
 static BitPacking builtin_bitpackers[] = {
-	BitPacking(2, 2, 3, bitpacking_masks[0], pack2_565, default_unpack),
-	BitPacking(1, 3, 3, bitpacking_masks[1], pack3_888, default_unpack),
+	BitPacking(2, 2, 3, bp_masks[0], &bp_packers[1], &bp_unpackers[0]),
+	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[0]),
 };
 
 /* **************************************************************** */
@@ -171,7 +181,7 @@ bool BitPacking::eq(BitPacking *o) {
 }
 
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
-Packer packer, Unpacker unpacker) {
+Packer *packer, Unpacker *unpacker) {
 	this->endian = endian;
 	this->bytes = bytes;
 	this->size = size;
@@ -181,8 +191,8 @@ Packer packer, Unpacker unpacker) {
 		this->unpacker = unpacker;
 		return;
 	}
-	this->packer = default_pack;
-	this->unpacker = default_unpack;
+	this->packer = &bp_packers[0];
+	this->unpacker = &bp_unpackers[0];
 
 	for (int i=0; i<(int)(sizeof(builtin_bitpackers)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = builtin_bitpackers+i;
@@ -207,12 +217,24 @@ bool BitPacking::is_le() {
 	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-void BitPacking::pack(int n, Pt<int32> in, Pt<uint8> out) {
-	return packer(this,n,in,out);
+template <class T>
+void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
+	switch (NumberTypeIndex_type_of(*in)) {
+	case uint8_type_i: packer->as_uint8(this,n,(Pt<uint8>)in,out); break;
+	case int16_type_i: packer->as_int16(this,n,(Pt<int16>)in,out); break;
+	case int32_type_i: packer->as_int32(this,n,(Pt<int32>)in,out); break;
+	default: RAISE("argh");
+	}
 }
 
-void BitPacking::unpack(int n, Pt<uint8> in, Pt<int32> out) {
-	return unpacker(this,n,in,out);
+template <class T>
+void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
+	switch (NumberTypeIndex_type_of(*in)) {
+	case uint8_type_i: unpacker->as_uint8(this,n,in,(Pt<uint8>)out); break;
+	case int16_type_i: unpacker->as_int16(this,n,in,(Pt<int16>)out); break;
+	case int32_type_i: unpacker->as_int32(this,n,in,(Pt<int32>)out); break;
+	default: RAISE("argh");
+	}
 }
 
 /* this could be faster (use asm) */
@@ -335,38 +357,34 @@ class Op2Loops {
 public:
 	template <class T>
 	static void op_map (int n, T *as, T b) {
-		while ((n&3)!=0) { T a = *as; *as++ = O::foo(a,b); n--; }
+		while ((n&3)!=0) { *as++ = O::foo(*as,b); n--; }
 		while (n) {
-			{ T a=as[0]; as[0]= O::foo(a,b); }
-			{ T a=as[1]; as[1]= O::foo(a,b); }
-			{ T a=as[2]; as[2]= O::foo(a,b); }
-			{ T a=as[3]; as[3]= O::foo(a,b); }
+			as[0] = O::foo(as[0],b);
+			as[1] = O::foo(as[1],b);
+			as[2] = O::foo(as[2],b);
+			as[3] = O::foo(as[3],b);
 			as+=4; n-=4;
 		}
 	}
 	template <class T>
 	static void op_zip (int n, T *as, T *bs) {
-		while ((n&3)!=0) {
-			T a = *as, b = *bs++; *as++ = O::foo(a,b); n--;
-		}
+		while ((n&3)!=0) { *as++ = O::foo(*as,*bs++); n--; }
 		while (n) {
-			{ T a=as[0], b=bs[0]; as[0]= O::foo(a,b); }
-			{ T a=as[1], b=bs[1]; as[1]= O::foo(a,b); }
-			{ T a=as[2], b=bs[2]; as[2]= O::foo(a,b); }
-			{ T a=as[3], b=bs[3]; as[3]= O::foo(a,b); }
+			as[0]= O::foo(as[0],bs[0]);
+			as[1]= O::foo(as[1],bs[1]);
+			as[2]= O::foo(as[2],bs[2]);
+			as[3]= O::foo(as[3],bs[3]);
 			as+=4; bs+=4; n-=4;
 		}
 	}
 	template <class T>
 	static T op_fold (T a, int n, T *bs) {
-		while ((n&3)!=0) {
-			T b = *bs++; a = O::foo(a,b); n--;
-		}
+		while ((n&3)!=0) { a = O::foo(a,*bs++); n--; }
 		while (n) {
-			{ T b = bs[0]; a = O::foo(a,b); }
-			{ T b = bs[1]; a = O::foo(a,b); }
-			{ T b = bs[2]; a = O::foo(a,b); }
-			{ T b = bs[3]; a = O::foo(a,b); }
+			a = O::foo(a,bs[0]);
+			a = O::foo(a,bs[1]);
+			a = O::foo(a,bs[2]);
+			a = O::foo(a,bs[3]);
 			bs+=4; n-=4;
 		}
 		return a;
@@ -376,25 +394,38 @@ public:
 		while (n--) {
 			int i=0;
 			while (i<an) {
-				{ T a = as[i], b = *bs++; as[i] = O::foo(a,b); }
+				as[i] = O::foo(as[i],*bs++);
 				i++;
 			}
 		}
 	}
 	template <class T>
 	static void op_scan (T a, int n, T *bs) {
-		while (n--) { T b = *bs; *bs++ = a = O::foo(a,b); }
+		while (n--) { *bs = a = O::foo(a,*bs); bs++; }
 	}
 	template <class T>
 	static void op_scan2 (int an, T *as, int n, T *bs) {
 		while (n--) {
-			for (int i=0; i<an; i++) {
-				T a = *as++, b = *bs; *bs++ = a = O::foo(a,b);
+			for (int i=0; i<an; i++, as++, bs++) {
+				*bs = O::foo(*as,*bs);
 			}
 			as=bs-an;
 		}
 	}
 };
+
+template <class T>
+static void quick_mod_map (int n, T *as, T b) {
+	if (!b) return;
+	while ((n&3)!=0) { T a = *as; *as++ = mod(a,b); n--; }
+	while (n) {
+		{ as[0]=mod(as[0],b); }
+		{ as[1]=mod(as[1],b); }
+		{ as[2]=mod(as[2],b); }
+		{ as[3]=mod(as[3],b); }
+		as+=4; n-=4;
+	}
+}
 
 template <class O>
 class Op2LoopsBitwise : Op2Loops<O> {
@@ -571,5 +602,17 @@ void startup_number () {
 	INIT_TABLE(op1_dict,op1_table)
 	INIT_TABLE(op2_dict,op2_table)
 	INIT_TABLE(number_type_dict,number_type_table)
+/*
+	Operator2 *mod = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(%)));
+	mod = quick_mod
+	->op
+*/
 }
 
+static void make_hocus_pocus () {
+	exit(1);
+	((BitPacking*)0)->pack(0,Pt<uint8>(),Pt<uint8>());
+	((BitPacking*)0)->pack(0,Pt<int16>(),Pt<uint8>());
+	((BitPacking*)0)->pack(0,Pt<int32>(),Pt<uint8>());
+	((BitPacking*)0)->pack(0,Pt<float32>(),Pt<uint8>());
+}

@@ -314,6 +314,9 @@ public:
 	operator int16 *() { return (int16 *)p; }
 	operator int32 *() { return (int32 *)p; }
 	operator float32 *() { return (float32 *)p; }
+	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8 *)start); }
+	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16 *)start); }
+	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32 *)start); }
 //	operator T *() { return p; }
 //	operator Pt<const T>() { return Pt((const T *)p); }
 	int operator-(Pt x) { return p-x.p; }
@@ -405,12 +408,22 @@ struct BitPacking;
 
 /* those are the types of the optimised loops of conversion */ 
 /* inputs are const */
-typedef void (*  Packer)(BitPacking *self, int n, Pt<int32> in, Pt<uint8> out);
-typedef void (*Unpacker)(BitPacking *self, int n, Pt<uint8> in, Pt<int32> out);
+struct Packer {
+	void (*as_uint8  )(BitPacking *self, int n, Pt<uint8> in,   Pt<uint8> out);
+	void (*as_int16  )(BitPacking *self, int n, Pt<int16> in,   Pt<uint8> out);
+	void (*as_int32  )(BitPacking *self, int n, Pt<int32> in,   Pt<uint8> out);
+//	void (*as_float32)(BitPacking *self, int n, Pt<float32> in, Pt<uint8> out);
+};
+struct Unpacker {
+	void (*as_uint8  )(BitPacking *self, int n, Pt<uint8> in, Pt<uint8> out);
+	void (*as_int16  )(BitPacking *self, int n, Pt<uint8> in, Pt<int16> out);
+	void (*as_int32  )(BitPacking *self, int n, Pt<uint8> in, Pt<int32> out);
+//	void (*as_float32)(BitPacking *self, int n, Pt<uint8> in, Pt<float32> out);
+};
 
 struct BitPacking {
-	Packer packer;
-	Unpacker unpacker;
+	Packer *packer;
+	Unpacker *unpacker;
 	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
 	int bytes;
 	int size;
@@ -418,15 +431,15 @@ struct BitPacking {
 
 	BitPacking(){abort();} /* don't call, but don't remove. sorry. */
 	BitPacking(int endian, int bytes, int size, uint32 *mask,
-		Packer packer=0, Unpacker unpacker=0);
+		Packer *packer=0, Unpacker *unpacker=0);
 	void gfpost();
 	bool is_le();
 	bool eq(BitPacking *o);
 	DECL3(initialize);
 
 /* main entrances to Packers/Unpackers */
-	void pack(  int n, Pt<int32> in, Pt<uint8> out);
-	void unpack(int n, Pt<uint8> in, Pt<int32> out);
+	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
+	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
 	DECL3(pack2);
 	DECL3(unpack2);
 };
