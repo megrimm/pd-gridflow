@@ -44,6 +44,7 @@
 #define $ self
 #define LIST(args...) args
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
+#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
 #define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
@@ -405,13 +406,15 @@ typedef Pt<Number>(*Unpacker)(BitPacking *$, int n, Pt</*const*/ uint8> in, Pt<N
 
 struct BitPacking {
 	Packer packer;
+	Unpacker unpacker;
 	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
 	int bytes;
 	int size;
 	uint32 mask[4];
 
 	BitPacking(){abort();} /* don't call, but don't remove. sorry. */
-	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer packer=0);
+	BitPacking(int endian, int bytes, int size, uint32 *mask,
+		Packer packer=0, Unpacker unpacker=0);
 	void gfpost();
 	Pt<uint8> pack(int n, Pt</*const*/ Number> data, Pt<uint8> target);
 	Pt<Number> unpack(int n, Pt</*const*/ uint8> in, Pt<Number> out);

@@ -144,6 +144,8 @@ class GridIn < GridObject
 		@timelog = false
 		@framecount = 0
 		@time = Time.new
+		return if a.length==0
+		_0_open(*a)
 	end
 
 	def _0_open(sym,*a)
@@ -645,23 +647,25 @@ targa header is like:
 	def frame
 		rewind_if_needed
 		head = @stream.read(18)
-		comment_length,colors,w,h,depth = head.unpack("cxcx9vvcx")
+		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
 		comment = @stream.read(comment_length)
 
 		if colors != 2
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth}"
+		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
 		GridFlow.post "tga: comment: \"#{comment}\""
 
 		@bp = case depth
 		when 24
 			BitPacking.new(ENDIAN_BIG,3,[0x0000ff,0x00ff00,0xff0000])
-#		when 32
-#			#!@#$ test me
+		when 32
 #			BitPacking.new(ENDIAN_BIG,4,
-#				[0x000000ff,0x0000ff00,0x00ff0000,0xff000000])
+			BitPacking.new(ENDIAN_LITTLE,4,
+##				[0x0000ff00,0x00ff0000,0xff000000,0x000000ff])
+#				[0x0000ff00,0x00ff0000,0x3f000000,0x000000ff])
+				[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
 		else
 			raise "tga: unsupported colour depth: #{depth}\n"
 		end

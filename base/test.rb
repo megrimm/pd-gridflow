@@ -389,10 +389,32 @@ def test_tcp
 	end
 end
 
+def test_layer
+	gin = FObject["@in targa file #{$imdir}/tux.tga"]
+	gfor = FObject["@for {0 0} {120 160} {1 1}"]
+	gche = FObject["@checkers"]
+
+	gove = FObject["@layer"]
+#	gove = FObject["@fold + {0 0 0 0}"]
+#	gout = FObject["@print"]
+#	gove = FObject["@inner2 * + 0 {3 4 # 1 0 0 0 0}"]
+	gout = FObject["@out x11"]
+
+	gin.connect 0,gove,0
+	gfor.connect 0,gche,0
+	gche.connect 0,gove,1
+	gove.connect 0,gout,0
+	gfor.send_in 0
+	gin.send_in 0
+	$mainloop.loop
+end
+
 def test_formats
 	gin = FObject["@in"]
-	gout = FObject["@out 256 256"]
-	gin.connect 0,gout,0
+	gs = FObject["@downscale_by {3 2} smoothly"]
+	gout = FObject["@out x11"]
+	gin.connect 0,gs,0
+	gs.connect 0,gout,0
 	[
 		"jpeg file #{$imdir}/ruby0216.jpg",
 		"ppm file #{$imdir}/g001.ppm",
@@ -402,9 +424,8 @@ def test_formats
 #		"targa file #{$imdir}/tux.tga",
 	].each {|command|
 		gin.send_in 0,"open #{command}"
-#		gin.send_in 0
 		2.times { gin.send_in 0 } # test for load, rewind, load
-		sleep 1
+		STDIN.readline
 	}
 	
 #	gin.delete
