@@ -1,7 +1,5 @@
 /* $Id$ */
 
-test
-
 version 0.4.0 (head):
  * added (timewise) profiler
  * added @scale_by for quick scaling by integer factors.
