@@ -87,38 +87,35 @@ EACH_FLOAT_TYPE(FOO)
 #undef FOO
 
 void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
-		int dims = 1;
-		Ruby delim = SYM(#);
-		del();
-		for (int i=0; i<n; i++) {
-			if (a[i] == delim) {
-				STACK_ARRAY(int32,v,i);
-				if (i!=0 && TYPE(a[i-1])==T_SYMBOL) {
-					i--;
-					nt = NumberTypeE_find(a[i]);
-				}
-				for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
-				init(new Dim(i,v),nt);
-				if (a[i] != delim) i++;
-				i++; a+=i; n-=i;
-				goto fill;
-			}
+	int dims = 1;
+	Ruby delim = SYM(#);
+	del();
+	for (int i=0; i<n; i++) {
+		if (a[i] == delim) {
+			STACK_ARRAY(int32,v,i);
+			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
+			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
+			init(new Dim(i,v),nt);
+			if (a[i] != delim) i++;
+			i++; a+=i; n-=i;
+			goto fill;
 		}
-		if (n!=0 && TYPE(a[0])==T_SYMBOL) {
-			nt = NumberTypeE_find(a[0]);
-			a++, n--;
-		}
-		{int32 v[1]={n}; init(new Dim(1,Pt<int32>(v,1)),nt);}
-		fill:
-		int nn = dim->prod();
-		n = min(n,nn);
+	}
+	if (n!=0 && TYPE(a[0])==T_SYMBOL) {
+		nt = NumberTypeE_find(a[0]);
+		a++, n--;
+	}
+	{int32 v[1]={n}; init(new Dim(1,Pt<int32>(v,1)),nt);}
+	fill:
+	int nn = dim->prod();
+	n = min(n,nn);
 #define FOO(type) { \
-		Pt<type> p = (Pt<type>)*this; \
-		if (n==0) CLEAR(p,nn); \
-		else { \
-			for (int i=0; i<n; i++) NUM(a[i],p[i]); \
-			for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
-		TYPESWITCH(nt,FOO,)
+	Pt<type> p = (Pt<type>)*this; \
+	if (n==0) CLEAR(p,nn); \
+	else { \
+		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
+		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
+	TYPESWITCH(nt,FOO,)
 #undef FOO		
 }
 
@@ -172,8 +169,8 @@ GridInlet::~GridInlet() {
 afterwards. This is to allow some optimisations. Anyway there is no good reason
 why this would be changed afterwards. */
 void GridInlet::set_factor(int factor) {
-	assert(dim);
-	assert(factor > 0);
+	if(!dim) RAISE("huh?");
+	if(factor<=0) RAISE("%s: factor=%d should be >= 1",parent->info(),factor);
 	if (dim->prod() && dim->prod() % factor)
 		RAISE("%s: set_factor: expecting divisor",parent->info());
 	this->factor = factor;
@@ -633,10 +630,7 @@ template <class T>
 void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 	int n = rb_str_len(s) / sizeof(T);
 	Pt<T> p = rb_str_pt(s,T);
-/*
-	fprintf(stderr,"send_out_grid_flow_2: sending %d elements (dex=%d/%d)\n",
-		n,go->dex,go->dim->prod());
-*/
+//fprintf(stderr,"send_out_grid_flow_2: sending %d elements (dex=%d/%d)\n",n,go->dex,go->dim->prod());
 	go->send(n,p);
 }
 
@@ -653,7 +647,6 @@ static void *GridObject_allocate ();
 /* install_rgrid(Integer inlet, Boolean multi_type? = true) */
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");
-//	if (INT(argv[0])!=0) RAISE("not yet");
 	GridHandler *gh = new GridHandler;
 	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
