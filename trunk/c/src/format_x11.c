@@ -70,10 +70,8 @@ struct FormatX11 {
 	XImage *ximage;      /* X11 image descriptor */
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
-	struct timeval tv;   /* time of the last grid_end */
 	bool is_owner;
 	int mode;
-	bool timelog;
 };
 
 /* default connection (not used for now) */
@@ -464,15 +462,6 @@ GRID_END(FormatX11,0) {
 		int sy = Dim_get(in->dim,0);
 		FormatX11_show_section($,0,0,sx,sy);
 	}
-	if (!$->timelog) return;
-/*	whine_time("FormatX11:0:end"); */
-	{
-		struct timeval t;
-		gettimeofday(&t,0);
-		whine("x11:0:end: %d.%06d (diff %8d usec)\n",t.tv_sec,t.tv_usec,
-			(t.tv_sec-$->tv.tv_sec)*1000000 + (t.tv_usec-$->tv.tv_usec));
-		memcpy(&$->tv,&t,sizeof(struct timeval));
-	}
 }
 
 void FormatX11_close (FormatX11 *$) {
@@ -503,10 +492,6 @@ void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 		$->autodraw = GET(1,int,0);
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
 		whine("autodraw = %d",$->autodraw);
-	} else if (sym == SYM(timelog)) {
-		$->timelog = GET(1,int,0);
-		COERCE_INT_INTO_RANGE($->timelog,0,1);
-		whine("timelog = %d",$->timelog);
 	} else {
 		whine("unknown option: %s", fts_symbol_name(sym));
 	}
@@ -529,9 +514,6 @@ Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 	$->autodraw= 1;
 	$->mode    = mode;
 	$->dim     = 0;
-	$->timelog = 0;
-
-	gettimeofday(&$->tv,0);
 
 	switch(mode) {
 	case 4: case 2: break;
