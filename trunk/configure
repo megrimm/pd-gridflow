@@ -24,7 +24,7 @@ do
 		;;
 		--fast)
 			echo -e "Fast Mode (less error checking)"
-			GRIDFLOW_FAST="#define GRIDFLOW_FAST"
+			OPTIONS="$OPTIONS, #define HAVE_SPEED"
 		;;
 		--jmax-dist-dir)
 			JMAXROOTDIR=$2
@@ -54,6 +54,12 @@ if [ "z$JMAXROOTDIR" == "z" ]; then
 	fi
 fi
 
+symlink () {
+	rm $1
+	ln -s $1.$JMAX $1
+	echo -e "`pwd`: updating $1"
+}
+
 has-videodev () {
 (
 	echo '#include <stdlib.h>'
@@ -76,6 +82,17 @@ has-x11-shared-memory () {
 gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
 }
 
+# this is very "heuristic" to say the least. sorry.
+has-pentium-compatible () {
+(
+	echo 'typedef unsigned long long uint64;'
+	echo 'int main(void) { uint64 x;'
+	echo '__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));'
+	echo 'return 0;}'
+) > /tmp/$$.c
+gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
+}
+
 FORMATS='X11 PPM Targa Grid'
 
 echo -n "looking for videodev (video4linux input hardware): "
@@ -94,14 +111,24 @@ if has-x11-shared-memory; then
 else
 	echo "no"
 fi
-symlink () {
-	rm $1
-	ln -s $1.$JMAX $1
-	echo -e "`pwd`: updating $1"
-}
 
+echo -n "looking for pentium-compatible CPU: "
+if has-pentium-compatible; then
+	echo "yes"
+	OPTIONS="$OPTIONS, #define HAVE_PENTIUM"
+	OPTIONS="$OPTIONS, #define HAVE_TSC_PROFILING"
+else
+	echo "no"
+fi
+
+# replace commas by linefeeds
+OPTIONS=`echo "$OPTIONS" | awk 'BEGIN{RS=", ?"}{print}'`
+
+echo
 echo "our format list: $FORMATS"
-echo ""
+echo
+echo "our option list: $OPTIONS"
+echo
 
 #--------------------------------#
 echo "generating symbolic links"
@@ -147,7 +174,6 @@ echo "
 #include $JMAX_INCLUDE
 #endif
 
-$GRIDFLOW_FAST
 #define FORMAT_LIST(_pre1_,_pre2_) \\"
 for format in $FORMATS; do
 	echo "  _pre1_ _pre2_##Format$format,\\"

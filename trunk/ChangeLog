@@ -1,16 +1,18 @@
 /* $Id$ */
 
-version 0.4.0 (head):
+version 0.4.0 (2001.11.28):
  * package name changed from "video4jmax" to "gridflow"
- * documentation FULLY updated, more precise, more structured
- * documentation now written in XML (and converted to HTML)
+ * documentation *rewritten*, more precise, more structured
+ * documentation format is now XML (includes HTMLized version)
  * can now compile without jmax/fts (if you need quicker testing...)
- * added TCP client socket support (in "grid" format only)
  * added format "grid" for storing any kind of grid to disk.
+ * added TCP client/server socket support (with format "grid" only)
  * added (timewise) profiler
+ * @convolve now takes up to three arguments
  * Format API changes again
- * Formats: "connect" merged into "open"; "size" merged into "option".
- * Formats: @video_out merged into @out.
+	* "connect" merged into "open"
+	* "size" merged into "option"
+	* @video_out merged into @out
  * format videodev can now do full framerate (instead of just half)
  * added X11 Shared Memory support (faster image transfer locally)
  * added @scale_by for quick scaling by integer factors.

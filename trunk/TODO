@@ -1,9 +1,6 @@
 /* $Id$ */
 
-
-
-
-"!" is planned for version 0.4.0
+"!" is planned for "real soon now"
 
 Distribution
 [ ] send mail about name change
@@ -14,6 +11,7 @@ Distribution
 Installation
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
+[ ] add --no-profiler and non-pentium autodetect
 
 Documentation / Help / HelpScreenshot Update
 [x| | ] @in, @video_in_file
@@ -35,10 +33,9 @@ Documentation / Help / HelpScreenshot Update
 [x| | ] format grid
 
 Documentation
-[ ] project_policy.xml
+[!] project_policy.xml
 [ ] validate samples/outside
 [ ] specify policy for <sample>, <icon>, etc.
-[ ] op2: relative speeds
 [ ] add credits
 [ ] split reference.*ml into: elements.*ml objects.*ml formats.*ml
 [ ] document internals
@@ -66,7 +63,8 @@ General
 Computation Objects
 [ ] @cartprod (?), @slice (@splice ?)
 [ ] black option in @store (?)
-[ ] @export_list, @import~, @export~, @import*, @export*
+[!] @export_list
+[ ] @import~, @export~, @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @matrix_inverse, @matrix_solve
@@ -76,7 +74,7 @@ Computation Objects
 
 Effects
 [!] overlay using alpha channel
-[ ] pinch, waves
+[ ] pinch
 [ ] pixelize, despeckle
 [ ] hue change
 [ ] abyss effect
@@ -97,8 +95,6 @@ Structure & Protocol
 	messages; etc... (?!?)
 [ ] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
-[ ] copy-on-write and similar tricks
-[ ] accept lists as 1D grids directly in constructors
 
 Input/Output
 [ ] in-place editing (rw mode)
@@ -108,27 +104,26 @@ Input/Output
 [x] add NTSC<->PAL option
 [ ] allow to select tv channels (this is "freq")
 [ ] fix RGB<->BGR<->??? palette issues
-[ ] should disable x11 shared memory on remote displays.
-[ ] arguments to @in,@out could be a auto-open.
+[!] should disable x11 shared memory on remote displays.
+[!] arguments to @in,@out could be a auto-open.
 
 File Formats
-[ ] Targa write support
+[!] Targa write support
 [ ] JPEG support
-[ ] PPM P3,P6 support
-[ ] PGM P2,P5 support
+[!] PPM P3    support
+[!] PGM P2,P5 support
 [ ] PBM P1,P4 support
 [ ] XBM support
 [ ] XPM support
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
 [!] MPEG support
-[!] TCP server
-[!] TCP no blocking
+[x] TCP server
 [!] VDSP support
-[ ] multi-image (seq) (createable by cat, ar, tar or zip)
+[!] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[ ] rewinding file
-[ ] FileFormat base class + inheritance + pre-written open() code, etc
+[!] rewinding file
+[!] FileFormat base class + inheritance + pre-written open() code, etc
 
 Java/Swing
 [ ] color picker
@@ -143,6 +138,9 @@ UnitTesting/Bugs
 [ ] distinguish "mod" and "%" properly (re: rounding)
 [ ] leak in all FileFormat#close
 [ ] add alloc-tracing to find all leaks
+[ ] TCP server socket busy even after kill
+[!] TCP server blocks fts on accept()
+[!] TCP connection blocks on read()
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
