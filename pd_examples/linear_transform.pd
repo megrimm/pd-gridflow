@@ -1,0 +1,126 @@
+#N canvas 413 106 685 447 10;
+#X text 230 4 click here to go in manual mode;
+#X obj 452 335 fork;
+#X floatatom 130 200 5 0 0 0 - - -;
+#X obj 16 290 @ >> 11;
+#X obj 16 447 fps detailed;
+#X obj 275 60 tgl 20 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0 1
+;
+#X obj 16 154 @store;
+#X obj 546 87 @import ( 1 );
+#X obj 190 186 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -260818 -1 -1 4900 1;
+#X obj 120 379 @in;
+#X obj 546 67 * 3;
+#X obj 546 127 @export;
+#X obj 422 420 @ sin*;
+#X obj 190 203 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -260818 -1 -1 5100 1;
+#X obj 120 303 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X floatatom 131 148 5 0 0 0 - - -;
+#X msg 113 446 option timelog $ 1;
+#X obj 102 223 @four;
+#X obj 422 363 @import ( 1 );
+#X msg 452 157 10000;
+#X floatatom 380 337 5 0 0 0 - - -;
+#X obj 16 21 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+;
+#X obj 16 404 @store;
+#X obj 16 426 @out x11;
+#X text 142 304 step 1;
+#X obj 16 130 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 189 152 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -260818 -1 -1 7200 1;
+#X obj 109 13 loadbang;
+#X obj 422 385 @outer + ( 9000 18000 0 9000 );
+#X obj 102 244 @redim ( 2 2 );
+#X msg 298 80 100;
+#X obj 495 240 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 105 421 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X text 184 133 linear transform;
+#X obj 16 86 fork;
+#X obj 109 36 @for ( -128 -128 ) ( 128 128 ) ( 1 1 );
+#X obj 16 311 @ + 128;
+#X floatatom 130 165 5 0 0 0 - - -;
+#X floatatom 130 182 5 0 0 0 - - -;
+#X obj 189 170 hsl 128 15 -4096 4096 0 0 empty empty empty -2 -6 0
+8 -260818 -1 -1 6400 1;
+#X msg 157 354 open teapot.ppm;
+#X obj 120 328 fork;
+#X obj 38 474 print;
+#X obj 422 185 vsl 15 128 0 35999 0 0 empty empty empty 0 -8 0 8 -241291
+-1 -1 4505 1;
+#X obj 452 184 vsl 15 128 -10000 10000 0 0 empty empty empty 0 -8 0
+8 -241291 -1 -1 6350 1;
+#X obj 298 100 +;
+#X obj 298 120 % 36000;
+#X obj 452 135 loadbang;
+#X text 364 162 rotozoomer;
+#X obj 16 268 @inner * + 0;
+#X text 38 22 step 2;
+#X obj 546 147 route int;
+#X obj 546 187 * -1;
+#X obj 16 45 metro 500;
+#X obj 546 107 @ sin* 100;
+#X obj 546 167 / 100000;
+#X obj 298 60 demultiplex;
+#X connect 1 0 31 0;
+#X connect 1 1 12 1;
+#X connect 2 0 17 2;
+#X connect 3 0 36 0;
+#X connect 4 0 42 0;
+#X connect 5 0 56 0;
+#X connect 6 0 49 0;
+#X connect 7 0 54 0;
+#X connect 8 0 38 0;
+#X connect 9 0 22 1;
+#X connect 10 0 7 0;
+#X connect 11 0 51 0;
+#X connect 12 0 29 0;
+#X connect 13 0 2 0;
+#X connect 14 0 41 0;
+#X connect 15 0 17 0;
+#X connect 16 0 23 0;
+#X connect 17 0 29 0;
+#X connect 18 0 28 0;
+#X connect 19 0 44 0;
+#X connect 20 0 18 0;
+#X connect 21 0 53 0;
+#X connect 22 0 23 0;
+#X connect 23 0 4 0;
+#X connect 25 0 6 0;
+#X connect 26 0 15 0;
+#X connect 27 0 35 0;
+#X connect 28 0 12 0;
+#X connect 29 0 49 2;
+#X connect 30 0 45 0;
+#X connect 31 0 43 0;
+#X connect 32 0 16 0;
+#X connect 34 0 25 0;
+#X connect 34 1 56 0;
+#X connect 35 0 6 1;
+#X connect 36 0 22 0;
+#X connect 37 0 17 1;
+#X connect 38 0 17 2;
+#X connect 39 0 37 0;
+#X connect 40 0 9 0;
+#X connect 41 0 9 0;
+#X connect 41 1 40 0;
+#X connect 43 0 18 0;
+#X connect 43 0 45 1;
+#X connect 44 0 1 0;
+#X connect 45 0 46 0;
+#X connect 46 0 43 0;
+#X connect 46 0 10 0;
+#X connect 47 0 19 0;
+#X connect 49 0 3 0;
+#X connect 51 0 55 0;
+#X connect 52 0 44 0;
+#X connect 53 0 34 0;
+#X connect 54 0 11 0;
+#X connect 55 0 52 0;
+#X connect 56 0 30 0;
