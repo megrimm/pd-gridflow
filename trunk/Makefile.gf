@@ -6,8 +6,6 @@ INSTALL_DATA = install -m 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
-CC = g++
-
 all2:: gridflow-for-jmax gridflow-for-puredata # doc-all
 
 # suffixes (not properly used)
