@@ -512,7 +512,6 @@ class FPS < GridObject
 			u0,t0=GridFlow.rdtsc,Time.new.to_f
 			sleep .01
 			u1,t1=GridFlow.rdtsc,Time.new.to_f
-			p u0,t0,u1,t1
 			@hertz = (u1-u0)/(t1-t0)
 			GridFlow.post "estimating cpu clock at #{@hertz} Hz"
 		end
