@@ -41,76 +41,34 @@ typedef video_picture    VideoPicture   ;
 typedef video_mbuf       VideoMbuf      ;
 typedef video_mmap       VideoMmap      ;
 
-/* !@#$ all those consts should be made available to the Ruby side... see usb.c */
-struct named_int {const char *name; int v;};
-#define FLAG(_num_,_name_,_desc_) {#_name_,   _num_},
-#define  OPT(_num_,_name_,_desc_) {#_name_,1<<_num_},
-
-static named_int video_type_flags[] = {
-	FLAG( 0,CAPTURE,       "Can capture")
-	FLAG( 1,TUNER,         "Can tune")
-	FLAG( 2,TELETEXT,      "Does teletext")
-	FLAG( 3,OVERLAY,       "Overlay onto frame buffer")
-	FLAG( 4,CHROMAKEY,     "Overlay by chromakey")
-	FLAG( 5,CLIPPING,      "Can clip")
-	FLAG( 6,FRAMERAM,      "Uses the frame buffer memory")
-	FLAG( 7,SCALES,        "Scalable")
-	FLAG( 8,MONOCHROME,    "Monochrome only")
-	FLAG( 9,SUBCAPTURE,    "Can capture subareas of the image")
-	FLAG(10,MPEG_DECODER,  "Can decode MPEG streams")
-	FLAG(11,MPEG_ENCODER,  "Can encode MPEG streams")
-	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
-	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
-};
-
-static named_int tuner_flags[] = {
-	FLAG(0,PAL,      "")
-	FLAG(1,NTSC,     "")
-	FLAG(2,SECAM,    "")
-	FLAG(3,LOW,      "Uses KHz not MHz")
-	FLAG(4,NORM,     "Tuner can set norm")
-	FLAG(5,DUMMY5,   "")
-	FLAG(6,DUMMY6,   "")
-	FLAG(7,STEREO_ON,"Tuner is seeing stereo")
-	FLAG(8,RDS_ON,   "Tuner is seeing an RDS datastream")
-	FLAG(9,MBS_ON,   "Tuner is seeing an MBS datastream")
-};
-
-static named_int channel_flags[] = {
-	FLAG(0,TUNER,"")
-	FLAG(1,AUDIO,"")
-	FLAG(2,NORM ,"")
-};
-
-static named_int video_palette_choice[] = {
-	OPT( 0,NIL,     "(nil)")
-	OPT( 1,GREY,    "Linear greyscale")
-	OPT( 2,HI240,   "High 240 cube (BT848)")
-	OPT( 3,RGB565,  "565 16 bit RGB")
-	OPT( 4,RGB24,   "24bit RGB")
-	OPT( 5,RGB32,   "32bit RGB")
-	OPT( 6,RGB555,  "555 15bit RGB")
-	OPT( 7,YUV422,  "YUV422 capture")
-	OPT( 8,YUYV,    "")
-	OPT( 9,UYVY,    "The great thing about standards is ...")
-	OPT(10,YUV420,  "")
-	OPT(11,YUV411,  "YUV411 capture")
-	OPT(12,RAW,     "RAW capture (BT848)")
-	OPT(13,YUV422P, "YUV 4:2:2 Planar")
-	OPT(14,YUV411P, "YUV 4:1:1 Planar")
-	OPT(15,YUV420P, "YUV 4:2:0 Planar")
-	OPT(16,YUV410P, "YUV 4:1:0 Planar")
-};
-
-static named_int video_mode_choice[] = {
-	OPT( 0,PAL,  "pal")
-	OPT( 1,NTSC, "ntsc")
-	OPT( 2,SECAM,"secam")
-	OPT( 3,AUTO, "auto")
-};
+static const char *ruby_code =
+\ruby
+flags :name,:VideoTypeFlags,:start,0,:values,%w(
+	CAPTURE TUNER TELETEXT OVERLAY CHROMAKEY CLIPPING FRAMERAM
+	SCALES MONOCHROME SUBCAPTURE
+	MPEG_DECODER MPEG_ENCODER MJPEG_DECODER MJPEG_ENCODER
+)
+flags :name,:TunerFlags,:start,0,:values,%w(
+	PAL NTSC SECAM LOW NORM DUMMY5 DUMMY6 STEREO_ON RDS_ON MBS_ON
+)
+flags :name,:ChannelFlags,:start,0,:values,%w(
+	TUNER AUDIO NORM
+)
+choice :name,:VideoPaletteChoice,:start,0,:values,%w(
+	NIL GREY HI240
+	RGB565 RGB24 RGB32 RGB555
+	YUV422 YUYV UYVY YUV420 YUV411 RAW
+	YUV422P YUV411P YUV420P YUV410P
+)
+choice :name,:VideoModeChoice,:start,0,:values,%w(
+	PAL NTSC SECAM AUTO
+)
+\end ruby
+;
 
 /* **************************************************************** */
 
+/*
 #define WH(_field_,_spec_) \
 	sprintf(buf+strlen(buf), "%s: " _spec_ "; ", #_field_, self->_field_);
 
@@ -150,76 +108,73 @@ static char *choice_to_s(int value, int n, named_int *table) {
 		return strdup(table[value].name);
 	}
 }
+*/
+
+class RStream {
+public:
+	Ruby a;
+	RStream(Ruby a) : a(a) {}
+	RStream &operator <<(/*Ruby*/ void *v) { rb_ary_push(a,(Ruby)v); return *this; }
+	RStream &operator <<(int v) { return *this<<(void *)INT2NUM(v); }
+};
 
 static void gfpost(VideoChannel *self) {
-	char buf[256] = "[VideoChannel] ";
-	WH(channel,"%d");
-	WH(name,"%.32s");
-	WH(tuners,"%d");
-	WHFLAGS(flags,channel_flags);
-	WH(type,"0x%04x");
-	WH(norm,"%d");
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoChannel) << self->channel
+		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+		<< self->tuners << self->flags << self->type << self->norm;
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoTuner *self) {
-	char buf[256] = "[VideoTuner] ";
-	WH(tuner,"%d");
-	WH(name,"%.32s");
-	WH(rangelow,"%lu");
-	WH(rangehigh,"%lu");
-	WHFLAGS(flags,tuner_flags);
-	WHCHOICE(mode,video_mode_choice);
-	WH(signal,"%d");
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoTuner) << self->tuner
+		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+		<< self->rangelow << self->rangehigh
+		<< self->flags << self->mode << self->signal;
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoCapability *self) {
-	char buf[256] = "[VideoCapability] ";
-	WH(name,"%.20s");
-	WHFLAGS(type,video_type_flags);
-	WH(channels,"%d");
-	WH(audios,"%d");
-	WHYX(maxsize,maxheight,maxwidth);
-	WHYX(minsize,minheight,minwidth);
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoCapability)
+		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+		<< self->type
+		<< self->channels << self->audios
+		<< self->maxheight << self->maxwidth
+		<< self->minheight << self->minwidth;
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoWindow *self) {
-	char buf[256] = "[VideoWindow] ";
-	WHYX(pos,y,x);
-	WHYX(size,height,width);
-	WH(chromakey,"0x%08x");
-	WH(flags,"0x%08x");
-	WH(clipcount,"%d");
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoWindow)
+		<< self->y << self->x 
+		<< self->height << self->width
+		<< self->chromakey << self->flags << self->clipcount;
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoPicture *self) {
-	char buf[256] = "[VideoPicture] ";
-	WH(brightness,"%d");
-	WH(hue,"%d");
-	WH(contrast,"%d");
-	WH(whiteness,"%d");
-	WH(depth,"%d");
-	WHCHOICE(palette,video_palette_choice);
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoPicture)
+		<< self->brightness << self->contrast << self->colour
+		<< self->hue << self->whiteness << self->depth << self->palette;
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoMbuf *self) {
-	char buf[256] = "[VideoMBuf] ";
-	WH(size,"%d");
-	WH(frames,"%d");
-	for (int i=0; i<4; i++) WH(offsets[i],"%d");
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoMBuf) << self->size << self->frames;
+	for (int i=0; i<4; i++) rs << self->offsets[i];
+	rb_p(rs.a);
 }
 
 static void gfpost(VideoMmap *self) {
-	char buf[256] = "[VideoMMap] ";
-	WH(frame,"%u");
-	WHYX(size,height,width);
-	WHCHOICE(format,video_palette_choice);
-	gfpost("%s",buf);
+	RStream rs(rb_ary_new());
+	rs << (void *)SYM(VideoMMap) << self->frame
+		<< self->height << self->width << self->format;
+	rb_p(rs.a);
 };
 
 /* **************************************************************** */
@@ -440,7 +395,7 @@ GRID_INLET(FormatVideoDev,0) {
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
-	vtuner.mode = VIDEO_MODE_NTSC;
+	vtuner.mode = VIDEO_MODE_NTSC; //???
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 }
@@ -509,10 +464,10 @@ GRID_INLET(FormatVideoDev,0) {
 		get(0,0,SYM(contrast  ));
 		get(0,0,SYM(whiteness ));
 	} else if (attr==SYM(brightness)) { PICTURE_ATTR_GET(brightness);
-	} else if (attr==SYM(hue))        { PICTURE_ATTR_GET(hue       );
-	} else if (attr==SYM(colour))     { PICTURE_ATTR_GET(colour    );
-	} else if (attr==SYM(contrast))   { PICTURE_ATTR_GET(contrast  );
-	} else if (attr==SYM(whiteness))  { PICTURE_ATTR_GET(whiteness );
+	} else if (attr==SYM(hue       )) { PICTURE_ATTR_GET(hue       );
+	} else if (attr==SYM(colour    )) { PICTURE_ATTR_GET(colour    );
+	} else if (attr==SYM(contrast  )) { PICTURE_ATTR_GET(contrast  );
+	} else if (attr==SYM(whiteness )) { PICTURE_ATTR_GET(whiteness );
 	} else { RAISE("What you say?"); }
 }
 
@@ -536,6 +491,7 @@ GRID_INLET(FormatVideoDev,0) {
 	gp->palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, gp);
 	WIOCTL(fd, VIDIOCGPICT, gp);
+	//if (bit_packing) { delete bit_packing; bit_packing=0; }
 	switch(palette) {
 	case VIDEO_PALETTE_RGB24:{
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
@@ -545,7 +501,7 @@ GRID_INLET(FormatVideoDev,0) {
 		/* woops, special case already, can't do that with bit_packing */
 	}
 	default:
-		gfpost("can't handle palette %d", gp->palette);
+		RAISE("can't handle palette %d", gp->palette);
 	}
 	delete gp;
 }
@@ -568,13 +524,15 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost(gp);
 	char buf[1024] = "";
-	for (int i=0; i<COUNT(video_palette_choice); i++) {
+	int n = 17 /*COUNT(video_palette_choice)*/;
+	for (int i=0; i<n; i++) {
 		gp->palette = i;
 		ioctl(fd, VIDIOCSPICT, gp);
 		ioctl(fd, VIDIOCGPICT, gp);
 		if (gp->palette == i) {
 			if (*buf) strcpy(buf+strlen(buf),", ");
-			strcpy(buf+strlen(buf),video_palette_choice[i].name);
+			//strcpy(buf+strlen(buf),video_palette_choice[i].name);
+			sprintf(buf+strlen(buf),"%d",i);
 		}
 	}
 	gfpost("This card supports palettes: %s", buf);
