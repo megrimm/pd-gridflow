@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@
 
 /*
 'bridge_puredata.c' becomes 'gridflow.pd_linux' which loads Ruby and tells
-Ruby to load the other 90% of Gridflow. GridFlow creates the FObject class
+Ruby to load the other 95% of Gridflow. GridFlow creates the FObject class
 and then subclasses it many times, each time calling FObject.install(),
 which tells the bridge to register a class in puredata or jmax. Puredata
 objects have proxies for each of the non-first inlets so that any inlet
@@ -545,6 +545,19 @@ static GFBridge gf_bridge3 = {
 
 struct BFGridFlow : t_object {};
 
+t_class *bindpatcher;
+static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
+	t_pd *bself = pd_new(bindpatcher);
+	if (ac!=1 || at->a_type != A_SYMBOL) {
+		post("bindpatcher: oops");
+	} else {
+		t_symbol *s = atom_getsymbol(at);
+		post("binding patcher to: %s",s->s_name);
+		pd_bind((t_pd *)canvas_getcurrent(),s);
+	}
+	return bself;
+}
+
 extern "C" void gridflow_setup () {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-PureData","/dev/null"};
@@ -579,4 +592,7 @@ post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 
 	gf_alarm = clock_new(0,(void(*)())gf_timer_handler);
 	gf_timer_handler(gf_alarm,0);
+
+	bindpatcher = class_new(gensym("bindpatcher"),
+		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 }
