@@ -2,7 +2,7 @@ $keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
 
-ClassDecl = Struct.new(:name,:supername,:methods)
+ClassDecl = Struct.new(:name,:supername,:methods,:grins)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
 Arg = Struct.new(:type,:name,:default)
 
@@ -28,14 +28,14 @@ def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	#STDERR.puts "class: #{line}"
 	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
-	q=ClassDecl.new($1,$2,{})
+	q=ClassDecl.new($1,$2,{},{})
 	$stack << q
 	$classes << q
 	Out.puts ""
 end
 
 def parse_methoddecl(line,term)
-	/^(\w+)\s+(\w+)\s*\((.*)\)\s*#{term}\s*$/.match line or
+	/^(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
 		raise "syntax error #{where}"
 	rettype,selector,arglist = $1,$2,$3
 	arglist,minargs,maxargs = parse_arglist arglist
@@ -81,17 +81,20 @@ def handle_decl(line)
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	classname = $stack[-1].name
-	m = parse_methoddecl(line,";")
+	m = parse_methoddecl(line,";\s*$")
 	$stack[-1].methods[m.selector] = m
 
 	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
 	Out.puts "#{unparse_arglist m.arglist});//FCS"
+	Out.puts "static Ruby #{m.selector}_wrap"+
+	"(int argc, Ruby *argv, Ruby rself);//FCS"
 end
 
 def handle_def(line)
 	#STDERR.puts "def: #{line}"
-	m = parse_methoddecl(line,"\{?")
+	m = parse_methoddecl(line,"{?.*$")
+	term = line[/\{.*/]
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
@@ -106,7 +109,7 @@ def handle_def(line)
 		qlass.methods[m.selector] = m
 	end
 
-	Out.print "static Ruby #{classname}_#{m.selector}_wrap"+
+	Out.print "Ruby #{classname}::#{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself) {"+
 	"static const char *methodspec = "+
 	"\"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"+
@@ -155,15 +158,27 @@ def handle_def(line)
 	Out.print "return foo;" if m.rettype!="void" ###
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
-	Out.puts "#{unparse_arglist m.arglist, false}){//FCS"
+	Out.puts "#{unparse_arglist m.arglist, false})#{term}//FCS"
 end
 
 def handle_grdecl(line)
 	qlass = $stack[-1]
 	Out.puts qlass.methods.map {|foo,method|
 		c,s = qlass.name,method.selector
-		"{ \"#{s}\",(RMethod)#{c}_#{s}_wrap }"
+		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
 	}.join(",")
+end
+
+def handle_grin(line)
+	fields = line.split(/\s+/)
+	i = fields[0].to_i
+	c = $stack[-1].name
+	Out.print "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);"
+	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, int n, Pt<T> data);"
+	Out.print "static GridHandler grid_#{i}_hand;"
+#		((C*)(in->parent))->grin_##I(in,n,data); }
+	handle_decl "Ruby _#{i}_grid(...);"
+	$stack[-1].grins[i] = fields.dup
 end
 
 def handle_end(line)
@@ -174,6 +189,24 @@ def handle_end(line)
 		if fields[0]!="class" or
 		(n>1 and fields[1]!=frame.name)
 		then raise "end not matching #{where}" end
+		$stack.push frame
+		frame.grins.each {|i,v|
+			k = case v[1]
+			when nil; '4'
+			when 'int32'; '1'
+			when 'int'; '2'
+			when 'float'; 'F'
+			else raise 'BORK BORK BORK' end
+			Out.print "static GridHandler #{frame.name}_grid_#{i}_hand = GRIN#{k}(#{frame.name},#{i});"
+			handle_def "Ruby _#{i}_grid(...) {"+
+				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{frame.name}_grid_#{i}_hand);"+
+				"return in[#{i}]->begin(argc,argv);}"
+		}
+		$stack.pop
+			#Out.puts "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);//FCS"
+			#Out.puts "static Ruby _#{i}_grid_wrap(int argc, Ruby *argv, Ruby rself) {"
+			#Out.puts "L}"
+			#Out.puts "void _#{i}_grid(...){L}"
 	end
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
@@ -202,6 +235,7 @@ loop{
 		rescue StandardError => e
 			STDERR.puts e.inspect
 			STDERR.puts "at line #{$linenumber}"
+			STDERR.puts e.backtrace
 			exit 1
 		end
 	else
