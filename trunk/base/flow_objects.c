@@ -110,7 +110,6 @@ GRID_FLOW(GridImport,1) {
 
 GRID_END(GridImport,1) {}
 
-//METHOD3(GridImport,init,void,Grid t) {
 METHOD(GridImport,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
@@ -125,7 +124,7 @@ METHOD(GridImport,_0_reset) {
 	if (out->is_busy()) out->abort();
 }
 
-GRCLASS(GridImport,"@import",inlets:2,outlets:1,
+GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
 	DECL(GridImport,init),
 	DECL(GridImport,_0_reset))
@@ -150,7 +149,7 @@ GRID_FLOW(GridExport,0) {
 
 GRID_END(GridExport,0) {}
 
-GRCLASS(GridExport,"@export",inlets:1,outlets:1,
+GRCLASS(GridExport,"@export",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridExport,0)))
 /* outlet 0 not used for grids */
 
@@ -183,7 +182,7 @@ GRID_END(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
 }
 
-GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,
+GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridExportList,0)))
 /* outlet 0 not used for grids */
 
@@ -302,7 +301,7 @@ METHOD(GridStore,_0_bang) {
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
 
-GRCLASS(GridStore,"@store",inlets:2,outlets:1,
+GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridStore,0),GRINLET(GridStore,1)),
 	DECL(GridStore,init),
 	DECL(GridStore,_0_bang))
@@ -329,7 +328,7 @@ METHOD(GridOp1,init) {
 	$->op = OP1(argv[0]);
 }
 
-GRCLASS(GridOp1,"@!",inlets:1,outlets:1,
+GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridOp1,0)),
 	DECL(GridOp1,init))
 
@@ -387,7 +386,7 @@ METHOD(GridOp2,init) {
 	}
 }
 
-GRCLASS(GridOp2,"@",inlets:2,outlets:1,
+GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
 LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
 	DECL(GridOp2,init))
 
@@ -454,7 +453,7 @@ METHOD(GridFold,init) {
 	}
 }
 
-GRCLASS(GridFold,"@fold",inlets:2,outlets:1,
+GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridFold,0)),
 	DECL(GridFold,init))
 
@@ -512,7 +511,7 @@ METHOD(GridScan,init) {
 	}
 }
 
-GRCLASS(GridScan,"@scan",inlets:2,outlets:1,
+GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridScan,0)),
 	DECL(GridScan,init))
 
@@ -589,7 +588,7 @@ METHOD(GridInner,init) {
 	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
-GRCLASS(GridInner,"@inner",inlets:3,outlets:1,
+GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,init))
 
@@ -655,7 +654,7 @@ METHOD(GridInner2,init) {
 	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
-GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,
+GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridInner2,0),GRINLET(GridInner2,2)),
 	DECL(GridInner2,init))
 
@@ -709,7 +708,7 @@ METHOD(GridOuter,init) {
 	if (argc==2) $->r.init_from_ruby(argv[1]);
 }
 
-GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,
+GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
 	DECL(GridOuter,init))
 
@@ -824,7 +823,7 @@ METHOD(GridConvolve,init) {
 	if (argc==4) $->b.init_from_ruby(argv[3]);
 }
 
-GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,
+GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
 	DECL(GridConvolve,init))
 
@@ -903,7 +902,7 @@ GRID_INPUT_2(GridFor,2,step) {}
 GRID_INPUT_2(GridFor,1,to) {}
 GRID_INPUT_2(GridFor,0,from) {GridFor__0_bang($,rself,0,0);}
 
-GRCLASS(GridFor,"@for",inlets:3,outlets:1,
+GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridFor,0),GRINLET(GridFor,1),GRINLET(GridFor,2)),
 	DECL(GridFor,init),
 	DECL(GridFor,_0_bang),
@@ -924,7 +923,7 @@ GRID_FLOW(GridDim,0) {}
 
 GRID_END(GridDim,0) {}
 
-GRCLASS(GridDim,"@dim",inlets:1,outlets:1,
+GRCLASS(GridDim,"@dim",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridDim,0)))
 
 /* **************************************************************** */
@@ -1006,7 +1005,7 @@ METHOD(GridRedim,init) {
 	$->data = 0;
 }
 
-GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,
+GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
 LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,1)),
 	DECL(GridRedim,init))
 
@@ -1073,7 +1072,7 @@ METHOD(GridScaleBy,init) {
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
-GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,
+GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridScaleBy,0)),
 	DECL(GridScaleBy,init))
 
@@ -1124,7 +1123,7 @@ METHOD(GridRGBtoHSV,init) {
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
-GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,
+GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridRGBtoHSV,0)),
 	DECL(GridRGBtoHSV,init))
 
@@ -1163,7 +1162,7 @@ METHOD(GridHSVtoRGB,init) {
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
-GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,
+GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridHSVtoRGB,0)),
 	DECL(GridHSVtoRGB,init))
 
@@ -1256,7 +1255,7 @@ METHOD(RtMetro,init) {
 	gfpost("mode = %d",$->mode);
 }
 
-GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,
+GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,startup:0,
 LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
@@ -1271,7 +1270,7 @@ LIST(),
 struct GridGlobal : GridObject {
 };
 
-GRCLASS(GridGlobal,"@global",inlets:1,outlets:1,
+GRCLASS(GridGlobal,"@global",inlets:1,outlets:1,startup:0,
 LIST())
 
 /* **************************************************************** */
