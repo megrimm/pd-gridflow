@@ -75,6 +75,13 @@ int GridInlet_idle_verbose(GridInlet *$, const char *where) {
 void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	int i;
 	int *v = NEW(int,ac);
+
+/*
+	if (!GridInlet_idle($)) {
+		then what do i do?
+	}
+*/
+
 	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
 	$->dim = Dim_new(ac,v);
 	FREE(v);
@@ -98,7 +105,7 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	{
 		int newdex = $->dex + n;
 		if (newdex > Dim_prod($->dim)) {
-			whine("%d:i%d: grid input overflow: %d of %d",
+			whine("%s:i%d: grid input overflow: %d of %d",
 				INFO($), newdex, Dim_prod($->dim));
 			n = Dim_prod($->dim) - $->dex;
 			if (n<=0) return;
@@ -124,7 +131,7 @@ void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
 
 void GridInlet_set_factor(GridInlet *$, int factor) {
 	assert(factor > 0);
-	assert(Dim_prod($) % factor == 0);
+	assert(Dim_prod($->dim) % factor == 0);
 	$->factor = factor;
 
 }
@@ -154,6 +161,7 @@ int GridOutlet_idle(GridOutlet *$) {
 
 void GridOutlet_abort(GridOutlet *$) {
 	assert($);
+	assert(!GridOutlet_idle($));
 	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
@@ -162,6 +170,7 @@ void GridOutlet_abort(GridOutlet *$) {
 
 void GridOutlet_end(GridOutlet *$) {
 	assert($);
+	assert(!GridOutlet_idle($));
 	GridOutlet_flush($);
 	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
 	FREE($->dim);
@@ -171,10 +180,15 @@ void GridOutlet_end(GridOutlet *$) {
 
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
+	int winlet = $->woutlet; /* hack */
 	int n = Dim_count(dim);
 	fts_atom_t a[MAX_DIMENSIONS];
 
 	assert($);
+
+	whine("%s:o%d: beginning a %s",INFO((GridInlet *)$), Dim_to_s(dim));
+
+	/* if (!GridOutlet_idle($)) GridOutlet_abort($); */
 
 	$->dim = dim;
 	$->dex = 0;
@@ -208,12 +222,13 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	if (n >= PACKET_LENGTH) {
 		GridOutlet_send_direct($,n,data);
 	} else {
-		memcpy(&$->buf[$->bufn],data,sizeof(Number)*n);
+		memcpy(&$->buf[$->bufn],data,n*sizeof(Number));
 		$->bufn += n;
 	}
 }
 
 void GridOutlet_flush(GridOutlet *$) {
+	assert(!GridOutlet_idle($));
 	GridOutlet_send_direct($,$->bufn,$->buf);
 	$->bufn = 0;
 }
