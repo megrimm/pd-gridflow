@@ -41,14 +41,11 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <fcntl.h>
-
-static Dict *format_grid_object_set = 0;
+//#include <fcntl.h>
 
 extern FormatClass class_FormatGrid;
 
 typedef struct FormatGrid FormatGrid;
-typedef bool (*FGWaiter)(FormatGrid*,GridOutlet*,int n,char *buf);
 
 struct FormatGrid {
 	Format_FIELDS;
@@ -60,46 +57,7 @@ struct FormatGrid {
 
 /* socket stuff */
 	int listener;
-
-/* async stuff */
-	char *buf;
-	int buf_i;
-	int buf_n;
-	FGWaiter do_stuff;
 };
-
-static void read_do(FormatGrid *$, int n, FGWaiter stuff) {
-	FREE($->buf);
-	$->buf = NEW(char,n);
-	$->buf_i = 0;
-	$->buf_n = n;
-	$->do_stuff = stuff;
-}
-
-static bool try_read(FormatGrid *$) {
-	if (!$->buf) {
-//		whine("frame: try_read (nothing to do)");
-		return true;
-	}
-	whine("frame: try read");
-	while ($->buf) {
-		int n = read($->stream,$->buf+$->buf_i,$->buf_n-$->buf_i);
-		if (n<0) {
-			whine("try_read: %s", strerror(errno));
-			/* fix this */
-		} else {
-			$->buf_i += n;
-		}
-		if ($->buf_i == $->buf_n) {
-			char *buf = $->buf;
-			$->buf = 0;
-			if (!$->do_stuff($,$->parent->out[0],$->buf_n,buf)) return false;
-		} else {
-			return true;
-		}
-	}
-	return true;
-}
 
 static int bufsize (FormatGrid *$, GridOutlet *out) {
 	int n = Dim_prod_start($->dim,1);
@@ -109,7 +67,8 @@ static int bufsize (FormatGrid *$, GridOutlet *out) {
 }
 
 /* for each slice of the body */
-static bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame3 (FormatGrid *$, int n, char *buf) {
+	GridOutlet *out = $->parent->out[0];
 	int nn = n*8/$->bpv;
 	Number *data = (Number *)buf;
 //	whine("out->dex = %d",out->dex);
@@ -119,13 +78,14 @@ static bool FormatGrid_frame3 (FormatGrid *$, GridOutlet *out, int n, char *buf)
 	if (out->dex == Dim_prod(out->dim)) {
 		GridOutlet_end(out);
 	} else {
-		read_do($,bufsize($,out),FormatGrid_frame3);
+		Stream_on_read_do($->st,bufsize($,out),(OnRead)FormatGrid_frame3,$);
 	}
 	return true;
 }
 
 /* the dimension list */
-static bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame2 (FormatGrid *$, int n, char *buf) {
+	GridOutlet *out = $->parent->out[0];
 	int prod;
 	int n_dim = n/sizeof(int);
 	int v[n_dim];
@@ -145,13 +105,14 @@ static bool FormatGrid_frame2 (FormatGrid *$, GridOutlet *out, int n, char *buf)
 	}
 	FREE(buf);
 	GridOutlet_begin(out, $->dim);
-	read_do($,bufsize($,out),FormatGrid_frame3);
+	Stream_on_read_do($->st,bufsize($,out),(OnRead)FormatGrid_frame3,$);
 	return true;
 err: return false;
 }
 
 /* the header */
-static bool FormatGrid_frame1 (FormatGrid *$, GridOutlet *out, int n, char *buf) {
+static bool FormatGrid_frame1 (FormatGrid *$, int n, char *buf) {
+	GridOutlet *out = $->parent->out[0];
 	int n_dim;
 	if (is_le()) {
 		whine("we are smallest digit first");
@@ -184,31 +145,32 @@ static bool FormatGrid_frame1 (FormatGrid *$, GridOutlet *out, int n, char *buf)
 	}
 	whine("bpv=%d; res=%d; n_dim=%d", $->bpv, buf[6], n_dim);
 	FREE(buf);
-	read_do($,n_dim*sizeof(int),FormatGrid_frame2);
+	Stream_on_read_do($->st,n_dim*sizeof(int),(OnRead)FormatGrid_frame2,$);
 	return true;
 err: return false;
 }
 
 /* rewinding and starting */
 static bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
+	int fd = Stream_get_fd($->st);
 	if (frame!=-1) return 0;
 	whine("frame: $->is_socket: %d",$->is_socket);
 	/* rewind when at end of file. */
 	if (!$->is_socket) {
-		off_t thispos = lseek($->stream,0,SEEK_CUR);
-		off_t lastpos = lseek($->stream,0,SEEK_END);
+		off_t thispos = lseek(fd,0,SEEK_CUR);
+		off_t lastpos = lseek(fd,0,SEEK_END);
 		whine("thispos = %d", thispos);
 		whine("lastpos = %d", lastpos);
 		if (thispos == lastpos) thispos = 0;
 		{
-			off_t nextpos = lseek($->stream,thispos,SEEK_SET);
+			off_t nextpos = lseek(fd,thispos,SEEK_SET);
 			whine("nextpos = %d", nextpos);
 		}
 	}
 
-	read_do($,8,FormatGrid_frame1);
+	Stream_on_read_do($->st,8,(OnRead)FormatGrid_frame1,$);
 	if (!$->is_socket) {
-		while ($->buf) try_read($);
+		while (Stream_is_waiting($->st)) Stream_try_read($->st);
 		whine("frame: finished");
 	}
 
@@ -217,6 +179,7 @@ err: return false;
 }
 
 GRID_BEGIN(FormatGrid,0) {
+	int fd = Stream_get_fd($->st);
 	$->dim = in->dim;
 
 	/* header */
@@ -230,7 +193,7 @@ GRID_BEGIN(FormatGrid,0) {
 		buf[5]=32;
 		buf[6]=0;
 		buf[7]=Dim_count($->dim);
-		if (8>write($->stream,buf,8)) {
+		if (8>write(fd,buf,8)) {
 			whine("grid header: write error: %s",strerror(errno));
 		}
 
@@ -239,7 +202,7 @@ GRID_BEGIN(FormatGrid,0) {
 	/* dimension list */
 	{
 		int n = sizeof(int)*Dim_count($->dim);
-		if (n>write($->stream,$->dim->v,n)) {
+		if (n>write(fd,$->dim->v,n)) {
 			whine("dimension list: write error: %s",strerror(errno));
 		}
 	}	
@@ -247,18 +210,20 @@ GRID_BEGIN(FormatGrid,0) {
 }
 
 GRID_FLOW(FormatGrid,0) {
-	write($->stream,data,n*sizeof(Number));
+	int fd = Stream_get_fd($->st);
+	write(fd,data,n*sizeof(Number));
 }
 
 GRID_END(FormatGrid,0) {
-	lseek($->stream,0,SEEK_SET);
+	int fd = Stream_get_fd($->st);
+	lseek(fd,0,SEEK_SET);
 }
 
 void FormatGrid_close (FormatGrid *$) {
+	int fd = Stream_get_fd($->st);
+	close(fd);
 	if ($->is_socket) Dict_del(gf_timer_set,$);
-/*	if ($->bstream) fclose($->bstream); */
-	$->bstream = 0;
-	if (0 <= $->stream) close($->stream);
+	$->st = 0;
 	FREE($);
 }
 
@@ -275,12 +240,11 @@ static bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 	}
 
 	filename = Symbol_name(Var_get_symbol(at+0));
-	$->bstream = gf_file_fopen(filename,mode);
-	if (!$->bstream) {
+	$->st = Stream_open_file(filename,mode);
+	if (!$->st) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}
-	$->stream = fileno($->bstream);
 	return true;
 err: return false;
 }
@@ -292,13 +256,8 @@ err: return false;
 #include <netdb.h>
 #include <netinet/in.h>
 
-static void nonblock (int fd) {
-	int flags = fcntl(fd,F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(fd,F_SETFL,flags);
-}
-
 static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
+	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -308,7 +267,7 @@ static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 		whine("bad arguments"); goto err;
 	}
 
-	$->stream = socket(AF_INET,SOCK_STREAM,0);
+	stream = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
 	address.sin_port = htons(Var_get_int(at+1));
@@ -322,19 +281,21 @@ static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 		memcpy(&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
 	}
 
-	if (0>connect($->stream,(struct sockaddr *)&address,sizeof(address))) {
+	if (0>connect(stream,(struct sockaddr *)&address,sizeof(address))) {
 		whine("open_tcp(connect): %s",strerror(errno));
 		goto err;
 	}
 
-	if ($->mode==4 && $->is_socket) nonblock($->stream);
+	$->st = Stream_open_fd(stream,$->mode);
+	if ($->mode==4 && $->is_socket) Stream_nonblock($->st);
 	return true;
 err:
-	if (0<= $->stream) close($->stream);
+	if (0<= stream) close(stream);
 	return false;
 }
 
 static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
+	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -360,9 +321,8 @@ static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 		goto err;
 	}
 
-	$->stream = accept($->listener,0,0);
-	if (0> $->stream) {
-		$->stream = -1;
+	stream = accept($->listener,0,0);
+	if (0> stream) {
 		printf("open_tcpserver(accept): %s\n", strerror(errno));
 		goto err;
 	}
@@ -370,7 +330,9 @@ static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	close($->listener);
 	$->listener = -1;
 
-	if ($->mode==4) nonblock($->stream);
+	$->st = Stream_open_fd(stream,mode);
+
+	if ($->mode==4) Stream_nonblock($->st);
 	return true;
 err:
 	if ($->listener>0) {
@@ -386,7 +348,6 @@ static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode
 	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
 
 	if (!$) return 0;
-	$->buf = 0;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
@@ -407,7 +368,7 @@ static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode
 		whine("open: $->is_socket = %d", $->is_socket);
 	}
 
-	if ($->is_socket) Dict_put(gf_timer_set,$,try_read);
+	if ($->is_socket) Dict_put(gf_timer_set,$,Stream_try_read);
 
 	return (Format *)$;
 err:

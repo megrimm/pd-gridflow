@@ -26,8 +26,6 @@
 
 int gf_max_packet_length = 1024;
 
-FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
-
 #define INFO(_self_) \
 	Symbol_name(fts_get_class_name((_self_)->parent->_o.head.cl)), \
 	(_self_)->winlet
@@ -448,62 +446,3 @@ void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {
 		GridObject_conf_class(class,grclass->handlers[i].winlet);
 	}
 }
-
-/* **************** Format **************************************** */
-/* this is an abstract base class for file formats, network protocols, etc */
-
-Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
-	Format *$ = (Format *) NEW(char,qlass->object_size);
-	$->cl = qlass;
-	$->parent = parent;
-	$->chain = 0;
-	$->mode = mode;
-	$->stream = -1;
-	$->bstream = 0;
-	$->bit_packing = 0;
-	$->dim = 0;
-
-	/* FF_W, FF_R, FF_RW */
-	if (mode==2 || mode==4 || mode==6) {
-		if (! (qlass->flags & (1 << (mode/2)))) {
-			whine("Format %s does not support mode '%s'",
-				qlass->symbol_name,
-				format_flags_names[mode/2]);
-			return 0;
-		}
-	} else {
-		whine("Format opening mode is incorrect");
-		return 0;
-	}
-
-	return $;
-}
-
-void Format_close(Format *$) {
-	FREE($->bit_packing);
-	FREE($->dim);
-	FREE($);
-}
-
-/* **************** FormatClass *********************************** */
-
-FormatClass *FormatClass_find(const char *name) {
-	int i;
-	for (i=0; i<COUNT(format_classes); i++) {
-		/* whine("comparing `%s' with `%s'", name,
-			format_classes[i]->symbol_name); */
-		if (strcmp(format_classes[i]->symbol_name,name)==0) {
-			return format_classes[i];
-		}
-	}
-	return 0; /* fail */
-}
-
-const char *format_flags_names[] = {
-	"(0<<1)",
-	"FF_W: write",
-	"FF_R: read",
-	"FF_RW: read_write",
-};
-
-int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);

@@ -48,24 +48,25 @@ static Dim *FormatTarga_read_header (Format *$) {
 	short w,h;
 	char *comment;
 	int comment_length, depth;
+	FILE *f = Stream_get_file($->st);
 
-	comment_length = (uint8)getc($->bstream);
-	getc($->bstream); /* skip */
+	comment_length = (uint8)getc(f);
+	getc(f); /* skip */
 	{
-		int colors = (uint8)getc($->bstream);
+		int colors = (uint8)getc(f);
 		if (colors != 2) {
 			whine("unsupported color format: %d", colors);
 			goto err;
 		}
 	}
-	for (i=0;i<9;i++) getc($->bstream); /* skip */
-	fread(&w,1,2,$->bstream); /* !@#$ byte order problem */
-	fread(&h,1,2,$->bstream); /* !@#$ byte order problem */
-	depth = getc($->bstream);
+	for (i=0;i<9;i++) getc(f); /* skip */
+	fread(&w,1,2,f); /* !@#$ byte order problem */
+	fread(&h,1,2,f); /* !@#$ byte order problem */
+	depth = getc(f);
 	whine("tga: size y=%d x=%d depth=%d",h,w,depth);
-	getc($->bstream); /* skip */
+	getc(f); /* skip */
 	comment = NEW2(char,comment_length+1);
-	fread(comment, 1, comment_length, $->bstream);
+	fread(comment, 1, comment_length, f);
 	whine("tga: comment: %s", comment);
 	FREE(comment);
 
@@ -85,6 +86,7 @@ err:
 }
 
 static bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
+	FILE *f = Stream_get_file($->st);
 	Dim *dim;
 	if (frame!=-1) return false;
 	dim = FormatTarga_read_header($);
@@ -98,7 +100,7 @@ static bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
 		Number b2[bs];
 		for (y=0; y<dim->v[0]; y++) {
 			int i;
-			int bs2 = (int) fread(b1,1,bs,$->bstream);
+			int bs2 = (int) fread(b1,1,bs,f);
 			if (bs2 < bs) {
 				whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
 			}
@@ -120,7 +122,8 @@ GRID_FLOW(FormatTarga,0) {}
 GRID_END(FormatTarga,0) {}
 
 static void FormatTarga_close (Format *$) {
-	if ($->bstream) fclose($->bstream);
+	FILE *f = Stream_get_file($->st);
+	if (f) fclose(f);
 	FREE($);
 }
 
@@ -135,8 +138,8 @@ static Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mod
 	}
 	filename = Symbol_name(Var_get_symbol(at+1));
 
-	$->bstream = gf_file_fopen(filename,mode);
-	if (!$->bstream) {
+	$->st = Stream_open_file(filename,mode);
+	if (!$->st) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}

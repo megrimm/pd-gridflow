@@ -83,7 +83,7 @@ GRID_END(FormatMPEG,0) {}
 
 static void FormatMPEG_close (Format *$) {
 	if (mpeg_id) FREE(mpeg_id);
-	if ($->bstream) fclose($->bstream);
+	if ($->st) Stream_close($->st);
 	FREE($);
 }
 
@@ -98,8 +98,8 @@ static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode
 	}
 	filename = Symbol_name(Var_get_symbol(at+1));
 
-	$->bstream = gf_file_fopen(filename,mode);
-	if (!$->bstream) {
+	$->st = Stream_open_file(filename,mode);
+	if (!$->st) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}
@@ -112,7 +112,7 @@ static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode
 	mpeg_id = NEW(ImageDesc,1);
 
 	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
-	if (!OpenMPEG($->bstream,mpeg_id)) {
+	if (!OpenMPEG(Stream_get_file($->st),mpeg_id)) {
 		whine("libmpeg: can't open mpeg file");
 		goto err;
 	}
