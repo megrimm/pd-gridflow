@@ -1,0 +1,26 @@
+#N canvas 160 61 500 480 10;
+#X obj 110 208 route position;
+#X msg 147 123 option setcursor 32;
+#X text 221 206 <- get mouse coordinates and events;
+#X text 49 22 How to get the mouse coordinates and hide / change the
+cursor?;
+#X floatatom 140 302 5 0 0 0 - - -;
+#X obj 142 250 print;
+#X msg 128 100 option hidecursor;
+#X text 273 98 <-- removes the cursor;
+#X text 307 120 <-- accepts 0 - 63;
+#X obj 127 345 @mouse;
+#X obj 65 151 @out x11;
+#X obj 142 274 listelement 0;
+#X obj 195 248 s mouse;
+#X obj 190 378 print xy_clicked;
+#X obj 69 378 print xy_dragged;
+#X connect 0 0 5 0;
+#X connect 0 0 11 0;
+#X connect 0 0 12 0;
+#X connect 1 0 10 0;
+#X connect 6 0 10 0;
+#X connect 9 0 14 0;
+#X connect 9 1 13 0;
+#X connect 10 0 0 0;
+#X connect 11 0 4 0;
