@@ -7,32 +7,29 @@ Installation
 [ ] add --slow switch to turn off all optimizations
 
 Documentation
-[!] op2: atan, **
-[!] op2: ALL
-[!] op2: relative speeds
+[ ] XMLize reference section
+[ ] create JMAXML->HTML converter
+[ ] validate samples/outside
+[ ] validate samples/020
+[ ] op2: relative speeds
+[ ] add credits
 [ ] split reference.html into:
 	protocol.html operator.html format.html object.html
 [ ] document internals
-[!] add credits
 [ ] add explanation of video4jmax vs jmax-videodsp
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
-[!] validate samples/outside
-[!] validate samples/020
 [ ] H5 font-size is smaller than regular P font-size ?
 [ ] make real documentation for templates
 [ ] recategorize objects+templates together
 [ ] find a good XML editor
 [ ] create a good DTD/Schema for jMax/v4j/C
-[!] XMLize reference section
-[!] create JMAXML->HTML converter
 [ ] document use of [route grid_end], [route grid_begin]
 [ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
 [ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
-[!] add list of new samples in ChangeLog
 
 General
 [ ] make FREE() handle #delete as possible
@@ -52,7 +49,6 @@ Computation Objects
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 
 Effects
-[!] ripple
 [!] overlay using alpha channel
 [ ] pinch, waves
 [ ] pixelize, despeckle
@@ -67,7 +63,6 @@ Effects
 [ ] see gimp for ideas
 
 Structure & Protocol
-[x] packets: output buffering
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
@@ -120,7 +115,7 @@ Misc
 [ ] v4j could have a runtime profiler for cpu+memory usage.
 
 ================
-vin_file_test_2.jmax
+vin_file_test_2.jmax / benchmark.jmax
 
 0.2.0.pre3      :   20 frames in 30   seconds :  0.66 fps
 0.2.0.pre8 ps=16:   20 frames in  8   seconds :  2.50 fps
