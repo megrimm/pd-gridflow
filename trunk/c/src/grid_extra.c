@@ -70,7 +70,7 @@ GRID_END(GridScaleBy,0) {
 
 METHOD(GridScaleBy,init) {
 	$->rint = GET(1,int,2);
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridScaleBy,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }

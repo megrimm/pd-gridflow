@@ -284,8 +284,10 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 			case 'i': args[n_args++]=fts_t_int;    break;
 			case 'p': args[n_args++]=fts_t_ptr;    break;
 			case 'l': args[n_args++]=fts_t_list;   break;
-			case '+': while(n_args<16) {
-				args[n_args]=args[n_args-1]; n_args++; }
+			case '+': min_args = n_args;
+				while(n_args<16) {
+					args[n_args]=args[n_args-1];
+					n_args++;}
 				break;
 			case ';': min_args = n_args; break;
 			default: assert(0);
@@ -315,39 +317,41 @@ FILE *gf_file_fopen(const char *name, int mode) {
 static fts_alarm_t *rtmetro_alarm = 0;
 
 typedef struct RtMetro {
-	fts_object_t o;
+	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
 	int ms; /* millisecond time */
 	int on;
 } RtMetro;
 
-METHOD2(RtMetro,int) {
+METHOD(RtMetro,int) {
 	$->on = !! GET(0,int,0);
 	whine("on = %d",$->on);
 }
 
-METHOD2(RtMetro,rint) {
+METHOD(RtMetro,rint) {
 	$->ms = GET(0,int,0);
 	whine("ms = %d",$->ms);
 }
 
-METHOD2(RtMetro,init) {
+METHOD(RtMetro,init) {
+	GridObject_init((GridObject *)$);
 	$->ms = GET(1,int,0);
 	$->on = 0;
 	whine("ms = %d",$->ms);
 	whine("on = %d",$->on);
 }
 
-METHOD2(RtMetro,delete) {}
+METHOD(RtMetro,delete) {
+	GridObject_delete((GridObject *)$);
+}
 
-CLASS(RtMetro) {
-	MethodDecl methods[] = {
-		DECL22(RtMetro, 0,int,   int,   "i"),
-		DECL22(RtMetro, 1,int,   rint,  "i"),
-		DECL22(RtMetro,-1,init,  init,  "s"),
-		DECL22(RtMetro,-1,delete,delete,""),
-	};
+CLASS(RtMetro,
+	DECL2(RtMetro, 0,int,   int,   "i"),
+	DECL2(RtMetro, 1,int,   rint,  "i"),
+	DECL2(RtMetro,-1,init,  init,  "s"),
+	DECL2(RtMetro,-1,delete,delete,""))
+{
 	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(RtMetro_methods));
 	return fts_Success;
 }
 
@@ -358,14 +362,14 @@ CLASS(RtMetro) {
    GridFlow.
 */
 typedef struct GFGlobal {
-	fts_object_t o;
+	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
 } GFGlobal;
 
 static void profiler_reset$1(void*d,void*k,void*v) {
 	((GridObject *)k)->profiler_cumul = 0;
 }
 
-METHOD2(GFGlobal,profiler_reset) {
+METHOD(GFGlobal,profiler_reset) {
 	Dict *os = gf_object_set;
 	int i;
 	Dict_each(os,profiler_reset$1,0);
@@ -381,7 +385,7 @@ static void profiler_dump$1(void*d,void*k,void*v) {
 	List_push((List *)d,k);
 }
 
-METHOD2(GFGlobal,profiler_dump) {
+METHOD(GFGlobal,profiler_dump) {
         /* if you blow 256 chars it's your own fault */
 	char buf[256];
 
@@ -413,19 +417,22 @@ METHOD2(GFGlobal,profiler_dump) {
 	whine("--------------------------------");
 }
 
-METHOD2(GFGlobal,init) {}
+METHOD(GFGlobal,init) {
+	GridObject_init((GridObject *)$);
+}
 
-METHOD2(GFGlobal,delete) {}
+METHOD(GFGlobal,delete) {
+	GridObject_delete((GridObject *)$);
+}
 
-CLASS(GFGlobal) {
-	MethodDecl methods[] = {
-		DECL22(GFGlobal,-1,init,          init,          "s"),
-		DECL22(GFGlobal,-1,delete,        delete,        ""),
-		DECL22(GFGlobal, 0,profiler_reset,profiler_reset,""),
-		DECL22(GFGlobal, 0,profiler_dump, profiler_dump, ""),
-	};
+CLASS(GFGlobal,
+	DECL(GFGlobal,-1,init,          "s"),
+	DECL(GFGlobal,-1,delete,        ""),
+	DECL(GFGlobal, 0,profiler_reset,""),
+	DECL(GFGlobal, 0,profiler_dump, ""))
+{
 	fts_class_init(class, sizeof(GFGlobal), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GFGlobal_methods));
 	return fts_Success;
 }
 

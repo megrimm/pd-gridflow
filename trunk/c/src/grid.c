@@ -380,7 +380,7 @@ void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode) {
   abstract class for an FTS Object that has Grid-aware inlets/outlets
 */
 
-METHOD(GridObject,init) {
+void GridObject_init(GridObject *$) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
@@ -390,11 +390,11 @@ METHOD(GridObject,init) {
 
 /* category: input */
 
-METHOD2(GridObject,grid_begin){ENTER;GridInlet_begin($->in[winlet],ac,at);LEAVE;}
-METHOD2(GridObject,grid_flow ){ENTER;GridInlet_flow( $->in[winlet],ac,at);LEAVE;}
-METHOD2(GridObject,grid_flow2){ENTER;GridInlet_flow2($->in[winlet],ac,at);LEAVE;}
-METHOD2(GridObject,grid_end  ){ENTER;GridInlet_end(  $->in[winlet],ac,at);LEAVE;}
-METHOD2(GridObject,list      ){ENTER;GridInlet_list( $->in[winlet],ac,at);LEAVE;}
+METHOD(GridObject,grid_begin){GridInlet_begin($->in[winlet],ac,at);}
+METHOD(GridObject,grid_flow ){GridInlet_flow( $->in[winlet],ac,at);}
+METHOD(GridObject,grid_flow2){GridInlet_flow2($->in[winlet],ac,at);}
+METHOD(GridObject,grid_end  ){GridInlet_end(  $->in[winlet],ac,at);}
+METHOD(GridObject,list      ){GridInlet_list( $->in[winlet],ac,at);}
 
 void GridObject_delete(GridObject *$) {
 	int i;
@@ -419,11 +419,11 @@ void GridObject_delete(GridObject *$) {
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {
 	MethodDecl methods[] = {
-		DECL12(GridObject,winlet,grid_begin,"spi+"),
-		DECL12(GridObject,winlet,grid_flow, "sip"),
-		DECL12(GridObject,winlet,grid_flow2,"sip"),
-		DECL12(GridObject,winlet,grid_end,  ""),
-		DECL12(GridObject,winlet,list,      "l"),
+		DECL(GridObject,winlet,grid_begin,"spi+"),
+		DECL(GridObject,winlet,grid_flow, "sip"),
+		DECL(GridObject,winlet,grid_flow2,"sip"),
+		DECL(GridObject,winlet,grid_end,  ""),
+		DECL(GridObject,winlet,list,      "l"),
 	};
 	define_many_methods(class,ARRAY(methods));
 }
