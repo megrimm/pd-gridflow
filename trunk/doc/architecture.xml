@@ -222,6 +222,12 @@
 	<operator-2 name="swaprem" cname="mer"
 	> B % A, remainder (goes with /) </operator-2>
 
+	<operator-2 name="gcd" cname="gcd">
+	greatest common divisor</operator-2>
+
+	<operator-2 name="lcm" cname="lcm">
+	least common multiple</operator-2>
+
 	<!-- bits -->
 	<operator-2 name="|"     cname="or" 
 		color="bright munchies"
@@ -286,7 +292,7 @@
 	> arctan(A/B) </operator-2>
 	<operator-2 name="tanh*" cname="tanh"
 		color="smooth clipping"
-		space="smooth clipping (of individual points), neural sigmoid"
+		space="smooth clipping (of individual points), neural sigmoid, fuzzy logic"
 	> B * tanh(A) </operator-2>
 	<operator-2 name="log*" cname="log"
 	> B * log(A) (in base e) </operator-2>
@@ -309,6 +315,20 @@ bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks
 with the main part.
 </p>
 
+</prose></section>
+
+<section name="Synchronisation"><prose>
+<p>In GridFlow you cannot send two grids in different inlets at the
+same time. You have to use @finished together with (possibly) fork and @store,
+which can be cumbersome. If you don't do this, the result is undefined
+behaviour (or crash!).</p>
+
+<p>In GridFlow 0.7.1 this is beginning to change. @store and @ now allow
+right-inlet grids to be buffered if an operation is occuring on left inlet. This
+should make many circuits simpler.
+</p>
+
+<p>(more to come)</p>
 </prose></section>
 
 </documentation>
