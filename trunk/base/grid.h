@@ -889,6 +889,17 @@ struct FObject {
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
 	uint64 profiler_last;
+
+	/*
+	  part of the purpose of this is to cause the virtual-table-field
+	  to be created in FObject and not GridObject, because else gdb pretends
+	  the virtual table is after FObject when it's actually before, and then
+	  ((GridObject *)a)->foo != ((FObject *)a)->foo
+	  PS: I've heard this is not a hack, this is the only way, as in:
+	  Even dynamic_cast<> relies on this.
+	*/
+	virtual ~FObject() {}
+	virtual void mark(){} /* not used for now */
 };
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
@@ -906,8 +917,8 @@ struct GridObject : FObject {
     */
 
 	GridObject();
-	virtual void mark(); /* not used for now */
-	virtual ~GridObject();
+	~GridObject();
+	void mark(); /* not used for now */
 
 	const char *args() {
 		Ruby s=rb_funcall(rself,SI(args),0);
@@ -935,8 +946,6 @@ struct GridObject : FObject {
 };
 
 void GridObject_conf_class(Ruby rself, GridClass *grclass);
-
-/* **************************************************************** */
 
 /* **************************************************************** */
 

@@ -37,6 +37,8 @@
 #include <ctype.h>
 #include <stdarg.h>
 
+//#define TRACE_SELF
+
 struct BFObject;
 struct FMessage {
 	BFObject *self;
@@ -153,7 +155,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	self->bself->rself = rself;
 #ifdef TRACE_SELF
 	fprintf(stderr,"init: rself=%08x, self=%08x, bself=%08x\n",
-		(int)rself, (int)self, (int)fm->self);
+		(int)rself, (int)self, (int)self->bself);
 #endif
 	return rself;
 }
