@@ -298,7 +298,7 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	return $;
 }
 
-GRCLASS(BitPacking,inlets:0,outlets:0,
+GRCLASS(BitPacking,"",inlets:0,outlets:0,
 LIST(),
 	DECL(BitPacking,init),
 	DECL(BitPacking,pack2),
@@ -306,12 +306,19 @@ LIST(),
 
 /* **************************************************************** */
 
+void Dim::check() {
+	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
+	for (int i=0; i<n; i++)
+		if (v[i]<1 || v[i]>MAX_INDICES)
+			RAISE("dim[%d]=%d is out of range",i,v[i]);
+}
+
+
 /* returns a string like "Dim(240,320,3)" */
 char *Dim::to_s() {
 	/* if you blow 256 chars it's your own fault */
 	char *bottom = NEW(char,256);
 	char *s = bottom;
-	invariant();
 	s += sprintf(s,"Dim(");
 	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
 	s += sprintf(s,")");
