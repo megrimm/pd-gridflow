@@ -78,7 +78,7 @@ GRID_INLET(FormatJPEG,0) {
 
 METHOD3(FormatJPEG,frame) {
 	GridOutlet *o = out[0];
-	rb_funcall(rself,SI(rewind_if_needed),0);
+	if (feof(f)) return Qfalse;
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
 	jpeg_stdio_src(&djpeg,f);
