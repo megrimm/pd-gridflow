@@ -34,11 +34,11 @@ Dim *Dim_new (int n, int *v) {
 	Dim *$ = (Dim *) NEW(int,n+1);
 
 	int i;
-	assert_range(n,1,MAX_DIMENSIONS);
+	assert_range(n,0,MAX_DIMENSIONS);
 	assert(v);
 	$->n = n;
 	for (i=0; i<n; i++) {
-		assert_range(v[i],1,MAX_INDICES);
+		assert_range(v[i],0,MAX_INDICES);
 		$->v[i] = v[i];
 	}
 	return $;
@@ -46,14 +46,14 @@ Dim *Dim_new (int n, int *v) {
 
 int Dim_count (Dim *$) {
 	assert($);
-	assert_range($->n,1,MAX_DIMENSIONS);
+	assert_range($->n,0,MAX_DIMENSIONS);
 	return $->n;
 }
 
 int Dim_get (Dim *$, int i) {
 	assert($);
 	assert_range(i,0,$->n-1);
-	assert_range($->v[i],1,MAX_INDICES);
+	assert_range($->v[i],0,MAX_INDICES);
 	return $->v[i];
 }
 
