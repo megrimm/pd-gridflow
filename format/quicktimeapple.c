@@ -479,22 +479,23 @@ err:
 }
 
 \classinfo {
-	IEVAL(rself,
-\ruby
-install '#in:quicktime',1,1
-@comment="Apple Quicktime (using Apple's)"
-@flags=4
-suffixes_are'mov'
-def self.new(mode,source,filename)
-  if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
-end
-\end ruby
-);
 	EnterMovies();
-	extern Ruby cFormat;
-	rb_funcall(mGridFlow, SI(fclass_install), 2,
-		EVAL("GridFlow::FormatQuickTimeCamera"), cFormat); //hack
-}
+IEVAL(rself,
+\ruby
+  install '#in:quicktime',1,1
+  @comment="Apple Quicktime (using Apple's)"
+  @flags=4
+  suffixes_are'mov'
+  def self.new(mode,source,filename)
+    if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
+  end
+  FormatQuickTimeCamera.instance_eval{
+    install '#in:quicktime_camera',1,1
+    @comment="Apple Quicktime (using Apple's) (CAMERA MODULE)"
+    @flags=4
+  }
+\end ruby
+);}
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
 	\startall
