@@ -134,7 +134,7 @@ METHOD3(GridCast,initialize) {
 }
 
 GRCLASS(GridCast,"@cast",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridCast,0,4)),
+LIST(GRINLET4(GridCast,0,4)),
 	DECL(GridCast,initialize))
 
 /* **************************************************************** */
@@ -217,7 +217,7 @@ METHOD3(GridImport,_0_reset) {
 }
 
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridImport,0,4),GRINLET(GridImport,1,4)),
+LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
 	DECL(GridImport,initialize),
 	DECL(GridImport,_0_reset),
 	DECL(GridImport,_0_symbol),
@@ -235,17 +235,23 @@ struct GridExport : GridObject {
 	GRINLET3(0);
 };
 
+template <class T>
+static Ruby INTORFLOAT2NUM(T value) {return INT2NUM(value);}
+
+static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
+static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
+
 GRID_INLET(GridExport,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) {
-		Ruby a[] = { INT2NUM(0), sym_int, INT2NUM(data[i]) };
+		Ruby a[] = { INT2NUM(0), INTORFLOAT2NUM(data[i]) };
 		FObject_send_out(COUNT(a),a,rself);
 	}
 } GRID_FINISH {
 } GRID_END
 
 GRCLASS(GridExport,"@export",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridExport,0,4)))
+LIST(GRINLET4(GridExport,0,4)))
 /* outlet 0 not used for grids */
 
 /* **************************************************************** */
@@ -269,7 +275,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ary_store(list,1,sym_list);
 } GRID_FLOW {
 	for (int i=0; i<n; i++, data++)
-		rb_ary_store(list,in->dex+i+2,INT2NUM(*data));
+		rb_ary_store(list,in->dex+i+2,INTORFLOAT2NUM(*data));
 } GRID_FINISH {
 	FObject_send_out(rb_ary_len(list),rb_ary_ptr(list),rself);
 	list = 0;
@@ -277,7 +283,7 @@ GRID_INLET(GridExportList,0) {
 } GRID_END
 
 GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridExportList,0,4)))
+LIST(GRINLET4(GridExportList,0,4)))
 /* outlet 0 not used for grids */
 
 /* **************************************************************** */
@@ -422,7 +428,7 @@ METHOD3(GridStore,_0_bang) {
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridStore,0,4),GRINLET2(GridStore,1,4)),
+LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
 	DECL(GridStore,initialize),
 	DECL(GridStore,_0_bang))
 
@@ -451,7 +457,7 @@ METHOD3(GridOp1,initialize) {
 }
 
 GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridOp1,0,6)),
+LIST(GRINLET4(GridOp1,0,6)),
 	DECL(GridOp1,initialize))
 
 /* **************************************************************** */
@@ -517,7 +523,7 @@ METHOD3(GridOp2,initialize) {
 }
 
 GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridOp2,0,6),GRINLET2(GridOp2,1,4)),
+LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
 	DECL(GridOp2,initialize))
 
 /* **************************************************************** */
@@ -587,7 +593,7 @@ METHOD3(GridFold,initialize) {
 }
 
 GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridFold,0,4)),
+LIST(GRINLET4(GridFold,0,4)),
 	DECL(GridFold,initialize))
 
 /* **************************************************************** */
@@ -648,7 +654,7 @@ METHOD3(GridScan,initialize) {
 }
 
 GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridScan,0,4)),
+LIST(GRINLET4(GridScan,0,4)),
 	DECL(GridScan,initialize))
 
 /* **************************************************************** */
@@ -763,7 +769,7 @@ METHOD3(GridInner,initialize) {
 }
 
 GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
-LIST(GRINLET2(GridInner,0,4),GRINLET2(GridInner,2,4)),
+LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 	DECL(GridInner,initialize))
 
 /* **************************************************************** */
@@ -774,7 +780,7 @@ struct GridInner2 : GridInner {
 };
 
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
-LIST(GRINLET2(GridInner,0,4),GRINLET2(GridInner,2,4)),
+LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 	DECL(GridInner,initialize))
 
 /* **************************************************************** */
@@ -832,7 +838,7 @@ METHOD3(GridOuter,initialize) {
 }
 
 GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridOuter,0,4),GRINLET2(GridOuter,1,4)),
+LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
 	DECL(GridOuter,initialize))
 
 /* **************************************************************** */
@@ -940,7 +946,7 @@ METHOD3(GridConvolve,initialize) {
 }
 
 GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridConvolve,0,4),GRINLET2(GridConvolve,1,4)),
+LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4)),
 	DECL(GridConvolve,initialize))
 
 /* **************************************************************** */
@@ -1037,7 +1043,7 @@ GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
-LIST(GRINLET2(GridFor,0,4),GRINLET2(GridFor,1,4),GRINLET2(GridFor,2,4)),
+LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFor,2,4)),
 	DECL(GridFor,initialize),
 	DECL(GridFor,_0_bang),
 	DECL(GridFor,_0_set))
@@ -1059,7 +1065,7 @@ GRID_INLET(GridDim,0) {
 } GRID_END
 
 GRCLASS(GridDim,"@dim",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridDim,0,0)))
+LIST(GRINLET4(GridDim,0,0)))
 
 /* **************************************************************** */
 
@@ -1120,7 +1126,7 @@ METHOD3(GridRedim,initialize) {
 }
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridRedim,0,4),GRINLET(GridRedim,1,4)),
+LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 	DECL(GridRedim,initialize))
 
 /* ---------------------------------------------------------------- */
@@ -1204,7 +1210,7 @@ METHOD3(GridScaleBy,initialize) {
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,"@scale_by",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
+LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 	DECL(GridScaleBy,initialize))
 
 /* ---------------------------------------------------------------- */
@@ -1297,7 +1303,7 @@ METHOD3(GridDownscaleBy,initialize) {
 }
 
 GRCLASS(GridDownscaleBy,"@downscale_by",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
+LIST(GRINLET4(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
 	DECL(GridDownscaleBy,initialize))
 
 /* **************************************************************** */
@@ -1368,7 +1374,7 @@ METHOD3(GridJoin,initialize) {
 }
 
 GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridJoin,0,4),GRINLET2(GridJoin,1,4)),
+LIST(GRINLET4(GridJoin,0,4),GRINLET4(GridJoin,1,4)),
 	DECL(GridJoin,initialize))
 
 /* **************************************************************** */
@@ -1379,10 +1385,16 @@ struct GridGrade : GridObject {
 };
 
 template <class T>
-class GradeFunction {
-public:
+struct GradeFunction {
 	static int comparator (const void *a, const void *b) {
 		return **(T**)a - **(T**)b;
+	}
+};
+
+struct GradeFunction<float32> {
+	static int comparator (const void *a, const void *b) {
+		float32 x = **(float32**)a - **(float32**)b;
+		return x<0 ? -1 : x>0;
 	}
 };
 
@@ -1408,7 +1420,7 @@ METHOD3(GridGrade,initialize) {
 }
 
 GRCLASS(GridGrade,"@grade",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridGrade,0,4)),
+LIST(GRINLET4(GridGrade,0,4)),
 	DECL(GridGrade,initialize))
 
 /* **************************************************************** */
@@ -1446,7 +1458,7 @@ METHOD3(GridPerspective,initialize) {
 }
 
 GRCLASS(GridPerspective,"@perspective",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridPerspective,0,4)),
+LIST(GRINLET4(GridPerspective,0,4)),
 	DECL(GridPerspective,initialize))
 
 /* **************************************************************** */
@@ -1513,7 +1525,7 @@ METHOD3(GridFinished,initialize) {
 }
 
 GRCLASS(GridFinished,"@finished",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridFinished,0,0)),
+LIST(GRINLET4(GridFinished,0,0)),
 	DECL(GridFinished,initialize))
 
 /* **************************************************************** */
@@ -1636,7 +1648,7 @@ METHOD3(DrawPolygon,initialize) {
 }
 
 GRCLASS(DrawPolygon,"@draw_polygon",inlets:3,outlets:1,startup:0,
-LIST(GRINLET2(DrawPolygon,0,4),GRINLET2(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
+LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
 	DECL(DrawPolygon,initialize))
 
 /* **************************************************************** */

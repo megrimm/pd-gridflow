@@ -46,6 +46,7 @@ def cast value, type
 	when :uint8; value & 0xff
 	when :int16; (value & 0x7fff) - (value & 0x8000)
 	when :int32; value
+	when :float32; value.to_f
 	else raise "hell"
 	end
 end
@@ -158,10 +159,8 @@ end
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 	
-if nt==:int32
 	a = FObject["@print"]
 	a.send_in 0, "3 3 #{nt} # 1 0 0 0"
-end
 
 	(a = FObject["@outer * {3 2 #{nt} # 1 2 3}"]).connect 0,e,0
 	b = FObject["@dim"]
