@@ -525,7 +525,19 @@ Feature.new {
 	formats ["MPEG"]
 },
 Feature.new {
-	tag :quicktime
+	tag :quicktimeapple
+	name "Apple's QuickTime"
+	uses_so ["-lquicktime"]
+	test proc {
+		c_test "
+		#include <Movies.h>
+		int main () { return EnterMovies==0; }
+		", *uses_so
+	}
+	formats ["QuickTimeApple"]
+},
+Feature.new {
+	tag :quicktimehw
 	name "HeroineWarrior's QuickTime4Linux (or LibQuickTime)"
 	uses_so Or[
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
@@ -544,7 +556,7 @@ Feature.new {
 		); return quicktime_open==0; }
 		`, f.uses_so
 	}
-	formats ["QuickTime"]
+	formats ["QuickTimeHW"]
 },
 Feature.new {
 	tag :jmax25
