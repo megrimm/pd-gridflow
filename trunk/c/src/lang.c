@@ -111,14 +111,22 @@ struct Dict {
 	int capa;
 	int size;
 	DictEntry **table;
+	CompFunc cf;
 	HashFunc hf;
 };
 
-int HashFunc_default(void *k) { return (int)k; }
+static int CompFunc_default(void *k1, void *k2) {
+	return cmp((long)k1,(long)k2);
+}
 
-Dict *Dict_new(HashFunc hf) {
+static int HashFunc_default(void *k) {
+	return (int)k;
+}
+
+Dict *Dict_new(CompFunc cf, HashFunc hf) {
 	int i;
 	Dict *$ = NEW(Dict,1);
+	$->cf = cf ? cf : CompFunc_default;
 	$->hf = hf ? hf : HashFunc_default;
 	$->capa = 7;
 	$->size = 0;
@@ -143,7 +151,7 @@ DictEntry *Dict_has_key(Dict *$, void *k) {
 	int h = Dict_hash($,k) % $->capa;
 	DictEntry *de = $->table[h];
 	while (de) {
-		if (de->k == k) return de;
+		if ($->cf(de->k,k)==0) return de;
 		de = de->next;
 	}
 	return 0;
@@ -178,7 +186,7 @@ void Dict_del(Dict *$, void *k) {
 	DictEntry **dev = $->table+h;
 	while (*dev) {
 		DictEntry *de = *dev;
-		if (de->k == k) {
+		if ($->cf(de->k,k)==0) {
 			*dev = de->next;
 			FREE(de);
 			$->size -= 1;

@@ -31,11 +31,6 @@
 #include <sys/time.h>
 #include <ctype.h>
 
-typedef struct symbol_entry_t {
-	const char *s;
-	fts_class_t *c;
-} symbol_entry_t;
-
 typedef struct Dest {
 	FObject *obj;
 	int inlet;
@@ -48,25 +43,30 @@ typedef struct MethodDecl2 {
 	const char *signature;
 } MethodDecl2;
 
-static symbol_entry_t *symbols;
-static int symbols_n = 0;
+static List *symbols;
+static Dict *sym_dex;
+static Dict *classes;
 
 /* **************************************************************** */
 /* Symbol */
 
-Symbol Symbol_new (const char *s) {
-	int i;
-	if (!symbols) symbols = NEW(symbol_entry_t,1024);
-	for (i=0; i<symbols_n; i++) {
-		if (strcmp(symbols[i].s,s)==0) return i;
-	}
-	if (symbols_n >= 1024) { assert(0); }
-	symbols[symbols_n].s = strdup(s);
-	symbols[symbols_n].c = 0;
-	return symbols_n++;
+int HashFunc_string(void *k) {
+	const char *s = k;
+	int h=0;
+	while (*s) h = (h<<13)^(h>>19)^(*s++);
+	return h;
 }
 
-const char *Symbol_name(Symbol sym) { return symbols[sym].s; }
+Symbol Symbol_new (const char *s) {
+	void *k = strdup(s);
+	if (!Dict_has_key(sym_dex,k)) {
+		Dict_put(sym_dex,k,(void *)List_size(symbols));
+		List_push(symbols,k);
+	}
+	return (Symbol)Dict_get(sym_dex,k);
+}
+
+const char *Symbol_name(Symbol sym) { return List_get(symbols,(int)sym); }
 
 /* **************************************************************** */
 /* Var */
@@ -110,7 +110,7 @@ n_outlets, void *user_data) {
 	class->n_inlets = n_inlets;
 	class->n_outlets = n_outlets;
 	class->method_table = NEW(Dict *,n_inlets+1);
-	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0);
+	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0,0);
 	class->user_data = user_data;
 }
 
@@ -118,7 +118,7 @@ void fts_class_install(Symbol sym,
 fts_status_t (*p)(fts_class_t *class, int ac, const Var *at)) {
 	fts_class_t *$ = NEW(fts_class_t,1);
 	p($,0,0);
-	symbols[sym].c = $;
+	Dict_put(classes,(void *)sym,$);
 	$->name = sym;
 }
 
@@ -155,7 +155,7 @@ void fts_object_set_error(FObject *o, const char *s, ...) {
 
 FObject *fts_object_new(int ac, Var *at) {
 	Symbol classname = Var_get_symbol(at);
-	fts_class_t *class = symbols[classname].c;
+	fts_class_t *class = Dict_get(classes,(void *)classname);
 	if (!class) {
 		printf("ERROR: class not found: %s\n",Symbol_name(classname));
 		exit(1);
@@ -372,6 +372,9 @@ int fts_file_open(const char *name, const char *mode) {
 extern fts_module_t gridflow_module;
 
 int gridflow_init_standalone (void) {
+	symbols = List_new(0);
+	sym_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
+	classes = Dict_new(0,0);
 	timers = List_new(0);
 	fprintf(stdout,"< gridflow_init_standalone\n");
 
@@ -386,6 +389,6 @@ int gridflow_init_standalone (void) {
 	Symbol_new("set");
 
 	gridflow_module.foo3();
-	printf("> gridflow_init_standalone\n");
+	whine("> gridflow_init_standalone\n");
 	return true;
 }

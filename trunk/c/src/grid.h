@@ -198,55 +198,6 @@ typedef void(*FTSMethod)(METHOD_ARGS(FObject));
 
 #define SYM(_sym_) (Symbol_new(#_sym_))
 
-/* **************************************************************** */
-/* other general purpose stuff */
-
-/*
-  a remainder function such that floor(a/b)*b+mod(a,b) = a
-  in contrast to C-language builtin a%b,
-  this one has uniform behaviour around zero.
-*/
-static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
-
-/*
-  integer powers.
-*/
-static inline int ipow(int a, int b) {
-/*
-  very bad algorithm, but still avoids using floats.
-  (most useful values of b are 2 and 3)
-*/
-/*
-	int r=1;
-	if (b>10) return (int)(0+floor(pow(a,b)));
-	while(b-->0) r *= a;
-	return r;
-*/
-/* better algorithm */
-	int r=1;
-	while(1) {
-		if (b&1) r*=a;
-		b>>=1;
-		if (!b) return r;
-		a*=a;
-	}
-}	
-
-#undef min
-#undef max
-
-/* minimum/maximum functions */
-
-static inline int min(int a, int b) { return a<b?a:b; }
-static inline int max(int a, int b) { return a>b?a:b; }
-/*
-static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
-static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
-*/
-
-/* three-way comparison */
-static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
-
 /* */
 static inline uint64 rdtsc(void) {
   uint64 x;
@@ -364,6 +315,9 @@ typedef struct BitPacking BitPacking;
 
 extern int builtin_bitpacks_n;
 extern BitPacking builtin_bitpacks[];
+
+void swap32 (int n, uint32 *data);
+void swap16 (int n, uint16 *data);
 
 /* **************************************************************** */
 /* operator.c */

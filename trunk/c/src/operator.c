@@ -204,8 +204,8 @@ Dict *op2_dict;
 
 void startup_operator (void) {
 	int i;
-	op1_dict = Dict_new(0);
-	op2_dict = Dict_new(0);
+	op1_dict = Dict_new(0,0);
+	op2_dict = Dict_new(0,0);
 	for(i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = Symbol_new(op1_table[i].name);
 		Dict_put(op1_dict,(void *)(int)op1_table[i].sym,&op1_table[i]);

@@ -30,17 +30,19 @@
 typedef int fts_status_t;
 #define fts_Success 1
 
-typedef enum Symbol {
-	fts_t_symbol,
-	fts_t_int, fts_s_int = fts_t_int,
-	fts_t_float,
-	fts_t_list, fts_s_list = fts_t_list,
-	fts_t_ptr,
-	fts_s_init,
-	fts_s_delete,
-	fts_s_bang,
-	fts_s_set,
-} Symbol;
+typedef long Symbol;
+
+/* hack */
+static Symbol
+	fts_t_symbol=0,
+	fts_t_int=1, fts_s_int=1,
+	fts_t_float=2,
+	fts_t_list=3, fts_s_list=3,
+	fts_t_ptr=4,
+	fts_s_init=5,
+	fts_s_delete=6,
+	fts_s_bang=7,
+	fts_s_set=8;
 
 typedef Symbol fts_type_t;
 
