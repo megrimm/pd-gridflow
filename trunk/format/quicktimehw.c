@@ -57,6 +57,7 @@ struct FormatQuickTimeHW : Format {
 	\decl Ruby frame ();
 	\decl void seek (int frame);
 	\decl void force_size (int32 height, int32 width);
+	\decl void set_parameter (Symbol name, int32 value);
 	GRINLET3(0);
 };
 
@@ -102,8 +103,10 @@ struct FormatQuickTimeHW : Format {
 	return INT2NUM(nframe);
 }
 
-//\def void force_size (int height, int width) {
-//}
+//!@#$ should also support symbol values (how?)
+\def void set_parameter (Symbol name, int32 value) {
+	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
+}
 
 GRID_INLET(FormatQuickTimeHW,0) {
 	if (in->dim->n != 3)
@@ -169,12 +172,12 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	if (!anim) RAISE("can't open file `%s': %s", rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		length = quicktime_video_length(anim,track);
-	/*	gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
+		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),
 			quicktime_video_height(anim,track),
 			quicktime_video_width(anim,track),
 			quicktime_video_depth(anim,track),
-			quicktime_frame_rate(anim,track));*/
+			quicktime_frame_rate(anim,track));
 /* This doesn't really work: (is it just for encoding?)
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec: %s",
