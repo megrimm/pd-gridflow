@@ -129,7 +129,7 @@ bool GridInlet::is_busy_verbose(const char *where) {
 
 void GridInlet::set_factor(int factor) {
 	assert(factor > 0);
-	assert(Dim_prod($->dim) % factor == 0);
+	assert(dim->prod() % factor == 0);
 	this->factor = factor;
 	FREE(buf);
 	if (factor > 1) {
@@ -150,24 +150,20 @@ static VALUE GridInlet_begin$2(GridInlet *$) {
 }
 
 void GridInlet::begin(int argc, VALUE *argv) {
-	int i;
-	int *v = NEW(int,argc-1);
-	GridOutlet *back_out = (GridOutlet *) FIX2PTR(argv[0]);
+	GridOutlet *back_out = (GridOutlet *) FIX2PTRAB(argv[0],argv[1]);
 //	fprintf(stderr,"back_out=%p\n",back_out);
-	Dim *dim;
-	argc--, argv++;
+	argc-=2, argv+=2;
 
 	if (is_busy()) {
 		gfpost("grid inlet busy (aborting previous grid)");
 		abort();
 	}
 
-	if (argc-1>MAX_DIMENSIONS) {
-		gfpost("too many dimensions (aborting grid)"); abort(); return;
-	}
+	if (argc>MAX_DIMENSIONS) RAISE("too many dimensions (aborting grid)");
 
-	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	dim = this->dim = new Dim(argc,v);
+	int *v = NEW(int,argc);
+	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
+	Dim *dim = this->dim = new Dim(argc,v);
 	FREE(v);
 
 	dex = 0;
@@ -259,14 +255,30 @@ void GridInlet::list(int argc, VALUE *argv) {
 	t.init_from_ruby_list(argc,argv);
 	assert(gh);
 	dim = t.dim->dup();
-	gh->begin(parent->peer,(GridObject *)parent,this);
-	gh->flow(parent->peer,(GridObject *)parent,this,t.dim->prod(),t.as_int32());
-	gh->end(parent->peer,(GridObject *)parent,this);
+	gh->begin(parent->peer,parent,this);
+	gh->flow( parent->peer,parent,this,t.dim->prod(),t.as_int32());
+	gh->end(  parent->peer,parent,this);
 	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
 	FREE(dim);
 	dex = 0;
 }
+
+void GridInlet::int_(int argc, VALUE *argv) {
+	Grid t;
+	t.init_from_ruby(argv[0]);
+	assert(gh);
+	dim = t.dim->dup();
+	gh->begin(parent->peer,parent,this);
+	gh->flow( parent->peer,parent,this,t.dim->prod(),t.as_int32());
+	gh->end(  parent->peer,parent,this);
+	//!@#$ add error handling.
+	/* rescue; GridInlet_abort($); */
+	FREE(dim);
+	dex = 0;
+}
+
+void GridInlet::float_(int argc, VALUE *argv) {int_(argc,argv);}
 
 /* **************** GridOutlet ************************************ */
 
@@ -288,12 +300,12 @@ GridOutlet::~GridOutlet() {
 }
 
 bool GridOutlet::is_busy() {
-	assert(self);
+	assert(this);
 	return !!dim;
 }
 
 void GridOutlet::abort() {
-	assert(self);
+	assert(this);
 	if (!is_busy()) return;
 	FREE(dim);
 	dex = 0;
@@ -304,7 +316,7 @@ void GridOutlet::abort() {
 }
 
 void GridOutlet::end() {
-	assert(self);
+	assert(this);
 	assert(is_busy());
 	flush();
 //	LEAVE_P;
@@ -317,10 +329,9 @@ void GridOutlet::end() {
 }
 
 void GridOutlet::begin(Dim *dim) {
+	assert(this);
+
 	int n = dim->count();
-
-	assert($);
-
 	dim = dim->dup(); /* leak */
 
 	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
@@ -330,15 +341,16 @@ void GridOutlet::begin(Dim *dim) {
 	this->dim = dim;
 	dex = 0;
 	frozen = 0;
-	ron = 0; ro  = 0;
-	rwn = 0; rw  = 0;
-	VALUE a[n+3];
+	ron = 0; FREE(ro); ro = new GridInlet*[8];
+	rwn = 0; FREE(rw); rw = new GridInlet*[8];
+	VALUE a[n+4];
 	a[0] = INT2NUM(woutlet);
 	a[1] = sym_grid_begin;
-	a[2] = PTR2FIX(this);
-	for(int i=0; i<n; i++) a[3+i] = INT2NUM(dim->get(i));
+	a[2] = PTR2FIXA(this);
+	a[3] = PTR2FIXB(this);
+	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 //	LEAVE_P;
-	FObject_send_out(n+3,a,parent->peer);
+	FObject_send_out(COUNT(a),a,parent->peer);
 //	ENTER_P;
 	frozen = 1;
 /*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
@@ -352,11 +364,13 @@ void GridOutlet::send_direct(int n, const Number *data) {
 			INT2NUM(woutlet),
 			sym_grid_flow,
 			INT2NUM(pn),
-			PTR2FIX(data), /* explicitly removing const */
-			INT2NUM(4), /* mode ro */
+			PTR2FIX(data),
+			INT2NUM(4), // mode ro
 		};
 //		LEAVE_P;
-		FObject_send_out(COUNT(a),a,parent->peer);
+//		FObject_send_out(COUNT(a),a,parent->peer);
+		for (int i=0; i<ron; i++) ro[i]->flow(COUNT(a)-2,a+2);
+		for (int i=0; i<rwn; i++) rw[i]->flow(COUNT(a)-2,a+2);
 //		ENTER_P;
 		data += pn;
 		n -= pn;
@@ -364,9 +378,9 @@ void GridOutlet::send_direct(int n, const Number *data) {
 }
 
 void GridOutlet::send(int n, const Number *data) {
-	assert(GridOutlet_busy($));
+	assert(is_busy());
 	dex += n;
-	assert($->dex <= dim->prod());
+	assert(dex <= dim->prod());
 	if (n > gf_max_packet_length/2 || bufn + n > gf_max_packet_length) {
 		flush();
 	}
@@ -379,7 +393,7 @@ void GridOutlet::send(int n, const Number *data) {
 }
 
 void GridOutlet::give(int n, Number *data) {
-	assert(GridOutlet_busy($));
+	assert(is_busy());
 	dex += n;
 	assert(dex <= dim->prod());
 	flush();
@@ -390,10 +404,12 @@ void GridOutlet::give(int n, Number *data) {
 			sym_grid_flow,
 			INT2NUM(n),
 			PTR2FIX(data),
+			PTR2FIX(data),
 			INT2NUM(6), /* mode rw */
 		};
 //		LEAVE_P;
-		FObject_send_out(COUNT(a),a,parent->peer);
+//		FObject_send_out(COUNT(a),a,parent->peer);
+		rw[0]->flow(COUNT(a)-2,a+2);
 //		ENTER_P;
 	} else {
 		/* normal stuff */
@@ -412,10 +428,11 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 	assert(is_busy());
 	assert(!frozen);
 	assert(mode==6 || mode==4);
+	assert(ron<8 && rwn<8);
 	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
 	/* not using ->ro, ->rw yet */
-	if (mode==4) ron += 1;
-	if (mode==6) rwn += 1;
+	if (mode==4) ro[ron++]=in;
+	if (mode==6) rw[rwn++]=in;
 }
 
 /* **************** GridObject ************************************ */
@@ -519,7 +536,7 @@ static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
 }
 
 static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
-	static const char *names[] = { "grid_begin", "grid_flow", "grid_end", "list" };
+	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
 //	VALUE list = rb_call_super(argc,argv);
 	VALUE list = rb_class_instance_methods(argc,argv,rself);
 	VALUE v = rb_ivar_get(rself,SI(@grid_class));
@@ -538,12 +555,12 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 }
 
 METHOD(GridObject,method_missing) {
-	static const char *names[] = { "grid_begin", "grid_flow", "grid_end", "list" };
+	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
 	char *name;
 //	gfpost("argc=%d,argv=%p,self=%p,rself=%p",argc,argv,self,rself);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	rb_p(argv[0]);
+//	rb_p(argv[0]);
 	name = rb_sym_name(argv[0]);
 	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
@@ -560,10 +577,11 @@ METHOD(GridObject,method_missing) {
 		if (!inl) RAISE("inlet #%d missing for object %s",i,$->args());
 		argc--, argv++;
 		switch(m) {
-		case 0: return inl->begin(argc,argv);
-		case 1: return inl->flow( argc,argv);
-		case 2: return inl->end(  argc,argv);
-		case 3: return inl->list( argc,argv);
+		case 0: return inl->begin( argc,argv);
+		case 1: return inl->end(   argc,argv);
+		case 2: return inl->list(  argc,argv);
+		case 3: return inl->int_(  argc,argv);
+		case 4: return inl->float_(argc,argv);
 		}
 	}
 }
