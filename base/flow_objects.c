@@ -381,7 +381,7 @@ GRID_INLET(GridStore,0) {
 		if (i) op_add->zip(nd,v,v+nd*i);
 	}
 
-#define EMIT(type) { \
+#define FOO(type) { \
 		Pt<type> p = (Pt<type>)r; \
 		if (size<=16) { \
 			Pt<type> foo = ARRAY_NEW(type,nd*size); \
@@ -392,26 +392,16 @@ GRID_INLET(GridStore,0) {
 		} \
 }
 
-	switch (r.nt) {
-	case uint8_type_i: EMIT(uint8); break;
-	case int16_type_i: EMIT(int16); break;
-	case int32_type_i: EMIT(int32); break;
-	case float32_type_i: EMIT(float32); break;
-	default: RAISE("argh");
-	}
-#undef EMIT
+	TYPESWITCH(r.nt,FOO,)
+#undef FOO
 } GRID_FINISH {
 	GridOutlet *o = out[0];
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = r.dim->prod();
-		switch(r.nt) {
-		case uint8_type_i: while (n--) o->send(size,(Pt<uint8>)r); break;
-		case int16_type_i: while (n--) o->send(size,(Pt<int16>)r); break;
-		case int32_type_i: while (n--) o->send(size,(Pt<int32>)r); break;
-		case float32_type_i: while (n--) o->send(size,(Pt<float32>)r); break;
-		default: RAISE("unsupported type");
-		}
+#define FOO(T) while (n--) o->send(size,(Pt<T>)r);
+		TYPESWITCH(r.nt,FOO,)
+#undef FOO
 	}
 } GRID_END
 
@@ -753,13 +743,9 @@ METHOD3(GridInner,initialize) {
 	rint = argc<3 ? 0 : INT(argv[2]);
 	if (argc==4) {
 		r.init_from_ruby(argv[3]);
-		switch (r.nt) {
-		case uint8_type_i: process_right((uint8)0); break;
-		case int16_type_i: process_right((int16)0); break;
-		case int32_type_i: process_right((int32)0); break;
-		case float32_type_i: process_right((float32)0); break;
-		default: RAISE("boo");
-		}
+#define FOO(T) process_right((T)0);
+		TYPESWITCH(r.nt,FOO,)
+#undef FOO
 	}
 	return Qnil;
 }
@@ -988,7 +974,7 @@ void GridFor::trigger (T bogus) {
 	for (int i=step.dim->prod()-1; i>=0; i--)
 		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
-		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
+		nn[i] = (int32)(tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
 	}
 	if (from.dim->n==0) {
@@ -1013,19 +999,14 @@ void GridFor::trigger (T bogus) {
 	}
 }
 
-#define TRIGGER(_fun_,_nt_) \
-	switch (_nt_) { \
-	case uint8_type_i: _fun_((uint8)0); break; \
-	case int16_type_i: _fun_((int16)0); break; \
-	case int32_type_i: _fun_((int32)0); break; \
-	default: RAISE("argh");}
-
 METHOD3(GridFor,_0_bang) {
 	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
 		RAISE("dimension mismatch");
 	if (from.nt != to.nt || to.nt != step.nt)
 		RAISE("type mismatch");
-	TRIGGER(trigger,from.nt);
+#define FOO(T) trigger((T)0);
+	TYPESWITCH(from.nt,FOO,);
+#undef FOO
 	return Qnil;
 }
 

@@ -533,6 +533,13 @@ struct NumberType {
 
 NumberTypeIndex NumberTypeIndex_find (Ruby sym);
 
+#define TYPESWITCH(T,C,E) switch (T) { \
+	case uint8_type_i: C(uint8) break; \
+	case int16_type_i: C(int16) break; \
+	case int32_type_i: C(int32) break; \
+	case float32_type_i: C(float32) break; \
+	default: E; RAISE("argh");}
+
 /* Operator objects encapsulate optimised loops of simple operations */
 
 template <class T>
@@ -830,7 +837,6 @@ struct FClass {
 		COUNT(_name_##_handlers),_name_##_handlers, \
 	}; \
 	static void _name_ ## _startup (Ruby rself)
-
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware outlet */
