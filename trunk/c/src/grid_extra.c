@@ -79,7 +79,7 @@ METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridScaleBy,inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
-	DECL(GridScaleBy,-1,init,  "si"),
+	DECL(GridScaleBy,-1,init,  "s;i"),
 	DECL(GridScaleBy,-1,delete,""))
 
 /* **************************************************************** */
