@@ -124,9 +124,7 @@ GRID_INLET(FormatSDL,0) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatSDL_alarm));
 }
 
-GRCLASS(FormatSDL,
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatSDL',1,1;"
 	"conf_format 2,'sdl','Simple Directmedia Layer'");
 }

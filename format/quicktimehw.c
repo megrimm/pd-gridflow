@@ -210,9 +210,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatQuickTimeHW,
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"
 	"conf_format 6,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)', 'mov'");
@@ -237,5 +235,4 @@ GRCLASS(FormatQuickTimeHW,
 	rb_ivar_set(rself,SI(@fourccs),fourccs);
 #endif
 }
-
 \end class FormatQuickTimeHW

@@ -338,14 +338,11 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(FormatQuickTimeCamera,LIST(GRINLET2(FormatQuickTimeCamera,0)),
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatQuickTimeCamera',1,1;"
 	"conf_format 4,'quicktimecamera','Apple Quicktime (using Apple\\'s)','mov'"
 	);
 }
-
 \end class FormatQuickTimeCamera
 
 \class FormatQuickTimeApple < Format
@@ -499,9 +496,7 @@ err:
 		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
 }
 
-GRCLASS(FormatQuickTimeApple,
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,
 \ruby
 install 'FormatQuickTimeApple',1,1
@@ -516,5 +511,4 @@ end
 	extern Ruby cFormat;
 	fclass_install(&ciFormatQuickTimeCamera,cFormat); //hack
 }
-
 \end class FormatQuickTimeApple

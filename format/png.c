@@ -135,12 +135,9 @@ GRID_INLET(FormatPNG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatPNG,
-\grdecl
-) {
+\classinfo {
 	IEVAL(rself,
 	"install 'FormatPNG',1,1;"
 	"include GridFlow::EventIO; conf_format 4,'png','PNG'");
 }
-
 \end class FormatPNG

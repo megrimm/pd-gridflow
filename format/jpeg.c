@@ -113,12 +113,9 @@ GRID_INLET(FormatJPEG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatJPEG,
-\grdecl
-) {
+\classinfo {
 	IEVAL(rself,
 	"install 'FormatJPEG',1,1;"
 	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
 }
-
 \end class FormatJPEG

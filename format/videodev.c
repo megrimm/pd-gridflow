@@ -540,13 +540,8 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_funcall(rself,SI(initialize2),0);
 }
 
-/* **************************************************************** */
-
-GRCLASS(FormatVideoDev,
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatVideoDev',1,1;"
 	"conf_format 4,'videodev','Video4linux 1.x'");
 }
-
 \end class FormatVideoDev

@@ -333,14 +333,11 @@ struct FormatDC1394 : Format {
 	gfpost("i'd like to get a frame from the cam, but how?");
 }
 
-GRCLASS(FormatDC1394,LIST(),
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatDC1394',1,1;"
 	"conf_format 4,'dc1394','Video4linux 1.x'");
 	//IEVAL(rself,ruby_code);
 	rb_funcall(rself,SI(instance_eval),3,rb_str_new2(ruby_code),
 		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));
 }
-
 \end class FormatDC1394

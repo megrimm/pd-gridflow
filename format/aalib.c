@@ -160,10 +160,7 @@ GRID_INLET(FormatAALib,0) {
 	gfpost("aalib image size: %s",(new Dim(3,v))->to_s());
 }
 
-GRCLASS(FormatAALib,
-LIST(GRINLET2(FormatAALib,0)),
-\grdecl
-){
+\classinfo {
 	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
 	const aa_driver *const *p = aa_drivers;
 	for (; *p; p++) {
@@ -173,5 +170,4 @@ LIST(GRINLET2(FormatAALib,0)),
 	IEVAL(rself,"install 'FormatAALib',1,1;"
 	"conf_format 2,'aalib','Ascii Art Library'");
 }
-
 \end class FormatAALib

@@ -226,9 +226,7 @@ GRID_INLET(FormatQuartz,0) {
 	[window close];
 }
 
-GRCLASS(FormatQuartz,LIST(GRINLET2(FormatQuartz,0)),
-\grdecl
-){
+\classinfo {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
