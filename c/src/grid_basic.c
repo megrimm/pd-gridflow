@@ -159,8 +159,6 @@ GRID_FLOW(GridExport,0) {
 GRID_END(GridExport,0) {}
 
 METHOD(GridExport,init) {
-	int i;
-	int v[ac-1];
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridExport,0);
 }
@@ -176,6 +174,59 @@ CLASS(GridExport) {
 
 	/* initialize the class */
 	fts_class_init(class, sizeof(GridExport), 1, 1, 0);
+	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
+
+	/* define the methods */
+
+	return fts_Success;
+}
+
+/* **************************************************************** */
+
+typedef struct GridExportList {
+	GridObject_FIELDS;
+	fts_atom_t *list;
+	int n;
+} GridExportList;
+
+GRID_BEGIN(GridExportList,0) {
+	int n = Dim_prod(in->dim);
+	if (n>1000) {
+		whine("list too big (%d elements)", n);
+		return false;
+	}
+	$->list = NEW(fts_atom_t,n);
+	$->n = n;
+	return true;
+}
+
+GRID_FLOW(GridExportList,0) {
+	int i;
+	for (i=0; i<n; i++, data++) fts_set_int($->list+in->dex+i,*data);
+}
+
+GRID_END(GridExportList,0) {
+	fts_outlet_send(OBJ($),0,fts_s_list,$->n,$->list);
+	FREE($->list);
+}
+
+METHOD(GridExportList,init) {
+	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	$->in[0] = GridInlet_NEW3($,GridExportList,0);
+}
+
+METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
+
+CLASS(GridExportList) {
+	fts_type_t rien[] = { fts_t_symbol };
+	MethodDecl methods[] = {
+		{-1, fts_s_init,   METHOD_PTR(GridExportList,init), ARRAY(rien), -1 },
+		{-1, fts_s_delete, METHOD_PTR(GridExportList,delete), 0,0,0 },
+	};
+
+	/* initialize the class */
+	fts_class_init(class, sizeof(GridExportList), 1, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	GridObject_conf_class(class,0);
 
@@ -1320,6 +1371,7 @@ CLASS(GridPrint) {
 void startup_grid_basic (void) {
 	INSTALL("@import",     GridImport);
 	INSTALL("@export",     GridExport);
+	INSTALL("@export_list",GridExportList);
 	INSTALL("@store",       GridStore);
 	INSTALL("@!",             GridOp1);
 	INSTALL("@",              GridOp2);
