@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* matju to rfigura:
+/*
 'bridge_puredata.c' becomes 'gridflow.pd_linux' which loads Ruby and tells
 Ruby to load the other 90% of Gridflow. GridFlow creates the FObject class
 and then subclasses it many times, each time calling FObject.install(),

@@ -1,5 +1,6 @@
 # $Id$
 
+$:.delete_if {|x| x=='.' }
 require "gridflow"
 
 include GridFlow
