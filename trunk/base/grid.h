@@ -474,6 +474,12 @@ static short convert(Ruby x, short *foo) {
 	return v;
 }
 
+static uint16 convert(Ruby x, uint16 *foo) {
+	int v = INT(x);
+	if (v<0 || v>=0x10000) RAISE("value is out of range");
+	return v;
+}
+
 static int   convert(Ruby x, int   *foo) { return INT(x); }
 static int32 convert(Ruby x, int32 *foo) { return INT(x); }
 static bool  convert(Ruby x, bool  *foo) {
