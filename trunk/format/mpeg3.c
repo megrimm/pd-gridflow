@@ -34,7 +34,7 @@ struct FormatMPEG3 : Format {
 	int track;
 
 	FormatMPEG3 () : track(0) {}
-	\decl void initialize (Symbol mode, Symbol source, Symbol filename);
+	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void seek (int frame);
 	\decl Ruby frame ();
 	\decl void close ();
@@ -81,6 +81,7 @@ struct FormatMPEG3 : Format {
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
+	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	mpeg = mpeg3_open(rb_str_ptr(filename));
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
