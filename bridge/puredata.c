@@ -306,6 +306,7 @@ void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
 	rb_funcall_rescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
+	canvas_fixlinesfor(glist, (t_text *)x);
 }
 
 /* change color to show selection: */
@@ -600,8 +601,7 @@ extern "C" void gridflow_setup () {
 	ruby_init();
 	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
-
-post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
+	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
 	rb_ivar_set(cData,SI(@gf_bridge),PTR2FIX(gf_bridge2));

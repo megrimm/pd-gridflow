@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -173,7 +173,7 @@ static VALUE *localize_sysstack () {
 #if 1
 static VALUE *localize_sysstack () {
 	void *bp;
-	sscanf(RUBY_STACK_END,"0x%08x",&bp);
+	sscanf(RUBY_STACK_END,"0x%08lx",(long *)&bp);
 	return (VALUE *)bp;
 }
 #endif
