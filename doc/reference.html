@@ -27,9 +27,11 @@
 <li><a href="#@export"><img src="images/@export.png" alt="[@export]" border="0"></a></li>
 <li><a href="#@export_list"><img src="images/@export_list.png" alt="[@export_list]" border="0"></a></li>
 <li><a href="#@export_symbol">@export_symbol</a></li>
+<li><a href="#@pack">@pack</a></li>
 <li><a href="#@two"><img src="images/@two.png" alt="[@two]" border="0"></a></li>
 <li><a href="#@three"><img src="images/@three.png" alt="[@three]" border="0"></a></li>
 <li><a href="#@four"><img src="images/@four.png" alt="[@four]" border="0"></a></li>
+<li><a href="#@eight">@eight</a></li>
 <li><a href="#@for"><img src="images/@for.png" alt="[@for 0 320 1]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Computing">Objects for Computing</a></h4><ul>
@@ -79,6 +81,7 @@
 <li><a href="#@solarize">@solarize</a></li>
 <li><a href="#@checkers">@checkers</a></li>
 <li><a href="#@layer">@layer</a></li>
+<li><a href="#@draw_image">@draw_image</a></li>
 <li><a href="#@draw_polygon">@draw_polygon</a></li>
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
@@ -91,6 +94,12 @@
 <li><a href="#fork">fork</a></li>
 <li><a href="#jmax_udpsend">jmax_udpsend</a></li>
 <li><a href="#jmax_udpreceive">jmax_udpreceive</a></li>
+<li><a href="#jmax4_udpsend">jmax4_udpsend</a></li>
+<li><a href="#jmax4_udpreceive">jmax4_udpreceive</a></li>
+</ul>
+<h4><a href="#PureData_emulation">PureData emulation</a></h4><ul>
+<li><a href="#pd_netsend">pd_netsend</a></li>
+<li><a href="#pd_netreceive">pd_netreceive</a></li>
 </ul>
 <br><br>
 </div></td></tr> <tr><td colspan="4" bgcolor="black">
@@ -159,15 +168,26 @@
 				a list of integers. <br>
   <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> generated symbol<br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@pack">@pack</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p><b>NOT AVAILABLE YET</b></p> <p>Similar to [@join], but takes individual integers, and builds a Dim(N) vector out of it. </p> <br><b>attr</b>&nbsp;trigger_by <b>(</b><b><i>TriggerBy</i> trigger_by</b><b>)</b>  <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> inputs<b>)</b>   <br>
+ <br><b>inlet&nbsp;* </b><b>method</b>&nbsp;int <b>(</b><b>)</b> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
+			combination of inputs given in all inlets. 
+			this is produced according to the value of the trigger attribute. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@two] is now an alias for [@pack 2] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+   <p> [@two] will soon become an alias for [@pack 2] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@three] is now an alias for [@pack 3] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+   <p> [@three] will soon become an alias for [@pack 3] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@four.png" alt="[@four]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@four] is now an alias for [@pack 4] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+   <p> [@four] will soon become an alias for [@pack 4] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@eight">@eight</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+  <p> [@eight] will soon become an alias for [@pack 8] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><a href="images/help_@for.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>when given scalar bounds, works like a regular [for] object plugged 
@@ -441,11 +461,12 @@
 			factor is optional (default is 2). 
 			if it's a single value, then that factor is to be used 
 			for both rows and columns. <br>
-  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x {r g b})</i> grid<b>)</b>  
-			identical to @scale_to with arguments that are exactly 
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
+			duplicates each pixel several times in width and several times in height, 
+			where the number of times is determined by the factor described above. 
 			twice those of the incoming grid. It is several times faster. <br>
   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(1 or 2)</i> grid<b>)</b> sets factor<br>
-  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid((factor*y) (factor*x) {r g b})</i> grid<b>)</b>   <br>
+  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid((factor*y) (factor*x) channels)</i> grid<b>)</b>   <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@downscale_by">@downscale_by</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -453,10 +474,10 @@
 			factor is optional (default is 2). 
 			if it's a single value, then that factor is to be used 
 			for both rows and columns. <br>
-  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x {r g b})</i> grid<b>)</b>  
-			Scales down picture by specified amount. <br>
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
+			Scales down picture by specified amount. (See scale factor above) <br>
   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(1 or 2)</i> grid<b>)</b>  sets factor<br>
-  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid((factor/y) (factor/x) {r g b})</i> grid<b>)</b>   <br>
+  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid((factor/y) (factor/x) channels)</i> grid<b>)</b>   <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@spread.png" alt="[@spread]" border="0"><br clear="left"><br><br><a href="images/help_@spread.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
@@ -651,14 +672,37 @@
 				a weighting of how much of either picture is seen 
 				in the result. <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@draw_image">@draw_image</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>numop2</i> operator<b>, </b><i>grid(y,x,channels)</i> picture<b>, </b><i>grid({y x})</i> position<b>)</b>     <br>
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
+				picture onto which another picture will be superimposed. <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;tile <b>(</b><i>0 or 1</i> flag<b>)</b>  
+				if enabled, inlet 1 picture will be repeated to cover the inlet 0 picture. <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;alpha <b>(</b><i>0 or 1</i> flag<b>)</b>  
+				if enabled, inlet 1 picture will be combined with inlet 0 picture using 
+				the selected operator, 
+				and then blended with inlet 0 picture according to transparency of 
+				the inlet 1 picture, and then inserted in the result. 
+				if disabled, the blending doesn't occur, as the transparency level 
+				is considered to be "opaque". note that with alpha enabled, 
+				the last channel of inlet 1 picture is considered to represent transparency. <br>
+   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
+				picture that will be superimposed onto another picture. <br>
+   <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid({y x})</i> grid<b>)</b>  
+				position of the inlet 0 picture corresponding to top-left corner 
+				of inlet 1 picture. <br>
+   <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
+				resulting picture. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@draw_polygon">@draw_polygon</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b>&nbsp;init <b>(</b><i>numop2</i> operator<b>, </b><i>grid(channels)</i> color<b>, </b><i>grid(vertices,{y x})</i> vertices<b>)</b>     <br>
-  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>   
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
 				picture on which the polygon will be superimposed. <br>
    <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(channels)</i> grid<b>)</b>  
 				color of each pixel <br>
-   <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(vertices {y x})</i> grid<b>)</b>   
+   <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(vertices {y x})</i> grid<b>)</b>  
 				vertices of the polygon. <br>
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>   
 				modified picture. 
@@ -745,15 +789,35 @@
  
 		Sends messages (but not grids nor dspsignals) via UDP (which 
 		does not involve a connection, and may lose packets in case of 
-		network overload or noise or etc) <br><b>method</b>&nbsp;init <b>(</b><i>host</i> host<b>, </b><i>integer</i> port<b>)</b>    <br>
+		network overload or noise or etc). <p>This works with jMax 2.5 and 4.1 but not 4.0.</p> <br><b>method</b>&nbsp;init <b>(</b><i>host</i> host<b>, </b><i>integer</i> port<b>)</b>    <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax_udpreceive">jmax_udpreceive</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>Counterpart of jmax_udpsend</p> <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> port<b>)</b>   <br>
+ <p>Counterpart of jmax_udpsend</p> <p>This works with jMax 2.5 and 4.1 but not 4.0.</p> <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> port<b>)</b>   <br>
  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b><b>)</b> <br>
  <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;list <b>(</b>protocol_name<b>, </b>sender_port<b>, </b>sender_host<b>, </b>sender_ip_address<b>)</b>      <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax4_udpsend">jmax4_udpsend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		same as jmax_udpsend but for jMax 4.0.x UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax4_udpreceive">jmax4_udpreceive</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		same as jmax_udpreceive but for jMax 4.0.x UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td>&nbsp;</td></tr>
+ <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="PureData_emulation"></a><h4>PureData emulation</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pd_netsend">pd_netsend</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		same as jmax_udpsend but for PureData UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pd_netreceive">pd_netreceive</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		same as jmax_udpreceive but for PureData UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
