@@ -27,6 +27,20 @@
 #include "grid.h"
 
 /* **************************************************************** */
+
+Operator1 *OP1(VALUE x) {
+	VALUE s = rb_hash_aref(op1_dict,x);
+	if (s==Qnil) RAISE("expected one-input-operator");
+	return (Operator1 *)FIX2PTR(s);
+}
+
+Operator2 *OP2(VALUE x) {
+	VALUE s = rb_hash_aref(op2_dict,x);
+	if (s==Qnil) RAISE("expected two-input-operator");
+	return (Operator2 *)FIX2PTR(s);
+}
+
+/* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream
   of integers to a streamed grid as used now.
@@ -84,7 +98,7 @@ METHOD(GridImport,init) {
 	GridObject_init((GridObject *)$);
 
 	for (i=0; i<argc-1; i++) {
-		v[i] = NUM2INT(argv[i]);
+		v[i] = INT(argv[i]);
 		if (v[i]<1 || v[i]>MAX_INDICES) rb_raise(rb_eArgError,"dim out of bounds");
 	}
 	$->dim = Dim_new(argc,v);
@@ -97,7 +111,7 @@ METHOD(GridImport,delete) {
 
 METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
-	Number data[] = { NUM2INT(argv[0]) };
+	Number data[] = { INT(argv[0]) };
 	if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
 	GridOutlet_send(out,COUNT(data),data);
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
@@ -364,8 +378,7 @@ GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridOp1,init) {
 	GridObject_init((GridObject *)$);
-	$->op = FIX2PTR(rb_hash_aref(op1_dict,argv[0]));
-	if ($->op) RAISE("unknown unary operator \"%s\"", argv[0]);
+	$->op = OP1(argv[0]);
 }
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
@@ -437,14 +450,10 @@ GRID_FLOW(GridOp2,1) {
 GRID_END(GridOp2,1) {}
 
 METHOD(GridOp2,init) {
-	VALUE sym = argv[0];
-	$->rint = NUM2INT(argv[1]);
-	$->dim = 0;
-
 	GridObject_init((GridObject *)$);
-
-	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
-	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
+	$->op = OP2(argv[0]);
+	$->rint = argc<2 ? 0 : INT(argv[1]);
+	$->dim = 0;
 }
 
 METHOD(GridOp2,delete) {
@@ -456,7 +465,7 @@ METHOD(GridOp2,delete) {
 METHOD(GridOp2,int) {
 	FREE($->data);
 	if ($->dim) FREE($->dim);
-	$->rint = NUM2INT(argv[0]);
+	$->rint = INT(argv[0]);
 }
 
 GRCLASS(GridOp2,inlets:2,outlets:1,
@@ -509,19 +518,15 @@ GRID_FLOW(GridFold,0) {
 GRID_END(GridFold,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridFold,init) {
-	VALUE sym = argv[0];
-	$->rint = NUM2INT(argv[1]);
-
 	GridObject_init((GridObject *)$);
-
-	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
-	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
+	$->op = OP2(argv[0]);
+	$->rint = INT(argv[1]);
 }
 
 METHOD(GridFold,delete) { GridObject_delete((GridObject *)$); }
 
 METHOD(GridFold,int) {
-	$->rint = NUM2INT(argv[0]);
+	$->rint = INT(argv[0]);
 }
 
 GRCLASS(GridFold,inlets:2,outlets:1,
@@ -606,7 +611,7 @@ GRID_END(GridInner,2) {}
 METHOD(GridInner,init) {
 	VALUE sym_para = argv[0];
 	VALUE sym_fold = argv[1];
-	$->rint = NUM2INT(argv[2]);
+	$->rint = INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
 
@@ -696,16 +701,12 @@ GRID_FLOW(GridInner2,2) {
 GRID_END(GridInner2,2) {}
 
 METHOD(GridInner2,init) {
-	VALUE sym_para = argv[0];
-	VALUE sym_fold = argv[1];
-	$->rint = NUM2INT(argv[2]);
+	GridObject_init((GridObject *)$);
+	$->op_para = OP2(argv[0]);
+	$->op_fold = OP2(argv[1]);
+	$->rint = INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
-	GridObject_init((GridObject *)$);
-	$->op_para = FIX2PTR(rb_hash_aref(op2_dict,sym_para));
-	$->op_fold = FIX2PTR(rb_hash_aref(op2_dict,sym_fold));
-	if ($->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
-	if ($->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridInner2,delete) {
@@ -776,15 +777,10 @@ GRID_FLOW(GridOuter,1) {
 GRID_END(GridOuter,1) {}
 
 METHOD(GridOuter,init) {
-	VALUE sym = argv[0];
-
 	GridObject_init((GridObject *)$);
-
+	$->op = OP2(argv[0]);
 	$->dim = 0;
 	$->data = 0;
-
-	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
-	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
 METHOD(GridOuter,delete) {
@@ -908,21 +904,14 @@ GRID_FLOW(GridConvolve,1) {
 GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
-	VALUE sym_para = argc<1 ? SYM(*) : argv[0];
-	VALUE sym_fold = argc<2 ? SYM(*) : argv[1];
-
 	GridObject_init((GridObject *)$);
+	$->op_para = OP2(argc<1 ? SYM(*) : argv[0]);
+	$->op_fold = OP2(argc<2 ? SYM(*) : argv[1]);
+	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
 	$->diml = 0;
 	$->datal = 0;
-
-	$->op_para = FIX2PTR(rb_hash_aref(op2_dict,sym_para));
-	$->op_fold = FIX2PTR(rb_hash_aref(op2_dict,sym_fold));
-	$->rint = NUM2INT(argv[2]);
-
-	if (!$->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
-	if (!$->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridConvolve,delete) {
@@ -947,17 +936,17 @@ typedef struct GridFor {
 
 METHOD(GridFor,init) {
 	GridObject_init((GridObject *)$);
-	$->from = NUM2INT(argv[0]);
-	$->to   = NUM2INT(argv[1]);
-	$->step = NUM2INT(argv[2]);
+	$->from = INT(argv[0]);
+	$->to   = INT(argv[1]);
+	$->step = INT(argv[2]);
 	if (!$->step) $->step=1;
 }
 
 METHOD(GridFor,delete) { GridObject_delete((GridObject *)$); }
 
-METHOD(GridFor,from) { $->from = NUM2INT(argv[0]); }
-METHOD(GridFor,to  ) { $->to   = NUM2INT(argv[0]); }
-METHOD(GridFor,step) { $->step = NUM2INT(argv[0]); if (!$->step) $->step=1; }
+METHOD(GridFor,from) { $->from = INT(argv[0]); }
+METHOD(GridFor,to  ) { $->to   = INT(argv[0]); }
+METHOD(GridFor,step) { $->step = INT(argv[0]); if (!$->step) $->step=1; }
 
 METHOD(GridFor,bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
@@ -977,7 +966,7 @@ METHOD(GridFor,bang) {
 }
 
 METHOD(GridFor,from2) {
-	$->from = NUM2INT(argv[0]);
+	$->from = INT(argv[0]);
 	GridFor_bang($,rself,argc,argv);
 }
 
@@ -1111,7 +1100,7 @@ METHOD(GridRedim,init) {
 	GridObject_init((GridObject *)$);
 
 	for (i=0; i<argc; i++) {
-		v[i] = NUM2INT(argv[i]);
+		v[i] = INT(argv[i]);
 		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
 	}
 	$->dim = Dim_new(argc,v);
@@ -1230,7 +1219,7 @@ METHOD(GridIn,open) {
 	VALUE format = rb_hash_aref(format_classes_dex,argv[0]);
 	FormatClass *qlass;
 	if (format==Qnil) RAISE("unknown file format identifier: %s",
-		rb_id2name(SYM2ID(argv[0])));
+		rb_sym_name(argv[0]));
 	qlass = FIX2PTR(format);
 
 	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1247,7 +1236,7 @@ METHOD(GridIn,bang) {
 }
 
 METHOD(GridIn,int) {
-	int frame = NUM2INT(argv[0]);
+	int frame = INT(argv[0]);
 	whine("will read frame # %d", frame);
 	GridIn_frame($,frame);
 }
@@ -1327,7 +1316,7 @@ METHOD(GridOut,option) {
 	VALUE sym = argv[0];
 	CHECK_FILE_OPEN
 	if (sym == SYM(timelog)) {
-		$->timelog = NUM2INT(argv[1]);
+		$->timelog = INT(argv[1]);
 		COERCE_INT_INTO_RANGE($->timelog,0,1);
 		whine("timelog = %d",$->timelog);
 	} else if ($->ff->cl->option) {
@@ -1347,7 +1336,7 @@ METHOD(GridOut,open) {
 	VALUE format = rb_hash_aref(format_classes_dex,argv[0]);
 	FormatClass *qlass;
 	if (format==Qnil) RAISE("unknown file format identifier: %s",
-		rb_id2name(SYM2ID(argv[0])));
+		rb_sym_name(argv[0]));
 	qlass = FIX2PTR(format);
 
 	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1456,7 +1445,7 @@ GRID_END(GridScaleBy,0) {
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD(GridScaleBy,init) {
-	$->rint = argc<1 ? 2 : NUM2INT(argv[1]);
+	$->rint = argc<1 ? 2 : INT(argv[1]);
 	GridObject_init((GridObject *)$);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
