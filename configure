@@ -63,7 +63,7 @@ has-videodev () {
 gcc /tmp/$$.c -o /tmp/$$
 }
 
-FORMATS='X11 PPM Targa'
+FORMATS='X11 PPM Targa Grid'
 
 echo -n "looking for videodev (video4linux input hardware): "
 if has-videodev; then
