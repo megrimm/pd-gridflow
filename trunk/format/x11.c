@@ -80,7 +80,7 @@ struct FormatX11 : Format {
 	Atom wmDeleteAtom;
 
 	FormatX11 () : use_stripes(false), 
-	autodraw(1), window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
+	autodraw(1), window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
 	verbose(false), dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
@@ -367,9 +367,14 @@ void FormatX11::resize_window (int sx, int sy) {
 	if (sy<16) sy=16; if (sy>4000) RAISE("height too big");
 	if (sx<16) sx=16; if (sx>4000) RAISE("width too big");
 	alloc_image(sx,sy);
-	name = strdup("GridFlow");
+	if (name) delete name;
+	name = new char[64];
+	sprintf(name,"GridFlow (%d,%d,3)",sy,sx);
 	if (window) {
-		if (is_owner && !lock_size) XResizeWindow(display,window,sx,sy);
+		if (is_owner && !lock_size) {
+			set_wm_hints(sx,sy);
+			XResizeWindow(display,window,sx,sy);
+		}
 	} else {
 		XSetWindowAttributes xswa;
 		xswa.do_not_propagate_mask = 0; //?
@@ -379,7 +384,7 @@ void FormatX11::resize_window (int sx, int sy) {
 			CopyFromParent, InputOutput, CopyFromParent,
 			CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
-		//set_wm_hints(sx,sy);
+		set_wm_hints(sx,sy);
 		if (is_owner) {
 			/* fall_thru 0 */
 			XSelectInput(display, window,
