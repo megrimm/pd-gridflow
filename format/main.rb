@@ -653,6 +653,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 		metrics=[]
 		rewind_if_needed
 		line = @stream.gets
+		(rewind; line = @stream.gets) if not line # hack
 		line.chomp!
 		if line != "P6" then raise "Wrong format (needing PPM P6)" end
 		while metrics.length<3
@@ -684,7 +685,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 	end
 
 	install_rgrid 0
-	install_format "FormatGrid", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap"
+	install_format "FormatPPM", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap"
 end
 
 class FormatTarga < Format; include EventIO, PPMandTarga

@@ -766,7 +766,7 @@ struct GridOutlet {
 	void send(int n, Pt<T> data);
 
 	void flush() {
-		if (bufi) return;
+		if (!bufi) return;
 		switch(buf.nt) {
 		case uint8_type_i: send_direct(bufi,(Pt<uint8>)buf); break;
 		case int16_type_i: send_direct(bufi,(Pt<int16>)buf); break;
