@@ -186,7 +186,7 @@
 	<jmax-class name="@in">
 		<icon
 			image="images/@in.jpg"
-			text="[@import 240 320 3]"
+			text="[@in]"
 		/>
 
 		<method name="init">
@@ -387,9 +387,58 @@
 			text="[@export]"
 		/>
 	</jmax-class>
+
+	<jmax-class name="@two">
+		<icon
+			image="images/@two.jpg"
+			text="[@two]"
+		/>
+		<p> holds two values, defaulting to (0,0). each time one is
+		changed (by sending an integer in that inlet), a dim(2) grid is
+		sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>2</dim></grid></outlet>
+		<sample
+			image="images/grab_two.png"
+			text="[@two]"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@three">
+		<icon
+			image="images/@three.jpg"
+			text="[@three]"
+		/>
+		<p> holds three values, defaulting to (0,0,0). each time one is
+		changed (by sending an integer in that inlet), a dim(3) grid is
+		sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<inlet id="2"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>3</dim></grid></outlet>
+		<sample
+			image="images/grab_three.png"
+			text="[@three]"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@four">
+		<p> holds four values, defaulting to (0,0,0,0). each time one is
+		changed (by sending an integer in that inlet), a dim(4) grid is
+		sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<inlet id="2"><method name="int"/></inlet>
+		<inlet id="3"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>4</dim></grid></outlet>
+	</jmax-class>
 </section>
 
-<section name="Transformation Objects">
+<section name="Objects for Generating">
 	<jmax-class name="@for">
 		<icon
 			image="images/@for.jpg"
@@ -418,7 +467,9 @@
 			</grid>
 		</outlet>
 	</jmax-class>
+</section>
 
+<section name="Objects for Computing">
 	<jmax-class name="@">
 		<p>This object computes a grid by computing "in parallel" a same
 		operation on each left-hand element with its corresponding right-hand
@@ -624,7 +675,9 @@
 		<outlet id="0">
 		</outlet>
 	</jmax-class>
+</section>
 
+<section name="Objects for Coordinate Transforms">
 	<jmax-class name="@redim">
 		<icon
 			image="images/@redim.jpg"
@@ -723,6 +776,120 @@
 		/>
 	</jmax-class>
 
+	<jmax-class name="@identity_transform">
+		<icon
+			image="images/@identity_transform.jpg"
+			text="[@identity_transform]"
+		/>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<method name="bang">creates a coordinate map that can
+			be fed into the left input of @store to give the same result
+			as a bang in that input; that coordinate map is
+			dim(height,width,2), where each dim(2) is a (y,x) pair indexing
+			a pixel.</method>
+		</inlet>
+		<inlet id="1">
+			<method name="int">a height.</method>
+		</inlet>
+		<inlet id="2">
+			<method name="int">a width.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a coordinate map.</grid>
+		</outlet>
+
+<p>@identity_transform builds a pixel-level transform grid suitable for 
+using with inlet 0 of @store. </p>
+<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
+<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
+<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
+0. Not guaranteed to be fast (use an intermediate @store as a cache 
+if needed)</p>
+
+		<sample
+			image="images/grab_identity_transform.png"
+			text="[@identity_transform]"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@scale_to">
+		<icon
+			image="images/@scale_to.jpg"
+				text="[@scale_to]"
+		/>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid>a picture to be scaled.</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">a height.</method>
+		</inlet>
+		<inlet id="2">
+			<method name="int">a width.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a scaled picture.</grid>
+		</outlet>
+
+
+<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
+and chained from @identity_transform and to @store. This will scale an 
+image of any size to the size specified in inlets 1,2. If it doesn't correspond 
+the values of @identity_transform, part of the image will be trimmed and/or 
+duplicated.</p>
+
+		<sample
+			image="images/grab_scale_to.png"
+			text="[@scale_to]"
+		/>
+	</jmax-class>
+	
+	<jmax-class name="@spread">
+		<icon
+			image="images/@spread.jpg"
+			text="[@spread]"
+		/>
+
+		<p>typically you plug a @identity_transform into this object,
+		and you plug this object into the left side of a @store. it will
+		scatter pixels around, giving an "unpolished glass" effect.</p>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid>a coordinate map.</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">a spread factor.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a coordinate map.</grid>
+		</outlet>
+
+
+	<p>@spread scatters the pixels in an image. Not all original pixels will 
+	appear, and some may get duplicated (triplicated, etc) randomly. Some 
+	wrap-around effect will occur close to the edges. </p>
+	<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
+	number of pixels + 1. even values translate the whole image by half 
+	a pixel due to rounding.</p>
+
+		<sample
+			image="images/grab_spread.png"
+			text="[@spread]"
+		/>
+	</jmax-class>
 </section>
 
 <section name="Reporting Objects">
@@ -748,12 +915,162 @@
 
 		<sample image="images/grab_dim.png"/>
 	</jmax-class>
+	<jmax-class name="@print">
+		<p>future use</p>
+	</jmax-class>
+</section>
+
+<section name="Objects intended for Picture Processing">
+	<jmax-class name="@convolve">
+
+		<p>this is the object for blurring, sharpening, finding edges,
+		embossing, and many other uses.</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"   type="integer"/>
+		</method>
+		<inlet id="0">
+			<grid><dim>rows columns rest...</dim>
+				splits the incoming grid into dim(rest...) parts.
+				for each of those parts at (y,x), a rectangle of such
+				parts, centered around (y,x), is combined with the
+				convolution grid like a [@] of operation op_para. Then
+				each such result is folded like [@fold] of operation
+				op_fold and specified base. the results are assembled
+				into a grid that is sent to the outlet. near the borders of
+				the grid, coordinates wrap around. this means the whole grid
+				has to be received before production of the next grid
+				starts.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>rows2 columns2</dim>
+				this is the convolution grid and it gets stored in
+				the object. rows2 and columns2 must be odd numbers.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>rows columns rest...</dim>
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@scale_by">
+		<method name="init">
+			no arguments. scales by 2.
+		</method>
+		<method name="init">
+			<arg name="factor"/>
+			future use: will scale by that factor.
+		</method>
+		<method name="init">
+			<arg name="factor_y"/>
+			<arg name="factor_x"/>
+			future use: will scale by those factors.
+		</method>
+		<inlet id="0">
+			<grid><dim>y x {r g b}</dim>
+			identical to @scale_to with arguments that are exactly
+			twice those of the incoming grid. It is several times faster.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>y x {r g b}</dim></grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@contrast">
+		<icon
+			image="images/@contrast.jpg"
+			text="[@contrast]"
+		/>
+
+		<method name="init">
+			no arguments.
+		</method>
+		
+		<inlet id="0">
+			<grid><dim>rows columns channels</dim>
+			produces a grid like the incoming grid but with
+			different constrast.
+			</grid>
+			<p>@contrast adjusts the intensity in an image.
+			resulting values outside 0-255 are automatically clipped.</p>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+			this is the secondary contrast. it makes the incoming black
+			correspond to a certain fraction between output black and the
+			master contrast value. no effect is 256. default value is 256.
+			</method>	
+		</inlet>
+		<inlet id="2">
+			<method name="int">
+			this is the master contrast. it makes the incoming white
+			correspond to a certain fraction between output black and output
+			white. no effect is 256. default value is 256.
+			</method>	
+		</inlet>
+		<outlet>
+			<grid><dim>rows columns channels</dim>
+			</grid>
+		</outlet>
+		<sample
+			image="images/grab_contrast.png"
+			text="[@contrast]"
+		/> 
+	</jmax-class>
+
+	<jmax-class name="@posterize">
+		<icon
+			image="images/@posterize.jpg"
+			text="[@posterize]"
+		/>
+
+		<p>@posterize reduces the number of possible intensities in an image;
+		it rounds the color values.The effect is mostly apparent with a low
+		number of levels.</p>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>rows columns channels</dim>
+				produces a posterized picture from the input picture.
+			</grid>
+		</inlet>
+
+		<inlet id="1">
+			<method name="int">
+				this is the number of possible levels per channel. the
+				levels are equally spaced, with the lowest at 0 and the
+				highest at 255. the minimum number of levels is 2, and the
+				default value is 2.
+			</method>
+		</inlet>
+		
+		<outlet id="0">
+		</outlet>
+
+		<p>example: simulate the 216-color "web" palette using 6 levels.
+		simulate a 15-bit display using 32 levels.</p>
+
+	<sample
+		image="images/grab_posterize.png"
+		text="[@posterize]"
+	/>
+</jmax-class>
+
 </section>
 
 <section name="Special Objects">
 	<jmax-class name="rtmetro">
 		future use.
 	</jmax-class>
+
 	<jmax-class name="@global">
 		<p>
 		objects of this class do nothing by themselves and are just
@@ -772,129 +1089,6 @@
 			in a future section called "profiling".
 		</method>
 	</jmax-class>
-</section>
-
-<section name="Compound Objects">
-	<jmax-class name="@contrast">
-		<icon
-			image="images/@contrast.jpg"
-			text="[@contrast]"
-		/>
-
-		<p>@contrast adjusts the intensity in an image.
-		values outside 0-255 are automatically trimmed. </p>
-
-		<p> Sending an integer to inlet 2 sets the intensity of incoming
-		white to a certain fraction between output black and output white.
-		normal value is 256; may be set smaller or bigger.</p>
-
-		<p> Sending an integer to inlet 1 sets the intensity of incoming
-		black to a certain fraction between output black and inlet 2 value.
-		normal value is 256; may be set smaller or bigger.</p>
-
-		<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-
-		<sample
-			image="images/grab_contrast.png"
-			text="[@contrast]"
-		/> 
-</jmax-class>
-
-<jmax-class name="@identity_transform">
-	<icon
-		image="images/@identity_transform.jpg"
-		text="[@identity_transform]"
-	/>
-<p>@identity_transform builds a pixel-level transform grid suitable for 
-using with inlet 0 of @store. </p>
-<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
-<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
-<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
-0. Not guaranteed to be fast (use an intermediate @store as a cache 
-if needed)</p>
-
-	<sample
-		image="images/grab_identity_transform.png"
-		text="[@identity_transform]"
-	/>
-</jmax-class>
-
-<jmax-class name="@posterize">
-	<icon
-		image="images/@posterize.jpg"
-		text="[@posterize]"
-	/>
-<p>@posterize reduces the number of intensities in an image. </p>
-<p> Sending an integer to inlet 1 sets the number of possible levels. 
-Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
-depth with 32. The effect is mostly apparent with small values.</p>
-<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-	<sample
-		image="images/grab_posterize.png"
-		text="[@posterize]"
-	/>
-</jmax-class>
-
-<jmax-class name="@scale_to">
-	<icon
-		image="images/@scale_to.jpg"
-		text="[@scale_to]"
-	/>
-<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
-and chained from @identity_transform and to @store. This will scale an 
-image of any size to the size specified in inlets 1,2. If it doesn't correspond 
-the values of @identity_transform, part of the image will be trimmed and/or 
-duplicated.</p>
-
-	<sample
-		image="images/grab_scale_to.png"
-		text="[@scale_to]"
-	/>
-</jmax-class>
-
-<jmax-class name="@spread">
-	<icon
-		image="images/@spread.jpg"
-		text="[@spread]"
-	/>
-<p>@spread scatters the pixels in an image. Not all original pixels will 
-appear, and some may get duplicated (triplicated, etc) randomly. Some 
-wrap-around effect will occur close to the edges. </p>
-<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
-number of pixels + 1. even values translate the whole image by half 
-a pixel due to rounding.</p>
-	<sample
-		image="images/grab_spread.png"
-		text="[@spread]"
-	/>
-</jmax-class>
-
-<jmax-class name="@three">
-	<icon
-		image="images/@three.jpg"
-		text="[@three]"
-	/>
-<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-doing redundant updates -- sorry)</p>
-<icon
-	image="images/grab_three.png"
-	text="[@three]"
-/>
-</jmax-class>
-<jmax-class name="@two">
-<icon
-	image="images/@two.jpg"
-	text="[@two]"
-/>
-<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
-<p>Sending an integer guarantees an update to outlet 0 (currently it's 
-doing redundant updates -- sorry)</p>
-<sample
-	image="images/grab_two.png"
-	text="[@two]"
-/>
-</jmax-class>
 </section>
 
 <section name="External Picture Formats">
