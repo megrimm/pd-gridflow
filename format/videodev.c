@@ -119,12 +119,12 @@ static const char *video_mode_choice[] = {
 
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,ARRAY(_table_))); \
+	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
 	FREE(foo);}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,ARRAY(_table_)));\
+	whine(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
 	FREE(foo);}
 
 static char *flags_to_s(int value, int n, const char **table) {
@@ -407,10 +407,10 @@ static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	}
 }
 
-static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
+static void FormatVideoDev_option (FormatVideoDev *$, int argc, VALUE *argv) {
 	int fd = Stream_get_fd($->st);
-	Symbol sym = GET(0,symbol,SYM(foo));
-	int value = GET(1,int,42424242);
+	VALUE sym = argv[0];
+	int value = NUM2INT(argv[1]);
 	if (sym == SYM(channel)) {
 		FormatVideoDev_channel($,value);
 	} else if (sym == SYM(tuner)) {
@@ -418,7 +418,7 @@ static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	} else if (sym == SYM(norm)) {
 		FormatVideoDev_norm($,value);
 	} else if (sym == SYM(size)) {
-		int value2 = GET(2,int,42424242);
+		int value2 = NUM2INT(argv[2]);
 		FormatVideoDev_size($,value,value2);
 
 #define PICTURE_ATTR(_name_) \
@@ -435,7 +435,7 @@ static void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	PICTURE_ATTR(whiteness)
 
 	} else {
-		whine("unknown option: %s", Symbol_name(sym));
+		RAISE("unknown option: %s", sym);
 	}
 }
 
@@ -448,7 +448,7 @@ static void FormatVideoDev_close (FormatVideoDev *$) {
 static void FormatVideoDev_init (FormatVideoDev *$) {
 	int fd = Stream_get_fd($->st);
 	VideoCapability vcaps;
-	Var at[3];
+	VALUE argv[3];
 //	char *s;
 	VideoPicture *gp = NEW(VideoPicture,1);
 
@@ -498,7 +498,8 @@ static void FormatVideoDev_init (FormatVideoDev *$) {
 	FormatVideoDev_channel($,0);
 }
 
-static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int
+mode, int argc, VALUE *argv) {
 	FormatVideoDev *$ = (FormatVideoDev *)Format_open(&class_FormatVideoDev,parent,mode);
 	const char *filename;
 	int stream;
@@ -509,16 +510,13 @@ static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int 
 	$->pending_frames[1] = -1;
 	$->image = 0;
 
-	if (ac!=1) { whine("usage: videodev filename"); goto err; }
-	filename = Symbol_name(Var_get_symbol(at+0));
+	if (argc!=1) { whine("usage: videodev filename"); goto err; }
+	filename = rb_id2name(SYM2ID(argv[0]));
 
 	whine("will try opening file");
 
 	stream = open(filename, O_RDWR);
-	if (0> stream) {
-		whine("can't open file: %s", filename);
-		goto err;
-	}
+	if (0> stream) RAISE("can't open file: %s", filename);
 
 	$->st = Stream_open_fd(stream,mode);
 

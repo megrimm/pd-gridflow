@@ -116,14 +116,14 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 
 /* ---------------------------------------------------------------- */
 
-static Symbol button_sym(int i) {
+static VALUE button_sym(int i) {
 	char foo[42];
 	sprintf(foo,"button%d",i);
-	return Symbol_new(foo);
+	return ID2SYM(rb_intern(foo));
 }
 
 static void FormatX11_alarm(FormatX11 *$) {
-	Var at[4];
+	VALUE argv[4];
 	XEvent e;
 
 	for (;;) {
@@ -143,26 +143,26 @@ static void FormatX11_alarm(FormatX11 *$) {
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			PUT(0,symbol,SYM(press));
-			PUT(1,symbol,button_sym(eb->button));
-			PUT(2,int,eb->y);
-			PUT(3,int,eb->x);
-			//Object_send_thru(OBJ($->out->parent),0,4,at);
+			argv[0] = SYM(press);
+			argv[1] = button_sym(eb->button);
+			argv[2] = INT2NUM(eb->y);
+			argv[3] = INT2NUM(eb->x);
+			//FObject_send_thru($->out->parent,0,4,at);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			PUT(0,symbol,SYM(release));
-			PUT(1,symbol,button_sym(eb->button));
-			PUT(2,int,eb->y);
-			PUT(3,int,eb->x);
+			argv[0] = SYM(release);
+			argv[1] = button_sym(eb->button);
+			argv[2] = INT2NUM(eb->y);
+			argv[3] = INT2NUM(eb->x);
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
 			//whine("drag at (y=%d,x=%d)",em->y,em->x);
-			PUT(0,symbol,SYM(motion));
-			PUT(1,int,em->y);
-			PUT(2,int,em->x);
+			argv[0] = SYM(motion);
+			argv[1] = INT2NUM(em->y);
+			argv[2] = INT2NUM(em->x);
 		}break;
 		case DestroyNotify:{
 			/* should notify $->parent here */
@@ -409,11 +409,11 @@ static void FormatX11_close (FormatX11 *$) {
 	Format_close((Format *)$);
 }
 
-static void FormatX11_option (FormatX11 *$, ATOMLIST) {
-	Symbol sym = GET(0,symbol,SYM(foo));
+static void FormatX11_option (FormatX11 *$, int argc, VALUE *argv) {
+	VALUE sym = argv[0];
 	if (sym == SYM(out_size)) {
-		int sy = GET(1,int,0);
-		int sx = GET(2,int,0);
+		int sy = NUM2INT(argv[1]);
+		int sx = NUM2INT(argv[2]);
 		COERCE_INT_INTO_RANGE(sy,16,MAX_INDICES);
 		COERCE_INT_INTO_RANGE(sx,16,MAX_INDICES);
 		FormatX11_resize_window($,sx,sy);
@@ -422,11 +422,11 @@ static void FormatX11_option (FormatX11 *$, ATOMLIST) {
 		int sx = Dim_get($->dim,1);
 		FormatX11_show_section($,0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
-		$->autodraw = GET(1,int,0);
+		$->autodraw = NUM2INT(argv[1]);
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
 		whine("autodraw = %d",$->autodraw);
 	} else {
-		whine("unknown option: %s", Symbol_name(sym));
+		whine("unknown option: %s", rb_id2name(SYM2ID(sym)));
 	}
 }
 
@@ -476,7 +476,8 @@ err:;
 	return 0;
 }
 
-static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
+int argc, VALUE *argv) {
 	FormatX11 *$ = (FormatX11 *)Format_open(&class_FormatX11,parent,mode);
 
 	/* defaults */
@@ -502,7 +503,7 @@ static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
 	*/
 
 	{
-		Symbol domain = Var_get_symbol(at+0);
+		VALUE domain = argv[0];
 		int i;
 		// assert (ac>0);
 		if (domain==SYM(here)) {
@@ -511,7 +512,7 @@ static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
 			i=1;
 		} else if (domain==SYM(local)) {
 			char host[64];
-			int dispnum = Var_get_int(at+1);
+			int dispnum = NUM2INT(argv[1]);
 			whine("mode `local'");
 			whine("display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
@@ -520,8 +521,8 @@ static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
 		} else if (domain==SYM(remote)) {
 			char host[64];
 			int dispnum = 0;
-			strcpy(host,Symbol_name(Var_get_symbol(at+1)));
-				dispnum = Var_get_int(at+2);
+			strcpy(host,rb_id2name(SYM2ID(argv[1])));
+			dispnum = NUM2INT(argv[2]);
 			sprintf(host+strlen(host),":%d",dispnum);
 			whine("mode `remote'");
 			whine("host `%s'",host);
@@ -539,16 +540,16 @@ static Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode,
 			goto err;
 		}
 
-		if (i>=ac) {
+		if (i>=argc) {
 			whine("will create new window");
 		} else {
-			Symbol winspec = Var_get_symbol(at+i);
+			VALUE winspec = argv[i];
 			if (winspec==SYM(root)) {
 				$->window = $->root_window;
 				whine("will use root window (0x%x)", $->window);
 				$->is_owner = false;
 			} else {
-				const char *winspec2 = Symbol_name(winspec);
+				const char *winspec2 = rb_id2name(SYM2ID(winspec));
 				if (strncmp(winspec2,"0x",2)==0) {
 					$->window = strtol(winspec2+2,0,16);
 				} else {

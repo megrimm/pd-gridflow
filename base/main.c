@@ -49,7 +49,7 @@ FILE *whine_f;
 /* The setup part */
 
 #define DECL_SYM2(_sym_) \
-	Symbol sym_##_sym_ = (Symbol) 0xDeadBeef;
+	VALUE sym_##_sym_ = 0xDeadBeef;
 
 DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
@@ -89,14 +89,6 @@ void showenv(const char *s) {
 
 void gf_timer_handler (Timer *foo, void *obj);
 
-VALUE gf_post_string (VALUE $, VALUE s) {
-	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
-
-	post("%s",RSTRING(s)->ptr);
-//	fprintf(stderr,"%s",RSTRING(s)->ptr);
-	return Qnil;
-}
-
 VALUE gf_ruby_init$1 (void *foo) {
 	gf_install_bridge();
 	disable_signal_handlers(); /* paranoid; help me with gdb */
@@ -130,14 +122,11 @@ void gf_ruby_init (void) {
 	ruby_init();
 
 	rb_eval_string("module GridFlow; end");
-	rb_define_singleton_method(rb_eval_string("GridFlow"),
-		"post_string", gf_post_string, 1);
-
-	ruby_options(ARRAY(foo));
+	ruby_options(COUNT(foo),foo);
 	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
 }
 
-void gridflow_module_init (void) {
+void gf_init (void) {
 
 	disable_signal_handlers();
 	srandom(time(0));
@@ -158,8 +147,8 @@ void gridflow_module_init (void) {
 
 	gf_ruby_init();
 
-	#define DEF_SYM(_sym_) \
-		sym_##_sym_ = Symbol_new(#_sym_);
+#define DEF_SYM(_sym_) \
+	sym_##_sym_ = SYM(_sym_);
 
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
@@ -184,55 +173,8 @@ void gridflow_module_init (void) {
 
 /* this is the entry point for all of the above */
 
-fts_module_t gridflow_module = {
-	"video",
-	"GridFlow: n-dimensional array streaming, pictures, video, etc.",
-	gridflow_module_init, 0, 0};
-
 /* **************************************************************** */
 /* Procs of somewhat general utility */
-
-/*
-	a slightly friendlier version of post(...)
-	it removes redundant messages.
-	it also ensures that a \n is added at the end.
-*/
-void whine(char *fmt, ...) {
-	static char *last_format = 0;
-	static int format_count = 0;
-
-	if (last_format && strcmp(last_format,fmt)==0) {
-		format_count++;
-		if (format_count >= 64) {
-			if (high_bit(format_count)-low_bit(format_count) < 3) {
-				post("[too many similar posts. this is # %d]\n",format_count);
-#ifdef MAKE_TMP_LOG
-				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
-				fflush(whine_f);
-#endif
-			}
-			return;
-		}
-	} else {
-		last_format = strdup(fmt);
-		format_count = 1;
-	}
-
-	/* do the real stuff now */
-	{
-		va_list args;
-		char post_s[256*4];
-		int length;
-		va_start(args,fmt);
-		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
-		post_s[sizeof(post_s)-1]=0; /* safety */
-		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
-#ifdef MAKE_TMP_LOG
-		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
-		fflush(whine_f);
-#endif
-	}
-}
 
 void whine_time(const char *s) {
 	struct timeval t;
@@ -248,126 +190,53 @@ void whine_time(const char *s) {
 	+ more of the same
 	; begin optional section
 */
-void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
-	fts_type_t args[16];
+void define_many_methods(VALUE $, int n, MethodDecl *methods) {
+	VALUE args[16]; /* not really used anymore */
 	int i;
 	for (i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		int j;
-		int min_args=-1;
 		int n_args=0;
 		const char *s = md->signature;
+		char buf[256];
 		for (j=0; s[j]; j++) {
 			switch(s[j]) {
-			case 's': args[n_args++]=fts_t_symbol; break;
-			case 'i': args[n_args++]=fts_t_int;    break;
-			case 'p': args[n_args++]=fts_t_ptr;    break;
-			case 'l': args[n_args++]=fts_t_list;   break;
-			case '+': min_args = n_args;
+			case 's': args[n_args++]=rb_cSymbol;  break;
+			case 'i': args[n_args++]=rb_cInteger; break;
+			case 'p': args[n_args++]=rb_cData;    break;
+			case 'l': args[n_args++]=rb_cArray;   break;
+			case '+':
 				while(n_args<16) {
 					args[n_args]=args[n_args-1];
 					n_args++;}
+				n_args = -1;
 				break;
-			case ';': min_args = n_args; break;
+			case ';': n_args = -1; break;
 			default: assert(0);
 			}
 		}
-		fts_method_define_optargs(class,
-			md->winlet == -1 ? fts_SystemInlet : md->winlet,
-			Symbol_new(md->selector), md->method,
-			n_args, args, min_args == -1 ? n_args : min_args);
+		n_args=-1; /* yes, really. sorry. */
+		if (md->winlet>=0) {
+			sprintf(buf,"_%d_%s",md->winlet,md->selector);
+		} else {
+			if (strcmp(md->selector,"init")==0) {
+				sprintf(buf,"initialize");
+			} else {
+				sprintf(buf,"%s",md->selector);
+			}
+		}
+		rb_define_method($,buf,(VALUE(*)())md->method,n_args);
 	}
 }
-
+/*
 char *FObject_to_s(FObject *$) {
 	char *buf = NEW2(char,256);
 	sprintf_vars(buf,
-/*		((fts_object_t)$->twin)->o.argc,
-		((fts_object_t)$->twin)->o.argv);
-*/
 		$->argc,
 		$->argv);
 	return buf;
 }
-
-/* **************************************************************** */
-/* [@global] */
-
-/* a dummy object that gives access to any stuff global to
-   GridFlow.
 */
-typedef struct GFGlobal {
-	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
-} GFGlobal;
-
-static void profiler_reset$1(void*d,void*k,void*v) {
-	((GridObject *)k)->profiler_cumul = 0;
-}
-
-METHOD(GFGlobal,profiler_reset) {
-	Dict *os = gf_object_set;
-	Dict_each(os,profiler_reset$1,0);
-}
-
-static int by_profiler_cumul(void **a, void **b) {
-	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
-	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
-	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
-}
-
-static void profiler_dump$1(void *d,void *k,void *v) {
-	List_push((List *)d,k);
-}
-
-METHOD(GFGlobal,profiler_dump) {
-	/* if you blow 256 chars it's your own fault */
-	List *ol = List_new(0);
-
-	uint64 total=0;
-	int i;
-	whine("--------------------------------");
-	whine("         clock-ticks percent pointer  constructor");
-	Dict_each(gf_object_set,profiler_dump$1,ol);
-	List_sort(ol,by_profiler_cumul);
-	for(i=0;i<List_size(ol);i++) {
-		GridObject *o = List_get(ol,i);
-		total += o->profiler_cumul;
-	}
-	if (total<1) total=1;
-	for(i=0;i<List_size(ol);i++) {
-		GridObject *o = List_get(ol,i);
-		int ppm = o->profiler_cumul * 1000000 / total;
-		char *buf = FObject_to_s(OBJ(o));
-		whine("%20lld %2d.%04d %08x [%s]\n",
-			o->profiler_cumul,
-			ppm/10000,
-			ppm%10000,
-			o,
-			buf);
-		/* Symbol_new(fts_get_class_name(o->o.head.cl)) */
-		FREE(buf);
-	}
-	whine("--------------------------------");
-}
-
-METHOD(GFGlobal,init) {
-	GridObject_init((GridObject *)$);
-}
-
-METHOD(GFGlobal,delete) {
-	GridObject_delete((GridObject *)$);
-}
-
-GRCLASS(GFGlobal,inlets:1,outlets:1,
-LIST(),
-/* outlet 0 not used for grids */
-	DECL(GFGlobal,-1,init,          "s"),
-	DECL(GFGlobal,-1,delete,        ""),
-	DECL(GFGlobal, 0,profiler_reset,""),
-	DECL(GFGlobal, 0,profiler_dump, ""))
-
-#define INSTALL(_sym_,_name_) \
-	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
 void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 	callback(o);
@@ -390,5 +259,4 @@ void gf_timer_handler (Timer *foo, void *obj) {
 }
 
 void startup_gridflow (void) {
-	INSTALL("@global", GFGlobal);
 }

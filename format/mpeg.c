@@ -87,13 +87,14 @@ static void FormatMPEG_close (FormatMPEG *$) {
 	FREE($);
 }
 
-static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int
+mode, int argc, VALUE *argv) {
 	FormatMPEG *$ = (FormatMPEG *)Format_open(&class_FormatMPEG,parent,mode);
 	const char *filename;
 
 	if (!$) return 0;
 
-	if (ac!=2 || Var_get_symbol(at+0) != SYM(file)) {
+	if (argc!=2 || argv[0] != SYM(file)) {
 		whine("usage: mpeg file <filename>"); goto err;
 	}
 	filename = Symbol_name(Var_get_symbol(at+1));

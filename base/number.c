@@ -305,59 +305,12 @@ char *Dim_to_s(Dim *$) {
 	/* if you blow 256 chars it's your own fault */
 	char *bottom = NEW(char,256);
 	char *s = bottom;
-
 	int i=0;
-
 	Dim_invariant($);
-	
 	s += sprintf(s,"Dim(");
-	while(i<$->n) {
-		s += sprintf(s,"%s%d", ","+!i, $->v[i]);
-		i++;
-	}
+	for(; i<$->n; i++) s += sprintf(s,"%s%d", ","+!i, $->v[i]);
 	s += sprintf(s,")");
 	return (char *)REALLOC(bottom,strlen(bottom)+1);
-}
-
-int Dim_equal_verbose(Dim *$, Dim *other) {
-	int i;
-	Dim_invariant($);
-	Dim_invariant(other);
-	if ($->n != other->n) {
-		whine("Got %d dimensions, but should be %d, "
-			"as in (height,width,channels)", $->n, other->n);
-		return 0;
-	}
-	for(i=0; i<$->n; i++) {
-		if ($->v[0] != other->v[0]) {
-			whine("Dimension #%d mismatch: got %d, should be %d",
-				$->v[0], other->v[0]);
-			return 0;
-		}
-	}
-	return 1;
-}
-
-/* here, "other" better be a (height,width,channels) with channels=3 (rgb) */
-int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
-	Dim_invariant($);
-	Dim_invariant(other);
-	if ($->n != other->n) {
-		whine("Got %d dimensions, but should be %d, "
-			"as in (height,width,channels)", $->n, other->n);
-	} else if ($->v[0] != other->v[0]) {
-		whine("Height mismatch: got %d, should be %d",
-			$->v[0], other->v[0]);
-	} else if ($->v[1] != other->v[1]) {
-		whine("Width mismatch: got %d, should be %d",
-			$->v[1], other->v[1]);
-	} else if ($->v[2] != 3) {
-		whine("Channel mismatch: got %d, should be %d, as in (red,green,blue)",
-			$->v[2], other->v[2]);
-	} else {
-		return 1;
-	}
-	return 0;
 }
 
 /* **************************************************************** */
@@ -383,13 +336,6 @@ static NumberType numeric_type_table[] = {
 	DECL_TYPE(complex160,160),
 */
 };
-
-/*
-typedef struct {
-	int type;
-	void *buffer;
-} Array;
-*/
 
 /* **************************************************************** */
 

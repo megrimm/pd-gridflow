@@ -89,16 +89,17 @@ static void FormatMPEG3_close (FormatMPEG3 *$) {
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-static Format *FormatMPEG3_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatMPEG3_open (FormatClass *qlass, GridObject *parent, int
+mode, int argc, VALUE *argv) {
 	FormatMPEG3 *$ = (FormatMPEG3 *)Format_open(&class_FormatMPEG3,parent,mode);
 	const char *filename;
 
 	if (!$) return 0;
 
-	if (ac!=2 || Var_get_symbol(at+0) != SYM(file)) {
+	if (argc!=2 || argv[0] != SYM(file)) {
 		whine("usage: mpeg file <filename>"); goto err;
 	}
-	filename = Symbol_name(Var_get_symbol(at+1));
+	filename = rb_id2name(SYM2ID(argv[1]));
 
 	$->mpeg = mpeg3_open(strdup(filename));
 	if (!$->mpeg) {

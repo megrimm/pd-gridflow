@@ -126,16 +126,17 @@ static void FormatTarga_close (Format *$) {
 	FREE($);
 }
 
-static Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatTarga_open (FormatClass *class, GridObject *parent, int
+mode, int argc, VALUE *argv) {
 	FormatTarga *$ = (FormatTarga *)Format_open(&class_FormatTarga,parent,mode);
 	const char *filename;
 
 	if (!$) return 0;
 
-	if (ac!=2 || Var_get_symbol(at+0) != SYM(file)) {
+	if (argc!=2 || argv[0] != SYM(file)) {
 		whine("usage: targa file <filename>"); goto err;
 	}
-	filename = Symbol_name(Var_get_symbol(at+1));
+	filename = rb_id2name(SYM2ID(argv[0]));
 
 	$->st = Stream_open_file(filename,mode);
 	if (!$->st) {

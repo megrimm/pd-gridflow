@@ -7,6 +7,9 @@ version 0.6.0 (head):
  * merged c/src/Sources into ./config.make
  * c/src/format_*.c -> format/*.c; c/src/*.c -> base/*.c
  * allows writing a jMax class in the Ruby scripting language
+ * GridFlow now relies on the Ruby API instead of the jMax API
+ * many many macros and typedefs have changed or disappeared
+ * added 289 new bugs
 
 version 0.5.0 (2002.06.08):
  * big changes to the internals (especially use of macros)
