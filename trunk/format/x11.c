@@ -246,7 +246,10 @@ top:
 	if (use_shm) {
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
-		assert(ximage);
+		if (!ximage) {
+			gfpost("shm got disabled, retrying...");
+			goto top;
+		}
 		shm_info->shmid = shmget(
 			IPC_PRIVATE,
 			ximage->bytes_per_line * ximage->height,
