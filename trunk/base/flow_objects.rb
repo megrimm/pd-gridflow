@@ -246,7 +246,7 @@ class GridPrint < GridFlow::GridObject
 			for row in 0...@dim[0]
 				column=0; str=""
 				for col in 0...@dim[1]
-					str << "{" << dump(unpack(@data[sz*row+sz2*col,sz2])) << "}"
+					str << "(" << dump(unpack(@data[sz*row+sz2*col,sz2])) << ")"
 					break if str.length>@trunc
 				end
 				post trunc(str)
@@ -955,20 +955,52 @@ end
 
 #-------- fClasses for: GUI
 
-class Display < FObject
+module Gooey # to be included in any FObject class
+	def initialize
+		super
+		GridFlow.post "GOOEY"
+		@selected=false
+		@bg  = "#ffffff" # white background
+		@bgb = "#000000" # black border
+		@bgs = "#0000ff" # blue border when selected
+		@fg  = "#000000" # black foreground
+		@rsym = "#{self.class}#{self.id}".intern # unique id for use in Tcl
+	end
+	def initialize2() GridFlow.whatever :bind, self, @rsym.to_s end
+	def pd_displace(can,x,y) @x+=x; @y+=y; pd_show(can) end
+	def pd_activate(*a) return; GridFlow.post "pd_activate: %s", a.inspect end
+	def quote(text) # for tcl (isn't completely right ?)
+		text=text.gsub(/[\{\}]/) {|x| "\\"+x }
+		"{#{text}}"
+	end
+	def pd_vis(can,flag) pd_show(can) if flag!=0 end
+	def pd_getrect(can)
+		x,y=GridFlow.whatever :getpos,self,can
+		if @x!=x or @y!=y then @x,@y=x,y end
+		# the extra one-pixel on each side was for #peephole only
+		# not sure what to do with this
+		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
+	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
+		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
+		return 0
+	end
+	def pd_select(can,selected)
+		@selected=selected
+		outl = (if @selected!=0 then @bgs else "#000000" end)
+		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
+	end
+end
+
+class Display < FObject; include Gooey
 	attr_accessor :text
 	def initialize()
+		super
 		@sel = nil; @args = [] # contents of last received message
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
 		@y,@x = 0,0     # topleft of the widget
 		@bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
-	end
-	def initialize2()
-		GridFlow.post "Display#initialize2: #{args.inspect}"
-		return if GridFlow.bridge_name!="puredata"
-		@rsym = "display#{self.id}".intern
-		GridFlow.whatever :bind, self, @rsym.to_s
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
@@ -988,10 +1020,6 @@ class Display < FObject
 			end
 		pd_show nil
 	end
-	def quote(text) # for tcl
-		#text=text.gsub(/[\{\}]/) {|x| "\\"+x }
-		"{#{text}}"
-	end
 	def pd_show(can)
 		GridFlow.post "pd_show %d",can
 		if can
@@ -1002,7 +1030,7 @@ class Display < FObject
 		end
 		return if not @can # can't show for now...
 		@font = "Courier -12"
-		GridFlow.post "would show %s", quote(@text)
+		outl = (if @selected!=0 then @bgs else "#000000" end)
 		GridFlow.gui %{
 			set canvas #{@can}
 			$canvas delete #{@rsym}TEXT
@@ -1016,34 +1044,14 @@ class Display < FObject
 			set sx [expr $x2-$x1+1]
 			set sy [expr $y2-$y1+3]
 			$canvas delete #{@rsym}
-			$canvas create rectangle \
-				#{@x} #{@y} [expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} -tags #{@rsym}
-				global current_x current_y tooltip
+			$canvas create rectangle #{@x} #{@y} \
+				[expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} \
+				-tags #{@rsym} -outline #{outl}
 			$canvas lower #{@rsym} #{@rsym}TEXT
 			pd \"#{@rsym} set_size $sy $sx;\n\";
 		}
 	end
-	def pd_displace(can,x,y)
-		GridFlow.gui "#{@can} move #{@rsym} #{x} #{y}\n"
-		@x+=x; @y+=y; pd_show(can)
-	end
-	def pd_getrect(can)
-		x,y=GridFlow.whatever :getpos,self,can
-		if @x!=x or @y!=y then @x,@y=x,y end
-		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
-	end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
-		return 0
-	end
-	def pd_vis(can,flag) pd_show(can) if flag!=0 end
-	def pd_select(can,state)
-		outl = (if state!=0 then @bgs else "#000000" end)
-		GridFlow.post "%s", %{ #{@can} itemconfigure #{@rsym} -outline #{outl} }
-		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
-	end
 	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT \n}; super end
-
 	def _0_grid(*foo) # big hack!
 		# hijacking a [#print]
 		gp = GridPrint.new
@@ -1051,7 +1059,10 @@ class Display < FObject
 		overlord = self
 		gp.instance_eval { @overlord = overlord }
 		def gp.post(fmt,*args) @overlord.text << sprintf(fmt,*args) << "\n" end
-		def gp.end_hook; @overlord.instance_eval{@text.chomp!}; @overlord.pd_show nil end
+		def gp.end_hook
+			@overlord.instance_eval{@text.chomp!}
+			@overlord.pd_show nil
+		end
 		#gp.send_in 0, :trunc, 70
 		gp.send_in 0, :maxrows, 20
 		gp.send_in 0, :grid, *foo
@@ -1063,7 +1074,7 @@ class Display < FObject
 	end
 end
 
-class Peephole < FPatcher
+class Peephole < FPatcher; include Gooey
 	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","@out","#scale_by 1",
 	proc{Demux.new(2)}]
 	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
@@ -1077,12 +1088,7 @@ class Peephole < FPatcher
 		@y,@x = 0,0     # topleft of the widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 		@bg,@bgs = "#A07467","#00ff80"
-	end
-	def initialize2(*args)
-		GridFlow.post "Peephole#initialize2: #{args.inspect}"
-		return if GridFlow.bridge_name!="puredata"
-		@rsym = "peephole#{self.id}".intern
-		GridFlow.whatever :bind, self, @rsym.to_s
+		@selected=false
 	end
 	def pd_show(can)
 		GridFlow.post "pd_show %d",can
@@ -1090,6 +1096,7 @@ class Peephole < FPatcher
 		GridFlow.post "getpos -> [%s]",a.inspect
 		@x,@y=a
 		@can=".x%x.c"%(can*4) if can
+		outl = (if state!=0 then @bgs else "#000000" end)
 		if not @open
 			can2=@can.gsub(/\.c$/,"")
 			GridFlow.gui %{
@@ -1103,40 +1110,21 @@ class Peephole < FPatcher
 		}
 		GridFlow.gui %{
 			#{@can} delete #{@rsym}
-			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} -fill #{@bg} -tags #{@rsym}
+			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} \
+				-fill #{@bg} -tags #{@rsym} -outline #{outl}
 		}
 		set_geometry_for_real_now
 	end
-	def pd_displace(can,x,y)
-		GridFlow.gui "#{@can} move #{@rsym} #{x} #{y}\n"
-		@x+=x; @y+=y; pd_show(can)
-	end
-	def pd_getrect(can)
-		x,y=GridFlow.whatever :getpos,self,can
-		if @x!=x or @y!=y then @x,@y=x,y end
-		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
-	end
-	def pd_vis(can,flag) pd_show(can) if flag!=0 end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
-		return 0
-	end
-	def pd_select(can,state)
-		outl = (if state!=0 then @bgs else "#000000" end)
-		GridFlow.post "%s", %{ #{@can} itemconfigure #{@rsym} -outline #{outl} }
-		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
-	end
 	def set_geometry_for_real_now
 		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
-		if @fx>@sx or @fy>@sx then
-			@down = true
+		@down = (@fx>@sx or @fy>@sx)
+		if @down then
 			@scale = [(@fy+@sy-1)/@sy,(@fx+@sx-1)/@sx].max
 			@scale=1 if @scale<1 # what???
 			@fobjects[2].send_in 1, @scale
 			sy2 = @fy/@scale
 			sx2 = @fx/@scale
 		else
-			@down = false
 			@scale = [@sy/@fy,@sx/@fx].min
 			@fobjects[4].send_in 1, @scale
 			sy2 = @fy*@scale
@@ -1168,17 +1156,15 @@ class Peephole < FPatcher
 		@y,@x = y,x
 		set_geometry_for_real_now
 	end
-	def _0_fall_thru(flag)
+	def _0_fall_thru(flag) # never worked ?
 		GridFlow.post "fall_thru: #{flag}"
 		@fobjects[3].send_in 0, :fall_thru, flag
 	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
 	def _1_position(y,x,b)
-		if @down then
-			send_out 0,:position,y*@scale,x*@scale,b
-		else
-			send_out 0,:position,y/@scale,x/@scale,b
-		end
+		s=@scale
+		if @down then y*=s;x*=s else y*=s;x*=s end
+		send_out 0,:position,y,x,b
 	end
 	def _2_list(sy,sx,chans)
 		@fy,@fx = sy,sx
