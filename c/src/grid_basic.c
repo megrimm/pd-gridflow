@@ -200,8 +200,7 @@ typedef struct GridStore {
 
 GRID_BEGIN(GridStore,0) {
 	int na = Dim_count(in->dim);
-	int nb;
-	int nc,nd,i;
+	int nb,nc,nd,i;
 	int v[MAX_DIMENSIONS];
 	if (!$->data || !$->dim) {
 		whine("empty buffer, better luck next time.");
@@ -215,11 +214,18 @@ GRID_BEGIN(GridStore,0) {
 	whine("[b] %s",Dim_to_s($->dim));
 */
 
+	if (na<1) {
+		whine("must have at least 1 dimension.",
+			na,1,1+nb);
+		return false;
+	}
+/*
 	if (na<1 || na>1+nb) {
 		whine("wrong number of dimensions: got %d, expecting %d..%d",
 			na,1,1+nb);
 		return false;
 	}
+*/
 	nc = Dim_get(in->dim,na-1);
 	if (nc > nb) {
 		whine("wrong number of elements in last dimension: "
@@ -636,7 +642,7 @@ GRID_BEGIN(GridInner,0) {
 	{
 		int a_last = Dim_get(a,Dim_count(a)-1);
 		int b_last = Dim_get(b,Dim_count(b)-1);
-		int n = Dim_count(a)+Dim_count(b)-1;
+		int n = Dim_count(a)+Dim_count(b)-2;
 		int v[n];
 		int i,j;
 		if (a_last != b_last) {
@@ -644,7 +650,7 @@ GRID_BEGIN(GridInner,0) {
 			return false;
 		}
 		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
-		for (  j=0; j<Dim_count(b)  ; i++,j++) { v[i] = Dim_get(b,j); }
+		for (  j=0; j<Dim_count(b)-1; i++,j++) { v[i] = Dim_get(b,j); }
 		GridOutlet_begin($->out[0],Dim_new(n,v));
 		GridInlet_set_factor(in,a_last);
 	}	
@@ -662,12 +668,11 @@ GRID_FLOW(GridInner,0) {
 
 	for (i=0; i<n; i+=factor) {
 		for (j=0; j<b_prod/factor; j+=factor) {
-			int k;
-			memcpy(buf,&$->data[i],factor*sizeof(Number));
-			$->op_para->op_array2(factor,buf,&data[j]);
+			memcpy(buf,&data[i],factor*sizeof(Number));
+			$->op_para->op_array2(factor,buf,&$->data[j]);
 			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
 		}
-		GridOutlet_send(out,b_prod/factor,buf);
+		GridOutlet_send(out,b_prod/factor,buf2);
 	}
 	FREE(buf);
 	FREE(buf2);
@@ -735,7 +740,7 @@ CLASS(GridInner) {
 	define_many_methods(class,ARRAY(methods));
 
 	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class(class,2);
 
 	return fts_Success;
 }
@@ -938,6 +943,9 @@ GRID_FLOW(GridConvolve,1) {
 GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
+	fts_symbol_t sym_para = GET(1,symbol,SYM(*));
+	fts_symbol_t sym_fold = GET(2,symbol,SYM(+));
+
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridConvolve,0);
 	$->in[1] = GridInlet_NEW3($,GridConvolve,1);
@@ -946,8 +954,19 @@ METHOD(GridConvolve,init) {
 	$->data = 0;
 	$->diml = 0;
 	$->datal = 0;
-	$->op_para = op2_table_find(SYM(*));
-	$->op_fold = op2_table_find(SYM(+));
+
+	if (!$->op_para) {
+		fts_object_set_error(OBJ($),
+			"unknown binary operator \"%s\"", fts_symbol_name(sym_para));
+	}
+	if (!$->op_fold) {
+		fts_object_set_error(OBJ($),
+			"unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
+	}
+
+	$->op_para = op2_table_find(sym_para);
+	$->op_fold = op2_table_find(sym_fold);
+	/* $->rint = GET(3,int,0); */
 }
 
 METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
@@ -955,9 +974,9 @@ METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
 CLASS(GridConvolve) {
 	int i;
 	fts_type_t int_alone[]  = { fts_t_int };
-	fts_type_t rien[] = { fts_t_symbol };
+	fts_type_t init_args[] = {fts_t_symbol, fts_t_symbol, fts_t_symbol, fts_t_int};
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridConvolve,init), ARRAY(rien),-1},
+		{-1, fts_s_init,   METHOD_PTR(GridConvolve,init), ARRAY(init_args),1},
 		{-1, fts_s_delete, METHOD_PTR(GridConvolve,delete),0,0,0 },
 	};
 
