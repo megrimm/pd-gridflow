@@ -443,7 +443,6 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
-	rb_p(rself);
 	rb_ivar_set(rself, SI(@bfclass), PTR2FIX(qlass));
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(

@@ -28,15 +28,17 @@
 #!@#$ DON'T PUT ABSTRACTIONS IN THE %w() !!!
 # @mouse=help_mouse @motion_detection=help_motion_detect @fade=help_fade
 
+# @apply_colormap_channelwise @checkers @complex_sq @contrast
+# @posterize @ravel @greyscale_to_rgb @rgb_to_greyscale @solarize @spread
 %w(
-	@apply_colormap_channelwise @cast @checkers @complex_sq @contrast
+	@cast
 	@convolve @dim @downscale_by @draw_polygon @export=@importexport
 	@finished @fold @for @four=@twothreefour @global @grade
-	@greyscale_to_rgb @import=@importexport @inner=@foldinnerouter
+	@import=@importexport @inner=@foldinnerouter
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
-	@! #=@ @perspective @posterize printargs @print @ravel @redim
-	@rgb_to_greyscale rubyprint @scale_by @scale_to @scan @solarize
-	@spread @store @three=@twothreefour @two=@twothreefour
+	@! #=@ @perspective printargs @print @redim
+	rubyprint @scale_by @scale_to @scan
+	@store @three=@twothreefour @two=@twothreefour
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
