@@ -508,7 +508,7 @@ puts <<EOF
 <!-- #{"$"}Id#{"$"} -->
 <title>GridFlow #{GF_VERSION} - #{tree.att['title']}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="jmax.css" type="text/css">
+<link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
 <body bgcolor="#FFFFFF"
   leftmargin="0" topmargin="0"
