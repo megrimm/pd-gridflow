@@ -1,5 +1,5 @@
 #N canvas 227 91 440 355 10;
-#X obj 20 47 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#X obj 20 28 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
 #X obj 20 309 @out;
 #X msg 51 256 open x11 here;
@@ -19,8 +19,10 @@
 #X obj 297 322 @checkers;
 #X obj 20 209 @draw_polygon put 1;
 #X obj 195 196 @import ( 7 2 );
-#X connect 0 0 5 0;
-#X connect 0 0 12 0;
+#X obj 19 48 fork;
+#X obj 51 48 fork;
+#X obj 116 45 print;
+#X connect 0 0 19 0;
 #X connect 2 0 1 0;
 #X connect 3 0 1 0;
 #X connect 4 0 17 0;
@@ -34,3 +36,7 @@
 #X connect 12 0 10 0;
 #X connect 17 0 1 0;
 #X connect 18 0 17 2;
+#X connect 19 0 5 0;
+#X connect 19 1 20 0;
+#X connect 20 0 7 0;
+#X connect 20 1 12 0;
