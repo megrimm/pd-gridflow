@@ -136,7 +136,7 @@ Format *FormatTarga_open (FormatClass *class, ATOMLIST, int mode) {
 	const char *filename;
 	Format *$ = NEW(Format,1);
 	$->cl = &class_FormatTarga;
-	$->stream = 0;
+	$->stream = -1;
 	$->bstream = 0;
 
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {

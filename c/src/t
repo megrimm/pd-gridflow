@@ -17,7 +17,8 @@ SAM=/home/projects/gridflow/samples
 # SRC='grid_basic.c grid.c grid.h index.c tuple.c'
 SRC='video_out.c grid_basic.c grid.c grid.h'
 
-FILE=../mexico/bbb_main.jmax
+# F=color_correction
+# FILE="${F}.jmax ${F}.new.jmax"
 #FILE=outside/grid_tcp.jmax
 #FILE=outside/scale_test_2.jmax
 

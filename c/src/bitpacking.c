@@ -161,7 +161,7 @@ BitPacking *BitPacking_new(int bytes, uint32 r, uint32 g, uint32 b) {
 	$->mask[2] = b;
 	$->pack = default_pack;
 
-	for (i=0; i<sizeof(builtin_bitpacks)/sizeof(BitPacking); i++) {
+	for (i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = builtin_bitpacks+i;
 		if (bp->bytes == bytes &&
 		bp->mask[0]==r && bp->mask[1]==g && bp->mask[2]==b) {

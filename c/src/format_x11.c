@@ -368,8 +368,11 @@ bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	} else
 	#endif
 	{
-		/* this buffer may be too big, but at least it won't be too small */
-		$->image = (uint8 *)calloc(sx * sy, BitPacking_bytes($->bit_packing));
+		/* let's overestimate the pixel size */
+		/* int pixel_size = BitPacking_bytes($->bit_packing); */
+		int pixel_size = 4;
+
+		$->image = (uint8 *)calloc(sx * sy, pixel_size);
 
 		$->ximage = XCreateImage(d->display, d->visual,
 			d->depth, ZPixmap, 0, (int8 *) $->image,
