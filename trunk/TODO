@@ -1,16 +1,16 @@
 /* $Id$ */
 
---- make the development process more test-driven.
-  --- *Especially* the debugging process.
+--- make the development process more test-driven:
+    * file every feature request and bug report into base/test.rb so
+      that gridflow fails those tests;
+    * THEN make gridflow pass those tests.
 
+* notes on PPC RDTSC:
 <Ahruman> But remember, the speed of UpTime varies by machine anyway.
 AbsoluteToNanoseconds() is a Good Thing
-
 <mmaddin> "The PowerPC has a similar instruction. QuickTime exposes a massaged version
 <mmaddin> of it using the Microseconds() routine."
-
 http://www.simdtech.org/apps/group_public/email/altivec/msg01956.html
-
 <arwyn> on OS X you can use time = mach_absolute_time(),
 and mach_timebase_info(&info), then ns = (time * info.numer) / info.denom;
 <matju> arwyn: what's the header to include for that?
@@ -25,6 +25,15 @@ and mach_timebase_info(&info), then ns = (time * info.numer) / info.denom;
 * FDj *yawns* and *sneezes*
 <arwyn> and even then, you'll still get ns resolutions out of it
 
+for 0.7.6: switch focus to PD instead of jMax; have OSX support that makes sense, if
+possible; fix as many bugs as possible
+
+for 0.7.7: ?
+
+for 0.7.8: ?
+
+for 0.7.9: ?
+
 for 0.8.0:
 
  * added @matrix_solve, @slice
@@ -37,8 +46,16 @@ for 0.8.0:
  * [@export~]
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
-pick a number: [121]
 
+pick a number: [125]
+
+[124] on OSX:
+      <_peter> Program received signal EXC_BAD_ACCESS, Could not access memory.
+      <_peter> 0x0042d050 in _Z17localize_sysstackv () at bridge/common.c:128
+
+[123] doesn't compile with old versions of usb.h
+[122] @import "numbertype" attribute doesn't exist (!!!)
+[121] @downscale_by still craps on RGBA images?
 [120] osx: -bundle_loader stuff fails if pd is not in $PATH
 [119] osx: SDL doesn't work here
 [118] error messages can be unclear (eg. file not open... is it @in's, or @out's?)
@@ -212,7 +229,8 @@ Source Filter
 
 Architecture
 <pat> aussi les erreurs que donne gf c'est beaucoup de ligne pour juste un file not found ;)
-[ ] eliminate the Dim class, replacing by Grid itself.
+[ ] reentrancy of objects (to allow true recursion)
+[ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] inlet-variables (variables associated to inlets)
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
@@ -314,6 +332,7 @@ Effects
 [ ] kaleidoscopes
 [ ] FFTW
 [ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(d-b-c+a)*x*y
+[ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
 [ ] @daltonism
 
@@ -321,11 +340,10 @@ Input/Output
 [ ] videodev: colorspace yuv, etc
 [ ] videodev: is it possible to reach 60 fps ?
 [ ] a @store that is persistent (saved in .jmax) ?
-[ ] Grid: bpv 8,16,64,signed/unsigned
-[ ] Grid: bpv 1,2,4
-[ ] Grid: float
+[ ] Grid: support storage in all six types
+[ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format (?)
-[ ] jMax4, Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
+[ ] jMax4, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
 [ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC
 [ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
@@ -346,7 +364,7 @@ Input/Output
 [ ] try low-latency kernelpatch
 [ ] try preemption kernelpatch
 [ ] x11: support dual heads
-[ ] [joystick_port], [parallel_port], [serial_port]
+[ ] [parallel_port], [serial_port], [usb_mouse]
 
 Format
 [ ] remaining number type support in formats
@@ -373,8 +391,8 @@ User Interface
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] peephole:
     [x] auto-@scale_by for very small images
-    [ ] works with jmax4
-    [ ] works without x11
+    [ ] works with Pd
+    [ ] works without x11 (for osx...)
     [ ] appear _over_ pulldowns ? (and popups, even?)
     [x] is it possible to make it borderless? not with x11
     [ ] does it really work with something other than 3 channels ?
@@ -446,12 +464,8 @@ navigable menu as in 'file/open'
 then i can make one for pd or jmax or both, but it does not make sense to
 add it to gridflow itself. 
 
-
-
 > http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
-
-
 
 debugging:
 
@@ -470,12 +484,10 @@ stepi
 
 p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
 
-
-
-
-
-
-
-
 ... I am Jack's Overwritten Stack Pointer...
 
+<ircbridge> <GPS> Tcl_GetObjResult Tcl_GetErrorInfo ...
+<ircbridge> <GPS> Tcl_GetStringResult may also be helpful.  (note I can't
+seem to find Tcl_GetErrorInfo (maybe I dreamed it up)) 
+<ircbridge> <GPS> matju: BTW CatchObjCmd might help too
+<ircbridge> <GPS> I see that the new Tcl_Dict commands have taken over the HEAD's CatchObjCmd
