@@ -72,6 +72,7 @@ FILES = [
   [:directory, "base/",
     [:ruby, "bridge_puredata.rb"],
     [:ruby, "main.rb"],
+    [:ruby, "flow_objects.rb"],
     [:ruby, "test.rb"],
     [:ruby, "MainLoop.rb"],
   ],
@@ -84,6 +85,8 @@ FILES = [
 	[:ruby, "server_2.rb"],
 	[:ruby, "server_1_grid.rb"],
 	[:ruby, "server_1_ppm.rb"],
+	[:ruby, "jmax_format.rb"],
+	[:ruby, "puredata_format.rb"],
   ],
 ]
 
