@@ -1083,6 +1083,15 @@
 	<jmax-class name="format videodev @in">
 		<icon image="format_videodev" text="[open videodev /dev/video0]"/>
 
+		<method name="open">
+			<arg name="device"/>
+		</method>
+
+		<method name="open noinit">
+			<arg name="device"/>
+			This is the same except it is gentle with bad-tempered drivers.
+		</method>
+
 		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
 		should work for bttv based cards and the dc1/dc10plus from Miro.</p>
 
@@ -1099,10 +1108,17 @@
 		</p>
 		
 		<p>other options:
-		<method name="option channel"   ><arg name="level" type="integer"/></method>
-		<method name="option tuner"     ><arg name="level" type="integer"/></method>
-		<method name="option norm"      ><arg name="level" type="integer"/></method>
-		</p>
+		<method name="option channel"   ><arg type="integer"/></method>
+		<method name="option tuner"     ><arg type="integer"/></method>
+		<method name="option norm"      ><arg type="integer"/></method>
+		<method name="option frequency" ><arg type="integer"/></method>
+		<method name="option transfer mmap">
+			This is the normal (and fast) way of transferring pictures
+			from the camera.
+		</method>
+		<method name="option transfer read">
+			Some cameras/drivers only support this instead of mmap.
+		</method>
 
 		<method name="option size">
 			<arg name="height"/>
@@ -1110,6 +1126,7 @@
 			sets the input size, especially when using a video digitalizer
 			device
 		</method>
+		</p>
 	</jmax-class>
 
 	<jmax-class name="format sdl @out">
