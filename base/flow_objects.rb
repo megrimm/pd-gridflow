@@ -129,6 +129,7 @@ end
 # to see what the messages look like when they get on the Ruby side.
 class RubyPrint < GridFlow::GridObject
 	def initialize(*a)
+		super
 		@time = !!(a.length and a[0]==:time)
 	end
 
@@ -147,6 +148,7 @@ end
 
 class PrintArgs < GridFlow::GridObject
 	def initialize(*a)
+		super
 		GridFlow.post(a.inspect)
 	end
 	install "printargs", 0, 0
@@ -330,6 +332,7 @@ end
 
 class GridCheckers < GridObject
 	def initialize
+		super
 		@chain =
 		[
 			"@ >> 3","@ & 1","@fold ^","@ inv+ 0","@ & 63",
@@ -511,6 +514,7 @@ end
 
 class JMaxUDPSend < FObject
 	def initialize(host,port)
+		super
 		@socket = UDPSocket.new
 		@host,@port = host.to_s,port.to_i
 	end
@@ -539,6 +543,7 @@ end
 
 class JMaxUDPReceive < FObject
 	def initialize(port)
+		super
 		@socket = UDPSocket.new
 		@port = port.to_i
 		@socket.bind "localhost", @port
@@ -689,6 +694,7 @@ end # if not =~ jmax
 
 class Peephole < GridFlow::FObject
 	def initialize(*args)
+		super
 		GridFlow.post "Peephole#init: #{args.inspect}"
 	end
 	def method_missing(*args)
