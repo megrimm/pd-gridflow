@@ -43,7 +43,7 @@
 #include "../base/grid.h.fcs"
 
 @interface GFView: NSView {
-	uint8 *imdata;
+	Pt<uint8> imdata;
 	int imwidth;
 	int imheight;
 }
@@ -63,17 +63,11 @@
 	gfpost("new size: y=%d x=%d",h,w);
 	imheight=h;
 	imwidth=w;
-	if (imdata) delete imdata;
-	imdata = ARRAY_NEW(uint8,[self imageDataSize]);
+	if (imdata) delete imdata.p;
+	int size = [self imageDataSize];
+	imdata = ARRAY_NEW(uint8,size);
 	uint8 *p = imdata;
-	for (int y=0; y<h; y++) {
-		for (int x=0; x<w; x++) {
-			*p++ = 255;
-			*p++ = 255;
-			*p++ = 255;
-			*p++ = 0;
-		}
-	}
+	CLEAR(imdata,size);
 	NSSize s = {w,h};
 	[[self window] setContentSize: s];
 	return self;
@@ -81,7 +75,7 @@
 
 - (id) initWithFrame: (NSRect)r {
 	[super initWithFrame: r];
-	imdata=0; imwidth=-1; imheight=-1;
+	imdata=Pt<uint8>(); imwidth=-1; imheight=-1;
 	[self imageHeight: 240 width: 320];
 	return self;
 }	
@@ -131,7 +125,7 @@ struct FormatQuartz : Format {
 	\decl void initialize (Symbol mode);
 	\decl void delete_m ();
 	\decl void close ();
-	GRINLET3(0);
+	\grin 0
 };
 
 static NSDate *distantFuture, *distantPast;
