@@ -65,9 +65,8 @@ module GridFlow
 	end
 end
 
-if true
-	$post_log = File.open "/tmp/gridflow.log", "w"
-end
+#$post_log = File.open "/tmp/gridflow.log", "w"
+$post_log = nil
 
 module GridFlow #------------------
 
@@ -120,10 +119,12 @@ end
 class FObject
 	alias profiler_cumul= profiler_cumul_assign
 	attr_writer :args
+	attr_reader :outlets
 	def args; @args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
 		@outlets ||= []
-		@outlets.push [object, inlet]
+		@outlets[outlet] ||= []
+		@outlets[outlet].push [object, inlet]
 	end
 	def send_in(inlet, *m)
 		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /

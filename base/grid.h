@@ -152,8 +152,8 @@ static inline int mod(int a, int b) {
 int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 
 /* integer powers in log(b) time */
-static inline int ipow(int a, int b) {
-	int r=1;
+static inline int ipow(int32 a, uint32 b) {
+	int32 r=1;
 	while(1) {
 		if (b&1) r*=a;
 		b>>=1;
