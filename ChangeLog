@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.4.1 (head):
+version 0.4.1 (2002.01.02):
  * cvs repository now has public access
  * now can run configure without jmax/fts being present
  * standalone version now works on Silicon Graphics and Corel Netwinder.

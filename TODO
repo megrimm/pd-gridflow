@@ -30,7 +30,7 @@ Documentation / Help / HelpScreenshot Update (all "!")
 [x|x|x] @in, @video_in_file
 [x|x|x] @out, @video_out_file, @video_out
 [x|x|x] @scale_to, @scale_by
-[x|x|x] @import, @export
+[x|x|x] @import, @export, @export_list
 [x|x|x] @store, @redim
 [x|x|x] @, @!
 [x|x|x] @fold, @inner, @outer
