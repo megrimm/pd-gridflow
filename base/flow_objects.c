@@ -422,7 +422,7 @@ GRID_INLET(GridOp2,0) {
 		if (in->dex+n <= loop) {
 			op->zip(n,data,rdata+in->dex);
 		} else {
-			/* !@#$ should prebuild and reuse this array when n is small */
+			/* !@#$ should prebuild and reuse this array when "loop" is small */
 			STACK_ARRAY(T,data2,n);
 			int ii = mod(in->dex,loop);
 			int m = min(loop-ii,n);
@@ -720,14 +720,7 @@ GRID_INLET(GridOuter,0) {
 	out[0]->begin(new Dim(n,v),in->nt);
 } GRID_FLOW {
 	int b_prod = r.dim->prod();
-	if (b_prod <= 4) {
-		Pt<T> buf = ARRAY_NEW(T,b_prod*n);
-		for (int i=0,k=0; i<n; i++) {
-			for (int j=0; j<b_prod; j++, k++) buf[k] = data[i];
-		}
-		for (int j=0; j<n; j++) op->zip(b_prod,buf+b_prod*j,(Pt<T>)r);
-		out[0]->give(b_prod*n,buf);
-	} else {
+	if (b_prod > 4) {
 		STACK_ARRAY(T,buf,b_prod);
 		while (n) {
 			for (int j=0; j<b_prod; j++) buf[j] = *data;
@@ -735,7 +728,20 @@ GRID_INLET(GridOuter,0) {
 			out[0]->send(b_prod,buf);
 			data++; n--;
 		}
+		return;
 	}
+	n*=b_prod;
+	Pt<T> buf = ARRAY_NEW(T,n);
+	Pt<T> buf2 = ARRAY_NEW(T,b_prod*64);
+	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(Pt<T>)r,b_prod);
+	for (int i=0,k=0; k<n; i++) {
+		for (int j=0; j<b_prod; j++, k++) buf[k] = data[i];
+	}
+	int j=0;
+	for (; j<n&-64; j+=64*b_prod) op->zip(64*b_prod,buf+j,buf2);
+	for (; j<n&- 8; j+= 8*b_prod) op->zip( 8*b_prod,buf+j,buf2);
+	for (; j<n    ; j+=   b_prod) op->zip(   b_prod,buf+j,buf2);
+	out[0]->give(n,buf);
 } GRID_FINISH {
 } GRID_END
 
