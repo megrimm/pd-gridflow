@@ -22,7 +22,7 @@
 */
 
 #include <usb.h>
-#include "grid.h.fcs"
+#include "../base/grid.h.fcs"
 
 static Ruby cUSB;
 
