@@ -39,7 +39,7 @@ CFLAGS += -g    # gdb info
 CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 CFLAGS += -fPIC # some OSes/machines need that for .so files
 
-OBJDIR = $(ARCH)
+OBJDIR = .
 
 #----------------------------------------------------------------#
 
