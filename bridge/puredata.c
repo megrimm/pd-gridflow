@@ -417,12 +417,16 @@ static Ruby bridge_gui (int argc, Ruby *argv, Ruby rself) {
 static Ruby bridge_bind (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=2) RAISE("bad args");
 	if (TYPE(argv[0])==T_STRING) {
+#if PD_VERSION_INT < 37
+	RAISE("requires Pd 0.37");
+#else
 		Ruby name = rb_funcall(argv[0],SI(to_s),0);
 		Ruby qlassid = rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
 		if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 		t_pd *o = pd_newest();
 		pd_bind(o,gensym(rb_str_ptr(argv[1])));
+#endif
 	} else {
 		Ruby rself = argv[0];
 		DGS(FObject);

@@ -52,10 +52,22 @@
 #GridFlow.whatever(:gui,"pack .controls.gridflow -side right\n")
 
 GridFlow.whatever(:gui,%q{
-menu .mbar.gridflow -tearoff $pd_tearoff
-.mbar add cascade -label "GridFlow" -menu .mbar.gridflow
-.mbar.gridflow add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
-.mbar.gridflow add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
+
+if {[catch {
+	# pd 0.37
+	menu .mbar.gridflow -tearoff $pd_tearoff
+	.mbar add cascade -label "GridFlow" -menu .mbar.gridflow
+	set gfmenu .mbar.gridflow
+}]} {
+	# pd 0.36
+	###the problem is that GridFlow.whatever:bind requires 0.37
+	#menubutton .mbar.gridflow -text "GridFlow" -menu .mbar.gridflow.menu
+	#menu .mbar.gridflow.menu
+	#pack .mbar.gridflow
+	#set gfmenu .mbar.gridflow.menu
+}
+$gfmenu add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
+$gfmenu add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
 
 if {[string length [info command post]] == 0} {
 	proc post {x} {puts $x}
