@@ -196,7 +196,7 @@ $loader.puts $decls
 $loader.puts "
 }; /* extern */
 void startup_cpu () {
-	gfpost(\"startup_cpu: using MMX optimisations\");
+	if (EVAL(\"GridFlow.bridge_name\")!=Qnil) gfpost(\"startup_cpu: using MMX optimisations\");
 	#{$install}
 }
 "
