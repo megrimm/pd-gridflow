@@ -2,6 +2,7 @@ XML = \
 install.xml \
 project_policy.xml \
 reference.xml \
+format.xml \
 internals.xml \
 architecture.xml
 
