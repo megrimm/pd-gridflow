@@ -691,3 +691,15 @@ void startup_grid () {
 	cFormat = rb_const_get(mGridFlow,SI(Format));
 	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
 }
+
+void gfmemcopy(uint8 *out, const uint8 *in, int n) {
+	while (n>16) {
+		((int32*)out)[0] = ((int32*)in)[0];
+		((int32*)out)[1] = ((int32*)in)[1];
+		((int32*)out)[2] = ((int32*)in)[2];
+		((int32*)out)[3] = ((int32*)in)[3];
+		in+=16; out+=16; n-=16;
+	}
+	while (n>4) { *(int32*)out = *(int32*)in; in+=4; out+=4; n-=4; }
+	while (n) { *out = *in; in++; out++; n--; }
+}

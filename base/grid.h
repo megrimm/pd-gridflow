@@ -58,7 +58,7 @@
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
-#define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
+#define COPY(_dest_,_src_,_n_) gfmemcopy((uint8*)(_dest_),(uint8*)(_src_),(_n_)*sizeof(*(_dest_)))
 #define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
@@ -423,7 +423,7 @@ struct Operator1On {
 	bool has_neutral;
 	T neutral;
 */
-	void   (*op_array)(int,Pt<T>);
+	void   (*op_map)(int,T*);
 };
 
 struct Operator1 {
@@ -438,12 +438,12 @@ struct Operator2On {
 	bool has_neutral;
 	Number neutral;
 */
-	void   (*op_array)(int,Pt<T>,T);
-	void   (*op_array2)(int,Pt<T>, Pt</*const*/ T>);
-	T (*op_fold)(T,int,Pt</*const*/ T>);
-	void   (*op_fold2)(int,Pt<T>,int,Pt</*const*/ T>);
-	void   (*op_scan)(T,int,Pt<T>);
-	void   (*op_scan2)(int,Pt</*const*/ T>,int,Pt<T>);
+	void (*op_map)(int,T*,T);
+	void (*op_map2)(int,T*,T*);
+	T    (*op_fold)(T,int,T*);
+	void (*op_fold2)(int,T*,int,T*);
+	void (*op_scan)(T,int,T*);
+	void (*op_scan2)(int,T*,int,T*);
 };
 
 struct Operator2 {
@@ -485,6 +485,8 @@ struct Grid {
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
 	~Grid();
+	operator int32 *() { return (int32 *)data; }
+	operator uint8 *() { return (uint8 *)data; }
 	operator Pt<int32>() { return Pt<int32>((int32 *)data,dim->prod()); }
 	operator Pt<uint8>() { return Pt<uint8>((uint8 *)data,dim->prod()); }
 	inline bool is_empty() { return !dim; }
@@ -722,5 +724,7 @@ Ruby ruby_c_install(GridClass *gc, Ruby super);
 typedef Ruby (*RFunc)(...);
 
 extern "C" void Init_gridflow () /*throws Exception*/;
+
+void gfmemcopy(uint8 *out, const uint8 *in, int n);
 
 #endif /* __GF_GRID_H */

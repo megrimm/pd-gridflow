@@ -71,7 +71,7 @@ int low_bit(uint32 n) {
 	while (n--) { _x_ }
 
 static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
-	register uint32 t;
+	uint32 t;
 	int i;
 	int hb[4];
 	uint32 mask[4];
@@ -136,7 +136,7 @@ Pt<Number> out) {
 static void pack2_565(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
-	register uint32 t;
+	uint32 t;
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 }
 
@@ -358,7 +358,7 @@ NumberTypeIndex NumberType_find (Ruby sym) {
 #define DEF_OP1(_name_,_expr_) \
 	\
 	template <class T> \
-	static void op1_array_##_name_ (int n, Pt<T> as) { \
+	static void op1_array_##_name_ (int n, T *as) { \
 		while ((n&3)!=0) { T a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
 			{ T a=as[0]; as[0]= _expr_; } \
@@ -385,65 +385,68 @@ Operator1 op1_table[] = {
 
 /* **************************************************************** */
 
-#define DEF_OP2(_name_,_expr_) \
+#define DEF_OP2(op,expr) \
 	\
 	template <class T> \
-	static void op_array_##_name_ (int n, Pt<T> as, T b) { \
-		while ((n&3)!=0) { T a = *as; *as++ = _expr_; n--; } \
+	static inline T Z##op (T a, T b) { return expr; } \
+	\
+	template <class T> \
+	static void op_map_##op (int n, T *as, T b) { \
+		while ((n&3)!=0) { T a = *as; *as++ = Z##op(a,b); n--; } \
 		while (n) { \
-			{ T a=as[0]; as[0]= _expr_; } \
-			{ T a=as[1]; as[1]= _expr_; } \
-			{ T a=as[2]; as[2]= _expr_; } \
-			{ T a=as[3]; as[3]= _expr_; } \
+			{ T a=as[0]; as[0]= Z##op(a,b); } \
+			{ T a=as[1]; as[1]= Z##op(a,b); } \
+			{ T a=as[2]; as[2]= Z##op(a,b); } \
+			{ T a=as[3]; as[3]= Z##op(a,b); } \
 		as+=4; n-=4; } } \
 	\
 	template <class T> \
-	static void op_array2_##_name_ (int n, Pt<T> as, Pt<T> bs) { \
-		while ((n&3)!=0) { T a = *as, b = *bs++; *as++ = _expr_; n--; } \
+	static void op_map2_##op (int n, T *as, T *bs) { \
+		while ((n&3)!=0) { T a = *as, b = *bs++; *as++ = Z##op(a,b); n--; } \
 		while (n) { \
-			{ T a=as[0], b=bs[0]; as[0]= _expr_; } \
-			{ T a=as[1], b=bs[1]; as[1]= _expr_; } \
-			{ T a=as[2], b=bs[2]; as[2]= _expr_; } \
-			{ T a=as[3], b=bs[3]; as[3]= _expr_; } \
+			{ T a=as[0], b=bs[0]; as[0]= Z##op(a,b); } \
+			{ T a=as[1], b=bs[1]; as[1]= Z##op(a,b); } \
+			{ T a=as[2], b=bs[2]; as[2]= Z##op(a,b); } \
+			{ T a=as[3], b=bs[3]; as[3]= Z##op(a,b); } \
 		as+=4; bs+=4; n-=4; } } \
 	\
 	template <class T> \
-	static T op_fold_##_name_ (T a, int n, Pt<T> bs) { \
-		while ((n&3)!=0) { T b = *bs++; a = _expr_; n--; } \
+	static T op_fold_##op (T a, int n, T *bs) { \
+		while ((n&3)!=0) { T b = *bs++; a = Z##op(a,b); n--; } \
 		while (n) { \
-			{ T b = bs[0]; a = _expr_; } \
-			{ T b = bs[1]; a = _expr_; } \
-			{ T b = bs[2]; a = _expr_; } \
-			{ T b = bs[3]; a = _expr_; } \
+			{ T b = bs[0]; a = Z##op(a,b); } \
+			{ T b = bs[1]; a = Z##op(a,b); } \
+			{ T b = bs[2]; a = Z##op(a,b); } \
+			{ T b = bs[3]; a = Z##op(a,b); } \
 		bs+=4; n-=4; } \
 		return a; } \
 	\
 	template <class T> \
-	static void op_fold2_##_name_ (int an, Pt<T> as, int n, Pt<T> bs) {\
+	static void op_fold2_##op (int an, T *as, int n, T *bs) {\
 		while (n--) { \
 			int i=0; \
 			while (i<an) { \
-				{ T a = as[i], b = *bs++; as[i] = _expr_; } i++; } } } \
+				{ T a = as[i], b = *bs++; as[i] = Z##op(a,b); } i++; } } } \
 	\
 	template <class T> \
-	static void op_scan_##_name_ (T a, int n, Pt<T> bs) { \
-		while (n--) { T b = *bs; *bs++ = a = _expr_; } } \
+	static void op_scan_##op (T a, int n, T *bs) { \
+		while (n--) { T b = *bs; *bs++ = a = Z##op(a,b); } } \
 	\
 	template <class T> \
-	static void op_scan2_##_name_ (int an, Pt<T> as, int n, Pt<T> bs) { \
+	static void op_scan2_##op (int an, T *as, int n, T *bs) { \
 		while (n--) { \
 			for (int i=0; i<an; i++) { \
-				T a = *as++, b = *bs; *bs++ = a = _expr_; } \
+				T a = *as++, b = *bs; *bs++ = a = Z##op(a,b); } \
 			as=bs-an; } }
 
-#define DECL_OP2(_name_,_sym_,_props_) { \
+#define DECL_OP2(_op_,_sym_,_props_) { \
 	0, _sym_, { \
-	&op_array_##_name_, \
-	&op_array2_##_name_, \
-	&op_fold_##_name_, \
-	&op_fold2_##_name_, \
-	&op_scan_##_name_, \
-	&op_scan2_##_name_ } }
+	&op_map_##_op_, \
+	&op_map2_##_op_, \
+	&op_fold_##_op_, \
+	&op_fold2_##_op_, \
+	&op_scan_##_op_, \
+	&op_scan2_##_op_ } }
 
 DEF_OP2(add, a+b)
 DEF_OP2(sub, a-b)
@@ -567,3 +570,4 @@ void startup_number () {
 	rb_define_method(rb_cString, "swap32!", (RFunc)String_swap32_f, 0);
 	rb_define_method(rb_cString, "swap16!", (RFunc)String_swap16_f, 0);
 }
+
