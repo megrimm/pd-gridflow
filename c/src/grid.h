@@ -25,19 +25,21 @@
 
 #include <pthread.h>
 #include <assert.h>
-
 #include "config.h"
 #include "macros.h"
+
+/* current version number as string literal */
+#define VIDEO4JMAX_VERSION "0.2.1"
+#define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
+
+/* **************************************************************** */
+/* general purpose stuff */
 
 #ifdef NO_ASSERT
 	/* disabling assertion checking */
 	#undef assert
 	#define assert(_foo_)
 #endif
-
-/* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.2.1"
-#define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -50,12 +52,21 @@ typedef double float64;
 
 int high_bit(unsigned long n);
 int low_bit(unsigned long n);
-void whine(char *fmt, ...);
 void *qalloc(size_t n);
-int    v4j_file_open(const char *name, int mode);
-FILE *v4j_file_fopen(const char *name, int mode); 
+
+/*
+  a remainder function such that floor(a/b)*b+mod(a,b) = a
+  in contrast to C-language builtin a%b,
+  this one has uniform behaviour around zero.
+*/
+static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
 
 /* **************************************************************** */
+/* jMax specific */
+
+void whine(char *fmt, ...);
+int    v4j_file_open(const char *name, int mode);
+FILE *v4j_file_fopen(const char *name, int mode); 
 
 typedef struct MethodDecl MethodDecl;
 struct MethodDecl {
@@ -69,25 +80,8 @@ struct MethodDecl {
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 
-#define DECL_SYM(_sym_) \
-	extern fts_symbol_t sym_##_sym_;
-
-DECL_SYM(open)
-DECL_SYM(close)
-DECL_SYM(reset)
-DECL_SYM(autodraw)
-DECL_SYM(grid_begin)
-DECL_SYM(grid_flow)
-DECL_SYM(grid_end)
-
-static inline int mod(int a, int b) {
-	if (a<0) a += b * (1-(a/b));
-	return a%b;
-/*
-	int r = a%b;
-	r += (-( (r<0) ^ (b<0) )) & y;
-*/
-}
+/* **************************************************************** */
+/* Video4jmax specific */
 
 /* not used for now
 typedef enum {
@@ -112,6 +106,18 @@ typedef struct {
 
 /* **************************************************************** */
 
+#define DECL_SYM(_sym_) \
+	extern fts_symbol_t sym_##_sym_;
+
+DECL_SYM(open)
+DECL_SYM(close)
+DECL_SYM(reset)
+DECL_SYM(autodraw)
+DECL_SYM(grid_begin)
+DECL_SYM(grid_flow)
+DECL_SYM(grid_end)
+
+
 /* used as maximum width, maximum height, etc. */
 #define MAX_INDICES 2000
 
@@ -134,10 +140,13 @@ typedef long Number;
 
 /* options */
 
-/* don't use this, doesn't work yet
-	#define VIDEO_OUT_SHM */
-/* don't use this, does not work yet.
-	#define GRID_USE_INLINE */
+#if 0
+  /* don't use this, doesn't work yet */
+  #define VIDEO_OUT_SHM
+  /* don't use this, does not work yet. */
+  #define GRID_USE_INLINE
+#endif
+
 /* #define NO_ASSERT */
 /* #define NO_DEADBEEF */
 
@@ -181,19 +190,17 @@ struct Dim {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-#define GRIDBEGIN(_name_) void _name_(GridInlet *$)
-#define  GRIDFLOW(_name_) void _name_(GridInlet *$, int n, const Number *data)
-#define   GRIDEND(_name_) void _name_(GridInlet *$)
+#define GRID_BEGIN_(_name_) void _name_(GridInlet *$)
+#define  GRID_FLOW_(_name_) void _name_(GridInlet *$, int n, const Number *data)
+#define   GRID_END_(_name_) void _name_(GridInlet *$)
 
-/*
-typedef void (*GridBegin)(GridInlet *$);
-typedef void (*GridFlow) (GridInlet *$, int n, const Number *data);
-typedef void (*GridEnd)  (GridInlet *$);
-*/
+typedef GRID_BEGIN_( (*GridBegin) );
+typedef  GRID_FLOW_( (*GridFlow) );
+typedef   GRID_END_( (*GridEnd) );
 
-typedef GRIDBEGIN((*GridBegin));
-typedef  GRIDFLOW((*GridFlow));
-typedef   GRIDEND((*GridEnd));
+#define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_##_##_inlet_##_begin)
+#define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_##_##_inlet_##_flow)
+#define   GRID_END(_class_,_inlet_)   GRID_END_(_class_##_##_inlet_##_end)
 
 struct GridInlet {
 	GridObject *parent;

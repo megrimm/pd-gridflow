@@ -238,7 +238,7 @@ static void VideoOut_show_section(
 	XFlush($->display->display);
 }
 
-void VideoOut_0_begin(GridInlet *$) {
+GRID_BEGIN(VideoOut,0) {
 	VideoOut *parent = (VideoOut *) GridInlet_parent($);
 
 	parent->bufn = 0;
@@ -274,7 +274,7 @@ static uint8 *VideoOut_convert(
 	return target;
 }
 
-void VideoOut_0_flow(GridInlet *$, int n, const Number *data) {
+GRID_FLOW(VideoOut,0) {
 	VideoOut *parent = (VideoOut *) GridInlet_parent($);
 
 	int bytes_per_pixel = parent->ximage->bits_per_pixel/8;
