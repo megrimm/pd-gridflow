@@ -196,11 +196,11 @@ Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
 /* begin Ruby 1.6 compatibility */
 
 static uint64 num2ull(Ruby val) {
-    if (FIXNUM_P(val)) return (LONG_LONG)FIX2LONG(val);
+    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	uint64 v =
-		(uint64)NUM2LONG(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2LONG(rb_funcall(val,SI(&),1,ULONG2NUM(0xffffffff)));
+		(uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
 }
 
 static Ruby ull2num(uint64 val) {
