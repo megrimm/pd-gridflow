@@ -408,7 +408,7 @@ void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode) {
   abstract class for an FTS Object that has Grid-aware inlets/outlets
 */
 
-void GridObject_init(GridObject *$) {
+METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
@@ -471,7 +471,7 @@ METHOD(GridObject,method_missing) {
 	rb_call_super(argc,argv);
 }
 
-void GridObject_delete(GridObject *$) {
+METHOD(GridObject,delete) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) {
 		if ($->in[i])  {  GridInlet_delete($->in[i]);  FREE($->in[i]);  }
@@ -488,6 +488,12 @@ void GridObject_delete(GridObject *$) {
 */
 }
 
+GRCLASS(GridObject,inlets:0,outlets:0,
+LIST(),
+	DECL(GridObject,init),
+	DECL(GridObject,delete),
+	DECL(GridObject,method_missing))
+
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
 	{
 		MethodDecl methods[] = {
@@ -497,6 +503,7 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 	}
 
 	rb_enable_super($,"method_missing");
+//	ruby_c_install(gc->name, gc->name, gc, Format_class2);
 
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method($,"instance_methods",GridObject_instance_methods,-1);
@@ -606,11 +613,14 @@ void Stream_close(Stream *$) {
 
 #define FC(s) ((FormatClass *)s->grid_class)
 
-FormatClass *format_classes[] = { FORMAT_LIST(&,_class) };
+FormatClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
 VALUE format_classes_dex = Qnil;
 
 METHOD(Format,init) {
 	int flags = FC($)->flags;
+
+	rb_call_super(argc,argv);
+
 	$->mode = argv[0];
 	$->parent = 0;
 	$->st = 0;
@@ -667,17 +677,21 @@ int format_flags_n = COUNT(format_flags_names);
 
 /* **************************************************************** */
 
+VALUE Format_class;
+VALUE GridObject_class;
+
 void startup_grid (void) {
-	VALUE Format_class2;
 	int i;
-	ruby_c_install("Format","Format", &Format_class, FObject_class);
-	Format_class2 = rb_const_get(GridFlow_module,SI(Format));
+	ruby_c_install("GridObject","GridObject", &GridObject_classinfo, FObject_class);
+	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
+	ruby_c_install("Format","Format", &Format_classinfo, GridObject_class);
+	Format_class = rb_const_get(GridFlow_module,SI(Format));
 	rb_define_readonly_variable("$format_classes",&format_classes_dex);
 	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatClass *fc = format_classes[i];
 		GridClass *gc = (GridClass *) fc;
-		ruby_c_install(gc->name, gc->name, gc, Format_class2);
+		ruby_c_install(gc->name, gc->name, gc, Format_class);
 		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fc->symbol_name)),
 			rb_const_get(GridFlow_module,rb_intern(gc->name)));
 	}

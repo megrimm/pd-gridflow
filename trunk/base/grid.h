@@ -224,7 +224,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 #define GRCLASS(_name_,_inlets_,_outlets_,_handlers_,args...) \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	GridClass _name_ ## _class = { \
+	GridClass _name_ ## _classinfo = { \
 		sizeof(_name_), \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
@@ -312,34 +312,30 @@ typedef struct Dim {
 	int v[1];
 } Dim;
 
-
-	Dim *Dim_new2(int n, int *v, const char *file, int line);
-/*	Dim *Dim_new(int n, int *v); */
+Dim *Dim_new2(int n, int *v, const char *file, int line);
 #define Dim_new(_n_,_v_) Dim_new2(_n_,_v_,__FILE__,__LINE__)
-	Dim *Dim_dup2(Dim *$, const char *file, int line);
-/*	Dim *Dim_dup(Dim *$); */
+Dim *Dim_dup2(Dim *$, const char *file, int line);
 #define Dim_dup(_$_) Dim_dup2(_$_,__FILE__,__LINE__)
-	int Dim_count(Dim *$);
-	int Dim_get(Dim *$, int i);
-	int Dim_prod(Dim *$);
-	int Dim_prod_start(Dim *$, int start);
-
-	char *Dim_to_s(Dim *$);
-	int Dim_calc_dex(Dim *$, int *v);
+int Dim_count(Dim *$);
+int Dim_get(Dim *$, int i);
+int Dim_prod(Dim *$);
+int Dim_prod_start(Dim *$, int start);
+char *Dim_to_s(Dim *$);
+int Dim_calc_dex(Dim *$, int *v);
 
 /* **************************************************************** */
 /* bitpacking.c */
 
 typedef struct BitPacking BitPacking;
 
-	int high_bit(uint32 n);
-	int low_bit(uint32 n);
-	BitPacking *BitPacking_new(int endian, int bytes, uint32 r, uint32 g, uint32 b);
-	void    BitPacking_whine(BitPacking *$);
-	uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
-	Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
-	int     BitPacking_bytes(BitPacking *$);
-	bool    BitPacking_is_le(BitPacking *$);
+int high_bit(uint32 n);
+int low_bit(uint32 n);
+BitPacking *BitPacking_new(int endian, int bytes, uint32 r, uint32 g, uint32 b);
+void    BitPacking_whine(BitPacking *$);
+uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
+Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
+int     BitPacking_bytes(BitPacking *$);
+bool    BitPacking_is_le(BitPacking *$);
 
 extern int builtin_bitpacks_n;
 extern BitPacking builtin_bitpacks[];
@@ -392,7 +388,15 @@ extern VALUE /*Hash*/ op1_dict;
 extern VALUE /*Hash*/ op2_dict;
 
 /* **************************************************************** */
-/* grid.c (part 1: inlet objects) */
+
+/* future use:
+typedef struct Grid {
+	Dim *dim;
+	Number *data;
+	// add: number type
+	// add: producer function
+} Grid;
+*/
 
 /* GridInlet represents a grid-aware inlet */
 
@@ -439,12 +443,12 @@ struct GridInlet {
 	Number *buf; /* factor-chunk buffer */
 };
 
-	GridInlet *GridInlet_new(GridObject *parent, const GridHandler *gh);
-	void GridInlet_delete(GridInlet *$);
-	GridObject *GridInlet_parent(GridInlet *$);
-	void GridInlet_abort(GridInlet *$);
-	void GridInlet_set_factor(GridInlet *$, int factor);
-	bool GridInlet_busy(GridInlet *$);
+GridInlet *GridInlet_new(GridObject *parent, const GridHandler *gh);
+void GridInlet_delete(GridInlet *$);
+GridObject *GridInlet_parent(GridInlet *$);
+void GridInlet_abort(GridInlet *$);
+void GridInlet_set_factor(GridInlet *$, int factor);
+bool GridInlet_busy(GridInlet *$);
 
 typedef struct GridClass {
 	int objectsize;
@@ -489,26 +493,22 @@ struct GridOutlet {
 
 /* transmission accelerator */
 	int frozen;
-	int ron;
-	GridInlet *ro; /* want (const Number *) shown to */
-	int rwn;
-	GridInlet *rw; /* want (Number *) given to */
+	int ron; GridInlet *ro; /* want (const Number *) shown to */
+	int rwn; GridInlet *rw; /* want (Number *) given to */
 };
 
-	GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
-	void GridOutlet_delete(GridOutlet *$);
-	GridObject *GridOutlet_parent(GridOutlet *$);
-	bool GridOutlet_busy   (GridOutlet *$);
-
-	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
-	void GridOutlet_abort  (GridOutlet *$);
-	void GridOutlet_give       (GridOutlet *$, int n,       Number *data);
-	void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
-	void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
-	void GridOutlet_flush  (GridOutlet *$);
-	void GridOutlet_end    (GridOutlet *$);
-
-	void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
+GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
+void GridOutlet_delete(GridOutlet *$);
+GridObject *GridOutlet_parent(GridOutlet *$);
+bool GridOutlet_busy   (GridOutlet *$);
+void GridOutlet_begin  (GridOutlet *$, Dim *dim);
+void GridOutlet_abort  (GridOutlet *$);
+void GridOutlet_give       (GridOutlet *$, int n,       Number *data);
+void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
+void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
+void GridOutlet_flush  (GridOutlet *$);
+void GridOutlet_end    (GridOutlet *$);
+void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
 
 /* **************************************************************** */
 /* grid.c (part 3: processor objects) */
@@ -525,9 +525,7 @@ struct GridObject {
 	GridObject_FIELDS;
 };
 
-	void GridObject_init(GridObject *$);
-	void GridObject_delete(GridObject *$);
-	void GridObject_conf_class(VALUE $, GridClass *grclass);
+void GridObject_conf_class(VALUE $, GridClass *grclass);
 
 /* **************************************************************** */
 /* io.c (part 1: streams) */
@@ -588,7 +586,7 @@ struct FormatClass {
 #define FMTCLASS(_name_,symbol_name,long_name,flags,_inlets_,_outlets_,_handlers_,args...) \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	FormatClass _name_ ## _class = { { \
+	FormatClass _name_ ## _classinfo = { { \
 		sizeof(_name_), \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
@@ -600,7 +598,7 @@ struct Format {
 	Format_FIELDS;
 };
 
-extern FormatClass FORMAT_LIST( ,_class);
+extern FormatClass FORMAT_LIST( ,_classinfo);
 extern FormatClass *format_classes[];
 extern VALUE /*Hash*/ format_classes_dex;
 
@@ -632,9 +630,11 @@ typedef struct GFBridge {
 } GFBridge;
 
 extern GFBridge gf_bridge;
-
 extern VALUE GridFlow_module;
 extern VALUE FObject_class;
+extern VALUE FObject_class;
+extern VALUE GridObject_class;
+extern VALUE Format_class;
 
 uint64 RtMetro_now(void);
 
@@ -642,7 +642,6 @@ VALUE gf_post_string (VALUE $, VALUE s);
 void FObject_mark (VALUE *$);
 void FObject_sweep (VALUE *$);
 VALUE FObject_send_out(int argc, VALUE *argv, VALUE $);
-void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
 char *rb_sym_name(VALUE sym);
@@ -668,7 +667,7 @@ void gf_init (void);
 
 #define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
 #define INSTALL(jname,rname) \
-	ruby_c_install(jname, #rname, &rname##_class, FObject_class);
+	ruby_c_install(jname, #rname, &rname##_classinfo, GridObject_class);
 
 VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
 VALUE super);

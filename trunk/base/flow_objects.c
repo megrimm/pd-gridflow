@@ -28,17 +28,6 @@
 
 /* **************************************************************** */
 
-/* future use:
-typedef struct Grid {
-	Dim *dim;
-	Number *data;
-	// add: number type
-	// add: producer function
-} Grid;
-*/
-
-/* **************************************************************** */
-
 Operator1 *OP1(VALUE x) {
 	VALUE s = rb_hash_aref(op1_dict,x);
 	if (s==Qnil) RAISE("expected one-input-operator");
@@ -106,7 +95,7 @@ GRID_END(GridImport,1) {}
 METHOD(GridImport,init) {
 	int i;
 	int v[argc];
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 
 	for (i=0; i<argc; i++) {
 		v[i] = INT(argv[i]);
@@ -117,7 +106,7 @@ METHOD(GridImport,init) {
 
 METHOD(GridImport,delete) {
 	FREE($->dim);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 METHOD(GridImport,_0_int) {
@@ -163,8 +152,8 @@ GRID_FLOW(GridExport,0) {
 
 GRID_END(GridExport,0) {}
 
-METHOD(GridExport,init)   { GridObject_init(  (GridObject *)$); }
-METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridExport,init)   { rb_call_super(argc,argv); }
+METHOD(GridExport,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridExport,inlets:1,outlets:1,
 LIST(GRINLET(GridExport,0)),
@@ -203,8 +192,8 @@ GRID_END(GridExportList,0) {
 	$->list = 0;
 }
 
-METHOD(GridExportList,init)   { GridObject_init(  (GridObject *)$); }
-METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridExportList,init)   { rb_call_super(argc,argv); }
+METHOD(GridExportList,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridExportList,inlets:1,outlets:1,
 LIST(GRINLET(GridExportList,0)),
@@ -328,7 +317,7 @@ GRID_END(GridStore,1) {}
 
 METHOD(GridStore,init) {
 	VALUE t = argc==0 ? SYM(int32) : argv[0];
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->data = 0;
 	$->dim  = 0;
 	if (t==SYM(int32)) {
@@ -343,7 +332,7 @@ METHOD(GridStore,init) {
 METHOD(GridStore,delete) {
 	FREE($->data);
 	FREE($->dim);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 METHOD(GridStore,_0_bang) {
@@ -388,11 +377,11 @@ GRID_FLOW(GridOp1,0) {
 GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridOp1,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op = OP1(argv[0]);
 }
 
-METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridOp1,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridOp1,inlets:1,outlets:1,
 LIST(GRINLET(GridOp1,0)),
@@ -461,7 +450,7 @@ GRID_FLOW(GridOp2,1) {
 GRID_END(GridOp2,1) {}
 
 METHOD(GridOp2,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
 	$->rint = argc<2 ? 0 : INT(argv[1]);
 	$->dim = 0;
@@ -470,7 +459,7 @@ METHOD(GridOp2,init) {
 METHOD(GridOp2,delete) {
 	FREE($->data);
 	FREE($->dim);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 METHOD(GridOp2,_1_int) {
@@ -529,12 +518,12 @@ GRID_FLOW(GridFold,0) {
 GRID_END(GridFold,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridFold,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
 	$->rint = argc<2 ? 0 : INT(argv[1]);
 }
 
-METHOD(GridFold,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridFold,delete) { rb_call_super(argc,argv); }
 
 METHOD(GridFold,_1_int) {
 	$->rint = INT(argv[0]);
@@ -626,7 +615,7 @@ METHOD(GridInner,init) {
 	$->dim = 0;
 	$->data = 0;
 
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 
 	$->op_para = Dict_get(op2_dict,(void *)sym_para);
 	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
@@ -637,7 +626,7 @@ METHOD(GridInner,init) {
 METHOD(GridInner,delete) {
 	FREE($->dim);
 	FREE($->data);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridInner,inlets:3,outlets:1,
@@ -712,7 +701,7 @@ GRID_FLOW(GridInner2,2) {
 GRID_END(GridInner2,2) {}
 
 METHOD(GridInner2,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
 	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
@@ -723,7 +712,7 @@ METHOD(GridInner2,init) {
 METHOD(GridInner2,delete) {
 	FREE($->dim);
 	FREE($->data);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridInner2,inlets:3,outlets:1,
@@ -788,7 +777,7 @@ GRID_FLOW(GridOuter,1) {
 GRID_END(GridOuter,1) {}
 
 METHOD(GridOuter,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
 	$->dim = 0;
 	$->data = 0;
@@ -797,7 +786,7 @@ METHOD(GridOuter,init) {
 METHOD(GridOuter,delete) {
 	FREE($->dim);
 	FREE($->data);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridOuter,inlets:2,outlets:1,
@@ -915,7 +904,7 @@ GRID_FLOW(GridConvolve,1) {
 GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->op_para = OP2(argc<1 ? SYM(*) : argv[0]);
 	$->op_fold = OP2(argc<2 ? SYM(*) : argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
@@ -928,7 +917,7 @@ METHOD(GridConvolve,init) {
 METHOD(GridConvolve,delete) {
 	FREE($->dim);  FREE($->diml);
 	FREE($->data); FREE($->datal);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridConvolve,inlets:2,outlets:1,
@@ -946,14 +935,14 @@ typedef struct GridFor {
 } GridFor;
 
 METHOD(GridFor,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->from = INT(argv[0]);
 	$->to   = INT(argv[1]);
 	$->step = INT(argv[2]);
 	if (!$->step) $->step=1;
 }
 
-METHOD(GridFor,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridFor,delete) { rb_call_super(argc,argv); }
 
 METHOD(GridFor,_0_set) { $->from = INT(argv[0]); }
 METHOD(GridFor,_1_int) { $->to   = INT(argv[0]); }
@@ -1015,9 +1004,9 @@ GRID_FLOW(GridDim,0) {}
 
 GRID_END(GridDim,0) {}
 
-METHOD(GridDim,init) { GridObject_init((GridObject *)$); }
+METHOD(GridDim,init) { rb_call_super(argc,argv); }
 
-METHOD(GridDim,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridDim,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridDim,inlets:1,outlets:1,
 LIST(GRINLET(GridDim,0)),
@@ -1108,7 +1097,7 @@ GRID_END(GridRedim,1) {}
 METHOD(GridRedim,init) {
 	int i;
 	int v[argc];
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 
 	for (i=0; i<argc; i++) {
 		v[i] = INT(argv[i]);
@@ -1121,7 +1110,7 @@ METHOD(GridRedim,init) {
 METHOD(GridRedim,delete) {
 	FREE($->dim);
 	FREE($->data);
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(GridRedim,inlets:2,outlets:1,
@@ -1152,9 +1141,8 @@ GRID_FLOW(GridPrint,0) {
 
 GRID_END(GridPrint,0) {}
 
-METHOD(GridPrint,init) { GridObject_init((GridObject *)$); }
-
-METHOD(GridPrint,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridPrint,init)   { rb_call_super(argc,argv); }
+METHOD(GridPrint,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridPrint,inlets:1,outlets:0,
 LIST(GRINLET(GridPrint,0)),
@@ -1245,7 +1233,7 @@ METHOD(GridIn,_0_int) {
 
 METHOD(GridIn,_0_option) {
 	CHECK_FILE_OPEN
-	rb_funcall2($->ff,SI(_0_option),argc,argv);
+	rb_funcall2($->ff,SI(option),argc,argv);
 }
 
 METHOD(GridIn,init) {
@@ -1375,7 +1363,7 @@ METHOD(GridOut,init) {
 	$->timelog = 0;
 	$->ff = 0;
 	gettimeofday(&$->tv,0);
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	if (argc>0) {
 		rb_funcall(rself,SI(_0_open),2,SYM(x11),SYM(here));
 		rb_funcall(rself,SI(_0_option),3,SYM(out_size),argv[0],argv[1]);
@@ -1464,14 +1452,14 @@ GRID_END(GridScaleBy,0) {
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD(GridScaleBy,init) {
 	$->rint = argc<1 ? 2 : INT(argv[0]);
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
 /* destructor */
 /* this object has nothing more to deallocate than a plain GridObject */
 /* therefore it only calls super() */
-METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridScaleBy,delete) { rb_call_super(argc,argv); }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,inlets:1,outlets:1,
@@ -1526,11 +1514,11 @@ GRID_END(GridRGBtoHSV,0) {
 }
 
 METHOD(GridRGBtoHSV,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
-METHOD(GridRGBtoHSV,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridRGBtoHSV,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridRGBtoHSV,inlets:1,outlets:1,
 LIST(GRINLET(GridRGBtoHSV,0)),
@@ -1574,11 +1562,11 @@ GRID_END(GridHSVtoRGB,0) {
 }
 
 METHOD(GridHSVtoRGB,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
-METHOD(GridHSVtoRGB,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridHSVtoRGB,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridHSVtoRGB,inlets:1,outlets:1,
 LIST(GRINLET(GridHSVtoRGB,0)),
@@ -1636,7 +1624,7 @@ METHOD(RtMetro,_1_int) {
 }
 
 METHOD(RtMetro,init) {
-	GridObject_init((GridObject *)$);
+	rb_call_super(argc,argv);
 	$->ms = FIX2INT(argv[0]);
 	$->on = 0;
 	whine("ms = %d",$->ms);
@@ -1644,7 +1632,7 @@ METHOD(RtMetro,init) {
 }
 
 METHOD(RtMetro,delete) {
-	GridObject_delete((GridObject *)$);
+	rb_call_super(argc,argv);
 }
 
 GRCLASS(RtMetro,inlets:2,outlets:1,
@@ -1719,13 +1707,8 @@ METHOD(GridGlobal,_0_profiler_dump) {
 */
 }
 
-METHOD(GridGlobal,init) {
-	GridObject_init((GridObject *)$);
-}
-
-METHOD(GridGlobal,delete) {
-	GridObject_delete((GridObject *)$);
-}
+METHOD(GridGlobal,init)   { rb_call_super(argc,argv); }
+METHOD(GridGlobal,delete) { rb_call_super(argc,argv); }
 
 GRCLASS(GridGlobal,inlets:1,outlets:1,
 LIST(),
