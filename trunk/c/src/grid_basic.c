@@ -80,9 +80,6 @@ METHOD(GridImport,init) {
 	int i;
 	int v[ac-1];
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridImport,0);
-	$->in[1] = GridInlet_NEW3($,GridImport,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for (i=0; i<ac-1; i++) {
 		v[i] = GET(i+1,int,0);
@@ -115,11 +112,6 @@ LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
 	DECL(GridImport,-1,delete,""),
 	DECL(GridImport, 0,int,   "i"),
 	DECL(GridImport, 0,reset, ""))
-{
-	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
-	GridObject_conf_class2(class,&GridImport_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 /*
@@ -147,20 +139,15 @@ GRID_END(GridExport,0) {}
 
 METHOD(GridExport,init) {
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridExport,0);
 }
 
 METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridExport,inlets:1,outlets:1,
 LIST(GRINLET(GridExport,0)),
+/* outlet 0 not used for grids */
 	DECL(GridExport,-1,init,  "s"),
 	DECL(GridExport,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridExport), 1, 1, 0);
-	GridObject_conf_class2(class,&GridExport_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 
@@ -190,20 +177,15 @@ GRID_END(GridExportList,0) {
 
 METHOD(GridExportList,init) {
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridExportList,0);
 }
 
 METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridExportList,inlets:1,outlets:1,
 LIST(GRINLET(GridExportList,0)),
+/* outlet 0 not used for grids */
 	DECL(GridExportList,-1,init,  "s"),
 	DECL(GridExportList,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridExportList), 1, 1, 0);
-	GridObject_conf_class2(class,&GridExportList_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 /*
@@ -322,23 +304,17 @@ GRID_FLOW(GridStore,1) {
 GRID_END(GridStore,1) {}
 
 METHOD(GridStore,init) {
+	Symbol t = GET(1,symbol,SYM(int32));
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridStore,0);
-	$->in[1] = GridInlet_NEW3($,GridStore,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
-	{
-		Symbol t = GET(1,symbol,SYM(int32));
-		if (t==SYM(int32)) {
-			$->nt = int32_type_i;
-		} else if (t==SYM(uint8)) {
-			$->nt = uint8_type_i;
-		} else {
-			fts_object_set_error(OBJ($),
-				"unknown element type \"%s\"", fts_symbol_name(t));
-		}
-	}
 	$->data = 0;
 	$->dim  = 0;
+	if (t==SYM(int32)) {
+		$->nt = int32_type_i;
+	} else if (t==SYM(uint8)) {
+		$->nt = uint8_type_i;
+	} else {
+		RAISE2("unknown element type \"%s\"", fts_symbol_name(t));
+	}
 }
 
 METHOD(GridStore,delete) {
@@ -362,11 +338,6 @@ LIST(GRINLET(GridStore,0),GRINLET(GridStore,1)),
 	DECL(GridStore,-1,init,  "s;s"),
 	DECL(GridStore,-1,delete,""),
 	DECL(GridStore, 0,bang,  ""))
-{
-	fts_class_init(class, sizeof(GridStore), 2, 1, 0);
-	GridObject_conf_class2(class,&GridStore_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 
@@ -382,10 +353,8 @@ GRID_BEGIN(GridOp1,0) {
 }
 
 GRID_FLOW(GridOp1,0) {
-	int i;
 	Number *data2 = NEW2(Number,n);
 	GridOutlet *out = $->out[0];
-
 	memcpy(data2,data,n*sizeof(Number));
 	$->op->op_array(n,data2);
 	in->dex += n;
@@ -399,13 +368,10 @@ METHOD(GridOp1,init) {
 	Symbol sym = GET(1,symbol,op1_table[0].sym);
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridOp1,0);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op1_table_find(sym);
 	if (!$->op) {
-		fts_object_set_error(OBJ($),
-			"unknown unary operator \"%s\"", fts_symbol_name(sym));
+		RAISE2("unknown unary operator \"%s\"", fts_symbol_name(sym));
 	}
 }
 
@@ -415,11 +381,6 @@ GRCLASS(GridOp1,inlets:1,outlets:1,
 LIST(GRINLET(GridOp1,0)),
 	DECL(GridOp1,-1,init,  "ss"),
 	DECL(GridOp1,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridOp1), 1, 1, 0);
-	GridObject_conf_class2(class,&GridOp1_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 /*
@@ -476,7 +437,6 @@ GRID_BEGIN(GridOp2,1) {
 }
 
 GRID_FLOW(GridOp2,1) {
-	int i;
 	memcpy(&$->data[in->dex], data, n*sizeof(Number));
 	in->dex += n;
 }
@@ -489,14 +449,10 @@ METHOD(GridOp2,init) {
 	$->dim = 0;
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW2($,GridOp2,0);
-	$->in[1] = GridInlet_NEW3($,GridOp2,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op2_table_find(sym);
 	if (!$->op) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
 	}
 }
 
@@ -517,11 +473,6 @@ LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
 	DECL(GridOp2,-1,init,  "ss;i"),
 	DECL(GridOp2,-1,delete,""),
 	DECL(GridOp2, 1,int,   ""),/*why zero?*/)
-{
-	fts_class_init(class, sizeof(GridOp2), 2, 1, 0);
-	GridObject_conf_class2(class,&GridOp2_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 /*
@@ -571,13 +522,10 @@ METHOD(GridFold,init) {
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridFold,0);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op = op2_table_find(sym);
 	if (!$->op) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
 	}
 }
 
@@ -592,11 +540,6 @@ LIST(GRINLET(GridFold,0)),
 	DECL(GridFold,-1,init,  "ss;i"),
 	DECL(GridFold,-1,delete,""),
 	DECL(GridFold, 1,int,   ""),/*why zero?*/)
-{
-	fts_class_init(class, sizeof(GridFold), 2, 1, 0);
-	GridObject_conf_class2(class,&GridFold_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 
@@ -681,19 +624,14 @@ METHOD(GridInner,init) {
 	$->data = 0;
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridInner,0);
-	$->in[2] = GridInlet_NEW3($,GridInner,2);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->op_para = op2_table_find(sym_para);
 	$->op_fold = op2_table_find(sym_fold);
 	if (!$->op_para) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym_para));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_para));
 	}
 	if (!$->op_fold) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
 	}
 }
 
@@ -706,11 +644,7 @@ METHOD(GridInner,delete) {
 GRCLASS(GridInner,inlets:3,outlets:1,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,-1,init,  "sss;i"),
-	DECL(GridInner,-1,delete,"")) {
-	fts_class_init(class, sizeof(GridInner), 3, 1, 0);
-	GridObject_conf_class2(class,&GridInner_class);
-	return fts_Success;
-}
+	DECL(GridInner,-1,delete,""))
 
 /* **************************************************************** */
 
@@ -774,17 +708,13 @@ METHOD(GridOuter,init) {
 	Symbol sym = GET(1,symbol,op2_table[0].sym);
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridOuter,0);
-	$->in[1] = GridInlet_NEW3($,GridOuter,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->dim = 0;
 	$->data = 0;
 
 	$->op = op2_table_find(sym);
 	if (!$->op) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym));
 	}
 }
 
@@ -797,11 +727,7 @@ METHOD(GridOuter,delete) {
 GRCLASS(GridOuter,inlets:2,outlets:1,
 LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
 	DECL(GridOuter,-1,init,  "ss"),
-	DECL(GridOuter,-1,delete,"")) {
-	fts_class_init(class, sizeof(GridOuter), 2, 1, 0);
-	GridObject_conf_class2(class,&GridOuter_class);
-	return fts_Success;
-}
+	DECL(GridOuter,-1,delete,""))
 
 /* **************************************************************** */
 
@@ -895,7 +821,6 @@ GRID_END(GridConvolve,0) {
 GRID_BEGIN(GridConvolve,1) {
 	int length = Dim_prod(in->dim);
 	int count = Dim_count(in->dim);
-	int i;
 	if (count != 2) RAISE("only exactly two dimensions allowed for now");
 	/* because odd * odd = odd */
 	if ((length & 1) == 0) RAISE("even number of elements");
@@ -918,9 +843,6 @@ METHOD(GridConvolve,init) {
 	Symbol sym_fold = GET(2,symbol,SYM(+));
 
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridConvolve,0);
-	$->in[1] = GridInlet_NEW3($,GridConvolve,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 	$->dim = 0;
 	$->data = 0;
 	$->diml = 0;
@@ -931,12 +853,10 @@ METHOD(GridConvolve,init) {
 	$->rint = GET(3,int,0);
 
 	if (!$->op_para) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym_para));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_para));
 	}
 	if (!$->op_fold) {
-		fts_object_set_error(OBJ($),
-			"unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
+		RAISE2("unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
 	}
 }
 
@@ -949,11 +869,7 @@ METHOD(GridConvolve,delete) {
 GRCLASS(GridConvolve,inlets:2,outlets:1,
 LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
 	DECL(GridConvolve,-1,init,  "s;ssi"),
-	DECL(GridConvolve,-1,delete,"")) {
-	fts_class_init(class, sizeof(GridConvolve), 2, 1, 0);
-	GridObject_conf_class2(class,&GridConvolve_class);
-	return fts_Success;
-}
+	DECL(GridConvolve,-1,delete,""))
 
 /* **************************************************************** */
 
@@ -970,7 +886,6 @@ METHOD(GridFor,init) {
 	$->to   = GET(2,int,0);
 	$->step = GET(3,int,0);
 	if (!$->step) $->step=1;
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
 METHOD(GridFor,delete) { GridObject_delete((GridObject *)$); }
@@ -1010,11 +925,6 @@ LIST(),
 	DECL2(GridFor, 0,set, from, "i"),
 	DECL2(GridFor, 1,int, to,   "i"),
 	DECL2(GridFor, 2,int, step, "i"))
-{
-	fts_class_init(class, sizeof(GridFor), 3, 1, 0);
-	define_many_methods(class,ARRAY(GridFor_methods));
-	return fts_Success;
-}
 
 /* **************************************************************** */
 
@@ -1040,24 +950,14 @@ GRID_FLOW(GridDim,0) {}
 
 GRID_END(GridDim,0) {}
 
-METHOD(GridDim,init) {
-	int i;
-	int v[ac-1];
-	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridDim,0);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
-}
+METHOD(GridDim,init) { GridObject_init((GridObject *)$); }
 
 METHOD(GridDim,delete) { GridObject_delete((GridObject *)$); }
 
 GRCLASS(GridDim,inlets:1,outlets:1,
 LIST(GRINLET(GridDim,0)),
 	DECL(GridDim,-1,init,  "s"),
-	DECL(GridDim,-1,delete,"")) {
-	fts_class_init(class, sizeof(GridDim), 1, 1, 0);
-	GridObject_conf_class2(class,&GridDim_class);
-	return fts_Success;
-}
+	DECL(GridDim,-1,delete,""))
 
 /* **************************************************************** */
 
@@ -1143,9 +1043,6 @@ METHOD(GridRedim,init) {
 	int i;
 	int v[ac-1];
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridRedim,0);
-	$->in[1] = GridInlet_NEW3($,GridRedim,1);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for (i=0; i<ac-1; i++) {
 		v[i] = GET(i+1,int,0);
@@ -1165,11 +1062,6 @@ GRCLASS(GridRedim,inlets:2,outlets:1,
 LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,0)),
 	DECL(GridRedim,-1,init,  "si+"),
 	DECL(GridRedim,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridRedim), 2, 1, 0);
-	GridObject_conf_class2(class,&GridRedim_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 
@@ -1194,13 +1086,7 @@ GRID_FLOW(GridPrint,0) {
 
 GRID_END(GridPrint,0) {}
 
-METHOD(GridPrint,init) {
-	int i;
-	int v[ac-1];
-	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridPrint,0);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
-}
+METHOD(GridPrint,init) { GridObject_init((GridObject *)$); }
 
 METHOD(GridPrint,delete) { GridObject_delete((GridObject *)$); }
 
@@ -1208,11 +1094,6 @@ GRCLASS(GridPrint,inlets:1,outlets:0,
 LIST(GRINLET(GridPrint,0)),
 	DECL(GridPrint,-1,init,  "s"),
 	DECL(GridPrint,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridPrint), 1, 0, 0);
-	GridObject_conf_class2(class,&GridPrint_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 

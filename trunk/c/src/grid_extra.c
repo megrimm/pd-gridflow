@@ -71,7 +71,6 @@ GRID_END(GridScaleBy,0) {
 METHOD(GridScaleBy,init) {
 	$->rint = GET(1,int,2);
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridScaleBy,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
@@ -81,12 +80,6 @@ GRCLASS(GridScaleBy,inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
 	DECL(GridScaleBy,-1,init,  "s"),
 	DECL(GridScaleBy,-1,delete,""))
-{
-	fts_class_init(class, sizeof(GridScaleBy), 1, 1, 0);
-	GridObject_conf_class2(class,&GridScaleBy_class);
-	return fts_Success;
-}
-
 
 /* **************************************************************** */
 

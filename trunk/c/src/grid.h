@@ -137,6 +137,7 @@
 
 /* 0.5.0 */
 #define RAISE(args...) return whine(args),0;
+#define RAISE2(args...) {fts_object_set_error(OBJ($),args);return;}
 
 /* 0.5.0: shortcuts for MethodDecl */
 
@@ -176,9 +177,12 @@ typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _class = { \
+		sizeof(_name_), \
 		ARRAY(_name_##_methods),\
 		_inlets_,_outlets_,ARRAY(_name_##_handlers) }; \
-	static fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST)
+	static fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST) {\
+		GridObject_conf_class2(class,&_name_##_class); \
+		return fts_Success;}
 
 /*
   casts a pointer to any object, into a fts_object_t*.
@@ -407,11 +411,6 @@ typedef struct GridObject GridObject;
 #define GRID_FLOW2_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Number *data)
 #define   GRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
 
-#define GRID_BEGIN_PTR(_cl_,_inlet_) ((GRID_BEGIN_(_cl_,(*)))_cl_##_##_inlet_##_begin)
-#define  GRID_FLOW_PTR(_cl_,_inlet_)  ((GRID_FLOW_(_cl_,(*)))_cl_##_##_inlet_##_flow)
-#define GRID_FLOW2_PTR(_cl_,_inlet_) ((GRID_FLOW2_(_cl_,(*)))_cl_##_##_inlet_##_flow2)
-#define   GRID_END_PTR(_cl_,_inlet_)   ((GRID_END_(_cl_,(*)))_cl_##_##_inlet_##_end)
-
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
 typedef GRID_FLOW2_(GridObject, (*GridFlow2));
@@ -460,6 +459,7 @@ typedef struct GridHandler {
 } GridHandler;
 
 typedef struct GridClass {
+	int objectsize;
 	int methodsn;
 	MethodDecl *methods;
 	int inlets;
@@ -479,18 +479,6 @@ typedef struct GridClass {
 	((GridBegin)_class_##_##_winlet_##_begin), \
 	 ((GridFlow)_class_##_##_winlet_##_flow2), \
 	  ((GridEnd)_class_##_##_winlet_##_end), 6 }
-
-#define GridInlet_NEW3(_parent_,_class_,_winlet_) \
-	GridInlet_new((GridObject *)_parent_, _winlet_, \
-		((GridBegin)_class_##_##_winlet_##_begin), \
-		 ((GridFlow)_class_##_##_winlet_##_flow), \
-		  ((GridEnd)_class_##_##_winlet_##_end), 4)
-
-#define GridInlet_NEW2(_parent_,_class_,_winlet_) \
-	GridInlet_new((GridObject *)_parent_, _winlet_, \
-		((GridBegin)_class_##_##_winlet_##_begin), \
-		(/*(GridFlow2)*/(GridFlow)_class_##_##_winlet_##_flow2), \
-		  ((GridEnd)_class_##_##_winlet_##_end), 6)
 
 /* **************************************************************** */
 /* grid.c (part 2: outlet objects) */
@@ -593,9 +581,7 @@ struct FormatClass {
 	Format_frame_m frame;
 
 /* for writing, from inlet */
-	GRID_BEGIN_(Format,(*begin));
-	GRID_FLOW_( Format,(*flow));
-	GRID_END_(  Format,(*end));
+	GridHandler *handler;
 
 /* for both */
 	/* for misc options */

@@ -518,6 +518,7 @@ err:
 	return 0;
 }
 
+static GridHandler FormatVideoDev_handler = GRINLET(FormatVideoDev,0);
 FormatClass class_FormatVideoDev = {
 	object_size: sizeof(FormatVideoDev),
 	symbol_name: "videodev",
@@ -527,10 +528,7 @@ FormatClass class_FormatVideoDev = {
 	open: FormatVideoDev_open,
 	frames: 0,
 	frame:  (Format_frame_m)FormatVideoDev_frame,
-	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatVideoDev,0),
-	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatVideoDev,0),
-	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatVideoDev,0),
+	handler: &FormatVideoDev_handler,
 	option: (Format_option_m)FormatVideoDev_option,
 	close:  (Format_close_m)FormatVideoDev_close,
-
 };

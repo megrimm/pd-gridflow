@@ -63,8 +63,8 @@ typedef struct fts_class_t {
 	int object_size;
 	int n_inlets;
 	int n_outlets;
-	int stuff;
 	Dict **method_table; /* by inlet */
+	void *user_data;
 } fts_class_t;
 
 struct fts_object_t {
@@ -125,7 +125,7 @@ void fts_set_ptr(fts_atom_t *, void *);
 #define fts_get_symbol_arg(AC, AT, N, DEF) ((N) < (AC) ? fts_get_symbol(&(AT)[N]) : (DEF))
 #define fts_get_ptr_arg(AC, AT, N, DEF)    ((N) < (AC) ? fts_get_ptr(&(AT)[N]) : (DEF))
 
-void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, int stuff);
+void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, void *user_data);
 
 Symbol fts_get_class_name(fts_class_t *class);
 

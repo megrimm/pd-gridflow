@@ -122,7 +122,6 @@ METHOD(GridIn,option) {
 
 METHOD(GridIn,init) {
 	GridObject_init((GridObject *)$);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 	$->ff = 0;
 	$->timelog = 0; /* not used in @in yet */
 	$->framecount = 0;
@@ -144,11 +143,6 @@ LIST(),
 	DECL(GridIn, 0,close, ""),
 //	DECL(GridIn, 0,frame, "si"),
 	DECL(GridIn, 0,option,"ssi"))
-{
-	fts_class_init(class, sizeof(GridIn), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridIn_methods));
-	return fts_Success;
-}
 
 /* ---------------------------------------------------------------- */
 
@@ -158,18 +152,17 @@ GRID_BEGIN(GridOut,0) {
 	{
 		CHECK_FILE_OPEN2
 		in->dex=0;
-		return $->ff->cl->begin($->ff, in);
+		return $->ff->cl->handler->begin((GridObject *)($->ff),in);
 	}
 }
 
 GRID_FLOW(GridOut,0) {
-	Format *f = $->ff;
 	CHECK_FILE_OPEN
-	$->ff->cl->flow($->ff, in, n, data);
+	$->ff->cl->handler->flow((GridObject *)($->ff),in,n,data);
 }
 
 GRID_END(GridOut,0) {
-	$->ff->cl->end($->ff,in);
+	$->ff->cl->handler->end((GridObject *)($->ff),in);
 	LEAVE;
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
 	if (!$->timelog) return;
@@ -208,8 +201,8 @@ METHOD(GridOut,close) {
 
 METHOD(GridOut,open) {
 	char buf[256];
-	int i;
 /*
+	int i;
 	sprintf_atoms(buf,ac,at);
 	whine("open args = %s",buf);
 	for (i=0; i<ac; i++) {
@@ -242,7 +235,6 @@ METHOD(GridOut,init) {
 	$->ff = 0;
 	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$);
-	$->in[0] = GridInlet_NEW3($,GridOut,0);
 	if (ac>1) {
 		fts_atom_t at2[3];
 		fts_set_symbol(at2+0,SYM(x11));
@@ -262,17 +254,13 @@ METHOD(GridOut,delete) {
 
 GRCLASS(GridOut,inlets:1,outlets:1,
 LIST(GRINLET(GridOut,0)),
+/* outlet 0 not used for grids */
 	DECL(GridOut,-1,init,  "s;ii"),
 	DECL(GridOut,-1,delete,""),
 	DECL(GridOut, 0,open,  "s;sss"),
 	DECL(GridOut, 0,close, ""),
 /*	DECL(GridOut, 0,frame, "si"), */
 	DECL(GridOut, 0,option,"ssii"))
-{
-	fts_class_init(class, sizeof(GridOut), 1, 1, 0);
-	GridObject_conf_class2(class,&GridOut_class);
-	return fts_Success;
-}
 
 /* ---------------------------------------------------------------- */
 

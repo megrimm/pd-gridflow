@@ -180,10 +180,12 @@ void whine_time(const char *s) {
 /* to help find uninitialized values */
 void *qalloc(size_t n, const char *file, int line) {
 	long *data = (long *) qalloc2(n,file,line);
-	int i;
-	int nn = (int) n/4;
 	#ifndef NO_DEADBEEF
+	{
+		int i;
+		int nn = (int) n/4;
 		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
+	}
 	#endif
 	return data;	
 
@@ -235,14 +237,14 @@ void qfree(void *data) {
 	{
 		int n=8;
 		data = realloc(data,n);
+#ifndef NO_DEADBEEF
 		{
 			long *data2 = (long *) data;
 			int i;
 			int nn = (int) n/4;
-#ifndef NO_DEADBEEF
 			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
-#endif
 		}
+#endif
 	}
 	free(data);
 }
@@ -346,15 +348,11 @@ METHOD(RtMetro,delete) {
 
 GRCLASS(RtMetro,inlets:2,outlets:1,
 LIST(),
+/* outlet 0 not used for grids */
 	DECL2(RtMetro, 0,int,   int,   "i"),
 	DECL2(RtMetro, 1,int,   rint,  "i"),
 	DECL2(RtMetro,-1,init,  init,  "s"),
 	DECL2(RtMetro,-1,delete,delete,""))
-{
-	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
-	GridObject_conf_class2(class,&RtMetro_class);
-	return fts_Success;
-}
 
 /* **************************************************************** */
 /* [@global] */
@@ -372,7 +370,6 @@ static void profiler_reset$1(void*d,void*k,void*v) {
 
 METHOD(GFGlobal,profiler_reset) {
 	Dict *os = gf_object_set;
-	int i;
 	Dict_each(os,profiler_reset$1,0);
 }
 
@@ -387,11 +384,10 @@ static void profiler_dump$1(void*d,void*k,void*v) {
 }
 
 METHOD(GFGlobal,profiler_dump) {
-        /* if you blow 256 chars it's your own fault */
+	/* if you blow 256 chars it's your own fault */
 	char buf[256];
-
-	Dict *os = gf_object_set;
 	List *ol = List_new(0);
+
 	uint64 total=0;
 	int i;
 	whine("--------------------------------");
@@ -428,15 +424,11 @@ METHOD(GFGlobal,delete) {
 
 GRCLASS(GFGlobal,inlets:1,outlets:1,
 LIST(),
+/* outlet 0 not used for grids */
 	DECL(GFGlobal,-1,init,          "s"),
 	DECL(GFGlobal,-1,delete,        ""),
 	DECL(GFGlobal, 0,profiler_reset,""),
 	DECL(GFGlobal, 0,profiler_dump, ""))
-{
-	fts_class_init(class, sizeof(GFGlobal), 1, 1, 0);
-	GridObject_conf_class2(class,&GFGlobal_class);
-	return fts_Success;
-}
 
 #define INSTALL(_sym_,_name_) \
 	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
