@@ -283,8 +283,7 @@ module EventIO
 			filename = GridFlow.find_file filename if mode==:in
 			@stream = File.open filename, fmode
 		when :gzfile
-			#raise "gzip is read-only" if fmode == "w"
-			filename = args[0].to_s
+s			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
 			@stream = File.open filename, fmode
 			if mode==:in then
@@ -593,15 +592,15 @@ class FormatPPM < Format; include EventIO
 
 	def _0_rgrid_begin
 		dim = inlet_dim 0
+		raise "expecting (rows,columns,channels)" if dim.length!=3
+		raise "expecting channels=3" if dim[2]!=3
 		@stream.write "P6\n" \
 		"# generated using GridFlow #{GF_VERSION}\n#{dim[1]} #{dim[0]}\n255\n"
 		@stream.flush
 		inlet_set_factor 0, 3
 	end
 	def _0_rgrid_flow data
-		pa = @bp.pack(data)
-		#puts "#{data.length}/4 = #{data.length/4} -> #{pa.length}"
-		@stream.write pa
+		@stream.write @bp.pack(data)
 	end
 	def _0_rgrid_end
 		@stream.flush
@@ -615,8 +614,11 @@ class FormatTarga < Format; include EventIO
 
 =begin
 targa header is like:
-	[:comment, Uint8, :length], 1,
-	[:colors,  Uint8], 9,
+	[:comment, Uint8, :length],
+	[:colortype, Uint8],
+	[:colors,  Uint8], 5,
+	[:origin_x, Int16],
+	[:origin_y, Int16],
 	[:w, Uint16],
 	[:h, Uint16],
 	[:depth, Uint8], 1,
@@ -626,6 +628,19 @@ targa header is like:
 	def initialize(mode,source,*args)
 		super
 		raw_open mode,source,*args
+	end
+
+	def set_bitpacking depth
+		@bp = case depth
+		when 24
+			# endian here doesn't seem to be changing much ?
+			BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
+		when 32
+			BitPacking.new(ENDIAN_LITTLE,4,
+				[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
+		else
+			raise "tga: unsupported colour depth: #{depth}\n"
+		end
 	end
 
 	def frame
@@ -641,19 +656,7 @@ targa header is like:
 #		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
 #		GridFlow.post "tga: comment: \"#{comment}\""
 
-		@bp = case depth
-		when 24
-			# endian here doesn't seem to be changing much ?
-			BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
-		when 32
-#			BitPacking.new(ENDIAN_BIG,4,
-			BitPacking.new(ENDIAN_LITTLE,4,
-##				[0x0000ff00,0x00ff0000,0xff000000,0x000000ff])
-#				[0x0000ff00,0x00ff0000,0x3f000000,0x000000ff])
-				[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
-		else
-			raise "tga: unsupported colour depth: #{depth}\n"
-		end
+		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ]
 
 		bs = w*depth/8
@@ -672,8 +675,28 @@ targa header is like:
 		send_out_grid_end 0
 	end
 
+	def _0_rgrid_begin
+		dim = inlet_dim 0
+		raise "expecting (rows,columns,channels)" if dim.length!=3
+		raise "expecting channels=3 or 4" if dim[2]!=3 and dim[2]!=4
+		# comment = "" # "created using GridFlow"
+		comment = "CREATOR: The GIMP's TGA Filter Version 1.2"
+		@stream.write [comment.length,colortype=0,colors=2,"\0"*9,
+		dim[1],dim[0],8*dim[2],(8*(dim[2]-3))|32,comment].pack("ccca9vvcca*")
+		set_bitpacking 8*dim[2]
+		inlet_set_factor 0, dim[2]
+	end
+
+	def _0_rgrid_flow data
+		@stream.write @bp.pack(data)
+	end
+	
+	def _0_rgrid_end
+		@stream.flush
+	end
+
 	install_rgrid 0
-	install_format "FormatTarga", 1, 1, FF_R, "targa", "TrueVision Targa"
+	install_format "FormatTarga", 1, 1, FF_R|FF_W, "targa", "TrueVision Targa"
 end
 
 =begin

@@ -21,6 +21,9 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+/* !@#$ not handling abort on compress */
+/* !@#$ not handling abort on decompress */
+
 #include "../base/grid.h"
 extern "C" {
 #include <jpeglib.h>
@@ -28,8 +31,10 @@ extern "C" {
 
 struct FormatJPEG : Format {
 	BitPacking *bit_packing;
+	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
+	Dim *dim;
 	FILE *f;
 
 	DECL3(close);
@@ -39,21 +44,39 @@ struct FormatJPEG : Format {
 };
 
 GRID_BEGIN(FormatJPEG,0) {
-/*
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 greyscale channel (got %d)",in->dim->get(2));
+		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	if (dim) delete dim;
 	dim = in->dim->dup();
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
-*/
+	cjpeg.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cjpeg);
+	jpeg_stdio_dest(&cjpeg,f);
+	cjpeg.image_width = in->dim->get(1);
+	cjpeg.image_height = in->dim->get(0);
+	cjpeg.input_components = 3;
+	cjpeg.in_color_space = JCS_RGB;
+	jpeg_set_defaults(&cjpeg);
+	jpeg_start_compress(&cjpeg,TRUE);
 }
 
 GRID_FLOW(FormatJPEG,0) {
+	int rowsize = in->dim->get(1)*in->dim->get(2);
+	int rowsize2 = in->dim->get(1)*3;
+	uint8 row[rowsize2];
+	uint8 *rows[1] = { row };
+	while (n) {
+		bit_packing->pack(in->dim->get(1),data,Pt<uint8>(row,rowsize));
+		jpeg_write_scanlines(&cjpeg,rows,1);		
+		n-=rowsize; data+=rowsize;
+	}
 }
 
 GRID_END(FormatJPEG,0) {
+	jpeg_finish_compress(&cjpeg);
+	jpeg_destroy_compress(&cjpeg);
 }
 
 METHOD3(FormatJPEG,frame) {
@@ -71,7 +94,7 @@ METHOD3(FormatJPEG,frame) {
 	uint8 *rows[1] = { row };
 	for (int n=0; n<sy; n++) {
 		jpeg_read_scanlines(&djpeg,rows,1);
-		o->send(sx*3,Pt<uint8>(row,sx*4));
+		o->send(sx*3,Pt<uint8>(row,sx*3));
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);
@@ -84,21 +107,23 @@ METHOD3(FormatJPEG,close) {
 }
 
 METHOD3(FormatJPEG,init) {
+	dim = 0;
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: jpeg file <filename>");
-	rb_funcall(peer,SI(raw_open),3,SYM(in),argv[0],argv[1]);
-	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	bit_packing = new BitPacking(is_le(),3,3,mask);
+	if (mode!=SYM(in) && mode!=SYM(out)) RAISE("AAARGH!");
+	rb_funcall(peer,SI(raw_open),3,mode,argv[0],argv[1]);
 	OpenFile *foo;
 	GetOpenFile(rb_ivar_get(peer,SI(@stream)),foo);
 	f = foo->f;
+	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+	bit_packing = new BitPacking(is_le(),3,3,mask);
 	return Qnil;
 }
 
 static void startup (GridClass *$) {
 	IEVAL($->rubyclass,
-	"include GridFlow::EventIO; conf_format 4,'jpeg','JPEG'");
+	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
 }
 
 GRCLASS(FormatJPEG,"FormatJPEG",
