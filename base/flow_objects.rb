@@ -209,11 +209,11 @@ class GridPrint < GridFlow::GridObject
 
 	def unpack data
 		case @nt
-		when :uint8; data.unpack("C*")
-		when :int16; data.unpack("s*")
-		when :int32; data.unpack("l*")
-		when :float32; data.unpack("f*")
-		when :float64; data.unpack("d*")
+		when :u, :u8,  :uint8; data.unpack("C*")
+		when :s, :i16, :int16; data.unpack("s*")
+		when :i, :i32, :int32; data.unpack("l*")
+		when :f, :f32, :float32; data.unpack("f*")
+		when :d, :f64, :float64; data.unpack("d*")
 		else raise "#{self.class} doesn't know how to decode #{@nt}"
 		end
 	end
@@ -283,12 +283,16 @@ class GridPack < GridObject
 		super
 		@data=[0]*n
 		@cast=cast
+		@ps  =GridFlow.packstring_for_nt cast
 	end
 	def initialize2
 		return if self.class.ninlets>1
 		GridFlow.whatever :addinlets, self, @data.length-1
 	end
-	def _0_cast(cast) @cast=cast end #!@#$ typecheck
+	def _0_cast(cast)
+		@ps   = GridFlow.packstring_for_nt cast
+		@cast = cast
+	end
 	def self.define_inlet i
 		module_eval "
 			def _#{i}_int   x; @data[#{i}]=x; _0_bang; end
@@ -298,7 +302,11 @@ class GridPack < GridObject
 	(0...15).each {|x| define_inlet x }
 	def _0_bang
 		send_out_grid_begin 0, [@data.length], @cast
-		send_out_grid_flow 0, @data.pack("l*")
+		GridFlow.post "packing @data=%s", @data.inspect
+		GridFlow.post "  with @cast=%s @ps=%s", @cast, @ps
+		duhta = @data.pack(@ps)
+		GridFlow.post "duhta=%s", duhta.inspect
+		send_out_grid_flow 0, duhta
 	end
 	install_rgrid 0
 	install "#pack", 1, 1
