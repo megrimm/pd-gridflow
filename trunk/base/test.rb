@@ -169,9 +169,9 @@ end
 	
 	a = FObject["@print"]
 	a.send_in 0, "3 3 #{nt} # 1 0 0 0"
-
-	a = FObject["@print"]
 	a.send_in 0, "3 3 3 #{nt} # 1 2 3 4"
+	a.send_in 0, "base 16"
+	a.send_in 0, "3 3 3 #{nt} # 255 0 0 0"
 
 	(a = FObject["@outer * {3 2 #{nt} # 1 2 3}"]).connect 0,e,0
 	b = FObject["@dim"]

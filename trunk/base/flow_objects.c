@@ -1199,6 +1199,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 \def void initialize (Grid *factor) {
 	scale.constrain(expect_scale_factor);
 	rb_call_super(argc,argv);
+	scale.init_from_ruby(INT2NUM(2));
 	if (factor) scale.swallow(factor);
 	prepare_scale_factor();
 }
@@ -1263,7 +1264,7 @@ GRID_INLET(GridDownscaleBy,0) {
 			}
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
-				OP2(SYM(/))->map(rowsize2,buf,(T)(scalex*scaley));
+				op2_div->map(rowsize2,buf,(T)(scalex*scaley));
 				out[0]->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}
@@ -1290,6 +1291,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 \def void initialize (Grid *factor, Symbol option) {
 	scale.constrain(expect_scale_factor);
 	rb_call_super(argc,argv);
+	scale.init_from_ruby(INT2NUM(2));
 	if (factor) scale.swallow(factor);
 	prepare_scale_factor();
 	smoothly = option==SYM(smoothly);

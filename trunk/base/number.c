@@ -474,6 +474,7 @@ DEF_OP2(sub, a-b)
 DEF_OP2(bus, b-a)
 
 DEF_OP2(mul, a*b)
+DEF_OP2(mulshr8, (a*b)>>8)
 DEF_OP2(div, b==0 ? 0 : a/b)
 DEF_OP2(div2, b==0 ? 0 : div2(a,b))
 DEF_OP2(vid, a==0 ? 0 : b/a)
@@ -543,6 +544,7 @@ Operator2 op2_table[] = {
 	DECL_OP2(bus, "inv+", "LN=0"),
 
 	DECL_OP2(mul, "*", "N=1 ASSO"),
+	DECL_OP2_NOFLOAT(mulshr8, "*>>8", "N=256 ASSO"),
 	DECL_OP2(div, "/", "RN=1"),
 	DECL_OP2_NOFLOAT(div2, "div", "RN=1"),
 	DECL_OP2(vid, "inv*", "LN=1"),
