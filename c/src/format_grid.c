@@ -71,7 +71,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	/* header */
 	{
 		char buf[8];
-		if (0>read($->stream,buf,sizeof(buf))) {
+		if (8>read($->stream,buf,sizeof(buf))) {
 			whine("grid header: read error: %s",strerror(errno));
 			goto err;
 		}
@@ -107,7 +107,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	/* dimension list */
 	{
 		int v[n_dim],i;
-		if (0>read($->stream,v,sizeof(v))) {
+		if (sizeof(v)>read($->stream,v,sizeof(v))) {
 			whine("dimension list: read error: %s",strerror(errno));
 			goto err;
 		}
@@ -128,10 +128,17 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	/* body */
 	{
 		Number *data = NEW2(Number,prod);
-		int i;
-		if (0>read($->stream,data,prod*sizeof(Number))) {
-			whine("body: read error: %s",strerror(errno));
-			goto err;
+		char *data2 = (char *)data;
+		int n=prod*sizeof(Number);
+		int i=0;
+		while (i<n) {
+			int r = read($->stream,data2+i,n-i);
+			if (r<0) {
+				whine("body: read error: %s",strerror(errno));
+				goto err;
+			}
+			i+=r;
+			whine("got %d bytes; %d bytes left", r, n-i);
 		}
 		if ($->is_le != is_le()) swap32(prod,data);
 
@@ -184,7 +191,7 @@ GRID_END(FormatGrid,0) {
 void FormatGrid_close (Format *$) {
 /*	if ($->bstream) fclose($->bstream); */
 	$->bstream = 0;
-	$->stream = 0;
+	if ($->stream) close($->stream);
 	FREE($);
 }
 
@@ -228,21 +235,21 @@ bool FormatGrid_open_tcp (Format *$, int ac, const fts_atom_t *at, int mode) {
 	$->stream = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
-	address.sin_port = fts_get_int(at+1);
+	address.sin_port = htons(fts_get_int(at+1));
 
 	{
 		const char *hostname;
 		int port;
 		struct hostent *h = gethostbyname(fts_symbol_name(fts_get_symbol(at+0)));
 		if (!h) {
-			whine("open_tcp: ",strerror(errno));
+			whine("open_tcp(gethostbyname): %s",strerror(errno));
 			goto err;
 		}
 		memcpy (&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
 	}
 
 	if (0>connect($->stream,&address,sizeof(address))) {
-		whine("open_tcp: ",strerror(errno));
+		whine("open_tcp(connect): %s",strerror(errno));
 		goto err;
 	}
 	return true;
