@@ -30,8 +30,7 @@ template <int n> class SCOPY {
 public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
 		*a=*b; SCOPY<n-1>::f(a+1,b+1);}};
 template <> class SCOPY<0> {
-public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
-	}};
+public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {}};
 
 /*template <> class SCOPY<4> {
 public: template <class T>
@@ -61,8 +60,7 @@ static void expect_exactly_one_dim (P<Dim> d) {
 	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }
 }
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridCast < GridObject
 struct GridCast : GridObject {
 	\attr NumberTypeE nt;
@@ -161,12 +159,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 \classinfo { IEVAL(rself,"install '@import',2,1"); }
 \end class GridImport
 
-/* **************************************************************** */
-/*
-  GridExport ("@export") is the class for converting from streamed grids
-  to old-style integer stream.
-*/
-
+//****************************************************************
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
 \class GridExport < GridObject
@@ -176,10 +169,7 @@ struct GridExport : GridObject {
 
 template <class T>
 static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
-static Ruby INTORFLOAT2NUM(int64   value) {
-	Ruby v = gf_ll2num(value);
-	//fprintf(stderr,"value=%lld cvt'd to %s\n",value,rb_str_ptr(rb_funcall(v,SI(to_s),0)));
-	return v;}
+static Ruby INTORFLOAT2NUM(int64   value) {return    gf_ll2num(value);}
 static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
 
@@ -191,13 +181,10 @@ GRID_INLET(GridExport,0) {
 	}
 } GRID_FINISH {
 } GRID_END
-
-/* outlet 0 not used for grids */
 \classinfo { IEVAL(rself,"install '@export',1,1"); }
 \end class GridExport
 
 /* **************************************************************** */
-
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
 \class GridExportList < GridObject
@@ -228,26 +215,23 @@ GRID_INLET(GridExportList,0) {
 \end class GridExportList
 
 /* **************************************************************** */
-/*
-  GridStore ("@store") is the class for storing a grid and restituting
-  it on demand. The right inlet receives the grid. The left inlet receives
-  either a bang (which forwards the whole image) or a grid describing what to
-  send.
-*/
-
-/*{ Dim[*As,B],Dim[*Cs,*Ds] -> Dim[*As,*Ds] }*/
-/* in0: integer nt */
-/* in1: whatever nt */
-/* out0: same nt as in1 */
+// GridStore ("@store") is the class for storing a grid and restituting
+// it on demand. The right inlet receives the grid. The left inlet receives
+// either a bang (which forwards the whole image) or a grid describing what
+// to send.
+//{ Dim[*As,B],Dim[*Cs,*Ds] -> Dim[*As,*Ds] }
+// in0: integer nt
+// in1: whatever nt
+// out0: same nt as in1
 \class GridStore < GridObject
 struct GridStore : GridObject {
 	PtrGrid r; //\attr
 	PtrGrid put_at; //\attr
-	int32 wdex [MAX_DIMENSIONS]; /* temporary buffer, copy of put_at */
+	int32 wdex [MAX_DIMENSIONS]; // temporary buffer, copy of put_at
 	int32 fromb[MAX_DIMENSIONS];
 	int32 to2  [MAX_DIMENSIONS];
 	int lsd;
-	int d; /* goes with wdex */
+	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
 	\decl void _0_bang ();
 	\decl void _1_reassign ();
@@ -258,10 +242,9 @@ struct GridStore : GridObject {
 	template <class T> void compute_indices(Pt<T> v, int nc, int nd);
 };
 
-/* takes the backstore of a grid and puts it back into place.
-   a backstore is a grid that is filled while the grid it would
-   replace has not finished being used.
-*/
+// takes the backstore of a grid and puts it back into place. a backstore
+// is a grid that is filled while the grid it would replace has not
+// finished being used.
 static void snap_backstore (PtrGrid &r) {
 	if (r.next) {r=r.next.p; r.next=0;}
 }
@@ -286,10 +269,10 @@ template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
 	}
 }
 
-/*!@#$ i should ensure that n is not exceedingly large */
-/*!@#$ worse: the size of the foo buffer may still be too large */
+// !@#$ i should ensure that n is not exceedingly large
+// !@#$ worse: the size of the foo buffer may still be too large
 GRID_INLET(GridStore,0) {
-	/* snap_backstore must be done before *anything* else */
+	// snap_backstore must be done before *anything* else
 	snap_backstore(r);
 	NOTEMPTY(r);
 	int na = in->dim->n;
@@ -425,30 +408,17 @@ GRID_INLET(GridStore,1) {
 } GRID_FINISH {
 } GRID_END
 
-\def void initialize (Grid *r) {
-	rb_call_super(argc,argv);
-	if (r) this->r=r;
-}
-
 \def void _0_bang () {
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
-
-\def void _1_reassign () {
-	put_at=0;
-}
-
-\def void _1_put_at (Grid *index) {
-	put_at=index;
-}
-
+\def void _1_reassign () { put_at=0; }
+\def void _1_put_at (Grid *index) { put_at=index; }
+\def void initialize (Grid *r) {rb_call_super(argc,argv); if (r) this->r=r;}
 \classinfo { IEVAL(rself,"install '@store',2,1"); }
 \end class GridStore
 
-/* **************************************************************** */
-
-/*{ Dim[*As]<T> -> Dim[*As]<T> }*/
-
+//****************************************************************
+//{ Dim[*As]<T> -> Dim[*As]<T> }
 \class GridOp1 < GridObject
 struct GridOp1 : GridObject {
 	\attr Numop1 *op;
@@ -470,17 +440,11 @@ GRID_INLET(GridOp1,0) {
 	rb_call_super(argc,argv);
 	this->op = op;
 }
-
 \classinfo { IEVAL(rself,"install '@!',1,1"); }
 \end class GridOp1
 
-/* **************************************************************** */
-/*
-  GridOp2 ("@") is the class of objects for parallel operation ("pairwise") on the
-  values of the left grid with values of a (stored) right grid or (stored)
-  single value.
-*/
-
+//****************************************************************
+//{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
 \class GridOp2 < GridObject
 struct GridOp2 : GridObject {
 	\attr Numop2 *op;
@@ -489,8 +453,6 @@ struct GridOp2 : GridObject {
 	\grin 0
 	\grin 1
 };
-
-/*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
 GRID_INLET(GridOp2,0) {
 	snap_backstore(r);
@@ -543,15 +505,8 @@ GRID_INPUT2(GridOp2,1,r) {} GRID_END
 \classinfo { IEVAL(rself,"install '@',2,1"); }
 \end class GridOp2
 
-/* **************************************************************** */
-/*
-  GridFold ("@fold") is the class of objects for removing the last dimension
-  by cascading an operation on all those values. There is a start value. When
-  doing [@fold + 42] each new value is computed like 42+a+b+c+...
-*/
-
-/*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
-
+//****************************************************************
+//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,*Cs]<T> }
 \class GridFold < GridObject
 struct GridFold : GridObject {
 	\attr Numop2 *op;
@@ -561,7 +516,6 @@ struct GridFold : GridObject {
 	\grin 1
 };
 
-/* fold: dim(*X,Y,*Z) x dim(*Z) -> dim(*X,*Z) */
 GRID_INLET(GridFold,0) {
 	NOTEMPTY(seed);
 	SAME_TYPE(in,seed);
@@ -604,15 +558,8 @@ GRID_INPUT(GridFold,1,seed) {} GRID_END
 \classinfo { IEVAL(rself,"install '@fold',2,1"); }
 \end class GridFold
 
-/* **************************************************************** */
-/*
-  GridScan ("@scan") is similar to @fold except that it gives back all
-  the partial results thereof; therefore the output is of the same
-  size as the input (unlike @fold).
-*/
-
-/*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
-
+//****************************************************************
+//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,B,*Cs]<T> }
 \class GridScan < GridObject
 struct GridScan : GridObject {
 	\attr Numop2 *op;
@@ -656,18 +603,8 @@ GRID_INPUT(GridScan,1,seed) {} GRID_END
 \classinfo { IEVAL(rself,"install '@scan',2,1"); }
 \end class GridScan
 
-/* **************************************************************** */
-/* inner: (op_para,op_fold,seed,A in dim(*As,A0), B in dim(B0,*Bs))
-          -> c in dim(*As,*Bs)
-   c = map((*As,*Bs),fold(op_fold,seed,zip(op_para,...... whatever
-*/
-
-/* transpose=false: */
-/*{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }*/
-
-/* transpose=true: */
-/*{ Dim[*As,C]<T>,Dim[*Bs,C]<T> -> Dim[*As,*Bs]<T> }*/
-
+//****************************************************************
+//{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }
 \class GridInner < GridObject
 struct GridInner : GridObject {
 	\attr Numop2 *op_para;
@@ -756,12 +693,10 @@ GRID_INPUT(GridInner,2,r) {} GRID_END
 
 /* **************************************************************** */
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
-
 \class GridOuter < GridObject
 struct GridOuter : GridObject {
 	\attr Numop2 *op;
 	PtrGrid r;
-
 	\decl void initialize (Numop2 *op, Grid *r=0);
 	\grin 0
 	\grin 1
@@ -794,19 +729,15 @@ GRID_INLET(GridOuter,0) {
 	STACK_ARRAY(T,buf2,b_prod*64);
 	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(Pt<T>)*r,b_prod);
 	switch (b_prod) {
-	case 1:	for (int i=0,k=0; k<n; i++) {buf[k++]=data[i];}
-	break;
-	case 2: for (int i=0,k=0; k<n; i++) {buf[k++]=data[i];buf[k++]=data[i];}
-	break;
-	case 3:	for (int i=0,k=0; k<n; i++)
-		{buf[k++]=data[i];buf[k++]=data[i];buf[k++]=data[i];}
-	break;
-	case 4:	for (int i=0,k=0; k<n; i++)
-		{buf[k++]=data[i];buf[k++]=data[i];buf[k++]=data[i];buf[k++]=data[i];}
-	break;
+	#define Z buf[k++]=data[i]
+	case 1:	for (int i=0,k=0; k<n; i++) {Z;} break;
+	case 2: for (int i=0,k=0; k<n; i++) {Z;Z;} break;
+	case 3:	for (int i=0,k=0; k<n; i++) {Z;Z;Z;} break;
+	case 4:	for (int i=0,k=0; k<n; i++) {Z;Z;Z;Z;} break;
 	default:
-	for (int i=0,k=0; k<n; i++) for (int j=0; j<b_prod; j++, k++) buf[k]=data[i];
+	for (int i=0,k=0; k<n; i++) for (int j=0; j<b_prod; j++, k++) Z;
 	}
+	#undef Z
 	int nn=n/(64*b_prod)*(64*b_prod);
 	for (int j=0; j<nn; j+=64*b_prod) op->zip(64*b_prod,buf+j,buf2);
 	op->zip(n-nn,buf+nn,buf2);
@@ -826,14 +757,14 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 \classinfo { IEVAL(rself,"install '@outer',2,1"); }
 \end class GridOuter
 
-/* **************************************************************** */
-
+//****************************************************************
+//{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> } or
+//{ Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }
 \class GridFor < GridObject
 struct GridFor : GridObject {
 	\attr PtrGrid from;
 	\attr PtrGrid to;
 	\attr PtrGrid step;
-
 	GridFor () {
 		from.constrain(expect_max_one_dim);
 		to  .constrain(expect_max_one_dim);
@@ -847,10 +778,6 @@ struct GridFor : GridObject {
 	\grin 2 int
 	template <class T> void trigger (T bogus);
 };
-
-/*{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> }
-  or
-  { Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }*/
 
 \def void initialize (Grid *from, Grid *to, Grid *step) {
 	rb_call_super(argc,argv);
@@ -920,25 +847,19 @@ void GridFor::trigger (T bogus) {
 #undef FOO
 }
 
-\def void _0_set (Grid *r) {
-	from=new Grid(argv[0]);
-}
-
+\def void _0_set (Grid *r) { from=new Grid(argv[0]); }
 GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
-
 \classinfo { IEVAL(rself,"install '@for',3,1"); }
 \end class GridFor
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridFinished < GridObject
 struct GridFinished : GridObject {
 	\grin 0
 };
 
-/* nt N/A */
 GRID_INLET(GridFinished,0) {
 	in->set_mode(0);
 } GRID_FLOW {
@@ -950,9 +871,8 @@ GRID_INLET(GridFinished,0) {
 \classinfo { IEVAL(rself,"install '@finished',1,1"); }
 \end class GridFinished
 
-/* **************************************************************** */
-/*{ Dim[*As] -> Dim[B] }*/
-
+//****************************************************************
+//{ Dim[*As] -> Dim[B] }
 \class GridDim < GridObject
 struct GridDim : GridObject {
 	\grin 0
@@ -969,8 +889,7 @@ GRID_INLET(GridDim,0) {
 \classinfo { IEVAL(rself,"install '@dim',1,1"); }
 \end class GridDim
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridType < GridObject
 struct GridType : GridObject {
 	\grin 0
@@ -987,15 +906,13 @@ GRID_INLET(GridType,0) {
 \classinfo { IEVAL(rself,"install '@type',1,1"); }
 \end class GridType
 
-/* **************************************************************** */
-
-/*{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }*/
-
+//****************************************************************
+//{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
 \class GridRedim < GridObject
 struct GridRedim : GridObject {
 	\attr P<Dim> dim;
 	PtrGrid dim_grid;
-	PtrGrid temp; /* temp->dim is not of the same shape as dim */
+	PtrGrid temp; // temp->dim is not of the same shape as dim
 	~GridRedim() {}
 	\decl void initialize (Grid *d);
 	\grin 0
@@ -1012,7 +929,7 @@ GRID_INLET(GridRedim,0) {
 		int b = dim->prod();
 		int n2 = min(n,b-i);
 		if (n2>0) out->send(n2,data);
-		/* discard other values if any */
+		// discard other values if any
 	} else {
 		int a = in->dim->prod();
 		int n2 = min(n,a-i);
@@ -1046,8 +963,7 @@ GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 \classinfo { IEVAL(rself,"install '@redim',2,1"); }
 \end class GridRedim
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridJoin < GridObject
 struct GridJoin : GridObject {
 	\attr int which_dim;
@@ -1128,8 +1044,7 @@ GRID_INPUT(GridJoin,1,r) {L} GRID_END
 \classinfo { IEVAL(rself,"install '@join',2,1"); }
 \end class GridJoin
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridGrade < GridObject
 struct GridGrade : GridObject {
 	\grin 0
@@ -1171,17 +1086,14 @@ GRID_INLET(GridGrade,0) {
 \classinfo { IEVAL(rself,"install '@grade',1,1"); }
 \end class GridGrade
 
-/* **************************************************************** */
-
+//****************************************************************
 //\class GridMedian < GridObject
-
-/* **************************************************************** */
-
+//****************************************************************
 \class GridTranspose < GridObject
 struct GridTranspose : GridObject {
 	\attr int dim1;
 	\attr int dim2;
-	int d1,d2,na,nb,nc,nd; /* temporaries */
+	int d1,d2,na,nb,nc,nd; // temporaries
 	\decl void initialize (int dim1=0, int dim2=1);
 	\grin 0
 };
@@ -1212,14 +1124,11 @@ GRID_INLET(GridTranspose,0) {
 	STACK_ARRAY(T,res,na*nb*nc*nd);
 	if (dim1==dim2) { out->send(n,data); return; }
 	for (; n; n-=na*nb*nc*nd, data+=na*nb*nc*nd) {
-		for (int a=0; a<na; a++) {
-			for (int b=0; b<nb; b++) {
-				for (int c=0; c<nc; c++) {
+		for (int a=0; a<na; a++)
+			for (int b=0; b<nb; b++)
+				for (int c=0; c<nc; c++)
 					COPY(res +((c*nb+b)*na+a)*nd,
 					     data+((a*nb+b)*nc+c)*nd,nd);
-				}
-			}
-		}
 		out->send(na*nb*nc*nd,res);
 	}
 } GRID_FINISH {
@@ -1235,12 +1144,10 @@ GRID_INLET(GridTranspose,0) {
 \classinfo { IEVAL(rself,"install '@transpose',3,1"); }
 \end class GridTranspose
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	\attr int32 z;
-
 	\grin 0
 	\decl void initialize (int32 z=256);
 };
@@ -1264,11 +1171,7 @@ GRID_INLET(GridPerspective,0) {
 	out=0;
 } GRID_END
 
-\def void initialize (int32 z) {
-	rb_call_super(argc,argv);
-	this->z = z;
-}
-
+\def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z; }
 \classinfo { IEVAL(rself,"install '@perspective',1,1"); }
 \end class GridPerspective
 
