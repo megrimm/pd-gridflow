@@ -41,9 +41,10 @@ static int max_packet_size = 1024*2;
 
 /* result should be printed immediately as the GC may discard it anytime */
 static const char *INFO(GridObject *foo) {
+	if (!foo) return "(nil GridObject!?)";
 	Ruby z = rb_funcall(foo->rself,SI(args),0);
 /*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
-	if (z==Qnil) return "(argh)";
+	if (z==Qnil) return "(nil args!?)";
 	return rb_str_ptr(z);
 }
 
@@ -657,16 +658,4 @@ void startup_grid () {
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
 	cFormat = rb_const_get(mGridFlow,SI(Format));
 	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
-}
-
-void gfmemcopy(uint8 *out, const uint8 *in, int n) {
-	while (n>16) {
-		((int32*)out)[0] = ((int32*)in)[0];
-		((int32*)out)[1] = ((int32*)in)[1];
-		((int32*)out)[2] = ((int32*)in)[2];
-		((int32*)out)[3] = ((int32*)in)[3];
-		in+=16; out+=16; n-=16;
-	}
-	while (n>4) { *(int32*)out = *(int32*)in; in+=4; out+=4; n-=4; }
-	while (n) { *out = *in; in++; out++; n--; }
 }
