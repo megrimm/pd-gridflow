@@ -125,14 +125,15 @@ struct FormatQuartz : Format {
 	\decl void initialize (Symbol mode);
 	\decl void delete_m ();
 	\decl void close ();
+	\decl void call ();
 	\grin 0
 };
 
 static NSDate *distantFuture, *distantPast;
 
-void FormatQuartz_tick(FormatQuartz *self) {
+\def void call() {
 	NSEvent *e = [NSApp nextEventMatchingMask: NSAnyEventMask
-//		untilDate: distantFuture // blocking
+		// untilDate: distantFuture // blocking
 		untilDate: distantPast // nonblocking
 		inMode: NSDefaultRunLoopMode
 		dequeue: YES];
@@ -142,6 +143,7 @@ void FormatQuartz_tick(FormatQuartz *self) {
 	}
 	[NSApp updateWindows];
 	[self->window flushWindowIfNeeded];
+	IEVAL(rself,"@clock.delay 20");
 }
 
 template <class T, class S>
@@ -181,7 +183,6 @@ GRID_INLET(FormatQuartz,0) {
 	}
 } GRID_FINISH {
 	GFView_display(widget);
-	FormatQuartz_tick(this);
 } GRID_END
 
 \def void initialize (Symbol mode) {
@@ -200,7 +201,7 @@ GRID_INLET(FormatQuartz,0) {
 	[window orderFrontRegardless];
 	wc = [[NSWindowController alloc]
 		initWithWindow: window];
-	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatQuartz_tick));
+	IEVAL(rself,"@clock = Clock.new self");
 	[window makeFirstResponder: widget];
 	gfpost("mainWindow = %08lx",(long)[NSApp mainWindow]);
 	gfpost(" keyWindow = %08lx",(long)[NSApp keyWindow]);
@@ -213,7 +214,7 @@ GRID_INLET(FormatQuartz,0) {
 }
 
 \def void close () {
-	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
+	IEVAL(rself,"@clock.unset");
 	rb_call_super(argc,argv);
 	[window autorelease];
 	[window setReleasedWhenClosed: YES];

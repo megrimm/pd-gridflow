@@ -334,13 +334,16 @@ module EventIO
 		@action = nil
 		@chunksize = nil
 		@rewind_redefined = false
+		@clock = Clock.new self
+		@delay = 100 # ms
 		super
 	end
+
+	def call() try_read end
 
 	def on_read(n,&action)
 		@action = action
 		@chunksize = n
-		$tasks[self] = proc { self.try_read }
 	end
 
 	def try_accept
@@ -350,7 +353,7 @@ module EventIO
 		@stream = @acceptor.accept
 		@stream.nonblock = true
 		@stream.sync = true
-		$tasks.delete self
+		@clock.unset
 #		send_out 0, :accept # does not work
 	rescue Errno::EAGAIN
 	end
@@ -370,7 +373,7 @@ module EventIO
 		if @buffer.length == @chunksize
 			action,buffer = @action,@buffer
 			@action,@buffer = nil,""
-			$tasks.delete self
+			@clock.unset
 			action.call buffer
 		end
 #		end#while
@@ -438,7 +441,7 @@ module EventIO
 			GridFlow.post "----------- #{Time.new-time}"
 			@stream.nonblock = true
 			@stream.sync = true
-			$tasks[self] = proc {self.try_read}
+			@clock.delay @delay
 		when :tcpserver
 			TCPSocket.do_not_reverse_lookup = true # hack
 			TCPServer.do_not_reverse_lookup = true # hack
@@ -447,7 +450,7 @@ module EventIO
 			@acceptor = TCPServer.open(args[0].to_s)
 			GridFlow.post "----------- #{Time.new-time}"
 			@acceptor.nonblock = true
-			$tasks[self] = proc {self.try_accept}
+			#$tasks[self] = proc {self.try_accept} #!!!!!
 		else
 			raise "unknown access method '#{source}'"
 		end
@@ -614,7 +617,7 @@ class FormatGrid < Format; include EventIO
 			@dex += data.length/4
 		end
 		if @dex == @prod
-			$tasks.delete self
+			@clock.unset
 		else
 			on_read(bufsize) {|data| frame3 data }
 		end
