@@ -33,99 +33,90 @@ class Expect < FObject
 end
 
 def test_math
+	hm = "#".intern
 for nt in [:int32, :int16] do
 	e = FObject["@export_list"]
 	x = Expect.new
 	e.connect 0,x,0
 
-	x.expect([2,3,5,7]) { e.send_in 0,"4 #{nt} # 2 3 5 7" }
+	x.expect([2,3,5,7]) { e.send_in 0,"list #{nt} 2 3 5 7" }
 	x.expect([42]*10000) { e.send_in 0,"10000 #{nt} # 42" }
 
-	(a = FObject["@two"]).connect 0,e,0
-	x.expect([42,0]) { a.send_in 0,42 }
-	x.expect([42,28]) { a.send_in 1,28 }
-	x.expect([1313,28]) { a.send_in 0,1313 }
-
-	(a = FObject["@three"]).connect 0,e,0
-	x.expect([42,0,0]) { a.send_in 0,42 }
-	x.expect([42,28,0]) { a.send_in 1,28 }
-	x.expect([42,28,-1]) { a.send_in 2,-1 }
-
-	(a = FObject["@four"]).connect 0,e,0
-	x.expect([42,0,0,0]) { a.send_in 0,42 }
-	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
-
-	(a = FObject["@ + {0 10}"]).connect 0,e,0
+	(a = FObject["@ + {#{nt} 0 10}"]).connect 0,e,0
 	x.expect([1,12,4,18,16,42,64]) {
-		a.send_in 0, 1,2,4,8,16,32,64 }
+		a.send_in 0,:list,nt, 1,2,4,8,16,32,64 }
 
-	(a = FObject["@ + 42"]).connect 0,e,0
+	(a = FObject["@ + {#{nt} # 42}"]).connect 0,e,0
 	x.expect([43,44,46,50,51,52,53,54,55,56,57]) {
-		a.send_in 0, 1,2,4,8,9,10,11,12,13,14,15 }
+		a.send_in 0,:list,nt, 1,2,4,8,9,10,11,12,13,14,15 }
 
 	x.expect([3,5,9,15]) {
-		a.send_in 1, 2,3,5,7
-		a.send_in 0, 1,2,4,8 }
+		a.send_in 1,:list,4,nt,hm, 2,3,5,7
+		a.send_in 0,:list,4,nt,hm, 1,2,4,8 }
 	x.expect([11,12,14,18]) {
-		a.send_in 1, 10
-		a.send_in 0, 1,2,4,8 }
+		a.send_in 1, "list #{nt} # 10"
+		a.send_in 0,:list,nt, 1,2,4,8 }
 
-	(a = FObject["@ / 3"]).connect 0,e,0
-	x.expect([-2,-1,-1,-1,0,0,0,0,0,1,1,1,2]) { a.send_in(0, *(-6..6).to_a) }
+	(a = FObject["@ / {#{nt} # 3}"]).connect 0,e,0
+	x.expect([-2,-1,-1,-1,0,0,0,0,0,1,1,1,2]) {
+		a.send_in(0,:list,nt, *(-6..6).to_a) }
 
-	(a = FObject["@ div 3"]).connect 0,e,0
-	x.expect([-2,-2,-2,-1,-1,-1,0,0,0,1,1,1,2]) { a.send_in(0, *(-6..6).to_a) }
+	(a = FObject["@ div {#{nt} # 3}"]).connect 0,e,0
+	x.expect([-2,-2,-2,-1,-1,-1,0,0,0,1,1,1,2]) {
+		a.send_in(0, :list, nt, *(-6..6).to_a) }
 
-	(a = FObject["@ ignore 42"]).connect 0,e,0
-	x.expect((-6..6).to_a) { a.send_in(0, *(-6..6).to_a) }
+	(a = FObject["@ ignore {#{nt} # 42}"]).connect 0,e,0
+	x.expect((-6..6).to_a) { a.send_in(0, :list, nt, *(-6..6).to_a) }
 
-	(a = FObject["@ put 42"]).connect 0,e,0
-	x.expect([42]*13) { a.send_in(0, *(-6..6).to_a) }
+	(a = FObject["@ put {#{nt} # 42}"]).connect 0,e,0
+	x.expect([42]*13) { a.send_in(0, :list, nt, *(-6..6).to_a) }
 
 	(a = FObject["@! abs"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
-		a.send_in 0, -2,3,-5,7 }
+		a.send_in 0,:list,nt, -2,3,-5,7 }
 
-	(a = FObject["@fold * 1"]).connect 0,e,0
-	x.expect([210]) { a.send_in 0, 2,3,5,7 }
-	x.expect([128]) { a.send_in 0, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
+	(a = FObject["@fold * {#{nt} # 1}"]).connect 0,e,0
+	x.expect([210]) { a.send_in 0,:list,nt, 2,3,5,7 }
+	x.expect([128]) { a.send_in 0,:list,nt, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
 
-	(a = FObject["@fold + {0 0}"]).connect 0,e,0
-	x.expect([18,23]) { a.send_in 0, 3,2,"#".intern,2,3,5,7,11,13 }
+	(a = FObject["@fold + {#{nt} 0 0}"]).connect 0,e,0
+	x.expect([18,23]) { a.send_in 0, 3,2,nt,hm,2,3,5,7,11,13 }
 
-	(a = FObject["@scan + {0 0}"]).connect 0,e,0
-	x.expect([2,3,7,10,18,23]) { a.send_in 0, 3,2,"#".intern,2,3,5,7,11,13 }
+	(a = FObject["@scan + {#{nt} 0 0}"]).connect 0,e,0
+	x.expect([2,3,7,10,18,23]) { a.send_in 0, 3,2,nt,hm,2,3,5,7,11,13 }
 
-	(a = FObject["@scan * 1"]).connect 0,e,0
-	x.expect([2,6,30,210]) { a.send_in 0, 2,3,5,7 }
+	(a = FObject["@scan * {#{nt} # 1}"]).connect 0,e,0
+	x.expect([2,6,30,210]) { a.send_in 0,:list,nt, 2,3,5,7 }
 	x.expect([1,1,2,2,4,8,16,16,16,32,32,64,128]) {
-		a.send_in 0, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
+		a.send_in 0,:list,nt, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
 
 	(a = FObject["@outer +"]).connect 0,e,0
 	x.expect([9,10,12,17,18,20,33,34,36]) {
-		a.send_in 1, 1,2,4
-		a.send_in 0, 8,16,32 }
+		a.send_in 1,:list,nt, 1,2,4
+		a.send_in 0,:list,nt, 8,16,32 }
 
-	(a = FObject["@outer",:%,[3,-3]]).connect 0,e,0
+	(a = FObject["@outer",:%,[nt,3,-3]]).connect 0,e,0
 	x.expect([0,0,1,-2,2,-1,0,0,1,-2,2,-1,0,0]) {
-		a.send_in 0, -30,-20,-10,0,+10,+20,+30 }
+		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
 
-	(a = FObject["@outer","swap%".intern,[3,-3]]).connect 0,e,0
+	(a = FObject["@outer","swap%".intern,[nt,3,-3]]).connect 0,e,0
 	x.expect([-27,-3,-17,-3,-7,-3,0,0,3,7,3,17,3,27]) {
-		a.send_in 0, -30,-20,-10,0,+10,+20,+30 }
+		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
 
-	(a = FObject["@inner2 * + 0 {2 2 # 2 3 5 7}"]).connect 0,e,0
+	(a = FObject["@inner2 * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	x.expect([8,19,32,76]) { i0.send_in 0, 1,2,4,8 }
+	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 	
-	(a = FObject["@inner * + 0 {2 2 # 2 3 5 7}"]).connect 0,e,0
+	(a = FObject["@inner * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	x.expect([12,17,48,68]) { i0.send_in 0, 1,2,4,8 }
+	x.expect([12,17,48,68]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 
+if nt==:int32
 	a = FObject["@print"]
-	a.send_in 0, "3 3 # 1 0 0 0"
+	a.send_in 0, "3 3 #{nt} # 1 0 0 0"
+end
 
-	(a = FObject["@outer * {3 2 # 1 2 3}"]).connect 0,e,0
+	(a = FObject["@outer * {3 2 #{nt} # 1 2 3}"]).connect 0,e,0
 	b = FObject["@dim"]
 	c = FObject["@export_list"]
 	a.connect 0,b,0
@@ -135,17 +126,17 @@ for nt in [:int32, :int16] do
 
 	y.expect([2,3,2]) {
 		x.expect([1,2,3,1,2,3,10,20,30,10,20,30]) {
-			a.send_in 0, 1, 10 }}
+			a.send_in 0,:list,nt, 1, 10 }}
 
 	#pr=GridPrint.new
 	(b = FObject["@redim {5 5}"]).connect 0,e,0
-	(a = FObject["@convolve"]).connect 0,b,0
+	(a = FObject["@convolve * + 0"]).connect 0,b,0
 	(i0 = FObject["@redim {5 5 1}"]).connect 0,a,0
 	(i1 = FObject["@redim {3 1}"]).connect 0,a,1
 	i1.send_in 1, 3,3
 	x.expect([5,6,5,4,4,4,6,7,6,4,3,3,6,7,5,4,2,3,6,6,5,4,3,4,5]) {
-		i1.send_in 0, 1,1,1,1,1,1,1,1,1
-		i0.send_in 0, 1,1,1,0,0,0 }
+		a.send_in 1,:list,3,3,nt,hm, 1,1,1,1,1,1,1,1,1
+		i0.send_in 0,:list,nt, 1,1,1,0,0,0 }
 
 	(a = FObject["@import {4}"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
@@ -154,13 +145,15 @@ for nt in [:int32, :int16] do
 		a.send_in 1, :list, 3
 		a.send_in 0, :list, *(1..9).to_a}
 
-	for o in ["@store", "@store uint8"]
+	for o in ["@store",
+		#"@store uint8"
+	]
 		(a = FObject[o]).connect 0,e,0
-		a.send_in 1, 5, 4, "#".intern, 1,2,3,4,5
+		a.send_in 1, 5, 4, nt, hm, 1,2,3,4,5
 		x.expect([1,2,3,4,4,5,1,2,2,3,4,5]) {
-			a.send_in 0, 3,1, "#".intern, 0,2,4 }
-		x.expect([1,2,3,4,5]*24) { a.send_in 0, 2,3,0, "#".intern }
-		x.expect([1,2,3,4,5]*4)  { a.send_in 0, 0, "#".intern }
+			a.send_in 0, 3,1, hm, 0,2,4 }
+		x.expect([1,2,3,4,5]*24) { a.send_in 0, 2,3,0,hm }
+		x.expect([1,2,3,4,5]*4)  { a.send_in 0, 0,hm }
 		x.expect([1,2,3,4,5]*4)  { a.send_in 0 }
 	end
 
@@ -192,7 +185,22 @@ for nt in [:int32, :int16] do
 	(a = FObject["@complex_sq"]).connect 0,e,0
 	x.expect([8,0]) { a.send_in 0, 2, 2 }
 	x.expect([0,9]) { a.send_in 0, 0, 3 }
-end
+end # for nt
+
+	(a = FObject["@two"]).connect 0,e,0
+	x.expect([42,0]) { a.send_in 0,42 }
+	x.expect([42,28]) { a.send_in 1,28 }
+	x.expect([1313,28]) { a.send_in 0,1313 }
+
+	(a = FObject["@three"]).connect 0,e,0
+	x.expect([42,0,0]) { a.send_in 0,42 }
+	x.expect([42,28,0]) { a.send_in 1,28 }
+	x.expect([42,28,-1]) { a.send_in 2,-1 }
+
+	(a = FObject["@four"]).connect 0,e,0
+	x.expect([42,0,0,0]) { a.send_in 0,42 }
+	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
+
 end
 
 def test_int16

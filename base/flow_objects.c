@@ -83,6 +83,21 @@ static void expect_rgba_picture (Dim *d) {
 	} \
 	GRID_FINISH {}
 
+#define SAME_TYPE(_a_,_b_) \
+	if ((_a_).nt != (_b_).nt) RAISE("%s(%s): same type please (%s versus %s)", \
+		INFO(this), __PRETTY_FUNCTION__, \
+		number_type_table[(_a_).nt].name, \
+		number_type_table[(_b_).nt].name);
+
+/* result should be printed immediately as the GC may discard it anytime */
+static const char *INFO(GridObject *foo) {
+	if (!foo) return "(nil GridObject!?)";
+	Ruby z = rb_funcall(foo->rself,SI(args),0);
+/*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
+	if (z==Qnil) return "(nil args!?)";
+	return rb_str_ptr(z);
+}
+
 /* **************************************************************** */
 
 struct GridCast : GridObject {
@@ -217,7 +232,7 @@ GRID_INLET(GridExportList,0) {
 } GRID_END
 
 GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridExportList,0,4)))
+LIST(GRINLET2(GridExportList,0,4)))
 /* outlet 0 not used for grids */
 
 /* **************************************************************** */
@@ -271,56 +286,50 @@ GRID_INLET(GridStore,0) {
 	int size = r.dim->prod(nc);
 	assert((n % nc) == 0);
 	int nd = n/nc;
-	STACK_ARRAY(int32,v,n);
+	STACK_ARRAY(T,v,n);
 	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
 		if (i) op_mul->map(nd,v,r.dim->v[i]);
 		op_mod->map(nd,v+nd*i,r.dim->v[i]);
 		if (i) op_add->zip(nd,v,v+nd*i);
 	}
-	if (r.nt==int32_type_i) {
-		Pt<int32> p = (Pt<int32>)r;
-		if (size<8) {
-			STACK_ARRAY(int32,foo,nd*size);
-			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size);
-			out[0]->send(size*nd,foo);
-		} else {
-			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
-		}			
-	} else if (r.nt==uint8_type_i) {
-		Pt<uint8> p = (Pt<uint8>)r;
-		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
-	} else RAISE("unsupported type");
+#define EMIT(type) { \
+		Pt<type> p = (Pt<type>)r; \
+		if (size<16) { \
+			STACK_ARRAY(type,foo,nd*size); \
+			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size); \
+			out[0]->send(size*nd,foo); \
+		} else { \
+			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
+		} \
+}
+	switch (r.nt) {
+	case uint8_type_i: EMIT(uint8); break;
+	case int16_type_i: EMIT(int16); break;
+	case int32_type_i: EMIT(int32); break;
+	case float32_type_i: EMIT(float32); break;
+	default: RAISE("argh");
+	}
+#undef EMIT
 } GRID_FINISH {
 	GridOutlet *o = out[0];
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = r.dim->prod();
 		switch(r.nt) {
-		case int32_type_i: while (n--) o->send(size,(Pt<int32>)r); break;
 		case uint8_type_i: while (n--) o->send(size,(Pt<uint8>)r); break;
+		case int16_type_i: while (n--) o->send(size,(Pt<int16>)r); break;
+		case int32_type_i: while (n--) o->send(size,(Pt<int32>)r); break;
+		case float32_type_i: while (n--) o->send(size,(Pt<float32>)r); break;
 		default: RAISE("unsupported type");
 		}
 	}
 } GRID_END
 
-GRID_INLET(GridStore,1) {
-	this->in[0]->abort();
-	r.init(in->dim->dup(),r.nt);
-} GRID_FLOW {
-	if (r.nt==int32_type_i) {
-		COPY((Pt<int32>)r + in->dex, data, n);
-	} else if (r.nt==uint8_type_i) {
-		uint8 *data2 = (Pt<uint8>)r + in->dex;
-		for(int i=0; i<n; i++) data2[i] = data[i];
-	} else RAISE("unsupported type");
-	in->dex += n;
-} GRID_FINISH {
-} GRID_END
+GRID_INPUT(GridStore,1,r) {} GRID_END
 
 METHOD3(GridStore,initialize) {
 	rb_call_super(argc,argv);
-	r.init(0, NumberType_find(argc==0 ? SYM(int32) : argv[0]));
 	return Qnil;
 }
 
@@ -380,10 +389,10 @@ struct GridOp2 : GridObject {
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
 GRID_INLET(GridOp2,0) {
+	SAME_TYPE(*in,r);
 	out[0]->begin(in->dim->dup(),in->nt);
 } GRID_FLOW {
 	if (r.is_empty()) RAISE("ARGH");
-	if (in->nt!=r.nt) RAISE("same type please");
 	Pt<T> rdata = (Pt<T>)r;
 	int loop = r.dim->prod();
 	if (loop>1) {
@@ -445,7 +454,7 @@ struct GridFold : GridObject {
 
 /* fold: dim(*X,Y,*Z) x dim(*Z) -> dim(*X,*Z) */
 GRID_INLET(GridFold,0) {
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
@@ -513,7 +522,7 @@ struct GridScan : GridFold {
 };
 
 GRID_INLET(GridScan,0) {
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	int yi = an-bn-1;
@@ -579,7 +588,7 @@ struct GridInner : GridObject {
 };
 
 GRID_INLET(GridInner,0) {
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
@@ -645,7 +654,7 @@ struct GridInner2 : GridInner {
 };
 
 GRID_INLET(GridInner2,0) {
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
@@ -712,7 +721,7 @@ GRID_INLET(GridOuter,0) {
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	int n = a->n+b->n;
 	int32 v[n];
 	COPY(v,a->v,a->n);
@@ -768,7 +777,7 @@ GRID_INLET(GridConvolve,0) {
 	if (!db) RAISE("right inlet has no grid");
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
-	if (in->nt!=b.nt) RAISE("same type please");
+	SAME_TYPE(*in,b);
 	/* bug: da[0]>=db[0] and da[1]>=db[1] are also conditions */
 	int32 v[da->n];
 	COPY(v,da->v,da->n);
@@ -777,7 +786,7 @@ GRID_INLET(GridConvolve,0) {
 	v[0] += 2*margy;
 	v[1] += 2*margx;
 	c.init(new Dim(da->n,v),in->nt);
-	out[0]->begin(da->dup());
+	out[0]->begin(da->dup(),in->nt);
 	in->set_factor(da->prod(1));
 } GRID_FLOW {
 	int factor = in->factor; /* line length of a */
@@ -976,8 +985,8 @@ struct GridRedim : GridObject {
 
 GRID_INLET(GridRedim,0) {
 	int a = in->dim->prod(), b = dim->prod();
-	if (a<b) {int32 v[1]={a}; temp.init(new Dim(1,v));}
-	out[0]->begin(dim->dup());
+	if (a<b) {int32 v[1]={a}; temp.init(new Dim(1,v),in->nt);}
+	out[0]->begin(dim->dup(),in->nt);
 } GRID_FLOW {
 	int i = in->dex;
 	if (temp.is_empty()) {
@@ -988,7 +997,7 @@ GRID_INLET(GridRedim,0) {
 	} else {
 		int a = in->dim->prod();
 		int n2 = min(n,a-i);
-		COPY(&((Pt<int32>)temp)[i],data,n2);
+		COPY(((Pt<T>)temp)+i,data,n2);
 		if (n2>0) out[0]->send(n2,data);
 	}
 } GRID_FINISH {
@@ -996,7 +1005,7 @@ GRID_INLET(GridRedim,0) {
 		int a = in->dim->prod(), b = dim->prod();
 		int i = a;
 		while (i<b) {
-			out[0]->send(min(a,b-i),(Pt<int32>)temp);
+			out[0]->send(min(a,b-i),(Pt<T>)temp);
 			i += a;
 		}
 	}
@@ -1225,7 +1234,7 @@ struct GridLayer : GridObject {
 GRID_INLET(GridLayer,0) {
 	Dim *a = in->dim;
 	expect_rgba_picture(a);
-	if (in->nt!=r.nt) RAISE("same type please");
+	SAME_TYPE(*in,r);
 	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
 	in->set_factor(a->prod(1));
@@ -1327,7 +1336,7 @@ static int order_by_column (const void *a, const void *b) {
 GRID_INLET(DrawPolygon,0) {
 	if (polygon.is_empty()) RAISE("no polygon?");
 	if (lines.is_empty()) RAISE("no lines???");
-	if (in->nt!=color.nt) RAISE("same type please");
+	SAME_TYPE(*in,color);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
 	if (in->dim->get(2)!=color.dim->get(0))
 		RAISE("image does not have same	number of channels as stored color");

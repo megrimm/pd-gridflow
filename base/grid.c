@@ -40,14 +40,6 @@ static const char *INFO(GridObject *foo) {
 	return rb_str_ptr(z);
 }
 
-#define NTI_MAKE(_type_) \
-NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { return _type_##_type_i; }
-
-NTI_MAKE(uint8)
-NTI_MAKE(int16)
-NTI_MAKE(int32)
-NTI_MAKE(float32)
-
 #define CHECK_TYPE(d) \
 	if (NumberTypeIndex_type_of(d)!=nt) \
 		RAISE("%s(%s): " \
@@ -90,7 +82,15 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 				goto fill;
 			}
 		}
-		{int32 v[1]={n}; init(new Dim(1,v),nt);}
+		{
+			if (n!=0 && TYPE(a[0])==T_SYMBOL) {
+				nt = NumberType_find(a[0]);
+				a++;
+				n--;
+			}
+			int32 v[1]={n};
+			init(new Dim(1,v),nt);
+		}
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -175,13 +175,29 @@ void GridInlet::set_factor(int factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
-	self->gh->flow(self,-1,Pt<int32>());
+	switch (self->nt) {
+	case uint8_type_i: self->gh->flow(self,-1,Pt<uint8>()); break;
+	case int16_type_i: self->gh->flow(self,-1,Pt<int16>()); break;
+	case int32_type_i: self->gh->flow(self,-1,Pt<int32>()); break;
+	case float32_type_i: self->gh->flow(self,-1,Pt<float32>()); break;
+	default: RAISE("argh");
+	}
 	return Qnil;
 }
 
 static Ruby GridInlet_begin_2(GridInlet *self) {
 	self->dim = 0; /* hack */
 	return (Ruby) 0;
+}
+
+bool GridInlet::supports_type(NumberTypeIndex nt) {
+	switch (nt) {
+	case uint8_type_i: return !! gh->flow_uint8;
+	case int16_type_i: return !! gh->flow_int16;
+	case int32_type_i: return !! gh->flow_int32;
+	case float32_type_i: return !! gh->flow_float32;
+	default: return false;
+	}
 }
 
 void GridInlet::begin(int argc, Ruby *argv) {
@@ -198,16 +214,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",INFO(parent));
 
-	bool supported;
-	switch (nt) {
-	case uint8_type_i: supported = !! gh->flow_uint8; break;
-	case int16_type_i: supported = !! gh->flow_int16; break;
-	case int32_type_i: supported = !! gh->flow_int32; break;
-	case float32_type_i: supported = !! gh->flow_float32; break;
-	default: supported = false;
-	}
-
-	if (!supported)
+	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
 			INFO(parent), number_type_table[nt].name);
 
@@ -291,6 +298,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	}
 }
 
+/* !@#$ this is not correct */
 void GridInlet::abort() {
 	if (dim) {
 		if (dim->prod())
@@ -308,7 +316,13 @@ void GridInlet::end() {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
-	gh->flow(this,-2,Pt<int32>());
+	switch (nt) {
+	case uint8_type_i: gh->flow(this,-2,Pt<uint8>()); break;
+	case int16_type_i: gh->flow(this,-2,Pt<int16>()); break;
+	case int32_type_i: gh->flow(this,-2,Pt<int32>()); break;
+	case float32_type_i: gh->flow(this,-2,Pt<float32>()); break;
+	default: RAISE("argh");
+	}
 	if (dim) {delete dim; dim=0;}
 	buf.del();
 	dex = 0;
@@ -321,28 +335,43 @@ void GridInlet::end() {
 	gfpost("%s",foo); \
 }
 
-/* !@#$ something wrong with nt here */
-void GridInlet::grid(Grid *g) {
+template <class T>
+void GridInlet::grid2(Grid *g, T foo) {
 	assert(gh);
-	int n = g->dim->prod();
+	nt = g->nt;
 	dim = g->dim->dup();
-	gh->flow(this,-1,Pt<int32>());
+	int n = g->dim->prod();
+	gh->flow(this,-1,Pt<T>());
 	if (n>0 && gh->mode!=0) {
-		Pt<int32> data = (Pt<int32>)*g;
-		int size = g->dim->prod(); // * number_type_table[g->nt].size/8;
+		Pt<T> data = (Pt<T>)*g;
+		int size = g->dim->prod();
 		if (gh->mode==6) {
-			Pt<int32> d = data;
-			data = ARRAY_NEW(int32,size);
+			Pt<T> d = data;
+			data = ARRAY_NEW(T,size);
 			COPY(data,d,size);
 		}
 		gh->flow(this,n,data);
 	}
-	gh->flow(this,-2,Pt<int32>());
+	gh->flow(this,-2,Pt<T>());
 	//!@#$ add error handling.
 	/* rescue; abort(); end ??? */
 	delete dim;
 	dim = 0;
 	dex = 0; /* why? */
+}
+
+void GridInlet::grid(Grid *g) {
+	if (!supports_type(g->nt))
+		RAISE("%s: number type %s not supported here",
+			INFO(parent), number_type_table[g->nt].name);
+
+	switch (g->nt) {
+	case uint8_type_i: grid2(g,(uint8)0); break;
+	case int16_type_i: grid2(g,(int16)0); break;
+	case int32_type_i: grid2(g,(int32)0); break;
+	case float32_type_i: grid2(g,(float32)0); break;
+	default: RAISE("argh");
+	}
 }
 
 void GridInlet::list(int argc, Ruby *argv) {
@@ -429,8 +458,10 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 }
 
 #define SEND_IN_CHUNKS(type) { \
+	gfpost("send_in_chunks..."); \
 	STACK_ARRAY(type,data2,bs); \
 	for (;n>=bs;n-=bs,data+=bs) { \
+		gfpost("n=%d",n); \
 		convert_number_type(bs,data2,data); send(bs,data2);} \
 	convert_number_type(n,data2,data); \
 	send(n,data2); }

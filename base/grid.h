@@ -450,6 +450,14 @@ enum NumberTypeIndex {
 
 #undef DECL_TYPE
 
+#define NTI_MAKE(_type_) \
+inline NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { return _type_##_type_i; }
+NTI_MAKE(uint8)
+NTI_MAKE(int16)
+NTI_MAKE(int32)
+NTI_MAKE(float32)
+#undef NTI_MAKE
+
 struct NumberType {
 	Ruby /*Symbol*/ sym;
 	const char *name;
@@ -615,9 +623,9 @@ struct Grid {
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
-		_member_.init(in->dim->dup(),int32_type_i); } \
+		_member_.init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
 	GRID_FLOW { \
-		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
+		COPY(&((Pt<T>)_member_)[in->dex], data, n); } \
 	GRID_FINISH
 
 typedef struct GridInlet GridInlet;
@@ -673,6 +681,11 @@ struct GridInlet {
 	void int_(  int argc, Ruby *argv);
 	void float_(int argc, Ruby *argv);
 	void grid(Grid *g);
+	bool supports_type(NumberTypeIndex nt);
+
+private:
+	template <class T>
+	void grid2(Grid *g, T foo);
 };
 
 struct FClass {
