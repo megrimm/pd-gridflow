@@ -224,8 +224,7 @@ Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
 #define DECL_SYM2(_sym_) Ruby sym_##_sym_ = 0xDeadBeef;
 #define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
 
-DECL_SYM2(grid_begin)
-DECL_SYM2(grid_end)
+DECL_SYM2(grid)
 DECL_SYM2(bang)
 DECL_SYM2(int)
 DECL_SYM2(list)
@@ -342,8 +341,7 @@ void startup_formats();
 void Init_gridflow () {
 	signal(11,SIG_DFL);
 
-	DEF_SYM(grid_begin);
-	DEF_SYM(grid_end);
+	DEF_SYM(grid);
 	DEF_SYM(bang);
 	DEF_SYM(int);
 	DEF_SYM(list);

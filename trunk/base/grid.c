@@ -184,7 +184,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	if (!r) {abort(); return;}
 
 	this->dim = dim;
-	back_out->callback(this,gh->mode);
+	back_out->callback(this);
 }
 
 void GridInlet::flow(int argc, Ruby *argv) {
@@ -239,6 +239,8 @@ void GridInlet::flow(int argc, Ruby *argv) {
 		gh->flow(parent,this,n,data);
 		if (gh->mode==4) delete[] (int32 *)data;
 		dex = newdex;
+	} else if (mode==0) {
+		/* nothing happens */
 	} else {
 		assert(0);
 	}
@@ -275,19 +277,17 @@ void GridInlet::end(int argc, Ruby *argv) {
 	gfpost("%s",foo); \
 }
 
-void GridInlet::list(int argc, Ruby *argv) {
-	Grid t;
-	t.init_from_ruby_list(argc,argv);
+void GridInlet::grid(Grid *g) {
 	assert(gh);
-	dim = t.dim->dup();
-	int n = dim->prod();
+	int n = g->dim->prod();
+	dim = g->dim->dup();
 	gh->begin(parent,this);
-	if (n>0) {
-		Pt<Number> data = t.as_int32();
+	if (n>0 && gh->mode!=0) {
+		Pt<Number> data = g->as_int32();
 		if (gh->mode==6) {
 			Pt<Number> d = data;
-			int size = t.dim->prod()*number_type_table[t.nt].size/8;
-			data = Pt<Number>((Number *)new char[size],t.dim->prod());
+			int size = g->dim->prod()*number_type_table[g->nt].size/8;
+			data = Pt<Number>((Number *)new char[size],g->dim->prod());
 			memcpy(data,d,size);
 		}
 		gh->flow(parent,this,n,data);
@@ -297,22 +297,19 @@ void GridInlet::list(int argc, Ruby *argv) {
 	/* rescue; GridInlet_abort($); */
 	delete dim;
 	dim = 0;
-	dex = 0;
+	dex = 0; /* why? */
+}
+
+void GridInlet::list(int argc, Ruby *argv) {
+	Grid t;
+	t.init_from_ruby_list(argc,argv);
+	grid(&t);
 }
 
 void GridInlet::int_(int argc, Ruby *argv) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
-	assert(gh);
-	dim = t.dim->dup();
-	gh->begin(parent,this);
-	gh->flow( parent,this,t.dim->prod(),t.as_int32());
-	gh->end(  parent,this);
-	//!@#$ add error handling.
-	/* rescue; GridInlet_abort($); */
-	delete dim;
-	dim = 0;
-	dex = 0;
+	grid(&t);
 }
 
 void GridInlet::float_(int argc, Ruby *argv) {int_(argc,argv);}
@@ -327,15 +324,14 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	buf = Pt<Number>(new Number[gf_max_packet_length],gf_max_packet_length);
 	bufn = 0;
 	frozen = 0;
-	ron = 0; ro = 0;
-	rwn = 0; rw = 0;
+	inlets = Pt<GridInlet *>();
+	ninlets = 0;
 }
 
 GridOutlet::~GridOutlet() {
 	if (dim) delete dim;
 	if (buf) delete[] (Number *)buf;
-	if (ro) delete[] ro;
-	if (rw) delete[] rw;
+	if (inlets) delete[] inlets.p;
 }
 
 bool GridOutlet::is_busy() {
@@ -346,19 +342,17 @@ bool GridOutlet::is_busy() {
 void GridOutlet::abort() {
 	assert(this);
 	if (!is_busy()) return;
+	for (int i=0; i<ninlets; i++) inlets[i]->abort();
 	delete dim;
 	dim = 0;
 	dex = 0;
-	Ruby a[] = { INT2NUM(woutlet), sym_grid_end };
-	FObject_send_out(COUNT(a),a,parent->peer);
 }
 
 void GridOutlet::end() {
 	assert(this);
 	assert(is_busy());
 	flush();
-	Ruby a[] = { INT2NUM(woutlet), sym_grid_end };
-	FObject_send_out(COUNT(a),a,parent->peer);
+	for (int i=0; i<ninlets; i++) inlets[i]->end(0,0);
 	delete dim;
 	dim = 0;
 	dex = 0;
@@ -373,11 +367,12 @@ void GridOutlet::begin(Dim *dim) {
 	this->dim = dim;
 	dex = 0;
 	frozen = 0;
-	ron = 0; if (ro) delete[] ro; ro = new GridInlet*[MAX_CORDS];
-	rwn = 0; if (rw) delete[] rw; rw = new GridInlet*[MAX_CORDS];
+	ninlets = 0;
+	if (inlets) delete[] inlets.p;
+	inlets = Pt<GridInlet *>(new GridInlet*[MAX_CORDS],MAX_CORDS);
 	Ruby a[n+4];
 	a[0] = INT2NUM(woutlet);
-	a[1] = sym_grid_begin;
+	a[1] = sym_grid;
 	a[2] = PTR2FIXA(this);
 	a[3] = PTR2FIXB(this);
 	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
@@ -392,8 +387,7 @@ void GridOutlet::send_direct(int n, Pt<Number> data) {
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
 		Ruby a[] = { INT2NUM(pn), PTR2FIX(data), INT2NUM(4) };
-		for (int i=0; i<ron; i++) ro[i]->flow(COUNT(a),a);
-		for (int i=0; i<rwn; i++) rw[i]->flow(COUNT(a),a);
+		for (int i=0; i<ninlets; i++) inlets[i]->flow(COUNT(a),a);
 		data += pn;
 		n -= pn;
 	}
@@ -433,10 +427,10 @@ void GridOutlet::give(int n, Pt<Number> data) {
 	dex += n;
 	assert(dex <= dim->prod());
 	flush();
-	if (ron == 0 && rwn == 1) {
+	if (ninlets==1 && inlets[0]->gh->mode == 6) {
 		/* this is the copyless buffer passing */
 		Ruby a[] = { INT2NUM(n), PTR2FIX(data), INT2NUM(6) };
-		rw[0]->flow(COUNT(a),a);
+		inlets[0]->flow(COUNT(a),a);
 	} else {
 		/* normal stuff */
 		send_direct(n,data);
@@ -451,14 +445,14 @@ void GridOutlet::flush() {
 	bufn = 0;
 }
 
-void GridOutlet::callback(GridInlet *in, int mode) {
+void GridOutlet::callback(GridInlet *in) {
+	int mode = in->gh->mode;
 	assert(is_busy());
 	assert(!frozen);
 	assert(mode==6 || mode==4);
-	assert(ron<MAX_CORDS && rwn<MAX_CORDS);
+	assert(ninlets<MAX_CORDS);
 	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
-	if (mode==4) ro[ron++]=in;
-	if (mode==6) rw[rwn++]=in;
+	inlets[ninlets++]=in;
 }
 
 /* **************** GridObject ************************************ */
@@ -591,7 +585,7 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 }
 
 static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
-	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
+	static const char *names[] = {"grid","list","int","float"};
 	Ruby list = rb_class_instance_methods(argc,argv,rself);
 	Ruby v = rb_ivar_get(rself,SI(@grid_class));
 	if (v==Qnil) return list;
@@ -609,7 +603,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 }
 
 METHOD3(GridObject,method_missing) {
-	static const char *names[] = {"grid_begin","grid_end","list","int","float"};
+	static const char *names[] = {"grid","list","int","float"};
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	const char *name = rb_sym_name(argv[0]);
@@ -624,10 +618,9 @@ METHOD3(GridObject,method_missing) {
 		argc--, argv++;
 		switch(m) {
 		case 0: return inl->begin(  argc,argv), Qnil;
-		case 1: return inl->end(    argc,argv), Qnil;
-		case 2: return inl->list(   argc,argv), Qnil;
-		case 3: return inl->int_(   argc,argv), Qnil;
-		case 4: return inl->float_( argc,argv), Qnil;
+		case 1: return inl->list(   argc,argv), Qnil;
+		case 2: return inl->int_(   argc,argv), Qnil;
+		case 3: return inl->float_( argc,argv), Qnil;
 		}
 		return Qnil;
 	}
@@ -676,7 +669,7 @@ METHOD3(Format,init) {
 //	rb_p(rb_obj_class(peer));
 //	printf("this=%08x, peer=%08x, &mode=%08x, &parent=%08x\n",
 //		(int)this, peer, (int)&mode, (int)&parent);
-	mode = argv[0]; /* VG: Invalid write of size 4 */
+	mode = argv[0];
 	parent = 0;
 	/* FF_W, FF_R, FF_RW */
 	if (mode==SYM(in)) {
@@ -693,12 +686,6 @@ err:
 	RAISE("Format '%s' does not support mode '%s'",
 		RSTRING(rb_ivar_get(rb_obj_class(peer),
 			SI(@symbol_name)))->ptr, rb_sym_name(mode));
-}
-
-METHOD3(Format,option) {
-	if (argc<1) RAISE("not enough arguments");
-	RAISE("option %s not supported",rb_sym_name(argv[0]));
-	return Qnil;
 }
 
 METHOD3(Format,close) {
@@ -722,7 +709,6 @@ METHOD3(Format,open_file) {
 GRCLASS(Format,"Format",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(Format,init),
-	DECL(Format,option),
 	DECL(Format,open_file),
 	DECL(Format,close))
 

@@ -106,7 +106,7 @@ class Format
 			else raise "unsupported number type"
 			end
 		else
-			super
+			raise "option #{name} not supported"
 		end
 	end
 end
