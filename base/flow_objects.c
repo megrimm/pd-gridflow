@@ -204,9 +204,9 @@ GRID_INLET(GridExportList,0) {
 // out0: same nt as in1
 \class GridStore < GridObject
 struct GridStore : GridObject {
-	PtrGrid r; //\attr
-	PtrGrid put_at; //\attr
-	Numop *op; //\attr
+	PtrGrid r; // can't be \attr
+	PtrGrid put_at; // can't be //\attr
+	\attr Numop *op;
 	int32 wdex [Dim::MAX_DIMENSIONS]; // temporary buffer, copy of put_at
 	int32 fromb[Dim::MAX_DIMENSIONS];
 	int32 to2  [Dim::MAX_DIMENSIONS];
@@ -360,10 +360,8 @@ GRID_INLET(GridStore,1) {
 	while (n) {
 		// here d is the dim# to reset; d=n for none
 		for(;d<lsd;d++) x[d]=fromb[d];
-		// do stuff here
 		COPY(v,x,lsd);
 		compute_indices(v,lsd,1);
-		//COPY((Pt<T>)*r+v[0]*cs,data,cs);
 		op->zip(cs,(Pt<T>)*r+v[0]*cs,data);
 		data+=cs;
 		n-=cs;
@@ -379,16 +377,13 @@ GRID_INLET(GridStore,1) {
 	}
 	//end:; // why not here ???
 } GRID_END
-
-\def void _0_bang () {
-	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
-}
-\def void _0_op (Numop *op) { this->op=op; }
+\def void _0_op(Numop *op) { this->op=op; }
+\def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
 \def void _1_reassign () { put_at=0; }
 \def void _1_put_at (Grid *index) { put_at=index; }
 \def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	if (r) this->r= r?r:new Grid(new Dim(),int32_e,true);
+	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	op = op_put;
 }
 \classinfo { IEVAL(rself,"install '#store',2,1"); }
