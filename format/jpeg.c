@@ -110,7 +110,7 @@ GRID_INLET(FormatJPEG,0) {
 
 \classinfo {
 	IEVAL(rself,
-	"install 'FormatJPEG',1,1;"
-	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
+	"install '#in:jpeg',1,1;@mode=6;"
+	"include GridFlow::EventIO; suffixes_are'jpeg','jpg'");
 }
 \end class FormatJPEG

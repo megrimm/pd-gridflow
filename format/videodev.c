@@ -536,7 +536,6 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatVideoDev',1,1;"
-	"conf_format 4,'videodev','Video4linux 1.x'");
+	IEVAL(rself,"install '#io:videodev',1,1;@flags=4;@comment='Video4linux 1.x'");
 }
 \end class FormatVideoDev

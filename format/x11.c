@@ -667,7 +667,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatX11',1,1;"
-	"conf_format 6,'x11','X Window System Version 11.5'");
+	IEVAL(rself,"install '#io:x11',1,1;@mode=6;@comment='X Window System Version 11.5'");
 }
 \end class FormatX11
