@@ -71,9 +71,11 @@ struct FormatMPEG3 : Format {
 }
 
 \def void close () {
+	fprintf(stderr, "begin mpeg3_close...\n");
 	if (bit_packing) { delete bit_packing; bit_packing=0; }
 	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
 	rb_call_super(argc,argv);
+	fprintf(stderr, "end mpeg3_close...\n");
 }
 
 /* note: will not go through jMax data paths */

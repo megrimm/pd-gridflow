@@ -239,6 +239,7 @@ module GridIO
 	end
 
 	def delete
+		#GridFlow.post "HELLO!!!"
 		@format.close if @format
 		@format = nil
 		super
@@ -356,16 +357,17 @@ module EventIO
 	end
 
 	def try_accept
+		#!@#$ use setsockopt(SO_REUSEADDR) here???
 		TCPSocket.do_not_reverse_lookup = true # hack
 		@acceptor.nonblock = true
 		@stream = @acceptor.accept
 		@stream.nonblock = true
 		@stream.sync = true
-#		p "GOT IT"
+#		STDERR.puts "GOT IT"
 		$tasks.delete self
 #		send_out 0, :accept # does not work
 	rescue Errno::EAGAIN
-#		p "wouldblock"
+#		STDERR.puts "wouldblock"
 	end
 
 	def try_read(dummy=nil)
