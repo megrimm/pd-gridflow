@@ -31,6 +31,25 @@
 #include "grid.h"
 #include <ctype.h>
 
+/* those two functions are for future use */
+
+/* greatest common divisor, by euclid's algorithm */
+template <class T>
+static void gcd (T a, T b) {
+	while (b) {
+		T c=mod(a,b);
+		a=b;
+		b=c;
+	}
+	return a;
+}
+
+/* least common multiple */
+template <class T>
+static inline void lcm (T a, T b) {
+	return a*b/gcd(a,b);
+}
+
 /* maximum number of grid cords per outlet per cord type */
 #define MAX_CORDS 8
 

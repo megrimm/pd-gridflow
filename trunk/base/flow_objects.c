@@ -26,25 +26,6 @@
 #include <math.h>
 #include "grid.h"
 
-#undef GRID_INPUT
-#define GRID_INPUT(_class_,_inlet_,_member_) \
-	GRID_INLET(_class_,_inlet_) { \
-		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
-		if (is_busy_except(in)) { \
-			if (_member_.next == &_member_) { \
-				/*gfpost("object busy (backstoring data)"); */\
-				_member_.next = new Grid(); \
-				_member_.next->dc = _member_.dc; \
-			} else { \
-				gfpost("object busy and backstore busy (aborting)"); \
-				in->abort(); \
-			} \
-		} \
-		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
-	GRID_FLOW { \
-		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
-	GRID_FINISH
-
 /* **************************************************************** */
 
 Operator1 *OP1(Ruby x) {
@@ -89,6 +70,7 @@ static void expect_rgba_picture (Dim *d) {
 
 /* a variant on GRID_INPUT */
 /* there's an inlet 0 hardcoded here, sorry */
+/* should be replaced by GRID_INPUT eventually ! */
 #define DIM_INPUT(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,1) { \
 		expect_dim_dim_list(in->dim); \
@@ -306,12 +288,11 @@ struct GridStore : GridObject {
 	GRINLET3(1);
 };
 
-/*!@#$ i should ensure that n is not exceedingly large */
-/*!@#$ worse: the size of the foo buffer may still be too large */
-GRID_INLET(GridStore,0) {
-	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
-
-	/* snap backstore */
+/* takes the backstore of a grid and puts it back into place.
+   a backstore is a grid that is filled while the grid it would
+   replace has not finished being used.
+*/
+static void snap_backstore (Grid &r) {
 	if (r.next != &r) {
 		delete r.dim;
 		delete[] (uint8 *)r.data;
@@ -322,6 +303,14 @@ GRID_INLET(GridStore,0) {
 		delete r.next;
 		r.next = &r;
 	}
+}
+
+/*!@#$ i should ensure that n is not exceedingly large */
+/*!@#$ worse: the size of the foo buffer may still be too large */
+GRID_INLET(GridStore,0) {
+	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
+
+	snap_backstore(r);
 
 	int na = in->dim->n;
 	int nb = r.dim->n;
@@ -365,10 +354,10 @@ GRID_INLET(GridStore,0) {
 	}
 #define EMIT(type) { \
 		Pt<type> p = (Pt<type>)r; \
-		if (size<16) { \
-			STACK_ARRAY(type,foo,nd*size); \
+		if (size<=16) { \
+			ARRAY_NEW(type,nd*size); \
 			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size); \
-			out[0]->send(size*nd,foo); \
+			out[0]->give(size*nd,foo); \
 		} else { \
 			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
 		} \
@@ -460,6 +449,7 @@ struct GridOp2 : GridObject {
 
 GRID_INLET(GridOp2,0) {
 	SAME_TYPE(*in,r);
+	snap_backstore(r);
 	out[0]->begin(in->dim->dup(),in->nt);
 } GRID_FLOW {
 	if (r.is_empty()) RAISE("ARGH");
@@ -469,14 +459,14 @@ GRID_INLET(GridOp2,0) {
 		if (in->dex+n <= loop) {
 			op->zip(n,data,rdata+in->dex);
 		} else {
+			/* !@#$ should prebuild and reuse this array when n is small */
 			STACK_ARRAY(T,data2,n);
-			//!@#$ accelerate me
-			for (int i=0; i<n;) {
-				int ii = (in->dex+i)%loop;
-				int m = min(loop-ii,n-i);
-				COPY(data2+i,rdata+ii,m);
-				i+=m;
-			}
+			int ii = mod(in->dex,loop);
+			int m = min(loop-ii,n);
+			COPY(data2,rdata+ii,m);
+			int nn = m+((n-m)/loop)*loop;
+			for (int i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
+			if (n>nn) COPY(data2+nn,rdata,n-nn);
 			op->zip(n,data,data2);
 		}
 	} else {
@@ -543,7 +533,6 @@ GRID_INLET(GridFold,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	STACK_ARRAY(T,buf,n/yn);
-	assert (n % factor == 0);
 	int i=0;
 	int nn=n;
 	while (n) {
@@ -561,6 +550,7 @@ GRID_INPUT(GridFold,1,r) {} GRID_END
 
 METHOD3(GridFold,initialize) {
 	rb_call_super(argc,argv);
+	if (argc<1) RAISE("not enough args");
 	op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
@@ -608,7 +598,6 @@ GRID_INLET(GridScan,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	STACK_ARRAY(T,buf,n);
-	assert (n % factor == 0);
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
@@ -792,12 +781,12 @@ GRID_INLET(GridOuter,0) {
 } GRID_FLOW {
 	int b_prod = r.dim->prod();
 	if (b_prod <= 4) {
-		STACK_ARRAY(T,buf,b_prod*n);
+		Pt<T> buf = ARRAY_NEW(T,b_prod*n);
 		for (int i=0,k=0; i<n; i++) {
 			for (int j=0; j<b_prod; j++, k++) buf[k] = data[i];
 		}
 		for (int j=0; j<n; j++) op->zip(b_prod,buf+b_prod*j,(Pt<T>)r);
-		out[0]->send(b_prod*n,buf);
+		out[0]->give(b_prod*n,buf);
 	} else {
 		STACK_ARRAY(T,buf,b_prod);
 		while (n) {

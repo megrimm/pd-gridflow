@@ -41,13 +41,18 @@ def test_operators
 	#!@#$ WRITE ME
 end
 
+def cast value, type
+	case type
+	when :uint8; value & 0xff
+	when :int16; (value & 0x7fff) - (value & 0x8000)
+	when :int32; value
+	else raise "hell"
+	end
+end
+
 def test_math
 	hm = "#".intern
 for nt in [:int32, :int16, :uint8] do
-	bits = case nt
-		when :uint8; 8
-		when :int16; 16
-		when :int32; 32 end
 
 	GridFlow.verbose = false
 	GridFlow.gfpost "starting test for #{nt}"
@@ -58,11 +63,18 @@ for nt in [:int32, :int16, :uint8] do
 	x.expect([2,3,5,7]) { e.send_in 0,"list #{nt} 2 3 5 7" }
 	a = FObject["@fold + {#{nt} # 0}"]
 	a.connect 0,e,0
-	x.expect([420000%(1<<bits)]) { a.send_in 0,"10000 #{nt} # 42" }
+	x.expect([cast(420000,nt)]) { a.send_in 0,"10000 #{nt} # 42" }
 
 	(a = FObject["@ + {#{nt} 0 10}"]).connect 0,e,0
 	x.expect([1,12,4,18,16,42,64]) {
 		a.send_in 0,:list,nt, 1,2,4,8,16,32,64 }
+
+	a = FObject["@ + {#{nt} 2 3 5}"]
+	b = FObject["@fold + {#{nt} # 0}"]
+	a.connect 0,b,0
+	b.connect 0,e,0
+	x.expect([cast(45332,nt)]) { a.send_in 0, 1000,nt,hm,42 }
+	
 
 	(a = FObject["@ + {#{nt} # 42}"]).connect 0,e,0
 	x.expect((43..169).to_a) {
@@ -769,7 +781,8 @@ end
 		store.send_in 0
 # 		store2.send_in 0
 		x+=1
-		$mainloop.timers.after(.0) {task[]}
+		if x<1000 then $mainloop.timers.after(.0) {task[]}
+		else GridGlobal.new.send_in 0,"profiler_dump"; exit end
 	}
 	task[]
 	$mainloop.loop
