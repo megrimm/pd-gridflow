@@ -706,6 +706,7 @@ struct GridObject : FObject {
 
 	DECL3(init);
 	DECL3(inlet_dim);
+	DECL3(inlet_set_factor);
 	DECL3(method_missing);
 	DECL3(del);
 	DECL3(send_out_grid_begin);

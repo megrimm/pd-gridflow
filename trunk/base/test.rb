@@ -2,7 +2,7 @@
 
 require "gridflow"
 include GridFlow
-#GridFlow.verbose=true
+GridFlow.verbose=true
 
 $imdir = "./images"
 $animdir = "/opt/mex"
@@ -170,6 +170,19 @@ def test_math
 			a.send_in 0 } }
 end
 
+def test_rtmetro
+	rt = FObject["rtmetro 1000"]
+	pr = FObject["rubyprint"]
+	rt.connect 0,pr,0
+	GridFlow.post "trying to start the rtmetro"
+	rt.send_in 0,1
+	$mainloop.timers.after(10.0) {
+		GridFlow.post "trying to stop the rtmetro (after 10 sec delay)"
+		rt.send_in 0,0
+	}
+	$mainloop.loop
+end
+
 def test_print
 	i = FObject["@redim {3}"]
 	pr = FObject["@print"]
@@ -232,8 +245,7 @@ def test_image command
 	gout = FObject["@out 256 256"]
 	gin.connect 0,gout,0
 #	31.times {
-	3
-.times {
+	3.times {
 		gin.send_in 0,"open #{command}"
 		gout.send_in 0,"option timelog 1"
 		gin.send_in 0
@@ -269,10 +281,18 @@ def test_ppm2
 #	$mainloop.loop
 end
 
+def test_foo
+	foo = FObject["@for {0 234} {0 345} {1 1}"]
+	che = FObject["@checkers"]
+	out = FObject["@out x11"]
+	foo.connect 0,che,0
+	che.connect 0,out,0
+end
+
 def test_anim msgs
 	gin = FObject["@in"]
-#	gout = FObject["@out 256 256"]
-#proc{
+	gout = FObject["@out 256 256"]
+proc{
 	gout = FObject["@fold + 0"]
 	gout2 = FObject["@ / 3"]
 	gout3 = FObject["@outer + {0}"]
@@ -281,7 +301,7 @@ def test_anim msgs
 	gout.connect 0,gout2,0
 	gout2.connect 0,gout3,0
 	gout3.connect 0,gout4,0
-#}
+}
 
 	gin.connect 0,gout,0
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
@@ -371,12 +391,10 @@ def test_formats
 	[
 		"jpeg file #{$imdir}/ruby0216.jpg",
 		"ppm file #{$imdir}/g001.ppm",
-#		"ppm file #{$imdir}/b001.ppm",
-#		"ppm file #{$imdir}/r001.ppm",
 		"targa file #{$imdir}/teapot.tga",
-#		"targa file #{$imdir}/tux.tga",
 		"grid gzfile #{$imdir}/foo.grid.gz",
 		"grid gzfile #{$imdir}/foo2.grid.gz",
+#		"targa file #{$imdir}/tux.tga",
 	].each {|command|
 		gin.send_in 0,"open #{command}"
 #		gin.send_in 0
@@ -387,6 +405,49 @@ def test_formats
 #	gin.delete
 #	gout.delete
 end
+
+def test_formats_write
+	# read files, store and save them, reload, compare, expect identical
+	a = FObject["@in"]
+	b = FObject["@out"]; a.connect 0,b,0
+	c = FObject["@ -"]; a.connect 0,c,1
+	d = FObject["@in"]; d.connect 0,c,0
+	e = FObject["@fold +"]; c.connect 0,e,0
+	f = FObject["@fold +"]; e.connect 0,f,0
+	g = FObject["@fold +"]; f.connect 0,g,0
+	h = FObject["@export_list"]; g.connect 0,h,0
+	x = Expect.new; h.connect 0,x,0
+	[
+		["ppm file", "#{$imdir}/g001.ppm"],
+#		["targa file", "#{$imdir}/teapot.tga"],
+		["grid gzfile", "#{$imdir}/foo.grid.gz"],
+	].each {|type,file|
+		a.send_in 0, "open #{type} #{file}"
+		b.send_in 0, "open #{type} /tmp/patate"
+		a.send_in 0
+		b.send_in 0, "close"
+		raise "written file does not exist" if not File.exist? "/tmp/patate"
+		d.send_in 0, "open #{type} /tmp/patate"
+		x.expect([0]) { d.send_in 0 }
+	}	
+end
+
+def test_headerless
+	gout = FObject["@out"]
+	gout.send_in 0, "open grid file #{$imdir}/hello.txt"
+	gout.send_in 0, "option headerless"
+	gout.send_in 0, "option type uint8"
+	gout.send_in 0, "104 101 108 108 111 32 119 111 114 108 100 33 10"
+	gout.send_in 0, "close"
+	gin = FObject["@in"]
+	pr = FObject["@print"]
+	gin.connect 0,pr,0
+	gin.send_in 0, "open grid file #{$imdir}/hello.txt"
+	gin.send_in 0, "option headerless 13"
+	gin.send_in 0, "option type uint8"
+	gin.send_in 0
+end
+
 
 def test_sound
 #	o2 = FObject["@ * 359"] # @ 439.775 Hz
@@ -448,11 +509,11 @@ end
 #test_nonsense
 #test_ppm2
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
-test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video15 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
-#test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
+test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
 #test_anim ["open quicktime file /home/matju/domopers_hi.mov"]
 #test_anim ["open quicktime file /home/matju/net/c.mov"]

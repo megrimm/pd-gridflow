@@ -37,11 +37,12 @@ static GFBridge *gf_bridge2;
 
 static void count_tick () {
 	static int count = 0;
-	static int next = 100;
+	static int next = 500;
 	if (count>=next) {
 		gf_bridge2->post("survived to %d clock ticks%s",count,
 			gf_bridge2->post_does_ln ? "" : "\n");
-		next = (next*14+9)/10; /* next notice when 40% bigger */
+		//next = (next*15+9)/10; /* next notice when 50% bigger */
+		next *= 2;
 	}
 	count++;
 }

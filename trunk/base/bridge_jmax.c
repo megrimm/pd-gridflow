@@ -279,11 +279,11 @@ static Ruby gf_find_file(Ruby $, Ruby s) {
 	char buf[1024];
 	if (TYPE(s)!=T_STRING) RAISE("expected string");
 	/* unlikely buffer overflow ahead (blame jMax) */
-	gf_bridge2->post("find_file before (1): %s\n",RSTRING(s)->ptr);
-	fts_file_get_read_path(RSTRING(s)->ptr,buf);
-	gf_bridge2->post("find_file before (2): %s\n",RSTRING(s)->ptr);
-	gf_bridge2->post("name after: %s\n",buf);
-	return rb_str_new2(buf);
+	if (fts_file_get_read_path(RSTRING(s)->ptr,buf)) {
+		return rb_str_new2(buf);
+	} else {
+		return s;
+	}
 }
 
 void gridflow_module_init () {
