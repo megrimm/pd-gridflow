@@ -22,10 +22,10 @@
 			will fit into; or "per_message" indicating each incoming message
 			will be turned into a vector.
 		</attr>
-		<attr name="numbertype" type="NumberType" default="int32"/>
+		<attr name="cast" type="NumberType" default="int32"/>
 		<method name="init">
 			<arg name="shape" isattr="yes"/>
-			<arg name="numbertype" isattr="yes"/>
+			<arg name="cast" isattr="yes"/>
 		</method>
 		<inlet id="0">
 			<method name="int">
@@ -585,6 +585,16 @@
 			homogeneous 3-D is really just regular 4-D...(!)</p>
 		</method></outlet>
 	</class>			
+
+	<class name="@transpose">
+		<method name="init">
+			<arg name="dim1" type="integer"/>
+			<arg name="dim2" type="integer"/>
+		</method>
+		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>
+			swaps the two specified dimensions; dimension numbers are as in [@join].
+		</method></inlet>
+	</class>
 </section>
 
 <section name="Objects for Coordinate Transforms">
@@ -1323,6 +1333,137 @@
 	</class>
 	<class name="jmax4_udpreceive">
 		same as jmax_udpreceive but for jMax 4.0.x UDP connections.
+	</class>
+	<class name="foreach">
+		<inlet id="0"><method name="list"><rest/>
+			Outputs N messages, one per list element, in order.
+		</method></inlet>
+	</class>
+	<class name="rubysprintf">
+		<method name="init">
+			<arg name="format" type="symbol"/>
+		</method>
+		<inlet id="0"><method name="list">
+			Outputs the format string with %-codes replaced
+			by elements of the list formatted as the %-codes say.
+			To get a list of those codes, consult a Ruby manual
+			(Equivalently, Perl, Python, Tcl and C all have equivalents of this,
+			and it's almost always called sprintf, or the % operator, or both)
+		</method></inlet>
+		<inlet id="1" attr="format" type="symbol"/>
+	</class>
+	<class name="listflatten">
+		<inlet id="0"><method name="list"><rest/>
+		</method></inlet>
+	</class>
+	<class name="listmake">
+		Emulation of jMax's [list] (but there cannot be a class named [list] in Pd)
+		<method name="init">
+			<rest name="list" isattr="yes"/>
+		</method>
+		<inlet id="0">
+			<method name="bang">send "list" to outlet 0</method>
+			<method name="list">as sending to inlet 1 and then banging; that is, passes thru and remembers.</method>
+		</inlet>
+		<inlet id="1" attr="list"/>
+	</class>
+	<class name="listlength">
+		<inlet id="0"><method name="list">
+			outputs the number of elements in the incoming list.
+		</method></inlet>
+	</class>
+	<class name="listelement">
+		<method name="init">
+			<arg name="index" type="int" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="list"><rest/>
+			Outputs one element of the list, as selected by "index".
+			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax.
+		</method></inlet>
+		<inlet id="1" attr="index"/>
+	</class>
+	<class name="listsublist">
+		<method name="init">
+			<arg name="index" type="int" isattr="yes"/>
+			<arg name="length" type="int" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="list"><rest/>
+			Outputs consecutive elements of the list, as selected by "index" and "length".
+			Also accepts negative indices (e.g.: -1 means "last"), like Ruby, but unlike jMax.
+		</method></inlet>
+		<inlet id="1" attr="index"/>
+		<inlet id="2" attr="length"/>
+	</class>
+	<class name="listprepend">
+		<method name="init">
+			<rest name="list" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="list"><rest/>
+			Outputs the stored list followed by the incoming list, all in one message.
+		</method></inlet>
+		<inlet id="1" attr="list"/>
+	</class>
+	<class name="listappend">
+		<method name="init">
+			<rest name="list" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="list"><rest/>
+			Outputs the incoming list followed by the stored list, all in one message.
+		</method></inlet>
+		<inlet id="1" attr="list"/>
+	</class>
+	<class name="listreverse">
+		<inlet id="0"><method name="list"><rest/>
+			Outputs the incoming list, from last element to first element.
+		</method></inlet>
+	</class>
+	<class name="oneshot">
+		Like [spigot], but turns itself off after each message, so you have to turn it on
+		again to making it pass another message.
+	</class>
+	<class name="inv+">
+		<method name="init">
+			<arg name="b" type="float" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="float"><arg name="a" type="float"/>
+			outputs b-a
+		</method></inlet>
+		<inlet id="1" attr="b"/>
+	</class>
+	<class name="inv*">
+		<method name="init">
+			<arg name="b" type="float" isattr="yes"/>
+		</method>
+		<inlet id="0"><method name="float"><arg name="a" type="float"/>
+			outputs b/a
+		</method></inlet>
+		<inlet id="1" attr="b"/>
+	</class>
+	<class name="messageprepend">
+		(This is not in jMax, but is there to help port $* messageboxes)
+		<method name="init"><rest name="list" isattr="yes"/></method>
+		<inlet id="0"><method name="&lt;any&gt;"><rest/>
+			Like [listprepend], but operates on whole messages, that is, including the selector.
+		</method></inlet>
+		<inlet id="1" attr="list"/>
+	</class>
+	<class name="messageappend">
+		(This is not in jMax, but is there to help port $* messageboxes)
+		<method name="init"><rest name="list" isattr="yes"/></method>
+		<inlet id="0"><method name="&lt;any&gt;"><rest/>
+			Like [listappend], but operates on whole messages, that is, including the selector.
+		</method>
+		</inlet>
+		<inlet id="1" attr="list"/>
+	</class>
+	<class name="demux">
+		<method name="init"><arg name="n">number of outlets</arg></method>
+		<inlet id="0"><method name="&lt;any&gt;"><rest/>
+			Routes a message to the active outlet.
+		</method></inlet>
+		<inlet id="1"><method name="int"><arg name="i" type="int"/>
+			Selects which outlet is active.
+		</method></inlet>
 	</class>
 </section>
 
