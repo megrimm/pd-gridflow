@@ -122,8 +122,8 @@ METHOD(GridIn,connect) {
 }
 
 METHOD(GridIn,delete) {
-	CHECK_FILE_OPEN
-	$->ff->cl->close($->ff);
+	if ($->ff) $->ff->cl->close($->ff);
+	GridObject_delete((GridObject *)$);
 }
 
 METHOD(GridIn,bang) {
@@ -221,13 +221,9 @@ METHOD(GridOut,init) {
 	$->in[0] = GridInlet_NEW3($,GridOut,0);
 }
 
-static void GridOut_p_close(GridOut *$) {
+METHOD(GridOut,close) {
 	CHECK_FILE_OPEN
 	$->ff->cl->close($->ff);
-}
-
-METHOD(GridOut,close) {
-	GridOut_p_close($);
 }
 
 METHOD(GridOut,open) {
@@ -273,7 +269,8 @@ METHOD(GridOut,connect) {
 }
 
 METHOD(GridOut,delete) {
-	if ($->ff) { GridOut_p_close($); }
+	if ($->ff) $->ff->cl->close($->ff);
+	GridObject_delete((GridObject *)$);
 }
 
 METHOD(GridOut,option) {
@@ -340,14 +337,9 @@ GRID_END(VideoOut,0) {
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
 }
 
-
-static void VideoOut_p_close(VideoOut *$) {
+METHOD(VideoOut,close) {
 	CHECK_FILE_OPEN
 	$->ff->cl->close($->ff);
-}
-
-METHOD(VideoOut,close) {
-	VideoOut_p_close($);
 }
 
 METHOD(VideoOut,open) {
@@ -415,7 +407,8 @@ METHOD(VideoOut,init) {
 }
 
 METHOD(VideoOut,delete) {
-	if ($->ff) { VideoOut_p_close($); }
+	if ($->ff) $->ff->cl->close($->ff);
+	GridObject_delete((GridObject *)$);
 }
 
 METHOD(VideoOut,bang) {
