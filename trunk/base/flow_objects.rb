@@ -548,56 +548,6 @@ class JMaxUDPSend < FObject
 	install "jmax_udpsend", 1, 0
 end
 
-class JMax4UDPSend < FObject
-	def initialize(host,port)
-		super
-		@socket = UDPSocket.new
-		@host,@port = host.to_s,port.to_i
-		@symbols = {}
-	end
-	def encode(x)
-		case x
-		when Integer; "\x01" + [x].pack("N")
-		when Float; "\x02" + [x].pack("G")
-		when Symbol, String
-			x = x.to_s
-			y = x.intern
-			if not @symbols[y]
-				@symbols[y]=true
-				"\x04" + [y].pack("N") + x + "\0"
-			else
-				"\x03" + [y].pack("N")
-			end
-		end
-	end
-	def method_missing(sel,*args)
-		sel=sel.to_s.sub(/^_\d_/, "")
-		sel=(case sel; when "int","float"; ""; else encode(sel) end)
-		args=args.map{|arg| encode(arg) }.join("")
-		@socket.send(sel+args+"\x0f", 0, @host, @port)
-	end
-	def delete; @socket.close end
-	install "jmax4_udpsend", 1, 0
-end
-
-class PDNetSend < FObject
-	def initialize(host,port)
-		super
-		@socket = UDPSocket.new
-		@host,@port = host.to_s,port.to_i
-	end
-	def encode(x) x.to_s end
-	def method_missing(sel,*args)
-		sel=sel.to_s.sub(/^_\d_/, "")
-		sel=(case sel; when "int","float"; ""; else encode(sel)+" " end)
-		@socket.send encode(sel) +
-			args.map{|arg| encode(arg) }.join(" ") + ";\n",
-			0, @host, @port
-	end
-	def delete; @socket.close end
-	install "pd_netsend", 1, 0
-end
-
 class JMaxUDPReceive < FObject
 	def initialize(port)
 		super
@@ -629,6 +579,38 @@ class JMaxUDPReceive < FObject
 	end
 	def delete; $tasks.delete(self); @socket.close end
 	install "jmax_udpreceive", 0, 2
+end
+
+class JMax4UDPSend < FObject
+	def initialize(host,port)
+		super
+		@socket = UDPSocket.new
+		@host,@port = host.to_s,port.to_i
+		@symbols = {}
+	end
+	def encode(x)
+		case x
+		when Integer; "\x01" + [x].pack("N")
+		when Float; "\x02" + [x].pack("G")
+		when Symbol, String
+			x = x.to_s
+			y = x.intern
+			if not @symbols[y]
+				@symbols[y]=true
+				"\x04" + [y].pack("N") + x + "\0"
+			else
+				"\x03" + [y].pack("N")
+			end
+		end
+	end
+	def method_missing(sel,*args)
+		sel=sel.to_s.sub(/^_\d_/, "")
+		sel=(case sel; when "int","float"; ""; else encode(sel) end)
+		args=args.map{|arg| encode(arg) }.join("")
+		@socket.send(sel+args+"\x0f", 0, @host, @port)
+	end
+	def delete; @socket.close end
+	install "jmax4_udpsend", 1, 0
 end
 
 class JMax4UDPReceive < FObject
@@ -673,14 +655,48 @@ class JMax4UDPReceive < FObject
 	install "jmax4_udpreceive", 0, 2
 end
 
-class PDNetReceive < FObject
-	def initialize(port)
+class PDNetSocket < FObject
+	def initialize(host,port,protocol=:udp,*options)
 		super
-		@socket = UDPSocket.new
-		@port = port.to_i
-		@socket.bind nil, @port
+		GridFlow.post "#{self.class} init"
+		host = host.to_s
+		port = port.to_i
+		@host,@port,@protocol = host.to_s,port.to_i,protocol
+		@options = {}
+		options.each {|k|
+			k=k.intern if String===k
+			@options[k]=true
+		}
+		case protocol
+		when :udp
+			@socket = UDPSocket.new
+			if host=="-" then
+				@socket.bind nil, port
+			end
+		when :tcp
+			if host=="-" then
+				@server = TCPServer.new("localhost",port)
+			else
+				@socket = TCPSocket.new(host,port)
+			end
+			
+		end
 		$tasks[self] = proc {tick}
+		@data = ""
 	end
+	def encode(x) x.to_s end
+	def method_missing(sel,*args)
+		sel=sel.to_s
+		sel.sub!(/^_\d_/, "") or return super
+		sel=(case sel; when "int","float"; ""; else encode(sel)+" " end)
+		msg = [sel,*args.map{|arg| encode(arg) }].join(" ")
+		if @options[:nosemicolon] then msg << "\n" else msg << ";\n" end
+		case @protocol
+		when :udp; @socket.send msg, 0, @host, @port
+		when :tcp; @socket.send msg, 0
+		end
+	end
+	def delete; $tasks.delete(self); @socket.close end
 	def decode s
 		s.chomp!("\n")
 		s.chomp!(";")
@@ -692,17 +708,44 @@ class PDNetReceive < FObject
 		}
 	end
 	def tick
-		ready_to_read = IO.select [@socket],[],[],0
+		ready_to_accept = IO.select [@server],[],[],0 if @server
+		if ready_to_accept
+			@socket.close if @socket
+			@socket = @server.accept
+		end
+		ready_to_read = IO.select [@socket],[],[],0 if @socket
 		return if not ready_to_read
-		data,sender = @socket.recvfrom 1024
-		return if not data
-		send_out 1, sender.map {|x| x=x.intern if String===x; x }
-		send_out 0, *(decode data)
+		case @protocol
+		when :udp
+			data,sender = @socket.recvfrom 1024
+			send_out 1, sender.map {|x| x=x.intern if String===x; x }
+			send_out 0, *(decode data)
+		when :tcp
+			#GridFlow.post "sysread_begin"
+			@data << @socket.sysread(1024)
+			#GridFlow.post "sysread: #{@data}"
+			sender = "hello"
+			loop do
+				n = /\n/ =~ @data
+				break if not n
+				send_out 1, sender.map {|x| x=x.intern if String===x; x }
+				send_out 0, *(decode @data.slice!(0..n))
+			end
+		end
 	end
-	def delete; $tasks.delete(self); @socket.close end
+	install "pd_netsocket", 1, 2
+end
+
+class PDNetReceive < PDNetSocket
+	def initialize(port) super("-",port) end
 	install "pd_netreceive", 0, 2
 end
 
+class PDNetSend < PDNetSocket
+	install "pd_netsend", 1, 0
+end
+
+# bogus class for representing objects that have no recognized class.
 class Broken < FObject
 	install "broken", 0, 0
 end
