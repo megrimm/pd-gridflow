@@ -36,7 +36,7 @@
 #include <ctype.h>
 #include "grid.h"
 
-int gf_max_packet_length = 1024;
+int gf_max_packet_length = 1024*2;
 
 #define INFO(foo) "!@#$"
 
@@ -649,12 +649,6 @@ err:
 		RSTRING(rb_ivar_get(rself,SI(@symbol_name)))->ptr, rb_sym_name($->mode));
 }
 
-/*
-METHOD(Format,send_out) {
-	RAISE("BLAHBLAHBLAH");
-}
-*/
-
 METHOD(Format,option) {
 	if (argc<1) RAISE("not enough arguments");
 	RAISE("option %s not supported",rb_sym_name(argv[0]));
@@ -678,7 +672,6 @@ METHOD(Format,open_file) {
 GRCLASS(Format,inlets:0,outlets:0,
 LIST(),
 	DECL(Format,init),
-//	DECL(Format,send_out),
 	DECL(Format,option),
 	DECL(Format,open_file),
 	DECL(Format,close))
