@@ -4,7 +4,7 @@
 <!-- $Id$ -->
 <!--
         GridFlow Installation
-        Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+        Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 -->
 <section name="Software (and Hardware) you Probably Need">
 <p>Required Hardware (One of...):<list>
@@ -159,6 +159,10 @@ you may have to change the C_INCLUDE_PATH environment variable.</li>
 <li>run pd with the <k>-path</k> to the extras directory and <k>-lib
 gridflow</k>, or put those options in your <k>~/.pdrc</k> file. (this part is
 essentially the same as GEM's and PDP's)</li>
+<li>to be able to access the images (<k>gridflow/images</k>), create a 
+<k>~/.gridflow_startup</k> file and put a command like this in it:
+<k>GridFlow.data_path &lt;&lt; "/mydir/gridflow/images"</k>
+</li>
 </list>
 
 </section>

@@ -408,7 +408,7 @@
 
 	</class>
 
-	<class name="@inner,@inner2">
+	<class name="@inner">
 		<icon text="[@inner * + 0]"/>
 		<help text="[@inner * + 0]" image="@foldinnerouter" />
 
@@ -467,9 +467,7 @@
 	</class>
 
 	<class name="@inner2">
-		<icon text="[@inner2 * + 0]"/>
-		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
-
+		 [@inner2] removed; instead use [@transpose] with [@inner]
 	</class>
 	
 	<class name="@join">
@@ -769,7 +767,7 @@
 			</method>
 		</inlet>
 		<inlet id="1"><method name="grid">
-			<arg name="grid" type="grid(1 or 2)"/>sets factor</method></inlet>
+			<arg name="grid" type="grid(1 or 2)"/>sets scale factor</method></inlet>
 		<outlet id="0">
 			<method name="grid">
 				<arg name="grid" type="grid((factor/y) (factor/x) channels)"/>

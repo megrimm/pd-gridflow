@@ -42,8 +42,8 @@
 <li><a href="#@fold"><img src="images/@fold.png" alt="[@fold +]" border="0"></a></li>
 <li><a href="#@scan">@scan</a></li>
 <li><a href="#@outer"><img src="images/@outer.png" alt="[@outer +]" border="0"></a></li>
-<li><a href="#@inner,@inner2"><img src="images/@inner.png" alt="[@inner * + 0]" border="0"></a></li>
-<li><a href="#@inner2"><img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"></a></li>
+<li><a href="#@inner"><img src="images/@inner.png" alt="[@inner * + 0]" border="0"></a></li>
+<li><a href="#@inner2">@inner2</a></li>
 <li><a href="#@join">@join</a></li>
 <li><a href="#@finished">@finished</a></li>
 <li><a href="#@cast">@cast</a></li>
@@ -326,7 +326,7 @@ use [#pack 8] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 		from the left grid  and the ones from the right. for example : 
 		(10,20,30) [@outer +] (1,2,3)  will give : 
 		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner,@inner2">@inner,@inner2</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner">@inner</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@inner.png" alt="[@inner * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>think of this one as a special combination of [@outer], [@] and 
 		[@fold]. this is one of the most complex operations. It is very useful 
@@ -357,8 +357,9 @@ use [#pack 8] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 				changes the right-hand side grid to that. <br>
     <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner2">@inner2</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		 [@inner2] removed; instead use [@transpose] with [@inner] <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b>&nbsp;init <b>(</b>which_dim<b>)</b>   
@@ -540,7 +541,7 @@ use [#pack 8] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 			for both rows and columns. <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(y x channels)</i> grid<b>)</b>  
 			Scales down picture by specified amount. (See scale factor above) <br>
-  <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(1 or 2)</i> grid<b>)</b>  sets factor<br>
+  <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(1 or 2)</i> grid<b>)</b>  sets scale factor<br>
   <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid((factor/y) (factor/x) channels)</i> grid<b>)</b>   <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign="top"><br>

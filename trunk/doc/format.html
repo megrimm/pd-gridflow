@@ -231,11 +231,12 @@
  <p>Support for .mov files.</p> <p>This format supports frame-seek and frame-tell.</p> <p>Uses the HeroineWarrior-QuickTime library aka QuickTime4Linux 
 		(libquicktime.so). There is also a variant on the same library and that project 
 		is just called LibQuickTime.</p> <p>Some versions of those libraries may include support for different codecs, 
-		and some also may support entirely different wrapper formats such as AVI.</p> <br><b>method</b>&nbsp;open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
+		and some also may support entirely different wrapper formats such as AVI.</p> <p>On Macintosh, Apple QuickTime is used instead, but several of the following 
+		messages may not be available.</p> <br><b>method</b>&nbsp;open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
  <br><b>method</b>&nbsp;codec <b>(</b><i>symbol</i> codec<b>)</b>   
 			Allowed values are at least: raw, jpeg, png, mjpa, yuv2, yuv4. 
 			Some other values may allowed, depending on the version of the library 
-			and other things. 
+			and which codec plugins are installed. 
 			Must be set before the first frame is written. 
 			only applies to @out. Choosing a codec is important 
 			because codecs influence greatly the speed of 
@@ -243,6 +244,13 @@
 			the size of the written file, and its fidelity to the 
 			original content. Note that there exist other Apple-QuickTime 
 			codecs that are not supported by HeroineWarrior-QuickTime. <br>
+ <br><b>method</b>&nbsp;parameter <b>(</b><i>symbol</i> key<b>, </b><i>int</i> value<b>)</b>    
+			Sets special codec-specific settings. 
+			For example: <kbd><font color="#007777">parameter jpeg_compression 75</font></kbd> <br>
+ <br><b>method</b>&nbsp;framerate <b>(</b><i>int</i> fps<b>)</b>   
+			Sets the framerate of the file. 
+			This is not used by GridFlow when reading a file, but other 
+			programs usually care. <br>
  <br><b>method</b>&nbsp;colorspace <b>(</b><i>symbol</i> colorspace<b>)</b>   
 			Allowed values are rgb, rgba, bgr, bgra, yuv, yuva. 
 			Normally you don't need this. <br>
@@ -316,14 +324,22 @@
  <br><b>method</b>&nbsp;colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b>&nbsp;whiteness <b>(</b><i>0-65535</i> level<b>)</b> <br>
- </p> <p>other options: <br><b>method</b>&nbsp;channel <b>(</b><i>integer</i> <b>)</b> <br>
+ </p> <br><b>method</b>&nbsp;get <b>(</b><i>symbol</i> attr<b>)</b>   
+			gets a specific attribute. a message is sent through right outlet. 
+			valid attributes are: brightness, hue, colour, contrast, whiteness. <br>
+ <br><b>method</b>&nbsp;get <b>(</b><b>)</b>  
+			gets all attributes. <br>
+ <p>other options: <br><b>method</b>&nbsp;channel <b>(</b><i>integer</i> <b>)</b> <br>
  <br><b>method</b>&nbsp;tuner <b>(</b><i>integer</i> <b>)</b> <br>
  <br><b>method</b>&nbsp;norm <b>(</b><i>integer</i> <b>)</b> <br>
  <br><b>method</b>&nbsp;frequency <b>(</b><i>integer</i> <b>)</b> <br>
- <br><b>method</b>&nbsp;transfer <b>(</b><b>)</b>  <ul> <li><b>1</b> : mmap: 
+ <br><b>method</b>&nbsp;transfer <b>(</b><i>symbol(read|mmap)</i> <b>, </b><i>integer</i> <b>)</b>    <ul> <li><b>1</b> : mmap: 
 			This is the normal (and fast) way of transferring pictures 
 			from the camera. </li> <li><b>2</b> : read: 
-			Some cameras/drivers only support this instead of mmap. </li></ul> <br>
+			Some cameras/drivers only support this instead of mmap. </li></ul> 
+			In case of mmap, the extra numeric argument sets the 
+			queue length in number of frames, so you can select an 
+			appropriate tradeoff between efficiency and latency. <br>
  <br><b>method</b>&nbsp;colorspace <b>(</b><i>symbol</i> colorspace<b>)</b>   
 			Allowed values are: RGB24, YUV420P. 
 			Use this if your driver doesn't support RGB24. <br>
