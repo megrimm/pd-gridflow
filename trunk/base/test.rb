@@ -34,6 +34,7 @@ def test_math
 	e.connect 0,x,0
 
 	x.expect([2,3,5,7]) { e.send_in 0,"2 3 5 7" }
+	x.expect([42]*10000) { e.send_in 0,"10000 # 42" }
 
 	(a = FObject["@ + {0 10}"]).connect 0,e,0
 	x.expect([1,12,4,18]) {
@@ -415,10 +416,10 @@ end
 
 if ARGV[0] then
 	send "test_#{ARGV[0]}"
-	exit
+	exit 0
 end
 
-test_polygon
+#test_polygon
 #test_math
 #test_munchies
 #test_image "ppm file #{$imdir}/g001.ppm"
@@ -427,7 +428,7 @@ test_polygon
 #test_image "grid gzfile #{$imdir}/foo.grid.gz"
 #test_print
 #test_nonsense
-#test_ppm2
+test_ppm2
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video15 noinit","option transfer read"]
@@ -440,5 +441,5 @@ test_polygon
 #test_tcp
 #test_sound
 #test_metro
-$mainloop.loop
+#$mainloop.loop
 

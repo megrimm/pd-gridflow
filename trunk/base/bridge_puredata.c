@@ -21,6 +21,17 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+/* matju to rfigura:
+'bridge_puredata.c' becomes 'gridflow.pd_linux' which loads Ruby and tells
+Ruby to load the other 90% of Gridflow. GridFlow creates the FObject class
+and then subclasses it many times, each time calling FObject.install(),   
+which tells the bridge to register a class in puredata or jmax. Puredata  
+objects have proxies for each of the non-first inlets so that any inlet   
+may receive any distinguished message. All inlets are typed as 'anything',
+and the 'anything' method translates the whole message to Ruby objects and
+tries to call a Ruby method of the proper name.
+*/
+
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
@@ -45,12 +56,12 @@ static GFBridge *gf_bridge2;
 
 /*
 static Ruby Pointer_new (void *ptr) {
-	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
+	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, ptr);
 }
 
-static void *Pointer_get (Ruby self) {
+static void *Pointer_get (Ruby $) {
 	void *p;
-	Data_Get_Struct(self,void *,p);
+	Data_Get_Struct($,void *,p);
 	return p;
 }
 */
@@ -91,14 +102,9 @@ int noutlets_of (Ruby qlass) {
 static t_class *BFProxy_class;
 
 struct BFProxy : t_object {
-	t_object *parent;
+	BFObject *parent;
 	int inlet;
 };
-
-BFObject *FObject_peer(Ruby rself) {
-	DGS(GridObject);
-	return (BFObject *) $->foreign_peer;
-}
 
 void Bridge_export_value(Ruby arg, t_atom *at) {
 	if (INTEGER_P(arg)) {
@@ -135,8 +141,11 @@ Ruby Bridge_import_value(const t_atom *at) {
 /*
   Yes, I really have to do that myself.
   PureData is not very sophisticated: it does not have a parser.
+  So this code handles the parentheses by making nested lists out of
+  their contents. This does not happen in the jMax bridge because jMax
+  already parses braces as list delimiters.
 */
-#include<unistd.h>
+#include <unistd.h>
 int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv,
 int level=0) {
 	int argc=0;
@@ -194,11 +203,9 @@ static Ruby BFObject_method_missing$1 (kludge *k) {
 }
 
 static Ruby BFObject_rescue (kludge *k) {
-//	rb_eval_string("STDERR.puts $!.inspect");
-//	Ruby error_array = rb_eval_string(
-//		"[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
-	Ruby error_array = rb_eval_string(
-		"[\"ruby #{$!.class}: #{$!}\"]");
+//	EVAL("STDERR.puts $!.inspect");
+//	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
+	Ruby error_array = EVAL("[\"ruby #{$!.class}: #{$!}\"]");
 //	for (int i=0; i<rb_ary_len(error_array); i++)
 //		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	//!@#$leak
@@ -213,13 +220,8 @@ static Ruby BFObject_rescue (kludge *k) {
 static void BFObject_method_missing (BFObject *$,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
 //	post("%p %d %s %d\n",$,winlet,selector->s_name,ac);
-	kludge k;
-	k.$ = $;
-	k.winlet = winlet;
-	k.selector = selector;
-	k.ac = ac;
-	k.at = at;
-	k.is_init = false;
+	kludge k = { $: $, winlet: winlet, selector: selector, ac: ac, at: at,
+		is_init: false };
 	if (!$->peer) {
 		pd_error($,"you are trying to send a message to a dead object. \
 			the precise reason was given when you last tried to create \
@@ -240,68 +242,53 @@ t_symbol *s, int argc, t_atom *argv) {
 static void BFProxy_method_missing(BFProxy *$,
 t_symbol *s, int argc, t_atom *argv) {
 //	post("BFProxy_method_missing: Hello World!");
-	BFObject_method_missing((BFObject *)$->parent,$->inlet,s,argc,argv);
+	BFObject_method_missing($->parent,$->inlet,s,argc,argv);
 }
 	
-
-#define $R rself
-
 static Ruby BFObject_init$1 (kludge *k) {
 	Ruby argv[k->ac];
 //	post("k->ac=%d k->at=%d\n",k->ac,(int)k->at);
 	int argc = Bridge_import_list(k->ac,k->at,argv);
 //	post("argc=%d\n",argc);
 
-	BFObject *j_peer = (BFObject *)k->$;
 	Ruby qlass = BFObject::find_fclass(k->selector);
 	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
-	j_peer->peer = rself;
 	DGS(GridObject);
-	$->foreign_peer = (void *)j_peer;
+	$->foreign_peer = k->$;
+	$->foreign_peer->peer = rself;
 
 	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
 
 /*
-	post("%s in=%d out=%d\n",
-		rb_str_ptr(rb_funcall(rb_funcall(rself,SI(class),0),SI(inspect),0)),
-		ninlets,noutlets);
+	post("%s in=%d out=%d\n",rb_str_ptr(rb_funcall(
+		rb_funcall(rself,SI(class),0),SI(inspect),0)), ninlets, noutlets);
 */
-
-//	if (ninlets>0) inlet_new(j_peer,&j_peer->ob_pd,0,0);
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = j_peer;
+		p->parent = $->foreign_peer;
 		p->inlet = i;
-		inlet_new(j_peer, &p->ob_pd, 0,0);
+		inlet_new($->foreign_peer, &p->ob_pd, 0,0);
 	}
 
 	for (int i=0; i<noutlets; i++) {
-		j_peer->out[i] = outlet_new(j_peer,&s_anything);
+		$->foreign_peer->out[i] = outlet_new($->foreign_peer,&s_anything);
 	}
 	return rself;
 }
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = BFObject::find_bfclass(classsym);
-	BFObject *self = (BFObject *)pd_new(qlass);
-
-	kludge k;
-	k.is_init = true;
-	k.$ = (BFObject *)$;
-	k.selector = classsym;
-	k.ac = ac;
-	k.at = at;
-
+	BFObject *$ = (BFObject *)pd_new(qlass);
+	kludge k = { $: $, winlet:-1, selector: classsym,
+		ac: ac, at: at, is_init: true };
 	rb_rescue2(
 		(RFunc)BFObject_init$1,(Ruby)&k,
 		(RFunc)BFObject_rescue,(Ruby)&k,
 		rb_eException,0);
-
 	/* now what do i do with constructors that raised exception? */
-
-	return (void *)self;
+	return (void *)$;
 }
 
 static void BFObject_delete$1 (kludge *k) {
@@ -310,13 +297,8 @@ static void BFObject_delete$1 (kludge *k) {
 }
 
 static void BFObject_delete (BFObject *$) {
-	kludge k;
-	k.$ = $;
-	k.is_init = false;
-	k.selector = gensym("delete");
-	k.ac = 0;
-	k.at = 0;
-
+	kludge k = { $: $, winlet:-1, selector: gensym("delete"),
+		ac: 0, at: 0, is_init: false };
 	rb_rescue2(
 		(RFunc)BFObject_delete$1,(Ruby)&k,
 		(RFunc)BFObject_rescue,(Ruby)&k,
@@ -328,15 +310,15 @@ static void BFObject_class_init$1 (t_class *qlass) {
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
-Ruby FObject_s_install_2(Ruby $, char *name2, Ruby inlets2, Ruby outlets2) {
-	t_class *qlass = class_new(gensym(name2),
+Ruby FObject_s_install_2(Ruby $, char *name) {
+	t_class *qlass = class_new(gensym(name),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject),
 		CLASS_DEFAULT,
 		A_GIMME,0);
 
 	rb_hash_aset(rb_ivar_get(GridFlow_module2,SI(@bfclasses_set)),
-		rb_str_new2(name2), PTR2FIX(qlass));
+		rb_str_new2(name), PTR2FIX(qlass));
 
 	kludge k;
 	k.$ = 0;
@@ -349,12 +331,8 @@ Ruby FObject_s_install_2(Ruby $, char *name2, Ruby inlets2, Ruby outlets2) {
 }
 
 Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
-	BFObject *jo = (BFObject *) FObject_peer($);
-	if (!jo) return Qnil; /* Ruby-only object */
+	BFObject *jo = FObject_peer($);
 	Ruby qlass = rb_funcall($,SI(class),0);
-	if (outlet<0 || outlet>=noutlets_of(qlass)) {
-		EARG("outlet %d does not exist",outlet);
-	}
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
@@ -366,7 +344,7 @@ Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
 static t_clock *gf_alarm;
 
 /* copy-paste */
-static uint64 RtMetro_now2(void) {
+static uint64 RtMetro_now2() {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
@@ -375,6 +353,7 @@ static uint64 RtMetro_now2(void) {
 void gf_timer_handler (t_clock *alarm, void *obj) {
 	static int count = 0;
 	if (count%1000==0) post("survived to %d ticks\n",count);
+	count++;
 	if (is_in_ruby) {
 		post("warning: ruby is not reentrant\n");
 		return;
@@ -386,7 +365,6 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	clock_delay(gf_alarm,gf_bridge2->clock_tick/10);
 //	gfpost("tick was: %lld\n",RtMetro_now2()-time);
 	is_in_ruby = false;
-	count++;
 }       
 
 Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
@@ -395,8 +373,8 @@ Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
 	$->send_out = FObject_send_out_2;
 	$->post = (void (*)(const char *, ...))post;
 	$->post_does_ln = true;
-	GridFlow_module2 = rb_eval_string("GridFlow");
-	Pointer_class2 = rb_eval_string("GridFlow::Pointer");
+	GridFlow_module2 = EVAL("GridFlow");
+	Pointer_class2 = EVAL("GridFlow::Pointer");
 	rb_ivar_set(GridFlow_module2, SI(@bfclasses_set), rb_hash_new());
 	return Qnil;
 }
@@ -426,13 +404,13 @@ extern "C" void gridflow_setup () {
 
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 
-	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
+	rb_define_singleton_method(EVAL("Data"),"gridflow_bridge_init",
 		(RFunc)gridflow_bridge_init,1);
 
 	post("(done)");
 
 	if (!
-	rb_eval_string("begin require 'gridflow'; true; rescue Exception => e;\
+	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
 		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
 	{
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");

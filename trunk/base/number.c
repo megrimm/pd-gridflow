@@ -258,7 +258,7 @@ METHOD3(BitPacking,unpack2) {
 void BitPacking_sweep (Ruby *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
 	BitPacking *c_peer;
 	Ruby $; /* ruby_peer */
 
@@ -297,14 +297,14 @@ void Dim::check() {
 }
 
 
-/* returns a string like "Dim(240,320,3)" */
+/* returns a string like "Dim[240,320,3]" */
 char *Dim::to_s() {
 	/* if you blow 256 chars it's your own fault */
 	char buf[256];
 	char *s = buf;
-	s += sprintf(s,"Dim(");
+	s += sprintf(s,"Dim[");
 	for(int i=0; i<n; i++) s += sprintf(s,"%s%d", ","+!i, v[i]);
-	s += sprintf(s,")");
+	s += sprintf(s,"]");
 	return strdup(buf);
 }
 
@@ -366,7 +366,7 @@ DEF_OP1(sq, a*a)
 
 Operator1 op1_table[] = {
 	DECL_OP1(abs, "abs"),
-	DECL_OP1(sqrt,"sqrt"),
+	DECL_OP1(sqrt,"sqrt"), 
 	DECL_OP1(rand,"rand"),
 	DECL_OP1(sq,"sq"),
 };
@@ -471,20 +471,27 @@ DEF_OP2(pow, ipow(a,b))
 
 /*
 Algebraic Properties (not used yet)
-  RN: { e in G | f(x,RN)=x } (right neutral)
-  LN: { e in G | f(x,RN)=x } (left neutral)
-  N: N=LN=RN (both sides neutral)
-  ASSO: f(a,f(b,c))=f(f(a,b),c) (even on overflow)
-  COMM: f(a,b)=f(b,a)
+
+  RN: right neutral: { e in G | f(x,RN)=x }
+  LN: left neutral: { e in G | f(x,RN)=x } (left neutral)
+  N: both sides neutral: N=LN=RN
+
+  LINV: left inverse: each a has a b like f(a,b) = the left neutral
+  RINV: right inverse: each b has a a like f(a,b) = the right neutral
+  INV: both sides inverse
+
+  ASSO: associative: f(a,f(b,c))=f(f(a,b),c)
+  COMM: commutative: f(a,b)=f(b,a)
+
 */
 Operator2 op2_table[] = {
-	DECL_OP2(add, "+", "N=0 ASSO COMM"),
+	DECL_OP2(add, "+", "N=0 ASSO COMM"), /* LINV=sub */
 	DECL_OP2(sub, "-", "RN=0"),
-	DECL_OP2(bus, "inv+", ""),
+	DECL_OP2(bus, "inv+", "LN=0"),
 
 	DECL_OP2(mul, "*", "N=1 ASSO"),
 	DECL_OP2(div, "/", "RN=1"),
-	DECL_OP2(vid, "inv*", ""),
+	DECL_OP2(vid, "inv*", "LN=1"),
 	DECL_OP2(mod, "%", ""),
 	DECL_OP2(dom, "swap%", ""),
 	DECL_OP2(rem, "rem", ""),
@@ -497,10 +504,10 @@ Operator2 op2_table[] = {
 	DECL_OP2(shr, ">>", "RN=0"),
 
 	DECL_OP2(sc_and,"&&", ""),
-	DECL_OP2(sc_or, "||", ""),
+	DECL_OP2(sc_or, "||", ""), /* N!=0 */
 
-	DECL_OP2(min, "min", "ASSO COMM"),
-	DECL_OP2(max, "max", "ASSO COMM"),
+	DECL_OP2(min, "min", "ASSO COMM"), /* N = greatest possible number */
+	DECL_OP2(max, "max", "ASSO COMM"), /* N = smallest possible number */
 
 	DECL_OP2(eq,  "==", ""),
 	DECL_OP2(ne,  "!=", ""),
@@ -526,23 +533,23 @@ void startup_number () {
 		number_type_table[i].sym = ID2SYM(rb_intern(number_type_table[i].name));
 	}
 
-	rb_ivar_set(GridFlow_module,SI(@op1_dict),op1_dict=rb_hash_new());
+	rb_ivar_set(mGridFlow,SI(@op1_dict),op1_dict=rb_hash_new());
 	for(int i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
 		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX((op1_table+i)));
 	} 
 
-	rb_ivar_set(GridFlow_module,SI(@op2_dict),op2_dict=rb_hash_new());
+	rb_ivar_set(mGridFlow,SI(@op2_dict),op2_dict=rb_hash_new());
 	for(int i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
 		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
 	} 
 
-	Ruby BitPacking_class =
-		rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
-	define_many_methods(BitPacking_class,
-		BitPacking_classinfo.methodsn,
-		BitPacking_classinfo.methods);
+	Ruby cBitPacking =
+		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
+	define_many_methods(cBitPacking,
+		ciBitPacking.methodsn,
+		ciBitPacking.methods);
 	SDEF(BitPacking,new,-1);
 	rb_define_method(rb_cString, "swap32!", (RFunc)String_swap32_f, 0);
 	rb_define_method(rb_cString, "swap16!", (RFunc)String_swap16_f, 0);

@@ -46,7 +46,7 @@
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
-#define INSTALL(rname) ruby_c_install(&rname##_classinfo, GridObject_class);
+#define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -112,13 +112,13 @@
 #define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
 
 #define DEF(_class_,_name_,_argc_) \
-	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
+	rb_define_method(c##_class_,#_name_,(RFunc)_class_##_##_name_,_argc_)
 
 #define DEF2(_class_,_name2_,_name_,_argc_) \
-	rb_define_method(_class_##_class,_name2_,(RFunc)_class_##_##_name_,_argc_)
+	rb_define_method(c##_class_,_name2_,(RFunc)_class_##_##_name_,_argc_)
 
 #define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(_class_##_class,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
+	rb_define_singleton_method(c##_class_,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
 
 #define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
 #define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
@@ -200,7 +200,7 @@ typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	GridClass _name_ ## _classinfo = { \
+	GridClass ci ## _name_ = { \
 		0, sizeof(_name_), _name_##_allocate, _startup_, \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
@@ -331,29 +331,23 @@ public:
 #define DECL_SYM(_sym_) extern "C" Ruby/*Symbol*/ sym_##_sym_;
 
 DECL_SYM(grid_begin)
-//DECL_SYM(grid_flow)
 DECL_SYM(grid_end)
 DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
 
-struct DimPattern {};
-
 /* a Dim is a list of dimensions that describe the shape of a grid */
-struct Dim : DimPattern {
-	bool free;
+struct Dim {
 	int n;
 	int v[MAX_DIMENSIONS];
 
 	void check();
 
 	Dim(int n) {
-		free = true;
 		this->n = n;
 	}
 
 	Dim(int n, int *v) {
-		free = false;
 		this->n = n;
 		memcpy(this->v,v,n*sizeof(int));
 		check();
@@ -379,6 +373,8 @@ struct Dim : DimPattern {
 		for (int i=0; i<=end; i++) dex = dex * this->v[i] + v[i];
 		return dex;
 	}
+
+	/* big leak machine */
 	char *to_s();
 
 	bool equal(Dim *o) {
@@ -388,17 +384,12 @@ struct Dim : DimPattern {
 	}
 };
 
-struct DimVar : DimPattern {
-	int n; /* -1 = any; 0+ = exact number */
-	Dim *dim;
+/*
+struct DimPattern {
+	const char *s;
+	DimPattern(const char *_s) { s=_s; }
 };
-
-struct GridType : DimPattern {
-	int n; /* subparts */
-	DimPattern *pats;
-};
-
-/* new GridType(SYM(A),MANY(SYM(B))) */
+*/
 
 /* **************************************************************** */
 
@@ -499,18 +490,27 @@ extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
 /* **************************************************************** */
 
+/* will RAISE with proper message if invalid */
+/* DimConstraint functions should be replaced by something more
+   sophisticated, but not now.
+*/
+typedef void (*DimConstraint)(Dim *d);
+
 struct Grid {
+	DimConstraint dc;
 	Dim *dim;
 	NumberTypeIndex nt;
 	void *data;
 	/*GridType *constraint; */
 
 	Grid() {
+		dc = 0;
 		dim = 0;
 		nt = int32_type_i;
 		data = 0;
 	}
 
+	void constrain(DimConstraint dc_) { dc=dc_; }
 	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a);
@@ -519,6 +519,7 @@ struct Grid {
 	inline Pt<int32> as_int32() { return Pt<int32>((int32 *)data,dim->prod()); }
 	inline Pt<uint8> as_uint8() { return Pt<uint8>((uint8 *)data,dim->prod()); }
 	inline bool is_empty() { return !dim; }
+	Dim *to_dim ();
 };
 
 /* **************************************************************** */
@@ -566,14 +567,6 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_BEGIN(_class_,_inlet_) { \
-		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
-	GRID_FLOW(_class_,_inlet_) { \
-		COPY(&_member_.as_int32()[in->dex], data, n); } \
-	GRID_END(_class_,_inlet_) {}
-
-#define GRID_INPUT_2(_class_,_inlet_,_member_) \
-	GRID_BEGIN(_class_,_inlet_) { \
-		if (in->dim->n > 1) RAISE("at most 1 dimension"); \
 		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
 	GRID_FLOW(_class_,_inlet_) { \
 		COPY(&_member_.as_int32()[in->dex], data, n); } \
@@ -676,10 +669,12 @@ struct GridOutlet {
 /* **************************************************************** */
 /* the <Ruby/C++/Other> mapping of GridObjects is not too clear, sorry */
 
+typedef struct BFObject BFObject; /* fts_object_t or something */
+
 struct FObject {
 	Ruby /*GridFlow::FObject*/ peer; /* point to Ruby peer */
 	GridClass *grid_class;
-	void *foreign_peer; /* point to jMax peer */
+	BFObject *foreign_peer; /* point to jMax/PD peer */
 	uint64 profiler_cumul, profiler_last;
 };
 
@@ -704,6 +699,10 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_flow);
 	DECL3(send_out_grid_end);
 };
+
+inline BFObject *FObject_peer(Ruby rself) {
+	DGS(GridObject); return $->foreign_peer;
+}
 
 void GridObject_conf_class(Ruby $, GridClass *grclass);
 
@@ -744,13 +743,12 @@ struct Format : GridObject {
 
 /* **************************************************************** */
 
-typedef struct BFObject BFObject; /* fts_object_t or something */
-
 typedef struct GFBridge {
 	/* send message */
+	/* pre: outlet number is valid; $ has a foreign_peer */
 	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $);
 	/* add new class */
-	Ruby (*class_install)(Ruby $, char *name2, Ruby inlets2, Ruby outlets2);
+	Ruby (*class_install)(Ruby $, char *name);
 	/* to write to the console */
 	void (*post)(const char *, ...);
 	/* PD adds a newline; jMax doesn't. */
@@ -760,12 +758,12 @@ typedef struct GFBridge {
 } GFBridge;
 
 extern "C" GFBridge gf_bridge;
-extern Ruby GridFlow_module;
-extern Ruby FObject_class;
-extern Ruby GridObject_class;
-extern Ruby Format_class;
+extern Ruby mGridFlow;
+extern Ruby cFObject;
+extern Ruby cGridObject;
+extern Ruby cFormat;
 
-uint64 RtMetro_now(void);
+uint64 RtMetro_now();
 
 Ruby gf_post_string (Ruby $, Ruby s);
 void FObject_mark (Ruby *$);
@@ -789,6 +787,6 @@ Ruby ruby_c_install(GridClass *gc, Ruby super);
 
 typedef Ruby (*RFunc)(...);
 
-extern "C" void Init_gridflow (void) /*throws Exception*/;
+extern "C" void Init_gridflow () /*throws Exception*/;
 
 #endif /* __GF_GRID_H */

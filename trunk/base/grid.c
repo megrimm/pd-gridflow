@@ -38,6 +38,7 @@ int gf_max_packet_length = 1024*2;
 /* **************** Grid ****************************************** */
 
 void Grid::init(Dim *dim, NumberTypeIndex nt) {
+	if (dc && dim) dc(dim);
 	del();
 	this->nt = nt;
 	this->dim = dim;
@@ -47,7 +48,8 @@ void Grid::init(Dim *dim, NumberTypeIndex nt) {
 void Grid::init_from_ruby_list(int n, Ruby *a) {
 		int dims = 1;
 		Ruby delim = SYM(#);
-		init(new Dim(0,0));
+//		init(new Dim(0,0));
+		del();
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
 				int v[i];
@@ -77,6 +79,10 @@ void Grid::init_from_ruby(Ruby x) {
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
 		SI(call),1,x);
 	}
+}
+
+Dim *Grid::to_dim() {
+	return new Dim(dim->prod(),(int *)(Number *)as_int32());
 }
 
 void Grid::del() {
@@ -625,8 +631,8 @@ void GridObject_conf_class(Ruby $, GridClass *grclass) {
 /* this is an abstract base class for file formats, network protocols, etc */
 
 #ifdef FORMAT_LIST
-extern GridClass FORMAT_LIST( ,_classinfo);
-GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
+extern GridClass FORMAT_LIST( ,ci,);
+GridClass *format_classes[] = { FORMAT_LIST(&,ci,) };
 #else
 GridClass *format_classes[] = {};
 #endif
@@ -665,7 +671,7 @@ METHOD3(Format,open_file) {
 	if (argc<1) RAISE("expect filename");
 	rb_ivar_set(peer,SI(@stream),
 		rb_funcall(rb_eval_string("File"),SI(open),2,
-			rb_funcall(GridFlow_module,SI(find_file),1,
+			rb_funcall(mGridFlow,SI(find_file),1,
 			rb_any_to_s(argv[0])),
 			rb_str_new2(mode==4?"r":mode==2?"w":(RAISE("argh"),""))));
 	return Qnil;
@@ -680,15 +686,15 @@ LIST(),
 
 /* **************************************************************** */
 
-Ruby Format_class;
-Ruby GridObject_class;
+Ruby cFormat;
+Ruby cGridObject;
 
 void startup_grid () {
-	ruby_c_install(&GridObject_classinfo, FObject_class);
-	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
-	ruby_c_install(&Format_classinfo, GridObject_class);
-	Format_class = rb_const_get(GridFlow_module,SI(Format));
-	rb_ivar_set(GridFlow_module,SI(@formats),rb_hash_new());
+	ruby_c_install(&ciGridObject, cFObject);
+	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
+	ruby_c_install(&ciFormat, cGridObject);
+	cFormat = rb_const_get(mGridFlow,SI(Format));
+	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
 
 	EVAL(
 	"module GridFlow; def Format.conf_format(flags,symbol_name,description)"
@@ -699,6 +705,6 @@ void startup_grid () {
 	"end;end");
 
 	for (int i=0; i<COUNT(format_classes); i++) {
-		ruby_c_install(format_classes[i], Format_class);
+		ruby_c_install(format_classes[i], cFormat);
 	}
 }

@@ -60,18 +60,45 @@ Operator2 *OP2(Ruby x) {
 }
 
 static void expect_dim_dim_list (Dim *d) {
-	if (d->n!=1) RAISE("dimension list must have 1 dimension");
+	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());
 	int n = d->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 }
+
+/* there's an inlet 0 hardcoded here, sorry */
+#define DIM_INPUT(_class_,_inlet_,_member_) \
+	GRID_BEGIN(_class_,1) { \
+		expect_dim_dim_list(in->dim); \
+		if (in->dim->n) in->set_factor(in->dim->n); \
+	} \
+	GRID_FLOW(_class_,1) { \
+		if (dim) delete _member_, _member_=0; \
+		_member_ = new Dim(n,(int *)(Number *)data); \
+		this->in[0]->abort(); \
+		out[0]->abort(); \
+	} \
+	GRID_END(_class_,1) {}
+
+static void max_one_dim (Dim *d) {
+	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }
+}
+
+static void exactly_one_dim (Dim *d) {
+	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }
+}
+
 /* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream
   of integers to a streamed grid as used now.
 */
 
+/*{ ?,Dim[B] -> Dim[*Cs] }*/
+
 struct GridImport : GridObject {
+	Grid dim_grid;
 	Dim *dim; /* size of grids to send */
+	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() { if (dim) delete dim; }
 	DECL3(init);
 	DECL3(_0_reset);
@@ -94,29 +121,14 @@ GRID_FLOW(GridImport,0) {
 }
 GRID_END(GridImport,0) {}
 
-/* same inlet 1 as @redim */
-
-GRID_BEGIN(GridImport,1) {
-	expect_dim_dim_list(in->dim);
-	if (in->dim->n) in->set_factor(in->dim->n);
-}
-
-GRID_FLOW(GridImport,1) {
-	if (dim) delete dim, dim=0;
-	dim = new Dim(n,(int *)(Number *)data);
-	this->in[0]->abort();
-	out[0]->abort();
-}
-
-GRID_END(GridImport,1) {}
+GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid.to_dim(); }
 
 METHOD3(GridImport,init) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
-	Grid t;
-	t.init_from_ruby(argv[0]);
-	expect_dim_dim_list(t.dim);
-	dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	dim_grid.constrain(expect_dim_dim_list);
+	dim_grid.init_from_ruby(argv[0]);
+	dim = dim_grid.to_dim();
 	return Qnil;
 }
 
@@ -135,6 +147,8 @@ LIST(GRINLET(GridImport,0,4),GRINLET(GridImport,1,4)),
   GridExport ("@export") is the class for converting from streamed grids
   to old-style integer stream.
 */
+
+/*{ Dim[*As] -> ? }*/
 
 struct GridExport : GridObject {
 	GRINLET3(0);
@@ -157,6 +171,8 @@ LIST(GRINLET(GridExport,0,4)))
 
 /* **************************************************************** */
 
+/*{ Dim[*As] -> ? }*/
+
 struct GridExportList : GridObject {
 	Ruby /*Array*/ list;
 	int n;
@@ -168,7 +184,7 @@ GRID_BEGIN(GridExportList,0) {
 	int n = in->dim->prod();
 // 	fprintf(stderr,"flow_objects: this=%08x dim=%s\n",(long)in, in->dim->to_s());
 //	if (n==1) abort();
-	if (n>1000) RAISE("list too big (%d elements)", n);
+	if (n>250000) RAISE("list too big (%d elements)", n);
 	list = rb_ary_new2(n+2);
 	this->n = n;
 	rb_ivar_set(peer,SI(@list),list); /* keep */
@@ -198,6 +214,8 @@ LIST(GRINLET(GridExportList,0,4)))
   either a bang (which forwards the whole image) or a grid describing what to
   send.
 */
+
+/*{ Dim[*As,B],Dim[*Cs,*Ds] -> Dim[*As,*Ds] }*/
 
 struct GridStore : GridObject {
 	Grid r;
@@ -307,6 +325,8 @@ LIST(GRINLET(GridStore,0,4),GRINLET(GridStore,1,4)),
 
 /* **************************************************************** */
 
+/*{ Dim[*As] -> Dim[*As] }*/
+
 struct GridOp1 : GridObject {
 	const Operator1 *op;
 	DECL3(init);
@@ -347,6 +367,8 @@ struct GridOp2 : GridObject {
 	GRINLET3(1);
 };
 
+/*{ Dim[*As],Dim[*Bs] -> Dim[*As] }*/
+
 GRID_BEGIN(GridOp2,0) { out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW(GridOp2,0) {
@@ -375,7 +397,7 @@ GRID_FLOW(GridOp2,0) {
 
 GRID_END(GridOp2,0) { out[0]->end(); }
 
-GRID_INPUT(GridOp2,1,r)
+GRID_INPUT(GridOp2,1,r) {}
 
 METHOD3(GridOp2,init) {
 	rb_call_super(argc,argv);
@@ -400,6 +422,8 @@ LIST(GRINLET(GridOp2,0,6),GRINLET(GridOp2,1,4)),
   by cascading an operation on all those Rubys. There is a start Ruby. When
   doing [@fold + 42] each new Ruby is computed like 42+a+b+c+...
 */
+
+/*{ Dim[*As,*Bs],Dim[*Bs] -> Dim[*As] }*/
 
 struct GridFold : GridObject {
 	const Operator2 *op;
@@ -446,7 +470,7 @@ GRID_FLOW(GridFold,0) {
 
 GRID_END(GridFold,0) { out[0]->end(); }
 
-GRID_INPUT(GridFold,1,r)
+GRID_INPUT(GridFold,1,r) {}
 
 METHOD3(GridFold,init) {
 	rb_call_super(argc,argv);
@@ -471,6 +495,8 @@ LIST(GRINLET(GridFold,0,4)),
   the partial results thereof; therefore the output is of the same
   size as the input (unlike @fold).
 */
+
+/*{ Dim[*As,*Bs],Dim[*Bs] -> Dim[*As,*Bs] }*/
 
 struct GridScan : GridFold {
 	DECL3(init);
@@ -509,7 +535,7 @@ GRID_FLOW(GridScan,0) {
 
 GRID_END(GridScan,0) { out[0]->end(); }
 
-GRID_INPUT(GridScan,1,r)
+GRID_INPUT(GridScan,1,r) {}
 
 METHOD3(GridScan,init) {
 	rb_call_super(argc,argv);
@@ -533,6 +559,8 @@ LIST(GRINLET(GridScan,0,4)),
           -> c in dim(*As,*Bs)
    c = map((*As,*Bs),fold(op_fold,rint,map2(op_para,...... whatever
 */
+
+/*{ Dim[*As,C],Dim[C,*Bs] -> Dim[*As,*Bs] }*/
 
 struct GridInner : GridObject {
 	const Operator2 *op_para;
@@ -611,6 +639,8 @@ LIST(GRINLET(GridInner,0,4),GRINLET(GridInner,2,4)),
 
 /* **************************************************************** */
 
+/*{ Dim[*As,C],Dim[*Bs,C] -> Dim[*As,*Bs] }*/
+
 struct GridInner2 : GridInner {
 	DECL3(init);
 	GRINLET3(0);
@@ -681,6 +711,8 @@ LIST(GRINLET(GridInner2,0,4),GRINLET(GridInner2,2,4)),
 
 /* **************************************************************** */
 
+/*{ Dim[*As],Dim[*Bs] -> Dim[*As,*Bs] }*/
+
 struct GridOuter : GridObject {
 	Grid r;
 	const Operator2 *op;
@@ -741,6 +773,8 @@ LIST(GRINLET(GridOuter,0,4),GRINLET(GridOuter,1,4)),
 /* the incoming grid is stored as "c" with a margin on the four sides
    of it. the margin is the size of the "b" grid minus one then split in two.
 */   
+
+/*{ Dim[A,B,*Cs],Dim[D,E] -> Dim[A,B,*Cs] }*/
 
 struct GridConvolve : GridObject {
 	Grid c,b;
@@ -872,6 +906,10 @@ struct GridFor : GridObject {
 	GRINLET3(2);
 };
 
+/*{ Dim[],Dim[],Dim[] -> Dim[A] }
+  or
+  { Dim[B],Dim[B],Dim[B] -> Dim[*As,B] }*/
+
 METHOD3(GridFor,init) {
 	rb_call_super(argc,argv);
 	if (argc<3) RAISE("not enough arguments");
@@ -923,12 +961,15 @@ METHOD3(GridFor,_0_bang) {
 
 METHOD3(GridFor,_0_set) {
 	from.init_from_ruby(argv[0]);
+	from.constrain(max_one_dim);
+	to  .constrain(max_one_dim);
+	step.constrain(max_one_dim);
 	return Qnil;
 }
 
-GRID_INPUT_2(GridFor,2,step) {}
-GRID_INPUT_2(GridFor,1,to) {}
-GRID_INPUT_2(GridFor,0,from) {_0_bang(0,0);}
+GRID_INPUT(GridFor,2,step) {}
+GRID_INPUT(GridFor,1,to) {}
+GRID_INPUT(GridFor,0,from) {_0_bang(0,0);}
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
@@ -937,6 +978,8 @@ LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
 	DECL(GridFor,_0_set))
 
 /* **************************************************************** */
+
+/*{ Dim[*As] -> Dim[B] }*/
 
 struct GridDim : GridObject {
 	GRINLET3(0);
@@ -958,7 +1001,10 @@ LIST(GRINLET(GridDim,0,4)))
 
 /* **************************************************************** */
 
+/*{ Dim[*As],Dim[B] -> Dim[*Cs] }*/
+
 struct GridRedim : GridObject {
+	Grid dim_grid;
 	Dim *dim;
 	Grid temp; /* temp.dim is not of the same shape as dim */
 
@@ -1005,21 +1051,7 @@ GRID_END(GridRedim,0) {
 	temp.del();
 }
 
-/* same inlet 1 as @import */
-
-GRID_BEGIN(GridRedim,1) {
-	expect_dim_dim_list(in->dim);
-	if (in->dim->n) in->set_factor(in->dim->n);
-}
-
-GRID_FLOW(GridRedim,1) {
-	if (dim) delete dim;
-	dim = new Dim(n,(int *)(Number *)data);
-	this->in[0]->abort();
-	out[0]->abort();
-}
-
-GRID_END(GridRedim,1) {}
+GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid.to_dim(); }
 
 METHOD3(GridRedim,init) {
 	rb_call_super(argc,argv);
@@ -1036,8 +1068,10 @@ LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 	DECL(GridRedim,init))
 
 /* ---------------------------------------------------------------- */
-
 /* "@scale_by" does quick scaling of pictures by integer factors */
+
+/*{ Dim[A,B,3] -> Dim[C,D,3] }*/
+
 struct GridScaleBy : GridObject {
 	int rint; /* integer scale factor (r as in right inlet, which does not exist yet) */
 	DECL3(init);
@@ -1120,9 +1154,10 @@ LIST(GRINLET(GridScaleBy,0,4)),
 <matju> outlet 0: dim(n,2)
 */
 /*
+{ Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] }
 struct GridPolygon : GridObject {
-//	Grid polygon ("N,2");
-//	Grid color ("3");
+//	Grid polygon;
+//	Grid color;
 	DECL3(init);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -1148,6 +1183,8 @@ LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4))
 */
 
 /* **************************************************************** */
+
+/*{ Dim[*As,3] -> Dim[*As,3] }*/
 
 struct GridRGBtoHSV : GridObject {
 	DECL3(init);
@@ -1202,6 +1239,8 @@ LIST(GRINLET(GridRGBtoHSV,0,4)),
 	DECL(GridRGBtoHSV,init))
 
 /* **************************************************************** */
+
+/*{ Dim[*As,3] -> Dim[*As,3] }*/
 
 struct GridHSVtoRGB : GridObject {
 	DECL3(init);
@@ -1258,7 +1297,7 @@ struct RtMetro : GridObject {
 	DECL3(_1_int);
 };
 
-uint64 RtMetro_now(void) {
+uint64 RtMetro_now() {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;

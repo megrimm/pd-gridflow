@@ -95,7 +95,7 @@ METHOD3(FormatMPEG3,init) {
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
 
 	const char *filename = rb_str_ptr(
-		rb_funcall(GridFlow_module,SI(find_file),1,
+		rb_funcall(mGridFlow,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
 	mpeg = mpeg3_open(strdup(filename));
