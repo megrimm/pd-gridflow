@@ -361,8 +361,8 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 
 #ifndef ULL2NUM
 #define ULL2NUM(x) \
-	rb_funcall(rb_funcall(UINT2NUM((x)>>32),SYM(<<),1,INT2NUM(32)), \
-		SYM(+),1,UINT2NUM(((uint32)x)))
+	rb_funcall(rb_funcall(UINT2NUM((x)>>32),SI(<<),1,INT2NUM(32)), \
+		SI(+),1,UINT2NUM(((uint32)x)))
 #endif
 
 Ruby GridFlow_rdtsc (Ruby rself) {
