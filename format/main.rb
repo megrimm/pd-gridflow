@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -512,7 +512,7 @@ class FormatFile < Format
 		when /\.grid$/i;  FormatGrid.new(*a)
 		else
 			if not /\./=~file then raise "no filename suffix?" end
-			GridFlow.post "suffixes=%s", @suffixes.inspect
+			#GridFlow.post "suffixes=%s", @suffixes.inspect
 			suf=file.split(/\./)[-1]
 			h=suffixes[suf]
 			if not h then raise "unknown suffix '.#{suf}'" end
