@@ -99,32 +99,37 @@ size_t n, const char *type, const char *file, int line, bool deadbeef) {
 	return data;
 }
 
+//#define HAVE_DANGLE_CHECK
+
 /* to help find dangling references */
 bool qfree(void *data, bool fadedfoo) {
 	static int warncount=0;
 	assert(data);
 #ifdef HAVE_LEAKAGE_DUMP
 	if (gf_alloc_set && gf_alloc_set!=Qnil) {
+#ifndef HAVE_DANGLE_CHECK
 		VALUE a = rb_funcall(gf_alloc_set,SI(delete),1,PTR2FIX(data));
-		if (a==Qnil)
-			gfpost("warning: qfree() on unregistered pointer %08x (#%d)",
+		if (a==Qnil) {
+			gfpost("error: qfree() on unregistered pointer %08x (#%d)",
 				(long)data,warncount++);
-		else
+			raise(11);
+		} else
 			free(FIX2PTR(a));
-/*
+#else
 		VALUE a = rb_funcall(gf_alloc_set,SI([]),1,PTR2FIX(data));
 		AllocTrace *at = (AllocTrace *)FIX2PTR(a);
-		if (a==Qnil)
-			gfpost("warning: qfree() on unregistered pointer %08x (#%d)",
+		if (a==Qnil) {
+			gfpost("error: qfree() on unregistered pointer %08x (#%d)",
 				(long)data,warncount++);
-		else if (at->freed) {
-			gfpost("warning: qfree() on already freed pointer %08x (#%d)",
+			raise(11);
+		} else if (at->freed) {
+			gfpost("error: qfree() on already freed pointer %08x (#%d)",
 				(long)data,warncount++);
 			raise(11);
 		}
 		at->freed = true;
 		return !at->freed;
-*/
+#endif
 	}
 #endif
 	return true;

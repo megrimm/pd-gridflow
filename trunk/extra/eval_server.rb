@@ -10,7 +10,7 @@ require "fcntl"
 module Errno; class E000 < StandardError; end; end
 
 if Object.constants.include? :GridFlow
-  def log s; GridFlow.whine "%s", s; end
+  def log s; GridFlow.postln "%s", s; end
 else
   def log s; STDERR.puts s; end
 end

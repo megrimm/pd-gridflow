@@ -39,21 +39,26 @@ Compatibility:
 	Should work with Ruby 1.6.6 and jMax 2.5.1 or PureData 0.35-0
 </li></list>
 
-Release steps:
+Release steps (<b>OPERATE WITH CAUTION</b>):
 
 <list>
 	<li>cvs tag gridflow_0_6_2 .
 	</li><li>mkdir gridflow
-	</li><li>cd gridflow
 	</li><li>
-cvs -d gridflow@artengine.ca:/home/cvs/gridflow export -r gridflow_0_6_2 .
-	</li><li>rm -rf CVS CVSROOT # caution!!!
+cvs -d gridflow@artengine.ca:/home/cvs/gridflow export -r gridflow_0_6_2 -d
+gridflow .
+	</li><li>cd gridflow
+	</li><li>rm -rf CVS CVSROOT
 	</li><li>chmod -R go=u-w .
 	</li><li>cd ..
 	</li><li>tar cfzvv gridflow-0.6.2.tar.gz gridflow
 	</li><li>rm -rf gridflow # caution!!!
-	</li><li>scp gridflow*gz webster@artengine.ca:/home/matju/gridflow/download
+	</li><li>scp gridflow*gz root@artengine.ca:/home/matju/gridflow/download
 	</li><li>mv gridflow*gz /home/matju/net/gridflow
+	</li><li>artengine.ca : expand tarball into jmax/gridflow/latest
+	</li><li>jmax/pd/0xff/ruby-talk mlists : post release
+	</li><li>freshmeat.net : post release
+	</li><li>RAA : post release
 	</li>
 </list>
 
