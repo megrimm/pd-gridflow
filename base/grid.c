@@ -22,6 +22,17 @@
 */
 
 #include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include "grid.h"
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
 #include "grid.h"
 
 int gf_max_packet_length = 1024;
@@ -445,4 +456,156 @@ void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {
 	for (i=0; i<grclass->handlersn; i++) {
 		GridObject_conf_class(class,grclass->handlers[i].winlet);
 	}
+}
+
+/* **************** Stream **************************************** */
+
+Stream *Stream_open_file(const char *filename, int mode) {
+	Stream *$;
+	int fd = fts_file_open(filename,mode==4?"r":mode==2?"w":"");
+	if (fd<0) return 0;
+	$ = NEW(Stream,1);
+	$->fd = fd;
+	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	if (!$->file) return 0;
+	$->buf = 0; $->buf_i = $->buf_n = 0;
+	$->on_read = $->target = 0;
+	return $;
+}
+
+Stream *Stream_open_fd(int fd, int mode) {
+	Stream *$ = NEW(Stream,1);
+	$->fd = fd;
+	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	if (!$->file) return 0;
+	$->buf = 0; $->buf_i = $->buf_n = 0;
+	$->on_read = $->target = 0;
+	return $;
+}
+
+void Stream_nonblock(Stream *$) {
+	int flags = fcntl($->fd,F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl($->fd,F_SETFL,flags);
+}
+
+int Stream_get_fd(Stream *$) {
+	return $->fd;
+}
+
+FILE *Stream_get_file(Stream *$) {
+/*	if (!$->file) $->file = fdopen($->file,mode); */
+	return $->file;
+}
+
+int Stream_read(Stream *$, int n, char *buf) {
+	assert(0);
+}
+
+void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
+	FREE($->buf);
+	$->buf = NEW(char,n);
+	$->buf_i = 0;
+	$->buf_n = n;
+	$->on_read = on_read;
+	$->target = target;
+}
+
+bool Stream_try_read(Stream *$) {
+	if (!$->buf) {
+		whine("Stream_try_read has nothing to do",$);
+		return true;
+	}
+	while ($->buf) {
+		int n = read($->fd,$->buf+$->buf_i,$->buf_n-$->buf_i);
+		if (n<=0) {
+			if (n==0 || errno==EAGAIN || errno==EWOULDBLOCK) {
+				whine("(trying again later)");
+			} else {
+				whine("Stream_try_read: %s", strerror(errno));
+			}
+			return true;
+		} else {
+			$->buf_i += n;
+		}
+		if ($->buf_i == $->buf_n) {
+			char *buf = $->buf;
+			$->buf = 0;
+			if (!$->on_read($->target,$->buf_n,buf)) return false;
+		}
+	}
+	return true;
+}
+
+bool Stream_is_waiting(Stream *$) {
+	return !!$->buf;
+}
+
+void Stream_close(Stream *$) {
+	if ($->file) fclose($->file);
+	else close($->fd);
+	FREE($);
+}
+
+/* **************** Format **************************************** */
+/* this is an abstract base class for file formats, network protocols, etc */
+
+FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
+Dict *format_classes_dex;
+
+Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
+	Format *$ = (Format *) NEW(char,qlass->object_size);
+	$->cl = qlass;
+	$->parent = parent;
+	$->chain = 0;
+	$->mode = mode;
+	$->st = 0;
+	$->bit_packing = 0;
+	$->dim = 0;
+
+	/* FF_W, FF_R, FF_RW */
+	if (mode==2 || mode==4 || mode==6) {
+		if (! (qlass->flags & (1 << (mode/2)))) {
+			whine("Format %s does not support mode '%s'",
+				qlass->symbol_name,
+				format_flags_names[mode/2]);
+			return 0;
+		}
+	} else {
+		whine("Format opening mode is incorrect");
+		return 0;
+	}
+
+	return $;
+}
+
+void Format_close(Format *$) {
+	FREE($->bit_packing);
+	FREE($->dim);
+	FREE($);
+}
+
+/* **************** FormatClass *********************************** */
+
+const char *format_flags_names[] = {
+	"(0<<1)",
+	"FF_W: write",
+	"FF_R: read",
+	"FF_RW: read_write",
+};
+
+int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
+
+/* **************************************************************** */
+
+void startup_grid (void) {
+	int i;
+	whine("format-list-begin");
+	format_classes_dex = Dict_new((CompFunc)strcmp,HashFunc_string);
+	for (i=0; i<COUNT(format_classes); i++) {
+		FormatClass *fc = format_classes[i];
+		whine("  %10s %s",fc->symbol_name, fc->long_name);
+		Dict_put(format_classes_dex, fc->symbol_name, fc);
+	}
+	whine("format-list-end");
 }
