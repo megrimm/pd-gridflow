@@ -1,7 +1,7 @@
 #N canvas 1 218 522 408 10;
 #X obj 212 43 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
-#X obj 231 117 @out window;
+#X obj 231 117 #out window;
 #X obj 1 158 hsl 128 15 0 319 0 0 h_end_o h_end_i empty -2 -8 1 10
 -262144 -1 -1 12302 1;
 #X obj 1 10 hsl 128 15 0 319 0 0 h_start_o h_start_i empty 0 8 1 10
@@ -21,10 +21,10 @@
 #X text 27 264 image;
 #X obj 93 37 unpack 0 0;
 #X obj 173 37 unpack 0 0;
-#X obj 126 61 @four;
-#X obj 125 81 @export_list;
+#X obj 126 61 #pack 4;
+#X obj 125 81 #export_list;
 #X msg 95 135 4 2 # \$1 \$2 \$1 \$4 \$3 \$4 \$3 \$2;
-#X obj 27 177 @draw_polygon >> ( 1 1 1 );
+#X obj 27 177 #draw_polygon >> ( 1 1 1 );
 #X connect 0 0 13 0;
 #X connect 2 0 8 0;
 #X connect 4 0 9 0;
@@ -41,10 +41,10 @@
 #X text -42 9 start;
 #X text 135 158 end;
 #X obj 328 23 loadbang;
-#X obj 231 72 @store;
+#X obj 231 72 #store;
 #X obj 393 25 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 315 117 @mouse \, ...;
+#X obj 315 117 #mouse \, ...;
 #X obj 260 266 listelement 0;
 #X obj 367 190 listelement 1;
 #X obj 260 225 listelement 0;
@@ -56,12 +56,12 @@
 #X obj 378 65 loadbang;
 #X msg 378 85 0 0;
 #X obj 328 161 t a;
-#X obj 30 342 @out window;
-#X obj 13 279 @for ( 0 0 ) ( 0 0 ) ( 1 1 );
+#X obj 30 342 #out window;
+#X obj 13 279 #for ( 0 0 ) ( 0 0 ) ( 1 1 );
 #X obj 78 233 t b a;
-#X obj 30 306 @store;
+#X obj 30 306 #store;
 #X msg 14 255 set ( \$1 \$2 );
-#X obj 327 43 @in b001.jpg;
+#X obj 327 43 #in b001.jpg;
 #X text 10 49 drag the mouse;
 #X text 36 34 step 2:;
 #X text 19 65 inside the;
