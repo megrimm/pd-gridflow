@@ -17,7 +17,6 @@
 </section>
 
 <section name="Release">
-<prose>
 
 Compatibility:
 
@@ -51,12 +50,9 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 	</li><li>RAA : post release
 	</li>
 </list>
-
-</prose>
 </section>
 
 <section name="Documentation">
-<prose>
 <list>
 <li>
 	Pictures identified as "&lt;help&gt;" should be screenshots of the
@@ -93,7 +89,6 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 	Let's keep it under 500k please.
 </li>
 </list>
-</prose>
 
 in doc do:
 for z in images/*.* images/*/*.*; do fgrep -q $z *.html || echo "$z"; done
@@ -101,14 +96,10 @@ for z in images/*.* images/*/*.*; do fgrep -q $z *.html || echo "$z"; done
 </section>
 
 <section name="...">
-<prose>
-
 	CVS Quick Reference:
 	environment variables
 		CVSEDITOR=pico
 		CVS_RSH=ssh2
-
-</prose>
 </section>
 
 </documentation>

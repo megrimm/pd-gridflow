@@ -9,15 +9,13 @@
 
 <!--
 <section name="Conventions of this Manual">
-<prose>
 	(In this section, usage of Bold, Italic, Courier, etc. would be explained.
 	eventually I'd like those to have precise meanings consistent throughout
 	the whole documentation)
-</prose>
 </section>
 -->
 
-<section name="Numbers"><prose>
+<section name="Numbers">
 
 	<p>High-performance computation requires precise and quite peculiar
 	definitions of numbers and their representation.</p>
@@ -47,9 +45,9 @@
 	written to files and to windows.
 	</p>
 
-</prose></section>
+</section>
 
-<section name="Grid Literals"><prose>
+<section name="Grid Literals">
 <p>
 	In every grid-accepting inlet, a list may be sent instead; if
 	it consists only of integers, it will be converted to a
@@ -62,9 +60,9 @@
 	In every grid-accepting inlet, an integer or float may also be sent;
 	it will be converted to a zero-dimensional grid (a <b>scalar</b>).
 </p>
-</prose></section>
+</section>
 
-<section name="Grid Protocol"><prose>
+<section name="Grid Protocol">
 	<p>
 	each element of a grid is an <b>int32</b>.
 	</p>
@@ -102,9 +100,9 @@
 	Zero-dimensional grids exist. They are called dim(). They can only contain
 	a single number.
 	</p>
-</prose></section>
+</section>
 
-<section name="Picture Protocol"><prose>
+<section name="Picture Protocol">
 	<p><i>This section is useful if you want to know what a picture is
 	in terms of a grid.
 	</i></p>
@@ -138,9 +136,10 @@
 	0, maximum is 255, and values wrap like with <k>% 256</k>. If you want to
 	clip them, you may use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
 	</p>
-</prose></section>
+</section>
 
 <section name="One-Input Operators">
+<table>
 
 	<!-- todo: text attr in those icons could be auto-generated -->
 
@@ -152,10 +151,10 @@
 	> square root of A, rounded downwards </operator-1>
 	<operator-1 name="sq" cname="sq"
 	> A times A </operator-1>
+</table>
 </section>
 
 <section name="Two-Input Operators">
-	<prose>
 		<p>In the following table, A is the value entered to the
 		left, and B is the value entered to the right.</p>
 
@@ -166,11 +165,9 @@
 
 		<p>Hyperbolic functions (tanh) work with our angles too, so the
 		same conversions apply.</p>
-	</prose>
-
-	<!-- todo: text attr in those icons could be auto-generated -->
-	<!-- todo: make CNAME a column in html -->
-
+	
+<table>
+	
 	<!-- category: bogus -->
 	<operator-2 name="ignore" cname="ignore"
 		color="no effect"
@@ -302,9 +299,10 @@
 	<operator-2 name="**" cname="pow"
 		color="gamma correction"
 	> A**B, that is, A raised to power B </operator-2>
+</table>
 </section>
 
-<section name="Bridges"><prose>
+<section name="Bridges">
 <p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric.
 jMax support has been added back as a <b>Bridge</b>.</p>
 
@@ -315,9 +313,9 @@ bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks
 with the main part.
 </p>
 
-</prose></section>
+</section>
 
-<section name="Synchronisation"><prose>
+<section name="Synchronisation">
 <p>In GridFlow you cannot send two grids in different inlets at the
 same time. You have to use @finished together with (possibly) fork and @store,
 which can be cumbersome. If you don't do this, the result is undefined
@@ -329,6 +327,6 @@ should make many circuits simpler.
 </p>
 
 <p>(more to come)</p>
-</prose></section>
+</section>
 
 </documentation>

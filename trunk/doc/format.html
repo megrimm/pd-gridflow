@@ -22,31 +22,12 @@
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
-<tr><td colspan="2"><h4><a href="#Objects_for_Input/Output">Objects for Input/Output</a></h4><ul>
-<li><a href="#@in"><img src="images/@in.png" alt="[@in]" border="0"></a></li>
-<li><a href="#@out"><img src="images/@out.png" alt="[@out]" border="0"></a></li>
-</ul>
-<h4><a href="#Picture/Movie_Formats">Picture/Movie Formats</a></h4><ul>
-<li><a href="#format ppm @in/@out"><img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"></a></li>
-<li><a href="#format targa @in/@out"><img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"></a></li>
-<li><a href="#format jpeg @in/@out">format jpeg @in/@out</a></li>
-<li><a href="#format quicktime @in/@out">format quicktime @in/@out</a></li>
-<li><a href="#format mpeg @in"><img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"></a></li>
-<li><a href="#format grid @in/@out"><img src="images/format_grid.png" alt="[open grid file filename.grid]" border="0"></a></li>
-</ul>
-<h4><a href="#Acquisition_Devices">Acquisition Devices</a></h4><ul>
-<li><a href="#format videodev @in"><img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"></a></li>
-</ul>
-<h4><a href="#Window_Output">Window Output</a></h4><ul>
-<li><a href="#format x11 @in/@out"><img src="images/format_x11.png" alt="[open x11 here]" border="0"></a></li>
-<li><a href="#format sdl @out">format sdl @out</a></li>
-<li><a href="#format aalib @out">format aalib @out</a></li>
-</ul>
-<br><br>
+<tr><td colspan="2"><br><br>
 </td></tr> 
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Objects_for_Input/Output"></a><h4>Objects for Input/Output</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@in">@in</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4"><a name="Objects_for_Input/Output"></a><h4>Objects for Input/Output</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@in">@in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@in.png" alt="[@in]" border="0"><br clear="left"><br><br><a href="images/help_@inout.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 			If no arguments given, creates an input object for an unspecified 
@@ -56,23 +37,23 @@
 			with those arguments. 
 			Remember that most formats produce Dim[rows,columns,3] grids with 
 			0-255 values. (Most.) <br>
-  <br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
+  <br><b>inlet 0 </b><b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 				This is the command that gives a particular resource 
 				to a @out object. This is done through a "format" 
 				(there is a list of formats in this manual). The other 
 				arguments depend on the chosen format. The format may 
 				be a file format or a protocol or a hardware device, etc. <br>
- <br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> close <b>(</b><b>)</b>  
 				close may be necessary if you operate on "/dev/video", 
 				which can only be read by one at a time. otherwise it's 
 				usually not necessary. <br>
- <br><b>inlet 0</b> <b>method</b> int <b>(</b>frame_number<b>)</b>   
+ <br><b>inlet 0 </b><b>method</b> int <b>(</b>frame_number<b>)</b>   
 				selects one picture from a multi-picture format 
 				and then does the same as a bang. <br>
- <br><b>inlet 0</b> <b>method</b> set <b>(</b>frame_number<b>)</b>   
+ <br><b>inlet 0 </b><b>method</b> set <b>(</b>frame_number<b>)</b>   
 				selects one picture from a multi-picture format, 
 				to be displayed by the next bang. <br>
- <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> bang <b>(</b><b>)</b>  
 				sends a grid through the outlet. the grid may be the 
 				result of reading from a file, acquiring from a device, 
 				capturing from the screen etc. 
@@ -83,19 +64,20 @@
 				same file, but if the end of file is reached instead, 
 				it will rewind and send the first picture again. 
 				see section "External Picture Formats". <br>
- <br><b>inlet 0</b> <b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
+ <br><b>inlet 0 </b><b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
 				Obsolete. the word "option" is optional now. <br>
- <br><b>inlet 0</b> <b>method</b> rewind <b>(</b><b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> rewind <b>(</b><b>)</b>  
 				rewinds to beginning of file if applicable. <br>
- <br><b>inlet 0</b> <b>method</b> loop <b>(</b><i>bool</i> flag<b>)</b>   
+ <br><b>inlet 0 </b><b>method</b> loop <b>(</b><i>bool</i> flag<b>)</b>   
 				controls the automatic looping of movies. <br>
-   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
+   <br><b>inlet 1 </b><b>method</b> int <b>(</b><b>)</b>  
 				frame number of frame just sent, 
 				for formats that have frame numbers. <br>
- <br><b>inlet 1</b> <b>method</b> bang <b>(</b><b>)</b>  
+ <br><b>inlet 1 </b><b>method</b> bang <b>(</b><b>)</b>  
 				tried to read a frame that does not exist 
 				(signals end of file) <br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@out">@out</a></td></tr><tr><td></td><td valign='top'><br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@out">@out</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@out.png" alt="[@out]" border="0"><br clear="left"><br><br><a href="images/help_@inout.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 			If no arguments given, creates an output object for an unspecified 
@@ -108,37 +90,39 @@
  <br><b>method</b> init <b>(</b><i>integer</i> rows<b>, </b><i>integer</i> columns<b>)</b>    
 			This alternate way to create an @out automatically calls 
 			"open x11 here" and "out_size <i>rows columns</i>". <br>
-  <br><b>inlet 0</b> <b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
+  <br><b>inlet 0 </b><b>method</b> open <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
 				This is the command that gives a particular resource 
 				to a @out object. This is done through a "format" 
 				(there is a list of formats in this manual). The other 
 				arguments depend on the chosen format. The format may 
 				be a file format or a protocol or a hardware device, etc. <br>
- <br><b>inlet 0</b> <b>method</b> grid <b>(</b><i>grid</i> grid<b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> grid <b>(</b><i>grid</i> grid<b>)</b>  
 				this is format-specific. most formats 
 				expect grid(rows columns {red green blue}). 
 				In formats that write to a file, sending a 2nd picture 
 				overwrites the first. 
 				see section "External Picture Formats". <br>
- <br><b>inlet 0</b> <b>method</b> close <b>(</b><b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> close <b>(</b><b>)</b>  
 				closes the file. usually not necessary. <br>
- <br><b>inlet 0</b> <b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
+ <br><b>inlet 0 </b><b>method</b> option <b>(</b><i>symbol</i> selector<b>, </b>stuff...<b>)</b>    
 				Obsolete. Omit the word "option" now. <br>
- <br><b>inlet 0</b> <b>method</b> timelog <b>(</b><i>0,1</i> status<b>)</b>   
+ <br><b>inlet 0 </b><b>method</b> timelog <b>(</b><i>0,1</i> status<b>)</b>   
 				when status=1, current time (unix clock) and time since last 
 				frame-end are printed in the console. when status=0, it is off. 
 				default is 0. <br>
- <br><b>inlet 0</b> <b>method</b> rewind <b>(</b><b>)</b>  
+ <br><b>inlet 0 </b><b>method</b> rewind <b>(</b><b>)</b>  
 				rewinds to beginning of file if applicable. 
 				will overwrite the previous data. <br>
-   <br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
+   <br><b>outlet 0 </b><b>method</b> bang <b>(</b><b>)</b>  
 				sent when a complete grid has been received. <br>
-  <br></td> 
+  <br></td></tr><tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Picture/Movie_Formats"></a><h4>Picture/Movie Formats</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format ppm @in/@out">format ppm @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4"><a name="Picture/Movie_Formats"></a><h4>Picture/Movie Formats</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format ppm @in/@out">format ppm @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>Subformat P6 only. 
 		Max-number can only be 255 (24-bit RGB). </p> <br><b>method</b> open ppm file <b>(</b><i>symbol</i> filename<b>)</b>   
@@ -148,7 +132,8 @@
 			same but for .ppm.gz files <br>
  <br><b>method</b> grid <b>(</b><i>grid(rows columns {r g b})</i> grid<b>)</b>   
 			values 0-255 <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in/@out">format targa @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in/@out">format targa @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p> <br><b>method</b> open targa file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
@@ -157,14 +142,16 @@
 			same but for .tga.gz files <br>
  <br><b>method</b> grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
 			values 0-255 <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in/@out">format jpeg @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in/@out">format jpeg @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Support for RGB non-progressive</p> <br><b>method</b> open jpeg file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
  <br><b>method</b> grid <b>(</b><i>grid(rows columns 3)</i> grid<b>)</b>   
 			values 0-255 <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <p>uses the HeroineWarrior-Quicktime library (libquicktime.so)</p> <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
  <br><b>method</b> codec <b>(</b><i>symbol</i> codec<b>)</b>   
@@ -176,7 +163,8 @@
 			the size of the written file, and its fidelity to the 
 			original content. Note that there exist other Apple-QuickTime 
 			codecs that are not supported by HeroineWarrior-QuickTime. <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>support for .mpeg files</p> <p>this format supports frame-seek and frame-tell.</p> <p>Two different libraries are available for dealing with 
 		MPEG files. Those have different details, capabilities and quirks.</p> <p>In any case, GridFlow does not support importing audio from 
@@ -186,7 +174,8 @@
 		several MPEG files together). </p> <p>Supports Rewind and Frame Select.</p> <br><b>method</b> open mpeg file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format grid @in/@out">format grid @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format grid @in/@out">format grid @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_grid.png" alt="[open grid file filename.grid]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
     <p> 
 		This is GridFlow's special file format. This is the only I/O 
@@ -224,12 +213,14 @@
 			A number will be written in whichever way is more natural 
 			on this computer. The natural way is slightly faster to handle. 
 			This is the default setting. </li> </ul> <br>
- </p> <br></td> 
+ </p> <br></td></tr><tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Acquisition_Devices"></a><h4>Acquisition Devices</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4"><a name="Acquisition_Devices"></a><h4>Acquisition Devices</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <br><b>method</b> open <b>(</b>device<b>, </b><i>'noinit'</i> noinit<b>)</b>    
 			Noinit makes this format handler gentle with bad-tempered drivers 
@@ -254,12 +245,14 @@
  <br><b>method</b> size <b>(</b>height<b>, </b>width<b>)</b>    
 			sets the input size, especially when using a video digitalizer 
 			device <br>
- </p> <br></td> 
+ </p> <br></td></tr><tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Window_Output"></a><h4>Window Output</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4"><a name="Window_Output"></a><h4>Window Output</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_x11.png" alt="[open x11 here]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
    <p>supports 15,16,24,32-bit truecolor displays</p> <p>now also support 8-bit indexed displays, using a private colormap 
 		configured as 3:3:2 RGB. When using 8-bit you can specify the 
@@ -318,7 +311,7 @@
 			the ones GridFlow uses.) <br>
  <br><b>method</b> hidecursor <b>(</b><b>)</b>  
 			This makes the cursor invisible. <br>
-  <br><b>outlet 0</b> <b>method</b> position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     
+  <br><b>outlet 0 </b><b>method</b> position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     
 				This is emitted every time the cursor moves inside 
 				the window connected to this format handler. This is also 
 				emitted when the cursor is dragging from inside to outside 
@@ -327,18 +320,17 @@
 				extracted from the button value by applying [&gt;&gt; 
 				buttonnumber] and then checking whether the result is odd. 
 				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul> <br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign='top'><br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> open <b>(</b><b>)</b>  
 			opens a dim(480,640,3) rgb window. <br>
  <br><b>method</b> grid <b>(</b><i>grid(rows columns {red green blue})</i> grid<b>)</b>   
 			sends frame to screen. window is NOT resized. <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format aalib @out">format aalib @out</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format aalib @out">format aalib @out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>method</b> open aalib <b>(</b>driver<b>, </b>args...<b>)</b>   
-				Normally "X11" with uppercase X; else consult 
-				the AALib manual.   
-				You can pass "commandline options" of AALib here.  <br>
+ <br><b>method</b> open aalib <b>(</b>driver<b>, </b>args...<b>)</b>    <br>
  <br><b>method</b> grid <b>(</b><i>grid(rows columns {white})</i> grid<b>)</b>   
 			converts a greyscale image to an ascii image and possibly 
 			displays it. note that the image is typically downscaled by 
@@ -355,7 +347,8 @@
  <br><b>method</b> dump <b>(</b><b>)</b>  
 			produces a Dim[y,x,2] grid whose two channels are 
 			ascii character codes and character attributes. <br>
- <br></td> 
+ <br></td></tr><tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <td colspan="4" bgcolor="black">

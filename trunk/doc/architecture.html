@@ -22,94 +22,115 @@
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
-<tr><td colspan="2"><h4><a href="#Numbers">Numbers</a></h4><ul>
-</ul>
-<h4><a href="#Grid_Literals">Grid Literals</a></h4><ul>
-</ul>
-<h4><a href="#Grid_Protocol">Grid Protocol</a></h4><ul>
-</ul>
-<h4><a href="#Picture_Protocol">Picture Protocol</a></h4><ul>
-</ul>
-<h4><a href="#One-Input_Operators">One-Input Operators</a></h4><ul>
-</ul>
-<h4><a href="#Two-Input_Operators">Two-Input Operators</a></h4><ul>
-</ul>
-<h4><a href="#Bridges">Bridges</a></h4><ul>
-</ul>
-<h4><a href="#Synchronisation">Synchronisation</a></h4><ul>
-</ul>
-<br><br>
+<tr><td colspan="2"><br><br>
 </td></tr> 
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Numbers"></a><h4>Numbers</h4></td></tr><tr><td></td><td></td><td> <p>High-performance computation requires precise and quite peculiar 
-	definitions of numbers and their representation.</p> <p>Inside most programs, numbers are written down as strings of 
+<tr><td colspan="4"><a name="Numbers"></a><h4>Numbers</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>High-performance computation requires precise and quite peculiar 
+	definitions of numbers and their representation.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Inside most programs, numbers are written down as strings of 
 	bits. A bit is either zero or one. Just like the decimal system 
 	uses units, tens, hundreds, the binary system uses units, twos, 
-	fours, eights, sixteens, and so on.</p> <p>One notation called integer allows for only integer values to be 
+	fours, eights, sixteens, and so on.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>One notation called integer allows for only integer values to be 
 	written (no fractions). when it is unsigned, no negative values may 
 	be written. when it is signed, one bit indicates whether the number 
-	is positive or negative.</p> <p>In GridFlow, there are two kinds of numbers:</p> <p><b>int32</b>, signed 32-bit integer. 
+	is positive or negative.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>In GridFlow, there are two kinds of numbers:</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p><b>int32</b>, signed 32-bit integer. 
 	values from -2147483648 to 2147483647 
 	(which is from -2<sup>31</sup> to 2<sup>31</sup>-1). 
-	this is used for most computations. </p> <p><b>uint8</b>, unsigned 8-bit integer. 
+	this is used for most computations. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p><b>uint8</b>, unsigned 8-bit integer. 
 	values from 0 to 255 
 	(which is from 0 to 255). 
 	this is the usual size of numbers taken from files and cameras, and 
-	written to files and to windows. </p> 
+	written to files and to windows. </p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Grid_Literals"></a><h4>Grid Literals</h4></td></tr><tr><td></td><td></td><td> 
-<p> 
+</td></tr>
+<tr><td></td><td></td><td><p> 
 	In every grid-accepting inlet, a list may be sent instead; if 
 	it consists only of integers, it will be converted to a 
 	one-dimensional grid. Else it may contain a single "#" sign and 
 	integers on both sides of it, where the ones to the left of it are 
 	fed as arguments to an imaginary [@redim] object and the one to the 
 	right of it are fed through that [@redim]. 
-</p> 
-<p> 
+</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p> 
 	In every grid-accepting inlet, an integer or float may also be sent; 
 	it will be converted to a zero-dimensional grid (a <b>scalar</b>). 
-</p> 
+</p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Grid_Protocol"></a><h4>Grid Protocol</h4></td></tr><tr><td></td><td></td><td> <p> 
-	each element of a grid is an <b>int32</b>. </p> <p> 
+<tr><td colspan="4"><a name="Grid_Protocol"></a><h4>Grid Protocol</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
+	each element of a grid is an <b>int32</b>. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a 
 	three-dimensional grid of 240 rows of 320 columns of triplets is called 
-	dim(240,320,3). </p> <p> 
+	dim(240,320,3). </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	There is a sequence in which elements of a Grid are stored and 
 	transmitted.  Dimension 0 is called "first" and dimension N-1 is 
 	called "last". They are called so because if you select a 
 	position in the first dimension of a grid, the selected part is of the same 
 	shape minus the first dimension; so in dim(240,320,3) if you select 
 	row 51 (or whichever valid row number), you get a dim(320,3). if you select 
-	a subpart two more times you get to a single number. </p> <p> 
+	a subpart two more times you get to a single number. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	At each such level, elements are sent/stored in their numeric order, 
 	and are numbered using natural numbers starting at 0. This ordering usually 
-	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, <kbd>@export</kbd> and <kbd>@redim</kbd> care about it. </p> <p> 
+	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, <kbd>@export</kbd> and <kbd>@redim</kbd> care about it. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	On the other hand, order of dimensions usually does matter; this is 
 	what distinguishes rows from columns and channels, for example. 
-	Most objects care about the distinction. </p> <p> 
+	Most objects care about the distinction. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	A grid with only 1 element in a given dimension is different from one 
 	lacking that dimension; it won't have the same meaning. You can use this 
-	property to your advantage sometimes. </p> <p> 
+	property to your advantage sometimes. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	Zero-dimensional grids exist. They are called dim(). They can only contain 
-	a single number. </p> 
+	a single number. </p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Picture_Protocol"></a><h4>Picture Protocol</h4></td></tr><tr><td></td><td></td><td> <p><i>This section is useful if you want to know what a picture is 
-	in terms of a grid. </i></p> <p>A picture is a three-dimensional Grid: <ul> <li><b>0</b> : rows</li> <li><b>1</b> : columns</li> <li><b>2</b> : channels</li> </ul> </p> <p>Channels for the RGB color model are: <ul> <li><b>0</b> : red</li> <li><b>1</b> : green</li> <li><b>2</b> : blue</li> </ul> </p> <p> 
+<tr><td colspan="4"><a name="Picture_Protocol"></a><h4>Picture Protocol</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p><i>This section is useful if you want to know what a picture is 
+	in terms of a grid. </i></p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>A picture is a three-dimensional Grid: <ul> <li><b>0</b> : rows</li> <li><b>1</b> : columns</li> <li><b>2</b> : channels</li> </ul> </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Channels for the RGB color model are: <ul> <li><b>0</b> : red</li> <li><b>1</b> : green</li> <li><b>2</b> : blue</li> </ul> </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	Because Grids are made of 32-bit integers, a three-channel picture uses 
 	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
 	for display. That huge amount of slack is there because when you create 
@@ -117,31 +138,46 @@
 	higher precision than a normal picture. Especially, results of multiplications 
 	are big and should not overflow before you divide them back to normal; 
 	and similarly, you can have negative values all over, as long as you take 
-	care of them before they get to the display. </p> <p> 
+	care of them before they get to the display. </p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p> 
 	In the final conversion, high bits are just ignored. This means: black is 
 	0, maximum is 255, and values wrap like with <kbd>% 256</kbd>. If you want to 
-	clip them, you may use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. </p> 
+	clip them, you may use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. </p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr> <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr><tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="1"><tr><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr> <tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> randomly produces a non-negative number below A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> square root of A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/sq.png" border="0" alt="sq"></td><td> A times A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  
+</table></td></tr></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
-</table> 
+ 
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Two-Input_Operators"></a><h4>Two-Input Operators</h4></td></tr> <tr><td></td><td></td><td> <p>In the following table, A is the value entered to the 
-		left, and B is the value entered to the right.</p> <p>Angles are in hundredths of degrees. This means a full circle 
+<tr><td colspan="4"><a name="Two-Input_Operators"></a><h4>Two-Input Operators</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>In the following table, A is the value entered to the 
+		left, and B is the value entered to the right.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Angles are in hundredths of degrees. This means a full circle 
 		(two pi radians) is 36000. You convert from degrees to our angles 
 		by multiplying by 100. You convert from radians to our angles by 
-		multiplying by 18000/pi.</p> <p>Hyperbolic functions (tanh) work with our angles too, so the 
-		same conversions apply.</p> </td></tr>
- <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/ignore.png" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
+		multiplying by 18000/pi.</p></td></tr>
+<tr><td></td><td></td><td> </td></tr>
+<tr><td></td><td></td><td><p>Hyperbolic functions (tanh) work with our angles too, so the 
+		same conversions apply.</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><tr><td></td><td></td><td><table border="1"><tr><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr> <tr><td><img src="images/op/ignore.png" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
  <tr><td><img src="images/op/put.png" border="0" alt="put"></td><td> B </td><td>replace by</td><td>replace by</td></tr>
  <tr><td><img src="images/op/add.jpg" border="0" alt="+"></td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr>
  <tr><td><img src="images/op/sub.jpg" border="0" alt="-"></td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr>
@@ -183,34 +219,47 @@
  <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/pow.jpg" border="0" alt="**"></td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>&nbsp;</td></tr>
  
+</table></td></tr></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
 <tr><td>&nbsp;</td></tr>
-</table> 
+ 
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Bridges"></a><h4>Bridges</h4></td></tr><tr><td></td><td></td><td> 
-<p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric. 
-jMax support has been added back as a <b>Bridge</b>.</p> 
-<p>Bridges, for the most part, plug into the FObject class, which is the common 
+</td></tr>
+<tr><td></td><td></td><td><p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric. 
+jMax support has been added back as a <b>Bridge</b>.</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p>Bridges, for the most part, plug into the FObject class, which is the common 
 root of most of GridFlow's classes. Under the current design, the bridge is 
 compiled separately, and is directly loaded by the host software; then the 
 bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks 
 with the main part. 
-</p> 
+</p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Synchronisation"></a><h4>Synchronisation</h4></td></tr><tr><td></td><td></td><td> 
-<p>In GridFlow you cannot send two grids in different inlets at the 
+</td></tr>
+<tr><td></td><td></td><td><p>In GridFlow you cannot send two grids in different inlets at the 
 same time. You have to use @finished together with (possibly) fork and @store, 
 which can be cumbersome. If you don't do this, the result is undefined 
-behaviour (or crash!).</p> 
-<p>In GridFlow 0.7.1 this is beginning to change. @store and @ now allow 
+behaviour (or crash!).</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p>In GridFlow 0.7.1 this is beginning to change. @store and @ now allow 
 right-inlet grids to be buffered if an operation is occuring on left inlet. This 
 should make many circuits simpler. 
-</p> 
-<p>(more to come)</p> 
+</p></td></tr>
+<tr><td></td><td></td><td> 
+</td></tr>
+<tr><td></td><td></td><td><p>(more to come)</p></td></tr>
+<tr><td></td><td></td><td> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
