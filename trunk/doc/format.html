@@ -71,6 +71,9 @@
  <br><b>inlet 0</b> <b>method</b> int <b>(</b>frame_number<b>)</b>   
 				selects one picture from a multi-picture format 
 				and then does the same as a bang. <br>
+ <br><b>inlet 0</b> <b>method</b> set <b>(</b>frame_number<b>)</b>   
+				selects one picture from a multi-picture format, 
+				to be displayed by the next bang. <br>
  <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
 				sends a grid through the outlet. the grid may be the 
 				result of reading from a file, acquiring from a device, 
@@ -88,6 +91,14 @@
 				see section "External Picture Formats". <br>
  <br><b>inlet 0</b> <b>method</b> option rewind <b>(</b><b>)</b>  
 				rewinds to beginning of file if applicable. <br>
+ <br><b>inlet 0</b> <b>method</b> option loop <b>(</b><i>bool</i> flag<b>)</b>   
+				controls the automatic looping of movies. <br>
+   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
+				frame number of frame just sent, 
+				for formats that have frame numbers. <br>
+ <br><b>inlet 1</b> <b>method</b> bang <b>(</b><b>)</b>  
+				tried to read a frame that does not exist 
+				(signals end of file) <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@out">@out</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@out.png" alt="[@out]" border="0"><br clear="left"><br><br><a href="images/help_@inout.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b>format<b>, </b>format_specific_part...<b>)</b>    
@@ -162,14 +173,17 @@
 			values 0-255 <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
+ <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
  <br><b>method</b> option codec <b>(</b><i>symbol</i> codec<b>)</b>   
 			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4. 
-			must be set before the first frame is written. 
-			only applies to @out. <br>
+			Must be set before the first frame is written. 
+			only applies to @out. Choosing a codec is important 
+			because codecs influence greatly the speed of 
+			encoding, the size of the written file, and its 
+			fidelity. <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>Two different libraries are available for dealing with 
+  <p>support for .mpeg files</p> <p>this format supports frame-seek and frame-tell.</p> <p>Two different libraries are available for dealing with 
 		MPEG files. Those have different details, capabilities and quirks.</p> <p>In any case, GridFlow does not support importing audio from 
 		those files.</p> <p>If you use the HeroineWarrior library, you may open several 
 		mpeg files at once, but not with the GregWard library.</p> <p>Libraries may scream error messages in a rude way.</p> <p>By opposition to PPM and TARGA, this format driver only 

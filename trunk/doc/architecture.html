@@ -49,6 +49,8 @@
 </ul>
 <h4><a href="#Bridges">Bridges</a></h4><ul>
 </ul>
+<h4><a href="#Synchronisation">Synchronisation</a></h4><ul>
+</ul>
 <br><br>
 </td></tr> 
 <tr> 
@@ -172,6 +174,10 @@
  <tr><td><img src="images/op/dom.jpg" border="0" alt="swap%"></td><td> B % A, modulo (goes with div) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/rem.png" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/mer.png" border="0" alt="swaprem"></td><td> B % A, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/gcd.png" border="0" alt="gcd"></td><td> 
+	greatest common divisor</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/lcm.png" border="0" alt="lcm"></td><td> 
+	least common multiple</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/or.jpg" border="0" alt="|"></td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr>
  <tr><td><img src="images/op/xor.jpg" border="0" alt="^"></td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr>
  <tr><td><img src="images/op/and.jpg" border="0" alt="&"></td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr>
@@ -191,7 +197,7 @@
  <tr><td><img src="images/op/sin.jpg" border="0" alt="sin*"></td><td> B * sin(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
  <tr><td><img src="images/op/cos.jpg" border="0" alt="cos*"></td><td> B * cos(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
  <tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td><td>&nbsp;</td><td>find angle to origin (part of polar transform)</td></tr>
- <tr><td><img src="images/op/tanh.png" border="0" alt="tanh*"></td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid</td></tr>
+ <tr><td><img src="images/op/tanh.png" border="0" alt="tanh*"></td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid, fuzzy logic</td></tr>
  <tr><td><img src="images/op/log.png" border="0" alt="log*"></td><td> B * log(A) (in base e) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/pow.jpg" border="0" alt="**"></td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>&nbsp;</td></tr>
@@ -210,6 +216,22 @@ compiled separately, and is directly loaded by the host software; then the
 bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks 
 with the main part. 
 </p> 
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+ 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Synchronisation"></a><h4>Synchronisation</h4></td></tr><tr><td></td><td></td><td> 
+<p>In GridFlow you cannot send two grids in different inlets at the 
+same time. You have to use @finished together with (possibly) fork and @store, 
+which can be cumbersome. If you don't do this, the result is undefined 
+behaviour (or crash!).</p> 
+<p>In GridFlow 0.7.1 this is beginning to change. @store and @ now allow 
+right-inlet grids to be buffered if an operation is occuring on left inlet. This 
+should make many circuits simpler. 
+</p> 
+<p>(more to come)</p> 
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
