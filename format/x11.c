@@ -687,6 +687,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			override_redirect = true;
 		} else if (a==SYM(use_stripes)){
 			use_stripes = true;
+		} else {
+			break;
 		}
 	}
 
