@@ -36,7 +36,7 @@ ImageDesc *mpeg_id = 0;
 struct FormatMPEG : Format {
 	BitPacking *bit_packing;
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(frame);
 	DECL3(close);
 	GRINLET3(0);
@@ -81,7 +81,7 @@ METHOD3(FormatMPEG,close) {
 	return Qnil;
 }
 
-METHOD3(FormatMPEG,init) {
+METHOD3(FormatMPEG,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
@@ -113,6 +113,6 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatMPEG,"FormatMPEG",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG,0,4)),
-DECL(FormatMPEG,init),
+DECL(FormatMPEG,initialize),
 DECL(FormatMPEG,frame),
 DECL(FormatMPEG,close))

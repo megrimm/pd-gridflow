@@ -403,10 +403,9 @@ class FPS < GridObject
 		if fps>.001 then
 			if @detailed
 				@history.sort!
-
 				send_out 0, fps, 1000/fps,
 					1000*@history.min,
-					500*(@history[n/2]+@history[(n+1)/2]),
+					500*(@history[n/2]+@history[(n-1)/2]),
 					1000*@history.max
 			else
 				send_out 0, fps

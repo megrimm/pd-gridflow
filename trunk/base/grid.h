@@ -42,19 +42,22 @@
 /* general-purpose macros */
 
 #define LIST(args...) args
-#define RAISE(args...)    rb_raise(rb_eArgError,args)
+#define RAISE(args...) rb_raise(rb_eArgError,args)
 #define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
 #define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
+
+/* returns the size of a statically defined array */
+#define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
+
+/* these could be inline functions */
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
-
-/* these should be inline functions */
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 #define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
@@ -75,10 +78,6 @@
 #undef assert
 #define assert(_foo_)
 #endif
-
-/* returns the size of a statically defined array */
-#define COUNT(_array_) \
-	((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 #ifdef HAVE_TSC_PROFILING
 #define HAVE_PROFILING
@@ -382,7 +381,7 @@ struct BitPacking {
 	void gfpost();
 	bool is_le();
 	bool eq(BitPacking *o);
-	DECL3(init);
+	DECL3(initialize);
 
 /* main entrances to Packers/Unpackers */
 	void pack(  int n, Pt<Number> in, Pt< uint8> out);
@@ -638,7 +637,7 @@ struct GridOutlet {
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
 struct FObject {
-	Ruby /*GridFlow::FObject*/ peer; /* point to Ruby peer */
+	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
 	GridClass *grid_class;
 	BFObject *foreign_peer; /* point to jMax/PD peer */
 	uint64 profiler_cumul, profiler_last;
@@ -653,21 +652,24 @@ struct GridObject : FObject {
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
 
-	/* Those are really specific to Formats. Should fix that someday. */
-	GridObject *parent;
-	Ruby /*Symbol*/ mode;
+	/* Make sure you distinguish #close/#delete, and C++'s delete. The first
+	two are quite equivalent and should never make an object "crashable".
+	C++ is called by Ruby's garbage collector or by jMax/PureData's delete.
+    */
 
 	GridObject();
 	virtual void mark(); /* not used for now */
 	virtual ~GridObject();
 
 	const char *args() {
-		Ruby s=rb_funcall(peer,SI(args),0);
+		Ruby s=rb_funcall(rself,SI(args),0);
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
 
-	DECL3(init);
+	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
+
+	DECL3(initialize);
 	DECL3(inlet_dim);
 	DECL3(inlet_set_factor);
 	DECL3(method_missing);
@@ -677,42 +679,16 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_end);
 };
 
+typedef struct GridObject Format;
+
 inline BFObject *FObject_peer(Ruby rself) {
 	DGS(GridObject); return self->foreign_peer;
 }
 
 void GridObject_conf_class(Ruby rself, GridClass *grclass);
 
-/* **************************************************************** */
-
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
-
-struct Format : GridObject {
-	/*
-	  "parent","mode" fields have been moved to GridObject temporarily
-	  as a hack around a memory corruption bug that would be somewhat
-	  tricky to fix now.
-	*/	
-
-	DECL3(init);
-	DECL3(option);
-	DECL3(close);
-	DECL3(open_file);
-};
-
-/*
-	NEW FORMAT API
-	mode is :in or :out
-	def initialize(mode,*args) : open a file handler (do it via .new of class)
-	def frame() : read one frame, send through outlet 0
-	def seek(Integer i) : select one frame to be read next (by number)
-	def length() : ^Integer number of frames
-	def option(Symbol name, *args) : miscellaneous options
-	def close() : close a handler
-*/
-
-/* **************************************************************** */
 
 typedef struct GFBridge {
 	/* send message */
@@ -736,7 +712,6 @@ extern Ruby cFormat;
 
 uint64 RtMetro_now();
 
-Ruby gf_post_string (Ruby rself, Ruby s);
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself);
 Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets, Ruby outlets);
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);

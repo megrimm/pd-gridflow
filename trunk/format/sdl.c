@@ -46,7 +46,7 @@ struct FormatSDL : Format {
 			dim->prod(0,1)*bit_packing->bytes);
 	}
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(close);
 	GRINLET3(0);
 };
@@ -105,7 +105,7 @@ METHOD3(FormatSDL,close) {
 	return Qnil;
 }
 
-METHOD3(FormatSDL,init) {
+METHOD3(FormatSDL,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc>0) RAISE("too many arguments");
@@ -144,6 +144,6 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatSDL,"FormatSDL",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatSDL,0,4)),
-DECL(FormatSDL,init),
+DECL(FormatSDL,initialize),
 DECL(FormatSDL,close))
 

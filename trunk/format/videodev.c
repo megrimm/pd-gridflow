@@ -229,7 +229,7 @@ struct FormatVideoDev : Format {
 
 	void frame_finished (Pt<uint8> buf);
 
-	DECL3(init);
+	DECL3(initialize);
 	DECL3(close);
 	DECL3(size);
 	DECL3(option);
@@ -242,7 +242,7 @@ struct FormatVideoDev : Format {
 	DECL3(channel);
 	DECL3(frequency);
 	DECL3(transfer);
-	DECL3(init2);
+	DECL3(initialize2);
 	GRINLET3(0);
 };
 
@@ -261,7 +261,7 @@ struct FormatVideoDev : Format {
 		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
 		 RAISE("ioctl error"), 0))
 
-#define GETFD NUM2INT(rb_funcall(rb_ivar_get(peer,SI(@stream)),SI(fileno),0))
+#define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
 METHOD3(FormatVideoDev,size) {
 	int fd = GETFD;
@@ -369,7 +369,7 @@ static int read3(int fd, uint8 *image, int n) {
 
 METHOD3(FormatVideoDev,frame) {
 	if (!bit_packing) RAISE("no bit_packing");
-	if (!image) rb_funcall(peer,SI(alloc_image),0);
+	if (!image) rb_funcall(rself,SI(alloc_image),0);
 	int fd = GETFD;
 	if (!use_mmap) {
 //		gfpost("self=%p; image=%p",self,image);
@@ -388,12 +388,12 @@ METHOD3(FormatVideoDev,frame) {
 	int finished_frame;
 	if (pending_frames[0] < 0) {
 		next_frame = 0;
-		for (int i=0; i<2; i++) rb_funcall(peer,SI(frame_ask),0);
+		for (int i=0; i<2; i++) rb_funcall(rself,SI(frame_ask),0);
 	}
 	vmmap.frame = finished_frame = pending_frames[0];
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
 	frame_finished(image+vmbuf.offsets[finished_frame]);
-	rb_funcall(peer,SI(frame_ask),0);
+	rb_funcall(rself,SI(frame_ask),0);
 	return Qnil;
 }
 
@@ -439,7 +439,7 @@ METHOD3(FormatVideoDev,channel) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	rb_funcall(peer,SI(tuner),1,INT2NUM(0));
+	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 	return Qnil;
 }
 
@@ -454,11 +454,11 @@ METHOD3(FormatVideoDev,transfer) {
 	VALUE sym = argv[0];
 	gfpost("transfer %s",rb_sym_name(argv[0]));
 	if (sym == SYM(read)) {
-		rb_funcall(peer,SI(dealloc_image),0);
+		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
 		gfpost("transfer read");
 	} else if (sym == SYM(mmap)) {
-		rb_funcall(peer,SI(dealloc_image),0);
+		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = true;
 		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
@@ -471,17 +471,17 @@ METHOD3(FormatVideoDev,option) {
 	int value = argv[1];
 	gfpost("option %s %08x",rb_sym_name(sym),value);
 	if (sym == SYM(channel)) {
-		rb_funcall(peer,SI(channel),1,value);
+		rb_funcall(rself,SI(channel),1,value);
 	} else if (sym == SYM(tuner)) {
-		rb_funcall(peer,SI(tuner),1,value);
+		rb_funcall(rself,SI(tuner),1,value);
 	} else if (sym == SYM(norm)) {
-		rb_funcall(peer,SI(norm),1,value);
+		rb_funcall(rself,SI(norm),1,value);
 	} else if (sym == SYM(frequency)) {
-		rb_funcall(peer,SI(frequency),1,value);
+		rb_funcall(rself,SI(frequency),1,value);
 	} else if (sym == SYM(transfer)) {
-		rb_funcall(peer,SI(transfer),1,value);
+		rb_funcall(rself,SI(transfer),1,value);
 	} else if (sym == SYM(size)) {
-		rb_funcall(peer,SI(size),2,value,argv[2]);
+		rb_funcall(rself,SI(size),2,value,argv[2]);
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -504,20 +504,20 @@ METHOD3(FormatVideoDev,option) {
 
 METHOD3(FormatVideoDev,close) {
 	if (bit_packing) delete bit_packing;
-	if (image) rb_funcall(peer,SI(dealloc_image),0);
+	if (image) rb_funcall(rself,SI(dealloc_image),0);
 	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
 	return Qnil;
 }
 
-METHOD3(FormatVideoDev,init2) {
+METHOD3(FormatVideoDev,initialize2) {
 	int fd = GETFD;
 	VideoCapability vcaps;
 	VideoPicture *gp = new VideoPicture;
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
-	rb_funcall(peer,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
+	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost("original settings:");
@@ -550,12 +550,12 @@ METHOD3(FormatVideoDev,init2) {
 	default:
 		gfpost("can't handle palette %d", gp->palette);
 	}
-	rb_funcall(peer,SI(channel),1,INT2NUM(0));
-	rb_funcall(peer,SI(size),2,INT2NUM(0),INT2NUM(0));
+	rb_funcall(rself,SI(channel),1,INT2NUM(0));
+	rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
 	return Qnil;
 }
 
-METHOD3(FormatVideoDev,init) {
+METHOD3(FormatVideoDev,initialize) {
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	pending_frames[0] = -1;
@@ -567,16 +567,16 @@ METHOD3(FormatVideoDev,init) {
 	const char *filename = rb_sym_name(argv[0]);
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
-	rb_ivar_set(peer,SI(@stream),file);
+	rb_ivar_set(rself,SI(@stream),file);
 //	rb_p(file);
-//	rb_p(rb_ivar_get(peer,SI(@stream)));
+//	rb_p(rb_ivar_get(rself,SI(@stream)));
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 		int v[]={288,352,3};
 		dim = new Dim(3,v);
 	} else {
-		rb_funcall(peer,SI(init2),0);
+		rb_funcall(rself,SI(initialize2),0);
 	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
@@ -592,8 +592,8 @@ static void startup (GridClass *self) {
 
 GRCLASS(FormatVideoDev,"FormatVideoDev",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatVideoDev,0,4)),
-DECL(FormatVideoDev,init),
-DECL(FormatVideoDev,init2),
+DECL(FormatVideoDev,initialize),
+DECL(FormatVideoDev,initialize2),
 DECL(FormatVideoDev,alloc_image),
 DECL(FormatVideoDev,dealloc_image),
 DECL(FormatVideoDev,frame_ask),
