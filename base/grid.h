@@ -309,7 +309,7 @@ public:
 		if (!(p+i>=start && p+i<start+n)) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p, (long)i, (long)p+i,(long)start,(long)start+n);
+				(long)p, (long)i, (long)p+i,(long)start,(long)(start+n));
 			::raise(11);
 		}
 #endif
@@ -317,18 +317,19 @@ public:
 	}
 
 	void will_use(int k) {
+		if (k==0) return;
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p>=start && p<start+n)) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)p,(long)start,(long)start+n);
+				(long)p,(long)start,(long)(start+n));
 			::raise(11);
 		}
 		T *q = p+k-1;
 		if (!(q>=start && q<start+n)) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				(long)q,(long)start,(long)start+n);
+				(long)q,(long)start,(long)(start+n));
 			::raise(11);
 		}
 #endif
@@ -368,11 +369,14 @@ EACH_NUMBER_TYPE(FOO)
 
 template <class T>
 inline void COPY(Pt<T> dest, Pt<T> src, int n) {
+	src.will_use(n);
+	dest.will_use(n);
 	gfmemcopy((uint8*)dest,(uint8*)src,n*sizeof(T));
 }
 
 template <class T>
 inline void CLEAR(Pt<T> dest, int n) {
+	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
 

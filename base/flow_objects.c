@@ -754,10 +754,9 @@ GRID_INLET(GridOuter,0) {
 	default:
 	for (int i=0,k=0; k<n; i++) for (int j=0; j<b_prod; j++, k++) buf[k]=data[i];
 	}
-	int j=0;
-	for (; j<n&-64; j+=64*b_prod) op->zip(64*b_prod,buf+j,buf2);
-	for (; j<n&- 8; j+= 8*b_prod) op->zip( 8*b_prod,buf+j,buf2);
-	for (; j<n    ; j+=   b_prod) op->zip(   b_prod,buf+j,buf2);
+	int nn=n/(64*b_prod)*(64*b_prod);
+	for (int j=0; j<nn; j+=64*b_prod) op->zip(64*b_prod,buf+j,buf2);
+	op->zip(n-nn,buf+nn,buf2);
 	out[0]->give(n,buf);
 } GRID_FINISH {
 } GRID_END
@@ -1031,7 +1030,7 @@ GRID_INLET(GridJoin,0) {
 		}
 	}
 	out[0]->begin(new Dim(d->n,v));
-	in->set_factor(d->prod(w));
+	if (d->prod(w)) in->set_factor(d->prod(w));
 } GRID_FLOW {
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;

@@ -315,9 +315,9 @@ DEF_OP2(mer, a==0 ? 0 : b%a,
 DEF_OP2(gcd, gcd(a,b), x==0, x==1)
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
 
-DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==-1)
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==-1) // !@#$ uint8?
 DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
-DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), x==-1, x==0)
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), x==-1, x==0) // !@#$ uint8?
 DEF_OP2F(shl, a<<b, a*pow(2.0,+b), side==at_right && x==0, false)
 DEF_OP2F(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
 
