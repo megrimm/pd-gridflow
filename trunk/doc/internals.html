@@ -61,15 +61,19 @@ PD.</p></td></tr>
 called Potato", which is often used in modern software design and is a nice convention borrowed from 
 biology.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>A FObject is normally in two: a (Ruby) GridFlow::FObject that is the central part and a 
-(C++) FObject. The GridFlow::FObject is created as a 
-RData kind of box (T_DATA) using Ruby-C's Data_Make_Struct on a GridObject. This is how 
-most Ruby-C programs inherit from Ruby classes. Note that Ruby's boxed objects 
-have a maximum of five fields, and they're usually taken, so additional fields 
-have to be outside of it. This is why RData exists.</p></td></tr>
+<tr><td></td><td></td><td><p> 
+A FObject is normally in two or three parts: a (Ruby) GridFlow::FObject 
+that is the central part; a (C++) FObject; a (C++) BFObject. 
+The GridFlow::FObject is created as a RData kind of box (T_DATA) 
+using Ruby-C's Data_Make_Struct on a GridObject. This is 
+how most Ruby-C programs inherit from Ruby classes. Note that 
+Ruby's boxed objects have a maximum of five fields, and they're usually 
+taken, so additional fields have to be outside of it. This is why RData exists. </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>So basically you have a C++ FObject that is "part of" a GridFlow::FObject and 
-they point to each other using "peer pointers". </p></td></tr>
+<tr><td></td><td></td><td><p> 
+So basically you have a C++ FObject that is "part of" a GridFlow::FObject 
+and they point to each other using "peer pointers". 
+ The BFObject links back to the RData box through a pointer called peer. </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
