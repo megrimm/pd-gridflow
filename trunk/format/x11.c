@@ -86,11 +86,13 @@ struct FormatX11 : Format {
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
+	if (y>dim->get(0)||x>dim->get(1)) return;
+	if (y+sy>dim->get(0)) sy=dim->get(0)-y;
+	if (x+sx>dim->get(1)) sx=dim->get(1)-x;
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		XSync(display,False);
-		if (sy>dim->get(0)) sy=dim->get(0);
-		if (sx>dim->get(1)) sx=dim->get(1);
+//		gfpost("display,window,imagegc = %d,%d,%d",display,window,imagegc);
 //		gfpost("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		/* should completion events be waited for? looks like a bug */
@@ -274,7 +276,10 @@ top:
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl(shm_info->shmid,IPC_RMID,0);
 
-		if (!use_shm) RAISE("shm got disabled, retrying...");
+		if (!use_shm) {
+			gfpost("shm got disabled, retrying...");
+			goto top;
+		}
 	} else
 #endif
 	{
@@ -298,7 +303,6 @@ void FormatX11::resize_window (int sx, int sy) {
 	if (sx>MAX_INDICES) RAISE("width too big");
 
 	int v[3] = {sy, sx, 3};
-	Window oldw;
 /* !@#$ this code is sort of meaningless now
 	if (parent && parent->in[0]->dex > 0) {
 		gfpost("resizing while receiving picture (ignoring)");
@@ -316,8 +320,7 @@ void FormatX11::resize_window (int sx, int sy) {
 	
 	name = strdup("GridFlow");
 
-	oldw = window;
-	if (oldw) {
+	if (window) {
 		if (is_owner) {
 			//gfpost("About to resize window: %s",dim->to_s());
 			XResizeWindow(display,window,sx,sy);

@@ -348,8 +348,8 @@ class GridCheckers < GridObject
 		(0..@chain.length-2).each {|i| @chain[i].connect 0,@chain[i+1],0 }
 		@chain[-1].connect 0,self,1
 	end
-	def _0_grid(*a) @chain[0]._0_grid *a; end
-	def _1_grid(*a) send_out 0, :grid, *a; end
+	def _0_grid(*a) @chain[0]._0_grid(*a) end
+	def _1_grid(*a) send_out(0, :grid, *a) end
 	install "@checkers", 1, 1
 end
 
@@ -400,7 +400,6 @@ class FPS < GridObject
 		n=@history.length
 		fps = n/@duration
 		@duration = 0
-		GridFlow.post "n=%d", n
 		if fps>.001 then
 			if @detailed
 				@history.sort!

@@ -227,7 +227,7 @@ def test_munchies
 	f2 = FObject["@for 2 5 1"] # make vector (2,3,4)
 	t0 = FObject["@outer ^"] # for combining all rows and columns
 	t1 = FObject["@outer *"] # for generating colours
-	gout = FObject["@out 64 64"] # open window
+	gout = FObject["@out x11"] # open window
 
 	# syntax: source.connect outlet,destination,inlet
 	f0.connect 0,t0,0
@@ -242,7 +242,7 @@ end
 
 def test_image command
 	gin = FObject["@in"]
-	gout = FObject["@out 256 256"]
+	gout = FObject["@out x11"]
 	gin.connect 0,gout,0
 #	31.times {
 	3.times {
@@ -260,10 +260,7 @@ def test_ppm2
 	pa = FObject["@convolve << + 0"]
 	pb = FObject["@ / 9"]
 	ra = FObject["@redim {3 3}"]
-#	gout = FObject["@out 256 256"]
-	gout = FObject["@out"]
-#	gout.send_in 0, "open sdl"
-	gout.send_in 0, "open x11 here"
+	gout = FObject["@out x11"]
 	gin.connect 0,store,1
 	store.connect 0,pa,0
 	pa.connect 0,pb,0
@@ -285,11 +282,10 @@ def test_foo
 	foo = FObject["@for {0 0} {64 64} {1 1}"]
 	che = FObject["@checkers"]
 	sca = FObject["@scale_by {5 3}"]
-	out = FObject["@out"]
+	out = FObject["@out x11"]
 	foo.connect 0,che,0
 	che.connect 0,sca,0
 	sca.connect 0,out,0
-	out.send_in 0, "open x11"
 	foo.send_in 0
 	$mainloop.loop
 end
@@ -334,7 +330,7 @@ def test_tcp
 		# client
 		GridFlow.gfpost_header = "[client] "
 		$in_client = in1 = FObject["@in"]
-		out = FObject["@out 240 320"]
+		out = FObject["@out x11"]
 		in1.connect 0,out,0
 		out.send_in 0,"option timelog 1"
 		out.send_in 0,"option autodraw 2"
@@ -528,7 +524,7 @@ def test_polygon
 	o4 = FObject["@ cos* 60"]; o3.connect 0,o4,0
 	o5 = FObject["@ + {160 100}"]; o4.connect 0,o5,0
 	poly = FObject["@polygon {3 # 255}"]; o5.connect 0,poly,2
-	out = FObject["@out 240 320"]; poly.connect 0,out,0
+	out = FObject["@out x11"]; poly.connect 0,out,0
 	poly.send_in 0, "240 320 # 0"
 end
 
