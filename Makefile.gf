@@ -1,7 +1,7 @@
 # $Id$
 # This is an annex that covers what is not covered by the generated Makefile
 
-SYSTEM = $(shell uname -s)
+SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 INSTALL_DATA = install -m 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
@@ -187,7 +187,6 @@ jmax-install:: jmax-install-java
 	$(INSTALL_LIB) libgridflow$(LSUF) \
 		$(GFID)/c/lib/$(ARCH)/opt/libgridflow$(LSUF)
 	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
-	$(INSTALL_DATA) gridflow.scm $(GFID)/gridflow.scm
 	$(INSTALL_DIR) $(GFID)/templates
 	$(INSTALL_DIR) $(GFID)/help
 	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
@@ -225,35 +224,25 @@ ifeq (${SYSTEM},Darwin)
 #  PDBUNDLEFLAGS = -bundle_loader $(shell which pd)
   PDBUNDLEFLAGS = -bundle -undefined suppress
 else
-  OS = LINUX
-  PDSUF = .pd_linux
+  ifeq (${SYSTEM},NT)
+    OS = NT
+    PDSUF = .dll
+    PDBUNDLEFLAGS = -shared -I$(PUREDATA_PATH)/src
+    PDLIB = -L/usr/local/lib $(LIBRUBYARG_SHARED) $(PUREDATA_PATH)/bin/pd.dll
+  else
+    OS = LINUX
+    PDSUF = .pd_linux
+  endif
 endif
 # OS = WINNT # PDSUF = .dll
 # OS = IRIX5 # PDSUF = .pd_irix5
 # OS = IRIX6 # PDSUF = .pd_irix6
-
-#pd_nt: foo1.dll foo2.dll dspobj~.dll
-#PDNTCFLAGS = /W3 /WX /DNT /DPD /nologo
-#VC="C:\Program Files\Microsoft Visual Studio\Vc98"
-#PDNTINCLUDE = /I. /I\tcl\include /I\ftp\pd\src /I$(VC)\include
-#PDNTLDIR = $(VC)\lib
-#PDNTLIB = $(PDNTLDIR)\libc.lib \
-#	$(PDNTLDIR)\oldnames.lib \
-#	$(PDNTLDIR)\kernel32.lib \
-#	\ftp\pd\bin\pd.lib 
-#.c.dll:
-#	cl $(PDNTCFLAGS) $(PDNTINCLUDE) /c $*.c
-#	link /dll /export:$*_setup $*.obj $(PDNTLIB)
-
-
 # PDCFLAGS = -o32 -DPD -DUNIX -DIRIX -O2
 # PDLDFLAGS = -elf -shared -rdata_shared 
-
 # PDCFLAGS = -n32 -DPD -DUNIX -DIRIX -DN32 -woff 1080,1064,1185 \
 #	-OPT:roundoff=3 -OPT:IEEE_arithmetic=3 -OPT:cray_ivdep=true \
 #	-Ofast=ip32
 # PDLDFLAGS = -IPA -n32 -shared -rdata_shared
-
 #PDCFLAGS = -DPD -O2 -funroll-loops -fomit-frame-pointer \
 #    -Wall -W -Wshadow -Wstrict-prototypes -Werror \
 #    -Wno-unused -Wno-parentheses -Wno-switch
