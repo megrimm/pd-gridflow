@@ -622,6 +622,13 @@ class GridExportSymbol < GridObject
 	install "@export_symbol", 1, 1
 end
 
+class Phork < GridObject
+  def method_missing(sel,*args)
+    sel =~ /^_(\d)_(.*)/; send_out 1,$2,*args; send_out 0,$2,*args
+  end
+  install "phork", 1, 2
+end
+
 # linear solarization
 class GridSolarize < FPatcher
 	FObjects = ["@ & 255","@ << 1","@ inv+ 255","@! abs","@ inv+ 255"]
