@@ -639,12 +639,13 @@ class GridExportSymbol < GridObject
 	install "@export_symbol", 1, 1
 end
 
-class Phork < FObject
-  #!@#$ marche po
+class Fork < FObject
   def method_missing(sel,*args)
-    sel =~ /^_(\d)_(.*)/; send_out 1,$2,*args; send_out 0,$2,*args
+    sel.to_s =~ /^_(\d)_(.*)$/
+	send_out 1,$2.intern,*args
+	send_out 0,$2.intern,*args
   end
-  install "phork", 1, 2
+  install "fork", 1, 2
 end
 
 # linear solarization

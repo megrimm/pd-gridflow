@@ -60,6 +60,13 @@ for nt in [:int32, :int16, :uint8] do
 	x = Expect.new
 	e.connect 0,x,0
 
+	a = FObject["fork"]
+	b = FObject["@ +"]
+	a.connect 0,b,0
+	a.connect 1,b,1
+	b.connect 0,e,0
+	x.expect([4]) { a.send_in 0, 2 }
+
 	x.expect([2,3,5,7]) { e.send_in 0,"list #{nt} 2 3 5 7" }
 	a = FObject["@fold + {#{nt} # 0}"]
 	a.connect 0,e,0
