@@ -768,12 +768,21 @@ GRID_INLET(GridOuter,0) {
 	out[0]->begin(new Dim(n,v),in->nt);
 } GRID_FLOW {
 	int b_prod = r.dim->prod();
-	STACK_ARRAY(T,buf,b_prod);
-	while (n) {
-		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		op->zip(b_prod,buf,(Pt<T>)r);
-		out[0]->send(b_prod,buf);
-		data++; n--;
+	if (b_prod <= 4) {
+		STACK_ARRAY(T,buf,b_prod*n);
+		for (int i=0,k=0; i<n; i++) {
+			for (int j=0; j<b_prod; j++, k++) buf[k] = data[i];
+		}
+		for (int j=0; j<n; j++) op->zip(b_prod,buf+b_prod*j,(Pt<T>)r);
+		out[0]->send(b_prod*n,buf);
+	} else {
+		STACK_ARRAY(T,buf,b_prod);
+		while (n) {
+			for (int j=0; j<b_prod; j++) buf[j] = *data;
+			op->zip(b_prod,buf,(Pt<T>)r);
+			out[0]->send(b_prod,buf);
+			data++; n--;
+		}
 	}
 } GRID_FINISH {
 } GRID_END
@@ -1372,6 +1381,44 @@ LIST(GRINLET2(GridGrade,0,4)),
 
 /* **************************************************************** */
 
+struct GridPerspective : GridObject {
+	int32 z;
+	GRINLET3(0);
+	DECL3(initialize);
+};
+
+GRID_INLET(GridPerspective,0) {
+	int n = in->dim->n;
+	int32 v[n];
+	COPY(v,in->dim->v,n);
+	v[n-1]--;
+	in->set_factor(in->dim->get(in->dim->n-1));
+	out[0]->begin(new Dim(n,v),in->nt);
+} GRID_FLOW {
+	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
+	static Operator2 *op_div = 0; if (!op_div) op_div = OP2(SYM(/));
+	int m = in->factor;
+	STACK_ARRAY(T,foo,m);
+	for (;n;n-=m,data+=m) {
+		op_mul->map(m-1,data,(T)z);
+		op_div->map(m-1,data,data[m-1]);
+		out[0]->send(m-1,data);
+	}	
+} GRID_FINISH {
+} GRID_END
+
+METHOD3(GridPerspective,initialize) {
+	rb_call_super(argc,argv);
+	z = argc>=1 ? INT(argv[0]) : 256;
+	return Qnil;
+}
+
+GRCLASS(GridPerspective,"@perspective",inlets:1,outlets:1,startup:0,
+LIST(GRINLET2(GridPerspective,0,4)),
+	DECL(GridPerspective,initialize))
+
+/* **************************************************************** */
+
 struct GridLayer : GridObject {
 	Grid r;
 	GridLayer() {
@@ -1791,6 +1838,7 @@ void startup_flow_objects () {
 	INSTALL(GridLayer);
 	INSTALL(GridFinished);
 	INSTALL(GridJoin);
+	INSTALL(GridPerspective);
 	INSTALL(GridGrade);
 	INSTALL(DrawPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
