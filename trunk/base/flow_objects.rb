@@ -69,7 +69,8 @@ FObject.subclass("gridflow",1,1) {
 	end
 	def _0_formats
 		post "-"*32
-		GridFlow.formats.each {|k,v|
+		GridFlow.fclasses.each {|k,v|
+			next if not /#in:/ =~ k
 			modes = case v.flags
 			when 2; "#out"
 			when 4; "#in"

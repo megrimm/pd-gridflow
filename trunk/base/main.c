@@ -38,8 +38,6 @@
 #include <assert.h>
 #include <limits.h>
 
-#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
-
 BuiltinSymbols bsym;
 GFStack gf_stack;
 Ruby mGridFlow;
@@ -247,7 +245,7 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 		self = (FObject *)alloc();
 	}
 	self->check_magic();
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
+	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	self->rself = rself;
@@ -271,7 +269,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_ivar_set(rself,SI(@ninlets),INT2NUM(inlets));
 	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
 	rb_ivar_set(rself,SI(@foreign_name),name2);
-	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)), name2, rself);
+	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses)), name2, rself);
 	rb_funcall(rself, SI(install2), 1, name2);
 	return Qnil;
 }
@@ -285,7 +283,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 }
 
 \def void delete_m () {
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
+	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	rb_funcall(keep,SI(delete),1,rself);
 }
 
@@ -344,7 +342,7 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 }
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
+	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects"));
 	if (argc!=3) RAISE("bad args");
 	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
 	int endian = INT(argv[0]);
@@ -577,8 +575,8 @@ BUILTIN_SYMBOLS(FOO)
 //FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
 //#undef FOO
 
-	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
-	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
+	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
+	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
@@ -590,7 +588,7 @@ BUILTIN_SYMBOLS(FOO)
 		"def self.install2(*) end\n"
 		"def self.add_creator(name)\n"
 			"name=name.to_str.dup\n"
-			"GridFlow.instance_eval{@fclasses_set}[name]=self\n"
+			"GridFlow.instance_eval{@fclasses}[name]=self\n"
 			"GridFlow.add_creator_2 name end\n"
 		"end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
@@ -627,11 +625,7 @@ BUILTIN_SYMBOLS(FOO)
 	for (int i=0; i<COUNT(format_classes); i++) {
 		GridFlow_fclass_install(0,PTR2FIX(format_classes[i]), cFormat);
 	}
-	if (strcmp(RUBY_ARCH,"powerpc-darwin")==0) {
-		EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
-	} else {
-		EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
-	}
+	EVAL("h=GridFlow.fclasses; h['#in:window'] = h['#in:quartz']||h['#in:x11']||h['#in:sdl']");
 	EVAL("GridFlow.load_user_config");
 	signal(11,SIG_DFL); // paranoia
 }

@@ -139,57 +139,38 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 #define DEF_OP(op,expr,neutral,absorbent) \
 	template <class T> class Y##op : Op<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
-		inline static bool is_neutral(T x, LeftRight side) { return neutral; } \
+		inline static bool is_neutral  (T x, LeftRight side) { return neutral; } \
 		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } };
-
+#define DEF_OPFT(op,expr,neutral,absorbent,T) \
+	template <> class Y##op<T> : Op<T> { public: \
+		inline static T f(T a, T b) { return expr; } \
+		inline static bool is_neutral  (T x, LeftRight side) { return neutral; } \
+		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } }; \
 // this macro is for operators that have different code for the float version
 #define DEF_OPF(op,expr,expr2,neutral,absorbent) \
 	DEF_OP( op,expr,      neutral,absorbent) \
-	template <> class Y##op<float32> : Op<float32> { public: \
-		inline static float32 f(float32 a, float32 b) { return expr2; } \
-		inline static bool is_neutral(float32 x, LeftRight side) { return neutral; } \
-		inline static bool is_absorbent(float32 x, LeftRight side) { return absorbent; } }; \
-	template <> class Y##op<float64> : Op<float64> { public: \
-		inline static float64 f(float64 a, float64 b) { return expr2; } \
-		inline static bool is_neutral(float64 x, LeftRight side) { return neutral; } \
-		inline static bool is_absorbent(float64 x, LeftRight side) { return absorbent; } }; \
+	DEF_OPFT(op,expr2,neutral,absorbent,float32) \
+	DEF_OPFT(op,expr2,neutral,absorbent,float64)
 
 #define DECL_OPON(base,op,T) NumopOn<T>( \
 	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, \
 	&base<Y##op<T> >::op_fold, &base<Y##op<T> >::op_scan, \
 	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
-
 #define DECL_OPON_NOFOLD(base,op,T) NumopOn<T>( \
 	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, 0,0, \
 	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
-
-#ifdef HAVE_LITE
 #define DECL_OP(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32), flags)
+	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
+	DECL_OPON(OpLoops,op,float32), DECL_OPON(OpLoops,op,float64)), flags)
 #define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32), flags)
+	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
+	NumopOn<float32>(0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0)), flags)
 #define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
 	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
-	DECL_OPON_NOFOLD(OpLoops,op,int32), flags)
-#else
-#define DECL_OP(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32), DECL_OPON(OpLoops,op,int64), \
-	DECL_OPON(OpLoops,op,float32), DECL_OPON(OpLoops,op,float64), \
-	flags)
-#define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32), DECL_OPON(OpLoops,op,int64), \
-	NumopOn<float32>(0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0), \
-	flags)
-#define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
-	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
-	DECL_OPON_NOFOLD(OpLoops,op,int32), DECL_OPON_NOFOLD(OpLoops,op,int64), \
-	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64), \
-	flags)
-#endif
+	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
+	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64)), flags)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
@@ -341,12 +322,11 @@ Numop op_table3[] = {
 const long op_table3_n = COUNT(op_table3);
 #endif
 
-#define INIT_TABLE(_dict_,_table_) { \
-	_dict_ = IEVAL(mGridFlow,"@" #_dict_ " ||= {}"); \
-	for(int i=0; i<_table_##_n; i++) { \
-		_table_[i].sym = ID2SYM(rb_intern(_table_[i].name)); \
-		rb_hash_aset(_dict_,_table_[i].sym,PTR2FIX((_table_+i))); \
-	}}
+// D=dictionary, A=table, A##_n=table count.
+#define INIT_TABLE(D,A) { D=IEVAL(mGridFlow,"@"#D" ||= {}"); \
+	for(int i=0; i<A##_n; i++) { \
+		A[i].sym = ID2SYM(rb_intern(A[i].name)); \
+		rb_hash_aset(D,A[i].sym,PTR2FIX((A+i)));}}
 
 #ifdef PASS1
 Ruby op_dict = Qnil;
@@ -370,13 +350,12 @@ void startup_number () {
 		rb_hash_aset(number_type_dict, ID2SYM(rb_intern(a)),
 				PTR2FIX(&number_type_table[i]));
 	}
-
-#define OVERRIDE_INT(_name_,_mode_,_func_) { \
-	Numop *foo = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(_name_))); \
-	foo->on_uint8.op_##_mode_ = _func_; \
-	foo->on_int16.op_##_mode_ = _func_; \
-	foo->on_int32.op_##_mode_ = _func_; }
-
+// S:name; M:mode; F:replacement function;
+#define OVERRIDE_INT(S,M,F) { \
+	Numop *foo = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(S))); \
+	foo->on_uint8.op_##M=F; \
+	foo->on_int16.op_##M=F; \
+	foo->on_int32.op_##M=F; }
 	OVERRIDE_INT(ignore,map,quick_ign_map);
 	OVERRIDE_INT(ignore,zip,quick_ign_zip);
 	//OVERRIDE_INT(put,map,quick_put_map);
