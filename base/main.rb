@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../COPYING for further informations on licensing terms.
+	See file ../../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,35 +25,12 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-class NotImplementedError
-	def initialize(*)
-		GridFlow.gfpost "HELLO"
-		Process.kill $$, 6
-	end
-end
-
-#verbose,$VERBOSE=$VERBOSE,false
-for victim in [TCPSocket, TCPServer]
-	def victim.new
-		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
-		"(disabled because of bug in threadless sockets)"
-	end
-end if VERSION < "1.6.6"
-
-# this should be done in base/bridge_jmax.c
-for victim in [Thread, Continuation]
-	def victim.new
-		raise NotImplementedError, "disabled because of jMax incompatibility"
-	end
-end
-#$VERBOSE=verbose
-
 require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
 module GridFlow
-	GF_VERSION = "0.6.2"
+	GF_VERSION = "0.6.0"
 	def esmtick
 		$esm.tick
 		$mainloop.timers.after(0.1) { esmtick }
@@ -66,61 +43,95 @@ module GridFlow
 end
 
 if true
-	$post_log = File.open "/tmp/gridflow.log", "w"
+	$whine_log = File.open "/tmp/gridflow.log", "w"
 end
 
-module GridFlow #------------------
+p GridFlow::GridOuter.instance_methods
 
-def self.post(s,*a)
-	post_string(sprintf("%s"+s,post_header,*a))
-	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
+def GridFlow.post(s,*a)
+#	printf s,*a
+	GridFlow.post_string(sprintf s,*a)
+	($whine_log << (sprintf s,*a); $whine_log.flush) if $whine_log
 end
 
-class<<self
-	attr_accessor :post_header
-	attr_accessor :verbose
-	attr_reader :alloc_set
-	attr_reader :fobjects_set
+class<<GridFlow; attr_accessor :whine_header end
+GridFlow.whine_header = "[whine] "
+
+def GridFlow.whine2(fmt,s)
+	@whine_last ||= ""
+	@whine_count ||= 0
+
+	if @whine_last==fmt
+		@whine_count+=1
+		#if @whine_count >= 64 and @whine_count/(@whine_count&-@whine_count)<4
+		#	post "[too many similar posts. this is # %d]\n", @whine_count
+		#	return
+		#end
+	else
+		@whine_last = fmt
+		@whine_count += 1
+	end
+
+	s<<"\n" if s[-1]!=10
+	post(GridFlow.whine_header)
+	post(s)
 end
 
-@verbose=false
+# a slightly friendlier version of post(...)
+# it removes redundant messages.
+# it also ensures that a \n is added at the end.
+def GridFlow.whine(fmt,*a)
+	fmt=fmt.to_s
+	whine2(fmt,(sprintf fmt, *a))
+end
 
-self.post_header = "[gf] "
-
-def self.gfpost2(fmt,s); post("%s",s) end
-def self.gfpost(fmt,*a); post(fmt,*a) end
-
-self.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
-self.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
+GridFlow.whine "This is GridFlow 0.6.0 within Ruby version #{VERSION}"
+GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
-def self.parse(m)
-	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
+GridFlow.whine "hello???"
+GridFlow.whine GridFlow.constants.inspect
+
+for victim in [TCPSocket, TCPServer]
+	def victim.new
+		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
+		"(disabled because of bug in threadless sockets)"
+	end
+end if VERSION < "1.6.6"
+
+for victim in [Thread, Continuation]
+	def victim.new
+		raise NotImplementedError, "disabled because of jMax incompatibility"
+	end
+end
+
+# simple dataflow engine mixin for Ruby
+#module GridFlow; module RubyFlow
+#	def initialize
+#		...
+#		super
+#	end
+#	...
+#end end
+
+# dual system that can work with both Ruby dataflow and jMax dataflow
+#module GridFlow; class DFObject; include RubyFlow
+#	...
+#end end
+
+def GridFlow.parse(m)
+	m = m.split(/\s+/)
 	m.map! {|x| case x
 		when Integer, Symbol; x
-		when /^[+-]?[0-9]+$/; x.to_i
+		when /^[0-9]+$/; x.to_i
 		when String; x.intern
 		end
 	}
-	i=0
-	while i<m.length
-		if m[i]=="{".intern
-			j=i+1
-			j+=1 until m[j]=="}".intern
-			a = [m[i+1..j-1]]
-			m[i..j] = a
-		else
-			i+=1
-		end
-	end
 	m
 end
 
 # adding some functionality to that:
-class FObject
-	alias profiler_cumul= profiler_cumul_assign
-	attr_writer :args
-	def args; @args || "[#{self.class} ...]"; end
+module GridFlow; class FObject
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]
@@ -133,7 +144,7 @@ class FObject
 			m.shift
 		elsif String===m[0]
 			m.shift.intern
-		elsif m.length>1 and String===m[0] #???
+		elsif m.length>1 and String===m[0]
 			m.shift.intern
 		elsif m.length>1
 			:list
@@ -144,34 +155,24 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
-		p m if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
-	def self.name_lookup sym
-		qlasses = GridFlow.instance_eval{@fclasses_set}
-#		p qlasses
-		qlass = qlasses[sym.to_s]
-#		p qlass
-		raise "object class '#{sym}' not found" if not qlass
-		qlass
-	end
 	def self.[](*m)
-		o=nil
-		if m.length==1 and m[0] =~ / /
-			o="[#{m[0]}]"
-			m=GridFlow.parse(m[0]) 
-		else
-			o=m.inspect
-		end
+		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
-		qlass = name_lookup sym
-		r = qlass.new(*m)
-		r.args = o
-		p o if GridFlow.verbose
-		r
+		p sym
+		qlass = case sym
+			when "@"; GridFlow::GridOp2
+			when "@!"; GridFlow::GridOp1
+			when /^@/; GridFlow.const_get("Grid"+
+				("_"+sym[1..-1]).gsub("_[a-z]") {|s| s[1..1].upcase})
+			else
+				raise ArgumentError, "GF names begin with @"
+			end
+		qlass.new(*m)
 	end
-end
+end end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -203,101 +204,12 @@ class RubyFor < GridFlow::FObject
 	# FObject.install(name, inlets, outlets)
 	# no support for metaclasses yet
 	install "rubyfor", 3, 1
-end
 
 # FObject features I want to see:
 #
 #	self.ninlets #=> 3
 #	self.noutlets #=> 1
 #	self.external_name #=> "rubyfor"
-
-# to see what the messages look like when they get on the Ruby side.
-class RubyPrint < GridFlow::GridObject
-	def initialize(*a)
-		if a.length and a[0]==:time then
-			@time=true
-		end	
-	end
-
-	def method_missing(s,*a)
-		s=s.to_s
-		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
-		case s
-		when /^_0_/; GridFlow.gfpost "#{pre}#{s[3..-1]}: #{a.inspect}"
-		else super
-		end
-	end
-
-	install_rgrid 0
-	install "rubyprint", 1, 0
-end
-
-class PrintArgs < GridFlow::GridObject
-	def initialize(*a)
-		GridFlow.gfpost(a.inspect)
-	end
-	install "printargs", 0, 0
-end
-
-class GridPrint < GridFlow::GridObject
-	def initialize(name=nil)
-		super # don't forget super!!!
-		if name then @name = name+": " else @name="" end
-	end
-
-	def make_columns data
-		min = data.unpack("l*").min
-		max = data.unpack("l*").max
-		@columns = [sprintf("%d",min).length,sprintf("%d",max).length].max
-	end
-
-	def _0_rgrid_begin; @dim = inlet_dim 0; @data = ""; end
-	def _0_rgrid_flow data; @data << data end
-	def _0_rgrid_end
-		make_columns @data
-		GridFlow.gfpost("#{name}dim(#{@dim.join','}): " + case @dim.length
-		when 0,1; dump @data
-		when 2;   ""
-		else      "(not printed)"
-		end)
-		case @dim.length
-		when 2
-			sz = @data.length/@dim[0]
-			for row in 0...@dim[0]
-				GridFlow.gfpost dump(@data[sz*row,sz])
-			end
-		end
-	end
-	def dump data
-		# data.unpack("l*").join(",")
-		f = "%#{@columns}d"
-		data.unpack("l*").map{|x| sprintf f,x }.join(" ")
-	end
-	install_rgrid 0
-	install "@print", 1, 0
-end
-
-class GridGlobal
-	def _0_profiler_reset
-		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
-	end
-	def _0_profiler_dump
-		ol = []
-		total=0
-		GridFlow.gfpost "-"*32
-		GridFlow.gfpost "         clock-ticks percent pointer  constructor"
-		GridFlow.fobjects_set.each {|o,*| ol.push o }
-		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
-		ol.each {|o| total += o.profiler_cumul }
-		total=1 if total<1
-		ol.each {|o|
-			int ppm = o.profiler_cumul * 1000000 / total
-			GridFlow.gfpost "%20d %2d.%04d %08x %s",
-				o.profiler_cumul, ppm/10000, ppm%10000,
-				o.id, o.args
-		}
-		GridFlow.gfpost "-"*32
-	end
 end
 
 #class RtMetro < GridFlow::FObject
@@ -305,9 +217,11 @@ end
 #
 #end
 
-def self.routine
+#----------------------------------------------------------------#
+
+def routine
+#	GridFlow.whine "hello"
 	$tasks.each {|k,v|
-#		puts "#{k} #{v}"
 		case v
 		when Integer; GridFlow.exec k,v
 		when Proc; v[k]
@@ -315,36 +229,16 @@ def self.routine
 		end
 	}
 	$mainloop.timers.after(0.025) { routine }
-#	if not @nextgc or Time.new > @nextgc then
-#		GC.start
-#		@nextgc = Time.new + 5
-#	end
+#	GC.start
+#	GridFlow.whine "bye"
 end
 
 def GridFlow.find_file s
-	gfpost "find_file: #{s}"
+	whine "find_file: #{s}"
 	s
 end
 
-def GridFlow.tick
-	$mainloop.one(0)
-#	GC.start
-rescue Exception => e
-	GridFlow.gfpost "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
-end
-
-end # module GridFlow
-#----------------------------------------------------------------#
-
 user_config_file = ENV["HOME"] + "/.gridflow_startup"
-load user_config_file if File.exist? user_config_file
+require user_config_file if File.exist? user_config_file
 
-END {
-#	puts "This is an END block"
-	GridFlow.fobjects_set.each {|k,v| k.delete }
-	GridFlow.fobjects_set.clear
-}
-
-GridFlow.routine
-
-#set_trace_func proc {|a| p a }
+routine
