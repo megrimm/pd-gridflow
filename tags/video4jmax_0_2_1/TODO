@@ -1,0 +1,102 @@
+/* $Id$ */
+
+Installation
+[ ]
+
+Documentation
+[ ] review reference.html
+[ ] review images of reference.html
+[ ] change title bar
+[ ] validate samples/inside
+[ ] validate samples/outside
+[ ] validate samples/020
+
+General
+[ ] remove memory leaks, segmentation faults
+[ ] better error handling
+
+Computation Objects
+[ ] @! (unary ops)
+[ ] @inner, @outer, @fold
+[ ] @convolution
+[ ] @redim, @dim (APL rho)
+[ ] @slice (@splice ?)
+[ ] black option in @store
+[ ] @import~, @export~
+	note: DSP->Control is ok, but Control->DSP may be kludgy
+
+Effects
+[ ] blur, emboss, find edges, solarize, pinch, waves
+[ ] see gimp for ideas
+[ ] abyss effect, fractals
+[ ] image-sur-image
+[ ] n-frame delaying
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits)
+
+Structure & Protocol
+[x] packets: output buffering
+[ ] grid_end message (triads: begin,packet,end -> accept,process,finish)
+[ ] check for too-short / too-long data vs. proposed dims.
+[ ] change the protocol completely:
+	not based on messages, but rather a push/pull combination,
+	add GridStream objects, allow them to be passed in other
+	messages; GridInlet,GridOutlet have redundant info, like the
+	element counter, etc.
+[ ] angles will be 0<=x<36000
+[ ] unary ops: sq sqrt abs
+[ ] binary ops: **
+[ ] binary ops: mod revmod
+[ ] binary ops: <= != >=
+[ ] binary ops: *sin -> b * sin(a * 2 * pi / 36000)
+[ ] binary ops: atan2
+[ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+[ ] copy-on-write and similar tricks
+
+Input/Output
+[ ] in-place editing
+[ ] implement byte-order, bit-order support in @video_out
+	(need alternate hardware to test that)
+[ ] add PTC support
+[ ] x11 shared memory working
+[ ] x11 screen capture
+[ ] Expose events
+[ ] Video4linux support
+[ ] files: multi-image (seq), multi-file (multi)
+[ ] Targa support
+[ ] JPEG support
+[ ] QuickTime support
+
+Misc
+[ ] @print
+[ ] @literal
+
+Bugs
+[ ] @video_out causes delayed crash when closing its associated window
+
+From: Aeldrik Pander <aeldrik@metachaos.demon.nl>
+
+> I noticed a small thing in the ./src/c/Makefile, It is better to use:
+> JMAXROOTDIR=../../../..
+> DISTDIR = $(JMAXROOTDIR)/fts
+> etc ...
+> Then it is possible to compile the package in any dir, you don't need to
+> put it in the jmax/packages dir. I use a compilation script wich passes
+> the JMAXROOTDIR parameter to the Makefile.
+
+
+================
+vin_file_test_2.jmax
+0.2.0.pre3: 20 frames in 30 seconds.
+0.2.0.pre8: 20 frames in  8 seconds (packet=16)
+0.2.0.pre8: 20 frames in  4 seconds (packet=1k)
+
+store3:
+	28,36,128
+	336,557,140
+	179,15,183
+
+what if I wanted to delay the various parts of the frame differently ? ie.
+the pixels in the center are delayed 1 frame ......... and the pixels on
+the ourside are delayed 25 frames ........; everything in the middle is
+delayed discreetly between these 2 values. 
+

@@ -1,0 +1,15 @@
+# $Id$
+
+set pname video4jmax
+
+package provide $pname 
+package require reftype
+global jmaxArch jmaxMode
+ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
+
+puts "package: Video4jmax"
+
+### help
+sourceFile $dir/help/${pname}.help.index.tcl
+helpSummary "$pname" $dir/help/${pname}.summary.jmax
+

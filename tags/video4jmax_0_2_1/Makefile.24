@@ -1,0 +1,27 @@
+PNAME=video4jmax
+
+all:
+	(cd c ; $(MAKE) all)
+.PHONY: all
+
+clean:
+	(cd c ; $(MAKE) clean)
+.PHONY: clean
+
+all_c:
+	(cd c ; $(MAKE) all)
+.PHONY: all_c
+
+clean_c:
+	(cd c ; $(MAKE) clean)
+.PHONY: clean_c
+
+install:
+	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)
+	$(INSTALL_DATA) $(PNAME).jpk $(lib_install_dir)/packages/$(PNAME)/$(PNAME).jpk
+	$(INSTALL_DATA) $(PNAME).scm $(lib_install_dir)/packages/$(PNAME)/$(PNAME).scm
+	( cd c ; $(MAKE) $@)
+	( cd help; $(MAKE) $@)
+.PHONY: install
+
+

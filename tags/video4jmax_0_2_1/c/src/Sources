@@ -1,0 +1,7 @@
+SOURCES = \
+dim.c grid.c grid_basic.c video4jmax.c \
+video_out.c video_out_file.c video_in_file.c \
+format_ppm.c \
+format_targa.c \
+format_videodev.c \
+

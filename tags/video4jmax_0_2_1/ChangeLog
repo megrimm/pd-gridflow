@@ -1,0 +1,51 @@
+/* $Id$ */
+
+version 0.2.1:
+ * added private CVS repository on hostname.2y.net
+ * added configuration script (detects video4linux 1.x)
+ * added documentation in HTML format
+ * added File Format API
+	* format "ppm": PPM P6 RGB24 support read-write
+	* format "targa": Targa RGB24 support read-write
+	* format "videodev": Video4linux read (only works with dc1plus.o)
+ * @store no longer slowing down its downstream
+ * many other accelerations
+ * Tuple changed to Dim; Index removed
+ * Grid element type is typedef Number
+ * @ supports grids in right inlet
+
+version 0.2.0:
+ * package name changed from "video" to "video4jmax"
+ * new kind of post() cancels repetitive log entries
+ * major modifications to existing objects
+ * new "grid transmission system"
+	(Tuple,Index,GridInlet,GridOutlet,GridObject)
+ * vout -> @video_out
+ * vin_file -> @video_in_file
+ * vout_file -> @video_out_file
+ * added @import, @export
+ * added @, @store
+
+version 0.1.1:
+ * removed vout's grab
+ * vout width and height parameters swapped
+ * vout_file class is mostly like vout but writes to a file in PPM format.
+
+version 0.1.0:
+
+ * fixed the bits_per_pixel bug
+ * merged in some other variations on the main sample
+ * included Christian's makefiles for jmax 2.5
+
+version 0.0.7:
+
+ * vout should support most types of RGB visuals now
+ * autodraw now works: 0=none; 1=page; 2=line; 3=pixel
+ * less global variables
+ * putting all of this under the GPL
+
+version 0.0.5:
+
+ * vout class, two params: width, height; 24-bit BGR only; refresh by
+finishing scanline or sending bang; "grab" (hack); "reset" for resetting
+the pixel pointer. 
