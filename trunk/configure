@@ -23,8 +23,8 @@
 
 #----------------------------------------------------------------#
 
-
 require "rbconfig"
+require "mkmf"
 require "ftools"
 include Config
 DESTDIR = "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
@@ -32,6 +32,8 @@ RUBY = "ruby"
 LIBRUBY_A = "#{CONFIG['libdir']}/ruby/" +
 	"#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/" +
 	"#{CONFIG['arch']}/libruby.a"
+
+$CFLAGS += " -xc++ -fno-operator-names"
 
 FILES = [
   [:directory, "base/",
@@ -77,7 +79,9 @@ def c_test code, *link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
-	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]
+	command = ["/usr/bin/env", "gcc"]
+	command.concat $CFLAGS.split(/ /).reject{|x| x.length==0 }
+	command.concat ["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]
 	launch2 log,*command or return false
 	command = ["/tmp/#{$$}"]
 	launch2 log,*command or return false
@@ -138,7 +142,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <#{$conf[:RUBY_H]}>
-		int main (void) { return !rb_rescue; }
+		int main () { return rb_rescue==0; }
 		", "-lruby"
 	}
 },
@@ -150,7 +154,7 @@ Feature.new {
 #		p "",l,File.exist?(l)
 		c_test "
 		#include <#{$conf[:RUBY_H]}>
-		int main (void) { return !rb_rescue; }
+		int main () { return rb_rescue==0; }
 		", LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
 	options ["HAVE_STATIC_RUBY"]
@@ -170,7 +174,7 @@ Feature.new {
 		# please fix me.
 		c_test '
 		typedef unsigned long long uint64;
-		int main(void) { uint64 x;
+		int main() { uint64 x;
 		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 		return 0;}'
 	}
@@ -189,7 +193,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
-		int main (void) {return XSetErrorHandler==0;}
+		int main () {return XSetErrorHandler==0;}
 		", *uses_so
 	}
 	formats ["X11"]
@@ -207,7 +211,7 @@ Feature.new {
 		#include <sys/ipc.h>
 		#include <sys/shm.h>
 		#include <X11/extensions/XShm.h>
-		int main (void) {return XShmPutImage==0;}
+		int main () {return XShmPutImage==0;}
 		", *uses_so
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
@@ -220,7 +224,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <SDL/SDL.h>
-		int main (void) {return SDL_MapRGB==0;}
+		int main () {return SDL_MapRGB==0;}
 		", *uses_so
 	}
 	formats ["SDL"]
@@ -236,7 +240,7 @@ Feature.new {
 		extern \"C\" {
 		#include <aalib.h>
 		};
-		int main (void) {return aa_init==0;}
+		int main () {return aa_init==0;}
 		", *uses_so
 	}
 	formats ["AALib"]
@@ -252,7 +256,7 @@ Feature.new {
 		#include <stdio.h>
 		#include <jpeglib.h>
 		};
-		int main (void) {
+		int main () {
 		return jpeg_write_scanlines==0;}
 		", *uses_so
 	}
@@ -265,7 +269,7 @@ Feature.new {
 		c_test "
 		#include <stdlib.h>
 		#include <linux/videodev.h>
-		int main (void) { struct video_window foo; return 0; }
+		int main () { struct video_window foo; return 0; }
 		"
 	}
 	formats ["VideoDev"]
@@ -279,7 +283,7 @@ Feature.new {
 	test proc {|f|
 		c_test "
 		#include <#{f.uses_h}>
-		int main (void) { return mpeg3_open==0; }
+		int main () { return mpeg3_open==0; }
 		", *uses_so
 	}
 	formats ["MPEG3"]
@@ -292,7 +296,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <mpeg.h>
-		int main (void) { return GetMPEGFrame==0; }
+		int main () { return GetMPEGFrame==0; }
 		", *uses_so
 	}
 	formats ["MPEG"]
@@ -306,7 +310,7 @@ Feature.new {
 	test proc {|f|
 		c_test "
 		#include <quicktime/quicktime.h>
-		int main (void) { return quicktime_open==0; }
+		int main () { return quicktime_open==0; }
 		", *f.uses_so
 	}
 	formats ["QuickTime"]
@@ -322,8 +326,8 @@ Feature.new {
 	options ["HAVE_JMAX_2_5"]
 },
 Feature.new {
-	tag :jmax30
-	name "IRCAM's jMax 3.0 / 3.1"
+	tag :jmax4
+	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
 	status :disabled
@@ -331,7 +335,7 @@ Feature.new {
 		has_jmax "-DLINUXPC" and #!@#$ nonportable
 		File.exist?($conf[:JMAX_SOURCES]+"/include/ftsconfig.h")
 	}
-	options ["HAVE_JMAX_3_0"]
+	options ["HAVE_JMAX_4"]
 },
 Feature.new {
 	tag :puredata
@@ -341,7 +345,7 @@ Feature.new {
 	test proc {
 		c_test "
 			\#include <m_pd.h>
-			int main (void) { return 0; }
+			int main () { return 0; }
 		"
 	}
 }]
@@ -393,6 +397,8 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_DEBUG
 	when "--jmax-arch"; $conf[:JMAX_ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
+		$CFLAGS += " -I#{$conf[:JMAX_SOURCES]}/include"
+
 	when "--help"; usage; exit 0
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
@@ -419,8 +425,8 @@ def has_jmax(*link); c_test '
 	#define operator operator_
 	#define class class_
 	#include "fts/fts.h"
-/*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
-	int main (void) { return 0; }
+/*	int main () { puts(FTS_VERSION_STRING); return 0; } */
+	int main () { return 0; }
 ', *link
 end
 
@@ -568,17 +574,6 @@ def make_makefile f
     f.puts
 end
 
-#--------------------------------#
-#p $rubylibdir
-=begin
-CONF = Config::MAKEFILE_CONFIG
-CONF['rubylibdir'] = CONF['sitelibdir']
-CONF['archdir'] = CONF['sitearchdir']
-=end
-require "mkmf"
-#p $rubylibdir
-#--------------------------------#
-
 if $conf[:OPTIONS].include? "HAVE_JMAX_2_5" and not $conf[:JMAX_ARCH]
 	DUAL.puts "ERROR: compiling with jMax, but not having the --jmax-arch specified"
 	DUAL.puts "(try i686-linux or ppc-macosx or whatever that is supposed work)"
@@ -605,7 +600,7 @@ end
 
 f.puts "GRIDFLOW_LDSOFLAGS  = " + $conf[:LDSOFLAGS].join(" ")
 f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
-f.puts "CFLAGS += -I#{$conf[:JMAX_SOURCES]}/include -xc++ " + $CFLAGS
+f.puts "CFLAGS += -I#{$conf[:JMAX_SOURCES]}/include " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
 	f.puts "#{z}=yes"
@@ -717,6 +712,8 @@ f.puts mf
 f.puts "include Makefile.gf"
 make_makefile f
 f.close
+
+puts "$CFLAGS = #{$CFLAGS.inspect}"
 
 =begin
 for z in [
