@@ -194,7 +194,7 @@ static VALUE BFObject_init$1 (kludge *k) {
 	for (int i=0; i<k->ac; i++) argv[i] = jr_convert(k->at+i);
 	BFObject *j_peer = (BFObject *)k->$;
 	VALUE qlass = (VALUE)k->$->head.cl->user_data;
-	VALUE rself = rb_funcall2(qlass,rb_intern("new"),k->ac,argv);
+	VALUE rself = rb_funcall2(qlass,SI(new),k->ac,argv);
 	j_peer->peer = rself;
 	DGS(GridObject);
 	$->foreign_peer = (void *)j_peer;
@@ -227,8 +227,7 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 	VALUE $ = rb_hash_aref(rb_ivar_get(GridFlow_module2,
-		rb_intern("@fclasses_set")),
-		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
+		SI(@fclasses_set)), rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
 	int ninlets = ninlets_of($);
 	int noutlets = noutlets_of($);
