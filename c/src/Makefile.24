@@ -1,7 +1,7 @@
 # this file is no longer maintained
 # copy appropriate new options from Makefile.25
 
-PNAME=video4jmax
+PNAME=gridflow
 
 DISTDIR = ../../../../fts
 PACKAGEROOT = ..
