@@ -42,7 +42,7 @@ CFLAGS += -fPIC # some OSes/machines need that for .so files
 #----------------------------------------------------------------#
 
 cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
-	ruby cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
+	$(RUBY_INSTALL_NAME) cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
 
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
@@ -60,8 +60,9 @@ unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
 kloc::
-	wc base/*.[ch] base/*.rb format/*.[ch] format/*.rb \
-	configure Makefile.gf extra/*.rb
+	wc base/*.[ch] format/*.[cm] bridge/*.c optional/*.c 2>/dev/null
+	wc base/*.rb   format/*.rb   bridge/*.rb devices4ruby/*.rb \
+	optional/*.rb configure extra/*.rb 2>/dev/null
 
 edit::
 	(nedit base/grid.[ch] base/number.c base/flow_objects.c \
@@ -74,7 +75,7 @@ TEST = base/test.rb math
 
 test::
 	rm -f core
-	(ruby       -w $(TEST)) || $(BACKTRACE)
+	($(RUBY_INSTALL_NAME) -w $(TEST)) || $(BACKTRACE)
 
 VALG = NO_MMX=1 valgrind --suppressions=extra/gf.valgrind2 -v
 VALG += --num-callers=8
@@ -83,12 +84,12 @@ VALG += --show-reachable=yes
 
 vtest::
 	rm -f core
-	($(VALG) ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
+	($(VALG) $(RUBY_INSTALL_NAME) -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
 	less gf-valgrind
 
 vvtest::
 	rm -f core
-	($(VALG) --leak-check=yes ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
+	($(VALG) --leak-check=yes $(RUBY_INSTALL_NAME) -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
 	less gf-valgrind
 
 test16:: test
@@ -101,7 +102,7 @@ testpd::
 	(pd -path . -lib gridflow test.pd || gdb `which pd` core)
 
 munchies::
-	ruby base/test.rb munchies
+	$(RUBY_INSTALL_NAME) base/test.rb munchies
 
 foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"

@@ -924,7 +924,7 @@ for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
   LOG.puts "#{z}: #{$conf[z].inspect}"
 end
 LOG.puts "-"*64
-RUBY = "ruby"
+RUBY = "$(RUBY_INSTALL_NAME)"
 
 def my_install_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
   entries.each {|type,name,*rest|
