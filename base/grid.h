@@ -640,17 +640,14 @@ extern VALUE /*Hash*/ format_classes_dex;
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 void Format_close(Format *$);
 
-typedef struct Timer Timer;
-Timer *Timer_new(void (*f)(Timer *foo, void *), void *);
-void Timer_set_delay(Timer *, float);
-void Timer_arm(Timer *);
-void Timer_loop(void);
+/* keyed on data */
+void MainLoop_add(void *data, void (*func)());
+void MainLoop_remove(void *data);
+void MainLoop_run(void);
 
 /* **************************************************************** */
 
 extern VALUE /*Hash*/ gf_object_set;
-extern VALUE /*Hash*/ gf_timer_set;
-extern Timer *gf_timer;
 extern const char *whine_header;
 
 //char *FObject_to_s(FObject *$);
@@ -658,12 +655,14 @@ extern const char *whine_header;
 /* **************************************************************** */
 /* 0.6.0 */
 
+extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
+extern VALUE FObject_class;
+
 uint64 RtMetro_now(void);
 
 void gf_install_bridge(void);
-extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
-extern VALUE FObject_class;
 VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $);
+VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $);
 void gf_init (void);
 #define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
 #define FIX2PTR(value) (void *)(FIX2INT(value)*4)

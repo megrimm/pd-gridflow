@@ -1633,10 +1633,10 @@ METHOD(RtMetro,_0_int) {
 	whine("on = %d",$->on);
 	if (oon && !$->on) {
 		whine("deleting rtmetro alarm...");
-		rb_funcall(gf_timer_set,rb_intern("remove"),1,$);
+		MainLoop_remove($);
 	} else if (!oon && $->on) {
 		whine("creating rtmetro alarm...");
-		rb_hash_aset(gf_timer_set,PTR2FIX($),PTR2FIX(RtMetro_alarm));
+		MainLoop_add($,RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}
 }

@@ -25,6 +25,17 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
+require "base/MainLoop.rb"
+$mainloop = MainLoop.new
+$tasks = {}
+
+def routine
+	$tasks.each {|k,v| GridFlow.exec k,v }
+	after(100) { routine }
+end
+
+$mainloop.after
+
 def GridFlow.post(s,*a)
 	GridFlow.post_string(sprintf s,*a)
 end
