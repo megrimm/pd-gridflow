@@ -105,6 +105,7 @@ Computation Objects
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
 [ ] timelines as in MM-Director
+[ ] @replace_if
 
 Effects
 [ ] improve
