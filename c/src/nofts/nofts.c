@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* this file is for allowing video4jmax to be compiled without jMax. */
+/* this file is for allowing GridFlow to be compiled without jMax. */
 
 #include "../grid.h"
 #include <string.h>
@@ -320,8 +320,12 @@ fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at) {
 void fts_send2(fts_object_t *o, int inlet, int ac, const fts_atom_t *at) {
 	fts_symbol_t sel;
 	assert(ac>0);
-	sel = fts_get_symbol(at);
-	fts_send(o,inlet,sel,ac-1,at+1);
+	if (fts_is_symbol(at)) {
+		sel = fts_get_symbol(at);
+		fts_send(o,inlet,sel,ac-1,at+1);
+	} else {
+		fts_send(o,inlet,SYM(list),ac,at);
+	}
 }
 
 void fts_send(fts_object_t *o, int inlet, fts_symbol_t sel, int ac, const fts_atom_t *at) {
@@ -361,11 +365,11 @@ int ac, const fts_atom_t *at) {
 /* **************************************************************** */
 /* Clock, Alarm */
 
-static fts_clock_t v4j_clock = {};
+static fts_clock_t fts_main_clock = {};
 static List *alarms = 0;
 
 fts_clock_t *fts_sched_get_clock(void) {
-	return &v4j_clock;
+	return &fts_main_clock;
 }
 
 fts_alarm_t *fts_alarm_new(fts_clock_t *clock,
@@ -435,12 +439,16 @@ int strsplit(char *victim, int max, char **witnesses) {
 	}
 }
 
+static bool isnumber(const char *s) {
+	return isdigit(*s) ||
+		((*s=='+' || *s=='-') && isdigit(s[1]));}
+
 int silly_parse(const char *s, fts_atom_t *a) {
 	char *b = strdup(s);
 	char *p[10];
 	int i, n = strsplit(b,10,p);
 	for (i=0; i<n; i++) {
-		if (isdigit(p[i][0])) {
+		if (isnumber(p[i])) {
 			fts_set_int(a+i,atoi(p[i]));
 			//printf("%i: '%s' is int\n",i,p[i]);
 		} else {
@@ -476,11 +484,11 @@ int fts_file_open(const char *name, const char *mode) {
 	}
 }
 
-extern fts_module_t video4jmax_module;
+extern fts_module_t gridflow_module;
 
-int video4jmax_init_standalone (void) {
+int gridflow_init_standalone (void) {
 	alarms = List_new(0);
-	fprintf(stdout,"< video4jmax_init_standalone\n");
+	fprintf(stdout,"< gridflow_init_standalone\n");
 	fts_new_symbol("symbol");
 	fts_new_symbol("int");
 	fts_new_symbol("float");
@@ -491,7 +499,7 @@ int video4jmax_init_standalone (void) {
 	fts_new_symbol("bang");
 	fts_new_symbol("set");
 
-	video4jmax_module.foo3();
-	printf("> video4jmax_init_standalone\n");
+	gridflow_module.foo3();
+	printf("> gridflow_init_standalone\n");
 	return true;
 }
