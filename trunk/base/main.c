@@ -429,30 +429,42 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 
 Ruby GridFlow_rdtsc (Ruby rself) { return gf_ull2num(rdtsc()); }
 
-/* This code handles nested lists because PureData doesn't do it
-and jMax only does it when it feels like it. */
+/* This code handles nested lists because PureData (0.38) doesn't do it */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 	int stack[16];
 	int stackn=0;
 	Ruby *av = rb_ary_ptr(argv);
 	int ac = rb_ary_len(argv);
 	int j=0;
-	for (int i=0; i<ac; i++) {
-		if (av[i]==bsym._lbrace || av[i]==bsym._lparen) {
-			if (stackn==16) RAISE("too many nested lists (>16)");
-			stack[stackn++]=j;
-		} else if (av[i]==bsym._rbrace || av[i]==bsym._rparen) {
+	for (int i=0; i<ac; ) {
+		int close=0;
+		if (SYMBOL_P(av[i])) {
+			const char *s = rb_sym_name(av[i]);
+			while (*s=='(' || *s=='{') {
+				if (stackn==16) RAISE("too many nested lists (>16)");
+				stack[stackn++]=j;
+				s++;
+			}
+			const char *se = s+strlen(s);
+			while (se[-1]==')' || se[-1]=='}') { se--; close++; }
+			if (s!=se) {
+				Ruby u = rb_str_new(s,se-s);
+				av[j++] = rb_funcall(rself,SI(FloatOrSymbol),1,u);
+			}
+		} else {
+			av[j++]=av[i];
+		}
+		i++;
+		while (close--) {
 			if (!stackn) RAISE("unbalanced '}' or ')'",av[i]);
 			Ruby a2 = rb_ary_new();
 			int j2 = stack[--stackn];
 			for (int k=j2; k<j; k++) rb_ary_push(a2,av[k]);
 			j=j2;
 			av[j++] = a2;
-		} else {
-			av[j++]=av[i];
 		}
 	}
-	if (stackn) RAISE("unbalanced '{' or '('");
+	if (stackn) RAISE("unbalanced '{' or '(' (stackn=%d)",stackn);
 	RARRAY(argv)->len = j;
 	return rself;
 }
