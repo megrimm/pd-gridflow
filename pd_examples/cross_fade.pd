@@ -1,0 +1,97 @@
+#N canvas 464 128 533 457 10;
+#X text 151 8 step 1;
+#X obj 85 275 @ +;
+#X obj 420 138 +;
+#X obj 133 392 @ max 0;
+#X obj 85 294 @ >> 8;
+#X obj 133 371 @ min 255;
+#X obj 195 96 @in;
+#X msg 455 120 0;
+#X msg 420 117 4;
+#X obj 446 196 loadbang;
+#X obj 124 6 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X text 178 329 click to clip out-of-range colours;
+#X obj 44 98 @in;
+#X text 138 292 denominator (divides by 256);
+#X text 445 72 step 2;
+#X obj 375 24 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 157 326 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X floatatom 455 139 5 0 0 0 - - -;
+#X obj 225 262 @ *;
+#X obj 420 95 metro 5;
+#X obj 85 498 print;
+#X obj 420 71 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X msg 446 217 255;
+#X obj 375 49 for 0 256 1;
+#X obj 85 254 @ *;
+#X obj 85 184 @store;
+#X floatatom 278 96 5 0 0 0 - - -;
+#X obj 120 134 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 225 236 @store;
+#X obj 120 161 fork;
+#X obj 85 423 @out x11;
+#X obj 85 350 demultiplex;
+#X obj 85 445 fps detailed;
+#X text 228 373 the @layer object could simplify and accelerate this
+patch if only there was a @join object to add an opacity channel to
+a plain RGB picture.;
+#X obj 239 117 fork;
+#X obj 378 296 hsl 128 15 0 256 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 5259 1;
+#X obj 384 250 @pingpong;
+#X obj 149 229 * -1;
+#X obj 149 208 - 256;
+#X text 190 206 <- inverses the value before multiplying;
+#X msg 67 62 open b001.jpg;
+#X msg 218 61 open r001.jpg;
+#X obj 195 39 fork;
+#X obj 44 41 fork;
+#X connect 1 0 4 0;
+#X connect 2 0 17 0;
+#X connect 2 0 36 0;
+#X connect 3 0 30 0;
+#X connect 4 0 31 0;
+#X connect 5 0 3 0;
+#X connect 6 0 28 1;
+#X connect 7 0 17 0;
+#X connect 8 0 2 0;
+#X connect 9 0 22 0;
+#X connect 10 0 42 0;
+#X connect 10 0 43 0;
+#X connect 12 0 25 1;
+#X connect 15 0 23 0;
+#X connect 16 0 31 1;
+#X connect 17 0 2 1;
+#X connect 18 0 1 1;
+#X connect 19 0 8 0;
+#X connect 21 0 19 0;
+#X connect 22 0 36 1;
+#X connect 23 0 8 0;
+#X connect 24 0 1 0;
+#X connect 25 0 24 0;
+#X connect 26 0 34 0;
+#X connect 27 0 29 0;
+#X connect 28 0 18 0;
+#X connect 29 0 25 0;
+#X connect 29 1 28 0;
+#X connect 30 0 32 0;
+#X connect 31 0 30 0;
+#X connect 32 0 20 0;
+#X connect 34 0 27 0;
+#X connect 34 1 18 1;
+#X connect 34 1 38 0;
+#X connect 35 0 26 0;
+#X connect 36 0 35 0;
+#X connect 37 0 24 1;
+#X connect 38 0 37 0;
+#X connect 40 0 12 0;
+#X connect 41 0 6 0;
+#X connect 42 0 6 0;
+#X connect 42 1 41 0;
+#X connect 43 0 12 0;
+#X connect 43 1 40 0;
