@@ -570,14 +570,16 @@ struct DrawImage : GridObject {
 	\attr Grid image;
 	\attr Grid position;
 	\attr bool alpha;
+	\attr bool tile;
 	
-	DrawImage() {
+	DrawImage() : alpha(false), tile(false) {
 		position.constrain(expect_position);
 		image.constrain(expect_picture);
 	}
 
 	\decl void initialize (Numop2 *op, Grid *image=0, Grid *position=0);
 	\decl void _0_alpha (bool v=true);
+	\decl void _0_tile (bool v=true);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
@@ -601,16 +603,23 @@ GRID_INLET(DrawImage,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 } GRID_FLOW {
 	int y = in->dex/in->factor;
+	if (position.nt != int32_type_i) RAISE("position has to be in int32");
+	//!@#$ assumes int32 position
 	int py = ((int32*)position)[0], sy = image.dim->v[0];
 	int px = ((int32*)position)[1], sx = image.dim->v[1];
 	for (; n; y++, n-=in->factor, data+=in->factor) {
-		if (y>=py && y<py+sy) {
+		int ty = div2(y-py,sy);
+		if (ty==0 || tile) {
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
 			COPY(data2,data,in->factor);
-			int xs = max(0,px);
-			int xe = min(in->dim->get(1),px+sx);
 			int cn = image.dim->prod(2);
-			Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*(y-py) + cn*(xs-px);
+			int xe;
+			for (int xs=tile ? (px%sx)-px : px; xs<in->dim->get(1); xs=xe) {
+				xe = min(in->dim->get(1),xs+sx);
+				xs = max(0,xs);
+				//fprintf(stderr,"xs=%d xe=%d in->dim[1]=%d\n",xs,xe,in->dim->get(1));
+				Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*mod(y-py,sy) + cn*(xs-px);
+////////////////////////////////
 			if (alpha && image.dim->get(2)!=in->dim->get(2)) {
 				// RGB by RGBA
 				//!@#$ optimise
@@ -644,11 +653,11 @@ GRID_INLET(DrawImage,0) {
 #undef COMPUTE_ALPHA
 			} else {
 				// RGB by RGB, etc
-				//!@#$ optimise
-				for (; xs<xe; cd+=cn) {
-					op->zip(cn,data2+cn*xs++,cd);
-				}
+				op->zip(cn*(xe-xs),data2+cn*xs,cd);
 			}
+////////////////////////////////
+			if (!tile) break;
+			} //for ...
 			out[0]->give(in->factor,data2);
 		} else {
 			out[0]->send(in->factor,data);
@@ -662,6 +671,10 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 
 \def void _0_alpha (bool v=true) {
 	alpha = v;
+}
+
+\def void _0_tile (bool v=true) {
+	tile = v;
 }
 
 \def void initialize (Numop2 *op, Grid *image, Grid *position) {
