@@ -21,99 +21,13 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-#----------------------------------------------------------------#
-
 require "rbconfig"
 require "mkmf"
 require "ftools"
 include Config
-
-def make_expand(x)
-  y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
-  if x!=y then make_expand y else y end
-end
-
-def read_ld_so_conf
-	return [] unless File.exist?("/etc/ld.so.conf")
-	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
-	x.delete_if { x.length==0 }
-	x
-end
-
-$C_INCLUDE_PATH = (
-	(ENV["CPLUS_INCLUDE_PATH"]||"").split(":") +
-	(ENV["C_INCLUDE_PATH"]||"").split(":") +
-	["/usr/include"]).uniq
-
-$LIBRARY_PATH = (
-	(ENV["LIBRARY_PATH"]||"").split(":") +
-	["/usr/lib","/lib"]).uniq
-
-$LD_LIBRARY_PATH = (
-	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
-		read_ld_so_conf +
-		["/usr/lib","/lib"]).uniq
-
-#for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
-#	puts "#{var}: #{eval(var.to_s).inspect}"
-#end
-
-$CFLAGS += " -xc++ -fno-operator-names -falign-functions=4"
-$CFLAGS += " -fno-omit-frame-pointer"
-
-ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
-"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
-ruby18a = "#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
-for x in [ruby16a,ruby18a] do
-	$LIBRUBY_A = make_expand x
-	break if File.exist? $LIBRUBY_A
-end
-
-FILES = [
-  [:directory, "base/",
-    [:ruby, "main.rb"],
-    [:ruby, "flow_objects.rb"],
-    [:ruby, "test.rb"],
-    [:ruby, "source_filter.rb"],
-    [:ruby, "MainLoop.rb"],
-  ],
-  [:directory, "bridge/",
-    [:ruby, "puredata.rb"],
-  ],
-  [:directory, "format/",
-    [:ruby, "main.rb"],
-  ],
-  [:directory, "extra/",
-	[:ruby, "eval_server.rb"],
-	[:ruby, "smpte.rb"],
-	[:ruby, "server_2.rb"],
-	[:ruby, "server_1_grid.rb"],
-	[:ruby, "server_1_ppm.rb"],
-	[:ruby, "jmax_format.rb"],
-	[:ruby, "puredata_format.rb"],
-  ],
-]
-
-#--------------------------------#
-
-$conf={
-	:LDSOFLAGS => ["-lm"],
-	:BRIDGE_LDFLAGS => ["-lm"],
-	:FEATURES => {},
-	:FORMATS => [],
-	:OPTIONS => [],
-	:DEFINES => {
-		:JMAX_ARCH => "i686-linux",
-		:RUBY_PREFIX => CONFIG['sitedir'],
-		:PREFIX => "/usr/local",
-		:CPU => nil,
-	},
-	:CC => "g++",
-	:OBJS => [],
-}
+LOG = File.open "./config.log", "w"
 
 #----------------------------------------------------------------#
-# Generic Parts
 
 class Or
 	attr_reader :a
@@ -133,6 +47,22 @@ def launch2(log,*command)
 	log << "error \##{ret}\n" if ret>0
 	return ret<=0
 end
+
+$conf={
+	:LDSOFLAGS => ["-lm"],
+	:BRIDGE_LDFLAGS => ["-lm"],
+	:FEATURES => {},
+	:FORMATS => [],
+	:OPTIONS => [],
+	:DEFINES => {
+		:JMAX_ARCH => "i686-linux",
+		:RUBY_PREFIX => CONFIG['sitedir'],
+		:PREFIX => "/usr/local",
+		:CPU => nil,
+	},
+	:CC => "g++",
+	:OBJS => [],
+}
 
 def c_test_old code, *link
 	log = ""
@@ -208,9 +138,6 @@ def join_pid pid
 	Process.waitpid2(pid)[1]
 end
 
-#----------------------------------------------------------------#
-# Specific to the GridFlow project
-
 module Future; end
 
 class Feature
@@ -239,6 +166,75 @@ class Feature
 	attr2 :action #!@#$
 	attr2 :defines #!@#$
 end
+
+#----------------------------------------------------------------#
+
+def make_expand(x)
+  y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
+  if x!=y then make_expand y else y end
+end
+
+def read_ld_so_conf
+	return [] unless File.exist?("/etc/ld.so.conf")
+	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
+	x.delete_if { x.length==0 }
+	x
+end
+
+$C_INCLUDE_PATH = (
+	(ENV["CPLUS_INCLUDE_PATH"]||"").split(":") +
+	(ENV["C_INCLUDE_PATH"]||"").split(":") +
+	["/usr/include"]).uniq
+
+$LIBRARY_PATH = (
+	(ENV["LIBRARY_PATH"]||"").split(":") +
+	["/usr/lib","/lib"]).uniq
+
+$LD_LIBRARY_PATH = (
+	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
+		read_ld_so_conf +
+		["/usr/lib","/lib"]).uniq
+
+#for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+#	puts "#{var}: #{eval(var.to_s).inspect}"
+#end
+
+$CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
+ 
+ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
+"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
+ruby18a = "#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
+for x in [ruby16a,ruby18a] do
+	$LIBRUBY_A = make_expand x
+	break if File.exist? $LIBRUBY_A
+end
+
+FILES = [
+  [:directory, "base/",
+    [:ruby, "main.rb"],
+    [:ruby, "flow_objects.rb"],
+    [:ruby, "test.rb"],
+    [:ruby, "source_filter.rb"],
+    [:ruby, "MainLoop.rb"],
+  ],
+  [:directory, "bridge/",
+    [:ruby, "puredata.rb"],
+  ],
+  [:directory, "format/",
+    [:ruby, "main.rb"],
+  ],
+  [:directory, "extra/",
+	[:ruby, "eval_server.rb"],
+	[:ruby, "smpte.rb"],
+	[:ruby, "server_2.rb"],
+	[:ruby, "server_1_grid.rb"],
+	[:ruby, "server_1_ppm.rb"],
+	[:ruby, "jmax_format.rb"],
+	[:ruby, "puredata_format.rb"],
+  ],
+]
+
+#----------------------------------------------------------------#
 
 $features = [
 Feature.new {
@@ -632,8 +628,7 @@ CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
 CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
 
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
-
-LOG = File.open "./config.log", "w"
+$CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", "-falign-functions=4"
 
 #--------------------------------#
 
