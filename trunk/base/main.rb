@@ -29,6 +29,8 @@ require "base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
+p GridFlow::GridOuter.instance_methods
+
 def GridFlow.post(s,*a)
 	GridFlow.post_string(sprintf s,*a)
 end
@@ -40,7 +42,7 @@ def GridFlow.whine(s,*a)
 	GridFlow.post(s,*a)
 end
 
-GridFlow.whine "This GridFlow 0.6.0 within Ruby version #{VERSION}"
+GridFlow.whine "This is GridFlow 0.6.0 within Ruby version #{VERSION}"
 GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
@@ -76,6 +78,24 @@ end
 
 # adding some functionality to that:
 module GridFlow; class FObject
+	def connect outlet, object, inlet
+		@outlets ||= []
+		@outlets.push [object, inlet]
+	end
+	def send_in(inlet, *m)
+		sym = if m.length==0
+			:bang
+		elsif m.length>1 && Symbol==m[0]
+			m.shift
+		elsif m.length>1
+			:list
+		elsif Integer===m[0]
+			:int
+		elsif Float===m[0]
+			:float
+		end
+		send("_#{inlet}_#{sym}".intern,*m)
+	end
 	def self.[](*foo)
 		if foo.length==1 and foo[0] =~ / / then
 			foo = foo[0].split(/\s+/)
@@ -88,6 +108,12 @@ module GridFlow; class FObject
 				raise ArgumentError, "GF names begin with @"
 			end
 		foo.shift
+		foo.map! {|x| case x
+			when Integer, Symbol; x
+			when /^[0-9]+$/; x.to_i
+			when String; x.intern
+			end }
+		p foo
 		qlass.new(*foo)
 	end
 end end
@@ -95,7 +121,7 @@ end end
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
 # _0_bang means bang message on inlet 0
-# FObject#send_thru sends a message through an outlet
+# FObject#send_out sends a message through an outlet
 class RubyFor < GridFlow::FObject
 	attr_accessor :start, :stop, :step
 	def initialize(start,stop,step)
@@ -107,9 +133,9 @@ class RubyFor < GridFlow::FObject
 	def _0_bang
 		x = start
 		if step > 0
-			(send_thru 0, x; x += step) while x < stop
+			(send_out 0, x; x += step) while x < stop
 		elsif step < 0
-			(send_thru 0, x; x += step) while x > stop
+			(send_out 0, x; x += step) while x > stop
 		end
 	end
 	def _0_int(x)
@@ -140,6 +166,7 @@ end
 def routine
 	$tasks.each {|k,v| GridFlow.exec k,v }
 	$mainloop.timers.after(100) { routine }
+	GC.start
 end
 
 routine

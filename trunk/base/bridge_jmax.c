@@ -21,14 +21,11 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <fts/fts.h>
 #include "../config.h"
 #include "grid.h"
-#include "bridge_jmax.h"
 #include <ctype.h>
 #include <stdarg.h>
-
-static int gf_winlet2;
-int gf_winlet (void) { return gf_winlet2; }
 
 /* **************************************************************** */
 /* FObject */
@@ -36,10 +33,6 @@ int gf_winlet (void) { return gf_winlet2; }
 /* for garbage collection */
 void FObject_mark (VALUE *$) {}
 void FObject_sweep (VALUE *$) {}
-
-#define INTEGER_P(_value_) (FIXNUM_P(_value_) || TYPE(_value_)==T_BIGNUM)
-#define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
-#define EARG(_reason_) rb_raise(rb_eArgError, _reason_)
 
 typedef struct BFObject {
 	fts_object_t _o;
@@ -232,20 +225,23 @@ int ac, const fts_atom_t *at) {
 }
 
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
-	char *name2;
+	VALUE name2;
 	if (SYMBOL_P(name)) {
-		name2 = rb_id2name(SYM2ID(name));
+		name2 = rb_funcall(name,rb_intern("dup"),0);
 	} else if (TYPE(name) == T_STRING) {
-		name2 = strdup(RSTRING(name)->ptr);
+		name2 = rb_funcall(name,rb_intern("to_s"),0);
 	} else {
-		EARG("expect symbol");
+		EARG("expect symbol or string");
 	}
-	whine("class will be called: %s",name2);
+	whine("class will be called: %s",RSTRING(name2)->ptr);
 	kludge.inlets = NUM2INT(inlets);
 	if (kludge.inlets<0 || kludge.inlets>9) EARG("...");
 	kludge.outlets = NUM2INT(outlets);
 	if (kludge.outlets<0 || kludge.outlets>9) EARG("...");
 	kludge.qlass = $;
+	rb_ivar_set($,"@inlets",inlets);
+	rb_ivar_set($,"@outlets",outlets);
+	rb_ivar_set($,"@foreign_name",name2);
 	{
 		fts_status_t r = 
 			fts_class_install(fts_new_symbol(name2),BFObject_class_init);
@@ -255,8 +251,10 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
 	return Qnil;
 }
 
-VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
+VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $) {
+	VALUE sym;
 	int outlet;
+	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	fts_symbol_t selector = fts_s_bang;
 	fts_atom_t at[argc+1];
 	int ac=0;
@@ -290,34 +288,14 @@ VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 		for (i=0; i<ac; i++) rj_convert(argv[i],at+i);
 	}
 	fts_outlet_send(FObject_peer($),outlet,selector,ac,at);
-	FObject_send_thru_2(argc,argv,$);
+	FObject_send_out_2(argc,argv,$);
 	return Qnil;
-}
-
-VALUE FObject_s_new(BFObject *jmax_peer, VALUE qlass, VALUE argc, VALUE *argv) {
-	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
-	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
-	VALUE ruby_peer;
-	c_peer->foreign_peer = jmax_peer;
-	ruby_peer = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
-	c_peer->peer = ruby_peer;
-	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
-
-	whinep($);
-	{
-		int i;
-		for (i=0; i<argc; i++) whinep(argv[i]);
-	}
-	whine("argc = %d",argc);
-	whine("argv = %p",argv);
-	rb_funcall2($,rb_intern("initialize"),argc,argv);
-	return $;
 }
 
 void gf_install_bridge (void) {
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
-	DEF(FObject, send_thru, -1);
+	DEF(FObject, send_out, -1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, 3);
 	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);

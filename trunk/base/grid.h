@@ -524,9 +524,9 @@ struct GridOutlet {
 /* grid.c (part 3: processor objects) */
 
 #define GridObject_FIELDS \
-	VALUE peer; /* point to Ruby peer */ \
+	GridClass *grid_class; \
+	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */ \
 	void *foreign_peer; /* point to jMax peer */ \
-	GridClass *gclass; \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
@@ -667,11 +667,13 @@ void gf_install_bridge(void);
 VALUE gf_post_string (VALUE $, VALUE s);
 void FObject_mark (VALUE *$);
 void FObject_sweep (VALUE *$);
-VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $);
-VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $);
+VALUE FObject_send_out(int argc, VALUE *argv, VALUE $);
+VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $);
+void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
 //VALUE FObject_s_new(BFObject *foo, VALUE qlass, VALUE argc, VALUE *argv);
+char *rb_sym_name(VALUE sym);
 
 void gf_init (void);
 #define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
@@ -682,6 +684,10 @@ void gf_init (void);
 
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(_class_##_class,#_name_,_class_##_s_##_name_,_argc_)
+
+#define INTEGER_P(_value_) (FIXNUM_P(_value_) || TYPE(_value_)==T_BIGNUM)
+#define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
+#define EARG(_reason_) rb_raise(rb_eArgError, _reason_)
 
 /* hack */
 int gf_winlet(void);

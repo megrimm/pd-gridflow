@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
+#include <ctype.h>
 #include "grid.h"
 
 int gf_max_packet_length = 1024;
@@ -103,6 +104,7 @@ void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 	int i;
 	int *v = NEW(int,argc-1);
 	GridOutlet *back_out = (GridOutlet *) FIX2PTR(argv[0]);
+	argc--, argv++;
 
 	if (GridInlet_busy($)) {
 		whine("grid inlet busy (aborting previous grid)");
@@ -114,8 +116,8 @@ void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 		goto err;
 	}
 
-	for (i=0; i<argc-1; i++) v[i] = NUM2INT(argv[1]);
-	$->dim = Dim_new(argc-1,v);
+	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
+	$->dim = Dim_new(argc,v);
 	FREE(v);
 
 	$->dex = 0;
@@ -210,7 +212,13 @@ void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 	int i;
 	Number *v = NEW(Number,argc);
 	int n = argc;
-	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
+	whine("argc=%d",n);
+	for (i=0; i<argc; i++) {
+		whine("argv[%d]=%ld",i,argv[i],
+			RSTRING(rb_funcall(argv[i],rb_intern("inspect"),0))->ptr);
+		v[i] = NUM2INT(argv[i]);
+		whine("v[%d]=%ld",i,v[i]);
+	}
 	$->dim = Dim_new(1,&n);
 
 	assert($->gh->begin);
@@ -268,7 +276,7 @@ void GridOutlet_abort(GridOutlet *$) {
 	LEAVE_P;
 	{
 		VALUE a[] = { INT2NUM($->woutlet), sym_grid_end };
-		FObject_send_thru(COUNT(a),a,$->parent->peer);
+		FObject_send_out(COUNT(a),a,$->parent->peer);
 	}
 	ENTER_P;
 }
@@ -280,7 +288,7 @@ void GridOutlet_end(GridOutlet *$) {
 	LEAVE_P;
 	{
 		VALUE a[] = { INT2NUM($->woutlet), sym_grid_end };
-		FObject_send_thru(COUNT(a),a,$->parent->peer);
+		FObject_send_out(COUNT(a),a,$->parent->peer);
 	}
 	ENTER_P;
 	FREE($->dim);
@@ -307,9 +315,9 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	a[0] = INT2NUM($->woutlet);
 	a[1] = sym_grid_begin;
 	a[2] = PTR2FIX($);
-	for(i=0; i<n; i++) a[i+1] = INT2NUM(Dim_get($->dim,i));
+	for(i=0; i<n; i++) a[3+i] = INT2NUM(Dim_get($->dim,i));
 	LEAVE_P;
-	FObject_send_thru(n+3,a,$->parent->peer);
+	FObject_send_out(n+3,a,$->parent->peer);
 	ENTER_P;
 	$->frozen = 1;
 /*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
@@ -320,14 +328,14 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
 		VALUE a[] = {
-			INT2NUM(0),
+			INT2NUM($->woutlet),
 			sym_grid_flow,
-			pn,
+			INT2NUM(pn),
 			PTR2FIX(data), /* explicitly removing const */
 			INT2NUM(4), /* mode ro */
 		};
 		LEAVE_P;
-		FObject_send_thru(COUNT(a),a,$->parent->peer);
+		FObject_send_out(COUNT(a),a,$->parent->peer);
 		ENTER_P;
 		data += pn;
 		n -= pn;
@@ -364,7 +372,7 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 			INT2NUM(6), /* mode rw */
 		};
 		LEAVE_P;
-		FObject_send_thru(COUNT(a),a,$->parent->peer);
+		FObject_send_out(COUNT(a),a,$->parent->peer);
 		ENTER_P;
 	} else {
 		/* normal stuff */
@@ -402,7 +410,7 @@ void GridObject_init(GridObject *$) {
 	$->profiler_cumul = 0;
 
 	{
-		GridClass *cl = $->gclass;
+		GridClass *cl = $->grid_class;
 		whine("cl=%p",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
@@ -416,10 +424,26 @@ void GridObject_init(GridObject *$) {
 
 /* category: input */
 
-METHOD(GridObject,grid_begin){GridInlet_begin($->in[gf_winlet()],argc,argv);}
-METHOD(GridObject,grid_flow ){GridInlet_flow( $->in[gf_winlet()],argc,argv);}
-METHOD(GridObject,grid_end  ){GridInlet_end(  $->in[gf_winlet()],argc,argv);}
-METHOD(GridObject,list      ){GridInlet_list( $->in[gf_winlet()],argc,argv);}
+METHOD(GridObject,method_missing) {
+	char *name;
+	whine("argc=%d,argv=%p,self=%p",argc,argv,self);
+	if (argc<1) RAISE("not enough arguments");
+	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
+	whine("method_missing: %s",rb_sym_name(argv[0]));
+	name = rb_sym_name(argv[0]);
+	rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);
+	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
+		int i = name[1]-'0';
+		GridInlet *inl = $->in[i];
+		argc--, argv++;
+		if      (strcmp(name+3,"grid_begin")==0) return GridInlet_begin(inl,argc,argv);
+		else if (strcmp(name+3,"grid_flow" )==0) return GridInlet_flow( inl,argc,argv);
+		else if (strcmp(name+3,"grid_end"  )==0) return GridInlet_end(  inl,argc,argv);
+		else if (strcmp(name+3,"list"      )==0) return GridInlet_list( inl,argc,argv);
+		argc++, argv--;
+	}
+	rb_call_super(argc,argv);
+}
 
 void GridObject_delete(GridObject *$) {
 	int i;
@@ -445,11 +469,15 @@ void GridObject_delete(GridObject *$) {
 }
 
 void GridObject_conf_class(VALUE $, int winlet) {
-	MethodDecl methods[] = {
+/*	MethodDecl methods[] = {
 		DECL(GridObject,winlet,grid_begin,"spi+"),
 		DECL(GridObject,winlet,grid_flow, "sip"),
 		DECL(GridObject,winlet,grid_end,  ""),
 		DECL(GridObject,winlet,list,      "l"),
+	};
+*/
+	MethodDecl methods[] = {
+		DECL(GridObject,-1,method_missing,"+"),
 	};
 	define_many_methods($,COUNT(methods),methods);
 }
@@ -556,7 +584,7 @@ void Stream_close(Stream *$) {
 /* this is an abstract base class for file formats, network protocols, etc */
 
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
-VALUE format_classes_dex;
+VALUE format_classes_dex = Qnil;
 
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
 	Format *$ = (Format *) NEW(char,qlass->object_size);
@@ -606,6 +634,7 @@ int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
 void startup_grid (void) {
 	int i;
 	whine("format-list-begin");
+	rb_define_readonly_variable("$format_classes_dex",&format_classes_dex);
 	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatClass *fc = format_classes[i];
