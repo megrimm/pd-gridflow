@@ -28,8 +28,6 @@
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
-
-
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
@@ -41,9 +39,9 @@ static void count_tick () {
 	static int count = 0;
 	static int next = 100;
 	if (count>=next) {
-		gf_bridge2->post("survived to %d ticks%s",count,
+		gf_bridge2->post("survived to %d clock ticks%s",count,
 			gf_bridge2->post_does_ln ? "" : "\n");
-		next = (next*14+9)/10;
+		next = (next*14+9)/10; /* next notice when 40% bigger */
 	}
 	count++;
 }
