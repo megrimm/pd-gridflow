@@ -857,8 +857,10 @@ class RubyFor < GridFlow::FObject
 		self.start = x
 		_0_bang
 	end
-	alias :_1_int :stop=
-	alias :_2_int :step=
+	alias _1_int stop=
+	alias _2_int step=
+	alias _1_float stop=
+	alias _2_float stop=
 
 	# FObject.install(name, inlets, outlets)
 	# no support for metaclasses yet
