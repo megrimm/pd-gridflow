@@ -842,6 +842,10 @@ class Peephole < GridFlow::FPatcher
 		@y,@x = y,x
 		set_geometry_for_real_now
 	end
+	def _0_fall_thru(flag)
+		GridFlow.post "fall_thru: #{flag}"
+		@fobjects[3].send_in 0, :fall_thru, flag
+	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
 	def _1_position(y,x,b) send_out 0,:position,y*@scale,x*@scale,b end
 	def _2_list(sy,sx,chans)
