@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+#  a script i wrote to automate restarting of jmax and a few other jobs.
+#  only written for myself.
+#
+
+#INST=/opt/jmax
+INST=/opt
+ARCH=i686-linux
+JMAKE="make ARCH=$ARCH"
+INST2=$INST/lib/jmax/fts/bin/$ARCH/opt/fts
+
+# SRC='array.[ch] video.c'
+# SRC='grid.c grid_protocol.[ch] video.[ch] macros.h vout*.c vin*.c'
+# SRC='grid_basic.c grid.c grid.h index.c tuple.c'
+SRC='video_out.c grid_basic.c grid.c grid.h'
+
+
+#FILE=../../samples/colour-demo-1.jmax
+#FILE=../../samples/colour-demo-t.jmax
+#FILE=../../samples/vin_file_test_1.jmax
+#FILE=../../samples/vin_file_test_2.jmax
+#FILE=../../samples/store.jmax
+#FILE=../../samples/feedback_fractal.jmax
+FILE=../../samples/cross_fade.jmax
+#FILE=
+
+#export DISPLAY=:1
+ulimit -c unlimited
+
+case $1 in
+	edit) (nedit $SRC &) ;;
+	kill) killall -9 java fts ;;
+	run)  killall -9 java fts; jmax $FILE ;;
+	rund)
+		killall -9 java fts
+		jmax -jmaxConnection udpclient -jmaxMode debug \
+			-jmaxPort 4242 $FILE
+		echo run udp 127.0.0.1:4242 > /tmp/jmax-debug
+		gdb $INST2 --command=/tmp/jmax-debug
+	;;
+	rundd)
+		killall -9 java fts
+		jmax -jmaxConnection udpclient -jmaxPort 4242 $FILE
+#		echo press enter to continue
+#		read foo
+#		echo $INST2 udp 127.0.0.1:4242
+		echo --------
+		echo run udp 127.0.0.1:4242
+		echo --------
+		gdb $INST2
+	;;
+	install) $JMAKE && (cd ../../../../; $JMAKE install) ;;
+	clean)
+		$JMAKE clean
+		rm err err2 core
+	;;
+	cc) $JMAKE &> err
+		cat err \
+		| fgrep -v 'pasting would' \
+		| fgrep -v '../../../../fts/src' \
+		> err2
+		pico err ;;
+#		pico err2 ;;
+	*|compile) $JMAKE ;;
+#	*) echo "usage: ./t [edit|install]" ;;
+esac
+
+

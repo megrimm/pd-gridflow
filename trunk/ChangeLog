@@ -1,0 +1,46 @@
+version 0.2.1:
+ * configuration script
+ * some cleanups
+ * @store no longer slowing down everything it touches
+ * many things work faster
+ * @video_out supports sharing memory with the display (NOT!)
+ * added File Format API
+ * added Video4jmax support
+ * Tuple -> Dim, Index -> (removed)
+ * Grid element type is typedef Number
+
+version 0.2.0:
+ * package name changed from "video" to "video4jmax"
+ * new kind of post() cancels repetitive log entries
+ * major modifications to existing objects
+ * new "grid transmission system"
+	(Tuple,Index,GridInlet,GridOutlet,GridObject)
+ * vout -> @video_out
+ * vin_file -> @video_in_file
+ * vout_file -> @video_out_file
+ * added @import, @export
+ * added @, @store
+
+version 0.1.1:
+ * removed vout's grab
+ * vout width and height parameters swapped
+ * vout_file class is mostly like vout but writes to a file in PPM format.
+
+version 0.1.0:
+
+ * fixed the bits_per_pixel bug
+ * merged in some other variations on the main sample
+ * included Christian's makefiles for jmax 2.5
+
+version 0.0.7:
+
+ * vout should support most types of RGB visuals now
+ * autodraw now works: 0=none; 1=page; 2=line; 3=pixel
+ * less global variables
+ * putting all of this under the GPL
+
+version 0.0.5:
+
+ * vout class, two params: width, height; 24-bit BGR only; refresh by
+finishing scanline or sending bang; "grab" (hack); "reset" for resetting
+the pixel pointer. 
