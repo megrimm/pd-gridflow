@@ -133,7 +133,7 @@
 	((_type_ *)qalloc(sizeof(_type_)*(_count_)))
 
 #define NEW2(_type_,_count_) \
-	((_type_ *)malloc(sizeof(_type_)*(_count_)))
+	((_type_ *)qalloc2(sizeof(_type_)*(_count_)))
 
 /* ************************************ new macros for 0.2.2 */
 

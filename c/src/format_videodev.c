@@ -295,8 +295,9 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	if (WIOCTL($->stream_raw, VIDIOCSYNC,     &vmmap)) goto err2;
 
 	/* success goes here */
+
 	/* something wrong, missing sizeof(sometype) */
-/*	memcpy($->stuff,buffer,$->left * BitPacking_bytes($->bit_packing)); */
+/*	memcpy($->stuff,buffer,num_pixels * BitPacking_bytes($->bit_packing)); */
 	memcpy($->stuff,buffer,$->left);
 
 err2:

@@ -59,6 +59,7 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
+void *qalloc2(size_t n);
 void *qalloc(size_t n); /*0xdeadbeef*/
 void qfree(void *data); /*0xfadedf00*/
 
