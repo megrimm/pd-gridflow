@@ -110,20 +110,53 @@ static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
 	for (int i=0; i<rb_ary_len(error_array); i++)
 		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	//!@#$leak
-	if (fm->self) fts_object_set_error(fm->self,"%s",strdup(rb_str_ptr(
-		rb_funcall(error_array,SI(join),0))));
+	if (fm->self) fts_object_set_error(fm->self,"%s",rb_str_ptr(
+		rb_funcall(error_array,SI(join),0)));
 	return Qnil;
 }
 
 static void BFObject_method_missing (BFObject *self,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
-	FMessage fm = { self: self, winlet: winlet, selector: selector, ac: ac, at: at };
+	FMessage fm = {
+		self: self, winlet: winlet, selector: selector,
+		ac: ac, at: at };
 	rb_rescue2(
 		(RMethod)BFObject_method_missing_1,(Ruby)&fm,
 		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
+
+/* 0.7.3 */
+/* UNFINISHED. SORRY.
+static void BFObject_generic_daemon (BFObject *self,
+fts_daemon_action_t action, fts_object_t *obj,
+fts_symbol_t property, fts_atom_t *value) {
+	fts_atom_t at[2];
+	FMessage fm;
+	fm.self = self;
+	fm.winlet = -1;
+	fm.at = at;
+	if (action == obj_property_get) {
+		fm.selector = SYM(daemon_property_get);
+		fm.ac = 2;
+		fts_set_symbol(fm.at+0,property);
+		rb_rescue2(
+			(RMethod)BFObject_method_missing_1,(Ruby)&fm,
+			(RMethod)BFObject_rescue,(Ruby)&fm,
+			rb_eException,0);
+	} else if (action == obj_property_set) {
+		fm.selector = SYM(daemon_property_get);
+		fm.ac = 1;
+		fts_set_symbol(fm.at+0,property);
+		rb_rescue2(
+			(RMethod)BFObject_method_missing_1,(Ruby)&fm,
+			(RMethod)BFObject_rescue,(Ruby)&fm,
+			rb_eException,0);
+	} else {
+		post("unhandled daemon call...\n");
+	}
+}
+*/
 
 static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac+1];
@@ -292,7 +325,6 @@ void gridflow_module_init () {
 	}
 
 	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
-	// !@#$ if exception occurred above, will crash soon
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);
 }

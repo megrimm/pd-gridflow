@@ -122,9 +122,8 @@ static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
 //	for (int i=0; i<rb_ary_len(error_array); i++)
 //		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	//!@#$leak
-	if (fm->self) pd_error(fm->self,"%s",strdup(rb_str_ptr(
-		rb_funcall(error_array,SI(join),1,rb_str_new2("\n")))));
+	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(
+		rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
@@ -275,7 +274,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	}
 	is_in_ruby = true;
 	rb_funcall(mGridFlow2,SI(tick),0);
-	clock_delay(gf_alarm,gf_bridge2->clock_tick/10);
+	clock_delay(gf_alarm,gf_bridge2->clock_tick);
 	is_in_ruby = false;
 	count_tick();
 }       
