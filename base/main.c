@@ -46,7 +46,7 @@ VALUE FObject_class;
 struct GFBridge gf_bridge = {
 	send_out: 0,
 	class_install: 0,
-	post: printf,
+	post: (void(*)(const char *, ...))printf,
 };
 
 void startup_number(void);
@@ -306,29 +306,13 @@ void whine_time(const char *s) {
 void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	VALUE args[16]; /* not really used anymore */
 	int i;
+	fprintf(stderr,"here are %d methods:\n",n);
 	for (i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		int j;
-		int n_args=0;
 		const char *s = md->signature;
 		char buf[256];
-		for (j=0; s[j]; j++) {
-			switch(s[j]) {
-			case 's': args[n_args++]=rb_cSymbol;  break;
-			case 'i': args[n_args++]=rb_cInteger; break;
-			case 'p': args[n_args++]=rb_cData;    break;
-			case 'l': args[n_args++]=rb_cArray;   break;
-			case '+':
-				while(n_args<16) {
-					args[n_args]=args[n_args-1];
-					n_args++;}
-				n_args = -1;
-				break;
-			case ';': n_args = -1; break;
-			default: assert(0);
-			}
-		}
-		n_args=-1; /* yes, really. sorry. */
+		int n_args=-1; /* yes, really. sorry. */
 		if (md->winlet>=0) {
 			sprintf(buf,"_%d_%s",md->winlet,md->selector);
 		} else {
@@ -338,7 +322,10 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 				sprintf(buf,"%s",md->selector);
 			}
 		}
+		fprintf(stderr,"%s: adding method #%s\n",
+			RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr,buf);
 		rb_define_method($,buf,(VALUE(*)())md->method,n_args);
+		fprintf(stderr,"(hello)\n");
 	}
 }
 
