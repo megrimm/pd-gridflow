@@ -709,7 +709,7 @@ class GridRavel < FPatcher
 	install "@ravel", 1, 1
 end
 
-class RubyUDPSend < FObject
+class JMaxUDPSend < FObject
 	def initialize(host,port)
 		@socket = UDPSocket.new
 		@host,@port = host.to_s,port.to_i
@@ -730,7 +730,53 @@ class RubyUDPSend < FObject
 			0, @host, @port
 	end
 
-	install "ruby_udpsend", 1, 0
+	def delete
+		@socket.close
+	end
+
+	install "jmax_udpsend", 1, 0
+end
+
+class JMaxUDPReceive < FObject
+	def initialize(port)
+		@socket = UDPSocket.new
+		@port = port.to_i
+		@socket.bind "localhost", @port
+#		@socket.nonblock = true
+		$tasks[self] = proc {tick}
+	end
+
+	def decode s
+		n = s.length
+		i=0
+		m = []
+		case s[i]
+		when 3; i+=5; m << s[i-4,4].unpack("N")[0]
+		when 4; i+=5; m << s[i-4,4].unpack("g")[0]
+		when 1; i2=s.index("\x02",i); m << s[i+1..i2-1].intern; i=i2+1
+		when 11; break
+		else raise "unknown code in udp packet"
+		end while i<n
+		m
+	end
+
+	def tick
+		ready_to_read = IO.select [@socket],[],[],0
+		return if not ready_to_read
+#		GridFlow.post "recvfrom: before"
+		data,sender = @socket.recvfrom 1024
+#		GridFlow.post "recvfrom: after"
+		return if not data
+#		GridFlow.post "#{data.inspect}"
+		send_out 1, sender.map {|x| x=x.intern if String===x; x }
+		send_out 0, *(decode data)
+	end
+
+	def delete
+		@socket.close
+	end
+
+	install "jmax_udpreceive", 0, 2
 end
 
 def self.routine
