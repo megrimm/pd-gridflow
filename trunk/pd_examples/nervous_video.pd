@@ -40,7 +40,7 @@
 #X restore 261 222 pd counter;
 #X obj 261 201 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 138 341 @out x11;
+#X obj 138 341 @out window;
 #X obj 387 179 random 310;
 #X msg 452 150 seed 150;
 #X obj 420 204 / 10;

@@ -9,7 +9,7 @@
 #X obj 45 63 @for ( -128 -128 ) ( 128 128 ) ( 1 1 );
 #X obj 44 132 @ + 128;
 #X obj 46 84 @ *;
-#X obj 46 178 @out x11;
+#X obj 46 178 @out window;
 #X obj 45 43 metro 33.3667;
 #X text 61 24 (step 2);
 #X msg 203 125 open teapot.png \, bang;
