@@ -397,7 +397,7 @@ inline void  ::operator delete[] (void *p) { gffree(p); }
 void gfmemcopy(uint8 *out, const uint8 *in, int n);
 template <class T> inline void COPY(Pt<T> dest, Pt<T> src, int n) {
 	src.will_use(n); dest.will_use(n);
-	gfmemcopy((uint8*)dest,(uint8*)src,n*sizeof(T));
+	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
 template <class T> inline void CLEAR(Pt<T> dest, int n) {
 	dest.will_use(n);

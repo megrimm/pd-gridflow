@@ -549,6 +549,11 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	if (*endp++!='_') goto hell;
 	if (strcmp(endp,"grid")==0) {
 		Ruby handlers = rb_ivar_get(rb_obj_class(rself),SI(@handlers));
+		if (TYPE(handlers)!=T_ARRAY) {
+			rb_p(handlers);
+			RAISE("gridhandler-list missing (maybe forgot install_rgrid ?)"
+			" while trying to receive on inlet %d",i);
+		}
 		if (i>=rb_ary_len(handlers)) RAISE("BORK");
 		GridHandler *gh = FIX2PTR(GridHandler, rb_ary_ptr(handlers)[i]);
 		if (in.size()<=(uint32)i) in.resize(i+1);
