@@ -24,8 +24,9 @@ Installation
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] reintroduce --puredata-dist-dir ?
-[ ] --ruby-prefix
+[ ] --prefix (pour ruby)
 [ ] install vs site-install mess
+[ ] --whole-archive
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -74,8 +75,7 @@ Architecture
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
-[ ] make @store loopable
-[ ] MMX autodetection
+[ ] MMX _runtime_ autodetection
 [ ] MMX computations integration
 [ ] pull mode (functional-style)
 [ ] remove all uses of assert() (replace by RAISE())
@@ -86,12 +86,14 @@ Architecture
 [ ] UnknownAtom class
 [ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
-[ ] jMax does not support literal lists in messages...
+[ ] jMax/PD bridges should support list-literals inside messages
 [ ] sizeof(Pt<>) could be 4 instead of 12 for speed increase?
 [ ] DEF_OP2_BITWISE
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
 [ ] bin op "avg" (average)
+[ ] bin op "gcd" (greatest common divisor)
+[ ] bin op "lcm" (least common multiple)
 [ ] dispatch on _n_-prefixed methods (one selector any inlet)
 	and     _#{i}_-named methods (any selector one inlet)
 [ ] security modes:
@@ -103,9 +105,15 @@ Architecture
 	Grid *next inside Grid objects.
 [ ] Outlet#buffer should harmonise with the lcm of its
 	corresponding Inlet#factor's.
+[ ] User-defined operators; compound operators... e.g.
+	[@ {{* 7} + {>> 3}}]
+[ ] n-ary operators... make [@] a metaclass
+[ ] lazy grids: Grid#operator Pt<T> makes sure all the grid is received
+	and Grid#range(int start, int n, T bogus) makes sure the
+	specified part of the grid is received.
 
 Computation Objects
-[ ] @type, @cast
+[ ] @type
 [ ] @splice
 [ ] zero option in @store (?)
 [ ] zero option in @convolve (?)
@@ -114,7 +122,6 @@ Computation Objects
 [ ] see APL/J/NArray/PDL/Aplus reference
 [ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
 [ ] http://www.dai.ed.ac.uk/HIPR2/wksheets.htm
-[ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @foldr, @scanr
 [ ] @matrix_inverse, @matrix_solve
 [ ] @transpose: dimension swapping
@@ -126,15 +133,14 @@ Computation Objects
 [ ] @unpack
 [ ] @import_symbol
 [ ] make a class that is a color equivalent of aalib
-[ ] merge @inner and @inner2 again (@inner2 would be alias)
-	(option transposed)
+[ ] polygon operators (@perimeter, @area, ...)
 
 Effects
 [ ] pinch
 [ ] pixelize, despeckle
 [ ] abyss effect
 [ ] @dither
-[ ] image-sur-image
+[ ] image-sur-image (@pip)
 [ ] n-frame delaying
 [ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
 [ ] HSV<->RGB; hue shifting
@@ -176,7 +182,11 @@ Format
 [ ] Generic MMAP Driver
 [ ] Unix-for-jMax
 [ ] "open grid pipe" and such.
-[ ] x11: colormap support
+[ ] quicktime write
+[ ] AVI
+
+[ ] <alx1> a bang when the video file is done playing so you could loop it
+easily or go to another clip... 
 
 jMax-UI
 [ ] color picker
@@ -238,6 +248,9 @@ Bugs
 [ ] jpeg file cat crashes on second file (jpeglib buffering?)
 [ ] gcc 3.2 fails to instantiate templates
 [ ] videodev stays busy after closing patch ?
+[ ] GRID_FINISH triggered while backstore ???
+[ ] @for has a bug re negative step
+[ ] fts_class_install failed: Duplicated metaclass
 
 SOON:
  
@@ -247,6 +260,7 @@ SOON:
 [ ] @border
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it @chroma_key though)
+	maybe @mask...
 
 <matju> mais je pourrais faire @perspective
 <matju> inlet 0: dim(n,3)
@@ -264,7 +278,7 @@ SOON:
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] memory profiling
 [ ] TCP: non-blocking write
-[ ] TCP Socket Buffering   
+[ ] TCP: buffer n grids
 [ ] read/write PureData files
 [ ] read/write jMax files
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
@@ -308,6 +322,17 @@ message "help" au inlet 0 enverrait une description de la classe dans le log.
 ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
 <alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
 avoir le même output que hasciicam? 
+
+alx1->matju: détection de plusieurs personnes; détection avec deux caméras
+(?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots
+
+<alx1> matju: another feature for the summer : select file to load via a
+navigable menu as in 'file/open'
+<matju> alx1: this is not a feature i can put in gridflow. if you want it,
+then i can make one for pd or jmax or both, but it does not make sense to
+add it to gridflow itself. 
+
+
 
 > http://redshift.sourceforge.net/debugging-GC/
 > [ruby-talk:53835]

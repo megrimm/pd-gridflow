@@ -1,5 +1,22 @@
 /* $Id$ */
 
+version 0.7.1 (head):
+
+ * fixed important bugs (crashes)
+ * @store,@ can now receive in inlet 1 while sending from outlet 0.
+ * @, when inlet 1 grid size is small but not 1, is now much faster.
+ * added memcpy() usage logging (see profiler_dump)
+ * added drag_rectangle.jmax, plot.jmax
+ * added classes fork, ruby_udpsend, @rotate, @remap_image
+ * added operator gcd,lcm (common divisors/multiples)
+ * quicktime: added seek, fixed bugs
+ * added @in's inlet 1 for telling frame number (quicktime)
+ * updated cross_fade.jmax (much faster)
+ * added new example: cellular_1d.pd
+ * @two,@three,@four allow 0:bang trigger
+ * added bridge_jmax4.c
+ * added quicktime encoding
+
 version 0.7.0 (2003.02.01):
 
  * new classes: @cast, @join, @ravel, @grade, @perspective
