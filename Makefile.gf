@@ -24,11 +24,9 @@ endif
 
 # GridFlow Installation Directory
 GFID = $(lib_install_dir)/packages/gridflow/
-LDSOFLAGS = -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
 CFLAGS += -Wall # for cleanliness
 CFLAGS += -Wno-unused # it's normal to have unused parameters
-CFLAGS += -mcpu=pentium # NOT PORTABLE (FIX ME)
 
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
@@ -103,7 +101,6 @@ munchies::
 
 foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"
-	@echo "GRIDFLOW_LDSOFLAGS = $(GRIDFLOW_LDSOFLAGS)"
 
 #----------------------------------------------------------------#
 
@@ -114,9 +111,10 @@ gridflow-for-jmax:: $(JMAX_LIB)
 #	echo $(LDSOFLAGS)
 #	echo $(CFLAGS)
 
+# the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	$(CC) -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -187,7 +185,7 @@ PD_LIB = $(OBJDIR)/gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	$(CC) -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) $(LDSOFLAGS) $(CFLAGS) $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
