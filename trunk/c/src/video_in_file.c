@@ -162,6 +162,6 @@ CLASS(VideoInFile) {
 }
 
 void VideoInFile_config(void) {
-	fts_class_install(fts_new_symbol("@video_in_file"), VideoInFile_instantiate);
+	fts_class_install(fts_new_symbol("@video_in_file"), VideoInFile_class_init);
 }
 

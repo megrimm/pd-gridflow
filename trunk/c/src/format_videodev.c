@@ -152,6 +152,7 @@ void FormatVideoDev_size (FileFormat *$, int height, int width) {
 	WIOCTL($->stream_raw, VIDIOCGWIN, &grab_win);
 	video_window_whine(&grab_win);
 	grab_win.clipcount = 0;
+	grab_win.flags = 0;
 	grab_win.height = height;
 	grab_win.width  = width;
 	video_window_whine(&grab_win);
@@ -235,10 +236,19 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	}
 
 	whine("will try opening file");
-	$->stream_raw = v4j_file_open(filename, O_RDONLY);
+
+/* actually you only can open devices using open() directly */
+/*	$->stream_raw = v4j_file_open(filename, O_RDONLY); */
+	$->stream_raw =          open(filename, O_RDONLY);
 	if (0> $->stream_raw) {
 		whine("can't open file: %s", filename);
 		goto err;
+	}
+
+	{
+		int v = fcntl($->stream_raw, F_SETFL);
+		v |= O_NONBLOCK;
+		fcntl($->stream_raw, F_SETFL, v);
 	}
 
 	WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);

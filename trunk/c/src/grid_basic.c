@@ -248,7 +248,7 @@ void GridStore_1_begin(GridInlet *$) {
 	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
-		GridInlet_abort(parent->in[0]);
+		GridInlet_abort(parent->in[0]); /* bug? */
 		free(parent->data);
 	}
 	parent->dim = $->dim;
@@ -310,7 +310,9 @@ CLASS(GridStore) {
 #define DEF_OP(__name,__expr) \
 	static Number op_##__name (Number a, Number b) { return __expr; } \
 	static void op_array_##__name (int n, Number *as, Number b) { \
-		while (n--) { Number a = *as; *as++ = __expr; } }
+		while (n--) { Number a = *as; *as++ = __expr; } } \
+	static Number op_fold_##__name (Number a, int n, const Number *as) { \
+		while (n--) { Number b = *as; a = __expr; } return a; }
 
 DEF_OP(add, a+b)
 DEF_OP(sub, a-b)
@@ -341,8 +343,8 @@ DEF_OP(ge,  a >= b)
 DEF_OP(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
 DEF_OP(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
 
-#define DECLOP(__name,__sym) \
-	{ 0, __sym, &op_##__name, &op_array_##__name }
+#define DECLOP(_name_,_sym_) \
+	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
 
 typedef struct Operation Operation;
 struct Operation {
@@ -350,6 +352,7 @@ struct Operation {
 	const char *name;
 	Number (*op)(Number,Number);
 	void (*op_array)(int,Number *,Number);
+	Number (*op_fold)(Number,int,const Number *);
 };
 
 Operation optable[] = {
@@ -385,9 +388,9 @@ Operation optable[] = {
 
 /* **************************************************************** */
 /*
-  GridOp2 ("@") is the class of objects for operating on an array
-  in a left inlet, and a scalar (integer) alone in the right inlet.
-  They support operators listed in the section above.
+  GridOp2 ("@") is the class of objects for parallel operation on the
+  values of the left grid with values of a (stored) right grid or (stored)
+  single value.
 */
 
 typedef struct GridOp2 GridOp2;
@@ -425,9 +428,7 @@ void GridOp2_0_flow(GridInlet *$, int n, const Number *data) {
 	GridOutlet_send(out,n,data2);
 	free(data2);
 /*
-	if ($->dex >= Dim_prod($->dim)) {
-		GridInlet_end($);
-	}
+	if ($->dex >= Dim_prod($->dim)) { GridInlet_end($); }
 */
 }
 
@@ -435,7 +436,7 @@ void GridOp2_1_begin(GridInlet *$) {
 	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
-		GridInlet_abort(parent->in[0]);
+		GridInlet_abort(parent->in[0]); /* bug? */
 		free(parent->data);
 	}
 	parent->dim = $->dim;
@@ -491,7 +492,6 @@ METHOD(GridOp2,bang) {
 	GridOutlet_send($->out[0],Dim_prod($->dim),$->data);
 }
 
-
 CLASS(GridOp2) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
@@ -514,14 +514,133 @@ CLASS(GridOp2) {
 
 /* **************************************************************** */
 
+/*
+  GridFold ("@fold") is the class of objects for removing the last dimension
+  by cascading an operation on all those values. There is a start value. When
+  doing [@fold + 42] each new value is computed like 42+a+b+c+...
+
+  DOES NOT WORK YET
+*/
+
+typedef struct GridFold GridFold;
+struct GridFold {
+	GridObject_FIELDS;
+	Operation *op;
+	int rint;
+	Number accum;
+/*
+	Number *data;
+	Dim *dim;
+*/
+};
+
+void GridFold_0_begin(GridInlet *$) {
+	GridFold *parent = (GridFold *) GridInlet_parent($);
+	int n = Dim_count($->dim);
+	Dim *foo;
+	if (n<1) goto err;
+	foo = Dim_new(n-1,$->dim->v);
+	GridOutlet_begin(parent->out[0],foo);
+err:
+	GridInlet_abort($);
+}
+
+void GridFold_0_flow(GridInlet *$, int n, const Number *data) {
+	GridFold *parent = (GridFold *) GridInlet_parent($);
+	int wrap = Dim_get($->dim,Dim_count($->dim)-1);
+	int i;
+	GridOutlet *out = parent->out[0];
+	for (i=0; i<n; i++) {
+		if ((($->dex+i) % wrap) == 0) parent->accum = parent->rint;
+		parent->accum = parent->op->op_fold(parent->accum,1,&data[i]);
+		if ((($->dex+i) % wrap) == wrap-1) {
+			GridOutlet_send(out,1,&parent->accum);
+		}
+	}
+	$->dex += n;
+/*
+	if ($->dex >= Dim_prod($->dim)) { GridInlet_end($); }
+*/
+}
+
+/*
+void GridFold_1_begin(GridInlet *$) {
+	GridFold *parent = (GridFold *) GridInlet_parent($);
+	int length = Dim_prod($->dim);
+	if (parent->data) {
+		GridInlet_abort(parent->in[0]); (* bug? *)
+		free(parent->data);
+	}
+	parent->dim = $->dim;
+	parent->data = NEW2(Number,length);
+}
+
+void GridFold_1_flow(GridInlet *$, int n, const Number *data) {
+	GridFold *parent = (GridFold *) GridInlet_parent($);
+	int i;
+	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
+	Dim_dex_add($->dim,n,&$->dex);
+}
+*/
+
+METHOD(GridFold,init) {
+	int i;
+	fts_symbol_t sym = GET(1,symbol,optable[0].sym);
+	$->rint = GET(2,int,0);
+
+	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	$->in[0] = GridInlet_new((GridObject *)$, 0,
+		GridOp2_0_begin, GridOp2_0_flow);
+	$->in[1] = GridInlet_new((GridObject *)$, 1,
+		GridOp2_1_begin, GridOp2_1_flow);
+	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+
+	for(i=0; i<COUNT(optable); i++) {
+		if (optable[i].sym == sym) {
+			whine("created @ object with operator '%s'", optable[i].name);
+			$->op = &optable[i];
+			return;
+		}
+	}
+
+	//!@#$
+	whine("unknown operator, trying '+' instead");
+	$->op = &optable[0];
+}
+
+METHOD(GridFold,delete) { /* write me */ }
+
+CLASS(GridFold) {
+	int i;
+	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
+
+	MethodDecl methods[] = {
+		{ -1, fts_s_init,   METHOD_PTR(GridFold,init),   ARRAY(init_args), 2 },
+		{ -1, fts_s_delete, METHOD_PTR(GridFold,delete), 0,0,0 },
+/*		{  1, fts_s_int,    METHOD_PTR(GridFold,rint),   0,0,0 }, */
+	};
+
+	/* initialize the class */
+	fts_class_init(class, sizeof(GridFold), 2, 1, 0);
+	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
+/*	GridObject_conf_class(class,1); */
+
+	return fts_Success;
+}
+
+/* **************************************************************** */
+
 void grid_basic_config (void) {
 	int i;
 	for(i=0; i<COUNT(optable); i++) {
 		optable[i].sym = fts_new_symbol(optable[i].name);
 	} 
 
-	fts_class_install(fts_new_symbol("@import"), GridImport_instantiate);
-	fts_class_install(fts_new_symbol("@export"), GridExport_instantiate);
-	fts_class_install(fts_new_symbol("@store"),   GridStore_instantiate);
-	fts_class_install(fts_new_symbol("@"),          GridOp2_instantiate);
+	fts_class_install(fts_new_symbol("@import"), GridImport_class_init);
+	fts_class_install(fts_new_symbol("@export"), GridExport_class_init);
+	fts_class_install(fts_new_symbol("@store"),   GridStore_class_init);
+	fts_class_install(fts_new_symbol("@"),          GridOp2_class_init);
+	fts_class_install(fts_new_symbol("@fold"),     GridFold_class_init);
 }
+

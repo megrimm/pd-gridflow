@@ -150,6 +150,6 @@ CLASS(VideoOutFile) {
 }
 
 void VideoOutFile_config (void) {
-	fts_class_install(fts_new_symbol("@video_out_file"), VideoOutFile_instantiate);
+	fts_class_install(fts_new_symbol("@video_out_file"), VideoOutFile_class_init);
 }
 

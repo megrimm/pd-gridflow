@@ -477,6 +477,6 @@ CLASS(VideoOut) {
 
 void VideoOut_config (void) {
 	display_init(&x11);
-	fts_class_install(fts_new_symbol("@video_out"), VideoOut_instantiate);
+	fts_class_install(fts_new_symbol("@video_out"), VideoOut_class_init);
 }
 
