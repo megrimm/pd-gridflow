@@ -98,14 +98,14 @@ struct GridExport {
 	GridObject_FIELDS;
 };
 
-GRID_BEGIN(GridExport,0) { /* nothing to do */ }
+GRID_BEGIN(GridExport,0) { return true; }
 
 GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
 		fts_atom_t a[1];
 		fts_set_int(a+0,*data);
-		fts_outlet_send(OBJ($->parent),0,fts_s_int,1,a);
+		fts_outlet_send(OBJ(parent),0,fts_s_int,1,a);
 		data++;
 	}
 }
@@ -159,52 +159,50 @@ struct GridStore {
 };
 
 GRID_BEGIN(GridStore,0) {
-	int na = Dim_count($->dim);
+	int na = Dim_count(in->dim);
 	int nb;
 	int nc,nd,i;
 	int v[MAX_DIMENSIONS];
 	if (!parent->data || !parent->dim) {
 		whine("empty buffer, better luck next time.");
-		goto err;
+		return false;
 	}
 
 	nb = Dim_count(parent->dim);
 
-	whine("[a] %s",Dim_to_s($->dim));
+	whine("[a] %s",Dim_to_s(in->dim));
 	whine("[b] %s",Dim_to_s(parent->dim));
 
 	if (na<1 || na>1+nb) {
 		whine("wrong number of dimensions: got %d, expecting %d..%d",
 			na,1,1+nb);
-		goto err;
+		return false;
 	}
-	nc = Dim_get($->dim,na-1);
+	nc = Dim_get(in->dim,na-1);
 	if (nc > nb) {
 		whine("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
-		goto err;
+		return false;
 	}
 	nd = nb - nc + na - 1;
 	if (nd > MAX_DIMENSIONS) {
 		whine("too many dimensions!");
-		goto err;
+		return false;
 	}
-	for (i=0; i<na-1; i++) v[i] = Dim_get($->dim,i);
+	for (i=0; i<na-1; i++) v[i] = Dim_get(in->dim,i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get(parent->dim,i);
 	GridOutlet_begin(parent->out[0],Dim_new(nd,v));
 	parent->buf = NEW2(Number,nc);
 	parent->bufn = 0;
 	whine("[r] %s",Dim_to_s(parent->out[0]->dim));
-	return;
-err:
-	GridInlet_abort($);
+	return true;
 }
 
 GRID_FLOW(GridStore,0) {
 	GridOutlet *out = parent->out[0];
-	int na = Dim_count($->dim);
+	int na = Dim_count(in->dim);
 	int nb = Dim_count(parent->dim);
-	int nc = Dim_get($->dim,na-1);
+	int nc = Dim_get(in->dim,na-1);
 
 	while(n>0) {
 		int bs = nc - parent->bufn;
@@ -233,25 +231,26 @@ GRID_FLOW(GridStore,0) {
 			parent->bufn=0;
 		}
 	}
-	$->dex += n;
+	in->dex += n;
 	GridOutlet_flush(parent->out[0]);
 }
 
 GRID_BEGIN(GridStore,1) {
-	int length = Dim_prod($->dim);
+	int length = Dim_prod(in->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
 		free(parent->data);
 	}
-	parent->dim = Dim_dup($->dim);
+	parent->dim = Dim_dup(in->dim);
 	parent->data = NEW2(Number,length);
+	return true;
 }
 
 GRID_FLOW(GridStore,1) {
 	int i;
-	memcpy(&parent->data[$->dex], data, sizeof(Number)*n);
-	$->dex += n;
-	if ($->dex >= Dim_prod($->dim)) GridInlet_finish($); /* ? */
+	memcpy(&parent->data[in->dex], data, sizeof(Number)*n);
+	in->dex += n;
+	if (in->dex >= Dim_prod(in->dim)) GridInlet_finish(in); /* ? */
 }
 
 METHOD(GridStore,init) {
@@ -306,8 +305,9 @@ struct GridOp1 {
 };
 
 GRID_BEGIN(GridOp1,0) {
-	GridOutlet_begin(parent->out[0],Dim_dup($->dim));
-	$->dex = 0;
+	GridOutlet_begin(parent->out[0],Dim_dup(in->dim));
+	in->dex = 0;
+	return true;
 }
 
 GRID_FLOW(GridOp1,0) {
@@ -317,12 +317,9 @@ GRID_FLOW(GridOp1,0) {
 
 	memcpy(data2,data,sizeof(int)*n);
 	parent->op->op_array(n,data2);
-	$->dex += n;
+	in->dex += n;
 	GridOutlet_send(out,n,data2);
 	free(data2);
-/*
-	if ($->dex >= Dim_prod($->dim)) { GridInlet_end($); }
-*/
 }
 
 METHOD(GridOp1,init) {
@@ -376,8 +373,9 @@ struct GridOp2 {
 };
 
 GRID_BEGIN(GridOp2,0) {
-	GridOutlet_begin(parent->out[0],Dim_dup($->dim));
-	$->dex = 0;
+	GridOutlet_begin(parent->out[0],Dim_dup(in->dim));
+	in->dex = 0;
+	return true;
 }
 
 GRID_FLOW(GridOp2,0) {
@@ -389,13 +387,13 @@ GRID_FLOW(GridOp2,0) {
 		int loop = Dim_prod(parent->dim);
 		int i;
 		for (i=0; i<n; i++) {
-			int rint = parent->data[($->dex+i)%loop];
+			int rint = parent->data[(in->dex+i)%loop];
 			data2[i] = parent->op->op(data2[i],rint);
 		}
 	} else {
 		parent->op->op_array(n,data2,parent->rint);
 	}
-	$->dex += n;
+	in->dex += n;
 	GridOutlet_send(out,n,data2);
 	free(data2);
 /*
@@ -404,19 +402,20 @@ GRID_FLOW(GridOp2,0) {
 }
 
 GRID_BEGIN(GridOp2,1) {
-	int length = Dim_prod($->dim);
+	int length = Dim_prod(in->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
 		free(parent->data);
 	}
-	parent->dim = Dim_dup($->dim);
+	parent->dim = Dim_dup(in->dim);
 	parent->data = NEW2(Number,length);
+	return true;
 }
 
 GRID_FLOW(GridOp2,1) {
 	int i;
-	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
-	$->dex += n;
+	memcpy(&parent->data[in->dex], data, sizeof(int)*n);
+	in->dex += n;
 }
 
 METHOD(GridOp2,init) {
@@ -480,30 +479,28 @@ struct GridFold {
 };
 
 GRID_BEGIN(GridFold,0) {
-	int n = Dim_count($->dim);
+	int n = Dim_count(in->dim);
 	Dim *foo;
-	if (n<1) { whine("minimum 1 dimension"); goto err; }
+	if (n<1) { whine("minimum 1 dimension"); return false; }
 
-	foo = Dim_new(n-1,$->dim->v);
-	whine("fold dimension = %s",Dim_to_s(foo));
+	foo = Dim_new(n-1,in->dim->v);
+/*	whine("fold dimension = %s",Dim_to_s(foo)); */
 	GridOutlet_begin(parent->out[0],foo);
-	return;
-err:
-	GridInlet_abort($);
+	return true;
 }
 
 GRID_FLOW(GridFold,0) {
-	int wrap = Dim_get($->dim,Dim_count($->dim)-1);
+	int wrap = Dim_get(in->dim,Dim_count(in->dim)-1);
 	int i;
 	GridOutlet *out = parent->out[0];
 	for (i=0; i<n; i++) {
-		if ((($->dex+i) % wrap) == 0) parent->accum = parent->rint;
+		if (((in->dex+i) % wrap) == 0) parent->accum = parent->rint;
 		parent->accum = parent->op->op_fold(parent->accum,1,&data[i]);
-		if ((($->dex+i) % wrap) == wrap-1) {
+		if (((in->dex+i) % wrap) == wrap-1) {
 			GridOutlet_send(out,1,&parent->accum);
 		}
 	}
-	$->dex += n;
+	in->dex += n;
 }
 
 METHOD(GridFold,init) {
@@ -564,15 +561,16 @@ struct GridDim {
 };
 
 GRID_BEGIN(GridDim,0) {
-	int n = Dim_count($->dim);
+	int n = Dim_count(in->dim);
 	int i;
 	Dim *foo = Dim_new(1,&n);
 	Number v[n];
 	GridOutlet_begin(parent->out[0],foo);
 	for (i=0; i<n; i++) {
-		v[i] = Dim_get($->dim,i);
+		v[i] = Dim_get(in->dim,i);
 	}
 	GridOutlet_send(parent->out[0],n,v);
+	return true;
 }
 
 GRID_FLOW(GridDim,0) {
@@ -614,9 +612,10 @@ struct GridPrint {
 };
 
 GRID_BEGIN(GridPrint,0) {
-	char *foo = Dim_to_s($->dim);
+	char *foo = Dim_to_s(in->dim);
 	whine("Grid %s",foo);
 	free(foo);
+	return true;
 }
 
 GRID_FLOW(GridPrint,0) {
