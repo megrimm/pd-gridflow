@@ -92,16 +92,22 @@ class XNode
 		e=nil
 		case tag
 		when "section"
-			mk(:h4) { mk(:a,:href,att["name"]) { print att["name"] }}
-			print "<blockquote>"
-			e="</blockquote>\n"
+			mk(:h4) { mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
+				print att["name"] }}
+			print "<ul>"
+			e="</ul>\n"
 		when "jmax_class"
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
-			if icon
-				mk(:img,:src,icon.att["image"],:alt,icon.att["text"])
-				mk(:br)
-				puts
-			end
+			mk(:li) { mk(:a,:href,"\#"+att["name"]) {
+				if icon
+					mk(:img,:src,icon.att["image"],
+						:alt,icon.att["text"],
+						:border,0)
+				else
+					print att["name"]
+				end
+			}}
+			puts
 		end
 
 		contents.each {|x|
@@ -120,7 +126,9 @@ class XNode
 		when "jmax_doc"; #nothing
 		when "section"
 			black_ruler
-			mk(:tr) { mk(:td,:colspan,4) { mk(:h4) { print att["name"] }}}
+			mk(:tr) { mk(:td,:colspan,4) {
+				mk(:a,:name,att["name"].gsub(/ /,'_')) {}
+				mk(:h4) { print att["name"] }}}
 			e="<tr><td>&nbsp;</td></tr>"
 			$section={}
 		when "p", "i", "u", "b", "sup", "k"

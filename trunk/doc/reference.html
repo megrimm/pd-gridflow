@@ -35,40 +35,51 @@
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
-<tr><td colspan="2"><h4><a href="Conventions of this Manual">Conventions of this Manual</a></h4><blockquote></blockquote>
-<h4><a href="Grid Protocol">Grid Protocol</a></h4><blockquote></blockquote>
-<h4><a href="Picture Protocol">Picture Protocol</a></h4><blockquote></blockquote>
-<h4><a href="Unary Operators">Unary Operators</a></h4><blockquote></blockquote>
-<h4><a href="Binary Operators">Binary Operators</a></h4><blockquote></blockquote>
-<h4><a href="Objects for Input/Output">Objects for Input/Output</a></h4><blockquote><img src="images/@in.jpg" alt="[@import 240 320 3]"><br>
-<img src="images/@out.jpg" alt="[@out]"><br>
-<img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]"><br>
-<img src="images/@export.jpg" alt="[@export]"><br>
-</blockquote>
-<h4><a href="Transformation Objects">Transformation Objects</a></h4><blockquote><img src="images/@for.jpg" alt="[@for 0 320 1]"><br>
-<img src="images/@fold_%2B.jpg" alt="[@fold +]"><br>
-<img src="images/@outer.jpg" alt="[@outer +]"><br>
-<img src="images/@inner.jpg" alt="[@inner * + 0]"><br>
-<img src="images/@redim.jpg" alt="[@redim 2]"><br>
-<img src="images/@store.jpg" alt="[@store]"><br>
-</blockquote>
-<h4><a href="Reporting Objects">Reporting Objects</a></h4><blockquote><img src="images/@dim.jpg" alt="[@dim]"><br>
-</blockquote>
-<h4><a href="Special Objects">Special Objects</a></h4><blockquote></blockquote>
-<h4><a href="Compound Objects">Compound Objects</a></h4><blockquote><img src="images/@contrast.jpg" alt="[@contrast]"><br>
-<img src="images/@identity_transform.jpg" alt="[@identity_transform]"><br>
-<img src="images/@posterize.jpg" alt="[@posterize]"><br>
-<img src="images/@scale_to.jpg" alt="[@scale_to]"><br>
-<img src="images/@spread.jpg" alt="[@spread]"><br>
-<img src="images/@three.jpg" alt="[@three]"><br>
-<img src="images/@two.jpg" alt="[@two]"><br>
-</blockquote>
-<h4><a href="External Picture Formats">External Picture Formats</a></h4><blockquote><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]"><br>
-<img src="images/format/tga.jpg" alt="[open targa file filename.tga]"><br>
-<img src="images/format/videodev.jpg" alt="[open videodev /dev/video0]"><br>
-<img src="images/format/x11.jpg" alt="[open x11 here]"><br>
-<img src="images/format/grid.jpg" alt="[open grid file filename.grid]"><br>
-</blockquote>
+<tr><td colspan="2"><h4><a href="#Conventions_of_this_Manual">Conventions of this Manual</a></h4><ul></ul>
+<h4><a href="#Grid_Protocol">Grid Protocol</a></h4><ul></ul>
+<h4><a href="#Picture_Protocol">Picture Protocol</a></h4><ul></ul>
+<h4><a href="#Unary_Operators">Unary Operators</a></h4><ul></ul>
+<h4><a href="#Binary_Operators">Binary Operators</a></h4><ul></ul>
+<h4><a href="#Objects_for_Input/Output">Objects for Input/Output</a></h4><ul><li><a href="#@in"><img src="images/@in.jpg" alt="[@in]" border="0"></a></li>
+<li><a href="#@out"><img src="images/@out.jpg" alt="[@out]" border="0"></a></li>
+<li><a href="#@import"><img src="images/@import_240_320_3.jpg" alt="[@ import 240 320 3]" border="0"></a></li>
+<li><a href="#@export"><img src="images/@export.jpg" alt="[@export]" border="0"></a></li>
+<li><a href="#@two">@two</a></li>
+<li><a href="#@three">@three</a></li>
+<li><a href="#@four">@four</a></li>
+</ul>
+<h4><a href="#Transformation_Objects">Transformation Objects</a></h4><ul><li><a href="#@for"><img src="images/@for.jpg" alt="[@for 0 320 1]" border="0"></a></li>
+<li><a href="#@">@</a></li>
+<li><a href="#@!">@!</a></li>
+<li><a href="#@fold"><img src="images/@fold_%2B.jpg" alt="[@fold +]" border="0"></a></li>
+<li><a href="#@outer"><img src="images/@outer.jpg" alt="[@outer +]" border="0"></a></li>
+<li><a href="#@inner"><img src="images/@inner.jpg" alt="[@inner * + 0]" border="0"></a></li>
+<li><a href="#@redim"><img src="images/@redim.jpg" alt="[@redim 2]" border="0"></a></li>
+<li><a href="#@store"><img src="images/@store.jpg" alt="[@store]" border="0"></a></li>
+</ul>
+<h4><a href="#Reporting_Objects">Reporting Objects</a></h4><ul><li><a href="#@dim"><img src="images/@dim.jpg" alt="[@dim]" border="0"></a></li>
+<li><a href="#@print">@print</a></li>
+</ul>
+<h4><a href="#Objects_intended_for_Picture_Processing">Objects intended for Picture Processing</a></h4><ul><li><a href="#@convolve">@convolve</a></li>
+<li><a href="#@scale_by">@scale_by</a></li>
+<li><a href="#@contrast"><img src="images/@contrast.jpg" alt="[@contrast]" border="0"></a></li>
+<li><a href="#@posterize"><img src="images/@posterize.jpg" alt="[@posterize]" border="0"></a></li>
+</ul>
+<h4><a href="#Special_Objects">Special Objects</a></h4><ul><li><a href="#rtmetro">rtmetro</a></li>
+<li><a href="#@global">@global</a></li>
+</ul>
+<h4><a href="#Compound_Objects">Compound Objects</a></h4><ul><li><a href="#@identity_transform"><img src="images/@identity_transform.jpg" alt="[@identity_transform]" border="0"></a></li>
+<li><a href="#@scale_to"><img src="images/@scale_to.jpg" alt="[@scale_to]" border="0"></a></li>
+<li><a href="#@spread"><img src="images/@spread.jpg" alt="[@spread]" border="0"></a></li>
+<li><a href="#@three"><img src="images/@three.jpg" alt="[@three]" border="0"></a></li>
+<li><a href="#@two"><img src="images/@two.jpg" alt="[@two]" border="0"></a></li>
+</ul>
+<h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul><li><a href="#format ppm @in/@out"><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]" border="0"></a></li>
+<li><a href="#format targa @in"><img src="images/format/tga.jpg" alt="[open targa file filename.tga]" border="0"></a></li>
+<li><a href="#format videodev @in"><img src="images/format/videodev.jpg" alt="[open videodev /dev/video0]" border="0"></a></li>
+<li><a href="#format x11 @in/@out"><img src="images/format/x11.jpg" alt="[open x11 here]" border="0"></a></li>
+<li><a href="#format grid @in/@out"><img src="images/format/grid.jpg" alt="[open grid file filename.grid]" border="0"></a></li>
+</ul>
 <br><br>
 </td></tr>
 
@@ -81,7 +92,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Conventions of this Manual</h4></td></tr>
+<tr><td colspan="4"><a name="Conventions_of_this_Manual"></a><h4>Conventions of this Manual</h4></td></tr>
 
 <tr><td></td><td></td><td>
 
@@ -100,7 +111,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Grid Protocol</h4></td></tr>
+<tr><td colspan="4"><a name="Grid_Protocol"></a><h4>Grid Protocol</h4></td></tr>
 
 <tr><td></td><td></td><td>
 
@@ -197,7 +208,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Picture Protocol</h4></td></tr>
+<tr><td colspan="4"><a name="Picture_Protocol"></a><h4>Picture Protocol</h4></td></tr>
 
 <tr><td></td><td></td><td>
 
@@ -276,7 +287,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Unary Operators</h4></td></tr>
+<tr><td colspan="4"><a name="Unary_Operators"></a><h4>Unary Operators</h4></td></tr>
 
 
 
@@ -309,7 +320,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Binary Operators</h4></td></tr>
+<tr><td colspan="4"><a name="Binary_Operators"></a><h4>Binary Operators</h4></td></tr>
 
 	<tr><td></td><td></td><td>
 
@@ -444,7 +455,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Objects for Input/Output</h4></td></tr>
+<tr><td colspan="4"><a name="Objects_for_Input/Output"></a><h4>Objects for Input/Output</h4></td></tr>
 
 
 
@@ -810,6 +821,72 @@
 
 	<br></td>
 
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<p> holds two values, defaulting to (0,0). each time one is
+
+		changed (by sending an integer in that inlet), a dim(2) grid is
+
+		sent through the outlet.</p>
+
+		<br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+
+		<br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>2<b>)</b><br><br>
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<p> holds three values, defaulting to (0,0,0). each time one is
+
+		changed (by sending an integer in that inlet), a dim(3) grid is
+
+		sent through the outlet.</p>
+
+		<br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+
+		<br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>3<b>)</b><br><br>
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<p> holds four values, defaulting to (0,0,0,0). each time one is
+
+		changed (by sending an integer in that inlet), a dim(4) grid is
+
+		sent through the outlet.</p>
+
+		<br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+
+		<br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>inlet 3</b> <b>method</b> int <b>(</b><b>)</b><br>
+
+		<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>4<b>)</b><br><br>
+
+	<br></td>
+
 <tr><td>&nbsp;</td></tr>
 
 
@@ -817,7 +894,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Transformation Objects</h4></td></tr>
+<tr><td colspan="4"><a name="Transformation_Objects"></a><h4>Transformation Objects</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@for.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
@@ -1426,7 +1503,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Reporting Objects</h4></td></tr>
+<tr><td colspan="4"><a name="Reporting_Objects"></a><h4>Reporting Objects</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@dim">@dim</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@dim.jpg"><br clear="left"><br><br><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -1472,6 +1549,12 @@
 
 	<br></td>
 
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@print">@print</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<p>future use</p>
+
+	<br></td>
+
 <tr><td>&nbsp;</td></tr>
 
 
@@ -1479,13 +1562,286 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Special Objects</h4></td></tr>
+<tr><td colspan="4"><a name="Objects_intended_for_Picture_Processing"></a><h4>Objects intended for Picture Processing</h4></td></tr>
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+
+
+		<p>this is the object for blurring, sharpening, finding edges,
+
+		embossing, and many other uses.</p>
+
+
+
+		<br><b>method</b> init <b>(</b>op_para<b>,</b>op_fold<b>,</b>base<b>)</b>
+
+			
+
+			
+
+			
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b>
+
+				splits the incoming grid into dim(rest...) parts.
+
+				for each of those parts at (y,x), a rectangle of such
+
+				parts, centered around (y,x), is combined with the
+
+				convolution grid like a [@] of operation op_para. Then
+
+				each such result is folded like [@fold] of operation
+
+				op_fold and specified base. the results are assembled
+
+				into a grid that is sent to the outlet. near the borders of
+
+				the grid, coordinates wrap around. this means the whole grid
+
+				has to be received before production of the next grid
+
+				starts.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>grid</b> <b>dim(</b>rows2 columns2<b>)</b>
+
+				this is the convolution grid and it gets stored in
+
+				the object. rows2 and columns2 must be odd numbers.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b>
+
+			<br><br>
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_by">@scale_by</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments. scales by 2.
+
+		<br>
+
+		<br><b>method</b> init <b>(</b>factor<b>)</b>
+
+			
+
+			future use: will scale by that factor.
+
+		<br>
+
+		<br><b>method</b> init <b>(</b>factor_y<b>,</b>factor_x<b>)</b>
+
+			
+
+			
+
+			future use: will scale by those factors.
+
+		<br>
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b>
+
+			identical to @scale_to with arguments that are exactly
+
+			twice those of the incoming grid. It is several times faster.
+
+			<br><br>
+
+		
+
+		
+
+			<br><b>outlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b><br><br>
+
+		
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@contrast.jpg"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+		
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b>
+
+			produces a grid like the incoming grid but with
+
+			different constrast.
+
+			<br><br>
+
+			<p>@contrast adjusts the intensity in an image.
+
+			resulting values outside 0-255 are automatically clipped.</p>
+
+		
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+			this is the secondary contrast. it makes the incoming black
+
+			correspond to a certain fraction between output black and the
+
+			master contrast value. no effect is 256. default value is 256.
+
+			<br>	
+
+		
+
+		
+
+			<br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>
+
+			this is the master contrast. it makes the incoming white
+
+			correspond to a certain fraction between output black and output
+
+			white. no effect is 256. default value is 256.
+
+			<br>	
+
+		
+
+		
+
+			<br><b>outlet </b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b>
+
+			<br><br>
+
+		
+
+		 
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@posterize">@posterize</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@posterize.jpg"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" border="0"></a><br clear="left"><br></td><td><br>
+
+		
+
+
+
+		<p>@posterize reduces the number of possible intensities in an image;
+
+		it rounds the color values.The effect is mostly apparent with a low
+
+		number of levels.</p>
+
+
+
+		<br><b>method</b> init <b>(</b><b>)</b>
+
+			no arguments.
+
+		<br>
+
+
+
+		
+
+			<br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b>
+
+				produces a posterized picture from the input picture.
+
+			<br><br>
+
+		
+
+
+
+		
+
+			<br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>
+
+				this is the number of possible levels per channel. the
+
+				levels are equally spaced, with the lowest at 0 and the
+
+				highest at 255. the minimum number of levels is 2, and the
+
+				default value is 2.
+
+			<br>
+
+		
+
+		
+
+		
+
+		
+
+
+
+		<p>example: simulate the 216-color "web" palette using 6 levels.
+
+		simulate a 15-bit display using 32 levels.</p>
+
+
+
+	
+
+<br></td>
+
+
+
+<tr><td>&nbsp;</td></tr>
+
+
+
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Special_Objects"></a><h4>Special Objects</h4></td></tr>
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rtmetro">rtmetro</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		future use.
 
 	<br></td>
+
+
 
 	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign='top'><br><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
@@ -1530,45 +1886,7 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>Compound Objects</h4></td></tr>
-
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@contrast.jpg"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/ic_grab_contrast.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-		
-
-
-
-		<p>@contrast adjusts the intensity in an image.
-
-		values outside 0-255 are automatically trimmed. </p>
-
-
-
-		<p> Sending an integer to inlet 2 sets the intensity of incoming
-
-		white to a certain fraction between output black and output white.
-
-		normal value is 256; may be set smaller or bigger.</p>
-
-
-
-		<p> Sending an integer to inlet 1 sets the intensity of incoming
-
-		black to a certain fraction between output black and inlet 2 value.
-
-		normal value is 256; may be set smaller or bigger.</p>
-
-
-
-		<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
-
-
-
-		 
-
-<br></td>
-
-
+<tr><td colspan="4"><a name="Compound_Objects"></a><h4>Compound Objects</h4></td></tr>
 
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@identity_transform.jpg"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/ic_grab_identity_transform.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
@@ -1589,26 +1907,6 @@ using with inlet 0 of @store. </p>
 if needed)</p>
 
 
-
-	
-
-<br></td>
-
-
-
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@posterize">@posterize</a></td></tr><tr><td></td><td valign='top'><br><img src="images/@posterize.jpg"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/ic_grab_posterize.jpg" border="0"></a><br clear="left"><br></td><td><br>
-
-	
-
-<p>@posterize reduces the number of intensities in an image. </p>
-
-<p> Sending an integer to inlet 1 sets the number of possible levels. 
-
-Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
-
-depth with 32. The effect is mostly apparent with small values.</p>
-
-<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
 
 	
 
@@ -1695,7 +1993,7 @@ doing redundant updates -- sorry)</p>
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><h4>External Picture Formats</h4></td></tr>
+<tr><td colspan="4"><a name="External_Picture_Formats"></a><h4>External Picture Formats</h4></td></tr>
 
 
 
