@@ -78,7 +78,7 @@ extern "C" {
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
-	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",ar[q]); \
+	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",(long)ar[q]); \
 	gfpost("%s",foo); \
 }
 
@@ -96,6 +96,10 @@ extern "C" {
 #ifndef HAVE_DEBUG
 #undef assert
 #define assert(_foo_)
+#endif
+
+#ifdef HAVE_DEBUG
+#define HAVE_DEBUG_HARDER
 #endif
 
 #ifdef HAVE_TSC_PROFILING

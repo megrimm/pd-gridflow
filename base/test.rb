@@ -131,14 +131,14 @@ if nt!=:uint8
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
 end
 
-	(a = FObject["@inner2 * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
-	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
-	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
-	
 	(a = FObject["@inner * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([12,17,48,68]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 
+	(a = FObject["@inner2 * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
+	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
+	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
+	
 if nt==:int32
 	a = FObject["@print"]
 	a.send_in 0, "3 3 #{nt} # 1 0 0 0"

@@ -532,7 +532,7 @@ class FPS < GridObject
 		options.each {|o|
 			case o
 			when :detailed; @detailed=true
-			when :user,:system,:cpu; @mode=o
+			when :real,:user,:system,:cpu; @mode=o
 			end
 		}
 		!!detailed
