@@ -537,6 +537,12 @@ class ForEach < FObject
 	install "foreach", 1, 1
 end
 
+class ListReverse < FObject
+	def initialize() super end
+	def _0_list(*) send_out 0,:list,*a.reverse end
+	install "listreverse", 1, 1
+end
+
 class ListFlatten < FObject
 	def initialize() super end
 	def _0_list(*a) send_out 0,:list,*a.flatten end
