@@ -445,12 +445,12 @@ static bool  convert(Ruby x, bool  *foo) {
 }
 
 static uint64 convert(Ruby val, uint64 *foo) {
-    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
 static int64 convert(Ruby val, int64 *foo) {
-    if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
+	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
