@@ -70,6 +70,7 @@ int low_bit(uint32 n) {
 	while (n>3) { _x_ _x_ _x_ _x_ n-=4; } \
 	while (n--) { _x_ }
 
+template <class Number>
 static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	uint32 t;
 	int i;
@@ -117,8 +118,8 @@ static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) 
 
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
-static void default_unpack(BitPacking *self, int n, Pt</*const*/ uint8> in,
-Pt<Number> out) {
+template <class Number>
+static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<Number> out) {
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
 
@@ -133,6 +134,7 @@ Pt<Number> out) {
 
 /* **************************************************************** */
 
+template <class Number>
 static void pack2_565(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
@@ -140,6 +142,7 @@ static void pack2_565(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 }
 
+template <class Number>
 static void pack3_888(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
@@ -204,11 +207,11 @@ bool BitPacking::is_le() {
 	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-void BitPacking::pack(int n, Pt<Number> in, Pt<uint8> out) {
+void BitPacking::pack(int n, Pt<int32> in, Pt<uint8> out) {
 	return packer(this,n,in,out);
 }
 
-void BitPacking::unpack(int n, Pt<uint8> in, Pt<Number> out) {
+void BitPacking::unpack(int n, Pt<uint8> in, Pt<int32> out) {
 	return unpacker(this,n,in,out);
 }
 
@@ -248,12 +251,12 @@ METHOD3(BitPacking,initialize) {
 METHOD3(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / sizeof(Number) / size;
-	Pt<Number> in = Pt<Number>((Number *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
+	int n = rb_str_len(argv[0]) / sizeof(int32) / size;
+	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes2 = n*bytes;
 	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	pack(n,Pt<Number>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
+	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
 	return out;
 }
 
@@ -262,11 +265,11 @@ METHOD3(BitPacking,unpack2) {
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
-	int bytes2 = n*size*sizeof(Number);
+	int bytes2 = n*size*sizeof(int32);
 	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*size);
-	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<Number>((Number *)rb_str_ptr(out),n));
+	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;
 }

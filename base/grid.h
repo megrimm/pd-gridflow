@@ -197,11 +197,15 @@ typedef Ruby (*RMethod)(Ruby rself, ...); /* !@#$ */
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
 		#_name_, _jname_ };
 
-/* pentium-only, wtf? */
+#ifdef HAVE_PENTIUM
 static inline uint64 rdtsc() {
-  uint64 x;
-  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-  return x;}
+	uint64 x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return x;}
+#else
+static inline uint64 rdtsc() {
+	RAISE("Toto, we're not in Pentium(tm) anymore");}
+#endif
 
 /* is little-endian */
 static inline bool is_le() {
@@ -233,14 +237,9 @@ typedef struct MethodDecl {
 void define_many_methods(Ruby/*Class*/ rself, int n, MethodDecl *methods);
 
 /* **************************************************************** */
-/* maximum number of dimensions in an array */
-#define MAX_DIMENSIONS 16
-/* **************************************************************** */
 
 /*
   what kind of number a Grid contains.
-  note that on the other hand, indexing and dimensioning of Grids is
-  still done with explicit ints.
 */
 typedef long Number;
 
@@ -302,6 +301,9 @@ DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
 
+/* maximum number of dimensions in an array */
+#define MAX_DIMENSIONS 16
+
 /* a Dim is a list of dimensions that describe the shape of a grid */
 struct Dim {
 	int n;
@@ -359,8 +361,8 @@ struct BitPacking;
 
 /* those are the types of the optimised loops of conversion */ 
 /* inputs are const */
-typedef void (*  Packer)(BitPacking *self, int n, Pt<Number> in, Pt< uint8> out);
-typedef void (*Unpacker)(BitPacking *self, int n, Pt< uint8> in, Pt<Number> out);
+typedef void (*  Packer)(BitPacking *self, int n, Pt<int32> in, Pt<uint8> out);
+typedef void (*Unpacker)(BitPacking *self, int n, Pt<uint8> in, Pt<int32> out);
 
 struct BitPacking {
 	Packer packer;
@@ -379,8 +381,8 @@ struct BitPacking {
 	DECL3(initialize);
 
 /* main entrances to Packers/Unpackers */
-	void pack(  int n, Pt<Number> in, Pt< uint8> out);
-	void unpack(int n, Pt< uint8> in, Pt<Number> out);
+	void pack(  int n, Pt<int32> in, Pt<uint8> out);
+	void unpack(int n, Pt<uint8> in, Pt<int32> out);
 	DECL3(pack2);
 	DECL3(unpack2);
 };
@@ -498,19 +500,19 @@ struct Grid {
 
 /* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
-	void _##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data); \
+	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<int32>data); \
 
 /* macro for declaring an inlet inside GRCLASS() */
 #define GRINLET(_class_,_winlet_,_mode_) {_winlet_, _mode_, \
 	(void (*)(GridInlet *, int, Pt<int32>)) \
-	 _class_##__##_winlet_##_flow }
+	 _class_##_grid_inlet_##_winlet_ }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
-	static void _cl_##__##_inlet_##_flow\
+	static void _cl_##_grid_inlet_##_inlet_\
 	(GridInlet *in, int n, Pt<Number> data) { \
-		((_cl_*)in->parent)->_##_inlet_##_flow(in,n,data); } \
-	void _cl_::_##_inlet_##_flow \
+		((_cl_*)in->parent)->grid_inlet_##_inlet_(in,n,data); } \
+	void _cl_::##grid_inlet_##_inlet_ \
 	(GridInlet *in, int n, Pt<Number> data) { \
 	if (n==-1)
 #define GRID_FLOW else if (n>=0)
@@ -525,7 +527,7 @@ struct Grid {
 		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
 	GRID_FINISH
 
-typedef struct  GridInlet  GridInlet;
+typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 	int winlet;
 	int mode; /* 0=ignore; 4=ro; 6=rw */
@@ -533,7 +535,7 @@ typedef struct GridHandler {
 	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
 	end-marker for inlet definitions... sorry for the confusion */
 
-	void  (*flow)(GridInlet *, int n, Pt<Number>data);
+	void  (*flow)(GridInlet *, int n, Pt<int32>data);
 } GridHandler;
 
 typedef struct  GridObject GridObject;
@@ -550,7 +552,7 @@ struct GridInlet {
 /* grid receptor */
 	int factor; /* flow's n will be multiple of self->factor */
 	int bufn;
-	Pt<Number> buf; /* factor-chunk buffer */
+	Pt<int32> buf; /* factor-chunk buffer */
 
 /* extra */
 	GridObject *sender;
@@ -562,7 +564,7 @@ struct GridInlet {
 	void set_factor(int factor);
 	bool is_busy();
 	void begin( int argc, Ruby *argv);
-	void flow(int mode, int n, Pt<Number> data);
+	void flow(int mode, int n, Pt<int32> data);
 	void end();
 	void list(  int argc, Ruby *argv);
 	void int_(  int argc, Ruby *argv);
@@ -600,7 +602,7 @@ struct GridOutlet {
 
 /* those are set at every beginning of a transmission */
 	Dim *dim; /* dimensions of the grid being sent */
-	Pt<Number>buf; /* temporary buffer */
+	Pt<int32> buf; /* temporary buffer */
 	bool frozen; /* is the "begin" phase finished? */
 	Pt<GridInlet *> inlets; /* which inlets are we connected to */
 	int ninlets; /* how many of them */
@@ -617,10 +619,16 @@ struct GridOutlet {
 	bool is_busy();
 	void begin(Dim *dim);
 	void abort();
-	void give(int n, Pt<Number>data);
-	void send(int n, Pt</*const*/ uint8>data);
-	void send(int n, Pt</*const*/ Number>data);
-	void send_direct(int n, Pt</*const*/ Number>data);
+	/* give: data must be dynamic. it should not be used by the caller
+	   beyond the call to give() */
+	void give(int n, Pt<int32> data);
+	/* send/send_direct: data belongs to caller, may be stack-allocated,
+	   receiver doesn't modify the data; in send(), there is buffering;
+	   in send_direct(), there is not. When switching from buffered to
+	   unbuffered mode, flush() must be called */
+	void send(int n, Pt<uint8>data);
+	void send(int n, Pt<int32>data);
+	void send_direct(int n, Pt<int32>data);
 	void flush();
 	void end();
 	void callback(GridInlet *in);
