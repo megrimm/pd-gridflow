@@ -622,7 +622,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	} break;
 	}
 
-	if (verbose) bit_packing->gfpost();
+	//if (verbose) bit_packing->gfpost();
 	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
 }
 
