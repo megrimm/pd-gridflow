@@ -795,6 +795,7 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	"\truby base/source_filter.rb $< $<.fcs\n"+
 	"\t#{comp}\n"
 }
+mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
