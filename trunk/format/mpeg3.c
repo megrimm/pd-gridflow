@@ -101,7 +101,7 @@ static void startup (GridClass *$) {
 }
 
 GRCLASS(FormatMPEG3,"FormatMPEG3",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG3,0)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatMPEG3,0,4)),
 DECL(FormatMPEG3,init),
 DECL(FormatMPEG3,seek),
 DECL(FormatMPEG3,frame),

@@ -38,9 +38,9 @@
 #include <assert.h>
 #include <limits.h>
 
-VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
-VALUE FObject_class;
-static VALUE sym_outlets=0;
+Ruby GridFlow_module; /* not the same as jMax's gridflow_module */
+Ruby FObject_class;
+static Ruby sym_outlets=0;
 
 static void default_post(const char *fmt, ...) {
 	va_list args;
@@ -53,17 +53,19 @@ struct GFBridge gf_bridge = {
 	send_out: 0,
 	class_install: 0,
 	post: default_post,
+	post_does_ln: false,
+	clock_tick: 10.0,
 };
 
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
 
-VALUE rb_ary_fetch(VALUE $, int i) {
-	VALUE argv[] = { INT2NUM(i) };
+Ruby rb_ary_fetch(Ruby $, int i) {
+	Ruby argv[] = { INT2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,$);
 }
 
-const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
+const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 void FObject_mark (void *z) {
 /*
@@ -81,7 +83,7 @@ static void FObject_free (void *$) {
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
 
-void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
+void FObject_send_out_3(int *argc, Ruby **argv, Ruby *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
 /*
 	{int i; for(i=0; i<(*argc); i++)
@@ -108,9 +110,9 @@ void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	}
 }
 
-VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
-	VALUE ary;
-	VALUE sym;
+Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
+	Ruby ary;
+	Ruby sym;
 	int outlet;
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	if (gf_bridge.send_out)
@@ -121,8 +123,8 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	if (ary==Qnil) return Qnil;
 	int n = RARRAY(ary)->len;
 	for (int i=0; i<n; i++) {
-		VALUE conn = rb_ary_fetch(ary,i);
-		VALUE rec = rb_ary_fetch(conn,0);
+		Ruby conn = rb_ary_fetch(ary,i);
+		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
@@ -136,15 +138,15 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	return Qnil;
 }
 
-VALUE FObject_delete(VALUE argc, VALUE *argv, VALUE $) {
-	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
+Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby $) {
+	Ruby keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,$);
 //	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	return Qnil;
 }
 
-VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
-	VALUE gc2 = rb_ivar_get(qlass,SI(@grid_class));
+Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
+	Ruby gc2 = rb_ivar_get(qlass,SI(@grid_class));
 /*
 	if (gc2==Qnil) RAISE("@grid_class not found in %s",
 		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);
@@ -152,10 +154,10 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 
 	GridClass *gc = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
 
-	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
+	Ruby keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
 	c_peer->foreign_peer = 0;
-	VALUE $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
+	Ruby $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
 	c_peer->peer = $;
 	c_peer->grid_class = gc;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
@@ -165,9 +167,9 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	return $;
 }
 
-VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
+Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
 	int inlets, outlets;
-	VALUE name2;
+	Ruby name2;
 	if (SYMBOL_P(name)) {
 		name2 = rb_funcall(name,SI(dup),0);
 	} else if (TYPE(name) == T_STRING) {
@@ -189,12 +191,12 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
 	return Qnil;
 }
 
-VALUE FObject_profiler_cumul(VALUE rself) {
+Ruby FObject_profiler_cumul(Ruby rself) {
 	DGS(GridObject);
 	return LL2NUM($->profiler_cumul);
 }
 
-VALUE FObject_profiler_cumul_assign(VALUE rself, VALUE arg) {
+Ruby FObject_profiler_cumul_assign(Ruby rself, Ruby arg) {
 	DGS(GridObject);
 	$->profiler_cumul = NUM2LL(arg);
 	return arg;
@@ -203,7 +205,7 @@ VALUE FObject_profiler_cumul_assign(VALUE rself, VALUE arg) {
 /* ---------------------------------------------------------------- */
 /* The setup part */
 
-#define DECL_SYM2(_sym_) VALUE sym_##_sym_ = 0xDeadBeef;
+#define DECL_SYM2(_sym_) Ruby sym_##_sym_ = 0xDeadBeef;
 #define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
 
 DECL_SYM2(grid_begin)
@@ -213,7 +215,7 @@ DECL_SYM2(bang)
 DECL_SYM2(int)
 DECL_SYM2(list)
 
-static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
+static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
 	void *data2 = FIX2PTR(data);
 	void (*func2)(void*) = (void(*)(void*))FIX2PTR(func);
 	func2(data2);
@@ -225,7 +227,7 @@ static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-void define_many_methods(VALUE $, int n, MethodDecl *methods) {
+void define_many_methods(Ruby $, int n, MethodDecl *methods) {
 /*	fprintf(stderr,"here are %d methods:\n",n); */
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
@@ -235,9 +237,18 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 		fprintf(stderr,"%s: adding method #%s\n",
 			RSTRING(rb_funcall($,SI(inspect),0))->ptr,buf);
 */
-		rb_define_method($,buf,(VALUE(*)())md->method,-1);
+		rb_define_method($,buf,(Ruby(*)())md->method,-1);
 		rb_enable_super($,buf);
 	}
+}
+
+Ruby GridFlow_clock_tick (Ruby $) {
+	return rb_float_new(gf_bridge.clock_tick);
+}
+
+void GridFlow_clock_tick_set (Ruby $, Ruby tick) {
+	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
+	gf_bridge.clock_tick = RFLOAT(tick)->value;
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
@@ -266,7 +277,7 @@ void gfpost(const char *fmt, ...) {
 	}
 }
 
-VALUE gf_post_string (VALUE $, VALUE s) {
+Ruby gf_post_string (Ruby $, Ruby s) {
 	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
 	char *p = rb_str_ptr(s);
 //	bool has_ln = p[rb_str_len(p)-1]=='\n';
@@ -274,8 +285,8 @@ VALUE gf_post_string (VALUE $, VALUE s) {
 	return Qnil;
 }
 
-VALUE ruby_c_install(GridClass *gc, VALUE super) {
-	VALUE $ = rb_define_class_under(GridFlow_module, gc->name, super);
+Ruby ruby_c_install(GridClass *gc, Ruby super) {
+	Ruby $ = rb_define_class_under(GridFlow_module, gc->name, super);
 	rb_ivar_set($,SI(@grid_class),PTR2FIX(gc));
 	define_many_methods($,gc->methodsn,gc->methods);
 //remember to take care of delete
@@ -293,14 +304,18 @@ VALUE ruby_c_install(GridClass *gc, VALUE super) {
   I'm sorry to slow things down, but with PureData I can't do it
   the old way: pointers turned into integers turn into float32's
   and this is very evil and non-working.
-*/
-VALUE Pointer_class;
 
-VALUE Pointer_new (void *ptr) {
+  Actually: this does not work in PureData either, because I can't
+  add datatypes to PureData. I am using float32's but splitting
+  each pointer in two parts, which _is_ working.
+*/
+Ruby Pointer_class;
+
+Ruby Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
 }
 
-void *Pointer_get (VALUE self) {
+void *Pointer_get (Ruby self) {
 	void *p;
 	Data_Get_Struct(self,void *,p);
 	return p;
@@ -331,6 +346,8 @@ void Init_gridflow () {
 	GridFlow_module = rb_define_module("GridFlow");
 //	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 
+	rb_define_singleton_method(GridFlow_module,"clock_tick",(RFunc)GridFlow_clock_tick,0);
+	rb_define_singleton_method(GridFlow_module,"clock_tick=",(RFunc)GridFlow_clock_tick_set,1);
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
 	rb_ivar_set(GridFlow_module, SI(@fobjects_set), rb_hash_new());
@@ -348,7 +365,7 @@ void Init_gridflow () {
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-	VALUE cdata = rb_eval_string("Data");
+	Ruby cdata = rb_eval_string("Data");
 	ID bi = SI(gridflow_bridge_init);
 	if (rb_respond_to(cdata,bi)) {
 		//fprintf(stderr,"Setting up bridge...\n");

@@ -526,7 +526,7 @@ static void startup (GridClass *$) {
 }
 
 GRCLASS(FormatX11,"FormatX11",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatX11,0)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatX11,0,4)),
 DECL(FormatX11,init),
 DECL(FormatX11,frame),
 DECL(FormatX11,option),

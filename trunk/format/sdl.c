@@ -132,7 +132,7 @@ static void startup (GridClass *$) {
 }
 
 GRCLASS(FormatSDL,"FormatSDL",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatSDL,0)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatSDL,0,4)),
 DECL(FormatSDL,init),
 DECL(FormatSDL,close))
 

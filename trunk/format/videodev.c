@@ -559,7 +559,7 @@ static void startup (GridClass *$) {
 }
 
 GRCLASS(FormatVideoDev,"FormatVideoDev",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatVideoDev,0)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatVideoDev,0,4)),
 DECL(FormatVideoDev,init),
 DECL(FormatVideoDev,init2),
 DECL(FormatVideoDev,alloc_image),

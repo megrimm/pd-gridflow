@@ -287,6 +287,10 @@ class GridGlobal
 		GridFlow.gfpost "-"*32
 		GridFlow.gfpost "         clock-ticks percent pointer  constructor"
 		GridFlow.fobjects_set.each {|o,*| ol.push o }
+
+		# HACK: BitPacking is not a real gridobject
+		ol.delete_if {|o| not o.respond_to? :profiler_cumul }
+
 		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
