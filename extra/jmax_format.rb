@@ -117,7 +117,9 @@ class JMaxFileReader < JMaxFileHandler
 			args << (case entry[2+i]
 			when :int
 				n=Size[op2]; v=@code[@index,n].unpack(Packer[op2])[0]
-				if v[8*n-1]!=0 then ~(~v&0x7fffffff) else v end
+				x = if v[8*n-1]!=0 then ~(~v&((1<<(8*n-1))-1)) else v end
+				#STDERR.puts "WARNING: #{v} -> #{x}" if x<0
+				x
 			when :float
 				n=4; @code[@index,4].unpack("f")[0]
 			when :symbol
