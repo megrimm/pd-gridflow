@@ -182,7 +182,6 @@ bool BitPacking::eq(BitPacking *o) {
 
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
 Packer *packer, Unpacker *unpacker) {
-	this->magic = BITPACKING_MAGIC;
 	this->endian = endian;
 	this->bytes = bytes;
 	this->size = size;
