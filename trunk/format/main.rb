@@ -483,7 +483,7 @@ class FormatGrid < Format; include EventIO
 	attr_accessor :bpv # Fixnum: bits-per-value
 
 	# endianness
-	attr_accessor :endian # ENDIAN_LITTLE or ENDIAN_BIG
+	# attr_accessor :endian # ENDIAN_LITTLE or ENDIAN_BIG
 
 	# IO or File or TCPSocket
 	attr_reader :stream
@@ -634,35 +634,36 @@ class FormatGrid < Format; include EventIO
 		@stream.flush
 	end
 
-	def option(name,*args)
-		case name
-		when :endian
-			case args[0]
-			when :little; @endian = ENDIAN_LITTLE
-			when :big;    @endian = ENDIAN_BIG
-			when :same;   @endian = ENDIAN_SAME
-			end
-		when :headerless
-			args=args[0] if Array===args[0]
-			#raise "expecting dimension list..."
-			args.each {|a|
-				Integer===a or raise "expecting dimension list..."
-			}
-			@headerless = args
-		when :headerful
-			@headerless = nil
-		when :type
-		# bug: should not be able to modify this _during_ a transfer
-			case args[0]
-			when :uint8; @bpv=8
-				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-			when :int16; @bpv=16
-				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
-			when :int32; @bpv=32
-			else raise "unsupported number type"
-			end
-		else
-			super
+	def endian(a)
+		case a
+		when :little; @endian = ENDIAN_LITTLE
+		when :big;    @endian = ENDIAN_BIG
+		when :same;   @endian = ENDIAN_SAME
+		else raise "argh"
+		end
+	end
+
+	def headerless(*args)
+		args=args[0] if Array===args[0]
+		#raise "expecting dimension list..."
+		args.each {|a|
+			Integer===a or raise "expecting dimension list..."
+		}
+		@headerless = args
+	end
+
+	def headerful; @headerless = nil end
+
+	#!@#$ method name conflict ?
+	def type(nt)
+		#!@#$ bug: should not be able to modify this _during_ a transfer
+		case nt
+		when :uint8; @bpv=8
+			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+		when :int16; @bpv=16
+			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
+		when :int32; @bpv=32
+		else raise "unsupported number type"
 		end
 	end
 
