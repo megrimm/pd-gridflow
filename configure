@@ -694,17 +694,17 @@ Feature.new {
 	}
 	formats ["Xine"]
 },
-Feature.new {
-	tag :example
-	name "example (example file optional/example.c)"
-	uses_o ["optional/example.o"]
-	test proc {|f|
-		c_test %`
-		#include <stdio.h>
-		int main () {
-		return 0 /* 0=ok, nonzero=bad */; }`
-	}
-},
+#Feature.new {
+#	tag :example
+#	name "example (example file optional/example.c)"
+#	uses_o ["optional/example.o"]
+#	test proc {|f|
+#		c_test %`
+#		#include <stdio.h>
+#		int main () {
+#		return 0 /* 0=ok, nonzero=bad */; }`
+#	}
+#},
 Feature.new {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
