@@ -1,19 +1,17 @@
 #N canvas 63 0 748 632 10;
-#X obj 27 77 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#X obj 18 49 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
 -1;
-#X obj 18 96 @in;
-#X obj 19 547 @out 128 128;
-#X msg 18 56 open jpeg file planet.jpg;
-#X msg 159 496 open x11 here;
-#X msg 159 517 close;
+#X obj 18 125 @in;
 #X text 14 15 @inner;
 #X obj 18 169 @inner2 * + 0;
 #X text 660 16 gridflow;
 #X text 178 172 this has yet to be done!;
-#X connect 0 0 1 0;
-#X connect 1 0 7 0;
-#X connect 3 0 1 0;
-#X connect 3 0 0 0;
-#X connect 4 0 2 0;
-#X connect 5 0 2 0;
-#X connect 7 0 2 0;
+#X obj 18 307 @out window;
+#X msg 41 95 open bluemarble.jpg;
+#X obj 18 70 fork;
+#X connect 0 0 8 0;
+#X connect 1 0 3 0;
+#X connect 3 0 6 0;
+#X connect 7 0 1 0;
+#X connect 8 0 1 0;
+#X connect 8 1 7 0;
