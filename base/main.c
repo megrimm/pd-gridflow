@@ -600,14 +600,13 @@ BUILTIN_SYMBOLS(FOO)
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	EVAL("module GridFlow\n"
-	    "def self.whatever(*) end\n"
 		"class FObject\n"
 		"def send_out2(*) end\n"
 		"def self.install2(*) end\n"
 		"def self.addcreator(name)\n"
 			"name=name.to_str.dup\n"
 			"GridFlow.instance_eval{@fclasses_set}[name]=self\n"
-			"GridFlow.whatever:addcreator,name end\n"
+			"GridFlow.addcreator2 name end\n"
 		"end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
