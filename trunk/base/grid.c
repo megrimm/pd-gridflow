@@ -819,9 +819,13 @@ void startup_grid () {
   do not call this.
   I don't understand how to use templates properly
   so this is a hack to make some things work.
+
+   GCC 3.2 optimises so much that i have to make the following
+   kludge non-static and i can't even put exit(1) at the beginning of it.
 */
-static void make_gimmick () {
-	exit(1); /* i warned you. */
+//static
+void make_gimmick () {
+//    exit(1); /* i warned you. */
 	GridOutlet foo(0,0);
 	foo.give(0,Pt<uint8>());
 	foo.give(0,Pt<int16>());
