@@ -285,7 +285,7 @@ public:
 //	operator Pt<const T>() { return Pt((const T *)p); }
 	int operator-(Pt x) { return p-x.p,n; }
 	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
-	template <class U> Pt operator-(int x) { return Pt(p-x,n,start); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 };
 
 //template <class T> Pt<T>::operator Pt<const T>() { return Pt<const T>(*this); }
