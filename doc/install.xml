@@ -16,14 +16,18 @@
 	<li>sparc : Sun SparcStation</li>
 </list>(but we only test i686 ourselves)</p>
 <p>Required Software:<list>
-	<li>Ruby 1.6.2 or more recent (language interpreter)</li>
+	<li>Ruby 1.6.2 or more recent (a language interpreter)</li>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 </list></p>
 <p>Very Recommended:<list>
-	<li>jMax 2.5</li>
-	<li>jMax 4.0 support in the works</li>
 	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
+	<li>one of:
+		<list>
+		<li>jMax 2.5</li>
+		<li>jMax 4.1</li>
+		<li>PureData</li>
+	</list></li>
 </list></p>
 <p>Optional:<list>
 	<li>PureData 0.35 or 0.36 (support is experimental)</li>
