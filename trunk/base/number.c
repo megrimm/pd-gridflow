@@ -460,6 +460,7 @@ DEF_OP2(atan, (T)(atan2(a,b) * 18000 / M_PI))
 DEF_OP2(tanh, (T)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 DEF_OP2(pow, ipow(a,b))
+DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))))
 
 #define DECL_OP2(_name_,_sym_,_props_) { \
 	0, _sym_, \
@@ -522,9 +523,10 @@ Operator2 op2_table[] = {
 	DECL_OP2(sin, "sin*", ""),
 	DECL_OP2(cos, "cos*", ""),
 	DECL_OP2(atan, "atan", ""),
-	DECL_OP2(tanh, "tanh", ""),
+	DECL_OP2(tanh, "tanh*", ""),
 	DECL_OP2(gamma, "gamma", "RN=256"),
 	DECL_OP2(pow, "**", "RN=1"),
+	DECL_OP2(log, "log*", ""),
 };
 
 Ruby op1_dict = Qnil;
