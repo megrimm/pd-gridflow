@@ -5,6 +5,8 @@
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
+[ ] separate bridge makefiles from other makefiles!!!
+
 [ ] research bugs in ASIO with Ruby. (eg. serial port)
 [ ] again, problem with find_file...
 [ ] remove "option" completely...
@@ -15,7 +17,7 @@ Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 [ ] jMax: jmax_examples/benchmark.jmax:
 #0  0x40390bcf in st_lookup (table=0x3, key=6457, value=0xbfffd50c) at st.c:258
 
-[ ] "make install" doesn't work on machine "lcd". 
+[ ] "make install" doesn't work properly with ruby-1.6
 
 [ ] PD:
  #0  0x4022abcf in st_lookup (table=0x6, key=3137, value=0xbfffdafc) at st.c:258
