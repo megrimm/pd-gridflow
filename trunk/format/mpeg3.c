@@ -32,7 +32,6 @@ struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	P<BitPacking> bit_packing;
 	int track;
-
 	FormatMPEG3 () : track(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void seek (int frame);
@@ -40,9 +39,7 @@ struct FormatMPEG3 : Format {
 	\decl void close ();
 };
 
-\def void seek (int frame) {
-	mpeg3_set_frame(mpeg,frame,track);
-}
+\def void seek (int frame) { mpeg3_set_frame(mpeg,frame,track); }
 
 \def Ruby frame () {
 	int nframe = mpeg3_get_frame(mpeg,track);
@@ -57,8 +54,7 @@ struct FormatMPEG3 : Format {
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 
-	int32 v[] = { sy, sx, channels };
-	GridOutlet out(this,0,new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(sy, sx, channels), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out.dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
@@ -70,10 +66,10 @@ struct FormatMPEG3 : Format {
 }
 
 \def void close () {
-	fprintf(stderr, "begin mpeg3_close...\n");
+//	fprintf(stderr, "begin mpeg3_close...\n");
 	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
 	rb_call_super(argc,argv);
-	fprintf(stderr, "end mpeg3_close...\n");
+//	fprintf(stderr, "end mpeg3_close...\n");
 }
 
 // libmpeg3 may be nice, but it won't take a filehandle, only filename

@@ -204,8 +204,7 @@ static int nn(int c) {return c?c:' ';}
   L
 //vdc = SGGetVideoDigitizerComponent(c);
   rb_call_super(argc,argv);
-  int32 v[] = { 240,320,4 };
-  dim = new Dim(3,v);
+  dim = new Dim(240,320,4);
   OSErr e;
   rect.top=rect.left=0;
   rect.bottom=v[0]; rect.right=v[1];
@@ -482,8 +481,7 @@ GRID_INLET(FormatQuickTimeApple,0) {
 		r.top, r.bottom, r.left, r.right);
 	OffsetRect(&r, -r.left, -r.top);
 	SetMovieBox(movie, &r);
-	{int32 v[] = { r.bottom-r.top, r.right-r.left, 4 };
-		dim = new Dim(3,v);}
+	dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
 	SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
 	buffer = ARRAY_NEW(uint8,dim->prod());
 	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r,

@@ -36,7 +36,6 @@ struct FormatPNG : Format {
 	png_infop info;
 	FILE *f;
 	FormatPNG () : bit_packing(0), png(0), f(0) {}
-	\decl void close ();
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\grin 0 int
@@ -53,7 +52,6 @@ GRID_INLET(FormatPNG,0) {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
-	uint8 *rows[1] = { row };
 	while (n) {
 		bit_packing->pack(in->dim->get(1),data,Pt<uint8>(row,rowsize));
 		n-=rowsize; data+=rowsize;
@@ -112,16 +110,12 @@ GRID_INLET(FormatPNG,0) {
 	row_pointers = 0;
 	png_read_end(png, 0);
 
-	int32 v[] = { height, width, channels };
-	GridOutlet out(this,0,new Dim(3,v),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(height, width, channels),
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	out.send(rowbytes*height,image_data);
 	free(image_data);
 	png_destroy_read_struct(&png, &info, NULL);
 	return Qnil;
-}
-
-\def void close () {
-	rb_call_super(argc,argv);
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {

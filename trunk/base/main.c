@@ -40,41 +40,30 @@
 
 BuiltinSymbols bsym;
 GFStack gf_stack;
-
+static bool has_int = true;
 Ruby mGridFlow;
 Ruby cFObject;
-
-/* begin Ruby 1.6 compatibility */
 
 uint64 gf_num2ull(Ruby val) {
     if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	uint64 v =
-		(uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
-}
-
-Ruby gf_ull2num(uint64 val) {
-	return rb_funcall(
-		rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
-		SI(+),1,UINT2NUM((uint32)val));
-}
-
+	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
 int64 gf_num2ll(Ruby val) {
     if (FIXNUM_P(val)) return (uint64)FIX2INT(val);
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	int64 v =
-		(int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));
-}
+	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
 
+Ruby gf_ull2num(uint64 val) {
+    return rb_funcall(
+	rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
+	SI(+),1,UINT2NUM((uint32)val));}
 Ruby gf_ll2num(int64 val) {
-	return rb_funcall(
-		rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
-		SI(+),1,UINT2NUM((uint32)val));
-}
+    return rb_funcall(
+	rb_funcall(INT2NUM((int32)(val>>32)),SI(<<),1,INT2FIX(32)),
+	SI(+),1,UINT2NUM((uint32)val));}
 
-/* end */
 extern "C"{
 void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
@@ -89,7 +78,6 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
 	buf2[BUFSIZ-1]=0;
 	VALUE ary = rb_funcall(e,SI(caller),0);
-//	fprintf(stderr,"gf_stack.n = %d\n",gf_stack.n);
 	if (gf_stack.n) {
 		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
 			rb_str_new2(gf_stack.s[gf_stack.n-1].o->info()));
@@ -105,30 +93,8 @@ Ruby rb_ary_fetch(Ruby rself, int i) {
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
-/* ---------------------------------------------------------------- */
-/* Dim */
-
-void Dim::check() {
-	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
-	for (int i=0; i<n; i++) if (v[i]<0) RAISE("Dim: negative dimension");
-}
-
-/* !@#$ big leak machine? */
-/* returns a string like "Dim[240,320,3]" */
-char *Dim::to_s() {
-	/* if you blow 256 chars it's your own fault */
-	char buf[256];
-	char *s = buf;
-	s += sprintf(s,"Dim[");
-	for(int i=0; i<n; i++) s += sprintf(s,"%s%ld", ","+!i, v[i]);
-	s += sprintf(s,"]");
-	return strdup(buf);
-}
-
-/* ---------------------------------------------------------------- */
-/* GridFlow::FObject */
-
-static int object_count=0;
+//----------------------------------------------------------------
+// CObject
 
 static void CObject_mark (void *z) {}
 void CObject_free (void *foo) {
@@ -142,8 +108,27 @@ void CObject_free (void *foo) {
 	delete self;
 }
 
-static bool has_int = true;
+//----------------------------------------------------------------
+// Dim
 
+void Dim::check() {
+	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
+	for (int i=0; i<n; i++) if (v[i]<0) RAISE("Dim: negative dimension");
+}
+
+// !@#$ big leak machine?
+// returns a string like "Dim[240,320,3]"
+char *Dim::to_s() {
+	// if you blow 256 chars it's your own fault
+	char buf[256];
+	char *s = buf;
+	s += sprintf(s,"Dim[");
+	for(int i=0; i<n; i++) s += sprintf(s,"%s%ld", ","+!i, v[i]);
+	s += sprintf(s,"]");
+	return strdup(buf);
+}
+
+//----------------------------------------------------------------
 \class FObject < CObject
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
@@ -173,18 +158,14 @@ struct Helper {
 	Ruby *argv;
 	FObject *self;
 	Ruby rself;
-	int n; /* stack level */
+	int n; // stack level
 };
 
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
 
-/*
-  inlet #-1 is reserved for SystemInlet messages
-  inlet #-2 is for inlet #0 messages that happen at start time
-*/
+// inlet #-1 is reserved for SystemInlet messages
+// inlet #-2 is for inlet #0 messages that happen at start time
 static void send_in_2 (Helper *h) { PROF(h->self) {
-	bool record = false;
-
 	int argc = h->argc;
 	Ruby *argv = h->argv;
 	if (h->argc<1) RAISE("not enough args");
@@ -245,7 +226,7 @@ static void send_in_3 (Helper *h) {
 	}
 	int noutlets = INT(noutlets2);
 	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
-	/* was PROF(0) a hack because of exception-handling problems? */
+	// was PROF(0) a hack because of exception-handling problems?
 	PROF(0) {
 	Ruby argv2[argc+2];
 	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
@@ -276,22 +257,22 @@ end:;
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ?
 		rb_ivar_get(qlass,SI(@allocator)) : Qnil;
-	/* !@#$ GridObject is in FObject constructor (ugly) */
-	GridObject *self;
+	FObject *self;
 	if (allocator==Qnil) {
-		/* this is a pure-ruby FObject/GridObject */
+		// this is a pure-ruby FObject/GridObject
+		// !@#$ GridObject is in FObject constructor (ugly)
 		self = new GridObject;
 	} else {
-		/* this is a C++ FObject/GridObject */
+		// this is a C++ FObject/GridObject
 		void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
-		self = (GridObject *)alloc();
+		self = (FObject *)alloc();
 	}
 	self->check_magic();
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	self->rself = rself;
-	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
+	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
 }
@@ -316,12 +297,10 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def Ruby total_time_get () {
-	return gf_ull2num(total_time);
-}
+\def Ruby total_time_get () {return gf_ull2num(total_time);}
 
 \def Ruby total_time_set (Ruby x) {
-	if (argc<1) RAISE("");
+	if (argc<1) RAISE("muh");
 	total_time = gf_num2ull(x);
 	return argv[0];
 }
@@ -334,7 +313,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 const char *FObject::info() {
 	if (!this) return "(nil FObject!?)";
 	Ruby z = rb_funcall(this->rself,SI(args),0);
-/*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
+	//if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0);
 	if (z==Qnil) return "(nil args!?)";
 	return rb_str_ptr(z);
 }
@@ -357,14 +336,21 @@ static Ruby String_swap16_f (Ruby rself) {
 	return rself;
 }
 
-/* **************************************************************** */
-
-\class BitPacking < CObject
-
-\def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {
+NumberTypeE NumberTypeE_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
+		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
+	Ruby nt_dict = rb_ivar_get(mGridFlow,SI(@number_type_dict));
+	Ruby v = rb_hash_aref(nt_dict,sym);
+	if (v!=Qnil) return FIX2PTR(NumberType,v)->index;
+	RAISE("unknown number type \"%s\"", rb_sym_name(sym));
 }
 
-/*!@#$ doesn't support number types */
+/* **************************************************************** */
+\class BitPacking < CObject
+
+\def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {}
+
+// !@#$ doesn't support number types
 \def String pack2 (String ins, String outs=Qnil) {
 	int n = rb_str_len(ins) / sizeof(int32) / size;
 	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(ins),rb_str_len(ins));
@@ -375,7 +361,7 @@ static Ruby String_swap16_f (Ruby rself) {
 	return out;
 }
 
-/*!@#$ doesn't support number types */
+// !@#$ doesn't support number types
 \def String unpack2 (String ins, String outs=Qnil) {
 	int n = rb_str_len(argv[0]) / bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(ins),rb_str_len(ins));
@@ -401,21 +387,13 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	BitPacking *self = new BitPacking(endian,bytes,size,masks2);
 	Ruby rself = Data_Wrap_Struct(qlass, 0, CObject_free, self);
 	self->rself = rself;
-	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) (!@#$ WHAT???) */
+	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping (leak) (!@#$ WHAT???)
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
 }
 
 \classinfo
 \end class BitPacking
-
-NumberTypeE NumberTypeE_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
-		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
-	Ruby v = rb_hash_aref(number_type_dict,sym);
-	if (v!=Qnil) return FIX2PTR(NumberType,v)->index;
-	RAISE("unknown number type \"%s\"", rb_sym_name(sym));
-}
 
 void gfpost(const char *fmt, ...) {
 	va_list args;
@@ -450,9 +428,8 @@ Ruby fclass_install(FClass *fc, Ruby super) {
 	return Qnil;
 }
 
-/* ---------------------------------------------------------------- */
+//----------------------------------------------------------------
 // GridFlow.class
-
 //\class GridFlow_s < patate
 
 typedef void (*Callback)(void*);
@@ -528,6 +505,8 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	}
 	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
 	for (; n; in++, out++, n--) { *out = *in; }
+	t=rdtsc()-t;
+	memcpy_time+=t;
 }
 
 extern "C" {
@@ -626,7 +605,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-	Ruby cData = EVAL("Data");
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
 

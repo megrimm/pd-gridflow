@@ -269,68 +269,35 @@ public:
 	return r;
 }
 
+#define TRAP(stuff) int r=(stuff); if (r<0) RAISE("%s", usb_strerror()); else return r;
+
 \def int bulk_write (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
-	int r = usb_bulk_write(h, ep, rb_str_ptr(s), rb_str_len(s), timeout);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_bulk_write(h, ep, rb_str_ptr(s), rb_str_len(s), timeout));}
 \def int bulk_read (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
 	gfpost("%d, '%s', %d",ep,rb_str_ptr(s),timeout);
-	int r = usb_bulk_read(h, ep, rb_str_ptr(s), rb_str_len(s), timeout);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_bulk_read(h, ep, rb_str_ptr(s), rb_str_len(s), timeout));}
 \def int claim_interface(int interface) {
-	int r = usb_claim_interface(h, interface);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_claim_interface(h, interface));}
 \def int release_interface(int interface) {
-	int r = usb_release_interface(h, interface);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_release_interface(h, interface));}
 \def int set_configuration(int configuration) {
-	int r = usb_set_configuration(h, configuration);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_set_configuration(h, configuration));}
 \def int set_altinterface(int alternate) {
-	int r = usb_set_altinterface(h, alternate);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_set_altinterface(h, alternate));}
 \def int control_msg(int requesttype, int request, int value, int index, String s, int timeout) {
-	int r = usb_control_msg(h, requesttype, request, value, index, rb_str_ptr(s), rb_str_len(s), timeout);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_control_msg(h, requesttype, request, value, index, rb_str_ptr(s), rb_str_len(s), timeout));}
 \def int resetep(int ep) {
-	int r = usb_resetep(h, ep);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_resetep(h, ep));}
 \def int clear_halt(int ep) {
-	int r = usb_clear_halt(h, ep);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_clear_halt(h, ep));}
 \def int reset() {
-	int r = usb_reset(h);
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}
-
+	TRAP(usb_reset(h));}
 /*\def int get_string(int index, int langid, String s) {
-	int r = usb_get_string(h, index, langid, rb_str_ptr(s), rb_str_len(s));
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}*/
-
+	TRAP(usb_get_string(h, index, langid, rb_str_ptr(s), rb_str_len(s)));}*/
 /*\def int get_string_simple(int index, String s) {
-	int r = usb_get_string_simple(h, index, rb_str_ptr(s), rb_str_len(s));
-	if (r<0) RAISE("%s", usb_strerror()); else return r;
-}*/
+	TRAP(usb_get_string_simple(h, index, rb_str_ptr(s), rb_str_len(s)));}*/
 
 // not handled yet:
 // struct usb_string_descriptor

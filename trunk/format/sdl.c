@@ -37,15 +37,12 @@ struct FormatSDL : Format {
 	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-
 	void resize_window (int sx, int sy);
 	void alarm ();
-
 	Pt<uint8> pixels () {
 		return Pt<uint8>((uint8 *)screen->pixels,
 			dim->prod(0,1)*bit_packing->bytes);
 	}
-
 	\decl void initialize (Symbol mode);
 	\decl void close ();
 	\grin 0 int
@@ -59,12 +56,10 @@ void FormatSDL::alarm() {
 }
 
 void FormatSDL::resize_window (int sx, int sy) {
-//	gfpost("switching to size (%d,%d)",sy,sx);
-	int32 v[] = {sy,sx,3};
-	dim = new Dim(3,v);
-	screen = SDL_SetVideoMode(v[1],v[0],0,SDL_SWSURFACE);
+	dim = new Dim(sy,sx,3);
+	screen = SDL_SetVideoMode(sx,sy,0,SDL_SWSURFACE);
 	if (!screen)
-		RAISE("Can't switch to (%d,%d,%dbpp): %s", v[0],v[1],24, SDL_GetError());
+		RAISE("Can't switch to (%d,%d,%dbpp): %s", sy,sx,24, SDL_GetError());
 }
 
 GRID_INLET(FormatSDL,0) {
@@ -82,10 +77,8 @@ GRID_INLET(FormatSDL,0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
-
 	assert((in->dex % sxc) == 0);
 	assert((n       % sxc) == 0);
-
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
@@ -93,9 +86,7 @@ GRID_INLET(FormatSDL,0) {
 	}
 	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 } GRID_FINISH {
-	int sy = in->dim->get(0);
-	int sx = in->dim->get(1);
-	SDL_UpdateRect(screen, 0, 0, sx, sy);
+	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
 
 \def void close () {
