@@ -245,10 +245,10 @@ def test_ppm2
 	gin.send_in 0,"open ppm file #{$imdir}/teapot.ppm"
 #	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
 	gin.send_in 0
-	30.times { store.send_in 0 }
+	40.times { store.send_in 0 }
 	v4j = FObject["@global"]
-	v4j.send_in 0,"profiler_dump"
-	$mainloop.loop
+#	v4j.send_in 0,"profiler_dump"
+#	$mainloop.loop
 end
 
 def test_anim msgs
@@ -388,12 +388,12 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
-test_anim ["open videodev /dev/video10",
-	"option transfer read",
-	"option channel 1",
-	"option size 240 320"]
+#test_anim ["open videodev /dev/video10",
+#	"option transfer read",
+#	"option channel 1",
+#	"option size 240 320"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]

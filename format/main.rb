@@ -501,12 +501,10 @@ class FormatPPM < Format; include EventIO
 		"# generated using GridFlow #{GF_VERSION}\n#{dim[1]} #{dim[0]}\n255\n"
 		@stream.flush
 	end
-
 	def _0_rgrid_flow data
 		# !@#$ use BitPacking here
 		@stream.write data.unpack("i*").pack("c*")
 	end
-	
 	def _0_rgrid_end
 		@stream.flush
 		@stream.seek 0,SEEK_SET
