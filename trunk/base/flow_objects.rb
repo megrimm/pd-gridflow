@@ -23,8 +23,6 @@
 
 module GridFlow
 
-def GridFlow.gui(*a) GridFlow.whatever:gui,*a end
-
 #-------- fClasses for: control + misc
 
 # a dummy class that gives access to any stuff global to GridFlow.
@@ -81,7 +79,7 @@ class GridGlobal < FObject
 	install "gridflow", 1, 1
 	addcreator "@global"
 	begin
-		GridFlow.whatever :bind, "gridflow", "gridflow"
+		GridFlow.bind "gridflow", "gridflow"
 	rescue Exception
 	end
 end
@@ -280,7 +278,7 @@ class GridPack < GridObject
 	end
 	def initialize2
 		return if self.class.ninlets>1
-		GridFlow.whatever :addinlets, self, @data.length-1
+		add_inlets @data.length-1
 	end
 	def _0_cast(cast)
 		@ps   = GridFlow.packstring_for_nt cast
@@ -315,15 +313,13 @@ class GridUnpack < GridObject
     n>=10 and raise "too many outlets"
     super
   end
-  def initialize2
-    GridFlow.whatever :addoutlets, self, @n
-  end
+  def initialize2; add_outlets @n end
   def _0_rgrid_begin
     inlet_dim(0)==[@n] or raise "expecting Dim[#{@n}], got Dim#{@dim}"
     inlet_set_factor 0,@n
   end
   def _0_rgrid_flow data
-    @ps = GridFlow.packstring_for_nt inlet_nt 0
+    @ps = GridFlow.packstring_for_nt inlet_nt(0)
     data.unpack(@ps).each_with_index{|x,i| send_out i,x }
   end
   def _0_rgrid_end; end
@@ -741,7 +737,7 @@ end
 
 class Shunt < FObject
 	def initialize(n,i=0) super; @n=n; @i=i end
-	def initialize2; GridFlow.whatever :addoutlets, self, @n end
+	def initialize2; add_outlets @n end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
 		send_out @i,$2.intern,*args
@@ -941,8 +937,8 @@ end
 class JMaxRange < FObject
   def initialize(*a) @a=a end
   def initialize2
-    GridFlow.whatever  :addinlets, self, @a.length
-    GridFlow.whatever :addoutlets, self, @a.length
+    add_inlets  @a.length
+    add_outlets @a.length
   end
   def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
   def method_missing(sel,*a)
@@ -978,7 +974,7 @@ module Gooey # to be included in any FObject class
 		  else raise "huh?"
 		end
 	end
-	def initialize2() GridFlow.whatever :bind, self, @rsym.to_s end
+	def initialize2() GridFlow.bind self, @rsym.to_s end
 	def pd_displace(can,x,y) self.canvas||=can; @x+=x; @y+=y; pd_show(can) end
 	def pd_activate(can,*) self.canvas||=can end
 	def quote(text) # for tcl (isn't completely right ?)
@@ -990,8 +986,7 @@ module Gooey # to be included in any FObject class
 	def update; pd_show @can if @vis end
 	def pd_getrect(can)
 		self.canvas||=can
-		x,y=GridFlow.whatever :getpos,self,can
-		if @x!=x or @y!=y then @x,@y=x,y end
+		@x,@y = get_position(can)
 		# the extra one-pixel on each side was for #peephole only
 		# not sure what to do with this
 		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
@@ -1038,7 +1033,7 @@ class Display < FObject; include Gooey
 	end
 	def pd_show(can)
 		super
-		if can; @x,@y=GridFlow.whatever:getpos,self,can end
+		@x,@y = get_position can if can
 		return if not canvas # can't show for now...
 		@font = "Courier -12"
 		GridFlow.gui %{
@@ -1086,7 +1081,7 @@ class Display < FObject; include Gooey
 
 	install "display", 1, 1
 	if GridFlow.bridge_name =~ /puredata/
-		GridFlow.whatever :setwidget, "display"
+		gui_enable
 	end
 end
 
@@ -1107,7 +1102,7 @@ class Peephole < FPatcher; include Gooey
 		@selected=false
 	end
 	def pd_show(can)
-		@x,@y=GridFlow.whatever:getpos,self,can if can
+		@x,@y = get_position can if can
 		if not @open
 			GridFlow.gui %{
 				pd \"#{@rsym} open [eval list [winfo id #{@canvas}]] 1;\n\";
@@ -1198,8 +1193,8 @@ class Peephole < FPatcher; include Gooey
 
 	install "#peephole", 1, 1
 	if GridFlow.bridge_name =~ /puredata/
-		GridFlow.whatever :setwidget, "#peephole"
-		#GridFlow.whatever :addtomenu, "#peephole" # was this IMPD-specific ?
+		gui_enable
+		#GridFlow.addtomenu "#peephole" # was this IMPD-specific ?
 	end
 end
 
