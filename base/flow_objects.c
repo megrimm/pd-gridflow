@@ -1278,7 +1278,7 @@ GRID_INLET(GridTranspose,0) {
 		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
 	if (d1<0) d1+=in->dim->n;
 	if (d2<0) d2+=in->dim->n;
-	if (d1>=in->dim->n || d2>=in->dim->n)
+	if (d1<0 || d2<0)
 		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
 	memswap(v+d1,v+d2,1);
 	if (d1==d2) {
