@@ -25,14 +25,21 @@
 #include "grid.h"
 #include <stdarg.h>
 
+void FObject_mark (VALUE *$) {}
+void FObject_sweep (VALUE *$) {}
+
 VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 	FObject_send_thru_2(argc,argv,$);
 	return Qnil;
 }
 
+VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
+	/* empty stub */
+	return Qnil;
+}
+
 void gf_install_bridge(void) {
-
-
+	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
 }
 
 int gf_winlet(void) {
