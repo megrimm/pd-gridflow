@@ -50,7 +50,7 @@ struct FormatAALib : Format {
 	\decl void autodraw_m (int autodraw);
 	\decl void dump ();
 	\decl void initialize (Symbol mode, Symbol target);
-	GRINLET3(0);
+	\grin 0 int
 };
 
 GRID_INLET(FormatAALib,0) {
