@@ -31,6 +31,13 @@
 #include "grid.h"
 #include <ctype.h>
 
+/* maximum number of grid cords per outlet per cord type */
+#define MAX_CORDS 8
+
+/* number of (minimum,maximum) numbers to send at once */
+#define MIN_PACKET_SIZE (1<<9)
+#define MAX_PACKET_SIZE (1<<11)
+
 /* result should be printed immediately as the GC may discard it anytime */
 static const char *INFO(GridObject *foo) {
 	if (!foo) return "(nil GridObject!?)";
@@ -175,6 +182,7 @@ void GridInlet::set_factor(int factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
+	LEAVE(self->sender);
 	ENTER(self->parent);
 	switch (self->nt) {
 	case uint8_type_i: self->gh->flow(self,-1,Pt<uint8>()); break;
@@ -184,6 +192,7 @@ static Ruby GridInlet_begin_1(GridInlet *self) {
 	default: RAISE("argh");
 	}
 	LEAVE(self->parent);
+	ENTER(self->sender);
 	return Qnil;
 }
 
@@ -242,6 +251,7 @@ template <class T>
 void GridInlet::flow(int mode, int n, Pt<T> data) {
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
+	LEAVE(sender);
 	ENTER(parent);
 	if (gh->mode==0) {
 		dex += n;
@@ -300,6 +310,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		RAISE("%s: unknown inlet mode",INFO(parent));
 	}
 	LEAVE(parent);
+	ENTER(sender);
 }
 
 /* !@#$ this is not correct */
@@ -320,6 +331,7 @@ void GridInlet::end() {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
+	LEAVE(sender);
 	ENTER(parent);
 	switch (nt) {
 	case uint8_type_i: gh->flow(this,-2,Pt<uint8>()); break;
@@ -329,6 +341,7 @@ void GridInlet::end() {
 	default: RAISE("argh");
 	}
 	LEAVE(parent);
+	ENTER(sender);
 	if (dim) {delete dim; dim=0;}
 	buf.del();
 	dex = 0;
@@ -355,15 +368,32 @@ void GridInlet::grid2(Grid *g, T foo) {
 			Pt<T> d = data;
 			data = ARRAY_NEW(T,size);
 			COPY(data,d,size);
+			gh->flow(this,n,data);
+		} else {
+			int m = MAX_PACKET_SIZE/factor;
+			if (!m) m++;
+			m *= factor;
+			while (n) {
+				if (m>n) m=n;
+				gh->flow(this,m,data);
+				data+=m; n-=m;
+			}			
 		}
-		gh->flow(this,n,data);
 	}
 	gh->flow(this,-2,Pt<T>());
 	//!@#$ add error handling.
-	/* rescue; abort(); end ??? */
+	// rescue; abort(); end ???
 	delete dim;
 	dim = 0;
-	dex = 0; /* why? */
+	dex = 0;
+
+	/* hack */
+/*
+	GridObject
+	GridOutlet *go = new GridOutlet(parent,0);
+	go->begin(g->dim->dup(),g->nt);
+	go->send(g->dim->prod(),(Pt<T>)*g);
+*/
 }
 
 void GridInlet::grid(Grid *g) {
@@ -569,7 +599,7 @@ METHOD3(GridObject,initialize) {
 		in[gh->winlet] = new GridInlet(this,gh);
 	}
 	for (int i=0; i<grid_class->outlets; i++) out[i] = new GridOutlet(this,i);
-	rb_call_super(0,0);
+	rb_call_super(argc,argv);
 	return Qnil;
 }
 

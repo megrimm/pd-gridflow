@@ -44,6 +44,11 @@ end
 def test_math
 	hm = "#".intern
 for nt in [:int32, :int16, :uint8] do
+	bits = case nt
+		when :uint8; 8
+		when :int16; 16
+		when :int32; 32 end
+
 	GridFlow.verbose = false
 	GridFlow.gfpost "starting test for #{nt}"
 	e = FObject["@export_list"]
@@ -51,7 +56,9 @@ for nt in [:int32, :int16, :uint8] do
 	e.connect 0,x,0
 
 	x.expect([2,3,5,7]) { e.send_in 0,"list #{nt} 2 3 5 7" }
-	x.expect([42]*10000) { e.send_in 0,"10000 #{nt} # 42" }
+	a = FObject["@fold + {#{nt} # 0}"]
+	a.connect 0,e,0
+	x.expect([420000%(1<<bits)]) { a.send_in 0,"10000 #{nt} # 42" }
 
 	(a = FObject["@ + {#{nt} 0 10}"]).connect 0,e,0
 	x.expect([1,12,4,18,16,42,64]) {
@@ -109,6 +116,10 @@ end
 	x.expect([9,10,12,17,18,20,33,34,36]) {
 		a.send_in 1,:list,nt, 1,2,4
 		a.send_in 0,:list,nt, 8,16,32 }
+
+	x.expect((0...100).to_a) {
+		a.send_in 1,(0...10).to_a
+		a.send_in 0,(0...10).map{|i| 10*i }}
 
 if nt!=:uint8
 	(a = FObject["@outer",:%,[nt,3,-3]]).connect 0,e,0
@@ -219,8 +230,8 @@ end # for nt
 	x.expect([42,0,0,0]) { a.send_in 0,42 }
 	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
 
-	glob = FObject["@global"]
-	glob.send_in 0, "profiler_dump"
+#	glob = FObject["@global"]
+#	glob.send_in 0, "profiler_dump"
 end
 
 def test_new_classes
@@ -275,6 +286,19 @@ def test_new_classes
 	x.expect([100*99/2]) { a.send_in 0, (0...100).map { (rand*0x10000).to_i }}
 	x.expect([100*99/2]) { a.send_in 0, (0...100).map { (rand*0x10).to_i }}
 	x.expect([100*99/2]) { a.send_in 0, (0...100).map { 0 }}
+
+	a = FObject["@perspective"]
+	a.connect 0,e,0
+	c = []
+	8.times {|v|
+		3.times {|i|
+			c << (v[i] * 1000 - 500) + (if i==2 then 2000 else 0 end)
+		}
+	}
+	x.expect([
+		-85,-85,85,-85,-85,85,85,85,
+		-51,-51,51,-51,-51,51,51,51]) {
+			a.send_in 0, 8,3,hm,*c }
 end
 
 def test_rtmetro
@@ -443,7 +467,7 @@ def test_anim msgs
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
 	frames=500
-	frames.times { gin.send_in 0 }
+	frames.times {|n| GridFlow.post "%d", n; gin.send_in 0 }
 #	loop { gin.send_in 0 }
 #	metro = FObject["rtmetro 80"]
 #	metro.connect 0,gin,0
@@ -848,6 +872,13 @@ def test_metro
 	$mainloop.loop
 end
 
+def test_outer
+	o = FObject["@outer + {0}"]
+	o.send_in 0, 25, 240, 320, 3, "#".intern, 42
+	g = FObject["@global"]
+	g.send_in 0, :profiler_dump
+end
+
 if ARGV[0] then
 	ARGV.each {|a| send "test_#{a}" }
 	exit 0
@@ -864,7 +895,8 @@ end
 #test_nonsense
 #test_ppm2
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
-test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]

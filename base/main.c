@@ -174,6 +174,7 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	}
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
+	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
 	if (gf_bridge.send_out && FObject_peer(rself))
 		gf_bridge.send_out(argc,argv,sym,outlet,rself);
 	Ruby ary = rb_ivar_defined(rself,SYM2ID(sym_outlets)) ?
@@ -184,7 +185,6 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	if (ary==Qnil) return Qnil;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	int n = RARRAY(ary)->len;
-	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);

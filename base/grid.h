@@ -602,13 +602,6 @@ struct Grid {
    should go where.
 */
 
-/* maximum number of grid cords per outlet per cord type */
-#define MAX_CORDS 8
-
-/* number of (minimum,maximum) numbers to send at once */
-#define MIN_PACKET_SIZE (1*1024)
-#define MAX_PACKET_SIZE (2*1024)
-
 /* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
 	template <class T> \
@@ -773,6 +766,7 @@ struct GridOutlet {
 	void send(int n, Pt<T> data);
 
 	void flush() {
+		if (bufi) return;
 		switch(buf.nt) {
 		case uint8_type_i: send_direct(bufi,(Pt<uint8>)buf); break;
 		case int16_type_i: send_direct(bufi,(Pt<int16>)buf); break;
