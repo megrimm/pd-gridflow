@@ -3,6 +3,8 @@
 version 0.6.3 (head):
 
  * removing the custom leak detector ("Valgrind" program used instead)
+ * videodev: new options: frequency, transfer [read|mmap], noinit
+ * profiler works again (somewhat)
 
 version 0.6.2 (2002.09.17):
 
