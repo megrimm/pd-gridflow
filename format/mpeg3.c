@@ -29,6 +29,7 @@
 
 struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
+	BitPacking *bit_packing;
 
 	DECL3(init);
 	DECL3(seek);
@@ -76,6 +77,7 @@ GRID_FLOW(FormatMPEG3,0) {}
 GRID_END(FormatMPEG3,0) {}
 
 METHOD3(FormatMPEG3,close) {
+	if (bit_packing) delete bit_packing;
 	if (mpeg) {
 		mpeg3_close(mpeg);
 		mpeg=0;

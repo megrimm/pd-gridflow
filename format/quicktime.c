@@ -30,6 +30,8 @@
 
 struct FormatQuickTime : Format {
 	quicktime_t *anim;
+	BitPacking *bit_packing;
+
 	DECL3(init);
 	DECL3(close);
 	DECL3(frame);
@@ -76,6 +78,7 @@ GRID_FLOW(FormatQuickTime,0) {}
 GRID_END(FormatQuickTime,0) {}
 
 METHOD3(FormatQuickTime,close) {
+	if (bit_packing) delete bit_packing;
 	if (anim) quicktime_close(anim);
 	rb_call_super(argc,argv);
 	return Qnil;

@@ -144,14 +144,12 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
-		p m if GridFlow.verbose
+		GridFlow.gfpost "%s",m.inspect if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.name_lookup sym
 		qlasses = GridFlow.instance_eval{@fclasses_set}
-#		p qlasses
 		qlass = qlasses[sym.to_s]
-#		p qlass
 		raise "object class '#{sym}' not found" if not qlass
 		qlass
 	end
@@ -168,7 +166,7 @@ class FObject
 		qlass = name_lookup sym
 		r = qlass.new(*m)
 		r.args = o
-		p o if GridFlow.verbose
+		GridFlow.gfpost "%s",o.inspect if GridFlow.verbose
 		r
 	end
 end
@@ -223,7 +221,7 @@ class RubyPrint < GridFlow::GridObject
 		s=s.to_s
 		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
 		case s
-		when /^_0_/; GridFlow.gfpost "#{pre}#{s[3..-1]}: #{a.inspect}"
+		when /^_0_/; GridFlow.gfpost "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
 		else super
 		end
 	end

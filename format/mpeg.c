@@ -34,9 +34,11 @@
 ImageDesc *mpeg_id = 0;
 
 struct FormatMPEG : Format {
-	DECL3(init),
-	DECL3(frame),
-	DECL3(close))
+	BitPacking *bit_packing;
+
+	DECL3(init);
+	DECL3(frame);
+	DECL3(close);
 	GRINLET3(0);
 };
 
@@ -68,6 +70,7 @@ GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
 METHOD3(FormatMPEG,close) {
+	if (bit_packing) delete bit_packing;
 	if (mpeg_id) {
 		CloseMPEG();
 		FREE(mpeg_id);

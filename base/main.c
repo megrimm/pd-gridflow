@@ -148,7 +148,8 @@ Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby $) {
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby gc2 = rb_ivar_get(qlass,SI(@grid_class));
+	Ruby gc2 = rb_ivar_defined(qlass,SI(@grid_class)) ?
+		rb_ivar_get(qlass,SI(@grid_class)) : Qnil;
 /*
 	if (gc2==Qnil) RAISE("@grid_class not found in %s",
 		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);

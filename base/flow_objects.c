@@ -28,14 +28,13 @@
 
 /* **************************************************************** */
 
-#define WATCH2(n,ar) { \
+#define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
 	for (int i=0; i<n; i++) p += sprintf(p,"%ld ",ar[i]); \
 	gfpost("%s",foo); \
 }
 
-//#define WATCH(ar) WATCH2(COUNT(ar),ar)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
 #define IV(s) rb_ivar_get($->peer,SI(s))
@@ -125,8 +124,7 @@ METHOD3(GridImport,init) {
 }
 
 METHOD3(GridImport,_0_reset) {
-	GridOutlet *o = out[0];
-	if (o->is_busy()) o->abort();
+	if (out[0]->is_busy()) out[0]->abort();
 	return Qnil;
 }
 
@@ -220,9 +218,6 @@ GRID_BEGIN(GridStore,0) {
 	int nc = in->dim->get(na-1);
 	int v[MAX_DIMENSIONS];
 
-//	gfpost("a=%s",in->dim->to_s());
-//	gfpost("b=%s",r.dim->to_s());
-
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 
 	if (nc > nb)
@@ -233,11 +228,8 @@ GRID_BEGIN(GridStore,0) {
 
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r.dim->v+nc,nb-nc);
-//	gfpost("%s",new Dim(nd,v)->to_s();
 	out[0]->begin(new Dim(nd,v));
 	if (nc>0) in->set_factor(nc);
-
-//	gfpost("c=%s",out[0]->dim->to_s());
 }
 
 GRID_FLOW(GridStore,0) {
@@ -262,7 +254,7 @@ GRID_FLOW(GridStore,0) {
 	} else if (r.nt==uint8_type_i) {
 		while (n>0) {
 			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,r.dim->v[i]);
-			out[0]->send8(size,r.as_uint8()+r.dim->calc_dex(v));
+			out[0]->send(size,r.as_uint8()+r.dim->calc_dex(v));
 			n -= nc;
 		}
 	} else RAISE("unsupported type");
@@ -273,11 +265,10 @@ GRID_END(GridStore,0) {
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = r.dim->prod();
-//		gfpost("n=%d",n);
 		if (r.nt==int32_type_i) {
 			while (n--) o->send(size,r.as_int32());
 		} else if (r.nt==uint8_type_i) {
-			while (n--) o->send8(size,r.as_uint8());
+			while (n--) o->send(size,r.as_uint8());
 		} else RAISE("unsupported type");
 	}
 	o->end();
@@ -301,13 +292,16 @@ GRID_FLOW(GridStore,1) {
 
 GRID_END(GridStore,1) {}
 
+static NumberTypeIndex NumberType_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
+	if (sym==SYM(int32)) return int32_type_i;
+	if (sym==SYM(uint8)) return uint8_type_i;
+	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
+}
+
 METHOD3(GridStore,init) {
-	Ruby t = argc==0 ? SYM(int32) : argv[0];
 	rb_call_super(argc,argv);
-	r.init(0,
-		t==SYM(int32) ? int32_type_i :
-		t==SYM(uint8) ? uint8_type_i :
-		(RAISE("unknown element type \"%s\"", t),int32_type_i));
+	r.init(0, NumberType_find(argc==0 ? SYM(int32) : argv[0]));
 	return Qnil;
 }
 
@@ -926,7 +920,6 @@ METHOD3(GridFor,_0_bang) {
 		/* here d is the dim# to increment */
 		for(;;) {
 			if (d<0) goto end;
-//			fprintf(stderr,"d=%d x[d]=%d stepb[d]=%d\n",d,x[d],stepb[d]);
 			x[d]+=stepb[d];
 			if (x[d]<tob[d]) break;
 			d--;
@@ -1272,7 +1265,6 @@ static uint64 RtMetro_delay(Ruby rself) {
 
 static void RtMetro_alarm(Ruby rself) {
 	uint64 now = RtMetro_now();
-//	uint32 *r = (uint32 *)rself;
 	DGS(RtMetro);
 	//gfpost("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {

@@ -59,6 +59,10 @@ struct FormatX11 : Format {
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
+
+	BitPacking *bit_packing;
+	Dim *dim;
+
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
@@ -369,6 +373,7 @@ GRID_END(FormatX11,0) {
 
 METHOD3(FormatX11,close) {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
+	if (bit_packing) delete bit_packing;
 	MainLoop_remove(this);
 	if (is_owner) XDestroyWindow(display,window);
 	XSync(display,0);

@@ -237,9 +237,9 @@ module EventIO
 		case source
 		when :file
 			filename = args[0].to_s
-			GridFlow.gfpost "filename before: '#{filename}'"
+			GridFlow.gfpost "filename before: '%s'", filename
 			filename = GridFlow.find_file filename
-			GridFlow.gfpost "filename after: '#{filename}'"
+			GridFlow.gfpost "filename after: '%s'", filename
 			@stream = File.open filename, mode
 		when :gzfile
 			raise "gzip is read-only" if mode == "w"
@@ -476,7 +476,7 @@ class FormatPPM < Format; include EventIO
 	def initialize(mode,source,*args)
 		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		super
-		p [mode,source,*args]
+		GridFlow.gfpost "%s", [mode,source,*args].inspect
 		raw_open mode,source,*args
 	end
 

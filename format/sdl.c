@@ -36,6 +36,9 @@ static bool in_use = false;
 
 struct FormatSDL : Format {
 	SDL_Surface *screen;
+	BitPacking *bit_packing;
+	Dim *dim;
+
 	void resize_window (int sx, int sy);
 
 	Pt<uint8> pixels () {
@@ -123,10 +126,10 @@ METHOD3(FormatSDL,init) {
 		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
 		break;
 	case 3: /* 24 bpp lent et généralement pas utilisé */
-		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+		bit_packing = new BitPacking(3,f->BytesPerPixel,3,mask);
 		break;
 	case 4: /* Probablement 32 bpp alors */
-		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+		bit_packing = new BitPacking(4,f->BytesPerPixel,3,mask);
 		break;
 	}
 	return Qnil;

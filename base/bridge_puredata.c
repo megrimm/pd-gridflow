@@ -100,7 +100,7 @@ BFObject *FObject_peer(Ruby rself) {
 	return (BFObject *) $->foreign_peer;
 }
 
-void Bridge_export_Ruby(Ruby arg, t_atom *at) {
+void Bridge_export_value(Ruby arg, t_atom *at) {
 	if (INTEGER_P(arg)) {
 		SETFLOAT(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
@@ -117,7 +117,7 @@ void Bridge_export_Ruby(Ruby arg, t_atom *at) {
 	}
 }
 
-Ruby Bridge_import_Ruby(const t_atom *at) {
+Ruby Bridge_import_value(const t_atom *at) {
 	t_atomtype t = at->a_type;
 	if (t==A_SYMBOL) {
 		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
@@ -160,7 +160,7 @@ int level=0) {
 				RAISE("closing parenthese without opening");
 			}
 		}
-		argv[argc++]=Bridge_import_Ruby(at);
+		argv[argc++]=Bridge_import_value(at);
 		ac--; at++;
 	}
 	if (level) RAISE("opening %d parenthese(s) without closing",level);
@@ -357,8 +357,8 @@ Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
 	}
 	t_atom at[argc];
 	t_atom sel;
-	Bridge_export_Ruby(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_Ruby(argv[i],at+i);
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	t_outlet *out = jo->te_outlet;
 	outlet_anything(jo->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
@@ -384,7 +384,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	long long time = RtMetro_now2();
 //	gfpost("tick");
 	rb_funcall(GridFlow_module2,SI(tick),0);
-	clock_delay(gf_alarm,gf_bridge2->clock_tick);
+	clock_delay(gf_alarm,gf_bridge2->clock_tick/10);
 //	gfpost("tick was: %lld\n",RtMetro_now2()-time);
 	is_in_ruby = false;
 	count++;
