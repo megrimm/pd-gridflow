@@ -120,7 +120,7 @@ long Dict_hash(Dict *$, fts_symbol_t k) {
 DictEntry *Dict_has_key(Dict *$, fts_symbol_t k) {
 	int h = Dict_hash($,k) % $->capa;
 	DictEntry *de = $->table[h];
-	while(de) {
+	while (de) {
 		if (de->k == k) return de;
 		de = de->next;
 	}
