@@ -229,7 +229,6 @@ void FormatX11::alarm() {
 		}break;
 		case DestroyNotify:{
 			gfpost("This window is being closed, so this handler will close too!");
-			fprintf(stderr,"This window is being closed, so this handler will close too!\n");
 			rb_funcall(rself,SI(close),0);
 			return;
 		}break;
@@ -243,7 +242,6 @@ void FormatX11::alarm() {
 			&& e.xclient.format==32
 			&& (Atom)(e.xclient.data.l[0])==wmDeleteAtom) {
 				gfpost("This window is being closed, so this handler will close too!");
-				fprintf(stderr,"This window is being closed, so this handler will close too!\n");
 				rb_funcall(rself,SI(close),0);
 				return;
 			}
@@ -279,10 +277,7 @@ void FormatX11::alarm() {
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
-	fprintf(stderr,"X11 reports Error: display=0x%08x\n",(int)d);
 	gfpost("X11 reports Error: display=0x%08x",(int)d);
-	fprintf(stderr,"serial=0x%08lx error=0x%08x request=0x%08x minor=0x%08x\n",
-		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	//if () 
