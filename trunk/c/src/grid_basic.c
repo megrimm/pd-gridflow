@@ -39,7 +39,7 @@ typedef struct GridImport {
 GRID_BEGIN(GridImport,0) { /* nothing to do */ return true; }
 GRID_FLOW(GridImport,0) {
 	GridOutlet *out = $->out[0];
-	while(n) {
+	while (n) {
 		int n2;
 		if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
 		n2 = Dim_prod(out->dim) - out->dex;
@@ -194,9 +194,8 @@ CLASS(GridExport) {
 
 typedef struct GridStore {
 	GridObject_FIELDS;
-/*	NumberType *nt; */
-	int nt;
-	Number *data;
+	int nt; /* number type */
+	void *data;
 	Dim *dim;
 } GridStore;
 
@@ -252,23 +251,28 @@ GRID_FLOW(GridStore,0) {
 	int i;
 	int v[nb];
 	assert((n % nc) == 0);
+	assert($->data);
 
-	while(n>0) {
-		for (i=0; i<nc; i++) v[i] = mod(*data++,$->dim->v[i]);
+	while (n>0) {
+		int pos;
+		for (i=0; i<nc; i++,data++) v[i] = mod(*data,$->dim->v[i]);
 		while (i<nb) v[i++] = 0;
+		pos = Dim_calc_dex($->dim,v);
 		switch ($->nt) {
-		case int32_type_i:
-			GridOutlet_send($->out[0],size,&$->data[ Dim_calc_dex($->dim,v) ]);
-		 	break;
+		case int32_type_i: {
+			Number *data2 = ((Number *)$->data) + pos;
+			GridOutlet_send($->out[0],size,data2);
+		 	break;}
 		case uint8_type_i: {
-			Number data3[16];
-			uint8 *data2 = (uint8 *)$->data + Dim_calc_dex($->dim,v);
+			int bs = PACKET_LENGTH;
+			Number data3[bs];
+			uint8 *data2 = ((uint8 *)$->data) + pos;
 			int left = size;
-			while (left>=16) {
-				for (i=0; i<16; i++) { data3[i] = data2[i]; }
-				GridOutlet_send($->out[0],16,data3);
-				data2+=16;
-				left-=16;
+			while (left>=bs) {
+				for (i=0; i<bs; i++) { data3[i] = data2[i]; }
+				GridOutlet_send($->out[0],bs,data3);
+				data2+=bs;
+				left-=bs;
 			}
 			while (left) {
 				data3[0] = *data2++;
@@ -294,7 +298,7 @@ GRID_BEGIN(GridStore,1) {
 	$->dim = Dim_dup(in->dim);
 	switch ($->nt) {
 	case int32_type_i: $->data = NEW2(Number,length); break;
-	case uint8_type_i: $->data = (Number *) NEW2(uint8,length); break;
+	case uint8_type_i: $->data = NEW2(uint8,length); break;
 	default: assert(0);
 	}
 	return true;
@@ -303,8 +307,10 @@ GRID_BEGIN(GridStore,1) {
 GRID_FLOW(GridStore,1) {
 	int i;
 	switch ($->nt) {
-	case int32_type_i: memcpy(&$->data[in->dex], data, n*sizeof(Number)); break;
-	case uint8_type_i: {
+	case int32_type_i:{
+		Number *data2 = (Number *)$->data + in->dex;
+		memcpy(data2, data, n*sizeof(Number)); break;}
+	case uint8_type_i:{
 		uint8 *data2 = (uint8 *)$->data + in->dex;
 		for(i=0; i<n; i++) data2[i] = data[i];
 		break;}
