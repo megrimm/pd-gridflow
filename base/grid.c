@@ -69,7 +69,7 @@ void Grid::init(Dim *dim, NumberTypeE nt) {
 void Grid::init_clear(Dim *dim, NumberTypeE nt) {
 	init(dim,nt);
 	int size = dim->prod()*number_type_table[nt].size/8;
-	CLEAR((char*)data,size);
+	CLEAR(Pt<char>((char *)data,size),size);
 }
 
 #define FOO(S) \
@@ -92,7 +92,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		del();
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
-				int32 v[i];
+				STACK_ARRAY(int32,v,i);
 				if (i!=0 && TYPE(a[i-1])==T_SYMBOL) {
 					i--;
 					nt = NumberTypeE_find(a[i]);
@@ -108,7 +108,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 			nt = NumberTypeE_find(a[0]);
 			a++, n--;
 		}
-		{int32 v[1]={n}; init(new Dim(1,v),nt);}
+		{int32 v[1]={n}; init(new Dim(1,Pt<int32>(v,1)),nt);}
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -124,7 +124,8 @@ void Grid::init_from_ruby(Ruby x) {
 	if (TYPE(x)==T_ARRAY) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
-		init(new Dim(0,0));
+		STACK_ARRAY(int32,foo,1);
+		init(new Dim(0,foo));
 		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -134,7 +135,7 @@ void Grid::init_from_ruby(Ruby x) {
 }
 
 Dim *Grid::to_dim() {
-	return new Dim(dim->prod(),(int32 *)(Pt<int32>)*this);
+	return new Dim(dim->prod(),(Pt<int32>)*this);
 }
 
 void Grid::del() {
@@ -173,7 +174,7 @@ void GridInlet::set_factor(int factor) {
 	this->factor = factor;
 	if (factor > 1) {
 		int32 v[] = {factor};
-		buf.init(new Dim(1,v));
+		buf.init(new Dim(1,Pt<int32>(v,1)));
 		bufi = 0;
 	} else {
 		buf.del();
@@ -221,7 +222,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	if (argc>MAX_DIMENSIONS)
 		RAISE("%s: too many dimensions (aborting grid)",parent->info());
 
-	int32 v[argc];
+	STACK_ARRAY(int32,v,argc);
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	Dim *dim = this->dim = new Dim(argc,v);
 
@@ -258,13 +259,13 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		}
 		if (factor>1 && bufi) {
 			int k = min(n,factor-bufi);
-			COPY((T *)buf+bufi,data,k);
+			COPY((Pt<T>)buf+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
 					Pt<T> data2 = ARRAY_NEW(T,factor);
-					COPY(data2,buf,factor);
+					COPY(data2,(Pt<T>)buf,factor);
 					gh->flow(this,factor,data2);
 				} else {
 					gh->flow(this,factor,(Pt<T>)buf);
@@ -287,7 +288,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		}
 		data += m;
 		n -= m;
-		if (factor>1 && n>0) COPY((T *)buf+bufi,data,n), bufi+=n;
+		if (factor>1 && n>0) COPY((Pt<T>)buf+bufi,data,n), bufi+=n;
 	} else if (mode==6) {
 		assert(factor==1);
 		int newdex = dex + n;
@@ -389,7 +390,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	dim = 0;
 	dex = 0;
 	int32 v[] = {MAX_PACKET_SIZE};
-	buf.init(new Dim(1,v), nt);
+	buf.init(new Dim(1,Pt<int32>(v,1)), nt);
 	bufi = 0;
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
@@ -419,7 +420,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	ninlets = 0;
 	if (nt != buf.nt) {
 		int32 v[] = {MAX_PACKET_SIZE};
-		buf.init(new Dim(1,v), nt);
+		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
 	}
 	if (inlets) delete[] inlets.p;
 	inlets = ARRAY_NEW(GridInlet *,MAX_CORDS);
@@ -432,6 +433,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
 	frozen = 1;
+	if (dex==dim->prod()) end(); /* zero-sized grid? */
 }
 
 template <class T>
@@ -488,7 +490,7 @@ void GridOutlet::send(int n, Pt<T> data) {
 		if (n > MIN_PACKET_SIZE) {
 			send_direct(n,data);
 		} else {
-			COPY((T *)buf+bufi,data,n);
+			COPY((Pt<T>)buf+bufi,data,n);
 			bufi += n;
 		}
 		if (dex==dim->prod()) end();
@@ -530,8 +532,8 @@ void GridOutlet::callback(GridInlet *in) {
 */
 
 GridObject::GridObject() {
-	CLEAR(in,MAX_INLETS);
-	CLEAR(out,MAX_OUTLETS);
+	for (int i=0; i<MAX_INLETS;  i++) in[i]=0;
+	for (int i=0; i<MAX_OUTLETS; i++) out[i]=0;
 }
 
 GridObject::~GridObject() {
@@ -605,7 +607,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	if (!out[outlet]) RAISE("outlet not found");
 	out[outlet]->begin(new Dim(n,v),nt);
