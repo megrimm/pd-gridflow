@@ -116,12 +116,19 @@ static volatile long bogus = 0; // to force *bp to be read in memory
 static sigjmp_buf rescue_segfault;
 static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
+
+/* that's good enough for both Linux/PC and OSX, but not Linux/Mac, ... */
+#if 0
+static VALUE *localize_sysstack () {return (VALUE *) 0xBFFFFFFC;}
+#endif
+
+/* the segfault trick (by Mathieu Bouchard) */
+/* may be useful on platforms where the two others fail. */
+#if 0
 static VALUE *localize_sysstack () {
-	/* that's good enough for both Linux and OSX */
-	return (VALUE *) 0xBFFFFFFC;
 	/* the following is a bit risky... well, not so much, but
 	   there's interference with gdb/osx and this trick, and such.
-	*//*
+	*/
 	// get any stack address
 	volatile long * volatile bp = (volatile long *)&bp;
 	//sighandler_t old = signal(11,trap_segfault); // g++-2.95 doesn't take it
@@ -137,7 +144,38 @@ static VALUE *localize_sysstack () {
 	signal(SIGBUS, SIG_DFL); // because i've had problems with segfaults being ignored.(!?)
 	//fprintf(stderr,"new = %08lx\n",(uint32)(bp+STACK_GROW_DIRECTION));
 	return (VALUE *)(bp+STACK_GROW_DIRECTION);
-	*/
 }
+#endif
+
+/* Nobu Nokada's ways; works with GLIBC/Cygwin/Human68k */
+#if 0
+static VALUE *localize_sysstack () {
+#if defined _WIN32 || defined __CYGWIN__
+#include <windows.h>
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+    MEMORY_BASIC_INFORMATION m;
+    memset(&m, 0, sizeof(m));
+    VirtualQuery(&m, &m, sizeof(m));
+    return STACK_UPPER((VALUE *)&m, (VALUE *)m.BaseAddress,
+	(VALUE *)((char *)m.BaseAddress + m.RegionSize) - 1);
+#elif defined(STACK_END_ADDRESS)
+    extern void *STACK_END_ADDRESS;
+    return STACK_END_ADDRESS;
+#else
+#error "NO STACK_END_ADDRESS ???"
+#endif
+}
+#endif
+
+/* using ../config.h */
+#if 1
+static VALUE *localize_sysstack () {
+	void *bp;
+	sscanf(RUBY_STACK_END,"0x%08x",&bp);
+	return (VALUE *)bp;
+}
+#endif
 
 #endif /* __BRIDGE_C */
