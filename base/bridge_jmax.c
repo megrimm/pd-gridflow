@@ -229,9 +229,11 @@ int ac, const fts_atom_t *at) {
 }
 
 static Ruby FObject_s_install_2(Ruby rself, char *name) {
-	fts_status_t r = fts_class_install(
-		fts_new_symbol_copy(name),BFObject_class_init);
-	RETIFFAIL(r,Qnil,"fts_class_install%s","");
+	fts_symbol_t sym = fts_new_symbol_copy(name);
+//	if (fts_class_get_by_name(sym))
+//		RAISE("class %s already exists (ignoring)",name);
+	fts_status_t r = fts_class_install(sym,BFObject_class_init);
+	RETIFFAIL(r,Qnil,"%s: fts_class_install%s",name,"");
 	return Qnil;
 }
 
