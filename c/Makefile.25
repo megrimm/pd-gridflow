@@ -1,6 +1,4 @@
-PNAME=video4jmax
 include ../config.make
-include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 
 all:
 	(cd src; $(MAKE) -k all)

@@ -7,7 +7,7 @@
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file LICENSE for further informations on licensing terms.
+	See file ../../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of

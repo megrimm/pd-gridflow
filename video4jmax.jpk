@@ -7,9 +7,9 @@ package require reftype
 global jmaxArch jmaxMode
 ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
 
-puts "package: Video4jmax"
+templateDirectory $dir/templates
 
-### help
 sourceFile $dir/help/${pname}.help.index.tcl
-helpSummary "$pname" $dir/help/${pname}.summary.jmax
+
+post "package: Video4jmax"
 

@@ -22,8 +22,9 @@ Computation Objects
 [ ] @redim, @dim (APL rho)
 [ ] @slice (@splice ?)
 [ ] black option in @store
-[ ] @import~, @export~
-	note: DSP->Control is ok, but Control->DSP may be kludgy
+[ ] @import~, @export~ (note:
+	DSP->Control is feasible
+	Control->DSP would be *very* kludgy)
 
 Effects
 [ ] blur, emboss, find edges, solarize, pinch, waves
@@ -59,10 +60,10 @@ Input/Output
 [ ] add PTC support
 [ ] x11 shared memory working
 [ ] x11 screen capture
-[ ] Expose events
 [ ] Video4linux support
-[ ] files: multi-image (seq), multi-file (multi)
-[ ] Targa support
+[ ] multi-image (seq)
+[ ] multi-file (multi)
+[ ] Targa write support
 [ ] JPEG support
 [ ] QuickTime support
 
@@ -72,6 +73,8 @@ Misc
 
 Bugs
 [ ] @video_out causes delayed crash when closing its associated window
+[ ] @import bug with 0 dims
+[ ] @export bug with init arguments
 
 From: Aeldrik Pander <aeldrik@metachaos.demon.nl>
 

@@ -1,6 +1,5 @@
 PNAME=video4jmax
 include config.make
-include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 
 all:
 	(cd c; $(MAKE) -k all)
@@ -14,7 +13,8 @@ install:
 	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)
 	$(INSTALL_DATA) $(PNAME).jpk $(lib_install_dir)/packages/$(PNAME)/$(PNAME).jpk
 	$(INSTALL_DATA) $(PNAME).scm $(lib_install_dir)/packages/$(PNAME)/$(PNAME).scm
-	#( cd help; $(MAKE) $@)# help does not work
-	( cd c; $(MAKE) $@)
+	(cd help; $(MAKE) $@)
+	(cd templates; $(MAKE) $@)
+	(cd c; $(MAKE) $@)
 .PHONY: install
 
