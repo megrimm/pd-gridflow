@@ -6,24 +6,25 @@
 
 #INST=/opt/jmax
 INST=/opt
+#INST=/usr
 ARCH=i686-linux
 JMAKE="make ARCH=$ARCH"
 INST2=$INST/lib/jmax/fts/bin/$ARCH/opt/fts
+SAM=../../samples
 
 # SRC='array.[ch] video.c'
 # SRC='grid.c grid_protocol.[ch] video.[ch] macros.h vout*.c vin*.c'
 # SRC='grid_basic.c grid.c grid.h index.c tuple.c'
 SRC='video_out.c grid_basic.c grid.c grid.h'
 
-
-#FILE=../../samples/colour-demo-1.jmax
-#FILE=../../samples/colour-demo-t.jmax
-#FILE=../../samples/vin_file_test_1.jmax
-#FILE=../../samples/vin_file_test_2.jmax
-#FILE=../../samples/store.jmax
-#FILE=../../samples/feedback_fractal.jmax
-FILE=../../samples/cross_fade.jmax
-#FILE=
+#FILE=$SAM/colour-demo-1.jmax
+#FILE=$SAM/colour-demo-t.jmax
+#FILE=$SAM/vin_file_test_1.jmax
+#FILE=$SAM/vin_file_test_2.jmax
+#FILE=$SAM/outside/linear_transform.jmax
+ FILE=$SAM/outside/feedback_fractal_2.jmax
+#FILE=$SAM/feedback_fractal.jmax
+#FILE=$SAM/cross_fade.jmax
 
 #export DISPLAY=:1
 ulimit -c unlimited
@@ -48,9 +49,11 @@ case $1 in
 		echo --------
 		echo run udp 127.0.0.1:4242
 		echo --------
+		echo $INST2
 		gdb $INST2
 	;;
-	install) $JMAKE && (cd ../../../../; $JMAKE install) ;;
+	#install) $JMAKE && (cd ../../../../; $JMAKE install) ;;
+	install) $JMAKE && (cd ../../; $JMAKE install) ;;
 	clean)
 		$JMAKE clean
 		rm err err2 core

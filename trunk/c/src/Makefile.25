@@ -1,14 +1,10 @@
-PNAME=video4jmax
-
-# JMAXDISTDIR = ../../../..
-JMAXROOTDIR=../../../..
+include ../../config.make
 DISTDIR = $(JMAXROOTDIR)/fts
-
 
 PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 include $(JMAXDISTDIR)/Makefiles/Makefile.package
-LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext
+LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
 
 
 ARCH_CFLAGS += -Wall -Wno-unused
