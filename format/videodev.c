@@ -445,7 +445,7 @@ GRID_INLET(FormatVideoDev,0) {
 	} else if (sym == SYM(_name_)) { \
 		VideoPicture vp; \
 		WIOCTL(fd, VIDIOCGPICT, &vp); \
-		vp._name_ = INT(value); \
+		vp._name_ = value; \
 		WIOCTL(fd, VIDIOCSPICT, &vp);
 	PICTURE_ATTR(brightness)
 	PICTURE_ATTR(hue)
