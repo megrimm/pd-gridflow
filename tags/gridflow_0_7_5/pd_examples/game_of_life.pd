@@ -1,0 +1,43 @@
+#N canvas 369 212 678 517 10;
+#X obj 38 154 @store;
+#X obj 106 51 @! rand;
+#X obj 16 52 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 106 13 loadbang;
+#X obj 15 9 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1;
+#X obj 111 238 @out x11;
+#X obj 110 280 print;
+#X obj 111 259 fps detailed;
+#X msg 106 32 240 320 uint8 # 10;
+#X obj 106 70 @ == ( uint8 1 );
+#X obj 111 157 @ < ( uint8 # 3 );
+#X text 248 197 1-bit to rgb conversion \, but real quick;
+#X obj 111 196 @ inv+ ( uint8 # );
+#X obj 111 215 @outer ignore ( 3 uint8 # );
+#X obj 111 135 @convolve >> + ( uint8 # -5 ) ( 3 3 uint8 # 0 0 0 0
+1 );
+#X text 239 152 my new-and-improved game-of-life algorithm (2003 edition).
+designed for the new optimizer in @convolve.;
+#X obj 110 113 @ << ( uint8 # 1 );
+#X obj 15 28 metro 0.1;
+#X obj 453 304 @global;
+#X msg 453 240 profiler_reset;
+#X msg 462 261 profiler_dump;
+#X connect 0 0 16 0;
+#X connect 1 0 9 0;
+#X connect 2 0 0 0;
+#X connect 3 0 8 0;
+#X connect 4 0 17 0;
+#X connect 5 0 7 0;
+#X connect 7 0 6 0;
+#X connect 8 0 1 0;
+#X connect 9 0 0 1;
+#X connect 10 0 0 1;
+#X connect 10 0 12 0;
+#X connect 12 0 13 0;
+#X connect 13 0 5 0;
+#X connect 14 0 10 0;
+#X connect 16 0 14 0;
+#X connect 17 0 2 0;
+#X connect 19 0 18 0;
+#X connect 20 0 18 0;

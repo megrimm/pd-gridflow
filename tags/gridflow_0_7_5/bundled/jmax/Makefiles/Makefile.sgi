@@ -1,0 +1,56 @@
+# 
+# jMax
+# Copyright (C) 1994, 1995, 1998, 1999 by IRCAM-Centre Georges Pompidou, Paris, France.
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# See file LICENSE for further informations on licensing terms.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 
+# Based on Max/ISPW by Miller Puckette.
+#
+
+PLATFORM := sgi
+
+CC := cc
+LD := cc
+CC_ALL_FLAG := -all
+CC_NONE_FLAG := -none
+LDSO=ld
+LDSOFLAGS=-elf -shared -rdata_shared
+SOLIBS=-lc -lm
+
+## This is to help Purify, that currently does not work with pthreads
+ifeq ($(ENABLE_PURIFY),yes)
+ARCH_CFLAGS := $(ARCH_CFLAGS) -DHELP_PURIFY
+FTS_SYS_LIBS = -laudio  -lmd -laudiofile -laudioutil -lmalloc  -lm -lfpe
+else
+FTS_SYS_LIBS = -laudio  -lmd -laudiofile -laudioutil -lmalloc  -lm -lfpe -lpthread
+endif
+
+INSTALL=install
+INSTALL_DATA=$(INSTALL) -m 644
+INSTALL_PROGRAM=$(INSTALL) -m 755
+INSTALL_SETUID=$(INSTALL) -m 4755
+INSTALL_LIB=$(INSTALL) -m 755
+INSTALL_DIR=$(INSTALL) -dir -m 755
+
+prefix=/usr
+doc_install_dir=$(prefix)/webdocs/jMax-$(JMAX_VERSION)
+lib_install_dir=$(prefix)/lib/jmax
+include_install_dir=$(prefix)/include
+bin_install_dir=$(prefix)/bin
+
+ARCH_PACKAGES=audpdev sgi unixdtd
+
