@@ -43,6 +43,14 @@ static bool FormatMPEG3_frame (FormatMPEG3 *$, GridOutlet *out, int frame) {
 	uint8 *buf = NEW(uint8,sx*sy*3);
 	uint8 *rows[sy];
 	for (i=0; i<sy; i++) rows[i]=buf+i*sx*3;
+
+	if (frame != -1) {
+		int result;
+		whine("attempting to seek frame # %d",frame);
+		result = mpeg3_set_frame($->mpeg, frame, 0);
+		whine("seek result: %d", result);
+	}
+
 	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 			 
 	{

@@ -92,6 +92,7 @@ void showenv(const char *s) {
 
 void gf_timer_handler (Timer *foo, void *obj);
 void gridflow_module_init (void) {
+
 	disable_signal_handlers();
 	srandom(time(0));
 
