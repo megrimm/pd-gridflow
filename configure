@@ -207,6 +207,7 @@ end
 LOG.puts "-"*64
 
 $CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
+$CFLAGS += " -I/usr/X11R6/include"
  
 ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
 "#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
@@ -336,7 +337,7 @@ Feature.new {
 Feature.new {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so ["-I/usr/X11R6/include","-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
@@ -349,7 +350,7 @@ Feature.new {
 	tag :x11_shm
 	name "X11 acceleration through shared memory"
 	uses_feature [:x11]
-	uses_so ["-I/usr/X11R6/include","-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
@@ -445,6 +446,7 @@ Feature.new {
 Feature.new {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
+	uses_h ["linux/videodev.h"]
 	test proc {
 		c_test "
 		#include <stdlib.h>
@@ -458,7 +460,7 @@ Feature.new {
 	tag :mpeg3
 	name "HeroineWarrior's LibMPEG3"
 	uses_so ["-lmpeg3","-lpthread","-lm",
-		"-L/usr/X11R6/lib","-I/usr/X11R6/include"]
+		"-L/usr/X11R6/lib"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	test proc {|f|
 		c_test "
