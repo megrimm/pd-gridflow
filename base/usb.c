@@ -26,12 +26,9 @@
 
 static Ruby cUSB;
 
-struct usb_define {
-	const char *name;
-	int i;
-};
+struct named_int {const char *name; int v;};
 
-usb_define usb_class_choice[] = {
+named_int usb_class_choice[] = {
 	{"USB_CLASS_PER_INTERFACE",0},
 	{"USB_CLASS_AUDIO",1},
 	{"USB_CLASS_COMM",2},
@@ -44,7 +41,7 @@ usb_define usb_class_choice[] = {
 	{0,0},
 };
 
-usb_define usb_descriptor_types_choices[] = {
+named_int usb_descriptor_types_choices[] = {
 	{"USB_DT_DEVICE",0x01},
 	{"USB_DT_CONFIG",0x02},
 	{"USB_DT_STRING",0x03},
@@ -57,7 +54,7 @@ usb_define usb_descriptor_types_choices[] = {
 	{0,0},
 };
 
-usb_define usb_descriptor_types_sizes[] = {
+named_int usb_descriptor_types_sizes[] = {
 	{"USB_DT_DEVICE_SIZE",18},
 	{"USB_DT_CONFIG_SIZE",9},
 	{"USB_DT_INTERFACE_SIZE",9},
@@ -67,7 +64,7 @@ usb_define usb_descriptor_types_sizes[] = {
 	{0,0},
 };
 
-usb_define usb_endpoints_choices[] = {
+named_int usb_endpoints_choices[] = {
 	{"USB_ENDPOINT_ADDRESS_MASK",0x0f},/* in bEndpointAddress */
 	{"USB_ENDPOINT_DIR_MASK",0x80},
 	{"USB_ENDPOINT_TYPE_MASK",0x03},/* in bmAttributes */
@@ -78,7 +75,7 @@ usb_define usb_endpoints_choices[] = {
 	{0,0},
 };
 
-usb_define usb_requests_choice[] = {
+named_int usb_requests_choice[] = {
 	{"USB_REQ_GET_STATUS",0x00},
 	{"USB_REQ_CLEAR_FEATURE",0x01},
 	{"USB_REQ_SET_FEATURE",0x03},
@@ -93,7 +90,7 @@ usb_define usb_requests_choice[] = {
 	{0,0},
 };
 
-usb_define usb_type_choice[] = {
+named_int usb_type_choice[] = {
 	{"USB_TYPE_STANDARD",(0x00 << 5)},
 	{"USB_TYPE_CLASS",(0x01 << 5)},
 	{"USB_TYPE_VENDOR",(0x02 << 5)},
@@ -101,7 +98,7 @@ usb_define usb_type_choice[] = {
 	{0,0},
 };
 
-usb_define usb_recipient_choice[] = {
+named_int usb_recipient_choice[] = {
 	{"USB_RECIP_DEVICE",0x00},
 	{"USB_RECIP_INTERFACE",0x01},
 	{"USB_RECIP_ENDPOINT",0x02},
@@ -109,7 +106,7 @@ usb_define usb_recipient_choice[] = {
 	{0,0},
 };
 
-usb_define usb_misc[] = {
+named_int usb_misc[] = {
 	{"USB_MAXENDPOINTS",32},
 	{"USB_MAXINTERFACES",32},
 	{"USB_MAXALTSETTING",128},
@@ -120,7 +117,7 @@ usb_define usb_misc[] = {
 	{0,0},
 };
 
-usb_define* usb_all_defines[] = {
+named_int* usb_all_defines[] = {
 	usb_class_choice,
 	usb_descriptor_types_choices,
 	usb_descriptor_types_sizes,
@@ -280,6 +277,7 @@ public:
 
 \def int bulk_read (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
+	gfpost("%d, '%s', %d",ep,rb_str_ptr(s),timeout);
 	int r = usb_bulk_read(h, ep, rb_str_ptr(s), rb_str_len(s), timeout);
 	if (r<0) RAISE("%s", usb_strerror()); else return r;
 }
@@ -377,11 +375,12 @@ void startup_usb () {
 		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA), SYM(interface)));
 #undef MANGLE
 	for(int i=0; i<COUNT(usb_all_defines); i++) {
-		usb_define *ud = usb_all_defines[i];
+		named_int *ud = usb_all_defines[i];
 		for(; ud->name; ud++) {
-			rb_const_set(cUSB, rb_intern(ud->name), INT2NUM(ud->i));
+			rb_const_set(cUSB, rb_intern(ud->name), INT2NUM(ud->v));
 		}
 	}
+	//usb_set_debug(42);
 	usb_init();
 	usb_find_busses();
 	usb_find_devices();
