@@ -967,8 +967,8 @@ struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 \class GridOutlet < CObject
 struct GridOutlet : CObject {
 // number of (minimum,maximum) numbers to send at once
-	static const int MIN_PACKET_SIZE = 1<<9;
-	static const int MAX_PACKET_SIZE = 1<<11;
+	static const int MIN_PACKET_SIZE = 1<<8;
+	static const int MAX_PACKET_SIZE = 1<<12;
 // those are set only once
 	GridObject *parent; // not a P<> because of circular refs
 	P<Dim> dim; // dimensions of the grid being sent
@@ -1062,7 +1062,7 @@ void *Pointer_get (Ruby self);
 Ruby fclass_install(FClass *fc, Ruby super);
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
-extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and;
+extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
 #define SAME_TYPE(_a_,_b_) \

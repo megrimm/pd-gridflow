@@ -41,7 +41,7 @@ public: template <class T>
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
 
-Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and;
+Numop *op_add, *op_sub, *op_mul, *op_div, *op_mod, *op_shl, *op_and, *op_put;
 
 static void expect_dim_dim_list (P<Dim> d) {
 	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());}
@@ -336,12 +336,11 @@ GRID_INLET(GridStore,1) {
 	d=0;
 	// find out when we can skip computing indices
 	//!@#$ should actually also stop before blowing up packet size
-#define MAX_PACKET_SIZE (1<<11) /* sorry! */
 	lsd=nn;
 	while (lsd>=nn-in->dim->n) {
 		lsd--;
 		int cs = in->dim->prod(lsd-nn+in->dim->n);
-		if (cs>MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
+		if (cs>GridOutlet::MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
 	int cs = in->dim->prod(lsd-nn+in->dim->n);
@@ -560,8 +559,16 @@ struct GridInner : GridObject {
 	\grin 1
 };
 
-#define MAX_PACKET_SIZE (1<<11)
-
+template <class T> void inner_child_a (Pt<T> buf, Pt<T> data, int rrows, int rcols, int chunk) {
+	Pt<T> bt = buf, dt = data;
+	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
+}
+template <class T, int rcols> void inner_child_b (Pt<T> buf, Pt<T> data, int rrows, int chunk) {
+	Pt<T> bt = buf, dt = data;
+	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) {
+		for (int k=0; k<rcols; k++) bt[k] = *dt;
+	}
+}
 GRID_INLET(GridInner,0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
@@ -583,18 +590,17 @@ GRID_INLET(GridInner,0) {
 	int rsize = r->dim->prod();
 	int rcols = rsize/rrows;
 	Pt<T> rdata = (Pt<T>)*r;
-	int chunk = MAX_PACKET_SIZE/rsize;
+	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	r2=new Grid(new Dim(chunk*rsize),r->nt);
 	Pt<T> buf3 = (Pt<T>)*r2;
 	for (int i=0; i<rrows; i++)
 		for (int j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
 } GRID_FLOW {
-	Numop *op_put = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(put)));
 	int rrows = in->factor();
 	int rsize = r->dim->prod();
 	int rcols = rsize/rrows;
-	int chunk = MAX_PACKET_SIZE/rsize;
+	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	STACK_ARRAY(T,buf ,chunk*rcols);
 	STACK_ARRAY(T,buf2,chunk*rcols);
 	int off = chunk;
@@ -602,8 +608,13 @@ GRID_INLET(GridInner,0) {
 		if (chunk*rrows>n) chunk=n/rrows;
 		op_put->map(chunk*rcols,buf2,*(T *)*seed);
 		for (int i=0; i<rrows; i++) {
-			for (int j=0; j<chunk; j++)
-				op_put->map(rcols,buf+j*rcols,data[i+j*rrows]);
+			switch (rcols) {
+			case 1:  inner_child_b<T,1>(buf,data+i,rrows,chunk); break;
+			case 2:  inner_child_b<T,2>(buf,data+i,rrows,chunk); break;
+			case 3:  inner_child_b<T,3>(buf,data+i,rrows,chunk); break;
+			case 4:  inner_child_b<T,4>(buf,data+i,rrows,chunk); break;
+			default: inner_child_a(buf,data+i,rrows,rcols,chunk);
+			}
 			op_para->zip(chunk*rcols,buf,(Pt<T>)*r2+i*off*rcols);
 			op_fold->zip(chunk*rcols,buf2,buf);
 		}
@@ -1072,9 +1083,9 @@ GRID_INLET(GridReverse,0) {
 	in->set_factor(in->dim->prod(d));
 } GRID_FLOW {
 	int f1=in->factor(), f2=in->dim->prod(d+1);
-	Pt<T> data2 = data+f1-f2;
 	while (n) {
 		int hf1=f1/2;
+		Pt<T> data2 = data+f1-f2;
 		for (int i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
 		out->send(f1,data);
 		data+=f1; n-=f1;
@@ -1167,5 +1178,6 @@ void startup_flow_objects () {
 	op_mod = OP(SYM(%));
 	op_and = OP(SYM(&));
 	op_div = OP(SYM(/));
+	op_put = OP(SYM(put));
 	\startall
 }
