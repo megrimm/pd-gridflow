@@ -24,6 +24,7 @@
 #include "../config.h"
 #include "grid.h"
 #include <ctype.h>
+#include <stdarg.h>
 
 #ifdef STANDALONE
 typedef FObject fts_object_t;
@@ -275,7 +276,7 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
 	return Qnil;
 }
 
-VALUE FObject_send_thru(VALUE argc, VALUE *argv, VALUE $) {
+VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 	int outlet;
 	fts_symbol_t selector = fts_s_bang;
 	fts_atom_t at[argc+1];
@@ -340,6 +341,14 @@ VALUE FObject_s_new(BFObject *peer, VALUE qlass, VALUE argc, VALUE *argv) {
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(_class_##_class,#_name_,_class_##_s_##_name_,_argc_)
 
+VALUE gf_post_string (VALUE $, VALUE s) {
+	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
+
+	post("%s",RSTRING(s)->ptr);
+//	fprintf(stderr,"%s",RSTRING(s)->ptr);
+	return Qnil;
+}
+
 void gf_install_bridge (void) {
 	GridFlow_module = rb_eval_string("GridFlow");
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
@@ -347,5 +356,65 @@ void gf_install_bridge (void) {
 	DEF(FObject, send_thru, -1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, 3);
+	rb_define_singleton_method(GridFlow_module,
+		"post_string", gf_post_string, 1);
+}
+
+struct Timer {
+	void (*f)(struct Timer *$, void *data);
+	void *data;
+	double time;
+	int armed;
+};
+
+void gridflow_module_init (void) {
+	gf_init();
+}
+
+fts_module_t gridflow_module = {
+	"video",
+	"GridFlow: n-dimensional array streaming, pictures, video, etc.",
+	gridflow_module_init, 0, 0};
+
+/*
+	a slightly friendlier version of post(...)
+	it removes redundant messages.
+	it also ensures that a \n is added at the end.
+*/
+void whine(char *fmt, ...) {
+	static char *last_format = 0;
+	static int format_count = 0;
+
+	if (last_format && strcmp(last_format,fmt)==0) {
+		format_count++;
+		if (format_count >= 64) {
+			if (high_bit(format_count)-low_bit(format_count) < 3) {
+				post("[too many similar posts. this is # %d]\n",format_count);
+#ifdef MAKE_TMP_LOG
+				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
+				fflush(whine_f);
+#endif
+			}
+			return;
+		}
+	} else {
+		last_format = strdup(fmt);
+		format_count = 1;
+	}
+
+	/* do the real stuff now */
+	{
+		va_list args;
+		char post_s[256*4];
+		int length;
+		va_start(args,fmt);
+		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
+		post_s[sizeof(post_s)-1]=0; /* safety */
+		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
+#ifdef MAKE_TMP_LOG
+		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+		fflush(whine_f);
+#endif
+	}
 }
 

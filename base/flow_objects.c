@@ -80,14 +80,14 @@ GRID_END(GridImport,1) {}
 
 METHOD(GridImport,init) {
 	int i;
-	int v[ac-1];
+	int v[argc];
 	GridObject_init((GridObject *)$);
 
-	for (i=0; i<ac-1; i++) {
-		v[i] = GET(i+1,int,0);
-		if (v[i]<1 || v[i]>MAX_INDICES) RAISE2("dim out of bounds");
+	for (i=0; i<argc-1; i++) {
+		v[i] = NUM2INT(argv[i]);
+		if (v[i]<1 || v[i]>MAX_INDICES) rb_raise(rb_eArgError,"dim out of bounds");
 	}
-	$->dim = Dim_new(ac-1,v);
+	$->dim = Dim_new(argc,v);
 }
 
 METHOD(GridImport,delete) {
@@ -97,9 +97,9 @@ METHOD(GridImport,delete) {
 
 METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
-	Number data[] = { GET(0,int,0) };
+	Number data[] = { NUM2INT(argv[0]) };
 	if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
-	GridOutlet_send(out,ARRAY(data));
+	GridOutlet_send(out,COUNT(data),data);
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
 }
 
@@ -130,9 +130,9 @@ GRID_BEGIN(GridExport,0) { return true; }
 GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
-		Var a[1];
-		Var_put_int(a+0,*data);
-		Object_send_thru(OBJ($),0,sym_int,1,a);
+		VALUE a[1];
+		a[0] = INT2NUM(*data);
+		FObject_send_thru(rself,0,sym_int,1,a);
 		data++;
 	}
 }
@@ -152,26 +152,27 @@ LIST(GRINLET(GridExport,0)),
 
 typedef struct GridExportList {
 	GridObject_FIELDS;
-	Var *list;
+	VALUE /*Array*/ list; //!@#$mark
 	int n;
 } GridExportList;
 
 GRID_BEGIN(GridExportList,0) {
 	int n = Dim_prod(in->dim);
 	if (n>1000) RAISE("list too big (%d elements)", n);
-	$->list = NEW(Var,n);
+	$->list = rb_ary_new();
 	$->n = n;
 	return true;
 }
 
 GRID_FLOW(GridExportList,0) {
 	int i;
-	for (i=0; i<n; i++, data++) Var_put_int($->list+in->dex+i,*data);
+	for (i=0; i<n; i++, data++)
+		rb_ary_store($->list,in->dex+i,INT2NUM(*data));
 }
-
+		
 GRID_END(GridExportList,0) {
-	Object_send_thru(OBJ($),0,sym_list,$->n,$->list);
-	FREE($->list);
+	FObject_send_thru(rself,0,sym_list,$->n,RARRAY($->list)->ptr);
+	$->list = 0;
 }
 
 METHOD(GridExportList,init)   { GridObject_init(  (GridObject *)$); }
@@ -298,7 +299,7 @@ GRID_FLOW(GridStore,1) {
 GRID_END(GridStore,1) {}
 
 METHOD(GridStore,init) {
-	Symbol t = GET(1,symbol,SYM(int32));
+	VALUE t = argc==0 ? SYM(int32) : argv[0];
 	GridObject_init((GridObject *)$);
 	$->data = 0;
 	$->dim  = 0;
@@ -307,7 +308,7 @@ METHOD(GridStore,init) {
 	} else if (t==SYM(uint8)) {
 		$->nt = uint8_type_i;
 	} else {
-		RAISE2("unknown element type \"%s\"", Symbol_name(t));
+		RAISE("unknown element type \"%s\"", t);
 	}
 }
 
@@ -359,12 +360,12 @@ GRID_FLOW(GridOp1,0) {
 GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridOp1,init) {
-	Symbol sym = GET(1,symbol,op1_table[0].sym);
+	VALUE sym = argv[0];
 
 	GridObject_init((GridObject *)$);
 
 	$->op = Dict_get(op1_dict,(void *)sym);
-	if (!$->op) RAISE2("unknown unary operator \"%s\"", Symbol_name(sym));
+	if (!$->op) RAISE("unknown unary operator \"%s\"", sym);
 }
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
@@ -436,14 +437,14 @@ GRID_FLOW(GridOp2,1) {
 GRID_END(GridOp2,1) {}
 
 METHOD(GridOp2,init) {
-	Symbol sym = GET(1,symbol,op2_table[0].sym);
-	$->rint = GET(2,int,0);
+	VALUE sym = argv[0];
+	$->rint = NUM2INT(argv[1]);
 	$->dim = 0;
 
 	GridObject_init((GridObject *)$);
 
 	$->op = Dict_get(op2_dict,(void *)sym);
-	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
+	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
 METHOD(GridOp2,delete) {
@@ -455,7 +456,7 @@ METHOD(GridOp2,delete) {
 METHOD(GridOp2,int) {
 	FREE($->data);
 	if ($->dim) FREE($->dim);
-	$->rint = GET(0,int,-42);
+	$->rint = NUM2INT(argv[0]);
 }
 
 GRCLASS(GridOp2,inlets:2,outlets:1,
@@ -508,19 +509,19 @@ GRID_FLOW(GridFold,0) {
 GRID_END(GridFold,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridFold,init) {
-	Symbol sym = GET(1,symbol,op2_table[0].sym);
-	$->rint = GET(2,int,0);
+	VALUE sym = argv[0];
+	$->rint = NUM2INT(argv[1]);
 
 	GridObject_init((GridObject *)$);
 
 	$->op = Dict_get(op2_dict,(void *)sym);
-	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
+	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
 METHOD(GridFold,delete) { GridObject_delete((GridObject *)$); }
 
 METHOD(GridFold,int) {
-	$->rint = GET(0,int,-42);
+	$->rint = NUM2INT(argv[0]);
 }
 
 GRCLASS(GridFold,inlets:2,outlets:1,
@@ -603,9 +604,9 @@ GRID_FLOW(GridInner,2) {
 GRID_END(GridInner,2) {}
 
 METHOD(GridInner,init) {
-	Symbol sym_para = GET(1,symbol,op2_table[0].sym);
-	Symbol sym_fold = GET(2,symbol,op2_table[0].sym);
-	$->rint = GET(3,int,0);
+	VALUE sym_para = argv[0];
+	VALUE sym_fold = argv[1];
+	$->rint = NUM2INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
 
@@ -613,8 +614,8 @@ METHOD(GridInner,init) {
 
 	$->op_para = Dict_get(op2_dict,(void *)sym_para);
 	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
-	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
-	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
+	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", sym_para);
+	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridInner,delete) {
@@ -695,9 +696,9 @@ GRID_FLOW(GridInner2,2) {
 GRID_END(GridInner2,2) {}
 
 METHOD(GridInner2,init) {
-	Symbol sym_para = GET(1,symbol,op2_table[0].sym);
-	Symbol sym_fold = GET(2,symbol,op2_table[0].sym);
-	$->rint = GET(3,int,0);
+	VALUE sym_para = argv[0];
+	VALUE sym_fold = argv[1];
+	$->rint = NUM2INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
 
@@ -705,8 +706,8 @@ METHOD(GridInner2,init) {
 
 	$->op_para = Dict_get(op2_dict,(void *)sym_para);
 	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
-	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
-	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
+	if (!$->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
+	if (!$->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridInner2,delete) {
@@ -777,7 +778,7 @@ GRID_FLOW(GridOuter,1) {
 GRID_END(GridOuter,1) {}
 
 METHOD(GridOuter,init) {
-	Symbol sym = GET(1,symbol,op2_table[0].sym);
+	VALUE sym = argv[0];
 
 	GridObject_init((GridObject *)$);
 
@@ -785,7 +786,7 @@ METHOD(GridOuter,init) {
 	$->data = 0;
 
 	$->op = Dict_get(op2_dict,(void *)sym);
-	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
+	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
 METHOD(GridOuter,delete) {
@@ -909,8 +910,8 @@ GRID_FLOW(GridConvolve,1) {
 GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
-	Symbol sym_para = GET(1,symbol,SYM(*));
-	Symbol sym_fold = GET(2,symbol,SYM(+));
+	VALUE sym_para = argc<1 ? SYM(*) : argv[0];
+	VALUE sym_fold = argc<2 ? SYM(*) : argv[1];
 
 	GridObject_init((GridObject *)$);
 	$->dim = 0;
@@ -920,10 +921,10 @@ METHOD(GridConvolve,init) {
 
 	$->op_para = Dict_get(op2_dict,(void *)sym_para);
 	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
-	$->rint = GET(3,int,0);
+	$->rint = NUM2INT(argv[2]);
 
-	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
-	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
+	if (!$->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
+	if (!$->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridConvolve,delete) {
@@ -948,17 +949,17 @@ typedef struct GridFor {
 
 METHOD(GridFor,init) {
 	GridObject_init((GridObject *)$);
-	$->from = GET(1,int,0);
-	$->to   = GET(2,int,0);
-	$->step = GET(3,int,0);
+	$->from = NUM2INT(argv[0]);
+	$->to   = NUM2INT(argv[1]);
+	$->step = NUM2INT(argv[2]);
 	if (!$->step) $->step=1;
 }
 
 METHOD(GridFor,delete) { GridObject_delete((GridObject *)$); }
 
-METHOD(GridFor,from) { $->from = GET(0,int,0); }
-METHOD(GridFor,to  ) { $->to   = GET(0,int,0); }
-METHOD(GridFor,step) { $->step = GET(0,int,0); if (!$->step) $->step=1; }
+METHOD(GridFor,from) { $->from = NUM2INT(argv[0]); }
+METHOD(GridFor,to  ) { $->to   = NUM2INT(argv[0]); }
+METHOD(GridFor,step) { $->step = NUM2INT(argv[0]); if (!$->step) $->step=1; }
 
 METHOD(GridFor,bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
@@ -978,8 +979,8 @@ METHOD(GridFor,bang) {
 }
 
 METHOD(GridFor,from2) {
-	$->from = GET(0,int,0);
-	GridFor_bang($,winlet,selector,ac,at);
+	$->from = NUM2INT(argv[0]);
+	GridFor_bang($,rself,argc,argv);
 }
 
 GRCLASS(GridFor,inlets:3,outlets:1,
@@ -1108,14 +1109,14 @@ GRID_END(GridRedim,1) {}
 
 METHOD(GridRedim,init) {
 	int i;
-	int v[ac-1];
+	int v[argc];
 	GridObject_init((GridObject *)$);
 
-	for (i=0; i<ac-1; i++) {
-		v[i] = GET(i+1,int,0);
+	for (i=0; i<argc; i++) {
+		v[i] = NUM2INT(argv[i]);
 		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
 	}
-	$->dim = Dim_new(ac-1,v);
+	$->dim = Dim_new(argc,v);
 	$->data = 0;
 }
 
@@ -1228,8 +1229,8 @@ err:
 }
 
 METHOD(GridIn,open) {
-	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
-	FormatClass *qlass = Dict_get(format_classes_dex,format);
+	VALUE format = argv[0];
+	FormatClass *qlass = Dict_get(format_classes_dex,(void *)format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1241,7 +1242,7 @@ METHOD(GridIn,open) {
 	if ($->ff) $->ff->cl->close($->ff);
 	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,(GridObject *)$,4,ac-1,at+1);
+		$->ff = qlass->open(qlass,(GridObject *)$,4,argc-1,argv+1);
 	} else {
 		whine("file format has no `open'");
 	}
@@ -1252,7 +1253,7 @@ METHOD(GridIn,bang) {
 }
 
 METHOD(GridIn,int) {
-	int frame = GET(0,int,0);
+	int frame = NUM2INT(argv[0]);
 	whine("will read frame # %d", frame);
 	GridIn_frame($,frame);
 }
@@ -1260,7 +1261,7 @@ METHOD(GridIn,int) {
 METHOD(GridIn,option) {
 	CHECK_FILE_OPEN
 	if ($->ff->cl->option) {
-		$->ff->cl->option($->ff,ac,at);
+		$->ff->cl->option($->ff,argc,argv);
 	} else {
 		whine("this format has no options");
 	}
@@ -1298,19 +1299,19 @@ GRID_BEGIN(GridOut,0) {
 	{
 		CHECK_FILE_OPEN2
 		in->dex=0;
-		return $->ff->cl->handler->begin((GridObject *)($->ff),in);
+		return $->ff->cl->handler->begin(rself,(GridObject *)($->ff),in);
 	}
 }
 
 GRID_FLOW(GridOut,0) {
 	CHECK_FILE_OPEN
-	$->ff->cl->handler->flow((GridObject *)($->ff),in,n,data);
+	$->ff->cl->handler->flow(rself,(GridObject *)($->ff),in,n,data);
 }
 
 GRID_END(GridOut,0) {
-	$->ff->cl->handler->end((GridObject *)($->ff),in);
+	$->ff->cl->handler->end(rself,(GridObject *)($->ff),in);
 	LEAVE;
-	Object_send_thru(OBJ($),0,sym_bang,0,0);
+	FObject_send_thru(rself,0,sym_bang,0,0);
 	if (!$->timelog) return;
 	{
 		struct timeval t;
@@ -1326,14 +1327,14 @@ GRID_END(GridOut,0) {
 }
 
 METHOD(GridOut,option) {
-	Symbol sym = GET(0,symbol,SYM(foo));
+	VALUE sym = argv[0];
 	CHECK_FILE_OPEN
 	if (sym == SYM(timelog)) {
-		$->timelog = GET(1,int,0);
+		$->timelog = NUM2INT(argv[1]);
 		COERCE_INT_INTO_RANGE($->timelog,0,1);
 		whine("timelog = %d",$->timelog);
 	} else if ($->ff->cl->option) {
-		$->ff->cl->option($->ff,ac,at);
+		$->ff->cl->option($->ff,argc,argv);
 	} else {
 		whine("this format has no options");
 	}
@@ -1357,8 +1358,8 @@ METHOD(GridOut,open) {
 	}
 	return;
 */
-	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
-	FormatClass *qlass = Dict_get(format_classes_dex,format);
+	VALUE format = argv[0];
+	FormatClass *qlass = Dict_get(format_classes_dex,(void *)format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1369,7 +1370,7 @@ METHOD(GridOut,open) {
 
 	if ($->ff) $->ff->cl->close($->ff);
 	if (qlass->open) {
-		$->ff = qlass->open(qlass,(GridObject *)$,2,ac-1,at+1);
+		$->ff = qlass->open(qlass,(GridObject *)$,2,argc-1,argv+1);
 	} else {
 		whine("file format has no `open'");
 	}
@@ -1381,15 +1382,15 @@ METHOD(GridOut,init) {
 	$->ff = 0;
 	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$);
-	if (ac>1) {
-		Var at2[3];
-		Var_put_symbol(at2+0,SYM(x11));
-		Var_put_symbol(at2+1,SYM(here));
-		GridOut_open($,winlet,selector,2,at2);
-		Var_put_symbol(at2+0,SYM(out_size));
-		Var_put_int(at2+1,GET(1,int,0));
-		Var_put_int(at2+2,GET(2,int,0));
-		GridOut_option($,winlet,selector,3,at2);
+	if (argc>0) {
+		{
+			VALUE at2[] = { SYM(x11), SYM(here) };
+			GridOut_open($,rself,COUNT(at2),at2);
+		}
+		{
+			VALUE at2[] = { SYM(out_size), NUM2INT(argv[0]), NUM2INT(argv[1]) };
+			GridOut_option($,rself,COUNT(at2),at2);
+		}
 	}
 }
 
@@ -1472,7 +1473,7 @@ GRID_END(GridScaleBy,0) {
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD(GridScaleBy,init) {
-	$->rint = GET(1,int,2);
+	$->rint = argc<1 ? 2 : NUM2INT(argv[1]);
 	GridObject_init((GridObject *)$);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
@@ -1611,21 +1612,22 @@ uint64 RtMetro_now(void) {
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
 }
 
-static void RtMetro_alarm(RtMetro *$) {
+static void RtMetro_alarm(VALUE rself) {
 	uint64 now = RtMetro_now();
+	DGS(RtMetro);
 	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {
 		//whine("rtmetro sending bang");
-		Object_send_thru(OBJ($),0,sym_bang,0,0);
+		FObject_send_thru(rself,0,sym_bang,0,0);
 		/* $->next_time = now; */ /* jmax style, less realtime */
 		$->next_time += 1000*$->ms;
 	}
 	$->last = now;
 }
 
-METHOD(RtMetro,int) {
+METHOD(RtMetro,_0_int) {
 	int oon = $->on;
-	$->on = !! GET(0,int,0);
+	$->on = !! FIX2INT(argv[0]);
 	whine("on = %d",$->on);
 	if (oon && !$->on) {
 		whine("deleting rtmetro alarm...");
@@ -1637,14 +1639,14 @@ METHOD(RtMetro,int) {
 	}
 }
 
-METHOD(RtMetro,rint) {
-	$->ms = GET(0,int,0);
+METHOD(RtMetro,_1_int) {
+	$->ms = FIX2INT(argv[0]);
 	whine("ms = %d",$->ms);
 }
 
 METHOD(RtMetro,init) {
 	GridObject_init((GridObject *)$);
-	$->ms = GET(1,int,0);
+	$->ms = FIX2INT(argv[0]);
 	$->on = 0;
 	whine("ms = %d",$->ms);
 	whine("on = %d",$->on);
@@ -1657,15 +1659,104 @@ METHOD(RtMetro,delete) {
 GRCLASS(RtMetro,inlets:2,outlets:1,
 LIST(),
 /* outlet 0 not used for grids */
-	DECL2(RtMetro, 0,int,   int,   "i"),
-	DECL2(RtMetro, 1,int,   rint,  "i"),
-	DECL2(RtMetro,-1,init,  init,  "si"),
+	DECL2(RtMetro, 0,int,   _0_int,   "i"),
+	DECL2(RtMetro, 1,int,   _1_int,  "i"),
+	DECL2(RtMetro,-1,initialize,  init,  "si"),
 	DECL2(RtMetro,-1,delete,delete,""))
 
 /* **************************************************************** */
+/* [@global] */
 
-#define INSTALL(_sym_,_name_) \
-	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
+/* a dummy object that gives access to any stuff global to
+   GridFlow.
+*/
+typedef struct GFGlobal {
+	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
+} GFGlobal;
+
+static void profiler_reset$1(void*d,void*k,void*v) {
+	((GridObject *)k)->profiler_cumul = 0;
+}
+
+METHOD(GFGlobal,profiler_reset) {
+	Dict *os = gf_object_set;
+	Dict_each(os,profiler_reset$1,0);
+}
+
+static int by_profiler_cumul(void **a, void **b) {
+	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
+	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
+	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
+}
+
+static void profiler_dump$1(void *d,void *k,void *v) {
+	List_push((List *)d,k);
+}
+
+METHOD(GFGlobal,profiler_dump) {
+	/* if you blow 256 chars it's your own fault */
+	List *ol = List_new(0);
+
+	uint64 total=0;
+	int i;
+	whine("--------------------------------");
+	whine("         clock-ticks percent pointer  constructor");
+	Dict_each(gf_object_set,profiler_dump$1,ol);
+	List_sort(ol,by_profiler_cumul);
+	for(i=0;i<List_size(ol);i++) {
+		GridObject *o = List_get(ol,i);
+		total += o->profiler_cumul;
+	}
+	if (total<1) total=1;
+	for(i=0;i<List_size(ol);i++) {
+		GridObject *o = List_get(ol,i);
+		int ppm = o->profiler_cumul * 1000000 / total;
+		char *buf = "(fix-me)"; // !@#$
+		whine("%20lld %2d.%04d %08x [%s]\n",
+			o->profiler_cumul,
+			ppm/10000,
+			ppm%10000,
+			o,
+			buf);
+		FREE(buf);
+	}
+	whine("--------------------------------");
+}
+
+METHOD(GFGlobal,init) {
+	GridObject_init((GridObject *)$);
+}
+
+METHOD(GFGlobal,delete) {
+	GridObject_delete((GridObject *)$);
+}
+
+GRCLASS(GFGlobal,inlets:1,outlets:1,
+LIST(),
+/* outlet 0 not used for grids */
+	DECL(GFGlobal,-1,init,          "s"),
+	DECL(GFGlobal,-1,delete,        ""),
+	DECL(GFGlobal, 0,profiler_reset,""),
+	DECL(GFGlobal, 0,profiler_dump, ""))
+
+/* **************************************************************** */
+
+static VALUE ruby_c_install(const char *jname, const char *rname,
+GridClass *gc) {
+	VALUE $ = rb_define_class_under(GridFlow_module, rname, FObject_class);
+	define_many_methods($,gc->methodsn,gc->methods);
+//remember to take care of delete
+	rb_funcall($,rb_intern("install"),3,
+		rb_str_new2(jname),
+		FIX2INT(gc->inlets),
+		FIX2INT(gc->outlets));
+	GridObject_conf_class2($,gc);
+	return Qnil;
+}
+
+#define INSTALL(jname,rname) \
+	ruby_c_install(jname, #rname, &rname##_class);
+
 
 void startup_flow_objects (void) {
 	INSTALL("@import",     GridImport);
@@ -1690,3 +1781,4 @@ void startup_flow_objects (void) {
 	INSTALL("@hsv_to_rgb", GridHSVtoRGB);
 	INSTALL("@rtmetro",    RtMetro);
 }
+

@@ -437,7 +437,7 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 		DECL(GridObject,winlet,grid_end,  ""),
 		DECL(GridObject,winlet,list,      "l"),
 	};
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,COUNT(methods),methods);
 }
 
 void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {

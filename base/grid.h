@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "../config.h"
+#include "lang.h"
 
 /* current version number as string literal */
 #define GF_VERSION "0.5.0"
@@ -80,13 +81,6 @@
 	((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 /*
-  "COUNT(array), array", a shortcut because often in jmax you pass
-  first the size of an array followed by a pointer to that array.
-*/
-#define ARRAY(_array_) \
-	COUNT(_array_), _array_
-
-/*
   make sure an int is not too small nor too big;
   warn and adjust outside values
 */
@@ -116,8 +110,6 @@
 
 /* **************************************************************** */
 
-#define ATOMLIST int ac, const Var *at
-
 /*
   lists the arguments suitable for any method of a given class.
   this includes a class-specific class name so you don't have to
@@ -127,12 +119,9 @@
   see METHOD_PTR, METHOD, OBJ
 */
 
-#define METHOD_ARGS(_class_) \
-	_class_ *self, int winlet, Symbol selector, ATOMLIST
+#define METHOD_ARGS(_class_) VALUE rself, int argc, VALUE *argv
 
-/* 0.5.0 */
-#define RAISE(args...) return whine(args),0;
-#define RAISE2(args...) {fts_object_set_error(OBJ($),args);return;}
+#define RAISE(args...) rb_raise(rb_eArgError,args)
 
 /* 0.5.0: shortcuts for MethodDecl */
 
@@ -141,30 +130,29 @@
 #define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
 	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym2_),args}
 
+#define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
+
 /*
   METHOD is a header for a given method in a given class.
   METHOD_PTR returns a pointer to a method of a class as if it were
   in the FObject class. this is because C's type system is broken.
 */
-#ifdef HAVE_PROFILING
 #define METHOD(_class_,_name_) \
-	static void _class_##_##_name_(METHOD_ARGS(_class_)); \
-	static void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
+	static void _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv); \
+	static VALUE _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
+		VALUE result; \
+		DGS(_class_); \
 		ENTER; \
-		_class_##_##_name_(self,winlet,selector,ac,at); \
+		result = Qnil; _class_##_##_name_($,rself,argc,argv); \
 		LEAVE; \
+		return result; \
 	} \
-	static void _class_##_##_name_(METHOD_ARGS(_class_))
-#define METHOD_PTR(_class_,_name_) \
-	((FTSMethod) _class_##_##_name_##_wrap)
-#else
-#define METHOD(_class_,_name_) \
-	static void _class_##_##_name_(METHOD_ARGS(_class_))
-#define METHOD_PTR(_class_,_name_) \
-	((FTSMethod) _class_##_##_name_)
-#endif
+	static void _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv)
 
-typedef void(*FTSMethod)(METHOD_ARGS(FObject));
+#define METHOD_PTR(_class_,_name_) \
+	((RMethod) _class_##_##_name_##_wrap)
+
+typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 
 /* class constructor */
 
@@ -173,30 +161,11 @@ typedef void(*FTSMethod)(METHOD_ARGS(FObject));
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _class = { \
 		sizeof(_name_), \
-		ARRAY(_name_##_methods),\
-		_inlets_,_outlets_,ARRAY(_name_##_handlers) }; \
-	static fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST) {\
-		GridObject_conf_class2(class,&_name_##_class); \
-		return fts_Success;}
+		COUNT(_name_##_methods),\
+		_name_##_methods,\
+		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers };
 
-/*
-  casts a pointer to any object, into a FObject *.
-*/
-#define OBJ(_object_) \
-	((FObject *)(_object_))
-
-/*
-  get arg or default value
-  this works with int, float, symbol,
-  string (const char *), ptr (void *)
-*/
-#define GET(_i_,_type_,_default_) \
-	(_i_>=0 && _i_<ac ? Var_get_##_type_ (at+_i_) : _default_)
-
-#define PUT(_i_,_type_,_value_) \
-	Var_put_##_type_ (at+_i_,_value_)
-
-#define SYM(_sym_) (Symbol_new(#_sym_))
+#define SYM(_sym_) (ID2SYM(rb_intern(#_sym_)))
 
 /* */
 static inline uint64 rdtsc(void) {
@@ -211,7 +180,7 @@ static inline bool is_le(void) {
 }
 
 /* **************************************************************** */
-/* general purpose but jMax specific */
+/* general purpose but Ruby/jMax specific */
 
 void whine(char *fmt, ...);
 void whine_time(const char *s);
@@ -219,11 +188,11 @@ void whine_time(const char *s);
 typedef struct MethodDecl {
 	int winlet;
 	const char *selector;
-	void (*method)(METHOD_ARGS(FObject));
+	RMethod method;
 	const char *signature;
 } MethodDecl;
 
-void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
+void define_many_methods(VALUE $, int n, MethodDecl *methods);
 
 /* **************************************************************** */
 /* limits */
@@ -256,7 +225,7 @@ typedef long Number;
 /* **************************************************************** */
 
 #define DECL_SYM(_sym_) \
-	extern Symbol sym_##_sym_;
+	extern VALUE sym_##_sym_;
 
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
@@ -291,9 +260,6 @@ typedef struct Dim {
 	int Dim_prod_start(Dim *$, int start);
 
 	char *Dim_to_s(Dim *$);
-	int Dim_equal_verbose(Dim *$, Dim *other);
-	int Dim_equal_verbose_hwc(Dim *$, Dim *other);
-	int Dim_dex_add(Dim *$, int n, int *dex);
 	int Dim_calc_dex(Dim *$, int *v);
 
 /* **************************************************************** */
@@ -334,13 +300,13 @@ typedef enum NumberTypeIndex {
 #undef DECL_TYPE
 
 typedef struct NumberType {
-	Symbol sym;
+	VALUE /*Symbol*/ sym;
 	const char *name;
 	int size;
 } NumberType;
 
 typedef struct Operator1 {
-	Symbol sym;
+	VALUE /*Symbol*/ sym;
 	const char *name;
 	Number (*op)(Number);
 	void   (*op_array)(int,Number*);
@@ -350,7 +316,7 @@ typedef struct Operator1 {
 	extern Dict *op1_dict;
 
 typedef struct Operator2 {
-	Symbol sym;
+	VALUE /*Symbol*/ sym;
 	const char *name;
 	Number (*op)(Number,Number);
 	void   (*op_array)(int,Number *,Number);
@@ -364,16 +330,16 @@ typedef struct Operator2 {
 /* **************************************************************** */
 /* grid.c (part 1: inlet objects) */
 
-/* GridInlet represents a grid-aware jmax inlet */
+/* GridInlet represents a grid-aware inlet */
 
 typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_cl_,_name_) bool _name_(_cl_ *$, GridInlet *in)
-#define  GRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, const Number *data)
-#define GRID_FLOW2_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Number *data)
-#define   GRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
+#define GRID_BEGIN_(_cl_,_name_) bool _name_(VALUE rself,_cl_ *$, GridInlet *in)
+#define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, const Number *data)
+#define GRID_FLOW2_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Number *data)
+#define   GRID_END_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
@@ -440,7 +406,7 @@ typedef struct GridClass {
 
 /* **************************************************************** */
 /* grid.c (part 2: outlet objects) */
-/* GridOutlet represents a grid-aware jmax outlet */
+/* GridOutlet represents a grid-aware outlet */
 
 struct GridOutlet {
 /* context information */
@@ -482,7 +448,7 @@ struct GridOutlet {
 /* grid.c (part 3: processor objects) */
 
 #define GridObject_FIELDS \
-	FObject _o; /* extends FObject */ \
+	void *peer; /* point to peer */ \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
@@ -493,8 +459,8 @@ struct GridObject {
 
 	void GridObject_init(GridObject *$);
 	void GridObject_delete(GridObject *$);
-	void GridObject_conf_class(fts_class_t *class, int winlet);
-	void GridObject_conf_class2(fts_class_t *class, GridClass *grclass);
+	void GridObject_conf_class(VALUE $, int winlet);
+	void GridObject_conf_class2(VALUE $, GridClass *grclass);
 
 /* **************************************************************** */
 /* io.c (part 1: streams) */
@@ -540,18 +506,18 @@ typedef struct Format Format;
 /* methods on objects of this class */
 /* for reading, to outlet */
 	/* frames - how many frames there are (optional) */
-	typedef int (*Format_frames_m)(Format *$);
+typedef int (*Format_frames_m)(Format *$);
 	/*
 	  read a frame, sending to outlet
 	  if frame number is -1, pick up next frame (reloop after last)
 	  (if frames() is not implemented, only -1 is valid)
 	*/
-	typedef bool (*Format_frame_m)(Format *$, GridOutlet *out, int frame);
+typedef bool (*Format_frame_m)(Format *$, GridOutlet *out, int frame);
 /* both in read and write mode */
 	/* all additional functionality */
-	typedef void (*Format_option_m)(Format *$, ATOMLIST);
+typedef void (*Format_option_m)(Format *$, int argc, VALUE *argv);
 	/* destroys this object */
-	typedef void (*Format_close_m)(Format *$);
+typedef void (*Format_close_m)(Format *$);
 
 struct FormatClass {
 	int object_size;
@@ -563,7 +529,8 @@ struct FormatClass {
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	Format *(*open)(FormatClass *$, GridObject *parent, int mode, ATOMLIST);
+	Format *(*open)(FormatClass *$, GridObject *parent, int mode, int argc,
+	VALUE *argv);
 
 	Format_frames_m frames;
 	Format_frame_m frame;
@@ -581,6 +548,7 @@ struct FormatClass {
 	Object _o; \
 	FormatClass *cl; \
 	GridObject *parent; \
+	VALUE parent2; \
 	Format *chain; \
 	int mode; \
 	Stream *st; \
@@ -598,6 +566,12 @@ extern Dict *format_classes_dex;
 Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 void Format_close(Format *$);
 
+typedef struct Timer Timer;
+Timer *Timer_new(void (*f)(Timer *foo, void *), void *);
+void Timer_set_delay(Timer *, float);
+void Timer_arm(Timer *);
+void Timer_loop(void);
+
 /* **************************************************************** */
 
 extern Dict *gf_object_set;
@@ -605,9 +579,17 @@ extern Dict *gf_timer_set;
 extern Timer *gf_timer;
 extern const char *whine_header;
 
-char *FObject_to_s(FObject *$);
+//char *FObject_to_s(FObject *$);
+
+/* **************************************************************** */
+/* 0.6.0 */
 
 uint64 RtMetro_now(void);
+
 void gf_install_bridge(void);
+extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
+extern VALUE FObject_class;
+VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $);
+void gf_init (void);
 
 #endif /* __GF_GRID_H */
