@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -71,22 +71,18 @@ choice :name,:VideoModeChoice,:start,0,:values,%w(
 /*
 #define WH(_field_,_spec_) \
 	sprintf(buf+strlen(buf), "%s: " _spec_ "; ", #_field_, self->_field_);
-
 #define WHYX(_name_,_fieldy_,_fieldx_) \
 	sprintf(buf+strlen(buf), "%s: y=%d, x=%d; ", #_name_, self->_fieldy_, self->_fieldx_);
-
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
 	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
 		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
 	delete[] foo;}
-
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
 	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
 		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	delete[] foo;}
-
 static char *flags_to_s(int value, int n, named_int *table) {
 	char foo[256];
 	*foo = 0;
@@ -98,7 +94,6 @@ static char *flags_to_s(int value, int n, named_int *table) {
 	if (!*foo) strcat(foo,"0");
 	return strdup(foo);
 }
-
 static char *choice_to_s(int value, int n, named_int *table) {
 	if (value < 0 || value >= n) {
 		char foo[64];
@@ -363,7 +358,7 @@ static int read3(int fd, uint8 *image, int n) {
 	uint64 t0 = gf_timeofday();
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
 	uint64 t1 = gf_timeofday();
-	if (t1-t0 > 100) gfpost("VIDIOCSYNC delay: %d us",t1-t0);
+	//if (t1-t0 > 100) gfpost("VIDIOCSYNC delay: %d us",t1-t0);
 	frame_finished(image+vmbuf.offsets[queue[0]]);
 	queuesize--;
 	for (int i=0; i<queuesize; i++) queue[i]=queue[i+1];
@@ -463,11 +458,17 @@ GRID_INLET(FormatVideoDev,0) {
 		get(0,0,SYM(colour    ));
 		get(0,0,SYM(contrast  ));
 		get(0,0,SYM(whiteness ));
+		get(0,0,SYM(frequency ));
 	} else if (attr==SYM(brightness)) { PICTURE_ATTR_GET(brightness);
 	} else if (attr==SYM(hue       )) { PICTURE_ATTR_GET(hue       );
 	} else if (attr==SYM(colour    )) { PICTURE_ATTR_GET(colour    );
 	} else if (attr==SYM(contrast  )) { PICTURE_ATTR_GET(contrast  );
 	} else if (attr==SYM(whiteness )) { PICTURE_ATTR_GET(whiteness );
+	} else if (attr==SYM(frequency )) {
+		int fd = GETFD;
+		int value;
+		WIOCTL(fd, VIDIOCGFREQ, &value);
+		{Ruby argv[3] ={INT2NUM(1), SYM(frequency), INT2NUM(value)}; send_out(COUNT(argv),argv);}
 	} else { RAISE("What you say?"); }
 }
 
