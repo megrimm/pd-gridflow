@@ -93,7 +93,7 @@ DEF_OP2(ge,  a >= b)
 
 DEF_OP2(sin, (Number)(b * sin(a * 2 * M_PI / 36000)))
 DEF_OP2(cos, (Number)(b * cos(a * 2 * M_PI / 36000)))
-DEF_OP2(atan, (Number)(atan2(a,b)))
+DEF_OP2(atan, (Number)(0+atan2(a,b)))
 DEF_OP2(tanh, (Number)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (Number)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 DEF_OP2(pow, ipow(a,b))

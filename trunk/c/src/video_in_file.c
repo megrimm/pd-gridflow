@@ -100,7 +100,7 @@ METHOD(VideoInFile,bang) {
 		goto err;
 	}
 	whine("file format handler says: %s", Dim_to_s(dim));
-	GridOutlet_begin($->out[0],dim);
+	GridOutlet_begin($->out[0],Dim_dup(dim));
 
 	n = Dim_prod(dim);
 	while (n>0) {

@@ -32,7 +32,7 @@
 #include "grid.h"
 
 #define MAKE_TMP_LOG
-//#define MAKE_TMP_LOG_ALLOC
+/* #define MAKE_TMP_LOG_ALLOC */
 
 FILE *whine_f;
 
@@ -80,7 +80,7 @@ void video4jmax_module_init (void) {
 	disable_signal_handlers();
 
 #ifdef MAKE_TMP_LOG
-	whine_f = fopen("/tmp/video4jmax.whine","w");
+	whine_f = fopen("/tmp/video4jmax.log","w");
 	if (!whine_f) whine_f = fopen("/dev/null","w");
 #endif
 
@@ -161,7 +161,7 @@ void whine(char *fmt, ...) {
 
 /* to help find uninitialized values */
 void *qalloc(size_t n) {
-	long *data = (long *) malloc(n);
+	long *data = (long *) qalloc2(n);
 	int i;
 	int nn = (int) n/4;
 	#ifndef NO_DEADBEEF
@@ -171,11 +171,10 @@ void *qalloc(size_t n) {
 
 }
 
-/* not used yet */
 void *qalloc2(size_t n) {
 	void *data = malloc(n);
 #ifdef MAKE_TMP_LOG_ALLOC
-	fprintf(whine_f, "[alloc] + %08x (%d)\n", data, n);
+	fprintf(whine_f, "[alloc] + *%p (%d)\n", data, n);
 #endif
 	return data;
 }
@@ -183,7 +182,7 @@ void *qalloc2(size_t n) {
 /* to help find dangling references */
 void qfree(void *data) {
 #ifdef MAKE_TMP_LOG_ALLOC
-	fprintf(whine_f, "[alloc] - %08x\n", data, n);
+	fprintf(whine_f, "[alloc] - *%p\n", data);
 #endif
 	{
 		int n=8;
@@ -193,7 +192,7 @@ void qfree(void *data) {
 			int i;
 			int nn = (int) n/4;
 #ifndef NO_DEADBEEF
-//			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
 #endif
 		}
 	}
