@@ -3,7 +3,7 @@
 	convert GridFlow Documentation XML to HTML with special formatting.
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.7.3"
+GF_VERSION = "0.8.0"
 
 #$use_rexml = true
 $use_rexml = false
@@ -123,6 +123,10 @@ class XNode
 			qlass = (if b then Class.new self else self end)
 			qlass.class_eval(&b) if b
 			for k in args do XNode.valid_tags[k]=qlass end
+			#qlass.class_eval {
+			#	public :show
+			#	public :show_index
+			#}
 		end
 	end
 
@@ -156,11 +160,11 @@ end
 
 XNode.register("documentation") {}
 
-XNode.register(*%w( icon help arg rest )) {
+XNode.register(*%w( icon help arg rest )) {public
 	def show; end
 }
 
-XNode.register("section") {
+XNode.register("section") {public
 	def show
 		write_black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
@@ -190,7 +194,7 @@ XNode.register("section") {
 }
 
 # basic text formatting nodes.
-XNode.register(*%w( p i u b k sup )) {
+XNode.register(*%w( p i u b k sup )) {public
 	def show
 		t = if tag=="k" then "kbd" else tag end
 		print "<#{t}>"
@@ -200,7 +204,7 @@ XNode.register(*%w( p i u b k sup )) {
 }
 
 # explicit hyperlink on the web.
-XNode.register("link") {
+XNode.register("link") {public
 	def show
 		print "<a href='#{att[:to]}'>"
 		super
@@ -209,7 +213,7 @@ XNode.register("link") {
 	end
 }
 
-XNode.register("list") {
+XNode.register("list") {public
 	attr_accessor :counter
 	def show
 		self.counter = att.fetch("start"){"1"}.to_i
@@ -219,7 +223,7 @@ XNode.register("list") {
 	end
 }
 
-XNode.register("li") {
+XNode.register("li") {public
 	def show
 		mk(:li) {
 			print "<b>#{parent.counter}</b>", " : "
@@ -230,7 +234,7 @@ XNode.register("li") {
 }
 
 # and "macro", "enum", "type", "use"
-XNode.register("class") {
+XNode.register("class") {public
 	include HasOwnLayout
 	def show
 		tag = self.tag
@@ -297,7 +301,7 @@ def nice_table
 					yield }}}}
 end
 
-XNode.register("method") {
+XNode.register("attr") {public
 	def show
 		print "<br>"
 		if parent.tag == "inlet" or parent.tag == "outlet"
@@ -306,8 +310,26 @@ XNode.register("method") {
 				
 			}
 		end
-		print "<b>method</b>&nbsp;"
-#=begin
+		print "<b>#{tag}</b>&nbsp;"
+		print "#{html_quote att['name']} <b>(</b>"
+		s=html_quote(att["name"])
+		s="<i>#{att['type']}</i> #{s}" if att['type']
+		print "<b>#{s}</b>"
+		print "<b>)</b> "
+	end
+}
+
+XNode.register("method") {public
+if true #
+	def show
+		print "<br>"
+		if parent.tag == "inlet" or parent.tag == "outlet"
+			mk(:b) {
+				print "#{parent.tag}&nbsp;#{parent.att['id']} "
+				
+			}
+		end
+		print "<b>#{tag}</b>&nbsp;"
 		print "#{html_quote att['name']} <b>(</b>"
 		print contents.map {|x|
 			next unless XNode===x
@@ -321,8 +343,19 @@ XNode.register("method") {
 			end
 		}.compact.join("<b>, </b>")
 		print "<b>)</b> "
-#=end
-=begin
+		super
+		print "<br>\n"
+	end
+else #
+	def show
+		print "<br>"
+		mk(:table) { mk(:tr) { mk(:td) {
+		name = ""
+		name << "#{parent.tag} #{parent.att['id']} " if \
+			parent.tag == "inlet" or parent.tag == "outlet"
+		name << tag.to_s
+		mk(:b) { print name.gsub(/ /,"&nbsp;") }
+		}; mk(:td) {
 		nice_table { mk(:tr) {
 			mk(:td,:width,1) { print html_quote(att['name']) }
 			contents.each {|x|
@@ -347,14 +380,14 @@ XNode.register("method") {
 				end
 			}
 		}}
-		print "<br>"
-=end
+		}; mk(:td) {
 		super
-		print "<br>\n"
+		}}}
 	end
+end #
 }
 
-XNode.register("table") {
+XNode.register("table") {public
 	def show
 		colors = ["#ffffff","#f0f8ff",]
 		rows = contents.find_all {|x| XNode===x && x.tag=="row" }
@@ -375,11 +408,11 @@ XNode.register("table") {
 	end
 }
 
-XNode.register("column") {
+XNode.register("column") {public
 	def show; end
 }
 
-XNode.register("row") {
+XNode.register("row") {public
 	attr_accessor :bgcolor
 	def show
 		columns = parent.contents.find_all {|x| XNode===x && x.tag=="column" }
@@ -504,11 +537,8 @@ puts <<EOF
 <tr><td colspan="4"> 
 <p><font size="-1">
 GridFlow #{GF_VERSION} Documentation<br>
-by Mathieu Bouchard
+Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
-and<br>
-Alexandre Castonguay
-<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
 EOF

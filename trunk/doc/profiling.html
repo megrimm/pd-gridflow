@@ -1,7 +1,7 @@
 <html>
 <!-- $Id$ -->
 <head>
-<title>GridFlow 0.7.3 - Profiling Performance</title>
+<title>GridFlow 0.8.0 - Profiling Performance</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -16,7 +16,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="3" height="16">
-      <h4>GridFlow 0.7.3 - Profiling Performance</h4>
+      <h4>GridFlow 0.8.0 - Profiling Performance</h4>
   </td></tr>
 
   <tr> 
@@ -116,6 +116,7 @@
 	</ul>
 
 	<h4>acceleration tricks</h4>
+	<ul>
 	<li>try the profiler and see what it says.</li>
 	<li>i mean really.</li>
 	<li>you can lose a lot of your time accelerating something
@@ -136,7 +137,7 @@
 	yourself.
 	</p>
 	</li>
-	<li>[@ & 255] is a very fast [@ % 256], and likewise for other
+	<li>[@ &amp; 255] is a very fast [@ % 256], and likewise for other
 	powers of two.</li>
 	<li>for do-nothing operations, "ignore" and "put" are faster than
 	"+ 0" and such...</li>
@@ -150,7 +151,12 @@
 	plain Ruby code or C++ code. If your new class is of generic
 	usefulness then maybe it should be added to the releases of
 	GridFlow. Contact me if you need help extending GridFlow.</li>
-	</list>
+
+	<li>put often-used files on fast drives. this means don't use NFS
+	(networked file system) for that. the file-to-ram cache can compensate for
+	that up to a certain amount, but the larger the file is, and the most used
+	the file is, the more important it is to put it on a local drive. </li>
+	</ul>
 
 	<h4>Changes from 0.5.0 to 0.7.0</h4>
 
@@ -173,10 +179,9 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="4">
-	<p><font size="-1">GridFlow 0.7.3 Documentation<br>
-        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
-        and<br>
-        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+	<p><font size="-1">GridFlow 0.8.0 Documentation<br>
+	by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+	</font></p>
     </td>
   </tr>
 

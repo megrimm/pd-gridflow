@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.3 - reference</title>
+<title>GridFlow 0.8.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.3 - index of this page:</h4>
+    <h4>GridFlow 0.8.0 - index of this page:</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -35,8 +35,8 @@
 <li><a href="#C++ class GridOutlet">C++ class GridOutlet</a></li>
 <li><a href="#C++ class Dim">C++ class Dim</a></li>
 <li><a href="#C++ class Grid">C++ class Grid</a></li>
-<li><a href="#C++ class Operator1">C++ class Operator1</a></li>
-<li><a href="#C++ class Operator2">C++ class Operator2</a></li>
+<li><a href="#C++ class Numop1">C++ class Numop1</a></li>
+<li><a href="#C++ class Numop2">C++ class Numop2</a></li>
 <li><a href="#C++ class GridClass">C++ class GridClass</a></li>
 <li><a href="#C++ class GFBridge">C++ class GFBridge</a></li>
 </ul>
@@ -125,32 +125,32 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		Grid represents a grid that is fully stored in memory. <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator1">C++ class Operator1</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Numop1">C++ class Numop1</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		This represents a one-input operator. 
 		Such an object contains a map() function that applies the operator 
 		over a memory segment. <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator2">C++ class Operator2</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Numop2">C++ class Numop2</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		This represents a two-input operator. 
 		Such an object contains four functions for each T, where 
-		T is one of the types uint8, int16, int32, float32. <br><b>method</b>&nbsp;map <b>(</b><i>integer</i> n<b>, </b><i>T *</i> as<b>, </b><i>T</i> b<b>)</b>     
+		T is one of the types uint8, int16, int32, float32. <br><b>method</b>&nbsp;map <b>(</b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>T</i> b<b>)</b>     
 			for i in 0...n, 
 			as[i] := f(as[i],b); 
 			This is like [@] with a scalar righthand <br>
- <br><b>method</b>&nbsp;zip <b>(</b><i>integer</i> n<b>, </b><i>T *</i> as<b>, </b><i>T *</i> bs<b>)</b>     
+ <br><b>method</b>&nbsp;zip <b>(</b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>     
 			for i in 0...n, 
 			as[i] := f(as[i],bs[i]); 
 			bs is not modified. 
 			(This is like [@] with a nonscalar righthand) <br>
- <br><b>method</b>&nbsp;fold <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>T *</i> as<b>, </b><i>T *</i> bs<b>)</b>      <p> 
+ <br><b>method</b>&nbsp;fold <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>      <p> 
 			for i in 0...n, 
 			for j in 0...an, 
 			as[j] := f(as[j],bs[i*an+j]); </p> 
 			(this is like @fold) <br>
- <br><b>method</b>&nbsp;scan <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>T *</i> as<b>, </b><i>T *</i> bs<b>)</b>      <p> for j in 0...an: bs[j] := f(as[j],bs[j]); </p> <p> for i in 1...n: for j in 0...an: 
+ <br><b>method</b>&nbsp;scan <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>      <p> for j in 0...an: bs[j] := f(as[j],bs[j]); </p> <p> for i in 1...n: for j in 0...an: 
 				bs[j] := f(bs[(i-1)*an+j],bs[i*an+j]); </p> 
 			(this is like @scan) <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
@@ -167,12 +167,9 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.3 Documentation<br>
-by Mathieu Bouchard
+GridFlow 0.8.0 Documentation<br>
+Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
-and<br>
-Alexandre Castonguay
-<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
 
