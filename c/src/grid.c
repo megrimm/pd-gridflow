@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "grid.h"
 
-FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&,class_) };
+FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 
 #define INFO(_self_) \
 	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
@@ -348,15 +348,18 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	define_many_methods(class,ARRAY(methods));
 }
 
-/* **************** FileFormatClass ******************************* */
+/* **************** Format **************************************** */
 
-FileFormatClass *FileFormatClass_find(const char *name) {
+
+/* **************** FormatClass *********************************** */
+
+FormatClass *FormatClass_find(const char *name) {
 	int i;
-	for (i=0; i<COUNT(file_format_classes); i++) {
+	for (i=0; i<COUNT(format_classes); i++) {
 		/* whine("comparing `%s' with `%s'", name,
-			file_format_classes[i]->symbol_name); */
-		if (strcmp(file_format_classes[i]->symbol_name,name)==0) {
-			return file_format_classes[i];
+			format_classes[i]->symbol_name); */
+		if (strcmp(format_classes[i]->symbol_name,name)==0) {
+			return format_classes[i];
 		}
 	}
 	return 0; /* fail */

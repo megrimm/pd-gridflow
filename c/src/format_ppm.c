@@ -26,15 +26,15 @@
 #include <string.h>
 #include <errno.h>
 
-extern FileFormatClass class_FormatPPM;
+extern FormatClass class_FormatPPM;
 
-typedef FileFormat FormatPPM;
+typedef Format FormatPPM;
 
-bool FormatPPM_frame (FileFormat *$, GridOutlet *out, int frame) {
+bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 	char buf[256];
 	int metrics[6],n=0;
 
-	if (frame != -1) return 0;
+	if (frame!=-1) return 0;
 	fgets(buf,256,$->bstream);
 	if (feof($->bstream)) {
 		fseek($->bstream,0,SEEK_SET);
@@ -110,13 +110,13 @@ GRID_END(FormatPPM,0) {
 	fseek($->bstream,0,SEEK_SET);
 }
 
-void FormatPPM_close (FileFormat *$) {
+void FormatPPM_close (Format *$) {
 	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-FileFormat *FormatPPM_open (FileFormatClass *qlass, const char *filename, int mode) {
-	FileFormat *$ = NEW(FileFormat,1);
+Format *FormatPPM_open (FormatClass *qlass, const char *filename, int mode) {
+	Format *$ = NEW(Format,1);
 	$->cl     = &class_FormatPPM;
 
 	$->stream = 0;
@@ -138,10 +138,10 @@ err:
 	return 0;
 }
 
-FileFormatClass class_FormatPPM = {
+FormatClass class_FormatPPM = {
 	symbol_name: "ppm",
 	long_name: "Portable PixMap",
-	flags: (FileFormatFlags)0,
+	flags: (FormatFlags)0,
 
 	open: FormatPPM_open,
 	connect: 0,

@@ -42,7 +42,7 @@
 
 typedef struct VideoOutFile {
 	GridObject_FIELDS;
-	FileFormat *ff; /* a file writer object */
+	Format *ff; /* a file writer object */
 } VideoOutFile;
 
 /* ---------------------------------------------------------------- */
@@ -61,7 +61,7 @@ GRID_BEGIN(VideoOutFile,0) {
 }
 
 GRID_FLOW(VideoOutFile,0) {
-	FileFormat *f = $->ff;
+	Format *f = $->ff;
 	CHECK_FILE_OPEN
 	$->ff->cl->flow($->ff, in, n, data);
 }
@@ -90,7 +90,7 @@ METHOD(VideoOutFile,close) {
 METHOD(VideoOutFile,open) {
 	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
 	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
-	FileFormatClass *qlass = FileFormatClass_find(format);
+	FormatClass *qlass = FormatClass_find(format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -111,7 +111,7 @@ METHOD(VideoOutFile,open) {
 METHOD(VideoOutFile,connect) {
 	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
 	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
-	FileFormatClass *qlass = FileFormatClass_find(format);
+	FormatClass *qlass = FormatClass_find(format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
