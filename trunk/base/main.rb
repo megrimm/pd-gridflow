@@ -332,14 +332,15 @@ def GridFlow.macerr(i)
 		"Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers/"+
 		"MacErrors.h")
 		while f.gets
-			m = /^\s*(\w+)\s*=\s*(-\d+),\s*\/\*\s*(.*)\s*\*\/$/.match $_
+			m = /^\s*(\w+)\s*=\s*(-\d+),\s*\/\*\s*(.*)\s*\*\/$/ \
+				.match $_
 			next if not m
 			if m[2].to_i == i then
-				return m[3]
+				return "#{m[2]}: \"#{m[3]}\""
 			end
 		end
 		return "no error message available for this error number"
-	rescue
+	rescue FileError
 		return "Can't find Apple's precious copyrighted "+
 		"list of error messages on this system."
 	ensure
