@@ -34,6 +34,7 @@ struct FormatQuickTime : Format {
 	DECL3(close);
 	DECL3(frame);
 //	DECL3(seek);
+	GRINLET3(0);
 };
 
 METHOD3(FormatQuickTime,frame) {

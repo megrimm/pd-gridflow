@@ -101,7 +101,6 @@ void Bridge_export_Ruby(Ruby arg, fts_atom_t *at) {
 		fts_set_int(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
 		const char *name = rb_sym_name(arg);
-		/*fprintf(stderr,"1: %s\n",name);*/
 		fts_set_symbol(at,fts_new_symbol_copy(name));
 	} else if (FLOAT_P(arg)) {
 		fts_set_float(at,RFLOAT(arg)->value);
@@ -218,7 +217,7 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 }
 
 static void BFObject_delete$1 (kludge *k) {
-	fprintf(stderr,"BFObject_delete$1 says hello %08x\n",(int)k->$);
+	//fprintf(stderr,"BFObject_delete$1 says hello %08x\n",(int)k->$);
 	rb_funcall(k->$->peer,SI(delete),0);
 }
 

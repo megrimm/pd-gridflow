@@ -243,6 +243,7 @@ struct FormatVideoDev : Format {
 	DECL3(frequency);
 	DECL3(transfer);
 	DECL3(init2);
+	GRINLET3(0);
 };
 
 #define IOCTL(_f_,_name_,_arg_) \

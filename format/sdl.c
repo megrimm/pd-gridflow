@@ -45,6 +45,7 @@ struct FormatSDL : Format {
 
 	DECL3(init);
 	DECL3(close);
+	GRINLET3(0);
 };
 
 void FormatSDL::resize_window (int sx, int sy) {
@@ -57,14 +58,14 @@ GRID_BEGIN(FormatSDL,0) {
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 	int sxc = in->dim->prod(1);
-	int sx = in->dim->get(1), osx = $->dim->get(1);
-	int sy = in->dim->get(0), osy = $->dim->get(0);
+	int sx = in->dim->get(1), osx = dim->get(1);
+	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_factor(sxc);
-//	if (sx!=osx || sy!=osy) $->resize_window(sx,sy);
+//	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 }
 
 GRID_FLOW(FormatSDL,0) {
-	int bypl = $->screen->pitch;
+	int bypl = screen->pitch;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
@@ -72,28 +73,28 @@ GRID_FLOW(FormatSDL,0) {
 	assert((in->dex % sxc) == 0);
 	assert((n       % sxc) == 0);
 
-	if (SDL_MUSTLOCK($->screen)) {
-		if (SDL_LockSurface($->screen) < 0) return; //???
+	if (SDL_MUSTLOCK(screen)) {
+		if (SDL_LockSurface(screen) < 0) return; //???
 	}
 
 	while (n>0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		$->bit_packing->pack(sx, data, $->pixels()+y*bypl);
+		bit_packing->pack(sx, data, pixels()+y*bypl);
 		y++;
 		data += sxc;
 		n -= sxc;
 	}
 
-    if (SDL_MUSTLOCK($->screen)) {
-        SDL_UnlockSurface($->screen);
+    if (SDL_MUSTLOCK(screen)) {
+        SDL_UnlockSurface(screen);
     }
 }
 
 GRID_END(FormatSDL,0) {
 	int sy = in->dim->get(0);
 	int sx = in->dim->get(1);
-    SDL_UpdateRect($->screen, 0, 0, sx, sy);
+    SDL_UpdateRect(screen, 0, 0, sx, sy);
 }
 
 METHOD3(FormatSDL,close) {

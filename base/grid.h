@@ -150,17 +150,8 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
   all its variants should be merged together eventually...
 */
 
-#define METHOD(_class_,_name_) \
-	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
-	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); \
-		return _class_##_##_name_($,argc,argv); } \
-	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
-
 #define DECL(_class_,_name_) \
 	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
-
-/* same, C++ style */
 
 #define DECL3(_name_) \
 	Ruby _name_(int argc, Ruby *argv);
@@ -507,16 +498,51 @@ typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
-#define  GRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Pt<Number>data)
-#define   GRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
-#define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
-#define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
-#define   GRID_END(_cl_,_inlet_) static   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
-typedef GRID_BEGIN_(GridObject,(*GridBegin));
-typedef  GRID_FLOW_(GridObject,(*GridFlow));
-typedef   GRID_END_(GridObject,(*GridEnd));
+#define CGRID_BEGIN_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
+#define  CGRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Pt<Number>data)
+#define   CGRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
+#define CGRID_BEGIN(_cl_,_inlet_) static CGRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
+#define  CGRID_FLOW(_cl_,_inlet_) static  CGRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
+#define   CGRID_END(_cl_,_inlet_) static   CGRID_END_(_cl_,_cl_##_##_inlet_##_end)
+typedef CGRID_BEGIN_(GridObject,(*GridBegin));
+typedef  CGRID_FLOW_(GridObject,(*GridFlow));
+typedef   CGRID_END_(GridObject,(*GridEnd));
 
+#define CGRINLET(_class_,_winlet_,_mode_) {_winlet_,\
+	((GridBegin)_class_##_##_winlet_##_begin), \
+	 ((GridFlow)_class_##_##_winlet_##_flow), \
+	  ((GridEnd)_class_##_##_winlet_##_end), _mode_ }
+
+/* C++ */
+
+#define GRID_BEGIN_(_name_) void _name_(GridInlet *in)
+#define  GRID_FLOW_(_name_) void _name_(GridInlet *in, int n, Pt<Number>data)
+#define   GRID_END_(_name_) void _name_(GridInlet *in)
+
+#define GRID_BEGIN(_cl_,_inlet_) \
+	static void _cl_##__##_inlet_##_begin(_cl_ *$, GridInlet *in) { \
+		$->_##_inlet_##_begin(in); } \
+	GRID_BEGIN_(_cl_::_##_inlet_##_begin)
+
+#define  GRID_FLOW(_cl_,_inlet_) \
+	static void _cl_##__##_inlet_##_flow(_cl_ *$, GridInlet *in, int n, Pt<Number> data) { \
+		$->_##_inlet_##_flow(in,n,data); } \
+	 GRID_FLOW_(_cl_::_##_inlet_##_flow)
+
+#define   GRID_END(_cl_,_inlet_) \
+	static void _cl_##__##_inlet_##_end(_cl_ *$, GridInlet *in) { \
+		$->_##_inlet_##_end(in); } \
+	  GRID_END_(_cl_::_##_inlet_##_end)
+
+#define GRINLET3(_inlet_) \
+	GRID_BEGIN_(_##_inlet_##_begin); \
+	 GRID_FLOW_(_##_inlet_##_flow); \
+	  GRID_END_(_##_inlet_##_end);
+
+#define GRINLET(_class_,_winlet_,_mode_) {_winlet_,\
+	((GridBegin)&_class_##__##_winlet_##_begin), \
+	 ((GridFlow)&_class_##__##_winlet_##_flow), \
+	  ((GridEnd)&_class_##__##_winlet_##_end), _mode_ }
 
 typedef struct GridHandler {
 	int       winlet;
@@ -574,12 +600,6 @@ typedef struct GridClass {
 } GridClass;
 
 #define LIST(args...) args
-
-/* should merge those two together */
-#define GRINLET(_class_,_winlet_,_mode_) {_winlet_,\
-	((GridBegin)_class_##_##_winlet_##_begin), \
-	 ((GridFlow)_class_##_##_winlet_##_flow), \
-	  ((GridEnd)_class_##_##_winlet_##_end), _mode_ }
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware outlet */

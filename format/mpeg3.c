@@ -34,6 +34,7 @@ struct FormatMPEG3 : Format {
 	DECL3(seek);
 	DECL3(frame);
 	DECL3(close);
+	GRINLET3(0);
 };
 
 METHOD3(FormatMPEG3,seek) {
