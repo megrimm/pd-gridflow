@@ -203,7 +203,7 @@ void Dict_del(Dict *$, void *k) {
 	}
 }
 
-/* you must not modify the hash during this operation */
+/* you must not modify the hash key set during this operation */
 void Dict_each(Dict *$, void (*proc)(void*,void*,void*), void *data) {
 	int i;
 //	printf("hello.\n");
