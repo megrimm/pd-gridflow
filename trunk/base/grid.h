@@ -149,7 +149,8 @@ typedef double float64;
 typedef /*volatile*/ VALUE Ruby;
 
 /* three-way comparison */
-static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
+template <class T> /* where T is comparable */
+static inline T cmp(T a, T b) { return a < b ? -1 : a > b; }
 
 /*
   a remainder function such that div2(a,b)*b+mod(a,b) = a
@@ -166,9 +167,13 @@ static inline int div2(int a, int b) {
 	return (a/b)-(c&&!!(a%b));
 }
 
+static inline int32   abs(  int32 a) { return  abs(a); }
+static inline float32 abs(float32 a) { return fabs(a); }
+
 /* integer powers in log(b) time */
-static inline int ipow(int32 a, uint32 b) {
-	int32 r=1;
+template <class T> /* where T is integral type */
+static inline T ipow(T a, T b) {
+	T r=1;
 	while(1) {
 		if (b&1) r*=a;
 		b>>=1;
@@ -177,13 +182,20 @@ static inline int ipow(int32 a, uint32 b) {
 	}
 }	
 
+/* kludge */
+static inline float32 ipow(float32 a, float32 b) { return pow(a,b); }
+
 #undef min
 #undef max
 
 /* minimum/maximum functions */
 
-static inline int min(int a, int b) { return a<b?a:b; }
-static inline int max(int a, int b) { return a>b?a:b; }
+template <class T> /* where T is comparable */
+static inline T min(T a, T b) { return a<b?a:b; }
+
+template <class T> /* where T is comparable */
+static inline T max(T a, T b) { return a>b?a:b; }
+
 /*
 static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
@@ -448,10 +460,6 @@ NumberTypeIndex NumberType_find (Ruby sym);
 
 template <class T>
 struct Operator1On {
-/*
-	bool has_neutral;
-	T neutral;
-*/
 	void   (*op_map)(int,T*);
 };
 
@@ -459,14 +467,12 @@ struct Operator1 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	Operator1On<int32> on_int32;
+	Operator1On<uint8> on_uint8;
+	Operator1On<float32> on_float32;
 };
 
 template <class T>
 struct Operator2On {
-/*
-	bool has_neutral;
-	Number neutral;
-*/
 	void (*op_map)(int,T*,T);
 	void (*op_zip)(int,T*,T*);
 	T    (*op_fold)(T,int,T*);
@@ -479,6 +485,8 @@ struct Operator2 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	Operator2On<int32> on_int32;
+	Operator2On<uint8> on_uint8;
+	Operator2On<float32> on_float32;
 };
 
 extern NumberType number_type_table[];

@@ -226,6 +226,86 @@ Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
 }
 
 /* ---------------------------------------------------------------- */
+/* C++<->Ruby bridge for classes/functions in base/number.c */
+
+static Ruby String_swap32_f (Ruby rself) {
+	int n = rb_str_len(rself)/4;
+	swap32(n,Pt<uint32>((uint32 *)rb_str_ptr(rself),n));
+	return rself;
+}
+
+static Ruby String_swap16_f (Ruby rself) {
+	int n = rb_str_len(rself)/2;
+	swap16(n,Pt<uint16>((uint16 *)rb_str_ptr(rself),n));
+	return rself;
+}
+
+/* **************************************************************** */
+
+METHOD3(BitPacking,initialize) {
+	return Qnil;
+}
+
+METHOD3(BitPacking,pack2) {
+	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
+	int n = rb_str_len(argv[0]) / sizeof(int32) / size;
+	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
+	int bytes2 = n*bytes;
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
+	rb_str_modify(out);
+	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
+	return out;
+}
+
+METHOD3(BitPacking,unpack2) {
+	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
+	int n = rb_str_len(argv[0]) / bytes;
+	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
+	int bytes2 = n*size*sizeof(int32);
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
+	rb_str_modify(out);
+	memset(rb_str_ptr(out),255,n*4*size);
+	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
+//	memcpy(rb_str_ptr(out),in,n);
+	return out;
+}
+
+void BitPacking_free (void *foo) {}
+
+static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
+	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
+	BitPacking *c_peer;
+
+	if (argc!=3) RAISE("bad args");
+	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
+
+	int endian = INT(argv[0]);
+	int bytes = INT(argv[1]);
+	Ruby *masks = rb_ary_ptr(argv[2]);
+	uint32 masks2[4];
+	int size = rb_ary_len(argv[2]);
+	if (size<1) RAISE("not enough masks");
+	if (size>4) RAISE("too many masks (%d)",size);
+	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
+	c_peer = new BitPacking(endian,bytes,size,masks2);
+	
+	Ruby rself = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
+	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) */
+	rb_funcall2(rself,SI(initialize),argc,argv);
+	return rself;
+}
+
+GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
+LIST(),
+	DECL(BitPacking,initialize),
+	DECL(BitPacking,pack2),
+	DECL(BitPacking,unpack2));
+
+
+
+/* ---------------------------------------------------------------- */
 /* The setup part */
 
 #define DECL_SYM2(_sym_) Ruby sym_##_sym_ = 0xDeadBeef;
@@ -394,6 +474,15 @@ void Init_gridflow () {
 	if (rb_respond_to(rb_cData,bi)) {
 		rb_funcall(rb_cData,bi,1,PTR2FIX(&gf_bridge));
 	}
+
+	Ruby cBitPacking =
+		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
+	define_many_methods(cBitPacking,
+		ciBitPacking.methodsn,
+		ciBitPacking.methods);
+	SDEF(BitPacking,new,-1);
+	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
+	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
 
 	/* run startup of every source file */
 
