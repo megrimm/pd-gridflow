@@ -103,13 +103,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		Pt<type> p = (Pt<type>)*this; \
 		for (int i=0; i<n; i++) p[i] = INT(a[i]); \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }
-		switch (nt) {
-		case uint8_type_i: FOO(uint8); break;
-		case int16_type_i: FOO(int16); break;
-		case int32_type_i: FOO(int32); break;
-		case float32_type_i: FOO(float32); break;
-		default: RAISE("argh");
-		}
+		TYPESWITCH(nt,FOO,)
 #undef FOO		
 }
 
@@ -179,20 +173,9 @@ void GridInlet::set_factor(int factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
-/*
-	switch (self->nt) {
-	case uint8_type_i: self->gh->flow(self,-1,Pt<uint8>()); break;
-	case int16_type_i: self->gh->flow(self,-1,Pt<int16>()); break;
-	case int32_type_i: self->gh->flow(self,-1,Pt<int32>()); break;
-	case float32_type_i: self->gh->flow(self,-1,Pt<float32>()); break;
-	default: RAISE("argh");
-	}
-*/
-
-#define FOO(T) case T##_type_i: self->gh->flow(self,-1,Pt<T>()); break;
-	switch (self->nt) { FOO(uint8) FOO(int16) FOO(int32) FOO(float32)
-	default: RAISE("argh");}
-
+#define FOO(T) self->gh->flow(self,-1,Pt<T>()); break;
+	TYPESWITCH(self->nt,FOO,)
+#undef FOO
 	return Qnil;
 }
 
@@ -202,13 +185,9 @@ static Ruby GridInlet_begin_2(GridInlet *self) {
 }
 
 bool GridInlet::supports_type(NumberTypeIndex nt) {
-	switch (nt) {
-	case uint8_type_i: return !! gh->flow_uint8;
-	case int16_type_i: return !! gh->flow_int16;
-	case int32_type_i: return !! gh->flow_int32;
-	case float32_type_i: return !! gh->flow_float32;
-	default: return false;
-	}
+#define FOO(T) return !! gh->flow_##T;
+	TYPESWITCH(nt,FOO,return false)
+#undef FOO
 }
 
 void GridInlet::begin(int argc, Ruby *argv) {
@@ -339,13 +318,9 @@ void GridInlet::end() {
 	}
 	LEAVE(sender);
 	ENTER(parent);
-	switch (nt) {
-	case uint8_type_i: gh->flow(this,-2,Pt<uint8>()); break;
-	case int16_type_i: gh->flow(this,-2,Pt<int16>()); break;
-	case int32_type_i: gh->flow(this,-2,Pt<int32>()); break;
-	case float32_type_i: gh->flow(this,-2,Pt<float32>()); break;
-	default: RAISE("argh");
-	}
+#define FOO(T) gh->flow(this,-2,Pt<T>());
+	TYPESWITCH(nt,FOO,)
+#undef FOO
 	LEAVE(parent);
 	ENTER(sender);
 	if (dim) {delete dim; dim=0;}
@@ -407,13 +382,9 @@ void GridInlet::grid(Grid *g) {
 		RAISE("%s: number type %s not supported here",
 			parent->info(), number_type_table[g->nt].name);
 
-	switch (g->nt) {
-	case uint8_type_i: grid2(g,(uint8)0); break;
-	case int16_type_i: grid2(g,(int16)0); break;
-	case int32_type_i: grid2(g,(int32)0); break;
-	case float32_type_i: grid2(g,(float32)0); break;
-	default: RAISE("argh");
-	}
+#define FOO(T) grid2(g,(T)0);
+	TYPESWITCH(g->nt,FOO,)
+#undef FOO
 }
 
 void GridInlet::list(int argc, Ruby *argv) {
@@ -500,13 +471,9 @@ void GridOutlet::flush() {
 	TRACE;
 	if (!bufi) return;
 //	fprintf(stderr,"%s, %s\n", buf.dim->to_s(), number_type_table[buf.nt].name);
-	switch(buf.nt) {
-	case uint8_type_i: send_direct(bufi,(Pt<uint8>)buf); break;
-	case int16_type_i: send_direct(bufi,(Pt<int16>)buf); break;
-	case int32_type_i: send_direct(bufi,(Pt<int32>)buf); break;
-	case float32_type_i: send_direct(bufi,(Pt<float32>)buf); break;
-	default: RAISE("argh");
-	}
+#define FOO(T) send_direct(bufi,(Pt<T>)buf);
+	TYPESWITCH(buf.nt,FOO,)
+#undef FOO
 	bufi = 0;
 }
 
@@ -515,13 +482,6 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
-#define SEND_IN_CHUNKS(type) { \
-	STACK_ARRAY(type,data2,bs); \
-	for (;n>=bs;n-=bs,data+=bs) { \
-		convert_number_type(bs,data2,data); send(bs,data2);} \
-	convert_number_type(n,data2,data); \
-	send(n,data2); }
-			
 /* buffering in outlet still is 8x faster...? */
 /* should use BitPacking for conversion...? */
 
@@ -535,13 +495,14 @@ void GridOutlet::send(int n, Pt<T> data) {
 			number_type_table[NumberTypeIndex_type_of(*data)].name,
 			number_type_table[nt].name);
 */
-		switch (nt) {
-		case uint8_type_i:   SEND_IN_CHUNKS(uint8); break;
-		case int16_type_i:   SEND_IN_CHUNKS(int16); break;
-		case int32_type_i:   SEND_IN_CHUNKS(int32); break;
-		case float32_type_i: SEND_IN_CHUNKS(float32); break;
-		default: RAISE("huh?");	
-		}
+#define FOO(T) { \
+	STACK_ARRAY(T,data2,bs); \
+	for (;n>=bs;n-=bs,data+=bs) { \
+		convert_number_type(bs,data2,data); send(bs,data2);} \
+	convert_number_type(n,data2,data); \
+	send(n,data2); }
+		TYPESWITCH(nt,FOO,)
+#undef FOO
 	} else {
 		dex += n;
 		assert(dex <= dim->prod());
@@ -712,13 +673,9 @@ METHOD3(GridObject,send_out_grid_flow) {
 	NumberTypeIndex nt = argc<3 ? int32_type_i : NumberTypeIndex_find(argv[2]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	GridOutlet *go = out[outlet];
-	switch (nt) {
-	case uint8_type_i: send_out_grid_flow_2(go,argv[1],(uint8)0); break;
-	case int16_type_i: send_out_grid_flow_2(go,argv[1],(int16)0); break;
-	case int32_type_i: send_out_grid_flow_2(go,argv[1],(int32)0); break;
-	case float32_type_i: send_out_grid_flow_2(go,argv[1],(float32)0); break;
-	default: RAISE("wham");
-	}
+#define FOO(T) send_out_grid_flow_2(go,argv[1],(T)0);
+	TYPESWITCH(nt,FOO,)
+#undef FOO
 	return Qnil;
 }
 
