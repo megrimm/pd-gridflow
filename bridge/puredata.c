@@ -368,7 +368,6 @@ int *x1, int *y1, int *x2, int *y2) {
 void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	BFObject *bself = (BFObject *)x;
-	post("bf_displacefn dx=%d dy=%d",dx,dy);
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
 	rb_funcall_rescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
@@ -469,41 +468,38 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_help (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=2) RAISE("bad args");
-	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby path = rb_funcall(argv[1],SI(to_s),0);
-	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no such class: %s", rb_str_ptr(name));
+static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
+	path = rb_funcall(path,SI(to_s),0);
+	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
+	if (qlassid==Qnil) RAISE("@bfclass==nil ???");
 	t_class *qlass = FIX2PTR(t_class,qlassid);
 	class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
 	return Qnil;
 }
 
-static Ruby bridge_gui (int argc, Ruby *argv, Ruby rself) {
+static Ruby GridFlow_s_gui (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby command = rb_funcall(argv[0],SI(to_s),0);
 	sys_gui(rb_str_ptr(command));
 	return Qnil;
 }
 
-static Ruby bridge_bind (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=2) RAISE("bad args");
-	if (TYPE(argv[0])==T_STRING) {
+static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
+	if (TYPE(argv0)==T_STRING) {
 #if PD_VERSION_INT < 37
 	RAISE("requires Pd 0.37");
 #else
-		Ruby name = rb_funcall(argv[0],SI(to_s),0);
+		Ruby name = rb_funcall(argv0,SI(to_s),0);
 		Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
 		if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 		t_pd *o = pd_newest();
-		pd_bind(o,gensym(rb_str_ptr(argv[1])));
+		pd_bind(o,gensym(rb_str_ptr(argv1)));
 #endif
 	} else {
-		Ruby rself = argv[0];
+		Ruby rself = argv0;
 		DGS(FObject);
-		t_symbol *s = gensym(rb_str_ptr(argv[1]));
+		t_symbol *s = gensym(rb_str_ptr(argv1));
 		t_pd *o = (t_pd *)(self->bself);
 		//fprintf(stderr,"binding %08x to: \"%s\" (%08x %s)\n",o,rb_str_ptr(argv[1]),s,s->s_name);
 		pd_bind(o,s);
@@ -511,11 +507,13 @@ static Ruby bridge_bind (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_setwidget (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=1) RAISE("bad args");
-	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
+static Ruby FObject_s_gui_enable (Ruby rself) {
+	rb_p(rself);
+	//RAISE("BORK!");
+	//Ruby fcset = rb_ivar_get(mGridFlow2,SI(@fclasses_set));
+	//Ruby qlassid = rb_ivar_get(rb_hash_aref(fcset,name),SI(@bfclass));
+	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
+	//if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 	t_widgetbehavior *wb = new t_widgetbehavior;
 	wb->w_getrectfn    = bf_getrectfn;
 	wb->w_displacefn   = bf_displacefn;
@@ -530,13 +528,10 @@ static Ruby bridge_setwidget (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_addinlets (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=2) RAISE("bad args");
-	FObject *self;
-	Data_Get_Struct(argv[0],FObject,self);
-	self->check_magic();
+static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
+	DGS(FObject);
 	if (!self->bself) RAISE("there is no bself");
-	int n = INT(argv[1]);
+	int n = INT(n_);
 	for (int i=self->bself->nin; i<self->bself->nin+n; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
 		p->parent = self->bself;
@@ -547,13 +542,10 @@ static Ruby bridge_addinlets (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_addoutlets (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=2) RAISE("bad args");
-	FObject *self;
-	Data_Get_Struct(argv[0],FObject,self);
-	self->check_magic();
+static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
+	DGS(FObject);
 	if (!self->bself) RAISE("there is no bself");
-	int n = INT(argv[1]);
+	int n = INT(n_);
 	t_outlet **oldouts = self->bself->out;
 	self->bself->out = new t_outlet*[self->bself->nout+n];
 	memcpy(self->bself->out,oldouts,self->bself->nout*sizeof(t_outlet*));
@@ -564,7 +556,7 @@ static Ruby bridge_addoutlets (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_addtomenu (int argc, Ruby *argv, Ruby rself) {
+static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
 	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
@@ -573,44 +565,31 @@ static Ruby bridge_addtomenu (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby bridge_addcreator (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=1) RAISE("bad args");
-	t_symbol *s = gensym(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0)));
-	class_addcreator((t_newmethod)BFObject_init,s,A_GIMME,0);
+static Ruby GridFlow_s_add_creator (Ruby name_) {
+	t_symbol *name = gensym(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
+	class_addcreator((t_newmethod)BFObject_init,name,A_GIMME,0);
 	return Qnil;
 }
 
-static Ruby bridge_getpos (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=2) RAISE("bad args");
-	FObject *self;
-	Data_Get_Struct(argv[0],FObject,self);
-	self->check_magic();
+static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
+	DGS(FObject);
 	t_text *bself = (t_text *)(self->bself);
-	t_glist *glist = FIX2PTR(t_glist,argv[1]);
+	t_glist *c = FIX2PTR(t_glist,canvas);
 	float x0,y0;
-	if (glist->gl_havewindow || !glist->gl_isgraph) {
+	if (c->gl_havewindow || !c->gl_isgraph) {
 		x0=bself->te_xpix;
 		y0=bself->te_ypix;
 	}
-	else {
-		x0 = glist_xtopixels(glist, glist->gl_x1 + (glist->gl_x2 - glist->gl_x1) * 
-            	bself->te_xpix / (glist->gl_screenx2 - glist->gl_screenx1));
-		y0 = glist_ytopixels(glist, glist->gl_y1 + (glist->gl_y2 - glist->gl_y1) * 
-            	bself->te_ypix / (glist->gl_screeny2 - glist->gl_screeny1));
+	else { // graph-on-parent: have to zoom
+		float zx = float(c->gl_x2 - c->gl_x1) / (c->gl_screenx2 - c->gl_screenx1);
+		float zy = float(c->gl_y2 - c->gl_y1) / (c->gl_screeny2 - c->gl_screeny1);
+		x0 = glist_xtopixels(c, c->gl_x1 + bself->te_xpix*zx);
+		y0 = glist_ytopixels(c, c->gl_y1 + bself->te_ypix*zy);
 	}
 	Ruby a = rb_ary_new();
 	rb_ary_push(a,INT2NUM((int)x0));
 	rb_ary_push(a,INT2NUM((int)y0));
 	return a;
-}
-
-// additional bridge-specific functionality
-static Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
-	if (argc==0) RAISE("BLEH");
-#define DEMUX(sym) if (argv[0]==SYM(sym)) return bridge_##sym(argc-1,argv+1,rself); else
-	DEMUX(help) DEMUX(gui) DEMUX(bind) DEMUX(setwidget) DEMUX(addinlets) DEMUX(addoutlets)
-	DEMUX(addtomenu) DEMUX(addcreator) DEMUX(getpos)
-	{RAISE("don't know how to do that (%s)",rb_sym_name(argv[0]));}
 }
 
 static t_clock *gf_alarm;
@@ -658,12 +637,23 @@ Ruby GridFlow_post_string (Ruby rself, Ruby string) {
 Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
-	rb_define_singleton_method(EVAL("GridFlow::FObject"),"install2",(RMethod)FObject_s_install2,1);
-	rb_define_method(EVAL("GridFlow::FObject"),"send_out2",(RMethod)FObject_send_out2,-1);
+	Ruby fo = EVAL("GridFlow::FObject");
+	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
+	rb_define_singleton_method(fo,"gui_enable", (RMethod)FObject_s_gui_enable, 0);
+	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
+	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
+	rb_define_method(fo,"send_out2",(RMethod)FObject_send_out2,-1);
+	rb_define_method(fo,"send_out2",(RMethod)FObject_send_out2,-1);
+	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
+	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
+	
 	SDEF2("clock_tick",GridFlow_clock_tick,0);
 	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
 	SDEF2("post_string",GridFlow_post_string,1);
-	SDEF2("whatever",bridge_whatever,-1);
+	SDEF2("addcreator2",GridFlow_s_add_creator,-1);
+	SDEF2("gui",GridFlow_s_gui,-1);
+	SDEF2("bind",GridFlow_s_bind,2);
+	// SDEF2("addtomenu",bridge_addtomenu,-1);
 	return Qnil;
 }
 
