@@ -85,11 +85,6 @@ def mkimg(icon,alt=nil)
 		:border, 0)
 end
 
-class DTDParser < XMLParser
-	def elementDecl(*args); print "elementDecl: "; p args; end
-	def attlistDecl(*args); print "attlistDecl: "; p args; end
-end
-
 class XNode
 	# note: in this class, methods starting with "prc_" are specializations
 	# of "print_contents", and starting with "prx_" are specializations of
@@ -346,10 +341,8 @@ class XNode
 			print "</a>"
 		}
 	end
-
 	alias prc_macro prc_class
 	alias prc_enum prc_class
-
 end
 
 class GFDocParser < XMLParser
@@ -382,55 +375,6 @@ class GFDocParser < XMLParser
 			@stack.last << text
 		end
 	end
-
-	def produce x; print x; end
-
-	def begin_p   t,a; produce  "<p>"  end; def end_p t;   produce  "</p>"  end
-	def begin_b   t,a; produce  "<b>"  end; def end_b t;   produce  "</b>"  end
-	def begin_i   t,a; produce  "<i>"  end; def end_i t;   produce  "</i>"  end
-	def begin_u   t,a; produce  "<u>"  end; def end_u t;   produce  "</u>"  end
-	def begin_k   t,a; produce "<kbd>" end; def end_k t;   produce "</kbd>" end
-	def begin_sup t,a; produce "<sup>" end; def end_sup t; produce "</sup>" end
-
-	def begin_list t,a
-		raise "start is missing" if not attrs["start"]
-		@xml_lists << attrs["start"]
-	end
-	def end_list t
-		@xml_lists.pop
-	end
-
-	def begin_li t,a
-		raise "no list" if not @xml_lists.last
-		produce "#{@xml_lists.last}. "
-	end
-	def end_li t
-	end
-
-	def begin_section t,a
-		raise "can't nest sections" if @xml_section
-		raise "name is missing" if not attrs["name"]
-		@xml_section = attrs["name"]
-	end
-	def end_section t
-		@xml_section = nil
-	end
-
-	def begin_method t,a
-	end
-	def end_method t
-	end
-
-	def begin_arg t,a
-	end
-	def end_arg t
-	end
-
-	def begin_icon t,a
-	end
-	def end_icon t
-	end
-
 end
 
 class DocumentTraceParser < XMLParser
