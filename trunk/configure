@@ -467,14 +467,14 @@ def make_makefile f
 end
 
 #--------------------------------#
-p $rubylibdir
+#p $rubylibdir
 =begin
 CONF = Config::MAKEFILE_CONFIG
 CONF['rubylibdir'] = CONF['sitelibdir']
 CONF['archdir'] = CONF['sitearchdir']
 =end
 require "mkmf"
-p $rubylibdir
+#p $rubylibdir
 #--------------------------------#
 puts "generating ./config.make"
 
@@ -559,11 +559,12 @@ puts "",
 ""
 
 #--------------------------------#
+$LOCAL_LIBS = "$(GRIDFLOW_LDSOFLAGS)"
 $objs = $sources.collect{|i| i.sub(/.c$/,".o") }
 dir_config("gridflow")
-p $rubylibdir
+#p $rubylibdir
 create_makefile("gridflow")
-p $rubylibdir
+#p $rubylibdir
 mf = File.readlines("Makefile").join""
 #p mf.length
 mf.gsub!(/-c \$<$/,"-c \$< -o $@")
@@ -580,7 +581,7 @@ f.puts "include Makefile.gf"
 make_makefile f
 f.close
 
-#=begin
+=begin
 for z in [
 :$srcdir,
 :$libdir,
@@ -590,4 +591,4 @@ for z in [
 :$sitelibdir,
 :$sitearchdir,
 ] do puts "#{z} = #{eval z.to_s}" end
-#=end
+=end
