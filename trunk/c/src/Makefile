@@ -29,19 +29,18 @@ LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 ### for hardcore malloc debugging; standalone only
 # LDSOFLAGS += -lefence
 
-$(PACKAGELIB): $(OBJS)
-	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS)
+OBJS1 = $(addprefix $(OBJDIR)/,$(subst .c,.o,$(SOURCES)))
 
-else
-ifeq ($(JMAX_VERSION),none)
+$(PACKAGELIB): $(OBJS1)
+	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
 
-endif #none
+else # JMAX_VERSION = none
 endif #25
 endif #24
 
-### standalone stuff
-include Sources
-OBJS = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
+### standalone stuff ####################################################
+
+OBJS2 = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
 FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 LIB = ../lib2/lib$(PNAME).so
 # LIB2 = /home/matju/lib/$(LIB)
@@ -63,9 +62,9 @@ clean-standalone::
 	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-$(LIB): $(OBJS) ../obj2/nofts.o Makefile
+$(LIB): $(OBJS2) ../obj2/nofts.o Makefile
 	@mkdir -p ../lib2
-	gcc -shared $(OBJS) ../obj2/nofts.o -o $@ $(LDSOFLAGS)
+	gcc -shared $(OBJS2) ../obj2/nofts.o -o $@ $(LDSOFLAGS)
 
 #$(LIB2): $(LIB)
 #	install --mode=755 $(LIB) $(LIB2)
