@@ -24,10 +24,6 @@
 require "socket"
 require "fcntl"
 
-module Errno
-	EWOULDBLOCK = EAGAIN unless const_defined? :EWOULDBLOCK
-end
-
 class IO
   def nonblock= flag
     bit = Fcntl::O_NONBLOCK
@@ -49,7 +45,7 @@ end
 ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
 
 OurByteOrder = case [1].pack("L")
-        when "\0\0\0\1"; ENDIAN_BIG     # Sun, SiliconGraphics
+        when "\0\0\0\1"; ENDIAN_BIG     # Mac, Sun, SiliconGraphics
         when "\1\0\0\0"; ENDIAN_LITTLE  # Intel
         else raise "Cannot determine byte order" end
 
@@ -61,13 +57,33 @@ class Format #< GridObject
 =begin
 	NEW FORMAT API (0.6.x)
 	mode is :in or :out
-	def initialize(mode,*args) : open a file handler (do it via .new of class)
-	def frame() : read one frame, send through outlet 0
-		in 0.7.1 : should return frame number.
-	def seek(Integer i) : select one frame to be read next (by number)
-	def length() : ^Integer number of frames
-	def option(Symbol name, *args) : miscellaneous options
-	def close() : close a handler
+
+	def initialize(mode,*args) :
+		open a file handler (do it via .new of class)
+
+	def frame() :
+		read one frame, send through outlet 0
+
+	def seek(Integer i) :
+		select one frame to be read next (by number)
+
+	def length() : ^Integer
+		returns number of frames (never implemented ?)
+
+	def option(Symbol name, *args) :
+		miscellaneous options
+
+	def close() :
+		close a handler
+
+	AMENDMENT (0.7.1):
+	def frame() now has return values :
+		Integer >= 0 : frame number of frame read.
+		false : no frame was read : end of sequence.
+		nil : a frame was read, but can't say its number.
+	note that trying to read a nonexistent frame should no longer
+	rewind automatically (@in handles that part), nor re-read the
+	last frame (mpeg/quicktime used to do this)
 =end
 
 	def initialize(mode,*)
@@ -95,6 +111,11 @@ class Format #< GridObject
 		nil
 	end
 
+	def seek frame
+		(rewind; return) if frame == 0
+		raise "don't know how to seek for frame other than # 0"
+	end
+
 	# this is what you should use to rewind
 	# different file-sources may redefine this as something else
 	# (eg: gzip)
@@ -104,16 +125,15 @@ class Format #< GridObject
 		@frame = 0
 	end
 
-	# rewind if at end-of-file
-	# using seek because #eof does not work that way
-	# (one read has to fail before the eof flag is set)
-	# don't call this in nonblocking mode!!! (why again?)
-	def rewind_if_needed
+	# This is different from IO#eof, which waits until a read has failed
+	# doesn't work in nonblocking mode? (I don't recall why)
+	def eof?
 		thispos = (@stream.seek 0,IO::SEEK_CUR; @stream.tell)
 		lastpos = (@stream.seek 0,IO::SEEK_END; @stream.tell)
-		(@frame = 0; thispos = 0) if thispos == lastpos
 		@stream.seek thispos,IO::SEEK_SET
+		return thispos == lastpos
 	rescue Errno::ESPIPE # just ignore if seek is not possible
+		return false
 	end
 
 	# "ideal" buffer size or something
@@ -156,7 +176,7 @@ class Format #< GridObject
 	end
 
 	def frame
-		@frame += 1
+		@frame+=1
 		@frame-1
 	end
 end
@@ -177,6 +197,7 @@ module GridIO
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
 		@format.parent = self
+		@loop = true
 	end
 
 	def _0_option(*a)
@@ -184,6 +205,9 @@ module GridIO
 		case a[0]
 		when :timelog
 			@timelog = Integer(a[1])!=0
+		when :loop
+			GridFlow.post "loop = #{a[1]}"
+			@loop = a[1].to_i != 0
 		else
 			@format.option(*a)
 		end
@@ -219,17 +243,21 @@ class GridIn < GridObject
 	def _0_bang
 		check_file_open
 		framenum = @format.frame
-#		(GridFlow.post "warning: frame number is nil"; return) if not framenum
-		return if not framenum
-		send_out 1, framenum
+		if framenum == false
+			send_out 1
+			return if not @loop
+			@format.seek 0
+			framenum = @format.frame
+			if framenum == false
+				raise "can't read frame: the end is at the beginning???"
+			end
+		end
+		send_out 1, framenum if framenum
 	end
 	def _0_int frame
 		check_file_open
 		@format.seek frame
-		framenum = @format.frame
-#		(GridFlow.post "warning: frame number is nil"; return) if not framenum
-		return if not framenum
-		send_out 1, framenum
+		_0_bang
 	end
 	def _0_reset
 		check_file_open
@@ -318,7 +346,7 @@ module EventIO
 #		p "GOT IT"
 		$tasks.delete self
 #		send_out 0, :accept # does not work
-	rescue Errno::EWOULDBLOCK
+	rescue Errno::EAGAIN
 #		p "wouldblock"
 	end
 
@@ -343,7 +371,7 @@ module EventIO
 			action.call buffer
 		end
 #		end#while
-	rescue Errno::EWOULDBLOCK
+	rescue Errno::EAGAIN
 		GridFlow.post "read would block"
 	end
 
@@ -466,7 +494,8 @@ class FormatGrid < Format; include EventIO
 		if read_wait?
 			raise "already waiting for input"
 		end
-		rewind_if_needed
+		return false if eof?
+
 		if @headerless then
 			@n_dim=@headerless.length
 			@dim = @headerless
@@ -625,7 +654,7 @@ class FormatGrid < Format; include EventIO
 	end
 
 	install_rgrid 0
-	install_format "FormatPPM", 1, 1, FF_R|FF_W, "grid", "GridFlow file format"
+	install_format "FormatGrid", 1, 1, FF_R|FF_W, "grid", "GridFlow file format"
 end
 
 module PPMandTarga
@@ -679,7 +708,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 	def frame
 		#@stream.sync = false
 		metrics=[]
-		rewind_if_needed
+		return false if eof?
 		line = @stream.gets
 		(rewind; line = @stream.gets) if not line # hack
 		line.chomp!
@@ -751,7 +780,7 @@ targa header is like:
 	end
 
 	def frame
-		rewind_if_needed
+		return false if eof?
 		head = @stream.read(18)
 		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
 		comment = @stream.read(comment_length)

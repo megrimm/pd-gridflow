@@ -45,6 +45,9 @@ METHOD3(FormatMPEG3,seek) {
 }
 
 METHOD3(FormatMPEG3,frame) {
+	int nframe = mpeg3_get_frame(mpeg,track);
+	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
+
 	GridOutlet *o = out[0];
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
@@ -69,9 +72,6 @@ METHOD3(FormatMPEG3,frame) {
 
 	delete[] (uint8 *)buf;
 
-	long nframe = min(
-		mpeg3_get_frame(mpeg,track),
-		mpeg3_video_frames(mpeg,track));
 	return INT2NUM(nframe);
 }
 
