@@ -808,12 +808,12 @@ end
 	task=proc {
 		o4.send_in 1, 5000*x
 		o5.send_in 1, 200+200*sin(x)
-		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 4+4*cos(.2*x+i*PI*2/3) }
+		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 4+4*cos(0.2*x+i*PI*2/3) }
 		o1.send_in 0
 		store.send_in 0
 # 		store2.send_in 0
 		x+=1
-		if x<1000 then $mainloop.timers.after(.0) {task[]}
+		if x<1000 then $mainloop.timers.after(0.0) {task[]}
 		else GridGlobal.new.send_in 0,"profiler_dump"; exit end
 	}
 	task[]

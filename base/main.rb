@@ -486,7 +486,7 @@ end
 
 def GridFlow.estimate_cpu_clock
 	u0,t0=GridFlow.rdtsc,Time.new.to_f
-	sleep .01
+	sleep 0.01
 	u1,t1=GridFlow.rdtsc,Time.new.to_f
 	(u1-u0)/(t1-t0)
 end
@@ -579,7 +579,7 @@ class FPS < GridObject
 		n=@history.length
 		fps = n/@duration
 		@duration = 0
-		if fps>.001 then
+		if fps>0.001 then
 			if @detailed
 				@history.sort!
 				send_out 0, fps,
@@ -587,7 +587,7 @@ class FPS < GridObject
 					500*(@history[n/2]+@history[(n-1)/2]),
 					1000*@history.max,
 					1000/fps,
-					1000*(@history.moment(2) - @history.moment(1)**2)**.5
+					1000*(@history.moment(2) - @history.moment(1)**2)**0.5
 			else
 				send_out 0, fps
 			end
