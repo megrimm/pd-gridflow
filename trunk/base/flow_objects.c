@@ -980,24 +980,18 @@ struct GridRedim : GridObject {
 };
 
 GRID_BEGIN(GridRedim,0) {
-	int a = in->dim->prod();
-	int b = $->dim->prod();
+	int a = in->dim->prod(), b = $->dim->prod();
 	if (a==0) {
-		/* int v=1; $->dim = new Dim(1,&v); */
 		$->data = NEW2(Number,1);
 		$->data[0] = 0;
 	} else if (a<b) {
-		/* $->dim = in->dim->dup(); */
 		$->data = NEW2(Number,in->dim->prod());
-	} else {
-		/* nothing */
 	}
 	$->out[0]->begin($->dim->dup());
 }
 
 GRID_FLOW(GridRedim,0) {
-	int a = in->dim->prod();
-	int b = $->dim->prod();
+	int a = in->dim->prod(), b = $->dim->prod();
 	int i = in->dex;
 	if ($->data) {
 		int n2 = min(n,a-i);
@@ -1011,8 +1005,7 @@ GRID_FLOW(GridRedim,0) {
 }
 
 GRID_END(GridRedim,0) {
-	int a = in->dim->prod();
-	int b = $->dim->prod();
+	int a = in->dim->prod(), b = $->dim->prod();
 	int i = a;
 	if ($->data) {
 		while (i<b) {
@@ -1241,7 +1234,7 @@ LIST(GRINLET(GridHSVtoRGB,0)),
 
 struct RtMetro : GridObject {
 	int ms; /* millisecond time interval */
-	int on;
+	bool on;
 	uint64 next_time; /* next time an event occurred */
 	uint64 last;
 };
@@ -1254,6 +1247,9 @@ uint64 RtMetro_now(void) {
 
 static void RtMetro_alarm(VALUE rself) {
 	uint64 now = RtMetro_now();
+	unsigned int *r = (unsigned int*)rself;
+//	fprintf(stderr,"%08x\n",(unsigned int)r);
+//	fprintf(stderr,"%08x %08x %08x %08x %08x\n",r[0],r[1],r[2],r[3],r[4]);
 	DGS(RtMetro);
 	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {
@@ -1271,11 +1267,12 @@ METHOD(RtMetro,_0_int) {
 	$->on = !! FIX2INT(argv[0]);
 	whine("on = %d",$->on);
 	if (oon && !$->on) {
-		whine("deleting rtmetro alarm...");
+		whine("deleting rtmetro alarm for $=%08x rself=%08x",(long)$,(long)rself);
 		MainLoop_remove($);
 	} else if (!oon && $->on) {
-		whine("creating rtmetro alarm...");
-		MainLoop_add($,(void(*)(void*))RtMetro_alarm);
+		whine("creating rtmetro alarm for $=%08x rself=%08x",(long)$,(long)rself);
+//		MainLoop_add($,(void(*)(void*))RtMetro_alarm);
+		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}
 }
@@ -1389,7 +1386,7 @@ void startup_flow_objects (void) {
 	INSTALL("@scale_by",   GridScaleBy);
 	INSTALL("@rgb_to_hsv", GridRGBtoHSV); /* buggy */
 	INSTALL("@hsv_to_rgb", GridHSVtoRGB); /* buggy */
-	INSTALL("@rtmetro",    RtMetro);
+	INSTALL("rtmetro",     RtMetro);
 	INSTALL("@global",     GridGlobal);
 }
 
