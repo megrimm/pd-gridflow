@@ -285,10 +285,8 @@ class GridPack < GridObject
 		@data=[0]*n
 	end
 	def initialize2
-		if self.class==GridPack then
-			GridFlow.whatever :addinlets, self, @data.length-1
-		end
-
+		return if self.class!=GridPack
+		GridFlow.whatever :addinlets, self, @data.length-1
 	end
 	def self.define_inlet i
 		module_eval "
@@ -311,6 +309,21 @@ class GridTwo   < GridPack; install_rgrid 0; install "@two",   2, 1 end
 class GridThree < GridPack; install_rgrid 0; install "@three", 3, 1 end
 class GridFour  < GridPack; install_rgrid 0; install "@four",  4, 1 end
 class GridEight < GridPack; install_rgrid 0; install "@eight", 8, 1 end
+
+### actually this is like [@export_list] -> [unpack]
+#class GridUnpack < GridObject
+#  def initialize(n)
+#    @n=n
+#    n>=16 and raise "too many outlets"
+#    super
+#  end
+#  def _0_rgrid_begin
+#    @dim = inlet_dim 0
+#    ...
+#  end
+#  install_rgrid 0
+#  install "@unpack", 1, 1
+#end
 
 class GridExportSymbol < GridObject
 	def _0_rgrid_begin; @data="" end
