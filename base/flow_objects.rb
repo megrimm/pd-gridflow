@@ -302,11 +302,8 @@ class GridPack < GridObject
 	(0...15).each {|x| define_inlet x }
 	def _0_bang
 		send_out_grid_begin 0, [@data.length], @cast
-		GridFlow.post "packing @data=%s", @data.inspect
-		GridFlow.post "  with @cast=%s @ps=%s", @cast, @ps
 		duhta = @data.pack(@ps)
-		GridFlow.post "duhta=%s", duhta.inspect
-		send_out_grid_flow 0, duhta
+		send_out_grid_flow 0, duhta, @cast
 	end
 	install_rgrid 0
 	install "#pack", 1, 1
