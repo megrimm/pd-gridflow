@@ -84,8 +84,7 @@ static inline void NUM(Ruby x, S &y) { \
 EACH_FLOAT_TYPE(FOO)
 #undef FOO
 
-void Grid::init_from_ruby_list(int n, Ruby *a) {
-		NumberTypeE nt = int32_type_i;
+void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 		int dims = 1;
 		Ruby delim = SYM(#);
 		del();
@@ -380,8 +379,8 @@ void GridInlet::from_grid(Grid *g) {
 #undef FOO
 }
 
-void GridInlet::from_ruby_list(int argc, Ruby *argv) {
-	Grid t;	t.init_from_ruby_list(argc,argv); from_grid(&t);
+void GridInlet::from_ruby_list(int argc, Ruby *argv, NumberTypeE nt) {
+	Grid t;	t.init_from_ruby_list(argc,argv,nt); from_grid(&t);
 }
 
 void GridInlet::from_ruby(int argc, Ruby *argv) {
