@@ -41,6 +41,14 @@ typedef struct Dest {
 	int inlet;
 } Dest;
 
+typedef struct MethodDecl2 {
+	int winlet;
+	const char *selector;
+	void (*method)(METHOD_ARGS(fts_object_t));
+	const char *signature;
+	Symbol selector2;
+} MethodDecl2;
+
 static symbol_entry_t *symbols;
 static int symbols_n = 0;
 

@@ -32,8 +32,8 @@ typedef struct GridScaleBy {
 
 GRID_BEGIN(GridScaleBy,0) {
 	Dim *a = in->dim;
-	if (Dim_count(a)!=3) {whine("(height,width,chans) please"); return false;}
-	if (Dim_get(a,2)!=3) {whine("3 chans please"); return false;}
+	if (Dim_count(a)!=3) RAISE("(height,width,chans) please");
+	if (Dim_get(a,2)!=3) RAISE("3 chans please");
 	{
 		int v[3]={ Dim_get(a,0)*2, Dim_get(a,1)*2, Dim_get(a,2) };
 		GridOutlet_begin($->out[0],Dim_new(3,v));
@@ -77,13 +77,12 @@ METHOD(GridScaleBy,init) {
 
 METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridScaleBy) {
-	MethodDecl methods[] = { 
-		DECL(GridScaleBy,-1,init,  "s"),
-		DECL(GridScaleBy,-1,delete,""),
-	};
+CLASS(GridScaleBy,
+	DECL(GridScaleBy,-1,init,  "s"),
+	DECL(GridScaleBy,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridScaleBy), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridScaleBy_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }

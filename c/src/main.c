@@ -52,10 +52,6 @@ FILE *whine_f;
 #define DECL_SYM2(_sym_) \
 	Symbol sym_##_sym_ = (Symbol) 0xDeadBeef;
 
-DECL_SYM2(open)
-DECL_SYM2(close)
-DECL_SYM2(reset)
-DECL_SYM2(autodraw)
 DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
 DECL_SYM2(grid_flow2)
@@ -104,10 +100,6 @@ void gridflow_module_init (void) {
 	#define DEF_SYM(_sym_) \
 		sym_##_sym_ = fts_new_symbol(#_sym_);
 
-	DEF_SYM(open);
-	DEF_SYM(close);
-	DEF_SYM(reset);
-	DEF_SYM(autodraw);
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
 	DEF_SYM(grid_flow2);
@@ -301,7 +293,7 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 		}
 		fts_method_define_optargs(class,
 			md->winlet == -1 ? fts_SystemInlet : md->winlet,
-			md->selector, md->method,
+			fts_new_symbol(md->selector), md->method,
 			n_args, args, min_args == -1 ? n_args : min_args);
 	}
 }
