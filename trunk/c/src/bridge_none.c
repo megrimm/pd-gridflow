@@ -76,14 +76,15 @@ bool Var_has_float( const Var *$) {return $->type == fts_t_float;}
 bool Var_has_symbol(const Var *$) {return $->type == fts_t_symbol;}
 bool Var_has_ptr(   const Var *$) {return $->type == fts_t_ptr;}
 
-int Var_get_int(   const Var *$) {assert(Var_has_int($)); return $->v.i;}
-float Var_get_float( const Var *$) {assert(Var_has_float($)); return $->v.f;}
+int    Var_get_int(   const Var *$) {assert(Var_has_int(   $)); return $->v.i;}
+float  Var_get_float( const Var *$) {assert(Var_has_float( $)); return $->v.f;}
 Symbol Var_get_symbol(const Var *$) {assert(Var_has_symbol($)); return $->v.s;}
-void *Var_get_ptr( const Var *$) {assert(Var_has_ptr($)); return $->v.p;}
+void * Var_get_ptr(   const Var *$) {assert(Var_has_ptr(   $)); return $->v.p;}
 
-void Var_put_int(   Var *$, int v) {    $->type = fts_t_int;    $->v.i = v;}
+void Var_put_int(   Var *$, int    v) { $->type = fts_t_int;    $->v.i = v;}
+void Var_put_float( Var *$, float  v) { $->type = fts_t_float;  $->v.f = v;}
 void Var_put_symbol(Var *$, Symbol v) { $->type = fts_t_symbol; $->v.s = v;}
-void Var_put_ptr(   Var *$, void *v) {  $->type = fts_t_ptr;    $->v.p = v;}
+void Var_put_ptr(   Var *$, void * v) { $->type = fts_t_ptr;    $->v.p = v;}
 
 void sprintf_vars(char *buf, int ac, Var *at) {
 	int i;

@@ -396,8 +396,8 @@ typedef struct Operator1 {
 	void   (*op_array)(int,Number*);
 } Operator1;
 
-	Operator1 *op1_table_find(Symbol sym);
 	extern Operator1 op1_table[];
+	extern Dict *op1_dict;
 
 typedef struct Operator2 {
 	Symbol sym;
@@ -408,8 +408,8 @@ typedef struct Operator2 {
 	Number (*op_fold)(Number,int,const Number *);
 } Operator2;
 
-	Operator2 *op2_table_find(Symbol sym);
 	extern Operator2 op2_table[];
+	extern Dict *op2_dict;
 
 /* **************************************************************** */
 /* grid.c (part 1: inlet objects) */

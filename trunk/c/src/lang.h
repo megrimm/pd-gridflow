@@ -77,6 +77,9 @@ struct Class {
 	int magic; /* 0x600df00d */
 };
 
+/* **************************************************************** */
+/* List/Dict */
+
 typedef struct List List; /* List ([0...n] -> void *) */
 List *List_new(int size);
 void List_push(List *$, void *v);

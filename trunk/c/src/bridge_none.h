@@ -116,6 +116,7 @@ Symbol Var_get_symbol(const Var *);
 void *Var_get_ptr(const Var *);
 
 void Var_put_int(Var *, int);
+void Var_put_float(Var *, float);
 void Var_put_symbol(Var *, Symbol);
 void Var_put_ptr(Var *, void *);
 

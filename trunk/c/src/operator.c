@@ -93,13 +93,7 @@ Operator1 op1_table[] = {
 	DECL_OP1(sq,"sq"),
 };
 
-Operator1 *op1_table_find(Symbol sym) {
-	int i;
-	for(i=0; i<COUNT(op1_table); i++) {
-		if (op1_table[i].sym == sym) return &op1_table[i];
-	}
-	return 0;
-}
+Dict *op1_dict;
 
 /* **************************************************************** */
 
@@ -206,20 +200,16 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**"),
 };
 
-Operator2 *op2_table_find(Symbol sym) {
-	int i;
-	for(i=0; i<COUNT(op2_table); i++) {
-		if (op2_table[i].sym == sym) return &op2_table[i];
-	}
-	return 0;
-}
+Dict *op2_dict;
 
 void startup_operator (void) {
 	int i;
 	for(i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = Symbol_new(op1_table[i].name);
+		Dict_put(op1_dict,(void *)op1_table[i].sym,&op1_table[i]);
 	} 
 	for(i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = Symbol_new(op2_table[i].name);
+		Dict_put(op2_dict,(void *)op2_table[i].sym,&op2_table[i]);
 	} 
 }

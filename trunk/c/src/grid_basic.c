@@ -362,7 +362,7 @@ METHOD(GridOp1,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op = op1_table_find(sym);
+	$->op = Dict_get(op1_dict,(void *)sym);
 	if (!$->op) RAISE2("unknown unary operator \"%s\"", Symbol_name(sym));
 }
 
@@ -441,7 +441,7 @@ METHOD(GridOp2,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op = op2_table_find(sym);
+	$->op = Dict_get(op2_dict,(void *)sym);
 	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
@@ -512,7 +512,7 @@ METHOD(GridFold,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op = op2_table_find(sym);
+	$->op = Dict_get(op2_dict,(void *)sym);
 	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
@@ -610,8 +610,8 @@ METHOD(GridInner,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op_para = op2_table_find(sym_para);
-	$->op_fold = op2_table_find(sym_fold);
+	$->op_para = Dict_get(op2_dict,(void *)sym_para);
+	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
 	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
 	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
 }
@@ -702,8 +702,8 @@ METHOD(GridInner2,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op_para = op2_table_find(sym_para);
-	$->op_fold = op2_table_find(sym_fold);
+	$->op_para = Dict_get(op2_dict,(void *)sym_para);
+	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
 	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
 	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_fold));
 }
@@ -783,7 +783,7 @@ METHOD(GridOuter,init) {
 	$->dim = 0;
 	$->data = 0;
 
-	$->op = op2_table_find(sym);
+	$->op = Dict_get(op2_dict,(void *)sym);
 	if (!$->op) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym));
 }
 
@@ -917,8 +917,8 @@ METHOD(GridConvolve,init) {
 	$->diml = 0;
 	$->datal = 0;
 
-	$->op_para = op2_table_find(sym_para);
-	$->op_fold = op2_table_find(sym_fold);
+	$->op_para = Dict_get(op2_dict,(void *)sym_para);
+	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
 	$->rint = GET(3,int,0);
 
 	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", Symbol_name(sym_para));
