@@ -61,8 +61,10 @@ typedef VALUE Ruby;
 #endif
 
 /* avoid ruby warning */
+#ifndef rb_enable_super
 #define rb_enable_super(a,b) \
 	if (RUBY_RELEASE_CODE < 20030716) rb_enable_super(a,b)
+#endif
 
 /* undocumented function from Ruby that is one thing we need to fix a very elusive bug
 that manifests itself when embedding ruby inside a plugin of another app. This exists
@@ -138,7 +140,7 @@ static inline Ruby PTR2FIX (const void *ptr) {
 	//fprintf(stderr,"pointer&3==%d\n",p&3);
 	if ((p&3)!=0) {
 		fprintf(stderr,"unaligned pointer: %08x\n",(int)(ptr));
-		::raise(11);
+		::raise(11);//assert(!"segfault ignored???");
 	}
 	return INT2NUM(p>>2);
 }
@@ -333,23 +335,27 @@ public:
 	Pt(T *q, int _n) : p(q), start(q), n(_n) {
 /* should this be >= or > ? */
 #ifdef HAVE_DEBUG_HARDER
+/*
 		if (p<start || p>start+n) {
 			fprintf(stderr,
 				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);
+			::raise(11);//assert(!"segfault ignored???");
 		}		
-#endif
+*/
+		#endif
 	}
 	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {
 #ifdef HAVE_DEBUG_HARDER
+/*
 		if (p<start || p>start+n) {
 			fprintf(stderr,
 				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);
+			::raise(11);//assert(!"segfault ignored???");
 		}		
-#endif
+*/
+		#endif
 	}
 #else
 	Pt() : p(0) {}
@@ -365,7 +371,7 @@ public:
 		if (!(p+i>=start && p+i<start+n)) {
 			fprintf(stderr, "%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
-			::raise(11);
+			::raise(11);//assert(!"segfault ignored???");
 		}
 #endif
 		return p[i];
@@ -378,14 +384,14 @@ public:
 			fprintf(stderr,
 				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
-			::raise(11);
+			::raise(11);//assert(!"segfault ignored???");
 		}
 		T *q = p+k-1;
 		if (!(q>=start && q<start+n)) {
 			fprintf(stderr,
 				"%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				__PRETTY_FUNCTION__, (long)q,(long)start,(long)(start+n));
-			::raise(11);
+			::raise(11);//assert(!"segfault ignored???");
 		}
 #endif
 	}
