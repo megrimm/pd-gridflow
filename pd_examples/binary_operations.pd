@@ -14,8 +14,8 @@
 #X text 99 127 negative;
 #X obj 14 104 @in;
 #X text 121 344 munchies (XOR effect) in the colour domain;
-#X obj 14 170 demux 2;
-#X obj 14 321 demux 2;
+#X obj 14 170 shunt 2;
+#X obj 14 321 shunt 2;
 #X text 132 280 color wrapping;
 #X obj 63 244 @ %;
 #X text 79 14 try various combinations of checkboxes and settings.
@@ -29,12 +29,12 @@ then click on the image loader to see the result.;
 ;
 #X obj 64 287 @ /;
 #X obj 62 195 @posterize;
-#X obj 14 125 demux 2;
+#X obj 14 125 shunt 2;
 #X obj 14 406 @out window;
 #X obj 63 266 @ * 255;
 #X obj 141 248 hsl 137 20 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X obj 14 220 demux 2;
+#X obj 14 220 shunt 2;
 #X text 63 88 image loader;
 #X msg 40 104 open r001.jpg \, bang;
 #X obj 39 66 metro 33.3667;

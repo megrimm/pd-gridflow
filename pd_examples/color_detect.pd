@@ -2,7 +2,7 @@
 #X obj 61 211 @! sq;
 #X obj 14 292 @ > 0;
 #X obj 68 314 @ + 128;
-#X obj 14 271 demux 2;
+#X obj 14 271 shunt 2;
 #X obj 14 154 @! sq;
 #X obj 340 138 hsl 222 15 0 442 0 0 empty empty tolerance 8 8 0 8 -262144
 -1 -1 7800 1;
@@ -20,7 +20,7 @@
 #X obj 14 211 @ inv+;
 #X obj 14 314 @ << 8;
 #X obj 14 192 @fold +;
-#X obj 14 374 demux 2;
+#X obj 14 374 shunt 2;
 #X obj 167 472 loadbang;
 #X obj 148 515 @checkers;
 #X obj 14 352 @outer ignore ( 3 # 0 );
@@ -50,7 +50,7 @@ accepted similarity.;
 = select circle in a color square \; pick one = select range in one
 channel;
 #X text 229 472 make background;
-#X obj 14 230 demux 2;
+#X obj 14 230 shunt 2;
 #X obj 57 249 @ inv+;
 #X obj 295 229 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
 -1 0;
@@ -106,7 +106,7 @@ channel;
 #X connect 17 0 11 0;
 #X restore 142 52 pd color panorama;
 #X obj 144 32 loadbang;
-#X obj 31 -9 demux 2;
+#X obj 31 -9 shunt 2;
 #X obj 9 51 r image;
 #X obj 269 -25 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
 -1 1;
@@ -117,7 +117,7 @@ channel;
 #X obj 338 302 hsl 129 15 4 4096 1 1 empty empty empty -2 -6 0 8 -262144
 -1 -1 6400 1;
 #X floatatom 295 302 5 0 0 0 - - -;
-#X obj 9 71 demux 2;
+#X obj 9 71 shunt 2;
 #X obj 23 115 @rgb_to_yuv;
 #X obj 65 71 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -1
 -1 0;
