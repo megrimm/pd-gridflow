@@ -49,6 +49,7 @@ typedef struct FormatGrid {
 	/* properties of currently recv'd image */
 	bool is_le; /* little endian: smallest digit first, like i386 */
 	int bpv;    /* bits per value: 32 only */
+	bool is_socket; /* future use */
 } FormatGrid;
 
 static void swap32 (int n, uint32 *data) {
@@ -64,9 +65,20 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	int n_dim, prod;
 	if (frame!=-1) return 0;
 
-/*
-	the rewind code would go here.
-*/
+	whine("$->is_socket: %d",$->is_socket);
+
+	/* rewind when at end of file. */
+	if (!$->is_socket) {
+		off_t thispos = lseek($->stream,0,SEEK_CUR);
+		off_t lastpos = lseek($->stream,0,SEEK_END);
+		whine("thispos = %d", thispos);
+		whine("lastpos = %d", lastpos);
+		if (thispos == lastpos) thispos = 0;
+		{
+			off_t nextpos = lseek($->stream,thispos,SEEK_SET);
+			whine("nextpos = %d", nextpos);
+		}
+	}
 
 	/* header */
 	{
@@ -199,8 +211,12 @@ void FormatGrid_close (Format *$) {
 
 /* **************************************************************** */
 
-bool FormatGrid_open_file (Format *$, int ac, const fts_atom_t *at, int mode) {
+bool FormatGrid_open_file (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
 	const char *filename;
+	whine("open_file: $->is_socket = %d", $->is_socket);
+	$->is_socket = false;
+	whine("open_file: $->is_socket = %d", $->is_socket);
+
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
 	if (!fts_is_symbol(at+0)) {
@@ -224,9 +240,11 @@ err:
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <netinet/in.h>
 
-bool FormatGrid_open_tcp (Format *$, int ac, const fts_atom_t *at, int mode) {
+bool FormatGrid_open_tcp (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
 	struct sockaddr_in address;
+	$->is_socket = true;
 
 	if (ac<2) { whine("not enough arguments"); goto err; }
 
@@ -247,7 +265,7 @@ bool FormatGrid_open_tcp (Format *$, int ac, const fts_atom_t *at, int mode) {
 			whine("open_tcp(gethostbyname): %s",strerror(errno));
 			goto err;
 		}
-		memcpy (&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
+		memcpy(&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
 	}
 
 	if (0>connect($->stream,&address,sizeof(address))) {
@@ -259,10 +277,28 @@ err:
 	return false;
 }
 
+bool FormatGrid_open_tcpserver (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
+	struct sockaddr_in address;
+	$->is_socket = true;
+
+	if (ac<1) { whine("not enough arguments"); goto err; }
+
+	if (!fts_is_int(at+1)) {
+		whine("bad arguments"); goto err;
+	}
+
+	$->stream = socket(AF_INET,SOCK_STREAM,0);
+
+	/* add server side code here */
+	return 42;
+err:
+	return false;
+}
+
 /* **************************************************************** */
 
 Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
-	Format *$ = NEW(Format,1);
+	FormatGrid *$ = NEW(FormatGrid,1);
 	const char *filename;
 	$->cl     = &class_FormatGrid;
 
@@ -287,6 +323,7 @@ Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int m
 			goto err;
 		}
 		if (!result) goto err;
+		whine("open: $->is_socket = %d", $->is_socket);
 	}
 
 	return $;
