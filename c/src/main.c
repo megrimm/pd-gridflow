@@ -115,7 +115,6 @@ void gridflow_module_init (void) {
 
 	gf_object_set = Dict_new(0);
 	gf_alarm_set  = Dict_new(0);
-	gf_alloc_set  = Dict_new(0);
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(), gf_alarm_handler, 0);
 
 	/* run startup of every source file */
@@ -124,6 +123,8 @@ void gridflow_module_init (void) {
 	post("--- GridFlow startup: end ---\n");
 
 	gf_alarm_handler(0,0); /* bootstrap the event loop */
+
+	gf_alloc_set  = Dict_new(0);
 }
 
 /* this is the entry point for all of the above */
@@ -349,7 +350,7 @@ typedef struct GFGlobal {
 } GFGlobal;
 
 static void profiler_reset$1(void*d,void*k,void*v) {
-	((GridObject *)v)->profiler_cumul = 0;
+	((GridObject *)k)->profiler_cumul = 0;
 }
 
 METHOD2(GFGlobal,profiler_reset) {
