@@ -4,7 +4,7 @@
         MetaRuby
         file: Main Loop
 
-        Copyright (c) 2001 by Mathieu Bouchard
+        Copyright (c) 2001,2002 by Mathieu Bouchard
         Licensed under the same license as Ruby.
 
 =end
@@ -15,9 +15,7 @@ class MainLoop
 a Message is something that can be called (activated).
 it includes receiver, selector, and parameters (and block).
 
-# please use "Message" instead.
-# this was an error of mine.
-# i want to use "Action" to mean Activation Record in the future.
+# the former name "Action" is now reserved for something else.
 =end
 class Message
 	attr_accessor :receiver,:selector,:params,:block
