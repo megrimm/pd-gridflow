@@ -1,23 +1,44 @@
 # $Id$
 
-def test_load
-	require "gridflow"
-end
-
-test_load
-
+require "gridflow"
 include GridFlow
 
 $imdir = "./images"
 $animdir = "/opt/mex"
+srand Time.new.to_i
 $port = 4200+rand(100)
 
 def pressakey; puts "press return to continue."; readline; end
 
+class Expect < FObject
+	def expect(v)
+		@count=0
+		@v=v
+		yield
+		raise "wrong number of messages (#{@count})" if @count!=1
+	end
+	def _0_list(*l)
+		raise "got #{l.inspect} expecting #{@v.inspect}" if @v!=l
+		@count+=1
+	end
+end
+
+def test_math
+	e = FObject["@export_list"]
+	x = Expect.new
+	e.connect 0,x,0
+	x.expect([2,3,5,7]) { e.send_in 0,"2 3 5 7" }
+
+	(a = FObject["@ +"]).connect 0,e,0
+	x.expect([3,5,9,15]) {
+		a.send_in 1, 2,3,5,7
+		a.send_in 0, 1,2,4,8 }
+end
+
 def test_gen
 	f0 = FObject["@for 0 64 1"]
 	f1 = FObject["@for 0 64 1"]
-	f2 = FObject["@for 1 4 1"]
+	f2 = FObject["@for 2 5 1"]
 	t0 = FObject["@outer ^"]
 	t1 = FObject["@outer *"]
 	gout = FObject["@out 256 256"]
@@ -35,9 +56,10 @@ def test_ppm1
 	gin = FObject["@in"]
 	gout = FObject["@out 256 256"]
 	gin.connect 0,gout,0
-#	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
-	gin.send_in 0,"open grid file #{$imdir}/foo.grid"
+	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
+#	gin.send_in 0,"open grid file #{$imdir}/foo.grid"
 	gin.send_in 0
+	$mainloop.loop
 end
 
 def test_ppm2
@@ -68,8 +90,8 @@ def test_anim
 #	pa.connect 0,gout,0
 
 	gin.connect 0,gout,0
-	gin.send_in 0,"open ppm file #{$animdir}/b.ppm.cat"
-#	gin.send_in 0,"open videodev /dev/video"
+#	gin.send_in 0,"open ppm file #{$animdir}/b.ppm.cat"
+	gin.send_in 0,"open videodev /dev/video"
 	gin.send_in 0,"option channel 1"
 	gin.send_in 0,"option size 480 640"
 	gout.send_in 0,"option timelog 1"
@@ -102,9 +124,13 @@ def test_tcp
 		out = FObject["@out 240 320"]
 		in1.connect 0,out,0
 		out.send_in 0,"option timelog 1"
+		out.send_in 0,"option autodraw 2"
 		GridFlow.whine "test: waiting 1 seconds"
 		sleep 1
-		in1.send_in 0,"open grid tcp localhost #{$port}"
+		p "HI"
+		#in1.send_in 0,"open grid tcp localhost #{$port}"
+		in1.send_in 0,"open grid tcp 127.0.0.1 #{$port}"
+		p "HI"
 
 		test_tcp = GridFlow::FObject.new
 		def test_tcp._0_bang
@@ -147,16 +173,6 @@ def test_tcp
 	end
 end
 
-def test_videodev
-	gin  = FObject["@in"]
-	gout = FObject["@out 200 200"]
-	gin.connect 0,gout,0
-	gin.send_in 0,"open videodev /dev/video0"
-	gin.send_in 0,"option channel 1"
-	gin.send_in 0
-	$mainloop.loop
-end
-
 def test_formats
 	gin = FObject["@in"]
 	gout = FObject["@out 256 256"]
@@ -180,13 +196,27 @@ def test_formats
 #	gout.delete
 end
 
-#test_gen
+def test_sound
+	o1 = FObject["@for 0 44100 1"] # 1 sec @ 1.225 Hz ?
+	o2 = FObject["@ * 359"] # @ 439.775 Hz
+	o3 = FObject["@ sin* 127"]
+	o4 = FObject["@in"]
+	o4.send_in 0,"open raw file /dev/dsp"
+	o4.send_in 0,"option type int16"
+	o1.connect 0,o2,0
+	o2.connect 0,o3,0
+	o3.connect 0,o4,0
+end
+
+#test_math
+test_gen
 #test_ppm1
 #test_ppm2
 #test_anim
-#test_videodev
 #test_anim2
 #test_anim3
-test_formats
+#test_formats
 #test_tcp
-#$mainloop.loop
+#test_sound
+$mainloop.loop
+

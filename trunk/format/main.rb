@@ -415,14 +415,27 @@ targa header is like:
 	install_format "FormatTarga", 1, 1, FF_R, "targa", "TrueVision Targa"
 end
 
-#class FormatMulti < Format
-#end
+=begin
+class FormatRaw < Format
+	install_rgrid 0
+	install_format "FormatRaw", 1, 1, FF_R|FF_W, "raw", "direct file data"
+end
 
-#class FormatSeq < Format
-#end 
+class FormatMulti < Format
+	install_rgrid 0
+	install_format "FormatMulti", 1, 1, FF_R, "multi", "joining multiple files"
+end
 
-#class FormatTempFile < Format
-#end 
+class FormatSeq < Format
+	install_rgrid 0
+	install_format "FormatSeq", 1, 1, FF_R|FF_W, "seq", "several files in one"
+end 
+
+class FormatTempFile < Format
+	install_rgrid 0
+	install_format "FormatTempFile", 1, 1, FF_R|FF_W, "tempfile", "huh..."
+end 
+=end
 
 end # module GridFlow
 
