@@ -57,7 +57,7 @@ struct FormatX11 : Format {
 	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
 	XImage *ximage;      /* X11 image descriptor */
 	char *name;          /* window name (for use by window manager) */
-	uint8 *image;        /* the real data (that XImage binds to) */
+	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
@@ -187,9 +187,10 @@ METHOD(FormatX11,frame) {
 
 	int sy=$->dim->get(0), sx=$->dim->get(1);
 	int bs=$->dim->prod(1);
-	Number b2[bs];
+	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
-		uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
+		Pt<uint8> b1 = Pt<uint8>($->image,$->ximage->bytes_per_line*$->dim->get(0))
+			+ $->ximage->bytes_per_line * y;
 		$->bit_packing->unpack(sx,b1,b2);
 		$->out[0]->send(bs,b2);
 	}
@@ -236,7 +237,8 @@ top:
 		if(shm_info->shmid < 0) RAISE("ERROR: shmget failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr =
 			(char *)shmat(shm_info->shmid,0,0);
-		image = (uint8 *)ximage->data;
+		image = Pt<uint8>((uint8 *)ximage->data,
+			ximage->bytes_per_line*dim->get(0));
 		shm_info->readOnly = False;
 
 		current_x11 = this;
@@ -258,7 +260,8 @@ top:
 		/* let's overestimate the pixel size */
 		/* int pixel_size = BitPacking_bytes($->bit_packing); */
 		int pixel_size = 4;
-		image = (uint8 *)calloc(sx*sy, pixel_size);
+		image = Pt<uint8>((uint8 *)calloc(sx*sy, pixel_size),
+			ximage->bytes_per_line*dim->get(0));
 		ximage = XCreateImage(
 			display,visual,depth,ZPixmap,0,(int8 *)image,sx,sy,8,0);
 	}
@@ -338,7 +341,7 @@ GRID_FLOW(FormatX11,0) {
 	while (n>0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		$->bit_packing->pack(sx, data, &$->image[y*bypl]);
+		$->bit_packing->pack(sx, data, $->image+y*bypl);
 		if ($->autodraw==2) $->show_section(0,y,sx,1);
 		y++;
 		data += sxc;
@@ -435,7 +438,7 @@ METHOD(FormatX11,init) {
 
 	$->window  = 0;
 	$->is_owner= true;
-	$->image   = 0;
+	$->image   = Pt<uint8>();
 	$->ximage  = 0;
 	$->autodraw= 1;
 #ifdef HAVE_X11_SHARED_MEMORY

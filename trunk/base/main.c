@@ -73,9 +73,12 @@ void FObject_mark (void *z) {
 */
 }
 
+static int object_count=0;
+
 static void FObject_free (void *$) {
 //	fprintf(stderr,"Say farewell to %08x\n",(int)$);
-	delete (GridObject *)$; /* !@#$ what about virtual~ ? */
+	delete (GridObject *)$;
+//	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
@@ -123,6 +126,11 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 		int inl = INT(rb_ary_fetch(conn,1));
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
+		/*
+		fprintf(stderr,"%s:\n",buf);
+		for (int i=0; i<argc; i++) rb_p(argv[i]);
+		fprintf(stderr,".\n");
+		*/
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
 	}
 	return Qnil;
@@ -151,8 +159,9 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->peer = $;
 	c_peer->grid_class = gc;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
-	fprintf(stderr,"new: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
+//	fprintf(stderr,"new: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	rb_funcall2($,SI(initialize),argc,argv);
+//	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
 	return $;
 }
 
@@ -188,6 +197,7 @@ VALUE FObject_profiler_cumul(VALUE rself) {
 VALUE FObject_profiler_cumul_assign(VALUE rself, VALUE arg) {
 	DGS(GridObject);
 	$->profiler_cumul = NUM2LL(arg);
+	return arg;
 }
 
 /* ---------------------------------------------------------------- */
@@ -317,9 +327,9 @@ void Init_gridflow () {
 	DEF_SYM(list);
 	sym_outlets=SYM(@outlets);
 
-	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
+//	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 	GridFlow_module = rb_define_module("GridFlow");
-	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
+//	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
@@ -341,7 +351,7 @@ void Init_gridflow () {
 	VALUE cdata = rb_eval_string("Data");
 	ID bi = SI(gridflow_bridge_init);
 	if (rb_respond_to(cdata,bi)) {
-		fprintf(stderr,"Setting up bridge...\n");
+		//fprintf(stderr,"Setting up bridge...\n");
 		rb_funcall(cdata,bi,1,PTR2FIX(&gf_bridge));
 	}
 

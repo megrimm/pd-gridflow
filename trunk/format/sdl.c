@@ -37,6 +37,11 @@ static bool in_use = false;
 struct FormatSDL : Format {
 	SDL_Surface *screen;
 	void resize_window (int sx, int sy);
+
+	Pt<uint8> pixels () {
+		return Pt<uint8>((uint8 *)screen->pixels,
+			dim->prod(0,1)*bit_packing->bytes);
+	}
 };
 
 void FormatSDL::resize_window (int sx, int sy) {
@@ -71,7 +76,7 @@ GRID_FLOW(FormatSDL,0) {
 	while (n>0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		$->bit_packing->pack(sx, data, &((uint8 *)$->screen->pixels)[y*bypl]);
+		$->bit_packing->pack(sx, data, $->pixels()+y*bypl);
 		y++;
 		data += sxc;
 		n -= sxc;

@@ -35,7 +35,7 @@
 	gfpost("%s",foo); \
 }
 
-#define WATCH(ar) WATCH2(COUNT(ar),ar)
+//#define WATCH(ar) WATCH2(COUNT(ar),ar)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
 #define IV(s) rb_ivar_get(rself,SI(s))
@@ -103,7 +103,7 @@ GRID_BEGIN(GridImport,1) {
 
 GRID_FLOW(GridImport,1) {
 	if ($->dim) delete $->dim, $->dim=0;
-	$->dim = new Dim(n,(int *)data);
+	$->dim = new Dim(n,(int *)(Number *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -116,7 +116,7 @@ METHOD(GridImport,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
+	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
 }
 
 METHOD(GridImport,_0_reset) {
@@ -171,7 +171,6 @@ GRID_BEGIN(GridExportList,0) {
 }
 
 GRID_FLOW(GridExportList,0) {
-//	WATCH2(n,data);
 	for (int i=0; i<n; i++, data++)
 		rb_ary_store($->list,in->dex+i+2,INT2NUM(*data));
 }
@@ -199,12 +198,12 @@ struct GridStore : GridObject {
 };
 
 GRID_BEGIN(GridStore,0) {
-	assert(in->dim);
+	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
+
 	int na = in->dim->n;
 	int nb = $->r.dim->n;
 	int nc = in->dim->get(na-1);
 	int v[MAX_DIMENSIONS];
-	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
 
 //	gfpost("a=%s",in->dim->to_s());
 //	gfpost("b=%s",$->r.dim->to_s());
@@ -315,10 +314,8 @@ struct GridOp1 : GridObject {
 GRID_BEGIN(GridOp1,0) { $->out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW(GridOp1,0) {
-	Number data2[n];
-	COPY(data2,data,n);
-	$->op->op_array(n,data2);
-	$->out[0]->send(n,data2);
+	$->op->op_array(n,data);
+	$->out[0]->give(n,data);
 }
 
 GRID_END(GridOp1,0) { $->out[0]->end(); }
@@ -329,7 +326,7 @@ METHOD(GridOp1,init) {
 }
 
 GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridOp1,0)),
+LIST(GRINLET2(GridOp1,0)),
 	DECL(GridOp1,init))
 
 /* **************************************************************** */
@@ -348,13 +345,13 @@ GRID_BEGIN(GridOp2,0) { $->out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW(GridOp2,0) {
 	if ($->r.is_empty()) RAISE("ARGH");
-	int32 *rdata = $->r.as_int32();
+	Pt<int32> rdata = $->r.as_int32();
 	int loop = $->r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
 			$->op->op_array2(n,data,rdata+in->dex);
 		} else {
-			Number data2[n];
+			STACK_ARRAY(Number,data2,n);
 			//!@#$ accelerate me
 			for (int i=0; i<n;) {
 				int ii = (in->dex+i)%loop;
@@ -424,9 +421,10 @@ GRID_FLOW(GridFold,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	GridOutlet *out = $->out[0];
-	Number buf[n/yn];
+	STACK_ARRAY(Number,buf,n/yn);
 	assert (n % factor == 0);
 	int i=0;
+	int nn=n;
 	while (n) {
 		COPY(buf+i,$->r.as_int32(),zn);
 		$->op->op_fold2(zn,buf+i,yn,data);
@@ -434,7 +432,7 @@ GRID_FLOW(GridFold,0) {
 		data += yn*zn;
 		n -= yn*zn;
 	}
-	out->send(COUNT(buf),buf);
+	out->send(nn/yn,buf);
 }
 
 GRID_END(GridFold,0) { $->out[0]->end(); }
@@ -484,15 +482,16 @@ GRID_FLOW(GridScan,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	GridOutlet *out = $->out[0];
-	Number buf[n];
+	STACK_ARRAY(Number,buf,n);
 	assert (n % factor == 0);
+	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
 		$->op->op_scan2(zn,$->r.as_int32(),yn,buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
-	out->send(COUNT(buf),buf);
+	out->send(nn,buf);
 }
 
 GRID_END(GridScan,0) { $->out[0]->end(); }
@@ -550,8 +549,9 @@ GRID_FLOW(GridInner,0) {
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = $->r.dim->prod();
 	int chunks = b_prod/factor;
-	Number buf2[b_prod/factor];
-	Number buf[factor], bufr[factor];
+	STACK_ARRAY(Number,buf2,b_prod/factor);
+	STACK_ARRAY(Number,buf,factor);
+	STACK_ARRAY(Number,bufr,factor);
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
@@ -617,8 +617,8 @@ GRID_FLOW(GridInner2,0) {
 	GridOutlet *out = $->out[0];
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = $->r.dim->prod();
-	Number buf2[b_prod/factor];
-	Number buf[factor];
+	STACK_ARRAY(Number,buf2,b_prod/factor);
+	STACK_ARRAY(Number,buf,factor);
 	assert (n % factor == 0);
 
 	for (int i=0; i<n; i+=factor) {
@@ -678,7 +678,7 @@ GRID_BEGIN(GridOuter,0) {
 
 GRID_FLOW(GridOuter,0) {
 	int b_prod = $->r.dim->prod();
-	Number buf[b_prod];
+	STACK_ARRAY(Number,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
 		$->op->op_array2(b_prod,buf,$->r.as_int32());
@@ -753,7 +753,7 @@ GRID_FLOW(GridConvolve,0) {
 	int l  = dc->prod(2); /* "pixel" length of a,c */
 	int oy = ll*(my/2), ox = l*(mx/2);
 	int i = in->dex / factor; /* line number of a */
-	Number *base = $->c.as_int32()+(i+$->margy)*ll+$->margx*l;
+	Pt<Number> base = $->c.as_int32()+(i+$->margy)*ll+$->margx*l;
 	
 	/* building c from a */
 	while (n) {
@@ -770,7 +770,7 @@ GRID_END(GridConvolve,0) {
 	int dbx = db->get(1), dax = da->get(1);
 	int l  = dc->prod(2);
 	int ll = dc->prod(1);
-	Number *cp = $->c.as_int32();
+	Pt<Number> cp = $->c.as_int32();
 
 	/* finishing building c from a */
 	COPY(cp                         ,cp+da->get(0)*ll,$->margy*ll);
@@ -778,14 +778,16 @@ GRID_END(GridConvolve,0) {
 
 	/* the real stuff */
 
-	Number buf3[l], buf2[l*dbx*dby], buf[l*dbx*dby];
-	Number *q=buf2;
+	STACK_ARRAY(Number,buf3,l);
+	STACK_ARRAY(Number,buf2,l*dbx*dby);
+	STACK_ARRAY(Number,buf ,l*dbx*dby);
+	Pt<Number> q=buf2;
 	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=$->b.as_int32()[i];
 
 	for (int iy=0; iy<day; iy++) {
 		for (int ix=0; ix<dax; ix++) {
-			Number *p = $->c.as_int32() + iy*ll + ix*l;
-			Number *r = buf;
+			Pt<Number> p = $->c.as_int32() + iy*ll + ix*l;
+			Pt<Number> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=$->rint;
 			$->op_para->op_array2(l*dbx*dby,buf,buf2);
@@ -846,13 +848,10 @@ METHOD(GridFor,init) {
 METHOD(GridFor,_0_bang) {
 	int n = $->from.dim->prod();
 	int nn[n+1];
-	Number x[n];
-	Number *from = $->from.as_int32();
-	Number *  to = $->to  .as_int32();
-	Number *step = $->step.as_int32();
-//	WATCH2(n,from);
-//	WATCH2(n,to);
-//	WATCH2(n,step);
+	STACK_ARRAY(Number,x,n);
+	Pt<Number> from = $->from.as_int32();
+	Pt<Number>   to = $->to  .as_int32();
+	Pt<Number> step = $->step.as_int32();
 	if (!$->from.dim->equal($->to.dim) || !$->to.dim->equal($->step.dim))
 		RAISE("dimension mismatch");
 	for (int i=$->step.dim->prod()-1; i>=0; i--)
@@ -871,12 +870,10 @@ METHOD(GridFor,_0_bang) {
 		/* here d is the dim# to reset; d=n for none */
 		for(;d<n;d++) x[d]=from[d];
 		d--;
-//		WATCH(x);
 		$->out[0]->send(n,x);
 		/* here d is the dim# to increment */
 		for(;;) {
 			if (d<0) goto end;
-//			fprintf(stderr,"d=%d\n",d);
 //			fprintf(stderr,"d=%d x[d]=%d step[d]=%d\n",d,x[d],step[d]);
 			x[d]+=step[d];
 			if (x[d]<to[d]) break;
@@ -915,7 +912,7 @@ struct GridDim : GridObject {};
 GRID_BEGIN(GridDim,0) {
 	int n = in->dim->n;
 	$->out[0]->begin(new Dim(1,&n));
-	$->out[0]->send(n,(Number *)in->dim->v);
+	$->out[0]->send(n,Pt<Number>((Number *)in->dim->v,in->dim->n));
 	$->out[0]->end();
 }
 
@@ -930,53 +927,46 @@ LIST(GRINLET(GridDim,0)))
 
 struct GridRedim : GridObject {
 	Dim *dim;
-	Number *data; /* data not always used. so not using Grid here */
+	Grid temp; /* temp.dim is not of the same shape as dim */
 
 	~GridRedim() {
 		if (dim) delete dim;
-		if (data) delete data;
 	}
 };
 
 GRID_BEGIN(GridRedim,0) {
-	if ($->data) delete $->data;
+	$->temp.del();
 	int a = in->dim->prod(), b = $->dim->prod();
-	if (a==0) {
-		//!@#$wrong
-		$->data = new Number[1];
-		$->data[0] = 0;
-	} else if (a<b) {
-		$->data = new Number[a];
-	}
+	if (a<b) $->temp.init(new Dim(1,&a));
 	$->out[0]->begin($->dim->dup());
 }
 
 GRID_FLOW(GridRedim,0) {
 	int i = in->dex;
-	if ($->data) {
-		int a = in->dim->prod();
-		int n2 = min(n,a-i);
-		COPY(&$->data[i],data,n2);
-		if (n2>0) $->out[0]->send(n2,data);
-	} else {
+	if ($->temp.is_empty()) {
 		int b = $->dim->prod();
 		int n2 = min(n,b-i);
 		if (n2>0) $->out[0]->send(n2,data);
 		/* discard other values if any */
+	} else {
+		int a = in->dim->prod();
+		int n2 = min(n,a-i);
+		COPY(&$->temp.as_int32()[i],data,n2);
+		if (n2>0) $->out[0]->send(n2,data);
 	}
 }
 
 GRID_END(GridRedim,0) {
-	if ($->data) {
+	if (!$->temp.is_empty()) {
 		int a = in->dim->prod(), b = $->dim->prod();
 		int i = a;
 		while (i<b) {
-			$->out[0]->send(min(a,b-i),$->data);
+			$->out[0]->send(min(a,b-i),$->temp.as_int32());
 			i += a;
 		}
 	}
 	$->out[0]->end();
-	if ($->data) delete[] $->data;
+	$->temp.del();
 }
 
 /* same inlet 1 as @import */
@@ -988,7 +978,7 @@ GRID_BEGIN(GridRedim,1) {
 
 GRID_FLOW(GridRedim,1) {
 	if ($->dim) delete $->dim;
-	$->dim = new Dim(n,(int *)data);
+	$->dim = new Dim(n,(int *)(Number *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -1001,8 +991,7 @@ METHOD(GridRedim,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
-	$->data = 0;
+	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
 }
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
@@ -1039,12 +1028,12 @@ GRID_BEGIN(GridScaleBy,0) {
 GRID_FLOW(GridScaleBy,0) {
 	int scale = $->rint;
 	int rowsize = in->dim->prod(1);
+	STACK_ARRAY(Number,buf,rowsize*scale);
 
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
 
 		/* scale the line x-wise */
-		Number buf[rowsize*scale];
 		int p=0;
 		for (int i=0; i<rowsize; i+=3) {
 			for (int k=0; k<scale; k++) {
@@ -1099,7 +1088,8 @@ GRID_BEGIN(GridRGBtoHSV,0) {
 */
 GRID_FLOW(GridRGBtoHSV,0) {
 	GridOutlet *out = $->out[0];
-	Number buf[n], *p=buf;
+	STACK_ARRAY(Number,buf,n);
+	Pt<Number> p=buf;
 	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int r=data[0], g=data[1], b=data[2];
 		int v=p[2]=max(max(r,g),b);
@@ -1141,7 +1131,8 @@ GRID_BEGIN(GridHSVtoRGB,0) {
 
 GRID_FLOW(GridHSVtoRGB,0) {
 	GridOutlet *out = $->out[0];
-	Number buf[n], *p = buf;
+	STACK_ARRAY(Number,buf,n);
+	Pt<Number> p = buf;
 	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int h=mod(data[0],252), s=data[1], v=data[2];
 		int j=h%42;
@@ -1208,7 +1199,7 @@ static uint64 RtMetro_delay(VALUE rself) {
 
 static void RtMetro_alarm(VALUE rself) {
 	uint64 now = RtMetro_now();
-	unsigned int *r = (unsigned int*)rself;
+//	uint32 *r = (uint32 *)rself;
 	DGS(RtMetro);
 	//gfpost("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {

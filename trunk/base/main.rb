@@ -27,7 +27,7 @@
 
 class NotImplementedError
 	def initialize(*)
-		GridFlow.gfpost "HELLO"
+		#GridFlow.gfpost "HELLO"
 		Process.kill $$, 6
 	end
 end
@@ -53,7 +53,7 @@ $mainloop = MainLoop.new
 $tasks = {}
 
 module GridFlow
-	GF_VERSION = "0.6.2"
+	GF_VERSION = "0.6.3"
 	def esmtick
 		$esm.tick
 		$mainloop.timers.after(0.1) { esmtick }
@@ -343,6 +343,7 @@ END {
 #	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v| k.delete }
 	GridFlow.fobjects_set.clear
+	GC.start
 }
 
 GridFlow.routine

@@ -43,7 +43,7 @@ METHOD(FormatMPEG3,frame) {
 	int sx = mpeg3_video_width($->mpeg,0);
 	int sy = mpeg3_video_height($->mpeg,0);
 	int npixels = sx*sy;
-	uint8 *buf = new uint8[sy*sx*3+16];
+	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*3+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
 	int result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
@@ -52,14 +52,14 @@ METHOD(FormatMPEG3,frame) {
 	o->begin(new Dim(3,v));
 
 	int bs = o->dim->prod(1);
-	Number b2[bs];
+	STACK_ARRAY(Number,b2,bs);
+	
 	for(int y=0; y<sy; y++) {
-		uint8 *b1 = buf + 3*sx*y;
-		$->bit_packing->unpack(sx,b1,b2);
+		$->bit_packing->unpack(sx,buf+3*sx*y,b2);
 		o->send(bs,b2);
 	}
 
-	delete[] buf;
+	delete[] (uint8 *)buf;
 	o->end();
 }
 

@@ -37,7 +37,7 @@ METHOD(FormatQuickTime,frame) {
 	int sx = quicktime_video_width($->anim,0);
 	int sy = quicktime_video_height($->anim,0);
 	int npixels = sx*sy;
-	uint8 *buf = new uint8[sy*sx*4+16];
+	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*4+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*4;
 	gfpost("pos = %d", quicktime_byte_position($->anim));
@@ -51,18 +51,17 @@ METHOD(FormatQuickTime,frame) {
 //	gfpost("result = %x", result);
 
 	int v[] = { sy, sx, 3 };
-	gfpost("dim(%d,%d,%d)",sy,sx,3);
+//	gfpost("dim(%d,%d,%d)",sy,sx,3);
 	o->begin(new Dim(3,v));
 
 	int bs = o->dim->prod(1);
-	Number b2[bs];
+	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
-		uint8 *b1 = buf + 4*sx*y;
-		$->bit_packing->unpack(sx,b1,b2);
+		$->bit_packing->unpack(sx,buf+4*sx*y,b2);
 		o->send(bs,b2);
 	}
 
-	delete[] buf;
+	delete[] (Number *)buf;
 	o->end();
 }
 
