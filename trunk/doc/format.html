@@ -228,7 +228,7 @@
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>Support for .mov files.</p> <p>This format supports frame-seek and frame-tell.</p> <p>Uses the HeroineWarrior-QuickTime library aka QuickTime4Linux 
+ <p>Support for .mov files.</p> <p>This format supports frame-seek and frame-tell.</p> <p>Uses the HW-QuickTime library aka QuickTime4Linux 
 		(libquicktime.so). There is also a variant on the same library and that project 
 		is just called LibQuickTime.</p> <p>Some versions of those libraries may include support for different codecs, 
 		and some also may support entirely different wrapper formats such as AVI.</p> <p>On Macintosh, Apple QuickTime is used instead, but several of the following 
@@ -243,10 +243,10 @@
 			encoding, the speed of decoding, 
 			the size of the written file, and its fidelity to the 
 			original content. Note that there exist other Apple-QuickTime 
-			codecs that are not supported by HeroineWarrior-QuickTime. <br>
+			codecs that are not supported by HW-QuickTime. <br>
  <br><b>method</b>&nbsp;parameter <b>(</b><i>symbol</i> key<b>, </b><i>int</i> value<b>)</b>    
 			Sets special codec-specific settings. 
-			For example: <kbd><font color="#007777">parameter jpeg_compression 75</font></kbd> <br>
+			For example: <kbd><font color="#007777">parameter jpeg_quality 75</font></kbd> <br>
  <br><b>method</b>&nbsp;framerate <b>(</b><i>int</i> fps<b>)</b>   
 			Sets the framerate of the file. 
 			This is not used by GridFlow when reading a file, but other 
@@ -254,6 +254,13 @@
  <br><b>method</b>&nbsp;colorspace <b>(</b><i>symbol</i> colorspace<b>)</b>   
 			Allowed values are rgb, rgba, bgr, bgra, yuv, yuva. 
 			Normally you don't need this. <br>
+ <br><b>method</b>&nbsp;size <b>(</b><i>int</i> height<b>, </b><i>int</i> width<b>)</b>    
+			Forces a window size when writing. Usually this has to be used <u>after</u> 
+			setting the framerate and codec and <u>before</u> setting the codec-parameters. 
+			(Strange. Sorry.) <br>
+ <br><b>method</b>&nbsp;force_size <b>(</b><i>int</i> height<b>, </b><i>int</i> width<b>)</b>    
+			forces a window size when reading. 
+			this is a workaround for a problem in HW-QuickTime. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>

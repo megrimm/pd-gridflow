@@ -3,7 +3,7 @@
 	convert GridFlow Documentation XML to HTML with special formatting.
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -22,15 +22,21 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.7.6"
+GF_VERSION = "0.7.7"
 
 #$use_rexml = true
 $use_rexml = false
 
+#require "gridflow"
+
 if $use_rexml
 	# this is a pure ruby xml-parser
-	#require "gridflow"
-	require "rexml/sax2parser"
+	begin
+		require "rexml/sax2parser"
+	rescue LoadError
+		require "rexml/parsers/sax2parser"
+		include REXML::Parsers
+	end
 	include REXML
 else
 	# this uses libexpat.so
@@ -459,7 +465,7 @@ if $use_rexml
 			@stack = [[]]
 			@sax.listen(:start_element) {|a,b,c,d| startElement(b,d) }
 			@sax.listen(  :end_element) {|a,b,c|   endElement(b) }
-			@sax.listen(   :characters) {|a|       characters(a) }
+			@sax.listen(   :characters) {|a| @gfdoc.character(a) }
 		end
 		def do_it; @sax.parse; end
 	end
@@ -546,7 +552,7 @@ puts <<EOF
 <tr><td colspan="4"> 
 <p><font size="-1">
 GridFlow #{GF_VERSION} Documentation<br>
-Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
+Copyright &copy; 2001,2002,2003,2004 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
