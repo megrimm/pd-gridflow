@@ -59,10 +59,11 @@ void FormatSDL::alarm() {
 }
 
 void FormatSDL::resize_window (int sx, int sy) {
+//	gfpost("switching to size (%d,%d)",sy,sx);
 	if (dim) delete dim;
 	int32 v[] = {sy,sx,3};
 	dim = new Dim(3,v);
-	screen = SDL_SetVideoMode(v[1],v[0],24, SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(v[1],v[0],0,SDL_SWSURFACE);
 	if (!screen)
 		RAISE("Can't switch to (%d,%d,%dbpp): %s", v[0],v[1],24, SDL_GetError());
 }
@@ -112,11 +113,6 @@ GRID_INLET(FormatSDL,0) {
 		RAISE("SDL_Init() error: %s",SDL_GetError());
 	atexit(SDL_Quit);
 	resize_window(320,240);
-/*
-	int32 v[] = {240,320,3};
-	dim = new Dim(3,v);
-	screen = SDL_SetVideoMode(v[1],v[0],24, SDL_SWSURFACE);
-*/
 	SDL_PixelFormat *f = screen->format;
 	uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
 	switch (f->BytesPerPixel) {
