@@ -116,13 +116,14 @@ GRCLASS(GridCast,LIST(GRINLET4(GridCast,0,4)),
 /* out0 nt to be specified explicitly */
 \class GridImport < GridObject
 struct GridImport : GridObject {
-	\attr NumberTypeE nt;
+	\attr NumberTypeE cast;
 	\attr Dim *dim; /* size of grids to send */
 	Grid dim_grid;
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() { if (dim) delete dim; }
 
-	\decl void initialize(Ruby x, NumberTypeE nt=int32_type_i);
+	\decl void initialize(Ruby x, NumberTypeE cast=int32_type_i);
+	\decl void _0_cast(NumberTypeE cast);
 	\decl void _0_reset();
 	\decl void _0_symbol(Symbol x);
 	\decl void _1_per_message();
@@ -132,7 +133,7 @@ struct GridImport : GridObject {
 	template <class T> void process (int n, Pt<T> data) {
 		GridOutlet *o = out[0];
 		while (n) {
-			if (dim && !o->is_busy()) o->begin(dim->dup(),nt);
+			if (dim && !o->is_busy()) o->begin(dim->dup(),cast);
 			int n2 = min((long)n,o->dim->prod()-o->dex);
 			o->send(n2,data);
 			n -= n2;
@@ -142,7 +143,7 @@ struct GridImport : GridObject {
 };
 
 GRID_INLET(GridImport,0) {
-	if (!dim) out[0]->begin(in->dim->dup(),nt);
+	if (!dim) out[0]->begin(in->dim->dup(),cast);
 } GRID_FLOW {
 	process(n,data);
 } GRID_FINISH {
@@ -160,15 +161,19 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	process(v[0],Pt<uint8>((uint8 *)name,v[0]));
 }
 
+\def void _0_cast(NumberTypeE cast) {
+	this->cast = cast;
+}
+
 \def void _1_per_message() {
 	dim_grid.del();
 	if (dim) delete dim;
 	dim = 0;
 }
 
-\def void initialize(Ruby x, NumberTypeE nt) {
+\def void initialize(Ruby x, NumberTypeE cast) {
 	rb_call_super(argc,argv);
-	this->nt = nt;
+	this->cast = cast;
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid.init_from_ruby(argv[0]);
 		dim = dim_grid.to_dim();
@@ -1258,9 +1263,9 @@ GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0,4)),
 
 \class GridTranspose < GridObject
 struct GridTranspose : GridObject {
-	int dim1;
-	int dim2;
-	int na,nb,nc,nd;
+	\attr int dim1;
+	\attr int dim2;
+	int d1,d2,na,nb,nc,nd; /* temporaries */
 	\decl void initialize (int dim1=0, int dim2=1);
 	GRINLET3(0);
 };
@@ -1268,19 +1273,30 @@ struct GridTranspose : GridObject {
 GRID_INLET(GridTranspose,0) {
 	STACK_ARRAY(int32,v,in->dim->n);
 	COPY(v,in->dim->v,in->dim->n);
-	if (dim1>=in->dim->n || dim2>=in->dim->n)
-		RAISE("not enough dimensions");
-	memswap(v+dim1,v+dim2,1);
-	nd = in->dim->prod(1+max(dim1,dim2));
-	nc = in->dim->v[max(dim1,dim2)];
-	nb = in->dim->prod(1+min(dim1,dim2))/nc/nd;
-	na = in->dim->v[min(dim1,dim2)];
-	out[0]->begin(new Dim(in->dim->n,v), in->nt);
-	in->set_factor(na*nb*nc*nd);
+	d1=dim1; d2=dim2;
+	if (d1>=in->dim->n || d2>=in->dim->n)
+		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
+	if (d1<0) d1+=in->dim->n;
+	if (d2<0) d2+=in->dim->n;
+	if (d1>=in->dim->n || d2>=in->dim->n)
+		RAISE("not enough dimensions: dim1=%d dim2=%d",dim1,dim2);
+	memswap(v+d1,v+d2,1);
+	if (d1==d2) {
+		out[0]->begin(new Dim(in->dim->n,v), in->nt);
+	} else {
+		nd = in->dim->prod(1+max(d1,d2));
+		nc = in->dim->v[max(d1,d2)];
+		nb = in->dim->prod(1+min(d1,d2))/nc/nd;
+		na = in->dim->v[min(d1,d2)];
+		out[0]->begin(new Dim(in->dim->n,v), in->nt);
+		in->set_factor(na*nb*nc*nd);
+	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
+	fprintf(stderr,"d1=%d d2=%d na=%d nb=%d nc=%d nd=%d n=%d\n",d1,d2,na,nb,nc,nd,n);
 	STACK_ARRAY(T,res,na*nb*nc*nd);
-	for (; n; n-=na*nb*nc*nd) {
+	if (dim1==dim2) { out[0]->send(n,data); return; }
+	for (; n; n-=na*nb*nc*nd, data+=na*nb*nc*nd) {
 		for (int a=0; a<na; a++) {
 			for (int b=0; b<nb; b++) {
 				for (int c=0; c<nc; c++) {
@@ -1289,8 +1305,8 @@ GRID_INLET(GridTranspose,0) {
 				}
 			}
 		}
+		out[0]->send(na*nb*nc*nd,res);
 	}
-	out[0]->send(na*nb*nc*nd,res);
 } GRID_FINISH {
 } GRID_END
 
@@ -1302,7 +1318,7 @@ GRID_INLET(GridTranspose,0) {
 
 GRCLASS(GridTranspose,LIST(GRINLET4(GridTranspose,0,4)),
 	\grdecl
-) { IEVAL(rself,"install '@transpose',1,1"); }
+) { IEVAL(rself,"install '@transpose',3,1"); }
 
 \end class GridTranspose
 
