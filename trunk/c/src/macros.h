@@ -86,7 +86,6 @@
 #define OBJ(_object_) \
 	((fts_object_t *)(_object_))
 
-	 
 /*
   get arg or default value
   this works with int, float, symbol (fts_symbol_t),
@@ -98,7 +97,6 @@
 /*
   "COUNT(array), array", a shortcut because often in jmax you pass
   first the size of an array followed by a pointer to that array.
-  (not used yet in my code)
 */
 #define ARRAY(_array_) \
 	COUNT(_array_), _array_
@@ -124,11 +122,17 @@
 
 #define $ self
 
+#undef assert
+#define assert(_expr_) \
+	if (!(_expr_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
+			__FILE__, __LINE__, #_expr_); \
+		abort(); }
+
 #define assert_range(_var_,_lower_,_upper_) \
 	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
 		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
-			__FILE__, __LINE__, \
-			#_var_, (_var_), (_lower_), (_upper_)); \
+			__FILE__, __LINE__, #_var_, (_var_), (_lower_), (_upper_)); \
 		abort(); }
 
 #define NEW(_type_,_count_) \

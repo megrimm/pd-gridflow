@@ -67,7 +67,10 @@ Dim *FormatTarga_frame (FileFormat *$, int frame) {
 	whine("tga: comment: %s", comment);
 	free(comment);
 
-	if (depth != 24 && depth != 32) {
+/*	if (depth != 24 && depth != 32) { */
+
+	/* temporary limitation of FileFormat: only 3 channels */
+	if (depth != 24) {
 		whine("tga: wrong colour depth: %i\n", depth);
 		goto err;
 	}

@@ -64,8 +64,7 @@ Dim *FormatPPM_frame (FileFormat *$, int frame) {
 		return $->dim;
 	}
 err:
-	fclose($->stream);
-	return 0; /* CRASH */
+	return 0;
 }
 
 Number *FormatPPM_read (FileFormat *$, int n) {
@@ -133,6 +132,7 @@ FileFormat *FormatPPM_open (const char *filename, int mode) {
 	$->close  = FormatPPM_close;
 
 	$->stuff = NEW(int,3); /* huh? */
+	$->stream = 0;
 
 	switch(mode) {
 	case 4: case 2: break;
