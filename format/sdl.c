@@ -59,7 +59,12 @@ void FormatSDL::alarm() {
 }
 
 void FormatSDL::resize_window (int sx, int sy) {
-	//???
+	if (dim) delete dim;
+	int32 v[] = {sy,sx,3};
+	dim = new Dim(3,v);
+	screen = SDL_SetVideoMode(v[1],v[0],24, SDL_SWSURFACE);
+	if (!screen)
+		RAISE("Can't switch to (%d,%d,%dbpp): %s", v[0],v[1],24, SDL_GetError());
 }
 
 GRID_INLET(FormatSDL,0) {
@@ -71,10 +76,8 @@ GRID_INLET(FormatSDL,0) {
 	int sx = in->dim->get(1), osx = dim->get(1);
 	int sy = in->dim->get(0), osy = dim->get(0);
 	in->set_factor(sxc);
-//	if (sx!=osx || sy!=osy) resize_window(sx,sy);
-}
-
-GRID_FLOW {
+	if (sx!=osx || sy!=osy) resize_window(sx,sy);
+} GRID_FLOW {
 	int bypl = screen->pitch;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
@@ -83,26 +86,17 @@ GRID_FLOW {
 	assert((in->dex % sxc) == 0);
 	assert((n       % sxc) == 0);
 
-	if (SDL_MUSTLOCK(screen)) {
-		if (SDL_LockSurface(screen) < 0) return; //???
-	}
-
+	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
 		bit_packing->pack(sx, data, pixels()+y*bypl);
 	}
-
-    if (SDL_MUSTLOCK(screen)) {
-        SDL_UnlockSurface(screen);
-    }
-}
-
-GRID_FINISH {
+	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
+} GRID_FINISH {
 	int sy = in->dim->get(0);
 	int sx = in->dim->get(1);
-    SDL_UpdateRect(screen, 0, 0, sx, sy);
-}
-GRID_END
+	SDL_UpdateRect(screen, 0, 0, sx, sy);
+} GRID_END
 
 \def void close () {
 	MainLoop_remove(this);
@@ -110,32 +104,27 @@ GRID_END
 }
 
 \def void initialize (Symbol mode) {
+	dim=0;screen=0;
 	rb_call_super(argc,argv);
 	if (in_use) RAISE("only one FormatSDL object at a time; sorry");
 	in_use=true;
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 		RAISE("SDL_Init() error: %s",SDL_GetError());
 	atexit(SDL_Quit);
-	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
-	if (!screen)
-		RAISE("Can't switch to (%d,%d,%dbpp): %s", 480, 640, 16, SDL_GetError());
-	int32 v[] = {480,640,3};
+	resize_window(320,240);
+/*
+	int32 v[] = {240,320,3};
 	dim = new Dim(3,v);
-
+	screen = SDL_SetVideoMode(v[1],v[0],24, SDL_SWSURFACE);
+*/
 	SDL_PixelFormat *f = screen->format;
 	uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
-	switch (screen->format->BytesPerPixel) {
+	switch (f->BytesPerPixel) {
 	case 1: RAISE("8 bpp not supported"); break;
-	case 2: /* Certainement 15 ou 16 bpp */
-		bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
+	case 2: case 3: case 4:
+		bit_packing = new BitPacking(is_le(),f->BytesPerPixel,3,mask);
 		break;
-	case 3: /* 24 bpp lent et généralement pas utilisé */
-		bit_packing = new BitPacking(3,f->BytesPerPixel,3,mask);
-		break;
-	case 4: /* Probablement 32 bpp alors */
-		bit_packing = new BitPacking(4,f->BytesPerPixel,3,mask);
-		break;
-	default: RAISE("unknown bpp"); break;
+	default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 	}
 	MainLoop_add(this,(void(*)(void*))FormatSDL_alarm);
 }
