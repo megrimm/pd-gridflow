@@ -283,10 +283,11 @@ top:
 		/* let's overestimate the pixel size */
 		/* int pixel_size = BitPacking_bytes(bit_packing); */
 		int pixel_size = 4;
-		image = Pt<uint8>((uint8 *)calloc(sx*sy, pixel_size),
-			ximage->bytes_per_line*sy);
 		ximage = XCreateImage(
-			display,visual,depth,ZPixmap,0,(int8 *)image,sx,sy,8,0);
+			display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
+		if (!ximage) RAISE("can't create image"); 
+		image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
+		ximage->data = (int8 *)image;
 	}
 	int status = XInitImage(ximage);
 	if (status!=1) gfpost("XInitImage returned: %d", status);
