@@ -259,15 +259,35 @@ FILES = [
 
 $features = [
 Feature.new {
+	tag :gcc3
+	name "GNU C++ Compiler 3"
+	test proc {
+		pi=File.popen "gcc -v 2>&1", "r"
+		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
+		version = $1
+		pi.close
+		if version < "3" then raise "version #{version} < 3" end
+		true
+	}
+},
+Feature.new {
 	tag :libruby
 	name "Ruby as a dynamic library"
 	uses_bridge_so ["-lruby"]
 	#uses_h ["ruby.h"] # is in special directory
+	defines :RUBY_STACK_END => proc {
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("/tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
 	test proc {
-		c_test "
+		c_test %{
+		#include <stdio.h>
 		#include <ruby.h>
-		int main () { return rb_rescue==0; }
-		", uses_bridge_so
+		int main () {
+			void *bp;
+			printf("#define RUBY_STACK_END 0x%08x",&bp);
+			return rb_rescue==0;
+		}}, uses_bridge_so
 	}
 },
 Feature.new {
@@ -282,25 +302,21 @@ Feature.new {
 		end
 		[lib]
 	}
+	defines :RUBY_STACK_END => proc {
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("/tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
 	test proc {
-		c_test "
+		c_test %{
+		#include <stdio.h>
 		#include <ruby.h>
-		int main () { return rb_rescue==0; }
-		", ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)]
+		int main () {
+			void *bp;
+			printf("#define RUBY_STACK_END 0x%08x",&bp);
+			return rb_rescue==0;
+		}}, ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)]
 	}
 	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
-},
-Feature.new {
-	tag :gcc3
-	name "GNU C++ Compiler 3"
-	test proc {
-		pi=File.popen "gcc -v 2>&1", "r"
-		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
-		version = $1
-		pi.close
-		if version < "3" then raise "version #{version} < 3" end
-		true
-	}
 },
 Feature.new {
 	tag :fast
@@ -395,7 +411,6 @@ Feature.new {
 Feature.new {
 	tag :ieee1394
 	name "IEEE1394 Libraries for Linux (raw1394/dc1394)"
-	status :disabled
 	uses_o ["base/ieee1394.o"]
 	uses_so ["-lraw1394","-ldc1394_control"]
 	uses_h ["libraw1394/raw1394.h","libdc1394/dc1394_control.h"]
@@ -406,7 +421,7 @@ Feature.new {
 		"
 	}
 	options ["HAVE_1394"]
-	formats ["dc1394"]
+	formats ["DC1394"]
 },
 Feature.new {
 	tag :x11
@@ -628,7 +643,7 @@ Feature.new {
 	name "Xine movie decoder"
 	uses_so ["-lxine"]
 	uses_h ["xine.h"]
-	status :disabled
+#	status :disabled
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -883,11 +898,17 @@ begin
   $features.each {|feature| try feature }
 ensure
   #!@#$ note: see END{} (duplication)
-  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c"
+  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c /tmp/#{$$}.o /tmp/#{$$}.asm"
 end
 
 $conf[:LDSOFLAGS].uniq!
 $conf[:BRIDGE_LDFLAGS].uniq!
+
+if not $conf[:FEATURES][:gcc3]
+  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
+  puts "(you might use --force-gcc3 to pretend at your own risk)"
+  exit 1
+end
 
 #--------------------------------#
 
@@ -937,8 +958,7 @@ def make_makefile f
 #   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
     f.puts "ruby-install::"
     my_install_files(f,"",FILES)
-    f.puts "\tcp bin/jmax2pd $(bindir)\n"
-    f.puts "\tchmod 755 $(bindir)/jmax2pd\n"
+    f.puts "\t-cp bin/jmax2pd $(bindir); chmod 755 $(bindir)/jmax2pd\n"
     f.puts
     f.puts "ruby-uninstall::"
     my_uninstall_files(f,"",FILES)
@@ -1144,5 +1164,5 @@ for z in [
 =end
 
 END {
-	system "rm -f /tmp/#{$$}.cpp /tmp/#{$$}"
+  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c /tmp/#{$$}.o /tmp/#{$$}.asm"
 }
