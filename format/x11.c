@@ -102,6 +102,7 @@ struct FormatX11 : Format {
 	\decl void hidecursor ();
 	\decl void verbose_m (int verbose);
 	\decl void initialize (...);
+	\decl void set_geometry (int y, int x, int sy, int sx);
 	GRINLET3(0);
 };
 
@@ -316,6 +317,7 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
+	//gfpost("resize: sx=%d sy=%d",sx,sy);
 	if (sy<16) sy=16; if (sy>4000) RAISE("height too big");
 	if (sx<16) sx=16; if (sx>4000) RAISE("width too big");
 	alloc_image(sx,sy);
@@ -520,6 +522,14 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
+\def void set_geometry (int y, int x, int sy, int sx) {
+	pos_x = x;
+	pos_y = y;
+	XMoveWindow(display,window,x,y);
+	resize_window(sx,sy);
+	XFlush(display);
+}
+
 \def void initialize (...) {
 	/* defaults */
 	int sy = 240;
@@ -579,9 +589,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			is_owner = false;
 		} else if (winspec==SYM(embed)) {
 			char *title = strdup(rb_str_ptr(argv[i+1]));
-			pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
-			sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
-			lock_size = true;
+			//pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
+			//sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
+			sy = sx = pos_y = pos_x = 0;
+			pos_y = 0;
+			pos_x = 0;
+			//lock_size = true;
 
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
