@@ -258,8 +258,7 @@ typedef Ruby (*RMethod)(...);
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass ci ## _name_ = { \
-		0, sizeof(_name_), _name_##_allocate, _startup_, \
-		COUNT(_name_##_methods),\
+		0, _name_##_allocate, _startup_, COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
 		#_name_, _jname_ };
@@ -807,8 +806,7 @@ struct FClass {
 /* !@#$ should move some of this stuff over to FClass */
 /* but can't right now (C++ weirdness) */
 struct GridClass /*: FClass */ {
-	Ruby rubyclass;
-	int objectsize;
+	Ruby rclass;
 	void *(*allocate)();
 	void (*startup)(GridClass *);
 	int methodsn;

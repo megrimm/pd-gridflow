@@ -454,7 +454,7 @@ Ruby ruby_c_install(GridClass *gc, Ruby super) {
 		INT2NUM(gc->inlets),
 		INT2NUM(gc->outlets));
 	GridObject_conf_class(rself,gc);
-	gc->rubyclass = rself;
+	gc->rclass = rself;
 	if (gc->startup) gc->startup(gc);
 	return Qnil;
 }

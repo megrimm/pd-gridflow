@@ -153,7 +153,7 @@ METHOD3(FormatAALib,initialize) {
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc2; i++) free(argv2[i]);
 
-	Ruby drivers = rb_ivar_get(grid_class->rubyclass,SI(@drivers));
+	Ruby drivers = rb_ivar_get(grid_class->rclass,SI(@drivers));
 	Ruby driver_address = rb_hash_aref(drivers,argv[0]);
 	if (driver_address==Qnil)
 		RAISE("unknown aalib driver '%s'",rb_sym_name(argv[0]));
@@ -168,7 +168,7 @@ METHOD3(FormatAALib,initialize) {
 }
 
 static void startup (GridClass *self) {
-	Ruby drivers = rb_ivar_set(self->rubyclass,SI(@drivers),rb_hash_new());
+	Ruby drivers = rb_ivar_set(self->rclass,SI(@drivers),rb_hash_new());
 	const aa_driver * const *p = aa_drivers;
 	while (*p) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)),
@@ -176,11 +176,11 @@ static void startup (GridClass *self) {
 		p++;
 	}
 	
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 		"GridFlow.post('aalib supports: %s', "
 		"@drivers.keys.join(', '))");
 
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 2,'aalib','Ascii Art Library'");
 }
 

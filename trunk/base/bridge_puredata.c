@@ -179,9 +179,8 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 	FMessage fm = { self: bself, winlet: winlet, selector: selector, ac: ac, at: at,
 		is_init: false };
 	if (!bself->rself) {
-		pd_error(bself,"you are trying to send a message to a dead object. \
-			the precise reason was given when you last tried to create \
-			the object. fix the contents of that box and try again.");
+		pd_error(bself,
+		"message to a dead object. (supposed to be impossible)");
 		return;
 	}
 	rb_rescue2(
@@ -237,15 +236,19 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
-	BFObject *self = (BFObject *)pd_new(qlass);
-	FMessage fm = { self: self, winlet:-1, selector: classsym,
+	BFObject *bself = (BFObject *)pd_new(qlass);
+	FMessage fm = { self: bself, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
-	rb_rescue2(
+	long r = rb_rescue2(
 		(RMethod)BFObject_init_1,(Ruby)&fm,
 		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
-	/* now what do i do with constructors that raised exception? */
-	return (void *)self;
+	if (r==Qnil) {
+//		pd_error(bself,"hello");
+		return 0; /* broken object */
+	} else {
+		return (void *)bself;
+	}
 }
 
 static void BFObject_delete_1 (FMessage *fm) {

@@ -739,7 +739,6 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 		gh->flow_int16 = 0;
 		gh->flow_float32 = 0;
 	}
-	gc->objectsize = sizeof(GridObject);
 	gc->allocate = GridObject_allocate;
 	gc->methodsn = 0;
 	gc->methods = 0;

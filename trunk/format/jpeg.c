@@ -114,7 +114,7 @@ METHOD3(FormatJPEG,initialize) {
 }
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
 }
 

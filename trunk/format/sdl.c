@@ -148,7 +148,7 @@ METHOD3(FormatSDL,initialize) {
 }
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 2,'sdl','Simple Directmedia Layer'");
 }
 

@@ -611,7 +611,7 @@ METHOD3(FormatX11,initialize) {
 }
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 6,'x11','X Window System Version 11.5'");
 }
 

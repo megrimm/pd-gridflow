@@ -509,7 +509,7 @@ METHOD3(FormatVideoDev,option) {
 METHOD3(FormatVideoDev,close) {
 	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
-	EVAL("@stream.close if @stream");
+	EVAL("puts \"VideoDev#close: \"; p self; @stream.close if @stream");
 	rb_call_super(argc,argv);
 	return Qnil;
 }
@@ -572,8 +572,6 @@ METHOD3(FormatVideoDev,initialize) {
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
 	rb_ivar_set(rself,SI(@stream),file);
-//	rb_p(file);
-//	rb_p(rb_ivar_get(rself,SI(@stream)));
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
@@ -590,7 +588,7 @@ METHOD3(FormatVideoDev,initialize) {
 /* **************************************************************** */
 
 static void startup (GridClass *self) {
-	IEVAL(self->rubyclass,
+	IEVAL(self->rclass,
 	"conf_format 4,'videodev','Video4linux 1.x'");
 }
 
@@ -606,7 +604,7 @@ DECL(FormatVideoDev,norm),
 DECL(FormatVideoDev,tuner),
 DECL(FormatVideoDev,channel),
 DECL(FormatVideoDev,frequency),
-DECL(FormatVideoDev,transfer), // for some reason there's a method blackhole...
+DECL(FormatVideoDev,transfer),
 DECL(FormatVideoDev,frame),
 DECL(FormatVideoDev,option),
 DECL(FormatVideoDev,close))
