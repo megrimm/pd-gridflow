@@ -94,12 +94,13 @@ class XNode
 		when "section"
 			mk(:h5) { mk(:a,:href,att["name"]) { print att["name"] }}
 			print "<blockquote>"
-			e="</blockquote>"
+			e="</blockquote>\n"
 		when "jmax_class"
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			if icon
 				mk(:img,:src,icon.att["image"],:alt,icon.att["text"])
 				mk(:br)
+				puts
 			end
 		end
 
@@ -143,8 +144,9 @@ class XNode
 		when "jmax_class"
 			name = att['name'] or raise
 			mk(:tr) {
-			  mk(:td,:colspan,4) {
-			    mk(:h5) { mk(:a,:name,name) { print name }}}}
+			  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
+			    mk(:font,:size,-1) {
+			      mk(:b) { mk(:a,:name,name) { print "&nbsp;"*2, name }}}}}
 			print "<tr>"
 			mk(:td) {}
 			print "<td valign='top'><br>"
@@ -163,7 +165,10 @@ class XNode
 					mk(:img,:src,small,:border,0)
 				}
 			end
-			print "</td><td>"
+			mk(:br,:clear,"left")
+			mk(:br)
+			print "</td><td><br>"
+			e="<br></td>"
 		when "method"
 			print "<br>"
 			print "<b>", $portnum.join(" "), "</b> " if $portnum
@@ -178,7 +183,7 @@ class XNode
 				end
 			}.compact.join "<b>,</b>"
 			print "<b>)</b>"
-			e="<br><br>"
+			e="<br>"
 		when "grid"
 			print "<br><b>grid</b> "
 			e="<br><br>"
@@ -204,7 +209,13 @@ class XNode
 			print "<tr>"
 			mk(:td) {
 				icon = contents.find {|x| XNode===x && x.tag == "icon" }
-				mk(:img,:src,icon.att["image"],:border,0) if icon
+				if icon then
+					mk(:img,:src,icon.att["image"],
+						:border,0,:alt,att["cname"])
+				else
+					mk(:img,:src,"images/op/#{att['cname']}.jpg",
+						:border,0,:alt,att["cname"])
+				end
 				# print att["name"]
 			}
 			print "<td>"
@@ -358,7 +369,7 @@ puts <<EOF
   cellspacing="2">
 <tr> 
 <td colspan="4" bgcolor="#082069">
-<img src="images/jmax_titre.jpg" width="253" height="23"></td>
+<img src="images/titre_gridflow.png" width="253" height="23"></td>
 </tr>
 <tr> 
 <td>&nbsp;</td>
@@ -396,6 +407,16 @@ end
 
 def footer
 puts <<EOF
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr> 
+<td colspan="4"> 
+<p><font size="-1">GridFlow 0.4.0 Documentation<br>
+by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+and<br>
+Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+</td>
+</tr>
 </table>
 </body>
 </html>
@@ -412,9 +433,10 @@ begin
 	STDERR.puts "reading standard input..."
 	parser.parse(STDIN.readlines.join("\n"), true)
 	nodes = parser.instance_eval{@stack}[0][0]
-	puts "<tr><td colspan='2'>"
-	nodes.print_index
-	puts "<br><br></td></tr>"
+	mk(:tr) { mk(:td,:colspan,2) {
+		nodes.print_index
+		puts "<br><br>"
+	}}
 	nodes.print_contents
 rescue XMLParserError => e
 	puts ""
@@ -432,18 +454,4 @@ puts ""
 puts ""
 
 __END__
-
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr> 
-<td colspan="4"> 
-<p><font size="-1">GridFlow 0.4.0 Documentation<br>
-by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
-and<br>
-Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-</td>
-</tr>
-</table>
-</body>
-</html>
 
