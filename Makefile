@@ -19,7 +19,7 @@ CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
 ifeq ($(HAVE_SPEED),yes)
 	CFLAGS += -O6 -funroll-loops # optimisation
 else
-	CFLAGS += -O1 # debuggability
+	CFLAGS += -O0 # debuggability
 endif
 
 CFLAGS += -g # gdb info
@@ -46,8 +46,11 @@ uninstall:: ruby-uninstall
 kloc::
 	wc base/*.[ch] base/*.rb format/*.[ch] configure Makefile extra/*.rb
 
+#edit::
+#	(nedit base/*.rb base/*.[ch] Makefile configure tests/test.rb &)
+
 edit::
-	(nedit base/*.rb base/*.[ch] Makefile configure tests/test.rb &)
+	(nedit format/*.c base/flow_objects.c base/grid.[ch] &)
 
 CONF = config.make config.h Makefile
 

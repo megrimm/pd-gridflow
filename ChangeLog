@@ -10,8 +10,9 @@ version 0.6.0 (head):
  * allows writing a jMax class in the Ruby scripting language
  * GridFlow now relies on the Ruby API instead of the jMax API
  * GridFlow can now be loaded as a plugin for Ruby (without jMax)
+ * GridFlow is now first a Ruby plugin and then a jMax plugin
  * many many macros and typedefs have changed or disappeared
- * added 289 new bugs
+ * File Format API changed completely (merging into GridObject)
 
 version 0.5.0 (2002.06.08):
  * big changes to the internals (especially use of macros)
