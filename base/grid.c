@@ -39,6 +39,8 @@ int gf_max_packet_length = 1024*2;
 /* **************** Grid ****************************************** */
 
 void Grid::init(Dim *dim, NumberTypeIndex nt) {
+	FREE(this->dim);
+	FREE(this->data);
 	this->nt = nt;
 	this->dim = dim;
 	this->data = dim ? NEWA(char,dim->prod()*number_type_table[nt].size/8) : 0;
@@ -80,8 +82,13 @@ void Grid::init_from_ruby(VALUE x) {
 }
 
 void Grid::del() {
+//	fprintf(stderr,"Grid::del() : %08x\n",(int)this);
 	FREE(dim);
 	FREE(data);
+}
+
+Grid::~Grid() {
+	del();
 }
 
 /* **************** GridInlet ************************************* */
@@ -263,7 +270,16 @@ void GridInlet::list(int argc, VALUE *argv) {
 	dim = t.dim->dup();
 	int n = t.dim->prod();
 	gh->begin(parent->peer,parent,this);
-	if (n>0) gh->flow( parent->peer,parent,this,n,t.as_int32());
+	if (n>0) {
+		Number *data = t.as_int32();
+		if (gh->mode==6) {
+			Number *d = data;
+			int size = t.dim->prod()*number_type_table[t.nt].size/8;
+			data = (Number *)NEWA(char,size);
+			memcpy(data,d,size);
+		}
+		gh->flow( parent->peer,parent,this,n,data);
+	}
 	gh->end(  parent->peer,parent,this);
 	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
@@ -304,6 +320,8 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 GridOutlet::~GridOutlet() {
 	FREE(dim);
 	FREE(buf);
+	FREE(ro);
+	FREE(rw);
 }
 
 bool GridOutlet::is_busy() {
@@ -337,13 +355,11 @@ void GridOutlet::end() {
 
 void GridOutlet::begin(Dim *dim) {
 	assert(this);
-
 	int n = dim->count();
-	dim = dim->dup(); /* leak */
 
 	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
 
-//	fprintf(stderr,"this outlet = %p\n",this);
+//	fprintf(stderr,"this outlet = %p; ro=%p; rw=%p\n",this,ro,rw);
 
 	this->dim = dim;
 	dex = 0;
@@ -445,6 +461,10 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 */
 
 void GridObject::mark() {}
+
+GridObject::~GridObject() {
+	fprintf(stderr,"GridObject::~GridObject says hello %08x\n",(int)this);
+}
 
 METHOD(GridObject,init) {
 	int i;
@@ -596,6 +616,7 @@ METHOD(GridObject,delete) {
 	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) FREE($->in[i]);
 	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) FREE($->out[i]);
 	rb_call_super(argc,argv);
+	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)$);
 }
 
 GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,

@@ -39,6 +39,8 @@ static VALUE Pointer_class2=0;
 static VALUE sym_ninlets=0, sym_noutlets=0;
 static VALUE sym_lparen=0, sym_rparen=0;
 
+static bool is_in_ruby = false;
+
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
 
@@ -103,7 +105,7 @@ void Bridge_export_value(VALUE arg, t_atom *at) {
 	} else if (SYMBOL_P(arg)) {
 		const char *name = rb_sym_name(arg);
 		/*fprintf(stderr,"1: %s\n",name);*/
-		SETSYMBOL(at,gensym(strdup(name)));
+		SETSYMBOL(at,gensym((char *)name));
 	} else if (FLOAT_P(arg)) {
 		SETFLOAT(at,RFLOAT(arg)->value);
 //	} else if (CLASS_OF(arg)==Pointer_class2) {
@@ -208,7 +210,7 @@ static VALUE BFObject_rescue (kludge *k) {
 
 static void BFObject_method_missing (BFObject *$,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
-	fprintf(stderr,"%p %d %s %d\n",$,winlet,selector->s_name,ac);
+//	fprintf(stderr,"%p %d %s %d\n",$,winlet,selector->s_name,ac);
 	kludge k;
 	k.$ = $;
 	k.winlet = winlet;
@@ -258,9 +260,11 @@ static VALUE BFObject_init$1 (kludge *k) {
 	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
 
+/*
 	fprintf(stderr,"%s in=%d out=%d\n",
 		rb_str_ptr(rb_funcall(rb_funcall(rself,SI(class),0),SI(inspect),0)),
 		ninlets,noutlets);
+*/
 
 //	if (ninlets>0) inlet_new(j_peer,&j_peer->ob_pd,0,0);
 
@@ -298,6 +302,25 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	return (void *)self;
 }
 
+static void BFObject_delete$1 (kludge *k) {
+	fprintf(stderr,"BFObject_delete$1 says hello %08x\n",(int)k->$);
+	rb_funcall(k->$->peer,SI(delete),0);
+}
+
+static void BFObject_delete (BFObject *$) {
+	kludge k;
+	k.$ = $;
+	k.is_init = false;
+	k.selector = gensym("delete");
+	k.ac = 0;
+	k.at = 0;
+
+	rb_rescue2(
+		(RFunc)BFObject_delete$1,(VALUE)&k,
+		(RFunc)BFObject_rescue,(VALUE)&k,
+		rb_eException,0);
+}
+
 static void BFObject_class_init$1 (t_class *qlass) {
 	VALUE $ = BFObject::find_fclass(gensym(class_getname(qlass)));
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
@@ -305,7 +328,7 @@ static void BFObject_class_init$1 (t_class *qlass) {
 
 VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 	t_class *qlass = class_new(gensym(name2),
-		(t_newmethod)BFObject_init, (t_method)0,
+		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject),
 		CLASS_DEFAULT,
 		A_GIMME,0);
@@ -349,11 +372,20 @@ static uint64 RtMetro_now2(void) {
 }
 
 void gf_timer_handler (t_clock *alarm, void *obj) {
+	static int count = 0;
+	if (count%1000==0) fprintf(stderr,"survived to %d ticks\n",count);
+	if (is_in_ruby) {
+		fprintf(stderr,"warning: ruby is not reentrant\n");
+		return;
+	}
+	is_in_ruby = true;
 	long long time = RtMetro_now2();
 //	gfpost("tick");
 	rb_funcall(GridFlow_module2,SI(tick),0);
 	clock_delay(gf_alarm,GF_TIMER_GRANULARITY);
 //	gfpost("tick was: %lld\n",RtMetro_now2()-time);
+	is_in_ruby = false;
+	count++;
 }       
 
 VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
