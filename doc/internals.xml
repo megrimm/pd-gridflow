@@ -3,8 +3,8 @@
 <documentation>
 <!-- $Id$ -->
 <!--
-	GridFlow Internals Manual
-	Copyright (c) 2002 by Mathieu Bouchard
+	GridFlow Reference Manual: Internals
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 -->
 <section name="notes">
 
@@ -126,20 +126,20 @@ links back to the RData box through another pointer called peer. </p>
 		Grid represents a grid that is fully stored in memory.
 	</class>
 
-	<class name="C++ class Operator1">
+	<class name="C++ class Numop1">
 		This represents a one-input operator.
 		Such an object contains a map() function that applies the operator
 		over a memory segment.
 	</class>
 
-	<class name="C++ class Operator2">
+	<class name="C++ class Numop2">
 		This represents a two-input operator.
 		Such an object contains four functions for each T, where
 		T is one of the types uint8, int16, int32, float32.
 
 		<method name="map">
 			<arg name="n" type="integer"/>
-			<arg name="as" type="T *"/>
+			<arg name="as" type="Pt&lt;T&gt;"/>
 			<arg name="b" type="T"/>
 			for i in 0...n,
 			as[i] := f(as[i],b);
@@ -148,8 +148,8 @@ links back to the RData box through another pointer called peer. </p>
 
 		<method name="zip">
 			<arg name="n" type="integer"/>
-			<arg name="as" type="T *"/>
-			<arg name="bs" type="T *"/>
+			<arg name="as" type="Pt&lt;T&gt;"/>
+			<arg name="bs" type="Pt&lt;T&gt;"/>
 			for i in 0...n,
 			as[i] := f(as[i],bs[i]);
 			bs is not modified.
@@ -159,8 +159,8 @@ links back to the RData box through another pointer called peer. </p>
 		<method name="fold">
 			<arg name="an" type="integer"/>
 			<arg name="n" type="integer"/>
-			<arg name="as" type="T *"/>
-			<arg name="bs" type="T *"/>
+			<arg name="as" type="Pt&lt;T&gt;"/>
+			<arg name="bs" type="Pt&lt;T&gt;"/>
 
 			<p>
 			for i in 0...n,
@@ -174,8 +174,8 @@ links back to the RData box through another pointer called peer. </p>
 		<method name="scan">
 			<arg name="an" type="integer"/>
 			<arg name="n" type="integer"/>
-			<arg name="as" type="T *"/>
-			<arg name="bs" type="T *"/>
+			<arg name="as" type="Pt&lt;T&gt;"/>
+			<arg name="bs" type="Pt&lt;T&gt;"/>
 
 			<p> for j in 0...an: bs[j] := f(as[j],bs[j]); </p>
 			<p> for i in 1...n: for j in 0...an:
