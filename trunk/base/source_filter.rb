@@ -11,14 +11,14 @@ Out = File.open ARGV[1], "w"
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	STDERR.puts "class: #{line}"
-	line.match /^(\w+)\s+<\s+(\w+)$/ or raise "syntax error #{where}"
+	/^(\w+)\s+<\s+(\w+)$/.match line or raise "syntax error #{where}"
 	$stack.push ClassDecl.new($1,$2,{})
 	Out.puts ""
 end
 
 def parse_arglist(arglist)
 	arglist.split(/,/).map {|arg|
-		arg.match /^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/ or
+		/^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/.match arg or
 			raise "syntax error in \"#{arg}\" #{where}"
 		type,name,default=$1,$2,$3
 		Arg.new(type.sub(/\s+$/,""),name,default)
@@ -31,7 +31,7 @@ end
 
 def handle_decl(line)
 	STDERR.puts "decl: #{line}"
-	line.match /^(\w+)\s+(\w+)\s*\((.*)\)\s*;\s*$/ or
+	/^(\w+)\s+(\w+)\s*\((.*)\)\s*;\s*$/.match line or
 		raise "syntax error #{where}"
 	rettype,selector,arglist1 = $1,$2,$3
 	arglist = parse_arglist arglist1
@@ -47,7 +47,7 @@ end
 
 def handle_def(line)
 	STDERR.puts "def: #{line}"
-	line.match /^(\w+)\s+(\w+)\s*\((.*)\)(\s*{?\s*)$/ or
+	/^(\w+)\s+(\w+)\s*\((.*)\)(\s*{?\s*)$/.match line or
 		raise "syntax error #{where}"
 	rettype,selector,arglist1,brace = $1,$2,$3,$4
 	arglist = parse_arglist arglist1
@@ -134,7 +134,7 @@ $linenumber=1
 loop{
 	x = In.gets
 	break if not x
-	if x.match /^\s*\\(\w+)\s*(.*)$/ then
+	if /^\s*\\(\w+)\s*(.*)$/.match x then
 		send("handle_#{$1}",$2)
 	else
 		Out.puts x
