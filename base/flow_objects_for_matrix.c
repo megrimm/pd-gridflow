@@ -70,12 +70,9 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 	op_div = op2_div;
 }
 
-GRCLASS(GridMatrixSolve,
-	\grdecl
-) { IEVAL(rself,"install '@matrix_solve',1,1"); }
-
+\classinfo { IEVAL(rself,"install '@matrix_solve',1,1"); }
 \end class
 
 void startup_flow_objects_for_matrix () {
-	\startup
+	\startall
 }

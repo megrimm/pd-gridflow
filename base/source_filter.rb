@@ -161,12 +161,20 @@ def handle_def(line)
 	Out.puts "#{unparse_arglist m.arglist, false})#{term}//FCS"
 end
 
-def handle_grdecl(line)
-	qlass = $stack[-1]
-	Out.puts qlass.methods.map {|foo,method|
-		c,s = qlass.name,method.selector
+def handle_classinfo(line)
+	frame = $stack[-1]
+	cl = frame.name
+	line="{}" if /^\s*$/ =~ line
+	Out.puts "static void #{cl}_startup (Ruby rself);"
+	Out.puts "static void *#{cl}_allocator () {return new #{cl};}"
+	Out.puts "static MethodDecl #{cl}_methods[] = {"
+	Out.puts frame.methods.map {|foo,method|
+		c,s = frame.name,method.selector
 		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
 	}.join(",")
+	Out.puts "}; FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
+	Out.puts "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
+	Out.puts "void #{frame.name}_startup (Ruby rself) "+line
 end
 
 def handle_grin(line)
@@ -186,8 +194,9 @@ def handle_end(line)
 	fields = line.split(/\s+/)
 	n = fields.length
 	if ClassDecl===frame then
+		cl = frame.name
 		if fields[0]!="class" or
-		(n>1 and fields[1]!=frame.name)
+		(n>1 and fields[1]!=cl)
 		then raise "end not matching #{where}" end
 		$stack.push frame
 		frame.grins.each {|i,v|
@@ -197,16 +206,12 @@ def handle_end(line)
 			when 'int'; '2'
 			when 'float'; 'F'
 			else raise 'BORK BORK BORK' end
-			Out.print "static GridHandler #{frame.name}_grid_#{i}_hand = GRIN#{k}(#{frame.name},#{i});"
+			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN#{k}(#{cl},#{i});"
 			handle_def "Ruby _#{i}_grid(...) {"+
-				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{frame.name}_grid_#{i}_hand);"+
+				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
 				"return in[#{i}]->begin(argc,argv);}"
 		}
 		$stack.pop
-			#Out.puts "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);//FCS"
-			#Out.puts "static Ruby _#{i}_grid_wrap(int argc, Ruby *argv, Ruby rself) {"
-			#Out.puts "L}"
-			#Out.puts "void _#{i}_grid(...){L}"
 	end
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
@@ -214,7 +219,7 @@ def handle_end(line)
 	Out.puts ""
 end
 
-def handle_startup(line)
+def handle_startall(line)
 	$classes.each {|q| Out.print "fclass_install(&ci#{q.name});" }
 	Out.puts ""
 end

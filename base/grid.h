@@ -61,8 +61,6 @@ extern "C" {
 typedef VALUE Ruby;
 // typedef struct Ruby { VALUE x };
 
-#define LIST(args...) args
-
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 #else
@@ -1037,7 +1035,7 @@ private:
 \end class GridInlet
 
 //****************************************************************
-// DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge
+// DECL/GRCLASS : Ruby<->C++ bridge
 
 // FClass is to be used only at initialization, starting with GF-0.7.1.
 // relevant contents are now copied over to ruby classes.
@@ -1057,8 +1055,7 @@ struct FClass {
 	static void _name_ ## _startup (Ruby rself); \
 	FClass ci ## _name_ = { \
 		_name_##_allocator, _name_ ## _startup, #_name_, \
-		COUNT(_name_##_methods), _name_##_methods, \
-	}; \
+		COUNT(_name_##_methods), _name_##_methods, }; \
 	static void _name_ ## _startup (Ruby rself)
 
 //****************************************************************

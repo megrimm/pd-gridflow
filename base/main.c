@@ -339,9 +339,7 @@ const char *FObject::info() {
 	return rb_str_ptr(z);
 }
 
-MethodDecl FObject_methods[] = {
-	\grdecl
-};
+\classinfo
 \end class FObject
 
 /* ---------------------------------------------------------------- */
@@ -408,10 +406,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return rself;
 }
 
-GRCLASS(BitPacking,
-	\grdecl
-){}
-
+\classinfo
 \end class BitPacking
 
 NumberTypeE NumberTypeE_find (Ruby sym) {

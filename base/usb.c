@@ -339,10 +339,7 @@ public:
 // Device usb_device(USB dev);
 // get_string and get_string_simple (not present in libusb 0.1.4)
 
-GRCLASS(USB,
-	\grdecl
-){}
-
+\classinfo
 \end class USB
 
 static Ruby USB_s_new(Ruby argc, Ruby *argv, Ruby qlass) {

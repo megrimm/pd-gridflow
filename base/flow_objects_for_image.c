@@ -186,10 +186,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	if (r) this->b=r;
 }
 
-GRCLASS(GridConvolve,
-	\grdecl
-) { IEVAL(rself,"install '@convolve',2,1"); }
-
+\classinfo { IEVAL(rself,"install '@convolve',2,1"); }
 \end class GridConvolve
 
 /* ---------------------------------------------------------------- */
@@ -270,10 +267,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-GRCLASS(GridScaleBy,
-	\grdecl
-) { IEVAL(rself,"install '@scale_by',2,1"); }
-
+\classinfo { IEVAL(rself,"install '@scale_by',2,1"); }
 \end class GridScaleBy
 
 /* ---------------------------------------------------------------- */
@@ -397,10 +391,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-GRCLASS(GridDownscaleBy,
-	\grdecl
-) { IEVAL(rself,"install '@downscale_by',2,1"); }
-
+\classinfo { IEVAL(rself,"install '@downscale_by',2,1"); }
 \end class GridDownscaleBy
 
 /* **************************************************************** */
@@ -440,10 +431,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-GRCLASS(GridLayer,
-	\grdecl
-) { IEVAL(rself,"install '@layer',2,1"); }
-
+\classinfo { IEVAL(rself,"install '@layer',2,1"); }
 \end class GridLayer
 
 /* **************************************************************** */
@@ -571,10 +559,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-GRCLASS(DrawPolygon,
-	\grdecl
-) { IEVAL(rself,"install '@draw_polygon',3,1"); }
-
+\classinfo { IEVAL(rself,"install '@draw_polygon',3,1"); }
 \end class DrawPolygon
 
 /* **************************************************************** */
@@ -712,12 +697,9 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-GRCLASS(DrawImage,
-	\grdecl
-) { IEVAL(rself,"install '@draw_image',3,1"); }
-
+\classinfo { IEVAL(rself,"install '@draw_image',3,1"); }
 \end class DrawImage
 
 void startup_flow_objects_for_image () {
-	\startup
+	\startall
 }

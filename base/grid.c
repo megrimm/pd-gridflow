@@ -647,16 +647,13 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	hell: return rb_call_super(argc,argv);
 }
 
-GRCLASS(GridObject,
-	\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'GridObject',0,0");
 	// define in Ruby-metaclass
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
 	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }
-
 \end class GridObject
 
 Ruby cGridObject;
