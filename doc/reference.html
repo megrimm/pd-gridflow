@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.6 - Reference Manual: Flow Classes</title>
+<title>GridFlow 0.7.7 - Reference Manual: Flow Classes</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.6 - Reference Manual: Flow Classes</h4>
+    <h4>GridFlow 0.7.7 - Reference Manual: Flow Classes</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -467,7 +467,19 @@
 				be logically used in the same way for many purposes 
 				including color palettes, tables of probabilities, tables 
 				of statistics, whole animations, etc. <br>
-   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b> <br>
+   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(dims...)</i> grid<b>)</b>  
+			replace the whole grid, or a subpart of it (see other options on inlet 1) <br>
+   <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;reassign <b>(</b><b>)</b> (Future Use): 
+				makes it so that sending a grid to inlet 1 detaches the old buffer from [@store] 
+				and attaches a new one instead.  This is the default. <br>
+ <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;put_at <b>(</b>indices...<b>)</b> (Future Use): 
+				makes it so that sending a grid to inlet 1 writes into the existing buffer of [@store]. <p> 
+				example: suppose you have [@store {10 240 320 3}]. then "put_at 3" 
+				will allow to write a Dim[240,320,3] grid in indices (3,y,x,c) where y,x,c are indices of the incoming grid; 
+				in other words, if that's a buffer of 10 RGB frames, you'd be replacing frame #3. Furthermore, 
+				it also allows you to write a Dim[n,240,320,3] grid at (3+f,y,x,c) where f,y,x,c are indices of the incoming grid, 
+				replacing frame #3, #4, ... up to #3+n-1. Here n is at most 7 because the last frame in the buffer is #9. </p> <p>that way of working extends to other kinds of data you'd put in Grids, in any numbers of dimensions; 
+				because, as usual, [@store] wouldn't know the difference. </p> <br>
    
 			grids as stored, as indexed, or as assembled from multiple 
 			indexings.  <br></td></tr><tr><td></td><td></td><td> </td></tr>
@@ -947,7 +959,7 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.6 Documentation<br>
+GridFlow 0.7.7 Documentation<br>
 Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
