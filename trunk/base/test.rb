@@ -36,6 +36,20 @@ def test_math
 	x.expect([2,3,5,7]) { e.send_in 0,"2 3 5 7" }
 	x.expect([42]*10000) { e.send_in 0,"10000 # 42" }
 
+	(a = FObject["@two"]).connect 0,e,0
+	x.expect([42,0]) { a.send_in 0,42 }
+	x.expect([42,28]) { a.send_in 1,28 }
+	x.expect([1313,28]) { a.send_in 0,1313 }
+
+	(a = FObject["@three"]).connect 0,e,0
+	x.expect([42,0,0]) { a.send_in 0,42 }
+	x.expect([42,28,0]) { a.send_in 1,28 }
+	x.expect([42,28,-1]) { a.send_in 2,-1 }
+
+	(a = FObject["@four"]).connect 0,e,0
+	x.expect([42,0,0,0]) { a.send_in 0,42 }
+	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
+
 	(a = FObject["@ + {0 10}"]).connect 0,e,0
 	x.expect([1,12,4,18]) {
 		a.send_in 0, 1,2,4,8 }
@@ -257,9 +271,8 @@ end
 
 def test_anim msgs
 	gin = FObject["@in"]
-	gout = FObject["@out 256 256"]
-
-proc{
+#	gout = FObject["@out 256 256"]
+#proc{
 	gout = FObject["@fold + 0"]
 	gout2 = FObject["@ / 3"]
 	gout3 = FObject["@outer + {0}"]
@@ -268,14 +281,14 @@ proc{
 	gout.connect 0,gout2,0
 	gout2.connect 0,gout3,0
 	gout3.connect 0,gout4,0
-}
+#}
 
 	gin.connect 0,gout,0
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
 	msgs.each {|m| gin.send_in 0,m}
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=30
+	frames=300
 	frames.times { gin.send_in 0 }
 #	loop { gin.send_in 0 }
 #	metro = FObject["rtmetro 80"]
@@ -356,6 +369,7 @@ def test_formats
 	gout = FObject["@out 256 256"]
 	gin.connect 0,gout,0
 	[
+		"jpeg file #{$imdir}/ruby0216.jpg",
 		"ppm file #{$imdir}/g001.ppm",
 #		"ppm file #{$imdir}/b001.ppm",
 #		"ppm file #{$imdir}/r001.ppm",
@@ -365,6 +379,7 @@ def test_formats
 		"grid gzfile #{$imdir}/foo2.grid.gz",
 	].each {|command|
 		gin.send_in 0,"open #{command}"
+#		gin.send_in 0
 		2.times { gin.send_in 0 } # test for load, rewind, load
 		sleep 1
 	}
