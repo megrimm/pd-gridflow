@@ -193,6 +193,7 @@ module GridIO
 	attr_reader :format
 
 	def _0_open(sym,*a)
+		sym = sym.intern if String===sym
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
 		_0_close if @format

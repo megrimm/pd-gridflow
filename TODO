@@ -5,98 +5,90 @@
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
-[ ] bug in automatic type conversion (eg: @in quicktime -> ...)
-
-[ ] can't open "": Success; loading a nonquicktime file using quicktime
-
-[ ] @in#open problem with String argument.
-
-[ ] #0  BFObject_rescue (fm=0xbffff660) at bridge/jmax.c:112
+[001] bin/plusminus not working on vasarely
+[002] java/Makefile is improper
+[003] javac is not detected
+[004] bug in automatic type conversion (eg: @in quicktime -> ...)
+[005] can't open "": Success; loading a nonquicktime file using quicktime
+[006] @in#open problem with String argument.
+[007] #0  BFObject_rescue (fm=0xbffff660) at bridge/jmax.c:112
 112                     post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-
-[ ] Greyscale JPEG does not work
-
-[ ] T_DATA #dup #clone ???
-
-[ ] separate bridge makefiles from other makefiles!!!
-
-[ ] research bugs in ASIO with Ruby. (eg. serial port)
-[ ] again, problem with find_file...
-[ ] remove "option" completely...
-[ ] recursive message-loop not detected.
-[ ] "cast" missing: jpeg, quicktime, ...
-[ ] @for int64 fails on machine "lcd".
-
-[ ] jMax: jmax_examples/benchmark.jmax:
+[008] Greyscale JPEG does not work
+[009] T_DATA #dup #clone ???
+[010] separate bridge makefiles from other makefiles!!!
+[011] research bugs in ASIO with Ruby. (eg. serial port)
+[012] again, problem with find_file...
+[013] remove "option" completely...
+[014] recursive message-loop not detected.
+[015] "cast" missing: jpeg, quicktime, ...
+[016] @for int64 fails on machine "lcd".
+[017] jMax: jmax_examples/benchmark.jmax:
 #0  0x40390bcf in st_lookup (table=0x3, key=6457, value=0xbfffd50c) at st.c:258
-
-[ ] "make install" doesn't work properly with ruby-1.6
-
-[ ] PD:
+[018] "make install" doesn't work properly with ruby-1.6
+[019] PD:
  #0  0x4022abcf in st_lookup (table=0x6, key=3137, value=0xbfffdafc) at st.c:258
 258         hash_val = do_hash(key, table);
 #0  0x4022abcf in st_lookup (table=0x5, key=3137, value=0xbfffcf9c) at st.c:258
 258         hash_val = do_hash(key, table);
-
-[ ] PD:
+[020] PD:
 error: NotImplementedError: method `class' called on terminated object (at 80eb5dc: [00000000,00000000,00000000,40d10800,00000000])
 /opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:590:in `send_out'
-
-[ ] PD:
+[021] PD:
 error: NoMethodError: undefined method `intern' for nil
 /opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:591:in `method_missing'
-
-[ ] base/test.rb (default):
+[022] base/test.rb (default):
     2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
     (makes no sense whatsoever!)
-[ ] I messed with the installation (site-install vs install)
-[ ] GFStack overflows when accumulating errors
-[ ] format_grid: write test for other bpv's
-[ ] latency is not that good. (GC ?)
-[ ] tcp test is broken
-[ ] @export doesn't work in pd
-[ ] @join on small chunks is way too slow
-[ ] FormatGrid: not properly tested (crashes sometimes)
-[ ] stdout should be redirected if bridge is present
-[ ] error handling sometimes leads to crash
-[ ] error handling shows inanely useless messages (sometimes)
-[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
-[ ] format_x11 causes crash (resizing + shm, sometimes)
-[ ] format_x11 causes delayed crash when closing its associated window
-[ ] new "seed"s may leak ? (Grid vs Grid*)
-[ ] some seeds aren't typechecked
-[ ] doc/moulinette.rb crashes with ruby 1.8
-[ ] jpeg file cat crashes on second file (jpeglib buffering?)
-[ ] GRID_FINISH triggered while backstore ???
+[023] I messed with the installation (site-install vs install)
+[024] GFStack overflows when accumulating errors
+[025] format_grid: write test for other bpv's
+[026] latency is not that good. (GC ?)
+[027] tcp test is broken
+[028] @export doesn't work in pd
+[029] @join on small chunks is way too slow
+[030] FormatGrid: not properly tested (crashes sometimes)
+[031] stdout should be redirected if bridge is present
+[032] error handling sometimes leads to crash
+[033] error handling shows inanely useless messages (sometimes)
+[034] format/mpeg3.c,quicktime.c might cause lockup on exit
+[035] format_x11 causes crash (resizing + shm, sometimes)
+[036] format_x11 causes delayed crash when closing its associated window
+[037] new "seed"s may leak ? (Grid vs Grid*)
+[038] some seeds aren't typechecked
+[039] jpeg file cat crashes on second file (jpeglib buffering?)
+[040] GRID_FINISH triggered while backstore ???
 
 Bugs (Low Priority)
-[ ] what would be a way to make GF work well with PD's idea of a list?
-[ ] source_filter.rb should check whether \decl,\def match
-[ ] TCP server socket busy even after kill
-[ ] make better detection of libmpeg version
-[ ] write unit tests about required functionality
-[ ] write unit tests about error checking
-[ ] make system to ensure everything is working before a release.
-[ ] potential issues between fork() and X11 ?
-[ ] [@export_list] blows up with >=125 elements (alx)
-[ ] BitPacking has trouble with masks that extend beyond int25be
-[ ] remove the crap given by -w of ruby
-[ ] make: Dépendance circulaire site-install <- install abandonnée.
+[041] what would be a way to make GF work well with PD's idea of a list?
+[042] source_filter.rb should check whether \decl,\def match
+[043] TCP server socket busy even after kill
+[044] make better detection of libmpeg version
+[045] write unit tests about required functionality
+[046] write unit tests about error checking
+[047] make system to ensure everything is working before a release.
+[048] potential issues between fork() and X11 ?
+[049] [@export_list] blows up with >=125 elements (alx)
+[050] BitPacking has trouble with masks that extend beyond int25be
+[051] remove the crap given by -w of ruby
+[052] make: Dépendance circulaire site-install <- install abandonnée.
 	(with ruby 1.8)
-[ ] @in needs 2 inlets to work but should have only one.
-[ ] it's possible to crash by sending data in two inlets
+[053] @in needs 2 inlets to work but should have only one.
+[054] it's possible to crash by sending data in two inlets
     of a same object at once
-[ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
-[ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
-[ ] RtMetro crashes if deleted while turned on; and isn't reliably working
-[ ] is there still a problem with videodev rgb vs bgr ?
-[ ] mess with options in format grid
-[ ] look for "!@#$" in source
+[055] <matju> -fomit-frame-pointer is not rubygc-compatible ?
+[056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
+[057] RtMetro crashes if deleted while turned on; and isn't reliably working
+[058] is there still a problem with videodev rgb vs bgr ?
+[059] mess with options in format grid
+[060] look for "!@#$" in source
+[061] @store should support other integer types in inlet 0
 
 Bugs (Cannot reproduce)
-[ ] ruby SecurityError: Insecure operation - exist?
+[061] ruby SecurityError: Insecure operation - exist?
 	(trying to load ~/.gridflow_startup)
 	(this is one error message from HELL; makes no sense at all)
+
+===================
 
 Community
 [ ] put new examples on website
@@ -123,7 +115,6 @@ Installation
 [ ] bridge should check that the gridflow.so file matches.
 [ ] make ./configure's 'test' method work using exceptions
     for meaningful error reporting in config.log.
-[ ] -falign ...
 
 Documentation
 [ ] make a short feature list as a promo
@@ -149,10 +140,12 @@ Documentation
 [ ] benchmarks (especially: simple video i/o)
 --- remember to keep doc/help/screenshots/examples up to date
 
+Source Filter
+[ ] add \ruby \end blocks (multiline inlined rubyscripts)
+[ ] \attr
+
 Architecture
 [ ] eliminate the Dim class, replacing by Grid itself.
-[ ] add \ruby \end blocks (multiline inlined rubyscripts)
-[ ] attributes
 [ ] inlet-variables (variables associated to inlets)
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
@@ -162,9 +155,7 @@ Architecture
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (@global#classes, @global#methods, ...)
-[ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
-[ ] jMax/PD bridges should support list-literals inside messages
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
 [ ] dispatch on _n_-prefixed methods (one selector any inlet)
@@ -195,18 +186,18 @@ Architecture
 Operators
 [ ] User-defined operators; compound operators... e.g.
 	[@ {{* 7} + {>> 3}}]
-[ ] DEF_OP2_BITWISE
 [ ] n-ary operators... make [@] a metaclass
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] op2: abs- (absolute difference), avg (average)
+[ ] op2: abs- (absolute difference), avg (average), erf, rol, ror
 [ ] remove fold/scan for ops for which it makes no sense.
 [ ] MMX memcpy() ?
 [ ] MMX _runtime_ autodetection
-[ ] erf
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
 [ ] UnknownAtom class
+[ ] jMax/PD bridges should support list-literals inside messages
+[ ] GFBridge object visible from Ruby
 
 Computation Objects
 [ ] @counter (similar to @for)
