@@ -537,7 +537,13 @@ class ForEach < FObject
 	install "foreach", 1, 1
 end
 
-class Sprintf < GridFlow::FObject
+class ListFlatten < FObject
+	def initialize() super end
+	def _0_list(*a) send_out 0,:list,*a.flatten end
+	install "listflatten", 1, 1
+end
+
+class Sprintf < FObject
   def initialize(format) _1_symbol(format) end
   def _0_list(*a)
     a.each {|x| x=x.to_s if Symbol===x }
