@@ -31,7 +31,7 @@ void test_formats(void) {
 
 int main(void) {
 	int i;
-	gridflow_init_standalone();
+	gf_init_standalone();
 	test_formats();
 	return 0;
 }

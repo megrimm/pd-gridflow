@@ -15,7 +15,7 @@ $(LIB)::
 	(cd ../c/src; $(MAKE) -k standalone)
 
 test: test1 test2
-	$(FIX_LD) ./test1
+	$(FIX_LD) ./test1 anim2
 .PHONY: test
 
 test1: test1.c $(LIB)
@@ -27,7 +27,4 @@ test2: test2.c $(LIB)
 clean:
 	rm -f test1 test2
 .PHONY: clean
-
-#mpeg_test: mpeg_test.c
-#	gcc $(ARCH_CFLAGS) mpeg_test.c $(LIB) -o $@ -lmpeg
 
