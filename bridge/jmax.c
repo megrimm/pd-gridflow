@@ -339,7 +339,7 @@ void gridflow_module_init () {
 		return;
 	}
 
-	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
+	rb_define_singleton_method(mGridFlow2,"find_file_2",(RMethod)gf_find_file,1);
 //	post("gridflow clock DISABLED (sorry. connect a [metro] to [@global] instead)\n");
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);

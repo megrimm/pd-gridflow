@@ -119,7 +119,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + fm->winlet;
 	ID sel = rb_intern(buf);
-	fts_post("incoming: selector=%s\n", buf);
+	//fts_post("incoming: selector=%s\n", buf);
 	for (int i=0; i<fm->ac; i++) argv[i] = Bridge_import_value(fm->at+i);
 	rb_funcall2(fm->self->rself,sel,fm->ac,argv);
 	return Qnil;
@@ -196,6 +196,8 @@ static void BFObject_class_init_1 (fts_class_t *qlass)
 	for (int i=0; i<ninlets; i++) {
 		fts_class_inlet_varargs(qlass, i,(fts_method_t)BFObject_method_missing);
 	}
+//	fts_class_message_varargs(qlass, 0, (fts_method_t)BFObject_method_missing);
+	fts_class_input_handler(qlass, (fts_method_t)BFObject_method_missing);
 	for (int i=0; i<noutlets; i++) fts_class_outlet_atom(qlass,i);
 }
 
@@ -226,7 +228,7 @@ Ruby rself) {
 	fts_atom_t sel;
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
+	//fts_post("send_out: %s\n",fts_get_symbol(&sel));
 	fts_outlet_send(bself,outlet,fts_get_symbol(&sel),argc,at);
 	return Qnil;
 }
@@ -291,12 +293,11 @@ void gridflow_config() {
 		return;
 	}
 
-	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
+	rb_define_singleton_method(mGridFlow2,"find_file_2",(RMethod)gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 
-	/* GAAAH */
-//	fts_object *obj = fts_object_create(fts_tuple_class, 0, 0);
-//	fts_timebase_add_call(fts_get_timebase(), obj, gf_timer_handler, NULL, 0.0f);
+	fts_object *obj = fts_object_create(fts_tuple_class, 0, 0);
+	fts_timebase_add_call(fts_get_timebase(), obj, gf_timer_handler, NULL, 0.0f);
 }
 
 
