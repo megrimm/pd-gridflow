@@ -125,6 +125,7 @@ void gridflow_module_init (void) {
 	gf_object_set = Dict_new(0,0);
 	gf_timer_set  = Dict_new(0,0);
 	gf_timer = Timer_new(gf_timer_handler, 0);
+//	Dict_put(gf_timer_set,0,RtMetro_alarm);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
@@ -333,17 +334,44 @@ char *FObject_to_s(FObject *$) {
 /* **************************************************************** */
 /* [rtmetro] */
 
-static Timer *rtmetro_timer = 0;
-
 typedef struct RtMetro {
 	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
-	int ms; /* millisecond time */
+	int ms; /* millisecond time interval */
 	int on;
+	uint64 next_time; /* next time an event occurred */
+	uint64 last;
 } RtMetro;
 
+static long long RtMetro_now(void) {
+	struct timeval nowtv;
+	gettimeofday(&nowtv,0);
+	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
+}
+
+static void RtMetro_alarm(RtMetro *$) {
+	uint64 now = RtMetro_now();
+	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
+	if (now >= $->next_time) {
+		//whine("rtmetro sending bang");
+		Object_send_thru(OBJ($),0,sym_bang,0,0);
+		/* $->next_time = now; */ /* jmax style, less realtime */
+		$->next_time += 1000*$->ms;
+	}
+	$->last = now;
+}
+
 METHOD(RtMetro,int) {
+	int oon = $->on;
 	$->on = !! GET(0,int,0);
 	whine("on = %d",$->on);
+	if (oon && !$->on) {
+		whine("deleting rtmetro alarm...");
+		Dict_del(gf_timer_set,$);
+	} else if (!oon && $->on) {
+		whine("creating rtmetro alarm...");
+		Dict_put(gf_timer_set,$,RtMetro_alarm);
+		$->next_time = RtMetro_now();
+	}
 }
 
 METHOD(RtMetro,rint) {
@@ -368,7 +396,7 @@ LIST(),
 /* outlet 0 not used for grids */
 	DECL2(RtMetro, 0,int,   int,   "i"),
 	DECL2(RtMetro, 1,int,   rint,  "i"),
-	DECL2(RtMetro,-1,init,  init,  "s"),
+	DECL2(RtMetro,-1,init,  init,  "si"),
 	DECL2(RtMetro,-1,delete,delete,""))
 
 /* **************************************************************** */
@@ -457,7 +485,7 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 void gf_timer_handler (Timer *foo, void *obj) {
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-	Timer_set_delay(gf_timer, 25.0);
+	Timer_set_delay(gf_timer, 10.0);
 	Timer_arm(gf_timer);
 }
 
