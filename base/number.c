@@ -259,7 +259,7 @@ void swap16 (int n, Pt<uint16> data) {
 
 /* **************************************************************** */
 
-#define MAX_INDICES 1024*1024
+#define MAX_INDICES 16*1024*1024
 void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	for (int i=0; i<n; i++)
