@@ -5,7 +5,7 @@
 Distribution (0.5.x)
 [!] prepare gridflow-images-0.5
 [ ] upload on both web sites
-[ ] send announcement (jmaxvideo,jmax,0xff,fm.net)
+[ ] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 [ ] review all documentation
 
 Installation
@@ -47,6 +47,7 @@ Documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
+[ ] should GridFlow require Ruby ? (would save lots of work)
 [!] remove references to FTS in main source code
 [!] class Object
 [!] class Class
@@ -116,6 +117,7 @@ Effects
 	try interleaving the data and using [@inner]
 
 Input/Output
+[x] generic event-driven io
 [ ] in-place editing (rw mode)
 [ ] implement byte-order support in BitPacking
 [ ] add Hermes support
@@ -125,9 +127,17 @@ Input/Output
 [ ] Ruby bridge
 [ ] PureData bridge
 [ ] Max bridge
+[ ] TCP: move out of Grid
+[!] TCP: non-blocking write
+[!] TCP: non-blocking listen
+[ ] TCP Socket Buffering
+[x] Grid: bpv 8
+[ ] Grid: bpv 4,2,1
+[ ] Grid: bpv 16
+[ ] Grid: signed/unsigned
 
 Format
-[ ] all: get rid of the "format" notion
+[ ] all: possibly get rid of the "format" notion
 [x] all: Format base class + inheritance
 [!] all: rewinding file (or not)
 [!] seq: multi-image (createable by cat, ar, tar or zip)
@@ -138,16 +148,16 @@ Format
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM
 [ ] XPM
+[ ] GIF
 [ ] PNG (and register ourselves in libpng.org's app list)
 [ ] QuickTime
 [!] fork: is a new format, for e.g. multiple MPEG drivers
-[!] Grid: non-blocking write
-[!] Grid: non-blocking listen
 [!] Videodev: allow to select tv channels (this is "freq")
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
 [ ] Videodev: find out what channel the small cam goes on and why it isn't displaying.
 [ ] Raw: a new format for reading arbitrary data.
 [ ] X11: mouse input
+[ ] /dev/dsp
 
 Java/Swing
 [ ] color picker
@@ -163,4 +173,5 @@ UnitTesting/Bugs
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
 [ ] libmpeg fubar on SuSE
-
+[ ] Dict_each limitation
+[ ] possibly remove Number and sizeof(Number) (often does not make sense)

@@ -31,11 +31,11 @@ while [ 0 != $# ]
 do
 	case $1 in
 		--no-x11)
-			NO_X11=yes
+			HAVE_X11=off
 			echo "won't check for libX11"
 		;;
 		--no-mpeg)
-			NO_MPEG=yes
+			HAVE_MPEG=off
 			echo "won't check for libmpeg"
 		;;
 		--fast)
@@ -87,16 +87,27 @@ log () {
 }
 
 say () {
+  echo -n "$1"
+  shift
   (($@ 1>&5 2>&5) && echo "yes") || (echo "no" && false)
 }
 
 has-libmpeg () {
-	if [ ! "z$NO_MPEG" = "z" ]; then return 1; fi
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
 cat > /tmp/$$.c <<TEST
 	#include <mpeg.h>
-	int main (void) { return GetMPEGFrame==0; }
+	int main (void) { return !GetMPEGFrame; }
 TEST
 log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
+}
+
+has-libmpeg3 () {
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <mpeg3io.h>
+	int main (void) { return !mpeg3io_sync_buffer; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -lmpeg3 -lpthread -lm
 }
 
 has-jmax () {
@@ -110,11 +121,11 @@ log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
 }
 
 has-jmax-2-5 () {
-cat ${JMAXROOTDIR}/include/fts/lang/mess.h && has-jmax
+cat ${JMAXROOTDIR}/include/fts/lang/mess.h >/dev/null && has-jmax
 }
 
 has-jmax-3-0 () {
-cat ${JMAXROOTDIR}/include/ftsconfig.h && has-jmax
+cat ${JMAXROOTDIR}/include/ftsconfig.h >/dev/null && has-jmax
 }
 
 has-videodev () {
@@ -127,7 +138,7 @@ log gcc /tmp/$$.c -o /tmp/$$
 }
 
 has-x11 () {
-	if [ ! "z$NO_X11" = "z" ]; then return 1; fi
+	if [ "z$HAVE_X11" = "zoff" ]; then return 1; fi
 cat > /tmp/$$.c <<TEST
 	#include <X11/Xlib.h>
 	int main (void) {return 0;}
@@ -159,17 +170,19 @@ TEST
 log gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
+has-profiling () {
+	[ "z$HAVE_PROFILING" = "zno" ]
+}
+
 #--------------------------------#
 
 FORMATS='PPM Targa Grid'
 LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
 
-echo -n "looking for jMax 2.5: "
-if say has-jmax-2-5; then
+if say "looking for jMax 2.5: " has-jmax-2-5; then
 	JMAX_VERSION="25"
 else
-	echo -n "looking for jMax 3.0: "
-	if say has-jmax-3-0; then
+	if say "looking for jMax 3.0: " has-jmax-3-0; then
 		JMAX_VERSION="30"
 	else
 		echo "(not compiling for jmax)"
@@ -177,25 +190,22 @@ else
 	fi
 fi
 
-echo -n "looking for Ward's LibMPEG as -lwardsmpeg: "
-if say has-libmpeg wardsmpeg; then
+if say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3: " has-libmpeg3; then
+	append FORMATS MPEG3
+	append LDSOFLAGS -lmpeg3 -lpthread -lm
+elif say "looking for Ward's LibMPEG as -lwardsmpeg: " has-libmpeg wardsmpeg; then
 	append FORMATS MPEG
 	append LDSOFLAGS -lwardsmpeg
-else
-	echo -n "looking for Ward's LibMPEG as -lmpeg: "
-	if say has-libmpeg mpeg; then
-		append FORMATS MPEG
-		append LDSOFLAGS -lmpeg
-	fi
+elif say "looking for Ward's LibMPEG as -lmpeg: " has-libmpeg mpeg; then
+	append FORMATS MPEG
+	append LDSOFLAGS -lmpeg
 fi
 
-echo -n "looking for videodev (video4linux 1.x video digitizer drivers): "
-if say has-videodev; then
+if say "looking for videodev (video4linux 1.x digitizer drivers): " has-videodev; then
 	append FORMATS VideoDev
 fi
 
-echo -n "looking for x11 video protocol: "
-if say has-x11; then
+if say "looking for x11 video protocol: " has-x11; then
 	append FORMATS X11
 	append LDSOFLAGS -L/usr/X11R6/lib -lX11
 	echo -n "looking for x11 shared memory (acceleration): "
@@ -204,11 +214,10 @@ if say has-x11; then
 	fi
 fi
 
-echo -n "looking for pentium-compatible CPU: "
-if say has-pentium-compatible; then
+if say "looking for pentium-compatible CPU: " has-pentium-compatible; then
 	append OPTIONS HAVE_PENTIUM
 	echo -n "enable profiliing: "
-	if [ "z$HAVE_PROFILING" = "zno" ]; then
+	if say "enable profiling: " has-profiling; then
 		echo "no"
 	else
 		echo "yes"
