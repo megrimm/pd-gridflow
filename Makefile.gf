@@ -36,7 +36,6 @@ else
 endif
 
 CFLAGS += -g    # gdb info
-CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 CFLAGS += -fPIC # some OSes/machines need that for .so files
 
 OBJDIR = .
@@ -48,9 +47,9 @@ ifeq ($(HAVE_STATIC_RUBY),yes)
 	RUBYA2 = libruby.a/*.o
 endif
 
-cpu/pentium.o: cpu/pentium.rb
-	ruby cpu/pentium.rb > cpu/pentium.asm
-	nasm -felf cpu/pentium.asm -o cpu/pentium.o
+cpu/mmx.o: cpu/mmx.rb
+	ruby cpu/mmx.rb > cpu/mmx.asm
+	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
 libruby.a/object.o:
 	mkdir -p libruby.a
@@ -72,7 +71,8 @@ kloc::
 	configure Makefile.gf extra/*.rb
 
 edit::
-	(nedit base/*.[ch] */main.rb base/test.rb configure &)
+	(nedit base/grid.[ch] base/number.c base/flow_objects.c base/main.c \
+	*/main.rb base/test.rb configure &)
 
 CONF = config.make config.h Makefile
 
