@@ -43,7 +43,7 @@ METHOD(FormatMPEG3,frame) {
 	int sx = mpeg3_video_width($->mpeg,0);
 	int sy = mpeg3_video_height($->mpeg,0);
 	int npixels = sx*sy;
-	uint8 *buf = NEWA(uint8,sy*sx*3+16);
+	uint8 *buf = new uint8[sy*sx*3+16];
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
 	int result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
@@ -59,7 +59,7 @@ METHOD(FormatMPEG3,frame) {
 		o->send(bs,b2);
 	}
 
-	FREE(buf);
+	delete buf;
 	o->end();
 }
 

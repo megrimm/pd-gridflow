@@ -84,6 +84,10 @@ test::
 	rm -f core
 	(ruby       -w $(TEST)) || $(BACKTRACE)
 
+vtest::
+	rm -f core
+	(valgrind ruby       -w $(TEST) &> gf.valgrind) || $(BACKTRACE)
+
 test16:: test
 	(ruby-1.6.7 -w $(TEST)) || $(BACKTRACE)
 

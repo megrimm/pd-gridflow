@@ -120,12 +120,12 @@ static const char *video_mode_choice[] = {
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
 	gfpost(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,COUNT(_table_),_table_)); \
-	FREE(foo);}
+	delete foo;}
 
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
 	gfpost(TAB "%s: %s", #_field_, foo=choice_to_s($->_field_,COUNT(_table_),_table_));\
-	FREE(foo);}
+	delete foo;}
 
 static char *flags_to_s(int value, int n, const char **table) {
 	char foo[256];
@@ -241,8 +241,8 @@ METHOD(FormatVideoDev,size) {
 
 	/* bug here: won't flush the frame queue */
 
-	FREE($->dim);
-	$->dim = NEW(Dim,(3,v));
+	if ($->dim) delete $->dim;
+	$->dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_gfpost(&grab_win);
 	grab_win.clipcount = 0;
@@ -260,7 +260,7 @@ METHOD(FormatVideoDev,size) {
 METHOD(FormatVideoDev,dealloc_image) {
 	if (!$->image) return;
 	if (!$->use_mmap) {
-		FREE($->image);
+		delete $->image;
 	} else {
 		munmap($->image, $->vmbuf.size);
 		$->image = 0;
@@ -269,7 +269,7 @@ METHOD(FormatVideoDev,dealloc_image) {
 
 METHOD(FormatVideoDev,alloc_image) {
 	if (!$->use_mmap) {
-		$->image = NEWA(uint8,$->dim->prod(0,1)*$->bit_packing->bytes);
+		$->image = new uint8[$->dim->prod(0,1)*$->bit_packing->bytes];
 		return;
 	}
 	int fd = GETFD;
@@ -442,7 +442,7 @@ METHOD(FormatVideoDev,close) {
 METHOD(FormatVideoDev,init2) {
 	int fd = GETFD;
 	VideoCapability vcaps;
-	VideoPicture *gp = NEW(VideoPicture,());
+	VideoPicture *gp = new VideoPicture;
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	VideoCapability_gfpost(&vcaps);
@@ -472,7 +472,7 @@ METHOD(FormatVideoDev,init2) {
 	case VIDEO_PALETTE_RGB24:{
 //		uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		$->bit_packing = NEW(BitPacking,(is_le(),3,3,masks));
+		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	case VIDEO_PALETTE_RGB565:{
 		/* I think the BTTV card is lying. */
@@ -481,7 +481,7 @@ METHOD(FormatVideoDev,init2) {
 //			uint32 masks[3] = { 0x0000ff,0x00ff00,0xff0000 };
 			uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 //			uint32 masks[3] = { 0xff000000,0x00ff0000,0x0000ff00 };
-		$->bit_packing = NEW(BitPacking,(is_le(),3,3,masks));
+		$->bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
 	default:
 		gfpost("can't handle palette %d", gp->palette);

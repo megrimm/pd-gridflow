@@ -177,9 +177,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 /* ---------------------------------------------------------------- */
 
 METHOD(FormatX11,frame) {
-	char *s = $->dim->to_s();
-	gfpost("$->dim = %s",s);
-	FREE(s);
+//	gfpost("$->dim = %s",$->dim->to_s());
 
 	XGetSubImage($->display, $->window,
 		0, 0, $->dim->get(1), $->dim->get(0),
@@ -213,13 +211,13 @@ void FormatX11::dealloc_image () {
 	if (!ximage) return;
 	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-		FREE(shm_info);
+		if (shm_info) delete shm_info, shm_info=0;
 		/* and what do i do to ximage? */
 	#endif	
 	} else {
 		XDestroyImage(ximage);
 		ximage = 0; 
-		/* FREE($->image); */
+		/* delete $->image; */
 	}
 }
 
@@ -228,7 +226,7 @@ top:
 	dealloc_image();
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
-		shm_info = NEW(XShmSegmentInfo,());
+		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
 		assert(ximage);
 		shm_info->shmid = shmget(
@@ -276,8 +274,8 @@ void FormatX11::resize_window (int sx, int sy) {
 		gfpost("resizing while receiving picture (ignoring)");
 		return;
 	}
-	FREE(dim);
-	dim = NEW(Dim,(3,v));
+	if (dim) delete dim;
+	dim = new Dim(3,v);
 
 /* ximage */
 
@@ -290,15 +288,11 @@ void FormatX11::resize_window (int sx, int sy) {
 	oldw = window;
 	if (oldw) {
 		if (is_owner) {
-			char *s = dim->to_s();
-			gfpost("About to resize window: %s",s);
-			FREE(s);
+			//gfpost("About to resize window: %s",dim->to_s());
 			XResizeWindow(display,window,sx,sy);
 		}
 	} else {
-		char *s = dim->to_s();
-		gfpost("About to create window: %s",s);
-		FREE(s);
+		//gfpost("About to create window: %s",dim->to_s());
 		window = XCreateSimpleWindow(display,
 			root_window, 0, 0, sx, sy, 0, white, black);
 		if(!window) RAISE("can't create window");
@@ -516,8 +510,8 @@ METHOD(FormatX11,init) {
 	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 	gfpost("is_le = %d",is_le());
 	gfpost("disp_is_le = %d", disp_is_le);
-	$->bit_packing = NEW(BitPacking,(
-		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks));
+	$->bit_packing = new BitPacking(
+		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
 
 	$->bit_packing->gfpost();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
