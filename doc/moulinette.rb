@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.8.0"
+GF_VERSION = "0.7.5"
 
 #$use_rexml = true
 $use_rexml = false
@@ -493,11 +493,11 @@ end
 
 #----------------------------------------------------------------#
 
-def write_header
+def write_header(tree)
 puts <<EOF
 <html><head>
 <!-- #{"$"}Id#{"$"} -->
-<title>GridFlow #{GF_VERSION} - reference</title>
+<title>GridFlow #{GF_VERSION} - #{tree.att['title']}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -512,7 +512,7 @@ EOF
 write_black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow #{GF_VERSION} - index of this page:</h4>
+    <h4>GridFlow #{GF_VERSION} - #{tree.att['title']}</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -575,8 +575,8 @@ def write_one_page file
 		output_name = file.sub(/\.xml/,".html")
 		STDERR.puts "writing #{output_name}"
 		STDOUT.reopen output_name, "w"
-		write_header
 		tree = $nodes[file]
+		write_header(tree)
 		mk(:tr) { mk(:td,:colspan,2) { mk(:div,:cols,tree.att["indexcols"]||1) {
 			tree.show_index
 			puts "<br><br>"
