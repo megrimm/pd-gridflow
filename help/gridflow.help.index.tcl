@@ -14,7 +14,7 @@ if {[string compare [lindex $argv 0] generate] == 0} {
 }
 }
 
-helpSummary "video4jmax summary" $dir/video4jmax.summary.jmax
+helpSummary "GridFlow summary" $dir/gridflow.summary.jmax
 
 foreach name {
 	@
