@@ -632,8 +632,10 @@ void startup_number () {
 //	OVERRIDE_INT(mod,map,quick_mod_map);
 }
 
-static void make_hocus_pocus () {
-	exit(1);
+/* i'm sorry... see the end of grid.c for an explanation... */
+//static
+void make_hocus_pocus () {
+//	exit(1);
 	((BitPacking*)0)->pack(0,Pt<uint8>(),Pt<uint8>());
 	((BitPacking*)0)->pack(0,Pt<int16>(),Pt<uint8>());
 	((BitPacking*)0)->pack(0,Pt<int32>(),Pt<uint8>());
