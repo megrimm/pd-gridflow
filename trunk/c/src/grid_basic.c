@@ -38,6 +38,22 @@ typedef struct GridImport {
 	int *v;
 } GridImport;
 
+GRID_BEGIN(GridImport,0) { /* nothing to do */ return true; }
+GRID_FLOW(GridImport,0) {
+	GridOutlet *out = $->out[0];
+	while(n) {
+		int n2;
+		if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
+		n2 = Dim_prod(out->dim) - out->dex;
+		if (n2 > n) n2 = n;
+		GridOutlet_send(out,n,data);
+		if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
+		n -= n2;
+		data += n2;
+	}
+}
+GRID_END(GridImport,0) { /* nothing to do */ }
+
 GRID_BEGIN(GridImport,1) {
 	if (Dim_count(in->dim) != 1) return false;
 	$->n = Dim_get(in->dim,0);
@@ -67,7 +83,7 @@ METHOD(GridImport,init) {
 	int i;
 	int v[ac-1];
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-/*	$->in[0] = GridInlet_NEW3($,GridImport,0); */
+	$->in[0] = GridInlet_NEW3($,GridImport,0);
 	$->in[1] = GridInlet_NEW3($,GridImport,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
@@ -88,9 +104,8 @@ METHOD(GridImport,delete) {
 METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
 	Number data[] = { GET(0,int,0) };
-
 	if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
-	GridOutlet_send(out,COUNT(data),data);
+	GridOutlet_send(out,ARRAY(data));
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
 }
 
@@ -114,6 +129,7 @@ CLASS(GridImport) {
 	/* initialize the class */
 	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 
 	/* define the methods */
@@ -181,6 +197,7 @@ CLASS(GridExport) {
 
 typedef struct GridStore {
 	GridObject_FIELDS;
+	/* NumberType *nt; */
 	Number *data;
 	Dim *dim;
 	Number *buf;
@@ -810,27 +827,25 @@ GRID_FLOW(GridConvolve,0) {
 }
 
 GRID_END(GridConvolve,0) {
+	int k;
 	int iy, ix, ny = Dim_get($->diml,0), nx = Dim_get($->diml,1);
 	int jy, jx, my = Dim_get($->dim ,0), mx = Dim_get($->dim ,1);
 	int l = Dim_prod_start($->diml,2);
 	Number buf[l];
-	int k;
-
+	Number as[l];
+	
 	for (iy=0; iy<ny; iy++) {
 		for (ix=0; ix<nx; ix++) {
-			for (k=0; k<l; k++) {
-				buf[k] = 0;
-			}
+			Number *d = $->data;
+			for (k=0; k<l; k++) { buf[k] = 0; }
 			for (jy=0; jy<my; jy++) {
-				int pos1 = mod(iy+jy-my/2,ny) * nx;
+				int pos1 = ((iy+jy-my/2+ny)%ny) * nx;
 				for (jx=0; jx<mx; jx++) {
-					int pos = pos1 + mod(ix+jx-mx/2,nx);
-					Number a = $->data[jy*mx+jx];
-					for (k=0; k<l; k++) {
-						Number b = $->datal[pos*l+k];
-						Number c = $->op_para->op(a,b);
-						buf[k] = $->op_fold->op(buf[k],c);
-					}
+					Number b = *d++;
+					int pos = pos1 + (ix+jx-mx/2+nx)%nx;
+					memcpy(as,&$->datal[pos*l],l*sizeof(Number));
+					$->op_para->op_array(l,as,b);
+					$->op_fold->op_array2(l,buf,as);
 				}
 			}
 			GridOutlet_send($->out[0],l,buf);
@@ -844,22 +859,15 @@ GRID_END(GridConvolve,0) {
 GRID_BEGIN(GridConvolve,1) {
 	int length = Dim_prod(in->dim);
 	int count = Dim_count(in->dim);
+	int i;
 	if (count != 2) {
 		whine("only exactly two dimensions allowed for now");
 		return false;
 	}
-	if (count > 0 && (Dim_get(in->dim,0) & 1) == 0) {
-		whine("even number of elements");
-		return false;
-	}
-	if (count > 1) {
-		int x = Dim_get(in->dim,0);
-		int i;
-		for (i=1; i<count; i++) {
-			if (Dim_get(in->dim,i) != x) {
-				whine("not a square grid");
-				return false;
-			}
+	for (i=0; i<count; i++) {
+		if ((Dim_get(in->dim,i) & 1) == 0) {
+			whine("even number of elements");
+			return false;
 		}
 	}
 	GridInlet_abort($->in[0]);

@@ -34,6 +34,8 @@ extern "C" {
 #define template q_template
 #endif
 
+/* #include <objc/Object.h> */
+
 #include "config.h"
 #include "macros.h"
 
@@ -91,6 +93,7 @@ static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 /* jMax specific */
 
 void whine(char *fmt, ...);
+void whine_time(const char *s);
 int    v4j_file_open(const char *name, int mode);
 FILE *v4j_file_fopen(const char *name, int mode); 
 
@@ -109,26 +112,6 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 /* **************************************************************** */
 /* Video4jmax specific */
 
-/* not used for now
-typedef enum {
-	t_uint8,
-	t_uint16,
-	t_uint32,
-unsupported:
-	t_int8,
-	t_int16,
-	t_int32,
-	t_float32,
-	t_float64,
-	t_complex64,
-	t_complex128,
-} ArrayType;
-
-typedef struct {
-	int type;
-	void *buffer;
-} Array;
-*/
 
 /* **************************************************************** */
 
@@ -166,7 +149,7 @@ typedef enum { false, true } bool;
 #endif
 
 /* number of (maximum,ideal) Numbers to send at once */
-#define PACKET_LENGTH (1*1024)
+#define PACKET_LENGTH (1024)
 
 /* options */
 
@@ -223,6 +206,11 @@ typedef struct BitPacking BitPacking;
 	Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
 
+typedef struct NumericType {
+	fts_symbol_t sym;
+	const char *name;
+	int size;
+} NumericType;
 
 typedef struct Operator1 {
 	fts_symbol_t sym;
@@ -239,6 +227,7 @@ typedef struct Operator2 {
 	const char *name;
 	Number (*op)(Number,Number);
 	void   (*op_array)(int,Number *,Number);
+	void   (*op_array2)(int,Number *, const Number *);
 	Number (*op_fold)(Number,int,const Number *);
 } Operator2;
 

@@ -25,6 +25,47 @@
 #include <stdlib.h>
 #include "grid.h"
 
+/* **************************************************************** */
+
+#define DECL_TYPE(_name_,_size_) \
+	{ 0, #_name_, _size_ }
+
+static NumericType numeric_type_table[] = {
+	DECL_TYPE(     uint8,  8),
+	DECL_TYPE(      int8,  8),
+	DECL_TYPE(    uint16, 16),
+	DECL_TYPE(     int16, 16),
+/*	DECL_TYPE(    uint32, 32), */
+	DECL_TYPE(     int32, 32),
+/*
+	DECL_TYPE(    uint64, 64),
+	DECL_TYPE(     int64, 64),
+	DECL_TYPE(   float32, 32),
+	DECL_TYPE(   float64, 64),
+	DECL_TYPE(   float80, 80),
+	DECL_TYPE( complex64, 64),
+	DECL_TYPE(complex128,128),
+	DECL_TYPE(complex160,160),
+*/
+};
+
+/*
+typedef struct {
+	int type;
+	void *buffer;
+} Array;
+*/
+
+/* **************************************************************** */
+
+/* future use, put in grid.h */
+/* would be for optimising out stuff like "* 0" in convolution matrices... */
+#define RHAND_NULL 0
+#define RHAND_IDENTITY 1
+#define RHAND_OTHER 2
+
+/* **************************************************************** */
+
 #define DEF_OP1(_name_,_expr_) \
 	static Number op1_##_name_ (Number a) { return _expr_; } \
 	static void op1_array_##_name_ (int n, Number *as) { \
@@ -62,10 +103,18 @@ Operator1 *op1_table_find(fts_symbol_t sym) {
 	static void op_array_##_name_ (int n, Number *as, Number b) { \
 		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
-			{ Number a = as[0]; as[0] = _expr_; } \
-			{ Number a = as[1]; as[1] = _expr_; } \
-			{ Number a = as[2]; as[2] = _expr_; } \
-			{ Number a = as[3]; as[3] = _expr_; } \
+			{ Number a=as[0]; as[0]= _expr_; } \
+			{ Number a=as[1]; as[1]= _expr_; } \
+			{ Number a=as[2]; as[2]= _expr_; } \
+			{ Number a=as[3]; as[3]= _expr_; } \
+		as+=4; n-=4; } } \
+	static void op_array2_##_name_ (int n, Number *as, const Number *bs) { \
+		while ((n&3)!=0) { Number a = *as, b = *bs++; *as++ = _expr_; n--; } \
+		while (n) { \
+			{ Number a=as[0], b=bs[0]; as[0]= _expr_; } \
+			{ Number a=as[1], b=bs[1]; as[1]= _expr_; } \
+			{ Number a=as[2], b=bs[2]; as[2]= _expr_; } \
+			{ Number a=as[3], b=bs[3]; as[3]= _expr_; } \
 		as+=4; n-=4; } } \
 	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
 		while (n--) { Number b = *as; a = _expr_; } return a; }
@@ -107,8 +156,8 @@ DEF_OP2(tanh, (Number)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (Number)(0+floor(pow(a/256.0,256.0/b)*256.0)))
 DEF_OP2(pow, ipow(a,b))
 
-#define DECL_OP2(_name_,_sym_) \
-	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
+#define DECL_OP2(_name_,_sym_) { 0, _sym_, \
+	&op_##_name_, &op_array_##_name_, &op_array2_##_name_, &op_fold_##_name_ }
 
 Operator2 op2_table[] = {
 	DECL_OP2(add, "+"),
