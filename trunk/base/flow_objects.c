@@ -346,7 +346,7 @@ struct GridOp2 : GridObject {
 
 GRID_BEGIN(GridOp2,0) { $->out[0]->begin(in->dim->dup()); }
 
-GRID_FLOW2(GridOp2,0) {
+GRID_FLOW(GridOp2,0) {
 	if ($->r.is_empty()) RAISE("ARGH");
 	int32 *rdata = $->r.as_int32();
 	int loop = $->r.dim->prod();

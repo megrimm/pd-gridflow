@@ -348,8 +348,13 @@ void gridflow_module_init () {
 		(RFunc)gridflow_bridge_init,1);
 	post("(done)\n");
 
-	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
-		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+	if (!
+	rb_eval_string("begin require 'gridflow'; true; rescue Exception => e;\
+		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
+	{
+		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
+		return;
+	}
 
 	rb_define_singleton_method(GridFlow_module2,"find_file",(RFunc)gf_find_file,1);
 	/* if exception occurred above, will crash soon */

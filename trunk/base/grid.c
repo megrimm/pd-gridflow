@@ -191,7 +191,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 	int mode = NUM2INT(argv[2]);
 	if (n==0) return;
 	if (mode==4) {
-		const Number *data = (Number *) FIX2PTR(argv[1]);
+		Number *data = (Number *) FIX2PTR(argv[1]);
 		if (!is_busy_verbose("flow")) return;
 		assert(n>0);
 		int d = dex + bufn;
@@ -209,7 +209,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 				if (gh->mode==6) {
 					Number *data2 = new Number[factor];
 					COPY(data2,buf,factor);
-					((GridFlow2)gh->flow)(parent->peer,parent,this,factor,data2);
+					gh->flow(parent->peer,parent,this,factor,data2);
 				} else {
 					gh->flow(parent->peer,parent,this,factor,buf);
 				}
@@ -223,7 +223,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			if (gh->mode==6) {
 				Number *data2 = new Number[m];
 				COPY(data2,data,m);
-				((GridFlow2)gh->flow)(parent->peer,parent,this,m,data2);
+				gh->flow(parent->peer,parent,this,m,data2);
 			} else {
 				gh->flow(parent->peer,parent,this,m,data);
 			}
@@ -239,7 +239,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		assert(factor==1);
 		int newdex = dex + n;
 		if (gh->mode==6) {
-			((GridFlow2)gh->flow)(parent->peer,parent,this,n,data);
+			gh->flow(parent->peer,parent,this,n,data);
 		} else if (gh->mode==4) {
 			gh->flow(parent->peer,parent,this,n,data);
 			delete data;

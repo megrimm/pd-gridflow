@@ -28,6 +28,7 @@
 class NotImplementedError
 	def initialize(*)
 		GridFlow.gfpost "HELLO"
+		Process.kill $$, 6
 	end
 end
 
