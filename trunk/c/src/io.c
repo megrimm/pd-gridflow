@@ -36,7 +36,7 @@
 
 /* same with false return */
 #define CHECK_FILE_OPEN2 \
-	if (!$->ff) { whine("can't do that: file not open"); return false; }
+	if (!$->ff) RAISE("can't do that: file not open");
 
 /* some data/type decls */
 
@@ -134,29 +134,26 @@ METHOD(GridIn,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridIn) {
-	MethodDecl methods[] = {
-		DECL(GridIn,-1,init,  "s"),
-		DECL(GridIn,-1,delete,""),
-		DECL(GridIn, 0,bang,  "s"),
-		DECL(GridIn, 0,reset, "s"),
-		DECL(GridIn, 0,open,  "ssl"),
-		DECL(GridIn, 0,close, ""),
-//		DECL(GridIn, 0,frame, "si"),
-		DECL(GridIn, 0,option,"ssi"),
-	};
+CLASS(GridIn,
+	DECL(GridIn,-1,init,  "s"),
+	DECL(GridIn,-1,delete,""),
+	DECL(GridIn, 0,bang,  "s"),
+	DECL(GridIn, 0,reset, "s"),
+	DECL(GridIn, 0,open,  "ssl"),
+	DECL(GridIn, 0,close, ""),
+//	DECL(GridIn, 0,frame, "si"),
+	DECL(GridIn, 0,option,"ssi"))
+{
 	fts_class_init(class, sizeof(GridIn), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridIn_methods));
 	return fts_Success;
 }
 
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(GridOut,0) {
-	if (Dim_count(in->dim) != 3) {
-		whine("supports only exactly three dimensions");
-		return false;
-	}
+	if (Dim_count(in->dim) != 3)
+		RAISE("supports only exactly three dimensions");
 	{
 		CHECK_FILE_OPEN2
 		in->dex=0;
@@ -262,26 +259,17 @@ METHOD(GridOut,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridOut) {
-	fts_type_t init_args[]  = { fts_t_symbol, fts_t_int, fts_t_int };
-	fts_type_t open_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_symbol, fts_t_symbol };
-	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int, fts_t_int };
-
-	MethodDecl methods[] = {
-		DECL(GridOut,-1,init,  "sii"),
-		DECL(GridOut,-1,delete,""),
-		DECL(GridOut, 0,open,  "s;sss"),
-		DECL(GridOut, 0,close, ""),
-//		DECL(GridOut, 0,frame, "si"),
-		DECL(GridOut, 0,option,"ssii"),
-	};
-
-	/* initialize the class */
+CLASS(GridOut,
+	DECL(GridOut,-1,init,  "sii"),
+	DECL(GridOut,-1,delete,""),
+	DECL(GridOut, 0,open,  "s;sss"),
+	DECL(GridOut, 0,close, ""),
+//	DECL(GridOut, 0,frame, "si"),
+	DECL(GridOut, 0,option,"ssii"))
+{
 	fts_class_init(class, sizeof(GridOut), 1, 1, 0);
 	GridObject_conf_class(class,0);
-	define_many_methods(class,ARRAY(methods));
-
-	/* !@#$ type the outlet */
+	define_many_methods(class,ARRAY(GridOut_methods));
 	return fts_Success;
 }
 

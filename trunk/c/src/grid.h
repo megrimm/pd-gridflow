@@ -98,16 +98,19 @@
 #define METHOD_ARGS(_class_) \
 	_class_ *self, int winlet, Symbol selector, ATOMLIST
 
+/* 0.5.0 */
+#define RAISE(args...) return whine(args),0;
+
 /* 0.5.0: shortcuts for MethodDecl */
 
 #define DECL(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
+	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym_),args}
 #define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
-	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym2_),args}
+	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym2_),args}
 #define DECL12(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,SYM(_sym_),METHOD2PTR(_cl_,_sym_),args}
+	{_inlet_,#_sym_,METHOD2PTR(_cl_,_sym_),args}
 #define DECL22(_cl_,_inlet_,_sym_,_sym2_,args...) \
-	{_inlet_,SYM(_sym_),METHOD2PTR(_cl_,_sym2_),args}
+	{_inlet_,#_sym_,METHOD2PTR(_cl_,_sym2_),args}
 
 /*
   now (0.3.1) using a separate macro for some things like decls
@@ -151,8 +154,10 @@
 #endif
 
 /* a header for the class constructor */
-#define CLASS(_name_) \
-	fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST)
+#define CLASS(_name_,args...) \
+	static MethodDecl _name_ ## _methods[] = { args \
+	}; \
+	static fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST)
 
 /* returns the size of a statically defined array */
 #define COUNT(_array_) \
@@ -272,13 +277,12 @@ void whine_time(const char *s);
 int    gf_file_open(const char *name, int mode);
 FILE *gf_file_fopen(const char *name, int mode); 
 
-typedef struct MethodDecl MethodDecl;
-struct MethodDecl {
+typedef struct MethodDecl {
 	int winlet;
-	Symbol selector;
+	const char *selector;
 	void (*method)(METHOD_ARGS(fts_object_t));
 	const char *signature;
-};
+} MethodDecl;
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 
@@ -315,10 +319,6 @@ typedef long Number;
 #define DECL_SYM(_sym_) \
 	extern Symbol sym_##_sym_;
 
-DECL_SYM(open)
-DECL_SYM(close)
-DECL_SYM(reset)
-DECL_SYM(autodraw)
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
 DECL_SYM(grid_flow2)

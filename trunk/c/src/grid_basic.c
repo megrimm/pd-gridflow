@@ -56,9 +56,9 @@ GRID_END(GridImport,0) { }
 
 GRID_BEGIN(GridImport,1) {
 	int n;
-	if (Dim_count(in->dim)!=1) return false;
+	if (Dim_count(in->dim)!=1) RAISE("expected 1 dim");
 	n = Dim_get(in->dim,0);
-	if (n>MAX_DIMENSIONS) { whine("too many dimensions"); return false; }
+	if (n>MAX_DIMENSIONS) RAISE("too big");
 	GridInlet_set_factor(in,n);
 	return true;
 }
@@ -109,15 +109,14 @@ METHOD(GridImport,reset) {
 	if (GridOutlet_busy(out)) GridOutlet_abort(out);
 }
 
-CLASS(GridImport) {
-	MethodDecl methods[] = {
+CLASS(GridImport,
 		DECL(GridImport,-1,init,  "sii+"),
 		DECL(GridImport,-1,delete,""),
 		DECL(GridImport, 0,int,   "i"),
-		DECL(GridImport, 0,reset, ""),
-	};
+		DECL(GridImport, 0,reset, ""))
+{
 	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridImport_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -154,13 +153,12 @@ METHOD(GridExport,init) {
 
 METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridExport) {
-	MethodDecl methods[] = {
-		DECL(GridExport,-1,init,  "s"),
-		DECL(GridExport,-1,delete,""),
-	};
+CLASS(GridExport,
+	DECL(GridExport,-1,init,  "s"),
+	DECL(GridExport,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridExport), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridExport_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
@@ -175,10 +173,7 @@ typedef struct GridExportList {
 
 GRID_BEGIN(GridExportList,0) {
 	int n = Dim_prod(in->dim);
-	if (n>1000) {
-		whine("list too big (%d elements)", n);
-		return false;
-	}
+	if (n>1000) RAISE("list too big (%d elements)", n);
 	$->list = NEW(fts_atom_t,n);
 	$->n = n;
 	return true;
@@ -201,13 +196,12 @@ METHOD(GridExportList,init) {
 
 METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridExportList) {
-	MethodDecl methods[] = {
-		DECL(GridExportList,-1,init,  "s"),
-		DECL(GridExportList,-1,delete,""),
-	};
+CLASS(GridExportList,
+	DECL(GridExportList,-1,init,  "s"),
+	DECL(GridExportList,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridExportList), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridExportList_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
@@ -231,33 +225,18 @@ GRID_BEGIN(GridStore,0) {
 	int na = Dim_count(in->dim);
 	int nb,nc,nd,i;
 	int v[MAX_DIMENSIONS];
-	if (!$->dim) {
-		whine("empty buffer, better luck next time.");
-		return false;
-	}
+	if (!$->dim) RAISE("empty buffer, better luck next time.");
 
 	nb = Dim_count($->dim);
 
-	if (na<1) {
-		whine("must have at least 1 dimension.",
-			na,1,1+nb);
-		return false;
-	}
-/*
-	if (na<1 || na>1+nb) {
-		whine("wrong number of dimensions: got %d, expecting %d..%d",
-			na,1,1+nb);
-		return false;
-	}
-*/
+	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
+
 	nc = Dim_get(in->dim,na-1);
-	if (nc > nb) {
-		whine("wrong number of elements in last dimension: "
+	if (nc > nb)
+		RAISE("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
-		return false;
-	}
 	nd = nb - nc + na - 1;
-	if (nd > MAX_DIMENSIONS) { whine("too many dimensions!"); return false; }
+	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
 	for (i=0; i<na-1; i++) v[i] = Dim_get(in->dim,i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
 	GridOutlet_begin($->out[0],Dim_new(nd,v));
@@ -379,14 +358,13 @@ METHOD(GridStore,bang) {
 	GridOutlet_end(  $->out[0]);
 }
 
-CLASS(GridStore) {
-	MethodDecl methods[] = {
-		DECL(GridStore,-1,init,  "s;s"),
-		DECL(GridStore,-1,delete,""),
-		DECL(GridStore, 0,bang,  ""),
-	};
+CLASS(GridStore,
+	DECL(GridStore,-1,init,  "s;s"),
+	DECL(GridStore,-1,delete,""),
+	DECL(GridStore, 0,bang,  ""))
+{
 	fts_class_init(class, sizeof(GridStore), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridStore_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -435,13 +413,12 @@ METHOD(GridOp1,init) {
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridOp1) {
-	MethodDecl methods[] = {
-		DECL(GridOp1,-1,init,  "ss"),
-		DECL(GridOp1,-1,delete,""),
-	};
+CLASS(GridOp1,
+	DECL(GridOp1,-1,init,  "ss"),
+	DECL(GridOp1,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridOp1), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridOp1_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
@@ -537,14 +514,13 @@ METHOD(GridOp2,int) {
 	$->rint = GET(0,int,-42);
 }
 
-CLASS(GridOp2) {
-	MethodDecl methods[] = {
-		DECL(GridOp2,-1,init,  "ss;i"),
-		DECL(GridOp2,-1,delete,""),
-		DECL(GridOp2, 1,int,   ""),/*why zero?*/
-	};
+CLASS(GridOp2,
+	DECL(GridOp2,-1,init,  "ss;i"),
+	DECL(GridOp2,-1,delete,""),
+	DECL(GridOp2, 1,int,   ""),/*why zero?*/)
+{
 	fts_class_init(class, sizeof(GridOp2), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridOp2_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -565,7 +541,7 @@ typedef struct GridFold {
 
 GRID_BEGIN(GridFold,0) {
 	int n = Dim_count(in->dim);
-	if (n<1) { whine("minimum 1 dimension"); return false; }
+	if (n<1) RAISE("minimum 1 dimension");
 	{
 		Dim *foo = Dim_new(n-1,in->dim->v);
 		GridOutlet_begin($->out[0],foo);
@@ -614,14 +590,13 @@ METHOD(GridFold,int) {
 	$->rint = GET(0,int,-42);
 }
 
-CLASS(GridFold) {
-	MethodDecl methods[] = {
-		DECL(GridFold,-1,init,  "ss;i"),
-		DECL(GridFold,-1,delete,""),
-		DECL(GridFold, 1,int,   ""),/*why zero?*/
-	};
+CLASS(GridFold,
+	DECL(GridFold,-1,init,  "ss;i"),
+	DECL(GridFold,-1,delete,""),
+	DECL(GridFold, 1,int,   ""),/*why zero?*/)
+{
 	fts_class_init(class, sizeof(GridFold), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridFold_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
@@ -640,18 +615,16 @@ typedef struct GridInner {
 GRID_BEGIN(GridInner,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
-	if (!b) { whine("right inlet has no grid"); return false; }
-	if (Dim_count(a)<1) { whine("minimum 1 dimension"); return false; }
+	if (!b) RAISE("right inlet has no grid");
+	if (Dim_count(a)<1) RAISE("minimum 1 dimension");
 	{
 		int a_last = Dim_get(a,Dim_count(a)-1);
 		int b_last = Dim_get(b,Dim_count(b)-1);
 		int n = Dim_count(a)+Dim_count(b)-2;
 		int v[n];
 		int i,j;
-		if (a_last != b_last) {
-			whine("last dimension of each grid must have same size");
-			return false;
-		}
+		if (a_last != b_last)
+			RAISE("last dimension of each grid must have same size");
 		for (i=j=0; j<Dim_count(a)-1; i++,j++) { v[i] = Dim_get(a,j); }
 		for (  j=0; j<Dim_count(b)-1; i++,j++) { v[i] = Dim_get(b,j); }
 		GridOutlet_begin($->out[0],Dim_new(n,v));
@@ -688,7 +661,7 @@ GRID_END(GridInner,0) {
 GRID_BEGIN(GridInner,2) {
 	int length = Dim_prod(in->dim);
 	GridInlet_abort($->in[0]);
-	if (Dim_count(in->dim)<1) { whine("minimum 1 dimension"); return false; }
+	if (Dim_count(in->dim)<1) RAISE("minimum 1 dimension");
 	FREE($->dim);
 	FREE($->data);
 	$->dim = Dim_dup(in->dim);
@@ -733,13 +706,11 @@ METHOD(GridInner,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridInner) {
-	MethodDecl methods[] = { 
-		DECL(GridInner,-1,init,  "sss;i"),
-		DECL(GridInner,-1,delete,""),
-	};
+CLASS(GridInner,
+	DECL(GridInner,-1,init,  "sss;i"),
+	DECL(GridInner,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridInner), 3, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridInner_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,2);
 	return fts_Success;
@@ -757,7 +728,7 @@ typedef struct GridOuter {
 GRID_BEGIN(GridOuter,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
-	if (!b) { whine("right inlet has no grid"); return false; }
+	if (!b) RAISE("right inlet has no grid");
 	{
 		int n = Dim_count(a)+Dim_count(b);
 		int v[n];
@@ -827,13 +798,11 @@ METHOD(GridOuter,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridOuter) {
-	MethodDecl methods[] = {
-		DECL(GridOuter,-1,init,  "ss"),
-		DECL(GridOuter,-1,delete,""),
-	};
+CLASS(GridOuter,
+	DECL(GridOuter,-1,init,  "ss"),
+	DECL(GridOuter,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridOuter), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridOuter_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -853,15 +822,11 @@ typedef struct GridConvolve {
 GRID_BEGIN(GridConvolve,0) {
 	Dim *a = in->dim;
 	Dim *b = $->dim;
-	if (!b) { whine("right inlet has no grid"); return false; }
-	if (Dim_count(a) < Dim_count(b)) {
-		whine("left grid has less dimensions than right grid");
-		return false;
-	}
-	if (Dim_count(a) < 2) {
-		whine("left grid has less than two dimensions");
-		return false;
-	}
+	if (!b) RAISE("right inlet has no grid");
+	if (Dim_count(a) < Dim_count(b))
+		RAISE("left grid has less dimensions than right grid");
+	if (Dim_count(a) < 2)
+		RAISE("left grid has less than two dimensions");
 	
 	{
 		int v[MAX_DIMENSIONS];
@@ -936,15 +901,9 @@ GRID_BEGIN(GridConvolve,1) {
 	int length = Dim_prod(in->dim);
 	int count = Dim_count(in->dim);
 	int i;
-	if (count != 2) {
-		whine("only exactly two dimensions allowed for now");
-		return false;
-	}
+	if (count != 2) RAISE("only exactly two dimensions allowed for now");
 	/* because odd * odd = odd */
-	if ((length & 1) == 0) {
-		whine("even number of elements");
-		return false;
-	}
+	if ((length & 1) == 0) RAISE("even number of elements");
 	GridInlet_abort($->in[0]);
 	FREE($->dim);
 	FREE($->data);
@@ -992,13 +951,11 @@ METHOD(GridConvolve,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridConvolve) {
-	MethodDecl methods[] = {
-		DECL(GridConvolve,-1,init,  "sss;i"),
-		DECL(GridConvolve,-1,delete,""),
-	};
+CLASS(GridConvolve,
+	DECL(GridConvolve,-1,init,  "sss;i"),
+	DECL(GridConvolve,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridConvolve), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridConvolve_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -1050,18 +1007,17 @@ METHOD(GridFor,from2) {
 	GridFor_bang($,winlet,selector,ac,at);
 }
 
-CLASS(GridFor) {
-	MethodDecl methods[] = {
-		DECL(GridFor,-1,init,  "siii"),
-		DECL(GridFor,-1,delete,""),
-		DECL2(GridFor, 0,bang,bang, ""),
-		DECL2(GridFor, 0,int, from2,"i"),
-		DECL2(GridFor, 0,set, from, "i"),
-		DECL2(GridFor, 1,int, to,   "i"),
-		DECL2(GridFor, 2,int, step, "i"),
-	};
+CLASS(GridFor,
+	DECL(GridFor,-1,init,  "siii"),
+	DECL(GridFor,-1,delete,""),
+	DECL2(GridFor, 0,bang,bang, ""),
+	DECL2(GridFor, 0,int, from2,"i"),
+	DECL2(GridFor, 0,set, from, "i"),
+	DECL2(GridFor, 1,int, to,   "i"),
+	DECL2(GridFor, 2,int, step, "i"))
+{
 	fts_class_init(class, sizeof(GridFor), 3, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridFor_methods));
 	return fts_Success;
 }
 
@@ -1099,13 +1055,11 @@ METHOD(GridDim,init) {
 
 METHOD(GridDim,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridDim) {
-	MethodDecl methods[] = {
-		DECL(GridDim,-1,init,  "s"),
-		DECL(GridDim,-1,delete,""),
-	};
+CLASS(GridDim,
+	DECL(GridDim,-1,init,  "s"),
+	DECL(GridDim,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridDim), 1, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridDim_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
@@ -1169,12 +1123,10 @@ GRID_END(GridRedim,0) {
 
 GRID_BEGIN(GridRedim,1) {
 	int n;
-	if (Dim_count(in->dim)!=1) {
-		whine("dimension list must have 1 dimension");
-		return false;
-	}
+	if (Dim_count(in->dim)!=1)
+		RAISE("dimension list must have 1 dimension");
 	n = Dim_get(in->dim,0);
-	if (n>MAX_DIMENSIONS) { whine("too many dimensions"); return false; }
+	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	if (n) GridInlet_set_factor(in,n);
 	return true;
 }
@@ -1214,13 +1166,12 @@ METHOD(GridRedim,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridRedim) {
-	MethodDecl methods[] = {
-		DECL(GridRedim,-1,init,  "sii+"),
-		DECL(GridRedim,-1,delete,""),
-	};
+CLASS(GridRedim,
+	DECL(GridRedim,-1,init,  "sii+"),
+	DECL(GridRedim,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridRedim), 2, 1, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridRedim_methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
 	return fts_Success;
@@ -1259,13 +1210,12 @@ METHOD(GridPrint,init) {
 
 METHOD(GridPrint,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridPrint) {
-	MethodDecl methods[] = {
-		DECL(GridPrint,-1,init,  "s"),
-		DECL(GridPrint,-1,delete,""),
-	};
+CLASS(GridPrint,
+	DECL(GridPrint,-1,init,  "s"),
+	DECL(GridPrint,-1,delete,""))
+{
 	fts_class_init(class, sizeof(GridPrint), 1, 0, 0);
-	define_many_methods(class,ARRAY(methods));
+	define_many_methods(class,ARRAY(GridPrint_methods));
 	GridObject_conf_class(class,0);
 	return fts_Success;
 }
