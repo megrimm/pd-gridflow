@@ -57,7 +57,7 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-#define BUG(args...) {fprintf(stderr,args); ::raise(11);}
+#define BUG(s,args...) {fprintf(stderr,s "\nat: %s\n",args,__PRETTY_FUNCTION__); ::raise(11);}
 
 // !@#$ what am I going to do about this? should this be changed?
 // should I wrap all of the Ruby API for C++-style convenience?
@@ -221,18 +221,14 @@ template <class T> static T gcd2 (T a, T b) {
 template <class T> static inline T lcm (T a, T b) {return a*b/gcd(a,b);}
 
 // returns the position (0..31) of highest bit set in a word, or 0 if none.
-static int highest_bit(int n) {
-        int i=0;
-        if (n&0xffff0000) { n>>=16; i+=16; }
-        if (n&0x0000ff00) { n>>= 8; i+= 8; }
-        if (n&0x000000f0) { n>>= 4; i+= 4; }
-        if (n&0x0000000c) { n>>= 2; i+= 2; }
-        if (n&0x00000002) { n>>= 1; i+= 1; }
-        return i;
-}
-
+#define FOO(N) if ((x>>N)&(((typeof(x))1<<N)-1)) { x>>=N; i+=N; }
+static int highest_bit(uint8  x) {int i=0;                    FOO(4)FOO(2)FOO(1)return i;}
+static int highest_bit(uint16 x) {int i=0;              FOO(8)FOO(4)FOO(2)FOO(1)return i;}
+static int highest_bit(uint32 x) {int i=0;       FOO(16)FOO(8)FOO(4)FOO(2)FOO(1)return i;}
+static int highest_bit(uint64 x) {int i=0;FOO(32)FOO(16)FOO(8)FOO(4)FOO(2)FOO(1)return i;}
+#undef FOO
 // returns the position (0..31) of lowest bit set in a word, or 0 if none.
-static int lowest_bit(int n) { return highest_bit((~n+1)&n); }
+template <class T> static T lowest_bit(T n) { return highest_bit((~n+1)&n); }
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 
@@ -309,8 +305,8 @@ public:
 	T &operator[](Z i) {
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n))
-			BUG("%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
-				__PRETTY_FUNCTION__, (long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
+			BUG("BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx",
+				(long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
 #endif
 		return p[i];
 	}
@@ -319,12 +315,12 @@ public:
 #ifdef HAVE_DEBUG_HARDER
 		if (k==0) return;
 		if (!(p>=start && p<start+n))
-			BUG("%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				__PRETTY_FUNCTION__, (long)p,(long)start,(long)(start+n));
+			BUG("BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx",
+				(long)p,(long)start,(long)(start+n));
 		T *q = p+k-1;
 		if (!(q>=start && q<start+n))
-			BUG("%s\nBUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
-				__PRETTY_FUNCTION__, (long)q,(long)start,(long)(start+n));
+			BUG("BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx",
+				(long)q,(long)start,(long)(start+n));
 #endif
 	}
 
@@ -390,11 +386,8 @@ inline void  ::operator delete   (void *p) { gffree(p); }
 inline void  ::operator delete[] (void *p) { gffree(p); }
 #endif
 
-#define STACK_ARRAY(_type_,_name_,_count_) \
-	_type_ _name_##_foo[_count_]; Pt<_type_> _name_(_name_##_foo,_count_);
-
-#define ARRAY_NEW(_type_,_count_) \
-	(Pt<_type_>((_type_ *)new _type_[_count_],_count_))
+#define STACK_ARRAY(T,V,N) T V##_foo[N]; Pt<T> V(V##_foo,N);
+#define ARRAY_NEW(T,N) (Pt<T>((T *)new T[N],N))
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n);
 template <class T> inline void COPY(Pt<T> dest, Pt<T> src, int n) {
@@ -470,24 +463,18 @@ static  long  convert(Ruby x,   long *foo) {
 		convert(x,(int64 *)0);
 }
 static float64 convert(Ruby x, float64 *foo) {
-	//if (INTEGER_P(x)) return gf_num2ll(x);
 	if (INTEGER_P(x)) return INT(x);
 	if (TYPE(x)!=T_FLOAT) RAISE("not a Float");
 	return ((RFloat*)x)->value;}
 static float32 convert(Ruby x, float32 *foo) {
-	//if (INTEGER_P(x)) return gf_num2ll(x);
-	if (INTEGER_P(x)) return INT(x);
 	return (float32) convert(x,(float64 *)0);}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 
 #define BUILTIN_SYMBOLS(MACRO) \
-	MACRO(_grid,"grid") MACRO(_bang,"bang") \
-	MACRO(_int,"int")   MACRO(_float,"float") \
+	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(_lparen,"(") MACRO(_rparen,")") \
-	MACRO(_lbrace,"{") MACRO(_rbrace,"}") \
 	MACRO(iv_outlets,"@outlets") \
 	MACRO(iv_ninlets,"@ninlets") \
 	MACRO(iv_noutlets,"@noutlets")
@@ -612,38 +599,35 @@ int  low_bit(uint32 n);
 void swap32 (int n, Pt<uint32> data);
 void swap16 (int n, Pt<uint16> data);
 
-#define NT_UNSIGNED    (1<<0)
-#define NT_FLOAT       (1<<1)
-#define NT_UNSUPPORTED (1<<2)
-
+#define NT_UNSIGNED (1<<0)
+#define NT_FLOAT    (1<<1)
+#define NT_UNIMPL   (1<<2)
 #define NUMBER_TYPE_LIMITS(T,a,b,c) \
 	inline T nt_smallest(T *bogus) {return a;} \
 	inline T nt_greatest(T *bogus) {return b;} \
 	inline T nt_all_ones(T *bogus) {return c;}
 
-NUMBER_TYPE_LIMITS(uint8,0,255,255)
-NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff,-1)
-NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff,-1)
-NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL,-1)
+NUMBER_TYPE_LIMITS(  uint8,0,255,255)
+NUMBER_TYPE_LIMITS(  int16,-0x8000,0x7fff,-1)
+NUMBER_TYPE_LIMITS(  int32,-0x80000000,0x7fffffff,-1)
+NUMBER_TYPE_LIMITS(  int64,-0x8000000000000000LL,0x7fffffffffffffffLL,-1)
 NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 
 #ifdef HAVE_LITE
-#define NT_NOTLITE NT_UNSUPPORTED
+#define NT_NOTLITE NT_UNIMPL
+#define NONLITE(x)
 #else
 #define NT_NOTLITE 0
+#define NONLITE(x) x
 #endif
 #define NUMBER_TYPES(MACRO) \
-	MACRO(  uint8,  8, NT_UNSIGNED, "u8,b") \
-	MACRO(   int8,  8, NT_UNSUPPORTED, "i8") \
-	MACRO( uint16, 16, NT_UNSIGNED | NT_UNSUPPORTED, "u16") \
-	MACRO(  int16, 16, 0, "i16,s") \
-	MACRO( uint32, 32, NT_UNSIGNED | NT_UNSUPPORTED, "u32") \
-	MACRO(  int32, 32, 0, "i32,i") \
-	MACRO( uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED, "u64") \
-	MACRO(  int64, 64, NT_NOTLITE, "i64,l") \
-	MACRO(float32, 32, NT_NOTLITE | NT_FLOAT, "f32,f") \
-	MACRO(float64, 64, NT_NOTLITE | NT_FLOAT, "f64,d")
+	MACRO(  uint8, 8,NT_UNSIGNED, "u8,b")          MACRO( int8, 8,NT_UNIMPL, "i8") \
+	MACRO( uint16,16,NT_UNSIGNED|NT_UNIMPL, "u16") MACRO(int16,16,0, "i16,s") \
+	MACRO( uint32,32,NT_UNSIGNED|NT_UNIMPL, "u32") MACRO(int32,32,0, "i32,i") \
+	MACRO( uint64,64,NT_UNSIGNED|NT_UNIMPL, "u64") MACRO(int64,64,NT_NOTLITE, "i64,l") \
+	MACRO(float32,32,NT_NOTLITE|NT_FLOAT, "f32,f") \
+	MACRO(float64,64,NT_NOTLITE|NT_FLOAT, "f64,d")
 
 enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_e,
@@ -677,26 +661,15 @@ struct NumberType : CObject {
 
 NumberTypeE NumberTypeE_find (Ruby sym);
 
-#ifdef HAVE_LITE
-  #define TYPESWITCH(T,C,E) switch (T) { \
-    case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
-    case int32_e: C(int32) break; \
-    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-  #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
-    case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
-    case int32_e: C(int32) break; \
-    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-#else
-  #define TYPESWITCH(T,C,E) switch (T) { \
-    case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
-    case int32_e: C(int32) break; case int64_e: C(int64) break; \
-    case float32_e: C(float32) break; case float64_e: C(float64) break; \
-    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-  #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
-    case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
-    case int32_e: C(int32) break; case int64_e: C(int64) break; \
-    default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-#endif /*HAVE_LITE*/
+#define TYPESWITCH(T,C,E) switch (T) { \
+  case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
+  case int32_e:   C(int32) break; NONLITE(case int64_e: C(int64) break; \
+  case float32_e: C(float32) break; case float64_e: C(float64) break;) \
+  default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+#define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
+  case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
+  case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;)\
+  default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 // Numop objects encapsulate optimised loops of simple operations
 
@@ -885,8 +858,9 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 		((C*)(in->parent))->grin_##I(in,n,data); } \
 	template <class T> void  C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
+#define GRID_ALLOC else if (n==-3)
 #define GRID_FLOW else if (n>=0)
-#define GRID_FINISH else
+#define GRID_FINISH else if (n==-2)
 #define GRID_END }
 
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
@@ -925,10 +899,10 @@ struct GridInlet : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	int dex;
-	//Pt<int32> (*get_target)(GridInlet *self);
+	Pt<int32> (*get_target)(GridInlet *self);
 	PtrGrid buf;// factor-chunk buffer
 	int bufi;   // buffer index: how much of buf is filled
-	int mode; // 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet
+	int mode; // 0=ignore; 4=ro; 6=rw
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
@@ -941,6 +915,7 @@ struct GridInlet : CObject {
 
 	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
 	// as an end-marker for inlet definitions... sorry for the confusion
+	// GF-0.8: n=-3 is alloc.
 	template <class T> void flow(int mode, int n, Pt<T> data);
 	void end(); // this one ought to be called finish().
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
@@ -986,7 +961,8 @@ struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 // GridOutlet represents a grid-aware outlet
 \class GridOutlet < CObject
 struct GridOutlet : CObject {
-// number of (minimum,maximum) numbers to send at once
+// number of (minimum,maximum) BYTES to send at once
+// starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
 	static const int MIN_PACKET_SIZE = 1<<8;
 	static const int MAX_PACKET_SIZE = 1<<12;
 // those are set only once
@@ -1002,20 +978,26 @@ struct GridOutlet : CObject {
 // methods
 	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
 	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
-		buf=new Grid(new Dim(MAX_PACKET_SIZE), nt);
+		int ntsz = number_type_table[nt].size;
+		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
 		begin(woutlet,dim,nt);
 	}
 	~GridOutlet() {}
-	// give: data must be dynamic. it should not be used by the caller
-	// beyond the call to give()
-	template <class T> void give(int n, Pt<T> data);
+	void callback(GridInlet *in);
+
 	// send/send_direct: data belongs to caller, may be stack-allocated,
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
 	template <class T> void send(int n, Pt<T> data);
-	void flush();
-	void callback(GridInlet *in);
+	void flush(); // goes with send();
+
+	// give: data must be dynamic. it should not be used by the caller
+	// beyond the call to give()
+	template <class T> void give(int n, Pt<T> data);
+
+	// third way to send (new! GF-0.8) is called "ask"
+	template <class T> void ask(int factor, int min, int max);
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(int n, Pt<T> data);
@@ -1042,8 +1024,6 @@ struct FObject : CObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
-	// result should be printed or copied immediately as the GC may discard it anytime
-	const char *info();
 	\decl Ruby total_time_get();
 	\decl Ruby total_time_set(Ruby x);
 	\decl void send_in (...);
@@ -1075,16 +1055,17 @@ struct GridObject : FObject {
 };
 \end class GridObject
 
-typedef struct GridObject Format;
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
-#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
+//#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
+#define INFO(OBJ) "(bleh)"
+#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",INFO(this), #_a_);
 #define SAME_TYPE(_a_,_b_) \
 	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
-		this->info(), \
+		INFO(this), \
 		#_a_, number_type_table[(_a_)->nt].name, \
 		#_b_, number_type_table[(_b_)->nt].name);
 static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
@@ -1094,10 +1075,7 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 		if (a->v[ai+i] != b->v[bi+i]) {
 			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
 				ai+i, a->v[ai+i],
-				bi+i, b->v[bi+i]);
-		}
-	}
-}
+				bi+i, b->v[bi+i]);}}}
 
 // a stack for the profiler, etc.
 #define GF_STACK_MAX 256
@@ -1113,9 +1091,7 @@ struct GFStack {
 	void push (FObject *o) __attribute__((noinline));
 	void pop () __attribute__((noinline));
 };
-
 extern GFStack gf_stack;
-
 struct GFStackMarker {
 	int n;
 	bool flag;
@@ -1125,5 +1101,7 @@ struct GFStackMarker {
 		if (flag) { flag=false; return true; } else return false;
 	}
 };
+
+typedef GridObject Format;
 
 #endif // __GF_GRID_H
