@@ -339,7 +339,8 @@ end
 #-------- fClasses for: math
 
 class GridComplexSq < FPatcher
-  @fobjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
+#  @fobjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
+  @fobjects = ["@inner * + 0   {2 2 2 # 0 2 1 -1 1 0 1 1}","@fold * 1"]
   @wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
   def initialize() super end
   install "@complex_sq", 1, 1
