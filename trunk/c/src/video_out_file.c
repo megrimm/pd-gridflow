@@ -53,7 +53,7 @@ GRID_BEGIN(VideoOutFile,0) {
 	if (Dim_equal_verbose_hwc(in->dim,dim)) {
 		CHECK_FILE_OPEN2
 		in->dex=0;
-		$->ff->begin($->ff, in);
+		$->ff->cl->begin($->ff, in);
 		return true;
 	} else {
 		return false;
@@ -67,7 +67,7 @@ GRID_FLOW(VideoOutFile,0) {
 		int incr;
 		int max = Dim_prod(in->dim) - in->dex;
 		int bs = n<max?n:max;
-		$->ff->flow($->ff, in, bs, data);
+		$->ff->cl->flow($->ff, in, bs, data);
 		
 		data += bs;
 		in->dex += bs;
@@ -76,7 +76,7 @@ GRID_FLOW(VideoOutFile,0) {
 }
 
 GRID_END(VideoOutFile,0) {
-	$->ff->end($->ff,in);
+	$->ff->cl->end($->ff,in);
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
 }
 
@@ -91,7 +91,7 @@ METHOD(VideoOutFile,init) {
 
 static void VideoOutFile_p_close(VideoOutFile *$) {
 	CHECK_FILE_OPEN
-	$->ff->close($->ff);
+	$->ff->cl->close($->ff);
 }
 
 METHOD(VideoOutFile,close) {
@@ -110,9 +110,9 @@ METHOD(VideoOutFile,open) {
 		return;
 	}
 
-	if ($->ff) $->ff->close($->ff);
+	if ($->ff) $->ff->cl->close($->ff);
 	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
-	$->ff = qlass->open(fts_symbol_name(filename),2);
+	$->ff = qlass->open(qlass,fts_symbol_name(filename),2);
 }
 
 METHOD(VideoOutFile,delete) {
@@ -122,8 +122,8 @@ METHOD(VideoOutFile,delete) {
 
 METHOD(VideoOutFile,option) {
 	CHECK_FILE_OPEN
-	if ($->ff->option) {
-		$->ff->option($->ff,ac,at);
+	if ($->ff->cl->option) {
+		$->ff->cl->option($->ff,ac,at);
 	} else {
 		whine("this format has no options");
 	}

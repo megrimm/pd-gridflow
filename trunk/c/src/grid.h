@@ -23,7 +23,7 @@
 #ifndef __GRID_PROTOCOL_H
 #define __GRID_PROTOCOL_H
 
-#include <pthread.h>
+/* #include <pthread.h> */
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +38,7 @@ extern "C" {
 #include "macros.h"
 
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.2.2"
+#define VIDEO4JMAX_VERSION "0.2.3"
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 /* **************************************************************** */
@@ -249,7 +249,7 @@ typedef struct Operator2 {
 
 /* GridInlet represents a grid-aware jmax inlet */
 
-typedef struct GridInlet GridInlet;
+typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 /* typedef struct GridHandler GridHandler; */
@@ -257,6 +257,10 @@ typedef struct GridObject GridObject;
 #define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *$, GridInlet *in)
 #define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, const Number *data)
 #define   GRID_END_(_class_,_name_) void _name_(_class_ *$, GridInlet *in)
+
+#define GRID_BEGIN_PTR(_class_,_inlet_) ((GRID_BEGIN_(_class_,(*)))_class_##_##_inlet_##_begin)
+#define  GRID_FLOW_PTR(_class_,_inlet_)  ((GRID_FLOW_(_class_,(*)))_class_##_##_inlet_##_flow)
+#define   GRID_END_PTR(_class_,_inlet_)   ((GRID_END_(_class_,(*)))_class_##_##_inlet_##_end)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
@@ -319,8 +323,8 @@ struct GridOutlet {
 	int  GridOutlet_idle   (GridOutlet *$);
 	void GridOutlet_abort  (GridOutlet *$);
 	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
-	void GridOutlet_send   (GridOutlet *$, int n, const Number *data);
-	void GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data);
+	void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
+	void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
 	void GridOutlet_flush  (GridOutlet *$);
 	void GridOutlet_end    (GridOutlet *$);
 
@@ -332,7 +336,7 @@ struct GridOutlet {
 
 struct GridPacket {
 	GridOutlet *parent;
-	pthread_mutex_t *mutex;
+	/* pthread_mutex_t *mutex; */
 	Number *(*request)(void);
 	Number *buf;
 	int bufn;
@@ -375,63 +379,53 @@ struct FileFormatClass {
 	const char *long_name; /* long identifier */
 	FileFormatFlags flags; /* future use (set to 0 please) */
 
+/* methods on this object */
+
 	/*
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	FileFormat *(*open)(const char *filename, int mode);
+	FileFormat *(*open)(FileFormatClass *$, const char *filename, int mode);
 
+	/* for future use */
+	FileFormat *(*connect)(FileFormatClass *$, const char *proto, const char *target, int mode);
+	FileFormat *(*chain_to)(FileFormatClass *$, FileFormat *other);
+
+/* methods on objects of this class */
+/* for reading, to outlet */
+	/* frames - how many frames are there (optional) */
+	int  (*frames)(FileFormat *$);
 	/*
-	  for future use
+	  read a frame, sending to outlet
+	  if frame number is -1, pick up next frame (reloop after last)
+	  (if frames() is not implemented, only -1 is valid)
 	*/
-	FileFormat *(*connect)(const char *proto, const char *target, int mode);
-	FileFormat *(*chain_to)(FileFormat *other);
+	bool (*frame) (FileFormat *$, GridOutlet *out, int frame);
+
+/* for writing, from inlet */
+	GRID_BEGIN_(FileFormat,(*begin));
+	GRID_FLOW_( FileFormat,(*flow));
+	GRID_END_(  FileFormat,(*end));
+
+/* for both */
+	/* size - decide which (height,width) should incoming images have
+		(optional method) */
+	void (*size)  (FileFormat *$, int height, int width);
+	/* choose color model (not used for now) */
+	void (*color) (FileFormat *$, fts_symbol_t sym);
+	/* for misc options */
+	void (*option)(FileFormat *$, int ac, const fts_atom_t *at);
+	void (*close) (FileFormat *$);
+
 };
 
-/*
-	The Read aspect of a format:
-		frames - how many frames are there
-			(optional method)
-		frame - select a frame, prepare for reading,
-			get a dimensions descriptor.
-			if frame number is -1, pick up next frame; reloop after last.
-			if frames() is not implemented, you must use -1 as
-			a frame number.
-		size - decide which (height,width) should incoming images have
-			(optional method)
-		read - read actual data: n Numbers.
-		
-	The Write aspect of a format:
-		begin - similar to GridInlet's
-		flow  - similar to GridInlet's
-		end   - similar to (future) GridInlet's
-
-	Common aspect:
-		close
-*/
-
 #define FileFormat_FIELDS \
-	FileFormatClass *qlass; \
-	int stream_raw; \
-	FILE *stream; \
+	FileFormatClass *cl; \
+	int stream; \
+	FILE *bstream; \
 	FileFormat *chain; \
-	Dim *dim; \
-	int left; \
-	void *stuff; \
 	BitPacking *bit_packing; \
-	\
-	int    (*frames)(FileFormat *$); \
-	Dim   *(*frame) (FileFormat *$, int frame); \
-	void   (*size)  (FileFormat *$, int height, int width); \
-	Number*(*read)  (FileFormat *$, int n); \
-	\
-	GRID_BEGIN_(FileFormat,(*begin)); \
-	 GRID_FLOW_(FileFormat,(*flow)); \
-	  GRID_END_(FileFormat,(*end)); \
-	\
-	void   (*color) (FileFormat *$, fts_symbol_t sym); \
-	void   (*option)(FileFormat *$, int ac, const fts_atom_t *at); \
-	void   (*close) (FileFormat *$);
+	Dim *dim;
 
 struct FileFormat {
 	FileFormat_FIELDS;

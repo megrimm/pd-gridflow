@@ -30,10 +30,7 @@
 #include "grid.h"
 
 extern FileFormatClass class_FormatTarga;
-
-typedef struct FormatTarga {
-	FileFormat_FIELDS
-} FormatTarga;
+typedef struct FileFormat FormatTarga;
 
 /* targa header is like:
 	[:comment, Uint8, :length], 1,
@@ -44,30 +41,30 @@ typedef struct FormatTarga {
 	[:comment, String8Unpadded, :data],
 */
 
-Dim *FormatTarga_frame (FileFormat *$, int frame) {
+bool FormatTarga_frame (FileFormat *$, GridOutlet *out, int frame) {
 	char in;
-	int dims[3],n=0,i;
+	int dims[3],i;
 	short w,h;
 	char *comment;
 	int comment_length, depth;
 
-	comment_length = (uint8)getc($->stream);
-	getc($->stream); /* skip */
+	comment_length = (uint8)getc($->bstream);
+	getc($->bstream); /* skip */
 	{
-		int colors = (uint8)getc($->stream);
+		int colors = (uint8)getc($->bstream);
 		if (colors != 2) {
 			whine("unsupported color format: %d", colors);
 			goto err;
 		}
 	}
-	for (i=0;i<9;i++) getc($->stream); /* skip */
-	fread(&w,1,2,$->stream); /* !@#$ byte order problem */
-	fread(&h,1,2,$->stream); /* !@#$ byte order problem */
-	depth = getc($->stream);
+	for (i=0;i<9;i++) getc($->bstream); /* skip */
+	fread(&w,1,2,$->bstream); /* !@#$ byte order problem */
+	fread(&h,1,2,$->bstream); /* !@#$ byte order problem */
+	depth = getc($->bstream);
 	whine("tga: size y=%d x=%d depth=%d",h,w,depth);
-	getc($->stream); /* skip */
+	getc($->bstream); /* skip */
 	comment = NEW2(char,comment_length+1);
-	fread(comment, 1, comment_length, $->stream);
+	fread(comment, 1, comment_length, $->bstream);
 	whine("tga: comment: %s", comment);
 	FREE(comment);
 
@@ -80,37 +77,31 @@ Dim *FormatTarga_frame (FileFormat *$, int frame) {
 	}
 	{
 		int v[] = { h, w, depth/8 };
-		$->dim = Dim_new(3,v);
-		$->left = Dim_prod($->dim);
-		return $->dim;
+		GridOutlet_begin(out,Dim_new(3,v));
 	}
+	{
+		int bs = Dim_prod_start(out->dim,1);
+		int y;
+		uint8 b1[bs];
+		Number b2[bs];
+		for (y=0; y<h; y++) {
+			int i;
+			int bs2 = (int) fread(b1,1,bs,$->bstream);
+			if (bs2 < bs) {
+				whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
+			}
+			for (i=0; i<bs; i+=3) {
+				b2[i+0] = b1[i+2];
+				b2[i+1] = b1[i+1];
+				b2[i+2] = b1[i+0];
+			}
+			GridOutlet_send(out,bs,b2);
+		}
+	}
+	GridOutlet_end(out);
+	return true;
 err:
-	return 0;
-}
-
-Number *FormatTarga_read (FileFormat *$, int n) {
-	int i;
-	int bs = $->left;
-	int bs2;
-	uint8 b1[n];
-	Number *b2 = NEW2(Number,n);
-
-	assert(n%3 == 0);
-
-	if (!$->dim) return 0;
-	if (bs > n) bs = n;
-	bs2 = (int) fread(b1,1,bs,$->stream);
-	if (bs2 < bs) {
-		whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
-	}
-	for (i=0; i<bs; i+=3) {
-		b2[i+0] = b1[i+2];
-		b2[i+1] = b1[i+1];
-		b2[i+2] = b1[i+0];
-	}
-	n -= bs;
-	$->left -= bs;
-	return b2;
+	return false;
 }
 
 GRID_BEGIN(FormatTarga,0) {
@@ -124,25 +115,13 @@ GRID_END(FormatTarga,0) {
 }
 
 void FormatTarga_close (FileFormat *$) {
-	if ($->stream) fclose($->stream);
+	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-FileFormat *FormatTarga_open (const char *filename, int mode) {
-	const char *modestr;
+FileFormat *FormatTarga_open (FileFormatClass *class, const char *filename, int mode) {
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass  = &class_FormatTarga;
-	$->frames = 0;
-	$->frame  = FormatTarga_frame;
-	$->size   = 0;
-	$->read   = FormatTarga_read;
-	$->begin  = (GRID_BEGIN_(FileFormat,(*)))FormatTarga_0_begin;
-	$->flow   =  (GRID_FLOW_(FileFormat,(*)))FormatTarga_0_flow;
-	$->end    =   (GRID_END_(FileFormat,(*)))FormatTarga_0_end;
-	$->color  = 0;
-	$->option = 0;
-	$->close  = FormatTarga_close;
-	$->stuff  = NEW(int,4);
+	$->cl = &class_FormatTarga;
 
 	switch(mode) {
 //	case 4: case 2: break;
@@ -150,19 +129,37 @@ FileFormat *FormatTarga_open (const char *filename, int mode) {
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->stream = v4j_file_fopen(filename,mode);
-	if (!$->stream) {
+	$->stream = 0;
+	$->bstream = v4j_file_fopen(filename,mode);
+	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}
 	return $;
 err:
-	$->close($);
+	$->cl->close($);
 	return 0;
 }
 
 FileFormatClass class_FormatTarga = {
-	"targa", "Targa", (FileFormatFlags)0,
-	FormatTarga_open, 0, 0,
+	symbol_name: "targa",
+	long_name: "Targa",
+	flags: (FileFormatFlags)0,
+
+	open: FormatTarga_open,
+	connect: 0,
+	chain_to: 0,
+
+	frames: 0,
+	frame:  FormatTarga_frame,
+
+	begin:  GRID_BEGIN_PTR(FormatTarga,0),
+	flow:   GRID_FLOW_PTR(FormatTarga,0),
+	end:    GRID_END_PTR(FormatTarga,0),
+
+	size:   0,
+	color:  0,
+	option: 0,
+	close:  FormatTarga_close,
 };
 

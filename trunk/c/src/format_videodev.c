@@ -220,10 +220,13 @@ void video_mmap_whine(VideoMmap *$) {
 /* **************************************************************** */
 
 extern FileFormatClass class_FormatVideoDev;
+typedef FileFormat FormatVideoDev;
 
+/*
 typedef struct FormatVideoDev {
 	FileFormat_FIELDS
 } FormatVideoDev;
+*/
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
@@ -234,15 +237,15 @@ void FormatVideoDev_size (FileFormat *$, int height, int width) {
 	VideoWindow grab_win;
 	$->dim = Dim_new(3,v);
 
-	WIOCTL($->stream_raw, VIDIOCGWIN, &grab_win);
+	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	grab_win.height = height;
 	grab_win.width  = width;
 	VideoWindow_whine(&grab_win);
-	WIOCTL($->stream_raw, VIDIOCSWIN, &grab_win);
-	WIOCTL($->stream_raw, VIDIOCGWIN, &grab_win);
+	WIOCTL($->stream, VIDIOCSWIN, &grab_win);
+	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
 }
 
@@ -256,7 +259,7 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 
 	$->stuff = NEW2(uint8,$->left);
 
-	n = (int) read($->stream_raw,$->stuff,$->left);
+	n = (int) read($->stream,$->stuff,$->left);
 	if (0> n) {
 		whine("error reading: %s", strerror(errno));
 	} else if (n < $->left) {
@@ -266,23 +269,23 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 }
 */
 
-Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
+bool FormatVideoDev_frame (FileFormat *$, GridOutlet *out, int frame) {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	void *buffer;
 
-	int n;
 	if (frame != -1) return 0;
-	$->left = Dim_prod($->dim);
 
-	if ($->stuff) FREE($->stuff);
-	$->stuff = NEW2(uint8,$->left);
+	if (!$->bit_packing) {
+		whine("no bit_packing");
+		return false;
+	}
 
-	if (WIOCTL($->stream_raw, VIDIOCGMBUF, &vmbuf)) goto err1;
+	if (WIOCTL($->stream, VIDIOCGMBUF, &vmbuf)) goto err1;
 /*	video_mbuf_whine(&vmbuf); */
 
 	buffer = mmap(0,vmbuf.size,
-		PROT_READ|PROT_WRITE,MAP_SHARED,$->stream_raw,0);
+		PROT_READ|PROT_WRITE,MAP_SHARED,$->stream,0);
 	if (((int)buffer)==-1) {
 		whine("mmap: %s", strerror(errno));
 		goto err1;
@@ -291,37 +294,33 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	vmmap.format = VIDEO_PALETTE_RGB24;
 	vmmap.width  = Dim_get($->dim,1);
 	vmmap.height = Dim_get($->dim,0);
-	if (WIOCTL($->stream_raw, VIDIOCMCAPTURE, &vmmap)) goto err2;
-	if (WIOCTL($->stream_raw, VIDIOCSYNC,     &vmmap)) goto err2;
+	if (WIOCTL($->stream, VIDIOCMCAPTURE, &vmmap)) goto err2;
+	if (WIOCTL($->stream, VIDIOCSYNC,     &vmmap)) goto err2;
 
 	/* success goes here */
 
 	/* something wrong, missing sizeof(sometype) */
-/*	memcpy($->stuff,buffer,num_pixels * BitPacking_bytes($->bit_packing)); */
-	memcpy($->stuff,buffer,$->left);
+	GridOutlet_begin(out,Dim_dup($->dim));
+
+	/* picture is converted here. assuming RGB 8:8:8 (RGB24) */
+	{
+		int y;
+		int bs = Dim_prod_start($->dim,1);
+		Number b2[bs];
+		for(y=0; y < $->dim->v[0]; y++) {
+			uint8 *b1 = (uint8 *)buffer + BitPacking_bytes($->bit_packing) * Dim_get($->dim,1) * y;
+			BitPacking_unpack($->bit_packing,Dim_get($->dim,1),b1,b2);
+			GridOutlet_send(out,bs,b2);
+		}
+	}
+	GridOutlet_end(out);
+	munmap(buffer, vmbuf.size);
+	return true;
 
 err2:
 	munmap(buffer, vmbuf.size);
 err1:
-	return $->dim;
-}
-
-/* picture is converted here. assuming RGB 8:8:8 (RGB24) */
-Number *FormatVideoDev_read (FileFormat *$, int n) {
-	int i;
-	int bs = $->left;
-	uint8 *b1 = (uint8 *)$->stuff +
-		BitPacking_bytes($->bit_packing) * (Dim_prod($->dim) - $->left)/3;
-	Number *b2 = NEW2(Number,n);
-
-	if (!$->dim) return 0;
-	if ($->bit_packing) {
-		BitPacking_unpack($->bit_packing,n/3,b1,b2);
-	} else {
-		whine("no bit_packing");
-	}
-	$->left -= n;
-	return b2;
+	return false;
 }
 
 GRID_BEGIN(FormatVideoDev,0) {
@@ -339,23 +338,23 @@ GRID_END(FormatVideoDev,0) {
 void FormatVideoDev_tuner (FileFormat *$, int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = value;
-	if (0> ioctl($->stream_raw, VIDIOCGTUNER, &vtuner)) {
+	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
 		whine("no tuner #%d", value);
 	} else {
 		VideoTuner_whine(&vtuner);
 		vtuner.mode = VIDEO_MODE_NTSC;
-		WIOCTL($->stream_raw, VIDIOCSTUNER, &vtuner);
+		WIOCTL($->stream, VIDIOCSTUNER, &vtuner);
 	}
 }
 
 void FormatVideoDev_channel (FileFormat *$, int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
-	if (0> ioctl($->stream_raw, VIDIOCGCHAN, &vchan)) {
+	if (0> ioctl($->stream, VIDIOCGCHAN, &vchan)) {
 		whine("no channel #%d", value);
 	} else {
 		VideoChannel_whine(&vchan);
-		WIOCTL($->stream_raw, VIDIOCSCHAN, &vchan);
+		WIOCTL($->stream, VIDIOCSCHAN, &vchan);
 		FormatVideoDev_tuner($,0);
 	}
 }
@@ -371,9 +370,9 @@ void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
 		VideoPicture vp; \
-		WIOCTL($->stream_raw, VIDIOCGPICT, &vp); \
+		WIOCTL($->stream, VIDIOCGPICT, &vp); \
 		vp._name_ = value; \
-		WIOCTL($->stream_raw, VIDIOCSPICT, &vp); \
+		WIOCTL($->stream, VIDIOCSPICT, &vp); \
 
 	PICTURE_ATTR(brightness)
 	PICTURE_ATTR(hue)
@@ -387,25 +386,13 @@ void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
 }
 
 void FormatVideoDev_close (FileFormat *$) {
-	if ($->stream_raw>=0) close($->stream_raw);
+	if ($->stream>=0) close($->stream);
 	FREE($);
 }
 
-FileFormat *FormatVideoDev_open (const char *filename, int mode) {
+FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, int mode) {
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass  = &class_FormatVideoDev;
-	$->frames = 0;
-	$->frame  = FormatVideoDev_frame;
-	$->size   = FormatVideoDev_size;
-	$->read   = FormatVideoDev_read;
-	$->begin  = (GRID_BEGIN_(FileFormat,(*)))FormatVideoDev_0_begin;
-	$->flow   =  (GRID_FLOW_(FileFormat,(*)))FormatVideoDev_0_flow;
-	$->end    =   (GRID_END_(FileFormat,(*)))FormatVideoDev_0_end;
-	$->color  = 0;
-	$->option = FormatVideoDev_option;
-	$->close  = FormatVideoDev_close;
-
-	$->stuff = 0;
+	$->cl = &class_FormatVideoDev;
 
 	switch(mode) {
 	case 4: break;
@@ -415,31 +402,31 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	whine("will try opening file");
 
 /* actually you only can open devices using open() directly */
-/*	$->stream_raw = v4j_file_open(filename, O_RDONLY); */
-/*	$->stream_raw =          open(filename, O_RDONLY); */
-	$->stream_raw =          open(filename, O_RDWR);
-	if (0> $->stream_raw) {
+/*	$->stream = v4j_file_open(filename, O_RDONLY); */
+/*	$->stream =          open(filename, O_RDONLY); */
+	$->stream =          open(filename, O_RDWR);
+	if (0> $->stream) {
 		whine("can't open file: %s", filename);
 		goto err;
 	}
 
 	{
 		VideoCapability vcaps;
-		WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);
+		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
-	/*	$->size($,vcaps.minheight,vcaps.minwidth); */
-		$->size($,vcaps.maxheight,vcaps.maxwidth);
+	/*	$->cl->size($,vcaps.minheight,vcaps.minwidth); */
+		$->cl->size($,vcaps.maxheight,vcaps.maxwidth);
 	}
 
 	{
 		VideoPicture *gp = NEW(VideoPicture,1);
-		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
+		WIOCTL($->stream, VIDIOCGPICT, gp);
 		VideoPicture_whine(gp);
 		gp->depth = 24;
 		gp->palette = VIDEO_PALETTE_RGB24;
 		VideoPicture_whine(gp);
-		WIOCTL($->stream_raw, VIDIOCSPICT, gp);
-		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
+		WIOCTL($->stream, VIDIOCSPICT, gp);
+		WIOCTL($->stream, VIDIOCGPICT, gp);
 		VideoPicture_whine(gp);
 		switch(gp->palette) {
 		case VIDEO_PALETTE_RGB24:
@@ -464,12 +451,26 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 
 	return $;
 err:
-	$->close($);
+	$->cl->close($);
 	return 0;
 }
 
 FileFormatClass class_FormatVideoDev = {
-	"videodev", "Video4linux 1.x", (FileFormatFlags)0,
-	FormatVideoDev_open, 0, 0,
-};
+	symbol_name: "videodev",
+	long_name: "Video4linux 1.x",
+	flags: (FileFormatFlags)0,
+	open: FormatVideoDev_open,
+	connect: 0,
+	chain_to: 0,
 
+	frames: 0,
+	frame:  FormatVideoDev_frame,
+	size:   FormatVideoDev_size,
+	begin:  GRID_BEGIN_PTR(FormatVideoDev,0),
+	flow:   GRID_FLOW_PTR(FormatVideoDev,0),
+	end:    GRID_END_PTR(FormatVideoDev,0),
+	color:  0,
+	option: FormatVideoDev_option,
+	close:  FormatVideoDev_close,
+
+};
