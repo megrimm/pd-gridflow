@@ -40,6 +40,10 @@ do
 			echo "Fast Mode (less error checking)"
 			OPTIONS="$OPTIONS HAVE_SPEED"
 		;;
+		--no-profiler)
+			echo "No Profiler"
+			HAVE_PROFILER=no
+		;;
 		--jmax-dist-dir)
 			JMAXROOTDIR=$2
 			shift
@@ -73,45 +77,49 @@ fi
 
 #--------------------------------#
 
+say () {
+  ($@ && echo "yes") || (echo "no" && false)
+}
+
 has-libmpeg () {
 	if [ ! "z$NO_MPEG" = "z" ]; then return 1; fi
-(
-	echo '#include <mpeg.h>'
-	echo 'int main (void) { return GetMPEGFrame==0; }'
-) > /tmp/$$.c
-gcc /tmp/$$.c -o /tmp/$$ -lmpeg
+cat > /tmp/$$.c <<TEST
+	#include <mpeg.h>
+	int main (void) { return GetMPEGFrame==0; }
+TEST
+gcc /tmp/$$.c -o /tmp/$$ -lwardsmpeg
 }
 
 has-videodev () {
-(
-	echo '#include <stdlib.h>'
-	echo '#include <linux/videodev.h>'
-	echo 'int main (void) { struct video_window foo; }' 
-) > /tmp/$$.c
+cat > /tmp/$$.c <<TEST
+	#include <stdlib.h>
+	#include <linux/videodev.h>
+	int main (void) { struct video_window foo; }
+TEST
 gcc /tmp/$$.c -o /tmp/$$
 }
 
 has-x11-shared-memory () {
-(
-	echo '#include <X11/Xlib.h>'
-	echo '#include <X11/Xutil.h>'
-	echo '#include <X11/StringDefs.h>'
-	echo '#include <sys/ipc.h>'
-	echo '#include <sys/shm.h>'
-	echo '#include <X11/extensions/XShm.h>'
-	echo 'int main (void) {return 0;}'
-) > /tmp/$$.c
+cat > /tmp/$$.c <<TEST
+	#include <X11/Xlib.h>
+	#include <X11/Xutil.h>
+	#include <X11/StringDefs.h>
+	#include <sys/ipc.h>
+	#include <sys/shm.h>
+	#include <X11/extensions/XShm.h>
+	int main (void) {return 0;}
+TEST
 gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
 }
 
 # this is very "heuristic" to say the least. sorry.
 has-pentium-compatible () {
-(
-	echo 'typedef unsigned long long uint64;'
-	echo 'int main(void) { uint64 x;'
-	echo '__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));'
-	echo 'return 0;}'
-) > /tmp/$$.c
+cat > /tmp/$$.c <<TEST
+	typedef unsigned long long uint64;
+	int main(void) { uint64 x;
+	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+	return 0;}
+TEST
 gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
@@ -120,38 +128,38 @@ gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 FORMATS='X11 PPM Targa Grid'
 LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
 
-echo -n "looking for LibMPEG: "
-if has-libmpeg; then
-	echo "yes"
+echo -n "looking for Ward's LibMPEG as -lwardsmpeg: "
+if say has-libmpeg wardsmpeg; then
 	FORMATS="$FORMATS MPEG"
-	LDSOFLAGS="$LDSOFLAGS -lmpeg"
+	LDSOFLAGS="$LDSOFLAGS -lwardsmpeg"
 else
-	echo "no"
+	echo -n "looking for Ward's LibMPEG as -lmpeg: "
+	if say has-libmpeg wardsmpeg; then
+		FORMATS="$FORMATS MPEG"
+		LDSOFLAGS="$LDSOFLAGS -lmpeg"
+	fi
 fi
 
 echo -n "looking for videodev (video4linux 1.x video digitizer drivers): "
-if has-videodev; then
-	echo "yes"
+if say has-videodev; then
 	FORMATS="$FORMATS VideoDev"
-else
-	echo "no"
 fi
 
 echo -n "looking for x11 shared memory (acceleration): "
-if has-x11-shared-memory; then
-	echo "yes"
+if say has-x11-shared-memory; then
 	OPTIONS="$OPTIONS HAVE_X11_SHARED_MEMORY"
-else
-	echo "no"
 fi
 
 echo -n "looking for pentium-compatible CPU: "
-if has-pentium-compatible; then
-	echo "yes"
+if say has-pentium-compatible; then
 	OPTIONS="$OPTIONS HAVE_PENTIUM"
-	OPTIONS="$OPTIONS HAVE_TSC_PROFILING"
-else
-	echo "no"
+	echo -n "enable profiliing: "
+	if [ "z$HAVE_PROFILER" = "zno" ]; then
+		echo "no"
+	else
+		echo "yes"
+		OPTIONS="$OPTIONS HAVE_TSC_PROFILING"
+	fi
 fi
 
 #--------------------------------#
