@@ -22,6 +22,7 @@
 */
 
 #include "../base/grid.h.fcs"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -207,10 +208,12 @@ void FormatX11::alarm() {
 			XKeyEvent *ek = (XKeyEvent *)&e;
 			//XLookupString(ek, buf, 63, 0, 0);
 			char *kss = XKeysymToString(XLookupKeysym(ek, 0));
+			char buf[64];
+			if (isdigit(*kss)) sprintf(buf,"D%s",kss); else strcpy(buf,kss);
 			Ruby argv[6] = {
 				INT2NUM(0), e.type==KeyPress ? SYM(keypress) : SYM(keyrelease),
 				INT2NUM(ek->y), INT2NUM(ek->x), INT2NUM(ek->state),
-				rb_funcall(rb_str_new2(kss),SI(intern),0) };
+				rb_funcall(rb_str_new2(buf),SI(intern),0) };
 			send_out(COUNT(argv),argv);
 			//XFree(kss);
 		}break;
