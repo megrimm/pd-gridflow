@@ -265,7 +265,7 @@ static inline bool is_le(void) {
 /* **************************************************************** */
 /* general purpose but Ruby/jMax specific */
 
-void whine(const char *fmt, ...);
+void gfpost(const char *fmt, ...);
 
 typedef struct MethodDecl {
 	const char *selector;
@@ -383,7 +383,7 @@ struct BitPacking {
 	uint32 mask[4];
 
 	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer packer=0);
-	void whine();
+	void gfpost();
 	uint8 *pack(int n, const Number *data, uint8 *target);
 	Number *unpack(int n, const uint8 *in, Number *out);
 	bool is_le();
@@ -633,11 +633,6 @@ extern GridClass *format_classes[];
 */
 
 /* **************************************************************** */
-
-extern VALUE /*Hash*/ gf_object_set;
-extern const char *whine_header;
-
-/* **************************************************************** */
 /* 0.6.0 */
 
 typedef struct BFObject BFObject; /* fts_object_t or something */
@@ -663,7 +658,7 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
 char *rb_sym_name(VALUE sym);
-void post(const char *,...);
+/* void post(const char *,...); */
 
 /* keyed on data */
 void MainLoop_add(void *data, void (*func)(void*));
@@ -693,9 +688,6 @@ void MainLoop_remove(void *data);
 
 VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
 VALUE super);
-
-#undef post
-#define post(args...) gf_bridge.post(args)
 
 typedef VALUE (*RFunc)();
 

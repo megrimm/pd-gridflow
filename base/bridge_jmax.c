@@ -39,6 +39,7 @@
 #include <sys/time.h>
 #undef post
 
+/* can't even refer to the other GridFlow_module before ruby loads gridflow */
 static VALUE GridFlow_module2;
 
 #define rb_sym_name rb_sym_name_r4j
@@ -117,12 +118,12 @@ static VALUE BFObject_method_missing$1 (kludge *k) {
 }
 
 static VALUE BFObject_rescue (kludge *k) {
-	VALUE es = rb_eval_string("\"ruby #{$!.class}: #{$!}: #{$!.backtrace}\"");
-//	VALUE $ = BFObject_peer(k->$);
-	post("jmaxobject = %p\n", k->$);
-//	post("rubyobject = %p\n", $);
-	post("%s\n",RSTRING(es)->ptr);
-	if (k->$) fts_object_set_error(k->$,"%s",RSTRING(es)->ptr);
+	VALUE error_array = rb_eval_string(
+		"[\"ruby #{$!.class}: #{$!}\",*$!.backtrace]\"]");
+	for (int i=0; i<rb_ary_len(error_array); i++)
+		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+	if (k->$) fts_object_set_error(k->$,"%s",rb_str_ptr(
+		rb_funcall(error_array,SI(join),0)));
 	return Qnil;
 }
 
@@ -299,12 +300,12 @@ static uint64 RtMetro_now2(void) {
 
 void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 	long long time = RtMetro_now2();
-//	whine("tick");
+//	post("tick\n");
 	rb_eval_string("begin $mainloop.one(0); rescue Exception => e;\
-		GridFlow.whine \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+		GridFlow.gfpost \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
 	fts_alarm_set_delay(gf_alarm,500.0);
 	fts_alarm_arm(gf_alarm);
-//	whine("tick was: %lld\n",RtMetro_now2()-time);
+//	post("tick was: %lld\n",RtMetro_now2()-time);
 }       
 
 VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
@@ -332,8 +333,10 @@ void gridflow_module_init (void) {
 	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
 		(RFunc)gridflow_bridge_init,1);
 	post("(done)\n");
+
 	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
 		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+
 	rb_define_singleton_method(GridFlow_module2,"find_file",(RFunc)gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
