@@ -796,6 +796,7 @@ GRID_BEGIN(GridConvolve,0) {
 	if (!b) { whine("right inlet has no grid"); return false; }
 	if (Dim_count(a) < Dim_count(b)) {
 		whine("left grid has less dimensions than right grid");
+		return false;
 	}
 	$->diml = Dim_dup(a);
 	$->datal = NEW(Number,Dim_prod(a));
@@ -845,9 +846,11 @@ GRID_BEGIN(GridConvolve,1) {
 	int count = Dim_count(in->dim);
 	if (count != 2) {
 		whine("only exactly two dimensions allowed for now");
+		return false;
 	}
 	if (count > 0 && (Dim_get(in->dim,0) & 1) == 0) {
 		whine("even number of elements");
+		return false;
 	}
 	if (count > 1) {
 		int x = Dim_get(in->dim,0);
