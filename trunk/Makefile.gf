@@ -1,14 +1,15 @@
 # $Id$
+# This is an annex that covers what is not covered by the generated Makefile
 
 INSTALL_DATA = install --mode 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
-all:: ruby-all gridflow-for-ruby gridflow-for-jmax gridflow-for-puredata # doc-all
+all2:: gridflow-for-jmax gridflow-for-puredata # doc-all
 include config.make
 
 # suffixes
-if 1 # Linux, MSWindows with Cygnus, etc
+ifeq (1,1) # Linux, MSWindows with Cygnus, etc
 OSUF = .o
 LSUF = .so
 ESUF =
@@ -23,9 +24,6 @@ endif
 # GridFlow Installation Directory
 GFID = $(lib_install_dir)/packages/gridflow/
 LDSOFLAGS = -rdynamic $(GRIDFLOW_LDSOFLAGS)
-
-OBJS = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,$(OSUF),$(SOURCES))))
-LIB = $(OBJDIR)/gridflow$(LSUF)
 
 CFLAGS += -Wall # for cleanliness
 CFLAGS += -Wno-unused # it's normal to have unused parameters
@@ -43,19 +41,14 @@ CFLAGS += -fPIC # some OSes/machines need that for .so files
 
 OBJDIR = $(ARCH)
 
-gridflow-for-ruby:: $(LIB)
-
-
 #----------------------------------------------------------------#
 
-clean::
-	rm -f $(OBJS) $(LIB) $(JMAX_LIB) \
+clean2::
+	rm -f $(JMAX_LIB) \
 	$(OBJDIR)/base_bridge_jmax$(OSUF) \
 	$(OBJDIR)/base_bridge_puredata$(OSUF)
 
-install:: all ruby-install jmax-install
-	$(INSTALL_LIB) $(OBJDIR)/gridflow$(LSUF) \
-		$(RUBYDESTDIR)/$(RUBYARCH)/gridflow$(LSUF)
+install2:: ruby-install jmax-install
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
@@ -67,20 +60,6 @@ edit::
 	(nedit base/*.rb base/*.[ch] format/main.rb tests/test.rb &)
 
 CONF = config.make config.h Makefile
-
-$(OBJDIR)/base_%$(OSUF): base/%.c base/grid.h $(CONF)
-	@mkdir -p $(OBJDIR)
-	gcc $(CFLAGS) -c $< -o $@
-
-$(OBJDIR)/format_%$(OSUF): format/%.c base/grid.h $(CONF)
-	@mkdir -p $(OBJDIR)
-	gcc $(CFLAGS) -c $< -o $@
-
-RUBY_OBJS = $(OBJS)
-
-$(LIB): $(RUBY_OBJS) $(CONF)
-	@mkdir -p $(OBJDIR)
-	gcc -shared $(LDSOFLAGS) $(RUBY_OBJS) -o $@
 
 export-config::
 	@echo "#define GF_INSTALL_DIR \"$(GFID)\""
