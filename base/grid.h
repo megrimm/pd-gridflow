@@ -1023,7 +1023,7 @@ private:
 #define GRINF(C,I) {I, 0,0,0 }
 #endif // HAVE_LITE
 
-struct FClass {
+struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 	void *(*allocator)(); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
@@ -1117,10 +1117,7 @@ struct GridObject : FObject {
 			if (in[i] && in[i]!=gin && in[i]->is_busy()) return true;
 		return false;
 	}
-	// for Formats
-	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
 	\decl Ruby method_missing(...);
-	\decl void initialize();
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, int factor);

@@ -79,7 +79,6 @@ EACH_FLOAT_TYPE(FOO)
 #undef FOO
 
 void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
-	int dims = 1;
 	Ruby delim = SYM(#);
 	for (int i=0; i<n; i++) {
 		if (a[i] == delim) {
@@ -116,7 +115,6 @@ void Grid::init_from_ruby(Ruby x) {
 	if (TYPE(x)==T_ARRAY) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
-		STACK_ARRAY(int32,foo,1);
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
 		((Pt<int32>)*this)[0] = INT(x);
@@ -371,9 +369,9 @@ void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {TRACE;
 	for (int i=0; i<ninlets; i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	if (nt != buf->nt) {
 		// biggest packet size divisible by lcm_factor
-		int32 v[] = {(MAX_PACKET_SIZE/lcm_factor)*lcm_factor};
-		if (*v==0) *v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
-		buf=new Grid(new Dim(1,v),nt);
+		int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
+		if (v==0) v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
+		buf=new Grid(new Dim(v),nt);
 	}
 }
 
@@ -472,14 +470,6 @@ GridObject::GridObject() {}
 GridObject::~GridObject() {check_magic();}
 
 \class GridObject < FObject
-
-\def void initialize (...) {
-	Ruby qlass = rb_obj_class(rself);
-	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
-		RAISE("not a GridObject subclass ???");
-	int noutlets = convert(rb_ivar_get(qlass,SI(@noutlets)),(int*)0);
-	rb_call_super(argc,argv);
-}
 
 //!@#$ does not handle types properly
 //!@#$ most possibly a big hack

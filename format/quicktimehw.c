@@ -44,12 +44,11 @@ struct FormatQuickTimeHW : Format {
 	int channels;
 	bool started;
 	P<Dim> force;
-	int length; /* in frames */
+	int length; // in frames
 	float64 framerate;
 	P<BitPacking> bit_packing;
-
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
-		started(false), force(0), framerate(29.997), bit_packing(0) {}
+		started(false), force(0), framerate(29.97), bit_packing(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -60,18 +59,11 @@ struct FormatQuickTimeHW : Format {
 	\decl void parameter (Symbol name, int32 value);
 	\decl void framerate_m (float64 f);
 	\decl void size (int32 height, int32 width);
-	
 	\grin 0 int
 };
 
-\def void force_size (int32 height, int32 width) {
-	int32 v[] = { height, width };
-	force = new Dim(2,v);
-}
-
-\def void seek (int frame) {
-	int result = quicktime_set_video_position(anim,frame,track);
-}
+\def void force_size (int32 height, int32 width) { force = new Dim(height, width); }
+\def void seek (int frame) {quicktime_set_video_position(anim,frame,track);}
 
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
@@ -92,10 +84,9 @@ struct FormatQuickTimeHW : Format {
 	}
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels);
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
-	int result;
-	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
-	int32 v[] = { sy, sx, channels };
-	GridOutlet out(this,0,new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	int result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
+	GridOutlet out(this,0,new Dim(sy, sx, channels),
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out.dim->prod(1);
 	out.give(sy*sx*channels,buf);
 	started=true;
@@ -115,17 +106,14 @@ struct FormatQuickTimeHW : Format {
 \def void size (int32 height, int32 width) {
 	if (dim) RAISE("video size already set!");
 	// first frame: have to do setup
-	int32 v[] = {height, width, 3};
-	dim = new Dim(3,v);
+	dim = new Dim(height, width, 3);
 	quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
 	quicktime_set_cmodel(anim,colorspace);
 }
 
 GRID_INLET(FormatQuickTimeHW,0) {
-	if (in->dim->n != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	if (in->dim->n != 3)      RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3) RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->prod());
 	if (dim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");

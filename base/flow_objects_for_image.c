@@ -25,22 +25,15 @@
 #include "grid.h.fcs"
 
 static void expect_picture (P<Dim> d) {
-	if (d->n!=3) RAISE("(height,width,chans) dimensions please");
-}
-
+	if (d->n!=3) RAISE("(height,width,chans) dimensions please");}
 static void expect_rgb_picture (P<Dim> d) {
 	expect_picture(d);
-	if (d->get(2)!=3) RAISE("(red,green,blue) channels please");
-}
-
+	if (d->get(2)!=3) RAISE("(red,green,blue) channels please");}
 static void expect_rgba_picture (P<Dim> d) {
 	expect_picture(d);
-	if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");
-}
-
+	if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");}
 static void expect_max_one_dim (P<Dim> d) {
-	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }
-}
+	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }}
 
 //****************************************************************
 //{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }
@@ -76,8 +69,6 @@ template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x)
 	int day = a->dim->get(0), dax = a->dim->get(1), dac = a->dim->prod(2);
 	y=mod(y,day); x=mod(x,dax);
 	Pt<T> ap = (Pt<T>)*a + y*dax*dac;
-	int u=(dax-x)*dac;
-	int v=x*dac;
 	while (sx) {
 		int sx1 = min(sx,dax-x);
 		COPY(buf,ap+x*dac,sx1*dac);
@@ -126,10 +117,8 @@ GRID_INLET(GridConvolve,0) {
 	if (db->n != 2) RAISE("right grid must have two dimensions");
 	if (da->n < 2) RAISE("left grid has less than two dimensions");
 	if (seed->dim->n != 0) RAISE("seed must be scalar");
-	if (da->get(0) < db->get(0)) RAISE("grid too small (y): %d < %d",
-		da->get(0), db->get(0));
-	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d",
-		da->get(1), db->get(1));
+	if (da->get(0) < db->get(0)) RAISE("grid too small (y): %d < %d", da->get(0), db->get(0));
+	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d", da->get(1), db->get(1));
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
 	a=new Grid(in->dim,in->nt);
@@ -163,7 +152,6 @@ GRID_INLET(GridConvolve,0) {
 		out->send(n,buf);
 	}
 	a=0;
-	out=0;
 } GRID_END
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
@@ -172,8 +160,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	if (seed) this->seed=seed;
-	else this->seed=new Grid(new Dim(),int32_e,true);
+	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
 	if (r) this->b=r;
 }
 
@@ -208,33 +195,21 @@ GRID_INLET(GridScaleBy,0) {
 	int rowsize = in->dim->prod(1);
 	STACK_ARRAY(T,buf,rowsize*scalex);
 	int chans = in->dim->get(2);
+	#define Z(z) buf[p+z]=data[i+z]
 	for (; n>0; data+=rowsize, n-=rowsize) {
 		int p=0;
+		#define LOOP(z) \
+			for (int i=0; i<rowsize; i+=z) \
+			for (int k=0; k<scalex; k++, p+=3)
 		switch (chans) {
-		case 3: for (int i=0; i<rowsize; i+=3) {
-			for (int k=0; k<scalex; k++, p+=3) {
-				buf[p+0]=data[i+0];
-				buf[p+1]=data[i+1];
-				buf[p+2]=data[i+2];
-			}}
-		break;
-		case 4: for (int i=0; i<rowsize; i+=4) {
-			for (int k=0; k<scalex; k++, p+=4) {
-				buf[p+0]=data[i+0];
-				buf[p+1]=data[i+1];
-				buf[p+2]=data[i+2];
-				buf[p+3]=data[i+3];
-			}}
-		break;
-		default: for (int i=0; i<rowsize; i+=chans) {
-			for (int k=0; k<scalex; k++, p+=chans) {
-				for (int c=0; c<chans; c++) buf[p+c]=data[i+c];
-			}}
+		case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
+		case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
+		default: LOOP(chans) {for (int c=0; c<chans; c++) Z(c);}
 		}
+		#undef LOOP
 		for (int j=0; j<scaley; j++) out->send(rowsize*scalex,buf);
 	}
-} GRID_FINISH {
-	out=0;
+	#undef Z
 } GRID_END
 
 static void expect_scale_factor (P<Dim> dim) {
@@ -289,31 +264,19 @@ GRID_INLET(GridDownscaleBy,0) {
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
 	int chans=in->dim->get(2);
+	#define Z(z) buf[p+z]+=data[i+z]
 	if (smoothly) {
 		while (n>0) {
 			if (y%scaley==0) CLEAR(buf,rowsize2);
+			#define LOOP(z) \
+				for (int i=0,p=0; p<rowsize2; p+=z) \
+				for (int j=0; j<scalex; j++,i+=z)
 			switch (chans) {
-			// !@#$ how can i templatise all of those??? (cleanly)
-			case 3: for (int i=0,p=0; p<rowsize2; p+=3) {
-				for (int j=0; j<scalex; j++,i+=3) {
-					buf[p+0]+=data[i+0];
-					buf[p+1]+=data[i+1];
-					buf[p+2]+=data[i+2];
-				}}break;
-			case 4: for (int i=0,p=0; p<rowsize2;p+=4) {
-				for (int j=0; j<scalex; j++,i+=4) {
-					buf[p+0]+=data[i+0];
-					buf[p+1]+=data[i+1];
-					buf[p+2]+=data[i+2];
-					buf[p+3]+=data[i+3];
-				}}break;
-			default:
-			for (int i=0,p=0; p<rowsize2;p+=chans) {
-				for (int j=0; j<scalex; j++,i+=chans) {
-					for (int k=0; k<chans; k++)
-						buf[p+k]+=data[i+k];
-				}}break;
+			case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
+			case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
+			default:LOOP(chans) {for (int k=0; k<chans; k++) Z(k);} break;
 			}
+			#undef LOOP
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
 				op2_div->map(rowsize2,buf,(T)(scalex*scaley));
@@ -323,34 +286,22 @@ GRID_INLET(GridDownscaleBy,0) {
 			data+=rowsize;
 			n-=rowsize;
 		}
+	#undef Z
 	} else {
+	#define Z(z) buf[p+z]=data[i+z]
 		for (; n>0; data+=rowsize, n-=rowsize,y++) {
 			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
+			#define LOOP(z) for (int i=0,p=0; p<rowsize2; i+=xinc, p+=z)
 			switch(in->dim->get(2)) {
-			case 3:
-			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=3) {
-				buf[p+0]=data[i+0];
-				buf[p+1]=data[i+1];
-				buf[p+2]=data[i+2];
-			}break;
-			case 4:
-			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=4) {
-				buf[p+0]=data[i+0];
-				buf[p+1]=data[i+1];
-				buf[p+2]=data[i+2];
-				buf[p+3]=data[i+3];
-			}break;
-			default:
-			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=chans) {
-				for (int k=0; k<chans; k++)
-					buf[p+k]=data[i+k];
-			}break;
+			case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
+			case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
+			default:LOOP(chans) {for (int k=0; k<chans; k++) Z(k);}break;
 			}
+			#undef LOOP
 			out->send(rowsize2,buf);
 		}
 	}
-} GRID_FINISH {
-	out=0;
+	#undef Z
 } GRID_END
 
 GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
@@ -397,8 +348,6 @@ GRID_INLET(GridLayer,0) {
 	}
 #undef COMPUTE_ALPHA
 	out->send(n*3/4,foo);
-} GRID_FINISH {
-	out=0;
 } GRID_END
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
@@ -471,7 +420,6 @@ GRID_INLET(DrawPolygon,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int nl = polygon->dim->get(0);
 	qsort((int32 *)*lines,nl,sizeof(Line),order_by_starting_scanline);
-	STACK_ARRAY(int32,v,1);
 	int cn = color->dim->prod();
 	color2=new Grid(new Dim(cn*16), color->nt);
 	for (int i=0; i<16; i++) COPY((Pt<T>)*color2+cn*i,(Pt<T>)*color,cn);
@@ -515,8 +463,6 @@ GRID_INLET(DrawPolygon,0) {
 		data+=f;
 		y++;
 	}
-} GRID_FINISH {
-	out=0;
 } GRID_END
 
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
@@ -545,7 +491,6 @@ struct DrawImage : GridObject {
 	\attr PtrGrid position;
 	\attr bool alpha;
 	\attr bool tile;
-	int count;
 	
 	DrawImage() : alpha(false), tile(false) {
 		position.constrain(expect_position);
@@ -571,7 +516,6 @@ struct DrawImage : GridObject {
 	obuf[b+3] = rbuf[b+3] + (255-rbuf[b+3])*(ibuf[j+b+3])/256;
 
 template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0) {
-	count++;
 	if (ry<0 || ry>=image->dim->get(0)) return; // outside of image
 	int sx = in[0]->dim->get(1), rsx = image->dim->get(1);
 	int sc = in[0]->dim->get(2), rsc = image->dim->get(2);
@@ -602,7 +546,6 @@ template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, 
 }
 
 GRID_INLET(DrawImage,0) {
-	count=0;
 	NOTEMPTY(image);
 	NOTEMPTY(position);
 	SAME_TYPE(in,image);
@@ -618,8 +561,6 @@ GRID_INLET(DrawImage,0) {
 	}
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
-	int py = ((int32*)*position)[0], rsy = image->dim->v[0], sy=in->dim->get(0);
-	int px = ((int32*)*position)[1], rsx = image->dim->v[1], sx=in->dim->get(1);
 } GRID_FLOW {
 	int f = in->factor();
 	int y = in->dex/f;
@@ -643,8 +584,6 @@ GRID_INLET(DrawImage,0) {
 			out->send(f,data);
 		}
 	}
-} GRID_FINISH {
-	out=0;
 } GRID_END
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END

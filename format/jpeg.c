@@ -40,8 +40,6 @@ struct FormatJPEG : Format {
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
 	FILE *f;
-
-	\decl void close ();
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\grin 0 int
@@ -84,8 +82,8 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_stdio_src(&djpeg,f);
 	jpeg_read_header(&djpeg,TRUE);
 	int sx=djpeg.image_width, sy=djpeg.image_height, chans=djpeg.num_components;
-	int32 v[] = { sy, sx, chans };
-	GridOutlet out(this,0,new Dim(3,v),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(sy, sx, chans),
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*chans];
 	uint8 *rows[1] = { row };
@@ -96,10 +94,6 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);
 	return Qnil;
-}
-
-\def void close () {
-	rb_call_super(argc,argv);
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {

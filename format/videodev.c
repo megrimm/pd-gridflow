@@ -236,17 +236,16 @@ struct FormatVideoDev : Format {
 
 \def void size (int sy, int sx) {
 	int fd = GETFD;
-	int32 v[] = {sy,sx,3};
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
-	dim = new Dim(3,v);
+	dim = new Dim(sy,sx,3);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	gfpost(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
-	if (v[0] && v[1]) {
-		grab_win.height = v[0];
-		grab_win.width  = v[1];
+	if (sy && sx) {
+		grab_win.height = sy;
+		grab_win.width  = sx;
 	}
 	gfpost(&grab_win);
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
@@ -425,29 +424,25 @@ GRID_INLET(FormatVideoDev,0) {
 	} else RAISE("don't know that transfer mode");
 }
 
-#define PICTURE_ATTR(_name_) \
+#define PICTURE_ATTR(_name_) {\
 	int fd = GETFD; \
 	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
 	vp._name_ = value; \
-	WIOCTL(fd, VIDIOCSPICT, &vp);
+	WIOCTL(fd, VIDIOCSPICT, &vp);}
 
-\def void brightness (uint16 value) {
-	PICTURE_ATTR(brightness)}
-\def void hue      (uint16 value) {
-	PICTURE_ATTR(hue)}
-\def void colour (uint16 value) {
-	PICTURE_ATTR(colour)}
-\def void contrast (uint16 value) {
-	PICTURE_ATTR(contrast)}
-\def void whiteness (uint16 value) {
-	PICTURE_ATTR(whiteness)}
+\def void brightness (uint16 value) {PICTURE_ATTR(brightness)}
+\def void hue      (uint16 value)   {PICTURE_ATTR(hue)}
+\def void colour (uint16 value)     {PICTURE_ATTR(colour)}
+\def void contrast (uint16 value)   {PICTURE_ATTR(contrast)}
+\def void whiteness (uint16 value)  {PICTURE_ATTR(whiteness)}
 
-#define PICTURE_ATTR_GET(_name_) \
+#define PICTURE_ATTR_GET(_name_) { \
 	int fd = GETFD; \
 	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
-	{Ruby argv[3] = {INT2NUM(1), SYM(_name_), INT2NUM(vp._name_)}; send_out(COUNT(argv),argv);}
+	Ruby argv[3] = {INT2NUM(1), SYM(_name_), INT2NUM(vp._name_)}; \
+	send_out(COUNT(argv),argv);}
 
 \def void get (Symbol attr) {
 	if (!attr) {

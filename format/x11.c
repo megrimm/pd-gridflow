@@ -107,7 +107,6 @@ struct FormatX11 : Format {
 	\decl void hidecursor ();
 	\decl void verbose_m (int verbose);
 	\decl void initialize (...);
-	\decl void delete_m ();
 	\decl void set_geometry (int y, int x, int sy, int sx);
 	\decl void fall_thru (int flag);
 	\grin 0 int
@@ -133,34 +132,21 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 /* window manager hints, defines the window as non-resizable */
 void FormatX11::set_wm_hints (int sx, int sy) {
 	if (!is_owner) return;
-
 	XWMHints wmhints;
 	XTextProperty window_name, icon_name;
 	XSizeHints hints;
-
-	/* enable recommended, maximum and minimum size */
+	// enable recommended, maximum and minimum size
 	hints.flags=PSize|PMaxSize|PMinSize;
-
-	/* set those */
+	// set those
 	hints.min_width  = hints.max_width  = hints.width  = sx;
 	hints.min_height = hints.max_height = hints.height = sy;
-  
+
 	wmhints.input = True;
 	wmhints.flags = InputHint;
-
 	XStringListToTextProperty((char **)&name, 1, &window_name);
 	XStringListToTextProperty((char **)&name, 1, &icon_name);
-
 	XSetWMProperties(display, window,
 		&window_name, &icon_name, NULL, 0, &hints, &wmhints, NULL);
-}
-
-/* ---------------------------------------------------------------- */
-
-static Ruby button_sym(int i) {
-	char foo[42];
-	sprintf(foo,"button%d",i);
-	return SYM(foo);
 }
 
 static void FormatX11_alarm(FormatX11 *self) { self->alarm(); }
@@ -185,7 +171,7 @@ void FormatX11::alarm() {
 			if (verbose)
 				gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 					ex->y,ex->x,ex->height,ex->width);
-			if (mode() == SYM(out)) {
+			if (rb_ivar_get(rself,SI(@mode)) == SYM(out)) {
 				show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
@@ -229,11 +215,9 @@ void FormatX11::alarm() {
 			rb_funcall(rself,SI(close),0);
 			return;
 		}break;
-		case ConfigureNotify:{
-			/* like we care */
-		}break;
+		case ConfigureNotify:break; // as if we cared
 		case ClientMessage:{
-			/* tnx to vektor&walken */
+			// tnx to vektor&walken
 			/*
 			if (e.xclient.message_type==wmProtocolsAtom
 			&& e.xclient.format==32
@@ -250,8 +234,6 @@ void FormatX11::alarm() {
 	}
 }
 
-/* ---------------------------------------------------------------- */
-
 \def void frame () {
 	XGetSubImage(display, window,
 		0, 0, dim->get(1), dim->get(0),
@@ -267,8 +249,6 @@ void FormatX11::alarm() {
 		out.send(bs,b2);
 	}
 }
-
-/* ---------------------------------------------------------------- */
 
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
@@ -303,8 +283,7 @@ void FormatX11::dealloc_image () {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
-	int32 v[3] = {sy, sx, 3};
-	dim = new Dim(3,v);
+	dim = new Dim(sy, sx, 3);
 top:
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
@@ -346,16 +325,11 @@ top:
 		}
 	} else
 #endif
-	{
-		/* let's overestimate the pixel size */
-		/* int pixel_size = BitPacking_bytes(bit_packing); */
-		int pixel_size = 4;
-		ximage = XCreateImage(
-			display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
-		if (!ximage) RAISE("can't create image"); 
-		image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
-		ximage->data = (int8 *)image;
-	}
+	ximage = XCreateImage(
+		display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
+	if (!ximage) RAISE("can't create image"); 
+	image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
+	ximage->data = (int8 *)image;
 	int status = XInitImage(ximage);
 	if (status!=1) gfpost("XInitImage returned: %d", status);
 	return true;
@@ -384,7 +358,7 @@ void FormatX11::resize_window (int sx, int sy) {
 		if(!window) RAISE("can't create window");
 		set_wm_hints(sx,sy);
 		if (is_owner) {
-			/* fall_thru 0 */
+			// fall_thru 0
 			XSelectInput(display, window,
 				ExposureMask | StructureNotifyMask |
 				PointerMotionMask |
@@ -392,7 +366,7 @@ void FormatX11::resize_window (int sx, int sy) {
 				KeyPressMask | KeyReleaseMask);
 			XMapRaised(display, window);
 		} else {
-			/* fall_thru 1 */
+			// fall_thru 1
 			XSelectInput(display, window,
 				ExposureMask | StructureNotifyMask);
 		}
@@ -453,15 +427,8 @@ GRID_INLET(FormatX11,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void out_size (int sy, int sx) {
-	resize_window(sx,sy);
-}
-
-\def void draw () {
-	int sy = dim->get(0);
-	int sx = dim->get(1);
-	show_section(0,0,sx,sy);
-}
+\def void out_size (int sy, int sx) { resize_window(sx,sy); }
+\def void draw () { show_section(0,0,dim->get(1),dim->get(0)); }
 
 \def void autodraw_m (int autodraw) {
 	if (autodraw<0 || autodraw>2)
@@ -484,9 +451,7 @@ GRID_INLET(FormatX11,0) {
 	XFlush(display);
 }
 
-\def void verbose_m (int verbose) {
-	this->verbose = !! verbose;
-}
+\def void verbose_m (int verbose) { this->verbose=!!verbose; }
 
 void FormatX11::prepare_colormap() {
 	Colormap colormap = XCreateColormap(display,window,visual,AllocAll);
@@ -567,8 +532,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	for (int i=0; i<(int)nchildren_r; i++) {
 		Atom actual_type_r;
 		int actual_format_r;
-		unsigned long nitems_r;
-		unsigned long bytes_after_r;
+		unsigned long nitems_r, bytes_after_r;
 		unsigned char *prop_r;
 		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
 		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
@@ -576,10 +540,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		bool match = prop_r && nitems_r>=value_l &&
 			strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
 		XFree(prop_r);
-		if (match) {
-			target=children_r[i];
-			break;
-		}
+		if (match) {target=children_r[i]; break;}
 		target = search_window_tree(children_r[i],key,value,level+1);
 		if (target != 0xDeadBeef) break;
 	}
@@ -719,7 +680,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
-	if (verbose) gfpost("is_le = %d, disp_is_le = %d",is_le(),disp_is_le);
+	if (verbose) gfpost("is_le=%d, disp_is_le=%d",is_le(),disp_is_le);
 
 	switch(visual->c_class) {
 	case TrueColor: case DirectColor: {
@@ -734,9 +695,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	} break;
 	}
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatX11_alarm));
-}
-
-\def void delete_m () {
 }
 
 \classinfo {
