@@ -142,39 +142,40 @@ class Format #< GridObject
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
 
-	#!@#$ what's this doing here?
 	def option(name,*args)
-		case name
-		when :rewind
-			rewind
-		when :headerless
-			args=args[0] if Array===args[0]
-			#raise "expecting dimension list..."
-			args.each {|a|
-				Integer===a or raise "expecting dimension list..."
-			}
-			@headerless = args
-		when :headerful
-			@headerless = nil
-		when :type
-		# bug: should not be able to modify this _during_ a transfer
-		# bug: does not exist for formats other than "grid".
-			case args[0]
-			when :uint8; @bpv=8
-				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-			when :int16; @bpv=16
-				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
-			when :int32; @bpv=32
-			else raise "unsupported number type"
-			end
-		when :cast
-			case args[0]
-			when :uint8, :int16, :int32, :float32
-				@cast = args[0]
-			else raise "unsupported number type"
-			end
-		else
-			raise "option #{name} not supported"
+		rewind
+	end
+	
+	def headerless #!@#$ goes in FormatGrid ?
+		args=args[0] if Array===args[0]
+		#raise "expecting dimension list..."
+		args.each {|a|
+			Integer===a or raise "expecting dimension list..."
+		}
+		@headerless = args
+	end
+
+	def headerful #!@#$ goes in FormatGrid ?
+		@headerless = nil
+	end
+
+	def type #!@#$ name collision? #!@#$ goes in FormatGrid ?
+		#!@#$ bug: should not be able to modify this _during_ a transfer
+		case args[0]
+		when :uint8; @bpv=8
+			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+		when :int16; @bpv=16
+			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
+		when :int32; @bpv=32
+		else raise "unsupported number type"
+		end
+	end
+
+	def cast
+		case args[0]
+		when :uint8, :int16, :int32, :int64, :float32, :float64
+			@cast = args[0]
+		else raise "unsupported number type"
 		end
 	end
 
