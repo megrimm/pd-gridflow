@@ -544,11 +544,11 @@ BUILTIN_SYMBOLS(FOO)
 #define OBJECT_MAGIC 1618033989
 
 /* base class for C++ classes that get exported to Ruby */
-struct Object {
+struct CObject {
 	int32 magic;
 	Ruby rself; /* point to Ruby peer */
 
-	Object() : magic(OBJECT_MAGIC), rself(0) {}
+	CObject() : magic(OBJECT_MAGIC), rself(0) {}
 
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
@@ -569,7 +569,7 @@ struct Object {
 	  Even dynamic_cast<> relies on this.
 	*/
 
-	virtual ~Object() { magic = 0xDEADBEEF; }
+	virtual ~CObject() { magic = 0xDEADBEEF; }
 	virtual void mark() {} /* not used for now */
 };
 
@@ -582,7 +582,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 #define MAX_DIMENSIONS 16
 
 /* a Dim is a list of dimensions that describe the shape of a grid */
-struct Dim : Object {
+struct Dim : CObject {
 	int n;
 	Pt<int32> v; /* safe pointer */
 	int32 v2[MAX_DIMENSIONS]; /* real stuff */
@@ -639,8 +639,8 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
-\class BitPacking < Object
-struct BitPacking : Object {
+\class BitPacking < CObject
+struct BitPacking : CObject {
 	Packer *packer;
 	Unpacker *unpacker;
 	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
@@ -712,8 +712,8 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
-\class NumberType < Object
-struct NumberType : Object {
+\class NumberType < CObject
+struct NumberType : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int size;
@@ -753,7 +753,7 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 /* Operator objects encapsulate optimised loops of simple operations */
 
 template <class T>
-struct Numop1On : Object {
+struct Numop1On : CObject {
 	typedef void (*Map)(int,T*);
 	Map op_map;
 	Numop1On(Map m) : op_map(m) {}
@@ -762,8 +762,8 @@ struct Numop1On : Object {
 		op_map = z.op_map; }
 };
 
-\class Numop1 < Object
-struct Numop1 : Object {
+\class Numop1 < CObject
+struct Numop1 : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
@@ -797,7 +797,7 @@ EACH_NUMBER_TYPE(FOO)
 enum LeftRight { at_left, at_right };
 
 template <class T>
-struct Numop2On : Object {
+struct Numop2On : CObject {
 	/* Function Vectorisations */
 	typedef void (*Map)(int n, T *as, T b);
 	typedef void (*Zip)(int n, T *as, T *bs);
@@ -837,8 +837,8 @@ struct Numop2On : Object {
 /* abelian property: commutativity: f(a,b)=f(b,a) */
 #define OP2_COMM (1<<1)
 
-\class Numop2 < Object
-struct Numop2 : Object {
+\class Numop2 < CObject
+struct Numop2 : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
@@ -922,7 +922,7 @@ static Numop2 *convert(Ruby x, Numop2 **bogus) {
 */
 typedef void (*DimConstraint)(Dim *d);
 
-struct Grid : Object {
+struct Grid : CObject {
 	Grid *next;
 	DimConstraint dc;
 	Dim *dim;
@@ -1192,8 +1192,8 @@ private:
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
 /* represents objects that have inlets/outlets */
-\class FObject < Object
-struct FObject : Object {
+\class FObject < CObject
+struct FObject : CObject {
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 total_time;
 
