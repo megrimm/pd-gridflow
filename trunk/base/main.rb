@@ -214,7 +214,7 @@ end
 
 def routine
 	$tasks.each {|k,v| GridFlow.exec k,v }
-	$mainloop.timers.after(100) { routine }
+	$mainloop.timers.after(1.0) { routine }
 	GC.start
 end
 

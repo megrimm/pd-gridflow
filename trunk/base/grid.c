@@ -430,9 +430,10 @@ void GridObject_init(GridObject *$) {
 
 /* category: input */
 
-static VALUE GridObject_instance_methods_wrap(int argc, VALUE *argv, VALUE rself) {
+static VALUE GridObject_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	int i;
-	VALUE list = rb_call_super(argc,argv);
+//	VALUE list = rb_call_super(argc,argv);
+	VALUE list = rb_class_instance_methods(argc,argv,rself);
 	GridClass *grid_class = FIX2PTR(rb_ivar_get(rself,rb_intern("@grid_class")));
 	for (i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
@@ -443,17 +444,20 @@ static VALUE GridObject_instance_methods_wrap(int argc, VALUE *argv, VALUE rself
 		sprintf(buf,"_%d_grid_end",inl);   rb_ary_push(list,rb_str_new2(buf));
 		sprintf(buf,"_%d_list",inl);       rb_ary_push(list,rb_str_new2(buf));
 	}
+	fprintf(stderr,"%s: instance_methods: %s\n",
+		grid_class->name,
+		RSTRING(rb_funcall(list,rb_intern("inspect"),0))->ptr);
 	return list;
 }
 
 METHOD(GridObject,method_missing) {
 	char *name;
-	/*whine("argc=%d,argv=%p,self=%p",argc,argv,self);*/
+	//whine("argc=%d,argv=%p,self=%p",argc,argv,self);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	/*whine("method_missing: %s",rb_sym_name(argv[0]));*/
+	//whine("method_missing: %s",rb_sym_name(argv[0]));
 	name = rb_sym_name(argv[0]);
-	/*rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);*/
+	//rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
@@ -470,16 +474,10 @@ METHOD(GridObject,method_missing) {
 void GridObject_delete(GridObject *$) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) {
-		if ($->in[i]) {
-			GridInlet_delete($->in[i]);
-			FREE($->in[i]);
-		}
+		if ($->in[i])  {  GridInlet_delete($->in[i]);  FREE($->in[i]);  }
 	}
 	for (i=0; i<MAX_OUTLETS; i++) {
-		if ($->out[i]) {
-			GridOutlet_delete($->out[i]);
-			FREE($->out[i]);
-		}
+		if ($->out[i]) { GridOutlet_delete($->out[i]); FREE($->out[i]); }
 	}
 /*
 	Dict_del(gf_object_set,$);
@@ -490,36 +488,19 @@ void GridObject_delete(GridObject *$) {
 */
 }
 
-void GridObject_conf_class(VALUE $, int winlet) {
-/*	MethodDecl methods[] = {
-		DECL(GridObject,winlet,grid_begin,"spi+"),
-		DECL(GridObject,winlet,grid_flow, "sip"),
-		DECL(GridObject,winlet,grid_end,  ""),
-		DECL(GridObject,winlet,list,      "l"),
-	};
-*/
-	MethodDecl methods[] = {
-		DECL(GridObject,-1,method_missing,"+"),
-	};
-	define_many_methods($,COUNT(methods),methods);
-	
+void GridObject_conf_class(VALUE $, GridClass *grclass) {
 	{
-		MethodDecl clmethods[] = {
-			DECL(GridObject,-1,instance_methods,""),
+		MethodDecl methods[] = {
+			DECL(GridObject,-1,method_missing,"+"),
 		};
-		define_many_methods(CLASS_OF($),COUNT(clmethods),clmethods);
+		define_many_methods($,COUNT(methods),methods);
 	}
 
 	rb_enable_super($,"method_missing");
-	rb_enable_super(CLASS_OF($),"instance_methods");
-}
 
-void GridObject_conf_class2(VALUE $, GridClass *grclass) {
-	int i;
-	define_many_methods($,grclass->methodsn,grclass->methods);
-	for (i=0; i<grclass->handlersn; i++) {
-		GridObject_conf_class($,grclass->handlers[i].winlet);
-	}
+	/* define in Ruby-metaclass */
+	rb_define_singleton_method($,"instance_methods",GridObject_instance_methods,-1);
+	rb_enable_super(rb_singleton_class($),"instance_methods");
 }  
 
 
@@ -568,6 +549,7 @@ FILE *Stream_get_file(Stream *$) {
 
 int Stream_read(Stream *$, int n, char *buf) {
 	assert(0);
+	return 42;
 }
 
 void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {

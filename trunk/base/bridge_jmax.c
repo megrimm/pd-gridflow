@@ -28,6 +28,13 @@
 #include <sys/time.h>
 #undef post
 
+static VALUE GridFlow_module;
+
+#define rb_sym_name rb_sym_name_r4j
+static char *rb_sym_name(VALUE sym) {
+	return strdup(rb_id2name(SYM2ID(sym)));
+}
+
 /* **************************************************************** */
 /* BFObject */
 
@@ -59,10 +66,6 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 		/* can't use EARG here */
 		rb_raise(rb_eArgError, "cannot convert argument of class %s", CLASS_OF(arg));
 	}
-}
-
-static char *rb_sym_name(VALUE sym) {
-	return strdup(rb_id2name(SYM2ID(sym)));
 }
 
 VALUE jr_convert(const fts_atom_t *at) {
@@ -124,8 +127,8 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	k.ac = ac;
 	k.at = at;
 	rb_rescue2(
-		(RFunc)BFObject_method_missing$1,&k,
-		(RFunc)BFObject_rescue,&k,
+		(RFunc)BFObject_method_missing$1,(VALUE)&k,
+		(RFunc)BFObject_rescue,(VALUE)&k,
 		rb_eException,0);
 }
 
@@ -157,8 +160,9 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	k.at = at;
 
 	r = rb_rescue2(
-		(RFunc)BFObject_init$1,&k,
-		(RFunc)BFObject_rescue,&k,rb_eException,0);
+		(RFunc)BFObject_init$1,(VALUE)&k,
+		(RFunc)BFObject_rescue,(VALUE)&k,
+		rb_eException,0);
 }
 
 #define RETIFFAIL(name,r) \
@@ -171,30 +175,38 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 		post(name " failed: %s\n", fts_status_get_description(r)); \
 		return Qnil;}
 
-
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 	int inlets, outlets;
 	VALUE $;
 	VALUE methods;
 	int i,n;
-	int objectsize = sizeof(BFObject);
 	fts_status_t r;
 
 	post("name=%s\n",fts_symbol_name(qlass->mcl->name));
 
-	$ = rb_hash_aref(rb_ivar_get(rb_eval_string("GridFlow"),rb_intern("@fclasses_set")),
+	$ = rb_hash_aref(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
 
-	methods = rb_funcall($, rb_intern("instance_methods"), 0);
+	post("$=%p\n",$);
+/*
+	post("$=%s\n",RSTRING(rb_funcall($, rb_intern("inspect"), 0))->ptr);
+*/
+
+	methods = rb_funcall($, rb_intern("instance_methods"), 1, Qtrue);
 	n = RARRAY(methods)->len;
+
+/*
+	post("instance_methods(true)=%s\n",
+		RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr);
+*/
 
 	inlets = rb_ivar_get($,rb_intern("@inlets"));
 	outlets = rb_ivar_get($,rb_intern("@outlets"));
 
-	post("objectsize=%d, inlets=%d, outlets=%d, rubyclass=%p\n",
-		objectsize, inlets, outlets, qlass);
+	post("inlets=%d, outlets=%d, rubyclass=%p\n",
+		inlets, outlets, qlass);
 
-	r = fts_class_init(qlass, objectsize, inlets, outlets, (void *)$);
+	r = fts_class_init(qlass, sizeof(BFObject), inlets, outlets, (void *)$);
 
 	RETIFFAIL("fts_class_init",r);
 	
@@ -227,14 +239,15 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 
 static fts_status_t BFObject_class_init (fts_class_t *qlass,
 int ac, const fts_atom_t *at) {
-	VALUE r;
+	fts_status_t r;
 	kludge k;
 	k.$ = 0;
-	r = rb_rescue2(
-		(RFunc)BFObject_class_init$1,qlass,
-		(RFunc)BFObject_rescue,&k,
+	r = (fts_status_t) rb_rescue2(
+		(RFunc)BFObject_class_init$1,(VALUE)qlass,
+		(RFunc)BFObject_rescue,(VALUE)&k,
 		rb_eException,0);
-	return r==Qnil;
+	return (VALUE)r==Qnil ? 
+		fts_new_status("Exception in BF_Object_class_init") : r;
 }
 
 VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
@@ -263,38 +276,43 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 
 static fts_alarm_t *gf_alarm;
 
-static uint64 RtMetro_now(void) {
+/* copy-paste */
+static uint64 RtMetro_now2(void) {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
 }
 
 void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
-	long long time = RtMetro_now();
+	long long time = RtMetro_now2();
 //	whine("tick");
 	rb_eval_string("begin $mainloop.one(0); rescue Exception => e;\
 		GridFlow.whine \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
 	fts_alarm_set_delay(gf_alarm,500.0);
 	fts_alarm_arm(gf_alarm);
-//	whine("tick was: %lld\n",RtMetro_now()-time);
+//	whine("tick was: %lld\n",RtMetro_now2()-time);
 }       
 
-void gridflow_bridge_init (VALUE rself, VALUE p) {
+VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
 	GFBridge *$ = FIX2PTR(p);
 	$->class_install = FObject_s_install_2;
 	$->send_out = FObject_send_out_2;
 	$->post = post;
+	GridFlow_module = rb_eval_string("GridFlow");
+	return Qnil;
 }
 
 void gridflow_module_init (void) {
-	char *foo[] = {"jmax","/dev/null"};
+	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	rb_define_singleton_method(rb_eval_string("Data"),"gridflow_bridge_init",
 		gridflow_bridge_init,1);
 	post("(done)\n");
-	rb_eval_string("require 'gridflow'");
+	rb_eval_string("begin require 'gridflow'; rescue Exception => e;\
+		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+	/* if exception occurred above, will crash soon */
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);
 }
