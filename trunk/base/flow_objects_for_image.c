@@ -186,7 +186,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	if (seed) this->seed = *seed;
+	if (seed) this->seed.swallow(seed); // this->seed = *seed;
 	else this->seed.init_clear(new Dim(0,0),int32_type_i);
 	if (r) this->b.swallow(r);
 }
