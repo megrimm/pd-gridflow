@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.6.4 - reference</title>
+<title>GridFlow 0.6.5 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.6.4 - reference index</h4>
+    <h4>GridFlow 0.6.5 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -41,6 +41,7 @@
 <li><a href="#@import"><img src="images/@import.png" alt="[@import {240 320 3}]" border="0"></a></li>
 <li><a href="#@export"><img src="images/@export.png" alt="[@export]" border="0"></a></li>
 <li><a href="#@export_list"><img src="images/@export_list.png" alt="[@export_list]" border="0"></a></li>
+<li><a href="#@export_symbol">@export_symbol</a></li>
 <li><a href="#@two"><img src="images/@two.png" alt="[@two]" border="0"></a></li>
 <li><a href="#@three"><img src="images/@three.png" alt="[@three]" border="0"></a></li>
 <li><a href="#@four"><img src="images/@four.png" alt="[@four]" border="0"></a></li>
@@ -51,11 +52,14 @@
 <h4><a href="#Objects_for_Computing">Objects for Computing</a></h4><ul>
 <li><a href="#@"><img src="images/op/add.jpg" alt="[@ +]" border="0"></a></li>
 <li><a href="#@!"><img src="images/@!.png" alt="[@!]" border="0"></a></li>
+<li><a href="#@complex_sq">@complex_sq</a></li>
 <li><a href="#@fold"><img src="images/@fold.png" alt="[@fold +]" border="0"></a></li>
 <li><a href="#@scan">@scan</a></li>
 <li><a href="#@outer"><img src="images/@outer.png" alt="[@outer +]" border="0"></a></li>
 <li><a href="#@inner"><img src="images/@inner.png" alt="[@inner * + 0]" border="0"></a></li>
 <li><a href="#@inner2"><img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"></a></li>
+<li><a href="#@join">@join</a></li>
+<li><a href="#@finished">@finished</a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="#@redim"><img src="images/@redim.png" alt="[@redim {2}]" border="0"></a></li>
@@ -63,8 +67,11 @@
 <li><a href="#@identity_transform"><img src="images/@identity_transform.png" alt="[@identity_transform]" border="0"></a></li>
 <li><a href="#@scale_to"><img src="images/@scale_to.png" alt="[@scale_to]" border="0"></a></li>
 <li><a href="#@scale_by"><img src="images/@scale_by.png" alt="[@scale_by]" border="0"></a></li>
-<li><a href="#@scale_down_by">@scale_down_by</a></li>
+<li><a href="#@downscale_by">@downscale_by</a></li>
 <li><a href="#@spread"><img src="images/@spread.png" alt="[@spread]" border="0"></a></li>
+<li><a href="#@apply_colormap_channelwise">@apply_colormap_channelwise</a></li>
+<li><a href="#@rgb_to_greyscale">@rgb_to_greyscale</a></li>
+<li><a href="#@greyscale_to_rgb">@greyscale_to_rgb</a></li>
 </ul>
 <h4><a href="#Objects_for_Reporting">Objects for Reporting</a></h4><ul>
 <li><a href="#@dim"><img src="images/@dim.png" alt="[@dim]" border="0"></a></li>
@@ -76,28 +83,33 @@
 <li><a href="#@convolve"><img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"></a></li>
 <li><a href="#@contrast"><img src="images/@contrast.png" alt="[@contrast]" border="0"></a></li>
 <li><a href="#@posterize"><img src="images/@posterize.png" alt="[@posterize]" border="0"></a></li>
+<li><a href="#@solarize">@solarize</a></li>
 <li><a href="#@checkers">@checkers</a></li>
 <li><a href="#@layer">@layer</a></li>
+<li><a href="#@draw_polygon">@draw_polygon</a></li>
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
 <li><a href="#rtmetro">rtmetro</a></li>
 <li><a href="#pingpong">pingpong</a></li>
 <li><a href="#@global"><img src="images/@global.png" alt="[@global]" border="0"></a></li>
+<li><a href="#fps">fps</a></li>
 </ul>
 <h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul>
 <li><a href="#format ppm @in/@out"><img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"></a></li>
-<li><a href="#format targa @in"><img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"></a></li>
-<li><a href="#format jpeg @in">format jpeg @in</a></li>
+<li><a href="#format targa @in/@out"><img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"></a></li>
+<li><a href="#format jpeg @in/@out">format jpeg @in/@out</a></li>
 <li><a href="#format mpeg @in"><img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"></a></li>
 <li><a href="#format grid @in/@out"><img src="images/format_grid.png" alt="[open grid file filename.grid]" border="0"></a></li>
 <li><a href="#format videodev @in"><img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"></a></li>
 <li><a href="#format sdl @out">format sdl @out</a></li>
 <li><a href="#format x11 @in/@out"><img src="images/format_x11.png" alt="[open x11 here]" border="0"></a></li>
+<li><a href="#aalib @out">aalib @out</a></li>
 </ul>
 <h4><a href="#Objects_for_Scripting">Objects for Scripting</a></h4><ul>
 <li><a href="#ruby class FObject extending Data">ruby class FObject extending Data</a></li>
 <li><a href="#ruby class GridObject extending FObject">ruby class GridObject extending FObject</a></li>
 <li><a href="#ruby class BitPacking">ruby class BitPacking</a></li>
+<li><a href="#FPatcher extending FObject">FPatcher extending FObject</a></li>
 </ul>
 <h4><a href="#Objects_for_Internals">Objects for Internals</a></h4><ul>
 <li><a href="#C++ class GridInlet">C++ class GridInlet</a></li>
@@ -241,6 +253,17 @@
 				a list of integers. <br>
    <br><b>outlet 0</b> <b>method</b> list <b>(</b><b>)</b>  
 				elements of the incoming grid. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@export_symbol">@export_symbol</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>this object is another opposite of @import, which puts 
+		all of its values in a jMax list.</p> <br><b>method</b> init <b>(</b><b>)</b>  
+			this object is not configurable because there isn't 
+			anything that could possibly be configured here. <br>
+  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
+				transforms this grid into a single message containing 
+				a list of integers. <br>
+   <br><b>outlet 0</b> <b>method</b> list <b>(</b><b>)</b>  
+				elements of the incoming grid. <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds two values, defaulting to (0,0). each time one is 
@@ -335,7 +358,15 @@
 			operators. <br>
   <br><b>inlet 0</b> <b>grid</b>  <br>
    <br><b>outlet 0</b> <b>grid</b>  <br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@fold">@fold</a></td></tr><tr><td></td><td valign='top'><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@complex_sq">@complex_sq</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>this object computes the square of complex numbers. 
+		If seeing imaginary as Y and real as X, then this operation squares 
+		the distance of a point from origin and doubles the angle between it 
+		and the +X half-axis clockwise. (fun, eh?) </p> <p>used on an indexmap, this makes each thing appear twice, 
+		spanning half of the original angle.</p> <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims... {imaginary real}<b>)</b> <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>dims... {imaginary real}<b>)</b> <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@fold">@fold</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@fold.png" alt="[@fold +]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p><ul> <li><b>1</b> : [@fold +] computes totals</li> <li><b>2</b> : [@fold inv+] is an alternated sum (+/-)</li> <li><b>3</b> : [@fold * 1] can compute the size of a grid using its dimension list</li> <li><b>4</b> : [@fold & 1] can mean "for all"</li> <li><b>5</b> : [@fold | 0] can mean "there exists (at least one)"</li> <li><b>6</b> : [@fold ^ 0] can mean "there exists an odd number of..."</li> <li><b>7</b> : [@fold ^ 1] can mean "there exists an even number of...".</li> </ul></p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>     
 			the base value is optional and defaults to 0. 
@@ -424,7 +455,17 @@
 				changes the base value to that. <br>
    <br><b>inlet 2</b> <b>grid</b> <b>dim(</b>anyB..., lastB<b>)</b> 
 				changes the right-hand side grid to that. <br>
-    <br></td> 
+    <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p><b>NOT IMPLEMENTED</b></p> <br><b>method</b> init <b>(</b>which_dim<b>)</b>   
+			which dim is the number of the dimension by which the join will occur. 
+			0 means first dimension; -1 means last dimension. <br>
+  <br><b>inlet 0</b> <b>grid</b> <br>
+      <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@finished">@finished</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+  <br><b>inlet 0</b> <b>grid</b> any grid<br>
+   
+			a bang is emitted every time a grid transmission ends.  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -486,11 +527,9 @@
    <p> 
 			OBSOLETE AND REMOVED. USE @for INSTEAD. </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@scale_to.png" alt="[@scale_to]" border="0"><br clear="left"><br><br><a href="images/help_@scale_to.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <br><b>method</b> init <b>(</b><b>)</b>  
-			no arguments. <br>
+   <br><b>method</b> init <b>(</b>size<b>)</b>  {height width} pair. <br>
   <br><b>inlet 0</b> <b>grid</b> a 3-channel picture to be scaled.<br>
-   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> a height.<br>
-   <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b> a width.<br>
+   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> a {height width} pair.<br>
    <br><b>outlet 0</b> <b>grid</b> a scaled 3-channel picture.<br>
   <p>@scale_to is normally fed the same inlet 1,2 values as 
 		@identity_transform, and chained from @identity_transform and to 
@@ -507,7 +546,7 @@
 			identical to @scale_to with arguments that are exactly 
 			twice those of the incoming grid. It is several times faster. <br>
    <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor*y) (factor*x) {r g b}<b>)</b><br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_down_by">@scale_down_by</a></td></tr><tr><td></td><td valign='top'><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@downscale_by">@downscale_by</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> init <b>(</b><i>+integer</i> factor<b>, </b><i>optional symbol(smoothly)</i> how<b>)</b>    
 			factor is optional (default is 2). 
@@ -518,10 +557,11 @@
    <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(factor/y) (factor/x) {r g b}<b>)</b><br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@spread.png" alt="[@spread]" border="0"><br clear="left"><br><br><a href="images/help_@spread.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p>typically you plug a @identity_transform into this object, 
+   <p>typically you plug a @for into this object, 
 		and you plug this object into the left side of a @store. it will 
-		scatter pixels around, giving an "unpolished glass" effect.</p> <br><b>method</b> init <b>(</b><b>)</b>  
-			no arguments. <br>
+		scatter pixels around, giving an "unpolished glass" effect.</p> <p>if you put a picture in it, however, it will add noise. The 
+		resulting values may be out of range, so you may need to clip them 
+		using min/max.</p> <br><b>method</b> init <b>(</b>factor<b>)</b>  same as inlet 1 <br>
   <br><b>inlet 0</b> <b>grid</b> a coordinate map.<br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> a spread factor.<br>
    <br><b>outlet 0</b> <b>grid</b> a coordinate map.<br>
@@ -529,7 +569,25 @@
 		will  appear, and some may get duplicated (triplicated, etc) 
 		randomly. Some  wrap-around effect will occur close to the edges. </p> <p> Sending an integer to inlet 1 sets the amount of spreading in 
 		maximum  number of pixels + 1. even values translate the whole image 
-		by half  a pixel due to rounding.</p> <br></td> 
+		by half  a pixel due to rounding.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@apply_colormap_channelwise">@apply_colormap_channelwise</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>This object is useful for color correction. For each pixel 
+		it takes it apart, looks up each part separately in the colormap, 
+		and constructs a new pixel from that</p> <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
+			picture <br>
+ <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>intensities channels<b>)</b> 
+			colormap ("palette") <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
+			picture <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@rgb_to_greyscale">@rgb_to_greyscale</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@greyscale_to_rgb">@greyscale_to_rgb</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
+ <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -587,14 +645,14 @@
    <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b> <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@contrast.png" alt="[@contrast]" border="0"><br clear="left"><br><br><a href="images/help_@contrast.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <br><b>method</b> init <b>(</b><b>)</b>  
-			no arguments. <br>
+   <br><b>method</b> init <b>(</b>iwhiteness<b>, </b>contrast<b>)</b>  same as inlet 1. default=256. same as inlet 2. default=256. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
 			produces a grid like the incoming grid but with 
 			different constrast. <br>
  <p>@contrast adjusts the intensity in an image. 
 			resulting values outside 0-255 are automatically clipped.</p>   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
-			this is the secondary contrast. it makes the incoming black 
+			this is the secondary contrast (inverse whiteness). 
+			it makes the incoming black 
 			correspond to a certain fraction between output black and the 
 			master contrast value. no effect is 256. default value is 256. <br>
    <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>  
@@ -606,8 +664,7 @@
 <img src="images/@posterize.png" alt="[@posterize]" border="0"><br clear="left"><br><br><a href="images/help_@posterize.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>@posterize reduces the number of possible intensities in an image; 
 		it rounds the color values.The effect is mostly apparent with a low 
-		number of levels.</p> <br><b>method</b> init <b>(</b><b>)</b>  
-			no arguments. <br>
+		number of levels.</p> <br><b>method</b> init <b>(</b>levels<b>)</b>  same as inlet 1 <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
 				produces a posterized picture from the input picture. <br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
@@ -616,7 +673,14 @@
 				highest at 255. the minimum number of levels is 2, and the 
 				default value is 2. <br>
     <p>example: simulate the 216-color "web" palette using 6 levels. 
-		simulate a 15-bit display using 32 levels.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@checkers">@checkers</a></td></tr><tr><td></td><td valign='top'><br>
+		simulate a 15-bit display using 32 levels.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@solarize">@solarize</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>makes medium intensities brightest; formerly brightest colours 
+		become darkest; formerly darkest stays darkest. This filter is linear: 
+		it's like a 200% contrast except that overflows are <i>mirrored</i> 
+		instead of clipped or wrapped.</p>  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b><br>
+   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@checkers">@checkers</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x {y x}<b>)</b> 
 				result from a [@for {0 0} {height width} {1 1}] <br>
@@ -636,6 +700,19 @@
 				the opacity channel of the foreground is used as 
 				a weighting of how much of either picture is seen 
 				in the result. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@draw_polygon">@draw_polygon</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>grid(channels)</i> color<b>, </b><i>grid(vertices,{y x})</i> vertices<b>)</b>   
+				Normally you would use the "put" operator here; 
+				but abnormally I recommend + and ^ for psychedelic effects.    <br>
+  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x channels<b>)</b> 
+				picture on which the polygon will be superimposed. <br>
+   <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>channels<b>)</b> 
+				color of each pixel <br>
+   <br><b>inlet 2</b> <b>grid</b> <b>dim(</b>vertices {y x}<b>)</b> 
+				vertices of the polygon. <br>
+   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>y x channels<b>)</b> 
+				modified picture <br>
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
@@ -669,7 +746,28 @@
 			it could be vaguely relied upon if 
 			only you knew to which extent it is unreliable. more on this 
 			in a future section called "profiling". <br>
- <br></td> 
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="fps">fps</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> init <b>(</b><b>)</b>  <br>
+ <br><b>method</b> init detailed <b>(</b><b>)</b>  <br>
+  <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>  
+			Times at which bangs are received are stored until a large 
+			enough sample of those is accumulated. Large enough is defined 
+			to be whenever the timespan exceeds one second. Then a report 
+			is made through the outlet. <br>
+ <br><b>inlet 0</b> <b>method</b> (else) <b>(</b><b>)</b>  
+				messages other than bangs are ignored. <br>
+   <br><b>outlet 0</b> <b>method</b> float <b>(</b><b>)</b>  
+			non-detailed mode only. 
+			this is the messages-per-second rating. <br>
+ <br><b>outlet 0</b> <b>method</b> list(float,6) <b>(</b><b>)</b>  
+			detailed mode only. 
+			this is: messages-per-second, followed by five values of 
+			milliseconds-per-message: minimum, median, maximum, average, 
+			standard deviation. 
+			(the average happens to be simply 1000 divided by the 
+			messages-per-second, but it is convenient to have it anyway) <br>
+  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -685,16 +783,16 @@
 			same but for .ppm.gz files <br>
  <br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b> 
 			values 0-255 <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in">format targa @in</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in/@out">format targa @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_targa.png" alt="[open targa file filename.tga]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p> <br><b>method</b> open ppm file <b>(</b><i>symbol</i> filename<b>)</b>   
+  <p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p> <br><b>method</b> open targa file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
 			directory or one of the jMax-specified data directories. <br>
- <br><b>method</b> open ppm gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
+ <br><b>method</b> open targa gzfile <b>(</b><i>symbol</i> filename<b>)</b>   
 			same but for .tga.gz files <br>
  <br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b> 
 			values 0-255 <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in">format jpeg @in</a></td></tr><tr><td></td><td valign='top'><br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format jpeg @in/@out">format jpeg @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Support for RGB non-progressive</p> <br><b>method</b> open jpeg file <b>(</b><i>symbol</i> filename<b>)</b>   
 			opens the specified file, taken from the current 
@@ -842,7 +940,15 @@
 				extracted from the button value by applying [>> 
 				buttonnumber] and then checking whether the result is odd. 
 				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul> <br>
-  <br></td> 
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="aalib @out">aalib @out</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b> open aalib <b>(</b>driver<b>, </b>args...<b>)</b>   
+				Normally "X11" with uppercase X; else consult 
+				the AALib manual.   
+				You can pass "commandline options" of AALib here.  <br>
+ <br><b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+ <br><b>method</b> option print <b>(</b><i>int</i> y<b>, </b><i>int</i> x<b>, </b><i>int</i> attr<b>, </b><i>symbol</i> text<b>)</b>      <br>
+ <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -858,7 +964,14 @@
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		A BitPacking is a simple two-way converter between different 
-		numeric layouts. <br></td> 
+		numeric layouts. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="FPatcher extending FObject">FPatcher extending FObject</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>This class is much like jMax's templates and subpatchers and 
+		PureData's abstractions.</p> <p>This is a container for objects. Its proper objects are numbered 
+		starting with zero. The wire list is given in terms of those numbers: 
+		(sourceobject,sourceinlet,destobject,destinlet). There is a 
+		pseudo-object numbered #-1 which map to the container's own inlets 
+		and outlets.</p> <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -879,10 +992,20 @@
 		Grid represents a grid that is fully stored in memory. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator1">C++ class Operator1</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		This represents a one-input operator. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator2">C++ class Operator2</a></td></tr><tr><td></td><td valign='top'><br>
+		This represents a one-input operator. 
+		Such an object contains a map() function that applies the operator 
+		over a memory segment. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class Operator2">C++ class Operator2</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		This represents a two-input operator. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridClass">C++ class GridClass</a></td></tr><tr><td></td><td valign='top'><br>
+		This represents a two-input operator. 
+		Such an object contains six functions: <ul> <li><b>1</b> : map() applies the operator over a memory segment, using a 
+		single righthand value. (This is like [@] with a scalar righthand)</li> <li><b>2</b> : zip() applies the operator over a memory segment, using a 
+		same-sized memory segument as the righthand value. (This is like 
+		[@] with a nonscalar righthand)</li> <li><b>3</b> : fold() applies the operator in a chained way, computing a 
+		single value from a memory segment and a seed value. 
+		(this is like @fold with a scalar righthand)</li> <li><b>4</b> : fold2() applies the operator in a chained way, over a seed 
+		memory segment, chaining in a memory segment of segments. 
+		(this is like @fold with a nonscalar righthand)</li> <li><b>5</b> : scan() is like @scan with a scalar righthand.</li> <li><b>6</b> : scan2() is like @scan with a nonscalar righthand.</li> </ul> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridClass">C++ class GridClass</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		This represents a class of GridObjects. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GFBridge">C++ class GFBridge</a></td></tr><tr><td></td><td valign='top'><br>
@@ -895,7 +1018,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.6.4 Documentation<br>
+<p><font size="-1">GridFlow 0.6.5 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

@@ -241,6 +241,26 @@
 		</outlet>
 	</jmax-class>
 
+	<jmax-class name="@export_symbol">
+		<p>this object is another opposite of @import, which puts
+		all of its values in a jMax list.</p>
+		<method name="init">
+			this object is not configurable because there isn't
+			anything that could possibly be configured here.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				transforms this grid into a single message containing
+				a list of integers.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<method name="list">
+				elements of the incoming grid.
+			</method>
+		</outlet>
+	</jmax-class>
+
 	<jmax-class name="@two">
 		<icon text="[@two]"/>
 		<help text="[@two]" image="@twothreefour"/>
@@ -396,6 +416,20 @@
 			<grid>
 			</grid>
 		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@complex_sq">
+		<p>this object computes the square of complex numbers.
+		If seeing imaginary as Y and real as X, then this operation squares
+		the distance of a point from origin and doubles the angle between it
+		and the +X half-axis clockwise. (fun, eh?)
+		</p>
+		<p>used on an indexmap, this makes each thing appear twice,
+		spanning half of the original angle.</p>
+		<inlet id="0"><grid><dim>dims... {imaginary real}</dim>
+		</grid></inlet>
+		<outlet id="0"><grid><dim>dims... {imaginary real}</dim>
+		</grid></outlet>
 	</jmax-class>
 
 	<jmax-class name="@fold">
@@ -608,6 +642,32 @@
 		<outlet id="0">
 		</outlet>
 	</jmax-class>
+
+	<jmax-class name="@join">
+		<p><b>NOT IMPLEMENTED</b></p>
+		<method name="init">
+			<arg name="which_dim"/>
+
+			which dim is the number of the dimension by which the join will occur.
+			0 means first dimension; -1 means last dimension.
+		</method>
+		<inlet id="0">
+			<grid></grid>
+		</inlet>
+		<inlet id="1">
+		</inlet>
+		<outlet id="0">
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@finished">
+		<inlet id="0">
+			<grid>any grid</grid>
+		</inlet>
+		<outlet id="0">
+			a bang is emitted every time a grid transmission ends.
+		</outlet>
+	</jmax-class>
 </section>
 
 <section name="Objects for Coordinate Transforms">
@@ -710,17 +770,14 @@
 		<help text="[@scale_to]"/>
 
 		<method name="init">
-			no arguments.
+			<arg name="size">{height width} pair.</arg>
 		</method>
 
 		<inlet id="0">
 			<grid>a 3-channel picture to be scaled.</grid>
 		</inlet>
 		<inlet id="1">
-			<method name="int">a height.</method>
-		</inlet>
-		<inlet id="2">
-			<method name="int">a width.</method>
+			<method name="int">a {height width} pair.</method>
 		</inlet>
 		<outlet id="0">
 			<grid>a scaled 3-channel picture.</grid>
@@ -756,7 +813,7 @@
 		</outlet>
 	</jmax-class>
 
-	<jmax-class name="@scale_down_by">
+	<jmax-class name="@downscale_by">
 		<method name="init">
 			<arg name="factor" type="+integer"/>
 			<arg name="how" type="optional symbol(smoothly)"/>
@@ -778,12 +835,16 @@
 		<icon text="[@spread]"/>
 		<help text="[@spread]"/>
 
-		<p>typically you plug a @identity_transform into this object,
+		<p>typically you plug a @for into this object,
 		and you plug this object into the left side of a @store. it will
 		scatter pixels around, giving an "unpolished glass" effect.</p>
+		
+		<p>if you put a picture in it, however, it will add noise. The
+		resulting values may be out of range, so you may need to clip them
+		using min/max.</p>
 
 		<method name="init">
-			no arguments.
+			<arg name="factor">same as inlet 1</arg>
 		</method>
 
 		<inlet id="0">
@@ -806,6 +867,36 @@
 		maximum  number of pixels + 1. even values translate the whole image
 		by half  a pixel due to rounding.</p>
 
+	</jmax-class>
+
+	<jmax-class name="@apply_colormap_channelwise">
+		<p>This object is useful for color correction. For each pixel
+		it takes it apart, looks up each part separately in the colormap,
+		and constructs a new pixel from that</p>
+		
+		<inlet id="0"><grid><dim>rows columns channels</dim>
+			picture
+		</grid></inlet>
+		<inlet id="1"><grid><dim>intensities channels</dim>
+			colormap ("palette")
+		</grid></inlet>
+		<outlet id="0"><grid><dim>rows columns channels</dim>
+			picture
+		</grid></outlet>
+	</jmax-class>
+
+	<jmax-class name="@rgb_to_greyscale">
+		<inlet id="0"><grid><dim>rows columns {red green blue}</dim>
+		</grid></inlet>
+		<outlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@greyscale_to_rgb">
+		<inlet id="0"><grid><dim>rows columns {white}</dim></grid>
+		</inlet>
+		<outlet id="0"><grid><dim>rows columns {red green blue}</dim>
+		</grid></outlet>
 	</jmax-class>
 </section>
 
@@ -906,7 +997,8 @@
 		<help text="[@contrast]"/> 
 
 		<method name="init">
-			no arguments.
+			<arg name="iwhiteness">same as inlet 1. default=256.</arg>
+			<arg name="contrast">same as inlet 2. default=256.</arg>
 		</method>
 		
 		<inlet id="0">
@@ -919,7 +1011,8 @@
 		</inlet>
 		<inlet id="1">
 			<method name="int">
-			this is the secondary contrast. it makes the incoming black
+			this is the secondary contrast (inverse whiteness).
+			it makes the incoming black
 			correspond to a certain fraction between output black and the
 			master contrast value. no effect is 256. default value is 256.
 			</method>	
@@ -946,7 +1039,7 @@
 		number of levels.</p>
 
 		<method name="init">
-			no arguments.
+			<arg name="levels">same as inlet 1</arg>
 		</method>
 
 		<inlet id="0">
@@ -969,6 +1062,19 @@
 
 		<p>example: simulate the 216-color "web" palette using 6 levels.
 		simulate a 15-bit display using 32 levels.</p>
+	</jmax-class>
+
+	<jmax-class name="@solarize">
+		<p>makes medium intensities brightest; formerly brightest colours
+		become darkest; formerly darkest stays darkest. This filter is linear:
+		it's like a 200% contrast except that overflows are <i>mirrored</i>
+		instead of clipped or wrapped.</p>
+		<inlet id="0">
+			<grid><dim>rows columns channels</dim></grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>rows columns channels</dim></grid>
+		</outlet>
 	</jmax-class>
 
 	<jmax-class name="@checkers">
@@ -1004,6 +1110,37 @@
 				the opacity channel of the foreground is used as
 				a weighting of how much of either picture is seen
 				in the result.
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@draw_polygon">
+		<method name="init">
+			<arg name="operator" type="symbol">
+				Normally you would use the "put" operator here;
+				but abnormally I recommend + and ^ for psychedelic effects.   
+			</arg>
+			<arg name="color" type="grid(channels)"/>
+			<arg name="vertices" type="grid(vertices,{y x})"/>
+		</method>
+		<inlet id="0">
+			<grid><dim>y x channels</dim>
+				picture on which the polygon will be superimposed.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>channels</dim>
+				color of each pixel
+			</grid>
+		</inlet>
+		<inlet id="2">
+			<grid><dim>vertices {y x}</dim>
+				vertices of the polygon.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>y x channels</dim>
+				modified picture
 			</grid>
 		</outlet>
 	</jmax-class>
@@ -1048,6 +1185,38 @@
 			in a future section called "profiling".
 		</method>
 	</jmax-class>
+
+	<jmax-class name="fps">
+		<method name="init">
+		</method>
+		<method name="init detailed">
+		</method>
+		<inlet id="0">
+			<method name="bang">
+			Times at which bangs are received are stored until a large
+			enough sample of those is accumulated. Large enough is defined
+			to be whenever the timespan exceeds one second. Then a report
+			is made through the outlet.
+			</method>
+			<method name="(else)">
+				messages other than bangs are ignored.
+			</method>
+		</inlet>
+		<outlet id="0">
+			<method name="float">
+			non-detailed mode only.
+			this is the messages-per-second rating.
+			</method>
+			<method name="list(float,6)">
+			detailed mode only.
+			this is: messages-per-second, followed by five values of
+			milliseconds-per-message: minimum, median, maximum, average,
+			standard deviation.
+			(the average happens to be simply 1000 divided by the
+			messages-per-second, but it is convenient to have it anyway)
+			</method>
+		</outlet>
+	</jmax-class>
 </section>
 
 <section name="External Picture Formats">
@@ -1075,17 +1244,17 @@
 		</grid>
 	</jmax-class>
 
-	<jmax-class name="format targa @in">
+	<jmax-class name="format targa @in/@out">
 		<icon image="format_targa" text="[open targa file filename.tga]"/>
 		<p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p>
 
-		<method name="open ppm file">
+		<method name="open targa file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
 			directory or one of the jMax-specified data directories.
 		</method>
 
-		<method name="open ppm gzfile">
+		<method name="open targa gzfile">
 			<arg name="filename" type="symbol"/>
 			same but for .tga.gz files
 		</method>
@@ -1095,7 +1264,7 @@
 		</grid>
 	</jmax-class>
 
-	<jmax-class name="format jpeg @in">
+	<jmax-class name="format jpeg @in/@out">
 		<!--<icon image="format_jpeg" text="[open jpeg file foo.jpg]"/>-->
 		<p>Support for RGB non-progressive</p>
 		
@@ -1391,6 +1560,25 @@
 		</outlet>
 
 	</jmax-class>
+
+	<jmax-class name="aalib @out">
+		<method name="open aalib">
+			<arg name="driver">
+				Normally "X11" with uppercase X; else consult
+				the AALib manual.
+			</arg>
+			<rest name="args">
+				You can pass "commandline options" of AALib here.
+			</rest>
+		</method>
+		<grid><dim>rows columns {white}</dim></grid>
+		<method name="option print">
+			<arg name="y" type="int"/>
+			<arg name="x" type="int"/>
+			<arg name="attr" type="int"/>
+			<arg name="text" type="symbol"/>
+		</method>
+	</jmax-class>
 </section>
 
 <section name="Objects for Scripting">
@@ -1403,6 +1591,15 @@
 	<jmax-class name="ruby class BitPacking">
 		A BitPacking is a simple two-way converter between different
 		numeric layouts.
+	</jmax-class>
+	<jmax-class name="FPatcher extending FObject">
+		<p>This class is much like jMax's templates and subpatchers and
+		PureData's abstractions.</p>
+		<p>This is a container for objects. Its proper objects are numbered
+		starting with zero. The wire list is given in terms of those numbers:
+		(sourceobject,sourceinlet,destobject,destinlet). There is a
+		pseudo-object numbered #-1 which map to the container's own inlets
+		and outlets.</p>
 	</jmax-class>
 </section>
 <section name="Objects for Internals">
@@ -1420,9 +1617,27 @@
 	</jmax-class>
 	<jmax-class name="C++ class Operator1">
 		This represents a one-input operator.
+		Such an object contains a map() function that applies the operator
+		over a memory segment.
 	</jmax-class>
 	<jmax-class name="C++ class Operator2">
 		This represents a two-input operator.
+		Such an object contains six functions:
+		<list>
+		<li>map() applies the operator over a memory segment, using a
+		single righthand value. (This is like [@] with a scalar righthand)</li>
+		<li>zip() applies the operator over a memory segment, using a
+		same-sized memory segument as the righthand value. (This is like
+		[@] with a nonscalar righthand)</li>
+		<li>fold() applies the operator in a chained way, computing a
+		single value from a memory segment and a seed value.
+		(this is like @fold with a scalar righthand)</li>
+		<li>fold2() applies the operator in a chained way, over a seed
+		memory segment, chaining in a memory segment of segments.
+		(this is like @fold with a nonscalar righthand)</li>
+		<li>scan() is like @scan with a scalar righthand.</li>
+		<li>scan2() is like @scan with a nonscalar righthand.</li>
+		</list>
 	</jmax-class>
 	<jmax-class name="C++ class GridClass">
 		This represents a class of GridObjects.
