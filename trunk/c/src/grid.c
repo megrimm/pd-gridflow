@@ -19,7 +19,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-
 #include <stdlib.h>
 #include "grid.h"
 
@@ -37,7 +36,7 @@ static uint64 rdtsc(void) {
 #define ENTER $->profiler_last = rdtsc();
 #define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
 #define ENTER_P $->parent->profiler_last = rdtsc();
-#define LEAVE_P $->parent->profiler_cumul = rdtsc()-$->parent->profiler_last;
+#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
 
 /* **************** GridInlet ************************************* */
 
