@@ -255,7 +255,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 		const char *buf =
 			strcmp(md->selector,"del")==0 ? "delete" :
 			md->selector;
-		rb_define_method(rself,buf,(Ruby(*)(...))md->method,-1);
+		rb_define_method(rself,buf,(RMethod)md->method,-1);
 		rb_enable_super(rself,buf);
 	}
 }
@@ -343,7 +343,7 @@ void startup_grid();
 void startup_flow_objects();
 void startup_formats();
 
-#define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RFunc)b,c)
+#define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RMethod)b,c)
 
 #ifdef HAVE_PENTIUM
 /*
