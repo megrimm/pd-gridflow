@@ -19,7 +19,8 @@
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 	<li>GNU Bash</li>
-	<li>X11 Window System (Xserver and Xlib)</li>
+	<li>X11 Display Server</li>
+	<li>X11 Display Library (Xlib)</li>
 </list></p>
 <p>Very Recommended:<list>
 	<li>jMax 2.5</li>
@@ -27,7 +28,8 @@
 	<li>jMax 2.4 support removed</li>
 </list></p>
 <p>Optional:<list>
-	<li>Greg Ward's libmpeg ("Berkeley/MNI")</li>
+	<li>HeroineWarrior's libmpeg3.so</li>
+	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
 	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
 	<li>Ruby 1.6 with package "xmlparser" (for editing documentation)</li>
 </list></p>
@@ -38,44 +40,38 @@ as well as the jMax docs.</p>
 <p>Also Useful:<list>
 	<li>Pentium-compatible CPU (for profiling)</li>
 	<li>CVS (for live update)</li>
-	<li>Ruby (for regenerating documentation)</li>
 </list></p>
 <p>NOTE:
 There are several different incompatible libmpeg's from different authors;
 I found four of them, some numbered 2 and 3 as if they were version numbers
-(but it seems they are not). Gridflow supports the Berkeley/MNI one (Greg
-Ward). It would be nice to support the others as well eventually.
+(but it seems they are not).
+</p>
+
+<p>NOTE: if one of your libraries are only available in .a format, you will not
+be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 </p>
 </prose></section>
 
 <section name="Installation process (for jMax 2.5)"><prose>
 <list>
   <li>Download the latest version of GridFlow
-      and download the images pack (video4jmax-images-0.2.tar.gz).
-      The download sites are
-	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca</link> and
-	 <link to="http://hostname.2y.net/gridflow/download">hostname.2y.net</link>.
+      and download the images pack (gridflow-images-0.5.tar.gz).
+      The download site is
+	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca</link>.
       Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice),
       which will create a directory called 'gridflow';
       unpack the images pack into that directory, which will create
-	 another one called 'gridflow/images'.
-      You may also download Greg Ward's libmpeg from there but you have
-	 to install it separately and on your own.
+	 another one called 'images'.
   </li>
 
   <li>Find your system type (for AMD K6 and Pentium Pro and compatibles, 
   on Linux, this is <k>i686-linux</k>; if you have a recent Macintosh, this
   is <k>ppc-macosx</k> or <k>ppc-linux</k>)</li>
   
-  <li>Untar the archive with <k>tar -xvtf gridflow_current_version.tgz</k>
-  in your <k>packages</k> directory (or elsewhere). This will create the
-  <k>gridflow</k> directory and place all the files within.</li>
-
-  <li>Run <k>./configure --jmax25</k> from the <k>gridflow</k> directory.
+  <li>Run <k>./configure --jmax25 --arch <i>your-system-type</i></k> from the <k>gridflow</k> directory.
   note: if you didn't install GridFlow in the <k>packages</k> directory,
-  then you have to do something like
-  <k> ./configure --jmax25 --jmax-dist-dir</k>
-  <i>your-jmax-source-directory-goes-here</i></li>
+  then you have to add the option <k>--jmax-dist-dir
+  <i>your-jmax-source-directory-goes-here</i></k></li>
 
   <li><k>./configure</k> will try to detect some optional components (libmpeg,
   pentium clock, etc); error messages may appear in case of a <k>no</k>.
@@ -87,8 +83,8 @@ Ward). It would be nice to support the others as well eventually.
 
   <li>Stay in the same directory and do:
       <list>
-        <li><k>make ARCH=</k><i>your-system-type</i><k> all</k></li>
-        <li><k>make ARCH=</k><i>your-system-type</i><k> install</k></li>
+        <li><k>make all</k></li>
+        <li><k>make install</k></li>
       </list>
       but if the first one stops because of "Error" you shouldn't try the second
 	 one.
@@ -108,7 +104,7 @@ Ward). It would be nice to support the others as well eventually.
 
   <p>Note: If you want more speed, you can configure with the --fast
   switch, which turns off many error-detection mechanisms; if you want
-  more speed, you could configure with --no-profiler too, but if you do
+  more speed, you could configure with --no-profiling too, but if you do
   that, you can no longer find out which of the objects consume the most
   time.</p>
 
