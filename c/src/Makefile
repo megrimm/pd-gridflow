@@ -44,17 +44,17 @@ standalone:: $(LIB)
 clean-standalone::
 	rm -f ../lib2/* ../obj2/*
 
-../obj2/nofts.o: nofts.c nofts.h grid.h lang.h config.h Makefile
+../obj2/bridge_none.o: bridge_none.c bridge_none.h grid.h lang.h config.h Makefile
 	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-../obj2/%.o: %.c grid.h lang.h config.h nofts.h over_fts.h Makefile
+../obj2/%.o: %.c grid.h lang.h config.h bridge_none.h Makefile
 	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-$(LIB): $(OBJS2) ../obj2/nofts.o Makefile
+$(LIB): $(OBJS2) ../obj2/bridge_none.o Makefile
 	@mkdir -p ../lib2
-	gcc -shared $(OBJS2) ../obj2/nofts.o -o $@ $(LDSOFLAGS)
+	gcc -shared $(OBJS2) ../obj2/bridge_none.o -o $@ $(LDSOFLAGS)
 
 #$(LIB2): $(LIB)
 #	install --mode=755 $(LIB) $(LIB2)
