@@ -31,6 +31,12 @@
 #include "grid.h.fcs"
 #include <ctype.h>
 
+/* copied from bridge/puredata.c (sorry: linkage issue) */
+struct Pointer : CObject { void *p; Pointer(void *_p) : p(_p) {}};
+Ruby Pointer_s_noo (void *ptr) {
+	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, new Pointer(ptr));}
+static void *Pointer_gut (Ruby rself) {DGS(Pointer); return self->p;}
+
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",parent->info(),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
 #define TRACE assert(this);
 
@@ -156,9 +162,9 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 
 Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!argc) return PTR2FIX(this);
-	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
-	nt = (NumberTypeE) INT(argv[2]);
-	argc-=3, argv+=3;
+	GridOutlet *back_out = (GridOutlet *) Pointer_gut(argv[0]);
+	nt = (NumberTypeE) INT(argv[1]);
+	argc-=2, argv+=2;
 	PROF(parent) {
 	if (dim) {
 		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
@@ -318,13 +324,12 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	int n = dim->count();
 	this->nt = nt;
 	this->dim = dim;
-	Ruby a[n+5];
+	Ruby a[n+4];
 	a[0] = INT2NUM(woutlet);
 	a[1] = bsym._grid;
-	a[2] = PTR2FIXA(this);
-	a[3] = PTR2FIXB(this);
-	a[4] = INT2NUM(nt);
-	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
+	a[2] = Pointer_s_noo(this);
+	a[3] = INT2NUM(nt);
+	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
 	frozen=true;
 	if (!dim->prod()) {end(); return;}
