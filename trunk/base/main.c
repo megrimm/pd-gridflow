@@ -158,7 +158,7 @@ VALUE gf_object_set = 0;
 FILE *whine_f;
 
 /* ---------------------------------------------------------------- */
-/* FObject */
+/* GridFlow::FObject */
 
 VALUE rb_ary_fetch(VALUE $, int i) {
 	VALUE argv[] = { INT2NUM(i) };
@@ -221,7 +221,7 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 }
 
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
-	BFObject *foreign_peer = 0; /* for now */
+	BFObject *foreign_peer = 0;
 	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
 	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
 	VALUE $; /* ruby_peer */
@@ -230,13 +230,16 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->peer = $;
 	{
 		VALUE gc2 = rb_ivar_get(qlass,rb_intern("@grid_class"));
+		/*
 		if (gc2==Qnil) RAISE("@grid_class not found in %s",
 			RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
+		*/
 		c_peer->grid_class = gc2==Qnil ? 0 : FIX2PTR(gc2);
 	}
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 
-	rb_funcall2($,rb_intern("initialize"),argc,argv);
+	GridObject_init(c_peer);
+	rb_funcall2($,SI(initialize),argc,argv);
 	return $;
 }
 
@@ -309,23 +312,12 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	fprintf(stderr,"here are %d methods:\n",n);
 	for (i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
-		int j;
-		const char *s = md->signature;
-		char buf[256];
-		int n_args=-1; /* yes, really. sorry. */
-		if (md->winlet>=0) {
-			sprintf(buf,"_%d_%s",md->winlet,md->selector);
-		} else {
-			if (strcmp(md->selector,"init")==0) {
-				sprintf(buf,"initialize");
-			} else {
-				sprintf(buf,"%s",md->selector);
-			}
-		}
+		const char *buf = strcmp(md->selector,"init")==0 ?
+			"initialize" : md->selector;
 		fprintf(stderr,"%s: adding method #%s\n",
 			RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr,buf);
-		rb_define_method($,buf,(VALUE(*)())md->method,n_args);
-		fprintf(stderr,"(hello)\n");
+		rb_define_method($,buf,(VALUE(*)())md->method,-1);
+		rb_enable_super($,buf);
 	}
 }
 
@@ -364,6 +356,20 @@ void post(const char *fmt, ...) {
 	vfprintf(stderr,fmt,args);
 }
 */
+
+VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
+VALUE super) {
+	VALUE $ = rb_define_class_under(GridFlow_module, rname, super);
+	rb_ivar_set($,SI(@grid_class),PTR2FIX(gc));
+	define_many_methods($,gc->methodsn,gc->methods);
+//remember to take care of delete
+	rb_funcall($,SI(install),3,
+		rb_str_new2(jname),
+		INT2NUM(gc->inlets),
+		INT2NUM(gc->outlets));
+	GridObject_conf_class($,gc);
+	return Qnil;
+}
 
 /* ---------------------------------------------------------------- */
 
