@@ -100,20 +100,6 @@ fts_module_t video4jmax_module = {
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-// returns the highest bit set in a word, or -1 if none
-int high_bit(unsigned long n) {
-	int i;
-	for (i=31; ((n & 0x80000000) == 0) && i>=0; i--) n <<= 1;
-	return i;
-}
-
-// returns the lowest bit set in a word, or -1 if none
-int low_bit(unsigned long n) {
-	int i=0;
-	n = (~n+1)&n;
-	return high_bit(n);
-}
-
 /*
 	a slightly friendlier version of post(...)
 	it removes redundant messages.

@@ -50,9 +50,6 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
-int high_bit(unsigned long n);
-int low_bit(unsigned long n);
-
 void *qalloc(          size_t n); /*0xdeadbeef*/
 void qfree(void *data, size_t n); /*0xfadedf00*/
 
@@ -185,6 +182,18 @@ struct Dim {
 	#endif
 */
 
+typedef struct BitPacking BitPacking;
+
+	int high_bit(uint32 n);
+	int low_bit(uint32 n);
+	BitPacking *BitPacking_new(int bytes, uint32 r, uint32 g, uint32 b);
+	void BitPacking_whine(BitPacking *$);
+	uint8 *BitPacking_pack(BitPacking *$, int n, Number *data, uint8 *target);
+	Number *BitPacking_unpack(BitPacking *$, int n, uint8 *in, Number *out);
+	int BitPacking_bytes(BitPacking *$);
+
+/* **************************************************************** */
+
 /* GridInlet represents a grid-aware jmax inlet */
 
 typedef struct GridInlet GridInlet;
@@ -216,6 +225,7 @@ struct GridInlet {
 	GridFlow  flow;
 	GridEnd   end;
 
+	int factor; /* for future use: flow's n will be multiple of $->factor */
 	int count; /* how many Numbers transferred */
 };
 
@@ -349,6 +359,7 @@ struct FileFormatClass {
 	Dim *dim; \
 	int left; \
 	void *stuff; \
+	BitPacking *bit_packing; \
 	\
 	int    (*frames)(FileFormat *$); \
 	Dim   *(*frame) (FileFormat *$, int frame); \

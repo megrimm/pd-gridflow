@@ -110,6 +110,7 @@ METHOD(VideoInFile,bang) {
 		int bs = Dim_prod($->out[0]->dim) - $->out[0]->dex;
 		if (bs > maxbs) bs = maxbs;
 		if (bs > n) bs = n;
+		bs = (bs/3)*3; /* hack for videodev and later Targa */
 		data = $->ff->read($->ff,bs);
 		if (!data) {
 			whine("Frame data error?");
