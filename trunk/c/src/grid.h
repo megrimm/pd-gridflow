@@ -42,6 +42,20 @@ extern "C" {
 #define VIDEO4JMAX_VERSION "0.2.3"
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
+#ifdef VIDEO4JMAX_FAST
+#define NO_ASSERT
+#define NO_DEADBEEF
+#endif
+
+/* options */
+
+#if 0
+  /* don't use this, doesn't work yet */
+  #define VIDEO_OUT_SHM
+  /* don't use this, does not work yet. */
+  #define GRID_USE_INLINE
+#endif
+
 /* **************************************************************** */
 /* jMax macros */
 
@@ -171,7 +185,7 @@ extern "C" {
 #endif
 
 /* **************************************************************** */
-/* general purpose stuff */
+/* other general purpose stuff */
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -212,7 +226,7 @@ static inline int min(int a, int b) { return a<b?a:b; }
 static inline int max(int a, int b) { return a>b?a:b; }
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 /* **************************************************************** */
-/* jMax specific */
+/* general purpose but jMax specific */
 
 void whine(char *fmt, ...);
 void whine_time(const char *s);
@@ -232,8 +246,30 @@ struct MethodDecl {
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 
 /* **************************************************************** */
-/* Video4jmax specific */
+/* limits */
 
+/* not used for now */
+#define MAX_NUMBERS 64*1024*1024
+
+/* used as maximum width, maximum height, etc. */
+#define MAX_INDICES 2048
+
+/* maximum number of dimensions in an array */
+#define MAX_DIMENSIONS 4
+
+/* 1 + maximum id of last grid-aware inlet/outlet */
+#define MAX_INLETS 4
+#define MAX_OUTLETS 2
+
+/* number of (maximum,ideal) Numbers to send at once */
+#define PACKET_LENGTH (1024)
+
+/*
+  what kind of number a Grid contains.
+  note that on the other hand, indexing and dimensioning of Grids is
+  still done with explicit ints.
+*/
+typedef long Number;
 
 /* **************************************************************** */
 
@@ -248,44 +284,12 @@ DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
 DECL_SYM(grid_end)
 
-
-/* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 2048
-
-/* maximum number of dimensions in an array */
-#define MAX_DIMENSIONS 4
-
-/* 1 + maximum id of last grid-aware inlet/outlet */
-#define MAX_INLETS 4
-#define MAX_OUTLETS 2
-
-/*
-  what kind of number a Grid contains.
-  note that on the other hand, indexing and dimensioning of Grids is
-  still done with explicit ints.
-*/
-typedef long Number;
-
 #ifndef __cplusplus
 typedef enum { false, true } bool;
 #endif
 
-/* number of (maximum,ideal) Numbers to send at once */
-#define PACKET_LENGTH (1024)
-
-/* options */
-
-#if 0
-  /* don't use this, doesn't work yet */
-  #define VIDEO_OUT_SHM
-  /* don't use this, does not work yet. */
-  #define GRID_USE_INLINE
-#endif
-
-/* #define NO_ASSERT */
-/* #define NO_DEADBEEF */
-
 /* **************************************************************** */
+/* dim.c */
 
 /*
   a const array that holds dimensions of a grid
@@ -318,6 +322,9 @@ typedef struct Dim {
 	#endif
 */
 
+/* **************************************************************** */
+/* bitpacking.c */
+
 typedef struct BitPacking BitPacking;
 
 	int high_bit(uint32 n);
@@ -327,6 +334,9 @@ typedef struct BitPacking BitPacking;
 	uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
 	Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
+
+/* **************************************************************** */
+/* operator.c */
 
 #define DECL_TYPE(_name_,_size_) \
 	_name_##_type_i
@@ -372,6 +382,7 @@ typedef struct Operator2 {
 	extern Operator2 op2_table[];
 
 /* **************************************************************** */
+/* grid.c (1) */
 
 /* GridInlet represents a grid-aware jmax inlet */
 
@@ -429,6 +440,7 @@ struct GridInlet {
 		  ((GridEnd)_class_##_##_winlet_##_end))
 
 /* **************************************************************** */
+/* grid.c (2) */
 /* GridOutlet represents a grid-aware jmax outlet */
 
 struct GridOutlet {
@@ -451,12 +463,14 @@ struct GridOutlet {
 	int  GridOutlet_idle   (GridOutlet *$);
 	void GridOutlet_abort  (GridOutlet *$);
 	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
+	void GridOutlet_give       (GridOutlet *$, int n,       Number *data);
 	void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
 	void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
 	void GridOutlet_flush  (GridOutlet *$);
 	void GridOutlet_end    (GridOutlet *$);
 
 /* **************************************************************** */
+/* grid.c (3) */
 /* GridPacket
 	** for future use **
 	represents a smart buffer bound to a GridOutlet and N GridInlets
@@ -478,6 +492,7 @@ struct GridPacket {
 */
 
 /* **************************************************************** */
+/* grid.c (4) */
 
 #define GridObject_FIELDS \
 	fts_object_t o;  /* extends fts object */ \
@@ -497,6 +512,7 @@ struct GridObject {
 	void GridObject_delete(GridObject *$);
 
 /* **************************************************************** */
+/* grid.c (5) */
 
 typedef enum FormatFlags {dummy_dummy} FormatFlags;
 typedef struct FormatClass FormatClass;
@@ -568,4 +584,4 @@ FormatClass *FormatClass_find(const char *name);
 };
 #endif
 
-#endif /* __GRID_PROTOCOL_H */
+#endif /* __GRID_H */
