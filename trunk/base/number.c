@@ -282,6 +282,20 @@ template <class T>
 static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
+uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
+int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1);
+	return c<-0x4000000000000000?0x8000000000000000:
+		c>0x3fffffffffffffff?0x7fffffffffffffff:a+b; }
+
+uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
+int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
+	return c<-0x4000000000000000?0x8000000000000000:
+		c>0x3fffffffffffffff?0x7fffffffffffffff:a+b; }
+
 /*
 Algebraic Properties
   Note: N,A are now coded into DEF_OP2A
@@ -356,8 +370,8 @@ DEF_OP2(pow, ipow(a,b), false, false) // "RN=1"
 DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
 
 // 0.7.8
-//DEF_OP2(clipadd, min(nt_greatest(&a),max(nt_smallest(&a),a+b)), x==0, false)
-//DEF_OP2(clipsub, min(nt_greatest(&a),max(nt_smallest(&a),a-b)), side==at_right && x==0, false)
+DEF_OP2F(clipadd, clipadd(a,b), a+b, x==0, false)
+DEF_OP2F(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
 DEF_OP2(abssub,  abs(a-b), false, false)
 DEF_OP2(sqsub, (a-b)*(a-b), false, false)
 DEF_OP2(avg, (a-b)/2, false, false)
@@ -414,8 +428,8 @@ Numop2 op2_table[] = {
 	DECL_OP2_NOFOLD(pow, "**", 0),
 	DECL_OP2_NOFOLD(log, "log*", 0),
 // 0.7.8
-	//DECL_OP2(clipadd,"clip+", OP2_ASSOC|OP2_COMM),
-	//DECL_OP2(clipsub,"clip-", 0),
+	DECL_OP2(clipadd,"clip+", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(clipsub,"clip-", 0),
 	DECL_OP2_NOFOLD(abssub,"abs-", OP2_COMM),
 	DECL_OP2_NOFOLD(sqsub,"sq-", OP2_COMM),
 	DECL_OP2_NOFOLD(avg,"avg", OP2_COMM),
