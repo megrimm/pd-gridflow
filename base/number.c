@@ -50,6 +50,11 @@ int low_bit(uint32 n) {
 #define CONVERT2 \
 	for (t=0,i=0; i<$->size; i++) t |= (((in[i] << hb[i]) >> 7) & mask[i]);
 
+#define CONVERT3 \
+	for (t=0,i=0; i<$->size; i++) { \
+		t |= ((in[i]>>(7-hb[i]))|(in[i]<<(hb[i]-7))) & mask[i]; \
+	}
+
 #define WRITE_LE { \
 	int bytes = $->bytes; \
 	while (bytes--) { *out++ = t; t >>= 8; }}
@@ -71,34 +76,38 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 	register uint32 t;
 	int i;
 	int hb[4];
-	int mask[4];
+	uint32 mask[4];
 	int sameorder = $->endian==2 || $->endian==::is_le();
+	int size = $->size;
 
 	for (i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
-	memcpy(mask,$->mask,3*sizeof(int));
+	memcpy(mask,$->mask,size*sizeof(uint32));
 
-	if (sameorder && $->size==3) {
+	if (sameorder && size==3) {
 		switch($->bytes) {
 		case 2:
 			NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;)
-			break;
-		case 3:
-			NTIMES(t=CONVERT1; *((int16 *)out)=t; out[2]=t>>16; out+=3; in+=3;)
-			break;
+			return out;
 		case 4:
 			NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;)
-			break;
+			return out;
 		}
-	} else if ($->is_le()) {
-		if ($->size==3)
+	}
+	
+	if ($->is_le()) {
+		if (size==3)
 			while (n--) {CONVERT1; WRITE_LE; in+=3;}
-		else
-			while (n--) {CONVERT2; WRITE_LE; in+=$->size;}
+		else if (size==4) {
+			while (n--) {CONVERT3; WRITE_LE; in+=4;}
+		} else
+			while (n--) {CONVERT2; WRITE_LE; in+=size;}
 	} else {
-		if ($->size==3)	
+		if (size==3)	
 			while (n--) {CONVERT1; WRITE_BE; in+=3;}
+		else if (size==4)
+			while (n--) {CONVERT3; WRITE_BE; in+=4;}
 		else
-			while (n--) {CONVERT2; WRITE_BE; in+=$->size;}
+			while (n--) {CONVERT2; WRITE_BE; in+=size;}
 	}
 	return out;
 }
@@ -130,7 +139,7 @@ Pt<Number> out) {
 
 static Pt<uint8> pack2_565(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
-	const int mask[3] = {0x0000f800,0x000007e0,0x0000001f};
+	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 	return out;
