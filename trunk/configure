@@ -530,12 +530,19 @@ File.open("config.h","w") {|f| f.puts "
 \#error \"Can't do anything without ruby.h\"
 \#endif
 
-#define FORMAT_LIST(_pre_,_post_) \\"
-f.puts $conf[:FORMATS].map {|fmt| "  _pre_ Format#{fmt}##_post_" }.join(",\\\n")
+"
+
+if $conf[:FORMATS]!=[] then
+	f.puts "#define FORMAT_LIST(_pre_,_post_) \\"
+	f.puts $conf[:FORMATS].map {|fmt|
+		"  _pre_ Format#{fmt}##_post_"
+	}.join(",\\\n")
+end
 
 for z in $conf[:OPTIONS] do
 	f.puts "#define #{z}"
 end
+
 if $conf[:FEATURES][:mpeg3]
 f.puts "
 \#ifdef LIBMPEG_INCLUDE_HERE
