@@ -36,6 +36,8 @@ tries to call a Ruby method of the proper name.
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #include <m_pd.h>
+#include <ctype.h>
+#include <stdarg.h>
 
 struct BFObject;
 struct FMessage {
@@ -49,10 +51,6 @@ struct FMessage {
 
 /* code that is common across all bridges. */
 #include "bridge.c"
-
-#include <ctype.h>
-#include <stdarg.h>
-#include <sys/time.h>
 
 static ID sym_lparen=0, sym_rparen=0;
 

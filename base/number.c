@@ -263,7 +263,6 @@ METHOD3(BitPacking,unpack2) {
 	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*size);
-	this->gfpost();
 	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<Number>((Number *)rb_str_ptr(out),n));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;

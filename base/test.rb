@@ -432,6 +432,18 @@ def test_formats
 #	gout.delete
 end
 
+def test_rewind
+	gin = FObject["@in videodev /dev/video1 noinit"]
+	gin.send_in 0, "option transfer read"
+	gout = FObject["@out ppm file /tmp/foo.ppm"]
+#	gout = FObject["@out x11"]
+	gin.connect 0,gout,0
+	loop {
+		gin.send_in 0
+		gout.send_in 0, "option rewind"
+	}
+end
+
 def test_formats_write
 	# read files, store and save them, reload, compare, expect identical
 	a = FObject["@in"]
@@ -446,10 +458,12 @@ def test_formats_write
 	[
 		["ppm file", "#{$imdir}/g001.ppm"],
 #		["targa file", "#{$imdir}/teapot.tga"],
-		["grid gzfile", "#{$imdir}/foo.grid.gz"],
-	].each {|type,file|
+		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian little"],
+		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian big"],
+	].each {|type,file,*rest|
 		a.send_in 0, "open #{type} #{file}"
 		b.send_in 0, "open #{type} /tmp/patate"
+		rest.each {|r| b.send_in 0,r }
 		a.send_in 0
 		b.send_in 0, "close"
 		raise "written file does not exist" if not File.exist? "/tmp/patate"

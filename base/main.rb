@@ -300,6 +300,7 @@ class GridPack < GridObject
 		@data=[0]*self.class.ninlets
 	end
 	def self.define_inlet i
+		#!@#$ methods get defined in GridPack instead of subclasses???
 		eval "
 			def _#{i}_int x; @data[#{i}]=x; trigger; end
 			def _#{i}_float x; @data[#{i}]=x.to_i; trigger; end
