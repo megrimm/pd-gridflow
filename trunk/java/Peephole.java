@@ -70,6 +70,7 @@ implements FtsIntValueListener//, ImageObserver
 	public ErmesSketchPad sketchpad;
 	public boolean dragging;
 	public boolean createdSubwindow;
+	public boolean wasLocked;
 	
 	public Peephole( ErmesSketchPad theSketchPad, FtsObject theFtsObject) {
 		super(theSketchPad, theFtsObject);
@@ -82,6 +83,8 @@ implements FtsIntValueListener//, ImageObserver
 		int h = getHeight();
 		if (h == -1) setHeight(DEFAULT_HEIGHT);
 		else if (h <= MINIMUM_SIZE) setHeight(MINIMUM_SIZE);
+		
+		wasLocked = true;
 	}
 
 	public void setGeometry () {
@@ -157,7 +160,7 @@ implements FtsIntValueListener//, ImageObserver
 		windowid = Integer.valueOf(title.substring(title.indexOf("\t\t\t")+3)).intValue();
 
 		FtsAtom a[] = new FtsAtom[1];
-		for (int i=0; i<1; i++) a[i] = new FtsAtom();
+		a[0] = new FtsAtom();
 		// apparently you can't pass symbols in those arglists???
 		// a[0].setSymbol(new FtsSymbol("patate"));
 		a[0].setInt(windowid);
@@ -179,15 +182,31 @@ implements FtsIntValueListener//, ImageObserver
 	}*/
 
 	public void paint(Graphics g) {
+/*		if (!wasLocked && itsSketchPad.isLocked()) {
+			FtsAtom a[] = new FtsAtom[1];
+			a[0] = new FtsAtom();
+			a[0].setInt(0);
+			ftsObject.sendMessage(0, "fall_thru", 1, a);
+		} else if (wasLocked && !itsSketchPad.isLocked()) {
+			FtsAtom a[] = new FtsAtom[1];
+			a[0] = new FtsAtom();
+			a[0].setInt(1);
+			ftsObject.sendMessage(0, "fall_thru", 1, a);
+		}*/
 		if (!createdSubwindow) createSubwindow();
 		int x = getX(), y = getY();
 		int w = getWidth(), h = getHeight();
 		//Image image;
-		Color c = Settings.sharedInstance().getUIColor();
+		//Color c = Settings.sharedInstance().getUIColor();
+		Color c = itsSketchPad.isLocked() ?
+			new Color(0,0,0) :
+//			new Color(128,128,128);
+			new Color(160,116,103);
 		if(isSelected()) c = c.darker();
 		g.setColor(c);
 		g.fill3DRect(x+1, y+1, w-2, h-2, true);
 		super.paint(g);
+		wasLocked = itsSketchPad.isLocked();
 	}
 
 	public void updatePaint(Graphics g) { paint(g); }
