@@ -211,7 +211,7 @@ void video_mbuf_whine(VideoMbuf *$) {
 }
 
 void video_mmap_whine(VideoMmap *$) {
-	whine("VideoMBuf:");
+	whine("VideoMMap:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
@@ -300,7 +300,11 @@ bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
 	$->vmmap.width  = Dim_get($->dim,1);
 	$->vmmap.height = Dim_get($->dim,0);
+	whine("will try:");
+	video_mmap_whine(&$->vmmap);
 	if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
+	whine("driver gave us:");
+	video_mmap_whine(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
 	return true;
 }
@@ -470,15 +474,22 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 	}
 
 	{
+//		char *s;
 		VideoPicture *gp = NEW(VideoPicture,1);
 		WIOCTL($->stream, VIDIOCGPICT, gp);
+		whine("original settings:");
 		VideoPicture_whine(gp);
 		gp->depth = 24;
 		gp->palette = VIDEO_PALETTE_RGB24;
+
+//		FREE(s);
+		whine("trying settings:");
 		VideoPicture_whine(gp);
 		WIOCTL($->stream, VIDIOCSPICT, gp);
 		WIOCTL($->stream, VIDIOCGPICT, gp);
+		whine("driver gave us settings:");
 		VideoPicture_whine(gp);
+
 		switch(gp->palette) {
 		case VIDEO_PALETTE_RGB24:
 			$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
