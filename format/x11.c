@@ -517,8 +517,13 @@ METHOD(FormatX11,init) {
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
 }
 
-FMTCLASS(FormatX11,"x11","X Window System Version 11.5",FF_R | FF_W,
-inlets:1,outlets:1,LIST(GRINLET(FormatX11,0)),
+static void startup (GridClass *$) {
+	IEVAL($->rubyclass,
+	"conf_format 6,'x11','X Window System Version 11.5'");
+}
+
+GRCLASS(FormatX11,"FormatX11",
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatX11,0)),
 DECL(FormatX11,init),
 DECL(FormatX11,frame),
 DECL(FormatX11,option),
