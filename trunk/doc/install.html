@@ -34,7 +34,7 @@
 </div></td></tr> <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Hardware_and_Software_you_Probably_Need"></a><h4>Hardware and Software you Probably Need</h4></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Required Computer/Processor (one of...):<ul> <li><b>1</b> : PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li> <li><b>2</b> : Macintosh : G3/G4/G5</li> <li><b>3</b> : Corel Netwinder : StrongARM V4L</li> <li><b>4</b> : HP iPaq : StrongARM V4L</li> <li><b>5</b> : could work on SiliconGraphics and SPARCstation with a little nurture.</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Required Computer/Processor (one of...):<ul> <li><b>1</b> : PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li> <li><b>2</b> : Macintosh : G3/G4/G5</li> <li><b>3</b> : Corel NetWinder : StrongARM V4L</li> <li><b>4</b> : HP iPaq : some processor that works like the NetWinder</li> <li><b>5</b> : could work on SiliconGraphics and SPARCstation with a little nurture.</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Required OS (one of...):<ul> <li><b>1</b> : Linux (most any variant) (recommended)</li> <li><b>2</b> : MacOS 10.2 or later (experimental)</li> <li><b>3</b> : Windows with MinGW (very experimental)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -102,11 +102,11 @@ Note also that on Windows the dot-files are even more trouble.</li> </ul></td></
 <tr><td colspan="4"><a name="Other_Tips"></a><h4>Other Tips</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><ul> <li><b>1</b> : you just did a CVS update and now the program does not compile, or 
 crashes, or changes didn't go through. <ul> <li><b>1</b> : Did you forget the "make install" step?</li> <li><b>2</b> : If a new directory is created, you need to do <kbd><font color="#007777">cvs update -d</font></kbd>. 
-	  Many people just add that option to their configuration of the CVS software.</li> <li><b>3</b> : When some kinds of changes have happen, you may have to rerun the <kbd><font color="#007777">configure</font></kbd> 
+	  Many people just add that option to their configuration of the CVS software.</li> <li><b>3</b> : When some kinds of changes have happened, you may have to rerun the <kbd><font color="#007777">configure</font></kbd> 
 	program before redoing <kbd><font color="#007777">make</font></kbd>. If you had previously reconfigured with specific options, 
 	don't forget to use them again in this case.</li> <li><b>4</b> : Maybe matju forgot to upload part of an important change. Tell him.</li> </ul></li> <li><b>2</b> : PureData Crashing: <ul> <li><b>1</b> : you can start the debugger like <kbd><font color="#007777">gdb `which pd` core.24255</font></kbd> where the latter part 
 	is the name of a RAM dump file. You can enable those dumps using the shell command <kbd><font color="#007777">ulimit -c unlimited</font></kbd>. To avoid dumping, you can also start Pd from within the debugger 
-	using <kbd><font color="#007777">gdb `which pd`</font></kbd> then <kbd><font color="#007777">run</font></kbd> then causing the crash.</li> <li><b>2</b> : In GDB, after a crash, you can use the <kbd><font color="#007777">where</font></kbd> to find out what Pd was doing at the moment 
+	using <kbd><font color="#007777">gdb `which pd`</font></kbd> then <kbd><font color="#007777">run</font></kbd> then cause the crash.</li> <li><b>2</b> : In GDB, after a crash, you can use the <kbd><font color="#007777">where</font></kbd> to find out what Pd was doing at the moment 
 	of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal. </li> <li><b>3</b> : To quit GDB use the <kbd><font color="#007777">quit</font></kbd> command. (really.)</li> </ul></li> <li><b>3</b> : jMax Crashing: <ul> <li><b>1</b> : you should know where the FTS executable file is. Its filename looks 
 	like "/usr/lib/jmax/fts/bin/i686-linux/opt/fts". we'll call it $FTS now.</li> <li><b>2</b> : if you want to prevent a complete machine crash, you should not run 
 	fts as "root" user, and you should do chmod u-s on the $FTS file. I 
