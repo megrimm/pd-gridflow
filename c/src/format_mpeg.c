@@ -41,10 +41,14 @@ typedef struct FormatMPEG {
 static bool FormatMPEG_frame (FormatMPEG *$, GridOutlet *out, int frame) {
 	char *buf = NEW(char,mpeg_id->Size);
 	int npixels = mpeg_id->Height * mpeg_id->Width;
+	if (frame != -1) {
+		whine("can't seek frames with this driver");
+		goto err;
+	}
 /*	SetMPEGOption(MPEG_QUIET,1); */
 	if (!GetMPEGFrame(buf)) {
 		whine("libmpeg: can't fetch frame");
-		return 1;
+		goto err;
 	}
 
 	{

@@ -215,6 +215,24 @@ METHOD(GridIn,reset) {
 	GridIn_p_reset($);
 }
 
+void GridIn_frame(GridIn *$, int frame) {
+	CHECK_FILE_OPEN
+	/* this is not a sufficient check. see format_grid.c */
+	if (GridOutlet_busy($->out[0])) {
+		whine("ignoring frame request: already waiting for a frame");
+		return;
+	}
+
+	if (! $->ff->cl->frame($->ff,$->out[0],frame)) {
+		whine("file format package '%s' reported error",$->ff->cl->symbol_name);
+		goto err;
+	}
+	return;
+err:
+	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
+	return;
+}
+
 METHOD(GridIn,open) {
 	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
 	FormatClass *qlass = Dict_get(format_classes_dex,format);
@@ -236,21 +254,13 @@ METHOD(GridIn,open) {
 }
 
 METHOD(GridIn,bang) {
-	CHECK_FILE_OPEN
-	/* this is not a sufficient check. see format_grid.c */
-	if (GridOutlet_busy($->out[0])) {
-		whine("ignoring frame request: already waiting for a frame");
-		return;
-	}
+	GridIn_frame($,-1);
+}
 
-	if (! $->ff->cl->frame($->ff,$->out[0],-1)) {
-		whine("file format package '%s' reported error",$->ff->cl->symbol_name);
-		goto err;
-	}
-	return;
-err:
-	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
-	return;
+METHOD(GridIn,int) {
+	int frame = GET(0,int,0);
+	whine("will read frame # %d", frame);
+	GridIn_frame($,frame);
 }
 
 METHOD(GridIn,option) {
@@ -283,7 +293,7 @@ LIST(),
 	DECL(GridIn, 0,reset, "s"),
 	DECL(GridIn, 0,open,  "ssl"),
 	DECL(GridIn, 0,close, ""),
-//	DECL(GridIn, 0,frame, "si"),
+	DECL(GridIn, 0,int,   "si"),
 	DECL(GridIn, 0,option,"ssi"))
 
 /* ---------------------------------------------------------------- */
