@@ -427,10 +427,18 @@ Feature.new {
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib"],
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2"]]
 	test proc {|f|
-		c_test "
+		c_test %`
 		#include <quicktime/quicktime.h>
-		int main () { return quicktime_open==0; }
-		", *f.uses_so
+		#include <quicktime/lqt_version.h>
+		int main () {
+		fprintf(stderr,"LQT_VERSION = %s\\n",
+		#ifdef LQT_VERSION
+			LQT_VERSION
+		#else
+			"(undefined)"
+		#endif
+		); return quicktime_open==0; }
+		`, *f.uses_so
 	}
 	formats ["QuickTime"]
 },
@@ -811,6 +819,7 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	"\ttime #{comp}\n"
 }
 mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
+mf << ".PRECIOUS: %.h.fcs %.c.fcs"
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.gsub!(/^((site-)?install:.*)/) {$1+" install2"}
