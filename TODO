@@ -3,15 +3,13 @@
 "!" is planned for next release
 starting with 1.0, backwards compatibility will be kept
 
-Distribution (0.6.0)
-[!] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
-
 Distribution (0.6.1)
 [ ] make demo app(s) in Ruby/Tk
 [ ] add test plan
 [ ] follow test plan
 [ ] review all documentation
 [ ] review all patches
+[!] upload & send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 
 Installation
 [ ] de-jmax-ify the build process; installable doc; installable includes
@@ -191,6 +189,7 @@ Bugs
 [ ] profiler is broken
 [!] format/mpeg.c broken
 [!] tcp test is broken
+[ ] compiling without jMax nor PD should not require libruby.so
 
 Feature Requests
 
