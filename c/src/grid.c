@@ -69,12 +69,17 @@ void GridInlet_abort(GridInlet *$) {
 	$->dex = 0;
 }
 
-int GridInlet_idle_verbose(GridInlet *$, const char *where) {
+bool GridInlet_idle(GridInlet *$) {
+	assert($);
+	return !$->dim;
+}
+
+bool GridInlet_idle_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
-		whine("%s:i%d: no dim",INFO($));
+		whine("%s:i%d(%s): no dim", INFO($), where);
 	} else if (!$->flow && !$->flow2) {
-		whine("%s:i%d: no flow()",INFO($));
+		whine("%s:i%d(%s): no flow()", INFO($), where);
 	} else {
 		return 0;
 	}
@@ -234,7 +239,7 @@ GridObject *GridOutlet_parent(GridOutlet *$) {
 	return $->parent;
 }
 
-int GridOutlet_idle(GridOutlet *$) {
+bool GridOutlet_idle(GridOutlet *$) {
 	assert($);
 	return !$->dim;
 }

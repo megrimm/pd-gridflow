@@ -37,9 +37,9 @@
 */
 
 #ifdef HAVE_X11_SHARED_MEMORY
-	#include <sys/ipc.h>
-	#include <sys/shm.h>
-	#include <X11/extensions/XShm.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <X11/extensions/XShm.h>
 #endif
 
 extern FormatClass class_FormatX11;
@@ -49,16 +49,16 @@ typedef struct X11Display {
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
-	int white_pixel;
-	int black_pixel;
-	int depth;
-	int use_shm;	   /* should use shared memory? */
-	int vouts_n;
-	FormatX11 **vouts;
+	long white_pixel;
+	long black_pixel;
 	/*
 	  the vouts list is now always size 1. whenever i'm confident
 	  i won't ever need it anymore, i'll remove it.
 	*/
+	int vouts_n;
+	FormatX11 **vouts;
+	short depth;
+	bool use_shm;	   /* should use shared memory? */
 } X11Display;
 
 struct FormatX11 {
@@ -82,10 +82,12 @@ static X11Display *x11 = 0;
 static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	X11Display *d = $->display;
 	#ifdef HAVE_X11_SHARED_MEMORY
-	if ($->display->use_shm)
+	if ($->display->use_shm) {
+		XSync(d->display, 0);
 		XShmPutImage(d->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
-	else
+		XSync(d->display, 0);
+	} else
 	#endif
 		XPutImage(d->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy);
@@ -273,10 +275,17 @@ X11Display *X11Display_new(const char *disp_string) {
 		goto err;
 	}
 
-	$->use_shm = 0;
-	#ifdef HAVE_X11_SHARED_MEMORY
-		$->use_shm = 1;
-	#endif
+#ifdef HAVE_X11_SHARED_MEMORY
+	/* what do i do with remote windows? */
+	$->use_shm = !! XShmQueryExtension($->display);
+	whine("x11 shared memory compiled in; use_shm = %d",$->use_shm);
+#else
+	$->use_shm = false;
+	whine("x11 shared memory is not compiled in");
+#endif
+
+	$->use_shm = false;
+	whine("setting use_shm = 0 because it's buggy");
 
 	X11Display_set_alarm($);
 	return $;
@@ -334,8 +343,8 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 	X11Display *d = $->display;
 	FormatX11_dealloc_image($);
-	if (d->use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
+	if (d->use_shm) {
 		XShmSegmentInfo shm_info;
 		$->ximage = XShmCreateImage(d->display, d->visual,
 			d->depth, ZPixmap, 0, &shm_info, sx, sy);
@@ -345,19 +354,23 @@ void FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 			$->ximage->bytes_per_line * $->ximage->height,
 			IPC_CREAT|0777);
 		if(shm_info.shmid < 0) {
-			perror("shmget failed:");
-			assert(0);
+			whine("ERROR: shmget failed: %s",strerror(errno));
+			return;
 		}
-		$->ximage->data = shm_info.shmaddr =
-			(char *) shmat(shm_info.shmid, 0, 0);
-		$->image = (uint8 *) $->ximage->data;
-		XShmAttach(d->display, &shm_info);
+		$->ximage->data = shm_info.shmaddr = (char *)shmat(shm_info.shmid,0,0);
+		$->image = (uint8 *)$->ximage->data;
+		shm_info.readOnly = False;
+		if (!XShmAttach(d->display, &shm_info)) {
+			whine("ERROR: XShmAttach: big problem");
+			return;
+		}
 		XSync(d->display,0);
-		shmctl(shm_info.shmid,IPC_RMID,0);
+/*		shmctl(shm_info.shmid,IPC_RMID,0); */
+	} else
 	#endif
-	} else {
+	{
 		/* this buffer may be too big, but at least it won't be too small */
-		$->image = (uint8 *)calloc(sx * sy, sizeof(int));
+		$->image = (uint8 *)calloc(sx * sy, sizeof(long));
 
 		$->ximage = XCreateImage(d->display, d->visual,
 			d->depth, ZPixmap, 0, (int8 *) $->image,
@@ -373,6 +386,13 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	X11Display *d = $->display;
 	int v[3] = {sy, sx, 3};
 	Window oldw;
+
+/*
+	this test crashes.
+	if (!GridInlet_idle($->parent->in[0])) {
+		whine("warning: resizing while displaying!");
+	}
+*/
 
 	FREE($->dim);
 	$->dim = Dim_new(3,v);
