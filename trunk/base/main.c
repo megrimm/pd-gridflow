@@ -444,7 +444,7 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 
 static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	fprintf(stderr,"%ld\n",arg);
-	return LONG2NUM(arg);
+	return INT2NUM((int)arg);
 }
 
 Ruby GridFlow_clock_tick (Ruby rself) {
