@@ -638,11 +638,7 @@
 		inlet.</p>
 
 		<method name="init">
-			<arg name="number_type" type="int32 | uint8"/>
-			The number type argument is optional and by default is int32,
-			which allows the usual range of plus/minus two billions. With
-			uint8, values are wrapped into the 0..255 interval, and stored
-			in four times less memory.
+			<arg name="contents" type="grid"/>
 		</method>
 
 		<inlet id="0">
@@ -665,10 +661,7 @@
 			</method>
 		</inlet>
 		<inlet id="1">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/>
-				the received grid is stored. if the storage type is uint8,
-				the input is filtered to fit 0..255.
-			</method>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/></method>
 		</inlet>
 		<outlet id="0">
 			grids as stored, as indexed, or as assembled from multiple
@@ -917,7 +910,7 @@
 		<help text="[@convolve * + 0]"/>
 
 		<p>this is the object for blurring, sharpening, finding edges,
-		embossing, and many other uses.</p>
+		embossing, cellular automata, and many other uses.</p>
 
 		<method name="init">
 			<arg name="op_para" type="symbol"/>
@@ -944,7 +937,11 @@
 			<method name="grid">
 				<arg name="grid" type="grid(rows2 columns2)"/>
 				this is the convolution grid and it gets stored in
-				the object. rows2 and columns2 must be odd numbers.
+				the object. if rows2 and/or columns2 are odd numbers,
+				then the centre of convolution is the middle of the convolution
+				grid. if they are even numbers, then the chosen centre will
+				be slightly more to the left and/or to the top, because the
+				actual middle is between cells of the grid.
 			</method>
 		</inlet>
 		<outlet id="0">
@@ -1090,7 +1087,7 @@
 		<method name="init">
 			<arg name="operator" type="symbol">
 				Normally you would use the "put" operator here;
-				but abnormally I recommend + and ^ for psychedelic effects.   
+				but abnormally I recommend + and ^ for psychedelic effects.
 			</arg>
 			<arg name="color" type="grid(channels)"/>
 			<arg name="vertices" type="grid(vertices,{y x})"/>
@@ -1115,7 +1112,12 @@
 		<outlet id="0">
 			<method name="grid">
 				<arg name="grid" type="grid(y x channels)"/>
-				modified picture
+				modified picture.
+				note: starting with 0.7.2, drawing a 1-by-1
+				square really generates a 1-by-1 square, and
+				so on. This is because the right-hand border of a
+				polygon is excluded, whereas it was included
+				before, leading to slightly-wider-than-expected polygons.
 			</method>
 		</outlet>
 	</class>

@@ -15,19 +15,11 @@
 </section>
 -->
 
+<!--write-me
 <section name="User-level Overview">
 <p>(this section is for all users)</p>
-
-
-<write-me/>
 </section>
-
-<section name="Programmer-level Overview">
-<p>(this section is for people who want to mess with the internals or at least
-understand them a bit)</p>
-(move this section down?)
-<write-me/>
-</section>
+-->
 
 <section name="Numbers">
 
@@ -44,20 +36,34 @@ understand them a bit)</p>
 	be written. when it is signed, one bit indicates whether the number
 	is positive or negative.</p>
 
-	<p>In GridFlow, there are two kinds of numbers:</p>
+	<p>In GridFlow, there are six kinds of numbers:</p>
 
-	<p><b>int32</b>, signed 32-bit integer.
-	values from -2147483648 to 2147483647
-	(which is from -2<sup>31</sup> to 2<sup>31</sup>-1).
-	this is used for most computations.
-	</p>
-	
-	<p><b>uint8</b>, unsigned 8-bit integer.
-	values from 0 to 255
-	(which is from 0 to 255).
-	this is the usual size of numbers taken from files and cameras, and
-	written to files and to windows.
-	</p>
+	<table>
+		<column id="name">name</column>
+		<column id="aliases">aliases</column>
+		<column id="range">range</column>
+		<column id="precision">precision</column>
+		<column id="">description</column>
+		<row name="uint8" aliases="u8 b" range="0..255" precision="1">
+			unsigned 8-bit integer.
+			this is the usual size of numbers taken from files and cameras, and
+			written to files and to windows.
+		</row>
+		<row name="int16" aliases="i16 s" range="-32768..32767" precision="1"
+		>...</row>
+		<row name="int32" aliases="i32 i" range="-2147483648..2147483647" precision="1">
+			signed 32-bit integer. (which is from -2<sup>31</sup> to 2<sup>31</sup>-1).
+			this is used for most computations.
+		</row>
+		<row name="int16" aliases="i16 s" range="(huge!)" precision="1"
+		>...</row>
+		<row name="float32" aliases="f32 f" range="±10&lt;sup&gt;±38&lt;/sup&gt;"
+		precision="~7 digits (23 bits)"
+		>...</row>
+		<row name="float64" aliases="f32 f" range="±10&lt;sup&gt;±308&lt;/sup&gt;"
+		precision="~15 digits (52 bits)"
+		>...</row>
+	</table>
 
 </section>
 
@@ -181,6 +187,10 @@ understand them a bit)</p>
 		same conversions apply.</p>
 	
 <table>
+	<column>name</column>
+	<column>description</column>
+	<column>meaning in pixel context (pictures, palettes)</column>
+	<column>meaning in spatial context (indexmaps, polygons)</column>
 	
 	<!-- category: bogus -->
 	<operator-2 name="ignore" cname="ignore"
@@ -316,6 +326,14 @@ understand them a bit)</p>
 </table>
 </section>
 
+<!--write-me
+<section name="Programmer-level Overview">
+<p>(this section is for people who want to mess with the internals or at least
+understand them a bit)</p>
+(move this section down?)
+</section>
+-->
+
 <section name="Bridges">
 <p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric.
 jMax support has been added back as a <b>Bridge</b>.</p>
@@ -344,7 +362,7 @@ should make many circuits simpler.
 </section>
 
 <section name="Naming Conventions">
-	<write-me/>
+	<!--write-me-->
 </section>
 
 </documentation>
