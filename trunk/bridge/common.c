@@ -24,6 +24,8 @@
 #define __BRIDGE_C
 
 #include <sys/time.h>
+#include <signal.h>
+#include <setjmp.h>
 
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
@@ -103,6 +105,39 @@ static void gf_same_version () {
 			"main library is '%s'; bridge is '%s'",
 			rb_str_ptr(ver), GF_VERSION);
 	}
+}
+
+/* -------- This is the big hack for what Ruby can't do for itself -------- */
+
+volatile long bogus_variable = 0; /* just even *try* to optimise me out of existence! */
+
+sigjmp_buf rescue_segfault;
+
+static void trap_segfault (int patate) {
+	fprintf(stderr,"THIS IS INSIDE A SIGHANDLER!\n");
+	siglongjmp(rescue_segfault,11);
+}
+
+extern "C" void Init_stack(VALUE *addr);
+
+static void bridge_localize_sysstack () {
+	volatile long * volatile bp = (volatile long *)&bp; /* get any stack address */
+	fprintf(stderr,"sysstack top is at 0x%08lx\n",(long)bp);
+	post("sysstack top is at 0x%08lx\n",(long)bp);
+	signal(11,trap_segfault);
+	// in this loop, segfault is overridden to mean breaking out of the for-loop.
+	if (!sigsetjmp(rescue_segfault,0)) {
+		for (;;) {
+			//fprintf(stderr,"sysstack: trying 0x%08lx\n",(long)bp);
+			bp+=1;
+			bogus_variable += *bp;
+		}
+	}
+	bp-=1;
+	signal(11,SIG_DFL); /* can't really restore it. don't know where it was. */
+	fprintf(stderr,"sysstack starts at 0x%08lx\n",(long)bp);
+	post("sysstack starts at 0x%08lx\n",(long)bp);
+	Init_stack((VALUE *)bp);
 }
 
 #endif /* __BRIDGE_C */
