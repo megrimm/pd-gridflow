@@ -181,3 +181,4 @@ FILE *v4j_file_fopen(const char *name, int mode) {
 	if (fd<0) return 0;
 	return fdopen(fd,mode==4?"r":mode==2?"w":"");
 }
+
