@@ -1,17 +1,27 @@
 /* $Id$ */
 
-version 0.7.2 (delayed features):
+version 0.7.2 (head):
 
  * added support for float32
+ * added direct .jmax decoding
+ * added direct .pd encoding
+ * pd examples moved to separate directory
+ * ported some .jmax examples to .pd (automated) (1 out of 21)
+ * added motion_detect.pd
+ * new classes: demux, and more jmax emulations
+
+delayed features:
+
  * added bridge_jmax4.c (does not work yet)
 
-version 0.7.1 (head):
+version 0.7.1 (2003.03.24):
 
  * fixed important bugs (crashes and such)
  * @store,@ can now receive in inlet 1 while sending from outlet 0.
  * @, when inlet 1 grid size is small but not 1, is now much faster.
  * added memcpy() usage logging (see profiler_dump)
- * added examples: drag_rectangle.jmax, plot.jmax, cellular_1d.pd, eclipse.jmax
+ * added examples: drag_rectangle.jmax, plot.jmax, eclipse.jmax
+ * added example: cellular_1d.pd
  * added classes: fork, jmax_udpsend, jmax_udpreceive
  * added classes: @rotate, @remap_image, @type
  * added operators: gcd,lcm (common divisors/multiples)

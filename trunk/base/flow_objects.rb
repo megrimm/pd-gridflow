@@ -68,7 +68,9 @@ class GridGlobal < FObject
 end
 
 class FPS < GridObject
+	@handlers = [] # for GridObject (BLETCH)
 	def initialize(*options)
+		super
 		@history = []   # list of delays between incoming messages
 		@last = 0.0     # when was last time
 		@duration = 0.0 # how much delay since last summary
@@ -461,15 +463,6 @@ class RubyFor < GridFlow::FObject
 	install "rubyfor", 3, 1
 end
 
-class Fork < FObject
-  def method_missing(sel,*args)
-    sel.to_s =~ /^_(\d)_(.*)$/
-	send_out 1,$2.intern,*args
-	send_out 0,$2.intern,*args
-  end
-  install "fork", 1, 2
-end
-
 class JMaxUDPSend < FObject
 	def initialize(host,port)
 		@socket = UDPSocket.new
@@ -539,5 +532,73 @@ class JMaxUDPReceive < FObject
 
 	install "jmax_udpreceive", 0, 2
 end
+
+class Broken < FObject
+	install "broken", 0, 0
+end
+
+if GridFlow.bridge_name != "jmax"
+	class Fork < FObject
+	  def method_missing(sel,*args)
+	    sel.to_s =~ /^_(\d)_(.*)$/ or super
+		send_out 1,$2.intern,*args
+		send_out 0,$2.intern,*args
+	  end
+	  install "fork", 1, 2
+	end
+	class Demux < FObject
+		N=2
+		def initialize(n)
+			super
+			@n=n
+			@i=0
+			raise "sorry, maximum #{N}" if n>N
+		end
+		def method_missing(sel,*args)
+			sel.to_s =~ /^_(\d)_(.*)$/ or super
+			send_out @i,$2.intern,*args
+		end
+		def _1_int i; @i=i end
+		alias :_1_float :_1_int
+		install "demux", 2, N
+	end
+end
+
+if GridFlow.bridge_name == nil
+	class Button < FObject
+		def method_missing(*) send_out 0 end
+		install "button", 1, 1
+	end
+	class Toggle < FObject
+		def _0_bang; @state ^= true; trigger end
+		def _0_int x; @state = x!=0; trigger end
+		def trigger; send_out 0, (if @state then 1 else 0 end) end
+		install "toggle", 1, 1
+	end
+#	class Slider < FObject
+#		install "slider", 1, 1
+#	end
+	class JPatcher < FObject
+		def initialize
+			super
+			@subobjects = {}
+		end
+		attr_accessor :subobjects
+		install "jpatcher", 0, 0
+	end
+	class JComment < FObject
+		install "jcomment", 0, 0
+	end
+	class LoadBang < FObject
+		def trigger; send_out 0 end
+		install "loadbang", 0, 1
+	end
+	class MessBox < FObject
+		def _0_bang; send_out 0, *@argv end
+		def clear; @argv=[]; end
+		def append(*argv) @argv<<argv; end
+		install "messbox", 1, 1
+	end
+end # if "jmax"
 
 end # module GridFlow

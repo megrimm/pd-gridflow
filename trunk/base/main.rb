@@ -102,6 +102,11 @@ self.post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
 self.post "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
+Brace1 = "{".intern
+Brace2 = "}".intern
+Paren1 = "(".intern
+Paren2 = ")".intern
+
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
@@ -112,9 +117,9 @@ def self.parse(m)
 	}
 	i=0
 	while i<m.length
-		if m[i]=="{".intern
+		if m[i]==Brace1
 			j=i+1
-			j+=1 until m[j]=="}".intern
+			j+=1 until m[j]==Brace2
 			a = [m[i+1..j-1]]
 			m[i..j] = a
 		else
@@ -137,10 +142,19 @@ end
 
 # adding some functionality to that:
 class FObject
+	@broken_ok = false
+	class<<self
+		attr_accessor :broken_ok
+	end
+
 	alias :profiler_cumul :profiler_cumul_get
 	alias :profiler_cumul= :profiler_cumul_set
 	attr_writer :args # String
+	attr_accessor :argv # Array
 	attr_reader :outlets
+	attr_accessor :parent_patcher
+	attr_accessor :properties
+	attr_accessor :classname
 	def args
 		if defined? @args
 			@args
@@ -157,7 +171,10 @@ class FObject
 	def self.name_lookup sym
 		qlasses = GridFlow.instance_eval{@fclasses_set}
 		qlass = qlasses[sym.to_s]
-		raise "object class '#{sym}' not found" if not qlass
+		if not qlass
+			return qlasses['broken'] if @broken_ok
+			raise "object class '#{sym}' not found"
+		end
 		qlass
 	end
 	def self.[](*m)
@@ -168,23 +185,48 @@ class FObject
 		else
 			o=m.inspect
 		end
+		handle_braces m
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		qlass = name_lookup sym
 		r = qlass.new(*m)
 		GridFlow.post "%s",r.args if GridFlow.verbose
 		#r.args = o
+		r.classname = sym
 		r
 	end
 	def inspect
 		if args then "#<#{self.class} #{args}>" else super end
 	end
+	
+	def self.handle_braces(argv,i=0)
+		toplevel = i==0
+		j=i
+		while j<argv.length
+			case argv[j]
+			when Brace1,Paren1
+				handle_braces argv,j+1
+			when Brace2,Paren2
+				raise "unbalanced '#{argv[j]}'" if toplevel
+				argv[(i-1)...(j+1)] = [argv[i...j]]
+				return
+			end
+			j+=1
+		end
+		raise "unbalanced '{' or '('" unless toplevel
+	end
 	def initialize(*argv)
+		p argv
 		s = GridFlow.stringify_list argv
+		@argv = argv
 		@args = "["
-		@args << (self.class.instance_eval{@foreign_name} || self.class)
+		@args << (self.class.instance_eval{
+			@foreign_name if defined? @foreign_name} ||
+			self.class.to_s)
 		@args << " " if s.length>0
 		@args << s << "]"
+		@parent_patcher = nil
+		@properties = {}
 	end
 end
 

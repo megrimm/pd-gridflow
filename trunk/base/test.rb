@@ -938,13 +938,24 @@ def test_outer
 end
 
 def test_jmax_patch filename
+#	require "gridflow/extra/jmax_format.rb"
+	require "extra/jmax_format.rb"
+	require "extra/puredata_format.rb"
 	jfr = JMaxFileReader.new(File.open(filename),FObject)
-	jfr.parse
+	FObject.broken_ok = true
+	my_patcher = jfr.parse
+#	my_patcher.subobjects.each {|x,| x.trigger if LoadBang===x }
+#	$mainloop.loop
+#	$p=my_patcher; ARGV.clear; load "/home/matju/bin/iruby"
+	filename = File.basename filename
+	filename[File.extname(filename)]=".pd"
+	filename[0,0]="pd_examples/"
+	pfw = PureDataFileWriter.new(filename)
+	pfw.write_patcher my_patcher
+	pfw.close
 end
 
 if ARGV[0] then
-#	require "gridflow/extra/jmax_format.rb"
-	require "extra/jmax_format.rb"
 	name = ARGV.shift
 	send "test_#{name}", *ARGV
 #	ARGV.each {|a| send "test_#{a}" }
