@@ -42,6 +42,7 @@
 
 VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 VALUE FObject_class;
+static VALUE sym_outlets=0;
 
 static void default_post(const char *fmt, ...) {
 	va_list args;
@@ -73,7 +74,6 @@ void *qalloc(size_t n, const char *file, int line) {
 	for (int i=0; i<nn; i++) data[i] = 0xDEADBEEF;
 	#endif
 	return data;	
-
 }
 
 typedef struct AllocTrace {
@@ -146,7 +146,7 @@ void qdump(void) {
 /*
 	post("checking for memory leaks...");
 	VALUE ary;
-	ary = rb_funcall(gf_alloc_set,rb_intern("
+	ary = rb_funcall(gf_alloc_set,SI(
 	Dict_each(gf_alloc_set,qdump$1,0);
 	if (Dict_size(gf_alloc_set)==0) {
 		post("no leaks (yet)");
@@ -167,14 +167,15 @@ char *rb_sym_name(VALUE sym) {
 }
 
 void FObject_mark (VALUE *$) {}
-void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
+//void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
+void FObject_sweep (VALUE *$) {}
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
 /*
 	{int i; for(i=0; i<(*argc); i++)
 		fprintf(stderr,"%s\n",
-			RSTRING(rb_funcall((*argv)[i],rb_intern("inspect"),0))->ptr);}
+			RSTRING(rb_funcall((*argv)[i],SI(inspect),0))->ptr);}
 */
 	*outlet = INT(**argv);
 	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
@@ -196,8 +197,6 @@ void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	}
 }
 
-static VALUE sym_outlets=0;
-
 VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	VALUE ary;
 	VALUE sym;
@@ -206,9 +205,8 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
 
-	if (!sym_outlets) sym_outlets=rb_intern("@outlets");
-	ary = rb_ivar_defined($,sym_outlets) ?
-		rb_ivar_get($,sym_outlets) : Qnil;
+	ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
+		rb_ivar_get($,SYM2ID(sym_outlets)) : Qnil;
 	if (ary==Qnil) return Qnil;
 	int n = RARRAY(ary)->len;
 	for (int i=0; i<n; i++) {
@@ -224,16 +222,16 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	BFObject *foreign_peer = 0;
-	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	VALUE keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
 	VALUE $; /* ruby_peer */
 	c_peer->foreign_peer = foreign_peer;
 	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
 	c_peer->peer = $;
-	VALUE gc2 = rb_ivar_get(qlass,rb_intern("@grid_class"));
+	VALUE gc2 = rb_ivar_get(qlass,SI(@grid_class));
 	/*
 	if (gc2==Qnil) RAISE("@grid_class not found in %s",
-		RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
+		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);
 	*/
 	c_peer->grid_class = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
@@ -245,9 +243,9 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
 	int inlets, outlets;
 	VALUE name2;
 	if (SYMBOL_P(name)) {
-		name2 = rb_funcall(name,rb_intern("dup"),0);
+		name2 = rb_funcall(name,SI(dup),0);
 	} else if (TYPE(name) == T_STRING) {
-		name2 = rb_funcall(name,rb_intern("to_str"),0);
+		name2 = rb_funcall(name,SI(to_str),0);
 	} else {
 		EARG("expect symbol or string");
 	}
@@ -255,10 +253,10 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
 	if (inlets<0 || inlets>9) EARG("...");
 	outlets = INT(outlets2);
 	if (outlets<0 || outlets>9) EARG("...");
-	rb_ivar_set($,rb_intern("@inlets"),inlets);
-	rb_ivar_set($,rb_intern("@outlets"),outlets);
-	rb_ivar_set($,rb_intern("@foreign_name"),name2);
-	rb_hash_aset(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
+	rb_ivar_set($,SI(@ninlets),INT2NUM(inlets));
+	rb_ivar_set($,SI(@noutlets),INT2NUM(outlets));
+	rb_ivar_set($,SI(@foreign_name),name2);
+	rb_hash_aset(rb_ivar_get(GridFlow_module,SI(@fclasses_set)),
 		name2, $);
 	if (gf_bridge.class_install)
 		gf_bridge.class_install($,RSTRING(name2)->ptr,inlets2,outlets2);
@@ -300,7 +298,7 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 			"initialize" : md->selector;
 /*
 		fprintf(stderr,"%s: adding method #%s\n",
-			RSTRING(rb_funcall($,rb_intern("inspect"),0))->ptr,buf);
+			RSTRING(rb_funcall($,SI(inspect),0))->ptr,buf);
 */
 		rb_define_method($,buf,(VALUE(*)())md->method,-1);
 		rb_enable_super($,buf);
@@ -308,12 +306,12 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
-	rb_funcall(rb_eval_string("$tasks"),rb_intern("[]="), 2,
+	rb_funcall(rb_eval_string("$tasks"),SI([]=), 2,
 		PTR2FIX(data), PTR2FIX(func));
 }
 
 void MainLoop_remove(void *data) {
-	rb_funcall(rb_eval_string("$tasks"),rb_intern("delete"), 1,
+	rb_funcall(rb_eval_string("$tasks"),SI(delete), 1,
 		PTR2FIX(data));
 }
 
@@ -329,14 +327,15 @@ void gfpost(const char *fmt, ...) {
 		rb_funcall(GridFlow_module,SI(gfpost2),2,
 			rb_str_new2(fmt),rb_str_new2(post_s));
 	} else {
-		default_post("%s\n",post_s);
+		default_post("%s",post_s);
 	}
 }
 
 VALUE gf_post_string (VALUE $, VALUE s) {
 	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
-
-	gf_bridge.post("%s",RSTRING(s)->ptr);
+	char *p = rb_str_ptr(s);
+//	bool has_ln = p[rb_str_len(p)-1]=='\n';
+	gf_bridge.post(gf_bridge.post_does_ln?"%s":"%s\n",p);
 	return Qnil;
 }
 
@@ -353,6 +352,24 @@ VALUE ruby_c_install(GridClass *gc, VALUE super) {
 	return Qnil;
 }
 
+/*
+  I'm sorry to slow things down, but with PureData I can't do it
+  the old way: pointers turned into integers turn into float32's
+  and this is very evil and non-working.
+*/
+VALUE Pointer_class;
+
+VALUE Pointer_new (void *ptr) {
+	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
+}
+
+void *Pointer_get (VALUE self) {
+	void *p;
+	Data_Get_Struct(self,void *,p);
+	return p;
+}
+
+
 /* ---------------------------------------------------------------- */
 
 #include <signal.h>
@@ -367,6 +384,7 @@ void Init_gridflow (void) /*throws Exception*/ {
 	DEF_SYM(bang);
 	DEF_SYM(int);
 	DEF_SYM(list);
+	sym_outlets=SYM(@outlets);
 
 	/* !@#$ mark */
 	gf_alloc_set  = rb_hash_new();
@@ -377,9 +395,12 @@ void Init_gridflow (void) /*throws Exception*/ {
 
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
-	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
-	rb_ivar_set(GridFlow_module, rb_intern("@fclasses_set"), rb_hash_new());
+	rb_ivar_set(GridFlow_module, SI(@fobjects_set), rb_hash_new());
+	rb_ivar_set(GridFlow_module, SI(@fclasses_set), rb_hash_new());
 
+	Pointer_class = rb_define_class_under(GridFlow_module, "Pointer",
+	rb_cObject);
+	DEF(Pointer, get, 0);
 
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	DEF(FObject, send_out, -1);
@@ -387,7 +408,7 @@ void Init_gridflow (void) /*throws Exception*/ {
 	SDEF(FObject, new, -1);
 
 	VALUE cdata = rb_eval_string("Data");
-	ID bi = rb_intern("gridflow_bridge_init");
+	ID bi = SI(gridflow_bridge_init);
 	if (rb_respond_to(cdata,bi)) {
 		fprintf(stderr,"Setting up bridge...\n");
 		rb_funcall(cdata,bi,1,PTR2FIX(&gf_bridge));

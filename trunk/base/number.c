@@ -21,11 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/*
-  NOTE: most essential code of BitPacking is used very often;
-  the rest of the related code is special-case accelerations of it.
-*/
-
 #include "grid.h"
 #include <math.h>
 #include <stdlib.h>
@@ -131,10 +126,9 @@ BitPacking builtin_bitpacks[] = {
 /* **************************************************************** */
 
 bool BitPacking::eq(BitPacking *o) {
-	int i;
 	if (!(bytes == o->bytes)) return false;
 	if (!(size == o->size)) return false;
-	for (i=0; i<size; i++) {
+	for (int i=0; i<size; i++) {
 		if (!(mask[0] == o->mask[0])) return false;
 	}
 	if (endian==o->endian) return true;
@@ -144,18 +138,17 @@ bool BitPacking::eq(BitPacking *o) {
 
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
 Packer packer=0) {
-	int i;
 	this->endian = endian;
 	this->bytes = bytes;
 	this->size = size;
-	for (i=0; i<size; i++) this->mask[i] = mask[i];
+	for (int i=0; i<size; i++) this->mask[i] = mask[i];
 	if (packer) {
 		this->packer = packer;
 		return;
 	}
 	this->packer = default_pack;
 
-	for (i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
+	for (int i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = builtin_bitpacks+i;
 		if (this->eq(bp)) {
 			this->packer = bp->packer;
@@ -165,10 +158,9 @@ Packer packer=0) {
 }
 
 void BitPacking::gfpost() {
-	int i;
 	::gfpost("BitPacking:");
 	::gfpost("    bytes: %d", bytes);
-	for (i=0;i<size;i++) {
+	for (int i=0;i<size;i++) {
 		static const char *colour_name[] = {"red","green","blue","alpha"};
 		::gfpost("    mask[%5s]: %08x (bits from %2d up to %2d)",
 			colour_name[i],
@@ -186,18 +178,17 @@ uint8 *BitPacking::pack(int n, const Number *data, uint8 *target) {
 	return packer(this,n,data,target);
 }
 
-Number *BitPacking::unpack(int n, const uint8 *in, Number *out) {
-	int hb[4];
-	int i;
-	for (i=0; i<size; i++) hb[i] = high_bit(mask[i]);
-
 #define LOOP_UNPACK(_reader_) \
 	while (n--) { \
 		int bytes=0, temp=0; \
 		_reader_; \
-		for (i=0; i<size; i++) \
+		for (int i=0; i<size; i++) \
 			*out++ = ((temp & mask[i]) << 7) >> hb[i]; \
 	}
+
+Number *BitPacking::unpack(int n, const uint8 *in, Number *out) {
+	int hb[4];
+	for (int i=0; i<size; i++) hb[i] = high_bit(mask[i]);
 
 	if (is_le()) {
 		/* smallest byte first */
