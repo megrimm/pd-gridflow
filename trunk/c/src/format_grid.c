@@ -151,7 +151,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 				goto err;
 			}
 			i+=r;
-//			whine("got %d bytes; %d bytes left", r, n-i);
+			whine("got %d bytes; %d bytes left", r, n-i);
 		}
 		if ($->is_le != is_le()) swap32(prod,data);
 
@@ -206,17 +206,15 @@ GRID_END(FormatGrid,0) {
 void FormatGrid_close (Format *$) {
 /*	if ($->bstream) fclose($->bstream); */
 	$->bstream = 0;
-	if ($->stream) close($->stream);
+	if (0 <= $->stream) close($->stream);
 	FREE($);
 }
 
 /* **************************************************************** */
 
-bool FormatGrid_open_file (FormatGrid *$, ATOMLIST, int mode) {
+bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 	const char *filename;
-	whine("open_file: $->is_socket = %d", $->is_socket);
 	$->is_socket = false;
-	whine("open_file: $->is_socket = %d", $->is_socket);
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
@@ -243,7 +241,7 @@ err:
 #include <netdb.h>
 #include <netinet/in.h>
 
-bool FormatGrid_open_tcp (FormatGrid *$, ATOMLIST, int mode) {
+bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -275,11 +273,11 @@ bool FormatGrid_open_tcp (FormatGrid *$, ATOMLIST, int mode) {
 	}
 	return true;
 err:
-	if ($->stream>0) close($->stream);
+	if (0<= $->stream) close($->stream);
 	return false;
 }
 
-bool FormatGrid_open_tcpserver (FormatGrid *$, ATOMLIST, int mode) {
+bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
 	struct sockaddr address2;
 	$->is_socket = true;
@@ -290,7 +288,6 @@ bool FormatGrid_open_tcpserver (FormatGrid *$, ATOMLIST, int mode) {
 		whine("bad arguments"); goto err;
 	}
 
-	$->stream = -1;
 	$->listener = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
@@ -328,30 +325,23 @@ err:
 
 /* **************************************************************** */
 
-Format *FormatGrid_open (FormatClass *qlass, ATOMLIST, int mode) {
-	FormatGrid *$ = NEW(FormatGrid,1);
+Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
 	const char *filename;
-	$->cl     = &class_FormatGrid;
 
-	$->stream = -1;
-	$->bstream = 0;
+	if (!$) return 0;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
-
-	switch(mode) {
-	case 4: case 2: break;
-	default: whine("unsupported mode (#%d)", mode); goto err;
-	}
 
 	{
 		int result;
 		fts_symbol_t sym = fts_get_symbol(at+0);
 		if (sym == SYM(file)) {
-			result = FormatGrid_open_file($,ac-1,at+1,mode);
+			result = FormatGrid_open_file($,mode,ac-1,at+1);
 		} else if (sym == SYM(tcp)) {
-			result = FormatGrid_open_tcp($,ac-1,at+1,mode);
+			result = FormatGrid_open_tcp($,mode,ac-1,at+1);
 		} else if (sym == SYM(tcpserver)) {
-			result = FormatGrid_open_tcpserver($,ac-1,at+1,mode);
+			result = FormatGrid_open_tcpserver($,mode,ac-1,at+1);
 		} else {
 			whine("unknown access method '%s'",fts_symbol_name(sym));
 			goto err;
@@ -369,9 +359,10 @@ err:
 /* **************************************************************** */
 
 FormatClass class_FormatGrid = {
+	object_size: sizeof(FormatGrid),
 	symbol_name: "grid",
 	long_name: "Grid",
-	flags: (FormatFlags)0,
+	flags: FF_R|FF_W,
 
 	open: FormatGrid_open,
 	frames: 0,

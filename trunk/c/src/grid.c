@@ -429,6 +429,30 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */
 
+Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
+	Format *$ = (Format *) NEW(char,qlass->object_size);
+	$->cl = qlass;
+	$->stream = -1;
+	$->bstream = 0;
+	$->mode = mode;
+	$->parent = parent;
+
+	/* FF_W, FF_R, FF_RW */
+	if (mode==2 || mode==4 || mode==6) {
+		if (! (qlass->flags & (1 << (mode/2)))) {
+			whine("Format %s does not support mode '%s'",
+				qlass->symbol_name,
+				format_flags_names[mode/2]);
+			return 0;
+		}
+	} else {
+		whine("Format opening mode is incorrect");
+		return 0;
+	}
+
+	return $;
+}
+
 /* **************** FormatClass *********************************** */
 
 FormatClass *FormatClass_find(const char *name) {
@@ -443,3 +467,11 @@ FormatClass *FormatClass_find(const char *name) {
 	return 0; /* fail */
 }
 
+const char *format_flags_names[] = {
+	"(0<<1)",
+	"FF_W: write",
+	"FF_R: read",
+	"FF_RW: read_write",
+};
+
+int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
