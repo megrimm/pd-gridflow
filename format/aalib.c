@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "../base/grid.h"
+#include "../base/grid.h.fcs"
 #define aa_hardwareparams aa_hardware_params
 #include <aalib.h>
 

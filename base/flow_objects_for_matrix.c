@@ -22,7 +22,7 @@
 */
 
 #include <math.h>
-#include "grid.h"
+#include "grid.h.fcs"
 
 /* **************************************************************** */
 /* produce an upper triangular matrix with ones on the diagonal */

@@ -24,7 +24,7 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
-#include "grid.h"
+#include "grid.h.fcs"
 
 Operator2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
 Operator2 *op2_shl, *op2_and;
@@ -266,7 +266,7 @@ struct GridStore : GridObject {
    replace has not finished being used.
 */
 static void snap_backstore (Grid &r) {
-	if (r.next != &r) { r.swallow(r.next); r.next = &r; }
+	if (r.next) { r.swallow(r.next); r.next = 0; }
 }
 
 /*!@#$ i should ensure that n is not exceedingly large */

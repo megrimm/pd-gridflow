@@ -28,7 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "grid.h"
+#include "grid.h.fcs"
 #include <ctype.h>
 
 //#define TRACE fprintf(stderr,"%s [%s:%d]\n",__PRETTY_FUNCTION__,__FILE__,__LINE__);

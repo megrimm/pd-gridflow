@@ -32,7 +32,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "grid.h"
+#include "grid.h.fcs"
 #include "../config.h"
 #include <assert.h>
 #include <limits.h>
@@ -40,7 +40,7 @@
 BuiltinSymbols bsym;
 GFStack gf_stack;
 
-Ruby mGridFlow; /* not the same as jMax's gridflow_module */
+Ruby mGridFlow;
 Ruby cFObject;
 
 int gf_security = 1;
@@ -442,6 +442,11 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 	return Qnil;
 }
 
+static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
+	fprintf(stderr,"%ld\n",arg);
+	return LONG2NUM(arg);
+}
+
 Ruby GridFlow_clock_tick (Ruby rself) {
 	return rb_float_new(gf_bridge->clock_tick);
 }
@@ -552,6 +557,7 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("security",GridFlow_security,0);
 	SDEF2("security=",GridFlow_security_set,1);
 	SDEF2("exec",GridFlow_exec,2);
+	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("post_string",gf_post_string,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
 	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);

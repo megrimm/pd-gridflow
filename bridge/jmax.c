@@ -34,7 +34,7 @@
 #undef new
 
 #define IS_BRIDGE
-#include "../base/grid.h"
+#include "../base/grid.h.fcs"
 #include <ctype.h>
 #include <stdarg.h>
 

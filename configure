@@ -795,18 +795,21 @@ create_makefile("gridflow")
 mf = File.readlines("Makefile").join""
 #p mf.length
 
-common_dependencies =
-"base/grid.h config.make Makefile Makefile.gf base/source_filter.rb"
+common_deps1 = "config.make Makefile Makefile.gf base/source_filter.rb"
+common_deps2 = common_deps1 + " base/grid.h.fcs"
 
 mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp=$1
-	comp.sub!(/\$</,'$<.fcs')
 	comp.sub!(/\(CC\)/,'(CXX)')
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
-	"%.o: %.c #{common_dependencies}\n"+
-	"\truby base/source_filter.rb $< $<.fcs\n"+
+	"%.h.fcs: %.h #{common_deps1}\n"+
+	"\truby base/source_filter.rb $< $@\n\n"+
+	"%.c.fcs: %.c #{common_deps2}\n"+
+	"\truby base/source_filter.rb $< $@\n\n"+
+	"%.o: %.c.fcs #{common_deps2}\n"+
 	"\ttime #{comp}\n"
 }
+mf.gsub! /^.SUFFIXES:.*$/, ".SUFFIXES:\n\n"
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
