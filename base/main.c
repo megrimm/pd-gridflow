@@ -531,15 +531,6 @@ void startup_grid();
 void startup_flow_objects();
 void startup_flow_objects_for_image();
 void startup_flow_objects_for_matrix();
-void startup_cpu();
-void startup_usb();
-
-#ifdef FORMAT_LIST
-extern FClass FORMAT_LIST( ,ci,);
-FClass *format_classes[] = { FORMAT_LIST(&,ci,) };
-#else
-FClass *format_classes[] = {};
-#endif
 
 Ruby cFormat;
 
@@ -547,6 +538,8 @@ Ruby cFormat;
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 #define SDEF2(_name1_,_name2_,_argc_) \
 	rb_define_singleton_method(mGridFlow,_name1_,(RMethod)_name2_,_argc_)
+
+STARTUP_LIST(void)
 
 // Ruby's entrypoint.
 void Init_gridflow () {
@@ -610,21 +603,13 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects();
 	startup_flow_objects_for_image();
 	startup_flow_objects_for_matrix();
-#ifdef HAVE_USB
-	startup_usb();
-#endif
 	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
-#ifdef HAVE_MMX
-	if (!getenv("NO_MMX")) startup_cpu();
-#endif
 	cFormat = EVAL("GridFlow::Format");
-	for (int i=0; i<COUNT(format_classes); i++) {
-		GridFlow_fclass_install(0,PTR2FIX(format_classes[i]), cFormat);
-	}
+	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#in:window'] = h['#in:quartz']||h['#in:x11']||h['#in:sdl']");
 	EVAL("GridFlow.load_user_config");
 	signal(11,SIG_DFL); // paranoia
