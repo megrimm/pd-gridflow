@@ -43,6 +43,12 @@
 VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 VALUE FObject_class;
 
+struct GFBridge gf_bridge = {
+	send_out: 0,
+	class_install: 0,
+	post: printf,
+};
+
 void startup_number(void);
 void startup_grid(void);
 void startup_flow_objects(void);
@@ -163,6 +169,9 @@ char *rb_sym_name(VALUE sym) {
 	return rb_id2name(SYM2ID(sym));
 }
 
+void FObject_mark (VALUE *$) {}
+void FObject_sweep (VALUE *$) {fprintf(stderr,"sweeping FObject %p\n",$);}
+
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
 	{int i; for(i=0; i<(*argc); i++)
@@ -193,8 +202,9 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	VALUE sym;
 	int outlet;
 	int i, n;
-	FObject_send_out_2(argc,argv,$);
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
+	if (gf_bridge.send_out)
+		gf_bridge.send_out(argc,argv,sym,outlet,$);
 //	whine("message: %s",rb_sym_name(sym));
 	if (ary==Qnil) return Qnil;
 	n = RARRAY(ary)->len;
@@ -229,11 +239,35 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	return $;
 }
 
+VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
+	int inlets, outlets;
+	VALUE name2;
+	if (SYMBOL_P(name)) {
+		name2 = rb_funcall(name,rb_intern("dup"),0);
+	} else if (TYPE(name) == T_STRING) {
+		name2 = rb_funcall(name,rb_intern("to_str"),0);
+	} else {
+		EARG("expect symbol or string");
+	}
+	inlets = NUM2INT(inlets2);
+	if (inlets<0 || inlets>9) EARG("...");
+	outlets = NUM2INT(outlets2);
+	if (outlets<0 || outlets>9) EARG("...");
+	rb_ivar_set($,rb_intern("@inlets"),inlets);
+	rb_ivar_set($,rb_intern("@outlets"),outlets);
+	rb_ivar_set($,rb_intern("@foreign_name"),name2);
+	rb_hash_aset(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
+		name2, $);
+	if (gf_bridge.class_install)
+		gf_bridge.class_install($,RSTRING(name2)->ptr,inlets2,outlets2);
+	return Qnil;
+}
+
 /* ---------------------------------------------------------------- */
 /* The setup part */
 
-#define DECL_SYM2(_sym_) \
-	VALUE sym_##_sym_ = 0xDeadBeef;
+#define DECL_SYM2(_sym_) VALUE sym_##_sym_ = 0xDeadBeef;
+#define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
 
 DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
@@ -242,105 +276,11 @@ DECL_SYM2(bang)
 DECL_SYM2(int)
 DECL_SYM2(list)
 
-static void disable_signal_handlers (void) {
-	/*
-		this is for debugging only and should be turned off in
-		the normal distribution. this code ensures that crashes are
-		not trapped by jmax itself so i can have something to inspect.
-	*/
-	static int signals[] = {
-		SIGBUS, SIGSEGV, SIGTERM,
-		SIGHUP, SIGINT, SIGQUIT, SIGABRT,
-	};
-	int i;
-	for(i=0; i<COUNT(signals); i++) {
-		signal(signals[i],SIG_DFL);
-	}
-}
-
 static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 	void *data2 = FIX2PTR(data);
 	void (*func2)() = FIX2PTR(func);
 	func2(data2);
 	return Qnil;
-}
-
-VALUE gf_ruby_init$1 (void *foo) {
-	gf_install_bridge();
-	disable_signal_handlers(); /* paranoid; help me with gdb */
-	rb_eval_string(
-		"begin\n"
-/*			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n" */
-			"require 'base/main.rb'\n"
-/*
-			"require '/home/projects/gridflow/extra/TkRubyListener.rb'\n"
-			"$root = TkRoot.new { title 'GridFlow console' }\n"
-			"def foo; STDERR.puts \"ruby-loop-tick\"; Tk.after(1000) { foo }; end; foo\n"
-			"$listener = TkRubyListener.new($root,60,8)\n"
-			"$listener.frame.pack\n"
-			"Tk.mainloop\n"
-*/
-		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e.class}: #{e} #{e.backtrace}\"\n"
-		"end\n"
-	);
-	return Qnil;
-}
-
-VALUE gf_ruby_init$2 (void *foo) {
-	post("untrapped ruby exception occurred loading GridFlow\n");
-	return Qnil;
-}
-
-#define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
-
-void showenv(const char *s) {
-	post("%s = %s\n", s, getenv(s));
-}
-
-/* at this point, Ruby should already be started */
-/* this part will load GridFlow _into_ Ruby */
-void gf_init (void) {
-	DEF_SYM(grid_begin);
-	DEF_SYM(grid_flow);
-	DEF_SYM(grid_end);
-	DEF_SYM(bang);
-	DEF_SYM(int);
-	DEF_SYM(list);
-
-	/* !@#$ mark */
-	gf_alloc_set  = rb_hash_new();
-	gf_object_set = rb_hash_new();
-
-	GridFlow_module = rb_eval_string("module GridFlow; self; end");
-	rb_define_singleton_method(GridFlow_module,"exec",GridFlow_exec,2);
-	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
-	rb_ivar_set(GridFlow_module, rb_intern("@fclasses_set"), rb_hash_new());
-
-	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
-	DEF(FObject, send_out, -1);
-	SDEF(FObject, install, 3);
-	SDEF(FObject, new, -1);
-
-//	disable_signal_handlers();
-	srandom(time(0));
-
-	post("Welcome to GridFlow " GF_VERSION "\n");
-	post("Compiled on: " GF_COMPILE_TIME "\n");
-	post("--- GridFlow startup: begin ---\n");
-
-	showenv("LD_LIBRARY_PATH");
-	showenv("LIBRARY_PATH");
-	showenv("PATH");
-	showenv("DISPLAY");
-
-	/* run startup of every source file */
-	startup_number();
-	startup_grid();
-	startup_flow_objects();
-
-	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
-
-	post("--- GridFlow startup: end ---\n");
 }
 
 /* this is the entry point for all of the above */
@@ -400,15 +340,6 @@ void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 		rb_define_method($,buf,(VALUE(*)())md->method,n_args);
 	}
 }
-/*
-char *FObject_to_s(FObject *$) {
-	char *buf = NEW2(char,256);
-	sprintf_vars(buf,
-		$->argc,
-		$->argv);
-	return buf;
-}
-*/
 
 void MainLoop_add(void *data, void (*func)(void)) {
 	rb_funcall(rb_eval_string("$tasks"),rb_intern("[]="), 2,
@@ -438,10 +369,62 @@ VALUE gf_post_string (VALUE $, VALUE s) {
 	return Qnil;
 }
 
+/*
+void post(const char *fmt, ...) {
+	va_list args;
+	va_start(args,fmt);
+	vfprintf(stderr,fmt,args);
+}
+*/
+
 /* ---------------------------------------------------------------- */
 
 /* Ruby's entrypoint. */
-void Init_gridflow (void) {
-	gf_init();
+void Init_gridflow (void) /*throws Exception*/ {
+	DEF_SYM(grid_begin);
+	DEF_SYM(grid_flow);
+	DEF_SYM(grid_end);
+	DEF_SYM(bang);
+	DEF_SYM(int);
+	DEF_SYM(list);
+
+	puts("Hello World!");
+
+	/* !@#$ mark */
+	gf_alloc_set  = rb_hash_new();
+	gf_object_set = rb_hash_new();
+
+	GridFlow_module = rb_define_module("GridFlow");
+	rb_define_singleton_method(GridFlow_module,"exec",GridFlow_exec,2);
+	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
+	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
+	rb_ivar_set(GridFlow_module, rb_intern("@fclasses_set"), rb_hash_new());
+
+
+	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
+	DEF(FObject, send_out, -1);
+	SDEF(FObject, install, 3);
+	SDEF(FObject, new, -1);
+
+	post("GridFlow "GF_VERSION", as compiled on "GF_COMPILE_TIME"\n");
+
+	{
+		VALUE cdata = rb_eval_string("Data");
+		if (rb_respond_to(cdata,rb_intern("gridflow_bridge_init"))) {
+			post("Setting up bridge...\n");
+			rb_funcall(cdata,rb_intern("gridflow_bridge_init"),
+				1,PTR2FIX(&gf_bridge));
+			post("Done setting up bridge.\n");
+		} else {
+			post("bridge not found\n");
+		}
+	}
+
+	/* run startup of every source file */
+	startup_number();
+	startup_grid();
+	startup_flow_objects();
+
+	rb_require("gridflow/base/main.rb");
 }
 
