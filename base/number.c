@@ -189,6 +189,7 @@ template <class T> static inline T gf_floor (T a) {
 template <class T> static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
+/*
 uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
 int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
 int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
@@ -199,6 +200,7 @@ int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff
 int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
 int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 	return c<(nt_smallest(0LL)/2?nt_smallest(0LL):c>nt_greatest(0LL)/2?nt_greatest(0LL):a-b; }
+*/
 
 DEF_OP(ignore, a, side==at_right, side==at_left)
 DEF_OP(put, b, side==at_left, side==at_right)
@@ -246,8 +248,8 @@ DEF_OP(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false)
 DEF_OP(pow, ipow(a,b), false, false) // "RN=1"
 DEF_OP(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
 // 0.7.8
-DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
-DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
+//DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
+//DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
 DEF_OP(abssub,  abs(a-b), false, false)
 DEF_OP(sqsub, (a-b)*(a-b), false, false)
 DEF_OP(avg, (a-b)/2, false, false)
@@ -299,8 +301,8 @@ Numop op_table[] = {
 	DECL_OP_NOFOLD(pow, "**", 0),
 	DECL_OP_NOFOLD(log, "log*", 0),
 // 0.7.8
-	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
-	DECL_OP(clipsub,"clip-", 0),
+//	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
+//	DECL_OP(clipsub,"clip-", 0),
 	DECL_OP_NOFOLD(abssub,"abs-", OP_COMM),
 	DECL_OP_NOFOLD(sqsub,"sq-", OP_COMM),
 	DECL_OP_NOFOLD(avg,"avg", OP_COMM),
