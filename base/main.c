@@ -38,6 +38,8 @@
 #include <limits.h>
 
 BuiltinSymbols bsym;
+GFStack gf_stack;
+
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
 Ruby cFObject;
 
@@ -145,7 +147,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 */
 \def void send_in (...) {
 	bool record = false;
-	ENTER(this);
+	PROF(this) {
 	if (argc<1) RAISE("not enough args");
 	int inlet = INT(argv[0]);
 	argc--, argv++;
@@ -172,7 +174,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(rself,rb_intern(buf),argc,argv);
 
-	LEAVE(this);
+	} /* PROF */
 }
 
 \def void send_out (...) {
@@ -192,7 +194,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 
-	LEAVE(this);
+	PROF(0) {
 
 	if (gf_bridge->send_out && bself)
 		gf_bridge->send_out(argc,argv,sym,outlet,rself);
@@ -214,8 +216,8 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 		argv2[1] = sym;
 		rb_funcall2(rec,SI(send_in),argc+2,argv2);
 	}
-end:
-	ENTER(this);
+	} /* PROF */
+end:;
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -261,13 +263,13 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def Ruby profiler_cumul_get () {
-	return ull2num(profiler_cumul);
+\def Ruby total_time_get () {
+	return ull2num(total_time);
 }
 
-\def Ruby profiler_cumul_set (Ruby x) {
+\def Ruby total_time_set (Ruby x) {
 	if (argc<1) RAISE("");
-	profiler_cumul = num2ull(x);
+	total_time = num2ull(x);
 	return argv[0];
 }
 

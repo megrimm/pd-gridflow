@@ -153,8 +153,8 @@ class FObject
 		attr_reader :noutlets
 	end
 
-	alias :profiler_cumul :profiler_cumul_get
-	alias :profiler_cumul= :profiler_cumul_set
+	alias :total_time :total_time_get
+	alias :total_time= :total_time_set
 	attr_writer :args # String
 	attr_accessor :argv # Array
 	attr_reader :outlets

@@ -28,7 +28,7 @@ module GridFlow
 # a dummy class that gives access to any stuff global to GridFlow.
 class GridGlobal < FObject
 	def _0_profiler_reset
-		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
+		GridFlow.fobjects_set.each {|o,*| o.total_time = 0 }
 		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
 	end
 	def _0_profiler_dump
@@ -41,16 +41,17 @@ class GridGlobal < FObject
 		GridFlow.post "microseconds percent pointer  constructor"
 		GridFlow.fobjects_set.each {|o,*| ol.push o }
 
-		# HACK: BitPacking is not a real gridobject
-		ol.delete_if {|o| not o.respond_to? :profiler_cumul }
+		# HACK: BitPacking is not a real fobject
+		# !@#$ is this still necessary?
+		ol.delete_if {|o| not o.respond_to? :total_time }
 
-		ol.sort! {|a,b| a.profiler_cumul <=> b.profiler_cumul }
-		ol.each {|o| total += o.profiler_cumul }
+		ol.sort! {|a,b| a.total_time <=> b.total_time }
+		ol.each {|o| total += o.total_time }
 		total=1 if total<1
 		total_us = 0
 		ol.each {|o|
-			ppm = o.profiler_cumul * 1000000 / total
-			us = (o.profiler_cumul*1E6/GridFlow.cpu_hertz).to_i
+			ppm = o.total_time * 1000000 / total
+			us = (o.total_time*1E6/GridFlow.cpu_hertz).to_i
 			total_us += us
 			GridFlow.post "%12d %2d.%04d %08x %s", us,
 				ppm/10000, ppm%10000, o.object_id, o.args
