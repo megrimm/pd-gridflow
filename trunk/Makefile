@@ -1,7 +1,7 @@
 # $Id$
-include config.make
 
-all:: gridflow-for-ruby gridflow-for-jmax # doc-all
+all:: ruby-all gridflow-for-ruby gridflow-for-jmax # doc-all
+include config.make
 
 #----------------------------------------------------------------#
 
@@ -38,18 +38,20 @@ clean::
 	rm -f $(OBJS) $(LIB) $(JMAX_LIB) \
 	$(OBJDIR)/base_bridge_jmax.o $(OBJDIR)/base_bridge_none.o
 
-install::
+install:: all ruby-install
+	$(INSTALL_DATA) c/lib/$(ARCH)/gridflow.so $(RUBYDESTDIR)/$(RUBYARCH)/gridflow.so
 	$(INSTALL_DIR) $(GFID)
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
 	[ -f c/lib/$(ARCH)/libgridflow.so ] && \
 		$(INSTALL_LIB) c/lib/$(ARCH)/libgridflow.so \
 		$(GFID)/c/lib/$(ARCH)/opt/libgridflow.so
-	$(INSTALL_DIR) $(GFID)/ruby
 	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
 	$(INSTALL_DATA) gridflow.scm $(GFID)/gridflow.scm
-	$(INSTALL_DATA) base/main.rb $(GFID)/ruby/main.rb
 	(cd help; $(MAKE) $@)
 	(cd templates; $(MAKE) $@)
+
+uninstall:: ruby-uninstall
+	# add uninstallation of other files here.
 
 kloc::
 	wc base/*.[ch] base/*.rb format/*.[ch] configure Makefile extra/*.rb
@@ -77,7 +79,7 @@ export-config::
 	@echo "#define GF_INSTALL_DIR \"$(GFID)\""
 
 EFENCE = /usr/lib/libefence.so
-#	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi
+#	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
 test:: $(LIB)
 	ulimit -c unlimited; rm -f core; \
@@ -91,7 +93,6 @@ foo::
 #----------------------------------------------------------------#
 
 ifeq ($(HAVE_JMAX_2_5),yes)
-DISTDIR = $(JMAXROOTDIR)/fts
 JMAX_OBJS = $(OBJS) $(OBJDIR)/base_bridge_jmax.o
 JMAX_LIB = $(LIBDIR)/libgridflow.so
 gridflow-for-jmax:: $(LIBDIR) $(OBJDIR) $(JMAX_LIB)
@@ -101,7 +102,9 @@ $(OBJDIR)/base_bridge_jmax.o: base/bridge_jmax.c base/grid.h $(CONF)
 	gcc $(CFLAGS) -DLINUXPC -DOPTIMIZE -c $< -o $@
 
 $(JMAX_LIB): $(JMAX_OBJS) 
-	gcc $(LDSOFLAGS) $(FTS_SOFLAGS) $(JMAX_OBJS) -o $@ $(SOLIBS) $(MORESOLIBS)
+	@mkdir -p $(LIBDIR)
+	gcc -shared -rdynamic $(LDSOFLAGS) $(RUBY_OBJS) -o $@
+	gcc -shared -rdynamic $(LDSOFLAGS) $(JMAX_OBJS) -o $@
 
 else
 
