@@ -72,7 +72,7 @@ to the value on the right.;
 #X obj 99 475 # abs-;
 #X text 14 14 some two-input operators: *whoa \, there's a lot of them*
 ;
-#X text 619 13 GridFlow 0.7.8;
+#X text 619 13 GridFlow 0.8.0;
 #X connect 11 0 52 0;
 #X connect 12 0 53 0;
 #X connect 13 0 46 0;

@@ -24,8 +24,8 @@
 #X floatatom 250 217 5 0 0 0 - - -;
 #X floatatom 364 217 5 0 0 0 - - -;
 #X text 19 371 see also:;
-#X text 13 44 computes one of the four basic one-input operators;
-#X text 13 57 on each value of a grid;
+#X text 13 41 computes one of the four basic one-input operators;
+#X text 13 56 on each value of a grid;
 #X obj 18 111 #import ( 1 );
 #X obj 18 144 # abs-;
 #X obj 18 178 #export;
@@ -38,10 +38,10 @@
 #X obj 364 142 # sqrt;
 #X obj 94 376 # +;
 #X obj 249 145 # sq-;
-#X text 15 9 the one-input operators: [# abs-] \, [# rand] \, [# sqrt]
-\, [# sq-];
-#X text 465 13 GridFlow 0.7.8;
 #X obj 133 143 # rand;
+#X text 465 13 GridFlow 0.8.0;
+#X text 14 25 [# abs-] \, [# rand] \, [# sqrt] \, [# sq-];
+#X text 15 9 the one-input operators:;
 #X connect 0 0 26 0;
 #X connect 4 0 29 0;
 #X connect 5 0 31 0;
@@ -54,7 +54,7 @@
 #X connect 26 0 27 0;
 #X connect 27 0 28 0;
 #X connect 28 0 15 0;
-#X connect 29 0 40 0;
+#X connect 29 0 38 0;
 #X connect 30 0 16 0;
 #X connect 31 0 37 0;
 #X connect 32 0 17 0;
@@ -62,4 +62,4 @@
 #X connect 34 0 18 0;
 #X connect 35 0 34 0;
 #X connect 37 0 32 0;
-#X connect 40 0 30 0;
+#X connect 38 0 30 0;
