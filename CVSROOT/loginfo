@@ -29,4 +29,5 @@
 
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail matju@sympatico.ca acastonguay@artengine.ca
 
-ALL mail -s %s matju@sympatico.ca
+ALL mail -s %s matju@sympatico.ca acastonguay@artengine.ca
+
