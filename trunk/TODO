@@ -4,7 +4,7 @@
 "6" is planned for 0.6
 "7" is planned for 0.7
 
-Distribution (0.5.x)
+Distribution (0.5.0)
 [5] prepare gridflow-images-0.5
 [5] upload on both web sites
 [5] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
@@ -12,15 +12,18 @@ Distribution (0.5.x)
 [5] review all patches
 [5] after all, gridflow-images-0.5 is a good idea
 
+Distribution (0.6.0)
+
 Installation
-[x] "ARCH" moved into configure.
-[x] add --fast switch to turn on all optimizations
-[x] remove jMax 2.4 support
 [6] de-jmax-ify the build process; installable doc; installable includes
 [ ] replace --fast by opposite --debug option
-[!] backup the repository
+[ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
 [ ] detect and reject .a linkage
+[ ] remove hostname.2y.net cvs repository
+[ ] bring hostname.2y.net back up if possible
+[ ] matju homepage on artengine.ca ?
+[ ] less compile-time checks and more run-time checks
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -35,25 +38,20 @@ Documentation
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
 [ ] find a good XML editor
-[!] document our own release procedures, how our CVS works
-[!] document how to report bugs, basic troubleshooting
-[!] document our distribution of the archives
+[ ] document our own release procedures, how our CVS works
+[ ] document how to report bugs, basic troubleshooting
+[ ] document our distribution of the archives
 [ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
 [ ] document internals
 [ ] document gridflow-for-C
 [ ] document gridflow-for-Ruby
-[x] scan for unused/useless images
 [ ] document backward compatibility issues
+[ ] typical uses: <typical></typical>
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
-[x] make Dict scalable
-[x] struct GridClass
-[x] CLASS() -> GRCLASS(), fully automated
-[x] unary ops: sq
-[x] automated gridinlet/gridoutlet creation
 [6] 0. Design the GF-1.0 architecture (new internals documentation)
 [6] 1. Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
 	identify streams by ids given at grid msg
@@ -98,7 +96,6 @@ Computation Objects
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
-[x] @scale_by with argument
 [ ] timelines as in MM-Director
 
 Effects
@@ -122,27 +119,26 @@ Effects
 	try interleaving the data and using [@inner]
 
 Input/Output
-[x] generic event-driven io
 [ ] in-place editing (rw mode)
 [ ] implement byte-order support in BitPacking
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
 [ ] Pixonix bridge
-[ ] Ruby bridge
-[ ] PureData bridge
+[6] Ruby bridge
+[6] PureData bridge
 [ ] Max bridge
+[ ] Gimp bridge
 [ ] TCP: move out of Grid
 [ ] TCP: non-blocking write
 [ ] TCP: non-blocking listen
 [ ] TCP Socket Buffering
-[x] Grid: bpv 8
-[ ] Grid: bpv 4,2,1
-[ ] Grid: bpv 16
+[ ] Grid: bpv 1,2,4,16,64
 [ ] Grid: signed/unsigned
+[ ] MacOSX-Quartz output
+[ ] Win32-GDI output
 
 Format
-[x] all: Format base class + inheritance
 [ ] all: possibly get rid of the "format" notion ?
 [ ] all: rewinding file (or not)
 [ ] seq: multi-image (createable by cat, ar, tar or zip)

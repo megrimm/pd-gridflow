@@ -11,8 +11,8 @@ version 0.5.0 (head):
  * further separation of GridFlow from jMax
  * major format API changes (added Stream class)
  * format "grid" now supports 8 bits per value
+ * support for HeroineWarrior's LibMPEG3 (reading + seeking)
  * libmpeg.so (Greg Ward's) now also looked up as "libwardsmpeg.so"
- * support for HeroineWarrior's libmpeg3.so (read-only + frame-seek)
  * added objects: rtmetro, pingpong
  * Moved CVS repository from Hostname.2y.net to Artengine.ca
 
