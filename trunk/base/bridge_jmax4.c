@@ -73,13 +73,6 @@ static fts_class_t *find_bfclass (fts_symbol_t sym) {
 	if (v==Qnil) RAISE("class not found");
 	return FIX2PTR(fts_class_t,v);
 }
-static Ruby find_fclass (fts_symbol_t sym) {
-	Ruby v = rb_hash_aref(
-		rb_ivar_get(mGridFlow2, SI(@fclasses_set)),
-		rb_str_new2(sym));
-	if (v==Qnil) RAISE("class not found");
-	return v;
-}
 
 static void Bridge_export_value(Ruby arg, fts_atom_t *at) {
 	if (INTEGER_P(arg)) {
@@ -104,18 +97,17 @@ static Ruby Bridge_import_value(const fts_atom_t *at) {
 		return ID2SYM(rb_intern(fts_get_symbol(at)));
 	} else if (fts_is_float(at)) {
 		return rb_float_new(fts_get_float(at));
-	} 
-#if 0
-/* else if (fts_is_list(at)) { */
-/* 	fts_list_t *l = fts_get_list(at); */
-/* 	int n = fts_list_get_size(l); */
-/* 	fts_atom_t *p = fts_list_get_ptr(l); */
-/* 	Ruby a = rb_ary_new2(n); */
-/* 	for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(p+i)); */
-/* 	return a; */
-/* //	} else if (fts_is_ptr(at)) { */
-/* //		return Pointer_new(fts_get_ptr(at)); */
-/*     } */ 
+/*	} else if (fts_is_list(at)) {
+		fts_list_t *l = fts_get_list(at);
+		int n = fts_list_get_size(l);
+		fts_atom_t *p = fts_list_get_ptr(l);
+		Ruby a = rb_ary_new2(n);
+		for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(p+i));
+		return a;
+*/
+//	} else if (fts_is_ptr(at)) {
+//		return Pointer_new(fts_get_ptr(at));
+	}
 #endif /* doesn't compile */
 	else {
 		post("warning: type \"%s\" not supported\n",fts_get_class_name(at));
@@ -156,13 +148,10 @@ static void BFObject_method_missing (BFObject *self,
 }
 
 static Ruby BFObject_init_1 (FMessage *fm) {
-	Ruby argv[fm->ac];
-	for (int i=0; i<fm->ac; i++) 
-		argv[i] = Bridge_import_value(fm->at+i);
-	Ruby qlass = rb_hash_aref(rb_ivar_get(mGridFlow2,
-										  SI(@fclasses_set)), rb_str_new2(fts_object_get_class_name(fm->self)));
-   
-	Ruby rself = rb_funcall2(qlass,SI(new),fm->ac,argv);
+	Ruby argv[fm->ac+1];
+	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
+	argv[0] = rb_str_new2(fts_object_get_class_name(fm->self));
+	Ruby rself = rb_funcall2(EVAL("GridFlow::FObject"),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
@@ -200,35 +189,34 @@ static void BFObject_delete (BFObject *self) {
 static void BFObject_class_init_1 (fts_class_t *qlass) 
 {
 	Ruby rself = rb_hash_aref(rb_ivar_get(mGridFlow2,
-										  SI(@fclasses_set)), rb_str_new2(fts_class_get_name(qlass)));
+		SI(@fclasses_set)), rb_str_new2(fts_class_get_name(qlass)));
 	
 	int ninlets = ninlets_of(rself);
 	int noutlets = noutlets_of(rself);
 	
 	
-/* 	r = fts_class_init(qlass, sizeof(BFObject), ninlets, noutlets, (void *)rself); */
-	fts_class_init(qlass, sizeof(BFObject), (fts_method_t)BFObject_init, (fts_method_t)BFObject_delete);
-/*     RETIFFAIL(r,r,"fts_class_init%s",""); */
+	/* r = fts_class_init(qlass, sizeof(BFObject), ninlets, noutlets, (void *)rself); */
+	fts_class_init(qlass, sizeof(BFObject), (fts_method_t)BFObject_init,
+		(fts_method_t)BFObject_delete);
+	/* RETIFFAIL(r,r,"fts_class_init%s",""); */
 	
-/* 	r = fts_class_method_varargs( */
-/* 		qlass,fts_SystemInlet,fts_s_init,(fts_method_t)BFObject_init); */
-/* 	RETIFFAIL(r,r,"define_varargs (for %s)","#init"); */
+/*
+ 	r = fts_class_method_varargs(
+		qlass,fts_SystemInlet,fts_s_init,(fts_method_t)BFObject_init);
+		RETIFFAIL(r,r,"define_varargs (for %s)","#init");
 	
-/* 	r = fts_method_define_varargs( */
-/* 		qlass,fts_SystemInlet,fts_s_delete,(fts_method_t)BFObject_delete); */
-/* 	RETIFFAIL(r,r,"define_varargs (for %s)","#delete"); */
-	
+	r = fts_method_define_varargs(
+		qlass,fts_SystemInlet,fts_s_delete,(fts_method_t)BFObject_delete);
+	RETIFFAIL(r,r,"define_varargs (for %s)","#delete");
+*/	
 	
 	for (int i=0; i<ninlets; i++) {
 		fts_class_inlet_varargs(qlass, i,(fts_method_t)BFObject_method_missing);
 /* 	RETIFFAIL(r,r,"define_varargs (for inlet %i)",i); */
 	}
-
-
 }
 
-static void BFObject_class_init (fts_class_t *qlass)
-{
+static void BFObject_class_init (fts_class_t *qlass) {
 	fts_status_t r;
 	FMessage fm;
 	fm.self = 0;
@@ -259,12 +247,11 @@ Ruby rself) {
 	return Qnil;
 }
 
-static void gf_timer_handler (fts_object_t *obj, int winlet, fts_symbol_t s, int ac, const fts_atom_t* at)
-{
-//	uint64 time = RtMetro_now2();
-//	post("tick\n");
+static void gf_timer_handler (fts_object_t *obj, int winlet, fts_symbol_t s,
+int ac, const fts_atom_t* at) {
 	rb_funcall(mGridFlow2,SI(tick),0);
-	fts_timebase_add_call(fts_get_timebase(), obj, gf_timer_handler, NULL, gf_bridge2->clock_tick);
+	fts_timebase_add_call(fts_get_timebase(), obj,
+		gf_timer_handler, NULL, gf_bridge2->clock_tick);
 	fts_log("clock tick: %f\n", gf_bridge2->clock_tick);
 	count_tick();
 }       

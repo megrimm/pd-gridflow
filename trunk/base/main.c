@@ -120,12 +120,10 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 }
 
 METHOD3(FObject,send_in) {
+	bool record = false;
 	ENTER(this);
-
 	if (argc<1) RAISE("not enough args");
-	int inlet = INT(*argv);
-	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
-		RAISE("invalid inlet number");
+	int inlet = INT(argv[0]);
 	argc--, argv++;
 	Ruby foo;
 	if (argc==1 && TYPE(argv[0])==T_STRING /* && argv[0] =~ / / */) {
@@ -133,6 +131,13 @@ METHOD3(FObject,send_in) {
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
 	}
+	if (inlet==-2) {
+		Array init_messages = rb_ivar_get(rself,SI(@init_messages));
+		rb_ary_push(init_messages, rb_ary_new4(argc,argv));
+		inlet=0;
+	}
+	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
+		RAISE("invalid inlet number");
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
 	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
@@ -380,7 +385,7 @@ void gfpost(const char *fmt, ...) {
 	va_list args;
 	int length;
 	va_start(args,fmt);
-	const int n=4096;
+	const int n=256;
 	char post_s[n];
 	length = vsnprintf(post_s,n,fmt,args);
 	if (length<0 || length>=n) sprintf(post_s+n-6,"[...]"); /* safety */

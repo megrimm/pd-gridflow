@@ -72,13 +72,6 @@ static void bridge_common_init () {
 
 }
 
-/* copy-paste */
-static uint64 RtMetro_now2() {
-	struct timeval nowtv;
-	gettimeofday(&nowtv,0);
-	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
-}
-
 static int ninlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_ninlets))) RAISE("no inlet count");
 	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_ninlets)));

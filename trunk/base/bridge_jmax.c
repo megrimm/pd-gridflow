@@ -40,9 +40,6 @@
 
 //#define TRACE_SELF
 
-static const char *list_begin = "{";
-static const char *list_end = "}";
-
 struct BFObject;
 struct FMessage {
 	BFObject *self;
@@ -68,13 +65,6 @@ static fts_class_t *find_bfclass (fts_symbol_t sym) {
 		rb_str_new2(fts_symbol_name(sym)));
 	if (v==Qnil) RAISE("class not found");
 	return FIX2PTR(fts_class_t,v);
-}
-static Ruby find_fclass (fts_symbol_t sym) {
-	Ruby v = rb_hash_aref(
-		rb_ivar_get(mGridFlow2, SI(@fclasses_set)),
-		rb_str_new2(fts_symbol_name(sym)));
-	if (v==Qnil) RAISE("class not found");
-	return v;
 }
 
 static void Bridge_export_value(Ruby arg, fts_atom_t *at) {
@@ -144,12 +134,12 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 }
 
 static Ruby BFObject_init_1 (FMessage *fm) {
-	Ruby argv[fm->ac];
+	Ruby argv[fm->ac+1];
 	fm->ac--;
 	fm->at++;
-	for (int i=0; i<fm->ac; i++) argv[i] = Bridge_import_value(fm->at+i);
-	Ruby qlass = (Ruby)fm->self->head.cl->user_data;
-	Ruby rself = rb_funcall2(qlass,SI(new),fm->ac,argv);
+	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
+	argv[0] = (Ruby)fm->self->head.cl->user_data;
+	Ruby rself = rb_funcall2(EVAL("GridFlow::FObject"),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
@@ -170,7 +160,6 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	//post("BFObject_delete_1: deleting object # %08x\n",(int)fm->self);
 	rb_funcall(fm->self->rself,SI(delete),0);
 }
 
@@ -230,8 +219,6 @@ int ac, const fts_atom_t *at) {
 
 static Ruby FObject_s_install_2(Ruby rself, char *name) {
 	fts_symbol_t sym = fts_new_symbol_copy(name);
-//	if (fts_class_get_by_name(sym))
-//		RAISE("class %s already exists (ignoring)",name);
 	fts_status_t r = fts_class_install(sym,BFObject_class_init);
 	RETIFFAIL(r,Qnil,"%s: fts_class_install%s",name,"");
 	return Qnil;
@@ -260,12 +247,9 @@ Ruby rself) {
 static fts_alarm_t *gf_alarm;
 
 static void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
-//	uint64 time = RtMetro_now2();
-//	post("tick\n");
 	rb_funcall(mGridFlow2,SI(tick),0);
 	fts_alarm_set_delay(gf_alarm,gf_bridge2->clock_tick);
 	fts_alarm_arm(gf_alarm);
-//	post("tick was: %lld\n",RtMetro_now2()-time);
 	count_tick();
 }       
 
