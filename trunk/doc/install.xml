@@ -8,13 +8,13 @@
 -->
 <section name="Software (and Hardware) you Probably Need">
 <p>Required Hardware (One of...):<list>
-	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>
-	<li>i686 : "new" IBM PC with recent compiler</li>
-	<li>ppc : "new" Macintosh</li>
-	<li>armv4l : Corel Netwinder</li>
-	<li>mips : Silicon Graphics, non-PC</li>
-	<li>sparc : Sun SparcStation</li>
-</list>(but we only test i686 ourselves)</p>
+	<li>i386 : "old" PC, or "new" PC with old compiler</li>
+	<li>i686 : "new" PC with recent compiler (that's the one we mostly test with)</li>
+	<li>ppc : Macintosh (we are beginning to test with this too)</li>
+	<li>armv4l : Corel Netwinder (unsupported, but got it to work long ago)</li>
+	<li>mips : Silicon Graphics, non-PC (unsupported, but got it to work long ago)</li>
+	<li>sparc : Sun SparcStation (unsupported, but got it to work some time ago)</li>
+</list></p>
 <p>Required Software:<list>
 	<li>Ruby 1.6.6 or more recent (1.8.0 recommended)</li>
 	<li>GNU C Compiler (gcc)</li>
@@ -56,6 +56,21 @@ I found four of them, some numbered 2 and 3 as if they were version numbers
 <p>NOTE: if one of your libraries are only available in .a format, you will not
 be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 </p>
+</section>
+
+<section name="Downloading from CVS">
+<p>The CVS has the absolute latest version of GridFlow, but it's not guaranteed to be working, whereas
+the actual releases are more tested.</p>
+<p>However you may have various reasons to use the CVS edition, so here's how:</p>
+<p>Make sure you have the <k>cvs</k> and <k>ssh</k> programs installed.
+(On MacOS, they are part of the DevTools CD)</p>
+<p><k>mkdir -p ~/src/gridflow</k> (make a directory; it could be called otherwise if you like)</p>
+<p><k>cd ~/src/gridflow</k> (go in that directory)</p>
+<p><k>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow login</k> (the password is blank)</p>
+<p><k>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow checkout .</k> (download the first time)</p>
+<p>And the subsequent times, you only do this:</p>
+<p><k>cd ~/src/gridflow</k></p>
+<p><k>cvs update -dP</k></p>
 </section>
 
 <section name="Installation process (for jMax 2.5.1 and compatible)">
@@ -157,6 +172,36 @@ essentially the same as GEM's and PDP's)</li>
 	an example of how you may use GridFlow without jMax.
 </li></list>
 </section>
+
+<section name="Installation process (MacOS 10.2)">
+	<p>DevTools: you need the DevTools CD. I tried the december 2002 edition. You can
+	download that from Apple.</p>
+	<p>I've had a strange problem, in that the header files of Ruby
+	(<k>/usr/lib/ruby/powerpc-darwin6.0/*.h</k>) didn't install at first, and when
+	I tried reinstalling, the installer told me there was some more megs of files left to install, and
+	then installed the header files of Ruby among other things.</p>
+	<p>Even then, that version of Ruby is missing the static library <i>and</i> the shared library,
+	or in other words you can't build a jMax/PD plugin that uses Ruby with that. So I had to install
+	Ruby myself. I picked some 1.8 version and configured with <k>--enable-shared</k> which
+	is an essential option in this case it seems.</p>
+	<p>To be able to open a window in GF/OSX you need to do one of these:<list>
+		<li>Install Apple X11 from <k>http://www.apple.com/macosx/x11/</k></li>
+		<li>Install FINK from <k>http://fink.sourceforge.net/</k>. Start the FinkCommander.
+		Select <k>xfree86-rootless</k> and click on +A and +H. To start X11 in rootless mode 
+		on OSX, run this command: <k>X :0 -rootless &amp;</k>. This version of X11 will
+		require a "window manager", while Apple's X11 does not. The bundled one is <k>twm</k>,
+		but if you're not into retro, you better download a better one.</li>
+	</list></p>
+	<p>If [@out window] doesn't work ("no such file or directory" ??) then you may have to set
+	the DISPLAY environment variable. This is done by adding <k>export DISPLAY=:0</k> in
+	<k>~/.bashrc</k> or <k>setenv DISPLAY :0</k> in <k>~/.cshrc</k>.</p>
+	<p>Additional support packages you could install from Fink before installing GridFlow:
+	<k>libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</k></p>
+
+<p>Note: Fink installs stuff in directory <k>/sw</k>, which should be added to
+C_INCLUDE_PATH and LD_LIBRARY_PATH and such.</p>
+</section>
+
 <section name="Other Tips">
 <list>
 
