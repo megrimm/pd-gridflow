@@ -38,9 +38,10 @@
 #include <assert.h>
 #include <limits.h>
 
+#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
+
 BuiltinSymbols bsym;
 GFStack gf_stack;
-static bool has_int = true;
 Ruby mGridFlow;
 Ruby cFObject;
 
@@ -60,7 +61,7 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	VALUE ary = rb_funcall(e,SI(caller),0);
 	if (gf_stack.n) {
 		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
-			rb_str_new2(gf_stack.s[gf_stack.n-1].o->info()));
+			rb_str_new2(INFO(gf_stack.s[gf_stack.n-1].o)));
 	} else {
 		rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
 	}
@@ -116,9 +117,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 		sym = bsym._bang;
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
 		sym = bsym._list;
-	} else if (INTEGER_P(*argv)) {
-		sym = has_int ? bsym._int : bsym._float;
-	} else if (FLOAT_P(*argv)) {
+	} else if (INTEGER_P(*argv)||FLOAT_P(*argv)) {
 		sym = bsym._float;
 	} else if (SYMBOL_P(*argv)) {
 		sym = *argv;
@@ -128,7 +127,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
 	} else {
-		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?foo->info():"", argc,
+		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?INFO(foo):"", argc,
 			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
 	}
 }
@@ -288,14 +287,6 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 \def void delete_m () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,rself);
-}
-
-const char *FObject::info() {
-	if (!this) return "(nil FObject!?)";
-	Ruby z = rb_funcall(this->rself,SI(args),0);
-	//if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0);
-	if (z==Qnil) return "(nil args!?)";
-	return rb_str_ptr(z);
 }
 
 \classinfo
@@ -605,16 +596,8 @@ BUILTIN_SYMBOLS(FOO)
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
-
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
-
-	switch (EVAL("!(/puredata/ =~ GridFlow.bridge_name)")) {
-		case Qfalse: has_int = false; break;
-		case Qtrue:  has_int = true;  break;
-		default: abort(); /*???*/
-	}
-	
 	Ruby cBitPacking =
 		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
 	define_many_methods(cBitPacking,

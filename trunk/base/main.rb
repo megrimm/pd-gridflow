@@ -138,6 +138,8 @@ def self.stringify(arg)
 	end
 end
 
+::Object.module_eval do def FloatOrSymbol(x) Float(x) rescue x.intern end end
+
 # adding some functionality to that:
 class FObject
 	@broken_ok = false
@@ -170,6 +172,7 @@ class FObject
 			"[#{self.class} ...]"
 		end
 	end
+	alias info args
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets[outlet] ||= []

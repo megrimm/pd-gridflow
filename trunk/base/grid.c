@@ -37,25 +37,25 @@ Ruby Pointer_s_noo (void *ptr) {
 	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, new Pointer(ptr));}
 static void *Pointer_gut (Ruby rself) {DGS(Pointer); return self->p;}
 
-//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",parent->info(),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
+//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
 #define TRACE assert(this);
 
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
-		parent->info(), \
+		INFO(parent), \
 		__PRETTY_FUNCTION__, \
 		number_type_table[NumberTypeE_type_of(d)].name, \
 		number_type_table[this->nt].name);
 
 #define CHECK_BUSY(s) \
-	if (!dim) RAISE("%s: " #s " not busy",parent->info());
+	if (!dim) RAISE("%s: " #s " not busy",INFO(parent));
 
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
 	if (align) {L;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
-		parent->info(), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
+		INFO(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 #define CHECK_ALIGN2(d,nt) \
 	{int bytes = number_type_table[nt].size/8; \
@@ -131,9 +131,9 @@ void Grid::init_from_ruby(Ruby x) {
 // why this would be changed afterwards.
 void GridInlet::set_factor(int factor) {
 	if(!dim) RAISE("huh?");
-	if(factor<=0) RAISE("%s: factor=%d should be >= 1",parent->info(),factor);
+	if(factor<=0) RAISE("%s: factor=%d should be >= 1",INFO(parent),factor);
 	if (dim->prod() && dim->prod() % factor)
-		RAISE("%s: set_factor: expecting divisor",parent->info());
+		RAISE("%s: set_factor: expecting divisor",INFO(parent));
 	if (factor > 1) {
 		buf=new Grid(new Dim(factor), nt);
 		bufi=0;
@@ -168,15 +168,15 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	PROF(parent) {
 	if (dim) {
 		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
-			parent->info(), sender->info(), back_out->parent->info());
+			INFO(parent), INFO(sender), INFO(back_out->parent));
 		abort();
 	}
 	sender = back_out->parent;
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
-		RAISE("%s: inlet: unknown number type",parent->info());
+		RAISE("%s: inlet: unknown number type",INFO(parent));
 	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
-			parent->info(), number_type_table[nt].name);
+			INFO(parent), number_type_table[nt].name);
 	STACK_ARRAY(int32,v,argc);
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	P<Dim> dim = this->dim = new Dim(argc,v);
@@ -204,7 +204,7 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		int d = dex + bufi;
 		if (d+n > dim->prod()) {
 			gfpost("grid input overflow: %d of %d from [%s] to [%s]",
-				d+n, dim->prod(), sender->info(), 0);
+				d+n, dim->prod(), INFO(sender), 0);
 			n = dim->prod() - d;
 			if (n<=0) return;
 		}
@@ -254,16 +254,16 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		dex = newdex;
 	}break;
 	case 0: break; // ignore data
-	default: RAISE("%s: unknown inlet mode",parent->info());
+	default: RAISE("%s: unknown inlet mode",INFO(parent));
 	}} // PROF
 }
 
 void GridInlet::end() {TRACE;
 	assert(this);
-	if (!dim) RAISE("%s: inlet not busy",parent->info());
+	if (!dim) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
-			dex, dim->prod(), sender->info(), parent->info());
+			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
 	PROF(parent) {
 #define FOO(T) gh->flow(this,-2,Pt<T>());
@@ -291,7 +291,8 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
 		} else {
-			int m = GridOutlet::MAX_PACKET_SIZE/factor();
+			int ntsz = number_type_table[nt].size;
+			int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
 			if (!m) m++;
 			m *= factor();
 			while (n) {
@@ -312,7 +313,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 void GridInlet::from_grid(Grid *g) {TRACE;
 	if (!supports_type(g->nt))
 		RAISE("%s: number type %s not supported here",
-			parent->info(), number_type_table[g->nt].name);
+			INFO(parent), number_type_table[g->nt].name);
 #define FOO(T) from_grid2(g,(T)0);
 	TYPESWITCH(g->nt,FOO,)
 #undef FOO

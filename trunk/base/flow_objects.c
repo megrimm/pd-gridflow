@@ -26,8 +26,8 @@
 #include <math.h>
 #include "grid.h.fcs"
 
-// BAD HACK: GCC complains: unimplemented (--debug-harder mode only)
-#ifdef HAVE_DEBUG_HARDER
+// BAD HACK: GCC complains: unimplemented (--debug|--debug-harder mode only)
+#ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
 #else
 #define SCOPY(a,b,n) SCopy<n>::f(a,b)
@@ -238,7 +238,7 @@ static void snap_backstore (PtrGrid &r) {
 
 template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
 	for (int i=0; i<nc; i++) {
-		int32 wrap = r->dim->v[i];
+		uint32 wrap = r->dim->v[i];
 		bool fast = lowest_bit(wrap)==highest_bit(wrap); // is power of two?
 		if (i) {
 			if (fast) op_shl->map(nd,v,(T)highest_bit(wrap));
