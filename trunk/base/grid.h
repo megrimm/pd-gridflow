@@ -39,27 +39,9 @@ extern "C" {
 
 #define $ self
 
-#define NEW(_type_,_init_) \
-	(new(((_type_ *)qalloc(sizeof(_type_),#_type_,__FILE__,__LINE__,true))) \
-	_type_ _init_)
-
-#define NEWA(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_ "[]",__FILE__,__LINE__,false))
-
-#define FREE(_var_) \
-	(_var_ ? ((qfree(_var_, true) && (delete _var_, 0)), _var_=0) : 0)
-
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 
-void *qalloc(
-	size_t n, const char *type, const char *file, int line, bool deadbeef);
-
-bool qfree(void *data, bool fadedfoo);
-void *qrealloc(void *data, int n);
-
 #include <string.h>
-#define strdup(_foo_) \
-	({const char *foo=_foo_;strcpy(NEWA(char,strlen(foo)),foo);})
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -119,8 +101,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 #ifdef HAVE_DEBUG
 #define HAVE_ASSERT
-//#define HAVE_DEADBEEF
-#define HAVE_LEAKAGE_DUMP
 #endif
 
 #ifdef HAVE_TSC_PROFILING
@@ -227,7 +207,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 /* class constructor */
 
 #define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_handlers_,args...) \
-	static void *_name_##_allocate () { return NEW(_name_,()); } \
+	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
@@ -240,7 +220,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 
 #define FMTCLASS(_name_,symbol_name,description,flags,_inlets_,_outlets_,_handlers_,args...) \
 	FormatInfo _name_ ## _formatinfo = { symbol_name,description,flags }; \
-	static void *_name_##_allocate () { return NEW(_name_,()); } \
+	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
@@ -295,6 +275,9 @@ void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
+
+/* maximum number of grid cords per outlet per cord type */
+#define MAX_CORDS 8
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
@@ -356,7 +339,7 @@ struct Dim {
 		check();
 	}
 
-	Dim *dup() { return NEW(Dim,(n,v)); }
+	Dim *dup() { return new Dim(n,v); }
 
 	int count() {return n;}
 

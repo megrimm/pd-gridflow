@@ -329,32 +329,6 @@ rescue Exception => e
 	GridFlow.gfpost "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
 end
 
-AllocTrace = Struct.new(:v,:ptr,:size,:type,:file,:line)
-
-def self.leakage_dump
-	as = GridFlow.alloc_set
-	(gfpost "can't dump leakage list without --debug"; return) if not as
-	gfpost "forcing garbage-collection..."
-	GC.start
-	gfpost "list of remaining non-Ruby allocations:"
-	gfpost ""
-	gfpost "trace     pointer   size      type            file:line"
-	totsize=0
-	n=0
-	as2 = {}
-	as.each {|k,v| as2[k] = AllocTrace.new(v,*(GridFlow.alloctrace_to_a v)) }
-	keys = as.keys.sort {|a,b| as2[a].type <=> as2[b].type }
-	keys.each {|k|
-		v = as2[k]
-#		gfpost v.inspect
-		gfpost "%08x  %08x  %8d  %-16s %s:%d",
-			v.v*4, v.ptr*4, v.size, v.type, v.file, v.line
-		totsize+=v.size
-		n+=1
-	}
-	gfpost "total %d lost bytes in %d allocations", totsize, n
-end
-
 end # module GridFlow
 #----------------------------------------------------------------#
 
@@ -365,7 +339,6 @@ END {
 	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v| k.delete }
 	GridFlow.fobjects_set.clear
-	GridFlow.leakage_dump
 }
 
 GridFlow.routine
