@@ -56,7 +56,7 @@ static void expect_convolution_matrix (Dim *d) {
 
 struct PlanEntry {
 	int y,x; /* offset */
-	bool neutral,absorbent;
+	bool neutral;
 };
 
 \class GridConvolve < GridObject
@@ -73,20 +73,25 @@ struct GridConvolve : GridObject {
 	int margx,margy; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); plan=0; }
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
-	template <class T> void copy_row (Pt<T> buf, int y, int x);
+	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
 	GRINLET3(0);
 	GRINLET3(1);
 };
 
-template <class T> void GridConvolve::copy_row (Pt<T> buf, int y, int x) {
+template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x) {
 	int day = a.dim->get(0), dax = a.dim->get(1), dac = a.dim->prod(2);
 	y=mod(y,day); x=mod(x,dax);
 	Pt<T> ap = (Pt<T>)a + y*dax*dac;
 	int u=(dax-x)*dac;
 	int v=x*dac;
-	COPY(buf  ,ap+v,u);
-	COPY(buf+u,ap  ,v);
+	while (sx) {
+		int sx1 = min(sx,dax-x);
+		COPY(buf,ap+x*dac,sx1*dac);
+		x=0;
+		buf += sx1*dac;
+		sx -= sx1;
+	}
 }
 
 template <class T> void GridConvolve::make_plan (T bogus) {
@@ -111,10 +116,10 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 			//fprintf(stderr,"2: rh=%f, foo[0]=%f, neutral=%s, absorbent=%s\n",
 			//	0.0+rh,0.0+foo[0], boo[neutral?1:0],boo[absorbent?1:0]);
 
+			if (absorbent) continue;
 			plan[i].y = y;
 			plan[i].x = x;
 			plan[i].neutral = neutral;
-			plan[i].absorbent = absorbent;
 			i++;
 		}
 	}
@@ -142,28 +147,29 @@ GRID_INLET(GridConvolve,0) {
 	COPY((Pt<T>)a+in->dex, data, n);
 } GRID_FINISH {
 	make_plan((T)0);
-	Dim *da = a.dim, *db = b.dim;
-//	int dby = db->get(0);
-	int day = da->get(0);
-	int dbx = db->get(1);
-	int n = da->prod(1);
+	int dbx = b.dim->get(1);
+	int day = a.dim->get(0);
+	int n = a.dim->prod(1);
+	int sx = a.dim->get(1)+dbx-1;
+	int n2 = sx*a.dim->prod(2);
 	STACK_ARRAY(T,buf,n);
-	STACK_ARRAY(T,buf2,n);
+	STACK_ARRAY(T,buf2,n2);
 //	gfpost("%s",info());
 //	fprintf(stderr,"plann=%d\n",plann);
+	T orh=0;
 	for (int iy=0; iy<day; iy++) {
 		for (int i=0; i<n; i++) buf[i]=*(T *)seed; // !@#$ redo this with OP2(put)
 		for (int i=0; i<plann; i++) {
-			if (plan[i].absorbent) continue;
 			int jy = plan[i].y;
 			int jx = plan[i].x;
-			int y = mod(iy+jy-margy,day);
-			copy_row(buf2,y,jx-margx);
-			if (!plan[i].neutral) {
-				T rh = ((Pt<T>)b)[jy*dbx+jx];
-				op_para->map(n,buf2,rh);
+			T rh = ((Pt<T>)b)[jy*dbx+jx];
+			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
+				//copy_row(buf2,sx,iy+jy-margy,jx-margx);
+				copy_row(buf2,sx,iy+jy-margy,-margx);
+				if (!plan[i].neutral) op_para->map(n2,buf2,rh);
 			}
-			op_fold->zip(n,buf,buf2);
+			op_fold->zip(n,buf,buf2+jx*a.dim->prod(2));
+			orh=rh;
 		}
 		out[0]->send(n,buf);
 	}
