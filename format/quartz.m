@@ -226,9 +226,13 @@ GRID_INLET(FormatQuartz,0) {
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
-	IEVAL(rself,"install 'FormatQuartz',1,1;"
-	"conf_format 6,'quartz','Apple Quartz/Cocoa'");
-}
+	IEVAL(rself,
+\ruby
+	install '#in:quartz',1,1
+	@comment = "Apple Quartz/Cocoa"
+	@flags = 2
+\end ruby
+);}
 
 \end class FormatQuartz
 void startup_quartz () {
