@@ -8,6 +8,10 @@ clean:
 	(cd src; $(MAKE) clean)
 .PHONY: clean
 
+standalone:
+	(cd src; $(MAKE) standalone)
+.PHONY: standalone
+
 install:
 	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt
 	( \
