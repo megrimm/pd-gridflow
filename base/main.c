@@ -93,17 +93,17 @@ void gf_timer_handler (Timer *foo, void *obj);
 VALUE gf_ruby_init$1 (void *foo) {
 	rb_eval_string(
 		"begin\n"
-			"Thread.abort_on_exception = true\n"
-			"require '/home/projects/gridflow/extra/DRbServer.rb\n"
+			"require '/home/projects/gridflow/extra/eval_server.rb'\n"
+			"$esm = EvalServerManager.new\n"
 /*
 			"require '/home/projects/gridflow/extra/TkRubyListener.rb'\n"
 			"$root = TkRoot.new { title 'GridFlow console' }\n"
 			"def foo; STDERR.puts \"ruby-loop-tick\"; Tk.after(1000) { foo }; end; foo\n"
-			"Thread.new {STDERR.puts \"TK-HELLO\"; Tk.mainloop}\n"
 			"$listener = TkRubyListener.new($root,60,8)\n"
 			"$listener.frame.pack\n"
+			"Tk.mainloop\n"
 */
-		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e} #{e.backtrace}\"\n"
+		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e.class} #{e} #{e.backtrace}\"\n"
 		"end\n"
 	);
 	return Qnil;
@@ -146,7 +146,7 @@ void gridflow_module_init (void) {
 	showenv("PATH");
 	showenv("DISPLAY");
 
-//	gf_ruby_init();
+	gf_ruby_init();
 
 	#define DEF_SYM(_sym_) \
 		sym_##_sym_ = Symbol_new(#_sym_);
@@ -292,7 +292,7 @@ typedef struct RtMetro {
 	uint64 last;
 } RtMetro;
 
-static long long RtMetro_now(void) {
+static uint64 RtMetro_now(void) {
 	struct timeval nowtv;
 	gettimeofday(&nowtv,0);
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
@@ -434,16 +434,16 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 
 void gf_timer_handler$2 (void *foo) {
 //	rb_eval_string("STDERR.puts \"ruby-tick\"");
-	rb_eval_string("begin Thread.pass; "
-		"rescue Exception => e; STDERR.puts \"2: Ruby Exception: #{e} #{e.backtrace}\" end");
+	rb_eval_string("protect{$esm.tick}");
 }
 
 void gf_timer_handler (Timer *foo, void *obj) {
-//	whine("tick-start");
+	uint64 now = RtMetro_now();
+	fprintf(stderr,"tick-start @ %llu\n",now);
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
-//	gf_timer_handler$2(0);
-//	whine("tick-end");
+	gf_timer_handler$2(0);
+	fprintf(stderr,"tick-end (%llu)\n", RtMetro_now()-now);
 	Timer_set_delay(gf_timer, 100.0);
 	Timer_arm(gf_timer);
 }
