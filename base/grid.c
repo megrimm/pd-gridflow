@@ -587,13 +587,16 @@ GridObject::~GridObject() {
 template <class T>
 void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	GridObject *self = in->parent;
+	int i;
+	for (i=0; i<MAX_INLETS; i++) if (in==self->in[i]) break;
+	if (i==MAX_INLETS) RAISE("inlet not found?");
 	if (n==-1) {
-		rb_funcall(self->rself,SI(_0_rgrid_begin),0);
+		rb_funcall(self->rself,SI(send_in),2,INT2NUM(i),SYM(rgrid_begin));
 	} else if (n>=0) {
 		Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(T));
-		rb_funcall(self->rself,SI(_0_rgrid_flow),1,buf); // hack
+		rb_funcall(self->rself,SI(send_in),3,INT2NUM(i),SYM(rgrid_flow),buf);
 	} else {
-		rb_funcall(self->rself,SI(_0_rgrid_end),0);
+		rb_funcall(self->rself,SI(send_in),2,INT2NUM(i),SYM(rgrid_end));
 	}
 }
 
@@ -663,7 +666,7 @@ static void *GridObject_allocate ();
 /* install_rgrid(Integer inlet, Boolean multi_type? = true) */
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");
-	if (INT(argv[0])!=0) RAISE("not yet");
+//	if (INT(argv[0])!=0) RAISE("not yet");
 	GridHandler *gh = new GridHandler;
 	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
