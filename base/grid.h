@@ -485,6 +485,14 @@ static bool  convert(Ruby x, bool  *foo) {
 	}
 }
 
+static float64 convert(Ruby x, float64 *foo) {
+	if (TYPE(x)!=T_FLOAT) RAISE("not a Float");
+	return ((RFloat*)x)->value;
+}
+static float32 convert(Ruby x, float32 *foo) {
+	return (float32) convert(x,(float64 *)0);
+}
+
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 
