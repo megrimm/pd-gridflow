@@ -77,7 +77,7 @@ GRID_INLET(FormatPNG,0) {
 	png_init_io(png, f);
 	png_set_sig_bytes(png, 8);  // we already read the 8 signature bytes
 	png_read_info(png, info);   // read all PNG info up to image data
-	uint32 width, height;
+	png_uint_32 width, height;
 	int bit_depth, color_type;
 	png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type, 0,0,0);
 
