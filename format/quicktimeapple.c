@@ -40,8 +40,8 @@ struct FormatQuickTimeApple : Format {
 	Dim *dim;
 	int nframe, nframes;
 
-	FormatQuickTimeApple() : movie(0), movie_file(0), gw(0),
-		buffer(), dim(0), time(0), nframe(0), nframes(0) {}
+	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
+		buffer(), dim(0), nframe(0), nframes(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
@@ -73,13 +73,23 @@ struct FormatQuickTimeApple : Format {
 		time=0;
 		return Qfalse;
 	}
-	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
+//	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
 	out[0]->begin(dim->dup());
 	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
 	int n = dim->prod()/4;
-	for (int i=0; i<n; i++) bufu32[i]=(bufu32[i]<<8)+(bufu32[i]>>24);
+	int i;
+	for (i=0; i<n&-4; i+=4) {
+		bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
+		bufu32[i+1]=(bufu32[i+1]<<8)+(bufu32[i+1]>>24);
+		bufu32[i+2]=(bufu32[i+2]<<8)+(bufu32[i+2]>>24);
+		bufu32[i+3]=(bufu32[i+3]<<8)+(bufu32[i+3]>>24);
+	}
+	for (; i<n; i++) {
+		bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
+	}
+
 	out[0]->send(dim->prod(),buffer);
 	int nf=nframe;
 	nframe++;
@@ -177,7 +187,8 @@ GRCLASS(FormatQuickTimeApple,LIST(GRINLET2(FormatQuickTimeApple,0,4)),
 	IEVAL(rself,"install 'FormatQuickTimeApple',1,1;"
 	"conf_format 4,'quicktime','Apple Quicktime (using Apple\\'s)','mov'");
 
-	gfpost("EnterMovies() == %d",EnterMovies());
+//	gfpost("EnterMovies() == %d",EnterMovies());
+	EnterMovies();
 }
 
 \end class FormatQuickTimeApple
