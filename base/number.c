@@ -142,7 +142,6 @@ bool BitPacking::eq(BitPacking *o) {
 	return (endian ^ o->endian ^ ::is_le()) == 2;
 }
 
-#include<signal.h>
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
 Packer packer=0) {
 	int i;
@@ -160,18 +159,18 @@ Packer packer=0) {
 		BitPacking *bp = builtin_bitpacks+i;
 		if (this->eq(bp)) {
 			this->packer = bp->packer;
-			::whine("Bitpacking: will be using special packer (#%d)",i);
+			::gfpost("Bitpacking: will be using special packer (#%d)",i);
 		}
 	}
 }
 
-void BitPacking::whine() {
+void BitPacking::gfpost() {
 	int i;
-	::whine("BitPacking:");
-	::whine("    bytes: %d", bytes);
+	::gfpost("BitPacking:");
+	::gfpost("    bytes: %d", bytes);
 	for (i=0;i<size;i++) {
 		static const char *colour_name[] = {"red","green","blue","alpha"};
-		::whine("    mask[%5s]: %08x (bits from %2d up to %2d)",
+		::gfpost("    mask[%5s]: %08x (bits from %2d up to %2d)",
 			colour_name[i],
 			mask[i],
 			low_bit(mask[i]),
