@@ -28,6 +28,12 @@
 #include <quicktime/quicktime.h>
 #include <quicktime/colormodels.h>
 
+#include <quicktime/lqt_version.h>
+#ifdef LQT_VERSION
+#include <quicktime/lqt.h>
+#include <quicktime/lqt_codecinfo.h>
+#endif
+
 \class FormatQuickTime < Format
 struct FormatQuickTime : Format {
 	quicktime_t *anim;
@@ -39,7 +45,7 @@ struct FormatQuickTime : Format {
 	FormatQuickTime() : track(0), dim(0), codec(QUICKTIME_RAW) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
-	\decl void codec_m (Symbol c);
+	\decl void codec_m (String c);
 	\decl Ruby frame ();
 	\decl void seek (int frame);
 	GRINLET3(0);
@@ -54,17 +60,16 @@ struct FormatQuickTime : Format {
 	if (nframe >= quicktime_video_length(anim,track)) return Qfalse;
 
 	GridOutlet *o = out[0];
-	int channels = 3;
-	int bytes = quicktime_video_depth(anim,track)/8;
+	int channels = bit_packing->size;
+	int bytes = bit_packing->bytes;
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
 	int npixels = sx*sy;
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*bytes+16);
-//	quicktime_reads_cmodel(anim,BC_RGB888,0);
+	//if (!quicktime_reads_cmodel(anim,BC_RGB888,0)) RAISE("shoo");
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*bytes;
 	int result;
-//	result = quicktime_decode_video(anim,rows,track);
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,track);
 	int32 v[] = { sy, sx, channels };
 	o->begin(new Dim(3,v),
@@ -109,22 +114,19 @@ GRID_INLET(FormatQuickTime,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void codec_m (Symbol c) {
-	struct { Ruby sym; char *codec; } codecs[] = {
-		{SYM(raw), QUICKTIME_RAW},
-		{SYM(jpeg), QUICKTIME_JPEG},
-		{SYM(png), QUICKTIME_PNG},
-		{SYM(mjpa), QUICKTIME_MJPA},
-		{SYM(yuv2), QUICKTIME_YUV2},
-		{SYM(yuv4), QUICKTIME_YUV4},
-	};
-	int i;
-	for (i=0; i<COUNT(codecs); i++) {
-		if (c==codecs[i].sym) break;
-	}
-	if (i==COUNT(codecs))
-		RAISE("unknown codec name '%s'", rb_sym_name(c));
-	codec = codecs[i].codec;
+\def void codec_m (String c) {
+	//fprintf(stderr,"codec = %s\n",rb_str_ptr(rb_inspect(c)));
+#ifdef LQT_VERSION
+	char buf[5];
+	strncpy(buf,rb_str_ptr(c),4);
+	for (int i=rb_str_len(c); i<4; i++) buf[i]=' ';
+	buf[4]=0;
+	Ruby fourccs = rb_ivar_get(rb_obj_class(rself),SI(@fourccs));
+	if (Qnil==rb_hash_aref(fourccs,rb_str_new2(buf)))
+		RAISE("warning: unknown fourcc '%s' (%s)",
+			buf, rb_str_ptr(rb_inspect(rb_funcall(fourccs,SI(keys),0))));
+#endif	
+	codec = strdup(buf);
 }
 
 \def void close () {
@@ -145,6 +147,8 @@ GRID_INLET(FormatQuickTime,0) {
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec");
 		int depth = quicktime_video_depth(anim,track);
+		gfpost("quicktime_video_depth = %d",depth);
+		depth = 3*8;
 		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
 		bit_packing = new BitPacking(is_le(),depth/8,3,masks);
 	} else if (mode==SYM(out)) {
@@ -159,6 +163,26 @@ GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
 	IEVAL(rself,"install 'FormatQuickTime',1,1;"
 	"conf_format 6,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)'");
+
+#ifdef LQT_VERSION
+	lqt_registry_init();
+	int n = lqt_get_num_video_codecs();
+	Ruby codecs = rb_hash_new();
+	Ruby fourccs = rb_hash_new();
+	for (int i=0; i<n; i++) {
+		const lqt_codec_info_t *s = lqt_get_video_codec_info(i);
+		Ruby name = rb_str_new2(s->name);
+		Ruby f = rb_ary_new2(s->num_fourccs);
+		for (int j=0; j<s->num_fourccs; j++) {
+			Ruby fn = rb_str_new2(s->fourccs[j]);
+			rb_ary_push(f,fn);
+			rb_hash_aset(fourccs,fn,name);
+		}
+		rb_hash_aset(codecs,name,f);
+	}
+	rb_ivar_set(rself,SI(@codecs),codecs);
+	rb_ivar_set(rself,SI(@fourccs),fourccs);
+#endif
 }
 
 \end class FormatQuickTime
