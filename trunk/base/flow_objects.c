@@ -784,7 +784,6 @@ struct GridInner : GridObject {
 	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
-	template <class T> void process_right(T bogus);
 };
 
 #define MAX_PACKET_SIZE (1<<11)
@@ -847,9 +846,7 @@ GRID_INLET(GridInner,0) {
 	r2.del();
 } GRID_END
 
-GRID_INPUT(GridInner,2,r) {
-	process_right((T)0);
-} GRID_END
+GRID_INPUT(GridInner,2,r) {} GRID_END
 
 \def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
@@ -857,9 +854,6 @@ GRID_INPUT(GridInner,2,r) {
 	this->op_fold = op_fold;
 	if (seed) this->seed.swallow(seed); // this->seed = *seed;
 	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
-#define FOO(T) process_right((T)0);
-		TYPESWITCH(this->r.nt,FOO,)
-#undef FOO
 }
 
 GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
