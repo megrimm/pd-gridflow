@@ -51,6 +51,7 @@ clean2::
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 install2:: ruby-install puredata-install
+	(cd devices4ruby; make install)
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
