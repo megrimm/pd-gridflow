@@ -90,9 +90,18 @@ void showenv(const char *s) {
 
 void gf_timer_handler (Timer *foo, void *obj);
 
+VALUE gf_post_string (VALUE $, VALUE s) {
+	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
+
+	post("%s",RSTRING(s)->ptr);
+	return Qnil;
+}
+
 VALUE gf_ruby_init$1 (void *foo) {
+	gf_install_bridge();
 	rb_eval_string(
 		"begin\n"
+			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n"
 			"require '/home/projects/gridflow/extra/eval_server.rb'\n"
 			"$esm = EvalServerManager.new\n"
 /*
@@ -103,14 +112,14 @@ VALUE gf_ruby_init$1 (void *foo) {
 			"$listener.frame.pack\n"
 			"Tk.mainloop\n"
 */
-		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e.class} #{e} #{e.backtrace}\"\n"
+		"rescue Exception => e; STDERR.puts \"1: Ruby Exception: #{e.class}: #{e} #{e.backtrace}\"\n"
 		"end\n"
 	);
 	return Qnil;
 }
 
 VALUE gf_ruby_init$2 (void *foo) {
-	whine("ruby exception occurred loading gridflow-console");
+	whine("untrapped ruby exception occurred loading GridFlow");
 	return Qnil;
 }
 
@@ -118,12 +127,12 @@ void gf_ruby_init (void) {
 	char *foo[] = {"/bin/false","/dev/null"};
 	whine("starting Ruby...");
 	ruby_init();
+
+	rb_eval_string("module GridFlow; end");
+	rb_define_singleton_method(rb_eval_string("GridFlow"),
+		"post_string", gf_post_string, 1);
+
 	ruby_options(ARRAY(foo));
-//	ruby_run();
-	{
-		VALUE foo = rb_eval_string("VERSION");
-		whine("Ruby VERSION = %s",RSTRING(foo)->ptr);
-	}
 	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
 }
 
@@ -282,74 +291,6 @@ char *FObject_to_s(FObject *$) {
 }
 
 /* **************************************************************** */
-/* [rtmetro] */
-
-typedef struct RtMetro {
-	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
-	int ms; /* millisecond time interval */
-	int on;
-	uint64 next_time; /* next time an event occurred */
-	uint64 last;
-} RtMetro;
-
-static uint64 RtMetro_now(void) {
-	struct timeval nowtv;
-	gettimeofday(&nowtv,0);
-	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
-}
-
-static void RtMetro_alarm(RtMetro *$) {
-	uint64 now = RtMetro_now();
-	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
-	if (now >= $->next_time) {
-		//whine("rtmetro sending bang");
-		Object_send_thru(OBJ($),0,sym_bang,0,0);
-		/* $->next_time = now; */ /* jmax style, less realtime */
-		$->next_time += 1000*$->ms;
-	}
-	$->last = now;
-}
-
-METHOD(RtMetro,int) {
-	int oon = $->on;
-	$->on = !! GET(0,int,0);
-	whine("on = %d",$->on);
-	if (oon && !$->on) {
-		whine("deleting rtmetro alarm...");
-		Dict_del(gf_timer_set,$);
-	} else if (!oon && $->on) {
-		whine("creating rtmetro alarm...");
-		Dict_put(gf_timer_set,$,RtMetro_alarm);
-		$->next_time = RtMetro_now();
-	}
-}
-
-METHOD(RtMetro,rint) {
-	$->ms = GET(0,int,0);
-	whine("ms = %d",$->ms);
-}
-
-METHOD(RtMetro,init) {
-	GridObject_init((GridObject *)$);
-	$->ms = GET(1,int,0);
-	$->on = 0;
-	whine("ms = %d",$->ms);
-	whine("on = %d",$->on);
-}
-
-METHOD(RtMetro,delete) {
-	GridObject_delete((GridObject *)$);
-}
-
-GRCLASS(RtMetro,inlets:2,outlets:1,
-LIST(),
-/* outlet 0 not used for grids */
-	DECL2(RtMetro, 0,int,   int,   "i"),
-	DECL2(RtMetro, 1,int,   rint,  "i"),
-	DECL2(RtMetro,-1,init,  init,  "si"),
-	DECL2(RtMetro,-1,delete,delete,""))
-
-/* **************************************************************** */
 /* [@global] */
 
 /* a dummy object that gives access to any stuff global to
@@ -434,21 +375,20 @@ void gf_timer_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 
 void gf_timer_handler$2 (void *foo) {
 //	rb_eval_string("STDERR.puts \"ruby-tick\"");
-	rb_eval_string("protect{$esm.tick}");
+//	rb_eval_string("protect{$esm.tick}");
 }
 
 void gf_timer_handler (Timer *foo, void *obj) {
 	uint64 now = RtMetro_now();
-	fprintf(stderr,"tick-start @ %llu\n",now);
+//	fprintf(stderr,"tick-start @ %llu\n",now);
 	Dict_each(gf_timer_set,
 		(void(*)(void*,void*,void*))gf_timer_handler$1,0);
 	gf_timer_handler$2(0);
-	fprintf(stderr,"tick-end (%llu)\n", RtMetro_now()-now);
+//	fprintf(stderr,"tick-end (%llu)\n", RtMetro_now()-now);
 	Timer_set_delay(gf_timer, 100.0);
 	Timer_arm(gf_timer);
 }
 
 void startup_gridflow (void) {
-	INSTALL("rtmetro", RtMetro);
 	INSTALL("@global", GFGlobal);
 }
