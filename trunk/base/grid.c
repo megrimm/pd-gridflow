@@ -33,7 +33,13 @@
 
 int gf_max_packet_length = 1024*2;
 
-#define INFO(foo) rb_str_ptr(rb_funcall(foo->peer,SI(args),0))
+/* result should be printed immediately as the GC may discard it anytime */
+static const char *INFO(GridObject *foo) {
+	Ruby z = rb_funcall(foo->peer,SI(args),0);
+/*	if (TYPE(z)==T_ARRAY) z = rb_funcall(z,SI(inspect),0); */
+	if (z==Qnil) return "(argh)";
+	return rb_str_ptr(z);
+}
 
 /* **************** Grid ****************************************** */
 
@@ -713,6 +719,12 @@ LIST(),
 Ruby cFormat;
 Ruby cGridObject;
 
+void startup_formats () {
+	for (int i=0; i<COUNT(format_classes); i++) {
+		ruby_c_install(format_classes[i], cFormat);
+	}
+}
+
 void startup_grid () {
 	ruby_c_install(&ciGridObject, cFObject);
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
@@ -727,8 +739,4 @@ void startup_grid () {
 	"@description = description;"
 	"GridFlow.instance_eval{@formats}[symbol_name.intern]=self;"
 	"end;end");
-
-	for (int i=0; i<COUNT(format_classes); i++) {
-		ruby_c_install(format_classes[i], cFormat);
-	}
 }
