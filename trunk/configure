@@ -168,8 +168,10 @@ Feature.new {
 Feature.new {
 	tag :pentium
 	name "Pentium-compatible CPU"
-	uses_so ["-mpentium"]
+	# todo: -mcpu=pentiumpro, and so on.
+	uses_so ["-mcpu=pentium"]
 	test proc {
+		(Config::CONFIG["arch"] =~ /i586|i686/) and
 		# this is very "heuristic" to say the least. sorry.
 		# please fix me.
 		c_test '
@@ -599,8 +601,13 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 "
 end
 
-f.puts "GRIDFLOW_LDSOFLAGS  = " + $conf[:LDSOFLAGS].join(" ")
-f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
+f.puts "LDSOFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
+if Config::CONFIG["arch"] =~ /macosx/ then
+	f.puts "LDSOFLAGS += " +
+		"-bundle -bundle_loader /usr/local/pd/bin/pd -flat_namespace"
+else
+	f.puts "LDSOFLAGS += -rdynamic -shared"
+end
 f.puts "CFLAGS += " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
@@ -679,7 +686,7 @@ puts "",
 ""
 
 #--------------------------------#
-$LOCAL_LIBS = "$(GRIDFLOW_LDSOFLAGS)"
+$LOCAL_LIBS = "$(LDSOFLAGS)"
 $objs = $sources.collect{|i| i.sub(/.c$/,".o") }
 dir_config("gridflow")
 #p $rubylibdir
@@ -694,8 +701,15 @@ mf.sub! /^all:/,"all: all2 "
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++"
-mf.sub! /LDSHARED = gcc/, "LDSHARED = $(CC)"
 mf.sub! /^.c.o:/, ".c.o: base/grid.h config.make Makefile Makefile.gf"
+
+mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
+	(if Config::CONFIG["arch"] =~ /macosx/
+		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
+		else "$(CC)" end)
+
+# Adam Lindsay's Mac attempts.
+mf.sub! /-no-precomp/, "-no-cpp-precomp"
 
 #jMax conflict resolution
 mf.gsub!(/prefix/,'rubyprefix')

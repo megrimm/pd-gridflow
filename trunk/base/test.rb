@@ -2,7 +2,7 @@
 
 require "gridflow"
 include GridFlow
-#GridFlow.verbose=true
+GridFlow.verbose=true
 
 $imdir = "./images"
 $animdir = "/opt/mex"
