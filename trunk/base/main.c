@@ -575,15 +575,20 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	EVAL("module GridFlow\n"
-		"class FObject\n"
-		"def send_out2(*) end\n"
-		"def self.install2(*) end\n"
-		"def self.add_creator(name)\n"
-			"name=name.to_str.dup\n"
-			"GridFlow.instance_eval{@fclasses}[name]=self\n"
-			"GridFlow.add_creator_2 name end\n"
-		"end end");
+	EVAL(
+\ruby
+	module GridFlow
+		class FObject
+		def send_out2(*) end
+		def self.install2(*) end
+		def self.add_creator(name)
+			name=name.to_str.dup
+			GridFlow.fclasses[name]=self
+			GridFlow.add_creator_2 name end
+		end
+	end
+\end ruby
+);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
@@ -610,7 +615,7 @@ BUILTIN_SYMBOLS(FOO)
 		"$: = #{$:.inspect}\"\n; false end")) return;
 	cFormat = EVAL("GridFlow::Format");
 	STARTUP_LIST()
-	EVAL("h=GridFlow.fclasses; h['#in:window'] = h['#in:quartz']||h['#in:x11']||h['#in:sdl']");
+	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
 	EVAL("GridFlow.load_user_config");
 	signal(11,SIG_DFL); // paranoia
 }
