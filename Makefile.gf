@@ -156,9 +156,21 @@ ifeq ($(HAVE_JMAX25_GUIEXT),yes)
 gridflow-for-jmax:: $(JMAX_LIB) java/PathInfo.java
 	(cd java; make)
 
+jmax-install-java::
+	$(INSTALL_DIR) $(GFID)/java/classes
+	$(INSTALL_LIB) java/gridflow.jar \
+		$(GFID)/java/classes/gridflow.jar
+	$(INSTALL_DIR) $(GFID)/images
+	$(INSTALL_DATA) java/peephole.gif \
+		$(GFID)/images/peephole.gif
+	$(INSTALL_DATA) java/peephole_cursor.gif \
+		$(GFID)/images/peephole_cursor.gif
+
 else
 
 gridflow-for-jmax:: $(JMAX_LIB)
+
+jmax-install-java::
 
 endif
 
@@ -179,16 +191,6 @@ jmax-install:: jmax-install-java
 	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
 		$(INSTALL_DATA) $$f $(GFID)/$$f; \
 	done
-
-jmax-install-java::
-	$(INSTALL_DIR) $(GFID)/java/classes
-	$(INSTALL_LIB) java/gridflow.jar \
-		$(GFID)/java/classes/gridflow.jar
-	$(INSTALL_DIR) $(GFID)/images
-	$(INSTALL_DATA) java/peephole.gif \
-		$(GFID)/images/peephole.gif
-	$(INSTALL_DATA) java/peephole_cursor.gif \
-		$(GFID)/images/peephole_cursor.gif
 
 else
 
