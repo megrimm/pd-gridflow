@@ -34,7 +34,7 @@ typedef int32 Number;
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
-	for (int i=0; i<n; i++) p += sprintf(p,"%ld ",ar[i]); \
+	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",ar[q]); \
 	gfpost("%s",foo); \
 }
 
@@ -59,6 +59,10 @@ static void expect_dim_dim_list (Dim *d) {
 	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());
 	int n = d->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
+}
+
+static void expect_min_one_dim (Dim *d) {
+	if (d->n<1) RAISE("minimum 1 dimension");
 }
 
 static void expect_max_one_dim (Dim *d) {
@@ -568,7 +572,8 @@ GRID_INLET(GridInner,0) {
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
 	if (a_last != b_first)
-		RAISE("last dim of left side should be same size as first dim of right side");
+		RAISE("last dim of left side (%d) should be same size as "
+			"first dim of right side (%d)",a_last,b_first);
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
@@ -594,10 +599,6 @@ GRID_INLET(GridInner,0) {
 	}
 } GRID_FINISH {
 } GRID_END
-
-static void expect_min_one_dim (Dim *d) {
-	if (d->n<1) RAISE("minimum 1 dimension");
-}
 
 GRID_INPUT(GridInner,2,r) {} GRID_END
 
@@ -762,9 +763,6 @@ GRID_INLET(GridConvolve,0) {
 } GRID_FLOW {
 	int factor = in->factor; /* line length of a */
 	Dim *da = in->dim, *dc = c.dim, *db = b.dim;
-	rassert(da);
-	rassert(db);
-	rassert(dc);
 	int my = db->get(0), ny = da->get(0) - my/2*2;
 	int mx = db->get(1);
 	int ll = dc->prod(1); /* line length of c */
@@ -1072,7 +1070,6 @@ METHOD3(GridScaleBy,initialize) {
 	if (scalex<1) scalex=1;
 
 	rb_call_super(argc,argv);
-//	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1158,7 +1155,6 @@ METHOD3(GridDownscaleBy,initialize) {
 
 	smoothly = (argc>1 && argv[1]==SYM(smoothly));
 	rb_call_super(argc,argv);
-//	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1274,35 +1270,132 @@ LIST(GRINLET(GridFinished,0,0)),
 */
 
 /* { Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] } */
-/*
+
 struct GridPolygon : GridObject {
-	Grid polygon;
 	Grid color;
+	Grid polygon;
+	Grid lines;
+	int lines_start;
+	int lines_stop;
+	Pt<int32> lines_current;
+	int lines_current_n;
 	DECL3(initialize);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
+
+	void init_lines ();
 };
 
+template <class T> static void memswap (T *a, T *b, int n) {
+	T c[n];
+	COPY(c,a,n);
+	COPY(a,b,n);
+	COPY(b,c,n);
+}
+
+void GridPolygon::init_lines () {
+	int nl = polygon.dim->get(0);
+	int32 v[] = {nl,4};
+	lines.init(new Dim(2,v));
+	Pt<Number> ld = (Pt<int32>)lines;
+	Pt<Number> pd = (Pt<int32>)polygon;
+	for (int i=0,j=0; i<4*nl; i+=4) {
+		ld[i+0] = pd[j+0];
+		ld[i+1] = pd[j+1];
+		j=(j+2)%(2*nl);
+		ld[i+2] = pd[j+0];
+		ld[i+3] = pd[j+1];
+		if (ld[i+0]>ld[i+2]) memswap((Number *)ld+i+0,(Number *)ld+i+2,2);
+	}
+}
+
+static int order_by_starting_scanline (const void *a, const void *b) {
+	return ((Number *)a)[0] - ((Number *)b)[0];
+}
+
+static int order_by_starting_column (const void *a, const void *b) {
+	return ((Number *)a)[1] - ((Number *)b)[1];
+}
+
 GRID_INLET(GridPolygon,0) {
+	if (polygon.is_empty()) RAISE("no polygon?");
+	if (lines.is_empty()) RAISE("no lines???");
+	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
+	if (in->dim->get(2)!=color.dim->get(0))
+		RAISE("image does not have same	number of channels as stored color");
+	out[0]->begin(in->dim->dup());
+	lines_start = lines_stop = 0;
+	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	int nl = polygon.dim->get(0);
+	qsort((Number *)lines,nl,4*sizeof(Number),order_by_starting_scanline);
+} GRID_FLOW {
+	int nl = polygon.dim->get(0);
+	Pt<Number> ld = (Pt<Number>)lines;
+
+	for (int i=0; i<4*nl; i+=4) WATCH(4,(ld+i));
+
+	gfpost("n=%d",n);
+	int y = in->dex / in->factor;
+	while (n) {
+		if (lines_stop != nl && ld[4*lines_stop]<=y) lines_stop++;
+		for (int i=lines_start; i<lines_stop; i++) {
+			if (ld[4*i+2]<=y) {
+				memswap((Number *)ld+4*i,(Number *)ld+4*lines_start,4);
+				lines_start++;
+			}
+		}
+		gfpost("dex=%6d y=%3d: start=%d stop=%d",in->dex,y,lines_start,lines_stop);
+		Pt<Number> cd = (Pt<Number>)color;
+		int cn = color.dim->prod();
+		if (lines_start == lines_stop) {
+			out[0]->send(in->factor,data);
+		} else {
+			Pt<Number> data2 = ARRAY_NEW(Number,in->factor);
+			COPY(data2,data,in->factor);
+			qsort(ld+4*lines_start,lines_stop-lines_start,
+				4*sizeof(Number),order_by_starting_column);
+			int xb=0;
+			for (int i=lines_start; i<lines_stop; i++) {
+				int y1=ld[4*i+0], y2=ld[4*i+2];
+				int x1=ld[4*i+1], x2=ld[4*i+3];
+				int x = x1 + (y-y1)*(x2-x1)/(y2-y1);
+				if ((i-lines_start)&1) {
+					gfpost("odd: xb=%d x=%d",xb,x);
+					while (xb<=x) COPY(data2+cn*xb++,cd,cn);
+				} else {
+					gfpost("even");
+					xb=x;
+				}
+			}
+			out[0]->give(in->factor,data2);
+		}
+		n-=in->factor;
+		data+=in->factor;
+		y++;
+	}
+} GRID_FINISH {
+} GRID_END
+
+GRID_INPUT(GridPolygon,1,color) {} GRID_END
+GRID_INPUT(GridPolygon,2,polygon) {init_lines();} GRID_END
+
+static void expect_polygon (Dim *d) {
+	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
-
-GRID_FLOW {
-}
-
-GRID_FINISH {}
-GRID_END
-
-GRID_INPUT(GridPolygon,2,polygon) {}
-GRID_INPUT(GridPolygon,1,color) {}
 
 METHOD3(GridPolygon,initialize) {
+	color.constrain(expect_max_one_dim);
+	polygon.constrain(expect_polygon);
+	rb_call_super(argc,argv);
+	if (argc>=1) color.init_from_ruby(argv[0]);
+	if (argc>=2) polygon.init_from_ruby(argv[1]), init_lines();
+	return Qnil;
 }
 
 GRCLASS(GridPolygon,"@polygon",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4)),
 	DECL(GridPolygon,initialize))
-*/
 
 /* **************************************************************** */
 
@@ -1348,7 +1441,6 @@ GRID_INLET(GridRGBtoHSV,0) {
 
 METHOD3(GridRGBtoHSV,initialize) {
 	rb_call_super(argc,argv);
-//	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1389,7 +1481,6 @@ GRID_INLET(GridHSVtoRGB,0) {
 
 METHOD3(GridHSVtoRGB,initialize) {
 	rb_call_super(argc,argv);
-//	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
 }
 
@@ -1522,7 +1613,7 @@ void startup_flow_objects () {
 	INSTALL(GridLayer);
 	INSTALL(GridFinished);
 //	INSTALL(GridJoin);
-//	INSTALL(GridPolygon);
+	INSTALL(GridPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
 	INSTALL(RtMetro);
