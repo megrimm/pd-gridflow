@@ -59,6 +59,7 @@ General
 [x] how can I write unit tests or contracts?
 [ ] MMX memcpy() ?
 [ ] runtime configurable packet_length
+[ ] there's a type called "GridFlow". This is confusing.
 
 Computation Objects
 [ ] @cartprod (?), @slice (@splice ?)
@@ -117,7 +118,8 @@ File Formats
 [ ] XPM support
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
-[!] MPEG support
+[x] MPEG support
+[!] Better MPEG support
 [x] TCP server
 [!] VDSP support
 [!] multi-image (seq) (createable by cat, ar, tar or zip)

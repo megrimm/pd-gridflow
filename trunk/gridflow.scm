@@ -2,7 +2,7 @@
 
 (setq pname "gridflow")
 
-(provide-package pname "0.3.0")
+(provide-package pname "0.4.1")
 
 (ucs "load" "module" pname
   (file-cat dir "c" "lib" jmax-arch jmax-mode "libgridflow.so"))
