@@ -618,7 +618,7 @@ struct NumberType : Object {
 	int flags;
 	const char *aliases;
 	NumberTypeE index;
-
+	
 	NumberType(const char *name_, int size_, int flags_, const char *aliases_) :
 		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
 	
@@ -692,8 +692,13 @@ EACH_NUMBER_TYPE(FOO)
 };
 \end class
 
+static bool always_false () {return false;}
+
+enum LeftRight { at_left, at_right };
+
 template <class T>
 struct Operator2On : Object {
+	/* Function Vectorisations */
 	typedef void (*Map)(int n, T *as, T b);
 	typedef void (*Zip)(int n, T *as, T *bs);
 	typedef void (*Fold)(int an, int n, T *as, T *bs);
@@ -702,20 +707,40 @@ struct Operator2On : Object {
 	Zip op_zip;
 	Fold op_fold;
 	Scan op_scan;
-	Operator2On(Map m, Zip z, Fold f, Scan s) :
-		op_map(m), op_zip(z), op_fold(f), op_scan(s) {}
+
+	/* Algebraic Properties (those involving numeric types) */
+	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
+	/* neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y}; */
+	AlgebraicCheck is_neutral;
+	/* absorbent: right: exists a forall y {f(x,y)=a}; ... */
+	AlgebraicCheck is_absorbent;
+	
+	/* Constructors */
+	Operator2On(Map m, Zip z, Fold f, Scan s,
+		AlgebraicCheck n = (AlgebraicCheck)always_false,
+		AlgebraicCheck a = (AlgebraicCheck)always_false) :
+			op_map(m), op_zip(z), op_fold(f), op_scan(s),
+			is_neutral(n), is_absorbent(a) {}
 	Operator2On() {}
 	Operator2On(const Operator2On &z) {
 		op_map = z.op_map;
 		op_zip = z.op_zip;
 		op_fold = z.op_fold;
-		op_scan = z.op_scan; }
+		op_scan = z.op_scan;
+		is_neutral = z.is_neutral;
+		is_absorbent = z.is_absorbent; }
 };
+
+/* semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c) */
+#define OP2_ASSOC (1<<0)
+/* abelian property: commutativity: f(a,b)=f(b,a) */
+#define OP2_COMM (1<<1)
 
 \class Operator2 < Object
 struct Operator2 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
+	int flags;
 //private:
 #define FOO(T) \
 		Operator2On<T> on_##T; \
@@ -745,12 +770,12 @@ EACH_NUMBER_TYPE(FOO)
 	\decl void zip_m (NumberTypeE nt, int n, String as, String bs);
 	\decl void fold_m (NumberTypeE nt, int n, String as, String bs);
 	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
-		
+
 	Operator2(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) Operator2On<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	bool bogosity=0) : sym(sym_), name(name_) {
+	int flags_) : sym(sym_), name(name_), flags(flags_) {
 #define FOO(T) on_##T = op_##T;
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -1179,7 +1204,7 @@ extern Operator2 *op2_shl, *op2_and;
 		#_a_, number_type_table[(_a_).nt].name, \
 		#_b_, number_type_table[(_b_).nt].name);
 
-#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("'%s' is empty");
+#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("'%s' is empty",this->info());
 
 static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 	if (ai+n > a->n) RAISE("left hand: not enough dimensions");

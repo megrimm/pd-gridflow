@@ -25,6 +25,18 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
+
+#define NUMBER_TYPE_LIMITS(T,a,b) \
+	inline T nt_smallest(T *bogus) {return a;} \
+	inline T nt_greatest(T *bogus) {return b;}
+
+NUMBER_TYPE_LIMITS(uint8,0,255)
+NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff)
+NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff)
+NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL)
+NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL)
+NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL)
 
 /* ---------------------------------------------------------------- */
 
@@ -99,7 +111,12 @@ Operator1 op1_table[] = {
 */
 
 template <class T>
-class Op2 {public: static T f(T,T); };
+class Op2 {
+public:
+	static T f(T a, T b);
+	static bool is_neutral(T x, LeftRight side) {}
+	static bool is_absorbent(T x, LeftRight side) {}
+};
 
 template <class O>
 class Op2Loops {
@@ -187,13 +204,19 @@ public:
 */
 };
 
-#define DEF_OP2(op,expr) \
+/* classic two-input operator */
+#define DEF_OP2(op,expr,neutral,absorbent) \
 	template <class T> class Y##op : Op2<T> { public: \
-		inline static T f(T a, T b) { return expr; } };
+		inline static T f(T a, T b) { return expr; } \
+		inline static T is_neutral(T a, bool left) { return neutral; } \
+		inline static T is_absorbent(T a, bool left) { return absorbent; } };
 
-#define DEF_OP2F(op,expr,expr2) \
+/* this macro is for operators that have different code for the float version */
+#define DEF_OP2F(op,expr,expr2,neutral,absorbent) \
 	template <class T> class Y##op : Op2<T> { public: \
-		inline static T f(T a, T b) { return expr; } }; \
+		inline static T f(T a, T b) { return expr; } \
+		inline static T is_neutral(T a, bool left) { return neutral; } \
+		inline static T is_absorbent(T a, bool left) { return absorbent; } }; \
 	class Y##op<float32> : Op2<float32> { public: \
 		inline static float32 f(float32 a, float32 b) { return expr2; } }; \
 	class Y##op<float64> : Op2<float64> { public: \
@@ -205,31 +228,34 @@ public:
 	&base<Y##op<T> >::op_fold, \
 	&base<Y##op<T> >::op_scan)
 
-#define DECL_OP2(op,sym,props) Operator2(0, sym, \
+#define DECL_OP2(op,sym,flags) Operator2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
 	DECL_OP2ON(Op2Loops,op,float32), \
-	DECL_OP2ON(Op2Loops,op,float64))
+	DECL_OP2ON(Op2Loops,op,float64), \
+	flags)
 
 /*
-#define DECL_OP2_BITWISE(op,sym,props) Operator2(0, sym, \
+#define DECL_OP2_BITWISE(op,sym,flags) Operator2(0, sym, \
 	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int64), \
 	DECL_OP2ON(Op2LoopsBitwise,op,float32), \
-	DECL_OP2ON(Op2LoopsBitwise,op,float64))
+	DECL_OP2ON(Op2LoopsBitwise,op,float64), \
+	flags)
 */
 
-#define DECL_OP2_NOFLOAT(op,sym,props) Operator2(0, sym, \
+#define DECL_OP2_NOFLOAT(op,sym,flags) Operator2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
 	Operator2On<float32>(0,0,0,0), \
-	Operator2On<float64>(0,0,0,0))
+	Operator2On<float64>(0,0,0,0), \
+	flags)
 
 template <class T>
 static inline T gf_floor (T a) {
@@ -239,123 +265,126 @@ template <class T>
 static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
-DEF_OP2(ignore, a)
-DEF_OP2(put, b)
+/*
+Algebraic Properties
+  Note: N,A are now coded into DEF_OP2A
+	
+  RN: right neutral: { e in G | f(x,RN)=x }
+  LN: left neutral: { e in G | f(x,RN)=x } (left neutral)
+  N: both sides neutral: N=LN=RN
+  RA,LA,A: absorbence
 
-DEF_OP2(add, a+b)
-DEF_OP2(sub, a-b)
-DEF_OP2(bus, b-a)
+  LINV: left inverse: each a has a b like f(a,b) = the left neutral
+  RINV: right inverse: each b has a a like f(a,b) = the right neutral
+  INV: both sides inverse
+*/
+	
+DEF_OP2(ignore, a, side==at_right, side==at_left)
+DEF_OP2(put, b, side==at_left, side==at_right)
 
-DEF_OP2(mul, a*b)
-DEF_OP2(mulshr8, (a*b)>>8)
-DEF_OP2(div, b==0 ? 0 : a/b)
-DEF_OP2(div2, b==0 ? 0 : div2(a,b))
-DEF_OP2(vid, a==0 ? 0 : b/a)
-DEF_OP2(vid2, a==0 ? 0 : div2(b,a))
-DEF_OP2F(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b))
-DEF_OP2F(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a))
+DEF_OP2(add, a+b, x==0, false)
+DEF_OP2(sub, a-b, side==at_right && x==0, false)
+DEF_OP2(bus, b-a, side==at_left  && x==0, false)
+
+DEF_OP2(mul, a*b, x==1, x==0)
+DEF_OP2(mulshr8, (a*b)>>8, x==256, x==0)
+DEF_OP2(div, b==0 ? 0 : a/b, side==at_right && x==1, false)
+DEF_OP2(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
+DEF_OP2(vid, a==0 ? 0 : b/a, side==at_left && x==1, false)
+DEF_OP2(vid2, a==0 ? 0 : div2(b,a), side==at_left && x==1, false)
+DEF_OP2F(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b),
+	false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OP2F(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a),
+	false, side==at_left && x==0 || side==at_right && x==1)
 
 /*
 DEF_OP2F(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
 DEF_OP2F(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
 */
-DEF_OP2(rem, b==0 ? 0 : a%b)
-DEF_OP2(mer, a==0 ? 0 : b%a)
+DEF_OP2(rem, b==0 ? 0 : a%b,
+	false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OP2(mer, a==0 ? 0 : b%a,
+	false, side==at_left && x==0 || side==at_right && x==1)
 
-DEF_OP2(gcd, gcd(a,b))
-DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b))
+DEF_OP2(gcd, gcd(a,b), x==0, x==1)
+DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
 
-DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b))
-DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b))
-DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b))
-DEF_OP2F(shl, a<<b, a*pow(2.0,+b))
-DEF_OP2F(shr, a>>b, a*pow(2.0,-b))
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==-1)
+DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), x==-1, x==0)
+DEF_OP2F(shl, a<<b, a*pow(2.0,+b), side==at_right && x==0, false)
+DEF_OP2F(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
 
-DEF_OP2(sc_and, a ? b : a)
-DEF_OP2(sc_or,  a ? a : b)
+DEF_OP2(sc_and, a ? b : a, side==at_left && x!=0, side==at_left && x==0)
+DEF_OP2(sc_or,  a ? a : b, side==at_left && x==0, side==at_left && x!=0)
 
-DEF_OP2(min, min(a,b))
-DEF_OP2(max, max(a,b))
+DEF_OP2(min, min(a,b), x==nt_greatest(x), x==nt_smallest(x))
+DEF_OP2(max, max(a,b), x==nt_smallest(x), x==nt_greatest(x))
 
-DEF_OP2(cmp, cmp(a,b))
-DEF_OP2(eq,  a == b)
-DEF_OP2(ne,  a != b)
-DEF_OP2(gt,  a >  b)
-DEF_OP2(le,  a <= b)
-DEF_OP2(lt,  a <  b)
-DEF_OP2(ge,  a >= b)
+DEF_OP2(cmp, cmp(a,b), false, false)
+DEF_OP2(eq,  a == b, false, false)
+DEF_OP2(ne,  a != b, false, false)
+DEF_OP2(gt,  a >  b, false, side==at_left&&x==nt_smallest(x)||side==at_right&&x==nt_greatest(x))
+DEF_OP2(le,  a <= b, false, side==at_left&&x==nt_smallest(x)||side==at_right&&x==nt_greatest(x))
+DEF_OP2(lt,  a <  b, false, side==at_left&&x==nt_greatest(x)||side==at_right&&x==nt_smallest(x))
+DEF_OP2(ge,  a >= b, false, side==at_left&&x==nt_greatest(x)||side==at_right&&x==nt_smallest(x))
 
-DEF_OP2(sin, (T)(b * sin(a * (M_PI / 18000))))
-DEF_OP2(cos, (T)(b * cos(a * (M_PI / 18000))))
-DEF_OP2(atan, (T)(atan2(a,b) * (18000 / M_PI)))
-DEF_OP2(tanh, (T)(b * tanh(a * (M_PI / 18000))))
-DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)))
-DEF_OP2(pow, ipow(a,b))
-DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))))
+DEF_OP2(sin, (T)(b * sin(a * (M_PI / 18000))), false, false) // "LN=9000+36000n RA=0 LA=..."
+DEF_OP2(cos, (T)(b * cos(a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
+DEF_OP2(atan, (T)(atan2(a,b) * (18000 / M_PI)), false, false) // "LA=0"
+DEF_OP2(tanh, (T)(b * tanh(a * (M_PI / 18000))), false, x==0)
+DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
+DEF_OP2(pow, ipow(a,b), false, false) // "RN=1"
+DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
 
-/*
-Algebraic Properties (not used yet)
-
-  RN: right neutral: { e in G | f(x,RN)=x }
-  LN: left neutral: { e in G | f(x,RN)=x } (left neutral)
-  N: both sides neutral: N=LN=RN
-
-  LINV: left inverse: each a has a b like f(a,b) = the left neutral
-  RINV: right inverse: each b has a a like f(a,b) = the right neutral
-  INV: both sides inverse
-
-  ASSO: associative: f(a,f(b,c))=f(f(a,b),c)
-  COMM: commutative: f(a,b)=f(b,a)
-
-*/
 Operator2 op2_table[] = {
-	DECL_OP2(ignore, "ignore", "ASSO RN=all"),
-	DECL_OP2(put, "put", "ASSO LN=all"),
+	DECL_OP2(ignore, "ignore", OP2_ASSOC),
+	DECL_OP2(put, "put", OP2_ASSOC),
 
-	DECL_OP2(add, "+", "N=0 ASSO COMM"), /* LINV=sub */
-	DECL_OP2(sub, "-", "RN=0"),
-	DECL_OP2(bus, "inv+", "LN=0"),
+	DECL_OP2(add, "+", OP2_ASSOC|OP2_COMM), // "LINV=sub"
+	DECL_OP2(sub, "-", 0),
+	DECL_OP2(bus, "inv+", 0),
 
-	DECL_OP2(mul, "*", "N=1 ASSO"),
-	DECL_OP2_NOFLOAT(mulshr8, "*>>8", "N=256 ASSO"),
-	DECL_OP2(div, "/", "RN=1"),
-	DECL_OP2_NOFLOAT(div2, "div", "RN=1"),
-	DECL_OP2(vid, "inv*", "LN=1"),
-	DECL_OP2_NOFLOAT(vid2, "swapdiv", "LN=1"),
-	DECL_OP2_NOFLOAT(mod, "%", ""),
-	DECL_OP2_NOFLOAT(dom, "swap%", ""),
-	DECL_OP2_NOFLOAT(rem, "rem", ""),
-	DECL_OP2_NOFLOAT(mer, "swaprem", ""),
-	DECL_OP2_NOFLOAT(gcd, "gcd", "ASSO COMM"),
-	DECL_OP2_NOFLOAT(lcm, "lcm", "ASSO COMM"),
+	DECL_OP2(mul, "*", OP2_ASSOC|OP2_COMM),
+	DECL_OP2_NOFLOAT(mulshr8, "*>>8", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(div, "/", 0),
+	DECL_OP2_NOFLOAT(div2, "div", 0),
+	DECL_OP2(vid, "inv*", 0),
+	DECL_OP2_NOFLOAT(vid2, "swapdiv", 0),
+	DECL_OP2_NOFLOAT(mod, "%", 0),
+	DECL_OP2_NOFLOAT(dom, "swap%", 0),
+	DECL_OP2_NOFLOAT(rem, "rem", 0),
+	DECL_OP2_NOFLOAT(mer, "swaprem", 0),
+	DECL_OP2_NOFLOAT(gcd, "gcd", OP2_ASSOC|OP2_COMM),
+	DECL_OP2_NOFLOAT(lcm, "lcm", OP2_ASSOC|OP2_COMM),
 
-	DECL_OP2(or , "|", "N=0 ASSO COMM"),
-	DECL_OP2(xor, "^", "N=0 ASSO COMM"),
-	DECL_OP2(and, "&", "N=-1 ASSO COMM"),
-	DECL_OP2(shl, "<<", "RN=0"),
-	DECL_OP2(shr, ">>", "RN=0"),
+	DECL_OP2(or , "|", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(xor, "^", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(and, "&", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(shl, "<<", 0),
+	DECL_OP2(shr, ">>", 0),
 
-	DECL_OP2(sc_and,"&&", ""),
-	DECL_OP2(sc_or, "||", ""), /* N!=0 */
+	DECL_OP2(sc_and,"&&", 0),
+	DECL_OP2(sc_or, "||", 0),
 
-	DECL_OP2(min, "min", "ASSO COMM"), /* N = greatest possible number */
-	DECL_OP2(max, "max", "ASSO COMM"), /* N = smallest possible number */
+	DECL_OP2(min, "min", OP2_ASSOC|OP2_COMM),
+	DECL_OP2(max, "max", OP2_ASSOC|OP2_COMM),
 
-	DECL_OP2(eq,  "==", ""),
-	DECL_OP2(ne,  "!=", ""),
-	DECL_OP2(gt,  ">", ""),
-	DECL_OP2(le,  "<=", ""),
-	DECL_OP2(lt,  "<", ""),
-	DECL_OP2(ge,  ">=", ""),
-	DECL_OP2(cmp, "cmp", ""),
+	DECL_OP2(eq,  "==", OP2_COMM),
+	DECL_OP2(ne,  "!=", OP2_COMM),
+	DECL_OP2(gt,  ">", 0),
+	DECL_OP2(le,  "<=", 0),
+	DECL_OP2(lt,  "<", 0),
+	DECL_OP2(ge,  ">=", 0),
+	DECL_OP2(cmp, "cmp", 0),
 
-	DECL_OP2(sin, "sin*", ""),
-	DECL_OP2(cos, "cos*", ""),
-	DECL_OP2(atan, "atan", ""),
-	DECL_OP2(tanh, "tanh*", ""),
-	DECL_OP2(gamma, "gamma", "RN=256"),
-	DECL_OP2(pow, "**", "RN=1"),
-	DECL_OP2(log, "log*", ""),
+	DECL_OP2(sin, "sin*", 0),
+	DECL_OP2(cos, "cos*", 0),
+	DECL_OP2(atan, "atan", 0),
+	DECL_OP2(tanh, "tanh*", 0),
+	DECL_OP2(gamma, "gamma", 0),
+	DECL_OP2(pow, "**", 0),
+	DECL_OP2(log, "log*", 0),
 };
 
 template <class T>
