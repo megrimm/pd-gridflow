@@ -327,9 +327,12 @@ extern "C" void gridflow_setup () {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-PureData","/dev/null"};
 	post("setting up Ruby-for-PureData...");
+
+	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	bridge_localize_sysstack();
+	Init_stack(bp);
 	ruby_options(COUNT(foo),foo);
+
 	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
 	rb_ivar_set(cData,SI(@gf_bridge),PTR2FIX(gf_bridge2));
