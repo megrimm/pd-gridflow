@@ -455,10 +455,13 @@ Ruby gf_post_string (Ruby rself, Ruby s) {
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
-		const char *buf =
-			strcmp(md->selector,"del")==0 ? "delete" : md->selector;
+		char *buf = strcmp(md->selector,"del")==0 ? 
+			strdup("delete") : strdup(md->selector);
+		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0)
+			buf[strlen(buf)-2]=0;
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
 		rb_enable_super(rself,buf);
+		free(buf);
 	}
 }
 

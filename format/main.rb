@@ -215,8 +215,10 @@ module GridIO
 				@format.send_in 0, :option, *message
 			elsif @format.respond_to? "#{message[0]}" #hack
 				@format.send(*message)
-			else
+			elsif @format.respond_to? :option
 				@format.option(*message)
+			else
+				raise "unknown option #{message[0]}"
 			end
 		end
 	end
