@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -45,7 +45,6 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 #include <X11/extensions/XShm.h>
 #endif
 
-extern FormatClass class_FormatX11;
 typedef struct FormatX11 {
 	Format_FIELDS;
 
@@ -394,8 +393,8 @@ METHOD(FormatX11,close) {
 METHOD(FormatX11,option) {
 	VALUE sym = argv[0];
 	if (sym == SYM(out_size)) {
-		int sy = NUM2INT(argv[1]);
-		int sx = NUM2INT(argv[2]);
+		int sy = INT(argv[1]);
+		int sx = INT(argv[2]);
 		COERCE_INT_INTO_RANGE(sy,16,MAX_INDICES);
 		COERCE_INT_INTO_RANGE(sx,16,MAX_INDICES);
 		FormatX11_resize_window($,sx,sy);
@@ -404,7 +403,7 @@ METHOD(FormatX11,option) {
 		int sx = Dim_get($->dim,1);
 		FormatX11_show_section($,0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
-		$->autodraw = NUM2INT(argv[1]);
+		$->autodraw = INT(argv[1]);
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
 	} else
 		rb_call_super(argc,argv);

@@ -41,8 +41,7 @@ struct BitPacking {
 	uint32 mask[3];
 };
 
-// returns the highest bit set in a word
-// ... or -1 if none (no longer, sorry)
+// returns the highest bit set in a word, or 0 if none.
 int high_bit(uint32 n) {
 	int i=0;
 	if (n&0xffff0000) { n>>=16; i+=16; }
@@ -53,7 +52,7 @@ int high_bit(uint32 n) {
 	return i;
 }
 
-// returns the lowest bit set in a word, or -1 if none
+// returns the lowest bit set in a word, or 0 if none.
 int low_bit(uint32 n) {
 	return high_bit((~n+1)&n);
 }
@@ -67,6 +66,8 @@ int low_bit(uint32 n) {
 	(((in[1] << hb[1]) >> 7) & mask[1]) | \
 	(((in[2] << hb[2]) >> 7) & mask[2])
 
+/* those macros would be faster if the _increment_
+   were done only once every loop. or maybe gcc does it, i dunno */
 #define FOURTIMES(_x_) _x_ _x_ _x_ _x_
 
 #define NTIMES(_x_) \
@@ -216,11 +217,12 @@ Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
 		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
 	} else {
 		/* biggest byte first */
-		LOOP_UNPACK(while(bytes--) { temp = (temp<<8) | *in++; })
+		LOOP_UNPACK(bytes=$->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
 	}
 	return out;
 }
 
+/* this could be faster (unroll loops; use asm) */
 void swap32 (int n, uint32 *data) {
 	while(n--) {
 		uint32 x = *data;
@@ -230,12 +232,75 @@ void swap32 (int n, uint32 *data) {
 	}
 }
 
+/* this could be faster (unroll loops; use asm) */
 void swap16 (int n, uint16 *data) {
 	while(n--) {
 		uint16 x = *data;
 		*data++ = (x<<8) | (x>>8);
 	}
 }
+
+/* **************************************************************** */
+
+METHOD2(BitPacking,init) {
+	return Qnil;
+}
+
+METHOD2(BitPacking,pack2) {
+	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+{
+	int n = rb_str_len(argv[0]) / sizeof(Number) / 3;
+	Number *in = (Number *)rb_str_ptr(argv[0]);
+	VALUE out = rb_str_new("",n*BitPacking_bytes($));
+	rb_str_modify(out);
+	BitPacking_pack($,n,in,(uint8 *)rb_str_ptr(out));
+	return out;
+}}
+
+METHOD2(BitPacking,unpack2) {
+	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+{
+	int n = rb_str_len(argv[0]) / BitPacking_bytes($);
+	uint8 *in = rb_str_ptr(argv[0]);
+	VALUE out = rb_str_new("",n*3*sizeof(Number));
+	rb_str_modify(out);
+	memset(rb_str_ptr(out),255,n*12);
+	BitPacking_unpack($,n,in,(Number *)rb_str_ptr(out));
+//	memcpy(rb_str_ptr(out),in,n);
+	return out;
+}}
+
+void BitPacking_mark (VALUE *$) {}
+void BitPacking_sweep (VALUE *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
+
+VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
+	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	BitPacking *c_peer;
+	VALUE $; /* ruby_peer */
+
+	if (argc!=3) RAISE("bad args");
+	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
+
+	{
+		int endian = INT(argv[0]);
+		int bytes = INT(argv[1]);
+		VALUE *masks;
+		masks = rb_ary_ptr(argv[2]);
+		c_peer = BitPacking_new(INT(argv[0]),INT(argv[1]),
+			INT(masks[0]),INT(masks[1]),INT(masks[2]));
+	}
+	
+	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
+	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
+	rb_funcall2($,SI(initialize),argc,argv);
+	return $;
+}
+
+GRCLASS(BitPacking,inlets:0,outlets:0,
+LIST(),
+	DECL(BitPacking,init),
+	DECL(BitPacking,pack2),
+	DECL(BitPacking,unpack2));
 
 /* **************************************************************** */
 
@@ -497,4 +562,12 @@ void startup_number (void) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
 		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX(&op2_table[i]));
 	} 
+	{
+		VALUE BitPacking_class =
+			rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
+		define_many_methods(BitPacking_class,
+			BitPacking_classinfo.methodsn,
+			BitPacking_classinfo.methods);
+		SDEF(BitPacking,new,-1);
+	}
 }

@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -219,7 +219,6 @@ static void video_mmap_whine(VideoMmap *$) {
 
 /* **************************************************************** */
 
-extern FormatClass class_FormatVideoDev;
 typedef struct FormatVideoDev {
 	Format_FIELDS;
 	VideoMbuf vmbuf;
@@ -234,9 +233,11 @@ typedef struct FormatVideoDev {
 	((ioctl(_f_,_name_,_arg_) < 0) && \
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
-static void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
-	int fd = Stream_get_fd($->st);
-	int v[] = {height, width, 3};
+#define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
+
+METHOD(FormatVideoDev,size) {
+	int fd = GETFD;
+	int v[] = {NUM2INT(argv[0]), NUM2INT(argv[1]), 3};
 	VideoWindow grab_win;
 
 	/* bug here: won't flush the frame queue */
@@ -247,8 +248,8 @@ static void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
-	grab_win.height = height;
-	grab_win.width  = width;
+	grab_win.height = v[0];
+	grab_win.width  = v[1];
 	VideoWindow_whine(&grab_win);
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
@@ -275,13 +276,13 @@ static Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 }
 */
 
-static void FormatVideoDev_dealloc_image (FormatVideoDev *$) {
+METHOD(FormatVideoDev,dealloc_image) {
 	munmap($->image, $->vmbuf.size);
 }
 
-static bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
-	int fd = Stream_get_fd($->st);
-	if (WIOCTL(fd, VIDIOCGMBUF, &$->vmbuf)) return false;
+METHOD(FormatVideoDev,alloc_image) {
+	int fd = GETFD;
+	if (WIOCTL(fd, VIDIOCGMBUF, &$->vmbuf)) RAISE("ioctl error");
 	video_mbuf_whine(&$->vmbuf);
 	$->image = (uint8 *) mmap(
 		0,$->vmbuf.size,
@@ -289,15 +290,12 @@ static bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
 		fd,0);
 	if (((int)$->image)<=0) {
 		$->image=0;
-		whine("mmap: %s", strerror(errno));
-		return false;
+		RAISE("mmap: %s", strerror(errno));
 	}
-
-	return true;
 }
 
-static bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
-	int fd = Stream_get_fd($->st);
+METHOD(FormatVideoDev,frame_ask) {
+	int fd = GETFD;
 	$->pending_frames[0] = $->pending_frames[1];
 	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
@@ -305,11 +303,10 @@ static bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
 	$->vmmap.height = Dim_get($->dim,0);
 //	whine("will try:");
 //	video_mmap_whine(&$->vmmap);
-	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) return false;
+	if (WIOCTL(fd, VIDIOCMCAPTURE, &$->vmmap)) RAISE("ioctl error");
 //	whine("driver gave us:");
 //	video_mmap_whine(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
-	return true;
 }
 
 static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
@@ -332,34 +329,35 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 }
 
 METHOD(FormatVideoDev,frame) {
-	int fd = Stream_get_fd($->st);
+	int fd = GETFD;
 	int finished_frame;
 
 	if (!$->bit_packing) RAISE("no bit_packing");
 
 	if (!$->image) {
-		FormatVideoDev_alloc_image($);
+		rb_funcall(rself,SI(alloc_image),0);
 	}
 
 	if ($->pending_frames[0] < 0) {
 		$->next_frame = 0;
-		FormatVideoDev_frame_ask($);
-		FormatVideoDev_frame_ask($);
+		rb_funcall(rself,SI(frame_ask),0);
+		rb_funcall(rself,SI(frame_ask),0);
 	}
 
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
 	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) RAISE("wioctl");
 
 	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
-	FormatVideoDev_frame_ask($);
+	rb_funcall(rself,SI(frame_ask),0);
 }
 
 GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
 GRID_FLOW(FormatVideoDev,0) {}
 GRID_END(FormatVideoDev,0) {}
 
-static void FormatVideoDev_norm (FormatVideoDev *$, int value) {
-	int fd = Stream_get_fd($->st);
+METHOD(FormatVideoDev,norm) {
+	int value = INT(argv[0]);
+	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = $->current_tuner;
 	if (value<0 || value>3) {
@@ -375,8 +373,9 @@ static void FormatVideoDev_norm (FormatVideoDev *$, int value) {
 	}
 }
 
-static void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
-	int fd = Stream_get_fd($->st);
+METHOD(FormatVideoDev,tuner) {
+	int value = INT(argv[0]);
+	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	$->current_tuner = value;
@@ -389,8 +388,9 @@ static void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
 	}
 }
 
-static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
-	int fd = Stream_get_fd($->st);
+METHOD(FormatVideoDev,channel) {
+	int value = INT(argv[0]);
+	int fd = GETFD;
 	VideoChannel vchan;
 	vchan.channel = value;
 	$->current_channel = value;
@@ -399,23 +399,23 @@ static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	} else {
 		VideoChannel_whine(&vchan);
 		WIOCTL(fd, VIDIOCSCHAN, &vchan);
-		FormatVideoDev_tuner($,0);
+		rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 	}
 }
 
 METHOD(FormatVideoDev,option) {
-	int fd = Stream_get_fd($->st);
+	int fd = GETFD;
 	VALUE sym = argv[0];
 	int value = NUM2INT(argv[1]);
 	if (sym == SYM(channel)) {
-		FormatVideoDev_channel($,value);
+		rb_funcall(rself,SI(channel),1,INT2NUM(value));
 	} else if (sym == SYM(tuner)) {
-		FormatVideoDev_tuner($,value);
+		rb_funcall(rself,SI(tuner),1,INT2NUM(value));
 	} else if (sym == SYM(norm)) {
-		FormatVideoDev_norm($,value);
+		rb_funcall(rself,SI(norm),1,INT2NUM(value));
 	} else if (sym == SYM(size)) {
 		int value2 = NUM2INT(argv[2]);
-		FormatVideoDev_size($,value,value2);
+		rb_funcall(rself,SI(size),2,INT2NUM(value),INT2NUM(value2));
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -436,15 +436,14 @@ METHOD(FormatVideoDev,option) {
 }
 
 METHOD(FormatVideoDev,close) {
-	if ($->image) FormatVideoDev_dealloc_image($);
-	if ($->st) Stream_close($->st);
+	if ($->image) rb_funcall(rself,SI(dealloc_image),0);
+	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
 }
 
-static void FormatVideoDev_init2 (FormatVideoDev *$) {
-	int fd = Stream_get_fd($->st);
+METHOD(FormatVideoDev,init2) {
+	int fd = GETFD;
 	VideoCapability vcaps;
-	VALUE argv[3];
 //	char *s;
 	VideoPicture *gp = NEW(VideoPicture,1);
 
@@ -457,7 +456,7 @@ static void FormatVideoDev_init2 (FormatVideoDev *$) {
 	PUT(2,int,vcaps.maxwidth);
 	$->cl->option((Format *)$,3,at);
 */
-	FormatVideoDev_size($,vcaps.maxheight,vcaps.maxwidth);
+	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	whine("original settings:");
@@ -491,32 +490,27 @@ static void FormatVideoDev_init2 (FormatVideoDev *$) {
 	default:
 		whine("can't handle palette %d", gp->palette);
 	}
-	FormatVideoDev_channel($,0);
+	rb_funcall(rself,SI(channel),1,INT2NUM(0));
 }
 
 METHOD(FormatVideoDev,init) {
 	const char *filename;
 	int stream;
-
 	rb_call_super(argc,argv);
 	argv++, argc--;
-
 	$->pending_frames[0] = -1;
 	$->pending_frames[1] = -1;
 	$->image = 0;
-
-	if (argc!=1) RAISE("usage: videodev filename");
+	if (argc!=1) RAISE("usage: videodev <devicename>");
 	filename = rb_sym_name(argv[0]);
-
-	whine("will try opening file");
-
-	stream = open(filename, O_RDWR);
-	if (0> stream) RAISE("can't open file: %s", filename);
-
-	$->st = Stream_open_fd(stream,$->mode);
-
-	FormatVideoDev_init2($);
-
+	{
+		VALUE file = rb_funcall(EVAL("File"),SI(open),2,
+			rb_str_new2(filename), rb_str_new2("r+"));
+		rb_ivar_set(rself,SI(@stream),file);
+		rb_p(file);
+		rb_p(rb_ivar_get(rself,SI(@stream)));
+	}
+	rb_funcall(rself,SI(init2),0);
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
 }
@@ -526,6 +520,14 @@ METHOD(FormatVideoDev,init) {
 FMTCLASS(FormatVideoDev,"videodev","Video4linux 1.x",FF_R,
 inlets:1,outlets:1,LIST(GRINLET(FormatVideoDev,0)),
 DECL(FormatVideoDev,init),
+DECL(FormatVideoDev,init2),
+DECL(FormatVideoDev,alloc_image),
+DECL(FormatVideoDev,dealloc_image),
+DECL(FormatVideoDev,frame_ask),
+DECL(FormatVideoDev,size),
+DECL(FormatVideoDev,norm),
+DECL(FormatVideoDev,tuner),
+DECL(FormatVideoDev,channel),
 DECL(FormatVideoDev,frame),
 DECL(FormatVideoDev,option),
 DECL(FormatVideoDev,close))
