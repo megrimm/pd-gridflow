@@ -2,20 +2,23 @@
 
 version 0.7.1 (head):
 
- * fixed important bugs (crashes)
+ * fixed important bugs (crashes and such)
  * @store,@ can now receive in inlet 1 while sending from outlet 0.
  * @, when inlet 1 grid size is small but not 1, is now much faster.
  * added memcpy() usage logging (see profiler_dump)
- * added drag_rectangle.jmax, plot.jmax
- * added classes fork, ruby_udpsend, @rotate, @remap_image
- * added operator gcd,lcm (common divisors/multiples)
- * quicktime: added seek, fixed bugs
- * added @in's inlet 1 for telling frame number (quicktime)
+ * added examples: drag_rectangle.jmax, plot.jmax, cellular_1d.pd
+ * added classes: fork, jmax_udpsend, jmax_udpreceive
+ * added classes: @rotate, @remap_image, @type
+ * added operators: gcd,lcm (common divisors/multiples)
+ * quicktime: added encoding, added seek, fixed bugs
+ * @in inlet 1 tells frame number (int), end-of-file (bang)
+ * @in: added: set, option loop (controlling auto-rewind)
  * updated cross_fade.jmax (much faster)
- * added new example: cellular_1d.pd
- * @two,@three,@four allow 0:bang trigger
- * added bridge_jmax4.c
- * added quicktime encoding
+ * @two,@three,@four allow inlet 0 bang trigger
+ * added bridge_jmax4.c (does not work yet)
+ * added some support for float32 numbers in grids
+ * configure: simpler config for jMax 2.5
+ * PD help patches by Uli Berthold (not in cvs yet)
 
 version 0.7.0 (2003.02.01):
 
