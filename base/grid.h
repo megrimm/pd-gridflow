@@ -661,19 +661,26 @@ struct Grid {
 	template <class T> \
 	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<T> data); \
 
-/* macro for declaring an inlet inside GRCLASS() */
+/* macro for declaring an inlet inside GRCLASS() (int32 only) */
 #define GRINLET(_class_,i,mode) {i, mode, \
 	0, \
 	0, \
 	_class_##_grid_inlet_##i, \
 	0, }
 
-/* same for inlets that support more than just int32. */
+/* same for inlets that support all four types */
+#define GRINLET4(_class_,i,mode) {i, mode, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i }
+
+/* same except float32 unsupported by that inlet */
 #define GRINLET2(_class_,i,mode) {i, mode, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
 	_class_##_grid_inlet_##i, \
-	0, }
+	0 }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
@@ -931,6 +938,7 @@ struct GridObject : FObject {
 
 	DECL3(initialize);
 	DECL3(inlet_dim);
+	DECL3(inlet_nt);
 	DECL3(inlet_set_factor);
 	DECL3(method_missing);
 	DECL3(del);

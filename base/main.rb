@@ -312,35 +312,56 @@ class GridPrint < GridFlow::GridObject
 		if name then @name = name.to_s+": " else @name="" end
 	end
 
-	def make_columns data
-		min = data.unpack("l*").min
-		max = data.unpack("l*").max
+	def make_columns udata
+		min = udata.min
+		max = udata.max
 		@columns = [sprintf("%d",min).length,sprintf("%d",max).length].max
 	end
 
-	def _0_rgrid_begin; @dim = inlet_dim 0; @data = ""; end
-	def _0_rgrid_flow data; @data << data end
-	def _0_rgrid_end
-		make_columns @data
-		GridFlow.post("#{name}Dim[#{@dim.join','}]: " + case @dim.length
-		when 0,1; dump @data
-		when 2;   ""
-		else      "(not printed)"
-		end)
-		case @dim.length
-		when 2
-			sz = @data.length/@dim[0]
-			for row in 0...@dim[0]
-				GridFlow.post dump(@data[sz*row,sz])
-			end
+	def unpack data
+		case @nt
+		when :uint8; data.unpack("c*")
+		when :int16; data.unpack("s*")
+		when :int32; data.unpack("l*")
+		when :float32; data.unpack("f*")
+		else raise "#{self.class} doesn't know how to decode this"
 		end
 	end
-	def dump data
-		# data.unpack("l*").join(",")
-		f = "%#{@columns}d"
-		data.unpack("l*").map{|x| sprintf f,x }.join(" ")
+
+	def _0_rgrid_begin
+		@dim = inlet_dim 0
+		@nt = inlet_nt 0
+		@data = ""
 	end
-	install_rgrid 0
+
+	def _0_rgrid_flow(data) @data << data end
+
+	def _0_rgrid_end
+		head = "#{name}Dim[#{@dim.join','}]"
+		head << "(#{@nt})" if @nt!=:int32
+		head << ": "
+		if @dim.length > 2 then
+			GridFlow.post head+" (not printed)"
+		elsif @dim.length < 2 then
+			udata = unpack @data
+			make_columns udata
+			GridFlow.post(head + dump(udata))
+		else
+			GridFlow.post head
+			udata = unpack @data
+			make_columns udata
+			sz = udata.length/@dim[0]
+			for row in 0...@dim[0]
+				GridFlow.post dump(udata[sz*row,sz])
+			end
+		end
+		@data,@dim,@nt = nil
+	end
+	def dump udata
+		f = "%#{@columns}#{case @nt; when :float32; 'f'; else 'd' end}"
+		udata.map{|x| sprintf f,x }.join(" ")
+	end
+	install_rgrid 0, true
 	install "@print", 1, 0
 end
 
@@ -698,7 +719,7 @@ class RubyUDPSend < FObject
 	end
 
 	def method_missing(sel,*args)
-		sel=sel.to_s.sub /^_\d_/, ""
+		sel=sel.to_s.sub(/^_\d_/, "")
 		@socket.send encode(sel) +
 			args.map{|arg| encode(arg) }.join("") + "\x0b",
 			0, @host, @port
@@ -743,9 +764,10 @@ end end
 end # module GridFlow
 #----------------------------------------------------------------#
 
-#!@#$ this should be done _after_ formats/main.rb is loaded
-user_config_file = ENV["HOME"] + "/.gridflow_startup"
-load user_config_file if File.exist? user_config_file
+def GridFlow.load_user_config
+	user_config_file = ENV["HOME"] + "/.gridflow_startup"
+	load user_config_file if File.exist? user_config_file
+end
 
 END {
 #	puts "This is an END block"

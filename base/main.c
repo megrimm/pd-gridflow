@@ -38,15 +38,6 @@
 #include <assert.h>
 #include <limits.h>
 
-/* number of #send_out calls allowed at once (not used yet) */
-#define GF_STACK_DEPTH 1024
-struct GFStackFrame {
-	GridObject *self;
-	uint64 check_in;
-};
-GFStackFrame gf_stack[GF_STACK_DEPTH];
-int gf_stack_n = 0;
-
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
 Ruby cFObject;
 static Ruby sym_outlets=0;
@@ -582,12 +573,21 @@ void Init_gridflow () {
 	startup_grid();
 	startup_flow_objects();
 
-	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do "
-//	EVAL("for f in %w(gridflow/base/main.rb) do "
-		"require f end rescue STDERR.puts \"can't load: #{$!}\n$: = #{$:}; "
-		"backtrace: #{$!.backtrace}\"");
+	EVAL("begin require 'gridflow/base/main.rb'\n"
+		"rescue Exception => e; "
+		"STDERR.puts \"can't load: #{$!}\n"
+		"backtrace: #{$!.backtrace}\n"
+		"$: = #{$:.inspect}\"\n end");
+
+	EVAL("begin require 'gridflow/format/main.rb'\n"
+		"rescue Exception => e; "
+		"STDERR.puts \"can't load: #{$!}\n"
+		"backtrace: #{$!.backtrace}\n"
+		"$: = #{$:.inspect}\"\n end");
 
 	startup_formats();
+
+	EVAL("GridFlow.load_user_config");
 
 #ifdef HAVE_MMX
 	if (!getenv("NO_MMX")) startup_cpu();

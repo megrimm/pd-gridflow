@@ -644,6 +644,15 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	}
 }
 
+METHOD3(GridObject,inlet_nt) {
+	int inln = INT(argv[0]);
+	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	GridInlet *inl = in[inln];
+	if (!inl) RAISE("no such inlet #%d",inln);
+	if (!inl->is_busy()) return Qnil;
+	return number_type_table[inl->nt].sym;
+}
+
 METHOD3(GridObject,inlet_dim) {
 	int inln = INT(argv[0]);
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
@@ -711,17 +720,25 @@ METHOD3(GridObject,send_out_grid_abort) {
 
 static void *GridObject_allocate ();
 
+/* install_rgrid(Integer inlet, Boolean multi_type? = true) */
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	GridHandler *gh = new GridHandler;
 	GridClass *gc = new GridClass;
-	if (argc!=1) RAISE("er...");
+	if (argc<1 || argc>2) RAISE("er...");
 	if (INT(argv[0])!=0) RAISE("not yet");
 	gh->winlet = INT(argv[0]);
+	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
 	gh->mode = 4;
-	gh->flow_uint8 = 0;
-	gh->flow_int16 = 0;
 	gh->flow_int32 = GridObject_r_flow;
-	gh->flow_float32 = 0;
+	if (mt) {
+		gh->flow_uint8 = GridObject_r_flow;
+		gh->flow_int16 = GridObject_r_flow;
+		gh->flow_float32 = GridObject_r_flow;
+	} else {
+		gh->flow_uint8 = 0;
+		gh->flow_int16 = 0;
+		gh->flow_float32 = 0;
+	}
 	gc->objectsize = sizeof(GridObject);
 	gc->allocate = GridObject_allocate;
 	gc->methodsn = 0;
@@ -791,6 +808,7 @@ LIST(),
 	DECL(GridObject,send_out_grid_begin),
 	DECL(GridObject,send_out_grid_flow),
 	DECL(GridObject,send_out_grid_abort),
+	DECL(GridObject,inlet_nt),
 	DECL(GridObject,inlet_dim),
 	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))
