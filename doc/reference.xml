@@ -253,7 +253,7 @@ They do the opposite of @import and take no parameters. </p>
 
 		</inlet>
 		<sample
-			image="images/grab_export.jpg"
+			image="images/grab_export.png"
 			text="[@export]"
 		/>
 	</jmax-class>
