@@ -500,22 +500,20 @@ Operator2 op2_table[] = {
 VALUE op1_dict = Qnil;
 VALUE op2_dict = Qnil;
 
-void startup_number (void) {
+void startup_number () {
 	int foo = PTR2FIX("hello");
 
 	for (int i=0; i<COUNT(number_type_table); i++) {
 		number_type_table[i].sym = ID2SYM(rb_intern(number_type_table[i].name));
 	}
 
-	rb_define_readonly_variable("$op1_dict",&op1_dict);
-	op1_dict = rb_hash_new();
+	rb_ivar_set(GridFlow_module,SI(@op1_dict),op1_dict=rb_hash_new());
 	for(int i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
 		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX((op1_table+i)));
 	} 
 
-	rb_define_readonly_variable("$op2_dict",&op2_dict);
-	op2_dict = rb_hash_new();
+	rb_ivar_set(GridFlow_module,SI(@op2_dict),op2_dict=rb_hash_new());
 	for(int i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
 		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
