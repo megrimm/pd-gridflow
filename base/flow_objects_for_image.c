@@ -54,21 +54,72 @@ static void expect_convolution_matrix (Dim *d) {
 		d->n);
 }
 
+struct PlanEntry {
+	int y,x; /* offset */
+	bool neutral,absorbent;
+};
+
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
 	\attr Operator2 *op_para;
 	\attr Operator2 *op_fold;
 	\attr Grid seed;
+	\attr Grid b;
+	
+	Grid a;
+	int plann;
+	PlanEntry *plan; //Pt?
 
-	Grid c,b;
-	bool mode;
-	int margx,margy,margx2; /* margins */
-	GridConvolve () { b.constrain(expect_convolution_matrix); }	
+	int margx,margy; /* margins */
+	GridConvolve () { b.constrain(expect_convolution_matrix); plan=0; }
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
-	\decl void mode_m (int m);
+	template <class T> void copy_row (Pt<T> buf, int y, int x);
+	template <class T> void make_plan (T bogus);
 	GRINLET3(0);
 	GRINLET3(1);
 };
+
+template <class T> void GridConvolve::copy_row (Pt<T> buf, int y, int x) {
+	int day = a.dim->get(0), dax = a.dim->get(1), dac = a.dim->prod(2);
+	y=mod(y,day); x=mod(x,dax);
+	Pt<T> ap = (Pt<T>)a + y*dax*dac;
+	int u=(dax-x)*dac;
+	int v=x*dac;
+	COPY(buf  ,ap+v,u);
+	COPY(buf+u,ap  ,v);
+}
+
+template <class T> void GridConvolve::make_plan (T bogus) {
+	Dim *da = a.dim, *db = b.dim;
+	int dby = db->get(0);
+	int dbx = db->get(1);
+	if (plan) delete[] plan;
+	plan = new PlanEntry[dbx*dby];
+	int i=0;
+	for (int y=0; y<dby; y++) {
+		for (int x=0; x<dbx; x++) {
+			T rh = ((Pt<T>)b)[y*dbx+x];
+			bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
+			bool absorbent = op_para->on(rh)->is_absorbent(rh,at_right);
+			STACK_ARRAY(T,foo,1);
+			static const char *boo[] = {"false","true"};
+			if (absorbent) {
+				foo[0] = 0;
+				op_para->map(1,foo,rh);
+				absorbent = op_fold->on(rh)->is_neutral(foo[0],at_right);
+			}
+			//fprintf(stderr,"2: rh=%f, foo[0]=%f, neutral=%s, absorbent=%s\n",
+			//	0.0+rh,0.0+foo[0], boo[neutral?1:0],boo[absorbent?1:0]);
+
+			plan[i].y = y;
+			plan[i].x = x;
+			plan[i].neutral = neutral;
+			plan[i].absorbent = absorbent;
+			i++;
+		}
+	}
+	plann = i;
+}
 
 GRID_INLET(GridConvolve,0) {
 	SAME_TYPE(*in,b);
@@ -83,70 +134,42 @@ GRID_INLET(GridConvolve,0) {
 		da->get(0), db->get(0));
 	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d",
 		da->get(1), db->get(1));
-	STACK_ARRAY(int32,v,da->n);
-	COPY(v,da->v,da->n);
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
-	margx2 = db->get(1)-1-margx;
-	v[1] += db->get(1)-1;
-	c.init(new Dim(da->n,v),in->nt);
+	a.init(in->dim->dup(),in->nt);
 	out[0]->begin(da->dup(),in->nt);
-	in->set_factor(da->prod(1));
 } GRID_FLOW {
-	int factor = in->factor; /* line length of a */
-	Dim *da = in->dim, *dc = c.dim, *db = b.dim;
-	int my = db->get(0), ny = da->get(0) - my/2*2;
-	int mx = db->get(1);
-	int ll = dc->prod(1); /* line length of c */
-	int l  = dc->prod(2); /* "pixel" length of a,c */
-	int oy = ll*(my/2), ox = l*(mx/2);
-	int i = in->dex / factor; /* line number of a */
-	Pt<T> base = ((Pt<T>)c)+i*ll+margx*l;
-	
-	/* building c from a */
-	while (n) {
-		COPY(base,data,factor);
-		COPY(base+factor,data,margx2*l);
-		COPY(base-margx*l,data+factor-margx*l,margx*l);
-		base += ll; data += factor; n -= factor; i++;
-	}
+	COPY((Pt<T>)a+in->dex, data, n);
 } GRID_FINISH {
-	Dim *da = in->dim, *dc = c.dim, *db = b.dim;
-	int dby = db->get(0), day = da->get(0);
-	int dbx = db->get(1), dax = da->get(1);
-	int l  = dc->prod(2);
-	int ll = dc->prod(1);
-	Pt<T> cp = (Pt<T>)c;
-
+	make_plan((T)0);
+	Dim *da = a.dim, *db = b.dim;
+//	int dby = db->get(0);
+	int day = da->get(0);
+	int dbx = db->get(1);
 	int n = da->prod(1);
 	STACK_ARRAY(T,buf,n);
 	STACK_ARRAY(T,buf2,n);
+//	gfpost("%s",info());
+//	fprintf(stderr,"plann=%d\n",plann);
 	for (int iy=0; iy<day; iy++) {
-		for (int i=0; i<n; i++) buf[i]=*(T *)seed;
-		for (int jy=0; jy<dby; jy++) {
+		for (int i=0; i<n; i++) buf[i]=*(T *)seed; // !@#$ redo this with OP2(put)
+		for (int i=0; i<plann; i++) {
+			if (plan[i].absorbent) continue;
+			int jy = plan[i].y;
+			int jx = plan[i].x;
 			int y = mod(iy+jy-margy,day);
-			for (int jx=0; jx<dbx; jx++) {
-				COPY(buf2,cp+y*ll+jx*l,n);
+			copy_row(buf2,y,jx-margx);
+			if (!plan[i].neutral) {
 				T rh = ((Pt<T>)b)[jy*dbx+jx];
-				bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
-				//fprintf(stderr,"neutral?(%d) #=> %d\n",(int)rh,(int)neutral);
-				if (!neutral) op_para->map(n,buf2,rh);
-				op_fold->zip(n,buf,buf2);
+				op_para->map(n,buf2,rh);
 			}
+			op_fold->zip(n,buf,buf2);
 		}
 		out[0]->send(n,buf);
 	}
-	
-	c.del();
+	a.del();
 } GRID_END
 
-\def void mode_m (int m) {
-	if (m<0) m=0;
-	if (m>1) m=1;
-	gfpost("convolution mode = %d",m);
-	mode = m;
-}
-	
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
 \def void initialize (Operator2 *op_para, Operator2 *op_fold, Grid *seed, Grid *r) {
@@ -155,7 +178,6 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->op_fold = op_fold;
 	if (seed) this->seed = *seed;
 	else this->seed.init_clear(new Dim(0,0),int32_type_i);
-	this->mode = 1;
 	if (r) this->b.swallow(r);
 }
 
