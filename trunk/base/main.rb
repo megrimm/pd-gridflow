@@ -42,7 +42,8 @@ GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 
 for victim in [TCPSocket, TCPServer]
 	def victim.new
-		raise NotImplementedError, "before Ruby 1.6.6 there's a bug in sockets"
+		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
+		"(disabled because of bug in threadless sockets)"
 	end
 end if VERSION < "1.6.6"
 
@@ -51,6 +52,20 @@ for victim in [Thread, Continuation]
 		raise NotImplementedError, "disabled because of jMax incompatibility"
 	end
 end
+
+# simple dataflow engine mixin for Ruby
+#module GridFlow; module RubyFlow
+#	def initialize
+#		...
+#		super
+#	end
+#	...
+#end end
+
+# dual system that can work with both Ruby dataflow and jMax dataflow
+#module GridFlow; class DFObject; include RubyFlow
+#	...
+#end end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -79,7 +94,18 @@ class RubyFor < GridFlow::FObject
 	alias :_1_int :stop=
 	alias :_2_int :step=
 
-	# FlowObject.install(name, inlets, outlets)
+	# FObject.install(name, inlets, outlets)
 	# no support for metaclasses yet
 	install "rubyfor", 3, 1
+
+# FObject features I want to see:
+#
+#	self.ninlets #=> 3
+#	self.noutlets #=> 1
+#	self.external_name #=> "rubyfor"
 end
+
+#class RtMetro < GridFlow::FObject
+#	attr_accessor 
+#
+#end
