@@ -1,7 +1,24 @@
 #!/bin/bash
-# this script by Mathieu Bouchard, 2001.
+# this script by Mathieu Bouchard, 2001, 2002.
 
+# ARCH is not taken care of yet
+# readd support for no jmax
+# test with jmax 3.x
+
+ARCH=unknown
 JMAX_VERSION=unknown
+
+append () {
+	var=$1
+	shift
+	eval "$var=\"\$$var $@\""
+}
+
+usage () { cat << TEXT
+usage: ./configure --arch architecture [--jmax-dist-dir directory]
+	[--nojmax] [--fast]
+TEXT
+}
 
 echo
 if [ ! -f configure ]
@@ -14,23 +31,9 @@ argc=$#
 while [ 0 != $# ]
 do
 	case $1 in
-		--jmax24)
-			JMAX_VERSION=24
-			echo "Using jMax 2.4.x"
-			JMAX_INCLUDE='"fts.h"'
-		;;
-		--jmax25)
-			JMAX_VERSION=25
-			echo "Using jMax 2.5.x"
-			JMAX_INCLUDE='<fts/fts.h>'
-		;;
-		--jmax30)
-			JMAX_VERSION=30
-			echo "Using jMax 3.0.x (bêta)"
-		;;
-		--nojmax)
-			JMAX_VERSION=none
-			echo "Not using jMax"
+		--no-x11)
+			NO_X11=yes
+			echo "won't check for libX11"
 		;;
 		--no-mpeg)
 			NO_MPEG=yes
@@ -38,11 +41,15 @@ do
 		;;
 		--fast)
 			echo "Fast Mode (less error checking)"
-			OPTIONS="$OPTIONS HAVE_SPEED"
+			append OPTIONS HAVE_SPEED BLAH
 		;;
 		--no-profiler)
 			echo "No Profiler"
 			HAVE_PROFILER=no
+		;;
+		--arch)
+			ARCH=$2
+			shift
 		;;
 		--jmax-dist-dir)
 			JMAXROOTDIR=$2
@@ -56,29 +63,32 @@ do
 	shift
 done
 
-if [ "z$JMAX_VERSION" = "zunknown" ]
-then
-	echo "usage: ./configure [--jmax24|--jmax25|--jmax30|--nojmax]"
-	echo "         [--fast] [--jmax-dist-dir directory]"
-	exit 1
-fi
-
 if [ ! "z$JMAX_VERSION" = "znone" ]; then
 	if [ "z$JMAXROOTDIR" == "z" ]; then
 		JMAXROOTDIR=`(cd ../..; echo $PWD)`
 		if [ -d $JMAXROOTDIR/Makefiles ]; then
 			echo "assuming --jmax-dist-dir $JMAXROOTDIR"
 		else
-			echo "please specify --jmax-dist-dir <pathname>"
-			exit 1
+			usage; exit 1
 		fi
 	fi
 fi
 
+if [ "z$ARCH" = "zunknown" ]; then
+	usage; exit 1
+fi
+
+exec 5> ./config.log
+
 #--------------------------------#
 
+log () {
+  echo "$@"
+  $@
+}
+
 say () {
-  ($@ && echo "yes") || (echo "no" && false)
+  (($@ 1>&5 2>&5) && echo "yes") || (echo "no" && false)
 }
 
 has-libmpeg () {
@@ -87,7 +97,25 @@ cat > /tmp/$$.c <<TEST
 	#include <mpeg.h>
 	int main (void) { return GetMPEGFrame==0; }
 TEST
-gcc /tmp/$$.c -o /tmp/$$ -l"$1"
+log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
+}
+
+has-jmax () {
+cat > /tmp/$$.c <<TEST
+	#include "fts/fts.h"
+/*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
+	int main (void) { return 0; }
+TEST
+log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
+&& /tmp/$$
+}
+
+has-jmax-2-5 () {
+cat ${JMAXROOTDIR}/include/fts/lang/mess.h && has-jmax
+}
+
+has-jmax-3-0 () {
+cat ${JMAXROOTDIR}/include/ftsconfig.h && has-jmax
 }
 
 has-videodev () {
@@ -96,7 +124,16 @@ cat > /tmp/$$.c <<TEST
 	#include <linux/videodev.h>
 	int main (void) { struct video_window foo; }
 TEST
-gcc /tmp/$$.c -o /tmp/$$
+log gcc /tmp/$$.c -o /tmp/$$
+}
+
+has-x11 () {
+	if [ ! "z$NO_X11" = "z" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <X11/Xlib.h>
+	int main (void) {return 0;}
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
 }
 
 has-x11-shared-memory () {
@@ -109,7 +146,7 @@ cat > /tmp/$$.c <<TEST
 	#include <X11/extensions/XShm.h>
 	int main (void) {return 0;}
 TEST
-gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
+log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
 }
 
 # this is very "heuristic" to say the least. sorry.
@@ -120,45 +157,63 @@ cat > /tmp/$$.c <<TEST
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
 	return 0;}
 TEST
-gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
+log gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
 #--------------------------------#
 
-FORMATS='X11 PPM Targa Grid'
+FORMATS='PPM Targa Grid'
 LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
+
+echo -n "looking for jMax 2.5: "
+if say has-jmax-2-5; then
+	JMAX_VERSION="25"
+else
+	echo -n "looking for jMax 3.0: "
+	if say has-jmax-3-0; then
+		JMAX_VERSION="30"
+	else
+		echo "(not compiling for jmax)"
+		JMAX_VERSION="none"
+	fi
+fi
 
 echo -n "looking for Ward's LibMPEG as -lwardsmpeg: "
 if say has-libmpeg wardsmpeg; then
-	FORMATS="$FORMATS MPEG"
-	LDSOFLAGS="$LDSOFLAGS -lwardsmpeg"
+	append FORMATS MPEG
+	append LDSOFLAGS -lwardsmpeg
 else
 	echo -n "looking for Ward's LibMPEG as -lmpeg: "
 	if say has-libmpeg mpeg; then
-		FORMATS="$FORMATS MPEG"
-		LDSOFLAGS="$LDSOFLAGS -lmpeg"
+		append FORMATS MPEG
+		append LDSOFLAGS -lmpeg
 	fi
 fi
 
 echo -n "looking for videodev (video4linux 1.x video digitizer drivers): "
 if say has-videodev; then
-	FORMATS="$FORMATS VideoDev"
+	append FORMATS VideoDev
 fi
 
-echo -n "looking for x11 shared memory (acceleration): "
-if say has-x11-shared-memory; then
-	OPTIONS="$OPTIONS HAVE_X11_SHARED_MEMORY"
+echo -n "looking for x11 video protocol: "
+if say has-x11; then
+	append FORMATS X11
+	append LDSOFLAGS -L/usr/X11R6/lib -lX11
+	echo -n "looking for x11 shared memory (acceleration): "
+	if say has-x11-shared-memory; then
+		append OPTIONS HAVE_X11_SHARED_MEMORY
+	fi
 fi
 
 echo -n "looking for pentium-compatible CPU: "
 if say has-pentium-compatible; then
-	OPTIONS="$OPTIONS HAVE_PENTIUM"
+	append OPTIONS HAVE_PENTIUM
 	echo -n "enable profiliing: "
 	if [ "z$HAVE_PROFILER" = "zno" ]; then
 		echo "no"
 	else
 		echo "yes"
-		OPTIONS="$OPTIONS HAVE_TSC_PROFILING"
+		append OPTIONS HAVE_TSC_PROFILING
 	fi
 fi
 
@@ -212,14 +267,14 @@ echo "
 #ifdef STANDALONE
 #include \"nofts.h\"
 #else
-#include $JMAX_INCLUDE
+#include <fts/fts.h>
 #endif
 
 #define FORMAT_LIST(_pre1_,_pre2_) \\"
 for format in $FORMATS; do
 	echo "  _pre1_ _pre2_##Format$format,\\"
 done
-echo "_pre1_ _pre2_##FormatX11" # twice... hack.
+echo "_pre1_ _pre2_##FormatPPM" # twice... hack.
 echo
 for z in $OPTIONS; do
 	echo "#define $z"
@@ -227,3 +282,7 @@ done
 echo
 echo "#endif"
 ) > c/src/config.h
+
+echo
+echo 'please see ./config.log for the details of the configuration tests'
+echo
