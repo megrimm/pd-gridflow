@@ -95,7 +95,7 @@ struct GridImport : GridObject {
 	template <class T> void process (int n, Pt<T> data) {
 		while (n) {
 			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
-			int n2 = min((long)n,out->dim->prod()-out->dex);
+			int32 n2 = min((int32)n,out->dim->prod()-out->dex);
 			out->send(n2,data);
 			n-=n2; data+=n2;
 		}
@@ -158,7 +158,6 @@ GRID_INLET(GridExport,0) {
 		Ruby a[] = { INT2NUM(0), INTORFLOAT2NUM(data[i]) };
 		send_out(COUNT(a),a);
 	}
-} GRID_FINISH {
 } GRID_END
 \classinfo { IEVAL(rself,"install '#export',1,1"); }
 \end class GridExport

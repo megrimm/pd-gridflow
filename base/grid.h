@@ -158,14 +158,11 @@ static inline Ruby PTR2FIX (const void *ptr) {
 
 //****************************************************************
 
-typedef unsigned char  uint8;
-typedef unsigned short uint16;
-typedef unsigned long  uint32;
-typedef unsigned long long uint64;
-typedef char  int8;
-typedef short int16;
-typedef long  int32;
-typedef long long int64;
+/* int32 was long before, now int. */
+typedef char  int8;     typedef unsigned char  uint8;
+typedef short int16;    typedef unsigned short uint16;
+typedef int   int32;    typedef unsigned int  uint32;
+typedef long long int64;typedef unsigned long long uint64;
 typedef float  float32;
 typedef double float64;
 
@@ -182,10 +179,10 @@ int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 static inline int div2(int a, int b) {
 int c=a<0; return (a/b)-(c&&!!(a%b));}
 
-static inline int32   abs(  int32 a) { return a>0?a:-a; }
-static inline int64   abs(  int64 a) { return a>0?a:-a; }
-static inline float32 abs(float32 a) { return fabs(a); }
-static inline float64 abs(float64 a) { return fabs(a); }
+static inline int32   gf_abs(  int32 a) { return a>0?a:-a; }
+static inline int64   gf_abs(  int64 a) { return a>0?a:-a; }
+static inline float32 gf_abs(float32 a) { return fabs(a); }
+static inline float64 gf_abs(float64 a) { return fabs(a); }
 
 // integer powers in log(b) time. T is assumed Integer
 template <class T> static inline T ipow(T a, T b) {
@@ -336,24 +333,45 @@ public:
 #endif
 	}
 
+	Z operator-(Pt x) { return p-x.p; }
 	operator bool   () { return (bool   )p; }
 	operator void  *() { return (void  *)p; }
 	operator int8  *() { return (int8  *)p; }
+
+/* 0.7:
 #define FOO(S) operator S *() { return (S *)p; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	Z operator-(Pt x) { return p-x.p; }
-
 #ifdef HAVE_DEBUG
 #define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
-	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 #else
 #define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+#endif
+*/
+
+/* 0.8: */
+#define FOO(S) operator S *() { return (S *)p; }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#ifdef HAVE_DEBUG
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#else
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#endif
+/* end 0.8 (TESTING) */
+	
+#ifdef HAVE_DEBUG
+	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
+#else
 	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
 #endif
@@ -436,7 +454,6 @@ static uint16 convert(Ruby x, uint16 *foo) {
 	if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
 	return v;}
 
-static int   convert(Ruby x, int   *foo) { return INT(x); }
 static int32 convert(Ruby x, int32 *foo) { return INT(x); }
 static bool  convert(Ruby x, bool  *foo) {
 	if (x==Qtrue) return true;
