@@ -26,9 +26,9 @@
 -1;
 #X obj 343 459 @ gamma;
 #X obj 158 68 @camera_control;
-#X obj 119 163 demultiplex;
-#X obj 119 288 demultiplex;
-#X obj 119 412 demultiplex;
+#X obj 119 163 demux 2;
+#X obj 119 288 demux 2;
+#X obj 119 412 demux 2;
 #X obj 191 319 @fade 8;
 #X obj 191 217 @motion_detection;
 #X floatatom 332 270 5 0 0 0 - displaced_numb -;
