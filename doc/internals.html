@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.7 - C++/Ruby Internals</title>
+<title>GridFlow 0.7.8 - C++/Ruby Internals</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.7 - C++/Ruby Internals</h4>
+    <h4>GridFlow 0.7.8 - C++/Ruby Internals</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -52,27 +52,24 @@
 <tr><td></td><td></td><td><p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the 
 constants it defines are part of that namespace.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Ruby does not have the same concept of object as PD or jMax does. In GridFlow, object classes may 
+<tr><td></td><td></td><td><p>Ruby does not have the same concept of object as PD. In GridFlow, object classes may 
 inherit features from other object classes, and also there is no concept of inlet nor outlet, which are instead 
 provided by <kbd><font color="#007777">GridFlow::FObject</font></kbd>, which also has the purpose of exporting functionality to 
-PD or jMax, whichever is present.</p></td></tr>
+PD.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>In this document (and in many others) the phrase "a Potato" will be a shorthand for "an object of the class 
 called Potato", which is often used in modern software design and is a nice convention borrowed from 
 biology.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>A FObject is normally in two or three parts: a (Ruby) GridFlow::FObject that is the central part; a 
-(C++) FObject; a (C++/jMax) BFObject. The GridFlow::FObject is created as a 
+<tr><td></td><td></td><td><p>A FObject is normally in two: a (Ruby) GridFlow::FObject that is the central part and a 
+(C++) FObject. The GridFlow::FObject is created as a 
 RData kind of box (T_DATA) using Ruby-C's Data_Make_Struct on a GridObject. This is how 
 most Ruby-C programs inherit from Ruby classes. Note that Ruby's boxed objects 
 have a maximum of five fields, and they're usually taken, so additional fields 
 have to be outside of it. This is why RData exists.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>So basically you have a C++ FObject that is "part of" a GridFlow::FObject and 
-they point to each other using "peer pointers". Now, if jMax is enabled, then the 
-GridObject will have an additional pointer to a fts_object_t derivative called 
-BFObject (B for Bridge); that pointer is called foreign_peer. The BFObject 
-links back to the RData box through another pointer called peer. </p></td></tr>
+they point to each other using "peer pointers". </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -114,8 +111,7 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 		numeric layouts. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby FPatcher extending FObject">ruby FPatcher extending FObject</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>This class is much like jMax's templates and subpatchers and 
-		PureData's abstractions.</p> <p>This is a container for objects. Its proper objects are numbered 
+ <p>This class is much like PureData's abstractions.</p> <p>This is a container for objects. Its proper objects are numbered 
 		starting with zero. The wire list is given in terms of those numbers: 
 		(sourceobject,sourceinlet,destobject,destinlet). There is a 
 		pseudo-object numbered #-1 which map to the container's own inlets 
@@ -169,20 +165,20 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 		T is one of the types uint8, int16, int32, float32. <br><b>method</b>&nbsp;map <b>(</b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>T</i> b<b>)</b>     
 			for i in 0...n, 
 			as[i] := f(as[i],b); 
-			This is like [@] with a scalar righthand <br>
+			This is like <kbd><font color="#007777">[#]</font></kbd> with a scalar righthand <br>
  <br><b>method</b>&nbsp;zip <b>(</b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>     
 			for i in 0...n, 
 			as[i] := f(as[i],bs[i]); 
 			bs is not modified. 
-			(This is like [@] with a nonscalar righthand) <br>
+			(This is like <kbd><font color="#007777">[#]</font></kbd> with a nonscalar righthand) <br>
  <br><b>method</b>&nbsp;fold <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>      <p> 
 			for i in 0...n, 
 			for j in 0...an, 
 			as[j] := f(as[j],bs[i*an+j]); </p> 
-			(this is like @fold) <br>
+			(this is like <kbd><font color="#007777">[#fold]</font></kbd>) <br>
  <br><b>method</b>&nbsp;scan <b>(</b><i>integer</i> an<b>, </b><i>integer</i> n<b>, </b><i>Pt<T></i> as<b>, </b><i>Pt<T></i> bs<b>)</b>      <p> for j in 0...an: bs[j] := f(as[j],bs[j]); </p> <p> for i in 1...n: for j in 0...an: 
 				bs[j] := f(bs[(i-1)*an+j],bs[i*an+j]); </p> 
-			(this is like @scan) <br>
+			(this is like <kbd><font color="#007777">[#scan]</font></kbd>) <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridClass">C++ class GridClass</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -191,14 +187,14 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GFBridge">C++ class GFBridge</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		This holds linkage information about jMax and PureData and such. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+		This holds linkage information about PureData. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.7 Documentation<br>
-Copyright &copy; 2001,2002,2003,2004 by Mathieu Bouchard
+GridFlow 0.7.8 Documentation<br>
+Copyright &copy; 2001,2002,2003,2004,2005 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
