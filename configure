@@ -87,6 +87,7 @@ end
 def c_test code, *link
 	ldlpath = ENV["LD_LIBRARY_PATH"]
 	ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
+	link[0,0]=$conf[:LDSOFLAGS].find_all {|x| /^-L/ =~ x }
 
 	log = ""
 	log << code << "\n"
@@ -653,6 +654,16 @@ CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
 
 $CFLAGS += " -I " + (make_expand CONFIG["archdir"])
 $CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", "-falign-functions=4"
+
+# making it easier for everybody I hope:
+["/sw","/usr/local",ENV["home"]].each do|base|
+	$conf[:LDSOFLAGS] << "-L#{base}/lib" if 
+		not $LD_LIBRARY_PATH.include? "#{base}/lib" and
+		not $LIBRARY_PATH.include? "#{base}/lib"
+	$CFLAGS += " -I#{base}/include" if
+		not $C_INCLUDE_PATH.include? "#{base}/include" #and
+#		not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
+end
 
 #--------------------------------#
 
