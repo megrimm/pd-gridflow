@@ -74,6 +74,9 @@ struct FormatX11 : Format {
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
 
+	Atom wmProtocolsAtom;
+	Atom wmDeleteAtom;
+
 	FormatX11 () : use_stripes(false), 
 	autodraw(1), window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
 	verbose(false), dim(0), lock_size(false)
@@ -127,6 +130,8 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 
 /* window manager hints, defines the window as non-resizable */
 void FormatX11::set_wm_hints (int sx, int sy) {
+	if (!is_owner) return;
+
 	XWMHints wmhints;
 	XTextProperty window_name, icon_name;
 	XSizeHints hints;
@@ -203,10 +208,26 @@ void FormatX11::alarm() {
 			report_pointer(em->y,em->x,em->state);
 		}break;
 		case DestroyNotify:{
-			/* should notify parent here */
+			gfpost("This window is being closed, so this handler will close too!");
+			fprintf(stderr,"This window is being closed, so this handler will close too!\n");
+			rb_funcall(rself,SI(close),0);
+			return;
 		}break;
 		case ConfigureNotify:{
 			/* like we care */
+		}break;
+		case ClientMessage:{
+			/* tnx to vektor&walken */
+			/*
+			if (e.xclient.message_type==wmProtocolsAtom
+			&& e.xclient.format==32
+			&& (Atom)(e.xclient.data.l[0])==wmDeleteAtom) {
+				gfpost("This window is being closed, so this handler will close too!");
+				fprintf(stderr,"This window is being closed, so this handler will close too!\n");
+				rb_funcall(rself,SI(close),0);
+				return;
+			}
+			*/
 		}break;
 		default:
 			if (verbose) gfpost("received event of type # %d", e.type);
@@ -238,8 +259,13 @@ void FormatX11::alarm() {
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
+	fprintf(stderr,"X11 reports Error: display=0x%08x\n",(int)d);
+	gfpost("X11 reports Error: display=0x%08x",(int)d);
+	fprintf(stderr,"serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x\n",
+		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
+	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
+		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	current_x11->use_shm = false;
-	gfpost("caught X11 error (should be \"BadAccess: can't find shm\")");
 	return 42; /* it seems that the return value is ignored. */
 }
 
@@ -329,7 +355,7 @@ void FormatX11::resize_window (int sx, int sy) {
 			parent, pos_x, pos_y, sx, sy, 0, white, black);
 		if(!window) RAISE("can't create window");
 	}
-/*	set_wm_hints(sx,sy); */
+	//set_wm_hints(sx,sy);
 	imagegc = XCreateGC(display, window, 0, NULL);
 	if (is_owner) {
 		XSelectInput(display, window,
@@ -468,6 +494,8 @@ void FormatX11::open_display(const char *disp_string) {
 	display = XOpenDisplay(disp_string);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
+	//XSetErrorHandler(FormatX11_error_handler);
+
 	/*
 	  btw don't expect too much from X11 error handling system.
 	  it sucks big time and it won't work.
@@ -519,13 +547,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		unsigned char *prop_r;
 		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
 		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
-		fprintf(stderr,"%*s0x%08x -> %s (%lu)\n",level*2,"",(int)children_r[i],prop_r,nitems_r);
-		int value_l = strlen(value);
-		bool match = prop_r && strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
+		//fprintf(stderr,"%*s0x%08x -> %s (%lu)\n",level*2,"",(int)children_r[i],prop_r,nitems_r);
+		uint32 value_l = strlen(value);
+		bool match = prop_r && nitems_r>=value_l &&
+			strncmp((char *)prop_r+nitems_r-value_l,value,value_l)==0;
 		XFree(prop_r);
 		if (match) {
 			target=children_r[i];
-			gfpost("x11 embed: 0x%08x -> %s (%lu)",(int)children_r[i],prop_r,nitems_r);
+			gfpost("x11 embed: 0x%08x -> (%lu bytes) %s",
+				(int)children_r[i],nitems_r,prop_r);
 			break;
 		}
 		target = search_window_tree(children_r[i],key,value,level+1);
@@ -634,6 +664,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	/* "resize" also takes care of creation */
 	resize_window(sx,sy);
 
+	if (is_owner) {
+		wmProtocolsAtom = XInternAtom(display, "WM_PROTOCOLS", False);
+		wmDeleteAtom    = XInternAtom(display, "WM_DELETE_WINDOW", False);
+		XSetWMProtocols(display,window,&wmDeleteAtom,1);
+	}
+	
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
 	if (verbose) gfpost("is_le = %d, disp_is_le = %d",is_le(),disp_is_le);
