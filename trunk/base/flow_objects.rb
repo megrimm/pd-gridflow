@@ -568,7 +568,8 @@ class JMaxUDPReceive < FObject
 		@socket = UDPSocket.new
 		@port = port.to_i
 		@socket.bind nil, @port
-		$tasks[self] = proc {tick}
+		@clock = Clock.new self
+		@clock.delay 0
 	end
 	def decode s
 		n = s.length
@@ -583,15 +584,16 @@ class JMaxUDPReceive < FObject
 		end while i<n
 		m
 	end
-	def tick
+	def call
 		ready_to_read = IO.select [@socket],[],[],0
 		return if not ready_to_read
 		data,sender = @socket.recvfrom 1024
 		return if not data
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
+		@clock.delay 50
 	end
-	def delete; $tasks.delete(self); @socket.close end
+	def delete; @clock.unset; @socket.close end
 	install "jmax_udpreceive", 0, 2
 end
 
@@ -633,7 +635,8 @@ class JMax4UDPReceive < FObject
 		@socket = UDPSocket.new
 		@port = port.to_i
 		@socket.bind nil, @port
-		$tasks[self] = proc {tick}
+		@clock = Clock.new self
+		@clock.delay 0
 		@symbols = {}
 	end
 	def decode s
@@ -657,15 +660,16 @@ class JMax4UDPReceive < FObject
 		end while i<n
 		m
 	end
-	def tick
+	def call
 		ready_to_read = IO.select [@socket],[],[],0
 		return if not ready_to_read
 		data,sender = @socket.recvfrom 1024
 		return if not data
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
+		@clock.delay 50
 	end
-	def delete; $tasks.delete(self); @socket.close end
+	def delete; @clock.unset; @socket.close end
 	install "jmax4_udpreceive", 0, 2
 end
 
@@ -697,7 +701,8 @@ class PDNetSocket < FObject
 			end
 			
 		end
-		$tasks[self] = proc {tick}
+		@clock = Clock.new self
+		@clock.delay 0
 		@data = ""
 	end
 	def encode(x)
@@ -716,7 +721,7 @@ class PDNetSocket < FObject
 		when :tcp; @socket.send msg, 0
 		end
 	end
-	def delete; $tasks.delete(self); @socket.close end
+	def delete; @clock.unset; @socket.close end
 	def decode s
 		GridFlow.post "decoding from: %s", s.inspect if @options[:debug]
 		s.chomp!("\n")
@@ -732,7 +737,7 @@ class PDNetSocket < FObject
 			end
 		}
 	end
-	def tick
+	def call
 		ready_to_accept = IO.select [@server],[],[],0 if @server
 		if ready_to_accept
 			@socket.close if @socket
@@ -746,9 +751,7 @@ class PDNetSocket < FObject
 			send_out 1, sender.map {|x| x=x.intern if String===x; x }
 			send_out 0, *(decode data)
 		when :tcp
-			#GridFlow.post "sysread_begin"
 			@data << @socket.sysread(1024)
-			#GridFlow.post "sysread: #{@data}"
 			sender = @socket.peeraddr
 			loop do
 				n = /\n/ =~ @data
@@ -757,6 +760,7 @@ class PDNetSocket < FObject
 				send_out 0, *(decode @data.slice!(0..n))
 			end
 		end
+		@clock.delay 50
 	end
 	install "pd_netsocket", 2, 2
 end
@@ -800,7 +804,8 @@ end
 # hack: this is an alias.
 class Demux < Shunt; install "demux", 2, 0; end
 
-#-------- fClasses for: jMax conversion shit
+#-------- fClasses for: jmax2pd
+
 	class Button < FObject
 		def method_missing(*) send_out 0 end
 		install "button", 1, 1
@@ -811,42 +816,18 @@ class Demux < Shunt; install "demux", 2, 0; end
 		def trigger; send_out 0, (if @state then 1 else 0 end) end
 		install "toggle", 1, 1
 	end
-#	class Slider < FObject
-#		install "slider", 1, 1
-#	end
 	class JPatcher < FObject
-		def initialize(*a)
-			super
-			#STDERR.puts "JPATCHER: #{a.inspect}"
-			@subobjects = {}
-		end
+		def initialize(*a) super; @subobjects={} end
 		attr_accessor :subobjects
 		install "jpatcher", 0, 0
 	end
-	class JComment < FObject
-		install "jcomment", 0, 0
-	end
-	class LoadBang < FObject
-		def trigger; send_out 0 end
-		install "loadbang", 0, 1
-	end
+	class JComment < FObject; install "jcomment", 0, 0; end
+	class LoadBang < FObject; def trigger; send_out 0 end; install "loadbang", 0, 1 end
 	class MessBox < FObject
 		def _0_bang; send_out 0, *@argv end
 		def clear; @argv=[]; end
 		def append(*argv) @argv<<argv; end
 		install "messbox", 1, 1
-	end
-	class OneShot < FObject
-		def initialize(state=true) @state=state!=0 end
-		def method_missing(sel,*a)
-			m = /^_0_(.*)$/.match(sel.to_s) or return super
-			send_out 0, m[1].intern, *a if @state
-			@state=false
-		end
-		def _1_int(state) @state=state!=0 end
-		alias _1_float _1_int
-		def _1_bang; @state=true end
-		install "oneshot", 2, 1
 	end
 
 #-------- fClasses for: list manipulation (jMax-compatible)
@@ -929,8 +910,8 @@ class Demux < Shunt; install "demux", 2, 0; end
 		install "messageappend", 2, 1
 	end
 
-# this is the demo and test for Ruby->jMax bridge
-# FObject is a flow-object as found in jMax
+# this was the original demo for the Ruby/jMax/PureData bridges
+# FObjects are Ruby Objects that are exported to the PureData system.
 # _0_bang means bang message on inlet 0
 # FObject#send_out sends a message through an outlet
 class RubyFor < GridFlow::FObject
@@ -968,16 +949,27 @@ class RubyFor < GridFlow::FObject
 	install "for", 3, 1
 end
 
+class OneShot < FObject
+	def initialize(state=true) @state=state!=0 end
+	def method_missing(sel,*a)
+		m = /^_0_(.*)$/.match(sel.to_s) or return super
+		send_out 0, m[1].intern, *a if @state
+		@state=false
+	end
+	def _1_int(state) @state=state!=0 end
+	alias _1_float _1_int
+	def _1_bang; @state=true end
+	install "oneshot", 2, 1
+end
+
 class InvPlus < FObject
-  def initialize(b=0) @b=b end
-  def _1_float(b) @b=b end
+  def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b-a end
   install "inv+", 2, 1
 end
 
 class InvTimes < FObject
-  def initialize(b=0) @b=b end
-  def _1_float(b) @b=b end
+  def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b/a end
   install "inv*", 2, 1
 end
@@ -1455,15 +1447,17 @@ class JoystickPort < FObject
     raise "sorry, requires Ruby 1.8" if RUBY_VERSION<"1.8"
     @f = File.open(port.to_s,"r+")
     @status = nil
-    $tasks[self] = proc {tick}
+    @clock = Clock.new self
+    @clock.delay 0
     @f.nonblock=true
   end
-  def delete; $tasks.delete(self); @f.close end
-  def tick
+  def delete; @clock.unset; @f.close end
+  def call
     loop{
       begin
         event = @f.read(8)
       rescue Errno::EAGAIN
+	@clock.delay 0
         return
       end
       return if not event
