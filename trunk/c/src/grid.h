@@ -26,21 +26,9 @@
 
 #define VIDEO4JMAX_PROFILING
 
-/* #include <pthread.h> */
-
-/* a few C++ decls just in case you want to compile C++ code with this */
-/*
-#ifdef __cplusplus
-extern "C" {
-#define      new q_new
-#define     this q_this
-#define    class q_class
-#define operator q_operator
-#define template q_template
-#endif
-*/
-
-/* #include <objc/Object.h> */
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 
 #include "config.h"
 /* current version number as string literal */

@@ -10,33 +10,16 @@ INST=/opt
 ARCH=i686-linux
 JMAKE="make ARCH=$ARCH"
 INST2=$INST/lib/jmax/fts/bin/$ARCH/opt/fts
-SAM=../../samples
+SAM=/home/projects/video4jmax/samples
 
 # SRC='array.[ch] video.c'
 # SRC='grid.c grid_protocol.[ch] video.[ch] macros.h vout*.c vin*.c'
 # SRC='grid_basic.c grid.c grid.h index.c tuple.c'
 SRC='video_out.c grid_basic.c grid.c grid.h'
 
- FILE=outside/grid_tcp.jmax
-#FILE=outside/feedback_fractal_2.jmax
-#FILE=feedback_fractal.jmax
-#FILE=cross_fade.jmax
-#FILE=binary_operations.jmax
-#FILE=export_test.jmax
-#FILE=videodev_diff_2.jmax
-#FILE=outside/sine_transform.jmax
+FILE=../mexico/bbb_main.jmax
+#FILE=outside/grid_tcp.jmax
 #FILE=outside/scale_test_2.jmax
-#FILE=videodev_fade.jmax
-#FILE=color_correction.jmax
-#FILE=outside/convolve_test.jmax
-#FILE=benchmark.jmax
-#FILE=convolve.jmax
-#FILE=outside/bump_map.jmax
-#FILE=outside/anim_preload.jmax
-#FILE=image_stats.jmax
-#FILE=video_input.jmax
-#FILE=outside/game_of_life.jmax
-#FILE=ripple.jmax
 
 FILE=$SAM/$FILE
 
@@ -47,6 +30,8 @@ case $1 in
 	edit) (nedit $SRC &) ;;
 	kill) killall -9 java fts ;;
 	run)  killall -9 java fts; jmax $FILE ;;
+	run2)  (cd /opt/mexico; killall -9 java fts
+		jmax $FILE /home/projects/video4jmax/v4j_control.jmax) ;;
 	rund)
 		killall -9 java fts
 		jmax -jmaxConnection udpclient -jmaxMode debug \
