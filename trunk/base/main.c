@@ -699,13 +699,18 @@ BUILTIN_SYMBOLS(FOO)
 }
 
 void GFStack::push (FObject *o) {
-	void *bp = &bp; /* really. just finding our position on the stack. */
-	//gfpost("bp=0x%08x; s[n-1].bp=0x%08x",(int)bp,(int)(n?s[n-1].bp:0));
+	void *bp = &o; // really. just finding our position on the stack.
+/*
+	gfpost("bp=0x%08x; s[%d].bp=0x%08x",(int)bp,n-1,(int)(n?s[n-1].bp:0));
 	if (n && s[n-1].bp <= bp) {
 		int on = n;
-		while (n && s[n-1].bp <= bp) pop();
-		//gfpost("warning: unwinding %d entries from gf_stack",on-n);
+		while (n && s[n-1].bp <= bp) {
+			pop();
+			gfpost("bp=0x%08x; s[%d].bp=0x%08x",(int)bp,n-1,(int)(n?s[n-1].bp:0));
+		}
+		gfpost("warning: unwinding %d entries from gf_stack (out of %d)",on-n,on);
 	}
+*/
 	if (n>=GF_STACK_MAX)
 		RAISE("stack overflow (maximum %d FObject activations at once)", GF_STACK_MAX);
 	uint64 t = rdtsc();
@@ -720,7 +725,7 @@ void GFStack::pop () {
 	uint64 t = rdtsc();
 	if (!n) {
 		fprintf(stderr,"gf stack underflow\n");
-		::abort();
+		::raise(11);
 	}
 	n--;
 	//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);

@@ -352,11 +352,10 @@ GRID_INLET(GridDownscaleBy,0) {
 	} else {
 		for (; n>0; data+=rowsize, n-=rowsize,y++) {
 			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
-			for (int i=0,p=0; p<rowsize2; i+=xinc) {
+			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=3) {
 				buf[p+0]=data[i+0];
 				buf[p+1]=data[i+1];
 				buf[p+2]=data[i+2];
-				p+=3;
 			}
 			out[0]->send(rowsize2,buf);
 		}

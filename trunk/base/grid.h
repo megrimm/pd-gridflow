@@ -34,6 +34,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
+#include <version.h>
 
 extern "C" {
 #include <ruby.h>
@@ -46,12 +47,10 @@ extern "C" {
 
 #include "../config.h"
 
-/* lots of macros follow */
-/* i'm not going to explain to you why macros *ARE* a good thing. */
-/* ************************************************************** */
-/* general-purpose macros */
-
-typedef /*volatile*/ VALUE Ruby;
+/* !@#$ what am I going to do about this? should this be changed? */
+/* should I wrap all of the Ruby API for C++-style convenience? */
+typedef VALUE Ruby;
+/* typedef struct Ruby { VALUE x }; */
 
 #define LIST(args...) args
 
@@ -60,6 +59,15 @@ typedef /*volatile*/ VALUE Ruby;
 #else
 #define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
 #endif
+
+/* avoid ruby warning */
+#define rb_enable_super(a,b) \
+	if (RUBY_RELEASE_CODE < 20030716) rb_enable_super(a,b)
+
+/* undocumented function from Ruby that is one thing we need to fix a very elusive bug
+that manifests itself when embedding ruby inside a plugin of another app. This exists
+for all versions of Ruby up to now, and I don't know when it gets fixed. */
+extern "C" void Init_stack(VALUE *addr);
 
 extern "C" {
 void rb_raise0(
@@ -86,7 +94,6 @@ __attribute__ ((noreturn));
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
-
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
 /* because of older versions of Ruby (1.6.?) */
@@ -459,6 +466,12 @@ static inline int32 INT(Ruby x) {
 	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
 	RAISE("expected Integer or Float (got %s)",
 		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
+}
+
+static short convert(Ruby x, short *foo) {
+	int v = INT(x);
+	if (v<-0x8000 || v>=0x8000) RAISE("value is out of range");
+	return v;
 }
 
 static int   convert(Ruby x, int   *foo) { return INT(x); }
@@ -1277,7 +1290,7 @@ extern Numop2 *op2_shl, *op2_and;
 		#_a_, number_type_table[(_a_).nt].name, \
 		#_b_, number_type_table[(_b_).nt].name);
 
-#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("'%s' is empty",this->info());
+#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
 
 static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 	if (ai+n > a->n) RAISE("left hand: not enough dimensions");

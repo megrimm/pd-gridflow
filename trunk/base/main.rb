@@ -52,9 +52,7 @@ end
 
 # because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
 unless Object.instance_methods(true).include? "object_id"
-	class Object
-		alias object_id id
-	end
+	class Object; alias object_id id end
 end
 
 require "gridflow/base/MainLoop.rb"
@@ -352,7 +350,7 @@ def GridFlow.load_user_config
 	begin
 		load user_config_file if File.exist? user_config_file
 	rescue Exception => e
-		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+		GridFlow.post "#{e.class}: #{e}:\n" + e.backtrace.join("\n")
 		GridFlow.post "while loading ~/.gridflow_startup"
 	end
 end
