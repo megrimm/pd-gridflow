@@ -194,8 +194,7 @@ module GridIO
 	def _0_open(sym,*a)
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
-		@format.close if @format
-		@format = nil
+		_0_close if @format
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
 		#@format.connect 1,self,2
@@ -231,7 +230,9 @@ module GridIO
 
 	def _0_close
 		check_file_open
+		#GridFlow.post "format = #{@format}"
 		@format.close
+		#GridFlow.post "format = #{@format}"
 		@format = nil
 	end
 

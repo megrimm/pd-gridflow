@@ -467,7 +467,9 @@ GRID_INLET(FormatVideoDev,0) {
 \def void close () {
 	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
-	IEVAL(rself,"GridFlow.post \"VideoDev#close: #{self.inspect}\"; @stream.close if @stream");
+/*	IEVAL(rself,"GridFlow.post \"VideoDev#close: #{self.inspect}\"; 
+	@stream.close if @stream");
+*/
 	rb_call_super(argc,argv);
 }
 
