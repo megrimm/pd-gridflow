@@ -263,9 +263,9 @@ FILES = [
 	[:ruby, "jmax_format.rb"],
 	[:ruby, "puredata_format.rb"],
   ],
-  [:directory, "bin/",
-	[:ruby, "jmax2pd"],
-  ],
+#  [:directory, ["bin/","/$(bindir)"],
+#	[:ruby, "jmax2pd"],
+#  ],
 ]
 
 #----------------------------------------------------------------#
@@ -863,23 +863,26 @@ puts ""
 
 RUBY = "ruby"
 
-def my_install_files(f,base,entries)
+def my_install_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
   entries.each {|type,name,*rest|
+    if Array===name then name,oname=name else oname=name end
     case type
     when :ruby
-      f.puts "\t$(INSTALL_DATA) #{base+name} $(sitelibdir)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DATA) #{base+name} #{obase}/#{oname}"
     when :directory
-      f.puts "\t$(INSTALL_DIR) $(sitelibdir)/gridflow/#{base+name}"
-      my_install_files(f,base+name,rest) 
+      if oname[0,1]!="/" then oname="#{obase}/#{oname}" end
+      f.puts "\t$(INSTALL_DIR) #{oname}"
+      my_install_files(f,base+name,rest,oname)
     end
   }
 end
 
-def my_uninstall_files(f,base,entries)
+def my_uninstall_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
   entries.each {|type,name,*rest|
+    if Array===name then name,oname=name else oname=name end
     case type
     when :ruby
-      f.puts "\trm $(sitelibdir)/gridflow/#{base+name}"
+      f.puts "\trm #{obase}/#{oname}"
     when :directory
       my_uninstall_files(f,base+name,rest) 
     end
@@ -894,7 +897,8 @@ def make_makefile f
     f.puts "ruby-all::", ""
 #   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
     f.puts "ruby-install::"
-	my_install_files(f,"",FILES)
+    my_install_files(f,"",FILES)
+    f.puts "\t$(INSTALL_DATA) bin/jmax2pd $(bindir)\n"
     f.puts
     f.puts "ruby-uninstall::"
     my_uninstall_files(f,"",FILES)
