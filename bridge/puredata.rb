@@ -16,6 +16,31 @@
 	end
 }
 
+#GridFlow.whatever(:gui,"frame .controls.gridflow -relief ridge -borderwidth 2\n")
+#GridFlow.whatever(:gui,"button .controls.gridflow.button -text FOO\n")
+#GridFlow.whatever(:gui,"pack .controls.gridflow.button -side left\n")
+#GridFlow.whatever(:gui,"pack .controls.gridflow -side right\n")
+
+GridFlow.whatever(:gui,%q{
+menu .mbar.gridflow -tearoff $pd_tearoff
+.mbar add cascade -label "GridFlow" -menu .mbar.gridflow
+.mbar.gridflow add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
+.mbar.gridflow add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
+frame .ruby
+label .ruby.label -text "Ruby: "
+entry .ruby.eval -width 40
+pack .ruby.label -side left
+pack .ruby.eval -side left -fill x -expand yes
+pack .ruby -fill x -expand yes
+proc ruby_eval {} {
+	set l {}
+	foreach c [split [.ruby.eval get] ""] {lappend l [scan $c %c]}
+	pd "gridflow eval $l;"
+	.ruby.eval delete 0 end
+}
+bind .ruby.eval <Return> {ruby_eval}
+})
+
 #GridFlow.post "BLAH START"
 #GridFlow.whatever(:gui,"TEST\n")
 #GridFlow.whatever(:gui,".log.1 insert end {This is GridFlow\n}\n")
