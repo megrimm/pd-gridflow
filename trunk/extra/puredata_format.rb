@@ -48,16 +48,22 @@ class PureDataFileWriter
 	end
 
 	def escape x
-		x.gsub(/[;,]/) {|x| "\\#{x}" }
+		x.gsub(/[;,]/) {|x| "\\#{x}" }.gsub(/\n/) {"\\\n"}
 	end
 
 	def write_object o
 		pr = o.properties
 		#classname = o.class.instance_eval{@foreign_name}
 		classname = o.classname
+		if classname=="jpatcher"
+			#@f.print "#N canvas 0 0 "
+			write_patcher o
+		end
 		t = case classname
 		when "jcomment"; "text"
 		when "messbox"; "msg"
+		when "jpatcher"; "restore"
+		when "intbox"; "floatatom"
 		else "obj"
 		end
 		@f.print "#X #{t} #{pr[:x]} #{pr[:y]} "
@@ -68,7 +74,17 @@ class PureDataFileWriter
 			@f.print escape(pr[:comment].to_s)
 		when "messbox"
 			@f.print(list_to_s(o.argv[0]))
-		else		
+		when "slider"
+			@f.print "#{case pr[:orientation]; when 1; 'h'; when 2; 'v'end}sl "+
+			"128 15 #{pr[:minValue]} #{pr[:maxValue]} 0 0 "+
+			"empty empty empty -2 -6 0 8 -262144 -1 -1 0 1"
+		when "intbox"
+			@f.print "5 0 0 0 - - -;"
+		when "inlet"
+			@f.print "inlet"
+		when "jpatcher"
+			@f.print("pd ",list_to_s(o.argv))
+		else
 			@f.print(classname," ",list_to_s(o.argv))
 		end
 		@f.puts ";"
