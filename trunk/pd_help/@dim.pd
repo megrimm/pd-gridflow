@@ -20,7 +20,7 @@ like dim(3) whose values are 240 \, 320 \, 4;
 #X obj 206 283 printargs;
 #X obj 276 283 @export;
 #X obj 332 283 @export_list;
-#X msg 18 63 open jpeg file 1.jpg;
+#X msg 18 63 open bluemarble.jpg;
 #X connect 1 0 2 0;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
