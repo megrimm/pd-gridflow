@@ -746,10 +746,10 @@ else
 	fps.connect 0,pr,0
 end
 	store = FObject["@store"]; store.send_in 1, "240 320 3 uint8 # 0"
-	store2 = FObject["@store"]
+#	store2 = FObject["@store"]
 	store.connect 0,poly,0
-	poly.connect 0,store2,1
-	store2.connect 0,store,1
+	poly.connect 0,store,1
+#	store2.connect 0,store,1
 	o1.connect 0,o2,0
 	o2.connect 0,o3,0
 	o3.connect 0,o4,0
@@ -767,7 +767,7 @@ end
 		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
 		o1.send_in 0
 		store.send_in 0
-		store2.send_in 0
+# 		store2.send_in 0
 		x+=1
 		$mainloop.timers.after(.0) {task[]}
 	}

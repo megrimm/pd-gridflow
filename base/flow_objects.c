@@ -26,6 +26,25 @@
 #include <math.h>
 #include "grid.h"
 
+#undef GRID_INPUT
+#define GRID_INPUT(_class_,_inlet_,_member_) \
+	GRID_INLET(_class_,_inlet_) { \
+		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
+		if (is_busy_except(in)) { \
+			if (_member_.next == &_member_) { \
+				/*gfpost("object busy (backstoring data)"); */\
+				_member_.next = new Grid(); \
+				_member_.next->dc = _member_.dc; \
+			} else { \
+				gfpost("object busy and backstore busy (aborting)"); \
+				in->abort(); \
+			} \
+		} \
+		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+	GRID_FLOW { \
+		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
+	GRID_FINISH
+
 /* **************************************************************** */
 
 Operator1 *OP1(Ruby x) {
@@ -291,6 +310,18 @@ struct GridStore : GridObject {
 /*!@#$ worse: the size of the foo buffer may still be too large */
 GRID_INLET(GridStore,0) {
 	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
+
+	/* snap backstore */
+	if (r.next != &r) {
+		delete r.dim;
+		delete[] (uint8 *)r.data;
+		r.dim = r.next->dim;
+		r.data = r.next->data;
+		r.next->dim = 0;
+		r.next->data = 0;
+		delete r.next;
+		r.next = &r;
+	}
 
 	int na = in->dim->n;
 	int nb = r.dim->n;
