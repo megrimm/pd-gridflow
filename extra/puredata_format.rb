@@ -66,6 +66,7 @@ class PureDataFileWriter
 
 	# what am i supposed to do?
 	def escape  x; x.gsub(/[;,]/) {|x| " \\#{x}" }.gsub(/\n/) {"\\\n"} end
+	def escape2 x; x.gsub(/[,]/) {|x| " \\#{x} " }.gsub(/[;\$\"]/) {|x| "\\#{x}" }.gsub(/\n/) {"\\\n"} end
 
 	def write_object o
 		pr = o.properties
@@ -94,7 +95,7 @@ class PureDataFileWriter
 		when "button"
 			@f.print "bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1"
 		when "jcomment"
-			@f.print escape(pr[:comment].to_s)
+			@f.print escape2(pr[:comment].to_s)
 		when "messbox"
 			av=o.argv[0]
 			i=0
@@ -117,7 +118,7 @@ class PureDataFileWriter
 		when "intbox"
 			@f.print "5 0 0 0 - - -;"
 		when "inlet"; @f.print "inlet"
-		when "inlet"; @f.print "outlet"
+		when "outlet"; @f.print "outlet"
 		when "jpatcher"
 			@f.print("pd ",list_to_s(o.argv))
 		else
