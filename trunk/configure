@@ -467,9 +467,16 @@ def make_makefile f
 end
 
 #--------------------------------#
-puts "generating ./config.make"
-
+p $rubylibdir
+=begin
+CONF = Config::MAKEFILE_CONFIG
+CONF['rubylibdir'] = CONF['sitelibdir']
+CONF['archdir'] = CONF['sitearchdir']
+=end
 require "mkmf"
+p $rubylibdir
+#--------------------------------#
+puts "generating ./config.make"
 
 File.open("./config.make","w") {|f| f.puts "
 
@@ -501,10 +508,10 @@ $sources = sources = %w(
 	base/main.c
 	base/flow_objects.c
 )
-f.puts "SOURCES = #{sources.join(" ")} \\"
 for format in $conf[:FORMATS] do
-	f.puts "format/#{format.downcase}.c \\"
+	sources << "format/#{format.downcase}.c"
 end
+f.puts "SOURCES = #{sources.join(" ")} \\"
 f.puts ""
 #make_makefile f
 }
@@ -552,17 +559,19 @@ puts "",
 ""
 
 #--------------------------------#
-require "mkmf"
 $objs = $sources.collect{|i| i.sub(/.c$/,".o") }
 dir_config("gridflow")
+p $rubylibdir
 create_makefile("gridflow")
+p $rubylibdir
 mf = File.readlines("Makefile").join""
 #p mf.length
 mf.gsub!(/-c \$<$/,"-c \$< -o $@")
 mf.gsub!(/\*\.o/,"*.o */*.o")
-mf.sub!(/^install:/,"install: install2 ")
+mf.sub!(/^install:.*/,"install: install2 site-install")
 mf.sub!(/^all:/,"all: all2 ")
 mf.sub!(/^clean:/,"clean: clean2 ")
+mf.gsub!(/^(site-)?install:\n\n/,"")
 #p mf.length
 f = File.open("Makefile","w")
 f.puts "include config.make"
@@ -570,3 +579,15 @@ f.puts mf
 f.puts "include Makefile.gf"
 make_makefile f
 f.close
+
+#=begin
+for z in [
+:$srcdir,
+:$libdir,
+:$rubylibdir,
+:$archdir,
+:$sitedir,
+:$sitelibdir,
+:$sitearchdir,
+] do puts "#{z} = #{eval z.to_s}" end
+#=end
