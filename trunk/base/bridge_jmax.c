@@ -294,14 +294,13 @@ VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 	return Qnil;
 }
 
-void whinep(VALUE $) {
-	rb_funcall(rb_eval_string("STDERR"),rb_intern("puts"),1,
-		rb_funcall($,rb_intern("inspect"),0));
-}
-
-VALUE FObject_s_new(BFObject *peer, VALUE qlass, VALUE argc, VALUE *argv) {
-	VALUE $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, peer);
+VALUE FObject_s_new(BFObject *jmax_peer, VALUE qlass, VALUE argc, VALUE *argv) {
 	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	GridObject *c_peer = NEW(GridObject,10); /* !@#$ allocate correct length */
+	VALUE ruby_peer;
+	c_peer->foreign_peer = jmax_peer;
+	ruby_peer = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
+	c_peer->peer = ruby_peer;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 
 	whinep($);
@@ -315,29 +314,13 @@ VALUE FObject_s_new(BFObject *peer, VALUE qlass, VALUE argc, VALUE *argv) {
 	return $;
 }
 
-#define DEF(_class_,_name_,_argc_) \
-	rb_define_method(_class_##_class,#_name_,_class_##_##_name_,_argc_)
-
-#define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(_class_##_class,#_name_,_class_##_s_##_name_,_argc_)
-
-VALUE gf_post_string (VALUE $, VALUE s) {
-	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
-
-	post("%s",RSTRING(s)->ptr);
-//	fprintf(stderr,"%s",RSTRING(s)->ptr);
-	return Qnil;
-}
-
 void gf_install_bridge (void) {
-	GridFlow_module = rb_eval_string("GridFlow");
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
 	DEF(FObject, send_thru, -1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, 3);
-	rb_define_singleton_method(GridFlow_module,
-		"post_string", gf_post_string, 1);
+	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
 }
 
 struct Timer {
@@ -348,9 +331,12 @@ struct Timer {
 };
 
 void gridflow_module_init (void) {
+	char *foo[] = {"/bin/false","/dev/null"};
+	whine("setting up Ruby-for-jMax...");
+	ruby_init();
+	ruby_options(COUNT(foo),foo);
+	rb_rescue(gridflow_module_init$1,0,gridflow_module_init$2,0);
 	gf_init();
-
-
 }
 
 fts_module_t gridflow_module = {

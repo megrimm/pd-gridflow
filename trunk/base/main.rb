@@ -29,13 +29,6 @@ require "base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
-def routine
-	$tasks.each {|k,v| GridFlow.exec k,v }
-	after(100) { routine }
-end
-
-$mainloop.after
-
 def GridFlow.post(s,*a)
 	GridFlow.post_string(sprintf s,*a)
 end
@@ -47,9 +40,12 @@ def GridFlow.whine(s,*a)
 	GridFlow.post(s,*a)
 end
 
-GridFlow.whine "This is the Ruby interpreter, version #{VERSION}"
+GridFlow.whine "This GridFlow 0.6.0 within Ruby version #{VERSION}"
 GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
+
+GridFlow.whine "hello???"
+GridFlow.whine GridFlow.constants.inspect
 
 for victim in [TCPSocket, TCPServer]
 	def victim.new
@@ -77,6 +73,24 @@ end
 #module GridFlow; class DFObject; include RubyFlow
 #	...
 #end end
+
+# adding some functionality to that:
+module GridFlow; class FObject
+	def self.[](*foo)
+		if foo.length==1 and foo[0] =~ / / then
+			foo = foo[0].split(/\s+/)
+		end
+		qlass = case foo[0]
+			when "@"; GridFlow::GridOp2
+			when "@!"; GridFlow::GridOp1
+			when /^@/; GridFlow.const_get("Grid"+foo[0][1..1].upcase+foo[0][2..-1])
+			else
+				raise ArgumentError, "GF names begin with @"
+			end
+		foo.shift
+		qlass.new(*foo)
+	end
+end end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -120,3 +134,12 @@ end
 #	attr_accessor 
 #
 #end
+
+#----------------------------------------------------------------#
+
+def routine
+	$tasks.each {|k,v| GridFlow.exec k,v }
+	$mainloop.timers.after(100) { routine }
+end
+
+routine

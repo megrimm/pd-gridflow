@@ -403,6 +403,7 @@ void GridObject_init(GridObject *$) {
 
 	{
 		GridClass *cl = $->gclass;
+		whine("cl=%p",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = GridInlet_new($,gh);

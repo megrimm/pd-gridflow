@@ -196,7 +196,7 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
   see METHOD_PTR, METHOD, OBJ
 */
 
-#define METHOD_ARGS(_class_) VALUE rself, int argc, VALUE *argv
+#define METHOD_ARGS(_class_) int argc, VALUE *argv, VALUE rself
 
 #define RAISE(args...) rb_raise(rb_eArgError,args)
 
@@ -525,6 +525,7 @@ struct GridOutlet {
 
 #define GridObject_FIELDS \
 	VALUE peer; /* point to Ruby peer */ \
+	void *foreign_peer; /* point to jMax peer */ \
 	GridClass *gclass; \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
@@ -655,17 +656,32 @@ extern const char *whine_header;
 /* **************************************************************** */
 /* 0.6.0 */
 
+typedef struct BFObject BFObject; /* fts_object_t or something */
+
 extern VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 extern VALUE FObject_class;
 
 uint64 RtMetro_now(void);
 
 void gf_install_bridge(void);
+VALUE gf_post_string (VALUE $, VALUE s);
+void FObject_mark (VALUE *$);
+void FObject_sweep (VALUE *$);
 VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $);
 VALUE FObject_send_thru_2(int argc, VALUE *argv, VALUE $);
+VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
+VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
+//VALUE FObject_s_new(BFObject *foo, VALUE qlass, VALUE argc, VALUE *argv);
+
 void gf_init (void);
 #define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)
 #define FIX2PTR(value) (void *)(FIX2INT(value)*4)
+
+#define DEF(_class_,_name_,_argc_) \
+	rb_define_method(_class_##_class,#_name_,_class_##_##_name_,_argc_)
+
+#define SDEF(_class_,_name_,_argc_) \
+	rb_define_singleton_method(_class_##_class,#_name_,_class_##_s_##_name_,_argc_)
 
 /* hack */
 int gf_winlet(void);
