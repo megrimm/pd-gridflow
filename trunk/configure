@@ -24,7 +24,7 @@ do
 		;;
 		--fast)
 			echo -e "Fast Mode (less error checking)"
-			OPTIONS="$OPTIONS, #define HAVE_SPEED"
+			OPTIONS="$OPTIONS HAVE_SPEED"
 		;;
 		--jmax-dist-dir)
 			JMAXROOTDIR=$2
@@ -123,8 +123,7 @@ fi
 echo -n "looking for x11 shared memory (acceleration): "
 if has-x11-shared-memory; then
 	echo "yes"
-	OPTIONS="$OPTIONS
-#define HAVE_X11_SHARED_MEMORY"
+	OPTIONS="$OPTIONS HAVE_X11_SHARED_MEMORY"
 else
 	echo "no"
 fi
@@ -132,14 +131,11 @@ fi
 echo -n "looking for pentium-compatible CPU: "
 if has-pentium-compatible; then
 	echo "yes"
-	OPTIONS="$OPTIONS, #define HAVE_PENTIUM"
-	OPTIONS="$OPTIONS, #define HAVE_TSC_PROFILING"
+	OPTIONS="$OPTIONS HAVE_PENTIUM"
+	OPTIONS="$OPTIONS HAVE_TSC_PROFILING"
 else
 	echo "no"
 fi
-
-# replace commas by linefeeds
-OPTIONS=`echo "$OPTIONS" | awk 'BEGIN{RS=", ?"}{print}'`
 
 echo
 echo "our format list: $FORMATS"
@@ -200,7 +196,9 @@ for format in $FORMATS; do
 done
 echo "_pre1_ _pre2_##FormatX11" # twice... hack.
 echo
-echo $OPTIONS
+for z in $OPTIONS; do
+	echo "#define $z"
+done
 echo
 echo "#endif"
 ) > c/src/config.h

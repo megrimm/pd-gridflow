@@ -108,7 +108,7 @@ Input/Output
 [!] should disable x11 shared memory on remote displays.
 [!] arguments to @in,@out could be a auto-open.
 
-File Formats
+Formats
 [!] Targa write support
 [ ] JPEG support
 [!] PPM P3    support
@@ -124,8 +124,10 @@ File Formats
 [!] VDSP support
 [!] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[!] rewinding file
-[!] FileFormat base class + inheritance + pre-written open() code, etc
+[!] rewinding file (or not)
+[!] Format base class + inheritance
+[x] Format pre-written open() code
+[x] single alarm for X11.
 
 Java/Swing
 [ ] color picker
@@ -138,7 +140,7 @@ Java/Swing
 UnitTesting/Bugs
 [ ] @out causes delayed crash when closing its associated window
 [ ] distinguish "mod" and "%" properly (re: rounding)
-[ ] leak in all FileFormat#close
+[ ] leak in all FileFormat#close (?)
 [ ] add alloc-tracing to find all leaks
 [ ] TCP server socket busy even after kill
 [!] TCP server blocks fts on accept()
