@@ -695,6 +695,9 @@ void gf_init (void);
 #define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
 #define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
+#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
+
+
 /* hack */
 int gf_winlet(void);
 

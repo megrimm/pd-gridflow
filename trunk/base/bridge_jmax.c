@@ -50,16 +50,19 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 	if (INTEGER_P(arg)) {
 		fts_set_int(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
-		char *name = rb_id2name(SYM2ID(arg));
-		fprintf(stderr,"1: %s\n",name);
-		fts_set_symbol(at,fts_new_symbol(name));
-		free(name);
+		char *name = rb_sym_name(arg);
+		/*fprintf(stderr,"1: %s\n",name);*/
+		fts_set_symbol(at,fts_new_symbol_copy(name));
 	} else if (FLOAT_P(arg)) {
 		fts_set_float(at,RFLOAT(arg)->value);
 	} else {
 		/* can't use EARG here */
 		rb_raise(rb_eArgError, "cannot convert argument of class %s", CLASS_OF(arg));
 	}
+}
+
+static char *rb_sym_name(VALUE sym) {
+	return strdup(rb_id2name(SYM2ID(sym)));
 }
 
 VALUE jr_convert(const fts_atom_t *at) {
@@ -202,7 +205,6 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 
 	for (i=0; i<n; i++) {
 		const char *name = RSTRING(RARRAY(methods)->ptr[i])->ptr;
-		post("looking at #%s\n", name);
 		/* max 10 inlets */
 		if (strlen(name)>3 && isdigit(name[1]) &&
 		 name[0]=='_' && name[2]=='_') {
@@ -211,9 +213,9 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 				post("inlet #%d does not exist, skipping\n");
 				continue;
 			}
-			//post("will wrap that method\n");
+			post("will wrap method #%s\n", name);
 			r = fts_method_define_varargs(
-				qlass,inlet,fts_new_symbol(name+3),
+				qlass,inlet,fts_new_symbol_copy(name+3),
 				BFObject_method_missing);
 			
 			RETIFFAIL("define_varargs",r);
@@ -237,13 +239,13 @@ int ac, const fts_atom_t *at) {
 
 VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 	fts_status_t r = fts_class_install(
-		fts_new_symbol(name2),BFObject_class_init);
+		fts_new_symbol_copy(name2),BFObject_class_init);
 	RETIFFAIL2("fts_class_install",r);
 	return Qnil;
 }
 
 VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) {
-	post("%d\n",FObject_peer($));
+/*	post("%d\n",FObject_peer($));*/
 	if (outlet<0 || outlet>=fts_object_get_outlets_number(FObject_peer($))) {
 		EARG("outlet %d does not exist",outlet);
 	}
@@ -253,7 +255,7 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) 
 		fts_atom_t sel;
 		rj_convert(sym,&sel);
 		for (i=0; i<argc; i++) rj_convert(argv[i],at+i);
-		fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));
+		/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
 		fts_outlet_send(FObject_peer($),outlet,fts_get_symbol(&sel),argc,at);
 	}
 	return Qnil;
