@@ -507,6 +507,10 @@ end
 //	gfpost("EnterMovies() == %d",EnterMovies());
 	EnterMovies();
 	extern Ruby cFormat;
-	fclass_install(&ciFormatQuickTimeCamera,cFormat); //hack
+/* i don't recall why i had to do this
+   but i had to change it because fclass_install() got rubyfied
+	rb_funcall(mGridFlow, SI(fclass_install), 2,
+		EVAL("GridFlow::FormatQuickTimeCamera"), cFormat); //hack
+*/
 }
 \end class FormatQuickTimeApple
