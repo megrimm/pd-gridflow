@@ -619,7 +619,8 @@ Feature.new {
 		c_test "
 			\#include <m_pd.h>
 			int main () { return 0; }
-		", [] and $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
+		", [] #and
+		# $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
 	}
 },
 Feature.new {
@@ -709,12 +710,17 @@ $CFLAGS += " -falign-functions=4" if c_test "main(){return 0;}", ["-falign-funct
 
 # making it easier for everybody I hope:
 ["/sw","/usr/local",ENV["home"]].each do|base|
-	$conf[:LDSOFLAGS] << "-L#{base}/lib" if 
-		not $LD_LIBRARY_PATH.include? "#{base}/lib" and
-		not $LIBRARY_PATH.include? "#{base}/lib"
-	$CFLAGS += " -I#{base}/include" if
-		not $C_INCLUDE_PATH.include? "#{base}/include" #and
-#		not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
+	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
+	   not $LIBRARY_PATH.include? "#{base}/lib" then
+		$conf[:LDSOFLAGS] << "-L#{base}/lib"
+		$LD_LIBRARY_PATH << "#{base}/lib"
+		$LIBRARY_PATH << "#{base}/lib"
+	end
+	#and not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
+	if not $C_INCLUDE_PATH.include? "#{base}/include" then
+		$CFLAGS += " -I#{base}/include"
+		$C_INCLUDE_PATH << "#{base}/include"
+	end
 end
 
 #--------------------------------#
@@ -825,6 +831,7 @@ DUAL.puts "This is the GridFlow 0.7.6 configurator within Ruby version #{VERSION
 begin
   $features.each {|feature| try feature }
 ensure
+  #!@#$ note: see END{} (duplication)
   system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c"
 end
 
