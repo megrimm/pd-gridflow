@@ -27,6 +27,11 @@ require "ftools"
 include Config
 LOG = File.open "./config.log", "w"
 
+LOG.puts "-"*64
+LOG.puts "Environment Variables: "
+ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
+LOG.puts "-"*64
+
 #----------------------------------------------------------------#
 
 class Or
@@ -224,7 +229,6 @@ FILES = [
     [:ruby, "main.rb"],
   ],
   [:directory, "extra/",
-	[:ruby, "eval_server.rb"],
 	[:ruby, "smpte.rb"],
 	[:ruby, "server_2.rb"],
 	[:ruby, "server_1_grid.rb"],
@@ -935,7 +939,7 @@ mf.sub! /^clean:/,"clean: clean2 "
 mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"
-
+mf.sub!(/^site-install:\s*install/,"site-install: ")
 mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
