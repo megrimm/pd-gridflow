@@ -62,7 +62,7 @@ Release steps:
 <list>
 <li>
 	Pictures formerly identified as "samples" should be screenshots of the
-	help files. The &lt;sample&gt; tag will be replaced by a &lt;help&gt; tag.
+	help files. The &amp;lt;sample&amp;gt; tag will be replaced by a &amp;lt;help&amp;gt; tag.
 </li>
 <li>
 	Pictures identified as help must be real help. The source code of

@@ -16,6 +16,7 @@
 	<li>mips : Silicon Graphics, non-PC (only tested without jMax)</li>
 </list></p>
 <p>Required Software:<list>
+	<li>Ruby 1.6 (language interpreter)</li>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 	<li>GNU Bash</li>
