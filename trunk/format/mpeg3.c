@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,7 +27,6 @@
 #include <string.h>
 #include <errno.h>
 
-extern FormatClass class_FormatMPEG3;
 typedef struct FormatMPEG3 {
 	Format_FIELDS;
 	mpeg3_t *mpeg;
@@ -92,10 +91,8 @@ METHOD(FormatMPEG3,init) {
 	argv++, argc--;
 
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
-	filename = rb_sym_name(argv[1]);
-	filename = RSTRING(
-	rb_funcall(GridFlow_module,SI(find_file),1,rb_str_new2(filename))
-	)->ptr;
+	filename = rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
+		rb_funcall(argv[1],SI(to_s),0)));
 
 	$->mpeg = mpeg3_open(strdup(filename));
 	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));

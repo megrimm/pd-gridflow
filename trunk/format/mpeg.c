@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,7 +33,6 @@
 */
 ImageDesc *mpeg_id = 0;
 
-extern FormatClass class_FormatMPEG;
 typedef struct FormatMPEG {
 	Format_FIELDS;
 } FormatMPEG;
@@ -88,10 +87,8 @@ METHOD(FormatMPEG,init) {
 
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
 
-	filename = Symbol_name(Var_get_symbol(at+1));
-	filename = RSTRING(
-	rb_funcall(GridFlow_module,rb_intern("find_file"),1,rb_str_new2(filename))
-	)->ptr;
+	filename = rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
+		rb_funcall(argv[1],SI(to_s),0)));
 	
 	$->st = Stream_open_file(filename,mode);
 	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
