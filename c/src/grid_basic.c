@@ -462,12 +462,16 @@ GRID_FLOW2(GridOp2,0) {
 	GridOutlet *out = $->out[0];
 	if ($->dim) {
 		int loop = Dim_prod($->dim);
-		int i;
-		Number data2[n];
-		for (i=0; i<n; i++) {
-			data2[i] = $->data[(in->dex+i)%loop];
+		if (in->dex+n <= loop) {
+			$->op->op_array2(n,data,$->data+in->dex);
+		} else {
+			int i;
+			Number data2[n];
+			for (i=0; i<n; i++) {
+				data2[i] = $->data[(in->dex+i)%loop];
+			}
+			$->op->op_array2(n,data,data2);
 		}
-		$->op->op_array2(n,data,data2);
 	} else {
 		$->op->op_array(n,data,$->rint);
 	}
