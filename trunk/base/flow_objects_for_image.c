@@ -263,10 +263,11 @@ GRID_INLET(GridDownscaleBy,0) {
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
+	// i don't remember why two rows instead of just one.
 	temp=new Grid(new Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
-	int rowsize2 = temp->dim->prod();
+	int rowsize2 = temp->dim->prod(1);
 	Pt<T> buf = (Pt<T>)*temp; //!@#$ maybe should be something else than T ?
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
@@ -298,8 +299,8 @@ GRID_INLET(GridDownscaleBy,0) {
 	#undef Z
 	} else {
 	#define Z(z) buf[p+z]=data[i+z]
-		for (; n>0; data+=rowsize, n-=rowsize,y++) {
-			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
+		for (; n>0 && out->dim; data+=rowsize, n-=rowsize,y++) {
+			if (y%scaley!=0) continue;
 			#define LOOP(z) for (int i=0,p=0; p<rowsize2; i+=xinc, p+=z)
 			switch(in->dim->get(2)) {
 			case 1: LOOP(1) {Z(0);} break;
