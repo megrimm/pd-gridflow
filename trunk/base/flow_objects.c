@@ -126,6 +126,7 @@ struct GridImport : GridObject {
 	\decl void _0_cast(NumberTypeE cast);
 	\decl void _0_reset();
 	\decl void _0_symbol(Symbol x);
+	\decl void _0_list(...);
 	\decl void _1_per_message();
 	GRINLET3(0);
 	GRINLET3(1);
@@ -163,6 +164,11 @@ GRID_INPUT(GridImport,1,dim_grid) {
 
 \def void _0_cast(NumberTypeE cast) {
 	this->cast = cast;
+}
+
+\def void _0_list(...) {
+	fprintf(stderr,"GridImport#_0_list(...)\n");
+	in[0]->from_ruby_list(argc,argv);
 }
 
 \def void _1_per_message() {
@@ -1293,7 +1299,7 @@ GRID_INLET(GridTranspose,0) {
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
-	fprintf(stderr,"d1=%d d2=%d na=%d nb=%d nc=%d nd=%d n=%d\n",d1,d2,na,nb,nc,nd,n);
+	//fprintf(stderr,"d1=%d d2=%d na=%d nb=%d nc=%d nd=%d n=%d\n",d1,d2,na,nb,nc,nd,n);
 	STACK_ARRAY(T,res,na*nb*nc*nd);
 	if (dim1==dim2) { out[0]->send(n,data); return; }
 	for (; n; n-=na*nb*nc*nd, data+=na*nb*nc*nd) {

@@ -368,6 +368,9 @@ end
 		-85,-85,85,-85,-85,85,85,85,
 		-51,-51,51,-51,-51,51,51,51]) {
 			a.send_in 0, 8,3,hm,*c }
+			
+# regressiontests for past bugs
+	a = FObject["@inner"] # that's it.
 end
 
 def test_rtmetro
@@ -515,7 +518,8 @@ end
 def test_anim(*msgs)
 	GridFlow.verbose = false
 	gin = FObject["@in"]
-	gout1 = FObject["@out x11"]
+	#gout1 = FObject["@out x11"]
+	gout1 = FObject["@out sdl"]
 	#gout1 = FObject["@out quicktime file test.mov"]
 	#gout1.send_in 0, :codec, :jpeg
 	fps = FObject["fps detailed"]
@@ -684,6 +688,7 @@ def test_layer
 end
 
 Images = [
+	"png file opensource.png",
 #	"png file ShaunaKennedy/atmosphere.png",
 #	"targa file #{$imdir}/tux.tga",
 #	"png file #{$imdir}/lena.png",
@@ -1035,11 +1040,12 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim "open ppm file #{$imdir}/g001.ppm","loop 0"
+#test_anim "open ppm file #{$imdir}/g001.ppm"#,"loop 0"
 #test_anim "open ppm file #{$animdir}/b.ppm.cat"
 #test_anim "open jpeg file #{$imdir}/rgb.jpeg.cat"
-#test_anim "open quicktime file /Users/artengine/gf_images/rgb_uncompressed.mov"
-test_anim "open quicktime file /Users/artengine/gf_images/test_mjpega.mov"
+#test_anim "open quicktime file BLAH"
+#test_anim "open quicktime file #{$imdir}/rgb_uncompressed.mov"
+#test_anim "open quicktime file #{$imdir}/test_mjpega.mov"
 #test_anim "open ppm gzfile motion_tracking.ppm.cat.gz"
 #test_anim "open videodev /dev/video","channel 1","size 480 640"
 #test_anim "open videodev /dev/video1 noinit","transfer read"

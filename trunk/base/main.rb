@@ -166,6 +166,7 @@ class FObject
 	attr_accessor :parent_patcher
 	attr_accessor :properties
 	attr_accessor :classname
+	def initialize2; end
 	def args
 		if defined? @args
 			@args
