@@ -9,7 +9,7 @@
 #X text 109 189 coordinates;
 #X obj 56 189 outlet;
 #X obj 57 164 listsublist 0 2;
-#X obj 8 141 demux 2;
+#X obj 8 141 shunt 2;
 #X text 56 9 @out's outlet 0;
 #X obj 100 142 outlet;
 #X obj 41 94 >> 8;
