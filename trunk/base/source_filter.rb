@@ -175,6 +175,9 @@ def handle_end(line)
 		(n>1 and fields[1]!=frame.name)
 		then raise "end not matching #{where}" end
 	end
+	if :ruby==frame then
+		if fields[0]!="ruby" then raise "expected \\end ruby" end
+	end
 	Out.puts ""
 end
 
@@ -183,6 +186,12 @@ def handle_startup(line)
 	Out.puts ""
 end
 
+def handle_ruby(line)
+	Out.puts ""
+	$stack.push :ruby
+end
+
+$rubymode=false
 $linenumber=1
 loop{
 	x = In.gets
@@ -190,6 +199,10 @@ loop{
 	if /^\s*\\(\w+)\s*(.*)$/.match x then
 		send("handle_#{$1}",$2)
 	else
+		if $stack[-1]==:ruby then
+			x.gsub!(/\\""/,'\\\1')
+			x="\"#{x.chomp}\"\n"
+		end
 		Out.puts x
 	end
 	$linenumber+=1
