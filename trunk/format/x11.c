@@ -142,8 +142,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	Ruby argv[5] = {
 		INT2NUM(0), SYM(position),
 		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
-	Ruby parent = rb_ivar_get(rself,SI(@parent));
-	if (parent!=Qnil) FObject_send_out(COUNT(argv),argv,parent);
+	send_out(COUNT(argv),argv);
 }
 
 void FormatX11::alarm() {

@@ -196,6 +196,7 @@ module GridIO
 		@format = nil
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
+		#@format.connect 1,self,2
 		@format.parent = self
 		@loop = true
 	end
@@ -289,6 +290,7 @@ class GridOut < GridObject
 
 	def _0_list(*a) @format._0_list(*a) end
 	def _1_grid(*a) send_out 0,:grid,*a end # for aalib
+	def _1_position(*a) send_out 0,:position,*a end
 
 	def _0_grid(*a)
 		check_file_open

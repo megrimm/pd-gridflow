@@ -245,7 +245,7 @@ GRID_INLET(GridExport,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) {
 		Ruby a[] = { INT2NUM(0), INTORFLOAT2NUM(data[i]) };
-		FObject_send_out(COUNT(a),a,rself);
+		send_out(COUNT(a),a);
 	}
 } GRID_FINISH {
 } GRID_END
@@ -277,7 +277,7 @@ GRID_INLET(GridExportList,0) {
 	for (int i=0; i<n; i++, data++)
 		rb_ary_store(list,in->dex+i+2,INTORFLOAT2NUM(*data));
 } GRID_FINISH {
-	FObject_send_out(rb_ary_len(list),rb_ary_ptr(list),rself);
+	send_out(rb_ary_len(list),rb_ary_ptr(list));
 	list = 0;
 	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
 } GRID_END
@@ -1071,7 +1071,7 @@ struct GridType : GridObject {
 
 GRID_INLET(GridType,0) {
 		Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
-		FObject_send_out(COUNT(a),a,rself);
+		send_out(COUNT(a),a);
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
@@ -1528,7 +1528,7 @@ GRID_INLET(GridFinished,0) {
 } GRID_FLOW {
 } GRID_FINISH {
 	Ruby a[] = { INT2NUM(0), sym_bang };
-	FObject_send_out(COUNT(a),a,rself);
+	send_out(COUNT(a),a);
 } GRID_END
 
 METHOD3(GridFinished,initialize) {
@@ -1815,7 +1815,7 @@ static void RtMetro_alarm(Ruby rself) {
 	DGS(RtMetro);
 	if (now >= self->next_time) {
 		Ruby a[] = { INT2NUM(0), sym_bang };
-		FObject_send_out(COUNT(a),a,rself);
+		self->send_out(COUNT(a),a);
 		/* self->next_time = now; */ /* jmax style, less realtime */
 		self->next_time += self->delay();
 	}
