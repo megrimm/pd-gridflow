@@ -1,61 +1,100 @@
-<html>
-<head>
+<html><head>
 <!-- $Id$ -->
 <title>GridFlow 0.7.2 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
-<body
-  bgcolor="#FFFFFF"
-  leftmargin="0"
-  topmargin="0"
-  marginwidth="0"
-  marginheight="0">
-<table
-  width="100%"
-  bgcolor="white"
-  border="0"
-  cellspacing="2">
-<tr> 
-<td colspan="4" bgcolor="#082069">
-<img src="images/titre_gridflow.png" width="253" height="23"></td>
-</tr>
-<tr> 
-<td>&nbsp;</td>
-</tr>
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<body bgcolor="#FFFFFF"
+  leftmargin="0" topmargin="0"
+  marginwidth="0" marginheight="0">
+<table width="100%" bgcolor="white" border="0" cellspacing="2">
+<tr><td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23">
+</td></tr><tr><td>&nbsp;</td></tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.2 - reference index</h4>
+    <h4>GridFlow 0.7.2 - index of this page:</h4>
 </td></tr>
 <tr> 
-  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="5%"  rowspan="2">&nbsp;</td>
   <td width="25%" height="23">&nbsp;</td>
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
 <tr><td colspan="2"><h4><a href="#Objects_for_making_grids_and_breaking_them_down">Objects for making grids and breaking them down</a></h4><ul>
+<li><a href="#@import"><img src="images/@import.png" alt="[@import {240 320 3}]" border="0"></a></li>
+<li><a href="#@export"><img src="images/@export.png" alt="[@export]" border="0"></a></li>
+<li><a href="#@export_list"><img src="images/@export_list.png" alt="[@export_list]" border="0"></a></li>
+<li><a href="#@export_symbol">@export_symbol</a></li>
+<li><a href="#@two"><img src="images/@two.png" alt="[@two]" border="0"></a></li>
+<li><a href="#@three"><img src="images/@three.png" alt="[@three]" border="0"></a></li>
+<li><a href="#@four"><img src="images/@four.png" alt="[@four]" border="0"></a></li>
+<li><a href="#@for"><img src="images/@for.png" alt="[@for 0 320 1]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Computing">Objects for Computing</a></h4><ul>
+<li><a href="#@"><img src="images/op/add.jpg" alt="[@ +]" border="0"></a></li>
+<li><a href="#@!"><img src="images/@!.png" alt="[@!]" border="0"></a></li>
+<li><a href="#@complex_sq">@complex_sq</a></li>
+<li><a href="#@fold"><img src="images/@fold.png" alt="[@fold +]" border="0"></a></li>
+<li><a href="#@scan">@scan</a></li>
+<li><a href="#@outer"><img src="images/@outer.png" alt="[@outer +]" border="0"></a></li>
+<li><a href="#@inner,@inner2"><img src="images/@inner.png" alt="[@inner * + 0]" border="0"></a></li>
+<li><a href="#@inner2"><img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"></a></li>
+<li><a href="#@join">@join</a></li>
+<li><a href="#@finished">@finished</a></li>
+<li><a href="#@cast">@cast</a></li>
+<li><a href="#@ravel">@ravel</a></li>
+<li><a href="#@grade">@grade</a></li>
+<li><a href="#perspective">perspective</a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
+<li><a href="#@redim"><img src="images/@redim.png" alt="[@redim {2}]" border="0"></a></li>
+<li><a href="#@store"><img src="images/@store.png" alt="[@store]" border="0"></a></li>
+<li><a href="#@identity_transform"><img src="images/@identity_transform.png" alt="[@identity_transform]" border="0"></a></li>
+<li><a href="#@scale_to"><img src="images/@scale_to.png" alt="[@scale_to]" border="0"></a></li>
+<li><a href="#@scale_by"><img src="images/@scale_by.png" alt="[@scale_by]" border="0"></a></li>
+<li><a href="#@downscale_by">@downscale_by</a></li>
+<li><a href="#@spread"><img src="images/@spread.png" alt="[@spread]" border="0"></a></li>
+<li><a href="#@rotate">@rotate</a></li>
+<li><a href="#@remap_image">@remap_image</a></li>
 </ul>
 <h4><a href="#Objects_for_Reporting">Objects for Reporting</a></h4><ul>
+<li><a href="#@dim"><img src="images/@dim.png" alt="[@dim]" border="0"></a></li>
+<li><a href="#@type">@type</a></li>
+<li><a href="#@print">@print</a></li>
+<li><a href="#rubyprint">rubyprint</a></li>
+<li><a href="#printargs">printargs</a></li>
 </ul>
 <h4><a href="#Objects_for_Color_Conversion">Objects for Color Conversion</a></h4><ul>
+<li><a href="#@apply_colormap_channelwise">@apply_colormap_channelwise</a></li>
+<li><a href="#@rgb_to_greyscale">@rgb_to_greyscale</a></li>
+<li><a href="#@greyscale_to_rgb">@greyscale_to_rgb</a></li>
 </ul>
 <h4><a href="#Objects_for_Miscellaneous_Picture_Processing">Objects for Miscellaneous Picture Processing</a></h4><ul>
+<li><a href="#@convolve"><img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"></a></li>
+<li><a href="#@contrast"><img src="images/@contrast.png" alt="[@contrast]" border="0"></a></li>
+<li><a href="#@posterize"><img src="images/@posterize.png" alt="[@posterize]" border="0"></a></li>
+<li><a href="#@solarize">@solarize</a></li>
+<li><a href="#@checkers">@checkers</a></li>
+<li><a href="#@layer">@layer</a></li>
+<li><a href="#@draw_polygon">@draw_polygon</a></li>
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
+<li><a href="#rtmetro">rtmetro</a></li>
+<li><a href="#pingpong">pingpong</a></li>
+<li><a href="#@global"><img src="images/@global.png" alt="[@global]" border="0"></a></li>
+<li><a href="#fps">fps</a></li>
 </ul>
 <h4><a href="#jMax_emulation">jMax emulation</a></h4><ul>
+<li><a href="#fork">fork</a></li>
+<li><a href="#jmax_udpsend">jmax_udpsend</a></li>
+<li><a href="#jmax_udpreceive">jmax_udpreceive</a></li>
 </ul>
 <br><br>
 </td></tr> 
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_making_grids_and_breaking_them_down"></a><h4>Objects for making grids and breaking them down</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@import">@import</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@import.png" alt="[@import {240 320 3}]" border="0"><br clear="left"><br><br><a href="images/help_@importexport.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>This object allows you to import non-grid jMax data, such as 
@@ -174,9 +213,8 @@
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Computing"></a><h4>Objects for Computing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@">@</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/op/add.jpg" alt="[@ +]" border="0"><br clear="left"><br><br><a href="images/help_@.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>This object outputs a grid by computing "in parallel" a same 
@@ -361,9 +399,8 @@
  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Coordinate_Transforms"></a><h4>Objects for Coordinate Transforms</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@redim">@redim</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@redim.png" alt="[@redim {2}]" border="0"><br clear="left"><br><br><a href="images/help_@redim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b><i>list(+integer)</i> dims<b>)</b>   
@@ -477,9 +514,8 @@
 		deformation out of outlet 0.</p>     <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Reporting"></a><h4>Objects for Reporting</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@dim">@dim</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@dim.png" alt="[@dim]" border="0"><br clear="left"><br><br><a href="images/help_@dim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
@@ -513,9 +549,8 @@
  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Color_Conversion"></a><h4>Objects for Color Conversion</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@apply_colormap_channelwise">@apply_colormap_channelwise</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>This object is useful for color correction. For each pixel 
@@ -539,9 +574,8 @@
  <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Miscellaneous_Picture_Processing"></a><h4>Objects for Miscellaneous Picture Processing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@convolve.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>this is the object for blurring, sharpening, finding edges, 
@@ -634,9 +668,8 @@
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Special_Objects"></a><h4>Special Objects</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rtmetro">rtmetro</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
@@ -695,11 +728,11 @@
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><a name="jMax_emulation"></a><h4>jMax emulation</h4></td></tr> <p>those classes emulate jMax functionality, 
-	for use within PureData and Ruby.</p> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="fork">fork</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="jMax_emulation"></a><h4>jMax emulation</h4></td></tr> <tr><td></td><td></td><td> <p>those classes emulate jMax functionality, 
+	for use within PureData and Ruby.</p> </td></tr>
+ <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="fork">fork</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Every incoming message is sent to inlet 1 and then sent to 
 		inlet 0 as well. Messages remain completely unaltered. Contrast 
@@ -720,18 +753,17 @@
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr> 
-<td colspan="4"> 
-<p><font size="-1">GridFlow 0.7.2 Documentation<br>
-by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+<td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"> 
+<p><font size="-1">
+GridFlow 0.7.2 Documentation<br>
+by Mathieu Bouchard
+<a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 and<br>
-Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-</td>
-</tr>
-</table>
-</body>
-</html>
+Alexandre Castonguay
+<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
+</font></p>
+</td></tr></table></body></html>
 
 

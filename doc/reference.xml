@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no" ?>
 <!DOCTYPE documentation SYSTEM 'jmax.dtd'>
-<documentation>
+<documentation title="Flow Classes">
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Class Reference
@@ -1227,8 +1227,10 @@
 </section>
 
 <section name="jMax emulation">
+	<prose>
 	<p>those classes emulate jMax functionality,
 	for use within PureData and Ruby.</p>
+	</prose>
 
 	<class name="fork">
 		<p>Every incoming message is sent to inlet 1 and then sent to

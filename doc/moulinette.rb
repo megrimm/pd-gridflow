@@ -32,6 +32,7 @@ require "xmlparser"
 	[ ] make it validate
 	[ ] make it find the size of the pictures (and insert width/height attrs)
 	[ ] tune the output
+	[ ] fix the header of the page
 
 =end
 
@@ -75,7 +76,8 @@ end
 
 def mkimg(icon,alt=nil)
 	icon.tag == 'icon' or raise "need icon"
-	url = icon.att["image"] || icon.parent.att["name"].sub(/,.*$/,"")
+	url = icon.att["image"] || icon.parent.att["name"]
+	url = url.sub(/,.*$/,"")
 	raise icon.att.to_s if not url
 	url = "images/" + url if url !~ /^images\//
 	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
@@ -86,27 +88,17 @@ def mkimg(icon,alt=nil)
 end
 
 class XNode
-	# note: in this class, methods starting with "prc_" are specializations
-	# of "print_contents", and starting with "prx_" are specializations of
-	# "print_index"
+	# subclass interface:
+	#  #prc : called by #print_contents of base class
+	#  #prx : called by #print_index of base class
+	#  #print_contents : private, don't touch
+	#  #print_index : private, don't touch
 
 	class<<self; attr_accessor :valid_tags; end
 	self.valid_tags = {}
-	%w(
-		p b u i k sup
-		section
-		list li
-		icon help
-		arg rest method
-		inlet outlet
-		class
-		operator_1 operator_2
-		documentation
-		format
-		prose
-		part link
-		macro class enum
-	).each {|k| self.valid_tags[k]=1 }
+	def self.register(*args)
+		for k in args do XNode.valid_tags[k]=self end
+	end
 
 	def initialize tag, att, *contents
 		@tag,@att,@contents =
@@ -117,63 +109,34 @@ class XNode
 	attr_accessor :parent
 	def [] i; contents[i] end
 
-	def prx_section
-		mk(:h4) { mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
-			print att["name"] }}
-		print "<ul>\n"
-		proc { print "</ul>\n" }
-	end
-
-	def prx_class
-		icon = contents.find {|x| XNode===x && x.tag == "icon" }
-		if not att["name"] then
-			raise "name tag missing?"
-		end
-		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
-			if icon
-				icon.att['image'] ||= att['name']
-				mkimg(icon,att["cname"])
-			else
-				print att["name"]
-			end
-		}}
-		puts
-	end
-
-	def prx_macro; end # !@#$
-	def prx_class; end # !@#$
-	def prx_enum; end # !@#$
-
 	$counters=[]
 	$sections=nil
 	def print_index
-		pr = begin send("prx_#{tag}"); rescue NameError=>x; end
-		contents.each {|x|
-			next unless XNode===x
-			x.print_index
-		}
+		pr = begin prx; rescue NameError=>x; end
+		contents.each {|x| next unless XNode===x; x.print_index }
 		pr[] if Proc===pr
 	end
 
 	def print_contents
-		pr = send("prc_#{tag}")
+		pr = send("prc")
 		contents.each {|x|
 			case x
-			when String
-				x.gsub!(/[\r\n\t ]+$/," ")
-				print escape_html(x)
-			when XNode
-				x.print_contents
+			when String; x.gsub!(/[\r\n\t ]+$/," "); print escape_html(x)
+			when XNode; x.print_contents
 			else raise "crap"
 			end
 		}
 		pr[] if Proc===pr
 	end
+end
 
-#----------------------------------------------------------------#
+class XHidden < XNode
+	def prc; end
+	register *%w( icon help arg rest documentation )
+end
 
-	def prc_documentation; end
-	def prc_section
+class XSection < XNode
+	def prc
 		write_black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
 			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
@@ -185,38 +148,70 @@ class XNode
 			$section=nil
 		}
 	end
-	def prc_p
-		t = if tag=="k" then "kbd" else tag end
-		print "<#{t}>"
-		proc { print "</#{t}>" }
-	end
-	alias prc_i prc_p
-	alias prc_u prc_p
-	alias prc_b prc_p
-	alias prc_k prc_p
-	alias prc_sup prc_p
-
-	def prc_list
-		$counters << (att.fetch("start"){"1"}).to_i
-		print "<ul>"
-		proc { print "</ul>"; $counters.pop }
+	def prx
+		mk(:h4) {
+			mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
+				print att["name"] }}
+		print "<ul>\n"
+		proc { print "</ul>\n" }
 	end
 
-	def prc_li
-		print "<li><b>#{$counters.last}</b> : "
-		$counters[-1] += 1
-		proc { print "</li>" }
-	end
+	register "section"
+end
 
-	def prc_prose
+class XProse < XNode
+	def prc
 		print "<tr>"
 		mk(:td) {}
 		mk(:td) {}
 		print "<td>"
 		proc { print "</td></tr>\n" }
 	end
+	register "prose"
+end
 
-	def prc_class
+# basic text formatting nodes.
+class XTNode < XNode
+	def prc
+		t = if tag=="k" then "kbd" else tag end
+		print "<#{t}>"
+		proc { print "</#{t}>" }
+	end
+	register *%w( p i u b k sup )
+end
+
+# explicit hyperlink on the web.
+class XLink < XNode
+	def prc
+		print "<a href='#{att[:to]}'>"
+		proc {
+			print att[:to] if contents.length==0
+			print "</a>"
+		}
+	end
+	register "link"
+end
+
+class XList < XNode
+	def prc
+		$counters << (att.fetch("start"){"1"}).to_i
+		print "<ul>"
+		proc { print "</ul>"; $counters.pop }
+	end
+	register "list"
+end
+
+class XLI < XNode
+	def prc
+		print "<li><b>#{$counters.last}</b> : "
+		$counters[-1] += 1
+		proc { print "</li>" }
+	end
+	register "li"
+end
+
+class XClass < XNode
+	def prc
 		tag = self.tag
 		name = att['name'] or raise
 		mk(:tr) {
@@ -248,8 +243,26 @@ class XNode
 		print "</td><td><br>\n"
 		proc { print "<br></td>" }
 	end
-		
-	def prc_method
+	def prx
+		icon = contents.find {|x| XNode===x && x.tag == "icon" }
+		if not att["name"] then
+			raise "name tag missing?"
+		end
+		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
+			if icon
+				icon.att['image'] ||= att['name']
+				mkimg(icon,att["cname"])
+			else
+				print att["name"]
+			end
+		}}
+		puts
+	end
+	register "class" #, "macro", "enum", "type", "use"
+end		
+
+class XMethod < XNode
+	def prc
 		print "<br>"
 		print "<b>", $portnum.join(" "), "</b> " if $portnum
 		print "<b>method</b> #{att['name']} <b>(</b>"
@@ -267,35 +280,11 @@ class XNode
 		print "<b>)</b> "
 		proc { print "<br>\n" }
 	end
+	register "method"
+end
 
-	def prc_inlet
-		# hidden
-		$portnum = [tag,att['id']]
-		proc { $portnum = nil }
-	end
-	alias prc_outlet prc_inlet
-
-	def prc_icon; end
-	def prc_help; end
-	def prc_arg; end
-	def prc_rest; end
-
-	def prc_part
-		$section[:table] ||= (
-			print "<tr>"
-			2.times { mk(:td) {}}
-			print "<td>"
-			print "<table border='1'>"
-		;0)
-		print "<tr>"
-		mk(:td) { print att["name"]  }
-		mk(:td) { print att["who"]   }
-		mk(:td) { print att["files"] }
-		print "<td>"
-		proc { print "</td></tr>\n" }
-	end
-
-	def prc_operator_1
+class XOperator < XNode
+	def prc
 		$section[:table] ||= (
 			print "<tr>"
 			2.times { mk(:td) {}}
@@ -332,18 +321,19 @@ class XNode
 			print "</tr>\n"
 		}
 	end
-	alias prc_operator_2 prc_operator_1
-
-	def prc_link
-		print "<a href='#{att[:to]}'>"
-		proc {
-			print att[:to] if contents.length==0
-			print "</a>"
-		}
-	end
-	alias prc_macro prc_class
-	alias prc_enum prc_class
+	register "operator-1", "operator-2"
 end
+
+class XPort < XNode
+	def prc
+		# hidden
+		$portnum = [tag,att['id']]
+		proc { $portnum = nil }
+	end
+	register "inlet", "outlet"
+end
+
+#----------------------------------------------------------------#
 
 class GFDocParser < XMLParser
 	attr_reader :stack
@@ -355,7 +345,6 @@ class GFDocParser < XMLParser
 	end
 
 	def startElement(tag,attrs)
-		tag=tag.downcase.gsub(/-/,'_')
 		if not XNode.valid_tags[tag] then
 		 	raise "unknown tag #{tag}"
 		end
@@ -363,8 +352,7 @@ class GFDocParser < XMLParser
 	end
 
 	def endElement(tag)
-		tag=tag.downcase.gsub(/-/,'_')
-		node = XNode.new(*@stack.pop)
+		node = XNode.valid_tags[tag].new(*@stack.pop)
 		@stack.last << node
 	end
 
@@ -377,67 +365,31 @@ class GFDocParser < XMLParser
 	end
 end
 
-class DocumentTraceParser < XMLParser
-	def initialize(args)
-		@indent_out = 0
-		super
-	end
-	def startElement(tag,attrs)
-		print "\n", "  "*@indent_out, "(#{tag} #{attrs.inspect}"
-		@indent_out += 1
-		#super
-	end	
-	def endElement(tag)
-		@indent_out -= 1
-		print ")"
-		#super
-	end
-	def character(text)
-		text = text.gsub /\s+/, " "
-		text.strip!
-		return if text==""
-		print "\n", "  "*@indent_out, "\"", text[0...40], "\""
-		#super
-	end
-end
-
 #----------------------------------------------------------------#
 
 def write_header
 puts <<EOF
-<html>
-<head>
+<html><head>
 <!-- #{"$"}Id#{"$"} -->
 <title>GridFlow #{GF_VERSION} - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
-<body
-  bgcolor="#FFFFFF"
-  leftmargin="0"
-  topmargin="0"
-  marginwidth="0"
-  marginheight="0">
-<table
-  width="100%"
-  bgcolor="white"
-  border="0"
-  cellspacing="2">
-<tr> 
-<td colspan="4" bgcolor="#082069">
-<img src="images/titre_gridflow.png" width="253" height="23"></td>
-</tr>
-<tr> 
-<td>&nbsp;</td>
-</tr>
+<body bgcolor="#FFFFFF"
+  leftmargin="0" topmargin="0"
+  marginwidth="0" marginheight="0">
+<table width="100%" bgcolor="white" border="0" cellspacing="2">
+<tr><td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23">
+</td></tr><tr><td>&nbsp;</td></tr>
 EOF
 write_black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow #{GF_VERSION} - reference index</h4>
+    <h4>GridFlow #{GF_VERSION} - index of this page:</h4>
 </td></tr>
 <tr> 
-  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="5%"  rowspan="2">&nbsp;</td>
   <td width="25%" height="23">&nbsp;</td>
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
@@ -447,27 +399,25 @@ end
 
 def write_black_ruler
 puts <<EOF
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 EOF
 end
 
 def write_footer
 puts <<EOF
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr> 
-<td colspan="4"> 
-<p><font size="-1">GridFlow #{GF_VERSION} Documentation<br>
-by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+<td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"> 
+<p><font size="-1">
+GridFlow #{GF_VERSION} Documentation<br>
+by Mathieu Bouchard
+<a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 and<br>
-Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-</td>
-</tr>
-</table>
-</body>
-</html>
+Alexandre Castonguay
+<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
+</font></p>
+</td></tr></table></body></html>
 EOF
 end
 
