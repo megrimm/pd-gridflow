@@ -292,10 +292,10 @@ int *x1, int *y1, int *x2, int *y2) {
 		*x1=*y1=*x2=*y2=0;
 		return;
 	}
-	*x1 = rb_ary_ptr(a)[0];
-	*y1 = rb_ary_ptr(a)[1];
-	*x2 = rb_ary_ptr(a)[2];
-	*y2 = rb_ary_ptr(a)[3];
+	*x1 = INT(rb_ary_ptr(a)[0]);
+	*y1 = INT(rb_ary_ptr(a)[1]);
+	*x2 = INT(rb_ary_ptr(a)[2]);
+	*y2 = INT(rb_ary_ptr(a)[3]);
 }
 
 /* and this to displace a gobj: */
