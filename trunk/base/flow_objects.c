@@ -1375,116 +1375,15 @@ GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0,4)),
 
 /* **************************************************************** */
 /* [rtmetro] */
-
-\class RtMetro < GridObject
-struct RtMetro : GridObject {
-	\attr int ms; /* millisecond time interval */
-	\attr bool on;
-	\attr int mode; /* 0=equal; 1=geiger */
-
-	uint64 next_time; /* microseconds since epoch: next time an event occurs */
-	uint64 last;      /* microseconds since epoch: last time we checked */
-
-	uint64 delay();
-
-	\decl void initialize (int ms=1000, Symbol mode=Qnil);
-	\decl void _0_int (int x);
-	\decl void _1_int (int x);
-	\decl void delete_m();
-
-	~RtMetro() {
-		if (on) {
-			gfpost("~RtMetro: deleting rtmetro alarm for self=%08x rself=%08x",
-				(long)this,(long)rself);
-			MainLoop_remove((void *)rself);
-		} else {
-			gfpost("~RtMetro: nothing to do");
-		}
-	}
-};
-
-uint64 RtMetro_now() {
-	struct timeval nowtv;
-	gettimeofday(&nowtv,0);
-	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
-}
-
-uint64 RtMetro::delay() {
-	switch (mode) {
-		case 0:
-			return 1000LL*ms;
-		case 1:
-			/* Bangs in a geiger counter have a l*dt probability of occuring
-			in a dt time interval. Therefore the time till the next event
-			follows a Exp(l) law, for which:
-			f(t) = l*exp(-l*t)
-			F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
-			F^-1(p) = -log(1-p)/l
-			*/
-			return (uint64)(1000LL*ms*-log(1-drand()));
-		default:
-			abort();
-	}
-}
-
-static void RtMetro_alarm(Ruby rself) {
-	uint64 now = RtMetro_now();
-	DGS(RtMetro);
-	if (now >= self->next_time) {
-		Ruby a[] = { INT2NUM(0), bsym._bang };
-		self->send_out(COUNT(a),a);
-		/* self->next_time = now; */ /* jmax style, less realtime */
-		self->next_time += self->delay();
-	}
-	self->last = now;
-}
-
-\def void _0_int (int x) {
-	int oon = on;
-	on = !! x;
-	gfpost("on = %d",on);
-	if (oon && !on) {
-		gfpost("_0_int: deleting rtmetro alarm for self=%08x rself=%08x",
-			(long)this,(long)rself);
-		MainLoop_remove((void *)rself);
-	} else if (!oon && on) {
-		gfpost("_0_int: creating rtmetro alarm for self=%08x rself=%08x",
-			(long)this,(long)rself);
-		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
-		next_time = RtMetro_now();
-	}
-}
-
-\def void _1_int (int x) {
-	ms = x;
-	gfpost("ms = %d",ms);
-}
-
-\def void initialize (int ms, Symbol mode) {
-	rb_call_super(argc,argv);
-	this->ms = ms;
-	on = 0;
-	mode = 0;
-	if (argc>=2) {
-		if (mode==Qnil || mode==SYM(equal)) this->mode=0;
-		else if (mode==SYM(geiger)) this->mode=1;
-		else RAISE("this is not a known mode");
-	}		
-	gfpost("ms = %d",ms);
-	gfpost("on = %d",on);
-	gfpost("mode = %d",mode);
-}
-
-\def void delete_m () {
-	gfpost("RtMetro#del");
-	rb_funcall(rself,SI(_0_int),1,INT2NUM(0));
-}
-
-GRCLASS(RtMetro,LIST(),
-	\grdecl
-) { IEVAL(rself,"install 'rtmetro',2,1"); }
-
-\end class RtMetro
+/* This class has been removed. The following is an interesting comment: */
+/* Bangs in a geiger counter have a l*dt probability of occuring
+in a dt time interval. Therefore the time till the next event
+follows a Exp(l) law, for which:
+f(t) = l*exp(-l*t)
+F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
+F^-1(p) = -log(1-p)/l
+*/
+//return (uint64)(1000LL*ms*-log(1-drand()));
 
 /* **************************************************************** */
 
