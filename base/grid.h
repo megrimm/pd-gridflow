@@ -439,7 +439,7 @@ struct Dim {
 
 	Dim(int n, int32 *v=0) {
 		this->n = n;
-		if (v) memcpy(this->v,v,n*sizeof(int)), check();
+		if (v) { memcpy(this->v,v,n*sizeof(int)); check(); }
 	}
 
 	Dim *dup() { return new Dim(n,v); }
@@ -710,14 +710,7 @@ struct Grid {
 	NumberTypeE nt;
 	void *data;
 
-	Grid() {
-		next = this;
-		dc = 0;
-		dim = 0;
-		nt = int32_type_i;
-		data = 0;
-	}
-
+	Grid() : next(this), dc(0), dim(0), nt(int32_type_i), data(0) {}
 	void constrain(DimConstraint dc_) { dc=dc_; }
 	void init(Dim *dim, NumberTypeE nt=int32_type_i);
 	void init_clear(Dim *dim, NumberTypeE nt=int32_type_i);
@@ -816,11 +809,8 @@ GRID_FINISH
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT2(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
-		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
 		if (is_busy_except(in)) { \
-			/*gfpost("object busy (backstoring data)"); */\
 			if (_member_.next != &_member_) { \
-				/*RAISE("object busy and backstore busy (aborting)");*/ \
 				delete _member_.next; \
 			} \
 			_member_.next = new Grid(); \
@@ -877,18 +867,15 @@ struct GridInlet {
 	void set_factor(int factor);
 	bool is_busy() { return !!dim; }
 	void begin( int argc, Ruby *argv);
-	template <class T>
-	void flow(int mode, int n, Pt<T> data);
+	template <class T> void flow(int mode, int n, Pt<T> data);
 	void end();
-	void list(  int argc, Ruby *argv);
-	void int_(  int argc, Ruby *argv);
-	void float_(int argc, Ruby *argv);
-	void grid(Grid *g);
+	void from_ruby_list(int argc, Ruby *argv);
+	void from_ruby(int argc, Ruby *argv);
+	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);
 
 private:
-	template <class T>
-	void grid2(Grid *g, T foo);
+	template <class T> void from_grid2(Grid *g, T foo);
 };
 
 /* **************************************************************** */
@@ -948,28 +935,20 @@ struct GridOutlet {
 	GridOutlet(GridObject *parent, int woutlet);
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
-
 	void begin(Dim *dim, NumberTypeE nt=int32_type_i);
 	void abort();
-
 	/* give: data must be dynamic. it should not be used by the caller
 	   beyond the call to give() */
-	template <class T>
-	void give(int n, Pt<T> data);
-
+	template <class T> void give(int n, Pt<T> data);
 	/* send/send_direct: data belongs to caller, may be stack-allocated,
 	   receiver doesn't modify the data; in send(), there is buffering;
 	   in send_direct(), there is not. When switching from buffered to
 	   unbuffered mode, flush() must be called */
-	template <class T>
-	void send(int n, Pt<T> data);
-
+	template <class T> void send(int n, Pt<T> data);
 	void flush();
-
 	void callback(GridInlet *in);
 private:
-	template <class T>
-	void send_direct(int n, Pt<T> data);
+	template <class T> void send_direct(int n, Pt<T> data);
 	void end() {
 		flush();
 		for (int i=0; i<ninlets; i++) inlets[i]->end();

@@ -332,8 +332,7 @@ void GridInlet::end() {
 	dex = 0;
 }
 
-template <class T>
-void GridInlet::grid2(Grid *g, T foo) {
+template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	assert(gh);
 	nt = g->nt;
 	dim = g->dim->dup();
@@ -366,24 +365,22 @@ void GridInlet::grid2(Grid *g, T foo) {
 	dex = 0;
 }
 
-void GridInlet::grid(Grid *g) {
+void GridInlet::from_grid(Grid *g) {
 	if (!supports_type(g->nt))
 		RAISE("%s: number type %s not supported here",
 			parent->info(), number_type_table[g->nt].name);
-#define FOO(T) grid2(g,(T)0);
+#define FOO(T) from_grid2(g,(T)0);
 	TYPESWITCH(g->nt,FOO,)
 #undef FOO
 }
 
-void GridInlet::list(int argc, Ruby *argv) {
-	Grid t;	t.init_from_ruby_list(argc,argv); grid(&t);
+void GridInlet::from_ruby_list(int argc, Ruby *argv) {
+	Grid t;	t.init_from_ruby_list(argc,argv); from_grid(&t);
 }
 
-void GridInlet::int_(int argc, Ruby *argv) {
-	Grid t; t.init_from_ruby(argv[0]); grid(&t);
+void GridInlet::from_ruby(int argc, Ruby *argv) {
+	Grid t; t.init_from_ruby(argv[0]); from_grid(&t);
 }
-
-void GridInlet::float_(int argc, Ruby *argv) {int_(argc,argv);}
 
 /* **************** GridOutlet ************************************ */
 
@@ -689,10 +686,10 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 		if (!inl) RAISE("inlet #%d missing for object %s",i,args());
 		argc--, argv++;
 		switch(m) {
-		case 0: return inl->begin(  argc,argv), Qnil;
-		case 1: return inl->list(   argc,argv), Qnil;
-		case 2: return inl->int_(   argc,argv), Qnil;
-		case 3: return inl->float_( argc,argv), Qnil;
+		case 0: return inl->begin(         argc,argv), Qnil;
+		case 1: return inl->from_ruby_list(argc,argv), Qnil;
+		case 2: return inl->from_ruby(     argc,argv), Qnil;
+		case 3: return inl->from_ruby(     argc,argv), Qnil;
 		}
 		return Qnil;
 	}
