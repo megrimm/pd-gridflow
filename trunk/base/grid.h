@@ -72,6 +72,9 @@ extern "C" {
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
+/* because of older versions of Ruby (1.6.???) */
+#define rb_obj_class(o) rb_funcall((o),SI(class),0)
+
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
