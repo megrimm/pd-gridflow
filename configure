@@ -124,6 +124,7 @@ class Feature
 	attr2 :name
 	attr2 :status #!@#$
 	attr2 :uses_so #!@#$
+	attr2 :uses_o #!@#$
 	attr2 :uses_h #!@#$
 	attr2 :uses_feature #!@#$
 	attr2 :test #!@#$
@@ -170,6 +171,7 @@ Feature.new {
 	name "Pentium-compatible CPU"
 	# todo: -mcpu=pentiumpro, and so on.
 	uses_so ["-mcpu=pentium"]
+#	uses_o ["cpu/pentium.o"]
 	test proc {
 		(Config::CONFIG["arch"] =~ /i586|i686/) and
 		# this is very "heuristic" to say the least. sorry.
@@ -365,6 +367,7 @@ $conf={
 	:FORMATS => [],
 	:OPTIONS => [],
 	:DEFINES => [],
+	:OBJS => [],
 }
 
 #--------------------------------#
@@ -513,6 +516,7 @@ def try feature
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
 	$conf[:DEFINES].concat(feature.defines||[])
@@ -533,7 +537,7 @@ $conf[:LDSOFLAGS].uniq!
 #--------------------------------#
 
 puts ""
-for z in [:JMAX_ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
+for z in [:JMAX_ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
   puts "#{z}: #{$conf[z].inspect}"
 end
 puts ""
@@ -618,16 +622,11 @@ for z in $conf[:DEFINES] do
 	f.puts "#{z[0]}=#{z[1]}"
 end
 
-$sources = sources = %w(
-	base/number.c
-	base/grid.c
-	base/main.c
-	base/flow_objects.c
-)
+$sources = %w(base/number.c base/grid.c base/main.c base/flow_objects.c)
 for format in $conf[:FORMATS] do
-	sources << "format/#{format.downcase}.c"
+	$sources << "format/#{format.downcase}.c"
 end
-f.puts "SOURCES = #{sources.join(" ")} \\"
+f.puts "SOURCES = #{$sources.join(" ")} \\"
 f.puts ""
 #make_makefile f
 }
@@ -702,6 +701,7 @@ mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++"
 mf.sub! /^.c.o:/, ".c.o: base/grid.h config.make Makefile Makefile.gf"
+mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS]}"
 
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
 	(if Config::CONFIG["arch"] =~ /macosx/

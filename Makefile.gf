@@ -47,6 +47,10 @@ ifeq ($(HAVE_STATIC_RUBY),yes)
 	RUBYA2 = libruby.a/*.o
 endif
 
+cpu/pentium.o: cpu/pentium.rb
+	ruby cpu/pentium.rb > cpu/pentium.asm
+	nasm -felf cpu/pentium.asm -o cpu/pentium.o
+
 libruby.a/object.o:
 	mkdir -p libruby.a
 	(cd libruby.a; ar x $(PATH_LIBRUBY_A) || rm -f *.o)
@@ -54,7 +58,8 @@ libruby.a/object.o:
 clean2::
 	rm -f $(JMAX_LIB) \
 	$(OBJDIR)/base_bridge_jmax$(OSUF) \
-	$(OBJDIR)/base_bridge_puredata$(OSUF)
+	$(OBJDIR)/base_bridge_puredata$(OSUF) \
+	$(OBJS)
 
 install2:: ruby-install jmax-install
 
@@ -66,7 +71,7 @@ kloc::
 	configure Makefile.gf extra/*.rb
 
 edit::
-	(nedit base/*.rb base/*.[ch] format/main.rb &)
+	(nedit base/*.[ch] */main.rb base/test.rb configure &)
 
 CONF = config.make config.h Makefile
 
