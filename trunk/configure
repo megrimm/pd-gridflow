@@ -415,7 +415,7 @@ File.open("config.h","w") {|f| f.puts "
 \#ifdef STANDALONE
 \#include \"base/bridge_none.h\"
 \#else
-\#include \"base/bridge_jmax.h\"
+//\#include \"base/bridge_jmax.h\"
 \#endif
 
 #define FORMAT_LIST(_pre1_,_pre2_) \\"

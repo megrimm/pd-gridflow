@@ -249,33 +249,30 @@ void FormatGrid_close (FormatGrid *$) {
 	FREE($);
 }
 
-static void FormatGrid_option (FormatGrid *$, ATOMLIST) {
+static void FormatGrid_option (FormatGrid *$, int argc, VALUE *argv) {
 	int fd = Stream_get_fd($->st);
-	Symbol sym = GET(0,symbol,SYM(foo));
+	VALUE sym = argv[0];
 	if (sym == SYM(type)) {
 		/* bug: should not be able to modify this _during_ a transfer */
-		Symbol value = GET(1,symbol,SYM(uint8));
+		VALUE value = argv[1];
 		if (value==SYM(uint8)) { $->bpv=8; }
 		else if (value==SYM(int32)) { $->bpv=32; }
 		whine("$->bpv = %d",$->bpv);
 	} else {
-		whine("unknown option: %s", Symbol_name(sym));
+		RAISE("unknown option: %s", sym);
 	}
 }
 
 /* **************************************************************** */
 
-static bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_file (FormatGrid *$, int mode, int argc, VALUE *argv) {
 	const char *filename;
 	$->is_socket = false;
 
-	if (ac<1) { whine("not enough arguments"); goto err; }
+	if (argc<1) { whine("not enough arguments"); goto err; }
 
-	if (!Var_has_symbol(at+0)) {
-		whine("bad argument"); goto err;
-	}
-
-	filename = Symbol_name(Var_get_symbol(at+0));
+	if (TYPE(argv[0])!=T_SYMBOL) RAISE("bad argument");
+	filename = rb_id2name(SYM2ID(argv[0]));
 	$->st = Stream_open_file(filename,mode);
 	if (!$->st) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
@@ -296,25 +293,23 @@ static void FormatGrid_init (FormatGrid *$) {
 #include <netdb.h>
 #include <netinet/in.h>
 
-static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_tcp (FormatGrid *$, int mode, int argc, VALUE *argv) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
 	FormatGrid_init($);
 
-	if (ac<2) { whine("not enough arguments"); goto err; }
+	if (argc<2) { whine("not enough arguments"); goto err; }
 
-	if (!Var_has_symbol(at+0) || !Var_has_int(at+1)) {
-		whine("bad arguments"); goto err;
-	}
+	if (TYPE(argv[0])!=T_SYMBOL || TYPE(argv[1])!=T_FIXNUM) RAISE("bad arguments");
 
 	stream = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
-	address.sin_port = htons(Var_get_int(at+1));
+	address.sin_port = htons(NUM2INT(argv[1]));
 
 	{
-		struct hostent *h = gethostbyname(Symbol_name(Var_get_symbol(at+0)));
+		struct hostent *h = gethostbyname(rb_id2name(SYM2ID(argv[0])));
 		if (!h) {
 			whine("open_tcp(gethostbyname): %s",strerror(errno));
 			goto err;
@@ -335,22 +330,21 @@ err:
 	return false;
 }
 
-static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
+static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, int argc, VALUE
+*argv) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
 	FormatGrid_init($);
 
-	if (ac<1) { whine("not enough arguments"); goto err; }
+	if (argc<1) { whine("not enough arguments"); goto err; }
 
-	if (!Var_has_int(at+0)) {
-		whine("bad arguments"); goto err;
-	}
+	if (TYPE(argv[0])!=T_FIXNUM) RAISE("bad arguments");
 
 	$->listener = socket(AF_INET,SOCK_STREAM,0);
 
 	address.sin_family = AF_INET;
-	address.sin_port = htons(Var_get_int(at+0));
+	address.sin_port = htons(NUM2INT(argv[0]));
 	address.sin_addr.s_addr = INADDR_ANY;  /* whatever */
 
 	if (0> bind($->listener,(struct sockaddr *)&address,sizeof(address))) {
@@ -386,26 +380,26 @@ err:
 
 /* **************************************************************** */
 
-static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int
+mode, int argc, VALUE *argv) {
 	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
 	if (!$) return 0;
 
 	FormatGrid_init($);
 
-	if (ac<1) { whine("not enough arguments"); goto err; }
+	if (argc<1) RAISE("not enough arguments");
 
 	{
 		int result;
-		Symbol sym = Var_get_symbol(at+0);
+		VALUE sym = argv[0];
 		if (sym == SYM(file)) {
-			result = FormatGrid_open_file($,mode,ac-1,at+1);
+			result = FormatGrid_open_file($,mode,argc-1,argv+1);
 		} else if (sym == SYM(tcp)) {
-			result = FormatGrid_open_tcp($,mode,ac-1,at+1);
+			result = FormatGrid_open_tcp($,mode,argc-1,argv+1);
 		} else if (sym == SYM(tcpserver)) {
-			result = FormatGrid_open_tcpserver($,mode,ac-1,at+1);
+			result = FormatGrid_open_tcpserver($,mode,argc-1,argv+1);
 		} else {
-			whine("unknown access method '%s'",Symbol_name(sym));
-			goto err;
+			RAISE("unknown access method '%s'",sym);
 		}
 		if (!result) goto err;
 	}

@@ -4,13 +4,13 @@
 "6" is planned for 0.6
 "7" is planned for 0.7
 
-Distribution (0.5.0)
-[5] upload on both web sites
-[5] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
-
 Distribution (0.6.0)
 [6] review all documentation
 [6] review all patches
+[6] upload on both web sites
+[6] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
+
+Distribution (0.6.1)
 
 Installation
 [6] de-jmax-ify the build process; installable doc; installable includes
@@ -51,6 +51,8 @@ Documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
+[ ] Add simple C preprocessor to add multi-line strings
+    (because of rb_eval_string ?)
 [6] C Stream -> Ruby IO/File/TCPSocket
 [6] C GridHandler -> Ruby GridHandler
 [6] C Format -> Ruby GFFormat
@@ -135,6 +137,7 @@ Input/Output
 [6] PureData bridge
 [ ] Max bridge
 [ ] Gimp bridge
+[ ] Gnome/Gstreamer bridge
 [ ] TCP: move out of Grid
 [ ] TCP: non-blocking write
 [ ] TCP: non-blocking listen
@@ -160,6 +163,7 @@ Format
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
 [ ] Videodev: find out what channel the small cam goes on and why it isn't displaying.
 [ ] Raw: a new format for reading arbitrary data.
+[ ] Common message-passing format (includes other things than grid)
 [ ] X11: mouse input
 [ ] /dev/dsp
 [ ] /dev/mixer

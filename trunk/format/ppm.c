@@ -121,16 +121,17 @@ static void FormatPPM_close (Format *$) {
 	FREE($);
 }
 
-static Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
+static Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode,
+int argc, VALUE *argv) {
 	FormatPPM *$ = (FormatPPM *)Format_open(&class_FormatPPM,parent,mode);
 	const char *filename;
 
 	if (!$) return 0;
 
-	if (ac!=2 || Var_get_symbol(at+0) != SYM(file)) {
+	if (argc!=2 || argv[0] != SYM(file)) {
 		whine("usage: ppm file <filename>"); goto err;
 	}
-	filename = Symbol_name(Var_get_symbol(at+1));
+	filename = Symbol_name(argv[1]);
 
 	$->st = Stream_open_file(filename,mode);
 	if (!$->st) {

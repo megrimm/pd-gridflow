@@ -99,8 +99,8 @@ endif #25
 ARCH_CFLAGS += -Wall # for cleanliness
 ARCH_CFLAGS += -Wno-unused # it's normal to have unused parameters
 ARCH_CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
-ARCH_CFLAGS += -O1
-# ARCH_CFLAGS += -O6 -funroll-loops # optimisation
+# ARCH_CFLAGS += -O1
+ARCH_CFLAGS += -O6 -funroll-loops # optimisation
 ARCH_CFLAGS += -g # gdb info
 ARCH_CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 ARCH_CFLAGS += -fpic # some OSes need that for .so files
