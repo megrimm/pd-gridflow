@@ -72,15 +72,12 @@
 			<method name="option">
 				<arg name="selector" type="symbol"/>
 				<rest name="stuff"/>
-				for format-specific options.
-				(usually in devices that masquerade as formats).
-
-				see section "External Picture Formats".
+				Obsolete. the word "option" is optional now.
 			</method>
-			<method name="option rewind">
+			<method name="rewind">
 				rewinds to beginning of file if applicable.
 			</method>
-			<method name="option loop">
+			<method name="loop">
 				<arg name="flag" type="bool"/>
 				controls the automatic looping of movies.
 			</method>
@@ -123,7 +120,7 @@
 			<arg name="columns" type="integer"/>
 
 			This alternate way to create an @out automatically calls
-			"open x11 here" and "option out_size <i>rows columns</i>".
+			"open x11 here" and "out_size <i>rows columns</i>".
 		</method>
 		<inlet id="0">
 			<method name="open" min="1">
@@ -150,18 +147,15 @@
 			<method name="option">
 				<arg name="selector" type="symbol"/>
 				<rest name="stuff"/>
-				for format-specific options.
-				(usually in devices that masquerade as formats).
-
-				see section "External Picture Formats".
+				Obsolete. Omit the word "option" now.
 			</method>
-			<method name="option timelog">
+			<method name="timelog">
 				<arg name="status" type="0,1"/>
 				when status=1, current time (unix clock) and time since last
 				frame-end are printed in the console. when status=0, it is off.
 				default is 0.
 			</method>
-			<method name="option rewind">
+			<method name="rewind">
 				rewinds to beginning of file if applicable.
 				will overwrite the previous data.
 			</method>
@@ -242,7 +236,7 @@
 		<method name="open quicktime file">
 			<arg name="filename" type="symbol" />
 		</method>
-		<method name="option codec">
+		<method name="codec">
 			<arg name="codec" type="symbol"/>
 			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4.
 			Must be set before the first frame is written.
@@ -313,39 +307,42 @@
 			local machine via InterNet or compatible network.
 			Answers the call.
 		</method>
-		<method name="option type int32">
+		<method name="type int32">
 			output will be as 32 bit signed integers.
 		</method>
-		<method name="option type uint8">
+		<method name="type uint8">
 			output will be as 8 bit unsigned integers.
 		</method>
-		<method name="option headerful">
-			cancels option headerless (and back to reading .grid)
+		<method name="headerful">
+			cancels "headerless" (and back to reading .grid)
 		</method>
-		<method name="option headerless">
+		<method name="headerless">
 			<rest name="dimensions" type="integer"/>
 			instead of reading .grid files with header, will read raw data,
 			faking a .grid header to itself. It will use the hereby specified
 			dimension list, as well as two other settings:
-			<k>option type</k> and <k>option endian</k>.
+			<k>type</k> and <k>endian</k>.
 		</method>
 
 		<p>When writing "raw" data, a file may be considered a long string of
 		base 256 digits (called bytes), but different computers have different
 		conventions for dealing with them:
 
-		<method name="option endian big">
+		<method name="endian" type="symbol(big|endian|same)">
+			<list><li>big:
 			A number will be written starting with the biggest digit.
 			This is the natural way on the Macintosh, Sun, Amiga, and so on.
-		</method>
-		<method name="option endian little">
+			</li>
+			<li>little:
 			A number will be written starting with the smallest digit.
 			This is the natural way on the Intel 386/Pentium.
-		</method>
-		<method name="option endian same">
+			</li>
+			<li>same:
 			A number will be written in whichever way is more natural
 			on this computer. The natural way is slightly faster to handle.
 			This is the default setting.
+			</li>
+			</list>
 		</method>
 		</p>
 	</class>
@@ -376,27 +373,30 @@
 		Use that @inner2 object as a RGB-BGR converter.</p>
 
 		<p>color adjustments:
-		<method name="option brightness"><arg name="level" type="0-65535"/></method>
-		<method name="option hue"       ><arg name="level" type="0-65535"/></method>
-		<method name="option colour"    ><arg name="level" type="0-65535"/></method>
-		<method name="option contrast"  ><arg name="level" type="0-65535"/></method>
-		<method name="option whiteness" ><arg name="level" type="0-65535"/></method>
+		<method name="brightness"><arg name="level" type="0-65535"/></method>
+		<method name="hue"       ><arg name="level" type="0-65535"/></method>
+		<method name="colour"    ><arg name="level" type="0-65535"/></method>
+		<method name="contrast"  ><arg name="level" type="0-65535"/></method>
+		<method name="whiteness" ><arg name="level" type="0-65535"/></method>
 		</p>
 		
 		<p>other options:
-		<method name="option channel"   ><arg type="integer"/></method>
-		<method name="option tuner"     ><arg type="integer"/></method>
-		<method name="option norm"      ><arg type="integer"/></method>
-		<method name="option frequency" ><arg type="integer"/></method>
-		<method name="option transfer mmap">
+		<method name="channel"   ><arg type="integer"/></method>
+		<method name="tuner"     ><arg type="integer"/></method>
+		<method name="norm"      ><arg type="integer"/></method>
+		<method name="frequency" ><arg type="integer"/></method>
+		<method name="transfer" type="symbol(read|mmap)">
+			<list>
+			<li>mmap:
 			This is the normal (and fast) way of transferring pictures
 			from the camera.
-		</method>
-		<method name="option transfer read">
+			</li>
+			<li>read:
 			Some cameras/drivers only support this instead of mmap.
+			</li></list>
 		</method>
 
-		<method name="option size">
+		<method name="size">
 			<arg name="height"/>
 			<arg name="width"/>
 			sets the input size, especially when using a video digitalizer
@@ -481,7 +481,7 @@
 		an existing window; you can find out the number of a window by using
 		a tool like <k>xwininfo</k>, part of X11 standard tools.</p>
 
-		<method name="option out_size">
+		<method name="out_size">
 			<arg name="height" type="integer"/>
 			<arg name="width"  type="integer"/>
 			changes the window's size, just like sending a grid
@@ -490,22 +490,22 @@
 			this affects the size of screen captures too.
 		</method>
 		
-		<method name="option draw">
+		<method name="draw">
 			forces a redraw of the window's contents.
 		</method>
 
-		<method name="option autodraw">
+		<method name="autodraw">
 			<arg name="level" type="0,1,2"/>
 			<list start="0">
-			<li>option draw() is never automatically invoked</li>
-			<li>option draw() is invoked after each grid is finished</li>
-			<li>option draw() is invoked incrementally after each row is
+			<li>draw() is never automatically invoked</li>
+			<li>draw() is invoked after each grid is finished</li>
+			<li>draw() is invoked incrementally after each row is
 			received. (but buffering may cause lines to come in groups
 			anyway)</li>
 			</list>
 		</method>
 
-		<method name="option setcursor">
+		<method name="setcursor">
 			<arg name="cursor" type="0..63"/>
 			Selects one of the 64 predefined cursors of X11. (Note that if
 			your cursor table has them numbered from 0 to 126 using only even
@@ -513,7 +513,7 @@
 			the ones GridFlow uses.)
 		</method>
 		
-		<method name="option hidecursor">
+		<method name="hidecursor">
 			This makes the cursor invisible.
 		</method>
 
@@ -575,23 +575,23 @@
 			a factor of 2 by aalib itself.
 		</grid>
 		<grid><dim>rows columns {ascii attr}</dim>
-			the inverse of "option dump". Both together in a loop allow to
+			the inverse of "dump". Both together in a loop allow to
 			post-process aalib's buffer before displaying. Goes well
-			with "option draw", "option autodraw".
+			with "draw", "autodraw".
 		</grid>
-		<method name="option print">
+		<method name="print">
 			<arg name="y" type="int"/>
 			<arg name="x" type="int"/>
 			<arg name="attr" type="int"/>
 			<arg name="text" type="symbol"/>
 		</method>
-		<method name="option autodraw">
-			like X11's option autodraw.
+		<method name="autodraw">
+			like X11's autodraw.
 		</method>
-		<method name="option draw">
-			like X11's option draw.
+		<method name="draw">
+			like X11's draw.
 		</method>
-		<method name="option dump">
+		<method name="dump">
 			produces a Dim[y,x,2] grid whose two channels are
 			ascii character codes and character attributes.
 		</method>
