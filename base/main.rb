@@ -325,7 +325,7 @@ end # module GridFlow
 #----------------------------------------------------------------#
 
 def GridFlow.load_user_config
-	require "gridflow/base/bridge_puredata.rb" if GridFlow.bridge_name == "puredata"
+	require "gridflow/bridge/puredata.rb" if GridFlow.bridge_name == "puredata"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
 	begin
 		load user_config_file if File.exist? user_config_file
