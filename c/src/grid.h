@@ -50,6 +50,8 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
+void dummy(void);
+
 void *qalloc(          size_t n); /*0xdeadbeef*/
 void qfree(void *data, size_t n); /*0xfadedf00*/
 
@@ -175,6 +177,7 @@ struct Dim {
 };
 
 	Dim *Dim_new(int n, int *v);
+	Dim *Dim_dup(Dim *$);
 	int Dim_count(Dim *$);
 	int Dim_get(Dim *$, int i);
 	int Dim_prod(Dim *$);
@@ -297,8 +300,8 @@ struct GridOutlet {
 	int  GridOutlet_idle   (GridOutlet *$);
 	void GridOutlet_abort  (GridOutlet *$);
 	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
-	int  GridOutlet_send   (GridOutlet *$, int n, const Number *data);
-	int  GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data);
+	void GridOutlet_send   (GridOutlet *$, int n, const Number *data);
+	void GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data);
 	void GridOutlet_flush  (GridOutlet *$);
 	void GridOutlet_end    (GridOutlet *$);
 
