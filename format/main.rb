@@ -24,6 +24,7 @@
 require "socket"
 require "fcntl"
 
+=begin now in base/main.rb
 class IO
   def nonblock= flag
     bit = Fcntl::O_NONBLOCK
@@ -32,6 +33,7 @@ class IO
       (if flag; bit else 0 end))
   end
 end
+=end
 
 module GridFlow
 
@@ -194,6 +196,9 @@ module GridIO
 
 	def _0_open(sym,*a)
 		sym = sym.intern if String===sym
+		GridFlow.post "a.length=#{a.length}"
+		GridFlow.post "/\\./ =~ sym.to_s = #{/\./ =~ sym.to_s}"
+		if a.length==0 and /\./ =~ sym.to_s then a=[sym]; sym=:file end
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
 		_0_close if @format
@@ -861,6 +866,22 @@ class FormatTempFile < Format
 	install_format "FormatTempFile", 1, 1, FF_R|FF_W, "tempfile", "huh..."
 end 
 =end
+
+class FormatFile < Format
+	def self.new(mode,file)
+		a = [mode,:file,file]
+		case file.to_s
+		when /\.ppm$/i;   FormatPPM.new(*a)
+		when /\.tga$/i;   FormatTarga.new(*a)
+		when /\.jpe?g$/i; FormatJPEG.new(*a)
+		when /\.png$/i;   FormatPNG.new(*a)
+		when /\.mpe?g$/i; FormatMPEG.new(*a)
+		when /\.mov$/i;   FormatQuickTime.new(*a)
+		when /\.grid$/i;  FormatGrid.new(*a)
+		else raise "unknown suffix" end
+	end
+	install_format "FormatFile", 1, 1, FF_R|FF_W, "file", "huh..."
+end
 
 end # module GridFlow
 
