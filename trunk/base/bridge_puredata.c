@@ -328,6 +328,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 
 Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
 	GFBridge *self = gf_bridge2 = FIX2PTR(GFBridge,p);
+	self->name = "puredata";
 	self->class_install = FObject_s_install_2;
 	self->send_out = FObject_send_out_2;
 	self->post = (void (*)(const char *, ...))post;

@@ -59,6 +59,7 @@ static void default_post(const char *fmt, ...) {
 }
 
 GFBridge gf_bridge = {
+	name: 0,
 	send_out: 0,
 	class_install: 0,
 	post: default_post,
@@ -415,6 +416,10 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 
 Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
 
+Ruby GridFlow_bridge_name (Ruby rself) {
+	return gf_bridge.name ? rb_str_new2(gf_bridge.name) : Qnil;
+}
+
 void MainLoop_add(void *data, void (*func)(void*)) {
 	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX(func));
 }
@@ -538,6 +543,7 @@ void Init_gridflow () {
 	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);
 	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
 	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
+	SDEF2("bridge_name",GridFlow_bridge_name,0);
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());

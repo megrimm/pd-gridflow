@@ -269,6 +269,7 @@ static void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 
 static Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
 	GFBridge *self = FIX2PTR(GFBridge,p);
+	self->name = "jmax";
 	self->class_install = FObject_s_install_2;
 	self->send_out = FObject_send_out_2;
 	self->post = post;
