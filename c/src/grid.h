@@ -50,8 +50,6 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
-void dummy(void);
-
 void *qalloc(          size_t n); /*0xdeadbeef*/
 void qfree(void *data, size_t n); /*0xfadedf00*/
 
@@ -146,7 +144,7 @@ DECL_SYM(grid_end)
 */
 typedef long Number;
 
-/* typedef int bool; */
+typedef enum { false, true } bool;
 
 /* number of (maximum,ideal) Numbers to send at once */
 #define PACKET_LENGTH (1*1024)
@@ -238,9 +236,9 @@ struct Operator2 {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$)
-#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$, int n, const Number *data)
-#define   GRID_END_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$)
+#define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *parent, GridInlet *in)
+#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *parent, GridInlet *in, int n, const Number *data)
+#define   GRID_END_(_class_,_name_) void _name_(_class_ *parent, GridInlet *in)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
@@ -272,6 +270,7 @@ struct GridInlet {
 		GridBegin a, GridFlow p);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
+	void GridInlet_finish(GridInlet *$);
 
 /*
 #define GridInlet_NEW((GridObject *)parent, winlet, (GridBegin)a, (GridFlow)b);

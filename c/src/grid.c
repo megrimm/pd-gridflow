@@ -54,7 +54,6 @@ void GridInlet_abort(GridInlet *$) {
 	$->dex = 0;
 }
 
-/* ??? */
 void GridInlet_finish(GridInlet *$) {
 	if ($->dim && Dim_prod($->dim) != $->dex) {
 		whine("%s:i%d: finish: short end: %d of %d", INFO($),
@@ -90,7 +89,11 @@ void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (!$->begin) {
 		whine("%s:i%d: no begin()",INFO($));
 	} else {
-		$->begin((GridObject *)$->parent,$);
+		if (!$->begin((GridObject *)$->parent,$)) {
+			/* ok */
+		} else {
+			GridInlet_abort($);
+		}
 	}
 }
 
@@ -247,7 +250,6 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	};
 	int i;
 	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;
-
 	define_many_methods(class,ARRAY(methods));
 }
 

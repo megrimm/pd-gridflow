@@ -221,18 +221,16 @@ static void VideoOut_show_section(
 
 GRID_BEGIN(VideoOut,0) {
 	parent->bufn = 0;
-	if (!Dim_equal_verbose_hwc($->dim,parent->dim)) {
-		GridInlet_abort($);
-	}
+	return Dim_equal_verbose_hwc(in->dim,parent->dim);
 }
 
 GRID_FLOW(VideoOut,0) {
 	int bytes_per_pixel = parent->ximage->bits_per_pixel/8;
-	int linesize = Dim_get($->dim,1) * 3;
+	int linesize = Dim_get(in->dim,1) * 3;
 
 	while (n>0) {
-		int pixel_num = $->dex / 3;
-		int sx = Dim_get($->dim,1);
+		int pixel_num = in->dex / 3;
+		int sx = Dim_get(in->dim,1);
 		int line_num = pixel_num / sx;
 		int incr, on=n;
 
@@ -255,10 +253,10 @@ GRID_FLOW(VideoOut,0) {
 		if (parent->autodraw==2) {
 			VideoOut_show_section(parent,0,line_num,sx,1);
 		}
-		$->dex += linesize;
-		if ($->dex >= Dim_prod($->dim)) {
+		in->dex += linesize;
+		if (in->dex >= Dim_prod(in->dim)) {
 			if (parent->autodraw==1) {
-				int sy = Dim_get($->dim,0);
+				int sy = Dim_get(in->dim,0);
 				VideoOut_show_section(parent,0,0,sx,sy);
 			}
 			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);

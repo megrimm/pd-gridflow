@@ -34,6 +34,10 @@
 #define CHECK_FILE_OPEN \
 	if (!$->ff) { whine("can't do that: file not open"); return; }
 
+/* same with false return */
+#define CHECK_FILE_OPEN2 \
+	if (!$->ff) { whine("can't do that: file not open"); return false; }
+
 /* some data/type decls */
 
 typedef struct VideoOutFile VideoOutFile;
@@ -46,36 +50,31 @@ struct VideoOutFile {
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(VideoOutFile,0) {
-	int v[] = { Dim_get($->dim,0), Dim_get($->dim,1), 3 };
+	int v[] = { Dim_get(in->dim,0), Dim_get(in->dim,1), 3 };
 	Dim *dim = Dim_new(ARRAY(v));
-	if (!Dim_equal_verbose_hwc($->dim,dim)) {
-		GridInlet_abort($);
-		return;
+	if (Dim_equal_verbose_hwc(in->dim,dim)) {
+		{ VideoOutFile *$ = parent; CHECK_FILE_OPEN2 }
+		in->dex=0;
+		parent->ff->begin(parent->ff, in->dim);
+		return true;
+	} else {
+		return false;
 	}
-	{
-		VideoOutFile *$ = parent;
-		CHECK_FILE_OPEN
-	}
-	$->dex=0;
-	parent->ff->begin(parent->ff, $->dim);
 }
 
 GRID_FLOW(VideoOutFile,0) {
 	FileFormat *f = parent->ff;
-	{
-		VideoOutFile *$ = parent;
-		CHECK_FILE_OPEN
-	}
+	{ VideoOutFile *$ = parent; CHECK_FILE_OPEN }
 	while(n > 0) {
 		int incr;
-		int max = Dim_prod($->dim) - $->dex;
+		int max = Dim_prod(in->dim) - in->dex;
 		int bs = n<max?n:max;
 		parent->ff->flow(parent->ff, bs, data);
 		
 		data += bs;
-		$->dex += bs;
+		in->dex += bs;
 		n -= bs;
-		if ($->dex >= Dim_prod($->dim)) {
+		if (in->dex >= Dim_prod(in->dim)) {
 			parent->ff->end(parent->ff);
 			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
 		}
