@@ -124,15 +124,6 @@ static int noutlets_of (Ruby qlass) {
 	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_noutlets)));
 }
 
-static void gf_same_version () {
-	Ruby ver = EVAL("GridFlow::GF_VERSION");
-	if (strcmp(rb_str_ptr(ver), GF_VERSION) != 0) {
-		RAISE("GridFlow version mismatch: "
-			"main library is '%s'; bridge is '%s'",
-			rb_str_ptr(ver), GF_VERSION);
-	}
-}
-
 #ifndef STACK_GROW_DIRECTION
 #define STACK_GROW_DIRECTION -1
 #endif
@@ -178,7 +169,7 @@ static t_class *find_bfclass (t_symbol *sym) {
 	SETSYMBOL(a,sym);
 	char buf[4096];
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
-	Ruby v = rb_hash_aref(rb_ivar_get(mGridFlow2, SI(@fclasses_set)), rb_str_new2(buf));
+	Ruby v = rb_hash_aref(rb_ivar_get(mGridFlow2, SI(@fclasses)), rb_str_new2(buf));
 	if (v==Qnil) {
 		post("GF: class not found: '%s'",buf);
 		return 0;
@@ -529,7 +520,7 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	RAISE("requires Pd 0.37");
 #else
 		Ruby name = rb_funcall(argv0,SI(to_s),0);
-		Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
+		Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses)),name),SI(@bfclass));
 		if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 		t_pd *o = pd_newest();
@@ -549,7 +540,7 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 static Ruby FObject_s_gui_enable (Ruby rself) {
 	rb_p(rself);
 	//RAISE("BORK!");
-	//Ruby fcset = rb_ivar_get(mGridFlow2,SI(@fclasses_set));
+	//Ruby fcset = rb_ivar_get(mGridFlow2,SI(@fclasses));
 	//Ruby qlassid = rb_ivar_get(rb_hash_aref(fcset,name),SI(@bfclass));
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
 	//if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
@@ -616,7 +607,7 @@ static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
 static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
+	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses)),name),SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 	//!@#$
 	return Qnil;
@@ -694,7 +685,12 @@ Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 	rb_define_singleton_method(mGridFlow2,_name1_,(RMethod)GridFlow_s_##_name2_,_argc_)
 
 Ruby gf_bridge_init (Ruby rself) {
-	gf_same_version();
+	Ruby ver = EVAL("GridFlow::GF_VERSION");
+	if (strcmp(rb_str_ptr(ver), GF_VERSION) != 0) {
+		RAISE("GridFlow version mismatch: "
+			"main library is '%s'; bridge is '%s'",
+			rb_str_ptr(ver), GF_VERSION);
+	}
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	Ruby fo = EVAL("GridFlow::FObject");
 	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);

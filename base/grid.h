@@ -616,10 +616,10 @@ NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 
 #ifdef HAVE_LITE
 #define NT_NOTLITE NT_UNIMPL
-#define NONLITE(x)
+#define NONLITE(x...)
 #else
 #define NT_NOTLITE 0
-#define NONLITE(x) x
+#define NONLITE(x...) x
 #endif
 #define NUMBER_TYPES(MACRO) \
 	MACRO(  uint8, 8,NT_UNSIGNED, "u8,b")          MACRO( int8, 8,NT_UNIMPL, "i8") \
@@ -1060,8 +1060,8 @@ extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
-//#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
-#define INFO(OBJ) "(bleh)"
+#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
+//#define INFO(OBJ) "(bleh)"
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",INFO(this), #_a_);
 #define SAME_TYPE(_a_,_b_) \
 	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
