@@ -1,0 +1,183 @@
+<html>
+<!-- $Id$ -->
+<head>
+<title>GridFlow 0.7.0 - Profiling Performance</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="jmax.css" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<br>
+<table width="100%" border="0" cellspacing="5">
+  <tr><td colspan="4" bgcolor="#082069">
+	<img src="images/titre_gridflow.png" width="253" height="23"></td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="3" height="16">
+      <h4>GridFlow 0.7.0 - Profiling Performance</h4>
+  </td></tr>
+
+  <tr> 
+    <td width="12%" height="4">&nbsp;</td>
+    <td width="80%" height="4">&nbsp;</td>
+    <td width="12%" height="4">&nbsp;</td>
+  </tr>
+
+  <tr>
+    <td width="13%">&nbsp;</td>
+    <td width="82%">
+
+	<h4>What is profiling?</h4>
+	<p>
+	It is about getting empiric metrics about the execution of a program.
+	For example, find out which parts of a program consume the most time
+	and/or memory. Usually it's about the time, and this is what
+	GridFlow (0.4.0 and after) now allows you to measure.
+	</p>
+
+	<h4>How to get those stats from GridFlow ?</h4>
+	<ul>
+	<li>create a "@global" object and connect two
+	messageboxes to it, "profiler_reset" and "profiler_dump". The first
+	one resets all counters to zero. The second one gives a top of
+	the busiest objects, with percentages.</li>
+	<li>note that those results are global to a fts process. That is, if you
+	start jMax only once at a time, *all* objects in all patches may be
+	monitored (actually, only the GridFlow ones).
+	</li>
+	<h4>How do i interpret those stats?</h4>
+	<li>Note that some operations may not be monitored, and some of the
+	monitoring may be buggy. I think it's not buggy, but I may be wrong.
+	</li>
+	<li>
+	The current profiler uses a thing called RDTSC. This is a very high
+	precision clock that is very fast to use. However, *major* imprecisions
+	may come from the fact that an ordinary multitasking OS will run other
+	tasks without stopping/resuming the clock. This may happen randomly;
+	however, it has a much bigger chance of happening in [@in] or [@out].
+	</li>
+	<li>
+	If you make sure that only the bare minimum is actively running on your
+	computer, then [@out] (using x11) would include the time spent in the x11
+	server, except in some conditions.
+	</li>
+	<li>
+	The profiler has an impact on the results of the profiler. The profiler
+	includes half of its own influence in its own results, and disregards the
+	other half (or so). Profiling shouldn't add more than 100-300 ticks per
+	message (of which half is counted).
+	</li>
+	<li>
+	Message-passing time is not counted at all. Only time actually spent
+	inside GridFlow objects is counted. This may skew results.
+	</li>
+	<li>
+	A grid requires 2 messages (begin and end) plus one message per packet
+	(flow or flow2), where each packet contains at most 2048 numbers
+	(adjustable limit), and normally a packet should be at least half that
+	size unless it is the last one. On RGB grids of widths 640,320,160, the
+	packet size will usually be 1920. A small grid (~2000 elements or less)
+	is 3 messages; a large grid is 2 messages + 1 message per packet; for
+	a very large grid, the latter number may be very big, so you could ignore
+	the "plus two" part.
+	</li>
+	<li>
+	The MHz speed of your computer is important in determining the real
+	time consumption. Profiler results are in clock ticks. If you have a
+	400 MHz computer, then dividing by 400 will give you a time in
+	microseconds (usecs).
+	</li>
+	</ul>
+	</p>
+
+	<h4>Getting a frames-per-second measure</h4>
+	<ul>
+	<li>Make sure no other programs are actively running.</li>
+	<li>Set your [metro] to the lowest possible delay (for example, 1).</li>
+	<li>hide your jMax console.</li>
+	<li>Send an "option timelog 1" message to your [@out].</li>
+	<li>Make sure all of the output window is visible on the screen.</li>
+	<li>Activate your circuit.</li>
+	<li>Wait for over 20 frames or 10 seconds, the longest of the two.
+	waiting for even longer gives more accurate results.</li>
+	<li>Deactivate your circuit.</li>
+	<li>unhide your jMax console. Find the series of measurements at the
+	end of the log. If one of the time differences (except the first one)
+	is much larger than the others, you should redo the test from the
+	beginning.</li>
+	<li>the overall time difference is the end time minus the start time.</li>
+	<li>the overall number of frames is the end frame number minus the start
+	frame number.</li>
+	<li>the FPS (frames/second) value is the number of frames divided by
+	the overall time difference.</li>
+	</li>
+	</ul>
+
+	<h4>acceleration tricks</h4>
+	<li>try the profiler and see what it says.</li>
+	<li>i mean really.</li>
+	<li>you can lose a lot of your time accelerating something
+	that isn't really taking execution time.</li>
+	<li>it's faster to work on big grids than on small grids,
+	for the amount of number-crunching you can do.
+	</li>
+	<li>about numbertypes: uint8 is the fastest, followed by int16, int32, float32.
+	(and the first two are faster when MMX is enabled). However it
+	may be difficult to make some effects use int16
+	or smaller without blowing up.</li>
+	<li>[@ &lt;&lt;] is a very fast multiplication for powers of two.
+	[@ &gt;&gt;] is a very fast division for powers of two.
+	<p>
+	from my little experience, normal integer multiplication and division are
+	rather slow, especially on Intel brand. The gap between *,/ and
+	&lt;&lt;,&gt;&gt; is smaller on Cyrix brand CPUs, but still, try it
+	yourself.
+	</p>
+	</li>
+	<li>[@ & 255] is a very fast [@ % 256], and likewise for other
+	powers of two.</li>
+	<li>for do-nothing operations, "ignore" and "put" are faster than
+	"+ 0" and such...</li>
+	<li>remember that an image twice smaller in height <u>and</u> twice
+	smaller in height will be processed <u>four</u> times as fast (for
+	most effects) so you can get four times more frames per second.
+	It's the "rows*columns*channels" value that makes the biggest
+	difference (usually).</li>
+
+	<li>if all fails you may recode a jMax/PD/Ruby abstraction into
+	plain Ruby code or C++ code. If your new class is of generic
+	usefulness then maybe it should be added to the releases of
+	GridFlow. Contact me if you need help extending GridFlow.</li>
+	</list>
+
+	<h4>Changes from 0.5.0 to 0.7.0</h4>
+
+	<p>In the 0.6.x series, profiling was disabled because that
+	subsystem had to be redesigned.</p>
+
+	<p>Starting with 0.6.x, message-passing is somewhat slower; however
+	
+
+	<p>Starting with 0.7.0, profiling hooks now occur in
+	FObject#send_in and FObject#send_out (and of course in the grid
+	transmission engine), which shall be much less invading than the
+	previous scheme (where wrappers had to be generated for every
+	method).</p>
+</td>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="4">
+	<p><font size="-1">GridFlow 0.7.0 Documentation<br>
+        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+        and<br>
+        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+    </td>
+  </tr>
+
+</table>
+</body>
+</html>
