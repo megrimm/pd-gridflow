@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.3.0:
+version 0.3.0 (2001.11.04):
  * reworked File Format API
  * grid objects now all accept lists of integers (auto-convert to 1D grid)
  * many accelerations (incl large speedup on chains of binary operations)
@@ -10,12 +10,13 @@ version 0.3.0:
 	* can set output as wallpaper
 	* can read from the screen (screenshot)
 	* @video_out now a backward-compatibility wrapper
- * format videodev now uses double buffer mmap
+ * format videodev now uses double buffer mmap (somewhat faster)
  * @video_in_file, @video_out_file renamed to @in, @out (with aliases)
  * new objects:
 	@convolve, @inner, @for
- * reference manual converted to XML
  * more samples: Fire, Ripple, Game of Life, Chroma Key, Convolve, Saturation
+ * much improved samples: Color Correction, Linear Transform.
+ * use [@store uint8] for low-ram storage of values 0-255.
 
 version 0.2.2 (2001.08.15):
  * @video_out auto-updates on X11 ExposeEvent
