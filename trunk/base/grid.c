@@ -68,7 +68,7 @@ void Grid::init_from_ruby_list(int n, VALUE *a) {
 void Grid::init_from_ruby(VALUE x) {
 	if (TYPE(x)==T_ARRAY) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
-	} else if (INTEGER_P(x)) {
+	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		init(new Dim(0,0));
 		as_int32()[0] = INT(x);
 	} else {
@@ -153,6 +153,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 	int i;
 	int *v = NEW(int,argc-1);
 	GridOutlet *back_out = (GridOutlet *) FIX2PTR(argv[0]);
+//	fprintf(stderr,"back_out=%p\n",back_out);
 	Dim *dim;
 	argc--, argv++;
 
@@ -178,7 +179,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 
 //	gfpost("setting back dim...");
 	this->dim = dim;
-	((GridOutlet *)back_out)->callback(this,gh->mode);
+	back_out->callback(this,gh->mode);
 }
 
 void GridInlet::flow(int argc, VALUE *argv) {
@@ -323,6 +324,8 @@ void GridOutlet::begin(Dim *dim) {
 	dim = dim->dup(); /* leak */
 
 	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
+
+//	fprintf(stderr,"this outlet = %p\n",this);
 
 	this->dim = dim;
 	dex = 0;
@@ -537,10 +540,10 @@ static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 METHOD(GridObject,method_missing) {
 	static const char *names[] = { "grid_begin", "grid_flow", "grid_end", "list" };
 	char *name;
-	//gfpost("argc=%d,argv=%p,self=%p",argc,argv,self);
+//	gfpost("argc=%d,argv=%p,self=%p,rself=%p",argc,argv,self,rself);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	//rb_p(argv[0]);
+	rb_p(argv[0]);
 	name = rb_sym_name(argv[0]);
 	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {

@@ -80,10 +80,12 @@ static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 
 /*
   a remainder function such that floor(a/b)*b+mod(a,b) = a
+  and for which mod(a,b) is in [0;b) or (b;0]
   in contrast to C-language builtin a%b,
   this one has uniform behaviour around zero.
 */
-static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
+static inline int mod(int a, int b) {
+int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 
 /* integer powers in log(b) time */
 static inline int ipow(int a, int b) {
@@ -290,6 +292,9 @@ void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
 #define MAX_INLETS 4
 #define MAX_OUTLETS 2
 
+/* milliseconds between refreshes of x11, rtmetro, tcp */
+#define GF_TIMER_GRANULARITY (10.0)
+
 /* number of (maximum,ideal) Numbers to send at once */
 /* this should remain a constant throughout execution
    because code still expect it to be constant. */
@@ -344,9 +349,10 @@ struct Dim {
 		assert_range(i,0,n-1);
 		return v[i];
 	}
-	int prod(int start=0) {
+	int prod(int start=0,int end=-1) {
+		if (end<0) end+=n;
 		int tot=1;
-		for (int i=start; i<n; i++) tot *= v[i];
+		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
 	int calc_dex(int *v) {
@@ -379,9 +385,6 @@ struct BitPacking {
 	bool is_le();
 	bool eq(BitPacking *o);
 };
-
-extern int builtin_bitpacks_n;
-extern BitPacking builtin_bitpacks[];
 
 extern "C" {
 
@@ -427,7 +430,9 @@ typedef struct Operator2 {
 	void   (*op_array)(int,Number *,Number);
 	void   (*op_array2)(int,Number *, const Number *);
 	Number (*op_fold)(Number,int,const Number *);
+	void   (*op_fold2)(int,Number *,int,const Number *);
 	void   (*op_scan)(Number,int,Number *);
+	void   (*op_scan2)(int,const Number *,int,Number *);
 } Operator2;
 
 extern NumberType number_type_table[];
@@ -505,10 +510,12 @@ struct GridInlet {
 	void set_factor(int factor);
 	bool is_busy();
 	bool is_busy_verbose(const char *where);
-	void begin(int argc, VALUE *argv);
-	void flow(int argc, VALUE *argv);
-	void end(int argc, VALUE *argv);
-	void list(int argc, VALUE *argv);
+	void begin( int argc, VALUE *argv);
+	void flow(  int argc, VALUE *argv);
+	void end(   int argc, VALUE *argv);
+	void list(  int argc, VALUE *argv);
+	void int_(  int argc, VALUE *argv);
+	void float_(int argc, VALUE *argv);
 };
 
 extern "C" {
@@ -637,6 +644,7 @@ typedef struct GFBridge {
 	VALUE (*send_out)(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $);
 	VALUE (*class_install)(VALUE $, char *name2, VALUE inlets2, VALUE outlets2);
 	void (*post)(const char *, ...);
+	bool post_does_ln;
 } GFBridge;
 
 extern GFBridge gf_bridge;
@@ -665,8 +673,19 @@ void MainLoop_remove(void *data);
 	(((long)ptr)&3?RAISE("pointer alignment error"):0), \
 	INT2NUM(((long)ptr)/4))
 */
-#define PTR2FIX(ptr) INT2NUM(((long)ptr)/4)
-#define FIX2PTR(value) (void *)(FIX2INT(value)*4)
+
+#define PTR2FIX(ptr) INT2NUM(((long)ptr)>>2)
+#define FIX2PTR(value) (void *)(INT(value)<<2)
+
+#define PTR2FIXA(ptr) INT2NUM(((long)ptr)&0xffff)
+#define PTR2FIXB(ptr) INT2NUM((((long)ptr)>>16)&0xffff)
+#define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
+
+VALUE Pointer_new (void *ptr);
+void *Pointer_get (VALUE self);
+
+//#define PTR2FIX(ptr) Pointer_new((void *)ptr)
+//#define FIX2PTR(value) Pointer_get(value)
 
 #define DEF(_class_,_name_,_argc_) \
 	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
@@ -678,7 +697,12 @@ void MainLoop_remove(void *data);
 #define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
 #define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
-#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
+//#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
+
+#define INT(x) (INTEGER_P(x) ? NUM2INT(x) : \
+	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
+	(RAISE("expected Integer or Float"),0))
+
 #define INSTALL(rname) \
 	ruby_c_install(&rname##_classinfo, GridObject_class);
 
