@@ -133,7 +133,7 @@ static VALUE button_sym(int i) {
 	return SYM(foo);
 }
 
-static void FormatX11_alarm(FormatX11 *$) { $->alarm(); }
+static void FormatX11_alarm(FormatX11 *self) { self->alarm(); }
 
 void FormatX11::report_pointer(int y, int x, int state) {
 	VALUE argv[5] = {
@@ -299,8 +299,8 @@ top:
 void FormatX11::resize_window (int sx, int sy) {
 	if (sy<16) sy=16;
 	if (sx<16) sx=16;
-	if (sy>MAX_INDICES) RAISE("height too big");
-	if (sx>MAX_INDICES) RAISE("width too big");
+	if (sy>4000) RAISE("height too big");
+	if (sx>4000) RAISE("width too big");
 
 	int v[3] = {sy, sx, 3};
 /* !@#$ this code is sort of meaningless now
@@ -349,7 +349,7 @@ void FormatX11::resize_window (int sx, int sy) {
 	XSync(display,0);
 }
 
-GRID_BEGIN(FormatX11,0) {
+GRID_INLET(FormatX11,0) {
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
@@ -361,7 +361,7 @@ GRID_BEGIN(FormatX11,0) {
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 }
 
-GRID_FLOW(FormatX11,0) {
+GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
@@ -381,7 +381,7 @@ GRID_FLOW(FormatX11,0) {
 	}
 }
 
-GRID_END(FormatX11,0) {
+GRID_FINISH {
 	if (autodraw==1) {
 		int sx = in->dim->get(1);
 		int sy = in->dim->get(0);
@@ -390,6 +390,8 @@ GRID_END(FormatX11,0) {
 	/* calling this here because the clock problem is annoying */
 	alarm();
 }
+
+GRID_END
 
 METHOD3(FormatX11,close) {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
@@ -559,8 +561,8 @@ METHOD3(FormatX11,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 6,'x11','X Window System Version 11.5'");
 }
 

@@ -73,9 +73,10 @@ METHOD3(FormatQuickTime,frame) {
 	return Qnil;
 }
 
-GRID_BEGIN(FormatQuickTime,0) { RAISE("write support not implemented"); }
-GRID_FLOW(FormatQuickTime,0) {}
-GRID_END(FormatQuickTime,0) {}
+GRID_INLET(FormatQuickTime,0) { RAISE("write support not implemented"); }
+GRID_FLOW {}
+GRID_FINISH {}
+GRID_END
 
 METHOD3(FormatQuickTime,close) {
 	if (bit_packing) delete bit_packing;
@@ -110,8 +111,8 @@ METHOD3(FormatQuickTime,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 4,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)'");
 }

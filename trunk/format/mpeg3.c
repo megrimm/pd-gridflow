@@ -72,7 +72,7 @@ METHOD3(FormatMPEG3,frame) {
 	return Qnil;
 }
 
-GRID_BEGIN(FormatMPEG3,0) {
+GRID_INLET(FormatMPEG3,0) {
 	RAISE("write support not implemented");
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
@@ -80,8 +80,9 @@ GRID_BEGIN(FormatMPEG3,0) {
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
 }
 
-GRID_FLOW(FormatMPEG3,0) {}
-GRID_END(FormatMPEG3,0) {}
+GRID_FLOW {}
+GRID_FINISH {}
+GRID_END
 
 METHOD3(FormatMPEG3,close) {
 	if (bit_packing) delete bit_packing;
@@ -111,8 +112,8 @@ METHOD3(FormatMPEG3,init) {
 	return Qnil;
 }
 
-static void startup (GridClass *$) {
-	IEVAL($->rubyclass,
+static void startup (GridClass *self) {
+	IEVAL(self->rubyclass,
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using HeroineWarrior\\'s)'");
 }

@@ -38,7 +38,13 @@
 #include <assert.h>
 #include <limits.h>
 
-GFStack *gf_stack[GF_STACK_DEPTH];
+/* number of #send_out calls allowed at once (not used yet) */
+#define GF_STACK_DEPTH 1024
+struct GFStackFrame {
+	GridObject *self;
+};
+GFStackFrame gf_stack[GF_STACK_DEPTH];
+int gf_stack_n = 0;
 
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
 Ruby cFObject;
@@ -62,32 +68,32 @@ struct GFBridge gf_bridge = {
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
 
-Ruby rb_ary_fetch(Ruby $, int i) {
+Ruby rb_ary_fetch(Ruby rself, int i) {
 	Ruby argv[] = { INT2NUM(i) };
-	return rb_ary_aref(COUNT(argv),argv,$);
+	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
 const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 static void FObject_mark (void *z) {
 /*
-	GridObject *$ = (GridObject *)z;
-//	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",$,$->peer);
-	$->mark();
+	GridObject *self = (GridObject *)z;
+//	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",self,self->peer);
+	self->mark();
 */
 }
 
 static int object_count=0;
 
 static void FObject_free (void *foo) {
-	GridObject *$ = (GridObject *)foo;
-//	fprintf(stderr,"Say farewell to %08x\n",(int)$);
-	if (!$->peer) {
+	GridObject *self = (GridObject *)foo;
+//	fprintf(stderr,"Say farewell to %08x\n",(int)self);
+	if (!self->peer) {
 		fprintf(stderr,"attempt to free object that has no peer\n");
 		abort();
 	}
-	$->peer = 0; /* paranoia */
-	delete $;
+	self->peer = 0; /* paranoia */
+	delete self;
 	/* a silly bug was on this line before. watch out. */
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
@@ -114,18 +120,18 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, int &outl
 	}
 }
 
-Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
+Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	Ruby sym;
 	int outlet;
 	FObject_prepare_message(argc,argv,sym,outlet);
-	Ruby noutlets2 = rb_ivar_get(rb_obj_class($),SYM2ID(SYM(@noutlets)));
-	if (TYPE(noutlets2)!=T_FIXNUM) EARG("don't know how many outlet this has");
+	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
+	if (TYPE(noutlets2)!=T_FIXNUM) RAISE("don't know how many outlet this has");
 	int noutlets = INT(noutlets2);
-	if (outlet<0 || outlet>=noutlets) EARG("outlet %d does not exist",outlet);
-	if (gf_bridge.send_out && FObject_peer($))
-		gf_bridge.send_out(argc,argv,sym,outlet,$);
-	Ruby ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
-		rb_ivar_get($,SYM2ID(sym_outlets)) : Qnil;
+	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
+	if (gf_bridge.send_out && FObject_peer(rself))
+		gf_bridge.send_out(argc,argv,sym,outlet,rself);
+	Ruby ary = rb_ivar_defined(rself,SYM2ID(sym_outlets)) ?
+		rb_ivar_get(rself,SYM2ID(sym_outlets)) : Qnil;
 	if (ary==Qnil) return Qnil;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
@@ -143,9 +149,9 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
 	return Qnil;
 }
 
-Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby $) {
+Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby rself) {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
-	rb_funcall(keep,SI(delete),1,$);
+	rb_funcall(keep,SI(delete),1,rself);
 //	fprintf(stderr,"del: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	return Qnil;
 }
@@ -157,16 +163,16 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
 	c_peer->foreign_peer = 0;
-	Ruby $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
-	c_peer->peer = $;
+	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
+	c_peer->peer = rself;
 	c_peer->grid_class = gc;
-	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
-	rb_funcall2($,SI(initialize),argc,argv);
+	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
+	rb_funcall2(rself,SI(initialize),argc,argv);
 //	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
-	return $;
+	return rself;
 }
 
-Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
+Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	int inlets, outlets;
 	Ruby name2;
 	if (SYMBOL_P(name)) {
@@ -174,19 +180,17 @@ Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
 	} else if (TYPE(name) == T_STRING) {
 		name2 = rb_funcall(name,SI(dup),0);
 	} else {
-		EARG("expect symbol or string");
+		RAISE("expect symbol or string");
 	}
-	inlets = INT(inlets2);
-	if (inlets<0 || inlets>9) EARG("...");
-	outlets = INT(outlets2);
-	if (outlets<0 || outlets>9) EARG("...");
-	rb_ivar_set($,SI(@ninlets),INT2NUM(inlets));
-	rb_ivar_set($,SI(@noutlets),INT2NUM(outlets));
-	rb_ivar_set($,SI(@foreign_name),name2);
+	inlets  =  INT(inlets2); if ( inlets<0 ||  inlets>9) RAISE("...");
+	outlets = INT(outlets2); if (outlets<0 || outlets>9) RAISE("...");
+	rb_ivar_set(rself,SI(@ninlets),INT2NUM(inlets));
+	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
+	rb_ivar_set(rself,SI(@foreign_name),name2);
 	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)),
-		name2, $);
+		name2, rself);
 	if (gf_bridge.class_install)
-		gf_bridge.class_install($,RSTRING(name2)->ptr);
+		gf_bridge.class_install(rself,RSTRING(name2)->ptr);
 	return Qnil;
 }
 
@@ -209,12 +213,12 @@ static Ruby ull2num(uint64 val) {
 
 Ruby FObject_profiler_cumul(Ruby rself) {
 	DGS(GridObject);
-	return ull2num($->profiler_cumul);
+	return ull2num(self->profiler_cumul);
 }
 
 Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
 	DGS(GridObject);
-	$->profiler_cumul = num2ull(arg);
+	self->profiler_cumul = num2ull(arg);
 	return arg;
 }
 
@@ -230,7 +234,7 @@ DECL_SYM2(int)
 DECL_SYM2(list)
 
 typedef void (*Callback)(void*);
-static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
+static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 	void *data2 = FIX2PTR(void,data);
 	Callback func2 = (Callback) FIX2PTR(void,func);
 	func2(data2);
@@ -242,23 +246,23 @@ static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-void define_many_methods(Ruby $, int n, MethodDecl *methods) {
+void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		const char *buf =
 			strcmp(md->selector,"init")==0 ? "initialize" :
 			strcmp(md->selector,"del")==0 ? "delete" :
 			md->selector;
-		rb_define_method($,buf,(Ruby(*)(...))md->method,-1);
-		rb_enable_super($,buf);
+		rb_define_method(rself,buf,(Ruby(*)(...))md->method,-1);
+		rb_enable_super(rself,buf);
 	}
 }
 
-Ruby GridFlow_clock_tick (Ruby $) {
+Ruby GridFlow_clock_tick (Ruby rself) {
 	return rb_float_new(gf_bridge.clock_tick);
 }
 
-void GridFlow_clock_tick_set (Ruby $, Ruby tick) {
+void GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
 	gf_bridge.clock_tick = RFLOAT(tick)->value;
 }
@@ -288,8 +292,8 @@ void gfpost(const char *fmt, ...) {
 	}
 }
 
-Ruby gf_post_string (Ruby $, Ruby s) {
-	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
+Ruby gf_post_string (Ruby rself, Ruby s) {
+	if (TYPE(s) != T_STRING) RAISE("not a String");
 	char *p = rb_str_ptr(s);
 //	bool has_ln = p[rb_str_len(p)-1]=='\n';
 	gf_bridge.post(gf_bridge.post_does_ln?"%s":"%s\n",p);
@@ -297,16 +301,16 @@ Ruby gf_post_string (Ruby $, Ruby s) {
 }
 
 Ruby ruby_c_install(GridClass *gc, Ruby super) {
-	Ruby $ = rb_define_class_under(mGridFlow, gc->name, super);
-	rb_ivar_set($,SI(@grid_class),PTR2FIX(gc));
-	define_many_methods($,gc->methodsn,gc->methods);
+	Ruby rself = rb_define_class_under(mGridFlow, gc->name, super);
+	rb_ivar_set(rself,SI(@grid_class),PTR2FIX(gc));
+	define_many_methods(rself,gc->methodsn,gc->methods);
 //remember to take care of delete
-	rb_funcall($,SI(install),3,
+	rb_funcall(rself,SI(install),3,
 		rb_str_new2(gc->jname),
 		INT2NUM(gc->inlets),
 		INT2NUM(gc->outlets));
-	GridObject_conf_class($,gc);
-	gc->rubyclass = $;
+	GridObject_conf_class(rself,gc);
+	gc->rubyclass = rself;
 	if (gc->startup) gc->startup(gc);
 	return Qnil;
 }

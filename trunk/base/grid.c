@@ -31,6 +31,12 @@
 #include "grid.h"
 #include <ctype.h>
 
+/* maximum number of grid cords per outlet per cord type */
+#define MAX_CORDS 8
+
+/* number of (maximum,ideal) Numbers to send at once */
+/* this should remain a constant throughout execution
+   because code still expect it to be constant. */
 int gf_max_packet_length = 1024*2;
 
 /* result should be printed immediately as the GC may discard it anytime */
@@ -140,13 +146,13 @@ void GridInlet::set_factor(int factor) {
 	}
 }
 
-static Ruby GridInlet_begin$1(GridInlet *$) {
-	$->gh->begin($->parent,$);
+static Ruby GridInlet_begin_1(GridInlet *self) {
+	self->gh->flow(self,-1,Pt<int32>());
 	return Qnil;
 }
 
-static Ruby GridInlet_begin$2(GridInlet *$) {
-	$->dim = 0; /* hack */
+static Ruby GridInlet_begin_2(GridInlet *self) {
+	self->dim = 0; /* hack */
 	return (Ruby) 0;
 }
 
@@ -173,8 +179,8 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	dex = 0;
 	factor = 1;
 	int r = rb_ensure(
-		(RFunc)GridInlet_begin$1,(Ruby)this,
-		(RFunc)GridInlet_begin$2,(Ruby)this);
+		(RFunc)GridInlet_begin_1,(Ruby)this,
+		(RFunc)GridInlet_begin_2,(Ruby)this);
 	if (!r) {abort(); return;}
 
 	this->dim = dim;
@@ -205,9 +211,9 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 				if (gh->mode==6) {
 					Pt<Number> data2 = ARRAY_NEW(Number,factor);
 					COPY(data2,buf,factor);
-					gh->flow(parent,this,factor,data2);
+					gh->flow(this,factor,data2);
 				} else {
-					gh->flow(parent,this,factor,buf);
+					gh->flow(this,factor,buf);
 				}
 				dex = newdex;
 				bufn = 0;
@@ -219,9 +225,9 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 			if (gh->mode==6) {
 				Pt<Number> data2 = ARRAY_NEW(Number,m);
 				COPY(data2,data,m);
-				gh->flow(parent,this,m,data2);
+				gh->flow(this,m,data2);
 			} else {
-				gh->flow(parent,this,m,data);
+				gh->flow(this,m,data);
 			}
 			dex = newdex;
 		}
@@ -231,7 +237,7 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 	} else if (mode==6) {
 		assert(factor==1);
 		int newdex = dex + n;
-		gh->flow(parent,this,n,data);
+		gh->flow(this,n,data);
 		if (gh->mode==4) delete[] (int32 *)data;
 		dex = newdex;
 	} else if (mode==0) {
@@ -259,7 +265,7 @@ void GridInlet::end() {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
-	gh->end(parent,this);
+	gh->flow(this,-2,Pt<int32>());
 	if (dim) {delete dim; dim=0;}
 	if (buf) {delete[] (Number *)buf; buf=Pt<Number>();}
 	dex = 0;
@@ -277,7 +283,7 @@ void GridInlet::grid(Grid *g) {
 	assert(gh);
 	int n = g->dim->prod();
 	dim = g->dim->dup();
-	gh->begin(parent,this);
+	gh->flow(this,-1,Pt<int32>());
 	if (n>0 && gh->mode!=0) {
 		Pt<Number> data = (Pt<int32>)*g;
 		if (gh->mode==6) {
@@ -286,11 +292,11 @@ void GridInlet::grid(Grid *g) {
 			data = Pt<Number>((Number *)new char[size],g->dim->prod());
 			memcpy(data,d,size);
 		}
-		gh->flow(parent,this,n,data);
+		gh->flow(this,n,data);
 	}
-	gh->end(parent,this);
+	gh->flow(this,-2,Pt<int32>());
 	//!@#$ add error handling.
-	/* rescue; GridInlet_abort($); */
+	/* rescue; GridInlet_abort(self); */
 	delete dim;
 	dim = 0;
 	dex = 0; /* why? */
@@ -358,7 +364,7 @@ void GridOutlet::begin(Dim *dim) {
 	assert(this);
 	int n = dim->count();
 
-	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
+	/* if (GridOutlet_busy(self)) GridOutlet_abort(self); */
 
 	this->dim = dim;
 	dex = 0;
@@ -450,7 +456,7 @@ void GridOutlet::callback(GridInlet *in) {
 	assert(!frozen);
 	assert(mode==6 || mode==4);
 	assert(ninlets<MAX_CORDS);
-	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
+	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",self,in,mode); */
 	inlets[ninlets++]=in;
 }
 
@@ -494,17 +500,17 @@ METHOD3(GridObject,init) {
 
 /* category: input */
 
-void GridObject_r_begin(GridObject *$, GridInlet *in) {
-	rb_funcall($->peer,SI(_0_rgrid_begin),0); // hack
-}
-
-void GridObject_r_flow(GridObject *$, GridInlet *in, int n, Pt<Number>data) {
-	Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(Number));
-	rb_funcall($->peer,SI(_0_rgrid_flow),1,buf); // hack
-}
-
-void GridObject_r_end(GridObject *$, GridInlet *in) {
-	rb_funcall($->peer,SI(_0_rgrid_end),0); // hack
+// most possibly a big hack
+void GridObject_r_flow(GridInlet *in, int n, Pt<Number>data) {
+	GridObject *self = in->parent;
+	if (n==-1) {
+		rb_funcall(self->peer,SI(_0_rgrid_begin),0);
+	} else if (n>=0) {
+		Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(Number));
+		rb_funcall(self->peer,SI(_0_rgrid_flow),1,buf); // hack
+	} else {
+		rb_funcall(self->peer,SI(_0_rgrid_end),0);
+	}
 }
 
 METHOD3(GridObject,inlet_dim) {
@@ -566,10 +572,8 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("er...");
 	if (INT(argv[0])!=0) RAISE("not yet");
 	gh->winlet = INT(argv[0]);
-	gh->begin = GridObject_r_begin;
-	gh->flow = GridObject_r_flow;
-	gh->end = GridObject_r_end;
 	gh->mode = 4;
+	gh->flow = GridObject_r_flow;
 	gc->objectsize = sizeof(GridObject);
 	gc->allocate = GridObject_allocate;
 	gc->methodsn = 0;
@@ -643,11 +647,11 @@ LIST(),
 	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))
 
-void GridObject_conf_class(Ruby $, GridClass *grclass) {
+void GridObject_conf_class(Ruby rself, GridClass *grclass) {
 	/* define in Ruby-metaclass */
-	rb_define_singleton_method($,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
-	rb_define_singleton_method($,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
-	rb_enable_super(rb_singleton_class($),"instance_methods");
+	rb_define_singleton_method(rself,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
+	rb_define_singleton_method(rself,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
+	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }  
 
 /* **************** Format **************************************** */
