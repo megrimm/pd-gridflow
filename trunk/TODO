@@ -21,6 +21,17 @@ Documentation Update
 [ ] @for, @dim, @redim
 [ ] @print, rtmetro, @global
 
+Help Files Update
+[ ] @in, @video_in_file
+[ ] @out, @video_out_file
+[ ] @video_out
+[ ] @scale_by
+[ ] @import, @export, @redim, @store
+[ ] @, @!
+[ ] @fold, @inner, @outer
+[ ] @for, @dim, @redim
+[ ] @print, rtmetro, @global
+
 Documentation
 [ ] XMLize reference section
 [ ] create JMAXML->HTML converter
@@ -32,21 +43,21 @@ Documentation
 [ ] split reference.html into:
 	protocol.html operator.html format.html object.html
 [ ] document internals
-[ ] add explanation of video4jmax vs jmax-videodsp
+[ ] add explanation of gridflow vs videodsp
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
 [ ] H5 font-size is smaller than regular P font-size ?
 [ ] make real documentation for templates
 [ ] recategorize objects+templates together
 [ ] find a good XML editor
-[ ] create a good DTD/Schema for jMax/v4j/C
+[ ] create a good DTD/Schema for jMax/GF/C
 [ ] document use of [route grid_end], [route grid_begin]
 [ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
 [ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
-[ ] document videoNOT4jmax
+[ ] document gridflow-for-C
 
 General
 [ ] make FREE() handle #delete as possible
