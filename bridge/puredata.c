@@ -328,6 +328,7 @@ extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","/dev/null"};
 	post("setting up Ruby-for-PureData...");
 	ruby_init();
+	bridge_localize_sysstack();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
@@ -345,7 +346,7 @@ extern "C" void gridflow_setup () {
 
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
+		STDERR.puts \"#{e.class}: #{e}: #{e.backtrace}\"; false; end"))
 	{
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
