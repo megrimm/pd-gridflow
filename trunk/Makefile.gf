@@ -81,16 +81,27 @@ export-config::
 EFENCE = /usr/lib/libefence$(LSUF)
 #	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
-TEST = base/test.rb math
 BACKTRACE = ([ -f core ] && gdb `which ruby` core)
+# TEST = base/test.rb math
+TEST = base/test.rb formats
 
 test::
 	rm -f core
 	(ruby       -w $(TEST)) || $(BACKTRACE)
 
+VALG = valgrind --suppressions=extra/ruby.valgrind -v
+VALG += --num-callers=8
+# VALG += --gdb-attach=yes
+
 vtest::
 	rm -f core
-	(valgrind --suppressions=extra/ruby.valgrind -v ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
+	($(VALG) ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
+	less gf-valgrind
+
+vvtest::
+	rm -f core
+	($(VALG) --leak-check=yes ruby -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
+	less gf-valgrind
 
 test16:: test
 	(ruby-1.6.7 -w $(TEST)) || $(BACKTRACE)
