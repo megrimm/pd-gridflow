@@ -25,7 +25,7 @@ class PureDataFileWriter
 	def initialize filename
 		@f = File.open filename, "w"
 	end
-	def close; @f.close	end
+	def close; @f.close end
 	def write_patcher o
 		pr = o.properties
 		@f.puts "#N canvas #{pr[:wx]} #{pr[:wy]} #{pr[:ww]} #{pr[:wh]} 10;"
@@ -60,6 +60,11 @@ class PureDataFileWriter
 			#@f.print "#N canvas 0 0 "
 			write_patcher o
 		end
+
+		case classname
+		when "display"; classname="print"
+		end
+
 		t = case classname
 		when "jcomment"; "text"
 		when "messbox"; "msg"
@@ -68,6 +73,7 @@ class PureDataFileWriter
 		else "obj"
 		end
 		@f.print "#X #{t} #{pr[:x]} #{pr[:y]} "
+
 		case classname
 		when "button"
 			@f.print "bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1"
