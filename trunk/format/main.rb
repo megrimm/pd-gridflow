@@ -257,6 +257,12 @@ end
 module EventIO
 	def read_wait?; !!@action; end
 
+	def initialize(*)
+		@acceptor = nil
+		@buffer = nil
+		super
+	end
+
 	def on_read(n,&action)
 		@action = action
 		@chunksize = n
@@ -347,7 +353,7 @@ module EventIO
 			def self.rewind
 				@stream.close
 				raw_open(*@raw_open_args)
-			end
+			end unless singleton_methods.include? "rewind"
 		when :tcp
 			if VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
@@ -581,22 +587,31 @@ class FormatGrid < Format; include EventIO
 end
 
 module PPMandTarga
+	# "and false" disables features that may cause crashes and don't
+	# accelerate gridflow that much.
 	def frame_read_body height, width, channels
 		bs = width*channels
 		n = bs*height
 		bs = (self.class.buffersize/bs)*bs+bs # smallest multiple of bs over BufferSize
 		buf = ""
-#		if VERSION >= "1.8.0"
-#		else
+		if VERSION >= "1.8.0" and false
+			data = "x"*bs # must preallocate (bug in 1.8.0.pre1-3)
+			while n>0 do
+				bs=n if bs>n
+				@stream.read(bs,data) or raise EOFError
+				send_out_grid_flow 0, @bp.unpack(data,buf)
+				n-=bs
+			end
+		else
 			nothing = ""
 			while n>0 do
 				bs=n if bs>n
 				data = @stream.read(bs) or raise EOFError
 				send_out_grid_flow 0, @bp.unpack(data,buf)
-	#			data.replace nothing # prevent clogging memory
+				data.replace nothing and false # prevent clogging memory
 				n-=bs
 			end
-#		end
+		end
 	end
 end
 

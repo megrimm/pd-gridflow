@@ -454,6 +454,8 @@ GridObject::~GridObject() {
 }
 
 METHOD3(GridObject,initialize) {
+	if (!grid_class) RAISE("C++ grid_class is null in Ruby class %s",
+		rb_str_ptr(rb_funcall(rself,SI(inspect),0)));
 	for (int i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		in[gh->winlet] = new GridInlet(this,gh);
