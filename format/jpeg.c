@@ -100,6 +100,7 @@ GRID_INLET(FormatJPEG,0) {
 }
 
 \def void close () {
+	rb_call_super(argc,argv);
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
