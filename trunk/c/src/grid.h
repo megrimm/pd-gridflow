@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "config.h"
-#include "lang.h"
 
 /* current version number as string literal */
 #define GF_VERSION "0.5.0"
@@ -124,7 +123,7 @@
   this includes a class-specific class name so you don't have to
   write inane stuff like SomeClass* self = (SomeClass *) o;
   at the beginning of every method body. This is a trade-off because
-  it means you have to cast to (fts_object_t *) sometimes.
+  it means you have to cast to (FObject *) sometimes.
   see METHOD_PTR, METHOD, OBJ
 */
 
@@ -145,7 +144,7 @@
 /*
   METHOD is a header for a given method in a given class.
   METHOD_PTR returns a pointer to a method of a class as if it were
-  in the fts_object_t class. this is because C's type system is broken.
+  in the FObject class. this is because C's type system is broken.
 */
 #ifdef HAVE_PROFILING
 #define METHOD(_class_,_name_) \
@@ -165,7 +164,7 @@
 	((FTSMethod) _class_##_##_name_)
 #endif
 
-typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
+typedef void(*FTSMethod)(METHOD_ARGS(FObject));
 
 /* class constructor */
 
@@ -181,10 +180,10 @@ typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
 		return fts_Success;}
 
 /*
-  casts a pointer to any object, into a fts_object_t*.
+  casts a pointer to any object, into a FObject *.
 */
 #define OBJ(_object_) \
-	((fts_object_t *)(_object_))
+	((FObject *)(_object_))
 
 /*
   get arg or default value
@@ -271,7 +270,7 @@ FILE *gf_file_fopen(const char *name, int mode);
 typedef struct MethodDecl {
 	int winlet;
 	const char *selector;
-	void (*method)(METHOD_ARGS(fts_object_t));
+	void (*method)(METHOD_ARGS(FObject));
 	const char *signature;
 } MethodDecl;
 
@@ -538,7 +537,7 @@ struct GridOutlet {
 /* grid.c (part 3: processor objects) */
 
 #define GridObject_FIELDS \
-	fts_object_t o;  /* extends fts object */ \
+	FObject _o; /* extends FObject */ \
 	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
@@ -630,5 +629,7 @@ extern Dict *gf_object_set;
 extern Dict *gf_timer_set;
 extern Timer *gf_timer;
 extern const char *whine_header;
+
+char *FObject_to_s(FObject *$);
 
 #endif /* __GF_GRID_H */

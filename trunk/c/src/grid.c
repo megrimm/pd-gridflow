@@ -29,7 +29,7 @@ int gf_max_packet_length = 1024;
 FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 
 #define INFO(_self_) \
-	Symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
+	Symbol_name(fts_get_class_name((_self_)->parent->_o.head.cl)), \
 	(_self_)->winlet
 
 /* **************** GridInlet ************************************* */
@@ -384,7 +384,7 @@ void GridObject_init(GridObject *$) {
 	$->profiler_cumul = 0;
 
 	{
-		GridClass *cl = (GridClass *) $->o.head.cl->user_data;
+		GridClass *cl = (GridClass *) $->_o.head.cl->user_data;
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *h = &cl->handlers[i];
 			$->in[h->winlet] = GridInlet_new($,h->winlet,

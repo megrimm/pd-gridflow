@@ -63,6 +63,8 @@ typedef double float64;
 typedef enum { false, true } bool;
 #endif
 
+void gf_lang_init (void);
+
 /* **************************************************************** */
 /* Object/Class */
 
@@ -76,6 +78,8 @@ struct Class {
 	int objectsize;
 	int magic; /* 0x600df00d */
 };
+
+// void *Object_class(Object *$);
 
 /* **************************************************************** */
 /* List/Dict */
@@ -100,7 +104,17 @@ DictEntry *Dict_has_key(Dict *$, void *k);
 void *Dict_get(Dict *$, void *k);
 void Dict_put(Dict *$, void *k, void *v);
 void Dict_del(Dict *$, void *k);
-void Dict_each(Dict *$, void (*proc)(void* data, void *k, void* v), void *data);
+void Dict_each(Dict *$, void (*proc)(void *data, void *k, void *v), void *data);
 void Dict_capa_is(Dict *$, int capa);
+
+/* **************************************************************** */
+/* FObject: flow object */
+
+//typedef struct FObject FObject;
+
+/* **************************************************************** */
+/* Bridge */
+
+/* **************************************************************** */
 
 #endif /* __GRIDFLOW_LANG_H */

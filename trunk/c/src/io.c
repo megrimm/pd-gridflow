@@ -203,10 +203,10 @@ METHOD(GridOut,open) {
 	char buf[256];
 /*
 	int i;
-	sprintf_atoms(buf,ac,at);
+	sprintf_vars(buf,ac,at);
 	whine("open args = %s",buf);
 	for (i=0; i<ac; i++) {
-		sprintf_atoms(buf,1,at+i);
+		sprintf_vars(buf,1,at+i);
 		whine("open arg %d = %s %s", i, Symbol_name((at+i)->type), buf);
 	}
 	return;
