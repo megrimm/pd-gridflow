@@ -890,7 +890,7 @@ EACH_NUMBER_TYPE(FOO)
 	Grid *dup () {
 		Grid *foo = new Grid(dim,nt);
 		assert(false);
-		*foo = *this;
+		memcpy(foo->data,data,bytes());
 		return foo;
 	}
 	~Grid() {
@@ -934,33 +934,33 @@ struct PtrGrid : public P<Grid> {
 // GridInlet represents a grid-aware inlet
 
 // macro for declaring an inlet inside a class{} block
-#define GRINLET3(I) \
-	template <class T> void grin_##I(GridInlet *in, int n, Pt<T> data);
+//#define GRINLET3(I)
+//	GridHandler C##_gh_##I = K(C,I);
+//	template <class T> void grin_##I(GridInlet *in, int n, Pt<T> data);
 
 //// macros for declaring an inlet inside GRCLASS() (GridHandler)
 // C is for class, I for inlet number
-// GRINLET  : int32 only
-// GRINLET4 : all types
-// GRINLET2 : integers only; no floats
-// GRINLETF : floats only; no integers
+// GRIN1 : int32 only
+// GRIN4 : all types
+// GRIN2 : integers only; no floats
+// GRINF : floats only; no integers
 #ifndef HAVE_LITE
-#define GRINLET(C,I)  {I, 0,0,C##_grin_##I,0,0,0 }
-#define GRINLET4(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLET2(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I,C##_grin_##I,0,0 }
-#define GRINLETF(C,I) {I, 0,0,0,0,C##_grin_##I,C##_grin_##I }
+#define GRIN1(C,I) {I, 0,0,C::grinw_##I,0,0,0 }
+#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0 }
+#define GRINF(C,I) {I, 0,0,0,0,C::grinw_##I,C::grinw_##I }
 #else
-#define GRINLET( C,I) {I, 0,0,C##_grin_##I }
-#define GRINLET4(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLET2(C,I) {I, C##_grin_##I,C##_grin_##I,C##_grin_##I }
-#define GRINLETF(C,I) {I, 0,0,0 }
+#define GRIN1(C,I) {I, 0,0,C::grinw_##I }
+#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRINF(C,I) {I, 0,0,0 }
 #endif /* HAVE_LITE */
 
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(C,I) \
-	template <class T> static void C##_grin_##I\
-	(GridInlet *in, int n, Pt<T> data) { \
-		((C*)in->parent)->grin_##I(in,n,data); } \
+	template <class T> void C::grinw_##I (GridInlet *in, int n, Pt<T> data) { \
+		((C*)(in->parent))->grin_##I(in,n,data); } \
 	template <class T> \
 	void C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
@@ -988,11 +988,10 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 	int winlet;
-#define FOO(_type_) \
-	void (*flow_##_type_)(GridInlet *in, int n, Pt<_type_> data); \
-	void flow(GridInlet *in, int n, Pt<_type_> data) const { \
-		assert(flow_##_type_); \
-		flow_##_type_(in,n,data); }
+#define FOO(T) \
+	void (*flow_##T)(GridInlet *in, int n, Pt<T> data); \
+	void flow(GridInlet *in, int n, Pt<T> data) const { \
+		assert(flow_##T); flow_##T(in,n,data); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
@@ -1025,7 +1024,7 @@ struct GridInlet : CObject {
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	bool is_busy() {return !!dim;}
-	void begin( int argc, Ruby *argv);
+	Ruby begin(int argc, Ruby *argv);
 	template <class T> void flow(int mode, int n, Pt<T> data);
 	void end();
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e);
@@ -1048,21 +1047,17 @@ struct FClass {
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
-	// GridFlow inlet handlers (!@#$ hack)
-	int handlersn; GridHandler *handlers;
 };
 
 // RMethod,MethodDecl,DECL,DECL3 should go here
 
-#define GRCLASS(_name_,_handlers_,_args_...) \
+#define GRCLASS(_name_,_args_...) \
 	static void *_name_##_allocator () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { _args_ }; \
-	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	static void _name_ ## _startup (Ruby rself); \
 	FClass ci ## _name_ = { \
 		_name_##_allocator, _name_ ## _startup, #_name_, \
 		COUNT(_name_##_methods), _name_##_methods, \
-		COUNT(_name_##_handlers),_name_##_handlers, \
 	}; \
 	static void _name_ ## _startup (Ruby rself)
 

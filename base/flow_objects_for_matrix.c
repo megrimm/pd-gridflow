@@ -43,7 +43,7 @@ struct GridMatrixSolve : GridObject {
 		matrix.constrain(expect_complete_matrix);
 	}
 	\decl void initialize ();
-	GRINLET3(0);
+	\grin 0 float
 };
 
 GRID_INPUT(GridMatrixSolve,0,matrix) {
@@ -70,7 +70,7 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 	op_div = op2_div;
 }
 
-GRCLASS(GridMatrixSolve,LIST(GRINLETF(GridMatrixSolve,0)),
+GRCLASS(GridMatrixSolve,
 	\grdecl
 ) { IEVAL(rself,"install '@matrix_solve',1,1"); }
 

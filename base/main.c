@@ -408,7 +408,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return rself;
 }
 
-GRCLASS(BitPacking,LIST(),
+GRCLASS(BitPacking,
 	\grdecl
 ){}
 
@@ -449,10 +449,6 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 Ruby fclass_install(FClass *fc, Ruby super) {
 	if (!super) super = cGridObject;
 	Ruby rself = rb_define_class_under(mGridFlow, fc->name, super);
-	Ruby handlers = rb_ary_new();
-	rb_ivar_set(rself,SI(@handlers),handlers);
-	for (int i=0; i<fc->handlersn; i++)
-		rb_ary_push(handlers,PTR2FIX(&fc->handlers[i]));
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator))); //#!@$??
 	if (fc->startup) fc->startup(rself);
