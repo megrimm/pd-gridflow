@@ -49,22 +49,6 @@ static void expect_exactly_one_dim (Dim *d) {
 	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }
 }
 
-/* a variant on GRID_INPUT */
-/* there's an inlet 0 hardcoded here, sorry */
-/* should be replaced by GRID_INPUT eventually ! */
-#define DIM_INPUT(_class_,_inlet_,_member_) \
-	GRID_INLET(_class_,1) { \
-		expect_dim_dim_list(in->dim); \
-		if (in->dim->n) in->set_factor(in->dim->n); \
-	} \
-	GRID_FLOW { \
-		if (dim) { delete _member_; _member_=0; } \
-		_member_ = new Dim(n,(int *)(T *)data); \
-		this->in[0]->abort(); \
-		out[0]->abort(); \
-	} \
-	GRID_FINISH {}
-
 /* **************************************************************** */
 
 \class GridCast < GridObject
@@ -684,7 +668,7 @@ GRID_INPUT(GridInner,2,r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->seed = *seed;
+	this->seed.swallow(seed); // this->seed = *seed;
 	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
@@ -709,7 +693,7 @@ struct GridInner2 : GridInner {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->seed = *seed;
+	this->seed.swallow(seed); // this->seed = *seed;
 	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
