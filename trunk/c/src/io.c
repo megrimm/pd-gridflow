@@ -45,10 +45,11 @@
 Stream *Stream_open_file(const char *filename, int mode) {
 	Stream *$;
 	int fd = fts_file_open(filename,mode==4?"r":mode==2?"w":"");
-	if (!fd) return 0;
+	if (fd<0) return 0;
 	$ = NEW(Stream,1);
 	$->fd = fd;
 	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	if (!$->file) return 0;
 	$->buf = 0; $->buf_i = $->buf_n = 0;
 	$->on_read = $->target = 0;
 	return $;
@@ -58,6 +59,7 @@ Stream *Stream_open_fd(int fd, int mode) {
 	Stream *$ = NEW(Stream,1);
 	$->fd = fd;
 	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	if (!$->file) return 0;
 	$->buf = 0; $->buf_i = $->buf_n = 0;
 	$->on_read = $->target = 0;
 	return $;
@@ -83,7 +85,6 @@ int Stream_read(Stream *$, int n, char *buf) {
 }
 
 void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
-	whine("on_read_do");
 	FREE($->buf);
 	$->buf = NEW(char,n);
 	$->buf_i = 0;
@@ -93,14 +94,12 @@ void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
 }
 
 bool Stream_try_read(Stream *$) {
-	whine("Stream_try_read(%p)",$);
 	if (!$->buf) {
 		whine("Stream_try_read has nothing to do",$);
 		return true;
 	}
 	while ($->buf) {
 		int n = read($->fd,$->buf+$->buf_i,$->buf_n-$->buf_i);
-		whine("%d bytes read",n);
 		if (n<=0) {
 			if (n==0 || errno==EAGAIN || errno==EWOULDBLOCK) {
 				whine("(trying again later)");
@@ -113,7 +112,6 @@ bool Stream_try_read(Stream *$) {
 		}
 		if ($->buf_i == $->buf_n) {
 			char *buf = $->buf;
-			whine("read all %d bytes",$->buf_n);
 			$->buf = 0;
 			if (!$->on_read($->target,$->buf_n,buf)) return false;
 		}

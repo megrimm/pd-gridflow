@@ -77,7 +77,8 @@ static bool FormatGrid_frame3 (FormatGrid *$, int n, char *buf) {
 	FREE(buf);
 	if (out->dex == Dim_prod(out->dim)) {
 		GridOutlet_end(out);
-		Dict_del(gf_timer_set,$->st);
+		/* how do i fix this? */
+		//Dict_del(gf_timer_set,$->st);
 	} else {
 		Stream_on_read_do($->st,bufsize($,out),(OnRead)FormatGrid_frame3,$);
 	}
@@ -226,7 +227,7 @@ GRID_FLOW(FormatGrid,0) {
 
 GRID_END(FormatGrid,0) {
 	int fd = Stream_get_fd($->st);
-	lseek(fd,0,SEEK_SET);
+	lseek(fd,0,SEEK_SET); /* it's bad to rewind here */
 }
 
 void FormatGrid_close (FormatGrid *$) {
