@@ -26,7 +26,11 @@
 #include <string.h>
 #include <errno.h>
 
-extern FileFormatClass FormatPPM;
+extern FileFormatClass class_FormatPPM;
+
+typedef struct FormatPPM {
+	FileFormat_FIELDS
+} FormatPPM;
 
 Dim *FormatPPM_frame (FileFormat *$, int frame) {
 	char buf[256];
@@ -86,8 +90,7 @@ Number *FormatPPM_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatPPM_begin (FileFormat *$, Dim *dim) {
-	$->dim = dim;
+GRID_BEGIN(FormatPPM,0) {
 	fprintf($->stream,
 		"P6\n"
 		"# generated using Video4jmax " VIDEO4JMAX_VERSION "\n"
@@ -97,16 +100,17 @@ void FormatPPM_begin (FileFormat *$, Dim *dim) {
 		Dim_get($->dim,0));
 
 	fflush($->stream);
+	return true;
 }
 
-void FormatPPM_flow (FileFormat *$, int n, const Number *data) {
+GRID_FLOW(FormatPPM,0) {
 	uint8 data2[n];
 	int i;
 	for (i=0; i<n; i++) data2[i] = data[i];
 	fwrite(data2,1,n,$->stream);
 }
 
-void FormatPPM_end (FileFormat *$) {
+GRID_END(FormatPPM,0) {
 	fflush($->stream);
 	fseek($->stream,0,SEEK_SET);
 }
@@ -119,14 +123,14 @@ void FormatPPM_close (FileFormat *$) {
 FileFormat *FormatPPM_open (const char *filename, int mode) {
 	const char *modestr;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass  = &FormatPPM;
+	$->qlass  = &class_FormatPPM;
 	$->frames = 0;
 	$->frame  = FormatPPM_frame;
 	$->size   = 0;
 	$->read   = FormatPPM_read;
-	$->begin  = FormatPPM_begin;
-	$->flow   = FormatPPM_flow;
-	$->end    = FormatPPM_end;
+	$->begin  = (GRID_BEGIN_(FileFormat,(*)))FormatPPM_0_begin;
+	$->flow   = ( GRID_FLOW_(FileFormat,(*)))FormatPPM_0_flow;
+	$->end    = (  GRID_END_(FileFormat,(*)))FormatPPM_0_end;
 	$->color  = 0;
 	$->option = 0;
 	$->close  = FormatPPM_close;
@@ -150,7 +154,7 @@ err:
 	return 0;
 }
 
-FileFormatClass FormatPPM = {
+FileFormatClass class_FormatPPM = {
 	"ppm", "Portable PixMap", (FileFormatFlags)0,
 	FormatPPM_open, 0, 0,
 };

@@ -29,7 +29,11 @@
 
 #include "grid.h"
 
-extern FileFormatClass FormatTarga;
+extern FileFormatClass class_FormatTarga;
+
+typedef struct FormatTarga {
+	FileFormat_FIELDS
+} FormatTarga;
 
 /* targa header is like:
 	[:comment, Uint8, :length], 1,
@@ -109,13 +113,14 @@ Number *FormatTarga_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatTarga_begin (FileFormat *$, Dim *dim) {
+GRID_BEGIN(FormatTarga,0) {
+	return false;
 }
 
-void FormatTarga_flow (FileFormat *$, int n, const Number *data) {
+GRID_FLOW(FormatTarga,0) {
 }
 
-void FormatTarga_end (FileFormat *$) {
+GRID_END(FormatTarga,0) {
 }
 
 void FormatTarga_close (FileFormat *$) {
@@ -126,14 +131,14 @@ void FormatTarga_close (FileFormat *$) {
 FileFormat *FormatTarga_open (const char *filename, int mode) {
 	const char *modestr;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass  = &FormatTarga;
+	$->qlass  = &class_FormatTarga;
 	$->frames = 0;
 	$->frame  = FormatTarga_frame;
 	$->size   = 0;
 	$->read   = FormatTarga_read;
-	$->begin  = FormatTarga_begin;
-	$->flow   = FormatTarga_flow;
-	$->end    = FormatTarga_end;
+	$->begin  = (GRID_BEGIN_(FileFormat,(*)))FormatTarga_0_begin;
+	$->flow   =  (GRID_FLOW_(FileFormat,(*)))FormatTarga_0_flow;
+	$->end    =   (GRID_END_(FileFormat,(*)))FormatTarga_0_end;
 	$->color  = 0;
 	$->option = 0;
 	$->close  = FormatTarga_close;
@@ -156,7 +161,7 @@ err:
 	return 0;
 }
 
-FileFormatClass FormatTarga = {
+FileFormatClass class_FormatTarga = {
 	"targa", "Targa", (FileFormatFlags)0,
 	FormatTarga_open, 0, 0,
 };
