@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -470,6 +470,8 @@ static inline bool FLOAT_P(Ruby x) {
 	return TYPE(x)==T_FLOAT;
 }
 
+/* not using NUM2INT because Ruby can convert Symbol to int
+   (by compatibility with Ruby 1.4) */
 static inline int32 INT(Ruby x) {
 	if (INTEGER_P(x)) return NUM2INT(x);
 	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
@@ -996,9 +998,7 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 
 /* macro for declaring an inlet inside GRCLASS() (int32 only) */
 #define GRINLET(_class_,i,mode) {i, mode, \
-	0, 0, \
-	_class_##_grid_inlet_##i, 0, \
-	0, 0 }
+	0, 0, _class_##_grid_inlet_##i, 0, 0, 0 }
 
 /* same for inlets that support all types */
 #define GRINLET4(_class_,i,mode) {i, mode, \
@@ -1014,8 +1014,7 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 
 /* same except int unsupported by that inlet */
 #define GRINLETF(_class_,i,mode) {i, mode, \
-	0, 0, 0, 0, \
-	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
+	0, 0, 0, 0, _class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
@@ -1059,8 +1058,7 @@ typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 	int winlet;
 	int mode; /* 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet */
-	/* It used to be three different function pointers here (begin,flow,end)
-	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
+	/* n=-1 is begin, and n=-2 is _finish_. the name "end" is now used as an
 	end-marker for inlet definitions... sorry for the confusion */
 #define FOO(_type_) \
 	void (*flow_##_type_)(GridInlet *in, int n, Pt<_type_> data); \

@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -54,6 +54,8 @@
 	if (!is_busy()) RAISE("%s: " #s " not busy",parent->info());
 
 
+//#define INT(v) convert(v,(int*)0)
+
 /* **************** Grid ****************************************** */
 
 void Grid::init(Dim *dim, NumberTypeE nt) {
@@ -72,14 +74,14 @@ void Grid::init_clear(Dim *dim, NumberTypeE nt) {
 }
 
 #define FOO(S) \
-	static inline void NUM(Ruby x, S &y) { y = INT(x); }
+	static inline void NUM(Ruby x, S &y) { y = convert(x,(int32*)0); }
 EACH_INT_TYPE(FOO)
 #undef FOO
 
 #define FOO(S) \
 static inline void NUM(Ruby x, S &y) { \
 	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value; \
-	else if (INTEGER_P(x)) y = INT(x); \
+	else if (INTEGER_P(x)) y = convert(x,(int32*)0); \
 	else RAISE("expected Float (or at least Integer)");}
 EACH_FLOAT_TYPE(FOO)
 #undef FOO
@@ -95,7 +97,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 					i--;
 					nt = NumberTypeE_find(a[i]);
 				}
-				for (int j=0; j<i; j++) v[j] = INT(a[j]);
+				for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
 				init(new Dim(i,v),nt);
 				if (a[i] != delim) i++;
 				i++; a+=i; n-=i;
@@ -576,7 +578,7 @@ GridObject::~GridObject() {
 	Ruby qlass = rb_obj_class(rself);
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
 		RAISE("not a GridObject subclass ???");
-	int noutlets = INT(rb_ivar_get(qlass,SI(@noutlets)));
+	int noutlets = convert(rb_ivar_get(qlass,SI(@noutlets)),(int*)0);
 	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
 	if (handlers!=Qnil) {
 		for (int i=0; i<rb_ary_len(handlers); i++) {
@@ -640,7 +642,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
 	STACK_ARRAY(int32,v,n);
-	for (int i=0; i<n; i++) v[i] = INT(p[i]);
+	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
 	if (!out[outlet]) RAISE("outlet not found");
 	out[outlet]->begin(new Dim(n,v),nt);
 }
