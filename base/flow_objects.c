@@ -280,10 +280,17 @@ GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 \class GridStore < GridObject
 struct GridStore : GridObject {
 	Grid r; //\attr
+	Grid put_at; //\attr
+	int32 wdex[MAX_DIMENSIONS]; /* temporary buffer, copy of put_at */
+	int d; /* goes with wdex */
 	\decl void initialize (Grid *r=0);
 	\decl void _0_bang ();
+	\decl void _1_reassign ();
+	\decl void _1_put_at (Grid *index);
 	GRINLET3(0);
 	GRINLET3(1);
+	GridStore() { put_at.constrain(expect_max_one_dim); }
+	template <class T> void compute_indices(Pt<T> v, int nc, int nd);
 };
 
 /* takes the backstore of a grid and puts it back into place.
@@ -294,51 +301,7 @@ static void snap_backstore (Grid &r) {
 	if (r.next) { r.swallow(r.next); r.next = 0; }
 }
 
-/*!@#$ i should ensure that n is not exceedingly large */
-/*!@#$ worse: the size of the foo buffer may still be too large */
-GRID_INLET(GridStore,0) {
-	/* snap_backstore must be done before *anything* else */
-	snap_backstore(r);
-
-	NOTEMPTY(r);
-
-	int na = in->dim->n;
-	int nb = r.dim->n;
-	int nc = in->dim->get(na-1);
-	STACK_ARRAY(int32,v,MAX_DIMENSIONS);
-
-	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
-
-	int lastindexable = r.dim->prod()/r.dim->prod(nc) - 1;
-	int ngreatest = nt_greatest((T *)0);
-	if (lastindexable > ngreatest) {
-		RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
-	}
-	
-	if (nc > nb)
-		RAISE("wrong number of elements in last dimension: "
-			"got %d, expecting <= %d", nc, nb);
-	int nd = nb - nc + na - 1;
-	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
-
-	COPY(v,in->dim->v,na-1);
-	COPY(v+na-1,r.dim->v+nc,nb-nc);
-	out[0]->begin(new Dim(nd,v),r.nt);
-	if (nc>0) in->set_factor(nc);
-} GRID_FLOW {
-	int na = in->dim->n;
-	int nc = in->dim->get(na-1);
-	int size = r.dim->prod(nc);
-	assert((n % nc) == 0);
-	int nd = n/nc;
-	STACK_ARRAY(T,w,n);
-	Pt<T> v=w;
-	if (sizeof(T)==1 && nc==1 && r.dim->v[0]<=256) {
-		v=data;
-		goto skip;
-	}
-	COPY(v,data,n);
-	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
+template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
 	for (int i=0; i<nc; i++) {
 		int32 wrap = r.dim->v[i];
 		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
@@ -356,7 +319,49 @@ GRID_INLET(GridStore,0) {
 		}
 		if (i) op2_add->zip(nd,v,v+nd*i);
 	}
-	skip:;
+}
+
+/*!@#$ i should ensure that n is not exceedingly large */
+/*!@#$ worse: the size of the foo buffer may still be too large */
+GRID_INLET(GridStore,0) {
+	/* snap_backstore must be done before *anything* else */
+	snap_backstore(r);
+	NOTEMPTY(r);
+	int na = in->dim->n;
+	int nb = r.dim->n;
+	int nc = in->dim->get(na-1);
+	STACK_ARRAY(int32,v,MAX_DIMENSIONS);
+	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
+	int lastindexable = r.dim->prod()/r.dim->prod(nc) - 1;
+	int ngreatest = nt_greatest((T *)0);
+	if (lastindexable > ngreatest) {
+		RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
+	}
+	if (nc > nb)
+		RAISE("wrong number of elements in last dimension: "
+			"got %d, expecting <= %d", nc, nb);
+	int nd = nb - nc + na - 1;
+	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
+	COPY(v,in->dim->v,na-1);
+	COPY(v+na-1,r.dim->v+nc,nb-nc);
+	out[0]->begin(new Dim(nd,v),r.nt);
+	if (nc>0) in->set_factor(nc);
+} GRID_FLOW {
+	int na = in->dim->n;
+	int nc = in->dim->get(na-1);
+	int size = r.dim->prod(nc);
+	assert((n % nc) == 0);
+	int nd = n/nc;
+	STACK_ARRAY(T,w,n);
+	Pt<T> v=w;
+	if (sizeof(T)==1 && nc==1 && r.dim->v[0]<=256) {
+		/* bug? shouldn't modulo be done here? */
+		v=data;
+	} else {
+		COPY(v,data,n);
+		for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
+		compute_indices(v,nc,nd);
+	}
 /*
 #define FOO(type) { \
 	Pt<type> p = (Pt<type>)r; \
@@ -452,7 +457,57 @@ GRID_INLET(GridStore,0) {
 	}
 } GRID_END
 
-GRID_INPUT2(GridStore,1,r) {} GRID_END
+GRID_INLET(GridStore,1) {
+	if (put_at.is_empty()) { // reassign
+		if (is_busy_except(in)) {
+			if (r.next != &r) delete r.next;
+			r.next = new Grid();
+			r.next->dc = r.dc;
+		}
+		(r.next?r.next:&r)->init(in->dim->dup(),NumberTypeE_type_of(*data));
+	} else { // put_at ( ... )
+		//!@#$ should check types. if (r.nt!=in->nt) RAISE("shoo");
+		int nn = put_at.dim->prod();
+		COPY(Pt<int32>(wdex,n),(Pt<int32>)put_at,nn);
+		d=0;
+	}
+} GRID_FLOW {
+	if (put_at.is_empty()) { // reassign
+		COPY(((Pt<T>)*(r.next ? r.next : &r))+in->dex, data, n);
+		return;
+	}
+	// put_at ( ... )
+	int nn = r.dim->n;
+	Pt<int32> x = Pt<int32>(wdex,nn);
+	STACK_ARRAY(int32,v,nn);
+	STACK_ARRAY(int32,fromb,nn);
+	STACK_ARRAY(int32,sizeb,nn);
+	STACK_ARRAY(int32,to2,nn);
+	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
+	int na = put_at.dim->v[0];
+	COPY(fromb+nn-na,(Pt<int32>)put_at,na);
+	COPY(sizeb+nn-in->dim->n,(Pt<int32>)in->dim->v,in->dim->n);
+	for (int i=0; i<nn; i++) to2[i] = fromb[i]+sizeb[i];
+	while (data,n--) {
+		/* here d is the dim# to reset; d=n for none */
+		for(;d<nn;d++) x[d]=fromb[d];
+		/* do stuff here */
+		COPY(v,x,nn);
+		compute_indices(v,nn,1);
+		//fprintf(stderr,"n=%d: %ld %ld -> %ld\n",n,x[0],x[1],v[0]);
+		((Pt<T>)r)[v[0]] = *data++;
+		/* find next set of indices; here d is the dim# to increment */
+		for(;;) {
+			d--;
+			if (d<0) goto end;
+			x[d]++;
+			if (x[d]<to2[d]) break;
+		}
+		end:;
+		d++;
+	}
+} GRID_FINISH {
+} GRID_END
 
 \def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
@@ -461,6 +516,14 @@ GRID_INPUT2(GridStore,1,r) {} GRID_END
 
 \def void _0_bang () {
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
+}
+
+\def void _1_reassign () {
+	put_at.del();
+}
+
+\def void _1_put_at (Grid *index) {
+	put_at.swallow(index);
 }
 
 GRCLASS(GridStore,LIST(GRINLET2(GridStore,0,4),GRINLET4(GridStore,1,4)),
@@ -720,7 +783,6 @@ GRID_INLET(GridInner,0) {
 	int a_last = a->get(a->n-1);
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
-//	fprintf(stderr,"GridInner: n=%d\n",n);
 	SAME_DIM(1,a,a->n-1,b,0);
 	STACK_ARRAY(int32,v,n);
 	COPY(v,a->v,a->n-1);
