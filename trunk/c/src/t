@@ -4,6 +4,15 @@
 #  only written for myself.
 #
 
+
+
+# jMax 3.0.1.latest-cvs
+#export LD_LIBRARY_PATH=/local/jmax3/lib:$LD_LIBRARY_PATH
+#export PATH=/local/jmax3/bin:$PATH
+#ulimit -c unlimited
+
+
+
 #INST=/opt/jmax
 INST=/opt
 #INST=/usr

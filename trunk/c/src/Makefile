@@ -1,6 +1,4 @@
-# this file is no longer maintained
-# copy appropriate new options from Makefile.25
-
+# $Id$
 include ../../config.make
 ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g
 ARCH_CFLAGS += -fdollars-in-identifiers
@@ -8,7 +6,6 @@ ARCH_CFLAGS += -fpic
 
 ifeq ($(JMAX_VERSION),24)
 
-PNAME=gridflow
 DISTDIR = ../../../../fts
 PACKAGEROOT = ..
 include $(DISTDIR)/Makefiles/Makefile.lib
@@ -68,4 +65,7 @@ $(LIB): $(OBJS) ../obj2/nofts.o Makefile
 
 #$(LIB2): $(LIB)
 #	install --mode=755 $(LIB) $(LIB2)
+
+test::
+	(cd ../..; make test)
 
