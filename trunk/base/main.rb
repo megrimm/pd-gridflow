@@ -500,12 +500,17 @@ class GridPosterize < FPatcher
 	install "@posterize", 2, 1
 end
 
-begin
+def GridFlow.estimate_cpu_clock
 	u0,t0=GridFlow.rdtsc,Time.new.to_f
 	sleep .01
 	u1,t1=GridFlow.rdtsc,Time.new.to_f
-	@cpu_hertz = (u1-u0)/(t1-t0)
-	GridFlow.post "estimating cpu clock at #{@cpu_hertz} Hz"
+	(u1-u0)/(t1-t0)
+end
+
+begin
+	@cpu_hertz = (0...3).map {
+		GridFlow.estimate_cpu_clock
+	}.sort[1] # median of three tries
 rescue
 	GridFlow.post $!
 end
