@@ -395,16 +395,20 @@ METHOD(FormatX11,option) {
 	if (sym == SYM(out_size)) {
 		int sy = INT(argv[1]);
 		int sx = INT(argv[2]);
-		COERCE_INT_INTO_RANGE(sy,16,MAX_INDICES);
-		COERCE_INT_INTO_RANGE(sx,16,MAX_INDICES);
+		if (sy<16) sy=16;
+		if (sx<16) sx=16;
+		if (sy>MAX_INDICES) RAISE("height too big");
+		if (sx>MAX_INDICES) RAISE("width too big");
 		FormatX11_resize_window($,sx,sy);
 	} else if (sym == SYM(draw)) {
 		int sy = Dim_get($->dim,0);
 		int sx = Dim_get($->dim,1);
 		FormatX11_show_section($,0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
-		$->autodraw = INT(argv[1]);
-		COERCE_INT_INTO_RANGE($->autodraw,0,2);
+		int autodraw = INT(argv[1]);
+		if (autodraw<0 || autodraw>2)
+			RAISE("autodraw=%d is out of range",autodraw);
+		$->autodraw = autodraw;
 	} else
 		rb_call_super(argc,argv);
 }

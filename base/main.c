@@ -199,14 +199,20 @@ void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	}
 }
 
+static VALUE sym_outlets=0;
+
 VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
-	VALUE ary = rb_ivar_get($,rb_intern("@outlets"));
+	VALUE ary;
 	VALUE sym;
 	int outlet;
 	int i, n;
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
+
+	if (!sym_outlets) sym_outlets=rb_intern("@outlets");
+	ary = rb_ivar_defined($,sym_outlets) ?
+		rb_ivar_get($,sym_outlets) : Qnil;
 	if (ary==Qnil) return Qnil;
 	n = RARRAY(ary)->len;
 	for (i=0; i<n; i++) {
@@ -296,14 +302,6 @@ void whine_time(const char *s) {
 	whine("%s: %d.%06d\n",s,t.tv_sec,t.tv_usec);
 }
 
-/* Key for method signature codes:
-	s Symbol
-	i Fixnum (int)
-	l List (???)
-	p void *
-	+ more of the same
-	; begin optional section
-*/
 void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	VALUE args[16]; /* not really used anymore */
 	int i;
@@ -373,8 +371,12 @@ VALUE super) {
 
 /* ---------------------------------------------------------------- */
 
+#include <signal.h>
+
 /* Ruby's entrypoint. */
 void Init_gridflow (void) /*throws Exception*/ {
+	signal(11,SIG_IGN);
+
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
 	DEF_SYM(grid_end);
@@ -419,7 +421,18 @@ void Init_gridflow (void) /*throws Exception*/ {
 	startup_grid();
 	startup_flow_objects();
 
+/*
 	rb_require("gridflow/base/main.rb");
 	rb_require("gridflow/format/main.rb");
+*/
+
+	post("begin require\n");
+
+	rb_eval_string("begin\
+		require 'gridflow/base/main.rb'; \
+		require 'gridflow/format/main.rb'; \
+	rescue Exception; p \"#{$!}: #{$!.backtrace}\"; end");
+
+	post("end require\n");
 }
 
