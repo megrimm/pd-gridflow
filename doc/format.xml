@@ -311,6 +311,8 @@
 		is just called LibQuickTime.</p>
 		<p>Some versions of those libraries may include support for different codecs,
 		and some also may support entirely different wrapper formats such as AVI.</p>
+		<p>On Macintosh, Apple QuickTime is used instead, but several of the following
+		messages may not be available.</p>
 
 		<method name="open quicktime file">
 			<arg name="filename" type="symbol" />
@@ -319,7 +321,7 @@
 			<arg name="codec" type="symbol"/>
 			Allowed values are at least: raw, jpeg, png, mjpa, yuv2, yuv4.
 			Some other values may allowed, depending on the version of the library
-			and other things.
+			and which codec plugins are installed.
 			Must be set before the first frame is written.
 			only applies to @out. Choosing a codec is important
 			because codecs influence greatly the speed of
@@ -327,6 +329,18 @@
 			the size of the written file, and its fidelity to the
 			original content. Note that there exist other Apple-QuickTime
 			codecs that are not supported by HeroineWarrior-QuickTime.
+		</method>
+		<method name="parameter">
+			<arg name="key" type="symbol"/>
+			<arg name="value" type="int"/>
+			Sets special codec-specific settings.
+			For example: <k>parameter jpeg_compression 75</k>
+		</method>
+		<method name="framerate">
+			<arg name="fps" type="int"/>
+			Sets the framerate of the file.
+			This is not used by GridFlow when reading a file, but other
+			programs usually care.
 		</method>
 
 		<method name="colorspace">
@@ -468,13 +482,23 @@
 		<method name="contrast"  ><arg name="level" type="0-65535"/></method>
 		<method name="whiteness" ><arg name="level" type="0-65535"/></method>
 		</p>
+		<method name="get">
+			<arg name="attr" type="symbol"/>
+			gets a specific attribute. a message is sent through right outlet.
+			valid attributes are: brightness, hue, colour, contrast, whiteness.
+		</method>
+		<method name="get">
+			gets all attributes.
+		</method>
 		
 		<p>other options:
 		<method name="channel"   ><arg type="integer"/></method>
 		<method name="tuner"     ><arg type="integer"/></method>
 		<method name="norm"      ><arg type="integer"/></method>
 		<method name="frequency" ><arg type="integer"/></method>
-		<method name="transfer" type="symbol(read|mmap)">
+		<method name="transfer"  >
+			<arg type="symbol(read|mmap)"/>
+			<arg type="integer" default="2"/>
 			<list>
 			<li>mmap:
 			This is the normal (and fast) way of transferring pictures
@@ -483,6 +507,9 @@
 			<li>read:
 			Some cameras/drivers only support this instead of mmap.
 			</li></list>
+			In case of mmap, the extra numeric argument sets the
+			queue length in number of frames, so you can select an
+			appropriate tradeoff between efficiency and latency.
 		</method>
 
 		<method name="colorspace">
