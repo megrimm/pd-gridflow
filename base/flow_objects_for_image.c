@@ -193,13 +193,10 @@ GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4))
 
 /* ---------------------------------------------------------------- */
 /* "@scale_by" does quick scaling of pictures by integer factors */
-
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
-/*!@#$ should support N channels */
-
 \class GridScaleBy < GridObject
 struct GridScaleBy : GridObject {
-	\attr Grid scale; /* integer scale factor */
+	\attr Grid scale; // integer scale factor
 	int scaley;
 	int scalex;
 	\decl void initialize (Grid *factor=0);
@@ -216,11 +213,7 @@ struct GridScaleBy : GridObject {
 GRID_INLET(GridScaleBy,0) {
 	Dim *a = in->dim;
 	expect_picture(a);
-	// computing the output's size
-	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
-	out=new GridOutlet(this,0,new Dim(3,v),in->nt);
-
-	// configuring the input format
+	out=new GridOutlet(this,0,new Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
@@ -308,12 +301,10 @@ struct GridDownscaleBy : GridObject {
 GRID_INLET(GridDownscaleBy,0) {
 	Dim *a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
-	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
-	out=new GridOutlet(this,0,new Dim(3,v),in->nt);
+	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
 //!@#$	in->set_factor(a->get(1)*a->get(2)*scaley); <- things could be easier with this
-	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
-	temp.init(new Dim(2,w), in->nt);
+	temp.init(new Dim(2,in->dim->get(1)/scalex,in->dim->get(2)), in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp.dim->prod();
@@ -489,8 +480,7 @@ struct DrawPolygon : GridObject {
 
 void DrawPolygon::init_lines () {
 	int nl = polygon.dim->get(0);
-	int32 v[] = {nl,8};
-	lines.init(new Dim(2,v), int32_e);
+	lines.init(new Dim(nl,8), int32_e);
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 	Pt<int32> pd = (Pt<int32>)polygon;
 	for (int i=0,j=0; i<nl; i++) {
@@ -526,8 +516,7 @@ GRID_INLET(DrawPolygon,0) {
 	qsort((int32 *)lines,nl,sizeof(Line),order_by_starting_scanline);
 	STACK_ARRAY(int32,v,1);
 	int cn = color.dim->prod();
-	v[0] = cn*16;
-	color2.init(new Dim(1,v), color.nt);
+	color2.init(new Dim(cn*16), color.nt);
 	for (int i=0; i<16; i++) COPY((Pt<T>)color2+cn*i,(Pt<T>)color,cn);
 } GRID_FLOW {
 	int nl = polygon.dim->get(0);
@@ -721,10 +710,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	this->op = op;
 	if (image) this->image.swallow(image);
 	if (position) this->position.swallow(position);
-	else {
-		int32 v[] = { 2 };
-		this->position.init_clear(new Dim(1,v), int32_e);
-	}
+	else this->position.init_clear(new Dim(2), int32_e);
 }
 
 GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0,4),GRINLET4(DrawImage,1,4),GRINLET(DrawImage,2,4)),

@@ -193,41 +193,29 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
 	nt = (NumberTypeE) INT(argv[2]);
 	argc-=3, argv+=3;
-
 	PROF(parent) {
-
 	if (is_busy()) {
 		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
 			parent->info(), sender->info(), back_out->parent->info());
 		abort();
 	}
-
 	sender = back_out->parent;
-
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",parent->info());
-
 	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
 			parent->info(), number_type_table[nt].name);
-
-	if (argc>MAX_DIMENSIONS)
-		RAISE("%s: too many dimensions (aborting grid)",parent->info());
-
 	STACK_ARRAY(int32,v,argc);
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	Dim *dim = this->dim = new Dim(argc,v);
-
 	dex = 0;
 	factor = 1;
 	int r = rb_ensure(
 		(RMethod)GridInlet_begin_1,(Ruby)this,
 		(RMethod)GridInlet_begin_2,(Ruby)this);
 	if (!r) {abort(); return;}
-
 	this->dim = dim;
 	back_out->callback(this);
-
 	} /* PROF */
 }
 
