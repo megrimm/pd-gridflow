@@ -234,20 +234,19 @@ template <class T> static inline T lcm (T a, T b) {
 	return a*b/gcd(a,b);
 }
 
-// returns the position (0..63) of the highest bit set in a word, or 0 if none. */
-template <class T> int highest_bit(T n) {
-	int i=0;
-	if (sizeof(T)>=8) if (n&0xffffffff00000000) { n>>=32; i+=32; }
-	if (sizeof(T)>=4) if (n&0xffff0000) { n>>=16; i+=16; }
-	if (sizeof(T)>=2) if (n&0x0000ff00) { n>>= 8; i+= 8; }
-	if (n&0x000000f0) { n>>= 4; i+= 4; }
-	if (n&0x0000000c) { n>>= 2; i+= 2; }
-	if (n&0x00000002) { n>>= 1; i+= 1; }
-	return i;
+// returns the position (0..31) of highest bit set in a word, or 0 if none.
+static int highest_bit(int n) {
+        int i=0;
+        if (n&0xffff0000) { n>>=16; i+=16; }
+        if (n&0x0000ff00) { n>>= 8; i+= 8; }
+        if (n&0x000000f0) { n>>= 4; i+= 4; }
+        if (n&0x0000000c) { n>>= 2; i+= 2; }
+        if (n&0x00000002) { n>>= 1; i+= 1; }
+        return i;
 }
 
-// returns the position (0..63) lowest bit set in a word, or 0 if none.
-template <class T> int lowest_bit(T n) {
+// returns the position (0..31) of lowest bit set in a word, or 0 if none.
+static int lowest_bit(int n) {
 	return highest_bit((~n+1)&n);
 }
 
