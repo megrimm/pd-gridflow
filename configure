@@ -43,7 +43,6 @@ FILES = [
 	[:ruby, "server_2.rb"],
 	[:ruby, "server_1_grid.rb"],
 	[:ruby, "server_1_ppm.rb"],
-	[:ruby, "server_0.rb"],
   ],
 ]
 
