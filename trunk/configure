@@ -328,7 +328,6 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
-	log << "[--puredata-dist-dir directory] "
 	log << "[--debug] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	puts

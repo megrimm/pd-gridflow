@@ -22,6 +22,7 @@ Installation
 [ ] add macos 10.x support (i need access to a mac)
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
+[ ] reintroduce --puredata-dist-dir ?
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -79,6 +80,7 @@ Architecture
 [ ] jMax metaclasses -> Ruby runtime subclass creation
 [ ] UnknownAtom class
 [ ] GFBridge object visible from Ruby
+[ ] use C++ destructor for C++ fields...
 
 Computation Objects
 [ ] @type, @cast

@@ -276,7 +276,7 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	if (size<1) RAISE("not enough masks");
 	if (size>4) RAISE("too many masks (%d)",size);
 	for (int i=0; i<size; i++) masks2[i] = INT(masks[i]);
-	c_peer = NEW(BitPacking,(endian,bytes,size,masks2));
+	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
 	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */

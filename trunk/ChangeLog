@@ -1,5 +1,9 @@
 /* $Id$ */
 
+version 0.6.3 (head):
+
+ * removing the custom leak detector ("Valgrind" program used instead)
+
 version 0.6.2 (2002.09.17):
 
  * jMax objects written in (or using) Ruby now can work in PureData too.

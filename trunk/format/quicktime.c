@@ -37,7 +37,7 @@ METHOD(FormatQuickTime,frame) {
 	int sx = quicktime_video_width($->anim,0);
 	int sy = quicktime_video_height($->anim,0);
 	int npixels = sx*sy;
-	uint8 *buf = NEWA(uint8,sy*sx*4+16);
+	uint8 *buf = new uint8[sy*sx*4+16];
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*4;
 	gfpost("pos = %d", quicktime_byte_position($->anim));
@@ -62,7 +62,7 @@ METHOD(FormatQuickTime,frame) {
 		o->send(bs,b2);
 	}
 
-	FREE(buf);
+	delete buf;
 	o->end();
 }
 
