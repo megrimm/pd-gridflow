@@ -898,6 +898,8 @@ end
 
 #-------- fClasses for: Hardware
 
+if const_defined? :USB
+
 class<<USB
 	attr_reader :busses
 end
@@ -947,6 +949,8 @@ class DelcomUSB < GridFlow::FObject
 	def close; @usb.close; end
 	install "delcomusb", 1, 1
 end
+
+end # if const_defined? :USB
 
 # requires Ruby 1.8.0 because of bug in Ruby 1.6.x
 class JoystickPort < FObject
