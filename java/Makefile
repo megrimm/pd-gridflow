@@ -12,7 +12,7 @@ gridflow/FtsPeepholeObject.class \
 gridflow/Peephole.class \
 gridflow/PeepholeControlPanel.class \
 gridflow/GridFlowExtension.class \
-gridflow/PeepholeControlPanel$1.class \
+gridflow/PeepholeControlPanel\$1.class \
 gridflow/PathInfo.class
 
 SRC = \
@@ -29,8 +29,8 @@ JC = $(JAVA_HOME)/bin/javac -classpath $(CLASSPATH) -O
 all: gridflow.jar
 
 clean::
-	rm -f $(OBJS)
-	
+	rm -f $(OBJS) gridflow.jar PathInfo.java
+
 gridflow.jar: $(SRC)
 	-mkdir gridflow
 	$(JC) -d . $(SRC)
