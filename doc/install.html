@@ -9,44 +9,44 @@
 <br>
 <table width="100%" border="0" cellspacing="1">
   <tr bgcolor="#00283c"> 
-    <td colspan="3"><img src="../samples/images/jmax_titre.jpg" width="253" height="23"></td>
+    <td colspan="3"><img src="images/jmax_titre.jpg" width="253" height="23"></td>
   </tr>
-  <tr> 
+  <tr>
     <td width="13%" height="7">&nbsp;</td>
     <td width="56%" height="7">&nbsp;</td>
     <td width="31%" height="7">&nbsp;</td>
   </tr>
-  <tr> 
-    <td colspan="2" height="6"> 
+  <tr>
+    <td colspan="2" height="6">
       <h4>video4jmax
  - installation help</h4>
     </td>
     <td width="31%" height="6">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="13%">&nbsp;</td>
-    <td width="56%"> 
+    <td width="56%">
       <p>&nbsp;</p>
       <h5>Requirements </h5>
       <p>i). jmax 2.5 (should work under jmax 2.4.12)<br>
         ii). an X11 display server </p>
-      <p><font size="-1">note: you will need to have a version of jmax running, 
-        for help on installing and compiling jmax, please see Christian Klippel's 
-        extensive help file at <a href="http://www.mamalala.de">http://www.mamalala.de</a> 
+      <p><font size="-1">note: you will need to have a version of jmax running,
+        for help on installing and compiling jmax, please see Christian Klippel's
+        extensive help file at <a href="http://www.mamalala.de">http://www.mamalala.de</a>
         as well as the jmax docs.</font></p>
     </td>
     <td width="31%">&nbsp;</td>
   </tr>
-  <tr> 
+  <tr>
     <td width="13%">&nbsp;</td>
-    <td width="56%"> 
+    <td width="56%">
       <h5><br>
         Installation process (for jMax 2.5)</h5>
-      <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in 
-        your 'packages' directory. This will create the video4jmax directory and 
+      <p>1. Untar the archive with tar -xvtf video4jmax_current_version.tgz in
+        your 'packages' directory. This will create the video4jmax directory and
         place all the files within. </p>
-      <p>2. Run './configure - --jmax25' from the video4jmax directory. That should 
-        take care of adjusting the Makefiles to your current version and point 
+      <p>2. Run './configure - --jmax25' from the video4jmax directory. That should
+        take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
       <p>Files Changed by configure: <br>
@@ -66,7 +66,7 @@
         5. Add "package require video4jmax" within the "when start" section of 
         ~/.jmaxrc</p>
       <p>6. Add this line to your ~/.jmaxrc file:<br>
-        dataDirectory /usr/local/jmax/packages/video4jmax/samples/images (or any 
+        dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
         path to the directory where you will place the images).</p>
       <p>7. Restart jmax. </p>
       <p>&nbsp;</p>
@@ -96,7 +96,12 @@
       </p>
       <p><br>
         5. Add "package require video4jmax" within the "when start" section of 
-        ~/.jmaxrc and (re)start jmax. (remove the older line if you upgrade).</p>
+        ~/.jmaxrc</p>
+        <p>6. Add this line to your ~/.jmaxrc file:<br>
+        dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
+        path to the directory where you will place the images).</p>
+      <p>7. Restart jmax. </p>
+
       <p>&nbsp;</p>
       <p>Thank you to Christian Klippel who provided Makefiles <br>
       </p>
