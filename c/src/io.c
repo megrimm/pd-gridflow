@@ -44,17 +44,16 @@
 typedef struct GridIn {
 	GridObject_FIELDS;
 	Format *ff; /* a file reader object */
+	bool timelog; /* future use */
+	struct timeval tv; /* future use */
 } GridIn;
 
 typedef struct GridOut {
 	GridObject_FIELDS;
 	Format *ff; /* a file writer object */
+	bool timelog;
+	struct timeval tv;   /* time of the last grid_end */
 } GridOut;
-
-typedef struct VideoOut {
-	GridObject_FIELDS;
-	Format *ff; /* a file writer object */
-} VideoOut;
 
 /* ---------------------------------------------------------------- */
 
@@ -68,6 +67,8 @@ METHOD(GridIn,init) {
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 	$->ff = 0;
+	$->timelog = 0; /* not used in @in yet */
+	gettimeofday(&$->tv,0);
 }
 
 METHOD(GridIn,close) {
@@ -179,12 +180,25 @@ GRID_END(GridOut,0) {
 	$->ff->cl->end($->ff,in);
 	LEAVE;
 	fts_outlet_send(OBJ($),0,fts_s_bang,0,0);
+	if (!$->timelog) return;
+	{
+		struct timeval t;
+		gettimeofday(&t,0);
+		whine("@out:0:end: %d.%06d (diff %8d usec)\n",t.tv_sec,t.tv_usec,
+			(t.tv_sec-$->tv.tv_sec)*1000000 + (t.tv_usec-$->tv.tv_usec));
+		memcpy(&$->tv,&t,sizeof(struct timeval));
+	}
 	ENTER;
 }
 
 METHOD(GridOut,option) {
+	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	CHECK_FILE_OPEN
-	if ($->ff->cl->option) {
+	if (sym == SYM(timelog)) {
+		$->timelog = GET(1,int,0);
+		COERCE_INT_INTO_RANGE($->timelog,0,1);
+		whine("timelog = %d",$->timelog);
+	} else if ($->ff->cl->option) {
 		$->ff->cl->option($->ff,ac,at);
 	} else {
 		whine("this format has no options");
@@ -228,6 +242,8 @@ METHOD(GridOut,open) {
 }
 
 METHOD(GridOut,init) {
+	$->timelog = 0;
+	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridOut,0);
 	if (ac>1) {
