@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "video4jmax.h"
 #include "grid.h"
 
 //#if !defined(GRID_USE_INLINE) || (defined(GRID_USE_INLINE) && defined(PROC))

@@ -20,8 +20,6 @@
 */
 
 #include <stdlib.h>
-
-#include "video4jmax.h"
 #include "grid.h"
 
 static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };

@@ -23,7 +23,6 @@
 
 #include <stdlib.h>
 
-#include "video4jmax.h"
 #include "grid.h"
 #include <math.h>
 

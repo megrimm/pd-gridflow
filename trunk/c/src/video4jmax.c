@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include "video4jmax.h"
 #include "grid.h"
 
 /* **************************************************************** */

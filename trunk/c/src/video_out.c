@@ -29,7 +29,6 @@
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
 
-#include "video4jmax.h"
 #include "grid.h"
 
 /*
