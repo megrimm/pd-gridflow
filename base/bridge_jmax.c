@@ -276,25 +276,23 @@ static Ruby gf_find_file(Ruby rself, Ruby s) {
 void gridflow_module_init () {
 	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
-	post("setting up Ruby-for-jMax...\n");
+	post("Loading Ruby-for-jMax (from GridFlow " GF_VERSION ")\n");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
 	rb_ivar_set(EVAL("Data"),SI(@gf_bridge),PTR2FIX(gf_bridge2));
 	rb_define_singleton_method(EVAL("Data"),"gf_bridge_init",
 		(RMethod)gf_bridge_init,0);
-	post("(done)\n");
 
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end"))
-	{
+		STDERR.puts \"ruby #{e.class}: #{e}: #{e.backtrace}\"; false; end")) {
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
 	}
 
 	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
-	/* if exception occurred above, will crash soon */
+	// !@#$ if exception occurred above, will crash soon
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);
 }

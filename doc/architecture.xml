@@ -15,6 +15,20 @@
 </section>
 -->
 
+<section name="User-level Overview">
+<p>(this section is for all users)</p>
+
+
+<write-me/>
+</section>
+
+<section name="Programmer-level Overview">
+<p>(this section is for people who want to mess with the internals or at least
+understand them a bit)</p>
+(move this section down?)
+<write-me/>
+</section>
+
 <section name="Numbers">
 
 	<p>High-performance computation requires precise and quite peculiar
@@ -327,6 +341,10 @@ should make many circuits simpler.
 </p>
 
 <p>(more to come)</p>
+</section>
+
+<section name="Naming Conventions">
+	<write-me/>
 </section>
 
 </documentation>

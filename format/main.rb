@@ -140,6 +140,7 @@ class Format #< GridObject
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
 
+	#!@#$ what's this doing here?
 	def option(name,*args)
 		case name
 		when :rewind
@@ -489,7 +490,7 @@ class FormatGrid < Format; include EventIO
 	attr_reader :stream
 
 	# nil=headerful; array=assumed dimensions of received grids
-	attr_accessor :headerless
+	#attr_accessor :headerless
 
 	def initialize(mode,source,*args)
 		super

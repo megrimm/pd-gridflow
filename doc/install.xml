@@ -17,7 +17,7 @@
 	<li>sparc : Sun SparcStation</li>
 </list>(but we only test i686 ourselves)</p>
 <p>Required Software:<list>
-	<li>Ruby 1.6 or more recent (language interpreter)</li>
+	<li>Ruby 1.6.2 or more recent (language interpreter)</li>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 </list></p>
@@ -27,7 +27,7 @@
 	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
 </list></p>
 <p>Optional:<list>
-	<li>PureData 0.35 or 0.36</li>
+	<li>PureData 0.35 or 0.36 (support is experimental)</li>
 	<li>Simple Directmedia Layer (sdl)</li>
 	<li>Ascii Art Library (aalib)</li>
 	<li>HeroineWarrior's libmpeg3.so</li>
@@ -131,7 +131,8 @@ have to recreate the library index using the <k>ldconfig</k> command too
 <section name="Installation process (with PureData 0.35 and compatible)">
 
 <list>
-<li>make sure <k>m_pd.h</k> is installed.</li>
+<li>make sure <k>m_pd.h</k> is installed and can be seen by the compiler.
+you may have to change the C_INCLUDE_PATH environment variable.</li>
 <li>go in GridFlow's source directory.</li>
 <li>run <k>./configure</k></li>
 <li>run <k>make</k></li>

@@ -481,6 +481,9 @@ struct Object {
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
 			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
+			for (int i=-1; i<=1; i++) {
+				fprintf(stderr,"this[0]=0x%08x\n",((int*)this)[i]);
+			}
 			raise(11);
 		}
 	}

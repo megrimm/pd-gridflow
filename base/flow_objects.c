@@ -35,18 +35,6 @@ Operator2 *op2_div;
 
 /* **************************************************************** */
 
-Operator1 *OP1(Ruby x) {
-	Ruby s = rb_hash_aref(op1_dict,x);
-	if (s==Qnil) RAISE("expected one-input-operator");
-	return FIX2PTR(Operator1,s);
-}
-
-Operator2 *OP2(Ruby x) {
-	Ruby s = rb_hash_aref(op2_dict,x);
-	if (s==Qnil) RAISE("expected two-input-operator");
-	return FIX2PTR(Operator2,s);
-}
-
 static void expect_dim_dim_list (Dim *d) {
 	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());
 	int n = d->get(0);
@@ -727,7 +715,7 @@ GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 \class GridInner2 < GridInner
 struct GridInner2 : GridInner {
 	GridInner2() { transpose=true; }
-	\decl void initialize (Operator2 *op_para=OP2(SYM(*)), Operator2 *op_fold=OP2(SYM(+)), int32 rint=0, Grid *r=0);
+	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
 };
 
 \def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
@@ -1593,9 +1581,9 @@ GRID_INLET(DrawPolygon,0) {
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
 				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl-1);
+				//int xn = xe-xs;
 				/* !@#$ could be faster! */
-				/* !@#$ should it be like <= or like < ? */
-				while (xs<=xe) op->zip(cn,data2+cn*xs++,cd);
+				while (xs<xe) op->zip(cn,data2+cn*xs++,cd);
 			}
 			out[0]->give(in->factor,data2);
 		}
@@ -1824,6 +1812,10 @@ GRCLASS(RtMetro,LIST(),
 \end class RtMetro
 
 /* **************************************************************** */
+
+static Operator2 *OP2(Ruby x) {
+	return FIX2PTR(Operator2,rb_hash_aref(op2_dict,x));
+}
 
 void startup_flow_objects () {
 	op2_add = OP2(SYM(+));
