@@ -34,6 +34,8 @@
 #include <quicktime/lqt_codecinfo.h>
 #endif
 
+//#include <quicktime/qtprivate.h> // HACK
+
 \class FormatQuickTimeHW < Format
 struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
@@ -43,16 +45,25 @@ struct FormatQuickTimeHW : Format {
 	int colorspace;
 	int channels;
 	bool started;
+	Dim *force;
 	
-	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), started(false) {}
+	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
+		started(false), force(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl void codec_m (String c);
 	\decl void colorspace_m (Symbol c);
 	\decl Ruby frame ();
 	\decl void seek (int frame);
+	\decl void force_size (int32 height, int32 width);
 	GRINLET3(0);
 };
+
+\def void force_size (int32 height, int32 width) {
+	if (force) delete force;
+	int32 v[] = { height, width };
+	force = new Dim(2,v);
+}
 
 \def void seek (int frame) {
 	int result = quicktime_set_video_position(anim,frame,track);
@@ -67,6 +78,11 @@ struct FormatQuickTimeHW : Format {
 	}
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
+	if (force) {
+		sy = force->get(0);
+		sx = force->get(1);
+	}
+//	quicktime_set_row_span(anim,sx);
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels);
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	int result;
@@ -78,6 +94,9 @@ struct FormatQuickTimeHW : Format {
 	started=true;
 	return INT2NUM(nframe);
 }
+
+//\def void force_size (int height, int width) {
+//}
 
 GRID_INLET(FormatQuickTimeHW,0) {
 	if (in->dim->n != 3)
@@ -154,6 +173,10 @@ GRID_INLET(FormatQuickTimeHW,0) {
 */
 	}
 	colorspace_m(0,0,SYM(rgb));
+//	quicktime_stsd_table_t *tb = 
+//		anim->moov.trak[0]->mdia.minf.stbl.stsd.table;
+//	gfpost("MOOV says size=(%d,%d) and dpi=(%f,%f)",
+//		tb->height,tb->width,tb->dpi_vertical,tb->dpi_horizontal);
 }
 
 GRCLASS(FormatQuickTimeHW,LIST(GRINLET2(FormatQuickTimeHW,0,4)),
