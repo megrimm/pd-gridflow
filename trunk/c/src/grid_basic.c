@@ -667,7 +667,7 @@ GRID_FLOW(GridInner,0) {
 	assert (n % factor == 0);
 
 	for (i=0; i<n; i+=factor) {
-		for (j=0; j<b_prod/factor; j+=factor) {
+		for (j=0; j<b_prod; j+=factor) {
 			memcpy(buf,&data[i],factor*sizeof(Number));
 			$->op_para->op_array2(factor,buf,&$->data[j]);
 			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
@@ -1158,6 +1158,7 @@ GRID_END(GridRedim,0) {
 		}
 	}
 	GridOutlet_end($->out[0]);
+	FREE($->data);
 }
 
 /* same inlet 1 as @import */
@@ -1203,6 +1204,7 @@ METHOD(GridRedim,init) {
 		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
 	}
 	$->dim = Dim_new(ac-1,v);
+	$->data = 0;
 }
 
 METHOD(GridRedim,delete) {
