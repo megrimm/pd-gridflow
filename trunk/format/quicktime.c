@@ -32,6 +32,7 @@ struct FormatQuickTime : Format {
 	quicktime_t *anim;
 	int track;
 	BitPacking *bit_packing;
+	Dim *dim;
 
 	DECL3(initialize);
 	DECL3(close);
@@ -48,19 +49,19 @@ METHOD3(FormatQuickTime,seek) {
 
 METHOD3(FormatQuickTime,frame) {
 	GridOutlet *o = out[0];
+	int channels = 3;
+	int bytes = quicktime_video_depth(anim,track)/8;
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
 	int npixels = sx*sy;
-	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*4+16);
+	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*bytes+16);
+
 //	gfpost("pos = %d", quicktime_byte_position(anim));
 //	quicktime_reads_cmodel(anim,BC_RGB888,0);
 //	gfpost("size=%d",quicktime_frame_size(anim,0,track));
 
-//	int channels = quicktime_track_channels(anim,track);
-	int channels = quicktime_video_depth(anim,track)/8;
-
 	uint8 *rows[sy];
-	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*bytes;
 
 	int result;
 //	result = quicktime_read_frame(anim,buf,track);
@@ -76,11 +77,11 @@ METHOD3(FormatQuickTime,frame) {
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
-		bit_packing->unpack(sx,buf+channels*sx*y,b2);
+		bit_packing->unpack(sx,buf+bytes*sx*y,b2);
 		o->send(bs,b2);
 	}
 
-	delete[] (int32 *)buf;
+	delete[] (uint8 *)buf;
 
 	int nframe = min(
 		quicktime_video_position(anim,track),
@@ -88,10 +89,34 @@ METHOD3(FormatQuickTime,frame) {
 	return INT2NUM(nframe);
 }
 
-GRID_INLET(FormatQuickTime,0) { RAISE("write support not implemented"); }
-GRID_FLOW {}
-GRID_FINISH {}
-GRID_END
+GRID_INLET(FormatQuickTime,0) {
+	if (in->dim->n != 3)
+		RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3)
+		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
+	in->set_factor(in->dim->prod());
+} GRID_FLOW {
+	if (dim) {
+		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
+	} else {
+		/* first frame: have to do setup */
+		dim = in->dim->dup();
+		quicktime_set_video(anim,1,dim->get(1),dim->get(0),
+			15,QUICKTIME_YUV4);
+	}
+	int sx = quicktime_video_width(anim,track);
+	int sy = quicktime_video_height(anim,track);
+	int npixels = in->factor/in->dim->get(2);
+	Pt<uint8> buf = ARRAY_NEW(uint8,npixels*bit_packing->bytes);
+	bit_packing->pack(npixels,data,buf);
+
+	uint8 *rows[sy];
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*bit_packing->bytes;
+
+	quicktime_encode_video(anim,rows,track);
+	delete[] (uint8 *)buf;
+} GRID_FINISH {
+} GRID_END
 
 METHOD3(FormatQuickTime,close) {
 	if (bit_packing) delete bit_packing;
@@ -113,24 +138,30 @@ METHOD3(FormatQuickTime,initialize) {
 		rb_funcall(mGridFlow,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
-	anim = quicktime_open(strdup(filename),1,0);
-	if (!anim)
-		RAISE("can't open file `%s': %s", filename, strerror(errno));
+	anim = quicktime_open(strdup(filename),
+		mode()==SYM(in),
+		mode()==SYM(out));
 
+	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	track = 0;
+	dim = 0;
 
-	if (!quicktime_supported_video(anim,track))
-		RAISE("quicktime: unsupported codec");
-
-	uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
-//	uint32 masks[] = { 0xff0000,0x00ff00,0x0000ff };
-	bit_packing = new BitPacking(is_le(),3,3,masks);
+	if (mode()==SYM(in)) {
+		if (!quicktime_supported_video(anim,track))
+			RAISE("quicktime: unsupported codec");
+		int depth = quicktime_video_depth(anim,track);
+		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
+		bit_packing = new BitPacking(is_le(),depth/8,3,masks);
+	} else if (mode()==SYM(out)) {
+		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
+		bit_packing = new BitPacking(is_le(),3,3,masks);
+	}
 	return Qnil;
 }
 
 static void startup (GridClass *self) {
 	IEVAL(self->rubyclass,
-	"conf_format 4,'quicktime','Apple Quicktime (using "
+	"conf_format 6,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)'");
 }
 
