@@ -38,7 +38,7 @@ struct GridMatrixSolve : GridObject {
 	Numop2 *op_sub;
 	Numop2 *op_mul;
 	Numop2 *op_div;
-	Grid matrix;
+	PtrGrid matrix;
 	GridMatrixSolve() {
 		matrix.constrain(expect_complete_matrix);
 	}
@@ -47,9 +47,9 @@ struct GridMatrixSolve : GridObject {
 };
 
 GRID_INPUT(GridMatrixSolve,0,matrix) {
-	int n = matrix.dim->get(0); // # rows
-	int m = matrix.dim->get(1); // # columns
-	Pt<T> mat = (Pt<T>)matrix;
+	int n = matrix->dim->get(0); // # rows
+	int m = matrix->dim->get(1); // # columns
+	Pt<T> mat = (Pt<T>)*matrix;
 	for (int j=0; j<n; j++) {
 		op_div->map(m,mat+j*m,mat[j*m+j]);
 		for (int i=j+1; i<n; i++) {
@@ -59,7 +59,7 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 			op_sub->zip(m,mat+i*m,row);
 		}
 	}
-	GridOutlet out(this,0,matrix.dim->dup());
+	GridOutlet out(this,0,matrix->dim->dup());
 	out.send(n*m,mat);
 } GRID_END
 

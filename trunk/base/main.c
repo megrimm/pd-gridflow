@@ -587,6 +587,7 @@ void Init_gridflow () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
+	signal(11,SIG_DFL); // paranoia
 	mGridFlow = EVAL("module GridFlow;"
 		"class<<self; attr_reader :bridge_name; end; "
 		"def post_string(s) STDERR.puts s end; "
@@ -661,7 +662,7 @@ BUILTIN_SYMBOLS(FOO)
 		EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
 	}
 	EVAL("GridFlow.load_user_config");
-	//signal(11,SIG_DFL); // paranoia
+	signal(11,SIG_DFL); // paranoia
 }
 
 void GFStack::push (FObject *o) {

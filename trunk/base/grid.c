@@ -55,7 +55,7 @@
 /* **************** Grid ****************************************** */
 
 void Grid::init(Dim *dim, NumberTypeE nt) {
-	if (dc && dim) dc(dim);
+	//if (dc && dim) dc(dim);
 	del();
 	if (!dim) RAISE("hell");
 	this->nt = nt;
@@ -129,17 +129,6 @@ void Grid::init_from_ruby(Ruby x) {
 	}
 }
 
-Dim *Grid::to_dim() {
-	return new Dim(dim->prod(),(Pt<int32>)*this);
-}
-
-void Grid::del() {
-	if (dim) delete dim;
-	if (data) delete[] (uint8 *)data;
-	dim=0;
-	data=0;
-}
-
 /* **************** GridInlet ************************************* */
 
 GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
@@ -164,10 +153,10 @@ void GridInlet::set_factor(int factor) {
 	this->factor = factor;
 	if (factor > 1) {
 		int32 v[] = {factor};
-		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
+		buf=new Grid(new Dim(1,Pt<int32>(v,1)), nt);
 		bufi = 0;
 	} else {
-		buf.del();
+		buf=0;
 	}
 }
 
@@ -239,17 +228,18 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 			if (n<=0) return;
 		}
 		if (factor>1 && bufi) {
+			Pt<T> bufd = (Pt<T>)*buf;
 			int k = min(n,factor-bufi);
-			COPY((Pt<T>)buf+bufi,data,k);
+			COPY(bufd+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
 					Pt<T> data2 = ARRAY_NEW(T,factor);
-					COPY(data2,(Pt<T>)buf,factor);
+					COPY(data2,bufd,factor);
 					gh->flow(this,factor,data2);
 				} else {
-					gh->flow(this,factor,(Pt<T>)buf);
+					gh->flow(this,factor,bufd);
 				}
 				dex = newdex;
 				bufi = 0;
@@ -269,7 +259,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		}
 		data += m;
 		n -= m;
-		if (factor>1 && n>0) COPY((Pt<T>)buf+bufi,data,n), bufi+=n;
+		if (factor>1 && n>0) COPY((Pt<T>)*buf+bufi,data,n), bufi+=n;
 	}break;
 	case 6:{
 		assert(factor==1);
@@ -285,6 +275,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 }
 
 void GridInlet::end() {
+	assert(this);
 	if (!is_busy()) RAISE("%s: inlet not busy",parent->info());
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
@@ -296,8 +287,8 @@ void GridInlet::end() {
 #undef FOO
 	} // PROF
 	if (dim) {delete dim; dim=0;}
-	buf.del();
-	dex = 0;
+	buf=0;
+	dex=0;
 }
 
 template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
@@ -343,11 +334,11 @@ void GridInlet::from_grid(Grid *g) {
 }
 
 void GridInlet::from_ruby_list(int argc, Ruby *argv, NumberTypeE nt) {
-	Grid t;	t.init_from_ruby_list(argc,argv,nt); from_grid(&t);
+	Grid t(argc,argv,nt); from_grid(&t);
 }
 
 void GridInlet::from_ruby(int argc, Ruby *argv) {
-	Grid t; t.init_from_ruby(argv[0]); from_grid(&t);
+	Grid t(argv[0]); from_grid(&t);
 }
 
 /* **************** GridOutlet ************************************ */
@@ -359,8 +350,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet, Dim *dim, NumberTypeE nt
 	this->nt = int32_e;
 	this->dim = 0;
 	dex = 0;
-	int32 v[] = {MAX_PACKET_SIZE};
-	buf.init(new Dim(1,Pt<int32>(v,1)), nt);
+	buf=new Grid(new Dim(MAX_PACKET_SIZE), nt);
 	bufi = 0;
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
@@ -399,15 +389,15 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	int lcm_factor = 1;
 	for (int i=0; i<ninlets; i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor);
 
-	if (nt != buf.nt) {
-		/* biggest packet size divisible by lcm_factor */
+	if (nt != buf->nt) {
+		// biggest packet size divisible by lcm_factor
 		int32 v[] = {(MAX_PACKET_SIZE/lcm_factor)*lcm_factor};
-		if (*v==0) *v=MAX_PACKET_SIZE; /* factor too big. don't have a choice. */
-		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
+		if (*v==0) *v=MAX_PACKET_SIZE; // factor too big. don't have a choice.
+		buf=new Grid(new Dim(1,v),nt);
 	}
 }
 
-/* send modifies dex; send_direct doesn't */
+// send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send_direct(int n, Pt<T> data) {
 	assert(this);
@@ -424,8 +414,8 @@ void GridOutlet::flush() {
 	assert(this);
 	TRACE;
 	if (!bufi) return;
-#define FOO(T) send_direct(bufi,(Pt<T>)buf);
-	TYPESWITCH(buf.nt,FOO,)
+#define FOO(T) send_direct(bufi,(Pt<T>)*buf);
+	TYPESWITCH(buf->nt,FOO,)
 #undef FOO
 	bufi = 0;
 }
@@ -461,7 +451,7 @@ void GridOutlet::send(int n, Pt<T> data) {
 		if (n > MIN_PACKET_SIZE) {
 			send_direct(n,data);
 		} else {
-			COPY((Pt<T>)buf+bufi,data,n);
+			COPY((Pt<T>)*buf+bufi,data,n);
 			bufi += n;
 		}
 		if (dex==dim->prod()) end();
