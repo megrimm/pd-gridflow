@@ -45,7 +45,7 @@ empty -2 -6 0 8 -260818 -1 -1 0 1;
 #X obj 397 165 r \$0-contrast_s;
 #X obj 417 232 r \$0-whiteness_s;
 #X obj 44 354 r \$0-size_s;
-#X obj 193 167 r \$0-channel_S;
+#X obj 193 167 r \$0-channel_s;
 #X obj 42 109 r \$0-video_s;
 #X connect 0 0 1 0;
 #X connect 2 0 0 0;
