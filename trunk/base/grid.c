@@ -100,10 +100,21 @@ void GridInlet_set_factor(GridInlet *$, int factor) {
 	}
 }
 
+VALUE GridInlet_begin$1(GridInlet *$) {
+	return (VALUE) $->gh->begin($->parent->peer,(GridObject *)$->parent,$);
+}
+
+VALUE GridInlet_begin$2(GridInlet *$) {
+	$->dim = 0; /* hack */
+//	whine("ensure: %p,%p",$,$->dim);
+	return (VALUE) 0;
+}
+
 void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 	int i;
 	int *v = NEW(int,argc-1);
 	GridOutlet *back_out = (GridOutlet *) FIX2PTR(argv[0]);
+	Dim *dim;
 	argc--, argv++;
 
 	if (GridInlet_busy($)) {
@@ -117,13 +128,20 @@ void GridInlet_begin(GridInlet *$, int argc, VALUE *argv) {
 	}
 
 	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	$->dim = Dim_new(argc,v);
+	dim = $->dim = Dim_new(argc,v);
 	FREE(v);
 
 	$->dex = 0;
 	assert($->gh->begin);
-	if (!$->gh->begin($->parent->peer,(GridObject *)$->parent,$)) goto err;
+	{
+		int v = rb_ensure(
+			(RFunc)GridInlet_begin$1,(VALUE)$,
+			(RFunc)GridInlet_begin$2,(VALUE)$);
+		if (!v) goto err;
+	}
 
+//	whine("setting back dim...");
+	$->dim = dim;
 	GridOutlet_callback((GridOutlet *)back_out,$,$->gh->mode);
 	return;
 err:
@@ -212,7 +230,7 @@ void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 	int i;
 	Number *v = NEW(Number,argc);
 	int n = argc;
-	whine("argc=%d",n);
+/*	whine("$=%p argc=%d",$,n); */
 	for (i=0; i<argc; i++) {
 		/*
 		whine("argv[%d]=%ld",i,argv[i],
@@ -424,6 +442,9 @@ METHOD(GridObject,init) {
 			$->out[i] = GridOutlet_new($,i);
 		}
 	}
+
+//	for (i=0; i<MAX_INLETS; i++) whine("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
+	rb_call_super(0,0);
 }
 
 /* category: input */
@@ -444,11 +465,15 @@ GRID_END_(GridObject,GridObject_r_end) {
 
 METHOD2(GridObject,inlet_dim) {
 	GridInlet *in = $->in[INT(argv[0])];
+	if (!in) RAISE("no such inlet #%d");
+	if (!in->dim) return Qnil;
+{
 	int i, n=Dim_count(in->dim);
 	VALUE a = rb_ary_new2(n);
+//	whine("inlet_dim: %p,%p",in,in->dim);
 	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
 	return a;
-}
+}}
 
 METHOD(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
@@ -501,16 +526,6 @@ static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
 	return Qnil;
 }
 
-VALUE GridObject_s_install_format(VALUE $, VALUE name, VALUE inlets2, VALUE
-outlets2, VALUE flags, VALUE symbol_name, VALUE description) {
-	rb_funcall($,SI(install),3,name,inlets2,outlets2);
-	rb_ivar_set($,SI(@flags),flags);
-	rb_ivar_set($,SI(@symbol_name),symbol_name);
-	rb_ivar_set($,SI(@description),description);
-	rb_hash_aset(format_classes_dex, rb_funcall(symbol_name,SI(intern),0), $);
-	return Qnil;
-}
-
 static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	int i;
 //	VALUE list = rb_call_super(argc,argv);
@@ -542,6 +557,8 @@ METHOD(GridObject,method_missing) {
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
+		//whine("$=%p; inl=%p",$,inl);
+		assert(inl);
 		argc--, argv++;
 		if      (strcmp(name+3,"grid_begin")==0) return GridInlet_begin(inl,argc,argv);
 		else if (strcmp(name+3,"grid_flow" )==0) return GridInlet_flow( inl,argc,argv);
@@ -593,7 +610,7 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method($,"instance_methods",GridObject_s_instance_methods,-1);
 	rb_define_singleton_method($,"install_rgrid",GridObject_s_install_rgrid,-1);
-	rb_define_singleton_method($,"install_format",GridObject_s_install_format,6);
+//	rb_define_singleton_method($,"install_format",GridObject_s_install_format,6);
 	rb_enable_super(rb_singleton_class($),"instance_methods");
 }  
 
@@ -606,7 +623,6 @@ extern GridClass FORMAT_LIST( ,_classinfo);
 extern FormatInfo FORMAT_LIST( ,_formatinfo);
 GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
 FormatInfo *format_infos[] = { FORMAT_LIST(&,_formatinfo) };
-VALUE format_classes_dex = Qnil;
 
 METHOD(Format,init) {
 	int flags = INT(rb_ivar_get(CLASS_OF(rself),SI(@flags)));
@@ -667,17 +683,6 @@ LIST(),
 	DECL(Format,open_file),
 	DECL(Format,close))
 
-/* **************** FormatClass *********************************** */
-
-const char *format_flags_names[] = {
-	"(0<<1)",
-	"FF_W: write",
-	"FF_R: read",
-	"FF_RW: read_write",
-};
-
-int format_flags_n = COUNT(format_flags_names);
-
 /* **************************************************************** */
 
 VALUE Format_class;
@@ -689,8 +694,7 @@ void startup_grid (void) {
 	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
 	ruby_c_install("Format","Format", &Format_classinfo, GridObject_class);
 	Format_class = rb_const_get(GridFlow_module,SI(Format));
-	rb_define_readonly_variable("$format_classes",&format_classes_dex);
-	format_classes_dex = rb_hash_new();
+	rb_ivar_set(GridFlow_module,SI(@formats),rb_hash_new());
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatInfo *fi = format_infos[i];
 		GridClass *gc = format_classes[i];
@@ -700,7 +704,7 @@ void startup_grid (void) {
 		rb_ivar_set(qlass,SI(@flags),INT2NUM(fi->flags));
 		rb_ivar_set(qlass,SI(@symbol_name),rb_str_new2(fi->symbol_name));
 		rb_ivar_set(qlass,SI(@description),rb_str_new2(fi->description));
-		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fi->symbol_name)),
-			qlass);
+		rb_hash_aset(rb_ivar_get(GridFlow_module,SI(@formats)),
+			ID2SYM(rb_intern(fi->symbol_name)), qlass);
 	}
 }

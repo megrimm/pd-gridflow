@@ -437,7 +437,7 @@ typedef struct GridHandler {
 	GridBegin begin;
 	GridFlow  flow; /* or GridFlow2 */
 	GridEnd   end;
-	int       mode; /* 4=r=flow; 6=rw=flow2 */
+	int       mode; /* 4=ro=flow; 6=rw=flow2 */
 } GridHandler;
 
 struct GridInlet {
@@ -545,7 +545,6 @@ void GridObject_conf_class(VALUE $, GridClass *grclass);
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
 #define FF_RW  (1<<3)
-extern const char *format_flags_names[];
 
 typedef struct FormatInfo FormatInfo;
 typedef struct Format Format;
@@ -568,7 +567,6 @@ struct Format {
 };
 
 extern GridClass *format_classes[];
-extern VALUE /*Hash*/ format_classes_dex;
 
 /*
 	NEW FORMAT API
@@ -649,6 +647,8 @@ VALUE super);
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
+
+typedef VALUE (*RFunc)();
 
 #ifdef __cplusplus
 };

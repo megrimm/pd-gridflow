@@ -50,8 +50,8 @@ p GridFlow::GridOuter.instance_methods
 
 def GridFlow.post(s,*a)
 #	printf s,*a
-	GridFlow.post_string(sprintf s,*a)
-	($whine_log << (sprintf s,*a); $whine_log.flush) if $whine_log
+	GridFlow.post_string(sprintf(s,*a))
+	($whine_log << sprintf(s,*a); $whine_log.flush) if $whine_log
 end
 
 class<<GridFlow; attr_accessor :whine_header end
@@ -85,7 +85,7 @@ def GridFlow.whine(fmt,*a)
 	whine2(fmt,(sprintf fmt, *a))
 end
 
-GridFlow.whine "This is GridFlow 0.6.0 within Ruby version #{VERSION}"
+GridFlow.whine "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
 GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
@@ -130,8 +130,10 @@ def GridFlow.parse(m)
 	m
 end
 
+module GridFlow #------------------
+
 # adding some functionality to that:
-module GridFlow; class FObject
+class FObject
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]
@@ -166,13 +168,14 @@ module GridFlow; class FObject
 			when "@"; GridFlow::GridOp2
 			when "@!"; GridFlow::GridOp1
 			when /^@/; GridFlow.const_get("Grid"+
-				("_"+sym[1..-1]).gsub("_[a-z]") {|s| s[1..1].upcase})
+				("_"+sym[1..-1]).gsub(/_[a-z]/) {|s| s[1..1].upcase})
 			else
-				raise ArgumentError, "GF names begin with @"
+				# raise ArgumentError, "GF names begin with @"
 			end
+		p qlass
 		qlass.new(*m)
 	end
-end end
+end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -212,11 +215,53 @@ class RubyFor < GridFlow::FObject
 #	self.external_name #=> "rubyfor"
 end
 
+# to see what the messages look like when they get on the Ruby side.
+class RubyPrint < GridFlow::GridObject
+	def method_missing(s,*a)
+		s=s.to_s
+		case s
+		when /^_0_/; GridFlow.whine "#{s[3..-1]}: #{a.inspect}"
+		else super
+		end
+	end
+
+	install_rgrid 0
+	install "rubyprint", 1, 0
+end
+
+class GridPrint < GridFlow::GridObject
+#	def initialize(*)
+#		super # don't forget super!!!
+#	end
+	def _0_rgrid_begin; @dim = inlet_dim 0; @data = ""; end
+	def _0_rgrid_flow data; @data << data end
+	def _0_rgrid_end
+		GridFlow.whine("dim(#{@dim.join','}): " + case @dim.length
+		when 0,1; dump @data
+		when 2;   ""
+		else      "(not printed)"
+		end)
+		case @dim.length
+		when 2
+			sz = @data.length/@dim[0]
+			for row in 0...@dim[0]
+				GridFlow.whine dump(@data[sz*row,sz])
+			end
+		end
+	end
+	def dump data
+		data.unpack("l*").join(",")
+	end
+	install_rgrid 0
+	install "@print", 1, 0
+end
+
 #class RtMetro < GridFlow::FObject
 #	attr_accessor 
 #
 #end
 
+end # module GridFlow
 #----------------------------------------------------------------#
 
 def routine

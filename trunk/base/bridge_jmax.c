@@ -115,8 +115,6 @@ static VALUE BFObject_rescue (kludge *k) {
 	return Qnil;
 }
 
-typedef VALUE (*RFunc)();
-
 static void BFObject_method_missing (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	kludge k;
@@ -174,6 +172,8 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 		post(name " failed: %s\n", fts_status_get_description(r)); \
 		return Qnil;}
 
+static VALUE sym_inlets=0, sym_outlets=0;
+
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 	int inlets, outlets;
 	VALUE $;
@@ -195,8 +195,12 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 /* post("instance_methods(true)=%s\n",
 RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr); */
 
-	inlets = rb_ivar_get($,rb_intern("@inlets"));
-	outlets = rb_ivar_get($,rb_intern("@outlets"));
+	if (!sym_inlets)  sym_inlets =rb_intern("@inlets");
+	if (!sym_outlets) sym_outlets=rb_intern("@outlets");
+	inlets = rb_ivar_defined($,sym_inlets) ?
+		rb_ivar_get($,sym_inlets) : INT2NUM(0);
+	outlets = rb_ivar_defined($,sym_outlets) ?
+		rb_ivar_get($,sym_outlets) : INT2NUM(0);
 
 	post("inlets=%d, outlets=%d, rubyclass=%p\n",
 		inlets, outlets, qlass);
@@ -217,7 +221,7 @@ RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr); */
 		 name[0]=='_' && name[2]=='_') {
 			int inlet = name[1]-'0';
 			if (inlet<0 || inlet>=inlets) {
-				post("inlet #%d does not exist, skipping\n");
+				post("inlet #%d does not exist, skipping\n",inlet);
 				continue;
 			}
 			post("will wrap method #%s\n", name);
