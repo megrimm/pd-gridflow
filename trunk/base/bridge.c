@@ -23,6 +23,7 @@
 #ifndef __BRIDGE_C
 #define __BRIDGE_C
 
+#include <sys/time.h>
 #include "grid.h"
 
 #define rb_sym_name rb_sym_name_r4j

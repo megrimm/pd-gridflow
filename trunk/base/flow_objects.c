@@ -1143,8 +1143,8 @@ static void expect_scale_factor (Dim *dim) {
 METHOD3(GridScaleBy,init) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	int scaley = scale.as_int32()[0];
-	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	scaley = scale.as_int32()[0];
+	scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
 	if (scaley<1) scaley=1;
 	if (scalex<1) scalex=1;
 

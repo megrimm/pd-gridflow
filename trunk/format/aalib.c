@@ -93,11 +93,14 @@ static void startup (GridClass *$) {
 	Ruby drivers = rb_ivar_set($->rubyclass,SI(@drivers),rb_hash_new());
 	const aa_driver * const *p = aa_drivers;
 	while (*p) {
-		gfpost("aalib supports: %s\n",(*p)->shortname);
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)),
 			PTR2FIX(*p));
 		p++;
 	}
+	IEVAL($->rubyclass,
+		"GridFlow.post('aalib supports: %s', "
+		"@drivers.keys.join(' ,'))");
+
 	IEVAL($->rubyclass,
 	"conf_format 2,'aalib','Ascii Art Library'");
 }

@@ -36,7 +36,6 @@
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
-#include <sys/time.h>
 
 struct BFObject;
 struct FMessage {

@@ -62,6 +62,7 @@ class Format
 	# different file-sources may redefine this as something else
 	# (eg: gzip)
 	def rewind
+		raise "Nothing to rewind about..." if not @stream
 		@stream.seek 0,IO::SEEK_SET
 	end
 
@@ -84,7 +85,7 @@ class Format
 	def option(name,*args)
 		case name
 		when :rewind
-
+			rewind
 		when :headerless
 			args=args[0] if Array===args[0]
 			#raise "expecting dimension list..."
@@ -197,7 +198,7 @@ class GridOut < GridObject
 		@framecount = 0
 		@time = Time.new
 		return if a.length==0
-		if Integer===a[0]
+		if Integer===a[0] or Float===a[0]
 			_0_open :x11,:here
 			_0_option :out_size,a[0],a[1]
 		else
@@ -514,18 +515,16 @@ class FormatGrid < Format; include EventIO
 		return if @headerless
 		# header
 		@stream.write(
-			[if OurByteOrder==ENDIAN_LITTLE then "\x7fgrid" else "\x7fGRID" end,
+			[if @endian==ENDIAN_LITTLE then "\x7fgrid" else "\x7fGRID" end,
 			 @bpv,0,@dim.length].pack("a5ccc"))
 		# dimension list
-		@stream.write(@dim.to_a.pack("i*"))
+		@stream.write(
+			@dim.to_a.pack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end))
 	end
 
 	def _0_rgrid_flow data
 		case @bpv
-		when 8
-			@stream.write @bp.pack(data)
-		when 16
-			#data.swap16! if GridFlow::OurByteOrder != @endian
+		when 8, 16
 			@stream.write @bp.pack(data)
 		when 32
 			data.swap32! if GridFlow::OurByteOrder != @endian
@@ -534,11 +533,17 @@ class FormatGrid < Format; include EventIO
 	end
 
 	def _0_rgrid_end
-
+		@stream.flush
 	end
 
 	def option(name,*args)
 		case name
+		when :endian
+			case args[0]
+			when :little; @endian = ENDIAN_LITTLE
+			when :big;    @endian = ENDIAN_BIG
+			when :same;   @endian = ENDIAN_SAME
+			end
 		when :headerless
 			args=args[0] if Array===args[0]
 			#raise "expecting dimension list..."
