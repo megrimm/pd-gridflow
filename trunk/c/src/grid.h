@@ -29,7 +29,7 @@
 #include "macros.h"
 
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.2.1"
+#define VIDEO4JMAX_VERSION "0.2.2"
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 /* **************************************************************** */

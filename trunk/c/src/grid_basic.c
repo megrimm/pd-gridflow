@@ -49,14 +49,19 @@ GRID_BEGIN(GridImport,1) {
 
 GRID_FLOW(GridImport,1) {
 	int i;
-	for(i=0;i<n;i++) { $->v[i] = data[in->dex+i]; }
+	for(i=0;i<n;i++) {
+		int v = data[in->dex+i];
+		COERCE_INT_INTO_RANGE(v,1,MAX_INDICES);
+		$->v[in->dex+i] = v;
+	}
 }
 
 GRID_END(GridImport,1) {
+/*	GridInlet_abort($->in[0]); */
+	GridOutlet_abort($->out[0]);
 	FREE($->dim);
 	$->dim = Dim_new($->n, $->v);
 	FREE($->v);
-	GridOutlet_abort($->out[0]);
 }
 
 METHOD(GridImport,init) {
@@ -113,6 +118,7 @@ CLASS(GridImport) {
 	/* initialize the class */
 	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,1);
 
 	/* define the methods */
 
@@ -236,6 +242,9 @@ GRID_FLOW(GridStore,0) {
 	int na = Dim_count(in->dim);
 	int nb = Dim_count($->dim);
 	int nc = Dim_get(in->dim,na-1);
+	int size = Dim_prod_start($->dim,nc);
+	int v[nb];
+	int i;
 
 	while(n>0) {
 		int bs = nc - $->bufn;
@@ -249,18 +258,9 @@ GRID_FLOW(GridStore,0) {
 		*/
 
 		if ($->bufn == nc) {
-			int pos,size,i;
-			int v[Dim_count($->dim)];
-			for (i=0; i<nc; i++) {
-				v[i] = mod($->buf[i],Dim_get($->dim,i));
-			}
-			for (; i<nb; i++) {
-				v[i] = 0;
-			}
-			pos = Dim_calc_dex($->dim,v);
-			size = Dim_prod_start($->dim,nc);
-			GridOutlet_send($->out[0],size,&$->data[pos]);
-
+			for (i=0; i<nc; i++) { v[i] = mod($->buf[i],$->dim->v[i]); }
+			for (; i<nb; i++) { v[i] = 0; }
+			GridOutlet_send($->out[0],size,&$->data[ Dim_calc_dex($->dim,v) ]);
 			$->bufn=0;
 		}
 	}

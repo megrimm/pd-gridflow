@@ -17,16 +17,14 @@ SAM=../../samples
 # SRC='grid_basic.c grid.c grid.h index.c tuple.c'
 SRC='video_out.c grid_basic.c grid.c grid.h'
 
-#FILE=$SAM/colour-demo-1.jmax
-#FILE=$SAM/colour-demo-t.jmax
-#FILE=$SAM/vin_file_test_1.jmax
-#FILE=$SAM/vin_file_test_2.jmax
 #FILE=$SAM/outside/linear_transform.jmax
 #FILE=$SAM/outside/feedback_fractal_2.jmax
 #FILE=$SAM/feedback_fractal.jmax
 #FILE=$SAM/cross_fade.jmax
 #FILE=$SAM/binary_operations.jmax
- FILE=$SAM/export_test.jmax
+#FILE=$SAM/export_test.jmax
+#FILE=$SAM/videodev_diff_2.jmax
+ FILE=$SAM/outside/sine_transform.jmax
 
 #export DISPLAY=:1
 ulimit -c unlimited
