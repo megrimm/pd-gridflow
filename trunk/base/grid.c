@@ -204,8 +204,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	sender = back_out->parent;
 	argc-=3, argv+=3;
 
-	LEAVE(sender);
-	ENTER(parent);
+	PROF(parent) {
 
 	if (is_busy()) {
 		gfpost("grid inlet busy (aborting previous grid)");
@@ -236,16 +235,14 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	this->dim = dim;
 	back_out->callback(this);
 
-	LEAVE(parent);
-	ENTER(sender);
+	} /* PROF */
 }
 
 template <class T>
 void GridInlet::flow(int mode, int n, Pt<T> data) {
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
-	LEAVE(sender);
-	ENTER(parent);
+	PROF(parent) {
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
@@ -302,8 +299,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	} else {
 		RAISE("%s: unknown inlet mode",parent->info());
 	}
-	LEAVE(parent);
-	ENTER(sender);
+	} /* PROF */
 }
 
 /* !@#$ this is not correct */
@@ -324,13 +320,11 @@ void GridInlet::end() {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), sender->info(), parent->info());
 	}
-	LEAVE(sender);
-	ENTER(parent);
+	PROF(parent) {
 #define FOO(T) gh->flow(this,-2,Pt<T>());
 	TYPESWITCH(nt,FOO,)
 #undef FOO
-	LEAVE(parent);
-	ENTER(sender);
+	} /* PROF */
 	if (dim) {delete dim; dim=0;}
 	buf.del();
 	dex = 0;
@@ -536,10 +530,8 @@ void GridOutlet::callback(GridInlet *in) {
 */
 
 GridObject::GridObject() {
-	profiler_cumul = 0;
-	profiler_last  = 0;
-	for (int i=0; i<MAX_INLETS;  i++) in[i]  = 0;
-	for (int i=0; i<MAX_OUTLETS; i++) out[i] = 0;
+	CLEAR(in,MAX_INLETS);
+	CLEAR(out,MAX_OUTLETS);
 }
 
 GridObject::~GridObject() {

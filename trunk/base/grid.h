@@ -95,7 +95,7 @@ typedef /*volatile*/ VALUE Ruby;
 	if (!(_expr_)) { \
 		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
 			__FILE__, __LINE__, #_expr_); \
-		abort(); }
+		::abort(); }
 
 /* disabling assertion checking? */
 #ifndef HAVE_DEBUG
@@ -107,31 +107,11 @@ typedef /*volatile*/ VALUE Ruby;
 #define HAVE_PROFILING
 #endif
 
+
 #ifdef HAVE_PROFILING
-#ifdef HAVE_DEBUG
-#define ENTER(_self_) { \
-	if ((_self_)->profiler_last) { \
-		fprintf(stderr,"%s: caught profiler bug OR recursive message-passing\n", _self_->info()); \
-		raise(11); abort(); } \
-	(_self_)->profiler_last = rdtsc(); }
-#define LEAVE(_self_) { \
-	if ((_self_)->profiler_last) \
-		(_self_)->profiler_cumul += rdtsc() - (_self_)->profiler_last; \
-	else { \
-		fprintf(stderr,"%s: LEAVE without ENTER\n", _self_->info()); \
-		raise(11); abort(); } \
-	(_self_)->profiler_last = 0; }
+#define PROF(_self_) for (GFStackMarker gf_marker(_self_);gf_marker.once();)
 #else
-#define ENTER(_self_) { \
-	(_self_)->profiler_last = rdtsc(); }
-#define LEAVE(_self_) { \
-	if ((_self_)->profiler_last) \
-		(_self_)->profiler_cumul += rdtsc() - (_self_)->profiler_last; \
-	(_self_)->profiler_last = 0; }
-#endif /* HAVE_DEBUG */
-#else
-#define ENTER(_self_)
-#define LEAVE(_self_)
+#define PROF(_self_)
 #endif /* HAVE_PROFILING */
 
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
@@ -491,7 +471,7 @@ struct Dim {
 		return tot;
 	}
 
-	/* big leak machine */
+	/* !@#$ big leak machine */
 	char *to_s();
 
 	bool equal(Dim *o) {
@@ -562,7 +542,7 @@ struct BitPacking : Object {
 	int size;
 	uint32 mask[4];
 
-	BitPacking(){abort();} /* don't call, but don't remove. sorry. */
+	BitPacking(){::abort();} /* don't call, but don't remove. sorry. */
 	BitPacking(int endian, int bytes, int size, uint32 *mask,
 		Packer *packer=0, Unpacker *unpacker=0);
 	void gfpost();
@@ -708,7 +688,7 @@ extern Ruby number_type_dict; /* GridFlow.@number_type_dict={} */
 extern Ruby op1_dict; /* GridFlow.@op1_dict={} */
 extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
-static NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
+static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
 	return NumberTypeE_find(x);
 }
 
@@ -771,7 +751,7 @@ EACH_NUMBER_TYPE(FOO)
 	Dim *to_dim ();
 };
 
-static Grid *convert (Ruby r, Grid **bogus) {
+static inline Grid *convert (Ruby r, Grid **bogus) {
 	if (!r) return 0;
 	Grid *foo = new Grid;
 	foo->init_from_ruby(r);
@@ -1000,10 +980,9 @@ typedef struct BFObject BFObject; /* fts_object_t or something */
 //\class FObject < Object
 struct FObject : Object {
 	BFObject *bself; /* point to jMax/PD peer */
-	uint64 profiler_cumul;
-	uint64 profiler_last;
+	uint64 total_time;
 
-	FObject() : bself(0), profiler_cumul(0), profiler_last(0) {}
+	FObject() : bself(0), total_time(0) {}
 
 	const char *args() {
 		Ruby s=rb_funcall(rself,SI(args),0);
@@ -1014,8 +993,8 @@ struct FObject : Object {
 	/* result should be printed immediately as the GC may discard it anytime */
 	const char *info();
 
-Ruby profiler_cumul_get(int argc, Ruby *argv); //FCS
-Ruby profiler_cumul_set(int argc, Ruby *argv,Ruby x);//FCS
+Ruby total_time_get(int argc, Ruby *argv); //FCS
+Ruby total_time_set(int argc, Ruby *argv,Ruby x);//FCS
 void send_in (int argc, Ruby *argv);//FCS
 void send_out (int argc, Ruby *argv);//FCS
 void del(int argc, Ruby *argv);//FCS
@@ -1127,5 +1106,48 @@ static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 		}
 	}
 }
+
+/* a stack for the profiler, etc. */
+#define GF_STACK_MAX 100
+struct GFStack {
+	struct GFStackFrame {
+		FObject *o;
+		uint64 time;
+	};
+	GFStackFrame s[GF_STACK_MAX];
+	int n;
+	
+	GFStack() { n = 0; }
+
+	void push (FObject *o) {
+		//fprintf(stderr,"%*spush(0x%08x)\n",n,"",(int)o);
+		uint64 t = rdtsc();
+		if (n) s[n-1].time = t - s[n-1].time;
+		s[n].o = o;
+		s[n].time = t;
+		n++;
+	}
+
+	void pop () {
+		uint64 t = rdtsc();
+		if (!n) ::abort();
+		n--;
+		//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);
+		if (s[n].o) s[n].o->total_time += t - s[n].time;
+		if (n) s[n-1].time = t - s[n-1].time;
+	}
+};
+
+extern GFStack gf_stack;
+
+struct GFStackMarker {
+	int n;
+	bool flag;
+	GFStackMarker(FObject *o) { n = gf_stack.n; gf_stack.push(o); flag=true; }
+	~GFStackMarker() { while (gf_stack.n != n) gf_stack.pop(); }
+	bool once () {
+		if (flag) { flag=false; return true; } else return false;
+	}
+};
 
 #endif /* __GF_GRID_H */
