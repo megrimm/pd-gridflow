@@ -1,36 +1,23 @@
-<html>
-<head>
+<html><head>
 <!-- $Id$ -->
 <title>GridFlow 0.7.2 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
-<body
-  bgcolor="#FFFFFF"
-  leftmargin="0"
-  topmargin="0"
-  marginwidth="0"
-  marginheight="0">
-<table
-  width="100%"
-  bgcolor="white"
-  border="0"
-  cellspacing="2">
-<tr> 
-<td colspan="4" bgcolor="#082069">
-<img src="images/titre_gridflow.png" width="253" height="23"></td>
-</tr>
-<tr> 
-<td>&nbsp;</td>
-</tr>
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<body bgcolor="#FFFFFF"
+  leftmargin="0" topmargin="0"
+  marginwidth="0" marginheight="0">
+<table width="100%" bgcolor="white" border="0" cellspacing="2">
+<tr><td colspan="4" bgcolor="#082069">
+<img src="images/titre_gridflow.png" width="253" height="23">
+</td></tr><tr><td>&nbsp;</td></tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.2 - reference index</h4>
+    <h4>GridFlow 0.7.2 - index of this page:</h4>
 </td></tr>
 <tr> 
-  <td width="5%" rowspan="2">&nbsp;</td>
+  <td width="5%"  rowspan="2">&nbsp;</td>
   <td width="25%" height="23">&nbsp;</td>
   <td width="66%" height="23">&nbsp;</td>
   <td width="5%"  height="23">&nbsp;</td>
@@ -38,14 +25,25 @@
 <tr><td colspan="2"><h4><a href="#notes">notes</a></h4><ul>
 </ul>
 <h4><a href="#Objects_for_Scripting">Objects for Scripting</a></h4><ul>
+<li><a href="#ruby class FObject extending Data">ruby class FObject extending Data</a></li>
+<li><a href="#ruby class GridObject extending FObject">ruby class GridObject extending FObject</a></li>
+<li><a href="#ruby class BitPacking">ruby class BitPacking</a></li>
+<li><a href="#FPatcher extending FObject">FPatcher extending FObject</a></li>
 </ul>
 <h4><a href="#Objects_for_Internals">Objects for Internals</a></h4><ul>
+<li><a href="#C++ class GridInlet">C++ class GridInlet</a></li>
+<li><a href="#C++ class GridOutlet">C++ class GridOutlet</a></li>
+<li><a href="#C++ class Dim">C++ class Dim</a></li>
+<li><a href="#C++ class Grid">C++ class Grid</a></li>
+<li><a href="#C++ class Operator1">C++ class Operator1</a></li>
+<li><a href="#C++ class Operator2">C++ class Operator2</a></li>
+<li><a href="#C++ class GridClass">C++ class GridClass</a></li>
+<li><a href="#C++ class GFBridge">C++ class GFBridge</a></li>
 </ul>
 <br><br>
 </td></tr> 
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="notes"></a><h4>notes</h4></td></tr><tr><td></td><td></td><td> 
 <p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the 
 constants it defines are part of that namespace. A GridFlow object is normally 
@@ -63,9 +61,8 @@ links back to the RData box through another pointer called peer. </p>
 </td></tr>
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Scripting"></a><h4>Objects for Scripting</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby class FObject extending Data">ruby class FObject extending Data</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
@@ -107,9 +104,8 @@ links back to the RData box through another pointer called peer. </p>
 		and outlets.</p> <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Internals"></a><h4>Objects for Internals</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridInlet">C++ class GridInlet</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
@@ -158,18 +154,17 @@ links back to the RData box through another pointer called peer. </p>
 		This holds linkage information about jMax and PureData and such. <br></td> 
 <tr><td>&nbsp;</td></tr>
  
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr> 
-<td colspan="4"> 
-<p><font size="-1">GridFlow 0.7.2 Documentation<br>
-by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+<td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"> 
+<p><font size="-1">
+GridFlow 0.7.2 Documentation<br>
+by Mathieu Bouchard
+<a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 and<br>
-Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
-</td>
-</tr>
-</table>
-</body>
-</html>
+Alexandre Castonguay
+<a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a>
+</font></p>
+</td></tr></table></body></html>
 
 

@@ -564,7 +564,7 @@
 		</method>
 	</class>
 
-	<class name="aalib @out">
+	<class name="format aalib @out">
 		<method name="open aalib">
 			<arg name="driver">
 				Normally "X11" with uppercase X; else consult
