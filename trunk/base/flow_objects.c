@@ -572,7 +572,7 @@ GRID_INPUT2(GridOp2,1,r) {} GRID_END
 \def void initialize(Numop2 *op, Grid *r=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_e);
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(), int32_e);
 }
 
 GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
@@ -636,7 +636,7 @@ GRID_INPUT(GridFold,1,r) {} GRID_END
 \def void initialize (Numop2 *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0), int32_e);
+	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(), int32_e);
 }
 
 GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
@@ -689,7 +689,7 @@ GRID_INPUT(GridScan,1,r) {} GRID_END
 \def void initialize (Numop2 *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0), int32_e);
+	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(), int32_e);
 }
 
 GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
@@ -791,7 +791,7 @@ GRID_INPUT(GridInner,2,r) {} GRID_END
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	if (seed) this->seed.swallow(seed); // this->seed = *seed;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_e);
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(), int32_e);
 }
 
 GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
@@ -866,7 +866,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 \def void initialize (Numop2 *op, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_e);
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(), int32_e);
 }
 
 GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),

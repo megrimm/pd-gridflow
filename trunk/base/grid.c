@@ -592,7 +592,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 }
 
 \def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_e) {
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
+	if (outlet<0) RAISE("bad outlet number");
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
 	STACK_ARRAY(int32,v,n);
@@ -609,7 +609,7 @@ void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 }
 
 \def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e) {
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
+	if (outlet<0) RAISE("bad outlet number");
 #define FOO(T) send_out_grid_flow_2(out,argv[1],(T)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO

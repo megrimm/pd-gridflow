@@ -181,7 +181,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	if (seed) this->seed.swallow(seed); // this->seed = *seed;
-	else this->seed.init_clear(new Dim(0,0),int32_e);
+	else this->seed.init_clear(new Dim(),int32_e);
 	if (r) this->b.swallow(r);
 }
 
