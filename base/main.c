@@ -95,14 +95,6 @@ static void default_post(const char *fmt, ...) {
 	va_end(args);
 }
 
-GFBridge gf_bridge_default = {
-	send_out: 0,
-	class_install: 0,
-	post: default_post,
-};
-
-GFBridge *gf_bridge = &gf_bridge_default;
-
 /* ---------------------------------------------------------------- */
 /* Dim */
 
@@ -110,7 +102,6 @@ void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	for (int i=0; i<n; i++) if (v[i]<0) RAISE("Dim: negative dimension");
 }
-
 
 /* !@#$ big leak machine? */
 /* returns a string like "Dim[240,320,3]" */
@@ -256,12 +247,14 @@ static void send_in_3 (Helper *h) {
 	}
 	int noutlets = INT(noutlets2);
 	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
-
 	/* was PROF(0) a hack because of exception-handling problems? */
 	PROF(0) {
+	Ruby argv2[argc+2];
+	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
+	argv2[0] = INT2NUM(outlet);
+	argv2[1] = sym;
+	rb_funcall2(rself,SI(send_out2), argc+2, argv2);
 
-	if (gf_bridge->send_out && bself)
-		gf_bridge->send_out(argc,argv,sym,outlet,rself);
 	Ruby ary = rb_ivar_defined(rself,SYM2ID(bsym.iv_outlets)) ?
 		rb_ivar_get(rself,SYM2ID(bsym.iv_outlets)) : Qnil;
 	if (ary==Qnil) goto end;
@@ -270,14 +263,12 @@ static void send_in_3 (Helper *h) {
 	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	n = rb_ary_len(ary);
+
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
-		Ruby argv2[argc+2];
-		for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
 		argv2[0] = INT2NUM(inl);
-		argv2[1] = sym;
 		rb_funcall2(rec,SI(send_in),argc+2,argv2);
 	}
 	} /* PROF */
@@ -323,8 +314,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
 	rb_ivar_set(rself,SI(@foreign_name),name2);
 	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)), name2, rself);
-	if (gf_bridge->class_install)
-		gf_bridge->class_install(rself,RSTRING(name2)->ptr);
+	rb_funcall(cFObject, SI(install2), 1, name2);
 	return Qnil;
 }
 
@@ -456,13 +446,6 @@ void gfpost(const char *fmt, ...) {
 	}
 }
 
-Ruby gf_post_string (Ruby rself, Ruby s) {
-	if (TYPE(s) != T_STRING) RAISE("not a String");
-	char *p = rb_str_ptr(s);
-	gf_bridge->post("%s",p);
-	return Qnil;
-}
-
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
@@ -489,7 +472,7 @@ Ruby fclass_install(FClass *fc, Ruby super) {
 }
 
 /* ---------------------------------------------------------------- */
-/* GridFlow.class */
+// GridFlow.class
 
 //\class GridFlow_s < patate
 
@@ -633,20 +616,20 @@ Ruby cFormat;
 #define SDEF2(_name1_,_name2_,_argc_) \
 	rb_define_singleton_method(mGridFlow,_name1_,(RMethod)_name2_,_argc_)
 
-/* Ruby's entrypoint. */
+// Ruby's entrypoint.
 void Init_gridflow () {
-//	signal(11,SIG_DFL);
-//	signal(6,SIG_DFL);
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
-	mGridFlow = EVAL("module GridFlow; self end");
+	mGridFlow = EVAL("module GridFlow;"
+		"class<<self; attr_reader :bridge_name; end; "
+		"def post_string(s) STDERR.puts s end; "
+		"self end");
 	SDEF2("security",GridFlow_security,0);
 	SDEF2("security=",GridFlow_security_set,1);
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
-	SDEF2("post_string",gf_post_string,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
 	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);
 	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
@@ -664,17 +647,13 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
+	EVAL("module GridFlow; def FObject.install2(*) end end");
+	EVAL("module GridFlow; class FObject; def send_out2(*) end end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
 	Ruby cData = EVAL("Data");
-
-	ID gb = SI(@gf_bridge);
-	if (rb_ivar_defined(cData,gb)) {
-		gf_bridge = FIX2PTR(GFBridge,rb_ivar_get(cData,gb));
-	}
-
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
 
@@ -731,17 +710,6 @@ BUILTIN_SYMBOLS(FOO)
 
 void GFStack::push (FObject *o) {
 	void *bp = &o; // really. just finding our position on the stack.
-/*
-	gfpost("bp=0x%08x; s[%d].bp=0x%08x",(int)bp,n-1,(int)(n?s[n-1].bp:0));
-	if (n && s[n-1].bp <= bp) {
-		int on = n;
-		while (n && s[n-1].bp <= bp) {
-			pop();
-			gfpost("bp=0x%08x; s[%d].bp=0x%08x",(int)bp,n-1,(int)(n?s[n-1].bp:0));
-		}
-		gfpost("warning: unwinding %d entries from gf_stack (out of %d)",on-n,on);
-	}
-*/
 	if (n>=GF_STACK_MAX)
 		RAISE("stack overflow (maximum %d FObject activations at once)", GF_STACK_MAX);
 	uint64 t = rdtsc();

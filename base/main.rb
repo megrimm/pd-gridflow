@@ -85,6 +85,7 @@ class<<self
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
 	attr_reader :formats
+	attr_reader :bridge_name
 	alias gfpost post
 end
 

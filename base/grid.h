@@ -1062,23 +1062,24 @@ struct FClass {
 	static void _name_ ## _startup (Ruby rself)
 
 /* **************************************************************** */
-/* GridOutlet represents a grid-aware outlet */
+// GridOutlet represents a grid-aware outlet
 
+\class GridOutlet < CObject
 struct GridOutlet {
-/* these are set only once, at outlet creation */
+// these are set only once, at outlet creation
 	GridObject *parent;
 	int woutlet;
-/* those are set at every beginning of a transmission */
+// those are set at every beginning of a transmission
 	NumberTypeE nt;
-	Dim *dim; /* dimensions of the grid being sent */
-	Grid buf; /* temporary buffer */
-	bool frozen; /* is the "begin" phase finished? */
-	Pt<GridInlet *> inlets; /* which inlets are we connected to */
-	int ninlets; /* how many of them */
-/* those are updated during transmission */
-	int dex; /* how many numbers were already sent in this connection */
-	int bufi; /* number of bytes used in the buffer */
-/* methods */
+	Dim *dim;    // dimensions of the grid being sent
+	Grid buf;    // temporary buffer
+	bool frozen; // is the "begin" phase finished?
+	Pt<GridInlet *> inlets; // which inlets are we connected to
+	int ninlets; // how many of them
+// those are updated during transmission
+	int dex;  // how many numbers were already sent in this connection
+	int bufi; // number of bytes used in the buffer
+// methods
 	GridOutlet(GridObject *parent, int woutlet);
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
@@ -1101,15 +1102,16 @@ private:
 		delete dim; dim = 0; dex = 0;
 	}
 };
+\end class GridOutlet
 
 /* **************************************************************** */
 
-typedef struct BFObject BFObject; /* fts_object_t or something */
+typedef struct BFObject BFObject; // Pd t_object or something
 
-/* represents objects that have inlets/outlets */
+// represents objects that have inlets/outlets
 \class FObject < CObject
 struct FObject : CObject {
-	BFObject *bself; /* point to PD peer */
+	BFObject *bself; // point to PD peer
 	uint64 total_time;
 	FObject() : bself(0), total_time(0) {}
 	const char *args() {
@@ -1117,7 +1119,7 @@ struct FObject : CObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
-	/* result should be printed or copied immediately as the GC may discard it anytime */
+	// result should be printed or copied immediately as the GC may discard it anytime
 	const char *info();
 	\decl Ruby total_time_get();
 	\decl Ruby total_time_set(Ruby x);
@@ -1153,9 +1155,8 @@ struct GridObject : FObject {
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, int factor);
-	\decl void delete_m();
-	\decl void send_out_grid_begin(int outlet, Array buf, NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow(int outlet, String buf, NumberTypeE nt=int32_e);
+	\decl void send_out_grid_begin(int outlet, Array dim,  NumberTypeE nt=int32_e);
+	\decl void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e);
 };
 \end class GridObject
 
@@ -1163,22 +1164,12 @@ struct GridObject : FObject {
 
 typedef struct GridObject Format;
 
-struct GFBridge {
-	/* send message; pre: outlet number is valid; self has a bself */
-	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby rself);
-	/* add new class */
-	Ruby (*class_install)(Ruby rself, char *name);
-	/* to write to the console */
-	void (*post)(const char *, ...);
-};
-
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 uint64 gf_timeofday();
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 Ruby fclass_install(FClass *fc, Ruby super=0); /* super=cGridObject */
 extern int gf_security; /* unused */
-extern "C" GFBridge *gf_bridge;
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
