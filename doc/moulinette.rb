@@ -87,17 +87,24 @@ def mkimg(icon,alt=nil)
 		:border, 0)
 end
 
+class XString < String
+	def display
+		print escape_html(gsub(/[\r\n\t ]+$/," "))
+	end
+end
+
 class XNode
 	# subclass interface:
-	#  #prc : called by #display of base class
 	#  #prx : called by #display_index of base class
 	#  #display : print as html
 	#  #display_index : private, don't touch
 
 	class<<self; attr_accessor :valid_tags; end
 	self.valid_tags = {}
-	def self.register(*args)
-		for k in args do XNode.valid_tags[k]=self end
+	def self.register(*args,&b)
+		qlass = (if b then Class.new self else self end)
+		qlass.class_eval(&b) if b
+		for k in args do XNode.valid_tags[k]=qlass end
 	end
 
 	def initialize tag, att, *contents
@@ -117,36 +124,26 @@ class XNode
 		pr[] if Proc===pr
 	end
 
+	def display; contents.each {|x| x.display } end
+end
+
+XNode.register("documentation") {}
+
+XNode.register(*%w( icon help arg rest )) {
+	def display; end
+}
+
+XNode.register("section") {
 	def display
-		pr = send :prc
-		contents.each {|x|
-			case x
-			when String; x.display
-			when XNode; x.display
-			else raise "crap"
-			end
-		}
-		pr[] if Proc===pr
-	end
-end
-
-class XHidden < XNode
-	def prc; end
-	register *%w( icon help arg rest documentation )
-end
-
-class XSection < XNode
-	def prc
 		write_black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
 			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
 			mk(:h4) { print att["name"] }}}
 		$section={}
-		proc {
-			print "<tr><td>&nbsp;</td></tr>\n"
-			print "</table>" if $section[:table]
-			$section=nil
-		}
+		super
+		print "<tr><td>&nbsp;</td></tr>\n"
+		print "</table>" if $section[:table]
+		$section=nil
 	end
 	def prx
 		mk(:h4) {
@@ -155,69 +152,61 @@ class XSection < XNode
 		print "<ul>\n"
 		proc { print "</ul>\n" }
 	end
+}
 
-	register "section"
-end
-
-class XProse < XNode
-	def prc
+XNode.register("prose") {
+	def display
 		print "<tr>"
 		mk(:td) {}
 		mk(:td) {}
 		print "<td>"
-		proc { print "</td></tr>\n" }
+		super
+		print "</td></tr>\n"
 	end
-	register "prose"
-end
-
-class XString < String
-	def display
-		print escape_html(gsub(/[\r\n\t ]+$/," "))
-	end
-end
+}
 
 # basic text formatting nodes.
-class XTNode < XNode
-	def prc
+XNode.register (*%w( p i u b k sup )) {
+	def display
 		t = if tag=="k" then "kbd" else tag end
 		print "<#{t}>"
-		proc { print "</#{t}>" }
+		super
+		print "</#{t}>"
 	end
-	register *%w( p i u b k sup )
-end
+}
 
 # explicit hyperlink on the web.
-class XLink < XNode
-	def prc
+XNode.register("link") {
+	def display
 		print "<a href='#{att[:to]}'>"
-		proc {
-			print att[:to] if contents.length==0
-			print "</a>"
-		}
+		super
+		print att[:to] if contents.length==0
+		print "</a>"
 	end
-	register "link"
-end
+}
 
-class XList < XNode
-	def prc
+XNode.register("list") {
+	def display
 		$counters << (att.fetch("start"){"1"}).to_i
 		print "<ul>"
-		proc { print "</ul>"; $counters.pop }
+		super
+		print "</ul>"
+		$counters.pop
 	end
-	register "list"
-end
+}
 
-class XLI < XNode
-	def prc
+XNode.register("li") {
+	def display
 		print "<li><b>#{$counters.last}</b> : "
 		$counters[-1] += 1
-		proc { print "</li>" }
+		super
+		print "</li>"
 	end
-	register "li"
-end
+}
 
-class XClass < XNode
-	def prc
+# and "macro", "enum", "type", "use"
+XNode.register("class") {
+	def display
 		tag = self.tag
 		name = att['name'] or raise
 		mk(:tr) {
@@ -247,7 +236,8 @@ class XClass < XNode
 		mk(:br,:clear,"left")
 		mk(:br)
 		print "</td><td><br>\n"
-		proc { print "<br></td>" }
+		super
+		print "<br></td>"
 	end
 	def prx
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
@@ -264,11 +254,10 @@ class XClass < XNode
 		}}
 		puts
 	end
-	register "class" #, "macro", "enum", "type", "use"
-end		
+}
 
-class XMethod < XNode
-	def prc
+XNode.register("method") {
+	def display
 		print "<br>"
 		print "<b>", $portnum.join(" "), "</b> " if $portnum
 		print "<b>method</b> #{att['name']} <b>(</b>"
@@ -284,13 +273,13 @@ class XMethod < XNode
 			end
 		}.compact.join("<b>, </b>")
 		print "<b>)</b> "
-		proc { print "<br>\n" }
+		super
+		print "<br>\n"
 	end
-	register "method"
-end
+}
 
-class XOperator < XNode
-	def prc
+XNode.register("operator-1", "operator-2") {
+	def display
 		$section[:table] ||= (
 			print "<tr>"
 			2.times { mk(:td) {}}
@@ -320,24 +309,22 @@ class XOperator < XNode
 			# print att["name"]
 		}
 		print "<td>"
-		proc {
-			print "</td>"
-			print "<td>#{(escape_html att['color'])||'&nbsp;'}</td>"
-			print "<td>#{(escape_html att['space'])||'&nbsp;'}</td>"
-			print "</tr>\n"
-		}
+		super
+		print "</td>"
+		print "<td>#{(escape_html att['color'])||'&nbsp;'}</td>"
+		print "<td>#{(escape_html att['space'])||'&nbsp;'}</td>"
+		print "</tr>\n"
 	end
-	register "operator-1", "operator-2"
-end
+}
 
-class XPort < XNode
-	def prc
+XNode.register("inlet","outlet") {
+	def display
 		# hidden
 		$portnum = [tag,att['id']]
-		proc { $portnum = nil }
+		super
+		$portnum = nil
 	end
-	register "inlet", "outlet"
-end
+}
 
 #----------------------------------------------------------------#
 
