@@ -257,7 +257,7 @@ module EventIO
 	end
 
 	def raw_open(mode,source,*args)
-		@mode,@source,@args = mode,source,args
+		@raw_open_args = mode,source,*args
 		mode = case mode
 			when :in; "r"
 			when :out; "w"
@@ -286,7 +286,7 @@ module EventIO
 			end
 			def self.rewind
 				@stream.close
-				raw_open @mode, @source, *@args
+				raw_open *@raw_open_args
 			end
 		when :tcp
 			if VERSION < "1.6.6"

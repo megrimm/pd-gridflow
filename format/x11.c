@@ -140,7 +140,6 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	/* HACK */
 	if (!parent) {
 		VALUE rself = IEVAL(peer,"@outlets[0][0][0]");
-		rb_p(rself);
 		DGS(GridObject);
 		parent = self;
 	}

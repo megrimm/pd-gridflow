@@ -230,7 +230,7 @@ struct FormatVideoDev : Format {
 	BitPacking *bit_packing;
 	Dim *dim;
 
-	void frame_finished (GridOutlet *o, Pt<uint8> buf);
+	void frame_finished (Pt<uint8> buf);
 
 	DECL3(init);
 	DECL3(close);
@@ -337,7 +337,8 @@ METHOD3(FormatVideoDev,frame_ask) {
 	return Qnil;
 }
 
-void FormatVideoDev::frame_finished (GridOutlet *o, Pt<uint8> buf) {
+void FormatVideoDev::frame_finished (Pt<uint8> buf) {
+	GridOutlet *o = out[0];
 	o->begin(dim->dup());
 	/* picture is converted here. */
 	int sy = dim->get(0);
@@ -382,7 +383,7 @@ METHOD3(FormatVideoDev,frame) {
 //		int n = tot;
 
 		int n = (int) read3(fd,image,tot);
-		if (n==tot) frame_finished(out[0],image);
+		if (n==tot) frame_finished(image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
 		return Qnil;
@@ -395,7 +396,7 @@ METHOD3(FormatVideoDev,frame) {
 	}
 	vmmap.frame = finished_frame = pending_frames[0];
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
-	frame_finished(out[0],image+vmbuf.offsets[finished_frame]);
+	frame_finished(image+vmbuf.offsets[finished_frame]);
 	rb_funcall(peer,SI(frame_ask),0);
 	return Qnil;
 }
@@ -572,8 +573,8 @@ METHOD3(FormatVideoDev,init) {
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
 		rb_str_new2(filename), rb_str_new2("r+"));
 	rb_ivar_set(peer,SI(@stream),file);
-	rb_p(file);
-	rb_p(rb_ivar_get(peer,SI(@stream)));
+//	rb_p(file);
+//	rb_p(rb_ivar_get(peer,SI(@stream)));
 	if (argc>1 && argv[1]==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);

@@ -66,11 +66,6 @@ GRID_END(FormatAALib,0) {
 	aa_flush(context);
 }
 
-/*
-METHOD3(FormatAALib,option) {
-}
-*/
-
 METHOD3(FormatAALib,close) {
 	return Qnil;
 }
@@ -109,6 +104,5 @@ static void startup (GridClass *$) {
 GRCLASS(FormatAALib,"FormatAALib",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatAALib,0,4)),
 DECL(FormatAALib,init),
-//DECL(FormatAALib,option),
 DECL(FormatAALib,close))
 
