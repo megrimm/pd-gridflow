@@ -519,98 +519,108 @@ doing redundant updates -- sorry)</p>
 	<prose><p>where A is the left value, and B is the right value.</p></prose>
 
 	<!-- todo: text attr in those icons could be auto-generated -->
+	<!-- todo: make CNAME a column in html -->
 
-	<operator-2 name="+"><icon image="images/@_%2B.jpg"/>
+	<!-- category: additive -->
+	<operator-2 name="+" cname="add"><icon image="images/@_%2B.jpg"/>
 		A + B
 	</operator-2>
-	<operator-2 name="-"><icon image="images/@_-.jpg"/>
+	<operator-2 name="-" cname="sub"><icon image="images/@_-.jpg"/>
 		A - B
 	</operator-2>
-	<operator-2 name="inv+"><icon image="images/@_inv%2B.jpg"/>
+	<operator-2 name="inv+" cname="bus"><icon image="images/@_inv%2B.jpg"/>
 		B - A
 	</operator-2>
-	<operator-2 name="*"><icon image="images/@_x.jpg"/>
+
+	<!-- category: multiplicative -->
+	<operator-2 name="*" cname="mul"><icon image="images/@_x.jpg"/>
 		A * B
 	</operator-2>
-	<operator-2 name="**"><icon image="images/@_xx.jpg"/>
-		A raised to power B
-	</operator-2>
-	<operator-2 name="/"><icon image="images/@_division.jpg"/>
-		A raised to power B
+	<operator-2 name="/" cname="div"><icon image="images/@_division.jpg"/>
 		A / B, rounded downwards
 	</operator-2>
-
-	<operator-2 name="inv*"><icon image="images/@_invx.jpg"/>
+	<operator-2 name="inv*" cname="vid"><icon image="images/@_invx.jpg"/>
 		B / A, rounded downwards
 	</operator-2>
-	<operator-2 name="%"><icon image="images/@_modulo.jpg"/>
+	<operator-2 name="%" cname="mod"><icon image="images/@_modulo.jpg"/>
 		A % B, non-negative remainder
 	</operator-2>
-	<operator-2 name="swap%"><icon image="images/@_swap.jpg"/>
+	<operator-2 name="swap%" cname="dom"><icon image="images/@_swap.jpg"/>
 		B % A, non-negative remainder
 	</operator-2>
-	<operator-2 name="|"><icon image="images/@_a_or_b_bitwise.jpg"/>
+
+	<!-- bits -->
+	<operator-2 name="|" cname="or"><icon image="images/@_a_or_b_bitwise.jpg"/>
 		A or B, bitwise
 	</operator-2>
-	<operator-2 name="||"><icon image="images/@_if_then_else.jpg"/>
-		if A is zero then B else A
-	</operator-2>
-	<operator-2 name="^"><icon image="images/@_xor_bitwise.jpg"/>
+	<operator-2 name="^" cname="xor"><icon image="images/@_xor_bitwise.jpg"/>
 		A xor B, bitwise
 	</operator-2>
-	<operator-2 name="&amp;"><icon image="images/@_and.jpg"/>
+	<operator-2 name="&amp;" cname="and"><icon image="images/@_and.jpg"/>
 		A and B, bitwise
 	</operator-2>
-	<operator-2 name="&amp;&amp;"><icon image="images/@_&amp;&amp;.jpg"/>
-		if A is zero then zero else B
-	</operator-2>
-	<operator-2 name="&lt;&lt;"><icon image="images/@_shift_bits_left.jpg"/>
+	<operator-2 name="&lt;&lt;" cname="shl"><icon image="images/@_shift_bits_left.jpg"/>
 		A * (2**(B % 32)), which is left-shifting
 	</operator-2>
-	<operator-2 name="&gt;&gt;"><icon image="images/@_shift_bits_right.jpg"/>
+	<operator-2 name="&gt;&gt;" cname="shr"><icon image="images/@_shift_bits_right.jpg"/>
 		A / (2**(B % 32)), which is right-shifting
 	</operator-2>
-	<operator-2 name="min"><icon image="images/@_min.jpg"/>
+
+	<!-- decision -->
+	<operator-2 name="||" cname="sc_or"><icon image="images/@_if_then_else.jpg"/>
+		if A is zero then B else A
+	</operator-2>
+	<operator-2 name="&amp;&amp;" cname="sc_and"><icon image="images/@_&amp;&amp;.jpg"/>
+		if A is zero then zero else B
+	</operator-2>
+	<operator-2 name="min" cname="min"><icon image="images/@_min.jpg"/>
 		the lowest value in A,B
 	</operator-2>
-	<operator-2 name="max"><icon image="images/@_max.jpg"/>
+	<operator-2 name="max" cname="max"><icon image="images/@_max.jpg"/>
 		the highest value in A,B
 	</operator-2>
-	<operator-2 name="=="><icon image="images/@_equals.jpg"/>
-		is A equal to B ? 1=true, 0=false
-	</operator-2>
-	<operator-2 name="!="><icon image="images/@_not_equal.jpg"/>
-		is A not equal to B ?
-	</operator-2>
-	<operator-2 name="&gt;"><icon image="images/@_greater_than.jpg"/>
-		is A greater than B ?
-	</operator-2>
-	<operator-2 name="&lt;="><icon image="images/@_smaller_or_equal.jpg"/>
-		is A not greater than B ?
-	</operator-2>
-	<operator-2 name="&lt;"><icon image="images/@_smaller_than.jpg"/>
-		is A less than B ?
-	</operator-2>
-	<operator-2 name="&gt;="><icon image="images/@_larger_or_equal_to.jpg"/>
-		is A not less than B ?
-	</operator-2>
-	<operator-2 name="cmp"><icon image="images/@_comp.jpg"/>
+
+	<!-- comparison -->
+	<operator-2 name="cmp" cname="cmp"><icon image="images/@_comp.jpg"/>
 		cmp gives -1 if A&lt;B; 0 if A=B; 1 if A&gt;B
 	</operator-2>
-	<operator-2 name="sin*"><icon image="images/@_sin.jpg"/>
+	<operator-2 name="==" cname="eq"><icon image="images/@_equals.jpg"/>
+		is A equal to B ? 1=true, 0=false
+	</operator-2>
+	<operator-2 name="!=" cname="ne"><icon image="images/@_not_equal.jpg"/>
+		is A not equal to B ?
+	</operator-2>
+	<operator-2 name="&gt;" cname="gt"><icon image="images/@_greater_than.jpg"/>
+		is A greater than B ?
+	</operator-2>
+	<operator-2 name="&lt;=" cname="le"><icon image="images/@_smaller_or_equal.jpg"/>
+		is A not greater than B ?
+	</operator-2>
+	<operator-2 name="&lt;" cname="lt"><icon image="images/@_smaller_than.jpg"/>
+		is A less than B ?
+	</operator-2>
+	<operator-2 name="&gt;=" cname="ge"><icon image="images/@_larger_or_equal_to.jpg"/>
+		is A not less than B ?
+	</operator-2>
+
+	<!-- other -->
+	<operator-2 name="sin*" cname="sin"><icon image="images/@_sin.jpg"/>
 		B * sin(A), where A is in hundredths of degrees
 	</operator-2>
-	<operator-2 name="cos*"><icon image="images/@_cos.jpg"/>
+	<operator-2 name="cos*" cname="cos"><icon image="images/@_cos.jpg"/>
 		B * cos(A)
 	</operator-2>
-	<operator-2 name="atan"><icon image="images/@_atan.jpg"/>
+	<operator-2 name="atan" cname="atan"><icon image="images/@_atan.jpg"/>
 		arctan(A/B)
 	</operator-2>
-	<operator-2 name="tanh"><icon image="images/@_tanh.jpg"/>
+	<operator-2 name="tanh" cname="tanh"><icon image="images/@_tanh.jpg"/>
 		tanh(A) where A is in hundredths of degrees (yes, really)
 	</operator-2>
-	<operator-2 name="gamma"><icon image="images/@_gamma.jpg"/>
+	<operator-2 name="gamma" cname="gamma"><icon image="images/@_gamma.jpg"/>
 		floor(pow(a/256.0,256.0/b)*256.0)
+	</operator-2>
+	<operator-2 name="**" cname="pow"><icon image="images/@_xx.jpg"/>
+		A raised to power B
 	</operator-2>
 </section>
 
