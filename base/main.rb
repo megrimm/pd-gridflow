@@ -534,6 +534,13 @@ end
 #
 #end
 
+class RGBtoGreyscale < FPatcher
+	FObjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
+	Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+	def initialize() super(FObjects,Wires,1) end
+	install "@rgb_to_greyscale", 1, 1
+end
+
 def self.routine
 #	post "hello"
 	$tasks.each {|k,v|
