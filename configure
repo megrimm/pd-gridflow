@@ -279,6 +279,7 @@ $features = [
 Feature.new {
 	tag :gcc3
 	name "GNU C++ Compiler 3"
+	options ["HAVE_GCC3"]
 	test proc {
 		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
@@ -286,6 +287,17 @@ Feature.new {
 		pi.close
 		if version < "3" then raise "version #{version} < 3" end
 		true
+	}
+},
+Feature.new {
+	tag :stl
+	name "C++ Standard Template Library"
+	test proc {
+		c_test %{
+		#include <vector>
+		int main () {
+			std::vector<int> foo;
+		}}
 	}
 },
 Feature.new {
@@ -680,7 +692,7 @@ Feature.new {
 			int main () {
 			printf("#define PD_VERSION_INT %d\\n",
 			#ifdef PD_MAJOR_VERSION
-				(int)(PD_MAJOR_VERSION+PD_MINOR_VERSION*100));
+				(int)(PD_MAJOR_VERSION*100+PD_MINOR_VERSION));
 			#else
 				(int)(PD_VERSION*100));
 			#endif

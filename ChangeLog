@@ -1,5 +1,17 @@
 /* $Id$ */
 
+version 0.7.8 (head):
+
+ * removed support for jMax 2.5 and jMax 4.1
+ * major changes to the bridge API (Ruby<->PureData)
+ * source code cleanup
+ * internals: split Grid into Grid+GridPtr
+ * internals: GridObject no longer manages GridOutlet
+ * internals: added classes P,PtrGrid,...
+ * internals: beginning to use C++'s Standard Template Library (sometimes)
+ * 13 object-classes rewritten from Ruby to Pd abstractions
+ * new two-input ops: clip+ clip- abs- sq- avg hypot (soon erf* rand)
+
 version 0.7.7 (2004.08.24):
 
  * GridFlow runs on MacOS 10.2 with PureData 0.37
