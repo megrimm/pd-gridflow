@@ -95,17 +95,21 @@ def c_test code, *link
 	command = ["/usr/bin/env", $conf[:CC]] +
 		$CFLAGS.split(/ /).reject{|x| x.length==0 }
 
+=begin this was to distinguish whether a .a or a .so was found, because of problems
+i've had before involving .a's that didn't want to link. but it seems to be a g++2.95 thing.
 	launch2 log,*(command+["/tmp/#{$$}.cpp","-shared", "-o",
 		"/tmp/lib#{$$}.so", *link]) and
 	  launch2 log,*(command+["/tmp/#{$$}b.cpp", "-xnone", "-L/tmp","-l#{$$}", "-o",
 		  "/tmp/#{$$}", *link]) and
 	  launch2 log,"/tmp/#{$$}" and
 	  return true
+=end
 
 	# test for .a when .so not found
 	launch2 log,*(command+["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]) and
 	  launch2 log,"/tmp/#{$$}" and
-	  return "static" # true
+#	  return "static" # true
+	  return true
 ensure
 	LOG.puts log
 	ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
