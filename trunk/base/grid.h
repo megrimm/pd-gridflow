@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 /* current version number as string literal */
-#define GF_VERSION "0.7.3"
+#define GF_VERSION "0.7.4"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
