@@ -25,58 +25,79 @@
 #include <math.h>
 #include "grid.h"
 
+/* "@scale_by" does quick scaling of pictures by integer factors */
 typedef struct GridScaleBy {
-	GridObject_FIELDS;
-	int rint;
+	GridObject_FIELDS; /* inherit from GridObject */
+	int rint; /* integer scale factor (r as in right inlet, which does not exist yet) */
 } GridScaleBy;
 
+/* processing a grid coming from inlet 0 */
+/* one needs three special methods for that; they are declared using macros */
+/* this one processes the header and accepts or rejects the grid */
 GRID_BEGIN(GridScaleBy,0) {
 	int scale = $->rint;
 	Dim *a = in->dim;
+
+	/* there are restrictions on grid sizes for efficiency reasons */
 	if (Dim_count(a)!=3) RAISE("(height,width,chans) please");
 	if (Dim_get(a,2)!=3) RAISE("3 chans please");
+
 	{
+		/* computing the output's size */
 		int v[3]={ Dim_get(a,0)*scale, Dim_get(a,1)*scale, Dim_get(a,2) };
 		GridOutlet_begin($->out[0],Dim_new(3,v));
-		GridInlet_set_factor(in,3*Dim_get(a,1));
+
+		/* configuring the input format */
+		GridInlet_set_factor(in,Dim_get(a,1)*Dim_get(a,2));
 	}
 	return true;
 }
 
+/* this method processes one packet of grid content */
 GRID_FLOW(GridScaleBy,0) {
 	int scale = $->rint;
-	int line = Dim_get(in->dim,1)*3;
+	int rowsize = Dim_get(in->dim,1)*Dim_get(in->dim,2);
 	int i,j,k;
-	while(n>0) {
-		Number buf[line*scale];
+	/* for every picture row in this packet... */
+	for (; n>0; data+=rowsize, n-=rowsize) {
+
+		/* scale the line x-wise */
+		Number buf[rowsize*scale];
 		int p=0;
-		for (i=0; i<line; i+=3) {
+		for (i=0; i<rowsize; i+=3) {
 			for (k=0; k<scale; k++) {
 				buf[p++]=data[i];
 				buf[p++]=data[i+1];
 				buf[p++]=data[i+2];
-			}			
+			}
 		}
+
+		/* send the x-scaled line several times (thus y-scaling) */
 		for (j=0; j<scale; j++) {
-			GridOutlet_send($->out[0],line*scale,buf);
+			GridOutlet_send($->out[0],rowsize*scale,buf);
 		}
-		data+=line;
-		n-=line;
 	}
 }
 
+/* not much to do here: when the input is done, the output is done too */
 GRID_END(GridScaleBy,0) {
 	GridOutlet_end($->out[0]);
 }
 
+/* the constructor accepts a scale factor as an argument */
+/* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD(GridScaleBy,init) {
 	$->rint = GET(1,int,2);
 	GridObject_init((GridObject *)$);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
+/* destructor */
+/* this object has nothing more to deallocate than a plain GridObject */
+/* therefore it only calls super() */
 METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
+/* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
 	DECL(GridScaleBy,-1,init,  "s;i"),
