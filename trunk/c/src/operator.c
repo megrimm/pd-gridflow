@@ -21,6 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include <math.h>
 #include "grid.h"
 
 #define DEF_OP1(_name_,_expr_) \
@@ -28,14 +29,15 @@
 	static void op1_array_##_name_ (int n, Number *as) { \
 		while (n--) { Number a = *as; *as++ = _expr_; } }
 
-DEF_OP1(abs, a>=0 ? a : -a)
+DEF_OP1(abs,  a>=0 ? a : -a)
+DEF_OP1(sqrt, floor(sqrt(a)))
 
 #define DECL_OP1(_name_,_sym_) \
 	{ 0, _sym_, &op1_##_name_, &op1_array_##_name_ }
 
-
 Operator1 op1_table[] = {
-	DECL_OP1(abs,"abs")
+	DECL_OP1(abs, "abs"),
+	DECL_OP1(sqrt,"sqrt"),
 };
 
 Operator1 *op1_table_find(fts_symbol_t sym) {
@@ -83,6 +85,7 @@ DEF_OP2(ge,  a >= b)
 
 DEF_OP2(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
 DEF_OP2(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
+DEF_OP2(pow, ipow(a,b))
 
 #define DECL_OP2(_name_,_sym_) \
 	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
@@ -108,14 +111,15 @@ Operator2 op2_table[] = {
 	DECL_OP2(max, "max"),
 
 	DECL_OP2(eq,  "=="),
-	DECL_OP2(ne,  "!="), //!@#$
+	DECL_OP2(ne,  "!="),
 	DECL_OP2(gt,  ">"),
-	DECL_OP2(le,  "<="), //!@#$
+	DECL_OP2(le,  "<="),
 	DECL_OP2(lt,  "<"),
-	DECL_OP2(ge,  ">="), //!@#$
+	DECL_OP2(ge,  ">="),
 
 	DECL_OP2(sin, "sin*"),
 	DECL_OP2(cos, "cos*"),
+	DECL_OP2(pow, "**"),
 };
 
 Operator2 *op2_table_find(fts_symbol_t sym) {

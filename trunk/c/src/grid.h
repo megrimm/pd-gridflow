@@ -60,6 +60,16 @@ void qfree(void *data, size_t n); /*0xfadedf00*/
 */
 static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
 
+/*
+  integer powers. (most useful values of b are 2 and 3)
+*/
+static inline int ipow(int a, int b) {
+	int r=1;
+	if (b>10) return floor(pow(a,b));
+	while(b-->0) r *= a;
+	return r;
+}	
+
 /* **************************************************************** */
 /* jMax specific */
 
@@ -133,6 +143,8 @@ DECL_SYM(grid_end)
   still done with explicit ints.
 */
 typedef long Number;
+
+/* typedef int bool; */
 
 /* number of (maximum,ideal) Numbers to send at once */
 #define PACKET_LENGTH (1*1024)
