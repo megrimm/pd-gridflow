@@ -1,7 +1,7 @@
 <html>
 <!-- $Id$ -->
 <head>
-<title>GridFlow 0.6.5 - Profiling Performance</title>
+<title>GridFlow 0.7.0 - Profiling Performance</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -16,7 +16,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="3" height="16">
-      <h4>GridFlow 0.6.5 - Profiling Performance</h4>
+      <h4>GridFlow 0.7.0 - Profiling Performance</h4>
   </td></tr>
 
   <tr> 
@@ -116,25 +116,62 @@
 	</ul>
 
 	<h4>acceleration tricks</h4>
-	[@ <<] is a very fast multiplication for powers of two.
-	[@ >>] is a very fast division for powers of two.
-
+	<li>try the profiler and see what it says.</li>
+	<li>i mean really.</li>
+	<li>you can lose a lot of your time accelerating something
+	that isn't really taking execution time.</li>
+	<li>it's faster to work on big grids than on small grids,
+	for the amount of number-crunching you can do.
+	</li>
+	<li>about numbertypes: uint8 is the fastest, followed by int16, int32, float32.
+	(and the first two are faster when MMX is enabled). However it
+	may be difficult to make some effects use int16
+	or smaller without blowing up.</li>
+	<li>[@ &lt;&lt;] is a very fast multiplication for powers of two.
+	[@ &gt;&gt;] is a very fast division for powers of two.
+	<p>
 	from my little experience, normal integer multiplication and division are
-	rather slow, especially on Intel brand. Even if you run a Cyrix brand cpu,
-	remember to try it yourself to see whether it makes a difference.
+	rather slow, especially on Intel brand. The gap between *,/ and
+	&lt;&lt;,&gt;&gt; is smaller on Cyrix brand CPUs, but still, try it
+	yourself.
+	</p>
+	</li>
+	<li>[@ & 255] is a very fast [@ % 256], and likewise for other
+	powers of two.</li>
+	<li>for do-nothing operations, "ignore" and "put" are faster than
+	"+ 0" and such...</li>
+	<li>remember that an image twice smaller in height <u>and</u> twice
+	smaller in height will be processed <u>four</u> times as fast (for
+	most effects) so you can get four times more frames per second.
+	It's the "rows*columns*channels" value that makes the biggest
+	difference (usually).</li>
 
-	<h4>Changes from 0.5.0 to 0.6.6</h4>
+	<li>if all fails you may recode a jMax/PD/Ruby abstraction into
+	plain Ruby code or C++ code. If your new class is of generic
+	usefulness then maybe it should be added to the releases of
+	GridFlow. Contact me if you need help extending GridFlow.</li>
+	</list>
 
-	In 0.6.6, profiling hooks will now occur in #send_in and #send_to, which
-	shall be much less invading than the previous scheme (where
-	wrappers had to be generated for every method).
+	<h4>Changes from 0.5.0 to 0.7.0</h4>
+
+	<p>In the 0.6.x series, profiling was disabled because that
+	subsystem had to be redesigned.</p>
+
+	<p>Starting with 0.6.x, message-passing is somewhat slower; however
+	
+
+	<p>Starting with 0.7.0, profiling hooks now occur in
+	FObject#send_in and FObject#send_out (and of course in the grid
+	transmission engine), which shall be much less invading than the
+	previous scheme (where wrappers had to be generated for every
+	method).</p>
 </td>
 
   <tr><td>&nbsp;</td></tr>
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="4">
-	<p><font size="-1">GridFlow 0.6.5 Documentation<br>
+	<p><font size="-1">GridFlow 0.7.0 Documentation<br>
         by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
         and<br>
         Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
