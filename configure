@@ -122,7 +122,9 @@ class Feature
 		link=link.flatten
 		ldlpath = ENV["LD_LIBRARY_PATH"]
 		uses_h.each {|h|
-			find_h h or raise "where is #{h} ?"
+			find_h h or
+				/framework/ =~ (uses_so||[]).join(" ") or
+				raise "where is #{h} ?"
 		} if uses_h
 		ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
 		link[0,0]=$conf[:LDSOFLAGS].find_all {|x| String===x and /^-L/ =~ x }.flatten
@@ -140,7 +142,8 @@ class Feature
 			 "-o", binname, *link])
 			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
 			errs = log.split("\n").find_all {|l| pat =~ l }
-			raise "gcc compilation error" if not errs
+			raise "gcc compilation error" if not errs or
+				errs.length==0
 			errs = errs[0].gsub(pat,"")
 			raise "gcc: #{errs}"
 		end
@@ -327,7 +330,7 @@ Feature.new {
 	name "Pentium-compatible CPU"
 	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
 	test proc {
-		(CONFIG["arch"] =~ /i\d86/) and
+		(CONFIG["arch"] =~ /i\d86/) or raise "#{CONFIG["arch"]} instead"
 		c_test '
 		#include <stdio.h>
 		char get_cpuid[]={
@@ -502,7 +505,7 @@ Feature.new {
 	name "Apple Quartz/Cocoa Display"
 	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_feature [:objcpp]
-	uses_h ["cocoa/cocoa.h"]
+	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
 	test proc {
 		c_test "
 		#include#
@@ -856,8 +859,9 @@ def try feature
 		rescue StandardError => e
 		end
 		if tresult
-			DUAL.puts "found "+
-				(if tresult!=true then " (#{tresult})" else "" end)
+			DUAL.puts "found "+(if tresult!=true
+				then " (#{tresult})"
+				else "" end)
 			if tresult == "static"
 				feature.uses_so.map! {|x|
 					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
@@ -867,7 +871,10 @@ def try feature
 				} if feature.uses_bridge_so
 			end
 		else
-			DUAL.puts "missing "+(if e then "(#{e})" else "(return false)" end)
+			DUAL.puts "missing "+(if e
+#				then "(#{e} @ #{e.backtrace.join', '})"
+				then "(#{e})"
+				else "(return false)" end)
 			if e
 				LOG.puts e.inspect
 				LOG.puts e.backtrace
