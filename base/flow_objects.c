@@ -110,7 +110,7 @@ GRID_FLOW {
 	GridOutlet *o = out[0];
 	while (n) {
 		if (!o->is_busy()) o->begin(dim->dup());
-		int n2 = min(n,o->dim->prod()-o->dex);
+		int n2 = min((long)n,o->dim->prod()-o->dex);
 		o->send(n2,data);
 		n -= n2;
 		data += n2;
@@ -865,7 +865,7 @@ METHOD3(GridFor,_0_bang) {
 	for (int i=step.dim->prod()-1; i>=0; i--)
 		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
-		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],0)) / stepb[i];
+		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],0L)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
 	}
 	if (from.dim->n==0) {

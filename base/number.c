@@ -230,81 +230,6 @@ void swap16 (int n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
-static Ruby String_swap32_f (Ruby rself) {
-	int n = rb_str_len(rself)/4;
-	swap32(n,Pt<uint32>((uint32 *)rb_str_ptr(rself),n));
-	return rself;
-}
-
-static Ruby String_swap16_f (Ruby rself) {
-	int n = rb_str_len(rself)/2;
-	swap16(n,Pt<uint16>((uint16 *)rb_str_ptr(rself),n));
-	return rself;
-}
-
-/* **************************************************************** */
-
-METHOD3(BitPacking,initialize) {
-	return Qnil;
-}
-
-METHOD3(BitPacking,pack2) {
-	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / sizeof(int32) / size;
-	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
-	int bytes2 = n*bytes;
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
-	rb_str_modify(out);
-	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
-	return out;
-}
-
-METHOD3(BitPacking,unpack2) {
-	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / bytes;
-	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
-	int bytes2 = n*size*sizeof(int32);
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
-	rb_str_modify(out);
-	memset(rb_str_ptr(out),255,n*4*size);
-	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
-//	memcpy(rb_str_ptr(out),in,n);
-	return out;
-}
-
-void BitPacking_free (void *foo) {}
-
-static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
-	BitPacking *c_peer;
-
-	if (argc!=3) RAISE("bad args");
-	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
-
-	int endian = INT(argv[0]);
-	int bytes = INT(argv[1]);
-	Ruby *masks = rb_ary_ptr(argv[2]);
-	uint32 masks2[4];
-	int size = rb_ary_len(argv[2]);
-	if (size<1) RAISE("not enough masks");
-	if (size>4) RAISE("too many masks (%d)",size);
-	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
-	c_peer = new BitPacking(endian,bytes,size,masks2);
-	
-	Ruby rself = Data_Wrap_Struct(qlass, 0, BitPacking_free, c_peer);
-	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) */
-	rb_funcall2(rself,SI(initialize),argc,argv);
-	return rself;
-}
-
-GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
-LIST(),
-	DECL(BitPacking,initialize),
-	DECL(BitPacking,pack2),
-	DECL(BitPacking,unpack2));
-
 /* **************************************************************** */
 
 #define MAX_INDICES 1024*1024
@@ -370,13 +295,19 @@ NumberTypeIndex NumberType_find (Ruby sym) {
 			{ T a=as[3]; as[3]= _expr_; } \
 		as+=4; n-=4; } }
 
-#define DECL_OP1(_name_,_sym_) \
-	{ 0, _sym_, { &op1_array_##_name_ } }
+#define DECL_OP1ON(_name_) \
+	{ &op1_array_##_name_ }
+
+#define DECL_OP1(_name_,_sym_) { 0, _sym_, \
+	DECL_OP1ON(_name_), \
+	DECL_OP1ON(_name_), \
+	DECL_OP1ON(_name_), \
+}
 
 DEF_OP1(abs,  a>=0 ? a : -a)
 DEF_OP1(sqrt, (T)(0+floor(sqrt(a))))
 /*DEF_OP1(rand, (random()*(long long)a)/RAND_MAX)*/
-DEF_OP1(rand, a==0 ? 0 : random()%a)
+DEF_OP1(rand, a==0 ? 0 : random()%(int32)a)
 DEF_OP1(sq, a*a)
 
 Operator1 op1_table[] = {
@@ -404,7 +335,7 @@ Operator1 op1_table[] = {
 		as+=4; n-=4; } } \
 	\
 	template <class T> \
-	static void op_map2_##op (int n, T *as, T *bs) { \
+	static void op_zip_##op (int n, T *as, T *bs) { \
 		while ((n&3)!=0) { T a = *as, b = *bs++; *as++ = Z##op(a,b); n--; } \
 		while (n) { \
 			{ T a=as[0], b=bs[0]; as[0]= Z##op(a,b); } \
@@ -442,14 +373,21 @@ Operator1 op1_table[] = {
 				T a = *as++, b = *bs; *bs++ = a = Z##op(a,b); } \
 			as=bs-an; } }
 
-#define DECL_OP2(_op_,_sym_,_props_) { \
-	0, _sym_, { \
-	&op_map_##_op_, \
-	&op_map2_##_op_, \
-	&op_fold_##_op_, \
-	&op_fold2_##_op_, \
-	&op_scan_##_op_, \
-	&op_scan2_##_op_ } }
+#define DECL_OP2ON(_op_) { \
+	&op_map_##_op_, &op_zip_##_op_, &op_fold_##_op_, &op_fold2_##_op_, \
+	&op_scan_##_op_, &op_scan2_##_op_ }
+
+#define DECL_OP2(_op_,_sym_,_props_) { 0, _sym_, \
+	DECL_OP2ON(_op_), \
+	DECL_OP2ON(_op_), \
+	DECL_OP2ON(_op_), \
+}
+
+#define DECL_OP2_NOFLOAT(_op_,_sym_,_props_) { 0, _sym_, \
+	DECL_OP2ON(_op_), \
+	DECL_OP2ON(_op_), \
+	{0,0,0,0,0,0}, \
+}
 
 DEF_OP2(ignore, a)
 DEF_OP2(put, b)
@@ -521,19 +459,19 @@ Operator2 op2_table[] = {
 
 	DECL_OP2(mul, "*", "N=1 ASSO"),
 	DECL_OP2(div, "/", "RN=1"),
-	DECL_OP2(div2, "div", "RN=1"),
+	DECL_OP2_NOFLOAT(div2, "div", "RN=1"),
 	DECL_OP2(vid, "inv*", "LN=1"),
-	DECL_OP2(vid2, "swapdiv", "LN=1"),
-	DECL_OP2(mod, "%", ""),
-	DECL_OP2(dom, "swap%", ""),
-	DECL_OP2(rem, "rem", ""),
-	DECL_OP2(mer, "swaprem", ""),
+	DECL_OP2_NOFLOAT(vid2, "swapdiv", "LN=1"),
+	DECL_OP2_NOFLOAT(mod, "%", ""),
+	DECL_OP2_NOFLOAT(dom, "swap%", ""),
+	DECL_OP2_NOFLOAT(rem, "rem", ""),
+	DECL_OP2_NOFLOAT(mer, "swaprem", ""),
 
-	DECL_OP2(or , "|", "N=0 ASSO COMM"),
-	DECL_OP2(xor, "^", "N=0 ASSO COMM"),
-	DECL_OP2(and, "&", "N=-1 ASSO COMM"),
-	DECL_OP2(shl, "<<", "RN=0"),
-	DECL_OP2(shr, ">>", "RN=0"),
+	DECL_OP2_NOFLOAT(or , "|", "N=0 ASSO COMM"),
+	DECL_OP2_NOFLOAT(xor, "^", "N=0 ASSO COMM"),
+	DECL_OP2_NOFLOAT(and, "&", "N=-1 ASSO COMM"),
+	DECL_OP2_NOFLOAT(shl, "<<", "RN=0"),
+	DECL_OP2_NOFLOAT(shr, ">>", "RN=0"),
 
 	DECL_OP2(sc_and,"&&", ""),
 	DECL_OP2(sc_or, "||", ""), /* N!=0 */
@@ -573,14 +511,5 @@ void startup_number () {
 	INIT_TABLE(op1_dict,op1_table)
 	INIT_TABLE(op2_dict,op2_table)
 	INIT_TABLE(number_type_dict,number_type_table)
-
-	Ruby cBitPacking =
-		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
-	define_many_methods(cBitPacking,
-		ciBitPacking.methodsn,
-		ciBitPacking.methods);
-	SDEF(BitPacking,new,-1);
-	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
-	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
 }
 
