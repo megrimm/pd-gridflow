@@ -115,12 +115,16 @@ void FormatPPM_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatPPM_open (FormatClass *qlass, const char *filename, int mode) {
+Format *FormatPPM_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
+	const char *filename;
 	Format *$ = NEW(Format,1);
 	$->cl     = &class_FormatPPM;
 
 	$->stream = 0;
 	$->bstream = 0;
+
+	if (ac!=1) { whine("usage: ppm filename"); goto err; }
+	filename = fts_symbol_name(fts_get_symbol(at+0));
 
 	switch(mode) {
 	case 4: case 2: break;
@@ -144,7 +148,6 @@ FormatClass class_FormatPPM = {
 	flags: (FormatFlags)0,
 
 	open: FormatPPM_open,
-	connect: 0,
 	chain_to: 0,
 
 	frames: 0,
@@ -154,8 +157,6 @@ FormatClass class_FormatPPM = {
 	flow:    GRID_FLOW_PTR(FormatPPM,0),
 	end:      GRID_END_PTR(FormatPPM,0),
 
-	size:   0,
-	color:  0,
 	option: 0,
 	close:  FormatPPM_close,
 };

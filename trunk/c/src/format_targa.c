@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -129,11 +131,15 @@ void FormatTarga_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatTarga_open (FormatClass *class, const char *filename, int mode) {
+Format *FormatTarga_open (FormatClass *class, int ac, const fts_atom_t *at, int mode) {
+	const char *filename;
 	Format *$ = NEW(Format,1);
 	$->cl = &class_FormatTarga;
 	$->stream = 0;
 	$->bstream = 0;
+
+	if (ac!=1) { whine("usage: targa filename"); goto err; }
+	filename = fts_symbol_name(fts_get_symbol(at+0));
 
 	switch(mode) {
 //	case 4: case 2: break;
@@ -158,7 +164,6 @@ FormatClass class_FormatTarga = {
 	flags: (FormatFlags)0,
 
 	open: FormatTarga_open,
-	connect: 0,
 	chain_to: 0,
 
 	frames: 0,
@@ -168,8 +173,6 @@ FormatClass class_FormatTarga = {
 	flow:   GRID_FLOW_PTR(FormatTarga,0),
 	end:    GRID_END_PTR(FormatTarga,0),
 
-	size:   0,
-	color:  0,
 	option: 0,
 	close:  FormatTarga_close,
 };
