@@ -253,22 +253,33 @@ end
 
 def test_anim msgs
 	gin = FObject["@in"]
-#	pa = FObject["@scale_by"]
 	gout = FObject["@out 256 256"]
 	global = FObject["@global"]
-#	in.connect 0,pa,0
-#	pa.connect 0,gout,0
 
+#	pa = FObject["@scale_by 2"]
+#	gin.connect 0,pa,0
+#	pa.connect 0,gout,0
 	gin.connect 0,gout,0
+
+	pr = FObject["rubyprint time"]
+	gout.connect 0,pr,0
+
 	msgs.each {|m| gin.send_in 0,m}
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=125
+	frames=10
 	frames.times { gin.send_in 0 }
-	loop { gin.send_in 0 }
+#	loop { gin.send_in 0 }
+
+#	metro = FObject["rtmetro 80"]
+#	metro.connect 0,gin,0
+#	metro.send_in 0,1
+#	$mainloop.loop
+
 	d=Time.new-d
 	printf "%d frames in %.6f seconds (avg %.6f ms, %.6f fps)\n",
 		frames, d, 1000*d/frames, frames/d
+#	global.send_in 0,"dfgdfgdkfjgl"
 	global.send_in 0,"profiler_dump"
 end
 
@@ -346,6 +357,8 @@ def test_formats
 	].each {|command|
 		gin.send_in 0,"open #{command}"
 		gin.send_in 0
+		gin.send_in 0
+		gin.send_in 0
 		sleep 1
 	}
 	
@@ -354,16 +367,28 @@ def test_formats
 end
 
 def test_sound
-	o1 = FObject["@for 0 44100 1"] # 1 sec @ 1.225 Hz ?
-	o2 = FObject["@ * 359"] # @ 439.775 Hz
-	o3 = FObject["@ sin* 127"]
-	o4 = FObject["@in"]
+#	o2 = FObject["@ * 359"] # @ 439.775 Hz
+#	o1 = FObject["@for 0 44100 1"] # 1 sec @ 1.225 Hz ?
+	o1 = FObject["@for 0 4500 1"]
+	o2 = FObject["@ * 1600"] # @ 439.775 Hz
+	o3 = FObject["@ sin* 255"]
+	o4 = FObject["@ gamma 400"]
+	o5 = FObject["@ << 7"]
+	out = FObject["@out"]
 	o1.connect 0,o2,0
 	o2.connect 0,o3,0
 	o3.connect 0,o4,0
-	o4.send_in 0,"open raw file /dev/dsp"
-	o4.send_in 0,"option type int16"
-	o1.send_in 0
+	o4.connect 0,o5,0
+	o5.connect 0,out,0
+#	out.send_in 0,"open raw file /dev/dsp"
+	out.send_in 0,"open grid file /dev/dsp"
+	out.send_in 0,"option type int16"
+	x=0
+	loop {
+		o4.send_in 1, x
+		o1.send_in 0
+		x+=10
+	}
 end
 
 def test_metro
@@ -388,12 +413,9 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
-#test_anim ["open videodev /dev/video10",
-#	"option transfer read",
-#	"option channel 1",
-#	"option size 240 320"]
+test_anim ["open videodev /dev/video15 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]

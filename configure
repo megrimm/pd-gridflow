@@ -23,7 +23,6 @@
 
 #----------------------------------------------------------------#
 
-
 require "rbconfig"
 require "ftools"
 include Config
