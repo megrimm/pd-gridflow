@@ -27,6 +27,7 @@ foreach name {
 	@dim
 	@fold
 	@outer
+	@redim
 } {
 	helpPatch $name $dir/$name.help.jmax
 }
