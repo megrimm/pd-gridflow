@@ -82,6 +82,8 @@ class<<self
 	attr_reader :fobjects_set
 end
 
+@verbose=false
+
 self.post_header = "[gf] "
 
 def self.gfpost2(fmt,s); post("%s",s) end
@@ -115,8 +117,9 @@ end
 
 # adding some functionality to that:
 class FObject
+	alias profiler_cumul= profiler_cumul_assign
 	attr_writer :args
-	def args; args || "[#{self.class} ...]"; end
+	def args; @args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets.push [object, inlet]
@@ -140,7 +143,7 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
-		p m
+		p m if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.name_lookup sym
@@ -275,24 +278,24 @@ end
 
 class GridGlobal
 	def _0_profiler_reset
-		gf_object_set.each {|o| o.profiler_cumul = 0 }
+		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
 	end
 	def _0_profiler_dump
 		ol = []
 		total=0
-		gfpost "-"*32
-		gfpost "         clock-ticks percent pointer  constructor"
-		gf_object_set.each {|o| ol.push o }
+		GridFlow.gfpost "-"*32
+		GridFlow.gfpost "         clock-ticks percent pointer  constructor"
+		GridFlow.fobjects_set.each {|o,*| ol.push o }
 		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
 		ol.each {|o|
 			int ppm = o.profiler_cumul * 1000000 / total
-			gfpost "%20lld %2d.%04d %08x [%s]\n",
+			GridFlow.gfpost "%20d %2d.%04d %08x %s",
 				o.profiler_cumul, ppm/10000, ppm%10000,
-				o, o.info
+				o.id, o.args
 		}
-		gfpost "-"*32
+		GridFlow.gfpost "-"*32
 	end
 end
 
@@ -336,7 +339,7 @@ user_config_file = ENV["HOME"] + "/.gridflow_startup"
 load user_config_file if File.exist? user_config_file
 
 END {
-	puts "This is an END block"
+#	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v| k.delete }
 	GridFlow.fobjects_set.clear
 }

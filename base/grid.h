@@ -166,70 +166,67 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 /* 0.5.0: shortcuts for MethodDecl */
 
-#define DECL(_cl_,_sym_) \
-	{#_sym_,METHOD_PTR(_cl_,_sym_)}
+#define DECL(_class_,_name_) \
+	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
+
+#define DECL4(_class_,_name_) \
+	MethodDecl(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap)
 
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
 
 /*
   METHOD is a header for a given method in a given class.
-  METHOD_PTR returns a pointer to a method of a class as if it were
-  in the FObject class. this is because C's type system is broken.
+  all its variants should be merged together eventually...
 */
+
+/* returns no value; is profilable */
 #define METHOD(_class_,_name_) \
 	static void _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv); \
 	static VALUE _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
-		VALUE result; \
-		DGS(_class_); \
-		ENTER; \
-		result = Qnil; _class_##_##_name_($,rself,argc,argv); \
-		LEAVE; \
+		VALUE result; DGS(_class_); \
+		ENTER; result = Qnil; _class_##_##_name_($,rself,argc,argv); LEAVE; \
 		return result; \
 	} \
 	static void _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv)
 
-/* should be merged with the preceding one someday */
+/* C++ style */
+#define DECL3(_class_,_name_) \
+	void _name_(int argc, VALUE *argv); \
+	static VALUE _name_##_wrap(METHOD_ARGS(_class_)) { \
+		VALUE result; DGS(_class_); \
+		ENTER; result = Qnil; $->_name_(argc,argv); LEAVE; \
+		return result; \
+	}
+
+#define METHOD3(_class_,_name_) \
+	MethodDecl _class_##_##_name_##_kludge_ \
+	(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap); \
+	void _class_::_name_(int argc, VALUE *argv)
+
+/* returns a value; is not profilable */
 #define METHOD2(_class_,_name_) \
 	static VALUE _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv); \
 	static VALUE _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
-		VALUE result; \
-		DGS(_class_); \
+		VALUE result; DGS(_class_); \
 		result = _class_##_##_name_($,rself,argc,argv); \
 		return result; \
 	} \
 	static VALUE _class_##_##_name_(_class_ *$, VALUE rself, int argc, VALUE *argv)
 
-#define METHOD_PTR(_class_,_name_) \
-	((RMethod) _class_##_##_name_##_wrap)
-
 typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 
 /* class constructor */
 
-#define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_handlers_,args...) \
+#define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_startup_,_handlers_,args...) \
 	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
-		sizeof(_name_), \
-		_name_##_allocate, \
+		0, sizeof(_name_), _name_##_allocate, _startup_, \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
 		#_name_, _jname_ };
-
-#define FMTCLASS(_name_,symbol_name,description,flags,_inlets_,_outlets_,_handlers_,args...) \
-	FormatInfo _name_ ## _formatinfo = { symbol_name,description,flags }; \
-	static void *_name_##_allocate () { return new _name_; } \
-	static MethodDecl _name_ ## _methods[] = { args }; \
-	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
-	GridClass _name_ ## _classinfo = { \
-		sizeof(_name_), \
-		_name_##_allocate, \
-		COUNT(_name_##_methods),\
-		_name_##_methods,\
-		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
-		#_name_, #_name_ };
 
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -246,6 +243,7 @@ static inline bool is_le(void) {
 	return ((char *)&x)[0];
 }
 
+#define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
@@ -258,8 +256,20 @@ static inline bool is_le(void) {
 void gfpost(const char *fmt, ...);
 
 typedef struct MethodDecl {
+	const char *qlass;
 	const char *selector;
 	RMethod method;
+//	MethodDecl *next;
+
+//	static MethodDecl *gf_all_methods;
+
+	MethodDecl(const char *qlass, const char *selector, RMethod method) {
+		this->qlass = qlass;
+		this->selector = selector;
+		this->method = method;
+//		this->next = gf_all_methods;
+//		gf_all_methods = this;
+	}
 } MethodDecl;
 
 void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
@@ -310,14 +320,6 @@ DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
 
-/* **************************************************************** */
-/* dim.c */
-
-/*
-  a const array that holds dimensions of a grid
-  and can do some calculations on positions in that grid.
-*/
-
 }; /* extern "C" */
 
 /*
@@ -326,6 +328,9 @@ inline void *operator new(size_t nbytes) {
 	return qalloc(nbytes);
 }
 */
+
+/* a Dim is a const array that holds dimensions of a grid
+  and can do some calculations on positions in that grid. */
 
 struct Dim {
 	int n;
@@ -368,9 +373,7 @@ struct Dim {
 	}
 };
 
-/* **************************************************************** */
 /* BitPacking objects encapsulate optimised loops of conversion */
-
 struct BitPacking;
 
 typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
@@ -399,9 +402,6 @@ int low_bit(uint32 n);
 void swap32 (int n, uint32 *data);
 void swap16 (int n, uint16 *data);
 
-/* **************************************************************** */
-/* Operator objects encapsulate optimised loops of simple operations */
-
 #define DECL_TYPE(_name_,_size_) \
 	_name_##_type_i
 
@@ -421,6 +421,8 @@ typedef struct NumberType {
 	const char *name;
 	int size;
 } NumberType;
+
+/* Operator objects encapsulate optimised loops of simple operations */
 
 typedef struct Operator1 {
 	VALUE /*Symbol*/ sym;
@@ -534,8 +536,10 @@ struct GridInlet {
 extern "C" {
 
 typedef struct GridClass {
+	VALUE rubyclass;
 	int objectsize;
 	void *(*allocate)();
+	void (*startup)(GridClass *);
 	int methodsn;
 	MethodDecl *methods;
 	int inlets;
@@ -627,20 +631,12 @@ void GridObject_conf_class(VALUE $, GridClass *grclass);
 #define FF_R   (1<<2)
 #define FF_RW  (1<<3)
 
-struct FormatInfo {
-	const char *symbol_name; /* short identifier */
-	const char *description; /* long identifier */
-	int flags;
-};
-
 struct Format : GridObject {
 	GridObject *parent;
 	VALUE /*Symbol*/ mode;
 	BitPacking *bit_packing;
 	Dim *dim;
 };
-
-extern GridClass *format_classes[];
 
 /*
 	NEW FORMAT API
@@ -720,8 +716,7 @@ void *Pointer_get (VALUE self);
 	FLOAT_P(x) ? NUM2INT(rb_funcall(x,SI(round),0)) : \
 	(RAISE("expected Integer or Float"),0))
 
-#define INSTALL(rname) \
-	ruby_c_install(&rname##_classinfo, GridObject_class);
+#define INSTALL(rname) ruby_c_install(&rname##_classinfo, GridObject_class);
 
 VALUE ruby_c_install(GridClass *gc, VALUE super);
 

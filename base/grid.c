@@ -471,7 +471,7 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 void GridObject::mark() {}
 
 GridObject::~GridObject() {
-	fprintf(stderr,"GridObject::~GridObject says hello %08x\n",(int)this);
+//	fprintf(stderr,"GridObject::~GridObject says hello %08x\n",(int)this);
 }
 
 METHOD(GridObject,init) {
@@ -624,10 +624,10 @@ METHOD(GridObject,delete) {
 	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) delete $->in[i], $->in[i]=0;
 	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) delete $->out[i], $->out[i]=0;
 	rb_call_super(argc,argv);
-	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)$);
+//	fprintf(stderr,"GridObject#delete says hello %08x\n",(int)$);
 }
 
-GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,
+GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(GridObject,init),
 	DECL(GridObject,delete),
@@ -649,12 +649,9 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 
 #ifdef FORMAT_LIST
 extern GridClass FORMAT_LIST( ,_classinfo);
-extern FormatInfo FORMAT_LIST( ,_formatinfo);
 GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
-FormatInfo *format_infos[] = { FORMAT_LIST(&,_formatinfo) };
 #else
 GridClass *format_classes[] = {};
-FormatInfo *format_infos[] = {};
 #endif
 
 METHOD(Format,init) {
@@ -699,7 +696,7 @@ METHOD(Format,open_file) {
 			rb_str_new2($->mode==4?"r":$->mode==2?"w":(RAISE("argh"),""))));
 }
 
-GRCLASS(Format,"Format",inlets:0,outlets:0,
+GRCLASS(Format,"Format",inlets:0,outlets:0,startup:0,
 LIST(),
 	DECL(Format,init),
 	DECL(Format,option),
@@ -712,22 +709,21 @@ VALUE Format_class;
 VALUE GridObject_class;
 
 void startup_grid () {
-	int i;
 	ruby_c_install(&GridObject_classinfo, FObject_class);
 	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
 	ruby_c_install(&Format_classinfo, GridObject_class);
 	Format_class = rb_const_get(GridFlow_module,SI(Format));
 	rb_ivar_set(GridFlow_module,SI(@formats),rb_hash_new());
-	for (i=0; i<COUNT(format_classes); i++) {
-		FormatInfo *fi = format_infos[i];
-		GridClass *gc = format_classes[i];
-		VALUE qlass;
-		ruby_c_install(gc, Format_class);
-		qlass = rb_const_get(GridFlow_module,rb_intern(gc->name));
-		rb_ivar_set(qlass,SI(@flags),INT2NUM(fi->flags));
-		rb_ivar_set(qlass,SI(@symbol_name),rb_str_new2(fi->symbol_name));
-		rb_ivar_set(qlass,SI(@description),rb_str_new2(fi->description));
-		rb_hash_aset(rb_ivar_get(GridFlow_module,SI(@formats)),
-			ID2SYM(rb_intern(fi->symbol_name)), qlass);
+
+	EVAL(
+	"module GridFlow; def Format.conf_format(flags,symbol_name,description)"
+	"@flags = flags;"
+	"@symbol_name = symbol_name;"
+	"@description = description;"
+	"GridFlow.instance_eval{@formats}[symbol_name.intern]=self;"
+	"end;end");
+
+	for (int i=0; i<COUNT(format_classes); i++) {
+		ruby_c_install(format_classes[i], Format_class);
 	}
 }
