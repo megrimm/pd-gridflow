@@ -109,16 +109,15 @@ METHOD(GridImport,reset) {
 	if (GridOutlet_busy(out)) GridOutlet_abort(out);
 }
 
-CLASS(GridImport,
-		DECL(GridImport,-1,init,  "si+"),
-		DECL(GridImport,-1,delete,""),
-		DECL(GridImport, 0,int,   "i"),
-		DECL(GridImport, 0,reset, ""))
+GRCLASS(GridImport,inlets:2,outlets:1,
+LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
+	DECL(GridImport,-1,init,  "si+"),
+	DECL(GridImport,-1,delete,""),
+	DECL(GridImport, 0,int,   "i"),
+	DECL(GridImport, 0,reset, ""))
 {
 	fts_class_init(class, sizeof(GridImport), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridImport_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridImport_class);
 	return fts_Success;
 }
 
@@ -153,13 +152,13 @@ METHOD(GridExport,init) {
 
 METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridExport,
+GRCLASS(GridExport,inlets:1,outlets:1,
+LIST(GRINLET(GridExport,0)),
 	DECL(GridExport,-1,init,  "s"),
 	DECL(GridExport,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridExport), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridExport_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridExport_class);
 	return fts_Success;
 }
 
@@ -196,13 +195,13 @@ METHOD(GridExportList,init) {
 
 METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridExportList,
+GRCLASS(GridExportList,inlets:1,outlets:1,
+LIST(GRINLET(GridExportList,0)),
 	DECL(GridExportList,-1,init,  "s"),
 	DECL(GridExportList,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridExportList), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridExportList_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridExportList_class);
 	return fts_Success;
 }
 
@@ -358,15 +357,14 @@ METHOD(GridStore,bang) {
 	GridOutlet_end(  $->out[0]);
 }
 
-CLASS(GridStore,
+GRCLASS(GridStore,inlets:2,outlets:1,
+LIST(GRINLET(GridStore,0),GRINLET(GridStore,1)),
 	DECL(GridStore,-1,init,  "s;s"),
 	DECL(GridStore,-1,delete,""),
 	DECL(GridStore, 0,bang,  ""))
 {
 	fts_class_init(class, sizeof(GridStore), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridStore_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridStore_class);
 	return fts_Success;
 }
 
@@ -413,13 +411,13 @@ METHOD(GridOp1,init) {
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridOp1,
+GRCLASS(GridOp1,inlets:1,outlets:1,
+LIST(GRINLET(GridOp1,0)),
 	DECL(GridOp1,-1,init,  "ss"),
 	DECL(GridOp1,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridOp1), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridOp1_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridOp1_class);
 	return fts_Success;
 }
 
@@ -514,15 +512,14 @@ METHOD(GridOp2,int) {
 	$->rint = GET(0,int,-42);
 }
 
-CLASS(GridOp2,
+GRCLASS(GridOp2,inlets:2,outlets:1,
+LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
 	DECL(GridOp2,-1,init,  "ss;i"),
 	DECL(GridOp2,-1,delete,""),
 	DECL(GridOp2, 1,int,   ""),/*why zero?*/)
 {
 	fts_class_init(class, sizeof(GridOp2), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridOp2_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridOp2_class);
 	return fts_Success;
 }
 
@@ -590,14 +587,14 @@ METHOD(GridFold,int) {
 	$->rint = GET(0,int,-42);
 }
 
-CLASS(GridFold,
+GRCLASS(GridFold,inlets:2,outlets:1,
+LIST(GRINLET(GridFold,0)),
 	DECL(GridFold,-1,init,  "ss;i"),
 	DECL(GridFold,-1,delete,""),
 	DECL(GridFold, 1,int,   ""),/*why zero?*/)
 {
 	fts_class_init(class, sizeof(GridFold), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridFold_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridFold_class);
 	return fts_Success;
 }
 
@@ -706,13 +703,12 @@ METHOD(GridInner,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridInner,
+GRCLASS(GridInner,inlets:3,outlets:1,
+LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,-1,init,  "sss;i"),
 	DECL(GridInner,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridInner), 3, 1, 0);
-	define_many_methods(class,ARRAY(GridInner_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,2);
+	GridObject_conf_class2(class,&GridInner_class);
 	return fts_Success;
 }
 
@@ -798,13 +794,12 @@ METHOD(GridOuter,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridOuter,
+GRCLASS(GridOuter,inlets:2,outlets:1,
+LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
 	DECL(GridOuter,-1,init,  "ss"),
 	DECL(GridOuter,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridOuter), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridOuter_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridOuter_class);
 	return fts_Success;
 }
 
@@ -951,13 +946,12 @@ METHOD(GridConvolve,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridConvolve,
+GRCLASS(GridConvolve,inlets:2,outlets:1,
+LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
 	DECL(GridConvolve,-1,init,  "s;ssi"),
 	DECL(GridConvolve,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridConvolve), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridConvolve_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridConvolve_class);
 	return fts_Success;
 }
 
@@ -1007,7 +1001,8 @@ METHOD(GridFor,from2) {
 	GridFor_bang($,winlet,selector,ac,at);
 }
 
-CLASS(GridFor,
+GRCLASS(GridFor,inlets:3,outlets:1,
+LIST(),
 	DECL(GridFor,-1,init,  "siii"),
 	DECL(GridFor,-1,delete,""),
 	DECL2(GridFor, 0,bang,bang, ""),
@@ -1055,12 +1050,12 @@ METHOD(GridDim,init) {
 
 METHOD(GridDim,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridDim,
+GRCLASS(GridDim,inlets:1,outlets:1,
+LIST(GRINLET(GridDim,0)),
 	DECL(GridDim,-1,init,  "s"),
 	DECL(GridDim,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridDim), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridDim_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridDim_class);
 	return fts_Success;
 }
 
@@ -1166,14 +1161,13 @@ METHOD(GridRedim,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridRedim,
+GRCLASS(GridRedim,inlets:2,outlets:1,
+LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,0)),
 	DECL(GridRedim,-1,init,  "si+"),
 	DECL(GridRedim,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridRedim), 2, 1, 0);
-	define_many_methods(class,ARRAY(GridRedim_methods));
-	GridObject_conf_class(class,0);
-	GridObject_conf_class(class,1);
+	GridObject_conf_class2(class,&GridRedim_class);
 	return fts_Success;
 }
 
@@ -1210,13 +1204,13 @@ METHOD(GridPrint,init) {
 
 METHOD(GridPrint,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridPrint,
+GRCLASS(GridPrint,inlets:1,outlets:0,
+LIST(GRINLET(GridPrint,0)),
 	DECL(GridPrint,-1,init,  "s"),
 	DECL(GridPrint,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridPrint), 1, 0, 0);
-	define_many_methods(class,ARRAY(GridPrint_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridPrint_class);
 	return fts_Success;
 }
 

@@ -77,13 +77,13 @@ METHOD(GridScaleBy,init) {
 
 METHOD(GridScaleBy,delete) { GridObject_delete((GridObject *)$); }
 
-CLASS(GridScaleBy,
+GRCLASS(GridScaleBy,inlets:1,outlets:1,
+LIST(GRINLET(GridScaleBy,0)),
 	DECL(GridScaleBy,-1,init,  "s"),
 	DECL(GridScaleBy,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridScaleBy), 1, 1, 0);
-	define_many_methods(class,ARRAY(GridScaleBy_methods));
-	GridObject_conf_class(class,0);
+	GridObject_conf_class2(class,&GridScaleBy_class);
 	return fts_Success;
 }
 

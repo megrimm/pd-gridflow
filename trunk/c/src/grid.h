@@ -80,6 +80,32 @@
 
 /* **************************************************************** */
 
+/* returns the size of a statically defined array */
+#define COUNT(_array_) \
+	((int)(sizeof(_array_) / sizeof((_array_)[0])))
+
+/*
+  "COUNT(array), array", a shortcut because often in jmax you pass
+  first the size of an array followed by a pointer to that array.
+*/
+#define ARRAY(_array_) \
+	COUNT(_array_), _array_
+
+/*
+  make sure an int is not too small nor too big;
+  warn and adjust outside values
+*/
+#define COERCE_INT_INTO_RANGE(_var_,_lower_,_upper_) \
+	if ((_var_) < (_lower_)) { \
+		whine("warning: %s=%d was smaller than %d\n", #_var_, (_var_), (_lower_)); \
+		(_var_) = (_lower_); \
+	} else if ((_var_) > (_upper_)) { \
+		whine("warning: %s=%d was bigger than %d\n", #_var_, (_var_), (_upper_)); \
+		(_var_) = (_upper_); \
+	}
+
+/* **************************************************************** */
+
 /* those are helpers for profiling. */
 #ifdef HAVE_PROFILING
 #define ENTER $->profiler_last = rdtsc();
@@ -120,12 +146,9 @@
 	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym2_),args}
 
 /*
-  now (0.3.1) using a separate macro for some things like decls
-  and for methods that should not be profiled.
-*/
-
-/*
-  a header for a given method in a given class.
+  METHOD is a header for a given method in a given class.
+  METHOD_PTR returns a pointer to a method of a class as if it were
+  in the fts_object_t class. this is because C's type system is broken.
 */
 #ifdef HAVE_PROFILING
 #define METHOD(_class_,_name_) \
@@ -136,34 +159,26 @@
 		LEAVE; \
 	} \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
+#define METHOD_PTR(_class_,_name_) \
+	((FTSMethod) _class_##_##_name_##_wrap)
 #else
 #define METHOD(_class_,_name_) \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
+#define METHOD_PTR(_class_,_name_) \
+	((FTSMethod) _class_##_##_name_)
 #endif
 
-/*
-  returns a pointer to a method of a class as an fts_object_t* instead
-  of a pointer to an object of your class. This is because in C, structs
-  cannot inherit from another struct, and so a pointer of one type cannot be
-  considered as a pointer to a similar, more elementary type.
-*/
-#ifdef HAVE_PROFILING
-#define METHOD_PTR(_class_,_name_) \
-	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
-#else
-#define METHOD_PTR(_class_,_name_) \
-	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
-#endif
+typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
 
-/* a header for the class constructor */
-#define CLASS(_name_,args...) \
-	static MethodDecl _name_ ## _methods[] = { args \
-	}; \
+/* class constructor */
+
+#define GRCLASS(_name_,_inlets_,_outlets_,_handlers_,args...) \
+	static MethodDecl _name_ ## _methods[] = { args }; \
+	GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	GridClass _name_ ## _class = { \
+		ARRAY(_name_##_methods),\
+		_inlets_,_outlets_,ARRAY(_name_##_handlers) }; \
 	static fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST)
-
-/* returns the size of a statically defined array */
-#define COUNT(_array_) \
-	((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 /*
   casts a pointer to any object, into a fts_object_t*.
@@ -178,26 +193,6 @@
 */
 #define GET(_i_,_type_,_default_) \
 	fts_get_##_type_##_arg (ac,at,_i_,_default_)
-
-/*
-  "COUNT(array), array", a shortcut because often in jmax you pass
-  first the size of an array followed by a pointer to that array.
-*/
-#define ARRAY(_array_) \
-	COUNT(_array_), _array_
-
-/*
-  make sure an int is not too small nor too big;
-  warn and adjust outside values
-*/
-#define COERCE_INT_INTO_RANGE(_var_,_lower_,_upper_) \
-	if ((_var_) < (_lower_)) { \
-		post("warning: %s=%d was smaller than %d\n", #_var_, (_var_), (_lower_)); \
-		(_var_) = (_lower_); \
-	} else if ((_var_) > (_upper_)) { \
-		post("warning: %s=%d was bigger than %d\n", #_var_, (_var_), (_upper_)); \
-		(_var_) = (_upper_); \
-	}
 
 #define SYM(_sym_) (fts_new_symbol(#_sym_))
 
@@ -406,7 +401,6 @@ typedef struct Operator2 {
 typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
-/* typedef struct GridHandler GridHandler; */
 
 #define GRID_BEGIN_(_cl_,_name_) bool _name_(_cl_ *$, GridInlet *in)
 #define  GRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, const Number *data)
@@ -456,6 +450,35 @@ struct GridInlet {
 	void GridInlet_abort(GridInlet *$);
 	void GridInlet_set_factor(GridInlet *$, int factor);
 	bool GridInlet_busy(GridInlet *$);
+
+typedef struct GridHandler {
+	int       winlet;
+	GridBegin begin;
+	GridFlow  flow; /* or flow2 */
+	GridEnd   end;
+	int       mode; /* 4=r=flow; 6=rw=flow2 */
+} GridHandler;
+
+typedef struct GridClass {
+	int methodsn;
+	MethodDecl *methods;
+	int inlets;
+	int outlets;
+	int handlersn;
+	GridHandler *handlers;
+} GridClass;
+
+#define LIST(args...) args
+
+#define GRINLET(_class_,_winlet_) {_winlet_,\
+	((GridBegin)_class_##_##_winlet_##_begin), \
+	 ((GridFlow)_class_##_##_winlet_##_flow), \
+	  ((GridEnd)_class_##_##_winlet_##_end), 4 }
+
+#define GRINLET2(_class_,_winlet_) {_winlet_,\
+	((GridBegin)_class_##_##_winlet_##_begin), \
+	 ((GridFlow)_class_##_##_winlet_##_flow2), \
+	  ((GridEnd)_class_##_##_winlet_##_end), 6 }
 
 #define GridInlet_NEW3(_parent_,_class_,_winlet_) \
 	GridInlet_new((GridObject *)_parent_, _winlet_, \
@@ -525,6 +548,7 @@ struct GridObject {
 	void GridObject_init(GridObject *$);
 	void GridObject_delete(GridObject *$);
 	void GridObject_conf_class(fts_class_t *class, int winlet);
+	void GridObject_conf_class2(fts_class_t *class, GridClass *grclass);
 
 /* **************************************************************** */
 /* grid.c (part 4: formats) */

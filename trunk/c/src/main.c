@@ -344,14 +344,15 @@ METHOD(RtMetro,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(RtMetro,
+GRCLASS(RtMetro,inlets:2,outlets:1,
+LIST(),
 	DECL2(RtMetro, 0,int,   int,   "i"),
 	DECL2(RtMetro, 1,int,   rint,  "i"),
 	DECL2(RtMetro,-1,init,  init,  "s"),
 	DECL2(RtMetro,-1,delete,delete,""))
 {
 	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
-	define_many_methods(class,ARRAY(RtMetro_methods));
+	GridObject_conf_class2(class,&RtMetro_class);
 	return fts_Success;
 }
 
@@ -425,14 +426,15 @@ METHOD(GFGlobal,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GFGlobal,
+GRCLASS(GFGlobal,inlets:1,outlets:1,
+LIST(),
 	DECL(GFGlobal,-1,init,          "s"),
 	DECL(GFGlobal,-1,delete,        ""),
 	DECL(GFGlobal, 0,profiler_reset,""),
 	DECL(GFGlobal, 0,profiler_dump, ""))
 {
 	fts_class_init(class, sizeof(GFGlobal), 1, 1, 0);
-	define_many_methods(class,ARRAY(GFGlobal_methods));
+	GridObject_conf_class2(class,&GFGlobal_class);
 	return fts_Success;
 }
 

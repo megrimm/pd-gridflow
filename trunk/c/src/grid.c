@@ -428,6 +428,14 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	define_many_methods(class,ARRAY(methods));
 }
 
+void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {
+	int i;
+	define_many_methods(class,grclass->methodsn,grclass->methods);
+	for (i=0; i<grclass->handlersn; i++) {
+		GridObject_conf_class(class,grclass->handlers[i].winlet);
+	}
+}
+
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */
 

@@ -231,6 +231,7 @@ static FormatX11 *current_x11;
 int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	current_x11->use_shm = false;
 	whine("caught X11 error (should be \"BadAccess: can't find shm\")");
+	return 42; /* it seems that the return value is ignored. */
 }
 
 bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
