@@ -282,6 +282,7 @@ DECL_SYM(reset)
 DECL_SYM(autodraw)
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
+DECL_SYM(grid_flow2)
 DECL_SYM(grid_end)
 
 #ifndef __cplusplus
@@ -393,18 +394,22 @@ typedef struct GridObject GridObject;
 
 #define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *$, GridInlet *in)
 #define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, const Number *data)
+#define GRID_FLOW2_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, Number *data)
 #define   GRID_END_(_class_,_name_) void _name_(_class_ *$, GridInlet *in)
 
 #define GRID_BEGIN_PTR(_class_,_inlet_) ((GRID_BEGIN_(_class_,(*)))_class_##_##_inlet_##_begin)
 #define  GRID_FLOW_PTR(_class_,_inlet_)  ((GRID_FLOW_(_class_,(*)))_class_##_##_inlet_##_flow)
+#define GRID_FLOW2_PTR(_class_,_inlet_) ((GRID_FLOW2_(_class_,(*)))_class_##_##_inlet_##_flow2)
 #define   GRID_END_PTR(_class_,_inlet_)   ((GRID_END_(_class_,(*)))_class_##_##_inlet_##_end)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
+typedef GRID_FLOW2_(GridObject, (*GridFlow2));
 typedef   GRID_END_(GridObject, (*GridEnd));
 
 #define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_,_class_##_##_inlet_##_begin)
 #define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_,_class_##_##_inlet_##_flow)
+#define GRID_FLOW2(_class_,_inlet_) GRID_FLOW2_(_class_,_class_##_##_inlet_##_flow2)
 #define   GRID_END(_class_,_inlet_)   GRID_END_(_class_,_class_##_##_inlet_##_end)
 
 struct GridInlet {
@@ -419,15 +424,17 @@ struct GridInlet {
 /* grid receptor */
 	GridBegin begin;
 	GridFlow  flow;
+	GridFlow2 flow2;
 	GridEnd   end;
 
 	int factor; /* flow's n will be multiple of $->factor */
 	int bufn;
 	Number *buf; /* factor-chunk buffer */
+	int mode;
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
-		GridBegin b, GridFlow f, GridEnd e);
+		GridBegin b, GridFlow f, GridEnd e, int mode);
 	void GridInlet_delete(GridInlet *$);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
@@ -437,7 +444,13 @@ struct GridInlet {
 	GridInlet_new((GridObject *)_parent_, _winlet_, \
 		((GridBegin)_class_##_##_winlet_##_begin), \
 		 ((GridFlow)_class_##_##_winlet_##_flow), \
-		  ((GridEnd)_class_##_##_winlet_##_end))
+		  ((GridEnd)_class_##_##_winlet_##_end), 4)
+
+#define GridInlet_NEW2(_parent_,_class_,_winlet_) \
+	GridInlet_new((GridObject *)_parent_, _winlet_, \
+		((GridBegin)_class_##_##_winlet_##_begin), \
+		((GridFlow2)(GridFlow)_class_##_##_winlet_##_flow2), \
+		  ((GridEnd)_class_##_##_winlet_##_end), 6)
 
 /* **************************************************************** */
 /* grid.c (2) */
@@ -455,44 +468,32 @@ struct GridOutlet {
 /* buffering */
 	Number *buf;
 	int bufn;
+
+/* transmission accelerator */
+	int frozen;
+	int ron;
+	GridInlet *ro; /* want (const Number *) shown to */
+	int rwn;
+	GridInlet *rw; /* want (Number *) given to */
 };
 
 	GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
 	void GridOutlet_delete(GridOutlet *$);
 	GridObject *GridOutlet_parent(GridOutlet *$);
 	int  GridOutlet_idle   (GridOutlet *$);
-	void GridOutlet_abort  (GridOutlet *$);
+
 	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
+	void GridOutlet_abort  (GridOutlet *$);
 	void GridOutlet_give       (GridOutlet *$, int n,       Number *data);
 	void GridOutlet_send       (GridOutlet *$, int n, const Number *data);
 	void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data);
 	void GridOutlet_flush  (GridOutlet *$);
 	void GridOutlet_end    (GridOutlet *$);
 
+	void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode);
+
 /* **************************************************************** */
 /* grid.c (3) */
-/* GridPacket
-	** for future use **
-	represents a smart buffer bound to a GridOutlet and N GridInlets
-*/
-
-struct GridPacket {
-	GridOutlet *parent;
-	/* pthread_mutex_t *mutex; */
-	Number *(*request)(void);
-	Number *buf;
-	int bufn;
-};
-
-/*
-	GridPacket *GridPacket_new(GridOutlet *parent, int n, Number *data);
-	int GridPacket_size(GridPacket *$);
-	Number *GridPacket_data(GridPacket *$);
-	void GridPacket_delete(GridPacket *$);
-*/
-
-/* **************************************************************** */
-/* grid.c (4) */
 
 #define GridObject_FIELDS \
 	fts_object_t o;  /* extends fts object */ \
@@ -512,7 +513,7 @@ struct GridObject {
 	void GridObject_delete(GridObject *$);
 
 /* **************************************************************** */
-/* grid.c (5) */
+/* grid.c (4) */
 
 typedef enum FormatFlags {dummy_dummy} FormatFlags;
 typedef struct FormatClass FormatClass;

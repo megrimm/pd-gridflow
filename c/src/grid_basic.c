@@ -58,7 +58,9 @@ GRID_BEGIN(GridImport,1) {
 	int n;
 	if (Dim_count(in->dim)!=1) return false;
 	n = Dim_get(in->dim,0);
-	if (n<0 || n>MAX_DIMENSIONS) return false;
+	if (n>MAX_DIMENSIONS) {
+		whine("too many dimensions");
+	}
 	GridInlet_set_factor(in,n);
 	return true;
 }
@@ -452,24 +454,26 @@ GRID_BEGIN(GridOp2,0) {
 	return true;
 }
 
-GRID_FLOW(GridOp2,0) {
-	Number *data2 = NEW2(Number,n);
+GRID_FLOW2(GridOp2,0) {
 	GridOutlet *out = $->out[0];
-
+/*
+	Number *data2 = NEW(Number,n);
 	memcpy(data2,data,n*sizeof(Number));
+*/
+
 	if ($->dim) {
 		int loop = Dim_prod($->dim);
 		int i;
 		for (i=0; i<n; i++) {
 			int rint = $->data[(in->dex+i)%loop];
-			data2[i] = $->op->op(data2[i],rint);
+			data[i] = $->op->op(data[i],rint);
 		}
 	} else {
-		$->op->op_array(n,data2,$->rint);
+		$->op->op_array(n,data,$->rint);
 	}
 	in->dex += n;
-	GridOutlet_send(out,n,data2);
-	FREE(data2);
+	GridOutlet_give(out,n,data);
+/*	GridOutlet_send(out,n,data); */
 }
 
 GRID_END(GridOp2,0) { GridOutlet_end($->out[0]); }
@@ -498,7 +502,7 @@ METHOD(GridOp2,init) {
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->in[0] = GridInlet_NEW3($,GridOp2,0);
+	$->in[0] = GridInlet_NEW2($,GridOp2,0);
 	$->in[1] = GridInlet_NEW3($,GridOp2,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
@@ -850,6 +854,7 @@ typedef struct GridConvolve {
 	Dim *diml; Number *datal;
 	const Operator2 *op_para;
 	const Operator2 *op_fold;
+	Number rint;
 } GridConvolve;
 
 GRID_BEGIN(GridConvolve,0) {
@@ -882,7 +887,7 @@ GRID_END(GridConvolve,0) {
 	for (iy=0; iy<ny; iy++) {
 		for (ix=0; ix<nx; ix++) {
 			Number *d = $->data;
-			for (k=0; k<l; k++) { buf[k] = 0; }
+			for (k=0; k<l; k++) { buf[k] = $->rint; }
 			for (jy=0; jy<my; jy++) {
 				int pos1 = ((iy+jy-my/2+ny)%ny) * nx;
 				for (jx=0; jx<mx; jx++) {
@@ -955,6 +960,10 @@ METHOD(GridConvolve,init) {
 	$->diml = 0;
 	$->datal = 0;
 
+	$->op_para = op2_table_find(sym_para);
+	$->op_fold = op2_table_find(sym_fold);
+	/* $->rint = GET(3,int,0); */
+
 	if (!$->op_para) {
 		fts_object_set_error(OBJ($),
 			"unknown binary operator \"%s\"", fts_symbol_name(sym_para));
@@ -963,10 +972,6 @@ METHOD(GridConvolve,init) {
 		fts_object_set_error(OBJ($),
 			"unknown binary operator \"%s\"", fts_symbol_name(sym_fold));
 	}
-
-	$->op_para = op2_table_find(sym_para);
-	$->op_fold = op2_table_find(sym_fold);
-	/* $->rint = GET(3,int,0); */
 }
 
 METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
