@@ -26,8 +26,8 @@
 #include <math.h>
 #include "grid.h.fcs"
 
-Operator2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
-Operator2 *op2_shl, *op2_and;
+Numop2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
+Numop2 *op2_shl, *op2_and;
 
 /* **************************************************************** */
 
@@ -384,9 +384,9 @@ GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0,6)),
 
 \class GridOp2 < GridObject
 struct GridOp2 : GridObject {
-	\attr Operator2 *op;
+	\attr Numop2 *op;
 	Grid r;
-	\decl void initialize(Operator2 *op, Grid *r=0);
+	\decl void initialize(Numop2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -425,10 +425,10 @@ GRID_INLET(GridOp2,0) {
 
 GRID_INPUT2(GridOp2,1,r) {} GRID_END
 
-\def void initialize(Operator2 *op, Grid *r=0) {
+\def void initialize(Numop2 *op, Grid *r=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 }
 
 GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
@@ -448,9 +448,9 @@ GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
 
 \class GridFold < GridObject
 struct GridFold : GridObject {
-	\attr Operator2 *op;
+	\attr Numop2 *op;
 	\attr Grid seed;
-	\decl void initialize (Operator2 *op, Grid *seed=0);
+	\decl void initialize (Numop2 *op, Grid *seed=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -488,10 +488,10 @@ GRID_INLET(GridFold,0) {
 
 GRID_INPUT(GridFold,1,r) {} GRID_END
 
-\def void initialize (Operator2 *op, Grid *seed=0) {
+\def void initialize (Numop2 *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0));
+	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0), int32_type_i);
 }
 
 GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
@@ -511,7 +511,7 @@ GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
 
 \class GridScan < GridFold
 struct GridScan : GridFold {
-	\decl void initialize (Operator2 *op, Grid *seed=0);
+	\decl void initialize (Numop2 *op, Grid *seed=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -540,10 +540,10 @@ GRID_INLET(GridScan,0) {
 
 GRID_INPUT(GridScan,1,r) {} GRID_END
 
-\def void initialize (Operator2 *op, Grid *seed=0) {
+\def void initialize (Numop2 *op, Grid *seed=0) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0));
+	if (seed) this->seed.swallow(seed); else this->seed.init_clear(new Dim(0,0), int32_type_i);
 }
 
 GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
@@ -566,8 +566,8 @@ GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
 
 \class GridInner < GridObject
 struct GridInner : GridObject {
-	\attr Operator2 *op_para;
-	\attr Operator2 *op_fold;
+	\attr Numop2 *op_para;
+	\attr Numop2 *op_fold;
 	\attr Grid seed;
 	Grid r;
 
@@ -575,7 +575,7 @@ struct GridInner : GridObject {
 	Grid r2;
 	
 	GridInner() { transpose=false; }
-	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
 	template <class T> void process_right(T bogus);
@@ -615,7 +615,7 @@ GRID_INLET(GridInner,0) {
 		for (int j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
 } GRID_FLOW {
-	Operator2 *op2_put = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(put)));
+	Numop2 *op2_put = FIX2PTR(Numop2,rb_hash_aref(op2_dict,SYM(put)));
 	int rrows = in->factor;
 	int rsize = r.dim->prod();
 	int rcols = rsize/rrows;
@@ -664,12 +664,12 @@ GRID_INPUT(GridInner,2,r) {
 	process_right((T)0);
 } GRID_END
 
-\def void initialize (Operator2 *op_para, Operator2 *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	this->seed.swallow(seed); // this->seed = *seed;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
 #undef FOO
@@ -686,15 +686,15 @@ GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 \class GridInner2 < GridInner
 struct GridInner2 : GridInner {
 	GridInner2() { transpose=true; }
-	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 };
 
-\def void initialize (Operator2 *op_para, Operator2 *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	this->seed.swallow(seed); // this->seed = *seed;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 #define FOO(T) process_right((T)0);
 		TYPESWITCH(this->r.nt,FOO,)
 #undef FOO
@@ -712,10 +712,10 @@ GRCLASS(GridInner2,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 
 \class GridOuter < GridObject
 struct GridOuter : GridObject {
-	\attr Operator2 *op;
+	\attr Numop2 *op;
 	Grid r;
 
-	\decl void initialize (Operator2 *op, Grid *r=0);
+	\decl void initialize (Numop2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -769,10 +769,10 @@ GRID_INLET(GridOuter,0) {
 
 GRID_INPUT(GridOuter,1,r) {} GRID_END
 
-\def void initialize (Operator2 *op, Grid *r) {
+\def void initialize (Numop2 *op, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op = op;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
 }
 
 GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
@@ -1016,6 +1016,23 @@ struct GridJoin : GridObject {
 	\decl void initialize (int which_dim=-1, Grid *r=0);
 };
 
+template <int n>
+class SCOPY {
+public:
+	template <class T>
+	static inline void f(Pt<T> a, Pt<T> b) {
+		*a=*b;
+		SCOPY<n-1>::f(a+1,b+1);
+	}
+};
+
+template <>
+class SCOPY<0> {
+public:
+	template <class T>
+	static inline void f(Pt<T> a, Pt<T> b) {}
+};
+
 GRID_INLET(GridJoin,0) {
 	NOTEMPTY(r);
 	SAME_TYPE(*in,r);
@@ -1032,10 +1049,10 @@ GRID_INLET(GridJoin,0) {
 		if (i==w) {
 			v[i]+=r.dim->v[i];
 		} else {
-			if (v[i]!=r.dim->v[i]) RAISE("dimensions mismatch");
+			if (v[i]!=r.dim->v[i]) RAISE("dimensions mismatch: dim #%i, left is %d, right is %d",i,v[i],r.dim->v[i]);
 		}
 	}
-	out[0]->begin(new Dim(d->n,v));
+	out[0]->begin(new Dim(d->n,v),in->nt);
 	if (d->prod(w)) in->set_factor(d->prod(w));
 } GRID_FLOW {
 	int w = which_dim;
@@ -1043,7 +1060,21 @@ GRID_INLET(GridJoin,0) {
 	int a = in->factor;
 	int b = r.dim->prod(w);
 	Pt<T> data2 = (Pt<T>)r + in->dex*b/a;
-	if (a+b<=16) {
+	if (a==3 && b==1) {
+		int m = n+n*b/a;
+		STACK_ARRAY(T,data3,m);
+		Pt<T> data4 = data3;
+/*		if (sizeof(T)==1 && is_le()) {
+			while (n) {
+				*(int32*)data4 = (0x00ffffff & data) | (*(uint8*)data2 << 24);
+				n-=3; data+=3; data2+=1; data4+=4;
+			}
+		}
+*/		while (n) {
+			SCOPY<3>::f(data4,data); SCOPY<1>::f(data4+3,data2); n-=3; data+=3; data2+=1; data4+=4;
+		}
+		out[0]->send(m,data3);
+	} else if (a+b<=16) {
 		int m = n+n*b/a;
 		STACK_ARRAY(T,data3,m);
 		int i=0;
@@ -1276,8 +1307,8 @@ GRCLASS(RtMetro,LIST(),
 
 /* **************************************************************** */
 
-static Operator2 *OP2(Ruby x) {
-	return FIX2PTR(Operator2,rb_hash_aref(op2_dict,x));
+static Numop2 *OP2(Ruby x) {
+	return FIX2PTR(Numop2,rb_hash_aref(op2_dict,x));
 }
 
 void startup_flow_objects () {
