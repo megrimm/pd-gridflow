@@ -22,7 +22,12 @@ endif
 #----------------------------------------------------------------#
 
 CFLAGS += -Wall # for cleanliness
-CFLAGS += -Wno-unused # it's normal to have unused parameters
+# but it's normal to have unused parameters
+#ifeq ($(HAVE_GCC3),yes)
+#CFLAGS += -Wno-unused-parameter
+#else
+CFLAGS += -Wno-unused
+#endif
 
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability

@@ -1,39 +1,58 @@
 /* $Id$ */
 
---- make the development process more test-driven:
-    * file every feature request and bug report into base/test.rb so
-      that gridflow fails those tests;
-    * THEN make gridflow pass those tests.
-
-for 0.7.7:
-[ ] GF with Pd 0.36 : undefined pd_newest
-
 for 0.7.8:
 
-[ ] [#reverse]
-[ ] [#change]
+FObject#send_out2 : bself is NULL, rself=4097cbe8
+[gf] ruby: ObjectSpace._id2ref(0x4097cbe8/2)
+[gf] returns: #<GridFlow::FormatX11 [FormatX11 out]>
+
+test with waves.pd, 24 by 32.
+==1673== 809108 bytes in 187 blocks are still reachable in loss record 64 of 64
+==1673==    at 0x40026DAA: __builtin_vec_new (vg_replace_malloc.c:203)
+==1673==    by 0x40026E01: operator new[](unsigned) (vg_replace_malloc.c:216)
+==1673==    by 0x41FE269F: Grid::init(P<Dim>, NumberTypeE) (base/grid.h.fcs:910)
+==1673==    by 0x41FCBE27: Grid::init_from_ruby_list(int, unsigned long*, NumberTypeE) (base/grid.c.fcs:100)
+==1673==    by 0x41FCC679: Grid::init_from_ruby(unsigned long) (base/grid.c.fcs:117)
+==1673==    by 0x41FE223F: Grid::Grid(unsigned long) (base/grid.h.fcs:888)
+==1673==    by 0x42093152: convert(unsigned long, Grid**) (base/grid.h.fcs:921)
+==1673==    by 0x4208F72B: GridOuter::initialize_wrap(int, unsigned long*, unsigned long) (base/flow_objects.c.fcs:862)
+
 [ ] we're switching to PD for abstractions, instead of Ruby.
     Make a new bunch of them. Add a video latency patch (in examples)
+[ ] drop :whatever
+[ ] wrap Dim
+[ ] wrap GridInlet
+[ ] wrap GridOutlet
+[ ] wrap Grid
+[ ] reenable DimConstraints
+[ ] remove GridInlet* ?
+[ ] ruby-based send_out_grid_begin is pretty fucked
+[ ] [#reverse]
+[ ] [#]
+[ ] [#change]
+[ ] [#import~]
+[ ] [#export~]
+[ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
+[ ] Numop API exposed to Ruby
+[ ] re-enable int64,float64
+[ ] <alx_> #define RUBY_STACK_END "0xbfffd5c0" (!?!?!?)
 
 for 0.7.9: ?
 
 for 0.8.0:
 
- * added #matrix_solve, #slice
- * Copy-on-Write (COW)
- * Numop API exposed to Ruby
- * < 10 bugs in buglist
- * Fully hyperlinked manual
- * internals documentation
- * internal grid protocol redesigned
- * [#export~]
- * raise limit of in/outlets from 10 to 100 or unlimited.
+[ ] added #matrix_solve, #slice
+[ ] Copy-on-Write (COW)
+[ ] < 10 bugs in buglist
+[ ] Fully hyperlinked manual
+[ ] internals documentation
+[ ] internal grid protocol redesigned
+[ ] raise limit of in/outlets from 10 to 100 or unlimited.
 
 for 0.8.1:
 
  * wrap Pd API completely.
- * drop the :whatever part.
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
@@ -61,7 +80,6 @@ pick a number: [147]
 [119] osx: SDL doesn't work here
 [118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
 [117] osx: [#store] crash instead of raising
-[115] x11: dual display does not work (screens .0 vs .1; but xinerama works fine)
 [112] Pt<T>: some casts aren't done properly
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
@@ -84,7 +102,6 @@ pick a number: [147]
 [032] error handling sometimes leads to crash
 [033] error handling shows inanely useless messages (sometimes)
 [034] format/mpeg3.c,quicktime.c might cause lockup on exit
-[037] new "seed"s may leak ? (Grid vs Grid*)
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
 [040] GRID_FINISH triggered while backstore ???
@@ -106,7 +123,11 @@ Bugs (Low Priority)
 [060] look for "!@#$" in source
 [029] #join on small chunks is way too slow
 [009] T_DATA #dup #clone ???
-[131] "open x11 10.0.0.5:0.1" -> ERROR: opening X11 display: Success
+
+--- make the development process more test-driven:
+    * file every feature request and bug report into base/test.rb so
+      that gridflow fails those tests;
+    * THEN make gridflow pass those tests.
 
 ===================
 
@@ -136,10 +157,7 @@ Installation
 [ ] reintroduce --puredata-dist-dir ?
 [ ] --prefix (pour ruby)
 [ ] install vs site-install mess
-[ ] --whole-archive
 [ ] bridge should check that the gridflow.so file matches.
-[ ] make ./configure's 'test' method work using exceptions
-    for meaningful error reporting in config.log.
 [ ] make uninstall
 [ ] have option for gprof
 [ ] cross-compile:
@@ -149,8 +167,7 @@ Installation
 Documentation
 [ ] make a short feature list as a promo
 [ ] add credits
-[ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
-    mode x11 non-supporté
+[ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un mode x11 non-supporté
 [ ] project_policy.xml
 [ ] specify policy for <help>, <icon>, etc.
 [ ] things you type verbatim are all in KBD blocks
@@ -170,61 +187,49 @@ Documentation
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
 --- remember to keep doc/help/screenshots/examples up to date
+[ ] <jtm_> the suggestion would be to add a link at the end of each section leading to the next section
 
 Source Filter
 [ ] add \ruby \end blocks (multiline inlined rubyscripts)
 [ ] \attr
 
 Architecture
-<pat> aussi les erreurs que donne gf c'est beaucoup de ligne pour juste un file not found ;)
-[ ] Ptr<T> is Pt<T> + refcounting ?
-[ ] reentrancy of objects (to allow true recursion)
+[0.8] <pat> aussi les erreurs que donne gf c'est beaucoup de ligne pour juste un file not found ;)
+[0.8] reentrancy of objects (to allow true recursion)
+[0.8] inlet-variables (variables associated to inlets)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
-[ ] inlet-variables (variables associated to inlets)
-[ ] change the protocol completely:
-	not based on messages, but rather a push/pull combination,
-	add GridStream objects, allow them to be passed in other
-	messages; etc... (?!?)
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (#global:classes, #global:methods, ...)
-[ ] use C++ destructor for C++ fields...
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
-[ ] dispatch on _n_-prefixed methods (one selector any inlet)
-	and     _#{i}_-named methods (any selector one inlet)
-[ ] security modes:
-	<=0 : can run arbitrary programs and ruby scripts ?
-	<=1 : can write files
-	<=2 : can read files
-	<=3 : can open windows ?
-[ ] generalize the backstore
-[ ] Outlet#buffer should harmonise with the lcm of its
-	corresponding Inlet#factor's.
+[0.8] dispatch on _n_-prefixed methods (one selector any inlet)
+	  and     _#{i}_-named methods (any selector one inlet)
+[0.8] generalize the backstore
+[ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
 [ ] lazy grids: Grid#operator Pt<T> makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
-[ ] accounting: grids messages packets numbers bytes copybytes
-[ ] memory profiling
-[ ] compare Ruby API with both flext/pyext
+[0.8] accounting: grids messages packets numbers bytes copybytes
+[0.8] memory profiling
+[0.8] compare Ruby API with both flext/pyext
 [ ] add a "query" class for debugging other objects?
     (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
-[ ] add a deprecation system
 [ ] interpret nested lists as n-dimensional.
+[0.8] MMX memcpy() ?
+[0.8] MMX _runtime_ autodetection
 
 Operators
-[ ] User-defined operators; compound operators... e.g.
-	[# {{* 7} + {>> 3}}]
+[ ] User-defined operators; compound operators... e.g. [# {{* 7} + {>> 3}}]
 [ ] n-ary operators... make [#] variable-inlet
+[ ] binary ops to replace unaries : rand -> ???, sqrt -> ???
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] op2: abs- (absolute difference), avg (average), erf, rol, ror, weight
-[ ] remove fold/scan for ops for which it makes no sense.
-[ ] MMX memcpy() ?
-[ ] MMX _runtime_ autodetection
+[ ] numop2: rol, ror
+[ ] numop1: weight (in bits)
 
 Bridge
 [ ] UnknownAtom class
@@ -243,7 +248,7 @@ Computation Objects
 [ ] #store: option zero (?)
 [ ] #import~, #export~
 [ ] #fold, #scan: option reverse (right-to-left)
-[ ] #,#join: option swap (?)
+[ ] #join: option swap
 [ ] #matrix_inverse, #matrix_solve
 [ ] #reverse (on given dimension number)
 [ ] #timeline (or rtmetro): sequencing of events from grid
@@ -266,7 +271,7 @@ Effects
 	maybe #mask...
 [ ] turtle (logo style)
 [ ] effectv
-[ ] create templates for usage patterns
+[ ] create abstractions for usage patterns (eg: like @remap_image)
 [ ] see gimp for ideas
 [ ] kaleidoscopes
 [ ] FFTW
@@ -282,13 +287,11 @@ Input/Output
 [ ] a #store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
-[ ] Grid: text version of the format (?)
-[ ] Max, Gimp, GStreamer, ffmpeg, xine, mplayer, Hermes/PTC/TinyPTC,
-[ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC
+[ ] Grid: text version of the format
+[ ] Gimp, GStreamer, ffmpeg, xine, mplayer, GEM, PDP, OSC
 [ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] get subtitling of tv channels
-[ ] in-place editing (rw mode)
 [ ] add messages "load", "save" as open,bang,close combos. (?)
 [ ] use 1.8.0's IO#read(Integer,String)->String
 [ ] SDL: should support multiple windows
@@ -298,38 +301,28 @@ Input/Output
 [ ] shell object?
 [ ] #import, 'grid tcp': option: sudden vs gradual transmission through gridflow.
 [ ] HPGL, [unixtime]
-[ ] x11: support dual heads
 [ ] [parallel_port], [serial_port], [usb_mouse]
-[ ] videodev: messages "get contrast", "get brightness", etc...
-    which would output messages "contrast $1", "brightness $1", from outlet 1
-    also just "get" would do all possible get's at once.
 
 Format
 [ ] remaining number type support in formats
-[ ] x11: draw with optional arguments on part of picture to redraw
 [ ] all: possibly get rid of the "format" notion ?
-[ ] TAR, ZIP, CAT with seeking
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM, GIF support
 [ ] fork: pseudoformat for launching format handler as separate process
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
-[ ] videodev: choose number of buffered frames
-[ ] Unix-for-Pd (stdin inlet, stdout/stderr outlets)
 [ ] "open grid pipe" and such.
 [ ] TCP: non-blocking write
 [ ] TCP: buffer n grids
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
 [ ] AVI
 [ ] format grid: "headerless until 10" (text files)
-[ ] settable buffer size in videodev
 
 User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] peephole:
     [ ] works without x11 (for osx...)
-    [ ] appear _over_ pulldowns ? (and popups, even?)
     [ ] does it really work with something other than 3 channels ?
     [ ] add a popup menu that makes sense
 [ ] make ruby/tcl evaluator boxes retractable
@@ -355,22 +348,18 @@ gridflow, and ~/.gridflow_startup would be edited only by the user but
 because the startup is a ruby script so gridflow couldn't just do
 search-and-replace in there, because the option could be inside a "if"
 expression and such... at most, gridflow could _append_ text to
-.gridflow_startup, to be non-intrusive... hrm... i'm late. i should go now. 
+.gridflow_startup, to be non-intrusive...
 
 Feature Requests
 
 From: Dave Bergevin <dabergevin@eisa.com> 
   [ ] synchronized audio with the video when using mpeg1 & 2
   [ ] full screen mode (without the menu bars or frames)
-
 From: Alexandre Castonguay <acastonguay@artengine.ca>
-  [ ] support for tcp/ip connections to control pd objects (from a web 
-      interface)
-  [ ] server side pd to handle multiple incoming commands, audio + video 
-      streams
+  [ ] server side pd to handle multiple incoming commands, audio + video streams
   [ ] support for audio in the mpeg streams
 
-<matju> alx_away:
+<matju> alx:
  le tab completion ne donnerait pas seulement les noms possibles pour le
 prochain argument dans le objectbox; il donnerait aussi une description de
 l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
@@ -387,31 +376,8 @@ ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ?
 alx1->matju: détection de plusieurs personnes; détection avec deux caméras
 (?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots
 
-<alx1> matju: another feature for the summer : select file to load via a
-navigable menu as in 'file/open'
-<matju> alx1: this is not a feature i can put in gridflow. if you want it,
-then i can make one for pd, but it does not make sense to
-add it to gridflow itself. 
-
 > http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
-
-debugging:
-
-gdb `which ruby`
-----------------------
-break main
-run -rgridflow -e ';'
-set step-mode on
-break eval.c:5409
-cont
-add-symbol-file /usr/local/lib/ruby/site_ruby/1.6/i686-linux/gridflow.so
-rbreak ^_init
-
-stepi
-----------------------
-
-p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
 
 ... I am Jack's Overwritten Stack Pointer...
 
@@ -451,3 +417,11 @@ http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
 <MiS> and specify -helppath to add a path to help.  So selecting 'Help'
       in the pop-up on an abstraction will open a help fiel for that abstraction
 
+"Bangs in a geiger counter have a l*dt probability of occuring
+ in a dt time interval. Therefore the time till the next event
+ follows a Exp(l) law, for which:
+ f(t) = l*exp(-l*t)
+ F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
+ F^-1(p) = -log(1-p)/l
+ //return (uint64)(1000LL*ms*-log(1-drand()));"
+matju 2002
