@@ -72,15 +72,17 @@ int GridInlet_idle_verbose(GridInlet *$, const char *where) {
 	return 1;
 }
 
+void GridInlet_set_factor(GridInlet *$, int factor) {
+	assert(factor > 0);
+	assert(Dim_prod($->dim) % factor == 0);
+	$->factor = factor;
+}
+
 void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	int i;
 	int *v = NEW(int,ac);
 
-/*
-	if (!GridInlet_idle($)) {
-		then what do i do?
-	}
-*/
+/* if (!GridInlet_idle($)) { then what do i do? } */
 
 	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
 	$->dim = Dim_new(ac,v);
@@ -91,9 +93,7 @@ void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (!$->begin) {
 		whine("%s:i%d: no begin()",INFO($));
 	} else {
-		if (!$->begin((GridObject *)$->parent,$)) {
-			GridInlet_abort($);
-		}
+		if (!$->begin((GridObject *)$->parent,$)) { GridInlet_abort($); }
 	}
 }
 
@@ -122,18 +122,29 @@ void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
 		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
 			$->dex, Dim_prod($->dim));
 	}
-	if ($->end) {
-		$->end((GridObject *)$->parent,$);
-	}
+	if ($->end) { $->end((GridObject *)$->parent,$); }
 	FREE($->dim);
 	$->dex = 0;
 }
 
-void GridInlet_set_factor(GridInlet *$, int factor) {
-	assert(factor > 0);
-	assert(Dim_prod($->dim) % factor == 0);
-	$->factor = factor;
+void GridInlet_list(GridInlet *$, int ac, const fts_atom_t *at) {
+	int i;
+	Number *v = NEW(Number,ac);
+	int n = ac;
+	for (i=0; i<ac; i++) v[i] = GET(i,int,0);
+	$->dim = Dim_new(1,&n);
 
+	if (!$->begin) {
+		whine("%s:i%d: no begin()",INFO($));
+	} else {
+		if (!$->begin((GridObject *)$->parent,$)) { GridInlet_abort($); }
+	}
+
+	$->flow((GridObject *)$->parent,$,n,v);
+	if ($->end) { $->end((GridObject *)$->parent,$); }
+	FREE($->dim);
+	$->dex = 0;
+	FREE(v);
 }
 
 /* **************** GridOutlet ************************************ */
@@ -264,6 +275,10 @@ METHOD(GridObject,grid_end) {
 	GridInlet_end($->in[winlet],ac,at);
 }
 
+METHOD(GridObject,list) {
+	GridInlet_list($->in[winlet],ac,at);
+}
+
 void GridObject_delete(GridObject *$) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) FREE($->in[i]);
@@ -275,10 +290,12 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol, };
 	fts_type_t packet[] = { fts_t_symbol, fts_t_int, fts_t_ptr };
 	fts_type_t rien[] = { fts_t_symbol };
+	fts_type_t list[] = { fts_t_list };
 	MethodDecl methods[] = {
 		{winlet,sym_grid_begin,METHOD_PTR(GridObject,grid_begin),ARRAY(int_dims),-1},
 		{winlet,sym_grid_flow, METHOD_PTR(GridObject,grid_flow), ARRAY(packet),-1},
 		{winlet,sym_grid_end,  METHOD_PTR(GridObject,grid_end), ARRAY(rien),-1},
+		{winlet,fts_s_list,    METHOD_PTR(GridObject,list),ARRAY(list),-1},
 	};
 	int i;
 	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;
