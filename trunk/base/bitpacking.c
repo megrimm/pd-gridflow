@@ -150,8 +150,40 @@ static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 
 template <class T>
 static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+	Pt<int32> o32 = (Pt<int32>)out;
+	while (n>=4) {
+		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
+		o32[1] = (in[7]<<24) | (in[ 8]<<16) | (in[ 3]<<8) | in[4];
+		o32[2] = (in[9]<<24) | (in[10]<<16) | (in[11]<<8) | in[6];
+		o32+=3; in+=12;
+		n-=4;
+	}
+	out = (Pt<uint8>)o32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
+
+/*
+template <>
+static void pack3_888(BitPacking *self, int n, Pt<uint8> in, Pt<uint8> out) {
+	Pt<uint32> o32 = Pt<uint32>((uint32 *)out.p,n*3/4);
+	Pt<uint32> i32 = Pt<uint32>((uint32 *)in.p,n*3/4);
+	while (n>=4) {
+#define Z(w,i) ((word##w>>(i*8))&255)
+		uint32 word0 = i32[0];
+		uint32 word1 = i32[1];
+		uint32 word2 = i32[2];
+		o32[0] = (Z(1,1)<<24) | (Z(0,0)<<16) | (Z(0,1)<<8) | Z(0,2);
+		o32[1] = (Z(1,3)<<24) | (Z(2,0)<<16) | (Z(0,3)<<8) | Z(1,0);
+		o32[2] = (Z(2,1)<<24) | (Z(2,2)<<16) | (Z(2,3)<<8) | Z(1,2);
+		o32+=3; i32+=3;
+		n-=4;
+	}
+#undef Z
+	out = (Pt<uint8>)o32;
+	in  = (Pt<uint8>)i32;
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
+}
+*/
 
 template <class T>
 static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
@@ -245,12 +277,10 @@ Packer *packer, Unpacker *unpacker) {
 		}
 	}
 end:;
-/*
 	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
 	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
 	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
-*/
 }
 
 bool BitPacking::is_le() {
