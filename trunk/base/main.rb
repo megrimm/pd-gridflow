@@ -143,12 +143,14 @@ end
 # adding some functionality to that:
 class FObject
 	@broken_ok = false
+	@do_loadbangs = true
 	class<<self
 		# global
 		attr_accessor :broken_ok
 		# per-class
 		attr_reader :ninlets
 		attr_reader :noutlets
+		attr_accessor :do_loadbangs
 	end
 
 	alias :total_time :total_time_get
@@ -198,7 +200,7 @@ class FObject
 		r = qlass.new(*m)
 		GridFlow.post "%s",r.args if GridFlow.verbose
 		r.classname = qlassname
-		for x in ms do r.send_in(-2, *x) end
+		for x in ms do r.send_in(-2, *x) end if FObject.do_loadbangs
 		r
 	end
 	def inspect
