@@ -25,6 +25,7 @@ require "rbconfig"
 require "mkmf"
 require "ftools"
 include Config
+require "win32/process" if CONFIG["arch"] =~ /i386-mingw/
 LOG = File.open "./config.log", "w"
 
 $verbose=false
