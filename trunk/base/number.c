@@ -27,11 +27,14 @@
 #include <stdio.h>
 #include <limits.h>
 
+#ifdef PASS1
 NumberType number_type_table[] = {
 #define FOO(_sym_,_size_,_flags_,args...) NumberType( #_sym_, _size_, _flags_, args ),
 NUMBER_TYPES(FOO)
 #undef FOO
 };
+const long number_type_table_n = COUNT(number_type_table);
+#endif
 
 // those are bogus class-templates in the sense that you don't create
 // objects from those, you just call static functions. The same kind
@@ -114,6 +117,8 @@ template <class T> static void quick_put_map (int n, T *as, T b) {
 	UNROLL_8(FOO,n,as)
 #undef FOO
 }
+
+#ifdef PASS1
 void quick_put_map (int n, int16 *as, int16 b) {
 	if (n&1!=0 && (long)as&4!=0) { *as++=b; n--; }
 	quick_put_map (n>>1, (int32 *)as, (int32)(b<<16)+b);
@@ -125,6 +130,7 @@ void quick_put_map (int n, uint8 *as, uint8 b) {
 	quick_put_map (n>>2, (int32 *)as, c);
 	while (n&3!=0) *as++=b;
 }
+#endif
 template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
@@ -203,6 +209,7 @@ int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 	return c<(nt_smallest(0LL)/2?nt_smallest(0LL):c>nt_greatest(0LL)/2?nt_greatest(0LL):a-b; }
 */
 
+#ifdef PASS1
 DEF_OP(ignore, a, side==at_right, side==at_left)
 DEF_OP(put, b, side==at_left, side==at_right)
 DEF_OP(add, a+b, x==0, false)
@@ -222,6 +229,8 @@ DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a),
 //DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
 DEF_OP(rem, b==0?0:a%b, false, side==at_left&&x==0 || side==at_right&&x==1)
 DEF_OP(mer, a==0?0:b%a, false, side==at_left&&x==0 || side==at_right&&x==1)
+#endif
+#ifdef PASS2
 DEF_OP(gcd, gcd(a,b), x==0, x==1)
 DEF_OP(gcd2, gcd2(a,b), x==0, x==1) // should test those and pick one of the two
 DEF_OP(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
@@ -234,6 +243,8 @@ DEF_OP(sc_and, a ? b : a, side==at_left && x!=0, side==at_left && x==0)
 DEF_OP(sc_or,  a ? a : b, side==at_left && x==0, side==at_left && x!=0)
 DEF_OP(min, min(a,b), x==nt_greatest(&x), x==nt_smallest(&x))
 DEF_OP(max, max(a,b), x==nt_smallest(&x), x==nt_greatest(&x))
+#endif
+#ifdef PASS3
 DEF_OP(cmp, cmp(a,b), false, false)
 DEF_OP(eq,  a == b, false, false)
 DEF_OP(ne,  a != b, false, false)
@@ -258,8 +269,13 @@ DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), false, false)
 DEF_OP(sqrt, (T)(0+floor(sqrt(a))), false, false)
 DEF_OP(rand, a==0 ? 0 : random()%(int32)a, false, false)
 //DEF_OP(erf,"erf*", 0)
+#endif
 
-Numop op_table[] = {
+extern Numop      op_table1[], op_table2[], op_table3[];
+extern const long op_table1_n, op_table2_n, op_table3_n;
+
+#ifdef PASS1
+Numop op_table1[] = {
 	DECL_OP(ignore, "ignore", OP_ASSOC),
 	DECL_OP(put, "put", OP_ASSOC),
 	DECL_OP(add, "+", OP_ASSOC|OP_COMM), // "LINV=sub"
@@ -275,6 +291,11 @@ Numop op_table[] = {
 	DECL_OP_NOFLOAT(dom, "swap%", 0),
 	DECL_OP_NOFLOAT(rem, "rem", 0),
 	DECL_OP_NOFLOAT(mer, "swaprem", 0),
+};
+const long op_table1_n = COUNT(op_table1);
+#endif
+#ifdef PASS2
+Numop op_table2[] = {
 	DECL_OP_NOFLOAT(gcd, "gcd", OP_ASSOC|OP_COMM),
 	DECL_OP_NOFLOAT(gcd2, "gcd2", OP_ASSOC|OP_COMM),
 	DECL_OP_NOFLOAT(lcm, "lcm", OP_ASSOC|OP_COMM),
@@ -287,6 +308,11 @@ Numop op_table[] = {
 	DECL_OP_NOFOLD(sc_or, "||", 0),
 	DECL_OP(min, "min", OP_ASSOC|OP_COMM),
 	DECL_OP(max, "max", OP_ASSOC|OP_COMM),
+};
+const long op_table2_n = COUNT(op_table2);
+#endif
+#ifdef PASS3
+Numop op_table3[] = {
 	DECL_OP_NOFOLD(eq,  "==", OP_COMM),
 	DECL_OP_NOFOLD(ne,  "!=", OP_COMM),
 	DECL_OP_NOFOLD(gt,  ">", 0),
@@ -312,19 +338,23 @@ Numop op_table[] = {
 	DECL_OP_NOFOLD(rand,"rand", 0),
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
 };
-
-Ruby op_dict = Qnil;
-Ruby number_type_dict = Qnil;
+const long op_table3_n = COUNT(op_table3);
+#endif
 
 #define INIT_TABLE(_dict_,_table_) { \
-	rb_ivar_set(mGridFlow,rb_intern("@" #_dict_),_dict_=rb_hash_new()); \
-	for(int i=0; i<COUNT(_table_); i++) { \
+	_dict_ = IEVAL(mGridFlow,"@" #_dict_ " ||= {}"); \
+	for(int i=0; i<_table_##_n; i++) { \
 		_table_[i].sym = ID2SYM(rb_intern(_table_[i].name)); \
 		rb_hash_aset(_dict_,_table_[i].sym,PTR2FIX((_table_+i))); \
 	}}
 
+#ifdef PASS1
+Ruby op_dict = Qnil;
+Ruby number_type_dict = Qnil;
 void startup_number () {
-	INIT_TABLE(op_dict,op_table)
+	INIT_TABLE(op_dict,op_table1)
+	INIT_TABLE(op_dict,op_table2)
+	INIT_TABLE(op_dict,op_table3)
 	INIT_TABLE(number_type_dict,number_type_table)
 
 	for (int i=0; i<COUNT(number_type_table); i++) {
@@ -349,10 +379,8 @@ void startup_number () {
 
 	OVERRIDE_INT(ignore,map,quick_ign_map);
 	OVERRIDE_INT(ignore,zip,quick_ign_zip);
-#if 0
-	OVERRIDE_INT(put,map,quick_put_map);
-	OVERRIDE_INT(put,zip,quick_put_zip);
-	OVERRIDE_INT(%,map,quick_mod_map); // !@#$ does that make an improvement at all?
-#endif
+	//OVERRIDE_INT(put,map,quick_put_map);
+	//OVERRIDE_INT(put,zip,quick_put_zip);
+	//OVERRIDE_INT(%,map,quick_mod_map); // !@#$ does that make an improvement at all?
 }
-
+#endif
