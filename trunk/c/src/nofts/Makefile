@@ -9,6 +9,7 @@ ARCH=i686-linux
 # include $(JMAXDISTDIR)/Makefiles/Makefile.package
 
 LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
+LDSOFLAGS += -lefence
 
 ARCH_CFLAGS += -Wall -Wno-unused
 ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
