@@ -34,9 +34,9 @@ struct FormatMPEG3 : Format {
 METHOD(FormatMPEG3,seek) {
 	int frame = INT(argv[0]);
 	int result;
-	whine("attempting to seek frame # %d",frame);
+	gfpost("attempting to seek frame # %d",frame);
 	result = mpeg3_set_frame($->mpeg, frame, 0);
-	whine("seek result: %d", result);
+	gfpost("seek result: %d", result);
 }
 
 METHOD(FormatMPEG3,frame) {
