@@ -41,7 +41,6 @@
 const char *whine_header = "[whine] ";
 Dict *gf_object_set = 0;
 Dict *gf_timer_set = 0;
-Dict *gf_alloc_set = 0;
 Timer *gf_timer = 0;
 
 FILE *whine_f;
@@ -87,10 +86,20 @@ static void disable_signal_handlers (void) {
 }
 
 void showenv(const char *s) {
-	post("%s = %s\n", s, getenv(s));
+	whine("%s = %s\n", s, getenv(s));
 }
 
 void gf_timer_handler (Timer *foo, void *obj);
+
+void gridflow_ruby_init (void) {
+	whine("starting Ruby...");
+	ruby_init();
+	{
+		VALUE foo = rb_eval_string("VERSION");
+		whine("Ruby VERSION = %s",RSTRING(foo)->ptr);
+	}
+}
+
 void gridflow_module_init (void) {
 
 	disable_signal_handlers();
@@ -101,14 +110,16 @@ void gridflow_module_init (void) {
 	if (!whine_f) whine_f = fopen("/dev/null","w");
 #endif
 
-	post("Welcome to GridFlow " GF_VERSION "\n");
-	post("Compiled on: " GF_COMPILE_TIME "\n");
-	post("--- GridFlow startup: begin ---\n");
+	whine("Welcome to GridFlow " GF_VERSION);
+	whine("Compiled on: " GF_COMPILE_TIME);
+	whine("--- GridFlow startup: begin ---");
 
 	showenv("LD_LIBRARY_PATH");
 	showenv("LIBRARY_PATH");
 	showenv("PATH");
 	showenv("DISPLAY");
+
+	gridflow_ruby_init();
 
 	#define DEF_SYM(_sym_) \
 		sym_##_sym_ = Symbol_new(#_sym_);
@@ -117,11 +128,11 @@ void gridflow_module_init (void) {
 	DEF_SYM(grid_flow);
 	DEF_SYM(grid_flow2);
 	DEF_SYM(grid_end);
-
 	DEF_SYM(bang);
 	DEF_SYM(int);
 	DEF_SYM(list);
 
+	gf_alloc_set  = Dict_new(0,0);
 	gf_object_set = Dict_new(0,0);
 	gf_timer_set  = Dict_new(0,0);
 	gf_timer = Timer_new(gf_timer_handler, 0);
@@ -130,18 +141,16 @@ void gridflow_module_init (void) {
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
 
-	post("--- GridFlow startup: end ---\n");
-
 	gf_timer_handler(0,0); /* bootstrap the event loop */
 
-	gf_alloc_set  = Dict_new(0,0);
+	whine("--- GridFlow startup: end ---");
 }
 
 /* this is the entry point for all of the above */
 
 fts_module_t gridflow_module = {
 	"video",
-	"GridFlow: streamed n-dimensional arrays; video; etc.",
+	"GridFlow: n-dimensional array streaming, pictures, video, etc.",
 	gridflow_module_init, 0, 0};
 
 /* **************************************************************** */
@@ -193,92 +202,6 @@ void whine_time(const char *s) {
 	struct timeval t;
 	gettimeofday(&t,0);
 	whine("%s: %d.%06d\n",s,t.tv_sec,t.tv_usec);
-}
-
-/* to help find uninitialized values */
-void *qalloc(size_t n, const char *file, int line) {
-	long *data = (long *) qalloc2(n,file,line);
-	#ifndef NO_DEADBEEF
-	{
-		int i;
-		int nn = (int) n/4;
-		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
-	}
-	#endif
-	return data;	
-
-}
-
-typedef struct AllocTrace {
-	size_t n;
-	const char *file;
-	int line;
-} AllocTrace;
-
-void *qalloc2(size_t n, const char *file, int line) {
-	void *data = malloc(n);
-	assert(data);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
-		AllocTrace *al = (AllocTrace *) malloc(sizeof(AllocTrace));
-		al->n    = n   ;
-		al->file = file;
-		al->line = line;
-		Dict_put(gf_alloc_set,data,al);
-	}
-#endif
-	return data;
-}
-
-void *qrealloc(void *data, int n) {
-	void *data2 = realloc(data,n);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
-		void *a = Dict_get(gf_alloc_set,data);
-		Dict_del(gf_alloc_set,data);
-		Dict_put(gf_alloc_set,data2,a);
-	}
-#endif
-	return data2;
-}
-
-/* to help find dangling references */
-void qfree(void *data) {
-	assert(data);
-#ifdef MAKE_LEAK_DUMP
-	if (gf_alloc_set) {
-		void *a = Dict_get(gf_alloc_set,data);
-		if (a) free(a);
-		Dict_del(gf_alloc_set,data);
-	}
-#endif
-	{
-		int n=8;
-		data = realloc(data,n);
-#ifndef NO_DEADBEEF
-		{
-			long *data2 = (long *) data;
-			int i;
-			int nn = (int) n/4;
-			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
-		}
-#endif
-	}
-	free(data);
-}
-
-static void qdump$1(void *obj, void *k, void *v) {
-	AllocTrace *al = (AllocTrace *)v;
-	whine("warning: %d bytes leak allocated at file %s line %d",
-		al->n,al->file,al->line);
-}
-
-void qdump(void) {
-	whine("checking for memory leaks...");
-	Dict_each(gf_alloc_set,qdump$1,0);
-	if (Dict_size(gf_alloc_set)==0) {
-		whine("no leaks (yet)");
-	}
 }
 
 /* Key for method signature codes:

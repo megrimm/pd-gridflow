@@ -30,6 +30,99 @@
 #include <limits.h>
 
 /* **************************************************************** */
+/* Allocation */
+
+Dict *gf_alloc_set = 0;
+
+/* to help find uninitialized values */
+void *qalloc(size_t n, const char *file, int line) {
+	long *data = (long *) qalloc2(n,file,line);
+	#ifndef NO_DEADBEEF
+	{
+		int i;
+		int nn = (int) n/4;
+		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
+	}
+	#endif
+	return data;	
+
+}
+
+typedef struct AllocTrace {
+	size_t n;
+	const char *file;
+	int line;
+} AllocTrace;
+
+void *qalloc2(size_t n, const char *file, int line) {
+	void *data = malloc(n);
+	assert(data);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		AllocTrace *al = (AllocTrace *) malloc(sizeof(AllocTrace));
+		al->n    = n   ;
+		al->file = file;
+		al->line = line;
+		Dict_put(gf_alloc_set,data,al);
+	}
+#endif
+	return data;
+}
+
+void *qrealloc(void *data, int n) {
+	void *data2 = realloc(data,n);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		void *a = Dict_get(gf_alloc_set,data);
+		Dict_del(gf_alloc_set,data);
+		Dict_put(gf_alloc_set,data2,a);
+	}
+#endif
+	return data2;
+}
+
+/* to help find dangling references */
+void qfree(void *data) {
+	assert(data);
+#ifdef MAKE_LEAK_DUMP
+	if (gf_alloc_set) {
+		void *a = Dict_get(gf_alloc_set,data);
+		if (a) free(a);
+		Dict_del(gf_alloc_set,data);
+	}
+#endif
+	{
+		int n=8;
+		data = realloc(data,n);
+#ifndef NO_DEADBEEF
+		{
+			long *data2 = (long *) data;
+			int i;
+			int nn = (int) n/4;
+			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+		}
+#endif
+	}
+	free(data);
+}
+
+void post(const char *,...);
+
+static void qdump$1(void *obj, void *k, void *v) {
+	AllocTrace *al = (AllocTrace *)v;
+	post("warning: %d bytes leak allocated at file %s line %d",
+		al->n,al->file,al->line);
+}
+
+void qdump(void) {
+	post("checking for memory leaks...");
+	Dict_each(gf_alloc_set,qdump$1,0);
+	if (Dict_size(gf_alloc_set)==0) {
+		post("no leaks (yet)");
+	}
+}
+
+/* **************************************************************** */
 /* Object/Class/Method */
 
 Object *Object_new(Class *_class) {
