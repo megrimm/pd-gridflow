@@ -137,6 +137,10 @@
 #define NEW2(_type_,_count_) \
 	((_type_ *)malloc(sizeof(_type_)*(_count_)))
 
+/* ************************************ new macros for 0.2.2 */
+
+#define SYM(_sym_) fts_new_symbol(#_sym_)
+
 /* ************************************ junk */
 
 /*

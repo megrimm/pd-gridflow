@@ -136,12 +136,26 @@ METHOD(VideoInFile,size) {
 	}
 }
 
+METHOD(VideoInFile,option) {
+	fts_symbol_t sym = GET(0,symbol,SYM(foo));
+	int value = GET(1,int,42424242);
+
+	CHECK_FILE_OPEN
+	if ($->ff->option) {
+		$->ff->option($->ff,sym,value);
+	} else {
+		whine("this format has no options");
+	}
+}
+
 /* ---------------------------------------------------------------- */
 
 CLASS(VideoInFile) {
 	fts_type_t rien[]       = { fts_t_symbol };
 	fts_type_t open_args[]  = { fts_t_symbol, fts_t_symbol };
+	fts_type_t frame_args[] = { fts_t_symbol, fts_t_int };
 	fts_type_t size_args[]  = { fts_t_symbol, fts_t_int, fts_t_int };
+	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int };
 
 	MethodDecl methods[] = {
 		{-1,fts_s_init,  METHOD_PTR(VideoInFile,init),  ARRAY(rien),-1},
@@ -150,7 +164,9 @@ CLASS(VideoInFile) {
 		{ 0,sym_reset,   METHOD_PTR(VideoInFile,reset), ARRAY(rien),-1},
 		{ 0,sym_open,    METHOD_PTR(VideoInFile,open),  ARRAY(open_args),-1},
 		{ 0,sym_close,   METHOD_PTR(VideoInFile,close), 0,0,0},
-		{ 0,fts_new_symbol("size"),METHOD_PTR(VideoInFile,size),ARRAY(size_args),-1},
+		{ 0,SYM(size),   METHOD_PTR(VideoInFile,size),  ARRAY(size_args),-1},
+//		{ 0,SYM(frame),  METHOD_PTR(VideoInFile,frame), ARRAY(frame_args),-1},
+		{ 0,SYM(option), METHOD_PTR(VideoInFile,option),ARRAY(option_args),-1},
 	};
 
 	/* initialize the class */
