@@ -24,7 +24,8 @@
 
 GF_VERSION = "0.7.3"
 
-$use_rexml = true
+#$use_rexml = true
+$use_rexml = false
 
 if $use_rexml
 	# this is a pure ruby xml-parser
@@ -33,7 +34,7 @@ if $use_rexml
 	include REXML
 else
 	# this uses libexpat.so
-	equire "xmlparser"
+	require "xmlparser"
 end
 
 =begin todo
@@ -413,23 +414,28 @@ XNode.register("inlet","outlet") {}
 if $use_rexml
 	class GFDocParser
 		def initialize(file)
-			@sax = SAX2Parser.new(file)
+			@sax = SAX2Parser.new(File.open file)
 			@xml_lists = []
 			@stack = [[]]
 			@sax.listen(:start_element) {|a,b,c,d| startElement(b,d) }
 			@sax.listen(  :end_element) {|a,b,c|   endElement(b) }
+			#!@#$ what about character ?
 		end
 		def do_it; @sax.parse; end
 	end
 else
-	class GFDocParser < XMLParser
+	class GFDocParser
 		def initialize(file)
-			@file = file
-			super("ISO-8859-1")
+			@xml = XMLParser.new("ISO-8859-1")
+			foo=self; @xml.instance_eval { @gfdoc=foo }
+			def @xml.startElement(tag,attrs) @gfdoc.startElement(tag,attrs) end
+			def @xml.endElement(tag) @gfdoc.endElement(tag) end
+			def @xml.character(text) @gfdoc.character(text) end
+			@file = File.open file
 			@xml_lists = []
 			@stack = [[]]
 		end
-		def do_it; parse(file.readlines.join("\n"), true) end
+		def do_it; @xml.parse(@file.readlines.join("\n"), true) end
 	end
 end
 
@@ -517,7 +523,7 @@ XMLParserError = Exception if $use_rexml
 def read_one_page file
 	begin
 		STDERR.puts "reading #{file}"
-		parser = GFDocParser.new(File.open(file))
+		parser = GFDocParser.new(file)
 		parser.do_it
 		$nodes[file] = parser.stack[0][0]
 	rescue XMLParserError => e
