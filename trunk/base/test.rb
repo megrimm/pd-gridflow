@@ -383,7 +383,7 @@ def test_store
 	b = FObject["@store"]
 	c = FObject["@out x11"]
 	a.connect 0,b,1
-	a.send_in 0,"option cast uint8"
+	a.send_in 0,"cast uint8"
 	a.send_in 0
 	b.connect 0,c,0
 	d = FObject["@for {0 0} {256 256} {1 1}"]
@@ -427,7 +427,7 @@ def test_image command
 #	31.times {
 	3.times {
 		gin.send_in 0,"open #{command}"
-		gout.send_in 0,"option timelog 1"
+		gout.send_in 0,"timelog 1"
 		gin.send_in 0
 	}
 	FObject["@global"].send_in 0, "profiler_dump"
@@ -447,7 +447,7 @@ def test_ppm2
 	pb.connect 0,gout,0
 	ra.connect 0,pa,1
 	ra.send_in 0,"0 0"
-	gout.send_in 0,"option timelog 1"
+	gout.send_in 0,"timelog 1"
 	gin.send_in 0,"open ppm file #{$imdir}/teapot.ppm"
 #	gin.send_in 0,"open ppm file #{$imdir}/g001.ppm"
 	gin.send_in 0
@@ -475,7 +475,7 @@ def test_anim msgs
 	gin = FObject["@in"]
 	gout1 = FObject["@out x11"]
 	#gout1 = FObject["@out quicktime file test.mov"]
-	#gout1.send_in 0, :option, :codec, :jpeg
+	#gout1.send_in 0, :codec, :jpeg
 	fps = FObject["fps detailed"]
 	rpr = FObject["rubyprint"]
 	gout1.connect 0,fps,0
@@ -498,8 +498,8 @@ def test_anim msgs
 
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
 	msgs.each {|m| gin.send_in 0,m }
-	gin.send_in 0, "option cast uint8"
-#	gout.send_in 0,"option timelog 1"
+	gin.send_in 0, "cast uint8"
+#	gout.send_in 0,"timelog 1"
 	d=Time.new
 	frames=2000
 	frames.times {|n|
@@ -544,8 +544,8 @@ def test_tcp
 		$in_client = in1 = FObject["@in"]
 		out = FObject["@out x11"]
 		in1.connect 0,out,0
-		out.send_in 0,"option timelog 1"
-		out.send_in 0,"option autodraw 2"
+		out.send_in 0,"timelog 1"
+		out.send_in 0,"autodraw 2"
 		GridFlow.post "test: waiting 1 second"
 		sleep 1
 		p "HI"
@@ -572,7 +572,7 @@ def test_tcp
 		in1.send_in 0,"open ppm file #{$imdir}/r001.ppm"
 		in2.send_in 0,"open ppm file #{$imdir}/b001.ppm"
 		out.send_in 0,"open grid tcpserver #{$port}"
-		out.send_in 0,"option type uint8"
+		out.send_in 0,"type uint8"
 		test_tcp = GridFlow::FObject.new
 		def test_tcp._0_bang
 			# GridFlow.post "tick"
@@ -663,7 +663,7 @@ def test_formats
 	t1=[]
 	Images.each {|command|
 		gin.send_in 0,"open #{command}"
-		gin.send_in 0,"option cast int16"
+		gin.send_in 0,"cast int16"
 		# test for load, rewind, load
 #		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
 		gin.send_in 0
@@ -675,13 +675,13 @@ end
 
 def test_rewind
 	gin = FObject["@in videodev /dev/video1 noinit"]
-	gin.send_in 0, "option transfer read"
+	gin.send_in 0, "transfer read"
 	gout = FObject["@out ppm file /tmp/foo.ppm"]
 #	gout = FObject["@out x11"]
 	gin.connect 0,gout,0
 	loop {
 		gin.send_in 0
-		gout.send_in 0, "option rewind"
+		gout.send_in 0, "rewind"
 	}
 end
 
@@ -702,8 +702,8 @@ def test_formats_write
 #		["targa file", "#{$imdir}/teapot.tga"],
 #		["targa file", "#{$imdir}/tux.tga"],
 		["jpeg file", "#{$imdir}/ruby0216.jpg"],
-#		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian little"],
-#		["grid gzfile", "#{$imdir}/foo.grid.gz", "option endian big"],
+#		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian little"],
+#		["grid gzfile", "#{$imdir}/foo.grid.gz", "endian big"],
 	].each {|type,file,*rest|
 		a.send_in 0, "open #{type} #{file}"
 		b.send_in 0, "open #{type} /tmp/patate"
@@ -727,16 +727,16 @@ end
 def test_headerless
 	gout = FObject["@out"]
 	gout.send_in 0, "open grid file #{$imdir}/hello.txt"
-	gout.send_in 0, "option headerless"
-	gout.send_in 0, "option type uint8"
+	gout.send_in 0, "headerless"
+	gout.send_in 0, "type uint8"
 	gout.send_in 0, "104 101 108 108 111 32 119 111 114 108 100 33 10"
 	gout.send_in 0, "close"
 	gin = FObject["@in"]
 	pr = FObject["@print"]
 	gin.connect 0,pr,0
 	gin.send_in 0, "open grid file #{$imdir}/hello.txt"
-	gin.send_in 0, "option headerless 13"
-	gin.send_in 0, "option type uint8"
+	gin.send_in 0, "headerless 13"
+	gin.send_in 0, "type uint8"
 	gin.send_in 0
 end
 
@@ -757,7 +757,7 @@ def test_sound
 	o5.connect 0,out,0
 #	out.send_in 0,"open raw file /dev/dsp"
 	out.send_in 0,"open grid file /dev/dsp"
-	out.send_in 0,"option type int16"
+	out.send_in 0,"type int16"
 	x=0
 	loop {
 		o4.send_in 1, x
@@ -852,13 +852,13 @@ def test_aalib
 	filt.connect 0,sto,1
 	sto.connect 0,op,0
 	op.connect 0,gout,0
-	gout.send_in 0, :option, :autodraw, 0
+	gout.send_in 0, :autodraw, 0
 	GridFlow.verbose = false
 	task=proc{
 		gin.send_in 0
-		gout.send_in 0, :option, :dump
+		gout.send_in 0, :dump
 		sto.send_in 0
-		gout.send_in 0, :option, :draw
+		gout.send_in 0, :draw
 		$mainloop.timers.after(0.1,&task)
 	}
 	task[]
@@ -973,16 +973,16 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-test_anim ["open ppm file #{$imdir}/g001.ppm","option loop 0"]
+test_anim ["open ppm file #{$imdir}/g001.ppm","loop 0"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open jpeg file #{$imdir}/rgb.jpeg.cat"]
 #test_anim ["open quicktime file test.mov"]
 #test_anim ["open quicktime file #{$imdir}/rgb_uncompressed.mov"]
 #test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
 #test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
-#test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
-#test_anim ["open videodev /dev/video1 noinit","option transfer read"]
-#test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
+#test_anim ["open videodev /dev/video","channel 1","size 480 640"]
+#test_anim ["open videodev /dev/video1 noinit","transfer read"]
+#test_anim ["open videodev /dev/video","channel 1","size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
 #test_anim ["open quicktime file /home/matju/pics/domopers_hi.mov"]

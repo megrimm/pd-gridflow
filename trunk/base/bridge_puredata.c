@@ -32,6 +32,7 @@ and the 'anything' method translates the whole message to Ruby objects and
 tries to call a Ruby method of the proper name.
 */
 
+#define IS_BRIDGE
 #include "grid.h"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT

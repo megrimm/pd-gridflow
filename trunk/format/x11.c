@@ -41,6 +41,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 #include <X11/extensions/XShm.h>
 #endif
 
+\class FormatX11 < Format
 struct FormatX11 : Format {
 	template <class T> void frame_by_type (T bogus);
 /* at the Display/Screen level */
@@ -80,9 +81,14 @@ struct FormatX11 : Format {
 	void prepare_colormap();
 	void alarm();
 
-	DECL3(frame);
-	DECL3(close);
-	DECL3(option);
+	\decl void frame ();
+	\decl void close ();
+	\decl void out_size (int sy, int sx);
+	\decl void draw ();
+	\decl void autodraw_m (int autodraw);
+	\decl void setcursor (int shape);
+	\decl void hidecursor ();
+	\decl void verbose_m (int verbose);
 	DECL3(initialize);
 	GRINLET3(0);
 };
@@ -197,12 +203,12 @@ void FormatX11::alarm() {
 
 /* ---------------------------------------------------------------- */
 
-METHOD3(FormatX11,frame) {
+\def void frame () {
 	XGetSubImage(display, window,
 		0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
 	out[0]->begin(dim->dup(),
-		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1);
 	int bs=dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
@@ -212,7 +218,6 @@ METHOD3(FormatX11,frame) {
 		bit_packing->unpack(sx,b1,b2);
 		out[0]->send(bs,b2);
 	}
-	return Qnil;
 }
 
 /* ---------------------------------------------------------------- */
@@ -395,7 +400,7 @@ GRID_INLET(FormatX11,0) {
 	alarm();
 } GRID_END
 
-METHOD3(FormatX11,close) {
+\def void close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
 	if (bit_packing) delete bit_packing;
 	MainLoop_remove(this);
@@ -404,44 +409,42 @@ METHOD3(FormatX11,close) {
 	dealloc_image();
 	XCloseDisplay(display);
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
-METHOD3(FormatX11,option) {
-	VALUE sym = argv[0];
-	if (sym == SYM(out_size)) {
-		if (argc<3) RAISE("not enough args");
-		int sy = INT(argv[1]);
-		int sx = INT(argv[2]);
-		resize_window(sx,sy);
-	} else if (sym == SYM(draw)) {
-		int sy = dim->get(0);
-		int sx = dim->get(1);
-		show_section(0,0,sx,sy);
-	} else if (sym == SYM(autodraw)) {
-		if (argc<2) RAISE("not enough args");
-		int autodraw = INT(argv[1]);
-		if (autodraw<0 || autodraw>2)
-			RAISE("autodraw=%d is out of range",autodraw);
-		this->autodraw = autodraw;
-	} else if (sym == SYM(setcursor)) {
-		if (argc<2) RAISE("not enough args");
-		int shape = 2*(INT(argv[1])&63);
-		Cursor c = XCreateFontCursor(display,shape);
-		XDefineCursor(display,window,c);
-		XFlush(display);
-	} else if (sym == SYM(hidecursor)) {
-		Font font = XLoadFont(display,"fixed");
-		XColor color; /* bogus */
-		Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
-		XDefineCursor(display,window,c);
-		XFlush(display);
-	} else if (sym == SYM(verbose)) {
-		if (argc<2) RAISE("not enough args");
-		verbose = !! INT(argv[1]);
-	} else
-		rb_call_super(argc,argv);
-	return Qnil;
+\def void out_size (int sy, int sx) {
+	resize_window(sx,sy);
+}
+
+\def void draw () {
+	int sy = dim->get(0);
+	int sx = dim->get(1);
+	show_section(0,0,sx,sy);
+}
+
+\def void autodraw_m (int autodraw) {
+	if (autodraw<0 || autodraw>2)
+		RAISE("autodraw=%d is out of range",autodraw);
+	this->autodraw = autodraw;
+}
+
+\def void setcursor (int shape) {
+	if (argc<2) RAISE("not enough args");
+	shape = 2*(shape&63);
+	Cursor c = XCreateFontCursor(display,shape);
+	XDefineCursor(display,window,c);
+	XFlush(display);
+}
+
+\def void hidecursor () {
+	Font font = XLoadFont(display,"fixed");
+	XColor color; /* bogus */
+	Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
+	XDefineCursor(display,window,c);
+	XFlush(display);
+}
+
+\def void verbose_m (int verbose) {
+	this->verbose = !! verbose;
 }
 
 void FormatX11::prepare_colormap() {
@@ -626,11 +629,10 @@ METHOD3(FormatX11,initialize) {
 
 GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),
 DECL(FormatX11,initialize),
-DECL(FormatX11,frame),
-DECL(FormatX11,option),
-DECL(FormatX11,close))
-{
+\grdecl
+){
 	IEVAL(rself,"install 'FormatX11',1,1;"
 	"conf_format 6,'x11','X Window System Version 11.5'");
 }
 
+\end class FormatX11

@@ -34,6 +34,7 @@ typedef
 #endif
 AAAttr;
 
+\class FormatAALib < Format
 struct FormatAALib : Format {
 	aa_context *context;
 //	aa_hardwareparams *hparams;
@@ -41,9 +42,13 @@ struct FormatAALib : Format {
 	int autodraw; /* as for X11 */
 	bool raw_mode;
 
-	DECL3(option);
-	DECL3(close);
-	DECL3(initialize);
+	\decl void hidecursor ();
+	\decl void print (int y, int x, int a, Symbol text);
+	\decl void draw ();
+	\decl void close ();
+	\decl void autodraw_m (int autodraw);
+	\decl void dump ();
+	\decl void initialize (Symbol mode, Symbol target);
 	GRINLET3(0);
 };
 
@@ -93,70 +98,63 @@ GRID_INLET(FormatAALib,0) {
 	if (autodraw==1) aa_flush(context);
 } GRID_END
 
-METHOD3(FormatAALib,close) {
+\def void close () {
 	if (context) {
 		aa_close(context);
 		context=0;
 	}
-	return Qnil;
 }
 
-METHOD3(FormatAALib,option) {
-	VALUE sym = argv[0];
-	if (sym==SYM(hidecursor)) {
-		aa_hidemouse(context);
-	} else if (sym==SYM(print)) {
-		if (argc!=5 || TYPE(argv[4]) != T_SYMBOL) RAISE("boo");
-		int y = INT(argv[1]);
-		int x = INT(argv[2]);
-		int a = INT(argv[3]);
-		aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(argv[4]));
-		if (autodraw==1) aa_flush(context);
-	} else if (sym == SYM(draw)) {
-		aa_flush(context);
-	} else if (sym == SYM(autodraw)) {
-		int autodraw = INT(argv[1]);
-		if (autodraw<0 || autodraw>1)
-			RAISE("autodraw=%d is out of range",autodraw);
-		this->autodraw = autodraw;
-	} else if (sym == SYM(dump)) {
-		int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
-		out[0]->begin(new Dim(3,v));
-		for (int y=0; y<aa_scrheight(context); y++) {
-			for (int x=0; x<aa_scrwidth(context); x++) {
-				STACK_ARRAY(int32,data,2);
-				data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
-				data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
-				out[0]->send(2,data);
-			}
-		}		
-	} else
-		return rb_call_super(argc,argv);
-	return Qnil;
+\def void hidecursor () {
+	aa_hidemouse(context);
 }
 
-METHOD3(FormatAALib,initialize) {
+\def void print (int y, int x, int a, Symbol text) {
+	aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(text));
+	if (autodraw==1) aa_flush(context);
+}
+
+\def void draw () {
+	aa_flush(context);
+}
+
+\def void autodraw_m (int autodraw) {
+	if (autodraw<0 || autodraw>1)
+		RAISE("autodraw=%d is out of range",autodraw);
+	this->autodraw = autodraw;
+}
+
+\def void dump () {
+	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
+	out[0]->begin(new Dim(3,v));
+	for (int y=0; y<aa_scrheight(context); y++) {
+		for (int x=0; x<aa_scrwidth(context); x++) {
+			STACK_ARRAY(int32,data,2);
+			data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
+			data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
+			out[0]->send(2,data);
+		}
+	}		
+}
+
+/* !@#$ varargs missing here */
+\def void initialize (Symbol mode, Symbol target) {
 	rb_call_super(argc,argv);
-	for (int i=0; i<argc; i++) {
-		gfpost("aalib argv[%d]=%s",i,
-			rb_str_ptr(rb_funcall(argv[i],SI(inspect),0)));
-	}
-	argv++, argc--;
 	context = 0;
 	autodraw = 1;
-	if (argc<1) RAISE("wrong number of arguments");
-
-	int argc2=argc;
+	int argc2=0;
 	char *argv2[argc2];
+/*
 	for (int i=0; i<argc2; i++)
-		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
+		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i+1],SI(to_s),0)));
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc2; i++) free(argv2[i]);
+*/
 
 	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
-	Ruby driver_address = rb_hash_aref(drivers,argv[0]);
+	Ruby driver_address = rb_hash_aref(drivers,target);
 	if (driver_address==Qnil)
-		RAISE("unknown aalib driver '%s'",rb_sym_name(argv[0]));
+		RAISE("unknown aalib driver '%s'",rb_sym_name(target));
 	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
 	context = aa_init(driver,&aa_defparams,0);
 
@@ -164,15 +162,12 @@ METHOD3(FormatAALib,initialize) {
 	if (!context) RAISE("opening aalib didn't work");
 	int32 v[]={context->imgheight,context->imgwidth,1};
 	gfpost("aalib image size: %s",(new Dim(3,v))->to_s());
-	return Qnil;
 }
 
 GRCLASS(FormatAALib,
 LIST(GRINLET2(FormatAALib,0,4)),
-DECL(FormatAALib,initialize),
-DECL(FormatAALib,option),
-DECL(FormatAALib,close))
-{
+\grdecl
+){
 	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
 	const aa_driver * const *p = aa_drivers;
 	while (*p) {
@@ -185,3 +180,4 @@ DECL(FormatAALib,close))
 	"conf_format 2,'aalib','Ascii Art Library'");
 }
 
+\end class FormatAALib

@@ -243,45 +243,6 @@ static inline bool is_le() {
 void gfpost(const char *fmt, ...);
 
 /* **************************************************************** */
-
-static inline bool INTEGER_P(Ruby x) {
-	return FIXNUM_P(x) || TYPE(x)==T_BIGNUM;
-}
-
-static inline bool FLOAT_P(Ruby x) {
-	return TYPE(x)==T_FLOAT;
-}
-
-static inline long INT(Ruby x) {
-	if (INTEGER_P(x)) return NUM2INT(x);
-	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
-	RAISE("expected Integer or Float (got %s)",
-		rb_funcall(x,SI(inspect),0));
-}
-
-typedef Ruby (*RMethod)(...); /* !@#$ fishy */
-
-/* you shouldn't use MethodDecl directly */
-struct MethodDecl {
-	const char *selector;
-	RMethod method;
-};
-
-/* declare a method in GRCLASS() */
-#define DECL(_class_,_name_) \
-	{ #_name_,(RMethod) _class_##_##_name_##_wrap }
-
-/* declare a method inside a class{}; */
-#define DECL3(_name_) \
-	Ruby _name_(int argc, Ruby *argv);
-
-/* define a method body */
-#define METHOD3(_class_,_name_) \
-	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); return self->_name_(argc,argv); } \
-	Ruby _class_::_name_(int argc, Ruby *argv)
-
-/* **************************************************************** */
 /*
   hook into pointer manipulation.
   will help find memory corruption bugs.
@@ -363,11 +324,11 @@ public:
 	int operator-(Pt x) { return p-x.p; }
 
 #ifdef HAVE_DEBUG
-	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8	*)start,0); }
-	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16	*)start,0); }
-	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32	*)start,0); }
-	template <class U> Pt operator+(U x) { return Pt(p+x,n,start,0); }
-	template <class U> Pt operator-(U x) { return Pt(p-x,n,start,0); }
+	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8	*)start); }
+	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16	*)start); }
+	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32	*)start); }
+	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 #else
 	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,0); }
 	operator Pt<int16>() { return Pt<int16>((int16 *)p,0); }
@@ -395,6 +356,69 @@ template <class T> static void memswap (T *a, T *b, int n) {
 	COPY(a,b,n);
 	COPY(b,c,n);
 }
+
+/* **************************************************************** */
+/* my own little Ruby <-> C++ layer */
+
+struct Arg {
+	Ruby a;
+};
+
+struct ArgList {
+	int n;
+	Pt<Arg> v;
+};
+
+static inline bool INTEGER_P(Ruby x) {
+	return FIXNUM_P(x) || TYPE(x)==T_BIGNUM;
+}
+
+static inline bool FLOAT_P(Ruby x) {
+	return TYPE(x)==T_FLOAT;
+}
+
+static inline int32 INT(Ruby x) {
+	if (INTEGER_P(x)) return NUM2INT(x);
+	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
+	RAISE("expected Integer or Float (got %s)",
+		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
+}
+
+static int32 convert(Ruby x, int   *foo) { return INT(x); }
+static int32 convert(Ruby x, int32 *foo) { return INT(x); }
+
+typedef Ruby Symbol;
+typedef Ruby Array;
+typedef Ruby String;
+typedef Ruby Integer;
+static Ruby convert(Ruby x, Ruby *bogus) {
+	return x;
+}
+
+
+typedef Ruby (*RMethod)(...); /* !@#$ fishy */
+
+/* you shouldn't use MethodDecl directly */
+struct MethodDecl {
+	const char *selector;
+	RMethod method;
+};
+
+/* **************************************************************** */
+
+/* declare a method in GRCLASS() */
+#define DECL(_class_,_name_) \
+	{ #_name_,(RMethod) _class_##_##_name_##_wrap }
+
+/* declare a method inside a class{}; */
+#define DECL3(_name_) \
+	Ruby _name_(int argc, Ruby *argv);
+
+/* define a method body */
+#define METHOD3(_class_,_name_) \
+	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
+		DGS(_class_); return self->_name_(argc,argv); } \
+	Ruby _class_::_name_(int argc, Ruby *argv)
 
 /* **************************************************************** */
 
@@ -510,6 +534,7 @@ struct Unpacker {
 //	void (*as_float32)(BitPacking *self, int n, Pt<uint8> in, Pt<float32> out);
 };
 
+//\class BitPacking < Object
 struct BitPacking : Object {
 	Packer *packer;
 	Unpacker *unpacker;
@@ -524,14 +549,16 @@ struct BitPacking : Object {
 	void gfpost();
 	bool is_le();
 	bool eq(BitPacking *o);
-	DECL3(initialize);
+void initialize(int argc,Ruby*argv,Ruby foo1, Ruby foo2, Ruby foo3);//FCS
+String pack2(int argc, Ruby *argv,String ins, String outs=Qnil);//FCS
+String unpack2(int argc, Ruby *argv,String ins, String outs=Qnil);//FCS
 
 /* main entrances to Packers/Unpackers */
 	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
 	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
-	DECL3(pack2);
-	DECL3(unpack2);
+
 };
+//\end
 
 int high_bit(uint32 n);
 int low_bit(uint32 n);
@@ -556,7 +583,7 @@ void swap16 (int n, Pt<uint16> data);
 	MACRO( complex64, 64, NT_UNSUPPORTED) \
 	MACRO(complex128,128, NT_UNSUPPORTED)
 
-enum NumberTypeIndex {
+enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_type_i,
 NUMBER_TYPES(FOO)
 #undef FOO
@@ -564,7 +591,7 @@ NUMBER_TYPES(FOO)
 };
 
 #define NTI_MAKE(_type_) \
-inline NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { \
+inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 	return _type_##_type_i; }
 NTI_MAKE(uint8)
 NTI_MAKE(int16)
@@ -579,7 +606,7 @@ struct NumberType {
 	int flags;
 };
 
-NumberTypeIndex NumberTypeIndex_find (Ruby sym);
+NumberTypeE NumberTypeE_find (Ruby sym);
 
 #define TYPESWITCH(T,C,E) switch (T) { \
 	case uint8_type_i: C(uint8) break; \
@@ -666,6 +693,24 @@ extern Ruby number_type_dict; /* GridFlow.@number_type_dict={} */
 extern Ruby op1_dict; /* GridFlow.@op1_dict={} */
 extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
+static NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
+	return NumberTypeE_find(x);
+}
+
+#ifndef IS_BRIDGE
+static Operator1 *convert(Ruby x, Operator1 **bogus) {
+	Ruby s = rb_hash_aref(op1_dict,x);
+	if (s==Qnil) RAISE("expected one-input-operator");
+	return FIX2PTR(Operator1,s);
+}
+
+static Operator2 *convert(Ruby x, Operator2 **bogus) {
+	Ruby s = rb_hash_aref(op2_dict,x);
+	if (s==Qnil) RAISE("expected two-input-operator");
+	return FIX2PTR(Operator2,s);
+}
+#endif
+
 /* **************************************************************** */
 
 /* will RAISE with proper message if invalid */
@@ -678,7 +723,7 @@ struct Grid {
 	Grid *next;
 	DimConstraint dc;
 	Dim *dim;
-	NumberTypeIndex nt;
+	NumberTypeE nt;
 	void *data;
 
 	Grid() {
@@ -690,10 +735,24 @@ struct Grid {
 	}
 
 	void constrain(DimConstraint dc_) { dc=dc_; }
-	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
+	void init(Dim *dim, NumberTypeE nt=int32_type_i);
+	void init_clear(Dim *dim, NumberTypeE nt=int32_type_i);
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
+
+	void swallow (Grid *victim) {
+		if (dc) dc(victim->dim);
+		if (dim) delete dim;
+		if (data) delete[] (uint8 *)data;
+		dim = victim->dim;
+		nt = victim->nt;
+		data = victim->data;
+		victim->dim = 0;
+		victim->data = 0;
+		delete victim;
+	}
+
 	~Grid();
 #define DEFCAST(type) \
 	operator type *() { return (type *)data; } \
@@ -706,6 +765,13 @@ struct Grid {
 	inline bool is_empty() { return !dim; }
 	Dim *to_dim ();
 };
+
+static Grid *convert (Ruby r, Grid **bogus) {
+	if (!r) return 0;
+	Grid *foo = new Grid;
+	foo->init_from_ruby(r);
+	return foo;
+}
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
@@ -758,7 +824,7 @@ struct Grid {
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 GRID_INLET(_class_,_inlet_) { \
-_member_.init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+_member_.init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 GRID_FLOW { \
 COPY(&((Pt<T>)_member_)[in->dex], data, n); } \
 GRID_FINISH
@@ -776,7 +842,7 @@ GRID_FINISH
 			_member_.next = new Grid(); \
 			_member_.next->dc = _member_.dc; \
 		} \
-		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+		_member_.next->init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 	GRID_FLOW { \
 		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
 	GRID_FINISH
@@ -808,7 +874,7 @@ struct GridInlet {
 
 /* grid progress info */
 	Dim *dim;
-	NumberTypeIndex nt;
+	NumberTypeE nt;
 	int dex;
 
 /* grid receptor */
@@ -834,7 +900,7 @@ struct GridInlet {
 	void int_(  int argc, Ruby *argv);
 	void float_(int argc, Ruby *argv);
 	void grid(Grid *g);
-	bool supports_type(NumberTypeIndex nt);
+	bool supports_type(NumberTypeE nt);
 
 private:
 	template <class T>
@@ -881,7 +947,7 @@ struct GridOutlet {
 	int woutlet;
 
 /* those are set at every beginning of a transmission */
-	NumberTypeIndex nt;
+	NumberTypeE nt;
 	Dim *dim; /* dimensions of the grid being sent */
 	Grid buf; /* temporary buffer */
 	bool frozen; /* is the "begin" phase finished? */
@@ -899,7 +965,7 @@ struct GridOutlet {
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
 
-	void begin(Dim *dim, NumberTypeIndex nt=int32_type_i);
+	void begin(Dim *dim, NumberTypeE nt=int32_type_i);
 	void abort();
 
 	/* give: data must be dynamic. it should not be used by the caller
@@ -932,6 +998,7 @@ private:
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
 /* represents objects that have inlets/outlets */
+//\class FObject < Object
 struct FObject : Object {
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
@@ -948,17 +1015,19 @@ struct FObject : Object {
 	/* result should be printed immediately as the GC may discard it anytime */
 	const char *info();
 
-	DECL3(profiler_cumul_get);
-	DECL3(profiler_cumul_set);
+Ruby profiler_cumul_get(int argc, Ruby *argv); //FCS
+Ruby profiler_cumul_set(int argc, Ruby *argv,Ruby x);//FCS
 	DECL3(send_in);
 	DECL3(send_out);
-	DECL3(del);
+void del(int argc, Ruby *argv);//FCS
 };
+//\end class FObject
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
 #define MAX_OUTLETS 4
 
+//\class GridObject < FObject
 struct GridObject : FObject {
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
@@ -980,16 +1049,22 @@ struct GridObject : FObject {
 	/* for Formats */
 	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
 
-	DECL3(initialize);
-	DECL3(inlet_dim);
-	DECL3(inlet_nt);
-	DECL3(inlet_set_factor);
 	DECL3(method_missing);
-	DECL3(del);
-	DECL3(send_out_grid_begin);
-	DECL3(send_out_grid_flow);
-	DECL3(send_out_grid_abort);
+
+	DECL3(initialize);
+//void initialize(int argc, Ruby *argv);//FCS
+Array inlet_dim(int argc, Ruby *argv,int inln);//FCS
+Symbol inlet_nt(int argc, Ruby *argv,int inln);//FCS
+void inlet_set_factor(int argc, Ruby *argv,int inln, int factor);//FCS
+void del(int argc, Ruby *argv);//FCS
+
+void send_out_grid_begin(int argc, Ruby *argv,int outlet, Array
+ buf, NumberTypeE nt=int32_type_i);//FCS
+void send_out_grid_flow(int argc, Ruby *argv,int outlet, String
+ buf, NumberTypeE nt=int32_type_i);//FCS
+void send_out_grid_abort(int argc, Ruby *argv,int outlet);//FCS
 };
+//\end class GridObject
 
 /* **************************************************************** */
 

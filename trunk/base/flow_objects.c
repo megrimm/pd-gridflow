@@ -26,6 +26,12 @@
 #include <math.h>
 #include "grid.h"
 
+Operator2 *op2_add;
+Operator2 *op2_mul;
+Operator2 *op2_shl;
+Operator2 *op2_mod;
+Operator2 *op2_and;
+
 /* **************************************************************** */
 
 Operator1 *OP1(Ruby x) {
@@ -113,9 +119,10 @@ static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 
 /* **************************************************************** */
 
+\class GridCast < GridObject
 struct GridCast : GridObject {
-	NumberTypeIndex nt;
-	DECL3(initialize);
+	NumberTypeE nt;
+	\decl void initialize (NumberTypeE nt);
 	GRINLET3(0);
 };
 
@@ -126,16 +133,16 @@ GRID_INLET(GridCast,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridCast,initialize) {
+\def void initialize (NumberTypeE nt) {
 	rb_call_super(argc,argv);
-	if (argc!=1) RAISE("wrong number of args");
-	nt = NumberTypeIndex_find(argv[0]);
-	return Qnil;
+	this->nt = nt;
 }
 
 GRCLASS(GridCast,LIST(GRINLET4(GridCast,0,4)),
-	DECL(GridCast,initialize))
-{ IEVAL(rself,"install '@cast',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@cast',1,1"); }
+
+\end class GridCast
 
 /* **************************************************************** */
 /*
@@ -145,16 +152,18 @@ GRCLASS(GridCast,LIST(GRINLET4(GridCast,0,4)),
 
 /*{ ?,Dim[B] -> Dim[*Cs] }*/
 /* out0 nt to be specified explicitly */
+\class GridImport < GridObject
 struct GridImport : GridObject {
 	Grid dim_grid;
 	Dim *dim; /* size of grids to send */
-	NumberTypeIndex nt;
+	NumberTypeE nt;
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() { if (dim) delete dim; }
-	DECL3(initialize);
-	DECL3(_0_reset);
-	DECL3(_0_symbol);
-	DECL3(_1_per_message);
+
+	\decl void initialize(Ruby x, NumberTypeE nt=int32_type_i);
+	\decl void _0_reset();
+	\decl void _0_symbol(Symbol x);
+	\decl void _1_per_message();
 	GRINLET3(0);
 	GRINLET3(1);
 
@@ -182,46 +191,39 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	dim = dim_grid.to_dim();
 } GRID_END
 
-METHOD3(GridImport,_0_symbol) {
-	if (argc!=1 || !SYMBOL_P(argv[0])) RAISE("bad args");
+\def void _0_symbol(Symbol x) {
 	const char *name = rb_sym_name(argv[0]);
 	int32 v[] = { strlen(name) };
 	if (!dim) out[0]->begin(new Dim(1,v));
 	process(v[0],Pt<uint8>((uint8 *)name,v[0]));
-	return Qnil;
 }
 
-METHOD3(GridImport,_1_per_message) {
+\def void _1_per_message() {
 	dim_grid.del();
 	if (dim) delete dim;
 	dim = 0;
-	return Qnil;
 }
 
-METHOD3(GridImport,initialize) {
+\def void initialize(Ruby x, NumberTypeE nt) {
 	rb_call_super(argc,argv);
-	if (argc<1 || argc>2) RAISE("wrong number of args");
-	nt = argc==2 ? NumberTypeIndex_find(argv[1]) : int32_type_i;
+	this->nt = nt;
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid.init_from_ruby(argv[0]);
 		dim = dim_grid.to_dim();
 	} else {
 		dim = 0;
 	}
-	return Qnil;
 }
 
-METHOD3(GridImport,_0_reset) {
+\def void _0_reset() {
 	if (out[0]->is_busy()) out[0]->abort();
-	return Qnil;
 }
 
 GRCLASS(GridImport,LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
-	DECL(GridImport,initialize),
-	DECL(GridImport,_0_reset),
-	DECL(GridImport,_0_symbol),
-	DECL(GridImport,_1_per_message))
-{ IEVAL(rself,"install '@import',2,1"); }
+	\grdecl
+){ IEVAL(rself,"install '@import',2,1"); }
+
+\end class GridImport
 
 /* **************************************************************** */
 /*
@@ -298,10 +300,11 @@ GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 /* in0: integer nt */
 /* in1: whatever nt */
 /* out0: same nt as in1 */
+\class GridStore < GridObject
 struct GridStore : GridObject {
 	Grid r;
-	DECL3(initialize);
-	DECL3(_0_bang);
+	\decl void initialize (Grid *r=0);
+	\decl void _0_bang ();
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -312,14 +315,7 @@ struct GridStore : GridObject {
 */
 static void snap_backstore (Grid &r) {
 	if (r.next != &r) {
-		if (r.dim) delete r.dim;
-		if (r.data) delete[] (uint8 *)r.data;
-		r.dim = r.next->dim;
-		r.data = r.next->data;
-		r.nt = r.next->nt;
-		r.next->dim = 0;
-		r.next->data = 0;
-		delete r.next;
+		r.swallow(r.next);
 		r.next = &r;
 	}
 }
@@ -407,28 +403,29 @@ GRID_INLET(GridStore,0) {
 
 GRID_INPUT2(GridStore,1,r) {} GRID_END
 
-METHOD3(GridStore,initialize) {
+\def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	return Qnil;
+	if (r) this->r.swallow(r);
 }
 
-METHOD3(GridStore,_0_bang) {
+\def void _0_bang () {
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
-	return Qnil;
 }
 
 GRCLASS(GridStore,LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
-	DECL(GridStore,initialize),
-	DECL(GridStore,_0_bang))
-{ IEVAL(rself,"install '@store',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@store',2,1"); }
+
+\end class GridStore
 
 /* **************************************************************** */
 
 /*{ Dim[*As]<T> -> Dim[*As]<T> }*/
 
+\class GridOp1 < GridObject
 struct GridOp1 : GridObject {
 	Operator1 *op;
-	DECL3(initialize);
+	\decl void initialize (Operator1 *op);
 	GRINLET3(0);
 };
 
@@ -440,15 +437,16 @@ GRID_INLET(GridOp1,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridOp1,initialize) {
+\def void initialize (Operator1 *op) {
 	rb_call_super(argc,argv);
-	op = OP1(argv[0]);
-	return Qnil;
+	this->op = op;
 }
 
 GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0,6)),
-	DECL(GridOp1,initialize))
-{ IEVAL(rself,"install '@!',1,1"); }
+	\grdecl
+){ IEVAL(rself,"install '@!',1,1"); }
+
+\end class GridOp1
 
 /* **************************************************************** */
 /*
@@ -457,10 +455,11 @@ GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0,6)),
   single Ruby.
 */
 
+\class GridOp2 < GridObject
 struct GridOp2 : GridObject {
 	Operator2 *op;
 	Grid r;
-	DECL3(initialize);
+	\decl void initialize(Operator2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -499,22 +498,17 @@ GRID_INLET(GridOp2,0) {
 
 GRID_INPUT2(GridOp2,1,r) {} GRID_END
 
-METHOD3(GridOp2,initialize) {
+\def void initialize(Operator2 *op, Grid *r=0) {
 	rb_call_super(argc,argv);
-	op = OP2(argv[0]);
-	if (argc>2) RAISE("too many args");
-	if (argc<2) {
-		r.init(new Dim(0,0),int32_type_i);
-		((Pt<int32>)r)[0] = 0;
-	} else {
-		r.init_from_ruby(argv[1]);
-	}
-	return Qnil;
+	this->op = op;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 }
 
 GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
-	DECL(GridOp2,initialize))
-{ IEVAL(rself,"install '@',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@',2,1"); }
+
+\end class GridOp2
 
 /* **************************************************************** */
 /*
@@ -525,10 +519,11 @@ GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
 
 /*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
+\class GridFold < GridObject
 struct GridFold : GridObject {
 	Operator2 *op;
 	Grid r;
-	DECL3(initialize);
+	\decl void initialize (Operator2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -538,7 +533,8 @@ GRID_INLET(GridFold,0) {
 	SAME_TYPE(*in,r);
 	int an = in->dim->n;
 	int bn = r.dim->n;
-	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
+	if (an<=bn) RAISE("minimum 1 more dimension than the right hand "
+		"(%d vs %d)",an,bn);
 	int32 v[an-1];
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
@@ -565,23 +561,17 @@ GRID_INLET(GridFold,0) {
 
 GRID_INPUT(GridFold,1,r) {} GRID_END
 
-METHOD3(GridFold,initialize) {
+\def void initialize (Operator2 *op, Grid *r=0) {
 	rb_call_super(argc,argv);
-	if (argc<1) RAISE("not enough args");
-	op = OP2(argv[0]);
-	if (argc>2) RAISE("too many args");
-	if (argc<2) {
-		r.init(new Dim(0,0),int32_type_i);
-		((Pt<int32>)r)[0] = 0;
-	} else {
-		r.init_from_ruby(argv[1]);
-	}
-	return Qnil;
+	this->op = op;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 }
 
 GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
-	DECL(GridFold,initialize))
-{ IEVAL(rself,"install '@fold',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@fold',2,1"); }
+
+\end class GridFold
 
 /* **************************************************************** */
 /*
@@ -592,8 +582,9 @@ GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
 
 /*{ Dim[*As,*Bs]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
+\class GridScan < GridFold
 struct GridScan : GridFold {
-	DECL3(initialize);
+	\decl void initialize (Operator2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -626,22 +617,17 @@ GRID_INLET(GridScan,0) {
 
 GRID_INPUT(GridScan,1,r) {} GRID_END
 
-METHOD3(GridScan,initialize) {
+\def void initialize (Operator2 *op, Grid *r=0) {
 	rb_call_super(argc,argv);
-	op = OP2(argv[0]);
-	if (argc>2) RAISE("too many args");
-	if (argc<2) {
-		r.init(new Dim(0,0),int32_type_i);
-		((Pt<int32>)r)[0] = 0;
-	} else {
-		r.init_from_ruby(argv[1]);
-	}
-	return Qnil;
+	this->op = op;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 }
 
 GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
-	DECL(GridScan,initialize))
-{ IEVAL(rself,"install '@scan',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@scan',2,1"); }
+
+\end class GridScan
 
 /* **************************************************************** */
 /* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
@@ -655,13 +641,15 @@ GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
 /* transpose=true: */
 /*{ Dim[*As,C]<T>,Dim[*Bs,C]<T> -> Dim[*As,*Bs]<T> }*/
 
+\class GridInner < GridObject
 struct GridInner : GridObject {
 	bool transpose;
 	Operator2 *op_para;
 	Operator2 *op_fold;
 	int32 rint;
 	Grid r;
-	DECL3(initialize);
+
+	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
 
@@ -674,7 +662,8 @@ GRID_INLET(GridInner,0) {
 	Dim *a = in->dim;
 	Dim *b = r.dim;
 	if (!b) RAISE("right inlet has no grid");
-	if (a->n<1) RAISE("minimum 1 dimension");
+	if (a->n<1) RAISE("a: minimum 1 dimension");
+	if (b->n<1) RAISE("b: minimum 1 dimension");
 	int a_last = a->get(a->n-1);
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
@@ -734,45 +723,57 @@ GRID_INPUT(GridInner,2,r) {
 	process_right((T)0);
 } GRID_END
 
-METHOD3(GridInner,initialize) {
+\def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
 	rb_call_super(argc,argv);
-	r.constrain(expect_min_one_dim);
-	if (argc>4) RAISE("too many args");
-	op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
-	op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
-	rint = argc<3 ? 0 : INT(argv[2]);
-	if (argc==4) {
-		r.init_from_ruby(argv[3]);
+	this->op_para = op_para;
+	this->op_fold = op_fold;
+	this->rint = rint;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 #define FOO(T) process_right((T)0);
-		TYPESWITCH(r.nt,FOO,)
+		TYPESWITCH(this->r.nt,FOO,)
 #undef FOO
-	}
-	return Qnil;
 }
 
 GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
-	DECL(GridInner,initialize))
-{ IEVAL(rself,"install '@inner',3,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@inner',3,1"); }
+
+\end class GridInner
 
 /* **************************************************************** */
 
+\class GridInner2 < GridInner
 struct GridInner2 : GridInner {
 	GridInner2() { transpose=true; }
-	DECL3(initialize);
+	\decl void initialize (Operator2 *op_para=OP2(SYM(*)), Operator2 *op_fold=OP2(SYM(+)), int32 rint=0, Grid *r=0);
 };
 
+\def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
+	rb_call_super(argc,argv);
+	this->op_para = op_para;
+	this->op_fold = op_fold;
+	this->rint = rint;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
+#define FOO(T) process_right((T)0);
+		TYPESWITCH(this->r.nt,FOO,)
+#undef FOO
+}
+
 GRCLASS(GridInner2,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
-	DECL(GridInner,initialize))
-{ IEVAL(rself,"install '@inner2',3,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@inner2',3,1"); }
+
+\end class GridInner2
 
 /* **************************************************************** */
 
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
 
+\class GridOuter < GridObject
 struct GridOuter : GridObject {
 	Grid r;
 	Operator2 *op;
-	DECL3(initialize);
+	\decl void initialize (Operator2 *op, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -810,18 +811,17 @@ GRID_INLET(GridOuter,0) {
 
 GRID_INPUT(GridOuter,1,r) {} GRID_END
 
-METHOD3(GridOuter,initialize) {
+\def void initialize (Operator2 *op, Grid *r) {
 	rb_call_super(argc,argv);
-	op = OP2(argv[0]);
-	if (argc<1) RAISE("not enough args");
-	if (argc>2) RAISE("too many args");
-	if (argc==2) r.init_from_ruby(argv[1]);
-	return Qnil;
+	this->op = op;
+	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0));
 }
 
 GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
-	DECL(GridOuter,initialize))
-{ IEVAL(rself,"install '@outer',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@outer',2,1"); }
+
+\end class GridOuter
 
 /* **************************************************************** */
 /* the incoming grid is stored as "c" with a margin on the four sides
@@ -830,12 +830,21 @@ GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
 
 /*{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }*/
 
+static void expect_convolution_matrix (Dim *d) {
+	if (d->n != 2) RAISE("only exactly two dimensions allowed for now (got %d)",
+		d->n);
+	/* because odd * odd = odd */
+	if (d->prod()&1 == 0) RAISE("even number of elements");
+}
+
+\class GridConvolve < GridObject
 struct GridConvolve : GridObject {
 	Grid c,b;
 	Operator2 *op_para, *op_fold;
 	int32 rint;
 	int margx,margy; /* margins */
-	DECL3(initialize);
+	GridConvolve () { b.constrain(expect_convolution_matrix); }	
+	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, int32 rint=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -908,38 +917,32 @@ GRID_INLET(GridConvolve,0) {
 	c.del();
 } GRID_END
 
-static void expect_convolution_matrix (Dim *d) {
-	if (d->n != 2) RAISE("only exactly two dimensions allowed for now");
-	/* because odd * odd = odd */
-	if (d->prod()&1 == 0) RAISE("even number of elements");
-}
-
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-METHOD3(GridConvolve,initialize) {
+\def void initialize (Operator2 *op_para, Operator2 *op_fold, int32 rint, Grid *r) {
 	rb_call_super(argc,argv);
-	b.constrain(expect_convolution_matrix);
-	if (argc>4) RAISE("too many args");
-	op_para = OP2(argc<1 ? SYM(*) : argv[0]);
-	op_fold = OP2(argc<2 ? SYM(+) : argv[1]);
-	rint = argc<3 ? 0 : INT(argv[2]);
-	if (argc==4) b.init_from_ruby(argv[3]);
-	return Qnil;
+	this->op_para = op_para;
+	this->op_fold = op_fold;
+	this->rint = rint;
+	if (r) this->b.swallow(r);
 }
 
 GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4)),
-	DECL(GridConvolve,initialize))
-{ IEVAL(rself,"install '@convolve',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@convolve',2,1"); }
+
+\end class GridConvolve
 
 /* **************************************************************** */
 
+\class GridFor < GridObject
 struct GridFor : GridObject {
 	Grid from;
 	Grid to;
 	Grid step;
-	DECL3(initialize);
-	DECL3(_0_set);
-	DECL3(_0_bang);
+	\decl void initialize (Grid *from, Grid *to, Grid *step);
+	\decl void _0_set (Grid *r=0);
+	\decl void _0_bang ();
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
@@ -950,16 +953,14 @@ struct GridFor : GridObject {
   or
   { Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }*/
 
-METHOD3(GridFor,initialize) {
-	from.constrain(expect_max_one_dim);
-	to  .constrain(expect_max_one_dim);
-	step.constrain(expect_max_one_dim);
+\def void initialize (Grid *from, Grid *to, Grid *step) {
+	this->from.constrain(expect_max_one_dim);
+	this->to  .constrain(expect_max_one_dim);
+	this->step.constrain(expect_max_one_dim);
 	rb_call_super(argc,argv);
-	if (argc<3) RAISE("not enough arguments");
-	from.init_from_ruby(argv[0]);
-	to  .init_from_ruby(argv[1]);
-	step.init_from_ruby(argv[2]);
-	return Qnil;
+	this->from.swallow(from);
+	this->to  .swallow(to  );
+	this->step.swallow(step);
 }
 
 template <class T>
@@ -999,7 +1000,7 @@ void GridFor::trigger (T bogus) {
 	}
 }
 
-METHOD3(GridFor,_0_bang) {
+\def void _0_bang () {
 	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
 		RAISE("dimension mismatch");
 	if (from.nt != to.nt || to.nt != step.nt)
@@ -1007,12 +1008,10 @@ METHOD3(GridFor,_0_bang) {
 #define FOO(T) trigger((T)0);
 	TYPESWITCH_NOFLOAT(from.nt,FOO,);
 #undef FOO
-	return Qnil;
 }
 
-METHOD3(GridFor,_0_set) {
+\def void _0_set (Grid *r) {
 	from.init_from_ruby(argv[0]);
-	return Qnil;
 }
 
 GRID_INPUT(GridFor,2,step) {} GRID_END
@@ -1020,10 +1019,10 @@ GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
 GRCLASS(GridFor,LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFor,2,4)),
-	DECL(GridFor,initialize),
-	DECL(GridFor,_0_bang),
-	DECL(GridFor,_0_set))
-{ IEVAL(rself,"install '@for',3,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@for',3,1"); }
+
+\end class GridFor
 
 /* **************************************************************** */
 
@@ -1064,6 +1063,7 @@ GRCLASS(GridType,LIST(GRINLET4(GridType,0,0)))
 
 /*{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }*/
 
+\class GridRedim < GridObject
 struct GridRedim : GridObject {
 	Grid dim_grid;
 	Dim *dim;
@@ -1072,7 +1072,7 @@ struct GridRedim : GridObject {
 	~GridRedim() {
 		if (dim) delete dim;
 	}
-	DECL3(initialize);
+	\decl void initialize (Grid *d);
 	GRINLET3(0);
 	GRINLET3(1);
 };
@@ -1108,19 +1108,18 @@ GRID_INLET(GridRedim,0) {
 
 GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid.to_dim(); } GRID_END
 
-METHOD3(GridRedim,initialize) {
+\def void initialize (Grid *d) {
 	rb_call_super(argc,argv);
-	if (argc!=1) RAISE("wrong number of args");
-	Grid t;
-	t.init_from_ruby(argv[0]);
-	expect_dim_dim_list(t.dim);
-	dim = new Dim(t.dim->prod(),(int32 *)(Pt<int32>)t);
-	return Qnil;
+	dim_grid.swallow(d);
+	expect_dim_dim_list(dim_grid.dim);
+	dim = dim_grid.to_dim();
 }
 
 GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
-	DECL(GridRedim,initialize))
-{ IEVAL(rself,"install '@redim',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@redim',2,1"); }
+
+\end class GridRedim
 
 /* ---------------------------------------------------------------- */
 /* "@scale_by" does quick scaling of pictures by integer factors */
@@ -1128,18 +1127,19 @@ GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 /*!@#$ should support N channels */
 
+\class GridScaleBy < GridObject
 struct GridScaleBy : GridObject {
 	Grid scale; /* integer scale factor */
 	int scaley;
 	int scalex;
-	DECL3(initialize);
+	\decl void initialize (Grid *factor=0);
 	GRINLET3(0);
 	GRINLET3(1);
 	void prepare_scale_factor () {
 		scaley = ((Pt<int32>)scale)[0];
 		scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
-		if (scaley<1) scaley=1;
-		if (scalex<1) scalex=1;
+		if (scaley<1) scaley=2;
+		if (scalex<1) scalex=2;
 	}
 };
 
@@ -1193,38 +1193,40 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
-METHOD3(GridScaleBy,initialize) {
+\def void initialize (Grid *factor) {
 	scale.constrain(expect_scale_factor);
-	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	prepare_scale_factor();
 	rb_call_super(argc,argv);
-	return Qnil;
+	if (factor) scale.swallow(factor);
+	prepare_scale_factor();
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
-	DECL(GridScaleBy,initialize))
-{ IEVAL(rself,"install '@scale_by',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@scale_by',2,1"); }
+
+\end class GridScaleBy
 
 /* ---------------------------------------------------------------- */
 /* "@downscale_by" does quick downscaling of pictures by integer factors */
 
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
 
+\class GridDownscaleBy < GridObject
 struct GridDownscaleBy : GridObject {
 	Grid scale;
 	int scaley;
 	int scalex;
 	bool smoothly;
 	Grid temp;
-	DECL3(initialize);
+	\decl void initialize (Grid *factor=0, Symbol option=Qnil);
 	GRINLET3(0);
 	GRINLET3(1);
 	void prepare_scale_factor () {
 		scaley = ((Pt<int32>)scale)[0];
 		scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
-		if (scaley<1) scaley=1;
-		if (scalex<1) scalex=1;
+		if (scaley<1) scaley=2;
+		if (scalex<1) scalex=2;
 	}
 };
 
@@ -1282,31 +1284,29 @@ GRID_INLET(GridDownscaleBy,0) {
 
 GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
-METHOD3(GridDownscaleBy,initialize) {
+\def void initialize (Grid *factor, Symbol option) {
 	scale.constrain(expect_scale_factor);
-	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	scaley = ((Pt<int32>)scale)[0];
-	scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
-	if (scaley<1) scaley=1;
-	if (scalex<1) scalex=1;
-
-	smoothly = (argc>1 && argv[1]==SYM(smoothly));
 	rb_call_super(argc,argv);
-	return Qnil;
+	if (factor) scale.swallow(factor);
+	prepare_scale_factor();
+	smoothly = option==SYM(smoothly);
 }
 
 GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
-	DECL(GridDownscaleBy,initialize))
-{ IEVAL(rself,"install '@downscale_by',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@downscale_by',2,1"); }
+
+\end class GridDownscaleBy
 
 /* **************************************************************** */
 
+\class GridJoin < GridObject
 struct GridJoin : GridObject {
 	Grid r;
 	int which_dim;
 	GRINLET3(0);
 	GRINLET3(1);
-	DECL3(initialize);
+	\decl void initialize (int which_dim=-1, Grid *r=0);
 };
 
 GRID_INLET(GridJoin,0) {
@@ -1358,23 +1358,23 @@ GRID_INLET(GridJoin,0) {
 
 GRID_INPUT(GridJoin,1,r) {} GRID_END
 
-METHOD3(GridJoin,initialize) {
+\def void initialize (int which_dim, Grid *r) {
 	rb_call_super(argc,argv);
-	if (argc>2) RAISE("bad args");
-	which_dim = argc<1 ? -1 : INT(argv[0]);
-	if (argc>=2) r.init_from_ruby(argv[1]);
-	return Qnil;
+	this->which_dim = which_dim;
+	if (r) this->r.swallow(r);
 }
 
 GRCLASS(GridJoin,LIST(GRINLET4(GridJoin,0,4),GRINLET4(GridJoin,1,4)),
-	DECL(GridJoin,initialize))
-{ IEVAL(rself,"install '@join',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@join',2,1"); }
+
+\end class GridJoin
 
 /* **************************************************************** */
 
+\class GridGrade < GridObject
 struct GridGrade : GridObject {
 	GRINLET3(0);
-	DECL3(initialize);
 };
 
 template <class T>
@@ -1407,21 +1407,19 @@ GRID_INLET(GridGrade,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridGrade,initialize) {
-	rb_call_super(argc,argv);
-	return Qnil;
-}
-
 GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0,4)),
-	DECL(GridGrade,initialize))
-{ IEVAL(rself,"install '@grade',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@grade',1,1"); }
+
+\end class GridGrade
 
 /* **************************************************************** */
 
+\class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	int32 z;
 	GRINLET3(0);
-	DECL3(initialize);
+	\decl void initialize (int32 z=256);
 };
 
 GRID_INLET(GridPerspective,0) {
@@ -1444,26 +1442,25 @@ GRID_INLET(GridPerspective,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridPerspective,initialize) {
+\def void initialize (int32 z) {
 	rb_call_super(argc,argv);
-	z = argc>=1 ? INT(argv[0]) : 256;
-	return Qnil;
+	this->z = z;
 }
 
 GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0,4)),
-	DECL(GridPerspective,initialize))
-{ IEVAL(rself,"install '@perspective',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@perspective',1,1"); }
+
+\end class GridPerspective
 
 /* **************************************************************** */
 
+\class GridLayer < GridObject
 struct GridLayer : GridObject {
 	Grid r;
-	GridLayer() {
-		r.constrain(expect_rgb_picture);
-	}
+	GridLayer() { r.constrain(expect_rgb_picture); }
 	GRINLET3(0);
 	GRINLET3(1);
-	DECL3(initialize);
 };
 
 GRID_INLET(GridLayer,0) {
@@ -1488,20 +1485,17 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-METHOD3(GridLayer,initialize) {
-	rb_call_super(argc,argv);
-	return Qnil;
-}
-
 GRCLASS(GridLayer,LIST(GRINLET2(GridLayer,0,4),GRINLET2(GridLayer,1,4)),
-	DECL(GridLayer,initialize))
-{ IEVAL(rself,"install '@layer',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@layer',2,1"); }
+
+\end class GridLayer
 
 /* **************************************************************** */
 
+\class GridFinished < GridObject
 struct GridFinished : GridObject {
 	GRINLET3(0);
-	DECL3(initialize);
 };
 
 /* nt N/A */
@@ -1512,14 +1506,11 @@ GRID_INLET(GridFinished,0) {
 	send_out(COUNT(a),a);
 } GRID_END
 
-METHOD3(GridFinished,initialize) {
-	rb_call_super(argc,argv);
-	return Qnil;
-}
-
 GRCLASS(GridFinished,LIST(GRINLET4(GridFinished,0,0)),
-	DECL(GridFinished,initialize))
-{ IEVAL(rself,"install '@finished',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@finished',1,1"); }
+
+\end class GridFinished
 
 /* **************************************************************** */
 //template <class T>
@@ -1527,6 +1518,11 @@ struct Line {
 	int32 y1,x1,y2,x2,x,m,pad1,pad2;
 };
 
+static void expect_polygon (Dim *d) {
+	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
+}
+
+\class DrawPolygon < GridObject
 struct DrawPolygon : GridObject {
 	Operator2 *op;
 	Grid color;
@@ -1536,12 +1532,17 @@ struct DrawPolygon : GridObject {
 	int lines_stop;
 	Pt<int32> lines_current;
 	int lines_current_n;
-	DECL3(initialize);
+	DrawPolygon() {
+		color.constrain(expect_max_one_dim);
+		polygon.constrain(expect_polygon);
+	}
+	\decl void initialize (Operator2 *op, Grid *color=0, Grid *polygon=0);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
 
 	void init_lines();
+
 };
 
 void DrawPolygon::init_lines () {
@@ -1626,30 +1627,25 @@ GRID_INLET(DrawPolygon,0) {
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
-static void expect_polygon (Dim *d) {
-	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
-}
-
-METHOD3(DrawPolygon,initialize) {
-	color.constrain(expect_max_one_dim);
-	polygon.constrain(expect_polygon);
+\def void initialize (Operator2 *op, Grid *color, Grid *polygon) {
 	rb_call_super(argc,argv);
-	if (argc>=1) op = OP2(argv[0]);
-	if (argc>=2) color.init_from_ruby(argv[1]);
-	if (argc>=3) { polygon.init_from_ruby(argv[2]); init_lines(); }
-	return Qnil;
+	this->op = op;
+	if (color) this->color.swallow(color);
+	if (polygon) { this->color.swallow(polygon); init_lines(); }
 }
 
 GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
-	DECL(DrawPolygon,initialize))
-{ IEVAL(rself,"install '@draw_polygon',3,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@draw_polygon',3,1"); }
+
+\end class DrawPolygon
 
 /* **************************************************************** */
 
 /*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
 
+\class GridRGBtoHSV < GridObject
 struct GridRGBtoHSV : GridObject {
-	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1686,21 +1682,18 @@ GRID_INLET(GridRGBtoHSV,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridRGBtoHSV,initialize) {
-	rb_call_super(argc,argv);
-	return Qnil;
-}
-
 GRCLASS(GridRGBtoHSV,LIST(GRINLET2(GridRGBtoHSV,0,4)),
-	DECL(GridRGBtoHSV,initialize))
-{ IEVAL(rself,"install '@rgb_to_hsv',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@rgb_to_hsv',1,1"); }
+
+\end class GridRGBtoHSV
 
 /* **************************************************************** */
 
 /*{ Dim[*As,3]<T> -> Dim[*As,3]<T> }*/
 
+\class GridHSVtoRGB < GridObject
 struct GridHSVtoRGB : GridObject {
-	DECL3(initialize);
 	GRINLET3(0);
 };
 
@@ -1726,18 +1719,16 @@ GRID_INLET(GridHSVtoRGB,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(GridHSVtoRGB,initialize) {
-	rb_call_super(argc,argv);
-	return Qnil;
-}
-
 GRCLASS(GridHSVtoRGB,LIST(GRINLET2(GridHSVtoRGB,0,4)),
-	DECL(GridHSVtoRGB,initialize))
-{ IEVAL(rself,"install '@hsv_to_rgb',1,1"); }
+	\grdecl
+) { IEVAL(rself,"install '@hsv_to_rgb',1,1"); }
+
+\end class GridHSVtoRGB
 
 /* **************************************************************** */
 /* [rtmetro] */
 
+\class RtMetro < GridObject
 struct RtMetro : GridObject {
 	int ms; /* millisecond time interval */
 	bool on;
@@ -1747,10 +1738,10 @@ struct RtMetro : GridObject {
 
 	uint64 delay();
 
-	DECL3(initialize);
-	DECL3(_0_int);
-	DECL3(_1_int);
-	DECL3(del);
+	\decl void initialize (int ms, Symbol mode);
+	\decl void _0_int (int x);
+	\decl void _1_int (int x);
+	\decl void del ();
 
 	~RtMetro() {
 		if (on) {
@@ -1803,9 +1794,9 @@ static void RtMetro_alarm(Ruby rself) {
 	self->last = now;
 }
 
-METHOD3(RtMetro,_0_int) {
+\def void _0_int (int x) {
 	int oon = on;
-	on = !! FIX2INT(argv[0]);
+	on = !! x;
 	gfpost("on = %d",on);
 	if (oon && !on) {
 		gfpost("_0_int: deleting rtmetro alarm for self=%08x rself=%08x",
@@ -1817,47 +1808,48 @@ METHOD3(RtMetro,_0_int) {
 		MainLoop_add((void *)rself,(void(*)(void*))RtMetro_alarm);
 		next_time = RtMetro_now();
 	}
-	return Qnil;
 }
 
-METHOD3(RtMetro,_1_int) {
-	ms = FIX2INT(argv[0]);
+\def void _1_int (int x) {
+	ms = x;
 	gfpost("ms = %d",ms);
-	return Qnil;
 }
 
-METHOD3(RtMetro,initialize) {
+\def void initialize (int ms, Symbol mode) {
 	rb_call_super(argc,argv);
-	ms = FIX2INT(argv[0]);
+	this->ms = ms;
 	on = 0;
 	mode = 0;
 	if (argc>=2) {
-		if (argv[1]==SYM(equal)) mode=0;
-		else if (argv[1]==SYM(geiger)) mode=1;
+		if (mode==Qnil || mode==SYM(equal)) this->mode=0;
+		else if (mode==SYM(geiger)) this->mode=1;
 		else RAISE("this is not a known mode");
 	}		
 	gfpost("ms = %d",ms);
 	gfpost("on = %d",on);
 	gfpost("mode = %d",mode);
-	return Qnil;
 }
 
-METHOD3(RtMetro,del) {
+\def void del () {
 	gfpost("RtMetro#del");
 	rb_funcall(rself,SI(_0_int),1,INT2NUM(0));
-	return Qnil;
 }
 
 GRCLASS(RtMetro,LIST(),
-	DECL(RtMetro,_0_int),
-	DECL(RtMetro,_1_int),
-	DECL(RtMetro,initialize),
-	DECL(RtMetro,del))
-{ IEVAL(rself,"install 'rtmetro',2,1"); }
+	\grdecl
+) { IEVAL(rself,"install 'rtmetro',2,1"); }
+
+\end class RtMetro
 
 /* **************************************************************** */
 
 void startup_flow_objects () {
+	op2_add = OP2(SYM(+));
+	op2_mul = OP2(SYM(*));
+	op2_shl = OP2(SYM(<<));
+	op2_mod = OP2(SYM(%));
+	op2_and = OP2(SYM(&));
+
 	fclass_install(&ciGridCast);
 	fclass_install(&ciGridImport);
 	fclass_install(&ciGridExport);

@@ -215,34 +215,34 @@ static void gfpost(VideoMmap *self) {
 
 /* **************************************************************** */
 
+\class FormatVideoDev < Format
 struct FormatVideoDev : Format {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	Pt<uint8> image;
 	int pending_frames[2], next_frame;
-	int current_channel;
-	int current_tuner;
+	int current_channel, current_tuner;
 	bool use_mmap;
-
 	BitPacking *bit_packing;
 	Dim *dim;
 
+	FormatVideoDev () :	use_mmap(true), dim(0) {}
 	void frame_finished (Pt<uint8> buf);
 
-	DECL3(initialize);
-	DECL3(close);
-	DECL3(size);
-	DECL3(option);
-	DECL3(alloc_image);
-	DECL3(dealloc_image);
-	DECL3(frame);
-	DECL3(frame_ask);
-	DECL3(norm);
-	DECL3(tuner);
-	DECL3(channel);
-	DECL3(frequency);
-	DECL3(transfer);
-	DECL3(initialize2);
+	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
+	\decl void close ();
+	\decl void size (int sy, int sx);
+	\decl void option (Symbol sym, int value);
+	\decl void alloc_image ();
+	\decl void dealloc_image ();
+	\decl void frame ();
+	\decl void frame_ask ();
+	\decl void norm (int value);
+	\decl void tuner (int value);
+	\decl void channel (int value);
+	\decl void frequency (int value);
+	\decl void transfer (Symbol sym);
+	\decl void initialize2 ();
 	GRINLET3(0);
 };
 
@@ -266,13 +266,12 @@ struct FormatVideoDev : Format {
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
-METHOD3(FormatVideoDev,size) {
+\def void size (int sy, int sx) {
 	int fd = GETFD;
-	int32 v[] = {NUM2INT(argv[0]), NUM2INT(argv[1]), 3};
+	int32 v[] = {sy,sx,3};
 	VideoWindow grab_win;
 
 	/* bug here: won't flush the frame queue */
-
 	if (dim) delete dim;
 	dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
@@ -287,24 +286,22 @@ METHOD3(FormatVideoDev,size) {
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	gfpost(&grab_win);
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,dealloc_image) {
-	if (!image) return Qnil;
+\def void dealloc_image () {
+	if (!image) return;
 	if (!use_mmap) {
 		delete[] (uint8 *)image;
 	} else {
 		munmap(image, vmbuf.size);
 		image = Pt<uint8>();
 	}
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,alloc_image) {
+\def void alloc_image () {
 	if (!use_mmap) {
 		image = ARRAY_NEW(uint8,dim->prod(0,1)*bit_packing->bytes);
-		return Qnil;
+		return;
 	}
 	//RAISE("hello");
 	int fd = GETFD;
@@ -318,10 +315,9 @@ METHOD3(FormatVideoDev,alloc_image) {
 		image=Pt<uint8>();
 		RAISE("mmap: %s", strerror(errno));
 	}
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,frame_ask) {
+\def void frame_ask () {
 	int fd = GETFD;
 	pending_frames[0] = pending_frames[1];
 	vmmap.frame = pending_frames[1] = next_frame;
@@ -334,13 +330,12 @@ METHOD3(FormatVideoDev,frame_ask) {
 //	gfpost("driver gave us:");
 //	gfpost(&vmmap);
 	next_frame = (pending_frames[1]+1) % vmbuf.frames;
-	return Qnil;
 }
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	GridOutlet *o = out[0];
 	o->begin(dim->dup(),
-		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
@@ -370,7 +365,7 @@ static int read3(int fd, uint8 *image, int n) {
 	return n;
 }
 
-METHOD3(FormatVideoDev,frame) {
+\def void frame () {
 	if (!bit_packing) RAISE("no bit_packing");
 	if (!image) rb_funcall(rself,SI(alloc_image),0);
 	int fd = GETFD;
@@ -386,7 +381,7 @@ METHOD3(FormatVideoDev,frame) {
 		if (n==tot) frame_finished(image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
-		return Qnil;
+		return;
 	}
 	int finished_frame;
 	if (pending_frames[0] < 0) {
@@ -397,7 +392,6 @@ METHOD3(FormatVideoDev,frame) {
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
 	frame_finished(image+vmbuf.offsets[finished_frame]);
 	rb_funcall(rself,SI(frame_ask),0);
-	return Qnil;
 }
 
 GRID_INLET(FormatVideoDev,0) {
@@ -406,8 +400,7 @@ GRID_INLET(FormatVideoDev,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(FormatVideoDev,norm) {
-	int value = INT(argv[0]);
+\def void norm (int value) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner;
@@ -419,11 +412,9 @@ METHOD3(FormatVideoDev,norm) {
 		gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,tuner) {
-	int value = INT(argv[0]);
+\def void tuner (int value) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
@@ -431,11 +422,9 @@ METHOD3(FormatVideoDev,tuner) {
 	vtuner.mode = VIDEO_MODE_NTSC;
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,channel) {
-	int value = INT(argv[0]);
+\def void channel (int value) {
 	int fd = GETFD;
 	VideoChannel vchan;
 	vchan.channel = value;
@@ -444,19 +433,14 @@ METHOD3(FormatVideoDev,channel) {
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,frequency) {
-	int value = INT(argv[0]);
+\def void frequency (int value) {
 	int fd = GETFD;
 	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,transfer) {
-	VALUE sym = argv[0];
-	gfpost("transfer %s",rb_sym_name(argv[0]));
+\def void transfer (Symbol sym) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
@@ -466,55 +450,35 @@ METHOD3(FormatVideoDev,transfer) {
 		use_mmap = true;
 		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,option) {
+\def void option (Symbol sym, int value) {
 	int fd = GETFD;
-	VALUE sym = argv[0];
-	int value = argv[1];
-	gfpost("option %s %08x",rb_sym_name(sym),value);
-	if (sym == SYM(channel)) {
-		rb_funcall(rself,SI(channel),1,value);
-	} else if (sym == SYM(tuner)) {
-		rb_funcall(rself,SI(tuner),1,value);
-	} else if (sym == SYM(norm)) {
-		rb_funcall(rself,SI(norm),1,value);
-	} else if (sym == SYM(frequency)) {
-		rb_funcall(rself,SI(frequency),1,value);
-	} else if (sym == SYM(transfer)) {
-		rb_funcall(rself,SI(transfer),1,value);
-	} else if (sym == SYM(size)) {
-		rb_funcall(rself,SI(size),2,value,argv[2]);
-
+	if (0) {
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
 		VideoPicture vp; \
 		WIOCTL(fd, VIDIOCGPICT, &vp); \
 		vp._name_ = INT(value); \
-		WIOCTL(fd, VIDIOCSPICT, &vp); \
-
+		WIOCTL(fd, VIDIOCSPICT, &vp);
 	PICTURE_ATTR(brightness)
 	PICTURE_ATTR(hue)
 	PICTURE_ATTR(colour)
 	PICTURE_ATTR(contrast)
 	PICTURE_ATTR(whiteness)
-
 	} else {
 		rb_call_super(argc,argv);
 	}
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,close) {
+\def void close () {
 	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
 	EVAL("puts \"VideoDev#close: \"; p self; @stream.close if @stream");
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,initialize2) {
+\def void initialize2 () {
 	int fd = GETFD;
 	VideoCapability vcaps;
 	VideoPicture *gp = new VideoPicture;
@@ -556,23 +520,21 @@ METHOD3(FormatVideoDev,initialize2) {
 	}
 	rb_funcall(rself,SI(channel),1,INT2NUM(0));
 	rb_funcall(rself,SI(size),2,INT2NUM(0),INT2NUM(0));
-	return Qnil;
 }
 
-METHOD3(FormatVideoDev,initialize) {
+\def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
 	rb_call_super(argc,argv);
-	argv++, argc--;
 	pending_frames[0] = -1;
 	pending_frames[1] = -1;
 	image = Pt<uint8>();
-	use_mmap = true;
-	dim = 0;
-	if (argc<1) RAISE("usage: videodev <devicename>");
-	const char *filename = rb_sym_name(argv[0]);
-	VALUE file = rb_funcall(EVAL("File"),SI(open),2,
-		rb_str_new2(filename), rb_str_new2("r+"));
-	rb_ivar_set(rself,SI(@stream),file);
-	if (argc>1 && argv[1]==SYM(noinit)) {
+	IEVAL(rself,"STDERR.puts self.instance_variables.inspect");
+	IEVAL(rself,"STDERR.puts @stream.inspect");
+	rb_p(filename);
+	rb_ivar_set(rself,SI(@stream),
+		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
+	IEVAL(rself,"STDERR.puts self.instance_variables.inspect");
+	IEVAL(rself,"STDERR.puts @stream.inspect");
+	if (option==SYM(noinit)) {
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 		int32 v[]={288,352,3};
@@ -582,28 +544,15 @@ METHOD3(FormatVideoDev,initialize) {
 	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
-	return Qnil;
 }
 
 /* **************************************************************** */
 
 GRCLASS(FormatVideoDev,LIST(GRINLET2(FormatVideoDev,0,4)),
-DECL(FormatVideoDev,initialize),
-DECL(FormatVideoDev,initialize2),
-DECL(FormatVideoDev,alloc_image),
-DECL(FormatVideoDev,dealloc_image),
-DECL(FormatVideoDev,frame_ask),
-DECL(FormatVideoDev,size),
-DECL(FormatVideoDev,norm),
-DECL(FormatVideoDev,tuner),
-DECL(FormatVideoDev,channel),
-DECL(FormatVideoDev,frequency),
-DECL(FormatVideoDev,transfer),
-DECL(FormatVideoDev,frame),
-DECL(FormatVideoDev,option),
-DECL(FormatVideoDev,close))
-{
+\grdecl
+){
 	IEVAL(rself,"install 'FormatVideoDev',1,1;"
 	"conf_format 4,'videodev','Video4linux 1.x'");
 }
 
+\end class FormatVideoDev

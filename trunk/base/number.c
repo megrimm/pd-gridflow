@@ -219,7 +219,7 @@ bool BitPacking::is_le() {
 
 template <class T>
 void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
-	switch (NumberTypeIndex_type_of(*in)) {
+	switch (NumberTypeE_type_of(*in)) {
 	case uint8_type_i: packer->as_uint8(this,n,(Pt<uint8>)in,out); break;
 	case int16_type_i: packer->as_int16(this,n,(Pt<int16>)in,out); break;
 	case int32_type_i: packer->as_int32(this,n,(Pt<int32>)in,out); break;
@@ -229,7 +229,7 @@ void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
 
 template <class T>
 void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
-	switch (NumberTypeIndex_type_of(*out)) {
+	switch (NumberTypeE_type_of(*out)) {
 	case uint8_type_i: unpacker->as_uint8(this,n,in,(Pt<uint8>)out); break;
 	case int16_type_i: unpacker->as_int16(this,n,in,(Pt<int16>)out); break;
 	case int32_type_i: unpacker->as_int32(this,n,in,(Pt<int32>)out); break;

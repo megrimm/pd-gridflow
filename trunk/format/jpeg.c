@@ -33,6 +33,7 @@ extern "C" {
 #include <jpeglib.h>
 };
 
+\class FormatJPEG < Format
 struct FormatJPEG : Format {
 	BitPacking *bit_packing;
 	struct jpeg_compress_struct cjpeg;
@@ -40,9 +41,9 @@ struct FormatJPEG : Format {
 	struct jpeg_error_mgr jerr;
 	FILE *f;
 
-	DECL3(close);
-	DECL3(frame);
-	DECL3(initialize);
+	\decl void close ();
+	\decl Ruby frame ();
+	\decl void initialize (Symbol mode, Symbol source, String filename);
 	GRINLET3(0);
 };
 
@@ -76,7 +77,7 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_destroy_compress(&cjpeg);
 } GRID_END
 
-METHOD3(FormatJPEG,frame) {
+\def Ruby frame () {
 	GridOutlet *o = out[0];
 	if (feof(f)) return Qfalse;
 	djpeg.err = jpeg_std_error(&jerr);
@@ -86,7 +87,7 @@ METHOD3(FormatJPEG,frame) {
 	int sx = djpeg.image_width, sy = djpeg.image_height;
 	int32 v[] = { sy, sx, 3 };
 	o->begin(new Dim(3,v),
-		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*3];
 	uint8 *rows[1] = { row };
@@ -99,22 +100,19 @@ METHOD3(FormatJPEG,frame) {
 	return Qnil;
 }
 
-METHOD3(FormatJPEG,close) {
-	return Qnil;
+\def void close () {
 }
 
-METHOD3(FormatJPEG,initialize) {
+\def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
-	argv++, argc--;
-	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: jpeg file <filename>");
-	if (mode()!=SYM(in) && mode()!=SYM(out)) RAISE("AAARGH!");
-	rb_funcall(rself,SI(raw_open),3,mode(),argv[0],argv[1]);
+	if (source!=SYM(file)) RAISE("usage: jpeg file <filename>");
+	if (mode!=SYM(in) && mode!=SYM(out)) RAISE("AAARGH!");
+	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
 	OpenFile *foo;
 	GetOpenFile(rb_ivar_get(rself,SI(@stream)),foo);
 	f = foo->f;
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
-	return Qnil;
 }
 
 GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0,4)),
@@ -126,3 +124,4 @@ DECL(FormatJPEG,close)) {
 	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
 }
 
+\end class FormatJPEG

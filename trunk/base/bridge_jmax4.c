@@ -35,6 +35,7 @@
 #undef template
 #undef new
 
+#define IS_BRIDGE
 #include "grid.h"
 #include <ctype.h>
 #include <stdarg.h>
