@@ -100,37 +100,33 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 <tr><td></td><td></td><td> 
 <ul> 
 <li><b>1</b> :  
-	Pictures formerly identified as "samples" should be screenshots of the 
-	help files. The &amp;lt;sample&amp;gt; tag will be replaced by a &amp;lt;help&amp;gt; tag. 
+	Pictures identified as "&lt;help&gt;" should be screenshots of the 
+	help files. They shouldn't be screenshots of the template. 
 </li> 
 <li><b>2</b> :  
-	Pictures identified as help must be real help. The source code of 
-	a template doesn't count as help. 
-</li> 
-<li><b>3</b> :  
 	A Help file is a visual summary of what an object does. It should be 
 	interactive and allow the user to understand what the object does. 
 	Sample inputs are provided and sample results can be seen. 
 </li> 
-<li><b>4</b> :  
+<li><b>3</b> :  
 	All modifications to the documentation must be done in the XML. The 
 	HTML must be kept up-to-date by rerunning "make" in the "doc/" directory. 
 </li> 
-<li><b>5</b> :  
+<li><b>4</b> :  
 	Help-wise, Formats are considered objects. 
 	Operators are to be documented as part of [@] and [@!]. 
 </li> 
-<li><b>6</b> :  
+<li><b>5</b> :  
 	Images grabbed directly from a jMax window should be encoded in PNG. 
 	This includes "icons" (object boxes, message boxes, etc). If they are 
 	in JPEG, only change to PNG when the image has to change anyway. 
 	Distinguish "icons" from "thumbnails", the latter of which are <b>scaled-down</b> grabs, which should be encoded in JPEG. 
 </li> 
-<li><b>7</b> :  
+<li><b>6</b> :  
 	There are not help-thumbnails anymore in the reference manual 
 	because they were not helpful. 
 </li> 
-<li><b>8</b> :  
+<li><b>7</b> :  
 	Large images should be kept out of the release. The release itself must 
 	be small enough not to discourage us from doing releases and keeping 
 	them all. It also should be downloadable on a bad modem. =) 
