@@ -339,7 +339,6 @@ end
 #-------- fClasses for: math
 
 class GridComplexSq < FPatcher
-#  @fobjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
   @fobjects = ["@inner * + 0   {2 2 2 # 0 2 1 -1 1 0 1 1}","@fold * 1"]
   @wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
   def initialize() super end
@@ -1068,36 +1067,66 @@ class Peephole < GridFlow::FPatcher
 	@fobjects = ["@dim","@export_list","@downscale_by 1 smoothly","@out","@scale_by 1",
 	proc{Demux.new(2)}]
 	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
-	def initialize(*args)
+	def initialize(sy=32,sx=32,*args)
 		super
 		@fobjects[1].connect 0,self,2
-		GridFlow.post "Peephole#init: #{args.inspect}"
+		GridFlow.post "Peephole#initialize: #{sx} #{sy} #{args.inspect}"
 		@scale = 1
 		@down = false
-		@sy,@sx = 16,16 # size of the peephole widget
+		@sy,@sx = sy,sx # size of the peephole widget
 		@y,@x = 0,0     # topleft of the peephole widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 	end
+	def initialize2(*args)
+		GridFlow.post "Peephole#initialize2: #{args.inspect}"
+		return if GridFlow.bridge_name!="puredata"
+		@rsym = "peephole#{self.id}".intern
+		GridFlow.whatever :bind, self, @rsym.to_s
+	end
 	def pd_show(can)
-		@can=".x%x.c"%(can*4)
+		GridFlow.post "pd_show %d",can
+		a=GridFlow.whatever:getpos,self,can
+		GridFlow.post "getpos -> [%s]",a.inspect
+		@x,@y=a
+		@can=".x%x.c"%(can*4) if can
+		if not @open
+			can2=@can.gsub(/\.c$/,"")
+			GridFlow.whatever :gui, %{
+				pd \"#{@rsym} open [eval list [winfo id #{@can}]] 1;\n\";
+			}
+			@open=true
+		end
+		# round-trip to ensure this is done after the open
 		GridFlow.whatever :gui, %{
-			#{@can} create rectangle #{@x} #{@y} #{@sx} #{@sy} -fill #600040 -tags GF#{id}
+			pd \"#{@rsym} set_geometry #{@y} #{@x} #{@sy} #{@sx};\n\";
 		}
+		color = "#A07467"
+		GridFlow.whatever :gui, %{
+			#{@can} delete #{@rsym}
+			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} -fill #{color} -tags #{@rsym}
+		}
+		set_geometry_for_real_now
 	end
 	def pd_displace(can,x,y)
-		GridFlow.whatever :gui, "#{@can} move GF#{id} #{x} #{y}\n"
+		GridFlow.post "pd_displace %d %d %d",can,x,y
+		GridFlow.whatever :gui, "#{@can} move #{@rsym} #{x} #{y}\n"
 		@x+=x
 		@y+=y
+		pd_show(can)
 	end
 	def pd_getrect(can)
+		x,y=GridFlow.whatever :getpos,self,can
+	#	GridFlow.post "pd_getrect %d %d %d",can,x,y
+		if @x!=x or @y!=y then @x,@y=x,y end
 		#GridFlow.post "%d %d %d %d", @x, @y, @sx, @sy
-		[@x/2,@y/2,@x+@sx,@y+@sy]
+		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
 	end
 	def pd_vis(can,flag)
-		pd_show(can) if not @can
+		GridFlow.post "pd_vis"
+		pd_show(can) if flag!=0
 	end
 	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
+		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
 		return 0
 	end
 	def set_geometry_for_real_now
@@ -1116,22 +1145,28 @@ class Peephole < GridFlow::FPatcher
 			sy2 = @fy*@scale
 			sx2 = @fx*@scale
 		end
-		@fobjects[5].send_in 1, (if @down then 0 else 1 end)
-		@fobjects[3].send_in 0, :set_geometry,
-			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
+		begin
+			@fobjects[5].send_in 1, (if @down then 0 else 1 end)
+			x2=@y+(@sy-sy2)/2
+			y2=@x+(@sx-sx2)/2
+			@fobjects[3].send_in 0, :set_geometry,
+				x2, y2, sy2, sx2
+		rescue StandardError => e
+			GridFlow.post "peeperr: %s", e.inspect
+		end
+		GridFlow.post "set_geometry_for_real_now (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)",
+			@x,@y,@sx,@sy,@fx,@fy,sx2,sy2,x2,y2
 	end
 	def _0_open(wid,use_subwindow)
 		GridFlow.post "%s", [wid,use_subwindow].inspect
 		@use_subwindow = use_subwindow==0 ? false : true
+		#@fobjects[3].send_in 0, :open,:x11,:here
 		if @use_subwindow then
-			@fobjects[3].send_in 0, :open,:x11,:here,:embed, wid
-		else
-			@fobjects[3].send_in 0, :open,:x11,:here, wid
+			@fobjects[3].send_in 0, :open,:x11,:here,:embed_by_id,wid
 		end
 	end
 	def _0_set_geometry(y,x,sy,sx)
-		GridFlow.post "peephole \#0x%08x: inlet 0: set_geometry %d %d %d %d",
-			id,y,x,sy,sx
+		#GridFlow.post "_0_set_geometry %d %d %d %d",id,y,x,sy,sx
 		@sy,@sx = sy,sx
 		@y,@x = y,x
 		set_geometry_for_real_now
@@ -1163,11 +1198,11 @@ class Peephole < GridFlow::FPatcher
 	end
 
 	def method_missing(s,*a)
-		GridFlow.post "%s: %s", s.to_s, a.inspect
+		#GridFlow.post "%s: %s", s.to_s, a.inspect
 		super rescue NameError
 	end
 
-	install "peephole", 1, 1
+	install "#peephole", 1, 1
 end
 
 #-------- fClasses for: Hardware
