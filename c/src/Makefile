@@ -1,21 +1,6 @@
 # $Id$
 include ../../config.make
 
-ifeq ($(JMAX_VERSION),24)
-
-DISTDIR = ../../../../fts
-PACKAGEROOT = ..
-include $(DISTDIR)/Makefiles/Makefile.lib
-include Sources
-PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
-
-all: $(LIBDIR) $(OBJDIR)  $(PACKAGELIB)
-
-TOCLEAN = $(PACKAGELIB)
-include $(DISTDIR)/Makefiles/Makefile.lib.end
-MODULE_SOFLAGS += $(GRIDFLOW_LDSOFLAGS)
-
-else
 ifeq ($(JMAX_VERSION),25)
 
 DISTDIR = $(JMAXROOTDIR)/fts
@@ -34,9 +19,14 @@ OBJS1 = $(addprefix $(OBJDIR)/,$(subst .c,.o,$(SOURCES)))
 $(PACKAGELIB): $(OBJS1)
 	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
 
+else
+ifeq ($($JMAX_VERSION),30)
+
+# then i don't know (yet)
+
 else # JMAX_VERSION = none
+endif #30
 endif #25
-endif #24
 
 ### standalone stuff ####################################################
 
