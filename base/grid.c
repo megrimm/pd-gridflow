@@ -453,6 +453,15 @@ void GridObject_conf_class(VALUE $, int winlet) {
 	define_many_methods($,COUNT(methods),methods);
 }
 
+void GridObject_conf_class2(VALUE $, GridClass *grclass) {
+	int i;
+	define_many_methods($,grclass->methodsn,grclass->methods);
+	for (i=0; i<grclass->handlersn; i++) {
+		GridObject_conf_class($,grclass->handlers[i].winlet);
+	}
+}  
+
+
 /* **************** Stream **************************************** */
 
 Stream *Stream_open_file(const char *filename, int mode) {

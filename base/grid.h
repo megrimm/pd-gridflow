@@ -259,7 +259,7 @@ static inline bool is_le(void) {
 /* **************************************************************** */
 /* general purpose but Ruby/jMax specific */
 
-void whine(char *fmt, ...);
+void whine(const char *fmt, ...);
 void whine_time(const char *s);
 
 typedef struct MethodDecl {
