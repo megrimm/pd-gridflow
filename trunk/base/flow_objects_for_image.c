@@ -315,7 +315,7 @@ struct GridDownscaleBy : GridObject {
 GRID_INLET(GridDownscaleBy,0) {
 	Dim *a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
-	if (a->get(2)!=3) RAISE("3 chans please");
+	if (a->get(2)!=3 && a->get(2)!=4) RAISE("3 or 4 chans please");
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
@@ -332,6 +332,8 @@ GRID_INLET(GridDownscaleBy,0) {
 	if (smoothly) {
 		while (n>0) {
 			if (y%scaley==0) CLEAR(buf,rowsize2);
+			switch (in->dim->get(2)) {
+			case 3:
 			for (int i=0,p=0; p<rowsize2;) {
 				for (int j=0; j<scalex; j++,i+=3) {
 					buf[p+0]+=data[i+0];
@@ -339,6 +341,17 @@ GRID_INLET(GridDownscaleBy,0) {
 					buf[p+2]+=data[i+2];
 				}
 				p+=3;
+			}break;
+			case 4:
+			for (int i=0,p=0; p<rowsize2;) {
+				for (int j=0; j<scalex; j++,i+=3) {
+					buf[p+0]+=data[i+0];
+					buf[p+1]+=data[i+1];
+					buf[p+2]+=data[i+2];
+					buf[p+3]+=data[i+3];
+				}
+				p+=4;
+			}break;
 			}
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
@@ -352,10 +365,20 @@ GRID_INLET(GridDownscaleBy,0) {
 	} else {
 		for (; n>0; data+=rowsize, n-=rowsize,y++) {
 			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
+			switch(in->dim->get(2)) {
+			case 3:
 			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=3) {
 				buf[p+0]=data[i+0];
 				buf[p+1]=data[i+1];
 				buf[p+2]=data[i+2];
+			}break;
+			case 4:
+			for (int i=0,p=0; p<rowsize2; i+=xinc, p+=4) {
+				buf[p+0]=data[i+0];
+				buf[p+1]=data[i+1];
+				buf[p+2]=data[i+2];
+				buf[p+3]=data[i+3];
+			}break;
 			}
 			out[0]->send(rowsize2,buf);
 		}
@@ -570,6 +593,7 @@ struct DrawImage : GridObject {
 	\attr Grid position;
 	\attr bool alpha;
 	\attr bool tile;
+	int count;
 	
 	DrawImage() : alpha(false), tile(false) {
 		position.constrain(expect_position);
@@ -582,9 +606,56 @@ struct DrawImage : GridObject {
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
+
+	/* draw row # ry of right image in row buffer buf, starting at xs */
+	/* overflow on both sides has to be handled automatically by this method */
+	template <class T> void draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0);
 };
 
+#define COMPUTE_ALPHA(c,a) obuf[j+(c)] = ibuf[j+(c)] + (rbuf[a])*(obuf[j+(c)]-ibuf[j+(c)])/256;
+#define COMPUTE_ALPHA4(b) \
+	COMPUTE_ALPHA(b+0,b+3); \
+	COMPUTE_ALPHA(b+1,b+3); \
+	COMPUTE_ALPHA(b+2,b+3); \
+	obuf[b+3] = rbuf[b+3] + (255-rbuf[b+3])*(ibuf[j+b+3])/256;
+
+template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0) {
+	count++;
+//	fprintf(stderr,"draw_segment(0x%08lx,0x%08lx,%d,%d)\n",
+//		(long)(T*)obuf, (long)(T*)ibuf, ry, x0);
+	if (ry<0 || ry>=image.dim->get(0)) return; /* outside of image */
+	int sx = in[0]->dim->get(1), rsx = image.dim->get(1);
+	int sc = in[0]->dim->get(2), rsc = image.dim->get(2);
+	Pt<T> rbuf = ((Pt<T>)image) + ry*rsx*rsc;
+	//if (x0<0) return; // GAAAH
+	//if (x0+rsx>sx) return; // GAAAH
+	if (x0>sx || x0<=-rsx) return; /* outside of buffer */
+	int n=rsx;
+	if (x0+n>sx) n=sx-x0;
+	if (x0<0) { rbuf-=rsc*x0; n+=x0; x0=0; }
+	if (alpha && rsc!=sc) { // RGB by RGBA //!@#$ optimise
+		int j=sc*x0;
+		for (; n; n--, rbuf+=rsc, j+=sc) {
+			op->zip(sc,obuf+j,rbuf);
+			COMPUTE_ALPHA(0,3); COMPUTE_ALPHA(1,3); COMPUTE_ALPHA(2,3);
+		}
+	} else if (alpha && rsc==4 && sc==4) { // RGBA by RGBA
+		op->zip(n*rsc,obuf+x0*rsc,rbuf);
+		int j=sc*x0;
+		for (; n>=4; n-=4, rbuf+=16, j+=16) {
+			COMPUTE_ALPHA4(0);COMPUTE_ALPHA4(4);
+			COMPUTE_ALPHA4(8);COMPUTE_ALPHA4(12);
+		}
+		for (; n; n--, rbuf+=4, j+=4) {
+			COMPUTE_ALPHA4(0);
+		}
+	} else { // RGB by RGB, etc
+		op->zip(n*rsc,obuf+sc*x0,rbuf);
+	}
+}
+
 GRID_INLET(DrawImage,0) {
+	count=0;
 	NOTEMPTY(image);
 	NOTEMPTY(position);
 	SAME_TYPE(*in,image);
@@ -600,69 +671,35 @@ GRID_INLET(DrawImage,0) {
 	}
 	out[0]->begin(in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
+	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
+	fprintf(stderr,"rsy=%d rsx=%d sy=%d sx=%d py=%d px=%d\n",
+		rsy,rsx,sy,sx,py,px);
 } GRID_FLOW {
 	int y = in->dex/in->factor;
-	if (position.nt != int32_type_i) RAISE("position has to be in int32");
-	//!@#$ assumes int32 position
-	int py = ((int32*)position)[0], sy = image.dim->v[0];
-	int px = ((int32*)position)[1], sx = image.dim->v[1];
+	if (position.nt != int32_type_i) RAISE("position has to be int32");
+	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
+	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
 	for (; n; y++, n-=in->factor, data+=in->factor) {
-		int ty = div2(y-py,sy);
-		if (ty==0 || tile) {
+		int ty = div2(y-py,rsy);
+		//fprintf(stderr,"y=%d py=%d ty=%d\n",y,py,ty);
+		if (tile || ty==0) {
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
 			COPY(data2,data,in->factor);
-			int cn = image.dim->prod(2);
-			int xe;
-			for (int xs=tile ? (px%sx)-px : px; xs<in->dim->get(1); xs=xe) {
-				xe = min(in->dim->get(1),xs+sx);
-				xs = max(0,xs);
-				//fprintf(stderr,"xs=%d xe=%d in->dim[1]=%d\n",xs,xe,in->dim->get(1));
-				Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*mod(y-py,sy) + cn*(xs-px);
-////////////////////////////////
-			if (alpha && image.dim->get(2)!=in->dim->get(2)) {
-				// RGB by RGBA
-				//!@#$ optimise
-				int nn=xe-xs;
-#define COMPUTE_ALPHA(c,a) data2[j+(c)] = data[j+(c)] + (cd[a])*(data2[j+(c)]-data[j+(c)])/256;
-				for (; nn; nn--, cd+=cn) {
-					int j = (cn-1)*xs++;
-					op->zip(cn,data2+j,cd);
-					COMPUTE_ALPHA(0,3); COMPUTE_ALPHA(1,3); COMPUTE_ALPHA(2,3);
+			if (tile) {
+				for (int x=px-div2(px+rsx-1,rsx)*rsx; x<sx; x+=rsx) {
+					draw_segment(data2,data,mod(y-py,rsy),x);
 				}
-			} else if (alpha) {
-				// RGBA by RGBA
-				//!@#$ optimise
-				int nn=xe-xs;
-				op->zip(cn*nn,data2,cd);
-				int j = 0;
-#define COMPUTE_ALPHA4(b) \
-	COMPUTE_ALPHA(b+0,b+3); \
-	COMPUTE_ALPHA(b+1,b+3); \
-	COMPUTE_ALPHA(b+2,b+3); \
-	data2[b+3] = cd[3] + (255-cd[3])*(data[j+b+3])/256;
-				for (; nn>=4; nn-=4, cd+=cn<<2, j+=cn<<2) {
-					COMPUTE_ALPHA4(0);
-					COMPUTE_ALPHA4(4);
-					COMPUTE_ALPHA4(8);
-					COMPUTE_ALPHA4(12);
-				}
-				for (; nn; nn--, cd+=cn, j+=cn) {
-					COMPUTE_ALPHA4(0);
-				}
-#undef COMPUTE_ALPHA
 			} else {
-				// RGB by RGB, etc
-				op->zip(cn*(xe-xs),data2+cn*xs,cd);
+				draw_segment(data2,data,y-py,px);
 			}
-////////////////////////////////
-			if (!tile) break;
-			} //for ...
 			out[0]->give(in->factor,data2);
 		} else {
 			out[0]->send(in->factor,data);
 		}
 	}
 } GRID_FINISH {
+//	fprintf(stderr,"draw_segment count = %d\n",count);
 } GRID_END
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END
