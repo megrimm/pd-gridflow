@@ -281,7 +281,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 
 \def Ruby total_time_set (Ruby x) {
 	if (argc<1) RAISE("muh");
-	total_time = gf_num2ull(x);
+	total_time = TO(uint64,x);
 	return argv[0];
 }
 
