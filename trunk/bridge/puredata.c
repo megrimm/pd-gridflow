@@ -67,6 +67,8 @@ static bool is_in_ruby = false;
 struct BFObject : t_object {
 	int32 magic; /* paranoia */
 	Ruby rself;
+	int nin;  /* per object settings (not class) */
+	int nout; /* per object settings (not class) */
 	t_outlet **out;
 
 	void check_magic () {
@@ -194,8 +196,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	self->bself = fm->self;
 	self->bself->rself = rself;
 
-	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
-	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
+	int ninlets  = self->bself->nin = ninlets_of(rb_funcall(rself,SI(class),0));
+	int noutlets = self->bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
@@ -203,11 +205,11 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		p->inlet = i;
 		inlet_new(self->bself, &p->ob_pd, 0,0);
 	}
-
 	self->bself->out = new t_outlet*[noutlets];
 	for (int i=0; i<noutlets; i++) {
 		self->bself->out[i] = outlet_new(self->bself,&s_anything);
 	}
+	rb_funcall(rself,SI(initialize2),0);
 	return rself;
 }
 
@@ -434,7 +436,6 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 			Ruby qlassid =
 				rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
 			if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
-			//t_pd *o = pd_new(FIX2PTR(t_class,qlassid));
 			pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 			t_pd *o = pd_newest();
 			pd_bind(o,gensym(rb_str_ptr(argv[2])));
@@ -460,6 +461,34 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 		//wb->w_savefn       = bf_savefn;
 		//wb->w_propertiesfn = bf_propertiesfn;
 		class_setwidget(FIX2PTR(t_class,qlassid),wb);
+	} else if (argv[0] == SYM(addinlets)) {
+		if (argc!=3) RAISE("bad args");
+		FObject *self;
+		Data_Get_Struct(argv[1],FObject,self);
+		self->check_magic();
+		if (!self->bself) RAISE("there is no bself");
+		int n = INT(argv[2]);
+		for (int i=self->bself->nin; i<self->bself->nin+n; i++) {
+			BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
+			p->parent = self->bself;
+			p->inlet = i;
+			inlet_new(self->bself, &p->ob_pd, 0,0);
+		}
+		self->bself->nin+=n;
+	} else if (argv[0] == SYM(addoutlets)) {
+		if (argc!=3) RAISE("bad args");
+		FObject *self;
+		Data_Get_Struct(argv[1],FObject,self);
+		self->check_magic();
+		if (!self->bself) RAISE("there is no bself");
+		int n = INT(argv[2]);
+		t_outlet **oldouts = self->bself->out;
+		self->bself->out = new t_outlet*[self->bself->nout+n];
+		memcpy(self->bself->out,oldouts,self->bself->nout*sizeof(t_outlet*));
+		for (int i=self->bself->nout; i<self->bself->nout+n; i++) {
+			self->bself->out[i] = outlet_new(self->bself,&s_anything);
+		}
+		self->bself->nout+=n;
 	} else if (argv[0] == SYM(addtomenu)) {
 		if (argc!=2) RAISE("bad args");
 		Ruby name = rb_funcall(argv[1],SI(to_s),0);
