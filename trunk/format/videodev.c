@@ -306,7 +306,7 @@ METHOD3(FormatVideoDev,alloc_image) {
 		image = ARRAY_NEW(uint8,dim->prod(0,1)*bit_packing->bytes);
 		return Qnil;
 	}
-	RAISE("hello");
+	//RAISE("hello");
 	int fd = GETFD;
 	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
 	video_mbuf_gfpost(&vmbuf);
