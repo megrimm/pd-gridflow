@@ -275,7 +275,7 @@ GRID_INLET(GridStore,0) {
 
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r.dim->v+nc,nb-nc);
-	out[0]->begin(new Dim(nd,v));
+	out[0]->begin(new Dim(nd,v),r.nt);
 	if (nc>0) in->set_factor(nc);
 } GRID_FLOW {
 	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
