@@ -251,7 +251,7 @@ endif
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): bridge/puredata.c bridge/common.c base/grid.h $(CONF)
-	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
+	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) -Ibundled/pd \
 		$< -xnone -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
