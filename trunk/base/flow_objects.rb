@@ -791,6 +791,10 @@ end
 
 # bogus class for representing objects that have no recognized class.
 class Broken < FObject
+	def args
+		a=@args.dup
+		a[7,0] = " "+classname
+		a end
 	install "broken", 0, 0
 end
 
@@ -920,6 +924,28 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def initialize() super end
 		def _0_list(*a) send_out 0,:list,*a.reverse end
 		install "#{LPrefix}listreverse", 1, 1
+	end
+
+	class MessagePrepend < FObject
+		def initialize(*b) super; @b=b end
+		def _0_(*a) a[0,0]=@b; send_out 0, *a end
+		def _1_list(*b) @b=b end
+		def method_missing(sym,a)
+			m = /(_\d_)(.*)/.match sym.to_s or return super
+			send m[1].intern, m[2], *a
+		end
+		install "messageprepend", 2, 1
+	end
+
+	class MessageAppend < FObject
+		def initialize(*b) super; @b=b end
+		def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
+		def _1_list(*b) @b=b end
+		def method_missing(sym,a)
+			m = /(_\d_)(.*)/.match sym.to_s or return super
+			send m[1].intern, m[2], *a
+		end
+		install "messageappend", 2, 1
 	end
 
 unless GridFlow.bridge_name =~ /jmax/
