@@ -76,10 +76,14 @@ struct FormatQuickTime : Format {
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
-	STACK_ARRAY(uint8,b2,bs);
-	for(int y=0; y<sy; y++) {
-		bit_packing->unpack(sx,buf+bytes*sx*y,b2);
-		o->send(bs,b2);
+	if (1 /* && BG_RGB888 color model */) {
+		o->send(bytes*sx*sy,buf);
+	} else {
+		STACK_ARRAY(uint8,b2,bs);
+		for(int y=0; y<sy; y++) {
+			bit_packing->unpack(sx,buf+bytes*sx*y,b2);
+			o->send(bs,b2);
+		}
 	}
 	delete[] (uint8 *)buf;
 	return INT2NUM(nframe);
@@ -139,22 +143,23 @@ GRID_INLET(FormatQuickTime,0) {
 /* libquicktime may be nice, but it won't take a filehandle, only filename */
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
-	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
+	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
 	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	if (mode==SYM(in)) {
+		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
+			quicktime_video_compressor(anim,track),
+			quicktime_video_height(anim,track),
+			quicktime_video_width(anim,track),
+			quicktime_video_depth(anim,track),
+			quicktime_frame_rate(anim,track));
 		if (!quicktime_supported_video(anim,track))
-			RAISE("quicktime: unsupported codec");
-		int depth = quicktime_video_depth(anim,track);
-		gfpost("quicktime_video_depth = %d",depth);
-		depth = 3*8;
-		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
-		bit_packing = new BitPacking(is_le(),depth/8,3,masks);
-	} else if (mode==SYM(out)) {
-		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
-		bit_packing = new BitPacking(is_le(),3,3,masks);
+			RAISE("quicktime: unsupported codec: %s",
+			      quicktime_video_compressor(anim,track));
 	}
+	uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
+	bit_packing = new BitPacking(is_le(),3,3,masks);
 }
 
 GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
