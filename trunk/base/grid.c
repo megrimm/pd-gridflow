@@ -140,7 +140,7 @@ bool GridInlet::is_busy_verbose(const char *where) {
 void GridInlet::set_factor(int factor) {
 	assert(dim);
 	assert(factor > 0);
-	assert(dim->prod() % factor == 0);
+	if (dim->prod() % factor) RAISE("set_factor: expecting divisor");
 	this->factor = factor;
 	if (buf) {delete[] (Number *)buf; buf=Pt<Number>();}
 	if (factor > 1) {

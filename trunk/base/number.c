@@ -103,9 +103,32 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 	return out;
 }
 
+#define LOOP_UNPACK(_reader_) \
+	while (n--) { int bytes=0; uint32 temp=0; _reader_; \
+		for (int i=0; i<$->size; i++) { \
+			uint32 t=temp&$->mask[i]; *out++ = (t<<(7-hb[i]))|(t>>(hb[i]-7));} \
+	}
+
+//			*out++ = ((temp & $->mask[i]) << 7) >> hb[i];
+
+static Pt<Number> default_unpack(BitPacking *$, int n, Pt</*const*/ uint8> in,
+Pt<Number> out) {
+	int hb[4];
+	for (int i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
+
+	if (is_le()) {
+		/* smallest byte first */
+		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
+	} else {
+		/* biggest byte first */
+		LOOP_UNPACK(bytes=$->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
+	}
+	return out;
+}
+
 /* **************************************************************** */
 
-static Pt<uint8> pack_5652(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static Pt<uint8> pack2_565(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const int mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
@@ -113,7 +136,7 @@ static Pt<uint8> pack_5652(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	return out;
 }
 
-static Pt<uint8> pack_8883(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static Pt<uint8> pack3_888(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 	return out;
 }
@@ -123,9 +146,9 @@ uint32 bitpacking_masks[][4] = {
 	{0x00ff0000,0x0000ff00,0x000000ff,0},
 };
 
-BitPacking builtin_bitpacks[] = {
-	BitPacking(2, 2, 3, bitpacking_masks[0], pack_5652),
-	BitPacking(1, 3, 3, bitpacking_masks[1], pack_8883),
+static BitPacking builtin_bitpackers[] = {
+	BitPacking(2, 2, 3, bitpacking_masks[0], pack2_565, default_unpack),
+	BitPacking(1, 3, 3, bitpacking_masks[1], pack3_888, default_unpack),
 };
 
 /* **************************************************************** */
@@ -142,22 +165,25 @@ bool BitPacking::eq(BitPacking *o) {
 }
 
 BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
-Packer packer) {
+Packer packer, Unpacker unpacker) {
 	this->endian = endian;
 	this->bytes = bytes;
 	this->size = size;
 	for (int i=0; i<size; i++) this->mask[i] = mask[i];
 	if (packer) {
 		this->packer = packer;
+		this->unpacker = unpacker;
 		return;
 	}
 	this->packer = default_pack;
+	this->unpacker = default_unpack;
 
-	for (int i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
-		BitPacking *bp = builtin_bitpacks+i;
+	for (int i=0; i<(int)(sizeof(builtin_bitpackers)/sizeof(BitPacking)); i++) {
+		BitPacking *bp = builtin_bitpackers+i;
 		if (this->eq(bp)) {
 			this->packer = bp->packer;
-			::gfpost("Bitpacking: will be using special packer (#%d)",i);
+			this->unpacker = bp->unpacker;
+			//::gfpost("Bitpacking: will be using special packer (#%d)",i);
 		}
 	}
 }
@@ -175,30 +201,12 @@ bool BitPacking::is_le() {
 	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-Pt<uint8> BitPacking::pack(int n, Pt<Number> data, Pt<uint8> target) {
-	return packer(this,n,data,target);
+Pt<uint8> BitPacking::pack(int n, Pt<Number> in, Pt<uint8> out) {
+	return packer(this,n,in,out);
 }
 
-#define LOOP_UNPACK(_reader_) \
-	while (n--) { \
-		int bytes=0, temp=0; \
-		_reader_; \
-		for (int i=0; i<size; i++) \
-			*out++ = ((temp & mask[i]) << 7) >> hb[i]; \
-	}
-
 Pt<Number> BitPacking::unpack(int n, Pt<uint8> in, Pt<Number> out) {
-	int hb[4];
-	for (int i=0; i<size; i++) hb[i] = high_bit(mask[i]);
-
-	if (is_le()) {
-		/* smallest byte first */
-		LOOP_UNPACK(while(this->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
-	} else {
-		/* biggest byte first */
-		LOOP_UNPACK(bytes=this->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
-	}
-	return out;
+	return unpacker(this,n,in,out);
 }
 
 /* this could be faster (use asm) */
@@ -255,6 +263,7 @@ METHOD3(BitPacking,unpack2) {
 	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*size);
+	this->gfpost();
 	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<Number>((Number *)rb_str_ptr(out),n));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;

@@ -65,6 +65,24 @@ static void expect_dim_dim_list (Dim *d) {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 }
 
+static void expect_max_one_dim (Dim *d) {
+	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }
+}
+
+static void expect_exactly_one_dim (Dim *d) {
+	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }
+}
+
+static void expect_rgb_picture (Dim *d) {
+	if (d->n!=3) RAISE("(height,width,chans) dimensions please");
+	if (d->get(2)!=3) RAISE("(red,green,blue) channels please");
+}
+
+static void expect_rgba_picture (Dim *d) {
+	if (d->n!=3) RAISE("(height,width,chans) dimensions please");
+	if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");
+}
+
 /* there's an inlet 0 hardcoded here, sorry */
 #define DIM_INPUT(_class_,_inlet_,_member_) \
 	GRID_BEGIN(_class_,1) { \
@@ -78,14 +96,6 @@ static void expect_dim_dim_list (Dim *d) {
 		out[0]->abort(); \
 	} \
 	GRID_END(_class_,1) {}
-
-static void max_one_dim (Dim *d) {
-	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }
-}
-
-static void exactly_one_dim (Dim *d) {
-	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }
-}
 
 /* **************************************************************** */
 /*
@@ -910,9 +920,9 @@ struct GridFor : GridObject {
   { Dim[B],Dim[B],Dim[B] -> Dim[*As,B] }*/
 
 METHOD3(GridFor,init) {
-	from.constrain(max_one_dim);
-	to  .constrain(max_one_dim);
-	step.constrain(max_one_dim);
+	from.constrain(expect_max_one_dim);
+	to  .constrain(expect_max_one_dim);
+	step.constrain(expect_max_one_dim);
 	rb_call_super(argc,argv);
 	if (argc<3) RAISE("not enough arguments");
 	from.init_from_ruby(argv[0]);
@@ -1086,8 +1096,7 @@ GRID_BEGIN(GridScaleBy,0) {
 	Dim *a = in->dim;
 
 	/* there are restrictions on grid sizes for efficiency reasons */
-	if (a->n!=3) RAISE("(height,width,chans) please");
-	if (a->get(2)!=3) RAISE("3 chans please");
+	expect_rgb_picture(a);
 
 	/* computing the output's size */
 	int v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
@@ -1244,6 +1253,52 @@ LIST(GRINLET(GridDownscaleBy,0,4)),
 
 /* **************************************************************** */
 
+struct GridLayer : GridObject {
+	Grid r;
+	GridLayer() {
+		r.constrain(expect_rgb_picture);
+	}
+	GRINLET3(0);
+	GRINLET3(1);
+	DECL3(init);
+};
+
+GRID_BEGIN(GridLayer,0) {
+	Dim *a = in->dim;
+	expect_rgba_picture(a);
+	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
+	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
+	in->set_factor(a->prod(1));
+	out[0]->begin(r.dim->dup());
+}
+
+GRID_FLOW(GridLayer,0) {
+	Pt<Number> rr = r.as_int32() + in->dex*3/4;
+	STACK_ARRAY(Number,foo,n*3/4);
+	for (int i=0,j=0; i<n; i+=4,j+=3) {
+		foo[j+0] = (data[i+0]*data[i+3] + rr[j+0]*(256-data[i+3])) >> 8;
+		foo[j+1] = (data[i+1]*data[i+3] + rr[j+1]*(256-data[i+3])) >> 8;
+		foo[j+2] = (data[i+2]*data[i+3] + rr[j+2]*(256-data[i+3])) >> 8;
+	}
+	out[0]->send(n*3/4,foo);
+}
+
+GRID_END(GridLayer,0) { out[0]->end(); }
+
+GRID_INPUT(GridLayer,1,r) {}
+
+METHOD3(GridLayer,init) {
+	rb_call_super(argc,argv);
+	return Qnil;
+}
+
+GRCLASS(GridLayer,"@layer",inlets:2,outlets:1,startup:0,
+LIST(GRINLET(GridLayer,0,4),GRINLET(GridLayer,1,4)),
+	DECL(GridLayer,init))
+
+/* **************************************************************** */
+
+/* **************************************************************** */
 /*
 <matju> @polygon
 <matju> inlet 0: image sur laquelle superposer un polygone
@@ -1256,11 +1311,12 @@ LIST(GRINLET(GridDownscaleBy,0,4)),
 <matju> inlet 1: facteur k (l'oeil est au point 0,0,0; l'écran est le plan z=k)
 <matju> outlet 0: dim(n,2)
 */
+
+/* { Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] } */
 /*
-{ Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] }
 struct GridPolygon : GridObject {
-//	Grid polygon;
-//	Grid color;
+	Grid polygon;
+	Grid color;
 	DECL3(init);
 	GRINLET3(0);
 	GRINLET3(1);
@@ -1275,10 +1331,11 @@ GRID_FLOW(GridPolygon,0) {
 
 GRID_END(GridPolygon,0) {}
 
-GRID_INPUT(GridPolygon,2,polygon)
-GRID_INPUT(GridPolygon,1,color)
+GRID_INPUT(GridPolygon,2,polygon) {}
+GRID_INPUT(GridPolygon,1,color) {}
 
-METHOD3(GridPolygon,init) {}
+METHOD3(GridPolygon,init) {
+}
 
 GRCLASS(GridPolygon,"@polygon",inlets:3,outlets:1,startup:0,
 LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4)),
@@ -1519,6 +1576,7 @@ void startup_flow_objects () {
 	INSTALL(GridRedim);
 	INSTALL(GridScaleBy);
 	INSTALL(GridDownscaleBy);
+	INSTALL(GridLayer);
 //	INSTALL(GridPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
