@@ -38,6 +38,10 @@ struct List {
 	void **ptr;
 };
 
+#undef NEW
+#define NEW(_type_,_count_) \
+	((_type_ *)malloc(sizeof(_type_)*(_count_)))
+
 List *List_new(int size) {
 	List *$ = NEW(List,1);
 	$->size = size;
@@ -93,6 +97,7 @@ struct DictEntry {
 
 struct Dict {
 	int capa;
+	int size;
 	DictEntry **table;
 	HashFunc hf;
 };
@@ -104,9 +109,14 @@ Dict *Dict_new(HashFunc hf) {
 	Dict *$ = NEW(Dict,1);
 	$->hf = hf ? hf : HashFunc_default;
 	$->capa = 7;
+	$->size = 0;
 	$->table = NEW(DictEntry *,$->capa);
 	for (i=0; i<$->capa; i++) $->table[i] = 0;
 	return $;
+}
+
+int Dict_size(Dict *$) {
+	return $->size;
 }
 
 long Dict_hash(Dict *$, void *k) {
@@ -144,6 +154,7 @@ void Dict_put(Dict *$, void *k, void *v) {
 		de->v = v;
 		de->next = $->table[h];
 		$->table[h] = de;
+		$->size += 1;
 	}
 }
 
@@ -155,6 +166,7 @@ void Dict_del(Dict *$, void *k) {
 		if (de->k == k) {
 			*dev = de->next;
 			FREE(de);
+			$->size -= 1;
 			return;
 		}
 		dev = &(de->next);
