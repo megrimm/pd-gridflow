@@ -70,6 +70,7 @@ end
 class<<self
 	attr_accessor :post_header
 	attr_accessor :verbose
+	attr_reader :alloc_set
 end
 
 self.post_header = "[gf] "
@@ -130,6 +131,7 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
+		p m
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.name_lookup sym
@@ -315,6 +317,25 @@ rescue Exception => e
 	GridFlow.gfpost "ruby #{e.class}: #{e}: #{e.backtrace}"
 end
 
+def self.leakage_dump
+	as = GridFlow.alloc_set
+	(gfpost "can't dump leakage list without --debug"; return) if not as
+	gfpost "forcing garbage-collection..."
+	GC.start
+	gfpost "list of remaining non-Ruby allocations:"
+	gfpost ""
+	gfpost "trace     pointer   size      type            file:line"
+	totsize=0
+	n=0
+	as.each {|k,v|
+		ptr,size,type,file,line = GridFlow.alloctrace_to_s v
+		gfpost "%08x  %08x  %8d  %-16s %s:%d", v*4, ptr*4, size, type, file, line
+		totsize+=size
+		n+=1
+	}
+	gfpost "total %d lost bytes in %d allocations", totsize, n
+end
+
 end # module GridFlow
 #----------------------------------------------------------------#
 
@@ -323,10 +344,7 @@ load user_config_file if File.exist? user_config_file
 
 END {
 	puts "This is an END block"
-}
-
-at_exit {
-	puts "This is an at_exit block"
+	GridFlow.leakage_dump
 }
 
 GridFlow.routine

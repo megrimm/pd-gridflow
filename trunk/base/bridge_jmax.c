@@ -37,7 +37,9 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <sys/time.h>
-#undef post
+
+/* sorry. memory leaks must be found by hand in this module */
+#undef strdup
 
 /* can't even refer to the other GridFlow_module before ruby loads gridflow */
 static VALUE GridFlow_module2=0;
@@ -45,9 +47,7 @@ static VALUE Pointer_class2=0;
 static VALUE sym_ninlets=0, sym_noutlets=0;
 
 #define rb_sym_name rb_sym_name_r4j
-static char *rb_sym_name(VALUE sym) {
-	return strdup(rb_id2name(SYM2ID(sym)));
-}
+static const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
 
 static VALUE Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
@@ -100,7 +100,7 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 	if (INTEGER_P(arg)) {
 		fts_set_int(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
-		char *name = rb_sym_name(arg);
+		const char *name = rb_sym_name(arg);
 		/*fprintf(stderr,"1: %s\n",name);*/
 		fts_set_symbol(at,fts_new_symbol_copy(name));
 	} else if (FLOAT_P(arg)) {
@@ -320,7 +320,7 @@ static VALUE gf_find_file(VALUE $, VALUE s) {
 	return rb_str_new2(buf);
 }
 
-void gridflow_module_init (void) {
+void gridflow_module_init () {
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
 	ruby_init();

@@ -39,28 +39,31 @@ extern "C" {
 #define $ self
 
 #define NEW(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_),__FILE__,__LINE__))
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,__FILE__,__LINE__,true))
 
 #define NEW2(_type_,_count_) \
-	((_type_ *)qalloc2(sizeof(_type_)*(_count_),__FILE__,__LINE__))
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,__FILE__,__LINE__,false))
 
 #define NEW3(_type_,_count_,_file_,_line_) \
-	((_type_ *)qalloc2(sizeof(_type_)*(_count_),_file_,_line_))
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,_file_,_line_,true))
 
 #define FREE(_var_) \
-	_var_ ? (qfree(_var_), _var_=0) : 0
+	_var_ ? (qfree(_var_, true), _var_=0) : 0
 
 #define REALLOC(_val_,_count_) \
 	(qrealloc(_val_,_count_))
 
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 
-void *qalloc2(size_t n, const char *file, int line);
-void *qalloc(size_t n, const char *file, int line); /*0xdeadbeef*/
-void qfree2(void *data);
-void qfree(void *data); /*0xfadedf00*/
+void *qalloc(
+	size_t n, const char *type, const char *file, int line, bool deadbeef);
+
+void qfree(void *data, bool fadedfoo);
 void *qrealloc(void *data, int n);
-void qdump(void);
+
+#include <string.h>
+#define strdup(_foo_) \
+	({const char *foo=_foo_;strcpy(NEW(char,strlen(foo)),foo);})
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -114,11 +117,14 @@ static inline int max(int a, int b) { return a>b?a:b; }
 /*
 static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
+static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
+static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
-#ifdef HAVE_SPEED
-#define NO_ASSERT
-#define NO_DEADBEEF
+#ifdef HAVE_DEBUG
+#define HAVE_ASSERT
+//#define HAVE_DEADBEEF
+#define HAVE_LEAKAGE_DUMP
 #endif
 
 #ifdef HAVE_TSC_PROFILING
@@ -148,12 +154,12 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 			__FILE__, __LINE__, #_expr_); \
 		abort(); }
 
-#ifdef NO_ASSERT
+#ifndef HAVE_ASSERT
 	/* disabling assertion checking */
-	#undef assert
-	#define assert(_foo_)
-	#undef assert_range
-	#define assert_range(_foo_,_a_,_b_)
+#undef assert
+#define assert(_foo_)
+#undef assert_range
+#define assert_range(_foo_,_a_,_b_)
 #endif
 
 /* **************************************************************** */
@@ -447,8 +453,8 @@ typedef struct Operator2 {
 extern NumberType number_type_table[];
 extern Operator1 op1_table[];
 extern Operator2 op2_table[];
-extern VALUE /*Hash*/ op1_dict;
-extern VALUE /*Hash*/ op2_dict;
+extern VALUE op1_dict; /* GridFlow.@op1_dict={} */
+extern VALUE op2_dict; /* GridFlow.@op2_dict={} */
 
 /* **************************************************************** */
 
@@ -597,6 +603,7 @@ extern "C" {
 /* **************************************************************** */
 
 struct GridObject {
+	virtual void mark(); /* not used for now */
 	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */
 	GridClass *grid_class;
 	void *foreign_peer; /* point to jMax peer */
@@ -671,8 +678,7 @@ void FObject_sweep (VALUE *$);
 VALUE FObject_send_out(int argc, VALUE *argv, VALUE $);
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
-char *rb_sym_name(VALUE sym);
-/* void post(const char *,...); */
+const char *rb_sym_name(VALUE sym);
 
 /* keyed on data */
 void MainLoop_add(void *data, void (*func)(void*));
@@ -723,5 +729,7 @@ typedef VALUE (*RFunc)();
 void Init_gridflow (void) /*throws Exception*/;
 
 }; /* extern "C" */
+
+#define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 
 #endif /* __GF_GRID_H */
