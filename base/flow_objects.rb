@@ -1015,7 +1015,7 @@ class Display < FObject; include Gooey
 	def delete; super end
 	def _0_grid(*foo) # big hack!
 		# hijacking a [#print]
-		gp = GridPrint.new
+		gp = FObject["#print"]
 		@text = ""
 		overlord = self
 		gp.instance_eval { @overlord = overlord }
