@@ -204,13 +204,15 @@ for op in $opcodes.keys do
 end
 
 $loader.puts $decls
-$loader.puts "
+$loader.puts %`
 }; /* extern */
-void startup_cpu () {
+#include <stdlib.h>
+void startup_mmx_loader () {/*bogus*/}
+void startup_mmx () {
+	if (getenv("NO_MMX")) return;
 	if (EVAL(\"GridFlow.bridge_name\")!=Qnil) gfpost(\"startup_cpu: using MMX optimisations\");
 	#{$install}
-}
-"
+}`
 
 STDERR.puts "automatically generated #{$count} MMX asm functions"
 
