@@ -739,11 +739,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 \def void delete_m () {
 }
 
-GRCLASS(FormatX11,
-\grdecl
-){
+\classinfo {
 	IEVAL(rself,"install 'FormatX11',1,1;"
 	"conf_format 6,'x11','X Window System Version 11.5'");
 }
-
 \end class FormatX11

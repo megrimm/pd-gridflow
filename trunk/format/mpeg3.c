@@ -88,9 +88,7 @@ struct FormatMPEG3 : Format {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-GRCLASS(FormatMPEG3,
-\grdecl
-) {
+\classinfo {
 	IEVAL(rself,"install 'FormatMPEG3',1,1;"
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using HeroineWarrior\\'s)', 'mpg,mpeg'");
