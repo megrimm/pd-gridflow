@@ -155,4 +155,6 @@ int HashFunc_string(void *k);
 
 /* **************************************************************** */
 
+extern Dict *gf_alloc_set;
+
 #endif /* __GRIDFLOW_LANG_H */
