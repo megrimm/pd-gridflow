@@ -152,22 +152,6 @@ class FObject
 		@outlets[outlet] ||= []
 		@outlets[outlet].push [object, inlet]
 	end
-=begin
-	def send_in(inlet, *m)
-		m=GridFlow.parse(m[0]) if m.length==1 and String===m[0] and m[0] =~ / /
-		sym = if m.length==0 then :bang
-		elsif Symbol===m[0] then m.shift
-		elsif String===m[0] then m.shift.intern
-		elsif m.length>1 then :list
-		elsif Integer===m[0] then :int
-		elsif Float===m[0] then :float
-		elsif Array===m[0] then m=m[0];:list
-		else raise "don't know how to deal with #{m.inspect}"
-		end
-		GridFlow.post "%s",m.inspect if GridFlow.verbose
-		send("_#{inlet}_#{sym}".intern,*m)
-	end
-=end
 	def self.name_lookup sym
 		qlasses = GridFlow.instance_eval{@fclasses_set}
 		qlass = qlasses[sym.to_s]

@@ -552,7 +552,7 @@ GRID_INLET(GridFold,0) {
 	int32 v[an-1];
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
-	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
+	COPY(v+yi,in->dim->v+an-bn,bn);
 	SAME_DIM(an-(yi+1),in->dim,(yi+1),r.dim,0);
 	out[0]->begin(new Dim(COUNT(v),v),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
@@ -565,12 +565,9 @@ GRID_INLET(GridFold,0) {
 	STACK_ARRAY(T,buf,n/yn);
 	int i=0;
 	int nn=n;
-	while (n) {
+	for (int i=0; n; i+=zn, data+=yn*zn, n-=yn*zn) {
 		COPY(buf+i,((Pt<T>)r),zn);
 		op->fold(zn,yn,buf+i,data);
-		i += zn;
-		data += yn*zn;
-		n -= yn*zn;
 	}
 	out[0]->send(nn/yn,buf);
 } GRID_FINISH {
@@ -615,11 +612,10 @@ GRID_INLET(GridScan,0) {
 	SAME_TYPE(*in,r);
 	int an = in->dim->n;
 	int bn = r.dim->n;
-	int yi = an-bn-1;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
-	SAME_DIM(an-(yi+1),in->dim,(yi+1),r.dim,0);
+	SAME_DIM(bn,in->dim,an-bn,r.dim,0);
 	out[0]->begin(in->dim->dup(),in->nt);
-	in->set_factor(in->dim->get(yi)*r.dim->prod());
+	in->set_factor(in->dim->prod(an-bn-1));
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = r.dim->n;
@@ -627,14 +623,14 @@ GRID_INLET(GridScan,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	STACK_ARRAY(T,buf,n);
-	int nn=n;
-	while (n) {
-		COPY(buf,data,n);
-		op->scan(zn,yn,(Pt<T>)r,buf);
-		data += yn*zn;
-		n -= yn*zn;
+	fprintf(stderr,"an=%d bn=%d yn=%d zn=%d n=%d\n",an,bn,yn,zn,n);
+	COPY(buf,data,n);
+	for (int i=0; i<n; i+=factor) {
+		WATCH(n,buf);
+		op->scan(zn,yn,(Pt<T>)r,buf+i);
 	}
-	out[0]->send(nn,buf);
+	WATCH(n,buf);
+	out[0]->send(n,buf);
 } GRID_FINISH {
 } GRID_END
 

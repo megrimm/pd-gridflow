@@ -132,6 +132,14 @@ end
 	x.expect([1,1,2,2,4,8,16,16,16,32,32,64,128]) {
 		a.send_in 0,:list,nt, 1,1,2,1,2,2,2,1,1,2,1,2,2 }
 
+	(a = FObject["@scan + {#{nt} 0 0 0}"]).connect 0,e,0
+	x.expect([1,2,3,5,7,9,12,15,18]) {
+		a.send_in 0,:list,3,3,nt,hm,*(1..9) }
+
+	(a = FObject["@scan + {#{nt} # 0}"]).connect 0,e,0
+	x.expect([1,3,6, 4,9,15, 7,15,24]) {
+		a.send_in 0,:list,3,3,nt,hm,*(1..9) }
+
 	(a = FObject["@outer +"]).connect 0,e,0
 	x.expect([9,10,12,17,18,20,33,34,36]) {
 		a.send_in 1,:list,nt, 1,2,4
@@ -466,7 +474,8 @@ def test_anim msgs
 	GridFlow.verbose = false
 	gin = FObject["@in"]
 	gout1 = FObject["@out x11"]
-	#gout1 = FObject["@out quicktime file b.mov"]
+	#gout1 = FObject["@out quicktime file test.mov"]
+	#gout1.send_in 0, :option, :codec, :jpeg
 	fps = FObject["fps detailed"]
 	rpr = FObject["rubyprint"]
 	gout1.connect 0,fps,0
@@ -492,7 +501,7 @@ def test_anim msgs
 	gin.send_in 0, "option cast uint8"
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=500
+	frames=2000
 	frames.times {|n|
 		#GridFlow.post "%d", n
 		gin.send_in 0
@@ -943,15 +952,16 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-#test_anim ["open ppm file #{$imdir}/g001.ppm"]
+test_anim ["open ppm file #{$imdir}/g001.ppm","option loop 0"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
-#test_anim ["open quicktime file b.mov"]
+#test_anim ["open jpeg file #{$imdir}/rgb.jpeg.cat"]
+#test_anim ["open quicktime file test.mov"]
 #test_anim ["open quicktime file #{$imdir}/rgb_uncompressed.mov"]
 #test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
 #test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]
-test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
+#test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
 #test_anim ["open quicktime file /home/matju/pics/domopers_hi.mov"]
