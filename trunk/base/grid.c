@@ -37,7 +37,7 @@
 /* number of (maximum,ideal) Numbers to send at once */
 /* this should remain a constant throughout execution
    because code still expect it to be constant. */
-int gf_max_packet_length = 1024*2;
+static int max_packet_size = 1024*2;
 
 /* result should be printed immediately as the GC may discard it anytime */
 static const char *INFO(GridObject *foo) {
@@ -60,7 +60,6 @@ void Grid::init(Dim *dim, NumberTypeIndex nt) {
 void Grid::init_from_ruby_list(int n, Ruby *a) {
 		int dims = 1;
 		Ruby delim = SYM(#);
-//		init(new Dim(0,0));
 		del();
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
@@ -113,7 +112,7 @@ Grid::~Grid() {
 GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	this->parent = parent;
 	this->gh    = gh;
-	assert(gh->begin && gh->flow && gh->end);
+	assert(gh->flow);
 	dim   = 0;
 	nt    = int32_type_i;
 	dex   = 0;
@@ -188,7 +187,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 }
 
 void GridInlet::flow(int mode, int n, Pt<Number> data) {
-	assert(!is_busy());
+	if (!is_busy()) RAISE("inlet not busy");
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
@@ -259,8 +258,7 @@ void GridInlet::abort() {
 }
 
 void GridInlet::end() {
-	assert(!is_busy());
-/*	gfpost("%s: GridInlet_end()", INFO(parent)); */
+	if (!is_busy()) RAISE("inlet not busy");
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
@@ -323,7 +321,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	this->woutlet = woutlet;
 	dim = 0;
 	dex = 0;
-	buf = ARRAY_NEW(Number,gf_max_packet_length);
+	buf = ARRAY_NEW(Number,max_packet_size);
 	bufn = 0;
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
@@ -336,36 +334,15 @@ GridOutlet::~GridOutlet() {
 	if (inlets) delete[] inlets.p;
 }
 
-bool GridOutlet::is_busy() {
-	assert(this);
-	return !!dim;
-}
-
 void GridOutlet::abort() {
-	assert(this);
-	if (!is_busy()) return;
+	if (!is_busy()) RAISE("outlet not busy");
 	for (int i=0; i<ninlets; i++) inlets[i]->abort();
-	delete dim;
-	dim = 0;
-	dex = 0;
-}
-
-void GridOutlet::end() {
-	assert(this);
-	assert(is_busy());
-	flush();
-	for (int i=0; i<ninlets; i++) inlets[i]->end();
-	delete dim;
-	dim = 0;
-	dex = 0;
+	delete dim; dim = 0; dex = 0;
 }
 
 void GridOutlet::begin(Dim *dim) {
-	assert(this);
 	int n = dim->count();
-
-	/* if (GridOutlet_busy(self)) GridOutlet_abort(self); */
-
+	/* if (is_busy()) abort(); */
 	this->dim = dim;
 	dex = 0;
 	frozen = 0;
@@ -381,14 +358,13 @@ void GridOutlet::begin(Dim *dim) {
 	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
 	FObject_send_out(COUNT(a),a,parent->rself);
 	frozen = 1;
-/*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
 
 void GridOutlet::send_direct(int n, Pt<Number> data) {
-	assert(is_busy());
+	if (!is_busy()) RAISE("outlet not busy");
 	assert(frozen);
 	while (n>0) {
-		int pn = min(n,gf_max_packet_length);
+		int pn = min(n,max_packet_size);
 		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
 		data += pn;
 		n -= pn;
@@ -401,23 +377,19 @@ void GridOutlet::send(int n, Pt<Number> data) {
 	assert(frozen);
 	dex += n;
 	assert(dex <= dim->prod());
-	if (n > gf_max_packet_length/2 || bufn + n > gf_max_packet_length) {
-		flush();
-	}
-	if (n > gf_max_packet_length/2) {
+	if (n > max_packet_size/2 || bufn + n > max_packet_size) flush();
+	if (n > max_packet_size/2) {
 		send_direct(n,data);
 	} else {
 		COPY(buf+bufn,data,n);
 		bufn += n;
 	}
-/*
-	send_direct(n,data);
-*/
+	if (dex==dim->prod()) end();
 }
 
 /* should use BitPacking? */
 void GridOutlet::send(int n, Pt<uint8> data) {
-	int bs = gf_max_packet_length;
+	int bs = max_packet_size;
 	STACK_ARRAY(Number,data2,bs);
 	for (;n>=bs;n-=bs) {
 		for (int i=0; i<bs; i++) data2[i] = *data++;
@@ -428,7 +400,7 @@ void GridOutlet::send(int n, Pt<uint8> data) {
 }
 
 void GridOutlet::give(int n, Pt<Number> data) {
-	assert(is_busy());
+	if (!is_busy()) RAISE("outlet not busy");
 	assert(frozen);
 	dex += n;
 	assert(dex <= dim->prod());
@@ -441,22 +413,15 @@ void GridOutlet::give(int n, Pt<Number> data) {
 		send_direct(n,data);
 		delete[] (Number *)data;
 	}
-}
-
-void GridOutlet::flush() {
-	assert(is_busy());
-	assert(frozen);
-	send_direct(bufn,buf);
-	bufn = 0;
+	if (dex==dim->prod()) end();
 }
 
 void GridOutlet::callback(GridInlet *in) {
 	int mode = in->gh->mode;
-	assert(is_busy());
+	if (!is_busy()) RAISE("outlet not busy");
 	assert(!frozen);
-	assert(mode==6 || mode==4);
+	assert(mode==6 || mode==4 || mode==0);
 	assert(ninlets<MAX_CORDS);
-	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",self,in,mode); */
 	inlets[ninlets++]=in;
 }
 
@@ -518,7 +483,7 @@ METHOD3(GridObject,inlet_dim) {
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d");
-	if (!inl->dim) return Qnil;
+	if (!inl->is_busy()) return Qnil;
 	int n=inl->dim->count();
 	Ruby a = rb_ary_new2(n);
 	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(inl->dim->v[i]));
@@ -530,7 +495,7 @@ METHOD3(GridObject,inlet_set_factor) {
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d");
-	if (!inl->dim) RAISE("inlet not active");
+	if (!inl->is_busy()) RAISE("inlet not active");
 	inl->set_factor(INT(argv[1]));
 	return Qnil;
 }
@@ -538,9 +503,9 @@ METHOD3(GridObject,inlet_set_factor) {
 METHOD3(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	int n = rb_ary_len(argv[1]);
 	Ruby *p = rb_ary_ptr(argv[1]);
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	out[outlet]->begin(new Dim(n,v));
@@ -557,10 +522,10 @@ METHOD3(GridObject,send_out_grid_flow) {
 	return Qnil;
 }
 
-METHOD3(GridObject,send_out_grid_end) {
+METHOD3(GridObject,send_out_grid_abort) {
 	int outlet = INT(argv[0]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
-	out[outlet]->end();
+	out[outlet]->abort();
 	return Qnil;
 }
 
@@ -610,7 +575,6 @@ METHOD3(GridObject,method_missing) {
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	const char *name = rb_sym_name(argv[0]);
-//	gfpost("method_missing: %s",name);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = in[i];
@@ -643,7 +607,7 @@ LIST(),
 	DECL(GridObject,del),
 	DECL(GridObject,send_out_grid_begin),
 	DECL(GridObject,send_out_grid_flow),
-	DECL(GridObject,send_out_grid_end),
+	DECL(GridObject,send_out_grid_abort),
 	DECL(GridObject,inlet_dim),
 	DECL(GridObject,inlet_set_factor),
 	DECL(GridObject,method_missing))

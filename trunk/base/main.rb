@@ -315,7 +315,6 @@ class GridPack < GridObject
 	def trigger
 		send_out_grid_begin 0, [self.class.ninlets]
 		send_out_grid_flow 0, @data.pack("l*")
-		send_out_grid_end 0
 	end
 end
 
@@ -353,7 +352,8 @@ class GridCheckers < GridObject
 	install "@checkers", 1, 1
 end
 
-class GridGlobal
+# a dummy class that gives access to any stuff global to GridFlow.
+class GridGlobal < GridObject
 	def _0_profiler_reset
 		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
 	end
@@ -381,6 +381,8 @@ class GridGlobal
 		}
 		GridFlow.post "-"*32
 	end
+
+	install "@global", 1, 1
 end
 
 class FPS < GridObject
@@ -442,7 +444,7 @@ def self.routine
 end
 
 def GridFlow.find_file s
-	post "find_file: #{s}"
+#	post "find_file: #{s}"
 	s
 end
 
@@ -469,4 +471,4 @@ END {
 
 GridFlow.routine
 
-#set_trace_func proc {|a| p a }
+# set_trace_func proc {|a| STDERR.puts  }

@@ -347,7 +347,6 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 		bit_packing->unpack(sx,b1,b2);
 		o->send(bs,b2);
 	}
-	o->end();
 }
 
 static int read2(int fd, uint8 *image, int n) {
