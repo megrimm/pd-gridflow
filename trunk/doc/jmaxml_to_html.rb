@@ -292,7 +292,7 @@ EOF
 black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>Video4jmax 0.3.0 - reference index</h4>
+    <h4>Video4jmax 0.3.1 - reference index</h4>
 </td></tr>
 <tr> 
   <td rowspan="2" width="12%">&nbsp;</td>
@@ -361,7 +361,7 @@ __END__
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">Video4jmax 0.3.0 Documentation<br>
+<p><font size="-1">Video4jmax 0.3.1 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

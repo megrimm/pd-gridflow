@@ -118,21 +118,11 @@
 				also displays it if autodraw &gt; 0
 			</grid>
 			<method name="bang">
-				asks for a repaint of the window.
-				Usually not needed, as windows normally
-				repaint automatically.
-				(<i>normally.</i>) 
+				see format x11's option draw.
 			</method>
 			<method name="autodraw">
 				<arg type="integer"/>
-				sets the drawing mode.
-				<list start="0">
-				<li>makes all drawing manually activated (by <k>bang</k>).</li>
-				<li>displays when a whole picture has been received.
-				(default)</li>
-				<li>displays every line as it comes.
-				(but buffering may cause lines to come in groups anyway)</li>
-				</list>
+				see format x11's option autodraw.
 			</method>
 		</inlet>
 
@@ -221,17 +211,8 @@
 			<method name="option">
 				<arg name="property"/>
 				<arg name="value"/>
-				for format-specific options. for example, the VideoDev
-				format (really a device type) has seven options:
-				<list>
-				<li><k>channel</k> <i>integer</i></li>
-				<li><k>tuner</k> <i>integer</i></li>
-				<li><k>brightness</k> <i>integer</i></li>
-				<li><k>hue</k> <i>integer</i></li>
-				<li><k>colour</k> <i>integer</i></li>
-				<li><k>contrast</k> <i>integer</i></li>
-				<li><k>whiteness</k> <i>integer</i></li>
-				</list>
+				for format-specific options.
+				(usually in devices that masquerade as formats).
 			</method>
 		</inlet>
 		<sample
@@ -403,6 +384,28 @@ or  uint8 (native format for ppm or tga formats) </p>
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
 		<sample image="images/grab_dim.png"/>
+	</jmax-class>
+</section>
+
+<section name="Special Objects">
+	<jmax-class name="rtmetro">
+		future use.
+	</jmax-class>
+	<jmax-class name="video4jmax">
+		objects of this class do nothing by themselves and are just
+		an access point to features that don't belong to any object in
+		particular.
+		<method name="profiler_reset">
+			resets all the time counters.
+		</method>
+		<method name="profiler_dump">
+			displays the time counters in decreasing order, with
+			the names of the classes those objects are in. this is
+			an experimental feature. like most statistics,
+			it could be vaguely relied upon if
+			only you knew to which extent it is unreliable. more on this
+			in a future section called "profiling".
+		</method>
 	</jmax-class>
 </section>
 
@@ -687,6 +690,23 @@ doing redundant updates -- sorry)</p>
 		"<k>0 0 1 0 1 0 1 0 0</k>" to a [@redim 3 3] and feed that to the
 		right side of a <k>[@inner * + 0]</k>. Use that @inner object as a
 		RGB-BGR converter.</p>
+
+		<p>color adjustments:
+		<list>
+		<li><k>brightness</k> <i>integer</i></li>
+		<li><k>hue</k> <i>integer</i></li>
+		<li><k>colour</k> <i>integer</i></li>
+		<li><k>contrast</k> <i>integer</i></li>
+		<li><k>whiteness</k> <i>integer</i></li>
+		</list></p>
+
+		<p>other options:
+		<list>
+		<li><k>channel</k> <i>integer</i></li>
+		<li><k>tuner</k> <i>integer</i></li>
+		<li><k>norm</k> <i>integer</i></li>
+		</list></p>
+
 	</jmax-class>
 
 	<jmax-class name="format x11 @in/@out">
@@ -724,7 +744,8 @@ doing redundant updates -- sorry)</p>
 		<p>option autodraw(level): when level=0, option draw() is never
 		automatically invoked; with level=1, option draw() is invoked after
 		each grid is finished; with level=2, option draw() is invoked
-		incrementally after each row is received.</p>
+		incrementally after each row is received. (but buffering may cause
+		lines to come in groups anyway)</p>
 
 		<p>option timelog(status): when status=1, current time (unix
 		clock) and time since last frame-end are printed in the console.

@@ -78,11 +78,6 @@ Description of a grid's shape.
 	<!ELEMENT dim (EMPTY)>
 	<!ATTLIST dim>
 
-Format.
-
-	<!ELEMENT format (EMPTY)>
-	<!ATTLIST format>
-
 Bitpacking.
 
 	<!ELEMENT bit-packing (EMPTY)>
