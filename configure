@@ -255,7 +255,6 @@ FILES = [
     [:ruby, "flow_objects.rb"],
     [:ruby, "test.rb"],
     [:ruby, "source_filter.rb"],
-    [:ruby, "MainLoop.rb"],
   ],
   [:directory, "bridge/",
     [:ruby, "puredata.rb"],
