@@ -1,0 +1,118 @@
+/* $Id$ */
+
+Installation
+[ ] add --fast switch to turn  on all optimizations
+[ ] add --slow switch to turn off all optimizations
+
+Documentation
+[ ] add credits
+[ ] add explanation of video4jmax vs jmax-videodsp
+[ ] things you type verbatim are all in KBD blocks
+[ ] placeholders for your own values are all in I blocks
+[ ] validate samples/outside
+[ ] validate samples/020
+[ ] H5 font-size is smaller than regular P font-size ?
+[ ] make real documentation for templates
+[ ] recategorize objects+templates together
+
+General
+[!] remove memory leaks, segmentation faults
+[ ] make FREE() handle #delete as possible
+[ ] better error handling
+[ ] @print
+[ ] @literal
+[ ] how can I write unit tests?
+
+Computation Objects
+[!] @inner, @cartprod (?)
+[!] @convolution
+[!] @redim (APL bin rho)
+[ ] @iota and/or @for
+[ ] @resync (fast version of @export followed by @import)
+[!] @slice (@splice ?)
+[ ] black option in @store
+[!] uint8 option in @store
+[ ] @import~, @export~ (note:
+	DSP->Control is feasible
+	Control->DSP would be *very* kludgy)
+[ ] try to manually unroll some loops
+
+Effects
+[!] blur
+[!] motion-blur (with or without feedback)
+[!] fire
+[!] ripple
+[!] overlay using alpha channel
+[ ] emboss, find edges, solarize, pinch, waves
+[ ] sharpen, pixelize, despeckle
+[ ] gamma correction
+[ ] *real* saturation, and hue change
+[ ] abyss effect
+[ ] image-sur-image
+[ ] n-frame delaying
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits)
+[ ] HSL <-> HSV <-> RGB <-> YUV
+[ ] blinds, 
+[ ] split channels, join channels
+[ ] see gimp for ideas
+
+Structure & Protocol
+[x] packets: output buffering
+[ ] change the protocol completely:
+	not based on messages, but rather a push/pull combination,
+	add GridStream objects, allow them to be passed in other
+	messages; GridInlet,GridOutlet have redundant info, like the
+	element counter, etc.
+[ ] unary ops: sq
+[ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+[ ] copy-on-write and similar tricks
+
+Input/Output
+[ ] in-place editing (rw mode)
+[ ] implement byte-order, bit-order support in BitPacking
+[ ] add PTC support
+[ ] add SDL support
+[ ] x11 shared memory working
+[ ] x11 screen capture
+[ ] x11 multi-display
+[ ] add messages "load", "save" as open,bang,close combos.
+
+File Formats
+[ ] Targa write support
+[ ] JPEG support
+[ ] PNG support (and register ourselves in libpng.org's app list)
+[ ] QuickTime support
+[ ] MPEG support
+[!] multi-image (seq) (createable by cat, ar, tar or zip)
+[!] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
+[ ] install libmpeg, libquicktime
+[ ] design generic grid format (.grid)
+
+Java/Swing
+[ ] Color Picker
+[ ] Grid Editor
+
+Bugs
+[ ] @video_out causes delayed crash when closing its associated window
+[ ] object sending too much data causes *another* object to crash.
+[ ] distinguish "mod" and "%" properly (re: rounding)
+
+Misc
+[ ] find out what channel the small cam goes on and why it isn't displaying.
+
+================
+vin_file_test_2.jmax
+0.2.0.pre3: 20 frames in 30 seconds.
+0.2.0.pre8: 20 frames in  8 seconds (packet=16)
+0.2.0.pre8: 20 frames in  4 seconds (packet=1k)
+
+store3:
+	28,36,128
+	336,557,140
+	179,15,183
+
+
+================
+
+#003f69
+#400077
