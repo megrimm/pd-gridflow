@@ -737,7 +737,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] "
 	log << "[--use-compiler-option option]* "
-	log << "[--use-cpu cpu] "
+	log << "[--use-cpu cpu] [--lite] "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
@@ -756,7 +756,8 @@ while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
 	when /=/
-		ARGV[0,0]=arg.split(/=/)
+		i=arg.index '='
+		ARGV.unshift arg[0..i-1], arg[i+1..-1]
 	when /^--no-/
 		name = arg[5..-1].intern
 		puts "there is no feature called #{name}" if not $features_h[name]
@@ -779,6 +780,9 @@ while ARGV.length>0 do
 		puts "Debug Harder Mode (even more error checking; even less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
 		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
+	when "--lite"
+		puts "Lite Mode (no float, no int64)"
+		$conf[:OPTIONS].push :HAVE_LITE
 	when "--jmax-arch"; $conf[:DEFINES][:JMAX_ARCH]=ARGV.shift
 	when "--help"; usage; exit 0
 	when "--prefix", "--ruby-prefix"
