@@ -81,7 +81,7 @@
 #X text 52 160 make blank image;
 #X text 33 210 feedback loop;
 #X text 81 247 (height \, width) grid = matrix;
-#X obj 207 110 demux 2;
+#X obj 207 110 shunt 2;
 #X obj 261 111 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
 1;
 #X obj 350 224 @color 0 800 1;
