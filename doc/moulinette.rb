@@ -65,9 +65,14 @@ $escape_map={
 	"&" => "&amp;",
 }
 
-def escape_html(text)
+# hackish transcoding from unicode to iso-8859-1
+def multicode(text); text.gsub(/\xc2(.)/) { $1 } end
+
+def html_quote(text)
 	return nil if not text
-	text.gsub(/[<>&]/) {|x| $escape_map[x] }
+	text = text.gsub(/[<>&]/) {|x| $escape_map[x] }
+	text = multicode(text) if /\xc2/ =~ text
+	text
 end
 
 def mk(tag,*values,&block)
@@ -100,7 +105,7 @@ end
 
 class XString < String
 	def show
-		print escape_html(gsub(/[\r\n\t ]+$/," "))
+		print html_quote(gsub(/[\r\n\t ]+$/," "))
 	end
 end
 
@@ -183,7 +188,6 @@ XNode.register("section") {
 		print "</ul>\n"
 	end
 }
-
 
 # basic text formatting nodes.
 XNode.register(*%w( p i u b k sup )) {
@@ -304,12 +308,12 @@ XNode.register("method") {
 		end
 		print "<b>method</b>&nbsp;"
 #=begin
-		print "#{escape_html att['name']} <b>(</b>"
+		print "#{html_quote att['name']} <b>(</b>"
 		print contents.map {|x|
 			next unless XNode===x
 			case x.tag
 			when "arg"
-				s=escape_html(x.att["name"])
+				s=html_quote(x.att["name"])
 				s="<i>#{x.att['type']}</i> #{s}" if x.att['type']
 				s
 			when "rest"
@@ -320,7 +324,7 @@ XNode.register("method") {
 #=end
 =begin
 		nice_table { mk(:tr) {
-			mk(:td,:width,1) { print escape_html(att['name']) }
+			mk(:td,:width,1) { print html_quote(att['name']) }
 			contents.each {|x|
 				next unless XNode===x
 				case x.tag
@@ -328,17 +332,17 @@ XNode.register("method") {
 					mk(:td,:bgcolor,:pink) {
 						s = ""
 						if x.att["type"]
-							s << "<i>" << escape_html(x.att["type"]) << "</i>"
+							s << "<i>" << html_quote(x.att["type"]) << "</i>"
 						end
 						if x.att["name"]
-							s << " " << escape_html(x.att["name"])
+							s << " " << html_quote(x.att["name"])
 						end
 						s<<"&nbsp;" if s.length==0
 						mk(:b) { puts s }
 					}
 				when "rest"
 					mk(:td,:bgcolor,:pink) {
-						mk(:b) { print escape_html(x.att["name"]), "..."}
+						mk(:b) { print html_quote(x.att["name"]), "..."}
 					}
 				end
 			}
@@ -352,14 +356,19 @@ XNode.register("method") {
 
 XNode.register("table") {
 	def show
+		colors = ["#ffffff","#f0f8ff",]
+		rows = contents.find_all {|x| XNode===x && x.tag=="row" }
+		rows.each_with_index {|x,i| x.bgcolor = colors[i%2] }
 		mk(:tr) {
 		2.times { mk(:td) {} }
 		mk(:td) {
 		nice_table {
 			mk(:tr) {
 				columns = contents.find_all {|x| XNode===x && x.tag=="column" }
-				columns.each {|x| mk(:td) { mk(:b) {
-					x.contents.each {|y| y.show }}}}
+				columns.each {|x| mk(:td,:bgcolor,"#808080") {
+				mk(:font,:color,"#ffffff") {
+				mk(:b) {
+					x.contents.each {|y| y.show }}}}}
 			}
 			super
 		}}}
@@ -371,39 +380,28 @@ XNode.register("column") {
 }
 
 XNode.register("row") {
+	attr_accessor :bgcolor
 	def show
 		columns = parent.contents.find_all {|x| XNode===x && x.tag=="column" }
-		mk(:tr) { columns.each {|x| mk(:td) {
+		mk(:tr) { columns.each {|x| mk(:td,:bgcolor,bgcolor) {
 			id = x.att["id"]
-			if id==""
-				then contents.each {|x| x.show }
-				else print att[id] end
-		}}}
-	end
-}
-
-XNode.register("operator-1", "operator-2") {
-	def show
-		mk(:tr) {
-		mk(:td) {
-			icon = contents.find {|x| XNode===x && x.tag == "icon" }
-			if icon then
-				mkimg icon
-			else
+			case x.att["type"]
+			when "icon" # should fix this for non-op icons
 				x = "images/op/#{att['cname']}.jpg"
 				x.sub! /jpg$/, "png" if not File.exist? x
 				if not File.exist? x
 					STDERR.print "warning: no icon for #{att['name']} (#{x})\n"
 				end
 				mk(:img,:src,x,:border,0,:alt,att["name"])
+			else
+				if id==""
+				then contents.each {|x| x.show }
+				else
+#					print html_quote(att[id] || "--")
+					print multicode(att[id] || "--")
+				end
 			end
-			# print att["name"]
-		}
-		mk(:td) { super }
-		mk(:td) { print "#{(escape_html att['color'])||'&nbsp;'}" }
-		mk(:td) { print "#{(escape_html att['space'])||'&nbsp;'}" }
-		}#/tr
-		puts ""
+		}}}
 	end
 }
 
@@ -436,6 +434,7 @@ else
 			@stack = [[]]
 		end
 		def do_it; @xml.parse(@file.readlines.join("\n"), true) end
+		def method_missing(sel,*args) @xml.send(sel,*args) end
 	end
 end
 
@@ -526,38 +525,40 @@ def read_one_page file
 		parser = GFDocParser.new(file)
 		parser.do_it
 		$nodes[file] = parser.stack[0][0]
-	rescue XMLParserError => e
+	rescue Exception => e
 		puts ""
 		puts ""
 		STDERR.puts e.inspect
-
 		i = parser.stack.length-1
 		(STDERR.puts "\tinside <#{parser.stack[i][0]}>"; i-=1) until i<1
-
 		# strange that line numbers are doubled.
 		# also the byte count is offset by the line count !?!?!?
 		STDERR.puts "\tinside #{file}:#{parser.line/2 + 1}" +
 			" (column #{parser.column}," +
 			" byte #{parser.byteIndex - parser.line/2})"
-
 		raise "why don't you fix the documentation"
 	end
 end
 
 def write_one_page file
-	output_name = file.sub(/\.xml/,".html")
-	STDERR.puts "writing #{output_name}"
-	STDOUT.reopen output_name, "w"
-	write_header
-	tree = $nodes[file]
-	mk(:tr) { mk(:td,:colspan,2) { mk(:div,:cols,tree.att["indexcols"]||1) {
-		tree.show_index
-		puts "<br><br>"
-	}}}
-	tree.show
-	write_footer
-	puts ""
-	puts ""
+	begin
+		output_name = file.sub(/\.xml/,".html")
+		STDERR.puts "writing #{output_name}"
+		STDOUT.reopen output_name, "w"
+		write_header
+		tree = $nodes[file]
+		mk(:tr) { mk(:td,:colspan,2) { mk(:div,:cols,tree.att["indexcols"]||1) {
+			tree.show_index
+			puts "<br><br>"
+		}}}
+		tree.show
+		write_footer
+		puts ""
+		puts ""
+	rescue Exception => e
+		STDERR.puts "#{e.class}: #{e.message}"
+		STDERR.puts e.backtrace
+	end
 end
 
 $files = %w(
