@@ -61,8 +61,8 @@ struct PlanEntry {
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
-	\attr Operator2 *op_para;
-	\attr Operator2 *op_fold;
+	\attr Numop2 *op_para;
+	\attr Numop2 *op_fold;
 	\attr Grid seed;
 	\attr Grid b;
 	
@@ -72,7 +72,7 @@ struct GridConvolve : GridObject {
 
 	int margx,margy; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); plan=0; }
-	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
 	GRINLET3(0);
@@ -94,7 +94,7 @@ template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x)
 	}
 }
 
-static Operator2 *OP2(Ruby x) {return FIX2PTR(Operator2,rb_hash_aref(op2_dict,x));}
+static Numop2 *OP2(Ruby x) {return FIX2PTR(Numop2,rb_hash_aref(op2_dict,x));}
 
 template <class T> void GridConvolve::make_plan (T bogus) {
 	Dim *da = a.dim, *db = b.dim;
@@ -148,7 +148,7 @@ GRID_INLET(GridConvolve,0) {
 } GRID_FLOW {
 	COPY((Pt<T>)a+in->dex, data, n);
 } GRID_FINISH {
-	Operator2 *op2_put = OP2(SYM(put));
+	Numop2 *op2_put = OP2(SYM(put));
 	make_plan((T)0);
 	int dbx = b.dim->get(1);
 	int day = a.dim->get(0);
@@ -182,7 +182,7 @@ GRID_INLET(GridConvolve,0) {
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void initialize (Operator2 *op_para, Operator2 *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
@@ -320,7 +320,7 @@ GRID_INLET(GridDownscaleBy,0) {
 	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
 	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
-	temp.init(new Dim(2,w));
+	temp.init(new Dim(2,w), in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp.dim->prod();
@@ -398,7 +398,7 @@ GRID_INLET(GridLayer,0) {
 	expect_rgba_picture(a);
 	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
-	in->set_factor(a->prod(1));
+	in->set_factor(a->prod(2));
 	out[0]->begin(r.dim->dup());
 } GRID_FLOW {
 	Pt<T> rr = ((Pt<T>)r) + in->dex*3/4;
@@ -410,6 +410,7 @@ GRID_INLET(GridLayer,0) {
 		COMPUTE_ALPHA(1,3);
 		COMPUTE_ALPHA(2,3);
 	}
+#undef COMPUTE_ALPHA
 	out[0]->send(n*3/4,foo);
 } GRID_FINISH {
 } GRID_END
@@ -434,7 +435,7 @@ static void expect_polygon (Dim *d) {
 
 \class DrawPolygon < GridObject
 struct DrawPolygon : GridObject {
-	\attr Operator2 *op;
+	\attr Numop2 *op;
 	\attr Grid color;
 	\attr Grid polygon;
 	Grid color2;
@@ -445,7 +446,7 @@ struct DrawPolygon : GridObject {
 		color.constrain(expect_max_one_dim);
 		polygon.constrain(expect_polygon);
 	}
-	\decl void initialize (Operator2 *op, Grid *color=0, Grid *polygon=0);
+	\decl void initialize (Numop2 *op, Grid *color=0, Grid *polygon=0);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
@@ -457,7 +458,7 @@ struct DrawPolygon : GridObject {
 void DrawPolygon::init_lines () {
 	int nl = polygon.dim->get(0);
 	int32 v[] = {nl,8};
-	lines.init(new Dim(2,v));
+	lines.init(new Dim(2,v), int32_type_i);
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 	Pt<int32> pd = (Pt<int32>)polygon;
 	for (int i=0,j=0; i<nl; i++) {
@@ -543,7 +544,7 @@ GRID_INLET(DrawPolygon,0) {
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
-\def void initialize (Operator2 *op, Grid *color, Grid *polygon) {
+\def void initialize (Numop2 *op, Grid *color, Grid *polygon) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	if (color) this->color.swallow(color);
@@ -565,16 +566,18 @@ static void expect_position(Dim *d) {
 
 \class DrawImage < GridObject
 struct DrawImage : GridObject {
-	\attr Operator2 *op;
+	\attr Numop2 *op;
 	\attr Grid image;
 	\attr Grid position;
-
+	\attr bool alpha;
+	
 	DrawImage() {
 		position.constrain(expect_position);
 		image.constrain(expect_picture);
 	}
 
-	\decl void initialize (Operator2 *op, Grid *image=0, Grid *position=0);
+	\decl void initialize (Numop2 *op, Grid *image=0, Grid *position=0);
+	\decl void _0_alpha (bool v=true);
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
@@ -585,16 +588,21 @@ GRID_INLET(DrawImage,0) {
 	NOTEMPTY(position);
 	SAME_TYPE(*in,image);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
-	if (in->dim->get(2)!=image.dim->get(2))
-		RAISE("incoming image does not have same number of channels as stored image");
+	int lchan = in->dim->get(2);
+	int rchan = image.dim->get(2);
+	if (alpha && rchan!=4) {
+		RAISE("alpha mode works only with 4 channels in right_hand");
+	}
+	if (lchan != rchan-(alpha?1:0) && lchan != rchan) {
+		RAISE("right_hand has %d channels, alpha=%d, left_hand has %d, expecting %d or %d",
+			rchan, alpha?1:0, lchan, rchan-(alpha?1:0), rchan);
+	}
 	out[0]->begin(in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 } GRID_FLOW {
 	int y = in->dex/in->factor;
-	int py = ((int32*)position)[0];
-	int px = ((int32*)position)[1];
-	int sy = image.dim->v[0];
-	int sx = image.dim->v[1];
+	int py = ((int32*)position)[0], sy = image.dim->v[0];
+	int px = ((int32*)position)[1], sx = image.dim->v[1];
 	for (; n; y++, n-=in->factor, data+=in->factor) {
 		if (y>=py && y<py+sy) {
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
@@ -603,8 +611,44 @@ GRID_INLET(DrawImage,0) {
 			int xe = min(in->dim->get(1),px+sx);
 			int cn = image.dim->prod(2);
 			Pt<T> cd = (Pt<T>)image + image.dim->prod(1)*(y-py) + cn*(xs-px);
-			//!@#$ optimise
-			for (; xs<xe; cd+=cn) op->zip(cn,data2+in->dim->get(2)*xs++,cd);
+			if (alpha && image.dim->get(2)!=in->dim->get(2)) {
+				// RGB by RGBA
+				//!@#$ optimise
+				int nn=xe-xs;
+#define COMPUTE_ALPHA(c,a) data2[j+(c)] = data[j+(c)] + (cd[a])*(data2[j+(c)]-data[j+(c)])/256;
+				for (; nn; nn--, cd+=cn) {
+					int j = (cn-1)*xs++;
+					op->zip(cn,data2+j,cd);
+					COMPUTE_ALPHA(0,3); COMPUTE_ALPHA(1,3); COMPUTE_ALPHA(2,3);
+				}
+			} else if (alpha) {
+				// RGBA by RGBA
+				//!@#$ optimise
+				int nn=xe-xs;
+				op->zip(cn*nn,data2,cd);
+				int j = 0;
+#define COMPUTE_ALPHA4(b) \
+	COMPUTE_ALPHA(b+0,b+3); \
+	COMPUTE_ALPHA(b+1,b+3); \
+	COMPUTE_ALPHA(b+2,b+3); \
+	data2[b+3] = cd[3] + (255-cd[3])*(data[j+b+3])/256;
+				for (; nn>=4; nn-=4, cd+=cn<<2, j+=cn<<2) {
+					COMPUTE_ALPHA4(0);
+					COMPUTE_ALPHA4(4);
+					COMPUTE_ALPHA4(8);
+					COMPUTE_ALPHA4(12);
+				}
+				for (; nn; nn--, cd+=cn, j+=cn) {
+					COMPUTE_ALPHA4(0);
+				}
+#undef COMPUTE_ALPHA
+			} else {
+				// RGB by RGB, etc
+				//!@#$ optimise
+				for (; xs<xe; cd+=cn) {
+					op->zip(cn,data2+cn*xs++,cd);
+				}
+			}
 			out[0]->give(in->factor,data2);
 		} else {
 			out[0]->send(in->factor,data);
@@ -616,11 +660,19 @@ GRID_INLET(DrawImage,0) {
 GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
 
-\def void initialize (Operator2 *op, Grid *image, Grid *position) {
+\def void _0_alpha (bool v=true) {
+	alpha = v;
+}
+
+\def void initialize (Numop2 *op, Grid *image, Grid *position) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	if (image) this->image.swallow(image);
 	if (position) this->position.swallow(position);
+	else {
+		int32 v[] = { 2 };
+		this->position.init_clear(new Dim(1,v), int32_type_i);
+	}
 }
 
 GRCLASS(DrawImage,LIST(GRINLET4(DrawImage,0,4),GRINLET4(DrawImage,1,4),GRINLET(DrawImage,2,4)),
