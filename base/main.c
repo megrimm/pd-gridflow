@@ -419,9 +419,12 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-Ruby fclass_install(FClass *fc, Ruby super) {
-	if (!super) super = cGridObject;
-	Ruby rself = rb_define_class_under(mGridFlow, fc->name, super);
+Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
+	FClass *fc = FIX2PTR(FClass,fc_);
+	//printf("fclass_install %s\n",fc->name);
+	Ruby rself = super!=Qnil ?
+		rb_define_class_under(mGridFlow, fc->name, super) :
+		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator))); //#!@$??
 	if (fc->startup) fc->startup(rself);
@@ -570,7 +573,6 @@ void Init_gridflow () {
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-
 	signal(11,SIG_DFL); // paranoia
 	mGridFlow = EVAL("module GridFlow;"
 		"class<<self; attr_reader :bridge_name; end; "
@@ -587,6 +589,7 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("malloc_bytes",GridFlow_malloc_bytes,0);
 	SDEF2("malloc_time", GridFlow_malloc_time,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
+	SDEF2("fclass_install",GridFlow_fclass_install,2);
 
 //#define FOO(A) fprintf(stderr,"sizeof("#A")=%d\n",sizeof(A));
 //FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
@@ -648,7 +651,7 @@ BUILTIN_SYMBOLS(FOO)
 #endif
 	cFormat = EVAL("GridFlow::Format");
 	for (int i=0; i<COUNT(format_classes); i++) {
-		fclass_install(format_classes[i], cFormat);
+		GridFlow_fclass_install(0,PTR2FIX(format_classes[i]), cFormat);
 	}
 	if (strcmp(RUBY_ARCH,"powerpc-darwin")==0) {
 		EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
