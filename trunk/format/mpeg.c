@@ -33,41 +33,31 @@
 */
 ImageDesc *mpeg_id = 0;
 
-typedef struct FormatMPEG {
-	Format_FIELDS;
-} FormatMPEG;
+struct FormatMPEG : Format {
+};
 
-static bool FormatMPEG_frame (FormatMPEG *$, GridOutlet *out, int frame) {
-	char *buf = NEW(char,mpeg_id->Size);
+METHOD(FormatMPEG,frame) {
+	uint8 *buf = NEW(uint8,mpeg_id->Size);
+	GridOutlet *out = $->out[0];
 	int npixels = mpeg_id->Height * mpeg_id->Width;
-	if (frame != -1) RAISE("can't seek frames with this driver");
 /*	SetMPEGOption(MPEG_QUIET,1); */
-	if (!GetMPEGFrame(buf)) RAISE("libmpeg: can't fetch frame");
+	if (!GetMPEGFrame((char *)buf)) RAISE("libmpeg: can't fetch frame");
 
-	{
-		int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
-		GridOutlet_begin(out, Dim_new(3,v));
+	int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
+	out->begin(new Dim(3,v));
+
+	int y;
+	int sy = out->dim->get(0);
+	int sx = out->dim->get(1);
+	int bs = out->dim->prod(1);
+	Number b2[bs];
+	for(y=0; y<sy; y++) {
+		uint8 *b1 = buf + 4*sx*y;
+		$->bit_packing->unpack(sx,b1,b2);
+		out->send(bs,b2);
 	}
-
-	{
-		int y;
-		int sy = Dim_get(out->dim,0);
-		int sx = Dim_get(out->dim,1);
-		int bs = Dim_prod_start(out->dim,1);
-		Number b2[bs];
-		for(y=0; y<sy; y++) {
-			uint8 *b1 = buf + 4*sx*y;
-			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send(out,bs,b2);
-		}
-	}
-
 	FREE(buf);
-
-	GridOutlet_end(out);
-	return true;
-err:
-	return false;
+	out->end();
 }
 
 GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
@@ -75,38 +65,34 @@ GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
 METHOD(FormatMPEG,close) {
-	if (mpeg_id) FREE(mpeg_id);
-	if ($->st) Stream_close($->st);
+	if (mpeg_id) {
+		CloseMPEG();
+		FREE(mpeg_id);
+	}
 	rb_call_super(argc,argv);
 }
 
 METHOD(FormatMPEG,init) {
 	rb_call_super(argc,argv);
-	const char *filename;
 	argv++, argc--;
-
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
-
-	filename = rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
-		rb_funcall(argv[1],SI(to_s),0)));
-	
-	$->st = Stream_open_file(filename,mode);
-	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
 
 	if (mpeg_id) RAISE("libmpeg.so is busy (you must close the other mpeg file)");
 
+	const char *filename =
+		rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
+			rb_funcall(argv[1],SI(to_s),0)));
+
 	mpeg_id = NEW(ImageDesc,1);
-
 	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
-	if (!OpenMPEG(Stream_get_file($->st),mpeg_id))
-		RAISE("libmpeg: can't open mpeg file");
+	VALUE f = rb_funcall(rb_cFile,SI(open),2,
+		rb_str_new2(filename),rb_str_new2("r"));
+	FILE *f2 = RFILE(f)->fptr->f;
+	if (!OpenMPEG(f2,mpeg_id))
+		RAISE("libmpeg: can't open mpeg file `%s': %s", filename, strerror(errno));
 
-	$->bit_packing = BitPacking_new(is_le(),4,0x0000ff,0x00ff00,0xff0000);
-
-	return (Format *)$;
-err:
-	FormatMPEG_close($);
-	return 0;
+	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+	$->bit_packing = new BitPacking(is_le(),4,3,mask);
 }
 
 FMTCLASS(FormatMPEG,"mpeg","Motion Picture Expert Group Format (using Ward's)",FF_R,
@@ -114,3 +100,4 @@ inlets:1,outlets:1,LIST(GRINLET(FormatMPEG,0)),
 DECL(FormatMPEG,init),
 DECL(FormatMPEG,frame),
 DECL(FormatMPEG,close))
+

@@ -101,7 +101,7 @@ class GridIn < GridObject
 
 	def _0_open(sym,*a)
 		qlass = GridFlow.formats[sym]
-		if not qlass then raise "unknown file format identifier: %s", sym end
+		if not qlass then raise "unknown file format identifier: #{sym}" end
 		@format.close if @format
 		@format = qlass.new :in, *a
 		@format.connect 0,self,1
@@ -154,7 +154,7 @@ class GridOut < GridObject
 
 	def _0_open(sym,*a)
 		qlass = GridFlow.formats[sym]
-		if not qlass then raise "unknown file format identifier: %s", sym end
+		if not qlass then raise "unknown file format identifier: #{sym}" end
 		@format.close if @format
 		@format = qlass.new :out, *a
 		@format.connect 0,self,1
