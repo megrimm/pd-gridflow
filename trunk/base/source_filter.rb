@@ -78,6 +78,7 @@ def handle_attr(line)
 	Out.print line
 	Out.puts "//FCS"
 	handle_decl "void _0_#{name}_m (#{type} #{name});"
+	Out.puts "# #{$linenumber}"
 end
 
 def handle_decl(line)
@@ -92,6 +93,7 @@ def handle_decl(line)
 	Out.print "#{unparse_arglist m.arglist});"
 	Out.puts "static Ruby #{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself);//FCS"
+	Out.puts "# #{$linenumber+1}"
 end
 
 def handle_def(line)
@@ -220,6 +222,7 @@ def handle_end(line)
 
 		}
 		$stack.pop
+		Out.puts "# #{$linenumber}"
 	end
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
