@@ -66,14 +66,6 @@ struct BFObject : fts_object_t {
 	Ruby rself;
 };
 
-static fts_class_t *find_bfclass (fts_symbol_t sym) {
-	Ruby v = rb_hash_aref(
-		rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
-		rb_str_new2(sym));
-	if (v==Qnil) RAISE("class not found");
-	return FIX2PTR(fts_class_t,v);
-}
-
 static void Bridge_export_value(Ruby arg, fts_atom_t *at) {
 	if (INTEGER_P(arg)) {
 		fts_set_int(at,NUM2INT(arg));
