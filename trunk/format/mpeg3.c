@@ -96,6 +96,6 @@ GRCLASS(FormatMPEG3,LIST(),
 ) {
 	IEVAL(rself,"install 'FormatMPEG3',1,1;"
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
-	" (using HeroineWarrior\\'s)'");
+	" (using HeroineWarrior\\'s)', 'mpg,mpeg'");
 }
 \end class FormatMPEG3
