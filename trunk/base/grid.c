@@ -167,13 +167,11 @@ void GridInlet::begin(int argc, VALUE *argv) {
 	FREE(v);
 
 	dex = 0;
-	assert(gh->begin);
 	int r = rb_ensure(
 		(RFunc)GridInlet_begin$1,(VALUE)this,
 		(RFunc)GridInlet_begin$2,(VALUE)this);
 	if (!r) {abort(); return;}
 
-//	gfpost("setting back dim...");
 	this->dim = dim;
 	back_out->callback(this,gh->mode);
 }
@@ -605,15 +603,6 @@ LIST(),
 	DECL(GridObject,method_missing))
 
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
-/*
-	MethodDecl methods[] = {
-		DECL(GridObject,method_missing),
-	};
-	define_many_methods($,COUNT(methods),methods);
-
-	rb_enable_super($,"method_missing");
-*/
-
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method($,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method($,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
