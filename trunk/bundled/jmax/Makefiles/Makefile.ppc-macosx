@@ -32,7 +32,7 @@ RANLIB = ranlib
 ARCH_CFLAGS := -pipe -Wall -Wno-unused -DMACOSX
 #ARCH_LDFLAGS := -rdynamic
 LDSO = cc
-LDSOFLAGS = -bundle -undefined suppress
+LDSOFLAGS = -bundle -undefined suppress -flat_namespace
 
 CC_ALL_FLAG := -Xlinker -all_load
 CC_NONE_FLAG := 
@@ -44,4 +44,20 @@ ARCH_OPT_LDFLAGS :=
 
 FTS_SYS_LIBS =
 
+
+prefix=/usr/local
+doc_install_dir=$(prefix)/doc/jMax-$(JMAX_VERSION)
+lib_install_dir=$(prefix)/lib/jmax
+include_install_dir=$(prefix)/include
+bin_install_dir=$(prefix)/bin
+
+#ARCH_PACKAGES=alsa oss unixdtd
+
+
+INSTALL=install
+INSTALL_DATA=$(INSTALL) -m 0644
+INSTALL_PROGRAM=$(INSTALL) -m 0755
+INSTALL_SETUID=$(INSTALL) -m 0755
+INSTALL_LIB=$(INSTALL) -m 0755
+INSTALL_DIR=$(INSTALL) -d -m 0755
 
