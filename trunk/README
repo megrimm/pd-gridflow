@@ -21,6 +21,7 @@ Directory layout
   ./images:
     sample images shared by ./samples, ./help, ./doc
     NOTE: bundled separately because they are big and seldom change
+	http://hostname.2y.net/video4jmax/download/video4jmax-images-0.2.tar.gz
 
   ./c/src:
     jMax object classes written in C

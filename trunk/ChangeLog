@@ -4,7 +4,13 @@ version 0.2.2:
  * @video_out auto-updates upon X11 ExposeEvents
  * fixed help (and summary)
  * split BitPacking module from @video_out
- * added support for BTTV input (that is, videodev-by-mmap)
+ * added support for BTTV input (that is, using mmap() command)
+ * new videodev options: channel,tuner,contrast,hue,etc.
+ * now with 24 binary operators, and 3 unary operators
+ * added many new samples
+ * new objects:
+	@fold, @dim,
+	@pixelize
 
 version 0.2.1:
  * added private CVS repository on hostname.2y.net
@@ -12,13 +18,14 @@ version 0.2.1:
  * added documentation in HTML format
  * added File Format API
 	* format "ppm": PPM P6 RGB24 support read-write
-	* format "targa": Targa RGB24 support read-write
-	* format "videodev": Video4linux read (only works with dc1plus.o)
+	* format "targa": Targa RGB24 support read-only
+	* format "videodev": Video4linux read (using read() command only)
  * @store no longer slowing down its downstream
  * many other accelerations
  * Tuple changed to Dim; Index removed
  * Grid element type is typedef Number
  * @ supports grids in right inlet
+ * now there are 20 binary operators
 
 version 0.2.0:
  * package name changed from "video" to "video4jmax"
