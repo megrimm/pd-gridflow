@@ -1,11 +1,12 @@
 #!/usr/bin/make
 
 # JMAX = /opt/lib/jmax
-JMAX = /usr/lib/jmax
-CLASSPATH=".:$(JMAX)/java/classes/jmax.jar:$(JMAX)/packages/guiobj/java/classes/guiobj.jar:$(JMAX)/java/lib/jacl/jacl.jar:$(JMAX)/java/lib/jacl/tcljava.jar"
+# JMAX = /usr/local/lib/jmax
 
-#include ../bundled/jmax/Makefiles/Makefile.$(ARCH)
-#include ../bundled/jmax/Makefiles/Makefile.package
+include ../config.make
+include ../bundled/jmax/Makefiles/Makefile.$(JMAX_ARCH)
+JMAX = $(prefix)/lib/jmax
+CLASSPATH=".:$(JMAX)/java/classes/jmax.jar:$(JMAX)/packages/guiobj/java/classes/guiobj.jar:$(JMAX)/java/lib/jacl/jacl.jar:$(JMAX)/java/lib/jacl/tcljava.jar"
 
 OBJS = \
 gridflow/FtsPeepholeObject.class \
