@@ -567,7 +567,7 @@ GRID_INLET(GridFold,0) {
 	int nn=n;
 	while (n) {
 		COPY(buf+i,((Pt<T>)r),zn);
-		op->fold2(zn,buf+i,yn,data);
+		op->fold(zn,yn,buf+i,data);
 		i += zn;
 		data += yn*zn;
 		n -= yn*zn;
@@ -630,7 +630,7 @@ GRID_INLET(GridScan,0) {
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
-		op->scan2(zn,(Pt<T>)r,yn,buf);
+		op->scan(zn,yn,(Pt<T>)r,buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
@@ -714,7 +714,7 @@ GRID_INLET(GridInner,0) {
 
 		for (int j=0; j<rcols; j++) buf2[j] = (T)rint;
 		op_para->zip(rsize,buf,rdata);
-		op_fold->fold2(rcols,buf2,rrows,buf);
+		op_fold->fold(rcols,rrows,buf2,buf);
 		out[0]->send(rcols,buf2);
 		n-=rrows;
 		data+=rrows;
@@ -919,7 +919,7 @@ GRID_INLET(GridConvolve,0) {
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=rint;
 			op_para->zip(l*dbx*dby,buf,buf2);
-			op_fold->fold2(l,buf3,dbx*dby,buf);
+			op_fold->fold(l,dbx*dby,buf3,buf);
 			out[0]->send(l,buf3);
 		}
 	}
