@@ -252,7 +252,7 @@ class XNode
 			when "rest"
 				x.att["name"] + "..."
 			end
-		}.compact.join "<b>,</b>"
+		}.compact.join("<b>,</b>")
 		print "<b>)</b>"
 		proc { print "<br>\n" }
 	end

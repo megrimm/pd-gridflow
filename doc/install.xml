@@ -20,16 +20,16 @@
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 	<li>GNU Bash</li>
-	<li>X11 Display Server</li>
-	<li>X11 Display Library (Xlib)</li>
 </list></p>
 <p>Very Recommended:<list>
 	<li>jMax 2.5</li>
 	<li>jMax 3.0 support coming soon</li>
 	<li>jMax 2.4 support removed</li>
+	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
 </list></p>
 <p>Optional:<list>
 	<li>HeroineWarrior's libmpeg3.so</li>
+	<li>HeroineWarrior's libquicktime.so</li>
 	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
 	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
 	<li>Ruby 1.6 with package "xmlparser" (for editing documentation)</li>
@@ -55,6 +55,17 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 
 <section name="Installation process (for jMax 2.5)"><prose>
 <list>
+  <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
+latest from the 1.7 series work and are faster)  You will need the file
+<k>libruby.so</k>, which is not always included. If you're using an
+installer and you're missing the file, then look for another package of a
+similar name that may contain extra files (eg: "ruby-dev"). If you're
+installing from source code you have to configure with the
+<k>--enable-shared</k> option. If you install into a system directory, you
+have to recreate the library index using the <k>ldconfig</k> command too
+(auto-installers normally do this for you).
+  </li>
+
   <li>Download the latest version of GridFlow
       and download the images pack (gridflow-images-0.5.tar.gz).
       The download site is
@@ -65,14 +76,20 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 	 another one called 'images'.
   </li>
 
-  <li>Find your system type (for AMD K6 and Pentium Pro and compatibles, 
-  on Linux, this is <k>i686-linux</k>; if you have a recent Macintosh, this
-  is <k>ppc-macosx</k> or <k>ppc-linux</k>)</li>
-  
-  <li>Run <k>./configure --arch <i>your-system-type</i></k> from the <k>gridflow</k> directory.
-  note: if you didn't install GridFlow in the <k>packages</k> directory,
-  then you have to add the option <k>--jmax-dist-dir
-  <i>your-jmax-source-directory-goes-here</i></k></li>
+  <li>Find your jMax ARCH value. This is the one you use when installing
+  jMax (or other jMax plugins other than GridFlow) manually. For K6,
+  PentiumPro and such, on Linux, this is <k>i686-linux</k>. If you are
+  trying to run it on a Macintosh, this would be <k>ppc-macosx</k> or
+  <k>ppc-linux</k>.</li>
+
+  <li>Run <k>./configure --jmax-arch <i>your-ARCH</i></k> from the
+  <k>gridflow</k> directory. 
+  note: if you didn't install GridFlow in the <k>jmax/packages</k>
+  directory, then you have to add the option <k>--jmax-dist-dir
+  <i>your-jmax-source-directory-goes-here</i></k>. Giving
+  <k>/usr/lib/jmax</k> will not do because it wants <k>include</k> and
+  <k>Makefiles</k> subdirectories, which do not get installed with
+  jMax.</li>
 
   <li><k>./configure</k> will try to detect some optional components (libmpeg,
   pentium clock, etc); error messages may appear in case of a <k>no</k>.
