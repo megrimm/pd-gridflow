@@ -23,37 +23,12 @@
 
 #include "../config.h"
 #include "grid.h"
+#include "bridge_jmax.h"
 #include <ctype.h>
 #include <stdarg.h>
 
-#ifdef STANDALONE
-typedef FObject fts_object_t;
-typedef Symbol fts_symbol_t;
-typedef Var fts_atom_t;
-#define fts_is_symbol(a) Var_has_symbol(a)   
-#define fts_is_int(a) Var_has_int(a)      
-#define fts_get_symbol(a) Var_get_symbol(a)   
-#define fts_get_int(a) Var_get_int(a)      
-#define fts_get_ptr(a) Var_get_ptr(a)      
-#define fts_set_symbol(a,b) Var_put_symbol(a,b) 
-#define fts_set_int(a,b) Var_put_int(a,b)    
-#define fts_set_ptr(a,b) Var_put_ptr(a,b)    
-#define fts_new_symbol(x) Symbol_new(x)
-#define fts_symbol_name(x) Symbol_name(x)
-#define fts_status_get_description(x) "foobar"
-#define fts_method_define_varargs(c,i,s,m) fts_method_define_optargs(c,i,s,m,0,0,0)
-#define fts_object_get_outlets_number(o) o->head.cl->n_outlets
-#define fts_outlet_send(a,b,c,d,e) Object_send_thru(a,b,c,d,e)
-#else
-#include "bridge_jmax.h"
-#endif
-
-VALUE FObject_class;
-VALUE GridFlow_module;
-
 static int gf_winlet2;
 int gf_winlet (void) { return gf_winlet2; }
-
 
 /* **************************************************************** */
 /* FObject */
@@ -315,6 +290,7 @@ VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 		for (i=0; i<ac; i++) rj_convert(argv[i],at+i);
 	}
 	fts_outlet_send(FObject_peer($),outlet,selector,ac,at);
+	FObject_send_thru_2(argc,argv,$);
 	return Qnil;
 }
 
@@ -373,52 +349,12 @@ struct Timer {
 
 void gridflow_module_init (void) {
 	gf_init();
+
+
 }
 
 fts_module_t gridflow_module = {
 	"video",
 	"GridFlow: n-dimensional array streaming, pictures, video, etc.",
 	gridflow_module_init, 0, 0};
-
-/*
-	a slightly friendlier version of post(...)
-	it removes redundant messages.
-	it also ensures that a \n is added at the end.
-*/
-void whine(char *fmt, ...) {
-	static char *last_format = 0;
-	static int format_count = 0;
-
-	if (last_format && strcmp(last_format,fmt)==0) {
-		format_count++;
-		if (format_count >= 64) {
-			if (high_bit(format_count)-low_bit(format_count) < 3) {
-				post("[too many similar posts. this is # %d]\n",format_count);
-#ifdef MAKE_TMP_LOG
-				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
-				fflush(whine_f);
-#endif
-			}
-			return;
-		}
-	} else {
-		last_format = strdup(fmt);
-		format_count = 1;
-	}
-
-	/* do the real stuff now */
-	{
-		va_list args;
-		char post_s[256*4];
-		int length;
-		va_start(args,fmt);
-		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
-		post_s[sizeof(post_s)-1]=0; /* safety */
-		post("%s%s%.*s",whine_header,post_s,post_s[length-1]!='\n',"\n");
-#ifdef MAKE_TMP_LOG
-		fprintf(whine_f,"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
-		fflush(whine_f);
-#endif
-	}
-}
 
