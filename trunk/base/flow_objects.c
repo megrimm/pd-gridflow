@@ -26,6 +26,37 @@
 #include <math.h>
 #include "grid.h.fcs"
 
+template <int n>
+class SCOPY {
+public:
+	template <class T>
+	static inline void f(Pt<T> a, Pt<T> b) {
+		*a=*b;
+		SCOPY<n-1>::f(a+1,b+1);
+	}
+};
+
+template <>
+class SCOPY<0> {
+public:
+	template <class T>
+	static inline void f(Pt<T> a, Pt<T> b) {}
+};
+
+/*
+template <>
+class SCOPY<4> {
+public:
+	template <class T>
+	static inline void f(Pt<T> a, Pt<T> b) {
+		*a=*b;
+		SCOPY<3>::f(a+1,b+1);
+	}
+	// would gcc 2.95 complain here?
+	static inline void f(Pt<uint8> a, Pt<uint8> b) { *(int32 *)a=*(int32 *)b; }
+};
+*/
+
 Numop2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
 Numop2 *op2_shl, *op2_and;
 
@@ -268,6 +299,14 @@ GRID_INLET(GridStore,0) {
 
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 
+	{
+		int lastindexable = r.dim->prod()/r.dim->prod(nc) - 1;
+		int ngreatest = nt_greatest((T *)0);
+		if (lastindexable > ngreatest) {
+			RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
+		}
+	}
+	
 	if (nc > nb)
 		RAISE("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
@@ -291,29 +330,105 @@ GRID_INLET(GridStore,0) {
 		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
 		if (i) {
 			if (is_power_of_two) {
-				op2_shl->map(nd,v,(int32)highest_bit(wrap));
+				op2_shl->map(nd,v,(T)highest_bit(wrap));
 			} else {
-				op2_mul->map(nd,v,wrap);
+				op2_mul->map(nd,v,(T)wrap);
 			}
 		}
 		if (is_power_of_two) {
-			op2_and->map(nd,v+nd*i,wrap-1);
+			op2_and->map(nd,v+nd*i,(T)(wrap-1));
 		} else {
-			op2_mod->map(nd,v+nd*i,wrap);
+			op2_mod->map(nd,v+nd*i,(T)(wrap));
 		}
 		if (i) op2_add->zip(nd,v,v+nd*i);
 	}
 
+/*
 #define FOO(type) { \
-		Pt<type> p = (Pt<type>)r; \
-		if (size<=16) { \
-			Pt<type> foo = ARRAY_NEW(type,nd*size); \
-			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size); \
-			out[0]->give(size*nd,foo); \
-		} else { \
-			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
-		} \
+	Pt<type> p = (Pt<type>)r; \
+	if (size<=16) { \
+		Pt<type> foo = ARRAY_NEW(type,nd*size); \
+		switch (size) { \
+		case 1: for (int i=0; i<nd; i++, foo+=size) SCOPY<1>::f(foo,p+1*v[i]); break; \
+		case 2: for (int i=0; i<nd; i++, foo+=size) SCOPY<2>::f(foo,p+2*v[i]); break; \
+		case 3: for (int i=0; i<nd; i++, foo+=size) SCOPY<3>::f(foo,p+3*v[i]); break; \
+		case 4: for (int i=0; i<nd; i++, foo+=size) SCOPY<4>::f(foo,p+4*v[i]); break; \
+		default: for (int i=0; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
+		}; \
+		out[0]->give(size*nd,foo-size*nd); \
+	} else { \
+		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
+	} \
 }
+*/
+
+
+#define FOO(type) { \
+	Pt<type> p = (Pt<type>)r; \
+	if (size<=16) { \
+		Pt<type> foo = ARRAY_NEW(type,nd*size); \
+		int i=0; \
+		switch (size) { \
+		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
+			foo[0] = p[v[i+0]]; \
+			foo[1] = p[v[i+1]]; \
+			foo[2] = p[v[i+2]]; \
+			foo[3] = p[v[i+3]]; \
+		} break; \
+		case 2: for (; i<nd; i++, foo+=2) SCOPY<2>::f(foo,p+2*v[i]); break; \
+		case 3: for (; i<nd; i++, foo+=3) SCOPY<3>::f(foo,p+3*v[i]); break; \
+		case 4: for (; i<nd; i++, foo+=4) SCOPY<4>::f(foo,p+4*v[i]); break; \
+		default:; }; \
+		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
+		out[0]->give(size*nd,foo-size*nd); \
+	} else { \
+		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
+	} \
+}
+
+/*
+#define FOO(type) { \
+	Pt<type> p = (Pt<type>)r; \
+	if (size<=16) { \
+		Pt<type> foo = ARRAY_NEW(type,nd*size); \
+		int i=0; \
+		switch (size) { \
+		case 1: for (; i<nd&-8; i+=8, foo+=8) { \
+			foo[0] = p[v[i+0]]; \
+			foo[1] = p[v[i+1]]; \
+			foo[2] = p[v[i+2]]; \
+			foo[3] = p[v[i+3]]; \
+			foo[4] = p[v[i+4]]; \
+			foo[5] = p[v[i+5]]; \
+			foo[6] = p[v[i+6]]; \
+			foo[7] = p[v[i+7]]; \
+		} break; \
+		case 2: for (; i<nd&-4; i+=4, foo+=4*2) { \
+			SCOPY<2>::f(foo+0,p+2*v[i+0]); \
+			SCOPY<2>::f(foo+2,p+2*v[i+1]); \
+			SCOPY<2>::f(foo+4,p+2*v[i+2]); \
+			SCOPY<2>::f(foo+6,p+2*v[i+3]); \
+		} break; \
+		case 3: for (; i<nd&-4; i+=4, foo+=4*3) { \
+			SCOPY<3>::f(foo+0,p+3*v[i+0]); \
+			SCOPY<3>::f(foo+3,p+3*v[i+1]); \
+			SCOPY<3>::f(foo+6,p+3*v[i+2]); \
+			SCOPY<3>::f(foo+9,p+3*v[i+3]); \
+		} break; \
+		case 4: for (; i<nd&-4; i+=4, foo+=4*4) { \
+			SCOPY<4>::f(foo+0,p+4*v[i+0]); \
+			SCOPY<4>::f(foo+4,p+4*v[i+1]); \
+			SCOPY<4>::f(foo+8,p+4*v[i+2]); \
+			SCOPY<4>::f(foo+12,p+4*v[i+3]); \
+		} break; \
+		default:; }; \
+		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
+		out[0]->give(size*nd,foo-size*nd); \
+	} else { \
+		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
+	} \
+}
+*/
 
 	TYPESWITCH(r.nt,FOO,)
 #undef FOO
@@ -339,7 +454,7 @@ GRID_INPUT2(GridStore,1,r) {} GRID_END
 	rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
 }
 
-GRCLASS(GridStore,LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
+GRCLASS(GridStore,LIST(GRINLET2(GridStore,0,4),GRINLET4(GridStore,1,4)),
 	\grdecl
 ) { IEVAL(rself,"install '@store',2,1"); }
 
@@ -1014,23 +1129,6 @@ struct GridJoin : GridObject {
 	GRINLET3(0);
 	GRINLET3(1);
 	\decl void initialize (int which_dim=-1, Grid *r=0);
-};
-
-template <int n>
-class SCOPY {
-public:
-	template <class T>
-	static inline void f(Pt<T> a, Pt<T> b) {
-		*a=*b;
-		SCOPY<n-1>::f(a+1,b+1);
-	}
-};
-
-template <>
-class SCOPY<0> {
-public:
-	template <class T>
-	static inline void f(Pt<T> a, Pt<T> b) {}
 };
 
 GRID_INLET(GridJoin,0) {
