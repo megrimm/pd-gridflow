@@ -131,7 +131,7 @@ GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
 		VALUE a[] = { INT2NUM(0), sym_int, INT2NUM(*data) };
-		FObject_send_thru(COUNT(a),a,rself);
+		FObject_send_out(COUNT(a),a,rself);
 		data++;
 	}
 }
@@ -174,7 +174,7 @@ GRID_END(GridExportList,0) {
 	a[0] = INT2NUM(0);
 	a[1] = sym_list;
 	memcpy(a+2,RARRAY($->list)->ptr,$->n*sizeof(void*));
-	FObject_send_thru(COUNT(a),a,rself);
+	FObject_send_out(COUNT(a),a,rself);
 	$->list = 0;
 }
 
@@ -1311,7 +1311,7 @@ GRID_END(GridOut,0) {
 	LEAVE;
 	{
 		VALUE a[] = { INT2NUM(0), sym_bang };
-		FObject_send_thru(COUNT(a),a,rself);
+		FObject_send_out(COUNT(a),a,rself);
 	}
 	if (!$->timelog) return;
 	{
@@ -1348,27 +1348,13 @@ METHOD(GridOut,close) {
 }
 
 METHOD(GridOut,open) {
-	char buf[256];
-/*
-	int i;
-	sprintf_vars(buf,ac,at);
-	whine("open args = %s",buf);
-	for (i=0; i<ac; i++) {
-		sprintf_vars(buf,1,at+i);
-		whine("open arg %d = %s %s", i, Symbol_name((at+i)->type), buf);
-	}
-	return;
-*/
-	VALUE format = argv[0];
-	FormatClass *qlass = FIX2PTR(rb_hash_aref(format_classes_dex,format));
+	VALUE format = rb_hash_aref(format_classes_dex,argv[0]);
+	FormatClass *qlass;
+	if (format==Qnil) RAISE("unknown file format identifier: %s",
+		rb_id2name(SYM2ID(argv[0])));
+	qlass = FIX2PTR(format);
 
-	if (qlass) {
-		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
-	} else {
-		whine("unknown file format identifier: %s", format);
-		return;
-	}
-
+	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
 	if ($->ff) $->ff->cl->close($->ff);
 	if (qlass->open) {
 		$->ff = qlass->open(qlass,(GridObject *)$,2,argc-1,argv+1);
@@ -1389,7 +1375,7 @@ METHOD(GridOut,init) {
 			GridOut_open($,rself,COUNT(at2),at2);
 		}
 		{
-			VALUE at2[] = { SYM(out_size), NUM2INT(argv[0]), NUM2INT(argv[1]) };
+			VALUE at2[] = { SYM(out_size), argv[0], argv[1] };
 			GridOut_option($,rself,COUNT(at2),at2);
 		}
 	}
@@ -1620,7 +1606,7 @@ static void RtMetro_alarm(VALUE rself) {
 	if (now >= $->next_time) {
 		//whine("rtmetro sending bang");
 		VALUE a[] = { INT2NUM(0), sym_bang };
-		FObject_send_thru(COUNT(a),a,rself);
+		FObject_send_out(COUNT(a),a,rself);
 		/* $->next_time = now; */ /* jmax style, less realtime */
 		$->next_time += 1000*$->ms;
 	}
@@ -1752,12 +1738,13 @@ LIST(),
 static VALUE ruby_c_install(const char *jname, const char *rname,
 GridClass *gc) {
 	VALUE $ = rb_define_class_under(GridFlow_module, rname, FObject_class);
+	rb_ivar_set($,rb_intern("@grid_class"),PTR2FIX(gc));
 	define_many_methods($,gc->methodsn,gc->methods);
 //remember to take care of delete
 	rb_funcall($,rb_intern("install"),3,
 		rb_str_new2(jname),
-		FIX2INT(gc->inlets),
-		FIX2INT(gc->outlets));
+		INT2NUM(gc->inlets),
+		INT2NUM(gc->outlets));
 	GridObject_conf_class2($,gc);
 	return Qnil;
 }
