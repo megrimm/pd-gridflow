@@ -321,6 +321,8 @@ def GridFlow.find_file s
 	if s==File.basename(s) then
 		dir = GridFlow.data_path.find {|x| File.exist?("#{x}/#{s}") }
 		if dir then "#{dir}/#{s}" else s end
+	elsif GridFlow.respond_to? :find_file_2
+		GridFlow.find_file_2 s
 	else
 		s
 	end
