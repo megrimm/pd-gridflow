@@ -131,15 +131,23 @@ class Feature
 		}	
 		log = ""
 		log << code << "\n"
-		File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
+		binname = "/tmp/#{$$}"
+		sourcename = binname+".cpp"
+		File.open(sourcename,"w") {|f| f.puts code }
 		command = ["/usr/bin/env", $conf[:CC]] +
 			$CFLAGS.split(/ /).reject{|x| x.length==0 }
-		# test for .a when .so not found... well, not really
-		launch2 log,*(command+options+["/tmp/#{$$}.cpp",
-			 "-o", "/tmp/#{$$}", *link]) and
-		  launch2 log,"/tmp/#{$$}" and
-	#	  return "static" # true
-		  return true
+		if not launch2 log,*(command+options+[sourcename,
+			 "-o", binname, *link])
+			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
+			errs = log.split("\n").find_all {|l| pat =~ l }
+			raise "gcc compilation error" if not errs
+			errs = errs[0].gsub(pat,"")
+			raise "gcc: #{errs}"
+		end
+		if not launch2 log,"/tmp/#{$$}"
+			raise "runtime error"
+		end
+		return true
 	ensure
 		LOG.puts log
 		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
@@ -324,9 +332,8 @@ Feature.new {
 Feature.new {
 	tag :mmx
 	uses_feature [:pentium]
-#	status :disabled
 	uses_o ["cpu/mmx.o","cpu/mmx_loader.o"]
-	name "MMX-compatible CPU"
+	name "MMX-compatible CPU (using NASM)"
 	test proc {
 		asm_test '
 		global main
@@ -351,6 +358,19 @@ Feature.new {
 		', '-lc'
 	}
 	options ["HAVE_MMX"]
+},
+Feature.new {
+	tag :simd
+	uses_feature [:pentium]
+	name "SIMD (MMX/SSE/Altivec) (using GCC)"
+	test proc {
+		c_test '
+		#include <stdio.h>
+		typedef int v8qi __attribute__ ((mode(V8QI)));
+		union vv8qi { v8qi v; char c[8]; };
+		int main () { return 0; }',nil,["-mmmx"]
+	}
+	options ["HAVE_SIMD"]
 },
 Feature.new {
 	tag :profiler
@@ -382,10 +402,11 @@ Feature.new {
 	test proc {
 		c_test "
 		#include#
-		int main () {return raw1394_get_libversion==0 || dc1394_get_camera_info;}
+		int main () {return raw1394_get_libversion==0 || dc1394_get_camera_info==0;}
 		"
 	}
-	options ["HAVE_FIREWIRE"]
+	options ["HAVE_1394"]
+	formats ["dc1394"]
 },
 Feature.new {
 	tag :x11
@@ -480,7 +501,6 @@ Feature.new {
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
-#	status :disabled
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
@@ -534,8 +554,7 @@ Feature.new {
 		c_test "
 		#include <stdlib.h>
 		#include#
-		int main () { struct video_window foo; return 0; }
-		"
+		int main () { struct video_window foo; return 0; }"
 	}
 	formats ["VideoDev"]
 },
@@ -618,8 +637,7 @@ Feature.new {
 		fprintf(stderr,"Xine version = %d.%d.%d (%s)\\n",
 			XINE_MAJOR_VERSION, XINE_MINOR_VERSION,
 			XINE_SUB_VERSION, XINE_VERSION);
-		return xine_new==0; }
-	`
+		return xine_new==0; }`
 	}
 	formats ["Xine"]
 },
@@ -628,7 +646,7 @@ Feature.new {
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
 	defines :JMAXDISTDIR => proc { Dir.getwd + "/bundled/jmax" }
-	uses_h ["fts/fts.h"]
+	uses_h ["fts/fts.h","fts/lang/mess.h"]
 	test proc {
 		c_test '
 		#define new new_
@@ -638,21 +656,17 @@ Feature.new {
 		#define class class_
 		#include#
 		int main () { return 0; }
-		', ["-DLINUXPC"] and
-		$C_INCLUDE_PATH.find {|dir|
-			File.exist?(dir+"/fts/lang/mess.h")
-		}
+		', ["-DLINUXPC"]
 	}
 	options ["HAVE_JMAX_2_5"]
 },
 Feature.new {
 	tag :jmax4
-#	status :disabled
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
 	defines :JMAX4_INSTALL_DIR => proc { `jmax-config --package-dir`.chomp }
-	uses_h ["fts/fts.h"]
+	uses_h ["fts/fts.h","fts/client/version.h"]
 	test proc {
 		c_test '
 		#define new new_
@@ -662,11 +676,7 @@ Feature.new {
 		#define class class_
 		#include#
 		int main () { return 0; }
-		', ["-DLINUXPC"] and
-		$C_INCLUDE_PATH.find {|dir|
-			#STDERR.puts dir
-			File.exist?(dir+"/fts/client/version.h")
-		}
+		', ["-DLINUXPC"]
 	}
 	options ["HAVE_JMAX_4"]
 },
@@ -683,8 +693,7 @@ Feature.new {
 		c_test "
 			#include#
 			int main () { return 0; }
-		" #and
-		# $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
+		"
 	}
 },
 Feature.new {
