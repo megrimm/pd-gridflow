@@ -41,6 +41,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 static fts_alarm_t *grid_alarm;
 static Dict *format_grid_object_set = 0;
@@ -99,6 +100,7 @@ static bool try_read(FormatGrid *$) {
 			return true;
 		}
 	}
+	return true;
 }
 
 static void swap32 (int n, uint32 *data) {
@@ -304,6 +306,12 @@ err:
 #include <netdb.h>
 #include <netinet/in.h>
 
+static void nonblock (int fd) {
+	int flags = fcntl(fd,F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(fd,F_SETFL,flags);
+}
+
 bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
 	$->is_socket = true;
@@ -334,6 +342,8 @@ bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 		whine("open_tcp(connect): %s",strerror(errno));
 		goto err;
 	}
+
+	if ($->mode==4) nonblock($->stream);
 	return true;
 err:
 	if (0<= $->stream) close($->stream);
@@ -377,6 +387,7 @@ bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	close($->listener);
 	$->listener = -1;
 
+	if ($->mode==4) nonblock($->stream);
 	return true;
 err:
 	if ($->listener>0) {
