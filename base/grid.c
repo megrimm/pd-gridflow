@@ -216,7 +216,7 @@ void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 	for (i=0; i<argc; i++) {
 		/*
 		whine("argv[%d]=%ld",i,argv[i],
-			RSTRING(rb_funcall(argv[i],rb_intern("inspect"),0))->ptr);
+			RSTRING(rb_funcall(argv[i],SI(inspect),0))->ptr);
 		*/
 		v[i] = NUM2INT(argv[i]);
 		/*whine("v[%d]=%ld",i,v[i]);*/
@@ -434,7 +434,7 @@ static VALUE GridObject_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	int i;
 //	VALUE list = rb_call_super(argc,argv);
 	VALUE list = rb_class_instance_methods(argc,argv,rself);
-	GridClass *grid_class = FIX2PTR(rb_ivar_get(rself,rb_intern("@grid_class")));
+	GridClass *grid_class = FIX2PTR(rb_ivar_get(rself,SI(@grid_class)));
 	for (i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		char buf[256];
@@ -446,7 +446,7 @@ static VALUE GridObject_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	}
 	fprintf(stderr,"%s: instance_methods: %s\n",
 		grid_class->name,
-		RSTRING(rb_funcall(list,rb_intern("inspect"),0))->ptr);
+		RSTRING(rb_funcall(list,SI(inspect),0))->ptr);
 	return list;
 }
 
@@ -457,7 +457,7 @@ METHOD(GridObject,method_missing) {
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	//whine("method_missing: %s",rb_sym_name(argv[0]));
 	name = rb_sym_name(argv[0]);
-	//rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);
+	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
@@ -491,7 +491,7 @@ void GridObject_delete(GridObject *$) {
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
 	{
 		MethodDecl methods[] = {
-			DECL(GridObject,-1,method_missing,"+"),
+			DECL(GridObject,method_missing),
 		};
 		define_many_methods($,COUNT(methods),methods);
 	}
@@ -506,26 +506,30 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 
 /* **************** Stream **************************************** */
 
-Stream *Stream_open_file(const char *filename, int mode) {
+Stream *Stream_open_file(const char *filename, VALUE mode) {
 	Stream *$;
-	FILE *f = fopen(filename,mode==4?"r":mode==2?"w":"");
+	FILE *f;
 	int fd;
+	f = fopen(
+		RSTRING(rb_funcall(GridFlow_module,SI(find_file),
+			1,rb_str_new2(filename)))->ptr,
+		mode==SYM(in)?"r":mode==SYM(out)?"w":"");
 	if (!f) RAISE("IO Error: %s",strerror(errno));
 	fd = fileno(f);
 	if (fd<0) return 0;
 	$ = NEW(Stream,1);
 	$->fd = fd;
-	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	$->file = fdopen(fd,mode==SYM(in)?"r":mode==SYM(out)?"w":"");
 	if (!$->file) return 0;
 	$->buf = 0; $->buf_i = $->buf_n = 0;
 	$->on_read = $->target = 0;
 	return $;
 }
 
-Stream *Stream_open_fd(int fd, int mode) {
+Stream *Stream_open_fd(int fd, VALUE mode) {
 	Stream *$ = NEW(Stream,1);
 	$->fd = fd;
-	$->file = fdopen(fd,mode==4?"r":mode==2?"w":"");
+	$->file = fdopen(fd,mode==SYM(in)?"r":mode==SYM(out)?"w":"");
 	if (!$->file) return 0;
 	$->buf = 0; $->buf_i = $->buf_n = 0;
 	$->on_read = $->target = 0;
@@ -570,7 +574,7 @@ bool Stream_try_read(Stream *$) {
 		int n = read($->fd,$->buf+$->buf_i,$->buf_n-$->buf_i);
 		if (n<=0) {
 			if (n==0 || errno==EAGAIN || errno==EWOULDBLOCK) {
-				whine("(trying again later)");
+				//whine("(trying again later)");
 			} else {
 				whine("Stream_try_read: %s", strerror(errno));
 			}
@@ -600,40 +604,55 @@ void Stream_close(Stream *$) {
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */
 
-FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
+#define FC(s) ((FormatClass *)s->grid_class)
+
+FormatClass *format_classes[] = { FORMAT_LIST(&,_class) };
 VALUE format_classes_dex = Qnil;
 
-Format *Format_open(FormatClass *qlass, GridObject *parent, int mode) {
-	Format *$ = (Format *) NEW(char,qlass->object_size);
-	$->cl = qlass;
-	$->parent = parent;
-	$->chain = 0;
-	$->mode = mode;
+METHOD(Format,init) {
+	int flags = FC($)->flags;
+	$->mode = argv[0];
+	$->parent = 0;
 	$->st = 0;
 	$->bit_packing = 0;
 	$->dim = 0;
 
+	whine("flags=%d",flags);
 	/* FF_W, FF_R, FF_RW */
-	if (mode==2 || mode==4 || mode==6) {
-		if (! (qlass->flags & (1 << (mode/2)))) {
-			whine("Format %s does not support mode '%s'",
-				qlass->symbol_name,
-				format_flags_names[mode/2]);
-			return 0;
-		}
+	if ($->mode==SYM(in)) {
+		if ((flags & 4)==0) goto err;
+	} else if ($->mode==SYM(out)) {
+		if ((flags & 2)==0) goto err;
 	} else {
-		whine("Format opening mode is incorrect");
-		return 0;
+		RAISE("Format opening mode is incorrect");
 	}
-
-	return $;
+	return;
+err:
+	RAISE("Format %s does not support mode '%s'",
+		FC($)->symbol_name, rb_sym_name($->mode));
 }
 
-void Format_close(Format *$) {
+METHOD(Format,send_out) {
+	RAISE("BLAHBLAHBLAH");
+}
+
+METHOD(Format,option) {
+	if (argc<1) RAISE("not enough arguments");
+	RAISE("option %s not supported",rb_sym_name(argv[0]));
+}
+
+METHOD(Format,close) {
 	FREE($->bit_packing);
 	FREE($->dim);
 	FREE($);
 }
+
+GRCLASS(Format,inlets:0,outlets:0,
+LIST(),
+	DECL(Format,init),
+	DECL(Format,send_out),
+	DECL(Format,option),
+	DECL(Format,close))
 
 /* **************** FormatClass *********************************** */
 
@@ -644,20 +663,22 @@ const char *format_flags_names[] = {
 	"FF_RW: read_write",
 };
 
-int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
+int format_flags_n = COUNT(format_flags_names);
 
 /* **************************************************************** */
 
 void startup_grid (void) {
+	VALUE Format_class2;
 	int i;
-	post("format-list-begin\n");
-	rb_define_readonly_variable("$format_classes_dex",&format_classes_dex);
+	ruby_c_install("Format","Format", &Format_class, FObject_class);
+	Format_class2 = rb_const_get(GridFlow_module,SI(Format));
+	rb_define_readonly_variable("$format_classes",&format_classes_dex);
 	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatClass *fc = format_classes[i];
-		post("  %10s %s\n",fc->symbol_name, fc->long_name);
+		GridClass *gc = (GridClass *) fc;
+		ruby_c_install(gc->name, gc->name, gc, Format_class2);
 		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fc->symbol_name)),
-			PTR2FIX(fc));
+			rb_const_get(GridFlow_module,rb_intern(gc->name)));
 	}
-	post("format-list-end\n");
 }
