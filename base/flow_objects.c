@@ -31,18 +31,6 @@ typedef int32 Number;
 
 /* **************************************************************** */
 
-#define WATCH(n,ar) { \
-	char foo[16*1024], *p=foo; \
-	p += sprintf(p,"%s: ",#ar); \
-	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",ar[q]); \
-	gfpost("%s",foo); \
-}
-
-#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
-
-#define IV(s) rb_ivar_get(rself,SI(s))
-#define IVS(s,v) rb_ivar_set(rself,SI(s),v)
-
 Operator1 *OP1(Ruby x) {
 	Ruby s = rb_hash_aref(op1_dict,x);
 	if (s==Qnil) RAISE("expected one-input-operator");
@@ -265,7 +253,7 @@ GRID_FLOW {
 	for (int i=0; i<nc; i++) {
 		if (i) op_mul->on_int32.op_map(nd,(Number*)v,r.dim->v[i]);
 		op_mod->on_int32.op_map(nd,(Number*)v+nd*i,r.dim->v[i]);
-		if (i) op_add->on_int32.op_map2(nd,(Number*)v,(Number*)v+nd*i);
+		if (i) op_add->on_int32.op_zip(nd,(Number*)v,(Number*)v+nd*i);
 	}
 	if (r.nt==int32_type_i) {
 		Pt<int32> p = (Pt<int32>)r;
@@ -375,7 +363,7 @@ GRID_INLET(GridOp2,0) {
 	int loop = r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			op->on_int32.op_map2(n,(Number*)data,(Number*)rdata+in->dex);
+			op->on_int32.op_zip(n,(Number*)data,(Number*)rdata+in->dex);
 		} else {
 			STACK_ARRAY(Number,data2,n);
 			//!@#$ accelerate me
@@ -385,7 +373,7 @@ GRID_INLET(GridOp2,0) {
 				COPY(data2+i,rdata+ii,m);
 				i+=m;
 			}
-			op->on_int32.op_map2(n,(Number*)data,(Number*)data2);
+			op->on_int32.op_zip(n,(Number*)data,(Number*)data2);
 		}
 	} else {
 		op->on_int32.op_map(n,(Number*)data,*rdata);
@@ -548,7 +536,7 @@ LIST(GRINLET(GridScan,0,4)),
 /* **************************************************************** */
 /* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
           -> c in dim(*As,*Bs)
-   c = map((*As,*Bs),fold(op_fold,rint,map2(op_para,...... whatever
+   c = map((*As,*Bs),fold(op_fold,rint,zip(op_para,...... whatever
 */
 
 /*{ Dim[*As,C],Dim[C,*Bs] -> Dim[*As,*Bs] }*/
@@ -592,7 +580,7 @@ GRID_INLET(GridInner,0) {
 		for (int j=0; j<chunks; j++) {
 			COPY(buf,&data[i],factor);
 			for (int k=0; k<factor; k++) bufr[k]=((Pt<int32>)r)[chunks*k+j];
-			op_para->on_int32.op_map2(factor,(Number*)buf,(Number*)bufr);
+			op_para->on_int32.op_zip(factor,(Number*)buf,(Number*)bufr);
 			buf2[j] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
@@ -653,7 +641,7 @@ GRID_INLET(GridInner2,0) {
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
 			COPY(buf,&data[i],factor);
-			op_para->on_int32.op_map2(factor,buf,(Number*)r+j);
+			op_para->on_int32.op_zip(factor,buf,(Number*)r+j);
 			buf2[k] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
@@ -705,7 +693,7 @@ GRID_INLET(GridOuter,0) {
 	STACK_ARRAY(Number,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		op->on_int32.op_map2(b_prod,buf,(Number*)r);
+		op->on_int32.op_zip(b_prod,buf,(Number*)r);
 		out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -804,7 +792,7 @@ GRID_INLET(GridConvolve,0) {
 			Pt<Number> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=rint;
-			op_para->on_int32.op_map2(l*dbx*dby,(Number*)buf,(Number*)buf2);
+			op_para->on_int32.op_zip(l*dbx*dby,(Number*)buf,(Number*)buf2);
 			op_fold->on_int32.op_fold2(l,(Number*)buf3,dbx*dby,(Number*)buf);
 			out[0]->send(l,buf3);
 		}
@@ -1271,7 +1259,13 @@ LIST(GRINLET(GridFinished,0,0)),
 
 /* { Dim[A,B,C],Dim[C],Dim[N,2] -> Dim[A,B,C] } */
 
-struct GridPolygon : GridObject {
+//template <class T>
+struct Line {
+	int32 y1,x1,y2,x2,x,m,pad1,pad2;
+};
+
+struct DrawPolygon : GridObject {
+	Operator2 *op;
 	Grid color;
 	Grid polygon;
 	Grid lines;
@@ -1287,38 +1281,31 @@ struct GridPolygon : GridObject {
 	void init_lines ();
 };
 
-template <class T> static void memswap (T *a, T *b, int n) {
-	T c[n];
-	COPY(c,a,n);
-	COPY(a,b,n);
-	COPY(b,c,n);
-}
-
-void GridPolygon::init_lines () {
+void DrawPolygon::init_lines () {
 	int nl = polygon.dim->get(0);
-	int32 v[] = {nl,4};
+	int32 v[] = {nl,8};
 	lines.init(new Dim(2,v));
-	Pt<Number> ld = (Pt<int32>)lines;
+	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 	Pt<Number> pd = (Pt<int32>)polygon;
-	for (int i=0,j=0; i<4*nl; i+=4) {
-		ld[i+0] = pd[j+0];
-		ld[i+1] = pd[j+1];
+	for (int i=0,j=0; i<nl; i++) {
+		ld[i].y1 = pd[j+0];
+		ld[i].x1 = pd[j+1];
 		j=(j+2)%(2*nl);
-		ld[i+2] = pd[j+0];
-		ld[i+3] = pd[j+1];
-		if (ld[i+0]>ld[i+2]) memswap((Number *)ld+i+0,(Number *)ld+i+2,2);
+		ld[i].y2 = pd[j+0];
+		ld[i].x2 = pd[j+1];
+		if (ld[i].y1>ld[i].y2) memswap((Number *)(ld+i)+0,(Number *)(ld+i)+2,2);
 	}
 }
 
 static int order_by_starting_scanline (const void *a, const void *b) {
-	return ((Number *)a)[0] - ((Number *)b)[0];
+	return ((Line *)a)->y1 - ((Line *)b)->y1;
 }
 
-static int order_by_starting_column (const void *a, const void *b) {
-	return ((Number *)a)[1] - ((Number *)b)[1];
+static int order_by_column (const void *a, const void *b) {
+	return ((Line *)a)->x - ((Line *)b)->x;
 }
 
-GRID_INLET(GridPolygon,0) {
+GRID_INLET(DrawPolygon,0) {
 	if (polygon.is_empty()) RAISE("no polygon?");
 	if (lines.is_empty()) RAISE("no lines???");
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
@@ -1328,24 +1315,20 @@ GRID_INLET(GridPolygon,0) {
 	lines_start = lines_stop = 0;
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int nl = polygon.dim->get(0);
-	qsort((Number *)lines,nl,4*sizeof(Number),order_by_starting_scanline);
+	qsort((Number *)lines,nl,sizeof(Line),order_by_starting_scanline);
 } GRID_FLOW {
 	int nl = polygon.dim->get(0);
-	Pt<Number> ld = (Pt<Number>)lines;
+	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 
-	for (int i=0; i<4*nl; i+=4) WATCH(4,(ld+i));
-
-	gfpost("n=%d",n);
 	int y = in->dex / in->factor;
 	while (n) {
-		if (lines_stop != nl && ld[4*lines_stop]<=y) lines_stop++;
+		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
 		for (int i=lines_start; i<lines_stop; i++) {
-			if (ld[4*i+2]<=y) {
-				memswap((Number *)ld+4*i,(Number *)ld+4*lines_start,4);
+			if (ld[i].y2<=y) {
+				memswap(ld.p+i,ld.p+lines_start,1);
 				lines_start++;
 			}
 		}
-		gfpost("dex=%6d y=%3d: start=%d stop=%d",in->dex,y,lines_start,lines_stop);
 		Pt<Number> cd = (Pt<Number>)color;
 		int cn = color.dim->prod();
 		if (lines_start == lines_stop) {
@@ -1353,20 +1336,15 @@ GRID_INLET(GridPolygon,0) {
 		} else {
 			Pt<Number> data2 = ARRAY_NEW(Number,in->factor);
 			COPY(data2,data,in->factor);
-			qsort(ld+4*lines_start,lines_stop-lines_start,
-				4*sizeof(Number),order_by_starting_column);
-			int xb=0;
 			for (int i=lines_start; i<lines_stop; i++) {
-				int y1=ld[4*i+0], y2=ld[4*i+2];
-				int x1=ld[4*i+1], x2=ld[4*i+3];
-				int x = x1 + (y-y1)*(x2-x1)/(y2-y1);
-				if ((i-lines_start)&1) {
-					gfpost("odd: xb=%d x=%d",xb,x);
-					while (xb<=x) COPY(data2+cn*xb++,cd,cn);
-				} else {
-					gfpost("even");
-					xb=x;
-				}
+				Line &l = ld[i];
+				l.x = l.x1 + (y-l.y1)*(l.x2-l.x1+1)/(l.y2-l.y1+1);
+			}
+			qsort(ld+lines_start,lines_stop-lines_start,
+				sizeof(Line),order_by_column);
+			for (int i=lines_start; i<lines_stop-1; i+=2) {
+				int xs = ld[i].x, xe = ld[i+1].x;
+				while (xs<=xe) op->on_int32.op_zip(cn,(int32*)data2+cn*xs++,(int32*)cd);
 			}
 			out[0]->give(in->factor,data2);
 		}
@@ -1377,25 +1355,26 @@ GRID_INLET(GridPolygon,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRID_INPUT(GridPolygon,1,color) {} GRID_END
-GRID_INPUT(GridPolygon,2,polygon) {init_lines();} GRID_END
+GRID_INPUT(DrawPolygon,1,color) {} GRID_END
+GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
 static void expect_polygon (Dim *d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
 
-METHOD3(GridPolygon,initialize) {
+METHOD3(DrawPolygon,initialize) {
 	color.constrain(expect_max_one_dim);
 	polygon.constrain(expect_polygon);
 	rb_call_super(argc,argv);
-	if (argc>=1) color.init_from_ruby(argv[0]);
-	if (argc>=2) polygon.init_from_ruby(argv[1]), init_lines();
+	if (argc>=1) op = OP2(argv[0]);
+	if (argc>=2) color.init_from_ruby(argv[1]);
+	if (argc>=3) { polygon.init_from_ruby(argv[2]); init_lines(); }
 	return Qnil;
 }
 
-GRCLASS(GridPolygon,"@polygon",inlets:3,outlets:1,startup:0,
-LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4)),
-	DECL(GridPolygon,initialize))
+GRCLASS(DrawPolygon,"@draw_polygon",inlets:3,outlets:1,startup:0,
+LIST(GRINLET(DrawPolygon,0,4),GRINLET(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
+	DECL(DrawPolygon,initialize))
 
 /* **************************************************************** */
 
@@ -1613,7 +1592,7 @@ void startup_flow_objects () {
 	INSTALL(GridLayer);
 	INSTALL(GridFinished);
 //	INSTALL(GridJoin);
-	INSTALL(GridPolygon);
+	INSTALL(DrawPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
 	INSTALL(RtMetro);
