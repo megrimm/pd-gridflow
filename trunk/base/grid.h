@@ -146,13 +146,19 @@ typedef /*volatile*/ VALUE Ruby;
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
 
 /*
-  a remainder function such that floor(a/b)*b+mod(a,b) = a
-  and for which mod(a,b) is in [0;b) or (b;0]
+  a remainder function such that div2(a,b)*b+mod(a,b) = a
+  and for which mod(a,b) is in [0;b) or (b;0].
   in contrast to C-language builtin a%b,
   this one has uniform behaviour around zero.
 */
 static inline int mod(int a, int b) {
 int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
+
+/* counterpart of mod(a,b), just like a/b and a%b are counterparts */
+static inline int div2(int a, int b) {
+	int c=a<0;
+	return (a/b)-(c&&!!(a%b));
+}
 
 /* integer powers in log(b) time */
 static inline int ipow(int32 a, uint32 b) {

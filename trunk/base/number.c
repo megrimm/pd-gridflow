@@ -451,13 +451,18 @@ Operator1 op1_table[] = {
 	&op_scan_##_op_, \
 	&op_scan2_##_op_ } }
 
+DEF_OP2(ignore, a)
+DEF_OP2(put, b)
+
 DEF_OP2(add, a+b)
 DEF_OP2(sub, a-b)
 DEF_OP2(bus, b-a)
 
 DEF_OP2(mul, a*b)
 DEF_OP2(div, b==0 ? 0 : a/b)
+DEF_OP2(div2, b==0 ? 0 : div2(a,b))
 DEF_OP2(vid, a==0 ? 0 : b/a)
+DEF_OP2(vid2, a==0 ? 0 : div2(b,a))
 DEF_OP2(mod, b==0 ? 0 : mod(a,b))
 DEF_OP2(dom, a==0 ? 0 : mod(b,a))
 DEF_OP2(rem, b==0 ? 0 : a%b)
@@ -507,13 +512,18 @@ Algebraic Properties (not used yet)
 
 */
 Operator2 op2_table[] = {
+	DECL_OP2(ignore, "ignore", "ASSO RN=all"),
+	DECL_OP2(put, "put", "ASSO LN=all"),
+
 	DECL_OP2(add, "+", "N=0 ASSO COMM"), /* LINV=sub */
 	DECL_OP2(sub, "-", "RN=0"),
 	DECL_OP2(bus, "inv+", "LN=0"),
 
 	DECL_OP2(mul, "*", "N=1 ASSO"),
 	DECL_OP2(div, "/", "RN=1"),
+	DECL_OP2(div2, "div", "RN=1"),
 	DECL_OP2(vid, "inv*", "LN=1"),
+	DECL_OP2(vid2, "swapdiv", "LN=1"),
 	DECL_OP2(mod, "%", ""),
 	DECL_OP2(dom, "swap%", ""),
 	DECL_OP2(rem, "rem", ""),
