@@ -33,7 +33,7 @@ typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
 
 struct BitPacking {
 	Packer pack;
-	bool is_le;
+	int endian; /* 0=big, 1=little, 2=same, 3=different */
 	int bytes;
 	uint32 mask[3];
 };
@@ -66,6 +66,10 @@ int low_bit(uint32 n) {
 
 #define FOURTIMES(_x_) _x_ _x_ _x_ _x_
 
+#define NTIMES(_x_) \
+	while (n>3) { FOURTIMES(_x_) n-=4; } \
+	while (n--) { _x_ }
+
 uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	register uint32 t;
 	int hb[3] = {
@@ -73,34 +77,17 @@ uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 		high_bit($->mask[1]),
 		high_bit($->mask[2])};
 	int mask[3];
+	int sameorder = $->endian==2 || $->endian==is_le();
 	memcpy(mask,$->mask,3*sizeof(int));
-	if ($->is_le && $->bytes==2) {
-		while (n>3) {
-			FOURTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
-			n-=4;
-		}
-		while (n--) {
-			t=CONVERT1; *((short *)out)=t; out+=2; in+=3;
-		}
-	} else if ($->is_le && $->bytes==3) {
-		while (n>3) {
-			FOURTIMES(
-				t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3; )
-			n-=4;
-		}
-		while (n--) {
-			t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;
-		}
-	} else if ($->is_le && $->bytes==4) {
-		while (n>3) {
-			FOURTIMES( t=CONVERT1; *((long *)out)=t; out+=4; in+=3; )
-			n-=4;
-		}
-		while (n--) {
-			t=CONVERT1; *((long *)out)=t; out+=4; in+=3;
-		}
-	} else if ($->is_le) {
-		/* smallest byte first (like the above) */
+	if (sameorder && $->bytes==2) {
+		NTIMES(t=CONVERT1; *((short *)out)=t; out+=2; in+=3;)
+	} else if (sameorder && $->bytes==3) {
+		NTIMES(t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;)
+	} else if (sameorder && $->bytes==4) {
+		NTIMES(t=CONVERT1; *((long *)out)=t; out+=4; in+=3;)
+	} else if (BitPacking_is_le($)) {
+		/* smallest byte first */
+		whine("hello!");
 		while (n--) {
 			int bytes = $->bytes;
 			t = CONVERT1;
@@ -151,16 +138,27 @@ uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
 }
 
 BitPacking builtin_bitpacks[] = {
-	{ pack_5652, true, 2, {0x0000f800,0x000007e0,0x0000001f} },
-	{ pack_8883, true, 3, {0x00ff0000,0x0000ff00,0x000000ff} },
+	{ pack_5652, 2, 2, {0x0000f800,0x000007e0,0x0000001f} },
+	{ pack_8883, 1, 3, {0x00ff0000,0x0000ff00,0x000000ff} },
 };
 
 /* **************************************************************** */
 
-BitPacking *BitPacking_new(bool is_le, int bytes, uint32 r, uint32 g, uint32 b) {
+static bool BitPacking_eq(BitPacking *$, BitPacking *o) {
+	if (!($->bytes == o->bytes)) return false;
+	if (!($->mask[0] == o->mask[0] &&
+		$->mask[1] == o->mask[1] &&
+		$->mask[2] == o->mask[2])) return false;
+	if ($->endian==o->endian) return true;
+	/* same==little on a little-endian; same==big on a big-endian */
+	return ($->endian ^ o->endian ^ is_le()) == 2;
+}
+
+BitPacking *BitPacking_new(int endian, int bytes, uint32 r, uint32
+g, uint32 b) {
 	int i;
 	BitPacking *$ = NEW(BitPacking,1);
-	$->is_le = is_le;
+	$->endian = endian;
 	$->bytes = bytes;
 	$->mask[0] = r;
 	$->mask[1] = g;
@@ -169,8 +167,7 @@ BitPacking *BitPacking_new(bool is_le, int bytes, uint32 r, uint32 g, uint32 b) 
 
 	for (i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = builtin_bitpacks+i;
-		if (bp->bytes == bytes &&
-		bp->mask[0]==r && bp->mask[1]==g && bp->mask[2]==b) {
+		if (BitPacking_eq($,bp)) {
 			$->pack = bp->pack;
 			whine("Bitpacking: will be using special packer (#%d)",i);
 		}
@@ -193,7 +190,8 @@ void BitPacking_whine(BitPacking *$) {
 }
 
 int  BitPacking_bytes(BitPacking *$) { return $->bytes; }
-bool BitPacking_is_le(BitPacking *$) { return $->is_le; }
+bool BitPacking_is_le(BitPacking *$) {
+	return $->endian==1 || $->endian^is_le()==3; }
 
 uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return $->pack($,n,in,out);
@@ -213,7 +211,7 @@ Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
 		*out++ = ((temp & $->mask[2]) << 7) >> hb[2]; \
 	}
 
-	if ($->is_le) {
+	if (BitPacking_is_le($)) {
 		/* smallest byte first */
 		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
 	} else {
