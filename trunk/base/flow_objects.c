@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -453,6 +453,7 @@ METHOD(GridOp2,init) {
 	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
 	$->rint = argc<2 ? 0 : INT(argv[1]);
+	$->data = 0;
 	$->dim = 0;
 }
 
@@ -1211,7 +1212,7 @@ METHOD(GridIn,_0_open) {
 	if (qlass==Qnil) RAISE("unknown file format identifier: %s",
 		rb_sym_name(argv[0]));
 
-//	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
+//	whine("file format: %s (%s)",qlass->symbol_name, qlass->description);
 
 	if ($->ff) rb_funcall($->ff,SI(close),0);
 	argv[0] = SYM(in);
@@ -1351,7 +1352,7 @@ METHOD(GridOut,_0_open) {
 	if (qlass==Qnil) RAISE("unknown file format identifier: %s",
 		rb_sym_name(argv[0]));
 
-//	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
+//	whine("file format: %s (%s)",qlass->symbol_name, qlass->description);
 
 	if ($->ff) rb_funcall($->ff,SI(close),0);
 	argv[0] = SYM(out);

@@ -2,14 +2,14 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ../COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -430,7 +430,90 @@ METHOD(GridObject,init) {
 
 /* category: input */
 
-static VALUE GridObject_instance_methods(int argc, VALUE *argv, VALUE rself) {
+GRID_BEGIN_(GridObject,GridObject_r_begin) {
+	rb_funcall(rself,SI(_0_rgrid_begin),0); // hack
+	return true;
+}
+
+GRID_FLOW_(GridObject,GridObject_r_flow) {
+	VALUE buf = rb_str_new((char *)data,n*sizeof(Number));
+	rb_funcall(rself,SI(_0_rgrid_flow),1,buf); // hack
+}
+
+GRID_END_(GridObject,GridObject_r_end) {
+	rb_funcall(rself,SI(_0_rgrid_end),0); // hack
+}
+
+METHOD2(GridObject,inlet_dim) {
+	GridInlet *in = $->in[INT(argv[0])];
+	int i, n=Dim_count(in->dim);
+	VALUE a = rb_ary_new2(n);
+	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
+	return a;
+}
+
+METHOD(GridObject,send_out_grid_begin) {
+	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
+{
+	int outlet = INT(argv[0]);
+	int n = rb_ary_len(argv[1]);
+	int i;
+	int v[n];
+	VALUE *p = rb_ary_ptr(argv[1]);
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	for (i=0; i<n; i++) v[i] = INT(p[i]);
+	GridOutlet_begin($->out[outlet],Dim_new(n,v));
+}}
+
+METHOD(GridObject,send_out_grid_flow) {
+	if (argc!=2 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
+{
+	int outlet = INT(argv[0]);
+	int n = rb_str_len(argv[1]) / sizeof(Number);
+	Number *p = (Number *)rb_str_ptr(argv[1]);
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	GridOutlet_send($->out[outlet],n,p);
+}}
+
+METHOD(GridObject,send_out_grid_end) {
+	int outlet = INT(argv[0]);
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	GridOutlet_end($->out[outlet]);
+}
+
+static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
+	GridHandler *gh = NEW(GridHandler,1);
+	GridClass *gc = NEW(GridClass,1);
+	if (argc!=1) RAISE("er...");
+	if (INT(argv[0])!=0) RAISE("not yet");
+	gh->winlet = INT(argv[0]);
+	gh->begin = GridObject_r_begin;
+	gh->flow = GridObject_r_flow;
+	gh->end = GridObject_r_end;
+	gh->mode = 4;
+	gc->objectsize = 256; /* hack */
+	gc->methodsn = 0;
+	gc->methods = 0;
+	gc->inlets = MAX_INLETS; /* hack */
+	gc->outlets = MAX_OUTLETS; /* hack */
+	gc->handlersn = 1; /* hack, crack */
+	gc->handlers = gh;
+	gc->name = "hello";
+	rb_ivar_set(rself,SI(@grid_class),PTR2FIX(gc));
+	return Qnil;
+}
+
+VALUE GridObject_s_install_format(VALUE $, VALUE name, VALUE inlets2, VALUE
+outlets2, VALUE flags, VALUE symbol_name, VALUE description) {
+	rb_funcall($,SI(install),3,name,inlets2,outlets2);
+	rb_ivar_set($,SI(@flags),flags);
+	rb_ivar_set($,SI(@symbol_name),symbol_name);
+	rb_ivar_set($,SI(@description),description);
+	rb_hash_aset(format_classes_dex, rb_funcall(symbol_name,SI(intern),0), $);
+	return Qnil;
+}
+
+static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
 	int i;
 //	VALUE list = rb_call_super(argc,argv);
 	VALUE list = rb_class_instance_methods(argc,argv,rself);
@@ -455,7 +538,7 @@ METHOD(GridObject,method_missing) {
 	//whine("argc=%d,argv=%p,self=%p",argc,argv,self);
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	//whine("method_missing: %s",rb_sym_name(argv[0]));
+	//rb_p(argv[0]);
 	name = rb_sym_name(argv[0]);
 	//rb_funcall2(rb_cObject,SI(p),argc,argv);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
@@ -492,6 +575,10 @@ GRCLASS(GridObject,inlets:0,outlets:0,
 LIST(),
 	DECL(GridObject,init),
 	DECL(GridObject,delete),
+	DECL(GridObject,send_out_grid_begin),
+	DECL(GridObject,send_out_grid_flow),
+	DECL(GridObject,send_out_grid_end),
+	DECL(GridObject,inlet_dim),
 	DECL(GridObject,method_missing))
 
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
@@ -506,124 +593,30 @@ void GridObject_conf_class(VALUE $, GridClass *grclass) {
 //	ruby_c_install(gc->name, gc->name, gc, Format_class2);
 
 	/* define in Ruby-metaclass */
-	rb_define_singleton_method($,"instance_methods",GridObject_instance_methods,-1);
+	rb_define_singleton_method($,"instance_methods",GridObject_s_instance_methods,-1);
+	rb_define_singleton_method($,"install_rgrid",GridObject_s_install_rgrid,-1);
+	rb_define_singleton_method($,"install_format",GridObject_s_install_format,6);
 	rb_enable_super(rb_singleton_class($),"instance_methods");
 }  
-
-
-/* **************** Stream **************************************** */
-
-Stream *Stream_open_file(const char *filename, VALUE mode) {
-	Stream *$;
-	FILE *f;
-	int fd;
-	f = fopen(
-		RSTRING(rb_funcall(GridFlow_module,SI(find_file),
-			1,rb_str_new2(filename)))->ptr,
-		mode==SYM(in)?"r":mode==SYM(out)?"w":"");
-	if (!f) RAISE("IO Error: %s",strerror(errno));
-	fd = fileno(f);
-	if (fd<0) return 0;
-	$ = NEW(Stream,1);
-	$->fd = fd;
-	$->file = fdopen(fd,mode==SYM(in)?"r":mode==SYM(out)?"w":"");
-	if (!$->file) return 0;
-	$->buf = 0; $->buf_i = $->buf_n = 0;
-	$->on_read = $->target = 0;
-	return $;
-}
-
-Stream *Stream_open_fd(int fd, VALUE mode) {
-	Stream *$ = NEW(Stream,1);
-	$->fd = fd;
-	$->file = fdopen(fd,mode==SYM(in)?"r":mode==SYM(out)?"w":"");
-	if (!$->file) return 0;
-	$->buf = 0; $->buf_i = $->buf_n = 0;
-	$->on_read = $->target = 0;
-	return $;
-}
-
-void Stream_nonblock(Stream *$) {
-	int flags = fcntl($->fd,F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl($->fd,F_SETFL,flags);
-}
-
-int Stream_get_fd(Stream *$) {
-	return $->fd;
-}
-
-FILE *Stream_get_file(Stream *$) {
-/*	if (!$->file) $->file = fdopen($->file,mode); */
-	return $->file;
-}
-
-int Stream_read(Stream *$, int n, char *buf) {
-	assert(0);
-	return 42;
-}
-
-void Stream_on_read_do(Stream *$, int n, OnRead on_read, void *target) {
-	FREE($->buf);
-	$->buf = NEW(char,n);
-	$->buf_i = 0;
-	$->buf_n = n;
-	$->on_read = on_read;
-	$->target = target;
-}
-
-bool Stream_try_read(Stream *$) {
-	if (!$->buf) {
-		whine("Stream_try_read has nothing to do",$);
-		return true;
-	}
-	while ($->buf) {
-		int n = read($->fd,$->buf+$->buf_i,$->buf_n-$->buf_i);
-		if (n<=0) {
-			if (n==0 || errno==EAGAIN || errno==EWOULDBLOCK) {
-				//whine("(trying again later)");
-			} else {
-				whine("Stream_try_read: %s", strerror(errno));
-			}
-			return true;
-		} else {
-			$->buf_i += n;
-		}
-		if ($->buf_i == $->buf_n) {
-			char *buf = $->buf;
-			$->buf = 0;
-			if (!$->on_read($->target,$->buf_n,buf)) return false;
-		}
-	}
-	return true;
-}
-
-bool Stream_is_waiting(Stream *$) {
-	return !!$->buf;
-}
-
-void Stream_close(Stream *$) {
-	if ($->file) fclose($->file);
-	else close($->fd);
-	FREE($);
-}
 
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */
 
 #define FC(s) ((FormatClass *)s->grid_class)
 
-FormatClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
+extern GridClass FORMAT_LIST( ,_classinfo);
+extern FormatInfo FORMAT_LIST( ,_formatinfo);
+GridClass *format_classes[] = { FORMAT_LIST(&,_classinfo) };
+FormatInfo *format_infos[] = { FORMAT_LIST(&,_formatinfo) };
 VALUE format_classes_dex = Qnil;
 
 METHOD(Format,init) {
-	int flags = FC($)->flags;
+	int flags = INT(rb_ivar_get(CLASS_OF(rself),SI(@flags)));
 
 	rb_call_super(argc,argv);
 
 	$->mode = argv[0];
 	$->parent = 0;
-	$->st = 0;
 	$->bit_packing = 0;
 	$->dim = 0;
 
@@ -639,12 +632,14 @@ METHOD(Format,init) {
 	return;
 err:
 	RAISE("Format %s does not support mode '%s'",
-		FC($)->symbol_name, rb_sym_name($->mode));
+		RSTRING(rb_ivar_get(rself,SI(@symbol_name)))->ptr, rb_sym_name($->mode));
 }
 
+/*
 METHOD(Format,send_out) {
 	RAISE("BLAHBLAHBLAH");
 }
+*/
 
 METHOD(Format,option) {
 	if (argc<1) RAISE("not enough arguments");
@@ -657,11 +652,21 @@ METHOD(Format,close) {
 	FREE($);
 }
 
+METHOD(Format,open_file) {
+	if (argc<1) RAISE("expect filename");
+	rb_ivar_set(rself,SI(@stream),
+		rb_funcall(rb_eval_string("File"),SI(open),2,
+			rb_funcall(GridFlow_module,SI(find_file),1,
+			rb_any_to_s(argv[0])),
+			rb_str_new2($->mode==4?"r":$->mode==2?"w":(RAISE("argh"),""))));
+}
+
 GRCLASS(Format,inlets:0,outlets:0,
 LIST(),
 	DECL(Format,init),
-	DECL(Format,send_out),
+//	DECL(Format,send_out),
 	DECL(Format,option),
+	DECL(Format,open_file),
 	DECL(Format,close))
 
 /* **************** FormatClass *********************************** */
@@ -689,10 +694,15 @@ void startup_grid (void) {
 	rb_define_readonly_variable("$format_classes",&format_classes_dex);
 	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
-		FormatClass *fc = format_classes[i];
-		GridClass *gc = (GridClass *) fc;
+		FormatInfo *fi = format_infos[i];
+		GridClass *gc = format_classes[i];
+		VALUE qlass;
 		ruby_c_install(gc->name, gc->name, gc, Format_class);
-		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fc->symbol_name)),
-			rb_const_get(GridFlow_module,rb_intern(gc->name)));
+		qlass = rb_const_get(GridFlow_module,rb_intern(gc->name));
+		rb_ivar_set(qlass,SI(@flags),INT2NUM(fi->flags));
+		rb_ivar_set(qlass,SI(@symbol_name),rb_str_new2(fi->symbol_name));
+		rb_ivar_set(qlass,SI(@description),rb_str_new2(fi->description));
+		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fi->symbol_name)),
+			qlass);
 	}
 }
