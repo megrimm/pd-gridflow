@@ -97,7 +97,7 @@
 #X obj 303 125 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 457 241 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 4900 1;
+-1 -1 3400 1;
 #X obj 437 383 @three;
 #X text 17 319 above this point \, the picture is greyscale and channelless
 \, but here \, each number is replaced by a color pixel.;
@@ -106,10 +106,10 @@
 #X obj 395 385 fork;
 #X msg 431 220 600;
 #X obj 437 241 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 11200 1;
+-1 -1 10200 1;
 #X obj 303 101 fork;
 #X obj 477 241 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 700 1;
+-1 -1 1275 1;
 #X text 145 114 blank image for startup;
 #X text 297 49 height width;
 #X msg 239 49 72 256;

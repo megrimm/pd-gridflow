@@ -1,25 +1,33 @@
 #N canvas 76 239 496 421 10;
 #X msg 314 366 240 320 uint8 # 10;
-#X text 15 28 this part at the left defines the rule of the game (this is my own rewriting of the rules. it is equivalent to the original but faster to compute.);
-#X text 372 26 click here;
-#X text 14 241 convert this 1-bit picture to standard RGB: 1 becomes -1 becomes 255 \; but 0 stays 0;
-#X text 421 351 this part at the left creates a semi-random map to start with;
-#X obj 348 25 toggle ;
-#X obj 21 157 @convolve >> + ( uint8 # -5 ) ( 3 3 uint8 # 0 0 0 0 1 );
-#X obj 348 48 metro 0.100000001490116;
+#X text 15 28 this part at the left defines the rule of the game (this
+is my own rewriting of the rules. it is equivalent to the original
+but faster to compute.);
+#X text 370 80 click here;
+#X text 14 241 convert this 1-bit picture to standard RGB: 1 becomes
+-1 becomes 255 \; but 0 stays 0;
+#X text 421 351 this part at the left creates a semi-random map to
+start with;
+#X obj 350 80 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 21 157 @convolve >> + ( uint8 # -5 ) ( 3 3 uint8 # 0 0 0 0 1
+);
+#X obj 350 103 metro 0.1;
 #X obj 315 386 @! rand;
 #X obj 19 391 @out window;
 #X obj 19 370 @outer ignore ( 3 uint8 # );
 #X obj 316 407 @ == ( uint8 # 1 );
 #X text 336 144 this is the feedback loop;
-#X obj 290 25 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
+#X obj 290 25 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
 #X obj 290 48 for 0 10 1;
-#X obj 314 345 loadbang ;
-#X obj 279 149 @store ;
-#X obj 258 70 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
-#X obj 19 437 print ;
+#X obj 314 345 loadbang;
+#X obj 279 149 @store;
+#X obj 258 70 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 19 437 print;
 #X obj 19 414 fps detailed;
-#X obj 194 304 fork ;
+#X obj 194 304 fork;
 #X text 285 73 next;
 #X obj 21 135 @ << ( uint8 # 1 );
 #X obj 19 349 @ inv+ ( uint8 # 0 );

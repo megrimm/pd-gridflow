@@ -1,18 +1,17 @@
-#N canvas 214 0 521 289 10;
-#X obj 194 79 metro 50;
+#N canvas 231 129 521 289 10;
 #X obj 190 45 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
 #X obj 231 153 @out x11;
 #X obj 231 175 route position;
 #X obj 231 213 s mouse;
 #X obj 73 178 hsl 128 15 0 319 0 0 h_end_o h_end_i horizontal_end -2
--8 193 10 -62784 -1 -1 3185 1;
+-8 1 10 -62784 -1 -1 5852 1;
 #X obj 46 217 hsl 128 15 0 319 0 0 h_start_o h_start_i horizontal_start
-0 -8 193 10 -355 -1 -1 3185 0;
+0 -8 1 10 -355 -1 -1 5852 0;
 #X obj -42 81 vsl 15 128 0 239 0 0 v_start_o v_start_i vertical_start
-0 -8 193 10 -260818 -1 -1 5579 1;
+0 -8 1 10 -260818 -1 -1 9033 1;
 #X obj -10 102 vsl 15 128 0 239 0 0 v_end_o v_end_i vertical_end 0
--8 193 10 -258699 -1 -1 5579 1;
+-8 1 10 -258699 -1 -1 9033 1;
 #X obj 291 212 print mouse;
 #N canvas 84 370 450 300 mouse 0;
 #X msg 259 48 0 0;
@@ -93,9 +92,10 @@
 #X connect 17 0 1 1;
 #X connect 18 0 0 1;
 #X restore 231 113 pd make_rectangle;
+#X obj 194 79 metro 33.3667;
 #X connect 0 0 11 0;
-#X connect 1 0 0 0;
+#X connect 1 0 2 0;
 #X connect 2 0 3 0;
-#X connect 3 0 4 0;
-#X connect 3 0 9 0;
-#X connect 11 0 2 0;
+#X connect 2 0 8 0;
+#X connect 10 0 1 0;
+#X connect 11 0 10 0;
