@@ -927,7 +927,7 @@ class DelcomUSB < GridFlow::FObject
 				}
 			}
 		}
-		GridFlow.post "Interface # %i\n", if_num
+		# GridFlow.post "Interface # %i\n", if_num
 		@usb.set_configuration 1
 		@usb.claim_interface if_num
 		@usb.set_altinterface 0
@@ -946,6 +946,31 @@ class DelcomUSB < GridFlow::FObject
 	end
 	def close; @usb.close; end
 	install "delcomusb", 1, 1
+end
+
+# requires Ruby 1.8.0 because of bug in Ruby 1.6.x
+class JoystickPort < FObject
+  def initialize(port)
+    raise "sorry, requires Ruby 1.8" if VERSION<"1.8"
+    @f = File.open(port.to_s,"r+")
+    @status = nil
+    $tasks[self] = proc {tick}
+    @f.nonblock=true
+  end
+  def delete; $tasks.delete(self); @f.close end
+  def tick
+    loop{
+      begin
+        event = @f.read(8)
+      rescue Errno::EAGAIN
+        return
+      end
+      return if not event
+      return if event.length<8
+      send_out 0, *event.unpack("IsCC")
+    }
+  end
+  install "joystick_port", 0, 1
 end
 
 end # module GridFlow
