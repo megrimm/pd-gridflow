@@ -204,10 +204,17 @@ end
 
 # to see what the messages look like when they get on the Ruby side.
 class RubyPrint < GridFlow::GridObject
+	def initialize(*a)
+		if a.length and a[0]==:time then
+			@time=true
+		end	
+	end
+
 	def method_missing(s,*a)
 		s=s.to_s
+		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
 		case s
-		when /^_0_/; GridFlow.whine "#{s[3..-1]}: #{a.inspect}"
+		when /^_0_/; GridFlow.whine "#{pre}#{s[3..-1]}: #{a.inspect}"
 		else super
 		end
 	end
