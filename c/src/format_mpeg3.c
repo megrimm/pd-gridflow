@@ -21,12 +21,11 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#define LIBMPEG_INCLUDE_HERE
 #include "grid.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-//#include <libmpeg3.h>
-#include <libmpeg3/libmpeg3.h>
 
 extern FormatClass class_FormatMPEG3;
 typedef struct FormatMPEG3 {
@@ -40,7 +39,7 @@ static bool FormatMPEG3_frame (FormatMPEG3 *$, GridOutlet *out, int frame) {
 	int npixels = sx*sy;
 	int result;
 	int i;
-	uint8 *buf = NEW(uint8,sx*sy*3);
+	uint8 *buf = NEW(uint8,sy*sx*3+16);
 	uint8 *rows[sy];
 	for (i=0; i<sy; i++) rows[i]=buf+i*sx*3;
 
