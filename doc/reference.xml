@@ -7,6 +7,11 @@
 	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
 -->
 
+<section name="Conventions of this Manual">
+<prose>
+</prose>
+</section>
+
 <section name="Grid Protocol">
 <prose>
 	<p>
@@ -15,12 +20,18 @@
 	is -2<sup>31</sup> to 2<sup>31</sup>-1).
 	</p>
 	<p>
+	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a
+	three-dimensional grid of 240 rows of 320 columns of triplets is called
+	dim(240,320,3).
+	</p>
+	<p>
 	There is a sequence in which elements of a Grid are stored and
 	transmitted.  Dimension 0 is called "outer" or "first" and dimension N-1 is
-	called  "inner" or "last". This inner/outer relationship may also be thought
-	of  this way: a Grid is an array of array of array of...; for example, a
-	picture  is an array of lines; a line is an array of pixels; a pixel is an
-	array  of integers. 
+	called  "inner" or "last". They are called so because if you select a
+	position in the first dimension of a grid, the selected part is of the same
+	shape minus the first dimension; so in dim(240,320,3) if you select
+	row 51 (or whichever valid row number), you get a dim(320,3). if you select
+	a subpart two more times you get to a single number.
 	</p>
 	<p>
 	At each such level, elements are sent/stored in their numeric order, 
@@ -32,6 +43,15 @@
 	On the other hand, order of dimensions usually does matter; this is 
 	what distinguishes rows from columns and channels, for example.
 	Most objects care about the distinction.
+	</p>
+	<p>
+	A grid with only 1 element in a given dimension is different from one
+	lacking that dimension; it won't have the same meaning. You can use this
+	property to your advantage sometimes.
+	</p>
+	<p>
+	Zero-dimensional grids exist. They are called dim(). They can only contain
+	a single number.
 	</p>
 </prose>
 </section>
@@ -63,10 +83,9 @@
 	care of them before they get to the display.
 	</p>
 	<p>
-	In the final conversion, high bits are just truncated. The black value 
-	is 0 and the maximum intensity value is 255; negative values are wrapped 
-	and values above 255 are wrapped too. If you want to clip them, you may 
-	use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
+	In the final conversion, high bits are just ignored. This means: black is
+	0, maximum is 255, and values wrap like with <k>% 256</k>. If you want to
+	clip them, you may use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
 	</p>
 </prose>
 </section>
@@ -78,14 +97,18 @@
 			text="[@video_out 240 320]"
 		/>
 
+		<p>note: this object is obsolete, for the most part, as it now just
+		creates a @out object under the hood and opens a window in x11
+		format with it. See section "External Picture Formats".</p>
+
 		<method name="init">
 			<arg name="rows" type="integer"/>
 			<arg name="columns" type="integer"/>
 			Each @video_out object creates a window when it is created.
-			It is constructed with two parameters. If you want to create
-			a window that is 240 pixels high and 320 pixels wide:
-			@video_out 240 320. @video_out will use three channels in RGB
-			with values ranging 0-255.
+			It will accept dim(rows,columns,3) grids.
+			If you want to create a window that is 240 pixels high and 320
+			pixels wide: [@video_out 240 320]. @video_out will use three
+			channels in RGB with values ranging 0-255.
 		</method>
 		
 		<inlet id="0">
@@ -154,6 +177,12 @@
 			<method name="close">
 				closes the file.
 				usually not necessary.
+			</method>
+			<method name="option">
+				<arg name="name"/>
+				<arg name="value"/>
+				for format-specific functionality.
+				see section "External Picture Formats".
 			</method>
 		</inlet>
 		<sample
@@ -625,32 +654,83 @@ doing redundant updates -- sorry)</p>
 </section>
 
 <section name="External Picture Formats">
-	<format name="ppm" long-name="">
+
+	<jmax-class name="format ppm @in/@out">
 		<icon
 			image="images/open_ppm.jpg"
 			text="[open filename.ppm]"
 		/>
-		<p>PPM:Read+Write. Subformat P6 only. RGB-24 only.</p>
-	</format>
-	<format name="targa" long-name="">
+		Subformat P6 only.
+		Max number 255 (24-bit RGB).
+	</jmax-class>
+
+	<jmax-class name="format targa @in">
 		<icon
 			image="images/open_tga.jpg"
 			text="[open filename.tga targa]"
 		/>
-		<p>Targa: Read Only. RGB-24 only. (ARGB-32 is temporarily disabled) 
-		</p>
-		<p>Experimental.</p>
-	</format>
-	<format name="x11" long-name="">
-	</format>
-	<format name="videodev" long-name="">
+		<p>Support for RGB-24 (3 channels).</p>
+		<p>If you bug me a bit you'll get ARGB-32 too.</p>
+	</jmax-class>
+
+	<jmax-class name="format videodev @in">
 		<icon
 			image="images/open_videodev.jpg"
-			text="[open dev/video0 videodev]"
+			text="[open /dev/video0 videodev]"
 		/>
-		<p>Video4Linux-1 devices, RGB-24 only. Variable picture 
-		size. should work for bttv based cards and the dc1 from miro, possibly 
+
+		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
+		should work for bttv based cards and the dc1 from miro, possibly 
 		dc10plus.</p>
-	</format>
+
+		<p>If you suffer from color inversion, you may feed the list
+		"<k>0 0 1 0 1 0 1 0 0</k>" to a [@redim 3 3] and feed that to the
+		right side of a <k>[@inner * + 0]</k>. Use that @inner object as a
+		RGB-BGR converter.</p>
+	</jmax-class>
+
+	<jmax-class name="format x11 @in/@out">
+		<icon text="[connect here x11]"/>
+		<p>This is the replacement for the @video_out object.</p>
+
+		<p>default connection: the destination must be <k>here</k>.</p>
+		
+		<p>connecting locally (unix sockets): the destination must be
+		like <k>local/display</k>, where display is the display number; for
+		example, <k>local/0</k>.</p>
+		
+		<p>connecting to remote display using TCP (or locally using TCP):
+	the destination must be like <k>remote/host/display</k>; for example,
+	<k>remote/artengine.ca/0</k> will try to connect to hostname.2y.net
+	on port 6000, which is display 0.</p>
+
+		<p>because of the design of Xlib, if any of the connections involved
+		crashes, then the whole program (fts) has to be terminated. (don't
+		you love xlib)</p>
+
+		<p>only one window may be open per connection (to simplify matters;
+		this doesn't reduce flexibility). you may send to a new
+		toplevel window (by default); if you append "/root" to your
+		destination you can write in root window (the "wallpaper"); if you
+		append a window number, e.g. <k>0x28003ff</k>, you may connect to
+		an existing window; you can find out the number of a window by using
+		a tool like <k>xwininfo</k>, part of X11 standard tools.</p>
+
+		<p>option out_size(height,width): changes the window's size, just
+		like sending a grid dim(height,width,3) would.</p>
+
+		<p>option draw(): forces a redraw of the window's contents.</p>
+
+		<p>option autodraw(level): when level=0, option draw() is never
+		automatically invoked; with level=1, option draw() is invoked after
+		each grid is finished; with level=2, option draw() is invoked
+		incrementally after each row is received.</p>
+
+		<p>option timelog(status): when status=1, current time (unix
+		clock) and time since last frame-end are printed in the console.
+		when status=0, it is off. default is 0.</p>
+
+	</jmax-class>
+
 </section>
 </jmax-doc>
