@@ -1,10 +1,27 @@
-include ../../config.make
-DISTDIR = $(JMAXROOTDIR)/fts
+# this file is no longer maintained
+# copy appropriate new options from Makefile.25
 
-# DISTDIR = $(JMAXROOTDIR)/fts
-# PACKAGEROOT = ..
-# PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
-# include $(JMAXDISTDIR)/Makefiles/Makefile.package
+include ../../config.make
+
+ifeq ($(JMAX_VERSION),24)
+
+PNAME=gridflow
+DISTDIR = ../../../../fts
+PACKAGEROOT = ..
+include $(DISTDIR)/Makefiles/Makefile.lib
+include Sources
+PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
+
+all: $(LIBDIR) $(OBJDIR)  $(PACKAGELIB)
+
+TOCLEAN = $(PACKAGELIB)
+include $(DISTDIR)/Makefiles/Makefile.lib.end
+MODULE_SOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
+ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g
+
+else
+
+DISTDIR = $(JMAXROOTDIR)/fts
 
 PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
@@ -22,7 +39,7 @@ ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
 include Sources
 OBJS = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
 FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
-LIB = ../lib2/libgridflow.so
+LIB = ../lib2/lib$(PNAME).so
 # LIB2 = /home/matju/lib/$(LIB)
 
 standalone: $(LIB)
@@ -47,17 +64,10 @@ $(LIB): $(OBJS) ../obj2/nofts.o ../lib2
 #$(LIB2): $(LIB)
 #	install --mode=755 $(LIB) $(LIB2)
 
-test1: test1.c $(LIB)
-	gcc $(ARCH_CFLAGS) -DSTANDALONE test1.c $(LIB) -o $@
-
-test2: test2.c $(LIB)
-	gcc $(ARCH_CFLAGS) -DSTANDALONE test2.c $(LIB) -o $@
-
-#clean::
-#	rm libgridflow.so nofts.o $(OBJS)
-
 test:: test2
 	$(FIX_LD) ./test2
 
 mpeg_test: mpeg_test.c
 	gcc $(ARCH_CFLAGS) mpeg_test.c $(LIB) -o $@ -lmpeg
+
+endif
