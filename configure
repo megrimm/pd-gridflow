@@ -226,6 +226,19 @@ Feature.new {
 	formats ["SDL"]
 },
 Feature.new {
+	tag :aalib
+	name "Ascii Art Library"
+	uses_so ["-laa"]
+	uses_h ["aalib.h"]
+	test proc {
+		c_test "
+		#include <aalib.h>
+		int main (void) {return !aa_init;}
+		", *uses_so
+	}
+	formats ["AALib"]
+},
+Feature.new {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	test proc {

@@ -2,7 +2,7 @@
 
 require "gridflow"
 include GridFlow
-GridFlow.verbose=true
+#GridFlow.verbose=true
 
 $imdir = "./images"
 $animdir = "/opt/mex"
@@ -257,24 +257,25 @@ end
 
 def test_anim msgs
 	gin = FObject["@in"]
-	gout = FObject["@out 256 256"]
-	global = FObject["@global"]
+#	gout = FObject["@out 256 256"]
 
-#	pa = FObject["@scale_by 2"]
-#	gin.connect 0,pa,0
-#	pa.connect 0,gout,0
+	gout = FObject["@fold + 0"]
+	gout2 = FObject["@ / 3"]
+	gout3 = FObject["@outer + {0}"]
+	gout4 = FObject["@out"]
+	gout4.send_in 0, "open aalib X11"
+	gout.connect 0,gout2,0
+	gout2.connect 0,gout3,0
+	gout3.connect 0,gout4,0
+
 	gin.connect 0,gout,0
-
-	pr = FObject["rubyprint time"]
-	gout.connect 0,pr,0
-
+#	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
 	msgs.each {|m| gin.send_in 0,m}
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=10
+	frames=30
 	frames.times { gin.send_in 0 }
 #	loop { gin.send_in 0 }
-
 #	metro = FObject["rtmetro 80"]
 #	metro.connect 0,gin,0
 #	metro.send_in 0,1
@@ -284,6 +285,7 @@ def test_anim msgs
 	printf "%d frames in %.6f seconds (avg %.6f ms, %.6f fps)\n",
 		frames, d, 1000*d/frames, frames/d
 #	global.send_in 0,"dfgdfgdkfjgl"
+	global = FObject["@global"]
 	global.send_in 0,"profiler_dump"
 end
 
@@ -353,16 +355,15 @@ def test_formats
 	gin.connect 0,gout,0
 	[
 		"ppm file #{$imdir}/g001.ppm",
-		"ppm file #{$imdir}/b001.ppm",
-		"ppm file #{$imdir}/r001.ppm",
+#		"ppm file #{$imdir}/b001.ppm",
+#		"ppm file #{$imdir}/r001.ppm",
 		"targa file #{$imdir}/teapot.tga",
+#		"targa file #{$imdir}/tux.tga",
 		"grid gzfile #{$imdir}/foo.grid.gz",
 		"grid gzfile #{$imdir}/foo2.grid.gz",
 	].each {|command|
 		gin.send_in 0,"open #{command}"
-		gin.send_in 0
-		gin.send_in 0
-		gin.send_in 0
+		2.times { gin.send_in 0 } # test for load, rewind, load
 		sleep 1
 	}
 	
@@ -428,8 +429,9 @@ end
 #test_image "grid gzfile #{$imdir}/foo.grid.gz"
 #test_print
 #test_nonsense
-test_ppm2
-#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_ppm2
+#test_anim ["open ppm file #{$imdir}/g001.ppm"]
+test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video15 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
