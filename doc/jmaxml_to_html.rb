@@ -13,27 +13,221 @@ require "xmlparser"
 
 =end
 
+class DTDParser < XMLParser
+	def elementDecl(*args)
+		print "elementDecl: "; p args
+	end
+	def attlistDecl(*args)
+		print "attlistDecl: "; p args
+	end
+end
+
+class XNode
+	class<<self; attr_accessor :valid_tags; end
+	self.valid_tags = {
+		"p" => 1,
+		"b" => 1,
+		"u" => 1,
+		"i" => 1,
+		"k" => 1,
+		"sup" => 1,
+		"section" => 1,
+		"li" => 1,
+		"list" => 1,
+		"icon" => 1,
+		"arg" => 1,
+		"method" => 1,
+		"dim" => 1,
+		"grid" => 1,
+		"inlet" => 1,
+		"outlet" => 1,
+		"sample" => 1,
+		"jmax_class" => 1,
+		"operator_1" => 1,
+		"operator_2" => 1,
+		"jmax_doc" => 1,
+		"format" => 1,
+		"prose" => 1,
+	}
+	def initialize tag, att, *contents
+		@tag,@att,@contents =
+		 tag, att, contents
+	end
+	attr_reader :tag, :att, :contents
+	def [] i; contents[i] end
+	def print_index
+		puts "<tr><td colspan='4'><i>index goes here.</i></td></tr>"
+	end
+
+	$counters=[]
+	$sections=nil
+	def print_contents
+		e=nil
+		case tag
+		when "jmax_doc"; #nothing
+		when "section"
+			black_ruler
+			print "<tr><td colspan='4'><h4>#{att['name']}</h4></td></tr>"
+			e="<tr><td>&nbsp;</td></tr>"
+			$section={}
+		when "p", "i", "u", "b", "sup", "k"
+			t = if tag=="k" then "kbd" else tag end
+			print "<#{t}>"
+			e="</#{t}>"
+		when "list"
+			$counters << (att.fetch("start"){"1"}).to_i
+			print "<ul>"
+			e="</ul>"
+		when "li"
+			print "<li><b>#{$counters.last}</b> : "
+			$counters[-1] += 1
+			e="</li>"
+		when "prose"
+			print "<tr><td></td><td></td><td>"
+			e="</td></tr>"
+		when "jmax_class"
+			name = att['name'] or raise
+			print "<tr><td colspan='4'>"
+			print "<h5><a name='#{name}'></a>#{name}</h5>"
+			print "</td></tr>"
+			print "<tr><td></td><td></td><td>"
+		when "icon", "sample"
+			# hidden
+			return
+		when "method", "arg", "inlet", "grid", "dim", "outlet"
+			print "[#{tag}]"; e="[/#{tag}]"
+		when "operator_1", "operator_2", "format"
+			$section[:table] ||= (
+				print "<tr><td></td><td></td><td>"
+				print "<table border='1'>"
+			;0)
+			print "<tr><td>#{att['name']}</td><td>"
+			e="</td></tr>"
+		else
+			raise "crap in #{tag}"
+		end
+		contents.each {|x|
+			case x
+			when String; print x
+			when XNode; x.print_contents
+			else raise "crap"
+			end
+		}
+		print e if e
+		case tag
+		when "list"
+			$counters.pop
+		when "section"
+			print "</table>" if $section[:table]
+			$section=nil
+		end
+	end
+end
+
 class JmaxmlParser < XMLParser
-	def initialize(args)
+	def initialize(*a)
 		super
+		@jmax_lists = []
+		@stack = [[]]
+	end
+
+	def startElement(tag,attrs)
+		tag=tag.downcase.gsub(/-/,'_')
+		if not XNode.valid_tags[tag] then
+		 	raise "unknown tag #{tag}"
+		end
+		@stack<<[tag,attrs]
+	end
+
+	def endElement(tag)
+		tag=tag.downcase.gsub(/-/,'_')
+		node = XNode.new(*@stack.pop)
+		@stack.last << node
+	end
+
+	def character(text)
+		if String===@stack.last.last then
+			@stack.last.last << text
+		else
+			@stack.last << text
+		end
+	end
+
+	def produce x; puts x; end
+
+	def begin_p   t,a; produce  "<p>"  end; def end_p t;   produce  "</p>"  end
+	def begin_b   t,a; produce  "<b>"  end; def end_b t;   produce  "</b>"  end
+	def begin_i   t,a; produce  "<i>"  end; def end_i t;   produce  "</i>"  end
+	def begin_u   t,a; produce  "<u>"  end; def end_u t;   produce  "</u>"  end
+	def begin_k   t,a; produce "<kbd>" end; def end_k t;   produce "</kbd>" end
+	def begin_sup t,a; produce "<sup>" end; def end_sup t; produce "</sup>" end
+
+	def begin_list t,a
+		raise "start is missing" if not attrs["start"]
+		@jmax_lists << attrs["start"]
+	end
+	def end_list t
+		@jmax_lists.pop
+	end
+
+	def begin_li t,a
+		raise "no list" if not @jmax_lists.last
+		produce "#{@jmax_lists.last}. "
+	end
+	def end_li t
+	end
+
+	def begin_section t,a
+		raise "can't nest sections" if @jmax_section
+		raise "name is missing" if not attrs["name"]
+		@jmax_section = attrs["name"]
+	end
+	def end_section t
+		@jmax_section = nil
+	end
+
+	def begin_method t,a
+	end
+	def end_method t
+	end
+
+	def begin_arg t,a
+	end
+	def end_arg t
+	end
+
+	def begin_icon t,a
+	end
+	def end_icon t
+	end
+
+end
+
+class DocumentTraceParser < XMLParser
+	def initialize(args)
 		@indent_out = 0
+		super
 	end
 	def startElement(tag,attrs)
 		print "\n", "  "*@indent_out, "(#{tag} #{attrs.inspect}"
 		@indent_out += 1
+		#super
 	end	
 	def endElement(tag)
 		@indent_out -= 1
 		print ")"
+		#super
 	end
 	def character(text)
 		text = text.gsub /\s+/, " "
 		text.strip!
 		return if text==""
 		print "\n", "  "*@indent_out, "\"", text[0...40], "\""
+		#super
 	end
 end
 
+#----------------------------------------------------------------#
 
 def header
 puts <<EOF
@@ -56,8 +250,7 @@ puts <<EOF
   cellspacing="2">
 <tr> 
 <td colspan="4" bgcolor="#082069">
-<img src="images/jmax_titre.jpg" width="253" height="23">
-</td>
+<img src="images/jmax_titre.jpg" width="253" height="23"></td>
 </tr>
 <tr> 
 <td>&nbsp;</td>
@@ -65,10 +258,14 @@ puts <<EOF
 EOF
 black_ruler
 puts <<EOF
+<tr><td colspan="4" height="16"> 
+    <h4>Video4jmax 0.3.0 - reference index</h4>
+</td></tr>
 <tr> 
-<td colspan="4" height="16"> 
-<h4>Video4jmax 0.2.2 - reference index</h4>
-</td>
+  <td rowspan="2" width="12%">&nbsp;</td>
+  <td width="30%" height="23">&nbsp;</td>
+  <td width="50%" height="23">&nbsp;</td>
+  <td width="10%" height="23">&nbsp;</td>
 </tr>
 EOF
 end
@@ -99,17 +296,17 @@ end
 
 #----------------------------------------------------------------#
 
-#header
-#black_ruler
-#footer
+header
+black_ruler
 
 parser = JmaxmlParser.new "ISO-8859-1"
-#STDIN.each {|line|
-#	parser.parse line
-#}
-#parser.parse "", true
+
 begin
+	STDERR.puts "reading standard input..."
 	parser.parse(STDIN.readlines.join("\n"), true)
+	nodes = parser.instance_eval{@stack}[0][0]
+	nodes.print_index
+	nodes.print_contents
 rescue XMLParserError => e
 	puts ""
 	puts ""
@@ -120,6 +317,8 @@ rescue XMLParserError => e
 	STDERR.puts "column: #{parser.column}"
 	STDERR.puts "  byte: #{parser.byteIndex}"
 end
+
+footer
 puts ""
 puts ""
 
