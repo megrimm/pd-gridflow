@@ -26,22 +26,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// returns the highest bit set in a word, or 0 if none.
-int highest_bit(uint32 n) {
-	int i=0;
-	if (n&0xffff0000) { n>>=16; i+=16; }
-	if (n&0x0000ff00) { n>>= 8; i+= 8; }
-	if (n&0x000000f0) { n>>= 4; i+= 4; }
-	if (n&0x0000000c) { n>>= 2; i+= 2; }
-	if (n&0x00000002) { n>>= 1; i+= 1; }
-	return i;
-}
-
-// returns the lowest bit set in a word, or 0 if none.
-int lowest_bit(uint32 n) {
-	return highest_bit((~n+1)&n);
-}
-
 #define CONVERT1 t = \
 	(((in[0] << hb[0]) >> 7) & mask[0]) | \
 	(((in[1] << hb[1]) >> 7) & mask[1]) | \
@@ -282,7 +266,7 @@ char *Dim::to_s() {
 /* **************************************************************** */
 
 NumberType number_type_table[] = {
-#define FOO(_sym_,_size_,_flags_,args...) { 0, #_sym_, _size_, _flags_ },
+#define FOO(_sym_,_size_,_flags_,args...) { 0, #_sym_, _size_, _flags_, args },
 NUMBER_TYPES(FOO)
 #undef FOO
 };
@@ -318,14 +302,18 @@ public:
 	DECL_OP1ON(Op1Loops,op,uint8), \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
+	DECL_OP1ON(Op1Loops,op,int64), \
 	DECL_OP1ON(Op1Loops,op,float32), \
+	DECL_OP1ON(Op1Loops,op,float64), \
 }
 
 #define DECL_OP1_NOU(op,sym,props) { 0, sym, \
 	{0}, \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
+	DECL_OP1ON(Op1Loops,op,int64), \
 	DECL_OP1ON(Op1Loops,op,float32), \
+	DECL_OP1ON(Op1Loops,op,float64), \
 }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
@@ -427,7 +415,9 @@ public:
 	template <class T> class Y##op : Op2<T> { public: \
 		inline static T f(T a, T b) { return expr; } }; \
 	class Y##op<float32> : Op2<float32> { public: \
-		inline static float32 f(float32 a, float32 b) { return expr2; } };
+		inline static float32 f(float32 a, float32 b) { return expr2; } }; \
+	class Y##op<float64> : Op2<float64> { public: \
+		inline static float64 f(float64 a, float64 b) { return expr2; } };
 
 #define DECL_OP2ON(base,op,type) { \
 	&base<Y##op<type> >::op_map, \
@@ -439,7 +429,9 @@ public:
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
+	DECL_OP2ON(Op2Loops,op,int64), \
 	DECL_OP2ON(Op2Loops,op,float32), \
+	DECL_OP2ON(Op2Loops,op,float64), \
 }
 
 /*
@@ -447,7 +439,9 @@ public:
 	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
+	DECL_OP2ON(Op2LoopsBitwise,op,int64), \
 	DECL_OP2ON(Op2LoopsBitwise,op,float32), \
+	DECL_OP2ON(Op2LoopsBitwise,op,float64), \
 }
 */
 
@@ -455,6 +449,8 @@ public:
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
+	DECL_OP2ON(Op2Loops,op,int64), \
+	{0,0,0,0}, \
 	{0,0,0,0}, \
 }
 
@@ -626,6 +622,20 @@ void startup_number () {
 	INIT_TABLE(op2_dict,op2_table)
 	INIT_TABLE(number_type_dict,number_type_table)
 
+	for (int i=0; i<COUNT(number_type_table); i++) {
+		number_type_table[i].index = (NumberTypeE) i;
+		char a[64];
+		strcpy(a,number_type_table[i].aliases);
+		char *b = strchr(a,',');
+		if (b) {
+			*b=0;
+			rb_hash_aset(number_type_dict, ID2SYM(rb_intern(b+1)),
+				PTR2FIX(&number_type_table[i]));
+		}
+		rb_hash_aset(number_type_dict, ID2SYM(rb_intern(a)),
+				PTR2FIX(&number_type_table[i]));
+	}
+
 #define OVERRIDE_INT(_name_,_mode_,_func_) { \
 	Operator2 *foo = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(_name_))); \
 	foo->on_uint8.op_##_mode_ = _func_; \
@@ -646,12 +656,9 @@ void startup_number () {
 //static
 void make_hocus_pocus () {
 //	exit(1);
-	((BitPacking*)0)->pack(0,Pt<uint8>(),Pt<uint8>());
-	((BitPacking*)0)->pack(0,Pt<int16>(),Pt<uint8>());
-	((BitPacking*)0)->pack(0,Pt<int32>(),Pt<uint8>());
-	((BitPacking*)0)->pack(0,Pt<float32>(),Pt<uint8>());
-	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<uint8>());
-	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<int16>());
-	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<int32>());
-	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<float32>());
+#define FOO(S) \
+	((BitPacking*)0)->pack(0,Pt<S>(),Pt<uint8>()); \
+	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<S>());
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 }

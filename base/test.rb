@@ -47,14 +47,16 @@ def cast value, type
 	when :uint8; value & 0xff
 	when :int16; (value & 0x7fff) - (value & 0x8000)
 	when :int32; value
+	when :int64; value
 	when :float32; value.to_f
+	when :float64; value.to_f
 	else raise "hell"
 	end
 end
 
 def test_math
 	hm = "#".intern
-for nt in [:int32, :int16, :uint8] do
+for nt in [:uint8, :int16, :int32, :int64, :float32, :float64] do
 
 	GridFlow.verbose = false
 	GridFlow.gfpost "starting test for #{nt}"
@@ -96,7 +98,7 @@ for nt in [:int32, :int16, :uint8] do
 		a.send_in 1, "list #{nt} # 10"
 		a.send_in 0,:list,nt, 1,2,4,8 }
 
-if nt!=:uint8
+if nt!=:uint8 and nt!=:float32 and nt!=:float64
 	(a = FObject["@ / {#{nt} # 3}"]).connect 0,e,0
 	x.expect([-2,-1,-1,-1,0,0,0,0,0,1,1,1,2]) {
 		a.send_in(0,:list,nt, *(-6..6).to_a) }
@@ -150,7 +152,7 @@ end
 		a.send_in 1,(0...10).to_a
 		a.send_in 0,(0...10).map{|i| 10*i }}
 
-if nt!=:uint8
+if nt!=:uint8 and nt!=:float32 and nt!=:float64
 	(a = FObject["@outer",:%,[nt,3,-3]]).connect 0,e,0
 	x.expect([0,0,1,-2,2,-1,0,0,1,-2,2,-1,0,0]) {
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
@@ -168,11 +170,13 @@ end
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 	
+if nt!=:int64
 	a = FObject["@print"]
 	a.send_in 0, "3 3 #{nt} # 1 0 0 0"
 	a.send_in 0, "3 3 3 #{nt} # 1 2 3 4"
 	a.send_in 0, "base 16"
 	a.send_in 0, "3 3 3 #{nt} # 255 0 0 0"
+end
 
 	(a = FObject["@outer * {3 2 #{nt} # 1 2 3}"]).connect 0,e,0
 	b = FObject["@dim"]
@@ -251,6 +255,10 @@ end
 	a.send_in 0, "5 5 # 1000 0 0 0 0 0" 
 #	}
 
+if nt==:float32 or nt==:float64
+	(a = FObject["@matrix_solve"]).connect 0,e,0
+	x.expect([1,0,0,0,1,0,0,0,1]) { a.send_in 0, 3, 3, nt, hm, 1,0,0,0,1,0,0,0,1 }
+end
 	GridFlow.gfpost "ending test for #{nt}"
 end # for nt
 

@@ -72,14 +72,18 @@ void Grid::init_clear(Dim *dim, NumberTypeE nt) {
 	CLEAR((char*)data,size);
 }
 
-static inline void NUM(Ruby x, uint8 &y) { y = INT(x); }
-static inline void NUM(Ruby x, int16 &y) { y = INT(x); }
-static inline void NUM(Ruby x, int32 &y) { y = INT(x); }
-static inline void NUM(Ruby x, float32 &y) {
-	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value;
-	else if (INTEGER_P(x)) y = INT(x);
-	else RAISE("expected Float (or at least Integer)");
-}
+#define FOO(S) \
+	static inline void NUM(Ruby x, S &y) { y = INT(x); }
+EACH_INT_TYPE(FOO)
+#undef FOO
+
+#define FOO(S) \
+static inline void NUM(Ruby x, S &y) { \
+	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value; \
+	else if (INTEGER_P(x)) y = INT(x); \
+	else RAISE("expected Float (or at least Integer)");}
+EACH_FLOAT_TYPE(FOO)
+#undef FOO
 
 void Grid::init_from_ruby_list(int n, Ruby *a) {
 		NumberTypeE nt = int32_type_i;
@@ -649,16 +653,16 @@ static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
 	gh->mode = 4;
-	gh->flow_int32 = GridObject_r_flow;
 	if (mt) {
-		gh->flow_uint8 = GridObject_r_flow;
-		gh->flow_int16 = GridObject_r_flow;
-		gh->flow_float32 = GridObject_r_flow;
+#define FOO(S) gh->flow_##S = GridObject_r_flow;
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	} else {
-		gh->flow_uint8 = 0;
-		gh->flow_int16 = 0;
-		gh->flow_float32 = 0;
+#define FOO(S) gh->flow_##S = 0;
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 	}
+	gh->flow_int32 = GridObject_r_flow;
 	Ruby handlers = rb_ary_new();
 	rb_ary_push(handlers,PTR2FIX(gh));
 	rb_ivar_set(rself,SI(@handlers),handlers);
@@ -772,8 +776,7 @@ void startup_grid () {
 void make_gimmick () {
 //    exit(1); /* i warned you. */
 	GridOutlet foo(0,0);
-	foo.give(0,Pt<uint8>());
-	foo.give(0,Pt<int16>());
-	foo.give(0,Pt<int32>());
-	foo.give(0,Pt<float32>());
+#define FOO(S) foo.give(0,Pt<S>());
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
 }
