@@ -185,7 +185,9 @@ class XNode
 			print "<b>)</b>"
 			e="<br>"
 		when "grid"
-			print "<br><b>grid</b> "
+			print "<br>"
+			print "<b>", $portnum.join(" "), "</b> " if $portnum
+			print "<b>grid</b> "
 			e="<br><br>"
 		when "dim"
 			print "<b>dim(</b>"
