@@ -24,7 +24,7 @@ PathInfo.java
 
 # libPeephole.so
 
-JC = $(JAVA_HOME)/bin/javac -classpath $(CLASSPATH) -O
+JC = javac -classpath $(CLASSPATH) -O
 
 all: gridflow.jar
 
@@ -32,7 +32,7 @@ clean::
 	rm -f $(OBJS) gridflow.jar PathInfo.java
 
 gridflow.jar: $(SRC)
-	-mkdir gridflow
+	mkdir gridflow || true
 	$(JC) -d . $(SRC)
 	/bin/rm -f gridflow.jar
 	jar -cvf gridflow.jar gridflow/*.class
