@@ -50,8 +50,8 @@ struct List {
 List *List_new(int size) {
 	List *$ = NEW(List,1);
 	$->size = size;
-	$->capa = size;
-	$->ptr = NEW(void *,size);
+	$->capa = size ? size : 1;
+	$->ptr = NEW(void *,$->capa);
 	{ int i; for (i=0; i<size; i++) $->ptr[i] = 0; }
 	return $;
 }
@@ -250,7 +250,7 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	md->selector = selector;
 	md->method = method;
 	md->n_args = n_args;
-	md->args = NEW(fts_type_t,n_args);
+	md->args = NEW(fts_type_t,n_args?n_args:1);
 	memcpy(md->args,args,n_args*sizeof(fts_type_t));
 	md->min_args = min_args;
 	Dict_put($->method_table[winlet+1],selector,md);
@@ -260,22 +260,33 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 /* Object */
 
 void fts_object_set_error(fts_object_t *o, const char *s, ...) {
-	if (o->error) FREE(o);
-	o->error = strdup(s);
+	char buf[256];
+	va_list rest;
+	va_start(rest,s);
+	vsnprintf(buf,sizeof(buf),s,rest);
+	if (o->error) FREE(o->error);
+	o->error = strdup(buf);
+	va_end(rest);
 }
 
 fts_object_t *fts_object_new(int ac, fts_atom_t *at) {
 	fts_symbol_t classname = fts_get_symbol(at);
 	fts_class_t *class = symbols[classname].c;
-	return fts_object_new2(class,ac-1,at+1);
+	if (!class) {
+		printf("ERROR: class not found: %s\n",fts_symbol_name(classname));
+		exit(1);
+	}
+	return fts_object_new2(class,ac,at);
 }
 
 fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at) {
 	int i;
-	fts_object_t *$ = (fts_object_t *)qalloc(class->object_size);
+	fts_object_t *$;
+	assert(class->object_size > 0);
+	$ = (fts_object_t *)qalloc(class->object_size);
 	$->head.cl = class;
 	$->argc = ac;
-	$->argv = NEW(fts_atom_t,ac);
+	$->argv = NEW(fts_atom_t,ac?ac:1);
 	memcpy($->argv,at,ac*sizeof(fts_atom_t));
 	$->error = 0;
 	$->outlets = NEW(List *, class->n_outlets);
@@ -306,8 +317,8 @@ void fts_send(fts_object_t *o, int inlet, fts_symbol_t sel, int ac, const fts_at
 	Dict *d = o->head.cl->method_table[inlet+1];
 	MethodDecl *md = (MethodDecl *) Dict_get(d,sel);
 	if (md) {
-/*		printf("object %08lx inlet %d selector %s argc %d\n",
-			(uint32)o,inlet,fts_symbol_name(sel),ac); */
+/*		printf("object %08lx inlet %d selector %s argc
+		%d\n",(uint32)o,inlet,fts_symbol_name(sel),ac); */
 		md->method(o,inlet,sel,ac,at);
 	} else {
 		printf("unknown method `%s'\n",fts_symbol_name(sel));
