@@ -2,8 +2,21 @@
 
 version 0.7.6 (head):
 
- * GridFlow runs on MacOS 10.2
+ * GridFlow runs on MacOS 10.2 (only with jMax 2.5)
+ * new object classes:
+	delcom_usb: support for Delcom USB I/O controller
+	joystick_port: support for linux joystick drivers
  * file suffix detector is now extensible
+ * added: Ruby interface for libUSB (base/usb.c)
+ * x11: now emits "keypress" and "keyrelease" messages
+ * [@downscale_by] now supports 4 channels (therefore [peephole] does too)
+ * [@out quartz] makes a native MacOS (Cocoa+Quartz) window (warning: buggy)
+ * support for Apple QuickTime movie decoding (format/quicktimeapple.c)
+ * fixed bugs in: x11, @draw_image, ...
+ * "open x11" now allows any display spec (including dual head setup)
+ * now includes the pictures used in the examples
+     (not a separate download anymore)
+ * [@out x11 here override_redirect] (override window manager; be careful with this)
 
 version 0.7.5 (2003.09.28):
 
