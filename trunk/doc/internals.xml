@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no" ?>
 <!DOCTYPE documentation SYSTEM 'jmax.dtd'>
-<documentation>
+<documentation title="C++/Ruby Internals">
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Internals
