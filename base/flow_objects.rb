@@ -786,7 +786,7 @@ class Fork < FObject
 end
 
 class Shunt < FObject
-	def initialize(n,i=0) super; @n=n; @i=i end
+	def initialize(n=2,i=0) super; @n=n; @i=i end
 	def initialize2; add_outlets @n end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
