@@ -10,7 +10,7 @@
 #X obj 142 100 @ * 7;
 #X text 25 205 do it (repeat line);
 #X obj 26 227 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1;
-#X obj 26 300 @out x11;
+#X obj 26 300 @out window;
 #X text 244 45 this is the formula for generating one line. each bar is 320/7 pixels wide. this converts a column number (0-319) into a bar number (1-7)\,;
 #X obj 142 207 @ * 255;
 #X obj 69 55 fork ;

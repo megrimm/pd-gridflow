@@ -456,7 +456,7 @@ end
 
 def test_munchies
 	m=Munchies.new
-	gout = FObject["@out x11"]
+	gout = FObject["@out quartz"]
 	m.connect 0,gout,0
 	m.send_in 0
 	$mainloop.loop
@@ -534,6 +534,17 @@ def test_anim(*msgs)
 #	gin.connect 1,rpr,0
 
 	gin.connect 0,gout1,0
+=begin
+	layer=FObject["@layer"]
+	gin.connect 0,layer,0
+	layer.connect 0,gout1,0
+	check=FObject["@checkers"]
+	phor=FObject["@for {0 0} {256 256} {1 1}"]
+	phor.connect 0,check,0
+	check.connect 0,layer,1
+	phor.send_in 0
+=end
+
 #	scale = FObject["@scale_by 3"]
 #	gin.connect 0,scale,0
 #	scale.connect 0,gout1,0
@@ -673,7 +684,7 @@ def test_layer
 end
 
 Images = [
-	"png file ShaunaKennedy/atmosphere.png",
+#	"png file ShaunaKennedy/atmosphere.png",
 #	"targa file #{$imdir}/tux.tga",
 #	"png file #{$imdir}/lena.png",
 	"jpeg file #{$imdir}/ruby0216.jpg",
@@ -702,7 +713,7 @@ end
 
 def test_formats
 	gin = FObject["@in"]
-	gout = FObject["@out x11"]
+	gout = FObject["@out window"]
 	gs = FObject["@ + {int16 # 0}"]
 	gin.connect 0,gs,0
 	gs.connect 0,gout,0
@@ -1027,9 +1038,8 @@ end
 #test_anim "open ppm file #{$imdir}/g001.ppm","loop 0"
 #test_anim "open ppm file #{$animdir}/b.ppm.cat"
 #test_anim "open jpeg file #{$imdir}/rgb.jpeg.cat"
-test_anim "open quicktime file BLAH"
-#test_anim "open quicktime file #{$imdir}/rgb_uncompressed.mov"
-#test_anim "open quicktime file #{$imdir}/test_mjpega.mov"
+#test_anim "open quicktime file /Users/artengine/gf_images/rgb_uncompressed.mov"
+test_anim "open quicktime file /Users/artengine/gf_images/test_mjpega.mov"
 #test_anim "open ppm gzfile motion_tracking.ppm.cat.gz"
 #test_anim "open videodev /dev/video","channel 1","size 480 640"
 #test_anim "open videodev /dev/video1 noinit","transfer read"
