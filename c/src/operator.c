@@ -30,7 +30,7 @@
 #define DECL_TYPE(_name_,_size_) \
 	{ 0, #_name_, _size_ }
 
-static NumericType numeric_type_table[] = {
+static NumberType numeric_type_table[] = {
 	DECL_TYPE(     uint8,  8),
 	DECL_TYPE(      int8,  8),
 	DECL_TYPE(    uint16, 16),
