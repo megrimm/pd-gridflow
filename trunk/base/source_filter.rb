@@ -97,7 +97,7 @@ def handle_decl(line)
 end
 
 def handle_def(line)
-	m = parse_methoddecl(line,"{?.*$")
+	m = parse_methoddecl(line,"\{?.*$")
 	term = line[/\{.*/]
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
