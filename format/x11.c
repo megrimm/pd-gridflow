@@ -53,19 +53,22 @@ struct FormatX11 : Format {
 	short depth;
 	bool use_shm;	   /* should use shared memory? */
 	bool use_stripes;  /* use alternate conversion in 256-color mode */
-
+	
 /* at the Window level */
 	int autodraw;        /* how much to send to the display at once */
 	Window window;       /* X11 window number */
+	Window parent;       /* X11 window number of the parent */
 	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
 	XImage *ximage;      /* X11 image descriptor */
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
 	bool verbose;
+	int pos_x, pos_y;
 
 	BitPacking *bit_packing;
 	Dim *dim;
+	bool lock_size;
 
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
@@ -73,7 +76,7 @@ struct FormatX11 : Format {
 
 	FormatX11 () : use_stripes(false), 
 	autodraw(1), window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
-	verbose(false), dim(0)
+	verbose(false), dim(0), lock_size(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
@@ -88,6 +91,7 @@ struct FormatX11 : Format {
 	void report_pointer(int y, int x, int state);
 	void prepare_colormap();
 	void alarm();
+	Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level=0);
 
 	\decl void frame ();
 	\decl void close ();
@@ -317,10 +321,10 @@ void FormatX11::resize_window (int sx, int sy) {
 	alloc_image(sx,sy);
 	name = strdup("GridFlow");
 	if (window) {
-		if (is_owner) XResizeWindow(display,window,sx,sy);
+		if (is_owner && !lock_size) XResizeWindow(display,window,sx,sy);
 	} else {
 		window = XCreateSimpleWindow(display,
-			root_window, 0, 0, sx, sy, 0, white, black);
+			parent, pos_x, pos_y, sx, sy, 0, white, black);
 		if(!window) RAISE("can't create window");
 	}
 /*	set_wm_hints(sx,sy); */
@@ -490,6 +494,32 @@ void FormatX11::open_display(const char *disp_string) {
 #endif
 }
 
+Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level) {
+	if (level>2) return 0xDeadBeef;
+	Window root_r, parent_r;
+	Window *children_r;
+	unsigned int nchildren_r;
+	XQueryTree(display,xid,&root_r,&parent_r,&children_r,&nchildren_r);
+	Window target = 0xDeadBeef;
+	for (int i=0; i<(int)nchildren_r; i++) {
+		Atom actual_type_r;
+		int actual_format_r;
+		unsigned long nitems_r;
+		unsigned long bytes_after_r;
+		unsigned char *prop_r;
+		XGetWindowProperty(display,children_r[i],key,0,666,0,AnyPropertyType,
+		&actual_type_r,&actual_format_r,&nitems_r,&bytes_after_r,&prop_r);
+		fprintf(stderr,"%*s0x%08x -> %s\n",level*2,"",(int)children_r[i],prop_r);
+		bool match = prop_r && strcmp((char *)prop_r,value)==0;
+		XFree(prop_r);
+		if (match) { target=children_r[i]; break; }
+		target = search_window_tree(children_r[i],key,value,level+1);
+		if (target != 0xDeadBeef) break;
+	}
+	if (children_r) XFree(children_r);
+	return target;
+}
+
 \def void initialize (...) {
 	/* defaults */
 	int sy = 240;
@@ -536,6 +566,9 @@ void FormatX11::open_display(const char *disp_string) {
 		i++;
 	}
 
+	pos_x=0;
+	pos_y=0;
+	parent = root_window;
 	if (i>=argc) {
 		if (verbose) gfpost("will create new window");
 	} else {
@@ -544,6 +577,15 @@ void FormatX11::open_display(const char *disp_string) {
 			window = root_window;
 			if (verbose) gfpost("will use root window (0x%x)", window);
 			is_owner = false;
+		} else if (winspec==SYM(embed)) {
+			char *title = strdup(rb_str_ptr(argv[i+1]));
+			pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
+			sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
+			lock_size = true;
+
+			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
+			if (parent == 0xDeadBeef) RAISE("Window not found.");
+
 		} else {
 			const char *winspec2 = rb_sym_name(winspec);
 			if (strncmp(winspec2,"0x",2)==0) {
