@@ -166,11 +166,16 @@ GRID_BEGIN(FormatGrid,0) {
 		buf[5]=32;
 		buf[6]=0;
 		buf[7]=Dim_count($->dim);
+		if (8>write($->stream,buf,8)) {
+			whine("grid header: write error: %s",strerror(errno));
+		}
+
 	}
 
 	/* dimension list */
 	{
-		if (0>write($->stream,$->dim->v,Dim_count($->dim))) {
+		int n = sizeof(int)*Dim_count($->dim);
+		if (n>write($->stream,$->dim->v,n)) {
 			whine("dimension list: write error: %s",strerror(errno));
 		}
 	}	
@@ -178,10 +183,7 @@ GRID_BEGIN(FormatGrid,0) {
 }
 
 GRID_FLOW(FormatGrid,0) {
-	Number data2[n];
-	memcpy(data2,data,n*sizeof(Number));
-	if ($->is_le != is_le()) swap32(n,data2);
-	write($->stream,data2,n*sizeof(Number));
+	write($->stream,data,n*sizeof(Number));
 }
 
 GRID_END(FormatGrid,0) {
