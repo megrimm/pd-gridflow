@@ -130,9 +130,8 @@ GRID_BEGIN(GridExport,0) { return true; }
 GRID_FLOW(GridExport,0) {
 	int i;
 	for (i=0; i<n; i++) {
-		VALUE a[1];
-		a[0] = INT2NUM(*data);
-		FObject_send_thru(rself,0,sym_int,1,a);
+		VALUE a[] = { INT2NUM(0), sym_int, INT2NUM(*data) };
+		FObject_send_thru(COUNT(a),a,rself);
 		data++;
 	}
 }
@@ -171,7 +170,11 @@ GRID_FLOW(GridExportList,0) {
 }
 		
 GRID_END(GridExportList,0) {
-	FObject_send_thru(rself,0,sym_list,$->n,RARRAY($->list)->ptr);
+	VALUE a[$->n+2];
+	a[0] = INT2NUM(0);
+	a[1] = sym_list;
+	memcpy(a+2,RARRAY($->list)->ptr,$->n*sizeof(void*));
+	FObject_send_thru(COUNT(a),a,rself);
 	$->list = 0;
 }
 
@@ -360,12 +363,9 @@ GRID_FLOW(GridOp1,0) {
 GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridOp1,init) {
-	VALUE sym = argv[0];
-
 	GridObject_init((GridObject *)$);
-
-	$->op = Dict_get(op1_dict,(void *)sym);
-	if (!$->op) RAISE("unknown unary operator \"%s\"", sym);
+	$->op = FIX2PTR(rb_hash_aref(op1_dict,argv[0]));
+	if ($->op) RAISE("unknown unary operator \"%s\"", argv[0]);
 }
 
 METHOD(GridOp1,delete) { GridObject_delete((GridObject *)$); }
@@ -443,7 +443,7 @@ METHOD(GridOp2,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op = Dict_get(op2_dict,(void *)sym);
+	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
 	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
@@ -514,7 +514,7 @@ METHOD(GridFold,init) {
 
 	GridObject_init((GridObject *)$);
 
-	$->op = Dict_get(op2_dict,(void *)sym);
+	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
 	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
@@ -701,13 +701,11 @@ METHOD(GridInner2,init) {
 	$->rint = NUM2INT(argv[2]);
 	$->dim = 0;
 	$->data = 0;
-
 	GridObject_init((GridObject *)$);
-
-	$->op_para = Dict_get(op2_dict,(void *)sym_para);
-	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
-	if (!$->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
-	if (!$->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
+	$->op_para = FIX2PTR(rb_hash_aref(op2_dict,sym_para));
+	$->op_fold = FIX2PTR(rb_hash_aref(op2_dict,sym_fold));
+	if ($->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
+	if ($->op_fold) RAISE("unknown binary operator \"%s\"", sym_fold);
 }
 
 METHOD(GridInner2,delete) {
@@ -785,7 +783,7 @@ METHOD(GridOuter,init) {
 	$->dim = 0;
 	$->data = 0;
 
-	$->op = Dict_get(op2_dict,(void *)sym);
+	$->op = FIX2PTR(rb_hash_aref(op2_dict,sym));
 	if (!$->op) RAISE("unknown binary operator \"%s\"", sym);
 }
 
@@ -919,8 +917,8 @@ METHOD(GridConvolve,init) {
 	$->diml = 0;
 	$->datal = 0;
 
-	$->op_para = Dict_get(op2_dict,(void *)sym_para);
-	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
+	$->op_para = FIX2PTR(rb_hash_aref(op2_dict,sym_para));
+	$->op_fold = FIX2PTR(rb_hash_aref(op2_dict,sym_fold));
 	$->rint = NUM2INT(argv[2]);
 
 	if (!$->op_para) RAISE("unknown binary operator \"%s\"", sym_para);
@@ -1230,7 +1228,7 @@ err:
 
 METHOD(GridIn,open) {
 	VALUE format = argv[0];
-	FormatClass *qlass = Dict_get(format_classes_dex,(void *)format);
+	FormatClass *qlass = FIX2PTR(rb_hash_aref(format_classes_dex,format));
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1311,7 +1309,10 @@ GRID_FLOW(GridOut,0) {
 GRID_END(GridOut,0) {
 	$->ff->cl->handler->end(rself,(GridObject *)($->ff),in);
 	LEAVE;
-	FObject_send_thru(rself,0,sym_bang,0,0);
+	{
+		VALUE a[] = { INT2NUM(0), sym_bang };
+		FObject_send_thru(COUNT(a),a,rself);
+	}
 	if (!$->timelog) return;
 	{
 		struct timeval t;
@@ -1359,7 +1360,7 @@ METHOD(GridOut,open) {
 	return;
 */
 	VALUE format = argv[0];
-	FormatClass *qlass = Dict_get(format_classes_dex,(void *)format);
+	FormatClass *qlass = FIX2PTR(rb_hash_aref(format_classes_dex,format));
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -1618,7 +1619,8 @@ static void RtMetro_alarm(VALUE rself) {
 	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
 	if (now >= $->next_time) {
 		//whine("rtmetro sending bang");
-		FObject_send_thru(rself,0,sym_bang,0,0);
+		VALUE a[] = { INT2NUM(0), sym_bang };
+		FObject_send_thru(COUNT(a),a,rself);
 		/* $->next_time = now; */ /* jmax style, less realtime */
 		$->next_time += 1000*$->ms;
 	}
@@ -1631,10 +1633,10 @@ METHOD(RtMetro,_0_int) {
 	whine("on = %d",$->on);
 	if (oon && !$->on) {
 		whine("deleting rtmetro alarm...");
-		Dict_del(gf_timer_set,$);
+		rb_funcall(gf_timer_set,rb_intern("remove"),1,$);
 	} else if (!oon && $->on) {
 		whine("creating rtmetro alarm...");
-		Dict_put(gf_timer_set,$,RtMetro_alarm);
+		rb_hash_aset(gf_timer_set,PTR2FIX($),PTR2FIX(RtMetro_alarm));
 		$->next_time = RtMetro_now();
 	}
 }
@@ -1679,8 +1681,10 @@ static void profiler_reset$1(void*d,void*k,void*v) {
 }
 
 METHOD(GFGlobal,profiler_reset) {
-	Dict *os = gf_object_set;
+/*
+	VALUE os = gf_object_set;
 	Dict_each(os,profiler_reset$1,0);
+*/
 }
 
 static int by_profiler_cumul(void **a, void **b) {
@@ -1690,11 +1694,14 @@ static int by_profiler_cumul(void **a, void **b) {
 }
 
 static void profiler_dump$1(void *d,void *k,void *v) {
+/*
 	List_push((List *)d,k);
+*/
 }
 
 METHOD(GFGlobal,profiler_dump) {
 	/* if you blow 256 chars it's your own fault */
+/*
 	List *ol = List_new(0);
 
 	uint64 total=0;
@@ -1721,6 +1728,7 @@ METHOD(GFGlobal,profiler_dump) {
 		FREE(buf);
 	}
 	whine("--------------------------------");
+*/
 }
 
 METHOD(GFGlobal,init) {
