@@ -288,7 +288,7 @@ class GridPack < GridObject
 		return if self.class!=GridPack
 		GridFlow.whatever :addinlets, self, @data.length-1
 	end
-	def _0_cast(cast) @cast=cast end
+	def _0_cast(cast) @cast=cast end #!@#$ typecheck
 	def self.define_inlet i
 		module_eval "
 			def _#{i}_int   x; @data[#{i}]=x; _0_bang; end
@@ -833,11 +833,11 @@ class Fork < FObject
   install "fork", 1, 2 if GridFlow.bridge_name != "jmax"
 end
 
-class Demux < FObject
-	def initialize(n)
+class Shunt < FObject
+	def initialize(n,i=0)
 		super
 		@n=n
-		@i=0
+		@i=i
 	end
 	def initialize2
 		GridFlow.whatever :addoutlets, self, @n
@@ -848,9 +848,12 @@ class Demux < FObject
 	end
 	def _1_int i; @i=i.to_i end
 	alias :_1_float :_1_int
-	if GridFlow.bridge_name != "jmax"
-		install "demux", 2, 0
-	end
+	install "shunt", 2, 0
+end
+
+# hack: this is an alias.
+if GridFlow.bridge_name != "jmax"
+	class Demux < Shunt; install "demux", 2, 0; end
 end
 
 unless GridFlow.bridge_name =~ /jmax/
