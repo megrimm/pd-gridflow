@@ -167,6 +167,9 @@ GridInlet::~GridInlet() {
 	delete dim;
 }
 
+/* must be set before the end of GRID_BEGIN phase, and so cannot be changed
+afterwards. This is to allow some optimisations. Anyway there is no good reason
+why this would be changed afterwards. */
 void GridInlet::set_factor(int factor) {
 	assert(dim);
 	assert(factor > 0);
@@ -250,7 +253,8 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		return; /* ignore data */
 	}
 	if (n==0) return;
-	if (mode==4) {
+	switch(mode) {
+	case 4:{
 		int d = dex + bufi;
 		if (d+n > dim->prod()) {
 			gfpost("grid input overflow: %d of %d from %s to %s",
@@ -290,18 +294,18 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		data += m;
 		n -= m;
 		if (factor>1 && n>0) COPY((Pt<T>)buf+bufi,data,n), bufi+=n;
-	} else if (mode==6) {
+	}break;
+	case 6:{
 		assert(factor==1);
 		int newdex = dex + n;
 		gh->flow(this,n,data);
 		if (gh->mode==4) delete[] (T *)data;
 		dex = newdex;
-	} else if (mode==0) {
-		/* nothing happens */
-	} else {
+	}break;
+	case 0: break; /* nothing happens */
+	default: 
 		RAISE("%s: unknown inlet mode",parent->info());
-	}
-	} /* PROF */
+	}} /* PROF */
 }
 
 /* !@#$ this is not correct */
@@ -419,10 +423,6 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	dex = 0;
 	frozen = 0;
 	ninlets = 0;
-	if (nt != buf.nt) {
-		int32 v[] = {MAX_PACKET_SIZE};
-		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
-	}
 	if (inlets) delete[] inlets.p;
 	inlets = ARRAY_NEW(GridInlet *,MAX_CORDS);
 	Ruby a[n+5];
@@ -435,6 +435,26 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	parent->send_out(COUNT(a),a);
 	frozen = 1;
 	if (dex==dim->prod()) end(); /* zero-sized grid? */
+
+	int lcm_factor = 1;
+	for (int i=0; i<ninlets; i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor);
+
+	if (nt != buf.nt) {
+		/* biggest packet size divisible by lcm_factor */
+		int32 v[] = {(MAX_PACKET_SIZE/lcm_factor)*lcm_factor};
+		if (*v==0) *v=MAX_PACKET_SIZE; /* factor too big. don't have a choice. */
+		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
+	}
+
+/*	
+	char buf[256];
+	sprintf(buf,"%s: lcm{ ", parent->info());
+	for (int i=0; i<ninlets; i++) {
+		sprintf(buf+strlen(buf),"%d ",inlets[i]->factor);
+	}
+	sprintf(buf+strlen(buf),"} = %d",lcm_factor);
+	gfpost("%s",buf);
+*/
 }
 
 template <class T>
