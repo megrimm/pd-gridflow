@@ -41,23 +41,23 @@ int gf_max_packet_length = 1024*2;
 void Grid::init(Dim *dim, NumberTypeIndex nt) {
 	this->nt = nt;
 	this->dim = dim;
-	this->data = dim ? NEW(char,dim->prod()*number_type_table[nt].size/8) : 0;
+	this->data = dim ? NEWA(char,dim->prod()*number_type_table[nt].size/8) : 0;
 }
 
 void Grid::init_from_ruby_list(int n, VALUE *a) {
 		int dims = 1;
 		VALUE delim = SYM(#);
-		init(new Dim(0,0));
+		init(NEW(Dim,(0,0)));
 		for (int i=0; i<n; i++) {
 			if (a[i] == delim) {
 				int v[i];
 				for (int j=0; j<i; j++) v[j] = INT(a[j]);
-				init(new Dim(i,v));
+				init(NEW(Dim,(i,v)));
 				i++; a+=i; n-=i;
 				goto fill;
 			}
 		}
-		init(new Dim(1,&n));
+		init(NEW(Dim,(1,&n)));
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
@@ -70,7 +70,7 @@ void Grid::init_from_ruby(VALUE x) {
 	if (TYPE(x)==T_ARRAY) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
-		init(new Dim(0,0));
+		init(NEW(Dim,(0,0)));
 		as_int32()[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -136,7 +136,7 @@ void GridInlet::set_factor(int factor) {
 	this->factor = factor;
 	FREE(buf);
 	if (factor > 1) {
-		buf = NEW(Number,factor);
+		buf = NEWA(Number,factor);
 		bufn = 0;
 	}
 }
@@ -166,7 +166,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 
 	int v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	Dim *dim = this->dim = new Dim(argc,v);
+	Dim *dim = this->dim = NEW(Dim,(argc,v));
 
 	dex = 0;
 	int r = rb_ensure(
@@ -200,7 +200,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			if (bufn == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
-					Number *data2 = NEW2(Number,factor);
+					Number *data2 = NEWA(Number,factor);
 					COPY(data2,buf,factor);
 					((GridFlow2)gh->flow)(parent->peer,parent,this,factor,data2);
 				} else {
@@ -214,7 +214,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		if (m) {
 			int newdex = dex + m;
 			if (gh->mode==6) {
-				Number *data2 = NEW2(Number,m);
+				Number *data2 = NEWA(Number,m);
 				COPY(data2,data,m);
 				((GridFlow2)gh->flow)(parent->peer,parent,this,m,data2);
 			} else {
@@ -294,7 +294,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	this->woutlet = woutlet;
 	dim = 0;
 	dex = 0;
-	buf = NEW2(Number,gf_max_packet_length);
+	buf = NEWA(Number,gf_max_packet_length);
 	bufn = 0;
 	frozen = 0;
 	ron = 0; ro = 0;
@@ -348,8 +348,8 @@ void GridOutlet::begin(Dim *dim) {
 	this->dim = dim;
 	dex = 0;
 	frozen = 0;
-	ron = 0; FREE(ro); ro = new GridInlet*[8];
-	rwn = 0; FREE(rw); rw = new GridInlet*[8];
+	ron = 0; FREE(ro); ro = NEWA(GridInlet*,8);
+	rwn = 0; FREE(rw); rw = NEWA(GridInlet*,8);
 	VALUE a[n+4];
 	a[0] = INT2NUM(woutlet);
 	a[1] = sym_grid_begin;
@@ -450,16 +450,15 @@ METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	/* Dict_put(gf_object_set,$,0); */
 	$->profiler_cumul = 0;
 
 	GridClass *cl = $->grid_class;
 	//gfpost("cl=%p\n",cl);
 	for (i=0; i<cl->handlersn; i++) {
 		GridHandler *gh = &cl->handlers[i];
-		$->in[gh->winlet] = new GridInlet($,gh);
+		$->in[gh->winlet] = NEW(GridInlet,($,gh));
 	}
-	for (i=0; i<cl->outlets; i++) $->out[i] = new GridOutlet($,i);
+	for (i=0; i<cl->outlets; i++) $->out[i] = NEW(GridOutlet,($,i));
 //	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
 	rb_call_super(0,0);
 }
@@ -498,7 +497,7 @@ METHOD(GridObject,send_out_grid_begin) {
 	VALUE *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
-	$->out[outlet]->begin(new Dim(n,v));
+	$->out[outlet]->begin(NEW(Dim,(n,v)));
 }
 
 METHOD(GridObject,send_out_grid_flow) {
@@ -516,9 +515,11 @@ METHOD(GridObject,send_out_grid_end) {
 	$->out[outlet]->end();
 }
 
+static void *GridObject_allocate ();
+
 static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
-	GridHandler *gh = NEW(GridHandler,1);
-	GridClass *gc = NEW(GridClass,1);
+	GridHandler *gh = NEW(GridHandler,());
+	GridClass *gc = NEW(GridClass,());
 	if (argc!=1) RAISE("er...");
 	if (INT(argv[0])!=0) RAISE("not yet");
 	gh->winlet = INT(argv[0]);
@@ -526,7 +527,8 @@ static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
 	gh->flow = GridObject_r_flow;
 	gh->end = GridObject_r_end;
 	gh->mode = 4;
-	gc->objectsize = 256; /* hack */
+	gc->objectsize = sizeof(GridObject);
+	gc->allocate = GridObject_allocate;
 	gc->methodsn = 0;
 	gc->methods = 0;
 	gc->inlets = MAX_INLETS; /* hack */
@@ -590,11 +592,9 @@ METHOD(GridObject,method_missing) {
 
 METHOD(GridObject,delete) {
 	GridObject *parent=$;
-	gfpost("%s: GridObject#delete",INFO(foo));
-	for (int i=0; i<MAX_INLETS;  i++)
-		if ($->in[i])  { delete $->in[i]; $->in[i]=0; }
-	for (int i=0; i<MAX_OUTLETS; i++)
-		if ($->out[i]) { delete $->out[i]; $->out[i]=0; }
+	//gfpost("%s: GridObject#delete",INFO(foo));
+	for (int i=0; i<MAX_INLETS;  i++) if ($->in[i]) FREE($->in[i]);
+	for (int i=0; i<MAX_OUTLETS; i++) if ($->out[i]) FREE($->out[i]);
 	rb_call_super(argc,argv);
 }
 
