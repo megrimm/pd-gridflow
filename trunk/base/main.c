@@ -42,6 +42,7 @@
 #define GF_STACK_DEPTH 1024
 struct GFStackFrame {
 	GridObject *self;
+	uint64 check_in;
 };
 GFStackFrame gf_stack[GF_STACK_DEPTH];
 int gf_stack_n = 0;
@@ -98,12 +99,13 @@ static void FObject_free (void *foo) {
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
 
-static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, int &outlet) {
-	if (argc<1) RAISE("not enough args");
-	outlet = INT(*argv);
-	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
-		RAISE("invalid outlet number");
-	argc--, argv++;
+void GFStack_push(FObject *g) {
+}
+
+void GFStack_pop(FObject *g) {
+}
+
+static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	if (argc<1) {
 		sym = SYM(bang);
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
@@ -115,15 +117,56 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, int &outl
 	} else if (SYMBOL_P(*argv)) {
 		sym = *argv;
 		argc--, argv++;
+	} else if (argc==1 && TYPE(*argv)==T_ARRAY) {
+		sym = SYM(list);
+		argc = rb_ary_len(*argv);
+		argv = rb_ary_ptr(*argv);
 	} else {
-		RAISE("bad message");
+		RAISE("bad message: argc=%d; argv[0]=%s",argc,
+			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
 	}
+}
+
+Ruby FObject_send_in(int argc, Ruby *argv, Ruby rself) {
+	if (TYPE(rself)==T_DATA) { DGS(FObject); ENTER(self); }
+	Ruby sym;
+
+	if (argc<1) RAISE("not enough args");
+	int inlet = INT(*argv);
+	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
+		RAISE("invalid inlet number");
+	argc--, argv++;
+
+	Ruby foo;
+	if (argc==1 && TYPE(argv[0])==T_STRING /* && argv[0] =~ / / */) {
+		foo = rb_funcall(mGridFlow,SI(parse),1,argv[0]);
+		argc = rb_ary_len(foo);
+		argv = rb_ary_ptr(foo);
+	}
+
+	FObject_prepare_message(argc,argv,sym);
+
+	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
+		/* GridFlow.post "%s",m.inspect if GridFlow.verbose */
+	}
+
+	char buf[256];
+	sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
+	rb_funcall2(rself,rb_intern(buf),argc,argv);
+	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
+	return Qnil;
 }
 
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	Ruby sym;
-	int outlet;
-	FObject_prepare_message(argc,argv,sym,outlet);
+
+	if (argc<1) RAISE("not enough args");
+	int outlet = INT(*argv);
+	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
+		RAISE("invalid outlet number");
+	argc--, argv++;
+
+	FObject_prepare_message(argc,argv,sym);
 	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
 	if (TYPE(noutlets2)!=T_FIXNUM) {
 		IEVAL(rself,"STDERR.puts inspect");
@@ -141,14 +184,24 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	if (ary==Qnil) return Qnil;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	int n = RARRAY(ary)->len;
+	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
+
+		Ruby argv2[argc+2];
+		for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
+		argv2[0] = INT2NUM(inl);
+		argv2[1] = sym;
+		rb_funcall2(rec,SI(send_in),argc+2,argv2);
+/*
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
+*/
 	}
+	if (TYPE(rself)==T_DATA) { DGS(FObject); ENTER(self); }
 	return Qnil;
 }
 
@@ -208,8 +261,9 @@ static uint64 num2ull(Ruby val) {
 }
 
 static Ruby ull2num(uint64 val) {
-	return rb_funcall(rb_funcall(UINT2NUM((uint32)val),SI(<<),1,INT2FIX(32)),
-		SI(+),1,UINT2NUM(val>>32));
+	return rb_funcall(
+		rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32)),
+		SI(+),1,UINT2NUM((uint32)val));
 }
 
 /* end */
@@ -358,14 +412,8 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	return tick;
 }
 
-#ifndef ULL2NUM
-#define ULL2NUM(x) \
-	rb_funcall(rb_funcall(UINT2NUM((x)>>32),SI(<<),1,INT2NUM(32)), \
-		SI(+),1,UINT2NUM(((uint32)x)))
-#endif
-
 Ruby GridFlow_rdtsc (Ruby rself) {
-	return ULL2NUM(rdtsc());
+	return ull2num(rdtsc());
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
@@ -486,6 +534,7 @@ void Init_gridflow () {
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	DEF(FObject, send_out, -1);
+	DEF(FObject, send_in, -1);
 	DEF(FObject, delete, -1);
 	DEF(FObject, profiler_cumul, 0);
 	DEF2(FObject, "profiler_cumul=", profiler_cumul_set, 1);
