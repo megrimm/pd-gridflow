@@ -98,17 +98,17 @@ struct FormatX11 : Format {
 	void alarm();
 	Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level=0);
 
+	\decl void initialize (...);
 	\decl void frame ();
 	\decl void close ();
-	\decl void out_size (int sy, int sx);
-	\decl void draw ();
-	\decl void autodraw_m (int autodraw);
-	\decl void setcursor (int shape);
-	\decl void hidecursor ();
-	\decl void verbose_m (int verbose);
-	\decl void initialize (...);
-	\decl void set_geometry (int y, int x, int sy, int sx);
-	\decl void fall_thru (int flag);
+	\decl void _0_out_size (int sy, int sx);
+	\decl void _0_draw ();
+	\decl void _0_autodraw (int autodraw);
+	\decl void _0_setcursor (int shape);
+	\decl void _0_hidecursor ();
+	\decl void _0_verbose (int verbose);
+	\decl void _0_set_geometry (int y, int x, int sy, int sx);
+	\decl void _0_fall_thru (int flag);
 	\grin 0 int
 };
 
@@ -427,23 +427,23 @@ GRID_INLET(FormatX11,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void out_size (int sy, int sx) { resize_window(sx,sy); }
-\def void draw () { show_section(0,0,dim->get(1),dim->get(0)); }
+\def void _0_out_size (int sy, int sx) { resize_window(sx,sy); }
+\def void _0_draw () { show_section(0,0,dim->get(1),dim->get(0)); }
 
-\def void autodraw_m (int autodraw) {
+\def void _0_autodraw (int autodraw) {
 	if (autodraw<0 || autodraw>2)
 		RAISE("autodraw=%d is out of range",autodraw);
 	this->autodraw = autodraw;
 }
 
-\def void setcursor (int shape) {
+\def void _0_setcursor (int shape) {
 	shape = 2*(shape&63);
 	Cursor c = XCreateFontCursor(display,shape);
 	XDefineCursor(display,window,c);
 	XFlush(display);
 }
 
-\def void hidecursor () {
+\def void _0_hidecursor () {
 	Font font = XLoadFont(display,"fixed");
 	XColor color; /* bogus */
 	Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
@@ -451,7 +451,7 @@ GRID_INLET(FormatX11,0) {
 	XFlush(display);
 }
 
-\def void verbose_m (int verbose) { this->verbose=!!verbose; }
+\def void _0_verbose (int verbose) { this->verbose=!!verbose; }
 
 void FormatX11::prepare_colormap() {
 	Colormap colormap = XCreateColormap(display,window,visual,AllocAll);
@@ -548,7 +548,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
-\def void set_geometry (int y, int x, int sy, int sx) {
+\def void _0_set_geometry (int y, int x, int sy, int sx) {
 	pos_x = x;
 	pos_y = y;
 	XMoveWindow(display,window,x,y);
@@ -556,7 +556,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	XFlush(display);
 }
 
-\def void fall_thru (int flag) {
+\def void _0_fall_thru (int flag) {
 	if (flag) {
 		gfpost("falling through!");
 		XSelectInput(display, window,

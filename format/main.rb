@@ -44,10 +44,17 @@ class Format < GridObject
 	FF_R,FF_W = 4,2
 	attr_accessor :parent
 
-=begin API
+=begin API (version 0.8)
 	mode is :in or :out
 	def initialize(mode,*args) :
 		open a file handler (do it via .new of class)
+	attr_reader :description :
+		a _literal_ (constant) string describing the format handler
+	def self.info() optional :
+		return a string describing the format handler differently
+		than self.description(). in particular, it can list
+		compile-time options and similar things. for example,
+		quicktime returns a list of codecs.
 	def frame() :
 		read one frame, send through outlet 0
 		return values :
@@ -66,6 +73,10 @@ class Format < GridObject
 	inlet 0 :
 		grid : frame to write
 		other : special options
+	outlet 0 :
+		grid : frame just read
+	outlet 1 :
+		everything else
 =end
 
 	def initialize(mode,*)
@@ -192,29 +203,11 @@ module GridIO
 	def _0_timelog flag; @timelog = Integer(flag)!=0 end
 	def _0_loop flag; @loop = Integer(flag)!=0 end
 
-	def _0_option(*message)
-		case message[0]
-		when :timelog, :loop
-			send_in 0, *message
-		else
-			check_file_open
-			if @format.respond_to? "_0_#{message[0]}" #hack
-				@format.send_in 0, :option, *message
-			elsif @format.respond_to? "#{message[0]}" #hack
-				@format.send(*message)
-			elsif @format.respond_to? :option
-				@format.option(*message)
-			else
-				raise "unknown option #{message[0]}"
-			end
-		end
-	end
-
 	def method_missing(*message)
 		sel = message[0].to_s
 		if sel =~ /^_0_/
 			message[0] = sel.sub(/^_0_/,"").intern
-			_0_option(*message)
+			@format.send_in 0, *message
 		elsif sel =~ /^_2_/
 			sel = sel.sub(/^_2_/,"").intern
 			message.shift
