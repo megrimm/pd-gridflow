@@ -77,6 +77,7 @@ struct FormatMPEG3 : Format {
 // libmpeg3 may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
+	if (mode!=SYM(in)) RAISE("read-only, sorry");
 	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
 	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
@@ -87,8 +88,8 @@ struct FormatMPEG3 : Format {
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatMPEG3',1,1;"
-	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
-	" (using HeroineWarrior\\'s)', 'mpg,mpeg'");
+	IEVAL(rself,"install '#in:mpeg',1,1;@flags=4;"
+	"@comment='Motion Picture Expert Group Format"
+	" (using HeroineWarrior\\'s)';suffixes_are'mpg,mpeg'");
 }
 \end class FormatMPEG3

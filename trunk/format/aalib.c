@@ -138,6 +138,7 @@ GRID_INLET(FormatAALib,0) {
 	char *argv2[argc];
 	for (int i=0; i<argc; i++)
 		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
+	if (mode!=SYM(out)) RAISE("write-only, sorry");
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc; i++) free(argv2[i]);
 	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
@@ -159,7 +160,6 @@ GRID_INLET(FormatAALib,0) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
 	}
 // IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
-	IEVAL(rself,"install 'FormatAALib',1,1;"
-	"conf_format 2,'aalib','Ascii Art Library'");
+	IEVAL(rself,"install '#in:aalib',1,1;@flags=2;@comment='Ascii Art Library'");
 }
 \end class FormatAALib

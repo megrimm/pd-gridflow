@@ -208,10 +208,15 @@ GRID_INLET(FormatQuickTimeHW,0) {
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatQuickTimeHW',1,1;"
-	"conf_format 6,'quicktime',"
-	"%[Burkhard Plaum's (or HeroineWarrior's) libquicktime], 'mov';"
-	"def self.info; %[codecs: #{@codecs.keys.join' '}] end");
+	IEVAL(rself,
+\ruby
+  install '#io:quicktime',1,1
+  @comment=%[Burkhard Plaum's (or HeroineWarrior's) libquicktime]
+  suffixes_are 'mov'
+  @flags=6
+  def self.info; %[codecs: #{@codecs.keys.join' '}] end
+\end ruby
+);
 
 #ifdef LQT_VERSION
 	lqt_registry_init();

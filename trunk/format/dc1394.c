@@ -317,6 +317,7 @@ struct FormatDC1394 : Format {
 	int numPorts = raw1394_get_port_info(rh,0,0);
 	raw1394_destroy_handle(rh);
 	gfpost("there are %d Feuerweuer ports",numPorts);
+	if (mode!=SYM(in)) RAISE("sorry, read-only");
 	for(int port=0; port<numPorts; port++) {
 		gfpost("trying port #%d...",port);
 		RH rh = dc1394_create_handle(port);
@@ -334,8 +335,7 @@ struct FormatDC1394 : Format {
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatDC1394',1,1;"
-	"conf_format 4,'dc1394','Video4linux 1.x'");
+	IEVAL(rself,"install '#io:dc1394',1,1;@flags=4;@comment='Video4linux 1.x'");
 	//IEVAL(rself,ruby_code);
 	rb_funcall(rself,SI(instance_eval),3,rb_str_new2(ruby_code),
 		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));

@@ -27,7 +27,6 @@ require "fcntl"
 module GridFlow
 
 class<<self
-	attr_reader :formats
 	def max_rank; 16; end
 	def max_size; 64*1024**2; end
 	def max_packet; 1024*2; end
@@ -86,7 +85,7 @@ class Format < GridObject
 		@mode = mode
 		@frame = 0
 		@parent = nil
-		flags = self.class.instance_eval{@flags}
+		flags = self.class.instance_eval{if defined?@flags then @flags else 6 end}
 		# FF_W, FF_R, FF_RW
 		case mode
 		when  :in; flags[2]==1
@@ -101,13 +100,19 @@ class Format < GridObject
 		@stream.close if defined? @stream and @stream
 	end
 
-	def self.install_format(name,inlets,outlets,flags,symbol_name,description,
-	suffixes="")
-		install(name,inlets,outlets)
-		conf_format(flags,symbol_name,description,suffixes)
-		nil
+	def self.suffixes_are(*suffixes)
+		suffixes.map{|s|s.split(/[, ]/)}.flatten.each {|suffix|
+			Format.suffixes[suffix] = self
+		}
 	end
 
+	class<<self
+		attr_reader :symbol_name
+		attr_reader :description
+		attr_reader :flags
+		attr_reader :suffixes
+	end
+	@suffixes = {}
 	def seek frame
 		(rewind; return) if frame == 0
 		raise "don't know how to seek for frame other than # 0"
@@ -146,11 +151,9 @@ class Format < GridObject
 		}
 		@headerless = args
 	end
-
 	def _0_headerful #!@#$ goes in FormatGrid ?
 		@headerless = nil
 	end
-
 	def _0_type arg
 		#!@#$ goes in FormatGrid ?
 		#!@#$ bug: should not be able to modify this _during_ a transfer
@@ -163,7 +166,6 @@ class Format < GridObject
 		else raise "unsupported number type: #{arg}"
 		end
 	end
-
 	def _0_cast arg
 		case arg
 		when :uint8, :int16, :int32, :int64, :float32, :float64
@@ -171,25 +173,20 @@ class Format < GridObject
 		else raise "unsupported number type: #{arg}"
 		end
 	end
-
-	def frame
-		@frame+=1
-		@frame-1
-	end
+	def frame; @frame+=1; @frame-1 end
 end
 
 # common parts between GridIn and GridOut
 module GridIO
-	def check_file_open
-		if not @format then raise "can't do that: file not open" end
-	end
-
+	def check_file_open; if not @format then raise "can't do that: file not open" end end
+	def _0_close; check_file_open; @format.close; @format = nil end
+	def delete; @format.close if @format; @format = nil; super end
 	attr_reader :format
 
 	def _0_open(sym,*a)
 		sym = sym.intern if String===sym
 		if a.length==0 and /\./ =~ sym.to_s then a=[sym]; sym=:file end
-		qlass = GridFlow.formats[sym]
+		qlass = GridFlow.fclasses["\#io:#{sym}"]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
 		_0_close if @format
 		@format = qlass.new @mode, *a
@@ -200,8 +197,7 @@ module GridIO
 	end
 
 	def _0_timelog flag; @timelog = Integer(flag)!=0 end
-	def _0_loop flag; @loop = Integer(flag)!=0 end
-
+	def _0_loop    flag;    @loop = Integer(flag)!=0 end
 	def method_missing(*message)
 		sel = message[0].to_s
 		if sel =~ /^_0_/
@@ -215,23 +211,11 @@ module GridIO
 			return super
 		end
 	end
-
-	def _0_close
-		check_file_open
-		@format.close
-		@format = nil
-	end
-
-	def delete
-		@format.close if @format
-		@format = nil
-		super
-	end
 end
 
-class GridIn < GridObject
+GridObject.subclass("#in",1,2) {
+	install_rgrid 0
 	include GridIO
-
 	def initialize(*a)
 		super
 		@format = nil
@@ -242,7 +226,6 @@ class GridIn < GridObject
 		return if a.length==0
 		_0_open(*a)
 	end
-
 	def _0_bang
 		check_file_open
 		framenum = @format.frame
@@ -257,24 +240,14 @@ class GridIn < GridObject
 		end
 		send_out 1, framenum if framenum
 	end
-
-	def _0_int frame; _0_set frame; _0_bang end
+	def _0_float frame; _0_set frame; _0_bang end
 	def _0_set frame; check_file_open; @format.seek frame end
 	def _0_reset; check_file_open; @format.seek 0; end
+	def _1_grid(*a) send_out 0,:grid,*a end
+}
 
-	alias _0_float _0_int
-
-	def _1_grid(*a)
-		send_out 0,:grid,*a
-	end
-
-	install_rgrid 0
-	install "#in", 1, 2
-end
-
-class GridOut < GridObject
+GridObject.subclass("#out",1,1) {
 	include GridIO
-
 	def initialize(*a)
 		super
 		@format = nil
@@ -314,10 +287,8 @@ class GridOut < GridObject
 			@framecount, time, ((time-@time)*1000).to_i)
 		@time = time
 	end
-
 	install_rgrid 0
-	install "#out", 1, 1
-end
+}
 
 class BitPacking
 	alias pack pack2
@@ -377,12 +348,41 @@ module EventIO
 		GridFlow.post "read would block"
 	end
 
+	def raw_open_gzip_in(filename)
+		r,w = IO.pipe
+		if pid=fork
+			GridFlow.subprocesses[pid]=true
+			w.close
+			@stream = r
+		else
+			r.close
+			STDOUT.reopen w
+			STDIN.reopen @stream
+			@stream = File.open filename, "r"
+			exec "gzip", "-dc"
+		end
+	end
+	def raw_open_gzip_out(filename)
+		r,w = IO.pipe
+		if pid=fork
+			GridFlow.subprocesses[pid]=true
+			r.close
+			@stream = w
+		else
+			w.close
+			STDIN.reopen r
+			STDOUT.reopen @stream
+			@stream = File.open filename, "w"
+			exec "gzip", "-c"
+		end
+	end
 	def raw_open(mode,source,*args)
 		@raw_open_args = mode,source,*args
 		fmode = case mode
 			when :in; "r"
 			when :out; "w"
 			else raise "bad mode" end
+		close
 		case source
 		when :file
 			filename = args[0].to_s
@@ -391,37 +391,12 @@ module EventIO
 		when :gzfile
 			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
-			close
-			@stream = File.open filename, fmode
 			if mode==:in then
-				r,w = IO.pipe
-				if pid=fork
-					GridFlow.subprocesses[pid]=true
-					w.close
-					@stream = r
-				else
-					r.close
-					STDOUT.reopen w
-					STDIN.reopen @stream
-					@stream = File.open filename, "r"
-					exec "gzip", "-dc"
-				end
-			else # mode==:out
-				r,w = IO.pipe
-				if pid=fork
-					GridFlow.subprocesses[pid]=true
-					r.close
-					@stream = w
-				else
-					w.close
-					STDIN.reopen r
-					STDOUT.reopen @stream
-					@stream = File.open filename, "w"
-					exec "gzip", "-c"
-				end
+				raw_open_gzip_in filename
+			else
+				raw_open_gzip_out filename
 			end
 			def self.rewind
-			#	GridFlow.post "self.rewind"
 				raw_open(*@raw_open_args)
 				@frame = 0
 			end unless @rewind_redefined
@@ -458,25 +433,8 @@ module EventIO
 	end
 end
 
-class Format
-	class<<self
-		attr_reader :symbol_name
-		attr_reader :description
-		attr_reader :flags
-		attr_reader :suffixes
-	end
-	@suffixes = {}
-	def self.conf_format(flags,symbol_name,description,suffixes='')
-		@flags = flags
-		@symbol_name = symbol_name
-		@description = description
-		suffixes.split(/,/).each {|suffix| Format.suffixes[suffix] = self }
-		GridFlow.formats[symbol_name.intern]=self
-	end
-end
-
 # this is the format autodetection proxy and should be defined before all other formats
-class FormatFile < Format
+Format.subclass("#io:file",1,1) {
 	def self.new(mode,file)
 		file=file.to_s
 		a = [mode,:file,file]
@@ -494,10 +452,14 @@ class FormatFile < Format
 			h.new(*a)
 		end
 	end
-	install_format "FormatFile", 1, 1, FF_R|FF_W, "file", "format autodetection proxy"
-end
+	@comment="format autodetection proxy"
+}
 
-class FormatGrid < Format; include EventIO
+Format.subclass("#io:grid",1,1) {
+	include EventIO
+	install_rgrid 0
+	@comment = "GridFlow file format"
+	suffixes_are "grid"
 =begin
 	This is the Grid format I defined:
 	1 uint8: 0x7f
@@ -620,7 +582,7 @@ class FormatGrid < Format; include EventIO
 		when 16
 			@bp = BitPacking.new(@endian,2,[0xffff])
 			send_out_grid_flow(0, @bp.unpack(data))
-			@dex += data.length
+			@dex += data.length/2
 		when 32
 			data.swap32! if @endian!=OurByteOrder
 			send_out_grid_flow 0, data
@@ -659,15 +621,13 @@ class FormatGrid < Format; include EventIO
 		end
 	end
 
-	def _0_rgrid_end
-		@stream.flush
-	end
+	def _0_rgrid_end; @stream.flush end
 
 	def endian(a)
-		case a
-		when :little; @endian = ENDIAN_LITTLE
-		when :big;    @endian = ENDIAN_BIG
-		when :same;   @endian = ENDIAN_SAME
+		@endian = case a
+		when :little; ENDIAN_LITTLE
+		when :big;    ENDIAN_BIG
+		when :same;   ENDIAN_SAME
 		else raise "argh"
 		end
 	end
@@ -687,18 +647,13 @@ class FormatGrid < Format; include EventIO
 	def type(nt)
 		#!@#$ bug: should not be able to modify this _during_ a transfer
 		case nt
-		when :uint8; @bpv=8
-			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-		when :int16; @bpv=16
-			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
-		when :int32; @bpv=32
+		when :uint8; @bpv= 8; @bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+		when :int16; @bpv=16; @bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
+		when :int32; @bpv=32; @bp=nil
 		else raise "unsupported number type"
 		end
 	end
-
-	install_rgrid 0
-	install_format "FormatGrid", 1, 1, FF_R|FF_W, "grid", "GridFlow file format", "grid"
-end
+}
 
 module PPMandTarga
 	# "and false" disables features that may cause crashes and don't
@@ -737,17 +692,19 @@ module PPMandTarga
 	end
 end
 
-class FormatPPM < Format; include EventIO, PPMandTarga
+Format.subclass("#io:ppm",1,1) {
+	install_rgrid 0
+	@comment = "Portable PixMap (PPM) File Format"
+	suffixes_are "ppm"
+	include EventIO, PPMandTarga
+
 	def initialize(mode,source,*args)
-		if mode==:out
-			@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
-		else
-			@bp = nil
-		end
+		@bp = if mode==:out
+			BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
+		else nil end
 		super
 		raw_open mode,source,*args
 	end
-
 	def frame
 		#@stream.sync = false
 		metrics=[]
@@ -778,19 +735,15 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 		@stream.flush
 		inlet_set_factor 0, 3
 	end
-	def _0_rgrid_flow data
-		@stream.write @bp.pack(data)
-	end
-	def _0_rgrid_end
-		@stream.flush
-	end
+	def _0_rgrid_flow(data) @stream.write @bp.pack(data) end
+	def _0_rgrid_end; @stream.flush end
+}
 
+Format.subclass("#io:targa",1,1) {
 	install_rgrid 0
-	install_format "FormatPPM", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap", "ppm"
-end
-
-class FormatTarga < Format; include EventIO, PPMandTarga
-
+	@comment = "TrueVision Targa"
+	suffixes_are "tga"
+	include EventIO, PPMandTarga
 =begin
 targa header is like:
 	[:comment, Uint8, :length],
@@ -803,7 +756,6 @@ targa header is like:
 	[:depth, Uint8], 1,
 	[:comment, String8Unpadded, :data],
 =end
-
 	def initialize(mode,source,*args)
 		super
 		raw_open mode,source,*args
@@ -851,9 +803,6 @@ targa header is like:
 
 	def _0_rgrid_flow data; @stream.write @bp.pack(data) end
 	def _0_rgrid_end; @stream.flush end
-	install_rgrid 0
-	install_format "FormatTarga", 1, 1, FF_R|FF_W, "targa", "TrueVision Targa", "tga"
-end
-
+}
 end # module GridFlow
 

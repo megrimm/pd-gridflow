@@ -497,8 +497,10 @@ err:
 \classinfo {
 	IEVAL(rself,
 \ruby
-install 'FormatQuickTimeApple',1,1
-conf_format 4,'quicktime',"Apple Quicktime (using Apple's)",'mov'
+install '#in:quicktime',1,1
+@comment="Apple Quicktime (using Apple's)"
+@flags=4
+suffixes_are'mov'
 def self.new(mode,source,filename)
   if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
 end

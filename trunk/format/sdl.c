@@ -115,7 +115,6 @@ GRID_INLET(FormatSDL,0) {
 }
 
 \classinfo {
-	IEVAL(rself,"install 'FormatSDL',1,1;"
-	"conf_format 2,'sdl','Simple Directmedia Layer'");
+	IEVAL(rself,"install '#io:sdl',1,1;@flags=2;@comment='Simple Directmedia Layer'");
 }
 \end class FormatSDL
