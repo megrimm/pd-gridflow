@@ -41,15 +41,9 @@ typedef struct FormatMPEG {
 static bool FormatMPEG_frame (FormatMPEG *$, GridOutlet *out, int frame) {
 	char *buf = NEW(char,mpeg_id->Size);
 	int npixels = mpeg_id->Height * mpeg_id->Width;
-	if (frame != -1) {
-		whine("can't seek frames with this driver");
-		goto err;
-	}
+	if (frame != -1) RAISE("can't seek frames with this driver");
 /*	SetMPEGOption(MPEG_QUIET,1); */
-	if (!GetMPEGFrame(buf)) {
-		whine("libmpeg: can't fetch frame");
-		goto err;
-	}
+	if (!GetMPEGFrame(buf)) RAISE("libmpeg: can't fetch frame");
 
 	{
 		int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
@@ -81,63 +75,45 @@ GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
 GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
-static void FormatMPEG_close (FormatMPEG *$) {
+METHOD(FormatMPEG,close) {
 	if (mpeg_id) FREE(mpeg_id);
 	if ($->st) Stream_close($->st);
-	FREE($);
+	rb_call_super(argc,argv);
 }
 
-static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int
-mode, int argc, VALUE *argv) {
-	FormatMPEG *$ = (FormatMPEG *)Format_open(&class_FormatMPEG,parent,mode);
+METHOD(FormatMPEG,init) {
+	rb_call_super(argc,argv);
 	const char *filename;
+	argv++, argc--;
 
-	if (!$) return 0;
+	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
 
-	if (argc!=2 || argv[0] != SYM(file)) {
-		whine("usage: mpeg file <filename>"); goto err;
-	}
 	filename = Symbol_name(Var_get_symbol(at+1));
-
+	filename = RSTRING(
+	rb_funcall(GridFlow_module,rb_intern("find_file"),1,rb_str_new2(filename))
+	)->ptr;
+	
 	$->st = Stream_open_file(filename,mode);
-	if (!$->st) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
-	}
+	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
 
-	if (mpeg_id) {
-		whine("libmpeg.so is busy (you must close the other mpeg file)");
-		goto err;
-	}
+	if (mpeg_id) RAISE("libmpeg.so is busy (you must close the other mpeg file)");
 
 	mpeg_id = NEW(ImageDesc,1);
 
 	SetMPEGOption(MPEG_DITHER,FULL_COLOR_DITHER);
-	if (!OpenMPEG(Stream_get_file($->st),mpeg_id)) {
-		whine("libmpeg: can't open mpeg file");
-		goto err;
-	}
+	if (!OpenMPEG(Stream_get_file($->st),mpeg_id))
+		RAISE("libmpeg: can't open mpeg file");
 
 	$->bit_packing = BitPacking_new(is_le(),4,0x0000ff,0x00ff00,0xff0000);
 
 	return (Format *)$;
 err:
-	$->cl->close((Format *)$);
+	FormatMPEG_close($);
 	return 0;
 }
 
-static GridHandler FormatMPEG_handler = GRINLET(FormatMPEG,0);
-FormatClass class_FormatMPEG = {
-	object_size: sizeof(FormatMPEG),
-	symbol_name: "mpeg",
-	long_name: "Motion Picture Expert Group Format (using Ward's)",
-	flags: FF_R,
-
-	open: FormatMPEG_open,
-	frames: 0,
-	frame:  (Format_frame_m)FormatMPEG_frame,
-	handler: &FormatMPEG_handler,
-	option: 0,
-	close:  (Format_close_m)FormatMPEG_close,
-};
-
+FMTCLASS(FormatMPEG,"mpeg","Motion Picture Expert Group Format (using Ward's)",FF_R,
+inlets:1,outlets:1,LIST(GRINLET(FormatMPEG,0)),
+DECL(FormatMPEG,init),
+DECL(FormatMPEG,frame),
+DECL(FormatMPEG,close))

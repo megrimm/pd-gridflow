@@ -33,7 +33,15 @@ typedef struct FormatMPEG3 {
 	mpeg3_t *mpeg;
 } FormatMPEG3;
 
-static bool FormatMPEG3_frame (FormatMPEG3 *$, GridOutlet *out, int frame) {
+METHOD(FormatMPEG3,seek) {
+	int frame = INT(argv[0]);
+	int result;
+	whine("attempting to seek frame # %d",frame);
+	result = mpeg3_set_frame($->mpeg, frame, 0);
+	whine("seek result: %d", result);
+}
+
+METHOD(FormatMPEG3,frame) {
 	int sx = mpeg3_video_width($->mpeg,0);
 	int sy = mpeg3_video_height($->mpeg,0);
 	int npixels = sx*sy;
@@ -42,89 +50,63 @@ static bool FormatMPEG3_frame (FormatMPEG3 *$, GridOutlet *out, int frame) {
 	uint8 *buf = NEW(uint8,sy*sx*3+16);
 	uint8 *rows[sy];
 	for (i=0; i<sy; i++) rows[i]=buf+i*sx*3;
-
-	if (frame != -1) {
-		int result;
-		whine("attempting to seek frame # %d",frame);
-		result = mpeg3_set_frame($->mpeg, frame, 0);
-		whine("seek result: %d", result);
-	}
-
 	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
-			 
 	{
 		int v[] = { sy, sx, 3 };
-		GridOutlet_begin(out, Dim_new(3,v));
+		GridOutlet_begin($->out[0], Dim_new(3,v));
 	}
-
 	{
 		int y;
-		int sy = Dim_get(out->dim,0);
-		int sx = Dim_get(out->dim,1);
-		int bs = Dim_prod_start(out->dim,1);
+		int sy = Dim_get($->out[0]->dim,0);
+		int sx = Dim_get($->out[0]->dim,1);
+		int bs = Dim_prod_start($->out[0]->dim,1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + 3*sx*y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send(out,bs,b2);
+			GridOutlet_send($->out[0],bs,b2);
 		}
 	}
-
 	FREE(buf);
-
-	GridOutlet_end(out);
-	return true;
-err:
-	return false;
+	GridOutlet_end($->out[0]);
 }
 
 GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
 GRID_FLOW(FormatMPEG3,0) {}
 GRID_END(FormatMPEG3,0) {}
 
-static void FormatMPEG3_close (FormatMPEG3 *$) {
+METHOD(FormatMPEG3,close) {
 	if ($->mpeg) {
 		mpeg3_close($->mpeg);
 		$->mpeg=0;
 	}
-	FREE($);
+	rb_call_super(argc,argv);
 }
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-static Format *FormatMPEG3_open (FormatClass *qlass, GridObject *parent, int
-mode, int argc, VALUE *argv) {
-	FormatMPEG3 *$ = (FormatMPEG3 *)Format_open(&class_FormatMPEG3,parent,mode);
+METHOD(FormatMPEG3,init) {
 	const char *filename;
 
-	if (!$) return 0;
+	rb_call_super(argc,argv);
+	argv++, argc--;
 
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
-	filename = rb_id2name(SYM2ID(argv[1]));
+	filename = rb_sym_name(argv[1]);
+	filename = RSTRING(
+	rb_funcall(GridFlow_module,SI(find_file),1,rb_str_new2(filename))
+	)->ptr;
 
 	$->mpeg = mpeg3_open(strdup(filename));
 	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 
 	$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
-
-	return (Format *)$;
-err:
-	$->cl->close((Format *)$);
-	return 0;
 }
 
-static GridHandler FormatMPEG3_handler = GRINLET(FormatMPEG3,0);
-FormatClass class_FormatMPEG3 = {
-	object_size: sizeof(FormatMPEG3),
-	symbol_name: "mpeg",
-	long_name: "Motion Picture Expert Group Format (using HeroineWarrior's)",
-	flags: FF_R,
-
-	open: FormatMPEG3_open,
-	frames: 0,
-	frame:  (Format_frame_m)FormatMPEG3_frame,
-	handler: &FormatMPEG3_handler,
-	option: 0,
-	close:  (Format_close_m)FormatMPEG3_close,
-};
+FMTCLASS(FormatMPEG3,"mpeg","Motion Picture Expert Group Format (using HeroineWarrior's)",FF_R,
+inlets:1,outlets:1,LIST(GRINLET(FormatMPEG3,0)),
+DECL(FormatMPEG3,init),
+DECL(FormatMPEG3,seek),
+DECL(FormatMPEG3,frame),
+DECL(FormatMPEG3,close))
 

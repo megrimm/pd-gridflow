@@ -331,31 +331,27 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 	GridOutlet_end(out);
 }
 
-static bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
+METHOD(FormatVideoDev,frame) {
 	int fd = Stream_get_fd($->st);
 	int finished_frame;
 
-	if (frame != -1) return 0;
 	if (!$->bit_packing) RAISE("no bit_packing");
 
 	if (!$->image) {
-		if (!FormatVideoDev_alloc_image($)) goto err;
+		FormatVideoDev_alloc_image($);
 	}
 
 	if ($->pending_frames[0] < 0) {
 		$->next_frame = 0;
-		if (!FormatVideoDev_frame_ask($)) goto err;
-		if (!FormatVideoDev_frame_ask($)) goto err;
+		FormatVideoDev_frame_ask($);
+		FormatVideoDev_frame_ask($);
 	}
 
 	$->vmmap.frame = finished_frame = $->pending_frames[0];
-	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) goto err;
+	if (WIOCTL(fd, VIDIOCSYNC, &$->vmmap)) RAISE("wioctl");
 
-	FormatVideoDev_frame_finished($,out,$->image+$->vmbuf.offsets[finished_frame]);
-	if (!FormatVideoDev_frame_ask($)) goto err;
-	return true;
-err:
-	return false;
+	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
+	FormatVideoDev_frame_ask($);
 }
 
 GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
@@ -407,7 +403,7 @@ static void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	}
 }
 
-static void FormatVideoDev_option (FormatVideoDev *$, int argc, VALUE *argv) {
+METHOD(FormatVideoDev,option) {
 	int fd = Stream_get_fd($->st);
 	VALUE sym = argv[0];
 	int value = NUM2INT(argv[1]);
@@ -435,17 +431,17 @@ static void FormatVideoDev_option (FormatVideoDev *$, int argc, VALUE *argv) {
 	PICTURE_ATTR(whiteness)
 
 	} else {
-		RAISE("unknown option: %s", sym);
+		rb_call_super(argc,argv);
 	}
 }
 
-static void FormatVideoDev_close (FormatVideoDev *$) {
+METHOD(FormatVideoDev,close) {
 	if ($->image) FormatVideoDev_dealloc_image($);
 	if ($->st) Stream_close($->st);
-	Format_close((Format *)$);
+	rb_call_super(argc,argv);
 }
 
-static void FormatVideoDev_init (FormatVideoDev *$) {
+static void FormatVideoDev_init2 (FormatVideoDev *$) {
 	int fd = Stream_get_fd($->st);
 	VideoCapability vcaps;
 	VALUE argv[3];
@@ -498,50 +494,39 @@ static void FormatVideoDev_init (FormatVideoDev *$) {
 	FormatVideoDev_channel($,0);
 }
 
-static Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int
-mode, int argc, VALUE *argv) {
-	FormatVideoDev *$ = (FormatVideoDev *)Format_open(&class_FormatVideoDev,parent,mode);
+METHOD(FormatVideoDev,init) {
 	const char *filename;
 	int stream;
 
-	if (!$) return 0;
+	rb_call_super(argc,argv);
+	argv++, argc--;
 
 	$->pending_frames[0] = -1;
 	$->pending_frames[1] = -1;
 	$->image = 0;
 
-	if (argc!=1) { whine("usage: videodev filename"); goto err; }
-	filename = rb_id2name(SYM2ID(argv[0]));
+	if (argc!=1) RAISE("usage: videodev filename");
+	filename = rb_sym_name(argv[0]);
 
 	whine("will try opening file");
 
 	stream = open(filename, O_RDWR);
 	if (0> stream) RAISE("can't open file: %s", filename);
 
-	$->st = Stream_open_fd(stream,mode);
+	$->st = Stream_open_fd(stream,$->mode);
 
-	FormatVideoDev_init($);
+	FormatVideoDev_init2($);
 
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
-
-	return (Format *)$;
-err:
-	$->cl->close((Format *)$);
-	return 0;
 }
 
-static GridHandler FormatVideoDev_handler = GRINLET(FormatVideoDev,0);
-FormatClass class_FormatVideoDev = {
-	object_size: sizeof(FormatVideoDev),
-	symbol_name: "videodev",
-	long_name: "Video4linux 1.x",
-	flags: FF_R,
+/* **************************************************************** */
 
-	open: FormatVideoDev_open,
-	frames: 0,
-	frame:  (Format_frame_m)FormatVideoDev_frame,
-	handler: &FormatVideoDev_handler,
-	option: (Format_option_m)FormatVideoDev_option,
-	close:  (Format_close_m)FormatVideoDev_close,
-};
+FMTCLASS(FormatVideoDev,"videodev","Video4linux 1.x",FF_R,
+inlets:1,outlets:1,LIST(GRINLET(FormatVideoDev,0)),
+DECL(FormatVideoDev,init),
+DECL(FormatVideoDev,frame),
+DECL(FormatVideoDev,option),
+DECL(FormatVideoDev,close))
+

@@ -30,44 +30,34 @@ extern FormatClass class_FormatPPM;
 
 typedef Format FormatPPM;
 
-static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
+METHOD(FormatPPM,frame) {
 	char buf[256];
 	int metrics[6],n=0;
 	FILE *f = Stream_get_file($->st);
 
-	if (frame!=-1) return 0;
 	fgets(buf,256,f);
 	if (feof(f)) {
 		fseek(f,0,SEEK_SET);
 		fgets(buf,256,f);
 	}
 
-	if(strcmp("P6\n",buf)!=0) {
-		whine("Wrong format (needing PPM P6)");
-		goto err;
-	}
+	if(strcmp("P6\n",buf)!=0) RAISE("Wrong format (needing PPM P6)");
 	while (n<3) {
 		fgets(buf,256,f);
 		if (*buf=='#') continue; /* skipping a comment line */
 		n += sscanf(buf,"%d%d%d",metrics+n,metrics+n+1,metrics+n+2);
-		if (feof(f)) {
-			whine("unexpected end of file in header");
-			goto err;
-		}
+		if (feof(f)) RAISE("unexpected end of file in header");
 	}
 /*	whine("File metrics: %d %d %d",metrics[0],metrics[1],metrics[2]); */
-	if(metrics[2] != 255) {
-		whine("Wrong color depth (max_value=%d instead of 255)",metrics[2]);
-		goto err;
-	}
+	if(metrics[2] != 255) RAISE("Wrong color depth (max_value=%d instead of 255)",metrics[2]);
 	{
 		int v[] = { metrics[1], metrics[0], 3 };
-		GridOutlet_begin(out, Dim_new(3,v));
+		GridOutlet_begin($->out[0], Dim_new(3,v));
 	}
 
 	{
 		int y;
-		int bs = Dim_prod_start(out->dim,1);
+		int bs = Dim_prod_start($->out[0]->dim,1);
 		uint8 b1[bs];
 		Number b2[bs];
 		for (y=0; y<metrics[1]; y++) {
@@ -78,13 +68,10 @@ static bool FormatPPM_frame (Format *$, GridOutlet *out, int frame) {
 			}
 			/* should use bitpacking instead... */
 			for (i=0; i<bs; i++) b2[i] = b1[i];
-			GridOutlet_send(out,bs,b2);
+			GridOutlet_send($->out[0],bs,b2);
 		}
 	}
-	GridOutlet_end(out);
-	return true;
-err:
-	return false;
+	GridOutlet_end($->out[0]);
 }
 
 GRID_BEGIN(FormatPPM,0) {
@@ -116,45 +103,25 @@ GRID_END(FormatPPM,0) {
 	fseek(f,0,SEEK_SET);
 }
 
-static void FormatPPM_close (Format *$) {
-        if ($->st) Stream_close($->st);
-	FREE($);
+METHOD(FormatPPM,close) {
+	if ($->st) Stream_close($->st);
+	rb_call_super(argc,argv);
 }
 
-static Format *FormatPPM_open (FormatClass *qlass, GridObject *parent, int mode,
-int argc, VALUE *argv) {
-	FormatPPM *$ = (FormatPPM *)Format_open(&class_FormatPPM,parent,mode);
+METHOD(FormatPPM,init) {
 	const char *filename;
+	rb_call_super(argc,argv);
+	argv++, argc--;
 
-	if (!$) return 0;
+	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: ppm file <filename>");
+	filename = rb_sym_name(argv[1]);
 
-	if (argc!=2 || argv[0] != SYM(file)) {
-		whine("usage: ppm file <filename>"); goto err;
-	}
-	filename = rb_id2name(SYM2ID(argv[1]));
-
-	$->st = Stream_open_file(filename,mode);
-	if (!$->st) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
-	}
-	return $;
-err:
-	$->cl->close($);
-	return 0;
+	$->st = Stream_open_file(filename,$->mode);
+	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
 }
 
-static GridHandler FormatPPM_handler = GRINLET(FormatPPM,0);
-FormatClass class_FormatPPM = {
-	object_size: sizeof(FormatPPM),
-	symbol_name: "ppm",
-	long_name: "Portable PixMap",
-	flags: FF_R|FF_W,
-
-	open: FormatPPM_open,
-	frames: 0,
-	frame:  FormatPPM_frame,
-	handler: &FormatPPM_handler,
-	option: 0,
-	close:  FormatPPM_close,
-};
+FMTCLASS(FormatPPM,"ppm","Portable PixMap",FF_R|FF_W,
+inlets:1,outlets:1,LIST(GRINLET(FormatPPM,0)),
+DECL(FormatPPM,init),
+DECL(FormatPPM,frame),
+DECL(FormatPPM,close))
