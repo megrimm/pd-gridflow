@@ -93,6 +93,17 @@ def self.hunt_zombies
 	died.each {|x| subprocesses.delete x }
 end
 
+def self.packstring_for_nt(nt)
+	case nt
+	when :u, :u8,  :uint8; "C*"
+	when :s, :i16, :int16; "s*"
+	when :i, :i32, :int32; "l*"
+	when :f, :f32, :float32; "f*"
+	when :d, :f64, :float64; "d*"
+	else raise "no decoder for #{nt.inspect}"
+	end
+end
+
 self.post_header = "[gf] "
 
 def self.gfpost2(fmt,s); post("%s",s) end
