@@ -272,7 +272,7 @@ GRID_INLET(GridExportList,0) {
 	this->n = n;
 	rb_ivar_set(rself,SI(@list),list); /* keep */
 	rb_ary_store(list,0,INT2NUM(0));
-	rb_ary_store(list,1,sym_list);
+	rb_ary_store(list,1,bsym._list);
 } GRID_FLOW {
 	for (int i=0; i<n; i++, data++)
 		rb_ary_store(list,in->dex+i+2,INTORFLOAT2NUM(*data));
@@ -1508,7 +1508,7 @@ struct GridFinished : GridObject {
 GRID_INLET(GridFinished,0) {
 } GRID_FLOW {
 } GRID_FINISH {
-	Ruby a[] = { INT2NUM(0), sym_bang };
+	Ruby a[] = { INT2NUM(0), bsym._bang };
 	send_out(COUNT(a),a);
 } GRID_END
 
@@ -1795,7 +1795,7 @@ static void RtMetro_alarm(Ruby rself) {
 	uint64 now = RtMetro_now();
 	DGS(RtMetro);
 	if (now >= self->next_time) {
-		Ruby a[] = { INT2NUM(0), sym_bang };
+		Ruby a[] = { INT2NUM(0), bsym._bang };
 		self->send_out(COUNT(a),a);
 		/* self->next_time = now; */ /* jmax style, less realtime */
 		self->next_time += self->delay();
@@ -1858,32 +1858,34 @@ GRCLASS(RtMetro,LIST(),
 /* **************************************************************** */
 
 void startup_flow_objects () {
-	INSTALL(GridCast);
-	INSTALL(GridImport);
-	INSTALL(GridExport);
-	INSTALL(GridExportList);
-	INSTALL(GridStore);
-	INSTALL(GridOp1);
-	INSTALL(GridOp2);
-	INSTALL(GridFold);
-	INSTALL(GridScan);
-	INSTALL(GridInner);
-	INSTALL(GridInner2);
-	INSTALL(GridOuter);
-	INSTALL(GridConvolve);
-	INSTALL(GridFor);
-	INSTALL(GridDim);
-	INSTALL(GridType);
-	INSTALL(GridRedim);
-	INSTALL(GridScaleBy);
-	INSTALL(GridDownscaleBy);
-	INSTALL(GridLayer);
-	INSTALL(GridFinished);
-	INSTALL(GridJoin);
-	INSTALL(GridPerspective);
-	INSTALL(GridGrade);
-	INSTALL(DrawPolygon);
-//	INSTALL(GridRGBtoHSV); /* buggy */
-//	INSTALL(GridHSVtoRGB); /* buggy */
-	INSTALL(RtMetro);
+	fclass_install(&ciGridCast);
+	fclass_install(&ciGridImport);
+	fclass_install(&ciGridExport);
+	fclass_install(&ciGridExportList);
+	fclass_install(&ciGridStore);
+	fclass_install(&ciGridOp1);
+	fclass_install(&ciGridOp2);
+	fclass_install(&ciGridFold);
+	fclass_install(&ciGridScan);
+	fclass_install(&ciGridInner);
+	fclass_install(&ciGridInner2);
+	fclass_install(&ciGridOuter);
+	fclass_install(&ciGridConvolve);
+	fclass_install(&ciGridFor);
+	fclass_install(&ciGridDim);
+	fclass_install(&ciGridType);
+	fclass_install(&ciGridRedim);
+	fclass_install(&ciGridScaleBy);
+	fclass_install(&ciGridDownscaleBy);
+	fclass_install(&ciGridLayer);
+	fclass_install(&ciGridFinished);
+	fclass_install(&ciGridJoin);
+	fclass_install(&ciGridPerspective);
+	fclass_install(&ciGridGrade);
+	fclass_install(&ciDrawPolygon);
+	fclass_install(&ciRtMetro);
+/*
+	fclass_install(&ciGridRGBtoHSV);
+	fclass_install(&ciGridHSVtoRGB);
+*/
 }

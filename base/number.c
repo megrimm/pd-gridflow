@@ -276,24 +276,10 @@ char *Dim::to_s() {
 
 /* **************************************************************** */
 
-#define DECL_TYPE(_name_,_size_) \
-	{ 0, #_name_, _size_ }
-
 NumberType number_type_table[] = {
-	DECL_TYPE(     uint8,  8),
-	DECL_TYPE(      int8,  8),
-	DECL_TYPE(    uint16, 16),
-	DECL_TYPE(     int16, 16),
-	DECL_TYPE(    uint32, 32),
-	DECL_TYPE(     int32, 32),
-	DECL_TYPE(   float32, 32),
-	DECL_TYPE(   float64, 64),
-/*
-	DECL_TYPE(    uint64, 64),
-	DECL_TYPE(     int64, 64),
-	DECL_TYPE( complex64, 64),
-	DECL_TYPE(complex128,128),
-*/
+#define FOO(_sym_,_size_,_flags_,args...) { 0, #_sym_, _size_, _flags_ },
+NUMBER_TYPES(FOO)
+#undef FOO
 };
 
 /* **************************************************************** */

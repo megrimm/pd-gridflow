@@ -455,7 +455,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeIndex nt) {
 	inlets = ARRAY_NEW(GridInlet *,MAX_CORDS);
 	Ruby a[n+5];
 	a[0] = INT2NUM(woutlet);
-	a[1] = sym_grid;
+	a[1] = bsym._grid;
 	a[2] = PTR2FIXA(this);
 	a[3] = PTR2FIXB(this);
 	a[4] = INT2NUM(nt);
@@ -792,12 +792,12 @@ Ruby cGridObject, cFormat;
 
 void startup_formats () {
 	for (int i=0; i<COUNT(format_classes); i++) {
-		ruby_c_install(format_classes[i], cFormat);
+		fclass_install(format_classes[i], cFormat);
 	}
 }
 
 void startup_grid () {
-	ruby_c_install(&ciGridObject, cFObject);
+	fclass_install(&ciGridObject, cFObject);
 	EVAL(
 	"module GridFlow; "
 	"class Format < GridObject; end; "

@@ -268,15 +268,19 @@ static void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
 	count_tick();
 }       
 
-static Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
-	GFBridge *self = FIX2PTR(GFBridge,p);
-	self->name = "jmax";
-	self->class_install = FObject_s_install_2;
-	self->send_out = FObject_send_out_2;
-	self->post = post;
-	self->post_does_ln = false;
-	gf_bridge2 = self;
+static GFBridge gf_bridge3 = {
+	name: "jmax",
+	send_out: FObject_send_out_2,
+	class_install: FObject_s_install_2,
+	post: post,
+	post_does_ln: false,
+	clock_tick: 10.0,
+	whatever: 0
+};
+
+static Ruby gf_bridge_init (Ruby rself) {
 	mGridFlow2 = EVAL("GridFlow");
+	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
 	return Qnil;
 }
 
@@ -292,13 +296,15 @@ static Ruby gf_find_file(Ruby rself, Ruby s) {
 }
 
 void gridflow_module_init () {
+	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
-	rb_define_singleton_method(EVAL("Data"),"gridflow_bridge_init",
-		(RMethod)gridflow_bridge_init,1);
+	rb_ivar_set(EVAL("Data"),SI(@gf_bridge),PTR2FIX(gf_bridge2));
+	rb_define_singleton_method(EVAL("Data"),"gf_bridge_init",
+		(RMethod)gf_bridge_init,0);
 	post("(done)\n");
 
 	if (!

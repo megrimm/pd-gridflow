@@ -57,8 +57,6 @@ struct FMessage {
 /* code that is common across all bridges. */
 #include "bridge.c"
 
-static ID sym_lparen=0, sym_rparen=0;
-
 static bool is_in_ruby = false;
 
 /* **************************************************************** */
@@ -343,36 +341,40 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	count_tick();
 }       
 
-Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
-	GFBridge *self = gf_bridge2 = FIX2PTR(GFBridge,p);
-	self->name = "puredata";
-	self->class_install = FObject_s_install_2;
-	self->send_out = FObject_send_out_2;
-	self->post = (void (*)(const char *, ...))post;
-	self->post_does_ln = true;
-	self->whatever = bridge_whatever;
+Ruby gf_bridge_init (Ruby rself) {
 	mGridFlow2 = EVAL("GridFlow");
-	cPointer2 = EVAL("GridFlow::Pointer");
+//	cPointer2 = EVAL("GridFlow::Pointer");
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
+	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
 	return Qnil;
 }
 
+static GFBridge gf_bridge3 = {
+	name: "puredata",
+	send_out: FObject_send_out_2,
+	class_install: FObject_s_install_2,
+	post: (void (*)(const char *, ...))post,
+	post_does_ln: true,
+	clock_tick: 10.0,
+	whatever: bridge_whatever
+};
+
 extern "C" void gridflow_setup () {
+	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-PureData","/dev/null"};
 	post("setting up Ruby-for-PureData...");
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
-//	sym_lparen=ID2SYM(rb_intern("("));
-//	sym_rparen=ID2SYM(rb_intern(")"));
+	rb_ivar_set(EVAL("Data"),SI(@gf_bridge),PTR2FIX(gf_bridge2));
 
 	BFProxy_class = class_new(gensym("ruby_proxy"),
 		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 
-	rb_define_singleton_method(EVAL("Data"),"gridflow_bridge_init",
-		(RMethod)gridflow_bridge_init,1);
+	rb_define_singleton_method(EVAL("Data"),"gf_bridge_init",
+		(RMethod)gf_bridge_init,0);
 
 	post("(done)");
 

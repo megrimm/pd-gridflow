@@ -28,12 +28,13 @@
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
+static BuiltinSymbols *syms;
+static GFBridge *gf_bridge2;
+
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
 static Ruby cPointer2=0;
-static ID sym_ninlets=0, sym_noutlets=0;
-static GFBridge *gf_bridge2;
 
 static void count_tick () {
 	static int count = 0;
@@ -68,8 +69,7 @@ static Ruby make_error_message () {
 }
 
 static void bridge_common_init () {
-	sym_ninlets  = rb_intern("@ninlets");
-	sym_noutlets = rb_intern("@noutlets");
+
 }
 
 /* copy-paste */
@@ -80,13 +80,13 @@ static uint64 RtMetro_now2() {
 }
 
 static int ninlets_of (Ruby qlass) {
-	if (!rb_ivar_defined(qlass,sym_ninlets)) RAISE("no inlet count");
-	return INT(rb_ivar_get(qlass,sym_ninlets));
+	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_ninlets))) RAISE("no inlet count");
+	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_ninlets)));
 }
 
 static int noutlets_of (Ruby qlass) {
-	if (!rb_ivar_defined(qlass,sym_noutlets)) RAISE("no outlet count");
-	return INT(rb_ivar_get(qlass,sym_noutlets));
+	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_noutlets))) RAISE("no outlet count");
+	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_noutlets)));
 }
 
 #endif /* __BRIDGE_C */

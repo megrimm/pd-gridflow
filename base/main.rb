@@ -115,17 +115,6 @@ def self.parse(m)
 		when String; x.intern
 		end
 	}
-	i=0
-	while i<m.length
-		if m[i]==Brace1
-			j=i+1
-			j+=1 until m[j]==Brace2
-			a = [m[i+1..j-1]]
-			m[i..j] = a
-		else
-			i+=1
-		end
-	end
 	m
 end
 
@@ -185,7 +174,7 @@ class FObject
 		else
 			o=m.inspect
 		end
-		handle_braces m
+		GridFlow.handle_braces!(m)
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		qlass = name_lookup sym
@@ -198,25 +187,8 @@ class FObject
 	def inspect
 		if args then "#<#{self.class} #{args}>" else super end
 	end
-	
-	def self.handle_braces(argv,i=0)
-		toplevel = i==0
-		j=i
-		while j<argv.length
-			case argv[j]
-			when Brace1,Paren1
-				handle_braces argv,j+1
-			when Brace2,Paren2
-				raise "unbalanced '#{argv[j]}'" if toplevel
-				argv[(i-1)...(j+1)] = [argv[i...j]]
-				return
-			end
-			j+=1
-		end
-		raise "unbalanced '{' or '('" unless toplevel
-	end
+
 	def initialize(*argv)
-		p argv
 		s = GridFlow.stringify_list argv
 		@argv = argv
 		@args = "["
