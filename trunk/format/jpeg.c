@@ -24,7 +24,7 @@
 /* !@#$ not handling abort on compress */
 /* !@#$ not handling abort on decompress */
 
-#include "../base/grid.h"
+#include "../base/grid.h.fcs"
 /* removing macros (removing warnings) */
 #undef HAVE_PROTOTYPES
 #undef HAVE_STDLIB_H

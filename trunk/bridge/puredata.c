@@ -33,7 +33,7 @@ tries to call a Ruby method of the proper name.
 */
 
 #define IS_BRIDGE
-#include "../base/grid.h"
+#include "../base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #undef EXTERN
@@ -61,8 +61,19 @@ static bool is_in_ruby = false;
 /* BFObject */
 
 struct BFObject : t_object {
+	int32 magic; /* paranoia */
 	Ruby rself;
 	t_outlet **out;
+
+	void check_magic () {
+		if (magic != OBJECT_MAGIC) {
+			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
+			for (int i=-1; i<=1; i++) {
+				fprintf(stderr,"this[0]=0x%08x\n",((int*)this)[i]);
+			}
+			raise(11);
+		}
+	}
 };
 
 static t_class *find_bfclass (t_symbol *sym) {
@@ -184,6 +195,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
 	BFObject *bself = (BFObject *)pd_new(qlass);
+	bself->magic = OBJECT_MAGIC;
+	bself->check_magic();
 	FMessage fm = { self: bself, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
 	long r = rb_rescue2(
@@ -195,6 +208,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
+	fm->self->check_magic();
 	if (fm->self->rself) {
 		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
@@ -202,13 +216,15 @@ static void BFObject_delete_1 (FMessage *fm) {
 	}
 }
 
-static void BFObject_delete (BFObject *self) {
-	FMessage fm = { self: self, winlet:-1, selector: gensym("delete"),
+static void BFObject_delete (BFObject *bself) {
+	bself->check_magic();
+	FMessage fm = { self: bself, winlet:-1, selector: gensym("delete"),
 		ac: 0, at: 0, is_init: false };
 	rb_rescue2(
 		(RMethod)BFObject_delete_1,(Ruby)&fm,
 		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
+	bself->magic = 0xDeadBeef;
 }
 
 static void BFObject_class_init_1 (t_class *qlass) {
@@ -237,6 +253,7 @@ static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet,
 Ruby rself) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
+	bself->check_magic();
 	Ruby qlass = rb_funcall(rself,SI(class),0);
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);

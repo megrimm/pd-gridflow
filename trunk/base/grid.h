@@ -64,9 +64,10 @@ typedef /*volatile*/ VALUE Ruby;
 	self->check_magic();
 
 /* returns the size of a statically defined array */
+/* warning: does not work with STACK_ARRAY() */
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
-/* !@#$ these could be inline functions */
+/* !@#$ could these be inline functions? */
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
@@ -120,11 +121,6 @@ typedef /*volatile*/ VALUE Ruby;
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
 
-#define DEF(_class_,_name_,_argc_) \
-	rb_define_method(c##_class_,#_name_,(RMethod)_class_##_##_name_,_argc_)
-#define DEF2(_class_,_name2_,_name_,_argc_) \
-	rb_define_method(c##_class_,_name2_,(RMethod)_class_##_##_name_,_argc_)
-
 const char *rb_sym_name(Ruby sym);
 
 /* **************************************************************** */
@@ -155,9 +151,7 @@ int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 
 /* counterpart of mod(a,b), just like a/b and a%b are counterparts */
 static inline int div2(int a, int b) {
-	int c=a<0;
-	return (a/b)-(c&&!!(a%b));
-}
+int c=a<0; return (a/b)-(c&&!!(a%b));}
 
 static inline int32   abs(  int32 a) { return a>0?a:-a; }
 static inline int64   abs(  int64 a) { return a>0?a:-a; }
@@ -549,7 +543,7 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
-//\class BitPacking < Object
+\class BitPacking < Object
 struct BitPacking : Object {
 	Packer *packer;
 	Unpacker *unpacker;
@@ -564,16 +558,15 @@ struct BitPacking : Object {
 	void gfpost();
 	bool is_le();
 	bool eq(BitPacking *o);
-void initialize(int argc,Ruby*argv,Ruby foo1, Ruby foo2, Ruby foo3);//FCS
-String pack2(int argc, Ruby *argv,String ins, String outs=Qnil);//FCS
-String unpack2(int argc, Ruby *argv,String ins, String outs=Qnil);//FCS
+	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
+	\decl String pack2(String ins, String outs=Qnil);
+	\decl String unpack2(String ins, String outs=Qnil);
 
 /* main entrances to Packers/Unpackers */
 	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
 	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
-
 };
-//\end
+\end class
 
 int high_bit(uint32 n);
 int low_bit(uint32 n);
@@ -594,9 +587,7 @@ void swap16 (int n, Pt<uint16> data);
 	MACRO(    uint64, 64, NT_UNSIGNED | NT_UNSUPPORTED, "u64") \
 	MACRO(     int64, 64, NT_UNSUPPORTED, "i64,l") \
 	MACRO(   float32, 32, NT_FLOAT, "f32,f") \
-	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED, "f64,d") \
-	MACRO( complex64, 64, NT_FLOAT | NT_UNSUPPORTED, "") \
-	MACRO(complex128,128, NT_FLOAT | NT_UNSUPPORTED, "")
+	MACRO(   float64, 64, NT_FLOAT | NT_UNSUPPORTED, "f64,d")
 
 enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_type_i,
@@ -629,14 +620,14 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 	case int64_type_i: C(int64) break; \
 	case float32_type_i: C(float32) break; \
 	case float64_type_i: C(float64) break; \
-	default: E; RAISE("type %d not available here",T);}
+	default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
 	case uint8_type_i: C(uint8) break; \
 	case int16_type_i: C(int16) break; \
 	case int32_type_i: C(int32) break; \
 	case int64_type_i: C(int64) break; \
-	default: E; RAISE("type %d not available here",T);}
+	default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 /* Operator objects encapsulate optimised loops of simple operations */
 
@@ -774,7 +765,7 @@ struct Grid : Object {
 	NumberTypeE nt;
 	void *data;
 
-	Grid() : next(this), dc(0), dim(0), nt(int32_type_i), data(0) {}
+	Grid() : next(0), dc(0), dim(0), nt(int32_type_i), data(0) {}
 	void constrain(DimConstraint dc_) { dc=dc_; }
 	void init(Dim *dim, NumberTypeE nt=int32_type_i);
 	void init_clear(Dim *dim, NumberTypeE nt=int32_type_i);
@@ -782,6 +773,9 @@ struct Grid : Object {
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
 
+	// void operator= (Grid &victim) {} ??
+
+	// almost like assignment, but also destroys the grid being assigned.
 	void swallow (Grid *victim) {
 		if (dc) dc(victim->dim);
 		if (dim) delete dim;
@@ -826,35 +820,26 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 
 /* macro for declaring an inlet inside GRCLASS() (int32 only) */
 #define GRINLET(_class_,i,mode) {i, mode, \
-	0, \
-	0, \
-	_class_##_grid_inlet_##i, \
-	0, \
-	0, \
-	0 }
+	0, 0, \
+	_class_##_grid_inlet_##i, 0, \
+	0, 0 }
 
 /* same for inlets that support all four types */
 #define GRINLET4(_class_,i,mode) {i, mode, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i }
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
 
 /* same except float unsupported by that inlet */
 #define GRINLET2(_class_,i,mode) {i, mode, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i, \
 	0, 0 }
 
 /* same except int unsupported by that inlet */
 #define GRINLETF(_class_,i,mode) {i, mode, \
 	0, 0, 0, 0, \
-	_class_##_grid_inlet_##i, \
-	_class_##_grid_inlet_##i }
+	_class_##_grid_inlet_##i, _class_##_grid_inlet_##i }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
@@ -1030,7 +1015,7 @@ private:
 typedef struct BFObject BFObject; /* fts_object_t or something */
 
 /* represents objects that have inlets/outlets */
-//\class FObject < Object
+\class FObject < Object
 struct FObject : Object {
 	BFObject *bself; /* point to jMax/PD peer */
 	uint64 total_time;
@@ -1046,19 +1031,19 @@ struct FObject : Object {
 	/* result should be printed immediately as the GC may discard it anytime */
 	const char *info();
 
-Ruby total_time_get(int argc, Ruby *argv); //FCS
-Ruby total_time_set(int argc, Ruby *argv,Ruby x);//FCS
-void send_in (int argc, Ruby *argv);//FCS
-void send_out (int argc, Ruby *argv);//FCS
-void del(int argc, Ruby *argv);//FCS
+	\decl Ruby total_time_get();
+	\decl Ruby total_time_set(Ruby x);
+	\decl void send_in (...);
+	\decl void send_out (...);
+	\decl void del();
 };
-//\end class FObject
+\end class FObject
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
 #define MAX_OUTLETS 4
 
-//\class GridObject < FObject
+\class GridObject < FObject
 struct GridObject : FObject {
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
@@ -1080,20 +1065,18 @@ struct GridObject : FObject {
 	/* for Formats */
 	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
 
-Ruby method_missing(int argc, Ruby *argv);//FCS
-void initialize(int argc, Ruby *argv);//FCS
-Array inlet_dim(int argc, Ruby *argv,int inln);//FCS
-Symbol inlet_nt(int argc, Ruby *argv,int inln);//FCS
-void inlet_set_factor(int argc, Ruby *argv,int inln, int factor);//FCS
-void del(int argc, Ruby *argv);//FCS
+\decl Ruby method_missing(...);
+\decl void initialize();
+\decl Array inlet_dim(int inln);
+\decl Symbol inlet_nt(int inln);
+\decl void inlet_set_factor(int inln, int factor);
+\decl void del();
 
-void send_out_grid_begin(int argc, Ruby *argv,int outlet, Array
- buf, NumberTypeE nt=int32_type_i);//FCS
-void send_out_grid_flow(int argc, Ruby *argv,int outlet, String
- buf, NumberTypeE nt=int32_type_i);//FCS
-void send_out_grid_abort(int argc, Ruby *argv,int outlet);//FCS
+\decl void send_out_grid_begin(int outlet, Array buf, NumberTypeE nt=int32_type_i);
+\decl void send_out_grid_flow(int outlet, String buf, NumberTypeE nt=int32_type_i);
+\decl void send_out_grid_abort(int outlet);
 };
-//\end class GridObject
+\end class GridObject
 
 /* **************************************************************** */
 

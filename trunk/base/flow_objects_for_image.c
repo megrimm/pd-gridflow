@@ -22,7 +22,7 @@
 */
 
 #include <math.h>
-#include "grid.h"
+#include "grid.h.fcs"
 
 static void expect_picture (Dim *d) {
 	if (d->n!=3) RAISE("(height,width,chans) dimensions please");

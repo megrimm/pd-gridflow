@@ -22,7 +22,7 @@
 */
 
 #define LIBMPEG_INCLUDE_HERE
-#include "../base/grid.h"
+#include "../base/grid.h.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
