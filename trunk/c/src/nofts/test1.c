@@ -11,21 +11,29 @@ void pressakey(void) {
 	fgets(buf,256,stdin);
 }
 
-void test_dict$1(void *foo, fts_symbol_t k, void *v) {
-	printf("%s : %s\n", fts_symbol_name(k), (const char *)v);
+void test_dict$1(void *foo, void *k, void *v) {
+	printf("%s : %s\n", fts_symbol_name((fts_symbol_t)k), (const char *)v);
 }
 
 void test_dict(void) {
-	Dict *d = Dict_new();
-	Dict_put(d,SYM(apples),"oranges");
-	Dict_put(d,SYM(monty),"python");
-	Dict_put(d,SYM(luby),"is not engrish");
-	Dict_put(d,SYM(foo),"bar");
-	Dict_put(d,SYM(recursive),"n. see also: recursive");
+	Dict *d = Dict_new(0);
+	Dict_put(d,(void *)(0+SYM(apples)),"oranges");
+	Dict_put(d,(void *)(0+SYM(monty)),"python");
+	Dict_put(d,(void *)(0+SYM(luby)),"is not engrish");
+	Dict_put(d,(void *)(0+SYM(foo)),"bar");
+	Dict_put(d,(void *)(0+SYM(recursive)),"n. see also: recursive");
 	Dict_each(d,test_dict$1,0);
 }
 
-void test_view_ppm(void) {
+void test_view_ppm1(void) {
+	fts_object_t *in = fts_object_new3("@in");
+	fts_object_t *out = fts_object_new3("@out 256 256");
+	fts_connect(in,0,out,0);
+	fts_send3(in,0,"open ppm file ../../../images/g001.ppm");
+	fts_send3(in,0,"bang");
+}
+
+void test_view_ppm2(void) {
 	fts_object_t *in = fts_object_new3("@in");
 	fts_object_t *pa = fts_object_new3("@convolve << + 0");
 	fts_object_t *pb = fts_object_new3("@ / 9");
@@ -54,8 +62,8 @@ void test_view_anim(void) {
 	fts_connect(pa,0,out,0);
 */
 	fts_connect(in,0,out,0);
-/*	fts_send3(in,0,"open ppm file ../../../images/b.ppm.cat"); */
-	fts_send3(in,0,"open videodev /dev/video");
+	fts_send3(in,0,"open ppm file ../../../images/b.ppm.cat");
+//	fts_send3(in,0,"open videodev /dev/video");
 	fts_send3(in,0,"option channel 1");
 	fts_send3(in,0,"option size 480 640");
 	fts_send3(out,0,"option timelog 1");
@@ -63,39 +71,84 @@ void test_view_anim(void) {
 	fts_send3(v4j,0,"profiler_dump");
 }
 
+void test_view_anim2(void) {
+	fts_object_t *in = fts_object_new3("@in");
+	fts_object_t *out = fts_object_new3("@out 256 256");
+	fts_connect(in,0,out,0);
+	fts_send3(in,0,"open mpeg file /home/matju/net/washington_zoom_in.mpeg");
+//	printf("here...\n");
+	while(1) fts_send3(in,0,"bang");
+//	printf("there...\n");
+}
+
+typedef struct TestTCP {
+	fts_object_t *in1, *in2, *out;
+	int toggle;
+} TestTCP;
+
+void test_tcp$1(TestTCP *$) {
+	if (!GridInlet_idle(((GridObject *)$->out)->in[0])) return;
+	if ($->toggle==0) {
+		fts_send3($->in1,0,"bang");
+	} else {
+		fts_send3($->in2,0,"bang");
+	}
+	$->toggle ^= 1;
+}
+
+void test_tcp$2(TestTCP *$) {
+	if (!GridInlet_idle(((GridObject *)$->out)->in[0])) return;
+	fts_send3($->in1,0,"bang");
+}
+
 void test_tcp(void) {
 	if (fork()) {
-		/* server */
-		fts_object_t *in1 = fts_object_new3("@in");
-		fts_object_t *in2 = fts_object_new3("@in");
-		fts_object_t *out = fts_object_new3("@out");
-		fts_connect(in1,0,out,0);
-		fts_connect(in2,0,out,0);
-		fts_send3(in1,0,"open ppm file ../../../images/r001.ppm");
-		fts_send3(in2,0,"open ppm file ../../../images/b001.ppm");
-		fts_send3(out,0,"open grid tcpserver 4243");
-		while(1) {
-			fts_send3(in1,0,"bang"); sleep(1);
-			fts_send3(in2,0,"bang"); sleep(1);
-		}
-	} else {
 		/* client */
-		fts_object_t *in  = fts_object_new3("@in");
-		fts_object_t *out = fts_object_new3("@out 240 320");
-		fts_connect(in,0,out,0);
-		fts_send3(out,0,"autodraw 2");
-		whine("test: waiting 2 seconds\n");
+		TestTCP *$ = NEW(TestTCP,1);
+		$->in1 = fts_object_new3("@in");
+		$->out = fts_object_new3("@out 240 320");
+		whine_header = "[client] ";
+		fts_connect($->in1,0,$->out,0);
+		fts_send3($->out,0,"option autodraw 2");
+		whine("test: waiting 2 seconds");
 		sleep(2);
-		fts_send3(in,0,"open grid tcp localhost 4243");
-		while(1) { fts_send3(in,0,"bang"); sleep(1); }
+		fts_send3($->in1,0,"open grid tcp localhost 4242");
+
+//		Dict_put(gridflow_alarm_set,$,test_tcp$2);
+		fts_send3($->in1,0,"bang");
+	} else {
+		/* server */
+		TestTCP *$ = NEW(TestTCP,1);
+		$->in1 = fts_object_new3("@in");
+		$->in2 = fts_object_new3("@in");
+		$->out = fts_object_new3("@out");
+		$->toggle = 0;
+		whine_header = "[server] ";
+		fts_connect($->in1,0,$->out,0);
+		fts_connect($->in2,0,$->out,0);
+		fts_send3($->in1,0,"open ppm file ../../../images/r001.ppm");
+		fts_send3($->in2,0,"open ppm file ../../../images/b001.ppm");
+		fts_send3($->out,0,"open grid tcpserver 4242");
+//		Dict_put(gridflow_alarm_set,$,test_tcp$1);
+		fts_send3($->in1,0,"bang");
 	}		
 }
 
+void test_foo(void) {
+	fts_object_t *in  = fts_object_new3("@in");
+	fts_object_t *out = fts_object_new3("@out");
+	fts_send3(out,0,"open videodev /dev/video0");
+}
+
 int main(void) {
+	int i;
 	gridflow_init_standalone();
-/*	test_dict(); */
-/*	test_view_ppm(); */
-/*	test_view_anim(); */
+//	test_dict();
+//	for (i=0;i<3;i++) test_view_ppm1();
+//	test_view_ppm2();
+//	test_view_anim();
+// 	test_view_anim2();
+//	test_foo();
 	test_tcp();
 
 	fts_loop();

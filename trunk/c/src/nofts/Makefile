@@ -1,6 +1,9 @@
 # attempt to make v4j run without jmax:
 
+ifndef ARCH
 ARCH=i686-linux
+endif
+include ../../../config.make
 
 # include ../../../config.make
 # DISTDIR = $(JMAXROOTDIR)/fts
@@ -9,6 +12,7 @@ ARCH=i686-linux
 # include $(JMAXDISTDIR)/Makefiles/Makefile.package
 
 LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
+LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 # LDSOFLAGS += -lefence # for hardcore malloc debugging.
 
 ARCH_CFLAGS += -Wall -Wno-unused
@@ -16,14 +20,11 @@ ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
 ARCH_CFLAGS += -DSTANDALONE
 ARCH_CFLAGS += -O6 -mpentium
 
-OBJS = \
-dim.o bitpacking.o operator.o main.o io.o \
-grid.o grid_basic.o grid_extra.o \
-format_x11.o \
-format_ppm.o \
-format_targa.o \
-format_grid.o \
-format_videodev.o
+include ../Sources
+
+OBJS = $(subst .c,.o,$(SOURCES))
+
+FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 
 LIB = libgridflow.so
 # LIB2 = /home/matju/lib/$(LIB)
@@ -32,7 +33,7 @@ all:: test1
 nofts.o: nofts.c
 	gcc $(ARCH_CFLAGS) -c $<
 
-%.o: ../%.c ../grid.h nofts.h ../config.h
+%.o: ../%.c ../grid.h ../lang.h ../config.h nofts.h
 	gcc $(ARCH_CFLAGS) -c $<
 
 $(LIB): $(OBJS) nofts.o
@@ -48,4 +49,7 @@ clean::
 	rm libgridflow.so nofts.o $(OBJS)
 
 test:: test1
-	LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH} ./test1
+	$(FIX_LD) ./test1
+
+mpeg_test: mpeg_test.c
+	gcc $(ARCH_CFLAGS) mpeg_test.c libgridflow.so -o $@ -lmpeg

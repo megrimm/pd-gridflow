@@ -25,6 +25,7 @@
 
 #ifndef __NOFTS_H
 #define __NOFTS_H
+#include "../lang.h"
 
 typedef int fts_status_t;
 #define fts_Success 1
@@ -52,25 +53,6 @@ typedef struct fts_atom_t {
 		void *p;
 	} v;
 } fts_atom_t;
-
-typedef struct List List; /* List ([0...n] -> void *) */
-
-List *List_new(int size);
-void List_push(List *$, void *v);
-void *List_get(List *$, int i);
-void List_put(List *$, int i, void *v);
-int List_size(List *$);
-void *List_pop(List *$);
-
-typedef struct Dict Dict; /* Dictionary (Symbol -> void *) */
-typedef struct DictEntry DictEntry;
-
-Dict *Dict_new(void);
-long Dict_hash(Dict *$, fts_symbol_t k);
-DictEntry *Dict_has_key(Dict *$, fts_symbol_t k);
-void *Dict_get(Dict *$, fts_symbol_t k);
-void Dict_put(Dict *$, fts_symbol_t k, void *v);
-void Dict_each(Dict *$, void (*proc)(void* data,fts_symbol_t k,void* v), void *data);
 
 typedef struct fts_object_t fts_object_t;
 
