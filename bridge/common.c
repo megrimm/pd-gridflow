@@ -106,22 +106,19 @@ static void gf_same_version () {
 
 /* -------- This is the big hack for what Ruby can't do for itself -------- */
 
-static volatile long bogus_variable = 0; /* just even *try* to optimise me out of existence! */
+static volatile long bogus = 0; // to force *bp to be read in memory
 static sigjmp_buf rescue_segfault;
 static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
-static VALUE *bridge_localize_sysstack () {
-	volatile long * volatile bp = (volatile long *)&bp; /* get any stack address */
-	//fprintf(stderr,"sysstack top is at 0x%08lx\n",(long)bp);
-	signal(11,trap_segfault);
-	// in this loop, segfault is overridden to mean breaking out of the for-loop.
-	if (!sigsetjmp(rescue_segfault,0)) {
-		for (;;bp++) bogus_variable += *bp;
-	}
-	bp--;
-	signal(11,SIG_DFL); /* can't really restore it. don't know where it was. */
-	//fprintf(stderr,"sysstack starts at 0x%08lx\n",(long)bp);
-	return (VALUE *)bp;
+static VALUE *localize_sysstack () {
+	// get any stack address
+	volatile long * volatile bp = (volatile long *)&bp;
+	sighandler_t old = signal(11,trap_segfault);
+	// read stack until segfault; segfault is redefined as a break.
+	if (!sigsetjmp(rescue_segfault,0)) for (;;bp++) bogus += *bp;
+	// restore signal handler
+	signal(11,old);
+	return (VALUE *)(bp-1);
 }
 
 #endif /* __BRIDGE_C */

@@ -267,9 +267,8 @@ void gridflow_config() {
 	char *foo[] = {"Ruby-for-jMax","/dev/null"};
 	post("setting up Ruby-for-jMax...\n");
 
-	VALUE *bp = bridge_localize_sysstack();
 	ruby_init();
-	Init_stack(bp);
+	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 
 	bridge_common_init();
