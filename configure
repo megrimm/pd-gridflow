@@ -27,8 +27,6 @@ require "rbconfig"
 require "mkmf"
 require "ftools"
 include Config
-DESTDIR = "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
-RUBY = "ruby"
 
 def make_expand(x)
   y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
@@ -151,7 +149,7 @@ Feature.new {
 	uses_so ["-lruby"]
 	test proc {
 		c_test "
-		#include <#{$conf[:RUBY_H]}>
+		#include <ruby.h>
 		int main () { return rb_rescue==0; }
 		", "-lruby"
 	}
@@ -162,7 +160,7 @@ Feature.new {
 	name "Ruby as a static library"
 	test proc {
 		c_test "
-		#include <#{$conf[:RUBY_H]}>
+		#include <ruby.h>
 		int main () { return rb_rescue==0; }
 		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
@@ -181,7 +179,7 @@ Feature.new {
 	uses_so ["-mcpu=pentium"]
 #	uses_o ["cpu/pentium.o"]
 	test proc {
-		(Config::CONFIG["arch"] =~ /i586|i686/) and
+		(CONFIG["arch"] =~ /i586|i686/) and
 		# this is very "heuristic" to say the least. sorry.
 		# please fix me.
 		c_test '
@@ -428,6 +426,9 @@ if not $conf[:JMAX_SOURCES]
 	end
 end
 
+CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
+$CFLAGS += " -I " + (make_expand CONFIG["archdir"])
+
 LOG = File.open "./config.log", "w"
 
 #--------------------------------#
@@ -531,9 +532,6 @@ def try feature
 	true
 end
 
-$conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
-$conf[:RUBYIO_H] = Config::CONFIG["archdir"] + "/rubyio.h"
-
 DUAL.puts "This is the GridFlow 0.6.5 configurator within Ruby version #{VERSION}"
 
 begin
@@ -554,6 +552,9 @@ puts ""
 
 #--------------------------------#
 # extconf.rb
+
+DESTDIR = make_expand "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
+RUBY = "ruby"
 
 def my_install_files(f,base,entries)
   entries.each {|type,name,*rest|
@@ -657,14 +658,6 @@ File.open("config.h","w") {|f| f.puts "
 
 #{foo}
 
-extern \"C\" {
-\#include \"#{$conf[:RUBY_H]}\"
-\#include \"#{$conf[:RUBYIO_H]}\"
-};
-\#ifndef RUBY_H
-\#error \"Can't do anything without ruby.h\"
-\#endif
-
 "
 
 if $conf[:FORMATS]!=[] then
@@ -709,8 +702,8 @@ mf.sub! /^install:.*/, "install: install2 site-install"
 mf.sub! /^all:/,"all: all2 "
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
-mf.sub! /CC = gcc\n/, "CC = g++"
-mf.sub! /^.c.o:/, ".c.o: base/grid.h config.make Makefile Makefile.gf"
+mf.sub! /CC = gcc\n/, "CC = g++\n"
+mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS]}"
 
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +

@@ -34,6 +34,16 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
+
+extern "C" {
+#include <ruby.h>
+#include <rubyio.h>
+};
+
+#ifndef RUBY_H
+#error "Can't do anything without ruby.h"
+#endif
+
 #include "../config.h"
 
 /* lots of macros follow */
