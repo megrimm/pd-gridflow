@@ -222,7 +222,8 @@ ifeq ($(HAVE_PUREDATA),yes)
 ifeq (${SYSTEM},Darwin)
   OS = DARWIN
   PDSUF = .pd_darwin
-  PDBUNDLEFLAGS = -bundle_loader $(shell which pd)
+#  PDBUNDLEFLAGS = -bundle_loader $(shell which pd)
+  PDBUNDLEFLAGS = -bundle -undefined suppress
 else
   OS = LINUX
   PDSUF = .pd_linux
@@ -260,7 +261,7 @@ endif
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): bridge/puredata.c bridge/common.c base/grid.h $(CONF)
-	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) -Ibundled/pd \
+	$(CXX) -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
