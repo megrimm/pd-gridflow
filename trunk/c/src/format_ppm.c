@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -21,6 +23,8 @@
 
 #include "grid.h"
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 extern FileFormatClass FormatPPM;
 
@@ -37,7 +41,7 @@ Dim *FormatPPM_frame (FileFormat *$, int frame) {
 
 	if(strcmp("P6\n",buf)!=0) {
 		whine("Wrong format (needing PPM P6)");
-		return 0;
+		goto err;
 	}
 	while (n<3) {
 		fgets(buf,256,$->stream);
@@ -45,13 +49,13 @@ Dim *FormatPPM_frame (FileFormat *$, int frame) {
 		n += sscanf(buf,"%d%d%d",metrics+n,metrics+n+1,metrics+n+2);
 		if (feof($->stream)) {
 			whine("unexpected end of file in header");
-			return 0;
+			goto err;
 		}
 	}
 	whine("File metrics: %d %d %d",metrics[0],metrics[1],metrics[2]);
 	if(metrics[2] != 255) {
 		whine("Wrong color depth (max_value=%d instead of 255)",metrics[2]);
-		return 0;
+		goto err;
 	}
 	{
 		int v[] = { metrics[1], metrics[0], 3 };
@@ -59,6 +63,9 @@ Dim *FormatPPM_frame (FileFormat *$, int frame) {
 		$->left = Dim_prod($->dim);
 		return $->dim;
 	}
+err:
+	fclose($->stream);
+	return 0; /* CRASH */
 }
 
 Number *FormatPPM_read (FileFormat *$, int n) {
@@ -80,12 +87,29 @@ Number *FormatPPM_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatPPM_acceptor (FileFormat *$, Dim *dim) {
+void FormatPPM_accept (FileFormat *$, Dim *dim) {
+	$->dim = dim;
+	fprintf($->stream,
+		"P6\n"
+		"# generated using Video4jmax " VIDEO4JMAX_VERSION "\n"
+		"%d %d\n"
+		"255\n",
+		Dim_get($->dim,1),
+		Dim_get($->dim,0));
 
+	fflush($->stream);
 }
 
-void FormatPPM_processor (FileFormat *$, int n, const Number *data) {
+void FormatPPM_process (FileFormat *$, int n, const Number *data) {
+	uint8 data2[n];
+	int i;
+	for (i=0; i<n; i++) data2[i] = data[i];
+	fwrite(data2,1,n,$->stream);
+}
 
+void FormatPPM_finish (FileFormat *$) {
+	fflush($->stream);
+	fseek($->stream,0,SEEK_SET);
 }
 
 void FormatPPM_close (FileFormat *$) {
@@ -94,21 +118,28 @@ void FormatPPM_close (FileFormat *$) {
 }
 
 FileFormat *FormatPPM_open (const char *filename, int mode) {
+	const char *modestr;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass     = &FormatPPM;
-	$->frames    = 0;
-	$->frame     = FormatPPM_frame;
-	$->size      = 0;
-	$->read      = FormatPPM_read;
-	$->acceptor  = FormatPPM_acceptor;
-	$->processor = FormatPPM_processor;
-	$->close     = FormatPPM_close;
+	$->qlass   = &FormatPPM;
+	$->frames  = 0;
+	$->frame   = FormatPPM_frame;
+	$->size    = 0;
+	$->read    = FormatPPM_read;
+	$->accept  = FormatPPM_accept;
+	$->process = FormatPPM_process;
+	$->finish  = FormatPPM_finish;
+	$->close   = FormatPPM_close;
 
-	$->stuff = NEW(int,3);
-	$->stream = fopen(filename,"r");
+	$->stuff = NEW(int,3); /* huh? */
+
+	switch(mode) {
+	case 4: case 2: break;
+	default: whine("unsupported mode (#%d)", mode); goto err;
+	}
+
+	$->stream = v4j_file_fopen(filename,mode);
 	if (!$->stream) {
-		whine("can't open file: %s", filename);
-		perror("filename");
+		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;
 	}
 	return $;

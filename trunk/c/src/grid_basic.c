@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -23,6 +25,7 @@
 
 #include "video4jmax.h"
 #include "grid.h"
+#include "math.h"
 
 /* **************************************************************** */
 /*
@@ -59,7 +62,7 @@ METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
 	if (GridOutlet_idle(out)) GridOutlet_propose(out,$->dim);
 	GridOutlet_send(out,COUNT(data),data);
-//	if (out->dex >= Dim_prod(out->dim)) GridOutlet_abort(out);
+	if (out->dex >= Dim_prod(out->dim)) GridOutlet_abort(out);
 }
 
 METHOD(GridImport,reset) {
@@ -355,12 +358,15 @@ DEF_OP(shr, a>>b)
 DEF_OP(min, a<b?a:b)
 DEF_OP(max, a>b?a:b)
 
-DEF_OP(eq,  a == b);
-DEF_OP(ne,  a != b);
-DEF_OP(gt,  a >  b);
-DEF_OP(le,  a <= b);
-DEF_OP(lt,  a <  b);
-DEF_OP(ge,  a >= b);
+DEF_OP(eq,  a == b)
+DEF_OP(ne,  a != b)
+DEF_OP(gt,  a >  b)
+DEF_OP(le,  a <= b)
+DEF_OP(lt,  a <  b)
+DEF_OP(ge,  a >= b)
+
+DEF_OP(sin, (int)(b * sin(a * 2 * PI / 36000)))
+DEF_OP(cos, (int)(b * cos(a * 2 * PI / 36000)))
 
 #define DECLOP(__name,__sym) \
 	{ 0, __sym, &op_##__name, &op_array_##__name }
@@ -382,7 +388,7 @@ Operation optable[] = {
 	DECLOP(div, "/"),
 	DECLOP(vid, "inv*"),
 	DECLOP(mod, "%"),
-	DECLOP(dom, "rev%"),
+	DECLOP(dom, "swap%"),
 
 	DECLOP(or , "|"),
 	DECLOP(xor, "^"),
@@ -394,22 +400,25 @@ Operation optable[] = {
 	DECLOP(max, "max"),
 
 	DECLOP(eq,  "=="),
-	DECLOP(ne,  "!="),
+	DECLOP(ne,  "!="), //!@#$
 	DECLOP(gt,  ">"),
-	DECLOP(le,  "<="),
+	DECLOP(le,  "<="), //!@#$
 	DECLOP(lt,  "<"),
-	DECLOP(ge,  ">="),
+	DECLOP(ge,  ">="), //!@#$
+
+	DECLOP(sin, "sin*")
+	DECLOP(cos, "cos*")
 };
 
 /* **************************************************************** */
 /*
-  GridOp1 ("@") is the class of objects for operating on an array
+  GridOp2 ("@") is the class of objects for operating on an array
   in a left inlet, and a scalar (integer) alone in the right inlet.
   They support operators listed in the section above.
 */
 
-typedef struct GridOp1 GridOp1;
-struct GridOp1 {
+typedef struct GridOp2 GridOp2;
+struct GridOp2 {
 	GridObject_FIELDS;
 	Operation *op;
 	int rint;
@@ -417,16 +426,16 @@ struct GridOp1 {
 	Dim *dim;
 };
 
-void GridOp1_acceptor0(GridInlet *$) {
-	GridOp1 *parent = (GridOp1 *) GridInlet_parent($);
+void GridOp2_acceptor0(GridInlet *$) {
+	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	GridOutlet_propose(parent->out[0],$->dim);
 	$->dex = 0;
 }
 
-void GridOp1_processor0(GridInlet *$, int n, const Number *data) {
+void GridOp2_processor0(GridInlet *$, int n, const Number *data) {
 	int i;
 	Number *data2 = NEW2(Number,n);
-	GridOp1 *parent = (GridOp1 *) GridInlet_parent($);
+	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	GridOutlet *out = parent->out[0];
 
 	memcpy(data2,data,sizeof(int)*n);
@@ -449,8 +458,8 @@ void GridOp1_processor0(GridInlet *$, int n, const Number *data) {
 */
 }
 
-void GridOp1_acceptor1(GridInlet *$) {
-	GridOp1 *parent = (GridOp1 *) GridInlet_parent($);
+void GridOp2_acceptor1(GridInlet *$) {
+	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]);
@@ -460,23 +469,23 @@ void GridOp1_acceptor1(GridInlet *$) {
 	parent->data = NEW2(Number,length);
 }
 
-void GridOp1_processor1(GridInlet *$, int n, const Number *data) {
-	GridOp1 *parent = (GridOp1 *) GridInlet_parent($);
+void GridOp2_processor1(GridInlet *$, int n, const Number *data) {
+	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
 	Dim_dex_add($->dim,n,&$->dex);
 }
 
-METHOD(GridOp1,init) {
+METHOD(GridOp2,init) {
 	int i;
 	fts_symbol_t sym = GET(1,symbol,optable[0].sym);
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridOp1_acceptor0, GridOp1_processor0);
+		GridOp2_acceptor0, GridOp2_processor0);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridOp1_acceptor1, GridOp1_processor1);
+		GridOp2_acceptor1, GridOp2_processor1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for(i=0; i<COUNT(optable); i++) {
@@ -492,17 +501,17 @@ METHOD(GridOp1,init) {
 	$->op = &optable[0];
 }
 
-METHOD(GridOp1,delete) {
+METHOD(GridOp2,delete) {
 	/* write me */
 }
 
-METHOD(GridOp1,rint) {
+METHOD(GridOp2,rint) {
 	free($->data);
 	$->dim = 0;
 	$->rint = GET(0,int,-42);
 }
 
-METHOD(GridOp1,bang) {
+METHOD(GridOp2,bang) {
 	if (! $->dim || ! $->data) {
 		whine("empty buffer, better luck next time.");
 		return;
@@ -512,19 +521,19 @@ METHOD(GridOp1,bang) {
 }
 
 
-CLASS(GridOp1) {
+CLASS(GridOp2) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
 
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridOp1,init),   ARRAY(init_args), 2 },
-		{ -1, fts_s_delete, METHOD_PTR(GridOp1,delete), 0,0,0 },
-		{  1, fts_s_int,    METHOD_PTR(GridOp1,rint),   0,0,0 },
-		{  1, fts_s_bang,   METHOD_PTR(GridOp1,bang),   0,0,0 },
+		{ -1, fts_s_init,   METHOD_PTR(GridOp2,init),   ARRAY(init_args), 2 },
+		{ -1, fts_s_delete, METHOD_PTR(GridOp2,delete), 0,0,0 },
+		{  1, fts_s_int,    METHOD_PTR(GridOp2,rint),   0,0,0 },
+		{  1, fts_s_bang,   METHOD_PTR(GridOp2,bang),   0,0,0 },
 	};
 
 	/* initialize the class */
-	fts_class_init(class, sizeof(GridOp1), 2, 1, 0);
+	fts_class_init(class, sizeof(GridOp2), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
 	GridObject_conf_class(class,0);
 	GridObject_conf_class(class,1);
@@ -543,5 +552,5 @@ void grid_basic_config (void) {
 	fts_class_install(fts_new_symbol("@import"), GridImport_instantiate);
 	fts_class_install(fts_new_symbol("@export"), GridExport_instantiate);
 	fts_class_install(fts_new_symbol("@store"),   GridStore_instantiate);
-	fts_class_install(fts_new_symbol("@"),          GridOp1_instantiate);
+	fts_class_install(fts_new_symbol("@"),          GridOp2_instantiate);
 }

@@ -1,3 +1,25 @@
+/*
+	$Id$
+
+	Video4jmax
+	Copyright (c) 2001 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file LICENSE for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*/
 #ifndef __GRID_PROTOCOL_H
 #define __GRID_PROTOCOL_H
 
@@ -75,8 +97,9 @@ struct Dim {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-typedef void (*GridAcceptor)(GridInlet *$);
-typedef void (*GridProcessor)(GridInlet *$, int n, const Number *data);
+typedef void (*GridAccept)(GridInlet *$);
+typedef void (*GridProcess)(GridInlet *$, int n, const Number *data);
+typedef void (*GridFinish)(GridInlet *$); /* not there yet! */
 
 struct GridInlet {
 	GridObject *parent;
@@ -88,14 +111,15 @@ struct GridInlet {
 //	Number *buf; /* packet buffer */
 
 	/* processing functions */
-	GridAcceptor acceptor;
-	GridProcessor processor;
+	GridAccept  accept;
+	GridProcess process;
+	GridFinish  finish; /* not there yet! */
 
 	int count; /* how many Numbers transferred */
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
-		GridAcceptor a, GridProcessor p);
+		GridAccept a, GridProcess p);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 	void GridInlet_finish(GridInlet *$);
@@ -205,8 +229,9 @@ struct FileFormatClass {
 		read - read actual data: n Numbers.
 		
 	The Write aspect of a format:
-		acceptor - similar to GridInlet's
-		processor - similar to GridInlet's
+		accept - similar to GridInlet's
+		process - similar to GridInlet's
+		finish - similar to (future) GridInlet's
 
 	Common aspect:
 		close
@@ -222,12 +247,13 @@ struct FileFormatClass {
 	void *stuff; \
 	\
 	int    (*frames) (FileFormat *$); \
-	Dim *(*frame)  (FileFormat *$, int frame); \
+	Dim   *(*frame)  (FileFormat *$, int frame); \
 	void   (*size)   (FileFormat *$, int height, int width); \
 	Number*(*read)   (FileFormat *$, int n); \
 	\
-	void   (*acceptor) (FileFormat *$, Dim *dim); \
-	void   (*processor)(FileFormat *$, int n, const Number *data); \
+	void   (*accept) (FileFormat *$, Dim *dim); \
+	void   (*process)(FileFormat *$, int n, const Number *data); \
+	void   (*finish) (FileFormat *$); \
 	\
 	void   (*config) (FileFormat *$, fts_symbol_t *sym, int value); \
 	void   (*close)  (FileFormat *$);
@@ -235,5 +261,9 @@ struct FileFormatClass {
 struct FileFormat {
 	FileFormat_FIELDS;
 };
+
+extern FileFormatClass FILE_FORMAT_LIST( );
+extern FileFormatClass *file_format_classes[];
+FileFormatClass *FileFormatClass_find(const char *name);
 
 #endif /* __GRID_PROTOCOL_H */

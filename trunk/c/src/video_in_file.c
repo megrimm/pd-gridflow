@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -32,9 +34,6 @@
 	if (!$->ff) { whine("can't do that: file not open"); return; }
 
 /* some data/type decls */
-
-extern FileFormatClass FILE_FORMAT_LIST( );
-static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
 
 typedef struct VideoInFile VideoInFile;
 
@@ -72,15 +71,7 @@ METHOD(VideoInFile,reset) {
 METHOD(VideoInFile,open) {
 	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("/tmp/untitled.ppm"));
 	const char *format = fts_symbol_name(GET(1,symbol,fts_new_symbol("ppm")));
-	FileFormatClass *qlass = 0;
-	int i;
-
-	for (i=0; i<COUNT(file_format_classes); i++) {
-		if (strcmp(file_format_classes[i]->symbol_name,format)==0) {
-			qlass = file_format_classes[i];
-			break;
-		}
-	}
+	FileFormatClass *qlass = FileFormatClass_find(format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);

@@ -34,7 +34,7 @@
 #endif
 
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.2.0"
+#define VIDEO4JMAX_VERSION "0.2.1"
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -49,6 +49,8 @@ int high_bit(unsigned long n);
 int low_bit(unsigned long n);
 void whine(char *fmt, ...);
 void *qalloc(size_t n);
+int    v4j_file_open(const char *name, int mode);
+FILE *v4j_file_fopen(const char *name, int mode); 
 
 /* **************************************************************** */
 
