@@ -231,3 +231,7 @@ GRID_INLET(FormatQuartz,0) {
 }
 
 \end class FormatQuartz
+void startup_quartz () {
+        \startall
+}
+
