@@ -69,12 +69,12 @@ typedef struct {
 #define DEF_OP1(_name_,_expr_) \
 	static Number op1_##_name_ (Number a) { return _expr_; } \
 	static void op1_array_##_name_ (int n, Number *as) { \
-		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; } \
+		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
-			{ Number a = as[0]; as[0] = _expr_; } \
-			{ Number a = as[1]; as[1] = _expr_; } \
-			{ Number a = as[2]; as[2] = _expr_; } \
-			{ Number a = as[3]; as[3] = _expr_; } \
+			{ Number a=as[0]; as[0]= _expr_; } \
+			{ Number a=as[1]; as[1]= _expr_; } \
+			{ Number a=as[2]; as[2]= _expr_; } \
+			{ Number a=as[3]; as[3]= _expr_; } \
 		as+=4; n-=4; } }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
