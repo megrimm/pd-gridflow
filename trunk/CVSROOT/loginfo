@@ -29,5 +29,7 @@
 
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail matju@sympatico.ca acastonguay@artengine.ca
 
-ALL mail -s %s matju@sympatico.ca acastonguay@artengine.ca
+#ALL mail -s %s matju@sympatico.ca acastonguay@artengine.ca
+
+DEFAULT $CVSROOT/CVSROOT/loginfo.rb $CVSROOT $USER %s matju@sympatico.ca acastonguay@artengine.ca
 
