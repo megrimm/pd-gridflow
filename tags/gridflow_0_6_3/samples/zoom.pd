@@ -1,0 +1,38 @@
+#N canvas 250 270 592 410 10;
+#X obj 200 146 @in;
+#X obj 45 178 @out 256 256;
+#X msg 341 248 3 3 # 1 0 0 0;
+#X msg 216 125 open ppm file images/teapot.ppm;
+#X obj 195 125 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 341 272 @print;
+#X obj 103 85 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 0 1;
+#X obj 48 272 @ foo;
+#X msg 48 251 bar;
+#X obj 45 158 @store;
+#X obj 45 43 metro 10;
+#X obj 45 24 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X text 218 108 (step 1);
+#X text 160 109 (step 2);
+#X text 27 5 (step 3);
+#X obj 45 107 @ >> 4;
+#X obj 45 63 @for ( -128 -128 ) ( 128 128 ) ( 1 1 );
+#X obj 44 132 @ + 128;
+#X text 27 221 test sending to a broken object;
+#X text 330 217 testing grid literals;
+#X obj 46 84 @ *;
+#X connect 0 0 9 1;
+#X connect 2 0 5 0;
+#X connect 3 0 0 0;
+#X connect 4 0 0 0;
+#X connect 6 0 20 1;
+#X connect 8 0 7 0;
+#X connect 9 0 1 0;
+#X connect 10 0 16 0;
+#X connect 11 0 10 0;
+#X connect 15 0 17 0;
+#X connect 16 0 20 0;
+#X connect 17 0 9 0;
+#X connect 20 0 15 0;
