@@ -1224,7 +1224,7 @@
 			<arg name="port" type="integer"/>
 		</method>
 		<outlet id="0"><method name="&lt;any&gt;"/></outlet>
-		<outlet id="1"/><method name="list">
+		<outlet id="1"><method name="list">
 			<arg name="protocol_name"/>
 			<arg name="sender_port"/>
 			<arg name="sender_host"/>

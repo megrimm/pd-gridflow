@@ -43,9 +43,13 @@
 </ul>
 <h4><a href="#Objects_for_Reporting">Objects for Reporting</a></h4><ul>
 </ul>
-<h4><a href="#Objects_for_Picture_Processing">Objects for Picture Processing</a></h4><ul>
+<h4><a href="#Objects_for_Color_Conversion">Objects for Color Conversion</a></h4><ul>
+</ul>
+<h4><a href="#Objects_for_Miscellaneous_Picture_Processing">Objects for Miscellaneous Picture Processing</a></h4><ul>
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
+</ul>
+<h4><a href="#jMax_emulation">jMax emulation</a></h4><ul>
 </ul>
 <br><br>
 </td></tr> 
@@ -123,16 +127,18 @@
    <p> holds two values, defaulting to (0,0). each time one is 
 		changed (by sending an integer in that inlet), a Dim(2) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b> no arguments.<br>
- <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
- <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
+  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
+ <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b> resend the grid without change<br>
+  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>2<b>)</b><br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds three values, defaulting to (0,0,0). each time one is 
 		changed (by sending an integer in that inlet), a Dim(3) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b> no arguments.<br>
- <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
- <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
+  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
+ <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b> resend the grid without change<br>
+  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>3<b>)</b><br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign='top'><br>
@@ -140,8 +146,9 @@
    <p> holds four values, defaulting to (0,0,0,0). each time one is 
 		changed (by sending an integer in that inlet), a Dim(4) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b> no arguments.<br>
- <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
- <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
+  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> <br>
+ <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b> resend the grid without change<br>
+  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>inlet 3</b> <b>method</b> int <b>(</b><b>)</b> <br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>4<b>)</b><br>
@@ -229,14 +236,17 @@
 				changes the base value to use. <br>
     <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scan">@scan</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>[@scan +] computes subtotals.</p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>)</b>    
+ <p>[@scan +] computes subtotals; this can be used, for example, 
+		to convert a regular probability distribution into a cumulative one. </p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>)</b>    
 			the base value is optional and defaults to 0. 
 			the operator is one from the table of two-input operators. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., last<b>)</b> 
-				replaces every Dim(last) subgrid by all the result of a cascade on that 
-				subgrid. Doing that with base value 0 and operation + on grid "2 3 5 7" will 
-				compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and gives the subtotals "2 5 10 17". 
-				produces a Dim(dims,last) grid. <br>
+				replaces every Dim(last) subgrid by all the results of 
+				cascading the operator on that subgrid, 
+				producing a Dim(dims,last) grid. 
+				For example, with base value 0 and operation + on grid "2 3 5 
+				7" will compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and give the 
+				subtotals "2 5 10 17". <br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
 				changes the base value to use. <br>
     <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@outer">@outer</a></td></tr><tr><td></td><td valign='top'><br>
@@ -256,14 +266,17 @@
 		applied on each  of the possible pairs combinations between numbers 
 		from the left grid  and the ones from the right. for example : 
 		(10,20,30) [@outer +] (1,2,3)  will give : 
-		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner">@inner</a></td></tr><tr><td></td><td valign='top'><br>
+		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner,@inner2">@inner,@inner2</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@inner.png" alt="[@inner * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p>think of this one as a special combination of [@outer], [@] 
-		and [@fold]. this is one of the most complex operations. It is very 
-		useful for performing linear transforms like rotations, scalings, 
-		tilts, and color remappings. A linear transform is done by something called matrix 
-		multiplication, which happens to be [@inner * + 0]. </p> <p>This object has been renamed from @inner to @inner2 because a 
-		different @inner object will be added in the future.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
+   <p>think of this one as a special combination of [@outer], [@] and 
+		[@fold]. this is one of the most complex operations. It is very useful 
+		for performing linear transforms like rotations, scalings, shearings, 
+		and some kinds of color remappings. A linear transform is done by 
+		something called matrix multiplication, which happens to be [@inner * + 
+		0]. @inner also does dot product and other funny operations.</p> <p>@inner2 is a variant on @inner; used to be called @inner (GF-0.4.1 
+		and before); the right-hand "matrix" is transposed upon reception (the 
+		last dimension is swapped with the rest of the dimensions, so that the 
+		last becomes first and the others stay in order)</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
 			op_para and op_fold are two operators picked from the table 
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
@@ -284,26 +297,7 @@
 				changes the right-hand side grid to that. <br>
     <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner2">@inner2</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p>a variant on @inner.</p> <p>This object used to be called @inner.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
-			op_para and op_fold are two operators picked from the table 
-			of two-input operators. 
-			the base value has to be specified (has no default value yet). <br>
-  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA..., lastA<b>)</b> 
-				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) 
-				pieces of Dim(lastA) size. 
-				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) 
-				pieces of Dim(lastB) size. 
-				On every piece pair, does [@] using the specified 
-				op_para operation, followed by a [@fold] using 
-				the specified op_fold operator and base value. 
-				creates a Dim(anyA...,anyB...) grid by assembling all 
-				the results together. 
-				(note: lastA must be equal to lastB.) <br>
-   <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>  
-				changes the base value to that. <br>
-   <br><b>inlet 2</b> <b>grid</b> <b>dim(</b>anyB..., lastB<b>)</b> 
-				changes the right-hand side grid to that. <br>
-    <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign='top'><br>
+   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> init <b>(</b>which_dim<b>)</b>   
 			Which_dim is the number of the dimension by which the join will 
@@ -470,25 +464,17 @@
 		will  appear, and some may get duplicated (triplicated, etc) 
 		randomly. Some  wrap-around effect will occur close to the edges. </p> <p> Sending an integer to inlet 1 sets the amount of spreading in 
 		maximum  number of pixels + 1. even values translate the whole image 
-		by half  a pixel due to rounding.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@apply_colormap_channelwise">@apply_colormap_channelwise</a></td></tr><tr><td></td><td valign='top'><br>
+		by half  a pixel due to rounding.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@rotate">@rotate</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>This object is useful for color correction. For each pixel 
-		it takes it apart, looks up each part separately in the colormap, 
-		and constructs a new pixel from that</p> <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
-			picture <br>
- <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>intensities channels<b>)</b> 
-			colormap ("palette") <br>
- <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
-			picture <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@rgb_to_greyscale">@rgb_to_greyscale</a></td></tr><tr><td></td><td valign='top'><br>
+ <p>performs rotations on indexmaps and polygons and such.</p> <br><b>method</b> init <b>(</b><i>0...35999</i> angle<b>)</b>   <br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>{anyA 2}<b>)</b><br>
+ <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> rotation angle; 0...36000<br>
+  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>{anyA 2}<b>)</b><br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@remap_image">@remap_image</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
- <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@greyscale_to_rgb">@greyscale_to_rgb</a></td></tr><tr><td></td><td valign='top'><br>
-<br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
-  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
- <br></td> 
+ <p>if you chain indexmap (coordinate) transformations from outlet 1 
+		to inlet 1, then sending an image in inlet 0 will emit its 
+		deformation out of outlet 0.</p>     <br></td> 
 <tr><td>&nbsp;</td></tr>
  
 <tr> 
@@ -504,7 +490,10 @@
 				sends a grid dim(length of dims) containing dims. <br>
    <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rank<b>)</b> 
 				the list of dimensions of the incoming grid. <br>
-  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@print">@print</a></td></tr><tr><td></td><td valign='top'><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@type">@type</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>gives a symbol representing the numeric type of the grid received. </p> <br><b>outlet 0</b> <b>method</b>  <b>(</b><b>)</b> <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@print">@print</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> init <b>(</b><b>)</b> <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
@@ -527,7 +516,33 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><a name="Objects_for_Picture_Processing"></a><h4>Objects for Picture Processing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br>
+<tr><td colspan="4"><a name="Objects_for_Color_Conversion"></a><h4>Objects for Color Conversion</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@apply_colormap_channelwise">@apply_colormap_channelwise</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>This object is useful for color correction. For each pixel 
+		it takes it apart, looks up each part separately in the colormap, 
+		and constructs a new pixel from that. You may also color-correct 
+		colormaps themselves.</p> <p>Only works for things that have 3 channels.</p> <p>Note: if you just need to apply a palette on an indexed-color 
+		picture, you don't need this. Just use @store instead.</p> <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
+			picture <br>
+ <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>intensities channels<b>)</b> 
+			colormap ("palette") <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
+			picture <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@rgb_to_greyscale">@rgb_to_greyscale</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
+ <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@greyscale_to_rgb">@greyscale_to_rgb</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns {white}<b>)</b><br>
+  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> <br>
+ <br></td> 
+<tr><td>&nbsp;</td></tr>
+ 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="Objects_for_Miscellaneous_Picture_Processing"></a><h4>Objects for Miscellaneous Picture Processing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@convolve.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>this is the object for blurring, sharpening, finding edges, 
 		embossing, and many other uses.</p> <br><b>method</b> init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      <br>
@@ -677,6 +692,31 @@
 			standard deviation. 
 			(the average happens to be simply 1000 divided by the 
 			messages-per-second, but it is convenient to have it anyway) <br>
+  <br></td> 
+<tr><td>&nbsp;</td></tr>
+ 
+<tr> 
+<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
+</tr>
+<tr><td colspan="4"><a name="jMax_emulation"></a><h4>jMax emulation</h4></td></tr> <p>those classes emulate jMax functionality, 
+	for use within PureData and Ruby.</p> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="fork">fork</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>Every incoming message is sent to inlet 1 and then sent to 
+		inlet 0 as well. Messages remain completely unaltered. Contrast 
+		with PureData's "t a a" objects, which have the same purpose but 
+		transform bangs into zeros and such.</p> <br><b>inlet 0</b> <b>method</b> <any> <b>(</b><b>)</b> <br>
+   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax_udpsend">jmax_udpsend</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Sends messages (but not grids nor dspsignals) via UDP (which 
+		does not involve a connection, and may lose packets in case of 
+		network overload or noise or etc) <br><b>method</b> init <b>(</b><i>host</i> host<b>, </b><i>integer</i> port<b>)</b>    <br>
+ <br><b>inlet 0</b> <b>method</b> <any> <b>(</b><b>)</b> <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax_udpreceive">jmax_udpreceive</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>Counterpart of jmax_udpsend</p> <br><b>method</b> init <b>(</b><i>integer</i> port<b>)</b>   <br>
+ <br><b>outlet 0</b> <b>method</b> <any> <b>(</b><b>)</b> <br>
+ <br><b>outlet 1</b> <b>method</b> list <b>(</b>protocol_name<b>, </b>sender_port<b>, </b>sender_host<b>, </b>sender_ip_address<b>)</b>      <br>
   <br></td> 
 <tr><td>&nbsp;</td></tr>
  
