@@ -1,0 +1,129 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
+<!-- $Id$ -->
+<!--
+	GridFlow Reference Manual
+	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+-->
+
+<section name="Note">
+	first consult the file ../README for a vague idea on the meaning of
+	subdirectories.
+</section>
+
+<section name="Responsibilities">
+	<part who="matju" name="Framework" 
+		files="main.c,dim.c,bitpacking.c,grid.[ch],operator.c"/>
+	<part who="matju" name="Grid Processors" files="grid_basic.c,grid_extra.c"/>
+	<part who="matju" name="Input/Output" files="io.c,format*.c"/>
+	<part who="matju" name="Build Process" files="configure,Makefile"/>
+	<part who="matju" name="Test Suite" files="test1.c"/>
+	<part who="matju" name="Samples" files="samples/*"/>
+	<part who="matju" name="Documentation" files="doc/*"/>
+	<part who="alx"   name="Help Files and Documentation Pictures"
+		files="help/*,doc/images/*"/>
+	<part who="matju" name="Java/Swing Extensions" files="java/*"/>
+	<part who="matju" name="C Port" files="nofts.[ch]"/>
+	<part who="?" name="Max Port" />
+	<part who="?" name="Ruby Port" />
+	<part who="matju" name="Extras" files="extra/*"/>
+</section>
+
+<section name="Release">
+<prose>
+
+Compatibility:
+
+<list><li>
+	Should work with Ruby 1.6.6 and jMax 2.5.1 or PureData 0.35-0
+</li></list>
+
+Release steps (<b>OPERATE WITH CAUTION</b>):
+
+<list>
+	<li>cvs tag gridflow_0_6_4 .
+	</li><li>mkdir gridflow
+	</li><li>cvs -d :pserver:gridflow@artengine.ca:/home/cvs/gridflow
+			export -r gridflow_0_6_4 -d gridflow .
+	</li><li>cd gridflow
+	</li><li>rm -rf CVS CVSROOT
+	</li><li>chmod -R go=u-w .
+	</li><li>cd ..
+	</li><li>tar cfzvv gridflow-0.6.4.tar.gz gridflow
+	</li><li>rm -rf gridflow # caution!!!
+	</li><li>scp gridflow*gz
+			matju@artengine.ca:/home/members/matju/gridflow/download
+	</li><li>mv gridflow*gz /home/matju/net/gridflow
+	</li><li>ssh matju@artengine.ca :
+		expand tarball into jmax/gridflow/latest
+	</li><li>jmax/pd/0xff/ruby-talk mlists : post release
+	</li><li>freshmeat.net : post release
+	</li><li>RAA : post release
+	</li>
+</list>
+
+</prose>
+</section>
+
+<section name="Documentation">
+<prose>
+<list>
+<li>
+	Pictures formerly identified as "samples" should be screenshots of the
+	help files. The &amp;lt;sample&amp;gt; tag will be replaced by a &amp;lt;help&amp;gt; tag.
+</li>
+<li>
+	Pictures identified as help must be real help. The source code of
+	a template doesn't count as help.
+</li>
+<li>
+	A Help file is a visual summary of what an object does. It should be
+	interactive and allow the user to understand what the object does.
+	Sample inputs are provided and sample results can be seen.
+</li>
+<li>
+	All modifications to the documentation must be done in the XML. The
+	HTML must be kept up-to-date by rerunning "make" in the "doc/" directory.
+</li>
+<li>
+	Help-wise, Formats are considered objects.
+	Operators are to be documented as part of [@] and [@!].
+</li>
+<li>
+	Images grabbed directly from a jMax window should be encoded in PNG.
+	This includes "icons" (object boxes, message boxes, etc). If they are
+	in JPEG, only change to PNG when the image has to change anyway.
+	Distinguish "icons" from "thumbnails", the latter of which are
+	<b>scaled-down</b> grabs, which should be encoded in JPEG.
+</li>
+<li>
+	There are not help-thumbnails anymore in the reference manual
+	because they were not helpful.
+</li>
+<li>
+	Large images should be kept out of the release. The release itself must
+	be small enough not to discourage us from doing releases and keeping
+	them all. It also should be downloadable on a bad modem. =)
+	Let's keep it under 500k please.
+</li>
+</list>
+</prose>
+
+in doc do:
+for z in images/*.* images/*/*.*; do fgrep -q $z *.html || echo "$z"; done
+
+</section>
+
+<section name="...">
+<prose>
+
+	CVS Quick Reference:
+	environment variables
+		CVSEDITOR=pico
+		CVS_RSH=ssh2
+
+</prose>
+</section>
+
+</jmax-doc>
