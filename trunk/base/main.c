@@ -69,11 +69,8 @@ VALUE gf_alloc_set = Qnil;
 void *qalloc(size_t n, const char *file, int line) {
 	long *data = (long *) qalloc2(n,file,line);
 	#ifndef NO_DEADBEEF
-	{
-		int i;
-		int nn = (int) n/4;
-		for (i=0; i<nn; i++) data[i] = 0xDEADBEEF;
-	}
+	int nn = (int) n/4;
+	for (int i=0; i<nn; i++) data[i] = 0xDEADBEEF;
 	#endif
 	return data;	
 
@@ -128,18 +125,13 @@ void qfree(void *data) {
 */
 	}
 #endif
-	{
-		int n=8;
-		data = realloc(data,n);
+	int n=8;
+	data = realloc(data,n);
 #ifndef NO_DEADBEEF
-		{
-			long *data2 = (long *) data;
-			int i;
-			int nn = (int) n/4;
-			for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
-		}
+	long *data2 = (long *) data;
+	int nn = (int) n/4;
+	for (int i=0; i<nn; i++) data2[i] = 0xFADEDF00;
 #endif
-	}
 	free(data);
 }
 
@@ -210,7 +202,6 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	VALUE ary;
 	VALUE sym;
 	int outlet;
-	int i, n;
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
@@ -219,8 +210,8 @@ VALUE FObject_send_out(int argc, VALUE *argv, VALUE $) {
 	ary = rb_ivar_defined($,sym_outlets) ?
 		rb_ivar_get($,sym_outlets) : Qnil;
 	if (ary==Qnil) return Qnil;
-	n = RARRAY(ary)->len;
-	for (i=0; i<n; i++) {
+	int n = RARRAY(ary)->len;
+	for (int i=0; i<n; i++) {
 		VALUE conn = rb_ary_fetch(ary,i);
 		VALUE rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
@@ -239,14 +230,12 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->foreign_peer = foreign_peer;
 	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
 	c_peer->peer = $;
-	{
-		VALUE gc2 = rb_ivar_get(qlass,rb_intern("@grid_class"));
-		/*
-		if (gc2==Qnil) RAISE("@grid_class not found in %s",
-			RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
-		*/
-		c_peer->grid_class = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
-	}
+	VALUE gc2 = rb_ivar_get(qlass,rb_intern("@grid_class"));
+	/*
+	if (gc2==Qnil) RAISE("@grid_class not found in %s",
+		RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
+	*/
+	c_peer->grid_class = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 	rb_funcall2($,SI(initialize),argc,argv);
 	return $;

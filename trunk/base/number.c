@@ -279,18 +279,15 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	if (argc!=3) RAISE("bad args");
 	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
 
-	{
-		int i;
-		int endian = INT(argv[0]);
-		int bytes = INT(argv[1]);
-		VALUE *masks = rb_ary_ptr(argv[2]);
-		uint32 masks2[4];
-		int size = rb_ary_len(argv[2]);
-		if (size<1) RAISE("not enough masks");
-		if (size>4) RAISE("too many masks (%d)",size);
-		for (i=0; i<size; i++) masks2[i] = INT(masks[i]);
-		c_peer = new BitPacking(endian,bytes,size,masks2);
-	}
+	int endian = INT(argv[0]);
+	int bytes = INT(argv[1]);
+	VALUE *masks = rb_ary_ptr(argv[2]);
+	uint32 masks2[4];
+	int size = rb_ary_len(argv[2]);
+	if (size<1) RAISE("not enough masks");
+	if (size>4) RAISE("too many masks (%d)",size);
+	for (int i=0; i<size; i++) masks2[i] = INT(masks[i]);
+	c_peer = new BitPacking(endian,bytes,size,masks2);
 	
 	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping (leak) */
@@ -501,35 +498,32 @@ VALUE op1_dict = Qnil;
 VALUE op2_dict = Qnil;
 
 void startup_number (void) {
-	int i;
 	int foo = PTR2FIX("hello");
 
-	for (i=0; i<COUNT(number_type_table); i++) {
+	for (int i=0; i<COUNT(number_type_table); i++) {
 		number_type_table[i].sym = ID2SYM(rb_intern(number_type_table[i].name));
 	}
 
 	rb_define_readonly_variable("$op1_dict",&op1_dict);
 	op1_dict = rb_hash_new();
-	for(i=0; i<COUNT(op1_table); i++) {
+	for(int i=0; i<COUNT(op1_table); i++) {
 		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
 		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX((op1_table+i)));
 	} 
 
 	rb_define_readonly_variable("$op2_dict",&op2_dict);
 	op2_dict = rb_hash_new();
-	for(i=0; i<COUNT(op2_table); i++) {
+	for(int i=0; i<COUNT(op2_table); i++) {
 		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
 		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
 	} 
 
-	{
-		VALUE BitPacking_class =
-			rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
-		define_many_methods(BitPacking_class,
-			BitPacking_classinfo.methodsn,
-			BitPacking_classinfo.methods);
-		SDEF(BitPacking,new,-1);
-	}
+	VALUE BitPacking_class =
+		rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
+	define_many_methods(BitPacking_class,
+		BitPacking_classinfo.methodsn,
+		BitPacking_classinfo.methods);
+	SDEF(BitPacking,new,-1);
 	rb_define_method(rb_cString, "swap32!", (RFunc)String_swap32_f, 0);
 	rb_define_method(rb_cString, "swap16!", (RFunc)String_swap16_f, 0);
 }
