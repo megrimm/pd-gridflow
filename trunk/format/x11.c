@@ -294,10 +294,12 @@ top:
 void FormatX11::resize_window (int sx, int sy) {
 	int v[3] = {sy, sx, 3};
 	Window oldw;
+/* !@#$ this code is sort of meaningless now
 	if (parent && parent->in[0]->dex > 0) {
 		gfpost("resizing while receiving picture (ignoring)");
 		return;
 	}
+*/
 	if (dim) delete dim;
 	dim = new Dim(3,v);
 
@@ -474,6 +476,7 @@ METHOD3(FormatX11,init) {
 
 	argv++, argc--;
 
+	dim     = 0;
 	window  = 0;
 	is_owner= true;
 	image   = Pt<uint8>();

@@ -566,6 +566,7 @@ METHOD3(FormatVideoDev,init) {
 	pending_frames[1] = -1;
 	image = Pt<uint8>();
 	use_mmap = true;
+	dim = 0;
 	if (argc<1) RAISE("usage: videodev <devicename>");
 	const char *filename = rb_sym_name(argv[0]);
 	VALUE file = rb_funcall(EVAL("File"),SI(open),2,

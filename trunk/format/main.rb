@@ -58,6 +58,29 @@ class Format
 		conf_format(flags,symbol_name,description)
 		nil
 	end
+
+	# this is what you should use to rewind
+	# different file-sources may redefine this as something else
+	# (eg: gzip)
+	def rewind
+		@stream.seek 0,IO::SEEK_SET
+	end
+
+	# rewind if at end-of-file
+	# using seek because #eof does not work that way
+	# (one read has to fail before the eof flag is set)
+	# don't call this in nonblocking mode!!! (why again?)
+	def rewind_if_needed
+		thispos = @stream.seek 0,IO::SEEK_CUR
+		lastpos = @stream.seek 0,IO::SEEK_END
+		if thispos == lastpos then thispos = 0 end
+		nextpos = @stream.seek 0,IO::SEEK_SET
+	rescue Errno::ESPIPE # just ignore if seek is not possible
+	end
+
+	# "ideal" buffer size or something
+	# the buffer may be bigger than this but usually not by much.
+	BufferSize = 16384
 end
 
 # common parts between GridIn and GridOut
@@ -214,9 +237,14 @@ module EventIO
 	def try_read dummy
 #		while @action
 #		p @chunksize-@buffer.length
-		t = @stream.read(@chunksize-(if @buffer then @buffer.length else 0 end))
+		n = @chunksize-(if @buffer then @buffer.length else 0 end)
+		t = @stream.read n
 #		p t
-		raise if not t
+		if not t
+			raise "heck" if not @stream.eof?
+			rewind
+			t = @stream.read n
+		end
 		if @buffer then @buffer << t else @buffer = t end
 		if @buffer.length == @chunksize
 			action,buffer = @action,@buffer
@@ -230,6 +258,7 @@ module EventIO
 	end
 
 	def raw_open(mode,source,*args)
+		@mode,@source,@args = mode,source,args
 		mode = case mode
 			when :in; "r"
 			when :out; "w"
@@ -255,6 +284,10 @@ module EventIO
 				STDIN.reopen @stream
 				@stream = File.open filename, mode
 				exec "gzip", "-dc"
+			end
+			def self.rewind
+				@stream.close
+				raw_open @mode, @source, *@args
 			end
 		when :tcp
 			if VERSION < "1.6.6"
@@ -313,14 +346,6 @@ class FormatGrid < Format; include EventIO
 		raw_open mode,source,*args
 	end
 
-	def rewind_if_needed
-		thispos = @stream.seek 0,IO::SEEK_CUR
-		lastpos = @stream.seek 0,IO::SEEK_END
-		if thispos == lastpos then thispos = 0 end
-		nextpos = @stream.seek 0,IO::SEEK_SET
-	rescue Errno::ESPIPE # ignore if can't seek
-	end
-
 	# rewinding and starting
 	def frame
 		if not @stream
@@ -329,7 +354,7 @@ class FormatGrid < Format; include EventIO
 		if read_wait?
 			raise "already waiting for input"
 		end
-		rewind_if_needed if not TCPSocket===@stream
+		rewind_if_needed
 		on_read(8) {|data| frame1 data }
 		(try_read nil while read_wait?) if not TCPSocket===@stream
 #		GridFlow.post "frame: finished"
@@ -372,6 +397,8 @@ class FormatGrid < Format; include EventIO
 		if @prod > GridFlow.max_size
 			raise "dimension list: invalid prod (#{@prod})"
 		end
+		p @dim
+		p self.class.instance_variables
 		send_out_grid_begin 0, @dim
 
 		prod = 1
@@ -481,9 +508,10 @@ class FormatPPM < Format; include EventIO
 	end
 
 	def frame
+		#@stream.sync = false
 		metrics=[]
+		rewind_if_needed
 		line = @stream.gets
-		if not line then @stream.seek 0,IO::SEEK_SET; line = @stream.gets.chomp end
 		line.chomp!
 		if line != "P6" then raise "Wrong format (needing PPM P6)" end
 		while metrics.length<3
@@ -491,16 +519,22 @@ class FormatPPM < Format; include EventIO
 			next if line =~ /^#/
 			metrics.push(*(line.split(/\s+/).map{|x| Integer x }))
 		end
-		if metrics[2] != 255 then raise \
-			"Wrong color depth (max_value=#{metrics[2]} instead of 255)" end
+		metrics[2]==255 or
+			raise "Wrong color depth (max_value=#{metrics[2]} instead of 255)"
 
 		send_out_grid_begin 0, [metrics[1], metrics[0], 3]
 
 		bs = metrics[0]*3
+		n = bs*metrics[1]
+		bs = (BufferSize/bs)*bs+bs # smallest multiple of bs over BufferSize
 		buf = ""
-		for y in 0...metrics[1] do
+		nothing = ""
+		while n>0 do
+			bs=n if bs>n
 			data = @stream.read(bs) or raise EOFError
 			send_out_grid_flow 0, @bp.unpack(data,buf)
+			data.replace nothing # prevent clogging memory
+			n-=bs
 		end
 		send_out_grid_end 0
 	end
@@ -514,6 +548,7 @@ class FormatPPM < Format; include EventIO
 	def _0_rgrid_flow data
 		# !@#$ use BitPacking here
 		@stream.write data.unpack("i*").pack("c*")
+		#@stream.write @bp.unpack data
 	end
 	def _0_rgrid_end
 		@stream.flush
@@ -542,27 +577,42 @@ targa header is like:
 	end
 
 	def frame
-		comment_length,colors,w,h,depth = @stream.read(18).unpack("cxcx9vvcx")
+		rewind_if_needed
+		head = @stream.read(18)
+		comment_length,colors,w,h,depth = head.unpack("cxcx9vvcx")
 		comment = @stream.read(comment_length)
 
 		if colors != 2
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.post sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
-		GridFlow.post sprintf("tga: comment: %s", comment)
+		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth}"
+		GridFlow.post "tga: comment: \"#{comment}\""
 
-		if depth != 24 and depth != 32
-			raise sprintf("tga: wrong colour depth: %i\n", depth)
+		@bp = case depth
+		when 24
+			BitPacking.new(ENDIAN_BIG,3,[0x0000ff,0x00ff00,0xff0000])
+#		when 32
+#			#!@#$ test me
+#			BitPacking.new(ENDIAN_BIG,4,
+#				[0x000000ff,0x0000ff00,0x00ff0000,0xff000000])
+		else
+			raise "tga: unsupported colour depth: #{depth}\n"
 		end
 		send_out_grid_begin 0, [ h, w, depth/8 ]
-		
+
 		bs = w*depth/8
 
-		bp = BitPacking.new(ENDIAN_BIG,3,[0x0000ff,0x00ff00,0xff0000])
-		for y in 0...h do
-			data = @stream.read bs
-			send_out_grid_flow 0, bp.unpack(data)
+		n = bs*h
+		bs = (BufferSize/bs)*bs+bs # smallest multiple of bs over BufferSize
+		buf = ""
+		nothing = ""
+		while n>0 do
+			bs=n if bs>n
+			data = @stream.read(bs) or raise EOFError
+			send_out_grid_flow 0, @bp.unpack(data,buf)
+			data.replace nothing # prevent clogging memory
+			n-=bs
 		end
 		send_out_grid_end 0
 	end

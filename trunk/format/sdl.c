@@ -131,6 +131,7 @@ METHOD3(FormatSDL,init) {
 	case 4: /* Probablement 32 bpp alors */
 		bit_packing = new BitPacking(4,f->BytesPerPixel,3,mask);
 		break;
+	default: RAISE("unknown bpp"); break;
 	}
 	return Qnil;
 }
