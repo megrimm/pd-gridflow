@@ -41,44 +41,7 @@ tries to call a Ruby method of the proper name.
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
-
-/* **************************************************************** */
-/* pasted from pd's g_canvas.h; sorry */
-
-        /* Call this to get a gobj's bounding rectangle in pixels */
-typedef void (*t_getrectfn)(t_gobj *x, struct _glist *glist,
-    int *x1, int *y1, int *x2, int *y2);
-        /* and this to displace a gobj: */
-typedef void (*t_displacefn)(t_gobj *x, struct _glist *glist, int dx, int dy);
-        /* change color to show selection: */
-typedef void (*t_selectfn)(t_gobj *x, struct _glist *glist, int state);
-        /* change appearance to show activation/deactivation: */
-typedef void (*t_activatefn)(t_gobj *x, struct _glist *glist, int state);
-        /* warn a gobj it's about to be deleted */
-typedef void (*t_deletefn)(t_gobj *x, struct _glist *glist);
-        /*  making visible or invisible */
-typedef void (*t_visfn)(t_gobj *x, struct _glist *glist, int flag);
-        /* field a mouse click (when not in "edit" mode) */
-typedef int (*t_clickfn)(t_gobj *x, struct _glist *glist,
-    int xpix, int ypix, int shift, int alt, int dbl, int doit);
-        /*  save to a binbuf */
-typedef void (*t_savefn)(t_gobj *x, t_binbuf *b);
-        /*  open properties dialog */
-typedef void (*t_propertiesfn)(t_gobj *x, struct _glist *glist);
-        /* ... and later, resizing; getting/setting font or color... */
-
-struct _widgetbehavior
-{
-    t_getrectfn w_getrectfn;
-    t_displacefn w_displacefn;
-    t_selectfn w_selectfn;
-    t_activatefn w_activatefn;
-    t_deletefn w_deletefn;
-    t_visfn w_visfn;
-    t_clickfn w_clickfn;
-    t_savefn w_savefn;
-    t_propertiesfn w_propertiesfn;
-};
+#include "g_canvas.h"
 
 /* **************************************************************** */
 
@@ -118,12 +81,18 @@ struct BFObject : t_object {
 };
 
 static t_class *find_bfclass (t_symbol *sym) {
+	t_atom a[1];
+	SETSYMBOL(a,sym);
+	char buf[4096];
+//	post("sym=0x%08x",(long)sym);
+	//for (int i=0; i<16; i++) post("sym[%i]=0x%02x",i,((char*)sym)[i]);
+	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
 	Ruby v = rb_hash_aref(
 		rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
-		rb_str_new2(sym->s_name));
-//	if (v==Qnil) RAISE("class not found: '%s'",sym->s_name);
+		rb_str_new2(buf));
+//	if (v==Qnil) RAISE("class not found: '%s'",buf);
 	if (v==Qnil) {
-		post("class not found: '%s'",sym->s_name);
+		post("class not found: '%s'",buf);
 		return 0;
 	}
 	return FIX2PTR(t_class,v);
@@ -214,7 +183,12 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac+1];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 
-	argv[0] = rb_str_new2(fm->selector->s_name);
+	if (fm->selector==&s_list) {
+		argv[0] = rb_str_new2("list"); // pd is slightly broken here
+	} else {
+		argv[0] = rb_str_new2(fm->selector->s_name);
+	}
+
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
@@ -273,10 +247,6 @@ static void BFObject_delete (BFObject *bself) {
 	bself->magic = 0xDeadBeef;
 }
 
-static void BFObject_class_init_1 (t_class *qlass) {
-	class_addanything(qlass,(t_method)BFObject_method_missing0);
-}
-
 /* **************************************************************** */
 
 struct RMessage {
@@ -314,8 +284,23 @@ VALUE rb_funcall_rescue(VALUE rself, ID sel, int argc, ...) {
 /* Call this to get a gobj's bounding rectangle in pixels */
 void bf_getrectfn(t_gobj *x, struct _glist *glist,
 int *x1, int *y1, int *x2, int *y2) {
+	BFObject *bself = (BFObject*)x;
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	t_atom at[5];
-	Ruby a = rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_getrect),1,Qnil);
+	float x0,y0;
+	if (glist->gl_havewindow || !glist->gl_isgraph) {
+		x0=bself->te_xpix;
+		y0=bself->te_ypix;
+	}
+	else {
+		x0 = glist_xtopixels(glist, glist->gl_x1 + (glist->gl_x2 - glist->gl_x1) * 
+            	bself->te_xpix / (glist->gl_screenx2 - glist->gl_screenx1));
+		y0 = glist_ytopixels(glist, glist->gl_y1 + (glist->gl_y2 - glist->gl_y1) * 
+            	bself->te_ypix / (glist->gl_screeny2 - glist->gl_screeny1));
+	}
+	fprintf(stderr,"real x=%f; y=%f;\n",x0,y0);
+
+	Ruby a = rb_funcall_rescue(bself->rself,SI(pd_getrect),1,can);
 	if (TYPE(a)!=T_ARRAY || rb_ary_len(a)<4) {
 		post("bf_getrectfn: return value should be 4-element array");
 		*x1=*y1=*x2=*y2=0;
@@ -329,56 +314,70 @@ int *x1, int *y1, int *x2, int *y2) {
 
 /* and this to displace a gobj: */
 void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_displace),3,Qnil,INT2NUM(dx),INT2NUM(dy));
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
 }
 
 /* change color to show selection: */
 void bf_selectfn(t_gobj *x, struct _glist *glist, int state) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_select),2,Qnil,INT2NUM(state));
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
 }
 
 /* change appearance to show activation/deactivation: */
 void bf_activatefn(t_gobj *x, struct _glist *glist, int state) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_activate),2,Qnil,INT2NUM(state));
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
 }
 
 /* warn a gobj it's about to be deleted */
 void bf_deletefn(t_gobj *x, struct _glist *glist) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_delete),1,Qnil);
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
 }
 
 /*  making visible or invisible */
 void bf_visfn(t_gobj *x, struct _glist *glist, int flag) {
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby rself = ((BFObject*)x)->rself;
 	DGS(FObject);
 	self->check_magic();
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_vis),2,Qnil,INT2NUM(flag));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
 }
 
 /* field a mouse click (when not in "edit" mode) */
 int bf_clickfn(t_gobj *x, struct _glist *glist,
 int xpix, int ypix, int shift, int alt, int dbl, int doit) {
-	return INT(
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_click),7,Qnil,
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	Ruby ret = rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_click),7,can,
 		INT2NUM(xpix),INT2NUM(ypix),
 		INT2NUM(shift),INT2NUM(alt),
-		INT2NUM(dbl),INT2NUM(doit)));
+		INT2NUM(dbl),INT2NUM(doit));
+	if (TYPE(ret) == T_FIXNUM) return INT(ret);
+	post("bf_clickfn: expected Fixnum");
+	return 0;
 }
 /*  save to a binbuf */
 
 void bf_savefn(t_gobj *x, t_binbuf *b) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_save),2,Qnil,Qnil);
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
 }
 /*  open properties dialog */
 
 void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_properties),1,Qnil);
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
 /* ... and later, resizing; getting/setting font or color... */
 
 /* **************************************************************** */
 
+static void BFObject_class_init_1 (t_class *qlass) {
+	class_addanything(qlass,(t_method)BFObject_method_missing0);
+}
+
 static Ruby FObject_s_install_2(Ruby rself, char *name) {
+//	post("install: %s",name);
 	t_class *qlass = class_new(gensym(name),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject),
@@ -458,8 +457,8 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 		wb->w_deletefn     = bf_deletefn;
 		wb->w_visfn        = bf_visfn;
 		wb->w_clickfn      = bf_clickfn;
-		wb->w_savefn       = bf_savefn;
-		wb->w_propertiesfn = bf_propertiesfn;
+		//wb->w_savefn       = bf_savefn;
+		//wb->w_propertiesfn = bf_propertiesfn;
 		class_setwidget(FIX2PTR(t_class,qlassid),wb);
 	} else if (argv[0] == SYM(addtomenu)) {
 		if (argc!=2) RAISE("bad args");
