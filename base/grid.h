@@ -248,7 +248,7 @@ void define_many_methods(Ruby/*Class*/ $, int n, MethodDecl *methods);
 #define MAX_NUMBERS 64*1024*1024
 
 /* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 65535
+#define MAX_INDICES 1024*1024
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
@@ -258,7 +258,7 @@ void define_many_methods(Ruby/*Class*/ $, int n, MethodDecl *methods);
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
-#define MAX_OUTLETS 2
+#define MAX_OUTLETS 4
 
 /* number of #send_out calls allowed at once (not used yet) */
 #define GF_STACK_DEPTH 1024
@@ -615,7 +615,9 @@ struct GridInlet {
 struct FClass {
 };
 
-struct GridClass /*: FClass*/ {
+/* !@#$ should move some of this stuff over to FClass */
+/* but can't right now (C++ weirdness) */
+struct GridClass /*: FClass */ {
 	Ruby rubyclass;
 	int objectsize;
 	void *(*allocate)();
@@ -679,17 +681,19 @@ struct FObject {
 };
 
 struct GridObject : FObject {
+	bool freed; /* paranoia */
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
+
+	GridObject();
+	virtual void mark(); /* not used for now */
+	virtual ~GridObject();
 
 	const char *args() {
 		Ruby s=rb_funcall(peer,SI(args),0);
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
-
-	virtual void mark(); /* not used for now */
-	virtual ~GridObject();
 
 	DECL3(init);
 	DECL3(inlet_dim);

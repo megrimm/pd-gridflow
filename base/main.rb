@@ -311,6 +311,7 @@ end
 #end
 
 def self.routine
+#	post "hello"
 	$tasks.each {|k,v|
 #		puts "#{k} #{v}"
 		case v
@@ -336,9 +337,10 @@ end
 
 def GridFlow.tick
 	$mainloop.one(0)
+#	self.routine
 #	GC.start
 rescue Exception => e
-	GridFlow.post "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
+	GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
 end
 
 end # module GridFlow

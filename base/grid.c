@@ -461,19 +461,32 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 
 void GridObject::mark() {}
 
-GridObject::~GridObject() {}
-
-METHOD3(GridObject,init) {
+GridObject::GridObject() {
+	freed = false;
+	profiler_cumul = 0;
 	for (int i=0; i<MAX_INLETS;  i++) in[i]  = 0;
 	for (int i=0; i<MAX_OUTLETS; i++) out[i] = 0;
-	profiler_cumul = 0;
+}
 
-	GridClass *cl = grid_class;
-	for (int i=0; i<cl->handlersn; i++) {
-		GridHandler *gh = &cl->handlers[i];
+GridObject::~GridObject() {
+	if (freed) fprintf(stderr,"GridObject being deleted twice???\n");
+	freed=true;
+	for (int i=0; i<MAX_INLETS;  i++) {
+		//fprintf(stderr,"GridObject::~GridObject: inlet #%d=%08x\n",i,(int)in[i]);
+		if (in[i]) delete in[i], in[i]=0;
+	}
+	for (int i=0; i<MAX_OUTLETS; i++) {
+		//fprintf(stderr,"GridObject::~GridObject: outlet #%d=%08x\n",i,(int)out[i]);
+		if (out[i]) delete out[i], out[i]=0;
+	}
+}
+
+METHOD3(GridObject,init) {
+	for (int i=0; i<grid_class->handlersn; i++) {
+		GridHandler *gh = &grid_class->handlers[i];
 		in[gh->winlet] = new GridInlet(this,gh);
 	}
-	for (int i=0; i<cl->outlets; i++) out[i] = new GridOutlet(this,i);
+	for (int i=0; i<grid_class->outlets; i++) out[i] = new GridOutlet(this,i);
 	rb_call_super(0,0);
 	return Qnil;
 }
@@ -509,9 +522,9 @@ METHOD3(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
 	int n = rb_ary_len(argv[1]);
-	int v[n];
 	Ruby *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	int v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	out[outlet]->begin(new Dim(n,v));
 	return Qnil;
@@ -603,9 +616,8 @@ METHOD3(GridObject,method_missing) {
 	hell: return rb_call_super(argc,argv);
 }
 
+/* moved the stuff to the other destructor */
 METHOD3(GridObject,del) {
-	for (int i=0; i<MAX_INLETS;  i++) if (in[i]) delete in[i], in[i]=0;
-	for (int i=0; i<MAX_OUTLETS; i++) if (out[i]) delete out[i], out[i]=0;
 	rb_call_super(argc,argv);
 	return Qnil;
 }
@@ -638,9 +650,12 @@ GridClass *format_classes[] = {};
 #endif
 
 METHOD3(Format,init) {
-	int flags = INT(rb_ivar_get(CLASS_OF(peer),SI(@flags)));
+	int flags = INT(rb_ivar_get(rb_obj_class(peer),SI(@flags)));
+//	printf("self=%08x\n",(int)this);
 	rb_call_super(argc,argv);
-	mode = argv[0];
+//	printf("self=%08x\n",(int)this);
+//	fprintf(stderr,"index(mode)=%08x\n",(char*)(&mode)-(char*)this);
+	mode = argv[0]; /* VG: Invalid write of size 4 */
 	parent = 0;
 	/* FF_W, FF_R, FF_RW */
 	if (mode==SYM(in)) {
@@ -670,7 +685,7 @@ METHOD3(Format,close) {
 METHOD3(Format,open_file) {
 	if (argc<1) RAISE("expect filename");
 	rb_ivar_set(peer,SI(@stream),
-		rb_funcall(rb_eval_string("File"),SI(open),2,
+		rb_funcall(EVAL("File"),SI(open),2,
 			rb_funcall(mGridFlow,SI(find_file),1,
 			rb_any_to_s(argv[0])),
 			rb_str_new2(mode==4?"r":mode==2?"w":(RAISE("argh"),""))));
