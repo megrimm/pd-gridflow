@@ -896,4 +896,56 @@ class Peephole < GridFlow::FPatcher
 	install "peephole", 1, 1
 end
 
+#-------- fClasses for: Hardware
+
+class<<USB
+	attr_reader :busses
+end
+
+class DelcomUSB < GridFlow::FObject
+	Vendor=0x0FC5
+	Product=0x1222
+	def self.find_delcoms
+		r=[]
+		USB.busses.each {|dir,bus|
+			bus.each {|dev|
+				r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
+			}
+		}
+		r
+	end
+	def initialize #(bus=nil,dev=nil)
+		r=DelcomUSB.find_delcoms
+		raise "no such device" if r.length<1
+		raise "#{r.length} such devices (which one???)" if r.length>1
+		@usb=USB.new(r[0])
+		if_num=nil
+		r[0].config.each {|config|
+			config.interface.each {|interface|
+				interface.each {|altsetting|
+					if_num = interface.bInterfaceNumber
+				}
+			}
+		}
+		GridFlow.post "Interface # %i\n", if_num
+		@usb.set_configuration 1
+		@usb.claim_interface if_num
+		@usb.set_altinterface 0
+	end
+	# libdelcom had this:
+        # uint8 recipient, deviceModel, major, minor, dataL, dataM;
+        # uint16 length; uint8[8] extension;
+	def _0_send_command(major,minor,dataL,dataM,extension="\0\0\0\0\0\0\0\0")
+		raise "closed" if not @usb
+		raise "extension.length!=8" if extension.length!=8
+		@usb.control_msg(
+			0x000000c8, 0x00000012,
+			minor*0x100+major,
+			dataM*0x100+dataL,
+			extension, 5000)
+	end
+	def close; @usb.close; end
+	install "delcomusb", 1, 1
+end
+
 end # module GridFlow
