@@ -168,19 +168,19 @@ class StreamMap
 			time) || [[]]*3
 	end
 
-	def make_messages(time=nil)
-		selectors = [:ready_to_read,:ready_to_write,:stream_exception]
-		flags =     [          READ,          WRITE,        EXCEPT   ]
+	Selectors = [:ready_to_read,:ready_to_write,:stream_exception]
+	Flags =     [          READ,          WRITE,        EXCEPT   ]
 
+	def make_messages(time=nil)
 		lists = select(time)
 		#p lists
 		messages = []
-		(0..2).each {|i|
-			lists[i].each{|s|
+		lists.each_with_index {|l,i|
+			l.each{|s|
 				se = @streams[s.to_s]
 				observer = se.stream_observer
-				messages << Message.new(observer,selectors[i],s) \
-					if se.type_mask & flags[i] > 0
+				messages << Message.new(observer,Selectors[i],s) \
+					if se.type_mask & Flags[i] > 0
 			}
 		}
 		p messages if messages.length>0

@@ -94,7 +94,7 @@ METHOD3(FormatQuickTime,init) {
 		RAISE("usage: quicktime file <filename>");
 
 	const char *filename = rb_str_ptr(
-		rb_funcall(GridFlow_module,SI(find_file),1,
+		rb_funcall(mGridFlow,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
 	anim = quicktime_open(strdup(filename),1,0);

@@ -162,9 +162,9 @@ class FObject
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		qlass = name_lookup sym
+		GridFlow.post "%s",o.inspect if GridFlow.verbose
 		r = qlass.new(*m)
 		r.args = o
-		GridFlow.post "%s",o.inspect if GridFlow.verbose
 		r
 	end
 end
@@ -253,7 +253,7 @@ class GridPrint < GridFlow::GridObject
 	def _0_rgrid_flow data; @data << data end
 	def _0_rgrid_end
 		make_columns @data
-		GridFlow.post("#{name}dim(#{@dim.join','}): " + case @dim.length
+		GridFlow.post("#{name}Dim[#{@dim.join','}]: " + case @dim.length
 		when 0,1; dump @data
 		when 2;   ""
 		else      "(not printed)"
@@ -280,6 +280,9 @@ class GridGlobal
 		GridFlow.fobjects_set.each {|o,*| o.profiler_cumul = 0 }
 	end
 	def _0_profiler_dump
+		GridFlow.post "sorry, the profiler is broken. please someone fix it."
+		return
+
 		ol = []
 		total=0
 		GridFlow.post "-"*32
@@ -316,6 +319,9 @@ def self.routine
 		else raise "problem"
 		end
 	}
+	# mainloop is not used as much as it could.
+	# it should eventually play a more central role,
+	# but for now I rely on GridFlow.routine
 	$mainloop.timers.after(0.025) { routine }
 #	if not @nextgc or Time.new > @nextgc then
 #		GC.start
