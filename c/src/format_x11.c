@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/time.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -64,6 +65,7 @@ struct FormatX11 {
 	XImage *ximage;      /* X11 image descriptor */
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
+	struct timeval tv;   /* time of the last grid_end */
 };
 
 /* default connection (not used for now) */
@@ -371,7 +373,14 @@ GRID_END(FormatX11,0) {
 		int sy = Dim_get(in->dim,0);
 		FormatX11_show_section($,0,0,sx,sy);
 	}
-	whine_time("FormatX11:0:end");
+/*	whine_time("FormatX11:0:end"); */
+	{
+		struct timeval t;
+		gettimeofday(&t,0);
+		whine("x11:0:end: %d.%06d (diff %8d usec)\n",t.tv_sec,t.tv_usec,
+			(t.tv_sec-$->tv.tv_sec)*1000000 + (t.tv_usec-$->tv.tv_usec));
+		memcpy(&$->tv,&t,sizeof(struct timeval));
+	}
 }
 
 void FormatX11_close (FormatX11 *$) {
@@ -420,6 +429,8 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 	$->ximage  = 0;
 	$->autodraw = 1;
 	$->dim = 0;
+
+	gettimeofday(&$->tv,0);
 
 	switch(mode) {
 	case 2: break;
