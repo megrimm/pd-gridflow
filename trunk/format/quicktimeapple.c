@@ -340,7 +340,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 \classinfo {
 	IEVAL(rself,
 \ruby
-    install '#in:quicktimecamera',1,1
+    install '#io:quicktimecamera',1,1
     @comment="Apple Quicktime (CAMERA MODULE)"
     @flags=4
 \end ruby
@@ -485,7 +485,7 @@ err:
 	EnterMovies();
 IEVAL(rself,
 \ruby
-  install '#in:quicktime',1,1
+  install '#io:quicktime',1,1
   @comment="Apple Quicktime (using Apple's)"
   @flags=4
   suffixes_are'mov'
