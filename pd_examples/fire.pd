@@ -1,8 +1,6 @@
 #N canvas 108 61 545 466 10;
 #X obj 395 182 loadbang;
 #X text 232 334 palette generator;
-#X text 47 23 step 2;
-#X msg 447 206 75;
 #X obj 106 376 fps detailed;
 #X obj 94 45 for 0 100 1;
 #N canvas 645 360 400 289 fire 0;
@@ -65,24 +63,15 @@
 #X msg 63 177 \$1 \$2 # 0;
 #X obj 74 264 @outer ignore ( 0 );
 #X obj 253 351 @finished;
-#X msg 421 206 200;
-#X text 229 27 step 1;
 #X obj 26 22 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
 #X obj 94 22 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 207 26 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 421 227 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -225271
--24198 -1 3400 1;
 #X obj 94 65 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 321 351 fork;
-#X msg 395 206 600;
-#X obj 401 227 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -261689
--258699 -1 10200 1;
-#X obj 441 227 vsl 20 137 0 800 0 0 empty empty empty -2 -6 0 8 -228992
--62784 -1 1275 1;
 #X text 265 49 height width;
 #X msg 207 49 72 256;
 #X text 117 65 compose;
@@ -148,46 +137,42 @@
 #X text 81 283 (height \, width \, 1) grid = grey image;
 #X text 52 160 make blank image;
 #X text 33 210 feedback loop;
-#X obj 401 369 @pack 3;
 #X text 81 247 (height \, width) grid = matrix;
 #X obj 207 110 demux 2;
-#X obj 261 111 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+#X obj 261 111 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
 #X text 219 92 redo step 1 if you change the generator;
-#X connect 0 0 23 0;
-#X connect 0 0 15 0;
-#X connect 0 0 3 0;
-#X connect 3 0 25 0;
+#X obj 350 224 @color 0 800 1;
+#X msg 396 202 600 200 75;
+#X obj 227 25 loadbang;
+#X connect 0 0 34 0;
+#X connect 2 0 9 0;
+#X connect 3 0 16 0;
 #X connect 4 0 11 0;
-#X connect 5 0 21 0;
-#X connect 6 0 13 0;
-#X connect 6 0 9 1;
-#X connect 7 0 10 0;
-#X connect 8 0 9 0;
-#X connect 9 0 6 0;
-#X connect 10 0 31 1;
-#X connect 12 0 9 1;
-#X connect 13 0 31 0;
-#X connect 14 0 7 0;
-#X connect 15 0 20 0;
-#X connect 17 0 8 0;
-#X connect 18 0 5 0;
-#X connect 19 0 27 0;
-#X connect 20 0 37 1;
-#X connect 21 0 9 0;
-#X connect 22 0 14 0;
-#X connect 22 1 10 1;
-#X connect 23 0 24 0;
-#X connect 24 0 37 0;
-#X connect 25 0 37 2;
-#X connect 27 0 12 0;
-#X connect 27 0 6 2;
-#X connect 27 0 39 0;
-#X connect 29 0 4 0;
-#X connect 31 0 29 0;
-#X connect 32 0 6 1;
-#X connect 33 0 6 1;
-#X connect 37 0 22 0;
-#X connect 39 0 33 0;
-#X connect 39 1 32 0;
-#X connect 40 0 39 1;
+#X connect 4 0 7 1;
+#X connect 5 0 8 0;
+#X connect 6 0 7 0;
+#X connect 7 0 4 0;
+#X connect 8 0 23 1;
+#X connect 10 0 7 1;
+#X connect 11 0 23 0;
+#X connect 12 0 5 0;
+#X connect 13 0 6 0;
+#X connect 14 0 3 0;
+#X connect 15 0 19 0;
+#X connect 16 0 7 0;
+#X connect 17 0 12 0;
+#X connect 17 1 8 1;
+#X connect 19 0 10 0;
+#X connect 19 0 4 2;
+#X connect 19 0 30 0;
+#X connect 21 0 2 0;
+#X connect 23 0 21 0;
+#X connect 24 0 4 1;
+#X connect 25 0 4 1;
+#X connect 30 0 25 0;
+#X connect 30 1 24 0;
+#X connect 31 0 30 1;
+#X connect 33 0 17 0;
+#X connect 34 0 33 0;
+#X connect 35 0 19 0;
