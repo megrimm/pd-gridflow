@@ -31,10 +31,10 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X msg 160 206 frequency \$1;
 #X obj 270 206 r \$0-frequency;
 #X obj 318 344 r \$0-device;
-#X obj 153 346 @export_list;
+#X obj 153 346 #export_list;
 #X msg 153 295 list \$1;
 #X msg 154 365 size \$1 \$2;
-#X obj 153 314 @store ( 4 2 # 120 160 240 320 480 640 120 180 240 360
+#X obj 153 314 #store ( 4 2 # 120 160 240 320 480 640 120 180 240 360
 480 720 );
 #X obj 12 98 rubysprintf %d-%s;
 #X obj 11 117 pack s f;
@@ -78,7 +78,7 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X connect 32 0 31 0;
 #X restore 49 115 pd camera;
 #X msg 317 236 colorspace YUV420P;
-#X obj 66 177 @yuv_to_rgb;
+#X obj 66 177 #yuv_to_rgb;
 #X obj 299 51 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour 8
 8 0 8 -260818 -1 -1 12700 1;
 #X obj 133 21 vradio 15 1 0 3 \$0-size \$0-size empty 0 -6 0 8 -241291
@@ -103,7 +103,7 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X msg 317 196 transfer read;
 #X msg 317 216 colorspace RGB24;
 #X text 316 140 Special options:;
-#X obj 22 115 @in;
+#X obj 22 115 #in;
 #X obj 22 245 outlet image;
 #X obj 21 33 hradio 18 1 0 4 \$0-device \$0-device _0__1__2__3_ 0 -4
 0 8 -241291 -258699 -1 0;
@@ -113,8 +113,8 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X text 161 221 YUV->RGB;
 #X text 161 205 no conversion;
 #X obj 23 96 inlet;
-#X obj 66 198 @ min 255;
-#X obj 66 217 @ max 0;
+#X obj 66 198 # min 255;
+#X obj 66 217 # max 0;
 #X msg 317 176 transfer mmap 4;
 #X obj 132 117 hradio 18 1 0 4 \$0-tuner \$0-tuner _0__1__2__3_ 0 14
 0 8 -241291 -258699 -1 0;

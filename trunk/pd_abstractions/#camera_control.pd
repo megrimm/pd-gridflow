@@ -72,12 +72,12 @@ brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X msg 83 196 colorspace YUV420P;
 #X text 218 196 <-- click here if your webcam uses this colorspace
 ;
-#X obj 103 222 @yuv_to_rgb;
-#X text 185 222 <-- add this after [@in] to translate the colorspaces
+#X obj 103 222 #yuv_to_rgb;
+#X text 185 222 <-- add this after [#in] to translate the colorspaces
 ;
 #X obj 413 83 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour 8
 8 0 8 -260818 -1 -1 0 1;
-#X text 98 266 plug this to @in;
+#X text 98 266 plug this to #in;
 #X obj 241 53 vradio 15 1 0 3 \$0-size \$0-size empty 0 -6 0 8 -241291
 -258699 -1 0;
 #X text 259 53 120 \, 160;

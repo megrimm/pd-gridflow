@@ -8,8 +8,8 @@
 #X obj 75 13 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -261689
 -258699 -1 0 1;
 #X floatatom 3 14 5 0 0 0 - - -;
-#X obj 3 76 @pack 3;
-#X obj 209 36 @export_list;
+#X obj 3 76 #pack 3;
+#X obj 209 36 #export_list;
 #X obj 210 55 unpack 0 0 0;
 #X obj 208 17 inlet rgb_color;
 #X obj 56 75 outlet rgb_color;
@@ -20,15 +20,15 @@
 0;
 #X obj 125 192 s \$0-cnv;
 #X msg 125 172 color \$1;
-#X obj 4 154 @export;
-#X obj 3 133 @ ^ -1;
-#X obj 3 114 @fold |;
-#X obj 3 95 @ << ( 16 8 0 );
+#X obj 4 154 #export;
+#X obj 3 133 # ^ -1;
+#X obj 3 114 #fold |;
+#X obj 3 95 # << ( 16 8 0 );
 #X obj 194 75 loadbang;
 #X msg 194 151 range \$1 \$2;
-#X obj 194 132 @export_list;
+#X obj 194 132 #export_list;
 #X obj 194 94 listmake \$1 \$2;
-#X obj 194 113 @ || ( 0 255 );
+#X obj 194 113 # || ( 0 255 );
 #X obj 59 134 loadbang;
 #X obj 88 154 - \$3;
 #X msg 59 154 1;

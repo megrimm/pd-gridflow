@@ -1,13 +1,13 @@
 #N canvas 0 0 450 300 10;
 #X obj 18 13 inlet;
 #X obj 168 163 inlet;
-#X obj 18 160 @store;
-#X obj 113 90 @dim;
+#X obj 18 160 #store;
+#X obj 113 90 #dim;
 #X obj 18 33 t a a;
-#X obj 18 110 @finished;
-#X obj 18 130 @for ( 0 0 ) ( 0 0 ) ( 1 1 );
+#X obj 18 110 #finished;
+#X obj 18 130 #for ( 0 0 ) ( 0 0 ) ( 1 1 );
 #X obj 18 191 outlet;
-#X obj 113 110 @inner * + 0 ( 3 2 # 1 0 0 );
+#X obj 113 110 #inner ( 3 2 # 1 0 0 );
 #X obj 68 191 outlet;
 #X connect 0 0 4 0;
 #X connect 1 0 2 0;
