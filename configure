@@ -74,6 +74,7 @@ FILES = [
     [:ruby, "main.rb"],
     [:ruby, "flow_objects.rb"],
     [:ruby, "test.rb"],
+    [:ruby, "source_filter.rb"],
     [:ruby, "MainLoop.rb"],
   ],
   [:directory, "format/",
@@ -98,7 +99,11 @@ $conf={
 	:FEATURES => {},
 	:FORMATS => [],
 	:OPTIONS => [],
-	:DEFINES => {:JMAX_ARCH => "i686-linux", :RUBY_PREFIX => CONFIG['sitedir']},
+	:DEFINES => {
+		:JMAX_ARCH => "i686-linux",
+		:RUBY_PREFIX => CONFIG['sitedir'],
+		:PREFIX => "/usr/local",
+	},
 	:OBJS => [],
 }
 
@@ -490,6 +495,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
+	log << "[--prefix directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -772,7 +778,7 @@ create_makefile("gridflow")
 mf = File.readlines("Makefile").join""
 #p mf.length
 mf.gsub!(/\t(.*)-c \$<$/) {
-	"\truby base/source_filter.rb < $< > $<.fcs\n" +
+	"\truby base/source_filter.rb $< $<.fcs\n" +
 	"\t#{$1} -c $<.fcs -o $@"
 }
 mf.gsub! /\*\.o/, "*.o */*.o"
@@ -781,7 +787,8 @@ mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++\n"
-mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf base/source_filter.rb"
+mf.sub! /^.c.o:/,
+"%.o: %.c base/grid.h config.make Makefile Makefile.gf"#base/source_filter.rb"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
