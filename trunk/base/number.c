@@ -31,17 +31,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
-typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
-
-struct BitPacking {
-	Packer pack;
-	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
-	int bytes;
-	int size;
-	uint32 mask[4];
-};
-
 // returns the highest bit set in a word, or 0 if none.
 int high_bit(uint32 n) {
 	int i=0;
@@ -83,7 +72,7 @@ static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	int i;
 	int hb[4];
 	int mask[4];
-	int sameorder = $->endian==2 || $->endian==is_le();
+	int sameorder = $->endian==2 || $->endian==::is_le();
 
 	for (i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
 	memcpy(mask,$->mask,3*sizeof(int));
@@ -100,7 +89,7 @@ static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 			NTIMES(t=CONVERT1; *((long *)out)=t; out+=4; in+=3;)
 			break;
 		}
-	} else if (BitPacking_is_le($)) {
+	} else if ($->is_le()) {
 		if ($->size==3)
 			while (n--) {int bytes = $->bytes; CONVERT1; WRITE_LE; in+=3;}
 		else
@@ -129,85 +118,94 @@ static uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return out;
 }
 
+uint32 bitpacking_masks[][4] = {
+	{0x0000f800,0x000007e0,0x0000001f,0},
+	{0x00ff0000,0x0000ff00,0x000000ff,0},
+};
+
 BitPacking builtin_bitpacks[] = {
-	{ pack_5652, 2, 2, 3, {0x0000f800,0x000007e0,0x0000001f,0} },
-	{ pack_8883, 1, 3, 3, {0x00ff0000,0x0000ff00,0x000000ff,0} },
+	BitPacking(2, 2, 3, bitpacking_masks[0], pack_5652),
+	BitPacking(1, 3, 3, bitpacking_masks[1], pack_8883),
 };
 
 /* **************************************************************** */
 
-static bool BitPacking_eq(BitPacking *$, BitPacking *o) {
+bool BitPacking::eq(BitPacking *o) {
 	int i;
-	if (!($->bytes == o->bytes)) return false;
-	if (!($->size == o->size)) return false;
-	for (i=0; i<$->size; i++) {
-		if (!($->mask[0] == o->mask[0])) return false;
+	if (!(bytes == o->bytes)) return false;
+	if (!(size == o->size)) return false;
+	for (i=0; i<size; i++) {
+		if (!(mask[0] == o->mask[0])) return false;
 	}
-	if ($->endian==o->endian) return true;
+	if (endian==o->endian) return true;
 	/* same==little on a little-endian; same==big on a big-endian */
-	return ($->endian ^ o->endian ^ is_le()) == 2;
+	return (endian ^ o->endian ^ ::is_le()) == 2;
 }
 
-BitPacking *BitPacking_new(int endian, int bytes, int size, uint32 *mask) {
+#include<signal.h>
+BitPacking::BitPacking(int endian, int bytes, int size, uint32 *mask,
+Packer packer=0) {
 	int i;
-	BitPacking *$ = NEW(BitPacking,1);
-	$->endian = endian;
-	$->bytes = bytes;
-	$->size = size;
-	for (i=0; i<size; i++) $->mask[i] = mask[i];
-	$->pack = default_pack;
+	this->endian = endian;
+	this->bytes = bytes;
+	this->size = size;
+	for (i=0; i<size; i++) this->mask[i] = mask[i];
+	if (packer) {
+		this->packer = packer;
+		return;
+	}
+	this->packer = default_pack;
 
 	for (i=0; i<(int)(sizeof(builtin_bitpacks)/sizeof(BitPacking)); i++) {
 		BitPacking *bp = builtin_bitpacks+i;
-		if (BitPacking_eq($,bp)) {
-			$->pack = bp->pack;
-			whine("Bitpacking: will be using special packer (#%d)",i);
+		if (this->eq(bp)) {
+			this->packer = bp->packer;
+			::whine("Bitpacking: will be using special packer (#%d)",i);
 		}
 	}
-	return $;
 }
 
-void BitPacking_whine(BitPacking *$) {
+void BitPacking::whine() {
 	int i;
-	whine("BitPacking:");
-	whine("    bytes: %d", $->bytes);
-	for (i=0;i<$->size;i++) {
+	::whine("BitPacking:");
+	::whine("    bytes: %d", bytes);
+	for (i=0;i<size;i++) {
 		static const char *colour_name[] = {"red","green","blue","alpha"};
-		whine("    mask[%5s]: %08x (bits from %2d up to %2d)",
+		::whine("    mask[%5s]: %08x (bits from %2d up to %2d)",
 			colour_name[i],
-			$->mask[i],
-			low_bit($->mask[i]),
-			high_bit($->mask[i]));
+			mask[i],
+			low_bit(mask[i]),
+			high_bit(mask[i]));
 	}
 }
 
-int  BitPacking_bytes(BitPacking *$) { return $->bytes; }
-bool BitPacking_is_le(BitPacking *$) {
-	return $->endian==1 || ($->endian ^ is_le())==3; }
-
-uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
-	return $->pack($,n,in,out);
+bool BitPacking::is_le() {
+	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
+uint8 *BitPacking::pack(int n, const Number *data, uint8 *target) {
+	return packer(this,n,data,target);
+}
+
+Number *BitPacking::unpack(int n, const uint8 *in, Number *out) {
 	int hb[4];
 	int i;
-	for (i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
+	for (i=0; i<size; i++) hb[i] = high_bit(mask[i]);
 
 #define LOOP_UNPACK(_reader_) \
 	while (n--) { \
 		int bytes=0, temp=0; \
 		_reader_; \
-		for (i=0; i<$->size; i++) \
-			*out++ = ((temp & $->mask[i]) << 7) >> hb[i]; \
+		for (i=0; i<size; i++) \
+			*out++ = ((temp & mask[i]) << 7) >> hb[i]; \
 	}
 
-	if (BitPacking_is_le($)) {
+	if (is_le()) {
 		/* smallest byte first */
-		LOOP_UNPACK(while($->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
+		LOOP_UNPACK(while(this->bytes>bytes) { temp |= *in++ << (bytes++)*8; })
 	} else {
 		/* biggest byte first */
-		LOOP_UNPACK(bytes=$->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
+		LOOP_UNPACK(bytes=this->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
 	}
 	return out;
 }
@@ -249,10 +247,10 @@ METHOD2(BitPacking,pack2) {
 {
 	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
 	Number *in = (Number *)rb_str_ptr(argv[0]);
-	int bytes = n*BitPacking_bytes($);
+	int bytes = n*$->bytes;
 	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
-	BitPacking_pack($,n,in,(uint8 *)rb_str_ptr(out));
+	$->pack(n,in,(uint8 *)rb_str_ptr(out));
 	return out;
 }}
 
@@ -260,13 +258,13 @@ METHOD2(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 {
-	int n = rb_str_len(argv[0]) / BitPacking_bytes($);
+	int n = rb_str_len(argv[0]) / $->bytes;
 	uint8 *in = (uint8 *)rb_str_ptr(argv[0]);
 	int bytes = n*$->size*sizeof(Number);
 	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*$->size);
-	BitPacking_unpack($,n,in,(Number *)rb_str_ptr(out));
+	$->unpack(n,in,(Number *)rb_str_ptr(out));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;
 }}
@@ -292,7 +290,7 @@ static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 		if (size<1) RAISE("not enough masks");
 		if (size>4) RAISE("too many masks (%d)",size);
 		for (i=0; i<size; i++) masks2[i] = INT(masks[i]);
-		c_peer = BitPacking_new(endian,bytes,size,masks2);
+		c_peer = new BitPacking(endian,bytes,size,masks2);
 	}
 	
 	$ = Data_Wrap_Struct(qlass, BitPacking_mark, BitPacking_sweep, c_peer);
