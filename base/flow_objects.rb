@@ -525,7 +525,6 @@ class JMaxUDPSend < FObject
 		@socket = UDPSocket.new
 		@host,@port = host.to_s,port.to_i
 	end
-
 	def encode(x)
 		case x
 		when Integer; "\x03" + [x].pack("N")
@@ -533,18 +532,13 @@ class JMaxUDPSend < FObject
 		when Symbol, String; "\x01" + x.to_s + "\x02"
 		end
 	end
-
 	def method_missing(sel,*args)
 		sel=sel.to_s.sub(/^_\d_/, "")
 		@socket.send encode(sel) +
 			args.map{|arg| encode(arg) }.join("") + "\x0b",
 			0, @host, @port
 	end
-
-	def delete
-		@socket.close
-	end
-
+	def delete; @socket.close end
 	install "jmax_udpsend", 1, 0
 end
 
@@ -555,7 +549,6 @@ class JMax4UDPSend < FObject
 		@host,@port = host.to_s,port.to_i
 		@symbols = {}
 	end
-
 	def encode(x)
 		case x
 		when Integer; "\x01" + [x].pack("N")
@@ -571,19 +564,32 @@ class JMax4UDPSend < FObject
 			end
 		end
 	end
-
 	def method_missing(sel,*args)
 		sel=sel.to_s.sub(/^_\d_/, "")
 		sel=(case sel; when "int","float"; ""; else encode(sel) end)
 		args=args.map{|arg| encode(arg) }.join("")
 		@socket.send(sel+args+"\x0f", 0, @host, @port)
 	end
-
-	def delete
-		@socket.close
-	end
-
+	def delete; @socket.close end
 	install "jmax4_udpsend", 1, 0
+end
+
+class PDNetSend < FObject
+	def initialize(host,port)
+		super
+		@socket = UDPSocket.new
+		@host,@port = host.to_s,port.to_i
+	end
+	def encode(x) x.to_s end
+	def method_missing(sel,*args)
+		sel=sel.to_s.sub(/^_\d_/, "")
+		sel=(case sel; when "int","float"; ""; else encode(sel)+" " end)
+		@socket.send encode(sel) +
+			args.map{|arg| encode(arg) }.join(" ") + ";\n",
+			0, @host, @port
+	end
+	def delete; @socket.close end
+	install "pd_netsend", 1, 0
 end
 
 class JMaxUDPReceive < FObject
@@ -591,11 +597,9 @@ class JMaxUDPReceive < FObject
 		super
 		@socket = UDPSocket.new
 		@port = port.to_i
-		@socket.bind "localhost", @port
-#		@socket.nonblock = true
+		@socket.bind nil, @port
 		$tasks[self] = proc {tick}
 	end
-
 	def decode s
 		n = s.length
 		i=0
@@ -609,23 +613,15 @@ class JMaxUDPReceive < FObject
 		end while i<n
 		m
 	end
-
 	def tick
 		ready_to_read = IO.select [@socket],[],[],0
 		return if not ready_to_read
-#		GridFlow.post "recvfrom: before"
 		data,sender = @socket.recvfrom 1024
-#		GridFlow.post "recvfrom: after"
 		return if not data
-#		GridFlow.post "#{data.inspect}"
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
 	end
-
-	def delete
-		@socket.close
-	end
-
+	def delete; @socket.close end
 	install "jmax_udpreceive", 0, 2
 end
 
@@ -634,19 +630,16 @@ class JMax4UDPReceive < FObject
 		super
 		@socket = UDPSocket.new
 		@port = port.to_i
-		@socket.bind "localhost", @port
-#		@socket.nonblock = true
+		@socket.bind nil, @port
 		$tasks[self] = proc {tick}
 		@symbols = {}
 	end
-
 	def decode s
 		n = s.length
 		i=0
 		m = []
 		case s[i]
 		when 1; i+=5; m << s[i-4,4].unpack("N")[0]
-		#when 2; i+=5; m << s[i-4,4].unpack("G")[0]
 		when 2; i+=9; m << s[i-8,8].unpack("G")[0]
 		when 3
 			i+=5; sid = s[i-4,4].unpack("N")[0]
@@ -658,29 +651,50 @@ class JMax4UDPReceive < FObject
 			m << @symbols[sid]
 			i=i2+1
 		when 15; break
-		#else raise "unknown code in udp packet"
 		else GridFlow.post "unknown code %d in udp packet %s", s[i], s.inspect; return m
 		end while i<n
 		m
 	end
-
 	def tick
 		ready_to_read = IO.select [@socket],[],[],0
 		return if not ready_to_read
-#		GridFlow.post "recvfrom: before"
 		data,sender = @socket.recvfrom 1024
-#		GridFlow.post "recvfrom: after"
 		return if not data
-#		GridFlow.post "#{data.inspect}"
 		send_out 1, sender.map {|x| x=x.intern if String===x; x }
 		send_out 0, *(decode data)
 	end
-
-	def delete
-		@socket.close
-	end
-
+	def delete; @socket.close end
 	install "jmax4_udpreceive", 0, 2
+end
+
+class PDNetReceive < FObject
+	def initialize(port)
+		super
+		@socket = UDPSocket.new
+		@port = port.to_i
+		@socket.bind nil, @port
+		$tasks[self] = proc {tick}
+	end
+	def decode s
+		s.chomp!("\n")
+		s.chomp!(";")
+		s.split(" ").map {|x|
+			case x
+			when /-?\d/; x.to_f
+			else x.intern
+			end
+		}
+	end
+	def tick
+		ready_to_read = IO.select [@socket],[],[],0
+		return if not ready_to_read
+		data,sender = @socket.recvfrom 1024
+		return if not data
+		send_out 1, sender.map {|x| x=x.intern if String===x; x }
+		send_out 0, *(decode data)
+	end
+	def delete; @socket.close end
+	install "pd_netreceive", 0, 2
 end
 
 class Broken < FObject
@@ -823,7 +837,7 @@ class Peephole < GridFlow::FPatcher
 		@fobjects[3].send_in 0, :open,:x11,:here,:embed,args[0]
 	end
 	def _0_set_geometry(y,x,sy,sx)
-		GridFlow.post "inlet 0: set_geometry %d %d %d %d", y,x,sy,sx
+		# GridFlow.post "inlet 0: set_geometry %d %d %d %d", y,x,sy,sx
 		@sy,@sx = sy,sx
 		@y,@x = y,x
 		set_geometry_for_real_now
