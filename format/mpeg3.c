@@ -54,12 +54,14 @@ struct FormatMPEG3 : Format {
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 
-	GridOutlet out(this,0,new Dim(sy, sx, channels), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(sy, sx, channels),
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out.dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
-		bit_packing->unpack(sx,buf+channels*sx*y,b2);
-		out.send(bs,b2);
+		Pt<uint8> row = buf+channels*sx*y;
+		/* bit_packing->unpack(sx,row,b2); out.send(bs,b2); */
+		out.send(bs,row);
 	}
 	delete[] (uint8 *)buf;
 	return INT2NUM(nframe);
