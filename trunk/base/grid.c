@@ -154,7 +154,7 @@ static Ruby GridInlet_begin$2(GridInlet *$) {
 }
 
 void GridInlet::begin(int argc, Ruby *argv) {
-	GridOutlet *back_out = (GridOutlet *) FIX2PTRAB(argv[0],argv[1]);
+	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
 	sender = back_out->parent;
 	argc-=2, argv+=2;
 
@@ -184,7 +184,7 @@ void GridInlet::flow(int argc, Ruby *argv) {
 	int n = NUM2INT(argv[0]);
 	int mode = NUM2INT(argv[2]);
 	if (n==0) return;
-	Pt<Number> data = Pt<Number>((Number *)FIX2PTR(argv[1]),n);
+	Pt<Number> data = Pt<Number>(FIX2PTR(Number,argv[1]),n);
 	if (!is_busy_verbose("flow")) return;
 	if (mode==4) {
 		int d = dex + bufn;
@@ -577,7 +577,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	Ruby list = rb_class_instance_methods(argc,argv,rself);
 	Ruby v = rb_ivar_get(rself,SI(@grid_class));
 	if (v==Qnil) return list;
-	GridClass *grid_class = (GridClass *)FIX2PTR(v);
+	GridClass *grid_class = FIX2PTR(GridClass,v);
 	for (int i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		char buf[256];
@@ -667,8 +667,11 @@ METHOD3(Format,init) {
 	}
 	return Qnil;
 err:
-	RAISE("Format %s does not support mode '%s'",
-		RSTRING(rb_ivar_get(peer,SI(@symbol_name)))->ptr, rb_sym_name(mode));
+//	rb_p(peer);
+//	IEVAL(peer,"p self.class.instance_variables");
+	RAISE("Format '%s' does not support mode '%s'",
+		RSTRING(rb_ivar_get(rb_obj_class(peer),
+			SI(@symbol_name)))->ptr, rb_sym_name(mode));
 }
 
 METHOD3(Format,option) {

@@ -70,7 +70,7 @@ struct BFObject : t_object {
 			rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
 			rb_str_new2(sym->s_name));
 		if (v==Qnil) RAISE("class not found");
-		return (t_class *) FIX2PTR(v);
+		return FIX2PTR(t_class,v);
 	}
 	static Ruby find_fclass (t_symbol *sym) {
 		Ruby v = rb_hash_aref(
@@ -330,7 +330,7 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 }       
 
 Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
-	GFBridge *$ = gf_bridge2 = (GFBridge *) FIX2PTR(p);
+	GFBridge *$ = gf_bridge2 = FIX2PTR(GFBridge,p);
 	$->class_install = FObject_s_install_2;
 	$->send_out = FObject_send_out_2;
 	$->post = (void (*)(const char *, ...))post;

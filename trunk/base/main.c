@@ -155,7 +155,7 @@ Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby $) {
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby gc2 = rb_ivar_defined(qlass,SI(@grid_class)) ?
 		rb_ivar_get(qlass,SI(@grid_class)) : Qnil;
-	GridClass *gc = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
+	GridClass *gc = (gc2==Qnil ? 0 : FIX2PTR(GridClass,gc2));
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
 	c_peer->foreign_peer = 0;
@@ -234,8 +234,8 @@ DECL_SYM2(list)
 
 typedef void (*Callback)(void*);
 static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
-	void *data2 = FIX2PTR(data);
-	Callback func2 = (Callback)FIX2PTR(func);
+	void *data2 = FIX2PTR(void,data);
+	Callback func2 = (Callback) FIX2PTR(void,func);
 	func2(data2);
 	return Qnil;
 }
