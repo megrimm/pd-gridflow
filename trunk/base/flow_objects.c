@@ -623,13 +623,13 @@ GRID_INLET(GridScan,0) {
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor;
 	STACK_ARRAY(T,buf,n);
-	fprintf(stderr,"an=%d bn=%d yn=%d zn=%d n=%d\n",an,bn,yn,zn,n);
+	//fprintf(stderr,"an=%d bn=%d yn=%d zn=%d n=%d\n",an,bn,yn,zn,n);
 	COPY(buf,data,n);
 	for (int i=0; i<n; i+=factor) {
-		WATCH(n,buf);
+		//WATCH(n,buf);
 		op->scan(zn,yn,(Pt<T>)r,buf+i);
 	}
-	WATCH(n,buf);
+	//WATCH(n,buf);
 	out[0]->send(n,buf);
 } GRID_FINISH {
 } GRID_END

@@ -305,6 +305,26 @@ Ruby rself) {
 	return Qnil;
 }
 
+/* additional bridge-specific functionality */
+Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
+	if (argc==0) RAISE("BLEH");
+	if (argv[0] == SYM(help)) {
+		if (argc!=3) RAISE("bad args");
+		Ruby name = rb_funcall(argv[1],SI(to_s),0);
+		Ruby path = rb_funcall(argv[2],SI(to_s),0);
+		Ruby qlassid =
+			rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+		if (qlassid==Qnil) RAISE("no such class: %s",
+			rb_str_ptr(name));
+		t_class *qlass = FIX2PTR(t_class,qlassid);
+		//fprintf(stderr,"HELP: %s\n", class_getname(qlass));
+		class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
+		return Qnil;
+	} else {
+		RAISE("don't know how to do that");
+	}
+}
+
 static t_clock *gf_alarm;
 
 void gf_timer_handler (t_clock *alarm, void *obj) {
@@ -329,6 +349,7 @@ Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
 	self->send_out = FObject_send_out_2;
 	self->post = (void (*)(const char *, ...))post;
 	self->post_does_ln = true;
+	self->whatever = bridge_whatever;
 	mGridFlow2 = EVAL("GridFlow");
 	cPointer2 = EVAL("GridFlow::Pointer");
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());

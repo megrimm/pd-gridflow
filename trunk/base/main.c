@@ -49,6 +49,10 @@ static void default_post(const char *fmt, ...) {
 	va_end(args);
 }
 
+Ruby bridge_whatever_default (int argc, Ruby *argv, Ruby rself) {
+	RAISE("sorry, not available in this bridge");
+}
+
 GFBridge gf_bridge = {
 	name: 0,
 	send_out: 0,
@@ -56,6 +60,7 @@ GFBridge gf_bridge = {
 	post: default_post,
 	post_does_ln: false,
 	clock_tick: 10.0,
+	whatever: bridge_whatever_default,
 };
 
 /* ---------------------------------------------------------------- */
@@ -557,6 +562,8 @@ void Init_gridflow () {
 	if (rb_respond_to(rb_cData,bi)) {
 		rb_funcall(rb_cData,bi,1,PTR2FIX(&gf_bridge));
 	}
+
+	SDEF2("whatever",gf_bridge.whatever,-1);
 
 	Ruby cBitPacking =
 		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
