@@ -1,5 +1,21 @@
 /* $Id$ */
 
+version 0.3.0:
+ * reworked File Format API
+ * grid objects now all accept lists of integers (auto-convert to 1D grid)
+ * many accelerations (incl large speedup on binary operations)
+ * transformed @video_out (X11) into a "File Format" (really) and:
+	* allows multiple displays
+	* auto-resizing window
+	* can set output as wallpaper
+	* can read from the screen (screenshot)
+	* @video_out now a backward-compatibility wrapper
+ * format videodev now uses double buffer mmap
+ * @video_in_file, @video_out_file renamed to @in, @out (with aliases)
+ * new objects:
+	@convolve, @inner, @for
+ * reference manual converted to XML
+
 version 0.2.2 (2001.08.15):
  * @video_out auto-updates on X11 ExposeEvent
  * updated documentation and help
