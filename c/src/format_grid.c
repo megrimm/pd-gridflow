@@ -327,8 +327,6 @@ bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	address.sin_port = htons(fts_get_int(at+1));
 
 	{
-		const char *hostname;
-		int port;
 		struct hostent *h = gethostbyname(fts_symbol_name(fts_get_symbol(at+0)));
 		if (!h) {
 			whine("open_tcp(gethostbyname): %s",strerror(errno));
@@ -351,7 +349,6 @@ err:
 
 bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	struct sockaddr_in address;
-	struct sockaddr address2;
 	$->is_socket = true;
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
@@ -400,7 +397,6 @@ err:
 
 Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
-	const char *filename;
 
 	if (!$) return 0;
 	$->buf = 0;
@@ -434,6 +430,7 @@ err:
 
 /* **************************************************************** */
 
+static GridHandler FormatGrid_handler = GRINLET(FormatGrid,0);
 FormatClass class_FormatGrid = {
 	object_size: sizeof(FormatGrid),
 	symbol_name: "grid",
@@ -443,9 +440,7 @@ FormatClass class_FormatGrid = {
 	open: FormatGrid_open,
 	frames: 0,
 	frame:  (Format_frame_m)FormatGrid_frame,
-	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatGrid,0),
-	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatGrid,0),
-	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatGrid,0),
+	handler: &FormatGrid_handler,
 	option: 0,
 	close:  (Format_close_m)FormatGrid_close,
 };

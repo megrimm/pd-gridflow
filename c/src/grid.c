@@ -282,7 +282,6 @@ void GridOutlet_end(GridOutlet *$) {
 
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
-	int winlet = $->woutlet; /* hack */
 	int n = Dim_count(dim);
 	fts_atom_t a[MAX_DIMENSIONS+1];
 
@@ -307,13 +306,10 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 }
 
 void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
-	int incr;
-
 	assert(GridOutlet_busy($));
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
 		fts_atom_t a[2];
-		int i;
 		fts_set_int(a+0,pn);
 		fts_set_ptr(a+1,(void*)(long)data); /* explicitly removing const */
 		LEAVE_P;
@@ -386,6 +382,18 @@ void GridObject_init(GridObject *$) {
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
 	Dict_put(gf_object_set,$,0);
 	$->profiler_cumul = 0;
+
+	{
+		GridClass *cl = (GridClass *) $->o.head.cl->user_data;
+		for (i=0; i<cl->handlersn; i++) {
+			GridHandler *h = &cl->handlers[i];
+			$->in[h->winlet] = GridInlet_new($,h->winlet,
+				h->begin,h->flow,h->end,h->mode);
+		}
+		for (i=0; i<cl->outlets; i++) {
+			$->out[i] = GridOutlet_new($,i);
+		}
+	}
 }
 
 /* category: input */
@@ -430,6 +438,11 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 
 void GridObject_conf_class2(fts_class_t *class, GridClass *grclass) {
 	int i;
+	fts_class_init(class,
+		grclass->objectsize,
+		grclass->inlets,
+		grclass->outlets,
+		grclass);
 	define_many_methods(class,grclass->methodsn,grclass->methods);
 	for (i=0; i<grclass->handlersn; i++) {
 		GridObject_conf_class(class,grclass->handlers[i].winlet);

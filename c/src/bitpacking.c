@@ -124,9 +124,6 @@ uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
 }
 
 uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
-	const int hb[3] = {23,15,7};
-	const int mask[3] = {0x00ff0000,0x0000ff00,0x000000ff};
-	register uint32 t;
 	while (n>3) {
 		FOURTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 		n-=4;

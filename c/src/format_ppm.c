@@ -139,6 +139,7 @@ err:
 	return 0;
 }
 
+static GridHandler FormatPPM_handler = GRINLET(FormatPPM,0);
 FormatClass class_FormatPPM = {
 	object_size: sizeof(FormatPPM),
 	symbol_name: "ppm",
@@ -146,14 +147,9 @@ FormatClass class_FormatPPM = {
 	flags: FF_R|FF_W,
 
 	open: FormatPPM_open,
-
 	frames: 0,
 	frame:  FormatPPM_frame,
-
-	begin:  GRID_BEGIN_PTR(FormatPPM,0),
-	flow:    GRID_FLOW_PTR(FormatPPM,0),
-	end:      GRID_END_PTR(FormatPPM,0),
-
+	handler: &FormatPPM_handler,
 	option: 0,
 	close:  FormatPPM_close,
 };

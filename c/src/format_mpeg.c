@@ -129,6 +129,7 @@ err:
 	return 0;
 }
 
+static GridHandler FormatMPEG_handler = GRINLET(FormatMPEG,0);
 FormatClass class_FormatMPEG = {
 	object_size: sizeof(FormatMPEG),
 	symbol_name: "mpeg",
@@ -138,9 +139,7 @@ FormatClass class_FormatMPEG = {
 	open: FormatMPEG_open,
 	frames: 0,
 	frame:  FormatMPEG_frame,
-	begin:  GRID_BEGIN_PTR(FormatMPEG,0),
-	flow:    GRID_FLOW_PTR(FormatMPEG,0),
-	end:      GRID_END_PTR(FormatMPEG,0),
+	handler: &FormatMPEG_handler,
 	option: 0,
 	close:  FormatMPEG_close,
 };

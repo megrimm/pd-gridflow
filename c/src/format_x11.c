@@ -120,7 +120,6 @@ static Symbol button_sym(int i) {
 void FormatX11_alarm(FormatX11 *$) {
 	fts_atom_t at[4];
 	XEvent e;
-	int xpending;
 
 	for (;;) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
@@ -586,6 +585,7 @@ err:;
 	return 0;
 }
 
+static GridHandler FormatX11_handler = GRINLET(FormatX11,0);
 FormatClass class_FormatX11 = {
 	object_size: sizeof(FormatX11),
 	symbol_name: "x11",
@@ -595,9 +595,7 @@ FormatClass class_FormatX11 = {
 	open: FormatX11_open,
 	frames: 0,
 	frame:  (Format_frame_m)FormatX11_frame,
-	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatX11,0),
-	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatX11,0),
-	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatX11,0),
+	handler: &FormatX11_handler,
 	option: (Format_option_m)FormatX11_option,
 	close:  (Format_close_m)FormatX11_close,
 };

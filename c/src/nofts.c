@@ -43,10 +43,9 @@ typedef struct Dest {
 
 typedef struct MethodDecl2 {
 	int winlet;
-	const char *selector;
-	void (*method)(METHOD_ARGS(fts_object_t));
+	Symbol selector;
+	FTSMethod method;
 	const char *signature;
-	Symbol selector2;
 } MethodDecl2;
 
 static symbol_entry_t *symbols;
@@ -110,14 +109,14 @@ void sprintf_atoms(char *buf, int ac, fts_atom_t *at) {
 /* Class */
 
 void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int
-n_outlets, int stuff) {
+n_outlets, void *user_data) {
 	int i;
 	class->object_size = object_size;
 	class->n_inlets = n_inlets;
 	class->n_outlets = n_outlets;
-	class->stuff = stuff;
 	class->method_table = NEW(Dict *,n_inlets+1);
 	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0);
+	class->user_data = user_data;
 }
 
 void fts_class_install(Symbol sym,
@@ -132,7 +131,7 @@ Symbol fts_get_class_name(fts_class_t *class) { return class->name; }
 
 void fts_method_define_optargs(fts_class_t *$, int winlet, Symbol
 selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
-	MethodDecl *md = NEW(MethodDecl,1);
+	MethodDecl2 *md = NEW(MethodDecl2,1);
 	md->winlet = winlet;
 	md->selector = selector;
 	md->method = method;

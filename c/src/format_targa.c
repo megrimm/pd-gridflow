@@ -44,8 +44,7 @@ typedef struct Format FormatTarga;
 */
 
 Dim *FormatTarga_read_header (Format *$) {
-	char in;
-	int dims[3],i;
+	int i;
 	short w,h;
 	char *comment;
 	int comment_length, depth;
@@ -155,6 +154,7 @@ err:
 	return 0;
 }
 
+static GridHandler FormatTarga_handler = GRINLET(FormatTarga,0);
 FormatClass class_FormatTarga = {
 	object_size: sizeof(FormatTarga),
 	symbol_name: "targa",
@@ -162,14 +162,9 @@ FormatClass class_FormatTarga = {
 	flags: FF_R,
 
 	open: FormatTarga_open,
-
 	frames: 0,
 	frame:  FormatTarga_frame,
-
-	begin:  GRID_BEGIN_PTR(FormatTarga,0),
-	flow:   GRID_FLOW_PTR(FormatTarga,0),
-	end:    GRID_END_PTR(FormatTarga,0),
-
+	handler: &FormatTarga_handler,
 	option: 0,
 	close:  FormatTarga_close,
 };
