@@ -34,13 +34,6 @@
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",parent->info(),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
 #define TRACE assert(this);
 
-// maximum number of grid cords per outlet per cord type
-#define MAX_CORDS 8
-
-// number of (minimum,maximum) numbers to send at once
-#define MIN_PACKET_SIZE (1<<9)
-#define MAX_PACKET_SIZE (1<<11)
-
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
@@ -50,7 +43,7 @@
 		number_type_table[this->nt].name);
 
 #define CHECK_BUSY(s) \
-	if (!is_busy()) RAISE("%s: " #s " not busy",parent->info());
+	if (!dim) RAISE("%s: " #s " not busy",parent->info());
 
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
@@ -167,7 +160,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	nt = (NumberTypeE) INT(argv[2]);
 	argc-=3, argv+=3;
 	PROF(parent) {
-	if (is_busy()) {
+	if (dim) {
 		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
 			parent->info(), sender->info(), back_out->parent->info());
 		abort();
@@ -262,7 +255,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 
 void GridInlet::end() {TRACE;
 	assert(this);
-	if (!is_busy()) RAISE("%s: inlet not busy",parent->info());
+	if (!dim) RAISE("%s: inlet not busy",parent->info());
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), sender->info(), parent->info());
@@ -293,7 +286,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
 		} else {
-			int m = MAX_PACKET_SIZE/factor();
+			int m = GridOutlet::MAX_PACKET_SIZE/factor();
 			if (!m) m++;
 			m *= factor();
 			while (n) {
@@ -320,41 +313,12 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 #undef FOO
 }
 
-void GridInlet::from_ruby_list(int argc, Ruby *argv, NumberTypeE nt) {TRACE;
-	Grid t(argc,argv,nt); from_grid(&t);
-}
-
-void GridInlet::from_ruby(int argc, Ruby *argv) {TRACE;
-	Grid t(argv[0]); from_grid(&t);
-}
-
 /* **************** GridOutlet ************************************ */
 
-GridOutlet::GridOutlet(GridObject *parent, int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
-	this->parent = parent;
-	this->woutlet = woutlet;
-	this->nt = int32_e;
-	this->dim = 0;
-	dex = 0;
-	buf=new Grid(new Dim(MAX_PACKET_SIZE), nt);
-	bufi = 0;
-	frozen = 0;
-	inlets = Pt<GridInlet *>();
-	ninlets = 0;
-	if (dim) begin(dim,nt);
-}
-
-GridOutlet::~GridOutlet() {TRACE; if (inlets) delete[] inlets.p;}
-
-void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {TRACE;
+void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	int n = dim->count();
 	this->nt = nt;
 	this->dim = dim;
-	dex = 0;
-	frozen = 0;
-	ninlets = 0;
-	if (inlets) delete[] inlets.p;
-	inlets = ARRAY_NEW(GridInlet *,MAX_CORDS);
 	Ruby a[n+5];
 	a[0] = INT2NUM(woutlet);
 	a[1] = bsym._grid;
@@ -363,10 +327,10 @@ void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {TRACE;
 	a[4] = INT2NUM(nt);
 	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
-	frozen = 1;
+	frozen=true;
 	if (!dim->prod()) {end(); return;}
 	int32 lcm_factor = 1;
-	for (int i=0; i<ninlets; i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
+	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	if (nt != buf->nt) {
 		// biggest packet size divisible by lcm_factor
 		int32 v = (MAX_PACKET_SIZE/lcm_factor)*lcm_factor;
@@ -382,7 +346,7 @@ void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
 		int pn = min(n,MAX_PACKET_SIZE);
-		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
+		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->flow(4,pn,data);
 		data+=pn, n-=pn;
 	}
 }
@@ -441,8 +405,8 @@ void GridOutlet::give(int n, Pt<T> data) {TRACE;
 		delete[] (T *)data;
 		return;
 	}
-	if (ninlets==1 && inlets[0]->mode == 6) {
-		/* this is the copyless buffer passing */
+	if (inlets.size()==1 && inlets[0]->mode == 6) {
+		// this is the copyless buffer passing
 		flush();
 		inlets[0]->flow(6,n,data);
 		dex += n;
@@ -459,15 +423,8 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 	CHECK_BUSY(outlet); assert(!frozen);
 	int mode = in->mode;
 	assert(mode==6 || mode==4 || mode==0);
-	assert(ninlets<MAX_CORDS);
-	inlets[ninlets++]=in;
+	inlets.push_back(in);
 }
-
-/* **************** GridObject ************************************ */
-/* abstract class for a FObject that has Grid-aware inlets/outlets */
-
-GridObject::GridObject() {}
-GridObject::~GridObject() {check_magic();}
 
 \class GridObject < FObject
 
@@ -476,9 +433,9 @@ GridObject::~GridObject() {check_magic();}
 template <class T>
 void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	GridObject *self = in->parent;
-	int i;
-	for (i=0; i<MAX_INLETS; i++) if (in==self->in[i].p) break;
-	if (i==MAX_INLETS) RAISE("inlet not found?");
+	uint32 i;
+	for (i=0; i<self->in.size(); i++) if (in==self->in[i].p) break;
+	if (i==self->in.size()) RAISE("inlet not found?");
 	if (n==-1) {
 		rb_funcall(self->rself,SI(send_in),2,INT2NUM(i),SYM(rgrid_begin));
 	} else if (n>=0) {
@@ -490,18 +447,18 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 }
 
 \def Symbol inlet_nt (int inln) {
-	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->is_busy()) return Qnil;
+	if (!inl->dim) return Qnil;
 	return number_type_table[inl->nt].sym;
 }
 
 \def Array inlet_dim (int inln) {
-	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->is_busy()) return Qnil;
+	if (!inl->dim) return Qnil;
 	int n=inl->dim->count();
 	Ruby a = rb_ary_new2(n);
 	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(inl->dim->v[i]));
@@ -509,10 +466,10 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 }
 
 \def void inlet_set_factor (int inln, int factor) {
-	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
+	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->is_busy()) RAISE("inlet #%d not active",inln);
+	if (!inl->dim) RAISE("inlet #%d not active",inln);
 	inl->set_factor(factor);
 }
 
@@ -522,8 +479,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	Ruby *p = rb_ary_ptr(buf);
 	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
-	if (!out) out = new GridOutlet(this,outlet); // valgrind says leak?
-	out->begin(new Dim(n,v),nt);
+	out = new GridOutlet(this,outlet,new Dim(n,v),nt); // valgrind says leak?
 }
 
 template <class T>
@@ -540,13 +496,12 @@ void send_out_grid_flow_2(P<GridOutlet> go, Ruby s, T bogus) {
 #undef FOO
 }
 
-static void *GridObject_allocate ();
-
 // install_rgrid(Integer inlet, Boolean multi_type? = true)
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");
+	IEVAL(rself,"@handlers||=[]");
+	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
 	GridHandler *gh = new GridHandler;
-	gh->winlet = INT(argv[0]);
 	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
 	if (mt) {
 #define FOO(S) gh->flow_##S = GridObject_r_flow;
@@ -558,9 +513,7 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 	gh->flow_int32 = GridObject_r_flow;
-	Ruby handlers = rb_ary_new();
-	rb_ary_push(handlers,PTR2FIX(gh));
-	rb_ivar_set(rself,SI(@handlers),handlers);
+	rb_funcall(handlers,SI([]=),2,INT2NUM(INT(argv[0])),PTR2FIX(gh));
 	return Qnil;
 }
 
@@ -570,11 +523,12 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
 	if (handlers==Qnil) return list;
 	for (int i=0; i<rb_ary_len(handlers); i++) {
-		GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
+		Ruby ghp = rb_ary_ptr(handlers)[i];
+		if (ghp==Qnil) continue;
+		GridHandler *gh = FIX2PTR(GridHandler,ghp);
 		char buf[256];
-		int inl = gh->winlet;
 		for (int j=0; j<COUNT(names); j++) {
-			sprintf(buf,"_%d_%s",inl,names[j]);
+			sprintf(buf,"_%d_%s",i,names[j]);
 			rb_ary_push(list,rb_str_new2(buf));
 		}
 	}
@@ -610,13 +564,13 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 Ruby cGridObject;
 
 void startup_grid () {
-	fclass_install(&ciGridObject, cFObject);
+	\startall
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
 }
 
 // never call this. this is a hack to make some things work.
 void make_gimmick () {
-	GridOutlet foo(0,0);
+	GridOutlet foo(0,0,0);
 #define FOO(S) foo.give(0,Pt<S>());
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
