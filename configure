@@ -560,9 +560,9 @@ def my_install_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\tinstall --mode 644 #{base+name} $(RUBYDESTDIR)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DATA) #{base+name} $(RUBYDESTDIR)/gridflow/#{base+name}"
     when :directory
-      f.puts "\tmkdir -p $(RUBYDESTDIR)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DIR) $(RUBYDESTDIR)/gridflow/#{base+name}"
       my_install_files(f,base+name,rest) 
     end
   }
@@ -617,9 +617,8 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 end
 
 f.puts "LDSOFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
-if Config::CONFIG["arch"] =~ /macosx/ then
-	f.puts "LDSOFLAGS += " +
-		"-bundle -bundle_loader /usr/local/pd/bin/pd -flat_namespace"
+if Config::CONFIG["arch"] =~ /darwin/ then
+	f.puts "LDSOFLAGS += -bundle -flat_namespace"
 else
 	f.puts "LDSOFLAGS += -rdynamic -shared"
 end
@@ -706,10 +705,12 @@ mf.sub! /CC = gcc\n/, "CC = g++\n"
 mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS]}"
 
-mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
-	(if Config::CONFIG["arch"] =~ /macosx/
-		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
-		else "$(CC)" end)
+#mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
+#	(if Config::CONFIG["arch"] =~ /darwin/
+#		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
+#		else "$(CC)" end)
+
+mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CC)"
 
 # Adam Lindsay's Mac attempts.
 mf.sub! /-no-precomp/, "-no-cpp-precomp"
