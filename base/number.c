@@ -500,6 +500,10 @@ void startup_number (void) {
 	int i;
 	int foo = PTR2FIX("hello");
 
+	for (i=0; i<COUNT(number_type_table); i++) {
+		number_type_table[i].sym = ID2SYM(rb_intern(number_type_table[i].name));
+	}
+
 	rb_define_readonly_variable("$op1_dict",&op1_dict);
 	op1_dict = rb_hash_new();
 	for(i=0; i<COUNT(op1_table); i++) {

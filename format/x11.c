@@ -45,8 +45,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 #include <X11/extensions/XShm.h>
 #endif
 
-typedef struct FormatX11 {
-	Format_FIELDS;
+struct FormatX11 : Format {
 
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
@@ -67,7 +66,7 @@ typedef struct FormatX11 {
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
-} FormatX11;
+};
 
 /* ---------------------------------------------------------------- */
 
@@ -190,7 +189,7 @@ METHOD(FormatX11,frame) {
 		0, 0, $->dim->get(1), $->dim->get(0),
 		(unsigned)-1, ZPixmap, $->ximage, 0, 0);
 
-	GridOutlet_begin($->out[0],$->dim->dup());
+	$->out[0]->begin($->dim->dup());
 
 	{
 		int sy = $->dim->get(0);
@@ -201,11 +200,11 @@ METHOD(FormatX11,frame) {
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send($->out[0],bs,b2);
+			$->out[0]->send(bs,b2);
 		}
 	}
 
-	GridOutlet_end($->out[0]);
+	$->out[0]->end();
 }
 
 /* ---------------------------------------------------------------- */
@@ -340,16 +339,13 @@ GRID_BEGIN(FormatX11,0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1), osx = $->dim->get(1);
 	int sy = in->dim->get(0), osy = $->dim->get(0);
-	GridInlet_set_factor(in,sxc);
+	in->set_factor(sxc);
 	if (in->dim->count() != 3) {
-		whine("expecting 3 dimensions: rows,columns,channels");
-		return false;
+		RAISE("expecting 3 dimensions: rows,columns,channels");
 	} else if (in->dim->get(2) != 3) {
-		whine("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
-		return false;
+		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 	}
 	if (sx != osx || sy != osy) FormatX11_resize_window($,sx,sy);
-	return true;
 }
 
 GRID_FLOW(FormatX11,0) {
