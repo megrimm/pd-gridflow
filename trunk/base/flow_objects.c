@@ -1227,18 +1227,14 @@ err:
 }
 
 METHOD(GridIn,open) {
-	VALUE format = argv[0];
-	FormatClass *qlass = FIX2PTR(rb_hash_aref(format_classes_dex,format));
+	VALUE format = rb_hash_aref(format_classes_dex,argv[0]);
+	FormatClass *qlass;
+	if (format==Qnil) RAISE("unknown file format identifier: %s",
+		rb_id2name(SYM2ID(argv[0])));
+	qlass = FIX2PTR(format);
 
-	if (qlass) {
-		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
-	} else {
-		whine("unknown file format identifier: %s", format);
-		return;
-	}
-
+	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
 	if ($->ff) $->ff->cl->close($->ff);
-	if (GridOutlet_busy($->out[0])) GridOutlet_abort($->out[0]);
 	if (qlass->open) {
 		$->ff = qlass->open(qlass,(GridObject *)$,4,argc-1,argv+1);
 	} else {
@@ -1658,15 +1654,15 @@ LIST(),
 /* a dummy object that gives access to any stuff global to
    GridFlow.
 */
-typedef struct GFGlobal {
+typedef struct GridGlobal {
 	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
-} GFGlobal;
+} GridGlobal;
 
 static void profiler_reset$1(void*d,void*k,void*v) {
 	((GridObject *)k)->profiler_cumul = 0;
 }
 
-METHOD(GFGlobal,profiler_reset) {
+METHOD(GridGlobal,profiler_reset) {
 /*
 	VALUE os = gf_object_set;
 	Dict_each(os,profiler_reset$1,0);
@@ -1685,7 +1681,7 @@ static void profiler_dump$1(void *d,void *k,void *v) {
 */
 }
 
-METHOD(GFGlobal,profiler_dump) {
+METHOD(GridGlobal,profiler_dump) {
 	/* if you blow 256 chars it's your own fault */
 /*
 	List *ol = List_new(0);
@@ -1717,21 +1713,21 @@ METHOD(GFGlobal,profiler_dump) {
 */
 }
 
-METHOD(GFGlobal,init) {
+METHOD(GridGlobal,init) {
 	GridObject_init((GridObject *)$);
 }
 
-METHOD(GFGlobal,delete) {
+METHOD(GridGlobal,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-GRCLASS(GFGlobal,inlets:1,outlets:1,
+GRCLASS(GridGlobal,inlets:1,outlets:1,
 LIST(),
 /* outlet 0 not used for grids */
-	DECL(GFGlobal,-1,init,          "s"),
-	DECL(GFGlobal,-1,delete,        ""),
-	DECL(GFGlobal, 0,profiler_reset,""),
-	DECL(GFGlobal, 0,profiler_dump, ""))
+	DECL(GridGlobal,-1,init,          "s"),
+	DECL(GridGlobal,-1,delete,        ""),
+	DECL(GridGlobal, 0,profiler_reset,""),
+	DECL(GridGlobal, 0,profiler_dump, ""))
 
 /* **************************************************************** */
 
@@ -1775,5 +1771,6 @@ void startup_flow_objects (void) {
 	INSTALL("@rgb_to_hsv", GridRGBtoHSV);
 	INSTALL("@hsv_to_rgb", GridHSVtoRGB);
 	INSTALL("@rtmetro",    RtMetro);
+	INSTALL("@global",     GridGlobal);
 }
 
