@@ -6,7 +6,6 @@
         GridFlow Installation
         Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
 -->
-
 <section name="Software (and Hardware) you Probably Need">
 <p>Required Hardware (One of...):<list>
 	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>

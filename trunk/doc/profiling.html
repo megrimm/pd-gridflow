@@ -1,7 +1,7 @@
 <html>
 <!-- $Id$ -->
 <head>
-<title>GridFlow 0.7.2 - Profiling Performance</title>
+<title>GridFlow 0.7.3 - Profiling Performance</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -16,7 +16,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="3" height="16">
-      <h4>GridFlow 0.7.2 - Profiling Performance</h4>
+      <h4>GridFlow 0.7.3 - Profiling Performance</h4>
   </td></tr>
 
   <tr> 
@@ -158,7 +158,9 @@
 	subsystem had to be redesigned.</p>
 
 	<p>Starting with 0.6.x, message-passing is somewhat slower; however
-	
+	during the 0.6.x series, the number of messages per grid dropped from N+2
+	(where N = number of packets) to exactly 1. This more-than-compensates
+	for the slowdown.</p>
 
 	<p>Starting with 0.7.0, profiling hooks now occur in
 	FObject#send_in and FObject#send_out (and of course in the grid
@@ -171,7 +173,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="4">
-	<p><font size="-1">GridFlow 0.7.2 Documentation<br>
+	<p><font size="-1">GridFlow 0.7.3 Documentation<br>
         by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
         and<br>
         Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

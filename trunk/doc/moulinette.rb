@@ -146,7 +146,7 @@ class XNode
 		}
 	end
 	def inspect; "#<XNode #{tag}>"; end
-	alias to_s inspect
+	def to_s; inspect; end
 end
 
 XNode.register("documentation") {}
@@ -414,12 +414,12 @@ XNode.register("inlet","outlet") {}
 if $use_rexml
 	class GFDocParser
 		def initialize(file)
-			@sax = SAX2Parser.new(File.open file)
+			@sax = SAX2Parser.new(File.open(file))
 			@xml_lists = []
 			@stack = [[]]
 			@sax.listen(:start_element) {|a,b,c,d| startElement(b,d) }
 			@sax.listen(  :end_element) {|a,b,c|   endElement(b) }
-			#!@#$ what about character ?
+			@sax.listen(   :characters) {|a|       characters(a) }
 		end
 		def do_it; @sax.parse; end
 	end
