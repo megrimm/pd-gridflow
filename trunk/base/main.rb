@@ -25,6 +25,12 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
+class NotImplementedError
+	def initialize(*)
+		GridFlow.gfpost "HELLO"
+	end
+end
+
 for victim in [TCPSocket, TCPServer]
 	def victim.new
 		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
@@ -71,6 +77,7 @@ class<<self
 	attr_accessor :post_header
 	attr_accessor :verbose
 	attr_reader :alloc_set
+	attr_reader :fobjects_set
 end
 
 self.post_header = "[gf] "
@@ -317,6 +324,8 @@ rescue Exception => e
 	GridFlow.gfpost "ruby #{e.class}: #{e}: #{e.backtrace}"
 end
 
+AllocTrace = Struct.new(:v,:ptr,:size,:type,:file,:line)
+
 def self.leakage_dump
 	as = GridFlow.alloc_set
 	(gfpost "can't dump leakage list without --debug"; return) if not as
@@ -327,10 +336,15 @@ def self.leakage_dump
 	gfpost "trace     pointer   size      type            file:line"
 	totsize=0
 	n=0
-	as.each {|k,v|
-		ptr,size,type,file,line = GridFlow.alloctrace_to_s v
-		gfpost "%08x  %08x  %8d  %-16s %s:%d", v*4, ptr*4, size, type, file, line
-		totsize+=size
+	as2 = {}
+	as.each {|k,v| as2[k] = AllocTrace.new(v,*(GridFlow.alloctrace_to_a v)) }
+	keys = as.keys.sort {|a,b| as2[a].type <=> as2[b].type }
+	keys.each {|k|
+		v = as2[k]
+#		gfpost v.inspect
+		gfpost "%08x  %08x  %8d  %-16s %s:%d",
+			v.v*4, v.ptr*4, v.size, v.type, v.file, v.line
+		totsize+=v.size
 		n+=1
 	}
 	gfpost "total %d lost bytes in %d allocations", totsize, n
@@ -344,6 +358,8 @@ load user_config_file if File.exist? user_config_file
 
 END {
 	puts "This is an END block"
+	GridFlow.fobjects_set.each {|k,v| k.delete }
+	GridFlow.fobjects_set.clear
 	GridFlow.leakage_dump
 }
 

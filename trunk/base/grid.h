@@ -35,23 +35,19 @@ extern "C" {
 #include "../config.h"
 
 #include <stdlib.h>
+#include <new>
 
 #define $ self
 
-#define NEW(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,__FILE__,__LINE__,true))
+#define NEW(_type_,_init_) \
+	(new(((_type_ *)qalloc(sizeof(_type_),#_type_,__FILE__,__LINE__,true))) \
+	_type_ _init_)
 
-#define NEW2(_type_,_count_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,__FILE__,__LINE__,false))
-
-#define NEW3(_type_,_count_,_file_,_line_) \
-	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_,_file_,_line_,true))
+#define NEWA(_type_,_count_) \
+	((_type_ *)qalloc(sizeof(_type_)*(_count_),#_type_ "[]",__FILE__,__LINE__,false))
 
 #define FREE(_var_) \
-	_var_ ? (qfree(_var_, true), _var_=0) : 0
-
-#define REALLOC(_val_,_count_) \
-	(qrealloc(_val_,_count_))
+	_var_ ? (qfree(_var_, true), delete _var_, _var_=0) : 0
 
 #define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 
@@ -63,7 +59,7 @@ void *qrealloc(void *data, int n);
 
 #include <string.h>
 #define strdup(_foo_) \
-	({const char *foo=_foo_;strcpy(NEW(char,strlen(foo)),foo);})
+	({const char *foo=_foo_;strcpy(NEWA(char,strlen(foo)),foo);})
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
@@ -231,10 +227,12 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 /* class constructor */
 
 #define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_handlers_,args...) \
+	static void *_name_##_allocate () { return NEW(_name_,()); } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
 		sizeof(_name_), \
+		_name_##_allocate, \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
@@ -242,10 +240,12 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 
 #define FMTCLASS(_name_,symbol_name,description,flags,_inlets_,_outlets_,_handlers_,args...) \
 	FormatInfo _name_ ## _formatinfo = { symbol_name,description,flags }; \
+	static void *_name_##_allocate () { return NEW(_name_,()); } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
 		sizeof(_name_), \
+		_name_##_allocate, \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
@@ -337,6 +337,13 @@ DECL_SYM(list)
 
 }; /* extern "C" */
 
+/*
+inline void *operator new(size_t nbytes) {
+	fprintf(stderr,"new: %d bytes\n",nbytes);
+	return qalloc(nbytes);
+}
+*/
+
 struct Dim {
 	int n;
 	int v[MAX_DIMENSIONS];
@@ -349,7 +356,7 @@ struct Dim {
 		check();
 	}
 
-	Dim *dup() { return new Dim(n,v); }
+	Dim *dup() { return NEW(Dim,(n,v)); }
 
 	int count() {return n;}
 
@@ -393,6 +400,7 @@ struct BitPacking {
 	int size;
 	uint32 mask[4];
 
+	BitPacking(){abort();} /* don't call, but don't remove. sorry. */
 	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer packer=0);
 	void gfpost();
 	uint8 *pack(int n, const Number *data, uint8 *target);
@@ -537,6 +545,7 @@ extern "C" {
 
 typedef struct GridClass {
 	int objectsize;
+	void *(*allocate)();
 	int methodsn;
 	MethodDecl *methods;
 	int inlets;

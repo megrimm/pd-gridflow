@@ -100,7 +100,7 @@ GRID_BEGIN(GridImport,1) {
 
 GRID_FLOW(GridImport,1) {
 	FREE($->dim);
-	$->dim = new Dim(n,(int *)data);
+	$->dim = NEW(Dim,(n,(int *)data));
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -114,7 +114,7 @@ METHOD(GridImport,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
+	$->dim = NEW(Dim,(t.dim->prod(),(int *)t.as_int32()));
 }
 
 METHOD(GridImport,delete) {
@@ -223,8 +223,8 @@ GRID_BEGIN(GridStore,0) {
 
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,$->r.dim->v+nc,nb-nc);
-//	gfpost("%s",(new Dim(nd,v))->to_s());
-	$->out[0]->begin(new Dim(nd,v));
+//	gfpost("%s",NEW(Dim,(nd,v))->to_s());
+	$->out[0]->begin(NEW(Dim,(nd,v)));
 	if (nc>0) in->set_factor(nc);
 
 //	gfpost("c=%s",$->out[0]->dim->to_s());
@@ -389,7 +389,7 @@ METHOD(GridOp2,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
+		$->r.init(NEW(Dim,(0,0)),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
@@ -429,7 +429,7 @@ GRID_BEGIN(GridFold,0) {
 	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
 	for (int i=yi+1; i<an; i++)
 		if ($->r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
-	$->out[0]->begin(new Dim(COUNT(v),v));
+	$->out[0]->begin(NEW(Dim,(COUNT(v),v)));
 	in->set_factor(in->dim->get(yi)*$->r.dim->prod());
 }
 
@@ -462,7 +462,7 @@ METHOD(GridFold,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
+		$->r.init(NEW(Dim,(0,0)),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
@@ -526,7 +526,7 @@ METHOD(GridScan,init) {
 	$->op = OP2(argv[0]);
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
-		$->r.init(new Dim(0,0),int32_type_i);
+		$->r.init(NEW(Dim,(0,0)),int32_type_i);
 		$->r.as_int32()[0] = 0;
 	} else {
 		$->r.init_from_ruby(argv[1]);
@@ -569,7 +569,7 @@ GRID_BEGIN(GridInner,0) {
 	int v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
-	$->out[0]->begin(new Dim(n,v));
+	$->out[0]->begin(NEW(Dim,(n,v)));
 	in->set_factor(a_last);
 }
 
@@ -578,7 +578,7 @@ GRID_FLOW(GridInner,0) {
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = $->r.dim->prod();
 	int chunks = b_prod/factor;
-	Number *buf2 = NEW(Number,b_prod/factor);
+	Number buf2[b_prod/factor];
 	Number buf[factor], bufr[factor];
 	assert (n % factor == 0);
 
@@ -591,7 +591,6 @@ GRID_FLOW(GridInner,0) {
 		}
 		out->send(b_prod/factor,buf2);
 	}
-	FREE(buf2);
 }
 
 GRID_END(GridInner,0) { $->out[0]->end(); }
@@ -644,7 +643,7 @@ GRID_BEGIN(GridInner2,0) {
 	int v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v,b->n-1);
-	$->out[0]->begin(new Dim(n,v));
+	$->out[0]->begin(NEW(Dim,(n,v)));
 	in->set_factor(a_last);
 }
 
@@ -652,7 +651,7 @@ GRID_FLOW(GridInner2,0) {
 	GridOutlet *out = $->out[0];
 	int factor = in->dim->get(in->dim->n-1);
 	int b_prod = $->r.dim->prod();
-	Number *buf2 = NEW(Number,b_prod/factor);
+	Number buf2[b_prod/factor];
 	Number buf[factor];
 	assert (n % factor == 0);
 
@@ -664,7 +663,6 @@ GRID_FLOW(GridInner2,0) {
 		}
 		out->send(b_prod/factor,buf2);
 	}
-	FREE(buf2);
 }
 
 GRID_END(GridInner2,0) { $->out[0]->end(); }
@@ -715,19 +713,18 @@ GRID_BEGIN(GridOuter,0) {
 	int v[n];
 	COPY(v,a->v,a->n);
 	COPY(v+a->n,b->v,b->n);
-	$->out[0]->begin(new Dim(n,v));
+	$->out[0]->begin(NEW(Dim,(n,v)));
 }
 
 GRID_FLOW(GridOuter,0) {
 	int b_prod = $->r.dim->prod();
-	Number *buf = NEW(Number,b_prod);
+	Number buf[b_prod];
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
 		$->op->op_array2(b_prod,buf,$->r.as_int32());
 		$->out[0]->send(b_prod,buf);
 		data++; n--;
 	}
-	FREE(buf);
 }
 
 GRID_END(GridOuter,0) { $->out[0]->end(); }
@@ -785,7 +782,7 @@ GRID_BEGIN(GridConvolve,0) {
 	$->margx = db->get(1)/2;
 	v[0] += 2*$->margy;
 	v[1] += 2*$->margx;
-	$->c.init(new Dim(da->n,v));
+	$->c.init(NEW(Dim,(da->n,v)));
 	$->out[0]->begin(da->dup());
 	in->set_factor(da->prod(1));
 }
@@ -918,10 +915,10 @@ METHOD(GridFor,_0_bang) {
 		if (nn[i]<0) nn[i]=0;
 	}
 	if ($->from.dim->n==0) {
-		$->out[0]->begin(new Dim(1,nn));
+		$->out[0]->begin(NEW(Dim,(1,nn)));
 	} else {
 		nn[n]=n;
-		$->out[0]->begin(new Dim(n+1,nn));
+		$->out[0]->begin(NEW(Dim,(n+1,nn)));
 	}
 	for(int d=0;;) {
 		/* here d is the dim# to reset; d=n for none */
@@ -970,7 +967,7 @@ struct GridDim : GridObject {};
 
 GRID_BEGIN(GridDim,0) {
 	int n = in->dim->n;
-	$->out[0]->begin(new Dim(1,&n));
+	$->out[0]->begin(NEW(Dim,(1,&n)));
 	$->out[0]->send(n,(Number *)in->dim->v);
 	$->out[0]->end();
 }
@@ -994,10 +991,10 @@ GRID_BEGIN(GridRedim,0) {
 	int a = in->dim->prod(), b = $->dim->prod();
 	if (a==0) {
 		//!@#$wrong
-		$->data = NEW2(Number,1);
+		$->data = NEWA(Number,1);
 		$->data[0] = 0;
 	} else if (a<b) {
-		$->data = NEW2(Number,a);
+		$->data = NEWA(Number,a);
 	}
 	$->out[0]->begin($->dim->dup());
 }
@@ -1039,7 +1036,7 @@ GRID_BEGIN(GridRedim,1) {
 
 GRID_FLOW(GridRedim,1) {
 	FREE($->dim);
-	$->dim = new Dim(n,(int *)data);
+	$->dim = NEW(Dim,(n,(int *)data));
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -1052,7 +1049,7 @@ METHOD(GridRedim,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
+	$->dim = NEW(Dim,(t.dim->prod(),(int *)t.as_int32()));
 	$->data = 0;
 }
 
@@ -1087,7 +1084,7 @@ GRID_BEGIN(GridScaleBy,0) {
 
 	/* computing the output's size */
 	int v[3]={ a->get(0)*scale, a->get(1)*scale, a->get(2) };
-	$->out[0]->begin(new Dim(3,v));
+	$->out[0]->begin(NEW(Dim,(3,v)));
 
 	/* configuring the input format */
 	in->set_factor(a->get(1)*a->get(2));
@@ -1126,7 +1123,7 @@ GRID_END(GridScaleBy,0) { $->out[0]->end(); }
 METHOD(GridScaleBy,init) {
 	$->rint = argc<1 ? 2 : INT(argv[0]);
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0); // wtf?
+	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0)); // wtf?
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
@@ -1157,19 +1154,19 @@ GRID_BEGIN(GridRGBtoHSV,0) {
 */
 GRID_FLOW(GridRGBtoHSV,0) {
 	GridOutlet *out = $->out[0];
-	Number *buf = NEW(Number,n), *buf2=buf;
-	for (int i=0; i<n; i+=3, buf+=3, data+=3) {
+	Number buf[n], *p=buf;
+	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int r=data[0], g=data[1], b=data[2];
-		int v=buf[2]=max(max(r,g),b);
+		int v=p[2]=max(max(r,g),b);
 		int m=min(min(r,g),b);
 		int d=(v-m)?(v-m):1;
-		buf[1]=255*(v-m)/(v?v:1);
-		buf[0] = 
+		p[1]=255*(v-m)/(v?v:1);
+		p[0] = 
 			b==m ? 42*1+(g-r)*42/d :
 			r==m ? 42*3+(b-g)*42/d :
 			g==m ? 42*5+(r-b)*42/d : 0;
 	}
-	out->give(n,buf2);
+	out->give(n,buf);
 }
 
 GRID_END(GridRGBtoHSV,0) {
@@ -1178,7 +1175,7 @@ GRID_END(GridRGBtoHSV,0) {
 
 METHOD(GridRGBtoHSV,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0));
 }
 
 GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,
@@ -1199,25 +1196,25 @@ GRID_BEGIN(GridHSVtoRGB,0) {
 
 GRID_FLOW(GridHSVtoRGB,0) {
 	GridOutlet *out = $->out[0];
-	Number *buf = NEW(Number,n), *buf2 = buf;
-	for (int i=0; i<n; i+=3, buf+=3, data+=3) {
+	Number buf[n], *p = buf;
+	for (int i=0; i<n; i+=3, p+=3, data+=3) {
 		int h=mod(data[0],252), s=data[1], v=data[2];
 		int j=h%42;
 		int k=h/42;
 		int m=(255-s)*v/255;
 		int d=s*v/255;
-		buf[0]=(k==4?j:k==5||k==0?42:k==1?42-j:0)*d/42+m;
-		buf[1]=(k==0?j:k==1||k==2?42:k==3?42-j:0)*d/42+m;
-		buf[2]=(k==2?j:k==3||k==4?42:k==5?42-j:0)*d/42+m;
+		p[0]=(k==4?j:k==5||k==0?42:k==1?42-j:0)*d/42+m;
+		p[1]=(k==0?j:k==1||k==2?42:k==3?42-j:0)*d/42+m;
+		p[2]=(k==2?j:k==3||k==4?42:k==5?42-j:0)*d/42+m;
 	}
-	out->give(n,buf2);
+	out->give(n,buf);
 }
 
 GRID_END(GridHSVtoRGB,0) { $->out[0]->end(); }
 
 METHOD(GridHSVtoRGB,init) {
 	rb_call_super(argc,argv);
-	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	$->out[0] = NEW(GridOutlet,((GridObject *)$, 0));
 }
 
 GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,
