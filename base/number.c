@@ -442,6 +442,12 @@ public:
 	template <class T> class Y##op : Op2<T> { public: \
 		inline static T foo (T a, T b) { return expr; } };
 
+#define DEF_OP2F(op,expr,expr2) \
+	template <class T> class Y##op : Op2<T> { public: \
+		inline static T foo (T a, T b) { return expr; } }; \
+	class Y##op<float32> : Op2<float32> { public: \
+		inline static float32 foo (float32 a, float32 b) { return expr2; } };
+
 #define DECL_OP2ON(base,op,type) { \
 	&base<Y##op<type> >::op_map, \
 	&base<Y##op<type> >::op_zip, \
@@ -473,6 +479,12 @@ public:
 	{0,0,0,0,0,0}, \
 }
 
+template <class T>
+static inline T gf_floor (T a) { return (T) floor((double)a); }
+
+template <class T>
+static inline T gf_trunc (T a) { return (T) abs((double)a) * (a<0?-1:1); }
+
 DEF_OP2(ignore, a)
 DEF_OP2(put, b)
 
@@ -485,18 +497,24 @@ DEF_OP2(div, b==0 ? 0 : a/b)
 DEF_OP2(div2, b==0 ? 0 : div2(a,b))
 DEF_OP2(vid, a==0 ? 0 : b/a)
 DEF_OP2(vid2, a==0 ? 0 : div2(b,a))
-DEF_OP2(mod, b==0 ? 0 : mod(a,b))
-DEF_OP2(dom, a==0 ? 0 : mod(b,a))
+DEF_OP2F(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b))
+DEF_OP2F(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a))
+
+/*
+DEF_OP2F(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
+DEF_OP2F(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
+*/
 DEF_OP2(rem, b==0 ? 0 : a%b)
 DEF_OP2(mer, a==0 ? 0 : b%a)
+
 DEF_OP2(gcd, gcd(a,b))
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b))
 
-DEF_OP2(or , a|b)
-DEF_OP2(xor, a^b)
-DEF_OP2(and, a&b)
-DEF_OP2(shl, a<<b)
-DEF_OP2(shr, a>>b)
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b))
+DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b))
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b))
+DEF_OP2F(shl, a<<b, a*pow(2.0,+b))
+DEF_OP2F(shr, a>>b, a*pow(2.0,-b))
 
 DEF_OP2(sc_and, a ? b : a)
 DEF_OP2(sc_or,  a ? a : b)
@@ -555,11 +573,11 @@ Operator2 op2_table[] = {
 	DECL_OP2_NOFLOAT(gcd, "gcd", "ASSO COMM"),
 	DECL_OP2_NOFLOAT(lcm, "lcm", "ASSO COMM"),
 
-	DECL_OP2_NOFLOAT(or , "|", "N=0 ASSO COMM"),
-	DECL_OP2_NOFLOAT(xor, "^", "N=0 ASSO COMM"),
-	DECL_OP2_NOFLOAT(and, "&", "N=-1 ASSO COMM"),
-	DECL_OP2_NOFLOAT(shl, "<<", "RN=0"),
-	DECL_OP2_NOFLOAT(shr, ">>", "RN=0"),
+	DECL_OP2(or , "|", "N=0 ASSO COMM"),
+	DECL_OP2(xor, "^", "N=0 ASSO COMM"),
+	DECL_OP2(and, "&", "N=-1 ASSO COMM"),
+	DECL_OP2(shl, "<<", "RN=0"),
+	DECL_OP2(shr, ">>", "RN=0"),
 
 	DECL_OP2(sc_and,"&&", ""),
 	DECL_OP2(sc_or, "||", ""), /* N!=0 */

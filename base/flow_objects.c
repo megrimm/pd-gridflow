@@ -385,7 +385,7 @@ GRID_INLET(GridStore,0) {
 	}
 } GRID_END
 
-GRID_INPUT(GridStore,1,r) {} GRID_END
+GRID_INPUT2(GridStore,1,r) {} GRID_END
 
 METHOD3(GridStore,initialize) {
 	rb_call_super(argc,argv);
@@ -476,7 +476,7 @@ GRID_INLET(GridOp2,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRID_INPUT(GridOp2,1,r) {} GRID_END
+GRID_INPUT2(GridOp2,1,r) {} GRID_END
 
 METHOD3(GridOp2,initialize) {
 	rb_call_super(argc,argv);
@@ -1572,6 +1572,7 @@ GRID_INLET(DrawPolygon,0) {
 		if (lines_start == lines_stop) {
 			out[0]->send(in->factor,data);
 		} else {
+			int32 xl = in->dim->get(1);
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
 			COPY(data2,data,in->factor);
 			for (int i=lines_start; i<lines_stop; i++) {
@@ -1581,7 +1582,10 @@ GRID_INLET(DrawPolygon,0) {
 			qsort(ld+lines_start,lines_stop-lines_start,
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
-				int xs = ld[i].x, xe = ld[i+1].x;
+				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl-1);
+				if (xs<0) xs=0;
+				/* !@#$ could be faster! */
+				/* !@#$ should it be like <= or like < ? */
 				while (xs<=xe) op->zip(cn,data2+cn*xs++,cd);
 			}
 			out[0]->give(in->factor,data2);
