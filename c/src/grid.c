@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "grid.h"
 
-static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
+FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
 
 #define INFO(_self_) \
 	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \

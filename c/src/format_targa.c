@@ -157,7 +157,7 @@ err:
 }
 
 FileFormatClass FormatTarga = {
-	"targa", "Targa", 0,
+	"targa", "Targa", (FileFormatFlags)0,
 	FormatTarga_open, 0, 0,
 };
 

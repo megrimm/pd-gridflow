@@ -30,10 +30,9 @@
 #ifndef PROC
 #define PROC
 
-static inline void Dim_invariant(Dim *$) {
-	assert($);
-	assert_range($->n,0,MAX_DIMENSIONS);
-}
+#define Dim_invariant(_self_) \
+	assert(_self_); \
+	assert_range(_self_->n,0,MAX_DIMENSIONS);
 
 Dim *Dim_new(int n, int *v) {
 	Dim *$ = (Dim *) NEW(int,n+1);
@@ -81,6 +80,17 @@ int Dim_prod_start (Dim *$, int start) {
 	return v;
 }
 
+PROC int Dim_calc_dex(Dim *$, int *v) {
+	int dex=0;
+	int i;
+	for (i=0; i<$->n; i++) {
+		dex = dex * $->v[i] + v[i];
+	}
+	return dex;
+}
+
+/* ******************************************************** */
+
 /* returns a string like "Dim(240,320,3)" */
 char *Dim_to_s(Dim *$) {
 	/* if you blow 256 chars it's your own fault */
@@ -97,7 +107,7 @@ char *Dim_to_s(Dim *$) {
 		i++;
 	}
 	s += sprintf(s,")");
-	return realloc(bottom,strlen(bottom)+1);
+	return (char *)realloc(bottom,strlen(bottom)+1);
 }
 
 int Dim_equal_verbose(Dim *$, Dim *other) {
@@ -139,17 +149,6 @@ int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
 		return 1;
 	}
 	return 0;
-}
-
-/* ******************************************************** */
-
-PROC int Dim_calc_dex(Dim *$, int *v) {
-	int dex=0;
-	int i;
-	for (i=0; i<$->n; i++) {
-		dex = dex * $->v[i] + v[i];
-	}
-	return dex;
 }
 
 #endif
