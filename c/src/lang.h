@@ -40,10 +40,14 @@
 #define FREE(_var_) \
 	_var_ ? (qfree(_var_), _var_=0) : 0
 
+#define REALLOC(_val_,_count_) \
+	(qrealloc(_val_,_count_))
+
 void *qalloc2(size_t n, const char *file, int line);
 void *qalloc(size_t n, const char *file, int line); /*0xdeadbeef*/
 void qfree2(void *data);
 void qfree(void *data); /*0xfadedf00*/
+void *qrealloc(void *data, int n);
 void qdump(void);
 
 typedef unsigned char  uint8;

@@ -240,6 +240,7 @@ void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 
 	/* bug here: won't flush the frame queue */
 
+	FREE($->dim);
 	$->dim = Dim_new(3,v);
 	WIOCTL($->stream, VIDIOCGWIN, &grab_win);
 	VideoWindow_whine(&grab_win);
@@ -440,7 +441,7 @@ void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 void FormatVideoDev_close (FormatVideoDev *$) {
 	if ($->image) FormatVideoDev_dealloc_image($);
 	if ($->stream>=0) close($->stream);
-	FREE($);
+	Format_close((Format *)$);
 }
 
 Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, ATOMLIST) {

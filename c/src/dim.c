@@ -87,7 +87,6 @@ int Dim_calc_dex(Dim *$, int *v) {
 /* ******************************************************** */
 
 /* returns a string like "Dim(240,320,3)" */
-/* the memory leak warning is a false alarm (implement REALLOC() macro) */
 char *Dim_to_s(Dim *$) {
 	/* if you blow 256 chars it's your own fault */
 	char *bottom = NEW(char,256);
@@ -103,7 +102,7 @@ char *Dim_to_s(Dim *$) {
 		i++;
 	}
 	s += sprintf(s,")");
-	return (char *)realloc(bottom,strlen(bottom)+1);
+	return (char *)REALLOC(bottom,strlen(bottom)+1);
 }
 
 int Dim_equal_verbose(Dim *$, Dim *other) {
