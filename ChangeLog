@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.8.0 (head):
+version 0.7.5 (2003.09.16):
 
  * type aliases: int32,i32,i; int16,i16,s; uint8,u8,b; float32,f32,f
  * added support for float64 (alias f64, d)
@@ -11,18 +11,21 @@ version 0.8.0 (head):
  * rewrote the profiler subsystem (and removed bugs)
  * @scale_by: now works with any number of channels
  * renamed samples/ to jmax_examples/
- * Algebraic Properties Descriptions (internal, useful for optimising)
+ * Algebraic Properties Descriptions (internal, used for accelerations)
  * @convolve,@outer,@for,@inner,@draw_polygon: much faster
  * quicktime: support for pluggable codecs (eg: dv, divx, rpza, ...)
  * quicktime: fixed more bugs
  * quicktime: major speed increase
+ * quicktime: added "colorspace" option
  * videodev: fixed bugs
  * videodev: removed obsolete option "noinit"
- * videodev: added option "colormodel"
+ * videodev: added option "colormodel" (especially because of new camera drivers)
+ * sdl: added automatic resizing of window
  * png: read support
  * jMax bridge: more stable than ever
  * PureData bridge: *much* more stable than ever
  * Operator1, Operator2 renamed to Numop1, Numop2
+ * x11: now also called "window", so you can write "@out window", "open window"
  * new object classes:
      @draw_image: picture-in-picture, with alpha blending, etc
      jmax4_udpsend: send to a jMax 4.0.x system via UDP
@@ -30,17 +33,7 @@ version 0.8.0 (head):
      pd_netsend: send to a pd system via UDP
      pd_netreceive: receive from a pd system via UDP
      @eight: (like @four, but with eight of them ;-)
-
-soon:
-
- * added @matrix_solve, @slice
- * Numop API exposed to Ruby
- * < 10 bugs in buglist
- * Fully hyperlinked manual
- * internals documentation
- * internal grid protocol redesigned
- * [@pack], [@unpack]
- * [@export~]
+     peephole: like [@out x11] but as inset of a patcher (jMax 2.5 only)
 
 version 0.7.2 (2003.04.24):
 
