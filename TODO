@@ -116,6 +116,7 @@ Effects
 [ ] HSV<->RGB; hue shifting
 [ ] HSV<->HSL
 [ ] RGB<->YUV
+[ ] effectv
 [ ] blinds, ...
 [ ] create templates for usage patterns
 [ ] split channels, join channels
