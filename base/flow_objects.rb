@@ -1451,4 +1451,26 @@ FObject.subclass("SoundMixer",1,1) {
   end
 }
 
+# experimental
+FObject.subclass("rubyarray",2,1) {
+  def initialize() @a=[]; @i=0; end
+  def _0_float i; @i=i; send_out 0, *@a[@i]; end
+  def _1_list(*l) @a[@i]=l; end
+  def _0_save(filename,format=nil)
+    f=File.open(filename.to_s,"w")
+    if format then
+      @a.each {|x| f.puts(format.to_s%x) }
+    else
+      @a.each {|x| f.puts(x.join(",")) }
+    end
+    f.close
+  end
+  def _0_load(filename)
+    f=File.open(filename.to_s,"r")
+    @a.clear
+    f.each {|x| @a.push x.split(",").map {|y| Float(y) rescue y.intern }}
+    f.close
+  end
+}
+
 end # module GridFlow
