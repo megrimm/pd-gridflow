@@ -92,6 +92,7 @@ echo "generating ./config.make"
 	echo PNAME=video4jmax
 	echo JMAXROOTDIR=$JMAXROOTDIR
 	echo JMAXDISTDIR=$JMAXROOTDIR
+	echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
 ) > config.make
 
 #--------------------------------#

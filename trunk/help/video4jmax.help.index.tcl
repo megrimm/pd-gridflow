@@ -1,5 +1,6 @@
 #!/usr/bin/tclsh
 
+catch {
 if {[string compare [lindex $argv 0] generate] == 0} {
 	# should generate Scheme code here (or something)
 
@@ -11,8 +12,9 @@ if {[string compare [lindex $argv 0] generate] == 0} {
 		# write me
 	}
 }
+}
 
-helpSummary "video4jmax" $dir/video4jmax.summary.jmax
+helpSummary "video4jmax summary" $dir/video4jmax.summary.jmax
 
 foreach name {
 	@
