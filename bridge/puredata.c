@@ -63,7 +63,6 @@ struct FMessage {
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 static BuiltinSymbols *syms;
-static GFBridge *gf_bridge2;
 
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
@@ -76,21 +75,7 @@ static uint64 time_now() {
 	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
 }
 
-static void count_tick () {
-/*
-	static uint64 start_time = time_now();
-	static int count = 0;
-	static int next = 10000;
-	int32 duration = (time_now() - start_time) / 1000;
-	if (count>=next) {
-		gf_bridge2->post("GF clock ticks: %d in %d ms (%.2f ms/tick)%s",
-			count, duration, duration*1.0/count,
-			gf_bridge2->post_does_ln ? "" : "\n");
-		next *= 2;
-	}
-	count++;
-*/
-}
+//static void count_tick () {}
 
 /*
 static Ruby Pointer_new (void *ptr) {
@@ -149,66 +134,11 @@ static sigjmp_buf rescue_segfault;
 static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
 
-/* that's good enough for both Linux/PC and OSX, but not Linux/Mac, ... */
-#if 0
-static VALUE *localize_sysstack () {return (VALUE *) 0xBFFFFFFC;}
-#endif
-
-/* the segfault trick (by Mathieu Bouchard) */
-/* may be useful on platforms where the two others fail. */
-#if 0
-static VALUE *localize_sysstack () {
-	/* the following is a bit risky... well, not so much, but
-	   there's interference with gdb/osx and this trick, and such.
-	*/
-	// get any stack address
-	volatile long * volatile bp = (volatile long *)&bp;
-	//sighandler_t old = signal(11,trap_segfault); // g++-2.95 doesn't take it
-	//fprintf(stderr,"trap_segfault = %08lx\n",(uint32)trap_segfault);
-	void (*oldsegv)(int) = signal(SIGSEGV,trap_segfault);
-	void (*oldbus)(int)  = signal(SIGBUS, trap_segfault);
-	//fprintf(stderr,"old = %08lx\n",(uint32)old);
-	// read stack until segfault; segfault is redefined as a break.
-	if (!sigsetjmp(rescue_segfault,0)) for (;;bp-=STACK_GROW_DIRECTION) bogus += *bp;
-	// restore signal handler
-	//void (*new_)(int) = signal(11,old);
-	signal(SIGSEGV,SIG_DFL); // because i've had problems with segfaults being ignored.(!?)
-	signal(SIGBUS, SIG_DFL); // because i've had problems with segfaults being ignored.(!?)
-	//fprintf(stderr,"new = %08lx\n",(uint32)(bp+STACK_GROW_DIRECTION));
-	return (VALUE *)(bp+STACK_GROW_DIRECTION);
-}
-#endif
-
-/* Nobu Nokada's ways; works with GLIBC/Cygwin/Human68k */
-#if 0
-static VALUE *localize_sysstack () {
-#if defined _WIN32 || defined __CYGWIN__
-#include <windows.h>
-#endif
-
-#if defined(_WIN32) || defined(__CYGWIN__)
-    MEMORY_BASIC_INFORMATION m;
-    memset(&m, 0, sizeof(m));
-    VirtualQuery(&m, &m, sizeof(m));
-    return STACK_UPPER((VALUE *)&m, (VALUE *)m.BaseAddress,
-	(VALUE *)((char *)m.BaseAddress + m.RegionSize) - 1);
-#elif defined(STACK_END_ADDRESS)
-    extern void *STACK_END_ADDRESS;
-    return STACK_END_ADDRESS;
-#else
-#error "NO STACK_END_ADDRESS ???"
-#endif
-}
-#endif
-
-/* using ../config.h */
-#if 1
 static VALUE *localize_sysstack () {
 	void *bp;
 	sscanf(RUBY_STACK_END,"0x%08lx",(long *)&bp);
 	return (VALUE *)bp;
 }
-#endif
 
 /* reentrancy check */
 static bool is_in_ruby = false;
@@ -374,8 +304,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 		(RMethod)BFObject_init_1,(Ruby)&fm,
 		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
-	/* return NULL if broken object */
-	return r==Qnil ? 0 : (void *)bself;
+	return r==Qnil ? 0 : (void *)bself; // return NULL if broken object
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
@@ -437,7 +366,6 @@ void bf_getrectfn(t_gobj *x, struct _glist *glist,
 int *x1, int *y1, int *x2, int *y2) {
 	BFObject *bself = (BFObject*)x;
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	//fprintf(stderr,"real x=%f; y=%f;\n",x0,y0);
 	Ruby a = rb_funcall_rescue(bself->rself,SI(pd_getrect),1,can);
 	if (TYPE(a)!=T_ARRAY || rb_ary_len(a)<4) {
 		post("bf_getrectfn: return value should be 4-element array");
@@ -520,12 +448,13 @@ static void BFObject_class_init_1 (t_class *qlass) {
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
-static Ruby FObject_s_install_2(Ruby rself, char *name) {
-	t_class *qlass = class_new(gensym(name),
+static Ruby FObject_s_install2(Ruby rself, Ruby name) {
+	if (TYPE(name)!=T_STRING) RAISE("name must be String");
+	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	rb_hash_aset(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),
-		rb_str_new2(name), PTR2FIX(qlass));
+		rb_str_dup(name), PTR2FIX(qlass));
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(
 		(RMethod)BFObject_class_init_1,(Ruby)qlass,
@@ -534,12 +463,18 @@ static Ruby FObject_s_install_2(Ruby rself, char *name) {
 	return Qnil;
 }
 
-static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet,
-Ruby rself) {
+static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
+	//post("argc=%d argv=0x%p rself=0x%p",argc,argv,rself);
+	//for (int i=0; i<argc; i++) post("argv[%d]=0x%p",i,argv[i]);
 	DGS(FObject);
 	BFObject *bself = self->bself;
+	if (!bself) {post("FObject#send_out2 : bself is NULL, rself=%08x",rself);return Qnil;}
 	bself->check_magic();
 	Ruby qlass = rb_funcall(rself,SI(class),0);
+	int outlet = INT(argv[0]);
+	Ruby sym = argv[1];
+	argc-=2;
+	argv+=2;
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
@@ -713,7 +648,6 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 		rb_eException,0);
 	clock_delay(gf_alarm,clock_tick);
 	is_in_ruby = false;
-	count_tick();
 }       
 
 #define SDEF2(_name1_,_name2_,_argc_) \
@@ -723,14 +657,10 @@ Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
+	rb_define_singleton_method(EVAL("GridFlow::FObject"),"install2",(RMethod)FObject_s_install2,1);
+	rb_define_method(EVAL("GridFlow::FObject"),"send_out2",(RMethod)FObject_send_out2,-1);
 	return Qnil;
 }
-
-static GFBridge gf_bridge3 = {
-	send_out: FObject_send_out_2,
-	class_install: FObject_s_install_2,
-	post: (void (*)(const char *, ...))post,
-};
 
 struct BFGridFlow : t_object {};
 
@@ -768,8 +698,13 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	return tick;
 }
 
+Ruby GridFlow_post_string (Ruby rself, Ruby string) {
+	if (TYPE(string)!=T_STRING) RAISE("not a string!");
+	post("%s",rb_str_ptr(string));
+	return Qnil;
+}
+
 extern "C" void gridflow_setup () {
-	gf_bridge2 = &gf_bridge3;
 	char *foo[] = {"Ruby-for-PureData",DEVNULL};
 	post("setting up Ruby-for-PureData...");
 
@@ -779,8 +714,6 @@ extern "C" void gridflow_setup () {
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	bridge_common_init();
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
-	rb_ivar_set(cData,SI(@gf_bridge),PTR2FIX(gf_bridge2));
-
 	BFProxy_class = class_new(gensym("ruby_proxy"),
 		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
@@ -792,6 +725,7 @@ extern "C" void gridflow_setup () {
 		"@bridge_name = 'puredata'; self end");
 	SDEF2("clock_tick",GridFlow_clock_tick,0);
 	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
+	SDEF2("post_string",GridFlow_post_string,1);
 	SDEF2("whatever",bridge_whatever,-1);
 
 	post("(done)");
