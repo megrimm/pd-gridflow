@@ -731,7 +731,12 @@ Feature.new {
 			#include#
 			#include <stdio.h>
 			int main () {
-			printf("#define PD_VERSION_INT %d\\n",(int)(PD_VERSION*100));
+			printf("#define PD_VERSION_INT %d\\n",
+			#ifdef PD_MAJOR_VERSION
+				(int)(PD_MAJOR_VERSION+PD_MINOR_VERSION*100));
+			#else
+				(int)(PD_VERSION*100));
+			#endif
 			return 0;
 			}
 		`
