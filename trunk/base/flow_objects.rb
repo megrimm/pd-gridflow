@@ -127,7 +127,7 @@ class FPS < GridObject
 end
 
 # to see what the messages look like when they get on the Ruby side.
-class RubyPrint < GridFlow::GridObject
+class RubyPrint < GridFlow::FObject
 	def initialize(*a)
 		super
 		@time = !!(a.length and a[0]==:time)
@@ -142,11 +142,10 @@ class RubyPrint < GridFlow::GridObject
 		end
 	end
 
-	install_rgrid 0
 	install "rubyprint", 1, 0
 end
 
-class PrintArgs < GridFlow::GridObject
+class PrintArgs < GridFlow::FObject
 	def initialize(*a)
 		super
 		GridFlow.post(a.inspect)
@@ -724,11 +723,10 @@ class Peephole < GridFlow::FPatcher
 		@scale = [(sy+@sy-1)/@sy,(sx+@sx-1)/@sx].max
 		#GridFlow.post "s=#{[sy,sx].inspect} @s=#{[@sy,@sx].inspect} @scale=#{@scale}"
 		@fobjects[2].send_in 1, @scale
+		sy2 = @sy/@scale*@scale
+		sx2 = @sx/@scale*@scale
 		@fobjects[3].send_in 0, :set_geometry,
-			y+(sy-@sy/@scale)/2,
-			x+(sy-@sy/@scale)/2,
-			@sy/@scale*@scale,
-			@sx/@scale*@scale
+			@y+(sy-sy2)/2, @x+(sy-sy2)/2, sy2, sx2
 	end
 	install "peephole", 1, 1
 end
