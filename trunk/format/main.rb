@@ -501,8 +501,6 @@ class FormatFile < Format
 		when /\.tga$/i;   FormatTarga.new(*a)
 		when /\.jpe?g$/i; FormatJPEG.new(*a)
 		when /\.png$/i;   FormatPNG.new(*a)
-#		when /\.mpe?g$/i; FormatMPEG.new(*a)
-		when /\.mov$/i;   FormatQuickTime.new(*a)
 		when /\.grid$/i;  FormatGrid.new(*a)
 		else
 			if not /\./=~file then raise "no filename suffix?" end
