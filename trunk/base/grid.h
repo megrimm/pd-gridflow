@@ -614,4 +614,7 @@ extern const char *whine_header;
 
 char *FObject_to_s(FObject *$);
 
+uint64 RtMetro_now(void);
+void gf_install_bridge(void);
+
 #endif /* __GF_GRID_H */
