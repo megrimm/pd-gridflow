@@ -8,13 +8,15 @@ all:: ruby-all gridflow-for-ruby gridflow-for-jmax gridflow-for-puredata # doc-a
 include config.make
 
 # suffixes
+if 1 # Linux, MSWindows with Cygnus, etc
 OSUF = .o
 LSUF = .so
 ESUF =
-
-# OSUF = .OBJ
-# LSUF = .DLL
-# ESUF = .EXE
+else # MSWindows without Cygnus
+OSUF = .OBJ
+LSUF = .DLL
+ESUF = .EXE
+endif
 
 #----------------------------------------------------------------#
 
@@ -35,7 +37,7 @@ else
 	CFLAGS += -O6 -funroll-loops # speed
 endif
 
-CFLAGS += -g # gdb info
+CFLAGS += -g    # gdb info
 CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 CFLAGS += -fPIC # some OSes/machines need that for .so files
 
@@ -78,7 +80,7 @@ RUBY_OBJS = $(OBJS)
 
 $(LIB): $(RUBY_OBJS) $(CONF)
 	@mkdir -p $(OBJDIR)
-	gcc -shared -rdynamic $(LDSOFLAGS) $(RUBY_OBJS) -o $@
+	gcc -shared $(LDSOFLAGS) $(RUBY_OBJS) -o $@
 
 export-config::
 	@echo "#define GF_INSTALL_DIR \"$(GFID)\""
@@ -88,7 +90,7 @@ EFENCE = /usr/lib/libefence$(LSUF)
 
 test:: install
 	ulimit -c unlimited; rm -f core; \
-	ruby tests/test.rb || \
+	ruby -w tests/test.rb || \
 	([ -f core ] && gdb `which ruby` core)
 
 foo::
@@ -103,7 +105,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 $(JMAX_LIB): base/bridge_jmax.c base/grid.h $(CONF)
 	@mkdir -p $(OBJDIR)
-	gcc -shared -rdynamic $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
+	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
@@ -173,7 +175,7 @@ PD_LIB = $(OBJDIR)/gridflow-pd$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/grid.h $(CONF)
 	@mkdir -p $(OBJDIR)
-	gcc -shared -rdynamic $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
+	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
 

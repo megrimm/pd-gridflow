@@ -2,14 +2,14 @@
 # $Id$
 =begin
 	GridFlow
-	Copyright (c) 2001 by Mathieu Bouchard
+	Copyright (c) 2001,2002 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
 	as published by the Free Software Foundation; either version 2
 	of the License, or (at your option) any later version.
 
-	See file ../../COPYING for further informations on licensing terms.
+	See file ./COPYING for further informations on licensing terms.
 
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -62,7 +62,8 @@ def launch2(log,*command)
 	child = launch(nil,w,w,*command)
 	w.close
 	log << r.readlines.join << "\n"
-	ret = join_pid child
+	ret = join_pid(child)
+	ret = ret.to_int if VERSION > "1.7"
 	log << "error \##{ret}\n" if ret>0
 	return ret<=0
 end
@@ -125,6 +126,17 @@ end
 
 $features = [
 Feature.new {
+	tag :libruby
+	name "Ruby as a dynamic library"
+	uses_so ["-lruby"]
+	test proc {
+		c_test "
+		#include <#{$conf[:RUBY_H]}>
+		int main (void) { return !rb_rescue; }
+		", "-lruby"
+	}
+},
+Feature.new {
 	tag :fast
 	name "Compile for speed (and not debuggability)"
 },
@@ -134,6 +146,7 @@ Feature.new {
 	uses_so ["-mpentium"]
 	test proc {
 		# this is very "heuristic" to say the least. sorry.
+		# please fix me.
 		c_test '
 		typedef unsigned long long uint64;
 		int main(void) { uint64 x;
@@ -231,6 +244,7 @@ Feature.new {
 Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
+	uses_feature [:libruby]
 	test proc {
 		has_jmax "-DLINUXPC" and #!@#$ nonportable
 		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
@@ -240,6 +254,7 @@ Feature.new {
 Feature.new {
 	tag :jmax30
 	name "IRCAM's jMax 3.0 / 3.1"
+	uses_feature [:libruby]
 	unless_feature :jmax25
 	status :disabled
 	test proc {
@@ -251,6 +266,7 @@ Feature.new {
 Feature.new {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
+	uses_feature [:libruby]
 	options ["HAVE_PUREDATA"]
 	test proc {
 		c_test "
@@ -267,7 +283,7 @@ $features.each {|f| $features_h[f.tag]=f }
 
 $conf={
 	:ARCH => nil,
-	:LDSOFLAGS => ["-lm","-lruby"],
+	:LDSOFLAGS => ["-lm"],
 	:FEATURES => {},
 #	:FORMATS => ["PPM","Targa","Grid"],
 	:FORMATS => [],
@@ -398,16 +414,6 @@ end
 
 require "rbconfig"
 $conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
-STDERR.print "looking for libruby.so: "
-STDERR.flush
-c_test "
-#include <#{$conf[:RUBY_H]}>
-int main (void) { return !rb_rescue; }
-", "-lruby" or (
-	puts "no"
-	puts "can't continue: libruby.so is required"
-	exit 1)
-puts "yes"
 
 $features.each {|feature| try feature }
 
@@ -507,12 +513,9 @@ File.open("config.h","w") {|f| f.puts "
 
 #{`make export-config`}
 
-\#include <#{$conf[:RUBY_H]}>
-
-\#ifdef STANDALONE
-\#include \"base/bridge_none.h\"
-\#else
-//\#include \"base/bridge_jmax.h\"
+\#include "#{$conf[:RUBY_H]}"
+\#ifndef RUBY_H
+\#error Can't do anything without ruby.h
 \#endif
 
 #define FORMAT_LIST(_pre_,_post_) \\"
