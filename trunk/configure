@@ -346,6 +346,8 @@ end
 while ARGV.length>0 do
 	arg=ARGV.shift
 	case arg
+	when /=/
+		ARGV[0,0]=arg.split(/=/)
 	when /^--no-/
 		name = arg[5..-1].intern
 		puts "there is no feature called #{name}" if not $features_h[name]
@@ -524,6 +526,13 @@ CONF['archdir'] = CONF['sitearchdir']
 require "mkmf"
 #p $rubylibdir
 #--------------------------------#
+
+if $conf[:OPTIONS].include? "HAVE_JMAX_2_5" and not $conf[:JMAX_ARCH]
+	DUAL.puts "ERROR: compiling with jMax, but not having the --jmax-arch specified"
+	DUAL.puts "(try i686-linux or ppc-macosx or whatever that is supposed work)"
+	exit
+end
+
 puts "generating ./config.make"
 
 File.open("./config.make","w") {|f| f.puts "
@@ -593,9 +602,9 @@ File.open("config.h","w") {|f| f.puts "
 "
 
 if $conf[:FORMATS]!=[] then
-	f.puts "#define FORMAT_LIST(_pre_,_post_) \\"
+	f.puts "#define FORMAT_LIST(_pre_,_pre2_,_post_) \\"
 	f.puts $conf[:FORMATS].map {|fmt|
-		"  _pre_ Format#{fmt}##_post_"
+		"  _pre_ _pre2_##Format#{fmt}##_post_"
 	}.join(",\\\n")
 end
 
