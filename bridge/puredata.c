@@ -129,6 +129,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	argv[0] = INT2NUM(fm->winlet);
 	argv[1] = ID2SYM(rb_intern(fm->selector->s_name));
 	for (int i=0; i<fm->ac; i++) argv[2+i] = Bridge_import_value(fm->at+i);
+	fm->self->check_magic();
 	rb_funcall2(fm->self->rself,SI(send_in),fm->ac+2,argv);
 	return Qnil;
 }
@@ -145,9 +146,11 @@ static Ruby BFObject_rescue (FMessage *fm) {
 
 static void BFObject_method_missing (BFObject *bself,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
-//	post("%p %d %s %d\n",self,winlet,selector->s_name,ac);
+	//post("0x%08x %d %s %d\n",bself,winlet,selector->s_name,ac);
 	FMessage fm = { self: bself, winlet: winlet, selector: selector, ac: ac, at: at,
 		is_init: false };
+//	int *bserf = (int *)bself;
+//	post("send to: %08x %08x %08x %08x",bserf[0],bserf[1],bserf[2],bserf[3]);
 	if (!bself->rself) {
 		pd_error(bself,
 		"message to a dead object. (supposed to be impossible)");
@@ -286,6 +289,23 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 		if (argc!=2) RAISE("bad args");
 		Ruby command = rb_funcall(argv[1],SI(to_s),0);
 		sys_gui(rb_str_ptr(command));
+	} else if (argv[0] == SYM(bind)) {
+		if (argc!=3) RAISE("bad args");
+		if (TYPE(argv[1])==T_STRING) {
+			Ruby name = rb_funcall(argv[1],SI(to_s),0);
+			Ruby qlassid =
+				rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+			if (qlassid==Qnil) RAISE("no such class: %s",
+				rb_str_ptr(name));
+			//t_pd *o = pd_new(FIX2PTR(t_class,qlassid));
+			pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
+			t_pd *o = pd_newest();
+			pd_bind(o,gensym(rb_str_ptr(argv[2])));
+		} else {
+			Ruby rself = argv[1];
+			DGS(FObject);
+			pd_bind(&self->bself->te_g.g_pd,gensym(rb_str_ptr(argv[2])));
+		}
 	} else {
 		RAISE("don't know how to do that");
 	}
@@ -332,6 +352,8 @@ static GFBridge gf_bridge3 = {
 	clock_tick: 10.0,
 	whatever: bridge_whatever
 };
+
+struct BFGridFlow : t_object {};
 
 extern "C" void gridflow_setup () {
 	gf_bridge2 = &gf_bridge3;
