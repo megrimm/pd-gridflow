@@ -156,7 +156,18 @@ public:
 				as[1]=O::f(O::f(O::f(O::f(as[1],bs[1]),bs[4]),bs[7]),bs[10]);
 				as[2]=O::f(O::f(O::f(O::f(as[2],bs[2]),bs[5]),bs[8]),bs[11]); }
 		break;
-		// maybe a case 4 would be good.
+		case 4:
+			for (; (n&3)!=0; bs+=4, n--) {
+				as[0]=O::f(as[0],bs[0]);
+				as[1]=O::f(as[1],bs[1]);
+				as[2]=O::f(as[2],bs[2]);
+				as[3]=O::f(as[3],bs[3]); }
+			for (; n; bs+=16, n-=4) {
+				as[0]=O::f(O::f(O::f(O::f(as[0],bs[0]),bs[4]),bs[ 8]),bs[12]);
+				as[1]=O::f(O::f(O::f(O::f(as[1],bs[1]),bs[5]),bs[ 9]),bs[13]);
+				as[2]=O::f(O::f(O::f(O::f(as[2],bs[2]),bs[6]),bs[10]),bs[14]);
+				as[3]=O::f(O::f(O::f(O::f(as[3],bs[3]),bs[7]),bs[11]),bs[15]); }
+		break;
 		default:
 			for (; n--; ) {
 				int i=0;
@@ -246,40 +257,30 @@ public:
 		inline static bool is_absorbent(float64 x, LeftRight side) { return absorbent; } }; \
 
 #define DECL_OP2ON(base,op,T) Numop2On<T>( \
-	&base<Y##op<T> >::op_map, \
-	&base<Y##op<T> >::op_zip, \
-	&base<Y##op<T> >::op_fold, \
-	&base<Y##op<T> >::op_scan, \
-	&Y##op<T>::is_neutral, \
-	&Y##op<T>::is_absorbent)
+	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, \
+	&base<Y##op<T> >::op_fold, &base<Y##op<T> >::op_scan, \
+	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
+
+#define DECL_OP2ON_NOFOLD(base,op,T) Numop2On<T>( \
+	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, 0,0, \
+	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
 
 #define DECL_OP2(op,sym,flags) Numop2(0, sym, \
-	DECL_OP2ON(Op2Loops,op,uint8), \
-	DECL_OP2ON(Op2Loops,op,int16), \
-	DECL_OP2ON(Op2Loops,op,int32), \
-	DECL_OP2ON(Op2Loops,op,int64), \
-	DECL_OP2ON(Op2Loops,op,float32), \
-	DECL_OP2ON(Op2Loops,op,float64), \
+	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), DECL_OP2ON(Op2Loops,op,int64), \
+	DECL_OP2ON(Op2Loops,op,float32), DECL_OP2ON(Op2Loops,op,float64), \
 	flags)
-
-/*
-#define DECL_OP2_BITWISE(op,sym,flags) Numop2(0, sym, \
-	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
-	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
-	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
-	DECL_OP2ON(Op2LoopsBitwise,op,int64), \
-	DECL_OP2ON(Op2LoopsBitwise,op,float32), \
-	DECL_OP2ON(Op2LoopsBitwise,op,float64), \
-	flags)
-*/
 
 #define DECL_OP2_NOFLOAT(op,sym,flags) Numop2(0, sym, \
-	DECL_OP2ON(Op2Loops,op,uint8), \
-	DECL_OP2ON(Op2Loops,op,int16), \
-	DECL_OP2ON(Op2Loops,op,int32), \
-	DECL_OP2ON(Op2Loops,op,int64), \
-	Numop2On<float32>(0,0,0,0,0,0), \
-	Numop2On<float64>(0,0,0,0,0,0), \
+	DECL_OP2ON(Op2Loops,op,uint8), DECL_OP2ON(Op2Loops,op,int16), \
+	DECL_OP2ON(Op2Loops,op,int32), DECL_OP2ON(Op2Loops,op,int64), \
+	Numop2On<float32>(0,0,0,0,0,0), Numop2On<float64>(0,0,0,0,0,0), \
+	flags)
+
+#define DECL_OP2_NOFOLD(op,sym,flags) Numop2(0, sym, \
+	DECL_OP2ON_NOFOLD(Op2Loops,op,uint8), DECL_OP2ON_NOFOLD(Op2Loops,op,int16), \
+	DECL_OP2ON_NOFOLD(Op2Loops,op,int32), DECL_OP2ON_NOFOLD(Op2Loops,op,int64), \
+	DECL_OP2ON_NOFOLD(Op2Loops,op,float32), DECL_OP2ON_NOFOLD(Op2Loops,op,float64), \
 	flags)
 
 template <class T>
@@ -388,30 +389,30 @@ Numop2 op2_table[] = {
 	DECL_OP2(or , "|", OP2_ASSOC|OP2_COMM),
 	DECL_OP2(xor, "^", OP2_ASSOC|OP2_COMM),
 	DECL_OP2(and, "&", OP2_ASSOC|OP2_COMM),
-	DECL_OP2(shl, "<<", 0),
-	DECL_OP2(shr, ">>", 0),
+	DECL_OP2_NOFOLD(shl, "<<", 0),
+	DECL_OP2_NOFOLD(shr, ">>", 0),
 
-	DECL_OP2(sc_and,"&&", 0),
-	DECL_OP2(sc_or, "||", 0),
+	DECL_OP2_NOFOLD(sc_and,"&&", 0),
+	DECL_OP2_NOFOLD(sc_or, "||", 0),
 
 	DECL_OP2(min, "min", OP2_ASSOC|OP2_COMM),
 	DECL_OP2(max, "max", OP2_ASSOC|OP2_COMM),
 
-	DECL_OP2(eq,  "==", OP2_COMM),
-	DECL_OP2(ne,  "!=", OP2_COMM),
-	DECL_OP2(gt,  ">", 0),
-	DECL_OP2(le,  "<=", 0),
-	DECL_OP2(lt,  "<", 0),
-	DECL_OP2(ge,  ">=", 0),
-	DECL_OP2(cmp, "cmp", 0),
+	DECL_OP2_NOFOLD(eq,  "==", OP2_COMM),
+	DECL_OP2_NOFOLD(ne,  "!=", OP2_COMM),
+	DECL_OP2_NOFOLD(gt,  ">", 0),
+	DECL_OP2_NOFOLD(le,  "<=", 0),
+	DECL_OP2_NOFOLD(lt,  "<", 0),
+	DECL_OP2_NOFOLD(ge,  ">=", 0),
+	DECL_OP2_NOFOLD(cmp, "cmp", 0),
 
-	DECL_OP2(sin, "sin*", 0),
-	DECL_OP2(cos, "cos*", 0),
-	DECL_OP2(atan, "atan", 0),
-	DECL_OP2(tanh, "tanh*", 0),
-	DECL_OP2(gamma, "gamma", 0),
-	DECL_OP2(pow, "**", 0),
-	DECL_OP2(log, "log*", 0),
+	DECL_OP2_NOFOLD(sin, "sin*", 0),
+	DECL_OP2_NOFOLD(cos, "cos*", 0),
+	DECL_OP2_NOFOLD(atan, "atan", 0),
+	DECL_OP2_NOFOLD(tanh, "tanh*", 0),
+	DECL_OP2_NOFOLD(gamma, "gamma", 0),
+	DECL_OP2_NOFOLD(pow, "**", 0),
+	DECL_OP2_NOFOLD(log, "log*", 0),
 };
 
 Ruby op1_dict = Qnil;
