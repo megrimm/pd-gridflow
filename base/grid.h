@@ -48,13 +48,24 @@ extern "C" {
 
 /* lots of macros follow */
 /* i'm not going to explain to you why macros *ARE* a good thing. */
-/* **************************************************************** */
+/* ************************************************************** */
 /* general-purpose macros */
 
 typedef /*volatile*/ VALUE Ruby;
 
 #define LIST(args...) args
+
+#ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,args)
+#else
+#define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
+#endif
+
+extern "C" {
+void rb_raise0(
+const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
+__attribute__ ((noreturn));
+};
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -502,12 +513,8 @@ struct Dim : Object {
 
 	Dim *dup() { return new Dim(n,v); }
 	int count() {return n;}
+	int get(int i) { return v[i]; }
 
-	int get(int i) {
-		assert(i>=0);
-		assert(i<n);
-		return v[i];
-	}
 	int32 prod(int start=0, int end=-1) {
 		if (end<0) end+=n;
 		int32 tot=1;
@@ -515,7 +522,6 @@ struct Dim : Object {
 		return tot;
 	}
 
-	/* !@#$ big leak machine */
 	char *to_s();
 
 	bool equal(Dim *o) {
@@ -555,12 +561,14 @@ struct BitPacking : Object {
 	BitPacking(){::abort();} /* don't call, but don't remove. sorry. */
 	BitPacking(int endian, int bytes, int size, uint32 *mask,
 		Packer *packer=0, Unpacker *unpacker=0);
-	void gfpost();
 	bool is_le();
 	bool eq(BitPacking *o);
 	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
 	\decl String pack2(String ins, String outs=Qnil);
 	\decl String unpack2(String ins, String outs=Qnil);
+
+	//new
+	\decl String to_s();
 
 /* main entrances to Packers/Unpackers */
 	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
@@ -602,14 +610,25 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
-struct NumberType {
+\class NumberType < Object
+struct NumberType : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int size;
 	int flags;
 	const char *aliases;
 	NumberTypeE index;
+
+	NumberType(const char *name_, int size_, int flags_, const char *aliases_) :
+		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
+	
+	//new
+	\decl Symbol sym_m();
+	\decl int size_m();
+	\decl int flags_m();
+	\decl int index_m();
 };
+\end class
 
 NumberTypeE NumberTypeE_find (Ruby sym);
 
@@ -641,6 +660,7 @@ struct Operator1On : Object {
 		op_map = z.op_map; }
 };
 
+\class Operator1 < Object
 struct Operator1 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
@@ -666,7 +686,11 @@ EACH_NUMBER_TYPE(FOO)
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
+
+	\decl Symbol sym_m ();
+	\decl void map_m (NumberTypeE nt, int n, String as);
 };
+\end class
 
 template <class T>
 struct Operator2On : Object {
@@ -688,6 +712,7 @@ struct Operator2On : Object {
 		op_scan = z.op_scan; }
 };
 
+\class Operator2 < Object
 struct Operator2 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
@@ -716,6 +741,11 @@ EACH_NUMBER_TYPE(FOO)
 		bs.will_use(an*n);
 		on(*as)->op_scan(an,n,(T *)as,(T *)bs);}
 
+	\decl void map_m (NumberTypeE nt, int n, String as, String b);
+	\decl void zip_m (NumberTypeE nt, int n, String as, String bs);
+	\decl void fold_m (NumberTypeE nt, int n, String as, String bs);
+	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
+		
 	Operator2(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) Operator2On<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
@@ -726,6 +756,7 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 };
+\end class
 
 extern NumberType number_type_table[];
 extern Ruby number_type_dict; /* GridFlow.@number_type_dict={} */
@@ -773,7 +804,28 @@ struct Grid : Object {
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
 
-	// void operator= (Grid &victim) {} ??
+	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
+	inline bool is_empty() { return !dim; }
+	Dim *to_dim ();
+
+#define FOO(type) \
+	operator type *() { return (type *)data; } \
+	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+	
+	void operator= (Grid &foo) {
+		dc = foo.dc;
+		init(foo.dim->dup(),foo.nt);
+		COPY(Pt<uint8>((uint8 *)    data,bytes()),
+		     Pt<uint8>((uint8 *)foo.data,bytes()),bytes());
+	}
+
+	Grid *dup () {
+		Grid *foo = new Grid;
+		*foo = *this;
+		return foo;
+	}
 
 	// almost like assignment, but also destroys the grid being assigned.
 	void swallow (Grid *victim) {
@@ -789,13 +841,6 @@ struct Grid : Object {
 	}
 
 	~Grid();
-#define FOO(type) \
-	operator type *() { return (type *)data; } \
-	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	inline bool is_empty() { return !dim; }
-	Dim *to_dim ();
 };
 
 static inline Grid *convert (Ruby r, Grid **bogus) {
@@ -1129,10 +1174,12 @@ extern Operator2 *op2_add, *op2_sub, *op2_mul, *op2_div, *op2_mod;
 extern Operator2 *op2_shl, *op2_and;
 
 #define SAME_TYPE(_a_,_b_) \
-	if ((_a_).nt != (_b_).nt) RAISE("%s(%s): same type please (%s versus %s)", \
-		this->info(), __PRETTY_FUNCTION__, \
-		number_type_table[(_a_).nt].name, \
-		number_type_table[(_b_).nt].name);
+	if ((_a_).nt != (_b_).nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
+		this->info(), \
+		#_a_, number_type_table[(_a_).nt].name, \
+		#_b_, number_type_table[(_b_).nt].name);
+
+#define NOTEMPTY(_a_) if ((_a_).is_empty()) RAISE("'%s' is empty");
 
 static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
@@ -1151,6 +1198,7 @@ static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
 struct GFStack {
 	struct GFStackFrame {
 		FObject *o;
+		void *bp; /* a pointer into system stack */
 		uint64 time;
 	};
 	GFStackFrame s[GF_STACK_MAX];
@@ -1158,23 +1206,8 @@ struct GFStack {
 	
 	GFStack() { n = 0; }
 
-	void push (FObject *o) {
-		//fprintf(stderr,"%*spush(0x%08x)\n",n,"",(int)o);
-		uint64 t = rdtsc();
-		if (n) s[n-1].time = t - s[n-1].time;
-		s[n].o = o;
-		s[n].time = t;
-		n++;
-	}
-
-	void pop () {
-		uint64 t = rdtsc();
-		if (!n) ::abort();
-		n--;
-		//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);
-		if (s[n].o) s[n].o->total_time += t - s[n].time;
-		if (n) s[n-1].time = t - s[n-1].time;
-	}
+	void push (FObject *o);
+	void pop ();
 };
 
 extern GFStack gf_stack;

@@ -62,13 +62,12 @@ void Grid::init(Dim *dim, NumberTypeE nt) {
 	if (!dim) RAISE("hell");
 	this->nt = nt;
 	this->dim = dim;
-	int size = dim->prod()*number_type_table[nt].size/8;
-	data = dim ? new char[size] : 0;
+	data = dim ? new char[bytes()] : 0;
 }
 
 void Grid::init_clear(Dim *dim, NumberTypeE nt) {
 	init(dim,nt);
-	int size = dim->prod()*number_type_table[nt].size/8;
+	int size = bytes();
 	CLEAR(Pt<char>((char *)data,size),size);
 }
 
@@ -114,8 +113,10 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		n = min(n,nn);
 #define FOO(type) { \
 		Pt<type> p = (Pt<type>)*this; \
-		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
-		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }
+		if (n==0) CLEAR(p,nn); \
+		else { \
+			for (int i=0; i<n; i++) NUM(a[i],p[i]); \
+			for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 		TYPESWITCH(nt,FOO,)
 #undef FOO		
 }
