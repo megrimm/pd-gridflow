@@ -1,0 +1,656 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
+<!-- $Id$ -->
+<!--
+	Video4jmax Reference Manual
+	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+-->
+
+<section name="Grid Protocol">
+<prose>
+	<p>
+	each element of a grid is an integer. the range of allowed integer values 
+	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
+	is -2<sup>31</sup> to 2<sup>31</sup>-1).
+	</p>
+	<p>
+	There is a sequence in which elements of a Grid are stored and
+	transmitted.  Dimension 0 is called "outer" or "first" and dimension N-1 is
+	called  "inner" or "last". This inner/outer relationship may also be thought
+	of  this way: a Grid is an array of array of array of...; for example, a
+	picture  is an array of lines; a line is an array of pixels; a pixel is an
+	array  of integers. 
+	</p>
+	<p>
+	At each such level, elements are sent/stored in their numeric order, 
+	and are numbered using natural numbers starting at 0. This ordering usually 
+	does not matter, but sometimes it does. Most notably, <k>@import</k>, 
+	<k>@export</k> and <k>@redim</k> care about it. 
+	</p>
+	<p>
+	On the other hand, order of dimensions usually does matter; this is 
+	what distinguishes rows from columns and channels, for example.
+	Most objects care about the distinction.
+	</p>
+</prose>
+</section>
+
+<section name="Picture Protocol">
+<prose>
+	<p>A picture is a three-dimensional Grid: 
+	<list start="0">
+		<li>rows</li>
+		<li>columns</li>
+		<li>channels</li>
+	</list>
+	</p>
+	<p>Channels for the RGB color model are:
+	<list start="0">
+		<li>red</li>
+		<li>green</li>
+		<li>blue</li>
+	</list>
+	</p>
+	<p>
+	Because Grids are made of 32-bit integers, a three-channel picture uses 
+	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
+	for display. That huge amount of slack is there because when you create 
+	your own effects you often have intermediate results that need to be of 
+	higher precision than a normal picture. Especially, results of multiplications 
+	are big and should not overflow before you divide them back to normal; 
+	and similarly, you can have negative values all over, as long as you take 
+	care of them before they get to the display.
+	</p>
+	<p>
+	In the final conversion, high bits are just truncated. The black value 
+	is 0 and the maximum intensity value is 255; negative values are wrapped 
+	and values above 255 are wrapped too. If you want to clip them, you may 
+	use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
+	</p>
+</prose>
+</section>
+
+<section name="Objects for Input/Output">
+	<jmax-class name="@video_out">
+		<icon
+			image="images/video_out_240_320.jpg"
+			text="[@video_out 240 320]"
+		/>
+
+		<method name="init">
+			<arg name="rows" type="integer"/>
+			<arg name="columns" type="integer"/>
+			Each @video_out object creates a window when it is created.
+			It is constructed with two parameters. If you want to create
+			a window that is 240 pixels high and 320 pixels wide:
+			@video_out 240 320. @video_out will use three channels in RGB
+			with values ranging 0-255.
+		</method>
+		
+		<inlet id="0">
+			<grid><dim>rows columns {red green blue}</dim>
+				resizes the window to the size of the grid;
+				encodes that grid in the display's pixel format;
+				also displays it if autodraw &gt; 0
+			</grid>
+			<method name="bang">
+				asks for a repaint of the window.
+				Usually not needed, as windows normally
+				repaint automatically.
+				(<i>normally.</i>) 
+			</method>
+			<method name="autodraw">
+				<arg type="integer"/>
+				sets the drawing mode.
+				<list start="0">
+				<li>makes all drawing manually activated (by <k>bang</k>).</li>
+				<li>displays when a whole picture has been received.
+				(default)</li>
+				<li>displays every line as it comes.
+				(but buffering may cause lines to come in groups anyway)</li>
+				</list>
+			</method>
+		</inlet>
+
+		<outlet id="0">
+			<method name="bang">
+				sent when a complete grid has been received.
+			</method>
+		</outlet>
+
+		<p>
+		Destroying the object should close the window.
+		Because of how jMax works,
+		this may be delayed until you do something else.
+		Closing the window yourself will make jMax crash.
+		</p>
+
+		<sample
+			image="images/grab_video_out.png"
+			text="video_out_patch"
+		/>
+	</jmax-class>
+	<jmax-class name="@out">
+		<icon
+			image="images/video_out_file.jpg"
+			text="[@out]"
+		/>
+		<inlet id="0">
+			<method name="open" min="1">
+				<arg name="filename"/>
+				<arg name="format"/>
+				you must open a file first. You do this by sending the message
+				"open" with a filename parameter. you may append the symbol "targa"
+				for .tga files, or "videodev" for video4linux 1.x digitalizer input,
+				or "ppm" (but ppm is the default)
+			</method>
+			<grid><dim>rows columns {red green blue}</dim>
+				writes a grid to file.
+				the file must be open first.
+				Sending a 2nd picture overwrites the first, like what
+				happens to the video buffer inside a @video_out object.
+			</grid>
+			<method name="close">
+				closes the file.
+				usually not necessary.
+			</method>
+		</inlet>
+		<sample
+			image="images/grab_video_out_file.png"
+			text="[@out]"
+		/>
+	</jmax-class>
+	<jmax-class name="@in">
+		<icon
+			image="images/video_in_file.jpg"
+			text="[@ import 240 320 3]"
+		/>
+		This class is similar to @out in that it operates on
+		files. However some aspects of it are backwards because it's reading,
+		not writing. Objects of this class don't have a grid inlet, they have
+		a grid outlet instead.
+		<inlet id="0">
+			<method name="open" min="1">
+				<arg name="filename"/>
+				<arg name="format"/>
+			</method>
+			<method name="close">
+				close may be necessary if you operate on "/dev/video", which can
+				only be read by one at a time. otherwise it's not necessary.
+			</method>
+			<method name="bang">
+				causes the object to send the picture from an open file through its
+				outlet. Several bangs reread the same picture over and over.
+			</method>
+			<method name="size">
+				<arg name="height"/>
+				<arg name="width"/>
+				sets the input size, especially when using a video digitalizer
+				device
+			</method>
+			<method name="option">
+				<arg name="property"/>
+				<arg name="value"/>
+				for format-specific options. for example, the VideoDev
+				format (really a device type) has seven options:
+				<list>
+				<li><k>channel</k> <i>integer</i></li>
+				<li><k>tuner</k> <i>integer</i></li>
+				<li><k>brightness</k> <i>integer</i></li>
+				<li><k>hue</k> <i>integer</i></li>
+				<li><k>colour</k> <i>integer</i></li>
+				<li><k>contrast</k> <i>integer</i></li>
+				<li><k>whiteness</k> <i>integer</i></li>
+				</list>
+			</method>
+		</inlet>
+		<sample
+			image="images/grab_video_in.png"
+			text="[@ import 240 320 3]"
+		/>
+	</jmax-class>
+	<jmax-class name="@import">
+		<icon
+			image="images/@import_240_320_3.jpg"
+			text="[@ import 240 320 3]"
+		/>
+		<p>Objects of this class have an inlet that can receive integers and reset 
+as well as Grid outlet. You specify the dimensions (all of them) in the 
+constructor. For a 240-row 320-column picture you'd say: @import 240 320 
+3 </p>
+<p>An import object accumulates the integers you send to it. They should 
+be in the 0-255 range. When you send 3 of them, they represent the red, 
+green and blue values of one pixel. Successive pixels are ordered left 
+to right and when there are enough of them they form a line. Successive 
+lines are ordered top to bottom and when there are enough of them they 
+form a frame. After a frame is completed a new frame begins replacing 
+the previous one.</p>
+
+		<inlet id="0">
+			<method name="int">
+				begins a new grid if there is no current grid.
+				puts that integer in the current grid.
+				ends the grid if it is full.
+			</method>
+			<method name="reset">
+				aborts the current grid if there is one.
+			</method>
+		</inlet>
+		<sample
+			image="images/grab_import.png"
+			text="[@ import 240 320 3]"
+		/>
+	</jmax-class>
+	<jmax-class name="@export">
+		<icon
+			image="images/@export.jpg"
+			text="[@export]"
+		/>
+<p>Objects of this class have a Grid inlet and a 0.1-compatible outlet. 
+They do the opposite of @import and take no parameters. </p>
+		<inlet id="0">
+
+		</inlet>
+		<sample
+			image="images/grab_export.png"
+			text="[@export]"
+		/>
+	</jmax-class>
+</section>
+
+<section name="Transformation Objects">
+	<jmax-class name="@fold">
+		<icon
+			image="images/@fold_%2B.jpg"
+			text="[@fold +]"
+		/>
+		<p>
+
+		@fold makes the last dimension of a grid disappear by combining elements
+		together in each innermost array. For example, @fold + 0 on a RGB image
+		will output a channelless image in which every value is the sum of
+		red/green/blue values in a pixel. The zero is the starting value, so that
+		is actually 0+r+g+b. You can get the number of values in a grid by passing
+		it through @dim and then through @fold * 1.
+		</p>
+
+		<sample
+			image="images/grab_fold.png"
+			text="[@fold +]"
+		/>
+	</jmax-class>
+	<jmax-class name="@redim">
+		<icon
+			image="images/@redim.jpg"
+			text="[@redim 2]"
+		/>
+
+		<p> @redim outputs a grid of the dimensions provided in the
+constructor,  based on serializing the input grid and reserializing it to those
+dimensions.  If the new grid is bigger, incoming data is repeated to fill the
+grid; if  the new grid is smaller, extra data is dropped. </p>
+
+<p>ex: with a 240 320 RGB image, @redim 120 640 3 will visually separate  the
+even lines (left) from the odd lines (right). contrary to this, @redim  640 120
+3 will split every line and put its left half on a even line and the right half
+on the following odd line. @redim 480 320 3 will repeat the input image twice
+in the output image. @redim 240 50 3 will only keep  the 50 top lines.</p>
+
+	<sample
+		image="images/grab_redim.png"
+		text="[@redim 2]"
+	/>
+	</jmax-class>
+	<jmax-class name="@store">
+		<icon
+			image="images/@store.jpg"
+			text="[@store]"
+		/>
+
+		<p>A @store object can store exactly one Grid. You store it via its
+right  inlet. You fetch it by sending a bang through its left inlet, which
+sends  the Grid on the outlet. You may also perform all kinds of coordinate
+transforms  with @store. You send in the left inlet a Grid whose two channels
+are  Y and X coordinates of pixels of the stored grid. Values too large or  too
+small are wrapped around (using uniform modulo). @store is even more  flexible
+than that: you can address whole lines and pixel parts too, by  sending
+appropriately-sized grids (non-3D). Advanced users can figure  it out;
+beginners should simply ignore it. </p>
+
+		<p>If you send to @store a grid of 2 dimensions consisting of rows (y)
+and  channels, in which the channel ... see the example</p>
+
+		<p>TODO @store takes one argument specifying its size, int32 (default)
+or  uint8 (native format for ppm or tga formats) </p>
+
+		<sample
+			image="images/grab_cross_fade.png"
+			text="[@store]"
+		/>
+	</jmax-class>
+	<jmax-class name="@outer">
+		<icon
+			image="images/@outer.jpg"
+			text="[@outer +]"
+		/>
+		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will produce 
+		a grid of Dim(3,5) with the selected binary operation applied on each 
+		of the possible pairs combinations between numbers from the left grid 
+		and the ones from the right. for example : (10,20,30) [@outer +] (1,2,3) 
+		will give : ((11,12,13),(21,22,23),(31,32,33)) </p>
+		<sample
+			image="images/grab_outer.png"
+			text="[@dim]"
+		/>
+	</jmax-class>
+
+	<jmax-class name="@!">
+	
+	</jmax-class>
+
+	<jmax-class name="@">
+		<p>This object computes a Grid by combining each of its elements with an 
+		integer in its right inlet. This is not unlike built-in arithmetic objects, 
+		except that the left inlet, and the outlet, work with Grids. This runs 
+		up to 10 times faster than equivalent built-ins (but still probably slower 
+		than equivalent DSP built-ins. Construction takes 2 parameters: a first 
+		one is the operation's symbol, and a second optional one is the default 
+		value for the right inlet. Operations provided are listed below in the 
+		&quot;binary operations&quot; section. Many of them have no equivalent 
+		in "plain jMax". 
+		</p>
+	
+		<sample
+			image="images/grab_binary_operations.png"
+			text="binary operators 1"
+		/>
+	</jmax-class>
+</section>
+
+<section name="Reporting Objects">
+	<jmax-class name="@dim">
+		<icon image="images/@dim.jpg" text="[@dim]"/>
+		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
+		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+		<sample image="images/grab_dim.png"/>
+	</jmax-class>
+</section>
+
+<section name="Compound Objects">
+	<jmax-class name="@contrast">
+		<icon
+			image="images/@contrast.jpg"
+			text="[@contrast]"
+		/>
+
+		<p>@contrast adjusts the intensity in an image.
+		values outside 0-255 are automatically trimmed. </p>
+
+		<p> Sending an integer to inlet 2 sets the intensity of incoming
+		white to a certain fraction between output black and output white.
+		normal value is 256; may be set smaller or bigger.</p>
+
+		<p> Sending an integer to inlet 1 sets the intensity of incoming
+		black to a certain fraction between output black and inlet 2 value.
+		normal value is 256; may be set smaller or bigger.</p>
+
+		<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+
+		<sample
+			image="images/grab_contrast.png"
+			text="[@contrast]"
+		/> 
+</jmax-class>
+
+<jmax-class name="@identity_transform">
+	<icon
+		image="images/@identity_transform.jpg"
+		text="[@identity_transform]"
+	/>
+<p>@identity_transform builds a pixel-level transform grid suitable for 
+using with inlet 0 of @store. </p>
+<p> Sending an integer to inlet 2 sets the width of the resulting picture.</p>
+<p> Sending an integer to inlet 1 sets the height of the resulting picture.</p>
+<p> Sending a grid to inlet 0 generates said grid and sends it to inlet 
+0. Not guaranteed to be fast (use an intermediate @store as a cache 
+if needed)</p>
+
+	<sample
+		image="images/grab_identity_transform.png"
+		text="[@identity_transform]"
+	/>
+</jmax-class>
+
+<jmax-class name="@posterize">
+	<icon
+		image="images/@posterize.jpg"
+		text="[@posterize]"
+	/>
+<p>@posterize reduces the number of intensities in an image. </p>
+<p> Sending an integer to inlet 1 sets the number of possible levels. 
+Minimum value is 2. Simulate 216-color palette with 6. Simulate 15-bit 
+depth with 32. The effect is mostly apparent with small values.</p>
+<p> Sending a grid to inlet 0 filters it to outlet 0.</p>
+	<sample
+		image="images/grab_posterize.png"
+		text="[@posterize]"
+	/>
+</jmax-class>
+
+<jmax-class name="@scale_to">
+	<icon
+		image="images/@scale_to.jpg"
+		text="[@scale_to]"
+	/>
+<p>@scale_to is normally fed the same inlet 1,2 values as @identity_transform, 
+and chained from @identity_transform and to @store. This will scale an 
+image of any size to the size specified in inlets 1,2. If it doesn't correspond 
+the values of @identity_transform, part of the image will be trimmed and/or 
+duplicated.</p>
+
+	<sample
+		image="images/grab_scale_to.png"
+		text="[@scale_to]"
+	/>
+</jmax-class>
+
+<jmax-class name="@spread">
+	<icon
+		image="images/@spread.jpg"
+		text="[@spread]"
+	/>
+<p>@spread scatters the pixels in an image. Not all original pixels will 
+appear, and some may get duplicated (triplicated, etc) randomly. Some 
+wrap-around effect will occur close to the edges. </p>
+<p> Sending an integer to inlet 1 sets the amount of spreading in maximum 
+number of pixels + 1. even values translate the whole image by half 
+a pixel due to rounding.</p>
+	<sample
+		image="images/grab_spread.png"
+		text="[@spread]"
+	/>
+</jmax-class>
+
+<jmax-class name="@three">
+	<icon
+		image="images/@three.jpg"
+		text="[@three]"
+	/>
+<p>@three builds a Dim(3) grid using integers sent in inlets 0, 1, 2. </p>
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+doing redundant updates -- sorry)</p>
+<icon
+	image="images/grab_three.png"
+	text="[@three]"
+/>
+</jmax-class>
+<jmax-class name="@two">
+<icon
+	image="images/@two.jpg"
+	text="[@two]"
+/>
+<p>@two builds a Dim(2) grid using integers sent in inlets 0, 1. </p>
+<p>Sending an integer guarantees an update to outlet 0 (currently it's 
+doing redundant updates -- sorry)</p>
+<sample
+	image="images/grab_two.png"
+	text="[@two]"
+/>
+</jmax-class>
+</section>
+
+<section name="Unary Operators">
+
+	<!-- todo: text attr in those icons could be auto-generated -->
+
+	<operator-1 name="abs"><icon image="images/@!_abs.jpg"/>
+		absolute value of A
+	</operator-1>
+	<operator-1 name="rand"><icon image="images/@!_rand.jpg"/>
+		produces an random number between 0 and A-1
+	</operator-1>
+	<operator-1 name="sqrt"><icon image="images/@!_sqrt.jpg"/>
+		square root of A, rounded downwards
+	</operator-1>
+</section>
+
+<section name="Binary Operators">
+	<prose><p>where A is the left value, and B is the right value.</p></prose>
+
+	<!-- todo: text attr in those icons could be auto-generated -->
+	<!-- todo: make CNAME a column in html -->
+
+	<!-- category: additive -->
+	<operator-2 name="+" cname="add"><icon image="images/@_%2B.jpg"/>
+		A + B
+	</operator-2>
+	<operator-2 name="-" cname="sub"><icon image="images/@_-.jpg"/>
+		A - B
+	</operator-2>
+	<operator-2 name="inv+" cname="bus"><icon image="images/@_inv%2B.jpg"/>
+		B - A
+	</operator-2>
+
+	<!-- category: multiplicative -->
+	<operator-2 name="*" cname="mul"><icon image="images/@_x.jpg"/>
+		A * B
+	</operator-2>
+	<operator-2 name="/" cname="div"><icon image="images/@_division.jpg"/>
+		A / B, rounded downwards
+	</operator-2>
+	<operator-2 name="inv*" cname="vid"><icon image="images/@_invx.jpg"/>
+		B / A, rounded downwards
+	</operator-2>
+	<operator-2 name="%" cname="mod"><icon image="images/@_modulo.jpg"/>
+		A % B, non-negative remainder
+	</operator-2>
+	<operator-2 name="swap%" cname="dom"><icon image="images/@_swap.jpg"/>
+		B % A, non-negative remainder
+	</operator-2>
+
+	<!-- bits -->
+	<operator-2 name="|" cname="or"><icon image="images/@_a_or_b_bitwise.jpg"/>
+		A or B, bitwise
+	</operator-2>
+	<operator-2 name="^" cname="xor"><icon image="images/@_xor_bitwise.jpg"/>
+		A xor B, bitwise
+	</operator-2>
+	<operator-2 name="&amp;" cname="and"><icon image="images/@_and.jpg"/>
+		A and B, bitwise
+	</operator-2>
+	<operator-2 name="&lt;&lt;" cname="shl"><icon image="images/@_shift_bits_left.jpg"/>
+		A * (2**(B % 32)), which is left-shifting
+	</operator-2>
+	<operator-2 name="&gt;&gt;" cname="shr"><icon image="images/@_shift_bits_right.jpg"/>
+		A / (2**(B % 32)), which is right-shifting
+	</operator-2>
+
+	<!-- decision -->
+	<operator-2 name="||" cname="sc_or"><icon image="images/@_if_then_else.jpg"/>
+		if A is zero then B else A
+	</operator-2>
+	<operator-2 name="&amp;&amp;" cname="sc_and"><icon image="images/@_&amp;&amp;.jpg"/>
+		if A is zero then zero else B
+	</operator-2>
+	<operator-2 name="min" cname="min"><icon image="images/@_min.jpg"/>
+		the lowest value in A,B
+	</operator-2>
+	<operator-2 name="max" cname="max"><icon image="images/@_max.jpg"/>
+		the highest value in A,B
+	</operator-2>
+
+	<!-- comparison -->
+	<operator-2 name="cmp" cname="cmp"><icon image="images/@_comp.jpg"/>
+		cmp gives -1 if A&lt;B; 0 if A=B; 1 if A&gt;B
+	</operator-2>
+	<operator-2 name="==" cname="eq"><icon image="images/@_equals.jpg"/>
+		is A equal to B ? 1=true, 0=false
+	</operator-2>
+	<operator-2 name="!=" cname="ne"><icon image="images/@_not_equal.jpg"/>
+		is A not equal to B ?
+	</operator-2>
+	<operator-2 name="&gt;" cname="gt"><icon image="images/@_greater_than.jpg"/>
+		is A greater than B ?
+	</operator-2>
+	<operator-2 name="&lt;=" cname="le"><icon image="images/@_smaller_or_equal.jpg"/>
+		is A not greater than B ?
+	</operator-2>
+	<operator-2 name="&lt;" cname="lt"><icon image="images/@_smaller_than.jpg"/>
+		is A less than B ?
+	</operator-2>
+	<operator-2 name="&gt;=" cname="ge"><icon image="images/@_larger_or_equal_to.jpg"/>
+		is A not less than B ?
+	</operator-2>
+
+	<!-- other -->
+	<operator-2 name="sin*" cname="sin"><icon image="images/@_sin.jpg"/>
+		B * sin(A), where A is in hundredths of degrees
+	</operator-2>
+	<operator-2 name="cos*" cname="cos"><icon image="images/@_cos.jpg"/>
+		B * cos(A)
+	</operator-2>
+	<operator-2 name="atan" cname="atan"><icon image="images/@_atan.jpg"/>
+		arctan(A/B)
+	</operator-2>
+	<operator-2 name="tanh" cname="tanh"><icon image="images/@_tanh.jpg"/>
+		tanh(A) where A is in hundredths of degrees (yes, really)
+	</operator-2>
+	<operator-2 name="gamma" cname="gamma"><icon image="images/@_gamma.jpg"/>
+		floor(pow(a/256.0,256.0/b)*256.0)
+	</operator-2>
+	<operator-2 name="**" cname="pow"><icon image="images/@_xx.jpg"/>
+		A raised to power B
+	</operator-2>
+</section>
+
+<section name="External Picture Formats">
+	<format name="ppm" long-name="">
+		<icon
+			image="images/open_ppm.jpg"
+			text="[open filename.ppm]"
+		/>
+		<p>PPM:Read+Write. Subformat P6 only. RGB-24 only.</p>
+	</format>
+	<format name="targa" long-name="">
+		<icon
+			image="images/open_tga.jpg"
+			text="[open filename.tga targa]"
+		/>
+		<p>Targa: Read Only. RGB-24 only. (ARGB-32 is temporarily disabled) 
+		</p>
+		<p>Experimental.</p>
+	</format>
+	<format name="x11" long-name="">
+	</format>
+	<format name="videodev" long-name="">
+		<icon
+			image="images/open_videodev.jpg"
+			text="[open dev/video0 videodev]"
+		/>
+		<p>Video4Linux-1 devices, RGB-24 only. Variable picture 
+		size. should work for bttv based cards and the dc1 from miro, possibly 
+		dc10plus.</p>
+	</format>
+</section>
+</jmax-doc>
