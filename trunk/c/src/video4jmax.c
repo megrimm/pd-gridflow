@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <time.h>
 #include <stdarg.h>
 #include <string.h>
 #include <signal.h>
@@ -102,6 +103,8 @@ void video4jmax_module_init (void) {
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
 	DEF_SYM(grid_end);
+
+	video4jmax_object_set = ObjectSet_new();
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
@@ -233,6 +236,59 @@ FILE *v4j_file_fopen(const char *name, int mode) {
 }
 
 /* **************************************************************** */
+
+/* a set of objects */
+struct ObjectSet {
+	int capa;
+	int len;
+	GridObject **buf;
+};
+
+ObjectSet *ObjectSet_new(void) {
+	ObjectSet *$ = NEW(ObjectSet,1);
+	$->capa = 1;
+	$->len = 0;
+	$->buf = NEW(GridObject*,1);
+	return $;
+}
+
+void ObjectSet_add(ObjectSet *$, GridObject *obj) {
+	if ($->len >= $->capa) {
+		GridObject **buf;
+		$->capa *= 2;
+		buf = NEW(GridObject*,$->capa);
+		memcpy(buf,$->buf,$->len*sizeof(GridObject *));
+		FREE($->buf);
+		$->buf = buf;
+	}
+	$->buf[$->len++] = obj;
+	whine("added   %p (objects=%d)",obj,$->len);
+}
+
+void ObjectSet_del(ObjectSet *$, GridObject *obj) {
+	int i;
+	for (i=0; i<$->len; i++) {
+		if ($->buf[i]==obj) {
+			$->len--;
+			$->buf[i] = $->buf[$->len];
+			whine("deleted %p (objects=%d)",obj,$->len);
+			return;
+		}
+	}
+	whine("not deleting %p",obj);
+}
+
+/*
+void ObjectSet_each(ObjectSet *$, void(*)(GridObject *,void*),void*data) {}
+*/
+
+/* the set of all profilable objects (well, we hope so) */
+/* I assume no-one uses more than about 1000 objects at once, which
+   justifies the lousy algorithms above.
+*/
+ObjectSet *video4jmax_object_set;
+
+/* **************************************************************** */
 /* [rtmetro] */
 
 static fts_alarm_t *rtmetro_alarm = 0;
@@ -275,7 +331,43 @@ CLASS(RtMetro) {
 	/* initialize the class */
 	fts_class_init(class, sizeof(RtMetro), 2, 1, 0);
 	define_many_methods(class,ARRAY(methods));
-	GridObject_conf_class(class,0);
+/*	GridObject_conf_class(class,0); */
+	return fts_Success;
+}
+
+/* **************************************************************** */
+/* [video4jmax] */
+
+/* a dummy object that gives access to any stuff global to
+   video4jmax.
+*/
+typedef struct Video4jmax {
+	fts_object_t o;
+} Video4jmax;
+
+METHOD(Video4jmax,profiler_reset) {
+}
+
+METHOD(Video4jmax,profiler_dump) {
+}
+
+METHOD(Video4jmax,init) {}
+
+METHOD(Video4jmax,delete) {}
+
+CLASS(Video4jmax) {
+	fts_type_t   no_args[]  = { };
+	fts_type_t init_args[]  = { fts_t_symbol };
+	MethodDecl methods[] = {
+		{ -1, fts_s_init,   METHOD_PTR(Video4jmax,init),   ARRAY(init_args),0 },
+		{ -1, fts_s_delete, METHOD_PTR(Video4jmax,delete), 0,0,0 },
+		{  0, SYM(profiler_reset), METHOD_PTR(Video4jmax,profiler_reset),ARRAY(no_args),-1},
+		{  0, SYM(profiler_dump),  METHOD_PTR(Video4jmax,profiler_dump), ARRAY(no_args),-1},
+
+	};
+
+	fts_class_init(class, sizeof(Video4jmax), 1, 1, 0);
+	define_many_methods(class,ARRAY(methods));
 	return fts_Success;
 }
 
@@ -284,4 +376,5 @@ CLASS(RtMetro) {
 
 void startup_video4jmax (void) {
 	INSTALL("rtmetro", RtMetro);
+	INSTALL("video4jmax", Video4jmax);
 }

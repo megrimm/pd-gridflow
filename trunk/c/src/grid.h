@@ -587,6 +587,15 @@ extern FormatClass FORMAT_LIST( ,class_);
 extern FormatClass *format_classes[];
 FormatClass *FormatClass_find(const char *name);
 
+/* **************************************************************** */
+
+typedef struct ObjectSet ObjectSet;
+
+ObjectSet *ObjectSet_new(void);
+void ObjectSet_add(ObjectSet *$, GridObject *obj);
+void ObjectSet_del(ObjectSet *$, GridObject *obj);
+extern ObjectSet *video4jmax_object_set;
+
 #ifdef __cplusplus
 };
 #endif
