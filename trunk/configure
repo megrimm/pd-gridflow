@@ -286,9 +286,13 @@ Feature.new {
 	tag :librubystatic
 	unless_feature [:libruby]
 	name "Ruby as a static library"
-	uses_bridge_so ["-Wl,--whole-archive"+
-		" #{$LIBRUBY_A} #{CONFIG['LIBS']} "+
-		"-Wl,--no-whole-archive"]
+	uses_bridge_so {
+		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
+		unless Config::CONFIG["arch"] =~ /darwin/
+			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive"
+		end
+		[lib]
+	}
 	test proc {
 		c_test "
 		#include <ruby.h>
