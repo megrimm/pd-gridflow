@@ -6,16 +6,17 @@ Distribution (0.5.x)
 [!] prepare gridflow-images-0.5
 [ ] upload on both web sites
 [ ] send announcement (jmaxvideo,jmax,0xff,fm.net)
+[ ] review all documentation
 
 Installation
 [!] "ARCH" moved into configure.
 [!] de-jmax-ify the build process.
-[x] add --fast switch to turn  on all optimizations
+[ ] replace --fast by opposite --debug option
+[x] add --fast switch to turn on all optimizations
 [!] installable doc, installable includes
 [!] introduce jMax 3.0 support
-[!] phase out jMax 2.4 support
+[x] phase out jMax 2.4 support
 [!] backup the repository
-[ ] replace --fast by opposite --debug option
 [ ] add macos 10.x support
 
 Documentation
@@ -62,14 +63,16 @@ Architecture
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
-[ ] unary ops: sq
+[x] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] identify streams by ids given at grid_begin
     (may allow for cancelling rejected grids?)
     (add cancel option to the r/rw choice in callback of grid_begin ?)
 [ ] Will I switch to C++/ObjC finally ???
-[ ] Add support for Ruby
 [ ] make @store loopable
+[ ] MMX autodetection
+[ ] accounting: grids messages packets numbers bytes copybytes
+[ ] more profiling?
 
 Computation Objects
 [ ] @type, @cast
@@ -79,15 +82,18 @@ Computation Objects
 [ ] @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
-[ ] @pfold, @rfold, @prfold
+[ ] @scan
+[ ] @foldr, @scanr
 [ ] @inner is broken but useful; rename to @inner2; add real @inner
-[ ] @polygons
+[ ] @polygon
 [ ] @matrix_inverse, @matrix_solve
+[ ] @sort ?
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
-[ ] @scale_by with argument
+[x] @scale_by with argument
+[ ] timelines as in MM-Director
 
 Effects
 [!] improve
@@ -95,6 +101,7 @@ Effects
 [ ] pinch
 [ ] pixelize, despeckle
 [ ] abyss effect
+[ ] @dither
 [ ] image-sur-image
 [ ] n-frame delaying
 [ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
@@ -114,7 +121,10 @@ Input/Output
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
-[ ] VDSP bridge
+[ ] Pixonix bridge
+[ ] Ruby bridge
+[ ] PureData bridge
+[ ] Max bridge
 
 Format
 [ ] all: get rid of the "format" notion
@@ -137,6 +147,7 @@ Format
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
 [ ] Videodev: find out what channel the small cam goes on and why it isn't displaying.
 [ ] Raw: a new format for reading arbitrary data.
+[ ] X11: mouse input
 
 Java/Swing
 [ ] color picker
