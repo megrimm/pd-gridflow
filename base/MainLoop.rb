@@ -201,7 +201,6 @@ def initialize
 end
 
 def one(delay=nil)
-	p @timers.delay_until_next
 	while @timers.delay_until_next == 0
 		@timers.consume
 	end
