@@ -932,7 +932,7 @@ class DelcomUSB < GridFlow::FObject
 		# GridFlow.post "Interface # %i\n", if_num
 		@usb.set_configuration 1
 		@usb.claim_interface if_num
-		@usb.set_altinterface 0
+		@usb.set_altinterface 0 rescue ArgumentError
 	end
 	# libdelcom had this:
         # uint8 recipient, deviceModel, major, minor, dataL, dataM;
