@@ -115,17 +115,9 @@ bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
 	return true;
 }
 
-GRID_BEGIN(FormatTarga,0) {
-	whine("not implemented");
-	return false;
-}
-
-/* !@#$ use BitPacking here */
-GRID_FLOW(FormatTarga,0) {
-}
-
-GRID_END(FormatTarga,0) {
-}
+GRID_BEGIN(FormatTarga,0) { RAISE("not implemented"); }
+GRID_FLOW(FormatTarga,0) {}
+GRID_END(FormatTarga,0) {}
 
 void FormatTarga_close (Format *$) {
 	if ($->bstream) fclose($->bstream);
@@ -141,7 +133,7 @@ Format *FormatTarga_open (FormatClass *class, GridObject *parent, int mode, ATOM
 	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
 		whine("usage: targa file <filename>"); goto err;
 	}
-	filename = fts_symbol_name(fts_get_symbol(at+1));
+	filename = Symbol_name(fts_get_symbol(at+1));
 
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {

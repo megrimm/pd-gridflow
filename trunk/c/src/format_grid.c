@@ -224,8 +224,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	}
 
 	return true;
-err:
-	return false;
+err: return false;
 }
 
 GRID_BEGIN(FormatGrid,0) {
@@ -286,7 +285,7 @@ bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 		whine("bad argument"); goto err;
 	}
 
-	filename = fts_symbol_name(fts_get_symbol(at+0));
+	filename = Symbol_name(fts_get_symbol(at+0));
 	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
@@ -294,8 +293,7 @@ bool FormatGrid_open_file (FormatGrid *$, int mode, ATOMLIST) {
 	}
 	$->stream = fileno($->bstream);
 	return true;
-err:
-	return false;
+err: return false;
 }
 
 /* **************************************************************** */
@@ -327,7 +325,7 @@ bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	address.sin_port = htons(fts_get_int(at+1));
 
 	{
-		struct hostent *h = gethostbyname(fts_symbol_name(fts_get_symbol(at+0)));
+		struct hostent *h = gethostbyname(Symbol_name(fts_get_symbol(at+0)));
 		if (!h) {
 			whine("open_tcp(gethostbyname): %s",strerror(errno));
 			goto err;
@@ -413,7 +411,7 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 		} else if (sym == SYM(tcpserver)) {
 			result = FormatGrid_open_tcpserver($,mode,ac-1,at+1);
 		} else {
-			whine("unknown access method '%s'",fts_symbol_name(sym));
+			whine("unknown access method '%s'",Symbol_name(sym));
 			goto err;
 		}
 		if (!result) goto err;
@@ -434,7 +432,7 @@ static GridHandler FormatGrid_handler = GRINLET(FormatGrid,0);
 FormatClass class_FormatGrid = {
 	object_size: sizeof(FormatGrid),
 	symbol_name: "grid",
-	long_name: "Grid",
+	long_name: "GridFlow file format",
 	flags: FF_R|FF_W,
 
 	open: FormatGrid_open,

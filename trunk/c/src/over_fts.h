@@ -25,5 +25,7 @@
 #define __GF_OVER_FTS_H
 
 typedef fts_symbol_t Symbol;
+#define Symbol_new(x) fts_new_symbol(x)
+#define Symbol_name(x) fts_symbol_name(x)
 
 #endif

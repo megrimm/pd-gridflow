@@ -50,8 +50,7 @@ typedef struct FormatX11 {
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
-	long white_pixel;
-	long black_pixel;
+	long black,white; /* color numbers in default palette */
 	short depth;
 	bool use_shm;	   /* should use shared memory? */
 
@@ -114,7 +113,7 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 static Symbol button_sym(int i) {
 	char foo[42];
 	sprintf(foo,"button%d",i);
-	return fts_new_symbol(foo);
+	return Symbol_new(foo);
 }
 
 void FormatX11_alarm(FormatX11 *$) {
@@ -328,8 +327,7 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 		whine("About to create window: %s",s);
 		FREE(s);
 		$->window = XCreateSimpleWindow($->display,
-			$->root_window, 0, 0, sx, sy, 0,
-			$->white_pixel, $->black_pixel);
+			$->root_window, 0, 0, sx, sy, 0, $->white, $->black);
 		if(!$->window) {
 			whine("can't create window");
 			goto err;
@@ -425,7 +423,7 @@ void FormatX11_option (FormatX11 *$, ATOMLIST) {
 		COERCE_INT_INTO_RANGE($->autodraw,0,2);
 		whine("autodraw = %d",$->autodraw);
 	} else {
-		whine("unknown option: %s", fts_symbol_name(sym));
+		whine("unknown option: %s", Symbol_name(sym));
 	}
 }
 
@@ -441,17 +439,17 @@ FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
 	}
 
 	/*
-	  btw don't try to set the X11 error handler.
+	  btw don't expect too much from X11 error handling system.
 	  it sucks big time and it won't work.
 	*/
 
 	screen      = DefaultScreenOfDisplay($->display);
 	screen_num  = DefaultScreen($->display);
-	$->visual      = DefaultVisual($->display, screen_num);
-	$->white_pixel = XWhitePixel($->display,screen_num);
-	$->black_pixel = XBlackPixel($->display,screen_num);
+	$->visual   = DefaultVisual($->display, screen_num);
+	$->white    = XWhitePixel($->display,screen_num);
+	$->black    = XBlackPixel($->display,screen_num);
 	$->root_window = DefaultRootWindow($->display);
-	$->depth       = DefaultDepthOfScreen(screen);
+	$->depth    = DefaultDepthOfScreen(screen);
 
 	whine("depth = %d",$->depth);
 
@@ -517,7 +515,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		} else if (domain==SYM(remote)) {
 			char host[64];
 			int dispnum = 0;
-			strcpy(host,fts_symbol_name(fts_get_symbol(at+1)));
+			strcpy(host,Symbol_name(fts_get_symbol(at+1)));
 				dispnum = fts_get_int(at+2);
 			sprintf(host+strlen(host),":%d",dispnum);
 			whine("mode `remote'");
@@ -545,7 +543,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 				whine("will use root window (0x%x)", $->window);
 				$->is_owner = false;
 			} else {
-				const char *winspec2 = fts_symbol_name(winspec);
+				const char *winspec2 = Symbol_name(winspec);
 				if (strncmp(winspec2,"0x",2)==0) {
 					$->window = strtol(winspec2+2,0,16);
 				} else {

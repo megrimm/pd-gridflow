@@ -56,7 +56,7 @@ clean-standalone::
 	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-../obj2/%.o: %.c grid.h lang.h config.h nofts.h Makefile
+../obj2/%.o: %.c grid.h lang.h config.h nofts.h over_fts.h Makefile
 	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 

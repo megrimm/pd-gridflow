@@ -209,9 +209,9 @@ Operator2 *op2_table_find(Symbol sym) {
 void startup_operator (void) {
 	int i;
 	for(i=0; i<COUNT(op1_table); i++) {
-		op1_table[i].sym = fts_new_symbol(op1_table[i].name);
+		op1_table[i].sym = Symbol_new(op1_table[i].name);
 	} 
 	for(i=0; i<COUNT(op2_table); i++) {
-		op2_table[i].sym = fts_new_symbol(op2_table[i].name);
+		op2_table[i].sym = Symbol_new(op2_table[i].name);
 	} 
 }

@@ -328,10 +328,7 @@ bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
 	int finished_frame;
 
 	if (frame != -1) return 0;
-	if (!$->bit_packing) {
-		whine("no bit_packing");
-		return false;
-	}
+	if (!$->bit_packing) RAISE("no bit_packing");
 
 	if (!$->image) {
 		if (!FormatVideoDev_alloc_image($)) goto err;
@@ -353,17 +350,9 @@ err:
 	return false;
 }
 
-GRID_BEGIN(FormatVideoDev,0) {
-	return false;
-}
-
-GRID_FLOW(FormatVideoDev,0) {
-
-}
-
-GRID_END(FormatVideoDev,0) {
-
-}
+GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
+GRID_FLOW(FormatVideoDev,0) {}
+GRID_END(FormatVideoDev,0) {}
 
 void FormatVideoDev_norm (FormatVideoDev *$, int value) {
 	VideoTuner vtuner;
@@ -434,7 +423,7 @@ void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	PICTURE_ATTR(whiteness)
 
 	} else {
-		whine("unknown option: %s", fts_symbol_name(sym));
+		whine("unknown option: %s", Symbol_name(sym));
 	}
 }
 
@@ -455,7 +444,7 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 	$->image = 0;
 
 	if (ac!=1) { whine("usage: videodev filename"); goto err; }
-	filename = fts_symbol_name(fts_get_symbol(at+0));
+	filename = Symbol_name(fts_get_symbol(at+0));
 
 	whine("will try opening file");
 

@@ -75,7 +75,7 @@ METHOD(GridIn,reset) {
 }
 
 METHOD(GridIn,open) {
-	const char *format = fts_symbol_name(GET(0,symbol,SYM(ppm)));
+	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
 	FormatClass *qlass = FormatClass_find(format);
 
 	if (qlass) {
@@ -207,11 +207,11 @@ METHOD(GridOut,open) {
 	whine("open args = %s",buf);
 	for (i=0; i<ac; i++) {
 		sprintf_atoms(buf,1,at+i);
-		whine("open arg %d = %s %s", i, fts_symbol_name((at+i)->type), buf);
+		whine("open arg %d = %s %s", i, Symbol_name((at+i)->type), buf);
 	}
 	return;
 */
-	const char *format = fts_symbol_name(GET(0,symbol,SYM(ppm)));
+	const char *format = Symbol_name(GET(0,symbol,SYM(ppm)));
 	FormatClass *qlass = FormatClass_find(format);
 
 	if (qlass) {
@@ -265,7 +265,7 @@ LIST(GRINLET(GridOut,0)),
 /* ---------------------------------------------------------------- */
 
 #define INSTALL(_sym_,_name_) \
-	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
 
 void startup_io (void) {
 	INSTALL("@in",GridIn);
