@@ -21,11 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef __GF_OVER_FTS_H
-#define __GF_OVER_FTS_H
+/* **************************************************************** */
+/* Var */
 
-typedef fts_symbol_t Symbol;
-#define Symbol_new(x) fts_new_symbol(x)
-#define Symbol_name(x) fts_symbol_name(x)
-
-#endif

@@ -23,8 +23,8 @@
 
 /* this file is for allowing GridFlow to be compiled without jMax. */
 
-#ifndef __NOFTS_H
-#define __NOFTS_H
+#ifndef __BRIDGE_NONE_H
+#define __BRIDGE_NONE_H
 #include "lang.h"
 
 typedef int fts_status_t;
@@ -161,4 +161,4 @@ fts_object_t *fts_object_new3(const char *foo);
 void fts_send3(fts_object_t *o, int woutlet, const char *foo);
 
 
-#endif /* __NOFTS_H */
+#endif /* __BRIDGE_NONE_H */
