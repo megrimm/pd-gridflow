@@ -48,7 +48,6 @@ struct FormatMPEG3 : Format {
 	int nframe = mpeg3_get_frame(mpeg,track);
 	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
 
-	GridOutlet *o = out[0];
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
 	int npixels = sx*sy;
@@ -59,12 +58,12 @@ struct FormatMPEG3 : Format {
 	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 
 	int32 v[] = { sy, sx, channels };
-	o->begin(new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	int bs = o->dim->prod(1);
+	GridOutlet out(this,0,new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	int bs = out.dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
 		bit_packing->unpack(sx,buf+channels*sx*y,b2);
-		o->send(bs,b2);
+		out.send(bs,b2);
 	}
 	delete[] (uint8 *)buf;
 	return INT2NUM(nframe);

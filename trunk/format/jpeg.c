@@ -85,14 +85,13 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_read_header(&djpeg,TRUE);
 	int sx=djpeg.image_width, sy=djpeg.image_height, chans=djpeg.num_components;
 	int32 v[] = { sy, sx, chans };
-	out[0]->begin(new Dim(3,v),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(3,v),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	jpeg_start_decompress(&djpeg);
 	uint8 row[sx*chans];
 	uint8 *rows[1] = { row };
 	for (int n=0; n<sy; n++) {
 		jpeg_read_scanlines(&djpeg,rows,1);
-		out[0]->send(sx*chans,Pt<uint8>(row,sx*chans));
+		out.send(sx*chans,Pt<uint8>(row,sx*chans));
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);

@@ -295,7 +295,7 @@ struct FormatVideoDev : Format {
 }
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
-	out[0]->begin(dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
@@ -311,17 +311,17 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 				b2[x*3+1]=bufu[x/2];
 				b2[x*3+2]=bufv[x/2];
 			}
-			out[0]->send(bs,b2);
+			out.send(bs,b2);
 		}
 	} else if (bit_packing) {
 		STACK_ARRAY(uint8,b2,bs);
 		for(int y=0; y<sy; y++) {
 			Pt<uint8> buf2 = buf+bit_packing->bytes*sx*y;
 			bit_packing->unpack(sx,buf2,b2);
-			out[0]->send(bs,b2);
+			out.send(bs,b2);
 		}
 	} else {
-		out[0]->send(sy*bs,buf);
+		out.send(sy*bs,buf);
 	}
 }
 

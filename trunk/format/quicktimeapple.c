@@ -304,8 +304,8 @@ void pix_videoDarwin :: DoVideoSettings(){
 */
 
 \def void frame () {
-    out[0]->begin(dim->dup());
-    out[0]->send(dim->prod(),buf);
+    GridOutlet out(this,0,dim->dup());
+    out.send(dim->prod(),buf);
 L}
 
 \def void close () {
@@ -394,7 +394,7 @@ struct FormatQuickTimeApple : Format {
 //	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
-	out[0]->begin(dim->dup());
+	GridOutlet out(this,0,dim->dup());
 	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
 	int n = dim->prod()/4;
 	int i;
@@ -408,7 +408,7 @@ struct FormatQuickTimeApple : Format {
 		bufu32[i+0]=(bufu32[i+0]<<8)+(bufu32[i+0]>>24);
 	}
 
-	out[0]->send(dim->prod(),buffer);
+	out.send(dim->prod(),buffer);
 	int nf=nframe;
 	nframe++;
 	return INT2NUM(nf);
