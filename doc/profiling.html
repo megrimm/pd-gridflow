@@ -1,0 +1,101 @@
+<html>
+<head>
+<title>video4jmax - install</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="jmax.css" type="text/css">
+</head>
+
+<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<br>
+<table width="100%" border="0" cellspacing="5">
+  <tr><td colspan="4" bgcolor="#082069">
+	<img src="images/jmax_titre.jpg" width="253" height="23"></td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="3" height="16">
+      <h4>Video4jmax 0.3.1 - Profiling</h4>
+  </td></tr>
+
+  <tr> 
+    <td width="12%" height="4">&nbsp;</td>
+    <td width="80%" height="4">&nbsp;</td>
+    <td width="12%" height="4">&nbsp;</td>
+  </tr>
+
+  <tr>
+    <td width="13%">&nbsp;</td>
+    <td width="82%">
+
+	<h4>What is profiling?</h4>
+	<p>
+		It is about getting empiric metrics about the execution of a program.
+		For example, find out which parts of a program consume the most time
+		and/or memory. Usually it's about the time, and this is what
+		video4jmax (0.3.1) now allows you to measure.
+	</p>
+
+	<h4>How to get those stats from video4jmax?</h4>
+	<ul>
+	<li>create a "video4jmax" object (yes, really) and connect two
+	messageboxes to it, "profiler_dump" and "profiler_reset". See the
+	reference manual for more details.</li>
+	<li>note that those results are global to a fts process. That is, if you
+	start jMax only once at a time, *all* objects in all patches may be
+	monitored (actually, only the video4jmax ones).
+	</li>
+	<li>Note that some operations may not be monitored, and some of the
+	monitoring may be buggy. I think it's not buggy, but I may be wrong.
+	</li>
+	<li>
+	The current profiler uses a thing called RDTSC. This is a very high
+	precision clock that is very fast to use. However, *major* imprecisions
+	may come from the fact that an ordinary multitasking OS will run other
+	tasks without stopping/resuming the clock. This may happen randomly;
+	however, it has a much bigger chance of happening in [@in] or [@out].
+	</li>
+	<li>
+	The profiler has an impact on the results of the profiler. The profiler
+	includes half of its own influence in its own results, and disregards the
+	other half (or so). Profiling shouldn't add more than 100-300 ticks per
+	message (of which half is counted).
+	</li>
+	<li>
+	Message-passing time is not counted at all. Only time actually spent
+	inside Video4jmax objects is counted. This may skew results.
+	</li>
+	<li>
+	A grid requires 2 messages (begin and end) plus one message per packet
+	(flow or flow2), where each packet contains at most 2048 numbers
+	(adjustable limit), and normally a packet should be at least half that
+	size unless it is the last one. On RGB grids of widths 640,320,160, the
+	packet size will usually be 1920. A small grid (~2000 elements or less)
+	is 3 messages; a large grid is 2 messages + 1 message per packet; for
+	a very large grid, the latter number may be very big, so you could ignore
+	the "plus two" part.
+	</li>
+	<li>
+	The MHz speed of your computer is important in determining the real
+	time consumption. Profiler results are in clock ticks. If you have a
+	400 MHz computer, then dividing by 400 will give you a time in
+	microseconds (usecs).
+	</li>
+	</ul>
+	</p>
+</td>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+
+  <tr><td colspan="4">
+	<p><font size="-1">Video4jmax 0.3.1 Documentation<br>
+        by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
+        and<br>
+        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+    </td>
+  </tr>
+
+</table>
+</body>
+</html>
