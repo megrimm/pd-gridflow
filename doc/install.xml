@@ -8,16 +8,28 @@
 -->
 
 <section name="Software (and Hardware) you Probably Need"><prose>
-<p>Required:<list>
+<p>Required Hardware (One of...):<list>
+	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>
+	<li>i686 : "new" IBM PC with recent compiler</li>
+	<li>ppc : "new" Macintosh (IS NOT SUPPORTED YET - HELP US)</li>
+	<li>armv4l : Corel Netwinder (but jMax does not run on this)</li>
+	<li>mips : Silicon Graphics, non-PC (only tested without jMax)</li>
+</list></p>
+<p>Required Software:<list>
 	<li>GNU C Compiler (gcc)</li>
 	<li>GNU Make (gmake)</li>
 	<li>GNU Bash</li>
 	<li>X11 Window System (Xserver and Xlib)</li>
 </list></p>
-<p>Recommended:<list>
-	<li>jMax 2.4 or 2.5 (we test using 2.5)</li>
-	<li>libmpeg</li>
-	<li>a digitizer card with Video4linux 1.x (videodev.h)</li>
+<p>Very Recommended:<list>
+	<li>jMax 2.5</li>
+	<li>jMax 3.0 support coming soon</li>
+	<li>jMax 2.4 support removed</li>
+</list></p>
+<p>Optional:<list>
+	<li>Greg Ward's libmpeg ("Berkeley/MNI")</li>
+	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
+	<li>Ruby 1.6 with package "xmlparser" (for editing documentation)</li>
 </list></p>
 <p>NOTE: 
 for help on installing and compiling jMax, please see Christian Klippel's
@@ -28,10 +40,29 @@ as well as the jMax docs.</p>
 	<li>CVS (for live update)</li>
 	<li>Ruby (for regenerating documentation)</li>
 </list></p>
+<p>NOTE:
+There are several different incompatible libmpeg's from different authors;
+I found four of them, some numbered 2 and 3 as if they were version numbers
+(but it seems they are not). Gridflow supports the Berkeley/MNI one (Greg
+Ward). It would be nice to support the others as well eventually.
+</p>
 </prose></section>
 
 <section name="Installation process (for jMax 2.5)"><prose>
 <list>
+  <li>Download the latest version of GridFlow
+      and download the images pack (video4jmax-images-0.2.tar.gz).
+      The download sites are
+	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca</link> and
+	 <link to="http://hostname.2y.net/gridflow/download">hostname.2y.net</link>.
+      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice),
+      which will create a directory called 'gridflow';
+      unpack the images pack into that directory, which will create
+	 another one called 'gridflow/images'.
+      You may also download Greg Ward's libmpeg from there but you have
+	 to install it separately and on your own.
+  </li>
+
   <li>Find your system type (for AMD K6 and Pentium Pro and compatibles, 
   on Linux, this is <k>i686-linux</k>; if you have a recent Macintosh, this
   is <k>ppc-macosx</k> or <k>ppc-linux</k>)</li>
@@ -45,9 +76,6 @@ as well as the jMax docs.</p>
   then you have to do something like
   <k> ./configure --jmax25 --jmax-dist-dir</k>
   <i>your-jmax-source-directory-goes-here</i></li>
-
-	if there's a problem with libmpeg anywhere in the process,
-	you can add the option --no-mpeg to compile without mpeg.
 
   <li><k>./configure</k> will try to detect some optional components (libmpeg,
   pentium clock, etc); error messages may appear in case of a <k>no</k>.
@@ -66,17 +94,6 @@ as well as the jMax docs.</p>
 	 one.
   </li>
 
-  <li>
-      Get the images for the examples from
-	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca
-	 </link> or
-	 <link
-	 to="http://hostname.2y.net/gridflow/download">hostname.2y.net</link>.
-	 Place the archive in /usr/local/jmax/packages/gridflow
-      (or the path of your choice) and untar with <k>tar -xvzf
-	 video4jmax-images-0.2.tar.gz</k>.
-  </li>
-
   <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
   Add a line that says <k>package require gridflow</k>.
   Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
@@ -85,15 +102,16 @@ as well as the jMax docs.</p>
   <li>(Re)start jMax. </li>
 
 </list>
-</prose></section>
 
-<section name="Installation process (for jMax 2.4)"><prose>
-Mostly the same as when installing with jMax 2.5; however: you <u>must</u>
-unpack the sources in the <k>packages</k> directory (this is optional with 2.5).
-When running the configuration script you must say <k>--jmax24</k> instead of
-<k>--jmax25</k>. Don't forget to modify <k>packages/Makefile</k> so that the
-<k>C_PACKAGES</k> contains <k>gridflow</k>. Then do a regular jMax 2.4
-compile/install.
+  <p>Note: If there's a problem with libmpeg anywhere in the process,
+  you can add the option --no-mpeg to the configurator.</p>
+
+  <p>Note: If you want more speed, you can configure with the --fast
+  switch, which turns off many error-detection mechanisms; if you want
+  more speed, you could configure with --no-profiler too, but if you do
+  that, you can no longer find out which of the objects consume the most
+  time.</p>
+
 </prose></section>
 
 <section name="Installation process (without jMax)"><prose>

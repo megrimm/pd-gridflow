@@ -3,7 +3,7 @@
 <jmax-doc>
 <!-- $Id$ -->
 <!--
-	GridFlow Reference Manual
+	GridFlow Reference Manual: Class Reference
 	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
 -->
 
@@ -12,91 +12,6 @@
 	(In this section, usage of Bold, Italic, Courier, etc. would be explained.
 	eventually I'd like those to have precise meanings consistent throughout
 	the whole documentation)
-</prose>
-</section>
-
-<section name="Grid Protocol">
-<prose>
-	<p><i>This section is useful if you want to do more than just pictures
-	with GridFlow.
-	</i></p>
-	<p>
-	each element of a grid is an integer. the range of allowed integer values 
-	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
-	is -2<sup>31</sup> to 2<sup>31</sup>-1).
-	</p>
-	<p>
-	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a
-	three-dimensional grid of 240 rows of 320 columns of triplets is called
-	dim(240,320,3).
-	</p>
-	<p>
-	There is a sequence in which elements of a Grid are stored and
-	transmitted.  Dimension 0 is called "outer" or "first" and dimension N-1 is
-	called  "inner" or "last". They are called so because if you select a
-	position in the first dimension of a grid, the selected part is of the same
-	shape minus the first dimension; so in dim(240,320,3) if you select
-	row 51 (or whichever valid row number), you get a dim(320,3). if you select
-	a subpart two more times you get to a single number.
-	</p>
-	<p>
-	At each such level, elements are sent/stored in their numeric order, 
-	and are numbered using natural numbers starting at 0. This ordering usually 
-	does not matter, but sometimes it does. Most notably, <k>@import</k>, 
-	<k>@export</k> and <k>@redim</k> care about it. 
-	</p>
-	<p>
-	On the other hand, order of dimensions usually does matter; this is 
-	what distinguishes rows from columns and channels, for example.
-	Most objects care about the distinction.
-	</p>
-	<p>
-	A grid with only 1 element in a given dimension is different from one
-	lacking that dimension; it won't have the same meaning. You can use this
-	property to your advantage sometimes.
-	</p>
-	<p>
-	Zero-dimensional grids exist. They are called dim(). They can only contain
-	a single number.
-	</p>
-</prose>
-</section>
-
-<section name="Picture Protocol">
-<prose>
-	<p><i>This section is useful if you want to know what a picture is
-	in terms of a grid.
-	</i></p>
-
-	<p>A picture is a three-dimensional Grid: 
-	<list start="0">
-		<li>rows</li>
-		<li>columns</li>
-		<li>channels</li>
-	</list>
-	</p>
-	<p>Channels for the RGB color model are:
-	<list start="0">
-		<li>red</li>
-		<li>green</li>
-		<li>blue</li>
-	</list>
-	</p>
-	<p>
-	Because Grids are made of 32-bit integers, a three-channel picture uses 
-	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
-	for display. That huge amount of slack is there because when you create 
-	your own effects you often have intermediate results that need to be of 
-	higher precision than a normal picture. Especially, results of multiplications 
-	are big and should not overflow before you divide them back to normal; 
-	and similarly, you can have negative values all over, as long as you take 
-	care of them before they get to the display.
-	</p>
-	<p>
-	In the final conversion, high bits are just ignored. This means: black is
-	0, maximum is 255, and values wrap like with <k>% 256</k>. If you want to
-	clip them, you may use <k>"@ max 0"</k> and <k>"@ min 255"</k> objects. 
-	</p>
 </prose>
 </section>
 

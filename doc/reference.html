@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.4.1 - reference</title>
+<title>GridFlow 0.5.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.4.1 - reference index</h4>
+    <h4>GridFlow 0.5.0 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -36,10 +36,6 @@
   <td width="5%"  height="23">&nbsp;</td>
 </tr>
 <tr><td colspan="2"><h4><a href="#Conventions_of_this_Manual">Conventions of this Manual</a></h4><ul>
-</ul>
-<h4><a href="#Grid_Protocol">Grid Protocol</a></h4><ul>
-</ul>
-<h4><a href="#Picture_Protocol">Picture Protocol</a></h4><ul>
 </ul>
 <h4><a href="#One-Input_Operators">One-Input Operators</a></h4><ul>
 </ul>
@@ -104,57 +100,6 @@
 	(In this section, usage of Bold, Italic, Courier, etc. would be explained. 
 	eventually I'd like those to have precise meanings consistent throughout 
 	the whole documentation) 
-</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><a name="Grid_Protocol"></a><h4>Grid Protocol</h4></td></tr> 
-<tr><td></td><td></td><td> <p><i>This section is useful if you want to do more than just pictures 
-	with GridFlow. </i></p> <p> 
-	each element of a grid is an integer. the range of allowed integer values 
-	is called <i>signed 32-bit</i> and is -2147483648 to 2147483647 (which 
-	is -2<sup>31</sup> to 2<sup>31</sup>-1). </p> <p> 
-	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a 
-	three-dimensional grid of 240 rows of 320 columns of triplets is called 
-	dim(240,320,3). </p> <p> 
-	There is a sequence in which elements of a Grid are stored and 
-	transmitted.  Dimension 0 is called "outer" or "first" and dimension N-1 is 
-	called  "inner" or "last". They are called so because if you select a 
-	position in the first dimension of a grid, the selected part is of the same 
-	shape minus the first dimension; so in dim(240,320,3) if you select 
-	row 51 (or whichever valid row number), you get a dim(320,3). if you select 
-	a subpart two more times you get to a single number. </p> <p> 
-	At each such level, elements are sent/stored in their numeric order, 
-	and are numbered using natural numbers starting at 0. This ordering usually 
-	does not matter, but sometimes it does. Most notably, <kbd>@import</kbd>, <kbd>@export</kbd> and <kbd>@redim</kbd> care about it. </p> <p> 
-	On the other hand, order of dimensions usually does matter; this is 
-	what distinguishes rows from columns and channels, for example. 
-	Most objects care about the distinction. </p> <p> 
-	A grid with only 1 element in a given dimension is different from one 
-	lacking that dimension; it won't have the same meaning. You can use this 
-	property to your advantage sometimes. </p> <p> 
-	Zero-dimensional grids exist. They are called dim(). They can only contain 
-	a single number. </p> 
-</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr> 
-<td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
-</tr>
-<tr><td colspan="4"><a name="Picture_Protocol"></a><h4>Picture Protocol</h4></td></tr> 
-<tr><td></td><td></td><td> <p><i>This section is useful if you want to know what a picture is 
-	in terms of a grid. </i></p> <p>A picture is a three-dimensional Grid: <ul> <li><b>0</b> : rows</li> <li><b>1</b> : columns</li> <li><b>2</b> : channels</li> </ul> </p> <p>Channels for the RGB color model are: <ul> <li><b>0</b> : red</li> <li><b>1</b> : green</li> <li><b>2</b> : blue</li> </ul> </p> <p> 
-	Because Grids are made of 32-bit integers, a three-channel picture uses 
-	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
-	for display. That huge amount of slack is there because when you create 
-	your own effects you often have intermediate results that need to be of 
-	higher precision than a normal picture. Especially, results of multiplications 
-	are big and should not overflow before you divide them back to normal; 
-	and similarly, you can have negative values all over, as long as you take 
-	care of them before they get to the display. </p> <p> 
-	In the final conversion, high bits are just ignored. This means: black is 
-	0, maximum is 255, and values wrap like with <kbd>% 256</kbd>. If you want to 
-	clip them, you may use <kbd>"@ max 0"</kbd> and <kbd>"@ min 255"</kbd> objects. </p> 
 </td></tr> 
 <tr><td>&nbsp;</td></tr> 
 <tr> 
@@ -767,7 +712,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.4.1 Documentation<br>
+<p><font size="-1">GridFlow 0.5.0 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
