@@ -30,6 +30,22 @@ class PureDataFileWriter
 		pr = o.properties
 		@f.puts "#N canvas #{pr[:wx]} #{pr[:wy]} #{pr[:ww]} #{pr[:wh]} 10;"
 		ol = o.subobjects.keys
+		x=0
+		ol.find_all {|a| a.classname=="inlet"}.sort {|a,b| a.argv[0] <=> b.argv[0] }.each {|a|
+			if x>a.properties[:x]
+				a.properties[:x]=x+16
+				STDERR.puts "warning: moving inlet #{a.argv[0]} to the right"
+			end
+			x=a.properties[:x]
+		}
+		x=0
+		ol.find_all {|a| a.classname=="outlet"}.sort {|a,b| a.argv[0] <=> b.argv[0] }.each {|a|
+			if x>a.properties[:x]
+				a.properties[:x]=x+16
+				STDERR.puts "warning: moving outlet #{a.argv[0]} to the right"
+			end
+			x=a.properties[:x]
+		}
 		ol.each {|so| write_object so }
 		ol.each_with_index {|so,i|
 			next if not so.instance_eval{defined? @outlets}
@@ -48,9 +64,8 @@ class PureDataFileWriter
 		}.join " "
 	end
 
-	def escape x
-		x.gsub(/[;,]/) {|x| "\\#{x}" }.gsub(/\n/) {"\\\n"}
-	end
+	# what am i supposed to do?
+	def escape  x; x.gsub(/[;,]/) {|x| " \\#{x}" }.gsub(/\n/) {"\\\n"} end
 
 	def write_object o
 		pr = o.properties
@@ -63,6 +78,7 @@ class PureDataFileWriter
 
 		case classname
 		when "display"; classname="print"
+		when "list"; classname="listmake"
 		end
 
 		t = case classname
@@ -80,19 +96,28 @@ class PureDataFileWriter
 		when "jcomment"
 			@f.print escape(pr[:comment].to_s)
 		when "messbox"
-			@f.print(list_to_s(o.argv[0]))
+			av=o.argv[0]
+			i=0
+			dollar="$".intern
+			while i<av.length
+			  if av[i]==dollar then av[i,2]=("\\$"+av[i+1].to_s).intern else i+=1 end
+			end
+			@f.print(list_to_s(av))
 		when "slider"
+			#doradio = pr[:maxValue]-pr[:minValue]<=10
+			doradio = false
+			#p doradio
 			name = case pr[:orientation]
-				when 1; 'h'
-				when 2; 'v'
+				when 1;     if doradio then "hradio" else "hsl" end
+				when 2,nil; if doradio then "vradio" else "vsl" end
 				else raise "bogus slider orientation?" end
-			@f.print "#{name}sl "+
-			"128 15 #{pr[:minValue]} #{pr[:maxValue]} 0 0 "+
+			@f.print "#{name} "+
+			"#{pr[:w]} #{pr[:h]} #{pr[:minValue]} #{pr[:maxValue]} 0 0 "+
 			"empty empty empty -2 -6 0 8 -262144 -1 -1 0 1"
 		when "intbox"
 			@f.print "5 0 0 0 - - -;"
-		when "inlet"
-			@f.print "inlet"
+		when "inlet"; @f.print "inlet"
+		when "inlet"; @f.print "outlet"
 		when "jpatcher"
 			@f.print("pd ",list_to_s(o.argv))
 		else
