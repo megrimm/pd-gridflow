@@ -47,8 +47,10 @@ ifeq ($(HAVE_STATIC_RUBY),yes)
 	RUBYA2 = libruby.a/*.o
 endif
 
-cpu/mmx.o: cpu/mmx.rb
-	ruby cpu/mmx.rb > cpu/mmx.asm
+cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
+	ruby cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
+
+cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
 libruby.a/object.o:

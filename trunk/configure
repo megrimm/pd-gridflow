@@ -210,7 +210,7 @@ Feature.new {
 	tag :mmx
 	uses_feature [:pentium]
 #	status :disabled
-	uses_o ["cpu/mmx.o"]
+	uses_o ["cpu/mmx.o","cpu/mmx_loader.o"]
 	name "MMX-compatible CPU"
 	test proc {
 		asm_test '
@@ -754,7 +754,7 @@ mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++\n"
 mf.sub! /^.c.o:/, "%.o: %.c base/grid.h config.make Makefile Makefile.gf"
-mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS]}"
+mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
 #	(if Config::CONFIG["arch"] =~ /darwin/
