@@ -610,6 +610,7 @@ METHOD3(GridObject,method_missing) {
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
 	const char *name = rb_sym_name(argv[0]);
+//	gfpost("method_missing: %s",name);
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = in[i];

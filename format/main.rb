@@ -52,6 +52,8 @@ OurByteOrder = case [1].pack("L")
 class Format #< GridObject
 	FF_R,FF_W = 4,2
 
+	attr_accessor :parent
+
 =begin
 	NEW FORMAT API (0.6.x)
 	mode is :in or :out
@@ -152,6 +154,7 @@ module GridIO
 		@format.close if @format
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
+		@format.parent = self
 	end
 
 	def _0_option(*a)
@@ -200,7 +203,7 @@ class GridIn < GridObject
 	end
 
 	install_rgrid 0
-	install "@in", 3, 1
+	install "@in", 1, 1
 end
 
 class GridOut < GridObject
