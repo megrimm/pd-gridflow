@@ -46,12 +46,11 @@ METHOD(FormatMPEG,frame) {
 	int v[] = { mpeg_id->Height, mpeg_id->Width, 3 };
 	out->begin(new Dim(3,v));
 
-	int y;
 	int sy = out->dim->get(0);
 	int sx = out->dim->get(1);
 	int bs = out->dim->prod(1);
 	Number b2[bs];
-	for(y=0; y<sy; y++) {
+	for(int y=0; y<sy; y++) {
 		uint8 *b1 = buf + 4*sx*y;
 		$->bit_packing->unpack(sx,b1,b2);
 		out->send(bs,b2);

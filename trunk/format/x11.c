@@ -62,30 +62,34 @@ struct FormatX11 : Format {
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
+
+	void show_section(int x, int y, int sx, int sy);
+	void set_wm_hints (int sx, int sy);
+	void dealloc_image ();
+	bool alloc_image (int sx, int sy);
+	void resize_window (int sx, int sy);
+	void open_display(const char *disp_string);
 };
 
 /* ---------------------------------------------------------------- */
 
-static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
+void FormatX11::show_section(int x, int y, int sx, int sy) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-	if ($->use_shm) {
-		XSync($->display,False);
-		if (sy>$->dim->get(0)) sy=$->dim->get(0);
-		if (sx>$->dim->get(1)) sx=$->dim->get(1);
+	if (use_shm) {
+		XSync(display,False);
+		if (sy>dim->get(0)) sy=dim->get(0);
+		if (sx>dim->get(1)) sx=dim->get(1);
 //		gfpost("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
-		XShmPutImage($->display, $->window,
-			$->imagegc, $->ximage, x, y, x, y, sx, sy, False);
+		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		/* should completion events be waited for? looks like a bug */
 	} else
 	#endif
-		XPutImage($->display, $->window,
-			$->imagegc, $->ximage, x, y, x, y, sx, sy);
-
-	XFlush($->display);
+		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
+	XFlush(display);
 }
 
 /* window manager hints, defines the window as non-resizable */
-static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
+void FormatX11::set_wm_hints (int sx, int sy) {
 	XWMHints wmhints;
 	XTextProperty window_name, icon_name;
 	XSizeHints hints;
@@ -100,12 +104,11 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 	wmhints.input = True;
 	wmhints.flags = InputHint;
 
-	XStringListToTextProperty((char **)&$->name, 1, &window_name);
-	XStringListToTextProperty((char **)&$->name, 1, &icon_name);
+	XStringListToTextProperty((char **)&name, 1, &window_name);
+	XStringListToTextProperty((char **)&name, 1, &icon_name);
 
-	XSetWMProperties($->display, $->window,
-		&window_name, &icon_name,
-		NULL, 0, &hints, &wmhints, NULL);
+	XSetWMProperties(display, window,
+		&window_name, &icon_name, NULL, 0, &hints, &wmhints, NULL);
 }
 
 /* ---------------------------------------------------------------- */
@@ -132,8 +135,7 @@ static void FormatX11_alarm(FormatX11 *$) {
 			/*gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
 			if ($->mode == SYM(out)) {
-				FormatX11_show_section($, ex->x, ex->y, ex->width,
-				ex->height);
+				$->show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
 		case ButtonPress:{
@@ -199,19 +201,6 @@ METHOD(FormatX11,frame) {
 
 /* ---------------------------------------------------------------- */
 
-static void FormatX11_dealloc_image (FormatX11 *$) {
-	if (!$->ximage) return;
-	if ($->use_shm) {
-	#ifdef HAVE_X11_SHARED_MEMORY
-		FREE($->shm_info);
-	#endif	
-	} else {
-		XDestroyImage($->ximage);
-		$->ximage = 0; 
-		/* FREE($->image); */
-	}
-}
-
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
@@ -220,122 +209,126 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	return 42; /* it seems that the return value is ignored. */
 }
 
-static bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
-top:
-	FormatX11_dealloc_image($);
+void FormatX11::dealloc_image () {
+	if (!ximage) return;
+	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-	if ($->use_shm) {
-		$->shm_info = NEW(XShmSegmentInfo,1);
-		$->ximage = XShmCreateImage($->display, $->visual,
-			$->depth, ZPixmap, 0, $->shm_info, sx, sy);
-		assert($->ximage);
-		$->shm_info->shmid = shmget(
-			IPC_PRIVATE,
-			$->ximage->bytes_per_line * $->ximage->height,
-			IPC_CREAT|0777);
-		if($->shm_info->shmid < 0) RAISE("ERROR: shmget failed: %s",strerror(errno));
-		$->ximage->data = $->shm_info->shmaddr =
-			(char *)shmat($->shm_info->shmid,0,0);
-		$->image = (uint8 *)$->ximage->data;
-		$->shm_info->readOnly = False;
+		FREE(shm_info);
+	#endif	
+	} else {
+		XDestroyImage(ximage);
+		ximage = 0; 
+		/* FREE($->image); */
+	}
+}
 
-		current_x11 = $;
+bool FormatX11::alloc_image (int sx, int sy) {
+top:
+	dealloc_image();
+	#ifdef HAVE_X11_SHARED_MEMORY
+	if (use_shm) {
+		shm_info = NEW(XShmSegmentInfo,1);
+		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
+		assert(ximage);
+		shm_info->shmid = shmget(
+			IPC_PRIVATE,
+			ximage->bytes_per_line * ximage->height,
+			IPC_CREAT|0777);
+		if(shm_info->shmid < 0) RAISE("ERROR: shmget failed: %s",strerror(errno));
+		ximage->data = shm_info->shmaddr =
+			(char *)shmat(shm_info->shmid,0,0);
+		image = (uint8 *)ximage->data;
+		shm_info->readOnly = False;
+
+		current_x11 = this;
 		XSetErrorHandler(FormatX11_error_handler);
-		if (!XShmAttach($->display, $->shm_info)) RAISE("ERROR: XShmAttach: big problem");
+		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 
 		/* make sure the server picks it up */
-		XSync($->display,0);
+		XSync(display,0);
 
 		XSetErrorHandler(0);
 
 		/* yes, this can be done now. should cause auto-cleanup. */
-		shmctl($->shm_info->shmid,IPC_RMID,0);
+		shmctl(shm_info->shmid,IPC_RMID,0);
 
-		if (!$->use_shm) RAISE("shm got disabled, retrying...");
+		if (!use_shm) RAISE("shm got disabled, retrying...");
 	} else
 	#endif
 	{
 		/* let's overestimate the pixel size */
 		/* int pixel_size = BitPacking_bytes($->bit_packing); */
 		int pixel_size = 4;
-
-		$->image = (uint8 *)calloc(sx * sy, pixel_size);
-
-		$->ximage = XCreateImage($->display, $->visual,
-			$->depth, ZPixmap, 0, (int8 *) $->image,
-			sx, sy, 8, 0);
+		image = (uint8 *)calloc(sx*sy, pixel_size);
+		ximage = XCreateImage(
+			display,visual,depth,ZPixmap,0,(int8 *)image,sx,sy,8,0);
 	}
-	{
-		int status = XInitImage($->ximage);
-		gfpost("XInitImage returned: %d", status);
-	}
+	int status = XInitImage(ximage);
+	gfpost("XInitImage returned: %d", status);
 	return true;
 }
 
-static void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
+void FormatX11::resize_window (int sx, int sy) {
 	int v[3] = {sy, sx, 3};
 	Window oldw;
-
-	if ($->parent && $->parent->in[0]->dex > 0) {
+	if (parent && parent->in[0]->dex > 0) {
 		gfpost("resizing while receiving picture (ignoring)");
 		return;
 	}
-
-	FREE($->dim);
-	$->dim = new Dim(3,v);
+	FREE(dim);
+	dim = new Dim(3,v);
 
 /* ximage */
 
-	FormatX11_alloc_image($,sx,sy);
+	alloc_image(sx,sy);
 
 /* window */
 	
-	$->name = strdup("GridFlow");
+	name = strdup("GridFlow");
 
-	oldw = $->window;
+	oldw = window;
 	if (oldw) {
-		if ($->is_owner) {
-			char *s = $->dim->to_s();
+		if (is_owner) {
+			char *s = dim->to_s();
 			gfpost("About to resize window: %s",s);
 			FREE(s);
-			XResizeWindow($->display,$->window,sx,sy);
+			XResizeWindow(display,window,sx,sy);
 		}
 	} else {
-		char *s = $->dim->to_s();
+		char *s = dim->to_s();
 		gfpost("About to create window: %s",s);
 		FREE(s);
-		$->window = XCreateSimpleWindow($->display,
-			$->root_window, 0, 0, sx, sy, 0, $->white, $->black);
-		if(!$->window) RAISE("can't create window");
+		window = XCreateSimpleWindow(display,
+			root_window, 0, 0, sx, sy, 0, white, black);
+		if(!window) RAISE("can't create window");
 	}
 
-/*	FormatX11_set_wm_hints($,sx,sy); */
+/*	set_wm_hints(sx,sy); */
 
-	$->imagegc = XCreateGC($->display, $->window, 0, NULL);
-	printf("$->is_owner: %d\n", $->is_owner);
-	if ($->is_owner) {
-		XSelectInput($->display, $->window,
+	imagegc = XCreateGC(display, window, 0, NULL);
+	printf("is_owner: %d\n", is_owner);
+	if (is_owner) {
+		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask |
 			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-		XMapRaised($->display, $->window);
+		XMapRaised(display, window);
 	} else {
-		XSelectInput($->display, $->window,
+		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask);
 	}
-	XSync($->display,0);
-	return;
+	XSync(display,0);
 }
 
 GRID_BEGIN(FormatX11,0) {
+	if (in->dim->n != 3)
+		RAISE("expecting 3 dimensions: rows,columns,channels");
+	if (in->dim->get(2) != 3)
+		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1), osx = $->dim->get(1);
 	int sy = in->dim->get(0), osy = $->dim->get(0);
 	in->set_factor(sxc);
-	if (in->dim->count() != 3)
-		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 3)
-		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
-	if (sx != osx || sy != osy) FormatX11_resize_window($,sx,sy);
+	if (sx!=osx || sy!=osy) $->resize_window(sx,sy);
 }
 
 GRID_FLOW(FormatX11,0) {
@@ -351,7 +344,7 @@ GRID_FLOW(FormatX11,0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
 		$->bit_packing->pack(sx, data, &$->image[y*bypl]);
-		if ($->autodraw==2) FormatX11_show_section($,0,y,sx,1);
+		if ($->autodraw==2) $->show_section(0,y,sx,1);
 		y++;
 		data += sxc;
 		n -= sxc;
@@ -362,7 +355,7 @@ GRID_END(FormatX11,0) {
 	if ($->autodraw==1) {
 		int sx = in->dim->get(1);
 		int sy = in->dim->get(0);
-		FormatX11_show_section($,0,0,sx,sy);
+		$->show_section(0,0,sx,sy);
 	}
 }
 
@@ -371,7 +364,7 @@ METHOD(FormatX11,close) {
 	if (!$) {gfpost("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
-	FormatX11_dealloc_image($);
+	$->dealloc_image();
 	XCloseDisplay($->display);
 	rb_call_super(argc,argv);
 }
@@ -385,11 +378,11 @@ METHOD(FormatX11,option) {
 		if (sx<16) sx=16;
 		if (sy>MAX_INDICES) RAISE("height too big");
 		if (sx>MAX_INDICES) RAISE("width too big");
-		FormatX11_resize_window($,sx,sy);
+		$->resize_window(sx,sy);
 	} else if (sym == SYM(draw)) {
 		int sy = $->dim->get(0);
 		int sx = $->dim->get(1);
-		FormatX11_show_section($,0,0,sx,sy);
+		$->show_section(0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
 		int autodraw = INT(argv[1]);
 		if (autodraw<0 || autodraw>2)
@@ -399,39 +392,39 @@ METHOD(FormatX11,option) {
 		rb_call_super(argc,argv);
 }
 
-static void FormatX11_open_display(FormatX11 *$, const char *disp_string) {
+void FormatX11::open_display(const char *disp_string) {
 	int screen_num;
 	Screen *screen;
 
 	/* Open an X11 connection */
-	$->display = XOpenDisplay(disp_string);
-	if(!$->display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
+	display = XOpenDisplay(disp_string);
+	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
 
 	/*
 	  btw don't expect too much from X11 error handling system.
 	  it sucks big time and it won't work.
 	*/
 
-	screen      = DefaultScreenOfDisplay($->display);
-	screen_num  = DefaultScreen($->display);
-	$->visual   = DefaultVisual($->display, screen_num);
-	$->white    = XWhitePixel($->display,screen_num);
-	$->black    = XBlackPixel($->display,screen_num);
-	$->root_window = DefaultRootWindow($->display);
-	$->depth    = DefaultDepthOfScreen(screen);
+	screen   = DefaultScreenOfDisplay(display);
+	screen_num = DefaultScreen(display);
+	visual   = DefaultVisual(display, screen_num);
+	white    = XWhitePixel(display,screen_num);
+	black    = XBlackPixel(display,screen_num);
+	root_window = DefaultRootWindow(display);
+	depth    = DefaultDepthOfScreen(screen);
 
-	gfpost("depth = %d",$->depth);
+	gfpost("depth = %d",depth);
 
 	/* !@#$ check for visual type instead */
-	if ($->depth != 16 && $->depth != 24 && $->depth != 32)
-		RAISE("ERROR: depth %d not supported.", $->depth);
+	if (depth != 16 && depth != 24 && depth != 32)
+		RAISE("ERROR: depth %d not supported.", depth);
 
 #ifdef HAVE_X11_SHARED_MEMORY
 	/* what do i do with remote windows? */
-	$->use_shm = !! XShmQueryExtension($->display);
-	gfpost("x11 shared memory compiled in; use_shm = %d",$->use_shm);
+	use_shm = !! XShmQueryExtension(display);
+	gfpost("x11 shared memory compiled in; use_shm = %d",use_shm);
 #else
-	$->use_shm = false;
+	use_shm = false;
 	gfpost("x11 shared memory is not compiled in");
 #endif
 }
@@ -467,14 +460,14 @@ METHOD(FormatX11,init) {
 	// assert (ac>0);
 	if (domain==SYM(here)) {
 		gfpost("mode `here'");
-		FormatX11_open_display($,0);
+		$->open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
 		gfpost("mode `local', display_number `%d'",dispnum);
 		sprintf(host,":%d",dispnum);
-		FormatX11_open_display($,host);
+		$->open_display(host);
 		i=2;
 	} else if (domain==SYM(remote)) {
 		char host[256];
@@ -483,7 +476,7 @@ METHOD(FormatX11,init) {
 		dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
 		gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
-		FormatX11_open_display($,host);
+		$->open_display(host);
 		i=3;
 	} else {
 		RAISE("x11 destination syntax error");
@@ -514,7 +507,7 @@ METHOD(FormatX11,init) {
 	}
 
 	/* "resize" also takes care of creation */
-	FormatX11_resize_window($,sx,sy);
+	$->resize_window(sx,sy);
 
 	Visual *v = $->visual;
 	int disp_is_le = !ImageByteOrder($->display);

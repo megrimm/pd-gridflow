@@ -44,7 +44,7 @@ void FormatSDL::resize_window (int sx, int sy) {
 }
 
 GRID_BEGIN(FormatSDL,0) {
-	if (in->dim->count() != 3)
+	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));

@@ -33,9 +33,8 @@ struct FormatMPEG3 : Format {
 
 METHOD(FormatMPEG3,seek) {
 	int frame = INT(argv[0]);
-	int result;
 	gfpost("attempting to seek frame # %d",frame);
-	result = mpeg3_set_frame($->mpeg, frame, 0);
+	int result = mpeg3_set_frame($->mpeg, frame, 0);
 	gfpost("seek result: %d", result);
 }
 
@@ -44,12 +43,10 @@ METHOD(FormatMPEG3,frame) {
 	int sx = mpeg3_video_width($->mpeg,0);
 	int sy = mpeg3_video_height($->mpeg,0);
 	int npixels = sx*sy;
-	int result;
-	int i;
 	uint8 *buf = NEW(uint8,sy*sx*3+16);
 	uint8 *rows[sy];
-	for (i=0; i<sy; i++) rows[i]=buf+i*sx*3;
-	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*3;
+	int result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 
 	int v[] = { sy, sx, 3 };
 	o->begin(new Dim(3,v));
@@ -81,22 +78,20 @@ METHOD(FormatMPEG3,close) {
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
 METHOD(FormatMPEG3,init) {
-	const char *filename;
-
 	rb_call_super(argc,argv);
 	argv++, argc--;
 
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
-	filename = rb_str_ptr(rb_funcall(GridFlow_module,SI(find_file),1,
-		rb_funcall(argv[1],SI(to_s),0)));
+
+	const char *filename = rb_str_ptr(
+		rb_funcall(GridFlow_module,SI(find_file),1,
+			rb_funcall(argv[1],SI(to_s),0)));
 
 	$->mpeg = mpeg3_open(strdup(filename));
 	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 
-	{
-		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-		$->bit_packing = new BitPacking(is_le(),3,3,mask);
-	}
+	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+	$->bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
 FMTCLASS(FormatMPEG3,"mpeg","Motion Picture Expert Group Format (using HeroineWarrior's)",FF_R,
