@@ -51,6 +51,10 @@ Documentation
 --- remember to keep doc/help/screenshots/samples up to date
 
 Architecture
+[6] C Stream -> Ruby IO/File/TCPSocket
+[6] C GridHandler -> Ruby GridHandler
+[6] C Format -> Ruby GFFormat
+[6] C GridObject -> Ruby GFObject
 [6] 0. Design the GF-1.0 architecture (new internals documentation)
 [6] 1. Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
 	identify streams by ids given at grid msg

@@ -24,7 +24,7 @@ install::
 	#(cd java; $(MAKE) $@)
 
 kloc::
-	wc c/src/*.[ch] configure extra/*.rb
+	wc base/*.[ch] format/*.[ch] configure extra/*.rb
 
 
 
@@ -33,7 +33,6 @@ ifeq ($(JMAX_VERSION),25)
 
 ### Makefile.package begin
 
-PACKAGEROOT = c
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 DISTDIR = $(JMAXROOTDIR)/fts
 
@@ -45,19 +44,15 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 include $(JMAXDISTDIR)/Makefiles/Makefile.$(MODE)
 
 ifeq ($(strip $(OBJDIR)),)
-OBJDIR  = $(PACKAGEROOT)/obj/$(ARCH)/$(MODE)
+OBJDIR  = c/obj/$(ARCH)/$(MODE)
 endif
 
 ifeq ($(strip $(LIBDIR)),)
-LIBDIR  = $(PACKAGEROOT)/lib/$(ARCH)/$(MODE)
+LIBDIR  = c/lib/$(ARCH)/$(MODE)
 endif
 
 ifeq ($(strip $(BINDIR)),)
-BINDIR  = $(PACKAGEROOT)/bin/$(ARCH)/$(MODE)
-endif
-
-ifeq ($(strip $(SRCDIR)),)
-SRCDIR  = $(PACKAGEROOT)/src
+BINDIR  = c/bin/$(ARCH)/$(MODE)
 endif
 
 OBJECTS = $(addprefix $(OBJDIR)/, $(addsuffix .o , $(basename $(SOURCES))))
@@ -79,7 +74,11 @@ c-src-cleanobjs::
 c-src-clean:: c-src-cleanobjs
 	rm -f $(TOCLEAN)
 
-$(OBJDIR)/c_src_%.o : $(SRCDIR)/%.c
+$(OBJDIR)/base_%.o: base/%.c
+	$(CC) -c $(CFLAGS) $< -o $@
+.PRECIOUS: $(OBJDIR)/%.o
+
+$(OBJDIR)/format_%.o: format/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
 .PRECIOUS: $(OBJDIR)/%.o
 
@@ -100,7 +99,7 @@ LDSOFLAGS += -rdynamic $(GRIDFLOW_LDSOFLAGS)
 # LDSOFLAGS += -lefence
 
 OBJS1 = $(addprefix $(OBJDIR)/,$(subst /,_,$(subst .c,.o,$(SOURCES))))
-OBJS1 += $(OBJDIR)/c_src_bridge_jmax.o
+OBJS1 += $(OBJDIR)/base_bridge_jmax.o
 
 $(PACKAGELIB): $(OBJS1)
 	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
