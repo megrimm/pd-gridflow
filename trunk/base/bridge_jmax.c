@@ -217,7 +217,7 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 }
 
 static void BFObject_delete$1 (kludge *k) {
-	gfpost("BFObject_delete$1 says hello %08x",(int)k->$);
+	post("BFObject_delete$1 says hello %08x\n",(int)k->$);
 	rb_funcall(k->$->peer,SI(delete),0);
 }
 
