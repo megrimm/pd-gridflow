@@ -92,7 +92,7 @@ class GridGlobal < FObject
 		GridFlow.post "returns: %s", eval(s).inspect
 	end
 	install "gridflow", 1, 1
-	addcreator "@global"
+	add_creator "@global"
 	begin
 		GridFlow.bind "gridflow", "gridflow"
 	rescue Exception
@@ -968,7 +968,7 @@ end
 #-------- fClasses for: GUI
 
 module Gooey # to be included in any FObject class
-	def initialize
+	def initialize(*)
 		super
 		@selected=false
 		@bg  = "#ffffff" # white background
@@ -979,6 +979,7 @@ module Gooey # to be included in any FObject class
 		@can = nil    # the canvas number
 		@canvas = nil # the canvas string
 		@y,@x = 0,0 # position on canvas
+		@sy,@sx = 16,16 # size on canvas
 	end
 	attr_reader :canvas
 	attr_reader :selected
@@ -990,7 +991,7 @@ module Gooey # to be included in any FObject class
 		  else raise "huh?"
 		end
 	end
-	def initialize2() GridFlow.bind self, @rsym.to_s end
+	def initialize2(*) GridFlow.bind self, @rsym.to_s end
 	def pd_displace(can,x,y) self.canvas||=can; @x+=x; @y+=y; pd_show(can) end
 	def pd_activate(can,*) self.canvas||=can end
 	def quote(text) # for tcl (isn't completely right ?)
@@ -1007,9 +1008,7 @@ module Gooey # to be included in any FObject class
 		# not sure what to do with this
 		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
 	end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		return 0
-	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit) return 0 end
 	def outline; if selected then @bgs else "#000000" end end
 	def pd_select(can,sel)
 		self.canvas||=can
@@ -1017,7 +1016,10 @@ module Gooey # to be included in any FObject class
 		GridFlow.gui %{ #{canvas} itemconfigure #{@rsym} -outline #{outline} \n }
 	end
 	def pd_delete(can) end
-	def pd_show(can) self.canvas||=can end
+	def pd_show(can)
+		self.canvas||=can
+		@x,@y = get_position can if can
+	end
 end
 
 class Display < FObject; include Gooey
@@ -1048,7 +1050,6 @@ class Display < FObject; include Gooey
 	end
 	def pd_show(can)
 		super
-		@x,@y = get_position can if can
 		return if not canvas # can't show for now...
 		@font = "Courier -12"
 		GridFlow.gui %{
@@ -1099,17 +1100,63 @@ class Display < FObject; include Gooey
 end
 
 class GridEdit < FPatcher; include Gooey
+	@fobjects = ["#store","#dim","#export_list"]
+	@wires = [-1,0,0,1, -1,0,1,0, 0,0,-1,1, 1,0,2,0, 2,0,-1,0]
 	def initialize(grid)
 		super
-		@store = FObject["#store"]
-		@store.connect 0,self,0
-		@store.send_in 1, grid
+		@bg,@bgs,@fg = "#67A074","#0080ff","#ff80ff"
+		@cellsy,@cellsx = 16,48
+		send_in 0, grid
 	end
-	def _0_grid(*stuff) @store._0_grid(*stuff); update end
-	def update
-	
+	def _0_cell_size(sy,sx) @cellsy,@cellsx=sy,sx; update end
+	def _0_float(*) super; update end
+	def _0_list (*) super; update end
+	def _0_grid (*) super; update end
+	def _2_list (*dim)
+		@dim=dim
+		GridFlow.post "GridEdit#_2_list: "+dim.inspect
+	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
+		GridFlow.post "%s", [can,xpix,ypix,shift,alt,dbl,doit].inspect
+		i=(ypix-@y-1)/@cellsy
+		j=(xpix-@x-1)/@cellsx
+		GridFlow.post "%s %d %d", [can,xpix,ypix,shift,alt,dbl,doit].inspect, i, j
+		GridFlow.gui %{
+			set canvas #{canvas}
+			$canvas itemconfigure #{@rsym}CELL_#{i}_#{j} -fill green
+		}
+		return 0
+	end
+	def pd_show(can)
+		GridFlow.post "pd_show(#{can})"
+		super
+		return if not can
+		@font = "Courier -12"
+		ny = @dim[0] || 1
+		nx = @dim[1] || 1
+		@sy = 2+@cellsy*ny
+		@sx = 2+@cellsx*nx
+		g = %{
+			set canvas #{canvas}
+			$canvas delete #{@rsym} #{@rsym}CELL
+			$canvas create rectangle #{@x} #{@y} \
+				[expr #{@x+@sx}] [expr #{@y+@sy}] -fill #{@bg} \
+				-tags #{@rsym} -outline #{outline}
+		}
+		ny.times {|i|
+		  nx.times {|j|
+		    y1 = @y+1+i*@cellsy; y2 = y1+@cellsy
+		    x1 = @x+1+j*@cellsx; x2 = x1+@cellsx
+		    g << %{
+			$canvas create rectangle #{x1} #{y1} #{x2} #{y2} -fill #{@bg} \
+				-tags {#{@rsym}CELL #{@rsym}CELL_#{i}_#{j}} -outline #{outline}
+		    }
+		  }
+		}
+		GridFlow.gui g
 	end
 	install "#edit", 2, 1
+	gui_enable if GridFlow.bridge_name =~ /puredata/
 end
 
 class Peephole < FPatcher; include Gooey
@@ -1127,7 +1174,8 @@ class Peephole < FPatcher; include Gooey
 		@bg,@bgs = "#A07467","#00ff80"
 	end
 	def pd_show(can)
-		@x,@y = get_position can if can
+		super
+		return if not can
 		if not @open
 			GridFlow.gui %{
 				pd \"#{@rsym} open [eval list [winfo id #{@canvas}]] 1;\n\";
@@ -1176,13 +1224,11 @@ class Peephole < FPatcher; include Gooey
 	def _0_open(wid,use_subwindow)
 		GridFlow.post "%s", [wid,use_subwindow].inspect
 		@use_subwindow = use_subwindow==0 ? false : true
-		#@fobjects[3].send_in 0, :open,:x11,:here
 		if @use_subwindow then
 			@fobjects[3].send_in 0, :open,:x11,:here,:embed_by_id,wid
 		end
 	end
 	def _0_set_geometry(y,x,sy,sx)
-		#GridFlow.post "_0_set_geometry %d %d %d %d",id,y,x,sy,sx
 		@sy,@sx = sy,sx
 		@y,@x = y,x
 		set_geometry_for_real_now
