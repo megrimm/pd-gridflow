@@ -1,12 +1,12 @@
 #N canvas 192 66 485 362 10;
 #X obj 132 83 hradio 18 1 0 4 \$0-channel \$0-channel _0__1__2__3_
-0 14 0 8 -241291 -258699 -1 1;
+0 14 0 8 -241291 -258699 -1 0;
 #X obj 299 31 hsl 128 15 0 65535 0 0 \$0-brightness \$0-brightness
-brightness 8 8 0 8 -260818 -1 -1 10250 1;
+brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X obj 299 71 hsl 128 15 0 65535 0 0 \$0-hue \$0-hue hue 8 8 0 8 -260818
--1 -1 6600 1;
+-1 -1 0 1;
 #X obj 299 11 hsl 128 15 0 65535 0 0 \$0-contrast \$0-contrast contrast
-8 8 0 8 -260818 -1 -1 8800 1;
+8 8 0 8 -260818 -1 -1 0 1;
 #X obj 299 91 hsl 128 15 0 65635 0 0 \$0-whiteness \$0-whiteness whiteness
 8 8 0 8 -260818 -1 -1 0 1;
 #N canvas 256 168 546 412 camera 0;
@@ -80,22 +80,22 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X msg 317 236 colorspace YUV420P;
 #X obj 66 177 @yuv_to_rgb;
 #X obj 299 51 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour 8
-8 0 8 -260818 -1 -1 12700 1;
+8 0 8 -260818 -1 -1 0 1;
 #X obj 133 21 vradio 15 1 0 3 \$0-size \$0-size empty 0 -6 0 8 -241291
--258699 -1 1;
+-258699 -1 0;
 #X text 151 21 120 \, 160;
 #X text 151 37 240 \, 320;
 #X text 151 52 480 \, 640;
 #X text 131 6 select size;
 #X text 132 68 select channel;
 #X obj 240 12 nbx 5 14 0 65535 0 0 \$0-contrast \$0-contrast empty
-0 -6 0 10 -260818 -1 -1 45410 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 240 32 nbx 5 14 0 65535 0 0 \$0-brightness \$0-brightness empty
-0 -6 0 10 -260818 -1 -1 52892 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 240 52 nbx 5 14 0 65535 0 0 \$0-colour \$0-colour empty 0 -6
-0 10 -260818 -1 -1 65535 256;
+0 10 -260818 -1 -1 0 256;
 #X obj 240 72 nbx 5 14 0 65535 0 0 \$0-hue \$0-hue empty 0 -6 0 10
--260818 -1 -1 34058 256;
+-260818 -1 -1 0 256;
 #X obj 240 92 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
 0 -6 0 10 -260818 -1 -1 0 256;
 #X text 17 6 Select a camera;
@@ -126,15 +126,15 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X obj 22 300 \$0;
 #X obj 48 301 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 63 96 r \$0-foo;
 #X obj 305 257 s \$0-o;
 #X msg 22 319 \; \$1-device 0 \; \$1-size 1 \; \$1-channel 1;
+#X obj 63 96 r \$0-o;
 #X connect 5 0 25 0;
-#X connect 6 0 43 0;
+#X connect 6 0 42 0;
 #X connect 7 0 33 0;
-#X connect 21 0 43 0;
-#X connect 22 0 43 0;
-#X connect 23 0 43 0;
+#X connect 21 0 42 0;
+#X connect 22 0 42 0;
+#X connect 23 0 42 0;
 #X connect 25 0 28 0;
 #X connect 25 1 5 0;
 #X connect 28 0 26 0;
@@ -143,7 +143,7 @@ brightness 8 8 0 8 -260818 -1 -1 10250 1;
 #X connect 32 0 25 0;
 #X connect 33 0 34 0;
 #X connect 34 0 26 0;
-#X connect 35 0 43 0;
-#X connect 40 0 44 0;
+#X connect 35 0 42 0;
+#X connect 40 0 43 0;
 #X connect 41 0 40 0;
-#X connect 42 0 5 0;
+#X connect 44 0 5 0;
