@@ -392,6 +392,7 @@ typedef struct Operator2 {
 	void   (*op_array)(int,Number *,Number);
 	void   (*op_array2)(int,Number *, const Number *);
 	Number (*op_fold)(Number,int,const Number *);
+	void   (*op_scan)(Number,int,Number *);
 } Operator2;
 
 extern Operator1 op1_table[];

@@ -156,14 +156,9 @@ GRID_FLOW(GridExport,0) {
 
 GRID_END(GridExport,0) {}
 
-METHOD(GridExport,init)   { rb_call_super(argc,argv); }
-METHOD(GridExport,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridExport,inlets:1,outlets:1,
-LIST(GRINLET(GridExport,0)),
+LIST(GRINLET(GridExport,0)))
 /* outlet 0 not used for grids */
-	DECL(GridExport,init),
-	DECL(GridExport,delete))
 
 /* **************************************************************** */
 
@@ -196,14 +191,9 @@ GRID_END(GridExportList,0) {
 	$->list = 0;
 }
 
-METHOD(GridExportList,init)   { rb_call_super(argc,argv); }
-METHOD(GridExportList,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridExportList,inlets:1,outlets:1,
-LIST(GRINLET(GridExportList,0)),
+LIST(GRINLET(GridExportList,0)))
 /* outlet 0 not used for grids */
-	DECL(GridExportList,init),
-	DECL(GridExportList,delete))
 
 /* **************************************************************** */
 /*
@@ -385,12 +375,9 @@ METHOD(GridOp1,init) {
 	$->op = OP1(argv[0]);
 }
 
-METHOD(GridOp1,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridOp1,inlets:1,outlets:1,
 LIST(GRINLET(GridOp1,0)),
-	DECL(GridOp1,init),
-	DECL(GridOp1,delete))
+	DECL(GridOp1,init))
 
 /* **************************************************************** */
 /*
@@ -528,8 +515,6 @@ METHOD(GridFold,init) {
 	$->rint = argc<2 ? 0 : INT(argv[1]);
 }
 
-METHOD(GridFold,delete) { rb_call_super(argc,argv); }
-
 METHOD(GridFold,_1_int) {
 	$->rint = INT(argv[0]);
 }
@@ -537,8 +522,59 @@ METHOD(GridFold,_1_int) {
 GRCLASS(GridFold,inlets:2,outlets:1,
 LIST(GRINLET(GridFold,0)),
 	DECL(GridFold,init),
-	DECL(GridFold,delete),
 	DECL(GridFold,_1_int))
+
+/* **************************************************************** */
+/*
+  GridScan ("@scan") is similar to @fold except that it gives back all
+  the partial results thereof; therefore the output is of the same
+  size as the input (unlike @fold).
+*/
+
+typedef struct GridFold GridScan;
+
+GRID_BEGIN(GridScan,0) {
+	int n = Dim_count(in->dim);
+	if (n<1) RAISE("minimum 1 dimension");
+	GridOutlet_begin($->out[0],Dim_dup(in->dim));
+	GridInlet_set_factor(in,Dim_get(in->dim,Dim_count(in->dim)-1));
+	return true;
+}
+
+GRID_FLOW(GridScan,0) {
+	int factor = Dim_get(in->dim,Dim_count(in->dim)-1);
+	GridOutlet *out = $->out[0];
+	Number buf[n];
+	int i=0;
+	int nn=n;
+
+	assert (n % factor == 0);
+
+	while (n) {
+		memcpy(buf,data,n*sizeof(Number));
+		$->op->op_scan($->rint,factor,buf);
+		data += factor;
+		n -= factor;
+	}
+	GridOutlet_send(out,nn,buf);
+}
+
+GRID_END(GridScan,0) { GridOutlet_end($->out[0]); }
+
+METHOD(GridScan,init) {
+	rb_call_super(argc,argv);
+	$->op = OP2(argv[0]);
+	$->rint = argc<2 ? 0 : INT(argv[1]);
+}
+
+METHOD(GridScan,_1_int) {
+	$->rint = INT(argv[0]);
+}
+
+GRCLASS(GridScan,inlets:2,outlets:1,
+LIST(GRINLET(GridScan,0)),
+	DECL(GridScan,init),
+	DECL(GridScan,_1_int))
 
 /* **************************************************************** */
 typedef struct GridInner {
@@ -947,8 +983,6 @@ METHOD(GridFor,init) {
 	if (!$->step) $->step=1;
 }
 
-METHOD(GridFor,delete) { rb_call_super(argc,argv); }
-
 METHOD(GridFor,_0_set) { $->from = INT(argv[0]); }
 METHOD(GridFor,_1_int) { $->to   = INT(argv[0]); }
 METHOD(GridFor,_2_int) { $->step = INT(argv[0]); if (!$->step) $->step=1; }
@@ -978,7 +1012,6 @@ METHOD(GridFor,_0_int) {
 GRCLASS(GridFor,inlets:3,outlets:1,
 LIST(),
 	DECL(GridFor,init),
-	DECL(GridFor,delete),
 	DECL(GridFor,_0_bang),
 	DECL(GridFor,_0_int),
 	DECL(GridFor,_0_set),
@@ -1009,14 +1042,8 @@ GRID_FLOW(GridDim,0) {}
 
 GRID_END(GridDim,0) {}
 
-METHOD(GridDim,init) { rb_call_super(argc,argv); }
-
-METHOD(GridDim,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridDim,inlets:1,outlets:1,
-LIST(GRINLET(GridDim,0)),
-	DECL(GridDim,init),
-	DECL(GridDim,delete))
+LIST(GRINLET(GridDim,0)))
 
 /* **************************************************************** */
 
@@ -1194,16 +1221,10 @@ METHOD(GridScaleBy,init) {
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
-/* destructor */
-/* this object has nothing more to deallocate than a plain GridObject */
-/* therefore it only calls super() */
-METHOD(GridScaleBy,delete) { rb_call_super(argc,argv); }
-
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
 GRCLASS(GridScaleBy,inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
-	DECL(GridScaleBy,init),
-	DECL(GridScaleBy,delete))
+	DECL(GridScaleBy,init))
 
 /* **************************************************************** */
 
@@ -1256,12 +1277,9 @@ METHOD(GridRGBtoHSV,init) {
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
-METHOD(GridRGBtoHSV,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridRGBtoHSV,inlets:1,outlets:1,
 LIST(GRINLET(GridRGBtoHSV,0)),
-	DECL(GridRGBtoHSV,init),
-	DECL(GridRGBtoHSV,delete))
+	DECL(GridRGBtoHSV,init))
 
 /* **************************************************************** */
 
@@ -1304,12 +1322,9 @@ METHOD(GridHSVtoRGB,init) {
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
 
-METHOD(GridHSVtoRGB,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridHSVtoRGB,inlets:1,outlets:1,
 LIST(GRINLET(GridHSVtoRGB,0)),
-	DECL(GridHSVtoRGB,init),
-	DECL(GridHSVtoRGB,delete))
+	DECL(GridHSVtoRGB,init))
 
 /* **************************************************************** */
 /* [rtmetro] */
@@ -1369,16 +1384,11 @@ METHOD(RtMetro,init) {
 	whine("on = %d",$->on);
 }
 
-METHOD(RtMetro,delete) {
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(RtMetro,inlets:2,outlets:1,
 LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
-	DECL(RtMetro,init),
-	DECL(RtMetro,delete))
+	DECL(RtMetro,init))
 
 /* **************************************************************** */
 /* [@global] */
@@ -1445,13 +1455,9 @@ METHOD(GridGlobal,_0_profiler_dump) {
 */
 }
 
-METHOD(GridGlobal,init)   { rb_call_super(argc,argv); }
-METHOD(GridGlobal,delete) { rb_call_super(argc,argv); }
-
 GRCLASS(GridGlobal,inlets:1,outlets:1,
 LIST(),
 	DECL(GridGlobal,init),
-	DECL(GridGlobal,delete),
 	DECL(GridGlobal,_0_profiler_reset),
 	DECL(GridGlobal,_0_profiler_dump))
 
@@ -1465,6 +1471,7 @@ void startup_flow_objects (void) {
 	INSTALL("@!",          GridOp1);
 	INSTALL("@",           GridOp2);
 	INSTALL("@fold",       GridFold);
+	INSTALL("@scan",       GridScan);
 /*	INSTALL("@inner",      GridInner); */
 	INSTALL("@inner2",     GridInner2);
 	INSTALL("@outer",      GridOuter);
