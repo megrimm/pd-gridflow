@@ -113,21 +113,27 @@ void FObject_send_out_3(int *argc, Ruby **argv, Ruby *sym, int *outlet) {
 }
 
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
-	Ruby ary;
 	Ruby sym;
 	int outlet;
 	FObject_send_out_3(&argc,&argv,&sym,&outlet);
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
 
-	ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
+	Ruby ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
 		rb_ivar_get($,SYM2ID(sym_outlets)) : Qnil;
+//	printf("1: ");	rb_p(ary);
 	if (ary==Qnil) return Qnil;
+	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
+	ary = rb_ary_fetch(ary,outlet);
+//	printf("2: ");	rb_p(ary);
+	if (ary==Qnil) return Qnil;
+	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	int n = RARRAY(ary)->len;
 	for (int i=0; i<n; i++) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
+//		printf("3: ");	rb_p(conn);
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
 		/*
