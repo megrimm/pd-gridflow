@@ -40,16 +40,16 @@ def read_ld_so_conf
 end
 
 $C_INCLUDE_PATH = (
-	ENV["CPLUS_INCLUDE_PATH"].split(":") +
-	ENV["C_INCLUDE_PATH"].split(":") +
+	(ENV["CPLUS_INCLUDE_PATH"]||"").split(":") +
+	(ENV["C_INCLUDE_PATH"]||"").split(":") +
 	["/usr/include"]).uniq
 
 $LIBRARY_PATH = (
-	ENV["LIBRARY_PATH"].split(":") +
+	(ENV["LIBRARY_PATH"]||"").split(":") +
 	["/usr/lib","/lib"]).uniq
 
 $LD_LIBRARY_PATH = (
-	ENV["LD_LIBRARY_PATH"].split(":") +
+	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
 		read_ld_so_conf +
 		["/usr/lib","/lib"]).uniq
 
@@ -474,6 +474,7 @@ def usage
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
+	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
 end
@@ -492,8 +493,13 @@ while ARGV.length>0 do
 	when /^--no-/
 		name = arg[5..-1].intern
 		puts "there is no feature called #{name}" if not $features_h[name]
-		puts "won't check for feature #{name}"
+		puts "--no: won't check for feature #{name}"
 		$features_h.delete name
+	when /^--force-/
+		name = arg[8..-1].intern
+		puts "there is no feature called #{name}" if not $features_h[name]
+		puts "--force: assuming #{name} is there"
+		$features_h[name].test nil
 	when "--static" #!@#$ not working.
 		raise "boo"
 		$conf[:STATIC]=true
