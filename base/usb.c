@@ -238,8 +238,8 @@ static Ruby usb_scan_bus (usb_bus *bus) {
 	return rbus;
 }
 
-\class USB < Object
-class USB : public Object {
+\class USB < CObject
+class USB : public CObject {
 	usb_dev_handle *h;
 public:
 	\decl void initialize (Ruby dev);

@@ -159,7 +159,7 @@ static void FObject_mark (void *z) {
 static int object_count=0;
 
 void Object_free (void *foo) {
-	Object *self = (Object *)foo;
+	CObject *self = (CObject *)foo;
 	self->check_magic();
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
@@ -169,7 +169,7 @@ void Object_free (void *foo) {
 	delete self;
 }
 
-\class FObject < Object
+\class FObject < CObject
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	if (argc<1) {
@@ -390,7 +390,7 @@ static Ruby String_swap16_f (Ruby rself) {
 
 /* **************************************************************** */
 
-\class BitPacking < Object
+\class BitPacking < CObject
 
 \def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {
 }
