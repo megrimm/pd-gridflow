@@ -245,16 +245,21 @@ Feature.new {
 	name "Pentium-compatible CPU"
 	# todo: -mcpu=pentiumpro, and so on.
 	uses_so ["-mcpu=pentium"]
-#	uses_o ["cpu/pentium.o"]
 	test proc {
-		(CONFIG["arch"] =~ /i586|i686/) and
-		# this is very "heuristic" to say the least. sorry.
-		# please fix me.
+		(CONFIG["arch"] =~ /i\d86/) and
 		c_test '
-		typedef unsigned long long uint64;
-		int main() { uint64 x;
-		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-		return 0;}'
+		#include <stdio.h>
+		char get_cpuid[]={
+			96,49,192,15,162,139,124,36,36,137,31,
+			137,87,4,137,79,8,137,71,12,97,195};
+		main() {
+			char result[16];
+			int code;
+			((void(*)(char*))get_cpuid)(result);
+			code = ((int*)result)[3];
+			result[12]=0;
+			fprintf(stderr,"cpuid: name=\"%s\", flags=0x%08x\n",code);
+			return 0;}'
 	}
 	options ["HAVE_PENTIUM"]
 },
@@ -328,7 +333,7 @@ Feature.new {
 Feature.new {
 	tag :sdl
 	name "Simple Directmedia Layer"
-	uses_so ["-lSDL"]
+	uses_so ["-lSDL","-lpthread"]
 	#uses_h ["SDL/SDL.h"]
 	test proc {
 		c_test "
@@ -642,7 +647,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.7.1 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.2 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
