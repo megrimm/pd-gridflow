@@ -698,10 +698,9 @@ $features.each {|f| $features_h[f.tag]=f }
 def usage
 	log = ""
 	log << "usage: ./configure "
-	log << "[--use-compiler compiler] "
-	log << "[--use-compiler-option option]* "
-	log << "[--use-cpu cpu] [--lite] "
-	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
+	log << "[--use-compiler compiler] [--use-compiler-option option]* "
+	log << "[--use-cpu cpu] [--lite] [--debug] [--debug-harder]"
+	log << "[--ruby-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -887,10 +886,6 @@ for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
   LOG.puts "#{z}: #{$conf[z].inspect}"
 end
 LOG.puts "-"*64
-
-#--------------------------------#
-# extconf.rb
-
 RUBY = "ruby"
 
 def my_install_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
@@ -920,12 +915,9 @@ def my_uninstall_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
 end
 
 def make_makefile f
-#    f.puts "RUBYDESTDIR2 = " + make_expand(sprintf("%s/%s.%s",
-#		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
 	puts ""
     f.puts "RUBY = #{RUBY}"
     f.puts "ruby-all::", ""
-#   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
     f.puts "ruby-install::"
     my_install_files(f,"",FILES)
     f.puts "\tcp bin/jmax2pd $(gfbindir); chmod 755 $(gfbindir)/jmax2pd\n"
@@ -974,7 +966,6 @@ for format in $conf[:FORMATS] do
 end
 f.puts "SOURCES = #{$sources.join(" ")} \\"
 f.puts ""
-#make_makefile f
 } # end open config.make
 
 #--------------------------------#
@@ -1023,11 +1014,8 @@ $LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
 
 $objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
 dir_config("gridflow")
-#p $rubylibdir
 create_makefile("gridflow")
-#p $rubylibdir
 mf = File.readlines("Makefile").join""
-#p mf.length
 
 common_deps1 = "$(COMMON_DEPS)"
 common_deps2 = common_deps1 + " base/grid.h.fcs"
@@ -1068,48 +1056,24 @@ mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
 	"gfbindir = #{$conf[:BINDIR]}\n"
 mf.sub!(/^site-install:\s*install/,"site-install: ")
-#mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 mf.sub! /^prefix = .*$/, "prefix = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
-
-#mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
-#	(if CONFIG["arch"] =~ /darwin/
-#		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
-#		else "$(CXX)" end)
-
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
-
 # Adam Lindsay's Mac attempts.
 mf.sub! /-no-precomp/, "-no-cpp-precomp"
-
 # for proper operation on Cygwin
 mf.sub! /--driver-name=gcc/, "--driver-name=#{$conf[:CC]}"
-
 # remove gcc3.2 warning about -I/usr/include
 mf.sub!(/^CPPFLAGS = (.*)$/) {
 	cpp = "CPPFLAGS = " +
 		make_expand($1).sub(%r"-I\s*/usr/include","")
 }
 
-# jMax conflict resolution (this must be done last)
-mf.gsub!(/prefix/,'rubyprefix')
-
-#p mf.length
 f = File.open("Makefile","w")
 f.puts "include config.make"
 f.puts mf
 f.puts "include Makefile.gf"
 make_makefile f
 f.close
-
-# puts "$CFLAGS = #{$CFLAGS.inspect}"
-
-=begin
-for z in [
-:$srcdir,:$libdir,:$rubylibdir,
-:$archdir,:$sitedir,:$sitelibdir,:$sitearchdir,
-:$prefix,:$exec_prefix,
-] do puts "#{z} = #{eval z.to_s}" end
-=end
 
 END {
   system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
