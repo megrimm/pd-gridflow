@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -25,6 +27,7 @@
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 #include "video4jmax.h"
 #include "grid.h"
@@ -134,15 +137,12 @@ void whine(char *fmt, ...) {
 	/* do the real stuff now */
 	{
 		va_list args;
-		char post_s[256];
+		char post_s[256*4];
 		int length;
 		va_start(args,fmt);
 		length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
 		post_s[sizeof(post_s)-1]=0; /* safety */
-/*		if () strcat(post_s,"\n"); */
-		post(
-//		fprintf(stderr,
-			"[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
+		post("[whine] %s%.*s",post_s,post_s[length-1]!='\n',"\n");
 	}
 }
 
@@ -169,3 +169,12 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 	}
 }
 
+int v4j_file_open(const char *name, int mode) {
+	/* return fts_file_open(name,mode==4?"r":mode==2?"w":""); */
+	return open(name,mode);
+}
+
+FILE *v4j_file_fopen(const char *name, int mode) {
+	int fd = v4j_file_open(name,mode);
+	return fdopen(fd,mode==4?"r":mode==2?"w":"");
+}

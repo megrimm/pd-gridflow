@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -171,7 +173,9 @@ static uint8 *VideoOut_convert(
 			(((data[0] << d->high_bit[0]) >> 7) & d->mask[0]) |
 			(((data[1] << d->high_bit[1]) >> 7) & d->mask[1]) |
 			(((data[2] << d->high_bit[2]) >> 7) & d->mask[2]);
-		int bytes = parent->display->depth/8;
+		//int bytes = parent->display->depth/8;
+		int bytes = parent->ximage->bits_per_pixel/8;
+
 		while(bytes--) {
 			*target++ = temp;
 			temp >>= 8;

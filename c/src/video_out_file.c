@@ -1,4 +1,6 @@
 /*
+	$Id$
+
 	Video4jmax
 	Copyright (c) 2001 by Mathieu Bouchard
 
@@ -31,7 +33,7 @@
 
 /* return and complain when file not open */
 #define CHECK_FILE_OPEN \
-	if (!$->file) { whine("can't do that: file not open"); return; }
+	if (!$->ff) { whine("can't do that: file not open"); return; }
 
 /* some data/type decls */
 
@@ -39,16 +41,11 @@ typedef struct VideoOutFile VideoOutFile;
 
 struct VideoOutFile {
 	GridObject_FIELDS;
-	
-/* fields for: file writing */
-
-	FILE *file;     /* a UNIX-style buffered file object */
-	char *filename; /* a valid UNIX filename */
+	FileFormat *ff; /* a file writer object */
 };
 
 /* ---------------------------------------------------------------- */
 
-/* same as vout's */
 void VideoOutFile_acceptor0(GridInlet *$) {
 	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
 	int v[] = { Dim_get($->dim,0), Dim_get($->dim,1), 3 };
@@ -61,21 +58,13 @@ void VideoOutFile_acceptor0(GridInlet *$) {
 		VideoOutFile *$ = parent;
 		CHECK_FILE_OPEN
 	}
-	fprintf(parent->file,
-		"P6\n"
-		"# generated using Video4jmax " VIDEO4JMAX_VERSION "\n"
-		"%d %d\n"
-		"255\n",
-		Dim_get($->dim,1),
-		Dim_get($->dim,0));
-
-	fflush(parent->file);
 	$->dex=0;
+	parent->ff->accept(parent->ff, $->dim);
 }
 
 void VideoOutFile_processor0(GridInlet *$, int n, const Number *data) {
 	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
-	FILE *f = parent->file;
+	FileFormat *f = parent->ff;
 	{
 		VideoOutFile *$ = parent;
 		CHECK_FILE_OPEN
@@ -84,16 +73,13 @@ void VideoOutFile_processor0(GridInlet *$, int n, const Number *data) {
 		int incr;
 		int max = Dim_prod($->dim) - $->dex;
 		int bs = n<max?n:max;
-		uint8 data2[bs];
-		int i;
-		for (i=0; i<bs; i++) data2[i] = data[i];
-		fwrite(data2,1,bs,f);
+		parent->ff->process(parent->ff, bs, data);
+		
 		data += bs;
 		$->dex += bs;
 		n -= bs;
 		if ($->dex >= Dim_prod($->dim)) {
-			fflush(f);
-			fseek(f,0,SEEK_SET);
+			parent->ff->finish(parent->ff);
 			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
 		}
 	}
@@ -104,9 +90,6 @@ void VideoOutFile_processor0(GridInlet *$, int n, const Number *data) {
 METHOD(VideoOutFile,init) {
 	whine("VideoOutFile#init");
 
-	$->filename = 0;
-	$->file = 0;
-
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
 		VideoOutFile_acceptor0, VideoOutFile_processor0);
@@ -114,9 +97,7 @@ METHOD(VideoOutFile,init) {
 
 static void VideoOutFile_p_close(VideoOutFile *$) {
 	CHECK_FILE_OPEN
-	fclose($->file);
-	$->file = 0;
-	$->filename = 0;
+	$->ff->close($->ff);
 }
 
 METHOD(VideoOutFile,close) {
@@ -124,31 +105,25 @@ METHOD(VideoOutFile,close) {
 }
 
 METHOD(VideoOutFile,open) {
-	whine("VideoOutFile#open");
+	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("/tmp/untitled.ppm"));
+	const char *format = fts_symbol_name(GET(1,symbol,fts_new_symbol("ppm")));
+	FileFormatClass *qlass = FileFormatClass_find(format);
 
-	if ($->file) { VideoOutFile_p_close($); }
-
-	{
-		fts_symbol_t foo = GET(0,symbol,fts_new_symbol("/tmp/untitled.ppm"));
-		$->filename = strdup(fts_symbol_name(foo));
-	}
-
-	$->file = fopen($->filename,"w+");
-	if (!$->file) {
-		whine("can't open file %s for writing", $->filename);
-		$->filename = 0;
+	if (qlass) {
+		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
+	} else {
+		whine("unknown file format identifier: %s", format);
 		return;
 	}
+
+	if ($->ff) $->ff->close($->ff);
+	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
+	$->ff = qlass->open(fts_symbol_name(filename),2);
 }
 
 METHOD(VideoOutFile,delete) {
 	whine("VideoOutFile#delete");
-	if ($->file) { VideoOutFile_p_close($); }
-}
-
-METHOD(VideoOutFile,bang) {
-	CHECK_FILE_OPEN
-	fflush($->file);
+	if ($->ff) { VideoOutFile_p_close($); }
 }
 
 /* ---------------------------------------------------------------- */
@@ -161,7 +136,6 @@ CLASS(VideoOutFile) {
 	MethodDecl methods[] = {
 		{-1,fts_s_init,  METHOD_PTR(VideoOutFile,init),ARRAY(init_args),-1},
 		{-1,fts_s_delete,METHOD_PTR(VideoOutFile,delete), 0,0,0 },
-		{ 0,fts_s_bang,  METHOD_PTR(VideoOutFile,bang), 0,0,0 },
 		{ 0,sym_open,    METHOD_PTR(VideoOutFile,open),ARRAY(open_args),-1},
 		{ 0,sym_close,   METHOD_PTR(VideoOutFile,close), 0,0,0 },
 	};

@@ -24,6 +24,8 @@
 #include "video4jmax.h"
 #include "grid.h"
 
+static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
+
 #define INFO(__self) \
 	fts_symbol_name(fts_get_class_name((__self)->parent->o.head.cl)), \
 	(__self)->winlet
@@ -40,16 +42,14 @@ fts_type_t *make_dims_list (void) {
 
 /* **************** GridInlet ************************************* */
 
-GridInlet *GridInlet_new(
-	GridObject *parent, int winlet, GridAcceptor a, GridProcessor p)
-{
+GridInlet *GridInlet_new(GridObject *parent, int winlet, GridAccept a, GridProcess p) {
 	GridInlet *$ = NEW(GridInlet,1);
 	$->parent = parent;
 	$->winlet = winlet;
 	$->dim = 0;
 	$->dex = 0;
-	$->acceptor = a;
-	$->processor = p;
+	$->accept = a;
+	$->process = p;
 	return $;
 }
 
@@ -79,8 +79,8 @@ int GridInlet_idle_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
 		whine("%s:i%d: no dim",INFO($));
-	} else if (!$->processor) {
-		whine("%s:i%d: no processor",INFO($));
+	} else if (!$->process) {
+		whine("%s:i%d: no process()",INFO($));
 	} else {
 		return 0;
 	}
@@ -98,10 +98,10 @@ void GridInlet_accept(GridInlet *$, int ac, const fts_atom_t *at) {
 
 /*	whine("%s:i%d: grid_begin: %s",INFO($),Dim_to_s($->dim)); */
 	$->dex = 0;
-	if (!$->acceptor) {
-		whine("%s:i%d: no acceptor",INFO($));
+	if (!$->accept) {
+		whine("%s:i%d: no accept()",INFO($));
 	} else {
-		$->acceptor($);
+		$->accept($);
 	}
 }
 
@@ -110,7 +110,7 @@ void GridInlet_packet(GridInlet *$, int ac, const fts_atom_t *at) {
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (GridInlet_idle_verbose($,"packet")) return;
 	assert(n>0);
-	$->processor($,n,data);
+	$->process($,n,data);
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
@@ -173,7 +173,7 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 		fts_atom_t a[2];
 		int i;
 		fts_set_int(a+0,pn);
-		fts_set_ptr(a+1,data);
+		fts_set_ptr(a+1,data); /* gcc-warning here, don't worry */
 		fts_outlet_send(OBJ($->parent),0,sym_grid_packet,COUNT(a),a);
 		data += pn;
 		n -= pn;
@@ -259,3 +259,16 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 
 	define_many_methods(class,ARRAY(methods));
 }
+
+/* **************** FileFormatClass ******************************* */
+
+FileFormatClass *FileFormatClass_find(const char *name) {
+	int i;
+	for (i=0; i<COUNT(file_format_classes); i++) {
+		if (strcmp(file_format_classes[i]->symbol_name,name)==0) {
+			return file_format_classes[i];
+		}
+	}
+	return 0; /* fail */
+}
+
