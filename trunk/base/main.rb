@@ -31,6 +31,7 @@ end
 
 # should rewrite the whine() code here.
 def GridFlow.whine(s,*a)
+	s=s.to_s
 	s<<"\n" if s[-1]!=10
 	GridFlow.post(s,*a)
 end
@@ -52,9 +53,9 @@ end
 class RubyFor < GridFlow::FObject
 	attr_accessor :start, :stop, :step
 	def initialize(start,stop,step)
-		raise ArgumentError, "@start not integer" unless Integer===@start
-		raise ArgumentError, "@stop not integer" unless Integer===@stop
-		raise ArgumentError, "@step not integer" unless Integer===@step
+		raise ArgumentError, "@start not integer" unless Integer===start
+		raise ArgumentError, "@stop not integer" unless Integer===stop
+		raise ArgumentError, "@step not integer" unless Integer===step
 		@start,@stop,@step = start,stop,step
 	end
 	def _0_bang
