@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.0 - reference</title>
+<title>GridFlow 0.7.1 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.0 - reference index</h4>
+    <h4>GridFlow 0.7.1 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -142,14 +142,10 @@
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
-<tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr> <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>abs</td><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> 
-		absolute value of A </td></tr>
- <tr><td>rand</td><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> 
-		randomly produces a non-negative number below A </td></tr>
- <tr><td>sqrt</td><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> 
-		square root of A, rounded downwards </td></tr>
- <tr><td>sq</td><td><img src="images/op/sq.jpg" border="0" alt="sq"></td><td> 
-		A times A </td></tr>
+<tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr> <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> randomly produces a non-negative number below A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> square root of A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/sq.jpg" border="0" alt="sq"></td><td> A times A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  
 <tr><td>&nbsp;</td></tr>
 </table> 
@@ -162,45 +158,43 @@
 		by multiplying by 100. You convert from radians to our angles by 
 		multiplying by 18000/pi.</p> <p>Hyperbolic functions (tanh) work with our angles too, so the 
 		same conversions apply.</p> </td></tr>
- <tr><td></td><td></td><td><table border='1'><th><td>internal name</td><td>usual name</td><td>description</td></th><tr><td>ignore</td><td><img src="images/op/ignore.jpg" border="0" alt="ignore"></td><td> A </td></tr>
- <tr><td>put</td><td><img src="images/op/put.jpg" border="0" alt="put"></td><td> B </td></tr>
- <tr><td>add</td><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr>
- <tr><td>sub</td><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr>
- <tr><td>bus</td><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr>
- <tr><td>mul</td><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr>
- <tr><td>div</td><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded towards zero </td></tr>
- <tr><td>div2</td><td><img src="images/op/div2.jpg" border="0" alt="div2"></td><td> A / B, rounded downwards </td></tr>
- <tr><td>vid</td><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded towards zero </td></tr>
- <tr><td>vid2</td><td><img src="images/op/vid2.jpg" border="0" alt="vid2"></td><td> B / A, rounded downwards </td></tr>
- <tr><td>mod</td><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, modulo (goes with div) </td></tr>
- <tr><td>dom</td><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, modulo (goes with div) </td></tr>
- <tr><td>rem</td><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td></tr>
- <tr><td>mer</td><td><img src="images/op/mer.jpg" border="0" alt="mer"></td><td> B % A, remainder (goes with /) </td></tr>
- <tr><td>or</td><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise </td></tr>
- <tr><td>xor</td><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr>
- <tr><td>and</td><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr>
- <tr><td>shl</td><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td> 
-		A * (2**(B % 32)), which is left-shifting </td></tr>
- <tr><td>shr</td><td><img src="images/op/shr.jpg" border="0" alt="shr"></td><td> 
-		A / (2**(B % 32)), which is right-shifting </td></tr>
- <tr><td>sc_or</td><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td> if A is zero then B else A </td></tr>
- <tr><td>sc_and</td><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td> if A is zero then zero else B</td></tr>
- <tr><td>min</td><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td></tr>
- <tr><td>max</td><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td></tr>
- <tr><td>cmp</td><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A<B; 0 when A=B; 1 when A>B. </td></tr>
- <tr><td>eq</td><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td> is A equal to B ? 1=true, 0=false </td></tr>
- <tr><td>ne</td><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td> is A not equal to B ? </td></tr>
- <tr><td>gt</td><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td> is A greater than B ? </td></tr>
- <tr><td>le</td><td><img src="images/op/le.jpg" border="0" alt="le"></td><td> is A not greater than B ? </td></tr>
- <tr><td>lt</td><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td> is A less than B ? </td></tr>
- <tr><td>ge</td><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>is A not less than B ? </td></tr>
- <tr><td>sin</td><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td> B * sin(A) </td></tr>
- <tr><td>cos</td><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td> B * cos(A) </td></tr>
- <tr><td>atan</td><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td></tr>
- <tr><td>tanh*</td><td><img src="images/op/tanh*.jpg" border="0" alt="tanh*"></td><td> B * tanh(A) </td></tr>
- <tr><td>log*</td><td><img src="images/op/log*.jpg" border="0" alt="log*"></td><td> B * log(A) (in base e) </td></tr>
- <tr><td>gamma</td><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr>
- <tr><td>pow</td><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A**B, that is, A raised to power B </td></tr>
+ <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/ignore.jpg" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
+ <tr><td><img src="images/op/put.jpg" border="0" alt="put"></td><td> B </td><td>replace by</td><td>replace by</td></tr>
+ <tr><td><img src="images/op/add.jpg" border="0" alt="+"></td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr>
+ <tr><td><img src="images/op/sub.jpg" border="0" alt="-"></td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr>
+ <tr><td><img src="images/op/bus.jpg" border="0" alt="inv+"></td><td> B - A </td><td>negate then contrast</td><td>180 degree rotate then move</td></tr>
+ <tr><td><img src="images/op/mul.jpg" border="0" alt="*"></td><td> A * B </td><td>contrast</td><td>zoom out</td></tr>
+ <tr><td><img src="images/op/div.jpg" border="0" alt="/"></td><td> A / B, rounded towards zero </td><td>contrast</td><td>zoom in</td></tr>
+ <tr><td><img src="images/op/div2.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr>
+ <tr><td><img src="images/op/vid.jpg" border="0" alt="inv*"></td><td> B / A, rounded towards zero </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/vid2.jpg" border="0" alt="swapdiv"></td><td> B / A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/mod.jpg" border="0" alt="%"></td><td> A % B, modulo (goes with div) </td><td>&nbsp;</td><td>tile</td></tr>
+ <tr><td><img src="images/op/dom.jpg" border="0" alt="swap%"></td><td> B % A, modulo (goes with div) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/mer.jpg" border="0" alt="swaprem"></td><td> B % A, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/or.jpg" border="0" alt="|"></td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr>
+ <tr><td><img src="images/op/xor.jpg" border="0" alt="^"></td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr>
+ <tr><td><img src="images/op/and.jpg" border="0" alt="&"></td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr>
+ <tr><td><img src="images/op/shl.jpg" border="0" alt="<<"></td><td> A * (2**(B % 32)), which is left-shifting </td><td>like *</td><td>like *</td></tr>
+ <tr><td><img src="images/op/shr.jpg" border="0" alt=">>"></td><td> A / (2**(B % 32)), which is right-shifting </td><td>like /,div</td><td>like /,div</td></tr>
+ <tr><td><img src="images/op/sc_or.jpg" border="0" alt="||"></td><td> if A is zero then B else A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/sc_and.jpg" border="0" alt="&&"></td><td> if A is zero then zero else B</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr>
+ <tr><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr>
+ <tr><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/eq.jpg" border="0" alt="=="></td><td> is A equal to B ? 1=true, 0=false </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/ne.jpg" border="0" alt="!="></td><td> is A not equal to B ? </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/gt.jpg" border="0" alt=">"></td><td> is A greater than B ? </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/le.jpg" border="0" alt="<="></td><td> is A not greater than B ? </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/lt.jpg" border="0" alt="<"></td><td> is A less than B ? </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/ge.jpg" border="0" alt=">="></td><td>is A not less than B ? </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/sin.jpg" border="0" alt="sin*"></td><td> B * sin(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
+ <tr><td><img src="images/op/cos.jpg" border="0" alt="cos*"></td><td> B * cos(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
+ <tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td><td>&nbsp;</td><td>find angle to origin (part of polar transform)</td></tr>
+ <tr><td><img src="images/op/tanh*.jpg" border="0" alt="tanh*"></td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid</td></tr>
+ <tr><td><img src="images/op/log*.jpg" border="0" alt="log*"></td><td> B * log(A) (in base e) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/pow.jpg" border="0" alt="**"></td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>&nbsp;</td></tr>
  
 <tr><td>&nbsp;</td></tr>
 </table> 
@@ -223,7 +217,7 @@ with the main part.
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.7.0 Documentation<br>
+<p><font size="-1">GridFlow 0.7.1 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>

@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.0 - reference</title>
+<title>GridFlow 0.7.1 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.0 - reference index</h4>
+    <h4>GridFlow 0.7.1 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -380,7 +380,7 @@
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>dims... {imaginary real}<b>)</b> <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@fold">@fold</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@fold.png" alt="[@fold +]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p><ul> <li><b>1</b> : [@fold +] computes totals</li> <li><b>2</b> : [@fold inv+] is an alternated sum (+/-)</li> <li><b>3</b> : [@fold * 1] can compute the size of a grid using its dimension list</li> <li><b>4</b> : [@fold & 1] can mean "for all"</li> <li><b>5</b> : [@fold | 0] can mean "there exists (at least one)"</li> <li><b>6</b> : [@fold ^ 0] can mean "there exists an odd number of..."</li> <li><b>7</b> : [@fold ^ 1] can mean "there exists an even number of...".</li> </ul></p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>     
+   <p><ul> <li><b>1</b> : [@fold +] computes totals</li> <li><b>2</b> : [@fold inv+] is an alternated sum (+/-)</li> <li><b>3</b> : [@fold * 1] can compute the size of a grid using its dimension list</li> <li><b>4</b> : [@fold &amp; 1] can mean "for all"</li> <li><b>5</b> : [@fold | 0] can mean "there exists (at least one)"</li> <li><b>6</b> : [@fold ^ 0] can mean "there exists an odd number of..."</li> <li><b>7</b> : [@fold ^ 1] can mean "there exists an even number of...".</li> </ul></p> <br><b>method</b> init <b>(</b><i>symbol</i> operator<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>     
 			the base value is optional and defaults to 0. 
 			the operator is one from the table of two-input operators. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., last<b>)</b> 
@@ -791,7 +791,9 @@
 		there is at least a given delay between bangs. rtmetro ensures 
 		that on average there is a given delay between bangs: it will 
 		compensate too long delays by shorter delays. of course this won't 
-		work if the system cannot keep up with the amount of work. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pingpong">pingpong</a></td></tr><tr><td></td><td valign='top'><br>
+		work if the system cannot keep up with the amount of work. <p>WARNING: this class does not work as advertised.</p> <br><b>method</b> init <b>(</b><b>)</b> <br>
+ <br><b>method</b> init geiger <b>(</b><b>)</b> <br>
+ <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pingpong">pingpong</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		send a value in inlet 1 first. if successive increasing values are 
@@ -980,7 +982,7 @@
  <br><b>grid</b> <b>dim(</b>rows columns {red green blue}<b>)</b> 
 			resizes the window to the size of the grid; 
 			encodes that grid in the display's pixel format; 
-			also displays it if autodraw > 0 
+			also displays it if autodraw &gt; 0 
 			the values must be in range 0-255, 
 			or else they will be "wrapped". <br>
  <p> 
@@ -1017,7 +1019,7 @@
 				emitted when the cursor is dragging from inside to outside 
 				the window. The y and x coordinates are relative to the upper 
 				right corner of the window. Specific button states may be 
-				extracted from the button value by applying [>> 
+				extracted from the button value by applying [&gt;&gt; 
 				buttonnumber] and then checking whether the result is odd. 
 				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul> <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="aalib @out">aalib @out</a></td></tr><tr><td></td><td valign='top'><br>
@@ -1112,7 +1114,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.7.0 Documentation<br>
+<p><font size="-1">GridFlow 0.7.1 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
