@@ -247,13 +247,13 @@ DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), false, false) // "LA=0"
 DEF_OP(tanh, (T)(b * tanh(a * (M_PI / 18000))), false, x==0)
 DEF_OP(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
 DEF_OP(pow, ipow(a,b), false, false) // "RN=1"
-DEF_OP(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
+DEF_OP(log, (T)(a==0 ? 0 : b * log(gf_abs(a))), false, false) // "RA=0"
 // 0.7.8
 //DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
 //DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
-DEF_OP(abssub,  abs(a-b), false, false)
+DEF_OP(abssub,  gf_abs(a-b), false, false)
 DEF_OP(sqsub, (a-b)*(a-b), false, false)
-DEF_OP(avg, (a-b)/2, false, false)
+DEF_OP(avg, (a+b)/2, false, false)
 DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), false, false)
 DEF_OP(sqrt, (T)(0+floor(sqrt(a))), false, false)
 DEF_OP(rand, a==0 ? 0 : random()%(int32)a, false, false)
