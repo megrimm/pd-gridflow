@@ -5,6 +5,19 @@
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
+[ ] bug in automatic type conversion (eg: @in quicktime -> ...)
+
+[ ] can't open "": Success; loading a nonquicktime file using quicktime
+
+[ ] @in#open problem with String argument.
+
+[ ] #0  BFObject_rescue (fm=0xbffff660) at bridge/jmax.c:112
+112                     post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+
+[ ] Greyscale JPEG does not work
+
+[ ] T_DATA #dup #clone ???
+
 [ ] separate bridge makefiles from other makefiles!!!
 
 [ ] research bugs in ASIO with Ruby. (eg. serial port)
@@ -32,8 +45,6 @@ error: NotImplementedError: method `class' called on terminated object (at 80eb5
 [ ] PD:
 error: NoMethodError: undefined method `intern' for nil
 /opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:591:in `method_missing'
-
-[ ] BIG MEMORY LEAK ?
 
 [ ] base/test.rb (default):
     2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
@@ -297,6 +308,7 @@ User Interface
     [ ] works properly with multiple patchers
     [ ] resizable
     [ ] auto-@downscale_by
+    [ ] deleteable
     [ ] works with jmax4
     [ ] ...
 [ ] vector slider (n parallel sliders in one, Dim(n))
