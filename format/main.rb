@@ -24,6 +24,10 @@
 require "socket"
 require "fcntl"
 
+module Errno
+	EWOULDBLOCK = EAGAIN unless const_defined? :EWOULDBLOCK
+end
+
 class IO
   def nonblock= flag
     bit = Fcntl::O_NONBLOCK
