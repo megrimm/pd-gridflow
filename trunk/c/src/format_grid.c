@@ -30,10 +30,6 @@
 	1 uint8: number of dimensions N (supported: at least 0..4)
 	N uint32: number of elements per dimension D[0]..D[N-1]
 	raw data goes there.
-
-	future plans:
-	additional bpv values 1,2,4,8,16
-	reserved field will become number type or something
 */
 
 #include "grid.h"
@@ -67,13 +63,21 @@ static int bufsize (FormatGrid *$, GridOutlet *out) {
 }
 
 /* for each slice of the body */
+/* hope for a multiple of 4 */
 static bool FormatGrid_frame3 (FormatGrid *$, int n, char *buf) {
 	GridOutlet *out = $->parent->out[0];
 	int nn = n*8/$->bpv;
-	Number *data = (Number *)buf;
 //	whine("out->dex = %d",out->dex);
-	if ($->is_le != is_le()) swap32(nn,data);
-	GridOutlet_send(out,nn,data);
+	if ($->bpv==8) {
+		int i;
+		Number buf2[n];
+		for (i=0; i<n; i++) buf2[i] = ((uint8 *)buf)[i];
+		GridOutlet_send(out,n,buf2);
+	} else if ($->bpv==32) {
+		Number *data = (Number *)buf;
+		if ($->is_le != is_le()) swap32(nn,data);
+		GridOutlet_send(out,nn,data);
+	}
 	FREE(buf);
 	if (out->dex == Dim_prod(out->dim)) {
 		GridOutlet_end(out);
@@ -133,7 +137,9 @@ static bool FormatGrid_frame1 (FormatGrid *$, int n, char *buf) {
 
 	$->bpv = buf[5];
 	n_dim  = buf[7];
-	if ($->bpv != 32) {
+	switch ($->bpv) {
+		case 8: case 32: break;
+		default:
 		whine("unsupported bpv (%d)", $->bpv);
 		goto err;
 	}
@@ -201,7 +207,7 @@ GRID_BEGIN(FormatGrid,0) {
 		} else {
 			strcpy(buf,"\x7fGRID");
 		}
-		buf[5]=32;
+		buf[5]=$->bpv;
 		buf[6]=0;
 		buf[7]=Dim_count($->dim);
 		if (8>write(fd,buf,8)) {
@@ -222,7 +228,14 @@ GRID_BEGIN(FormatGrid,0) {
 
 GRID_FLOW(FormatGrid,0) {
 	int fd = Stream_get_fd($->st);
-	write(fd,data,n*sizeof(Number));
+	int i;
+	if ($->bpv==8) {
+		uint8 buf[n];
+		for (i=0; i<n; i++) { buf[i] = data[i]; }
+		write(fd,(char *)buf,n);
+	} else if ($->bpv==32) {
+		write(fd,data,n*sizeof(Number));
+	}
 }
 
 GRID_END(FormatGrid,0) {
@@ -234,6 +247,20 @@ void FormatGrid_close (FormatGrid *$) {
 	if ($->st) Stream_close($->st);
 	if ($->is_socket) Dict_del(gf_timer_set,$);
 	FREE($);
+}
+
+static void FormatGrid_option (FormatGrid *$, ATOMLIST) {
+	int fd = Stream_get_fd($->st);
+	Symbol sym = GET(0,symbol,SYM(foo));
+	if (sym == SYM(type)) {
+		/* bug: should not be able to modify this _during_ a transfer */
+		int value = GET(1,symbol,SYM(uint8));
+		if (value==SYM(uint8)) { $->bpv=8; }
+		else if (value==SYM(int32)) { $->bpv=32; }
+		whine("$->bpv = %d",$->bpv);
+	} else {
+		whine("unknown option: %s", Symbol_name(sym));
+	}
 }
 
 /* **************************************************************** */
@@ -260,6 +287,10 @@ err: return false;
 
 /* **************************************************************** */
 
+static void FormatGrid_init (FormatGrid *$) {
+	$->bpv = 32;
+}
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -269,6 +300,7 @@ static bool FormatGrid_open_tcp (FormatGrid *$, int mode, ATOMLIST) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
+	FormatGrid_init($);
 
 	if (ac<2) { whine("not enough arguments"); goto err; }
 
@@ -307,6 +339,7 @@ static bool FormatGrid_open_tcpserver (FormatGrid *$, int mode, ATOMLIST) {
 	int stream = -1;
 	struct sockaddr_in address;
 	$->is_socket = true;
+	FormatGrid_init($);
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
@@ -355,8 +388,9 @@ err:
 
 static Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
 	FormatGrid *$ = (FormatGrid *)Format_open(&class_FormatGrid,parent,mode);
-
 	if (!$) return 0;
+
+	FormatGrid_init($);
 
 	if (ac<1) { whine("not enough arguments"); goto err; }
 
@@ -395,6 +429,6 @@ FormatClass class_FormatGrid = {
 	frames: 0,
 	frame:  (Format_frame_m)FormatGrid_frame,
 	handler: &FormatGrid_handler,
-	option: 0,
+	option: (Format_option_m)FormatGrid_option,
 	close:  (Format_close_m)FormatGrid_close,
 };
