@@ -190,6 +190,8 @@ extern "C" {
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
 typedef unsigned long  uint32;
+typedef unsigned long long uint64;
+
 typedef char  int8;
 typedef short int16;
 typedef long  int32;
@@ -503,6 +505,7 @@ struct GridOutlet {
 
 #define GridObject_FIELDS \
 	fts_object_t o;  /* extends fts object */ \
+	uint64 profiler_cumul, profiler_last; \
 	GridInlet  * in[MAX_INLETS]; \
 	GridOutlet *out[MAX_OUTLETS];
 

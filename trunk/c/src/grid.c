@@ -28,6 +28,16 @@ FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
 	(_self_)->winlet
 
+static uint64 rdtsc(void) {
+  uint64 x;
+  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+  return x;}
+
+#define ENTER $->profiler_last = rdtsc();
+#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
+#define ENTER_P $->parent->profiler_last = rdtsc();
+#define LEAVE_P $->parent->profiler_cumul = rdtsc()-$->parent->profiler_last;
+
 /* **************** GridInlet ************************************* */
 
 GridInlet *GridInlet_new(GridObject *parent, int winlet,
@@ -243,14 +253,18 @@ void GridOutlet_abort(GridOutlet *$) {
 	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
+	LEAVE_P;
 	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	ENTER_P;
 }
 
 void GridOutlet_end(GridOutlet *$) {
 	assert($);
 	assert(!GridOutlet_idle($));
 	GridOutlet_flush($);
+	LEAVE_P;
 	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
+	ENTER_P;
 	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
@@ -277,7 +291,9 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->rw  = 0;
 	fts_set_ptr(a,$);
 	for(i=0; i<n; i++) fts_set_int(&a[i+1],Dim_get($->dim,i));
+	LEAVE_P;
 	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_begin,n+1,a);
+	ENTER_P;
 	$->frozen = 1;
 /*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
@@ -292,7 +308,9 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 		int i;
 		fts_set_int(a+0,pn);
 		fts_set_ptr(a+1,(void*)(long)data); /* explicitly removing const */
+		LEAVE_P;
 		fts_outlet_send(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
+		ENTER_P;
 		data += pn;
 		n -= pn;
 	}
@@ -323,7 +341,9 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 		fts_atom_t a[2];
 		fts_set_int(a+0,n);
 		fts_set_ptr(a+1,(void*)data);
+		LEAVE_P;
 		fts_outlet_send(OBJ($->parent),0,sym_grid_flow2,COUNT(a),a);
+		ENTER_P;
 	} else {
 		/* normal stuff */
 		GridOutlet_send_direct($,n,data);
@@ -357,18 +377,17 @@ METHOD(GridObject,init) {
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
 	ObjectSet_add(video4jmax_object_set,$);
+	$->profiler_cumul = 0;
+	$->profiler_last = 0;
 }
 
 /* category: input */
 
-METHOD(GridObject,grid_begin) { GridInlet_begin($->in[winlet],ac,at); }
-METHOD(GridObject,grid_flow ) { GridInlet_flow( $->in[winlet],ac,at); }
-METHOD(GridObject,grid_flow2) { GridInlet_flow2($->in[winlet],ac,at); }
-METHOD(GridObject,grid_end  ) { GridInlet_end(  $->in[winlet],ac,at); }
-
-METHOD(GridObject,list) {
-	GridInlet_list($->in[winlet],ac,at);
-}
+METHOD(GridObject,grid_begin){ENTER;GridInlet_begin($->in[winlet],ac,at);LEAVE;}
+METHOD(GridObject,grid_flow ){ENTER;GridInlet_flow( $->in[winlet],ac,at);LEAVE;}
+METHOD(GridObject,grid_flow2){ENTER;GridInlet_flow2($->in[winlet],ac,at);LEAVE;}
+METHOD(GridObject,grid_end  ){ENTER;GridInlet_end(  $->in[winlet],ac,at);LEAVE;}
+METHOD(GridObject,list      ){ENTER;GridInlet_list( $->in[winlet],ac,at);LEAVE;}
 
 void GridObject_delete(GridObject *$) {
 	int i;

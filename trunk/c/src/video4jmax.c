@@ -346,9 +346,36 @@ typedef struct Video4jmax {
 } Video4jmax;
 
 METHOD(Video4jmax,profiler_reset) {
+	ObjectSet *os = video4jmax_object_set;
+	int i;
+	for(i=0;i<os->len;i++)  {
+		os->buf[i]->profiler_cumul = 0;
+	}
+}
+
+static void whine_line (void) {
+	whine("--------------------------------");
+}
+
+static int by_profiler_cumul(const void *a, const void *b) {
+	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
+	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
+	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
 }
 
 METHOD(Video4jmax,profiler_dump) {
+	ObjectSet *os = video4jmax_object_set;
+	int i;
+	whine_line();
+     qsort(os->buf,os->len,sizeof(GridObject*),by_profiler_cumul);
+	for(i=0;i<os->len;i++) {
+		GridObject *o = os->buf[i];
+		whine("%20lld : %p (%s)\n",
+			o->profiler_cumul,
+			o,
+			fts_symbol_name(fts_get_class_name(o->o.head.cl)));
+	}
+	whine_line();
 }
 
 METHOD(Video4jmax,init) {}
