@@ -1073,6 +1073,8 @@ LIST(GRINLET(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 
 struct GridScaleBy : GridObject {
 	Grid scale; /* integer scale factor */
+	int scaley;
+	int scalex;
 	DECL3(init);
 	GRINLET3(0);
 };
@@ -1081,9 +1083,6 @@ struct GridScaleBy : GridObject {
 /* one needs three special methods for that; they are declared using macros */
 /* this one processes the header and accepts or rejects the grid */
 GRID_BEGIN(GridScaleBy,0) {
-	int scaley = scale.as_int32()[0];
-	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
-	gfpost("scale = {%d, %d}",scaley,scalex);
 	Dim *a = in->dim;
 
 	/* there are restrictions on grid sizes for efficiency reasons */
@@ -1100,8 +1099,6 @@ GRID_BEGIN(GridScaleBy,0) {
 
 /* this method processes one packet of grid content */
 GRID_FLOW(GridScaleBy,0) {
-	int scaley = scale.as_int32()[0];
-	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
 	int rowsize = in->dim->prod(1);
 	STACK_ARRAY(Number,buf,rowsize*scalex);
 
@@ -1127,7 +1124,7 @@ GRID_FLOW(GridScaleBy,0) {
 /* not much to do here: when the input is done, the output is done too */
 GRID_END(GridScaleBy,0) { out[0]->end(); }
 
-static void expect_one_or_two (Dim *dim) {
+static void expect_scale_factor (Dim *dim) {
 	if (dim->prod()!=1 && dim->prod()!=2)
 		RAISE("expecting only one or two numbers");
 }
@@ -1135,8 +1132,13 @@ static void expect_one_or_two (Dim *dim) {
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
 METHOD3(GridScaleBy,init) {
-	scale.constrain(expect_one_or_two);
+	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
+	int scaley = scale.as_int32()[0];
+	int scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	if (scaley<1) scaley=1;
+	if (scalex<1) scalex=1;
+
 	rb_call_super(argc,argv);
 	out[0] = new GridOutlet(this,0); // wtf?
 	return Qnil;
@@ -1146,6 +1148,99 @@ METHOD3(GridScaleBy,init) {
 GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,startup:0,
 LIST(GRINLET(GridScaleBy,0,4)),
 	DECL(GridScaleBy,init))
+
+/* ---------------------------------------------------------------- */
+/* "@downscale_by" does quick downscaling of pictures by integer factors */
+
+/*{ Dim[A,B,3] -> Dim[C,D,3] }*/
+
+struct GridDownscaleBy : GridObject {
+	Grid scale;
+	int scaley;
+	int scalex;
+	bool smoothly;
+	Grid temp;
+	DECL3(init);
+	GRINLET3(0);
+};
+
+GRID_BEGIN(GridDownscaleBy,0) {
+	Dim *a = in->dim;
+
+	if (a->n!=3) RAISE("(height,width,chans) please");
+	if (a->get(2)!=3) RAISE("3 chans please");
+
+	int v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
+	out[0]->begin(new Dim(3,v));
+
+	in->set_factor(a->get(1)*a->get(2));
+
+	temp.del();
+	int w[]={in->dim->get(1)/scalex,in->dim->get(2)};
+	temp.init(new Dim(2,w));
+}
+
+GRID_FLOW(GridDownscaleBy,0) {
+	int rowsize = in->dim->prod(1);
+	int rowsize2 = temp.dim->prod();
+	Pt<Number> buf = temp.as_int32();
+
+	int xinc = in->dim->get(2)*scalex;
+	int y = in->dex / rowsize;
+
+	if (smoothly) {
+		while (n>0) {
+			if (y%scaley==0) CLEAR(buf,rowsize2);
+			for (int i=0,p=0; p<rowsize2;) {
+				for (int j=0; j<scalex; j++,i+=3) {
+					buf[p+0]+=data[i+0];
+					buf[p+1]+=data[i+1];
+					buf[p+2]+=data[i+2];
+				}
+				p+=3;
+			}
+			y++;
+			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
+				OP2(SYM(/))->on_int32.op_array(rowsize2,buf,scalex*scaley);
+				out[0]->send(rowsize2,buf);
+				CLEAR(buf,rowsize2);
+			}
+			data+=rowsize;
+			n-=rowsize;
+		}
+	} else {
+		for (; n>0; data+=rowsize, n-=rowsize,y++) {
+			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
+			for (int i=0,p=0; p<rowsize2; i+=xinc) {
+				buf[p+0]=data[i+0];
+				buf[p+1]=data[i+1];
+				buf[p+2]=data[i+2];
+				p+=3;
+			}
+			out[0]->send(rowsize2,buf);
+		}
+	}
+}
+
+GRID_END(GridDownscaleBy,0) { out[0]->end(); }
+
+METHOD3(GridDownscaleBy,init) {
+	scale.constrain(expect_scale_factor);
+	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
+	scaley = scale.as_int32()[0];
+	scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	if (scaley<1) scaley=1;
+	if (scalex<1) scalex=1;
+
+	smoothly = (argc>1 && argv[1]==SYM(smoothly));
+	rb_call_super(argc,argv);
+	out[0] = new GridOutlet(this,0); // wtf?
+	return Qnil;
+}
+
+GRCLASS(GridDownscaleBy,"@downscale_by",inlets:1,outlets:1,startup:0,
+LIST(GRINLET(GridDownscaleBy,0,4)),
+	DECL(GridDownscaleBy,init))
 
 /* **************************************************************** */
 
@@ -1423,6 +1518,7 @@ void startup_flow_objects () {
 	INSTALL(GridDim);
 	INSTALL(GridRedim);
 	INSTALL(GridScaleBy);
+	INSTALL(GridDownscaleBy);
 //	INSTALL(GridPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
