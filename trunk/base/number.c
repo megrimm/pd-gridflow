@@ -261,7 +261,7 @@ METHOD2(BitPacking,unpack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 {
 	int n = rb_str_len(argv[0]) / BitPacking_bytes($);
-	uint8 *in = rb_str_ptr(argv[0]);
+	uint8 *in = (uint8 *)rb_str_ptr(argv[0]);
 	VALUE out = rb_str_new("",n*3*sizeof(Number));
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*12);
