@@ -55,9 +55,7 @@ DECL_SYM2(grid_end)
 #define STARTUP_LIST(_begin_,_end_) \
 	_begin_## operator       _end_ \
 	_begin_## grid_basic     _end_ \
-	_begin_## video_out      _end_ \
-	_begin_## video_out_file _end_ \
-	_begin_## video_in_file  _end_
+	_begin_## io             _end_
 
 /* declare startup of every source file */
 STARTUP_LIST(void startup_,(void);)
