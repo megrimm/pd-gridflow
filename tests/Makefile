@@ -14,7 +14,7 @@ $(LIB)::
 	(cd ../c/src; $(MAKE) -k standalone)
 
 test: test1 test2
-	$(FIX_LD) ./test2
+	$(FIX_LD) ./test1
 .PHONY: test
 
 test1: test1.c $(LIB)

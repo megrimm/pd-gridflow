@@ -17,6 +17,23 @@ void test_dict$1(void *foo, void *k, void *v) {
 	printf("%s : %s\n", fts_symbol_name((fts_symbol_t)k), (const char *)v);
 }
 
+void test_gen(void) {
+	fts_object_t *f0 = fts_object_new3("@for 0 64 1");
+	fts_object_t *f1 = fts_object_new3("@for 0 64 1");
+	fts_object_t *f2 = fts_object_new3("@for 1 4 1");
+	fts_object_t *t0 = fts_object_new3("@outer ^");
+	fts_object_t *t1 = fts_object_new3("@outer *");
+	fts_object_t *out = fts_object_new3("@out 256 256");
+	fts_connect(f0,0,t0,0);
+	fts_connect(f1,0,t0,1);
+	fts_connect(t0,0,t1,0);
+	fts_connect(f2,0,t1,1);
+	fts_connect(t1,0,out,0);
+	fts_send3(f2,0,"bang");
+	fts_send3(f1,0,"bang");
+	fts_send3(f0,0,"bang");
+}
+
 void test_dict(void) {
 	Dict *d = Dict_new(0);
 	Dict_put(d,(void *)(0+SYM(apples)),"oranges");
@@ -155,8 +172,10 @@ int main(void) {
 	TEST(view_anim2)
 	TEST(foo)
 	TEST(tcp)
+	TEST(gen)
 
-	((void(*)(void))Dict_get(tests,"dict"))();
+//	((void(*)(void))Dict_get(tests,"dict"))();
+	((void(*)(void))Dict_get(tests,"gen"))();
 
 	fts_loop();
 /*	{int i; for(i=0;;i++) printf("%3d = %s\n", i, fts_symbol_name(i)); } */
