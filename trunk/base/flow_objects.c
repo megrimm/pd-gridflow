@@ -26,16 +26,23 @@
 #include <math.h>
 #include "grid.h.fcs"
 
-template <int n> class SCOPY {
+// BAD HACK: GCC complains: unimplemented (--debug-harder mode only)
+#ifdef HAVE_DEBUG_HARDER
+#define SCOPY(a,b,n) COPY(a,b,n)
+#else
+#define SCOPY(a,b,n) SCopy<n>::f(a,b)
+#endif
+
+template <int n> class SCopy {
 public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
-		*a=*b; SCOPY<n-1>::f(a+1,b+1);}};
-template <> class SCOPY<0> {
+		*a=*b; SCopy<n-1>::f(a+1,b+1);}};
+template <> class SCopy<0> {
 public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {}};
 
-/*template <> class SCOPY<4> {
+/*template <> class SCopy<4> {
 public: template <class T>
 	static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
-		*a=*b; SCOPY<3>::f(a+1,b+1);}
+		*a=*b; SCopy<3>::f(a+1,b+1);}
 	// wouldn't gcc 2.95 complain here?
 	static inline void __attribute__((always_inline)) f(Pt<uint8> a, Pt<uint8> b)
 	{ *(int32 *)a=*(int32 *)b; }
@@ -294,9 +301,9 @@ GRID_INLET(GridStore,0) {
 			foo[2] = p[v[i+2]]; \
 			foo[3] = p[v[i+3]]; \
 		} break; \
-		case 2: for (; i<nd; i++, foo+=2) SCOPY<2>::f(foo,p+2*v[i]); break; \
-		case 3: for (; i<nd; i++, foo+=3) SCOPY<3>::f(foo,p+3*v[i]); break; \
-		case 4: for (; i<nd; i++, foo+=4) SCOPY<4>::f(foo,p+4*v[i]); break; \
+		case 2: for (; i<nd; i++, foo+=2) SCOPY(foo,p+2*v[i],2); break; \
+		case 3: for (; i<nd; i++, foo+=3) SCOPY(foo,p+3*v[i],3); break; \
+		case 4: for (; i<nd; i++, foo+=4) SCOPY(foo,p+4*v[i],4); break; \
 		default:; }; \
 		for (; i<nd; i++, foo+=size) COPY(foo,p+size*v[i],size); \
 		out->give(size*nd,foo-size*nd); \
@@ -927,7 +934,7 @@ GRID_INLET(GridJoin,0) {
 		STACK_ARRAY(T,data3,m);
 		Pt<T> data4 = data3;
 		while (n) {
-			SCOPY<3>::f(data4,data); SCOPY<1>::f(data4+3,data2);
+			SCOPY(data4,data,3); SCOPY(data4+3,data2,1);
 			n-=3; data+=3; data2+=1; data4+=4;
 		}
 		out->send(m,data3);
