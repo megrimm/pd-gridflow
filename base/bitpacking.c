@@ -277,10 +277,12 @@ Packer *packer, Unpacker *unpacker) {
 		}
 	}
 end:;
+/*
 	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
 	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
 	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
+*/
 }
 
 bool BitPacking::is_le() {
