@@ -91,9 +91,9 @@
 
 - (id) drawRect: (NSRect)rect {
 	[super drawRect: rect];
-L	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
-		rect.origin.x, rect.origin.y,
-		rect.size.width, rect.size.height);
+//L	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
+//		rect.origin.x, rect.origin.y,
+//		rect.size.width, rect.size.height);
 	if (![self lockFocusIfCanDraw]) return self;
 	CGContextRef g = (CGContextRef)
 		[[NSGraphicsContext graphicsContextWithWindow: [self window]]
@@ -101,8 +101,8 @@ L	fprintf(stderr,"drawRect: {%g,%g,%g,%g}\n",
 	CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
 	CGDataProviderRef dp = CGDataProviderCreateWithData(
 		NULL, imdata, imheight*imwidth*4, NULL);
-	fprintf(stderr,"imheight=%d imwidth=%d imdata=%08lx dp=%08lx\n",
-		imheight,imwidth,(long)imdata,(long)dp);
+//	fprintf(stderr,"imheight=%d imwidth=%d imdata=%08lx dp=%08lx\n",
+//		imheight,imwidth,(long)imdata,(long)dp);
 	CGImageRef image = CGImageCreate(imwidth, imheight, 8, 32, imwidth*4, 
 		cs, kCGImageAlphaFirst, dp, NULL, 0, kCGRenderingIntentDefault);
 	CGDataProviderRelease(dp);
@@ -138,6 +138,7 @@ struct FormatQuartz : Format {
 	NSDate *distantFuture;
 	\decl void initialize (Symbol mode);
 	\decl void delete_m ();
+	\decl void close ();
 	GRINLET3(0);
 };
 
@@ -154,7 +155,10 @@ void FormatQuartz_tick(FormatQuartz *self) {
 		[NSApp sendEvent: e];
 	}
 	[NSApp updateWindows];
-	[self->window update];
+	//[self->widget setNeedsDisplay: YES];
+	//[self->window update];
+	//[self->widget display];
+	[self->window flushWindowIfNeeded];
 }
 
 template <class T, class S>
@@ -192,13 +196,13 @@ GRID_INLET(FormatQuartz,0) {
 	NSRect r = {{0,0}, {320,240}};
 	window = [[NSWindow alloc]
 		initWithContentRect: r
-		styleMask: (NSTitledWindowMask |
-		NSMiniaturizableWindowMask
-//		| NSResizableWindowMask // can't make this one to work
-		)
+// NSBorderlessWindowMask for no border
+		styleMask: NSTitledWindowMask | NSMiniaturizableWindowMask | NSClosableWindowMask
 //		backing: NSBackingStoreNonretained
-		backing: NSBackingStoreRetained
-		defer: NO];
+//		backing: NSBackingStoreRetained
+		backing: NSBackingStoreBuffered
+		defer: YES
+		];
 	widget = [[GFView alloc] initWithFrame: r];
 	[window setContentView: widget];
 //	[window setAutodisplay: YES];
@@ -220,8 +224,19 @@ GRID_INLET(FormatQuartz,0) {
 }
 
 \def void delete_m () {
-L
+	//MainLoop_remove(this);
+	//[GFView freeAllocatedObjects];
+	[window autorelease];
+}
+
+\def void close () {
 	MainLoop_remove(this);
+	//[GFView freeAllocatedObjects];
+	//dealloc_image();
+	rb_call_super(argc,argv);
+	[window autorelease];
+	[window setReleasedWhenClosed: YES];
+	[window close];
 }
 
 GRCLASS(FormatQuartz,LIST(GRINLET2(FormatQuartz,0,4)),
