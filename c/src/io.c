@@ -134,7 +134,8 @@ METHOD(GridIn,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridIn,
+GRCLASS(GridIn,inlets:1,outlets:1,
+LIST(),
 	DECL(GridIn,-1,init,  "s"),
 	DECL(GridIn,-1,delete,""),
 	DECL(GridIn, 0,bang,  "s"),
@@ -259,17 +260,17 @@ METHOD(GridOut,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-CLASS(GridOut,
+GRCLASS(GridOut,inlets:1,outlets:1,
+LIST(GRINLET(GridOut,0)),
 	DECL(GridOut,-1,init,  "s;ii"),
 	DECL(GridOut,-1,delete,""),
 	DECL(GridOut, 0,open,  "s;sss"),
 	DECL(GridOut, 0,close, ""),
-//	DECL(GridOut, 0,frame, "si"),
+/*	DECL(GridOut, 0,frame, "si"), */
 	DECL(GridOut, 0,option,"ssii"))
 {
 	fts_class_init(class, sizeof(GridOut), 1, 1, 0);
-	GridObject_conf_class(class,0);
-	define_many_methods(class,ARRAY(GridOut_methods));
+	GridObject_conf_class2(class,&GridOut_class);
 	return fts_Success;
 }
 
