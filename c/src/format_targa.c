@@ -122,8 +122,7 @@ GRID_FLOW(FormatTarga,0) {}
 GRID_END(FormatTarga,0) {}
 
 static void FormatTarga_close (Format *$) {
-	FILE *f = Stream_get_file($->st);
-	if (f) fclose(f);
+        if ($->st) Stream_close($->st);
 	FREE($);
 }
 

@@ -117,8 +117,7 @@ GRID_END(FormatPPM,0) {
 }
 
 static void FormatPPM_close (Format *$) {
-	FILE *f = Stream_get_file($->st);
-	if (f) fclose(f);
+        if ($->st) Stream_close($->st);
 	FREE($);
 }
 
