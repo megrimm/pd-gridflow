@@ -25,12 +25,26 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
+for victim in [TCPSocket, TCPServer]
+	def victim.new
+		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
+		"(disabled because of bug in threadless sockets)"
+	end
+end if VERSION < "1.6.6"
+
+# this should be done in base/bridge_jmax.c
+for victim in [Thread, Continuation]
+	def victim.new
+		raise NotImplementedError, "disabled because of jMax incompatibility"
+	end
+end
+
 require "gridflow/base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
 module GridFlow
-	GF_VERSION = "0.6.1"
+	GF_VERSION = "0.6.2"
 	def esmtick
 		$esm.tick
 		$mainloop.timers.after(0.1) { esmtick }
@@ -46,36 +60,26 @@ if true
 	$post_log = File.open "/tmp/gridflow.log", "w"
 end
 
-def GridFlow.post(s,*a)
-	GridFlow.post_string(sprintf("%s"+s,GridFlow.post_header,*a))
+module GridFlow #------------------
+
+def self.post(s,*a)
+	post_string(sprintf("%s"+s,post_header,*a))
 	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
 end
 
-class<<GridFlow; attr_accessor :post_header end
-GridFlow.post_header = "[gf] "
-
-def GridFlow.gfpost2(fmt,s); post("%s",s) end
-def GridFlow.gfpost(fmt,*a); post(fmt,*a) end
-
-GridFlow.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
-GridFlow.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
-	if VERSION < "1.6.6"
-
-for victim in [TCPSocket, TCPServer]
-	def victim.new
-		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
-		"(disabled because of bug in threadless sockets)"
-	end
-end if VERSION < "1.6.6"
-
-# this should be done in base/bridge_jmax.c
-for victim in [Thread, Continuation]
-	def victim.new
-		raise NotImplementedError, "disabled because of jMax incompatibility"
-	end
+class<<self
+	attr_accessor :post_header
+	attr_accessor :verbose
 end
 
-module GridFlow #------------------
+self.post_header = "[gf] "
+
+def self.gfpost2(fmt,s); post("%s",s) end
+def self.gfpost(fmt,*a); post(fmt,*a) end
+
+self.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
+self.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
+	if VERSION < "1.6.6"
 
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
@@ -101,7 +105,7 @@ end
 
 # adding some functionality to that:
 class FObject
-	attr_accessor :args
+	attr_writer :args
 	def args; args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
 		@outlets ||= []
@@ -149,6 +153,7 @@ class FObject
 		qlass = name_lookup sym
 		r = qlass.new(*m)
 		r.args = o
+		p o if GridFlow.verbose
 		r
 	end
 end

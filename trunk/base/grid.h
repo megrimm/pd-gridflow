@@ -25,6 +25,10 @@
 #define __GF_GRID_H
 extern "C" {
 
+/* current version number as string literal */
+#define GF_VERSION "0.6.2"
+#define GF_COMPILE_TIME __DATE__ ", " __TIME__
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -48,6 +52,8 @@ extern "C" {
 
 #define REALLOC(_val_,_count_) \
 	(qrealloc(_val_,_count_))
+
+#define COPY(_dest_,_src_,_n_) memcpy((_dest_),(_src_),(_n_)*sizeof(*(_dest_)))
 
 void *qalloc2(size_t n, const char *file, int line);
 void *qalloc(size_t n, const char *file, int line); /*0xdeadbeef*/
@@ -109,10 +115,6 @@ static inline int max(int a, int b) { return a>b?a:b; }
 static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 */
-
-/* current version number as string literal */
-#define GF_VERSION "0.6.1"
-#define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef HAVE_SPEED
 #define NO_ASSERT
@@ -355,9 +357,10 @@ struct Dim {
 		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
-	int calc_dex(int *v) {
+	int calc_dex(int *v,int end=-1) {
+		if (end<0) end+=n;
 		int dex=0;
-		for (int i=0; i<n; i++) dex = dex * this->v[i] + v[i];
+		for (int i=0; i<=end; i++) dex = dex * this->v[i] + v[i];
 		return dex;
 	}
 	char *to_s();
@@ -581,6 +584,7 @@ struct GridOutlet {
 	void begin(Dim *dim);
 	void abort();
 	void give(int n, Number *data);
+	void send8(int n, const uint8 *data);
 	void send(int n, const Number *data);
 	void send_direct(int n, const Number *data);
 	void flush();
