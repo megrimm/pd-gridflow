@@ -584,11 +584,11 @@ extern "C" {
 /* **************************************************************** */
 
 struct GridObject {
-	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */ \
-	GridClass *grid_class; \
-	void *foreign_peer; /* point to jMax peer */ \
-	uint64 profiler_cumul, profiler_last; \
-	GridInlet  * in[MAX_INLETS]; \
+	VALUE /*GridFlow::FObject*/ peer; /* point to Ruby peer */
+	GridClass *grid_class;
+	void *foreign_peer; /* point to jMax peer */
+	uint64 profiler_cumul, profiler_last;
+	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out[MAX_OUTLETS];
 
 	const char *args() {

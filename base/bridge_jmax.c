@@ -86,9 +86,18 @@ VALUE jr_convert(const fts_atom_t *at) {
 		return ID2SYM(rb_intern(fts_symbol_name(fts_get_symbol(at))));
 	} else if (fts_is_float(at)) {
 		return rb_float_new(fts_get_float(at));
+	} else if (fts_is_list(at)) {
+		fts_list_t *l = fts_get_list(at);
+		int n = fts_list_get_size(l);
+		fts_atom_t *p = fts_list_get_ptr(l);
+		VALUE a = rb_ary_new2(n);
+		for (int i=0; i<n; i++) rb_ary_push(a,jr_convert(p+i));
+		return a;
 	} else if (fts_is_ptr(at)) {
+		post("warning: ptr type not supported\n");
 		return Qnil; /* not supported */
 	} else {
+		post("warning: type \"%s\" not supported\n",fts_symbol_name(at->type));
 		return Qnil; /* unknown */
 	}
 }
@@ -187,63 +196,30 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 static VALUE sym_inlets=0, sym_outlets=0;
 
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
-	int inlets, outlets;
-	VALUE $;
-	VALUE methods;
-	int i,n;
-	fts_status_t r;
-
-	post("name=%s\n",fts_symbol_name(qlass->mcl->name));
-
-	$ = rb_hash_aref(rb_ivar_get(GridFlow_module2,rb_intern("@fclasses_set")),
+	VALUE $ = rb_hash_aref(rb_ivar_get(GridFlow_module2,
+		rb_intern("@fclasses_set")),
 		rb_str_new2(fts_symbol_name(qlass->mcl->name)));
-
-	post("$=%p\n",$);
-/*  post("$=%s\n",RSTRING(rb_funcall($, rb_intern("inspect"), 0))->ptr); */
-
-	methods = rb_funcall($, rb_intern("instance_methods"), 1, Qtrue);
-	n = RARRAY(methods)->len;
-
-/* post("instance_methods(true)=%s\n",
-RSTRING(rb_funcall(methods,rb_intern("inspect"),0))->ptr); */
 
 	if (!sym_inlets)  sym_inlets =rb_intern("@inlets");
 	if (!sym_outlets) sym_outlets=rb_intern("@outlets");
-	inlets = rb_ivar_defined($,sym_inlets) ?
+	int inlets = rb_ivar_defined($,sym_inlets) ?
 		rb_ivar_get($,sym_inlets) : INT2NUM(0);
-	outlets = rb_ivar_defined($,sym_outlets) ?
+	int outlets = rb_ivar_defined($,sym_outlets) ?
 		rb_ivar_get($,sym_outlets) : INT2NUM(0);
 
-	post("inlets=%d, outlets=%d, rubyclass=%p\n",
-		inlets, outlets, qlass);
+	post("name=%s, inlets=%d, outlets=%d, rubyclass=%p\n",
+		qlass->mcl->name, inlets, outlets, qlass);
 
+	fts_status_t r;
 	r = fts_class_init(qlass, sizeof(BFObject), inlets, outlets, (void *)$);
-
 	RETIFFAIL("fts_class_init",r);
 	
 	r = fts_method_define_varargs(
 		qlass,fts_SystemInlet,fts_s_init,BFObject_init);
-	
 	RETIFFAIL("define_varargs (for constructor)",r);
 
-	for (i=0; i<n; i++) {
-		const char *name = RSTRING(RARRAY(methods)->ptr[i])->ptr;
-		/* max 10 inlets */
-		if (strlen(name)>3 && isdigit(name[1]) &&
-		 name[0]=='_' && name[2]=='_') {
-			int inlet = name[1]-'0';
-			if (inlet<0 || inlet>=inlets) {
-				post("inlet #%d does not exist, skipping\n",inlet);
-				continue;
-			}
-			post("will wrap method #%s\n", name);
-			r = fts_method_define_varargs(
-				qlass,inlet,fts_new_symbol_copy(name+3),
-				BFObject_method_missing);
-			
-			RETIFFAIL("define_varargs",r);
-		}
-	}
+	for (int i=0; i<inlets; i++)
+		fts_method_define_varargs(qlass, i, fts_s_anything, BFObject_method_missing);
 
 	return fts_Success;
 }

@@ -504,26 +504,26 @@ static VALUE GridObject_s_install_rgrid(int argc, VALUE *argv, VALUE rself) {
 }
 
 static VALUE GridObject_s_instance_methods(int argc, VALUE *argv, VALUE rself) {
-	int i;
+	static const char *names[] = { "grid_begin", "grid_flow", "grid_end", "list" };
 //	VALUE list = rb_call_super(argc,argv);
 	VALUE list = rb_class_instance_methods(argc,argv,rself);
-	GridClass *grid_class = (GridClass *)FIX2PTR(rb_ivar_get(rself,SI(@grid_class)));
-	for (i=0; i<grid_class->handlersn; i++) {
+	VALUE v = rb_ivar_get(rself,SI(@grid_class));
+	if (v==Qnil) return list;
+	GridClass *grid_class = (GridClass *)FIX2PTR(v);
+	for (int i=0; i<grid_class->handlersn; i++) {
 		GridHandler *gh = &grid_class->handlers[i];
 		char buf[256];
 		int inl = gh->winlet;
-		sprintf(buf,"_%d_grid_begin",inl); rb_ary_push(list,rb_str_new2(buf));
-		sprintf(buf,"_%d_grid_flow",inl);  rb_ary_push(list,rb_str_new2(buf));
-		sprintf(buf,"_%d_grid_end",inl);   rb_ary_push(list,rb_str_new2(buf));
-		sprintf(buf,"_%d_list",inl);       rb_ary_push(list,rb_str_new2(buf));
+		for (int j=0; j<COUNT(names); j++) {
+			sprintf(buf,"_%d_%s",inl,names[j]);
+			rb_ary_push(list,rb_str_new2(buf));
+		}
 	}
-	/* fprintf(stderr,"%s: instance_methods: %s\n",
-		grid_class->name,
-		RSTRING(rb_funcall(list,SI(inspect),0))->ptr); */
 	return list;
 }
 
 METHOD(GridObject,method_missing) {
+	static const char *names[] = { "grid_begin", "grid_flow", "grid_end", "list" };
 	char *name;
 	//gfpost("argc=%d,argv=%p,self=%p",argc,argv,self);
 	if (argc<1) RAISE("not enough arguments");
@@ -536,14 +536,13 @@ METHOD(GridObject,method_missing) {
 		GridInlet *inl = $->in[i];
 		//gfpost("$=%p; inl=%p",$,inl);
 		int m;
-		if      (strcmp(name+3,"grid_begin")==0) m=0;
-		else if (strcmp(name+3,"grid_flow" )==0) m=1;
-		else if (strcmp(name+3,"grid_end"  )==0) m=2;
-		else if (strcmp(name+3,"list"      )==0) m=3;
-		else { rb_call_super(argc,argv); return; }
-
+		for (m=0; m<COUNT(names); m++)
+			if (strcmp(name+3,names[m])==0) break;
+		if (m==COUNT(names)) {
+			rb_call_super(argc,argv);
+			return;
+		}
 		if (!inl) RAISE("inlet #%d missing for object %s",i,$->args());
-		
 		argc--, argv++;
 		switch(m) {
 		case 0: return inl->begin(argc,argv);
@@ -555,6 +554,7 @@ METHOD(GridObject,method_missing) {
 }
 
 METHOD(GridObject,delete) {
+	gfpost("%s: GridObject#delete",INFO(foo));
 	for (int i=0; i<MAX_INLETS;  i++)
 		if ($->in[i])  { delete $->in[i]; $->in[i]=0; }
 	for (int i=0; i<MAX_OUTLETS; i++)
@@ -572,18 +572,18 @@ LIST(),
 	DECL(GridObject,method_missing))
 
 void GridObject_conf_class(VALUE $, GridClass *grclass) {
+/*
 	MethodDecl methods[] = {
 		DECL(GridObject,method_missing),
 	};
 	define_many_methods($,COUNT(methods),methods);
 
 	rb_enable_super($,"method_missing");
-//	ruby_c_install(gc->name, gc->name, gc, Format_class2);
+*/
 
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method($,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method($,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
-//	rb_define_singleton_method($,"install_format",(RFunc)GridObject_s_install_format,6);
 	rb_enable_super(rb_singleton_class($),"instance_methods");
 }  
 
