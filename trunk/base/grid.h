@@ -467,7 +467,8 @@ enum NumberTypeIndex {
 #undef DECL_TYPE
 
 #define NTI_MAKE(_type_) \
-inline NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { return _type_##_type_i; }
+inline NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { \
+	return _type_##_type_i; }
 NTI_MAKE(uint8)
 NTI_MAKE(int16)
 NTI_MAKE(int32)
@@ -480,7 +481,7 @@ struct NumberType {
 	int size;
 };
 
-NumberTypeIndex NumberType_find (Ruby sym);
+NumberTypeIndex NumberTypeIndex_find (Ruby sym);
 
 /* Operator objects encapsulate optimised loops of simple operations */
 

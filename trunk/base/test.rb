@@ -32,9 +32,19 @@ class Expect < FObject
 	install "expect", 1, 0
 end
 
+def test_bitpacking
+	#!@#$ WRITE ME
+end
+
+def test_operators
+	#!@#$ WRITE ME
+end
+
 def test_math
 	hm = "#".intern
 for nt in [:int32, :int16, :uint8] do
+	GridFlow.verbose = false
+	GridFlow.gfpost "starting test for #{nt}"
 	e = FObject["@export_list"]
 	x = Expect.new
 	e.connect 0,x,0
@@ -191,6 +201,7 @@ end
 	(a = FObject["@complex_sq"]).connect 0,e,0
 	x.expect([8,0]) { a.send_in 0, 2, 2 }
 	x.expect([0,9]) { a.send_in 0, 0, 3 }
+	GridFlow.gfpost "ending test for #{nt}"
 end # for nt
 
 	(a = FObject["@two"]).connect 0,e,0
@@ -209,19 +220,9 @@ end # for nt
 
 end
 
-def test_int16
-	a = FObject["@cast int16"]
-	b = FObject["@ + {int16 # 42}"]
-	c = FObject["@cast int32"]
-#	d = FObject["@print"]
-	e = FObject["@export_list"]
+def test_new_classes
 	x = Expect.new
-	e.connect 0,x,0
-
-	a.connect 0,b,0
-	b.connect 0,c,0
-	c.connect 0,e,0
-	x.expect((43..52).to_a) { a.send_in 0,(1..10).to_a }
+	a = FObject["@grade"]
 end
 
 def test_rtmetro
@@ -347,21 +348,26 @@ end
 def test_anim msgs
 	GridFlow.verbose = false
 	gin = FObject["@in"]
-#	gout1 = FObject["@out x11"]
-#proc{
+	gout1 = FObject["@out x11"]
+	fps = FObject["fps detailed"]
+	rpr = FObject["rubyprint"]
+	gout1.connect 0,fps,0
+	fps.connect 0,rpr,0
+=begin
 	gout1 = FObject["@downscale_by {3 2}"]
 	gout2 = FObject["@rgb_to_greyscale"]
 	gout3 = FObject["@out aalib X11 -height 60 -width 132"]
 	gout1.connect 0,gout2,0
 	gout2.connect 0,gout3,0
-#}
+=end
 
 	gin.connect 0,gout1,0
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
 	msgs.each {|m| gin.send_in 0,m }
+	gin.send_in 0, "option cast uint8"
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
-	frames=100
+	frames=500
 	frames.times { gin.send_in 0 }
 #	loop { gin.send_in 0 }
 #	metro = FObject["rtmetro 80"]
@@ -503,20 +509,15 @@ end
 
 def test_formats
 	gin = FObject["@in"]
-#	gs = FObject["@downscale_by {2 2} smoothly"]
-#	gs = FObject["@posterize"]
-	gs = FObject["@solarize"]
-#	gs = FObject["@scale_to {288 288}"]
-#	gs = FObject["@contrast 256 512"]
-#	gs = FObject["@spread {32 0 0}"]
-#	gout = FObject["@print"]
 	gout = FObject["@out x11"]
+	gs = FObject["@ + {int16 # 0}"]
 	gin.connect 0,gs,0
 	gs.connect 0,gout,0
 #	GridFlow.verbose=false
 	t1=[]
 	Images.each {|command|
 		gin.send_in 0,"open #{command}"
+		gin.send_in 0,"option cast int16"
 		# test for load, rewind, load
 #		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
 		gin.send_in 0
@@ -626,7 +627,7 @@ def test_polygon
 	o4 = FObject["@ +"]
 	o5 = FObject["@ cos* 112"]
 	o6 = FObject["@ + {120 160}"]
-	poly = FObject["@draw_polygon + {3 # 255}"]
+	poly = FObject["@draw_polygon + {3 uint8 # 255}"]
 if false
 	out1 = FObject["@solarize"]
 #	out1 = FObject["@downscale_by 2 smoothly"]
@@ -638,7 +639,7 @@ else
 	pr = FObject["rubyprint"]
 	fps.connect 0,pr,0
 end
-	store = FObject["@store"]; store.send_in 1, "240 320 3 # 0"
+	store = FObject["@store"]; store.send_in 1, "240 320 3 uint8 # 0"
 	store2 = FObject["@store"]
 	store.connect 0,poly,0
 	poly.connect 0,store2,1
@@ -649,12 +650,15 @@ end
 	o4.connect 0,o5,0
 	o5.connect 0,o6,0
 	o6.connect 0,poly,2
+#	cast = FObject["@cast int32"]
+#	poly.connect 0,cast,0
+#	cast.connect 0,out1,0
 	poly.connect 0,out1,0
 	x=0
 	GridFlow.verbose=false
 	task=proc {
 		o4.send_in 1, 5000*x
-		poly.send_in 1, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
+		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
 		o1.send_in 0
 		store.send_in 0
 		store2.send_in 0
@@ -737,10 +741,12 @@ def test_asm
 	a.send_in 0
 	c = FObject["@ + {uint8 # 0}"]
 	t0 = Time.new; 1000.times {b.send_in 0}; t1 = Time.new-t0
+	t1 *= 1
 	b.connect 0,c,0
 	stuff=proc{
 		3.times{
 			t0 = Time.new; 1000.times {b.send_in 0}; t2 = Time.new-t0
+			t2 *= 1
 			GridFlow.post "   %f   %f   %f", t1, t2, t2-t1
 		}
 	}
@@ -775,8 +781,8 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-test_anim ["open ppm file #{$imdir}/g001.ppm"]
-#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm file #{$imdir}/g001.ppm"]
+test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]

@@ -229,7 +229,7 @@ void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
 
 template <class T>
 void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
-	switch (NumberTypeIndex_type_of(*in)) {
+	switch (NumberTypeIndex_type_of(*out)) {
 	case uint8_type_i: unpacker->as_uint8(this,n,in,(Pt<uint8>)out); break;
 	case int16_type_i: unpacker->as_int16(this,n,in,(Pt<int16>)out); break;
 	case int32_type_i: unpacker->as_int32(this,n,in,(Pt<int32>)out); break;
@@ -615,4 +615,8 @@ static void make_hocus_pocus () {
 	((BitPacking*)0)->pack(0,Pt<int16>(),Pt<uint8>());
 	((BitPacking*)0)->pack(0,Pt<int32>(),Pt<uint8>());
 	((BitPacking*)0)->pack(0,Pt<float32>(),Pt<uint8>());
+	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<uint8>());
+	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<int16>());
+	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<int32>());
+	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<float32>());
 }

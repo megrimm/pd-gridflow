@@ -248,7 +248,7 @@ METHOD3(BitPacking,initialize) {
 
 METHOD3(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
+	if (argc==2 && argv[1]!=Qnil && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / sizeof(int32) / size;
 	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes2 = n*bytes;
@@ -260,18 +260,17 @@ METHOD3(BitPacking,pack2) {
 
 METHOD3(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
+	if (argc==2 && argv[1]!=Qnil && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes2 = n*size*sizeof(int32);
 	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	memset(rb_str_ptr(out),255,n*4*size);
 	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
-//	memcpy(rb_str_ptr(out),in,n);
 	return out;
 }
 
+/* !@#$ isn't this a (very small) leak? */
 void BitPacking_free (void *foo) {}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -340,7 +339,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-NumberTypeIndex NumberType_find (Ruby sym) {
+NumberTypeIndex NumberTypeIndex_find (Ruby sym) {
 	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
 	if (sym==SYM(uint8)) return uint8_type_i;
 	if (sym==SYM(int16)) return int16_type_i;
