@@ -43,13 +43,13 @@ Compatibility:
 Release steps:
 
 <list>
-	<li>cvs tag gridflow_0_4 .
+	<li>cvs tag gridflow_0_5_0 .
 	</li><li>mkdir gridflow
 	</li><li>cd gridflow
-	</li><li>cvs -d hostname.2y.net:/home/cvs/gridflow export -r gridflow_0_4 .
+	</li><li>cvs -d hostname.2y.net:/home/cvs/gridflow export -r gridflow_0_5_0 .
 	</li><li>rm -rf CVS CVSROOT
 	</li><li>cd ..
-	</li><li>tar cfz gridflow-0.4.tar.gz gridflow
+	</li><li>tar cfz gridflow-0.5.0.tar.gz gridflow
 	</li><li>rm -rf gridflow # caution!!!
 	</li>
 </list>

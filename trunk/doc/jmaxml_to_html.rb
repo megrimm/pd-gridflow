@@ -83,34 +83,24 @@ class XNode
 	# "print_index"
 
 	class<<self; attr_accessor :valid_tags; end
-	self.valid_tags = {
-		"p" => 1,
-		"b" => 1,
-		"u" => 1,
-		"i" => 1,
-		"k" => 1,
-		"sup" => 1,
-		"section" => 1,
-		"li" => 1,
-		"list" => 1,
-		"icon" => 1,
-		"help" => 1,
-		"arg" => 1,
-		"rest" => 1,
-		"method" => 1,
-		"dim" => 1,
-		"grid" => 1,
-		"inlet" => 1,
-		"outlet" => 1,
-		"jmax_class" => 1,
-		"operator_1" => 1,
-		"operator_2" => 1,
-		"jmax_doc" => 1,
-		"format" => 1,
-		"prose" => 1,
-		"part" => 1,
-		"link" => 1,
-	}
+	self.valid_tags = {}
+	%w(
+		p b u i k sup
+		section
+		list li
+		icon help
+		arg rest method
+		dim grid
+		inlet outlet
+		jmax_class
+		operator_1 operator_2
+		jmax_doc
+		format
+		prose
+		part link
+		macro class enum
+	).each {|k| self.valid_tags[k]=1 }
+
 	def initialize tag, att, *contents
 		@tag,@att,@contents =
 		 tag, att, contents
@@ -139,6 +129,10 @@ class XNode
 		}}
 		puts
 	end
+
+	def prx_macro; end # !@#$
+	def prx_class; end # !@#$
+	def prx_enum; end # !@#$
 
 	$counters=[]
 	$sections=nil
@@ -330,6 +324,11 @@ class XNode
 			print "</a>"
 		}
 	end
+
+	alias prc_macro prc_jmax_class
+	alias prc_class prc_jmax_class
+	alias prc_enum prc_jmax_class
+
 end
 
 class JmaxmlParser < XMLParser
@@ -442,7 +441,7 @@ puts <<EOF
 <html>
 <head>
 <!-- #{"$"}Id#{"$"} -->
-<title>GridFlow 0.4.1 - reference</title>
+<title>GridFlow 0.5.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -468,7 +467,7 @@ EOF
 black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.4.1 - reference index</h4>
+    <h4>GridFlow 0.5.0 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -501,7 +500,7 @@ puts <<EOF
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.4.1 Documentation<br>
+<p><font size="-1">GridFlow 0.5.0 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
