@@ -196,8 +196,6 @@ module GridIO
 
 	def _0_open(sym,*a)
 		sym = sym.intern if String===sym
-		GridFlow.post "a.length=#{a.length}"
-		GridFlow.post "/\\./ =~ sym.to_s = #{/\./ =~ sym.to_s}"
 		if a.length==0 and /\./ =~ sym.to_s then a=[sym]; sym=:file end
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end

@@ -611,6 +611,7 @@ static void gfmemcopy32(int32 *as, int32 *bs, int n) {
 }
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
+//	fprintf(stderr,"memcopy n=%d\n",n);
 	memcpy_calls++;
 	memcpy_bytes+=n;
 	for (; n>16; in+=16, out+=16, n-=16) {
@@ -715,6 +716,7 @@ BUILTIN_SYMBOLS(FOO)
 
 	startup_formats();
 
+	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
 	EVAL("GridFlow.load_user_config");
 
 #ifdef HAVE_MMX
