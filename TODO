@@ -149,7 +149,6 @@ Format
 [ ] seq: multi-image (createable by cat, ar, tar or zip)
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
 [ ] Targa: RGBA-32 and write support
-[ ] GZ: support
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM
 [ ] GIF, JPEG, PNG support (+ reg ourselves in libpng.org's applist)
@@ -186,10 +185,11 @@ Bugs
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
 [ ] Window does not close when @out is destroyed
-[ ] profiler is broken
+[ ] profiler is severely broken
 [!] format/mpeg.c broken
 [!] tcp test is broken
 [ ] compiling without jMax nor PD should not require libruby.so
+[ ] issues with fork and X11 ?
 
 Feature Requests
 
