@@ -6,7 +6,7 @@ INSTALL_DATA = install -m 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
-all2:: gridflow-for-jmax gridflow-for-puredata # doc-all
+all2:: gridflow-for-puredata # doc-all
 
 # suffixes (not properly used)
 ifeq (1,1) # Linux, MSWindows with Cygnus, etc
@@ -42,10 +42,10 @@ cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
-clean2:: jmax-clean
+clean2::
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
-install2:: ruby-install jmax-install puredata-install
+install2:: ruby-install puredata-install
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
@@ -104,114 +104,6 @@ munchies::
 
 foo::
 	@echo "LDSOFLAGS = $(LDSOFLAGS)"
-
-#----------------------------------------------------------------#
-
-ifndef ARCH
-ARCH=$(JMAX_ARCH)
-endif
-
-ifeq ($(HAVE_JMAX_4),yes)
-
-jmax-clean::
-	@#nothing
-
-# GridFlow/jMax4 Installation Directory
-GFID = $(JMAX4_INSTALL_DIR)/gridflow
-
-JMAX_LIB = libgridflow$(LSUF)
-gridflow-for-jmax:: $(JMAX_LIB)
-
-# the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): bridge/jmax4.c bridge/common.c base/grid.h $(CONF)
-	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
-		-DLINUXPC -DOPTIMIZE $< \
-		-xnone -o $@
-
-jmax-install::
-	$(INSTALL_DIR) $(GFID)/c
-	$(INSTALL_LIB) libgridflow$(LSUF) $(GFID)/c/libgridflow$(LSUF)
-	$(INSTALL_DIR) $(GFID)/templates
-	$(INSTALL_DIR) $(GFID)/help
-	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
-		$(INSTALL_DATA) $$f $(GFID)/$$f; \
-	done
-else
-ifeq ($(HAVE_JMAX_2_5),yes)
-
-include bundled/jmax/Makefiles/Makefile.$(ARCH)
-
-# GridFlow/jMax25 Installation Directory
-GFID = $(lib_install_dir)/packages/gridflow/
-
-JMAX_LIB = libgridflow$(LSUF)
-
-java/PathInfo.java: config.make
-	@echo "\
-package gridflow; \
-public class PathInfo { \
-public static String jmax_path = \"$(GFID)\";} \
-" > java/PathInfo.java
-
-ifeq ($(HAVE_JMAX25_GUIEXT),yes)
-
-gridflow-for-jmax:: $(JMAX_LIB) java/PathInfo.java
-	(cd java; make)
-
-jmax-install-java::
-	$(INSTALL_DIR) $(GFID)/java/classes
-	$(INSTALL_LIB) java/gridflow.jar \
-		$(GFID)/java/classes/gridflow.jar
-	$(INSTALL_DIR) $(GFID)/images
-	$(INSTALL_DATA) java/peephole.gif \
-		$(GFID)/images/peephole.gif
-	$(INSTALL_DATA) java/peephole_cursor.gif \
-		$(GFID)/images/peephole_cursor.gif
-
-else
-
-gridflow-for-jmax:: $(JMAX_LIB)
-
-jmax-install-java::
-
-endif
-
-# the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): bridge/jmax.c bridge/common.c base/grid.h $(CONF)
-	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
-		-DLINUXPC -DOPTIMIZE $< \
-		-xnone -o $@
-
-jmax-install:: jmax-install-java
-	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
-	$(INSTALL_LIB) libgridflow$(LSUF) \
-		$(GFID)/c/lib/$(ARCH)/opt/libgridflow$(LSUF)
-	$(INSTALL_DATA) gridflow.jpk $(GFID)/gridflow.jpk
-	$(INSTALL_DIR) $(GFID)/templates
-	$(INSTALL_DIR) $(GFID)/help
-	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
-		$(INSTALL_DATA) $$f $(GFID)/$$f; \
-	done
-
-jmax-clean::
-	rm -f $(JMAX_LIB) 
-	(cd java; make clean)
-
-else
-
-$(JMAX_LIB):
-	@#nothing
-
-gridflow-for-jmax::
-	@#nothing
-
-jmax-clean::
-	@#nothing
-
-jmax-install::
-
-endif # HAVE_JMAX_2_5
-endif # HAVE_JMAX_4
 
 #----------------------------------------------------------------#
 

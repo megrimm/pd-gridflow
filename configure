@@ -73,7 +73,6 @@ $conf={
 	:FORMATS => [],
 	:OPTIONS => [],
 	:DEFINES => {
-		:JMAX_ARCH => "i686-linux",
 		:RUBY_PREFIX => CONFIG['prefix'],
 		:PREFIX => "/usr/local",
 		:CPU => nil,
@@ -678,45 +677,6 @@ Feature.new {
 	formats ["Xine"]
 },
 Feature.new {
-	tag :jmax25
-	name "IRCAM's jMax 2.5"
-	uses_feature [Or[:libruby,:librubystatic]]
-	defines :JMAXDISTDIR => proc { Dir.getwd + "/bundled/jmax" }
-	uses_h ["fts/fts.h","fts/lang/mess.h"]
-	test proc {
-		c_test '
-		#define new new_
-		#define template template_
-		#define this this_
-		#define operator operator_
-		#define class class_
-		#include#
-		int main () { return 0; }
-		', ["-DLINUXPC"]
-	}
-	options ["HAVE_JMAX_2_5"]
-},
-Feature.new {
-	tag :jmax4
-	name "IRCAM's jMax 4"
-	uses_feature [Or[:libruby,:librubystatic]]
-	unless_feature :jmax25
-	defines :JMAX4_INSTALL_DIR => proc { `jmax-config --package-dir`.chomp }
-	uses_h ["fts/fts.h","fts/client/version.h"]
-	test proc {
-		c_test '
-		#define new new_
-		#define template template_
-		#define this this_
-		#define operator operator_
-		#define class class_
-		#include#
-		int main () { return 0; }
-		', ["-DLINUXPC"]
-	}
-	options ["HAVE_JMAX_4"]
-},
-Feature.new {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
 	uses_feature [Or[:libruby,:librubystatic]]
@@ -742,18 +702,6 @@ Feature.new {
 			}
 		`
 	}
-},
-Feature.new {
-	tag :javac
-	name "Java Compiler"
-	options ["HAVE_JAVAC"]
-	test proc { `which javac` != "" }
-},
-Feature.new {
-	tag :jmax25guiext
-	name "jMax 2.5 GridFlow GUI extensions"
-	uses_feature [:jmax25,:javac]
-	options ["HAVE_JMAX25_GUIEXT"]
 }]
 
 $features_h = {}
@@ -767,7 +715,6 @@ def usage
 	log << "[--use-compiler compiler] "
 	log << "[--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] "
-	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
@@ -805,7 +752,6 @@ while ARGV.length>0 do
 	when "--lite"
 		puts "Lite Mode (no float, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
-	when "--jmax-arch"; $conf[:DEFINES][:JMAX_ARCH]=ARGV.shift
 	when "--help"; usage; exit 0
 	when "--prefix", "--ruby-prefix"
 		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
@@ -1077,30 +1023,6 @@ f.puts "
 }
 
 #--------------------------------#
-
-if $conf[:OPTIONS].index("HAVE_JMAX_2_5")
-	puts "generating gridflow.jpk"
-	File.open("gridflow.jpk","w") {|f|
-		f.puts "
-set pname gridflow
-package require guiobj
-package provide $pname 
-global jmaxArch jmaxMode
-ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
-templateDirectory $dir/templates
-sourceFile $dir/help/${pname}.help.index.tcl
-"
-		if $conf[:OPTIONS].index("HAVE_JMAX25_GUIEXT")
-			f.puts 'java::load -classpath "$dir/java/classes/gridflow.jar" gridflow.GridFlowExtension'
-			f.puts %{post "package: GridFlow (with GUI extensions)"}
-		else
-			f.puts %{post "package: GridFlow (without GUI extensions)"}
-		end
-	}
-end
-
-#--------------------------------#
-
 
 puts "",
 "\e[1mSee ./config.log if you want the details of the configuration tests.\e[0m",
