@@ -465,7 +465,7 @@ module EventIO
 			GridFlow.post "-----------"
 			time = Time.new
 			TCPSocket.do_not_reverse_lookup = true # hack
-			@stream = TCPSocket.open(args[0].to_s,args[1])
+			@stream = TCPSocket.open(args[0].to_s,args[1].to_i)
 			GridFlow.post "----------- #{Time.new-time}"
 			@stream.nonblock = true
 			@stream.sync = true
