@@ -209,6 +209,7 @@ void FormatX11::alarm() {
 			//XLookupString(ek, buf, 63, 0, 0);
 			char *kss = XKeysymToString(XLookupKeysym(ek, 0));
 			char buf[64];
+			if (!kss) return; /* unknown keys ignored */
 			if (isdigit(*kss)) sprintf(buf,"D%s",kss); else strcpy(buf,kss);
 			Ruby argv[6] = {
 				INT2NUM(0), e.type==KeyPress ? SYM(keypress) : SYM(keyrelease),
