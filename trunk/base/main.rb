@@ -151,6 +151,9 @@ class FObject
 		attr_reader :ninlets
 		attr_reader :noutlets
 		attr_accessor :do_loadbangs
+		def foreign_name
+			@foreign_name if defined? @foreign_name
+		end
 	end
 
 	alias :total_time :total_time_get
@@ -198,8 +201,8 @@ class FObject
 		qlassname = qlass.to_s
 		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
-		GridFlow.post "%s",r.args if GridFlow.verbose
 		r.classname = qlassname
+		GridFlow.post "%s",r.args if GridFlow.verbose
 		for x in ms do r.send_in(-2, *x) end if FObject.do_loadbangs
 		r
 	end
@@ -211,9 +214,7 @@ class FObject
 		s = GridFlow.stringify_list argv
 		@argv = argv
 		@args = "["
-		@args << (self.class.instance_eval{
-			@foreign_name if defined? @foreign_name} ||
-			self.class.to_s)
+		@args << (self.class.foreign_name || self.to_s)
 		@args << " " if s.length>0
 		@args << s << "]"
 		@parent_patcher = nil
