@@ -234,7 +234,6 @@ METHOD2(BitPacking,init) {
 METHOD2(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-{
 	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
 	Number *in = (Number *)rb_str_ptr(argv[0]);
 	int bytes = n*$->bytes;
@@ -242,12 +241,11 @@ METHOD2(BitPacking,pack2) {
 	rb_str_modify(out);
 	$->pack(n,in,(uint8 *)rb_str_ptr(out));
 	return out;
-}}
+}
 
 METHOD2(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-{
 	int n = rb_str_len(argv[0]) / $->bytes;
 	uint8 *in = (uint8 *)rb_str_ptr(argv[0]);
 	int bytes = n*$->size*sizeof(Number);
@@ -257,7 +255,7 @@ METHOD2(BitPacking,unpack2) {
 	$->unpack(n,in,(Number *)rb_str_ptr(out));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;
-}}
+}
 
 void BitPacking_mark (VALUE *$) {}
 void BitPacking_sweep (VALUE *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
@@ -375,8 +373,6 @@ Operator1 op1_table[] = {
 };
 
 /* **************************************************************** */
-
-/* i don't understand how fold2 is faster the way it is now... */
 
 #define DEF_OP2(_name_,_expr_) \
 	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
