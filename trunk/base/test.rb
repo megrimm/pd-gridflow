@@ -747,9 +747,12 @@ def test_polygon
 	o6 = FObject["@ + {120 160}"]
 	poly = FObject["@draw_polygon + {3 uint8 # 255}"]
 if false
-	out1 = FObject["@solarize"]
+	out1 = FObject["@cast int32"]
+	out2 = FObject["@solarize"]
 #	out1 = FObject["@downscale_by 2 smoothly"]
-	out2 = FObject["@out x11"]; out1.connect 0,out2,0
+	out3 = FObject["@out x11"]
+	out1.connect 0,out2,0
+	out2.connect 0,out3,0
 else
 	out1 = FObject["@out x11"]
 	fps = FObject["fps detailed cpu"]
@@ -777,7 +780,7 @@ end
 	task=proc {
 		o4.send_in 1, 5000*x
 		o5.send_in 1, 200+200*sin(x)
-		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
+		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 4+4*cos(.2*x+i*PI*2/3) }
 		o1.send_in 0
 		store.send_in 0
 # 		store2.send_in 0
@@ -909,7 +912,9 @@ end
 #test_nonsense
 #test_ppm2
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
-test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open quicktime file #{$imdir}/rgb_uncompressed.mov"]
+test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
 #test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]

@@ -99,6 +99,18 @@ static const char *INFO(GridObject *foo) {
 	return rb_str_ptr(z);
 }
 
+static void SAME_DIM(int n, Dim *a, int ai, Dim *b, int bi) {
+	if (ai+n > a->n) RAISE("left hand: not enough dimensions");
+	if (bi+n > b->n) RAISE("right hand: not enough dimensions");
+	for (int i=0; i<n; i++) {
+		if (a->v[ai+i] != b->v[bi+i]) {
+			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
+				ai+i, a->v[ai+i],
+				bi+i, b->v[bi+i]);
+		}
+	}
+}
+
 /* **************************************************************** */
 
 struct GridCast : GridObject {
@@ -294,10 +306,11 @@ struct GridStore : GridObject {
 */
 static void snap_backstore (Grid &r) {
 	if (r.next != &r) {
-		delete r.dim;
-		delete[] (uint8 *)r.data;
+		if (r.dim) delete r.dim;
+		if (r.data) delete[] (uint8 *)r.data;
 		r.dim = r.next->dim;
 		r.data = r.next->data;
+		r.nt = r.next->nt;
 		r.next->dim = 0;
 		r.next->data = 0;
 		delete r.next;
@@ -308,9 +321,10 @@ static void snap_backstore (Grid &r) {
 /*!@#$ i should ensure that n is not exceedingly large */
 /*!@#$ worse: the size of the foo buffer may still be too large */
 GRID_INLET(GridStore,0) {
-	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
-
+	/* snap_backstore must be done before *anything* else */
 	snap_backstore(r);
+
+	if (r.is_empty()) RAISE("empty buffer, better luck next time.");
 
 	int na = in->dim->n;
 	int nb = r.dim->n;
@@ -333,6 +347,7 @@ GRID_INLET(GridStore,0) {
 	static Operator2 *op_mod = 0; if (!op_mod) op_mod = OP2(SYM(%));
 	static Operator2 *op_and = 0; if (!op_and) op_and = OP2(SYM(&));
 	static Operator2 *op_mul = 0; if (!op_mul) op_mul = OP2(SYM(*));
+	static Operator2 *op_shl = 0; if (!op_shl) op_shl = OP2(SYM(<<));
 	static Operator2 *op_add = 0; if (!op_add) op_add = OP2(SYM(+));
 	/* !@#$ should optimise "mod" by "&" */
 	int na = in->dim->n;
@@ -344,8 +359,15 @@ GRID_INLET(GridStore,0) {
 	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
 		int32 wrap = r.dim->v[i];
-		if (i) op_mul->map(nd,v,wrap);
-		if (lowest_bit(wrap)==highest_bit(wrap)) {
+		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
+		if (i) {
+			if (is_power_of_two) {
+				op_shl->map(nd,v,(int32)highest_bit(wrap));
+			} else {
+				op_mul->map(nd,v,wrap);
+			}
+		}
+		if (is_power_of_two) {
 			op_and->map(nd,v+nd*i,wrap-1);
 		} else {
 			op_mod->map(nd,v+nd*i,wrap);
@@ -355,7 +377,7 @@ GRID_INLET(GridStore,0) {
 #define EMIT(type) { \
 		Pt<type> p = (Pt<type>)r; \
 		if (size<=16) { \
-			Pt<T> foo = ARRAY_NEW(type,nd*size); \
+			Pt<type> foo = ARRAY_NEW(type,nd*size); \
 			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size); \
 			out[0]->give(size*nd,foo); \
 		} else { \
@@ -448,8 +470,9 @@ struct GridOp2 : GridObject {
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }*/
 
 GRID_INLET(GridOp2,0) {
-	SAME_TYPE(*in,r);
 	snap_backstore(r);
+
+	SAME_TYPE(*in,r);
 	out[0]->begin(in->dim->dup(),in->nt);
 } GRID_FLOW {
 	if (r.is_empty()) RAISE("ARGH");
@@ -522,8 +545,7 @@ GRID_INLET(GridFold,0) {
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
 	COPY(v+yi,in->dim->v+yi+1,an-yi-1);
-	for (int i=yi+1; i<an; i++)
-		if (r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
+	SAME_DIM(an-(yi+1),in->dim,(yi+1),r.dim,0);
 	out[0]->begin(new Dim(COUNT(v),v),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
 } GRID_FLOW {
@@ -586,9 +608,8 @@ GRID_INLET(GridScan,0) {
 	int an = in->dim->n;
 	int bn = r.dim->n;
 	int yi = an-bn-1;
-	if (an<=bn) RAISE("dimension mismatch");
-	for (int i=yi+1; i<an; i++)
-		if (r.dim->v[i-yi-1]!=in->dim->v[i]) RAISE("dimension mismatch");
+	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
+	SAME_DIM(an-(yi+1),in->dim,(yi+1),r.dim,0);
 	out[0]->begin(in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(yi)*r.dim->prod());
 } GRID_FLOW {
@@ -663,9 +684,7 @@ GRID_INLET(GridInner,0) {
 	int a_last = a->get(a->n-1);
 	int b_first = b->get(0);
 	int n = a->n+b->n-2;
-	if (a_last != b_first)
-		RAISE("last dim of left side (%d) should be same size as "
-			"first dim of right side (%d)",a_last,b_first);
+	SAME_DIM(1,a,a->n-1,b,0);
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
@@ -1515,7 +1534,7 @@ struct DrawPolygon : GridObject {
 	GRINLET3(1);
 	GRINLET3(2);
 
-	void init_lines ();
+	void init_lines();
 };
 
 void DrawPolygon::init_lines () {
@@ -1543,6 +1562,7 @@ static int order_by_column (const void *a, const void *b) {
 }
 
 GRID_INLET(DrawPolygon,0) {
+	if (color.is_empty()) RAISE("no color?");
 	if (polygon.is_empty()) RAISE("no polygon?");
 	if (lines.is_empty()) RAISE("no lines???");
 	SAME_TYPE(*in,color);
@@ -1583,7 +1603,6 @@ GRID_INLET(DrawPolygon,0) {
 				sizeof(Line),order_by_column);
 			for (int i=lines_start; i<lines_stop-1; i+=2) {
 				int xs = max(ld[i].x,(int32)0), xe = min(ld[i+1].x,xl-1);
-				if (xs<0) xs=0;
 				/* !@#$ could be faster! */
 				/* !@#$ should it be like <= or like < ? */
 				while (xs<=xe) op->zip(cn,data2+cn*xs++,cd);

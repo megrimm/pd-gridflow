@@ -107,11 +107,14 @@ extern "C" {
 #endif
 
 #ifdef HAVE_PROFILING
-#define ENTER(_self_) { _self_->profiler_last = rdtsc(); }
+//	if ((_self_)->profiler_last)
+//		fprintf(stderr,"%s: profiler inaccuracy warning\n", _self_->info());
+#define ENTER(_self_) { \
+	(_self_)->profiler_last = rdtsc(); }
 #define LEAVE(_self_) { \
-	if (_self_->profiler_last) \
-		_self_->profiler_cumul += rdtsc() - _self_->profiler_last; \
-	_self_->profiler_last = 0; }
+	if ((_self_)->profiler_last) \
+		(_self_)->profiler_cumul += rdtsc() - (_self_)->profiler_last; \
+	(_self_)->profiler_last = 0; }
 #else
 #define ENTER(_self_)
 #define LEAVE(_self_)
@@ -172,7 +175,7 @@ static inline int div2(int a, int b) {
 	return (a/b)-(c&&!!(a%b));
 }
 
-static inline int32   abs(  int32 a) { return  abs(a); }
+static inline int32   abs(  int32 a) { return a>0?a:-a; }
 static inline float32 abs(float32 a) { return fabs(a); }
 
 /* integer powers in log(b) time */
@@ -856,17 +859,8 @@ struct GridOutlet {
 	template <class T>
 	void send(int n, Pt<T> data);
 
-	void flush() {
-		if (!bufi) return;
-		switch(buf.nt) {
-		case uint8_type_i: send_direct(bufi,(Pt<uint8>)buf); break;
-		case int16_type_i: send_direct(bufi,(Pt<int16>)buf); break;
-		case int32_type_i: send_direct(bufi,(Pt<int32>)buf); break;
-		case float32_type_i: send_direct(bufi,(Pt<float32>)buf); break;
-		default: RAISE("argh");
-		}
-		bufi = 0;
-	}
+	void flush();
+
 	void callback(GridInlet *in);
 private:
 	template <class T>
@@ -925,6 +919,9 @@ struct GridObject : FObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
+
+	/* result should be printed immediately as the GC may discard it anytime */
+	const char *info();
 
 	bool is_busy_except(GridInlet *gin) {
 		for (int i=0; i<MAX_INLETS; i++)
