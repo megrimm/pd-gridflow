@@ -11,16 +11,33 @@ version 0.8.0 (head):
  * rewrote the profiler subsystem (and removed bugs)
  * @scale_by: now works with any number of channels
  * renamed samples/ to jmax_examples/
- * @draw_image (picture-in-picture)
  * Algebraic Properties Descriptions (internal, useful for optimising)
  * @convolve,@outer,@for,@inner,@draw_polygon: much faster
  * quicktime: support for pluggable codecs (eg: dv, divx, rpza, ...)
  * quicktime: fixed more bugs
  * quicktime: major speed increase
+ * png: read support
+ * jMax bridge: more stable than ever
+ * PureData bridge: *much* more stable than ever
+ * Operator1, Operator2 renamed to Numop1, Numop2
+ * new object classes:
+     @draw_image: picture-in-picture, with alpha blending, etc
+     jmax4_udpsend: send to a jMax 4.0.x system via UDP
+     jmax4_udpreceive: receive from a jMax 4.0.x system via UDP
+     pd_netsend: send to a pd system via UDP
+     pd_netreceive: receive from a pd system via UDP
+     @eight: (like @four, but with eight of them ;-)
 
 soon:
 
  * added @matrix_solve, @slice
+ * Numop API exposed to Ruby
+ * < 10 bugs in buglist
+ * Fully hyperlinked manual
+ * internals documentation
+ * internal grid protocol redesigned
+ * [@pack], [@unpack]
+ * [@export~]
 
 version 0.7.2 (2003.04.24):
 
