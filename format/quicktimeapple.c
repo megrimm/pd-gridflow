@@ -23,6 +23,7 @@
 
 #define T_DATA T_COCOA_DATA
 #include <Quicktime/quicktime.h>
+#include <Quicktime/movies.h>
 #undef T_DATA
 #include "../base/grid.h.fcs"
 #include <stdlib.h>

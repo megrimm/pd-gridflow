@@ -576,6 +576,7 @@ Feature.new {
 	test proc {
 		c_test "
 		#include <Quicktime/quicktime.h>
+		#include <Quicktime/movies.h>
 		int main () { return EnterMovies==0; }
 		", uses_so
 	}
