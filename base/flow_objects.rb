@@ -962,6 +962,7 @@ class Display < FObject
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
 		@y,@x = 0,0     # topleft of the widget
+		@bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
 	end
 	def initialize2()
 		GridFlow.post "Display#initialize2: #{args.inspect}"
@@ -1000,8 +1001,6 @@ class Display < FObject
 			@can=".x%x.c"%(can*4)
 		end
 		return if not @can # can't show for now...
-		@bg = "#6774A0"
-		@fg = "#ffff80"
 		@font = "Courier -12"
 		GridFlow.post "would show %s", quote(@text)
 		GridFlow.gui %{
@@ -1038,8 +1037,12 @@ class Display < FObject
 		return 0
 	end
 	def pd_vis(can,flag) pd_show(can) if flag!=0 end
-	def pd_select(*a) GridFlow.post "pd_select "+a.join(", ") end
-	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT }; super end
+	def pd_select(can,state)
+		outl = (if state!=0 then @bgs else "#000000" end)
+		GridFlow.post "%s", %{ #{@can} itemconfigure #{@rsym} -outline #{outl} }
+		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
+	end
+	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT \n}; super end
 
 	def _0_grid(*foo) # big hack!
 		# hijacking a [#print]
@@ -1073,6 +1076,7 @@ class Peephole < FPatcher
 		@sy,@sx = sy,sx # size of the widget
 		@y,@x = 0,0     # topleft of the widget
 		@fy,@fx = 0,0   # size of last frame after downscale
+		@bg,@bgs = "#A07467","#00ff80"
 	end
 	def initialize2(*args)
 		GridFlow.post "Peephole#initialize2: #{args.inspect}"
@@ -1097,10 +1101,9 @@ class Peephole < FPatcher
 		GridFlow.gui %{
 			pd \"#{@rsym} set_geometry #{@y} #{@x} #{@sy} #{@sx};\n\";
 		}
-		color = "#A07467"
 		GridFlow.gui %{
 			#{@can} delete #{@rsym}
-			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} -fill #{color} -tags #{@rsym}
+			#{@can} create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} -fill #{@bg} -tags #{@rsym}
 		}
 		set_geometry_for_real_now
 	end
@@ -1118,8 +1121,10 @@ class Peephole < FPatcher
 		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
 		return 0
 	end
-	def pd_select(*a)
-		GridFlow.post "pd_select "+a.join(", ")
+	def pd_select(can,state)
+		outl = (if state!=0 then @bgs else "#000000" end)
+		GridFlow.post "%s", %{ #{@can} itemconfigure #{@rsym} -outline #{outl} }
+		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
 	end
 	def set_geometry_for_real_now
 		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
@@ -1185,7 +1190,7 @@ class Peephole < FPatcher
 	end
 	def delete
 		GridFlow.post "deleting peephole"
-		GridFlow.gui %{ #{@can} delete #{@rsym} }
+		GridFlow.gui %{ #{@can} delete #{@rsym} \n}
 		@fobjects[3].send_in 0, :close
 		super
 	end
