@@ -15,7 +15,7 @@ append () {
 
 usage () { cat << TEXT
 usage: ./configure --arch architecture [--jmax-dist-dir directory]
-	[--nojmax] [--fast]
+	[--fast]
 TEXT
 }
 
@@ -101,23 +101,27 @@ TEST
 log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
 }
 
+LIBMPEG3=-lmpeg3
+#LIBMPEG3=/usr/lib/libmpeg3.a
+
 has-libmpeg3 () {
 	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
 cat > /tmp/$$.c <<TEST
-	#include <libmpeg3.h>
-	int main (void) { return !mpeg3io_sync_buffer; }
+	//#include <libmpeg3.h>
+	#include <libmpeg3/libmpeg3.h>
+	int main (void) { return !mpeg3_open; }
 TEST
-log gcc /tmp/$$.c -o /tmp/$$ -lmpeg3 -lpthread -lm
+log gcc /tmp/$$.c -o /tmp/$$ $LIBMPEG3 -lpthread -lm
 }
 
-#has-libquicktime () {
-#	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
-#cat > /tmp/$$.c <<TEST
-#	#include <quicktime/quicktime.h>
-#	int main (void) { return !quicktime_open; }
-#TEST
-#log gcc /tmp/$$.c -o /tmp/$$ -lquicktime -lpthread -lpng -ldl -lglib
-#}
+has-libquicktime () {
+	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
+cat > /tmp/$$.c <<TEST
+	#include <quicktime/quicktime.h>
+	int main (void) { return !quicktime_open; }
+TEST
+log gcc /tmp/$$.c -o /tmp/$$ -lquicktime -lpthread -lpng -ldl -lglib
+}
 
 has-jmax () {
 cat > /tmp/$$.c <<TEST
@@ -201,7 +205,7 @@ fi
 
 if say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3: " has-libmpeg3; then
 	append FORMATS MPEG3
-	append LDSOFLAGS -lmpeg3 -lpthread -lm
+	append LDSOFLAGS $LIBMPEG3 -lpthread -lm
 elif say "looking for Ward's LibMPEG as -lwardsmpeg: " has-libmpeg wardsmpeg; then
 	append FORMATS MPEG
 	append LDSOFLAGS -lwardsmpeg
@@ -210,10 +214,10 @@ elif say "looking for Ward's LibMPEG as -lmpeg: " has-libmpeg mpeg; then
 	append LDSOFLAGS -lmpeg
 fi
 
-if say "looking for HeroineWarrior's LibQuicktime as -lquicktime: " has-libquicktime; then
-	append FORMATS Quicktime
-	append LDSOFLAGS -lquicktime -lpthread -lpng -ldl -lglib
-fi
+#if say "looking for HeroineWarrior's LibQuicktime as -lquicktime: " has-libquicktime; then
+#	append FORMATS Quicktime
+#	append LDSOFLAGS -lquicktime -lpthread -lpng -ldl -lglib
+#fi
 
 if say "looking for videodev (video4linux 1.x digitizer drivers): " has-videodev; then
 	append FORMATS VideoDev
