@@ -537,12 +537,6 @@ class ForEach < FObject
 	install "foreach", 1, 1
 end
 
-class ListReverse < FObject
-	def initialize() super end
-	def _0_list(*) send_out 0,:list,*a.reverse end
-	install "listreverse", 1, 1
-end
-
 class ListFlatten < FObject
 	def initialize() super end
 	def _0_list(*a) send_out 0,:list,*a.flatten end
@@ -920,6 +914,12 @@ LPrefix = (if GridFlow.bridge_name == "jmax" then "ruby" else "" end)
 		def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
 		def _1_list(*b) @b=b end
 		install "#{LPrefix}listappend", 2, 1
+	end
+
+	class ListReverse < FObject
+		def initialize() super end
+		def _0_list(*a) send_out 0,:list,*a.reverse end
+		install "#{LPrefix}listreverse", 1, 1
 	end
 
 unless GridFlow.bridge_name =~ /jmax/
