@@ -46,7 +46,6 @@ METHOD3(FormatQuickTime,seek) {
 	return Qnil;
 }
 
-
 METHOD3(FormatQuickTime,frame) {
 	GridOutlet *o = out[0];
 	int sx = quicktime_video_width(anim,track);
@@ -82,7 +81,11 @@ METHOD3(FormatQuickTime,frame) {
 	}
 
 	delete[] (int32 *)buf;
-	return Qnil;
+
+	int nframe = min(
+		quicktime_video_position(anim,track),
+		quicktime_video_length(anim,track));
+	return INT2NUM(nframe);
 }
 
 GRID_INLET(FormatQuickTime,0) { RAISE("write support not implemented"); }
