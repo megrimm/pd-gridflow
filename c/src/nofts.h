@@ -30,7 +30,7 @@
 typedef int fts_status_t;
 #define fts_Success 1
 
-typedef enum fts_symbol_t {
+typedef enum Symbol {
 	fts_t_symbol,
 	fts_t_int, fts_s_int = fts_t_int,
 	fts_t_float,
@@ -40,26 +40,26 @@ typedef enum fts_symbol_t {
 	fts_s_delete,
 	fts_s_bang,
 	fts_s_set,
-} fts_symbol_t;
+} Symbol;
 
-typedef fts_symbol_t fts_type_t;
+typedef Symbol fts_type_t;
 
 typedef struct fts_atom_t {
 	fts_type_t type;
 	union {
 		int i;
 		float f;
-		fts_symbol_t s;
+		Symbol s;
 		void *p;
 	} v;
 } fts_atom_t;
 
 typedef struct fts_object_t fts_object_t;
 
-typedef void (*fts_method_t)(fts_object_t *,int,fts_symbol_t,int,const fts_atom_t *);
+typedef void (*fts_method_t)(fts_object_t *,int,Symbol,int,const fts_atom_t *);
 
 typedef struct fts_class_t {
-	fts_symbol_t name;
+	Symbol name;
 	int object_size;
 	int n_inlets;
 	int n_outlets;
@@ -98,10 +98,10 @@ typedef struct fts_alarm_t {
 #define post printf
 #define fts_SystemInlet (-1)
 
-fts_symbol_t fts_new_symbol(const char *s);
-const char *fts_symbol_name(fts_symbol_t sym);
+Symbol fts_new_symbol(const char *s);
+const char *fts_symbol_name(Symbol sym);
 
-void fts_method_define_optargs(fts_class_t *, int winlet, fts_symbol_t
+void fts_method_define_optargs(fts_class_t *, int winlet, Symbol
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
 int fts_file_open(const char *name, const char *mode);
 
@@ -115,7 +115,7 @@ int fts_get_symbol(const fts_atom_t *);
 void *fts_get_ptr(const fts_atom_t *);
 
 void fts_set_int(fts_atom_t *, int);
-void fts_set_symbol(fts_atom_t *, fts_symbol_t);
+void fts_set_symbol(fts_atom_t *, Symbol);
 void fts_set_ptr(fts_atom_t *, void *);
 
 #define fts_get_int_arg(AC, AT, N, DEF) \
@@ -127,14 +127,14 @@ void fts_set_ptr(fts_atom_t *, void *);
 
 void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, int stuff);
 
-fts_symbol_t fts_get_class_name(fts_class_t *class);
+Symbol fts_get_class_name(fts_class_t *class);
 
 void sprintf_atoms(char *buf, int ac, fts_atom_t *at);
 
-void fts_class_install(fts_symbol_t sym,
+void fts_class_install(Symbol sym,
 	fts_status_t (*p)(fts_class_t *class, int ac, const fts_atom_t *at));
 
-void fts_outlet_send(fts_object_t *o, int woutlet, fts_symbol_t selector, int ac, const fts_atom_t *at);
+void fts_outlet_send(fts_object_t *o, int woutlet, Symbol selector, int ac, const fts_atom_t *at);
 
 void fts_object_set_error(fts_object_t *o, const char *s, ...);
 fts_clock_t *fts_sched_get_clock(void);
@@ -151,7 +151,7 @@ fts_object_t *fts_object_new(int ac, fts_atom_t *at);
 fts_object_t *fts_object_new2(fts_class_t *class, int ac, fts_atom_t *at);
 void fts_object_delete(fts_object_t *$);
 void fts_send2(fts_object_t *o, int winlet, int ac, const fts_atom_t *at);
-void fts_send(fts_object_t *o, int winlet, fts_symbol_t sel, int ac, const fts_atom_t *at);
+void fts_send(fts_object_t *o, int winlet, Symbol sel, int ac, const fts_atom_t *at);
 void fts_connect(fts_object_t *oo, int woutlet, fts_object_t *oi, int winlet);
 void fts_loop(void);
 

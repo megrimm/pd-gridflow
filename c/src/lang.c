@@ -149,6 +149,8 @@ void Dict_put(Dict *$, void *k, void *v) {
 	DictEntry *de = Dict_has_key($,k);
 	assert(k!=(void *)0xdeadbeef);
 //	printf("put %08x %08x\n",k,v);
+	if ($->size >= $->capa) Dict_capa_is($,(7*$->capa+4)/5);
+
 	if (de) {
 		de->v = v;
 	} else {
@@ -177,6 +179,7 @@ void Dict_del(Dict *$, void *k) {
 	}
 }
 
+/* you must not modify the hash during this operation */
 void Dict_each(Dict *$, void (*proc)(void*,void*,void*), void *data) {
 	int i;
 //	printf("hello.\n");
@@ -190,20 +193,21 @@ void Dict_each(Dict *$, void (*proc)(void*,void*,void*), void *data) {
 	}
 }
 
-/* not used/tested yet */
-void Dict_capa_is(Dict *$) {
+void Dict_capa_is(Dict *$, int capa) {
 	int i;
 	DictEntry **l = $->table;
 	int capa1 = $->capa;
-	$->capa = (7*$->capa+4)/5;
+	$->capa = capa;
 	$->table = NEW(DictEntry *,$->capa);
 	for (i=0; i<$->capa; i++) $->table[i] = 0;
 	for (i=0; i<capa1; i++) {
 		DictEntry *de = l[i];
 		while (de) {
+			DictEntry *wasnext = de->next;
 			int h = Dict_hash($,de->k) % $->capa;
 			de->next = $->table[h];
 			$->table[h] = de;
+			de = wasnext;
 		}
 	}
 }
