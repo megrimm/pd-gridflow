@@ -1,3 +1,5 @@
+# $Id$
+
 require "socket"
 
 picture = File.open("../images/teapot.ppm") {|x| x.read }
