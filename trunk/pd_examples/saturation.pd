@@ -4,16 +4,13 @@
 #X obj 14 177 @out window;
 #X text 327 99 OR;
 #X text 305 78 global saturation;
-#X obj 14 75 metro 10;
 #X floatatom 166 125 5 0 0 0 - - -;
-#X obj 213 155 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
--262144 -1 -1 9133 1;
+#X obj 213 157 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
+-262144 -1 -1 0 1;
 #X obj 213 127 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
 -262144 -1 -1 13600 1;
 #N canvas 0 0 553 633 @saturation 0;
-#X text 372 123 saturation factor:
-0 = grey
-256 = identity;
+#X text 372 123 saturation factor: 0 = grey 256 = identity;
 #X obj 247 168 @ inv+ 255;
 #X obj 335 145 inlet;
 #X obj 191 413 @ +;
@@ -59,39 +56,40 @@
 #X connect 22 0 19 0;
 #X restore 14 153 pd @saturation;
 #X obj 15 199 fps detailed;
-#X text 388 132 per-channel saturation;
+#X text 303 109 per-channel saturation;
 #X msg 166 34 0;
 #X obj 14 130 @in;
 #X text 351 126 Red Green Blue;
-#X obj 213 141 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
--262144 -1 -1 11933 1;
+#X obj 213 142 hsl 137 15 -256 512 0 0 empty empty empty -2 -6 0 8
+-262144 -1 -1 0 1;
 #X msg 14 97 open teapot.png \, bang;
 #X obj 166 13 loadbang;
 #X obj 165 78 hsl 137 20 -256 512 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 9133 1;
+-1 -1 13600 1;
 #X text 37 54 Click Me Gently :-);
 #X floatatom 166 156 5 0 0 0 - - -;
 #X floatatom 166 140 5 0 0 0 - - -;
 #X floatatom 165 101 5 0 0 0 - - -;
-#X obj 14 52 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+#X obj 14 52 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
-#X connect 1 0 9 1;
-#X connect 2 0 10 0;
-#X connect 5 0 16 0;
-#X connect 6 0 1 0;
-#X connect 7 0 20 0;
-#X connect 8 0 6 0;
-#X connect 9 0 2 0;
-#X connect 10 0 0 0;
-#X connect 12 0 18 0;
-#X connect 13 0 9 0;
-#X connect 15 0 21 0;
-#X connect 16 0 13 0;
-#X connect 17 0 12 0;
-#X connect 18 0 22 0;
-#X connect 20 0 1 2;
-#X connect 21 0 1 1;
-#X connect 22 0 8 0;
-#X connect 22 0 15 0;
-#X connect 22 0 7 0;
-#X connect 23 0 5 0;
+#X obj 14 75 metro 33.3667;
+#X connect 1 0 8 1;
+#X connect 2 0 9 0;
+#X connect 5 0 1 0;
+#X connect 6 0 19 0;
+#X connect 7 0 5 0;
+#X connect 8 0 2 0;
+#X connect 9 0 0 0;
+#X connect 11 0 17 0;
+#X connect 12 0 8 0;
+#X connect 14 0 20 0;
+#X connect 15 0 12 0;
+#X connect 16 0 11 0;
+#X connect 17 0 21 0;
+#X connect 19 0 1 2;
+#X connect 20 0 1 1;
+#X connect 21 0 7 0;
+#X connect 21 0 14 0;
+#X connect 21 0 6 0;
+#X connect 22 0 23 0;
+#X connect 23 0 15 0;
