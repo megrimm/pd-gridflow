@@ -496,7 +496,7 @@ end
 
 f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
 f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
-f.puts "CFLAGS += -xc++ " + $CFLAGS
+f.puts "CFLAGS += -I#{$conf[:JMAX_SOURCES]}/include -xc++ " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
 	f.puts "#{z}=yes"
@@ -540,6 +540,9 @@ if $conf[:FEATURES][:mpeg3]
 f.puts "
 \#ifdef LIBMPEG_INCLUDE_HERE
 \#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
+\#endif
+\#ifdef JMAX_INCLUDE_HERE
+\#include \"#{$conf[:JMAX_SOURCES]}/include/fts/fts.h\"
 \#endif
 \#ifdef PUREDATA_INCLUDE_HERE
 \#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
