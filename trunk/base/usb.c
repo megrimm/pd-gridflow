@@ -189,10 +189,21 @@ usb_define* usb_all_defines[] = {
 //	  MANGLE(interface)
 //	  MANGLE(extras)
 
-static Ruby usb_get_config (struct usb_config_descriptor *dev) {
-#define MANGLE(X) INT2NUM(dev->X)
+static Ruby usb_get_interface (struct usb_interface_descriptor *self) {
+#define MANGLE(X) INT2NUM(self->X)
+	return rb_funcall(rb_const_get(cUSB,SI(Interface)),SI(new),9,
+		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA));
+#undef MANGLE
+}
+
+static Ruby usb_get_config (struct usb_config_descriptor *self) {
+#define MANGLE(X) INT2NUM(self->X)
+	Ruby interface = rb_ary_new();
+	for (int i=0; i<self->interface->num_altsetting; i++) {
+		rb_ary_push(interface, usb_get_interface(&self->interface->altsetting[i]));
+	}
 	return rb_funcall(rb_const_get(cUSB,SI(Config)),SI(new),8,
-		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA));
+		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA), interface);
 #undef MANGLE
 }
 
@@ -215,14 +226,14 @@ void startup_usb () {
 	cUSB = rb_define_class_under(mGridFlow, "USB", rb_cObject);
 	IEVAL(cUSB, "def self.new(dev) @dev=dev; @ptr=dev.ptr; end");
 #define MANGLE(X) SYM(X)
-	rb_const_set(cUSB, SI(Device), rb_funcall(EVAL("Struct"),SI(new),17,
+	rb_const_set(cUSB, SI(Device), rb_funcall(EVAL("Struct"),SI(new),14+3,
 		USB_DEVICE_DESCRIPTOR(MANGLE,COMMA), SYM(filename), SYM(ptr), SYM(config)));
 	rb_const_set(cUSB, SI(Endpoint), rb_funcall(EVAL("Struct"),SI(new),8,
 		USB_ENDPOINT_DESCRIPTOR(MANGLE,COMMA)));
 	rb_const_set(cUSB, SI(Interface), rb_funcall(EVAL("Struct"),SI(new),10,
 		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA)));
-	rb_const_set(cUSB, SI(Config), rb_funcall(EVAL("Struct"),SI(new),8,
-		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA)));
+	rb_const_set(cUSB, SI(Config), rb_funcall(EVAL("Struct"),SI(new),8+1,
+		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA), SYM(interface)));
 #undef MANGLE
 	for(int i=0; i<COUNT(usb_all_defines); i++) {
 		usb_define *ud = usb_all_defines[i];
@@ -238,7 +249,7 @@ void startup_usb () {
 	for (usb_bus *bus=usb_get_busses(); bus; bus=bus->next) {
 		rb_hash_aset(busses,rb_str_new2(bus->dirname),usb_scan_bus(bus));
 	}
-	IEVAL(cUSB,"STDERR.print '@busses = '; STDERR.puts @busses.inspect");
+	//IEVAL(cUSB,"STDERR.print '@busses = '; STDERR.puts @busses.inspect");
 }
 
 /*
@@ -251,10 +262,10 @@ struct usb_interface
 struct usb_config_descriptor
 struct usb_device_descriptor
 struct usb_device
-struct usb_bus;
-struct usb_dev_handle;
-typedef struct usb_dev_handle usb_dev_handle;
-extern struct usb_bus *usb_busses;
+struct usb_bus
+struct usb_dev_handle
+typedef struct usb_dev_handle usb_dev_handle
+extern struct usb_bus *usb_busses
 */
 /*
 usb_dev_handle *usb_open(struct usb_device *dev);
