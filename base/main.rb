@@ -29,17 +29,47 @@ require "base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
+if true
+	$whine_log = File.open "/tmp/gridflow.log", "w"
+end
+
 p GridFlow::GridOuter.instance_methods
 
 def GridFlow.post(s,*a)
+#	printf s,*a
 	GridFlow.post_string(sprintf s,*a)
+	($whine_log << (sprintf s,*a); $whine_log.flush) if $whine_log
 end
 
-# should rewrite the whine() code here.
-def GridFlow.whine(s,*a)
-	s=s.to_s
+class<<GridFlow; attr_accessor :whine_header end
+GridFlow.whine_header = "[whine] "
+
+def GridFlow.whine2(fmt,s)
+	@whine_last ||= ""
+	@whine_count ||= 0
+
+	if @whine_last==fmt
+		@whine_count+=1
+		if @whine_count >= 64 and @whine_count/(@whine_count&-@whine_count)<4
+			post "[too many similar posts. this is # %d]\n", @whine_count
+			return
+		end
+	else
+		@whine_last = fmt
+		@whine_count += 1
+	end
+
 	s<<"\n" if s[-1]!=10
-	GridFlow.post(s,*a)
+	post(GridFlow.whine_header)
+	post(s)
+end
+
+# a slightly friendlier version of post(...)
+# it removes redundant messages.
+# it also ensures that a \n is added at the end.
+def GridFlow.whine(fmt,*a)
+	fmt=fmt.to_s
+	whine2(fmt,(sprintf fmt, *a))
 end
 
 GridFlow.whine "This is GridFlow 0.6.0 within Ruby version #{VERSION}"
@@ -76,6 +106,17 @@ end
 #	...
 #end end
 
+def GridFlow.parse(m)
+	m = m.split(/\s+/)
+	m.map! {|x| case x
+		when Integer, Symbol; x
+		when /^[0-9]+$/; x.to_i
+		when String; x.intern
+		end
+	}
+	m
+end
+
 # adding some functionality to that:
 module GridFlow; class FObject
 	def connect outlet, object, inlet
@@ -83,38 +124,38 @@ module GridFlow; class FObject
 		@outlets.push [object, inlet]
 	end
 	def send_in(inlet, *m)
+		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
 		sym = if m.length==0
 			:bang
-		elsif m.length>1 && Symbol==m[0]
+		elsif Symbol===m[0]
 			m.shift
+		elsif String===m[0]
+			m.shift.intern
+		elsif m.length>1 and String===m[0]
+			m.shift.intern
 		elsif m.length>1
 			:list
 		elsif Integer===m[0]
 			:int
 		elsif Float===m[0]
 			:float
+		else
+			raise "don't know how to deal with #{m.inspect}"
 		end
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
-	def self.[](*foo)
-		if foo.length==1 and foo[0] =~ / / then
-			foo = foo[0].split(/\s+/)
-		end
-		qlass = case foo[0]
+	def self.[](*m)
+		m=GridFlow.parse(m[0]) if m.length==1 and m[0] =~ / /
+		sym = m.shift
+		sym = sym.to_s if Symbol===sym
+		qlass = case sym
 			when "@"; GridFlow::GridOp2
 			when "@!"; GridFlow::GridOp1
-			when /^@/; GridFlow.const_get("Grid"+foo[0][1..1].upcase+foo[0][2..-1])
+			when /^@/; GridFlow.const_get("Grid"+sym[1..1].upcase+sym[2..-1])
 			else
 				raise ArgumentError, "GF names begin with @"
 			end
-		foo.shift
-		foo.map! {|x| case x
-			when Integer, Symbol; x
-			when /^[0-9]+$/; x.to_i
-			when String; x.intern
-			end }
-		p foo
-		qlass.new(*foo)
+		qlass.new(*m)
 	end
 end end
 

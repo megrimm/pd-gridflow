@@ -214,10 +214,12 @@ void GridInlet_list(GridInlet *$, int argc, VALUE *argv) {
 	int n = argc;
 	whine("argc=%d",n);
 	for (i=0; i<argc; i++) {
+		/*
 		whine("argv[%d]=%ld",i,argv[i],
 			RSTRING(rb_funcall(argv[i],rb_intern("inspect"),0))->ptr);
+		*/
 		v[i] = NUM2INT(argv[i]);
-		whine("v[%d]=%ld",i,v[i]);
+		/*whine("v[%d]=%ld",i,v[i]);*/
 	}
 	$->dim = Dim_new(1,&n);
 
@@ -411,7 +413,7 @@ void GridObject_init(GridObject *$) {
 
 	{
 		GridClass *cl = $->grid_class;
-		whine("cl=%p",cl);
+//		whine("cl=%p",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = GridInlet_new($,gh);
@@ -426,12 +428,12 @@ void GridObject_init(GridObject *$) {
 
 METHOD(GridObject,method_missing) {
 	char *name;
-	whine("argc=%d,argv=%p,self=%p",argc,argv,self);
+	/*whine("argc=%d,argv=%p,self=%p",argc,argv,self);*/
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	whine("method_missing: %s",rb_sym_name(argv[0]));
+	/*whine("method_missing: %s",rb_sym_name(argv[0]));*/
 	name = rb_sym_name(argv[0]);
-	rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);
+	/*rb_funcall2(rb_cObject,rb_intern("p"),argc,argv);*/
 	if (strlen(name)>3 && name[0]=='_' && name[2]=='_' && isdigit(name[1])) {
 		int i = name[1]-'0';
 		GridInlet *inl = $->in[i];
@@ -495,7 +497,10 @@ void GridObject_conf_class2(VALUE $, GridClass *grclass) {
 
 Stream *Stream_open_file(const char *filename, int mode) {
 	Stream *$;
-	int fd = fileno(fopen(filename,mode==4?"r":mode==2?"w":""));
+	FILE *f = fopen(filename,mode==4?"r":mode==2?"w":"");
+	int fd;
+	if (!f) RAISE("IO Error: %s",strerror(errno));
+	fd = fileno(f);
 	if (fd<0) return 0;
 	$ = NEW(Stream,1);
 	$->fd = fd;
@@ -633,14 +638,14 @@ int format_flags_n = sizeof(format_flags_names)/sizeof(const char *);
 
 void startup_grid (void) {
 	int i;
-	whine("format-list-begin");
+	post("format-list-begin\n");
 	rb_define_readonly_variable("$format_classes_dex",&format_classes_dex);
 	format_classes_dex = rb_hash_new();
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatClass *fc = format_classes[i];
-		whine("  %10s %s",fc->symbol_name, fc->long_name);
+		post("  %10s %s\n",fc->symbol_name, fc->long_name);
 		rb_hash_aset(format_classes_dex, ID2SYM(rb_intern(fc->symbol_name)),
 			PTR2FIX(fc));
 	}
-	whine("format-list-end");
+	post("format-list-end\n");
 }

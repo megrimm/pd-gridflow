@@ -674,6 +674,7 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets);
 VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass);
 //VALUE FObject_s_new(BFObject *foo, VALUE qlass, VALUE argc, VALUE *argv);
 char *rb_sym_name(VALUE sym);
+void post(const char *,...);
 
 void gf_init (void);
 #define PTR2FIX(ptr) INT2NUM(((int)ptr)/4)

@@ -301,12 +301,9 @@ void gf_install_bridge (void) {
 	rb_define_singleton_method(GridFlow_module, "post_string", gf_post_string, 1);
 }
 
-struct Timer {
-	void (*f)(struct Timer *$, void *data);
-	void *data;
-	double time;
-	int armed;
-};
+void gf_timer_handler (fts_alarm_t *foo, void *obj) {
+	rb_eval_string("$mainloop.one");
+}       
 
 void gridflow_module_init (void) {
 	char *foo[] = {"/bin/false","/dev/null"};
@@ -315,6 +312,11 @@ void gridflow_module_init (void) {
 	ruby_options(COUNT(foo),foo);
 	rb_rescue(gridflow_module_init$1,0,gridflow_module_init$2,0);
 	gf_init();
+	{
+		fts_alarm_t *alarm = fts_alarm_new(fts_sched_get_clock(),
+			gf_timer_handler,0);
+		fts_alarm_set_delay(alarm,1000.0);
+		fts_alarm_arm(alarm);
 }
 
 fts_module_t gridflow_module = {
