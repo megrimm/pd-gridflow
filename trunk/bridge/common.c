@@ -106,6 +106,10 @@ static void gf_same_version () {
 
 /* -------- This is the big hack for what Ruby can't do for itself -------- */
 
+#ifndef STACK_GROW_DIRECTION
+#define STACK_GROW_DIRECTION -1
+#endif
+
 static volatile long bogus = 0; // to force *bp to be read in memory
 static sigjmp_buf rescue_segfault;
 static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
@@ -115,10 +119,10 @@ static VALUE *localize_sysstack () {
 	volatile long * volatile bp = (volatile long *)&bp;
 	sighandler_t old = signal(11,trap_segfault);
 	// read stack until segfault; segfault is redefined as a break.
-	if (!sigsetjmp(rescue_segfault,0)) for (;;bp++) bogus += *bp;
+	if (!sigsetjmp(rescue_segfault,0)) for (;;bp-=STACK_GROW_DIRECTION) bogus += *bp;
 	// restore signal handler
 	signal(11,old);
-	return (VALUE *)(bp-1);
+	return (VALUE *)(bp+STACK_GROW_DIRECTION);
 }
 
 #endif /* __BRIDGE_C */
