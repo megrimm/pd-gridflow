@@ -976,7 +976,7 @@ puts "",
 #--------------------------------#
 $LOCAL_LIBS = $conf[:LDSOFLAGS].join(" ")
 
-$objs = $sources.collect{|i| i.sub(/.c$/,".o") }
+$objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
 dir_config("gridflow")
 #p $rubylibdir
 create_makefile("gridflow")
@@ -991,12 +991,17 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp=$1
 	comp.sub!(/\(CC\)/,'(CXX)')
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
+	comp2 = comp.gsub /-c/,'-xobjective-c++ -c'
 	"%.h.fcs: %.h #{common_deps1}\n"+
 	"\truby base/source_filter.rb $< $@\n\n"+
 	"%.c.fcs: %.c #{common_deps2}\n"+
 	"\truby base/source_filter.rb $< $@\n\n"+
+	"%.m.fcs: %.m #{common_deps2}\n"+
+	"\truby base/source_filter.rb $< $@\n\n"+
 	"%.o: %.c.fcs #{common_deps2}\n"+
-	"\t#{comp}\n"
+	"\t#{comp}\n"+
+	"%.o: %.m.fcs #{common_deps2}\n"+
+	"\t#{comp2}\n"
 }
 mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
 mf << ".PRECIOUS: %.h.fcs %.c.fcs\n"
