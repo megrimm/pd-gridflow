@@ -352,7 +352,7 @@ GRCLASS(GridStore,LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
 \class GridOp1 < GridObject
 struct GridOp1 : GridObject {
 	\attr Numop1 *op;
-	\decl void initialize (Operator1 *op);
+	\decl void initialize (Numop1 *op);
 	GRINLET3(0);
 };
 
