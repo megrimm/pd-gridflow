@@ -32,7 +32,7 @@
 
 #include "config.h"
 /* current version number as string literal */
-#define GRIDFLOW_VERSION "0.3.1"
+#define GRIDFLOW_VERSION "0.4.0"
 #define GRIDFLOW_COMPILE_TIME __DATE__ ", " __TIME__
 
 #define GRIDFLOW_FAST
@@ -310,7 +310,7 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 #define MAX_NUMBERS 64*1024*1024
 
 /* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 65536
+#define MAX_INDICES 32767
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
@@ -320,7 +320,9 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 #define MAX_OUTLETS 2
 
 /* number of (maximum,ideal) Numbers to send at once */
-#define PACKET_LENGTH 1024
+/* this should remain a constant throughout execution
+   because code still expect it to be constant. */
+extern int gf_max_packet_length;
 
 /*
   what kind of number a Grid contains.
