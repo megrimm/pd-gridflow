@@ -43,10 +43,17 @@
 VALUE GridFlow_module; /* not the same as jMax's gridflow_module */
 VALUE FObject_class;
 
+static void default_post(const char *fmt, ...) {
+	va_list args;
+	va_start(args,fmt);
+	vfprintf(stderr,fmt,args);
+	va_end(args);
+}
+
 struct GFBridge gf_bridge = {
 	send_out: 0,
 	class_install: 0,
-	post: (void(*)(const char *, ...))printf,
+	post: default_post,
 };
 
 void startup_number(void);
@@ -79,6 +86,8 @@ typedef struct AllocTrace {
 } AllocTrace;
 
 void *qalloc2(size_t n, const char *file, int line) {
+	assert(n>=0);
+	if (n>4000000) gfpost("hey. %d is a large buffer size!",n);
 	void *data = malloc(n);
 	assert(data);
 #ifdef MAKE_LEAK_DUMP
@@ -136,12 +145,12 @@ void qfree(void *data) {
 
 static void qdump$1(void *obj, void *k, void *v) {
 	AllocTrace *al = (AllocTrace *)v;
-	post("warning: %d bytes leak allocated at file %s line %d",
+	gfpost("warning: %d bytes leak allocated at file %s line %d",
 		al->n,al->file,al->line);
 }
 
 void qdump(void) {
-	post("(leak detection disabled)");
+	gfpost("(leak detection disabled)");
 /*
 	post("checking for memory leaks...");
 	VALUE ary;
@@ -152,10 +161,6 @@ void qdump(void) {
 	}
 */
 }
-
-VALUE gf_object_set = 0;
-
-FILE *whine_f;
 
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
@@ -323,31 +328,28 @@ void MainLoop_remove(void *data) {
 		PTR2FIX(data));
 }
 
-void whine(const char *fmt, ...) {
+void gfpost(const char *fmt, ...) {
 	va_list args;
 	char post_s[256*4];
 	int length;
 	va_start(args,fmt);
 	length = vsnprintf(post_s,sizeof(post_s)-2,fmt,args);
 	post_s[sizeof(post_s)-1]=0; /* safety */
-	rb_funcall(GridFlow_module,rb_intern("whine2"),2,
-		rb_str_new2(fmt),rb_str_new2(post_s));
+	va_end(args);
+	if (rb_respond_to(GridFlow_module,SI(gfpost2))) {
+		rb_funcall(GridFlow_module,SI(gfpost2),2,
+			rb_str_new2(fmt),rb_str_new2(post_s));
+	} else {
+		default_post("%s\n",post_s);
+	}
 }
 
 VALUE gf_post_string (VALUE $, VALUE s) {
 	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
 
-	post("%s",RSTRING(s)->ptr);
+	gf_bridge.post("%s",RSTRING(s)->ptr);
 	return Qnil;
 }
-
-/*
-void post(const char *fmt, ...) {
-	va_list args;
-	va_start(args,fmt);
-	vfprintf(stderr,fmt,args);
-}
-*/
 
 VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
 VALUE super) {
@@ -369,7 +371,6 @@ VALUE super) {
 
 /* Ruby's entrypoint. */
 void Init_gridflow (void) /*throws Exception*/ {
-	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 	signal(11,SIG_DFL);
 
 	DEF_SYM(grid_begin);
@@ -381,8 +382,8 @@ void Init_gridflow (void) /*throws Exception*/ {
 
 	/* !@#$ mark */
 	gf_alloc_set  = rb_hash_new();
-	gf_object_set = rb_hash_new();
 
+	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 	GridFlow_module = rb_define_module("GridFlow");
 	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 
@@ -397,37 +398,21 @@ void Init_gridflow (void) /*throws Exception*/ {
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-//	post("GridFlow "GF_VERSION", as compiled on "GF_COMPILE_TIME"\n");
-
-	{
-		VALUE cdata = rb_eval_string("Data");
-		if (rb_respond_to(cdata,rb_intern("gridflow_bridge_init"))) {
-			post("Setting up bridge...\n");
-			rb_funcall(cdata,rb_intern("gridflow_bridge_init"),
-				1,PTR2FIX(&gf_bridge));
-//			post("Done setting up bridge.\n");
-		} else {
-//			post("bridge not found\n");
-		}
+	VALUE cdata = rb_eval_string("Data");
+	ID bi = rb_intern("gridflow_bridge_init");
+	if (rb_respond_to(cdata,bi)) {
+		fprintf(stderr,"Setting up bridge...\n");
+		rb_funcall(cdata,bi,1,PTR2FIX(&gf_bridge));
 	}
 
 	/* run startup of every source file */
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-
-/*
-	rb_require("gridflow/base/main.rb");
-	rb_require("gridflow/format/main.rb");
-*/
-
-//	post("begin require\n");
-
-	rb_eval_string("begin\
-		require 'gridflow/base/main.rb'; \
-		require 'gridflow/format/main.rb'; \
-	rescue Exception; p \"#{$!}: #{$!.backtrace}\"; end");
-
-//	post("end require\n");
+//	rb_require("gridflow/base/main.rb");
+//	rb_require("gridflow/format/main.rb");
+	EVAL("STDERR.puts $:");
+	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do \
+		require	f end");
 }
 
