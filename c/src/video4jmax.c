@@ -43,7 +43,7 @@ DECL_SYM2(close)
 DECL_SYM2(reset)
 DECL_SYM2(autodraw)
 DECL_SYM2(grid_begin)
-DECL_SYM2(grid_packet)
+DECL_SYM2(grid_flow)
 DECL_SYM2(grid_end)
 
 void grid_basic_config (void);
@@ -65,7 +65,7 @@ void video4jmax_module_init (void) {
 	DEF_SYM(reset);
 	DEF_SYM(autodraw);
 	DEF_SYM(grid_begin);
-	DEF_SYM(grid_packet);
+	DEF_SYM(grid_flow);
 	DEF_SYM(grid_end);
 
 	grid_basic_config();

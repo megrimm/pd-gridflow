@@ -46,7 +46,7 @@ struct VideoOutFile {
 
 /* ---------------------------------------------------------------- */
 
-void VideoOutFile_acceptor0(GridInlet *$) {
+void VideoOutFile_0_begin(GridInlet *$) {
 	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
 	int v[] = { Dim_get($->dim,0), Dim_get($->dim,1), 3 };
 	Dim *dim = Dim_new(ARRAY(v));
@@ -59,10 +59,10 @@ void VideoOutFile_acceptor0(GridInlet *$) {
 		CHECK_FILE_OPEN
 	}
 	$->dex=0;
-	parent->ff->accept(parent->ff, $->dim);
+	parent->ff->begin(parent->ff, $->dim);
 }
 
-void VideoOutFile_processor0(GridInlet *$, int n, const Number *data) {
+void VideoOutFile_0_flow(GridInlet *$, int n, const Number *data) {
 	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
 	FileFormat *f = parent->ff;
 	{
@@ -73,13 +73,13 @@ void VideoOutFile_processor0(GridInlet *$, int n, const Number *data) {
 		int incr;
 		int max = Dim_prod($->dim) - $->dex;
 		int bs = n<max?n:max;
-		parent->ff->process(parent->ff, bs, data);
+		parent->ff->flow(parent->ff, bs, data);
 		
 		data += bs;
 		$->dex += bs;
 		n -= bs;
 		if ($->dex >= Dim_prod($->dim)) {
-			parent->ff->finish(parent->ff);
+			parent->ff->end(parent->ff);
 			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
 		}
 	}
@@ -92,7 +92,7 @@ METHOD(VideoOutFile,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		VideoOutFile_acceptor0, VideoOutFile_processor0);
+		VideoOutFile_0_begin, VideoOutFile_0_flow);
 }
 
 static void VideoOutFile_p_close(VideoOutFile *$) {

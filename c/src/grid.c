@@ -42,14 +42,14 @@ fts_type_t *make_dims_list (void) {
 
 /* **************** GridInlet ************************************* */
 
-GridInlet *GridInlet_new(GridObject *parent, int winlet, GridAccept a, GridProcess p) {
+GridInlet *GridInlet_new(GridObject *parent, int winlet, GridBegin b, GridFlow f) {
 	GridInlet *$ = NEW(GridInlet,1);
 	$->parent = parent;
 	$->winlet = winlet;
 	$->dim = 0;
 	$->dex = 0;
-	$->accept = a;
-	$->process = p;
+	$->begin = b;
+	$->flow = f;
 	return $;
 }
 
@@ -66,6 +66,7 @@ void GridInlet_abort(GridInlet *$) {
 	$->dex = 0;
 }
 
+/* ??? */
 void GridInlet_finish(GridInlet *$) {
 	if ($->dim && Dim_prod($->dim) != $->dex) {
 		whine("%s:i%d: finish: short end: %d of %d", INFO($),
@@ -79,15 +80,15 @@ int GridInlet_idle_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
 		whine("%s:i%d: no dim",INFO($));
-	} else if (!$->process) {
-		whine("%s:i%d: no process()",INFO($));
+	} else if (!$->flow) {
+		whine("%s:i%d: no flow()",INFO($));
 	} else {
 		return 0;
 	}
 	return 1;
 }
 
-void GridInlet_accept(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	int i;
 	int *v = NEW(int,ac);
 
@@ -98,19 +99,19 @@ void GridInlet_accept(GridInlet *$, int ac, const fts_atom_t *at) {
 
 /*	whine("%s:i%d: grid_begin: %s",INFO($),Dim_to_s($->dim)); */
 	$->dex = 0;
-	if (!$->accept) {
-		whine("%s:i%d: no accept()",INFO($));
+	if (!$->begin) {
+		whine("%s:i%d: no begin()",INFO($));
 	} else {
-		$->accept($);
+		$->begin($);
 	}
 }
 
-void GridInlet_packet(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	int n = GET(0,int,-1);
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
-	if (GridInlet_idle_verbose($,"packet")) return;
+	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
-	$->process($,n,data);
+	$->flow($,n,data);
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
@@ -150,7 +151,7 @@ void GridOutlet_abort(GridOutlet *$) {
 	$->dex = 0;
 }
 
-void GridOutlet_propose(GridOutlet *$, Dim *dim) {
+void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
 	int n = Dim_count(dim);
 	fts_atom_t a[MAX_DIMENSIONS];
@@ -174,7 +175,7 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 		int i;
 		fts_set_int(a+0,pn);
 		fts_set_ptr(a+1,(void*)(long)data); /* explicitly removing const */
-		fts_outlet_send(OBJ($->parent),0,sym_grid_packet,COUNT(a),a);
+		fts_outlet_send(OBJ($->parent),0,sym_grid_flow,COUNT(a),a);
 		data += pn;
 		n -= pn;
 	}
@@ -234,11 +235,11 @@ METHOD(GridObject,init) {
 /* category: input */
 
 METHOD(GridObject,grid_begin) {
-	GridInlet_accept(self->in[winlet],ac,at);
+	GridInlet_begin(self->in[winlet],ac,at);
 }
 
-METHOD(GridObject,grid_packet) {
-	GridInlet_packet(self->in[winlet],ac,at);
+METHOD(GridObject,grid_flow) {
+	GridInlet_flow(self->in[winlet],ac,at);
 }
 
 METHOD(GridObject,grid_end) {
@@ -250,9 +251,9 @@ void GridObject_conf_class(fts_class_t *class, int winlet) {
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol, };
 	fts_type_t packet[] = { fts_t_symbol, fts_t_int, fts_t_ptr };
 	MethodDecl methods[] = {
-		{winlet,sym_grid_begin, METHOD_PTR(GridObject,grid_begin), ARRAY(int_dims),-1},
-		{winlet,sym_grid_packet,METHOD_PTR(GridObject,grid_packet),ARRAY(packet),-1},
-		{winlet,sym_grid_end,   METHOD_PTR(GridObject,grid_end),   0,0,0},
+		{winlet,sym_grid_begin,METHOD_PTR(GridObject,grid_begin),ARRAY(int_dims),-1},
+		{winlet,sym_grid_flow, METHOD_PTR(GridObject,grid_flow), ARRAY(packet),-1},
+		{winlet,sym_grid_end,  METHOD_PTR(GridObject,grid_end),  0,0,0},
 	};
 	int i;
 	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;

@@ -199,15 +199,15 @@ Number *FormatVideoDev_read (FileFormat *$, int n) {
 	return b2;
 }
 
-void FormatVideoDev_accept (FileFormat *$, Dim *dim) {
+void FormatVideoDev_begin (FileFormat *$, Dim *dim) {
 
 }
 
-void FormatVideoDev_process (FileFormat *$, int n, const Number *data) {
+void FormatVideoDev_flow (FileFormat *$, int n, const Number *data) {
 
 }
 
-void FormatVideoDev_finish (FileFormat *$) {
+void FormatVideoDev_end (FileFormat *$) {
 
 }
 
@@ -219,15 +219,15 @@ void FormatVideoDev_close (FileFormat *$) {
 FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	struct video_capability vcaps;
 	FileFormat *$ = NEW(FileFormat,1);
-	$->qlass   = &FormatVideoDev;
-	$->frames  = 0;
-	$->frame   = FormatVideoDev_frame;
-	$->size    = FormatVideoDev_size;
-	$->read    = FormatVideoDev_read;
-	$->accept  = FormatVideoDev_accept;
-	$->process = FormatVideoDev_process;
-	$->finish  = FormatVideoDev_finish;
-	$->close   = FormatVideoDev_close;
+	$->qlass  = &FormatVideoDev;
+	$->frames = 0;
+	$->frame  = FormatVideoDev_frame;
+	$->size   = FormatVideoDev_size;
+	$->read   = FormatVideoDev_read;
+	$->begin  = FormatVideoDev_begin;
+	$->flow   = FormatVideoDev_flow;
+	$->end    = FormatVideoDev_end;
+	$->close  = FormatVideoDev_close;
 
 	switch(mode) {
 	case 4: break;
@@ -256,7 +256,7 @@ err:
 }
 
 FileFormatClass FormatVideoDev = {
-	"videodev", "Video4linux", 0,
+	"videodev", "Video4linux 1.x", 0,
 	FormatVideoDev_open, 0, 0,
 };
 

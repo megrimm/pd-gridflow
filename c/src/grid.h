@@ -41,7 +41,6 @@
   what kind of number a Grid contains.
   note that on the other hand, indexing and dimensioning of Grids is
   still done with explicit ints.
-  
 */
 typedef long Number;
 
@@ -97,9 +96,9 @@ struct Dim {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-typedef void (*GridAccept)(GridInlet *$);
-typedef void (*GridProcess)(GridInlet *$, int n, const Number *data);
-typedef void (*GridFinish)(GridInlet *$); /* not there yet! */
+typedef void (*GridBegin)(GridInlet *$);
+typedef void (*GridFlow)(GridInlet *$, int n, const Number *data);
+typedef void (*GridEnd)(GridInlet *$); /* not there yet! */
 
 struct GridInlet {
 	GridObject *parent;
@@ -110,19 +109,18 @@ struct GridInlet {
 
 //	Number *buf; /* packet buffer */
 
-	/* processing functions */
-	GridAccept  accept;
-	GridProcess process;
-	GridFinish  finish; /* not there yet! */
+	/* grid reception functions */
+	GridBegin begin;
+	GridFlow  flow;
+	GridEnd   end;
 
 	int count; /* how many Numbers transferred */
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
-		GridAccept a, GridProcess p);
+		GridBegin a, GridFlow p);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
-	void GridInlet_finish(GridInlet *$);
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware jmax outlet */
@@ -146,11 +144,11 @@ struct GridOutlet {
 	GridObject *GridOutlet_parent(GridOutlet *$);
 	int  GridOutlet_idle   (GridOutlet *$);
 	void GridOutlet_abort  (GridOutlet *$);
-	void GridOutlet_propose(GridOutlet *$, Dim *dim);
+	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
 	int  GridOutlet_send   (GridOutlet *$, int n, const Number *data);
 	int  GridOutlet_send_buffered(GridOutlet *$, int n, const Number *data);
 	void GridOutlet_flush  (GridOutlet *$);
-	/* GridOutlet_end ? */
+	void GridOutlet_end    (GridOutlet *$);
 
 /* **************************************************************** */
 /* GridPacket
@@ -188,7 +186,7 @@ struct GridObject {
 
 	METHOD(GridObject,init);
 	METHOD(GridObject,grid_begin);
-	METHOD(GridObject,grid_packet);
+	METHOD(GridObject,grid_flow);
 	METHOD(GridObject,grid_end);
 
 /* **************************************************************** */
@@ -229,9 +227,9 @@ struct FileFormatClass {
 		read - read actual data: n Numbers.
 		
 	The Write aspect of a format:
-		accept - similar to GridInlet's
-		process - similar to GridInlet's
-		finish - similar to (future) GridInlet's
+		begin - similar to GridInlet's
+		flow  - similar to GridInlet's
+		end   - similar to (future) GridInlet's
 
 	Common aspect:
 		close
@@ -251,9 +249,9 @@ struct FileFormatClass {
 	void   (*size)   (FileFormat *$, int height, int width); \
 	Number*(*read)   (FileFormat *$, int n); \
 	\
-	void   (*accept) (FileFormat *$, Dim *dim); \
-	void   (*process)(FileFormat *$, int n, const Number *data); \
-	void   (*finish) (FileFormat *$); \
+	void   (*begin)(FileFormat *$, Dim *dim); \
+	void   (*flow) (FileFormat *$, int n, const Number *data); \
+	void   (*end)  (FileFormat *$); \
 	\
 	void   (*config) (FileFormat *$, fts_symbol_t *sym, int value); \
 	void   (*close)  (FileFormat *$);

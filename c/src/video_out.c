@@ -32,6 +32,10 @@
 #include "video4jmax.h"
 #include "grid.h"
 
+/*
+	Note: sending images through shared memory doesn't work yet.
+*/
+
 #ifdef VIDEO_OUT_SHM
 	#include <sys/ipc.h>
 	#include <sys/shm.h>
@@ -114,11 +118,10 @@ void display_vout_remove(VideoDisplay *$, VideoOut *vout) {
 
 VideoOut *display_vout_find(VideoDisplay *$, Window wid) {
 	int i;
-	whine("looking for vout that has ->window == %ld", wid);
+	/*whine("looking for vout that has ->window == %ld", wid);*/
 	for (i=0; i<$->vouts_n; i++) {
-		whine("i=%d vout=%p ->window=%p", i, $->vouts[i], $->vouts[i]->window);
 		if ($->vouts[i]->window != wid) continue;
-		whine("found vout [%p] at index %d", $->vouts[i], i);
+		/*whine("found vout [%p] at index %d", $->vouts[i], i);*/
 		return $->vouts[i];
 	}
 	whine("vout not found!");
@@ -130,24 +133,26 @@ void display_set_alarm(VideoDisplay *$);
 void display_alarm(fts_alarm_t *foo, void *obj) {
 	VideoDisplay *$ = (VideoDisplay *)obj;
 	XEvent e;
-/*	int xpending = XPending($->display); */
-	int xpending = XEventsQueued($->display, QueuedAfterReading);
-	while (xpending) {
+	int xpending;
+	
+	while (1) {
+		int xpending = XEventsQueued($->display, QueuedAfterReading);
+		if (!xpending) break;
 		XNextEvent($->display,&e);
-		whine("received event of type # %d", e.type);
 		if (e.type == Expose) {
 			XExposeEvent *ex = (XExposeEvent *)&e;
 			VideoOut *vout;
-			whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
-				ex->y,ex->x,ex->height,ex->width);
+			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
+				ex->y,ex->x,ex->height,ex->width);*/
 			vout = display_vout_find($,ex->window);
 			if (vout) {
 				VideoOut_show_section(vout, ex->x, ex->y, ex->width,
 				ex->height);
 			}
 			
+		} else {
+			whine("received event of type # %d", e.type);
 		}
-		xpending--;
 	}
 	display_set_alarm($);
 }
@@ -157,7 +162,7 @@ void display_set_alarm(VideoDisplay *$) {
 		fts_clock_t *clock = fts_sched_get_clock();
 		$->alarm = fts_alarm_new(clock, display_alarm, $);
 	}
-	fts_alarm_set_delay($->alarm, 1000.0);
+	fts_alarm_set_delay($->alarm, 500.0);
 	fts_alarm_arm($->alarm);
 }
 
@@ -234,7 +239,7 @@ static void VideoOut_show_section(
 	XFlush($->display->display);
 }
 
-void VideoOut_acceptor0(GridInlet *$) {
+void VideoOut_0_begin(GridInlet *$) {
 	VideoOut *parent = (VideoOut *) GridInlet_parent($);
 
 	parent->bufn = 0;
@@ -270,7 +275,7 @@ static uint8 *VideoOut_convert(
 	return target;
 }
 
-void VideoOut_processor0(GridInlet *$, int n, const Number *data) {
+void VideoOut_0_flow(GridInlet *$, int n, const Number *data) {
 	VideoOut *parent = (VideoOut *) GridInlet_parent($);
 
 	int bytes_per_pixel = parent->ximage->bits_per_pixel/8;
@@ -347,7 +352,7 @@ METHOD(VideoOut,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		VideoOut_acceptor0, VideoOut_processor0);
+		VideoOut_0_begin, VideoOut_0_flow);
 
 	COERCE_INT_INTO_RANGE(height,1,MAX_INDICES);
 	COERCE_INT_INTO_RANGE(width, 1,MAX_INDICES);
