@@ -343,6 +343,7 @@ module EventIO
 		@buffer = nil
 		@action = nil
 		@chunksize = nil
+		@rewind_redefined = false
 		super
 	end
 
@@ -407,10 +408,12 @@ module EventIO
 		when :gzfile
 			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
+			close
 			@stream = File.open filename, fmode
 			if mode==:in then
 				r,w = IO.pipe
-				if fork
+				if pid=fork
+					GridFlow.subprocesses[pid]=true
 					w.close
 					@stream = r
 				else
@@ -422,7 +425,8 @@ module EventIO
 				end
 			else # mode==:out
 				r,w = IO.pipe
-				if fork
+				if pid=fork
+					GridFlow.subprocesses[pid]=true
 					r.close
 					@stream = w
 				else
@@ -434,10 +438,11 @@ module EventIO
 				end
 			end
 			def self.rewind
-				@stream.close
+				GridFlow.post "self.rewind"
 				raw_open(*@raw_open_args)
 				@frame = 0
-			end unless singleton_methods.include? "rewind"
+			end unless @rewind_redefined
+			@rewind_redefined = true
 		when :tcp
 			if VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
@@ -466,6 +471,7 @@ module EventIO
 	def close
 		@acceptor.close if @acceptor
 		@stream.close if @stream
+		GridFlow.hunt_zombies
 	end
 end
 

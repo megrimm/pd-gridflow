@@ -100,11 +100,27 @@ class<<self
 	attr_reader :alloc_set
 	attr_reader :fobjects_set
 	attr_reader :cpu_hertz
+	attr_reader :subprocesses
 	alias gfpost post
 end
 
+@subprocesses={}
 @verbose=false
 @data_path=[]
+
+def self.hunt_zombies
+	#STDERR.puts "GridFlow.hunt_zombies"
+	# the $$ value is bogus
+	begin
+		died = []
+		subprocesses.each {|x,v|
+			Process.waitpid2(x,Process::WNOHANG) and died<<x
+		}
+	rescue Errno::ECHILD
+	end
+	STDERR.puts died.inspect
+	died.each {|x| subprocesses.delete x }
+end
 
 self.post_header = "[gf] "
 
