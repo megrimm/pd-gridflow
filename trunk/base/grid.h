@@ -211,7 +211,7 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 /* greatest common divisor, by euclid's algorithm */
 /* this runs in log(a+b) */
 template <class T>
-static void gcd (T a, T b) {
+static T gcd (T a, T b) {
 	while (b) {
 		T c=mod(a,b);
 		a=b;
@@ -223,7 +223,7 @@ static void gcd (T a, T b) {
 /* least common multiple */
 /* this runs in log(a+b) */
 template <class T>
-static inline void lcm (T a, T b) {
+static inline T lcm (T a, T b) {
 	return a*b/gcd(a,b);
 }
 
@@ -331,6 +331,25 @@ public:
 #endif
 		return p[i];
 	}
+
+	void will_use(int k) {
+#ifdef HAVE_DEBUG_HARDER
+		if (!(p>=start && p<start+n)) {
+			fprintf(stderr,
+				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)p,(long)start,(long)start+n);
+			raise(11);
+		}
+		T *q = p+k-1;
+		if (!(q>=start && q<start+n)) {
+			fprintf(stderr,
+				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)q,(long)start,(long)start+n);
+			raise(11);
+		}
+#endif
+	}
+
 	operator bool   () { return (bool   )p; }
 	operator void  *() { return (void  *)p; }
 	operator uint8 *() { return (uint8 *)p; }
@@ -529,8 +548,9 @@ struct Operator1 {
 	MAKE_TYPE_ENTRY(float32)
 #undef MAKE_TYPE_ENTRY
 //public:
-	template <class T> inline void map(int n, Pt<T> a) {
-		on(*a)->op_map(n,(T *)a);}
+	template <class T> inline void map(int n, Pt<T> as) {
+		as.will_use(n);
+		on(*as)->op_map(n,(T *)as);}
 };
 
 template <class T>
@@ -558,17 +578,26 @@ struct Operator2 {
 	MAKE_TYPE_ENTRY(float32)
 #undef MAKE_TYPE_ENTRY
 //public:
-	template <class T> inline void map(int n, Pt<T> a, T b) {
-		on(*a)->op_map(n,(T *)a,b);}
-	template <class T> inline void zip(int n, Pt<T> a, Pt<T> b) {
-		on(*a)->op_zip(n,(T *)a,(T *)b);}
-	template <class T> inline T fold(T a, int n, Pt<T> b) {
-		return on(a)->op_fold(a,n,(T *)b);}
+	template <class T> inline void map(int n, Pt<T> as, T b) {
+		as.will_use(n);
+		on(*as)->op_map(n,(T *)as,b);}
+	template <class T> inline void zip(int n, Pt<T> as, Pt<T> bs) {
+		as.will_use(n);
+		bs.will_use(n);
+		on(*as)->op_zip(n,(T *)as,(T *)bs);}
+	template <class T> inline T fold(T a, int n, Pt<T> bs) {
+		bs.will_use(n);
+		return on(a)->op_fold(a,n,(T *)bs);}
 	template <class T> inline void fold2(int an, Pt<T> as, int n, Pt<T> bs) {
+		as.will_use(an);
+		bs.will_use(an*n);
 		on(*as)->op_fold2(an,(T *)as,n,(T *)bs);}
-	template <class T> inline T scan(T a, int n, Pt<T> b) {
-		on(a)->op_scan(a,n,(T *)b);}
+	template <class T> inline T scan(T a, int n, Pt<T> bs) {
+		b.will_use(n);
+		on(a)->op_scan(a,n,(T *)bs);}
 	template <class T> inline void scan2(int an, Pt<T> as, int n, Pt<T> bs) {
+		as.will_use(an);
+		bs.will_use(an*n);
 		on(*as)->op_scan2(an,(T *)as,n,(T *)bs);}
 };
 
@@ -662,6 +691,32 @@ struct Grid {
 
 /* macro for defining a gridinlet's behaviour as just storage */
 #define GRID_INPUT(_class_,_inlet_,_member_) \
+GRID_INLET(_class_,_inlet_) { \
+_member_.init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+GRID_FLOW { \
+COPY(&((Pt<T>)_member_)[in->dex], data, n); } \
+GRID_FINISH
+
+/* macro for defining a gridinlet's behaviour as just storage */
+#define GRID_INPUT2(_class_,_inlet_,_member_) \
+	GRID_INLET(_class_,_inlet_) { \
+		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
+		if (is_busy_except(in)) { \
+			/*gfpost("object busy (backstoring data)"); */\
+			if (_member_.next != &_member_) { \
+				/*RAISE("object busy and backstore busy (aborting)");*/ \
+				delete _member_.next; \
+			} \
+			_member_.next = new Grid(); \
+			_member_.next->dc = _member_.dc; \
+		} \
+		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
+	GRID_FLOW { \
+		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
+	GRID_FINISH
+
+/* macro for defining a gridinlet's behaviour as just storage */
+#define GRID_INPUT2(_class_,_inlet_,_member_) \
 	GRID_INLET(_class_,_inlet_) { \
 		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
 		if (is_busy_except(in)) { \

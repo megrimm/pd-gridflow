@@ -776,6 +776,7 @@ end
 	GridFlow.verbose=false
 	task=proc {
 		o4.send_in 1, 5000*x
+		o5.send_in 1, 200+200*sin(x)
 		poly.send_in 1,:list,:uint8, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
 		o1.send_in 0
 		store.send_in 0
