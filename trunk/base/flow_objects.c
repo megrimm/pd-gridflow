@@ -393,12 +393,12 @@ GRID_INLET(GridStore,0) {
 } GRID_END
 
 GRID_INLET(GridStore,1) {
+	NumberTypeE nt = NumberTypeE_type_of(*data);
 	if (!put_at) { // reassign
-		if (is_busy_except(in)) {
-			r.next = new Grid(in->dim,NumberTypeE_type_of(*data));
-		} else {
-			r = new Grid(in->dim,NumberTypeE_type_of(*data));
-		}
+		if (in[0].is_busy())
+			r.next = new Grid(in->dim,nt);
+		else
+			r = new Grid(in->dim,nt);
 		return;
 	}
 	// put_at ( ... )
@@ -1116,6 +1116,7 @@ struct GridJoin : GridObject {
 };
 
 GRID_INLET(GridJoin,0) {
+	L
 	NOTEMPTY(r);
 	SAME_TYPE(in,r);
 	P<Dim> d = in->dim;
@@ -1137,6 +1138,7 @@ GRID_INLET(GridJoin,0) {
 	out=new GridOutlet(this,0,new Dim(d->n,v),in->nt);
 	if (d->prod(w)) in->set_factor(d->prod(w));
 } GRID_FLOW {
+	L
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
 	int a = in->factor();
@@ -1168,11 +1170,12 @@ GRID_INLET(GridJoin,0) {
 		}
 	}
 } GRID_FINISH {
+	L
 	if (in->dim->prod()==0) out->send(r->dim->prod(),(Pt<T>)*r);
 	out=0;
 } GRID_END
 
-GRID_INPUT(GridJoin,1,r) {} GRID_END
+GRID_INPUT(GridJoin,1,r) {L} GRID_END
 
 \def void initialize (int which_dim, Grid *r) {
 	rb_call_super(argc,argv);

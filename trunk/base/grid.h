@@ -386,13 +386,15 @@ public:
 	P(const P<T> &_p) { p = _p.p; INCR; }
 	P<T> &operator =(T *  _p) { DECR; p=_p;   INCR; return *this; }
 	P<T> &operator =(P<T> _p) { DECR; p=_p.p; INCR; return *this; }
+	bool operator ==(P<T> _p) { return p == _p.p; }
+	bool operator !=(P<T> _p) { return p != _p.p; }
 	~P() { DECR; }
 	bool operator !(){ return  !p; }
 	operator bool()  { return !!p; }
 	T &operator *()  { return  *p; }
 	T *operator ->() { return   p; }
-#undef INCR
-#undef DECR
+//#undef INCR
+//#undef DECR
 };
 
 #ifndef IS_BRIDGE
@@ -924,17 +926,8 @@ struct PtrGrid : public P<Grid> {
 	P<Grid> next;
 //hacks
 	PtrGrid() : P<Grid>(), dc(0), next(0) {}
-	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {
-		p=_p.p;
-		if (p) p->refcount++;
-	}
-	PtrGrid &operator =(Grid *_p) {
-		if (p) {p->refcount--; if (!p->refcount) delete p;}
-		p=_p;
-		if (p) p->refcount++;
-		return *this;
-	}
-	//~PtrGrid() {if (p) { p->refcount--; }}
+	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {p=_p.p; INCR;}
+	PtrGrid &operator =(Grid *_p) {DECR; p=_p; INCR; return *this;}
 };
 
 //****************************************************************
@@ -1017,20 +1010,19 @@ struct GridInlet : CObject {
 // context information
 	GridObject *parent;
 	const GridHandler *gh;
+	GridObject *sender;
 // grid progress info
 	P<Dim> dim;
 	NumberTypeE nt;
 	int dex;
-// grid receptor
+// buffering
 	//Pt<int32> (*get_target)(GridInlet *self);
 	PtrGrid buf;// factor-chunk buffer
 	int bufi;   // buffer index: how much of buf is filled
-// extra
-	GridObject *sender;
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
-		parent(parent_), gh(gh_),
-		dim(0), nt(int32_e), dex(0), buf(), bufi(0), sender(0) {}
+		parent(parent_), gh(gh_), sender(0),
+		dim(0), nt(int32_e), dex(0), buf(), bufi(0) {}
 	~GridInlet() {}
 	void set_factor(int factor);
 	int32 factor() {return buf?buf->dim->prod():1;}
