@@ -73,11 +73,11 @@
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul><li><a href="#rtmetro">rtmetro</a></li>
 <li><a href="#@global">@global</a></li>
 </ul>
-<h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul><li><a href="#format ppm @in/@out"><img src="images/format/ppm.jpg" alt="[open ppm file filename.ppm]" border="0"></a></li>
-<li><a href="#format targa @in"><img src="images/format/tga.jpg" alt="[open targa file filename.tga]" border="0"></a></li>
-<li><a href="#format videodev @in"><img src="images/format/videodev.jpg" alt="[open videodev /dev/video0]" border="0"></a></li>
-<li><a href="#format x11 @in/@out"><img src="images/format/x11.jpg" alt="[open x11 here]" border="0"></a></li>
-<li><a href="#format grid @in/@out"><img src="images/format/grid.jpg" alt="[open grid file filename.grid]" border="0"></a></li>
+<h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul><li><a href="#format ppm @in/@out"><img src="images/format_ppm.jpg" alt="[open ppm file filename.ppm]" border="0"></a></li>
+<li><a href="#format targa @in"><img src="images/format_targa.jpg" alt="[open targa file filename.tga]" border="0"></a></li>
+<li><a href="#format grid @in/@out"><img src="images/format_grid.jpg" alt="[open grid file filename.grid]" border="0"></a></li>
+<li><a href="#format videodev @in"><img src="images/format_videodev.jpg" alt="[open videodev /dev/video0]" border="0"></a></li>
+<li><a href="#format x11 @in/@out"><img src="images/format_x11.jpg" alt="[open x11 here]" border="0"></a></li>
 </ul>
 <br><br>
 </td></tr>
@@ -2103,7 +2103,7 @@ duplicated.</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format ppm @in/@out">format ppm @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/ppm.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format ppm @in/@out">format ppm @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format_ppm.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -2127,11 +2127,19 @@ duplicated.</p>
 
 		<br>
 
+
+
+		<br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b>
+
+			values 0-255
+
+		<br><br>
+
 	<br></td>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in">format targa @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/tga.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format targa @in">format targa @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format_targa.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -2151,11 +2159,91 @@ duplicated.</p>
 
 		<br>
 
+
+
+		<br><b>grid</b> <b>dim(</b>rows columns 3<b>)</b>
+
+			values 0-255
+
+		<br><br>
+
 	<br></td>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/videodev.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format grid @in/@out">format grid @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format_grid.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+
+		
+
+		
+
+
+
+		<br><b>method</b> open file <b>(</b>filename<b>)</b>
+
+			
+
+			opens the specified file, taken from the current
+
+			directory or one of the jMax-specified data directories.
+
+		<br>
+
+		<br><b>method</b> open tcp <b>(</b>hostname<b>,</b>port<b>)</b>
+
+			
+
+			
+
+			dials an specified hostname/port on the InterNet or
+
+			compatible network. the TCP protocol is used.
+
+		<br>
+
+		<br><b>method</b> open tcpd <b>(</b>port<b>)</b>
+
+			
+
+			future use:
+
+			waits for a call (and answers) for this port on the
+
+			local machine via InterNet or compatible network.
+
+			Answers the call.
+
+		<br>
+
+
+
+		<p>
+
+		This is GridFlow's special file format. This is the only I/O
+
+		format that can hold absolutely anything that the [@store] object can.
+
+		However this can only be stored in 32 bits-per-value.
+
+		</p>
+
+		<p>
+
+		This is the only picture format that currently supports TCP
+
+		connections. This is still somewhat clunky: the socket only
+
+		opens in client mode only; and upon bang, jMax freezes until
+
+		the whole grid is received.
+
+		</p>
+
+	<br></td>
+
+
+
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format_videodev.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 
 		
 
@@ -2223,7 +2311,7 @@ duplicated.</p>
 
 
 
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/x11.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a><br clear="left"><br></td><td><br>
+	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format x11 @in/@out">format x11 @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format_x11.jpg"><br clear="left"><br><br><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" border="0"></a><br clear="left"><br></td><td><br>
 
 
 
@@ -2394,40 +2482,6 @@ duplicated.</p>
 		
 
 	<br></td>
-
-
-
-	<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format grid @in/@out">format grid @in/@out</a></td></tr><tr><td></td><td valign='top'><br><img src="images/format/grid.jpg"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-
-		
-
-		
-
-		<p>
-
-		This is GridFlow's special file format. This is the only I/O
-
-		format that can hold absolutely anything that the [@store] object can.
-
-		However this can only be stored in 32 bits-per-value.
-
-		</p>
-
-		<p>
-
-		This is the only picture format that currently supports TCP
-
-		connections. This is still somewhat clunky: the socket only
-
-		opens in client mode only; and upon bang, jMax freezes until
-
-		the whole grid is received.
-
-		</p>
-
-	<br></td>
-
-
 
 <tr><td>&nbsp;</td></tr>
 
