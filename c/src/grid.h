@@ -461,7 +461,7 @@ struct GridInlet {
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 	void GridInlet_set_factor(GridInlet *$, int factor);
-	bool GridInlet_idle(GridInlet *$);
+	bool GridInlet_busy(GridInlet *$);
 
 #define GridInlet_NEW3(_parent_,_class_,_winlet_) \
 	GridInlet_new((GridObject *)_parent_, _winlet_, \
@@ -503,7 +503,7 @@ struct GridOutlet {
 	GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
 	void GridOutlet_delete(GridOutlet *$);
 	GridObject *GridOutlet_parent(GridOutlet *$);
-	bool GridOutlet_idle   (GridOutlet *$);
+	bool GridOutlet_busy   (GridOutlet *$);
 
 	void GridOutlet_begin  (GridOutlet *$, Dim *dim);
 	void GridOutlet_abort  (GridOutlet *$);

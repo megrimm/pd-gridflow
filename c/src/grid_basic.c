@@ -41,7 +41,7 @@ GRID_FLOW(GridImport,0) {
 	GridOutlet *out = $->out[0];
 	while (n) {
 		int n2;
-		if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
+		if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
 		n2 = Dim_prod(out->dim) - out->dex;
 		if (n2 > n) n2 = n;
 		GridOutlet_send(out,n,data);
@@ -100,7 +100,7 @@ METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
 	Number data[] = { GET(0,int,0) };
 	ENTER;
-	if (GridOutlet_idle(out)) GridOutlet_begin(out,Dim_dup($->dim));
+	if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
 	GridOutlet_send(out,ARRAY(data));
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
 	LEAVE;
@@ -108,7 +108,7 @@ METHOD(GridImport,int) {
 
 METHOD(GridImport,reset) {
 	GridOutlet *out = $->out[0];
-	if (!GridOutlet_idle(out)) GridOutlet_abort(out);
+	if (GridOutlet_busy(out)) GridOutlet_abort(out);
 }
 
 CLASS(GridImport) {

@@ -72,21 +72,21 @@ void GridInlet_abort(GridInlet *$) {
 	$->dex = 0;
 }
 
-bool GridInlet_idle(GridInlet *$) {
+bool GridInlet_busy(GridInlet *$) {
 	assert($);
-	return !$->dim;
+	return !!$->dim;
 }
 
-bool GridInlet_idle_verbose(GridInlet *$, const char *where) {
+bool GridInlet_busy_verbose(GridInlet *$, const char *where) {
 	assert($);
 	if (!$->dim) {
 		whine("%s:i%d(%s): no dim", INFO($), where);
 	} else if (!$->flow && !$->flow2) {
 		whine("%s:i%d(%s): no flow()", INFO($), where);
 	} else {
-		return 0;
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 void GridInlet_set_factor(GridInlet *$, int factor) {
@@ -105,8 +105,8 @@ void GridInlet_begin(GridInlet *$, ATOMLIST) {
 	int *v = NEW(int,ac-1);
 	GridOutlet *back_out = (GridOutlet *) GET(0,ptr,(void *)0xDeadBeef);
 
-	if (!GridInlet_idle($)) {
-		whine("grid inlet not idle (aborting previous grid)");
+	if (GridInlet_busy($)) {
+		whine("grid inlet busy (aborting previous grid)");
 		GridInlet_abort($);
 	}
 
@@ -132,7 +132,7 @@ err:
 void GridInlet_flow(GridInlet *$, ATOMLIST) {
 	int n = GET(0,int,-1);
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
-	if (GridInlet_idle_verbose($,"flow")) return;
+	if (!GridInlet_busy_verbose($,"flow")) return;
 	assert(n>0);
 	{
 		int d = $->dex + $->bufn;
@@ -180,7 +180,7 @@ void GridInlet_flow(GridInlet *$, ATOMLIST) {
 void GridInlet_flow2(GridInlet *$, ATOMLIST) {
 	int n = GET(0,int,-1);
 	Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
-	if (GridInlet_idle_verbose($,"flow2")) return;
+	if (!GridInlet_busy_verbose($,"flow2")) return;
 	assert(n>0);
 	assert($->factor==1);
 	assert($->flow || $->flow2);
@@ -193,7 +193,7 @@ void GridInlet_flow2(GridInlet *$, ATOMLIST) {
 }
 
 void GridInlet_end(GridInlet *$, ATOMLIST) {
-	if (GridInlet_idle_verbose($,"end")) return;
+	if (!GridInlet_busy_verbose($,"end")) return;
 /*	whine("%s:i%d: GridInlet_end()", INFO($)); */
 	if (Dim_prod($->dim) != $->dex) {
 		whine("%s:i%d: incomplete grid: %d of %d", INFO($),
@@ -252,14 +252,14 @@ GridObject *GridOutlet_parent(GridOutlet *$) {
 	return $->parent;
 }
 
-bool GridOutlet_idle(GridOutlet *$) {
+bool GridOutlet_busy(GridOutlet *$) {
 	assert($);
-	return !$->dim;
+	return !!$->dim;
 }
 
 void GridOutlet_abort(GridOutlet *$) {
 	assert($);
-	if (GridOutlet_idle($)) return;
+	if (!GridOutlet_busy($)) return;
 	FREE($->dim);
 	$->dim = 0;
 	$->dex = 0;
@@ -270,7 +270,7 @@ void GridOutlet_abort(GridOutlet *$) {
 
 void GridOutlet_end(GridOutlet *$) {
 	assert($);
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	GridOutlet_flush($);
 	LEAVE_P;
 	fts_outlet_send(OBJ($->parent),$->woutlet,sym_grid_end,0,0);
@@ -288,7 +288,7 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 
 	assert($);
 
-	/* if (!GridOutlet_idle($)) GridOutlet_abort($); */
+	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
 
 	$->dim = dim;
 	$->dex = 0;
@@ -309,7 +309,7 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 	int incr;
 
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
 		fts_atom_t a[2];
@@ -325,7 +325,7 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 }
 
 void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	$->dex += n;
 	assert($->dex <= Dim_prod($->dim));
 	if (n > gf_max_packet_length/2 || $->bufn + n > gf_max_packet_length) {
@@ -340,7 +340,7 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 }
 
 void GridOutlet_give(GridOutlet *$, int n, Number *data) {
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	$->dex += n;
 	assert($->dex <= Dim_prod($->dim));
 	GridOutlet_flush($);
@@ -360,13 +360,13 @@ void GridOutlet_give(GridOutlet *$, int n, Number *data) {
 }
 
 void GridOutlet_flush(GridOutlet *$) {
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	GridOutlet_send_direct($,$->bufn,$->buf);
 	$->bufn = 0;
 }
 
 void GridOutlet_callback(GridOutlet *$, GridInlet *in, int mode) {
-	assert(!GridOutlet_idle($));
+	assert(GridOutlet_busy($));
 	assert(!$->frozen);
 	assert(mode==6 || mode==4);
 	/* whine("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
