@@ -120,6 +120,7 @@ METHOD(VideoInFile,bang) {
 		GridOutlet_send($->out[0],bs,data);
 		FREE(data);
 	}
+	GridOutlet_end($->out[0]);
 	return;
 err:
 	return;
