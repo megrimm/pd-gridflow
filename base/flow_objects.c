@@ -453,95 +453,93 @@ GRID_INPUT2(GridOp,1,r) {} GRID_END
 \end class GridOp
 
 //****************************************************************
-//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,*Cs]<T> }
 \class GridFold < GridObject
 struct GridFold : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop *op, Grid *seed=0);
+	\decl void initialize (Numop *op);
+	\decl void _0_op (Numop *op);
+	\decl void _0_seed (Grid *seed);
 	\grin 0
-	\grin 1
 };
 
 GRID_INLET(GridFold,0) {
-	SAME_TYPE(in,seed);
+	//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,*Cs]<T> }
+	if (seed) SAME_TYPE(in,seed);
 	int an = in->dim->n;
-	int bn = seed->dim->n;
-	if (an<=bn) RAISE("minimum 1 more dimension than the right hand "
-		"(%d vs %d)",an,bn);
+	int bn = seed?seed->dim->n:0;
+	if (an<=bn) RAISE("minimum 1 more dimension than the seed (%d vs %d)",an,bn);
 	STACK_ARRAY(int32,v,an-1);
 	int yi = an-bn-1;
 	COPY(v,in->dim->v,yi);
 	COPY(v+yi,in->dim->v+an-bn,bn);
-	SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
+	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
 	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
-	in->set_factor(in->dim->get(yi)*seed->dim->prod());
+	int k = seed ? seed->dim->prod() : 1;
+	in->set_factor(in->dim->get(yi)*k);
 } GRID_FLOW {
 	int an = in->dim->n;
-	int bn = seed->dim->n;
+	int bn = seed?seed->dim->n:0;
 	int yn = in->dim->v[an-bn-1];
 	int zn = in->dim->prod(an-bn);
 	STACK_ARRAY(T,buf,n/yn);
 	int nn=n;
 	int yzn=yn*zn;
 	for (int i=0; n; i+=zn, data+=yzn, n-=yzn) {
-		COPY(buf+i,((Pt<T>)*seed),zn);
+		if (seed) COPY(buf+i,((Pt<T>)*seed),zn);
+		else CLEAR(buf+i,zn);
 		op->fold(zn,yn,buf+i,data);
 	}
 	out->send(nn/yn,buf);
 } GRID_END
 
-GRID_INPUT(GridFold,1,seed) {} GRID_END
-
-\def void initialize (Numop *op, Grid *seed=0) {
-	rb_call_super(argc,argv);
-	this->op = op;
-	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
-}
-
-\classinfo { IEVAL(rself,"install '@fold',2,1"); }
+\def void _0_op   (Numop *op ) { this->op  =op;   }
+\def void _0_seed (Grid *seed) { this->seed=seed; }
+\def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
+\classinfo { IEVAL(rself,"install '#fold',1,1"); }
 \end class GridFold
 
-//****************************************************************
-//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,B,*Cs]<T> }
 \class GridScan < GridObject
 struct GridScan : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop *op, Grid *seed=0);
+	\decl void initialize (Numop *op);
+	\decl void _0_op (Numop *op);
+	\decl void _0_seed (Grid *seed);
 	\grin 0
-	\grin 1
 };
 
 GRID_INLET(GridScan,0) {
-	SAME_TYPE(in,seed);
+	//{ Dim[*As,B,*Cs]<T>,Dim[*Cs]<T> -> Dim[*As,B,*Cs]<T> }
+	if (seed) SAME_TYPE(in,seed);
 	int an = in->dim->n;
-	int bn = seed->dim->n;
+	int bn = seed?seed->dim->n:0;
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
-	SAME_DIM(bn,in->dim,an-bn,seed->dim,0);
+	if (seed) SAME_DIM(bn,in->dim,an-bn,seed->dim,0);
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_factor(in->dim->prod(an-bn-1));
 } GRID_FLOW {
 	int an = in->dim->n;
-	int bn = seed->dim->n;
+	int bn = seed?seed->dim->n:0;
 	int yn = in->dim->v[an-bn-1];
 	int zn = in->dim->prod(an-bn);
 	int factor = in->factor();
 	STACK_ARRAY(T,buf,n);
 	COPY(buf,data,n);
-	for (int i=0; i<n; i+=factor) op->scan(zn,yn,(Pt<T>)*seed,buf+i);
+	if (seed) {
+		for (int i=0; i<n; i+=factor) op->scan(zn,yn,(Pt<T>)*seed,buf+i);
+	} else {
+		STACK_ARRAY(T,seed,zn);
+		CLEAR(seed,zn);
+		for (int i=0; i<n; i+=factor) op->scan(zn,yn,seed,buf+i);
+	}
 	out->send(n,buf);
 } GRID_END
 
-GRID_INPUT(GridScan,1,seed) {} GRID_END
-
-\def void initialize (Numop *op, Grid *seed=0) {
-	rb_call_super(argc,argv);
-	this->op = op;
-	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
-}
-
-\classinfo { IEVAL(rself,"install '@scan',2,1"); }
+\def void _0_op   (Numop *op ) { this->op  =op;   }
+\def void _0_seed (Grid *seed) { this->seed=seed; }
+\def void initialize (Numop *op) { rb_call_super(argc,argv); this->op = op; }
+\classinfo { IEVAL(rself,"install '#scan',1,1"); }
 \end class GridScan
 
 //****************************************************************
@@ -554,9 +552,12 @@ struct GridInner : GridObject {
 	PtrGrid r;
 	PtrGrid r2;
 	GridInner() {}
-	\decl void initialize (Numop *op_para=op_mul, Numop *op_fold=op_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Grid *r=0);
+	\decl void _0_op   (Numop *op);
+	\decl void _0_fold (Numop *op);
+	\decl void _0_seed (Grid *seed);
 	\grin 0
-	\grin 2
+	\grin 1
 };
 
 #define MAX_PACKET_SIZE (1<<11)
@@ -614,17 +615,20 @@ GRID_INLET(GridInner,0) {
 	r2=0;
 } GRID_END
 
-GRID_INPUT(GridInner,2,r) {} GRID_END
+GRID_INPUT(GridInner,1,r) {} GRID_END
 
-\def void initialize (Numop *op_para, Numop *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	this->op_para = op_para;
-	this->op_fold = op_fold;
-	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
-	this->r    = r    ? r    : new Grid(new Dim(),int32_e,true);
+	this->op_para = op_mul;
+	this->op_fold = op_add;
+	this->seed = new Grid(new Dim(),int32_e,true);
+	this->r    = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '@inner',3,1"); }
+\def void _0_op   (Numop *op ) { this->op_para=op; }
+\def void _0_fold (Numop *op ) { this->op_fold=op; }
+\def void _0_seed (Grid *seed) { this->seed=seed; }
+\classinfo { IEVAL(rself,"install '#inner',2,1"); }
 \end class GridInner
 
 /* **************************************************************** */

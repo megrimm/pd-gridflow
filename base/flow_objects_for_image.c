@@ -57,12 +57,15 @@ struct GridConvolve : GridObject {
 	PlanEntry *plan; //Pt?
 	int margx,margy; // margins
 	GridConvolve () : plan(0) { b.constrain(expect_convolution_matrix); plan=0; }
-	\decl void initialize (Numop *op_para=op_mul, Numop *op_fold=op_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Grid *r=0);
+	\decl void _0_op   (Numop *op);
+	\decl void _0_fold (Numop *op);
+	\decl void _0_seed (Grid *seed);
+	\grin 0
+	\grin 1
 	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
 	~GridConvolve () {if (plan) delete[] plan;}
-	\grin 0
-	\grin 1
 };
 
 template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x) {
@@ -156,15 +159,19 @@ GRID_INLET(GridConvolve,0) {
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void initialize (Numop *op_para, Numop *op_fold, Grid *seed, Grid *r) {
+\def void _0_op   (Numop *op ) { this->op_para=op; }
+\def void _0_fold (Numop *op ) { this->op_fold=op; }
+\def void _0_seed (Grid *seed) { this->seed=seed; }
+
+\def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	this->op_para = op_para;
-	this->op_fold = op_fold;
-	this->seed = seed ? seed : new Grid(new Dim(),int32_e,true);
-	if (r) this->b=r;
+	this->op_para = op_mul;
+	this->op_fold = op_add;
+	this->seed = new Grid(new Dim(),int32_e,true);
+	this->b= r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '@convolve',2,1"); }
+\classinfo { IEVAL(rself,"install '#convolve',2,1"); }
 \end class GridConvolve
 
 /* ---------------------------------------------------------------- */
