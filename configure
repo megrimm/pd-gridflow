@@ -104,6 +104,7 @@ $conf={
 		:RUBY_PREFIX => CONFIG['sitedir'],
 		:PREFIX => "/usr/local",
 	},
+	:CC => "g++",
 	:OBJS => [],
 }
 
@@ -133,7 +134,7 @@ def c_test code, *link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
-	command = ["/usr/bin/env", "g++"]
+	command = ["/usr/bin/env", $conf[:CC]]
 	command.concat $CFLAGS.split(/ /).reject{|x| x.length==0 }
 	command.concat ["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]
 	launch2 log,*command or return false
@@ -545,6 +546,8 @@ while ARGV.length>0 do
 	when "--help"; usage; exit 0
 	when "--prefix", "--ruby-prefix"
 		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift+"/lib/ruby/site_ruby"
+	when "--use-compiler"
+		$conf[:CC] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -676,9 +679,9 @@ def my_install_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\t$(INSTALL_DATA) #{base+name} $(RUBYDESTDIR)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DATA) #{base+name} $(RUBYDESTDIR2)/gridflow/#{base+name}"
     when :directory
-      f.puts "\t$(INSTALL_DIR) $(RUBYDESTDIR)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DIR) $(RUBYDESTDIR2)/gridflow/#{base+name}"
       my_install_files(f,base+name,rest) 
     end
   }
@@ -688,7 +691,7 @@ def my_uninstall_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\trm $(RUBYDESTDIR)/gridflow/#{base+name}"
+      f.puts "\trm $(RUBYDESTDIR2)/gridflow/#{base+name}"
     when :directory
       my_uninstall_files(f,base+name,rest) 
     end
@@ -696,7 +699,7 @@ def my_uninstall_files(f,base,entries)
 end
 
 def make_makefile f
-    f.puts "RUBYDESTDIR = " + make_expand(sprintf("%s/%s.%s",
+    f.puts "RUBYDESTDIR2 = " + make_expand(sprintf("%s/%s.%s",
 		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
 	puts ""
     f.puts "RUBY = #{RUBY}"
@@ -801,7 +804,7 @@ mf.sub! /^install:.*/, "install: install2 site-install"
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
-mf.sub! /CC = gcc\n/, "CC = g++\n"
+mf.sub! /CC = gcc\n/, "CC = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
