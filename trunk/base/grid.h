@@ -233,6 +233,7 @@ typedef struct MethodDecl {
 //	MethodDecl *next;
 //	static MethodDecl *gf_all_methods;
 
+	MethodDecl() {} /* unused but required. new C++ makes no sense */
 	MethodDecl(const char *qlass, const char *selector, RMethod method) {
 		this->qlass = qlass;
 		this->selector = selector;
