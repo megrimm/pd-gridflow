@@ -62,7 +62,7 @@ struct GridConvolve : GridObject {
 
 	Grid c,b;
 	bool mode;
-	int margx,margy,margx2,margy2; /* margins */
+	int margx,margy,margx2; /* margins */
 	GridConvolve () { b.constrain(expect_convolution_matrix); }	
 	\decl void initialize (Operator2 *op_para=op2_mul, Operator2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	\decl void mode_m (int m);
@@ -87,9 +87,7 @@ GRID_INLET(GridConvolve,0) {
 	COPY(v,da->v,da->n);
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
-	margy2 = db->get(0)-1-margy;
 	margx2 = db->get(1)-1-margx;
-	v[0] += db->get(0)-1;
 	v[1] += db->get(1)-1;
 	c.init(new Dim(da->n,v),in->nt);
 	out[0]->begin(da->dup(),in->nt);
@@ -103,7 +101,7 @@ GRID_INLET(GridConvolve,0) {
 	int l  = dc->prod(2); /* "pixel" length of a,c */
 	int oy = ll*(my/2), ox = l*(mx/2);
 	int i = in->dex / factor; /* line number of a */
-	Pt<T> base = ((Pt<T>)c)+(i+margy)*ll+margx*l;
+	Pt<T> base = ((Pt<T>)c)+i*ll+margx*l;
 	
 	/* building c from a */
 	while (n) {
@@ -120,49 +118,23 @@ GRID_INLET(GridConvolve,0) {
 	int ll = dc->prod(1);
 	Pt<T> cp = (Pt<T>)c;
 
-	/* finishing building c from a */
-	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
-	COPY(cp+(margy+da->get(0))*ll,cp+margy*ll,    margy2*ll);
-	switch (mode) {
-	case 0:{
-		
-	STACK_ARRAY(T,buf3,l);
-	STACK_ARRAY(T,buf2,l*dbx*dby);
-	STACK_ARRAY(T,buf ,l*dbx*dby);
-	Pt<T> q=buf2;
-	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=((Pt<T>)b)[i];
-	for (int iy=0; iy<day; iy++) {
-		for (int ix=0; ix<dax; ix++) {
-			Pt<T> p = ((Pt<T>)c) + iy*ll + ix*l;
-			Pt<T> r = buf;
-			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
-			for (int i=l-1; i>=0; i--) buf3[i]=*(T *)seed;
-			op_para->zip(l*dbx*dby,buf,buf2);
-			op_fold->fold(l,dbx*dby,buf3,buf);
-			out[0]->send(l,buf3);
-		}
-	}
-	
-	}break;
-	case 1:{
-
 	int n = da->prod(1);
 	STACK_ARRAY(T,buf,n);
 	STACK_ARRAY(T,buf2,n);
 	for (int iy=0; iy<day; iy++) {
 		for (int i=0; i<n; i++) buf[i]=*(T *)seed;
 		for (int jy=0; jy<dby; jy++) {
+			int y = mod(iy+jy-margy,day);
 			for (int jx=0; jx<dbx; jx++) {
-				Pt<T> p = ((Pt<T>)c) + (iy+jy)*ll + jx*l;
-				COPY(buf2,p,n);
-				op_para->map(n,buf2,((Pt<T>)b)[jy*dbx+jx]);
+				COPY(buf2,cp+y*ll+jx*l,n);
+				T rh = ((Pt<T>)b)[jy*dbx+jx];
+				bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
+				//fprintf(stderr,"neutral?(%d) #=> %d\n",(int)rh,(int)neutral);
+				if (!neutral) op_para->map(n,buf2,rh);
 				op_fold->zip(n,buf,buf2);
 			}
 		}
 		out[0]->send(n,buf);
-	}
-	
-	}break;
 	}
 	
 	c.del();
@@ -181,7 +153,8 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
-	this->seed = *seed;
+	if (seed) this->seed = *seed;
+	else this->seed.init_clear(new Dim(0,0),int32_type_i);
 	this->mode = 1;
 	if (r) this->b.swallow(r);
 }

@@ -692,8 +692,6 @@ EACH_NUMBER_TYPE(FOO)
 };
 \end class
 
-static bool always_false () {return false;}
-
 enum LeftRight { at_left, at_right };
 
 template <class T>
@@ -717,8 +715,8 @@ struct Operator2On : Object {
 	
 	/* Constructors */
 	Operator2On(Map m, Zip z, Fold f, Scan s,
-		AlgebraicCheck n = (AlgebraicCheck)always_false,
-		AlgebraicCheck a = (AlgebraicCheck)always_false) :
+		AlgebraicCheck n,
+		AlgebraicCheck a) :
 			op_map(m), op_zip(z), op_fold(f), op_scan(s),
 			is_neutral(n), is_absorbent(a) {}
 	Operator2On() {}

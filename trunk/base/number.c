@@ -208,25 +208,31 @@ public:
 #define DEF_OP2(op,expr,neutral,absorbent) \
 	template <class T> class Y##op : Op2<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
-		inline static T is_neutral(T a, bool left) { return neutral; } \
-		inline static T is_absorbent(T a, bool left) { return absorbent; } };
+		inline static bool is_neutral(T x, LeftRight side) { return neutral; } \
+		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } };
 
 /* this macro is for operators that have different code for the float version */
 #define DEF_OP2F(op,expr,expr2,neutral,absorbent) \
 	template <class T> class Y##op : Op2<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
-		inline static T is_neutral(T a, bool left) { return neutral; } \
-		inline static T is_absorbent(T a, bool left) { return absorbent; } }; \
+		inline static bool is_neutral(T x, LeftRight side) { return neutral; } \
+		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } }; \
 	class Y##op<float32> : Op2<float32> { public: \
-		inline static float32 f(float32 a, float32 b) { return expr2; } }; \
+		inline static float32 f(float32 a, float32 b) { return expr2; } \
+		inline static bool is_neutral(float32 x, LeftRight side) { return neutral; } \
+		inline static bool is_absorbent(float32 x, LeftRight side) { return absorbent; } }; \
 	class Y##op<float64> : Op2<float64> { public: \
-		inline static float64 f(float64 a, float64 b) { return expr2; } };
+		inline static float64 f(float64 a, float64 b) { return expr2; } \
+		inline static bool is_neutral(float64 x, LeftRight side) { return neutral; } \
+		inline static bool is_absorbent(float64 x, LeftRight side) { return absorbent; } }; \
 
 #define DECL_OP2ON(base,op,T) Operator2On<T>( \
 	&base<Y##op<T> >::op_map, \
 	&base<Y##op<T> >::op_zip, \
 	&base<Y##op<T> >::op_fold, \
-	&base<Y##op<T> >::op_scan)
+	&base<Y##op<T> >::op_scan, \
+	&Y##op<T>::is_neutral, \
+	&Y##op<T>::is_absorbent)
 
 #define DECL_OP2(op,sym,flags) Operator2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
@@ -253,8 +259,8 @@ public:
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
-	Operator2On<float32>(0,0,0,0), \
-	Operator2On<float64>(0,0,0,0), \
+	Operator2On<float32>(0,0,0,0,0,0), \
+	Operator2On<float64>(0,0,0,0,0,0), \
 	flags)
 
 template <class T>
@@ -318,16 +324,16 @@ DEF_OP2F(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
 DEF_OP2(sc_and, a ? b : a, side==at_left && x!=0, side==at_left && x==0)
 DEF_OP2(sc_or,  a ? a : b, side==at_left && x==0, side==at_left && x!=0)
 
-DEF_OP2(min, min(a,b), x==nt_greatest(x), x==nt_smallest(x))
-DEF_OP2(max, max(a,b), x==nt_smallest(x), x==nt_greatest(x))
+DEF_OP2(min, min(a,b), x==nt_greatest(&x), x==nt_smallest(&x))
+DEF_OP2(max, max(a,b), x==nt_smallest(&x), x==nt_greatest(&x))
 
 DEF_OP2(cmp, cmp(a,b), false, false)
 DEF_OP2(eq,  a == b, false, false)
 DEF_OP2(ne,  a != b, false, false)
-DEF_OP2(gt,  a >  b, false, side==at_left&&x==nt_smallest(x)||side==at_right&&x==nt_greatest(x))
-DEF_OP2(le,  a <= b, false, side==at_left&&x==nt_smallest(x)||side==at_right&&x==nt_greatest(x))
-DEF_OP2(lt,  a <  b, false, side==at_left&&x==nt_greatest(x)||side==at_right&&x==nt_smallest(x))
-DEF_OP2(ge,  a >= b, false, side==at_left&&x==nt_greatest(x)||side==at_right&&x==nt_smallest(x))
+DEF_OP2(gt,  a >  b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
+DEF_OP2(le,  a <= b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
+DEF_OP2(lt,  a <  b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
+DEF_OP2(ge,  a >= b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
 
 DEF_OP2(sin, (T)(b * sin(a * (M_PI / 18000))), false, false) // "LN=9000+36000n RA=0 LA=..."
 DEF_OP2(cos, (T)(b * cos(a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
