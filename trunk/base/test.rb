@@ -162,11 +162,11 @@ if nt!=:uint8 and nt!=:float32 and nt!=:float64
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
 end
 
-	(a = FObject["@inner * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
+	(a = FObject["@inner * + {#{nt} # 0} {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([12,17,48,68]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 
-	(a = FObject["@inner2 * + 0 {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
+	(a = FObject["@inner2 * + {#{nt} # 0} {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([8,19,32,76]) { i0.send_in 0,:list,nt, 1,2,4,8 }
 	
@@ -192,7 +192,7 @@ end
 
 	#pr=GridPrint.new
 	(b = FObject["@redim {5 5}"]).connect 0,e,0
-	(a = FObject["@convolve * + 0"]).connect 0,b,0
+	(a = FObject["@convolve * + {#{nt} # 0}"]).connect 0,b,0
 	(i0 = FObject["@redim {5 5 1}"]).connect 0,a,0
 	(i1 = FObject["@redim {3 1}"]).connect 0,a,1
 	i1.send_in 1, 3,3
@@ -200,7 +200,7 @@ end
 		a.send_in 1,:list,3,3,nt,hm, 1,1,1,1,1,1,1,1,1
 		i0.send_in 0,:list,nt, 1,1,1,0,0,0 }
 
-	(a = FObject["@convolve * + 0"]).connect 0,e,0
+	(a = FObject["@convolve * + {#{nt} # 0}"]).connect 0,e,0
 	x.expect([1,3,6,4,0]) {
 		a.send_in 1, 1,2,nt,hm, 1,1
 		a.send_in 0, 1,5,nt,hm, 0,1,2,4,0 }
@@ -231,23 +231,33 @@ end
 	b.connect 0,c,0
 	c.connect 0,y,0
 
-	(a = FObject["@for 0 10 1"]).connect 0,e,0
+if nt!=:uint8 and nt!=:float32 and nt!=:float64
+	(a = FObject["@for {#{nt} # 0} {#{nt} # 10} {#{nt} # 1}"]).connect 0,e,0
 	a.connect 0,b,0
 	y.expect([10]) {
 		x.expect((0...10).to_a) {
 			a.send_in 0 } }
 
-	(a = FObject["@for {0} {10} {1}"]).connect 0,e,0
+	(a = FObject["@for {#{nt} # 0} {#{nt} # -10} {#{nt} # 1}"]).connect 0,e,0
+	a.connect 0,b,0
+	y.expect([0]) { x.expect([]) { a.send_in 0 } }
+
+	(a = FObject["@for {#{nt} # 0} {#{nt} # -10} {#{nt} # -1}"]).connect 0,e,0
+	a.connect 0,b,0
+	y.expect([10]) { x.expect([0,-1,-2,-3,-4,-5,-6,-7,-8,-9]) { a.send_in 0 } }
+
+	(a = FObject["@for {#{nt} 0} {#{nt} 10} {#{nt} 1}"]).connect 0,e,0
 	a.connect 0,b,0
 	y.expect([10,1]) {
 		x.expect((0...10).to_a) {
 			a.send_in 0 } }
 
-	(a = FObject["@for {2 3} {5 7} {1 1}"]).connect 0,e,0
+	(a = FObject["@for {#{nt} 2 3} {#{nt} 5 7} {#{nt} 1 1}"]).connect 0,e,0
 	a.connect 0,b,0
 	y.expect([3,4,2]) {
 		x.expect([2,3,2,4,2,5,2,6,3,3,3,4,3,5,3,6,4,3,4,4,4,5,4,6]) {
 			a.send_in 0 } }
+end
 
 	(a = FObject["@complex_sq"]).connect 0,e,0
 	x.expect([8,0]) { a.send_in 0, 2, 2 }
@@ -283,11 +293,7 @@ end # for nt
 
 #	glob = FObject["@global"]
 #	glob.send_in 0, "profiler_dump"
-end
 
-def test_new_classes
-	hm = "#".intern
-	x = Expect.new
 	e = FObject["@export_list"]
 	e.connect 0,x,0
 
@@ -306,6 +312,11 @@ def test_new_classes
 	a.connect 0,e,0
 	a.send_in 1,2,2,hm,11,13,17,19
 	x.expect([2,3,5,7,11,13,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
+
+	a = FObject["@join 0 {2 2 2 # 1 2 3}"]
+	a.connect 0,e,0
+	a.connect 0,b,0
+	y.expect([2,2,2]) { x.expect([1,2,3,1,2,3,1,2]) { a.send_in 0,0,2,2,hm }}
 
 	a = FObject["@ravel"]
 	b = FObject["@dim"]
@@ -659,6 +670,7 @@ Images = [
 	"grid gzfile #{$imdir}/foo.grid.gz",
 	"grid gzfile #{$imdir}/foo2.grid.gz",
 #	"targa file #{$imdir}/tux.tga",
+#	"videodev /dev/video0",
 ]
 
 def test_formats_speed
@@ -689,9 +701,9 @@ def test_formats
 		gin.send_in 0,"open #{command}"
 		gin.send_in 0,"cast int16"
 		# test for load, rewind, load
-#		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
-		gin.send_in 0
-		gin.send_in 0
+		5.times {|x| gs.send_in 1, [:int16, '#'.intern, x*128]; gin.send_in 0}
+		# test for filehandle leak
+		#1000.times { gin.send_in 0,"open #{command}" }
 		sleep 1
 	}
 	p t1	
@@ -979,6 +991,11 @@ def test_jmax_to_pd filename
 	pfw.close
 end
 
+def test_error
+	x = FObject["@store"]
+	x.send_in 0
+end
+
 if ARGV[0] then
 	name = ARGV.shift
 	send "test_#{name}", *ARGV
@@ -996,7 +1013,7 @@ end
 #test_print
 #test_nonsense
 #test_ppm2
-test_anim ["open ppm file #{$imdir}/g001.ppm","loop 0"]
+#test_anim ["open ppm file #{$imdir}/g001.ppm","loop 0"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open jpeg file #{$imdir}/rgb.jpeg.cat"]
 #test_anim ["open quicktime file test.mov"]
@@ -1006,7 +1023,7 @@ test_anim ["open ppm file #{$imdir}/g001.ppm","loop 0"]
 #test_anim ["open videodev /dev/video","channel 1","size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","transfer read"]
 #test_anim ["open videodev /dev/video","channel 1","size 120 160"]
-#test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
+test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
 #test_anim ["open quicktime file /home/matju/pics/domopers_hi.mov"]
 #test_anim ["open quicktime file /home/matju/net/c.mov"]

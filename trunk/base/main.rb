@@ -118,7 +118,7 @@ def self.hunt_zombies
 		}
 	rescue Errno::ECHILD
 	end
-	STDERR.puts died.inspect
+	#STDERR.puts died.inspect
 	died.each {|x| subprocesses.delete x }
 end
 
