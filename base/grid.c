@@ -257,7 +257,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	case 4:{
 		int d = dex + bufi;
 		if (d+n > dim->prod()) {
-			gfpost("grid input overflow: %d of %d from %s to %s",
+			gfpost("grid input overflow: %d of %d from [%s] to [%s]",
 				d+n, dim->prod(), sender->info(), parent->info());
 			n = dim->prod() - d;
 			if (n<=0) return;
@@ -312,7 +312,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 void GridInlet::abort() {
 	if (dim) {
 		if (dim->prod())
-		gfpost("aborting grid: %d of %d from %s to %s",
+		gfpost("aborting grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), sender->info(), parent->info());
 		delete dim; dim=0;
 	}
@@ -323,7 +323,7 @@ void GridInlet::abort() {
 void GridInlet::end() {
 	if (!is_busy()) RAISE("%s: inlet not busy",parent->info());
 	if (dim->prod() != dex) {
-		gfpost("incomplete grid: %d of %d from %s to %s",
+		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), sender->info(), parent->info());
 	}
 	PROF(parent) {
@@ -457,6 +457,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 */
 }
 
+/* send modifies dex; send_direct doesn't */
 template <class T>
 void GridOutlet::send_direct(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
@@ -485,6 +486,7 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 /* buffering in outlet still is 8x faster...? */
 /* should use BitPacking for conversion...? */
 
+/* send modifies dex; send_direct doesn't */
 template <class T>
 void GridOutlet::send(int n, Pt<T> data) {
 	if (!n) return;
@@ -521,21 +523,25 @@ void GridOutlet::send(int n, Pt<T> data) {
 template <class T>
 void GridOutlet::give(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	dex += n;
-	assert(dex <= dim->prod());
-	flush();
+	//gfpost("1: dex=%d, dim->prod()=%d\n",dex,dim?dim->prod():-1);
+	assert(dex+n <= dim->prod());
+	if (NumberTypeE_type_of(*data)!=nt) {
+		send(n,data);
+		delete[] (T *)data;
+		return;
+	}
 	if (ninlets==1 && inlets[0]->gh->mode == 6) {
 		/* this is the copyless buffer passing */
+		flush();
 		inlets[0]->flow(6,n,data);
+		dex += n;
 	} else {
-		if (NumberTypeE_type_of(*data)!=nt) {
-			send(n,data);
-		} else {
-			flush();
-			send_direct(n,data);
-		}
+		flush();
+		send_direct(n,data);
+		dex += n;
 		delete[] (T *)data;
 	}
+	//gfpost("2: dex=%d, dim->prod()=%d\n",dex,dim?dim->prod():-1);
 	if (dex==dim->prod()) end();
 }
 
