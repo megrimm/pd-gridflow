@@ -98,9 +98,16 @@ void test_anim2(void) {
 	fts_connect(in,0,out,0);
 	fts_send3(in,0,"open mpeg file "
 		"/home/matju/net/Animations/washington_zoom_in.mpeg");
-//	printf("here...\n");
 	while(1) fts_send3(in,0,"bang");
-//	printf("there...\n");
+}
+
+void test_anim3(void) {
+	FObject *in = fts_object_new3("@in");
+	FObject *out = fts_object_new3("@out 256 256");
+	fts_connect(in,0,out,0);
+	fts_send3(in,0,"open quicktime file "
+		"../images/gt.mov");
+	while(1) fts_send3(in,0,"bang");
 }
 
 typedef struct TestTCP {
@@ -179,6 +186,7 @@ int main(int argc, char **argv) {
 	TEST(ppm2)
 	TEST(anim)
 	TEST(anim2)
+	TEST(anim3)
 	TEST(foo)
 	TEST(tcp)
 	TEST(gen)
