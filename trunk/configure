@@ -85,14 +85,15 @@ ensure
 end
 
 def c_test code, link, options=[]
+	link=link.flatten
 	ldlpath = ENV["LD_LIBRARY_PATH"]
 	ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
-	link[0,0]=$conf[:LDSOFLAGS].find_all {|x| /^-L/ =~ x }
+	link[0,0]=$conf[:LDSOFLAGS].find_all {|x| String===x and /^-L/ =~ x }.flatten
 
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
-	File.open("/tmp/#{$$}b.cpp","w") {|f| f.puts "static void foo() {}" }
+#	File.open("/tmp/#{$$}b.cpp","w") {|f| f.puts "static void foo() {}" }
 	command = ["/usr/bin/env", $conf[:CC]] +
 		$CFLAGS.split(/ /).reject{|x| x.length==0 }
 
@@ -107,7 +108,10 @@ i've had before involving .a's that didn't want to link. but it seems to be a g+
 =end
 
 	# test for .a when .so not found... well, not really
-	launch2 log,*(command+options+["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]) and
+	# LOG.puts "link.length = #{link.length}"
+	# LOG.puts "link = #{link.inspect}"
+	launch2 log,*(command+options+["/tmp/#{$$}.cpp",
+		 "-o", "/tmp/#{$$}", *link]) and
 	  launch2 log,"/tmp/#{$$}" and
 #	  return "static" # true
 	  return true
@@ -423,7 +427,7 @@ Feature.new {
 Feature.new {
 	tag :quartz
 	name "Apple Quartz/Cocoa Display"
-	uses_so ["-lobjc","-framework","Cocoa"]
+	uses_so ["-lobjc",["-framework","Cocoa"]]
 	uses_feature [:objcpp]
 	test proc {
 		c_test "
@@ -527,12 +531,12 @@ Feature.new {
 Feature.new {
 	tag :quicktimeapple
 	name "Apple's QuickTime"
-	uses_so ["-lquicktime"]
+	uses_so [["-framework","Quicktime"]]
 	test proc {
 		c_test "
-		#include <Movies.h>
+		#include <Quicktime/quicktime.h>
 		int main () { return EnterMovies==0; }
-		", *uses_so
+		", uses_so
 	}
 	formats ["QuickTimeApple"]
 },
@@ -885,7 +889,7 @@ File.open("./config.make","w") {|f| f.puts "
 RUBYARCH=#{CONFIG['arch']}
 "
 
-f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].join(" ") + " " + $LDFLAGS
+f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
 
 if Config::CONFIG["arch"] =~ /darwin/ then
 	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
@@ -986,7 +990,7 @@ puts "",
 ""
 
 #--------------------------------#
-$LOCAL_LIBS = $conf[:LDSOFLAGS].join(" ")
+$LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
 
 $objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
 dir_config("gridflow")
