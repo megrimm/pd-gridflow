@@ -117,6 +117,17 @@ def self.parse(m)
 	m
 end
 
+def self.stringify_list(argv)
+	argv.map {|x| stringify x }.join(" ")
+end
+
+def self.stringify(arg)
+	case arg
+	when Integer, Float, Symbol; arg.to_s
+	when Array; "{#{stringify_list arg}}"
+	end
+end
+
 # adding some functionality to that:
 class FObject
 	attr_writer :args # String
@@ -167,17 +178,20 @@ class FObject
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		qlass = name_lookup sym
-		GridFlow.post "%s",o.inspect if GridFlow.verbose
 		r = qlass.new(*m)
-		r.args = o
+		GridFlow.post "%s",r.args if GridFlow.verbose
+		#r.args = o
 		r
 	end
 	def inspect
 		if args then "#<#{self.class} #{args}>" else super end
 	end
-	def initialize
-		super
-		self.args ||= "[#{self.class} ;-)]"
+	def initialize(*argv)
+		s = GridFlow.stringify_list argv
+		@args = "["
+		@args << (self.class.instance_eval{@foreign_name} || self.class)
+		@args << " " if s.length>0
+		@args << s << "]"
 	end
 end
 
@@ -471,7 +485,7 @@ begin
 	@cpu_hertz = (u1-u0)/(t1-t0)
 	GridFlow.post "estimating cpu clock at #{@cpu_hertz} Hz"
 rescue
-	p $!
+	GridFlow.post $!
 end
 
 # a dummy class that gives access to any stuff global to GridFlow.
@@ -499,8 +513,7 @@ class GridGlobal < FObject
 			ppm = o.profiler_cumul * 1000000 / total
 			us = (o.profiler_cumul*1E6/GridFlow.cpu_hertz).to_i
 			GridFlow.post "%12d %2d.%04d %08x %s", us,
-				ppm/10000, ppm%10000,
-				o.object_id, o.args
+				ppm/10000, ppm%10000, o.object_id, o.args
 		}
 		GridFlow.post "-"*32
 	end
@@ -577,7 +590,7 @@ class RGBtoGreyscale < FPatcher
 end
 
 class GreyscaleToRGB < FPatcher
-  FObjects = ["@fold +","@outer + {0 0 0}"]
+  FObjects = ["@fold put 0","@outer ignore {0 0 0}"]
   Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
   def initialize() super(FObjects,Wires,1) end
   install "@greyscale_to_rgb", 1, 1
