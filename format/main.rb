@@ -110,9 +110,10 @@ class Format #< GridObject
 		@stream.close if defined? @stream and @stream
 	end
 
-	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
+	def self.install_format(name,inlets,outlets,flags,symbol_name,description,
+	suffixes="")
 		install(name,inlets,outlets)
-		conf_format(flags,symbol_name,description)
+		conf_format(flags,symbol_name,description,suffixes)
 		nil
 	end
 
@@ -484,6 +485,33 @@ module EventIO
 	end
 end
 
+# this is the format autodetection proxy and should be defined before all other formats
+class FormatFile < Format
+	class<<self; attr_reader :suffixes; end
+	@suffixes = {}
+	def self.new(mode,file)
+		file=file.to_s
+		a = [mode,:file,file]
+		case file
+		when /\.ppm$/i;   FormatPPM.new(*a)
+		when /\.tga$/i;   FormatTarga.new(*a)
+		when /\.jpe?g$/i; FormatJPEG.new(*a)
+		when /\.png$/i;   FormatPNG.new(*a)
+#		when /\.mpe?g$/i; FormatMPEG.new(*a)
+		when /\.mov$/i;   FormatQuickTime.new(*a)
+		when /\.grid$/i;  FormatGrid.new(*a)
+		else
+			if not /\./=~file then raise "no filename suffix?" end
+			GridFlow.post "suffixes=%s", @suffixes.inspect
+			suf=file.split(/\./)[-1]
+			h=suffixes[suf]
+			if not h then raise "unknown suffix '.#{suf}'" end
+			h.new(*a)
+		end
+	end
+	install_format "FormatFile", 1, 1, FF_R|FF_W, "file", "format autodetection proxy"
+end
+
 class FormatGrid < Format; include EventIO
 =begin
 	This is the Grid format I defined:
@@ -685,7 +713,7 @@ class FormatGrid < Format; include EventIO
 	end
 
 	install_rgrid 0
-	install_format "FormatGrid", 1, 1, FF_R|FF_W, "grid", "GridFlow file format"
+	install_format "FormatGrid", 1, 1, FF_R|FF_W, "grid", "GridFlow file format", "grid"
 end
 
 module PPMandTarga
@@ -774,7 +802,7 @@ class FormatPPM < Format; include EventIO, PPMandTarga
 	end
 
 	install_rgrid 0
-	install_format "FormatPPM", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap"
+	install_format "FormatPPM", 1, 1, FF_R|FF_W, "ppm", "Portable PixMap", "ppm"
 end
 
 class FormatTarga < Format; include EventIO, PPMandTarga
@@ -850,7 +878,7 @@ targa header is like:
 	end
 
 	install_rgrid 0
-	install_format "FormatTarga", 1, 1, FF_R|FF_W, "targa", "TrueVision Targa"
+	install_format "FormatTarga", 1, 1, FF_R|FF_W, "targa", "TrueVision Targa", "tga"
 end
 
 =begin
@@ -864,22 +892,6 @@ class FormatTempFile < Format
 	install_format "FormatTempFile", 1, 1, FF_R|FF_W, "tempfile", "huh..."
 end 
 =end
-
-class FormatFile < Format
-	def self.new(mode,file)
-		a = [mode,:file,file]
-		case file.to_s
-		when /\.ppm$/i;   FormatPPM.new(*a)
-		when /\.tga$/i;   FormatTarga.new(*a)
-		when /\.jpe?g$/i; FormatJPEG.new(*a)
-		when /\.png$/i;   FormatPNG.new(*a)
-		when /\.mpe?g$/i; FormatMPEG.new(*a)
-		when /\.mov$/i;   FormatQuickTime.new(*a)
-		when /\.grid$/i;  FormatGrid.new(*a)
-		else raise "unknown suffix" end
-	end
-	install_format "FormatFile", 1, 1, FF_R|FF_W, "file", "huh..."
-end
 
 end # module GridFlow
 

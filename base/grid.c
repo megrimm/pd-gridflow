@@ -780,10 +780,11 @@ void startup_grid () {
 	EVAL(
 	"module GridFlow; "
 	"class Format < GridObject; end; "
-	"def Format.conf_format(flags,symbol_name,description)"
+	"def Format.conf_format(flags,symbol_name,description,suffixes='')"
 	"@flags = flags;"
 	"@symbol_name = symbol_name;"
 	"@description = description;"
+	"suffixes.split(/,/).each {|suffix| FormatFile.suffixes[suffix] = self };"
 	"GridFlow.instance_eval{@formats}[symbol_name.intern]=self;"
 	"end;end");
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
