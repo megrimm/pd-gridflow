@@ -622,7 +622,8 @@ class GridExportSymbol < GridObject
 	install "@export_symbol", 1, 1
 end
 
-class Phork < GridObject
+class Phork < FObject
+  #!@#$ marche po
   def method_missing(sel,*args)
     sel =~ /^_(\d)_(.*)/; send_out 1,$2,*args; send_out 0,$2,*args
   end
@@ -661,6 +662,29 @@ class GridRavel < FPatcher
 	Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,3,1, -1,0,3,0, 3,0,-1,0]
 	def initialize; super(FObjects,Wires,1) end
 	install "@ravel", 1, 1
+end
+
+class RubyUDPSend < FObject
+	def initialize(host,port)
+		@socket = UDPSocket.new
+		@host,@port = host,port
+	end
+
+	def encode(x)
+		case x
+		when Integer; "\x03" + [x].pack("N")
+		when Float; "\x04" + [x].pack("g")
+		when Symbol, String; "\x01" + x.to_s + "\x02"
+		end
+	end
+
+	def method_missing(sel,*args)
+		sel=sel.to_s.sub /^_\d_/, ""
+		@socket.send encode(sel) +
+			args.map{|arg| encode(arg) }.join("") + "\x0b",
+			0, @host, @port
+	end
+	install "ruby_udpsend", 1, 0
 end
 
 def self.routine
