@@ -65,7 +65,7 @@ static Ruby ull2num(uint64 val) {
 /* end */
 extern "C"{
 void rb_raise0(
-const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {L
+const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	va_list args;
 	char buf[BUFSIZ];
 	va_start(args,fmt);
@@ -77,7 +77,7 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
 	buf2[BUFSIZ-1]=0;
 	VALUE ary = rb_funcall(e,SI(caller),0);
-	//fprintf(stderr,"gf_stack.n = %d\n",gf_stack.n);
+//	fprintf(stderr,"gf_stack.n = %d\n",gf_stack.n);
 	if (gf_stack.n) {
 		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
 			rb_str_new2(gf_stack.s[gf_stack.n-1].o->info()));
@@ -95,18 +95,10 @@ static void default_post(const char *fmt, ...) {
 	va_end(args);
 }
 
-Ruby bridge_whatever_default (int argc, Ruby *argv, Ruby rself) {
-	RAISE("sorry, not available in this bridge");
-}
-
 GFBridge gf_bridge_default = {
-	name: 0,
 	send_out: 0,
 	class_install: 0,
 	post: default_post,
-	post_does_ln: false,
-	clock_tick: 10.0,
-	whatever: bridge_whatever_default,
 };
 
 GFBridge *gf_bridge = &gf_bridge_default;
@@ -141,18 +133,10 @@ Ruby rb_ary_fetch(Ruby rself, int i) {
 }
 
 const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
-
-static void FObject_mark (void *z) {
-/*
-	FObject *self = (FObject *)z;
-//	fprintf(stderr,"marking FObject c++=%p ruby=%p\n",self,self->peer);
-	self->mark();
-*/
-}
-
 static int object_count=0;
 
-void Object_free (void *foo) {
+static void CObject_mark (void *z) {}
+void CObject_free (void *foo) {
 	CObject *self = (CObject *)foo;
 	self->check_magic();
 	if (!self->rself) {
@@ -232,9 +216,8 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
-	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
-		/* GridFlow.post "%s",m.inspect if GridFlow.verbose */
-	}
+/*	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
+		// GridFlow.post "%s",m.inspect	}*/
 	char buf[256];
 	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
 	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
@@ -242,7 +225,6 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 } /* PROF */ }
 
 static void send_in_3 (Helper *h) {
-//	gfpost("send_in_3: ensuring cleanup: %d -> %d", gf_stack.n, h->n);
 	while (gf_stack.n > h->n) gf_stack.pop();
 }
 
@@ -318,7 +300,7 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	self->check_magic();
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	self->bself = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, Object_free, self);
+	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	self->rself = rself;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
 	rb_funcall2(rself,SI(initialize),argc,argv);
@@ -431,7 +413,7 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	if (size>4) RAISE("too many masks (%d)",size);
 	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
 	BitPacking *self = new BitPacking(endian,bytes,size,masks2);
-	Ruby rself = Data_Wrap_Struct(qlass, 0, Object_free, self);
+	Ruby rself = Data_Wrap_Struct(qlass, 0, CObject_free, self);
 	self->rself = rself;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) (!@#$ WHAT???) */
 	rb_funcall2(rself,SI(initialize),argc,argv);
@@ -457,14 +439,6 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	RAISE("unknown number type \"%s\"", rb_sym_name(sym));
 }
 
-void MainLoop_add(void *data, void (*func)(void*)) {
-	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(data), PTR2FIX((void *)func)); //#!@$??
-}
-
-void MainLoop_remove(void *data) {
-	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(data));
-}
-
 void gfpost(const char *fmt, ...) {
 	va_list args;
 	int length;
@@ -485,7 +459,7 @@ void gfpost(const char *fmt, ...) {
 Ruby gf_post_string (Ruby rself, Ruby s) {
 	if (TYPE(s) != T_STRING) RAISE("not a String");
 	char *p = rb_str_ptr(s);
-	gf_bridge->post(gf_bridge->post_does_ln?"%s":"%s\n",p);
+	gf_bridge->post("%s",p);
 	return Qnil;
 }
 
@@ -509,7 +483,6 @@ Ruby fclass_install(FClass *fc, Ruby super) {
 	for (int i=0; i<fc->handlersn; i++)
 		rb_ary_push(handlers,PTR2FIX(&fc->handlers[i]));
 	define_many_methods(rself,fc->methodsn,fc->methods);
-	//fprintf(stderr,"alloc: %08x\n", (int)(fc->allocator));
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator))); //#!@$??
 	if (fc->startup) fc->startup(rself);
 	return Qnil;
@@ -533,16 +506,6 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	return INT2NUM((int)arg);
 }
 
-Ruby GridFlow_clock_tick (Ruby rself) {
-	return rb_float_new(gf_bridge->clock_tick);
-}
-
-Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
-	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
-	gf_bridge->clock_tick = RFLOAT(tick)->value;
-	return tick;
-}
-
 Ruby GridFlow_security_set (Ruby rself, Ruby level) {
 	int security = INT(level);
 	if (security<0 || security>4) RAISE("expecting 0..4");
@@ -556,14 +519,8 @@ Ruby GridFlow_security (Ruby rself) {
 
 Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
 
-Ruby GridFlow_bridge_name (Ruby rself) {
-	return gf_bridge->name ? rb_str_new2(gf_bridge->name) : Qnil;
-}
-
-/*
-  This code handles nested lists because PureData doesn't do it
-  and jMax only does it when it feels like it.
-*/
+/* This code handles nested lists because PureData doesn't do it
+and jMax only does it when it feels like it. */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 	int stack[16];
 	int stackn=0;
@@ -595,6 +552,9 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 static uint64 memcpy_calls = 0;
 static uint64 memcpy_bytes = 0;
 static uint64 memcpy_time  = 0;
+static uint64 malloc_calls = 0; /* only new not delete */
+static uint64 malloc_bytes = 0; /* only new not delete */
+static uint64 malloc_time  = 0; /* in cpu ticks */
 
 // don't touch.
 static void gfmemcopy32(int32 *as, int32 *bs, int n) {
@@ -606,7 +566,6 @@ static void gfmemcopy32(int32 *as, int32 *bs, int n) {
 }
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
-//	fprintf(stderr,"memcopy n=%d\n",n);
 	uint64 t = rdtsc();
 	memcpy_calls++;
 	memcpy_bytes+=n;
@@ -619,10 +578,6 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
 	for (; n; in++, out++, n--) { *out = *in; }
 }
-
-static uint64 malloc_calls = 0; /* only new not delete */
-static uint64 malloc_bytes = 0; /* only new not delete */
-static uint64 malloc_time  = 0; /* in cpu ticks */
 
 extern "C" {
 void *gfmalloc(size_t n) {
@@ -661,9 +616,17 @@ void startup_grid();
 void startup_flow_objects();
 void startup_flow_objects_for_image();
 void startup_flow_objects_for_matrix();
-void startup_formats();
 void startup_cpu();
 void startup_usb();
+
+#ifdef FORMAT_LIST
+extern FClass FORMAT_LIST( ,ci,);
+FClass *format_classes[] = { FORMAT_LIST(&,ci,) };
+#else
+FClass *format_classes[] = {};
+#endif
+
+Ruby cFormat;
 
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
@@ -678,9 +641,7 @@ void Init_gridflow () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 
-	mGridFlow = rb_define_module("GridFlow");
-	SDEF2("clock_tick",GridFlow_clock_tick,0);
-	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
+	mGridFlow = EVAL("module GridFlow; self end");
 	SDEF2("security",GridFlow_security,0);
 	SDEF2("security=",GridFlow_security_set,1);
 	SDEF2("exec",GridFlow_exec,2);
@@ -694,7 +655,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("malloc_calls",GridFlow_malloc_calls,0);
 	SDEF2("malloc_bytes",GridFlow_malloc_bytes,0);
 	SDEF2("malloc_time", GridFlow_malloc_time,0);
-	SDEF2("bridge_name",GridFlow_bridge_name,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
@@ -718,10 +678,7 @@ BUILTIN_SYMBOLS(FOO)
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
 
-	if (!gf_bridge->whatever) gf_bridge->whatever = bridge_whatever_default;
-	SDEF2("whatever",gf_bridge->whatever,-1);
-
-	switch (EVAL("!!(/jmax/ =~ GridFlow.bridge_name)")) {
+	switch (EVAL("!(/puredata/ =~ GridFlow.bridge_name)")) {
 		case Qfalse: has_int = false; break;
 		case Qtrue:  has_int = true;  break;
 		default: abort(); /*???*/
@@ -743,7 +700,6 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects();
 	startup_flow_objects_for_image();
 	startup_flow_objects_for_matrix();
-
 #ifdef HAVE_USB
 	startup_usb();
 #endif
@@ -754,17 +710,14 @@ BUILTIN_SYMBOLS(FOO)
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
 
-	if (!EVAL("begin require 'gridflow/format/main.rb'; true\n"
-		"rescue Exception => e; "
-		"STDERR.puts \"can't load: #{$!}\n"
-		"backtrace: #{$!.backtrace.join\"\n\"}\n"
-		"$: = #{$:.inspect}\"\n; false end")) return;
-
 #ifdef HAVE_MMX
 	if (!getenv("NO_MMX")) startup_cpu();
 #endif
 
-	startup_formats();
+	cFormat = EVAL("GridFlow::Format");
+	for (int i=0; i<COUNT(format_classes); i++) {
+		fclass_install(format_classes[i], cFormat);
+	}
 
 	if (strcmp(RUBY_ARCH,"powerpc-darwin")==0) {
 		EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");

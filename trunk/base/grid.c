@@ -42,19 +42,15 @@
 #define MAX_PACKET_SIZE (1<<11)
 
 #define CHECK_TYPE(d) \
-	if (NumberTypeE_type_of(d)!=this->nt) \
-		RAISE("%s(%s): " \
+	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
-			parent->info(), \
-			__PRETTY_FUNCTION__, \
-			number_type_table[NumberTypeE_type_of(d)].name, \
-			number_type_table[this->nt].name);
+		parent->info(), \
+		__PRETTY_FUNCTION__, \
+		number_type_table[NumberTypeE_type_of(d)].name, \
+		number_type_table[this->nt].name);
 
 #define CHECK_BUSY(s) \
 	if (!is_busy()) RAISE("%s: " #s " not busy",parent->info());
-
-
-//#define INT(v) convert(v,(int*)0)
 
 /* **************** Grid ****************************************** */
 
@@ -124,7 +120,7 @@ void Grid::init_from_ruby(Ruby x) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		STACK_ARRAY(int32,foo,1);
-		init(new Dim(0,foo),int32_type_i);
+		init(new Dim(0,foo),int32_e);
 		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -144,25 +140,17 @@ void Grid::del() {
 	data=0;
 }
 
-Grid::~Grid() {
-	del();
-}
-
 /* **************** GridInlet ************************************* */
 
 GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	this->parent = parent;
 	this->gh = gh;
 	dim = 0;
-	nt = int32_type_i;
+	nt = int32_e;
 	dex = 0;
 	factor = 1;
 	bufi = 0;
 	sender = 0;
-}
-
-GridInlet::~GridInlet() {
-	delete dim;
 }
 
 /* must be set before the end of GRID_BEGIN phase, and so cannot be changed
@@ -379,7 +367,7 @@ void GridInlet::from_ruby(int argc, Ruby *argv) {
 GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	this->parent = parent;
 	this->woutlet = woutlet;
-	nt = int32_type_i;
+	nt = int32_e;
 	dim = 0;
 	dex = 0;
 	int32 v[] = {MAX_PACKET_SIZE};
@@ -397,9 +385,7 @@ GridOutlet::~GridOutlet() {
 
 void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	TRACE;
-//	fprintf(stderr,"%s, %s\n", dim->to_s(), number_type_table[nt].name);
 	int n = dim->count();
-	/* if (is_busy()) abort(); */
 	this->nt = nt;
 	this->dim = dim;
 	dex = 0;
@@ -427,16 +413,6 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 		if (*v==0) *v=MAX_PACKET_SIZE; /* factor too big. don't have a choice. */
 		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
 	}
-
-/*	
-	char buf[256];
-	sprintf(buf,"%s: lcm{ ", parent->info());
-	for (int i=0; i<ninlets; i++) {
-		sprintf(buf+strlen(buf),"%d ",inlets[i]->factor);
-	}
-	sprintf(buf+strlen(buf),"} = %d",lcm_factor);
-	gfpost("%s",buf);
-*/
 }
 
 /* send modifies dex; send_direct doesn't */
@@ -472,11 +448,6 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 template <class T>
 void GridOutlet::send(int n, Pt<T> data) {
 	if (!n) return;
-/*
-	fprintf(stderr,"GridOutlet::send: sending %d elements (dex=%d/%d)\n",
-		n,dex,dim?dim->prod():0);
-	if (!n) RAISE("a-ha");
-*/
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
@@ -505,7 +476,6 @@ void GridOutlet::send(int n, Pt<T> data) {
 template <class T>
 void GridOutlet::give(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	//gfpost("1: dex=%d, dim->prod()=%d\n",dex,dim?dim->prod():-1);
 	assert(dex+n <= dim->prod());
 	if (NumberTypeE_type_of(*data)!=nt) {
 		send(n,data);
@@ -523,7 +493,6 @@ void GridOutlet::give(int n, Pt<T> data) {
 		dex += n;
 		delete[] (T *)data;
 	}
-	//gfpost("2: dex=%d, dim->prod()=%d\n",dex,dim?dim->prod():-1);
 	if (dex==dim->prod()) end();
 }
 
@@ -536,9 +505,7 @@ void GridOutlet::callback(GridInlet *in) {
 }
 
 /* **************** GridObject ************************************ */
-/*
-  abstract class for an FTS Object that has Grid-aware inlets/outlets
-*/
+/* abstract class for a FObject that has Grid-aware inlets/outlets */
 
 GridObject::GridObject() {
 	for (int i=0; i<MAX_INLETS;  i++) in[i]=0;
@@ -616,7 +583,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	inl->set_factor(factor);
 }
 
-\def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_type_i) {
+\def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_e) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
@@ -630,11 +597,10 @@ template <class T>
 void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 	int n = rb_str_len(s) / sizeof(T);
 	Pt<T> p = rb_str_pt(s,T);
-//fprintf(stderr,"send_out_grid_flow_2: sending %d elements (dex=%d/%d)\n",n,go->dex,go->dim->prod());
 	go->send(n,p);
 }
 
-\def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_type_i) {
+\def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	GridOutlet *go = out[outlet];
 #define FOO(T) send_out_grid_flow_2(go,argv[1],(T)0);
@@ -726,41 +692,11 @@ GRCLASS(GridObject,LIST(),
 
 \end class GridObject
 
-/* **************** Format **************************************** */
-/* this is an abstract base class for file formats, network protocols, etc */
-
-#ifdef FORMAT_LIST
-extern FClass FORMAT_LIST( ,ci,);
-FClass *format_classes[] = { FORMAT_LIST(&,ci,) };
-#else
-FClass *format_classes[] = {};
-#endif
-
-/* **************************************************************** */
-
-Ruby cGridObject, cFormat;
-
-void startup_formats () {
-	for (int i=0; i<COUNT(format_classes); i++) {
-		fclass_install(format_classes[i], cFormat);
-	}
-}
+Ruby cGridObject;
 
 void startup_grid () {
 	fclass_install(&ciGridObject, cFObject);
-	EVAL(
-	"module GridFlow; "
-	"class Format < GridObject; end; "
-	"def Format.conf_format(flags,symbol_name,description,suffixes='')"
-	"@flags = flags;"
-	"@symbol_name = symbol_name;"
-	"@description = description;"
-	"suffixes.split(/,/).each {|suffix| FormatFile.suffixes[suffix] = self };"
-	"GridFlow.instance_eval{@formats}[symbol_name.intern]=self;"
-	"end;end");
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
-	cFormat = rb_const_get(mGridFlow,SI(Format));
-	rb_ivar_set(mGridFlow,SI(@formats),rb_hash_new());
 }
 
 /*

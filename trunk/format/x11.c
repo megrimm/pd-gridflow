@@ -123,8 +123,6 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		XSync(display,False);
-//		gfpost("display,window,imagegc = %d,%d,%d",display,window,imagegc);
-//		gfpost("x,y,sx,sy = %d,%d,%d,%d",x,y,sx,sy);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		/* should completion events be waited for? looks like a bug */
 	} else
@@ -179,7 +177,6 @@ void FormatX11::alarm() {
 	XEvent e;
 
 	for (;;) {
-//		int xpending = XEventsQueued(display, QueuedAfterReading);
 		int xpending = XEventsQueued(display, QueuedAfterFlush);
 		if (!xpending) break;
 		XNextEvent(display,&e);
@@ -281,7 +278,6 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	gfpost("X11 reports Error: display=0x%08x",(int)d);
 	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
-	//if () 
 	current_x11->use_shm = false;
 	return 42; /* it seems that the return value is ignored. */
 }
@@ -309,7 +305,6 @@ void FormatX11::dealloc_image () {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
-	fprintf(stderr,"sx=%d sy=%d\n",sx,sy);
 	int32 v[3] = {sy, sx, 3};
 	if (dim) delete dim;
 	dim = new Dim(3,v);
@@ -370,7 +365,6 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
-	//gfpost("resize: sx=%d sy=%d",sx,sy);
 	if (sy<16) sy=16; if (sy>4000) RAISE("height too big");
 	if (sx<16) sx=16; if (sx>4000) RAISE("width too big");
 	alloc_image(sx,sy);
@@ -422,7 +416,6 @@ GRID_INLET(FormatX11,0) {
 	in->set_factor(sxc);
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in->dim->get(2)!=bit_packing->size) {
-		//gfpost("changing bit_packing's number of channels");
 		BitPacking *o = bit_packing;
 		o->mask[3]=0;
 		bit_packing = new BitPacking(
@@ -435,7 +428,6 @@ GRID_INLET(FormatX11,0) {
 	int sx = in->dim->get(1);
 	int y = in->dex/sxc;
 	int oy = y;
-//L fprintf(stderr,"y=%d\n",y);
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
 		if (use_stripes) {
@@ -465,7 +457,7 @@ fprintf(stderr,"pack y=%d out=%08lx,%08lx,%08lx im=%08lx,%08lx,%08lx\n", y,
 \def void close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
 	if (bit_packing) delete bit_packing;
-	MainLoop_remove(this);
+	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
 	if (is_owner) XDestroyWindow(display,window);
 	XSync(display,0);
 	dealloc_image();
@@ -675,7 +667,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		char host[256];
 		strcpy(host,rb_sym_name(argv[1]));
 		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
-		//if (verbose)
 		gfpost("mode `display', DISPLAY=`%s'",host);
 		open_display(host);
 		i=2;
@@ -709,11 +700,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		} else if (winspec==SYM(embed)) {
 			Ruby title_s = rb_funcall(argv[i+1],SI(to_s),0);
 			char *title = strdup(rb_str_ptr(title_s));
-			//pos_y = INT(argv[i+2]); pos_x = INT(argv[i+3]);
-			//sy    = INT(argv[i+4]); sx    = INT(argv[i+5]);
 			sy = sx = pos_y = pos_x = 0;
-			//lock_size = true;
-
 			if (verbose) gfpost("embed: will be searching for title ending in '%s'",title);
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
@@ -767,16 +754,10 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
 	} break;
 	}
-
-	//if (verbose) bit_packing->gfpost();
-	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
+	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatX11_alarm));
 }
 
 \def void delete_m () {
-//	if (display) {
-//		gfpost("implicitly closing display");
-//		close(0,0);
-//	}
 }
 
 GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),

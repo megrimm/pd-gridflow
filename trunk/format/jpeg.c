@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -84,7 +84,6 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_stdio_src(&djpeg,f);
 	jpeg_read_header(&djpeg,TRUE);
 	int sx=djpeg.image_width, sy=djpeg.image_height, chans=djpeg.num_components;
-	//gfpost("chans=%d",chans);
 	int32 v[] = { sy, sx, chans };
 	out[0]->begin(new Dim(3,v),
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));

@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -60,7 +60,7 @@ void FormatSDL::alarm() {
 
 void FormatSDL::resize_window (int sx, int sy) {
 //	gfpost("switching to size (%d,%d)",sy,sx);
-	if (dim) delete dim;
+	delete dim;
 	int32 v[] = {sy,sx,3};
 	dim = new Dim(3,v);
 	screen = SDL_SetVideoMode(v[1],v[0],0,SDL_SWSURFACE);
@@ -100,7 +100,7 @@ GRID_INLET(FormatSDL,0) {
 } GRID_END
 
 \def void close () {
-	MainLoop_remove(this);
+	rb_funcall(EVAL("$tasks"),SI(delete), 1, PTR2FIX(this));
 	in_use=false;
 }
 
@@ -122,7 +122,7 @@ GRID_INLET(FormatSDL,0) {
 		break;
 	default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 	}
-	MainLoop_add(this,(void(*)(void*))FormatSDL_alarm);
+	rb_funcall(EVAL("$tasks"),SI([]=), 2, PTR2FIX(this), PTR2FIX((void *)FormatSDL_alarm));
 }
 
 GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0,4)),

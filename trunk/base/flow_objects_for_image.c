@@ -187,7 +187,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->op_para = op_para;
 	this->op_fold = op_fold;
 	if (seed) this->seed.swallow(seed); // this->seed = *seed;
-	else this->seed.init_clear(new Dim(0,0),int32_type_i);
+	else this->seed.init_clear(new Dim(0,0),int32_e);
 	if (r) this->b.swallow(r);
 }
 
@@ -508,7 +508,7 @@ struct DrawPolygon : GridObject {
 void DrawPolygon::init_lines () {
 	int nl = polygon.dim->get(0);
 	int32 v[] = {nl,8};
-	lines.init(new Dim(2,v), int32_type_i);
+	lines.init(new Dim(2,v), int32_e);
 	Pt<Line> ld = Pt<Line>((Line *)(int32 *)lines,nl);
 	Pt<int32> pd = (Pt<int32>)polygon;
 	for (int i=0,j=0; i<nl; i++) {
@@ -705,7 +705,7 @@ GRID_INLET(DrawImage,0) {
 //		rsy,rsx,sy,sx,py,px);
 } GRID_FLOW {
 	int y = in->dex/in->factor;
-	if (position.nt != int32_type_i) RAISE("position has to be int32");
+	if (position.nt != int32_e) RAISE("position has to be int32");
 	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
 	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
 	for (; n; y++, n-=in->factor, data+=in->factor) {
@@ -748,7 +748,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	if (position) this->position.swallow(position);
 	else {
 		int32 v[] = { 2 };
-		this->position.init_clear(new Dim(1,v), int32_type_i);
+		this->position.init_clear(new Dim(1,v), int32_e);
 	}
 }
 

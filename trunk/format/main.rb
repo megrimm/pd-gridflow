@@ -24,17 +24,6 @@
 require "socket"
 require "fcntl"
 
-=begin now in base/main.rb
-class IO
-  def nonblock= flag
-    bit = Fcntl::O_NONBLOCK
-    state = fcntl(Fcntl::F_GETFL, 0)
-    fcntl(Fcntl::F_SETFL, (state & ~bit) |
-      (if flag; bit else 0 end))
-  end
-end
-=end
-
 module GridFlow
 
 class<<self
@@ -51,41 +40,32 @@ OurByteOrder = case [1].pack("L")
         when "\1\0\0\0"; ENDIAN_LITTLE  # Intel
         else raise "Cannot determine byte order" end
 
-class Format #< GridObject
+class Format < GridObject
 	FF_R,FF_W = 4,2
-
 	attr_accessor :parent
 
-=begin
-	NEW FORMAT API (0.6.x)
+=begin API
 	mode is :in or :out
-
 	def initialize(mode,*args) :
 		open a file handler (do it via .new of class)
-
 	def frame() :
 		read one frame, send through outlet 0
-
+		return values :
+			Integer >= 0 : frame number of frame read.
+			false : no frame was read : end of sequence.
+			nil : a frame was read, but can't say its number.
+		note that trying to read a nonexistent frame should no longer
+		rewind automatically (@in handles that part), nor re-read the
+		last frame (mpeg/quicktime used to do this)
 	def seek(Integer i) :
 		select one frame to be read next (by number)
-
 	def length() : ^Integer
 		returns number of frames (never implemented ?)
-
-	def option(Symbol name, *args) :
-		miscellaneous options
-
 	def close() :
 		close a handler
-
-	AMENDMENT (0.7.1):
-	def frame() now has return values :
-		Integer >= 0 : frame number of frame read.
-		false : no frame was read : end of sequence.
-		nil : a frame was read, but can't say its number.
-	note that trying to read a nonexistent frame should no longer
-	rewind automatically (@in handles that part), nor re-read the
-	last frame (mpeg/quicktime used to do this)
+	inlet 0 :
+		grid : frame to write
+		other : special options
 =end
 
 	def initialize(mode,*)
@@ -246,14 +226,11 @@ module GridIO
 
 	def _0_close
 		check_file_open
-		#GridFlow.post "format = #{@format}"
 		@format.close
-		#GridFlow.post "format = #{@format}"
 		@format = nil
 	end
 
 	def delete
-		#GridFlow.post "HELLO!!!"
 		@format.close if @format
 		@format = nil
 		super
@@ -381,16 +358,13 @@ module EventIO
 		@stream = @acceptor.accept
 		@stream.nonblock = true
 		@stream.sync = true
-#		STDERR.puts "GOT IT"
 		$tasks.delete self
 #		send_out 0, :accept # does not work
 	rescue Errno::EAGAIN
-#		STDERR.puts "wouldblock"
 	end
 
 	def try_read(dummy=nil)
 #		while @action
-#		p @chunksize-@buffer.length
 		n = @chunksize-(if @buffer then @buffer.length else 0 end)
 #		puts "tell: #{@stream.tell}"
 		t = @stream.read(n) # or raise EOFError
@@ -399,7 +373,6 @@ module EventIO
 			rewind
 			t = @stream.read(n) or raise "can't read any of #{n} bytes?"
 		end
-#		p t
 		#return if not t
 		if @buffer then @buffer << t else @buffer = t end
 		if @buffer.length == @chunksize
@@ -424,9 +397,6 @@ module EventIO
 			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
 			@stream = File.open filename, fmode
-#		when :files
-#			if mode==:in then
-#			@glob = Dir[]
 		when :gzfile
 			filename = args[0].to_s
 			filename = GridFlow.find_file filename if mode==:in
@@ -497,10 +467,20 @@ module EventIO
 	end
 end
 
-# this is the format autodetection proxy and should be defined before all other formats
-class FormatFile < Format
+class Format
 	class<<self; attr_reader :suffixes; end
 	@suffixes = {}
+	def self.conf_format(flags,symbol_name,description,suffixes='')
+		@flags = flags
+		@symbol_name = symbol_name
+		@description = description
+		suffixes.split(/,/).each {|suffix| Format.suffixes[suffix] = self }
+		GridFlow.formats[symbol_name.intern]=self
+	end
+end
+
+# this is the format autodetection proxy and should be defined before all other formats
+class FormatFile < Format
 	def self.new(mode,file)
 		file=file.to_s
 		a = [mode,:file,file]
@@ -556,14 +536,9 @@ class FormatGrid < Format; include EventIO
 
 	# rewinding and starting
 	def frame
-		if not @stream
-			raise "can't get frame when there is no connection"
-		end
-		if read_wait?
-			raise "already waiting for input"
-		end
+		raise "can't get frame when there is no connection" if not @stream
+		raise "already waiting for input" if read_wait?
 		return false if eof?
-
 		if @headerless then
 			@n_dim=@headerless.length
 			@dim = @headerless
@@ -575,7 +550,6 @@ class FormatGrid < Format; include EventIO
 			on_read(8) {|data| frame1 data }
 		end
 		(try_read nil while read_wait?) if not TCPSocket===@stream
-#		GridFlow.post "frame: finished"
 		super
 	end
 
@@ -591,18 +565,11 @@ class FormatGrid < Format; include EventIO
 
 	# the header
 	def frame1 data
-#		GridFlow.post("we are " + if OurByteOrder == ENDIAN_LITTLE
-#			then "smallest digit first"
-#			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
 		@endian = case head
 			when "\x7fGRID"; ENDIAN_BIG
 			when "\x7fgrid"; ENDIAN_LITTLE
 			else raise "grid header: invalid (#{data.inspect})" end
-#		GridFlow.post("this file is " + if @endian
-#			then "biggest digit first"
-#			else "smallest digit first" end)
-
 		case bpv
 		when 8, 16, 32; # ok
 		else raise "unsupported bpv (#{@bpv})"
@@ -610,7 +577,6 @@ class FormatGrid < Format; include EventIO
 		if reserved!=0
 			raise "reserved field is not zero"
 		end
-#		GridFlow.post "@n_dim=#{@n_dim}"
 		if @n_dim > GridFlow.max_rank
 			raise "too many dimensions (#{@n_dim})"
 		end
@@ -620,7 +586,6 @@ class FormatGrid < Format; include EventIO
 	# the dimension list
 	def frame2 data
 		@dim = data.unpack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end)
-#		GridFlow.post "dim=#{@dim.inspect}"
 		set_bufsize
 		if @prod > GridFlow.max_size
 			raise "dimension list: invalid prod (#{@prod})"
@@ -700,7 +665,6 @@ class FormatGrid < Format; include EventIO
 
 	def headerless(*args)
 		args=args[0] if Array===args[0]
-		#raise "expecting dimension list..."
 		args.map! {|a|
 			Numeric===a or raise "expecting dimension list..."
 			a.to_i
@@ -854,14 +818,9 @@ targa header is like:
 		head = @stream.read(18)
 		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
 		comment = @stream.read(comment_length)
-
-		if colors != 2
-			raise "unsupported color format: #{colors}"
-		end
-
+		raise "unsupported color format: #{colors}" if colors != 2
 #		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
 #		GridFlow.post "tga: comment: \"#{comment}\""
-
 		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
 		frame_read_body h, w, depth/8
@@ -872,7 +831,8 @@ targa header is like:
 		dim = inlet_dim 0
 		raise "expecting (rows,columns,channels)" if dim.length!=3
 		raise "expecting channels=3 or 4" if dim[2]!=3 and dim[2]!=4
-		# comment = "" # "created using GridFlow"
+		# comment = "created using GridFlow"
+		#!@#$ why did i use that comment again?
 		comment = "CREATOR: The GIMP's TGA Filter Version 1.2"
 		@stream.write [comment.length,colortype=0,colors=2,"\0"*9,
 		dim[1],dim[0],8*dim[2],(8*(dim[2]-3))|32,comment].pack("ccca9vvcca*")
@@ -880,29 +840,11 @@ targa header is like:
 		inlet_set_factor 0, dim[2]
 	end
 
-	def _0_rgrid_flow data
-		@stream.write @bp.pack(data)
-	end
-	
-	def _0_rgrid_end
-		@stream.flush
-	end
-
+	def _0_rgrid_flow data; @stream.write @bp.pack(data) end
+	def _0_rgrid_end; @stream.flush end
 	install_rgrid 0
 	install_format "FormatTarga", 1, 1, FF_R|FF_W, "targa", "TrueVision Targa", "tga"
 end
-
-=begin
-class FormatMulti < Format
-	install_rgrid 0
-	install_format "FormatMulti", 1, 1, FF_R, "multi", "joining multiple files"
-end
-
-class FormatTempFile < Format
-	install_rgrid 0
-	install_format "FormatTempFile", 1, 1, FF_R|FF_W, "tempfile", "huh..."
-end 
-=end
 
 end # module GridFlow
 
