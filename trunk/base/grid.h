@@ -276,7 +276,7 @@ public:
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p,(long)start,(long)start+n);
-			raise(11);
+			::raise(11);
 		}		
 #endif
 	}
@@ -286,7 +286,7 @@ public:
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p,(long)start,(long)start+n);
-			raise(11);
+			::raise(11);
 		}		
 #endif
 	}
@@ -305,7 +305,7 @@ public:
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p, (long)i, (long)p+i,(long)start,(long)start+n);
-			raise(11);
+			::raise(11);
 		}
 #endif
 		return p[i];
@@ -317,14 +317,14 @@ public:
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)p,(long)start,(long)start+n);
-			raise(11);
+			::raise(11);
 		}
 		T *q = p+k-1;
 		if (!(q>=start && q<start+n)) {
 			fprintf(stderr,
 				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
 				(long)q,(long)start,(long)start+n);
-			raise(11);
+			::raise(11);
 		}
 #endif
 	}
@@ -361,14 +361,20 @@ EACH_NUMBER_TYPE(FOO)
 /* **************************************************************** */
 /* some basic memory handling */
 
-#define COPY(_dest_,_src_,_n_) gfmemcopy((uint8*)(_dest_),(uint8*)(_src_),(_n_)*sizeof(*(_dest_)))
-#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
+template <class T>
+inline void COPY(Pt<T> dest, Pt<T> src, int n) {
+	gfmemcopy((uint8*)dest,(uint8*)src,n*sizeof(T));
+}
+
+template <class T>
+inline void CLEAR(Pt<T> dest, int n) {
+	memset(dest,0,n*sizeof(T));
+}
+
 void gfmemcopy(uint8 *out, const uint8 *in, int n);
-template <class T> static void memswap (T *a, T *b, int n) {
-	T c[n];
-	COPY(c,a,n);
-	COPY(a,b,n);
-	COPY(b,c,n);
+
+template <class T> static void memswap (Pt<T> a, Pt<T> b, int n) {
+	STACK_ARRAY(T,c,n); COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
 }
 
 /* **************************************************************** */
@@ -441,46 +447,6 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
 
-/* maximum number of dimensions in an array */
-#define MAX_DIMENSIONS 16
-
-/* a Dim is a list of dimensions that describe the shape of a grid */
-struct Dim {
-	int n;
-	int32 v[MAX_DIMENSIONS];
-
-	void check();
-
-	Dim(int n, int32 *v=0) {
-		this->n = n;
-		if (v) { memcpy(this->v,v,n*sizeof(int)); check(); }
-	}
-
-	Dim *dup() { return new Dim(n,v); }
-	int count() {return n;}
-
-	int get(int i) {
-		assert(i>=0);
-		assert(i<n);
-		return v[i];
-	}
-	int32 prod(int start=0, int end=-1) {
-		if (end<0) end+=n;
-		int32 tot=1;
-		for (int i=start; i<=end; i++) tot *= v[i];
-		return tot;
-	}
-
-	/* !@#$ big leak machine */
-	char *to_s();
-
-	bool equal(Dim *o) {
-		if (n!=o->n) return false;
-		for (int i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
-		return true;
-	}
-};
-
 /* **************************************************************** */
 
 #define OBJECT_MAGIC 1618033989
@@ -513,6 +479,56 @@ struct Object {
 
 	virtual ~Object() { magic = 0xDEADBEEF; }
 	virtual void mark() {} /* not used for now */
+};
+
+/* **************************************************************** */
+
+/* maximum number of dimensions in an array */
+#define MAX_DIMENSIONS 16
+
+/* a Dim is a list of dimensions that describe the shape of a grid */
+struct Dim : Object {
+	int n;
+	Pt<int32> v; /* safe pointer */
+	int32 v2[MAX_DIMENSIONS]; /* real stuff */
+	
+	void check();
+
+	Dim(int n, Pt<int32> v) {
+		this->v = Pt<int32>(v2,MAX_DIMENSIONS);
+		this->n = n;
+		COPY(this->v,v,n); check();
+	}
+
+	Dim(int n, int32* v) {
+		this->v = Pt<int32>(v2,MAX_DIMENSIONS);
+		this->n = n;
+		COPY(this->v,Pt<int32>(v,n),n); check();
+	}
+
+	Dim *dup() { return new Dim(n,v); }
+	int count() {return n;}
+
+	int get(int i) {
+		assert(i>=0);
+		assert(i<n);
+		return v[i];
+	}
+	int32 prod(int start=0, int end=-1) {
+		if (end<0) end+=n;
+		int32 tot=1;
+		for (int i=start; i<=end; i++) tot *= v[i];
+		return tot;
+	}
+
+	/* !@#$ big leak machine */
+	char *to_s();
+
+	bool equal(Dim *o) {
+		if (n!=o->n) return false;
+		for (int i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
+		return true;
+	}
 };
 
 /* **************************************************************** */
@@ -613,56 +629,83 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 	case int64_type_i: C(int64) break; \
 	case float32_type_i: C(float32) break; \
 	case float64_type_i: C(float64) break; \
-	default: E; RAISE("argh");}
+	default: E; RAISE("type %d not available here",T);}
 
 #define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
 	case uint8_type_i: C(uint8) break; \
 	case int16_type_i: C(int16) break; \
 	case int32_type_i: C(int32) break; \
 	case int64_type_i: C(int64) break; \
-	default: E; RAISE("argh");}
+	default: E; RAISE("type %d not available here",T);}
 
 /* Operator objects encapsulate optimised loops of simple operations */
 
 template <class T>
-struct Operator1On {
-	void   (*op_map)(int,T*);
+struct Operator1On : Object {
+	typedef void (*Map)(int,T*);
+	Map op_map;
+	Operator1On(Map m) : op_map(m) {}
+	Operator1On() {}
+	Operator1On(const Operator1On &z) {
+		op_map = z.op_map; }
 };
 
-struct Operator1 {
+struct Operator1 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
-#define FOO(type) \
-		Operator1On<type> on_##type; \
-		Operator1On<type> *on(type &foo) { \
-			if (!on_##type.op_map) RAISE("operator does not support this type"); \
-			return &on_##type;}
+#define FOO(T) \
+		Operator1On<T> on_##T; \
+		Operator1On<T> *on(T &foo) { \
+			if (!on_##T.op_map) RAISE("operator does not support this type"); \
+			return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 //public:
 	template <class T> inline void map(int n, Pt<T> as) {
 		as.will_use(n);
 		on(*as)->op_map(n,(T *)as);}
+
+	Operator1(Ruby /*Symbol*/ sym_, const char *name_,
+#define FOO(T) Operator1On<T> op_##T, 
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+	bool bogosity=0) : sym(sym_), name(name_) {
+#define FOO(T) on_##T = op_##T;
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+	}
 };
 
 template <class T>
-struct Operator2On {
-	void (*op_map)(int n, T *as, T b);
-	void (*op_zip)(int n, T *as, T *bs);
-	void (*op_fold)(int an, int n, T *as, T *bs);
-	void (*op_scan)(int an, int n, T *as, T *bs);
+struct Operator2On : Object {
+	typedef void (*Map)(int n, T *as, T b);
+	typedef void (*Zip)(int n, T *as, T *bs);
+	typedef void (*Fold)(int an, int n, T *as, T *bs);
+	typedef void (*Scan)(int an, int n, T *as, T *bs);
+	Map op_map;
+	Zip op_zip;
+	Fold op_fold;
+	Scan op_scan;
+	Operator2On(Map m, Zip z, Fold f, Scan s) :
+		op_map(m), op_zip(z), op_fold(f), op_scan(s) {}
+	Operator2On() {}
+	Operator2On(const Operator2On &z) {
+		op_map = z.op_map;
+		op_zip = z.op_zip;
+		op_fold = z.op_fold;
+		op_scan = z.op_scan; }
 };
 
-struct Operator2 {
+struct Operator2 : Object {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 //private:
-#define FOO(type) \
-		Operator2On<type> on_##type; \
-		Operator2On<type> *on(type &foo) { \
-			if (!on_##type.op_map) RAISE("operator does not support this type"); \
-			return &on_##type;}
+#define FOO(T) \
+		Operator2On<T> on_##T; \
+		Operator2On<T> *on(T &foo) { \
+			if (!on_##T.op_map) RAISE("operator does not support this type"); \
+			return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 //public:
@@ -681,6 +724,16 @@ EACH_NUMBER_TYPE(FOO)
 		as.will_use(an);
 		bs.will_use(an*n);
 		on(*as)->op_scan(an,n,(T *)as,(T *)bs);}
+
+	Operator2(Ruby /*Symbol*/ sym_, const char *name_,
+#define FOO(T) Operator2On<T> op_##T, 
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+	bool bogosity=0) : sym(sym_), name(name_) {
+#define FOO(T) on_##T = op_##T;
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+	}
 };
 
 extern NumberType number_type_table[];
@@ -714,7 +767,7 @@ static Operator2 *convert(Ruby x, Operator2 **bogus) {
 */
 typedef void (*DimConstraint)(Dim *d);
 
-struct Grid {
+struct Grid : Object {
 	Grid *next;
 	DimConstraint dc;
 	Dim *dim;
@@ -822,7 +875,7 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 GRID_INLET(_class_,_inlet_) { \
 _member_.init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 GRID_FLOW { \
-COPY(&((Pt<T>)_member_)[in->dex], data, n); } \
+COPY((Pt<T>)(_member_)+in->dex, data, n); } \
 GRID_FINISH
 
 /* macro for defining a gridinlet's behaviour as just storage */
@@ -837,7 +890,7 @@ GRID_FINISH
 		} \
 		_member_.next->init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 	GRID_FLOW { \
-		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
+		COPY(((Pt<T>)*_member_.next)+in->dex, data, n); } \
 	GRID_FINISH
 
 typedef struct GridInlet GridInlet;

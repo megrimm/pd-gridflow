@@ -246,9 +246,12 @@ void swap16 (int n, Pt<uint16> data) {
 #define MAX_INDICES 16*1024*1024
 void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
-	for (int i=0; i<n; i++)
-		if (v[i]<0 || v[i]>MAX_INDICES)
-			RAISE("dim[%d]=%d is out of range",i,v[i]);
+	for (int i=0; i<n; i++) {
+		if (v[i]<0 || v[i]>MAX_INDICES) {
+			fprintf(stderr,"dim[%d]=%ld is out of range\n",i,v[i]);
+			::raise(11);
+		}
+	}
 }
 
 
@@ -295,26 +298,24 @@ public:
 	template <class T> class Y1##op : Op1<T> { public: \
 		inline static T f(T a) { return expr; } };
 
-#define DECL_OP1ON(base,op,type) { \
-	&base<Y1##op<type> >::op_map }
+#define DECL_OP1ON(base,op,T) Operator1On<T>( \
+	&base<Y1##op<T> >::op_map )
 
-#define DECL_OP1(op,sym,props) { 0, sym, \
+#define DECL_OP1(op,sym,props) Operator1( 0, sym, \
 	DECL_OP1ON(Op1Loops,op,uint8), \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
 	DECL_OP1ON(Op1Loops,op,int64), \
 	DECL_OP1ON(Op1Loops,op,float32), \
-	DECL_OP1ON(Op1Loops,op,float64), \
-}
+	DECL_OP1ON(Op1Loops,op,float64))
 
-#define DECL_OP1_NOU(op,sym,props) { 0, sym, \
-	{0}, \
+#define DECL_OP1_NOU(op,sym,props) Operator1(0, sym, \
+	Operator1On<uint8>(0), \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
 	DECL_OP1ON(Op1Loops,op,int64), \
 	DECL_OP1ON(Op1Loops,op,float32), \
-	DECL_OP1ON(Op1Loops,op,float64), \
-}
+	DECL_OP1ON(Op1Loops,op,float64))
 
 DEF_OP1(abs,  a>=0 ? a : -a)
 DEF_OP1(sqrt, (T)(0+floor(sqrt(a))))
@@ -365,11 +366,30 @@ public:
 	}
 	template <class T>
 	static void op_fold (int an, int n, T *as, T *bs) {
-		if (an==1) {
+		switch (an) {
+		case 1:
 			for (; (n&3)!=0; bs++, n--) *as=O::f(*as,*bs);
 			for (; n; bs+=4, n-=4)
 				*as=O::f(O::f(O::f(O::f(*as,bs[0]),bs[1]),bs[2]),bs[3]);
-		} else {
+		break;
+		case 2:
+			for (; (n&3)!=0; bs+=2, n--) {
+				as[0]=O::f(as[0],bs[0]);
+				as[1]=O::f(as[1],bs[1]); }
+			for (; n; bs+=8, n-=4) {
+				as[0]=O::f(O::f(O::f(O::f(as[0],bs[0]),bs[2]),bs[4]),bs[6]);
+				as[1]=O::f(O::f(O::f(O::f(as[1],bs[1]),bs[3]),bs[5]),bs[7]); }
+		break;
+		case 3:
+			for (; (n&3)!=0; bs+=3, n--) {
+				as[0]=O::f(as[0],bs[0]);
+				as[1]=O::f(as[1],bs[1]);
+				as[2]=O::f(as[2],bs[2]); }
+			for (; n; bs+=12, n-=4) {
+				as[0]=O::f(O::f(O::f(O::f(as[0],bs[0]),bs[3]),bs[6]),bs[9]);
+				as[1]=O::f(O::f(O::f(O::f(as[1],bs[1]),bs[4]),bs[7]),bs[10]);
+				as[2]=O::f(O::f(O::f(O::f(as[2],bs[2]),bs[5]),bs[8]),bs[11]); }
+		default:
 			for (; n--; ) {
 				int i=0;
 				for (; i<(an&-4); i+=4, bs+=4) {
@@ -419,40 +439,37 @@ public:
 	class Y##op<float64> : Op2<float64> { public: \
 		inline static float64 f(float64 a, float64 b) { return expr2; } };
 
-#define DECL_OP2ON(base,op,type) { \
-	&base<Y##op<type> >::op_map, \
-	&base<Y##op<type> >::op_zip, \
-	&base<Y##op<type> >::op_fold, \
-	&base<Y##op<type> >::op_scan }
+#define DECL_OP2ON(base,op,T) Operator2On<T>( \
+	&base<Y##op<T> >::op_map, \
+	&base<Y##op<T> >::op_zip, \
+	&base<Y##op<T> >::op_fold, \
+	&base<Y##op<T> >::op_scan)
 
-#define DECL_OP2(op,sym,props) { 0, sym, \
+#define DECL_OP2(op,sym,props) Operator2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
 	DECL_OP2ON(Op2Loops,op,float32), \
-	DECL_OP2ON(Op2Loops,op,float64), \
-}
+	DECL_OP2ON(Op2Loops,op,float64))
 
 /*
-#define DECL_OP2_BITWISE(op,sym,props) { 0, sym, \
+#define DECL_OP2_BITWISE(op,sym,props) Operator2(0, sym, \
 	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int64), \
 	DECL_OP2ON(Op2LoopsBitwise,op,float32), \
-	DECL_OP2ON(Op2LoopsBitwise,op,float64), \
-}
+	DECL_OP2ON(Op2LoopsBitwise,op,float64))
 */
 
-#define DECL_OP2_NOFLOAT(op,sym,props) { 0, sym, \
+#define DECL_OP2_NOFLOAT(op,sym,props) Operator2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
-	{0,0,0,0}, \
-	{0,0,0,0}, \
-}
+	Operator2On<float32>(0,0,0,0), \
+	Operator2On<float64>(0,0,0,0))
 
 template <class T>
 static inline T gf_floor (T a) {
