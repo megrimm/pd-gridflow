@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -459,10 +459,7 @@ Format *FormatVideoDev_open (FormatClass *class, ATOMLIST, int mode) {
 
 	whine("will try opening file");
 
-/* actually you only can open devices using open() directly */
-/*	$->stream = v4j_file_open(filename, O_RDONLY); */
-/*	$->stream =          open(filename, O_RDONLY); */
-	$->stream =          open(filename, O_RDWR);
+	$->stream = open(filename, O_RDWR);
 	if (0> $->stream) {
 		whine("can't open file: %s", filename);
 		goto err;

@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -88,7 +88,7 @@ err:
 GRID_BEGIN(FormatPPM,0) {
 	fprintf($->bstream,
 		"P6\n"
-		"# generated using Video4jmax " VIDEO4JMAX_VERSION "\n"
+		"# generated using GridFlow " GRIDFLOW_VERSION "\n"
 		"%d %d\n"
 		"255\n",
 		Dim_get(in->dim,1),
@@ -134,7 +134,7 @@ Format *FormatPPM_open (FormatClass *qlass, ATOMLIST, int mode) {
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->bstream = v4j_file_fopen(filename,mode);
+	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;

@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -21,10 +21,10 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef __GRID_PROTOCOL_H
-#define __GRID_PROTOCOL_H
+#ifndef __GRID_H
+#define __GRID_H
 
-#define VIDEO4JMAX_PROFILING
+#define GRIDFLOW_PROFILING
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,10 +32,12 @@
 
 #include "config.h"
 /* current version number as string literal */
-#define VIDEO4JMAX_VERSION "0.3.1"
-#define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
+#define GRIDFLOW_VERSION "0.3.1"
+#define GRIDFLOW_COMPILE_TIME __DATE__ ", " __TIME__
 
-#ifdef VIDEO4JMAX_FAST
+#define GRIDFLOW_FAST
+
+#ifdef GRIDFLOW_FAST
 #define NO_ASSERT
 #define NO_DEADBEEF
 #endif
@@ -70,7 +72,7 @@
 */
 
 /* those are helpers for profiling. */
-#ifdef VIDEO4JMAX_PROFILING
+#ifdef GRIDFLOW_PROFILING
 #define ENTER $->profiler_last = rdtsc();
 #define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
 #define ENTER_P $->parent->profiler_last = rdtsc();
@@ -101,9 +103,17 @@
 	_class_ *self, int winlet, fts_symbol_t selector, ATOMLIST
 
 /*
+  now (0.3.1) using a separate macro for some things like decls
+  and for methods that should not be profiled.
+*/
+
+#define METHOD2(_class_,_name_) \
+	void _class_##_##_name_(METHOD_ARGS(_class_))
+
+/*
   a header for a given method in a given class.
 */
-#ifdef VIDEO4JMAX_PROFILING
+#ifdef GRIDFLOW_PROFILING
 #define METHOD(_class_,_name_) \
 	void _class_##_##_name_(METHOD_ARGS(_class_)); \
 	void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
@@ -113,17 +123,12 @@
 	} \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
 #else
-#define METHOD(_class_,_name_) \
-	void _class_##_##_name_(METHOD_ARGS(_class_))
+#define METHOD(_class_,_name_) METHOD2(_class_,_name_)
 #endif
 
-/*
-  now (0.3.1) using a separate macro for some things like decls
-  and for methods that should not be profiled.
-*/
-
-#define METHOD2(_class_,_name_) \
-	void _class_##_##_name_(METHOD_ARGS(_class_))
+/* this is old-style METHOD_PTR */
+#define METHOD2PTR(_class_,_name_) \
+	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
 
 /*
   returns a pointer to a method of a class as an fts_object_t* instead
@@ -131,17 +136,12 @@
   cannot inherit from another struct, and so a pointer of one type cannot be
   considered as a pointer to a similar, more elementary type.
 */
-#ifdef VIDEO4JMAX_PROFILING
+#ifdef GRIDFLOW_PROFILING
 #define METHOD_PTR(_class_,_name_) \
 	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
 #else
-#define METHOD_PTR(_class_,_name_) \
-	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
+#define METHOD_PTR(_class_,_name_) METHOD2PTR(_class_,_name_)
 #endif
-
-/* this is old-style METHOD_PTR */
-#define METHOD2PTR(_class_,_name_) \
-	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
 
 /* a header for the class constructor */
 #define CLASS(_name_) \
@@ -288,8 +288,8 @@ static inline bool is_le(void) {
 
 void whine(char *fmt, ...);
 void whine_time(const char *s);
-int    v4j_file_open(const char *name, int mode);
-FILE *v4j_file_fopen(const char *name, int mode); 
+int    gf_file_open(const char *name, int mode);
+FILE *gf_file_fopen(const char *name, int mode); 
 
 typedef struct MethodDecl MethodDecl;
 struct MethodDecl {
@@ -310,17 +310,17 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 #define MAX_NUMBERS 64*1024*1024
 
 /* used as maximum width, maximum height, etc. */
-#define MAX_INDICES 2048
+#define MAX_INDICES 65536
 
 /* maximum number of dimensions in an array */
-#define MAX_DIMENSIONS 4
+#define MAX_DIMENSIONS 16
 
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
 #define MAX_OUTLETS 2
 
 /* number of (maximum,ideal) Numbers to send at once */
-#define PACKET_LENGTH (1024)
+#define PACKET_LENGTH 1024
 
 /*
   what kind of number a Grid contains.
@@ -643,7 +643,7 @@ typedef struct ObjectSet ObjectSet;
 ObjectSet *ObjectSet_new(void);
 void ObjectSet_add(ObjectSet *$, GridObject *obj);
 void ObjectSet_del(ObjectSet *$, GridObject *obj);
-extern ObjectSet *video4jmax_object_set;
+extern ObjectSet *gridflow_object_set;
 
 /* for C++ (see at the top of this file) */
 /*

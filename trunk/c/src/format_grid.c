@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -119,7 +119,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	/* dimension list */
 	{
 		int v[n_dim],i;
-		if (sizeof(v)>read($->stream,v,sizeof(v))) {
+		if ((int)sizeof(v)>read($->stream,v,sizeof(v))) {
 			whine("dimension list: read error: %s",strerror(errno));
 			goto err;
 		}
@@ -224,7 +224,7 @@ bool FormatGrid_open_file (FormatGrid *$, ATOMLIST, int mode) {
 	}
 
 	filename = fts_symbol_name(fts_get_symbol(at+0));
-	$->bstream = v4j_file_fopen(filename,mode);
+	$->bstream = gf_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
 		goto err;

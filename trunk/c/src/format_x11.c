@@ -1,7 +1,7 @@
 /*
 	$Id$
 
-	Video4jmax
+	GridFlow
 	Copyright (c) 2001 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
@@ -405,7 +405,7 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 
 /* window */
 	
-	$->name = strdup("Video4jmax");
+	$->name = strdup("GridFlow");
 
 	oldw = $->window;
 	if (oldw) {
