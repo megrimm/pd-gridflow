@@ -451,7 +451,10 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
-	if (!bself) {post("FObject#send_out2 : bself is NULL, rself=%08x",rself);return Qnil;}
+	if (!bself) {
+		//post("FObject#send_out2 : bself is NULL, rself=%08x",rself);
+		return Qnil;
+	}
 	bself->check_magic();
 	Ruby qlass = rb_funcall(rself,SI(class),0);
 	int outlet = INT(argv[0]);
