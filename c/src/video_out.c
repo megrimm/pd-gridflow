@@ -157,7 +157,7 @@ void display_set_alarm(VideoDisplay *$) {
 		fts_clock_t *clock = fts_sched_get_clock();
 		$->alarm = fts_alarm_new(clock, display_alarm, $);
 	}
-	fts_alarm_set_delay($->alarm, 250.0);
+	fts_alarm_set_delay($->alarm, 125.0);
 	fts_alarm_arm($->alarm);
 }
 
@@ -264,7 +264,9 @@ GRID_FLOW(VideoOut,0) {
 	}
 }
 
-GRID_END(VideoOut,0) {}
+GRID_END(VideoOut,0) {
+	whine_time("VideoOut:0:end");
+}
 
 /* ---------------------------------------------------------------- */
 

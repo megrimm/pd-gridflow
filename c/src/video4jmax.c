@@ -23,11 +23,13 @@
 
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <stdarg.h>
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "grid.h"
 
@@ -129,13 +131,14 @@ void whine(char *fmt, ...) {
 
 	if (last_format && strcmp(last_format,fmt)==0) {
 		format_count++;
-		if (format_count >= 256) {
-			if (high_bit(format_count)-low_bit(format_count) < 3)
-			post("[too many similar posts. this is # %d]\n",format_count);
+		if (format_count >= 64) {
+			if (high_bit(format_count)-low_bit(format_count) < 3) {
+				post("[too many similar posts. this is # %d]\n",format_count);
 #ifdef MAKE_TMP_LOG
-			fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
-			fflush(whine_f);
+				fprintf(whine_f,"[too many similar posts. this is # %d]\n",format_count);
+				fflush(whine_f);
 #endif
+			}
 			return;
 		}
 	} else {
@@ -157,6 +160,12 @@ void whine(char *fmt, ...) {
 		fflush(whine_f);
 #endif
 	}
+}
+
+void whine_time(const char *s) {
+	struct timeval t;
+	gettimeofday(&t,0);
+	whine("%s: %d.%06d\n",s,t.tv_sec,t.tv_usec);
 }
 
 /* to help find uninitialized values */
@@ -221,4 +230,5 @@ FILE *v4j_file_fopen(const char *name, int mode) {
 	if (fd<0) return 0;
 	return fdopen(fd,mode==4?"r":mode==2?"w":"");
 }
+
 
