@@ -64,7 +64,6 @@ Numop2 *op2_shl, *op2_and;
 static void expect_dim_dim_list (Dim *d) {
 	if (d->n!=1) RAISE("dimension list should be Dim[n], not %s",d->to_s());
 	int n = d->get(0);
-	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 }
 
 static void expect_min_one_dim (Dim *d) {
@@ -158,9 +157,9 @@ GRID_INPUT(GridImport,1,dim_grid) {
 
 \def void _0_symbol(Symbol x) {
 	const char *name = rb_sym_name(argv[0]);
-	int32 v[] = { strlen(name) };
-	if (!dim) out=new GridOutlet(this,0,new Dim(1,v));
-	process(v[0],Pt<uint8>((uint8 *)name,v[0]));
+	int n = strlen(name);
+	if (!dim) out=new GridOutlet(this,0,new Dim(n));
+	process(n,Pt<uint8>((uint8 *)name,n));
 	if (!dim) {delete out; out=0;}
 }
 
@@ -344,7 +343,6 @@ GRID_INLET(GridStore,0) {
 		RAISE("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
 	int nd = nb - nc + na - 1;
-	if (nd > MAX_DIMENSIONS) RAISE("too many dimensions!");
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r.dim->v+nc,nb-nc);
 	out=new GridOutlet(this,0,new Dim(nd,v),r.nt);
@@ -750,8 +748,7 @@ GRID_INLET(GridInner,0) {
 	int rcols = rsize/rrows;
 	Pt<T> rdata = (Pt<T>)r;
 	int chunk = MAX_PACKET_SIZE/rsize;
-	int32 rv = chunk*rsize;
-	r2.init(new Dim(1,&rv),r.nt);
+	r2.init(new Dim(chunk*rsize),r.nt);
 	Pt<T> buf3 = (Pt<T>)r2;
 	for (int i=0; i<rrows; i++)
 		for (int j=0; j<chunk; j++)
@@ -927,7 +924,7 @@ void GridFor::trigger (T bogus) {
 	}
 	Dim *d;
 	if (from.dim->n==0) {
-		d = new Dim(1,(int32 *)nn);
+		d = new Dim(*nn);
 	} else {
 		nn[n]=n;
 		d = new Dim(n+1, (int32 *)nn);
@@ -1013,9 +1010,8 @@ struct GridDim : GridObject {
 };
 
 GRID_INLET(GridDim,0) {
-	int32 v[1] = {in->dim->n};
-	GridOutlet out(this,0,new Dim(1,v));
-	out.send(v[0],Pt<int32>((int32 *)in->dim->v,in->dim->n));
+	GridOutlet out(this,0,new Dim(in->dim->n));
+	out.send(in->dim->n,Pt<int32>((int32 *)in->dim->v,in->dim->n));
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
@@ -1059,7 +1055,7 @@ struct GridRedim : GridObject {
 
 GRID_INLET(GridRedim,0) {
 	int a = in->dim->prod(), b = dim->prod();
-	if (a<b) {int32 v[1]={a}; temp.init(new Dim(1,v),in->nt);}
+	if (a<b) temp.init(new Dim(a),in->nt);
 	out=new GridOutlet(this,0,dim->dup(),in->nt);
 } GRID_FLOW {
 	int i = in->dex;

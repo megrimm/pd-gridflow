@@ -917,7 +917,7 @@ static inline Grid *convert (Ruby r, Grid **bogus) {
 	template <class T> \
 	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<T> data); \
 
-//// macros for declaring an inlet inside GRCLASS() //
+//// macros for declaring an inlet inside GRCLASS() (GridHandler)
 // C is for class, I for inlet number, M is for mode
 // GRINLET  : int32 only
 // GRINLET4 : all types
