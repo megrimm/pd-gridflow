@@ -77,6 +77,8 @@ void video4jmax_module_init (void) {
 
 	post("--- Video4jmax startup: end ---\n");
 
+	srandom(time(0));
+
 	/*
 		this is for debugging only and should be turned off in
 		the normal distribution. this code ensures that crashes are
@@ -149,13 +151,17 @@ void *qalloc(size_t n) {
 }
 
 /* to help find dangling references */
-void qfree(void *data, size_t n) {
+void qfree(void *data) {
+	int n=8;
+	data = realloc(data,n);
+	{
 	long *data2 = (long *) data;
 	int i;
 	int nn = (int) n/4;
 	#ifndef NO_DEADBEEF
-		for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
+//		for (i=0; i<nn; i++) data2[i] = 0xFADEDF00;
 	#endif
+	}
 }
 
 void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {

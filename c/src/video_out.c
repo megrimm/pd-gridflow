@@ -298,12 +298,12 @@ METHOD(VideoOut,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		(GridBegin)VideoOut_0_begin, (GridFlow)VideoOut_0_flow);
+		(GridBegin)VideoOut_0_begin, (GridFlow)VideoOut_0_flow, 0);
 
 	COERCE_INT_INTO_RANGE(height,1,MAX_INDICES);
 	COERCE_INT_INTO_RANGE(width, 1,MAX_INDICES);
 
-	$->autodraw = 2;
+	$->autodraw = 1;
 	$->buf = NEW(Number,width*3);
 	$->bufn = 0;
 

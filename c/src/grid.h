@@ -50,8 +50,8 @@ typedef long  int32;
 typedef float  float32;
 typedef double float64;
 
-void *qalloc(          size_t n); /*0xdeadbeef*/
-void qfree(void *data, size_t n); /*0xfadedf00*/
+void *qalloc(size_t n); /*0xdeadbeef*/
+void qfree(void *data); /*0xfadedf00*/
 
 /*
   a remainder function such that floor(a/b)*b+mod(a,b) = a
@@ -267,10 +267,9 @@ struct GridInlet {
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
-		GridBegin a, GridFlow p);
+		GridBegin b, GridFlow f, GridEnd e);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
-	void GridInlet_finish(GridInlet *$);
 
 /*
 #define GridInlet_NEW((GridObject *)parent, winlet, (GridBegin)a, (GridFlow)b);
