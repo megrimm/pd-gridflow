@@ -103,18 +103,18 @@ static void FObject_free (void *foo) {
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym) {
 	if (argc<1) {
-		sym = SYM(bang);
+		sym = bsym._bang;
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
-		sym = SYM(list);
+		sym = bsym._list;
 	} else if (INTEGER_P(*argv)) {
-		sym = SYM(int);
+		sym = bsym._int;
 	} else if (FLOAT_P(*argv)) {
-		sym = SYM(float);
+		sym = bsym._float;
 	} else if (SYMBOL_P(*argv)) {
 		sym = *argv;
 		argc--, argv++;
 	} else if (argc==1 && TYPE(*argv)==T_ARRAY) {
-		sym = SYM(list);
+		sym = bsym._list;
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
 	} else {
@@ -490,6 +490,10 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 	return Qnil;
 }
 
+/*
+  This code handles nested lists because PureData doesn't do it
+  and jMax only does it when it feels like it.
+*/
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 	int stack[16];
 	int stackn=0;

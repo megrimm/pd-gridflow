@@ -111,7 +111,7 @@ def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
 		when Integer, Symbol; x
-		when /^[+-]?[0-9]+$/; x.to_i
+		when /^[+\-]?[0-9]+$/; x.to_i
 		when String; x.intern
 		end
 	}

@@ -554,7 +554,7 @@ void swap16 (int n, Pt<uint16> data);
 	MACRO(   float32, 32, NT_FLOAT) \
 	MACRO(   float64, 64, NT_UNSUPPORTED) \
 	MACRO( complex64, 64, NT_UNSUPPORTED) \
-	MACRO(complex128,128, NT_UNSUPPORTED) \
+	MACRO(complex128,128, NT_UNSUPPORTED)
 
 enum NumberTypeIndex {
 #define FOO(_sym_,args...) _sym_##_type_i,

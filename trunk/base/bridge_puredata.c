@@ -120,44 +120,12 @@ static Ruby Bridge_import_value(const t_atom *at) {
 	}
 }
 
-/*
-  This code handles nested lists because PureData doesn't do it
-  and jMax only does it when it feels like it.
-*/
-int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv, int level=0) {
-	int argc=0;
-	while (ac) {
-		t_atomtype t = at->a_type;
-		if (t==A_SYMBOL) {
-			const char *s=at->a_w.w_symbol->s_name;
-			if (strcmp(s,list_begin)==0) {
-				ac--; at++;
-				Ruby ary = rb_ary_new();
-				Ruby argv2[ac];
-				int argc2 = Bridge_import_list(ac,at,argv2,level+1);
-				for (int i=0; i<argc2; i++) rb_ary_push(ary,argv2[i]);
-				argv[argc++] = ary;
-				continue;
-			}
-			if (strcmp(s,list_end)==0) {
-				ac--; at++;
-				if (level>0) return argc;
-				RAISE("closing list without opening");
-			}
-		}
-		argv[argc++]=Bridge_import_value(at);
-		ac--; at++;
-	}
-	if (level) RAISE("opening %d list(s) without closing",level);
-	return argc;
-}
-
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	Ruby argv[fm->ac+2];
 	argv[0] = INT2NUM(fm->winlet);
 	argv[1] = ID2SYM(rb_intern(fm->selector->s_name));
-	int argc = Bridge_import_list(fm->ac,fm->at,argv+2);
-	rb_funcall2(fm->self->rself,SI(send_in),argc+2,argv);
+	for (int i=0; i<fm->ac; i++) argv[2+i] = Bridge_import_value(fm->at+i);
+	rb_funcall2(fm->self->rself,SI(send_in),fm->ac+2,argv);
 	return Qnil;
 }
 
@@ -200,24 +168,17 @@ t_symbol *s, int argc, t_atom *argv) {
 }
 	
 static Ruby BFObject_init_1 (FMessage *fm) {
-	Ruby argv[fm->ac];
-//	post("ac=%d at=%d\n",fm->ac,(int)fm->at);
-	int argc = Bridge_import_list(fm->ac,fm->at,argv);
-//	post("argc=%d\n",argc);
+	Ruby argv[fm->ac+1];
+	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 
-	Ruby qlass = find_fclass(fm->selector);
-	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
+	argv[0] = rb_str_new2(fm->selector->s_name);
+	Ruby rself = rb_funcall2(EVAL("GridFlow::FObject"),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
 
 	int ninlets = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
-
-/*
-	post("%s in=%d out=%d\n",rb_str_ptr(rb_funcall(
-		rb_funcall(rself,SI(class),0),SI(inspect),0)), ninlets, noutlets);
-*/
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
