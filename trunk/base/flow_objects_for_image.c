@@ -42,22 +42,16 @@ static void expect_max_one_dim (P<Dim> d) {
 	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }
 }
 
-/* **************************************************************** */
-/* the incoming grid is stored as "c" with a margin on the four sides
-   of it. the margin is the size of the "b" grid minus one then split in two.
-*/   
-
-/*{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }*/
+//****************************************************************
+//{ Dim[A,B,*Cs]<T>,Dim[D,E]<T> -> Dim[A,B,*Cs]<T> }
 
 static void expect_convolution_matrix (P<Dim> d) {
 	if (d->n != 2) RAISE("only exactly two dimensions allowed for now (got %d)",
 		d->n);
 }
 
-struct PlanEntry {
-	int y,x; // offset
-	bool neutral;
-};
+// entry in a compiled convolution kernel
+struct PlanEntry { int y,x; bool neutral; };
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
@@ -65,12 +59,10 @@ struct GridConvolve : GridObject {
 	\attr Numop2 *op_fold;
 	\attr PtrGrid seed;
 	\attr PtrGrid b;
-	
 	PtrGrid a;
 	int plann;
 	PlanEntry *plan; //Pt?
-
-	int margx,margy; /* margins */
+	int margx,margy; // margins
 	GridConvolve () { b.constrain(expect_convolution_matrix); plan=0; }
 	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
@@ -110,7 +102,6 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 			bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
 			bool absorbent = op_para->on(rh)->is_absorbent(rh,at_right);
 			STACK_ARRAY(T,foo,1);
-			static const char *boo[] = {"false","true"};
 			if (absorbent) {
 				foo[0] = 0;
 				op_para->map(1,foo,rh);
@@ -220,31 +211,25 @@ GRID_INLET(GridScaleBy,0) {
 	for (; n>0; data+=rowsize, n-=rowsize) {
 		int p=0;
 		switch (chans) {
-		case 3:
-			for (int i=0; i<rowsize; i+=3) {
-				for (int k=0; k<scalex; k++, p+=3) {
-					buf[p+0]=data[i+0];
-					buf[p+1]=data[i+1];
-					buf[p+2]=data[i+2];
-				}
-			}
+		case 3: for (int i=0; i<rowsize; i+=3) {
+			for (int k=0; k<scalex; k++, p+=3) {
+				buf[p+0]=data[i+0];
+				buf[p+1]=data[i+1];
+				buf[p+2]=data[i+2];
+			}}
 		break;
-		case 4:
-			for (int i=0; i<rowsize; i+=4) {
-				for (int k=0; k<scalex; k++, p+=4) {
-					buf[p+0]=data[i+0];
-					buf[p+1]=data[i+1];
-					buf[p+2]=data[i+2];
-					buf[p+3]=data[i+3];
-				}
-			}
+		case 4: for (int i=0; i<rowsize; i+=4) {
+			for (int k=0; k<scalex; k++, p+=4) {
+				buf[p+0]=data[i+0];
+				buf[p+1]=data[i+1];
+				buf[p+2]=data[i+2];
+				buf[p+3]=data[i+3];
+			}}
 		break;
-		default:
-			for (int i=0; i<rowsize; i+=chans) {
-				for (int k=0; k<scalex; k++, p+=chans) {
-					for (int c=0; c<chans; c++) buf[p+c]=data[i+c];
-				}
-			}
+		default: for (int i=0; i<rowsize; i+=chans) {
+			for (int k=0; k<scalex; k++, p+=chans) {
+				for (int c=0; c<chans; c++) buf[p+c]=data[i+c];
+			}}
 		}
 		for (int j=0; j<scaley; j++) out->send(rowsize*scalex,buf);
 	}
@@ -270,10 +255,8 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 \classinfo { IEVAL(rself,"install '@scale_by',2,1"); }
 \end class GridScaleBy
 
-/* ---------------------------------------------------------------- */
-/* "@downscale_by" does quick downscaling of pictures by integer factors */
-/*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
-
+// ----------------------------------------------------------------
+//{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }
 \class GridDownscaleBy < GridObject
 struct GridDownscaleBy : GridObject {
 	\attr PtrGrid scale;
@@ -303,43 +286,33 @@ GRID_INLET(GridDownscaleBy,0) {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp->dim->prod();
 	Pt<T> buf = (Pt<T>)*temp; //!@#$ maybe should be something else than T ?
-
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
-
 	int chans=in->dim->get(2);
 	if (smoothly) {
 		while (n>0) {
 			if (y%scaley==0) CLEAR(buf,rowsize2);
 			switch (chans) {
 			// !@#$ how can i templatise all of those??? (cleanly)
-			case 3:
-			for (int i=0,p=0; p<rowsize2;) {
+			case 3: for (int i=0,p=0; p<rowsize2; p+=3) {
 				for (int j=0; j<scalex; j++,i+=3) {
 					buf[p+0]+=data[i+0];
 					buf[p+1]+=data[i+1];
 					buf[p+2]+=data[i+2];
-				}
-				p+=3;
-			}break;
-			case 4:
-			for (int i=0,p=0; p<rowsize2;) {
+				}}break;
+			case 4: for (int i=0,p=0; p<rowsize2;p+=4) {
 				for (int j=0; j<scalex; j++,i+=4) {
 					buf[p+0]+=data[i+0];
 					buf[p+1]+=data[i+1];
 					buf[p+2]+=data[i+2];
 					buf[p+3]+=data[i+3];
-				}
-				p+=4;
-			}break;
+				}}break;
 			default:
-			for (int i=0,p=0; p<rowsize2;) {
+			for (int i=0,p=0; p<rowsize2;p+=chans) {
 				for (int j=0; j<scalex; j++,i+=chans) {
 					for (int k=0; k<chans; k++)
 						buf[p+k]+=data[i+k];
-				}
-				p+=chans;
-			}break;
+				}}break;
 			}
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
@@ -394,8 +367,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 \classinfo { IEVAL(rself,"install '@downscale_by',2,1"); }
 \end class GridDownscaleBy
 
-/* **************************************************************** */
-
+//****************************************************************
 \class GridLayer < GridObject
 struct GridLayer : GridObject {
 	PtrGrid r;
@@ -434,11 +406,9 @@ GRID_INPUT(GridLayer,1,r) {} GRID_END
 \classinfo { IEVAL(rself,"install '@layer',2,1"); }
 \end class GridLayer
 
-/* **************************************************************** */
-//template <class T>
-struct Line {
-	int32 y1,x1,y2,x2,x,m,pad1,pad2;
-};
+// ****************************************************************
+// pad1,pad2 only are there for 32-byte alignment
+struct Line { int32 y1,x1,y2,x2,x,m,pad1,pad2; };
 
 static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
@@ -562,8 +532,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 \classinfo { IEVAL(rself,"install '@draw_polygon',3,1"); }
 \end class DrawPolygon
 
-/* **************************************************************** */
-
+//****************************************************************
 static void expect_position(P<Dim> d) {
 	if (d->n!=1) RAISE("position should have 1 dimension, not %d", d->n);
 	if (d->v[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d->v[0]);
@@ -589,8 +558,8 @@ struct DrawImage : GridObject {
 	\grin 0
 	\grin 1
 	\grin 2 int32
-	/* draw row # ry of right image in row buffer buf, starting at xs */
-	/* overflow on both sides has to be handled automatically by this method */
+	// draw row # ry of right image in row buffer buf, starting at xs
+	// overflow on both sides has to be handled automatically by this method
 	template <class T> void draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0);
 };
 
@@ -680,14 +649,8 @@ GRID_INLET(DrawImage,0) {
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
-
-\def void _0_alpha (bool v=true) {
-	alpha = v;
-}
-
-\def void _0_tile (bool v=true) {
-	tile = v;
-}
+\def void _0_alpha (bool v=true) { alpha = v; }
+\def void _0_tile (bool v=true) {   tile = v; }
 
 \def void initialize (Numop2 *op, Grid *image, Grid *position) {
 	rb_call_super(argc,argv);
