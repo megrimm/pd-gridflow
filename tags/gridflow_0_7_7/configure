@@ -1,0 +1,1208 @@
+#!/usr/bin/env ruby
+# $Id$
+=begin
+	GridFlow
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file ./COPYING for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=end
+
+require "rbconfig"
+require "mkmf"
+require "ftools"
+include Config
+require "win32/process" if CONFIG["arch"] =~ /mingw/
+LOG = File.open "./config.log", "w"
+
+$verbose=false
+LOG.puts "-"*64
+LOG.puts "Environment Variables: "
+ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
+LOG.puts "-"*64
+
+puts
+if not File.exist?("./configure")
+	puts "Run me from the right directory please."
+	exit 1
+end
+
+begin
+  Dir.mkdir "tmp"
+rescue Errno::EEXIST
+end
+
+#----------------------------------------------------------------#
+
+class Or
+	attr_reader :a
+	class<<self; alias [] new end
+	def initialize(*a) @a=a end
+	def to_s; @a.join " or "; end
+end
+
+def launch2(log,*command)
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch(nil,w,w,*command)
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid(child)
+	ret = ret.to_int if RUBY_VERSION > "1.7"
+	log << "error \##{ret}\n" if ret>0
+	return ret<=0
+end
+
+$conf={
+	:LDSOFLAGS => ["-lm"],
+	:BRIDGE_LDFLAGS => ["-lm"],
+	:FEATURES => {},
+	:FORMATS => [],
+	:OPTIONS => [],
+	:DEFINES => {
+		:JMAX_ARCH => "i686-linux",
+		:RUBY_PREFIX => CONFIG['prefix'],
+		:PREFIX => "/usr/local",
+		:CPU => nil,
+		:RUBY_ARCH => CONFIG['arch'],
+	},
+	:CC => "g++",
+	:OBJS => [],
+}
+
+def launch stdin,stdout,stderr,*command # -> returncode
+	child = fork
+	if not child then
+		STDIN .reopen stdin  if stdin
+		STDOUT.reopen stdout if stdout
+		STDERR.reopen stderr if stderr
+		exec *command
+		#!@#$ what happens with exception upon exec ?
+	end
+	child
+end
+
+def join_pid pid
+	Process.waitpid2(pid)[1]
+end
+
+module Future; end
+
+class Feature
+	def initialize(&b)
+		instance_eval(&b)
+	end
+	def self.attr2(sym,&b)
+		eval "def #{sym}(*args,&b)
+			raise args.inspect if args.length>1
+			if b then @#{sym}=b.extend Future
+			elsif args.length>0 then @#{sym}=args[0]
+			else if Future===@#{sym} then @#{sym}.call else @#{sym} end end end"
+	end
+	attr2 :tag
+	attr2 :name
+	attr2 :status #!@#$
+	attr2 :uses_so
+	attr2 :uses_bridge_so
+	attr2 :uses_o #!@#$
+	attr2 :uses_h
+	attr2 :uses_feature
+	attr2 :test
+	attr2 :formats #!@#$
+	attr2 :options #!@#$
+	attr2 :unless_feature #!@#$
+	attr2 :action #!@#$
+	attr2 :defines #!@#$
+
+	def find_h name
+		$C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
+	end
+
+	def c_test code, link=nil, options=[], feature=nil
+		link = (uses_so||[]).dup if not link
+		link=link.flatten
+		ldlpath = ENV["LD_LIBRARY_PATH"]
+		uses_h.each {|h|
+			find_h h or
+				/framework/ =~ (uses_so||[]).join(" ") or
+				raise "where is #{h} ?"
+		} if uses_h
+		ENV["LD_LIBRARY_PATH"] = ldlpath ? "./tmp:#{ldlpath}" : "./tmp"
+		link[0,0]=$conf[:LDSOFLAGS].find_all {|x| String===x and /^-L/ =~ x }.flatten
+		code=code.gsub(/#include#/) {
+			uses_h.map {|inc| "#include <#{inc}>\n" }.join""
+		}	
+		log = ""
+		log << code << "\n"
+		binname = "tmp/#{$$}"
+		sourcename = binname+".cpp"
+		File.open(sourcename,"w") {|f| f.puts code }
+		command = ["/usr/bin/env", $conf[:CC]] +
+			$CFLAGS.split(/ /).reject{|x| x.length==0 }
+		if not launch2 log,*(command+options+[sourcename,
+			 "-o", binname, *link])
+			pat = Regexp.new("^"+Regexp.quote(sourcename)+":\\d+: ")
+			errs = log.split("\n").find_all {|l| pat =~ l }
+			raise "gcc compilation error" if not errs or
+				errs.length==0
+			errs = errs[0].gsub(pat,"")
+			raise "gcc: #{errs}"
+		end
+		if not launch2 log,"tmp/#{$$}"
+			raise "runtime error"
+		end
+		return true
+	ensure
+		LOG.puts log
+		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
+	end
+
+	def asm_test code, *link
+		log = ""
+		log << code << "\n"
+		File.open("tmp/#{$$}.asm","w") {|f| f.puts code }
+		command = ["/usr/bin/env", "nasm",
+		"tmp/#{$$}.asm", "-f", "elf", "-o", "tmp/#{$$}.o"]
+		launch2 log,*command or return false
+		command = ["#{$conf[:CC]}","-o","tmp/#{$$}","tmp/#{$$}.o",*link]
+		launch2 log,*command or return false
+		command = ["tmp/#{$$}"]
+		launch2 log,*command or return false
+		true
+	ensure
+		LOG.puts log
+	end
+end
+
+#----------------------------------------------------------------#
+
+def make_expand(x)
+  y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
+  if x!=y then make_expand y else y end
+end
+
+def read_ld_so_conf
+	return [] unless File.exist?("/etc/ld.so.conf")
+	x = File.open("/etc/ld.so.conf"){|f| f.read }.split("\s")
+	x.delete_if { x.length==0 }
+	x
+end
+
+$C_INCLUDE_PATH = (
+	(ENV["CPLUS_INCLUDE_PATH"]||"").split(":") +
+	(ENV["C_INCLUDE_PATH"]||"").split(":") +
+	["/usr/include"]).uniq
+
+$LIBRARY_PATH = (
+	(ENV["LIBRARY_PATH"]||"").split(":") +
+	["/usr/lib","/lib"]).uniq
+
+$LD_LIBRARY_PATH = (
+	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
+		read_ld_so_conf +
+		["/usr/lib","/lib"]).uniq
+
+# making it easier for everybody I hope:
+["/Applications/Pd.app/Contents/Resources","/sw","/usr/local",ENV["home"]].each do|base|
+	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
+	   not $LIBRARY_PATH.include? "#{base}/lib" then
+		$conf[:LDSOFLAGS].unshift "-L#{base}/lib"
+		$LD_LIBRARY_PATH.unshift "#{base}/lib"
+		$LIBRARY_PATH.unshift "#{base}/lib"
+	end
+	#and not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
+	if not $C_INCLUDE_PATH.include? "#{base}/include" then
+		$CFLAGS += " -I#{base}/include"
+		$C_INCLUDE_PATH.unshift "#{base}/include"
+	end
+end
+
+for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
+	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
+end
+
+$conf[:BINDIR] = make_expand CONFIG['bindir']
+
+LOG.puts "-"*64
+
+$CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
+$CFLAGS += " -I/usr/X11R6/include"
+$C_INCLUDE_PATH.unshift "/usr/X11R6/include"
+
+ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
+"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
+ruby18a = "#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
+for x in [ruby16a,ruby18a] do
+	$LIBRUBY_A = make_expand x
+	break if File.exist? $LIBRUBY_A
+end
+
+FILES = [
+  [:directory, "base/",
+    [:ruby, "main.rb"],
+    [:ruby, "flow_objects.rb"],
+    [:ruby, "test.rb"],
+    [:ruby, "source_filter.rb"],
+    [:ruby, "MainLoop.rb"],
+  ],
+  [:directory, "bridge/",
+    [:ruby, "puredata.rb"],
+  ],
+  [:directory, "format/",
+    [:ruby, "main.rb"],
+  ],
+  [:directory, "extra/",
+	[:ruby, "smpte.rb"],
+	[:ruby, "server_2.rb"],
+	[:ruby, "server_1_grid.rb"],
+	[:ruby, "server_1_ppm.rb"],
+	[:ruby, "jmax_format.rb"],
+	[:ruby, "puredata_format.rb"],
+  ],
+]
+
+#----------------------------------------------------------------#
+
+$features = [
+Feature.new {
+	tag :gcc3
+	name "GNU C++ Compiler 3"
+	test proc {
+		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
+		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
+		version = $1
+		pi.close
+		if version < "3" then raise "version #{version} < 3" end
+		true
+	}
+},
+Feature.new {
+	tag :libruby
+	name "Ruby as a dynamic library"
+	uses_bridge_so ["-lruby"]
+	#uses_h ["ruby.h"] # is in special directory
+	defines :RUBY_STACK_END => proc {
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
+	test proc {
+		c_test %{
+		#include <stdio.h>
+		#include <ruby.h>
+		int main () {
+			void *bp;
+			printf("#define RUBY_STACK_END 0x%08x",&bp);
+			return rb_rescue==0;
+		}}, uses_bridge_so
+	}
+},
+Feature.new {
+	tag :librubystatic
+	unless_feature [:libruby]
+	name "Ruby as a static library"
+	#uses_h ["ruby.h"] # is in special directory
+	uses_bridge_so {
+		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
+		unless CONFIG["arch"] =~ /darwin/
+			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive"
+		end
+		[lib]
+	}
+	defines :RUBY_STACK_END => proc {
+		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
+	test proc {
+		c_test %{
+		#include <stdio.h>
+		#include <ruby.h>
+		int main () {
+			void *bp;
+			printf("#define RUBY_STACK_END 0x%08x",&bp);
+			return rb_rescue==0;
+		}}, ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)]
+	}
+	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
+},
+Feature.new {
+	tag :fast
+	name "Compile for speed (and not debuggability)"
+},
+Feature.new {
+	tag :pentium
+	name "Pentium-compatible CPU"
+	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
+	test proc {
+		(CONFIG["arch"] =~ /i\d86/) or raise "#{CONFIG["arch"]} instead"
+		c_test '
+		#include <stdio.h>
+		char get_cpuid[]={
+			96,49,192,15,162,139,124,36,36,137,31,
+			137,87,4,137,79,8,137,71,12,97,195};
+		main() {
+			char result[16];
+			int code;
+			((void(*)(char*))get_cpuid)(result);
+			code = ((int*)result)[3];
+			result[12]=0;
+	                fprintf(stderr,"cpuid: name=\"%12s\", flags=0x%08x\n",
+	                        result,code);
+			return 0;}'
+	}
+	options ["HAVE_PENTIUM"]
+},
+Feature.new {
+	tag :mmx
+	uses_feature [:pentium]
+	uses_o ["cpu/mmx.o","cpu/mmx_loader.o"]
+	name "MMX-compatible CPU (using NASM)"
+	test proc {
+		asm_test '
+		global main
+		extern exit
+		align 16
+		SECTION .data
+		foo: dd 42,0
+		SECTION .text
+		main:
+		lea esi,[foo]
+		movq mm0,qword[esi]
+		paddd mm0,qword[esi]
+		movq qword [esi],mm0
+		emms
+		cmp dword [foo], 84
+		je yes
+		push long 1
+		call exit
+		yes:
+		push long 0
+		call exit
+		', '-lc'
+	}
+	options ["HAVE_MMX"]
+},
+Feature.new {
+	tag :simd
+	uses_feature [:pentium]
+	name "SIMD (MMX/SSE/Altivec) (using GCC)"
+	test proc {
+		c_test '
+		#include <stdio.h>
+		typedef int v8qi __attribute__ ((mode(V8QI)));
+		union vv8qi { v8qi v; char c[8]; };
+		int main () { return 0; }',nil,["-mmmx"]
+	}
+	options ["HAVE_SIMD"]
+},
+Feature.new {
+	tag :profiler
+	name "profiler (speed measurements)"
+	uses_feature [:pentium]
+	options ["HAVE_TSC_PROFILING"]
+},
+Feature.new {
+	tag :usb
+	name "USB Library"
+	uses_h ["usb.h"]
+	uses_o ["base/usb.o"]
+	uses_so ["-lusb"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return usb_open==0 || usb_get_busses==0;}
+		"
+	}
+	options ["HAVE_USB"]
+},
+Feature.new {
+	tag :ieee1394
+	name "IEEE1394 Libraries for Linux (raw1394/dc1394)"
+	status :disabled
+	uses_o ["base/ieee1394.o"]
+	uses_so ["-lraw1394","-ldc1394_control"]
+	uses_h ["libraw1394/raw1394.h","libdc1394/dc1394_control.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return raw1394_get_libversion==0 || dc1394_get_camera_info==0;}
+		"
+	}
+	options ["HAVE_1394"]
+	formats ["DC1394"]
+},
+Feature.new {
+	tag :x11
+	name "X11 Display Protocol"
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_h ["X11/Xlib.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return XSetErrorHandler==0;}
+		"
+	}
+	formats ["X11"]
+},
+Feature.new {
+	tag :x11_shm
+	name "X11 acceleration through shared memory"
+	uses_feature [:x11]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
+	test proc {
+		c_test "
+		#include#
+		#include <X11/Xutil.h>
+		#include <X11/StringDefs.h>
+		#include <sys/ipc.h>
+		int main () {return XShmPutImage==0;}
+		"
+	}
+	options ["HAVE_X11_SHARED_MEMORY"]
+},
+=begin
+Feature.new {
+	tag :opengl
+	name "OpenGL (only as framebuffer)"
+	status :disabled
+	uses_so ["-L/usr/X11R6/lib","-lglut","-lGL","-lGLU"]
+	uses_h ["GL/glut.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return glutInit==0;}
+		"
+	}
+	formats ["OpenGL"]
+},
+=end
+Feature.new {
+	tag :sdl
+	name "Simple Directmedia Layer (experimental support)"
+	uses_so {
+		a=["-lSDL","-lpthread"]
+		a<<"-lobjc" if CONFIG["arch"] =~ /darwin/
+		a
+	}
+	uses_h ["SDL/SDL.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return SDL_MapRGB==0;}
+		"
+	}
+	formats ["SDL"]
+},
+Feature.new {
+	tag :objcpp
+	name "GNU/Apple ObjectiveC++ Compiler"
+	uses_h ["objc/Object.h"]
+	uses_so ["-lobjc"]
+	test proc {
+		c_test "
+		#include#
+		int main () { [[Object alloc] init]; }
+		", nil, ["-xobjective-c++"]
+	}
+},
+Feature.new {
+	tag :quartz
+	name "Apple Quartz/Cocoa Display"
+	uses_so ["-lobjc",["-framework","Cocoa"]]
+	uses_feature [:objcpp]
+	uses_h ["objc/Object.h","Cocoa/Cocoa.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return CGImageRelease==0;}
+		", nil, ["-xobjective-c++"]
+	}
+	formats ["Quartz"]
+},
+Feature.new {
+	tag :aalib
+	name "Ascii Art Library"
+	uses_so ["-laa"]
+	uses_h ["aalib.h"]
+	test proc {
+		c_test "
+		#define aa_hardwareparams aa_hardware_params
+		extern \"C\" {
+		#include#
+		};
+		int main () {return aa_init==0;}
+		"
+	}
+	formats ["AALib"]
+},
+Feature.new {
+	tag :jpeg
+	name "JPEG Library"
+	uses_so ["-ljpeg"]
+	uses_h ["jpeglib.h"]
+	test proc {
+		c_test "
+		extern \"C\" {
+		#include <stdio.h>
+		#include#
+		};
+		int main () {
+		return jpeg_write_scanlines==0;}
+		"
+	}
+	formats ["JPEG"]
+},
+Feature.new {
+	tag :png
+	name "PNG Library"
+	uses_so ["-lpng","-lz"]
+	uses_h Or[["libpng12/png.h"],["png.h"]]
+	test proc {|f|
+		f.c_test "
+		extern \"C\" {
+		#include <stdio.h>
+		#include#
+		};
+		int main () {
+		return png_check_sig==0;}
+		"
+	}
+	formats ["PNG"]
+},
+Feature.new {
+	tag :videodev
+	name "Video4linux Digitizer Driver Interface"
+	uses_h ["linux/videodev.h"]
+	test proc {
+		c_test "
+		#include <stdlib.h>
+		#include#
+		int main () { struct video_window foo; return 0; }"
+	}
+	formats ["VideoDev"]
+},
+Feature.new {
+	tag :mpeg3
+	name "HeroineWarrior LibMPEG3"
+	uses_so ["-lmpeg3","-lpthread","-lm",
+		"-L/usr/X11R6/lib"]
+	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
+	test proc {|f|
+		f.c_test "
+		#include#
+		int main () { return mpeg3_open==0; }
+		"
+	}
+	formats ["MPEG3"]
+},
+Feature.new {
+	tag :mpeg
+	name "Greg Ward's LibMPEG"
+	unless_feature :mpeg3
+	uses_so ["-lmpeg"]
+	uses_h ["mpeg.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () { return GetMPEGFrame==0; }
+		"
+	}
+	formats ["MPEG"]
+},
+Feature.new {
+	tag :quicktimeapple
+	name "Apple's QuickTime"
+	uses_so [["-framework","Quicktime"]]
+	uses_h ["Quicktime/quicktime.h","Quicktime/movies.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () { return EnterMovies==0; }
+		"
+	}
+	formats ["QuickTimeApple"]
+},
+Feature.new {
+	tag :quicktimehw
+	unless_feature :quicktimeapple
+	name "HeroineWarrior QuickTime4Linux (or LibQuickTime)"
+	uses_so Or[
+		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
+		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
+	uses_h ["quicktime/quicktime.h","quicktime/lqt_version.h"]
+	test proc {|f|
+		f.c_test %`
+		#include <stdio.h>
+		#include#
+		int main () {
+		fprintf(stderr,"LQT_VERSION = %s\\n",
+		#ifdef LQT_VERSION
+			LQT_VERSION
+		#else
+			"(undefined)"
+		#endif
+		); return quicktime_open==0; }
+		`
+	}
+	formats ["QuickTimeHW"]
+},
+Feature.new {
+	tag :xine
+	name "Xine movie decoder"
+	uses_so ["-lxine"]
+	uses_h ["xine.h"]
+	status :disabled
+	test proc {|f|
+		f.c_test %`
+		#include <stdio.h>
+		#include#
+		int main () {
+		fprintf(stderr,"Xine version = %d.%d.%d (%s)\\n",
+			XINE_MAJOR_VERSION, XINE_MINOR_VERSION,
+			XINE_SUB_VERSION, XINE_VERSION);
+		return xine_new==0; }`
+	}
+	formats ["Xine"]
+},
+Feature.new {
+	tag :jmax25
+	name "IRCAM's jMax 2.5"
+	uses_feature [Or[:libruby,:librubystatic]]
+	defines :JMAXDISTDIR => proc { Dir.getwd + "/bundled/jmax" }
+	uses_h ["fts/fts.h","fts/lang/mess.h"]
+	test proc {
+		c_test '
+		#define new new_
+		#define template template_
+		#define this this_
+		#define operator operator_
+		#define class class_
+		#include#
+		int main () { return 0; }
+		', ["-DLINUXPC"]
+	}
+	options ["HAVE_JMAX_2_5"]
+},
+Feature.new {
+	tag :jmax4
+	name "IRCAM's jMax 4"
+	uses_feature [Or[:libruby,:librubystatic]]
+	unless_feature :jmax25
+	defines :JMAX4_INSTALL_DIR => proc { `jmax-config --package-dir`.chomp }
+	uses_h ["fts/fts.h","fts/client/version.h"]
+	test proc {
+		c_test '
+		#define new new_
+		#define template template_
+		#define this this_
+		#define operator operator_
+		#define class class_
+		#include#
+		int main () { return 0; }
+		', ["-DLINUXPC"]
+	}
+	options ["HAVE_JMAX_4"]
+},
+Feature.new {
+	tag :puredata
+	name "Miller Puckette's Pure Data"
+	uses_feature [Or[:libruby,:librubystatic]]
+	options ["HAVE_PUREDATA"]
+	defines {
+		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
+		m = /PD_VERSION_INT\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		{:PUREDATA_PATH => File.dirname(path)+"/lib/pd", :PD_VERSION_INT => m[1].to_i}
+	}
+	uses_h ["m_pd.h"]
+	test proc {
+		c_test %`
+			#include#
+			#include <stdio.h>
+			int main () {
+			printf("#define PD_VERSION_INT %d\\n",
+			#ifdef PD_MAJOR_VERSION
+				(int)(PD_MAJOR_VERSION+PD_MINOR_VERSION*100));
+			#else
+				(int)(PD_VERSION*100));
+			#endif
+			return 0;
+			}
+		`
+	}
+},
+Feature.new {
+	tag :javac
+	name "Java Compiler"
+	options ["HAVE_JAVAC"]
+	test proc { `which javac` != "" }
+},
+Feature.new {
+	tag :jmax25guiext
+	name "jMax 2.5 GridFlow GUI extensions"
+	uses_feature [:jmax25,:javac]
+	options ["HAVE_JMAX25_GUIEXT"]
+}]
+
+$features_h = {}
+$features.each {|f| $features_h[f.tag]=f }
+
+#--------------------------------#
+
+def usage
+	log = ""
+	log << "usage: ./configure "
+	log << "[--use-compiler compiler] "
+	log << "[--use-compiler-option option]* "
+	log << "[--use-cpu cpu] [--lite] "
+	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
+	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
+	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
+	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
+	puts
+	while log.length>0 do puts log.slice!(/^.{1,70} /) end
+end
+
+while ARGV.length>0 do
+	arg=ARGV.shift
+	case arg
+	when /=/
+		i=arg.index '='
+		ARGV.unshift arg[0..i-1], arg[i+1..-1]
+	when /^--no-/
+		name = arg[5..-1].intern
+		puts "there is no feature called #{name}" if not $features_h[name]
+		puts "--no: won't check for feature #{name}"
+		$features_h.delete name
+	when /^--force-/
+		name = arg[8..-1].intern
+		puts "there is no feature called #{name}" if not $features_h[name]
+		puts "--force: assuming #{name} is there"
+		$features_h[name].test nil
+	when "--static" # experimental
+		$conf[:STATIC]=true
+		$conf[:LDSOFLAGS] << "-static"
+#		ARGV.unshift "--no-libruby"
+	when "--debug"
+		puts "Debug Mode (more error checking; less speed)"
+		$conf[:OPTIONS].push :HAVE_DEBUG
+	when "--debug-harder"
+		puts "Debug Harder Mode (even more error checking; even less speed)"
+		$conf[:OPTIONS].push :HAVE_DEBUG
+		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
+	when "--lite"
+		puts "Lite Mode (no float, no int64)"
+		$conf[:OPTIONS].push :HAVE_LITE
+	when "--jmax-arch"; $conf[:DEFINES][:JMAX_ARCH]=ARGV.shift
+	when "--help"; usage; exit 0
+	when "--prefix", "--ruby-prefix"
+		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
+	when "--use-compiler"
+		$conf[:CC] = ARGV.shift
+	when "--use-compiler-option"
+		$CFLAGS += " "+ARGV.shift
+	when "--use-cpu"
+		$conf[:DEFINES][:CPU] = ARGV.shift
+	when "--verbose"
+		$verbose=true
+	when "--bindir"
+		$conv[:BINDIR] = ARGV.shift
+	else puts "unknown option \"#{arg}\""; usage; exit 1
+	end
+end
+
+# the ||= lines are patches for old versions of ruby.
+CONFIG["ruby_version"] ||= "$(MAJOR).$(MINOR)"
+CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
+CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
+
+$CFLAGS += " -I " + (make_expand CONFIG["archdir"])
+
+#--------------------------------#
+
+DUAL = Object.new
+DUAL.instance_eval {
+	def self.print x
+		LOG   .puts  x; LOG   .flush
+		STDERR.print x; STDERR.flush
+	end
+	def self.puts x
+		self.print x+"\n"
+	end
+}
+
+def try feature
+	if Or===feature.uses_so
+		k=1
+		feature.uses_so.a.each {|i|
+			e=feature.dup; e.uses_so i; e.name(e.name+" (try \##{k})")
+			r=try e; return r if r
+			k+=1
+		}
+		return false
+	end
+	if Or===feature.uses_h
+		feature.uses_h.a.each {|i|
+			e=feature.dup; e.uses_h i; e.name(e.name+" <#{e.uses_h}>")
+			r=try e; return r if r
+		}
+		return false
+	end
+	LOG.puts "", "-"*64
+	DUAL.print "[#{feature.tag}] #{feature.name}: "
+	(feature.uses_feature||[]).find {|f|
+		if not (
+		  if Or===f then f.a.find {|x| $conf[:FEATURES][x] } else $conf[:FEATURES][f] end
+		) then 
+			DUAL.puts "disabled (would need #{f})"
+			return
+		end
+	}
+	if feature.status==:disabled then DUAL.puts "disabled (by author)"; return end
+	if not $features_h[feature.tag] then DUAL.puts "disabled (by user)"; return end
+	fu = feature.unless_feature || []
+	fu = [fu] if not Array===fu
+	for f in fu || [] do
+		if $conf[:FEATURES][f] then
+			DUAL.puts "disabled (using #{f} instead)"
+			return
+		end
+	end
+
+	if feature.test
+		begin
+			tresult = feature.test.call(feature)
+		rescue StandardError => e
+		end
+		if tresult
+			DUAL.puts "found "+(if tresult!=true
+				then " (#{tresult})"
+				else "" end)
+			if tresult == "static"
+				feature.uses_so.map! {|x|
+					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
+				} if feature.uses_so
+				feature.uses_bridge_so.map! {|x|
+					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
+				} if feature.uses_bridge_so
+			end
+		else
+			DUAL.puts "missing "+(if e
+				then (if $verbose
+					then "(#{e} @ #{e.backtrace.join', '})"
+					else "(#{e})" end)
+				else "(return false)" end)
+			if e
+				LOG.puts e.inspect
+				LOG.puts e.backtrace
+			end
+			return false
+		end
+	else
+		puts "enabled"
+		$conf[:FEATURES][feature.tag] = feature
+		feature.action.call if feature.action
+	end
+	feature.action.call if feature.action
+	$conf[:FEATURES][feature.tag] = feature
+	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	$conf[:BRIDGE_LDFLAGS].concat(feature.uses_bridge_so||[])
+	$conf[:OBJS].concat(feature.uses_o||[])
+	$conf[:FORMATS].concat(feature.formats||[])
+	$conf[:OPTIONS].concat(feature.options||[])
+	for k,v in feature.defines||{} do
+		$conf[:DEFINES][k]=(if Proc===v then v[] else v end)
+	end
+	true
+end
+
+DUAL.puts "This is the GridFlow 0.7.7 configurator within Ruby version #{RUBY_VERSION}"
+
+begin
+  $features.each {|feature| try feature }
+ensure
+  #!@#$ note: see END{} (duplication)
+  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
+end
+
+$conf[:LDSOFLAGS].uniq!
+$conf[:BRIDGE_LDFLAGS].uniq!
+
+$CFLAGS += " -falign-functions=4" if $conf[:FEATURES][:gcc3]
+
+#if not $conf[:FEATURES][:gcc3]
+#  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
+#  puts "(you might use --force-gcc3 to pretend at your own risk)"
+#  exit 1
+#end
+
+#--------------------------------#
+
+LOG.puts "-"*64
+for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
+  LOG.puts "#{z}: #{$conf[z].inspect}"
+end
+LOG.puts "-"*64
+
+#--------------------------------#
+# extconf.rb
+
+RUBY = "ruby"
+
+def my_install_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
+  entries.each {|type,name,*rest|
+    if Array===name then name,oname=name else oname=name end
+    case type
+    when :ruby
+      f.puts "\t$(INSTALL_DATA) #{base+name} #{obase}/#{oname}"
+    when :directory
+      if oname[0,1]!="/" then oname="#{obase}/#{oname}" end
+      f.puts "\t$(INSTALL_DIR) #{oname}"
+      my_install_files(f,base+name,rest,oname)
+    end
+  }
+end
+
+def my_uninstall_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
+  entries.each {|type,name,*rest|
+    if Array===name then name,oname=name else oname=name end
+    case type
+    when :ruby
+      f.puts "\trm #{obase}/#{oname}"
+    when :directory
+      my_uninstall_files(f,base+name,rest) 
+    end
+  }
+end
+
+def make_makefile f
+#    f.puts "RUBYDESTDIR2 = " + make_expand(sprintf("%s/%s.%s",
+#		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
+	puts ""
+    f.puts "RUBY = #{RUBY}"
+    f.puts "ruby-all::", ""
+#   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
+    f.puts "ruby-install::"
+    my_install_files(f,"",FILES)
+    f.puts "\tcp bin/jmax2pd $(gfbindir); chmod 755 $(gfbindir)/jmax2pd\n"
+    f.puts
+    f.puts "ruby-uninstall::"
+    my_uninstall_files(f,"",FILES)
+    f.puts
+end
+
+puts "generating ./config.make"
+
+File.open("./config.make","w") {|f| f.puts "
+
+RUBYARCH=#{CONFIG['arch']}
+"
+
+f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
+
+if CONFIG["arch"] =~ /darwin/ then
+	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
+else
+	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
+end
+$CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU]
+$CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
+#$CFLAGS += " -fforce-addr"
+#$CFLAGS += " -fprefetch-loop-arrays"
+#$CFLAGS += " -falign-jumps=4"
+#$CFLAGS += " -falign-loops=4"
+f.puts "CFLAGS += " + $CFLAGS
+
+for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
+for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
+
+$sources = %w(
+base/grid.c base/main.c base/number.c base/bitpacking.c
+base/flow_objects.c
+base/flow_objects_for_image.c
+base/flow_objects_for_matrix.c
+)
+for format in $conf[:FORMATS] do
+	x = "format/#{format.downcase}.c"
+	x = "format/#{format.downcase}.m" if not File.exist?(x)
+	raise "woops, missing file format/#{format.downcase}.*" if not File.exist?(x)
+	$sources << x
+end
+f.puts "SOURCES = #{$sources.join(" ")} \\"
+f.puts ""
+#make_makefile f
+} # end open config.make
+
+#--------------------------------#
+puts "generating config.h"
+File.open("config.h","w") {|f| f.puts "
+\#ifndef __CONFIG_H
+\#define __CONFIG_H
+/* this file was auto-generated by gridflow/configure */
+
+"
+
+if $conf[:FORMATS]!=[] then
+	f.puts "#define FORMAT_LIST(_pre_,_pre2_,_post_) \\"
+	f.puts $conf[:FORMATS].map {|fmt|
+		"  _pre_ _pre2_##Format#{fmt}##_post_"
+	}.join(",\\\n")
+end
+
+for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
+for k,v in $conf[:DEFINES] do f.puts "\#define #{k} "+v.inspect end
+
+if $conf[:FEATURES][:mpeg3]
+f.puts "
+\#ifdef LIBMPEG_INCLUDE_HERE
+\#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
+\#endif
+"
+end
+
+f.puts "
+#endif /* __CONFIG_H */"
+}
+
+#--------------------------------#
+
+if $conf[:OPTIONS].index("HAVE_JMAX_2_5")
+	puts "generating gridflow.jpk"
+	File.open("gridflow.jpk","w") {|f|
+		f.puts "
+set pname gridflow
+package require guiobj
+package provide $pname 
+global jmaxArch jmaxMode
+ucs load module $pname $dir/c/lib/$jmaxArch/$jmaxMode/lib${pname}.so
+templateDirectory $dir/templates
+sourceFile $dir/help/${pname}.help.index.tcl
+"
+		if $conf[:OPTIONS].index("HAVE_JMAX25_GUIEXT")
+			f.puts 'java::load -classpath "$dir/java/classes/gridflow.jar" gridflow.GridFlowExtension'
+			f.puts %{post "package: GridFlow (with GUI extensions)"}
+		else
+			f.puts %{post "package: GridFlow (without GUI extensions)"}
+		end
+	}
+end
+
+#--------------------------------#
+
+
+puts "",
+"\e[1mSee ./config.log if you want the details of the configuration tests.\e[0m",
+"\e[1mIf you are satisfied with that configuration, you may go on,\e[0m",
+"\e[1m  and do \"make\" and then \"make install\".\e[0m",
+"\e[1mIf you get stuck, you could contact the author about it,\e[0m",
+"\e[1m  but first make sure you read \"doc/install.html\". \e[0m",
+""
+
+#--------------------------------#
+$LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
+
+$objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
+dir_config("gridflow")
+#p $rubylibdir
+create_makefile("gridflow")
+#p $rubylibdir
+mf = File.readlines("Makefile").join""
+#p mf.length
+
+common_deps1 = "$(COMMON_DEPS)"
+common_deps2 = common_deps1 + " base/grid.h.fcs"
+
+mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
+	comp=$1
+	comp.sub!(/\(CC\)/,'(CXX)')
+	comp << " -o $@" if not comp =~ /-o\s*\$@/
+	comp2 = comp.gsub /-c/,'-xobjective-c++ -c'
+	"%.h.fcs: %.h #{common_deps1}\n"+
+	"\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.c.fcs: %.c #{common_deps2}\n"+
+	"\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.m.fcs: %.m #{common_deps2}\n"+
+	"\truby -w base/source_filter.rb $< $@\n\n"+
+	"%.o: %.c.fcs #{common_deps2}\n"+
+	"\t#{comp}\n"+
+	"%.o: %.m.fcs #{common_deps2}\n"+
+	"\t#{comp2}\n"
+}
+mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
+mf << ".PRECIOUS: %.h.fcs %.c.fcs\n"
+mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
+mf.gsub! /\*\.o/, "*.o */*.o"
+
+# GAAAH!!!
+if RUBY_VERSION >= "1.8" then
+	mf.gsub!(/^((site-)?install:.*)/) {$1+" $(RUBYARCHDIR)/$(DLLIB) install2"}
+else
+	mf.gsub!(/^((site-)?install:.*)/) {$1+" install2"}
+end
+
+mf.gsub!(/^install:.*/) {"install:site-install"} # should i keep this line?
+mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
+mf.sub! /^clean:/,"clean: clean2 "
+mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
+mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
+mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
+	"gfbindir = #{$conf[:BINDIR]}\n"
+mf.sub!(/^site-install:\s*install/,"site-install: ")
+#mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
+mf.sub! /^prefix = .*$/, "prefix = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
+
+#mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
+#	(if CONFIG["arch"] =~ /darwin/
+#		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
+#		else "$(CXX)" end)
+
+mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
+
+# Adam Lindsay's Mac attempts.
+mf.sub! /-no-precomp/, "-no-cpp-precomp"
+
+# for proper operation on Cygwin
+mf.sub! /--driver-name=gcc/, "--driver-name=#{$conf[:CC]}"
+
+# remove gcc3.2 warning about -I/usr/include
+mf.sub!(/^CPPFLAGS = (.*)$/) {
+	cpp = "CPPFLAGS = " +
+		make_expand($1).sub(%r"-I\s*/usr/include","")
+}
+
+# jMax conflict resolution (this must be done last)
+mf.gsub!(/prefix/,'rubyprefix')
+
+#p mf.length
+f = File.open("Makefile","w")
+f.puts "include config.make"
+f.puts mf
+f.puts "include Makefile.gf"
+make_makefile f
+f.close
+
+# puts "$CFLAGS = #{$CFLAGS.inspect}"
+
+=begin
+for z in [
+:$srcdir,:$libdir,:$rubylibdir,
+:$archdir,:$sitedir,:$sitelibdir,:$sitearchdir,
+:$prefix,:$exec_prefix,
+] do puts "#{z} = #{eval z.to_s}" end
+=end
+
+END {
+  system "/bin/rm -f tmp/#{$$} tmp/#{$$}.c tmp/#{$$}.o tmp/#{$$}.asm"
+}

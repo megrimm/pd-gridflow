@@ -1,0 +1,58 @@
+#N canvas 76 239 444 328 10;
+#X msg 257 76 240 320 uint8 # 10;
+#X text 35 7 click here;
+#X obj 17 9 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1;
+#X obj 258 96 @! rand;
+#X obj 25 253 @out window;
+#X obj 25 232 @outer ignore ( 3 uint8 # );
+#X text 42 94 this is the feedback loop;
+#X obj 117 12 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 135 11 for 0 10 1;
+#X obj 257 55 loadbang;
+#X obj 135 75 @store;
+#X obj 135 31 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 25 293 print;
+#X obj 25 273 fps detailed;
+#X obj 25 115 fork;
+#X text 153 31 next;
+#X obj 25 211 @ inv+ ( uint8 # 0 );
+#N canvas 0 0 450 210 game 0;
+#X obj 28 64 inlet matrix;
+#X obj 28 141 outlet matrix;
+#X obj 28 103 @convolve >> + ( uint8 # -5 ) ( 3 3 uint8 # 0 0 0 0 1
+);
+#X obj 28 83 @ << ( uint8 # 1 );
+#X obj 28 122 @ < ( uint8 # 3 );
+#X text 18 14 this part at the left defines the rule of the game (this
+is my own rewriting of the rules. it is equivalent to the original
+but faster to compute.);
+#X connect 0 0 3 0;
+#X connect 2 0 4 0;
+#X connect 3 0 2 0;
+#X connect 4 0 1 0;
+#X restore 25 74 pd game of life;
+#X text 254 22 init with a random map;
+#X obj 259 117 @ == ( uint8 # 0 );
+#X text 256 37 10% white dots;
+#X text 27 181 convert this 1-bit matrix to standard RGB \; 1 becomes
+-1 becomes 255 \, but 0 stays 0;
+#X obj 17 27 metro 5;
+#X connect 0 0 3 0;
+#X connect 2 0 22 0;
+#X connect 3 0 19 0;
+#X connect 4 0 13 0;
+#X connect 5 0 4 0;
+#X connect 7 0 8 0;
+#X connect 8 0 11 0;
+#X connect 9 0 0 0;
+#X connect 10 0 17 0;
+#X connect 11 0 10 0;
+#X connect 13 0 12 0;
+#X connect 14 0 16 0;
+#X connect 14 1 10 1;
+#X connect 16 0 5 0;
+#X connect 17 0 14 0;
+#X connect 19 0 14 0;
+#X connect 22 0 10 0;

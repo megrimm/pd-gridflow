@@ -1,0 +1,45 @@
+#N canvas 247 296 848 397 10;
+#X obj 99 50 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+-1;
+#X obj 50 127 @in;
+#X obj 50 272 @contrast;
+#X text 14 15 @contrast;
+#X obj 8 71 metro 100;
+#X obj 8 50 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1;
+#X obj 169 132 hsl 128 15 0 256 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 12700 1;
+#X obj 170 198 hsl 128 15 0 256 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 12700 1;
+#X text 116 16 adjusts the intensity in an image. resulting values
+outside 0-255 are automatically clipped.;
+#X text 308 200 master contrast;
+#X text 304 136 secondary contrast;
+#X floatatom 79 233 5 0 0 0 - - -;
+#X floatatom 108 253 5 0 0 0 - - -;
+#X text 447 136 makes the incoming black correspond to a certain fraction
+between output black and the master contrast value. no effect is 256
+this is also the default.;
+#X text 448 200 makes the incoming white correspond to a certain fraction
+between output black and output white. no effect is 256 this is also
+the default.;
+#X text 765 12 gridflow;
+#X text 339 350 see also:;
+#X obj 410 354 @convolve;
+#X obj 555 354 @solarize;
+#X obj 624 354 @layer;
+#X obj 479 354 @posterize;
+#X obj 50 342 @out window;
+#X msg 122 93 open bluemarble.jpg;
+#X obj 99 70 fork;
+#X connect 0 0 23 0;
+#X connect 1 0 2 0;
+#X connect 2 0 21 0;
+#X connect 4 0 1 0;
+#X connect 5 0 4 0;
+#X connect 6 0 11 0;
+#X connect 7 0 12 0;
+#X connect 11 0 2 1;
+#X connect 12 0 2 2;
+#X connect 22 0 1 0;
+#X connect 23 0 1 0;
+#X connect 23 1 22 0;

@@ -1,0 +1,49 @@
+GridFlow 0.7.7
+
+
+
+Directory layout
+
+  ./base:       object classes written in C++ and Ruby
+  ./bridge:     connectors between Ruby and jMax/PD/etc
+  ./bundled:    files from other packages, bundled here for convenience
+  ./format:     format handlers written in C++ and Ruby
+  ./cpu:	cpu-specific code
+  ./doc:        complete documentation in HTML, with XML source
+  ./doc/images: images that go with the HTML doc
+  ./extra:      useful small programs (mostly in Ruby)
+  ./help:       jMax-style help: simple jMax programs showing off all
+                individual features of each object class.
+  ./pd_help:    PD-style help
+  ./pd_examples:
+  ./jmax_examples: more complex jMax programs showing off more practical uses.
+                (ideally)
+  ./images:     sample images shared by ./samples, ./help, ./doc
+                NOTE: bundled separately because they are big and
+                seldom change
+                http://artengine.ca/jmax/gridflow/download/gridflow-images-0.5.tar.gz
+  ./templates:  jMax object classes written in jMax
+  ./CVSROOT:    project information for version control
+                (not in official releases)
+
+
+
+Legalese
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  This program is free software; you can redistribute it and/or
+  Modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
+
+  See file COPYING for further informations on licensing terms.
+
+
+
+CVS
+
+	$Id$
