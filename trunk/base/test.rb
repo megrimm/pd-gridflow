@@ -54,12 +54,12 @@ def test_math
 	x.expect([42,0,0,-42]) { a.send_in 3,-42 }
 
 	(a = FObject["@ + {0 10}"]).connect 0,e,0
-	x.expect([1,12,4,18]) {
-		a.send_in 0, 1,2,4,8 }
+	x.expect([1,12,4,18,16,42,64]) {
+		a.send_in 0, 1,2,4,8,16,32,64 }
 
 	(a = FObject["@ + 42"]).connect 0,e,0
-	x.expect([43,44,46,50]) {
-		a.send_in 0, 1,2,4,8 }
+	x.expect([43,44,46,50,51,52,53,54,55,56,57]) {
+		a.send_in 0, 1,2,4,8,9,10,11,12,13,14,15 }
 
 	x.expect([3,5,9,15]) {
 		a.send_in 1, 2,3,5,7
@@ -559,6 +559,25 @@ def test_store2
 	$mainloop.loop
 end
 
+def test_asm
+	GridFlow.verbose=false
+	a = FObject["@in ppm file images/r001.ppm"]
+	b = FObject["@store"]
+	d = FObject["@store"]
+	a.connect 0,b,1
+	a.connect 0,d,1
+	a.send_in 0
+	c = FObject["@ +"]
+	d.connect 0,c,1 # for map2
+	d.send_in 0
+	t0 = Time.new; 1000.times {b.send_in 0}; t1 = Time.new-t0
+	b.connect 0,c,0
+	3.times{
+	t0 = Time.new; 1000.times {b.send_in 0}; t2 = Time.new-t0
+	GridFlow.post "   %f   %f   %f", t1, t2, t2-t1
+	}
+end
+
 def test_metro
 	o1 = RtMetro.new(1000,:geiger)
 	o2 = RubyPrint.new(:time)
@@ -573,7 +592,7 @@ if ARGV[0] then
 end
 
 #test_polygon
-#test_math
+test_math
 #test_munchies
 #test_image "ppm file #{$imdir}/g001.ppm"
 #test_image "ppm gzfile #{$imdir}/g001.ppm.gz"
@@ -587,7 +606,7 @@ end
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video15 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
-test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
+#test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
 #test_anim ["open quicktime file /home/matju/domopers_hi.mov"]
 #test_anim ["open quicktime file /home/matju/net/c.mov"]

@@ -263,16 +263,19 @@ GRID_FLOW {
 	STACK_ARRAY(int32,v,n);
 	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
 	for (int i=0; i<nc; i++) {
-		if (i) op_mul->on_int32.op_array(nd,v,r.dim->v[i]);
-		op_mod->on_int32.op_array(nd,v+nd*i,r.dim->v[i]);
-		if (i) op_add->on_int32.op_array2(nd,v,v+nd*i);
+		if (i) op_mul->on_int32.op_map(nd,(Number*)v,r.dim->v[i]);
+		op_mod->on_int32.op_map(nd,(Number*)v+nd*i,r.dim->v[i]);
+		if (i) op_add->on_int32.op_map2(nd,(Number*)v,(Number*)v+nd*i);
 	}
 	if (r.nt==int32_type_i) {
 		Pt<int32> p = (Pt<int32>)r;
-//		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
-		STACK_ARRAY(int32,foo,nd*size);
-		for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size);
-		out[0]->send(size*nd,foo);
+		if (size<8) {
+			STACK_ARRAY(int32,foo,nd*size);
+			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size);
+			out[0]->send(size*nd,foo);
+		} else {
+			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
+		}			
 	} else if (r.nt==uint8_type_i) {
 		Pt<uint8> p = (Pt<uint8>)r;
 		for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]);
@@ -298,9 +301,7 @@ GRID_INLET(GridStore,1) {
 	this->in[0]->abort();
 	r.del();
 	r.init(in->dim->dup(),r.nt);
-}
-
-GRID_FLOW {
+} GRID_FLOW {
 	if (r.nt==int32_type_i) {
 		COPY((Pt<int32>)r + in->dex, data, n);
 	} else if (r.nt==uint8_type_i) {
@@ -308,11 +309,8 @@ GRID_FLOW {
 		for(int i=0; i<n; i++) data2[i] = data[i];
 	} else RAISE("unsupported type");
 	in->dex += n;
-}
-
-GRID_FINISH {}
-
-GRID_END
+} GRID_FINISH {
+} GRID_END
 
 METHOD3(GridStore,initialize) {
 	rb_call_super(argc,argv);
@@ -343,7 +341,7 @@ struct GridOp1 : GridObject {
 GRID_INLET(GridOp1,0) { out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW {
-	op->on_int32.op_array(n,data);
+	op->on_int32.op_map(n,(Number*)data);
 	out[0]->give(n,data);
 }
 
@@ -386,7 +384,7 @@ GRID_FLOW {
 	int loop = r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			op->on_int32.op_array2(n,data,rdata+in->dex);
+			op->on_int32.op_map2(n,(Number*)data,(Number*)rdata+in->dex);
 		} else {
 			STACK_ARRAY(Number,data2,n);
 			//!@#$ accelerate me
@@ -396,10 +394,10 @@ GRID_FLOW {
 				COPY(data2+i,rdata+ii,m);
 				i+=m;
 			}
-			op->on_int32.op_array2(n,data,data2);
+			op->on_int32.op_map2(n,(Number*)data,(Number*)data2);
 		}
 	} else {
-		op->on_int32.op_array(n,data,*rdata);
+		op->on_int32.op_map(n,(Number*)data,*rdata);
 	}
 	out[0]->give(n,data);
 }
@@ -472,7 +470,7 @@ GRID_FLOW {
 	int nn=n;
 	while (n) {
 		COPY(buf+i,((Pt<int32>)r),zn);
-		op->on_int32.op_fold2(zn,buf+i,yn,data);
+		op->on_int32.op_fold2(zn,(Number*)buf+i,yn,(Number*)data);
 		i += zn;
 		data += yn*zn;
 		n -= yn*zn;
@@ -540,7 +538,7 @@ GRID_FLOW {
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
-		op->on_int32.op_scan2(zn,((Pt<int32>)r),yn,buf);
+		op->on_int32.op_scan2(zn,(Number*)r,yn,(Number*)buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
@@ -618,8 +616,8 @@ GRID_FLOW {
 		for (int j=0; j<chunks; j++) {
 			COPY(buf,&data[i],factor);
 			for (int k=0; k<factor; k++) bufr[k]=((Pt<int32>)r)[chunks*k+j];
-			op_para->on_int32.op_array2(factor,buf,bufr);
-			buf2[j] = op_fold->on_int32.op_fold(rint,factor,buf);
+			op_para->on_int32.op_map2(factor,(Number*)buf,(Number*)bufr);
+			buf2[j] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
 	}
@@ -692,8 +690,8 @@ GRID_FLOW {
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
 			COPY(buf,&data[i],factor);
-			op_para->on_int32.op_array2(factor,buf,((Pt<int32>)r)+j);
-			buf2[k] = op_fold->on_int32.op_fold(rint,factor,buf);
+			op_para->on_int32.op_map2(factor,buf,(Number*)r+j);
+			buf2[k] = op_fold->on_int32.op_fold(rint,factor,(Number*)buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
 	}
@@ -757,7 +755,7 @@ GRID_FLOW {
 	STACK_ARRAY(Number,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		op->on_int32.op_array2(b_prod,buf,((Pt<int32>)r));
+		op->on_int32.op_map2(b_prod,buf,(Number*)r);
 		out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -874,8 +872,8 @@ GRID_FINISH {
 			Pt<Number> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=rint;
-			op_para->on_int32.op_array2(l*dbx*dby,buf,buf2);
-			op_fold->on_int32.op_fold2(l,buf3,dbx*dby,buf);
+			op_para->on_int32.op_map2(l*dbx*dby,(Number*)buf,(Number*)buf2);
+			op_fold->on_int32.op_fold2(l,(Number*)buf3,dbx*dby,(Number*)buf);
 			out[0]->send(l,buf3);
 		}
 	}
@@ -1232,7 +1230,7 @@ GRID_FLOW {
 			}
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
-				OP2(SYM(/))->on_int32.op_array(rowsize2,buf,scalex*scaley);
+				OP2(SYM(/))->on_int32.op_map(rowsize2,(Number*)buf,scalex*scaley);
 				out[0]->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}

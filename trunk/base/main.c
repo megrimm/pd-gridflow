@@ -345,6 +345,20 @@ void startup_formats();
 
 #define SDEF2(a,b,c) rb_define_singleton_method(mGridFlow,a,(RFunc)b,c)
 
+#ifdef HAVE_PENTIUM
+/*
+extern "C" void pentium_int32_map_add(int,int32*,int32);
+extern "C" void pentium_int32_map2_add(int,int32*,int32*);
+void startup_cpu () {
+	gfpost("startup_cpu: using 386/Pentium optimisations");
+	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_map =
+	pentium_int32_map_add;
+	FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(+)))->on_int32.op_map2 =
+	pentium_int32_map2_add;
+}
+*/
+#endif
+
 /* Ruby's entrypoint. */
 void Init_gridflow () {
 	signal(11,SIG_DFL);
@@ -393,5 +407,10 @@ void Init_gridflow () {
 		"backtrace: #{$!.backtrace}\"");
 
 	startup_formats();
+
+#ifdef HAVE_PENTIUM
+//	startup_cpu();
+#endif
+
 	signal(11,SIG_DFL); /* paranoia */
 }
