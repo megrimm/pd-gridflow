@@ -258,11 +258,11 @@ struct GridDownscaleBy : GridObject {
 };
 
 GRID_INLET(GridDownscaleBy,0) {
+
 	P<Dim> a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
-//!@#$	in->set_factor(a->get(1)*a->get(2)*scaley); <- things could be easier with this
 	temp=new Grid(new Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
@@ -279,13 +279,15 @@ GRID_INLET(GridDownscaleBy,0) {
 				for (int i=0,p=0; p<rowsize2; p+=z) \
 				for (int j=0; j<scalex; j++,i+=z)
 			switch (chans) {
+			case 1: LOOP(1) {Z(0);} break;
+			case 2: LOOP(2) {Z(0);Z(1);} break;
 			case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
 			case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
 			default:LOOP(chans) {for (int k=0; k<chans; k++) Z(k);} break;
 			}
 			#undef LOOP
 			y++;
-			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
+			if (y%scaley==0 && out->dim) {
 				op_div->map(rowsize2,buf,(T)(scalex*scaley));
 				out->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
@@ -300,6 +302,8 @@ GRID_INLET(GridDownscaleBy,0) {
 			if (y%scaley || y/scaley>=in->dim->get(0)/scaley) continue;
 			#define LOOP(z) for (int i=0,p=0; p<rowsize2; i+=xinc, p+=z)
 			switch(in->dim->get(2)) {
+			case 1: LOOP(1) {Z(0);} break;
+			case 2: LOOP(2) {Z(0);Z(1);} break;
 			case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
 			case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
 			default:LOOP(chans) {for (int k=0; k<chans; k++) Z(k);}break;
@@ -531,11 +535,10 @@ template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, 
 	int n=rsx;
 	if (x0+n>sx) n=sx-x0;
 	if (x0<0) { rbuf-=rsc*x0; n+=x0; x0=0; }
-	if (alpha && rsc!=sc) { // RGB by RGBA //!@#$ optimise
+	if (alpha && rsc==4 && sc==3) { // RGB by RGBA //!@#$ optimise
 		int j=sc*x0;
-		for (; n; n--, rbuf+=rsc, j+=sc) {
-			op->zip(sc,obuf+j,rbuf);
-			COMPUTE_ALPHA(0,3); COMPUTE_ALPHA(1,3); COMPUTE_ALPHA(2,3);
+		for (; n; n--, rbuf+=4, j+=3) {
+			op->zip(sc,obuf+j,rbuf); COMPUTE_ALPHA(0,3); COMPUTE_ALPHA(1,3); COMPUTE_ALPHA(2,3);
 		}
 	} else if (alpha && rsc==4 && sc==4) { // RGBA by RGBA
 		op->zip(n*rsc,obuf+x0*rsc,rbuf);
@@ -595,7 +598,7 @@ GRID_INLET(DrawImage,0) {
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
-\def void _0_alpha (bool v=true) { alpha = v; }
+\def void _0_alpha (bool v=true) { alpha = v; gfpost("ALPHA=%d",v); }
 \def void _0_tile (bool v=true) {   tile = v; }
 
 \def void initialize (Numop *op, Grid *image, Grid *position) {
