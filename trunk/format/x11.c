@@ -269,7 +269,6 @@ void FormatX11::dealloc_image () {
 
 bool FormatX11::alloc_image (int sx, int sy) {
 	dim = new Dim(sy, sx, 3);
-top:
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -277,13 +276,10 @@ top:
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
 		if (!ximage) {
-			gfpost("shm got disabled, retrying...");
-			goto top;
-		}
-		shm_info->shmid = shmget(
-			IPC_PRIVATE,
-			ximage->bytes_per_line * ximage->height,
-			IPC_CREAT|0777);
+			gfpost("shm got disabled (1), retrying...");
+			return alloc_image(sx,sy);}
+		shm_info->shmid = shmget(IPC_PRIVATE,
+			ximage->bytes_per_line*ximage->height, IPC_CREAT|0777);
 		if(shm_info->shmid < 0)
 			RAISE("ERROR: shmget failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr =
@@ -291,27 +287,19 @@ top:
 		image = Pt<uint8>((uint8 *)ximage->data,
 			ximage->bytes_per_line*sy);
 		shm_info->readOnly = False;
-
 		current_x11 = this;
 		//XSetErrorHandler(FormatX11_error_handler);
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
-
-		/* make sure the server picks it up */
-		XSync(display,0);
-
+		XSync(display,0); // make sure the server picks it up
 		//XSetErrorHandler(0);
-
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl(shm_info->shmid,IPC_RMID,0);
-
 		if (!use_shm) {
-			gfpost("shm got disabled, retrying...");
-			goto top;
-		}
+			gfpost("shm got disabled (2), retrying...");
+			return alloc_image(sx,sy);}
 	} else
 #endif
-	ximage = XCreateImage(
-		display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
+	ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
 	if (!ximage) RAISE("can't create image"); 
 	image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
 	ximage->data = (int8 *)image;
@@ -321,8 +309,8 @@ top:
 }
 
 void FormatX11::resize_window (int sx, int sy) {
-	if (sy<16) sy=16; if (sy>4000) RAISE("height too big");
-	if (sx<16) sx=16; if (sx>4000) RAISE("width too big");
+	if (sy<16) sy=16; if (sy>4096) RAISE("height too big");
+	if (sx<16) sx=16; if (sx>4096) RAISE("width too big");
 	alloc_image(sx,sy);
 	if (name) delete name;
 	name = new char[64];
@@ -345,15 +333,14 @@ void FormatX11::resize_window (int sx, int sy) {
 		if (is_owner) {
 			// fall_thru 0
 			XSelectInput(display, window,
-				ExposureMask | StructureNotifyMask |
-				PointerMotionMask |
-				ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-				KeyPressMask | KeyReleaseMask);
+			  ExposureMask | StructureNotifyMask | PointerMotionMask |
+			  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
+			  KeyPressMask | KeyReleaseMask);
 			XMapRaised(display, window);
 		} else {
 			// fall_thru 1
 			XSelectInput(display, window,
-				ExposureMask | StructureNotifyMask);
+			  ExposureMask | StructureNotifyMask);
 		}
 		imagegc = XCreateGC(display, window, 0, NULL);
 		if (visual->c_class == PseudoColor) prepare_colormap(); 
@@ -373,9 +360,8 @@ GRID_INLET(FormatX11,0) {
 	if (sx!=osx || sy!=osy) resize_window(sx,sy);
 	if (in->dim->get(2)!=bit_packing->size) {
 		bit_packing->mask[3]=0;
-		bit_packing = new BitPacking(
-			bit_packing->endian, bit_packing->bytes,
-			in->dim->get(2), bit_packing->mask);
+		bit_packing = new BitPacking(bit_packing->endian,
+		  bit_packing->bytes, in->dim->get(2), bit_packing->mask);
 	}
 } GRID_FLOW {
 	int bypl = ximage->bytes_per_line;
@@ -551,14 +537,10 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \def void initialize (...) {
-	// defaults
-	int sy = 240;
-	int sx = 320;
-
+	int sy=240, sx=320; // defaults
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
-
 	int i;
 	if (domain==SYM(here)) {
 		open_display(0);
@@ -650,23 +632,24 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
+	int bpp = ximage->bits_per_pixel;
 	switch(visual->c_class) {
 	case TrueColor: case DirectColor: {
 		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
-		bit_packing = new BitPacking(
-			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
+		bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 	} break;
 	case PseudoColor: {
 		uint32 masks[3] = { 0x07, 0x38, 0xC0 };
-		bit_packing = new BitPacking(
-			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
+		bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 	} break;
 	}
-	IEVAL(rself,"@clock = Clock.new self");
-	IEVAL(rself,"@clock.delay 0");
+	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");
 }
 
 \classinfo {
 	IEVAL(rself,"install '#io:x11',1,1;@mode=6;@comment='X Window System Version 11.5'");
 }
 \end class FormatX11
+void startup_x11 () {
+	\startall
+}

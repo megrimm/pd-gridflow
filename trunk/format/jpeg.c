@@ -114,3 +114,6 @@ GRID_INLET(FormatJPEG,0) {
 	"include GridFlow::EventIO; suffixes_are'jpeg','jpg'");
 }
 \end class FormatJPEG
+void startup_jpeg () {
+	\startall
+}

@@ -422,24 +422,8 @@ GRID_INLET(FormatQuickTimeApple,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void codec_m (String c) {
-	RAISE("Unimplemented. Sorry.");
-//!@#$
-}
-
-\def void colorspace_m (Symbol c) {
-	RAISE("Unimplemented. Sorry.");
-//!@#$
-/*	if (0) {
-	} else if (c==SYM(rgb))  { colorspace=BC_RGB888; channels=3;
-	} else if (c==SYM(rgba)) { colorspace=BC_RGBA8888; channels=4;
-	} else if (c==SYM(bgr))  { colorspace=BC_BGR888; channels=3;
-	} else if (c==SYM(bgrn)) { colorspace=BC_BGR8888; channels=4;
-	} else if (c==SYM(yuv))  { colorspace=BC_YUV888; channels=3;
-	} else if (c==SYM(yuva)) { colorspace=BC_YUVA8888; channels=4;
-	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
-*/
-}
+\def void codec_m      (String c) { RAISE("Unimplemented. Sorry."); }
+\def void colorspace_m (Symbol c) { RAISE("Unimplemented. Sorry."); }
 
 \def void close () {
 //!@#$
@@ -506,13 +490,12 @@ def self.new(mode,source,filename)
 end
 \end ruby
 );
-//	gfpost("EnterMovies() == %d",EnterMovies());
 	EnterMovies();
 	extern Ruby cFormat;
-/* i don't recall why i had to do this
-   but i had to change it because fclass_install() got rubyfied
 	rb_funcall(mGridFlow, SI(fclass_install), 2,
 		EVAL("GridFlow::FormatQuickTimeCamera"), cFormat); //hack
-*/
 }
 \end class FormatQuickTimeApple
+void startup_quicktimeapple () {
+	\startall
+}

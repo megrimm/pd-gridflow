@@ -239,3 +239,6 @@ GRID_INLET(FormatQuickTimeHW,0) {
 #endif
 }
 \end class FormatQuickTimeHW
+void startup_quicktimehw () {
+	\startall
+}

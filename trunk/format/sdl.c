@@ -118,3 +118,6 @@ GRID_INLET(FormatSDL,0) {
 	IEVAL(rself,"install '#io:sdl',1,1;@flags=2;@comment='Simple Directmedia Layer'");
 }
 \end class FormatSDL
+void startup_sdl () {
+	\startall
+}

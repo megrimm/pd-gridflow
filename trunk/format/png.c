@@ -135,3 +135,6 @@ GRID_INLET(FormatPNG,0) {
 	"install '#in:png',1,1;@mode=4;include GridFlow::EventIO; suffixes_are'png'");
 }
 \end class FormatPNG
+void startup_png () {
+	\startall
+}
