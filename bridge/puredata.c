@@ -170,7 +170,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 
 	argv[0] = rb_str_new2(fm->selector->s_name);
-	Ruby rself = rb_funcall2(EVAL("GridFlow::FObject"),SI([]),fm->ac+1,argv);
+	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
@@ -298,9 +298,9 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 
 Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
-	mGridFlow2 = EVAL("GridFlow");
+	mGridFlow2 = rb_const_get(rb_cObject,SI(GridFlow));
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
-	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
+	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	return Qnil;
 }
 
@@ -321,14 +321,15 @@ extern "C" void gridflow_setup () {
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
-	rb_ivar_set(EVAL("Data"),SI(@gf_bridge),PTR2FIX(gf_bridge2));
+	Ruby cData = rb_const_get(rb_cObject,SI(Data));
+	rb_ivar_set(cData,SI(@gf_bridge),PTR2FIX(gf_bridge2));
 
 	BFProxy_class = class_new(gensym("ruby_proxy"),
 		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 
-	rb_define_singleton_method(EVAL("Data"),"gf_bridge_init",
+	rb_define_singleton_method(cData,"gf_bridge_init",
 		(RMethod)gf_bridge_init,0);
 
 	post("(done)");

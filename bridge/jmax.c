@@ -164,7 +164,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	fm->at++;
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 	argv[0] = (Ruby)fm->self->head.cl->user_data;
-	Ruby rself = rb_funcall2(EVAL("GridFlow::FObject"),SI([]),fm->ac+1,argv);
+	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
@@ -264,7 +264,6 @@ Ruby rself) {
 	fts_atom_t sel;
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
 	fts_outlet_send(bself,outlet,fts_get_symbol(&sel),argc,at);
 	return Qnil;
 }
@@ -290,8 +289,8 @@ static GFBridge gf_bridge3 = {
 
 static Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
-	mGridFlow2 = EVAL("GridFlow");
-	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
+	mGridFlow2 = rb_const_get(rb_cObject,SI(GridFlow));
+	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	return Qnil;
 }
 
@@ -313,8 +312,8 @@ void gridflow_module_init () {
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
-	rb_ivar_set(EVAL("Data"),SI(@gf_bridge),PTR2FIX(gf_bridge2));
-	rb_define_singleton_method(EVAL("Data"),"gf_bridge_init",
+	rb_ivar_set(rb_const_get(rb_cObject,SI(Data)),SI(@gf_bridge),PTR2FIX(gf_bridge2));
+	rb_define_singleton_method(rb_const_get(rb_cObject,SI(Data)),"gf_bridge_init",
 		(RMethod)gf_bridge_init,0);
 
 	if (!
