@@ -145,7 +145,7 @@
 <tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr> <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> absolute value of A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> randomly produces a non-negative number below A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> square root of A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
- <tr><td><img src="images/op/sq.jpg" border="0" alt="sq"></td><td> A times A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/sq.png" border="0" alt="sq"></td><td> A times A </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  
 <tr><td>&nbsp;</td></tr>
 </table> 
@@ -158,20 +158,20 @@
 		by multiplying by 100. You convert from radians to our angles by 
 		multiplying by 18000/pi.</p> <p>Hyperbolic functions (tanh) work with our angles too, so the 
 		same conversions apply.</p> </td></tr>
- <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/ignore.jpg" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
- <tr><td><img src="images/op/put.jpg" border="0" alt="put"></td><td> B </td><td>replace by</td><td>replace by</td></tr>
+ <tr><td></td><td></td><td><table border='1'><th><td>name</td><td>description</td><td>meaning in pixel context (pictures, palettes)</td><td>meaning in spatial context (indexmaps, polygons)</td></th><tr><td><img src="images/op/ignore.png" border="0" alt="ignore"></td><td> A </td><td>no effect</td><td>no effect</td></tr>
+ <tr><td><img src="images/op/put.png" border="0" alt="put"></td><td> B </td><td>replace by</td><td>replace by</td></tr>
  <tr><td><img src="images/op/add.jpg" border="0" alt="+"></td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr>
  <tr><td><img src="images/op/sub.jpg" border="0" alt="-"></td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr>
  <tr><td><img src="images/op/bus.jpg" border="0" alt="inv+"></td><td> B - A </td><td>negate then contrast</td><td>180 degree rotate then move</td></tr>
  <tr><td><img src="images/op/mul.jpg" border="0" alt="*"></td><td> A * B </td><td>contrast</td><td>zoom out</td></tr>
  <tr><td><img src="images/op/div.jpg" border="0" alt="/"></td><td> A / B, rounded towards zero </td><td>contrast</td><td>zoom in</td></tr>
- <tr><td><img src="images/op/div2.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr>
+ <tr><td><img src="images/op/div2.png" border="0" alt="div"></td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr>
  <tr><td><img src="images/op/vid.jpg" border="0" alt="inv*"></td><td> B / A, rounded towards zero </td><td>&nbsp;</td><td>&nbsp;</td></tr>
- <tr><td><img src="images/op/vid2.jpg" border="0" alt="swapdiv"></td><td> B / A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/vid2.png" border="0" alt="swapdiv"></td><td> B / A, rounded downwards </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/mod.jpg" border="0" alt="%"></td><td> A % B, modulo (goes with div) </td><td>&nbsp;</td><td>tile</td></tr>
  <tr><td><img src="images/op/dom.jpg" border="0" alt="swap%"></td><td> B % A, modulo (goes with div) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
- <tr><td><img src="images/op/rem.jpg" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
- <tr><td><img src="images/op/mer.jpg" border="0" alt="swaprem"></td><td> B % A, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/rem.png" border="0" alt="rem"></td><td> A % B, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/mer.png" border="0" alt="swaprem"></td><td> B % A, remainder (goes with /) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/or.jpg" border="0" alt="|"></td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr>
  <tr><td><img src="images/op/xor.jpg" border="0" alt="^"></td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr>
  <tr><td><img src="images/op/and.jpg" border="0" alt="&"></td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr>
@@ -191,8 +191,8 @@
  <tr><td><img src="images/op/sin.jpg" border="0" alt="sin*"></td><td> B * sin(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
  <tr><td><img src="images/op/cos.jpg" border="0" alt="cos*"></td><td> B * cos(A) </td><td>&nbsp;</td><td>waves, rotations</td></tr>
  <tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td><td>&nbsp;</td><td>find angle to origin (part of polar transform)</td></tr>
- <tr><td><img src="images/op/tanh*.jpg" border="0" alt="tanh*"></td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid</td></tr>
- <tr><td><img src="images/op/log*.jpg" border="0" alt="log*"></td><td> B * log(A) (in base e) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ <tr><td><img src="images/op/tanh.png" border="0" alt="tanh*"></td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid</td></tr>
+ <tr><td><img src="images/op/log.png" border="0" alt="log*"></td><td> B * log(A) (in base e) </td><td>&nbsp;</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>&nbsp;</td></tr>
  <tr><td><img src="images/op/pow.jpg" border="0" alt="**"></td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>&nbsp;</td></tr>
  

@@ -72,12 +72,8 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 <prose>
 <list>
 <li>
-	Pictures formerly identified as "samples" should be screenshots of the
-	help files. The &amp;lt;sample&amp;gt; tag will be replaced by a &amp;lt;help&amp;gt; tag.
-</li>
-<li>
-	Pictures identified as help must be real help. The source code of
-	a template doesn't count as help.
+	Pictures identified as "&lt;help&gt;" should be screenshots of the
+	help files. They shouldn't be screenshots of the template.
 </li>
 <li>
 	A Help file is a visual summary of what an object does. It should be

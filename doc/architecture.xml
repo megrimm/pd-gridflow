@@ -284,11 +284,11 @@
 	<operator-2 name="atan" cname="atan"
 		space="find angle to origin (part of polar transform)"
 	> arctan(A/B) </operator-2>
-	<operator-2 name="tanh*" cname="tanh*"
+	<operator-2 name="tanh*" cname="tanh"
 		color="smooth clipping"
 		space="smooth clipping (of individual points), neural sigmoid"
 	> B * tanh(A) </operator-2>
-	<operator-2 name="log*" cname="log*"
+	<operator-2 name="log*" cname="log"
 	> B * log(A) (in base e) </operator-2>
 	<operator-2 name="gamma" cname="gamma"
 		color="gamma correction"

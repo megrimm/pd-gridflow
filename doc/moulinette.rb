@@ -333,8 +333,12 @@ class XNode
 			if icon then
 				mkimg icon
 			else
-				mk(:img,:src,"images/op/#{att['cname']}.jpg",
-					:border,0,:alt,att["name"])
+				x = "images/op/#{att['cname']}.jpg"
+				x.sub! /jpg$/, "png" if not File.exist? x
+				if not File.exist? x
+					STDERR.print "warning: no icon for #{att['name']} (#{x})\n"
+				end
+				mk(:img,:src,x,:border,0,:alt,att["name"])
 			end
 			# print att["name"]
 		}

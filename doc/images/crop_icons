@@ -6,7 +6,7 @@ fi
 
 for z in $foo; do \
 	echo $z
-	pngtopnm $z | pnmcrop | pnmtopng -compress 9 > $z.new
+	pngtopnm $z | pnmcrop | pnmtopng -background black -transparent =red -compress 9 > $z.new
 	mv $z.new $z
 done
 
