@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include "../c/src/grid.h"
+#include "../base/grid.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -176,6 +176,10 @@ void test_foo(void) {
 	fts_send3(out,0,"open videodev /dev/video0");
 }
 
+void test_ruby(void) {
+	FObject *rubyfor = fts_object_new3("rubyfor 0 10 3");
+}
+
 int main(int argc, char **argv) {
 	Dict *tests = Dict_new((CompFunc)strcmp,HashFunc_string);
 	int i;
@@ -190,6 +194,7 @@ int main(int argc, char **argv) {
 	TEST(foo)
 	TEST(tcp)
 	TEST(gen)
+	TEST(ruby)
 
 	{
 		const char *name = argc<2 ? "tcp" : argv[1];
