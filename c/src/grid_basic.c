@@ -99,11 +99,9 @@ METHOD(GridImport,delete) {
 METHOD(GridImport,int) {
 	GridOutlet *out = $->out[0];
 	Number data[] = { GET(0,int,0) };
-	ENTER;
 	if (!GridOutlet_busy(out)) GridOutlet_begin(out,Dim_dup($->dim));
 	GridOutlet_send(out,ARRAY(data));
 	if (out->dex >= Dim_prod(out->dim)) GridOutlet_end(out);
-	LEAVE;
 }
 
 METHOD(GridImport,reset) {
@@ -393,7 +391,6 @@ METHOD(GridStore,delete) {
 }
 
 METHOD(GridStore,bang) {
-	ENTER;
 	if (! $->dim || ! $->data) {
 		whine("empty buffer, better luck next time.");
 		return;
@@ -401,7 +398,6 @@ METHOD(GridStore,bang) {
 	GridOutlet_begin($->out[0],Dim_dup($->dim));
 	GridOutlet_send( $->out[0],Dim_prod($->dim),$->data);
 	GridOutlet_end(  $->out[0]);
-	LEAVE;
 }
 
 CLASS(GridStore) {
@@ -1101,7 +1097,6 @@ METHOD(GridFor,step) { $->step = GET(0,int,0); if (!$->step) $->step=1; }
 METHOD(GridFor,bang) {
 	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
 	Number x;
-	ENTER;
 	if (v<0) v=0;
 	GridOutlet_begin($->out[0],Dim_new(1,&v));
 	if ($->step > 0) {
@@ -1114,7 +1109,6 @@ METHOD(GridFor,bang) {
 		}
 	}
 	GridOutlet_end($->out[0]);
-	LEAVE;
 }
 
 METHOD(GridFor,from2) {
