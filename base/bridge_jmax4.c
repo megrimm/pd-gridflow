@@ -162,7 +162,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 										  SI(@fclasses_set)), rb_str_new2(fts_object_get_class_name(fm->self)));
    
 	Ruby rself = rb_funcall2(qlass,SI(new),fm->ac,argv);
-	DGS(GridObject);
+	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
 	return rself;

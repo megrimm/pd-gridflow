@@ -149,7 +149,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	for (int i=0; i<fm->ac; i++) argv[i] = Bridge_import_value(fm->at+i);
 	Ruby qlass = (Ruby)fm->self->head.cl->user_data;
 	Ruby rself = rb_funcall2(qlass,SI(new),fm->ac,argv);
-	DGS(GridObject);
+	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
 #ifdef TRACE_SELF

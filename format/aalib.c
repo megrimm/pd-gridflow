@@ -153,7 +153,7 @@ METHOD3(FormatAALib,initialize) {
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc2; i++) free(argv2[i]);
 
-	Ruby drivers = rb_ivar_get(grid_class->rclass,SI(@drivers));
+	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
 	Ruby driver_address = rb_hash_aref(drivers,argv[0]);
 	if (driver_address==Qnil)
 		RAISE("unknown aalib driver '%s'",rb_sym_name(argv[0]));
