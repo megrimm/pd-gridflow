@@ -41,6 +41,7 @@
 </ul>
 <h4><a href="#Window_Output">Window Output</a></h4><ul>
 <li><a href="#format x11 @in/@out"><img src="images/format_x11.png" alt="[open x11 here]" border="0"></a></li>
+<li><a href="#format quartz @out">format quartz @out</a></li>
 <li><a href="#format sdl @out">format sdl @out</a></li>
 <li><a href="#format aalib @out">format aalib @out</a></li>
 <li><a href="#format window @out">format window @out</a></li>
@@ -369,22 +370,35 @@
 			the ones GridFlow uses.) <br>
  <br><b>method</b>&nbsp;hidecursor <b>(</b><b>)</b>  
 			This makes the cursor invisible. <br>
-  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     
-				This is emitted every time the cursor moves inside 
+  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;position <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>)</b>     <p>This is emitted every time the cursor moves inside 
 				the window connected to this format handler. This is also 
 				emitted when the cursor is dragging from inside to outside 
-				the window. The y and x coordinates are relative to the upper 
+				the window. This is also emitted when a mouse button is pressed.</p> <p>The y and x coordinates are relative to the upper 
 				right corner of the window. Specific button states may be 
 				extracted from the button value by applying [&gt;&gt; 
 				buttonnumber] and then checking whether the result is odd. 
-				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul> <br>
+				Button numbers normally are: <ul> <li><b>0</b> : Shift</li> <li><b>1</b> : CapsLock</li> <li><b>2</b> : Control</li> <li><b>3</b> : Alternate</li> <li><b>4</b> : NumLock</li> <li><b>5</b> : ???</li> <li><b>6</b> : Meta</li> <li><b>7</b> : ScrollLock</li> <li><b>8</b> : Left Button</li> <li><b>9</b> : Middle Button</li> <li><b>10</b> : Right Button</li> <li><b>11</b> : Wheel Up</li> <li><b>12</b> : Wheel Down</li> </ul></p> <p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;keypress <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>, </b><i>symbol</i> keyname<b>)</b>      <p>Similar to <kbd><font color="#007777">position</font></kbd> above, but this is emitted when a 
+				keyboard key is pressed while this format handler's window 
+				is active. Keynames follow the X11 standard, similarly to PureData's [keyname] object. 
+				The only exception is that keynames that are digits get prefixed by a capital D so that 
+				they don't get mistaken for actual numbers.</p> <p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;keyrelease <b>(</b><i>integer</i> y<b>, </b><i>integer</i> x<b>, </b><i>integer</i> buttons<b>, </b><i>symbol</i> keyname<b>)</b>      
+				Same as keypress but when a key gets released instead. <p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p> <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quartz @out">format quartz @out</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;open <b>(</b><b>)</b>  
+			opens a dim(240,320,3) rgb window (default). <br>
+ <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns {red green blue})</i> grid<b>)</b>   
+			Sends image to screen. Window will be resized to fit the image exactly. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b>&nbsp;open <b>(</b><b>)</b>  
-			opens a dim(480,640,3) rgb window. <br>
+			Opens a dim(240,320,3) rgb window (default). <br>
  <br><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns {red green blue})</i> grid<b>)</b>   
-			sends frame to screen. window is NOT resized. <br>
+			Sends image to screen. Window will be resized to fit the image exactly. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format aalib @out">format aalib @out</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
