@@ -67,6 +67,7 @@ struct FormatX11 {
 	uint8 *image;        /* the real data (that XImage binds to) */
 	struct timeval tv;   /* time of the last grid_end */
 	bool not_ours;
+	int mode;
 };
 
 /* default connection (not used for now) */
@@ -160,18 +161,31 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
 		if (!xpending) break;
 		XNextEvent($->display,&e);
-		if (e.type == Expose) {
+		switch (e.type) {
+		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
 			FormatX11 *vout;
 			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
 			vout = X11Display_vout_find($,ex->window);
-			if (vout) {
+			if (vout && vout->mode == 2) {
 				FormatX11_show_section(vout, ex->x, ex->y, ex->width,
 				ex->height);
 			}
-			
-		} else {
+		}break;
+		case ButtonPress:{
+			XButtonEvent *eb = (XButtonEvent *)&e;
+			whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+		}break;
+		case ButtonRelease:{
+			XButtonEvent *eb = (XButtonEvent *)&e;
+			whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+		}break;
+		case MotionNotify:{
+			XMotionEvent *em = (XMotionEvent *)&e;
+			whine("drag at (y=%d,x=%d)",em->y,em->x);
+		}break;
+		default:
 			whine("received event of type # %d", e.type);
 		}
 	}
@@ -186,6 +200,12 @@ void X11Display_set_alarm(X11Display *$) {
 	fts_alarm_set_delay($->alarm, 125.0);
 	fts_alarm_arm($->alarm);
 }
+
+/*
+void X11Display_abort(Display *d, XErrorEvent *e) {
+	kill(getpid(),4);
+}
+*/
 
 X11Display *X11Display_new(const char *disp_string) {
 	X11Display *$ = NEW(X11Display,1);
@@ -204,6 +224,9 @@ X11Display *X11Display_new(const char *disp_string) {
 		whine("ERROR: opening X11 display");
 		goto err;
 	}
+
+	/* XSetErrorHandler(X11Display_abort); */
+
 	screen      = DefaultScreenOfDisplay($->display);
 	screen_num  = DefaultScreen($->display);
 	$->visual      = DefaultVisual($->display, screen_num);
@@ -234,7 +257,32 @@ err:;
 /* ---------------------------------------------------------------- */
 
 bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
-	return false;
+	if (frame != -1) return 0;
+
+	whine("$->dim = %s",Dim_to_s($->dim));
+
+	XGetSubImage($->display->display, $->window,
+		0, 0, Dim_get($->dim,1), Dim_get($->dim,0),
+		-1, ZPixmap, $->ximage, 0, 0);
+
+	GridOutlet_begin(out,Dim_dup($->dim));
+
+	{
+		int sy = Dim_get($->dim,0);
+		int sx = Dim_get($->dim,1);
+		int y;
+		int bs = Dim_prod_start($->dim,1);
+		Number b2[bs];
+		for(y=0; y<sy; y++) {
+			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
+			BitPacking_unpack($->bit_packing,sx,b1,b2);
+			GridOutlet_send(out,bs,b2);
+		}
+	}
+
+	GridOutlet_end(out);
+
+	return true;
 }
 
 /* ---------------------------------------------------------------- */
@@ -308,9 +356,7 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 
 	oldw = $->window;
 	if (oldw) {
-		if ($->window == $->display->root_window) {
-			/* can't resize that window */
-		} else {
+		if (!$->not_ours) {
 			whine("About to resize window: %s",Dim_to_s($->dim));
 			XResizeWindow(d->display,$->window,sx,sy);
 		}
@@ -328,10 +374,18 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	/* FormatX11_set_wm_hints($,sx,sy); */
 
 	$->imagegc = XCreateGC(d->display, $->window, 0, NULL);
-	XSelectInput(d->display, $->window,
-		ExposureMask | StructureNotifyMask |
-		ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-	XMapRaised  (d->display, $->window);
+	if ($->not_ours) {
+		XSelectInput(d->display, $->window,
+			ExposureMask | StructureNotifyMask);
+	} else {
+		XSelectInput(d->display, $->window,
+			ExposureMask | StructureNotifyMask |
+			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+	}
+
+	if (!$->not_ours) {
+		XMapRaised(d->display, $->window);
+	}
 	XSync(d->display,0);
 	return;
 err:
@@ -401,6 +455,13 @@ void FormatX11_close (FormatX11 *$) {
 	/* X11-socket leakage going on here */
 }
 
+/*
+void FormatX11_size (FormatX11 *$, int sy, int sx) {
+	int v[] = {sy,sx,3};
+	$->dim = Dim_new(ARRAY(v));
+}
+*/
+
 void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	if (sym == SYM(out_size)) {
@@ -450,13 +511,14 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 	$->not_ours= false;
 	$->image   = 0;
 	$->ximage  = 0;
-	$->autodraw = 1;
+	$->autodraw= 1;
+	$->mode = mode;
 	$->dim = 0;
 
 	gettimeofday(&$->tv,0);
 
 	switch(mode) {
-	case 2: break;
+	case 4: case 2: break;
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
@@ -568,7 +630,7 @@ FileFormatClass class_FormatX11 = {
 	flow:    GRID_FLOW_PTR(FormatX11,0),
 	end:      GRID_END_PTR(FormatX11,0),
 
-//	size:   FormatX11_size, /* ??? */
+//	size:   FormatX11_size,
 	size:   0,
 	color:  0,
 	option: FormatX11_option,
