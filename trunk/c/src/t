@@ -21,6 +21,7 @@ SRC='video_out.c grid_basic.c grid.c grid.h'
 # FILE="${F}.jmax ${F}.new.jmax"
 #FILE=outside/grid_tcp.jmax
 #FILE=outside/scale_test_2.jmax
+FILE=ripple.jmax
 
 FILE=$SAM/$FILE
 
