@@ -1108,6 +1108,10 @@ duplicated.</p>
 			opens the specified file, taken from the current
 			directory or one of the jMax-specified data directories.
 		</method>
+
+		<grid><dim>rows columns 3</dim>
+			values 0-255
+		</grid>
 	</jmax-class>
 
 	<jmax-class name="format targa @in">
@@ -1123,6 +1127,52 @@ duplicated.</p>
 			opens the specified file, taken from the current
 			directory or one of the jMax-specified data directories.
 		</method>
+
+		<grid><dim>rows columns 3</dim>
+			values 0-255
+		</grid>
+	</jmax-class>
+
+	<jmax-class name="format grid @in/@out">
+		<icon
+			image="images/format/grid.jpg"
+			text="[open grid file filename.grid]"
+		/>
+		<icon
+			image="images/format/grid_tcp.jpg"
+			text="[open grid tcp www.artengine.ca 4242]"
+		/>
+
+		<method name="open file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+		<method name="open tcp">
+			<arg name="hostname" type="symbol"/>
+			<arg name="port" type="integer"/>
+			dials an specified hostname/port on the InterNet or
+			compatible network. the TCP protocol is used.
+		</method>
+		<method name="open tcpd">
+			<arg name="port" type="integer"/>
+			future use:
+			waits for a call (and answers) for this port on the
+			local machine via InterNet or compatible network.
+			Answers the call.
+		</method>
+
+		<p>
+		This is GridFlow's special file format. This is the only I/O
+		format that can hold absolutely anything that the [@store] object can.
+		However this can only be stored in 32 bits-per-value.
+		</p>
+		<p>
+		This is the only picture format that currently supports TCP
+		connections. This is still somewhat clunky: the socket only
+		opens in client mode only; and upon bang, jMax freezes until
+		the whole grid is received.
+		</p>
 	</jmax-class>
 
 	<jmax-class name="format videodev @in">
@@ -1253,28 +1303,5 @@ duplicated.</p>
 			text="video_out_patch"
 		/>
 	</jmax-class>
-
-	<jmax-class name="format grid @in/@out">
-		<icon
-			image="images/format/grid.jpg"
-			text="[open grid file filename.grid]"
-		/>
-		<icon
-			image="images/format/grid_tcp.jpg"
-			text="[open grid tcp www.artengine.ca 4242]"
-		/>
-		<p>
-		This is GridFlow's special file format. This is the only I/O
-		format that can hold absolutely anything that the [@store] object can.
-		However this can only be stored in 32 bits-per-value.
-		</p>
-		<p>
-		This is the only picture format that currently supports TCP
-		connections. This is still somewhat clunky: the socket only
-		opens in client mode only; and upon bang, jMax freezes until
-		the whole grid is received.
-		</p>
-	</jmax-class>
-
 </section>
 </jmax-doc>
