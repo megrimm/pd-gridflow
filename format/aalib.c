@@ -38,7 +38,8 @@ struct FormatAALib : Format {
 	aa_context *context;
 //	aa_hardwareparams *hparams;
 	aa_renderparams *rparams;
-	Dim *dim;
+	int autodraw; /* as for X11 */
+	bool raw_mode;
 
 	DECL3(option);
 	DECL3(close);
@@ -50,34 +51,47 @@ GRID_INLET(FormatAALib,0) {
 	if (!context) RAISE("boo");
 	if (in->dim->n != 3)
 		RAISE("expecting 3 dimensions: rows,columns,channels");
-	if (in->dim->get(2) != 1)
+	switch (in->dim->get(2)) {
+	case 1: raw_mode = false; break;
+	case 2: raw_mode = true; break;
+	default:
 		RAISE("expecting 1 greyscale channel (got %d)",in->dim->get(2));
-	if (dim) delete dim;
-	dim = in->dim->dup();
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
-}
-
-GRID_FLOW {
-	int sx = min(in->factor,context->imgwidth);
-	int y = in->dex/in->factor;
-	while (n) {
-		if (y>=context->imgheight) return;
-		for (int x=0; x<sx; x++) aa_putpixel(context,x,y,data[x]);
-		y++;
-		n -= in->factor;
-		data += in->factor;
 	}
-}
-
-GRID_FINISH {
-	aa_palette pal;
-	for (int i=0; i<256; i++) aa_setpalette(pal,i,i,i,i);
-	aa_renderpalette(context,pal,rparams,0,0,
-		aa_scrwidth(context),aa_scrheight(context));
-	aa_flush(context);
-}
-GRID_END
-
+	in->set_factor(in->dim->get(1)*in->dim->get(2));
+} GRID_FLOW {
+	if (raw_mode) {
+		int sx = min(in->factor,aa_scrwidth(context));
+		int y = in->dex/in->factor;
+		while (n) {
+			if (y>=aa_scrheight(context)) return;
+			for (int x=0; x<sx; x++) {
+				context->textbuffer[y*aa_scrwidth(context)+x]=data[x*2+0];
+				context->attrbuffer[y*aa_scrwidth(context)+x]=data[x*2+1];
+			}
+			y++;
+			n -= in->factor;
+			data += in->factor;
+		}
+	} else {
+		int sx = min(in->factor,context->imgwidth);
+		int y = in->dex/in->factor;
+		while (n) {
+			if (y>=context->imgheight) return;
+			for (int x=0; x<sx; x++) aa_putpixel(context,x,y,data[x]);
+			y++;
+			n -= in->factor;
+			data += in->factor;
+		}
+	}
+} GRID_FINISH {
+	if (!raw_mode) {
+		aa_palette pal;
+		for (int i=0; i<256; i++) aa_setpalette(pal,i,i,i,i);
+		aa_renderpalette(context,pal,rparams,0,0,
+			aa_scrwidth(context),aa_scrheight(context));
+	}
+	if (autodraw==1) aa_flush(context);
+} GRID_END
 
 METHOD3(FormatAALib,close) {
 	if (context) {
@@ -96,8 +110,26 @@ METHOD3(FormatAALib,option) {
 		int y = INT(argv[1]);
 		int x = INT(argv[2]);
 		int a = INT(argv[3]);
-		aa_puts(context,y,x,(AAAttr)a,(char *)rb_sym_name(argv[4]));
+		aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(argv[4]));
+		if (autodraw==1) aa_flush(context);
+	} else if (sym == SYM(draw)) {
 		aa_flush(context);
+	} else if (sym == SYM(autodraw)) {
+		int autodraw = INT(argv[1]);
+		if (autodraw<0 || autodraw>1)
+			RAISE("autodraw=%d is out of range",autodraw);
+		this->autodraw = autodraw;
+	} else if (sym == SYM(dump)) {
+		int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
+		out[0]->begin(new Dim(3,v));
+		for (int y=0; y<aa_scrheight(context); y++) {
+			for (int x=0; x<aa_scrwidth(context); x++) {
+				STACK_ARRAY(int32,data,2);
+				data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
+				data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
+				out[0]->send(2,data);
+			}
+		}		
 	} else
 		return rb_call_super(argc,argv);
 	return Qnil;
@@ -110,8 +142,8 @@ METHOD3(FormatAALib,initialize) {
 			rb_str_ptr(rb_funcall(argv[i],SI(inspect),0)));
 	}
 	argv++, argc--;
-	dim = 0;
 	context = 0;
+	autodraw = 1;
 	if (argc<1) RAISE("wrong number of arguments");
 
 	int argc2=argc;
@@ -119,7 +151,7 @@ METHOD3(FormatAALib,initialize) {
 	for (int i=0; i<argc2; i++)
 		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
 	aa_parseoptions(0,0,&argc,argv2);
-	for (int i=0; i<argc2; i++) delete argv2[i];
+	for (int i=0; i<argc2; i++) free(argv2[i]);
 
 	Ruby drivers = rb_ivar_get(grid_class->rubyclass,SI(@drivers));
 	Ruby driver_address = rb_hash_aref(drivers,argv[0]);
