@@ -348,7 +348,7 @@ if true #
 				s="<i>#{x.att['type']}</i> #{s}" if x.att['type']
 				s
 			when "rest"
-				x.att["name"] + "..."
+				(x.att["name"]||"") + "..."
 			end
 		}.compact.join("<b>, </b>")
 		print "<b>)</b> "
