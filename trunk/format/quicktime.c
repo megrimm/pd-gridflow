@@ -120,9 +120,10 @@ GRID_INLET(FormatQuickTime,0) {
 	};
 	int i;
 	for (i=0; i<COUNT(codecs); i++) {
-		if (argv[1]==codecs[i].sym) break;
+		if (c==codecs[i].sym) break;
 	}
-	if (i==COUNT(codecs)) RAISE("unknown codec name");
+	if (i==COUNT(codecs))
+		RAISE("unknown codec name '%s'", rb_sym_name(c));
 	codec = codecs[i].codec;
 }
 

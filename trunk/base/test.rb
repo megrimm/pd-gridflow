@@ -231,7 +231,7 @@ end
 	b.connect 0,c,0
 	c.connect 0,y,0
 
-if nt!=:uint8 and nt!=:float32 and nt!=:float64
+if nt!=:uint8 and nt!=:float32 and nt!=:float64 and nt!=:int64
 	(a = FObject["@for {#{nt} # 0} {#{nt} # 10} {#{nt} # 1}"]).connect 0,e,0
 	a.connect 0,b,0
 	y.expect([10]) {
