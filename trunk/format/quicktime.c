@@ -30,6 +30,7 @@
 
 struct FormatQuickTime : Format {
 	quicktime_t *anim;
+	int track;
 	BitPacking *bit_packing;
 
 	DECL3(initialize);
@@ -41,31 +42,35 @@ struct FormatQuickTime : Format {
 
 METHOD3(FormatQuickTime,frame) {
 	GridOutlet *o = out[0];
-	int sx = quicktime_video_width(anim,0);
-	int sy = quicktime_video_height(anim,0);
+	int sx = quicktime_video_width(anim,track);
+	int sy = quicktime_video_height(anim,track);
 	int npixels = sx*sy;
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*4+16);
-	uint8 *rows[sy];
-	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*4;
-	gfpost("pos = %d", quicktime_byte_position(anim));
+//	gfpost("pos = %d", quicktime_byte_position(anim));
 //	quicktime_reads_cmodel(anim,BC_RGB888,0);
-//	gfpost("size=%d",quicktime_frame_size(anim,0,0));
+//	gfpost("size=%d",quicktime_frame_size(anim,0,track));
+
+//	int channels = quicktime_track_channels(anim,track);
+	int channels = quicktime_video_depth(anim,track)/8;
+
+	uint8 *rows[sy];
+	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 
 	int result;
-//	result = quicktime_read_frame(anim,buf,0);
-//	result = quicktime_decode_video(anim,rows,0);
-	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,0);
+//	result = quicktime_read_frame(anim,buf,track);
+//	result = quicktime_decode_video(anim,rows,track);
+	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,track);
 //	gfpost("result = %x", result);
 
-	int32 v[] = { sy, sx, 3 };
-//	gfpost("dim(%d,%d,%d)",sy,sx,3);
+	int32 v[] = { sy, sx, channels };
+//	gfpost("dim(%d,%d,%d)",sy,sx,channels);
 	o->begin(new Dim(3,v),
 		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
-		bit_packing->unpack(sx,buf+4*sx*y,b2);
+		bit_packing->unpack(sx,buf+channels*sx*y,b2);
 		o->send(bs,b2);
 	}
 
@@ -102,12 +107,14 @@ METHOD3(FormatQuickTime,initialize) {
 	if (!anim)
 		RAISE("can't open file `%s': %s", filename, strerror(errno));
 
-	if (!quicktime_supported_video(anim,0))
+	track = 0;
+
+	if (!quicktime_supported_video(anim,track))
 		RAISE("quicktime: unsupported codec");
 
-//	uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
-	uint32 masks[] = { 0xff0000,0x00ff00,0x0000ff };
-	bit_packing = new BitPacking(is_le(),4,3,masks);
+	uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
+//	uint32 masks[] = { 0xff0000,0x00ff00,0x0000ff };
+	bit_packing = new BitPacking(is_le(),3,3,masks);
 	return Qnil;
 }
 
