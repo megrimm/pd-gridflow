@@ -168,7 +168,8 @@ echo "generating ./config.make"
 echo "generating c/src/Sources"
 (
 	echo "SOURCES = \\"
-	echo "dim.c bitpacking.c operator.c grid.c grid_basic.c grid_extra.c main.c io.c \\"
+	echo "lang.c dim.c bitpacking.c operator.c grid.c main.c \\"
+	echo "grid_basic.c grid_extra.c io.c \\"
 	for format in $FORMATS; do
 		lc_format=`echo $format | tr A-Z a-z`
 		echo "format_$lc_format.c \\"
