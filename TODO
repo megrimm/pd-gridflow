@@ -3,11 +3,35 @@
 --- make the development process more test-driven.
     --- *Especially* the debugging process.
 
-Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
+("I am Jack's Overwritten Stack Pointer...")
 
-[001] bin/plusminus not working on vasarely
-[002] java/Makefile is improper
-[003] javac is not detected
+Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
+pick a number: [078]
+
+[077] f(&proc{}) isn't the same as f{} anymore (see "return")
+
+[075] I don't know well this area of the code, but I think that right now, you
+have to write a Java class that derives from ircam.jmax.editors.patcher.objects.Standard
+and implements popUpUpdate. -- François.
+
+[074] -march
+[072] [sl] in patches is actually slider.
+[073] static libraries don't link with gridflow.so
+
+[071] high latency problem seems to be coming from:
+#0  0x40079cc6 in sendto () from /lib/i686/libpthread.so.0
+#1  0x080c89aa in udp_dev_flush ()
+#2  0x080c320e in fts_client_poll ()
+#3  0x080b8975 in fts_sched_run ()
+#4  0x0805b5e0 in main () ./fts/src/tiles/main.c:40
+#5  0x400d47f7 in __libc_start_main () from /lib/i686/libc.so.6
+
+[018] "make install" doesn't work properly with ruby-1.6
+[023] I messed with the installation (site-install vs install)
+
+[070] [peephole] doesn't work with transparency
+[069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
+
 [004] bug in automatic type conversion (eg: @in quicktime -> ...)
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] @in#open problem with String argument.
@@ -20,27 +44,13 @@ Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 [012] again, problem with find_file...
 [013] remove "option" completely...
 [014] recursive message-loop not detected.
-[015] "cast" missing: jpeg, quicktime, ...
 [016] @for int64 fails on machine "lcd".
-[017] jMax: jmax_examples/benchmark.jmax:
-#0  0x40390bcf in st_lookup (table=0x3, key=6457, value=0xbfffd50c) at st.c:258
-[018] "make install" doesn't work properly with ruby-1.6
-[019] PD:
- #0  0x4022abcf in st_lookup (table=0x6, key=3137, value=0xbfffdafc) at st.c:258
-258         hash_val = do_hash(key, table);
-#0  0x4022abcf in st_lookup (table=0x5, key=3137, value=0xbfffcf9c) at st.c:258
-258         hash_val = do_hash(key, table);
-[020] PD:
-error: NotImplementedError: method `class' called on terminated object (at 80eb5dc: [00000000,00000000,00000000,40d10800,00000000])
-/opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:590:in `send_out'
 [021] PD:
 error: NoMethodError: undefined method `intern' for nil
 /opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:591:in `method_missing'
 [022] base/test.rb (default):
     2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
     (makes no sense whatsoever!)
-[023] I messed with the installation (site-install vs install)
-[024] GFStack overflows when accumulating errors
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
 [027] tcp test is broken
@@ -51,16 +61,15 @@ error: NoMethodError: undefined method `intern' for nil
 [032] error handling sometimes leads to crash
 [033] error handling shows inanely useless messages (sometimes)
 [034] format/mpeg3.c,quicktime.c might cause lockup on exit
-[035] format_x11 causes crash (resizing + shm, sometimes)
-[036] format_x11 causes delayed crash when closing its associated window
 [037] new "seed"s may leak ? (Grid vs Grid*)
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
 [040] GRID_FINISH triggered while backstore ???
+[063] "make" on my nfs is all fucked up re dates
 
 Bugs (Low Priority)
+[076] EINTR not handled properly in a lot of code?
 [041] what would be a way to make GF work well with PD's idea of a list?
-[042] source_filter.rb should check whether \decl,\def match
 [043] TCP server socket busy even after kill
 [044] make better detection of libmpeg version
 [045] write unit tests about required functionality
@@ -70,21 +79,17 @@ Bugs (Low Priority)
 [049] [@export_list] blows up with >=125 elements (alx)
 [050] BitPacking has trouble with masks that extend beyond int25be
 [051] remove the crap given by -w of ruby
-[052] make: Dépendance circulaire site-install <- install abandonnée.
-	(with ruby 1.8)
-[053] @in needs 2 inlets to work but should have only one.
-[054] it's possible to crash by sending data in two inlets
-    of a same object at once
-[055] <matju> -fomit-frame-pointer is not rubygc-compatible ?
+[052] make: Dépendance circulaire site-install <- install abandonnée. (with ruby 1.8)
+[054] it's possible to crash by sending data in two inlets of a same object at once
 [056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
 [057] RtMetro crashes if deleted while turned on; and isn't reliably working
-[058] is there still a problem with videodev rgb vs bgr ?
 [059] mess with options in format grid
 [060] look for "!@#$" in source
-[061] @store should support other integer types in inlet 0
+[061] @store should support other integer types in inlet 0 (would speedup beast.jmax)
+[064] @draw_image has (had?) problems (or revealed problems of grid.c) see sand.jmax
 
 Bugs (Cannot reproduce)
-[061] ruby SecurityError: Insecure operation - exist?
+[062] ruby SecurityError: Insecure operation - exist?
 	(trying to load ~/.gridflow_startup)
 	(this is one error message from HELL; makes no sense at all)
 
@@ -115,6 +120,7 @@ Installation
 [ ] bridge should check that the gridflow.so file matches.
 [ ] make ./configure's 'test' method work using exceptions
     for meaningful error reporting in config.log.
+[ ] make uninstall
 
 Documentation
 [ ] make a short feature list as a promo
@@ -188,7 +194,7 @@ Operators
 	[@ {{* 7} + {>> 3}}]
 [ ] n-ary operators... make [@] a metaclass
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] op2: abs- (absolute difference), avg (average), erf, rol, ror
+[ ] op2: abs- (absolute difference), avg (average), erf, rol, ror, weight
 [ ] remove fold/scan for ops for which it makes no sense.
 [ ] MMX memcpy() ?
 [ ] MMX _runtime_ autodetection
@@ -224,6 +230,7 @@ Computation Objects
 [ ] @random_select, @markov_chain
 [ ] @pack, @unpack
 [ ] @sort, @slice, @splice
+[ ] fuzzy @store
 [ ] @polygon_perimeter, @polygon_area, ...
 [ ] write a complete benchmark script
 [ ] @draw_polygon smoothly
@@ -245,8 +252,13 @@ Effects
 [ ] see gimp for ideas
 [ ] kaleidoscopes
 [ ] FFTW
+[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(d-b-c+a)*x*y
+[ ] multilinear interpolation (n-dimensional?)
+[ ] @daltonism
 
 Input/Output
+[ ] videodev: colorspace yuv, etc
+[ ] videodev: is it possible to reach 60 fps ?
 [ ] a @store that is persistent (saved in .jmax) ?
 [ ] Grid: bpv 8,16,64,signed/unsigned
 [ ] Grid: bpv 1,2,4
@@ -278,7 +290,7 @@ Format
 [ ] TAR, ZIP, CAT with seeking
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM, GIF, PNG support (+ reg ourselves in libpng.org's applist)
-[ ] fork: is a new format, for e.g. multiple singleton drivers
+[ ] fork: pseudoformat for launching format handler as separate process
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
 [ ] videodev: choose number of buffered frames
@@ -295,13 +307,16 @@ User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] peephole:
-    [ ] appears in right place
-    [ ] works properly with multiple patchers
-    [ ] resizable
-    [ ] auto-@downscale_by
-    [ ] deleteable
+    [ ] auto-@scale_by for very small images
     [ ] works with jmax4
-    [ ] ...
+    [ ] works without x11
+    [ ] appear _over_ pulldowns ? (and popups, even?)
+    [ ] race condition upon creation
+    [ ] problem with vertical offset (compare "vasarely" vs "karelia")
+    [ ] alx would prefer it black instead of powder blue
+    [ ] wouldn't it be better if it were borderless?
+    [ ] maybe the window could become insensitive while in edit mode
+    [ ] add a popup menu that makes sense
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
