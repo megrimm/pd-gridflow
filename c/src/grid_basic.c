@@ -1164,5 +1164,5 @@ void startup_grid_basic (void) {
 //	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
 	fts_class_install(fts_new_symbol("@dim"),           GridDim_class_init);
 	fts_class_install(fts_new_symbol("@redim"),       GridRedim_class_init);
-	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
+//	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
 }

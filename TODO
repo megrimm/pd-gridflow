@@ -1,7 +1,8 @@
 /* $Id$ */
 
 Installation
-[ ]
+[ ] add --fast switch to turn  on all optimizations
+[ ] add --slow switch to turn off all optimizations
 
 Documentation
 [ ] update install.html for new "configure" script.
@@ -16,10 +17,11 @@ Documentation
 [ ] change title bar
 [ ] validate samples/outside
 [ ] validate samples/020
-[ ] add doc for: **
+[ ] add doc for: ** tanh atan gamma
 
 General
 [!] remove memory leaks, segmentation faults
+[ ] make FREE() handle #delete as possible
 [ ] better error handling
 [ ] @print
 [ ] @literal
@@ -29,7 +31,6 @@ Computation Objects
 [!] @inner, @outer, @fold, @cartprod (?)
 [!] @convolution
 [!] @redim (APL bin rho)
-[ ] second inlet to @import
 [ ] @iota and/or @for
 [ ] @resync (fast version of @export followed by @import)
 [!] @slice (@splice ?)
@@ -38,6 +39,7 @@ Computation Objects
 [ ] @import~, @export~ (note:
 	DSP->Control is feasible
 	Control->DSP would be *very* kludgy)
+[ ] try to manually unroll some loops
 
 Effects
 [!] blur
@@ -46,7 +48,7 @@ Effects
 [!] ripple
 [!] overlay using alpha channel
 [ ] emboss, find edges, solarize, pinch, waves
-[ ] sharpen, pixelize, spread, despeckle
+[ ] sharpen, pixelize, despeckle
 [ ] gamma correction
 [ ] *real* saturation, and hue change
 [ ] abyss effect
@@ -60,19 +62,14 @@ Effects
 
 Structure & Protocol
 [x] packets: output buffering
-[ ] grid_end message (triads: begin,packet,end -> accept,process,finish)
-[ ] check for too-short / too-long data vs. proposed dims.
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; GridInlet,GridOutlet have redundant info, like the
 	element counter, etc.
-[ ] angles will be 0<=x<36000
-[ ] unary ops: sq rand
-[!] binary ops: atan2
+[ ] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] copy-on-write and similar tricks
-[!] support 0-dimensional and 0-element grids
 
 Input/Output
 [ ] in-place editing (rw mode)
@@ -82,6 +79,7 @@ Input/Output
 [ ] x11 shared memory working
 [ ] x11 screen capture
 [ ] x11 multi-display
+[ ] add messages "load", "save" as open,bang,close combos.
 
 File Formats
 [ ] Targa write support
@@ -92,6 +90,7 @@ File Formats
 [!] multi-image (seq) (createable by cat, ar, tar or zip)
 [!] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
 [ ] install libmpeg, libquicktime
+[ ] design generic grid format (.grid)
 
 Java/Swing
 [ ] Color Picker
@@ -100,6 +99,7 @@ Java/Swing
 Bugs
 [ ] @video_out causes delayed crash when closing its associated window
 [ ] object sending too much data causes *another* object to crash.
+[ ] distinguish "mod" and "%" properly (re: rounding)
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
@@ -115,3 +115,8 @@ store3:
 	336,557,140
 	179,15,183
 
+
+================
+
+#003f69
+#400077
