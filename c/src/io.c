@@ -121,7 +121,7 @@ METHOD(GridIn,option) {
 }
 
 METHOD(GridIn,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 	$->ff = 0;
 	$->timelog = 0; /* not used in @in yet */
@@ -240,7 +240,7 @@ METHOD(GridOut,init) {
 	$->timelog = 0;
 	$->ff = 0;
 	gettimeofday(&$->tv,0);
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridOut,0);
 	if (ac>1) {
 		fts_atom_t at2[3];
@@ -260,7 +260,7 @@ METHOD(GridOut,delete) {
 }
 
 CLASS(GridOut,
-	DECL(GridOut,-1,init,  "sii"),
+	DECL(GridOut,-1,init,  "s;ii"),
 	DECL(GridOut,-1,delete,""),
 	DECL(GridOut, 0,open,  "s;sss"),
 	DECL(GridOut, 0,close, ""),

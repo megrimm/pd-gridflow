@@ -47,25 +47,38 @@
 #define HAVE_PROFILING
 #endif
 
+/* lots of macros follow */
+/* i'm not going to explain to you why macros are a good thing. */
 /* **************************************************************** */
-/* macros for use with jMax/FTS */
-
-/* we're gonna override this, so load it first, to avoid conflicts */
-#include <assert.h>
 
 /*
-  This file section defines a few macros of general use. The goal of these is
-  to work more at the level of jmax's ideas instead of copy+pasting
-  boilerplate code (and having to read that afterwards). In short, they
-  should not hinder understanding of the code, but exactly the reverse.
-
-  The set of macros should remain small so that it stays easy to
-  use and understand. They should map to concepts commonly used in the
-  jMax extensions and/or user interface.
-
-  Please point out any inappropriate definitions and possible
-  replacements for those.
+  we're gonna override this,
+  so load it first, to avoid conflicts
 */
+#include <assert.h>
+
+#define assert_range(_var_,_lower_,_upper_) \
+	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
+			__FILE__, __LINE__, #_var_, (_var_), (_lower_), (_upper_)); \
+		abort(); }
+
+#undef assert
+#define assert(_expr_) \
+	if (!(_expr_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
+			__FILE__, __LINE__, #_expr_); \
+		abort(); }
+
+#ifdef NO_ASSERT
+	/* disabling assertion checking */
+	#undef assert
+	#define assert(_foo_)
+	#undef assert_range
+	#define assert_range(_foo_,_a_,_b_)
+#endif
+
+/* **************************************************************** */
 
 /* those are helpers for profiling. */
 #ifdef HAVE_PROFILING
@@ -80,20 +93,18 @@
 #define LEAVE_P
 #endif
 
+/* **************************************************************** */
+
+#define ATOMLIST int ac, const fts_atom_t *at
+
 /*
   lists the arguments suitable for any method of a given class.
   this includes a class-specific class name so you don't have to
-  write inane stuff like
-  
-  SomeClass* self = (SomeClass *) o;
-  
+  write inane stuff like SomeClass* self = (SomeClass *) o;
   at the beginning of every method body. This is a trade-off because
   it means you have to cast to (fts_object_t *) sometimes.
   see METHOD_PTR, METHOD, OBJ
-
 */
-
-#define ATOMLIST int ac, const fts_atom_t *at
 
 #define METHOD_ARGS(_class_) \
 	_class_ *self, int winlet, Symbol selector, ATOMLIST
@@ -107,18 +118,11 @@
 	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym_),args}
 #define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
 	{_inlet_,#_sym_,METHOD_PTR(_cl_,_sym2_),args}
-#define DECL12(_cl_,_inlet_,_sym_,args...) \
-	{_inlet_,#_sym_,METHOD2PTR(_cl_,_sym_),args}
-#define DECL22(_cl_,_inlet_,_sym_,_sym2_,args...) \
-	{_inlet_,#_sym_,METHOD2PTR(_cl_,_sym2_),args}
 
 /*
   now (0.3.1) using a separate macro for some things like decls
   and for methods that should not be profiled.
 */
-
-#define METHOD2(_class_,_name_) \
-	void _class_##_##_name_(METHOD_ARGS(_class_))
 
 /*
   a header for a given method in a given class.
@@ -133,12 +137,9 @@
 	} \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
 #else
-#define METHOD(_class_,_name_) METHOD2(_class_,_name_)
+#define METHOD(_class_,_name_) \
+	void _class_##_##_name_(METHOD_ARGS(_class_))
 #endif
-
-/* this is old-style METHOD_PTR */
-#define METHOD2PTR(_class_,_name_) \
-	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
 
 /*
   returns a pointer to a method of a class as an fts_object_t* instead
@@ -150,7 +151,8 @@
 #define METHOD_PTR(_class_,_name_) \
 	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
 #else
-#define METHOD_PTR(_class_,_name_) METHOD2PTR(_class_,_name_)
+#define METHOD_PTR(_class_,_name_) \
+	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
 #endif
 
 /* a header for the class constructor */
@@ -197,28 +199,7 @@
 		(_var_) = (_upper_); \
 	}
 
-#define assert_range(_var_,_lower_,_upper_) \
-	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
-			__FILE__, __LINE__, #_var_, (_var_), (_lower_), (_upper_)); \
-		abort(); }
-
-#undef assert
-#define assert(_expr_) \
-	if (!(_expr_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
-			__FILE__, __LINE__, #_expr_); \
-		abort(); }
-
 #define SYM(_sym_) (fts_new_symbol(#_sym_))
-
-#ifdef NO_ASSERT
-	/* disabling assertion checking */
-	#undef assert
-	#define assert(_foo_)
-	#undef assert_range
-	#define assert_range(_foo_,_a_,_b_)
-#endif
 
 /* **************************************************************** */
 /* other general purpose stuff */
@@ -541,13 +522,9 @@ struct GridObject {
 	GridObject_FIELDS;
 };
 
-	void GridObject_conf_class(fts_class_t *class, int winlet);
-
-	METHOD2(GridObject,init);
-	METHOD2(GridObject,grid_begin);
-	METHOD2(GridObject,grid_flow);
-	METHOD2(GridObject,grid_end);
+	void GridObject_init(GridObject *$);
 	void GridObject_delete(GridObject *$);
+	void GridObject_conf_class(fts_class_t *class, int winlet);
 
 /* **************************************************************** */
 /* grid.c (part 4: formats) */

@@ -79,7 +79,7 @@ GRID_END(GridImport,1) {}
 METHOD(GridImport,init) {
 	int i;
 	int v[ac-1];
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridImport,0);
 	$->in[1] = GridInlet_NEW3($,GridImport,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -110,7 +110,7 @@ METHOD(GridImport,reset) {
 }
 
 CLASS(GridImport,
-		DECL(GridImport,-1,init,  "sii+"),
+		DECL(GridImport,-1,init,  "si+"),
 		DECL(GridImport,-1,delete,""),
 		DECL(GridImport, 0,int,   "i"),
 		DECL(GridImport, 0,reset, ""))
@@ -147,7 +147,7 @@ GRID_FLOW(GridExport,0) {
 GRID_END(GridExport,0) {}
 
 METHOD(GridExport,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridExport,0);
 }
 
@@ -190,7 +190,7 @@ GRID_END(GridExportList,0) {
 }
 
 METHOD(GridExportList,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridExportList,0);
 }
 
@@ -323,7 +323,7 @@ GRID_FLOW(GridStore,1) {
 GRID_END(GridStore,1) {}
 
 METHOD(GridStore,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridStore,0);
 	$->in[1] = GridInlet_NEW3($,GridStore,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -400,7 +400,7 @@ GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 METHOD(GridOp1,init) {
 	Symbol sym = GET(1,symbol,op1_table[0].sym);
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridOp1,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
@@ -490,7 +490,7 @@ METHOD(GridOp2,init) {
 	$->rint = GET(2,int,0);
 	$->dim = 0;
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW2($,GridOp2,0);
 	$->in[1] = GridInlet_NEW3($,GridOp2,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -573,7 +573,7 @@ METHOD(GridFold,init) {
 	Symbol sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridFold,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
@@ -683,7 +683,7 @@ METHOD(GridInner,init) {
 	$->dim = 0;
 	$->data = 0;
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridInner,0);
 	$->in[2] = GridInlet_NEW3($,GridInner,2);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -777,7 +777,7 @@ GRID_END(GridOuter,1) {}
 METHOD(GridOuter,init) {
 	Symbol sym = GET(1,symbol,op2_table[0].sym);
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridOuter,0);
 	$->in[1] = GridInlet_NEW3($,GridOuter,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -922,7 +922,7 @@ METHOD(GridConvolve,init) {
 	Symbol sym_para = GET(1,symbol,SYM(*));
 	Symbol sym_fold = GET(2,symbol,SYM(+));
 
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridConvolve,0);
 	$->in[1] = GridInlet_NEW3($,GridConvolve,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -952,7 +952,7 @@ METHOD(GridConvolve,delete) {
 }
 
 CLASS(GridConvolve,
-	DECL(GridConvolve,-1,init,  "sss;i"),
+	DECL(GridConvolve,-1,init,  "s;ssi"),
 	DECL(GridConvolve,-1,delete,"")) {
 	fts_class_init(class, sizeof(GridConvolve), 2, 1, 0);
 	define_many_methods(class,ARRAY(GridConvolve_methods));
@@ -971,7 +971,7 @@ typedef struct GridFor {
 } GridFor;
 
 METHOD(GridFor,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->from = GET(1,int,0);
 	$->to   = GET(2,int,0);
 	$->step = GET(3,int,0);
@@ -1048,7 +1048,7 @@ GRID_END(GridDim,0) {}
 METHOD(GridDim,init) {
 	int i;
 	int v[ac-1];
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridDim,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
@@ -1147,7 +1147,7 @@ GRID_END(GridRedim,1) {}
 METHOD(GridRedim,init) {
 	int i;
 	int v[ac-1];
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridRedim,0);
 	$->in[1] = GridInlet_NEW3($,GridRedim,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
@@ -1167,7 +1167,7 @@ METHOD(GridRedim,delete) {
 }
 
 CLASS(GridRedim,
-	DECL(GridRedim,-1,init,  "sii+"),
+	DECL(GridRedim,-1,init,  "si+"),
 	DECL(GridRedim,-1,delete,""))
 {
 	fts_class_init(class, sizeof(GridRedim), 2, 1, 0);
@@ -1203,7 +1203,7 @@ GRID_END(GridPrint,0) {}
 METHOD(GridPrint,init) {
 	int i;
 	int v[ac-1];
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	GridObject_init((GridObject *)$);
 	$->in[0] = GridInlet_NEW3($,GridPrint,0);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 }
