@@ -369,7 +369,8 @@ VALUE super) {
 
 /* Ruby's entrypoint. */
 void Init_gridflow (void) /*throws Exception*/ {
-	signal(11,SIG_IGN);
+	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
+	signal(11,SIG_DFL);
 
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
@@ -378,13 +379,13 @@ void Init_gridflow (void) /*throws Exception*/ {
 	DEF_SYM(int);
 	DEF_SYM(list);
 
-	puts("Hello World!");
-
 	/* !@#$ mark */
 	gf_alloc_set  = rb_hash_new();
 	gf_object_set = rb_hash_new();
 
 	GridFlow_module = rb_define_module("GridFlow");
+	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
+
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
 	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
@@ -396,7 +397,7 @@ void Init_gridflow (void) /*throws Exception*/ {
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-	post("GridFlow "GF_VERSION", as compiled on "GF_COMPILE_TIME"\n");
+//	post("GridFlow "GF_VERSION", as compiled on "GF_COMPILE_TIME"\n");
 
 	{
 		VALUE cdata = rb_eval_string("Data");
@@ -404,9 +405,9 @@ void Init_gridflow (void) /*throws Exception*/ {
 			post("Setting up bridge...\n");
 			rb_funcall(cdata,rb_intern("gridflow_bridge_init"),
 				1,PTR2FIX(&gf_bridge));
-			post("Done setting up bridge.\n");
+//			post("Done setting up bridge.\n");
 		} else {
-			post("bridge not found\n");
+//			post("bridge not found\n");
 		}
 	}
 
@@ -420,13 +421,13 @@ void Init_gridflow (void) /*throws Exception*/ {
 	rb_require("gridflow/format/main.rb");
 */
 
-	post("begin require\n");
+//	post("begin require\n");
 
 	rb_eval_string("begin\
 		require 'gridflow/base/main.rb'; \
 		require 'gridflow/format/main.rb'; \
 	rescue Exception; p \"#{$!}: #{$!.backtrace}\"; end");
 
-	post("end require\n");
+//	post("end require\n");
 }
 
