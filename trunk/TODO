@@ -3,16 +3,46 @@
 --- make the development process more test-driven.
     --- *Especially* the debugging process.
 
-Bugs (High Priority) (!!! Fix all of these before 0.7.3 !!!)
-[ ] 2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
+Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
+
+[ ] research bugs in ASIO with Ruby. (eg. serial port)
+[ ] again, problem with find_file...
+[ ] remove "option" completely...
+[ ] recursive message-loop not detected.
+[ ] "cast" missing: jpeg, quicktime, ...
+[ ] @for int64 fails on machine "lcd".
+
+[ ] jMax: jmax_examples/benchmark.jmax:
+#0  0x40390bcf in st_lookup (table=0x3, key=6457, value=0xbfffd50c) at st.c:258
+
+[ ] "make install" doesn't work on machine "lcd". 
+
+[ ] PD:
+ #0  0x4022abcf in st_lookup (table=0x6, key=3137, value=0xbfffdafc) at st.c:258
+258         hash_val = do_hash(key, table);
+#0  0x4022abcf in st_lookup (table=0x5, key=3137, value=0xbfffcf9c) at st.c:258
+258         hash_val = do_hash(key, table);
+
+[ ] PD:
+error: NotImplementedError: method `class' called on terminated object (at 80eb5dc: [00000000,00000000,00000000,40d10800,00000000])
+/opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:590:in `send_out'
+
+[ ] PD:
+error: NoMethodError: undefined method `intern' for nil
+/opt/lib/ruby/site_ruby/1.8/gridflow/base/flow_objects.rb:591:in `method_missing'
+
+[ ] BIG MEMORY LEAK ?
+
+[ ] base/test.rb (default):
+    2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
     (makes no sense whatsoever!)
-[ ] I messed with the installation
+[ ] I messed with the installation (site-install vs install)
 [ ] GFStack overflows when accumulating errors
-[ ] 'make' removes temporaries? (*.fcs)
 [ ] format_grid: write test for other bpv's
 [ ] latency is not that good. (GC ?)
 [ ] tcp test is broken
 [ ] @export doesn't work in pd
+[ ] @join on small chunks is way too slow
 [ ] FormatGrid: not properly tested (crashes sometimes)
 [ ] stdout should be redirected if bridge is present
 [ ] error handling sometimes leads to crash
@@ -27,6 +57,7 @@ Bugs (High Priority) (!!! Fix all of these before 0.7.3 !!!)
 [ ] GRID_FINISH triggered while backstore ???
 
 Bugs (Low Priority)
+[ ] what would be a way to make GF work well with PD's idea of a list?
 [ ] source_filter.rb should check whether \decl,\def match
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
@@ -79,13 +110,15 @@ Installation
 [ ] bridge should check that the gridflow.so file matches.
 [ ] make ./configure's 'test' method work using exceptions
     for meaningful error reporting in config.log.
+[ ] -falign ...
 
 Documentation
+[ ] make a short feature list as a promo
+[ ] add credits
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
     mode x11 non-supporté
 [ ] project_policy.xml
 [ ] specify policy for <help>, <icon>, etc.
-[ ] add credits
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
 [ ] document our own release procedures, how our CVS works
@@ -100,6 +133,7 @@ Documentation
 [ ] it should be indicated whether an object is supported by jmax/pd/ruby/c++
 [ ] heavily hyperlink documentation
 [ ] automate more parts of the documentation
+[ ] benchmarks (especially: simple video i/o)
 --- remember to keep doc/help/screenshots/examples up to date
 
 Architecture
@@ -155,12 +189,14 @@ Operators
 [ ] remove fold/scan for ops for which it makes no sense.
 [ ] MMX memcpy() ?
 [ ] MMX _runtime_ autodetection
+[ ] erf
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
 [ ] UnknownAtom class
 
 Computation Objects
+[ ] @counter (similar to @for)
 [ ] @inner inlet 2 -> 1, and other incompatibilities i wanted to introduce
 [ ] @for "step" argument should have default {1...}
 [ ] zero option in @convolve (?)
@@ -187,6 +223,7 @@ Computation Objects
 [ ] @polygon_perimeter, @polygon_area, ...
 [ ] write a complete benchmark script
 [ ] @draw_polygon smoothly
+[ ] spatial biquads (ask Tom)
 [ ] string operations to compensate for the feebleness of jMax/PD
     in that area. this includes [@sprintf].
 --- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
@@ -206,6 +243,7 @@ Effects
 [ ] FFTW
 
 Input/Output
+[ ] a @store that is persistent (saved in .jmax) ?
 [ ] Grid: bpv 8,16,64,signed/unsigned
 [ ] Grid: bpv 1,2,4
 [ ] Grid: float
@@ -252,7 +290,13 @@ Format
 User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
-[ ] embedded display
+[ ] peephole:
+    [ ] appears in right place
+    [ ] works properly with multiple patchers
+    [ ] resizable
+    [ ] auto-@downscale_by
+    [ ] works with jmax4
+    [ ] ...
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
