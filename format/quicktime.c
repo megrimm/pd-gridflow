@@ -77,15 +77,16 @@ struct FormatQuickTime : Format {
 
 	int bs = o->dim->prod(1);
 	if (1 /* && BG_RGB888 color model */) {
-		o->send(bytes*sx*sy,buf);
+		//o->send(bytes*sx*sy,buf);
+		o->give(bytes*sx*sy,buf);
 	} else {
 		STACK_ARRAY(uint8,b2,bs);
 		for(int y=0; y<sy; y++) {
 			bit_packing->unpack(sx,buf+bytes*sx*y,b2);
 			o->send(bs,b2);
 		}
+		delete[] (uint8 *)buf;
 	}
-	delete[] (uint8 *)buf;
 	return INT2NUM(nframe);
 }
 
