@@ -644,6 +644,18 @@ void swap16 (int n, Pt<uint16> data);
 #define NT_FLOAT (1<<1)
 #define NT_UNSUPPORTED (1<<2)
 
+#define NUMBER_TYPE_LIMITS(T,a,b,c) \
+	inline T nt_smallest(T *bogus) {return a;} \
+	inline T nt_greatest(T *bogus) {return b;} \
+	inline T nt_all_ones(T *bogus) {return c;}
+
+NUMBER_TYPE_LIMITS(uint8,0,255,255)
+NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff,-1)
+NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff,-1)
+NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL,-1)
+NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
+NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
+
 #define NUMBER_TYPES(MACRO) \
 	MACRO(     uint8,  8, NT_UNSIGNED, "u8,b") \
 	MACRO(      int8,  8, NT_UNSUPPORTED, "i8") \
@@ -1290,8 +1302,8 @@ struct GFStack {
 	GFStackFrame s[GF_STACK_MAX];
 	int n;
 	GFStack() { n = 0; }
-	void push (FObject *o);
-	void pop ();
+	void push (FObject *o) __attribute__((noinline));
+	void pop () __attribute__((noinline));
 };
 
 extern GFStack gf_stack;

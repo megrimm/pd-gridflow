@@ -27,18 +27,6 @@
 #include <stdio.h>
 #include <limits.h>
 
-#define NUMBER_TYPE_LIMITS(T,a,b,c) \
-	inline T nt_smallest(T *bogus) {return a;} \
-	inline T nt_greatest(T *bogus) {return b;} \
-	inline T nt_all_ones(T *bogus) {return c;}
-
-NUMBER_TYPE_LIMITS(uint8,0,255,255)
-NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff,-1)
-NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff,-1)
-NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL,-1)
-NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
-NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
-
 /* ---------------------------------------------------------------- */
 
 NumberType number_type_table[] = {
