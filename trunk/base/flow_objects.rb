@@ -795,33 +795,39 @@ class Peephole < GridFlow::FPatcher
 		@fobjects[1].connect 0,self,2
 		GridFlow.post "Peephole#init: #{args.inspect}"
 		@scale = 1
-		@sy,@sx = 16,16
-		@y,@x = 0,0
+		@sy,@sx = 16,16 # size of the peephole widget
+		@y,@x = 0,0     # topleft of the peephole widget
+		@fy,@fx = 0,0   # size of last frame after downscale
+	end
+	def set_geometry_for_real_now
+		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
+		@scale = [(@fy+@sy-1)/@sy,(@fx+@sx-1)/@sx].max
+		@scale=1 if @scale<1 # what???
+		@fobjects[2].send_in 1, @scale
+		sy2 = @fy/@scale
+		sx2 = @fx/@scale
+		@fobjects[3].send_in 0, :set_geometry,
+			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
 	end
 #	def method_missing(*args)
 #		return super if :_0_grid==args[0]
 #		GridFlow.post "Peephole#method_missing: #{args.inspect}"
 #	end
-	def _0_open(args)
+	def _0_open(*args)
 		GridFlow.post "%s", args.inspect
-		@fobjects[3].send_in 0, :open,:x11,:here,:embed,"MyTitle"
+		@fobjects[3].send_in 0, :open,:x11,:here,:embed,args[0]
 	end
 	def _0_set_geometry(y,x,sy,sx)
-		GridFlow.post "set_geometry %d %d %d %d", y,x,sy,sx
-		@fobjects[3].send_in 0, :set_geometry,y,x,sy,sx
+		GridFlow.post "inlet 0: set_geometry %d %d %d %d", y,x,sy,sx
 		@sy,@sx = sy,sx
 		@y,@x = y,x
+		set_geometry_for_real_now
 	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
 	def _1_position(y,x,b) send_out 0,:position,y*@scale,x*@scale,b end
 	def _2_list(sy,sx,chans)
-		@scale = [(sy+@sy-1)/@sy,(sx+@sx-1)/@sx].max
-		#GridFlow.post "s=#{[sy,sx].inspect} @s=#{[@sy,@sx].inspect} @scale=#{@scale}"
-		@fobjects[2].send_in 1, @scale
-		sy2 = sy/@scale#*@scale
-		sx2 = sx/@scale#*@scale
-		@fobjects[3].send_in 0, :set_geometry,
-			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
+		@fy,@fx = sy,sx
+		set_geometry_for_real_now
 	end
 	install "peephole", 1, 1
 end
