@@ -38,8 +38,8 @@
 //#define WATCH(ar) WATCH2(COUNT(ar),ar)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
 
-#define IV(s) rb_ivar_get(rself,SI(s))
-#define IVS(s,v) rb_ivar_set(rself,SI(s),v)
+#define IV(s) rb_ivar_get($->peer,SI(s))
+#define IVS(s,v) rb_ivar_set($->peer,SI(s),v)
 
 Operator1 *OP1(Ruby x) {
 	Ruby s = rb_hash_aref(op1_dict,x);
@@ -117,11 +117,13 @@ METHOD(GridImport,init) {
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
 	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	return Qnil;
 }
 
 METHOD(GridImport,_0_reset) {
 	GridOutlet *out = $->out[0];
 	if (out->is_busy()) out->abort();
+	return Qnil;
 }
 
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
@@ -143,7 +145,7 @@ GRID_BEGIN(GridExport,0) {}
 GRID_FLOW(GridExport,0) {
 	for (int i=0; i<n; i++) {
 		Ruby a[] = { INT2NUM(0), sym_int, INT2NUM(data[i]) };
-		FObject_send_out(COUNT(a),a,rself);
+		FObject_send_out(COUNT(a),a,$->peer);
 	}
 }
 
@@ -162,10 +164,12 @@ struct GridExportList : GridObject {
 
 GRID_BEGIN(GridExportList,0) {
 	int n = in->dim->prod();
+// 	fprintf(stderr,"flow_objects: this=%08x dim=%s\n",(long)in, in->dim->to_s());
+//	if (n==1) abort();
 	if (n>1000) RAISE("list too big (%d elements)", n);
 	$->list = rb_ary_new2(n+2);
 	$->n = n;
-	rb_ivar_set(rself,SI(@list),$->list); /* keep */
+	rb_ivar_set($->peer,SI(@list),$->list); /* keep */
 	rb_ary_store($->list,0,INT2NUM(0));
 	rb_ary_store($->list,1,sym_list);
 }
@@ -176,9 +180,9 @@ GRID_FLOW(GridExportList,0) {
 }
 		
 GRID_END(GridExportList,0) {
-	FObject_send_out(rb_ary_len($->list),rb_ary_ptr($->list),rself);
+	FObject_send_out(rb_ary_len($->list),rb_ary_ptr($->list),$->peer);
 	$->list = 0;
-	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
+	rb_ivar_set($->peer,SI(@list),Qnil); /* unkeep */
 }
 
 GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,startup:0,
@@ -294,10 +298,12 @@ METHOD(GridStore,init) {
 		t==SYM(int32) ? int32_type_i :
 		t==SYM(uint8) ? uint8_type_i :
 		(RAISE("unknown element type \"%s\"", t),int32_type_i));
+	return Qnil;
 }
 
 METHOD(GridStore,_0_bang) {
 	rb_funcall($->peer,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0));
+	return Qnil;
 }
 
 GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
@@ -323,6 +329,7 @@ GRID_END(GridOp1,0) { $->out[0]->end(); }
 METHOD(GridOp1,init) {
 	rb_call_super(argc,argv);
 	$->op = OP1(argv[0]);
+	return Qnil;
 }
 
 GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
@@ -381,6 +388,7 @@ METHOD(GridOp2,init) {
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
+	return Qnil;
 }
 
 GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
@@ -449,6 +457,7 @@ METHOD(GridFold,init) {
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
+	return Qnil;
 }
 
 GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
@@ -508,6 +517,7 @@ METHOD(GridScan,init) {
 	} else {
 		$->r.init_from_ruby(argv[1]);
 	}
+	return Qnil;
 }
 
 GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
@@ -586,6 +596,7 @@ METHOD(GridInner,init) {
 	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->r.init(0);
 	if (argc==4) $->r.init_from_ruby(argv[3]);
+	return Qnil;
 }
 
 GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
@@ -652,6 +663,7 @@ METHOD(GridInner2,init) {
 	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->r.init(0);
 	if (argc==4) $->r.init_from_ruby(argv[3]);
+	return Qnil;
 }
 
 GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
@@ -706,6 +718,7 @@ METHOD(GridOuter,init) {
 	if (argc<1) RAISE("not enough args");
 	if (argc>2) RAISE("too many args");
 	if (argc==2) $->r.init_from_ruby(argv[1]);
+	return Qnil;
 }
 
 GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
@@ -823,6 +836,7 @@ METHOD(GridConvolve,init) {
 	$->c.init(0);
 	$->b.init(0);
 	if (argc==4) $->b.init_from_ruby(argv[3]);
+	return Qnil;
 }
 
 GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
@@ -843,6 +857,7 @@ METHOD(GridFor,init) {
 	$->from.init_from_ruby(argv[0]);
 	$->to  .init_from_ruby(argv[1]);
 	$->step.init_from_ruby(argv[2]);
+	return Qnil;
 }
 
 METHOD(GridFor,_0_bang) {
@@ -883,9 +898,13 @@ METHOD(GridFor,_0_bang) {
 	}
 	end:
 	$->out[0]->end();
+	return Qnil;
 }
 
-METHOD(GridFor,_0_set) { $->from.init_from_ruby(argv[0]); }
+METHOD(GridFor,_0_set) {
+	$->from.init_from_ruby(argv[0]);
+	return Qnil;
+}
 
 #define GRID_INPUT_2(_class_,_inlet_,_member_) \
 	GRID_BEGIN(_class_,_inlet_) { \
@@ -992,6 +1011,7 @@ METHOD(GridRedim,init) {
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
 	$->dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	return Qnil;
 }
 
 GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
@@ -1058,6 +1078,7 @@ METHOD(GridScaleBy,init) {
 	$->rint = argc<1 ? 2 : INT(argv[0]);
 	rb_call_super(argc,argv);
 	$->out[0] = new GridOutlet((GridObject *)$, 0); // wtf?
+	return Qnil;
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
@@ -1111,6 +1132,7 @@ GRID_END(GridRGBtoHSV,0) {
 METHOD(GridRGBtoHSV,init) {
 	rb_call_super(argc,argv);
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	return Qnil;
 }
 
 GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,startup:0,
@@ -1151,6 +1173,7 @@ GRID_END(GridHSVtoRGB,0) { $->out[0]->end(); }
 METHOD(GridHSVtoRGB,init) {
 	rb_call_super(argc,argv);
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
+	return Qnil;
 }
 
 GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,startup:0,
@@ -1224,11 +1247,13 @@ METHOD(RtMetro,_0_int) {
 		MainLoop_add((void *)$->peer,(void(*)(void*))RtMetro_alarm);
 		$->next_time = RtMetro_now();
 	}
+	return Qnil;
 }
 
 METHOD(RtMetro,_1_int) {
 	$->ms = FIX2INT(argv[0]);
 	gfpost("ms = %d",$->ms);
+	return Qnil;
 }
 
 METHOD(RtMetro,init) {
@@ -1244,6 +1269,7 @@ METHOD(RtMetro,init) {
 	gfpost("ms = %d",$->ms);
 	gfpost("on = %d",$->on);
 	gfpost("mode = %d",$->mode);
+	return Qnil;
 }
 
 GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,startup:0,

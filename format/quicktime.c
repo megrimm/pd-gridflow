@@ -63,6 +63,7 @@ METHOD(FormatQuickTime,frame) {
 
 	delete[] (Number *)buf;
 	o->end();
+	return Qnil;
 }
 
 GRID_BEGIN(FormatQuickTime,0) { RAISE("write support not implemented"); }
@@ -72,6 +73,7 @@ GRID_END(FormatQuickTime,0) {}
 METHOD(FormatQuickTime,close) {
 	if ($->anim) quicktime_close($->anim);
 	rb_call_super(argc,argv);
+	return Qnil;
 }
 
 /* note: will not go through jMax data paths */
@@ -97,6 +99,7 @@ METHOD(FormatQuickTime,init) {
 //	uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
 	uint32 masks[] = { 0xff0000,0x00ff00,0x0000ff };
 	$->bit_packing = new BitPacking(is_le(),4,3,masks);
+	return Qnil;
 }
 
 static void startup (GridClass *$) {

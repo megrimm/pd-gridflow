@@ -266,22 +266,24 @@ METHOD(FormatVideoDev,size) {
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	VideoWindow_gfpost(&grab_win);
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,dealloc_image) {
-	if (!$->image) return;
+	if (!$->image) return Qnil;
 	if (!$->use_mmap) {
 		delete[] (uint8 *)$->image;
 	} else {
 		munmap($->image, $->vmbuf.size);
 		$->image = Pt<uint8>();
 	}
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,alloc_image) {
 	if (!$->use_mmap) {
 		$->image = ARRAY_NEW(uint8,$->dim->prod(0,1)*$->bit_packing->bytes);
-		return;
+		return Qnil;
 	}
 	RAISE("hello");
 	int fd = GETFD;
@@ -295,6 +297,7 @@ METHOD(FormatVideoDev,alloc_image) {
 		$->image=Pt<uint8>();
 		RAISE("mmap: %s", strerror(errno));
 	}
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,frame_ask) {
@@ -310,6 +313,7 @@ METHOD(FormatVideoDev,frame_ask) {
 //	gfpost("driver gave us:");
 //	video_mmap_gfpost(&$->vmmap);
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
+	return Qnil;
 }
 
 static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out,
@@ -361,7 +365,7 @@ METHOD(FormatVideoDev,frame) {
 		if (n==tot) FormatVideoDev_frame_finished($,$->out[0],$->image);
 		if (0> n) RAISE("error reading: %s", strerror(errno));
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
-		return;
+		return Qnil;
 	}
 	int finished_frame;
 	if ($->pending_frames[0] < 0) {
@@ -373,6 +377,7 @@ METHOD(FormatVideoDev,frame) {
 	WIOCTL2(fd, VIDIOCSYNC, &$->vmmap);
 	FormatVideoDev_frame_finished($,$->out[0],$->image+$->vmbuf.offsets[finished_frame]);
 	rb_funcall($->peer,SI(frame_ask),0);
+	return Qnil;
 }
 
 GRID_BEGIN(FormatVideoDev,0) { RAISE("can't write."); }
@@ -392,6 +397,7 @@ METHOD(FormatVideoDev,norm) {
 		VideoTuner_gfpost(&vtuner);
 		WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 	}
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,tuner) {
@@ -404,6 +410,7 @@ METHOD(FormatVideoDev,tuner) {
 	vtuner.mode = VIDEO_MODE_NTSC;
 	VideoTuner_gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,channel) {
@@ -416,12 +423,14 @@ METHOD(FormatVideoDev,channel) {
 	VideoChannel_gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	rb_funcall($->peer,SI(tuner),1,INT2NUM(0));
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,frequency) {
 	int value = INT(argv[0]);
 	int fd = GETFD;
 	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,transfer) {
@@ -436,6 +445,7 @@ METHOD(FormatVideoDev,transfer) {
 		$->use_mmap = true;
 		gfpost("transfer mmap");
 	} else RAISE("don't know that transfer mode");
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,option) {
@@ -473,12 +483,14 @@ METHOD(FormatVideoDev,option) {
 		RAISE("crap");
 		rb_call_super(argc,argv);
 	}
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,close) {
 	if ($->image) rb_funcall($->peer,SI(dealloc_image),0);
 	EVAL("@stream.close if @stream");
 	rb_call_super(argc,argv);
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,init2) {
@@ -523,6 +535,7 @@ METHOD(FormatVideoDev,init2) {
 	}
 	rb_funcall($->peer,SI(channel),1,INT2NUM(0));
 	rb_funcall($->peer,SI(size),2,INT2NUM(0),INT2NUM(0));
+	return Qnil;
 }
 
 METHOD(FormatVideoDev,init) {
@@ -549,6 +562,7 @@ METHOD(FormatVideoDev,init) {
 	}
 	/* Sometimes a pause is needed here (?) */
 	usleep(250000);
+	return Qnil;
 }
 
 /* **************************************************************** */

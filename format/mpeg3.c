@@ -36,6 +36,7 @@ METHOD(FormatMPEG3,seek) {
 	gfpost("attempting to seek frame # %d",frame);
 	int result = mpeg3_set_frame($->mpeg, frame, 0);
 	gfpost("seek result: %d", result);
+	return Qnil;
 }
 
 METHOD(FormatMPEG3,frame) {
@@ -61,6 +62,7 @@ METHOD(FormatMPEG3,frame) {
 
 	delete[] (uint8 *)buf;
 	o->end();
+	return Qnil;
 }
 
 GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
@@ -73,6 +75,7 @@ METHOD(FormatMPEG3,close) {
 		$->mpeg=0;
 	}
 	rb_call_super(argc,argv);
+	return Qnil;
 }
 
 /* note: will not go through jMax data paths */
@@ -92,6 +95,7 @@ METHOD(FormatMPEG3,init) {
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	$->bit_packing = new BitPacking(is_le(),3,3,mask);
+	return Qnil;
 }
 
 static void startup (GridClass *$) {

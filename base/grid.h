@@ -133,7 +133,7 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 
 /* **************************************************************** */
 
-/* those are helpers for profiling. */
+/* those are helpers for profiling. OBSOLETE */
 #ifdef HAVE_PROFILING
 #define ENTER $->profiler_last = rdtsc();
 #define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
@@ -155,9 +155,6 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 #define DECL(_class_,_name_) \
 	MethodDecl(#_class_,#_name_,(RMethod) _class_##_##_name_##_wrap)
 
-#define DECL4(_class_,_name_) \
-	MethodDecl(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap)
-
 #define DGS(_class_) _class_ *$; Data_Get_Struct(rself,_class_,$);
 
 /*
@@ -165,22 +162,20 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
   all its variants should be merged together eventually...
 */
 
-/* returns no Ruby value; is profilable */
 #define METHOD(_class_,_name_) \
-	static void _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
+	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
 	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
 		DGS(_class_); \
-		ENTER; Ruby result = Qnil; _class_##_##_name_($,argc,argv); LEAVE; \
-		return result; \
-	} \
-	static void _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
+		return _class_##_##_name_($,argc,argv); } \
+	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
 
 /* C++ style */
+
 #define DECL3(_class_,_name_) \
 	void _name_(int argc, Ruby *argv); \
 	static Ruby _name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
 		DGS(_class_); \
-		ENTER; Ruby result = $->_name_(argc,argv); LEAVE; \
+		Ruby result = $->_name_(argc,argv); \
 		return result; }
 
 #define METHOD3(_class_,_name_) \
@@ -188,13 +183,9 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 	(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap); \
 	void _class_::_name_(int argc, Ruby *argv)
 
-/* returns a Ruby value; is not profilable */
-#define METHOD2(_class_,_name_) \
-	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv); \
-	static Ruby _class_##_##_name_##_wrap(int argc, Ruby *argv, Ruby rself) { \
-		DGS(_class_); \
-		return _class_##_##_name_($,argc,argv); } \
-	static Ruby _class_##_##_name_(_class_ *$, int argc, Ruby *argv)
+/* urgh? */
+#define DECL4(_class_,_name_) \
+	MethodDecl(#_class_,#_name_,(RMethod) _class_ :: _name_##_wrap)
 
 typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 
@@ -214,7 +205,7 @@ typedef Ruby (*RMethod)(Ruby $, ...); /* !@#$ */
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
 
-/* */
+/* pentium-only, wtf? */
 static inline uint64 rdtsc(void) {
   uint64 x;
   __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
@@ -528,9 +519,9 @@ typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_cl_,_name_) void _name_(Ruby rself,_cl_ *$, GridInlet *in)
-#define  GRID_FLOW_(_cl_,_name_) void _name_(Ruby rself,_cl_ *$, GridInlet *in, int n, Pt<Number>data)
-#define   GRID_END_(_cl_,_name_) void _name_(Ruby rself,_cl_ *$, GridInlet *in)
+#define GRID_BEGIN_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
+#define  GRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Pt<Number>data)
+#define   GRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
 #define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
 #define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
 #define   GRID_END(_cl_,_inlet_) static   GRID_END_(_cl_,_cl_##_##_inlet_##_end)

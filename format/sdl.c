@@ -94,6 +94,7 @@ GRID_END(FormatSDL,0) {
 }
 
 METHOD(FormatSDL,close) {
+	return Qnil;
 }
 
 METHOD(FormatSDL,init) {
@@ -124,6 +125,7 @@ METHOD(FormatSDL,init) {
 		$->bit_packing = new BitPacking(2,f->BytesPerPixel,3,mask);
 		break;
 	}
+	return Qnil;
 }
 
 static void startup (GridClass *$) {
