@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.7.3 (head):
+version 0.8.0 (head):
 
  * type aliases: int32,i32,i; int16,i16,s; uint8,u8,b; float32,f32,f
  * added support for float64 (alias f64, d)
@@ -15,6 +15,8 @@ version 0.7.3 (head):
  * Algebraic Properties Descriptions (internal, useful for optimising)
  * @convolve,@outer,@for,@inner,@draw_polygon: much faster
  * quicktime: support for pluggable codecs (eg: dv, divx, rpza, ...)
+ * quicktime: fixed more bugs
+ * quicktime: major speed increase
 
 soon:
 

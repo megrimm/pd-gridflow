@@ -152,9 +152,8 @@ public class PathInfo { \
 public static String jmax_path = \"$(GFID)\";} \
 " > java/PathInfo.java
 
-gridflow-for-jmax:: $(JMAX_LIB) # java/PathInfo.java
-
-#	(cd java; make)
+gridflow-for-jmax:: $(JMAX_LIB) java/PathInfo.java
+	(cd java; make)
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): bridge/jmax.c bridge/common.c base/grid.h $(CONF)
@@ -162,7 +161,7 @@ $(JMAX_LIB): bridge/jmax.c bridge/common.c base/grid.h $(CONF)
 		-DLINUXPC -DOPTIMIZE $< \
 		-xnone -o $@
 
-jmax-install::
+jmax-install:: jmax-install-java
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
 	$(INSTALL_LIB) libgridflow$(LSUF) \
 		$(GFID)/c/lib/$(ARCH)/opt/libgridflow$(LSUF)
@@ -174,7 +173,6 @@ jmax-install::
 		$(INSTALL_DATA) $$f $(GFID)/$$f; \
 	done
 
-# disabled for now
 jmax-install-java::
 	$(INSTALL_DIR) $(GFID)/java/classes
 	$(INSTALL_LIB) java/gridflow.jar \
