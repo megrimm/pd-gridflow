@@ -111,10 +111,10 @@ class FPS < GridObject
 	def method_missing(*a) end # ignore non-bangs
 	def _0_period x; @period=x end
 	def publish
-		if not @detailed then send_out 0, fps; return end
 		@history.sort!
 		n=@history.length
 		fps = @history.length/@duration
+		if not @detailed then send_out 0, fps; return end
 		send_out 0, fps,
 			1000*@history.min,
 			500*(@history[n/2]+@history[(n-1)/2]),
@@ -973,7 +973,8 @@ module Gooey # to be included in any FObject class
 		text=text.gsub(/[\{\}]/) {|x| "\\"+x }
 		"{#{text}}"
 	end
-	def pd_vis(can,flag) pd_show(can) if flag!=0 end
+	def pd_vis(can,vis) @vis=vis!=0; update end
+	def update; pd_show(can) if @vis end
 	def pd_getrect(can)
 		x,y=GridFlow.whatever :getpos,self,can
 		if @x!=x or @y!=y then @x,@y=x,y end
@@ -990,6 +991,7 @@ module Gooey # to be included in any FObject class
 		outl = (if @selected!=0 then @bgs else "#000000" end)
 		GridFlow.gui %{ #{@can} itemconfigure #{@rsym} -outline #{outl} \n }
 	end
+	def pd_delete(can) end
 end
 
 class Display < FObject; include Gooey
@@ -1018,13 +1020,12 @@ class Display < FObject; include Gooey
 			when :float; atom_to_s @args[0]
 			else @sel.to_s + ": " + @args.map{|a| atom_to_s a }.join(' ')
 			end
-		pd_show nil
+		update
 	end
 	def pd_show(can)
-		GridFlow.post "pd_show %d",can
 		if can
 			a=GridFlow.whatever:getpos,self,can
-			GridFlow.post "getpos -> [%s]",a.inspect
+			#GridFlow.post "getpos -> [%s]",a.inspect
 			@x,@y=a
 			@can=".x%x.c"%(can*4)
 		end
@@ -1051,7 +1052,13 @@ class Display < FObject; include Gooey
 			pd \"#{@rsym} set_size $sy $sx;\n\";
 		}
 	end
-	def delete; GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT \n}; super end
+	def pd_delete(can)
+		if @vis
+			GridFlow.gui %{ #{@can} delete #{@rsym} #{@rsym}TEXT \n}
+		end
+		super
+	end
+	def delete; super end
 	def _0_grid(*foo) # big hack!
 		# hijacking a [#print]
 		gp = GridPrint.new
@@ -1091,9 +1098,7 @@ class Peephole < FPatcher; include Gooey
 		@selected=false
 	end
 	def pd_show(can)
-		GridFlow.post "pd_show %d",can
 		a=GridFlow.whatever:getpos,self,can
-		GridFlow.post "getpos -> [%s]",a.inspect
 		@x,@y=a
 		@can=".x%x.c"%(can*4) if can
 		outl = (if state!=0 then @bgs else "#000000" end)
