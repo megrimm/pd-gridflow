@@ -875,6 +875,18 @@ unless GridFlow.bridge_name =~ /jmax/
 		def append(*argv) @argv<<argv; end
 		install "messbox", 1, 1
 	end
+	class OneShot < FObject
+		def initialize(state=true) @state=state!=0 end
+		def method_missing(sel,*a)
+			m = /^_0_(.*)$/.match(sel.to_s) or return super
+			send_out 0, m[1].intern, *a if @state
+			@state=false
+		end
+		def _1_int(state) @state=state!=0 end
+		alias _1_float _1_int
+		def _1_bang; @state=true end
+		install "oneshot", 2, 1
+	end
 end
 
 # jMax List Classes
