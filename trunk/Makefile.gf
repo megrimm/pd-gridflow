@@ -38,20 +38,11 @@ CFLAGS += -fPIC # some OSes/machines need that for .so files
 
 #----------------------------------------------------------------#
 
-ifeq ($(HAVE_STATIC_RUBY),yes)
-	RUBYA1 = static/libruby.a
-	RUBYA2 = static/libruby.a/*.o
-endif
-
 cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 	ruby cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
 
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
-
-static/libruby.a: config.make
-	mkdir -p static/libruby.a
-	(cd static/libruby.a; ar x $(PATH_LIBRUBY_A) || (rm -f *.o && false))
 
 clean2::
 	rm -f $(JMAX_LIB) \
@@ -130,10 +121,10 @@ JMAX_LIB = libgridflow$(LSUF)
 gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
+$(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
-		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
+		-xnone $(LIBRUBY_A) -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c
@@ -160,10 +151,10 @@ gridflow-for-jmax:: $(JMAX_LIB)
 #	echo $(CFLAGS)
 
 # the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
+$(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
-		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
+		-xnone $(LIBRUBY_A) -o $@
 
 jmax-install::
 	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
@@ -176,7 +167,6 @@ jmax-install::
 	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
 		$(INSTALL_DATA) $$f $(GFID)/$$f; \
 	done
-
 else
 
 $(JMAX_LIB):
@@ -235,9 +225,9 @@ endif
 
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
+$(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
-		$< -xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
+		$< -xnone $(LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
 
