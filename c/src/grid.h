@@ -96,9 +96,19 @@ struct Dim {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
+#define GRIDBEGIN(_name_) void _name_(GridInlet *$)
+#define  GRIDFLOW(_name_) void _name_(GridInlet *$, int n, const Number *data)
+#define   GRIDEND(_name_) void _name_(GridInlet *$)
+
+/*
 typedef void (*GridBegin)(GridInlet *$);
-typedef void (*GridFlow)(GridInlet *$, int n, const Number *data);
-typedef void (*GridEnd)(GridInlet *$); /* not there yet! */
+typedef void (*GridFlow) (GridInlet *$, int n, const Number *data);
+typedef void (*GridEnd)  (GridInlet *$);
+*/
+
+typedef GRIDBEGIN((*GridBegin));
+typedef  GRIDFLOW((*GridFlow));
+typedef   GRIDEND((*GridEnd));
 
 struct GridInlet {
 	GridObject *parent;

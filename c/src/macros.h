@@ -73,7 +73,7 @@
 
 /* a header for the class constructor */
 #define CLASS(_name_) \
-	fts_status_t _name_ ## _instantiate \
+	fts_status_t _name_ ## _class_init \
 	(fts_class_t *class, int ac, const fts_atom_t *at)
 
 /* returns the size of a statically defined array */
