@@ -231,18 +231,18 @@
     <td> 
 
 	<p> A picture is a three-dimensional Grid:
-	<ol start="0">
-	<li> rows
-	<li> columns
-	<li> channels
-	</ol>
+	<ul>
+	<li> <b>0</b> : rows
+	<li> <b>1</b> : columns
+	<li> <b>2</b> : channels
+	</ul>
 
 	<p> Channels for the RGB color model are:
-	<ol start="0">
-	<li> red
-	<li> green
-	<li> blue
-	</ol>
+	<ul>
+	<li> <b>0</b> : red
+	<li> <b>1</b> : green
+	<li> <b>2</b> : blue
+	</ul>
 
 	<p> Because Grids are made of 32-bit integers,
 	a three-channel picture uses 96 bpp (bits per pixel),
@@ -284,7 +284,7 @@
 	   240 pixels  high and 320 pixels wide: @video_out 240 320. @video_out
 	   will use three  channels in RGB with values ranging 0-255.
 
-     <p><b>grid(rows,columns,channels)</b><br>
+     <p><b>grid(<i>rows,columns,channels</i>)</b><br>
 	will be displayed if channels = 3 (RGB color model is assumed)
 	The picture's height and width <b>must</b> match the window's.
 
@@ -294,12 +294,12 @@
 
 	<p><b>autodraw</b> <i>integer</i><br>
 	sets the drawing mode:
-	<ol first="0">
-	<li> makes all drawing manually activated (by <b>bang</b>).
-	<li> displays when a whole picture has been received. (default)
-	<li> displays every line as it comes. (but buffering may cause
+	<ul>
+	<li><b>0</b> makes all drawing manually activated (by <b>bang</b>).
+	<li><b>1</b> displays when a whole picture has been received. (default)
+	<li><b>2</b> displays every line as it comes. (but buffering may cause
 		lines to come in groups anyway)
-	</ol>
+	</ul>
 
      <p><b>Notes:</b> @video_out sends a bang on its outlet when it has finished receiving 
         a picture. Destroying the object should close the window. Because of how 
@@ -326,7 +326,7 @@
     <td width="41" height="41">&nbsp;</td>
     <td width="123" height="41"><img src="images/video_out_file.jpg" width="94" height="19" alt="[@video_out_file]"></td>
     <td rowspan="3"> 
-	<p><b>grid(rows,columns,channels)</b><br>
+	<p><b>grid(<i>rows,columns,channels</i>)</b><br>
 	will be written to file if channels = 3 (RGB color model is assumed).
 	the file must be open first.
 
@@ -469,7 +469,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
   <tr> 
     <td colspan="4"> 
-      <h4>Transformation</h4>
+      <h4>Transformation Objects</h4>
     </td>
   </tr>
   <tr> 
@@ -575,7 +575,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
   <tr> 
     <td colspan="4"> 
-      <h4>Reporting</h4>
+      <h4>Reporting Objects</h4>
     </td>
   </tr>
   <tr> 
@@ -905,6 +905,26 @@
   <tr> 
     <td height="22">&nbsp;</td>
   </tr>
+
+
+  <tr> 
+    <td height="22">&nbsp;</td>
+  </tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+  <tr> 
+    <td colspan="4"> 
+      <h4><a name="compound_objects"></a>Compound Objects</h4>
+    </td>
+  </tr>
+
+  <tr><td colspan="3"><h5> @contrast </h5></td></tr>
+  <tr><td colspan="3"><h5> @identity_transform </h5></td></tr>
+  <tr><td colspan="3"><h5> @posterize </h5></td></tr>
+  <tr><td colspan="3"><h5> @scale_to </h5></td></tr>
+  <tr><td colspan="3"><h5> @spread </h5></td></tr>
+  <tr><td colspan="3"><h5> @three </h5></td></tr>
+  <tr><td colspan="3"><h5> @two </h5></td></tr>
+
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
   <tr> 
     <td colspan="3"> 
