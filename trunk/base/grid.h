@@ -832,7 +832,7 @@ struct PtrGrid : public P<Grid> {
 	DimConstraint dc;
 	void constrain(DimConstraint dc_) { dc=dc_; }
 	P<Grid> next;
-	PtrGrid() : P<Grid>(), dc(0), next(0) {}
+	PtrGrid()         : P<Grid>(),   dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
 	PtrGrid &operator =(  Grid *_p) {if(dc)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
@@ -848,7 +848,9 @@ static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 }
 
 static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
-	return convert(x,(PtrGrid *)foo);
+	PtrGrid pg;
+	pg = convert(x,(Grid **)0);
+	return pg;
 }
 #endif
 
