@@ -216,7 +216,9 @@ def test_image command
 	gin = FObject["@in"]
 	gout = FObject["@out 256 256"]
 	gin.connect 0,gout,0
-	31.times {
+#	31.times {
+	3
+.times {
 		gin.send_in 0,"open #{command}"
 		gout.send_in 0,"option timelog 1"
 		gin.send_in 0
@@ -392,6 +394,17 @@ def test_sound
 	}
 end
 
+def test_polygon
+	o1 = FObject["@for 0 5 1"]
+	o2 = FObject["@ * 14400"]; o1.connect 0,o2,0
+	o3 = FObject["@outer + {0 9000}"]; o2.connect 0,o3,0
+	o4 = FObject["@ cos* 60"]; o3.connect 0,o4,0
+	o5 = FObject["@ + {160 100}"]; o4.connect 0,o5,0
+	poly = FObject["@polygon {3 # 255}"]; o5.connect 0,poly,2
+	out = FObject["@out 240 320"]; poly.connect 0,out,0
+	poly.send_in 0, "240 320 # 0"
+end
+
 def test_metro
 	o1 = RtMetro.new(1000,:geiger)
 	o2 = RubyPrint.new(:time)
@@ -405,6 +418,7 @@ if ARGV[0] then
 	exit
 end
 
+test_polygon
 #test_math
 #test_munchies
 #test_image "ppm file #{$imdir}/g001.ppm"

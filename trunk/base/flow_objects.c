@@ -64,14 +64,6 @@ static void expect_dim_dim_list (Dim *d) {
 	int n = d->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 }
-
-#define GRID_INPUT(_class_,_inlet_,_member_) \
-	GRID_BEGIN(_class_,_inlet_) { \
-		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
-	GRID_FLOW(_class_,_inlet_) { \
-		COPY(&_member_.as_int32()[in->dex], data, n); } \
-	GRID_END(_class_,_inlet_) {}
-
 /* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream
@@ -80,9 +72,7 @@ static void expect_dim_dim_list (Dim *d) {
 
 struct GridImport : GridObject {
 	Dim *dim; /* size of grids to send */
-	~GridImport() {
-		if (dim) delete dim;
-	}
+	~GridImport() { if (dim) delete dim; }
 	DECL3(init);
 	DECL3(_0_reset);
 	GRINLET3(0);
@@ -936,14 +926,6 @@ METHOD3(GridFor,_0_set) {
 	return Qnil;
 }
 
-#define GRID_INPUT_2(_class_,_inlet_,_member_) \
-	GRID_BEGIN(_class_,_inlet_) { \
-		if (in->dim->n > 1) RAISE("at most 1 dimension"); \
-		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
-	GRID_FLOW(_class_,_inlet_) { \
-		COPY(&_member_.as_int32()[in->dex], data, n); } \
-	GRID_END(_class_,_inlet_)
-
 GRID_INPUT_2(GridFor,2,step) {}
 GRID_INPUT_2(GridFor,1,to) {}
 GRID_INPUT_2(GridFor,0,from) {_0_bang(0,0);}
@@ -1125,6 +1107,48 @@ LIST(GRINLET(GridScaleBy,0,4)),
 
 /* **************************************************************** */
 
+/*
+<matju> @polygon
+<matju> inlet 0: image sur laquelle superposer un polygone
+<matju> inlet 1: couleur
+<matju> inlet 2: coords de polygone, dim(n,2)
+<matju> outlet 0: polygone uni-sur-transparent par dessus l'image, sans antialias, recoupements en odd-even rule
+
+<matju> mais je pourrais faire @perspective
+<matju> inlet 0: dim(n,3)
+<matju> inlet 1: facteur k (l'oeil est au point 0,0,0; l'écran est le plan z=k)
+<matju> outlet 0: dim(n,2)
+*/
+/*
+struct GridPolygon : GridObject {
+//	Grid polygon ("N,2");
+//	Grid color ("3");
+	DECL3(init);
+	GRINLET3(0);
+	GRINLET3(1);
+	GRINLET3(2);
+};
+
+GRID_BEGIN(GridPolygon,0) {
+}
+
+GRID_FLOW(GridPolygon,0) {
+}
+
+GRID_END(GridPolygon,0) {}
+
+GRID_INPUT(GridPolygon,2,polygon)
+GRID_INPUT(GridPolygon,1,color)
+
+METHOD3(GridPolygon,init) {}
+
+GRCLASS(GridPolygon,"@polygon",inlets:3,outlets:1,startup:0,
+LIST(GRINLET(GridPolygon,0,4),GRINLET(GridPolygon,1,4),GRINLET(GridPolygon,2,4)),
+	DECL(GridPolygon,init))
+*/
+
+/* **************************************************************** */
+
 struct GridRGBtoHSV : GridObject {
 	DECL3(init);
 	GRINLET3(0);
@@ -1179,7 +1203,7 @@ LIST(GRINLET(GridRGBtoHSV,0,4)),
 
 /* **************************************************************** */
 
-typedef struct GridHSVtoRGB : GridObject {
+struct GridHSVtoRGB : GridObject {
 	DECL3(init);
 	GRINLET3(0);
 };
@@ -1351,6 +1375,7 @@ void startup_flow_objects () {
 	INSTALL(GridDim);
 	INSTALL(GridRedim);
 	INSTALL(GridScaleBy);
+//	INSTALL(GridPolygon);
 //	INSTALL(GridRGBtoHSV); /* buggy */
 //	INSTALL(GridHSVtoRGB); /* buggy */
 	INSTALL(RtMetro);

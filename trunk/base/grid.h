@@ -71,8 +71,8 @@
 			__FILE__, __LINE__, #_expr_); \
 		abort(); }
 
+/* disabling assertion checking? */
 #ifndef HAVE_DEBUG
-	/* disabling assertion checking */
 #undef assert
 #define assert(_foo_)
 #endif
@@ -113,6 +113,9 @@
 
 #define DEF(_class_,_name_,_argc_) \
 	rb_define_method(_class_##_class,#_name_,(RFunc)_class_##_##_name_,_argc_)
+
+#define DEF2(_class_,_name2_,_name_,_argc_) \
+	rb_define_method(_class_##_class,_name2_,(RFunc)_class_##_##_name_,_argc_)
 
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(_class_##_class,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
@@ -256,6 +259,9 @@ void define_many_methods(Ruby/*Class*/ $, int n, MethodDecl *methods);
 /* 1 + maximum id of last grid-aware inlet/outlet */
 #define MAX_INLETS 4
 #define MAX_OUTLETS 2
+
+/* number of #send_out calls allowed at once (not used yet) */
+#define GF_STACK_DEPTH 1024
 
 /* number of (maximum,ideal) Numbers to send at once */
 /* this should remain a constant throughout execution
@@ -556,6 +562,22 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 	((GridBegin)&_class_##__##_winlet_##_begin), \
 	 ((GridFlow)&_class_##__##_winlet_##_flow), \
 	  ((GridEnd)&_class_##__##_winlet_##_end), _mode_ }
+
+
+#define GRID_INPUT(_class_,_inlet_,_member_) \
+	GRID_BEGIN(_class_,_inlet_) { \
+		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
+	GRID_FLOW(_class_,_inlet_) { \
+		COPY(&_member_.as_int32()[in->dex], data, n); } \
+	GRID_END(_class_,_inlet_) {}
+
+#define GRID_INPUT_2(_class_,_inlet_,_member_) \
+	GRID_BEGIN(_class_,_inlet_) { \
+		if (in->dim->n > 1) RAISE("at most 1 dimension"); \
+		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
+	GRID_FLOW(_class_,_inlet_) { \
+		COPY(&_member_.as_int32()[in->dex], data, n); } \
+	GRID_END(_class_,_inlet_)
 
 typedef struct GridHandler {
 	int       winlet;

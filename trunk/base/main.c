@@ -38,7 +38,7 @@
 #include <assert.h>
 #include <limits.h>
 
-GFStack *gf_call_stack = 0;
+GFStack *gf_stack[GF_STACK_DEPTH];
 
 Ruby GridFlow_module; /* not the same as jMax's gridflow_module */
 Ruby FObject_class;
@@ -79,29 +79,35 @@ void FObject_mark (void *z) {
 
 static int object_count=0;
 
-static void FObject_free (void *$) {
+static void FObject_free (void *foo) {
+	GridObject *$ = (GridObject *)foo;
 //	fprintf(stderr,"Say farewell to %08x\n",(int)$);
-	delete (GridObject *)$;
+	if (!$->peer) {
+		fprintf(stderr,"attempt to free object that has no peer\n");
+		abort();
+	}
+	delete $;
+	$->peer = 0;
 //	object_count -= 1; fprintf(stderr,"object_count=%d\n",object_count);
 }
 
-void FObject_send_out_3(int *argc, Ruby **argv, Ruby *sym, int *outlet) {
-	if (*argc<1) RAISE("not enough args");
-	*outlet = INT(**argv);
-	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
+static void FObject_send_out_2(int &argc, Ruby *&argv, Ruby &sym, int &outlet) {
+	if (argc<1) RAISE("not enough args");
+	outlet = INT(*argv);
+	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
 		RAISE("invalid outlet number");
-	(*argc)--, (*argv)++;
-	if (*argc<1) {
-		*sym = SYM(bang);
-	} else if (*argc>1 && !SYMBOL_P(**argv)) {
-		*sym = SYM(list);
-	} else if (INTEGER_P(**argv)) {
-		*sym = SYM(int);
-	} else if (FLOAT_P(**argv)) {
-		*sym = SYM(float);
-	} else if (SYMBOL_P(**argv)) {
-		*sym = **argv;
-		(*argc)--, (*argv)++;
+	argc--, argv++;
+	if (argc<1) {
+		sym = SYM(bang);
+	} else if (argc>1 && !SYMBOL_P(*argv)) {
+		sym = SYM(list);
+	} else if (INTEGER_P(*argv)) {
+		sym = SYM(int);
+	} else if (FLOAT_P(*argv)) {
+		sym = SYM(float);
+	} else if (SYMBOL_P(*argv)) {
+		sym = *argv;
+		argc--, argv++;
 	} else {
 		RAISE("bad message");
 	}
@@ -110,17 +116,15 @@ void FObject_send_out_3(int *argc, Ruby **argv, Ruby *sym, int *outlet) {
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
 	Ruby sym;
 	int outlet;
-	FObject_send_out_3(&argc,&argv,&sym,&outlet);
+	FObject_send_out_2(argc,argv,sym,outlet);
 	if (gf_bridge.send_out)
 		gf_bridge.send_out(argc,argv,sym,outlet,$);
 
 	Ruby ary = rb_ivar_defined($,SYM2ID(sym_outlets)) ?
 		rb_ivar_get($,SYM2ID(sym_outlets)) : Qnil;
-//	printf("1: ");	rb_p(ary);
 	if (ary==Qnil) return Qnil;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
-//	printf("2: ");	rb_p(ary);
 	if (ary==Qnil) return Qnil;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	int n = RARRAY(ary)->len;
@@ -128,7 +132,6 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
 		Ruby conn = rb_ary_fetch(ary,i);
 		Ruby rec = rb_ary_fetch(conn,0);
 		int inl = INT(rb_ary_fetch(conn,1));
-//		printf("3: ");	rb_p(conn);
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
@@ -163,9 +166,9 @@ Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets2, Ruby outlets2) {
 	int inlets, outlets;
 	Ruby name2;
 	if (SYMBOL_P(name)) {
-		name2 = rb_funcall(name,SI(dup),0);
-	} else if (TYPE(name) == T_STRING) {
 		name2 = rb_funcall(name,SI(to_str),0);
+	} else if (TYPE(name) == T_STRING) {
+		name2 = rb_funcall(name,SI(dup),0);
 	} else {
 		EARG("expect symbol or string");
 	}
@@ -205,7 +208,7 @@ Ruby FObject_profiler_cumul(Ruby rself) {
 	return ull2num($->profiler_cumul);
 }
 
-Ruby FObject_profiler_cumul_assign(Ruby rself, Ruby arg) {
+Ruby FObject_profiler_cumul_set(Ruby rself, Ruby arg) {
 	DGS(GridObject);
 	$->profiler_cumul = num2ull(arg);
 	return arg;
@@ -224,9 +227,10 @@ DECL_SYM2(bang)
 DECL_SYM2(int)
 DECL_SYM2(list)
 
+typedef void (*Callback)(void*);
 static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
 	void *data2 = FIX2PTR(data);
-	void (*func2)(void*) = (void(*)(void*))FIX2PTR(func);
+	Callback func2 = (Callback)FIX2PTR(func);
 	func2(data2);
 	return Qnil;
 }
@@ -349,12 +353,15 @@ void Init_gridflow () {
 	sym_outlets=SYM(@outlets);
 
 	GridFlow_module = rb_define_module("GridFlow");
-	rb_define_singleton_method(GridFlow_module,"clock_tick",(RFunc)GridFlow_clock_tick,0);
-	rb_define_singleton_method(GridFlow_module,"clock_tick=",(RFunc)GridFlow_clock_tick_set,1);
-	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
-	rb_define_singleton_method(GridFlow_module, "post_string", (RFunc)gf_post_string, 1);
+#define SDEF2(a,b,c) rb_define_singleton_method(GridFlow_module,a,(RFunc)b,c)
+	SDEF2("clock_tick",GridFlow_clock_tick,0);
+	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
+	SDEF2("exec",GridFlow_exec,2);
+	SDEF2("post_string",gf_post_string,1);
 	rb_ivar_set(GridFlow_module, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(GridFlow_module, SI(@fclasses_set), rb_hash_new());
+	rb_define_const(GridFlow_module, "GF_VERSION", rb_str_new2(GF_VERSION));
+	rb_define_const(GridFlow_module, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 
 	Pointer_class = rb_define_class_under(GridFlow_module, "Pointer",
 	rb_cObject);
@@ -364,7 +371,7 @@ void Init_gridflow () {
 	DEF(FObject, send_out, -1);
 	DEF(FObject, delete, -1);
 	DEF(FObject, profiler_cumul, 0);
-	DEF(FObject, profiler_cumul_assign, 1);
+	DEF2(FObject, "profiler_cumul=", profiler_cumul_set, 1);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 

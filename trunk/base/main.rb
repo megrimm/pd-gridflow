@@ -53,7 +53,6 @@ $mainloop = MainLoop.new
 $tasks = {}
 
 module GridFlow
-	GF_VERSION = "0.6.3"
 	def esmtick
 		$esm.tick
 		$mainloop.timers.after(0.1) { esmtick }
@@ -90,6 +89,7 @@ self.post_header = "[gf] "
 def self.gfpost2(fmt,s); post("%s",s) end
 
 self.post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
+self.post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
 self.post "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
@@ -117,7 +117,6 @@ end
 
 # adding some functionality to that:
 class FObject
-	alias profiler_cumul= profiler_cumul_assign
 	attr_writer :args
 	attr_reader :outlets
 	def args; @args || "[#{self.class} ...]"; end
@@ -133,8 +132,6 @@ class FObject
 		elsif Symbol===m[0]
 			m.shift
 		elsif String===m[0]
-			m.shift.intern
-		elsif m.length>1 and String===m[0] #???
 			m.shift.intern
 		elsif m.length>1
 			:list
@@ -296,7 +293,7 @@ class GridGlobal
 		ol.each {|o| total += o.profiler_cumul }
 		total=1 if total<1
 		ol.each {|o|
-			int ppm = o.profiler_cumul * 1000000 / total
+			ppm = o.profiler_cumul * 1000000 / total
 			GridFlow.post "%20d %2d.%04d %08x %s",
 				o.profiler_cumul, ppm/10000, ppm%10000,
 				o.id, o.args
@@ -346,7 +343,7 @@ load user_config_file if File.exist? user_config_file
 
 END {
 #	puts "This is an END block"
-	GridFlow.fobjects_set.each {|k,v| k.delete }
+	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
 	GridFlow.fobjects_set.clear
 	GC.start
 }
