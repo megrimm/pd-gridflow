@@ -1,7 +1,12 @@
 # $Id$
 
+INSTALL_DATA = install --mode 644
+INSTALL_LIB = $(INSTALL_DATA)
+INSTALL_DIR = mkdir -p
+
 all:: ruby-all gridflow-for-ruby gridflow-for-jmax # doc-all
 include config.make
+
 
 #----------------------------------------------------------------#
 
@@ -16,10 +21,10 @@ CFLAGS += -Wall # for cleanliness
 CFLAGS += -Wno-unused # it's normal to have unused parameters
 CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
 
-ifeq ($(HAVE_SPEED),yes)
-	CFLAGS += -O6 -funroll-loops # optimisation
-else
+ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
+else
+	CFLAGS += -O6 -funroll-loops # speed
 endif
 
 CFLAGS += -g # gdb info
@@ -38,19 +43,16 @@ clean::
 	$(OBJDIR)/base_bridge_jmax.o
 
 install:: all ruby-install jmax-install
-	$(INSTALL_DATA) $(OBJDIR)/gridflow.so $(RUBYDESTDIR)/$(RUBYARCH)/gridflow.so
+	$(INSTALL_LIB) $(OBJDIR)/gridflow.so $(RUBYDESTDIR)/$(RUBYARCH)/gridflow.so
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
 
 kloc::
-	wc base/*.[ch] base/*.rb format/*.[ch] configure Makefile extra/*.rb
-
-#edit::
-#	(nedit base/*.rb base/*.[ch] Makefile configure tests/test.rb &)
+	wc base/*.[ch] base/*.rb format/*.[ch] format/*.rb configure Makefile extra/*.rb
 
 edit::
-	(nedit format/*.c base/flow_objects.c base/grid.[ch] &)
+	(nedit base/*.rb base/*.[ch] format/main.rb tests/test.rb &)
 
 CONF = config.make config.h Makefile
 

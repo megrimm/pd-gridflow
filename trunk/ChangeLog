@@ -1,18 +1,15 @@
 /* $Id$ */
 
 version 0.6.0 (head):
- * now requires Ruby 1.6.6 (including libruby.so)
- * ./configure rewritten in Ruby (not polished yet)
- * removed dependency on GNU Bash
- * merged c/src/Makefile, c/Makefile into ./Makefile
- * merged c/src/Sources into ./config.make
- * c/src/format_*.c -> format/*.c; c/src/*.c -> base/*.c
- * allows writing a jMax class in the Ruby scripting language
- * GridFlow now relies on the Ruby API instead of the jMax API
- * GridFlow can now be loaded as a plugin for Ruby (without jMax)
- * GridFlow is now first a Ruby plugin and then a jMax plugin
- * many many macros and typedefs have changed or disappeared
- * File Format API changed completely (merging into GridObject)
+ * GridFlow rewritten as a plugin for Ruby instead of jMax.
+ * GridFlow now includes a Ruby-for-jMax bridge.
+ * you need Ruby 1.6.6 (including libruby.so) or compatible
+ * you don't need GNU Bash anymore (configurator rewritten in Ruby)
+ * format handlers for .ppm, .tga, .grid rewritten in Ruby
+ * merged all Makefiles together, etc.
+ * sources are in base/ and format/ instead of c/src/
+ * in general, many many changes to the source code.
+ * many bugs removed, many bugs added.
 
 version 0.5.0 (2002.06.08):
  * big changes to the internals (especially use of macros)

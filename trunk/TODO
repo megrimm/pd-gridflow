@@ -3,9 +3,11 @@
 "6" is planned for 0.6
 "7" is planned for 0.7
 "8" is planned for 0.8
-"9" is planned for 0.9
+starting with 1.0, backwards compatibility will be kept
 
 Distribution (0.6.0)
+[ ] add test plan
+[ ] follow test plan
 [6] test format/mpeg.c
 [6] review all documentation
 [6] review all patches
@@ -13,6 +15,7 @@ Distribution (0.6.0)
 [6] send announcement (jmaxvideo,jmax,0xff,fm.net,pd)
 
 Distribution (0.6.1)
+[ ] make demo app(s) in Ruby/Tk
 
 Installation
 [6] de-jmax-ify the build process; installable doc; installable includes
@@ -84,6 +87,9 @@ Architecture
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
+[ ] replace whine() by post() everywhere
+[ ] add reflection (@global#classes, @global#methods, ...)
+[ ] add ~/.gridflow_startup
 
 Computation Objects
 [ ] @type, @cast
@@ -141,12 +147,11 @@ Input/Output
 [ ] Gnome/Gstreamer bridge
 [7] TCP: move out of Grid
 [7] TCP: non-blocking write
-[7] TCP: non-blocking listen
 [7] TCP Socket Buffering
 [7] Grid: bpv 1,2,4,16,64
 [7] Grid: signed/unsigned
-[ ] MacOSX-Quartz output
-[ ] Win32-GDI output
+[ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
+[ ] SDL, PTC, TinyPTC ?
 
 Format
 [ ] all: possibly get rid of the "format" notion ?
@@ -208,4 +213,9 @@ From: Alexandre Castonguay <acastonguay@artengine.ca>
 
 From: CK <x@meta.lo-res.org>
   [ ] a pd port ;)
+
+From: Margit Hideg <mhideg@rogers.com>
+  [ ] I wish to see server side jmax to handle multiple incoming
+      commands, audio + video streams
+
 

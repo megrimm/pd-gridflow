@@ -35,6 +35,7 @@ FILES = [
     [:ruby, "MainLoop.rb"],
   ],
   [:directory, "format/",
+    [:ruby, "main.rb"],
   ],
   [:directory, "extra/",
 	[:ruby, "eval_server.rb"],
@@ -262,7 +263,8 @@ $conf={
 	:ARCH => nil,
 	:LDSOFLAGS => ["-lm","-lruby"],
 	:FEATURES => {},
-	:FORMATS => ["PPM","Targa","Grid"],
+#	:FORMATS => ["PPM","Targa","Grid"],
+	:FORMATS => [],
 	:OPTIONS => [],
 	:DEFINES => {},
 }
