@@ -244,7 +244,7 @@ Feature.new {
 	name "Ascii Art Library"
 	uses_so ["-laa"]
 	uses_h ["aalib.h"]
-	status :disabled
+#	status :disabled
 	test proc {
 		c_test "
 		#define aa_hardwareparams aa_hardware_params
