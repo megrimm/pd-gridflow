@@ -44,8 +44,6 @@ GFStack gf_stack;
 Ruby mGridFlow;
 Ruby cFObject;
 
-int gf_security = 1;
-
 /* begin Ruby 1.6 compatibility */
 
 static uint64 num2ull(Ruby val) {
@@ -88,12 +86,12 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	rb_exc_raise(e);
 }};
 
-static void default_post(const char *fmt, ...) {
-	va_list args;
-	va_start(args,fmt);
-	vfprintf(stderr,fmt,args);
-	va_end(args);
+Ruby rb_ary_fetch(Ruby rself, int i) {
+	Ruby argv[] = { INT2NUM(i) };
+	return rb_ary_aref(COUNT(argv),argv,rself);
 }
+
+const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 /* ---------------------------------------------------------------- */
 /* Dim */
@@ -118,12 +116,6 @@ char *Dim::to_s() {
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
 
-Ruby rb_ary_fetch(Ruby rself, int i) {
-	Ruby argv[] = { INT2NUM(i) };
-	return rb_ary_aref(COUNT(argv),argv,rself);
-}
-
-const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 static int object_count=0;
 
 static void CObject_mark (void *z) {}
@@ -207,8 +199,7 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
-/*	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
-		// GridFlow.post "%s",m.inspect	}*/
+//	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) gfpost m.inspect
 	char buf[256];
 	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
 	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
@@ -220,12 +211,7 @@ static void send_in_3 (Helper *h) {
 }
 
 \def void send_in (...) {
-	Helper h;
-	h.argc = argc;
-	h.argv = argv;
-	h.self = this;
-	h.rself = rself;
-	h.n = gf_stack.n;
+	Helper h = {argc,argv,this,rself,gf_stack.n};
 	rb_ensure(
 		(RMethod)send_in_2,(Ruby)&h,
 		(RMethod)send_in_3,(Ruby)&h);
@@ -416,11 +402,6 @@ GRCLASS(BitPacking,LIST(),
 
 \end class BitPacking
 
-/* this is the entry point for all of the above */
-
-/* **************************************************************** */
-/* Procs of somewhat general utility */
-
 NumberTypeE NumberTypeE_find (Ruby sym) {
 	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
 		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
@@ -438,12 +419,7 @@ void gfpost(const char *fmt, ...) {
 	length = vsnprintf(post_s,n,fmt,args);
 	if (length<0 || length>=n) sprintf(post_s+n-6,"[...]"); /* safety */
 	va_end(args);
-	if (rb_respond_to(mGridFlow,SI(gfpost2))) {
-		rb_funcall(mGridFlow,SI(gfpost2),2,
-			rb_str_new2(fmt),rb_str_new2(post_s));
-	} else {
-		default_post("%s",post_s);
-	}
+	rb_funcall(mGridFlow,SI(gfpost2),2,rb_str_new2(fmt),rb_str_new2(post_s));
 }
 
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
@@ -487,17 +463,6 @@ static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
 static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	fprintf(stderr,"%ld\n",arg);
 	return INT2NUM((int)arg);
-}
-
-Ruby GridFlow_security_set (Ruby rself, Ruby level) {
-	int security = INT(level);
-	if (security<0 || security>4) RAISE("expecting 0..4");
-	gf_security = security;
-	return INT2NUM(gf_security);
-}
-
-Ruby GridFlow_security (Ruby rself) {
-	return INT2NUM(gf_security);
 }
 
 Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
@@ -626,8 +591,6 @@ BUILTIN_SYMBOLS(FOO)
 		"class<<self; attr_reader :bridge_name; end; "
 		"def post_string(s) STDERR.puts s end; "
 		"self end");
-	SDEF2("security",GridFlow_security,0);
-	SDEF2("security=",GridFlow_security_set,1);
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
@@ -672,8 +635,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
 	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
 
-	/* run startup of every source file */
-
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
@@ -682,30 +643,25 @@ BUILTIN_SYMBOLS(FOO)
 #ifdef HAVE_USB
 	startup_usb();
 #endif
-
 	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
-
 #ifdef HAVE_MMX
 	if (!getenv("NO_MMX")) startup_cpu();
 #endif
-
 	cFormat = EVAL("GridFlow::Format");
 	for (int i=0; i<COUNT(format_classes); i++) {
 		fclass_install(format_classes[i], cFormat);
 	}
-
 	if (strcmp(RUBY_ARCH,"powerpc-darwin")==0) {
 		EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
 	} else {
 		EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
 	}
 	EVAL("GridFlow.load_user_config");
-
-	signal(11,SIG_DFL); /* paranoia */
+	//signal(11,SIG_DFL); // paranoia
 }
 
 void GFStack::push (FObject *o) {
@@ -724,7 +680,6 @@ void GFStack::pop () {
 	uint64 t = rdtsc();
 	if (!n) RAISE("stack underflow (WHAT?)");
 	n--;
-	//fprintf(stderr,"%*spop(0x%08x)\n",n,"",(int)s[n].o);
 	if (s[n].o) s[n].o->total_time += t - s[n].time;
 	if (n) s[n-1].time = t - s[n-1].time;
 }
