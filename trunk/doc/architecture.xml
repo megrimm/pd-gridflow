@@ -183,23 +183,7 @@
 	</p>
 </section>
 
-<section name="One-Input Operators">
-<table>
-	<column id="name" type="icon">name</column>
-	<column id="">description</column>
-
-	<row name="abs" cname="abs"
-	> absolute value of A </row>
-	<row name="rand" cname="rand"
-	> randomly produces a non-negative number below A </row>
-	<row name="sqrt" cname="sqrt"
-	> square root of A, rounded downwards </row>
-	<row name="sq" cname="sq"
-	> A times A </row>
-</table>
-</section>
-
-<section name="Two-Input Operators">
+<section name="Numeric Operators">
 		<p>In the following table, A is the value entered to the
 		left, and B is the value entered to the right.</p>
 
@@ -348,6 +332,28 @@
 	<row name="**" cname="pow"
 		color="gamma correction"
 	> A**B, that is, A raised to power B </row>
+
+	<!-- former one-input operators -->
+	<row name="abs-" cname="abs"
+	> absolute value of (A-B) </row>
+	<row name="rand" cname="rand"
+	> randomly produces a non-negative number below A </row>
+	<row name="sqrt" cname="sqrt"
+	> square root of A, rounded downwards </row>
+	<row name="sq-" cname="sq"
+	> (A-B) times (A-B) </row>
+
+	<!-- 0.8.0 -->
+	<row name="clip+" cname="clip+"
+	> like A+B but overflow causes clipping instead of wrapping around (coming soon) </row>
+	<row name="clip-" cname="clip-"
+	> like A-B but overflow causes clipping instead of wrapping around (coming soon) </row>
+	<row name="avg" cname="avg"
+	> (A+B)/2 </row>
+	<row name="hypot" cname="hypot"
+	> square root of (A*A+B*B) </row>
+	<row name="erf*" cname="erf"
+	> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </row>
 </table>
 </section>
 

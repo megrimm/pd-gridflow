@@ -433,10 +433,9 @@ XNode.register("row") {public
 			id = x.att["id"]
 			case x.att["type"]
 			when "icon" # should fix this for non-op icons
-				x = "images/op/#{att['cname']}.jpg"
-				x.sub! /jpg$/, "png" if not File.exist? x
+				x = "op/#{att['cname']}-icon.png"
 				if not File.exist? x
-					STDERR.print "warning: no icon for #{att['name']} (#{x})\n"
+					warn "no icon for #{att['name']} (#{x})\n"
 				end
 				mk(:img,:src,x,:border,0,:alt,att["name"])
 			else
