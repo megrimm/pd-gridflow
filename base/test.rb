@@ -243,6 +243,23 @@ def test_new_classes
 	a.send_in 1,2,2,hm,11,13,17,19
 	x.expect([2,3,5,7,11,13,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
 
+	a = FObject["@ravel"]
+	b = FObject["@dim"]
+	be = FObject["@export_list"]
+	bx = Expect.new
+	a.connect 0,e,0
+	a.connect 0,b,0
+	b.connect 0,be,0
+	be.connect 0,bx,0
+	bx.expect([9]) {
+		x.expect([1,2,3,2,4,6,3,6,9]) {
+			o = FObject["@outer *"]
+			o.connect 0,a,0
+			o.send_in 1,1,2,3
+			o.send_in 0,1,2,3
+		}
+	}
+
 #	a = FObject["@grade"]
 end
 

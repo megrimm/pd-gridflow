@@ -614,6 +614,13 @@ class GridApplyColormapChannelwise < FPatcher
 	install "@apply_colormap_channelwise", 2, 1
 end
 
+class GridRavel < FPatcher
+	FObjects = ["@dim","@fold * 1","@redim {1}","@redim {42}"]
+	Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,3,1, -1,0,3,0, 3,0,-1,0]
+	def initialize; super(FObjects,Wires,1) end
+	install "@ravel", 1, 1
+end
+
 def self.routine
 #	post "hello"
 	$tasks.each {|k,v|
