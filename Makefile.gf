@@ -269,6 +269,8 @@ puredata-install::
 	mkdir -p $(PUREDATA_PATH)/doc/5.reference/gridflow
 	cp pd_help/*.pd $(PUREDATA_PATH)/doc/5.reference/gridflow
 	cp $(PD_LIB) pd_abstractions/*.pd $(PUREDATA_PATH)/extra
+	for z in camera_control motion_detection color mouse centroid centre_of_gravity fade; do \
+		cp pd_abstractions/\#$$z.pd $(PUREDATA_PATH)/extra/\@$$z.pd; done
 	mkdir -p $(PUREDATA_PATH)/extra/gridflow/icons
 	$(INSTALL_DATA) java/peephole.gif $(PUREDATA_PATH)/extra/gridflow/icons/peephole.gif
 
