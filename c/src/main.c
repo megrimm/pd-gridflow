@@ -39,9 +39,9 @@
 /* #define MAKE_TMP_LOG_ALLOC */
 
 const char *whine_header = "[whine] ";
-Dict *gridflow_object_set = 0;
-Dict *gridflow_alarm_set = 0;
-fts_alarm_t *gridflow_alarm = 0;
+Dict *gf_object_set = 0;
+Dict *gf_alarm_set = 0;
+fts_alarm_t *gf_alarm = 0;
 
 FILE *whine_f;
 
@@ -86,7 +86,7 @@ static void disable_signal_handlers (void) {
 	}
 }
 
-void gridflow_alarm_handler (fts_alarm_t *foo, void *obj);
+void gf_alarm_handler (fts_alarm_t *foo, void *obj);
 void gridflow_module_init (void) {
 	disable_signal_handlers();
 	srandom(time(0));
@@ -96,8 +96,8 @@ void gridflow_module_init (void) {
 	if (!whine_f) whine_f = fopen("/dev/null","w");
 #endif
 
-	post("Welcome to GridFlow " GRIDFLOW_VERSION "\n");
-	post("Compiled on: " GRIDFLOW_COMPILE_TIME "\n");
+	post("Welcome to GridFlow " GF_VERSION "\n");
+	post("Compiled on: " GF_COMPILE_TIME "\n");
 	post("--- GridFlow startup: begin ---\n");
 
 	#define DEF_SYM(_sym_) \
@@ -112,16 +112,16 @@ void gridflow_module_init (void) {
 	DEF_SYM(grid_flow2);
 	DEF_SYM(grid_end);
 
-	gridflow_object_set = Dict_new(0);
-	gridflow_alarm_set  = Dict_new(0);
-	gridflow_alarm = fts_alarm_new(fts_sched_get_clock(), gridflow_alarm_handler, 0);
+	gf_object_set = Dict_new(0);
+	gf_alarm_set  = Dict_new(0);
+	gf_alarm = fts_alarm_new(fts_sched_get_clock(), gf_alarm_handler, 0);
 
 	/* run startup of every source file */
 	STARTUP_LIST(startup_,();)
 
 	post("--- GridFlow startup: end ---\n");
 
-	gridflow_alarm_handler(0,0); /* bootstrap the event loop */
+	gf_alarm_handler(0,0); /* bootstrap the event loop */
 }
 
 /* this is the entry point for all of the above */
@@ -309,7 +309,7 @@ static void profiler_reset$1(void*d,void*k,void*v) {
 }
 
 METHOD2(GFGlobal,profiler_reset) {
-	Dict *os = gridflow_object_set;
+	Dict *os = gf_object_set;
 	int i;
 	Dict_each(os,profiler_reset$1,0);
 }
@@ -328,13 +328,13 @@ METHOD2(GFGlobal,profiler_dump) {
         /* if you blow 256 chars it's your own fault */
 	char buf[256];
 
-	Dict *os = gridflow_object_set;
+	Dict *os = gf_object_set;
 	List *ol = List_new(0);
 	uint64 total=0;
 	int i;
 	whine("--------------------------------");
 	whine("         clock-ticks percent pointer  constructor");
-	Dict_each(gridflow_object_set,profiler_dump$1,ol);
+	Dict_each(gf_object_set,profiler_dump$1,ol);
 	List_sort(ol,by_profiler_cumul);
 	for(i=0;i<List_size(ol);i++) {
 		GridObject *o = List_get(ol,i);
@@ -379,17 +379,15 @@ CLASS(GFGlobal) {
 #define INSTALL(_sym_,_name_) \
 	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
 
-void gridflow_alarm_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
-	whine("%08x",o);
+void gf_alarm_handler$1 (void *foo, void *o, void(*callback)(void*o)) {
 	callback(o);
 }
 
-void gridflow_alarm_handler (fts_alarm_t *foo, void *obj) {
-	whine("gridflow_alarm_handler");
-	Dict_each(gridflow_alarm_set,
-		(void(*)(void*,void*,void*))gridflow_alarm_handler$1,0);
-	fts_alarm_set_delay(gridflow_alarm, 1000.0);
-	fts_alarm_arm(gridflow_alarm);
+void gf_alarm_handler (fts_alarm_t *foo, void *obj) {
+	Dict_each(gf_alarm_set,
+		(void(*)(void*,void*,void*))gf_alarm_handler$1,0);
+	fts_alarm_set_delay(gf_alarm, 75.0);
+	fts_alarm_arm(gf_alarm);
 }
 
 void startup_gridflow (void) {

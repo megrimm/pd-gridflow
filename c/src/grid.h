@@ -21,8 +21,8 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef __GRIDFLOW_GRID_H
-#define __GRIDFLOW_GRID_H
+#ifndef __GF_GRID_H
+#define __GF_GRID_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,8 +31,8 @@
 #include "lang.h"
 
 /* current version number as string literal */
-#define GRIDFLOW_VERSION "0.4.0"
-#define GRIDFLOW_COMPILE_TIME __DATE__ ", " __TIME__
+#define GF_VERSION "0.4.0"
+#define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef HAVE_SPEED
 #define NO_ASSERT
@@ -606,9 +606,9 @@ Format *Format_open(FormatClass *qlass, GridObject *parent, int mode);
 
 /* **************************************************************** */
 
-extern Dict *gridflow_object_set;
-extern Dict *gridflow_alarm_set;
-extern fts_alarm_t *gridflow_alarm;
+extern Dict *gf_object_set;
+extern Dict *gf_alarm_set;
+extern fts_alarm_t *gf_alarm;
 extern const char *whine_header;
 
-#endif /* __GRIDFLOW_GRID_H */
+#endif /* __GF_GRID_H */

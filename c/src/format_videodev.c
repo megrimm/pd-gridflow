@@ -503,14 +503,13 @@ Format *FormatVideoDev_open (FormatClass *class, GridObject *parent, int mode, A
 		break;
 		default:
 			whine("can't handle palette %d", gp->palette);
-			$->bit_packing = 0;
 		}
 	}
 
 	FormatVideoDev_channel($,0);
 
-	/* Sometimes a pause is needed here */
-	usleep(500000);
+	/* Sometimes a pause is needed here (?) */
+	usleep(250000);
 
 	return (Format *)$;
 err:
