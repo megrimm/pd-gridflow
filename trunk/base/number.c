@@ -570,7 +570,7 @@ void startup_number () {
 		ciBitPacking.methodsn,
 		ciBitPacking.methods);
 	SDEF(BitPacking,new,-1);
-	rb_define_method(rb_cString, "swap32!", (RFunc)String_swap32_f, 0);
-	rb_define_method(rb_cString, "swap16!", (RFunc)String_swap16_f, 0);
+	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
+	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
 }
 

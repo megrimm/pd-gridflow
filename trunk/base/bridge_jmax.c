@@ -136,8 +136,8 @@ static void BFObject_method_missing (BFObject *self,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	FMessage fm = { self: self, winlet: winlet, selector: selector, ac: ac, at: at };
 	rb_rescue2(
-		(RFunc)BFObject_method_missing_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_method_missing_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
@@ -158,8 +158,8 @@ static void BFObject_init (BFObject *self,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 	FMessage fm = { self: self, winlet: winlet, selector: selector, ac: ac, at: at };
 	rb_rescue2(
-		(RFunc)BFObject_init_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_init_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
@@ -172,8 +172,8 @@ static void BFObject_delete (BFObject *self) {
 	FMessage fm = { self: self, winlet:-1, selector: fts_new_symbol("delete"),
 		ac: 0, at: 0 };
 	rb_rescue2(
-		(RFunc)BFObject_delete_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_delete_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
@@ -215,8 +215,8 @@ int ac, const fts_atom_t *at) {
 	FMessage fm;
 	fm.self = 0;
 	r = (fts_status_t) rb_rescue2(
-		(RFunc)BFObject_class_init_1,(Ruby)qlass,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_class_init_1,(Ruby)qlass,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 	return (Ruby)r==Qnil ? 
 		fts_new_status("Exception in BFObject_class_init_1") : r;
@@ -285,7 +285,7 @@ void gridflow_module_init () {
 	ruby_options(COUNT(foo),foo);
 	bridge_common_init();
 	rb_define_singleton_method(EVAL("Data"),"gridflow_bridge_init",
-		(RFunc)gridflow_bridge_init,1);
+		(RMethod)gridflow_bridge_init,1);
 	post("(done)\n");
 
 	if (!
@@ -296,7 +296,7 @@ void gridflow_module_init () {
 		return;
 	}
 
-	rb_define_singleton_method(mGridFlow2,"find_file",(RFunc)gf_find_file,1);
+	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
 	/* if exception occurred above, will crash soon */
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);

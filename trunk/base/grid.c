@@ -178,8 +178,8 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	dex = 0;
 	factor = 1;
 	int r = rb_ensure(
-		(RFunc)GridInlet_begin_1,(Ruby)this,
-		(RFunc)GridInlet_begin_2,(Ruby)this);
+		(RMethod)GridInlet_begin_1,(Ruby)this,
+		(RMethod)GridInlet_begin_2,(Ruby)this);
 	if (!r) {abort(); return;}
 
 	this->dim = dim;
@@ -616,8 +616,8 @@ LIST(),
 
 void GridObject_conf_class(Ruby rself, GridClass *grclass) {
 	/* define in Ruby-metaclass */
-	rb_define_singleton_method(rself,"instance_methods",(RFunc)GridObject_s_instance_methods,-1);
-	rb_define_singleton_method(rself,"install_rgrid",(RFunc)GridObject_s_install_rgrid,-1);
+	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
+	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
 	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }  
 

@@ -82,8 +82,8 @@ EFENCE = /usr/lib/libefence$(LSUF)
 #	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
 
 BACKTRACE = ([ -f core ] && gdb `which ruby` core)
-# TEST = base/test.rb math
-TEST = base/test.rb formats
+TEST = base/test.rb math
+# TEST = base/test.rb formats
 
 test::
 	rm -f core

@@ -192,8 +192,8 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 		return;
 	}
 	rb_rescue2(
-		(RFunc)BFObject_method_missing_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_method_missing_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
@@ -248,8 +248,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	FMessage fm = { self: self, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
 	rb_rescue2(
-		(RFunc)BFObject_init_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_init_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 	/* now what do i do with constructors that raised exception? */
 	return (void *)self;
@@ -268,8 +268,8 @@ static void BFObject_delete (BFObject *self) {
 	FMessage fm = { self: self, winlet:-1, selector: gensym("delete"),
 		ac: 0, at: 0, is_init: false };
 	rb_rescue2(
-		(RFunc)BFObject_delete_1,(Ruby)&fm,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_delete_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 }
 
@@ -290,8 +290,8 @@ static Ruby FObject_s_install_2(Ruby rself, char *name) {
 
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(
-		(RFunc)BFObject_class_init_1,(Ruby)qlass,
-		(RFunc)BFObject_rescue,(Ruby)&fm,
+		(RMethod)BFObject_class_init_1,(Ruby)qlass,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
 	return Qnil;
 }
@@ -352,7 +352,7 @@ extern "C" void gridflow_setup () {
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 
 	rb_define_singleton_method(EVAL("Data"),"gridflow_bridge_init",
-		(RFunc)gridflow_bridge_init,1);
+		(RMethod)gridflow_bridge_init,1);
 
 	post("(done)");
 

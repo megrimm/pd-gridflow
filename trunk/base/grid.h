@@ -115,11 +115,11 @@ extern "C" {
 #define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
 
 #define DEF(_class_,_name_,_argc_) \
-	rb_define_method(c##_class_,#_name_,(RFunc)_class_##_##_name_,_argc_)
+	rb_define_method(c##_class_,#_name_,(RMethod)_class_##_##_name_,_argc_)
 #define DEF2(_class_,_name2_,_name_,_argc_) \
-	rb_define_method(c##_class_,_name2_,(RFunc)_class_##_##_name_,_argc_)
+	rb_define_method(c##_class_,_name2_,(RMethod)_class_##_##_name_,_argc_)
 #define SDEF(_class_,_name_,_argc_) \
-	rb_define_singleton_method(c##_class_,#_name_,(RFunc)_class_##_s_##_name_,_argc_)
+	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 
 #define INTEGER_P(_Ruby_) (FIXNUM_P(_Ruby_) || TYPE(_Ruby_)==T_BIGNUM)
 #define FLOAT_P(_Ruby_) (TYPE(_Ruby_)==T_FLOAT)
@@ -194,7 +194,10 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 		DGS(_class_); return self->_name_(argc,argv); } \
 	Ruby _class_::_name_(int argc, Ruby *argv)
 
-typedef Ruby (*RMethod)(Ruby rself, ...); /* !@#$ */
+/* !@#$ */
+typedef Ruby (*RMethod)(...);
+//typedef Ruby (*RMethod)();
+
 
 #define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_startup_,_handlers_,args...) \
 	static void *_name_##_allocate () { return new _name_; } \
@@ -741,8 +744,6 @@ Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 
 Ruby ruby_c_install(GridClass *gc, Ruby super);
-
-typedef Ruby (*RFunc)(...);
 
 extern "C" void Init_gridflow () /*throws Exception*/;
 
