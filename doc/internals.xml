@@ -6,7 +6,7 @@
 	GridFlow Internals Manual
 	Copyright (c) 2002 by Mathieu Bouchard
 -->
-<section name="notes"><prose>
+<section name="notes">
 
 <p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the
 constants it defines are part of that namespace. A GridFlow object is normally
@@ -23,7 +23,7 @@ GridObject will have an additional pointer to a fts_object_t derivative called
 BFObject (B for Bridge); that pointer is called foreign_peer. The BFObject
 links back to the RData box through another pointer called peer. </p>
 
-</prose></section>
+</section>
 
 <section name="Objects for Scripting">
 	<class name="ruby class FObject extending Data">

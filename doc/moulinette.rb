@@ -93,18 +93,21 @@ class XString < String
 	end
 end
 
+module HasOwnLayout; end
+
 class XNode
 	# subclass interface:
-	#  #prx : called by #display_index of base class
-	#  #display : print as html
-	#  #display_index : private, don't touch
+	#  #display_index : print as html in index
+	#  #display : print as html in main part of the doc
 
-	class<<self; attr_accessor :valid_tags; end
-	self.valid_tags = {}
-	def self.register(*args,&b)
-		qlass = (if b then Class.new self else self end)
-		qlass.class_eval(&b) if b
-		for k in args do XNode.valid_tags[k]=qlass end
+	@valid_tags = {}
+	class<<self
+		attr_reader :valid_tags
+		def register(*args,&b)
+			qlass = (if b then Class.new self else self end)
+			qlass.class_eval(&b) if b
+			for k in args do XNode.valid_tags[k]=qlass end
+		end
 	end
 
 	def initialize tag, att, *contents
@@ -112,18 +115,16 @@ class XNode
 		 tag, att, contents
 		contents.each {|c| c.parent = self if XNode===c }
 	end
+
 	attr_reader :tag, :att, :contents
 	attr_accessor :parent
 	def [] i; contents[i] end
 
-	$counters=[]
-	$sections=nil
 	def display_index
-		pr = begin prx; rescue NameError=>x; end
 		contents.each {|x| next unless XNode===x; x.display_index }
-		pr[] if Proc===pr
 	end
 
+	# may crash in ruby 1.8 (bug in interpreter)
 	def display; contents.each {|x| x.display } end
 end
 
@@ -139,11 +140,18 @@ XNode.register("section") {
 		mk(:tr) { mk(:td,:colspan,4) {
 			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
 			mk(:h4) { print att["name"] }}}
-		$section={}
-		super
-		print "<tr><td>&nbsp;</td></tr>\n"
-		print "</table>" if $section[:table]
-		$section=nil
+		
+		contents.each {|x|
+			if HasOwnLayout===x then
+				x.display
+			else
+				mk(:tr) { mk(:td) {}; mk(:td) {}; mk(:td) { x.display }}
+				puts ""
+			end
+		}
+
+		mk(:tr) { mk(:td) { print "&nbsp;" }}
+		puts ""
 	end
 	def prx
 		mk(:h4) {
@@ -154,16 +162,6 @@ XNode.register("section") {
 	end
 }
 
-XNode.register("prose") {
-	def display
-		print "<tr>"
-		mk(:td) {}
-		mk(:td) {}
-		print "<td>"
-		super
-		print "</td></tr>\n"
-	end
-}
 
 # basic text formatting nodes.
 XNode.register (*%w( p i u b k sup )) {
@@ -186,26 +184,26 @@ XNode.register("link") {
 }
 
 XNode.register("list") {
+	attr_accessor :counter
 	def display
-		$counters << (att.fetch("start"){"1"}).to_i
-		print "<ul>"
-		super
-		print "</ul>"
-		$counters.pop
+		self.counter = att.fetch("start"){"1"}.to_i
+		mk(:ul) { super }
 	end
 }
 
 XNode.register("li") {
 	def display
-		print "<li><b>#{$counters.last}</b> : "
-		$counters[-1] += 1
-		super
-		print "</li>"
+		mk(:li) {
+			print "<b>#{parent.counter}</b>", " : "
+			parent.counter += 1
+			super
+		}
 	end
 }
 
 # and "macro", "enum", "type", "use"
 XNode.register("class") {
+	include HasOwnLayout
 	def display
 		tag = self.tag
 		name = att['name'] or raise
@@ -215,9 +213,10 @@ XNode.register("class") {
 		    mk(:a,:name,name) { print name }
 		  }
 		}
-		print "<tr>"
+		mk(:tr) {
 		mk(:td) {}
-		print "<td valign='top'><br>\n"
+		mk(:td,:valign,:top) {
+		print "<br>\n"
 		icon = contents.find {|x| XNode===x and x.tag == 'icon' }
 		help = contents.find {|x| XNode===x and x.tag == 'help' }
 		mkimg(icon) if icon
@@ -235,9 +234,13 @@ XNode.register("class") {
 		end
 		mk(:br,:clear,"left")
 		mk(:br)
-		print "</td><td><br>\n"
-		super
-		print "<br></td>"
+		}#/td
+		mk(:td) {
+			print "<br>\n"
+			super
+			print "<br>"
+		}#/td
+		}#/tr
 	end
 	def prx
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
@@ -259,14 +262,19 @@ XNode.register("class") {
 XNode.register("method") {
 	def display
 		print "<br>"
-		print "<b>", $portnum.join(" "), "</b> " if $portnum
-		print "<b>method</b> #{att['name']} <b>(</b>"
+		if parent.tag == "inlet" or parent.tag == "outlet"
+			mk(:b) {
+				print "#{parent.tag} #{parent.att['id']} "
+				
+			}
+		end
+		print "<b>method</b> #{escape_html att['name']} <b>(</b>"
 		print contents.map {|x|
 			next unless XNode===x
 			case x.tag
 			when "arg"
 				s=x.att["name"]
-				s="<i>#{x.att['type']}</i> #{s}" if x.att['type']
+				s="<i>#{x.att['type']}</i> #{escape_html s}" if x.att['type']
 				s
 			when "rest"
 				x.att["name"] + "..."
@@ -278,22 +286,30 @@ XNode.register("method") {
 	end
 }
 
+XNode.register("table") {
+	def display
+		mk(:tr) {
+		2.times { mk(:td) {} }
+		mk(:td) {
+		mk(:table,:border,1) {
+			mk(:tr) {
+				columns = ["name","description",
+					"meaning in pixel context (pictures, palettes)",
+					"meaning in spatial context (indexmaps, polygons)"]
+				columns.each {|x| mk(:td) { mk(:b) { print x }}}
+			}
+			super
+		}}}
+	end
+}
+
+XNode.register("column") {
+	# write me!
+}
+
 XNode.register("operator-1", "operator-2") {
 	def display
-		$section[:table] ||= (
-			print "<tr>"
-			2.times { mk(:td) {}}
-			print "<td>"
-			print "<table border='1'>"
-			mk(:th) {
-				print(["name","description",
-					"meaning in pixel context (pictures, palettes)",
-					"meaning in spatial context (indexmaps, polygons)"]\
-				.map{|x|
-					"<td>#{x}</td>" })
-			}
-		;0)
-		print "<tr>"
+		mk(:tr) {
 		mk(:td) {
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			if icon then
@@ -308,23 +324,15 @@ XNode.register("operator-1", "operator-2") {
 			end
 			# print att["name"]
 		}
-		print "<td>"
-		super
-		print "</td>"
-		print "<td>#{(escape_html att['color'])||'&nbsp;'}</td>"
-		print "<td>#{(escape_html att['space'])||'&nbsp;'}</td>"
-		print "</tr>\n"
+		mk(:td) { super }
+		mk(:td) { print "#{(escape_html att['color'])||'&nbsp;'}" }
+		mk(:td) { print "#{(escape_html att['space'])||'&nbsp;'}" }
+		}#/tr
+		puts ""
 	end
 }
 
-XNode.register("inlet","outlet") {
-	def display
-		# hidden
-		$portnum = [tag,att['id']]
-		super
-		$portnum = nil
-	end
-}
+XNode.register("inlet","outlet") {}
 
 #----------------------------------------------------------------#
 
@@ -339,7 +347,7 @@ class GFDocParser < XMLParser
 
 	def startElement(tag,attrs)
 		if not XNode.valid_tags[tag] then
-		 	raise "unknown tag #{tag}"
+		 	raise XMLParserError, "unknown tag #{tag}"
 		end
 		@stack<<[tag,attrs]
 	end
@@ -351,7 +359,7 @@ class GFDocParser < XMLParser
 
 	def character(text)
 		if not String===@stack.last.last then
-			@stack.last << XString.new
+			@stack.last << XString.new("")
 		end
 		@stack.last.last << text
 	end

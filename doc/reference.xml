@@ -679,14 +679,6 @@
 		</outlet>
 	</class>
 
-	<class name="@identity_transform">
-		<icon text="[@identity_transform]"/>
-		<help text="[@identity_transform]"/>
-		<p>
-			OBSOLETE AND REMOVED. USE @for INSTEAD.
-		</p>
-	</class>
-
 	<class name="@scale_to">
 		<icon text="[@scale_to]"/>
 		<help text="[@scale_to]"/>
@@ -704,14 +696,6 @@
 		<outlet id="0">
 			<method name="grid"><arg name="grid" type="grid"/>a scaled 3-channel picture.</method>
 		</outlet>
-
-		<p>@scale_to is normally fed the same inlet 1,2 values as
-		@identity_transform, and chained from @identity_transform and to
-		@store. This will scale an image of any size to the size specified
-		in inlets 1,2. If it doesn't correspond the values of
-		@identity_transform, part of the image will be trimmed and/or
-		duplicated.</p>
-
 	</class>
 
 	<class name="@scale_by">
@@ -852,7 +836,7 @@
 	<class name="@type">
 		<p>gives a symbol representing the numeric type of the grid received.
 		</p>
-		<outlet id="0"><method type="numeric type symbol"/></outlet>
+		<outlet id="0"><method name="&lt;numeric type symbol&gt;"/></outlet>
 	</class>
 
 	<class name="@print">
@@ -1227,11 +1211,9 @@
 </section>
 
 <section name="jMax emulation">
-	<prose>
 	<p>those classes emulate jMax functionality,
 	for use within PureData and Ruby.</p>
-	</prose>
-
+	
 	<class name="fork">
 		<p>Every incoming message is sent to inlet 1 and then sent to
 		inlet 0 as well. Messages remain completely unaltered. Contrast
