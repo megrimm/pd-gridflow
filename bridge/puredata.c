@@ -284,13 +284,22 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 
 static t_clock *gf_alarm;
 
+static void gf_timer_handler_1 (VALUE blah) {
+	rb_funcall(mGridFlow2,SI(tick),0);
+}
+
 void gf_timer_handler (t_clock *alarm, void *obj) {
 	if (is_in_ruby) {
 		post("warning: ruby is not signal-reentrant (is this a signal?)\n");
 		return;
 	}
 	is_in_ruby = true;
-	rb_funcall(mGridFlow2,SI(tick),0);
+//	rb_funcall(mGridFlow2,SI(tick),0);
+	FMessage fm; fm.self = 0;
+	rb_rescue2(
+		(RMethod)gf_timer_handler_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
+		rb_eException,0);
 	clock_delay(gf_alarm,gf_bridge2->clock_tick);
 	is_in_ruby = false;
 	count_tick();

@@ -270,8 +270,16 @@ Ruby rself) {
 
 static fts_alarm_t *gf_alarm;
 
-static void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
+static void gf_timer_handler_1 (VALUE blah) {
 	rb_funcall(mGridFlow2,SI(tick),0);
+}
+
+static void gf_timer_handler (fts_alarm_t *alarm, void *obj) {
+	FMessage fm; fm.self = 0;
+	rb_rescue2(
+		(RMethod)gf_timer_handler_1,(Ruby)&fm,
+		(RMethod)BFObject_rescue,(Ruby)&fm,
+		rb_eException,0);
 	fts_alarm_set_delay(gf_alarm,gf_bridge2->clock_tick);
 	fts_alarm_arm(gf_alarm);
 	count_tick();
@@ -324,6 +332,7 @@ void gridflow_module_init () {
 	}
 
 	rb_define_singleton_method(mGridFlow2,"find_file",(RMethod)gf_find_file,1);
+//	post("gridflow clock DISABLED (sorry. connect a [metro] to [@global] instead)\n");
 	gf_alarm = fts_alarm_new(fts_sched_get_clock(),gf_timer_handler,0);
 	gf_timer_handler(gf_alarm,0);
 }
