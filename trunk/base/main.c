@@ -737,7 +737,11 @@ BUILTIN_SYMBOLS(FOO)
 	if (!getenv("NO_MMX")) startup_cpu();
 #endif
 
-	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
+#ifdef MACOSX
+       EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
+#else
+        EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
+#endif
 	EVAL("GridFlow.load_user_config");
 
 	signal(11,SIG_DFL); /* paranoia */
