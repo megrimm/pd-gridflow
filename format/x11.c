@@ -179,7 +179,8 @@ void FormatX11::alarm() {
 	XEvent e;
 
 	for (;;) {
-		int xpending = XEventsQueued(display, QueuedAfterReading);
+//		int xpending = XEventsQueued(display, QueuedAfterReading);
+		int xpending = XEventsQueued(display, QueuedAfterFlush);
 		if (!xpending) break;
 		XNextEvent(display,&e);
 		switch (e.type) {

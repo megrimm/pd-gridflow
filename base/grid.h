@@ -1233,7 +1233,7 @@ struct GFBridge {
 	void (*post)(const char *, ...);
 	/* PD adds a newline; jMax doesn't. */
 	bool post_does_ln;
-	/* milliseconds between refreshes of x11, rtmetro, tcp */
+	/* milliseconds between refreshes of x11, tcp */
 	float clock_tick;
 	/* additional gimmickry: bridge-specific functions all-in-one */
 	Ruby (*whatever)(int argc, Ruby *argv, Ruby rself);
@@ -1241,7 +1241,7 @@ struct GFBridge {
 
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
-uint64 RtMetro_now();
+uint64 gf_timeofday();
 
 /* keyed on data */
 void MainLoop_add(void *data, void (*func)(void*));

@@ -846,7 +846,7 @@ class Shunt < FObject
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
 		send_out @i,$2.intern,*args
 	end
-	def _1_int i; @i=i.to_i end
+	def _1_int i; @i=i.to_i % @n end
 	alias :_1_float :_1_int
 	install "shunt", 2, 0
 end
