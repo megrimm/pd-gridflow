@@ -56,6 +56,7 @@ DECL_SYM2(grid_end)
 #define STARTUP_LIST(_begin_,_end_) \
 	_begin_## operator       _end_ \
 	_begin_## grid_basic     _end_ \
+	_begin_## grid_extra     _end_ \
 	_begin_## io             _end_ \
 	_begin_## video4jmax     _end_
 
