@@ -3,7 +3,7 @@ $stack = []
 $classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods)
-MethodDecl = Struct.new(:rettype,:selector,:arglist)
+MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs)
 Arg = Struct.new(:type,:name,:default)
 
 In = File.open ARGV[0], "r"
@@ -19,13 +19,27 @@ def handle_class(line)
 	Out.puts ""
 end
 
+def parse_methoddecl(line,term)
+	/^(\w+)\s+(\w+)\s*\((.*)\)\s*#{term}\s*$/.match line or
+		raise "syntax error #{where}"
+	rettype,selector,arglist = $1,$2,$3
+	arglist,minargs,maxargs = parse_arglist arglist
+	MethodDecl.new(rettype,selector,arglist,minargs,maxargs)
+end
+
 def parse_arglist(arglist)
-	arglist.split(/,/).map {|arg|
+	arglist = arglist.split(/,/)
+	maxargs = arglist.length
+	args = arglist.map {|arg|
+		if /^\s*\.\.\.\s*$/.match arg then maxargs=-1; next end
 		/^\s*([\w\s\*<>]+)\s*\b(\w+)\s*(?:\=(.*))?/.match arg or
 			raise "syntax error in \"#{arg}\" #{where}"
 		type,name,default=$1,$2,$3
 		Arg.new(type.sub(/\s+$/,""),name,default)
-	}
+	}.compact
+	minargs = args.length
+	minargs-=1 while minargs>0 and args[minargs-1].default
+	[args,minargs,maxargs]
 end
 
 def unparse_arglist(arglist,with_default=true)
@@ -42,55 +56,43 @@ end
 
 def handle_decl(line)
 	STDERR.puts "decl: #{line}"
-	/^(\w+)\s+(\w+)\s*\((.*)\)\s*;\s*$/.match line or
-		raise "syntax error #{where}"
-	rettype,selector,arglist = $1,$2,$3
-	arglist = parse_arglist arglist
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	classname = $stack[-1].name
-	$stack[-1].methods[selector] = MethodDecl.new(rettype,selector,arglist)
+	m = parse_methoddecl(line,";")
+	$stack[-1].methods[m.selector] = m
 
-	Out.print "#{rettype} #{selector}(int argc, Ruby *argv"
-	Out.print "," if arglist.length>0
-	Out.puts "#{unparse_arglist arglist});//FCS"
+	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
+	Out.print "," if m.arglist.length>0
+	Out.puts "#{unparse_arglist m.arglist});//FCS"
 end
 
 def handle_def(line)
 	STDERR.puts "def: #{line}"
-	/^(\w+)\s+(\w+)\s*\((.*)\)(\s*{?\s*)$/.match line or
-		raise "syntax error #{where}"
-	rettype,selector,arglist,brace = $1,$2,$3,$4
-	arglist = parse_arglist arglist
+	mdef = parse_methoddecl(line,"{?")
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
 	classname = qlass.name
-if qlass.methods[selector] #!@#$ HACK
-	method = qlass.methods[selector] or raise "undeclared method #{where}"
-	arglist = method.arglist
-else
-	qlass.methods[selector]=method=MethodDecl.new(rettype,selector,arglist)
-end
+	qlass.methods[mdef.selector] ||= mdef
+	m = qlass.methods[mdef.selector]
 
-	minargs = maxargs = method.arglist.length
-	minargs-=1 while minargs>0 and method.arglist[minargs-1].default
-
-	Out.print "static Ruby #{classname}_#{method.selector}_wrap"+
+	Out.print "static Ruby #{classname}_#{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself) {"+
 	"static const char *methodspec = "+
-	"\"#{qlass.name}::#{method.selector}(#{unparse_arglist arglist,false})\";"+
+	"\"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"+
 	"DGS(#{classname});"
 
-	Out.print "if (argc<#{minargs}||argc>#{maxargs}) "+
-		"RAISE(\"got %d args instead of %d..%d in %s\""+
-		",argc,#{minargs},#{maxargs},methodspec);"
+	Out.print "if (argc<#{m.minargs}"
+	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
+	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\""+
+		",argc,#{m.minargs},#{m.maxargs},methodspec);"
 
 	error = proc {|x,y|
 		"RAISE(\"got %s instead of #{x} in %s\","+
 		"rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)"
 	}
 
-	method.arglist.each_with_index{|arg,i|
+	m.arglist.each_with_index{|arg,i|
 		case arg.type
 		when "Symbol"
 			Out.print "if (argc>#{i} && TYPE(argv[#{i}])!=T_SYMBOL) "+
@@ -106,9 +108,9 @@ end
 		end
 	}
 
-	Out.print "return " if rettype!="void"
-	Out.print " self->#{method.selector}(argc,argv"
-	arglist.each_with_index{|arg,i|
+	Out.print "return " if m.rettype!="void"
+	Out.print " self->#{m.selector}(argc,argv"
+	m.arglist.each_with_index{|arg,i|
 		if arg.default then
 			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
 		else
@@ -116,10 +118,10 @@ end
 		end
 	}
 	Out.print ");"
-	Out.print "return Qnil;" if rettype=="void"
-	Out.print "} #{rettype} #{classname}::#{method.selector}(int argc, Ruby *argv"
-	Out.print "," if arglist.length>0
-	Out.puts "#{unparse_arglist arglist, false})#{brace}//FCS"
+	Out.print "return Qnil;" if m.rettype=="void"
+	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
+	Out.print "," if m.arglist.length>0
+	Out.puts "#{unparse_arglist m.arglist, false}){//FCS"
 end
 
 def handle_grdecl(line)

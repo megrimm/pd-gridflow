@@ -64,6 +64,17 @@ $tasks = {}
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
+class Array
+	def split(elem)
+		r=[]
+		j=0
+		for i in 0...length
+			(r<<self[j,i-j]; j=i+1) if self[i]==elem
+		end
+		r<<self[j,length-j]
+	end
+end
+
 module GridFlow #------------------
 
 def esmtick
@@ -83,6 +94,7 @@ def self.post(s,*a)
 end
 
 class<<self
+	attr_accessor :data_path
 	attr_accessor :post_header
 	attr_accessor :verbose
 	attr_reader :alloc_set
@@ -92,6 +104,7 @@ class<<self
 end
 
 @verbose=false
+@data_path=[]
 
 self.post_header = "[gf] "
 
@@ -175,14 +188,15 @@ class FObject
 			o=m.inspect
 		end
 		GridFlow.handle_braces!(m)
-		sym = m.shift
-		sym = sym.to_s if Symbol===sym
-		qlass = name_lookup sym
-#		GridFlow.post "%s %s",sym,m.inspect if GridFlow.verbose
+		ms = m.split ','.intern
+		m = ms.shift
+		qlass = m.shift
+		qlassname = qlass.to_s
+		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
 		GridFlow.post "%s",r.args if GridFlow.verbose
-		#r.args = o
-		r.classname = sym
+		r.classname = qlassname
+		for x in ms do r.send_in(-2, *x) end
 		r
 	end
 	def inspect
@@ -200,11 +214,13 @@ class FObject
 		@args << s << "]"
 		@parent_patcher = nil
 		@properties = {}
+		@init_messages = []
 	end
 end
 
 class FPatcher < FObject
 	def initialize(fobjects,wires,ninlets)
+		super()
 		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
 		@inlets = []
 		@ninlets = ninlets
@@ -276,8 +292,12 @@ def self.routine
 end
 
 def GridFlow.find_file s
-#	post "find_file: #{s}"
-	s
+	if s==File.basename(s) then
+		dir = GridFlow.data_path.find {|x| File.exist?("#{x}/#{s}") }
+		if dir then "#{dir}/#{s}" else s end
+	else
+		s
+	end
 end
 
 def GridFlow.tick
@@ -296,7 +316,12 @@ end # module GridFlow
 def GridFlow.load_user_config
 	require "gridflow/base/bridge_puredata.rb" if GridFlow.bridge_name == "puredata"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
-	load user_config_file if File.exist? user_config_file
+	begin
+		load user_config_file if File.exist? user_config_file
+	rescue Exception => e
+		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+		GridFlow.post "while loading ~/.gridflow_startup"
+	end
 end
 
 END {
@@ -307,9 +332,5 @@ END {
 }
 
 GridFlow.routine
-
-# set_trace_func proc {|a| STDERR.puts  }
-
-
 
 require "gridflow/base/flow_objects.rb"

@@ -158,6 +158,7 @@ class GridPrint < GridFlow::GridObject
 		super # don't forget super!!!
 		if name then @name = name.to_s+": " else @name="" end
 		@base=10; @format="d"
+		@trunc=70
 	end
 
 	def _0_base(x)
@@ -168,6 +169,11 @@ class GridPrint < GridFlow::GridObject
 		when 16; @format="x"
 		else raise "base #{x} not supported" end
 		@base = x
+	end
+
+	def _0_trunc(x)
+		0..240===x or raise "out of range (not in 0..240 range)"
+		@trunc = x
 	end
 
 	def make_columns udata
@@ -216,28 +222,29 @@ class GridPrint < GridFlow::GridObject
 			end
 		elsif @dim.length == 3 then
 			GridFlow.post head
-			udata = unpack @data
-			make_columns udata
-			sz = udata.length/@dim[0]
+			make_columns unpack(@data)
+			sz = @data.length/@dim[0]
 			sz2 = sz/@dim[1]
 			for row in 0...@dim[0]
 				column=0; str=""
-				for column in 0...@dim[1]
-					str << "{" << dump(udata[sz*row+sz2*column,sz2]) << "} "
+				for col in 0...@dim[1]
+					str << "{" << dump(unpack(@data[sz*row+sz2*col,sz2])) << "}"
+					break if str.length>@trunc
 				end
 				GridFlow.post trunc(str)
+				(GridFlow.post "[...]"; break) if row>100
 			end
 		end
 		@data,@dim,@nt = nil
 	end
 
-	def dump udata
+	def dump(udata,sep=" ")
 		f = "%#{@columns}#{case @nt; when :float32; 'f'; else @format end}"
-		udata.map{|x| sprintf f,x }.join(" ")
+		udata.map{|x| sprintf f,x }.join sep
 	end
 
 	def trunc s
-		if s.length>240 then s[0...240]+" [...]" else s end
+		if s.length>@trunc then s[0...@trunc]+" [...]" else s end
 	end
 
 	install_rgrid 0, true
@@ -430,6 +437,22 @@ class GreyscaleToRGB < FPatcher
   install "@greyscale_to_rgb", 1, 1
 end
 
+class RGBtoYUV < FPatcher
+  FObjects = ["@inner * + 0 {3 3 # 76 -44 128 150 -85 -108 29 128 -21}",
+  "@ >> 8","@ + {0 128 128}"]
+  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+  def initialize() super(FObjects,Wires,1) end
+  install "@rgb_to_yuv", 1, 1
+end
+
+class YUVtoRGB < FPatcher
+  FObjects = ["@ - {0 128 128}",
+  "@inner * + 0 {3 3 # 256 256 256 0 -88 454 358 -183 0}","@ >> 8"]
+  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+  def initialize() super(FObjects,Wires,1) end
+  install "@yuv_to_rgb", 1, 1
+end
+
 class GridApplyColormapChannelwise < FPatcher
 	FObjects = ["@outer & {-1 0}","@ + {3 2 # 0 0 0 1 0 2}","@store"]
 	Wires = [-1,1,2,1,2,0,-1,0]
@@ -456,38 +479,6 @@ class GridRemapImage < FPatcher
 end
 
 #-------- fClasses for: jMax compatibility
-
-# this is the demo and test for Ruby->jMax bridge
-# FObject is a flow-object as found in jMax
-# _0_bang means bang message on inlet 0
-# FObject#send_out sends a message through an outlet
-class RubyFor < GridFlow::FObject
-	attr_accessor :start, :stop, :step
-	def initialize(start,stop,step)
-		raise ArgumentError, "@start not integer" unless Integer===start
-		raise ArgumentError, "@stop not integer" unless Integer===stop
-		raise ArgumentError, "@step not integer" unless Integer===step
-		@start,@stop,@step = start,stop,step
-	end
-	def _0_bang
-		x = start
-		if step > 0
-			(send_out 0, x; x += step) while x < stop
-		elsif step < 0
-			(send_out 0, x; x += step) while x > stop
-		end
-	end
-	def _0_int(x)
-		self.start = x
-		_0_bang
-	end
-	alias :_1_int :stop=
-	alias :_2_int :step=
-
-	# FObject.install(name, inlets, outlets)
-	# no support for metaclasses yet
-	install "rubyfor", 3, 1
-end
 
 class JMaxUDPSend < FObject
 	def initialize(host,port)
@@ -590,7 +581,7 @@ if GridFlow.bridge_name != "jmax"
 	end
 end
 
-if GridFlow.bridge_name == nil
+unless GridFlow.bridge_name =~ /jmax/
 	class Button < FObject
 		def method_missing(*) send_out 0 end
 		install "button", 1, 1
@@ -605,8 +596,9 @@ if GridFlow.bridge_name == nil
 #		install "slider", 1, 1
 #	end
 	class JPatcher < FObject
-		def initialize
+		def initialize(*a)
 			super
+			#STDERR.puts "JPATCHER: #{a.inspect}"
 			@subobjects = {}
 		end
 		attr_accessor :subobjects
@@ -625,6 +617,43 @@ if GridFlow.bridge_name == nil
 		def append(*argv) @argv<<argv; end
 		install "messbox", 1, 1
 	end
-end # if "jmax"
+
+# this is the demo and test for Ruby->jMax bridge
+# FObject is a flow-object as found in jMax
+# _0_bang means bang message on inlet 0
+# FObject#send_out sends a message through an outlet
+class RubyFor < GridFlow::FObject
+	attr_accessor :start, :stop, :step
+	def cast(key,val)
+		val = Integer(val) if Float===val
+		raise ArgumentError, "#{key} isn't a number" unless Integer===val
+	end
+	def initialize(start,stop,step)
+		super
+		cast("start",start)
+		cast("stop",stop)
+		cast("step",step)
+		@start,@stop,@step = start,stop,step
+	end
+	def _0_bang
+		x = start
+		if step > 0
+			(send_out 0, x; x += step) while x < stop
+		elsif step < 0
+			(send_out 0, x; x += step) while x > stop
+		end
+	end
+	def _0_int(x)
+		self.start = x
+		_0_bang
+	end
+	alias :_1_int :stop=
+	alias :_2_int :step=
+
+	# FObject.install(name, inlets, outlets)
+	# no support for metaclasses yet
+	install "for", 3, 1
+end
+end # if not =~ jmax
 
 end # module GridFlow
