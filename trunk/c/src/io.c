@@ -232,13 +232,13 @@ METHOD(GridOut,init) {
 	$->in[0] = GridInlet_NEW3($,GridOut,0);
 	if (ac>1) {
 		fts_atom_t at2[3];
-		fts_set_symbol(at2+0,SYM(here));
-		fts_set_symbol(at2+1,SYM(x11));
+		fts_set_symbol(at2+0,SYM(x11));
+		fts_set_symbol(at2+1,SYM(here));
 		GridOut_open($,winlet,selector,2,at2);
 		fts_set_symbol(at2+0,SYM(out_size));
 		fts_set_int(at2+1,GET(1,int,0));
 		fts_set_int(at2+2,GET(2,int,0));
-		GridOut_open($,winlet,selector,3,at2);
+		GridOut_option($,winlet,selector,3,at2);
 	}
 }
 

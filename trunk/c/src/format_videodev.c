@@ -521,9 +521,8 @@ FormatClass class_FormatVideoDev = {
 	symbol_name: "videodev",
 	long_name: "Video4linux 1.x",
 	flags: (FormatFlags)0,
-	open: FormatVideoDev_open,
-	chain_to: 0,
 
+	open: FormatVideoDev_open,
 	frames: 0,
 	frame:  FormatVideoDev_frame,
 	begin:  GRID_BEGIN_PTR(FormatVideoDev,0),

@@ -98,6 +98,7 @@ GRID_BEGIN(FormatPPM,0) {
 	return true;
 }
 
+/* !@#$ use BitPacking here */
 GRID_FLOW(FormatPPM,0) {
 	uint8 data2[n];
 	int i;
@@ -123,8 +124,10 @@ Format *FormatPPM_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 	$->stream = 0;
 	$->bstream = 0;
 
-	if (ac!=1) { whine("usage: ppm filename"); goto err; }
-	filename = fts_symbol_name(fts_get_symbol(at+0));
+	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
+		whine("usage: ppm file <filename>"); goto err;
+	}
+	filename = fts_symbol_name(fts_get_symbol(at+1));
 
 	switch(mode) {
 	case 4: case 2: break;
@@ -148,7 +151,6 @@ FormatClass class_FormatPPM = {
 	flags: (FormatFlags)0,
 
 	open: FormatPPM_open,
-	chain_to: 0,
 
 	frames: 0,
 	frame:  FormatPPM_frame,

@@ -638,15 +638,11 @@ FormatClass class_FormatX11 = {
 	flags: (FormatFlags)0,
 
 	open: FormatX11_open,
-	chain_to: 0,
-
 	frames: 0,
 	frame:  FormatX11_frame,
-
 	begin:  GRID_BEGIN_PTR(FormatX11,0),
 	flow:    GRID_FLOW_PTR(FormatX11,0),
 	end:      GRID_END_PTR(FormatX11,0),
-
 	option: FormatX11_option,
 	close:  FormatX11_close,
 };
