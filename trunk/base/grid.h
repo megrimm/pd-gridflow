@@ -68,10 +68,16 @@ extern "C" {
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
-#define COPY(_dest_,_src_,_n_) gfmemcopy((uint8*)(_dest_),(uint8*)(_src_),(_n_)*sizeof(*(_dest_)))
-#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
+#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
+
+#define WATCH(n,ar) { \
+	char foo[16*1024], *p=foo; \
+	p += sprintf(p,"%s: ",#ar); \
+	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",ar[q]); \
+	gfpost("%s",foo); \
+}
 
 /* we're gonna override assert, so load it first, to avoid conflicts */
 #include <assert.h>
@@ -307,6 +313,19 @@ public:
 	(Pt<_type_>((_type_ *)new _type_[_count_],_count_))
 
 /* **************************************************************** */
+/* some basic memory handling */
+
+#define COPY(_dest_,_src_,_n_) gfmemcopy((uint8*)(_dest_),(uint8*)(_src_),(_n_)*sizeof(*(_dest_)))
+#define CLEAR(_dest_,_n_) memset((_dest_),0,(_n_)*sizeof(*(_dest_)))
+void gfmemcopy(uint8 *out, const uint8 *in, int n);
+template <class T> static void memswap (T *a, T *b, int n) {
+	T c[n];
+	COPY(c,a,n);
+	COPY(a,b,n);
+	COPY(b,c,n);
+}
+
+/* **************************************************************** */
 
 #define DECL_SYM(_sym_) extern "C" Ruby/*Symbol*/ sym_##_sym_;
 
@@ -449,7 +468,7 @@ struct Operator2On {
 	Number neutral;
 */
 	void (*op_map)(int,T*,T);
-	void (*op_map2)(int,T*,T*);
+	void (*op_zip)(int,T*,T*);
 	T    (*op_fold)(T,int,T*);
 	void (*op_fold2)(int,T*,int,T*);
 	void (*op_scan)(T,int,T*);
@@ -747,7 +766,5 @@ void *Pointer_get (Ruby self);
 Ruby ruby_c_install(GridClass *gc, Ruby super);
 
 extern "C" void Init_gridflow () /*throws Exception*/;
-
-void gfmemcopy(uint8 *out, const uint8 *in, int n);
 
 #endif /* __GF_GRID_H */

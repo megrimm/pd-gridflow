@@ -69,6 +69,18 @@ def test_math
 		a.send_in 1, 10
 		a.send_in 0, 1,2,4,8 }
 
+	(a = FObject["@ / 3"]).connect 0,e,0
+	x.expect([-2,-1,-1,-1,0,0,0,0,0,1,1,1,2]) { a.send_in(0, *(-6..6).to_a) }
+
+	(a = FObject["@ div 3"]).connect 0,e,0
+	x.expect([-2,-2,-2,-1,-1,-1,0,0,0,1,1,1,2]) { a.send_in(0, *(-6..6).to_a) }
+
+	(a = FObject["@ ignore 42"]).connect 0,e,0
+	x.expect((-6..6).to_a) { a.send_in(0, *(-6..6).to_a) }
+
+	(a = FObject["@ put 42"]).connect 0,e,0
+	x.expect([42]*13) { a.send_in(0, *(-6..6).to_a) }
+
 	(a = FObject["@! abs"]).connect 0,e,0
 	x.expect([2,3,5,7]) {
 		a.send_in 0, -2,3,-5,7 }
@@ -561,24 +573,40 @@ def test_sound
 	}
 end
 
+include Math
 def test_polygon
 	o1 = FObject["@for 0 5 1"]
 	o2 = FObject["@ * 14400"]
 	o3 = FObject["@outer + {0 9000}"]
-	o4 = FObject["@ cos* 60"]
-	o5 = FObject["@ + {120 160}"]
-	poly = FObject["@polygon {3 # 255}"]
+	o4 = FObject["@ +"]
+	o5 = FObject["@ cos* 112"]
+	o6 = FObject["@ + {120 160}"]
+	poly = FObject["@draw_polygon + {3 # 255}"]
 	out = FObject["@out x11"]
+	store = FObject["@store"]; store.send_in 1, "240 320 3 # 0"
+	store2 = FObject["@store"]
+	store.connect 0,poly,0
+	poly.connect 0,store2,1
+	store2.connect 0,store,1
 	o1.connect 0,o2,0
 	o2.connect 0,o3,0
 	o3.connect 0,o4,0
 	o4.connect 0,o5,0
-	o5.connect 0,poly,2
-	o6 = FObject["@print"]
 	o5.connect 0,o6,0
+	o6.connect 0,poly,2
 	poly.connect 0,out,0
-	o1.send_in 0
-	poly.send_in 0, "240 320 3 # 0"
+	x=0
+	GridFlow.verbose=false
+	task=proc {
+		o4.send_in 1, 5000*x
+		poly.send_in 1, *(0..2).map{|i| 16+16*cos(.2*x+i*PI*2/3) }
+		o1.send_in 0
+		store.send_in 0
+		store2.send_in 0
+		x+=1
+		$mainloop.timers.after(.0) {task[]}
+	}
+	task[]
 	$mainloop.loop
 end
 
