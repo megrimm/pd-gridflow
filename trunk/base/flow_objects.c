@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -189,7 +189,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 }
 
 \def void _0_reset() {
-	if (out[0]->is_busy()) out[0]->abort();
+	STACK_ARRAY(int32,foo,1);
+	while (out[0]->is_busy()) out[0]->send(1,foo);
 }
 
 GRCLASS(GridImport,LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
@@ -778,11 +779,8 @@ struct GridInner : GridObject {
 	\attr Numop2 *op_fold;
 	\attr Grid seed;
 	Grid r;
-
-	bool transpose;
 	Grid r2;
-	
-	GridInner() { transpose=false; }
+	GridInner() {}
 	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
 	GRINLET3(0);
 	GRINLET3(2);
@@ -849,25 +847,6 @@ GRID_INLET(GridInner,0) {
 	r2.del();
 } GRID_END
 
-template <class T> void GridInner::process_right(T bogus) {
-	if (!transpose) return;
-	int n = r.dim->n;
-	int rrows = r.dim->get(n-1);
-	int rsize = r.dim->prod();
-	if (rrows==0) RAISE("transpose: rows=0 ???");
-	int rcols = rsize/rrows;
-	STACK_ARRAY(int32,v,n);
-	for (int i=0; i<n-1; i++) v[i+1]=r.dim->v[i];
-	v[0]=r.dim->v[n-1];
-	Pt<T> rdata = (Pt<T>)r;
-	STACK_ARRAY(T,r2data,r.dim->prod());
-	for (int i=0; i<rrows; i++) {
-		for (int j=0; j<rcols; j++) r2data[i*rcols+j] = rdata[j*rrows+i];
-	}
-	r.init(new Dim(n,v),r.nt);
-	COPY((Pt<T>)r,r2data,rsize);
-}
-
 GRID_INPUT(GridInner,2,r) {
 	process_right((T)0);
 } GRID_END
@@ -888,31 +867,6 @@ GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 ) { IEVAL(rself,"install '@inner',3,1"); }
 
 \end class GridInner
-
-/* **************************************************************** */
-
-\class GridInner2 < GridInner
-struct GridInner2 : GridInner {
-	GridInner2() { transpose=true; }
-	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
-};
-
-\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
-	rb_call_super(argc,argv);
-	this->op_para = op_para;
-	this->op_fold = op_fold;
-	if (seed) this->seed.swallow(seed); // this->seed = *seed;
-	if (r) this->r.swallow(r); else this->r.init_clear(new Dim(0,0), int32_type_i);
-#define FOO(T) process_right((T)0);
-		TYPESWITCH(this->r.nt,FOO,)
-#undef FOO
-}
-
-GRCLASS(GridInner2,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
-	\grdecl
-) { IEVAL(rself,"install '@inner2',3,1"); }
-
-\end class GridInner2
 
 /* **************************************************************** */
 
