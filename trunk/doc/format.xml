@@ -4,24 +4,24 @@
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Format Handler Reference
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 -->
 
 <section name="Objects for Input/Output">
 
 	<class name="@in">
-		<icon text="[@in]"/>
-		<help text="[@in]" image="@inout"/>
+		<icon text="[#in]"/>
+		<help text="[#in]" image="#inout"/>
 
 		<method name="init" min="0">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 
 			If no arguments given, creates an input object for an unspecified
-			format. You then need to use the <k>open</k> command to link
+			format. You then need to use the <k>"open"</k> command to link
 			a format handler to it.
 
-			If arguments given, the <k>open</k> command is immediately called
+			If arguments given, the <k>"open"</k> command is immediately called
 			with those arguments.
 
 			Remember that most formats produce Dim[rows,columns,3] grids with
@@ -33,7 +33,7 @@
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 				This is the command that gives a particular resource
-				to a @out object. This is done through a "format"
+				to a <k>[#out]</k> object. This is done through a "format"
 				(there is a list of formats in this manual). The other
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
@@ -43,11 +43,11 @@
 			</method>
 			<method name="open">
 				<arg name="filename"/>
-				This is a shortcut for "open file" followed by a filename.
+				This is a shortcut for <k>"open file"</k> followed by a filename.
 				The filename must contain a dot, else it will be seen as a handler name.
 			</method>
 			<method name="close">
-				close may be necessary if you operate on "/dev/video",
+				close may be necessary if you operate on <k>"/dev/video"</k>,
 				which can only be read by one at a time. otherwise it's
 				usually not necessary.
 			</method>
@@ -105,18 +105,18 @@
 	</class>
 
 	<class name="@out">
-		<icon text="[@out]"/>
-		<help text="[@out]" image="@inout"/>
+		<icon text="[#out]"/>
+		<help text="[#out]" image="#inout"/>
 
 		<method name="init" min="0">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 
 			If no arguments given, creates an output object for an unspecified
-			format. You then need to use the <k>open</k> command to link
+			format. You then need to use the <k>"open"</k> command to link
 			a format handler to it.
 
-			If arguments given, the <k>open</k> command is immediately called
+			If arguments given, the <k>"open"</k> command is immediately called
 			with those arguments.
 
 			Remember that most formats expect dim(rows,columns,3) grids with
@@ -126,15 +126,15 @@
 			<arg name="rows" type="integer"/>
 			<arg name="columns" type="integer"/>
 
-			This alternate way to create an @out automatically calls
-			"open x11 here" and "out_size <i>rows columns</i>".
+			This alternate way to create an <k>[#out]</k> automatically calls
+			<k>"open window"</k> and <k>"out_size <i>rows columns</i>"</k>.
 		</method>
 		<inlet id="0">
 			<method name="open" min="1">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
 				This is the command that gives a particular resource
-				to a @out object. This is done through a "format"
+				to a <k>[#out]</k> object. This is done through a "format"
 				(there is a list of formats in this manual). The other
 				arguments depend on the chosen format. The format may
 				be a file format or a protocol or a hardware device, etc.
@@ -185,22 +185,22 @@
 	
 	<class name="#peephole">
 		<p>
-		This object class only works with a X11-based version of Pd or jMax.
+		This object class only works with a X11-based version of Pd.
 		(e.g. on Linux, BSD, but not MacOS X).
 		</p>
-		<p>Similar to [@out x11], except it creates an inset in the patch you put it
+		<p>Similar to <k>[#out window]</k>, except it creates an inset in the patch you put it
 		in, and a scaled version of the picture appears in the inset. It also emits the same messages
-		as [@out x11] and automatically scales cursor position according to the current scale factor.
+		as <k>[#out window]</k> and automatically scales cursor position according to the current scale factor.
 		The scale factor is decided automatically.
 		</p>
 		<method name="init">
 			<arg name="height" type="int"/>
 			<arg name="width" type="int"/>
 		</method>
-		<p>All other methods are as in [@out x11].</p>
+		<p>All other methods are as in <k>[#out window]</k>.</p>
 	</class>
 	<class name="#mouse">
-		This will process the "position" messages emitted by [@out] or [#peephole] in
+		This will process the "position" messages emitted by <k>[#out]</k> or <k>[#peephole]</k> in
 		useful ways.
 		<outlet id="0"><method name="list">
 			y,x coords of a click
@@ -222,15 +222,15 @@
 		</method></outlet>
 	</class>
 	<class name="#camera">
-		Works about like [@in videodev] except you can right-click-open it to access all of the
+		Works about like <k>[#in videodev]</k> except you can right-click-open it to access all of the
 		camera settings visually.
 	</class>
 </section>
 
 <section name="Picture/Movie Formats">
 
-	<class name="format ppm @in/@out">
-		<icon image="format_ppm" text="[open ppm file filename.ppm]"/>
+	<class name="format ppm #in/#out">
+		<icon image="format_ppm" text="[open filename.ppm]"/>
 
 		<p>Subformat P6 only.
 		Max-number can only be 255 (24-bit RGB).
@@ -239,7 +239,7 @@
 		<method name="open ppm file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 
 		<method name="open ppm gzfile">
@@ -253,14 +253,14 @@
 		</method>
 	</class>
 
-	<class name="format targa @in/@out">
-		<icon image="format_targa" text="[open targa file filename.tga]"/>
+	<class name="format targa #in/#out">
+		<icon image="format_targa" text="[open filename.tga]"/>
 		<p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p>
 
 		<method name="open targa file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 
 		<method name="open targa gzfile">
@@ -272,14 +272,14 @@
 		<method name="grid"><arg name="grid" type="grid(rows columns 4)"/>RGBA-32</method>
 	</class>
 
-	<class name="format jpeg @in/@out">
-		<!--<icon image="format_jpeg" text="[open jpeg file foo.jpg]"/>-->
+	<class name="format jpeg #in/#out">
+		<!--<icon image="format_jpeg" text="[open foo.jpg]"/>-->
 		<p>Support for RGB non-progressive</p>
 		
 		<method name="open jpeg file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 
 		<method name="grid">
@@ -287,14 +287,14 @@
 		</method>
 	</class>
 
-	<class name="format png @in">
-		<!--<icon image="format_jpeg" text="[open jpeg file foo.jpg]"/>-->
+	<class name="format png #in">
+		<!--<icon image="format_jpeg" text="[open foo.jpg]"/>-->
 		<p>Support for RGB non-progressive</p>
 		
 		<method name="open png file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 
 		<method name="grid"><arg name="grid" type="grid(rows columns 1)"/>Y-8 (greyscale)</method>
@@ -303,7 +303,7 @@
 		<method name="grid"><arg name="grid" type="grid(rows columns 4)"/>RGBA-32 (colour and transparency)</method>
 	</class>
 
-	<class name="format quicktime @in/@out">
+	<class name="format quicktime #in/#out">
 		<p>Support for .mov files.</p>
 		<p>This format supports frame-seek and frame-tell.</p>
 		<p>Uses the HW-QuickTime library aka QuickTime4Linux
@@ -323,7 +323,7 @@
 			Some other values may allowed, depending on the version of the library
 			and which codec plugins are installed.
 			Must be set before the first frame is written.
-			only applies to @out. Choosing a codec is important
+			only applies to <k>[#out]</k>. Choosing a codec is important
 			because codecs influence greatly the speed of
 			encoding, the speed of decoding,
 			the size of the written file, and its fidelity to the
@@ -334,7 +334,7 @@
 			<arg name="key" type="symbol"/>
 			<arg name="value" type="int"/>
 			Sets special codec-specific settings.
-			For example: <k>parameter jpeg_quality 75</k>
+			For example: <k>"parameter jpeg_quality 75"</k>
 		</method>
 		<method name="framerate">
 			<arg name="fps" type="int"/>
@@ -382,18 +382,18 @@
 		<method name="open mpeg file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 	</class>
 
-	<class name="format grid @in/@out">
+	<class name="format grid #in/#out">
 		<icon image="format_grid" text="[open grid file filename.grid]"/>
 		<icon image="format_grid_tcp" text="[open grid tcp artengine.ca 4242]"/>
 		<icon image="format_grid_tcpserver" text="[open grid tcpserver 4242]"/>
 
 		<p>
 		This is GridFlow's special file format. This is the only I/O
-		format that can hold anything that the [@store] object can.
+		format that can hold anything that the <k>[#store]</k> object can.
 		</p>
 		<p>
 		This is the picture format that would support TCP connections
@@ -403,7 +403,7 @@
 		<method name="open grid file">
 			<arg name="filename" type="symbol"/>
 			opens the specified file, taken from the current
-			directory or one of the jMax-specified data directories.
+			directory.
 		</method>
 		<method name="open grid gzfile">
 			<arg name="filename" type="symbol"/>
@@ -464,8 +464,8 @@
 
 <section name="Acquisition Devices">
 
-	<class name="format videodev @in">
-		<icon image="format_videodev" text="[open videodev /dev/video0]"/>
+	<class name="format videodev #in">
+		<icon image="format_videodev" text="[open /dev/video0]"/>
 
 		<method name="open">
 			<arg name="device"/>
@@ -480,13 +480,13 @@
 		works better.</p>
 
 		<p>Some hardware doesn't support RGB, so you may have to select a YUV colorspace
-		(see below) and then use <k>[@yuv_to_rgb]</k>. Don't forget to also do
-		<k>[@ min 255]</k> and <k>[@ max 0]</k>.
+		(see below) and then use <k>[#yuv_to_rgb]</k>. Don't forget to also do
+		<k>[# min 255]</k> and <k>[# max 0]</k>.
 		</p>
 
 		<p>If for some reason there's a bug that causes a driver to produce BGR instead of RGB,
 		so that red and blue are swapped, you can swap them back by filtering through a RGB-BGR
-		converter, such as <k>[@inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</k>.</p>
+		converter, such as <k>[#inner * + 0 {3 3 # 0 0 1 0 1 0 1 0 0}]</k>.</p>
 
 		<p>color adjustments:
 		<method name="brightness"><arg name="level" type="0-65535"/></method>
@@ -543,8 +543,8 @@
 
 <section name="Window Output">
 
-	<class name="format x11 @in/@out">
-		<icon image="format_x11" text="[open x11 here]"/>
+	<class name="format x11 #in/#out">
+		<icon image="format_x11" text="[open window]"/>
 		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
 
 		<p>supports 15,16,24,32-bit truecolor displays</p>
@@ -581,7 +581,7 @@
 			<arg name="host_name" type="symbol"/>
 			<arg name="display_number" type="integer"/>
 			connects to a remote X11 display server using TCP.
-			Sorry, IP addresses are not supported (jMax limitation).
+			Sorry, IP addresses are not supported.
 			Port number will be 6000 plus the display number, because
 			of the X11 standard.
 		</method>
@@ -597,12 +597,10 @@
 
 		<p>
 		Destroying the object (or sending "close") should close the window.
-		Because of how jMax works,
-		this may be delayed until you do something else.
 		</p>
 
 		<p>because of the design of Xlib, or if any of the connections
-		involved crashes, then the whole program (fts) has to be terminated.
+		involved crashes, then the whole program has to be terminated.
 		(don't you love xlib). Something similar happens if you close any
 		of the windows yourself, but IIRC this could be fixed.</p>
 
@@ -610,7 +608,7 @@
 		this doesn't reduce flexibility).</p>
 
 		<p>there is an additional argument that may be added to every
-		"open" message; if you don't put it, a new toplevel window is created.
+		<k>"open"</k> message; if you don't put it, a new toplevel window is created.
 		if you put "root" then the screen's wallpaper will be used instead
 		(it may fail to work with some popular window managers). You can also
 		put a window number, e.g. <k>0x28003ff</k>, you may connect to
@@ -709,7 +707,7 @@
 		</outlet>
 	</class>
 
-	<class name="format quartz @out">
+	<class name="format quartz #out">
 		<method name="open">
 			opens a dim(240,320,3) rgb window (default).
 		</method>
@@ -719,7 +717,7 @@
 		</method>
 	</class>
 
-	<class name="format sdl @out">
+	<class name="format sdl #out">
 		<method name="open">
 			Opens a dim(240,320,3) rgb window (default).
 		</method>
@@ -729,7 +727,7 @@
 		</method>
 	</class>
 
-	<class name="format aalib @out">
+	<class name="format aalib #out">
 		<method name="open aalib">
 			<arg name="driver">
 				Normally "X11" with uppercase X; else consult
@@ -769,7 +767,7 @@
 		</method>
 	</class>
 
-	<class name="format window @out">
+	<class name="format window #out">
 		<method name="open window">
 			Equivalent to "open x11", but this can be set by putting a line like
 			this in the config file: <k>GridFlow.formats[:window] = GridFlow.formats[:x11]</k>

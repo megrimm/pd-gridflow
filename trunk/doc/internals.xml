@@ -4,31 +4,29 @@
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Internals
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 -->
 <section name="notes">
 
 <p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the
 constants it defines are part of that namespace.</p>
-<p>Ruby does not have the same concept of object as PD or jMax does. In GridFlow, object classes may
+<p>Ruby does not have the same concept of object as PD. In GridFlow, object classes may
 inherit features from other object classes, and also there is no concept of inlet nor outlet, which are instead
 provided by <k>GridFlow::FObject</k>, which also has the purpose of exporting functionality to
-PD or jMax, whichever is present.</p>
+PD.</p>
 <p>In this document (and in many others) the phrase "a Potato" will be a shorthand for "an object of the class
 called Potato", which is often used in modern software design and is a nice convention borrowed from
 biology.</p>
-<p>A FObject is normally in two or three parts: a (Ruby) GridFlow::FObject that is the central part; a
-(C++) FObject; a (C++/jMax) BFObject. The GridFlow::FObject is created as a
+<p>A FObject is normally in two: a (Ruby) GridFlow::FObject that is the central part and a
+(C++) FObject. The GridFlow::FObject is created as a
 RData kind of box (T_DATA) using Ruby-C's Data_Make_Struct on a GridObject. This is how
 most Ruby-C programs inherit from Ruby classes. Note that Ruby's boxed objects
 have a maximum of five fields, and they're usually taken, so additional fields
 have to be outside of it. This is why RData exists.</p>
 
 <p>So basically you have a C++ FObject that is "part of" a GridFlow::FObject and
-they point to each other using "peer pointers". Now, if jMax is enabled, then the
-GridObject will have an additional pointer to a fts_object_t derivative called
-BFObject (B for Bridge); that pointer is called foreign_peer. The BFObject
-links back to the RData box through another pointer called peer. </p>
+they point to each other using "peer pointers". 
+</p>
 
 </section>
 
@@ -106,8 +104,7 @@ links back to the RData box through another pointer called peer. </p>
 	</class>
 
 	<class name="ruby FPatcher extending FObject">
-		<p>This class is much like jMax's templates and subpatchers and
-		PureData's abstractions.</p>
+		<p>This class is much like PureData's abstractions.</p>
 		<p>This is a container for objects. Its proper objects are numbered
 		starting with zero. The wire list is given in terms of those numbers:
 		(sourceobject,sourceinlet,destobject,destinlet). There is a
@@ -170,7 +167,7 @@ links back to the RData box through another pointer called peer. </p>
 			<arg name="b" type="T"/>
 			for i in 0...n,
 			as[i] := f(as[i],b);
-			This is like [@] with a scalar righthand
+			This is like <k>[#]</k> with a scalar righthand
 		</method>
 
 		<method name="zip">
@@ -180,7 +177,7 @@ links back to the RData box through another pointer called peer. </p>
 			for i in 0...n,
 			as[i] := f(as[i],bs[i]);
 			bs is not modified.
-			(This is like [@] with a nonscalar righthand)
+			(This is like <k>[#]</k> with a nonscalar righthand)
 		</method>
 
 		<method name="fold">
@@ -195,7 +192,7 @@ links back to the RData box through another pointer called peer. </p>
 			as[j] := f(as[j],bs[i*an+j]);
 			</p>
 
-			(this is like @fold)
+			(this is like <k>[#fold]</k>)
 		</method>
 
 		<method name="scan">
@@ -208,7 +205,7 @@ links back to the RData box through another pointer called peer. </p>
 			<p> for i in 1...n: for j in 0...an:
 				bs[j] := f(bs[(i-1)*an+j],bs[i*an+j]); </p>
 
-			(this is like @scan)
+			(this is like <k>[#scan]</k>)
 		</method>
 	</class>
 
@@ -217,7 +214,7 @@ links back to the RData box through another pointer called peer. </p>
 	</class>
 
 	<class name="C++ class GFBridge">
-		This holds linkage information about jMax and PureData and such.
+		This holds linkage information about PureData.
 	</class>
 
 </section>

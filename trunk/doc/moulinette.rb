@@ -3,7 +3,7 @@
 	convert GridFlow Documentation XML to HTML with special formatting.
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -552,7 +552,7 @@ puts <<EOF
 <tr><td colspan="4"> 
 <p><font size="-1">
 GridFlow #{GF_VERSION} Documentation<br>
-Copyright &copy; 2001,2002,2003,2004 by Mathieu Bouchard
+Copyright &copy; 2001,2002,2003,2004,2005 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
