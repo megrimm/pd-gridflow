@@ -1,17 +1,72 @@
 /* $Id$ */
 
+--- make the development process more test-driven.
+    --- *Especially* the debugging process.
+
+Bugs (High Priority)
+[ ] linear_transform.jmax crashes
+[ ] problem in @for with zero-sized grids?
+[ ] @for has a bug re negative step
+[ ] format_grid: write test for other bpv's
+[ ] latency is not that good. (GC ?)
+[ ] tcp test is broken
+[ ] @export doesn't work in pd
+[ ] /opt/lib/ruby/site_ruby/1.8/gridflow/format/main.rb:198:in `initialize':
+    got String instead of Symbol in FormatMPEG3::initialize(Symbol mode ,
+    Symbol source , Symbol filename ) (ArgumentError) 
+[ ] @join with empty input
+[ ] too many open files (eg: jpeg writing)
+[ ] FormatGrid: not properly tested (crashes sometimes)
+[ ] stdout should be redirected if bridge is present
+
+Bugs (Low Priority)
+[ ] format_x11 causes delayed crash when closing its associated window
+[ ] format_x11 causes crash (resizing + shm, sometimes)
+[ ] TCP server socket busy even after kill
+[ ] make better detection of libmpeg version
+[ ] detect and reject .a linkage
+[ ] write unit tests about required functionality
+[ ] write unit tests about error checking
+[ ] Window does not close when @out is destroyed
+[ ] format/mpeg.c seems to crash more often?
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[ ] potential issues between fork() and X11 ?
+[ ] don't try resizing the window before it opens (???) (loadbang?)
+[ ] [@export_list] blows up with >=125 elements (alx)
+[ ] doc/moulinette.rb crashes with ruby 1.8
+[ ] Format#init stopped initializing dim,bit_packing
+	(there may be bugs dating back to that change)
+[ ] cvs is not listed in the manual itself
+[ ] BitPacking has trouble with masks that extend beyond int25be
+[ ] remove the crap given by -w of ruby
+[ ] make: Dépendance circulaire site-install <- install abandonnée.
+	(with ruby 1.8)
+[ ] @in needs 2 inlets to work but should have only one.
+[ ] it's possible to crash by sending data in two inlets of a same object at once
+[ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
+[ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
+[ ] RtMetro crashes if deleted while turned on.
+[ ] RtMetro isn't reliably working
+[ ] jpeg file cat crashes on second file (jpeglib buffering?)
+[ ] videodev stays busy after closing patch ?
+[ ] GRID_FINISH triggered while backstore ???
+[ ] fts_class_install failed: Duplicated metaclass
+[ ] ruby SecurityError: Insecure operation - exist?
+	(trying to load ~/.gridflow_startup)
+	(this is one error message from HELL; makes no sense at all)
+[ ] is there still a problem with videodev rgb vs bgr ?
+[ ] mess with options in format grid
+[ ] look for "!@#$" in source
+
 Community
-[ ] put new samples on website
-[ ] add on website:
-	[ ] looking for someone to take care of win32 port
-	[ ] looking for someone to take care of macosx port
+[ ] put new examples on website
 
 Distribution
 [ ] should now plan which features are pre-1.0 and which are post-1.0
 [ ] add test plan
 [ ] follow test plan
 [ ] review all documentation
-[ ] review all samples
+[ ] review all examples
 [ ] make CDs
 
 Installation
@@ -35,7 +90,6 @@ Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
     mode x11 non-supporté
 [ ] project_policy.xml
-[ ] validate samples/outside
 [ ] specify policy for <help>, <icon>, etc.
 [ ] add credits
 [ ] things you type verbatim are all in KBD blocks
@@ -52,7 +106,7 @@ Documentation
 [ ] it should be indicated whether an object is supported by jmax/pd/ruby/c++
 [ ] heavily hyperlink documentation
 [ ] automate more parts of the documentation
---- remember to keep doc/help/screenshots/samples up to date
+--- remember to keep doc/help/screenshots/examples up to date
 
 Architecture
 [ ] add \ruby \end blocks (multiline inlined rubyscripts)
@@ -66,6 +120,8 @@ Architecture
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
+[ ] op2: abs-
+[ ] remove fold/scan for ops for which it makes no sense.
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
@@ -103,6 +159,8 @@ Architecture
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] add a deprecation system
+[ ] is "pluglet" a good common word for inlet and outlet?
+[ ] interpret nested lists as n-dimensional.
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
@@ -162,6 +220,7 @@ Effects
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it @chroma_key though)
 	maybe @mask...
+[ ] FFTW
 
 Input/Output
 [ ] Grid: bpv 8,16,signed/unsigned
@@ -183,6 +242,8 @@ Input/Output
 	gridflow.
 [ ] HPGL
 [ ] unixtime
+[ ] try low-latency kernelpatch
+[ ] try preemption kernelpatch
 
 Format
 [ ] remaining number type support in formats
@@ -215,68 +276,13 @@ User Interface
 [ ] object construction menu specialized for each class
 	(generated from class reflection/metadata)
 
-Extra/Samples/Etc
-[ ] make demo app(s) in Ruby/Tk
-[ ] world domination
+Extra/Examples/Etc
+[ ] make demo app(s) in Ruby/Tk: bin/playmovie
 [ ] .pd: read; write better
 [ ] .jmax: write
 [ ] .jmax(bma2): read, write
-[ ] samples/generique.jmax
-[ ] rename samples -> examples
-[ ] add examples from the workshop
-
-Bugs
-[ ] format_x11 causes delayed crash when closing its associated window
-[ ] format_x11 causes crash (resizing + shm, sometimes)
-[ ] TCP server socket busy even after kill
-[ ] make better detection of libmpeg version
-[!] detect and reject .a linkage
-[ ] write unit tests about required functionality
-[ ] write unit tests about error checking
-[ ] Window does not close when @out is destroyed
-[ ] profiler very often gives wrong results
-[ ] format/mpeg.c seems to crash more often?
-[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
-[!] tcp test is broken
-[ ] potential issues between fork() and X11 ?
-[ ] don't try resizing the window before it opens (???) (loadbang?)
-[!] [@export_list] blows up with >=125 elements (alx)
-[ ] Format#init stopped initializing dim,bit_packing
-	(there may be bugs dating back to that change)
-[ ] cvs is not listed in the manual itself
-[ ] recurrent bug: stdout SHALL NOT be used outside of debugging
-	because it interferes with normal functioning
-[ ] format_grid: write test for other bpv's
-[ ] problem in @for with zero-sized grids?
-[ ] BitPacking has trouble with masks that extend beyond int25be
-[ ] remove the crap given by -w of ruby
-[ ] make: Dépendance circulaire site-install <- install abandonnée.
-	(with ruby 1.8)
-[ ] @in needs 2 inlets to work but should have only one.
-[ ] it's possible to crash by sending data in two inlets of a same object at once
-[ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
-[ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
-[ ] latency is not that good. (GC ?)
-[ ] RtMetro crashes if deleted while turned on.
-[ ] RtMetro isn't reliably working
-[ ] jpeg file cat crashes on second file (jpeglib buffering?)
-[ ] videodev stays busy after closing patch ?
-[ ] GRID_FINISH triggered while backstore ???
-[ ] @for has a bug re negative step
-[ ] fts_class_install failed: Duplicated metaclass
-[ ] @export doesn't work in pd
-[ ] bridge_puredata sometimes ignore clock_tick ???
-[ ] ruby SecurityError: Insecure operation - exist?
-	(trying to load ~/.gridflow_startup)
-	(this is one error message from HELL; makes no sense at all)
-[ ] is there still a problem with videodev rgb vs bgr ?
-[ ] mess with options in format grid
-[ ] look for "!@#$" in source
-[ ] @draw_polygon off-by-one
-[ ] FormatGrid: not properly tested (crashes sometimes)
-[ ] look for bugs in @yuv_to_rgb ?
-[ ] ./configure:462: command not found: jmax-config --package-dir
-[ ] too many open files (eg: jpeg writing)
+[ ] examples/generique.jmax
+[ ] add examples from the workshop, etc
 
 how about creating aliases like "open window" = "open x11 here" (or arbitrary
 user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
