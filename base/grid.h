@@ -1080,10 +1080,10 @@ struct GridOutlet {
 	int dex;  // how many numbers were already sent in this connection
 	int bufi; // number of bytes used in the buffer
 // methods
-	GridOutlet(GridObject *parent, int woutlet);
+	GridOutlet(GridObject *parent, int woutlet, Dim *dim=0, NumberTypeE nt=int32_e);
+	void begin(Dim *dim, NumberTypeE nt=int32_e);
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
-	void begin(Dim *dim, NumberTypeE nt=int32_e);
 	/* give: data must be dynamic. it should not be used by the caller
 	   beyond the call to give() */
 	template <class T> void give(int n, Pt<T> data);
@@ -1135,8 +1135,11 @@ struct FObject : CObject {
 
 \class GridObject < FObject
 struct GridObject : FObject {
+	// NEW: 0.7.8:
+	//   'out' is now not handled by GridFlow itself.
+	//   it is also not an array anymore, and left there just for convenience.
 	GridInlet  * in[MAX_INLETS];
-	GridOutlet *out[MAX_OUTLETS];
+	GridOutlet *out;
 	/* Make sure you distinguish #close/#delete, and C++'s delete. The first
 	two are quite equivalent and should never make an object "crashable".
 	C++'s delete is called by Ruby's garbage collector or by PureData's delete.

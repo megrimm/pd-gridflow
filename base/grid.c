@@ -364,11 +364,12 @@ void GridInlet::from_ruby(int argc, Ruby *argv) {
 
 /* **************** GridOutlet ************************************ */
 
-GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
+GridOutlet::GridOutlet(GridObject *parent, int woutlet, Dim *dim, NumberTypeE nt) {
+	assert(this);
 	this->parent = parent;
 	this->woutlet = woutlet;
-	nt = int32_e;
-	dim = 0;
+	this->nt = int32_e;
+	this->dim = 0;
 	dex = 0;
 	int32 v[] = {MAX_PACKET_SIZE};
 	buf.init(new Dim(1,Pt<int32>(v,1)), nt);
@@ -376,14 +377,17 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
 	ninlets = 0;
+	if (dim) {begin(dim,nt);}
 }
 
 GridOutlet::~GridOutlet() {
+	assert(this);
 	if (dim) delete dim;
 	if (inlets) delete[] inlets.p;
 }
 
 void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
+	assert(this);
 	TRACE;
 	int n = dim->count();
 	this->nt = nt;
@@ -418,6 +422,7 @@ void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 /* send modifies dex; send_direct doesn't */
 template <class T>
 void GridOutlet::send_direct(int n, Pt<T> data) {
+	assert(this);
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	CHECK_TYPE(*data);
 	for (; n>0; ) {
@@ -428,6 +433,7 @@ void GridOutlet::send_direct(int n, Pt<T> data) {
 }
 
 void GridOutlet::flush() {
+	assert(this);
 	TRACE;
 	if (!bufi) return;
 #define FOO(T) send_direct(bufi,(Pt<T>)buf);
@@ -447,6 +453,7 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 /* send modifies dex; send_direct doesn't */
 template <class T>
 void GridOutlet::send(int n, Pt<T> data) {
+	assert(this);
 	if (!n) return;
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -475,6 +482,7 @@ void GridOutlet::send(int n, Pt<T> data) {
 
 template <class T>
 void GridOutlet::give(int n, Pt<T> data) {
+	assert(this);
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	assert(dex+n <= dim->prod());
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -497,6 +505,7 @@ void GridOutlet::give(int n, Pt<T> data) {
 }
 
 void GridOutlet::callback(GridInlet *in) {
+	assert(this);
 	TRACE; CHECK_BUSY(outlet); assert(!frozen);
 	int mode = in->gh->mode;
 	assert(mode==6 || mode==4 || mode==0);
@@ -509,13 +518,13 @@ void GridOutlet::callback(GridInlet *in) {
 
 GridObject::GridObject() {
 	for (int i=0; i<MAX_INLETS;  i++) in[i]=0;
-	for (int i=0; i<MAX_OUTLETS; i++) out[i]=0;
+	out=0;
 }
 
 GridObject::~GridObject() {
 	check_magic();
 	for (int i=0; i<MAX_INLETS;  i++) if (in[i]) delete in[i], in[i]=0;
-	for (int i=0; i<MAX_OUTLETS; i++) if (out[i]) delete out[i], out[i]=0;
+	if (out) delete out, out=0;
 }
 
 \class GridObject < FObject
@@ -532,7 +541,6 @@ GridObject::~GridObject() {
 			in[gh->winlet] = new GridInlet(this,gh);
 		}
 	}
-	for (int i=0; i<noutlets; i++) out[i] = new GridOutlet(this,i);
 	rb_call_super(argc,argv);
 }
 
@@ -589,8 +597,8 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	Ruby *p = rb_ary_ptr(buf);
 	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
-	if (!out[outlet]) RAISE("outlet not found");
-	out[outlet]->begin(new Dim(n,v),nt);
+	if (!out) out = new GridOutlet(this,outlet);
+	out->begin(new Dim(n,v),nt);
 }
 
 template <class T>
@@ -602,8 +610,7 @@ void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 
 \def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
-	GridOutlet *go = out[outlet];
-#define FOO(T) send_out_grid_flow_2(go,argv[1],(T)0);
+#define FOO(T) send_out_grid_flow_2(out,argv[1],(T)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }

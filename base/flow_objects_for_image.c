@@ -141,7 +141,7 @@ GRID_INLET(GridConvolve,0) {
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
 	a.init(in->dim->dup(),in->nt);
-	out[0]->begin(da->dup(),in->nt);
+	out=new GridOutlet(this,0,da->dup(),in->nt);
 } GRID_FLOW {
 	COPY((Pt<T>)a+in->dex, data, n);
 } GRID_FINISH {
@@ -168,9 +168,10 @@ GRID_INLET(GridConvolve,0) {
 			op_fold->zip(n,buf,buf2+jx*a.dim->prod(2));
 			orh=rh;
 		}
-		out[0]->send(n,buf);
+		out->send(n,buf);
 	}
 	a.del();
+	delete out; out=0;
 } GRID_END
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
@@ -217,7 +218,7 @@ GRID_INLET(GridScaleBy,0) {
 	expect_picture(a);
 	// computing the output's size
 	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
-	out[0]->begin(new Dim(3,v),in->nt);
+	out=new GridOutlet(this,0,new Dim(3,v),in->nt);
 
 	// configuring the input format
 	in->set_factor(a->get(1)*a->get(2));
@@ -255,9 +256,10 @@ GRID_INLET(GridScaleBy,0) {
 				}
 			}
 		}
-		for (int j=0; j<scaley; j++) out[0]->send(rowsize*scalex,buf);
+		for (int j=0; j<scaley; j++) out->send(rowsize*scalex,buf);
 	}
 } GRID_FINISH {
+	delete out; out=0;
 } GRID_END
 
 static void expect_scale_factor (Dim *dim) {
@@ -307,7 +309,7 @@ GRID_INLET(GridDownscaleBy,0) {
 	Dim *a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
-	out[0]->begin(new Dim(3,v),in->nt);
+	out=new GridOutlet(this,0,new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
 //!@#$	in->set_factor(a->get(1)*a->get(2)*scaley); <- things could be easier with this
 	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
@@ -357,7 +359,7 @@ GRID_INLET(GridDownscaleBy,0) {
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
 				op2_div->map(rowsize2,buf,(T)(scalex*scaley));
-				out[0]->send(rowsize2,buf);
+				out->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}
 			data+=rowsize;
@@ -386,10 +388,11 @@ GRID_INLET(GridDownscaleBy,0) {
 					buf[p+k]=data[i+k];
 			}break;
 			}
-			out[0]->send(rowsize2,buf);
+			out->send(rowsize2,buf);
 		}
 	}
 } GRID_FINISH {
+	delete out; out=0;
 } GRID_END
 
 GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
@@ -427,7 +430,7 @@ GRID_INLET(GridLayer,0) {
 	if (a->get(1)!=r.dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r.dim->get(0)) RAISE("same height please");
 	in->set_factor(a->prod(2));
-	out[0]->begin(r.dim->dup());
+	out=new GridOutlet(this,0,r.dim->dup());
 } GRID_FLOW {
 	Pt<T> rr = ((Pt<T>)r) + in->dex*3/4;
 	STACK_ARRAY(T,foo,n*3/4);
@@ -439,8 +442,9 @@ GRID_INLET(GridLayer,0) {
 		COMPUTE_ALPHA(2,3);
 	}
 #undef COMPUTE_ALPHA
-	out[0]->send(n*3/4,foo);
+	out->send(n*3/4,foo);
 } GRID_FINISH {
+	delete out; out=0;
 } GRID_END
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
@@ -515,7 +519,7 @@ GRID_INLET(DrawPolygon,0) {
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
 	if (in->dim->get(2)!=color.dim->get(0))
 		RAISE("image does not have same number of channels as stored color");
-	out[0]->begin(in->dim->dup(),in->nt);
+	out=new GridOutlet(this,0,in->dim->dup(),in->nt);
 	lines_start = lines_stop = 0;
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int nl = polygon.dim->get(0);
@@ -542,7 +546,7 @@ GRID_INLET(DrawPolygon,0) {
 			}
 		}
 		if (lines_start == lines_stop) {
-			out[0]->send(in->factor,data);
+			out->send(in->factor,data);
 		} else {
 			int32 xl = in->dim->get(1);
 			Pt<T> data2 = ARRAY_NEW(T,in->factor);
@@ -559,13 +563,14 @@ GRID_INLET(DrawPolygon,0) {
 				while (xe-xs>=16) { op->zip(16*cn,data2+cn*xs,cd); xs+=16; }
 				op->zip((xe-xs)*cn,data2+cn*xs,cd);
 			}
-			out[0]->give(in->factor,data2);
+			out->give(in->factor,data2);
 		}
 		n-=in->factor;
 		data+=in->factor;
 		y++;
 	}
 } GRID_FINISH {
+	delete out; out=0;
 } GRID_END
 
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
@@ -670,7 +675,7 @@ GRID_INLET(DrawImage,0) {
 		RAISE("right_hand has %d channels, alpha=%d, left_hand has %d, expecting %d or %d",
 			rchan, alpha?1:0, lchan, rchan-(alpha?1:0), rchan);
 	}
-	out[0]->begin(in->dim->dup(),in->nt);
+	out=new GridOutlet(this,0,in->dim->dup(),in->nt);
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
 	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
@@ -691,12 +696,13 @@ GRID_INLET(DrawImage,0) {
 			} else {
 				draw_segment(data2,data,y-py,px);
 			}
-			out[0]->give(in->factor,data2);
+			out->give(in->factor,data2);
 		} else {
-			out[0]->send(in->factor,data);
+			out->send(in->factor,data);
 		}
 	}
 } GRID_FINISH {
+	delete out; out=0;
 } GRID_END
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END
