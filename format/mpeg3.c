@@ -97,7 +97,10 @@ METHOD(FormatMPEG3,init) {
 	$->mpeg = mpeg3_open(strdup(filename));
 	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 
-	$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
+	{
+		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+		$->bit_packing = BitPacking_new(is_le(),3,3,mask);
+	}
 }
 
 FMTCLASS(FormatMPEG3,"mpeg","Motion Picture Expert Group Format (using HeroineWarrior's)",FF_R,
