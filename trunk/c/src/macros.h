@@ -126,7 +126,8 @@
 
 #define assert_range(_var_,_lower_,_upper_) \
 	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
-		fprintf(stderr,"assertion failed: %s=%d not in (%d..%d)\n", \
+		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
+			__FILE__, __LINE__, \
 			#_var_, (_var_), (_lower_), (_upper_)); \
 		abort(); }
 

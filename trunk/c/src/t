@@ -25,7 +25,8 @@ SRC='video_out.c grid_basic.c grid.c grid.h'
 #FILE=$SAM/outside/feedback_fractal_2.jmax
 #FILE=$SAM/feedback_fractal.jmax
 #FILE=$SAM/cross_fade.jmax
- FILE=$SAM/binary_operations.jmax
+#FILE=$SAM/binary_operations.jmax
+ FILE=$SAM/export_test.jmax
 
 #export DISPLAY=:1
 ulimit -c unlimited
@@ -52,6 +53,9 @@ case $1 in
 		echo --------
 		echo $INST2
 		gdb $INST2
+	;;
+	core)
+		gdb $INST2 core
 	;;
 	#install) $JMAKE && (cd ../../../../; $JMAKE install) ;;
 	install) $JMAKE && (cd ../../; $JMAKE install) ;;

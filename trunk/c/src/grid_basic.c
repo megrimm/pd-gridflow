@@ -53,9 +53,7 @@ METHOD(GridImport,init) {
 	whine("%s",Dim_to_s($->dim));
 }
 
-METHOD(GridImport,delete) {
-	/* write me */
-}
+METHOD(GridImport,delete) { /* write me */ }
 
 METHOD(GridImport,int) {
 	Number data[] = { GET(0,int,0) };
@@ -75,7 +73,7 @@ CLASS(GridImport) {
 	fts_type_t int_alone[]  = { fts_t_int };
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,  METHOD_PTR(GridImport,init),   ARRAY(int_dims),1},
+		{-1, fts_s_init,  METHOD_PTR(GridImport,init),   ARRAY(int_dims),2},
 		{-1, fts_s_delete,METHOD_PTR(GridImport,delete), 0,0,0},
 		{ 0, fts_s_int,   METHOD_PTR(GridImport,int),    ARRAY(int_alone),-1},
 		{ 0, sym_reset,   METHOD_PTR(GridImport,reset), 0,0,-1},
@@ -101,20 +99,16 @@ CLASS(GridImport) {
 typedef struct GridExport GridExport;
 struct GridExport {
 	GridObject_FIELDS;
-	Dim *dim;
 };
 
-void GridExport_0_begin(GridInlet *$) {
-	/* norhing to do */
-}
+void GridExport_0_begin(GridInlet *$) { /* nothing to do */ }
 
 void GridExport_0_flow(GridInlet *$, int n, const Number *data) {
 	int i;
-/*	whine("grfunction(%p,%d,%p): %d",$,n,data,*data);*/
 	for (i=0; i<n; i++) {
 		fts_atom_t a[1];
 		fts_set_int(a+0,*data);
-		fts_outlet_send(OBJ($),0,fts_s_int,1,a);
+		fts_outlet_send(OBJ($->parent),0,fts_s_int,1,a);
 		data++;
 		/* grdex_incr($->out_dex); */
 	}
@@ -128,28 +122,17 @@ METHOD(GridExport,init) {
 	$->in[0] = in = GridInlet_new((GridObject *)$, 0,
 		GridExport_0_begin,
 		GridExport_0_flow);
-
-	for (i=0; i<ac-1; i++) {
-		v[i] = GET(i+1,int,0);
-		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
-	}
-	$->dim = Dim_new(ac-1,v);
-	whine("%s",Dim_to_s($->dim));
 }
 
-METHOD(GridExport,delete) {
-	/* write me */
-}
+METHOD(GridExport,delete) { /* write me */ }
 
 CLASS(GridExport) {
 	int i;
-	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol };
+	fts_type_t rien[] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridExport,init), ARRAY(int_dims),2 },
+		{-1, fts_s_init,   METHOD_PTR(GridExport,init), ARRAY(rien), -1 },
 		{-1, fts_s_delete, METHOD_PTR(GridExport,delete), 0,0,0 },
 	};
-
-	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;
 
 	/* initialize the class */
 	fts_class_init(class, sizeof(GridExport), 1, 1, 0);
@@ -291,8 +274,7 @@ METHOD(GridStore,init) {
 	$->dim  = 0;
 }
 
-METHOD(GridStore,delete) {
-}
+METHOD(GridStore,delete) { /* write me */ }
 
 METHOD(GridStore,bang) {
 	if (! $->dim || ! $->data) {
@@ -492,9 +474,7 @@ METHOD(GridOp2,init) {
 	$->op = &optable[0];
 }
 
-METHOD(GridOp2,delete) {
-	/* write me */
-}
+METHOD(GridOp2,delete) { /* write me */ }
 
 METHOD(GridOp2,rint) {
 	free($->data);
