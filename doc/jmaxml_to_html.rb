@@ -248,12 +248,14 @@ class XNode
 			next unless XNode===x
 			case x.tag
 			when "arg"
-				x.att["name"]
+				s=x.att["name"]
+				s="<i>#{x.att['type']}</i> #{s}" if x.att['type']
+				s
 			when "rest"
 				x.att["name"] + "..."
 			end
-		}.compact.join("<b>,</b>")
-		print "<b>)</b>"
+		}.compact.join("<b>, </b>")
+		print "<b>)</b> "
 		proc { print "<br>\n" }
 	end
 
@@ -302,8 +304,12 @@ class XNode
 			2.times { mk(:td) {}}
 			print "<td>"
 			print "<table border='1'>"
+			mk(:th) {
+				print(["internal name","usual name","description"].map{|x| "<td>#{x}</td>" })
+			}
 		;0)
 		print "<tr>"
+		mk(:td) { print att['cname'] }
 		mk(:td) {
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			if icon then
