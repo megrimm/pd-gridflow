@@ -117,14 +117,12 @@ METHOD3(FormatJPEG,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
-	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
-}
-
-GRCLASS(FormatJPEG,"FormatJPEG",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatJPEG,0,4)),
+GRCLASS(FormatJPEG,LIST(GRINLET2(FormatJPEG,0,4)),
 DECL(FormatJPEG,initialize),
 DECL(FormatJPEG,frame),
-DECL(FormatJPEG,close))
+DECL(FormatJPEG,close)) {
+	IEVAL(rself,
+	"install 'FormatJPEG',1,1;"
+	"include GridFlow::EventIO; conf_format 6,'jpeg','JPEG'");
+}
 

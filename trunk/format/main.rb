@@ -256,12 +256,9 @@ class GridIn < GridObject
 
 	def _0_int frame; _0_set frame; _0_bang end
 	def _0_set frame; check_file_open; @format.seek frame end
-	alias _0_float _0_int
+	def _0_reset; check_file_open; @format.seek 0; end
 
-	def _0_reset
-		check_file_open
-		@format.seek 0
-	end
+	alias _0_float _0_int
 
 	def _1_grid(*a)
 		send_out 0,:grid,*a

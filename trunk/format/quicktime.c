@@ -185,17 +185,14 @@ METHOD3(FormatQuickTime,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
-	"conf_format 6,'quicktime','Apple Quicktime (using "
-	"HeroineWarrior\\'s)'");
-}
-
-GRCLASS(FormatQuickTime,"FormatQuickTime",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatQuickTime,0,4)),
+GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
 DECL(FormatQuickTime,initialize),
 DECL(FormatQuickTime,option),
 DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),
-DECL(FormatQuickTime,close))
+DECL(FormatQuickTime,close)) {
+	IEVAL(rself,"install 'FormatQuickTime',1,1;"
+	"conf_format 6,'quicktime','Apple Quicktime (using "
+	"HeroineWarrior\\'s)'");
+}
 

@@ -167,26 +167,21 @@ METHOD3(FormatAALib,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	Ruby drivers = rb_ivar_set(self->rclass,SI(@drivers),rb_hash_new());
+GRCLASS(FormatAALib,
+LIST(GRINLET2(FormatAALib,0,4)),
+DECL(FormatAALib,initialize),
+DECL(FormatAALib,option),
+DECL(FormatAALib,close))
+{
+	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
 	const aa_driver * const *p = aa_drivers;
 	while (*p) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)),
 			PTR2FIX(*p));
 		p++;
 	}
-	
-	IEVAL(self->rclass,
-		"GridFlow.post('aalib supports: %s', "
-		"@drivers.keys.join(', '))");
-
-	IEVAL(self->rclass,
+// IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
+	IEVAL(rself,"install 'FormatAALib',1,1;"
 	"conf_format 2,'aalib','Ascii Art Library'");
 }
-
-GRCLASS(FormatAALib,"FormatAALib",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatAALib,0,4)),
-DECL(FormatAALib,initialize),
-DECL(FormatAALib,option),
-DECL(FormatAALib,close))
 

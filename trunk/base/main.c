@@ -348,13 +348,11 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return rself;
 }
 
-GRCLASS(BitPacking,"",inlets:0,outlets:0,startup:0,
-LIST(),
+GRCLASS(BitPacking,LIST(),
 	DECL(BitPacking,initialize),
 	DECL(BitPacking,pack2),
-	DECL(BitPacking,unpack2));
-
-
+	DECL(BitPacking,unpack2))
+{}
 
 /* ---------------------------------------------------------------- */
 /* The setup part */
@@ -453,14 +451,9 @@ Ruby ruby_c_install(GridClass *gc, Ruby super) {
 	Ruby rself = rb_define_class_under(mGridFlow, gc->name, super);
 	rb_ivar_set(rself,SI(@grid_class),PTR2FIX(gc));
 	define_many_methods(rself,gc->methodsn,gc->methods);
-//remember to take care of delete
-	rb_funcall(rself,SI(install),3,
-		rb_str_new2(gc->jname),
-		INT2NUM(gc->inlets),
-		INT2NUM(gc->outlets));
 	GridObject_conf_class(rself,gc);
 	gc->rclass = rself;
-	if (gc->startup) gc->startup(gc);
+	if (gc->startup) gc->startup(rself);
 	return Qnil;
 }
 

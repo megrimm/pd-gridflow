@@ -133,9 +133,9 @@ METHOD3(GridCast,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridCast,"@cast",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridCast,0,4)),
+GRCLASS(GridCast,LIST(GRINLET4(GridCast,0,4)),
 	DECL(GridCast,initialize))
+{ IEVAL(rself,"install '@cast',1,1"); }
 
 /* **************************************************************** */
 /*
@@ -216,12 +216,12 @@ METHOD3(GridImport,_0_reset) {
 	return Qnil;
 }
 
-GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
+GRCLASS(GridImport,LIST(GRINLET4(GridImport,0,4),GRINLET(GridImport,1,4)),
 	DECL(GridImport,initialize),
 	DECL(GridImport,_0_reset),
 	DECL(GridImport,_0_symbol),
 	DECL(GridImport,_1_per_message))
+{ IEVAL(rself,"install '@import',2,1"); }
 
 /* **************************************************************** */
 /*
@@ -250,9 +250,9 @@ GRID_INLET(GridExport,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridExport,"@export",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridExport,0,4)))
 /* outlet 0 not used for grids */
+GRCLASS(GridExport,LIST(GRINLET4(GridExport,0,4)))
+{ IEVAL(rself,"install '@export',1,1"); }
 
 /* **************************************************************** */
 
@@ -282,9 +282,9 @@ GRID_INLET(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); /* unkeep */
 } GRID_END
 
-GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridExportList,0,4)))
+GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 /* outlet 0 not used for grids */
+{ IEVAL(rself,"install '@export_list',1,1"); }
 
 /* **************************************************************** */
 /*
@@ -427,10 +427,10 @@ METHOD3(GridStore,_0_bang) {
 	return Qnil;
 }
 
-GRCLASS(GridStore,"@store",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
+GRCLASS(GridStore,LIST(GRINLET(GridStore,0,4),GRINLET4(GridStore,1,4)),
 	DECL(GridStore,initialize),
 	DECL(GridStore,_0_bang))
+{ IEVAL(rself,"install '@store',2,1"); }
 
 /* **************************************************************** */
 
@@ -456,9 +456,9 @@ METHOD3(GridOp1,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridOp1,"@!",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridOp1,0,6)),
+GRCLASS(GridOp1,LIST(GRINLET4(GridOp1,0,6)),
 	DECL(GridOp1,initialize))
+{ IEVAL(rself,"install '@!',1,1"); }
 
 /* **************************************************************** */
 /*
@@ -522,9 +522,9 @@ METHOD3(GridOp2,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridOp2,"@",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
+GRCLASS(GridOp2,LIST(GRINLET4(GridOp2,0,6),GRINLET4(GridOp2,1,4)),
 	DECL(GridOp2,initialize))
+{ IEVAL(rself,"install '@',2,1"); }
 
 /* **************************************************************** */
 /*
@@ -589,9 +589,9 @@ METHOD3(GridFold,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridFold,"@fold",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridFold,0,4)),
+GRCLASS(GridFold,LIST(GRINLET4(GridFold,0,4)),
 	DECL(GridFold,initialize))
+{ IEVAL(rself,"install '@fold',2,1"); }
 
 /* **************************************************************** */
 /*
@@ -649,9 +649,9 @@ METHOD3(GridScan,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridScan,"@scan",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridScan,0,4)),
+GRCLASS(GridScan,LIST(GRINLET4(GridScan,0,4)),
 	DECL(GridScan,initialize))
+{ IEVAL(rself,"install '@scan',2,1"); }
 
 /* **************************************************************** */
 /* inner: (op_para,op_fold,rint,A in dim(*As,A0), B in dim(B0,*Bs))
@@ -764,9 +764,9 @@ METHOD3(GridInner,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridInner,"@inner",inlets:3,outlets:1,startup:0,
-LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
+GRCLASS(GridInner,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 	DECL(GridInner,initialize))
+{ IEVAL(rself,"install '@inner',3,1"); }
 
 /* **************************************************************** */
 
@@ -775,9 +775,9 @@ struct GridInner2 : GridInner {
 	DECL3(initialize);
 };
 
-GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,startup:0,
-LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
+GRCLASS(GridInner2,LIST(GRINLET4(GridInner,0,4),GRINLET4(GridInner,2,4)),
 	DECL(GridInner,initialize))
+{ IEVAL(rself,"install '@inner2',3,1"); }
 
 /* **************************************************************** */
 
@@ -833,9 +833,9 @@ METHOD3(GridOuter,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
+GRCLASS(GridOuter,LIST(GRINLET4(GridOuter,0,4),GRINLET4(GridOuter,1,4)),
 	DECL(GridOuter,initialize))
+{ IEVAL(rself,"install '@outer',2,1"); }
 
 /* **************************************************************** */
 /* the incoming grid is stored as "c" with a margin on the four sides
@@ -941,9 +941,9 @@ METHOD3(GridConvolve,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4)),
+GRCLASS(GridConvolve,LIST(GRINLET4(GridConvolve,0,4),GRINLET4(GridConvolve,1,4)),
 	DECL(GridConvolve,initialize))
+{ IEVAL(rself,"install '@convolve',2,1"); }
 
 /* **************************************************************** */
 
@@ -1038,11 +1038,11 @@ GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
-GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
-LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFor,2,4)),
+GRCLASS(GridFor,LIST(GRINLET4(GridFor,0,4),GRINLET4(GridFor,1,4),GRINLET4(GridFor,2,4)),
 	DECL(GridFor,initialize),
 	DECL(GridFor,_0_bang),
 	DECL(GridFor,_0_set))
+{ IEVAL(rself,"install '@for',3,1"); }
 
 /* **************************************************************** */
 
@@ -1060,8 +1060,8 @@ GRID_INLET(GridDim,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridDim,"@dim",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridDim,0,0)))
+GRCLASS(GridDim,LIST(GRINLET4(GridDim,0,0)))
+{ IEVAL(rself,"install '@dim',1,1"); }
 
 /* **************************************************************** */
 
@@ -1076,8 +1076,8 @@ GRID_INLET(GridType,0) {
 } GRID_FINISH {
 } GRID_END
 
-GRCLASS(GridType,"@type",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridType,0,0)))
+GRCLASS(GridType,LIST(GRINLET4(GridType,0,0)))
+{ IEVAL(rself,"install '@type',1,1"); }
 
 /* **************************************************************** */
 
@@ -1137,9 +1137,9 @@ METHOD3(GridRedim,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
+GRCLASS(GridRedim,LIST(GRINLET4(GridRedim,0,4),GRINLET(GridRedim,1,4)),
 	DECL(GridRedim,initialize))
+{ IEVAL(rself,"install '@redim',2,1"); }
 
 /* ---------------------------------------------------------------- */
 /* "@scale_by" does quick scaling of pictures by integer factors */
@@ -1221,9 +1221,9 @@ METHOD3(GridScaleBy,initialize) {
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
-GRCLASS(GridScaleBy,"@scale_by",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
+GRCLASS(GridScaleBy,LIST(GRINLET4(GridScaleBy,0,4),GRINLET(GridScaleBy,1,4)),
 	DECL(GridScaleBy,initialize))
+{ IEVAL(rself,"install '@scale_by',2,1"); }
 
 /* ---------------------------------------------------------------- */
 /* "@downscale_by" does quick downscaling of pictures by integer factors */
@@ -1314,9 +1314,9 @@ METHOD3(GridDownscaleBy,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridDownscaleBy,"@downscale_by",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
+GRCLASS(GridDownscaleBy,LIST(GRINLET4(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
 	DECL(GridDownscaleBy,initialize))
+{ IEVAL(rself,"install '@downscale_by',2,1"); }
 
 /* **************************************************************** */
 
@@ -1385,9 +1385,9 @@ METHOD3(GridJoin,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridJoin,"@join",inlets:2,outlets:1,startup:0,
-LIST(GRINLET4(GridJoin,0,4),GRINLET4(GridJoin,1,4)),
+GRCLASS(GridJoin,LIST(GRINLET4(GridJoin,0,4),GRINLET4(GridJoin,1,4)),
 	DECL(GridJoin,initialize))
+{ IEVAL(rself,"install '@join',2,1"); }
 
 /* **************************************************************** */
 
@@ -1431,9 +1431,9 @@ METHOD3(GridGrade,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridGrade,"@grade",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridGrade,0,4)),
+GRCLASS(GridGrade,LIST(GRINLET4(GridGrade,0,4)),
 	DECL(GridGrade,initialize))
+{ IEVAL(rself,"install '@grade',1,1"); }
 
 /* **************************************************************** */
 
@@ -1469,9 +1469,9 @@ METHOD3(GridPerspective,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridPerspective,"@perspective",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridPerspective,0,4)),
+GRCLASS(GridPerspective,LIST(GRINLET4(GridPerspective,0,4)),
 	DECL(GridPerspective,initialize))
+{ IEVAL(rself,"install '@perspective',1,1"); }
 
 /* **************************************************************** */
 
@@ -1512,9 +1512,9 @@ METHOD3(GridLayer,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridLayer,"@layer",inlets:2,outlets:1,startup:0,
-LIST(GRINLET2(GridLayer,0,4),GRINLET2(GridLayer,1,4)),
+GRCLASS(GridLayer,LIST(GRINLET2(GridLayer,0,4),GRINLET2(GridLayer,1,4)),
 	DECL(GridLayer,initialize))
+{ IEVAL(rself,"install '@layer',2,1"); }
 
 /* **************************************************************** */
 
@@ -1536,9 +1536,9 @@ METHOD3(GridFinished,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridFinished,"@finished",inlets:1,outlets:1,startup:0,
-LIST(GRINLET4(GridFinished,0,0)),
+GRCLASS(GridFinished,LIST(GRINLET4(GridFinished,0,0)),
 	DECL(GridFinished,initialize))
+{ IEVAL(rself,"install '@finished',1,1"); }
 
 /* **************************************************************** */
 //template <class T>
@@ -1659,9 +1659,9 @@ METHOD3(DrawPolygon,initialize) {
 	return Qnil;
 }
 
-GRCLASS(DrawPolygon,"@draw_polygon",inlets:3,outlets:1,startup:0,
-LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
+GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRINLET(DrawPolygon,2,4)),
 	DECL(DrawPolygon,initialize))
+{ IEVAL(rself,"install '@draw_polygon',3,1"); }
 
 /* **************************************************************** */
 
@@ -1710,9 +1710,9 @@ METHOD3(GridRGBtoHSV,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridRGBtoHSV,0,4)),
+GRCLASS(GridRGBtoHSV,LIST(GRINLET2(GridRGBtoHSV,0,4)),
 	DECL(GridRGBtoHSV,initialize))
+{ IEVAL(rself,"install '@rgb_to_hsv',1,1"); }
 
 /* **************************************************************** */
 
@@ -1750,9 +1750,9 @@ METHOD3(GridHSVtoRGB,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,startup:0,
-LIST(GRINLET2(GridHSVtoRGB,0,4)),
+GRCLASS(GridHSVtoRGB,LIST(GRINLET2(GridHSVtoRGB,0,4)),
 	DECL(GridHSVtoRGB,initialize))
+{ IEVAL(rself,"install '@hsv_to_rgb',1,1"); }
 
 /* **************************************************************** */
 /* [rtmetro] */
@@ -1867,12 +1867,12 @@ METHOD3(RtMetro,del) {
 	return Qnil;
 }
 
-GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,startup:0,
-LIST(),
+GRCLASS(RtMetro,LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
 	DECL(RtMetro,initialize),
 	DECL(RtMetro,del))
+{ IEVAL(rself,"install 'rtmetro',2,1"); }
 
 /* **************************************************************** */
 

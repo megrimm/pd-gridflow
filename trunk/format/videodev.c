@@ -587,13 +587,7 @@ METHOD3(FormatVideoDev,initialize) {
 
 /* **************************************************************** */
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
-	"conf_format 4,'videodev','Video4linux 1.x'");
-}
-
-GRCLASS(FormatVideoDev,"FormatVideoDev",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatVideoDev,0,4)),
+GRCLASS(FormatVideoDev,LIST(GRINLET2(FormatVideoDev,0,4)),
 DECL(FormatVideoDev,initialize),
 DECL(FormatVideoDev,initialize2),
 DECL(FormatVideoDev,alloc_image),
@@ -608,4 +602,8 @@ DECL(FormatVideoDev,transfer),
 DECL(FormatVideoDev,frame),
 DECL(FormatVideoDev,option),
 DECL(FormatVideoDev,close))
+{
+	IEVAL(rself,"install 'FormatVideoDev',1,1;"
+	"conf_format 4,'videodev','Video4linux 1.x'");
+}
 

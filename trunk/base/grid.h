@@ -254,15 +254,17 @@ typedef Ruby (*RMethod)(...);
 //typedef Ruby (*RMethod)();
 
 
-#define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_startup_,_handlers_,args...) \
+#define GRCLASS(_name_,_handlers_,args...) \
 	static void *_name_##_allocate () { return new _name_; } \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	static void _name_ ## _startup (Ruby rself); \
 	GridClass ci ## _name_ = { \
-		0, _name_##_allocate, _startup_, COUNT(_name_##_methods),\
-		_name_##_methods,\
-		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
-		#_name_, _jname_ };
+		0, _name_##_allocate, _name_ ## _startup, #_name_, \
+		COUNT(_name_##_methods), _name_##_methods, \
+		COUNT(_name_##_handlers),_name_##_handlers, \
+	}; \
+	static void _name_ ## _startup (Ruby rself)
 
 #ifdef HAVE_PENTIUM
 static inline uint64 rdtsc() {
@@ -801,15 +803,10 @@ struct FClass {
 struct GridClass /*: FClass */ {
 	Ruby rclass;
 	void *(*allocate)();
-	void (*startup)(GridClass *);
-	int methodsn;
-	MethodDecl *methods;
-	int inlets;
-	int outlets;
-	int handlersn;
-	GridHandler *handlers;
+	void (*startup)(Ruby rself);
 	const char *name;
-	const char *jname;
+	int methodsn; MethodDecl *methods;
+	int handlersn; GridHandler *handlers;
 };
 
 /* **************************************************************** */

@@ -147,13 +147,9 @@ METHOD3(FormatSDL,initialize) {
 	return Qnil;
 }
 
-static void startup (GridClass *self) {
-	IEVAL(self->rclass,
+GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0,4)),
+DECL(FormatSDL,initialize),
+DECL(FormatSDL,close)) {
+	IEVAL(rself,"install 'FormatSDL',1,1;"
 	"conf_format 2,'sdl','Simple Directmedia Layer'");
 }
-
-GRCLASS(FormatSDL,"FormatSDL",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatSDL,0,4)),
-DECL(FormatSDL,initialize),
-DECL(FormatSDL,close))
-
