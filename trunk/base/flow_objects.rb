@@ -1503,11 +1503,7 @@ class PlotterControl < GridFlow::FObject
   install "plotter_control", 1, 1
 end
 
-(begin
-   require "linux/ParallelPort"
-   true
- rescue LoadError
-   false end) and
+(begin require "linux/ParallelPort"; true; rescue LoadError; false end) and
 class ParallelPort < FObject
   def initialize(port,manually=0)
     @f = File.open(port.to_s,"r+")
@@ -1536,6 +1532,39 @@ class ParallelPort < FObject
   end
   # outlet 0 reserved (future use)
   install "parallel_port", 1, 3
+end
+
+(begin require "linux/SoundMixer"; true; rescue LoadError; false end) and
+class SoundMixer < GridFlow::FObject
+  def initialize(filename)
+    super
+    @file = File.open filename.to_s, 0
+    @file.extend Linux::SoundMixer
+    $sm = self
+  end
+  @@vars = Linux::SoundMixer.instance_methods.grep(/=/)
+  @@vars_h = {}
+  @@vars.each {|attr|
+    attr.chop!
+    eval %{ def _0_#{attr}(x) @file.#{attr} = x[0]*256+x[1] end }
+    @@vars_h[attr]=true
+  }
+  def _0_get(sel=nil)
+    if sel then
+      sels=sel.to_s
+      sel=sels.intern
+      raise if not @@vars_h.include? sel.to_s
+      begin
+        x = @file.send sel
+        send_out 0, sel, (x>>8)&255, x&255
+      rescue
+        send_out 0, sel, -1
+      end
+    else
+      @@vars.each {|var| _0_get var }
+    end
+  end
+  install "SoundMixer", 1, 1
 end
 
 end # module GridFlow
