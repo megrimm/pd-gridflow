@@ -47,9 +47,11 @@ struct FormatX11 : Format {
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
-	long black,white; /* color numbers in default palette */
+	Colormap colormap; /* for 256-color mode */
+	long black,white; /* color numbers in default colormap */
 	short depth;
 	bool use_shm;	   /* should use shared memory? */
+	bool use_stripes;  /* use alternate conversion in 256-color mode */
 
 /* at the Window level */
 	int autodraw;        /* how much to send to the display at once */
@@ -74,6 +76,7 @@ struct FormatX11 : Format {
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
 	void report_pointer(int y, int x, int state);
+	void prepare_colormap();
 	void alarm();
 
 	DECL3(frame);
@@ -201,7 +204,7 @@ METHOD3(FormatX11,frame) {
 
 	int sy=dim->get(0), sx=dim->get(1);
 	int bs=dim->prod(1);
-	STACK_ARRAY(Number,b2,bs);
+	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
 			+ ximage->bytes_per_line * y;
@@ -226,7 +229,7 @@ void FormatX11::dealloc_image () {
 	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
 		if (shm_info) delete shm_info, shm_info=0;
-		/* and what do i do to ximage? */
+		/* !@#$ and what do i do to ximage? */
 	#endif	
 	} else {
 		XDestroyImage(ximage);
@@ -337,6 +340,7 @@ void FormatX11::resize_window (int sx, int sy) {
 		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask);
 	}
+	if (visual->c_class == PseudoColor) prepare_colormap(); 
 	XSync(display,0);
 }
 
@@ -363,7 +367,15 @@ GRID_INLET(FormatX11,0) {
 	while (n>0) {
 		/* gfpost("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		bit_packing->pack(sx, data, image+y*bypl);
+		if (use_stripes) {
+			int k=y%3;
+			int o=y*bypl;
+			for (int x=0, i=0; x<sx; x++, i+=3, k=(k+1)%3) {
+				image[o+x] = (k<<6) | data[i+k]>>2;
+			}
+		} else {
+			bit_packing->pack(sx, data, image+y*bypl);
+		}
 		y++;
 		data += sxc;
 		n -= sxc;
@@ -422,6 +434,32 @@ METHOD3(FormatX11,option) {
 	return Qnil;
 }
 
+void FormatX11::prepare_colormap() {
+	Colormap colormap = XCreateColormap(display,window,visual,AllocAll);
+	XColor colors[256];
+	if (use_stripes) {
+		for (int i=0; i<192; i++) {
+			int k=(i&63)*0xffff/63;
+			colors[i].pixel = i;
+			colors[i].red   = (i>>6)==0 ? k : 0;
+			colors[i].green = (i>>6)==1 ? k : 0;
+			colors[i].blue  = (i>>6)==2 ? k : 0;
+			colors[i].flags = DoRed | DoGreen | DoBlue;
+		}
+		XStoreColors(display,colormap,colors,192);
+	} else {	
+		for (int i=0; i<256; i++) {
+			colors[i].pixel = i;
+			colors[i].red   = ((i>>0)&7)*0xffff/7;
+			colors[i].green = ((i>>3)&7)*0xffff/7;
+			colors[i].blue  = ((i>>6)&3)*0xffff/3;
+			colors[i].flags = DoRed | DoGreen | DoBlue;
+		}
+		XStoreColors(display,colormap,colors,256);
+	}
+	XSetWindowColormap(display,window,colormap);
+}
+
 void FormatX11::open_display(const char *disp_string) {
 	int screen_num;
 	Screen *screen;
@@ -442,12 +480,21 @@ void FormatX11::open_display(const char *disp_string) {
 	black    = XBlackPixel(display,screen_num);
 	root_window = DefaultRootWindow(display);
 	depth    = DefaultDepthOfScreen(screen);
+	colormap = 0;
 
 	gfpost("depth = %d",depth);
 
-	/* !@#$ check for visual type instead */
-	if (depth != 16 && depth != 24 && depth != 32)
-		RAISE("ERROR: depth %d not supported.", depth);
+	switch(visual->c_class) {
+	case TrueColor: case DirectColor: /* without colormap */
+	break;
+	case PseudoColor: /* with colormap */
+		if (depth!=8)
+			RAISE("ERROR: with colormap, only supported depth is 8 (got %d)",
+				depth);
+	break;
+	default: RAISE("ERROR: visual type not supported (got %d)",
+		visual->c_class);
+	}
 
 #ifdef HAVE_X11_SHARED_MEMORY
 	/* what do i do with remote windows? */
@@ -477,6 +524,7 @@ METHOD3(FormatX11,initialize) {
 #ifdef HAVE_X11_SHARED_MEMORY
 	shm_info= 0;
 #endif
+	use_stripes = false;
 
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 
@@ -505,6 +553,11 @@ METHOD3(FormatX11,initialize) {
 		i=3;
 	} else {
 		RAISE("x11 destination syntax error");
+	}
+
+	if (i<argc && argv[i]==SYM(use_stripes)) {
+		use_stripes = true;
+		i++;
 	}
 
 	if (i>=argc) {
@@ -536,11 +589,21 @@ METHOD3(FormatX11,initialize) {
 
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
-	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 	gfpost("is_le = %d",is_le());
 	gfpost("disp_is_le = %d", disp_is_le);
-	bit_packing = new BitPacking(
-		disp_is_le, ximage->bits_per_pixel/8, 3, masks);
+
+	switch(visual->c_class) {
+	case TrueColor: case DirectColor: {
+		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
+		bit_packing = new BitPacking(
+			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
+	} break;
+	case PseudoColor: {
+		uint32 masks[3] = { 0x07, 0x38, 0xC0 };
+		bit_packing = new BitPacking(
+			disp_is_le, ximage->bits_per_pixel/8, 3, masks);
+	} break;
+	}
 
 	bit_packing->gfpost();
 	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);

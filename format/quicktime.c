@@ -62,13 +62,13 @@ METHOD3(FormatQuickTime,frame) {
 	o->begin(new Dim(3,v));
 
 	int bs = o->dim->prod(1);
-	STACK_ARRAY(Number,b2,bs);
+	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
 		bit_packing->unpack(sx,buf+4*sx*y,b2);
 		o->send(bs,b2);
 	}
 
-	delete[] (Number *)buf;
+	delete[] (int32 *)buf;
 	return Qnil;
 }
 
