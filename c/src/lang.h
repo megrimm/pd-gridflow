@@ -63,6 +63,16 @@ typedef double float64;
 typedef enum { false, true } bool;
 #endif
 
+typedef struct Class Class;
+typedef struct Object {
+	Class *_class;
+} Object;
+struct Class {
+	Object _o;
+	Class *_super;
+	int sig; /* 0x600df00d */
+};
+
 typedef struct List List; /* List ([0...n] -> void *) */
 List *List_new(int size);
 void List_push(List *$, void *v);

@@ -50,7 +50,7 @@ FILE *whine_f;
 /* The setup part */
 
 #define DECL_SYM2(_sym_) \
-	fts_symbol_t sym_##_sym_ = (fts_symbol_t) 0xDeadBeef;
+	Symbol sym_##_sym_ = (Symbol) 0xDeadBeef;
 
 DECL_SYM2(open)
 DECL_SYM2(close)

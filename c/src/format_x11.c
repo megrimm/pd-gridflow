@@ -111,7 +111,7 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 
 /* ---------------------------------------------------------------- */
 
-static fts_symbol_t button_sym(int i) {
+static Symbol button_sym(int i) {
 	char foo[42];
 	sprintf(foo,"button%d",i);
 	return fts_new_symbol(foo);
@@ -409,7 +409,7 @@ void FormatX11_close (FormatX11 *$) {
 }
 
 void FormatX11_option (FormatX11 *$, ATOMLIST) {
-	fts_symbol_t sym = GET(0,symbol,SYM(foo));
+	Symbol sym = GET(0,symbol,SYM(foo));
 	if (sym == SYM(out_size)) {
 		int sy = GET(1,int,0);
 		int sx = GET(2,int,0);
@@ -499,7 +499,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	*/
 
 	{
-		fts_symbol_t domain = fts_get_symbol(at+0);
+		Symbol domain = fts_get_symbol(at+0);
 		int i;
 		// assert (ac>0);
 		if (domain==SYM(here)) {
@@ -539,7 +539,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		if (i>=ac) {
 			whine("will create new window");
 		} else {
-			fts_symbol_t winspec = fts_get_symbol(at+i);
+			Symbol winspec = fts_get_symbol(at+i);
 			if (winspec==SYM(root)) {
 				$->window = $->root_window;
 				whine("will use root window (0x%x)", $->window);

@@ -30,8 +30,12 @@
 #include "config.h"
 #include "lang.h"
 
+#ifndef STANDALONE
+#include "over_fts.h"
+#endif
+
 /* current version number as string literal */
-#define GF_VERSION "0.4.0"
+#define GF_VERSION "0.5.0"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef HAVE_SPEED
@@ -44,7 +48,7 @@
 #endif
 
 /* **************************************************************** */
-/* jMax macros */
+/* macros for use with jMax/FTS */
 
 /* we're gonna override this, so load it first, to avoid conflicts */
 #include <assert.h>
@@ -92,7 +96,7 @@
 #define ATOMLIST int ac, const fts_atom_t *at
 
 #define METHOD_ARGS(_class_) \
-	_class_ *self, int winlet, fts_symbol_t selector, ATOMLIST
+	_class_ *self, int winlet, Symbol selector, ATOMLIST
 
 /*
   now (0.3.1) using a separate macro for some things like decls
@@ -151,7 +155,7 @@
 
 /*
   get arg or default value
-  this works with int, float, symbol (fts_symbol_t),
+  this works with int, float, symbol,
   string (const char *), ptr (void *)
 */
 #define GET(_i_,_type_,_default_) \
@@ -260,7 +264,7 @@ FILE *gf_file_fopen(const char *name, int mode);
 typedef struct MethodDecl MethodDecl;
 struct MethodDecl {
 	int winlet;
-	fts_symbol_t selector;
+	Symbol selector;
 	void (*method)(METHOD_ARGS(fts_object_t));
 	int n_args;
 	fts_type_t *args;
@@ -300,7 +304,7 @@ typedef long Number;
 /* **************************************************************** */
 
 #define DECL_SYM(_sym_) \
-	extern fts_symbol_t sym_##_sym_;
+	extern Symbol sym_##_sym_;
 
 DECL_SYM(open)
 DECL_SYM(close)
@@ -372,29 +376,28 @@ typedef enum NumberTypeIndex {
 	DECL_TYPE(     int16, 16),
 /*	DECL_TYPE(    uint32, 32), */
 	DECL_TYPE(     int32, 32),
-	
 } NumberTypeIndex;
 
 #undef DECL_TYPE
 
 typedef struct NumberType {
-	fts_symbol_t sym;
+	Symbol sym;
 	const char *name;
 	int size;
 } NumberType;
 
 typedef struct Operator1 {
-	fts_symbol_t sym;
+	Symbol sym;
 	const char *name;
 	Number (*op)(Number);
 	void   (*op_array)(int,Number*);
 } Operator1;
 
-	Operator1 *op1_table_find(fts_symbol_t sym);
+	Operator1 *op1_table_find(Symbol sym);
 	extern Operator1 op1_table[];
 
 typedef struct Operator2 {
-	fts_symbol_t sym;
+	Symbol sym;
 	const char *name;
 	Number (*op)(Number,Number);
 	void   (*op_array)(int,Number *,Number);
@@ -402,7 +405,7 @@ typedef struct Operator2 {
 	Number (*op_fold)(Number,int,const Number *);
 } Operator2;
 
-	Operator2 *op2_table_find(fts_symbol_t sym);
+	Operator2 *op2_table_find(Symbol sym);
 	extern Operator2 op2_table[];
 
 /* **************************************************************** */
@@ -415,25 +418,25 @@ typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 /* typedef struct GridHandler GridHandler; */
 
-#define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *$, GridInlet *in)
-#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, const Number *data)
-#define GRID_FLOW2_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, Number *data)
-#define   GRID_END_(_class_,_name_) void _name_(_class_ *$, GridInlet *in)
+#define GRID_BEGIN_(_cl_,_name_) bool _name_(_cl_ *$, GridInlet *in)
+#define  GRID_FLOW_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, const Number *data)
+#define GRID_FLOW2_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in, int n, Number *data)
+#define   GRID_END_(_cl_,_name_) void _name_(_cl_ *$, GridInlet *in)
 
-#define GRID_BEGIN_PTR(_class_,_inlet_) ((GRID_BEGIN_(_class_,(*)))_class_##_##_inlet_##_begin)
-#define  GRID_FLOW_PTR(_class_,_inlet_)  ((GRID_FLOW_(_class_,(*)))_class_##_##_inlet_##_flow)
-#define GRID_FLOW2_PTR(_class_,_inlet_) ((GRID_FLOW2_(_class_,(*)))_class_##_##_inlet_##_flow2)
-#define   GRID_END_PTR(_class_,_inlet_)   ((GRID_END_(_class_,(*)))_class_##_##_inlet_##_end)
+#define GRID_BEGIN_PTR(_cl_,_inlet_) ((GRID_BEGIN_(_cl_,(*)))_cl_##_##_inlet_##_begin)
+#define  GRID_FLOW_PTR(_cl_,_inlet_)  ((GRID_FLOW_(_cl_,(*)))_cl_##_##_inlet_##_flow)
+#define GRID_FLOW2_PTR(_cl_,_inlet_) ((GRID_FLOW2_(_cl_,(*)))_cl_##_##_inlet_##_flow2)
+#define   GRID_END_PTR(_cl_,_inlet_)   ((GRID_END_(_cl_,(*)))_cl_##_##_inlet_##_end)
 
 typedef GRID_BEGIN_(GridObject, (*GridBegin));
 typedef  GRID_FLOW_(GridObject, (*GridFlow));
 typedef GRID_FLOW2_(GridObject, (*GridFlow2));
 typedef   GRID_END_(GridObject, (*GridEnd));
 
-#define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_,_class_##_##_inlet_##_begin)
-#define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_,_class_##_##_inlet_##_flow)
-#define GRID_FLOW2(_class_,_inlet_) GRID_FLOW2_(_class_,_class_##_##_inlet_##_flow2)
-#define   GRID_END(_class_,_inlet_)   GRID_END_(_class_,_class_##_##_inlet_##_end)
+#define GRID_BEGIN(_cl_,_inlet_) GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
+#define  GRID_FLOW(_cl_,_inlet_)  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
+#define GRID_FLOW2(_cl_,_inlet_) GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow2)
+#define   GRID_END(_cl_,_inlet_)   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
 
 struct GridInlet {
 /* context information */

@@ -409,7 +409,7 @@ Format *FormatGrid_open (FormatClass *qlass, GridObject *parent, int mode, ATOML
 
 	{
 		int result;
-		fts_symbol_t sym = fts_get_symbol(at+0);
+		Symbol sym = fts_get_symbol(at+0);
 		if (sym == SYM(file)) {
 			result = FormatGrid_open_file($,mode,ac-1,at+1);
 		} else if (sym == SYM(tcp)) {

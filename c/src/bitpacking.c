@@ -191,7 +191,7 @@ void BitPacking_whine(BitPacking *$) {
 
 int  BitPacking_bytes(BitPacking *$) { return $->bytes; }
 bool BitPacking_is_le(BitPacking *$) {
-	return $->endian==1 || $->endian^is_le()==3; }
+	return $->endian==1 || ($->endian ^ is_le())==3; }
 
 uint8 *BitPacking_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return $->pack($,n,in,out);

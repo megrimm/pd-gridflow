@@ -33,6 +33,7 @@
 /* List */
 
 struct List {
+	Object _o;
 	int size;
 	int capa;
 	void **ptr;
@@ -90,12 +91,14 @@ void List_sort(List *$, int (*cmp)(void**,void**)) {
 /* Dict */
 
 struct DictEntry {
+	Object _o;
 	void *k;
 	void *v;
 	struct DictEntry *next;
 };
 
 struct Dict {
+	Object _o;
 	int capa;
 	int size;
 	DictEntry **table;

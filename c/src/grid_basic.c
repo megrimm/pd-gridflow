@@ -25,6 +25,12 @@
 #include <math.h>
 #include "grid.h"
 
+#define DECL(_cl_,_inlet_,_sym_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
+
+#define DECL2(_cl_,_inlet_,_sym_,_sym2_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym2_),args}
+
 /* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream
@@ -113,10 +119,10 @@ CLASS(GridImport) {
 	fts_type_t int_alone[]  = { fts_t_int };
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,  METHOD_PTR(GridImport,init),   ARRAY(int_dims),2},
-		{-1, fts_s_delete,METHOD_PTR(GridImport,delete), 0,0,0},
-		{ 0, fts_s_int,   METHOD_PTR(GridImport,int),    ARRAY(int_alone),-1},
-		{ 0, sym_reset,   METHOD_PTR(GridImport,reset), 0,0,-1},
+		DECL(GridImport,-1,init,  ARRAY(int_dims),2),
+		DECL(GridImport,-1,delete,0,0,0),
+		DECL(GridImport, 0,int,   ARRAY(int_alone),-1),
+		DECL(GridImport, 0,reset, 0,0,-1),
 	};
 
 	{int i; for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;}
@@ -166,8 +172,8 @@ METHOD(GridExport,delete) { GridObject_delete((GridObject *)$); }
 CLASS(GridExport) {
 	fts_type_t rien[] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridExport,init), ARRAY(rien), -1 },
-		{-1, fts_s_delete, METHOD_PTR(GridExport,delete), 0,0,0 },
+		DECL(GridExport,-1,init,  ARRAY(rien),-1),
+		DECL(GridExport,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -219,8 +225,8 @@ METHOD(GridExportList,delete) { GridObject_delete((GridObject *)$); }
 CLASS(GridExportList) {
 	fts_type_t rien[] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridExportList,init), ARRAY(rien), -1 },
-		{-1, fts_s_delete, METHOD_PTR(GridExportList,delete), 0,0,0 },
+		DECL(GridExportList,-1,init,  ARRAY(rien),-1),
+		DECL(GridExportList,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -370,7 +376,7 @@ METHOD(GridStore,init) {
 	$->in[1] = GridInlet_NEW3($,GridStore,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 	{
-		fts_symbol_t t = GET(1,symbol,SYM(int32));
+		Symbol t = GET(1,symbol,SYM(int32));
 		if (t==SYM(int32)) {
 			$->nt = int32_type_i;
 		} else if (t==SYM(uint8)) {
@@ -404,9 +410,9 @@ CLASS(GridStore) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridStore,init), ARRAY(init_args),1},
-		{-1, fts_s_delete, METHOD_PTR(GridStore,delete),0,0,0 },
-		{ 0, fts_s_bang,   METHOD_PTR(GridStore,bang),  0,0,0 },
+		DECL(GridStore,-1,init,  ARRAY(init_args),1),
+		DECL(GridStore,-1,delete,0,0,0),
+		DECL(GridStore, 0,bang,  0,0,0),
 	};
 
 	/* initialize the class */
@@ -447,7 +453,7 @@ GRID_FLOW(GridOp1,0) {
 GRID_END(GridOp1,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridOp1,init) {
-	fts_symbol_t sym = GET(1,symbol,op1_table[0].sym);
+	Symbol sym = GET(1,symbol,op1_table[0].sym);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridOp1,0);
@@ -467,8 +473,8 @@ CLASS(GridOp1) {
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol };
 
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridOp1,init),   ARRAY(init_args), 1 },
-		{ -1, fts_s_delete, METHOD_PTR(GridOp1,delete), 0,0,0 },
+		DECL(GridOp1,-1,init,  ARRAY(init_args),1),
+		DECL(GridOp1,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -542,7 +548,7 @@ GRID_FLOW(GridOp2,1) {
 GRID_END(GridOp2,1) { /* nothing goes here */ }
 
 METHOD(GridOp2,init) {
-	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
+	Symbol sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
 	$->dim = 0;
 
@@ -564,7 +570,7 @@ METHOD(GridOp2,delete) {
 	GridObject_delete((GridObject *)$);
 }
 
-METHOD(GridOp2,rint) {
+METHOD(GridOp2,int) {
 	FREE($->data);
 	if ($->dim) FREE($->dim);
 	$->rint = GET(0,int,-42);
@@ -575,9 +581,9 @@ CLASS(GridOp2) {
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
 
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridOp2,init),   ARRAY(init_args), 2 },
-		{ -1, fts_s_delete, METHOD_PTR(GridOp2,delete), 0,0,0 },
-		{  1, fts_s_int,    METHOD_PTR(GridOp2,rint),   0,0,0 },/*why zero?*/
+		DECL(GridOp2,-1,init,  ARRAY(init_args),2),
+		DECL(GridOp2,-1,delete,0,0,0),
+		DECL(GridOp2, 1,int,   0,0,0),/*why zero?*/
 	};
 
 	/* initialize the class */
@@ -634,7 +640,7 @@ GRID_END(GridFold,0) { GridOutlet_end($->out[0]); }
 
 METHOD(GridFold,init) {
 	int i;
-	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
+	Symbol sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
@@ -650,7 +656,7 @@ METHOD(GridFold,init) {
 
 METHOD(GridFold,delete) { GridObject_delete((GridObject *)$); }
 
-METHOD(GridFold,rint) {
+METHOD(GridFold,int) {
 	$->rint = GET(0,int,-42);
 }
 
@@ -659,9 +665,9 @@ CLASS(GridFold) {
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
 
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridFold,init),   ARRAY(init_args), 2 },
-		{ -1, fts_s_delete, METHOD_PTR(GridFold,delete), 0,0,0 },
-		{  1, fts_s_int,    METHOD_PTR(GridFold,rint),   0,0,0 },/*why zero?*/
+		DECL(GridFold,-1,init,  ARRAY(init_args), 2),
+		DECL(GridFold,-1,delete,0,0,0),
+		DECL(GridFold, 1,int,   0,0,0),/*why zero?*/
 	};
 
 	/* initialize the class */
@@ -749,8 +755,8 @@ GRID_FLOW(GridInner,2) {
 GRID_END(GridInner,2) {}
 
 METHOD(GridInner,init) {
-	fts_symbol_t sym_para = GET(1,symbol,op2_table[0].sym);
-	fts_symbol_t sym_fold = GET(2,symbol,op2_table[0].sym);
+	Symbol sym_para = GET(1,symbol,op2_table[0].sym);
+	Symbol sym_fold = GET(2,symbol,op2_table[0].sym);
 	$->rint = GET(3,int,0);
 	$->dim = 0;
 	$->data = 0;
@@ -783,8 +789,8 @@ CLASS(GridInner) {
 	fts_type_t int_alone[]  = {fts_t_int};
 	fts_type_t init_args[] = {fts_t_symbol, fts_t_symbol, fts_t_symbol, fts_t_int};
 	MethodDecl methods[] = { 
-		{-1, fts_s_init,   METHOD_PTR(GridInner,init), ARRAY(init_args),-1},
-		{-1, fts_s_delete, METHOD_PTR(GridInner,delete),0,0,0 },
+		DECL(GridInner,-1,init,  ARRAY(init_args),-1),
+		DECL(GridInner,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -856,7 +862,7 @@ GRID_FLOW(GridOuter,1) {
 GRID_END(GridOuter,1) {}
 
 METHOD(GridOuter,init) {
-	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
+	Symbol sym = GET(1,symbol,op2_table[0].sym);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridOuter,0);
@@ -884,8 +890,8 @@ CLASS(GridOuter) {
 	fts_type_t int_alone[]  = { fts_t_int };
 	fts_type_t init_args[] = { fts_t_symbol, fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridOuter,init), ARRAY(init_args),-1},
-		{-1, fts_s_delete, METHOD_PTR(GridOuter,delete),0,0,0 },
+		DECL(GridOuter,-1,init,  ARRAY(init_args),-1),
+		DECL(GridOuter,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -1019,8 +1025,8 @@ GRID_FLOW(GridConvolve,1) {
 GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
-	fts_symbol_t sym_para = GET(1,symbol,SYM(*));
-	fts_symbol_t sym_fold = GET(2,symbol,SYM(+));
+	Symbol sym_para = GET(1,symbol,SYM(*));
+	Symbol sym_fold = GET(2,symbol,SYM(+));
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,GridConvolve,0);
@@ -1056,8 +1062,8 @@ CLASS(GridConvolve) {
 	fts_type_t int_alone[]  = { fts_t_int };
 	fts_type_t init_args[] = {fts_t_symbol, fts_t_symbol, fts_t_symbol, fts_t_int};
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridConvolve,init), ARRAY(init_args),1},
-		{-1, fts_s_delete, METHOD_PTR(GridConvolve,delete),0,0,0 },
+		DECL(GridConvolve,-1,init,  ARRAY(init_args),1),
+		DECL(GridConvolve,-1,delete,0,0,0 ),
 	};
 
 	/* initialize the class */
@@ -1123,13 +1129,13 @@ CLASS(GridFor) {
 	fts_type_t one_int[]   = {fts_t_int};
 
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridFor,init),   ARRAY(init_args),1 },
-		{ -1, fts_s_delete, METHOD_PTR(GridFor,delete), 0,0,0 },
-		{  0, fts_s_bang,   METHOD_PTR(GridFor,bang),   0,0,0 },
-		{  0, fts_s_int,    METHOD_PTR(GridFor,from2),  ARRAY(one_int),-1 },
-		{  0, fts_s_set,    METHOD_PTR(GridFor,from),   ARRAY(one_int),-1 },
-		{  1, fts_s_int,    METHOD_PTR(GridFor,to),     ARRAY(one_int),-1 },
-		{  2, fts_s_int,    METHOD_PTR(GridFor,step),   ARRAY(one_int),-1 },
+		DECL(GridFor,-1,init,  ARRAY(init_args),1),
+		DECL(GridFor,-1,delete,0,0,0),
+		DECL2(GridFor, 0,bang,  bang,  0,0,0),
+		DECL2(GridFor, 0,int,   from2, ARRAY(one_int),-1),
+		DECL2(GridFor, 0,set,   from,  ARRAY(one_int),-1),
+		DECL2(GridFor, 1,int,   to,    ARRAY(one_int),-1),
+		DECL2(GridFor, 2,int,   step,  ARRAY(one_int),-1),
 	};
 
 	/* initialize the class */
@@ -1176,8 +1182,8 @@ CLASS(GridDim) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridDim,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD_PTR(GridDim,delete), 0,0,0 },
+		DECL(GridDim,-1,init,  ARRAY(init_args),0),
+		DECL(GridDim,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -1296,8 +1302,8 @@ CLASS(GridRedim) {
 	fts_type_t init_args[]  = { fts_t_symbol };
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridRedim,init),   ARRAY(int_dims),2 },
-		{ -1, fts_s_delete, METHOD_PTR(GridRedim,delete), 0,0,0 },
+		DECL(GridRedim,-1,init,  ARRAY(int_dims),2),
+		DECL(GridRedim,-1,delete,0,0,0),
 	};
 
 	{int i; for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;}
@@ -1347,8 +1353,8 @@ CLASS(GridPrint) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(GridPrint,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD_PTR(GridPrint,delete), 0,0,0 },
+		DECL(GridPrint,-1,init,  ARRAY(init_args),0),
+		DECL(GridPrint,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
@@ -1367,15 +1373,15 @@ void startup_grid_basic (void) {
 	INSTALL("@import",     GridImport);
 	INSTALL("@export",     GridExport);
 	INSTALL("@export_list",GridExportList);
-	INSTALL("@store",       GridStore);
-	INSTALL("@!",             GridOp1);
-	INSTALL("@",              GridOp2);
-	INSTALL("@fold",         GridFold);
-	INSTALL("@inner",       GridInner);
-	INSTALL("@outer",       GridOuter);
-	INSTALL("@convolve", GridConvolve);
-	INSTALL("@for",           GridFor);
-	INSTALL("@dim",           GridDim);
-	INSTALL("@redim",       GridRedim);
-	INSTALL("@print",       GridPrint);
+	INSTALL("@store",      GridStore);
+	INSTALL("@!",          GridOp1);
+	INSTALL("@",           GridOp2);
+	INSTALL("@fold",       GridFold);
+	INSTALL("@inner",      GridInner);
+	INSTALL("@outer",      GridOuter);
+	INSTALL("@convolve",   GridConvolve);
+	INSTALL("@for",        GridFor);
+	INSTALL("@dim",        GridDim);
+	INSTALL("@redim",      GridRedim);
+	INSTALL("@print",      GridPrint);
 }

@@ -25,6 +25,9 @@
 #include <math.h>
 #include "grid.h"
 
+#define DECL(_cl_,_inlet_,_sym_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
+
 typedef struct GridScaleBy {
 	GridObject_FIELDS;
 	int rint;
@@ -84,8 +87,8 @@ CLASS(GridScaleBy) {
 	fts_type_t int_alone[]  = {fts_t_int};
 	fts_type_t init_args[] = {fts_t_symbol};
 	MethodDecl methods[] = { 
-		{-1, fts_s_init,   METHOD_PTR(GridScaleBy,init), ARRAY(init_args),-1},
-		{-1, fts_s_delete, METHOD_PTR(GridScaleBy,delete),0,0,0 },
+		DECL(GridScaleBy,-1,init,  ARRAY(init_args),-1),
+		DECL(GridScaleBy,-1,delete,0,0,0),
 	};
 
 	/* initialize the class */
