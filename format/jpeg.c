@@ -39,6 +39,7 @@ struct FormatJPEG : Format {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
+	int fd;
 	FILE *f;
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
@@ -100,9 +101,9 @@ GRID_INLET(FormatJPEG,0) {
 	rb_call_super(argc,argv);
 	if (source!=SYM(file)) RAISE("usage: jpeg file <filename>");
 	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
-	OpenFile *foo;
-	GetOpenFile(rb_ivar_get(rself,SI(@stream)),foo);
-	f = foo->f;
+	Ruby stream = rb_ivar_get(rself,SI(@stream));
+	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
+	f = fdopen(fd,mode==SYM(in)?"r":"w");
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
