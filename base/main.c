@@ -319,7 +319,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return argv[0];
 }
 
-\def void del () {
+\def void delete_m () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,rself);
 }
@@ -455,8 +455,7 @@ Ruby gf_post_string (Ruby rself, Ruby s) {
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
-		char *buf = strcmp(md->selector,"del")==0 ? 
-			strdup("delete") : strdup(md->selector);
+		char *buf = strdup(md->selector);
 		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0)
 			buf[strlen(buf)-2]=0;
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
@@ -656,17 +655,17 @@ BUILTIN_SYMBOLS(FOO)
 	startup_flow_objects_for_image();
 	startup_flow_objects_for_matrix();
 
-	EVAL("begin require 'gridflow/base/main.rb'\n"
+	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
-		"backtrace: #{$!.backtrace}\n"
-		"$: = #{$:.inspect}\"\n end");
+		"backtrace: #{$!.backtrace.join\"\n\"}\n"
+		"$: = #{$:.inspect}\"\n; false end")) return;
 
-	EVAL("begin require 'gridflow/format/main.rb'\n"
+	if (!EVAL("begin require 'gridflow/format/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
-		"backtrace: #{$!.backtrace}\n"
-		"$: = #{$:.inspect}\"\n end");
+		"backtrace: #{$!.backtrace.join\"\n\"}\n"
+		"$: = #{$:.inspect}\"\n; false end")) return;
 
 	startup_formats();
 

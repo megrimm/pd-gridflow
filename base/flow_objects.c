@@ -1194,7 +1194,7 @@ struct RtMetro : GridObject {
 	\decl void initialize (int ms, Symbol mode);
 	\decl void _0_int (int x);
 	\decl void _1_int (int x);
-	\decl void del ();
+	\decl void delete_m();
 
 	~RtMetro() {
 		if (on) {
@@ -1279,7 +1279,7 @@ static void RtMetro_alarm(Ruby rself) {
 	gfpost("mode = %d",mode);
 }
 
-\def void del () {
+\def void delete_m () {
 	gfpost("RtMetro#del");
 	rb_funcall(rself,SI(_0_int),1,INT2NUM(0));
 }

@@ -469,8 +469,8 @@ struct Object {
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
 			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
-			for (int i=-1; i<=1; i++) {
-				fprintf(stderr,"this[0]=0x%08x\n",((int*)this)[i]);
+			for (int i=-2; i<=2; i++) {
+				fprintf(stderr,"this[%d]=0x%08x\n",i,((int*)this)[i]);
 			}
 			raise(11);
 		}
@@ -1117,7 +1117,7 @@ struct FObject : Object {
 	\decl Ruby total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
-	\decl void del();
+	\decl void delete_m ();
 };
 \end class FObject
 
@@ -1152,7 +1152,7 @@ struct GridObject : FObject {
 \decl Array inlet_dim(int inln);
 \decl Symbol inlet_nt(int inln);
 \decl void inlet_set_factor(int inln, int factor);
-\decl void del();
+\decl void delete_m();
 
 \decl void send_out_grid_begin(int outlet, Array buf, NumberTypeE nt=int32_type_i);
 \decl void send_out_grid_flow(int outlet, String buf, NumberTypeE nt=int32_type_i);

@@ -727,7 +727,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 }
 
 /* moved the stuff to the other destructor */
-\def void del () {
+\def void delete_m () {
 	rb_call_super(argc,argv);
 }
 
