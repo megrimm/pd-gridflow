@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.6 - Reference Manual: Format Classes</title>
+<title>GridFlow 0.7.7 - Reference Manual: Format Classes</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.6 - Reference Manual: Format Classes</h4>
+    <h4>GridFlow 0.7.7 - Reference Manual: Format Classes</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -25,7 +25,9 @@
 <tr><td colspan="2"><div cols="1"><h4><a href="#Objects_for_Input/Output">Objects for Input/Output</a></h4><ul>
 <li><a href="#@in"><img src="images/@in.png" alt="[@in]" border="0"></a></li>
 <li><a href="#@out"><img src="images/@out.png" alt="[@out]" border="0"></a></li>
-<li><a href="#peephole">peephole</a></li>
+<li><a href="##peephole">#peephole</a></li>
+<li><a href="##mouse">#mouse</a></li>
+<li><a href="##camera">#camera</a></li>
 </ul>
 <h4><a href="#Picture/Movie_Formats">Picture/Movie Formats</a></h4><ul>
 <li><a href="#format ppm @in/@out"><img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"></a></li>
@@ -150,16 +152,38 @@
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b>  
 				sent when a complete grid has been received. <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="peephole">peephole</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#peephole">#peephole</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- 
-		Similar to [@out x11] and [@out window], except it creates an inset in the patch you put it 
+ <p> 
+		This object class only works with a X11-based version of Pd or jMax. 
+		(e.g. on Linux, BSD, but not MacOS X). </p> <p>Similar to [@out x11], except it creates an inset in the patch you put it 
 		in, and a scaled version of the picture appears in the inset. It also emits the same messages 
 		as [@out x11] and automatically scales cursor position according to the current scale factor. 
-		The scale factor is decided automatically. DO NOT create an objectbox with "peephole" 
-		written in it: instead drag one from the toolbar (it is the red-green-blue striped icon). 
-		This object class only works with jMax 2.5 together with a X11 version of Java/SWING 
-		(e.g. on Linux, BSD, but not MacOS X). <br></td></tr><tr><td></td><td></td><td> </td></tr>
+		The scale factor is decided automatically. </p> <br><b>method</b>&nbsp;init <b>(</b><i>int</i> height<b>, </b><i>int</i> width<b>)</b>    <br>
+ <p>All other methods are as in [@out x11].</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#mouse">#mouse</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		This will process the "position" messages emitted by [@out] or [#peephole] in 
+		useful ways. <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			y,x coords of a click <br>
+ <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			y,x coords of a drag (any button is kept pressed) <br>
+ <br><b>outlet&nbsp;2 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			y,x coords of an unclick <br>
+ <br><b>outlet&nbsp;3 </b><b>method</b>&nbsp;list <b>(</b><b>)</b>  
+			y,x coords of a move (no button is pressed) <br>
+ <br><b>outlet&nbsp;4 </b><b>method</b>&nbsp;float <b>(</b><b>)</b> button 1 status<br>
+ <br><b>outlet&nbsp;5 </b><b>method</b>&nbsp;float <b>(</b><b>)</b> button 2 status<br>
+ <br><b>outlet&nbsp;6 </b><b>method</b>&nbsp;float <b>(</b><b>)</b> button 3 status<br>
+ <br><b>outlet&nbsp;7 </b><b>method</b>&nbsp;float <b>(</b><b>)</b>  
+			wheel difference: -1 = roll up; 1 = roll down. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#camera">#camera</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		Works about like [@in videodev] except you can right-click-open it to access all of the 
+		camera settings visually. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -432,8 +456,8 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.6 Documentation<br>
-Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
+GridFlow 0.7.7 Documentation<br>
+Copyright &copy; 2001,2002,2003,2004 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>

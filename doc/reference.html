@@ -27,10 +27,11 @@
 <li><a href="#@export"><img src="images/@export.png" alt="[@export]" border="0"></a></li>
 <li><a href="#@export_list"><img src="images/@export_list.png" alt="[@export_list]" border="0"></a></li>
 <li><a href="#@export_symbol">@export_symbol</a></li>
-<li><a href="#@pack">@pack</a></li>
-<li><a href="#@two"><img src="images/@two.png" alt="[@two]" border="0"></a></li>
-<li><a href="#@three"><img src="images/@three.png" alt="[@three]" border="0"></a></li>
-<li><a href="#@four"><img src="images/@four.png" alt="[@four]" border="0"></a></li>
+<li><a href="##pack">#pack</a></li>
+<li><a href="##color">#color</a></li>
+<li><a href="#@two">@two</a></li>
+<li><a href="#@three">@three</a></li>
+<li><a href="#@four">@four</a></li>
 <li><a href="#@eight">@eight</a></li>
 <li><a href="#@for"><img src="images/@for.png" alt="[@for 0 320 1]" border="0"></a></li>
 </ul>
@@ -50,6 +51,8 @@
 <li><a href="#@grade">@grade</a></li>
 <li><a href="#@perspective">@perspective</a></li>
 <li><a href="#@transpose">@transpose</a></li>
+<li><a href="##fade">#fade</a></li>
+<li><a href="##fade_lin">#fade_lin</a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="#@redim"><img src="images/@redim.png" alt="[@redim {2}]" border="0"></a></li>
@@ -85,8 +88,9 @@
 <li><a href="#@draw_image">@draw_image</a></li>
 <li><a href="#@draw_polygon">@draw_polygon</a></li>
 </ul>
-<h4><a href="#Special_Objects">Special Objects</a></h4><ul>
+<h4><a href="#Other_Objects">Other Objects</a></h4><ul>
 <li><a href="#rtmetro">rtmetro</a></li>
+<li><a href="#bindpatcher">bindpatcher</a></li>
 <li><a href="#pingpong">pingpong</a></li>
 <li><a href="#@global"><img src="images/@global.png" alt="[@global]" border="0"></a></li>
 <li><a href="#fps">fps</a></li>
@@ -112,7 +116,9 @@
 <li><a href="#inv*">inv*</a></li>
 <li><a href="#messageprepend">messageprepend</a></li>
 <li><a href="#messageappend">messageappend</a></li>
+<li><a href="#shunt">shunt</a></li>
 <li><a href="#demux">demux</a></li>
+<li><a href="#range">range</a></li>
 </ul>
 <h4><a href="#PureData_emulation">PureData emulation</a></h4><ul>
 <li><a href="#pd_netsend">pd_netsend</a></li>
@@ -185,26 +191,32 @@
 				a list of integers. <br>
   <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> generated symbol<br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@pack">@pack</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#pack">#pack</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p><b>NOT AVAILABLE YET</b></p> <p>Similar to [@join], but takes individual integers, and builds a Dim(N) vector out of it. </p> <br><b>attr</b>&nbsp;trigger_by <b>(</b><b><i>TriggerBy</i> trigger_by</b><b>)</b>  <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> inputs<b>)</b>   <br>
+ <p>Similar to [@join], but takes individual integers, and builds a Dim(N) vector out of it. </p> <br><b>attr</b>&nbsp;trigger_by <b>(</b><b><i>TriggerBy</i> trigger_by</b><b>)</b>  <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> inputs<b>)</b>   <br>
  <br><b>inlet&nbsp;* </b><b>method</b>&nbsp;int <b>(</b><b>)</b> <br>
  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
 			combination of inputs given in all inlets. 
 			this is produced according to the value of the trigger attribute. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#color">#color</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>Triple slider for the selection of RGB values.</p> <br><b>method</b>&nbsp;init <b>(</b><i>float</i> min<b>, </b><i>float</i> max<b>, </b><i>0,1</i> hidepreview<b>)</b>     <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
+			Produces a Dim(3) grid of RGB values. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@two] will soon become an alias for [@pack 2] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+use [#pack 2] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@three] will soon become an alias for [@pack 3] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+use [#pack 3] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="images/@four.png" alt="[@four]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-   <p> [@four] will soon become an alias for [@pack 4] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+use [#pack 4] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@eight">@eight</a></td></tr><tr><td></td><td valign="top"><br>
-<br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
-  <p> [@eight] will soon become an alias for [@pack 8] </p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+use [#pack 8] instead<br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><a href="images/help_@for.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>when given scalar bounds, works like a regular [for] object plugged 
@@ -419,6 +431,23 @@
  <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> dim1<b>, </b><i>integer</i> dim2<b>)</b>    <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b>  
 			swaps the two specified dimensions; dimension numbers are as in [@join]. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#fade">#fade</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> rate<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b>  
+			produces on outlet 0 a linear recurrent fading according to the flow of 
+			incoming messages. For example, if rate=5, then 20% (one fifth) 
+			of each new message will be blended with 80% of the previous output. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#fade_lin">#fade_lin</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> maxraise<b>, </b><i>integer</i> maxdrop<b>)</b>    <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b>  
+			produces on outlet 0 a piecewise-linear nonrecurrent fading according to the flow of 
+			incoming messages. For example, if maxraise=2 and maxdrop=4, then with each 
+			new message an output is produced that is at most 2 more or 4 less than the 
+			previous output. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -750,24 +779,26 @@
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="Special_Objects"></a><h4>Special Objects</h4></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4"><a name="Other_Objects"></a><h4>Other Objects</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rtmetro">rtmetro</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- 
-		this is like jMax's builtin metro object. metro ensures that 
-		there is at least a given delay between bangs. rtmetro ensures 
-		that on average there is a given delay between bangs: it will 
-		compensate too long delays by shorter delays. of course this won't 
-		work if the system cannot keep up with the amount of work. <p>WARNING: this class does not work as advertised.</p> <br><b>method</b>&nbsp;init <b>(</b><b>)</b> <br>
- <br><b>method</b>&nbsp;init geiger <b>(</b><b>)</b> <br>
+This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="bindpatcher">bindpatcher</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>sets the receive-symbol for the Pd patcher it is in.</p> <p>has no inlets, no outlets.</p> <p>EXPERIMENTAL.</p> <br><b>method</b>&nbsp;init <b>(</b><i>symbol</i> symbol<b>)</b>   <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pingpong">pingpong</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		send a value in inlet 1 first. if successive increasing values are 
-		sent in inlet 0, then output values will be successive increasing 
-		until they reach the right inlet value and then decrease to zero. 
-		the formula is stateless and so same inputs give always same output. <br></td></tr><tr><td></td><td></td><td> </td></tr>
+		Transforms linear counting (0, 1, 2, 3, 4, ...)  into a back-and-forth counting (0, 1, 2, 1, 0, ...) 
+		from 0 to a specified upper bound. <br><b>method</b>&nbsp;init <b>(</b><i>int</i> top<b>)</b>   <br>
+  <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;float <b>(</b><i>float</i> top<b>)</b> <br>
+   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;float <b>(</b><b>)</b>  
+				a value to be transformed. 
+				If, for example, top=10, then values 0 thru 10 are left unchanged, 
+				values 11 thru 19 are mapped to 9 thru 1 respectively, and 20 thru 30 
+				are mapped to 0 thru 10, and so on. <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@global.png" alt="[@global]" border="0"><br clear="left"><br><br><a href="images/help_@global.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> 
@@ -934,13 +965,29 @@
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b>...<b>)</b>  
 			Like [listappend], but operates on whole messages, that is, including the selector. <br>
    <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="demux">demux</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="shunt">shunt</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br><b>method</b>&nbsp;init <b>(</b>n<b>)</b> <br>
+ 
+		Compatible with jMax's [demux]. <br><b>method</b>&nbsp;init <b>(</b>n<b>, </b>i<b>)</b>    <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b>...<b>)</b>  
 			Routes a message to the active outlet. <br>
  <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><i>int</i> i<b>)</b>  
 			Selects which outlet is active. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="demux">demux</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		please use shunt instead (name conflict with another Pd external) <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="range">range</a></td></tr><tr><td></td><td valign="top"><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b>separators...<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;float <b>(</b><b>)</b>  
+			a value to be sent to one of the outlets. The first outlet is for values 
+			smaller than the first argument; else the second outlet is for values smaller 
+			than the second argument; and so on; and the last outlet is for values greater 
+			or equal to the last argument. <br>
+ <br><b>inlet&nbsp;1..n </b><b>method</b>&nbsp;float <b>(</b><b>)</b>  
+			sets the corresponding separator in the separator list. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -960,7 +1007,7 @@
 <tr><td colspan="4"> 
 <p><font size="-1">
 GridFlow 0.7.7 Documentation<br>
-Copyright &copy; 2001,2002,2003 by Mathieu Bouchard
+Copyright &copy; 2001,2002,2003,2004 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>

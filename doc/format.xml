@@ -4,7 +4,7 @@
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Format Handler Reference
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 -->
 
 <section name="Objects for Input/Output">
@@ -183,14 +183,47 @@
 		</outlet>
 	</class>
 	
-	<class name="peephole">
-		Similar to [@out x11] and [@out window], except it creates an inset in the patch you put it
+	<class name="#peephole">
+		<p>
+		This object class only works with a X11-based version of Pd or jMax.
+		(e.g. on Linux, BSD, but not MacOS X).
+		</p>
+		<p>Similar to [@out x11], except it creates an inset in the patch you put it
 		in, and a scaled version of the picture appears in the inset. It also emits the same messages
 		as [@out x11] and automatically scales cursor position according to the current scale factor.
-		The scale factor is decided automatically. DO NOT create an objectbox with "peephole"
-		written in it: instead drag one from the toolbar (it is the red-green-blue striped icon).
-		This object class only works with jMax 2.5 together with a X11 version of Java/SWING
-		(e.g. on Linux, BSD, but not MacOS X).
+		The scale factor is decided automatically.
+		</p>
+		<method name="init">
+			<arg name="height" type="int"/>
+			<arg name="width" type="int"/>
+		</method>
+		<p>All other methods are as in [@out x11].</p>
+	</class>
+	<class name="#mouse">
+		This will process the "position" messages emitted by [@out] or [#peephole] in
+		useful ways.
+		<outlet id="0"><method name="list">
+			y,x coords of a click
+		</method></outlet>
+		<outlet id="1"><method name="list">
+			y,x coords of a drag (any button is kept pressed)
+		</method></outlet>
+		<outlet id="2"><method name="list">
+			y,x coords of an unclick
+		</method></outlet>
+		<outlet id="3"><method name="list">
+			y,x coords of a move (no button is pressed)
+		</method></outlet>
+		<outlet id="4"><method name="float" type="0,1">button 1 status</method></outlet>
+		<outlet id="5"><method name="float" type="0,1">button 2 status</method></outlet>
+		<outlet id="6"><method name="float" type="0,1">button 3 status</method></outlet>
+		<outlet id="7"><method name="float" type="-1,1">
+			wheel difference: -1 = roll up; 1 = roll down.
+		</method></outlet>
+	</class>
+	<class name="#camera">
+		Works about like [@in videodev] except you can right-click-open it to access all of the
+		camera settings visually.
 	</class>
 </section>
 
