@@ -228,10 +228,10 @@ Feature.new {
 		emms
 		cmp dword [foo], 84
 		je yes
-		push 1
+		push long 1
 		call exit
 		yes:
-		push 0
+		push long 0
 		call exit
 		', '-lc'
 	}
