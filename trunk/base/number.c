@@ -70,8 +70,8 @@ int low_bit(uint32 n) {
 	while (n>3) { _x_ _x_ _x_ _x_ n-=4; } \
 	while (n--) { _x_ }
 
-template <class Number>
-static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
+template <class T>
+static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	uint32 t;
 	int i;
 	int hb[4];
@@ -118,8 +118,8 @@ static void default_pack(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) 
 
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
-template <class Number>
-static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<Number> out) {
+template <class T>
+static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = high_bit(self->mask[i]);
 
@@ -134,16 +134,16 @@ static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<Number> out
 
 /* **************************************************************** */
 
-template <class Number>
-static void pack2_565(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
+template <class T>
+static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	uint32 t;
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
 }
 
-template <class Number>
-static void pack3_888(BitPacking *self, int n, Pt<Number> in, Pt<uint8> out) {
+template <class T>
+static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
@@ -274,13 +274,6 @@ NumberType number_type_table[] = {
 */
 };
 
-NumberTypeIndex NumberType_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
-	if (sym==SYM(int32)) return int32_type_i;
-	if (sym==SYM(uint8)) return uint8_type_i;
-	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
-}
-
 /* **************************************************************** */
 
 #define DEF_OP1(_name_,_expr_) \
@@ -298,10 +291,18 @@ NumberTypeIndex NumberType_find (Ruby sym) {
 #define DECL_OP1ON(_name_) \
 	{ &op1_array_##_name_ }
 
-#define DECL_OP1(_name_,_sym_) { 0, _sym_, \
-	DECL_OP1ON(_name_), \
-	DECL_OP1ON(_name_), \
-	DECL_OP1ON(_name_), \
+#define DECL_OP1(_op_,_sym_) { 0, _sym_, \
+	DECL_OP1ON(_op_), \
+	DECL_OP1ON(_op_), \
+	DECL_OP1ON(_op_), \
+	DECL_OP1ON(_op_), \
+}
+
+#define DECL_OP1_NOU(_op_,_sym_) { 0, _sym_, \
+	{0}, \
+	DECL_OP1ON(_op_), \
+	DECL_OP1ON(_op_), \
+	DECL_OP1ON(_op_), \
 }
 
 DEF_OP1(abs,  a>=0 ? a : -a)
@@ -311,7 +312,7 @@ DEF_OP1(rand, a==0 ? 0 : random()%(int32)a)
 DEF_OP1(sq, a*a)
 
 Operator1 op1_table[] = {
-	DECL_OP1(abs, "abs"),
+	DECL_OP1_NOU(abs, "abs"),
 	DECL_OP1(sqrt,"sqrt"), 
 	DECL_OP1(rand,"rand"),
 	DECL_OP1(sq,"sq"),
@@ -381,9 +382,11 @@ Operator1 op1_table[] = {
 	DECL_OP2ON(_op_), \
 	DECL_OP2ON(_op_), \
 	DECL_OP2ON(_op_), \
+	DECL_OP2ON(_op_), \
 }
 
 #define DECL_OP2_NOFLOAT(_op_,_sym_,_props_) { 0, _sym_, \
+	DECL_OP2ON(_op_), \
 	DECL_OP2ON(_op_), \
 	DECL_OP2ON(_op_), \
 	{0,0,0,0,0,0}, \

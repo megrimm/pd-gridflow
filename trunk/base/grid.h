@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 /* current version number as string literal */
-#define GF_VERSION "0.6.5"
+#define GF_VERSION "0.7.0"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -174,7 +174,7 @@ static inline float32 abs(float32 a) { return fabs(a); }
 template <class T> /* where T is integral type */
 static inline T ipow(T a, T b) {
 	T r=1;
-	while(1) {
+	for(;;) {
 		if (b&1) r*=a;
 		b>>=1;
 		if (!b) return r;
@@ -310,6 +310,8 @@ public:
 	operator int8  *() { return (int8  *)p; }
 	operator int16 *() { return (int16 *)p; }
 	operator int32 *() { return (int32 *)p; }
+	operator float32 *() { return (float32 *)p; }
+//	operator T *() { return p; }
 //	operator Pt<const T>() { return Pt((const T *)p); }
 	int operator-(Pt x) { return p-x.p; }
 	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
@@ -466,9 +468,18 @@ struct Operator1On {
 struct Operator1 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
-	Operator1On<int32> on_int32;
-	Operator1On<uint8> on_uint8;
-	Operator1On<float32> on_float32;
+//private:
+#define MAKE_TYPE_ENTRY(type) \
+		Operator1On<type> on_##type; \
+		Operator1On<type> *on(type &foo) {return &on_##type;}
+	MAKE_TYPE_ENTRY(uint8)
+	MAKE_TYPE_ENTRY(int16)
+	MAKE_TYPE_ENTRY(int32)
+	MAKE_TYPE_ENTRY(float32)
+#undef MAKE_TYPE_ENTRY
+//public:
+	template <class T> inline void map(int n, Pt<T> a) {
+		on(*a)->op_map(n,(T *)a);}
 };
 
 template <class T>
@@ -484,9 +495,28 @@ struct Operator2On {
 struct Operator2 {
 	Ruby /*Symbol*/ sym;
 	const char *name;
-	Operator2On<int32> on_int32;
-	Operator2On<uint8> on_uint8;
-	Operator2On<float32> on_float32;
+//private:
+#define MAKE_TYPE_ENTRY(type) \
+		Operator2On<type> on_##type; \
+		Operator2On<type> *on(type &foo) {return &on_##type;}
+	MAKE_TYPE_ENTRY(uint8)
+	MAKE_TYPE_ENTRY(int16)
+	MAKE_TYPE_ENTRY(int32)
+	MAKE_TYPE_ENTRY(float32)
+#undef MAKE_TYPE_ENTRY
+//public:
+	template <class T> inline void map(int n, Pt<T> a, T b) {
+		on(*a)->op_map(n,(T *)a,b);}
+	template <class T> inline void zip(int n, Pt<T> a, Pt<T> b) {
+		on(*a)->op_zip(n,(T *)a,(T *)b);}
+	template <class T> inline T fold(T a, int n, Pt<T> b) {
+		return on(a)->op_fold(a,n,(T *)b);}
+	template <class T> inline void fold2(int an, Pt<T> as, int n, Pt<T> bs) {
+		on(*as)->op_fold2(an,(T *)as,n,(T *)bs);}
+	template <class T> inline T scan(T a, int n, Pt<T> b) {
+		on(a)->op_scan(a,n,(T *)b);}
+	template <class T> inline void scan2(int an, Pt<T> as, int n, Pt<T> bs) {
+		on(*as)->op_scan2(an,(T *)as,n,(T *)bs);}
 };
 
 extern NumberType number_type_table[];
@@ -522,36 +552,61 @@ struct Grid {
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
 	~Grid();
-	operator int32 *() { return (int32 *)data; }
-	operator uint8 *() { return (uint8 *)data; }
-	operator Pt<int32>() { return Pt<int32>((int32 *)data,dim->prod()); }
-	operator Pt<uint8>() { return Pt<uint8>((uint8 *)data,dim->prod()); }
+#define DEFCAST(type) \
+	operator type *() { return (type *)data; } \
+	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
+	DEFCAST(uint8)
+	DEFCAST(int16)
+	DEFCAST(int32)
+	DEFCAST(float32)
+#undef DEFCAST
 	inline bool is_empty() { return !dim; }
 	Dim *to_dim ();
 };
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
+/*
+   sorry for the header file pollution.
+   with all the new C++ templating (v0.7) i don't exactly know what
+   should go where.
+*/
 
-/* what kind of number a Grid contains. */
-typedef int32 Number;
+/* maximum number of grid cords per outlet per cord type */
+#define MAX_CORDS 8
+
+/* number of (minimum,maximum) numbers to send at once */
+#define MIN_PACKET_SIZE (1*1024)
+#define MAX_PACKET_SIZE (2*1024)
 
 /* macro for declaring an inlet inside a class{} block */
 #define GRINLET3(_inlet_) \
-	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<int32>data); \
+	template <class T> \
+	void grid_inlet_##_inlet_(GridInlet *in, int n, Pt<T> data); \
 
 /* macro for declaring an inlet inside GRCLASS() */
-#define GRINLET(_class_,_winlet_,_mode_) {_winlet_, _mode_, \
-	(void (*)(GridInlet *, int, Pt<int32>)) \
-	 _class_##_grid_inlet_##_winlet_ }
+#define GRINLET(_class_,i,mode) {i, mode, \
+	0, \
+	0, \
+	_class_##_grid_inlet_##i, \
+	0, }
+
+/* same for inlets that support more than just int32. */
+#define GRINLET2(_class_,i,mode) {i, mode, \
+	0, \
+	_class_##_grid_inlet_##i, \
+	_class_##_grid_inlet_##i, \
+	0, }
 
 /* four-part macro for defining the behaviour of a gridinlet in a class */
 #define GRID_INLET(_cl_,_inlet_) \
+	template <class T> \
 	static void _cl_##_grid_inlet_##_inlet_\
-	(GridInlet *in, int n, Pt<Number> data) { \
+	(GridInlet *in, int n, Pt<T> data) { \
 		((_cl_*)in->parent)->grid_inlet_##_inlet_(in,n,data); } \
+	template <class T> \
 	void _cl_::grid_inlet_##_inlet_ \
-	(GridInlet *in, int n, Pt<Number> data) { \
+	(GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
 #define GRID_FLOW else if (n>=0)
 #define GRID_FINISH else
@@ -572,7 +627,16 @@ typedef struct GridHandler {
 	/* It used to be three different function pointers here (begin,flow,end)
 	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
 	end-marker for inlet definitions... sorry for the confusion */
-	void  (*flow)(GridInlet *, int n, Pt<int32>data);
+#define DEFFLOW(_type_) \
+	void (*flow_##_type_)(GridInlet *in, int n, Pt<_type_> data); \
+	void flow(GridInlet *in, int n, Pt<_type_> data) const { \
+		assert(flow_##_type_); \
+		flow_##_type_(in,n,data); }
+	DEFFLOW(uint8);
+	DEFFLOW(int16);
+	DEFFLOW(int32);
+	DEFFLOW(float32);
+#undef DEFFLOW
 } GridHandler;
 
 typedef struct  GridObject GridObject;
@@ -589,8 +653,8 @@ struct GridInlet {
 /* grid receptor */
 /*	Pt<int32> (*get_target)(GridInlet *self); */
 	int factor; /* flow's n will be multiple of self->factor */
-	int bufn;
-	Pt<int32> buf; /* factor-chunk buffer */
+	Grid buf; /* factor-chunk buffer */
+	int bufi; /* buffer index: how much of buf is filled */
 
 /* extra */
 	GridObject *sender;
@@ -602,7 +666,8 @@ struct GridInlet {
 	void set_factor(int factor);
 	bool is_busy();
 	void begin( int argc, Ruby *argv);
-	void flow(int mode, int n, Pt<int32> data);
+	template <class T>
+	void flow(int mode, int n, Pt<T> data);
 	void end();
 	void list(  int argc, Ruby *argv);
 	void int_(  int argc, Ruby *argv);
@@ -639,15 +704,16 @@ struct GridOutlet {
 	int woutlet;
 
 /* those are set at every beginning of a transmission */
+	NumberTypeIndex nt;
 	Dim *dim; /* dimensions of the grid being sent */
-	Pt<int32> buf; /* temporary buffer */
+	Grid buf; /* temporary buffer */
 	bool frozen; /* is the "begin" phase finished? */
 	Pt<GridInlet *> inlets; /* which inlets are we connected to */
 	int ninlets; /* how many of them */
 
 /* those are updated during transmission */
 	int dex; /* how many numbers were already sent in this connection */
-	int bufn; /* number of bytes used in the buffer */
+	int bufi; /* number of bytes used in the buffer */
 
 /* transmission accelerator */
 
@@ -656,21 +722,35 @@ struct GridOutlet {
 	~GridOutlet();
 	bool is_busy() { return !!dim; }
 
-	void begin(Dim *dim);
+	void begin(Dim *dim, NumberTypeIndex nt=int32_type_i);
 	void abort();
+
 	/* give: data must be dynamic. it should not be used by the caller
 	   beyond the call to give() */
-	void give(int n, Pt<int32> data);
+	template <class T>
+	void GridOutlet::give(int n, Pt<T> data);
+
 	/* send/send_direct: data belongs to caller, may be stack-allocated,
 	   receiver doesn't modify the data; in send(), there is buffering;
 	   in send_direct(), there is not. When switching from buffered to
 	   unbuffered mode, flush() must be called */
-	void send(int n, Pt<uint8>data);
-	void send(int n, Pt<int32>data);
-	void flush() { send_direct(bufn,buf); bufn = 0; }
+	template <class T>
+	void send(int n, Pt<T> data);
+
+	void flush() {
+		switch(buf.nt) {
+		case uint8_type_i: send_direct(bufi,(Pt<uint8>)buf); break;
+		case int16_type_i: send_direct(bufi,(Pt<int16>)buf); break;
+		case int32_type_i: send_direct(bufi,(Pt<int32>)buf); break;
+		case float32_type_i: send_direct(bufi,(Pt<float32>)buf); break;
+		default: RAISE("argh");
+		}
+		bufi = 0;
+	}
 	void callback(GridInlet *in);
 private:
-	void send_direct(int n, Pt<int32>data);
+	template <class T>
+	void send_direct(int n, Pt<T> data);
 	void end() {
 		flush();
 		for (int i=0; i<ninlets; i++) inlets[i]->end();
@@ -714,6 +794,7 @@ struct GridObject : FObject {
 		return rb_str_ptr(s);
 	}
 
+	/* for Formats */
 	Ruby mode () { return rb_ivar_get(rself,SI(@mode)); }
 
 	DECL3(initialize);
@@ -726,18 +807,22 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_abort);
 };
 
-typedef struct GridObject Format;
-
 inline BFObject *FObject_peer(Ruby rself) {
 	DGS(GridObject); return self->foreign_peer;
 }
 
 void GridObject_conf_class(Ruby rself, GridClass *grclass);
 
+/* **************************************************************** */
+
+/* **************************************************************** */
+
+typedef struct GridObject Format;
+
 #define FF_W   (1<<1)
 #define FF_R   (1<<2)
 
-typedef struct GFBridge {
+struct GFBridge {
 	/* send message */
 	/* pre: outlet number is valid; self has a foreign_peer */
 	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby rself);
@@ -749,9 +834,8 @@ typedef struct GFBridge {
 	bool post_does_ln;
 	/* milliseconds between refreshes of x11, rtmetro, tcp */
 	float clock_tick;
-} GFBridge;
+};
 
-extern "C" GFBridge gf_bridge;
 extern Ruby mGridFlow;
 extern Ruby cFObject;
 extern Ruby cGridObject;
@@ -773,6 +857,7 @@ void *Pointer_get (Ruby self);
 
 Ruby ruby_c_install(GridClass *gc, Ruby super);
 
+extern "C" GFBridge gf_bridge;
 extern "C" void Init_gridflow () /*throws Exception*/;
 
 #endif /* __GF_GRID_H */
