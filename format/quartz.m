@@ -142,7 +142,7 @@ static NSDate *distantFuture, *distantPast;
 		[NSApp sendEvent: e];
 	}
 	[NSApp updateWindows];
-	[self->window flushWindowIfNeeded];
+	[rself->window flushWindowIfNeeded];
 	IEVAL(rself,"@clock.delay 20");
 }
 
