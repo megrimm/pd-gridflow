@@ -43,8 +43,14 @@ GridInlet *GridInlet_new(
 	$->flow  = f;
 	$->end   = e;
 	$->factor= 1;
-//	$->buf   = 0;
+	$->buf   = 0;
+	$->bufn  = 0;
 	return $;
+}
+
+void GridInlet_delete(GridInlet *$) {
+	FREE($->dim);
+	FREE($->buf);
 }
 
 GridObject *GridInlet_parent(GridInlet *$) {
@@ -76,6 +82,11 @@ void GridInlet_set_factor(GridInlet *$, int factor) {
 	assert(factor > 0);
 	assert(Dim_prod($->dim) % factor == 0);
 	$->factor = factor;
+	FREE($->buf);
+	if (factor > 1) {
+		$->buf = NEW(Number,factor);
+		$->bufn = 0;
+	}
 }
 
 void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
@@ -110,7 +121,27 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 			n = Dim_prod($->dim) - $->dex;
 			if (n<=0) return;
 		}
-		$->flow((GridObject *)$->parent,$,n,data);
+		if ($->buf && $->bufn) {
+			while (n && $->bufn < $->factor) {
+				$->buf[$->bufn++] = *data++;
+				n--;
+			}
+			if ($->bufn == $->factor) {
+				$->flow((GridObject *)$->parent,$,$->factor,$->buf);
+				$->bufn = 0;
+			}
+		}
+		{
+			int m = (n / $->factor) * $->factor;
+			if (m) $->flow((GridObject *)$->parent,$,m,data);
+			n -= m;
+		}
+		if ($->buf) {
+			while (n) {
+				$->buf[$->bufn++] = *data++;
+				n--;
+			}
+		}
 		$->dex = newdex;
 	}
 }
@@ -158,6 +189,11 @@ GridOutlet *GridOutlet_new(GridObject *parent, int woutlet) {
 	$->buf = NEW2(Number,PACKET_LENGTH);
 	$->bufn = 0;
 	return $;
+}
+
+void GridOutlet_delete(GridOutlet *$) {
+	FREE($->dim);
+	FREE($->buf);
 }
 
 GridObject *GridOutlet_parent(GridOutlet *$) {
