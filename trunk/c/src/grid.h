@@ -25,6 +25,7 @@
 
 /* #include <pthread.h> */
 
+/* a few C++ decls just in case you want to compile C++ code with this */
 #ifdef __cplusplus
 extern "C" {
 #define      new q_new
@@ -42,7 +43,9 @@ extern "C" {
 #define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 /* **************************************************************** */
-/* #include "macros.h" */
+/* jMax macros */
+
+/* we're gonna override this, so load it first, to avoid conflicts */
 #include <assert.h>
 
 /*
@@ -495,14 +498,14 @@ struct GridObject {
 
 /* **************************************************************** */
 
-typedef enum FileFormatFlags {dummy_dummy} FileFormatFlags;
-typedef struct FileFormatClass FileFormatClass;
-typedef struct FileFormat FileFormat;
+typedef enum FormatFlags {dummy_dummy} FormatFlags;
+typedef struct FormatClass FormatClass;
+typedef struct Format Format;
 
-struct FileFormatClass {
+struct FormatClass {
 	const char *symbol_name; /* short identifier */
 	const char *long_name; /* long identifier */
-	FileFormatFlags flags; /* future use (set to 0 please) */
+	FormatFlags flags; /* future use (set to 0 please) */
 
 /* methods on this object */
 
@@ -510,56 +513,56 @@ struct FileFormatClass {
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	FileFormat *(*open   )(FileFormatClass *$, const char *filename, int mode);
-	FileFormat *(*connect)(FileFormatClass *$, const char *target,   int mode);
+	Format *(*open   )(FormatClass *$, const char *filename, int mode);
+	Format *(*connect)(FormatClass *$, const char *target,   int mode);
 
 	/* for future use */
-	FileFormat *(*chain_to)(FileFormatClass *$, FileFormat *other);
+	Format *(*chain_to)(FormatClass *$, Format *other);
 
 /* methods on objects of this class */
 /* for reading, to outlet */
 	/* frames - how many frames are there (optional) */
-	int  (*frames)(FileFormat *$);
+	int  (*frames)(Format *$);
 	/*
 	  read a frame, sending to outlet
 	  if frame number is -1, pick up next frame (reloop after last)
 	  (if frames() is not implemented, only -1 is valid)
 	*/
-	bool (*frame) (FileFormat *$, GridOutlet *out, int frame);
+	bool (*frame) (Format *$, GridOutlet *out, int frame);
 
 /* for writing, from inlet */
-	GRID_BEGIN_(FileFormat,(*begin));
-	GRID_FLOW_( FileFormat,(*flow));
-	GRID_END_(  FileFormat,(*end));
+	GRID_BEGIN_(Format,(*begin));
+	GRID_FLOW_( Format,(*flow));
+	GRID_END_(  Format,(*end));
 
 /* for both */
 	/* size - decide which (height,width) should incoming images have
 		(optional method) */
-	void (*size)  (FileFormat *$, int height, int width);
+	void (*size)  (Format *$, int height, int width);
 	/* choose color model (not used for now) */
-	void (*color) (FileFormat *$, fts_symbol_t sym);
+	void (*color) (Format *$, fts_symbol_t sym);
 	/* for misc options */
-	void (*option)(FileFormat *$, int ac, const fts_atom_t *at);
-	void (*close) (FileFormat *$);
+	void (*option)(Format *$, int ac, const fts_atom_t *at);
+	void (*close) (Format *$);
 
 };
 
-#define FileFormat_FIELDS \
-	FileFormatClass *cl; \
+#define Format_FIELDS \
+	FormatClass *cl; \
 	GridObject *parent; \
 	int stream; \
 	FILE *bstream; \
-	FileFormat *chain; \
+	Format *chain; \
 	BitPacking *bit_packing; \
 	Dim *dim;
 
-struct FileFormat {
-	FileFormat_FIELDS;
+struct Format {
+	Format_FIELDS;
 };
 
-extern FileFormatClass FILE_FORMAT_LIST( ,class_);
-extern FileFormatClass *file_format_classes[];
-FileFormatClass *FileFormatClass_find(const char *name);
+extern FormatClass FORMAT_LIST( ,class_);
+extern FormatClass *format_classes[];
+FormatClass *FormatClass_find(const char *name);
 
 #ifdef __cplusplus
 };

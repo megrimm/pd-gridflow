@@ -219,25 +219,20 @@ void video_mmap_whine(VideoMmap *$) {
 
 /* **************************************************************** */
 
-extern FileFormatClass class_FormatVideoDev;
+extern FormatClass class_FormatVideoDev;
 typedef struct FormatVideoDev {
-	FileFormat_FIELDS;
+	Format_FIELDS;
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	uint8 *image;
 	int pending_frame;
 } FormatVideoDev;
-/*
-typedef struct FormatVideoDev {
-	FileFormat_FIELDS
-} FormatVideoDev;
-*/
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
-void FormatVideoDev_size (FileFormat *$, int height, int width) {
+void FormatVideoDev_size (Format *$, int height, int width) {
 	int v[] = {height, width, 3};
 	VideoWindow grab_win;
 
@@ -256,7 +251,7 @@ void FormatVideoDev_size (FileFormat *$, int height, int width) {
 
 /* picture is read at once by frame() to facilitate debugging. */
 /*
-Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
+Dim *FormatVideoDev_frame_by_read (Format *$, int frame) {
 
 	int n;
 	if (frame != -1) return 0;
@@ -336,7 +331,7 @@ bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
 	GridOutlet_begin(out,Dim_dup($->dim));
 
 
-	/* picture is converted here. assuming RGB 8:8:8 (RGB24) */
+	/* picture is converted here. */
 	{
 		int sy = Dim_get($->dim,0);
 		int sx = Dim_get($->dim,1);
@@ -368,7 +363,7 @@ GRID_END(FormatVideoDev,0) {
 
 }
 
-void FormatVideoDev_tuner (FileFormat *$, int value) {
+void FormatVideoDev_tuner (Format *$, int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = value;
 	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
@@ -380,7 +375,7 @@ void FormatVideoDev_tuner (FileFormat *$, int value) {
 	}
 }
 
-void FormatVideoDev_channel (FileFormat *$, int value) {
+void FormatVideoDev_channel (Format *$, int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	if (0> ioctl($->stream, VIDIOCGCHAN, &vchan)) {
@@ -392,7 +387,7 @@ void FormatVideoDev_channel (FileFormat *$, int value) {
 	}
 }
 
-void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
+void FormatVideoDev_option (Format *$, int ac, const fts_atom_t *at) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
@@ -424,7 +419,7 @@ void FormatVideoDev_close (FormatVideoDev *$) {
 	FREE($);
 }
 
-FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, int mode) {
+Format *FormatVideoDev_open (FormatClass *class, const char *filename, int mode) {
 	FormatVideoDev *$ = NEW(FormatVideoDev,1);
 	$->cl = &class_FormatVideoDev;
 	$->pending_frame = -1;
@@ -451,7 +446,7 @@ FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, i
 		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
 	/*	$->cl->size($,vcaps.minheight,vcaps.minwidth); */
-		$->cl->size((FileFormat *)$,vcaps.maxheight,vcaps.maxwidth);
+		$->cl->size((Format *)$,vcaps.maxheight,vcaps.maxwidth);
 	}
 
 	{
@@ -469,6 +464,7 @@ FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, i
 			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
 		break;
 		case VIDEO_PALETTE_RGB565:
+			/* BIG_HACK_FIX_ME */
 //			$->bit_packing = BitPacking_new(2,0xf800,0x07e0,0x001f);
 			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
 			$->bit_packing = BitPacking_new(3,0xff0000,0x00ff00,0x0000ff);
@@ -480,21 +476,21 @@ FileFormat *FormatVideoDev_open (FileFormatClass *class, const char *filename, i
 		}
 	}
 
-	FormatVideoDev_channel((FileFormat *)$,0);
+	FormatVideoDev_channel((Format *)$,0);
 
 	/* Sometimes a pause is needed here */
 	usleep(500000);
 
-	return (FileFormat *)$;
+	return (Format *)$;
 err:
-	$->cl->close((FileFormat *)$);
+	$->cl->close((Format *)$);
 	return 0;
 }
 
-FileFormatClass class_FormatVideoDev = {
+FormatClass class_FormatVideoDev = {
 	symbol_name: "videodev",
 	long_name: "Video4linux 1.x",
-	flags: (FileFormatFlags)0,
+	flags: (FormatFlags)0,
 	open: FormatVideoDev_open,
 	connect: 0,
 	chain_to: 0,

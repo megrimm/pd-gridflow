@@ -41,7 +41,7 @@
 	#include <X11/extensions/XShm.h>
 #endif
 
-extern FileFormatClass class_FormatX11;
+extern FormatClass class_FormatX11;
 typedef struct FormatX11 FormatX11;
 typedef struct X11Display {
 	fts_alarm_t *alarm;
@@ -57,7 +57,7 @@ typedef struct X11Display {
 } X11Display;
 
 struct FormatX11 {
-	FileFormat_FIELDS;
+	Format_FIELDS;
 	int autodraw;        /* how much to send to the display at once */
 	X11Display *display; /* our own display struct (see above) */
 	Window window;       /* X11 window number */
@@ -152,11 +152,19 @@ FormatX11 *X11Display_vout_find(X11Display *$, Window wid) {
 
 void X11Display_set_alarm(X11Display *$);
 
+static fts_symbol_t button_sym(int i) {
+	char foo[42];
+	sprintf(foo,"button%d",i);
+	return fts_new_symbol(foo);
+}
+
 void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 	X11Display *$ = (X11Display *)obj;
+	fts_atom_t at[4];
 	XEvent e;
 	int xpending;
-	
+	FormatX11 *vout;
+
 	while (1) {
 		int xpending = XEventsQueued($->display, QueuedAfterReading);
 		if (!xpending) break;
@@ -164,10 +172,9 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			FormatX11 *vout;
+			vout = X11Display_vout_find($,ex->window);
 			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
-			vout = X11Display_vout_find($,ex->window);
 			if (vout && vout->mode == 2) {
 				FormatX11_show_section(vout, ex->x, ex->y, ex->width,
 				ex->height);
@@ -175,15 +182,27 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 		}break;
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			//whine("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			fts_set_symbol(at+0,SYM(press));
+			fts_set_symbol(at+1,button_sym(eb->button));
+			fts_set_int(at+2,eb->y);
+			fts_set_int(at+3,eb->x);
+			//fts_outlet_send(OBJ(vout->out->parent),0,4,at);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			//whine("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			fts_set_symbol(at+0,SYM(release));
+			fts_set_symbol(at+1,button_sym(eb->button));
+			fts_set_int(at+2,eb->y);
+			fts_set_int(at+3,eb->x);
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
-			whine("drag at (y=%d,x=%d)",em->y,em->x);
+			//whine("drag at (y=%d,x=%d)",em->y,em->x);
+			fts_set_symbol(at+0,SYM(motion));
+			fts_set_int(at+1,em->y);
+			fts_set_int(at+2,em->x);
 		}break;
 		default:
 			whine("received event of type # %d", e.type);
@@ -497,7 +516,7 @@ int strsplit(char *victim, int max, char **witnesses) {
 	}
 }
 
-FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int mode) {
+Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
 	FormatX11 *$ = NEW(FormatX11,1);
 
 	/* defaults */
@@ -608,16 +627,16 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 
 	BitPacking_whine($->bit_packing);
 
-	return (FileFormat *)$;
+	return (Format *)$;
 err:;
-	$->cl->close((FileFormat *)$);
+	$->cl->close((Format *)$);
 	return 0;
 }
 
-FileFormatClass class_FormatX11 = {
+FormatClass class_FormatX11 = {
 	symbol_name: "x11",
 	long_name: "X Window System Version 11.5",
-	flags: (FileFormatFlags)0,
+	flags: (FormatFlags)0,
 
 	open: 0,
 	connect: FormatX11_connect,

@@ -29,8 +29,8 @@
 
 #include "grid.h"
 
-extern FileFormatClass class_FormatTarga;
-typedef struct FileFormat FormatTarga;
+extern FormatClass class_FormatTarga;
+typedef struct Format FormatTarga;
 
 /* targa header is like:
 	[:comment, Uint8, :length], 1,
@@ -41,7 +41,7 @@ typedef struct FileFormat FormatTarga;
 	[:comment, String8Unpadded, :data],
 */
 
-bool FormatTarga_frame (FileFormat *$, GridOutlet *out, int frame) {
+Dim *FormatTarga_read_header (Format *$) {
 	char in;
 	int dims[3],i;
 	short w,h;
@@ -70,21 +70,32 @@ bool FormatTarga_frame (FileFormat *$, GridOutlet *out, int frame) {
 
 /*	if (depth != 24 && depth != 32) { */
 
-	/* temporary limitation of FileFormat: only 3 channels */
+	/* temporary limitation of Format: only 3 channels */
 	if (depth != 24) {
 		whine("tga: wrong colour depth: %i\n", depth);
 		goto err;
 	}
 	{
 		int v[] = { h, w, depth/8 };
-		GridOutlet_begin(out,Dim_new(3,v));
+		return Dim_new(3,v);
 	}
+err:
+	return 0;
+}
+
+bool FormatTarga_frame (Format *$, GridOutlet *out, int frame) {
+	Dim *dim;
+	if (frame!=-1) return false;
+	dim = FormatTarga_read_header($);
+	if (!dim) return false;
+	GridOutlet_begin(out,dim);
+
 	{
 		int bs = Dim_prod_start(out->dim,1);
 		int y;
 		uint8 b1[bs];
 		Number b2[bs];
-		for (y=0; y<h; y++) {
+		for (y=0; y<dim->v[0]; y++) {
 			int i;
 			int bs2 = (int) fread(b1,1,bs,$->bstream);
 			if (bs2 < bs) {
@@ -100,11 +111,10 @@ bool FormatTarga_frame (FileFormat *$, GridOutlet *out, int frame) {
 	}
 	GridOutlet_end(out);
 	return true;
-err:
-	return false;
 }
 
 GRID_BEGIN(FormatTarga,0) {
+	whine("not implemented");
 	return false;
 }
 
@@ -114,14 +124,16 @@ GRID_FLOW(FormatTarga,0) {
 GRID_END(FormatTarga,0) {
 }
 
-void FormatTarga_close (FileFormat *$) {
+void FormatTarga_close (Format *$) {
 	if ($->bstream) fclose($->bstream);
 	FREE($);
 }
 
-FileFormat *FormatTarga_open (FileFormatClass *class, const char *filename, int mode) {
-	FileFormat *$ = NEW(FileFormat,1);
+Format *FormatTarga_open (FormatClass *class, const char *filename, int mode) {
+	Format *$ = NEW(Format,1);
 	$->cl = &class_FormatTarga;
+	$->stream = 0;
+	$->bstream = 0;
 
 	switch(mode) {
 //	case 4: case 2: break;
@@ -129,7 +141,6 @@ FileFormat *FormatTarga_open (FileFormatClass *class, const char *filename, int 
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->stream = 0;
 	$->bstream = v4j_file_fopen(filename,mode);
 	if (!$->bstream) {
 		whine("can't open file `%s': %s", filename, strerror(errno));
@@ -141,10 +152,10 @@ err:
 	return 0;
 }
 
-FileFormatClass class_FormatTarga = {
+FormatClass class_FormatTarga = {
 	symbol_name: "targa",
-	long_name: "Targa",
-	flags: (FileFormatFlags)0,
+	long_name: "TrueVision Targa",
+	flags: (FormatFlags)0,
 
 	open: FormatTarga_open,
 	connect: 0,

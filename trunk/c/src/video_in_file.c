@@ -36,7 +36,7 @@
 
 typedef struct VideoInFile {
 	GridObject_FIELDS;
-	FileFormat *ff; /* a file reader object */
+	Format *ff; /* a file reader object */
 } VideoInFile;
 
 /* ---------------------------------------------------------------- */
@@ -66,9 +66,9 @@ METHOD(VideoInFile,reset) {
 }
 
 METHOD(VideoInFile,open) {
-	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("/tmp/untitled.ppm"));
-	const char *format = fts_symbol_name(GET(1,symbol,fts_new_symbol("ppm")));
-	FileFormatClass *qlass = FileFormatClass_find(format);
+	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
+	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
+	FormatClass *qlass = FormatClass_find(format);
 
 	if (qlass) {
 		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
@@ -78,8 +78,33 @@ METHOD(VideoInFile,open) {
 	}
 
 	if ($->ff) $->ff->cl->close($->ff);
-	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
-	$->ff = qlass->open(qlass,fts_symbol_name(filename),4);
+	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
+	if (qlass->open) {
+		$->ff = qlass->open(qlass,fts_symbol_name(filename),4);
+	} else {
+		whine("file format has no `open'");
+	}
+}
+
+METHOD(VideoInFile,connect) {
+	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
+	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
+	FormatClass *qlass = FormatClass_find(format);
+
+	if (qlass) {
+		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
+	} else {
+		whine("unknown file format identifier: %s", format);
+		return;
+	}
+
+	if ($->ff) $->ff->cl->close($->ff);
+	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
+	if (qlass->connect) {
+		$->ff = qlass->connect(qlass,fts_symbol_name(filename),4);
+	} else {
+		whine("file format has no `connect'");
+	}
 }
 
 METHOD(VideoInFile,delete) {
@@ -136,6 +161,7 @@ CLASS(VideoInFile) {
 		{ 0,fts_s_bang,  METHOD_PTR(VideoInFile,bang),  ARRAY(rien),-1},
 		{ 0,sym_reset,   METHOD_PTR(VideoInFile,reset), ARRAY(rien),-1},
 		{ 0,sym_open,    METHOD_PTR(VideoInFile,open),  ARRAY(open_args),-1},
+		{ 0,SYM(connect),METHOD_PTR(VideoInFile,connect),ARRAY(open_args),-1},
 		{ 0,sym_close,   METHOD_PTR(VideoInFile,close), 0,0,0},
 		{ 0,SYM(size),   METHOD_PTR(VideoInFile,size),  ARRAY(size_args),-1},
 //		{ 0,SYM(frame),  METHOD_PTR(VideoInFile,frame), ARRAY(frame_args),-1},
