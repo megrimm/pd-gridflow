@@ -10,8 +10,9 @@ version 0.7.7 (head):
  * removed [rtmetro] (obsolete)
  * [@store]: added methods: put_at, reassign
  * fixed bugs in: [@camera_control]
+ * [demux] renamed to [shunt] and extra optional arg added (for initial value)
  * new object classes:
-   [range], [@mouse], [@pack], [@color]
+   [range], [@mouse], [@pack], [@color], [bindpatcher]
 
 version 0.7.6 (2004.03.22):
 
