@@ -26,7 +26,7 @@
 extern "C" {
 
 /* current version number as string literal */
-#define GF_VERSION "0.6.2"
+#define GF_VERSION "0.6.3"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <stdlib.h>
@@ -99,10 +99,6 @@ static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
-#ifdef HAVE_DEBUG
-#define HAVE_ASSERT
-#endif
-
 #ifdef HAVE_TSC_PROFILING
 #define HAVE_PROFILING
 #endif
@@ -130,7 +126,7 @@ static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 			__FILE__, __LINE__, #_expr_); \
 		abort(); }
 
-#ifndef HAVE_ASSERT
+#ifndef HAVE_DEBUG
 	/* disabling assertion checking */
 #undef assert
 #define assert(_foo_)
@@ -247,6 +243,7 @@ static inline bool is_le(void) {
 #define EVAL(s) rb_eval_string(s)
 #define rb_str_len(s) (RSTRING(s)->len)
 #define rb_str_ptr(s) (RSTRING(s)->ptr)
+#define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define rb_ary_len(s) (RARRAY(s)->len)
 #define rb_ary_ptr(s) (RARRAY(s)->ptr)
 
@@ -294,12 +291,16 @@ void define_many_methods(VALUE/*Class*/ $, int n, MethodDecl *methods);
 #define MAX_OUTLETS 2
 
 /* milliseconds between refreshes of x11, rtmetro, tcp */
-#define GF_TIMER_GRANULARITY (10.0)
+//#define GF_TIMER_GRANULARITY (10.0)
+#define GF_TIMER_GRANULARITY (666.0)
 
 /* number of (maximum,ideal) Numbers to send at once */
 /* this should remain a constant throughout execution
    because code still expect it to be constant. */
 extern int gf_max_packet_length;
+
+/* **************************************************************** */
+}; /* extern "C" */
 
 /*
   what kind of number a Grid contains.
@@ -308,16 +309,59 @@ extern int gf_max_packet_length;
 */
 typedef long Number;
 
-/* **************************************************************** */
+/*
+  hook into pointer manipulation.
+  will help find memory corruption bugs.
+*/
+template <class T> class Pt {
+public:
+	T *p;
+	T *start;
+	int n;
 
-//template <class T> class Pt {
-//	
-//};
+	Pt() : p(0), start(0), n(0) {}
+	Pt(T *q, int _n) : p(q), start(q), n(_n) {}
+	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {}
+//	Pt(char *q) : p((T *)q) {}
+	T &operator *() { return *p; }
+	Pt operator++(     ) { p++;  return *this; }
+	Pt operator+=(int i) { p+=i; return *this; }
+	Pt operator++(int  ) { Pt f(*this); ++*this; return f; }
+	T &operator[](int i) {
+#ifdef HAVE_DEBUG
+		if (!(p+i>=start && p+i<start+n)) {
+			fprintf(stderr,
+				"BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx\n",
+				(long)p,(long)start,(long)start+n);
+			raise(11);
+		}
+#endif
+		return p[i];
+	}
+	operator bool   () { return (bool   )p; }
+	operator void  *() { return (void  *)p; }
+	operator uint8 *() { return (uint8 *)p; }
+	operator int8  *() { return (int8  *)p; }
+	operator int16 *() { return (int16 *)p; }
+	operator int32 *() { return (int32 *)p; }
+//	operator Pt<const T>() { return Pt((const T *)p); }
+	Pt operator-(Pt x) { return Pt(p-x.p,n,start); }
+	Pt operator+(int x) { return Pt(p+x,n,start); }
+	Pt operator-(int x) { return Pt(p-x,n,start); }
+};
+
+//template <class T> Pt<T>::operator Pt<const T>() { return Pt<const T>(*this); }
+
+#define STACK_ARRAY(_type_,_name_,_count_) \
+	_type_ _name_##_foo[_count_]; Pt<_type_> _name_(_name_##_foo,_count_);
+
+#define ARRAY_NEW(_type_,_count_) \
+	(Pt<_type_>((_type_ *)new _type_[_count_],_count_))
 
 /* **************************************************************** */
 
 #define DECL_SYM(_sym_) \
-	extern VALUE/*Symbol*/ sym_##_sym_;
+	extern "C" VALUE/*Symbol*/ sym_##_sym_;
 
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
@@ -325,8 +369,6 @@ DECL_SYM(grid_end)
 DECL_SYM(bang)
 DECL_SYM(int)
 DECL_SYM(list)
-
-}; /* extern "C" */
 
 /* a Dim is a const array that holds dimensions of a grid
   and can do some calculations on positions in that grid. */
@@ -375,8 +417,8 @@ struct Dim {
 /* BitPacking objects encapsulate optimised loops of conversion */
 struct BitPacking;
 
-typedef uint8 *(*Packer)(BitPacking *$, int n, const Number *in, uint8 *out);
-typedef Number *(*Unpacker)(BitPacking *$, int n, const uint8 *in, Number *out);
+typedef Pt<uint8>(*Packer)(BitPacking *$, int n, Pt</*const*/ Number> in, Pt<uint8> out);
+typedef Pt<Number>(*Unpacker)(BitPacking *$, int n, Pt</*const*/ uint8> in, Pt<Number> out);
 
 struct BitPacking {
 	Packer packer;
@@ -388,8 +430,8 @@ struct BitPacking {
 	BitPacking(){abort();} /* don't call, but don't remove. sorry. */
 	BitPacking(int endian, int bytes, int size, uint32 *mask, Packer packer=0);
 	void gfpost();
-	uint8 *pack(int n, const Number *data, uint8 *target);
-	Number *unpack(int n, const uint8 *in, Number *out);
+	Pt<uint8> pack(int n, Pt</*const*/ Number> data, Pt<uint8> target);
+	Pt<Number> unpack(int n, Pt</*const*/ uint8> in, Pt<Number> out);
 	bool is_le();
 	bool eq(BitPacking *o);
 };
@@ -398,8 +440,8 @@ extern "C" {
 
 int high_bit(uint32 n);
 int low_bit(uint32 n);
-void swap32 (int n, uint32 *data);
-void swap16 (int n, uint16 *data);
+void swap32 (int n, Pt<uint32> data);
+void swap16 (int n, Pt<uint16> data);
 
 #define DECL_TYPE(_name_,_size_) \
 	_name_##_type_i
@@ -427,19 +469,19 @@ typedef struct Operator1 {
 	VALUE /*Symbol*/ sym;
 	const char *name;
 	Number (*op)(Number);
-	void   (*op_array)(int,Number*);
+	void   (*op_array)(int,Pt<Number>);
 } Operator1;
 
 typedef struct Operator2 {
 	VALUE /*Symbol*/ sym;
 	const char *name;
 	Number (*op)(Number,Number);
-	void   (*op_array)(int,Number *,Number);
-	void   (*op_array2)(int,Number *, const Number *);
-	Number (*op_fold)(Number,int,const Number *);
-	void   (*op_fold2)(int,Number *,int,const Number *);
-	void   (*op_scan)(Number,int,Number *);
-	void   (*op_scan2)(int,const Number *,int,Number *);
+	void   (*op_array)(int,Pt<Number>,Number);
+	void   (*op_array2)(int,Pt<Number>, Pt</*const*/ Number>);
+	Number (*op_fold)(Number,int,Pt</*const*/ Number>);
+	void   (*op_fold2)(int,Pt<Number>,int,Pt</*const*/ Number>);
+	void   (*op_scan)(Number,int,Pt<Number>);
+	void   (*op_scan2)(int,Pt</*const*/ Number>,int,Pt<Number>);
 } Operator2;
 
 extern NumberType number_type_table[];
@@ -466,8 +508,8 @@ struct Grid {
 	void init_from_ruby_list(int n, VALUE *a);
 	void del();
 	~Grid();
-	inline int32 *as_int32() { return (int32 *)data; }
-	inline uint8 *as_uint8() { return (uint8 *)data; }
+	inline Pt<int32> as_int32() { return Pt<int32>((int32 *)data,dim->prod()); }
+	inline Pt<uint8> as_uint8() { return Pt<uint8>((uint8 *)data,dim->prod()); }
 	inline bool is_empty() { return !dim; }
 };
 
@@ -479,7 +521,7 @@ typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
 #define GRID_BEGIN_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
-#define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Number *data)
+#define  GRID_FLOW_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in, int n, Pt<Number>data)
 #define   GRID_END_(_cl_,_name_) void _name_(VALUE rself,_cl_ *$, GridInlet *in)
 #define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
 #define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
@@ -509,11 +551,14 @@ struct GridInlet {
 	int dex;
 
 /* grid receptor */
-
 	int factor; /* flow's n will be multiple of $->factor */
 	int bufn;
-	Number *buf; /* factor-chunk buffer */
+	Pt<Number> buf; /* factor-chunk buffer */
 
+/* extra */
+	GridObject *sender;
+
+/* methods */
 	GridInlet(GridObject *parent, const GridHandler *gh);
 	~GridInlet();
 	void abort();
@@ -573,13 +618,13 @@ struct GridOutlet {
 	int dex;
 
 /* buffering */
-	Number *buf;
+	Pt<Number>buf;
 	int bufn;
 
 /* transmission accelerator */
 	int frozen;
-	int ron; GridInlet **ro; /* want (const Number *) shown to */
-	int rwn; GridInlet **rw; /* want (Number *) given to */
+	int ron; GridInlet **ro; /* want Pt<const Number> shown to */
+	int rwn; GridInlet **rw; /* want (Pt<Number>) given to */
 
 /* methods */
 	GridOutlet(GridObject *parent, int woutlet);
@@ -587,10 +632,10 @@ struct GridOutlet {
 	bool is_busy();
 	void begin(Dim *dim);
 	void abort();
-	void give(int n, Number *data);
-	void send8(int n, const uint8 *data);
-	void send(int n, const Number *data);
-	void send_direct(int n, const Number *data);
+	void give(int n, Pt<Number>data);
+	void send8(int n, Pt</*const*/ uint8>data);
+	void send(int n, Pt</*const*/ Number>data);
+	void send_direct(int n, Pt</*const*/ Number>data);
 	void flush();
 	void end();
 	void callback(GridInlet *in, int mode);
@@ -682,11 +727,11 @@ void MainLoop_remove(void *data);
 	INT2NUM(((long)ptr)/4))
 */
 
-#define PTR2FIX(ptr) INT2NUM(((long)ptr)>>2)
+#define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
 #define FIX2PTR(value) (void *)(INT(value)<<2)
 
-#define PTR2FIXA(ptr) INT2NUM(((long)ptr)&0xffff)
-#define PTR2FIXB(ptr) INT2NUM((((long)ptr)>>16)&0xffff)
+#define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
+#define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
 #define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
 
 VALUE Pointer_new (void *ptr);

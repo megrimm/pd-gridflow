@@ -97,6 +97,7 @@ class GridIn < GridObject
 	end
 
 	def _0_open(sym,*a)
+		p [sym,*a]
 		qlass = GridFlow.formats[sym]
 		if not qlass then raise "unknown file format identifier: #{sym}" end
 		@format.close if @format
@@ -346,7 +347,7 @@ class FormatGrid < Format; include EventIO
 #			else "smallest digit first" end)
 
 		case bpv
-		when 8, 32; # ok
+		when 8, 16, 32; # ok
 		else raise "unsupported bpv (#{@bpv})"
 		end
 		if reserved!=0
@@ -393,6 +394,8 @@ class FormatGrid < Format; include EventIO
 			# send_out_grid_flow 0, data.unpack("c*").pack("i*")
 			send_out_grid_flow(0, @bp.unpack(data))
 			@dex += data.length
+		when 16
+			raise "not now."
 		when 32
 			# hope for a multiple of 4 #!@#$
 			if (@is_le ? 1 : 0)==OurByteOrder then
@@ -428,8 +431,10 @@ class FormatGrid < Format; include EventIO
 		case @bpv
 		when 8
 			@stream.write data.unpack("i*").pack("c*")
-#			@stream.write BitPacking.new(ENDIAN_LITTLE,3,
-#				data.pack "c*"
+#			@stream.write @bp.pack(data)
+		when 16
+#			data.swap16! if GridFlow::OurByteOrder != (is_le ? 1 : 0)
+			@stream.write data.unpack("i*").pack("s*")
 		when 32
 			data.swap32! if GridFlow::OurByteOrder != (is_le ? 1 : 0)
 			@stream.write data
@@ -437,9 +442,10 @@ class FormatGrid < Format; include EventIO
 	end
 
 	def _0_rgrid_end
-		case @stream
-		when File; @stream.seek 0,IO::SEEK_SET # should be an option
-		end
+#		case @stream
+#		when File; @stream.seek 0,IO::SEEK_SET # should be an option
+#		end
+
 	end
 
 	def option(name,*args)
@@ -448,6 +454,9 @@ class FormatGrid < Format; include EventIO
 		# bug: should not be able to modify this _during_ a transfer
 			case args[0]
 			when :uint8; @bpv=8
+				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+			when :int16; @bpv=16
+				@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
 			when :int32; @bpv=32
 			else raise "unsupported number type"
 			end
@@ -464,6 +473,7 @@ class FormatPPM < Format; include EventIO
 	def initialize(mode,source,*args)
 		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		super
+		p [mode,source,*args]
 		raw_open mode,source,*args
 	end
 

@@ -221,7 +221,7 @@ static void video_mmap_gfpost(VideoMmap *$) {
 struct FormatVideoDev : Format {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
-	uint8 *image;
+	Pt<uint8> image;
 	int pending_frames[2], next_frame;
 	int current_channel;
 	int current_tuner;
@@ -271,28 +271,28 @@ METHOD(FormatVideoDev,size) {
 METHOD(FormatVideoDev,dealloc_image) {
 	if (!$->image) return;
 	if (!$->use_mmap) {
-		delete[] $->image;
+		delete[] (uint8 *)$->image;
 	} else {
 		munmap($->image, $->vmbuf.size);
-		$->image = 0;
+		$->image = Pt<uint8>();
 	}
 }
 
 METHOD(FormatVideoDev,alloc_image) {
 	if (!$->use_mmap) {
-		$->image = new uint8[$->dim->prod(0,1)*$->bit_packing->bytes];
+		$->image = ARRAY_NEW(uint8,$->dim->prod(0,1)*$->bit_packing->bytes);
 		return;
 	}
 	RAISE("hello");
 	int fd = GETFD;
 	WIOCTL2(fd, VIDIOCGMBUF, &$->vmbuf);
 	video_mbuf_gfpost(&$->vmbuf);
-	$->image = (uint8 *) mmap(
+	$->image = Pt<uint8>((uint8 *) mmap(
 		0,$->vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,
-		fd,0);
+		fd,0), $->vmbuf.size);
 	if (((int)$->image)<=0) {
-		$->image=0;
+		$->image=Pt<uint8>();
 		RAISE("mmap: %s", strerror(errno));
 	}
 }
@@ -312,15 +312,16 @@ METHOD(FormatVideoDev,frame_ask) {
 	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
 }
 
-static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
+static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out,
+Pt<uint8> buf) {
 	out->begin($->dim->dup());
 	/* picture is converted here. */
 	int sy = $->dim->get(0);
 	int sx = $->dim->get(1);
 	int bs = $->dim->prod(1);
-	Number b2[bs];
+	STACK_ARRAY(Number,b2,bs);
 	for(int y=0; y<sy; y++) {
-		uint8 *b1 = buf + $->bit_packing->bytes * sx * y;
+		Pt<uint8> b1 = buf + $->bit_packing->bytes * sx * y;
 		$->bit_packing->unpack(sx,b1,b2);
 		out->send(bs,b2);
 	}
@@ -529,7 +530,7 @@ METHOD(FormatVideoDev,init) {
 	argv++, argc--;
 	$->pending_frames[0] = -1;
 	$->pending_frames[1] = -1;
-	$->image = 0;
+	$->image = Pt<uint8>();
 	$->use_mmap = true;
 	if (argc<1) RAISE("usage: videodev <devicename>");
 	const char *filename = rb_sym_name(argv[0]);

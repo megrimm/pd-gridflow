@@ -62,7 +62,7 @@ int low_bit(uint32 n) {
 	while (n>3) { FOURTIMES(_x_) n-=4; } \
 	while (n--) { _x_ }
 
-static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
+static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	register uint32 t;
 	int i;
 	int hb[4];
@@ -75,13 +75,13 @@ static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 	if (sameorder && $->size==3) {
 		switch($->bytes) {
 		case 2:
-			NTIMES(t=CONVERT1; *((short *)out)=t; out+=2; in+=3;)
+			NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;)
 			break;
 		case 3:
-			NTIMES(t=CONVERT1; *((short *)out)=t; out[2]=t>>16; out+=3; in+=3;)
+			NTIMES(t=CONVERT1; *((int16 *)out)=t; out[2]=t>>16; out+=3; in+=3;)
 			break;
 		case 4:
-			NTIMES(t=CONVERT1; *((long *)out)=t; out+=4; in+=3;)
+			NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;)
 			break;
 		}
 	} else if ($->is_le()) {
@@ -100,7 +100,7 @@ static uint8 *default_pack(BitPacking *$, int n, const Number *in, uint8 *out) {
 
 /* **************************************************************** */
 
-static uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
+static Pt<uint8> pack_5652(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const int mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
@@ -108,7 +108,7 @@ static uint8 *pack_5652(BitPacking *$, int n, const Number *in, uint8 *out) {
 	return out;
 }
 
-static uint8 *pack_8883(BitPacking *$, int n, const Number *in, uint8 *out) {
+static Pt<uint8> pack_8883(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 	return out;
 }
@@ -174,7 +174,7 @@ bool BitPacking::is_le() {
 	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-uint8 *BitPacking::pack(int n, const Number *data, uint8 *target) {
+Pt<uint8> BitPacking::pack(int n, Pt<Number> data, Pt<uint8> target) {
 	return packer(this,n,data,target);
 }
 
@@ -186,7 +186,7 @@ uint8 *BitPacking::pack(int n, const Number *data, uint8 *target) {
 			*out++ = ((temp & mask[i]) << 7) >> hb[i]; \
 	}
 
-Number *BitPacking::unpack(int n, const uint8 *in, Number *out) {
+Pt<Number> BitPacking::unpack(int n, Pt<uint8> in, Pt<Number> out) {
 	int hb[4];
 	for (int i=0; i<size; i++) hb[i] = high_bit(mask[i]);
 
@@ -201,7 +201,7 @@ Number *BitPacking::unpack(int n, const uint8 *in, Number *out) {
 }
 
 /* this could be faster (use asm) */
-void swap32 (int n, uint32 *data) {
+void swap32 (int n, Pt<uint32> data) {
 	NTIMES({
 		uint32 x = *data;
 		x = (x<<16) | (x>>16);
@@ -211,17 +211,19 @@ void swap32 (int n, uint32 *data) {
 }
 
 /* this could be faster (use asm) */
-void swap16 (int n, uint16 *data) {
+void swap16 (int n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
 static VALUE String_swap32_f (VALUE $) {
-	swap32(rb_str_len($)/4,(uint32 *)rb_str_ptr($));
+	swap32(rb_str_len($)/4,
+		Pt<uint32>((uint32 *)rb_str_ptr($),rb_str_len($)/4));
 	return $;
 }
 
 static VALUE String_swap16_f (VALUE $) {
-	swap16(rb_str_len($)/2,(uint16 *)rb_str_ptr($));
+	swap16(rb_str_len($)/2,
+		Pt<uint16>((uint16 *)rb_str_ptr($),rb_str_len($)/2));
 	return $;
 }
 
@@ -235,11 +237,11 @@ METHOD2(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
-	Number *in = (Number *)rb_str_ptr(argv[0]);
+	Pt<Number> in = Pt<Number>((Number *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes = n*$->bytes;
 	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
-	$->pack(n,in,(uint8 *)rb_str_ptr(out));
+	$->pack(n,Pt<Number>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes));
 	return out;
 }
 
@@ -247,12 +249,12 @@ METHOD2(BitPacking,unpack2) {
 	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
 	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int n = rb_str_len(argv[0]) / $->bytes;
-	uint8 *in = (uint8 *)rb_str_ptr(argv[0]);
+	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes = n*$->size*sizeof(Number);
 	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*$->size);
-	$->unpack(n,in,(Number *)rb_str_ptr(out));
+	$->unpack(n,Pt<uint8>((uint8 *)in,bytes),Pt<Number>((Number *)rb_str_ptr(out),n));
 //	memcpy(rb_str_ptr(out),in,n);
 	return out;
 }
@@ -352,7 +354,7 @@ NumberType number_type_table[] = {
 
 #define DEF_OP1(_name_,_expr_) \
 	static Number op1_##_name_ (Number a) { return _expr_; } \
-	static void op1_array_##_name_ (int n, Number *as) { \
+	static void op1_array_##_name_ (int n, Pt<Number> as) { \
 		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
 			{ Number a=as[0]; as[0]= _expr_; } \
@@ -381,7 +383,7 @@ Operator1 op1_table[] = {
 
 #define DEF_OP2(_name_,_expr_) \
 	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
-	static void op_array_##_name_ (int n, Number *as, Number b) { \
+	static void op_array_##_name_ (int n, Pt<Number> as, Number b) { \
 		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
 			{ Number a=as[0]; as[0]= _expr_; } \
@@ -389,7 +391,7 @@ Operator1 op1_table[] = {
 			{ Number a=as[2]; as[2]= _expr_; } \
 			{ Number a=as[3]; as[3]= _expr_; } \
 		as+=4; n-=4; } } \
-	static void op_array2_##_name_ (int n, Number *as, const Number *bs) { \
+	static void op_array2_##_name_ (int n, Pt<Number> as, Pt<Number> bs) { \
 		while ((n&3)!=0) { Number a = *as, b = *bs++; *as++ = _expr_; n--; } \
 		while (n) { \
 			{ Number a=as[0], b=bs[0]; as[0]= _expr_; } \
@@ -397,16 +399,16 @@ Operator1 op1_table[] = {
 			{ Number a=as[2], b=bs[2]; as[2]= _expr_; } \
 			{ Number a=as[3], b=bs[3]; as[3]= _expr_; } \
 		as+=4; bs+=4; n-=4; } } \
-	static Number op_fold_##_name_ (Number a, int n, const Number *bs) { \
+	static Number op_fold_##_name_ (Number a, int n, Pt<Number> bs) { \
 		while (n--) { Number b = *bs++; a = _expr_; } return a; } \
-	static void op_fold2_##_name_ (int an, Number *as, int n, const Number *bs) {\
+	static void op_fold2_##_name_ (int an, Pt<Number> as, int n, Pt<Number> bs) {\
 		while (n--) { \
 			int i=0; \
 			while (i<an) { \
 				{ Number a = as[i], b = *bs++; as[i] = _expr_; } i++; } } } \
-	static void op_scan_##_name_ (Number a, int n, Number *bs) { \
+	static void op_scan_##_name_ (Number a, int n, Pt<Number> bs) { \
 		while (n--) { Number b = *bs; *bs++ = a = _expr_; } } \
-	static void op_scan2_##_name_ (int an, const Number *as, int n, Number *bs) { \
+	static void op_scan2_##_name_ (int an, Pt<Number> as, int n, Pt<Number> bs) { \
 		while (n--) { \
 			for (int i=0; i<an; i++) { \
 				Number a = *as++, b = *bs; *bs++ = a = _expr_; } \
