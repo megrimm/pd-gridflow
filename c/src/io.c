@@ -31,14 +31,6 @@
 
 /* ---------------------------------------------------------------- */
 
-static uint64 rdtsc(void) {
-  uint64 x;
-  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-  return x;}
-
-#define ENTER $->profiler_last = rdtsc();
-#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
-
 /* return and complain when file not open */
 #define CHECK_FILE_OPEN \
 	if (!$->ff) { whine("can't do that: file not open"); return; }

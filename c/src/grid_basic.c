@@ -25,14 +25,6 @@
 #include <math.h>
 #include "grid.h"
 
-static uint64 rdtsc(void) {
-  uint64 x;
-  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-  return x;}
-
-#define ENTER $->profiler_last = rdtsc();
-#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
-
 /* **************************************************************** */
 /*
   GridImport ("@import") is the class for converting a old-style stream

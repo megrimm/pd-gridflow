@@ -28,16 +28,6 @@ FormatClass *format_classes[] = { FORMAT_LIST(&,class_) };
 	fts_symbol_name(fts_get_class_name((_self_)->parent->o.head.cl)), \
 	(_self_)->winlet
 
-static uint64 rdtsc(void) {
-  uint64 x;
-  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-  return x;}
-
-#define ENTER $->profiler_last = rdtsc();
-#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
-#define ENTER_P $->parent->profiler_last = rdtsc();
-#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
-
 /* **************** GridInlet ************************************* */
 
 GridInlet *GridInlet_new(GridObject *parent, int winlet,
