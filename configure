@@ -59,7 +59,7 @@ has-videodev () {
 gcc /tmp/$$.c -o /tmp/$$
 }
 
-FORMATS='PPM Targa'
+FORMATS='X11 PPM Targa'
 
 echo -n "looking for videodev (video4linux input hardware): "
 if has-videodev; then
@@ -121,6 +121,6 @@ echo "
 for format in $FORMATS; do
 	echo "  _pre1_ _pre2_##Format$format,\\"
 done
-echo "_pre1_ _pre2_##FormatPPM" # twice... hack.
+echo "_pre1_ _pre2_##FormatX11" # twice... hack.
 echo "#endif"
 ) > c/src/config.h

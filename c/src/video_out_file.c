@@ -63,16 +63,7 @@ GRID_BEGIN(VideoOutFile,0) {
 GRID_FLOW(VideoOutFile,0) {
 	FileFormat *f = $->ff;
 	CHECK_FILE_OPEN
-	while(n > 0) {
-		int incr;
-		int max = Dim_prod(in->dim) - in->dex;
-		int bs = n<max?n:max;
-		$->ff->cl->flow($->ff, in, bs, data);
-		
-		data += bs;
-		in->dex += bs;
-		n -= bs;
-	}
+	$->ff->cl->flow($->ff, in, n, data);
 }
 
 GRID_END(VideoOutFile,0) {
@@ -83,8 +74,6 @@ GRID_END(VideoOutFile,0) {
 /* ---------------------------------------------------------------- */
 
 METHOD(VideoOutFile,init) {
-	whine("VideoOutFile#init");
-
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_NEW3($,VideoOutFile,0);
 }
@@ -99,8 +88,8 @@ METHOD(VideoOutFile,close) {
 }
 
 METHOD(VideoOutFile,open) {
-	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("/tmp/untitled.ppm"));
-	const char *format = fts_symbol_name(GET(1,symbol,fts_new_symbol("ppm")));
+	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
+	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
 	FileFormatClass *qlass = FileFormatClass_find(format);
 
 	if (qlass) {
@@ -112,11 +101,35 @@ METHOD(VideoOutFile,open) {
 
 	if ($->ff) $->ff->cl->close($->ff);
 	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
-	$->ff = qlass->open(qlass,fts_symbol_name(filename),2);
+	if (qlass->open) {
+		$->ff = qlass->open(qlass,fts_symbol_name(filename),2);
+	} else {
+		whine("file format has no `open'");
+	}
+}
+
+METHOD(VideoOutFile,connect) {
+	fts_symbol_t filename = GET(0,symbol,fts_new_symbol("untitled.ppm"));
+	const char *format = fts_symbol_name(GET(1,symbol,SYM(ppm)));
+	FileFormatClass *qlass = FileFormatClass_find(format);
+
+	if (qlass) {
+		whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
+	} else {
+		whine("unknown file format identifier: %s", format);
+		return;
+	}
+
+	if ($->ff) $->ff->cl->close($->ff);
+	/* if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]); */
+	if (qlass->connect) {
+		$->ff = qlass->connect(qlass,fts_symbol_name(filename),2);
+	} else {
+		whine("file format has no `connect'");
+	}
 }
 
 METHOD(VideoOutFile,delete) {
-	whine("VideoOutFile#delete");
 	if ($->ff) { VideoOutFile_p_close($); }
 }
 
@@ -142,6 +155,7 @@ CLASS(VideoOutFile) {
 		{-1,fts_s_init,  METHOD_PTR(VideoOutFile,init),  ARRAY(init_args),-1},
 		{-1,fts_s_delete,METHOD_PTR(VideoOutFile,delete),0,0,0 },
 		{ 0,sym_open,    METHOD_PTR(VideoOutFile,open),  ARRAY(open_args),-1},
+		{ 0,SYM(connect),METHOD_PTR(VideoOutFile,connect),ARRAY(open_args),-1},
 		{ 0,sym_close,   METHOD_PTR(VideoOutFile,close), 0,0,0 },
 //		{ 0,SYM(frame),  METHOD_PTR(VideoOutFile,frame),  ARRAY(frame_args),-1},
 		{ 0,SYM(option), METHOD_PTR(VideoOutFile,option), ARRAY(option_args),-1},
