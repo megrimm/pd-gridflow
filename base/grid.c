@@ -126,7 +126,7 @@ void Grid::init_from_ruby(Ruby x) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		STACK_ARRAY(int32,foo,1);
-		init(new Dim(0,foo));
+		init(new Dim(0,foo),int32_type_i);
 		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -178,7 +178,7 @@ void GridInlet::set_factor(int factor) {
 	this->factor = factor;
 	if (factor > 1) {
 		int32 v[] = {factor};
-		buf.init(new Dim(1,Pt<int32>(v,1)));
+		buf.init(new Dim(1,Pt<int32>(v,1)), nt);
 		bufi = 0;
 	} else {
 		buf.del();
@@ -571,10 +571,11 @@ GridObject::~GridObject() {
 		RAISE("not a GridObject subclass ???");
 	int noutlets = INT(rb_ivar_get(qlass,SI(@noutlets)));
 	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
-	if (handlers==Qnil) RAISE("BLETCH");
-	for (int i=0; i<rb_ary_len(handlers); i++) {
-		GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
-		in[gh->winlet] = new GridInlet(this,gh);
+	if (handlers!=Qnil) {
+		for (int i=0; i<rb_ary_len(handlers); i++) {
+			GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
+			in[gh->winlet] = new GridInlet(this,gh);
+		}
 	}
 	for (int i=0; i<noutlets; i++) out[i] = new GridOutlet(this,i);
 	rb_call_super(argc,argv);
