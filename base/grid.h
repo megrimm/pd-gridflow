@@ -148,7 +148,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(int)(ptr));
+	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(long)(ptr));
 	return INT2NUM(p>>2);
 }
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
@@ -292,26 +292,29 @@ static inline uint64 rdtsc() {return 0;}
 // hook into pointer manipulation. will help find memory corruption bugs.
 
 template <class T> class Pt {
+typedef ptrdiff_t Z;
+//typedef long Z;
+//typedef int Z;
 public:
 	T *p;
 #ifdef HAVE_DEBUG
 	T *start;
-	int n;
+	Z n;
 	Pt() : p(0), start(0), n(0) {}
-	Pt(T *q, int _n) : p(q), start(q), n(_n) {}
-	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {}
+	Pt(T *q, Z _n) : p(q), start(q), n(_n) {}
+	Pt(T *q, Z _n, T *_start) : p(q), start(_start), n(_n) {}
 #else
 	Pt() : p(0) {}
-	Pt(T *q, int _n, T *_start=0) : p(q) {}
+	Pt(T *q, Z _n, T *_start=0) : p(q) {}
 #endif
 	T &operator *() { return *p; }
-	Pt operator+=(int i) { p+=i; return *this; }
-	Pt operator-=(int i) { p-=i; return *this; }
+	Pt operator+=(Z i) { p+=i; return *this; }
+	Pt operator-=(Z	i) { p-=i; return *this; }
 	Pt operator++(     ) { p++;  return *this; }
 	Pt operator--(     ) { p--;  return *this; }
-	Pt operator++(int  ) { Pt f(*this); ++*this; return f; }
-	Pt operator--(int  ) { Pt f(*this); --*this; return f; }
-	T &operator[](int i) {
+	Pt operator++(Z  ) { Pt f(*this); ++*this; return f; }
+	Pt operator--(Z  ) { Pt f(*this); --*this; return f; }
+	T &operator[](Z i) {
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n))
 			BUG("%s\nBUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx\n",
@@ -339,7 +342,7 @@ public:
 #define FOO(S) operator S *() { return (S *)p; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	int operator-(Pt x) { return p-x.p; }
+	Z operator-(Pt x) { return p-x.p; }
 
 #ifdef HAVE_DEBUG
 #define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
