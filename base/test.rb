@@ -162,6 +162,21 @@ if nt!=:uint8 and nt!=:float32 and nt!=:float64
 		a.send_in 0,:list,nt, -30,-20,-10,0,+10,+20,+30 }
 end
 
+	(a = FObject["@import {3}"]).connect 0,e,0
+	x.expect([2,3,5]) { [2,3,5].each {|v| a.send_in 0,:list,nt,hm,v }}
+
+	(a = FObject["@import {3}"]).connect 0,e,0
+	x.expect([2,3,5]) { [2,3,5].each {|v| a.send_in 0,:list,nt,v }}
+
+	(a = FObject["@redim {5}"]).connect 0,e,0
+	x.expect([2,3,5,2,3]) { a.send_in 0,:list,2,3,5 }
+
+	(a = FObject["@redim {5}"]).connect 0,e,0
+	x.expect([0,0,0,0,0]) { a.send_in 0,:list }
+
+	(a = FObject["@redim {0}"]).connect 0,e,0
+	x.expect([]) { a.send_in 0,:list,42,37,69 }
+
 	(a = FObject["@inner * + {#{nt} # 0} {2 2 #{nt} # 2 3 5 7}"]).connect 0,e,0
 	(i0 = FObject["@redim {2 2}"]).connect 0,a,0
 	x.expect([12,17,48,68]) { i0.send_in 0,:list,nt, 1,2,4,8 }
