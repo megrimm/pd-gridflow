@@ -299,47 +299,142 @@ CLASS(GridStore) {
 
 /* **************************************************************** */
 
-#define DEF_OP(__name,__expr) \
-	static Number op_##__name (Number a, Number b) { return __expr; } \
-	static void op_array_##__name (int n, Number *as, Number b) { \
-		while (n--) { Number a = *as; *as++ = __expr; } } \
-	static Number op_fold_##__name (Number a, int n, const Number *as) { \
-		while (n--) { Number b = *as; a = __expr; } return a; }
+#define DEF_OP1(_name_,_expr_) \
+	static Number op1_##_name_ (Number a) { return _expr_; } \
+	static void op1_array_##_name_ (int n, Number *as) { \
+		while (n--) { Number a = *as; *as++ = _expr_; } }
 
-DEF_OP(add, a+b)
-DEF_OP(sub, a-b)
-DEF_OP(bus, b-a)
+DEF_OP1(abs, a>=0 ? a : -a)
 
-DEF_OP(mul, a*b)
-DEF_OP(div, b==0 ? 0 : a/b)
-DEF_OP(vid, a==0 ? 0 : b/a)
-DEF_OP(mod, b==0 ? 0 : a%b)
-DEF_OP(dom, a==0 ? 0 : b%a)
+#define DECL_OP1(_name_,_sym_) \
+	{ 0, _sym_, &op1_##_name_, &op1_array_##_name_ }
 
-DEF_OP(or , a|b)
-DEF_OP(xor, a^b)
-DEF_OP(and, a&b)
-DEF_OP(shl, a<<b)
-DEF_OP(shr, a>>b)
+typedef struct Operation1 Operation1;
+struct Operation1 {
+	fts_symbol_t sym;
+	const char *name;
+	Number (*op)(Number);
+	void (*op_array)(int,Number*);
+};
 
-DEF_OP(min, a<b?a:b)
-DEF_OP(max, a>b?a:b)
+Operation1 op1_table[] = {
+	DECL_OP1(abs,"abs")
+};
 
-DEF_OP(eq,  a == b)
-DEF_OP(ne,  a != b)
-DEF_OP(gt,  a >  b)
-DEF_OP(le,  a <= b)
-DEF_OP(lt,  a <  b)
-DEF_OP(ge,  a >= b)
+Operation1 *op1_table_find(fts_symbol_t sym) {
+	int i;
+	for(i=0; i<COUNT(op1_table); i++) {
+		if (op1_table[i].sym == sym) return &op1_table[i];
+	}
+	return 0;
+}
 
-DEF_OP(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
-DEF_OP(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
+/* **************************************************************** */
 
-#define DECLOP(_name_,_sym_) \
+typedef struct GridOp1 GridOp1;
+struct GridOp1 {
+	GridObject_FIELDS;
+	Operation1 *op;
+};
+
+GRID_BEGIN(GridOp1,0) {
+	GridOutlet_begin(parent->out[0],$->dim);
+	$->dex = 0;
+}
+
+GRID_FLOW(GridOp1,0) {
+	int i;
+	Number *data2 = NEW2(Number,n);
+	GridOutlet *out = parent->out[0];
+
+	memcpy(data2,data,sizeof(int)*n);
+	parent->op->op_array(n,data2);
+	$->dex += n;
+	GridOutlet_send(out,n,data2);
+	free(data2);
+/*
+	if ($->dex >= Dim_prod($->dim)) { GridInlet_end($); }
+*/
+}
+
+METHOD(GridOp1,init) {
+	fts_symbol_t sym = GET(1,symbol,op1_table[0].sym);
+
+	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	$->in[0] = GridInlet_new((GridObject *)$, 0,
+		(GridBegin)GridOp1_0_begin, (GridFlow)GridOp1_0_flow);
+	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+
+	$->op = op1_table_find(sym);
+	if (!$->op) {
+		fts_object_set_error(OBJ($),
+			"unknown unary operator \"%s\"", fts_symbol_name(sym));
+	}
+}
+
+METHOD(GridOp1,delete) { /* write me */ }
+
+CLASS(GridOp1) {
+	int i;
+	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol };
+
+	MethodDecl methods[] = {
+		{ -1, fts_s_init,   METHOD_PTR(GridOp1,init),   ARRAY(init_args), 1 },
+		{ -1, fts_s_delete, METHOD_PTR(GridOp1,delete), 0,0,0 },
+	};
+
+	/* initialize the class */
+	fts_class_init(class, sizeof(GridOp1), 2, 1, 0);
+	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
+
+	return fts_Success;
+}
+
+
+/* **************************************************************** */
+
+#define DEF_OP2(_name_,_expr_) \
+	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
+	static void op_array_##_name_ (int n, Number *as, Number b) { \
+		while (n--) { Number a = *as; *as++ = _expr_; } } \
+	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
+		while (n--) { Number b = *as; a = _expr_; } return a; }
+
+DEF_OP2(add, a+b)
+DEF_OP2(sub, a-b)
+DEF_OP2(bus, b-a)
+
+DEF_OP2(mul, a*b)
+DEF_OP2(div, b==0 ? 0 : a/b)
+DEF_OP2(vid, a==0 ? 0 : b/a)
+DEF_OP2(mod, b==0 ? 0 : a%b)
+DEF_OP2(dom, a==0 ? 0 : b%a)
+
+DEF_OP2(or , a|b)
+DEF_OP2(xor, a^b)
+DEF_OP2(and, a&b)
+DEF_OP2(shl, a<<b)
+DEF_OP2(shr, a>>b)
+
+DEF_OP2(min, a<b?a:b)
+DEF_OP2(max, a>b?a:b)
+
+DEF_OP2(eq,  a == b)
+DEF_OP2(ne,  a != b)
+DEF_OP2(gt,  a >  b)
+DEF_OP2(le,  a <= b)
+DEF_OP2(lt,  a <  b)
+DEF_OP2(ge,  a >= b)
+
+DEF_OP2(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
+DEF_OP2(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
+
+#define DECL_OP2(_name_,_sym_) \
 	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
 
-typedef struct Operation Operation;
-struct Operation {
+typedef struct Operation2 Operation2;
+struct Operation2 {
 	fts_symbol_t sym;
 	const char *name;
 	Number (*op)(Number,Number);
@@ -347,36 +442,44 @@ struct Operation {
 	Number (*op_fold)(Number,int,const Number *);
 };
 
-Operation optable[] = {
-	DECLOP(add, "+"),
-	DECLOP(sub, "-"),
-	DECLOP(bus, "inv+"),
+Operation2 op2_table[] = {
+	DECL_OP2(add, "+"),
+	DECL_OP2(sub, "-"),
+	DECL_OP2(bus, "inv+"),
 
-	DECLOP(mul, "*"),
-	DECLOP(div, "/"),
-	DECLOP(vid, "inv*"),
-	DECLOP(mod, "%"),
-	DECLOP(dom, "swap%"),
+	DECL_OP2(mul, "*"),
+	DECL_OP2(div, "/"),
+	DECL_OP2(vid, "inv*"),
+	DECL_OP2(mod, "%"),
+	DECL_OP2(dom, "swap%"),
 
-	DECLOP(or , "|"),
-	DECLOP(xor, "^"),
-	DECLOP(and, "&"),
-	DECLOP(shl, "<<"),
-	DECLOP(shr, ">>"),
+	DECL_OP2(or , "|"),
+	DECL_OP2(xor, "^"),
+	DECL_OP2(and, "&"),
+	DECL_OP2(shl, "<<"),
+	DECL_OP2(shr, ">>"),
 
-	DECLOP(min, "min"),
-	DECLOP(max, "max"),
+	DECL_OP2(min, "min"),
+	DECL_OP2(max, "max"),
 
-	DECLOP(eq,  "=="),
-	DECLOP(ne,  "!="), //!@#$
-	DECLOP(gt,  ">"),
-	DECLOP(le,  "<="), //!@#$
-	DECLOP(lt,  "<"),
-	DECLOP(ge,  ">="), //!@#$
+	DECL_OP2(eq,  "=="),
+	DECL_OP2(ne,  "!="), //!@#$
+	DECL_OP2(gt,  ">"),
+	DECL_OP2(le,  "<="), //!@#$
+	DECL_OP2(lt,  "<"),
+	DECL_OP2(ge,  ">="), //!@#$
 
-	DECLOP(sin, "sin*"),
-	DECLOP(cos, "cos*"),
+	DECL_OP2(sin, "sin*"),
+	DECL_OP2(cos, "cos*"),
 };
+
+Operation2 *op2_table_find(fts_symbol_t sym) {
+	int i;
+	for(i=0; i<COUNT(op2_table); i++) {
+		if (op2_table[i].sym == sym) return &op2_table[i];
+	}
+	return 0;
+}
 
 /* **************************************************************** */
 /*
@@ -388,7 +491,7 @@ Operation optable[] = {
 typedef struct GridOp2 GridOp2;
 struct GridOp2 {
 	GridObject_FIELDS;
-	Operation *op;
+	Operation2 *op;
 	int rint;
 	Number *data;
 	Dim *dim;
@@ -400,13 +503,13 @@ GRID_BEGIN(GridOp2,0) {
 }
 
 GRID_FLOW(GridOp2,0) {
-	int i;
 	Number *data2 = NEW2(Number,n);
 	GridOutlet *out = parent->out[0];
 
 	memcpy(data2,data,sizeof(int)*n);
 	if (parent->dim) {
 		int loop = Dim_prod(parent->dim);
+		int i;
 		for (i=0; i<n; i++) {
 			int rint = parent->data[($->dex+i)%loop];
 			data2[i] = parent->op->op(data2[i],rint);
@@ -439,8 +542,7 @@ GRID_FLOW(GridOp2,1) {
 }
 
 METHOD(GridOp2,init) {
-	int i;
-	fts_symbol_t sym = GET(1,symbol,optable[0].sym);
+	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
@@ -450,17 +552,11 @@ METHOD(GridOp2,init) {
 		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
-	for(i=0; i<COUNT(optable); i++) {
-		if (optable[i].sym == sym) {
-			whine("created @ object with operator '%s'", optable[i].name);
-			$->op = &optable[i];
-			return;
-		}
+	$->op = op2_table_find(sym);
+	if (!$->op) {
+		fts_object_set_error(OBJ($),
+			"unknown binary operator \"%s\"", fts_symbol_name(sym));
 	}
-
-	//!@#$
-	whine("unknown operator, trying '+' instead");
-	$->op = &optable[0];
 }
 
 METHOD(GridOp2,delete) { /* write me */ }
@@ -471,15 +567,6 @@ METHOD(GridOp2,rint) {
 	$->rint = GET(0,int,-42);
 }
 
-METHOD(GridOp2,bang) {
-	if (! $->dim || ! $->data) {
-		whine("empty buffer, better luck next time.");
-		return;
-	}
-	GridOutlet_begin($->out[0],$->dim);
-	GridOutlet_send($->out[0],Dim_prod($->dim),$->data);
-}
-
 CLASS(GridOp2) {
 	int i;
 	fts_type_t init_args[]  = { fts_t_symbol, fts_t_symbol, fts_t_int };
@@ -488,7 +575,6 @@ CLASS(GridOp2) {
 		{ -1, fts_s_init,   METHOD_PTR(GridOp2,init),   ARRAY(init_args), 2 },
 		{ -1, fts_s_delete, METHOD_PTR(GridOp2,delete), 0,0,0 },
 		{  1, fts_s_int,    METHOD_PTR(GridOp2,rint),   0,0,0 },
-		{  1, fts_s_bang,   METHOD_PTR(GridOp2,bang),   0,0,0 },
 	};
 
 	/* initialize the class */
@@ -513,7 +599,7 @@ CLASS(GridOp2) {
 typedef struct GridFold GridFold;
 struct GridFold {
 	GridObject_FIELDS;
-	Operation *op;
+	Operation2 *op;
 	int rint;
 	Number accum;
 /*
@@ -569,7 +655,7 @@ void GridFold_1_flow(GridInlet *$, int n, const Number *data) {
 
 METHOD(GridFold,init) {
 	int i;
-	fts_symbol_t sym = GET(1,symbol,optable[0].sym);
+	fts_symbol_t sym = GET(1,symbol,op2_table[0].sym);
 	$->rint = GET(2,int,0);
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
@@ -579,17 +665,11 @@ METHOD(GridFold,init) {
 		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
-	for(i=0; i<COUNT(optable); i++) {
-		if (optable[i].sym == sym) {
-			whine("created @ object with operator '%s'", optable[i].name);
-			$->op = &optable[i];
-			return;
-		}
+	$->op = op2_table_find(sym);
+	if (!$->op) {
+		fts_object_set_error(OBJ($),
+			"unknown binary operator \"%s\"", fts_symbol_name(sym));
 	}
-
-	//!@#$
-	whine("unknown operator, trying '+' instead");
-	$->op = &optable[0];
 }
 
 METHOD(GridFold,delete) { /* write me */ }
@@ -617,14 +697,18 @@ CLASS(GridFold) {
 
 void grid_basic_config (void) {
 	int i;
-	for(i=0; i<COUNT(optable); i++) {
-		optable[i].sym = fts_new_symbol(optable[i].name);
+	for(i=0; i<COUNT(op1_table); i++) {
+		op1_table[i].sym = fts_new_symbol(op1_table[i].name);
+	} 
+
+	for(i=0; i<COUNT(op2_table); i++) {
+		op2_table[i].sym = fts_new_symbol(op2_table[i].name);
 	} 
 
 	fts_class_install(fts_new_symbol("@import"), GridImport_class_init);
 	fts_class_install(fts_new_symbol("@export"), GridExport_class_init);
 	fts_class_install(fts_new_symbol("@store"),   GridStore_class_init);
+	fts_class_install(fts_new_symbol("@!"),         GridOp1_class_init);
 	fts_class_install(fts_new_symbol("@"),          GridOp2_class_init);
 	fts_class_install(fts_new_symbol("@fold"),     GridFold_class_init);
 }
-
