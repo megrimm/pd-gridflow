@@ -622,7 +622,6 @@ class GridRavel < FPatcher
 end
 
 def self.routine
-#	post "hello"
 	$tasks.each {|k,v|
 #		puts "#{k} #{v}"
 		case v
