@@ -274,6 +274,7 @@ class FPatcher < FObject
 			inl = Integer $1
 			sym = $2.intern
 			if inl<@ninlets then
+			raise "#{inspect} has not @inlets[#{inl}]" if not @inlets[inl]
 				for x in @inlets[inl] do
 				 x[0].send_in x[1],sym,*args end
 			else
