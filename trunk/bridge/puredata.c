@@ -565,7 +565,7 @@ static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby GridFlow_s_add_creator (Ruby name_) {
+static Ruby GridFlow_s_add_creator_2 (Ruby name_) {
 	t_symbol *name = gensym(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
 	class_addcreator((t_newmethod)BFObject_init,name,A_GIMME,0);
 	return Qnil;
@@ -615,24 +615,24 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	is_in_ruby = false;
 }       
 
-Ruby GridFlow_clock_tick (Ruby rself) {
+Ruby GridFlow_s_clock_tick (Ruby rself) {
 	return rb_float_new(clock_tick);
 }
 
-Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
+Ruby GridFlow_s_clock_tick_set (Ruby rself, Ruby tick) {
 	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
 	clock_tick = RFLOAT(tick)->value;
 	return tick;
 }
 
-Ruby GridFlow_post_string (Ruby rself, Ruby string) {
+Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 	if (TYPE(string)!=T_STRING) RAISE("not a string!");
 	post("%s",rb_str_ptr(string));
 	return Qnil;
 }
 
-#define SDEF2(_name1_,_name2_,_argc_) \
-	rb_define_singleton_method(mGridFlow2,_name1_,(RMethod)_name2_,_argc_)
+#define SDEF(_name1_,_name2_,_argc_) \
+	rb_define_singleton_method(mGridFlow2,_name1_,(RMethod)GridFlow_s_##_name2_,_argc_)
 
 Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
@@ -647,13 +647,13 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
 	
-	SDEF2("clock_tick",GridFlow_clock_tick,0);
-	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
-	SDEF2("post_string",GridFlow_post_string,1);
-	SDEF2("addcreator2",GridFlow_s_add_creator,-1);
-	SDEF2("gui",GridFlow_s_gui,-1);
-	SDEF2("bind",GridFlow_s_bind,2);
-	// SDEF2("addtomenu",bridge_addtomenu,-1);
+	SDEF("clock_tick",clock_tick,0);
+	SDEF("clock_tick=",clock_tick_set,1);
+	SDEF("post_string",post_string,1);
+	SDEF("add_creator_2",add_creator_2,-1);
+	SDEF("gui",gui,-1);
+	SDEF("bind",bind,2);
+	// SDEF("add_to_menu",add_to_menu,-1);
 	return Qnil;
 }
 
