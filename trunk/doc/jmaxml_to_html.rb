@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.7.0"
+GF_VERSION = "0.7.1"
 
 require "xmlparser"
 
@@ -45,6 +45,17 @@ end
 def warn(text)
 	STDERR.print "\e[1;031mWARNING:\e[0m "
 	STDERR.puts text
+end
+
+$escape_map={
+	"<" => "&lt;",
+	">" => "&gt;",
+	"&" => "&amp;",
+}
+
+def escape_html(text)
+	return nil if not text
+	text.gsub(/[<>&]/) {|x| $escape_map[x] }
 end
 
 def mk(tag,*values,&block)
@@ -156,7 +167,7 @@ class XNode
 			case x
 			when String
 				x.gsub!(/[\r\n\t ]+$/," ")
-				print x
+				print escape_html(x)
 			when XNode
 				x.print_contents
 			else raise "crap"
@@ -310,23 +321,31 @@ class XNode
 			print "<td>"
 			print "<table border='1'>"
 			mk(:th) {
-				print(["internal name","usual name","description"].map{|x| "<td>#{x}</td>" })
+				print(["name","description",
+					"meaning in pixel context (pictures, palettes)",
+					"meaning in spatial context (indexmaps, polygons)"]\
+				.map{|x|
+					"<td>#{x}</td>" })
 			}
 		;0)
 		print "<tr>"
-		mk(:td) { print att['cname'] }
 		mk(:td) {
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
 			if icon then
 				mkimg icon
 			else
 				mk(:img,:src,"images/op/#{att['cname']}.jpg",
-					:border,0,:alt,att["cname"])
+					:border,0,:alt,att["name"])
 			end
 			# print att["name"]
 		}
 		print "<td>"
-		proc { print "</td></tr>\n" }
+		proc {
+			print "</td>"
+			print "<td>#{(escape_html att['color'])||'&nbsp;'}</td>"
+			print "<td>#{(escape_html att['space'])||'&nbsp;'}</td>"
+			print "</tr>\n"
+		}
 	end
 	alias prc_operator_2 prc_operator_1
 

@@ -144,18 +144,14 @@
 
 	<!-- todo: text attr in those icons could be auto-generated -->
 
-	<operator-1 name="abs" cname="abs">
-		absolute value of A
-	</operator-1>
-	<operator-1 name="rand" cname="rand">
-		randomly produces a non-negative number below A
-	</operator-1>
-	<operator-1 name="sqrt" cname="sqrt">
-		square root of A, rounded downwards
-	</operator-1>
-	<operator-1 name="sq" cname="sq">
-		A times A
-	</operator-1>
+	<operator-1 name="abs" cname="abs"
+	> absolute value of A </operator-1>
+	<operator-1 name="rand" cname="rand"
+	> randomly produces a non-negative number below A </operator-1>
+	<operator-1 name="sqrt" cname="sqrt"
+	> square root of A, rounded downwards </operator-1>
+	<operator-1 name="sq" cname="sq"
+	> A times A </operator-1>
 </section>
 
 <section name="Two-Input Operators">
@@ -176,59 +172,130 @@
 	<!-- todo: make CNAME a column in html -->
 
 	<!-- category: bogus -->
-	<operator-2 name="ignore" cname="ignore"> A </operator-2>
-	<operator-2 name="put"    cname="put"> B </operator-2>
+	<operator-2 name="ignore" cname="ignore"
+		color="no effect"
+		space="no effect"
+	> A </operator-2>
+	<operator-2 name="put"    cname="put"
+		color="replace by"
+		space="replace by"
+	> B </operator-2>
 
 	<!-- category: additive -->
-	<operator-2 name="+"    cname="add"> A + B </operator-2>
-	<operator-2 name="-"    cname="sub"> A - B </operator-2>
-	<operator-2 name="inv+" cname="bus"> B - A </operator-2>
+	<operator-2 name="+"    cname="add"
+		color="brightness, crossfade"
+		space="move, morph"
+	> A + B </operator-2>
+	<operator-2 name="-"    cname="sub"
+		color="brightness, motion detection"
+		space="move, motion detection"
+	> A - B </operator-2>
+	<operator-2 name="inv+" cname="bus"
+		color="negate then contrast"
+		space="180 degree rotate then move"
+	> B - A </operator-2>
 
 	<!-- category: multiplicative -->
-	<operator-2 name="*"     cname="mul"> A * B </operator-2>
-	<operator-2 name="/"     cname="div"> A / B, rounded towards zero </operator-2>
-	<operator-2 name="div"   cname="div2"> A / B, rounded downwards </operator-2>
-	<operator-2 name="inv*"  cname="vid"> B / A, rounded towards zero </operator-2>
-	<operator-2 name="swapdiv" cname="vid2"> B / A, rounded downwards </operator-2>
-	<operator-2 name="%"     cname="mod"> A % B, modulo (goes with div) </operator-2>
-	<operator-2 name="swap%" cname="dom"> B % A, modulo (goes with div) </operator-2>
-	<operator-2 name="rem"     cname="rem"> A % B, remainder (goes with /) </operator-2>
-	<operator-2 name="swaprem" cname="mer"> B % A, remainder (goes with /) </operator-2>
+	<operator-2 name="*"     cname="mul"
+		color="contrast"
+		space="zoom out"
+	> A * B </operator-2>
+	<operator-2 name="/"     cname="div"
+		color="contrast"
+		space="zoom in"
+	> A / B, rounded towards zero </operator-2>
+	<operator-2 name="div"   cname="div2"
+		color="contrast"
+		space="zoom in"
+	> A / B, rounded downwards </operator-2>
+	<operator-2 name="inv*"  cname="vid"
+	> B / A, rounded towards zero </operator-2>
+	<operator-2 name="swapdiv" cname="vid2"
+	> B / A, rounded downwards </operator-2>
+	<operator-2 name="%"     cname="mod"
+		space="tile"
+	> A % B, modulo (goes with div) </operator-2>
+	<operator-2 name="swap%" cname="dom"
+	> B % A, modulo (goes with div) </operator-2>
+	<operator-2 name="rem"     cname="rem"
+	> A % B, remainder (goes with /) </operator-2>
+	<operator-2 name="swaprem" cname="mer"
+	> B % A, remainder (goes with /) </operator-2>
 
 	<!-- bits -->
-	<operator-2 name="|"     cname="or" > A or B, bitwise  </operator-2>
-	<operator-2 name="^"     cname="xor"> A xor B, bitwise </operator-2>
-	<operator-2 name="&amp;" cname="and"> A and B, bitwise </operator-2>
-	<operator-2 name="&lt;&lt;" cname="shl">
-		A * (2**(B % 32)), which is left-shifting
-	</operator-2>
-	<operator-2 name="&gt;&gt;" cname="shr">
-		A / (2**(B % 32)), which is right-shifting
-	</operator-2>
+	<operator-2 name="|"     cname="or" 
+		color="bright munchies"
+		space="bottomright munchies"
+	> A or B, bitwise  </operator-2>
+	<operator-2 name="^"     cname="xor"
+		color="symmetric munchies (fractal checkers)"
+		space="symmetric munchies (fractal checkers)"
+	> A xor B, bitwise </operator-2>
+	<operator-2 name="&amp;" cname="and"
+		color="dark munchies"
+		space="topleft munchies"
+	> A and B, bitwise </operator-2>
+	<operator-2 name="&lt;&lt;" cname="shl"
+		color="like *"
+		space="like *"
+	> A * (2**(B % 32)), which is left-shifting </operator-2>
+	<operator-2 name="&gt;&gt;" cname="shr"
+		color="like /,div"
+		space="like /,div"
+	> A / (2**(B % 32)), which is right-shifting </operator-2>
 
 	<!-- decision -->
-	<operator-2 name="||" cname="sc_or"> if A is zero then B else A </operator-2>
-	<operator-2 name="&amp;&amp;" cname="sc_and"> if A is zero then zero else B</operator-2>
-	<operator-2 name="min" cname="min"> the lowest value in A,B </operator-2>
-	<operator-2 name="max" cname="max"> the highest value in A,B </operator-2>
+	<operator-2 name="||" cname="sc_or"
+	> if A is zero then B else A </operator-2>
+	<operator-2 name="&amp;&amp;" cname="sc_and"
+	> if A is zero then zero else B</operator-2>
+	<operator-2 name="min" cname="min"
+		color="clipping"
+		space="clipping (of individual points)"
+	> the lowest value in A,B </operator-2>
+	<operator-2 name="max" cname="max"
+		color="clipping"
+		space="clipping (of individual points)"
+	> the highest value in A,B </operator-2>
 
 	<!-- comparison -->
-	<operator-2 name="cmp"   cname="cmp"> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </operator-2>
-	<operator-2 name="=="    cname="eq"> is A equal to B ? 1=true, 0=false </operator-2>
-	<operator-2 name="!="    cname="ne"> is A not equal to B ? </operator-2>
-	<operator-2 name="&gt;"  cname="gt"> is A greater than B ? </operator-2>
-	<operator-2 name="&lt;=" cname="le"> is A not greater than B ? </operator-2>
-	<operator-2 name="&lt;"  cname="lt"> is A less than B ? </operator-2>
-	<operator-2 name="&gt;=" cname="ge">is A not less than B ? </operator-2>
+	<operator-2 name="cmp"   cname="cmp"
+	> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </operator-2>
+	<operator-2 name="=="    cname="eq"
+	> is A equal to B ? 1=true, 0=false </operator-2>
+	<operator-2 name="!="    cname="ne"
+	> is A not equal to B ? </operator-2>
+	<operator-2 name="&gt;"  cname="gt"
+	> is A greater than B ? </operator-2>
+	<operator-2 name="&lt;=" cname="le"
+	> is A not greater than B ? </operator-2>
+	<operator-2 name="&lt;"  cname="lt"
+	> is A less than B ? </operator-2>
+	<operator-2 name="&gt;=" cname="ge"
+	>is A not less than B ? </operator-2>
 
 	<!-- trigonometrics and exponentiation -->
-	<operator-2 name="sin*" cname="sin"> B * sin(A) </operator-2>
-	<operator-2 name="cos*" cname="cos"> B * cos(A) </operator-2>
-	<operator-2 name="atan" cname="atan"> arctan(A/B) </operator-2>
-	<operator-2 name="tanh*" cname="tanh*"> B * tanh(A) </operator-2>
-	<operator-2 name="log*" cname="log*"> B * log(A) (in base e) </operator-2>
-	<operator-2 name="gamma" cname="gamma"> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
-	<operator-2 name="**" cname="pow"> A**B, that is, A raised to power B </operator-2>
+	<operator-2 name="sin*" cname="sin"
+		space="waves, rotations"
+	> B * sin(A) </operator-2>
+	<operator-2 name="cos*" cname="cos"
+		space="waves, rotations"
+	> B * cos(A) </operator-2>
+	<operator-2 name="atan" cname="atan"
+		space="find angle to origin (part of polar transform)"
+	> arctan(A/B) </operator-2>
+	<operator-2 name="tanh*" cname="tanh*"
+		color="smooth clipping"
+		space="smooth clipping (of individual points), neural sigmoid"
+	> B * tanh(A) </operator-2>
+	<operator-2 name="log*" cname="log*"
+	> B * log(A) (in base e) </operator-2>
+	<operator-2 name="gamma" cname="gamma"
+		color="gamma correction"
+	> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
+	<operator-2 name="**" cname="pow"
+		color="gamma correction"
+	> A**B, that is, A raised to power B </operator-2>
 </section>
 
 <section name="Bridges"><prose>
