@@ -58,12 +58,10 @@ struct FormatQuickTimeApple : Format {
 \def Ruby frame () {
 	CGrafPtr savedPort;
 	GDHandle savedDevice;
-//	GetGWorld(&savedPort, &savedDevice);
 	SetMovieGWorld(movie,gw,GetGWorldDevice(gw));
 	Rect r;
 	GetMovieBox(movie,&r);
 	PixMapHandle pixmap = GetGWorldPixMap(gw);
-//	Ptr baseAddr = GetPixBaseAddr(pixmap);
 	short flags = nextTimeStep;
 	if (nframe>=nframes) return Qfalse;
 	if (nframe==0) flags |= nextTimeEdgeOK;
@@ -75,18 +73,13 @@ struct FormatQuickTimeApple : Format {
 		time=0;
 		return Qfalse;
 	}
-	gfpost("quicktime frame # %d",nframe);
-	gfpost("time=%d duration=%d", (long)time, (long)duration);
+	gfpost("quicktime frame #%d; time=%d duration=%d", nframe, (long)time, (long)duration);
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
 	out[0]->begin(dim->dup());
 	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
 	int n = dim->prod()/4;
-	for (int i=0; i<n; i++) {
-		bufu32[i]=(bufu32[i]<<8)+(bufu32[i]>>24);
-	}
-//	gfpost("dim->prod=%d",dim->prod());
-//	swap32(dim->prod()/4,bufu32);
+	for (int i=0; i<n; i++) bufu32[i]=(bufu32[i]<<8)+(bufu32[i]>>24);
 	out[0]->send(dim->prod(),buffer);
 	int nf=nframe;
 	nframe++;
