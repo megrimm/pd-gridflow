@@ -294,6 +294,11 @@ class GridFour < GridPack
 	install_rgrid 0
 	install "@four", 4, 1
 end
+class GridEight < GridPack
+	(0...8).each {|x| define_inlet x }
+	install_rgrid 0
+	install "@eight", 8, 1
+end
 
 class GridExportSymbol < GridObject
 	def _0_rgrid_begin; @data="" end
