@@ -101,10 +101,10 @@ const char *video_palette_choice[] = {
 };
 
 const char *video_mode_choice[] = {
-	OPT( 0,PAL,  "")
-	OPT( 1,NTSC, "")
-	OPT( 2,SECAM,"")
-	OPT( 3,AUTO, "")
+	OPT( 0,PAL,  "pal")
+	OPT( 1,NTSC, "ntsc")
+	OPT( 2,SECAM,"secam")
+	OPT( 3,AUTO, "auto")
 };
 
 /* **************************************************************** */
@@ -226,6 +226,8 @@ typedef struct FormatVideoDev {
 	VideoMmap vmmap;
 	uint8 *image;
 	int pending_frame;
+	int current_channel;
+	int current_tuner;
 } FormatVideoDev;
 
 #define WIOCTL(_f_,_name_,_arg_) \
@@ -363,21 +365,39 @@ GRID_END(FormatVideoDev,0) {
 
 }
 
-void FormatVideoDev_tuner (Format *$, int value) {
+void FormatVideoDev_norm (FormatVideoDev *$, int value) {
 	VideoTuner vtuner;
-	vtuner.tuner = value;
+	vtuner.tuner = $->current_tuner;
+	if (value<0 || value>3) {
+		whine("norm must be in range 0..3");
+		return;
+	}
 	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
 		whine("no tuner #%d", value);
 	} else {
+		vtuner.mode = value;
 		VideoTuner_whine(&vtuner);
-		vtuner.mode = VIDEO_MODE_NTSC;
 		WIOCTL($->stream, VIDIOCSTUNER, &vtuner);
 	}
 }
 
-void FormatVideoDev_channel (Format *$, int value) {
+void FormatVideoDev_tuner (FormatVideoDev *$, int value) {
+	VideoTuner vtuner;
+	vtuner.tuner = value;
+	$->current_tuner = value;
+	if (0> ioctl($->stream, VIDIOCGTUNER, &vtuner)) {
+		whine("no tuner #%d", value);
+	} else {
+		vtuner.mode = VIDEO_MODE_NTSC;
+		VideoTuner_whine(&vtuner);
+		WIOCTL($->stream, VIDIOCSTUNER, &vtuner);
+	}
+}
+
+void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
+	$->current_channel = value;
 	if (0> ioctl($->stream, VIDIOCGCHAN, &vchan)) {
 		whine("no channel #%d", value);
 	} else {
@@ -387,13 +407,15 @@ void FormatVideoDev_channel (Format *$, int value) {
 	}
 }
 
-void FormatVideoDev_option (Format *$, int ac, const fts_atom_t *at) {
+void FormatVideoDev_option (FormatVideoDev *$, int ac, const fts_atom_t *at) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
 		FormatVideoDev_channel($,value);
 	} else if (sym == SYM(tuner)) {
 		FormatVideoDev_tuner($,value);
+	} else if (sym == SYM(norm)) {
+		FormatVideoDev_norm($,value);
 
 #define PICTURE_ATTR(_name_) \
 	} else if (sym == SYM(_name_)) { \
@@ -476,7 +498,7 @@ Format *FormatVideoDev_open (FormatClass *class, const char *filename, int mode)
 		}
 	}
 
-	FormatVideoDev_channel((Format *)$,0);
+	FormatVideoDev_channel($,0);
 
 	/* Sometimes a pause is needed here */
 	usleep(500000);
