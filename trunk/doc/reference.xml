@@ -4,100 +4,8 @@
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Class Reference
-	Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+	Copyright (c) 2001,2002 by Mathieu Bouchard and Alexandre Castonguay
 -->
-
-<section name="Conventions of this Manual">
-<prose>
-	(In this section, usage of Bold, Italic, Courier, etc. would be explained.
-	eventually I'd like those to have precise meanings consistent throughout
-	the whole documentation)
-</prose>
-</section>
-
-<section name="One-Input Operators">
-
-	<!-- todo: text attr in those icons could be auto-generated -->
-
-	<operator-1 name="abs" cname="abs">
-		absolute value of A
-	</operator-1>
-	<operator-1 name="rand" cname="rand">
-		randomly produces a non-negative number below A
-	</operator-1>
-	<operator-1 name="sqrt" cname="sqrt">
-		square root of A, rounded downwards
-	</operator-1>
-	<operator-1 name="sq" cname="sq">
-		A times A
-	</operator-1>
-</section>
-
-<section name="Two-Input Operators">
-	<prose>
-		<p>In the following table, A is the value entered to the
-		left, and B is the value entered to the right.</p>
-
-		<p>Angles are in hundredths of degrees. This means a full circle
-		(two pi radians) is 36000. You convert from degrees to our angles
-		by multiplying by 100. You convert from radians to our angles by
-		multiplying by 18000/pi.</p>
-
-		<p>Hyperbolic functions (tanh) work with our angles too, so the
-		same conversions apply. In case you wonder, there's a hidden link
-		between Trigonometric and Hyperbolic functions that motivated me
-		to use the same unit.</p>
-	</prose>
-
-	<!-- todo: text attr in those icons could be auto-generated -->
-	<!-- todo: make CNAME a column in html -->
-
-	<!-- category: additive -->
-	<operator-2 name="+"    cname="add"> A + B </operator-2>
-	<operator-2 name="-"    cname="sub"> A - B </operator-2>
-	<operator-2 name="inv+" cname="bus"> B - A </operator-2>
-
-	<!-- category: multiplicative -->
-	<operator-2 name="*"     cname="mul"> A * B </operator-2>
-	<operator-2 name="/"     cname="div"> A / B, rounded downwards </operator-2>
-	<operator-2 name="inv*"  cname="vid"> B / A, rounded downwards </operator-2>
-	<operator-2 name="%"     cname="mod"> A % B, non-negative remainder </operator-2>
-	<operator-2 name="swap%" cname="dom"> B % A, non-negative remainder </operator-2>
-
-	<!-- bits -->
-	<operator-2 name="|"     cname="or" > A or B, bitwise  </operator-2>
-	<operator-2 name="^"     cname="xor"> A xor B, bitwise </operator-2>
-	<operator-2 name="&amp;" cname="and"> A and B, bitwise </operator-2>
-	<operator-2 name="&lt;&lt;" cname="shl">
-		A * (2**(B % 32)), which is left-shifting
-	</operator-2>
-	<operator-2 name="&gt;&gt;" cname="shr">
-		A / (2**(B % 32)), which is right-shifting
-	</operator-2>
-
-	<!-- decision -->
-	<operator-2 name="||" cname="sc_or"> if A is zero then B else A </operator-2>
-	<operator-2 name="&amp;&amp;" cname="sc_and"> if A is zero then zero else B</operator-2>
-	<operator-2 name="min" cname="min"> the lowest value in A,B </operator-2>
-	<operator-2 name="max" cname="max"> the highest value in A,B </operator-2>
-
-	<!-- comparison -->
-	<operator-2 name="cmp"   cname="cmp"> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </operator-2>
-	<operator-2 name="=="    cname="eq"> is A equal to B ? 1=true, 0=false </operator-2>
-	<operator-2 name="!="    cname="ne"> is A not equal to B ? </operator-2>
-	<operator-2 name="&gt;"  cname="gt"> is A greater than B ? </operator-2>
-	<operator-2 name="&lt;=" cname="le"> is A not greater than B ? </operator-2>
-	<operator-2 name="&lt;"  cname="lt"> is A less than B ? </operator-2>
-	<operator-2 name="&gt;=" cname="ge">is A not less than B ? </operator-2>
-
-	<!-- trigonometrics and exponentiation -->
-	<operator-2 name="sin*" cname="sin"> B * sin(A) </operator-2>
-	<operator-2 name="cos*" cname="cos"> B * cos(A) </operator-2>
-	<operator-2 name="atan" cname="atan"> arctan(A/B) </operator-2>
-	<operator-2 name="tanh" cname="tanh"> B * tanh(A) </operator-2>
-	<operator-2 name="gamma" cname="gamma"> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
-	<operator-2 name="**" cname="pow"> A raised to power B </operator-2>
-</section>
 
 <section name="Objects for Input/Output">
 
@@ -224,7 +132,7 @@
 	</jmax-class>
 
 	<jmax-class name="@import">
-		<icon text="[@import 240 320 3]"/>
+		<icon text="[@import {240 320 3}]"/>
 		<help text="[@import 240 320 3]" image="@importexport" />
 
 		<p>This object allows you to import non-grid jMax data, such as
@@ -233,8 +141,8 @@
 		single grids may be split.</p>
 
 		<method name="init">
-			<rest name="dims" type="+integer"/>
-			the argument list specifies a grid shape that the numbers
+			<arg name="dims" type="list(+integer)"/>
+			a list specifying a grid shape that the numbers
 			will fit into.
 		</method>
 		<inlet id="0">
@@ -401,10 +309,10 @@
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
-			<arg name="value" type="integer"/>
+			<arg name="value" type="integer|grid"/>
 			the operator is one picked in the table of the 30 two-input
 			operators. the value (optional, zero by default) becomes
-			the initial value of the right inlet.
+			the initial value of the right inlet. it may be a grid.
 		</method>
 
 		<inlet id="0">
@@ -464,14 +372,15 @@
 		<icon text="[@fold +]"/>
 		<help text="[@fold +]" image="@foldinnerouter"/>
 
-		<p>
-		@fold makes the last dimension of a grid disappear by combining elements
-		together in each innermost array. For example, @fold + 0 on a RGB image
-		will output a channelless image in which every value is the sum of
-		red/green/blue values in a pixel. The zero is the starting value, so that
-		is actually 0+r+g+b. You can get the number of values in a grid by passing
-		it through @dim and then through @fold * 1.
-		</p>
+		<p><list>
+		<li>[@fold +] computes totals</li>
+		<li>[@fold inv+] is an alternated sum (+/-)</li>
+		<li>[@fold * 1] can compute the size of a grid using its dimension list</li>
+		<li>[@fold &amp; 1] can mean "for all"</li>
+		<li>[@fold | 0] can mean "there exists (at least one)"</li>
+		<li>[@fold ^ 0] can mean "there exists an odd number of..."</li>
+		<li>[@fold ^ 1] can mean "there exists an even number of...".</li>
+		</list></p>
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
@@ -482,12 +391,11 @@
 		
 		<inlet id="0">
 			<grid><dim>dims..., last</dim>
-				produces a Dim(dims) grid (the last dimension is removed).
-				the incoming grid is split into Dim(last) subparts; from
-				each of those parts a result is produced by cascading the
-				specified operation from the base value (specified in
-				inlet 1) to all the elements in that subpart. (see examples
-				below)
+				replaces every Dim(last) subgrid by the result of a cascade on that subgrid.
+				Doing that
+				with base value 0 and operation + on grid "2 3 5 7" will compute
+				((((0+2)+3)+5)+7) find the total "17".
+				produces a Dim(dims) grid.
 			</grid>
 		</inlet>
 		<inlet id="1">
@@ -498,12 +406,36 @@
 		<outlet id="0">
 		</outlet>
 
-		<p>examples: [@fold +] is a sum of all elements (on the last
-		dimensions); similarly, [@fold inv+] is an alternated sum, and [@fold
-		* 1] is a product; [@fold &amp; 1] can be used to mean "for all";
-		[@fold | 0] can be used to mean "there exists (at least one)";
-		[@fold ^ 0] can be used to mean "there exists an odd number of..."
-		and [@fold ^ 1] "there exists an even number of...".</p>
+	</jmax-class>
+
+	<jmax-class name="@scan">
+		<!-- <icon text="[@scan +]"/> -->
+		<!-- <help text="[@scan +]"/> -->
+
+		<p>[@scan +] computes subtotals.</p>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="base" type="integer"/>
+			the base value is optional and defaults to 0.
+			the operator is one from the table of two-input operators.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>dims..., last</dim>
+				replaces every Dim(last) subgrid by all the result of a cascade on that
+				subgrid. Doing that with base value 0 and operation + on grid "2 3 5 7" will
+				compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and gives the subtotals "2 5 10 17".
+				produces a Dim(dims,last) grid.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to use.
+			</method>
+		</inlet>
+		<outlet id="0">
+		</outlet>
 
 	</jmax-class>
 
@@ -513,7 +445,9 @@
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
+			<arg name="value" type="grid"/>
 			the operator must be picked from the table of two-input operators.
+			the grid is optional and corresponds to inlet 1.
 		</method>
 
 		<inlet id="0">
@@ -539,14 +473,15 @@
 
 	</jmax-class>
 
-	<jmax-class name="@inner2">
-		<icon text="[@inner2 * + 0]"/>
-		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
+	<jmax-class name="@inner">
+		<icon text="[@inner * + 0]"/>
+		<help text="[@inner * + 0]" image="@foldinnerouter" />
 
 		<p>think of this one as a special combination of [@outer], [@]
 		and [@fold]. this is one of the most complex operations. It is very
 		useful for performing linear transforms like rotations, scalings,
-		tilts, and color remappings.
+		tilts, and color remappings. A linear transform is done by something called matrix
+		multiplication, which happens to be [@inner * + 0].
 		</p>
 
 		<p>This object has been renamed from @inner to @inner2 because a
@@ -563,10 +498,58 @@
 		<inlet id="0">
 			<grid><dim>anyA..., lastA</dim>
 
-				Splits the left-hand grid into Dim(anyA...) pieces
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
 				of Dim(lastA) size.
 
-				Splits the right-hand grid into Dim(anyB...) pieces
+				Splits the Dim(firstB,anyB...) right-hand grid into Dim(anyB...) pieces
+				of Dim(firstB) size.
+
+				On every piece pair, does [@] using the specified
+				op_para operation, followed by a [@fold] using
+				the specified op_fold operator and base value.
+			
+				creates a Dim(anyA...,anyB...) grid by assembling all
+				the results together.
+
+				(note: lastA must be equal to firstB.)
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to that.
+			</method>
+		</inlet>
+		<inlet id="2">
+			<grid><dim>anyB..., lastB</dim>
+				changes the right-hand side grid to that.
+			</grid>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+	</jmax-class>
+	<jmax-class name="@inner2">
+		<icon text="[@inner2 * + 0]"/>
+		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
+
+		<p>a variant on @inner.</p>
+
+		<p>This object used to be called @inner.</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"    type="integer"/>
+			op_para and op_fold are two operators picked from the table
+			of two-input operators.
+			the base value has to be specified (has no default value yet).
+		</method>
+		<inlet id="0">
+			<grid><dim>anyA..., lastA</dim>
+
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
+				of Dim(lastA) size.
+
+				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) pieces
 				of Dim(lastB) size.
 
 				On every piece pair, does [@] using the specified
@@ -576,7 +559,7 @@
 				creates a Dim(anyA...,anyB...) grid by assembling all
 				the results together.
 
-				(note: The lastA must be equal to the lastB.)
+				(note: lastA must be equal to lastB.)
 			</grid>
 		</inlet>
 		<inlet id="1">
@@ -596,12 +579,12 @@
 
 <section name="Objects for Coordinate Transforms">
 	<jmax-class name="@redim">
-		<icon text="[@redim 2]"/>
+		<icon text="[@redim {2}]"/>
 		<help text="[@redim 2]"/>
 
 		<method name="init">
-			<rest name="dims" type="+integer"/>
-			the argument list specifies a grid shape that the numbers
+			<arg name="dims" type="list(+integer)"/>
+			a list specifying a grid shape that the numbers
 			will fit into.
 			(same as with @import)
 		</method>
@@ -753,11 +736,8 @@
 		<help text="[@scale_by]"/>
 
 		<method name="init">
-			no arguments. scales by 2.
-		</method>
-		<method name="init">
-			<arg name="factor"/>
-			future use: will scale by that factor.
+			<arg name="factor" type="+integer"/>
+			factor is optional (2 by default).
 		</method>
 		<method name="init">
 			<arg name="factor_y"/>
@@ -771,7 +751,7 @@
 			</grid>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>(2*y) (2*x) {r g b}</dim></grid>
+			<grid><dim>(factor*y) (factor*x) {r g b}</dim></grid>
 		</outlet>
 	</jmax-class>
 
@@ -1101,9 +1081,8 @@
 		dc10plus.</p>
 
 		<p>If you suffer from color inversion, you may feed the list
-		"<k>0 0 1 0 1 0 1 0 0</k>" to a [@redim 3 3] and feed that to the
-		right side of a <k>[@inner2 * + 0]</k>. Use that @inner2 object as a
-		RGB-BGR converter.</p>
+		"<k>3 3 # 0 0 1 0 1 0 1 0 0</k>" to the right side of a <k>[@inner2 * + 0]</k>.
+		Use that @inner2 object as a RGB-BGR converter.</p>
 
 		<p>color adjustments:
 		<method name="option brightness"><arg name="level" type="0-65535"/></method>

@@ -55,6 +55,19 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 
 <section name="Installation process (for jMax 2.5)"><prose>
 <list>
+  <li>if you don't have jMax, get it at
+	<link to="http://www.ircam.fr/equipes/temps-reel/jmax/en/index.php3">
+	jMax's site
+	</link>.
+	If have only the RPM, you will need to install this:
+	<link to="http://www.artengine.ca/jmax/gridflow/download/jmax-headers-2.5.1.tar.gz">
+		jmax headers
+	</link>
+
+	in whichever directory as long as you tell it to GridFlow's
+	configurator. 
+
+  </li>
   <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
 latest from the 1.7 series work and are faster)  You will need the file
 <k>libruby.so</k>, which is not always included. If you're using an
