@@ -101,15 +101,6 @@ static bool try_read(FormatGrid *$) {
 	return true;
 }
 
-static void swap32 (int n, uint32 *data) {
-	while(n--) {
-		uint32 x = *data;
-		x = (x<<16) | (x>>16);
-		x = ((x&0xff00ff)<<8) | ((x>>8)&0xff00ff);
-		*data++ = x;
-	}
-}
-
 static int bufsize (FormatGrid *$, GridOutlet *out) {
 	int n = Dim_prod_start($->dim,1);
 	int k = 1 * gf_max_packet_length / n;

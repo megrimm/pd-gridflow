@@ -217,3 +217,20 @@ Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out) {
 	}
 	return out;
 }
+
+void swap32 (int n, uint32 *data) {
+	while(n--) {
+		uint32 x = *data;
+		x = (x<<16) | (x>>16);
+		x = ((x&0xff00ff)<<8) | ((x>>8)&0xff00ff);
+		*data++ = x;
+	}
+}
+
+void swap16 (int n, uint16 *data) {
+	while(n--) {
+		uint16 x = *data;
+		*data++ = (x<<8) | (x>>8);
+	}
+}
+

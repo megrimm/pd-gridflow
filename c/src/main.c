@@ -86,6 +86,10 @@ static void disable_signal_handlers (void) {
 	}
 }
 
+void showenv(const char *s) {
+	post("%s = %s\n", s, getenv(s));
+}
+
 void gf_timer_handler (Timer *foo, void *obj);
 void gridflow_module_init (void) {
 	disable_signal_handlers();
@@ -100,6 +104,11 @@ void gridflow_module_init (void) {
 	post("Compiled on: " GF_COMPILE_TIME "\n");
 	post("--- GridFlow startup: begin ---\n");
 
+	showenv("LD_LIBRARY_PATH");
+	showenv("LIBRARY_PATH");
+	showenv("PATH");
+	showenv("DISPLAY");
+
 	#define DEF_SYM(_sym_) \
 		sym_##_sym_ = Symbol_new(#_sym_);
 
@@ -112,8 +121,8 @@ void gridflow_module_init (void) {
 	DEF_SYM(int);
 	DEF_SYM(list);
 
-	gf_object_set = Dict_new(0);
-	gf_timer_set  = Dict_new(0);
+	gf_object_set = Dict_new(0,0);
+	gf_timer_set  = Dict_new(0,0);
 	gf_timer = Timer_new(fts_sched_get_clock(), gf_timer_handler, 0);
 
 	/* run startup of every source file */
@@ -123,7 +132,7 @@ void gridflow_module_init (void) {
 
 	gf_timer_handler(0,0); /* bootstrap the event loop */
 
-	gf_alloc_set  = Dict_new(0);
+	gf_alloc_set  = Dict_new(0,0);
 }
 
 /* this is the entry point for all of the above */
@@ -256,7 +265,7 @@ void qfree(void *data) {
 	free(data);
 }
 
-void qdump$1(void *obj, void *k, void *v) {
+static void qdump$1(void *obj, void *k, void *v) {
 	AllocTrace *al = (AllocTrace *)v;
 	whine("warning: %d bytes leak allocated at file %s line %d",
 		al->n,al->file,al->line);
@@ -419,7 +428,7 @@ METHOD(GFGlobal,profiler_dump) {
 	for(i=0;i<List_size(ol);i++) {
 		GridObject *o = List_get(ol,i);
 		int ppm = o->profiler_cumul * 1000000 / total;
-		char *buf = FObject_to_s(o);
+		char *buf = FObject_to_s(OBJ(o));
 		whine("%20lld %2d.%04d %08x [%s]\n",
 			o->profiler_cumul,
 			ppm/10000,

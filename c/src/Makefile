@@ -9,8 +9,7 @@ PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 include $(JMAXDISTDIR)/Makefiles/Makefile.package
 
-GRIDFLOW_LDSOFLAGS += -rdynamic
-LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
+LDSOFLAGS += -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
 ### for hardcore malloc debugging; standalone only
 # LDSOFLAGS += -lefence
@@ -55,7 +54,7 @@ clean-standalone::
 
 $(LIB): $(OBJS2) ../obj2/bridge_none.o Makefile
 	@mkdir -p ../lib2
-	gcc -shared $(OBJS2) ../obj2/bridge_none.o -o $@ $(LDSOFLAGS)
+	gcc -shared $(LDSOFLAGS) $(OBJS2) ../obj2/bridge_none.o -o $@
 
 test::
 	(cd ../..; make test)

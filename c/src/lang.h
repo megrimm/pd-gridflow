@@ -65,6 +65,42 @@ typedef enum { false, true } bool;
 
 void gf_lang_init (void);
 
+/* three-way comparison */
+static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
+
+/* **************************************************************** */
+/* other general purpose stuff */
+
+/*
+  a remainder function such that floor(a/b)*b+mod(a,b) = a
+  in contrast to C-language builtin a%b,
+  this one has uniform behaviour around zero.
+*/
+static inline int mod(int a, int b) { if (a<0) a += b * (1-(a/b)); return a%b; }
+
+/* integer powers in log(b) time */
+static inline int ipow(int a, int b) {
+	int r=1;
+	while(1) {
+		if (b&1) r*=a;
+		b>>=1;
+		if (!b) return r;
+		a*=a;
+	}
+}	
+
+#undef min
+#undef max
+
+/* minimum/maximum functions */
+
+static inline int min(int a, int b) { return a<b?a:b; }
+static inline int max(int a, int b) { return a>b?a:b; }
+/*
+static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
+static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
+*/
+
 /* **************************************************************** */
 /* Object/Class */
 
@@ -97,7 +133,8 @@ void List_sort(List *$, int (*cmp)(void**,void**));
 typedef struct Dict Dict; /* Dictionary (void * -> void *) */
 typedef struct DictEntry DictEntry;
 typedef int (*HashFunc)(void *k);
-Dict *Dict_new(HashFunc hf);
+typedef int (*CompFunc)(void *k1, void *k2);
+Dict *Dict_new(CompFunc cf, HashFunc hf);
 int Dict_size(Dict *$);
 long Dict_hash(Dict *$, void *k);
 DictEntry *Dict_has_key(Dict *$, void *k);
