@@ -270,14 +270,13 @@ typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 
 /* you shouldn't use MethodDecl directly */
 struct MethodDecl {
-	const char *qlass;
 	const char *selector;
 	RMethod method;
 };
 
 /* declare a method in GRCLASS() */
 #define DECL(_class_,_name_) \
-	{ #_class_,#_name_,(RMethod) _class_##_##_name_##_wrap }
+	{ #_name_,(RMethod) _class_##_##_name_##_wrap }
 
 /* declare a method inside a class{}; */
 #define DECL3(_name_) \
@@ -755,25 +754,6 @@ GRID_FINISH
 	GRID_FLOW { \
 		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
 	GRID_FINISH
-
-/* macro for defining a gridinlet's behaviour as just storage */
-#define GRID_INPUT2(_class_,_inlet_,_member_) \
-	GRID_INLET(_class_,_inlet_) { \
-		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
-		if (is_busy_except(in)) { \
-			/*gfpost("object busy (backstoring data)"); */\
-			if (_member_.next != &_member_) { \
-				/*RAISE("object busy and backstore busy (aborting)");*/ \
-				delete _member_.next; \
-			} \
-			_member_.next = new Grid(); \
-			_member_.next->dc = _member_.dc; \
-		} \
-		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
-	GRID_FLOW { \
-		COPY(&((Pt<T>)*_member_.next)[in->dex], data, n); } \
-	GRID_FINISH
-
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
