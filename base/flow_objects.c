@@ -1594,9 +1594,72 @@ LIST(GRINLET(GridHSVtoRGB,0)),
 	DECL(GridHSVtoRGB,-1,delete,""))
 
 /* **************************************************************** */
+/* [rtmetro] */
 
-#define INSTALL(_sym_,_name_) \
-	fts_class_install(Symbol_new(_sym_),_name_##_class_init)
+typedef struct RtMetro {
+	GridObject_FIELDS; /* yes, i know, it doesn't do grids */
+	int ms; /* millisecond time interval */
+	int on;
+	uint64 next_time; /* next time an event occurred */
+	uint64 last;
+} RtMetro;
+
+uint64 RtMetro_now(void) {
+	struct timeval nowtv;
+	gettimeofday(&nowtv,0);
+	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
+}
+
+static void RtMetro_alarm(RtMetro *$) {
+	uint64 now = RtMetro_now();
+	//whine("rtmetro alarm tick: %lld; next_time: %lld; now-last: %lld",now,$->next_time,now-$->last);
+	if (now >= $->next_time) {
+		//whine("rtmetro sending bang");
+		Object_send_thru(OBJ($),0,sym_bang,0,0);
+		/* $->next_time = now; */ /* jmax style, less realtime */
+		$->next_time += 1000*$->ms;
+	}
+	$->last = now;
+}
+
+METHOD(RtMetro,int) {
+	int oon = $->on;
+	$->on = !! GET(0,int,0);
+	whine("on = %d",$->on);
+	if (oon && !$->on) {
+		whine("deleting rtmetro alarm...");
+		Dict_del(gf_timer_set,$);
+	} else if (!oon && $->on) {
+		whine("creating rtmetro alarm...");
+		Dict_put(gf_timer_set,$,RtMetro_alarm);
+		$->next_time = RtMetro_now();
+	}
+}
+
+METHOD(RtMetro,rint) {
+	$->ms = GET(0,int,0);
+	whine("ms = %d",$->ms);
+}
+
+METHOD(RtMetro,init) {
+	GridObject_init((GridObject *)$);
+	$->ms = GET(1,int,0);
+	$->on = 0;
+	whine("ms = %d",$->ms);
+	whine("on = %d",$->on);
+}
+
+METHOD(RtMetro,delete) {
+	GridObject_delete((GridObject *)$);
+}
+
+GRCLASS(RtMetro,inlets:2,outlets:1,
+LIST(),
+/* outlet 0 not used for grids */
+	DECL2(RtMetro, 0,int,   int,   "i"),
+	DECL2(RtMetro, 1,int,   rint,  "i"),
+	DECL2(RtMetro,-1,init,  init,  "si"),
+	DECL2(RtMetro,-1,delete,delete,""))
 
 /* **************************************************************** */
 
@@ -1624,4 +1687,5 @@ void startup_flow_objects (void) {
 	INSTALL("@scale_by",   GridScaleBy);
 	INSTALL("@rgb_to_hsv", GridRGBtoHSV);
 	INSTALL("@hsv_to_rgb", GridHSVtoRGB);
+	INSTALL("@rtmetro",    RtMetro);
 }

@@ -1,0 +1,78 @@
+=begin
+	$Id$
+
+	GridFlow
+	Copyright (c) 2001 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file ../../COPYING for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=end
+
+# this file gets loaded by main.c upon startup
+# module GridFlow is supposed to be created by main.c
+# this includes GridFlow.post_string(s)
+
+def GridFlow.post(s,*a)
+	GridFlow.post_string(sprintf s,*a)
+end
+
+# should rewrite the whine() code here.
+def GridFlow.whine(s,*a)
+	s<<"\n" if s[-1]!=10
+	GridFlow.post(s,*a)
+end
+
+GridFlow.whine "This is the Ruby interpreter, version #{VERSION}"
+GridFlow.whine "Please use at least 1.6.6 if you plan to use sockets" \
+	if VERSION < "1.6.6"
+
+for victim in [Thread, Continuation]
+	def victim.new
+		raise NotImplementedError, "disabled because of jMax incompatibility"
+	end
+end
+
+# this is the demo and test for Ruby->jMax bridge
+# FObject is a flow-object as found in jMax
+# _0_bang means bang message on inlet 0
+# FObject#send_thru sends a message through an outlet
+class RubyFor < GridFlow::FObject
+	attr_accessor :start, :stop, :step
+	def initialize(start,stop,step)
+		raise ArgumentError, "@start not integer" unless Integer===@start
+		raise ArgumentError, "@stop not integer" unless Integer===@stop
+		raise ArgumentError, "@step not integer" unless Integer===@step
+		@start,@stop,@step = start,stop,step
+	end
+	def _0_bang
+		x = start
+		if step > 0
+			(send_thru 0, x; x += step) while x < stop
+		elsif step < 0
+			(send_thru 0, x; x += step) while x > stop
+		end
+	end
+	def _0_int(x)
+		self.start = x
+		_0_bang
+	end
+	alias :_1_int :stop=
+	alias :_2_int :step=
+
+	# FlowObject.install(name, inlets, outlets)
+	# no support for metaclasses yet
+	install "rubyfor", 3, 1
+end
