@@ -31,8 +31,8 @@ VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE $) {
 	return Qnil;
 }
 
-VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
-	struct { int inlets, outlets; } kludge;
+VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets2, VALUE outlets2) {
+	int inlets, outlets;
 	VALUE name2;
 	if (SYMBOL_P(name)) {
 		name2 = rb_funcall(name,rb_intern("dup"),0);
@@ -41,14 +41,15 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
 	} else {
 		EARG("expect symbol or string");
 	}
-//	whine("class will be called: %s",RSTRING(name2)->ptr);
-	kludge.inlets = NUM2INT(inlets);
-	if (kludge.inlets<0 || kludge.inlets>9) EARG("...");
-	kludge.outlets = NUM2INT(outlets);
-	if (kludge.outlets<0 || kludge.outlets>9) EARG("...");
+	inlets = NUM2INT(inlets2);
+	if (inlets<0 || inlets>9) EARG("...");
+	outlets = NUM2INT(outlets2);
+	if (outlets<0 || outlets>9) EARG("...");
 	rb_ivar_set($,rb_intern("@inlets"),inlets);
 	rb_ivar_set($,rb_intern("@outlets"),outlets);
 	rb_ivar_set($,rb_intern("@foreign_name"),name2);
+	rb_hash_aset(rb_ivar_get(GridFlow_module,rb_intern("@fclasses_set")),
+		name2, $);
 	return Qnil;
 }
 
