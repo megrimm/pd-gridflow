@@ -89,10 +89,10 @@ end
 
 class XNode
 	# subclass interface:
-	#  #prc : called by #print_contents of base class
-	#  #prx : called by #print_index of base class
-	#  #print_contents : private, don't touch
-	#  #print_index : private, don't touch
+	#  #prc : called by #display of base class
+	#  #prx : called by #display_index of base class
+	#  #display : print as html
+	#  #display_index : private, don't touch
 
 	class<<self; attr_accessor :valid_tags; end
 	self.valid_tags = {}
@@ -111,18 +111,18 @@ class XNode
 
 	$counters=[]
 	$sections=nil
-	def print_index
+	def display_index
 		pr = begin prx; rescue NameError=>x; end
-		contents.each {|x| next unless XNode===x; x.print_index }
+		contents.each {|x| next unless XNode===x; x.display_index }
 		pr[] if Proc===pr
 	end
 
-	def print_contents
-		pr = send("prc")
+	def display
+		pr = send :prc
 		contents.each {|x|
 			case x
-			when String; x.gsub!(/[\r\n\t ]+$/," "); print escape_html(x)
-			when XNode; x.print_contents
+			when String; x.display
+			when XNode; x.display
 			else raise "crap"
 			end
 		}
@@ -168,6 +168,12 @@ class XProse < XNode
 		proc { print "</td></tr>\n" }
 	end
 	register "prose"
+end
+
+class XString < String
+	def display
+		print escape_html(gsub(/[\r\n\t ]+$/," "))
+	end
 end
 
 # basic text formatting nodes.
@@ -357,11 +363,10 @@ class GFDocParser < XMLParser
 	end
 
 	def character(text)
-		if String===@stack.last.last then
-			@stack.last.last << text
-		else
-			@stack.last << text
+		if not String===@stack.last.last then
+			@stack.last << XString.new
 		end
+		@stack.last.last << text
 	end
 end
 
@@ -456,10 +461,10 @@ def write_one_page file
 	STDOUT.reopen output_name, "w"
 	write_header
 	mk(:tr) { mk(:td,:colspan,2) {
-		$nodes[file].print_index
+		$nodes[file].display_index
 		puts "<br><br>"
 	}}
-	$nodes[file].print_contents
+	$nodes[file].display
 	write_footer
 	puts ""
 	puts ""
