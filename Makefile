@@ -1,39 +1,36 @@
 # $Id$
 include config.make
 
-all:: c-src-all # doc-all java-all
+# GridFlow Installation Directory
+GFID = $(lib_install_dir)/packages/$(PNAME)
+PACKAGELIB = $(LIBDIR)/lib$(PNAME).so
+
+all:: c-src-all # doc-all
 
 standalone:: c-src-standalone
 
 test::
-	(cd tests; $(MAKE) -k test)
+	(cd tests; $(MAKE) test)
 
 clean:: c-src-clean c-src-clean-standalone
 
 install::
-	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt
-	( \
-		cd c/lib/$(ARCH)/opt ; \
-		$(INSTALL_LIB) lib$(PNAME).so $(lib_install_dir)/packages/$(PNAME)/c/lib/$(ARCH)/opt/lib$(PNAME).so ;\
-	)
-	$(INSTALL_DIR) $(lib_install_dir)/packages/$(PNAME)
-	$(INSTALL_DATA) $(PNAME).jpk $(lib_install_dir)/packages/$(PNAME)/$(PNAME).jpk
-	$(INSTALL_DATA) $(PNAME).scm $(lib_install_dir)/packages/$(PNAME)/$(PNAME).scm
+	$(INSTALL_DIR) $(GFID)
+	$(INSTALL_DIR) $(GFID)/c/lib/$(ARCH)/opt
+	$(INSTALL_LIB) c/lib/$(ARCH)/opt/lib$(PNAME).so $(GFID)/c/lib/$(ARCH)/opt/lib$(PNAME).so
+	$(INSTALL_DIR) $(GFID)/ruby
+	$(INSTALL_DATA) $(PNAME).jpk $(GFID)/$(PNAME).jpk
+	$(INSTALL_DATA) $(PNAME).scm $(GFID)/$(PNAME).scm
+	$(INSTALL_DATA) base/main.rb $(GFID)/ruby/main.rb
 	(cd help; $(MAKE) $@)
 	(cd templates; $(MAKE) $@)
-	#(cd java; $(MAKE) $@)
 
 kloc::
 	wc base/*.[ch] format/*.[ch] configure extra/*.rb
 
 
-
-
 ifeq ($(JMAX_VERSION),25)
 
-### Makefile.package begin
-
-PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 DISTDIR = $(JMAXROOTDIR)/fts
 
 ifndef MODE
@@ -68,19 +65,15 @@ TOCLEAN = $(PACKAGELIB)
 
 c-src-all:: $(LIBDIR) $(OBJDIR) $(PACKAGELIB)
 
-c-src-cleanobjs::
+c-src-clean::
 	rm -f $(OBJS1)
-
-c-src-clean:: c-src-cleanobjs
 	rm -f $(TOCLEAN)
 
 $(OBJDIR)/base_%.o: base/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
-.PRECIOUS: $(OBJDIR)/%.o
 
 $(OBJDIR)/format_%.o: format/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
-.PRECIOUS: $(OBJDIR)/%.o
 
 $(LIBDIR)/%.so: $(OBJECTS)
 	$(LDSO) $(LDSOFLAGS) $(FTS_SOFLAGS) -o $@ $^ $(SOLIBS) $(MORESOLIBS)
@@ -90,8 +83,6 @@ $(LIBDIR):
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
-
-### Makefile.package end
 
 LDSOFLAGS += -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
@@ -104,6 +95,8 @@ OBJS1 += $(OBJDIR)/base_bridge_jmax.o
 $(PACKAGELIB): $(OBJS1)
 	gcc $(LDSOFLAGS) -o $(PACKAGELIB) $(OBJS1)
 
+endif #25
+
 ARCH_CFLAGS += -Wall # for cleanliness
 ARCH_CFLAGS += -Wno-unused # it's normal to have unused parameters
 ARCH_CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
@@ -112,29 +105,38 @@ ARCH_CFLAGS += -g # gdb info
 ARCH_CFLAGS += -fdollars-in-identifiers # $ is the 28th letter
 ARCH_CFLAGS += -fpic # some OSes need that for .so files
 
-endif #25
+
 
 ### standalone stuff ####################################################
 
-OBJS2 = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
+OBJS2 = $(addprefix c/obj2/,$(subst /,_,$(subst .c,.o,$(SOURCES))))
 FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
-LIB = ../lib2/lib$(PNAME).so
+LIB = c/lib2/lib$(PNAME).so
 # LIB2 = /home/matju/lib/$(LIB)
 
 c-src-standalone:: $(LIB)
 
 c-src-clean-standalone::
-	rm -f ../lib2/* ../obj2/*
+	rm -f c/lib2/* c/obj2/*
 
-c/obj2/bridge_none.o: bridge_none.c bridge_none.h grid.h lang.h config.h Makefile
-	@mkdir -p ../obj2
+c/obj2/bridge_none.o: base/bridge_none.c base/bridge_none.h base/grid.h \
+base/lang.h config.h Makefile
+	@mkdir -p c/obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-c/obj2/%.o: %.c grid.h lang.h config.h bridge_none.h Makefile
-	@mkdir -p ../obj2
+c/obj2/base_%.o: base/%.c base/grid.h base/lang.h config.h \
+base/bridge_none.h Makefile
+	@mkdir -p c/obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-$(LIB): $(OBJS2) ../obj2/bridge_none.o Makefile
-	@mkdir -p ../lib2
-	gcc -shared $(LDSOFLAGS) $(OBJS2) ../obj2/bridge_none.o -o $@
+c/obj2/base_%.o: base/%.c base/grid.h base/lang.h config.h \
+base/bridge_none.h Makefile
+	@mkdir -p c/obj2
+	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
+$(LIB): $(OBJS2) c/obj2/bridge_none.o Makefile
+	@mkdir -p c/lib2
+	gcc -shared $(LDSOFLAGS) $(OBJS2) c/obj2/bridge_none.o -o $@
+
+export-config::
+	@echo "#define GF_INSTALL_DIR \"$(GFID)\""
