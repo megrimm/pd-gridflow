@@ -36,6 +36,7 @@ LIBRUBY_A = "#{CONFIG['libdir']}/ruby/" +
 FILES = [
   [:directory, "base/",
     [:ruby, "main.rb"],
+    [:ruby, "test.rb"],
     [:ruby, "MainLoop.rb"],
   ],
   [:directory, "format/",
