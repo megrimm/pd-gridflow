@@ -42,46 +42,35 @@
 #include <X11/extensions/XShm.h>
 #endif
 
-//static fts_alarm_t *x11_alarm;
+static fts_alarm_t *x11_alarm;
+static ObjectSet *format_x11_object_set = 0;
 
 extern FormatClass class_FormatX11;
-typedef struct FormatX11 FormatX11;
-typedef struct X11Display {
-	fts_alarm_t *alarm;
+typedef struct FormatX11 {
+	Format_FIELDS;
+
+/* at the Display/Screen level */
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
 	long white_pixel;
 	long black_pixel;
-	/*
-	  the vouts list is now always size 1. whenever i'm confident
-	  i won't ever need it anymore, i'll remove it.
-	*/
-	int vouts_n;
-	FormatX11 **vouts;
 	short depth;
 	bool use_shm;	   /* should use shared memory? */
-} X11Display;
 
-struct FormatX11 {
-	Format_FIELDS;
+/* at the Window level */
 	int autodraw;        /* how much to send to the display at once */
-	X11Display *display; /* our own display struct (see above) */
 	Window window;       /* X11 window number */
 	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
 	XImage *ximage;      /* X11 image descriptor */
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
 	bool is_owner;
-};
-
-/* default connection (not used for now) */
-static X11Display *x11 = 0;
+} FormatX11;
 
 /* ---------------------------------------------------------------- */
 
 static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
-	X11Display *d = $->display;
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if ($->display->use_shm) {
 		XSync(d->display,False);
@@ -92,10 +81,10 @@ static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 		/* should completion events be waited for? looks like a bug */
 	} else
 	#endif
-		XPutImage(d->display, $->window,
+		XPutImage($->display, $->window,
 			$->imagegc, $->ximage, x, y, x, y, sx, sy);
 
-	XFlush(d->display);
+	XFlush($->display);
 }
 
 /* window manager hints, defines the window as non-resizable */
@@ -117,49 +106,12 @@ static void FormatX11_set_wm_hints (FormatX11 *$, int sx, int sy) {
 	XStringListToTextProperty((char **)&$->name, 1, &window_name);
 	XStringListToTextProperty((char **)&$->name, 1, &icon_name);
 
-	XSetWMProperties($->display->display, $->window,
+	XSetWMProperties($->display, $->window,
 		&window_name, &icon_name,
 		NULL, 0, &hints, &wmhints, NULL);
 }
 
 /* ---------------------------------------------------------------- */
-
-void X11Display_vout_add(X11Display *$, FormatX11 *vout) {
-	FormatX11 **vouts = $->vouts;
-	whine("adding [%p] to vout list", vout);
-	$->vouts_n += 1;
-	$->vouts = NEW2(FormatX11 *, $->vouts_n);
-	memcpy($->vouts,vouts,$->vouts_n*sizeof(FormatX11 *));
-	$->vouts[$->vouts_n-1] = vout;
-	whine("vout count: %d", $->vouts_n);
-}
-
-void X11Display_vout_remove(X11Display *$, FormatX11 *vout) {
-	int i;
-	whine("looking for vout [%p]", vout);
-	for (i=0; i<$->vouts_n; i++) {
-		if ($->vouts[i] != vout) continue;
-		whine("removing [%p] from vout list (index %d)", vout, i);
-		$->vouts[i] = $->vouts[$->vouts_n-1];
-		$->vouts_n--;
-		whine("vout count: %d", $->vouts_n);
-		return;
-	}
-}
-
-FormatX11 *X11Display_vout_find(X11Display *$, Window wid) {
-	int i;
-	/*whine("looking for vout that has ->window == %ld", wid);*/
-	for (i=0; i<$->vouts_n; i++) {
-		if ($->vouts[i]->window != wid) continue;
-		/*whine("found vout [%p] at index %d", $->vouts[i], i);*/
-		return $->vouts[i];
-	}
-	whine("vout (wid=%d) not found!",wid);
-	return 0;
-}
-
-void X11Display_set_alarm(X11Display *$);
 
 static fts_symbol_t button_sym(int i) {
 	char foo[42];
@@ -167,8 +119,10 @@ static fts_symbol_t button_sym(int i) {
 	return fts_new_symbol(foo);
 }
 
-void X11Display_alarm(fts_alarm_t *foo, void *obj) {
-	X11Display *$ = (X11Display *)obj;
+void FormatX11_alarm(FormatX11 *$);
+void FormatX11_set_alarm(void);
+
+void FormatX11_alarm(FormatX11 *$) {
 	fts_atom_t at[4];
 	XEvent e;
 	int xpending;
@@ -181,7 +135,7 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			vout = X11Display_vout_find($,ex->window);
+			vout = $;
 			/*whine("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
 				ex->y,ex->x,ex->height,ex->width);*/
 			if (vout && vout->mode == 2) {
@@ -223,73 +177,25 @@ void X11Display_alarm(fts_alarm_t *foo, void *obj) {
 			whine("received event of type # %d", e.type);
 		}
 	}
-	X11Display_set_alarm($);
+	FormatX11_set_alarm();
 }
 
-void X11Display_set_alarm(X11Display *$) {
-	if (!$->alarm) {
+void FormatX11_global_alarm(fts_alarm_t *foo, void *obj) {
+	ObjectSet *oset = format_x11_object_set;
+	int i;
+	if (!oset) return;
+	for (i=0; i<oset->len; i++) {
+		FormatX11_alarm((FormatX11 *)(oset->buf[i]));
+	}
+}
+
+void FormatX11_set_alarm(void) {
+	if (!x11_alarm) {
 		fts_clock_t *clock = fts_sched_get_clock();
-		$->alarm = fts_alarm_new(clock, X11Display_alarm, $);
+		x11_alarm = fts_alarm_new(clock, FormatX11_global_alarm, 0);
 	}
-	fts_alarm_set_delay($->alarm, 125.0);
-	fts_alarm_arm($->alarm);
-}
-
-X11Display *X11Display_new(const char *disp_string) {
-	X11Display *$ = NEW(X11Display,1);
-	int screen_num;
-	Screen *screen;
-
-	$->alarm = 0;
-	$->vouts = NEW2(FormatX11 *, 1);
-	$->vouts_n = 0;
-
-	/* Open an X11 connection */
-	$->display = XOpenDisplay(disp_string);
-	if(!$->display) {
-		whine("ERROR: opening X11 display");
-		goto err;
-	}
-
-	/*
-	  btw don't try to set the X11 error handler.
-	  it sucks big time and it won't work.
-	*/
-
-	screen      = DefaultScreenOfDisplay($->display);
-	screen_num  = DefaultScreen($->display);
-	$->visual      = DefaultVisual($->display, screen_num);
-	$->white_pixel = XWhitePixel($->display,screen_num);
-	$->black_pixel = XBlackPixel($->display,screen_num);
-	$->root_window = DefaultRootWindow($->display);
-	$->depth       = DefaultDepthOfScreen(screen);
-
-	whine("depth = %d",$->depth);
-
-	/* !@#$ check for visual type instead */
-	if ($->depth != 16 && $->depth != 24 && $->depth != 32) {
-		whine("ERROR: depth %d not supported.", $->depth);
-		goto err;
-	}
-
-#ifdef HAVE_X11_SHARED_MEMORY
-	/* what do i do with remote windows? */
-	$->use_shm = !! XShmQueryExtension($->display);
-	whine("x11 shared memory compiled in; use_shm = %d",$->use_shm);
-#else
-	$->use_shm = false;
-	whine("x11 shared memory is not compiled in");
-#endif
-
-/*
-	$->use_shm = false;
-	whine("setting use_shm = 0 because it's buggy");
-*/
-
-	X11Display_set_alarm($);
-	return $;
-err:;
-	return 0;
+	fts_alarm_set_delay(x11_alarm, 75.0);
+	fts_alarm_arm(x11_alarm);
 }
 
 /* ---------------------------------------------------------------- */
@@ -299,7 +205,7 @@ bool FormatX11_frame (FormatX11 *$, GridOutlet *out, int frame) {
 
 	whine("$->dim = %s",Dim_to_s($->dim));
 
-	XGetSubImage($->display->display, $->window,
+	XGetSubImage($->display, $->window,
 		0, 0, Dim_get($->dim,1), Dim_get($->dim,0),
 		-1, ZPixmap, $->ximage, 0, 0);
 
@@ -328,7 +234,7 @@ err:
 
 void FormatX11_dealloc_image (FormatX11 *$) {
 	if (!$->ximage) return;
-	if ($->display->use_shm) {
+	if ($->use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
 		/* ??? */
 	#endif	
@@ -340,7 +246,6 @@ void FormatX11_dealloc_image (FormatX11 *$) {
 }
 
 bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
-	X11Display *d = $->display;
 	FormatX11_dealloc_image($);
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if (d->use_shm) {
@@ -375,8 +280,8 @@ bool FormatX11_alloc_image (FormatX11 *$, int sx, int sy) {
 
 		$->image = (uint8 *)calloc(sx * sy, pixel_size);
 
-		$->ximage = XCreateImage(d->display, d->visual,
-			d->depth, ZPixmap, 0, (int8 *) $->image,
+		$->ximage = XCreateImage($->display, $->visual,
+			$->depth, ZPixmap, 0, (int8 *) $->image,
 			sx, sy, 8, 0);
 	}
 	{
@@ -389,7 +294,6 @@ err:
 }
 
 void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
-	X11Display *d = $->display;
 	int v[3] = {sy, sx, 3};
 	Window oldw;
 
@@ -413,13 +317,13 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	if (oldw) {
 		if ($->is_owner) {
 			whine("About to resize window: %s",Dim_to_s($->dim));
-			XResizeWindow(d->display,$->window,sx,sy);
+			XResizeWindow($->display,$->window,sx,sy);
 		}
 	} else {
 		whine("About to create window: %s",Dim_to_s($->dim));
-		$->window = XCreateSimpleWindow(d->display,
-			d->root_window, 0, 0, sx, sy, 0,
-			d->white_pixel, d->black_pixel);
+		$->window = XCreateSimpleWindow($->display,
+			$->root_window, 0, 0, sx, sy, 0,
+			$->white_pixel, $->black_pixel);
 		if(!$->window) {
 			whine("can't create window");
 			goto err;
@@ -428,17 +332,17 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 
 	/* FormatX11_set_wm_hints($,sx,sy); */
 
-	$->imagegc = XCreateGC(d->display, $->window, 0, NULL);
+	$->imagegc = XCreateGC($->display, $->window, 0, NULL);
 	if ($->is_owner) {
-		XSelectInput(d->display, $->window,
+		XSelectInput($->display, $->window,
 			ExposureMask | StructureNotifyMask |
 			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-		XMapRaised(d->display, $->window);
+		XMapRaised($->display, $->window);
 	} else {
-		XSelectInput(d->display, $->window,
+		XSelectInput($->display, $->window,
 			ExposureMask | StructureNotifyMask);
 	}
-	XSync(d->display,0);
+	XSync($->display,0);
 	return;
 err:
 	return;
@@ -489,15 +393,14 @@ GRID_END(FormatX11,0) {
 }
 
 void FormatX11_close (FormatX11 *$) {
-	X11Display *d = $->display;
-	if (!d) {whine("stupid error: trying to close display NULL. =)"); return;}
-	X11Display_vout_remove(d,$);
-	if ($->is_owner) XDestroyWindow(d->display,$->window);
-	XSync(d->display,0);
+	ObjectSet_del(format_x11_object_set,(void *)$);
+	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
+	if ($->is_owner) XDestroyWindow($->display,$->window);
+	XSync($->display,0);
 	FormatX11_dealloc_image($);
+	XCloseDisplay($->display);
 	FREE($->dim);
 	FREE($);
-	/* XCloseDisplay(d->display); */
 }
 
 void FormatX11_option (FormatX11 *$, ATOMLIST) {
@@ -519,6 +422,58 @@ void FormatX11_option (FormatX11 *$, ATOMLIST) {
 	} else {
 		whine("unknown option: %s", fts_symbol_name(sym));
 	}
+}
+
+FormatX11 *FormatX11_open_display(FormatX11 *$, const char *disp_string) {
+	int screen_num;
+	Screen *screen;
+
+	/* Open an X11 connection */
+	$->display = XOpenDisplay(disp_string);
+	if(!$->display) {
+		whine("ERROR: opening X11 display: %s",strerror(errno));
+		goto err;
+	}
+
+	/*
+	  btw don't try to set the X11 error handler.
+	  it sucks big time and it won't work.
+	*/
+
+	screen      = DefaultScreenOfDisplay($->display);
+	screen_num  = DefaultScreen($->display);
+	$->visual      = DefaultVisual($->display, screen_num);
+	$->white_pixel = XWhitePixel($->display,screen_num);
+	$->black_pixel = XBlackPixel($->display,screen_num);
+	$->root_window = DefaultRootWindow($->display);
+	$->depth       = DefaultDepthOfScreen(screen);
+
+	whine("depth = %d",$->depth);
+
+	/* !@#$ check for visual type instead */
+	if ($->depth != 16 && $->depth != 24 && $->depth != 32) {
+		whine("ERROR: depth %d not supported.", $->depth);
+		goto err;
+	}
+
+#ifdef HAVE_X11_SHARED_MEMORY
+	/* what do i do with remote windows? */
+	$->use_shm = !! XShmQueryExtension($->display);
+	whine("x11 shared memory compiled in; use_shm = %d",$->use_shm);
+#else
+	$->use_shm = false;
+	whine("x11 shared memory is not compiled in");
+#endif
+
+/*
+	$->use_shm = false;
+	whine("setting use_shm = 0 because it's buggy");
+*/
+
+	FormatX11_set_alarm();
+	return $;
+err:;
+	return 0;
 }
 
 Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLIST) {
@@ -550,7 +505,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		// assert (ac>0);
 		if (domain==SYM(here)) {
 			whine("mode `here'");
-			$->display = X11Display_new(0);
+			if (!FormatX11_open_display($,0)) return 0;
 			i=1;
 		} else if (domain==SYM(local)) {
 			char host[64];
@@ -558,7 +513,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 			whine("mode `local'");
 			whine("display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
-			$->display = X11Display_new(host);
+			if (!FormatX11_open_display($,host)) return 0;
 			i=2;
 		} else if (domain==SYM(remote)) {
 			char host[64];
@@ -569,7 +524,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 			whine("mode `remote'");
 			whine("host `%s'",host);
 			whine("display_number `%d'",dispnum);
-			$->display = X11Display_new(host);
+			if (!FormatX11_open_display($,host)) return 0;
 			i=3;
 		} else {
 			whine("x11 destination syntax error");
@@ -587,7 +542,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 		} else {
 			fts_symbol_t winspec = fts_get_symbol(at+i);
 			if (winspec==SYM(root)) {
-				$->window = $->display->root_window;
+				$->window = $->root_window;
 				whine("will use root window (0x%x)", $->window);
 				$->is_owner = false;
 			} else {
@@ -609,10 +564,9 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 
 	/* "resize" also takes care of creation */
 	FormatX11_resize_window($,sx,sy);
-	X11Display_vout_add($->display,$);
 
 	{
-		Visual *v = $->display->visual;
+		Visual *v = $->visual;
 		$->bit_packing = BitPacking_new(
 			$->ximage->bits_per_pixel/8,
 			v->red_mask,
@@ -621,6 +575,9 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	}
 
 	BitPacking_whine($->bit_packing);
+
+	if (!format_x11_object_set) format_x11_object_set = ObjectSet_new();
+	ObjectSet_add(format_x11_object_set,(void *)$);
 
 	return (Format *)$;
 err:;
