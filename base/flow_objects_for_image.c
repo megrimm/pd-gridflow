@@ -560,8 +560,8 @@ GRCLASS(DrawPolygon,LIST(GRINLET4(DrawPolygon,0,4),GRINLET4(DrawPolygon,1,4),GRI
 /* **************************************************************** */
 
 static void expect_position(Dim *d) {
-	if (d->n!=1) RAISE("huh?");
-	if (d->v[0]!=2) RAISE("huh?");
+	if (d->n!=1) RAISE("position should have 1 dimension, not %d", d->n);
+	if (d->v[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d->v[0]);
 }
 
 \class DrawImage < GridObject

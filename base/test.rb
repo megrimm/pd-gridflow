@@ -306,18 +306,24 @@ end # for nt
 
 	a = FObject["@join 1"]
 	a.connect 0,e,0
-	a.send_in 1,2,2,hm,11,13,17,19
-	x.expect([2,3,11,13,5,7,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
+	a.send_in 1,2,2,nt,hm,11,13,17,19
+	x.expect([2,3,11,13,5,7,17,19]) { a.send_in 0,2,2,nt,hm,2,3,5,7 }
 
+if nt!=:float64; #!@#$
+	a.send_in 1, 5,1,nt,hm,42
+	y.expect([5,4]) {
+		x.expect([2,3,5,42,7,11,13,42,17,19,23,42,29,31,37,42,41,43,47,42]) {
+			a.send_in 0, 5,3,nt,hm,2,3,5,7,11,13,17,19,23,29,31,37,41,43,47 }}
+end
 	a = FObject["@join 0"]
 	a.connect 0,e,0
-	a.send_in 1,2,2,hm,11,13,17,19
-	x.expect([2,3,5,7,11,13,17,19]) { a.send_in 0,2,2,hm,2,3,5,7 }
+	a.send_in 1,2,2,nt,hm,11,13,17,19
+	x.expect([2,3,5,7,11,13,17,19]) { a.send_in 0,2,2,nt,hm,2,3,5,7 }
 
-	a = FObject["@join 0 {2 2 2 # 1 2 3}"]
+	a = FObject["@join 0 {2 2 2 #{nt} # 1 2 3}"]
 	a.connect 0,e,0
 	a.connect 0,b,0
-	y.expect([2,2,2]) { x.expect([1,2,3,1,2,3,1,2]) { a.send_in 0,0,2,2,hm }}
+	y.expect([2,2,2]) { x.expect([1,2,3,1,2,3,1,2]) { a.send_in 0,0,2,2,nt,hm }}
 
 	a = FObject["@ravel"]
 	b = FObject["@dim"]
@@ -630,13 +636,15 @@ def test_tcp
 end
 
 def test_layer
-#	gin = FObject["@in targa file #{$imdir}/tux.tga"]
-	gin1 = FObject["@in ppm file #{$imdir}/r001.ppm"]
-	gin = FObject["@join 2 {240 320 1 # 128}"]
-	gin1.connect 0,gin,0
+	
+	gin = FObject["@in png file ShaunaKennedy/atmosphere-bleu.png"]
+#	gin1 = FObject["@in ppm file #{$imdir}/r001.ppm"]
+#	gin = FObject["@join 2 {240 320 1 # 128}"]
+#	gin1.connect 0,gin,0
 
 #	gfor = FObject["@for {0 0} {120 160} {1 1}"]
-	gfor = FObject["@for {0 0} {240 320} {1 1}"]
+#	gfor = FObject["@for {0 0} {240 320} {1 1}"]
+	gfor = FObject["@for {0 0} {480 640} {1 1}"]
 	gche = FObject["@checkers"]
 
 	gove = FObject["@layer"]
@@ -658,19 +666,21 @@ def test_layer
 	gout.connect 0,fps,0
 	fps.connect 0,pr,0
 
-	loop{gin1.send_in 0}
+	loop{gin.send_in 0}
 #	gin.send_in 0
 #	gin1.send_in 0
 	$mainloop.loop
 end
 
 Images = [
+	"png file ShaunaKennedy/atmosphere.png",
+#	"targa file #{$imdir}/tux.tga",
+#	"png file #{$imdir}/lena.png",
 	"jpeg file #{$imdir}/ruby0216.jpg",
 	"ppm file #{$imdir}/g001.ppm",
 	"targa file #{$imdir}/teapot.tga",
 	"grid gzfile #{$imdir}/foo.grid.gz",
 	"grid gzfile #{$imdir}/foo2.grid.gz",
-#	"targa file #{$imdir}/tux.tga",
 #	"videodev /dev/video0",
 ]
 

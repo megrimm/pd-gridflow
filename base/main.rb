@@ -301,14 +301,14 @@ end
 
 def self.routine
 	$tasks.each {|k,v|
-#		puts "#{k} #{v}"
+		#GridFlow.post "#{k} #{v}"
 		case v
 		when Integer; GridFlow.exec k,v
 		when Proc; v[k]
 		else raise "problem"
 		end
 	}
-	# mainloop is not used as much as it could.
+	#!@#$ mainloop is not used as much as it could.
 	# it should eventually play a more central role,
 	# but for now I rely on GridFlow.routine
 	$mainloop.timers.after(0.025) { routine }

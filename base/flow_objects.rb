@@ -569,11 +569,9 @@ class JMax4UDPSend < FObject
 
 	def method_missing(sel,*args)
 		sel=sel.to_s.sub(/^_\d_/, "")
-		@socket.send((case sel
-			when "int","float"; ""
-			else encode(sel) end) +
-			args.map{|arg| encode(arg) }.join("") + "\x0f",
-			0, @host, @port)
+		sel=(case sel; when "int","float"; ""; else encode(sel) end)
+		args=args.map{|arg| encode(arg) }.join("")
+		@socket.send(sel+args+"\x0f", 0, @host, @port)
 	end
 
 	def delete
@@ -643,6 +641,7 @@ class JMax4UDPReceive < FObject
 		m = []
 		case s[i]
 		when 1; i+=5; m << s[i-4,4].unpack("N")[0]
+		#when 2; i+=5; m << s[i-4,4].unpack("G")[0]
 		when 2; i+=9; m << s[i-8,8].unpack("G")[0]
 		when 3
 			i+=5; sid = s[i-4,4].unpack("N")[0]
@@ -819,10 +818,10 @@ class Peephole < GridFlow::FPatcher
 		@scale = [(sy+@sy-1)/@sy,(sx+@sx-1)/@sx].max
 		#GridFlow.post "s=#{[sy,sx].inspect} @s=#{[@sy,@sx].inspect} @scale=#{@scale}"
 		@fobjects[2].send_in 1, @scale
-		sy2 = @sy/@scale*@scale
-		sx2 = @sx/@scale*@scale
+		sy2 = sy/@scale#*@scale
+		sx2 = sx/@scale#*@scale
 		@fobjects[3].send_in 0, :set_geometry,
-			@y+(sy-sy2)/2, @x+(sy-sy2)/2, sy2, sx2
+			@y+(@sy-sy2)/2, @x+(@sx-sx2)/2, sy2, sx2
 	end
 	install "peephole", 1, 1
 end
