@@ -67,10 +67,10 @@ public:
 	template <class T> class Y1##op : Op1<T> { public: \
 		inline static T f(T a) { return expr; } };
 
-#define DECL_OP1ON(base,op,T) Operator1On<T>( \
+#define DECL_OP1ON(base,op,T) Numop1On<T>( \
 	&base<Y1##op<T> >::op_map )
 
-#define DECL_OP1(op,sym,props) Operator1( 0, sym, \
+#define DECL_OP1(op,sym,props) Numop1( 0, sym, \
 	DECL_OP1ON(Op1Loops,op,uint8), \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
@@ -78,8 +78,8 @@ public:
 	DECL_OP1ON(Op1Loops,op,float32), \
 	DECL_OP1ON(Op1Loops,op,float64))
 
-#define DECL_OP1_NOU(op,sym,props) Operator1(0, sym, \
-	Operator1On<uint8>(0), \
+#define DECL_OP1_NOU(op,sym,props) Numop1(0, sym, \
+	Numop1On<uint8>(0), \
 	DECL_OP1ON(Op1Loops,op,int16), \
 	DECL_OP1ON(Op1Loops,op,int32), \
 	DECL_OP1ON(Op1Loops,op,int64), \
@@ -92,7 +92,7 @@ DEF_OP1(sqrt, (T)(0+floor(sqrt(a))))
 DEF_OP1(rand, a==0 ? 0 : random()%(int32)a)
 DEF_OP1(sq, a*a)
 
-Operator1 op1_table[] = {
+Numop1 op1_table[] = {
 	DECL_OP1_NOU(abs, "abs",""),
 	DECL_OP1(sqrt,"sqrt",""), 
 	DECL_OP1(rand,"rand",""),
