@@ -147,9 +147,11 @@ GRID_INLET(FormatQuickTime,0) {
 			quicktime_video_width(anim,track),
 			quicktime_video_depth(anim,track),
 			quicktime_frame_rate(anim,track));
+/* This doesn't really work: (is it just for encoding?)
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec: %s",
 			      quicktime_video_compressor(anim,track));
+*/
 	}
 	colorspace_m(0,0,SYM(rgb));
 }
