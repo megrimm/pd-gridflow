@@ -189,10 +189,18 @@ usb_define* usb_all_defines[] = {
 //	  MANGLE(interface)
 //	  MANGLE(extras)
 
+static Ruby usb_get_endpoint (struct usb_endpoint_descriptor *self) {
+#define MANGLE(X) INT2NUM(self->X)
+	return rb_funcall(rb_const_get(cUSB,SI(Endpoint)),SI(new),8,
+		USB_ENDPOINT_DESCRIPTOR(MANGLE,COMMA));
+#undef MANGLE
+}
+
 static Ruby usb_get_interface (struct usb_interface_descriptor *self) {
 #define MANGLE(X) INT2NUM(self->X)
-	return rb_funcall(rb_const_get(cUSB,SI(Interface)),SI(new),9,
-		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA));
+	return rb_funcall(rb_const_get(cUSB,SI(Interface)),SI(new),9+1,
+		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA),
+		usb_get_endpoint(self->endpoint));
 #undef MANGLE
 }
 
@@ -202,7 +210,7 @@ static Ruby usb_get_config (struct usb_config_descriptor *self) {
 	for (int i=0; i<self->interface->num_altsetting; i++) {
 		rb_ary_push(interface, usb_get_interface(&self->interface->altsetting[i]));
 	}
-	return rb_funcall(rb_const_get(cUSB,SI(Config)),SI(new),8,
+	return rb_funcall(rb_const_get(cUSB,SI(Config)),SI(new),8+1,
 		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA), interface);
 #undef MANGLE
 }
@@ -212,7 +220,7 @@ static Ruby usb_scan_bus (usb_bus *bus) {
 	for (struct usb_device *dev=bus->devices; dev; dev=dev->next) {
 		struct usb_device_descriptor *devd = &dev->descriptor;
 #define MANGLE(X) INT2NUM(devd->X)
-		rb_ary_push(rbus, rb_funcall(rb_const_get(cUSB,SI(Device)),SI(new),17,
+		rb_ary_push(rbus, rb_funcall(rb_const_get(cUSB,SI(Device)),SI(new),14+3,
 			USB_DEVICE_DESCRIPTOR(MANGLE,COMMA),
 			rb_str_new2(dev->filename),
 			PTR2FIX(dev),
@@ -222,16 +230,81 @@ static Ruby usb_scan_bus (usb_bus *bus) {
 	return rbus;
 }
 
+/*
+class USB {
+public:
+};
+*/
+
+Ruby USB_initialize (Ruby self, Ruby dev) {
+	Ruby ptr = rb_funcall(dev,SI(ptr),0);
+	rb_ivar_set(self, SI(@dev), ptr);
+	usb_dev_handle *h = usb_open(FIX2PTR(struct usb_device,ptr));
+	if (!h) RAISE("usb_open returned null handle");
+	rb_ivar_set(self, SI(@handle), PTR2FIX(h));
+	return Qnil;
+}
+
+Ruby USB_close (Ruby self) {
+	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+	if (!h) RAISE("USB closed");
+	int r = usb_close(h);
+	rb_ivar_set(self, SI(@handle), PTR2FIX(0));
+	return INT2NUM(r);
+}
+
+Ruby USB_bulk_write (Ruby self, Ruby ep, Ruby s, Ruby timeout) {
+	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+	if (!h) RAISE("USB closed");
+	int r = usb_bulk_write(h, INT(ep), rb_str_ptr(s), rb_str_len(s), INT(timeout));
+	return INT2NUM(r);
+}
+
+Ruby USB_bulk_read (Ruby self, Ruby ep, Ruby s, Ruby timeout) {
+	usb_dev_handle *h = FIX2PTR(usb_dev_handle,rb_ivar_get(self, SI(@handle)));
+	if (!h) RAISE("USB closed");
+	int r = usb_bulk_read(h, INT(ep), rb_str_ptr(s), rb_str_len(s), INT(timeout));
+	return INT2NUM(r);
+}
+
+// not handled yet:
+// struct usb_string_descriptor
+// struct usb_hid_descriptor
+/*
+int usb_control_msg(USB dev, int requesttype, int request, int value,
+	int index, char *bytes, int size, int timeout);
+int usb_set_configuration(USB dev, int configuration);
+int usb_claim_interface(USB dev, int interface);
+int usb_release_interface(USB dev, int interface);
+int usb_set_altinterface(USB dev, int alternate);
+int usb_resetep(USB dev, unsigned int ep);
+int usb_clear_halt(USB dev, unsigned int ep);
+int usb_reset(USB dev);
+int usb_get_string(USB dev, int index, int langid, char *buf, size_t buflen);
+int usb_get_string_simple(USB dev, int index, char *buf, size_t buflen);
+char *usb_strerror();
+void usb_init();
+void usb_set_debug(int level);
+int usb_find_busses();
+int usb_find_devices();
+Device usb_device(USB dev);
+*/
+
+
 void startup_usb () {
 	cUSB = rb_define_class_under(mGridFlow, "USB", rb_cObject);
-	IEVAL(cUSB, "def self.new(dev) @dev=dev; @ptr=dev.ptr; end");
+	//rb_define_singleton_method(cUSB, "new", USB_new, 1);
+	rb_define_method(cUSB, "initialize", (RMethod)USB_initialize, 1);
+	rb_define_method(cUSB, "close", (RMethod)USB_close, 0);
+	rb_define_method(cUSB, "bulk_write", (RMethod)USB_bulk_write, 3);
+	rb_define_method(cUSB, "buik_read", (RMethod)USB_bulk_read, 3);
 #define MANGLE(X) SYM(X)
 	rb_const_set(cUSB, SI(Device), rb_funcall(EVAL("Struct"),SI(new),14+3,
 		USB_DEVICE_DESCRIPTOR(MANGLE,COMMA), SYM(filename), SYM(ptr), SYM(config)));
 	rb_const_set(cUSB, SI(Endpoint), rb_funcall(EVAL("Struct"),SI(new),8,
 		USB_ENDPOINT_DESCRIPTOR(MANGLE,COMMA)));
-	rb_const_set(cUSB, SI(Interface), rb_funcall(EVAL("Struct"),SI(new),10,
-		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA)));
+	rb_const_set(cUSB, SI(Interface), rb_funcall(EVAL("Struct"),SI(new),9+1,
+		USB_INTERFACE_DESCRIPTOR(MANGLE,COMMA), SYM(endpoint)));
 	rb_const_set(cUSB, SI(Config), rb_funcall(EVAL("Struct"),SI(new),8+1,
 		USB_CONFIG_DESCRIPTOR(MANGLE,COMMA), SYM(interface)));
 #undef MANGLE
@@ -252,46 +325,3 @@ void startup_usb () {
 	//IEVAL(cUSB,"STDERR.print '@busses = '; STDERR.puts @busses.inspect");
 }
 
-/*
-struct usb_descriptor_header
-struct usb_string_descriptor
-struct usb_hid_descriptor
-struct usb_endpoint_descriptor
-struct usb_interface_descriptor
-struct usb_interface
-struct usb_config_descriptor
-struct usb_device_descriptor
-struct usb_device
-struct usb_bus
-struct usb_dev_handle
-typedef struct usb_dev_handle usb_dev_handle
-extern struct usb_bus *usb_busses
-*/
-/*
-usb_dev_handle *usb_open(struct usb_device *dev);
-int usb_close(usb_dev_handle *dev);
-int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes, int size,
-        int timeout);
-int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
-        int timeout);
-int usb_control_msg(usb_dev_handle *dev, int requesttype, int request,
-        int value, int index, char *bytes, int size, int timeout);
-int usb_set_configuration(usb_dev_handle *dev, int configuration);
-int usb_claim_interface(usb_dev_handle *dev, int interface);
-int usb_release_interface(usb_dev_handle *dev, int interface);
-int usb_set_altinterface(usb_dev_handle *dev, int alternate);
-int usb_resetep(usb_dev_handle *dev, unsigned int ep);
-int usb_clear_halt(usb_dev_handle *dev, unsigned int ep);
-int usb_reset(usb_dev_handle *dev);
-int usb_get_string(usb_dev_handle *dev, int index, int langid, char *buf,
-        size_t buflen);
-int usb_get_string_simple(usb_dev_handle *dev, int index, char *buf,
-        size_t buflen);
-char *usb_strerror(void);
-void usb_init(void);
-void usb_set_debug(int level);
-int usb_find_busses(void);
-int usb_find_devices(void);
-struct usb_device *usb_device(usb_dev_handle *dev);
-struct usb_bus *usb_get_busses(void);
-*/
