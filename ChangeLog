@@ -3,6 +3,8 @@
 version 0.2.2:
  * @video_out auto-updates upon X11 ExposeEvents
  * fixed help (and summary)
+ * split BitPacking module from @video_out
+ * added support for BTTV input (that is, videodev-by-mmap)
 
 version 0.2.1:
  * added private CVS repository on hostname.2y.net

@@ -20,8 +20,10 @@ Computation Objects
 [ ] @inner, @outer, @fold
 [ ] @convolution
 [ ] @redim, @dim (APL rho)
+[ ] @resync (fast version of @export followed by @import)
 [ ] @slice (@splice ?)
 [ ] black option in @store
+[ ] uint8 option in @store
 [ ] @import~, @export~ (note:
 	DSP->Control is feasible
 	Control->DSP would be *very* kludgy)
@@ -46,21 +48,19 @@ Structure & Protocol
 [ ] angles will be 0<=x<36000
 [ ] unary ops: sq sqrt abs
 [ ] binary ops: **
-[ ] binary ops: mod revmod
 [ ] binary ops: <= != >=
 [ ] binary ops: *sin -> b * sin(a * 2 * pi / 36000)
 [ ] binary ops: atan2
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] copy-on-write and similar tricks
+[ ] support 0-dimensional values
 
 Input/Output
 [ ] in-place editing
-[ ] implement byte-order, bit-order support in @video_out
-	(need alternate hardware to test that)
+[ ] implement byte-order, bit-order support in BitPacking
 [ ] add PTC support
 [ ] x11 shared memory working
 [ ] x11 screen capture
-[ ] Video4linux support
 [ ] multi-image (seq)
 [ ] multi-file (multi)
 [ ] Targa write support
@@ -70,6 +70,7 @@ Input/Output
 Misc
 [ ] @print
 [ ] @literal
+[ ] how can I write unit tests?
 
 Bugs
 [ ] @video_out causes delayed crash when closing its associated window
