@@ -52,7 +52,9 @@ typedef double float64;
 
 int high_bit(unsigned long n);
 int low_bit(unsigned long n);
-void *qalloc(size_t n);
+
+void *qalloc(          size_t n); /*0xdeadbeef*/
+void qfree(void *data, size_t n); /*0xfadedf00*/
 
 /*
   a remainder function such that floor(a/b)*b+mod(a,b) = a
@@ -152,8 +154,6 @@ typedef long Number;
 
 /* **************************************************************** */
 
-fts_type_t *make_dims_list (void);
-
 /*
   a const array that holds dimensions of a grid
   and can do some calculations on positions in that grid.
@@ -190,17 +190,17 @@ struct Dim {
 typedef struct GridInlet GridInlet;
 typedef struct GridObject GridObject;
 
-#define GRID_BEGIN_(_name_) void _name_(GridInlet *$)
-#define  GRID_FLOW_(_name_) void _name_(GridInlet *$, int n, const Number *data)
-#define   GRID_END_(_name_) void _name_(GridInlet *$)
+#define GRID_BEGIN_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$)
+#define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$, int n, const Number *data)
+#define   GRID_END_(_class_,_name_) void _name_(_class_ *parent, GridInlet *$)
 
-typedef GRID_BEGIN_( (*GridBegin) );
-typedef  GRID_FLOW_( (*GridFlow) );
-typedef   GRID_END_( (*GridEnd) );
+typedef GRID_BEGIN_(GridObject, (*GridBegin));
+typedef  GRID_FLOW_(GridObject, (*GridFlow));
+typedef   GRID_END_(GridObject, (*GridEnd));
 
-#define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_##_##_inlet_##_begin)
-#define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_##_##_inlet_##_flow)
-#define   GRID_END(_class_,_inlet_)   GRID_END_(_class_##_##_inlet_##_end)
+#define GRID_BEGIN(_class_,_inlet_) GRID_BEGIN_(_class_,_class_##_##_inlet_##_begin)
+#define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_,_class_##_##_inlet_##_flow)
+#define   GRID_END(_class_,_inlet_)   GRID_END_(_class_,_class_##_##_inlet_##_end)
 
 struct GridInlet {
 	GridObject *parent;

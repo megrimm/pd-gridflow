@@ -238,16 +238,6 @@ static void VideoOut_show_section(
 	XFlush($->display->display);
 }
 
-GRID_BEGIN(VideoOut,0) {
-	VideoOut *parent = (VideoOut *) GridInlet_parent($);
-
-	parent->bufn = 0;
-
-	if (!Dim_equal_verbose_hwc($->dim,parent->dim)) {
-		GridInlet_abort($);
-	}
-}
-
 /*
   This piece of code is non-portable.
   Will fix it when I get hardware to test it.
@@ -274,9 +264,14 @@ static uint8 *VideoOut_convert(
 	return target;
 }
 
-GRID_FLOW(VideoOut,0) {
-	VideoOut *parent = (VideoOut *) GridInlet_parent($);
+GRID_BEGIN(VideoOut,0) {
+	parent->bufn = 0;
+	if (!Dim_equal_verbose_hwc($->dim,parent->dim)) {
+		GridInlet_abort($);
+	}
+}
 
+GRID_FLOW(VideoOut,0) {
 	int bytes_per_pixel = parent->ximage->bits_per_pixel/8;
 	int linesize = Dim_get($->dim,1) * 3;
 
@@ -307,11 +302,6 @@ GRID_FLOW(VideoOut,0) {
 				int sy = Dim_get($->dim,0);
 				VideoOut_show_section(parent,0,0,sx,sy);
 			}
-			/*
-			struct timeval foo;
-			gettimeofday(&foo,0);
-			whine("shown image after: %d.%.06d",foo.tv_sec,foo.tv_usec);
-			*/
 			fts_outlet_send(OBJ(parent),0,fts_s_bang,0,0);
 		}
 	}
@@ -351,7 +341,7 @@ METHOD(VideoOut,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		VideoOut_0_begin, VideoOut_0_flow);
+		(GridBegin)VideoOut_0_begin, (GridFlow)VideoOut_0_flow);
 
 	COERCE_INT_INTO_RANGE(height,1,MAX_INDICES);
 	COERCE_INT_INTO_RANGE(width, 1,MAX_INDICES);

@@ -46,7 +46,6 @@ struct VideoOutFile {
 /* ---------------------------------------------------------------- */
 
 GRID_BEGIN(VideoOutFile,0) {
-	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
 	int v[] = { Dim_get($->dim,0), Dim_get($->dim,1), 3 };
 	Dim *dim = Dim_new(ARRAY(v));
 	if (!Dim_equal_verbose_hwc($->dim,dim)) {
@@ -62,7 +61,6 @@ GRID_BEGIN(VideoOutFile,0) {
 }
 
 GRID_FLOW(VideoOutFile,0) {
-	VideoOutFile *parent = (VideoOutFile *) GridInlet_parent($);
 	FileFormat *f = parent->ff;
 	{
 		VideoOutFile *$ = parent;
@@ -91,7 +89,7 @@ METHOD(VideoOutFile,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		VideoOutFile_0_begin, VideoOutFile_0_flow);
+		(GridBegin)VideoOutFile_0_begin, (GridFlow)VideoOutFile_0_flow);
 }
 
 static void VideoOutFile_p_close(VideoOutFile *$) {

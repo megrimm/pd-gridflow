@@ -67,7 +67,6 @@ METHOD(GridImport,reset) {
 }
 
 CLASS(GridImport) {
-	int i;
 	fts_type_t int_alone[]  = { fts_t_int };
 	fts_type_t int_dims[MAX_DIMENSIONS+1] = { fts_t_symbol };
 	MethodDecl methods[] = {
@@ -77,7 +76,7 @@ CLASS(GridImport) {
 		{ 0, sym_reset,   METHOD_PTR(GridImport,reset), 0,0,-1},
 	};
 
-	for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;
+	{int i; for (i=0; i<MAX_DIMENSIONS; i++) int_dims[i+1] = fts_t_int;}
 
 	/* initialize the class */
 	fts_class_init(class, sizeof(GridImport), 1, 1, 0);
@@ -118,14 +117,13 @@ METHOD(GridExport,init) {
 	GridInlet *in;
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = in = GridInlet_new((GridObject *)$, 0,
-		GridExport_0_begin,
-		GridExport_0_flow);
+		(GridBegin)GridExport_0_begin,
+		(GridFlow)GridExport_0_flow);
 }
 
 METHOD(GridExport,delete) { /* write me */ }
 
 CLASS(GridExport) {
-	int i;
 	fts_type_t rien[] = { fts_t_symbol };
 	MethodDecl methods[] = {
 		{-1, fts_s_init,   METHOD_PTR(GridExport,init), ARRAY(rien), -1 },
@@ -162,7 +160,6 @@ struct GridStore {
 };
 
 GRID_BEGIN(GridStore,0) {
-	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int na = Dim_count($->dim);
 	int nb;
 	int nc,nd,i;
@@ -205,7 +202,6 @@ err:
 }
 
 GRID_FLOW(GridStore,0) {
-	GridStore *parent = (GridStore *) GridInlet_parent($);
 	GridOutlet *out = parent->out[0];
 	int na = Dim_count($->dim);
 	int nb = Dim_count(parent->dim);
@@ -243,7 +239,6 @@ GRID_FLOW(GridStore,0) {
 }
 
 GRID_BEGIN(GridStore,1) {
-	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
@@ -254,7 +249,6 @@ GRID_BEGIN(GridStore,1) {
 }
 
 GRID_FLOW(GridStore,1) {
-	GridStore *parent = (GridStore *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(Number)*n);
 	Dim_dex_add($->dim,n,&$->dex);
@@ -263,9 +257,9 @@ GRID_FLOW(GridStore,1) {
 METHOD(GridStore,init) {
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridStore_0_begin, GridStore_0_flow);
+		(GridBegin)GridStore_0_begin, (GridFlow)GridStore_0_flow);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridStore_1_begin, GridStore_1_flow);
+		(GridBegin)GridStore_1_begin, (GridFlow)GridStore_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	$->data = 0;
@@ -401,7 +395,6 @@ struct GridOp2 {
 };
 
 GRID_BEGIN(GridOp2,0) {
-	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	GridOutlet_begin(parent->out[0],$->dim);
 	$->dex = 0;
 }
@@ -409,7 +402,6 @@ GRID_BEGIN(GridOp2,0) {
 GRID_FLOW(GridOp2,0) {
 	int i;
 	Number *data2 = NEW2(Number,n);
-	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	GridOutlet *out = parent->out[0];
 
 	memcpy(data2,data,sizeof(int)*n);
@@ -431,7 +423,6 @@ GRID_FLOW(GridOp2,0) {
 }
 
 GRID_BEGIN(GridOp2,1) {
-	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); /* bug? */
@@ -442,7 +433,6 @@ GRID_BEGIN(GridOp2,1) {
 }
 
 GRID_FLOW(GridOp2,1) {
-	GridOp2 *parent = (GridOp2 *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
 	Dim_dex_add($->dim,n,&$->dex);
@@ -455,9 +445,9 @@ METHOD(GridOp2,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridOp2_0_begin, GridOp2_0_flow);
+		(GridBegin)GridOp2_0_begin, (GridFlow)GridOp2_0_flow);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridOp2_1_begin, GridOp2_1_flow);
+		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for(i=0; i<COUNT(optable); i++) {
@@ -533,7 +523,6 @@ struct GridFold {
 };
 
 GRID_BEGIN(GridFold,0) {
-	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int n = Dim_count($->dim);
 	Dim *foo;
 	if (n<1) goto err;
@@ -544,7 +533,6 @@ err:
 }
 
 GRID_FLOW(GridFold,0) {
-	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int wrap = Dim_get($->dim,Dim_count($->dim)-1);
 	int i;
 	GridOutlet *out = parent->out[0];
@@ -563,7 +551,6 @@ GRID_FLOW(GridFold,0) {
 
 /*
 void GridFold_1_begin(GridInlet *$) {
-	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int length = Dim_prod($->dim);
 	if (parent->data) {
 		GridInlet_abort(parent->in[0]); (* bug? *)
@@ -574,7 +561,6 @@ void GridFold_1_begin(GridInlet *$) {
 }
 
 void GridFold_1_flow(GridInlet *$, int n, const Number *data) {
-	GridFold *parent = (GridFold *) GridInlet_parent($);
 	int i;
 	memcpy(&parent->data[$->dex], data, sizeof(int)*n);
 	Dim_dex_add($->dim,n,&$->dex);
@@ -588,9 +574,9 @@ METHOD(GridFold,init) {
 
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
 	$->in[0] = GridInlet_new((GridObject *)$, 0,
-		GridOp2_0_begin, GridOp2_0_flow);
+		(GridBegin)GridOp2_0_begin, (GridFlow)GridOp2_0_flow);
 	$->in[1] = GridInlet_new((GridObject *)$, 1,
-		GridOp2_1_begin, GridOp2_1_flow);
+		(GridBegin)GridOp2_1_begin, (GridFlow)GridOp2_1_flow);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for(i=0; i<COUNT(optable); i++) {

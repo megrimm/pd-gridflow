@@ -28,16 +28,6 @@ static FileFormatClass *file_format_classes[] = { FILE_FORMAT_LIST(&) };
 	fts_symbol_name(fts_get_class_name((__self)->parent->o.head.cl)), \
 	(__self)->winlet
 
-fts_type_t *make_dims_list (void) {
-	int i;
-	fts_type_t *dims = NEW(fts_type_t,MAX_DIMENSIONS+1);
-	dims[0] = fts_t_symbol;
-	for (i=0; i<MAX_DIMENSIONS; i++) {
-		dims[i+1] = fts_t_int;
-	}
-	return dims;
-}
-
 /* **************** GridInlet ************************************* */
 
 GridInlet *GridInlet_new(GridObject *parent, int winlet, GridBegin b, GridFlow f) {
@@ -100,7 +90,7 @@ void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	if (!$->begin) {
 		whine("%s:i%d: no begin()",INFO($));
 	} else {
-		$->begin($);
+		$->begin((GridObject *)$->parent,$);
 	}
 }
 
@@ -109,7 +99,7 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (GridInlet_idle_verbose($,"flow")) return;
 	assert(n>0);
-	$->flow($,n,data);
+	$->flow((GridObject *)$->parent,$,n,data);
 }
 
 void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
@@ -145,6 +135,7 @@ int GridOutlet_idle(GridOutlet *$) {
 
 void GridOutlet_abort(GridOutlet *$) {
 	assert($);
+	free($->dim);
 	$->dim = 0;
 	$->dex = 0;
 }
