@@ -71,12 +71,12 @@ struct FormatX11 : Format {
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
 
-	FormatX11 () : dim(0), window(0), is_owner(true), image(Pt<uint8>()),
-		ximage(0), autodraw(1), use_stripes(false)
+	FormatX11 () : dim(0), window(0), use_stripes(false), 
+	autodraw(1), ximage(0), image(Pt<uint8>()), is_owner(true)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
-	{}
+	, verbose(false) {}
 
 	void show_section(int x, int y, int sx, int sy);
 	void set_wm_hints (int sx, int sy);

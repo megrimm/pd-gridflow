@@ -42,9 +42,6 @@ tries to call a Ruby method of the proper name.
 #include <stdarg.h>
 #include <unistd.h>
 
-static const char *list_begin = "(";
-static const char *list_end = ")";
-
 struct BFObject;
 struct FMessage {
 	BFObject *self;
@@ -75,14 +72,6 @@ static t_class *find_bfclass (t_symbol *sym) {
 		rb_str_new2(sym->s_name));
 	if (v==Qnil) RAISE("class not found");
 	return FIX2PTR(t_class,v);
-}
-
-static Ruby find_fclass (t_symbol *sym) {
-	Ruby v = rb_hash_aref(
-		rb_ivar_get(mGridFlow2, SI(@fclasses_set)),
-		rb_str_new2(sym->s_name));
-	if (v==Qnil) RAISE("class not found");
-	return v;
 }
 
 static t_class *BFProxy_class;
@@ -164,7 +153,6 @@ t_symbol *s, int argc, t_atom *argv) {
 
 static void BFProxy_method_missing(BFProxy *self,
 t_symbol *s, int argc, t_atom *argv) {
-//	post("BFProxy_method_missing: Hello World!");
 	BFObject_method_missing(self->parent,self->inlet,s,argc,argv);
 }
 	
@@ -204,17 +192,12 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 		(RMethod)BFObject_init_1,(Ruby)&fm,
 		(RMethod)BFObject_rescue,(Ruby)&fm,
 		rb_eException,0);
-	if (r==Qnil) {
-//		pd_error(bself,"hello");
-		return 0; /* broken object */
-	} else {
-		return (void *)bself;
-	}
+	/* return NULL if broken object */
+	return r==Qnil ? 0 : (void *)bself;
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
 	if (fm->self->rself) {
-		//post("BFObject_delete is handling object at %08x",(int)fm->self);
 		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
 		post("BFObject_delete is NOT handling BROKEN object at %08x",(int)fm);
@@ -231,7 +214,6 @@ static void BFObject_delete (BFObject *self) {
 }
 
 static void BFObject_class_init_1 (t_class *qlass) {
-//	Ruby rself = BFObject::find_fclass(gensym(class_getname(qlass)));
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
@@ -278,7 +260,6 @@ Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 		if (qlassid==Qnil) RAISE("no such class: %s",
 			rb_str_ptr(name));
 		t_class *qlass = FIX2PTR(t_class,qlassid);
-		//fprintf(stderr,"HELP: %s\n", class_getname(qlass));
 		class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
 		return Qnil;
 	} else {
@@ -294,18 +275,14 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 		return;
 	}
 	is_in_ruby = true;
-//	uint64 time = RtMetro_now2();
-//	gfpost("tick");
 	rb_funcall(mGridFlow2,SI(tick),0);
 	clock_delay(gf_alarm,gf_bridge2->clock_tick/10);
-//	gfpost("tick was: %lld\n",RtMetro_now2()-time);
 	is_in_ruby = false;
 	count_tick();
 }       
 
 Ruby gf_bridge_init (Ruby rself) {
 	mGridFlow2 = EVAL("GridFlow");
-//	cPointer2 = EVAL("GridFlow::Pointer");
 	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
 	syms = FIX2PTR(BuiltinSymbols,EVAL("GridFlow.instance_eval{@bsym}"));
 	return Qnil;
@@ -348,7 +325,6 @@ extern "C" void gridflow_setup () {
 		return;
 	}
 
-//	rb_define_singleton_method(mGridFlow2,"find_file",gf_find_file,1);
 	gf_alarm = clock_new(0,(void(*)())gf_timer_handler);
 	gf_timer_handler(gf_alarm,0);
 }
