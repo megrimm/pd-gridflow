@@ -85,7 +85,8 @@ static int object_count=0;
 
 static void FObject_free (void *foo) {
 	FObject *self = (FObject *)foo;
-//	fprintf(stderr,"Say farewell to %08x\n",(int)self);
+	gfpost("FObject_free: %08x",(int)self);
+	self->check_magic();
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();
@@ -328,8 +329,12 @@ METHOD3(BitPacking,unpack2) {
 	return out;
 }
 
-/* !@#$ isn't this a (very small) leak? */
-void BitPacking_free (void *foo) {}
+void BitPacking_free (void *foo) {
+	BitPacking *self = (BitPacking *)foo;
+	gfpost("BitPacking_free: %08x",(int)self);
+	self->check_magic();
+	delete self;
+}
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));

@@ -53,11 +53,14 @@ extern "C" {
 
 #define LIST(args...) args
 #define RAISE(args...) rb_raise(rb_eArgError,args)
-#define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
 #define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
+#define DGS(_class_) \
+	_class_ *self; \
+	Data_Get_Struct(rself,_class_,self); \
+	self->check_magic();
 
 /* returns the size of a statically defined array */
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
@@ -458,7 +461,9 @@ struct Unpacker {
 //	void (*as_float32)(BitPacking *self, int n, Pt<uint8> in, Pt<float32> out);
 };
 
+#define BITPACKING_MAGIC 31415926
 struct BitPacking {
+	int magic;
 	Packer *packer;
 	Unpacker *unpacker;
 	unsigned int endian; /* 0=big, 1=little, 2=same, 3=different */
@@ -479,6 +484,14 @@ struct BitPacking {
 	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
 	DECL3(pack2);
 	DECL3(unpack2);
+
+
+	void check_magic () {
+		if (magic != BITPACKING_MAGIC) {
+			fprintf(stderr,"FObject memory corruption! (ask the debugger)\n");
+			raise(11);
+		}
+	}
 };
 
 int high_bit(uint32 n);
