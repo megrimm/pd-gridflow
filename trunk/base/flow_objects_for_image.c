@@ -24,13 +24,17 @@
 #include <math.h>
 #include "grid.h"
 
-static void expect_rgb_picture (Dim *d) {
+static void expect_picture (Dim *d) {
 	if (d->n!=3) RAISE("(height,width,chans) dimensions please");
+}
+
+static void expect_rgb_picture (Dim *d) {
+	expect_picture(d);
 	if (d->get(2)!=3) RAISE("(red,green,blue) channels please");
 }
 
 static void expect_rgba_picture (Dim *d) {
-	if (d->n!=3) RAISE("(height,width,chans) dimensions please");
+	expect_picture(d);
 	if (d->get(2)!=4) RAISE("(red,green,blue,alpha) channels please");
 }
 
@@ -175,10 +179,7 @@ struct GridScaleBy : GridObject {
 GRID_INLET(GridScaleBy,0) {
 /* this section processes the header and accepts or rejects the grid */
 	Dim *a = in->dim;
-
-	/* there are restrictions on grid sizes for efficiency reasons */
-	expect_rgb_picture(a);
-
+	expect_picture(a);
 	/* computing the output's size */
 	int32 v[3]={ a->get(0)*scaley, a->get(1)*scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
@@ -190,20 +191,28 @@ GRID_INLET(GridScaleBy,0) {
 	int rowsize = in->dim->prod(1);
 	STACK_ARRAY(T,buf,rowsize*scalex);
 
+	int chans = in->dim->get(2);
+	
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
 
 		/* scale the line x-wise */
 		int p=0;
-		for (int i=0; i<rowsize; i+=3) {
-			for (int k=0; k<scalex; k++) {
-				buf[p+0]=data[i+0];
-				buf[p+1]=data[i+1];
-				buf[p+2]=data[i+2];
-				p+=3;
+		if (chans==3) {
+			for (int i=0; i<rowsize; i+=3) {
+				for (int k=0; k<scalex; k++, p+=3) {
+					buf[p+0]=data[i+0];
+					buf[p+1]=data[i+1];
+					buf[p+2]=data[i+2];
+				}
+			}
+		} else {
+			for (int i=0; i<rowsize; i+=chans) {
+				for (int k=0; k<scalex; k++, p+=chans) {
+					for (int c=0; c<chans; c++) buf[p+c]=data[i+c];
+				}
 			}
 		}
-
 		/* send the x-scaled line several times (thus y-scaling) */
 		for (int j=0; j<scaley; j++) out[0]->send(rowsize*scalex,buf);
 	}
