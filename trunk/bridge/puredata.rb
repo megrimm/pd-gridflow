@@ -21,6 +21,13 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+#  <matju> alx1: in puredata.rb, just after the header, you have a %w() block,
+#  and in it you write the name of your object, and if your helpfile is not
+#  named like your object, then you add an equal sign and the filename
+
+#!@#$ DON'T PUT ABSTRACTIONS IN THE %w() !!!
+# @mouse=help_mouse @motion_detection=help_motion_detect @fade=help_fade
+
 %w(
 	@apply_colormap_channelwise @cast @checkers @complex_sq @contrast
 	@convolve @dim @downscale_by @draw_polygon @export=@importexport
@@ -29,8 +36,7 @@
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
 	@! @ @perspective @posterize printargs @print @ravel @redim
 	@rgb_to_greyscale rubyprint @scale_by @scale_to @scan @solarize
-	@spread @store @three=@twothreefour @two=@twothreefour @mouse=help_mouse
-	@motion_detection=help_motion_detect @fade=help_fade
+	@spread @store @three=@twothreefour @two=@twothreefour
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
@@ -61,7 +67,7 @@ proc listener_new {self name} {
 	pack $self.label -side left
 	pack $self.entry -side left -fill x -expand yes
 #	pack $self.count -side left
-	pack $self -fill x -expand yes
+	pack $self -fill x -expand no
 	bind $self.entry <Up>     "listener_up   $self"
 	bind $self.entry <Down>   "listener_down $self"
 }
@@ -111,5 +117,19 @@ proc tcl_eval {} {
 }
 listener_new .tcl "Tcl"
 bind .tcl.entry <Return> {tcl_eval}
+})
 
+
+# enable Pd-specific code
+module GridFlow
+  class Peephole
+    GridFlow.whatever :setwidget, "peephole"
+    #GridFlow.whatever :addtomenu, "peephole"
+  end
+end
+
+GridFlow.whatever(:gui,%q{
+image create photo icon_peephole -file /mnt/gridflow/java/peephole.gif
+global butt
+lappend butt {peephole {guiext peephole} peephole}
 })
