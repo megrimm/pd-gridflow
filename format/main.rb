@@ -201,16 +201,25 @@ module GridIO
 		@loop = true
 	end
 
-	def _0_option(*a)
-		check_file_open
-		case a[0]
-		when :timelog
-			@timelog = Integer(a[1])!=0
-		when :loop
-			@loop = a[1].to_i != 0
+	def _0_timelog flag; @timelog = Integer(flag)!=0 end
+	def _0_loop flag; @loop = a[1].to_i != 0 end
+
+	def _0_option(*message)
+		case message[0]
+		when :timelog, :loop
+			send_in 0, *message
 		else
-			@format.option(*a)
+			check_file_open
+			@format.option *message
+#			@format.send_in 0, :option, *message
 		end
+	end
+
+	def method_missing(*message)
+		sel = message[0].to_s
+		sel =~ /^_0_/ or return super
+		message[0] = sel.sub(/^_0_/,"").intern
+		_0_option(*message)
 	end
 
 	def _0_close
