@@ -65,10 +65,7 @@ static Ruby ull2num(uint64 val) {
 /* end */
 extern "C"{
 void rb_raise0(
-	const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
-
-//	raise(11);
-
+const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	va_list args;
 	char buf[BUFSIZ];
 	va_start(args,fmt);
@@ -81,7 +78,13 @@ void rb_raise0(
 	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
 	buf2[BUFSIZ-1]=0;
 	VALUE ary = rb_funcall(e,SI(caller),0);
-	rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
+
+	if (gf_stack.n) {
+		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
+			rb_str_new2(gf_stack.s[gf_stack.n-1].o->info()));
+	} else {
+		rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
+	}
 	rb_funcall(e,SI(set_backtrace),1,ary);
 	rb_exc_raise(e);
 }};
@@ -696,10 +699,19 @@ BUILTIN_SYMBOLS(FOO)
 }
 
 void GFStack::push (FObject *o) {
-	if (n>=GF_STACK_MAX) RAISE("stack overflow");
+	void *bp = &bp; /* really. just finding our position on the stack. */
+	//gfpost("bp=0x%08x; s[n-1].bp=0x%08x",(int)bp,(int)(n?s[n-1].bp:0));
+	if (n && s[n-1].bp <= bp) {
+		int on = n;
+		while (n && s[n-1].bp <= bp) pop();
+		//gfpost("warning: unwinding %d entries from gf_stack",on-n);
+	}
+	if (n>=GF_STACK_MAX)
+		RAISE("stack overflow (maximum %d FObject activations at once)", GF_STACK_MAX);
 	uint64 t = rdtsc();
 	if (n) s[n-1].time = t - s[n-1].time;
 	s[n].o = o;
+	s[n].bp = bp;
 	s[n].time = t;
 	n++;
 }
