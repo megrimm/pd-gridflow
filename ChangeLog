@@ -1,5 +1,9 @@
 /* $Id$ */
 
+version 0.?.? (head):
+ * now requires Ruby 1.6
+ * ./configure rewritten in Ruby (not polished yet)
+
 version 0.5.0 (2002.06.08):
  * big changes to the internals (especially use of macros)
  * can compile without X11; added --no-x11 in ./configure

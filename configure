@@ -1,297 +1,380 @@
-#!/bin/bash
-# this script by Mathieu Bouchard, 2001, 2002.
+#!/usr/bin/env ruby
+# $Id$
+=begin
+	GridFlow
+	Copyright (c) 2001 by Mathieu Bouchard
 
-# readd support for no jmax
-# test with jmax 3.x
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
 
-ARCH=unknown
-JMAX_VERSION=unknown
+	See file ../../COPYING for further informations on licensing terms.
 
-append () {
-	var=$1
-	shift
-	eval "$var=\"\$$var $@\""
-}
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-usage () { cat << TEXT
-usage: ./configure --arch architecture [--jmax-dist-dir directory]
-	[--fast]
-TEXT
-}
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=end
 
-echo
-if [ ! -f configure ]
-then
-	echo "Run me from the right directory please."
-	exit 1
-fi
+class Or
+	attr_reader :a
+	class<<self; alias [] new end
+	def initialize(*a) @a=a end
+end
 
-argc=$#
-while [ 0 != $# ]
-do
-	case $1 in
-		--no-x11)
-			HAVE_X11=off
-			echo "won't check for libX11"
-		;;
-		--no-mpeg)
-			HAVE_MPEG=off
-			echo "won't check for libmpeg"
-		;;
-		--fast)
-			echo "Fast Mode (less error checking)"
-			append OPTIONS HAVE_SPEED BLAH
-		;;
-		--no-profiling)
-			echo "No Profiling"
-			HAVE_PROFILING=no
-		;;
-		--arch)
-			ARCH=$2
-			shift
-		;;
-		--jmax-dist-dir)
-			JMAXROOTDIR=$2
-			shift
-		;;
-		*)
-			echo "unknown option \`$1'"
-			exit 1
-		;;
-	esac
-	shift
-done
+# future use
+class Feature
+	def initialize(&b)
+		instance_eval(&b)
+	end
+	def self.attr2(sym)
+		eval "def #{sym}(*args)
+			raise args.inspect if args.length>1
+			@#{sym}=args[0] if args.length>0
+			@#{sym} end"
+	end
+	attr2 :tag
+	attr2 :name
+	attr2 :status #!@#$
+	attr2 :uses_so #!@#$
+	attr2 :uses_h #!@#$
+	attr2 :uses_feature #!@#$
+	attr2 :test #!@#$
+	attr2 :formats #!@#$
+	attr2 :options #!@#$
+	attr2 :unless_feature #!@#$
+	attr2 :action #!@#$
+end
 
-if [ ! "z$JMAX_VERSION" = "znone" ]; then
-	if [ "z$JMAXROOTDIR" == "z" ]; then
-		JMAXROOTDIR=`(cd ../..; echo $PWD)`
-		if [ -d $JMAXROOTDIR/Makefiles ]; then
-			echo "assuming --jmax-dist-dir $JMAXROOTDIR"
-		else
-			usage; exit 1
-		fi
-	fi
-fi
-
-if [ "z$ARCH" = "zunknown" ]; then
-	usage; exit 1
-fi
-
-exec 5> ./config.log
+$features = [
+Feature.new {
+	tag :fast
+	name "Compile for speed (and not debuggability)"
+},
+Feature.new {
+	tag :pentium
+	name "Pentium-compatible CPU"
+	uses_so "-mpentium"
+	test proc {
+		# this is very "heuristic" to say the least. sorry.
+		c_test '
+		typedef unsigned long long uint64;
+		int main(void) { uint64 x;
+		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+		return 0;}'
+	}
+	options "HAVE_PENTIUM"
+},
+Feature.new {
+	tag :profiler
+	name "profiler (speed measurements)"
+	uses_feature [:pentium]
+	options "HAVE_TSC_PROFILING"
+},
+Feature.new {
+	tag :x11
+	name "X11 Display Protocol"
+	uses_so ["-L/usr/X11R6/lib","-lX11"]
+	test proc {
+		c_test "
+		#include <X11/Xlib.h>
+		int main (void) {return !XSetErrorHandler;}
+		", *uses_so
+	}
+	formats "X11"
+	options "HAVE_X11_SHARED_MEMORY"
+},
+Feature.new {
+	tag :x11_shm
+	name "X11 acceleration through shared memory"
+	uses_feature [:x11]
+	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	test proc {
+		c_test "
+		#include <X11/Xlib.h>
+		#include <X11/Xutil.h>
+		#include <X11/StringDefs.h>
+		#include <sys/ipc.h>
+		#include <sys/shm.h>
+		#include <X11/extensions/XShm.h>
+		int main (void) {return !XShmPutImage;}
+		", *uses_so
+	}
+},
+Feature.new {
+	tag :videodev
+	test proc {
+		c_test "
+		#include <stdlib.h>
+		#include <linux/videodev.h>
+		int main (void) { struct video_window foo; }
+		"
+	}
+	formats "VideoDev"
+},
+Feature.new {
+	tag :mpeg3
+	name "HeroineWarrior's LibMPEG3"
+	uses_so ["-lmpeg3","-lpthread","-lm"]
+	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
+	test proc {|h|
+		c_test "
+		#include <#{h.uses_h}>
+		int main (void) { return !mpeg3_open; }
+		", *uses_so
+	}
+	formats "MPEG"
+},
+Feature.new {
+	tag :mpeg
+	name "Greg Ward's LibMPEG"
+	unless_feature :mpeg3
+	test proc {
+		c_test "
+		#include <mpeg.h>
+		int main (void) { return !GetMPEGFrame; }
+		"
+	}
+	formats "MPEG"
+},
+Feature.new {
+	tag :quicktime
+	status :disabled
+	uses_so ["-lquicktime","-lpthread","-lpng","-ldl","-lglib"]
+	test proc {
+		c_test "
+		#include <quicktime/quicktime.h>
+		int main (void) { return !quicktime_open; }
+		", *uses_so
+	}
+	formats "QuickTime"
+},
+Feature.new {
+	tag :jmax25
+	name "IRCAM's jMax 2.5"
+	test proc {
+		has_jmax "-DLINUXPC" and #!@#$ nonportable
+		File.exist?($conf[:JMAXROOTDIR]+"/include/fts/lang/mess.h")
+	}
+	options "HAVE_JMAX_2_5"
+	action proc { $conf[:JMAX_VERSION]="25" }
+},
+Feature.new {
+	tag :jmax30
+	name "IRCAM's jMax 3.0 / 3.1"
+	unless_feature :jmax25
+	status :disabled
+	test proc {
+		has_jmax "-DLINUXPC" and #!@#$ nonportable
+		File.exist?($conf[:JMAXROOTDIR]+"/include/ftsconfig.h")
+	}
+	options "HAVE_JMAX_3_0"
+	action proc { $conf[:JMAX_VERSION]="30" }
+},
+Feature.new {
+	tag :puredata
+	status :disabled
+	options "HAVE_PUREDATA"
+}]
 
 #--------------------------------#
 
-log () {
-  echo "$@"
-  $@
+$conf={
+	:ARCH => nil,
+	:JMAX_VERSION => :unknown,
+	#!@#$ Xext ???
+	#!@#$ X11 is supposed to be optional
+	:LDSOFLAGS => ["-lm", "-L/usr/X11R6/lib", "-lX11", "-lXext"],
+	:FEATURES => {},
+	:FORMATS => ["PPM","Targa","Grid"],
+	:OPTIONS => [],
+	:DEFINES => {},
 }
 
-say () {
-  echo -n "$1"
-  shift
-  (($@ 1>&5 2>&5) && echo "yes") || (echo "no" && false)
-}
+#--------------------------------#
 
-has-libmpeg () {
-	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
-cat > /tmp/$$.c <<TEST
-	#include <mpeg.h>
-	int main (void) { return !GetMPEGFrame; }
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ -l"$1"
-}
+def usage; puts "\
+usage: ./configure --arch architecture [--jmax-dist-dir directory]
+	[--fast]
+"end
 
-LIBMPEG3=-lmpeg3
+puts
+if not File.exist?("./configure")
+	puts "Run me from the right directory please."
+	exit 1
+end
 
-has-libmpeg3 () {
-	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
-cat > /tmp/$$.c <<TEST
-	#include <$1>
-	int main (void) { return !mpeg3_open; }
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ $LIBMPEG3 -lpthread -lm
-}
+while ARGV.length>0 do
+	arg=ARGV.shift
+	case arg
+	when "--no-x11"
+		$conf[:HAVE_X11]=false
+		puts "won't check for libX11"
+	when "--no-mpeg"
+		$conf[:HAVE_MPEG]=false
+		puts "won't check for libmpeg"
+	when "--fast"
+		puts "Fast Mode (less error checking)"
+		$conf[:OPTIONS].push :HAVE_SPEED, :BLAH
+		#!@#$ what is BLAH ?
+	when "--no-profiling"
+		puts "No Profiling"
+		$conf[:HAVE_PROFILING]=false
+	when "--arch"
+		$conf[:ARCH]=ARGV.shift
+	when "--jmax-dist-dir"
+		$conf[:JMAXROOTDIR]=ARGV.shift
+	else
+		puts "unknown option \"#{arg}\""
+		exit 1
+	end
+end
 
-has-libquicktime () {
-	if [ "z$HAVE_MPEG" = "zoff" ]; then return 1; fi
-cat > /tmp/$$.c <<TEST
-	#include <quicktime/quicktime.h>
-	int main (void) { return !quicktime_open; }
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ -lquicktime -lpthread -lpng -ldl -lglib
-}
+if $conf[:JMAXROOTDIR] == nil
+	$conf[:JMAXROOTDIR]=`(cd ../..; echo $PWD)`
+	if FileTest.directory? $conf[:JMAXROOTDIR]+"/Makefiles"
+		puts "assuming --jmax-dist-dir $JMAXROOTDIR"
+	else
+		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
+	end
+end
 
-has-jmax () {
-cat > /tmp/$$.c <<TEST
+if $conf[:ARCH] == nil
+	usage; exit 1
+end
+
+LOG = File.open "./config.log", "w"
+
+#--------------------------------#
+
+def c_test code, *link
+	log = ""
+	log << code << "\n"
+	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
+	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch nil,w,w,*command
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid child
+	(log << "error \##{ret}\n"; return false) if ret>0
+	command = ["/tmp/#{$$}"]
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch nil,w,w,*command
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid child
+	(log << "error \##{ret}\n"; return false) if ret>0
+	true
+ensure
+	LOG.puts log
+end
+
+def has_jmax(*link); c_test '
 	#include "fts/fts.h"
 /*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
 	int main (void) { return 0; }
-TEST
-log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
-&& /tmp/$$
-}
+', *link
+# log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
+end
 
-has-jmax-2-5 () {
-cat ${JMAXROOTDIR}/include/fts/lang/mess.h >/dev/null && has-jmax
-}
+def launch stdin,stdout,stderr,*command # -> returncode
+	child = fork
+	if not child then
+		STDIN.reopen stdin if stdin
+		STDOUT.reopen stdout if stdout
+		STDERR.reopen stderr if stderr
+		exec *command
+		STDERR.puts "SHOULD NOT GET THERE"
+		exit!
+	end
+	child
+end
 
-has-jmax-3-0 () {
-cat ${JMAXROOTDIR}/include/ftsconfig.h >/dev/null && has-jmax
-}
+def join_pid pid
+	Process.waitpid2(pid)[1]
+end
 
-has-videodev () {
-cat > /tmp/$$.c <<TEST
-	#include <stdlib.h>
-	#include <linux/videodev.h>
-	int main (void) { struct video_window foo; }
-TEST
-log gcc /tmp/$$.c -o /tmp/$$
-}
+def try feature
+  if Or===feature.uses_h
+    a=feature.uses_h.a
+    for i in a do
+      e = feature.dup
+      e.uses_h i
+      r = try e
+	 return r if r
+    end
+    return false
+  end
+  if feature.test
+    line = "trying [#{feature.tag}] #{feature.name}: "
+    LOG.puts line
+    STDERR.print line
+    STDERR.flush
+    if feature.test.call(feature)
+      feature.action.call if feature.action
+      $conf[:FEATURES][feature.tag] = feature
+      STDERR.puts "yes"; true
+    else
+      STDERR.puts "no"; false
+    end
+  else
+    puts "[#{feature.tag}] #{feature.name}: enabled"
+    $conf[:FEATURES][feature.tag] = feature
+    feature.action.call if feature.action
+    true
+  end
+end
 
-has-x11 () {
-	if [ "z$HAVE_X11" = "zoff" ]; then return 1; fi
-cat > /tmp/$$.c <<TEST
-	#include <X11/Xlib.h>
-	int main (void) {return 0;}
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
-}
-
-has-x11-shared-memory () {
-cat > /tmp/$$.c <<TEST
-	#include <X11/Xlib.h>
-	#include <X11/Xutil.h>
-	#include <X11/StringDefs.h>
-	#include <sys/ipc.h>
-	#include <sys/shm.h>
-	#include <X11/extensions/XShm.h>
-	int main (void) {return 0;}
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ -L/usr/X11R6/lib -lX11
-}
-
-# this is very "heuristic" to say the least. sorry.
-has-pentium-compatible () {
-cat > /tmp/$$.c <<TEST
-	typedef unsigned long long uint64;
-	int main(void) { uint64 x;
-	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-	return 0;}
-TEST
-log gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
-}
-
-has-profiling () {
-	[ ! "z$HAVE_PROFILING" = "zno" ]
-}
+$features.each {|feature| try feature }
 
 #--------------------------------#
 
-FORMATS='PPM Targa Grid'
-LDSOFLAGS='-lm -L/usr/X11R6/lib -lX11 -lXext'
-
-if say "looking for jMax 2.5: " has-jmax-2-5; then
-	JMAX_VERSION="25"
-else
-	if say "looking for jMax 3.0: " has-jmax-3-0; then
-		JMAX_VERSION="30"
-	else
-		echo "(not compiling for jmax)"
-		JMAX_VERSION="none"
-	fi
-fi
-
-if say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3 <libmpeg3/libmpeg3.h>: " has-libmpeg3 libmpeg3/libmpeg3.h; then
-	append FORMATS MPEG3
-	append LDSOFLAGS $LIBMPEG3 -lpthread -lm
-	LIBMPEG_INCLUDE=libmpeg3/libmpeg3.h
-elif say "looking for HeroineWarrior's LibMPEG3 as -lmpeg3 <libmpeg3.h>: " has-libmpeg3 libmpeg3.h; then
-	append FORMATS MPEG3
-	append LDSOFLAGS $LIBMPEG3 -lpthread -lm
-	LIBMPEG_INCLUDE=libmpeg3.h
-elif say "looking for Ward's LibMPEG as -lwardsmpeg: " has-libmpeg wardsmpeg; then
-	append FORMATS MPEG
-	append LDSOFLAGS -lwardsmpeg
-elif say "looking for Ward's LibMPEG as -lmpeg: " has-libmpeg mpeg; then
-	append FORMATS MPEG
-	append LDSOFLAGS -lmpeg
-fi
-
-#if say "looking for HeroineWarrior's LibQuicktime as -lquicktime: " has-libquicktime; then
-#	append FORMATS Quicktime
-#	append LDSOFLAGS -lquicktime -lpthread -lpng -ldl -lglib
-#fi
-
-if say "looking for videodev (video4linux 1.x digitizer drivers): " has-videodev; then
-	append FORMATS VideoDev
-fi
-
-if say "looking for x11 video protocol: " has-x11; then
-	append FORMATS X11
-	append LDSOFLAGS -L/usr/X11R6/lib -lX11
-	echo -n "looking for x11 shared memory (acceleration): "
-	if say has-x11-shared-memory; then
-		append OPTIONS HAVE_X11_SHARED_MEMORY
-	fi
-fi
-
-if say "looking for pentium-compatible CPU: " has-pentium-compatible; then
-	append OPTIONS HAVE_PENTIUM
-	if say "enable profiling: " has-profiling; then
-		append OPTIONS HAVE_TSC_PROFILING
-	fi
-fi
+puts "", "our format list: " + $conf[:FORMATS].join(" ")
+puts "", "our option list: " + $conf[:OPTIONS].join(" ")
 
 #--------------------------------#
-
-echo
-echo "our format list: $FORMATS"
-echo
-echo "our option list: $OPTIONS"
-echo
-
-#--------------------------------#
-echo "generating ./config.make"
-(
-	echo ifndef ARCH
-	echo ARCH=$ARCH
-	echo endif
-	echo JMAX_VERSION=$JMAX_VERSION
-	echo PNAME=gridflow
-	if [ ! "z$JMAX_VERSION" = "znone" ]; then
-		echo JMAXROOTDIR=$JMAXROOTDIR
-		echo JMAXDISTDIR=$JMAXROOTDIR
-		echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
-	fi
-	if [ "z$LDSOFLAGS" != "z" ]; then
-		echo "GRIDFLOW_LDSOFLAGS += $LDSOFLAGS"
-	fi
-) > config.make
+puts "generating ./config.make"
+File.open("./config.make","w") {|f| f.puts "
+ifndef ARCH
+ARCH=#{$conf[:ARCH]}
+endif
+JMAX_VERSION=#{$conf[:JMAX_VERSION]}
+PNAME=gridflow
+"
+f.puts "
+JMAXROOTDIR=#{$conf[:JMAXROOTDIR]}
+JMAXDISTDIR=#{$conf[:JMAXROOTDIR]}
+include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
+" if $conf[:JMAX_VERSION]
+f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
+}
 
 #--------------------------------#
-echo "generating c/src/Sources"
-(
-	echo "SOURCES = \\"
-	echo "lang.c dim.c bitpacking.c operator.c grid.c main.c \\"
-	echo "grid_basic.c grid_extra.c io.c \\"
-	for format in $FORMATS; do
-		lc_format=`echo $format | tr A-Z a-z`
-		echo "format_$lc_format.c \\"
-	done
-	echo ""
-) > c/src/Sources
+puts "generating c/src/Sources"
+File.open("c/src/Sources","w") {|f|
+	sources = %w( lang.c dim.c bitpacking.c operator.c grid.c main.c
+		grid_basic.c grid_extra.c io.c )
+	f.puts "SOURCES = #{sources.join(" ")} \\"
+	for format in $conf[:FORMATS] do
+		f.puts "format_#{format.downcase}.c \\"
+	end
+	f.puts ""
+}
 
 #--------------------------------#
-echo "generating c/src/config.h"
-(
-echo "
+puts "generating c/src/config.h"
+File.open("c/src/config.h","w") {|f| f.puts "
 #ifndef __CONFIG_H
 #define __CONFIG_H
 /* this file was auto-generated by gridflow/configure */
-
-#ifdef LIBMPEG_INCLUDE_HERE
-#include <$LIBMPEG_INCLUDE>
-#endif
 
 #ifdef STANDALONE
 #include \"bridge_none.h\"
@@ -300,18 +383,21 @@ echo "
 #endif
 
 #define FORMAT_LIST(_pre1_,_pre2_) \\"
-for format in $FORMATS; do
-	echo "  _pre1_ _pre2_##Format$format,\\"
-done
-echo "_pre1_ _pre2_##FormatPPM" # twice... hack.
-echo
-for z in $OPTIONS; do
-	echo "#define $z"
-done
-echo
-echo "#endif"
-) > c/src/config.h
+f.puts $conf[:FORMATS].map {|fmt| "  _pre1_ _pre2_##Format#{fmt},\\" }.join("\n")
+f.puts "_pre1_ _pre2_##FormatPPM" # twice... hack.
+for z in $conf[:OPTIONS] do
+	echo "#define #{z}"
+end
+if $conf[:FEATURES][:mpeg3]
+f.puts "
+#ifdef LIBMPEG_INCLUDE_HERE
+#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
+#endif
+"
+end
+f.puts "", "#endif"
+}
 
-echo
-echo 'please see ./config.log for the details of the configuration tests'
-echo
+puts "",
+"please see ./config.log for the details of the configuration tests",
+""
