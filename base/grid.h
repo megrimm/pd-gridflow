@@ -424,21 +424,20 @@ static inline int32 INT(Ruby x) {
 		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
 }
 
-static short convert(Ruby x, short *foo) {
+static int16 convert(Ruby x, int16 *foo) {
 	int v = INT(x);
-	if (v<-0x8000 || v>=0x8000) RAISE("value is out of range");
-	return v;
-}
-
+	if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
+	return v;}
 static uint16 convert(Ruby x, uint16 *foo) {
 	int v = INT(x);
-	if (v<0 || v>=0x10000) RAISE("value is out of range");
-	return v;
-}
+	if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
+	return v;}
 
 static int   convert(Ruby x, int   *foo) { return INT(x); }
 static int32 convert(Ruby x, int32 *foo) { return INT(x); }
 static bool  convert(Ruby x, bool  *foo) {
+	if (x==Qtrue) return true;
+	if (x==Qfalse) return false;
 	switch (TYPE(x)) {
 		case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!INT(x);
 		default: RAISE("can't convert to bool");
@@ -789,9 +788,7 @@ struct Grid : CObject {
 		init(dim,nt);
 		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
 	}
-	Grid(Ruby x) : dim(0), nt(int32_e), data(0) {
-		init_from_ruby(x);
-	}
+	Grid(Ruby x) : dim(0), nt(int32_e), data(0) { init_from_ruby(x); }
 	Grid(int n, Ruby *a, NumberTypeE nt=int32_e) : dim(0), nt(int32_e), data(0) {
 		init_from_ruby_list(n,a,nt);
 	}
@@ -841,6 +838,19 @@ struct PtrGrid : public P<Grid> {
 	PtrGrid &operator =(P<Grid> _p) {if(dc)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
+
+#ifndef IS_BRIDGE
+static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
+	Grid *d = convert(x,(Grid **)0);
+	if (!d) RAISE("urgh");
+	if (d->dim->n!=1) RAISE("dimension list must have only one dimension itself");
+	return new Dim(d->dim->v[0],(int32 *)(d->data));
+}
+
+static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
+	return convert(x,(PtrGrid *)foo);
+}
+#endif
 
 //****************************************************************
 // GridInlet represents a grid-aware inlet
