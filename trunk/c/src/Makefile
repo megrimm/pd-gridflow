@@ -16,17 +16,18 @@ all: $(LIBDIR) $(OBJDIR)  $(PACKAGELIB)
 
 TOCLEAN = $(PACKAGELIB)
 include $(DISTDIR)/Makefiles/Makefile.lib.end
-MODULE_SOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
+MODULE_SOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g
 
 else
+ifeq ($(JMAX_VERSION),25)
 
 DISTDIR = $(JMAXROOTDIR)/fts
 
 PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 include $(JMAXDISTDIR)/Makefiles/Makefile.package
-LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
+
 LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 
 ### for hardcore malloc debugging; standalone only
@@ -35,6 +36,13 @@ LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 ARCH_CFLAGS += -Wall -Wno-unused
 ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
 
+else
+ifeq ($(JMAX_VERSION),none)
+
+endif
+endif
+endif
+
 ### standalone stuff
 include Sources
 OBJS = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
@@ -42,32 +50,23 @@ FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 LIB = ../lib2/lib$(PNAME).so
 # LIB2 = /home/matju/lib/$(LIB)
 
-standalone: $(LIB)
-.PHONY: standalone
+standalone:: $(LIB)
 
-clean-standalone:
+clean-standalone::
 	rm -f ../lib2/* ../obj2/*
-.PHONY: standalone
 
 ../obj2/nofts.o: nofts.c nofts.h grid.h lang.h config.h
-	[ -e ../obj2 ] || mkdir ../obj2
+	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-../obj2/%.o: %.c grid.h lang.h config.h nofts.h ../obj2
-	[ -e ../obj2 ] || mkdir ../obj2
+../obj2/%.o: %.c grid.h lang.h config.h nofts.h
+	@mkdir -p ../obj2
 	gcc $(ARCH_CFLAGS) -DSTANDALONE -c $< -o $@
 
-$(LIB): $(OBJS) ../obj2/nofts.o ../lib2
-	[ -e ../lib2 ] || mkdir ../lib2
+$(LIB): $(OBJS) ../obj2/nofts.o
+	@mkdir -p ../lib2
 	gcc -shared $(OBJS) ../obj2/nofts.o -o $@ $(LDSOFLAGS)
 
 #$(LIB2): $(LIB)
 #	install --mode=755 $(LIB) $(LIB2)
 
-test:: test2
-	$(FIX_LD) ./test2
-
-mpeg_test: mpeg_test.c
-	gcc $(ARCH_CFLAGS) mpeg_test.c $(LIB) -o $@ -lmpeg
-
-endif
