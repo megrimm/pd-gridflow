@@ -374,8 +374,6 @@ Operator1 op1_table[] = {
 	DECL_OP1(sq,"sq"),
 };
 
-VALUE op1_dict;
-
 /* **************************************************************** */
 
 //	static void op_array_##_name_ (int n, Number *as, Number b) {
@@ -481,10 +479,13 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**"),
 };
 
-VALUE op2_dict;
+VALUE op1_dict = Qnil;
+VALUE op2_dict = Qnil;
 
 void startup_number (void) {
 	int i;
+	rb_define_readonly_variable("$op1_dict",&op1_dict);
+	rb_define_readonly_variable("$op2_dict",&op2_dict);
 	op1_dict = rb_hash_new();
 	op2_dict = rb_hash_new();
 	for(i=0; i<COUNT(op1_table); i++) {
