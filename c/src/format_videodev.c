@@ -33,64 +33,78 @@
 
 /* **************************************************************** */
 
-#define FLAG(_name_,_num_,_desc_) #_name_,
+typedef struct video_capability VideoCapability;
+typedef struct video_channel    VideoChannel   ;
+typedef struct video_tuner      VideoTuner     ;
+typedef struct video_window     VideoWindow    ;
+typedef struct video_picture    VideoPicture   ;
+typedef struct video_mbuf       VideoMbuf      ;
+typedef struct video_mmap       VideoMmap      ;
 
-#define OPTION(_name_,_num_,_desc_) #_name_,
+#define FLAG(_num_,_name_,_desc_) #_name_,
+#define  OPT(_num_,_name_,_desc_) #_name_,
 
 const char *video_type_flags[] = {
-	FLAG(CAPTURE,       1,      "Can capture")
-	FLAG(TUNER,         2,      "Can tune")
-	FLAG(TELETEXT,      4,      "Does teletext")
-	FLAG(OVERLAY,       8,      "Overlay onto frame buffer")
-	FLAG(CHROMAKEY,     16,     "Overlay by chromakey")
-	FLAG(CLIPPING,      32,     "Can clip")
-	FLAG(FRAMERAM,      64,     "Uses the frame buffer memory")
-	FLAG(SCALES,        128,    "Scalable")
-	FLAG(MONOCHROME,    256,    "Monochrome only")
-	FLAG(SUBCAPTURE,    512,    "Can capture subareas of the image")
-	FLAG(MPEG_DECODER,  1024,   "Can decode MPEG streams")
-	FLAG(MPEG_ENCODER,  2048,   "Can encode MPEG streams")
-	FLAG(MJPEG_DECODER, 4096,   "Can decode MJPEG streams")
-	FLAG(MJPEG_ENCODER, 8192,   "Can encode MJPEG streams")
+	FLAG( 0,CAPTURE,       "Can capture")
+	FLAG( 1,TUNER,         "Can tune")
+	FLAG( 2,TELETEXT,      "Does teletext")
+	FLAG( 3,OVERLAY,       "Overlay onto frame buffer")
+	FLAG( 4,CHROMAKEY,     "Overlay by chromakey")
+	FLAG( 5,CLIPPING,      "Can clip")
+	FLAG( 6,FRAMERAM,      "Uses the frame buffer memory")
+	FLAG( 7,SCALES,        "Scalable")
+	FLAG( 8,MONOCHROME,    "Monochrome only")
+	FLAG( 9,SUBCAPTURE,    "Can capture subareas of the image")
+	FLAG(10,MPEG_DECODER,  "Can decode MPEG streams")
+	FLAG(11,MPEG_ENCODER,  "Can encode MPEG streams")
+	FLAG(12,MJPEG_DECODER, "Can decode MJPEG streams")
+	FLAG(13,MJPEG_ENCODER, "Can encode MJPEG streams")
 };
 
 const char *tuner_flags[] = {
-	FLAG(PAL,      1,  "")
-	FLAG(NTSC,     2,  "")
-	FLAG(SECAM,    4,  "")
-	FLAG(LOW,      8,  "Uses KHz not MHz")
-	FLAG(NORM,     16, "Tuner can set norm")
-	FLAG(DUMMY5,   32, "")
-	FLAG(DUMMY6,   64, "")
-	FLAG(STEREO_ON,128,"Tuner is seeing stereo")
-	FLAG(RDS_ON,   256,"Tuner is seeing an RDS datastream")
-	FLAG(MBS_ON,   512,"Tuner is seeing an MBS datastream")
+	FLAG(0,PAL,      "")
+	FLAG(1,NTSC,     "")
+	FLAG(2,SECAM,    "")
+	FLAG(3,LOW,      "Uses KHz not MHz")
+	FLAG(4,NORM,     "Tuner can set norm")
+	FLAG(5,DUMMY5,   "")
+	FLAG(6,DUMMY6,   "")
+	FLAG(7,STEREO_ON,"Tuner is seeing stereo")
+	FLAG(8,RDS_ON,   "Tuner is seeing an RDS datastream")
+	FLAG(9,MBS_ON,   "Tuner is seeing an MBS datastream")
 };
 
 const char *channel_flags[] = {
-	FLAG(TUNER,1,"")
-	FLAG(AUDIO,2,"")
-	FLAG(NORM ,4,"")
+	FLAG(0,TUNER,"")
+	FLAG(1,AUDIO,"")
+	FLAG(2,NORM ,"")
 };
 
-const char *video_palette_options[] = {
-	OPTION(NIL,      0,      "(nil)")
-	OPTION(GREY,     1,      "Linear greyscale")
-	OPTION(HI240,    2,      "High 240 cube (BT848)")
-	OPTION(RGB565,   3,      "565 16 bit RGB")
-	OPTION(RGB24,    4,      "24bit RGB")
-	OPTION(RGB32,    5,      "32bit RGB")
-	OPTION(RGB555,   6,      "555 15bit RGB")
-	OPTION(YUV422,   7,      "YUV422 capture")
-	OPTION(YUYV,     8,		"")
-	OPTION(UYVY,     9,      "The great thing about standards is ...")
-	OPTION(YUV420,   10,     "")
-	OPTION(YUV411,   11,     "YUV411 capture")
-	OPTION(RAW,      12,     "RAW capture (BT848)")
-	OPTION(YUV422P,  13,     "YUV 4:2:2 Planar")
-	OPTION(YUV411P,  14,     "YUV 4:1:1 Planar")
-	OPTION(YUV420P,  15,     "YUV 4:2:0 Planar")
-	OPTION(YUV410P,  16,     "YUV 4:1:0 Planar")
+const char *video_palette_choice[] = {
+	OPT( 0,NIL,     "(nil)")
+	OPT( 1,GREY,    "Linear greyscale")
+	OPT( 2,HI240,   "High 240 cube (BT848)")
+	OPT( 3,RGB565,  "565 16 bit RGB")
+	OPT( 4,RGB24,   "24bit RGB")
+	OPT( 5,RGB32,   "32bit RGB")
+	OPT( 6,RGB555,  "555 15bit RGB")
+	OPT( 7,YUV422,  "YUV422 capture")
+	OPT( 8,YUYV,    "")
+	OPT( 9,UYVY,    "The great thing about standards is ...")
+	OPT(10,YUV420,  "")
+	OPT(11,YUV411,  "YUV411 capture")
+	OPT(12,RAW,     "RAW capture (BT848)")
+	OPT(13,YUV422P, "YUV 4:2:2 Planar")
+	OPT(14,YUV411P, "YUV 4:1:1 Planar")
+	OPT(15,YUV420P, "YUV 4:2:0 Planar")
+	OPT(16,YUV410P, "YUV 4:1:0 Planar")
+};
+
+const char *video_mode_choice[] = {
+	OPT( 0,PAL,  "")
+	OPT( 1,NTSC, "")
+	OPT( 2,SECAM,"")
+	OPT( 3,AUTO, "")
 };
 
 /* **************************************************************** */
@@ -103,7 +117,15 @@ const char *video_palette_options[] = {
 #define WHYX(_name_,_fieldy_,_fieldx_) \
 	whine(TAB "%s: y=%d, x=%d", #_name_, $->_fieldy_, $->_fieldx_);
 
-char *multichoice_to_s(int value, int n, const char **table) {
+#define WHFLAGS(_field_,_table_) { \
+	char *foo; \
+	whine(TAB "%s: %s", #_field_, foo=flags_to_s($->_field_,ARRAY(_table_))); \
+	free(foo);}
+
+#define WHCHOICE(_field_,_table_) \
+	whine(TAB "%s: %s", #_field_, choice_to_s($->_field_,ARRAY(_table_)));
+
+char *flags_to_s(int value, int n, const char **table) {
 	int i;
 	char *foo = NEW(char,256);
 	*foo = 0;
@@ -116,63 +138,42 @@ char *multichoice_to_s(int value, int n, const char **table) {
 	return foo;
 }
 
-char *video_type_to_s(int type) {
-	return multichoice_to_s(type,ARRAY(video_type_flags));
+const char *choice_to_s(int value, int n, const char **table) {
+	return (value < 0 || value >= COUNT(table)) ? "(Unknown)" : table[value];
 }
 
-char *tuner_flags_to_s(int flags) {
-	return multichoice_to_s(flags,ARRAY(tuner_flags));
-}
-
-char *channel_flags_to_s(int flags) {
-	return multichoice_to_s(flags,ARRAY(channel_flags));
-}
-
-const char *video_palette_s(int palette) {
-	if (palette < 0 || palette >= COUNT(video_palette_options)) {
-		return "(Unknown)";
-	} else {
-		return video_palette_options[palette];
-	}
-}
-
-void video_channel_whine(struct video_channel *$) {
-	char *foo;
+void VideoChannel_whine(VideoChannel *$) {
 	whine("VideoChannel:");
 	WH(channel,"%d");
 	WH(name,"%-32s");
 	WH(tuners,"%d");
-	whine(TAB "flags: %s", foo=channel_flags_to_s($->flags)); free(foo);
-//	WH(flags,"0x%08x");
+	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
 	WH(norm,"%d");
 }
 
-void video_tuner_whine(struct video_tuner *$) {
-	char *foo;
+void VideoTuner_whine(VideoTuner *$) {
 	whine("VideoTuner:");
 	WH(tuner,"%d");
 	WH(name,"%-32s");
 	WH(rangelow,"%u");
 	WH(rangehigh,"%u");
-	whine(TAB "flags: %s", foo=tuner_flags_to_s($->flags)); free(foo);
-//	WH(flags,"0x%08x");
-	WH(mode,"%d");
+	WHFLAGS(flags,tuner_flags);
+	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
 }
 
-void video_capability_whine(struct video_capability *$) {
-	char *foo;
+void VideoCapability_whine(VideoCapability *$) {
 	whine("VideoCapability:");
 	WH(name,"%-20s");
-	whine(TAB "type: %s", foo=video_type_to_s($->type)); free(foo);
+	WHFLAGS(type,video_type_flags);
 	WH(channels,"%d");
 	WH(audios,"%d");
 	WHYX(maxsize,maxheight,maxwidth);
 	WHYX(minsize,minheight,minwidth);
 }
 
-void video_window_whine(struct video_window *$) {
+void VideoWindow_whine(VideoWindow *$) {
 	whine("VideoWindow:");
 	WHYX(pos,y,x);
 	WHYX(size,height,width);
@@ -181,17 +182,17 @@ void video_window_whine(struct video_window *$) {
 	WH(clipcount,"%d");
 }
 
-void video_picture_whine(struct video_picture *$) {
+void VideoPicture_whine(VideoPicture *$) {
 	whine("VideoPicture:");
 	WH(brightness,"%d");
 	WH(hue,"%d");
 	WH(contrast,"%d");
 	WH(whiteness,"%d");
 	WH(depth,"%d");
-	whine(TAB "palette: %s", video_palette_s($->palette));
+	WHCHOICE(palette,video_palette_choice)
 }
 
-void video_mbuf_whine(struct video_mbuf *$) {
+void video_mbuf_whine(VideoMbuf *$) {
 	whine("VideoMBuf:");
 	WH(size,"%d");
 	WH(frames,"%d");
@@ -201,11 +202,11 @@ void video_mbuf_whine(struct video_mbuf *$) {
 	WH(offsets[3],"%d");
 }
 
-void video_mmap_whine(struct video_mmap *$) {
+void video_mmap_whine(VideoMmap *$) {
 	whine("VideoMBuf:");
 	WH(frame,"%u");
 	WHYX(size,height,width);
-	whine(TAB "format: %s", video_palette_s($->format));
+	WHCHOICE(format,video_palette_choice)
 };
 
 /* **************************************************************** */
@@ -226,19 +227,19 @@ extern FileFormatClass FormatVideoDev;
 
 void FormatVideoDev_size (FileFormat *$, int height, int width) {
 	int v[] = { height, width, 3 };
-	struct video_window grab_win;
+	VideoWindow grab_win;
 	$->dim = Dim_new(3,v);
 
 	WIOCTL($->stream_raw, VIDIOCGWIN, &grab_win);
-	video_window_whine(&grab_win);
+	VideoWindow_whine(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	grab_win.height = height;
 	grab_win.width  = width;
-	video_window_whine(&grab_win);
+	VideoWindow_whine(&grab_win);
 	WIOCTL($->stream_raw, VIDIOCSWIN, &grab_win);
 	WIOCTL($->stream_raw, VIDIOCGWIN, &grab_win);
-	video_window_whine(&grab_win);
+	VideoWindow_whine(&grab_win);
 }
 
 /* picture is read at once by frame() to facilitate debugging. */
@@ -248,7 +249,7 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 	if (frame != -1) return 0;
 	$->left = Dim_prod($->dim);
 
-	whine("will read %d bytes", $->left);
+/*	whine("will read %d bytes", $->left); */
 
 	$->stuff = NEW2(uint8,$->left);
 
@@ -262,8 +263,8 @@ Dim *FormatVideoDev_frame_by_read (FileFormat *$, int frame) {
 }
 
 Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
-	struct video_mbuf vid_buf;
-	struct video_mmap vid_mmap;
+	VideoMbuf vmbuf;
+	VideoMmap vmmap;
 	void *buffer;
 
 	int n;
@@ -275,27 +276,27 @@ Dim *FormatVideoDev_frame (FileFormat *$, int frame) {
 	if ($->stuff) free($->stuff);
 	$->stuff = NEW2(uint8,$->left);
 
-	if (WIOCTL($->stream_raw, VIDIOCGMBUF, &vid_buf)) goto err1;
-/*	video_mbuf_whine(&vid_buf); */
+	if (WIOCTL($->stream_raw, VIDIOCGMBUF, &vmbuf)) goto err1;
+/*	video_mbuf_whine(&vmbuf); */
 
-	buffer = mmap(0,vid_buf.size,
+	buffer = mmap(0,vmbuf.size,
 		PROT_READ|PROT_WRITE,MAP_SHARED,$->stream_raw,0);
 	if (((int)buffer)==-1) {
 		whine("mmap: %s", strerror(errno));
 		goto err1;
 	}
-	vid_mmap.frame = 0;
-	vid_mmap.format = VIDEO_PALETTE_RGB24;
-	vid_mmap.width  = Dim_get($->dim,1);
-	vid_mmap.height = Dim_get($->dim,0);
-	if (WIOCTL($->stream_raw, VIDIOCMCAPTURE, &vid_mmap)) goto err2;
-	if (WIOCTL($->stream_raw, VIDIOCSYNC, &vid_mmap)) goto err2;
+	vmmap.frame = 0;
+	vmmap.format = VIDEO_PALETTE_RGB24;
+	vmmap.width  = Dim_get($->dim,1);
+	vmmap.height = Dim_get($->dim,0);
+	if (WIOCTL($->stream_raw, VIDIOCMCAPTURE, &vmmap)) goto err2;
+	if (WIOCTL($->stream_raw, VIDIOCSYNC,     &vmmap)) goto err2;
 
 	/* success goes here */
 	memcpy($->stuff,buffer,$->left);
 
 err2:
-	munmap (buffer, vid_buf.size);
+	munmap (buffer, vmbuf.size);
 err1:
 	return $->dim;
 }
@@ -330,27 +331,37 @@ void FormatVideoDev_end (FileFormat *$) {
 
 }
 
-void FormatVideoDev_option (FileFormat *$, fts_symbol_t sym, int value) {
+void FormatVideoDev_tuner (FileFormat *$, int value) {
+	VideoTuner vtuner;
+	vtuner.tuner = value;
+	if (0> ioctl($->stream_raw, VIDIOCGTUNER, &vtuner)) {
+		whine("no tuner #%d", value);
+	} else {
+		VideoTuner_whine(&vtuner);
+		vtuner.mode = VIDEO_MODE_NTSC;
+		WIOCTL($->stream_raw, VIDIOCSTUNER, &vtuner);
+	}
+}
+
+void FormatVideoDev_channel (FileFormat *$, int value) {
+	VideoChannel vchan;
+	vchan.channel = value;
+	if (0> ioctl($->stream_raw, VIDIOCGCHAN, &vchan)) {
+		whine("no channel #%d", value);
+	} else {
+		VideoChannel_whine(&vchan);
+		WIOCTL($->stream_raw, VIDIOCSCHAN, &vchan);
+		FormatVideoDev_tuner($,0);
+	}
+}
+
+void FormatVideoDev_option (FileFormat *$, int ac, const fts_atom_t *at) {
+	fts_symbol_t sym = GET(0,symbol,SYM(foo));
+	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
-		struct video_channel vchan;
-		vchan.channel = value;
-		if (0> ioctl($->stream_raw, VIDIOCGCHAN, &vchan)) {
-			whine("no channel #%d", value);
-		} else {
-			video_channel_whine(&vchan);
-			WIOCTL($->stream_raw, VIDIOCSCHAN, &vchan);
-			FormatVideoDev_option($,SYM(tuner),0);
-		}
+		FormatVideoDev_channel($,value);
 	} else if (sym == SYM(tuner)) {
-		struct video_tuner vtuner;
-		vtuner.tuner = value;
-		if (0> ioctl($->stream_raw, VIDIOCGTUNER, &vtuner)) {
-			whine("no tuner #%d", value);
-		} else {
-			video_tuner_whine(&vtuner);
-			vtuner.mode = VIDEO_MODE_NTSC;
-			WIOCTL($->stream_raw, VIDIOCSTUNER, &vtuner);
-		}
+		FormatVideoDev_tuner($,value);
 	} else {
 		whine("unknown option: %s", fts_symbol_name(sym));
 	}
@@ -394,23 +405,23 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 	}
 
 	{
-		struct video_capability vcaps;
+		VideoCapability vcaps;
 		WIOCTL($->stream_raw, VIDIOCGCAP, &vcaps);
-		video_capability_whine(&vcaps);
+		VideoCapability_whine(&vcaps);
 	/*	$->size($,vcaps.minheight,vcaps.minwidth); */
 		$->size($,vcaps.maxheight,vcaps.maxwidth);
 	}
 
 	{
-		struct video_picture *gp = NEW(struct video_picture,1);
+		VideoPicture *gp = NEW(VideoPicture,1);
 		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
-		video_picture_whine(gp);
+		VideoPicture_whine(gp);
 		gp->depth = 24;
 		gp->palette = VIDEO_PALETTE_RGB24;
-		video_picture_whine(gp);
+		VideoPicture_whine(gp);
 		WIOCTL($->stream_raw, VIDIOCSPICT, gp);
 		WIOCTL($->stream_raw, VIDIOCGPICT, gp);
-		video_picture_whine(gp);
+		VideoPicture_whine(gp);
 		switch(gp->palette) {
 		case VIDEO_PALETTE_RGB24:
 			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
@@ -427,10 +438,10 @@ FileFormat *FormatVideoDev_open (const char *filename, int mode) {
 		}
 	}
 
-	$->option($,SYM(channel),0);
+	FormatVideoDev_channel($,0);
 
 	/* Sometimes a pause is needed here */
-	sleep(1);
+	usleep(500000);
 
 	return $;
 err:
