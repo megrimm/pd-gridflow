@@ -591,7 +591,7 @@ if GridFlow.bridge_name != "jmax"
 	  install "fork", 1, 2
 	end
 	class Demux < FObject
-		N=2
+		N=5
 		def initialize(n)
 			super
 			@n=n

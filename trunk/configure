@@ -258,7 +258,8 @@ Feature.new {
 			((void(*)(char*))get_cpuid)(result);
 			code = ((int*)result)[3];
 			result[12]=0;
-			fprintf(stderr,"cpuid: name=\"%s\", flags=0x%08x\n",code);
+	                fprintf(stderr,"cpuid: name=\"%12s\", flags=0x%08x\n",
+	                        result,code);
 			return 0;}'
 	}
 	options ["HAVE_PENTIUM"]
