@@ -186,7 +186,7 @@ void X11Display_set_alarm(X11Display *$) {
 	fts_alarm_arm($->alarm);
 }
 
-X11Display *X11Display_new(void) {
+X11Display *X11Display_new(const char *disp_string) {
 	X11Display *$ = NEW(X11Display,1);
 	
 	int i;
@@ -198,7 +198,7 @@ X11Display *X11Display_new(void) {
 	$->vouts_n = 0;
 
 	/* Open an X11 connection */
-	$->display = XOpenDisplay(0);
+	$->display = XOpenDisplay(disp_string);
 	if(!$->display) {
 		whine("ERROR: opening X11 display");
 		goto err;
@@ -391,6 +391,7 @@ void FormatX11_close (FormatX11 *$) {
 	FormatX11_dealloc_image($);
 	FREE($->dim);
 	FREE($);
+	/* X11-socket leakage going on here */
 }
 
 void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
@@ -437,7 +438,46 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->display = X11Display_new();
+	/*
+		"here"
+		"local/0"
+		"remote/relayer/0"
+	*/
+
+	{
+		char host[64];
+		if (strcmp(target,"here")==0) {
+			whine("mode `here'");
+			$->display = X11Display_new(0);
+		} else if (strncmp(target,"local/",6)==0) {
+			int dispnum = atoi(target+6);
+			whine("mode `local'");
+			whine("display_number `%d'",dispnum);
+			sprintf(host,":%d",dispnum);
+			$->display = X11Display_new(host);
+		} else if (strncmp(target,"remote/",7)==0) {
+			int dispnum;
+			char *foo;
+			target += 7;
+			foo = strchr(target,'/');
+			if (!foo) {
+				strcpy(host,target);
+				dispnum = 0;
+			} else {
+				memcpy(host,target,foo-target);
+				host[foo-target] = 0;
+				sprintf(host+strlen(host),":%d",dispnum);
+			}
+			whine("mode `remote'");
+			whine("host `%s'",host);
+			whine("display_number `%d'",dispnum);
+			$->display = X11Display_new(host);
+		} else {
+			whine("error in target `%s'",target);
+			return 0;
+		}
+	}
+
 	if (!$->display) {
 		// ???
 		whine("can't open target `%s': %s", target, strerror(errno));
