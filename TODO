@@ -96,6 +96,10 @@ Structure & Protocol
 	messages; etc... (?!?)
 [ ] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
+[ ] replace #idle by #busy
+[ ] identify streams by ids given at grid_begin
+    (may allow for cancelling rejected grids?)
+    (add cancel option to the r/rw choice in callback of grid_begin ?)
 
 Input/Output
 [ ] in-place editing (rw mode)
@@ -121,6 +125,9 @@ Formats
 [x] MPEG support
 [!] Better MPEG support
 [x] TCP server
+[x] non-blocking read
+[!] non-blocking write
+[!] non-blocking listen
 [!] VDSP support
 [!] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
@@ -128,6 +135,7 @@ Formats
 [!] Format base class + inheritance
 [x] Format pre-written open() code
 [x] single alarm for X11.
+[x] single alarm for GridFlow.
 
 Java/Swing
 [ ] color picker
@@ -143,8 +151,6 @@ UnitTesting/Bugs
 [ ] leak in all FileFormat#close (?)
 [ ] add alloc-tracing to find all leaks
 [ ] TCP server socket busy even after kill
-[!] TCP server blocks fts on accept()
-[!] TCP connection blocks on read()
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
