@@ -4,6 +4,7 @@
 4. make gf work on "meg"
 5. workshop/workshop.htm
 
+6. FObject::grid_class *has* to go.
 
 /* $Id$ */
 
@@ -14,10 +15,12 @@ Community
 	[ ] looking for someone to take care of macosx port
 
 Distribution
+[ ] should now plan which features are pre-1.0 and which are post-1.0
 [ ] add test plan
 [ ] follow test plan
 [ ] review all documentation
 [ ] review all samples
+[ ] make CDs
 
 Installation
 [ ] installable doc
@@ -185,13 +188,16 @@ Format
 [ ] <alx1> a bang when the video file is done playing so you could loop it
 easily or go to another clip... 
 
-jMax-UI
+User Interface
 [ ] color picker
 [ ] gridbox (akin to intbox) or grid edition dialog, etc.
 [ ] embedded display
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
+[ ] drag-and-drop palette of object construction
+[ ] object construction menu specialized for each class
+	(generated from class reflection/metadata)
 
 Extra/Samples/Etc
 [ ] make demo app(s) in Ruby/Tk
@@ -268,6 +274,18 @@ SOON:
 [ ] make gridflow.pd_linux install in the proper spot  
 
 
+
+how about creating aliases like "open window" = "open x11 here" (or arbitrary
+user-defined sequence of messages settable in ~/.gridflow_startup)  and "open
+videodev" -> "open videodev /dev/video0, option channel 1, option size 240 320" 
+maybe there should be a separate ~/.gridflow_config that would be saveable from
+gridflow, and ~/.gridflow_startup would be edited only by the user but
+~/.gridflow_config would still be a text file.  i say that
+because the startup is a ruby script so gridflow couldn't just do
+search-and-replace in there, because the option could be inside a "if"
+expression and such... at most, gridflow could _append_ text to
+.gridflow_startup, to be non-intrusive... hrm... i'm late. i should go now. 
+
 Feature Requests
 
 From: Dave Bergevin <dabergevin@eisa.com> 
@@ -327,4 +345,23 @@ would be like:
 [loadbang] -> "baz, blah 42, zzz" -> [@foo bar]
 where "baz, blah 42, zzz" is 3 msgs in a msgbox (sent in order upon bang)
 
+
+
+
+debugging:
+
+gdb `which ruby`
+----------------------
+break main
+run -rgridflow -e ';'
+set step-mode on
+break eval.c:5409
+cont
+add-symbol-file /usr/local/lib/ruby/site_ruby/1.6/i686-linux/gridflow.so
+rbreak ^_init
+
+stepi
+----------------------
+
+p dlopen("/opt/lib/ruby/site_ruby/1.8/i586-linux/gridflow.so",0)
 

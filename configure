@@ -440,6 +440,7 @@ Feature.new {
 },
 Feature.new {
 	tag :jmax4
+	status :disabled
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
@@ -710,7 +711,7 @@ f.puts "CFLAGS += " + $CFLAGS
 for z in $conf[:OPTIONS] do f.puts "#{z}=yes" end
 for z in $conf[:DEFINES] do	f.puts "#{z[0]}=#{z[1]}" end
 
-$sources = %w(base/number.c base/grid.c base/main.c base/flow_objects.c)
+$sources = %w(base/grid.c base/main.c base/flow_objects.c base/number.c)
 for format in $conf[:FORMATS] do
 	$sources << "format/#{format.downcase}.c"
 end

@@ -75,7 +75,7 @@ end
 
 def mkimg(icon,alt=nil)
 	icon.tag == 'icon' or raise "need icon"
-	url = icon.att["image"] || icon.parent.att["name"]
+	url = icon.att["image"] || icon.parent.att["name"].sub(/,.*$/,"")
 	raise icon.att.to_s if not url
 	url = "images/" + url if url !~ /^images\//
 	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
@@ -366,6 +366,8 @@ class XNode
 end
 
 class GFDocParser < XMLParser
+	attr_reader :stack
+
 	def initialize(*a)
 		super
 		@xml_lists = []
@@ -548,34 +550,51 @@ end
 
 #----------------------------------------------------------------#
 
-header
+def process_one_page file
+	data = File.open(file) {|f| f.readlines }.join("\n")
+	header
+	parser = GFDocParser.new "ISO-8859-1"
+	begin
+		STDERR.puts "reading standard input..."
+		parser.parse(data, true)
+		nodes = parser.instance_eval{@stack}[0][0]
+		mk(:tr) { mk(:td,:colspan,2) {
+			nodes.print_index
+			puts "<br><br>"
+		}}
+		nodes.print_contents
+	rescue XMLParserError => e
+		puts ""
+		puts ""
+		STDERR.puts e.inspect
 
-parser = GFDocParser.new "ISO-8859-1"
+		i = parser.stack.length-1
+		(STDERR.puts "\tinside <#{parser.stack[i][0]}>"; i-=1) until i<1
 
-begin
-	STDERR.puts "reading standard input..."
-	parser.parse(STDIN.readlines.join("\n"), true)
-	nodes = parser.instance_eval{@stack}[0][0]
-	mk(:tr) { mk(:td,:colspan,2) {
-		nodes.print_index
-		puts "<br><br>"
-	}}
-	nodes.print_contents
-rescue XMLParserError => e
+		# strange that line numbers are doubled.
+		# also the byte count is offset by the line count !?!?!?
+		STDERR.puts "\tinside #{file}:#{parser.line/2 + 1}" +
+			" (column #{parser.column}," +
+			" byte #{parser.byteIndex - parser.line/2})"
+
+		raise "why don't you fix the documentation"
+	end
+	footer
 	puts ""
 	puts ""
-	STDERR.puts e.inspect
-
-	# strange that line numbers are doubled.
-	# also the byte count is offset by the line count !?!?!?
-	STDERR.puts "  line: #{parser.line/2 + 1}"
-	STDERR.puts "column: #{parser.column}"
-	STDERR.puts "  byte: #{parser.byteIndex - parser.line/2}"
 end
 
-footer
-puts ""
-puts ""
-
-__END__
-
+%w(
+	install.xml
+	project_policy.xml
+	reference.xml
+	format.xml
+	internals.xml
+	architecture.xml
+).each {|input_name|
+	output_name = input_name.sub(/\.xml/,".html")
+	STDERR.puts "will transform #{input_name} into #{output_name}"
+	STDOUT.reopen output_name, "w"
+	process_one_page input_name
+}
+	
