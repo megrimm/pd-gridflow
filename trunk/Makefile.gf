@@ -68,13 +68,8 @@ edit::
 	*/main.rb base/test.rb &)
 
 CONF = config.make config.h Makefile
-
-EFENCE = /usr/lib/libefence$(LSUF)
-#	if [ -f $(EFENCE) ]; then export LD_PRELOAD=$(EFENCE); fi;
-
 BACKTRACE = ([ -f core ] && gdb `which ruby` core)
 TEST = base/test.rb math
-# TEST = base/test.rb formats
 
 test::
 	rm -f core
@@ -118,7 +113,6 @@ ifeq ($(HAVE_PUREDATA),yes)
 ifeq (${SYSTEM},Darwin)
   OS = DARWIN
   PDSUF = .pd_darwin
-#  PDBUNDLEFLAGS = -bundle_loader $(shell which pd)
   PDBUNDLEFLAGS = -bundle -undefined suppress
 else
   ifeq (${SYSTEM},NT)
@@ -131,21 +125,10 @@ else
     PDSUF = .pd_linux
   endif
 endif
-# OS = IRIX5 # PDSUF = .pd_irix5
-# OS = IRIX6 # PDSUF = .pd_irix6
-# PDCFLAGS = -o32 -DPD -DUNIX -DIRIX -O2
-# PDLDFLAGS = -elf -shared -rdata_shared 
-# PDCFLAGS = -n32 -DPD -DUNIX -DIRIX -DN32 -woff 1080,1064,1185 \
-#	-OPT:roundoff=3 -OPT:IEEE_arithmetic=3 -OPT:cray_ivdep=true \
-#	-Ofast=ip32
-# PDLDFLAGS = -IPA -n32 -shared -rdata_shared
-#PDCFLAGS = -DPD -O2 -funroll-loops -fomit-frame-pointer \
-#    -Wall -W -Wshadow -Wstrict-prototypes -Werror \
-#    -Wno-unused -Wno-parentheses -Wno-switch
 
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): bridge/puredata.c base/grid.h $(CONF)
+$(PD_LIB): bridge/puredata.c.fcs base/grid.h $(CONF)
 	$(CXX) -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
