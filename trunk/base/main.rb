@@ -27,7 +27,7 @@
 
 class NotImplementedError
 	def initialize(*)
-		#GridFlow.gfpost "HELLO"
+		#GridFlow.post "HELLO"
 		Process.kill $$, 6
 	end
 end
@@ -80,6 +80,7 @@ class<<self
 	attr_accessor :verbose
 	attr_reader :alloc_set
 	attr_reader :fobjects_set
+	alias gfpost post
 end
 
 @verbose=false
@@ -87,10 +88,9 @@ end
 self.post_header = "[gf] "
 
 def self.gfpost2(fmt,s); post("%s",s) end
-def self.gfpost(fmt,*a); post(fmt,*a) end
 
-self.gfpost "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
-self.gfpost "Please use at least 1.6.6 if you plan to use sockets" \
+self.post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{VERSION}"
+self.post "Please use at least 1.6.6 if you plan to use sockets" \
 	if VERSION < "1.6.6"
 
 def self.parse(m)
@@ -145,7 +145,7 @@ class FObject
 		else
 			raise "don't know how to deal with #{m.inspect}"
 		end
-		GridFlow.gfpost "%s",m.inspect if GridFlow.verbose
+		GridFlow.post "%s",m.inspect if GridFlow.verbose
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
 	def self.name_lookup sym
@@ -167,7 +167,7 @@ class FObject
 		qlass = name_lookup sym
 		r = qlass.new(*m)
 		r.args = o
-		GridFlow.gfpost "%s",o.inspect if GridFlow.verbose
+		GridFlow.post "%s",o.inspect if GridFlow.verbose
 		r
 	end
 end
@@ -222,7 +222,7 @@ class RubyPrint < GridFlow::GridObject
 		s=s.to_s
 		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
 		case s
-		when /^_0_/; GridFlow.gfpost "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
+		when /^_0_/; GridFlow.post "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
 		else super
 		end
 	end
@@ -233,7 +233,7 @@ end
 
 class PrintArgs < GridFlow::GridObject
 	def initialize(*a)
-		GridFlow.gfpost(a.inspect)
+		GridFlow.post(a.inspect)
 	end
 	install "printargs", 0, 0
 end
@@ -256,7 +256,7 @@ class GridPrint < GridFlow::GridObject
 	def _0_rgrid_flow data; @data << data end
 	def _0_rgrid_end
 		make_columns @data
-		GridFlow.gfpost("#{name}dim(#{@dim.join','}): " + case @dim.length
+		GridFlow.post("#{name}dim(#{@dim.join','}): " + case @dim.length
 		when 0,1; dump @data
 		when 2;   ""
 		else      "(not printed)"
@@ -265,7 +265,7 @@ class GridPrint < GridFlow::GridObject
 		when 2
 			sz = @data.length/@dim[0]
 			for row in 0...@dim[0]
-				GridFlow.gfpost dump(@data[sz*row,sz])
+				GridFlow.post dump(@data[sz*row,sz])
 			end
 		end
 	end
@@ -285,8 +285,8 @@ class GridGlobal
 	def _0_profiler_dump
 		ol = []
 		total=0
-		GridFlow.gfpost "-"*32
-		GridFlow.gfpost "         clock-ticks percent pointer  constructor"
+		GridFlow.post "-"*32
+		GridFlow.post "         clock-ticks percent pointer  constructor"
 		GridFlow.fobjects_set.each {|o,*| ol.push o }
 
 		# HACK: BitPacking is not a real gridobject
@@ -297,11 +297,11 @@ class GridGlobal
 		total=1 if total<1
 		ol.each {|o|
 			int ppm = o.profiler_cumul * 1000000 / total
-			GridFlow.gfpost "%20d %2d.%04d %08x %s",
+			GridFlow.post "%20d %2d.%04d %08x %s",
 				o.profiler_cumul, ppm/10000, ppm%10000,
 				o.id, o.args
 		}
-		GridFlow.gfpost "-"*32
+		GridFlow.post "-"*32
 	end
 end
 
@@ -327,7 +327,7 @@ def self.routine
 end
 
 def GridFlow.find_file s
-	gfpost "find_file: #{s}"
+	post "find_file: #{s}"
 	s
 end
 
@@ -335,7 +335,7 @@ def GridFlow.tick
 	$mainloop.one(0)
 #	GC.start
 rescue Exception => e
-	GridFlow.gfpost "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
+	GridFlow.post "ruby #{e.class}: #{e}:\n" + backtrace.join("\n")
 end
 
 end # module GridFlow

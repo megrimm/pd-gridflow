@@ -68,9 +68,10 @@ Compatibility:
 <ul><li><b>1</b> :  
 	Should work with Ruby 1.6.6 and jMax 2.5.1 or PureData 0.35-0 
 </li></ul> 
-Release steps: 
-<ul> <li><b>1</b> : cvs tag gridflow_0_6_2 . </li><li><b>2</b> : mkdir gridflow </li><li><b>3</b> : cd gridflow </li><li><b>4</b> :  
-cvs -d gridflow@artengine.ca:/home/cvs/gridflow export -r gridflow_0_6_2 . </li><li><b>5</b> : rm -rf CVS CVSROOT # caution!!! </li><li><b>6</b> : chmod -R go=u-w . </li><li><b>7</b> : cd .. </li><li><b>8</b> : tar cfzvv gridflow-0.6.2.tar.gz gridflow </li><li><b>9</b> : rm -rf gridflow # caution!!! </li><li><b>10</b> : scp gridflow*gz webster@artengine.ca:/home/matju/gridflow/download </li><li><b>11</b> : mv gridflow*gz /home/matju/net/gridflow </li> 
+Release steps (<b>OPERATE WITH CAUTION</b>): 
+<ul> <li><b>1</b> : cvs tag gridflow_0_6_2 . </li><li><b>2</b> : mkdir gridflow </li><li><b>3</b> :  
+cvs -d gridflow@artengine.ca:/home/cvs/gridflow export -r gridflow_0_6_2 -d 
+gridflow . </li><li><b>4</b> : cd gridflow </li><li><b>5</b> : rm -rf CVS CVSROOT </li><li><b>6</b> : chmod -R go=u-w . </li><li><b>7</b> : cd .. </li><li><b>8</b> : tar cfzvv gridflow-0.6.2.tar.gz gridflow </li><li><b>9</b> : rm -rf gridflow # caution!!! </li><li><b>10</b> : scp gridflow*gz root@artengine.ca:/home/matju/gridflow/download </li><li><b>11</b> : mv gridflow*gz /home/matju/net/gridflow </li><li><b>12</b> : artengine.ca : expand tarball into jmax/gridflow/latest </li><li><b>13</b> : jmax/pd/0xff/ruby-talk mlists : post release </li><li><b>14</b> : freshmeat.net : post release </li><li><b>15</b> : RAA : post release </li> 
 </ul> 
 </td></tr> 
 <tr><td>&nbsp;</td></tr> 

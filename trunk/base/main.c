@@ -87,11 +87,6 @@ static void FObject_free (void *$) {
 
 void FObject_send_out_3(int *argc, Ruby **argv, Ruby *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
-/*
-	{int i; for(i=0; i<(*argc); i++)
-		fprintf(stderr,"%s\n",
-			RSTRING(rb_funcall((*argv)[i],SI(inspect),0))->ptr);}
-*/
 	*outlet = INT(**argv);
 	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
 		RAISE("invalid outlet number");
@@ -136,11 +131,6 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby $) {
 //		printf("3: ");	rb_p(conn);
 		char buf[256];
 		sprintf(buf,"_%d_%s",inl,rb_sym_name(sym));
-		/*
-		fprintf(stderr,"%s:\n",buf);
-		for (int i=0; i<argc; i++) rb_p(argv[i]);
-		fprintf(stderr,".\n");
-		*/
 		rb_funcall2(rec,rb_intern(buf),argc,argv);
 	}
 	return Qnil;
@@ -156,13 +146,7 @@ Ruby FObject_delete(Ruby argc, Ruby *argv, Ruby $) {
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby gc2 = rb_ivar_defined(qlass,SI(@grid_class)) ?
 		rb_ivar_get(qlass,SI(@grid_class)) : Qnil;
-/*
-	if (gc2==Qnil) RAISE("@grid_class not found in %s",
-		RSTRING(rb_funcall(qlass,SI(inspect),0))->ptr);
-*/
-
 	GridClass *gc = (GridClass *)(gc2==Qnil ? 0 : FIX2PTR(gc2));
-
 	Ruby keep = rb_ivar_get(GridFlow_module, SI(@fobjects_set));
 	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
 	c_peer->foreign_peer = 0;
@@ -170,7 +154,6 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	c_peer->peer = $;
 	c_peer->grid_class = gc;
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
-//	fprintf(stderr,"new: @fobjects_set.size: %ld\n",INT(rb_funcall(keep,SI(size),0)));
 	rb_funcall2($,SI(initialize),argc,argv);
 //	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
 	return $;
@@ -254,17 +237,12 @@ static Ruby GridFlow_exec (Ruby $, Ruby data, Ruby func) {
 /* Procs of somewhat general utility */
 
 void define_many_methods(Ruby $, int n, MethodDecl *methods) {
-/*	fprintf(stderr,"here are %d methods:\n",n); */
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		const char *buf =
 			strcmp(md->selector,"init")==0 ? "initialize" :
 			strcmp(md->selector,"del")==0 ? "delete" :
 			md->selector;
-/*
-		fprintf(stderr,"%s: adding method #%s\n",
-			RSTRING(rb_funcall($,SI(inspect),0))->ptr,buf);
-*/
 		rb_define_method($,buf,(Ruby(*)())md->method,-1);
 		rb_enable_super($,buf);
 	}
@@ -354,9 +332,9 @@ void *Pointer_get (Ruby self) {
 
 #include <signal.h>
 
-void startup_number(void);
-void startup_grid(void);
-void startup_flow_objects(void);
+void startup_number();
+void startup_grid();
+void startup_flow_objects();
 
 /* Ruby's entrypoint. */
 void Init_gridflow () {
@@ -370,10 +348,7 @@ void Init_gridflow () {
 	DEF_SYM(list);
 	sym_outlets=SYM(@outlets);
 
-//	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
 	GridFlow_module = rb_define_module("GridFlow");
-//	fprintf(stderr,"GridFlow_module=%p\n",(void*)GridFlow_module);
-
 	rb_define_singleton_method(GridFlow_module,"clock_tick",(RFunc)GridFlow_clock_tick,0);
 	rb_define_singleton_method(GridFlow_module,"clock_tick=",(RFunc)GridFlow_clock_tick_set,1);
 	rb_define_singleton_method(GridFlow_module,"exec",(RFunc)GridFlow_exec,2);
@@ -396,7 +371,6 @@ void Init_gridflow () {
 	Ruby cdata = rb_eval_string("Data");
 	ID bi = SI(gridflow_bridge_init);
 	if (rb_respond_to(cdata,bi)) {
-		//fprintf(stderr,"Setting up bridge...\n");
 		rb_funcall(cdata,bi,1,PTR2FIX(&gf_bridge));
 	}
 
@@ -404,10 +378,8 @@ void Init_gridflow () {
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	EVAL("STDERR.puts $:");
 	EVAL("for f in %w(gridflow/base/main.rb gridflow/format/main.rb) do \
-		require	f end");
-
+		require	f end rescue STDERR.puts \"can't load: #{$!}\n$: = #{$:}\"");
 	signal(11,SIG_DFL); /* paranoia */
 }
 

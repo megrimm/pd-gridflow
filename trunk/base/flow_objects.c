@@ -28,6 +28,13 @@
 
 /* **************************************************************** */
 
+static NumberTypeIndex NumberType_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
+	if (sym==SYM(int32)) return int32_type_i;
+	if (sym==SYM(uint8)) return uint8_type_i;
+	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
+}
+
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
@@ -291,13 +298,6 @@ GRID_FLOW(GridStore,1) {
 }
 
 GRID_END(GridStore,1) {}
-
-static NumberTypeIndex NumberType_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
-	if (sym==SYM(int32)) return int32_type_i;
-	if (sym==SYM(uint8)) return uint8_type_i;
-	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
-}
 
 METHOD3(GridStore,init) {
 	rb_call_super(argc,argv);

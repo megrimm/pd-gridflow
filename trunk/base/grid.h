@@ -435,8 +435,9 @@ typedef enum NumberTypeIndex {
 	DECL_TYPE(      int8,  8),
 	DECL_TYPE(    uint16, 16),
 	DECL_TYPE(     int16, 16),
-/*	DECL_TYPE(    uint32, 32), */
+	DECL_TYPE(    uint32, 32),
 	DECL_TYPE(     int32, 32),
+	DECL_TYPE(   float32, 32),
 } NumberTypeIndex;
 
 #undef DECL_TYPE

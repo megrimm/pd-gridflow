@@ -444,7 +444,6 @@ void GridOutlet::callback(GridInlet *in, int mode) {
 	assert(mode==6 || mode==4);
 	assert(ron<MAX_CORDS && rwn<MAX_CORDS);
 	/* gfpost("callback: outlet=%p, inlet=%p, mode=%d",$,in,mode); */
-	/* not using ->ro, ->rw yet */
 	if (mode==4) ro[ron++]=in;
 	if (mode==6) rw[rwn++]=in;
 }

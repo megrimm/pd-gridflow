@@ -122,6 +122,12 @@
 	from my little experience, normal integer multiplication and division are
 	rather slow, especially on Intel brand. Even if you run a Cyrix brand cpu,
 	remember to try it yourself to see whether it makes a difference.
+
+	<h4>Changes from 0.5.0 to 0.6.3</h4>
+	
+	In 0.6.3, profiling hooks will now occur in #send_in and #send_to, which
+	shall be much less invading than the previous scheme (where
+	wrappers had to be generated for every method).
 </td>
 
   <tr><td>&nbsp;</td></tr>
