@@ -1069,6 +1069,22 @@ LIST(GRINLET4(GridDim,0,0)))
 
 /* **************************************************************** */
 
+struct GridType : GridObject {
+	GRINLET3(0);
+};
+
+GRID_INLET(GridType,0) {
+		Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
+		FObject_send_out(COUNT(a),a,rself);
+} GRID_FLOW {
+} GRID_FINISH {
+} GRID_END
+
+GRCLASS(GridType,"@type",inlets:1,outlets:1,startup:0,
+LIST(GRINLET4(GridType,0,0)))
+
+/* **************************************************************** */
+
 /*{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }*/
 
 struct GridRedim : GridObject {
@@ -1880,6 +1896,7 @@ void startup_flow_objects () {
 	INSTALL(GridConvolve);
 	INSTALL(GridFor);
 	INSTALL(GridDim);
+	INSTALL(GridType);
 	INSTALL(GridRedim);
 	INSTALL(GridScaleBy);
 	INSTALL(GridDownscaleBy);
