@@ -27,13 +27,12 @@ LDSOFLAGS = -rdynamic $(GRIDFLOW_LDSOFLAGS)
 
 CFLAGS += -Wall # for cleanliness
 CFLAGS += -Wno-unused # it's normal to have unused parameters
-CFLAGS += -Wno-strict-prototypes # Ruby has old-skool .h files
+CFLAGS += -mcpu=pentium # NOT PORTABLE (FIX ME)
 
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
 else
 	CFLAGS += -O3 -funroll-loops # speed
-	CFLAGS += -mpentium
 endif
 
 CFLAGS += -g    # gdb info
