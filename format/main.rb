@@ -210,8 +210,14 @@ module GridIO
 			send_in 0, *message
 		else
 			check_file_open
-			@format.option *message
-#			@format.send_in 0, :option, *message
+			p "_0_#{message[0]}"
+			if @format.respond_to? "_0_#{message[0]}" #hack
+				@format.send_in 0, :option, *message
+			elsif @format.respond_to? "#{message[0]}" #hack
+				@format.send *message
+			else
+				@format.option(*message)
+			end
 		end
 	end
 

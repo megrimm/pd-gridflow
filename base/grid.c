@@ -42,12 +42,12 @@
 #define MAX_PACKET_SIZE (1<<11)
 
 #define CHECK_TYPE(d) \
-	if (NumberTypeIndex_type_of(d)!=this->nt) \
+	if (NumberTypeE_type_of(d)!=this->nt) \
 		RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
 			parent->info(), \
 			__PRETTY_FUNCTION__, \
-			number_type_table[NumberTypeIndex_type_of(d)].name, \
+			number_type_table[NumberTypeE_type_of(d)].name, \
 			number_type_table[this->nt].name);
 
 #define CHECK_BUSY(s) \
@@ -56,7 +56,7 @@
 
 /* **************** Grid ****************************************** */
 
-void Grid::init(Dim *dim, NumberTypeIndex nt) {
+void Grid::init(Dim *dim, NumberTypeE nt) {
 	if (dc && dim) dc(dim);
 	del();
 	if (!dim) RAISE("hell");
@@ -66,6 +66,12 @@ void Grid::init(Dim *dim, NumberTypeIndex nt) {
 //	fprintf(stderr,"allocating grid: %d bytes\n",size);
 	data = dim ? new char[size] : 0;
 //	for (int i=0; i<size; i++) ((char*)data)[i]=(i&3)*85;
+}
+
+void Grid::init_clear(Dim *dim, NumberTypeE nt) {
+	init(dim,nt);
+	int size = dim->prod()*number_type_table[nt].size/8;
+	CLEAR((char*)data,size);
 }
 
 static inline void NUM(Ruby x, uint8 &y) { y = INT(x); }
@@ -78,7 +84,7 @@ static inline void NUM(Ruby x, float32 &y) {
 }
 
 void Grid::init_from_ruby_list(int n, Ruby *a) {
-		NumberTypeIndex nt = int32_type_i;
+		NumberTypeE nt = int32_type_i;
 		int dims = 1;
 		Ruby delim = SYM(#);
 		del();
@@ -87,7 +93,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 				int32 v[i];
 				if (i!=0 && TYPE(a[i-1])==T_SYMBOL) {
 					i--;
-					nt = NumberTypeIndex_find(a[i]);
+					nt = NumberTypeE_find(a[i]);
 				}
 				for (int j=0; j<i; j++) v[j] = INT(a[j]);
 				init(new Dim(i,v),nt);
@@ -98,7 +104,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		}
 		{
 			if (n!=0 && TYPE(a[0])==T_SYMBOL) {
-				nt = NumberTypeIndex_find(a[0]);
+				nt = NumberTypeE_find(a[0]);
 				a++;
 				n--;
 			}
@@ -193,7 +199,7 @@ static Ruby GridInlet_begin_2(GridInlet *self) {
 	return (Ruby) 0;
 }
 
-bool GridInlet::supports_type(NumberTypeIndex nt) {
+bool GridInlet::supports_type(NumberTypeE nt) {
 #define FOO(T) return !! gh->flow_##T;
 	TYPESWITCH(nt,FOO,return false)
 #undef FOO
@@ -201,7 +207,7 @@ bool GridInlet::supports_type(NumberTypeIndex nt) {
 
 void GridInlet::begin(int argc, Ruby *argv) {
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
-	nt = (NumberTypeIndex) INT(argv[2]);
+	nt = (NumberTypeE) INT(argv[2]);
 	sender = back_out->parent;
 	argc-=3, argv+=3;
 
@@ -437,7 +443,7 @@ void GridOutlet::abort() {
 	delete dim; dim = 0; dex = 0;
 }
 
-void GridOutlet::begin(Dim *dim, NumberTypeIndex nt) {
+void GridOutlet::begin(Dim *dim, NumberTypeE nt) {
 	TRACE;
 //	fprintf(stderr,"%s, %s\n", dim->to_s(), number_type_table[nt].name);
 	int n = dim->count();
@@ -497,11 +503,11 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 template <class T>
 void GridOutlet::send(int n, Pt<T> data) {
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	if (NumberTypeIndex_type_of(*data)!=nt) {
+	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 /*
 		gfpost("HAVE TO CONVERT %s INTO %s",
-			number_type_table[NumberTypeIndex_type_of(*data)].name,
+			number_type_table[NumberTypeE_type_of(*data)].name,
 			number_type_table[nt].name);
 */
 #define FOO(T) { \
@@ -536,7 +542,7 @@ void GridOutlet::give(int n, Pt<T> data) {
 		/* this is the copyless buffer passing */
 		inlets[0]->flow(6,n,data);
 	} else {
-		if (NumberTypeIndex_type_of(*data)!=nt) {
+		if (NumberTypeE_type_of(*data)!=nt) {
 			send(n,data);
 		} else {
 			flush();
@@ -580,6 +586,9 @@ GridObject::~GridObject() {
 	}
 }
 
+\class GridObject < FObject
+
+//\def void initialize () {
 METHOD3(GridObject,initialize) {
 	Ruby qlass = rb_obj_class(rself);
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
@@ -613,8 +622,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	}
 }
 
-METHOD3(GridObject,inlet_nt) {
-	int inln = INT(argv[0]);
+\def Symbol inlet_nt (int inln) {
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
@@ -622,8 +630,7 @@ METHOD3(GridObject,inlet_nt) {
 	return number_type_table[inl->nt].sym;
 }
 
-METHOD3(GridObject,inlet_dim) {
-	int inln = INT(argv[0]);
+\def Array inlet_dim (int inln) {
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
@@ -634,27 +641,21 @@ METHOD3(GridObject,inlet_dim) {
 	return a;
 }
 
-METHOD3(GridObject,inlet_set_factor) {
-	int inln = INT(argv[0]);
+\def void inlet_set_factor (int inln, int factor) {
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
 	if (!inl->is_busy()) RAISE("inlet #%d not active",inln);
-	inl->set_factor(INT(argv[1]));
-	return Qnil;
+	inl->set_factor(factor);
 }
 
-METHOD3(GridObject,send_out_grid_begin) {
-	if (argc<2 || argc>3 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
-	int outlet = INT(argv[0]);
+\def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_type_i) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
-	int n = rb_ary_len(argv[1]);
-	Ruby *p = rb_ary_ptr(argv[1]);
-	NumberTypeIndex nt = argc<3 ? int32_type_i : NumberTypeIndex_find(argv[2]);
+	int n = rb_ary_len(buf);
+	Ruby *p = rb_ary_ptr(buf);
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	out[outlet]->begin(new Dim(n,v),nt);
-	return Qnil;
 }
 
 template <class T>
@@ -664,23 +665,17 @@ void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
 	go->send(n,p);
 }
 
-METHOD3(GridObject,send_out_grid_flow) {
-	if (argc<2 || argc>3 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int outlet = INT(argv[0]);
-	NumberTypeIndex nt = argc<3 ? int32_type_i : NumberTypeIndex_find(argv[2]);
+\def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_type_i) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	GridOutlet *go = out[outlet];
 #define FOO(T) send_out_grid_flow_2(go,argv[1],(T)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
-	return Qnil;
 }
 
-METHOD3(GridObject,send_out_grid_abort) {
-	int outlet = INT(argv[0]);
+\def void send_out_grid_abort (int outlet) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	out[outlet]->abort();
-	return Qnil;
 }
 
 static void *GridObject_allocate ();
@@ -752,29 +747,23 @@ METHOD3(GridObject,method_missing) {
 }
 
 /* moved the stuff to the other destructor */
-METHOD3(GridObject,del) {
+\def void del () {
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
-GRCLASS(GridObject,
-LIST(),
-	DECL(GridObject,initialize),
-	DECL(GridObject,del),
-	DECL(GridObject,send_out_grid_begin),
-	DECL(GridObject,send_out_grid_flow),
-	DECL(GridObject,send_out_grid_abort),
-	DECL(GridObject,inlet_nt),
-	DECL(GridObject,inlet_dim),
-	DECL(GridObject,inlet_set_factor),
-	DECL(GridObject,method_missing))
-{
+GRCLASS(GridObject,LIST(),
+	\grdecl
+	,DECL(GridObject,initialize)
+	,DECL(GridObject,method_missing)
+){
 	IEVAL(rself,"install 'GridObject',0,0");
 	/* define in Ruby-metaclass */
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
 	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }
+
+\end class GridObject
 
 /* **************** Format **************************************** */
 /* this is an abstract base class for file formats, network protocols, etc */

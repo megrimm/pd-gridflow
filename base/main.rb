@@ -178,6 +178,7 @@ class FObject
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
 		qlass = name_lookup sym
+#		GridFlow.post "%s %s",sym,m.inspect if GridFlow.verbose
 		r = qlass.new(*m)
 		GridFlow.post "%s",r.args if GridFlow.verbose
 		#r.args = o

@@ -28,6 +28,7 @@
 #include <quicktime/quicktime.h>
 #include <quicktime/colormodels.h>
 
+\class FormatQuickTime < Format
 struct FormatQuickTime : Format {
 	quicktime_t *anim;
 	int track;
@@ -35,21 +36,19 @@ struct FormatQuickTime : Format {
 	Dim *dim;
 	char *codec;
 
-	DECL3(initialize);
-	DECL3(option);
-	DECL3(close);
-	DECL3(frame);
-	DECL3(seek);
+	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void close ();
+	\decl void codec_m (Symbol c);
+	\decl Ruby frame ();
+	\decl void seek (int frame);
 	GRINLET3(0);
 };
 
-METHOD3(FormatQuickTime,seek) {
-	int frame = INT(argv[0]);
+\def void seek (int frame) {
 	int result = quicktime_set_video_position(anim,frame,track);
-	return Qnil;
 }
 
-METHOD3(FormatQuickTime,frame) {
+\def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
 	if (nframe >= quicktime_video_length(anim,track)) return Qfalse;
 
@@ -60,24 +59,15 @@ METHOD3(FormatQuickTime,frame) {
 	int sy = quicktime_video_height(anim,track);
 	int npixels = sx*sy;
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*bytes+16);
-
-//	gfpost("pos = %d", quicktime_byte_position(anim));
 //	quicktime_reads_cmodel(anim,BC_RGB888,0);
-//	gfpost("size=%d",quicktime_frame_size(anim,0,track));
-
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*bytes;
-
 	int result;
-//	result = quicktime_read_frame(anim,buf,track);
 //	result = quicktime_decode_video(anim,rows,track);
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,BC_RGB888,rows,track);
-//	gfpost("result = %x", result);
-
 	int32 v[] = { sy, sx, channels };
-//	gfpost("dim(%d,%d,%d)",sy,sx,channels);
 	o->begin(new Dim(3,v),
-		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
@@ -85,9 +75,7 @@ METHOD3(FormatQuickTime,frame) {
 		bit_packing->unpack(sx,buf+bytes*sx*y,b2);
 		o->send(bs,b2);
 	}
-
 	delete[] (uint8 *)buf;
-
 	return INT2NUM(nframe);
 }
 
@@ -120,79 +108,65 @@ GRID_INLET(FormatQuickTime,0) {
 } GRID_FINISH {
 } GRID_END
 
-METHOD3(FormatQuickTime,option) {
-	VALUE sym = argv[0];
-	if (sym == SYM(codec)) {
-		struct { Ruby sym; char *codec; } codecs[] = {
-			{SYM(raw), QUICKTIME_RAW},
-			{SYM(jpeg), QUICKTIME_JPEG},
-			{SYM(png), QUICKTIME_PNG},
-			{SYM(mjpa), QUICKTIME_MJPA},
-			{SYM(yuv2), QUICKTIME_YUV2},
-			{SYM(yuv4), QUICKTIME_YUV4},
-		};
-		Ruby c = argv[1];
-		int i;
-		for (i=0; i<COUNT(codecs); i++) {
-			if (argv[1]==codecs[i].sym) break;
-		}
-		if (i==COUNT(codecs)) RAISE("unknown codec name");
-		codec = codecs[i].codec;
-	} else
-		rb_call_super(argc,argv);
-	return Qnil;
+\def void codec_m (Symbol c) {
+	struct { Ruby sym; char *codec; } codecs[] = {
+		{SYM(raw), QUICKTIME_RAW},
+		{SYM(jpeg), QUICKTIME_JPEG},
+		{SYM(png), QUICKTIME_PNG},
+		{SYM(mjpa), QUICKTIME_MJPA},
+		{SYM(yuv2), QUICKTIME_YUV2},
+		{SYM(yuv4), QUICKTIME_YUV4},
+	};
+	int i;
+	for (i=0; i<COUNT(codecs); i++) {
+		if (argv[1]==codecs[i].sym) break;
+	}
+	if (i==COUNT(codecs)) RAISE("unknown codec name");
+	codec = codecs[i].codec;
 }
 
-METHOD3(FormatQuickTime,close) {
+\def void close () {
 	if (bit_packing) delete bit_packing;
 	if (anim) quicktime_close(anim);
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
 /* note: will not go through jMax data paths */
 /* libquicktime may be nice, but it won't take a filehandle, only filename */
-METHOD3(FormatQuickTime,initialize) {
+\def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
-	argc--; argv++;
 
-	if (argc!=2 || argv[0] != SYM(file))
-		RAISE("usage: quicktime file <filename>");
-
-	const char *filename = rb_str_ptr(
+	const char *filename2 = rb_str_ptr(
 		rb_funcall(mGridFlow,SI(find_file),1,
-			rb_funcall(argv[1],SI(to_s),0)));
+			rb_funcall(filename,SI(to_s),0)));
 
-	anim = quicktime_open(strdup(filename),
-		mode()==SYM(in),
-		mode()==SYM(out));
+	anim = quicktime_open(strdup(filename2),
+		mode==SYM(in),
+		mode==SYM(out));
 
 	if (!anim) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	track = 0;
 	dim = 0;
 	codec = QUICKTIME_RAW;
 
-	if (mode()==SYM(in)) {
+	if (mode==SYM(in)) {
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec");
 		int depth = quicktime_video_depth(anim,track);
 		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
 		bit_packing = new BitPacking(is_le(),depth/8,3,masks);
-	} else if (mode()==SYM(out)) {
+	} else if (mode==SYM(out)) {
 		uint32 masks[] = { 0x0000ff,0x00ff00,0xff0000 };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 	}
-	return Qnil;
 }
 
 GRCLASS(FormatQuickTime,LIST(GRINLET2(FormatQuickTime,0,4)),
-DECL(FormatQuickTime,initialize),
-DECL(FormatQuickTime,option),
-DECL(FormatQuickTime,seek),
-DECL(FormatQuickTime,frame),
-DECL(FormatQuickTime,close)) {
+\grdecl
+){
 	IEVAL(rself,"install 'FormatQuickTime',1,1;"
 	"conf_format 6,'quicktime','Apple Quicktime (using "
 	"HeroineWarrior\\'s)'");
 }
 
+\end class FormatQuickTime

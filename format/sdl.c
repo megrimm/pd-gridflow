@@ -34,6 +34,7 @@
 
 static bool in_use = false;
 
+\class FormatSDL < Format
 struct FormatSDL : Format {
 	SDL_Surface *screen;
 	BitPacking *bit_packing;
@@ -47,8 +48,8 @@ struct FormatSDL : Format {
 			dim->prod(0,1)*bit_packing->bytes);
 	}
 
-	DECL3(initialize);
-	DECL3(close);
+	\decl void initialize (Symbol mode);
+	\decl void close ();
 	GRINLET3(0);
 };
 
@@ -109,15 +110,12 @@ GRID_FINISH {
 }
 GRID_END
 
-METHOD3(FormatSDL,close) {
+\def void close () {
 	MainLoop_remove(this);
-	return Qnil;
 }
 
-METHOD3(FormatSDL,initialize) {
+\def void initialize (Symbol mode) {
 	rb_call_super(argc,argv);
-	argv++, argc--;
-	if (argc>0) RAISE("too many arguments");
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 		RAISE("SDL_Init() error: %s",SDL_GetError());
 //	signal(11,SIG_DFL); // leave me alone
@@ -144,12 +142,12 @@ METHOD3(FormatSDL,initialize) {
 	default: RAISE("unknown bpp"); break;
 	}
 	MainLoop_add(this,(void(*)(void*))FormatSDL_alarm);
-	return Qnil;
 }
 
 GRCLASS(FormatSDL,LIST(GRINLET2(FormatSDL,0,4)),
-DECL(FormatSDL,initialize),
-DECL(FormatSDL,close)) {
+\grdecl
+){
 	IEVAL(rself,"install 'FormatSDL',1,1;"
 	"conf_format 2,'sdl','Simple Directmedia Layer'");
 }
+\end class FormatSDL

@@ -27,24 +27,23 @@
 #include <string.h>
 #include <errno.h>
 
+\class FormatMPEG3 < Format
 struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	BitPacking *bit_packing;
 	int track;
 
-	DECL3(initialize);
-	DECL3(seek);
-	DECL3(frame);
-	DECL3(close);
+	\decl void initialize (Symbol mode, Symbol source, Symbol filename);
+	\decl void seek (int frame);
+	\decl Ruby frame ();
+	\decl void close ();
 };
 
-METHOD3(FormatMPEG3,seek) {
-	int frame = INT(argv[0]);
-	int result = mpeg3_set_frame(mpeg,frame,track);
-	return Qnil;
+\def void seek (int frame) {
+	mpeg3_set_frame(mpeg,frame,track);
 }
 
-METHOD3(FormatMPEG3,frame) {
+\def Ruby frame () {
 	int nframe = mpeg3_get_frame(mpeg,track);
 	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
 
@@ -60,7 +59,7 @@ METHOD3(FormatMPEG3,frame) {
 
 	int32 v[] = { sy, sx, channels };
 	o->begin(new Dim(3,v),
-		NumberTypeIndex_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 
 	int bs = o->dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
@@ -75,41 +74,37 @@ METHOD3(FormatMPEG3,frame) {
 	return INT2NUM(nframe);
 }
 
-METHOD3(FormatMPEG3,close) {
+\def void close () {
 	if (bit_packing) delete bit_packing;
 	if (mpeg) {
 		mpeg3_close(mpeg);
 		mpeg=0;
 	}
 	rb_call_super(argc,argv);
-	return Qnil;
 }
 
 /* note: will not go through jMax data paths */
 /* libmpeg3 may be nice, but it won't take a filehandle, only filename */
-METHOD3(FormatMPEG3,initialize) {
+\def void initialize (Symbol mode, Symbol source, Symbol filename) {
 	rb_call_super(argc,argv);
-	argv++, argc--;
-	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
-	const char *filename = rb_str_ptr(
+	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
+	const char *filename2 = rb_str_ptr(
 		rb_funcall(mGridFlow,SI(find_file),1,
 			rb_funcall(argv[1],SI(to_s),0)));
 
-	mpeg = mpeg3_open(strdup(filename));
+	mpeg = mpeg3_open(strdup(filename2));
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 	track = 0;
 
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
-	return Qnil;
 }
 
 GRCLASS(FormatMPEG3,LIST(),
-DECL(FormatMPEG3,initialize),
-DECL(FormatMPEG3,seek),
-DECL(FormatMPEG3,frame),
-DECL(FormatMPEG3,close)) {
+\grdecl
+) {
 	IEVAL(rself,"install 'FormatMPEG3',1,1;"
 	"conf_format 4,'mpeg','Motion Picture Expert Group Format"
 	" (using HeroineWarrior\\'s)'");
 }
+\end class FormatMPEG3

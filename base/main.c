@@ -263,20 +263,21 @@ static Ruby ull2num(uint64 val) {
 
 /* end */
 
-METHOD3(FObject,profiler_cumul_get) {
+\class FObject < Object
+
+\def Ruby profiler_cumul_get () {
 	return ull2num(profiler_cumul);
 }
 
-METHOD3(FObject,profiler_cumul_set) {
+\def Ruby profiler_cumul_set (Ruby x) {
 	if (argc<1) RAISE("");
-	profiler_cumul = num2ull(argv[0]);
+	profiler_cumul = num2ull(x);
 	return argv[0];
 }
 
-METHOD3(FObject,del) {
+\def void del () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
 	rb_funcall(keep,SI(delete),1,rself);
-	return Qnil;
 }
 
 const char *FObject::info() {
@@ -286,6 +287,8 @@ const char *FObject::info() {
 	if (z==Qnil) return "(nil args!?)";
 	return rb_str_ptr(z);
 }
+
+\end class FObject
 
 /* ---------------------------------------------------------------- */
 /* C++<->Ruby bridge for classes/functions in base/number.c */
@@ -304,29 +307,28 @@ static Ruby String_swap16_f (Ruby rself) {
 
 /* **************************************************************** */
 
-METHOD3(BitPacking,initialize) {
-	return Qnil;
+\class BitPacking < Object
+
+\def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {
 }
 
-METHOD3(BitPacking,pack2) {
-	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && argv[1]!=Qnil && TYPE(argv[1])!=T_STRING) RAISE("bad args");
-	int n = rb_str_len(argv[0]) / sizeof(int32) / size;
-	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
+/*!@#$ doesn't support number types */
+\def String pack2 (String ins, String outs=Qnil) {
+	int n = rb_str_len(ins) / sizeof(int32) / size;
+	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(ins),rb_str_len(ins));
 	int bytes2 = n*bytes;
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
+	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
 	return out;
 }
 
-METHOD3(BitPacking,unpack2) {
-	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
-	if (argc==2 && argv[1]!=Qnil && TYPE(argv[1])!=T_STRING) RAISE("bad args");
+/*!@#$ doesn't support number types */
+\def String unpack2 (String ins, String outs=Qnil) {
 	int n = rb_str_len(argv[0]) / bytes;
-	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
+	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(ins),rb_str_len(ins));
 	int bytes2 = n*size*sizeof(int32);
-	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes2) : rb_str_new("",bytes2);
+	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
 	return out;
@@ -363,18 +365,19 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 }
 
 GRCLASS(BitPacking,LIST(),
-	DECL(BitPacking,initialize),
-	DECL(BitPacking,pack2),
-	DECL(BitPacking,unpack2))
-{}
+	\grdecl
+){}
+
+\end class BitPacking
 
 /* this is the entry point for all of the above */
 
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-NumberTypeIndex NumberTypeIndex_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
+NumberTypeE NumberTypeE_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
+		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
 	if (sym==SYM(uint8)) return uint8_type_i;
 	if (sym==SYM(int16)) return int16_type_i;
 	if (sym==SYM(int32)) return int32_type_i;
@@ -545,6 +548,10 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	while (n>4) { *(int32*)out = *(int32*)in; in+=4; out+=4; n-=4; }
 	while (n) { *out = *in; in++; out++; n--; }
 }
+
+/* ---------------------------------------------------------------- */
+
+
 
 /* ---------------------------------------------------------------- */
 
