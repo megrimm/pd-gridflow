@@ -215,15 +215,29 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 		rb_eException,0);
 }
 
-#define RETIFFAIL(name,r) \
-	if (r) { \
-		post(name " failed: %s\n", fts_status_get_description(r)); \
-		return r;}
+static void BFObject_delete$1 (kludge *k) {
+	fprintf(stderr,"BFObject_delete$1 says hello %08x\n",(int)k->$);
+	rb_funcall(k->$->peer,SI(delete),0);
+}
 
-#define RETIFFAIL2(name,r) \
+static void BFObject_delete (BFObject *$) {
+	kludge k;
+	k.$ = $;
+//	k.is_init = false;
+	k.selector = fts_new_symbol("delete");
+	k.ac = 0;
+	k.at = 0;
+
+	rb_rescue2(
+		(RFunc)BFObject_delete$1,(VALUE)&k,
+		(RFunc)BFObject_rescue,(VALUE)&k,
+		rb_eException,0);
+}
+
+#define RETIFFAIL(r,r2,fmt,args...) \
 	if (r) { \
-		post(name " failed: %s\n", fts_status_get_description(r)); \
-		return Qnil;}
+		post(fmt " failed: %s\n", args, fts_status_get_description(r)); \
+		return r2;}
 
 static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 	VALUE $ = rb_hash_aref(rb_ivar_get(GridFlow_module2,
@@ -234,14 +248,20 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 
 	fts_status_t r;
 	r = fts_class_init(qlass, sizeof(BFObject), ninlets, noutlets, (void *)$);
-	RETIFFAIL("fts_class_init",r);
+	RETIFFAIL(r,r,"fts_class_init%s","");
 	
 	r = fts_method_define_varargs(
 		qlass,fts_SystemInlet,fts_s_init,BFObject_init);
-	RETIFFAIL("define_varargs (for constructor)",r);
+	RETIFFAIL(r,r,"define_varargs (for %s)","#init");
 
-	for (int i=0; i<ninlets; i++)
-		fts_method_define_varargs(qlass, i, fts_s_anything, BFObject_method_missing);
+	r = fts_method_define_varargs(
+		qlass,fts_SystemInlet,fts_s_delete,(fts_method_t)BFObject_delete);
+	RETIFFAIL(r,r,"define_varargs (for %s)","#delete");
+
+	for (int i=0; i<ninlets; i++) {
+		r = fts_method_define_varargs(qlass, i, fts_s_anything, BFObject_method_missing);
+		RETIFFAIL(r,r,"define_varargs (for inlet %i)",i);
+	}
 
 	return fts_Success;
 }
@@ -262,7 +282,7 @@ int ac, const fts_atom_t *at) {
 VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 	fts_status_t r = fts_class_install(
 		fts_new_symbol_copy(name2),BFObject_class_init);
-	RETIFFAIL2("fts_class_install",r);
+	RETIFFAIL(r,Qnil,"fts_class_install%s","");
 	return Qnil;
 }
 

@@ -381,6 +381,7 @@ void GridOutlet::begin(Dim *dim) {
 
 void GridOutlet::send_direct(int n, const Number *data) {
 	assert(is_busy());
+	assert(frozen);
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
 		VALUE a[] = { INT2NUM(pn), PTR2FIX(data), INT2NUM(4) };
@@ -395,6 +396,7 @@ void GridOutlet::send_direct(int n, const Number *data) {
 
 void GridOutlet::send(int n, const Number *data) {
 	assert(is_busy());
+	assert(frozen);
 	dex += n;
 	assert(dex <= dim->prod());
 	if (n > gf_max_packet_length/2 || bufn + n > gf_max_packet_length) {
@@ -422,6 +424,7 @@ void GridOutlet::send8(int n, const uint8 *data) {
 
 void GridOutlet::give(int n, Number *data) {
 	assert(is_busy());
+	assert(frozen);
 	dex += n;
 	assert(dex <= dim->prod());
 	flush();
@@ -440,6 +443,7 @@ void GridOutlet::give(int n, Number *data) {
 
 void GridOutlet::flush() {
 	assert(is_busy());
+	assert(frozen);
 	send_direct(bufn,buf);
 	bufn = 0;
 }
