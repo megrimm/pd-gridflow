@@ -25,6 +25,10 @@
 /* !@#$ not handling abort on decompress */
 
 #include "../base/grid.h"
+/* removing macros (removing warnings) */
+#undef HAVE_PROTOTYPES
+#undef HAVE_STDLIB_H
+#undef EXTERN
 extern "C" {
 #include <jpeglib.h>
 };

@@ -50,6 +50,9 @@ METHOD3(FormatQuickTime,seek) {
 }
 
 METHOD3(FormatQuickTime,frame) {
+	int nframe = quicktime_video_position(anim,track);
+	if (nframe >= quicktime_video_length(anim,track)) return Qfalse;
+
 	GridOutlet *o = out[0];
 	int channels = 3;
 	int bytes = quicktime_video_depth(anim,track)/8;
@@ -85,9 +88,6 @@ METHOD3(FormatQuickTime,frame) {
 
 	delete[] (uint8 *)buf;
 
-	int nframe = min(
-		quicktime_video_position(anim,track),
-		quicktime_video_length(anim,track));
 	return INT2NUM(nframe);
 }
 
