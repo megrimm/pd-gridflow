@@ -424,6 +424,7 @@ GRID_INLET(FormatX11,0) {
 	int sx = in->dim->get(1);
 	int y = in->dex/sxc;
 	int oy = y;
+//L fprintf(stderr,"y=%d\n",y);
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
 		if (use_stripes) {
@@ -432,6 +433,14 @@ GRID_INLET(FormatX11,0) {
 				image[o+x] = (k<<6) | data[i+k]>>2;
 			}
 		} else {
+
+/*			Pt<uint8> out = image+y*bypl;
+fprintf(stderr,"pack y=%d out=%08lx,%08lx,%08lx im=%08lx,%08lx,%08lx\n", y,
+	(long)out.p, (long)out.start, (long)(out.start+out.n),
+	(long)(image+y*bypl).p, (long)(image+y*bypl).start,
+		(long)((image+y*bypl).start+(image+y*bypl).n));
+			bit_packing->pack(sx, data, out);
+*/
 			bit_packing->pack(sx, data, image+y*bypl);
 		}
 	}

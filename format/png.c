@@ -114,7 +114,7 @@ GRID_INLET(FormatPNG,0) {
 
 	int rowbytes = png_get_rowbytes(png, info);
 	int channels = (int)png_get_channels(png, info);
-	uint8 *image_data = (uint8 *)malloc(rowbytes*height);
+	Pt<uint8> image_data = ARRAY_NEW(uint8,rowbytes*height);
 	row_pointers = new png_bytep[height];
 	gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
 		color_type, channels, width, rowbytes, height, gamma);
@@ -130,7 +130,7 @@ GRID_INLET(FormatPNG,0) {
 	int32 v[] = { height, width, channels };
 	out[0]->begin(new Dim(3,v),
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	out[0]->send(rowbytes*height, Pt<uint8>(image_data,rowbytes*height));
+	out[0]->send(rowbytes*height,image_data);
 	free(image_data);
 	return Qnil;
 }
