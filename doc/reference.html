@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.2 - reference</title>
+<title>GridFlow 0.7.3 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.2 - index of this page:</h4>
+    <h4>GridFlow 0.7.3 - index of this page:</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -605,7 +605,7 @@
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@convolve.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>this is the object for blurring, sharpening, finding edges, 
-		embossing, and many other uses.</p> <br><b>method</b>&nbsp;init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      <br>
+		embossing, cellular automata, and many other uses.</p> <br><b>method</b>&nbsp;init <b>(</b><i>symbol</i> op_para<b>, </b><i>symbol</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns rest...)</i> grid<b>)</b>   
 				splits the incoming grid into dim(rest...) parts. 
 				for each of those parts at (y,x), a rectangle of such 
@@ -619,7 +619,11 @@
 				starts. <br>
    <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows2 columns2)</i> grid<b>)</b>   
 				this is the convolution grid and it gets stored in 
-				the object. rows2 and columns2 must be odd numbers. <br>
+				the object. if rows2 and/or columns2 are odd numbers, 
+				then the centre of convolution is the middle of the convolution 
+				grid. if they are even numbers, then the chosen centre will 
+				be slightly more to the left and/or to the top, because the 
+				actual middle is between cells of the grid. <br>
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(rows columns rest...)</i> grid<b>)</b>   <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign="top"><br>
@@ -798,7 +802,7 @@
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.7.2 Documentation<br>
+GridFlow 0.7.3 Documentation<br>
 by Mathieu Bouchard
 <a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
 and<br>

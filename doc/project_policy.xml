@@ -46,7 +46,7 @@ Release steps (<b>OPERATE WITH CAUTION</b>):
 		expand tarball into jmax/gridflow/latest
 	</li><li>download somewhere else and try to compile
 	</li><li>update main page
-	</li><li>jmax/pd/0xff/ruby-talk mlists : post release
+	</li><li>jmax/pd/0xff/ruby-talk mlists : post release (note: prefix subject with [ANN] !!!!)
 	</li><li>freshmeat.net : post release
 	</li><li>RAA : post release
 	</li>
