@@ -135,8 +135,14 @@ static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
 
 static VALUE *localize_sysstack () {
-	void *bp;
-	sscanf(RUBY_STACK_END,"0x%08lx",(long *)&bp);
+	long bp;
+	sscanf(RUBY_STACK_END,"0x%08lx",&bp);
+	fprintf(stderr,"old RUBY_STACK_END = %08lx\n",bp);
+	// HACK (2004.08.29: alx has a problem; i hope it doesn't get worse)
+	// this rounds to the last word of a 4k block
+	// cross fingers that no other OS does it too different
+	bp=((bp+0xfff)&~0xfff)-sizeof(void*);
+	fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
 	return (VALUE *)bp;
 }
 
