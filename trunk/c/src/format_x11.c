@@ -567,6 +567,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	{
 		Visual *v = $->visual;
 		$->bit_packing = BitPacking_new(
+			ImageByteOrder($->display),
 			$->ximage->bits_per_pixel/8,
 			v->red_mask,
 			v->green_mask,
