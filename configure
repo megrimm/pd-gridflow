@@ -436,7 +436,7 @@ Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
-	defines :JMAXDISTDIR => `pwd`.chomp + "/bundled/jmax"
+	defines :JMAXDISTDIR => proc { `pwd`.chomp + "/bundled/jmax" }
 	test proc {
 		c_test '
 		#define new new_
@@ -459,7 +459,7 @@ Feature.new {
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
-	defines :JMAX4_INSTALL_DIR => `jmax-config --package-dir`.chomp
+	defines :JMAX4_INSTALL_DIR => proc { `jmax-config --package-dir`.chomp }
 	test proc {
 		c_test '
 		#define new new_
@@ -647,11 +647,13 @@ def try feature
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
-	for k,v in feature.defines||{} do $conf[:DEFINES][k]=v end
+	for k,v in feature.defines||{} do
+		$conf[:DEFINES][k]=(if Proc===v then v[] else v end)
+	end
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.7.2 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.3 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -679,9 +681,9 @@ def my_install_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\t$(INSTALL_DATA) #{base+name} $(RUBYDESTDIR2)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DATA) #{base+name} $(sitelibdir)/gridflow/#{base+name}"
     when :directory
-      f.puts "\t$(INSTALL_DIR) $(RUBYDESTDIR2)/gridflow/#{base+name}"
+      f.puts "\t$(INSTALL_DIR) $(sitelibdir)/gridflow/#{base+name}"
       my_install_files(f,base+name,rest) 
     end
   }
@@ -691,7 +693,7 @@ def my_uninstall_files(f,base,entries)
   entries.each {|type,name,*rest|
     case type
     when :ruby
-      f.puts "\trm $(RUBYDESTDIR2)/gridflow/#{base+name}"
+      f.puts "\trm $(sitelibdir)/gridflow/#{base+name}"
     when :directory
       my_uninstall_files(f,base+name,rest) 
     end
@@ -699,8 +701,8 @@ def my_uninstall_files(f,base,entries)
 end
 
 def make_makefile f
-    f.puts "RUBYDESTDIR2 = " + make_expand(sprintf("%s/%s.%s",
-		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
+#    f.puts "RUBYDESTDIR2 = " + make_expand(sprintf("%s/%s.%s",
+#		$conf[:DEFINES][:RUBY_PREFIX],CONFIG['MAJOR'],CONFIG['MINOR']))
 	puts ""
     f.puts "RUBY = #{RUBY}"
     f.puts "ruby-all::", ""
@@ -807,6 +809,8 @@ mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
+
+mf.sub! /^sitedir = .*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
 
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = " +
 #	(if Config::CONFIG["arch"] =~ /darwin/
