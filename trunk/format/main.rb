@@ -32,9 +32,12 @@ end
 
 module GridFlow
 
-def max_rank; 16; end
-def max_size; 64*1024**2; end
-def max_packet; 1024; end
+class<<self
+	attr_reader :formats
+	def max_rank; 16; end
+	def max_size; 64*1024**2; end
+	def max_packet; 1024; end
+end
 
 ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
 
@@ -46,6 +49,22 @@ OurByteOrder = case [1].pack("L")
 class Format
 	FF_R = 4
 	FF_W = 2
+
+	def self.install_format(name,inlets,outlets,flags,symbol_name,description)
+		install(name,inlets,outlets)
+		@flags = flags
+		@symbol_name = symbol_name
+		@description = description
+		GridFlow.formats[symbol_name.intern]=self
+		nil
+	end
+end
+
+class GridIn
+#	def _0_bang
+#		CHECK_FILE_OPEN
+#		rb_funcall($->ff,SI(frame),0);
+#	end
 end
 
 class BitPacking
@@ -314,6 +333,7 @@ end
 
 class FormatPPM < Format; include EventIO
 	def initialize(mode,source,*args)
+		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		super
 		raw_open mode,source,*args
 	end
@@ -327,22 +347,19 @@ class FormatPPM < Format; include EventIO
 		while metrics.length<3
 			line = @stream.gets
 			next if line =~ /^#/
-			metrics.push *(line.split(/\s+/).map{|x| Integer x })
+			metrics.push(*(line.split(/\s+/).map{|x| Integer x }))
 		end
 		if metrics[2] != 255 then raise \
 			"Wrong color depth (max_value=#{metrics[2]} instead of 255)" end
 
 		send_out_grid_begin 0, [metrics[1], metrics[0], 3]
 
-		bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		bs = metrics[0]*3
+		buf = ""
 		for y in 0...metrics[1] do
-			data = @stream.read bs
-			data or raise EOFError
-			send_out_grid_flow 0, bp.unpack data
-			#send_out_grid_flow 0, "\x80"*metrics[0]*12
+			data = @stream.read(bs) or raise EOFError
+			send_out_grid_flow 0, @bp.unpack(data,buf)
 		end
-		p "HELLO"
 		send_out_grid_end 0
 	end
 
@@ -355,7 +372,6 @@ class FormatPPM < Format; include EventIO
 
 	def _0_rgrid_flow data
 		# !@#$ use BitPacking here
-		# bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		@stream.write data.unpack("i*").pack("c*")
 	end
 	
@@ -393,11 +409,11 @@ targa header is like:
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.whine sprintf "tga: size y=%d x=%d depth=%d",h,w,depth
-		GridFlow.whine sprintf "tga: comment: %s", comment
+		GridFlow.whine sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
+		GridFlow.whine sprintf("tga: comment: %s", comment)
 
 		if depth != 24 and depth != 32
-			raise sprintf "tga: wrong colour depth: %i\n", depth
+			raise sprintf("tga: wrong colour depth: %i\n", depth)
 		end
 		send_out_grid_begin 0, [ h, w, depth/8 ]
 		
@@ -406,7 +422,7 @@ targa header is like:
 		bp = BitPacking.new(ENDIAN_BIG,3,[0x0000ff,0x00ff00,0xff0000])
 		for y in 0...h do
 			data = @stream.read bs
-			send_out_grid_flow 0, bp.unpack data
+			send_out_grid_flow 0, bp.unpack(data)
 		end
 		send_out_grid_end 0
 	end

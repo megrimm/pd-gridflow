@@ -248,21 +248,25 @@ METHOD2(BitPacking,init) {
 
 METHOD2(BitPacking,pack2) {
 	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 {
 	int n = rb_str_len(argv[0]) / sizeof(Number) / 3;
 	Number *in = (Number *)rb_str_ptr(argv[0]);
-	VALUE out = rb_str_new("",n*BitPacking_bytes($));
+	int bytes = n*BitPacking_bytes($);
+	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	BitPacking_pack($,n,in,(uint8 *)rb_str_ptr(out));
 	return out;
 }}
 
 METHOD2(BitPacking,unpack2) {
-	if (argc!=1 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+	if (argc<1 || argc>2 || TYPE(argv[0])!=T_STRING) RAISE("bad args");
+	if (argc==2 && TYPE(argv[1])!=T_STRING) RAISE("bad args");
 {
 	int n = rb_str_len(argv[0]) / BitPacking_bytes($);
 	uint8 *in = (uint8 *)rb_str_ptr(argv[0]);
-	VALUE out = rb_str_new("",n*3*sizeof(Number));
+	int bytes = n*3*sizeof(Number);
+	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*12);
 	BitPacking_unpack($,n,in,(Number *)rb_str_ptr(out));
