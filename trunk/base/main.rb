@@ -334,7 +334,12 @@ begin
 #	self.routine
 #	GC.start
 rescue Exception => e
-	GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+	#GridFlow.post "GridFlow.clock_tick: #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+	GridFlow.post "GridFlow.clock_tick: %s: %s:", e.class, e
+	b = e.backtrace
+	GridFlow.post "%s", b[0]
+	GridFlow.post "%s", b[1] if b.length>=2
+	GridFlow.post "ruby stack depth = %d", b.length
 end end
 
 end # module GridFlow
