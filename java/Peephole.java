@@ -89,14 +89,14 @@ implements FtsIntValueListener//, ImageObserver
 		FtsAtom a[] = new FtsAtom[4];
 		for (int i=0; i<4; i++) a[i] = new FtsAtom();
 		//int y = getY()-getHeight()/2+BORDER;
-		int y = getY()+BORDER-24; // fudge factor = 24
-		int x = getX()+BORDER-5; // fudge factor = 5
-		java.awt.Container ct = sketchpad;
-		while (ct!=null) {
-			if (ct.getParent()==null) break;
+		int y = getY()+BORDER;
+		int x = getX()+BORDER;
+		
+		for (java.awt.Container ct=sketchpad; ct!=null; ct=ct.getParent()) {
+			if (ct.getParent()==null) break; // hack
+			if (ct.getParent().getParent()==null) break; // hack hack
 			x += ct.getX();
 			y += ct.getY();
-			ct=ct.getParent();
 		}
 		a[0].setInt(y);
 		a[1].setInt(x);
@@ -151,10 +151,10 @@ implements FtsIntValueListener//, ImageObserver
 		String title = ((Frame)window).getTitle();
 		if (title==null) title="";
 		System.out.println("title was: "+title+" ("+title.length()+" bytes)");
-		if (title.indexOf("\n\n\n")<0) title+="\n\n\n"+windowid;
+		if (title.indexOf("\t\t\t")<0) title+="\t\t\t"+windowid;
 		System.out.println("title is now: "+title+" ("+title.length()+" bytes)");
 		((Frame)window).setTitle(title);
-		windowid = Integer.valueOf(title.substring(title.indexOf("\n\n\n")+3)).intValue();
+		windowid = Integer.valueOf(title.substring(title.indexOf("\t\t\t")+3)).intValue();
 
 		FtsAtom a[] = new FtsAtom[1];
 		for (int i=0; i<1; i++) a[i] = new FtsAtom();
