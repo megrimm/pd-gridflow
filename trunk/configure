@@ -237,7 +237,8 @@ Feature.new {
 Feature.new {
 	tag :mpeg3
 	name "HeroineWarrior's LibMPEG3"
-	uses_so ["-lmpeg3","-lpthread","-lm"]
+	uses_so ["-lmpeg3","-lpthread","-lm",
+		"-L/usr/X11R6/lib","-I/usr/X11R6/include"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	test proc {|h|
 		c_test "
@@ -456,7 +457,11 @@ end
 $conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
 $conf[:RUBYIO_H] = Config::CONFIG["archdir"] + "/rubyio.h"
 
-$features.each {|feature| try feature }
+begin
+  $features.each {|feature| try feature }
+ensure
+  system "/bin/rm -f /tmp/#{$$} /tmp/#{$$}.c"
+end
 
 $conf[:LDSOFLAGS].uniq!
 
@@ -604,9 +609,6 @@ f.puts "
 end
 
 f.puts "
-#ifndef HAVE_DEBUG
-#define HAVE_SPEED
-#endif
 #endif /* __CONFIG_H */"
 }
 

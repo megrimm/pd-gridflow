@@ -63,7 +63,8 @@ uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
 
 kloc::
-	wc base/*.[ch] base/*.rb format/*.[ch] format/*.rb configure Makefile extra/*.rb
+	wc base/*.[ch] base/*.rb format/*.[ch] format/*.rb \
+	configure Makefile.gf extra/*.rb
 
 edit::
 	(nedit base/*.rb base/*.[ch] format/main.rb tests/test.rb &)
