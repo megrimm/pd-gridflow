@@ -804,29 +804,20 @@ void GridFor::trigger (T bogus) {
 		to2[i] = fromb[i]+stepb[i]*nn[i];
 	}
 	P<Dim> d;
-	if (from->dim->n==0) {
-		d = new Dim(*nn);
-	} else {
-		nn[n]=n;
-		d = new Dim(n+1, (int32 *)nn);
-	}
+	if (from->dim->n==0) { d = new Dim(*nn); }
+	else { nn[n]=n;        d = new Dim(n+1, (int32 *)nn); }
 	int total = d->prod();
 	out=new GridOutlet(this,0,d,from->nt);
 	if (total==0) return;
 	int k=0;
 	for(int d=0;;d++) {
-		/* here d is the dim# to reset; d=n for none */
+		// here d is the dim# to reset; d=n for none
 		for(;d<n;d++) x[k+d]=fromb[d];
 		k+=n;
-		if (k==64*n) {
-			out->send(k,x);
-			k=0;
-			COPY(x,x+63*n,n);
-		} else {
-			COPY(x+k,x+k-n,n);
-		}
+		if (k==64*n) {out->send(k,x); k=0; COPY(x,x+63*n,n);}
+		else {                             COPY(x+k,x+k-n,n);}
 		d--;
-		/* here d is the dim# to increment */
+		// here d is the dim# to increment
 		for(;;d--) {
 			if (d<0) goto end;
 			x[k+d]+=stepb[d];
@@ -913,6 +904,7 @@ struct GridRedim : GridObject {
 	\attr P<Dim> dim;
 	PtrGrid dim_grid;
 	PtrGrid temp; // temp->dim is not of the same shape as dim
+	GridRedim() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridRedim() {}
 	\decl void initialize (Grid *d);
 	\grin 0
@@ -956,7 +948,6 @@ GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 \def void initialize (Grid *d) {
 	rb_call_super(argc,argv);
 	dim_grid=d;
-	expect_dim_dim_list(dim_grid->dim);
 	dim = dim_grid->to_dim();
 }
 
@@ -1050,8 +1041,7 @@ struct GridGrade : GridObject {
 	\grin 0
 };
 
-template <class T>
-struct GradeFunction {
+template <class T> struct GradeFunction {
 	static int comparator (const void *a, const void *b) {
 		return **(T**)a - **(T**)b;
 	}
