@@ -404,10 +404,9 @@ public:
 	}
 	template <class T>
 	static void op_scan (int an, int n, T *as, T *bs) {
-		for (int i=0; i<an; i++, as++, bs++) *bs = O::foo(*as,*bs);
-		as=bs-an;
 		while (n--) {
-			for (int i=0; i<an; i++, bs++) *bs = O::foo(bs[-an],*bs);
+			for (int i=0; i<an; i++, as++, bs++) *bs = O::foo(*as,*bs);
+			as=bs-an;
 		}
 	}
 };
