@@ -21,10 +21,31 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "bridge_jmax.h"
 #include "../config.h"
 #include "grid.h"
 #include <ctype.h>
+
+#ifdef STANDALONE
+typedef FObject fts_object_t;
+typedef Symbol fts_symbol_t;
+typedef Var fts_atom_t;
+#define fts_is_symbol(a) Var_has_symbol(a)   
+#define fts_is_int(a) Var_has_int(a)      
+#define fts_get_symbol(a) Var_get_symbol(a)   
+#define fts_get_int(a) Var_get_int(a)      
+#define fts_get_ptr(a) Var_get_ptr(a)      
+#define fts_set_symbol(a,b) Var_put_symbol(a,b) 
+#define fts_set_int(a,b) Var_put_int(a,b)    
+#define fts_set_ptr(a,b) Var_put_ptr(a,b)    
+#define fts_new_symbol(x) Symbol_new(x)
+#define fts_symbol_name(x) Symbol_name(x)
+#define fts_status_get_description(x) "foobar"
+#define fts_method_define_varargs(c,i,s,m) fts_method_define_optargs(c,i,s,m,0,0,0)
+#define fts_object_get_outlets_number(o) o->head.cl->n_outlets
+#define fts_outlet_send(a,b,c,d,e) Object_send_thru(a,b,c,d,e)
+#else
+#include "bridge_jmax.h"
+#endif
 
 VALUE FObject_class;
 VALUE GridFlow_module;
@@ -39,14 +60,6 @@ void FObject_sweep (VALUE *$) {}
 #define INTEGER_P(_value_) (FIXNUM_P(_value_) || TYPE(_value_)==T_BIGNUM)
 #define FLOAT_P(_value_) (TYPE(_value_)==T_FLOAT)
 #define EARG(_reason_) rb_raise(rb_eArgError, _reason_)
-
-typedef struct Kludge {
-	int inlets;
-	int outlets;
-	VALUE qlass;
-} Kludge;
-
-Kludge kludge;
 
 typedef struct BFObject {
 	fts_object_t _o;
@@ -70,8 +83,8 @@ void rj_convert(VALUE arg, fts_atom_t *at) {
 		char *name = rb_id2name(SYM2ID(arg));
 		fts_set_symbol(at,fts_new_symbol(name));
 		free(name);
-	} else if (FLOAT_P(arg)) {
-		fts_set_float(at,RFLOAT(arg)->value);
+//	} else if (FLOAT_P(arg)) {
+//		fts_set_float(at,RFLOAT(arg)->value);
 	} else {
 		/* can't use EARG here */
 		rb_raise(rb_eArgError, "cannot convert argument of class %s", CLASS_OF(arg));
@@ -83,92 +96,162 @@ VALUE jr_convert(const fts_atom_t *at) {
 		return INT2NUM(fts_get_int(at));
 	} else if (fts_is_symbol(at)) {
 		return ID2SYM(rb_intern(fts_symbol_name(fts_get_symbol(at))));
-	} else if (fts_is_float(at)) {
-		return rb_float_new(fts_get_float(at));
-	} else if (fts_is_ptr(at)) {
-		return Qnil; /* not supported */
+//	} else if (fts_is_float(at)) {
+//		return rb_float_new(fts_get_float(at));
+//	} else if (fts_is_ptr(at)) {
+//		return Qnil; /* not supported */
 	} else {
 		return Qnil; /* unknown */
 	}
 }
 
-static fts_status_t BFObject_class_init (fts_class_t *qlass,
-int ac, const fts_atom_t *at) {
-	fts_class_init(qlass, sizeof(BFObject),
-		kludge.inlets,
-		kludge.outlets,
-		(void *) kludge.qlass);
-	return fts_Success;
+// kludge
+static struct {
+	fts_object_t *$;
+	int winlet;
+	fts_symbol_t selector;
+	int ac;
+	const fts_atom_t *at;
+} z2;
+
+static VALUE BFObject_method_missing$1 (VALUE foo) {
+	const char *s = fts_symbol_name(z2.selector);
+	char buf[256];
+	VALUE argv[z2.ac];
+	VALUE $ = BFObject_peer(z2.$);
+	ID sel;
+	strcpy(buf+3,s);
+	buf[0] = buf[2] = '_';
+	buf[1] = '0' + z2.winlet;
+	sel = rb_intern(buf);
+	{ int i; for (i=0; i<z2.ac; i++) argv[i] = jr_convert(z2.at+i); }
+	rb_funcall2($,sel,z2.ac,argv);
+	return Qnil;
 }
 
-typedef struct Kludge2 {
-	fts_object_t *peer;
-	VALUE $;
-	VALUE sel;
-	int argc;
-	VALUE *argv;
-} Kludge2;
-
-static Kludge2 closure;
-
-static void BFObject_method_missing$1 (VALUE foo) {
-	rb_funcall(closure.$,closure.sel,closure.argc,closure.argv);
-}
-
-static void BFObject_method_missing$2 (VALUE foo) {
-	VALUE es = rb_eval_string("\"ruby #{$!.class}: #{$!}\"");
-	fts_object_set_error(FObject_peer(closure.$),"%s",es);
+static VALUE BFObject_method_missing$2 (VALUE foo) {
+	VALUE es = rb_eval_string("\"ruby #{$!.class}: #{$!}: #{$!.backtrace}\"");
+//	VALUE $ = BFObject_peer(z2.$);
+	whine("jmaxobject = %p", z2.$);
+//	whine("rubyobject = %p", $);
+	whine("%s",RSTRING(es)->ptr);
+	fts_object_set_error(z2.$,"%s",RSTRING(es)->ptr);
+	return Qnil;
 }
 
 typedef VALUE (*RFunc)();
 
 static void BFObject_method_missing (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
-	const char *s = fts_symbol_name(selector);
-	char buf[256];
-	VALUE argv[ac];
-/*	Kludge2 closure; */
-	strcpy(buf+3,s);
-	buf[0] = buf[2] = '_';
-	buf[1] = '0' + winlet;
-	closure.$ = BFObject_peer($);
-	closure.sel = rb_intern(buf);
-	closure.argc = ac;
-	closure.argv = argv;
-	{ int i; for (i=0; i<ac; i++) argv[i] = jr_convert(at+i); }
-	rb_rescue(
+	z2.$ = $;
+	z2.winlet = winlet;
+	z2.selector = selector;
+	z2.ac = ac;
+	z2.at = at;
+	rb_rescue2(
 		(RFunc)BFObject_method_missing$1,Qnil,
-		(RFunc)BFObject_method_missing$2,Qnil);
+		(RFunc)BFObject_method_missing$2,Qnil,
+		rb_eException,0);
 }
 
-VALUE FObject_s_new(FObject *peer, VALUE argc, VALUE *argv);
+VALUE FObject_s_new(BFObject *peer, VALUE qlass, VALUE argc, VALUE *argv);
 
-static void BFObject_init$1 (VALUE foo) {
-	FObject_s_new(closure.peer,closure.argc,closure.argv);
-	rb_funcall(closure.$,closure.sel,closure.argc,closure.argv);
+static VALUE BFObject_init$1 (VALUE foo) {
+	VALUE argv[z2.ac];
+	z2.ac--;
+	z2.at++;
+	{ int i; for (i=0; i<z2.ac; i++) argv[i] = jr_convert(z2.at+i); }
+	{
+		VALUE $ = FObject_s_new((BFObject *)z2.$,
+			(VALUE)z2.$->head.cl->user_data,z2.ac,argv);
+		((BFObject *)z2.$)->peer = $;
+		return $;
+	}
 }
 
 static void BFObject_init (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
-	const char *s = fts_symbol_name(selector);
-	char buf[256];
-	VALUE argv[ac];
-	closure.peer = $;
-	closure.sel = rb_intern(s);
-	ac--; at++;
-	closure.argc = ac;
-	closure.argv = argv;
-	{ int i; for (i=0; i<ac; i++) argv[i] = jr_convert(at+i); }
-	rb_rescue(
+	int r;
+	z2.$ = $;
+	z2.winlet = winlet;
+	z2.ac = ac;
+	z2.at = at;
+
+
+	r = rb_rescue2(
 		(RFunc)BFObject_init$1,Qnil,
-		(RFunc)BFObject_method_missing$2,Qnil);
+		(RFunc)BFObject_method_missing$2,Qnil,
+		rb_eException,0);
+	whine("rb_rescue2: %d",r);
+}
+
+static struct {
+	int inlets;
+	int outlets;
+	VALUE qlass;
+} kludge;
+
+#define RETIFFAIL(name,r) \
+	if (r) { \
+		whine(name " failed: %s", fts_status_get_description(r)); \
+		return r;}
+
+#define RETIFFAIL2(name,r) \
+	if (r) { \
+		whine(name " failed: %s", fts_status_get_description(r)); \
+		return Qnil;}
+
+
+static fts_status_t BFObject_class_init (fts_class_t *qlass,
+int ac, const fts_atom_t *at) {
+	VALUE $ = kludge.qlass;
+	VALUE methods = rb_funcall($, rb_intern("instance_methods"), 0);
+	int n = RARRAY(methods)->len;
+	int i;
+	int objectsize = sizeof(BFObject);
+	fts_status_t r;
+
+	whine("objectsize=%d, inlets=%d, outlets=%d, rubyclass=%p",
+		objectsize, kludge.inlets, kludge.outlets, kludge.qlass);
+
+	r = fts_class_init(qlass, objectsize,
+		kludge.inlets, kludge.outlets, (void *)$);
+
+	RETIFFAIL("fts_class_init",r);
+	
+	r = fts_method_define_varargs(
+		qlass,fts_SystemInlet,fts_s_init,BFObject_init);
+	
+	RETIFFAIL("define_varargs (for constructor)",r);
+
+	for (i=0; i<n; i++) {
+		const char *name = RSTRING(RARRAY(methods)->ptr[i])->ptr;
+		whine("looking at #%s", name);
+		/* max 10 inlets */
+		if (strlen(name)>3 && isdigit(name[1]) &&
+		 name[0]=='_' && name[2]=='_') {
+			int inlet = name[1]-'0';
+			if (inlet<0 || inlet>=kludge.inlets) {
+				whine("inlet #%d does not exist, skipping");
+				continue;
+			}
+			whine("will wrap that method");
+			whine("it has arity %d",
+				NUM2INT(rb_funcall(
+					rb_funcall($, rb_intern("instance_method"), 1, RARRAY(methods)->ptr[i]),
+					rb_intern("arity"), 0)));
+			r = fts_method_define_varargs(
+				qlass,inlet,fts_new_symbol(name+3),
+				BFObject_method_missing);
+			
+			RETIFFAIL("define_varargs",r);
+		}
+	}
+
+	return fts_Success;
 }
 
 VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
-	VALUE methods = rb_funcall($, rb_intern("instance_methods"), 0);
-	fts_class_t *peer;
-	int n = RARRAY(methods)->len;
-	int i;
 	char *name2;
 	if (SYMBOL_P(name)) {
 		name2 = rb_id2name(SYM2ID(name));
@@ -184,33 +267,11 @@ VALUE FObject_s_install(VALUE $, VALUE name, VALUE inlets, VALUE outlets) {
 	if (kludge.outlets<0 || kludge.outlets>9) EARG("...");
 	kludge.qlass = $;
 	{
-		fts_status_t foo = 
+		fts_status_t r = 
 			fts_class_install(fts_new_symbol(name2),BFObject_class_init);
-		if (!foo) raise(rb_eStandardError, "jMax class not installed");
+		RETIFFAIL2("fts_class_install",r);
 	}			
 		
-	peer = fts_class_get_by_name(fts_new_symbol(name2));
-	free(name2);
-
-	fts_method_define_varargs(
-		peer,fts_SystemInlet,fts_s_init,BFObject_init);
-
-	for (i=0; i<n; i++) {
-		const char *name = RSTRING(RARRAY(methods)->ptr[i])->ptr;
-		whine("looking at #%s", name);
-		/* max 10 inlets */
-		if (strlen(name)>3 && isdigit(name[1]) &&
-		 name[0]=='_' && name[2]=='_') {
-			whine("will wrap that method");
-			whine("it has arity %d",
-				NUM2INT(rb_funcall(
-					rb_funcall($, rb_intern("instance_method"), 1, RARRAY(methods)->ptr[i]),
-					rb_intern("arity"), 0)));
-			fts_method_define_varargs(
-				peer,name[1]-'0',fts_new_symbol(name+3),
-				BFObject_method_missing);
-		}
-	}
 	return Qnil;
 }
 
@@ -223,7 +284,7 @@ VALUE FObject_send_thru(VALUE argc, VALUE *argv, VALUE $) {
 	if (argc<1) EARG("args are (outlet, ...)");
 	if (TYPE(argv[0])!=T_FIXNUM) EARG("should be Fixnum");
 	outlet = FIX2INT(argv[0]);
-	if (outlet<0 || outlet>fts_object_get_outlets_number(FObject_peer($))) {
+	if (outlet<0 || outlet>=fts_object_get_outlets_number(FObject_peer($))) {
 		EARG("outlet does not exist");
 	}
 	argc--;
@@ -240,8 +301,8 @@ VALUE FObject_send_thru(VALUE argc, VALUE *argv, VALUE $) {
 			selector = fts_s_list;
 		} else if (argc==1 && INTEGER_P(argv[0])) {
 			selector = fts_s_int;
-		} else if (argc==1 && FLOAT_P(argv[0])) {
-			selector = fts_s_float;
+//		} else if (argc==1 && FLOAT_P(argv[0])) {
+//			selector = fts_s_float;
 		} else {
 			/* will raise shortly after this */
 		}
@@ -252,11 +313,24 @@ VALUE FObject_send_thru(VALUE argc, VALUE *argv, VALUE $) {
 	return Qnil;
 }
 
-VALUE FObject_s_new(FObject *peer, VALUE argc, VALUE *argv) {
-	VALUE $ = Data_Wrap_Struct(FObject_class, FObject_mark, FObject_sweep, peer);
-	VALUE set = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
-	rb_hash_aset(set,$,Qtrue); /* prevent sweeping */
-	rb_funcall($,rb_intern("initialize"),argc,argv);
+void whinep(VALUE $) {
+	rb_funcall(rb_eval_string("STDERR"),rb_intern("puts"),1,
+		rb_funcall($,rb_intern("inspect"),0));
+}
+
+VALUE FObject_s_new(BFObject *peer, VALUE qlass, VALUE argc, VALUE *argv) {
+	VALUE $ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, peer);
+	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
+
+	whinep($);
+	{
+		int i;
+		for (i=0; i<argc; i++) whinep(argv[i]);
+	}
+	whine("argc = %d",argc);
+	whine("argv = %p",argv);
+	rb_funcall2($,rb_intern("initialize"),argc,argv);
 	return $;
 }
 
@@ -268,8 +342,7 @@ VALUE FObject_s_new(FObject *peer, VALUE argc, VALUE *argv) {
 
 void gf_install_bridge (void) {
 	GridFlow_module = rb_eval_string("GridFlow");
-	FObject_class = rb_define_class_under(GridFlow_module,
-		"FObject", rb_cObject);
+	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
 	DEF(FObject, send_thru, -1);
 	SDEF(FObject, install, 3);
