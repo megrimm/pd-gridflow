@@ -260,7 +260,7 @@ puredata-install::
 	mkdir -p $(PUREDATA_PATH)/doc/5.reference/gridflow
 	cp pd_help/*.pd $(PUREDATA_PATH)/doc/5.reference/gridflow
 	cp $(PD_LIB) pd_abstractions/*.pd $(PUREDATA_PATH)/externs
-	cp java/peephole.gif $(PUREDATA_PATH)/lib/gridflow/icons/peephole.gif
+	$(INSTALL_DATA) java/peephole.gif $(PUREDATA_PATH)/lib/gridflow/icons/peephole.gif
 
 else
 
