@@ -1,12 +1,31 @@
-# $Id$
-# convert jMax-XML to HTML with our formatting.
+=begin
+	$Id$
+	convert jMax-XML to HTML with our formatting.
+
+	GridFlow
+	Copyright (c) 2001 by Mathieu Bouchard
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	See file ../../COPYING for further informations on licensing terms.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=end
 
 require "xmlparser"
 
 =begin todo
 
-	[ ] make it use an XML library
-	[ ] make it handle all relevant tags
 	[ ] make it validate
 	[ ] make it find the size of the pictures (and insert width/height attrs)
 	[ ] tune the output
@@ -55,8 +74,15 @@ class XNode
 	end
 	attr_reader :tag, :att, :contents
 	def [] i; contents[i] end
+
 	def print_index
-		puts "<tr><td colspan='4'><i>index goes here.</i></td></tr>"
+		if tag=="section" then
+			print "<h5><a href='\##{att['name']}'>#{att['name']}</a></h5>"
+		end
+		contents.each {|x|
+			next unless XNode===x
+			x.print_index
+		}
 	end
 
 	$counters=[]
@@ -266,7 +292,7 @@ def header
 puts <<EOF
 <html>
 <head>
-<title>video4jmax - reference</title>
+<title>GridFlow 0.4.0 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -292,7 +318,7 @@ EOF
 black_ruler
 puts <<EOF
 <tr><td colspan="4" height="16"> 
-    <h4>Video4jmax 0.3.1 - reference index</h4>
+    <h4>GridFlow 0.4.0 - reference index</h4>
 </td></tr>
 <tr> 
   <td rowspan="2" width="12%">&nbsp;</td>
@@ -330,7 +356,6 @@ end
 #----------------------------------------------------------------#
 
 header
-black_ruler
 
 parser = JmaxmlParser.new "ISO-8859-1"
 
@@ -338,7 +363,9 @@ begin
 	STDERR.puts "reading standard input..."
 	parser.parse(STDIN.readlines.join("\n"), true)
 	nodes = parser.instance_eval{@stack}[0][0]
+	puts "<tr><td>"
 	nodes.print_index
+	puts "<br><br></td></tr>"
 	nodes.print_contents
 rescue XMLParserError => e
 	puts ""
@@ -361,7 +388,7 @@ __END__
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">Video4jmax 0.3.1 Documentation<br>
+<p><font size="-1">GridFlow 0.4.0 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
