@@ -60,6 +60,14 @@ symlink () {
 	echo -e "`pwd`: updating $1"
 }
 
+has-libmpeg () {
+(
+	echo '#include <mpeg.h>'
+	echo 'int main (void) { return 0; }'
+) > /tmp/$$.c
+gcc /tmp/$$.c -o /tmp/$$ -lmpeg
+}
+
 has-videodev () {
 (
 	echo '#include <stdlib.h>'
@@ -94,6 +102,15 @@ gcc /tmp/$$.c -o /tmp/$$ -mpentium && /tmp/$$
 }
 
 FORMATS='X11 PPM Targa Grid'
+
+echo -n "looking for LibMPEG: "
+if has-libmpeg; then
+	echo "yes"
+	FORMATS="$FORMATS MPEG"
+	LDSOFLAGS="$LDSOFLAGS -lmpeg"
+else
+	echo "no"
+fi
 
 echo -n "looking for videodev (video4linux input hardware): "
 if has-videodev; then
@@ -146,6 +163,9 @@ echo "generating ./config.make"
 	echo JMAXROOTDIR=$JMAXROOTDIR
 	echo JMAXDISTDIR=$JMAXROOTDIR
 	echo 'include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)'
+	if [ "z$LDSOFLAGS" != "z" ]; then
+		echo "GRIDFLOW_LDSOFLAGS += $LDSOFLAGS"
+	fi
 ) > config.make
 
 #--------------------------------#
