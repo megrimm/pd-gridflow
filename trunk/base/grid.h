@@ -554,12 +554,10 @@ struct Operator1 {
 
 template <class T>
 struct Operator2On {
-	void (*op_map)(int,T*,T);
-	void (*op_zip)(int,T*,T*);
-	T    (*op_fold)(T,int,T*);
-	void (*op_fold2)(int,T*,int,T*);
-	void (*op_scan)(T,int,T*);
-	void (*op_scan2)(int,T*,int,T*);
+	void (*op_map)(int n, T *as, T b);
+	void (*op_zip)(int n, T *as, T *bs);
+	void (*op_fold)(int an, int n, T *as, T *bs);
+	void (*op_scan)(int an, int n, T *as, T *bs);
 };
 
 struct Operator2 {
@@ -584,20 +582,14 @@ struct Operator2 {
 		as.will_use(n);
 		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline T fold(T a, int n, Pt<T> bs) {
-		bs.will_use(n);
-		return on(a)->op_fold(a,n,(T *)bs);}
-	template <class T> inline void fold2(int an, Pt<T> as, int n, Pt<T> bs) {
+	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
-		on(*as)->op_fold2(an,(T *)as,n,(T *)bs);}
-	template <class T> inline T scan(T a, int n, Pt<T> bs) {
-		b.will_use(n);
-		on(a)->op_scan(a,n,(T *)bs);}
-	template <class T> inline void scan2(int an, Pt<T> as, int n, Pt<T> bs) {
+		on(*as)->op_fold(an,n,(T *)as,(T *)bs);}
+	template <class T> inline void scan(int an, int n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
-		on(*as)->op_scan2(an,(T *)as,n,(T *)bs);}
+		on(*as)->op_scan(an,n,(T *)as,(T *)bs);}
 };
 
 extern NumberType number_type_table[];

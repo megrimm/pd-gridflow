@@ -301,7 +301,7 @@ NumberType number_type_table[] = {
 #define DEF_OP1(_name_,_expr_) \
 	\
 	template <class T> \
-	static void op1_array_##_name_ (int n, T *as) { \
+	static void op1_map_##_name_ (int n, T *as) { \
 		while ((n&3)!=0) { T a = *as; *as++ = _expr_; n--; } \
 		while (n) { \
 			{ T a=as[0]; as[0]= _expr_; } \
@@ -311,7 +311,7 @@ NumberType number_type_table[] = {
 		as+=4; n-=4; } }
 
 #define DECL_OP1ON(_name_) \
-	{ &op1_array_##_name_ }
+	{ &op1_map_##_name_ }
 
 #define DECL_OP1(_op_,_sym_) { 0, _sym_, \
 	DECL_OP1ON(_op_), \
@@ -378,19 +378,16 @@ public:
 		}
 	}
 	template <class T>
-	static T op_fold (T a, int n, T *bs) {
-		while ((n&3)!=0) { a = O::foo(a,*bs++); n--; }
+	static void op_fold (int an, int n, T *as, T *bs) {
+		if (an==1) {
+		while ((n&3)!=0) { *as = O::foo(*as,*bs++); n--; }
 		while (n) {
-			a = O::foo(a,bs[0]);
-			a = O::foo(a,bs[1]);
-			a = O::foo(a,bs[2]);
-			a = O::foo(a,bs[3]);
+			*as = O::foo(*as,bs[0]);
+			*as = O::foo(*as,bs[1]);
+			*as = O::foo(*as,bs[2]);
+			*as = O::foo(*as,bs[3]);
 			bs+=4; n-=4;
-		}
-		return a;
-	}
-	template <class T>
-	static void op_fold2 (int an, T *as, int n, T *bs) {
+		}} else {
 		while (n--) {
 			int i=0;
 			while (i<(an&-4)) {
@@ -403,19 +400,14 @@ public:
 			while (i<an) {
 				as[i++] = O::foo(as[i],*bs++);
 			}
-		}
+		}}
 	}
 	template <class T>
-	static void op_scan (T a, int n, T *bs) {
-		while (n--) { *bs = a = O::foo(a,*bs); bs++; }
-	}
-	template <class T>
-	static void op_scan2 (int an, T *as, int n, T *bs) {
+	static void op_scan (int an, int n, T *as, T *bs) {
+		for (int i=0; i<an; i++, as++, bs++) *bs = O::foo(*as,*bs);
+		as=bs-an;
 		while (n--) {
-			for (int i=0; i<an; i++, as++, bs++) {
-				*bs = O::foo(*as,*bs);
-			}
-			as=bs-an;
+			for (int i=0; i<an; i++, bs++) *bs = O::foo(bs[-an],*bs);
 		}
 	}
 };
@@ -452,9 +444,7 @@ public:
 	&base<Y##op<type> >::op_map, \
 	&base<Y##op<type> >::op_zip, \
 	&base<Y##op<type> >::op_fold, \
-	&base<Y##op<type> >::op_fold2, \
-	&base<Y##op<type> >::op_scan, \
-	&base<Y##op<type> >::op_scan2 }
+	&base<Y##op<type> >::op_scan }
 
 #define DECL_OP2(op,sym,props) { 0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
@@ -476,7 +466,7 @@ public:
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
-	{0,0,0,0,0,0}, \
+	{0,0,0,0}, \
 }
 
 template <class T>
