@@ -40,6 +40,7 @@ struct FormatSDL : Format {
 	Dim *dim;
 
 	void resize_window (int sx, int sy);
+	void alarm ();
 
 	Pt<uint8> pixels () {
 		return Pt<uint8>((uint8 *)screen->pixels,
@@ -50,6 +51,13 @@ struct FormatSDL : Format {
 	DECL3(close);
 	GRINLET3(0);
 };
+
+static void FormatSDL_alarm(FormatSDL *self) { self->alarm(); }
+
+void FormatSDL::alarm() {
+	SDL_Event event;
+	while(SDL_PollEvent(&event)) {}
+}
 
 void FormatSDL::resize_window (int sx, int sy) {
 	//???
@@ -102,6 +110,7 @@ GRID_FINISH {
 GRID_END
 
 METHOD3(FormatSDL,close) {
+	MainLoop_remove(this);
 	return Qnil;
 }
 
@@ -111,7 +120,7 @@ METHOD3(FormatSDL,initialize) {
 	if (argc>0) RAISE("too many arguments");
 	if (SDL_Init(SDL_INIT_VIDEO)<0)
 		RAISE("SDL_Init() error: %s",SDL_GetError());
-	signal(11,SIG_DFL); // leave me alone
+//	signal(11,SIG_DFL); // leave me alone
 	atexit(SDL_Quit);
 	screen = SDL_SetVideoMode(640, 480, 16, SDL_SWSURFACE);
 	if (!screen)
@@ -134,6 +143,7 @@ METHOD3(FormatSDL,initialize) {
 		break;
 	default: RAISE("unknown bpp"); break;
 	}
+	MainLoop_add(this,(void(*)(void*))FormatSDL_alarm);
 	return Qnil;
 }
 
