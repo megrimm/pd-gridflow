@@ -131,7 +131,7 @@ int argc, VALUE *argv) {
 	if (argc!=2 || argv[0] != SYM(file)) {
 		whine("usage: ppm file <filename>"); goto err;
 	}
-	filename = Symbol_name(argv[1]);
+	filename = rb_id2name(SYM2ID(argv[1]));
 
 	$->st = Stream_open_file(filename,mode);
 	if (!$->st) {

@@ -23,6 +23,7 @@
 
 #include "bridge_none.h"
 #include "grid.h"
+#include <stdarg.h>
 
 VALUE FObject_send_thru(int argc, VALUE *argv, VALUE $) {
 	FObject_send_thru_2(argc,argv,$);
@@ -36,4 +37,10 @@ void gf_install_bridge(void) {
 
 int gf_winlet(void) {
 	return 0; /* won't work */
+}
+
+void post(const char *fmt, ...) {
+	va_list args;
+	va_start(args,fmt);
+	vfprintf(stderr,fmt,args);
 }
