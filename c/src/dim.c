@@ -29,8 +29,8 @@
 	assert(_self_); \
 	assert_range(_self_->n,0,MAX_DIMENSIONS);
 
-Dim *Dim_new(int n, int *v) {
-	Dim *$ = (Dim *) NEW(int,n+1);
+Dim *Dim_new2(int n, int *v, const char *file, int line) {
+	Dim *$ = (Dim *) NEW3(int,n+1,file,line);
 
 	int i;
 	assert_range(n,0,MAX_DIMENSIONS);
@@ -43,8 +43,8 @@ Dim *Dim_new(int n, int *v) {
 	return $;
 }
 
-Dim *Dim_dup(Dim *$) {
-	return Dim_new($->n,$->v);
+Dim *Dim_dup2(Dim *$, const char *file, int line) {
+	return Dim_new2($->n,$->v,file,line);
 }
 
 int Dim_count(Dim *$) {
@@ -87,6 +87,7 @@ int Dim_calc_dex(Dim *$, int *v) {
 /* ******************************************************** */
 
 /* returns a string like "Dim(240,320,3)" */
+/* the memory leak warning is a false alarm (implement REALLOC() macro) */
 char *Dim_to_s(Dim *$) {
 	/* if you blow 256 chars it's your own fault */
 	char *bottom = NEW(char,256);

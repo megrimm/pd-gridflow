@@ -639,8 +639,8 @@ typedef struct GridInner {
 	Dim *dim;
 	Number *data;
 	Number rint;
-	Operator2 *op_para;
-	Operator2 *op_fold;
+	const Operator2 *op_para;
+	const Operator2 *op_fold;
 } GridInner;
 
 GRID_BEGIN(GridInner,0) {
@@ -707,7 +707,7 @@ GRID_FLOW(GridInner,2) {
 	in->dex += n;
 }
 
-GRID_END(GridInner,2) { /* write me */ }
+GRID_END(GridInner,2) {}
 
 METHOD(GridInner,init) {
 	fts_symbol_t sym_para = GET(1,symbol,op2_table[0].sym);
@@ -733,7 +733,11 @@ METHOD(GridInner,init) {
 	}
 }
 
-METHOD(GridInner,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridInner,delete) {
+	FREE($->dim);
+	FREE($->data);
+	GridObject_delete((GridObject *)$);
+}
 
 CLASS(GridInner) {
 	int i;
@@ -760,7 +764,7 @@ typedef struct GridOuter {
 	GridObject_FIELDS;
 	Dim *dim;
 	Number *data;
-	Operator2 *op;
+	const Operator2 *op;
 } GridOuter;
 
 GRID_BEGIN(GridOuter,0) {
@@ -830,7 +834,11 @@ METHOD(GridOuter,init) {
 	}
 }
 
-METHOD(GridOuter,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridOuter,delete) {
+	FREE($->dim);
+	FREE($->data);
+	GridObject_delete((GridObject *)$);
+}
 
 CLASS(GridOuter) {
 	int i;
@@ -998,7 +1006,11 @@ METHOD(GridConvolve,init) {
 	}
 }
 
-METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
+METHOD(GridConvolve,delete) {
+	FREE($->dim);  FREE($->diml);
+	FREE($->data); FREE($->datal);
+	GridObject_delete((GridObject *)$);
+}
 
 CLASS(GridConvolve) {
 	int i;
