@@ -390,5 +390,5 @@ require "gridflow/format/main.rb"
   #print #pack #export_symbol #rotate
   #in #out
 ).each {|k|
-	GridFlow::FObject.name_lookup(k).addcreator k.gsub(/#/,"@")
+	GridFlow::FObject.name_lookup(k).add_creator k.gsub(/#/,"@")
 }
