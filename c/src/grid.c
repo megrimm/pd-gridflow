@@ -42,6 +42,8 @@ GridInlet *GridInlet_new(
 	$->begin = b;
 	$->flow  = f;
 	$->end   = e;
+	$->factor= 1;
+//	$->buf   = 0;
 	return $;
 }
 
@@ -95,7 +97,12 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	assert(n>0);
 	{
 		int newdex = $->dex + n;
-		assert(newdex <= Dim_prod($->dim));
+		if (newdex > Dim_prod($->dim)) {
+			whine("%d:i%d: grid input overflow: %d of %d",
+				INFO($), newdex, Dim_prod($->dim));
+			n = Dim_prod($->dim) - $->dex;
+			if (n<=0) return;
+		}
 		$->flow((GridObject *)$->parent,$,n,data);
 		$->dex = newdex;
 	}
@@ -113,6 +120,13 @@ void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
 	}
 	FREE($->dim);
 	$->dex = 0;
+}
+
+void GridInlet_set_factor(GridInlet *$, int factor) {
+	assert(factor > 0);
+	assert(Dim_prod($) % factor == 0);
+	$->factor = factor;
+
 }
 
 /* **************** GridOutlet ************************************ */

@@ -31,13 +31,12 @@
   of integers to a streamed grid as used now.
 */
 
-typedef struct GridImport GridImport;
-struct GridImport {
+typedef struct GridImport {
 	GridObject_FIELDS;
 	Dim *dim; /* size of grids to send */
 	int n;
 	int *v;
-};
+} GridImport;
 
 GRID_BEGIN(GridImport,1) {
 	if (Dim_count(in->dim) != 1) return false;
@@ -68,6 +67,8 @@ METHOD(GridImport,init) {
 	int i;
 	int v[ac-1];
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+/*	$->in[0] = GridInlet_NEW3($,GridImport,0); */
+	$->in[1] = GridInlet_NEW3($,GridImport,1);
 	$->out[0] = GridOutlet_new((GridObject *)$, 0);
 
 	for (i=0; i<ac-1; i++) {
@@ -78,8 +79,6 @@ METHOD(GridImport,init) {
 	$->v = 0;
 
 	whine("Importing Grid %s",Dim_to_s($->dim));
-/*	$->in[0] = GridInlet_NEW3($,GridImport,0); */
-	$->in[1] = GridInlet_NEW3($,GridImport,1);
 }
 
 METHOD(GridImport,delete) {
@@ -131,10 +130,9 @@ CLASS(GridImport) {
   to old-style integer stream.
 */
 
-typedef struct GridExport GridExport;
-struct GridExport {
+typedef struct GridExport {
 	GridObject_FIELDS;
-};
+} GridExport;
 
 GRID_BEGIN(GridExport,0) { return true; }
 
@@ -184,16 +182,13 @@ CLASS(GridExport) {
   send.
 */
 
-/* !@#$ */
-
-typedef struct GridStore GridStore;
-struct GridStore {
+typedef struct GridStore {
 	GridObject_FIELDS;
 	Number *data;
 	Dim *dim;
 	Number *buf;
 	int bufn;
-};
+} GridStore;
 
 GRID_BEGIN(GridStore,0) {
 	int na = Dim_count(in->dim);
@@ -340,11 +335,10 @@ CLASS(GridStore) {
 
 /* **************************************************************** */
 
-typedef struct GridOp1 GridOp1;
-struct GridOp1 {
+typedef struct GridOp1 {
 	GridObject_FIELDS;
 	const Operator1 *op;
-};
+} GridOp1;
 
 GRID_BEGIN(GridOp1,0) {
 	GridOutlet_begin($->out[0],Dim_dup(in->dim));
@@ -406,14 +400,13 @@ CLASS(GridOp1) {
   single value.
 */
 
-typedef struct GridOp2 GridOp2;
-struct GridOp2 {
+typedef struct GridOp2 {
 	GridObject_FIELDS;
 	const Operator2 *op;
 	int rint;
 	Number *data;
 	Dim *dim;
-};
+} GridOp2;
 
 GRID_BEGIN(GridOp2,0) {
 	GridOutlet_begin($->out[0],Dim_dup(in->dim));
@@ -516,13 +509,12 @@ CLASS(GridOp2) {
   doing [@fold + 42] each new value is computed like 42+a+b+c+...
 */
 
-typedef struct GridFold GridFold;
-struct GridFold {
+typedef struct GridFold {
 	GridObject_FIELDS;
 	const Operator2 *op;
 	int rint;
 	Number accum;
-};
+} GridFold;
 
 GRID_BEGIN(GridFold,0) {
 	int n = Dim_count(in->dim);
@@ -592,6 +584,12 @@ CLASS(GridFold) {
 
 /* **************************************************************** */
 
+typedef struct GridInner {
+	GridObject_FIELDS;
+} GridInner;
+
+/* **************************************************************** */
+
 typedef struct GridConvolve GridConvolve;
 struct GridConvolve {
 	GridObject_FIELDS;
@@ -652,6 +650,128 @@ CLASS(GridDim) {
 
 /* **************************************************************** */
 
+typedef struct GridRedim GridRedim;
+struct GridRedim {
+	GridObject_FIELDS;
+	Dim *dim;
+	Number *data;
+	int n;
+	int *v;
+};
+
+GRID_BEGIN(GridRedim,0) {
+	int a = Dim_prod(in->dim);
+	int b = Dim_prod($->dim);
+	if (a==0) {
+		int v=1;
+		$->dim = Dim_new(1,&v);
+		$->data = NEW2(Number,1);
+		$->data[0] = 0;
+	} else if (a<b) {
+		$->dim = Dim_dup(in->dim);
+		$->data = NEW2(Number,Dim_prod(in->dim));
+	} else {
+		/* nothing */
+	}
+	return true;
+}
+
+GRID_FLOW(GridRedim,0) {
+	int a = Dim_prod(in->dim);
+	int b = Dim_prod($->dim);
+	int i = in->dex;
+	if ($->dim) {
+		int n2 = min(n,a-i);
+		memcpy(&$->data[i],data,n2);
+		GridOutlet_send($->out[0],n2,data);
+	} else {
+		int n2 = min(n,b-i);
+		if (n2>0) GridOutlet_send($->out[0],n2,data);
+		/* discard other values if any */
+	}
+}
+
+GRID_END(GridRedim,0) {
+	int a = Dim_prod(in->dim);
+	int b = Dim_prod($->dim);
+	int i = a;
+	if ($->dim) {
+		while (i<b) {
+			int n = min(a,b-i);
+			GridOutlet_send($->out[0],n,$->data);
+			i += n;
+		}
+	}
+}
+
+/* same inlet 1 as @import */
+
+GRID_BEGIN(GridRedim,1) {
+	if (Dim_count(in->dim) != 1) return false;
+	$->n = Dim_get(in->dim,0);
+	if ($->n < 0 || $->n > MAX_DIMENSIONS) return false;
+	$->v = NEW(int,Dim_get(in->dim,0));
+	return true;
+}
+
+GRID_FLOW(GridRedim,1) {
+	int i;
+	for(i=0;i<n;i++) {
+		int v = data[in->dex+i];
+		COERCE_INT_INTO_RANGE(v,1,MAX_INDICES);
+		$->v[in->dex+i] = v;
+	}
+}
+
+GRID_END(GridRedim,1) {
+	GridInlet_abort($->in[0]);
+	GridOutlet_abort($->out[0]);
+	FREE($->dim);
+	$->dim = Dim_new($->n, $->v);
+	FREE($->v);
+}
+
+METHOD(GridRedim,init) {
+	int i;
+	int v[ac-1];
+	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	$->in[0] = GridInlet_NEW3($,GridRedim,0);
+	$->in[1] = GridInlet_NEW3($,GridRedim,1);
+	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+
+	for (i=0; i<ac-1; i++) {
+		v[i] = GET(i+1,int,0);
+		COERCE_INT_INTO_RANGE(v[i],1,MAX_INDICES);
+	}
+	$->dim = Dim_new(ac-1,v);
+	$->v = 0;
+
+	whine("Importing Grid %s",Dim_to_s($->dim));
+}
+
+METHOD(GridRedim,delete) {
+	FREE($->dim);
+	FREE($->data);
+	FREE($->v);
+}
+
+CLASS(GridRedim) {
+	int i;
+	fts_type_t init_args[]  = { fts_t_symbol };
+	MethodDecl methods[] = {
+		{ -1, fts_s_init,   METHOD_PTR(GridRedim,init),   ARRAY(init_args),0 },
+		{ -1, fts_s_delete, METHOD_PTR(GridRedim,delete), 0,0,0 },
+	};
+
+	/* initialize the class */
+	fts_class_init(class, sizeof(GridRedim), 1, 1, 0);
+	define_many_methods(class,ARRAY(methods));
+	GridObject_conf_class(class,0);
+	return fts_Success;
+}
+
+/* **************************************************************** */
+
 typedef struct GridPrint GridPrint;
 struct GridPrint {
 	GridObject_FIELDS;
@@ -667,6 +787,7 @@ GRID_BEGIN(GridPrint,0) {
 }
 
 GRID_FLOW(GridPrint,0) {
+	if (Dim_count(in->dim)<=1) { /* write me */ }
 	/* write me */
 }
 
@@ -711,6 +832,7 @@ void startup_grid_basic (void) {
 //	fts_class_install(fts_new_symbol("@convolve"), GridConvolve_class_init);
 //	fts_class_install(fts_new_symbol("@vec"),           GridVec_class_init);
 //	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
+	fts_class_install(fts_new_symbol("@redim"),       GridRedim_class_init);
 	fts_class_install(fts_new_symbol("@dim"),           GridDim_class_init);
 	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
 }
