@@ -106,6 +106,7 @@ struct FormatX11 : Format {
 	\decl void hidecursor ();
 	\decl void verbose_m (int verbose);
 	\decl void initialize (...);
+	\decl void delete_m ();
 	\decl void set_geometry (int y, int x, int sy, int sx);
 	\decl void fall_thru (int flag);
 	GRINLET3(0);
@@ -291,13 +292,16 @@ void FormatX11::dealloc_image () {
 	if (!ximage) return;
 	if (use_shm) {
 	#ifdef HAVE_X11_SHARED_MEMORY
-		if (shm_info) delete shm_info, shm_info=0;
-		/* !@#$ and what do i do to ximage? */
+		shmdt(ximage->data);
+		if (shm_info) {delete shm_info; shm_info=0;}
+//		ximage->data = new char[1]; // bogus
+		ximage->data = 0;
+//		XDestroyImage(ximage);
+//		ximage = 0;
 	#endif	
 	} else {
-		XDestroyImage(ximage);
-		ximage = 0; 
-		/* delete image; */
+//		XDestroyImage(ximage);
+//		ximage = 0; 
 	}
 }
 
@@ -320,7 +324,8 @@ top:
 			IPC_PRIVATE,
 			ximage->bytes_per_line * ximage->height,
 			IPC_CREAT|0777);
-		if(shm_info->shmid < 0) RAISE("ERROR: shmget failed: %s",strerror(errno));
+		if(shm_info->shmid < 0)
+			RAISE("ERROR: shmget failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr =
 			(char *)shmat(shm_info->shmid,0,0);
 		image = Pt<uint8>((uint8 *)ximage->data,
@@ -445,6 +450,7 @@ GRID_INLET(FormatX11,0) {
 	XSync(display,0);
 	dealloc_image();
 	XCloseDisplay(display);
+	display=0;
 	rb_call_super(argc,argv);
 }
 
@@ -673,7 +679,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 			sy = sx = pos_y = pos_x = 0;
 			//lock_size = true;
 
-			gfpost("embed: will be searching for title ending in '%s'",title);
+			if (verbose) gfpost("embed: will be searching for title ending in '%s'",title);
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
@@ -724,6 +730,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
 }
 
+\def void delete_m () {
+//	if (display) {
+//		gfpost("implicitly closing display");
+//		close(0,0);
+//	}
+}
 
 GRCLASS(FormatX11,LIST(GRINLET2(FormatX11,0,4)),
 \grdecl
