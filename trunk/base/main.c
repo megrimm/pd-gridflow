@@ -38,12 +38,11 @@
 #include <assert.h>
 #include <limits.h>
 
+BuiltinSymbols bsym;
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
 Ruby cFObject;
 
 int gf_security = 1;
-
-static Ruby sym_outlets=0;
 
 static void default_post(const char *fmt, ...) {
 	va_list args;
@@ -56,7 +55,7 @@ Ruby bridge_whatever_default (int argc, Ruby *argv, Ruby rself) {
 	RAISE("sorry, not available in this bridge");
 }
 
-GFBridge gf_bridge = {
+GFBridge gf_bridge_default = {
 	name: 0,
 	send_out: 0,
 	class_install: 0,
@@ -65,6 +64,8 @@ GFBridge gf_bridge = {
 	clock_tick: 10.0,
 	whatever: bridge_whatever_default,
 };
+
+GFBridge *gf_bridge = &gf_bridge_default;
 
 /* ---------------------------------------------------------------- */
 /* GridFlow::FObject */
@@ -173,10 +174,10 @@ METHOD3(FObject,send_out) {
 
 	LEAVE(this);
 
-	if (gf_bridge.send_out && bself)
-		gf_bridge.send_out(argc,argv,sym,outlet,rself);
-	Ruby ary = rb_ivar_defined(rself,SYM2ID(sym_outlets)) ?
-		rb_ivar_get(rself,SYM2ID(sym_outlets)) : Qnil;
+	if (gf_bridge->send_out && bself)
+		gf_bridge->send_out(argc,argv,sym,outlet,rself);
+	Ruby ary = rb_ivar_defined(rself,SYM2ID(bsym.iv_outlets)) ?
+		rb_ivar_get(rself,SYM2ID(bsym.iv_outlets)) : Qnil;
 	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
@@ -239,8 +240,8 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_ivar_set(rself,SI(@foreign_name),name2);
 	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)),
 		name2, rself);
-	if (gf_bridge.class_install)
-		gf_bridge.class_install(rself,RSTRING(name2)->ptr);
+	if (gf_bridge->class_install)
+		gf_bridge->class_install(rself,RSTRING(name2)->ptr);
 	return Qnil;
 }
 
@@ -367,25 +368,6 @@ GRCLASS(BitPacking,LIST(),
 	DECL(BitPacking,unpack2))
 {}
 
-/* ---------------------------------------------------------------- */
-/* The setup part */
-
-#define DECL_SYM2(_sym_) Ruby sym_##_sym_ = 0xDeadBeef;
-#define DEF_SYM(_sym_) sym_##_sym_ = SYM(_sym_);
-
-DECL_SYM2(grid)
-DECL_SYM2(bang)
-DECL_SYM2(int)
-DECL_SYM2(list)
-
-typedef void (*Callback)(void*);
-static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
-	void *data2 = FIX2PTR(void,data);
-	Callback func2 = (Callback) FIX2PTR(void,func);
-	func2(data2);
-	return Qnil;
-}
-
 /* this is the entry point for all of the above */
 
 /* **************************************************************** */
@@ -401,12 +383,12 @@ NumberTypeIndex NumberTypeIndex_find (Ruby sym) {
 }
 
 Ruby GridFlow_clock_tick (Ruby rself) {
-	return rb_float_new(gf_bridge.clock_tick);
+	return rb_float_new(gf_bridge->clock_tick);
 }
 
 Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
-	gf_bridge.clock_tick = RFLOAT(tick)->value;
+	gf_bridge->clock_tick = RFLOAT(tick)->value;
 	return tick;
 }
 
@@ -424,7 +406,7 @@ Ruby GridFlow_security (Ruby rself) {
 Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
 
 Ruby GridFlow_bridge_name (Ruby rself) {
-	return gf_bridge.name ? rb_str_new2(gf_bridge.name) : Qnil;
+	return gf_bridge->name ? rb_str_new2(gf_bridge->name) : Qnil;
 }
 
 void MainLoop_add(void *data, void (*func)(void*)) {
@@ -456,7 +438,7 @@ Ruby gf_post_string (Ruby rself, Ruby s) {
 	if (TYPE(s) != T_STRING) RAISE("not a String");
 	char *p = rb_str_ptr(s);
 //	bool has_ln = p[rb_str_len(p)-1]=='\n';
-	gf_bridge.post(gf_bridge.post_does_ln?"%s":"%s\n",p);
+	gf_bridge->post(gf_bridge->post_does_ln?"%s":"%s\n",p);
 	return Qnil;
 }
 
@@ -470,7 +452,8 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-Ruby ruby_c_install(FClass *fc, Ruby super) {
+Ruby fclass_install(FClass *fc, Ruby super) {
+	if (!super) super = cGridObject;
 	Ruby rself = rb_define_class_under(mGridFlow, fc->name, super);
 	Ruby handlers = rb_ary_new();
 	rb_ivar_set(rself,SI(@handlers),handlers);
@@ -497,6 +480,40 @@ void *Pointer_get (Ruby self) {
 	void *p;
 	Data_Get_Struct(self,void *,p);
 	return p;
+}
+
+typedef void (*Callback)(void*);
+static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
+	void *data2 = FIX2PTR(void,data);
+	Callback func2 = (Callback) FIX2PTR(void,func);
+	func2(data2);
+	return Qnil;
+}
+
+static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
+	int stack[16];
+	int stackn=0;
+	Ruby *av = rb_ary_ptr(argv);
+	int ac = rb_ary_len(argv);
+	int j=0;
+	for (int i=0; i<ac; i++) {
+		if (av[i]==bsym._lbrace || av[i]==bsym._lparen) {
+			if (stackn==16) RAISE("too many nested lists (>16)");
+			stack[stackn++]=j;
+		} else if (av[i]==bsym._rbrace || av[i]==bsym._rparen) {
+			if (!stackn) RAISE("unbalanced '}' or ')'",av[i]);
+			Ruby a2 = rb_ary_new();
+			int j2 = stack[--stackn];
+			for (int k=j2; k<j; k++) rb_ary_push(a2,av[k]);
+			j=j2;
+			av[j++] = a2;
+		} else {
+			av[j++]=av[i];
+		}
+	}
+	if (stackn) RAISE("unbalanced '{' or '('");
+	RARRAY(argv)->len = j;
+	return rself;
 }
 
 /* ---------------------------------------------------------------- */
@@ -550,11 +567,9 @@ void Init_gridflow () {
 	signal(11,SIG_DFL);
 //	setenv("RUBY_VERBOSE_GC","yes",1);
 
-	DEF_SYM(grid);
-	DEF_SYM(bang);
-	DEF_SYM(int);
-	DEF_SYM(list);
-	sym_outlets=SYM(@outlets);
+#define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
+BUILTIN_SYMBOLS(FOO)
+#undef FOO
 
 	mGridFlow = rb_define_module("GridFlow");
 	SDEF2("clock_tick",GridFlow_clock_tick,0);
@@ -568,9 +583,11 @@ void Init_gridflow () {
 	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
 	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
 	SDEF2("bridge_name",GridFlow_bridge_name,0);
+	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
+	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 	cPointer = rb_define_class_under(mGridFlow, "Pointer", rb_cObject);
@@ -581,13 +598,18 @@ void Init_gridflow () {
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 
-	Ruby rb_cData = EVAL("Data");
-	ID bi = SI(gridflow_bridge_init);
-	if (rb_respond_to(rb_cData,bi)) {
-		rb_funcall(rb_cData,bi,1,PTR2FIX(&gf_bridge));
+	Ruby cData = EVAL("Data");
+
+	ID gb = SI(@gf_bridge);
+	if (rb_ivar_defined(cData,gb)) {
+		gf_bridge = FIX2PTR(GFBridge,rb_ivar_get(cData,gb));
 	}
 
-	SDEF2("whatever",gf_bridge.whatever,-1);
+	ID gbi = SI(gf_bridge_init);
+	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
+
+	if (!gf_bridge->whatever) gf_bridge->whatever = bridge_whatever_default;
+	SDEF2("whatever",gf_bridge->whatever,-1);
 
 	Ruby cBitPacking =
 		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);

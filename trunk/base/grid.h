@@ -55,7 +55,6 @@ typedef /*volatile*/ VALUE Ruby;
 
 #define LIST(args...) args
 #define RAISE(args...) rb_raise(rb_eArgError,args)
-#define INSTALL(rname) ruby_c_install(&ci##rname, cGridObject);
 #define L fprintf(stderr,"%s:%d\n",__FILE__,__LINE__);
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -101,10 +100,6 @@ typedef /*volatile*/ VALUE Ruby;
 #ifndef HAVE_DEBUG
 #undef assert
 #define assert(_foo_)
-#endif
-
-#ifdef HAVE_DEBUG
-//#define HAVE_DEBUG_HARDER
 #endif
 
 #ifdef HAVE_TSC_PROFILING
@@ -203,8 +198,6 @@ template <class T> /* where T is comparable */
 static inline T max(T a, T b) { return a>b?a:b; }
 
 /*
-static inline int min(int a, int b) { int c = -(a<b); return (a&c)|(b&~c); }
-static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
@@ -405,12 +398,26 @@ template <class T> static void memswap (T *a, T *b, int n) {
 
 /* **************************************************************** */
 
-#define DECL_SYM(_sym_) extern "C" Ruby/*Symbol*/ sym_##_sym_;
+#define BUILTIN_SYMBOLS(MACRO) \
+	MACRO(_grid,"grid") \
+	MACRO(_bang,"bang") \
+	MACRO(_int,"int") \
+	MACRO(_float,"float") \
+	MACRO(_list,"list") \
+	MACRO(_lparen,"(") \
+	MACRO(_rparen,")") \
+	MACRO(_lbrace,"{") \
+	MACRO(_rbrace,"}") \
+	MACRO(_sharp,"#") \
+	MACRO(iv_outlets,"@outlets") \
+	MACRO(iv_ninlets,"@ninlets") \
+	MACRO(iv_noutlets,"@noutlets")
 
-DECL_SYM(grid)
-DECL_SYM(bang)
-DECL_SYM(int)
-DECL_SYM(list)
+extern struct BuiltinSymbols {
+#define FOO(_sym_,_str_) Ruby _sym_;
+BUILTIN_SYMBOLS(FOO)
+#undef FOO
+} bsym;
 
 /* maximum number of dimensions in an array */
 #define MAX_DIMENSIONS 16
@@ -531,22 +538,30 @@ int low_bit(uint32 n);
 void swap32 (int n, Pt<uint32> data);
 void swap16 (int n, Pt<uint16> data);
 
-#define DECL_TYPE(_name_,_size_) \
-	_name_##_type_i
+#define NT_UNSIGNED (1<<0)
+#define NT_FLOAT (1<<1)
+#define NT_UNSUPPORTED (1<<2)
+
+#define NUMBER_TYPES(MACRO) \
+	MACRO(     uint8,  8, NT_UNSIGNED) \
+	MACRO(      int8,  8, NT_UNSUPPORTED) \
+	MACRO(    uint16, 16, NT_UNSUPPORTED) \
+	MACRO(     int16, 16, 0) \
+	MACRO(    uint32, 32, NT_UNSUPPORTED) \
+	MACRO(     int32, 32, 0) \
+	MACRO(    uint64, 64, NT_UNSUPPORTED) \
+	MACRO(     int64, 64, NT_UNSUPPORTED) \
+	MACRO(   float32, 32, NT_FLOAT) \
+	MACRO(   float64, 64, NT_UNSUPPORTED) \
+	MACRO( complex64, 64, NT_UNSUPPORTED) \
+	MACRO(complex128,128, NT_UNSUPPORTED) \
 
 enum NumberTypeIndex {
-	DECL_TYPE(     uint8,  8),
-	DECL_TYPE(      int8,  8),
-	DECL_TYPE(    uint16, 16),
-	DECL_TYPE(     int16, 16),
-	DECL_TYPE(    uint32, 32),
-	DECL_TYPE(     int32, 32),
-	DECL_TYPE(   float32, 32),
-	DECL_TYPE(   float64, 64),
+#define FOO(_sym_,args...) _sym_##_type_i,
+NUMBER_TYPES(FOO)
+#undef FOO
 	number_type_table_end
 };
-
-#undef DECL_TYPE
 
 #define NTI_MAKE(_type_) \
 inline NumberTypeIndex NumberTypeIndex_type_of(_type_ &x) { \
@@ -561,6 +576,7 @@ struct NumberType {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int size;
+	int flags;
 };
 
 NumberTypeIndex NumberTypeIndex_find (Ruby sym);
@@ -664,7 +680,6 @@ struct Grid {
 	Dim *dim;
 	NumberTypeIndex nt;
 	void *data;
-	/*GridType *constraint; */
 
 	Grid() {
 		next = this;
@@ -1004,9 +1019,6 @@ extern Ruby cFormat;
 
 uint64 RtMetro_now();
 
-Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets, Ruby outlets);
-Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);
-
 /* keyed on data */
 void MainLoop_add(void *data, void (*func)(void*));
 void MainLoop_remove(void *data);
@@ -1014,12 +1026,11 @@ void MainLoop_remove(void *data);
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 
-//void define_many_methods(Ruby rself, int n, MethodDecl *methods);
-Ruby ruby_c_install(FClass *fc, Ruby super);
+Ruby fclass_install(FClass *fc, Ruby super=0); /* super=cGridObject */
 
 extern int gf_security; /* unused */
 
-extern "C" GFBridge gf_bridge;
+extern "C" GFBridge *gf_bridge;
 extern "C" void Init_gridflow ();
 
 #endif /* __GF_GRID_H */
