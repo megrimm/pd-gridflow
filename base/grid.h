@@ -1169,7 +1169,6 @@ uint64 gf_timeofday();
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
 Ruby fclass_install(FClass *fc, Ruby super=0); /* super=cGridObject */
-extern int gf_security; /* unused */
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
