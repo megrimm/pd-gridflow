@@ -228,6 +228,13 @@ class RubyPrint < GridFlow::GridObject
 	install "rubyprint", 1, 0
 end
 
+class PrintArgs < GridFlow::GridObject
+	def initialize(*a)
+		GridFlow.gfpost(a.inspect)
+	end
+	install "printargs", 0, 0
+end
+
 class GridPrint < GridFlow::GridObject
 #	def initialize(*)
 #		super # don't forget super!!!
