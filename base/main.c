@@ -65,20 +65,19 @@ static Ruby ull2num(uint64 val) {
 /* end */
 extern "C"{
 void rb_raise0(
-const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
+const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {L
 	va_list args;
 	char buf[BUFSIZ];
 	va_start(args,fmt);
 	vsnprintf(buf, BUFSIZ, fmt, args);
-	buf[BUFSIZ - 1] = '\0';
+	buf[BUFSIZ-1]=0;
 	va_end(args);
-
 	VALUE e = rb_exc_new2(exc, buf);
 	char buf2[BUFSIZ];
 	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
 	buf2[BUFSIZ-1]=0;
 	VALUE ary = rb_funcall(e,SI(caller),0);
-
+	//fprintf(stderr,"gf_stack.n = %d\n",gf_stack.n);
 	if (gf_stack.n) {
 		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
 			rb_str_new2(gf_stack.s[gf_stack.n-1].o->info()));
@@ -310,12 +309,10 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	GridObject *self;
 	if (allocator==Qnil) {
 		/* this is a pure-ruby FObject/GridObject */
-		//fprintf(stderr,"FObject.new pure ruby\n");
 		self = new GridObject;
 	} else {
 		/* this is a C++ FObject/GridObject */
 		void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
-		//fprintf(stderr,"FObject.new with allocator %08x\n",(int)(void*)alloc);
 		self = (GridObject *)alloc();
 	}
 	self->check_magic();
@@ -343,8 +340,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_ivar_set(rself,SI(@ninlets),INT2NUM(inlets));
 	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
 	rb_ivar_set(rself,SI(@foreign_name),name2);
-	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)),
-		name2, rself);
+	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)), name2, rself);
 	if (gf_bridge->class_install)
 		gf_bridge->class_install(rself,RSTRING(name2)->ptr);
 	return Qnil;
@@ -598,13 +594,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 
 static uint64 memcpy_calls = 0;
 static uint64 memcpy_bytes = 0;
-Ruby GridFlow_memcpy_calls (Ruby rself) { return ull2num(memcpy_calls); }
-Ruby GridFlow_memcpy_bytes (Ruby rself) { return ull2num(memcpy_bytes); }
-Ruby GridFlow_profiler_reset2 (Ruby rself) {
-	memcpy_calls = 0;
-	memcpy_bytes = 0;
-	return Qnil;
-}
+static uint64 memcpy_time  = 0;
 
 // don't touch.
 static void gfmemcopy32(int32 *as, int32 *bs, int n) {
@@ -617,6 +607,7 @@ static void gfmemcopy32(int32 *as, int32 *bs, int n) {
 
 void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 //	fprintf(stderr,"memcopy n=%d\n",n);
+	uint64 t = rdtsc();
 	memcpy_calls++;
 	memcpy_bytes+=n;
 	for (; n>16; in+=16, out+=16, n-=16) {
@@ -627,6 +618,40 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	}
 	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
 	for (; n; in++, out++, n--) { *out = *in; }
+}
+
+static uint64 malloc_calls = 0; /* only new not delete */
+static uint64 malloc_bytes = 0; /* only new not delete */
+static uint64 malloc_time  = 0; /* in cpu ticks */
+
+extern "C" {
+void *gfmalloc(size_t n) {
+	uint64 t = rdtsc();
+	void *p = malloc(n);
+	t=rdtsc()-t;
+	malloc_time+=t;
+	malloc_calls++;
+	malloc_bytes+=n;
+	return p;
+}
+void gffree(void *p) {
+	uint64 t = rdtsc();
+	free(p);
+	t=rdtsc()-t;
+	malloc_time+=t;
+}};
+
+Ruby GridFlow_memcpy_calls (Ruby rself) { return ull2num(memcpy_calls); }
+Ruby GridFlow_memcpy_bytes (Ruby rself) { return ull2num(memcpy_bytes); }
+Ruby GridFlow_memcpy_time  (Ruby rself) { return ull2num(memcpy_time); }
+Ruby GridFlow_malloc_bytes (Ruby rself) { return ull2num(malloc_bytes); }
+Ruby GridFlow_malloc_calls (Ruby rself) { return ull2num(malloc_calls); }
+Ruby GridFlow_malloc_time  (Ruby rself) { return ull2num(malloc_time); }
+
+Ruby GridFlow_profiler_reset2 (Ruby rself) {
+	memcpy_calls = memcpy_bytes = memcpy_time = 0;
+	malloc_calls = malloc_bytes = malloc_time = 0;
+	return Qnil;
 }
 
 /* ---------------------------------------------------------------- */
@@ -665,6 +690,10 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);
 	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
 	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
+	SDEF2("memcpy_time", GridFlow_memcpy_time,0);
+	SDEF2("malloc_calls",GridFlow_malloc_calls,0);
+	SDEF2("malloc_bytes",GridFlow_malloc_bytes,0);
+	SDEF2("malloc_time", GridFlow_malloc_time,0);
 	SDEF2("bridge_name",GridFlow_bridge_name,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 
@@ -731,16 +760,16 @@ BUILTIN_SYMBOLS(FOO)
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
 
-	startup_formats();
-
 #ifdef HAVE_MMX
 	if (!getenv("NO_MMX")) startup_cpu();
 #endif
 
+	startup_formats();
+
 #ifdef MACOSX
-       EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
+	EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
 #else
-        EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
+	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
 #endif
 	EVAL("GridFlow.load_user_config");
 
