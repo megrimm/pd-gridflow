@@ -6,8 +6,11 @@ starting with 1.0, backwards compatibility will be kept
 Community
 [ ] make IRC channel #dataflow
 [ ] put new samples on website
+[ ] add on website:
+	[ ] looking for someone to take care of win32 port
+	[ ] looking for someone to take care of macosx port
 
-Distribution (0.6.2)
+Distribution (0.6.3)
 [ ] add test plan
 [ ] follow test plan
 [ ] review all documentation
@@ -82,6 +85,7 @@ Architecture
 [ ] UnknownAtom class
 [ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
+[ ] add log*
 
 Computation Objects
 [ ] @type, @cast
@@ -93,6 +97,7 @@ Computation Objects
 [ ] @import~, @export~, @import*, @export*
 [ ] see APL/J/NArray/PDL/Aplus reference
 [ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
+[ ] http://www.dai.ed.ac.uk/HIPR2/wksheets.htm
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @foldr, @scanr
 [ ] @polygon
@@ -161,12 +166,10 @@ Format
 [ ] GIF, JPEG, PNG support (+ reg ourselves in libpng.org's applist)
 [ ] libquicktime.so, more libmpeg3.so
 [ ] fork: is a new format, for e.g. multiple MPEG drivers
-[ ] Videodev: allow to select tv channels (this is "freq")
 [ ] Videodev: fix RGB<->BGR<->??? palette issues
-[ ] Videodev: find out what channel the small cam goes on and why it isn't displaying.
 [ ] Raw: a new format for reading arbitrary data.
 [ ] Common message-passing format (includes other things than grid)
-[ ] X11: mouse input
+[ ] libaa
 [ ] /dev/dsp
 [ ] /dev/mixer
 [ ] Generic SHM Driver
@@ -210,6 +213,10 @@ Bugs
 [ ] undefined method `delete' for false (@fobjects_set)
 [ ] if @out#open fails, then a segfault might occur during next #open (?)
 [ ] don't try resizing the window before it opens (???) (loadbang?)
+[ ] tanh should be called tanh*
+[ ] probable memory corruption during initialization of GridFlow
+[ ] [@export_list] blows up with >=125 elements (alx)
+
 
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
@@ -232,4 +239,15 @@ From: Margit Hideg <mhideg@rogers.com>
   [ ] I wish to see server side jmax to handle multiple incoming
       commands, audio + video streams
 
+<matju> alx_away:
+ je viens d'avoir une idée géniale
+ tab completion dans jMax
+ hum
+ bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques. ça marcherait pour les object boxes mais pas pour le reste
+ le tab completion ne donnerait pas seulement les noms possibles pour le prochain argument dans le objectbox; il donnerait aussi une description de l'argument (surtout dans le cas où l'argument a beaucoup de valeurs possibles)
+ je pense que le help de jMax est une bonne idée (le concept hands-on) mais ça pourrait aller plus loin.
+ j'ai pensé intégrer le manuel de référence de gridflow directement dans le programme, disponible au runtime, dans l'éventualité d'un GUI qui saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un message "help" au inlet 0 enverrait une description de la classe dans le log.
+ (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ?
 
+<alx1> donc une option "open aalib" serait la 'seule' chose à faire pour
+avoir le même output que hasciicam? 

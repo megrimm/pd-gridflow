@@ -9,6 +9,7 @@ version 0.6.3 (head):
  * profiler wrapper code removed
  * x11: option setcursor <0-63>, option hidecursor
  * x11: outlet 0 tells cursor position / button state
+ * more C++ification of the code
 
 version 0.6.2 (2002.09.17):
 
