@@ -5,8 +5,9 @@ INSTALL_DATA = install --mode 644
 INSTALL_LIB = $(INSTALL_DATA)
 INSTALL_DIR = mkdir -p
 
+CC = g++
+
 all2:: gridflow-for-jmax gridflow-for-puredata # doc-all
-include config.make
 
 # suffixes
 ifeq (1,1) # Linux, MSWindows with Cygnus, etc
@@ -115,7 +116,7 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 $(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -186,7 +187,7 @@ PD_LIB = $(OBJDIR)/gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
 	@mkdir -p $(OBJDIR)
-	gcc -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CC) -shared $(LDSOFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
