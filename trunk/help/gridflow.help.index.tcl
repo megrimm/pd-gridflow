@@ -1,11 +1,8 @@
 #!/usr/bin/tclsh
 
-#set dir .
-#set argv generate
-
 catch {
-if {[string compare [lindex $argv 0] generate] == 0} {
-	# should generate Scheme code here (or something)
+if {[string compare [lindex $argv 0] test] == 0} {
+	set dir .
 
 	proc helpSummary {name file} {
 		# write me
@@ -13,7 +10,10 @@ if {[string compare [lindex $argv 0] generate] == 0} {
 
 	proc helpPatch {name file} {
 		# write me
-		puts "helpPatch $name $file"
+#		puts "helpPatch $name $file"
+		if {![file exists $file]} {
+			puts "$file does not exist"
+		}
 	}
 }
 }
