@@ -827,7 +827,69 @@ unless GridFlow.bridge_name =~ /jmax/
 		def append(*argv) @argv<<argv; end
 		install "messbox", 1, 1
 	end
+end
 
+# jMax List Classes
+
+unless GridFlow.bridge_name == "jmax"
+	class List < FObject
+		def initialize(*a) @a=a end
+		def _0_list(*a) @a=a; _0_bang end
+		def _1_list(*a) @a=a end
+		def _0_bang(*a) send_out 0, :list, *a end
+		install "list", 2, 1
+	end if false # disabled
+
+	class ListLength < FObject
+		def initialize() super end
+		def _0_list(*a) send_out 0, a.length end
+		install "listlength", 1, 1
+	end if false # disabled
+
+	class ListElement < FObject
+		def initialize(i) super; @i=i.to_i end
+		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
+		def _0_list(*a)
+			e=a[@i]
+			if Symbol===e then
+				send_out 0, :symbol, e
+			else
+				send_out 0, e
+			end
+		end
+		install "listelement", 2, 1
+	end
+
+	class ListSublist < FObject
+		def initialize(i,n) super; @i,@n=i.to_i,n.to_i end
+		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
+		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
+		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
+		install "listsublist", 2, 1
+	end
+
+	class ListPrepend < FObject
+		def initialize(*b) super; 
+			GridFlow.post "%s", @b.inspect
+		@b=b
+		end
+		def _0_list(*a) a[0,0]=@b
+			GridFlow.post "%s", a.inspect
+			GridFlow.post "%s", @b.inspect
+			send_out 0, :list, *a end
+		def _1_list(*b) @b=b end
+		install "listprepend", 2, 1
+	end
+
+	class ListAppend < FObject
+		def initialize(*b) super; @b=b end
+		def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
+		def _1_list(*b) @b=b end
+		install "listappend", 2, 1
+	end
+end
+
+unless GridFlow.bridge_name =~ /jmax/
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
 # _0_bang means bang message on inlet 0
