@@ -277,7 +277,7 @@ class GridIn < GridObject
 	end
 
 	install_rgrid 0
-	install "@in", 1, 2
+	install "#in", 1, 2
 end
 
 class GridOut < GridObject
@@ -318,13 +318,13 @@ class GridOut < GridObject
 	def log
 		time = Time.new
 		GridFlow.post(
-			"@out: frame#%04d time: %10.3f s; diff: %5d ms",
+			"\#out: frame#%04d time: %10.3f s; diff: %5d ms",
 			@framecount, time, ((time-@time)*1000).to_i)
 		@time = time
 	end
 
 	install_rgrid 0
-	install "@out", 1, 1
+	install "#out", 1, 1
 end
 
 class BitPacking
