@@ -47,8 +47,8 @@ for nt in [:int32, :int16, :uint8] do
 		a.send_in 0,:list,nt, 1,2,4,8,16,32,64 }
 
 	(a = FObject["@ + {#{nt} # 42}"]).connect 0,e,0
-	x.expect([43,44,46,50,51,52,53,54,55,56,57]) {
-		a.send_in 0,:list,nt, 1,2,4,8,9,10,11,12,13,14,15 }
+	x.expect((43..169).to_a) {
+		a.send_in 0,:list,nt, *(1..127).to_a }
 
 	x.expect([3,5,9,15]) {
 		a.send_in 1,:list,4,nt,hm, 2,3,5,7
@@ -728,12 +728,14 @@ end
 def test_asm
 	GridFlow.verbose=false
 	a = FObject["@in ppm file images/r001.ppm"]
+	aa = FObject["@cast uint8"]
 	b = FObject["@store"]
 	d = FObject["@store"]
-	a.connect 0,b,1
-	a.connect 0,d,1
+	a.connect 0,aa,0
+	aa.connect 0,b,1
+	aa.connect 0,d,1
 	a.send_in 0
-	c = FObject["@ +"]
+	c = FObject["@ + {uint8 # 0}"]
 	t0 = Time.new; 1000.times {b.send_in 0}; t1 = Time.new-t0
 	b.connect 0,c,0
 	stuff=proc{
