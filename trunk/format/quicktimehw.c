@@ -38,15 +38,15 @@
 struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
 	int track;
-	Dim *dim;
+	P<Dim> dim;
 	char *codec;
 	int colorspace;
 	int channels;
 	bool started;
-	Dim *force;
+	P<Dim> force;
 	int length; /* in frames */
 	float64 framerate;
-	BitPacking *bit_packing;
+	P<BitPacking> bit_packing;
 
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
 		started(false), force(0), framerate(29.997), bit_packing(0) {}
@@ -65,7 +65,6 @@ struct FormatQuickTimeHW : Format {
 };
 
 \def void force_size (int32 height, int32 width) {
-	delete force;
 	int32 v[] = { height, width };
 	force = new Dim(2,v);
 }
@@ -132,7 +131,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
 	} else {
 		// first frame: have to do setup
-		dim = in->dim->dup();
+		dim = in->dim;
 		quicktime_set_video(anim,1,dim->get(1),dim->get(0),framerate,codec);
 		quicktime_set_cmodel(anim,colorspace);
 	}

@@ -184,8 +184,8 @@ struct FormatVideoDev : Format {
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap;
-	BitPacking *bit_packing;
-	Dim *dim;
+	P<BitPacking> bit_packing;
+	P<Dim> dim;
 
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
 	void frame_finished (Pt<uint8> buf);
@@ -238,9 +238,7 @@ struct FormatVideoDev : Format {
 	int fd = GETFD;
 	int32 v[] = {sy,sx,3};
 	VideoWindow grab_win;
-
-	/* !@#$ bug here: won't flush the frame queue */
-	if (dim) delete dim;
+	// !@#$ bug here: won't flush the frame queue
 	dim = new Dim(3,v);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
 	gfpost(&grab_win);
@@ -295,7 +293,7 @@ struct FormatVideoDev : Format {
 }
 
 void FormatVideoDev::frame_finished (Pt<uint8> buf) {
-	GridOutlet out(this,0,dim->dup(),NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
@@ -473,7 +471,6 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \def void close () {
-	if (bit_packing) delete bit_packing;
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
 	rb_call_super(argc,argv);
 }

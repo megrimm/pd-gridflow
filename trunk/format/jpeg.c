@@ -35,7 +35,7 @@ extern "C" {
 
 \class FormatJPEG < Format
 struct FormatJPEG : Format {
-	BitPacking *bit_packing;
+	P<BitPacking> bit_packing;
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
