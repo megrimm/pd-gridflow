@@ -1,3 +1,5 @@
+;; $Id$
+
 (setq pname "video4jmax")
 
 (provide-package pname "0.0.0")
