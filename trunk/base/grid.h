@@ -886,7 +886,7 @@ typedef struct BFObject BFObject; /* fts_object_t or something */
 struct FObject {
 	Ruby /*GridFlow::FObject*/ rself; /* point to Ruby peer */
 	GridClass *grid_class;
-	BFObject *foreign_peer; /* point to jMax/PD peer */
+	BFObject *bself; /* point to jMax/PD peer */
 	uint64 profiler_cumul;
 	uint64 profiler_last;
 };
@@ -934,10 +934,6 @@ struct GridObject : FObject {
 	DECL3(send_out_grid_abort);
 };
 
-inline BFObject *FObject_peer(Ruby rself) {
-	DGS(GridObject); return self->foreign_peer;
-}
-
 void GridObject_conf_class(Ruby rself, GridClass *grclass);
 
 /* **************************************************************** */
@@ -951,7 +947,7 @@ typedef struct GridObject Format;
 
 struct GFBridge {
 	/* send message */
-	/* pre: outlet number is valid; self has a foreign_peer */
+	/* pre: outlet number is valid; self has a bself */
 	Ruby (*send_out)(int argc, Ruby *argv, Ruby sym, int outlet, Ruby rself);
 	/* add new class */
 	Ruby (*class_install)(Ruby rself, char *name);

@@ -53,8 +53,8 @@ struct FMessage {
 /* BFObject */
 
 struct BFObject : fts_object_t {
-	Ruby peer;
-	
+	Ruby rself;
+
 	static fts_class_t *find_bfclass (fts_symbol_t sym) {
 		Ruby v = rb_hash_aref(
 			rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
@@ -118,7 +118,7 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	buf[1] = '0' + fm->winlet;
 	ID sel = rb_intern(buf);
 	for (int i=0; i<fm->ac; i++) argv[i] = Bridge_import_value(fm->at+i);
-	rb_funcall2(fm->self->peer,sel,fm->ac,argv);
+	rb_funcall2(fm->self->rself,sel,fm->ac,argv);
 	return Qnil;
 }
 
@@ -149,8 +149,12 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby qlass = (Ruby)fm->self->head.cl->user_data;
 	Ruby rself = rb_funcall2(qlass,SI(new),fm->ac,argv);
 	DGS(GridObject);
-	self->foreign_peer = fm->self;
-	self->foreign_peer->peer = rself;
+	self->bself = fm->self;
+	self->bself->rself = rself;
+#ifdef TRACE_SELF
+	fprintf(stderr,"init: rself=%08x, self=%08x, bself=%08x\n",
+		(int)rself, (int)self, (int)fm->self);
+#endif
 	return rself;
 }
 
@@ -165,7 +169,7 @@ int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
 
 static void BFObject_delete_1 (FMessage *fm) {
 	post("BFObject_delete_1: deleting object # %08x\n",(int)fm->self);
-	rb_funcall(fm->self->peer,SI(delete),0);
+	rb_funcall(fm->self->rself,SI(delete),0);
 }
 
 static void BFObject_delete (BFObject *self) {
@@ -231,8 +235,13 @@ static Ruby FObject_s_install_2(Ruby rself, char *name) {
 
 static Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet,
 Ruby rself) {
-	fts_object_t *jo = FObject_peer(rself);
-	if (outlet<0 || outlet>=fts_object_get_outlets_number(jo)) {
+	DGS(FObject);
+	fts_object_t *bself = self->bself;
+#ifdef TRACE_SELF
+	fprintf(stderr,"send: rself=%08x, self=%08x, bself=%08x\n",
+		(int)rself, (int)self, (int)bself);
+#endif
+	if (outlet<0 || outlet>=fts_object_get_outlets_number(bself)) {
 		RAISE("outlet %d does not exist",outlet);
 	}
 	fts_atom_t at[argc];
@@ -240,7 +249,7 @@ Ruby rself) {
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	/*fprintf(stderr,"2: %s\n",fts_symbol_name(fts_get_symbol(&sel)));*/
-	fts_outlet_send(jo,outlet,fts_get_symbol(&sel),argc,at);
+	fts_outlet_send(bself,outlet,fts_get_symbol(&sel),argc,at);
 	return Qnil;
 }
 

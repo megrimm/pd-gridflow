@@ -158,6 +158,7 @@ Ruby FObject_send_in(int argc, Ruby *argv, Ruby rself) {
 }
 
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
+	DGS(FObject);
 	Ruby sym;
 
 	if (argc<1) RAISE("not enough args");
@@ -175,7 +176,7 @@ Ruby FObject_send_out(int argc, Ruby *argv, Ruby rself) {
 	int noutlets = INT(noutlets2);
 	if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 	if (TYPE(rself)==T_DATA) { DGS(FObject); LEAVE(self); }
-	if (gf_bridge.send_out && FObject_peer(rself))
+	if (gf_bridge.send_out && self->bself)
 		gf_bridge.send_out(argc,argv,sym,outlet,rself);
 	Ruby ary = rb_ivar_defined(rself,SYM2ID(sym_outlets)) ?
 		rb_ivar_get(rself,SYM2ID(sym_outlets)) : Qnil;
@@ -217,11 +218,11 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 		rb_ivar_get(qlass,SI(@grid_class)) : Qnil;
 	GridClass *gc = (gc2==Qnil ? 0 : FIX2PTR(GridClass,gc2));
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects_set));
-	GridObject *c_peer = gc ? (GridObject *)gc->allocate() : new GridObject();
-	c_peer->foreign_peer = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, c_peer);
-	c_peer->rself = rself;
-	c_peer->grid_class = gc;
+	GridObject *self = gc ? (GridObject *)gc->allocate() : new GridObject();
+	self->bself = 0;
+	Ruby rself = Data_Wrap_Struct(qlass, FObject_mark, FObject_free, self);
+	self->rself = rself;
+	self->grid_class = gc;
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping */
 	rb_funcall2(rself,SI(initialize),argc,argv);
 //	object_count += 1; fprintf(stderr,"object_count=%d\n",object_count);
