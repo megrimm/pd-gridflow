@@ -56,6 +56,7 @@ menu .mbar.gridflow -tearoff $pd_tearoff
 .mbar add cascade -label "GridFlow" -menu .mbar.gridflow
 .mbar.gridflow add command -label "profiler_dump" -command {pd "gridflow profiler_dump;"}
 .mbar.gridflow add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
+
 proc listener_new {self name} {
 	global _
 	set _($self:hist) {}
@@ -105,6 +106,7 @@ proc ruby_eval {} {
 	listener_append .ruby [.ruby.entry get]
 	.ruby.entry delete 0 end
 }
+
 listener_new .ruby "Ruby"
 bind .ruby.entry <Return> {ruby_eval}
 
@@ -129,7 +131,14 @@ module GridFlow
 end
 
 GridFlow.whatever(:gui,%q{
-image create photo icon_peephole -file /mnt/gridflow/java/peephole.gif
-global butt
-lappend butt {peephole {guiext peephole} peephole}
+catch {
+	if {[file exists ${pd_guidir}/lib/gridflow/icons/peephole.gif]} {
+		global pd_guidir
+		image create photo icon_peephole -file ${pd_guidir}/lib/gridflow/icons/peephole.gif
+		global butt
+		button_bar_add peephole {guiext peephole}
+	} {
+		puts $stderr GAAAH
+	}
+}
 })
