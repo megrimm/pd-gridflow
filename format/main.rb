@@ -60,11 +60,124 @@ class Format
 	end
 end
 
-class GridIn
-#	def _0_bang
-#		CHECK_FILE_OPEN
-#		rb_funcall($->ff,SI(frame),0);
-#	end
+# common parts between GridIn and GridOut
+module GridIO
+	def check_file_open
+		if not @format then raise "can't do that: file not open" end
+	end
+
+	def _0_option(*a)
+		check_file_open
+		case a[0]
+		when :timelog
+			@timelog = Integer(a[1])!=0
+		else
+			@format.option(*a)
+		end
+	end
+
+	def _0_close
+		check_file_open
+		@format.close
+		@format = 0
+	end
+end
+
+class GridIn < GridObject
+	include GridIO
+
+	def initialize(*a)
+		super
+		@format = nil
+		@timelog = false
+		@framecount = 0
+		@time = Time.new
+	end
+
+	def _0_open(sym,*a)
+		qlass = GridFlow.formats[sym]
+		if not qlass then raise "unknown file format identifier: %s", sym end
+		@format.close if @format
+		@format = qlass.new :in, *a
+		@format.connect 0,self,1
+	end
+
+	def delete
+		@format.close if @format
+		@format = 0
+		super
+	end
+
+	def _0_bang
+		check_file_open
+		@format.frame
+	end
+
+	def _0_int frame
+		check_file_open
+		@format.seek frame
+		@format.frame
+	end
+
+	def _0_reset
+		check_file_open
+		@format.seek 0
+	end
+
+	def _1_grid_begin(*a); send_out 0,:grid_begin,*a end
+	def _1_grid_flow (*a); send_out 0,:grid_flow, *a end
+	def _1_grid_end  (*a); send_out 0,:grid_end,  *a end
+
+	install_rgrid 0
+	install "@in", 1, 1
+end
+
+class GridOut < GridObject
+	include GridIO
+
+	def initialize(*a)
+		super
+		@format = nil
+		@timelog = false
+		@framecount = 0
+		@time = Time.new
+		if a.length>0
+			_0_open :x11,:here
+			_0_option :out_size,a[0],a[1]
+		end
+	end
+
+	def _0_open(sym,*a)
+		qlass = GridFlow.formats[sym]
+		if not qlass then raise "unknown file format identifier: %s", sym end
+		@format.close if @format
+		@format = qlass.new :out, *a
+		@format.connect 0,self,1
+	end
+
+	def _0_list      (*a); @format._0_list(      *a) end
+	def _0_grid_begin(*a); @format._0_grid_begin(*a) end
+	def _0_grid_flow (*a); @format._0_grid_flow( *a) end
+	def _0_grid_end  (*a); @format._0_grid_end(  *a)
+		send_out 0,:bang
+		if @timelog
+			time = Time.new
+			GridFlow.whine(
+				"@out:0:end: frame#%03d time: %9.3f s; minus last: %5d ms\n",
+				@framecount, time, ((time-@time)*1000).to_i)
+			@time = time
+		end
+		@framecount
+	end
+
+	def delete
+		@format.close if @format
+		@format = 0
+		super
+	end
+
+	install_rgrid 0
+	install "@out", 1, 1
 end
 
 class BitPacking
