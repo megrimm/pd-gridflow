@@ -133,16 +133,11 @@ mode, int argc, VALUE *argv) {
 
 	if (!$) return 0;
 
-	if (argc!=2 || argv[0] != SYM(file)) {
-		whine("usage: targa file <filename>"); goto err;
-	}
-	filename = rb_id2name(SYM2ID(argv[0]));
+	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: targa file <filename>");
+	filename = rb_id2name(SYM2ID(argv[1]));
 
 	$->st = Stream_open_file(filename,mode);
-	if (!$->st) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
-	}
+	if (!$->st) RAISE("can't open file `%s': %s", filename, strerror(errno));
 	return $;
 err:
 	$->cl->close($);
