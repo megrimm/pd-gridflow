@@ -22,9 +22,19 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.7.2"
+GF_VERSION = "0.7.3"
 
-require "xmlparser"
+$use_rexml = true
+
+if $use_rexml
+	# this is a pure ruby xml-parser
+	#require "gridflow"
+	require "rexml/sax2parser"
+	include REXML
+else
+	# this uses libexpat.so
+	equire "xmlparser"
+end
 
 =begin todo
 
@@ -88,7 +98,7 @@ def mkimg(icon,alt=nil)
 end
 
 class XString < String
-	def display
+	def show
 		print escape_html(gsub(/[\r\n\t ]+$/," "))
 	end
 end
@@ -97,8 +107,8 @@ module HasOwnLayout; end
 
 class XNode
 	# subclass interface:
-	#  #display_index : print as html in index
-	#  #display : print as html in main part of the doc
+	#  #show_index : print as html in index
+	#  #show : print as html in main part of the doc
 
 	@valid_tags = {}
 	class<<self
@@ -120,16 +130,20 @@ class XNode
 	attr_accessor :parent
 	def [] i; contents[i] end
 
-	def display_index
-		contents.each {|x| next unless XNode===x; x.display_index }
+	def show_index
+		contents.each {|x| next unless XNode===x; x.show_index }
 	end
 
-	# may crash in ruby 1.8 (bug in interpreter)
-	def display
-		# STDERR.puts contents.inspect
-		contents.each {|x| x.display }
+	# this method segfaults in ruby 1.8
+	# because of method lookup on Qundef or whatever.
+	def show
+		#STDERR.puts GridFlow.get_id(contents)
+		#STDERR.puts self
+		contents.each {|x|
+			# STDERR.puts GridFlow.get_id(x)
+			x.show
+		}
 	end
-
 	def inspect; "#<XNode #{tag}>"; end
 	alias to_s inspect
 end
@@ -137,11 +151,11 @@ end
 XNode.register("documentation") {}
 
 XNode.register(*%w( icon help arg rest )) {
-	def display; end
+	def show; end
 }
 
 XNode.register("section") {
-	def display
+	def show
 		write_black_ruler
 		mk(:tr) { mk(:td,:colspan,4) {
 			mk(:a,:name,att["name"].gsub(/ /,'_')) {}
@@ -149,9 +163,9 @@ XNode.register("section") {
 		
 		contents.each {|x|
 			if HasOwnLayout===x then
-				x.display
+				x.show
 			else
-				mk(:tr) { mk(:td) {}; mk(:td) {}; mk(:td) { x.display }}
+				mk(:tr) { mk(:td) {}; mk(:td) {}; mk(:td) { x.show }}
 				puts ""
 			end
 		}
@@ -159,7 +173,7 @@ XNode.register("section") {
 		mk(:tr) { mk(:td) { print "&nbsp;" }}
 		puts ""
 	end
-	def display_index
+	def show_index
 		mk(:h4) {
 			mk(:a,:href,"#"+att["name"].gsub(/ /,'_')) {
 				print att["name"] }}
@@ -172,7 +186,7 @@ XNode.register("section") {
 
 # basic text formatting nodes.
 XNode.register(*%w( p i u b k sup )) {
-	def display
+	def show
 		t = if tag=="k" then "kbd" else tag end
 		print "<#{t}>"
 		super
@@ -182,7 +196,7 @@ XNode.register(*%w( p i u b k sup )) {
 
 # explicit hyperlink on the web.
 XNode.register("link") {
-	def display
+	def show
 		print "<a href='#{att[:to]}'>"
 		super
 		print att[:to] if contents.length==0
@@ -192,14 +206,16 @@ XNode.register("link") {
 
 XNode.register("list") {
 	attr_accessor :counter
-	def display
+	def show
 		self.counter = att.fetch("start"){"1"}.to_i
-		mk(:ul) { super }
+		mk(:ul) {
+			super # method call on Qundef ???
+		}
 	end
 }
 
 XNode.register("li") {
-	def display
+	def show
 		mk(:li) {
 			print "<b>#{parent.counter}</b>", " : "
 			parent.counter += 1
@@ -211,7 +227,7 @@ XNode.register("li") {
 # and "macro", "enum", "type", "use"
 XNode.register("class") {
 	include HasOwnLayout
-	def display
+	def show
 		tag = self.tag
 		name = att['name'] or raise
 		mk(:tr) {
@@ -249,7 +265,7 @@ XNode.register("class") {
 		}#/td
 		}#/tr
 	end
-	def display_index
+	def show_index
 		icon = contents.find {|x| XNode===x && x.tag == "icon" }
 		if not att["name"] then
 			raise "name tag missing?"
@@ -277,7 +293,7 @@ def nice_table
 end
 
 XNode.register("method") {
-	def display
+	def show
 		print "<br>"
 		if parent.tag == "inlet" or parent.tag == "outlet"
 			mk(:b) {
@@ -334,7 +350,7 @@ XNode.register("method") {
 }
 
 XNode.register("table") {
-	def display
+	def show
 		mk(:tr) {
 		2.times { mk(:td) {} }
 		mk(:td) {
@@ -342,7 +358,7 @@ XNode.register("table") {
 			mk(:tr) {
 				columns = contents.find_all {|x| XNode===x && x.tag=="column" }
 				columns.each {|x| mk(:td) { mk(:b) {
-					x.contents.each {|y| y.display }}}}
+					x.contents.each {|y| y.show }}}}
 			}
 			super
 		}}}
@@ -350,23 +366,23 @@ XNode.register("table") {
 }
 
 XNode.register("column") {
-	def display; end
+	def show; end
 }
 
 XNode.register("row") {
-	def display
+	def show
 		columns = parent.contents.find_all {|x| XNode===x && x.tag=="column" }
 		mk(:tr) { columns.each {|x| mk(:td) {
 			id = x.att["id"]
 			if id==""
-				then contents.each {|x| x.display }
+				then contents.each {|x| x.show }
 				else print att[id] end
 		}}}
 	end
 }
 
 XNode.register("operator-1", "operator-2") {
-	def display
+	def show
 		mk(:tr) {
 		mk(:td) {
 			icon = contents.find {|x| XNode===x && x.tag == "icon" }
@@ -394,27 +410,41 @@ XNode.register("inlet","outlet") {}
 
 #----------------------------------------------------------------#
 
-class GFDocParser < XMLParser
-	attr_reader :stack
-
-	def initialize(*a)
-		super
-		@xml_lists = []
-		@stack = [[]]
+if $use_rexml
+	class GFDocParser
+		def initialize(file)
+			@sax = SAX2Parser.new(file)
+			@xml_lists = []
+			@stack = [[]]
+			@sax.listen(:start_element) {|a,b,c,d| startElement(b,d) }
+			@sax.listen(  :end_element) {|a,b,c|   endElement(b) }
+		end
+		def do_it; @sax.parse; end
 	end
+else
+	class GFDocParser < XMLParser
+		def initialize(file)
+			@file = file
+			super("ISO-8859-1")
+			@xml_lists = []
+			@stack = [[]]
+		end
+		def do_it; parse(file.readlines.join("\n"), true) end
+	end
+end
 
+class GFDocParser
+	attr_reader :stack
 	def startElement(tag,attrs)
 		if not XNode.valid_tags[tag] then
-		 	raise XMLParserError, "unknown tag #{tag}"
+			raise XMLParserError, "unknown tag #{tag}"
 		end
 		@stack<<[tag,attrs]
 	end
-
 	def endElement(tag)
 		node = XNode.valid_tags[tag].new(*@stack.pop)
 		@stack.last << node
 	end
-
 	def character(text)
 		if not String===@stack.last.last then
 			@stack.last << XString.new("")
@@ -482,14 +512,14 @@ end
 #----------------------------------------------------------------#
 
 $nodes = {}
+XMLParserError = Exception if $use_rexml
 
 def read_one_page file
 	begin
 		STDERR.puts "reading #{file}"
-		data = File.open(file) {|f| f.readlines }.join("\n")
-		parser = GFDocParser.new "ISO-8859-1"
-		parser.parse(data, true)
-		$nodes[file] = parser.instance_eval{@stack}[0][0]
+		parser = GFDocParser.new(File.open(file))
+		parser.do_it
+		$nodes[file] = parser.stack[0][0]
 	rescue XMLParserError => e
 		puts ""
 		puts ""
@@ -515,23 +545,18 @@ def write_one_page file
 	write_header
 	tree = $nodes[file]
 	mk(:tr) { mk(:td,:colspan,2) { mk(:div,:cols,tree.att["indexcols"]||1) {
-		tree.display_index
+		tree.show_index
 		puts "<br><br>"
 	}}}
-	tree.display
+	tree.show
 	write_footer
 	puts ""
 	puts ""
 end
 
 $files = %w(
-	install.xml
-	project_policy.xml
-	reference.xml
-	format.xml
-	internals.xml
-	architecture.xml
-)
+	install.xml project_policy.xml
+	reference.xml format.xml internals.xml architecture.xml)
 
 $files.each {|input_name| read_one_page input_name }
 $files.each {|input_name| write_one_page input_name }
