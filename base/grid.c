@@ -73,7 +73,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 				int32 v[i];
 				if (i!=0 && TYPE(a[i-1])==T_SYMBOL) {
 					i--;
-					nt = NumberType_find(a[i]);
+					nt = NumberTypeIndex_find(a[i]);
 				}
 				for (int j=0; j<i; j++) v[j] = INT(a[j]);
 				init(new Dim(i,v),nt);
@@ -84,7 +84,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		}
 		{
 			if (n!=0 && TYPE(a[0])==T_SYMBOL) {
-				nt = NumberType_find(a[0]);
+				nt = NumberTypeIndex_find(a[0]);
 				a++;
 				n--;
 			}
@@ -568,7 +568,8 @@ METHOD3(GridObject,initialize) {
 
 /* category: input */
 
-// most possibly a big hack
+//!@#$ does not handle types properly
+//!@#$ most possibly a big hack
 template <class T>
 void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	GridObject *self = in->parent;
@@ -605,24 +606,38 @@ METHOD3(GridObject,inlet_set_factor) {
 }
 
 METHOD3(GridObject,send_out_grid_begin) {
-	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
+	if (argc<2 || argc>3 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	int n = rb_ary_len(argv[1]);
 	Ruby *p = rb_ary_ptr(argv[1]);
+	NumberTypeIndex nt = argc<3 ? int32_type_i : NumberTypeIndex_find(argv[2]);
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = INT(p[i]);
-	out[outlet]->begin(new Dim(n,v));
+	out[outlet]->begin(new Dim(n,v),nt);
 	return Qnil;
 }
 
+template <class T>
+void send_out_grid_flow_2(GridOutlet *go, Ruby s, T bogus) {
+	int n = rb_str_len(s) / sizeof(T);
+	Pt<T> p = rb_str_pt(s,T);
+	go->send(n,p);
+}
+
 METHOD3(GridObject,send_out_grid_flow) {
-	if (argc!=2 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
+	if (argc<2 || argc>3 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
 	int outlet = INT(argv[0]);
-	int n = rb_str_len(argv[1]) / sizeof(int32);
-	Pt<int32> p = rb_str_pt(argv[1],int32);
+	NumberTypeIndex nt = argc<3 ? int32_type_i : NumberTypeIndex_find(argv[2]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
-	out[outlet]->send(n,p);
+	GridOutlet *go = out[outlet];
+	switch (nt) {
+	case uint8_type_i: send_out_grid_flow_2(go,argv[1],(uint8)0); break;
+	case int16_type_i: send_out_grid_flow_2(go,argv[1],(int16)0); break;
+	case int32_type_i: send_out_grid_flow_2(go,argv[1],(int32)0); break;
+	case float32_type_i: send_out_grid_flow_2(go,argv[1],(float32)0); break;
+	default: RAISE("wham");
+	}
 	return Qnil;
 }
 

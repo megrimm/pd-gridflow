@@ -116,7 +116,7 @@ GRID_INLET(GridCast,0) {
 METHOD3(GridCast,initialize) {
 	rb_call_super(argc,argv);
 	if (argc!=1) RAISE("wrong number of args");
-	nt = NumberType_find(argv[0]);
+	nt = NumberTypeIndex_find(argv[0]);
 	return Qnil;
 }
 
@@ -135,6 +135,7 @@ LIST(GRINLET2(GridCast,0,4)),
 struct GridImport : GridObject {
 	Grid dim_grid;
 	Dim *dim; /* size of grids to send */
+	NumberTypeIndex nt;
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() { if (dim) delete dim; }
 	DECL3(initialize);
@@ -143,25 +144,25 @@ struct GridImport : GridObject {
 	GRINLET3(1);
 };
 
-GRID_INLET(GridImport,0) {}
-GRID_FLOW {
+GRID_INLET(GridImport,0) {
+} GRID_FLOW {
 	GridOutlet *o = out[0];
 	while (n) {
-		if (!o->is_busy()) o->begin(dim->dup());
+		if (!o->is_busy()) o->begin(dim->dup(),nt);
 		int n2 = min((long)n,o->dim->prod()-o->dex);
 		o->send(n2,data);
 		n -= n2;
 		data += n2;
 	}
-}
-GRID_FINISH {}
-GRID_END
+} GRID_FINISH {
+} GRID_END
 
 GRID_INPUT(GridImport,1,dim_grid) {	dim = dim_grid.to_dim(); } GRID_END
 
 METHOD3(GridImport,initialize) {
 	rb_call_super(argc,argv);
-	if (argc!=1) RAISE("wrong number of args");
+	if (argc<1 || argc>2) RAISE("wrong number of args");
+	nt = argc==2 ? NumberTypeIndex_find(argv[1]) : int32_type_i;
 	dim_grid.init_from_ruby(argv[0]);
 	dim = dim_grid.to_dim();
 	return Qnil;
@@ -173,7 +174,7 @@ METHOD3(GridImport,_0_reset) {
 }
 
 GRCLASS(GridImport,"@import",inlets:2,outlets:1,startup:0,
-LIST(GRINLET(GridImport,0,4),GRINLET(GridImport,1,4)),
+LIST(GRINLET2(GridImport,0,4),GRINLET(GridImport,1,4)),
 	DECL(GridImport,initialize),
 	DECL(GridImport,_0_reset))
 
@@ -189,15 +190,14 @@ struct GridExport : GridObject {
 	GRINLET3(0);
 };
 
-GRID_INLET(GridExport,0) {}
-GRID_FLOW {
+GRID_INLET(GridExport,0) {
+} GRID_FLOW {
 	for (int i=0; i<n; i++) {
 		Ruby a[] = { INT2NUM(0), sym_int, INT2NUM(data[i]) };
 		FObject_send_out(COUNT(a),a,rself);
 	}
-}
-GRID_FINISH {}
-GRID_END
+} GRID_FINISH {
+} GRID_END
 
 GRCLASS(GridExport,"@export",inlets:1,outlets:1,startup:0,
 LIST(GRINLET2(GridExport,0,4)))
@@ -876,6 +876,7 @@ struct GridFor : GridObject {
 	GRINLET3(0);
 	GRINLET3(1);
 	GRINLET3(2);
+	template <class T> void trigger (T bogus);
 };
 
 /*{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> }
@@ -894,26 +895,26 @@ METHOD3(GridFor,initialize) {
 	return Qnil;
 }
 
-METHOD3(GridFor,_0_bang) {
+template <class T>
+void GridFor::trigger (T bogus) {
 	int n = from.dim->prod();
 	int32 nn[n+1];
-	STACK_ARRAY(int32,x,n);
-	Pt<int32> fromb = ((Pt<int32>)from);
-	Pt<int32>   tob = ((Pt<int32>)to  );
-	Pt<int32> stepb = ((Pt<int32>)step);
-	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
-		RAISE("dimension mismatch");
+	STACK_ARRAY(T,x,n);
+	Pt<T> fromb = ((Pt<T>)from);
+	Pt<T>   tob = ((Pt<T>)to  );
+	Pt<T> stepb = ((Pt<T>)step);
+
 	for (int i=step.dim->prod()-1; i>=0; i--)
 		if (!stepb[i]) RAISE("step must not contain zeroes");
 	for (int i=0; i<n; i++) {
-		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],0L)) / stepb[i];
+		nn[i] = (tob[i] - fromb[i] + stepb[i] - cmp(stepb[i],(T)0)) / stepb[i];
 		if (nn[i]<0) nn[i]=0;
 	}
 	if (from.dim->n==0) {
-		out[0]->begin(new Dim(1,nn));
+		out[0]->begin(new Dim(1,(int32 *)nn), from.nt);
 	} else {
 		nn[n]=n;
-		out[0]->begin(new Dim(n+1,nn));
+		out[0]->begin(new Dim(n+1, (int32 *)nn), from.nt);
 	}
 	for(int d=0;;) {
 		/* here d is the dim# to reset; d=n for none */
@@ -922,14 +923,28 @@ METHOD3(GridFor,_0_bang) {
 		out[0]->send(n,x);
 		/* here d is the dim# to increment */
 		for(;;) {
-			if (d<0) goto end;
+			if (d<0) return;
 			x[d]+=stepb[d];
 			if (x[d]<tob[d]) break;
 			d--;
 		}
 		d++;
 	}
-	end:
+}
+
+#define TRIGGER(_fun_,_nt_) \
+	switch (_nt_) { \
+	case uint8_type_i: _fun_((uint8)0); break; \
+	case int16_type_i: _fun_((int16)0); break; \
+	case int32_type_i: _fun_((int32)0); break; \
+	default: RAISE("argh");}
+
+METHOD3(GridFor,_0_bang) {
+	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
+		RAISE("dimension mismatch");
+	if (from.nt != to.nt || to.nt != step.nt)
+		RAISE("type mismatch");
+	TRIGGER(trigger,from.nt);
 	return Qnil;
 }
 
@@ -943,7 +958,7 @@ GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,startup:0,
-LIST(GRINLET(GridFor,0,4),GRINLET(GridFor,1,4),GRINLET(GridFor,2,4)),
+LIST(GRINLET2(GridFor,0,4),GRINLET2(GridFor,1,4),GRINLET2(GridFor,2,4)),
 	DECL(GridFor,initialize),
 	DECL(GridFor,_0_bang),
 	DECL(GridFor,_0_set))
@@ -1454,7 +1469,7 @@ METHOD3(GridRGBtoHSV,initialize) {
 }
 
 GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridRGBtoHSV,0,4)),
+LIST(GRINLET2(GridRGBtoHSV,0,4)),
 	DECL(GridRGBtoHSV,initialize))
 
 /* **************************************************************** */
@@ -1494,7 +1509,7 @@ METHOD3(GridHSVtoRGB,initialize) {
 }
 
 GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,startup:0,
-LIST(GRINLET(GridHSVtoRGB,0,4)),
+LIST(GRINLET2(GridHSVtoRGB,0,4)),
 	DECL(GridHSVtoRGB,initialize))
 
 /* **************************************************************** */
