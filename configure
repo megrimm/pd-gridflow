@@ -654,7 +654,7 @@ f.puts "include Makefile.gf"
 make_makefile f
 f.close
 
-#=begin
+=begin
 for z in [
 :$srcdir,
 :$libdir,
@@ -666,4 +666,4 @@ for z in [
 :$prefix,
 :$exec_prefix,
 ] do puts "#{z} = #{eval z.to_s}" end
-#=end
+=end

@@ -165,7 +165,7 @@ class GridOut < GridObject
 		send_out 0,:bang
 		if @timelog
 			time = Time.new
-			GridFlow.gfpost(
+			GridFlow.post(
 				"@out: frame#%04d time: %10.3f s; diff: %5d ms",
 				@framecount, time, ((time-@time)*1000).to_i)
 			@time = time
@@ -226,7 +226,7 @@ module EventIO
 		end
 #		end#while
 	rescue Errno::EWOULDBLOCK
-		GridFlow.gfpost "read would block"
+		GridFlow.post "read would block"
 	end
 
 	def raw_open(mode,source,*args)
@@ -237,9 +237,9 @@ module EventIO
 		case source
 		when :file
 			filename = args[0].to_s
-			GridFlow.gfpost "filename before: '%s'", filename
+			GridFlow.post "filename before: '%s'", filename
 			filename = GridFlow.find_file filename
-			GridFlow.gfpost "filename after: '%s'", filename
+			GridFlow.post "filename after: '%s'", filename
 			@stream = File.open filename, mode
 		when :gzfile
 			raise "gzip is read-only" if mode == "w"
@@ -260,21 +260,21 @@ module EventIO
 			if VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
 			end
-			GridFlow.gfpost "-----------"
+			GridFlow.post "-----------"
 			time = Time.new
 			TCPSocket.do_not_reverse_lookup = true # hack
 			@stream = TCPSocket.open(args[0].to_s,args[1])
-			GridFlow.gfpost "----------- #{Time.new-time}"
+			GridFlow.post "----------- #{Time.new-time}"
 			@stream.nonblock = true
 			@stream.sync = true
 			$tasks[self] = proc {self.try_read}
 		when :tcpserver
 			TCPSocket.do_not_reverse_lookup = true # hack
 			TCPServer.do_not_reverse_lookup = true # hack
-			GridFlow.gfpost "-----------"
+			GridFlow.post "-----------"
 			time = Time.new
 			@acceptor = TCPServer.open(args[0].to_s)
-			GridFlow.gfpost "----------- #{Time.new-time}"
+			GridFlow.post "----------- #{Time.new-time}"
 			@acceptor.nonblock = true
 			$tasks[self] = proc {self.try_accept}
 		else
@@ -332,12 +332,12 @@ class FormatGrid < Format; include EventIO
 		rewind_if_needed if not TCPSocket===@stream
 		on_read(8) {|data| frame1 data }
 		(try_read nil while read_wait?) if not TCPSocket===@stream
-#		GridFlow.gfpost "frame: finished"
+#		GridFlow.post "frame: finished"
 	end
 
 	# the header
 	def frame1 data
-#		GridFlow.gfpost("we are " + if OurByteOrder == ENDIAN_LITTLE
+#		GridFlow.post("we are " + if OurByteOrder == ENDIAN_LITTLE
 #			then "smallest digit first"
 #			else "biggest digit first" end)
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
@@ -345,7 +345,7 @@ class FormatGrid < Format; include EventIO
 			when "\x7fGRID"; false
 			when "\x7fgrid"; @is_le = true
 			else raise "grid header: invalid (#{data.inspect})" end
-#		GridFlow.gfpost("this file is " + if @is_le
+#		GridFlow.post("this file is " + if @is_le
 #			then "biggest digit first"
 #			else "smallest digit first" end)
 
@@ -356,7 +356,7 @@ class FormatGrid < Format; include EventIO
 		if reserved!=0
 			raise "reserved field is not zero"
 		end
-#		GridFlow.gfpost "@n_dim=#{@n_dim}"
+#		GridFlow.post "@n_dim=#{@n_dim}"
 		if @n_dim > GridFlow.max_rank
 			raise "too many dimensions (#{@n_dim})"
 		end
@@ -366,7 +366,7 @@ class FormatGrid < Format; include EventIO
 	# the dimension list
 	def frame2 data
 		@dim = data.unpack(if @is_le then "V*" else "N*" end)
-#		GridFlow.gfpost "dim=#{@dim.inspect}"
+#		GridFlow.post "dim=#{@dim.inspect}"
 		@prod = 1
 		@dim.each {|x| @prod *= x }
 		if @prod > GridFlow.max_size
@@ -421,7 +421,7 @@ class FormatGrid < Format; include EventIO
 			raise "can't send frame when there is no connection"
 		end
 		@dim = inlet_dim 0
-		GridFlow.gfpost "@dim=#{@dim.inspect}"
+		GridFlow.post "@dim=#{@dim.inspect}"
 		# header
 		@stream.write(
 			[if OurByteOrder==ENDIAN_LITTLE then "\x7fgrid" else "\x7fGRID" end,
@@ -476,7 +476,7 @@ class FormatPPM < Format; include EventIO
 	def initialize(mode,source,*args)
 		@bp = BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
 		super
-		GridFlow.gfpost "%s", [mode,source,*args].inspect
+		GridFlow.post "%s", [mode,source,*args].inspect
 		raw_open mode,source,*args
 	end
 
@@ -549,8 +549,8 @@ targa header is like:
 			raise "unsupported color format: #{colors}"
 		end
 
-		GridFlow.gfpost sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
-		GridFlow.gfpost sprintf("tga: comment: %s", comment)
+		GridFlow.post sprintf("tga: size y=%d x=%d depth=%d",h,w,depth)
+		GridFlow.post sprintf("tga: comment: %s", comment)
 
 		if depth != 24 and depth != 32
 			raise sprintf("tga: wrong colour depth: %i\n", depth)

@@ -148,6 +148,7 @@ Input/Output
 [ ] MacOSX-Quartz, Win32-GDI, Win32-DirectX ?
 [ ] PTC, TinyPTC ?
 [ ] adjustable gf_clock
+[ ] Grid: text version of the format
 
 Format
 [ ] all: possibly get rid of the "format" notion ?
@@ -204,6 +205,9 @@ Bugs
 [ ] @scale_to is broken
 [ ] rtmetro does not stop
 [ ] method_missing does blackholing
+[ ] warning: -Wno-strict-prototypes is not supported in C++
+[ ] BitPacking should not be a GridObject.
+[ ] undefined method `delete' for false (@fobjects_set)
 [ ] if @out#open fails, then a segfault might occur during next #open (?)
 [ ] don't try resizing the window before it opens (???) (loadbang?)
 

@@ -5,7 +5,8 @@ version 0.6.3 (head):
  * removing the custom leak detector ("Valgrind" program used instead)
  * removed all (?) memory leaks
  * videodev: new options: frequency, transfer [read|mmap], noinit
- * profiler works again (somewhat)
+ * profiler summary code rewritten
+ * profiler wrapper code removed
  * x11: option setcursor <0-63>, option hidecursor
  * x11: outlet 0 tells cursor position / button state
 

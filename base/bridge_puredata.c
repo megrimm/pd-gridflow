@@ -355,8 +355,7 @@ Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
 	if (outlet<0 || outlet>=noutlets_of(qlass)) {
 		EARG("outlet %d does not exist",outlet);
 	}
-	t_atom at[argc];
-	t_atom sel;
+	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	t_outlet *out = jo->te_outlet;

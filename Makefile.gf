@@ -33,6 +33,7 @@ ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
 else
 	CFLAGS += -O6 -funroll-loops # speed
+	CFLAGS += -mpentium
 endif
 
 CFLAGS += -g    # gdb info

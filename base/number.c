@@ -158,16 +158,12 @@ Packer packer=0) {
 }
 
 void BitPacking::gfpost() {
+	static const char *colour_name[] = {"red","green","blue","alpha"};
 	::gfpost("BitPacking:");
 	::gfpost("    bytes: %d", bytes);
-	for (int i=0;i<size;i++) {
-		static const char *colour_name[] = {"red","green","blue","alpha"};
+	for (int i=0;i<size;i++)
 		::gfpost("    mask[%5s]: %08x (bits from %2d up to %2d)",
-			colour_name[i],
-			mask[i],
-			low_bit(mask[i]),
-			high_bit(mask[i]));
-	}
+			colour_name[i], mask[i], low_bit(mask[i]), high_bit(mask[i]));
 }
 
 bool BitPacking::is_le() {
@@ -322,17 +318,15 @@ NumberType number_type_table[] = {
 	DECL_TYPE(      int8,  8),
 	DECL_TYPE(    uint16, 16),
 	DECL_TYPE(     int16, 16),
-/*	DECL_TYPE(    uint32, 32), */
+	DECL_TYPE(    uint32, 32),
 	DECL_TYPE(     int32, 32),
+	DECL_TYPE(   float32, 32),
 /*
 	DECL_TYPE(    uint64, 64),
 	DECL_TYPE(     int64, 64),
-	DECL_TYPE(   float32, 32),
 	DECL_TYPE(   float64, 64),
-	DECL_TYPE(   float80, 80),
 	DECL_TYPE( complex64, 64),
 	DECL_TYPE(complex128,128),
-	DECL_TYPE(complex160,160),
 */
 };
 
