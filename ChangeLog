@@ -1,6 +1,19 @@
 /* $Id$ */
 
-version 0.7.6 (2004.03.20):
+version 0.7.7 (head):
+
+ * updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
+ * added waves.pd
+ * added pd_examples/color_detect.pd (supersedes chroma_key.pd)
+ * added pd_examples/spectrogram.pd
+ * added pd_examples/photo_pianoroll.pd
+ * removed [rtmetro] (obsolete)
+ * [@store]: added methods: put_at, reassign
+ * fixed bugs in: [@camera_control]
+ * new object classes:
+   [range], [@mouse], [@pack], [@color]
+
+version 0.7.6 (2004.03.22):
 
  * GridFlow runs on MacOS 10.2 (only with jMax 2.5)
  * [@out quartz] makes a native MacOS (Cocoa+Quartz) window (warning: very buggy)
@@ -14,7 +27,7 @@ version 0.7.6 (2004.03.20):
  * now includes the pictures used in the examples
      (not a separate download anymore)
  * [@out x11 here override_redirect] (override window manager; be careful with this)
- * [pd_netsocket] does like netsend/netreceive] but two-way
+ * [pd_netsocket] does like [netsend]/[netreceive] but two-way
    (warning: not complete yet)
  * support for nested lists in incoming messages
  * new object classes:
@@ -26,7 +39,6 @@ version 0.7.6 (2004.03.20):
    jMax emulation: [listmake], [listlength], [listelement], [listsublist]
    jMax emulation: [listprepend], [listappend], [listreverse], [oneshot]
    jMax emulation: [inv+], [inv*]
-   [messageprepend], [messageappend], [@transpose]
  * Pd main window: adding GridFlow menu, Ruby/Tcl evaluators (with command-history)
  * added bin/jmax2pd (converts .jmax files to .pd files)
  * ported all .jmax examples to .pd (using jmax2pd) (20 out of 20)

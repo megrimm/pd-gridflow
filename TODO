@@ -31,8 +31,11 @@ and mach_timebase_info(&info), then ns = (time * info.numer) / info.denom;
 
 for 0.7.7: we're switching to PD for abstractions, instead of Ruby / jMax. Or something.
 Make a new bunch of them. Add a video latency patch (in examples)
-consider including 'mysql','renamefile', 'ls', 'shell'.
-abstractions shouldn't use [s]/[r].
+consider including [mysql] [renamefile] [ls] [shell]
+abstractions shouldn't use [s]/[r] without $0-.
+new policy: minimum supported gcc version: 3.0
+
+GF with Pd 0.36 : undefined pd_newest
 
 for 0.7.8: ?
 
@@ -41,51 +44,45 @@ for 0.7.9: ?
 for 0.8.0:
 
  * added @matrix_solve, @slice
+ * Copy-on-Write (COW)
  * Numop API exposed to Ruby
  * < 10 bugs in buglist
  * Fully hyperlinked manual
  * internals documentation
  * internal grid protocol redesigned
- * [@pack], [@unpack]
  * [@export~]
  * raise limit of in/outlets from 10 to 100 or unlimited.
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
-pick a number: [127]
+pick a number: [130]
 
-[126] use extra/ instead of externs/
+[130] numop ** can freeze GF
+[129] [display] should be translated to [messageprepend set] -> ""
+[128] loadbang-messages (comma) don't get translated to .pd ??
+[127] $(bindir) is not defined in Ruby 1.6
 
-[124] on OSX:
+[124] on OSX (10.3 ?):
       <_peter> Program received signal EXC_BAD_ACCESS, Could not access memory.
       <_peter> 0x0042d050 in _Z17localize_sysstackv () at bridge/common.c:128
 
 [123] doesn't compile with old versions of usb.h
-[122] @import "numbertype" attribute doesn't exist (!!!)
 [121] @downscale_by still craps on RGBA images?
 [120] osx: -bundle_loader stuff fails if Pd is not in $PATH
 [119] osx: SDL doesn't work here
 [118] error messages can be unclear (eg. file not open... is it @in's, or @out's?)
 [117] osx: [@store] crash instead of raising
-[116] [@out quartz]: alx says he can't unminimize the window
 [115] x11: dual display does not work
-[114] [@out quartz] doesn't show stuff before the window gets minimized???
-[113] [@out quartz] doesn't close by itself
 [112] Pt<T>: some casts aren't done properly
 [111] images/movies/gt.mov (penguin in raw codec) still doesn't load (why? 16 bpp?)
-[110] dataDirectory problem. see gf_find_file ??
 [109] @import ugly bug (what was it?)
 [108] encoding quicktime without uint8: does it really work?
 [107] MMX computations may be done misaligned, which may be bad.
-[106] @draw_image was found guilty of buffer overflow.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [103] videodev.c in mmap mode doesn't check how many frames it can buffer (always uses 2)
 [104] linux: error: shmget failed, in X11, with very big pictures.
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
-[101] osx: fts doesn't shut down by itself
 [100] osx: libgridflow.so installs in wrong directory (of course)
-[099] noinline directive ignored on helium.ruby-lang.org (g++ 2.95.4)
-[098] int64,float64 tests fail on helium.ruby-lang.org (g++ 2.95.4 ruby 1.6.7)
 [094] number.c takes too much time and ram to compile
 [092] ./configure --lite to disable 64-bit types? and maybe float32/64 ?
 [090] doesn't check whether ruby/version.h matches .so / .a
@@ -94,26 +91,19 @@ pick a number: [127]
 [088] FIX MOULINETTE.RB ! <attr name type default>
 [087] maybe write a script that automatically gets the backtrace from GDB.
 [086] I need better aborting of grids right fucking now.
-
 [078] "unsupported codec" bogus errors.
-
-[072] [sl] in .pl patches should actually be a slider.
+[072] [sl] in .pd patches should actually be a slider.
 [073] static libraries don't link with gridflow.so
-
-[069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
-
 [097] bin/backtrace does not detect scripts
 [004] bug in automatic type conversion (eg: @in quicktime -> ...)
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] @in#open problem with String argument.
 [008] Greyscale JPEG does not work
-[009] T_DATA #dup #clone ???
 [010] separate bridge makefiles from other makefiles!!!
-[011] research bugs in ASIO with Ruby. (eg. serial port)
+[011] research bugs in nonblock IO with Ruby. (eg. serial port)
 [014] recursive message-loop not detected.
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
-[028] @export doesn't work in Pd
 [030] FormatGrid: not properly tested (crashes sometimes)
 [031] stdout should be redirected if bridge is present
 [032] error handling sometimes leads to crash
@@ -126,42 +116,26 @@ pick a number: [127]
 
 Bugs (Low Priority)
 [016] @for int64 fails on machine "lcd".
-[063] "make" on my nfs is all fucked up re dates
-[081] .mov: SVQ1: unsupported colormodel
-	<g-rhum> codec SVQ1 h:256 w 320 d 24 fram... 25 000 000
 [079] can trap segfaults in codecs of libquicktime.
 [090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
 [076] EINTR not handled properly in a lot of code?
 [041] what would be a way to make GF work well with Pd's idea of a list?
 [043] TCP server socket busy even after kill
-[044] make better detection of libmpeg version
 [045] write unit tests about required functionality
 [046] write unit tests about error checking
 [047] make system to ensure everything is working before a release.
 [048] potential issues between fork() and X11 ?
-[049] [@export_list] blows up with >=125 elements (alx)
 [050] BitPacking has trouble with masks that extend beyond int25be
 [051] remove the crap given by -w of ruby
 [054] it's possible to crash by sending data in two inlets of a same object at once
 [056] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
-[057] RtMetro crashes if deleted while turned on; and isn't reliably working
 [059] mess with options in format grid
 [060] look for "!@#$" in source
 [061] @store should support other integer types in inlet 0 (would speedup beast.pd)
 [029] @join on small chunks is way too slow
-
-[071] high latency problem seems to be coming from:
-#0  0x40079cc6 in sendto () from /lib/i686/libpthread.so.0
-#1  0x080c89aa in udp_dev_flush ()
-#2  0x080c320e in fts_client_poll ()
-#3  0x080b8975 in fts_sched_run ()
-#4  0x0805b5e0 in main () ./fts/src/tiles/main.c:40
-#5  0x400d47f7 in __libc_start_main () from /lib/i686/libc.so.6
-
-Bugs (Cannot reproduce)
-[062] ruby SecurityError: Insecure operation - exist?
-	(trying to load ~/.gridflow_startup)
-	(this is one error message from HELL; makes no sense at all)
+[130] inline expressions like (1000/29.97) don't work
+[009] T_DATA #dup #clone ???
+[069] <jme> ruby SignalException: SIGALRM: (eval):0:in `require'
 
 ===================
 
@@ -232,6 +206,7 @@ Source Filter
 
 Architecture
 <pat> aussi les erreurs que donne gf c'est beaucoup de ligne pour juste un file not found ;)
+[ ] Ptr<T> is Pt<T> + refcounting ?
 [ ] reentrancy of objects (to allow true recursion)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] inlet-variables (variables associated to inlets)
@@ -274,7 +249,7 @@ Architecture
 Operators
 [ ] User-defined operators; compound operators... e.g.
 	[@ {{* 7} + {>> 3}}]
-[ ] n-ary operators... make [@] a metaclass
+[ ] n-ary operators... make [@] variable-inlet
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
 [ ] op2: abs- (absolute difference), avg (average), erf, rol, ror, weight
 [ ] remove fold/scan for ops for which it makes no sense.
@@ -283,7 +258,7 @@ Operators
 
 Bridge
 [ ] UnknownAtom class
-[ ] jMax/PD bridges should support list-literals inside messages
+[ ] Pd bridge should support list-literals inside messages
 [ ] GFBridge object visible from Ruby
 
 Computation Objects
@@ -292,32 +267,24 @@ Computation Objects
 [ ] @for "step" argument should have default {1...}
 [ ] zero option in @convolve (?)
 [ ] @convolve2 (simpler)
-[ ] @convolve rewritten as combination of @convolve, @border
+[ ] @convolve rewritten as combination of @convolve2+@border ?
 [ ] @convolve(2): should allow n-D convolution
-[ ] @convolve: compute execution plan for acceleration
-    (for duplicate matrix values)
-[ ] @convolve: optimise out computations where rhand is neutral (eg: * 1)
-[ ] @convolve: optimise out computations rhand is absorbent (eg: * 0)
 [ ] @complex_sq is backwards
 [ ] @store: option zero (?)
 [ ] @import~, @export~
 [ ] @fold, @scan: option reverse (right-to-left)
 [ ] @,@join: option swap (?)
 [ ] @matrix_inverse, @matrix_solve
-[ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] @timeline (or rtmetro): sequencing of events from grid
-[ ] @replace_if
-[ ] @random_select, @markov_chain
-[ ] @pack, @unpack
-[ ] @sort, @slice, @splice
-[ ] fuzzy @store
-[ ] @polygon_perimeter, @polygon_area, ...
+[ ] @replace_if, @random_select, @markov_chain, @unpack, @sort, @slice, @splice
+[ ] @polygon_perimeter, @polygon_area, @draw_polygon smoothly
+[ ] fuzzy @store (interpolate)
 [ ] write a complete benchmark script
-[ ] @draw_polygon smoothly
 [ ] spatial biquads (ask Tom)
 [ ] string operations to compensate for the feebleness of PD in that area.
 	this includes [@sprintf].
+[ ] @pack should become type-conscious (cast option, like @import)
 --- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
 
 Effects
@@ -333,19 +300,20 @@ Effects
 [ ] see gimp for ideas
 [ ] kaleidoscopes
 [ ] FFTW
-[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(d-b-c+a)*x*y
+[ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (@scale_by smoothly?)
+[ ] @scale_by/@downscale_by fractional values
 [ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
 [ ] @daltonism
 
 Input/Output
-[ ] videodev: colorspace yuv, etc
+[ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
 [ ] videodev: is it possible to reach 60 fps ?
 [ ] a @store that is persistent (saved in .pd) ?
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format (?)
-[ ] Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
+[ ] Max, Gimp, GStreamer, ffmpeg, xine, mplayer, Hermes/PTC/TinyPTC,
 [ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC
 [ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
@@ -357,16 +325,15 @@ Input/Output
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
-[!] x11: keyboard messages, outlet 0
 [ ] shell object?
 [ ] @import, 'grid tcp': option: sudden vs gradual transmission through
 	gridflow.
-[ ] HPGL
-[ ] unixtime
-[ ] try low-latency kernelpatch
-[ ] try preemption kernelpatch
+[ ] HPGL, [unixtime]
 [ ] x11: support dual heads
 [ ] [parallel_port], [serial_port], [usb_mouse]
+[ ] videodev: messages "get contrast", "get brightness", etc...
+    which would output messages "contrast $1", "brightness $1", from outlet 1
+    also just "get" would do all possible get's at once.
 
 Format
 [ ] remaining number type support in formats
@@ -374,7 +341,7 @@ Format
 [ ] all: possibly get rid of the "format" notion ?
 [ ] TAR, ZIP, CAT with seeking
 [ ] PNM: P1,P2,P3,P4,P5 support
-[ ] XBM, XPM, GIF, PNG support (+ reg ourselves in libpng.org's applist)
+[ ] XBM, XPM, GIF support
 [ ] fork: pseudoformat for launching format handler as separate process
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
@@ -438,11 +405,6 @@ From: Alexandre Castonguay <acastonguay@artengine.ca>
   [ ] support for audio in the mpeg streams
 
 <matju> alx_away:
- je viens d'avoir une idée géniale
- tab completion dans pd
- hum
- bah c'était juste génial pcq j'avais pas pensé aux problèmes logistiques.
-ça marcherait pour les object boxes mais pas pour le reste
  le tab completion ne donnerait pas seulement les noms possibles pour le
 prochain argument dans le objectbox; il donnerait aussi une description de
 l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
