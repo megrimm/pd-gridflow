@@ -53,7 +53,6 @@ FILE *whine_f;
 
 DECL_SYM2(grid_begin)
 DECL_SYM2(grid_flow)
-DECL_SYM2(grid_flow2)
 DECL_SYM2(grid_end)
 DECL_SYM2(bang)
 DECL_SYM2(int)
@@ -164,7 +163,6 @@ void gridflow_module_init (void) {
 
 	DEF_SYM(grid_begin);
 	DEF_SYM(grid_flow);
-	DEF_SYM(grid_flow2);
 	DEF_SYM(grid_end);
 	DEF_SYM(bang);
 	DEF_SYM(int);
