@@ -233,7 +233,7 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 		inlet=0;
 	}
 	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
-		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number");
+		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);
 	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) {
@@ -267,7 +267,7 @@ static void send_in_3 (Helper *h) {
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
 	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
-		RAISE("invalid outlet number");
+		RAISE("invalid outlet number: %d",outlet);
 	argc--, argv++;
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym);

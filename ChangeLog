@@ -13,7 +13,7 @@ version 0.7.6 (head):
  * [@out quartz] makes a native MacOS (Cocoa+Quartz) window (warning: buggy)
  * support for Apple QuickTime movie decoding (format/quicktimeapple.c)
  * fixed bugs in: x11, @draw_image, ...
- * "open x11" now allows any display spec (including dual head setup)
+ * "open x11" now allows any DISPLAY spec
  * now includes the pictures used in the examples
      (not a separate download anymore)
  * [@out x11 here override_redirect] (override window manager; be careful with this)
@@ -22,9 +22,15 @@ version 0.7.6 (head):
  * support for nested lists in incoming messages
  * new object classes:
    [foreach], [rubysprintf], [listflatten]
-   jMax emulation: [list], [listlength], [listelement], [listsublist]
+   jMax emulation: [listmake], [listlength], [listelement], [listsublist]
    jMax emulation: [listprepend], [listappend], [listreverse], [oneshot]
+   jMax emulation: [inv+], [inv*]
    TEST-ME: [messageprepend], [messageappend], [@transpose]
+   [@fade], [@centroid]
+ * Pd main window: adding GridFlow menu, Ruby/Tcl evaluators (with command-history)
+ * added bin/jmax2pd (converts .jmax files to .pd files)
+ * added examples (converted from jMax files):
+     fire.pd feedback_fractal.pd
 
 version 0.7.5 (2003.09.28):
 
