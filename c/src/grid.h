@@ -349,11 +349,12 @@ typedef struct BitPacking BitPacking;
 
 	int high_bit(uint32 n);
 	int low_bit(uint32 n);
-	BitPacking *BitPacking_new(bool is_le, int bytes, uint32 r, uint32 g, uint32 b);
+	BitPacking *BitPacking_new(int endian, int bytes, uint32 r, uint32 g, uint32 b);
 	void    BitPacking_whine(BitPacking *$);
 	uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
 	Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
+	bool    BitPacking_is_le(BitPacking *$);
 
 extern int builtin_bitpacks_n;
 extern BitPacking builtin_bitpacks[];

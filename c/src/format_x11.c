@@ -566,8 +566,11 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 
 	{
 		Visual *v = $->visual;
+		int disp_is_le = !ImageByteOrder($->display);
+		whine("is_le = %d",is_le());
+		whine("disp_is_le = %d", disp_is_le);
 		$->bit_packing = BitPacking_new(
-			ImageByteOrder($->display),
+			disp_is_le,
 			$->ximage->bits_per_pixel/8,
 			v->red_mask,
 			v->green_mask,
@@ -597,3 +600,4 @@ FormatClass class_FormatX11 = {
 	option: (Format_option_m)FormatX11_option,
 	close:  (Format_close_m)FormatX11_close,
 };
+
