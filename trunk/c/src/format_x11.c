@@ -55,6 +55,10 @@ typedef struct X11Display {
 	int use_shm;	   /* should use shared memory? */
 	int vouts_n;
 	FormatX11 **vouts;
+	/*
+	  the vouts list is now always size 1. whenever i'm confident
+	  i won't ever need it anymore, i'll remove it.
+	*/
 } X11Display;
 
 struct FormatX11 {
@@ -67,7 +71,7 @@ struct FormatX11 {
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
 	struct timeval tv;   /* time of the last grid_end */
-	bool not_ours;
+	bool is_owner;
 	int mode;
 	bool timelog;
 };
@@ -76,79 +80,6 @@ struct FormatX11 {
 static X11Display *x11 = 0;
 
 /* ---------------------------------------------------------------- */
-
-/*
-  error handler, loosely adapted from XFree86's,
-  minus the exit(), the extension stuff, and the stderr.
-*/
-static int X11Display_error_handler (Display *$, XErrorEvent *event) {
-	char buffer[BUFSIZ];
-	char mesg[BUFSIZ];
-	char number[32];
-	char *mtype = "XlibMessage";
-	XGetErrorText($, event->error_code, buffer, BUFSIZ);
-	XGetErrorDatabaseText($,mtype,"XError","X Error",mesg,BUFSIZ);
-	whine("---- Xlib Error Handler ----");
-	whine("%s:  %s\n  ", mesg, buffer);
-	XGetErrorDatabaseText($,mtype,"MajorCode","Request Major code %d",mesg,BUFSIZ);
-	whine(mesg, event->request_code);
-	if (event->request_code < 128) {
-		sprintf(number, "%d", event->request_code);
-		XGetErrorDatabaseText($, "XRequest", number, "", buffer, BUFSIZ);
-	} else {
-		strcpy(buffer,"(extension)");
-	}
-	whine(" (%s)\n", buffer);
-	if (event->request_code >= 128) {
-		XGetErrorDatabaseText($,mtype,"MinorCode","Request Minor code %d",
-			      mesg, BUFSIZ);
-		/*fputs("  ", fp); */
-		whine(mesg, event->minor_code);
-		/*fputs("\n", fp); */
-	}
-
-	switch (event->error_code) {
-	case BadWindow: case BadPixmap:
-	case BadCursor: case BadFont:
-	case BadDrawable: case BadColor:
-	case BadGC: case BadIDChoice:
-	case BadValue: case BadAtom:
-		if (event->error_code == BadValue)
-			XGetErrorDatabaseText($,mtype,"Value","Value 0x%x",
-				mesg, BUFSIZ);
-		else if (event->error_code == BadAtom)
-			XGetErrorDatabaseText($,mtype,"AtomID","AtomID 0x%x",
-				mesg, BUFSIZ);
-		else
-			XGetErrorDatabaseText($,mtype,"ResourceID","ResourceID 0x%x",
-				mesg, BUFSIZ);
-		break;
-		/*fputs("  ", fp);*/
-		whine(mesg, event->resourceid);
-		/*fputs("\n", fp);*/
-	}
-	XGetErrorDatabaseText($,mtype,"ErrorSerial","Error Serial #%d", 
-		mesg, BUFSIZ);
-	/*fputs("  ", fp);*/
-	whine(mesg, event->serial);
-	XGetErrorDatabaseText($,mtype,"CurrentSerial","Current Serial #%d",
-		mesg, BUFSIZ);
-	/*fputs("\n  ", fp); */
-	whine(mesg, ((_XPrivDisplay)$)->request);
-	/*fputs("\n", fp);*/
-	if (event->error_code == BadImplementation) return 0;
-	whine("---- end ----");
-	return 1;
-}
-
-/*
-static int X11Display_io_error_handler(Display *$) {
-	whine("this is Xlib IO Error Handler.");
-	whine("Xlib should be trying to sink the ship now (it won't stop us.)");
-	// dialing for help
-	longjmp(911);
-}
-*/
 
 static void FormatX11_show_section(FormatX11 *$, int x, int y, int sx, int sy) {
 	X11Display *d = $->display;
@@ -308,7 +239,6 @@ void X11Display_abort(Display *d, XErrorEvent *e) {
 */
 
 X11Display *X11Display_new(const char *disp_string) {
-/*	jmp_buf rescue;*/
 	X11Display *$ = NEW(X11Display,1);
 	int screen_num;
 	Screen *screen;
@@ -316,8 +246,6 @@ X11Display *X11Display_new(const char *disp_string) {
 	$->alarm = 0;
 	$->vouts = NEW2(FormatX11 *, 1);
 	$->vouts_n = 0;
-
-/*	if (setjmp(rescue)) goto err;*/
 
 	/* Open an X11 connection */
 	$->display = XOpenDisplay(disp_string);
@@ -327,11 +255,9 @@ X11Display *X11Display_new(const char *disp_string) {
 	}
 
 	/*
-	  note that unlike other things, the Xlib error handler really is
-	  global, and has to be shared among the connections.
+	  btw don't try to set the X11 error handler.
+	  it sucks big time and it won't work.
 	*/
-	XSetErrorHandler(X11Display_error_handler);
-	/* XSetIOErrorHandler(X11Display_io_error_handler); */
 
 	screen      = DefaultScreenOfDisplay($->display);
 	screen_num  = DefaultScreen($->display);
@@ -463,7 +389,7 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 
 	oldw = $->window;
 	if (oldw) {
-		if (!$->not_ours) {
+		if ($->is_owner) {
 			whine("About to resize window: %s",Dim_to_s($->dim));
 			XResizeWindow(d->display,$->window,sx,sy);
 		}
@@ -481,17 +407,14 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	/* FormatX11_set_wm_hints($,sx,sy); */
 
 	$->imagegc = XCreateGC(d->display, $->window, 0, NULL);
-	if ($->not_ours) {
-		XSelectInput(d->display, $->window,
-			ExposureMask | StructureNotifyMask);
-	} else {
+	if ($->is_owner) {
 		XSelectInput(d->display, $->window,
 			ExposureMask | StructureNotifyMask |
 			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-	}
-
-	if (!$->not_ours) {
 		XMapRaised(d->display, $->window);
+	} else {
+		XSelectInput(d->display, $->window,
+			ExposureMask | StructureNotifyMask);
 	}
 	XSync(d->display,0);
 	return;
@@ -555,20 +478,13 @@ GRID_END(FormatX11,0) {
 void FormatX11_close (FormatX11 *$) {
 	X11Display *d = $->display;
 	X11Display_vout_remove(d,$);
-	if (!$->not_ours) XDestroyWindow(d->display,$->window);
+	if ($->is_owner) XDestroyWindow(d->display,$->window);
 	XSync(d->display,0);
 	FormatX11_dealloc_image($);
 	FREE($->dim);
 	FREE($);
 	/* X11-socket leakage going on here */
 }
-
-/*
-void FormatX11_size (FormatX11 *$, int sy, int sx) {
-	int v[] = {sy,sx,3};
-	$->dim = Dim_new(ARRAY(v));
-}
-*/
 
 void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
@@ -606,7 +522,7 @@ Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 	$->stream  = 0;
 	$->bstream = 0;
 	$->window  = 0;
-	$->not_ours= false;
+	$->is_owner= true;
 	$->image   = 0;
 	$->ximage  = 0;
 	$->autodraw= 1;
@@ -677,7 +593,7 @@ Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 			if (winspec==SYM(root)) {
 				$->window = $->display->root_window;
 				whine("will use root window (0x%x)", $->window);
-				$->not_ours = true;
+				$->is_owner = false;
 			} else {
 				const char *winspec2 = fts_symbol_name(winspec);
 				if (strncmp(winspec2,"0x",2)==0) {
@@ -686,7 +602,7 @@ Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mo
 					$->window = atoi(winspec2);
 				}
 				if ($->window) {
-					$->not_ours = true;
+					$->is_owner = false;
 					whine("will use specified window (0x%x)", $->window);
 				} else {
 					whine("bad window specification");
