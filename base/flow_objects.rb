@@ -684,13 +684,17 @@ class PDNetSocket < FObject
 		$tasks[self] = proc {tick}
 		@data = ""
 	end
-	def encode(x) x.to_s end
+	def encode(x)
+		x=x.to_i if @options[:nofloat] and Float===x
+		x.to_s
+	end
 	def method_missing(sel,*args)
 		sel=sel.to_s
 		sel.sub!(/^_\d_/, "") or return super
-		sel=(case sel; when "int","float"; ""; else encode(sel)+" " end)
+		sel=(case sel; when "int","float"; ""; else encode(sel) end)
 		msg = [sel,*args.map{|arg| encode(arg) }].join(" ")
 		if @options[:nosemicolon] then msg << "\n" else msg << ";\n" end
+		GridFlow.post "encoding as: %s", msg.inspect if @options[:debug]
 		case @protocol
 		when :udp; @socket.send msg, 0, @host, @port
 		when :tcp; @socket.send msg, 0
@@ -698,10 +702,13 @@ class PDNetSocket < FObject
 	end
 	def delete; $tasks.delete(self); @socket.close end
 	def decode s
+		GridFlow.post "decoding from: %s", s.inspect if @options[:debug]
 		s.chomp!("\n")
+		s.chomp!("\r")
 		s.chomp!(";")
 		s.split(" ").map {|x|
 			case x
+			when /-?\d+$/; x.to_i
 			when /-?\d/; x.to_f
 			else x.intern
 			end
@@ -724,7 +731,7 @@ class PDNetSocket < FObject
 			#GridFlow.post "sysread_begin"
 			@data << @socket.sysread(1024)
 			#GridFlow.post "sysread: #{@data}"
-			sender = "hello"
+			sender = @socket.peeraddr
 			loop do
 				n = /\n/ =~ @data
 				break if not n
