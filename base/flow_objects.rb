@@ -491,11 +491,7 @@ end
 
 class Sprintf < FObject
   def initialize(format) _1_symbol(format) end
-  def _0_list(*a)
-    a.each {|x| x=x.to_s if Symbol===x }
-    send_out 0, :symbol, (sprintf @format, *a).intern
-  end
-  alias _0_int _0_list
+  def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
   alias _0_float _0_list
   alias _0_symbol _0_list
   def _1_symbol(format) @format = format.to_s end
@@ -1009,7 +1005,7 @@ module Gooey # to be included in any FObject class
 		# not sure what to do with this
 		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
 	end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit) return 0 end
+	def pd_click(can,x,y,shift,alt,dbl,doit) return 0 end
 	def outline; if selected then @bgs else "#000000" end end
 	def pd_select(can,sel)
 		self.canvas||=can
@@ -1136,34 +1132,56 @@ class GridEdit < GridObject; include Gooey
 			set canvas #{canvas}
 			$canvas itemconfigure #{@rsym}CELL_#{@i}_#{@j} -fill #{@bg}
 		}
+		unfocus @can
 	end
 	def _2_rgrid_begin
 		@data = []
 		@dim = inlet_dim 2
 		@nt = inlet_nt 2
 		GridFlow.post "_2_rgrid_begin: dim=#{@dim.inspect} nt=#{@nt.inspect}"
+		send_out_grid_begin 0, @dim, @nt
 	end
 	def _2_rgrid_flow data
 		ps = GridFlow.packstring_for_nt @nt
 		@data[@data.length,0] = data.unpack(ps)		
 		GridFlow.post "_2_rgrid_flow: data=#{@data.inspect}"
+		send_out_grid_flow 0, data
 	end
 	def _2_rgrid_end
 		GridFlow.post "_2_rgrid_end"
 	end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		#GridFlow.post "%s", [can,xpix,ypix,shift,alt,dbl,doit].inspect
+	def pd_click(can,x,y,shift,alt,dbl,doit)
+		GridFlow.post "pd_click: %s", [can,x,y,shift,alt,dbl,doit].inspect
 		return 0 if not doit!=0
-		i = (ypix-@y-1)/@cellsy
-		j = (xpix-@x-1)/@cellsx
+		i = (y-@y-1)/@cellsy
+		j = (x-@x-1)/@cellsx
 		GridFlow.post "%d,%d", i,j
 		ny = @dim[0] || 1
 		nx = @dim[1] || 1
-		edit_start i,j if (0...ny)===i and (0...nx)===j
+		if (0...ny)===i and (0...nx)===j then
+			focus @can,x,y
+			edit_start i,j
+		end
 		return 0
 	end
+	def pd_key(key)
+		GridFlow.post "pd_key: %s", [key].inspect
+		if key==0 then unfocus @can; return end
+	end
+	def pd_motion(dx,dy)
+		GridFlow.post "pd_motion: %s", [dx,dy].inspect
+		ny = @dim[0] || 1
+		nx = @dim[1] || 1
+		k = @i*nx+@j
+		GridFlow.post "@data[#{k}]=#{@data[k]} before"
+		@data[k]-=dy
+		@store.send_in 1, :put_at, [@i,@j]
+		@store.send_in 1, @data[k]
+		@store.send_in 0
+		GridFlow.post "@data[#{k}]=#{@data[k]} after"
+		update
+	end
 	def pd_show(can)
-		GridFlow.post "pd_show(#{can})"
 		super
 		return if not can
 		ny = @dim[0] || 1
