@@ -41,11 +41,9 @@
 <li><a href="#C++ class GFBridge">C++ class GFBridge</a></li>
 </ul>
 <br><br>
-</div></td></tr> 
-<tr><td colspan="4" bgcolor="black">
+</div></td></tr> <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="notes"></a><h4>notes</h4></td></tr><tr><td></td><td></td><td> 
-</td></tr>
+<tr><td colspan="4"><a name="notes"></a><h4>notes</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the 
 constants it defines are part of that namespace. A GridFlow object is normally 
 in two or three parts: a (Ruby) GridFlow::FObject that is the central part; a 
@@ -54,18 +52,15 @@ RData kind of box using Ruby-C's Data_Make_Struct on a GridObject. This is how
 most Ruby-C programs inherit from Ruby classes. Note that Ruby's boxed objects 
 have a maximum of five fields, and they're usually taken, so additional fields 
 have to be outside of it. This is why RData exists.</p></td></tr>
-<tr><td></td><td></td><td> 
-</td></tr>
+<tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>So basically you have a GridObject that is "part of" a GridFlow::FObject and 
 they point to each other using peer pointers. Now, if jMax is enabled, then the 
 GridObject will have an additional pointer to a fts_object_t derivative called 
 BFObject (B for Bridge); that pointer is called foreign_peer. The BFObject 
 links back to the RData box through another pointer called peer. </p></td></tr>
-<tr><td></td><td></td><td> 
-</td></tr>
+<tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
- 
-<tr><td colspan="4" bgcolor="black">
+ <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Scripting"></a><h4>Objects for Scripting</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ruby class FObject extending Data">ruby class FObject extending Data</a></td></tr><tr><td></td><td valign="top"><br>
@@ -109,11 +104,9 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 		starting with zero. The wire list is given in terms of those numbers: 
 		(sourceobject,sourceinlet,destobject,destinlet). There is a 
 		pseudo-object numbered #-1 which map to the container's own inlets 
-		and outlets.</p> <br></td></tr><tr><td></td><td></td><td> 
-</td></tr>
+		and outlets.</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
- 
-<tr><td colspan="4" bgcolor="black">
+ <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Objects_for_Internals"></a><h4>Objects for Internals</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GridInlet">C++ class GridInlet</a></td></tr><tr><td></td><td valign="top"><br>
@@ -168,11 +161,9 @@ links back to the RData box through another pointer called peer. </p></td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="C++ class GFBridge">C++ class GFBridge</a></td></tr><tr><td></td><td valign="top"><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		This holds linkage information about jMax and PureData and such. <br></td></tr><tr><td></td><td></td><td> 
-</td></tr>
+		This holds linkage information about jMax and PureData and such. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
- 
-<td colspan="4" bgcolor="black">
+ <td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">

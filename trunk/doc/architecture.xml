@@ -16,6 +16,11 @@
 -->
 
 <!--write-me
+<section name="Naming Conventions">
+</section>
+-->
+
+<!--write-me
 <section name="User-level Overview">
 <p>(this section is for all users)</p>
 </section>
@@ -42,29 +47,35 @@
 		<column id="name">name</column>
 		<column id="aliases">aliases</column>
 		<column id="range">range</column>
+		<column id="size">size (bytes)</column>
 		<column id="precision">precision</column>
 		<column id="">description</column>
-		<row name="uint8" aliases="u8 b" range="0..255" precision="1">
+		<row name="uint8" aliases="u8 b" size="1"
+		range="0..255" precision="1">
 			unsigned 8-bit integer.
 			this is the usual size of numbers taken from files and cameras, and
 			written to files and to windows.
 		</row>
-		<row name="int16" aliases="i16 s" range="-32768..32767" precision="1"
+		<row name="int16" aliases="i16 s" size="2"
+		range="±2&lt;sup&gt;15&lt;/sup&gt; = -32768..32767" precision="1"
 		>...</row>
-		<row name="int32" aliases="i32 i" range="-2147483648..2147483647" precision="1">
-			signed 32-bit integer. (which is from -2<sup>31</sup> to 2<sup>31</sup>-1).
+		<row name="int32" aliases="i32 i" size="4"
+		range="±2&lt;sup&gt;31&lt;/sup&gt; = -2147483648..2147483647" precision="1">
+			signed 32-bit integer.
 			this is used for most computations.
 		</row>
-		<row name="int16" aliases="i16 s" range="(huge!)" precision="1"
+		<row name="int64" aliases="i64 l" size="8"
+		range="±2&lt;sup&gt;63&lt;/sup&gt;" precision="1"
 		>...</row>
-		<row name="float32" aliases="f32 f" range="±10&lt;sup&gt;±38&lt;/sup&gt;"
+		<row name="float32" aliases="f32 f" size="4"
+		range="±10&lt;sup&gt;±38&lt;/sup&gt;"
 		precision="~7 digits (23 bits)"
 		>...</row>
-		<row name="float64" aliases="f32 f" range="±10&lt;sup&gt;±308&lt;/sup&gt;"
+		<row name="float64" aliases="f64 d" size="8"
+		range="±10&lt;sup&gt;±308&lt;/sup&gt;"
 		precision="~15 digits (52 bits)"
 		>...</row>
 	</table>
-
 </section>
 
 <section name="Grid Literals">
@@ -84,7 +95,8 @@
 
 <section name="Grid Protocol">
 	<p>
-	each element of a grid is an <b>int32</b>.
+	a grid has an associated number type that defines what are the possible values for its elements
+	(and how much space it takes). the default is <b>int32</b>.
 	</p>
 	<p>
 	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a
@@ -160,17 +172,17 @@
 
 <section name="One-Input Operators">
 <table>
+	<column id="name" type="icon">name</column>
+	<column id="">description</column>
 
-	<!-- todo: text attr in those icons could be auto-generated -->
-
-	<operator-1 name="abs" cname="abs"
-	> absolute value of A </operator-1>
-	<operator-1 name="rand" cname="rand"
-	> randomly produces a non-negative number below A </operator-1>
-	<operator-1 name="sqrt" cname="sqrt"
-	> square root of A, rounded downwards </operator-1>
-	<operator-1 name="sq" cname="sq"
-	> A times A </operator-1>
+	<row name="abs" cname="abs"
+	> absolute value of A </row>
+	<row name="rand" cname="rand"
+	> randomly produces a non-negative number below A </row>
+	<row name="sqrt" cname="sqrt"
+	> square root of A, rounded downwards </row>
+	<row name="sq" cname="sq"
+	> A times A </row>
 </table>
 </section>
 
@@ -187,142 +199,142 @@
 		same conversions apply.</p>
 	
 <table>
-	<column>name</column>
-	<column>description</column>
-	<column>meaning in pixel context (pictures, palettes)</column>
-	<column>meaning in spatial context (indexmaps, polygons)</column>
+	<column id="name" type="icon">name</column>
+	<column id="">description</column>
+	<column id="color">meaning in pixel context (pictures, palettes)</column>
+	<column id="space">meaning in spatial context (indexmaps, polygons)</column>
 	
 	<!-- category: bogus -->
-	<operator-2 name="ignore" cname="ignore"
+	<row name="ignore" cname="ignore"
 		color="no effect"
 		space="no effect"
-	> A </operator-2>
-	<operator-2 name="put"    cname="put"
+	> A </row>
+	<row name="put"    cname="put"
 		color="replace by"
 		space="replace by"
-	> B </operator-2>
+	> B </row>
 
 	<!-- category: additive -->
-	<operator-2 name="+"    cname="add"
+	<row name="+"    cname="add"
 		color="brightness, crossfade"
 		space="move, morph"
-	> A + B </operator-2>
-	<operator-2 name="-"    cname="sub"
+	> A + B </row>
+	<row name="-"    cname="sub"
 		color="brightness, motion detection"
 		space="move, motion detection"
-	> A - B </operator-2>
-	<operator-2 name="inv+" cname="bus"
+	> A - B </row>
+	<row name="inv+" cname="bus"
 		color="negate then contrast"
 		space="180 degree rotate then move"
-	> B - A </operator-2>
+	> B - A </row>
 
 	<!-- category: multiplicative -->
-	<operator-2 name="*"     cname="mul"
+	<row name="*"     cname="mul"
 		color="contrast"
 		space="zoom out"
-	> A * B </operator-2>
-	<operator-2 name="/"     cname="div"
+	> A * B </row>
+	<row name="/"     cname="div"
 		color="contrast"
 		space="zoom in"
-	> A / B, rounded towards zero </operator-2>
-	<operator-2 name="div"   cname="div2"
+	> A / B, rounded towards zero </row>
+	<row name="div"   cname="div2"
 		color="contrast"
 		space="zoom in"
-	> A / B, rounded downwards </operator-2>
-	<operator-2 name="inv*"  cname="vid"
-	> B / A, rounded towards zero </operator-2>
-	<operator-2 name="swapdiv" cname="vid2"
-	> B / A, rounded downwards </operator-2>
-	<operator-2 name="%"     cname="mod"
+	> A / B, rounded downwards </row>
+	<row name="inv*"  cname="vid"
+	> B / A, rounded towards zero </row>
+	<row name="swapdiv" cname="vid2"
+	> B / A, rounded downwards </row>
+	<row name="%"     cname="mod"
 		space="tile"
-	> A % B, modulo (goes with div) </operator-2>
-	<operator-2 name="swap%" cname="dom"
-	> B % A, modulo (goes with div) </operator-2>
-	<operator-2 name="rem"     cname="rem"
-	> A % B, remainder (goes with /) </operator-2>
-	<operator-2 name="swaprem" cname="mer"
-	> B % A, remainder (goes with /) </operator-2>
+	> A % B, modulo (goes with div) </row>
+	<row name="swap%" cname="dom"
+	> B % A, modulo (goes with div) </row>
+	<row name="rem"     cname="rem"
+	> A % B, remainder (goes with /) </row>
+	<row name="swaprem" cname="mer"
+	> B % A, remainder (goes with /) </row>
 
-	<operator-2 name="gcd" cname="gcd">
-	greatest common divisor</operator-2>
+	<row name="gcd" cname="gcd">
+	greatest common divisor</row>
 
-	<operator-2 name="lcm" cname="lcm">
-	least common multiple</operator-2>
+	<row name="lcm" cname="lcm">
+	least common multiple</row>
 
 	<!-- bits -->
-	<operator-2 name="|"     cname="or" 
+	<row name="|"     cname="or" 
 		color="bright munchies"
 		space="bottomright munchies"
-	> A or B, bitwise  </operator-2>
-	<operator-2 name="^"     cname="xor"
+	> A or B, bitwise  </row>
+	<row name="^"     cname="xor"
 		color="symmetric munchies (fractal checkers)"
 		space="symmetric munchies (fractal checkers)"
-	> A xor B, bitwise </operator-2>
-	<operator-2 name="&amp;" cname="and"
+	> A xor B, bitwise </row>
+	<row name="&amp;" cname="and"
 		color="dark munchies"
 		space="topleft munchies"
-	> A and B, bitwise </operator-2>
-	<operator-2 name="&lt;&lt;" cname="shl"
+	> A and B, bitwise </row>
+	<row name="&lt;&lt;" cname="shl"
 		color="like *"
 		space="like *"
-	> A * (2**(B % 32)), which is left-shifting </operator-2>
-	<operator-2 name="&gt;&gt;" cname="shr"
+	> A * (2**(B % 32)), which is left-shifting </row>
+	<row name="&gt;&gt;" cname="shr"
 		color="like /,div"
 		space="like /,div"
-	> A / (2**(B % 32)), which is right-shifting </operator-2>
+	> A / (2**(B % 32)), which is right-shifting </row>
 
 	<!-- decision -->
-	<operator-2 name="||" cname="sc_or"
-	> if A is zero then B else A </operator-2>
-	<operator-2 name="&amp;&amp;" cname="sc_and"
-	> if A is zero then zero else B</operator-2>
-	<operator-2 name="min" cname="min"
+	<row name="||" cname="sc_or"
+	> if A is zero then B else A </row>
+	<row name="&amp;&amp;" cname="sc_and"
+	> if A is zero then zero else B</row>
+	<row name="min" cname="min"
 		color="clipping"
 		space="clipping (of individual points)"
-	> the lowest value in A,B </operator-2>
-	<operator-2 name="max" cname="max"
+	> the lowest value in A,B </row>
+	<row name="max" cname="max"
 		color="clipping"
 		space="clipping (of individual points)"
-	> the highest value in A,B </operator-2>
+	> the highest value in A,B </row>
 
 	<!-- comparison -->
-	<operator-2 name="cmp"   cname="cmp"
-	> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </operator-2>
-	<operator-2 name="=="    cname="eq"
-	> is A equal to B ? 1=true, 0=false </operator-2>
-	<operator-2 name="!="    cname="ne"
-	> is A not equal to B ? </operator-2>
-	<operator-2 name="&gt;"  cname="gt"
-	> is A greater than B ? </operator-2>
-	<operator-2 name="&lt;=" cname="le"
-	> is A not greater than B ? </operator-2>
-	<operator-2 name="&lt;"  cname="lt"
-	> is A less than B ? </operator-2>
-	<operator-2 name="&gt;=" cname="ge"
-	>is A not less than B ? </operator-2>
+	<row name="cmp"   cname="cmp"
+	> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </row>
+	<row name="=="    cname="eq"
+	> is A equal to B ? 1=true, 0=false </row>
+	<row name="!="    cname="ne"
+	> is A not equal to B ? </row>
+	<row name="&gt;"  cname="gt"
+	> is A greater than B ? </row>
+	<row name="&lt;=" cname="le"
+	> is A not greater than B ? </row>
+	<row name="&lt;"  cname="lt"
+	> is A less than B ? </row>
+	<row name="&gt;=" cname="ge"
+	>is A not less than B ? </row>
 
 	<!-- trigonometrics and exponentiation -->
-	<operator-2 name="sin*" cname="sin"
+	<row name="sin*" cname="sin"
 		space="waves, rotations"
-	> B * sin(A) </operator-2>
-	<operator-2 name="cos*" cname="cos"
+	> B * sin(A) </row>
+	<row name="cos*" cname="cos"
 		space="waves, rotations"
-	> B * cos(A) </operator-2>
-	<operator-2 name="atan" cname="atan"
+	> B * cos(A) </row>
+	<row name="atan" cname="atan"
 		space="find angle to origin (part of polar transform)"
-	> arctan(A/B) </operator-2>
-	<operator-2 name="tanh*" cname="tanh"
+	> arctan(A/B) </row>
+	<row name="tanh*" cname="tanh"
 		color="smooth clipping"
 		space="smooth clipping (of individual points), neural sigmoid, fuzzy logic"
-	> B * tanh(A) </operator-2>
-	<operator-2 name="log*" cname="log"
-	> B * log(A) (in base e) </operator-2>
-	<operator-2 name="gamma" cname="gamma"
+	> B * tanh(A) </row>
+	<row name="log*" cname="log"
+	> B * log(A) (in base e) </row>
+	<row name="gamma" cname="gamma"
 		color="gamma correction"
-	> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
-	<operator-2 name="**" cname="pow"
+	> floor(pow(a/256.0,256.0/b)*256.0) </row>
+	<row name="**" cname="pow"
 		color="gamma correction"
-	> A**B, that is, A raised to power B </operator-2>
+	> A**B, that is, A raised to power B </row>
 </table>
 </section>
 
@@ -333,19 +345,6 @@ understand them a bit)</p>
 (move this section down?)
 </section>
 -->
-
-<section name="Bridges">
-<p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric.
-jMax support has been added back as a <b>Bridge</b>.</p>
-
-<p>Bridges, for the most part, plug into the FObject class, which is the common
-root of most of GridFlow's classes. Under the current design, the bridge is
-compiled separately, and is directly loaded by the host software; then the
-bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks
-with the main part.
-</p>
-
-</section>
 
 <section name="Synchronisation">
 <p>In GridFlow you cannot send two grids in different inlets at the
@@ -361,8 +360,17 @@ should make many circuits simpler.
 <p>(more to come)</p>
 </section>
 
-<section name="Naming Conventions">
-	<!--write-me-->
+<section name="Bridges">
+<p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric.
+jMax support has been added back as a <b>Bridge</b>.</p>
+
+<p>Bridges, for the most part, plug into the FObject class, which is the common
+root of most of GridFlow's classes. Under the current design, the bridge is
+compiled separately, and is directly loaded by the host software; then the
+bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks
+with the main part.
+</p>
+
 </section>
 
 </documentation>
