@@ -36,9 +36,16 @@ struct FormatQuickTime : Format {
 	DECL3(initialize);
 	DECL3(close);
 	DECL3(frame);
-//	DECL3(seek);
+	DECL3(seek);
 	GRINLET3(0);
 };
+
+METHOD3(FormatQuickTime,seek) {
+	int frame = INT(argv[0]);
+	int result = quicktime_set_video_position(anim,frame,track);
+	return Qnil;
+}
+
 
 METHOD3(FormatQuickTime,frame) {
 	GridOutlet *o = out[0];
@@ -127,7 +134,7 @@ static void startup (GridClass *self) {
 GRCLASS(FormatQuickTime,"FormatQuickTime",
 inlets:1,outlets:1,startup:startup,LIST(GRINLET2(FormatQuickTime,0,4)),
 DECL(FormatQuickTime,initialize),
-//DECL(FormatQuickTime,seek),
+DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),
 DECL(FormatQuickTime,close))
 
