@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -296,9 +296,9 @@ struct MethodDecl {
 template <class T> class Pt {
 public:
 	T *p;
+#ifdef HAVE_DEBUG
 	T *start;
 	int n;
-
 	Pt() : p(0), start(0), n(0) {}
 	Pt(T *q, int _n) : p(q), start(q), n(_n) {
 /* should this be >= or > ? */
@@ -321,8 +321,11 @@ public:
 		}		
 #endif
 	}
+#else
+	Pt() : p(0) {}
+	Pt(T *q, int _n, T *_start=0) : p(q) {}
+#endif
 
-//	Pt(char *q) : p((T *)q) {}
 	T &operator *() { return *p; }
 	Pt operator++(     ) { p++;  return *this; }
 	Pt operator+=(int i) { p+=i; return *this; }
@@ -364,13 +367,21 @@ public:
 	operator int16 *() { return (int16 *)p; }
 	operator int32 *() { return (int32 *)p; }
 	operator float32 *() { return (float32 *)p; }
-	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8 *)start); }
-	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16 *)start); }
-	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32 *)start); }
-//	operator T *() { return p; }
 	int operator-(Pt x) { return p-x.p; }
-	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
-	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
+
+#ifdef HAVE_DEBUG
+	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,n*sizeof(T)/1,(uint8	*)start,0); }
+	operator Pt<int16>() { return Pt<int16>((int16 *)p,n*sizeof(T)/2,(int16	*)start,0); }
+	operator Pt<int32>() { return Pt<int32>((int32 *)p,n*sizeof(T)/4,(int32	*)start,0); }
+	template <class U> Pt operator+(U x) { return Pt(p+x,n,start,0); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,n,start,0); }
+#else
+	operator Pt<uint8>() { return Pt<uint8>((uint8 *)p,0); }
+	operator Pt<int16>() { return Pt<int16>((int16 *)p,0); }
+	operator Pt<int32>() { return Pt<int32>((int32 *)p,0); }
+	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
+#endif
 };
 
 #define STACK_ARRAY(_type_,_name_,_count_) \
@@ -1005,6 +1016,8 @@ void *Pointer_get (Ruby self);
 
 //void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 Ruby ruby_c_install(FClass *fc, Ruby super);
+
+extern int gf_security; /* unused */
 
 extern "C" GFBridge gf_bridge;
 extern "C" void Init_gridflow ();

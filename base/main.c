@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -40,6 +40,8 @@
 
 Ruby mGridFlow; /* not the same as jMax's gridflow_module */
 Ruby cFObject;
+
+int gf_security = 1;
 
 static Ruby sym_outlets=0;
 
@@ -408,6 +410,17 @@ Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
 	return tick;
 }
 
+Ruby GridFlow_security_set (Ruby rself, Ruby level) {
+	int security = INT(level);
+	if (security<0 || security>4) RAISE("expecting 0..4");
+	gf_security = security;
+	return INT2NUM(gf_security);
+}
+
+Ruby GridFlow_security (Ruby rself) {
+	return INT2NUM(gf_security);
+}
+
 Ruby GridFlow_rdtsc (Ruby rself) { return ull2num(rdtsc()); }
 
 Ruby GridFlow_bridge_name (Ruby rself) {
@@ -546,6 +559,8 @@ void Init_gridflow () {
 	mGridFlow = rb_define_module("GridFlow");
 	SDEF2("clock_tick",GridFlow_clock_tick,0);
 	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
+	SDEF2("security",GridFlow_security,0);
+	SDEF2("security=",GridFlow_security_set,1);
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("post_string",gf_post_string,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);

@@ -937,8 +937,17 @@ def test_outer
 	g.send_in 0, :profiler_dump
 end
 
+def test_jmax_patch filename
+	jfr = JMaxFileReader.new(File.open(filename),FObject)
+	jfr.parse
+end
+
 if ARGV[0] then
-	ARGV.each {|a| send "test_#{a}" }
+#	require "gridflow/extra/jmax_format.rb"
+	require "extra/jmax_format.rb"
+	name = ARGV.shift
+	send "test_#{name}", *ARGV
+#	ARGV.each {|a| send "test_#{a}" }
 	exit 0
 end
 
