@@ -429,6 +429,7 @@ Feature.new {
 Feature.new {
 	tag :ieee1394
 	name "IEEE1394 Libraries for Linux (raw1394/dc1394)"
+	status :disabled
 	uses_o ["base/ieee1394.o"]
 	uses_so ["-lraw1394","-ldc1394_control"]
 	uses_h ["libraw1394/raw1394.h","libdc1394/dc1394_control.h"]

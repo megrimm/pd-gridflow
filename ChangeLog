@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.7.7 (head):
+version 0.7.7 (2004.08.24):
 
  * GridFlow runs on MacOS 10.2 with PureData 0.37
  * updated drag_rectangle.pd, nervous_video.pd, fire.pd, color_correction.pd
@@ -20,11 +20,16 @@ version 0.7.7 (head):
  * [@downscale_by smoothly] accepts any number of channels
  * [@inner2] removed; instead use [@transpose] with [@inner]
  * videodev: "transfer" message allows to change the queue's length
- * quicktime(hw): added messages "parameter", "framerate"
+ * quicktime(hw): added messages "parameter", "framerate", "size"
+ * quicktime(hw): fixed encoding bug
  * png: fixed memory leak
  * ./configure --lite disables float32 float64 int64
------------------------------------------------------------------[VALIDATE]
-
+ * ./configure --verbose prints useless details
+ * doc: rewrote installation instructions
+ * x11: fixed memory leak in resizing window
+ * on MacOS 10 [@out window] now defaults to [@out quartz]
+ * doc: added credits section
+ 
 version 0.7.6 (2004.03.22):
 
  * GridFlow runs on MacOS 10.2 (only with jMax 2.5)

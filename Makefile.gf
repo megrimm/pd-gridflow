@@ -234,7 +234,6 @@ else
     PDSUF = .pd_linux
   endif
 endif
-# OS = WINNT # PDSUF = .dll
 # OS = IRIX5 # PDSUF = .pd_irix5
 # OS = IRIX6 # PDSUF = .pd_irix6
 # PDCFLAGS = -o32 -DPD -DUNIX -DIRIX -O2
@@ -273,8 +272,6 @@ puredata-install::
 	@#nothing
 
 endif # HAVE_PUREDATA
-
-
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
