@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no" ?>
-<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
-<jmax-doc>
+<!DOCTYPE documentation SYSTEM 'jmax.dtd'>
+<documentation>
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual
@@ -42,15 +42,15 @@ Compatibility:
 Release steps (<b>OPERATE WITH CAUTION</b>):
 
 <list>
-	<li>cvs tag gridflow_0_7_0 .
+	<li>cvs tag gridflow_0_7_1 .
 	</li><li>mkdir gridflow
 	</li><li>cvs -d :pserver:anonymous@artengine.ca:/home/cvs/gridflow
-			export -r gridflow_0_7_0 -d gridflow .
+			export -r gridflow_0_7_1 -d gridflow .
 	</li><li>cd gridflow
 	</li><li>rm -rf CVS CVSROOT
 	</li><li>chmod -R go=u-w .
 	</li><li>cd ..
-	</li><li>tar cfzvv gridflow-0.7.0.tar.gz gridflow
+	</li><li>tar cfzvv gridflow-0.7.1.tar.gz gridflow
 	</li><li>rm -rf gridflow # caution!!!
 	</li><li>scp gridflow*gz
 			matju@artengine.ca:/home/members/matju/gridflow/download
@@ -128,4 +128,4 @@ for z in images/*.* images/*/*.*; do fgrep -q $z *.html || echo "$z"; done
 </prose>
 </section>
 
-</jmax-doc>
+</documentation>

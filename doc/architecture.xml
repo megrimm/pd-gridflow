@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no" ?>
-<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
-<jmax-doc>
+<!DOCTYPE documentation SYSTEM 'jmax.dtd'>
+<documentation>
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Architecture
@@ -311,4 +311,4 @@ with the main part.
 
 </prose></section>
 
-</jmax-doc>
+</documentation>
