@@ -786,6 +786,8 @@ typedef struct GridConvolve {
 	Number *data;
 	Dim *diml;
 	Number *datal;
+	const Operator2 *op_para;
+	const Operator2 *op_fold;
 } GridConvolve;
 
 GRID_BEGIN(GridConvolve,0) {
@@ -793,10 +795,11 @@ GRID_BEGIN(GridConvolve,0) {
 	Dim *b = $->dim;
 	if (!b) { whine("right inlet has no grid"); return false; }
 	if (Dim_count(a) < Dim_count(b)) {
-		whine("left grid has more dimensions than right grid");
+		whine("left grid has less dimensions than right grid");
 	}
 	$->diml = Dim_dup(a);
 	$->datal = NEW(Number,Dim_prod(a));
+	GridOutlet_begin($->out[0],Dim_dup(in->dim));
 	return true;
 }
 
@@ -806,12 +809,56 @@ GRID_FLOW(GridConvolve,0) {
 }
 
 GRID_END(GridConvolve,0) {
-	/* write me */
+	int iy, ix, ny = Dim_get($->diml,0), nx = Dim_get($->diml,1);
+	int jy, jx, my = Dim_get($->dim ,0), mx = Dim_get($->dim ,1);
+	int l = Dim_prod_start($->diml,2);
+	Number buf[l];
+	int k;
+
+	for (iy=0; iy<ny; iy++) {
+		for (ix=0; ix<nx; ix++) {
+			for (k=0; k<l; k++) {
+				buf[k] = 0;
+			}
+			for (jy=0; jy<my; jy++) {
+				int pos1 = mod(iy+jy-my/2,ny) * nx;
+				for (jx=0; jx<mx; jx++) {
+					int pos = pos1 + mod(ix+jx-mx/2,nx);
+					Number a = $->data[jy*mx+jx];
+					for (k=0; k<l; k++) {
+						Number b = $->datal[pos*l+k];
+						Number c = $->op_para->op(a,b);
+						buf[k] = $->op_fold->op(buf[k],c);
+					}
+				}
+			}
+			GridOutlet_send($->out[0],l,buf);
+		}
+	}
 	GridOutlet_end($->out[0]);
+	FREE($->diml);
+	FREE($->datal);
 }
 
 GRID_BEGIN(GridConvolve,1) {
 	int length = Dim_prod(in->dim);
+	int count = Dim_count(in->dim);
+	if (count != 2) {
+		whine("only exactly two dimensions allowed for now");
+	}
+	if (count > 0 && (Dim_get(in->dim,0) & 1) == 0) {
+		whine("even number of elements");
+	}
+	if (count > 1) {
+		int x = Dim_get(in->dim,0);
+		int i;
+		for (i=1; i<count; i++) {
+			if (Dim_get(in->dim,i) != x) {
+				whine("not a square grid");
+				return false;
+			}
+		}
+	}
 	GridInlet_abort($->in[0]);
 	FREE($->dim);
 	FREE($->data);
@@ -836,6 +883,8 @@ METHOD(GridConvolve,init) {
 	$->data = 0;
 	$->diml = 0;
 	$->datal = 0;
+	$->op_para = op2_table_find(SYM(*));
+	$->op_fold = op2_table_find(SYM(+));
 }
 
 METHOD(GridConvolve,delete) { GridObject_delete((GridObject *)$); }
@@ -1149,19 +1198,21 @@ CLASS(GridPrint) {
 
 /* **************************************************************** */
 
+#define INSTALL(_sym_,_name_) \
+	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+
 void startup_grid_basic (void) {
-	fts_class_install(fts_new_symbol("@import"),     GridImport_class_init);
-	fts_class_install(fts_new_symbol("@export"),     GridExport_class_init);
-	fts_class_install(fts_new_symbol("@store"),       GridStore_class_init);
-	fts_class_install(fts_new_symbol("@!"),             GridOp1_class_init);
-	fts_class_install(fts_new_symbol("@"),              GridOp2_class_init);
-	fts_class_install(fts_new_symbol("@fold"),         GridFold_class_init);
-//	fts_class_install(fts_new_symbol("@inner"),       GridInner_class_init);
-	fts_class_install(fts_new_symbol("@outer"),       GridOuter_class_init);
-//	fts_class_install(fts_new_symbol("@convolve"), GridConvolve_class_init);
-//	fts_class_install(fts_new_symbol("@vec"),           GridVec_class_init);
-//	fts_class_install(fts_new_symbol("@for"),           GridFor_class_init);
-	fts_class_install(fts_new_symbol("@dim"),           GridDim_class_init);
-	fts_class_install(fts_new_symbol("@redim"),       GridRedim_class_init);
-//	fts_class_install(fts_new_symbol("@print"),       GridPrint_class_init);
+	INSTALL("@import",     GridImport);
+	INSTALL("@export",     GridExport);
+	INSTALL("@store",       GridStore);
+	INSTALL("@!",             GridOp1);
+	INSTALL("@",              GridOp2);
+	INSTALL("@fold",         GridFold);
+	INSTALL("@inner",       GridInner);
+	INSTALL("@outer",       GridOuter);
+	INSTALL("@convolve", GridConvolve);
+	INSTALL("@for",           GridFor);
+	INSTALL("@dim",           GridDim);
+	INSTALL("@redim",       GridRedim);
+	INSTALL("@print",       GridPrint);
 }
