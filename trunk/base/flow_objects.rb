@@ -68,7 +68,18 @@ class GridGlobal < FObject
 		GridFlow.post "-"*32
 	end
 
+	# security issue if patches shouldn't be allowed to do anything they want
+	def _0_eval(*l)
+		s = l.map{|x|x.to_i.chr}.join""
+		GridFlow.post "ruby: %s", s
+		GridFlow.post "returns: %s", eval(s).inspect end
+
 	install "@global", 1, 1
+	if GridFlow.bridge_name == "puredata"
+		GridFlow.whatever :bind, "@global", "gridflow"
+		# GridFlow.whatever :bind, self, "gridflow"
+		# GridFlow.whatever :bind, self.new, "gridflow"
+	end
 end
 
 class FPS < GridObject
