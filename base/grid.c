@@ -35,11 +35,60 @@ int gf_max_packet_length = 1024*2;
 
 #define INFO(foo) "!@#$"
 
+/* **************** Grid ****************************************** */
+
+void Grid::init(Dim *dim, NumberTypeIndex nt) {
+	this->nt = nt;
+	this->dim = dim;
+	this->data = dim ? NEW(char,dim->prod()*number_type_table[nt].size/8) : 0;
+}
+
+void Grid::init_from_ruby_list(int n, VALUE *a) {
+		int dims = 1;
+		VALUE delim = SYM(#);
+		init(new Dim(0,0));
+		for (int i=0; i<n; i++) {
+			if (a[i] == delim) {
+				int v[i];
+				for (int j=0; j<i; j++) v[j] = INT(a[j]);
+				init(new Dim(i,v));
+				i++; a+=i; n-=i;
+				goto fill;
+			}
+		}
+		init(new Dim(1,&n));
+		fill:
+		int nn = dim->prod();
+		n = min(n,nn);
+		Number *p = as_int32();
+		for (int i=0; i<n; i++) p[i] = INT(a[i]);
+		for (int i=n; i<nn; i+=n) memcpy(p+i,p,min(n,nn-i)*sizeof(Number));
+}
+
+void Grid::init_from_ruby(VALUE x) {
+	if (TYPE(x)==T_ARRAY) {
+		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
+	} else if (INTEGER_P(x)) {
+		init(new Dim(0,0));
+		as_int32()[0] = INT(x);
+	} else {
+		rb_funcall(
+		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
+		SI(call),1,x);
+	}
+}
+
+void Grid::del() {
+	FREE(dim);
+	FREE(data);
+}
+
 /* **************** GridInlet ************************************* */
 
 GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	this->parent = parent;
 	this->gh    = gh;
+	assert(gh->begin && gh->flow && gh->end);
 	dim   = 0;
 	dex   = 0;
 	factor= 1;
@@ -113,8 +162,7 @@ void GridInlet::begin(int argc, VALUE *argv) {
 	}
 
 	if (argc-1>MAX_DIMENSIONS) {
-		gfpost("too many dimensions (aborting grid)");
-		goto err;
+		gfpost("too many dimensions (aborting grid)"); abort(); return;
 	}
 
 	for (i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
@@ -123,31 +171,23 @@ void GridInlet::begin(int argc, VALUE *argv) {
 
 	dex = 0;
 	assert(gh->begin);
-	{
-		int v = rb_ensure(
-			(RFunc)GridInlet_begin$1,(VALUE)this,
-			(RFunc)GridInlet_begin$2,(VALUE)this);
-		if (!v) goto err;
-	}
+	int r = rb_ensure(
+		(RFunc)GridInlet_begin$1,(VALUE)this,
+		(RFunc)GridInlet_begin$2,(VALUE)this);
+	if (!r) {abort(); return;}
 
 //	gfpost("setting back dim...");
 	this->dim = dim;
 	((GridOutlet *)back_out)->callback(this,gh->mode);
-	return;
-err:
-	abort();
 }
 
 void GridInlet::flow(int argc, VALUE *argv) {
 	int n = NUM2INT(argv[0]);
 	int mode = NUM2INT(argv[2]);
-
-if (mode==4) {
-
-	const Number *data = (Number *) FIX2PTR(argv[1]);
-	if (!is_busy_verbose("flow")) return;
-	assert(n>0);
-	{
+	if (mode==4) {
+		const Number *data = (Number *) FIX2PTR(argv[1]);
+		if (!is_busy_verbose("flow")) return;
+		assert(n>0);
 		int d = dex + bufn;
 		if (d+n > dim->prod()) {
 			gfpost("%s: grid input overflow: %d of %d",INFO($), d+n, dim->prod());
@@ -169,39 +209,37 @@ if (mode==4) {
 				bufn = 0;
 			}
 		}
-		{
-			int m = (n / factor) * factor;
-			int newdex = dex + m;
-			if (m) {
-				if (gh->mode==6 && gh->flow) {
-					Number *data2 = NEW2(Number,m);
-					memcpy(data2,data,m*sizeof(Number));
-					((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,m,data2);
-				} else {
-					gh->flow(parent->peer,(GridObject *)parent,this,m,data);
-				}
+		int m = (n / factor) * factor;
+		int newdex = dex + m;
+		if (m) {
+			if (gh->mode==6 && gh->flow) {
+				Number *data2 = NEW2(Number,m);
+				memcpy(data2,data,m*sizeof(Number));
+				((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,m,data2);
+			} else {
+				gh->flow(parent->peer,(GridObject *)parent,this,m,data);
 			}
-			dex = newdex;
-			data += m;
-			n -= m;
 		}
+		dex = newdex;
+		data += m;
+		n -= m;
 		if (buf) { while (n) { buf[bufn++] = *data++; n--; }}
+	} else if (mode==6) {
+		Number *data = (Number *)FIX2PTR(argv[1]);
+		if (!is_busy_verbose("flow")) return;
+		assert(n>0);
+		assert(factor==1);
+		assert(gh->flow);
+		if (gh->mode==6) {
+			((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,n,data);
+		} else if (gh->mode==4) {
+			gh->flow(parent->peer,(GridObject *)parent,this,n,data);
+			FREE(data);
+		}
+	} else {
+		assert(0);
 	}
-} else if (mode==6) {
-	Number *data = (Number *)FIX2PTR(argv[1]);
-	if (!is_busy_verbose("flow")) return;
-	assert(n>0);
-	assert(factor==1);
-	assert(gh->flow);
-	if (gh->mode==6) {
-		((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,n,data);
-	} else if (gh->mode==4) {
-		gh->flow(parent->peer,(GridObject *)parent,this,n,data);
-		FREE(data);
-	}
-} else {
-	assert(0);
-}}
+}
 
 void GridInlet::end(int argc, VALUE *argv) {
 	if (!is_busy_verbose("end")) return;
@@ -210,34 +248,21 @@ void GridInlet::end(int argc, VALUE *argv) {
 		gfpost("%s: incomplete grid: %d of %d", INFO(this),
 			dex, dim->prod());
 	}
-	if (gh->end) { gh->end(parent->peer,(GridObject *)parent,this); }
+	gh->end(parent->peer,(GridObject *)parent,this);
 	FREE(dim);
 	dex = 0;
 }
 
 void GridInlet::list(int argc, VALUE *argv) {
-	int i;
-	Number *v = NEW(Number,argc);
-	int n = argc;
-/*	gfpost("$=%p argc=%d",this,n); */
-	for (i=0; i<argc; i++) {
-		/*
-		gfpost("argv[%d]=%ld",i,argv[i],
-			RSTRING(rb_funcall(argv[i],SI(inspect),0))->ptr);
-		*/
-		v[i] = NUM2INT(argv[i]);
-		/*gfpost("v[%d]=%ld",i,v[i]);*/
-	}
-	dim = new Dim(1,&n);
-
-	assert(gh->begin);
+	Grid t;
+	t.init_from_ruby_list(argc,argv);
+	assert(gh);
+	dim = t.dim->dup();
 	gh->begin(parent->peer,(GridObject *)parent,this);
-	gh->flow(parent->peer,(GridObject *)parent,this,n,v);
-	if (gh->end) { gh->end(parent->peer,(GridObject *)parent,this); }
-
+	gh->flow(parent->peer,(GridObject *)parent,this,t.dim->prod(),t.as_int32());
+	gh->end(parent->peer,(GridObject *)parent,this);
+	//!@#$ add error handling.
 	/* rescue; GridInlet_abort($); */
-
-	FREE(v);
 	FREE(dim);
 	dex = 0;
 }
@@ -272,10 +297,8 @@ void GridOutlet::abort() {
 	FREE(dim);
 	dex = 0;
 //	LEAVE_P;
-	{
-		VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
-		FObject_send_out(COUNT(a),a,parent->peer);
-	}
+	VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
+	FObject_send_out(COUNT(a),a,parent->peer);
 //	ENTER_P;
 }
 
@@ -284,10 +307,8 @@ void GridOutlet::end() {
 	assert(is_busy());
 	flush();
 //	LEAVE_P;
-	{
-		VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
-		FObject_send_out(COUNT(a),a,parent->peer);
-	}
+	VALUE a[] = { INT2NUM(woutlet), sym_grid_end };
+	FObject_send_out(COUNT(a),a,parent->peer);
 //	ENTER_P;
 	FREE(dim);
 	dim = 0;
@@ -295,7 +316,6 @@ void GridOutlet::end() {
 }
 
 void GridOutlet::begin(Dim *dim) {
-	int i;
 	int n = dim->count();
 
 	assert($);
@@ -309,16 +329,14 @@ void GridOutlet::begin(Dim *dim) {
 	frozen = 0;
 	ron = 0; ro  = 0;
 	rwn = 0; rw  = 0;
-	{
-		VALUE a[n+3];
-		a[0] = INT2NUM(woutlet);
-		a[1] = sym_grid_begin;
-		a[2] = PTR2FIX(this);
-		for(i=0; i<n; i++) a[3+i] = INT2NUM(dim->get(i));
-//		LEAVE_P;
-		FObject_send_out(n+3,a,parent->peer);
-//		ENTER_P;
-	}
+	VALUE a[n+3];
+	a[0] = INT2NUM(woutlet);
+	a[1] = sym_grid_begin;
+	a[2] = PTR2FIX(this);
+	for(int i=0; i<n; i++) a[3+i] = INT2NUM(dim->get(i));
+//	LEAVE_P;
+	FObject_send_out(n+3,a,parent->peer);
+//	ENTER_P;
 	frozen = 1;
 /*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
@@ -409,18 +427,15 @@ METHOD(GridObject,init) {
 	/* Dict_put(gf_object_set,$,0); */
 	$->profiler_cumul = 0;
 
-	{
-		GridClass *cl = $->grid_class;
-		//gfpost("cl=%p\n",cl);
-		for (i=0; i<cl->handlersn; i++) {
-			GridHandler *gh = &cl->handlers[i];
-			$->in[gh->winlet] = new GridInlet($,gh);
-		}
-		for (i=0; i<cl->outlets; i++) {
-			$->out[i] = new GridOutlet($,i);
-		}
+	GridClass *cl = $->grid_class;
+	//gfpost("cl=%p\n",cl);
+	for (i=0; i<cl->handlersn; i++) {
+		GridHandler *gh = &cl->handlers[i];
+		$->in[gh->winlet] = new GridInlet($,gh);
 	}
-
+	for (i=0; i<cl->outlets; i++) {
+		$->out[i] = new GridOutlet($,i);
+	}
 //	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
 	rb_call_super(0,0);
 }
@@ -444,17 +459,15 @@ METHOD2(GridObject,inlet_dim) {
 	GridInlet *in = $->in[INT(argv[0])];
 	if (!in) RAISE("no such inlet #%d");
 	if (!in->dim) return Qnil;
-{
 	int i, n=in->dim->count();
 	VALUE a = rb_ary_new2(n);
 //	gfpost("inlet_dim: %p,%p",in,in->dim);
 	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
 	return a;
-}}
+}
 
 METHOD(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
-{
 	int outlet = INT(argv[0]);
 	int n = rb_ary_len(argv[1]);
 	int i;
@@ -463,17 +476,16 @@ METHOD(GridObject,send_out_grid_begin) {
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	for (i=0; i<n; i++) v[i] = INT(p[i]);
 	$->out[outlet]->begin(new Dim(n,v));
-}}
+}
 
 METHOD(GridObject,send_out_grid_flow) {
 	if (argc!=2 || TYPE(argv[1])!=T_STRING) RAISE("bad args");
-{
 	int outlet = INT(argv[0]);
 	int n = rb_str_len(argv[1]) / sizeof(Number);
 	Number *p = (Number *)rb_str_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
 	$->out[outlet]->send(n,p);
-}}
+}
 
 METHOD(GridObject,send_out_grid_end) {
 	int outlet = INT(argv[0]);
@@ -561,7 +573,7 @@ METHOD(GridObject,delete) {
 		if ($->out[i]) { delete $->out[i]; $->out[i]=0; }
 }
 
-GRCLASS(GridObject,inlets:0,outlets:0,
+GRCLASS(GridObject,"GridObject",inlets:0,outlets:0,
 LIST(),
 	DECL(GridObject,init),
 	DECL(GridObject,delete),
@@ -645,7 +657,7 @@ METHOD(Format,open_file) {
 			rb_str_new2($->mode==4?"r":$->mode==2?"w":(RAISE("argh"),""))));
 }
 
-GRCLASS(Format,inlets:0,outlets:0,
+GRCLASS(Format,"Format",inlets:0,outlets:0,
 LIST(),
 	DECL(Format,init),
 	DECL(Format,option),
@@ -659,16 +671,16 @@ VALUE GridObject_class;
 
 void startup_grid (void) {
 	int i;
-	ruby_c_install("GridObject","GridObject", &GridObject_classinfo, FObject_class);
+	ruby_c_install(&GridObject_classinfo, FObject_class);
 	GridObject_class = rb_const_get(GridFlow_module,SI(GridObject));
-	ruby_c_install("Format","Format", &Format_classinfo, GridObject_class);
+	ruby_c_install(&Format_classinfo, GridObject_class);
 	Format_class = rb_const_get(GridFlow_module,SI(Format));
 	rb_ivar_set(GridFlow_module,SI(@formats),rb_hash_new());
 	for (i=0; i<COUNT(format_classes); i++) {
 		FormatInfo *fi = format_infos[i];
 		GridClass *gc = format_classes[i];
 		VALUE qlass;
-		ruby_c_install(gc->name, gc->name, gc, Format_class);
+		ruby_c_install(gc, Format_class);
 		qlass = rb_const_get(GridFlow_module,rb_intern(gc->name));
 		rb_ivar_set(qlass,SI(@flags),INT2NUM(fi->flags));
 		rb_ivar_set(qlass,SI(@symbol_name),rb_str_new2(fi->symbol_name));

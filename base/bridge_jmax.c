@@ -127,12 +127,16 @@ static VALUE BFObject_method_missing$1 (kludge *k) {
 }
 
 static VALUE BFObject_rescue (kludge *k) {
+//	rb_eval_string("STDERR.puts $!.inspect");
+//	VALUE error_array = rb_eval_string(
+//		"[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
 	VALUE error_array = rb_eval_string(
-		"[\"ruby #{$!.class}: #{$!}\",*$!.backtrace]\"]");
+		"[\"ruby #{$!.class}: #{$!}\"]");
 	for (int i=0; i<rb_ary_len(error_array); i++)
 		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	if (k->$) fts_object_set_error(k->$,"%s",rb_str_ptr(
-		rb_funcall(error_array,SI(join),0)));
+	//!@#$leak
+	if (k->$) fts_object_set_error(k->$,"%s",strdup(rb_str_ptr(
+		rb_funcall(error_array,SI(join),0))));
 	return Qnil;
 }
 
@@ -170,14 +174,13 @@ static VALUE BFObject_init$1 (kludge *k) {
 
 static void BFObject_init (fts_object_t *$,
 int winlet, fts_symbol_t selector, int ac, const fts_atom_t *at) {
-	int r;
 	kludge k;
 	k.$ = $;
 	k.winlet = winlet;
 	k.ac = ac;
 	k.at = at;
 
-	r = rb_rescue2(
+	rb_rescue2(
 		(RFunc)BFObject_init$1,(VALUE)&k,
 		(RFunc)BFObject_rescue,(VALUE)&k,
 		rb_eException,0);
@@ -208,7 +211,7 @@ static fts_status_t BFObject_class_init$1 (fts_class_t *qlass) {
 		rb_ivar_get($,sym_outlets) : INT2NUM(0);
 
 	post("name=%s, inlets=%d, outlets=%d, rubyclass=%p\n",
-		qlass->mcl->name, inlets, outlets, qlass);
+		fts_symbol_name(qlass->mcl->name), inlets, outlets, qlass);
 
 	fts_status_t r;
 	r = fts_class_init(qlass, sizeof(BFObject), inlets, outlets, (void *)$);
