@@ -227,7 +227,7 @@ top:
 	dealloc_image();
 	#ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
-		shm_info = NEW(XShmSegmentInfo,1);
+		shm_info = NEW(XShmSegmentInfo,());
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
 		assert(ximage);
 		shm_info->shmid = shmget(
@@ -276,7 +276,7 @@ void FormatX11::resize_window (int sx, int sy) {
 		return;
 	}
 	FREE(dim);
-	dim = new Dim(3,v);
+	dim = NEW(Dim,(3,v));
 
 /* ximage */
 
@@ -514,8 +514,8 @@ METHOD(FormatX11,init) {
 	uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 	gfpost("is_le = %d",is_le());
 	gfpost("disp_is_le = %d", disp_is_le);
-	$->bit_packing = new BitPacking(
-		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
+	$->bit_packing = NEW(BitPacking,(
+		disp_is_le, $->ximage->bits_per_pixel/8, 3, masks));
 
 	$->bit_packing->gfpost();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
