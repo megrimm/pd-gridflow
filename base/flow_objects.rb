@@ -70,6 +70,21 @@ class GridGlobal < FObject
 		end
 		GridFlow.post "-"*32
 	end
+	def _0_formats
+		GridFlow.post "-"*32
+		GridFlow.formats.each {|k,v|
+			modes = case v.flags
+			when 2; "#out"
+			when 4; "#in"
+			when 6; "#in/#out"
+			end
+			GridFlow.post "%s %s: %s", modes, k, v.description
+			if v.respond_to? :info then
+				GridFlow.post "-> %s", v.info
+			end
+		}
+		GridFlow.post "-"*32
+	end
 	# security issue if patches shouldn't be allowed to do anything they want
 	def _0_eval(*l)
 		s = l.map{|x|x.to_i.chr}.join""
@@ -411,10 +426,10 @@ class GridScaleTo < FPatcher
 end
 
 #<vektor> told me to:
-# RGBtoYUV : @fobjects = ["@inner * + 0 {3 3 # 66 -38 112 128 -74 -94 25 112 -18}",
+# RGBtoYUV : @fobjects = ["#inner ( 3 3 # 66 -38 112 128 -74 -94 25 112 -18 )",
 #	"@ >> 8","@ + {16 128 128}"]
-# YUVtoRGB : @fobjects = ["@ - {16 128 128}",
-#	"@inner * + 0 {3 3 # 298 298 298 0 -100 516 409 -208 0}","@ >> 8"]
+# YUVtoRGB : @fobjects = ["@ - ( 16 128 128 )",
+#	"#inner ( 3 3 # 298 298 298 0 -100 516 409 -208 0 )","@ >> 8"]
 
 class GridRotate < FPatcher
 	@fobjects = ["@inner * + 0","@ >> 8"]
@@ -963,6 +978,7 @@ module Gooey # to be included in any FObject class
 		@rsym = "#{self.class}#{self.id}".intern # unique id for use in Tcl
 		@can = nil    # the canvas number
 		@canvas = nil # the canvas string
+		@y,@x = 0,0 # position on canvas
 	end
 	attr_reader :canvas
 	attr_reader :selected
@@ -1011,7 +1027,6 @@ class Display < FObject; include Gooey
 		@sel = nil; @args = [] # contents of last received message
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
-		@y,@x = 0,0     # topleft of the widget
 		@bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
@@ -1080,13 +1095,25 @@ class Display < FObject; include Gooey
 	end
 
 	install "display", 1, 1
-	if GridFlow.bridge_name =~ /puredata/
-		gui_enable
+	gui_enable if GridFlow.bridge_name =~ /puredata/
+end
+
+class GridEdit < FPatcher; include Gooey
+	def initialize(grid)
+		super
+		@store = FObject["#store"]
+		@store.connect 0,self,0
+		@store.send_in 1, grid
 	end
+	def _0_grid(*stuff) @store._0_grid(*stuff); update end
+	def update
+	
+	end
+	install "#edit", 2, 1
 end
 
 class Peephole < FPatcher; include Gooey
-	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","@out","#scale_by 1",
+	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","#out","#scale_by 1",
 	proc{Demux.new(2)}]
 	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
 	def initialize(sy=32,sx=32,*args)
@@ -1096,10 +1123,8 @@ class Peephole < FPatcher; include Gooey
 		@scale = 1
 		@down = false
 		@sy,@sx = sy,sx # size of the widget
-		@y,@x = 0,0     # topleft of the widget
 		@fy,@fx = 0,0   # size of last frame after downscale
 		@bg,@bgs = "#A07467","#00ff80"
-		@selected=false
 	end
 	def pd_show(can)
 		@x,@y = get_position can if can
@@ -1192,10 +1217,8 @@ class Peephole < FPatcher; include Gooey
 	end
 
 	install "#peephole", 1, 1
-	if GridFlow.bridge_name =~ /puredata/
-		gui_enable
-		#GridFlow.addtomenu "#peephole" # was this IMPD-specific ?
-	end
+	gui_enable if GridFlow.bridge_name =~ /puredata/
+	#GridFlow.addtomenu "#peephole" # was this IMPD-specific ?
 end
 
 #-------- fClasses for: Hardware
