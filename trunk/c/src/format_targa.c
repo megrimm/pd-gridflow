@@ -78,7 +78,6 @@ Dim *FormatTarga_frame (FileFormat *$, int frame) {
 		return $->dim;
 	}
 err:
-	fclose($->stream);
 	return 0;
 }
 
@@ -89,13 +88,19 @@ Number *FormatTarga_read (FileFormat *$, int n) {
 	uint8 b1[n];
 	Number *b2 = NEW2(Number,n);
 
+	assert(n%3 == 0);
+
 	if (!$->dim) return 0;
 	if (bs > n) bs = n;
 	bs2 = (int) fread(b1,1,bs,$->stream);
 	if (bs2 < bs) {
 		whine("unexpected end of file: bs=%d; bs2=%d",bs,bs2);
 	}
-	for (i=0; i<bs; i++) b2[i] = b1[i];
+	for (i=0; i<bs; i+=3) {
+		b2[i+0] = b1[i+2];
+		b2[i+1] = b1[i+1];
+		b2[i+2] = b1[i+0];
+	}
 	n -= bs;
 	$->left -= bs;
 	return b2;
