@@ -9,8 +9,8 @@
 
 <section name="Objects for making grids and breaking them down">
 	<class name="@import">
-		<icon text="[@import {240 320 3}]"/>
-		<help text="[@import {240 320 3}]" image="@importexport" />
+		<icon text="[#import {240 320 3}]"/>
+		<help text="[#import {240 320 3}]" image="#importexport" />
 		<p>This object allows you to produce grids from non-grid data, such as
 		integers and lists of integers. This object also reframes/resyncs
 		grids so that multiple grids may be joined together, or
@@ -49,8 +49,8 @@
 			<method name="grid">
 				<arg name="grid" type="grid(dims...)"/>
 				this is the equivalent of filtering this grid through
-				an @export object and sending the resulting integers
-				to this @import object, except that it's over
+				an <k>[#export]</k> object and sending the resulting integers
+				to this <k>[#import]</k> object, except that it's over
 				10 times faster.
 			</method>
 		</inlet>
@@ -67,10 +67,10 @@
 	</class>
 
 	<class name="@export">
-		<icon text="[@export]"/>
-		<help text="[@export]" image="@importexport" />
+		<icon text="[#export]"/>
+		<help text="[#export]" image="#importexport" />
 
-		<p>this object is the opposite of @import.</p>
+		<p>this object is the opposite of #import.</p>
 		<method name="init">
 			this object is not configurable because there isn't
 			anything that could possibly be configured here.
@@ -88,11 +88,11 @@
 	</class>
 
 	<class name="@export_list">
-		<icon text="[@export_list]"/>
-		<help text="[@export_list]" image="@importexport" />
+		<icon text="[#export_list]"/>
+		<help text="[#export_list]" image="#importexport" />
 
-		<p>this object is another opposite of @import, which puts
-		all of its values in a jMax list.</p>
+		<p>this object is another opposite of <k>[#import]</k>, which puts
+		all of its values in a list.</p>
 		<method name="init" />
 		<inlet id="0">
 			<method name="grid"><arg name="grid" type="grid(dims...)"/>
@@ -108,7 +108,7 @@
 	</class>
 
 	<class name="@export_symbol">
-		<p>this object is another opposite of @import, which constructs a jMax symbol
+		<p>this object is another opposite of @import, which constructs a symbol
 		from its input. The values are expected to be valid ASCII codes, but no check
 		will be performed for that, and additionally, no check will be made that the generated
 		symbol only contains characters that can be put in a symbol.</p>
@@ -123,7 +123,7 @@
 	</class>
 
 	<class name="#pack">
-		<p>Similar to [@join], but takes individual integers, and builds a Dim(N) vector out of it.
+		<p>Similar to <k>[#join]</k>, but takes individual integers, and builds a Dim(N) vector out of it.
 		</p>
 
 		<attr name="trigger_by" type="TriggerBy" default="any">
@@ -172,22 +172,18 @@
 		</method></outlet>
 	</class>
 -->
-	<class name="@two">use [#pack 2] instead</class>
-	<class name="@three">use [#pack 3] instead</class>
-	<class name="@four">use [#pack 4] instead</class>
-	<class name="@eight">use [#pack 8] instead</class>
 
 	<class name="@for">
-		<icon text="[@for 0 320 1]"/>
-		<help text="[@for 0 320 1]"/>
+		<icon text="[#for 0 320 1]"/>
+		<help text="[#for 0 320 1]"/>
 
-		<p>when given scalar bounds, works like a regular [for] object plugged
-		to a [@import] tuned for a Dim(size) where size is the number of values
-		produced by a bang to that [for].</p>
+		<p>when given scalar bounds, works like a regular <k>[for]</k> object plugged
+		to a <k>[#import]</k> tuned for a Dim(size) where size is the number of values
+		produced by a bang to that <k>[for]</k>.</p>
 
 		<p>when given vector bounds, will work like any number of [for] objects
 		producing all possible combinations of their values in the proper order.
-		This replaces the old [@identity_transform] object.</p>
+		This replaces the old <k>[#identity_transform]</k> object.</p>
 
 		<method name="init">
 			<arg name="from" type="integer"/>
@@ -218,7 +214,7 @@
 
 <section name="Objects for Computing">
 	<class name="@">
-		<icon text="[@ +]" image="op/add.jpg" />
+		<icon text="[# +]" image="op/add.png" />
 		<help text="two-input operators"/>
 
 		<attr name="op" type="grid"/>
@@ -228,10 +224,7 @@
 
 		<p>This object outputs a grid by computing "in parallel" a same
 		operation on each left-hand element with its corresponding right-hand
-		element. This is a massively parallel version of jMax's builtin
-		arithmetic operators. In case you wonder, it's only parallel in the
-		sense that all those computations are independent; there's no
-		guarantee about how many of them will actually be computed at once.
+		element. 
 		</p>
 
 		<method name="init">
@@ -270,8 +263,8 @@
 	</class>
 
 	<class name="@!">
-		<icon text="[@!]"/>
-		<help text="[@!]"/>
+		<icon text="[#!]"/>
+		<help text="[#!]"/>
 
 		<p>This object computes a grid by computing "in parallel" a same
 		operation on each element of the grid.
@@ -309,17 +302,17 @@
 	</class>
 
 	<class name="@fold">
-		<icon text="[@fold +]"/>
-		<help text="[@fold +]" image="@foldinnerouter"/>
+		<icon text="[#fold +]"/>
+		<help text="[#fold +]" image="#foldinnerouter"/>
 
 		<p><list>
-		<li>[@fold +] computes totals</li>
-		<li>[@fold inv+] is an alternated sum (+/-)</li>
-		<li>[@fold * 1] can compute the size of a grid using its dimension list</li>
-		<li>[@fold &amp; 1] can mean "for all"</li>
-		<li>[@fold | 0] can mean "there exists (at least one)"</li>
-		<li>[@fold ^ 0] can mean "there exists an odd number of..."</li>
-		<li>[@fold ^ 1] can mean "there exists an even number of...".</li>
+		<li><k>[#fold +]</k> computes totals</li>
+		<li><k>[#fold inv+]</k> is an alternated sum (+/-)</li>
+		<li><k>[#fold * 1]</k> can compute the size of a grid using its dimension list</li>
+		<li><k>[#fold &amp; 1]</k> can mean "for all"</li>
+		<li><k>[#fold | 0]</k> can mean "there exists (at least one)"</li>
+		<li><k>[#fold ^ 0]</k> can mean "there exists an odd number of..."</li>
+		<li><k>[#fold ^ 1]</k> can mean "there exists an even number of...".</li>
 		</list></p>
 
 		<method name="init">
@@ -342,10 +335,10 @@
 	</class>
 
 	<class name="@scan">
-		<!-- <icon text="[@scan +]"/> -->
-		<!-- <help text="[@scan +]"/> -->
+		<!-- <icon text="[#scan +]"/> -->
+		<!-- <help text="[#scan +]"/> -->
 
-		<p>[@scan +] computes subtotals; this can be used, for example,
+		<p><k>[#scan +]</k> computes subtotals; this can be used, for example,
 		to convert a regular probability distribution into a cumulative one.
 		(or in general, discrete integration)
 		</p>
@@ -375,8 +368,8 @@
 	</class>
 
 	<class name="@outer">
-		<icon text="[@outer +]"/>
-		<help text="[@outer +]" image="@foldinnerouter"/>
+		<icon text="[#outer +]"/>
+		<help text="[#outer +]" image="#foldinnerouter"/>
 
 		<method name="init">
 			<arg name="operator" type="numop2"/>
@@ -399,7 +392,7 @@
 		<outlet id="0">
 		</outlet>
 
-		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will
+		<p>When given a grid of Dim(3) and a grid of Dim(5) <k>[#outer]</k> will
 		produce  a grid of Dim(3,5) with the selected two-input operation
 		applied on each  of the possible pairs combinations between numbers
 		from the left grid  and the ones from the right. for example :
@@ -409,17 +402,17 @@
 	</class>
 
 	<class name="@inner">
-		<icon text="[@inner * + 0]"/>
-		<help text="[@inner * + 0]" image="@foldinnerouter" />
+		<icon text="[#inner * + 0]"/>
+		<help text="[#inner * + 0]" image="#foldinnerouter" />
 
-		<p>think of this one as a special combination of [@outer], [@] and
-		[@fold]. this is one of the most complex operations. It is very useful
+		<p>think of this one as a special combination of <k>[#outer]</k>, <k>[#]</k> and
+		<k>[#fold]</k>. this is one of the most complex operations. It is very useful
 		for performing linear transforms like rotations, scalings, shearings,
 		and some kinds of color remappings. A linear transform is done by
-		something called matrix multiplication, which happens to be [@inner * +
-		0]. @inner also does dot product and other funny operations.</p>
+		something called matrix multiplication, which happens to be <k>[#inner * +
+		0]</k>. <k>[#inner]</k> also does dot product and other funny operations.</p>
 
-		<p>@inner2 is a variant on @inner; used to be called @inner (GF-0.4.1
+		<p><k>[#inner2]</k> is a variant on <k>[#inner]</k>; used to be called <k>[#inner</k> (GF-0.4.1
 		and before); the right-hand "matrix" is transposed upon reception (the
 		last dimension is swapped with the rest of the dimensions, so that the
 		last becomes first and the others stay in order)</p>
@@ -442,8 +435,8 @@
 				Splits the Dim(firstB,anyB...) right-hand grid into
 				Dim(anyB...) pieces of Dim(firstB) size.
 
-				On every piece pair, does [@] using the specified
-				op_para operation, followed by a [@fold] using
+				On every piece pair, does <k>[#]</k> using the specified
+				op_para operation, followed by a <k>[#fold]</k> using
 				the specified op_fold operator and base value.
 			
 				creates a Dim(anyA...,anyB...) grid by assembling all
@@ -467,7 +460,7 @@
 	</class>
 
 	<class name="@inner2">
-		 [@inner2] removed; instead use [@transpose] with [@inner]
+		 <k>[#inner2]</k> removed; instead use <k>[#transpose]</k> with <k>[#inner]</k>
 	</class>
 	
 	<class name="@join">
@@ -526,7 +519,7 @@
 	<class name="@ravel">
 		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>any grid</method></inlet>
 		<outlet id="0"><method name="grid"><arg name="grid" type="grid"/>
-			like @redim but always produce a 1-D grid
+			like <k>[#redim]</k> but always produce a 1-D grid
 			with the same total number of elements.
 		</method></outlet>
 	</class>
@@ -538,15 +531,15 @@
 			producing new Dim[B] vectors that each contain numbers from
 			0 to B-1 indicating the ordering of the values. The result is
 			a Dim[A...,B] grid.</p>
-			<p>for example, connecting a [@grade] to a [@outer ignore {0}]
-			to a [@store] object, storing a single vector into [@store], and
-			sending the same vector to [@grade], will sort the values of the
+			<p>for example, connecting a [@grade] to a <k>[#outer ignore {0}]</k>
+			to a <k>[#store]</k> object, storing a single vector into <k>[#store]</k>, and
+			sending the same vector to <k>[#grade]</k>, will sort the values of the
 			vector. however for higher-dimensional grids, what should go
-			between [@store] and [@grade] to achieve the same result would
+			between <k>[#store]</k> and <k>[#grade]</k> to achieve the same result would
 			be more complex.</p>
 			<p>you may achieve different kinds of sorting by applying various
-			filters before [@grade]. the possibilities are unlimited.</p>
-			<p>if you plug [@grade] directly into another [@grade], you will
+			filters before <k>[#grade]</k>. the possibilities are unlimited.</p>
+			<p>if you plug <k>[#grade]</k> directly into another <k>[#grade]</k>, you will
 			get the inverse arrangement, which allows to take the sorted values
 			and make them unsorted in the original way. note that this is really
 			not the same as just listing the values backwards.</p>
@@ -577,7 +570,7 @@
 			<arg name="dim2" type="integer"/>
 		</method>
 		<inlet id="0"><method name="grid"><arg name="grid" type="grid"/>
-			swaps the two specified dimensions; dimension numbers are as in [@join].
+			swaps the two specified dimensions; dimension numbers are as in <k>[#join]</k>.
 		</method></inlet>
 	</class>
 	
@@ -610,14 +603,14 @@
 
 <section name="Objects for Coordinate Transforms">
 	<class name="@redim">
-		<icon text="[@redim {2}]"/>
-		<help text="[@redim 2]"/>
+		<icon text="[#redim {2}]"/>
+		<help text="[#redim 2]"/>
 
 		<method name="init">
 			<arg name="dims" type="dim_list"/>
 			a list specifying a grid shape that the numbers
 			will fit into.
-			(same as with @import)
+			(same as with <k>[#import]</k>)
 		</method>
 		<inlet id="0">
 			<method name="grid"><arg name="grid" type="grid(dims...)"/>
@@ -631,7 +624,7 @@
 			<method name="grid"><arg name="grid" type="grid(rank)"/>
 				this grid is a dimension list that replaces the one
 				specified in the constructor.
-				(same as with @import)
+				(same as with <k>[#import]</k>)
 			</method>
 		</inlet>
 		<outlet id="0">
@@ -640,19 +633,19 @@
 			</method>
 		</outlet>
 
-		<p>example: with a 240 320 RGB image, @redim 120 640 3 will visually
+		<p>example: with a 240 320 RGB image, <k>[#redim 120 640 3]</k> will visually
 		separate the even lines (left) from the odd lines (right). contrary
-		to this, @redim 640 120 3 will split every line and put its left half
-		on a even line and the right half on the following odd line. @redim
+		to this, <k>[#redim 640 120 3]</k> will split every line and put its left half
+		on a even line and the right half on the following odd line. <k>[#redim]</k>
 		480 320 3 will repeat the input image twice in the output image.
-		@redim 240 50 3 will only keep the 50 top lines.</p>
+		<k>[#redim]</k> 240 50 3 will only keep the 50 top lines.</p>
 
 	</class>
 	<class name="@store">
-		<icon text="[@store]"/>
-		<help text="[@store]"/>
+		<icon text="[#store]"/>
+		<help text="[#store]"/>
 
-		<p>A @store object can store exactly one grid, using the right
+		<p>A <k>[#store]</k> object can store exactly one grid, using the right
 		inlet. You fetch it back, or selected subparts thereof, using the left
 		inlet.</p>
 
@@ -666,8 +659,8 @@
 			</method>
 			<method name="grid"><arg name="grid" type="grid(dims..., indices)"/>
 				in this grid, the last dimension refers to subparts of
-				the stored grid. sending a Dim(200,200,2) on a @store
-				that holds a Dim(240,320,3) will cause the @store to handle
+				the stored grid. sending a Dim(200,200,2) on a <k>[#store]</k>
+				that holds a Dim(240,320,3) will cause the <k>[#store]</k> to handle
 				the incoming grid as a Dim(200,200) of Dim(2)'s, where each
 				Dim(2) represents a position in a Dim(240,320) of Dim(3)'s.
 				therefore the resulting grid will be a Dim(200,200) of
@@ -692,7 +685,7 @@
 			<method name="put_at"><rest name="indices"/>(Future Use): 
 				makes it so that sending a grid to inlet 1 writes into the existing buffer of [@store].
 				<p>
-				example: suppose you have [@store {10 240 320 3}]. then "put_at 3"
+				example: suppose you have <k>[#store {10 240 320 3}]</k>. then "put_at 3"
 				will allow to write a Dim[240,320,3] grid in indices (3,y,x,c) where y,x,c are indices of the incoming grid;
 				in other words, if that's a buffer of 10 RGB frames, you'd be replacing frame #3. Furthermore,
 				it also allows you to write a Dim[n,240,320,3] grid at (3+f,y,x,c) where f,y,x,c are indices of the incoming grid,
@@ -710,8 +703,8 @@
 	</class>
 
 	<class name="@scale_to">
-		<icon text="[@scale_to]"/>
-		<help text="[@scale_to]"/>
+		<icon text="[#scale_to]"/>
+		<help text="[#scale_to]"/>
 
 		<method name="init">
 			<arg name="size">{height width} pair.</arg>
@@ -729,8 +722,8 @@
 	</class>
 
 	<class name="@scale_by">
-		<icon text="[@scale_by]"/>
-		<help text="[@scale_by]"/>
+		<icon text="[#scale_by]"/>
+		<help text="[#scale_by]"/>
 
 		<method name="init">
 			<arg name="factor" type="grid dim() or dim(2)"/>
@@ -776,11 +769,11 @@
 	</class>
 
 	<class name="@spread">
-		<icon text="[@spread]"/>
-		<help text="[@spread]"/>
+		<icon text="[#spread]"/>
+		<help text="[#spread]"/>
 
-		<p>typically you plug a @for into this object,
-		and you plug this object into the left side of a @store. it will
+		<p>typically you plug a <k>[#for]</k> into this object,
+		and you plug this object into the left side of a <k>[#store]</k>. it will
 		scatter pixels around, giving an "unpolished glass" effect.</p>
 		
 		<p>if you put a picture in it, however, it will add noise. The
@@ -802,7 +795,7 @@
 		</outlet>
 
 
-		<p>@spread scatters the pixels in an image. Not all original pixels
+		<p><k>[#spread]</k> scatters the pixels in an image. Not all original pixels
 		will  appear, and some may get duplicated (triplicated, etc)
 		randomly. Some  wrap-around effect will occur close to the edges.
 		</p>
@@ -842,11 +835,11 @@
 
 <section name="Objects for Reporting">
 	<class name="@dim">
-		<icon text="[@dim]"/>
-		<help text="[@dim]"/>
+		<icon text="[#dim]"/>
+		<help text="[#dim]"/>
 
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
-		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+		<k>[#dim]</k> will return a grid like Dim(3), whose values are 240, 320, 4. </p>
 
 		<method name="init">
 			no arguments.
@@ -881,7 +874,7 @@
 	</class>
 
 	<class name="rubyprint">
-		This is only for testing the translation from PD/jMax to Ruby.
+		This is only for testing the translation from PD to Ruby.
 		<method name="init"/>
 		<inlet id="0">
 			<method name="&lt;any&gt;">
@@ -891,7 +884,7 @@
 	</class>
 
 	<class name="printargs">
-		This is only for testing the translation from PD/jMax to Ruby.
+		This is only for testing the translation from PD to Ruby.
 		<method name="init">
 			<rest name="any"/>
 			prints everything.
@@ -967,8 +960,8 @@
 
 <section name="Objects for Miscellaneous Picture Processing">
 	<class name="@convolve">
-		<icon text="[@convolve * + 0]"/>
-		<help text="[@convolve * + 0]"/>
+		<icon text="[#convolve * + 0]"/>
+		<help text="[#convolve * + 0]"/>
 
 		<p>this is the object for blurring, sharpening, finding edges,
 		embossing, cellular automata, and many other uses.</p>
@@ -989,8 +982,8 @@
 				splits the incoming grid into dim(rest...) parts.
 				for each of those parts at (y,x), a rectangle of such
 				parts, centered around (y,x), is combined with the
-				convolution grid like a [@] of operation op_para. Then
-				each such result is folded like [@fold] of operation
+				convolution grid like a <k>[#]</k> of operation op_para. Then
+				each such result is folded like <k>[#fold]</k> of operation
 				op_fold and specified base. the results are assembled
 				into a grid that is sent to the outlet. near the borders of
 				the grid, coordinates wrap around. this means the whole grid
@@ -1017,8 +1010,8 @@
 	</class>
 
 	<class name="@contrast">
-		<icon text="[@contrast]"/>
-		<help text="[@contrast]"/> 
+		<icon text="[#contrast]"/>
+		<help text="[#contrast]"/> 
 
 		<method name="init">
 			<arg name="iwhiteness" default="256">same as inlet 1.</arg>
@@ -1031,7 +1024,7 @@
 			produces a grid like the incoming grid but with
 			different constrast.
 			</method>
-			<p>@contrast adjusts the intensity in an image.
+			<p><k>[#contrast]</k> adjusts the intensity in an image.
 			resulting values outside 0-255 are automatically clipped.</p>
 		</inlet>
 		<inlet id="1">
@@ -1057,10 +1050,10 @@
 	</class>
 
 	<class name="@posterize">
-		<icon text="[@posterize]"/>
-		<help text="[@posterize]"/>
+		<icon text="[#posterize]"/>
+		<help text="[#posterize]"/>
 
-		<p>@posterize reduces the number of possible intensities in an image;
+		<p><k>[#posterize]</k> reduces the number of possible intensities in an image;
 		it rounds the color values.The effect is mostly apparent with a low
 		number of levels.</p>
 
@@ -1110,7 +1103,7 @@
 		<inlet id="0">
 			<method name="grid">
 				<arg name="grid" type="grid(y x {y x})"/>
-				result from a [@for {0 0} {height width} {1 1}]
+				result from a <k>[#for {0 0} {height width} {1 1}]</k>
 			</method>
 		</inlet>
 		<outlet id="0">
@@ -1262,8 +1255,8 @@
 	</class>
 
 	<class name="@global">
-		<icon text="[@global]" />
-		<help text="[@global]" />
+		<icon text="[#global]" />
+		<help text="[#global]" />
 
 		<p>
 		objects of this class do nothing by themselves and are just
@@ -1368,12 +1361,6 @@
 			<arg name="sender_ip_address"/>
 		</method>
 		</outlet>
-	</class>
-	<class name="jmax4_udpsend">
-		same as jmax_udpsend but for jMax 4.0.x UDP connections.
-	</class>
-	<class name="jmax4_udpreceive">
-		same as jmax_udpreceive but for jMax 4.0.x UDP connections.
 	</class>
 	<class name="foreach">
 		<inlet id="0"><method name="list"><rest/>
