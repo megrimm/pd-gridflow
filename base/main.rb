@@ -117,7 +117,7 @@ end
 
 # adding some functionality to that:
 class FObject
-	attr_writer :args
+	attr_writer :args # String
 	attr_reader :outlets
 	def args; @args || "[#{self.class} ...]"; end
 	def connect outlet, object, inlet
@@ -273,6 +273,44 @@ class GridPrint < GridFlow::GridObject
 	end
 	install_rgrid 0
 	install "@print", 1, 0
+end
+
+class GridPack < GridObject
+	class<<self;attr_reader :ninlets;end
+	def initialize
+		super
+		@data=[0]*self.class.ninlets
+	end
+	def self.define_inlet i
+		eval "
+			def _#{i}_int x; @data[#{i}]=x; trigger; end
+			def _#{i}_float x; @data[#{i}]=x.to_i; trigger; end
+		"
+	end
+	def trigger
+		send_out_grid_begin 0, [self.class.ninlets]
+		send_out_grid_flow 0, @data.pack("l*")
+		send_out_grid_end 0
+	end
+end
+
+# the install_rgrids in the following are hacks so that
+# outlets can work. (install_rgrid is supposed to be for receiving)
+
+class GridTwo < GridPack
+	(0...2).each {|x| define_inlet x }
+	install_rgrid 0
+	install "@two", 2, 1
+end
+class GridThree < GridPack
+	(0...3).each {|x| define_inlet x }
+	install_rgrid 0
+	install "@three", 3, 1
+end
+class GridFour < GridPack
+	(0...4).each {|x| define_inlet x }
+	install_rgrid 0
+	install "@four", 4, 1
 end
 
 class GridGlobal
