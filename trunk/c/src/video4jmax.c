@@ -54,6 +54,7 @@ void VideoInFile_config (void);
 void video4jmax_module_init (void) {
 	post("Welcome to Video4jmax !\n");
 	post("Version: " VIDEO4JMAX_VERSION "\n");
+	post("Compiled on: " VIDEO4JMAX_COMPILE_TIME "\n");
 	post("--- Video4jmax startup: begin ---\n");
 
 	#define DEF_SYM(_sym_) \
@@ -171,8 +172,8 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods) {
 }
 
 int v4j_file_open(const char *name, int mode) {
-	/* return fts_file_open(name,mode==4?"r":mode==2?"w":""); */
-	return open(name,mode);
+	return fts_file_open(name,mode==4?"r":mode==2?"w":"");
+/*	return open(name,mode); */
 }
 
 FILE *v4j_file_fopen(const char *name, int mode) {

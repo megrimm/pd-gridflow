@@ -35,6 +35,7 @@
 
 /* current version number as string literal */
 #define VIDEO4JMAX_VERSION "0.2.1"
+#define VIDEO4JMAX_COMPILE_TIME __DATE__ ", " __TIME__
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;

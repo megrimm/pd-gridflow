@@ -9,3 +9,5 @@ LDSOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
 
 ARCH_CFLAGS += -Wall -Wno-unused
 ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
+# ARCH_CFLAGS += -fomit-frame-pointer
+
