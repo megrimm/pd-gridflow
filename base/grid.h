@@ -212,7 +212,6 @@ static inline float64 ipow(float64 a, float64 b) { return pow(a,b); }
 
 #undef min
 #undef max
-
 /* minimum/maximum functions; T is assumed to be Comparable */
 template <class T> static inline T min(T a, T b) { return a<b?a:b; }
 template <class T> static inline T max(T a, T b) { return a>b?a:b; }
@@ -262,13 +261,15 @@ template <class T> int lowest_bit(T n) {
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 
-/* **************************************************************** */
+/* is little-endian */
+static inline bool is_le() {
+	int x=1;
+	return ((char *)&x)[0];
+}
 
 #if defined(HAVE_PENTIUM)
 static inline uint64 rdtsc() {
-	uint64 x;
-	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-	return x;
+	uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;
 }
 #elif defined(HAVE_PPC)
 static inline uint64 rdtsc() {
@@ -285,12 +286,6 @@ return 0;
 #else
 static inline uint64 rdtsc() {return 0;}
 #endif
-
-/* is little-endian */
-static inline bool is_le() {
-	int x=1;
-	return ((char *)&x)[0];
-}
 
 /* **************************************************************** */
 
@@ -317,10 +312,8 @@ static inline bool is_le() {
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
 /* **************************************************************** */
-/*
-  hook into pointer manipulation.
-  will help find memory corruption bugs.
-*/
+// hook into pointer manipulation. will help find memory corruption bugs.
+
 template <class T> class Pt {
 public:
 	T *p;
@@ -484,14 +477,7 @@ static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 
-/* you shouldn't use MethodDecl directly (used by source_filter.rb) */
-struct MethodDecl {
-	const char *selector;
-	RMethod method;
-};
-
 /* **************************************************************** */
-
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") \
 	MACRO(_int,"int")   MACRO(_float,"float") \
@@ -509,15 +495,13 @@ BUILTIN_SYMBOLS(FOO)
 } bsym;
 
 /* **************************************************************** */
-
-#define OBJECT_MAGIC 1618033989
-
 /* base class for C++ classes that get exported to Ruby.
    BTW: It's quite convenient to have virtual-methods in the base class
    because otherwise the vtable* isn't at the beginning of the object
    and that's pretty confusing to a lot of people, especially when simple
    casting causes a pointer to change its value. */
 struct CObject {
+#define OBJECT_MAGIC 1618033989
 	int32 magic;
 	Ruby rself; /* point to Ruby peer */
 	CObject() : magic(OBJECT_MAGIC), rself(0) {}
@@ -533,14 +517,17 @@ struct CObject {
 	virtual void mark() {} /* not used for now */
 };
 void CObject_free (void *);
+
+/* you shouldn't use MethodDecl directly (used by source_filter.rb) */
+struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 
 /* **************************************************************** */
-
-/* maximum number of dimensions in an array */
+// maximum number of dimensions in a grid
 #define MAX_DIMENSIONS 16
 
-/* a Dim is a list of dimensions that describe the shape of a grid */
+// a Dim is a list of dimensions that describe the shape of a grid
+\class Dim < CObject
 struct Dim : CObject {
 	int n;
 	Pt<int32> v; /* safe pointer */
@@ -556,6 +543,10 @@ struct Dim : CObject {
 		this->n = n;
 		COPY(this->v,Pt<int32>(v,n),n); check();
 	}
+	Dim()                 {v=Pt<int32>(v2,MAX_DIMENSIONS); n=0;                     check();}
+	Dim(int a)            {v=Pt<int32>(v2,MAX_DIMENSIONS); n=1;v[0]=a;              check();}
+	Dim(int a,int b)      {v=Pt<int32>(v2,MAX_DIMENSIONS); n=2;v[0]=a;v[1]=b;       check();}
+	Dim(int a,int b,int c){v=Pt<int32>(v2,MAX_DIMENSIONS); n=3;v[0]=a;v[1]=b;v[2]=c;check();}
 	Dim *dup() { return new Dim(n,v); }
 	int count() {return n;}
 	int get(int i) { return v[i]; }
@@ -572,6 +563,7 @@ struct Dim : CObject {
 		return true;
 	}
 };
+\end class Dim
 
 /* **************************************************************** */
 /* BitPacking objects encapsulate optimised loops of conversion */
@@ -860,6 +852,7 @@ static Numop2 *convert(Ruby x, Numop2 **bogus) {
 */
 typedef void (*DimConstraint)(Dim *d);
 
+\class Grid < CObject
 struct Grid : CObject {
 	Grid *next;
 	DimConstraint dc;
@@ -907,6 +900,7 @@ EACH_NUMBER_TYPE(FOO)
 	}
 	~Grid() {del();}
 };
+\end class Grid
 
 static inline Grid *convert (Ruby r, Grid **bogus) {
 	if (!r) return 0;
@@ -999,7 +993,8 @@ EACH_NUMBER_TYPE(FOO)
 } GridHandler;
 
 typedef struct  GridObject GridObject;
-struct GridInlet {
+\class GridInlet < CObject
+struct GridInlet : CObject {
 /* context information */
 	GridObject *parent;
 	const GridHandler *gh;
@@ -1029,6 +1024,7 @@ struct GridInlet {
 private:
 	template <class T> void from_grid2(Grid *g, T foo);
 };
+\end class GridInlet
 
 /* **************************************************************** */
 /* DECL/DECL3/METHOD3/GRCLASS : Ruby<->C++ bridge */
@@ -1065,7 +1061,7 @@ struct FClass {
 // GridOutlet represents a grid-aware outlet
 
 \class GridOutlet < CObject
-struct GridOutlet {
+struct GridOutlet : CObject {
 // these are set only once, at outlet creation
 	GridObject *parent;
 	int woutlet;
@@ -1129,15 +1125,13 @@ struct FObject : CObject {
 };
 \end class FObject
 
-/* 1 + maximum id of last grid-aware inlet/outlet */
-#define MAX_INLETS 4
-#define MAX_OUTLETS 4
-
 \class GridObject < FObject
 struct GridObject : FObject {
 	// NEW: 0.7.8:
 	//   'out' is now not handled by GridFlow itself.
 	//   it is also not an array anymore, and left there just for convenience.
+	/* 1 + maximum id of last grid-aware inlet/outlet */
+	#define MAX_INLETS 4
 	GridInlet  * in[MAX_INLETS];
 	GridOutlet *out;
 	/* Make sure you distinguish #close/#delete, and C++'s delete. The first
