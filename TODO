@@ -1,32 +1,38 @@
 /* $Id$ */
 
+"!" is planned for version 0.3.0
+
 Installation
 [ ] add --fast switch to turn  on all optimizations
 [ ] add --slow switch to turn off all optimizations
 
 Documentation
-[ ] op2: atan, **
+[!] op2: atan, **
+[!] op2: ALL
+[!] op2: relative speeds
 [ ] split reference.html into:
 	protocol.html operator.html format.html object.html
 [ ] document internals
-[ ] add credits
+[!] add credits
 [ ] add explanation of video4jmax vs jmax-videodsp
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
-[ ] validate samples/outside
-[ ] validate samples/020
+[!] validate samples/outside
+[!] validate samples/020
 [ ] H5 font-size is smaller than regular P font-size ?
 [ ] make real documentation for templates
 [ ] recategorize objects+templates together
 [ ] find a good XML editor
-[ ] find a good DTD/Schema for jMax/v4j/C or create one
-[ ] XMLize reference section
+[ ] create a good DTD/Schema for jMax/v4j/C
+[!] XMLize reference section
+[!] create JMAXML->HTML converter
 [ ] document use of [route grid_end], [route grid_begin]
 [ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
 [ ] improve protocol description
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
+[!] add list of new samples in ChangeLog
 
 General
 [ ] make FREE() handle #delete as possible
@@ -35,13 +41,9 @@ General
 [ ] how can I write unit tests or contracts?
 
 Computation Objects
-[!] @inner, @cartprod (?)
-[!] @redim (APL bin rho)
-[!] @slice (@splice ?)
-[ ] black option in @store
-[ ] @export_list
-[ ] @import~, @export~
-[ ] @import*, @export*
+[ ] @cartprod (?), @slice (@splice ?)
+[ ] black option in @store (?)
+[ ] @export_list, @import~, @export~, @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] listop, listfold
@@ -81,6 +83,8 @@ Input/Output
 [ ] add PTC / TinyPTC / SDL support
 [ ] x11 shared memory working
 [ ] add messages "load", "save" as open,bang,close combos.
+[ ] add NTSC<->PAL option
+[ ] fix RGB<->BGR<->??? palette issues
 
 File Formats
 [ ] Targa write support
@@ -88,8 +92,8 @@ File Formats
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
 [ ] MPEG support
-[!] multi-image (seq) (createable by cat, ar, tar or zip)
-[!] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
+[ ] multi-image (seq) (createable by cat, ar, tar or zip)
+[ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
 [ ] install libmpeg
 [ ] design generic grid format (.grid)
 [ ] rewinding file
