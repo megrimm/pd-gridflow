@@ -331,12 +331,13 @@ GRID_INLET(GridDownscaleBy,0) {
 	int32 v[3]={ a->get(0)/scaley, a->get(1)/scalex, a->get(2) };
 	out[0]->begin(new Dim(3,v),in->nt);
 	in->set_factor(a->get(1)*a->get(2));
+//!@#$	in->set_factor(a->get(1)*a->get(2)*scaley); <- things could be easier with this
 	int32 w[]={in->dim->get(1)/scalex,in->dim->get(2)};
 	temp.init(new Dim(2,w), in->nt);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp.dim->prod();
-	Pt<T> buf = (Pt<T>)temp;
+	Pt<T> buf = (Pt<T>)temp; //!@#$ maybe should be something else than T ?
 
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
@@ -685,8 +686,8 @@ GRID_INLET(DrawImage,0) {
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	int py = ((int32*)position)[0], rsy = image.dim->v[0], sy=in->dim->get(0);
 	int px = ((int32*)position)[1], rsx = image.dim->v[1], sx=in->dim->get(1);
-	fprintf(stderr,"rsy=%d rsx=%d sy=%d sx=%d py=%d px=%d\n",
-		rsy,rsx,sy,sx,py,px);
+//	fprintf(stderr,"rsy=%d rsx=%d sy=%d sx=%d py=%d px=%d\n",
+//		rsy,rsx,sy,sx,py,px);
 } GRID_FLOW {
 	int y = in->dex/in->factor;
 	if (position.nt != int32_type_i) RAISE("position has to be int32");
