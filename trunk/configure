@@ -272,7 +272,7 @@ $conf={
 def usage
 	log = ""
 	log << "usage: ./configure --arch architecture [--jmax-dist-dir directory] "
-	log << "[--fast] "
+	log << "[--debug] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	puts
 	while log.length>0 do puts log.slice!(/^.{1,70} /) end
@@ -292,10 +292,9 @@ while ARGV.length>0 do
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "won't check for feature #{name}"
 		$features_h.delete name
-	when "--fast" #!@#$
-		puts "Fast Mode (less error checking)"
-		$conf[:OPTIONS].push :HAVE_SPEED
-		#!@#$ what is BLAH ?
+	when "--debug"
+		puts "Debug Mode (more error checking; less speed)"
+		$conf[:OPTIONS].push :HAVE_DEBUG
 	when "--arch"; $conf[:ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
 	else puts "unknown option \"#{arg}\""; exit 1
@@ -495,21 +494,25 @@ File.open("config.h","w") {|f| f.puts "
 //\#include \"base/bridge_jmax.h\"
 \#endif
 
-#define FORMAT_LIST(_pre1_,_pre2_) \\"
-f.puts $conf[:FORMATS].map {|fmt| "  _pre1_ _pre2_##Format#{fmt}" }.join(",\\\n")
+#define FORMAT_LIST(_pre_,_post_) \\"
+f.puts $conf[:FORMATS].map {|fmt| "  _pre_ Format#{fmt}##_post_" }.join(",\\\n")
 
 for z in $conf[:OPTIONS] do
 	f.puts "#define #{z}"
 end
 if $conf[:FEATURES][:mpeg3]
 f.puts "
-
 \#ifdef LIBMPEG_INCLUDE_HERE
 \#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
 \#endif
 "
 end
-f.puts "", "#endif"
+
+f.puts "
+#ifndef HAVE_DEBUG
+#define HAVE_SPEED
+#endif
+#endif /* __CONFIG_H */"
 }
 
 puts "",

@@ -1,10 +1,12 @@
 /* $Id$ */
 
-"5" is planned for 0.5
 "6" is planned for 0.6
 "7" is planned for 0.7
+"8" is planned for 0.8
+"9" is planned for 0.9
 
 Distribution (0.6.0)
+[6] test format/mpeg.c
 [6] review all documentation
 [6] review all patches
 [6] upload on both web sites
@@ -60,7 +62,7 @@ Architecture
 	(add cancel option to the r/rw choice in callback of grid msg ?)
 [6] 2. Replace Object/Class/List/Dict/Stream by libruby.so
 [6] 3. Publish interfaces to Ruby side (scriptability)
-[6] 4. Abstract out jMax support
+[ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
 [ ] @print
 [ ] MMX memcpy() ?
@@ -84,19 +86,20 @@ Architecture
 
 Computation Objects
 [ ] @type, @cast
-[ ] @cartprod (?), @slice (@splice ?)
+[ ] @cartprod (?)
+[ ] @slice (@splice ?)
 [ ] black option in @store (?)
 [ ] @import~, @export~
 [ ] @import*, @export*
 [ ] see APL/J/NArray/PDL reference
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
-[ ] @scan
+[7] @scan
 [ ] @foldr, @scanr
-[ ] @inner is broken but useful; rename to @inner2; add real @inner
+[7] @inner is broken but useful; rename to @inner2; add real @inner
 [ ] @polygon
 [ ] @matrix_inverse, @matrix_solve
-[ ] @sort ?
-[ ] @transpose: dimension swapping
+[7] @sort ?
+[7] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
@@ -131,17 +134,16 @@ Input/Output
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
 [ ] Pixonix bridge
-[6] Ruby bridge
-[6] PureData bridge
+[7] PureData bridge
 [ ] Max bridge
 [ ] Gimp bridge
 [ ] Gnome/Gstreamer bridge
-[ ] TCP: move out of Grid
-[ ] TCP: non-blocking write
-[ ] TCP: non-blocking listen
-[ ] TCP Socket Buffering
-[ ] Grid: bpv 1,2,4,16,64
-[ ] Grid: signed/unsigned
+[7] TCP: move out of Grid
+[7] TCP: non-blocking write
+[7] TCP: non-blocking listen
+[7] TCP Socket Buffering
+[7] Grid: bpv 1,2,4,16,64
+[7] Grid: signed/unsigned
 [ ] MacOSX-Quartz output
 [ ] Win32-GDI output
 
@@ -177,8 +179,7 @@ jMax-UI
 [ ] 2d slider
 [ ] radial slider (angle chooser)
 
-UnitTesting/Bugs
-[6] intense memory corruption while running Ruby-for-jMax
+Bugs
 [ ] format_x11 causes delayed crash when closing its associated window
 [ ] format_x11 causes crash (resizing + shm, sometimes)
 [ ] distinguish "mod" and "%" properly (re: rounding)
@@ -186,10 +187,24 @@ UnitTesting/Bugs
 [ ] make better detection of libmpeg version
 [ ] detect and reject .a linkage
 [ ] possibly remove Number and sizeof(Number) (often does not make sense)
+[ ] write unit tests about required functionality
+[ ] write unit tests about error checking
+[6] Window does not close when @out is destroyed
+[6] profiler is broken
 
 Feature Requests
 
 From: Dave Bergevin <dabergevin@eisa.com> 
   [ ] synchronized audio with the video when using mpeg1 & 2
   [ ] full screen mode (without the menu bars or frames)
+
+From: Alexandre Castonguay <acastonguay@artengine.ca>
+  [ ] support for tcp/ip connections to control jmax objects (from a web 
+      interface)
+  [ ] server side jmax to handle multiple incoming commands, audio + video 
+      streams
+  [ ] support for audio in the mpeg streams
+
+From: CK <x@meta.lo-res.org>
+  [ ] a pd port ;)
 
