@@ -14,14 +14,12 @@ Distribution (0.6.1)
 Installation
 [ ] de-jmax-ify the build process; installable doc; installable includes
 [ ] produce binaries (.tar.gz .rpm .deb ?)
-[ ] replace --fast by opposite --debug option
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
-[ ] remove hostname.2y.net cvs repository
-[ ] matju homepage on artengine.ca ?
 [ ] less compile-time checks and more run-time checks
 [ ] remove /tmp/$$.c, /tmp/$$
 [ ] prevent CVS write access for anonymous account
+[ ] should GridFlow be bundled with some of its own dependencies?
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -57,7 +55,6 @@ Architecture
 	(add cancel option to the r/rw choice in callback of grid msg ?)
 [ ] replace current macro system by SWIG or Inline.rb ?
 [ ] better error handling
-[ ] @print
 [ ] MMX memcpy() ?
 [ ] runtime configurable packet_length
 [ ] change the protocol completely:
@@ -78,7 +75,7 @@ Architecture
 [ ] send-reply messages (imperative-style)
 [ ] replace whine() by post() everywhere
 [ ] add reflection (@global#classes, @global#methods, ...)
-[ ] add ~/.gridflow_startup
+[ ] jMax metaclasses -> Ruby runtime subclass creation
 
 Computation Objects
 [ ] @type, @cast
@@ -88,20 +85,20 @@ Computation Objects
 [ ] @import~, @export~
 [ ] @import*, @export*
 [ ] see APL/J/NArray/PDL reference
+[ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
-[ ] @scan
 [ ] @foldr, @scanr
-[ ] @inner is broken but useful; rename to @inner2; add real @inner
 [ ] @polygon
 [ ] @matrix_inverse, @matrix_solve
 [ ] @sort ?
+[ ] op_fold2 ?
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
 [ ] timelines as in MM-Director
 [ ] @replace_if
-[ ] geiger_metro, @random_select, @markov_chain
+[ ] @random_select, @markov_chain
 
 Effects
 [ ] improve
@@ -126,7 +123,6 @@ Effects
 
 Input/Output
 [ ] in-place editing (rw mode)
-[ ] implement byte-order support in BitPacking
 [ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] arguments to @in,@out could be a auto-open.
@@ -135,7 +131,6 @@ Input/Output
 [ ] Max bridge
 [ ] Gimp bridge
 [ ] Gnome/Gstreamer bridge
-[ ] TCP: move out of Grid
 [ ] TCP: non-blocking write
 [ ] TCP Socket Buffering
 [ ] Grid: bpv 1,2,4,16,64
@@ -186,10 +181,12 @@ Bugs
 [ ] write unit tests about error checking
 [ ] Window does not close when @out is destroyed
 [ ] profiler is severely broken
-[!] format/mpeg.c broken
+[ ] format/mpeg.c seems to crash more often?
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
 [!] tcp test is broken
 [ ] compiling without jMax nor PD should not require libruby.so
 [ ] issues with fork and X11 ?
+[ ] bug when FORMAT_LIST is empty
 
 Feature Requests
 

@@ -231,7 +231,6 @@ Feature.new {
 Feature.new {
 	tag :quicktime
 	name "HeroineWarrior's QuickTime file reader"
-	status :disabled
 	uses_so ["-lquicktime","-lpthread","-lpng","-ldl","-lglib"]
 	test proc {
 		c_test "
@@ -270,7 +269,7 @@ Feature.new {
 	options ["HAVE_PUREDATA"]
 	test proc {
 		c_test "
-			\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
+			\#include <m_pd.h>
 			int main (void) { return 0; }
 		"
 	}
@@ -323,7 +322,6 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_DEBUG
 	when "--jmax-arch"; $conf[:JMAX_ARCH]=ARGV.shift
 	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
-	when "--puredata-dist-dir"; $conf[:PUREDATA_SOURCES]=ARGV.shift
 	when "--help"; usage; exit 0
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
@@ -336,16 +334,6 @@ if not $conf[:JMAX_SOURCES]
 	else
 		#!@#$ should really disable.
 		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
-	end
-end
-
-if not $conf[:PUREDATA_SOURCES]
-	$conf[:PUREDATA_SOURCES]=`(cd ../..; echo $PWD)`.chomp
-	if FileTest.directory? $conf[:PUREDATA_SOURCES]+"/man/pd.1"
-		puts "assuming --puredata-dist-dir #{$conf[:PUREDATA_SOURCES]}"
-	else
-		#!@#$ should really disable.
-		puts "PureData disabled (otherwise use the --puredata-dist-dir option)"
 	end
 end
 
@@ -383,7 +371,14 @@ def try feature
 		end
 		return false
 	end
+	LOG.puts "-"*64, ""
 	DUAL.print "[#{feature.tag}] #{feature.name}: "
+	(feature.uses_feature||[]).find {|f|
+		if not $conf[:FEATURES][f]
+			DUAL.puts "disabled (would need #{f})"
+			return
+		end
+	}
 	if feature.status == :disabled
 		DUAL.puts "disabled (by author)"
 		return
@@ -564,7 +559,7 @@ f.puts "
 \#include \"#{$conf[:JMAX_SOURCES]}/include/fts/fts.h\"
 \#endif
 \#ifdef PUREDATA_INCLUDE_HERE
-\#include \"#{$conf[:PUREDATA_SOURCES]}/src/m_pd.h\"
+\#include <m_pd.h>
 \#endif
 "
 end
