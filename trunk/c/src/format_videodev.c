@@ -404,7 +404,7 @@ void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 	}
 }
 
-void FormatVideoDev_option (FormatVideoDev *$, int ac, const fts_atom_t *at) {
+void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
@@ -441,7 +441,7 @@ void FormatVideoDev_close (FormatVideoDev *$) {
 	FREE($);
 }
 
-Format *FormatVideoDev_open (FormatClass *class, int ac, const fts_atom_t *at, int mode) {
+Format *FormatVideoDev_open (FormatClass *class, ATOMLIST, int mode) {
 	const char *filename;
 	FormatVideoDev *$ = NEW(FormatVideoDev,1);
 	$->cl = &class_FormatVideoDev;
@@ -529,11 +529,11 @@ FormatClass class_FormatVideoDev = {
 
 	open: FormatVideoDev_open,
 	frames: 0,
-	frame:  FormatVideoDev_frame,
-	begin:  GRID_BEGIN_PTR(FormatVideoDev,0),
-	flow:   GRID_FLOW_PTR(FormatVideoDev,0),
-	end:    GRID_END_PTR(FormatVideoDev,0),
-	option: FormatVideoDev_option,
-	close:  FormatVideoDev_close,
+	frame:  (Format_frame_m)FormatVideoDev_frame,
+	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatVideoDev,0),
+	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatVideoDev,0),
+	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatVideoDev,0),
+	option: (Format_option_m)FormatVideoDev_option,
+	close:  (Format_close_m)FormatVideoDev_close,
 
 };

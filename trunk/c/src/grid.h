@@ -94,9 +94,11 @@
   see METHOD_PTR, METHOD, OBJ
 
 */
+
+#define ATOMLIST int ac, const fts_atom_t *at
+
 #define METHOD_ARGS(_class_) \
-	_class_ *self, int winlet, fts_symbol_t selector, \
-	int ac, const fts_atom_t *at
+	_class_ *self, int winlet, fts_symbol_t selector, ATOMLIST
 
 /*
   a header for a given method in a given class.
@@ -143,8 +145,7 @@
 
 /* a header for the class constructor */
 #define CLASS(_name_) \
-	fts_status_t _name_ ## _class_init \
-	(fts_class_t *class, int ac, const fts_atom_t *at)
+	fts_status_t _name_ ## _class_init (fts_class_t *class, ATOMLIST)
 
 /* returns the size of a statically defined array */
 #define COUNT(_array_) \
@@ -305,7 +306,7 @@ void define_many_methods(fts_class_t *class, int n, MethodDecl *methods);
 /* **************************************************************** */
 /* limits */
 
-/* not used for now */
+/* maximum size of any grid (256 megs in 32-bit, 64 megs in 8-bit) */
 #define MAX_NUMBERS 64*1024*1024
 
 /* used as maximum width, maximum height, etc. */
@@ -388,6 +389,9 @@ typedef struct BitPacking BitPacking;
 	uint8  *BitPacking_pack(BitPacking *$, int n, const Number *data, uint8 *target);
 	Number *BitPacking_unpack(BitPacking *$, int n, const uint8 *in, Number *out);
 	int     BitPacking_bytes(BitPacking *$);
+
+extern int builtin_bitpacks_n;
+extern BitPacking builtin_bitpacks[];
 
 /* **************************************************************** */
 /* operator.c */
@@ -503,7 +507,7 @@ struct GridInlet {
 #define GridInlet_NEW2(_parent_,_class_,_winlet_) \
 	GridInlet_new((GridObject *)_parent_, _winlet_, \
 		((GridBegin)_class_##_##_winlet_##_begin), \
-		((GridFlow2)(GridFlow)_class_##_##_winlet_##_flow2), \
+		(/*(GridFlow2)*/(GridFlow)_class_##_##_winlet_##_flow2), \
 		  ((GridEnd)_class_##_##_winlet_##_end), 6)
 
 /* **************************************************************** */
@@ -574,30 +578,35 @@ typedef enum FormatFlags {dummy_dummy} FormatFlags;
 typedef struct FormatClass FormatClass;
 typedef struct Format Format;
 
-struct FormatClass {
-	const char *symbol_name; /* short identifier */
-	const char *long_name; /* long identifier */
-	FormatFlags flags; /* future use (set to 0 please) */
-
-/* methods on this object */
-
-	/*
-	  mode=4 is reading; mode=2 is writing;
-	  other values are not used yet (not even 6)
-	*/
-	Format *(*open)(FormatClass *$, int ac, const fts_atom_t *at, int mode);
-
 /* methods on objects of this class */
-
 /* for reading, to outlet */
 	/* frames - how many frames there are (optional) */
-	int  (*frames)(Format *$);
+	typedef int (*Format_frames_m)(Format *$);
 	/*
 	  read a frame, sending to outlet
 	  if frame number is -1, pick up next frame (reloop after last)
 	  (if frames() is not implemented, only -1 is valid)
 	*/
-	bool (*frame) (Format *$, GridOutlet *out, int frame);
+	typedef bool (*Format_frame_m)(Format *$, GridOutlet *out, int frame);
+/* both in read and write mode */
+	/* all additional functionality */
+	typedef void (*Format_option_m)(Format *$, ATOMLIST);
+	/* destroys this object */
+	typedef void (*Format_close_m)(Format *$);
+
+struct FormatClass {
+	const char *symbol_name; /* short identifier */
+	const char *long_name; /* long identifier */
+	FormatFlags flags; /* future use (set to 0 please) */
+
+	/*
+	  mode=4 is reading; mode=2 is writing;
+	  other values are not used yet (not even 6)
+	*/
+	Format *(*open)(FormatClass *$, ATOMLIST, int mode);
+
+	Format_frames_m frames;
+	Format_frame_m frame;
 
 /* for writing, from inlet */
 	GRID_BEGIN_(Format,(*begin));
@@ -606,9 +615,8 @@ struct FormatClass {
 
 /* for both */
 	/* for misc options */
-	void (*option)(Format *$, int ac, const fts_atom_t *at);
-	void (*close) (Format *$);
-
+	Format_option_m option;
+	Format_close_m close;
 };
 
 #define Format_FIELDS \

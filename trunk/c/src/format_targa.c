@@ -132,7 +132,7 @@ void FormatTarga_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatTarga_open (FormatClass *class, int ac, const fts_atom_t *at, int mode) {
+Format *FormatTarga_open (FormatClass *class, ATOMLIST, int mode) {
 	const char *filename;
 	Format *$ = NEW(Format,1);
 	$->cl = &class_FormatTarga;

@@ -116,7 +116,7 @@ void FormatPPM_close (Format *$) {
 	FREE($);
 }
 
-Format *FormatPPM_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
+Format *FormatPPM_open (FormatClass *qlass, ATOMLIST, int mode) {
 	const char *filename;
 	Format *$ = NEW(Format,1);
 	$->cl     = &class_FormatPPM;

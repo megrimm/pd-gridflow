@@ -211,7 +211,7 @@ void FormatGrid_close (Format *$) {
 
 /* **************************************************************** */
 
-bool FormatGrid_open_file (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
+bool FormatGrid_open_file (FormatGrid *$, ATOMLIST, int mode) {
 	const char *filename;
 	whine("open_file: $->is_socket = %d", $->is_socket);
 	$->is_socket = false;
@@ -242,7 +242,7 @@ err:
 #include <netdb.h>
 #include <netinet/in.h>
 
-bool FormatGrid_open_tcp (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
+bool FormatGrid_open_tcp (FormatGrid *$, ATOMLIST, int mode) {
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -268,7 +268,7 @@ bool FormatGrid_open_tcp (FormatGrid *$, int ac, const fts_atom_t *at, int mode)
 		memcpy(&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
 	}
 
-	if (0>connect($->stream,&address,sizeof(address))) {
+	if (0>connect($->stream,(struct sockaddr *)&address,sizeof(address))) {
 		whine("open_tcp(connect): %s",strerror(errno));
 		goto err;
 	}
@@ -277,7 +277,7 @@ err:
 	return false;
 }
 
-bool FormatGrid_open_tcpserver (FormatGrid *$, int ac, const fts_atom_t *at, int mode) {
+bool FormatGrid_open_tcpserver (FormatGrid *$, ATOMLIST, int mode) {
 	struct sockaddr_in address;
 	$->is_socket = true;
 
@@ -297,7 +297,7 @@ err:
 
 /* **************************************************************** */
 
-Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
+Format *FormatGrid_open (FormatClass *qlass, ATOMLIST, int mode) {
 	FormatGrid *$ = NEW(FormatGrid,1);
 	const char *filename;
 	$->cl     = &class_FormatGrid;
@@ -326,9 +326,9 @@ Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int m
 		whine("open: $->is_socket = %d", $->is_socket);
 	}
 
-	return $;
+	return (Format *)$;
 err:
-	$->cl->close($);
+	$->cl->close((Format *)$);
 	return 0;
 }
 
@@ -341,10 +341,10 @@ FormatClass class_FormatGrid = {
 
 	open: FormatGrid_open,
 	frames: 0,
-	frame:  FormatGrid_frame,
-	begin:  GRID_BEGIN_PTR(FormatGrid,0),
-	flow:    GRID_FLOW_PTR(FormatGrid,0),
-	end:      GRID_END_PTR(FormatGrid,0),
+	frame:  (Format_frame_m)FormatGrid_frame,
+	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatGrid,0),
+	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatGrid,0),
+	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatGrid,0),
 	option: 0,
-	close:  FormatGrid_close,
+	close:  (Format_close_m)FormatGrid_close,
 };
