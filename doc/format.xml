@@ -237,6 +237,7 @@
 	<class name="format quicktime @in/@out">
 		<p>support for .mov files.</p>
 		<p>this format supports frame-seek and frame-tell.</p>
+		<p>uses the HeroineWarrior-Quicktime library (libquicktime.so)</p>
 
 		<method name="open quicktime file">
 			<arg name="filename" type="symbol" />
@@ -247,8 +248,10 @@
 			Must be set before the first frame is written.
 			only applies to @out. Choosing a codec is important
 			because codecs influence greatly the speed of
-			encoding, the size of the written file, and its
-			fidelity.
+			encoding, the speed of decoding,
+			the size of the written file, and its fidelity to the
+			original content. Note that there exist other Apple-QuickTime
+			codecs that are not supported by HeroineWarrior-QuickTime.
 		</method>
 	</class>
 

@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.7.1 - reference</title>
+<title>GridFlow 0.7.2 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.7.1 - reference index</h4>
+    <h4>GridFlow 0.7.2 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -173,14 +173,16 @@
 			values 0-255 <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format quicktime @in/@out">format quicktime @in/@out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
+ <p>support for .mov files.</p> <p>this format supports frame-seek and frame-tell.</p> <p>uses the HeroineWarrior-Quicktime library (libquicktime.so)</p> <br><b>method</b> open quicktime file <b>(</b><i>symbol</i> filename<b>)</b>   <br>
  <br><b>method</b> option codec <b>(</b><i>symbol</i> codec<b>)</b>   
 			allowed values: raw, jpeg, png, mjpa, yuv2, yuv4. 
 			Must be set before the first frame is written. 
 			only applies to @out. Choosing a codec is important 
 			because codecs influence greatly the speed of 
-			encoding, the size of the written file, and its 
-			fidelity. <br>
+			encoding, the speed of decoding, 
+			the size of the written file, and its fidelity to the 
+			original content. Note that there exist other Apple-QuickTime 
+			codecs that are not supported by HeroineWarrior-QuickTime. <br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format mpeg @in">format mpeg @in</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_mpeg.png" alt="[open mpeg file filename.mpeg]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>support for .mpeg files</p> <p>this format supports frame-seek and frame-tell.</p> <p>Two different libraries are available for dealing with 
@@ -372,7 +374,7 @@
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.7.1 Documentation<br>
+<p><font size="-1">GridFlow 0.7.2 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
