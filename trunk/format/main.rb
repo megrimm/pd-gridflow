@@ -468,7 +468,12 @@ module EventIO
 end
 
 class Format
-	class<<self; attr_reader :suffixes; end
+	class<<self
+		attr_reader :symbol_name
+		attr_reader :description
+		attr_reader :flags
+		attr_reader :suffixes
+	end
 	@suffixes = {}
 	def self.conf_format(flags,symbol_name,description,suffixes='')
 		@flags = flags
@@ -492,9 +497,8 @@ class FormatFile < Format
 		when /\.grid$/i;  FormatGrid.new(*a)
 		else
 			if not /\./=~file then raise "no filename suffix?" end
-			#GridFlow.post "suffixes=%s", @suffixes.inspect
 			suf=file.split(/\./)[-1]
-			h=suffixes[suf]
+			h=Format.suffixes[suf]
 			if not h then raise "unknown suffix '.#{suf}'" end
 			h.new(*a)
 		end
