@@ -21,11 +21,83 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+#----------------------------------------------------------------#
+
+require "rbconfig"
+require "ftools"
+include Config
+DESTDIR = CONFIG["sitedir"] + "/" + CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
+RUBY = "ruby"
+
+FILES = [
+  [:directory, "base/",
+    [:ruby, "main.rb"],
+    [:ruby, "MainLoop.rb"],
+  ],
+  [:directory, "format/",
+  ],
+  [:directory, "extra/",
+	[:ruby, "eval_server.rb"],
+	[:ruby, "smpte.rb"],
+	[:ruby, "server_2.rb"],
+	[:ruby, "server_1_grid.rb"],
+	[:ruby, "server_1_ppm.rb"],
+	[:ruby, "server_0.rb"],
+  ],
+]
+
+#----------------------------------------------------------------#
+# Generic Parts
+
 class Or
 	attr_reader :a
 	class<<self; alias [] new end
 	def initialize(*a) @a=a end
 end
+
+def launch2(log,*command)
+	log << command.join(" ") << "\n"
+	r,w = IO.pipe
+	child = launch(nil,w,w,*command)
+	w.close
+	log << r.readlines.join << "\n"
+	ret = join_pid child
+	log << "error \##{ret}\n" if ret>0
+	return ret<=0
+end
+
+def c_test code, *link
+	log = ""
+	log << code << "\n"
+	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
+	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
+	launch2 log,*command or return false
+	command = ["/tmp/#{$$}"]
+	launch2 log,*command or return false
+	true
+ensure
+	LOG.puts log
+end
+
+def launch stdin,stdout,stderr,*command # -> returncode
+	child = fork
+	if not child then
+		STDIN.reopen stdin if stdin
+		STDOUT.reopen stdout if stdout
+		STDERR.reopen stderr if stderr
+		exec *command
+		STDERR.puts "SHOULD NOT GET THERE"
+		exit!
+	end
+	child
+end
+
+def join_pid pid
+	Process.waitpid2(pid)[1]
+end
+
+#----------------------------------------------------------------#
+# Specific to the GridFlow project
 
 class Feature
 	def initialize(&b)
@@ -160,10 +232,9 @@ Feature.new {
 	name "IRCAM's jMax 2.5"
 	test proc {
 		has_jmax "-DLINUXPC" and #!@#$ nonportable
-		File.exist?($conf[:JMAXROOTDIR]+"/include/fts/lang/mess.h")
+		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
 	}
 	options ["HAVE_JMAX_2_5"]
-	action proc { $conf[:JMAX_VERSION]="25" }
 },
 Feature.new {
 	tag :jmax30
@@ -172,10 +243,9 @@ Feature.new {
 	status :disabled
 	test proc {
 		has_jmax "-DLINUXPC" and #!@#$ nonportable
-		File.exist?($conf[:JMAXROOTDIR]+"/include/ftsconfig.h")
+		File.exist?($conf[:JMAX_SOURCES]+"/include/ftsconfig.h")
 	}
 	options ["HAVE_JMAX_3_0"]
-	action proc { $conf[:JMAX_VERSION]="30" }
 },
 Feature.new {
 	tag :puredata
@@ -190,7 +260,6 @@ $features.each {|f| $features_h[f.tag]=f }
 
 $conf={
 	:ARCH => nil,
-	:JMAX_VERSION => :unknown,
 	:LDSOFLAGS => ["-lm","-lruby"],
 	:FEATURES => {},
 	:FORMATS => ["PPM","Targa","Grid"],
@@ -225,85 +294,34 @@ while ARGV.length>0 do
 		$features_h.delete name
 	when "--fast" #!@#$
 		puts "Fast Mode (less error checking)"
-		$conf[:OPTIONS].push :HAVE_SPEED, :BLAH
+		$conf[:OPTIONS].push :HAVE_SPEED
 		#!@#$ what is BLAH ?
-	when "--no-profiling" #!@#$
-		puts "No Profiling"
-		$conf[:HAVE_PROFILING]=false
-	when "--arch"
-		$conf[:ARCH]=ARGV.shift
-	when "--jmax-dist-dir"
-		$conf[:JMAXROOTDIR]=ARGV.shift
-	else
-		puts "unknown option \"#{arg}\""
-		exit 1
+	when "--arch"; $conf[:ARCH]=ARGV.shift
+	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
+	else puts "unknown option \"#{arg}\""; exit 1
 	end
 end
 
-if not $conf[:JMAXROOTDIR]
-	$conf[:JMAXROOTDIR]=`(cd ../..; echo $PWD)`
-	if FileTest.directory? $conf[:JMAXROOTDIR]+"/Makefiles"
-		puts "assuming --jmax-dist-dir $JMAXROOTDIR"
+if not $conf[:JMAX_SOURCES]
+	$conf[:JMAX_SOURCES]=`(cd ../..; echo $PWD)`
+	if FileTest.directory? $conf[:JMAX_SOURCES]+"/Makefiles"
+		puts "assuming --jmax-dist-dir #{$conf[:JMAX_SOURCES]}"
 	else
 		puts "jMax disabled (otherwise use the --jmax-dist-dir option)"
 	end
 end
 
-if $conf[:ARCH] == nil
-	usage; exit 1
-end
+if not $conf[:ARCH]; usage; exit 1; end
 
 LOG = File.open "./config.log", "w"
 
 #--------------------------------#
-
-def launch2(log,*command)
-	log << command.join(" ") << "\n"
-	r,w = IO.pipe
-	child = launch(nil,w,w,*command)
-	w.close
-	log << r.readlines.join << "\n"
-	ret = join_pid child
-	log << "error \##{ret}\n" if ret>0
-	return ret<=0
-end
-
-def c_test code, *link
-	log = ""
-	log << code << "\n"
-	File.open("/tmp/#{$$}.c","w") {|f| f.puts code }
-	command = ["/usr/bin/env", "gcc", "/tmp/#{$$}.c", "-o", "/tmp/#{$$}", *link]
-	launch2 log,*command or return false
-	command = ["/tmp/#{$$}"]
-	launch2 log,*command or return false
-	true
-ensure
-	LOG.puts log
-end
 
 def has_jmax(*link); c_test '
 	#include "fts/fts.h"
 /*	int main (void) { puts(FTS_VERSION_STRING); return 0; } */
 	int main (void) { return 0; }
 ', *link
-# log gcc /tmp/$$.c -I${JMAXROOTDIR}/include -DARCH=$ARCH -DLINUXPC -o /tmp/$$ \
-end
-
-def launch stdin,stdout,stderr,*command # -> returncode
-	child = fork
-	if not child then
-		STDIN.reopen stdin if stdin
-		STDOUT.reopen stdout if stdout
-		STDERR.reopen stderr if stderr
-		exec *command
-		STDERR.puts "SHOULD NOT GET THERE"
-		exit!
-	end
-	child
-end
-
-def join_pid pid
-	Process.waitpid2(pid)[1]
 end
 
 DUAL = Object.new
@@ -378,24 +396,68 @@ $conf[:LDSOFLAGS].uniq!
 #--------------------------------#
 
 puts ""
-for z in [:ARCH, :JMAX_VERSION, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
+for z in [:ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES] do
   puts "#{z}: #{$conf[z].inspect}"
 end
 puts ""
 
 #--------------------------------#
+# extconf.rb
+
+def install_files(f,base,entries)
+  entries.each {|type,name,*rest|
+    case type
+    when :ruby
+      f.puts "\tinstall --mode 644 #{base+name} $(RUBYDESTDIR)/gridflow/#{base+name}"
+    when :directory
+      f.puts "\tmkdir -p $(RUBYDESTDIR)/gridflow/#{base+name}"
+      install_files(f,base+name,rest) 
+    end
+  }
+end
+
+def uninstall_files(f,base,entries)
+  entries.each {|type,name,*rest|
+    case type
+    when :ruby
+      f.puts "\trm $(RUBYDESTDIR)/gridflow/#{base+name}"
+    when :directory
+      uninstall_files(f,base+name,rest) 
+    end
+  }
+end
+
+def make_makefile f
+    f.puts "RUBYDESTDIR = #{DESTDIR}", ""
+    f.puts "RUBY = #{RUBY}"
+    f.puts "ruby-all::", ""
+#   f.puts "Makefile: extconf.rb", "\t$(RUBY) extconf.rb", ""
+    f.puts "ruby-install::"
+    install_files(f,"",FILES)
+    f.puts
+    f.puts "ruby-uninstall::"
+    uninstall_files(f,"",FILES)
+    f.puts
+end
+
+#--------------------------------#
 puts "generating ./config.make"
 File.open("./config.make","w") {|f| f.puts "
+
+RUBYARCH=#{CONFIG["arch"]}
+
 ifndef ARCH
 ARCH=#{$conf[:ARCH]}
 endif
-JMAX_VERSION=#{$conf[:JMAX_VERSION]}
 "
+if $conf[:OPTIONS].include? "HAVE_JMAX_2_5"
 f.puts "
-JMAXROOTDIR=#{$conf[:JMAXROOTDIR]}
-JMAXDISTDIR=#{$conf[:JMAXROOTDIR]}
+JMAXROOTDIR=#{$conf[:JMAX_SOURCES]}
+JMAXDISTDIR=#{$conf[:JMAX_SOURCES]}
 include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
-" if $conf[:JMAX_VERSION]
+"
+end
+
 f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
 
 for z in $conf[:OPTIONS] do
@@ -413,6 +475,7 @@ for format in $conf[:FORMATS] do
 	f.puts "format/#{format.downcase}.c \\"
 end
 f.puts ""
+make_makefile f
 }
 
 #--------------------------------#
@@ -452,3 +515,6 @@ f.puts "", "#endif"
 puts "",
 "please see ./config.log for the details of the configuration tests",
 ""
+
+
+

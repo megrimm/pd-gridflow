@@ -17,7 +17,6 @@ Installation
 [ ] replace --fast by opposite --debug option
 [ ] introduce jMax 3.x support (whenever jMax 3.x itself is ready)
 [ ] add macos 10.x support (i need access to a mac)
-[ ] detect and reject .a linkage
 [ ] remove hostname.2y.net cvs repository
 [ ] bring hostname.2y.net back up if possible
 [ ] matju homepage on artengine.ca ?
@@ -44,8 +43,6 @@ Documentation
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document asymptotic cpu+memory usage
 [ ] document internals
-[ ] document gridflow-for-C
-[ ] document gridflow-for-Ruby
 [ ] document backward compatibility issues
 [ ] typical uses: <typical></typical>
 --- remember to keep doc/help/screenshots/samples up to date
@@ -56,7 +53,6 @@ Architecture
 [6] C Stream -> Ruby IO/File/TCPSocket
 [6] C GridHandler -> Ruby GridHandler
 [6] C Format -> Ruby GFFormat
-[6] C GridObject -> Ruby GFObject
 [6] 0. Design the GF-1.0 architecture (new internals documentation)
 [6] 1. Single-Message Grids (grid_begin,grid_flow,grid_end -> grid)
 	identify streams by ids given at grid msg
@@ -181,11 +177,18 @@ jMax-UI
 [ ] radial slider (angle chooser)
 
 UnitTesting/Bugs
+[6] intense memory corruption while running Ruby-for-jMax
 [ ] format_x11 causes delayed crash when closing its associated window
 [ ] format_x11 causes crash (resizing + shm, sometimes)
 [ ] distinguish "mod" and "%" properly (re: rounding)
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
-[ ] libmpeg fubar on SuSE
-[ ] Dict_each limitation
+[ ] detect and reject .a linkage
 [ ] possibly remove Number and sizeof(Number) (often does not make sense)
+
+Feature Requests
+
+From: Dave Bergevin <dabergevin@eisa.com> 
+  [ ] synchronized audio with the video when using mpeg1 & 2
+  [ ] full screen mode (without the menu bars or frames)
+
