@@ -359,16 +359,13 @@ module EventIO
 	end
 
 	def try_read(dummy=nil)
-#		while @action
 		n = @chunksize-(if @buffer then @buffer.length else 0 end)
-#		puts "tell: #{@stream.tell}"
 		t = @stream.read(n) # or raise EOFError
 		if not t
 			raise "heck" if not @stream.eof?
 			rewind
 			t = @stream.read(n) or raise "can't read any of #{n} bytes?"
 		end
-		#return if not t
 		if @buffer then @buffer << t else @buffer = t end
 		if @buffer.length == @chunksize
 			action,buffer = @action,@buffer
@@ -376,7 +373,6 @@ module EventIO
 			@clock.unset
 			action.call buffer
 		end
-#		end#while
 	rescue Errno::EAGAIN
 		GridFlow.post "read would block"
 	end
@@ -533,11 +529,19 @@ class FormatGrid < Format; include EventIO
 		raw_open mode,source,*args
 	end
 
+	def post(*s)
+		# because i'm using miller_0_38 and it can't disable the console
+		# i am using fprintf stderr instead of post.
+		### STDERR.puts(sprintf(*s))
+		# disabled because i don't need it now
+	end
+
 	# rewinding and starting
 	def frame
 		raise "can't get frame when there is no connection" if not @stream
 		raise "already waiting for input" if read_wait?
 		return false if eof?
+		post "----- 1"
 		if @headerless then
 			@n_dim=@headerless.length
 			@dim = @headerless
@@ -548,8 +552,11 @@ class FormatGrid < Format; include EventIO
 		else
 			on_read(8) {|data| frame1 data }
 		end
+		post "----- 2"
 		(try_read nil while read_wait?) if not TCPSocket===@stream
+		post "----- 3"
 		super
+		post "----- 4"
 	end
 
 	def set_bufsize
@@ -564,6 +571,7 @@ class FormatGrid < Format; include EventIO
 
 	# the header
 	def frame1 data
+		post "----- frame1"
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
 		@endian = case head
 			when "\x7fGRID"; ENDIAN_BIG
@@ -584,6 +592,7 @@ class FormatGrid < Format; include EventIO
 
 	# the dimension list
 	def frame2 data
+		post "----- frame2"
 		@dim = data.unpack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end)
 		set_bufsize
 		if @prod > GridFlow.max_size
@@ -599,6 +608,7 @@ class FormatGrid < Format; include EventIO
 
 	# for each slice of the body
 	def frame3 data
+		post "----- frame3 with dex=#{@dex.inspect}, prod=#{@prod.inspect}"
 		n = data.length
 		nn = n*8/@bpv
 		# is/was there a problem with the size of the data being read?
@@ -616,7 +626,7 @@ class FormatGrid < Format; include EventIO
 			send_out_grid_flow 0, data
 			@dex += data.length/4
 		end
-		if @dex == @prod
+		if @dex >= @prod
 			@clock.unset
 		else
 			on_read(bufsize) {|data| frame3 data }
@@ -628,7 +638,7 @@ class FormatGrid < Format; include EventIO
 			raise "can't send frame when there is no connection"
 		end
 		@dim = inlet_dim 0
-		GridFlow.post "@dim=#{@dim.inspect}"
+		post "@dim=#{@dim.inspect}"
 		return if @headerless
 		# header
 		@stream.write(
