@@ -263,3 +263,8 @@ puredata-install::
 	@#nothing
 
 endif # HAVE_PUREDATA
+
+
+
+beep::
+	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
