@@ -1,5 +1,5 @@
 PNAME=video4jmax
-JMAXDISTDIR=../..
+include config.make
 include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 
 all:

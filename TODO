@@ -1,9 +1,17 @@
 /* $Id$ */
 
+Installation
+[ ]
+
+Documentation
+[ ] review reference.html
+[ ] review images of reference.html
+[ ] change title bar
+[ ] validate samples/inside
+[ ] validate samples/outside
+[ ] validate samples/020
+
 General
-[ ] ./configure
-[ ] INCLUDE UP-TO-DATE DOC!!!
-[ ] UPDATE "samples/" !!!!
 [ ] remove memory leaks, segmentation faults
 [ ] better error handling
 

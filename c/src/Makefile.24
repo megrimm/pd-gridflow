@@ -14,7 +14,7 @@ TOCLEAN = $(PACKAGELIB)
 
 include $(DISTDIR)/Makefiles/Makefile.lib.end
 
-MODULE_SOFLAGS += -L/usr/X11R6/lib -lX11 -lXext
+MODULE_SOFLAGS += -L/usr/X11R6/lib -lX11 -lXext -lm
 
 
 ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g

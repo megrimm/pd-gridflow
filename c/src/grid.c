@@ -173,7 +173,7 @@ void GridOutlet_send_direct(GridOutlet *$, int n, const Number *data) {
 		fts_atom_t a[2];
 		int i;
 		fts_set_int(a+0,pn);
-		fts_set_ptr(a+1,data); /* gcc-warning here, don't worry */
+		fts_set_ptr(a+1,(void*)(long)data); /* explicitly removing const */
 		fts_outlet_send(OBJ($->parent),0,sym_grid_packet,COUNT(a),a);
 		data += pn;
 		n -= pn;

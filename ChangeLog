@@ -1,16 +1,18 @@
 /* $Id$ */
 
 version 0.2.1:
- * configuration script
- * some cleanups
- * @store no longer slowing down everything it touches
- * many things work faster
+ * added private CVS repository on hostname.2y.net
+ * added configuration script (detects video4linux 1.x)
+ * added documentation in HTML format
  * added File Format API
- * File Format "ppm": PPM support read-write
- * File Format "videodev": Video4linux read (only works with dc1plus.o)
- * Tuple -> Dim, Index -> (removed)
+	* format "ppm": PPM P6 RGB24 support read-write
+	* format "targa": Targa RGB24 support read-write
+	* format "videodev": Video4linux read (only works with dc1plus.o)
+ * @store no longer slowing down its downstream
+ * many other accelerations
+ * Tuple changed to Dim; Index removed
  * Grid element type is typedef Number
- * @ seems to be supporting grids in right inlet
+ * @ supports grids in right inlet
 
 version 0.2.0:
  * package name changed from "video" to "video4jmax"

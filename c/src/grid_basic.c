@@ -25,7 +25,7 @@
 
 #include "video4jmax.h"
 #include "grid.h"
-#include "math.h"
+#include <math.h>
 
 /* **************************************************************** */
 /*
@@ -365,8 +365,8 @@ DEF_OP(le,  a <= b)
 DEF_OP(lt,  a <  b)
 DEF_OP(ge,  a >= b)
 
-DEF_OP(sin, (int)(b * sin(a * 2 * PI / 36000)))
-DEF_OP(cos, (int)(b * cos(a * 2 * PI / 36000)))
+DEF_OP(sin, (int)(b * sin(a * 2 * M_PI / 36000)))
+DEF_OP(cos, (int)(b * cos(a * 2 * M_PI / 36000)))
 
 #define DECLOP(__name,__sym) \
 	{ 0, __sym, &op_##__name, &op_array_##__name }
@@ -406,8 +406,8 @@ Operation optable[] = {
 	DECLOP(lt,  "<"),
 	DECLOP(ge,  ">="), //!@#$
 
-	DECLOP(sin, "sin*")
-	DECLOP(cos, "cos*")
+	DECLOP(sin, "sin*"),
+	DECLOP(cos, "cos*"),
 };
 
 /* **************************************************************** */

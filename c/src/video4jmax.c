@@ -52,7 +52,8 @@ void VideoOutFile_config (void);
 void VideoInFile_config (void);
 
 void video4jmax_module_init (void) {
-	post("Welcome to Video4jmax!\n");
+	post("Welcome to Video4jmax !\n");
+	post("Version: " VIDEO4JMAX_VERSION "\n");
 	post("--- Video4jmax startup: begin ---\n");
 
 	#define DEF_SYM(_sym_) \
@@ -176,5 +177,6 @@ int v4j_file_open(const char *name, int mode) {
 
 FILE *v4j_file_fopen(const char *name, int mode) {
 	int fd = v4j_file_open(name,mode);
+	if (fd<0) return 0;
 	return fdopen(fd,mode==4?"r":mode==2?"w":"");
 }
