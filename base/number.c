@@ -254,6 +254,7 @@ Dim *Dim_new2(int n, int *v, const char *file, int line) {
 		assert_range(v[i],0,MAX_INDICES);
 		$->v[i] = v[i];
 	}
+	Dim_invariant($);
 	return $;
 }
 

@@ -165,6 +165,9 @@ char *rb_sym_name(VALUE sym) {
 
 void FObject_send_out_3(int *argc, VALUE **argv, VALUE *sym, int *outlet) {
 	if (*argc<1) RAISE("not enough args");
+	{int i; for(i=0; i<(*argc); i++)
+		fprintf(stderr,"%s\n",
+			RSTRING(rb_funcall((*argv)[i],rb_intern("inspect"),0))->ptr);}
 	*outlet = NUM2INT(**argv);
 	if (*outlet<0 || *outlet>9 /*|| *outlet>real_outlet_max*/)
 		RAISE("invalid outlet number");
@@ -214,7 +217,12 @@ VALUE FObject_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
 	c_peer->foreign_peer = foreign_peer;
 	$ = Data_Wrap_Struct(qlass, FObject_mark, FObject_sweep, c_peer);
 	c_peer->peer = $;
-	c_peer->grid_class = FIX2PTR(rb_ivar_get(qlass,rb_intern("@grid_class")));
+	{
+		VALUE gc2 = rb_ivar_get(qlass,rb_intern("@grid_class"));
+		if (gc2==Qnil) RAISE("@grid_class not found in %s",
+			RSTRING(rb_funcall(qlass,rb_intern("inspect"),0))->ptr);
+		c_peer->grid_class = gc2==Qnil ? 0 : FIX2PTR(gc2);
+	}
 	rb_hash_aset(keep,$,Qtrue); /* prevent sweeping */
 
 	rb_funcall2($,rb_intern("initialize"),argc,argv);
@@ -260,13 +268,10 @@ static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 VALUE gf_ruby_init$1 (void *foo) {
 	gf_install_bridge();
 	disable_signal_handlers(); /* paranoid; help me with gdb */
-	rb_define_method(GridFlow_module,"exec",GridFlow_exec,2);
 	rb_eval_string(
 		"begin\n"
 /*			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n" */
 			"require 'base/main.rb'\n"
-			"require '/home/projects/gridflow/extra/eval_server.rb'\n"
-			"$esm = EvalServerManager.new\n"
 /*
 			"require '/home/projects/gridflow/extra/TkRubyListener.rb'\n"
 			"$root = TkRoot.new { title 'GridFlow console' }\n"
@@ -306,10 +311,11 @@ void gf_init (void) {
 	gf_alloc_set  = rb_hash_new();
 	gf_object_set = rb_hash_new();
 
-	rb_eval_string("module GridFlow; end");
-	GridFlow_module = rb_eval_string("GridFlow");
-
+	GridFlow_module = rb_eval_string("module GridFlow; self; end");
+	rb_define_singleton_method(GridFlow_module,"exec",GridFlow_exec,2);
 	rb_ivar_set(GridFlow_module, rb_intern("@fobjects_set"), rb_hash_new());
+	rb_ivar_set(GridFlow_module, rb_intern("@fclasses_set"), rb_hash_new());
+
 	FObject_class = rb_define_class_under(GridFlow_module, "FObject", rb_cObject);
 	DEF(FObject, send_out, -1);
 	SDEF(FObject, install, 3);
@@ -318,9 +324,9 @@ void gf_init (void) {
 //	disable_signal_handlers();
 	srandom(time(0));
 
-	post("Welcome to GridFlow " GF_VERSION);
-	post("Compiled on: " GF_COMPILE_TIME);
-	post("--- GridFlow startup: begin ---");
+	post("Welcome to GridFlow " GF_VERSION "\n");
+	post("Compiled on: " GF_COMPILE_TIME "\n");
+	post("--- GridFlow startup: begin ---\n");
 
 	showenv("LD_LIBRARY_PATH");
 	showenv("LIBRARY_PATH");
@@ -332,7 +338,7 @@ void gf_init (void) {
 	startup_grid();
 	startup_flow_objects();
 
-	gf_ruby_init$1(0);
+	rb_rescue(gf_ruby_init$1,0,gf_ruby_init$2,0);
 
 	post("--- GridFlow startup: end ---\n");
 }
