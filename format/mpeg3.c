@@ -83,7 +83,10 @@ GRID_FLOW(FormatMPEG3,0) {}
 GRID_END(FormatMPEG3,0) {}
 
 static void FormatMPEG3_close (FormatMPEG3 *$) {
-	if ($->mpeg) mpeg3_close($->mpeg);
+	if ($->mpeg) {
+		mpeg3_close($->mpeg);
+		$->mpeg=0;
+	}
 	FREE($);
 }
 
@@ -96,16 +99,11 @@ mode, int argc, VALUE *argv) {
 
 	if (!$) return 0;
 
-	if (argc!=2 || argv[0] != SYM(file)) {
-		whine("usage: mpeg file <filename>"); goto err;
-	}
+	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: mpeg file <filename>");
 	filename = rb_id2name(SYM2ID(argv[1]));
 
 	$->mpeg = mpeg3_open(strdup(filename));
-	if (!$->mpeg) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
-	}
+	if (!$->mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 
 	$->bit_packing = BitPacking_new(is_le(),3,0x0000ff,0x00ff00,0xff0000);
 
