@@ -766,11 +766,11 @@ BUILTIN_SYMBOLS(FOO)
 
 	startup_formats();
 
-#ifdef MACOSX
-	EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
-#else
-	EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
-#endif
+	if (strcmp(RUBY_ARCH,"powerpc-darwin")==0) {
+		EVAL("GridFlow.formats[:window] = GridFlow.formats[:quartz]");
+	} else {
+		EVAL("GridFlow.formats[:window] = GridFlow.formats[:x11]");
+	}
 	EVAL("GridFlow.load_user_config");
 
 	signal(11,SIG_DFL); /* paranoia */
