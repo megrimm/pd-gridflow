@@ -341,3 +341,6 @@ struct FormatDC1394 : Format {
 		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));
 }
 \end class FormatDC1394
+void startup_dc1394 () {
+	\startall
+}

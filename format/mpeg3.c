@@ -93,3 +93,6 @@ struct FormatMPEG3 : Format {
 	" (using HeroineWarrior\\'s)';suffixes_are'mpg,mpeg'");
 }
 \end class FormatMPEG3
+void startup_mpeg3 () {
+	\startall
+}

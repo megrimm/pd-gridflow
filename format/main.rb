@@ -40,9 +40,8 @@ OurByteOrder = case [1].pack("L")
         else raise "Cannot determine byte order" end
 
 class Format < GridObject
-	FF_R,FF_W = 4,2
+	FF_R,FF_W = 4,2 # flags indicating support of :in and :out respectively.
 	attr_accessor :parent
-
 =begin API (version 0.8)
 	mode is :in or :out
 	def initialize(mode,*args) :
@@ -63,19 +62,14 @@ class Format < GridObject
 		note that trying to read a nonexistent frame should no longer
 		rewind automatically (@in handles that part), nor re-read the
 		last frame (mpeg/quicktime used to do this)
-	def seek(Integer i) :
-		select one frame to be read next (by number)
-	def length() : ^Integer
-		returns number of frames (never implemented ?)
-	def close() :
-		close a handler
+	def seek(Integer i) :     select one frame to be read next (by number)
+	def length() : ^Integer   returns number of frames (never implemented ?)
+	def close() :             close a handler
 	inlet 0 :
 		grid : frame to write
 		other : special options
-	outlet 0 :
-		grid : frame just read
-	outlet 1 :
-		everything else
+	outlet 0 : grid : frame just read
+	outlet 1 : everything else
 =end
 
 	def initialize(mode,*)
@@ -158,11 +152,9 @@ class Format < GridObject
 		#!@#$ goes in FormatGrid ?
 		#!@#$ bug: should not be able to modify this _during_ a transfer
 		case arg
-		when :uint8; @bpv=8
-			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-		when :int16; @bpv=16
-			@bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
-		when :int32; @bpv=32
+		when :uint8; @bpv=8; @bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+		when :int16; @bpv=16; @bp=BitPacking.new(ENDIAN_LITTLE,1,[0xffff])
+		when :int32; @bpv=32; @bp=nil
 		else raise "unsupported number type: #{arg}"
 		end
 	end
@@ -282,8 +274,7 @@ GridObject.subclass("#out",1,1) {
 
 	def log
 		time = Time.new
-		GridFlow.post(
-			"\#out: frame#%04d time: %10.3f s; diff: %5d ms",
+		post("\#out: frame#%04d time: %10.3f s; diff: %5d ms",
 			@framecount, time, ((time-@time)*1000).to_i)
 		@time = time
 	end
@@ -345,7 +336,7 @@ module EventIO
 			action.call buffer
 		end
 	rescue Errno::EAGAIN
-		GridFlow.post "read would block"
+		post "read would block"
 	end
 
 	def raw_open_gzip_in(filename)
@@ -405,21 +396,21 @@ module EventIO
 			if RUBY_VERSION < "1.6.6"
 				raise "use at least 1.6.6 (reason: bug in socket code)"
 			end
-			GridFlow.post "-----------"
+			post "-----------"
 			time = Time.new
 			TCPSocket.do_not_reverse_lookup = true # hack
 			@stream = TCPSocket.open(args[0].to_s,args[1].to_i)
-			GridFlow.post "----------- #{Time.new-time}"
+			post "----------- #{Time.new-time}"
 			@stream.nonblock = true
 			@stream.sync = true
 			@clock.delay @delay
 		when :tcpserver
 			TCPSocket.do_not_reverse_lookup = true # hack
 			TCPServer.do_not_reverse_lookup = true # hack
-			GridFlow.post "-----------"
+			post "-----------"
 			time = Time.new
 			@acceptor = TCPServer.open(args[0].to_s)
-			GridFlow.post "----------- #{Time.new-time}"
+			post "----------- #{Time.new-time}"
 			@acceptor.nonblock = true
 			#$tasks[self] = proc {self.try_accept} #!!!!!
 		else
@@ -433,7 +424,6 @@ module EventIO
 	end
 end
 
-# this is the format autodetection proxy and should be defined before all other formats
 Format.subclass("#io:file",1,1) {
 	def self.new(mode,file)
 		file=file.to_s
@@ -464,22 +454,21 @@ Format.subclass("#io:grid",1,1) {
 	This is the Grid format I defined:
 	1 uint8: 0x7f
 	4 uint8: "GRID" big endian | "grid" little endian
-	1 uint8: bits per value (supported: 32)
+	1 uint8: type {
+		number of bits in 8,16,32,64, plus one of: 1:unsigned 2:float
+		but float8,float16 are not allowed (!)
+	}
 	1 uint8: reserved (supported: 0)
 	1 uint8: number of dimensions N (supported: at least 0..4)
 	N uint32: number of elements per dimension D[0]..D[N-1]
 	raw data goes there.
 =end
-
 	# bits per value: 32 only
 	attr_accessor :bpv # Fixnum: bits-per-value
-
 	# endianness
 	# attr_accessor :endian # ENDIAN_LITTLE or ENDIAN_BIG
-
 	# IO or File or TCPSocket
 	attr_reader :stream
-
 	# nil=headerful; array=assumed dimensions of received grids
 	#attr_accessor :headerless
 
@@ -730,8 +719,9 @@ Format.subclass("#io:ppm",1,1) {
 		dim = inlet_dim 0
 		raise "expecting (rows,columns,channels)" if dim.length!=3
 		raise "expecting channels=3" if dim[2]!=3
-		@stream.write "P6\n" \
-		"# generated using GridFlow #{GF_VERSION}\n#{dim[1]} #{dim[0]}\n255\n"
+		@stream.write "P6\n"
+		@stream.write "# generated using GridFlow #{GF_VERSION}\n"
+		@stream.write "#{dim[1]} #{dim[0]}\n255\n"
 		@stream.flush
 		inlet_set_factor 0, 3
 	end
@@ -763,12 +753,10 @@ targa header is like:
 
 	def set_bitpacking depth
 		@bp = case depth
-		when 24
-			# endian here doesn't seem to be changing much ?
-			BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
-		when 32
-			BitPacking.new(ENDIAN_LITTLE,4,
-				[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
+		#!@#$ endian here doesn't seem to be changing much ?
+		when 24; BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
+		when 32; BitPacking.new(ENDIAN_LITTLE,4,
+			[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
 		else
 			raise "tga: unsupported colour depth: #{depth}\n"
 		end
@@ -780,8 +768,8 @@ targa header is like:
 		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
 		comment = @stream.read(comment_length)
 		raise "unsupported color format: #{colors}" if colors != 2
-#		GridFlow.post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
-#		GridFlow.post "tga: comment: \"#{comment}\""
+#		post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
+#		post "tga: comment: \"#{comment}\""
 		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
 		frame_read_body h, w, depth/8
@@ -794,15 +782,13 @@ targa header is like:
 		raise "expecting channels=3 or 4" if dim[2]!=3 and dim[2]!=4
 		# comment = "created using GridFlow"
 		#!@#$ why did i use that comment again?
-		comment = "CREATOR: The GIMP's TGA Filter Version 1.2"
+		comment = "generated using GridFlow #{GF_VERSION}"
 		@stream.write [comment.length,colortype=0,colors=2,"\0"*9,
 		dim[1],dim[0],8*dim[2],(8*(dim[2]-3))|32,comment].pack("ccca9vvcca*")
 		set_bitpacking 8*dim[2]
 		inlet_set_factor 0, dim[2]
 	end
-
 	def _0_rgrid_flow data; @stream.write @bp.pack(data) end
 	def _0_rgrid_end; @stream.flush end
 }
 end # module GridFlow
-

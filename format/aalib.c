@@ -163,3 +163,6 @@ GRID_INLET(FormatAALib,0) {
 	IEVAL(rself,"install '#in:aalib',1,1;@flags=2;@comment='Ascii Art Library'");
 }
 \end class FormatAALib
+void startup_aalib () {
+	\startall
+}
