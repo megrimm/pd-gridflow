@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -278,46 +278,39 @@ end
 
 class GridPack < GridObject
 	class<<self;attr_reader :ninlets;end
-	def initialize
+	def initialize(n=nil)
+		n||=self.class.ninlets
+		n>=16 and raise "too many inlets"
 		super
-		@data=[0]*self.class.ninlets
+		@data=[0]*n
+	end
+	def initialize2
+		if self.class==GridPack then
+			GridFlow.whatever :addinlets, self, @data.length-1
+		end
+
 	end
 	def self.define_inlet i
 		module_eval "
-			def _#{i}_int x; @data[#{i}]=x; _0_bang; end
+			def _#{i}_int   x; @data[#{i}]=x     ; _0_bang; end
 			def _#{i}_float x; @data[#{i}]=x.to_i; _0_bang; end
 		"
 	end
-
+	(0...15).each {|x| define_inlet x }
 	def _0_bang
-		send_out_grid_begin 0, [self.class.ninlets]
+		send_out_grid_begin 0, [@data.length]
 		send_out_grid_flow 0, @data.pack("l*")
 	end
+	install_rgrid 0
+	install "@pack", 1, 1
 end
 
 # the install_rgrids in the following are hacks so that
 # outlets can work. (install_rgrid is supposed to be for receiving)
-
-class GridTwo < GridPack
-	(0...2).each {|x| define_inlet x }
-	install_rgrid 0
-	install "@two", 2, 1
-end
-class GridThree < GridPack
-	(0...3).each {|x| define_inlet x }
-	install_rgrid 0
-	install "@three", 3, 1
-end
-class GridFour < GridPack
-	(0...4).each {|x| define_inlet x }
-	install_rgrid 0
-	install "@four", 4, 1
-end
-class GridEight < GridPack
-	(0...8).each {|x| define_inlet x }
-	install_rgrid 0
-	install "@eight", 8, 1
-end
+class GridTwo   < GridPack; install_rgrid 0; install "@two",   2, 1 end
+class GridThree < GridPack; install_rgrid 0; install "@three", 3, 1 end
+class GridFour  < GridPack; install_rgrid 0; install "@four",  4, 1 end
+class GridEight < GridPack; install_rgrid 0; install "@eight", 8, 1 end
 
 class GridExportSymbol < GridObject
 	def _0_rgrid_begin; @data="" end
@@ -1168,9 +1161,8 @@ class<<USB
 end
 
 class DelcomUSB < GridFlow::FObject
-	Vendor=0x0FC5
-	Product=0x1222
-	def self.find_delcoms
+	Vendor,Product=0x0FC5,0x1222
+	def self.find
 		r=[]
 		USB.busses.each {|dir,bus|
 			bus.each {|dev|
@@ -1180,16 +1172,14 @@ class DelcomUSB < GridFlow::FObject
 		r
 	end
 	def initialize #(bus=nil,dev=nil)
-		r=DelcomUSB.find_delcoms
+		r=DelcomUSB.find
 		raise "no such device" if r.length<1
 		raise "#{r.length} such devices (which one???)" if r.length>1
 		@usb=USB.new(r[0])
 		if_num=nil
 		r[0].config.each {|config|
 			config.interface.each {|interface|
-				interface.each {|altsetting|
-					if_num = interface.bInterfaceNumber
-				}
+				if_num = interface.bInterfaceNumber
 			}
 		}
 		# GridFlow.post "Interface # %i\n", if_num
@@ -1209,7 +1199,7 @@ class DelcomUSB < GridFlow::FObject
 			dataM*0x100+dataL,
 			extension, 5000)
 	end
-	def close; @usb.close; end # wouldn't that be def delete ?
+	def delete; @usb.close; end
 	install "delcomusb", 1, 1
 end
 
@@ -1220,7 +1210,8 @@ class IOBox < GridFlow::FObject
 	  r=[]
 	  USB.busses.each {|dir,bus|
 	    bus.each {|dev|
-	      GridFlow.post "dir=#{dir}, vendor=#{dev.idVendor}, product=#{dev.idProduct}"
+	      GridFlow.post "dir=%s, vendor=%x, product=%x",
+		      dir, dev.idVendor, dev.idProduct
 	      r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
 	    }
 	  }
@@ -1234,17 +1225,18 @@ class IOBox < GridFlow::FObject
 		if_num=nil
 		r[0].config.each {|config|
 			config.interface.each {|interface|
-				interface.each {|altsetting|
-					if_num = interface.bInterfaceNumber
-				}
+				#GridFlow.post "interface=%s", interface.to_s
+				if_num = interface.bInterfaceNumber
 			}
 		}
 		# GridFlow.post "Interface # %i\n", if_num
-		@usb.set_configuration 0
+		# @usb.set_configuration 0
 		@usb.claim_interface if_num
 		@usb.set_altinterface 0 rescue ArgumentError
 	end
-	def close; @usb.close; end # wouldn't that be def delete ?
+	#@usb.control_msg(0b10100001,0x01,0,0,"",1000)
+	#@usb.control_msg(0b10100001,0x01,0,1," ",0)
+	def delete; @usb.close; end
 	install "iobox", 1, 1
 end
 
