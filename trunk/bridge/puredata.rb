@@ -29,7 +29,8 @@
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
 	@! @ @perspective @posterize printargs @print @ravel @redim
 	@rgb_to_greyscale rubyprint @scale_by @scale_to @scan @solarize
-	@spread @store @three=@twothreefour @two=@twothreefour
+	@spread @store @three=@twothreefour @two=@twothreefour @mouse=help_mouse
+	@motion_detection=help_motion_detect @fade=help_fade
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
