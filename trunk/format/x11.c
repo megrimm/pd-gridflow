@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -61,6 +61,7 @@ struct FormatX11 : Format {
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
+	bool verbose;
 
 	BitPacking *bit_packing;
 	Dim *dim;
@@ -155,27 +156,31 @@ void FormatX11::alarm() {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			/*gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
-				ex->y,ex->x,ex->height,ex->width);*/
+			if (verbose)
+				gfpost("ExposeEvent at (y=%d,x=%d) size (y=%d,x=%d)",
+					ex->y,ex->x,ex->height,ex->width);
 			if (mode() == SYM(out)) {
 				show_section(ex->x,ex->y,ex->width,ex->height);
 			}
 		}break;
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			//gfpost("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			if (verbose)
+				gfpost("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			eb->state |= 128<<eb->button;
 			report_pointer(eb->y,eb->x,eb->state);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
-			//gfpost("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
+			if (verbose)
+				gfpost("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
 			eb->state &= ~(128<<eb->button);
 			report_pointer(eb->y,eb->x,eb->state);
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
-			//gfpost("drag at (y=%d,x=%d)",em->y,em->x);
+			if (verbose)
+				gfpost("drag at (y=%d,x=%d)",em->y,em->x);
 			report_pointer(em->y,em->x,em->state);
 		}break;
 		case DestroyNotify:{
@@ -185,7 +190,7 @@ void FormatX11::alarm() {
 			/* like we care */
 		}break;
 		default:
-			gfpost("received event of type # %d", e.type);
+			if (verbose) gfpost("received event of type # %d", e.type);
 		}
 	}
 }
@@ -405,6 +410,7 @@ METHOD3(FormatX11,close) {
 METHOD3(FormatX11,option) {
 	VALUE sym = argv[0];
 	if (sym == SYM(out_size)) {
+		if (argc<3) RAISE("not enough args");
 		int sy = INT(argv[1]);
 		int sx = INT(argv[2]);
 		resize_window(sx,sy);
@@ -413,11 +419,13 @@ METHOD3(FormatX11,option) {
 		int sx = dim->get(1);
 		show_section(0,0,sx,sy);
 	} else if (sym == SYM(autodraw)) {
+		if (argc<2) RAISE("not enough args");
 		int autodraw = INT(argv[1]);
 		if (autodraw<0 || autodraw>2)
 			RAISE("autodraw=%d is out of range",autodraw);
 		this->autodraw = autodraw;
 	} else if (sym == SYM(setcursor)) {
+		if (argc<2) RAISE("not enough args");
 		int shape = 2*(INT(argv[1])&63);
 		Cursor c = XCreateFontCursor(display,shape);
 		XDefineCursor(display,window,c);
@@ -428,6 +436,9 @@ METHOD3(FormatX11,option) {
 		Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
 		XDefineCursor(display,window,c);
 		XFlush(display);
+	} else if (sym == SYM(verbose)) {
+		if (argc<2) RAISE("not enough args");
+		verbose = !! INT(argv[1]);
 	} else
 		rb_call_super(argc,argv);
 	return Qnil;
@@ -481,8 +492,6 @@ void FormatX11::open_display(const char *disp_string) {
 	depth    = DefaultDepthOfScreen(screen);
 	colormap = 0;
 
-	gfpost("depth = %d",depth);
-
 	switch(visual->c_class) {
 	case TrueColor: case DirectColor: /* without colormap */
 	break;
@@ -498,10 +507,10 @@ void FormatX11::open_display(const char *disp_string) {
 #ifdef HAVE_X11_SHARED_MEMORY
 	/* what do i do with remote windows? */
 	use_shm = !! XShmQueryExtension(display);
-	gfpost("x11 shared memory compiled in; use_shm = %d",use_shm);
+	if (verbose) gfpost("x11 shared memory compiled in; use_shm = %d",use_shm);
 #else
 	use_shm = false;
-	gfpost("x11 shared memory is not compiled in");
+	if (verbose) gfpost("x11 shared memory is not compiled in");
 #endif
 }
 
@@ -527,17 +536,23 @@ METHOD3(FormatX11,initialize) {
 
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 
+	if (domain==SYM(verbose)) {
+		verbose = true;
+		argv++, argc--;
+		domain = argc<1 ? SYM(here) : argv[0];
+	}
+
 	int i;
 	// assert (ac>0);
 	if (domain==SYM(here)) {
-		gfpost("mode `here'");
+		if (verbose) gfpost("mode `here'");
 		open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		if (argc<2) RAISE("open local: not enough args");
 		char host[256];
 		int dispnum = NUM2INT(argv[1]);
-		gfpost("mode `local', display_number `%d'",dispnum);
+		if (verbose) gfpost("mode `local', display_number `%d'",dispnum);
 		sprintf(host,":%d",dispnum);
 		open_display(host);
 		i=2;
@@ -547,7 +562,7 @@ METHOD3(FormatX11,initialize) {
 		strcpy(host,rb_sym_name(argv[1]));
 		int dispnum = NUM2INT(argv[2]);
 		sprintf(host+strlen(host),":%d",dispnum);
-		gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
+		if (verbose) gfpost("mode `remote', host `%s', display_number `%d'",host,dispnum);
 		open_display(host);
 		i=3;
 	} else {
@@ -560,12 +575,12 @@ METHOD3(FormatX11,initialize) {
 	}
 
 	if (i>=argc) {
-		gfpost("will create new window");
+		if (verbose) gfpost("will create new window");
 	} else {
 		VALUE winspec = argv[i];
 		if (winspec==SYM(root)) {
 			window = root_window;
-			gfpost("will use root window (0x%x)", window);
+			if (verbose) gfpost("will use root window (0x%x)", window);
 			is_owner = false;
 		} else {
 			const char *winspec2 = rb_sym_name(winspec);
@@ -576,9 +591,9 @@ METHOD3(FormatX11,initialize) {
 			}
 			if (window) {
 				is_owner = false;
-				gfpost("will use specified window (0x%x)", window);
+				if (verbose) gfpost("will use specified window (0x%x)", window);
 			} else {
-				gfpost("bad window specification");
+				if (verbose) gfpost("bad window specification");
 			}
 		}
 	}
@@ -588,8 +603,7 @@ METHOD3(FormatX11,initialize) {
 
 	Visual *v = visual;
 	int disp_is_le = !ImageByteOrder(display);
-	gfpost("is_le = %d",is_le());
-	gfpost("disp_is_le = %d", disp_is_le);
+	if (verbose) gfpost("is_le = %d, disp_is_le = %d",is_le(),disp_is_le);
 
 	switch(visual->c_class) {
 	case TrueColor: case DirectColor: {
@@ -604,7 +618,7 @@ METHOD3(FormatX11,initialize) {
 	} break;
 	}
 
-	bit_packing->gfpost();
+	if (verbose) bit_packing->gfpost();
 	MainLoop_add(this,(void(*)(void*))FormatX11_alarm);
 	return Qnil;
 }
