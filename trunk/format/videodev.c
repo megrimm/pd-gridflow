@@ -416,7 +416,8 @@ GRID_INLET(FormatVideoDev,0) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
-	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
+	/* !@#$ should this be an error or warning? */
+	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) gfpost("warning: no tuner #%d", value);
 	vtuner.mode = VIDEO_MODE_NTSC;
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
