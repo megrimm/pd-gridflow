@@ -204,6 +204,8 @@ Bugs
 [ ] @scale_to is broken
 [ ] rtmetro does not stop
 [ ] method_missing does blackholing
+[ ] if @out#open fails, then a segfault might occur during next #open (?)
+[ ] don't try resizing the window before it opens (???) (loadbang?)
 
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations

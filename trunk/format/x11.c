@@ -73,6 +73,7 @@ struct FormatX11 : Format {
 	bool alloc_image (int sx, int sy);
 	void resize_window (int sx, int sy);
 	void open_display(const char *disp_string);
+	void report_pointer(int y, int x, int state);
 	void alarm();
 
 	DECL3(frame);
@@ -132,8 +133,21 @@ static VALUE button_sym(int i) {
 
 static void FormatX11_alarm(FormatX11 *$) { $->alarm(); }
 
+void FormatX11::report_pointer(int y, int x, int state) {
+	VALUE argv[5] = {
+		INT2NUM(0), SYM(position),
+		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
+	/* HACK */
+	if (!parent) {
+		VALUE rself = IEVAL(peer,"@outlets[0][0][0]");
+		rb_p(rself);
+		DGS(GridObject);
+		parent = self;
+	}
+	FObject_send_out(COUNT(argv),argv,parent->peer);
+}
+
 void FormatX11::alarm() {
-	VALUE argv[4];
 	XEvent e;
 
 //	gfpost("X11 HELLO? (%lld)",RtMetro_now());
@@ -154,26 +168,19 @@ void FormatX11::alarm() {
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//gfpost("button %d press at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			argv[0] = SYM(press);
-			argv[1] = button_sym(eb->button);
-			argv[2] = INT2NUM(eb->y);
-			argv[3] = INT2NUM(eb->x);
-			//FObject_send_thru(out->parent,0,4,at);
+			eb->state |= 128<<eb->button;
+			report_pointer(eb->y,eb->x,eb->state);
 		}break;
 		case ButtonRelease:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
 			//gfpost("button %d release at (y=%d,x=%d)",eb->button,eb->y,eb->x);
-			argv[0] = SYM(release);
-			argv[1] = button_sym(eb->button);
-			argv[2] = INT2NUM(eb->y);
-			argv[3] = INT2NUM(eb->x);
+			eb->state &= ~(128<<eb->button);
+			report_pointer(eb->y,eb->x,eb->state);
 		}break;
 		case MotionNotify:{
 			XMotionEvent *em = (XMotionEvent *)&e;
 			//gfpost("drag at (y=%d,x=%d)",em->y,em->x);
-			argv[0] = SYM(motion);
-			argv[1] = INT2NUM(em->y);
-			argv[2] = INT2NUM(em->x);
+			report_pointer(em->y,em->x,em->state);
 		}break;
 		case DestroyNotify:{
 			/* should notify parent here */
@@ -318,10 +325,11 @@ void FormatX11::resize_window (int sx, int sy) {
 /*	set_wm_hints(sx,sy); */
 
 	imagegc = XCreateGC(display, window, 0, NULL);
-	printf("is_owner: %d\n", is_owner);
+	gfpost("is_owner: %d\n", is_owner);
 	if (is_owner) {
 		XSelectInput(display, window,
 			ExposureMask | StructureNotifyMask |
+			PointerMotionMask |
 			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
 		XMapRaised(display, window);
 	} else {
@@ -369,6 +377,8 @@ GRID_END(FormatX11,0) {
 		int sy = in->dim->get(0);
 		show_section(0,0,sx,sy);
 	}
+	/* calling this here because the clock problem is annoying */
+	alarm();
 }
 
 METHOD3(FormatX11,close) {
@@ -402,6 +412,17 @@ METHOD3(FormatX11,option) {
 		if (autodraw<0 || autodraw>2)
 			RAISE("autodraw=%d is out of range",autodraw);
 		autodraw = autodraw;
+	} else if (sym == SYM(setcursor)) {
+		int shape = 2*(INT(argv[1])&63);
+		Cursor c = XCreateFontCursor(display,shape);
+		XDefineCursor(display,window,c);
+		XFlush(display);
+	} else if (sym == SYM(hidecursor)) {
+		Font font = XLoadFont(display,"fixed");
+		XColor color; /* bogus */
+		Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
+		XDefineCursor(display,window,c);
+		XFlush(display);
 	} else
 		rb_call_super(argc,argv);
 	return Qnil;
