@@ -29,7 +29,7 @@
 
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail matju@sympatico.ca acastonguay@artengine.ca
 
-DEFAULT /opt/bin/ruby $CVSROOT/CVSROOT/loginfo.rb $CVSROOT $USER %s matju@sympatico.ca acastonguay@artengine.ca
+DEFAULT /opt/bin/ruby $CVSROOT/CVSROOT/loginfo.rb $CVSROOT $USER %s 'matju@sympatico.ca, acastonguay@artengine.ca'
 
 
 
