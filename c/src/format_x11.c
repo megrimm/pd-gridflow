@@ -47,7 +47,7 @@ typedef struct X11Display {
 	fts_alarm_t *alarm;
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
-	int root_window;
+	Window root_window;
 	int white_pixel;
 	int black_pixel;
 	int depth;
@@ -66,6 +66,7 @@ struct FormatX11 {
 	char *name;          /* window name (for use by window manager) */
 	uint8 *image;        /* the real data (that XImage binds to) */
 	struct timeval tv;   /* time of the last grid_end */
+	bool not_ours;
 };
 
 /* default connection (not used for now) */
@@ -307,8 +308,12 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 
 	oldw = $->window;
 	if (oldw) {
-		whine("About to resize window: %s",Dim_to_s($->dim));
-		XResizeWindow(d->display,$->window,sx,sy);
+		if ($->window == $->display->root_window) {
+			/* can't resize that window */
+		} else {
+			whine("About to resize window: %s",Dim_to_s($->dim));
+			XResizeWindow(d->display,$->window,sx,sy);
+		}
 	} else {
 		whine("About to create window: %s",Dim_to_s($->dim));
 		$->window = XCreateSimpleWindow(d->display,
@@ -323,7 +328,9 @@ void FormatX11_resize_window (FormatX11 *$, int sx, int sy) {
 	/* FormatX11_set_wm_hints($,sx,sy); */
 
 	$->imagegc = XCreateGC(d->display, $->window, 0, NULL);
-	XSelectInput(d->display, $->window, ExposureMask);
+	XSelectInput(d->display, $->window,
+		ExposureMask | StructureNotifyMask |
+		ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
 	XMapRaised  (d->display, $->window);
 	XSync(d->display,0);
 	return;
@@ -386,7 +393,7 @@ GRID_END(FormatX11,0) {
 void FormatX11_close (FormatX11 *$) {
 	X11Display *d = $->display;
 	X11Display_vout_remove(d,$);
-	XDestroyWindow(d->display,$->window);
+	if (!$->not_ours) XDestroyWindow(d->display,$->window);
 	XSync(d->display,0);
 	FormatX11_dealloc_image($);
 	FREE($->dim);
@@ -415,6 +422,20 @@ void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 	}
 }
 
+int strsplit(char *victim, int max, char **witnesses) {
+	int n=0;
+	for(;;) {
+		*witnesses++ = victim;
+		n++;
+		if (n==max) return n;
+		while (*victim != '/') {
+			if (!*victim) return n;
+			victim++;
+		}
+		*victim++ = 0;
+	}
+}
+
 FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int mode) {
 	FormatX11 *$ = NEW(FormatX11,1);
 
@@ -426,6 +447,7 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 	$->stream  = 0;
 	$->bstream = 0;
 	$->window  = 0;
+	$->not_ours= false;
 	$->image   = 0;
 	$->ximage  = 0;
 	$->autodraw = 1;
@@ -444,44 +466,70 @@ FileFormat *FormatX11_connect (FileFormatClass *qlass, const char *target, int m
 		"remote/relayer/0"
 	*/
 
+	/* plenty of ways to crash this */
 	{
-		char host[64];
-		if (strcmp(target,"here")==0) {
+		char *copy = strdup(target);
+		char *field[10];
+		int i=0,n=strsplit(copy,10,field);
+		char *t = copy+strlen(copy);
+		while (n<10) field[n++] = t;
+/*
+		{int j; for(j=0; j<10; j++) {
+			whine("field[%d] is `%s'",j,field[j]);
+		}}
+*/
+		if (strcmp(field[0],"here")==0) {
 			whine("mode `here'");
 			$->display = X11Display_new(0);
-		} else if (strncmp(target,"local/",6)==0) {
-			int dispnum = atoi(target+6);
+			i=1;
+		} else if (strcmp(field[0],"local")==0) {
+			char host[64];
+			int dispnum = atoi(field[1]);
 			whine("mode `local'");
 			whine("display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
 			$->display = X11Display_new(host);
-		} else if (strncmp(target,"remote/",7)==0) {
-			int dispnum;
-			char *foo;
-			target += 7;
-			foo = strchr(target,'/');
-			if (!foo) {
-				strcpy(host,target);
-				dispnum = 0;
-			} else {
-				memcpy(host,target,foo-target);
-				host[foo-target] = 0;
-				sprintf(host+strlen(host),":%d",dispnum);
-			}
+			i=2;
+		} else if (strcmp(field[0],"remote")==0) {
+			char host[64];
+			int dispnum = 0;
+			strcpy(host,field[1]);
+			dispnum = atoi(field[2]);
+			sprintf(host+strlen(host),":%d",dispnum);
 			whine("mode `remote'");
 			whine("host `%s'",host);
 			whine("display_number `%d'",dispnum);
 			$->display = X11Display_new(host);
+			i=3;
 		} else {
 			whine("error in target `%s'",target);
 			return 0;
 		}
-	}
 
-	if (!$->display) {
-		// ???
-		whine("can't open target `%s': %s", target, strerror(errno));
-		goto err;
+		if (!$->display) {
+			// ???
+			whine("can't open target `%s': %s", target, strerror(errno));
+			goto err;
+		}
+
+		if (strcmp(field[i],"root")==0) {
+			$->window = $->display->root_window;
+			whine("will use root window (0x%x)", $->window);
+			$->not_ours = true;
+		} else {
+			if (strncmp(field[i],"0x",2)==0) {
+				$->window = strtol(field[i]+2,0,16);
+			} else {
+				$->window = atoi(field[i]);
+			}
+			if ($->window) {
+				$->not_ours = true;
+				whine("will use specified window (0x%x)", $->window);
+			} else {
+				whine("will create new window");
+			}
+		}
+		i++;
 	}
 
 	FormatX11_resize_window($,sx,sy);
