@@ -27,7 +27,8 @@
 
 struct FormatAALib : Format {
 	aa_context *context;
-	aa_renderparams *renderparams;
+//	aa_hardwareparams *hparams;
+	aa_renderparams *rparams;
 	Dim *dim;
 
 	DECL3(close);
@@ -46,7 +47,6 @@ GRID_INLET(FormatAALib,0) {
 }
 
 GRID_FLOW {
-/*
 	int sx = min(in->factor,context->imgwidth);
 	int y = in->dex/in->factor;
 	while (n) {
@@ -56,13 +56,12 @@ GRID_FLOW {
 		n -= in->factor;
 		data += in->factor;
 	}
-*/
 }
 
 GRID_FINISH {
 	aa_palette pal;
 	for (int i=0; i<256; i++) aa_setpalette(pal,i,i,i,i);
-	aa_renderpalette(context,pal,renderparams,0,0,
+	aa_renderpalette(context,pal,rparams,0,0,
 		aa_scrwidth(context),aa_scrheight(context));
 	aa_flush(context);
 }
@@ -85,6 +84,13 @@ METHOD3(FormatAALib,initialize) {
 		RAISE("unknown aalib driver '%s'",rb_sym_name(argv[0]));
 	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
 	context = aa_init(driver,&aa_defparams,0);
+	char *argv2[argc];
+	for (int i=0; i<argc; i++) {
+		if (TYPE(argv[i]) != T_SYMBOL) RAISE("expected symbol");
+		argv2[i] = (char *)rb_sym_name(argv[i]);
+	}
+	aa_parseoptions(0,0,&argc,argv2);
+	rparams = aa_getrenderparams();
 	if (!context) RAISE("opening aalib didn't work");
 	int32 v[]={context->imgheight,context->imgwidth,1};
 	gfpost("aalib image size: %s",(new Dim(3,v))->to_s());
@@ -99,6 +105,7 @@ static void startup (GridClass *self) {
 			PTR2FIX(*p));
 		p++;
 	}
+	
 	IEVAL(self->rubyclass,
 		"GridFlow.post('aalib supports: %s', "
 		"@drivers.keys.join(' ,'))");
