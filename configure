@@ -336,7 +336,7 @@ Feature.new {
 Feature.new {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so ["-I/usr/X11R6/include","-L/usr/X11R6/lib","-lX11","-lXext"]
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
@@ -349,7 +349,7 @@ Feature.new {
 	tag :x11_shm
 	name "X11 acceleration through shared memory"
 	uses_feature [:x11]
-	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so ["-I/usr/X11R6/include","-L/usr/X11R6/lib","-lX11","-lXext"]
 	test proc {
 		c_test "
 		#include <X11/Xlib.h>
