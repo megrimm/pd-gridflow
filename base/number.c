@@ -27,16 +27,17 @@
 #include <stdio.h>
 #include <limits.h>
 
-#define NUMBER_TYPE_LIMITS(T,a,b) \
+#define NUMBER_TYPE_LIMITS(T,a,b,c) \
 	inline T nt_smallest(T *bogus) {return a;} \
-	inline T nt_greatest(T *bogus) {return b;}
+	inline T nt_greatest(T *bogus) {return b;} \
+	inline T nt_all_ones(T *bogus) {return c;}
 
-NUMBER_TYPE_LIMITS(uint8,0,255)
-NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff)
-NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff)
-NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL)
-NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL)
-NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL)
+NUMBER_TYPE_LIMITS(uint8,0,255,255)
+NUMBER_TYPE_LIMITS(int16,0x8000,0x7fff,-1)
+NUMBER_TYPE_LIMITS(int32,0x80000000,0x7fffffff,-1)
+NUMBER_TYPE_LIMITS(int64,(int64)0x8000000000000000LL,(int64)0x7fffffffffffffffLL,-1)
+NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
+NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 
 /* ---------------------------------------------------------------- */
 
@@ -56,17 +57,9 @@ class Op1Loops {
 public:
 	template <class T>
 	static void op_map (int n, T *as) {
-		for (; (n&7)!=0; n--, as++) *as=O::f(*as);
-		for (; n; as+=8, n-=8) {
-			as[0]=O::f(as[0]);
-			as[1]=O::f(as[1]);
-			as[2]=O::f(as[2]);
-			as[3]=O::f(as[3]);
-			as[4]=O::f(as[4]);
-			as[5]=O::f(as[5]);
-			as[6]=O::f(as[6]);
-			as[7]=O::f(as[7]);
-		} 
+#define FOO(I) as[I]=O::f(as[I]);
+	UNROLL_8(FOO,n,as)
+#undef FOO
 	}
 };
 
@@ -127,42 +120,27 @@ class Op2Loops {
 public:
 	template <class T>
 	static void op_map (int n, T *as, T b) {
-		for (; (n&3)!=0; as++, n--) *as=O::f(*as,b);
-		for (; n; as+=4, n-=4) {
-			as[0]=O::f(as[0],b);
-			as[1]=O::f(as[1],b);
-			as[2]=O::f(as[2],b);
-			as[3]=O::f(as[3],b);
-		}
+		if (!n) return;
+#define FOO(I) as[I]=O::f(as[I],b);
+	UNROLL_8(FOO,n,as)
+#undef FOO
 	}
 	template <class T>
 	static void op_zip (int n, T *as, T *bs) {
-		for (; (n&7)!=0; as++,bs++,n--) *as=O::f(*as,*bs);
-		for (; n; as+=8, bs+=8, n-=8) {
-			as[0]=O::f(as[0],bs[0]);
-			as[1]=O::f(as[1],bs[1]);
-			as[2]=O::f(as[2],bs[2]);
-			as[3]=O::f(as[3],bs[3]);
-			as[4]=O::f(as[4],bs[4]);
-			as[5]=O::f(as[5],bs[5]);
-			as[6]=O::f(as[6],bs[6]);
-			as[7]=O::f(as[7],bs[7]);
-		}
+		if (!n) return;
+		int ba=bs-as; // really!
+#define FOO(I) as[I]=O::f(as[I],as[ba+I]);
+	UNROLL_8(FOO,n,as)
+#undef FOO
 	}
 	// disabled
 	template <class T>
 	static void op_zip2 (int n, T *as, T *bs, T *cs) {
-		for (; (n&7)!=0; as++,bs++,cs++,n--) *cs=O::f(*as,*bs);
-		for (; n; as+=8, bs+=8, cs+=8, n-=8) {
-			cs[0]=O::f(as[0],bs[0]);
-			cs[1]=O::f(as[1],bs[1]);
-			cs[2]=O::f(as[2],bs[2]);
-			cs[3]=O::f(as[3],bs[3]);
-			cs[4]=O::f(as[4],bs[4]);
-			cs[5]=O::f(as[5],bs[5]);
-			cs[6]=O::f(as[6],bs[6]);
-			cs[7]=O::f(as[7],bs[7]);
-		}
+		if (!n) return;
+		int ba=bs-as, ca=cs-as;
+#define FOO(I) as[ca+I]=O::f(as[I],as[ba+I]);
+	UNROLL_8(FOO,n,as)
+#undef FOO
 	}
 	template <class T>
 	static void op_fold (int an, int n, T *as, T *bs) {
@@ -189,6 +167,8 @@ public:
 				as[0]=O::f(O::f(O::f(O::f(as[0],bs[0]),bs[3]),bs[6]),bs[9]);
 				as[1]=O::f(O::f(O::f(O::f(as[1],bs[1]),bs[4]),bs[7]),bs[10]);
 				as[2]=O::f(O::f(O::f(O::f(as[2],bs[2]),bs[5]),bs[8]),bs[11]); }
+		break;
+		// maybe a case 4 would be good.
 		default:
 			for (; n--; ) {
 				int i=0;
@@ -210,20 +190,48 @@ public:
 	}
 };
 
+template <class T>
+static void quick_mod_map (int n, T *as, T b) {
+	if (!b) return;
+#define FOO(I) as[I]=mod(as[I],b);
+	UNROLL_8(FOO,n,as)
+#undef FOO
+}
+
+template <class T>
+static void quick_ign_map (int n, T *as, T b) {}
+template <class T>
+static void quick_ign_zip (int n, T *as, T *bs) {}
+template <class T>
+static void quick_put_map (int n, T *as, T b) {
+#define FOO(I) as[I]=b;
+	UNROLL_8(FOO,n,as)
+#undef FOO
+}
+void quick_put_map (int n, int16 *as, int16 b) {
+	if (n&1!=0 && (long)as&4!=0) { *as++=b; n--; }
+	quick_put_map (n>>1, (int32 *)as, (int32)(b<<16)+b);
+	if (n&1!=0) *as++=b;
+}
+void quick_put_map (int n, uint8 *as, uint8 b) {
+	while (n&3!=0 && (long)as&4!=0) { *as++=b; n--; }
+	int32 c=(b<<8)+b; c+=c<<16;
+	quick_put_map (n>>2, (int32 *)as, c);
+	while (n&3!=0) *as++=b;
+}
+template <class T>
+static void quick_put_zip (int n, T *as, T *bs) {
+	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
+}
+
+// the following is almost useless if you have MMX enabled.
 template <class O>
 class Op2LoopsBitwise : Op2Loops<O> {
 public:
 /*
 	template <class T>
 	static void op_map (int n, T *as, T b) {
-		for (; (n&3)!=0; as++, n--) *as=O::f(*as,b);
-		for (; n; as+=4, n-=4) {
-			as[0]=O::f(as[0],b);
-			as[1]=O::f(as[1],b);
-			as[2]=O::f(as[2],b);
-			as[3]=O::f(as[3],b);
-		}
-	}
+		...
 */
 };
 
@@ -249,7 +257,7 @@ public:
 		inline static bool is_neutral(float64 x, LeftRight side) { return neutral; } \
 		inline static bool is_absorbent(float64 x, LeftRight side) { return absorbent; } }; \
 
-#define DECL_OP2ON(base,op,T) Operator2On<T>( \
+#define DECL_OP2ON(base,op,T) Numop2On<T>( \
 	&base<Y##op<T> >::op_map, \
 	&base<Y##op<T> >::op_zip, \
 	&base<Y##op<T> >::op_fold, \
@@ -257,7 +265,7 @@ public:
 	&Y##op<T>::is_neutral, \
 	&Y##op<T>::is_absorbent)
 
-#define DECL_OP2(op,sym,flags) Operator2(0, sym, \
+#define DECL_OP2(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
@@ -267,7 +275,7 @@ public:
 	flags)
 
 /*
-#define DECL_OP2_BITWISE(op,sym,flags) Operator2(0, sym, \
+#define DECL_OP2_BITWISE(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON(Op2LoopsBitwise,op,uint8), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int16), \
 	DECL_OP2ON(Op2LoopsBitwise,op,int32), \
@@ -277,13 +285,13 @@ public:
 	flags)
 */
 
-#define DECL_OP2_NOFLOAT(op,sym,flags) Operator2(0, sym, \
+#define DECL_OP2_NOFLOAT(op,sym,flags) Numop2(0, sym, \
 	DECL_OP2ON(Op2Loops,op,uint8), \
 	DECL_OP2ON(Op2Loops,op,int16), \
 	DECL_OP2ON(Op2Loops,op,int32), \
 	DECL_OP2ON(Op2Loops,op,int64), \
-	Operator2On<float32>(0,0,0,0,0,0), \
-	Operator2On<float64>(0,0,0,0,0,0), \
+	Numop2On<float32>(0,0,0,0,0,0), \
+	Numop2On<float64>(0,0,0,0,0,0), \
 	flags)
 
 template <class T>
@@ -336,11 +344,12 @@ DEF_OP2(mer, a==0 ? 0 : b%a,
 	false, side==at_left && x==0 || side==at_right && x==1)
 
 DEF_OP2(gcd, gcd(a,b), x==0, x==1)
+DEF_OP2(gcd2, gcd2(a,b), x==0, x==1) /* should test those and pick one of the two */
 DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
 
-DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, (int64)x==-1)
+DEF_OP2F(or , a|b, (float32)((int32)a | (int32)b), x==0, x==nt_all_ones(&x))
 DEF_OP2F(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
-DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), (int64)x==-1, x==0)
+DEF_OP2F(and, a&b, (float32)((int32)a & (int32)b), x==nt_all_ones(&x), x==0)
 DEF_OP2F(shl, a<<b, a*pow(2.0,+b), side==at_right && x==0, false)
 DEF_OP2F(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
 
@@ -366,7 +375,7 @@ DEF_OP2(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false
 DEF_OP2(pow, ipow(a,b), false, false) // "RN=1"
 DEF_OP2(log, (T)(a==0 ? 0 : b * log(abs(a))), false, false) // "RA=0"
 
-Operator2 op2_table[] = {
+Numop2 op2_table[] = {
 	DECL_OP2(ignore, "ignore", OP2_ASSOC),
 	DECL_OP2(put, "put", OP2_ASSOC),
 
@@ -385,6 +394,7 @@ Operator2 op2_table[] = {
 	DECL_OP2_NOFLOAT(rem, "rem", 0),
 	DECL_OP2_NOFLOAT(mer, "swaprem", 0),
 	DECL_OP2_NOFLOAT(gcd, "gcd", OP2_ASSOC|OP2_COMM),
+	DECL_OP2_NOFLOAT(gcd2, "gcd2", OP2_ASSOC|OP2_COMM),
 	DECL_OP2_NOFLOAT(lcm, "lcm", OP2_ASSOC|OP2_COMM),
 
 	DECL_OP2(or , "|", OP2_ASSOC|OP2_COMM),
@@ -415,31 +425,6 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**", 0),
 	DECL_OP2(log, "log*", 0),
 };
-
-template <class T>
-static void quick_mod_map (int n, T *as, T b) {
-	if (!b) return;
-	for (; (n&3)!=0; n--, as++) *as=mod(*as,b);
-	for (; n; as+=4, n+=4) {
-		as[0]=mod(as[0],b);
-		as[1]=mod(as[1],b);
-		as[2]=mod(as[2],b);
-		as[3]=mod(as[3],b);
-	}
-}
-
-template <class T>
-static void quick_ign_map (int n, T *as, T b) {
-}
-
-template <class T>
-static void quick_ign_zip (int n, T *as, T *bs) {
-}
-
-template <class T>
-static void quick_put_zip (int n, T *as, T *bs) {
-	gfmemcopy(as,bs,n);
-}
 
 Ruby op1_dict = Qnil;
 Ruby op2_dict = Qnil;
@@ -472,18 +457,17 @@ void startup_number () {
 	}
 
 #define OVERRIDE_INT(_name_,_mode_,_func_) { \
-	Operator2 *foo = FIX2PTR(Operator2,rb_hash_aref(op2_dict,SYM(_name_))); \
+	Numop2 *foo = FIX2PTR(Numop2,rb_hash_aref(op2_dict,SYM(_name_))); \
 	foo->on_uint8.op_##_mode_ = _func_; \
 	foo->on_int16.op_##_mode_ = _func_; \
 	foo->on_int32.op_##_mode_ = _func_; }
 
-/*
 	OVERRIDE_INT(ignore,map,quick_ign_map);
 	OVERRIDE_INT(ignore,zip,quick_ign_zip);
-	OVERRIDE_INT(put,map,quick_put_zip);
-*/
-
-	/* !@#$ does that make an improvement at all? (suspect) */
-//	OVERRIDE_INT(mod,map,quick_mod_map);
+#if 0
+	OVERRIDE_INT(put,map,quick_put_map);
+	OVERRIDE_INT(put,zip,quick_put_zip);
+	OVERRIDE_INT(%,map,quick_mod_map); // !@#$ does that make an improvement at all?
+#endif
 }
 
