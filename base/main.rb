@@ -25,12 +25,12 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-class NotImplementedError
-	def initialize(*)
-		#GridFlow.post "HELLO"
-		Process.kill $$, 6
-	end
-end
+#class NotImplementedError
+#	def initialize(*)
+#		#GridFlow.post "HELLO"
+#		Process.kill $$, 6
+#	end
+#end
 
 #verbose,$VERBOSE=$VERBOSE,false
 for victim in [TCPSocket, TCPServer]
@@ -177,8 +177,6 @@ class FObject
 	end
 end
 
-# Those would be equivalent of PD/jMax patchers/abstractions
-# except that they'd work at the Ruby level only.
 class FPatcher < FObject
 	def initialize(fobjects,wires,ninlets)
 		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x end }
@@ -215,12 +213,7 @@ class FPatcher < FObject
 			end
 		else super end
 	end
-#	def self.make_chain
-#	end
 end
-
-#class FAbstraction
-#end
 
 # this is the demo and test for Ruby->jMax bridge
 # FObject is a flow-object as found in jMax
@@ -335,8 +328,7 @@ class GridPack < GridObject
 		@data=[0]*self.class.ninlets
 	end
 	def self.define_inlet i
-		#!@#$ methods get defined in GridPack instead of subclasses???
-		eval "
+		module_eval "
 			def _#{i}_int x; @data[#{i}]=x; trigger; end
 			def _#{i}_float x; @data[#{i}]=x.to_i; trigger; end
 		"
@@ -505,6 +497,9 @@ class FPS < GridObject
 		@detailed = !!detailed
 	end
 	def method_missing(*)
+		# ignore
+	end
+	def _0_bang
 		t = Time.new.to_f
 		@history.push t-@last
 		@duration += t-@last
@@ -535,10 +530,34 @@ end
 #end
 
 class RGBtoGreyscale < FPatcher
-	FObjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
-	Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
-	def initialize() super(FObjects,Wires,1) end
-	install "@rgb_to_greyscale", 1, 1
+  FObjects = ["@ * {77 151 28}","@fold +","@outer >> {8}"]
+  Wires = [-1,0,0,0, 0,0,1,0, 1,0,2,0, 2,0,-1,0]
+  def initialize() super(FObjects,Wires,1) end
+  install "@rgb_to_greyscale", 1, 1
+end
+
+class GreyscaleToRGB < FPatcher
+  FObjects = ["@fold +","@outer + {0 0 0}"]
+  Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
+  def initialize() super(FObjects,Wires,1) end
+  install "@greyscale_to_rgb", 1, 1
+end
+
+class GridComplexSq < FPatcher
+  FObjects = ["@inner2 * + 0 {2 2 2 # 0 1 2 0 1 1 -1 1}","@fold * 1"]
+  Wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
+  def initialize() super(FObjects,Wires,1) end
+  install "@complex_sq", 1, 1
+end
+
+class GridExportSymbol < GridObject
+	def _0_rgrid_begin; @data="" end
+	def _0_rgrid_flow data; @data << data; end
+	def _0_rgrid_end
+		send_out 0, :symbol, @data.unpack("I*").pack("c*").intern
+	end
+	install_rgrid 0
+	install "@export_symbol", 1, 1
 end
 
 def self.routine

@@ -136,7 +136,7 @@ void GridInlet::set_factor(int factor) {
 	assert(dim);
 	assert(factor > 0);
 	if (dim->prod() && dim->prod() % factor)
-		RAISE("set_factor: expecting divisor");
+		RAISE("%s: set_factor: expecting divisor",INFO(parent));
 	this->factor = factor;
 	if (buf) {delete[] (Number *)buf; buf=Pt<Number>();}
 	if (factor > 1) {
@@ -162,14 +162,15 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	argc-=3, argv+=3;
 
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
-		RAISE("unknown number type");
+		RAISE("%s: inlet: unknown number type",INFO(parent));
 
 	if (is_busy()) {
 		gfpost("grid inlet busy (aborting previous grid)");
 		abort();
 	}
 
-	if (argc>MAX_DIMENSIONS) RAISE("too many dimensions (aborting grid)");
+	if (argc>MAX_DIMENSIONS)
+		RAISE("%s: too many dimensions (aborting grid)",INFO(parent));
 
 	int32 v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
@@ -187,7 +188,7 @@ void GridInlet::begin(int argc, Ruby *argv) {
 }
 
 void GridInlet::flow(int mode, int n, Pt<Number> data) {
-	if (!is_busy()) RAISE("inlet not busy");
+	if (!is_busy()) RAISE("%s: inlet not busy",INFO(parent));
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
@@ -242,7 +243,7 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 	} else if (mode==0) {
 		/* nothing happens */
 	} else {
-		assert(0);
+		RAISE("%s: unknown inlet mode",INFO(parent));
 	}
 }
 
@@ -258,7 +259,7 @@ void GridInlet::abort() {
 }
 
 void GridInlet::end() {
-	if (!is_busy()) RAISE("inlet not busy");
+	if (!is_busy()) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from %s to %s",
 			dex, dim->prod(), INFO(sender), INFO(parent));
@@ -284,17 +285,17 @@ void GridInlet::grid(Grid *g) {
 	gh->flow(this,-1,Pt<int32>());
 	if (n>0 && gh->mode!=0) {
 		Pt<Number> data = (Pt<int32>)*g;
+		int size = g->dim->prod(); // * number_type_table[g->nt].size/8;
 		if (gh->mode==6) {
 			Pt<Number> d = data;
-			int size = g->dim->prod()*number_type_table[g->nt].size/8;
-			data = Pt<Number>((Number *)new char[size],g->dim->prod());
-			memcpy(data,d,size);
+			data = ARRAY_NEW(Number,size);
+			COPY(data,d,size);
 		}
 		gh->flow(this,n,data);
 	}
 	gh->flow(this,-2,Pt<int32>());
 	//!@#$ add error handling.
-	/* rescue; GridInlet_abort(self); */
+	/* rescue; abort(); end ??? */
 	delete dim;
 	dim = 0;
 	dex = 0; /* why? */
@@ -335,7 +336,7 @@ GridOutlet::~GridOutlet() {
 }
 
 void GridOutlet::abort() {
-	if (!is_busy()) RAISE("outlet not busy");
+	if (!is_busy()) RAISE("%s: outlet not busy",INFO(parent));
 	for (int i=0; i<ninlets; i++) inlets[i]->abort();
 	delete dim; dim = 0; dex = 0;
 }
@@ -361,7 +362,7 @@ void GridOutlet::begin(Dim *dim) {
 }
 
 void GridOutlet::send_direct(int n, Pt<Number> data) {
-	if (!is_busy()) RAISE("outlet not busy");
+	if (!is_busy()) RAISE("%s: outlet not busy",INFO(parent));
 	assert(frozen);
 	while (n>0) {
 		int pn = min(n,max_packet_size);
@@ -400,7 +401,7 @@ void GridOutlet::send(int n, Pt<uint8> data) {
 }
 
 void GridOutlet::give(int n, Pt<Number> data) {
-	if (!is_busy()) RAISE("outlet not busy");
+	if (!is_busy()) RAISE("%s: outlet not busy",INFO(parent));
 	assert(frozen);
 	dex += n;
 	assert(dex <= dim->prod());
@@ -418,7 +419,7 @@ void GridOutlet::give(int n, Pt<Number> data) {
 
 void GridOutlet::callback(GridInlet *in) {
 	int mode = in->gh->mode;
-	if (!is_busy()) RAISE("outlet not busy");
+	if (!is_busy()) RAISE("%s: outlet not busy",INFO(parent));
 	assert(!frozen);
 	assert(mode==6 || mode==4 || mode==0);
 	assert(ninlets<MAX_CORDS);
@@ -484,7 +485,7 @@ METHOD3(GridObject,inlet_dim) {
 	int inln = INT(argv[0]);
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d");
+	if (!inl) RAISE("no such inlet #%d",inln);
 	if (!inl->is_busy()) return Qnil;
 	int n=inl->dim->count();
 	Ruby a = rb_ary_new2(n);
@@ -496,8 +497,8 @@ METHOD3(GridObject,inlet_set_factor) {
 	int inln = INT(argv[0]);
 	if (inln<0 || inln>=MAX_INLETS) RAISE("bad inlet number");
 	GridInlet *inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d");
-	if (!inl->is_busy()) RAISE("inlet not active");
+	if (!inl) RAISE("no such inlet #%d",inln);
+	if (!inl->is_busy()) RAISE("inlet #%d not active",inln);
 	inl->set_factor(INT(argv[1]));
 	return Qnil;
 }
@@ -505,7 +506,7 @@ METHOD3(GridObject,inlet_set_factor) {
 METHOD3(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	int n = rb_ary_len(argv[1]);
 	Ruby *p = rb_ary_ptr(argv[1]);
 	int32 v[n];
@@ -519,14 +520,14 @@ METHOD3(GridObject,send_out_grid_flow) {
 	int outlet = INT(argv[0]);
 	int n = rb_str_len(argv[1]) / sizeof(Number);
 	Pt<Number> p = rb_str_pt(argv[1],Number);
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	out[outlet]->send(n,p);
 	return Qnil;
 }
 
 METHOD3(GridObject,send_out_grid_abort) {
 	int outlet = INT(argv[0]);
-	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
+	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet number");
 	out[outlet]->abort();
 	return Qnil;
 }

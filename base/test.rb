@@ -175,6 +175,10 @@ def test_math
 	y.expect([3,4,2]) {
 		x.expect([2,3,2,4,2,5,2,6,3,3,3,4,3,5,3,6,4,3,4,4,4,5,4,6]) {
 			a.send_in 0 } }
+
+	(a = FObject["@complex_sq"]).connect 0,e,0
+	x.expect([8,0]) { a.send_in 0, 2, 2 }
+	x.expect([0,9]) { a.send_in 0, 0, 3 }
 end
 
 def test_rtmetro
@@ -299,21 +303,18 @@ end
 
 def test_anim msgs
 	gin = FObject["@in"]
-	gout = FObject["@out 256 256"]
-proc{
-	gout = FObject["@fold + 0"]
-	gout2 = FObject["@ / 3"]
-	gout3 = FObject["@outer + {0}"]
-	gout4 = FObject["@out"]
-	gout4.send_in 0, "open aalib X11"
-	gout.connect 0,gout2,0
+#	gout1 = FObject["@out x11"]
+#proc{
+	gout1 = FObject["@downscale_by {3 2}"]
+	gout2 = FObject["@rgb_to_greyscale"]
+	gout3 = FObject["@out aalib X11 -height 60 -width 132"]
+	gout1.connect 0,gout2,0
 	gout2.connect 0,gout3,0
-	gout3.connect 0,gout4,0
-}
+#}
 
-	gin.connect 0,gout,0
+	gin.connect 0,gout1,0
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
-	msgs.each {|m| gin.send_in 0,m}
+	msgs.each {|m| gin.send_in 0,m }
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
 	frames=300
@@ -401,7 +402,7 @@ def test_layer
 #	gove = FObject["@fold + {0 0 0 0}"]
 #	gout = FObject["@print"]
 #	gove = FObject["@inner2 * + 0 {3 4 # 1 0 0 0 0}"]
-	gout = FObject["@out x11"]
+	gout = FObject["@out sdl"]
 
 	gin.connect 0,gove,0
 	gfor.connect 0,gche,0
@@ -461,7 +462,7 @@ def test_formats
 	Images.each {|command|
 		gin.send_in 0,"open #{command}"
 		# test for load, rewind, load
-		2.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
+		4.times {|x| gs.send_in 1, [2*(x+1)]*2; gin.send_in 0}
 		sleep 1
 	}
 	p t1	
@@ -562,13 +563,23 @@ end
 
 def test_polygon
 	o1 = FObject["@for 0 5 1"]
-	o2 = FObject["@ * 14400"]; o1.connect 0,o2,0
-	o3 = FObject["@outer + {0 9000}"]; o2.connect 0,o3,0
-	o4 = FObject["@ cos* 60"]; o3.connect 0,o4,0
-	o5 = FObject["@ + {160 100}"]; o4.connect 0,o5,0
-	poly = FObject["@polygon {3 # 255}"]; o5.connect 0,poly,2
-	out = FObject["@out x11"]; poly.connect 0,out,0
-	poly.send_in 0, "240 320 # 0"
+	o2 = FObject["@ * 14400"]
+	o3 = FObject["@outer + {0 9000}"]
+	o4 = FObject["@ cos* 60"]
+	o5 = FObject["@ + {120 160}"]
+	poly = FObject["@polygon {3 # 255}"]
+	out = FObject["@out x11"]
+	o1.connect 0,o2,0
+	o2.connect 0,o3,0
+	o3.connect 0,o4,0
+	o4.connect 0,o5,0
+	o5.connect 0,poly,2
+	o6 = FObject["@print"]
+	o5.connect 0,o6,0
+	poly.connect 0,out,0
+	o1.send_in 0
+	poly.send_in 0, "240 320 3 # 0"
+	$mainloop.loop
 end
 
 def test_store2
@@ -620,7 +631,7 @@ if ARGV[0] then
 end
 
 #test_polygon
-test_math
+#test_math
 #test_munchies
 #test_image "ppm file #{$imdir}/g001.ppm"
 #test_image "ppm gzfile #{$imdir}/g001.ppm.gz"
@@ -632,7 +643,7 @@ test_math
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
-#test_anim ["open videodev /dev/video15 noinit","option transfer read"]
+#test_anim ["open videodev /dev/video1 noinit","option transfer read"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
@@ -644,3 +655,7 @@ test_math
 #test_metro
 #$mainloop.loop
 
+x = FObject["@export_symbol"]
+y = FObject["rubyprint"]
+x.connect 0,y,0
+x.send_in 0, [70,79,79,33]

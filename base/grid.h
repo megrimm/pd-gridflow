@@ -263,6 +263,7 @@ public:
 	Pt() : p(0), start(0), n(0) {}
 	Pt(T *q, int _n) : p(q), start(q), n(_n) {}
 	Pt(T *q, int _n, T *_start) : p(q), start(_start), n(_n) {}
+
 //	Pt(char *q) : p((T *)q) {}
 	T &operator *() { return *p; }
 	Pt operator++(     ) { p++;  return *this; }
@@ -286,7 +287,7 @@ public:
 	operator int16 *() { return (int16 *)p; }
 	operator int32 *() { return (int32 *)p; }
 //	operator Pt<const T>() { return Pt((const T *)p); }
-	int operator-(Pt x) { return p-x.p,n; }
+	int operator-(Pt x) { return p-x.p; }
 	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
 	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
 };
@@ -336,12 +337,6 @@ struct Dim {
 		int32 tot=1;
 		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
-	}
-	int32 calc_dex(int32 *v, int end=-1) {
-		if (end<0) end+=n;
-		int32 dex=0;
-		for (int i=0; i<=end; i++) dex = dex * this->v[i] + v[i];
-		return dex;
 	}
 
 	/* big leak machine */
@@ -410,7 +405,7 @@ enum NumberTypeIndex {
 	DECL_TYPE(    uint32, 32),
 	DECL_TYPE(     int32, 32),
 	DECL_TYPE(   float32, 32),
-	DECL_TYPE(   float64, 32),
+	DECL_TYPE(   float64, 64),
 	number_type_table_end
 };
 
@@ -540,11 +535,10 @@ typedef int32 Number;
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 	int winlet;
-	int mode; /* 0=ignore; 4=ro; 6=rw */
+	int mode; /* 0=ignore; 4=ro; 6=rw; 8=dump; 8 is not implemented yet */
 	/* It used to be three different function pointers here (begin,flow,end)
 	but now, n=-1 is begin, and n=-2 is _finish_. "end" is now used as an
 	end-marker for inlet definitions... sorry for the confusion */
-
 	void  (*flow)(GridInlet *, int n, Pt<int32>data);
 } GridHandler;
 
@@ -560,6 +554,7 @@ struct GridInlet {
 	int dex;
 
 /* grid receptor */
+/*	Pt<int32> (*get_target)(GridInlet *self); */
 	int factor; /* flow's n will be multiple of self->factor */
 	int bufn;
 	Pt<int32> buf; /* factor-chunk buffer */
