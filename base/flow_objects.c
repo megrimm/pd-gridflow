@@ -1109,7 +1109,13 @@ GRID_INLET(GridRedim,0) {
 } GRID_FINISH {
 	if (!temp.is_empty()) {
 		int a = in->dim->prod(), b = dim->prod();
-		for (int i=a; i<b; i+=a) out[0]->send(min(a,b-i),(Pt<T>)temp);
+		if (a) {
+			for (int i=a; i<b; i+=a) out[0]->send(min(a,b-i),(Pt<T>)temp);
+		} else {
+			STACK_ARRAY(T,foo,1);
+			foo[0]=0;
+			for (int i=0; i<b; i++) out[0]->send(1,foo);
+		}
 	}
 	temp.del();
 } GRID_END
