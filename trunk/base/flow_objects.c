@@ -492,7 +492,7 @@ GRID_INLET(GridStore,1) {
 	lsd++;
 	int cs = in->dim->prod(lsd-nn+in->dim->n);
 	in->set_factor(cs);
-	fprintf(stderr,"lsd=%d, cs=%d\n",lsd,cs);
+	//fprintf(stderr,"lsd=%d, cs=%d\n",lsd,cs);
 	//WATCH(nn,fromb);WATCH(nn,sizeb);WATCH(nn,to2);
 } GRID_FLOW {
 	if (put_at.is_empty()) { // reassign
