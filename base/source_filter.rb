@@ -54,6 +54,13 @@ def where
   "[#{ARGV[0]}:#{$linenumber}]"
 end
 
+def handle_attr(line)
+	raise "missing \\class #{where}" if
+		not $stack[-1] or not ClassDecl===$stack[-1]
+	#$stack[-1].attrs[]
+	Out.puts line
+end
+
 def handle_decl(line)
 	#STDERR.puts "decl: #{line}"
 	raise "missing \\class #{where}" if
