@@ -69,6 +69,7 @@ $CFLAGS += " -xc++ -fno-operator-names"
 
 FILES = [
   [:directory, "base/",
+    [:ruby, "bridge_puredata.rb"],
     [:ruby, "main.rb"],
     [:ruby, "test.rb"],
     [:ruby, "MainLoop.rb"],
@@ -84,6 +85,17 @@ FILES = [
 	[:ruby, "server_1_ppm.rb"],
   ],
 ]
+
+#--------------------------------#
+
+$conf={
+	:LDSOFLAGS => ["-lm"],
+	:FEATURES => {},
+	:FORMATS => [],
+	:OPTIONS => [],
+	:DEFINES => [[:JMAX_ARCH,"i686-linux"]],
+	:OBJS => [],
+}
 
 #----------------------------------------------------------------#
 # Generic Parts
@@ -158,15 +170,18 @@ end
 #----------------------------------------------------------------#
 # Specific to the GridFlow project
 
+module Future; end
+
 class Feature
 	def initialize(&b)
 		instance_eval(&b)
 	end
-	def self.attr2(sym)
-		eval "def #{sym}(*args)
+	def self.attr2(sym,&b)
+		eval "def #{sym}(*args,&b)
 			raise args.inspect if args.length>1
-			@#{sym}=args[0] if args.length>0
-			@#{sym} end"
+			if b then @#{sym}=b.extend Future
+			elsif args.length>0 then @#{sym}=args[0]
+			else if Future===@#{sym} then @#{sym}.call else @#{sym} end end end"
 	end
 	attr2 :tag
 	attr2 :name
@@ -206,7 +221,7 @@ Feature.new {
 		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
 	options ["HAVE_STATIC_RUBY"]
-	defines [["PATH_LIBRUBY_A",$LIBRUBY_A],
+	defines [[:PATH_LIBRUBY_A,$LIBRUBY_A],
 		["LIBS_LIBRUBY_A",CONFIG['LIBS']]]
 },
 Feature.new {
@@ -402,6 +417,7 @@ Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
 	uses_feature [Or[:libruby,:librubystatic]]
+	defines [[:JMAXDISTDIR,`pwd`.chomp + "/bundled/jmax"]]
 	test proc {
 		c_test '
 		#define new new_
@@ -423,6 +439,7 @@ Feature.new {
 	name "IRCAM's jMax 4"
 	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
+	defines {[["JMAX4_INSTALL_DIR",`jmax-config --package-dir`.chomp]]}
 	test proc {
 		c_test '
 		#define new new_
@@ -444,28 +461,19 @@ Feature.new {
 	name "Miller Puckette's Pure Data"
 	uses_feature [Or[:libruby,:librubystatic]]
 	options ["HAVE_PUREDATA"]
+	defines {
+		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
+		[[:PUREDATA_PATH, File.dirname(path)+"/lib/pd" ]]}
 	test proc {
 		c_test "
 			\#include <m_pd.h>
 			int main () { return 0; }
-		"
+		" and $C_INCLUDE_PATH.find {|x| File.exist? x+"/m_pd.h" }
 	}
 }]
 
 $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
-
-#--------------------------------#
-
-$conf={
-	:JMAX_ARCH => nil,
-	:LDSOFLAGS => ["-lm"],
-	:FEATURES => {},
-	:FORMATS => [],
-	:OPTIONS => [],
-	:DEFINES => [],
-	:OBJS => [],
-}
 
 #--------------------------------#
 
@@ -485,11 +493,6 @@ if not File.exist?("./configure")
 	puts "Run me from the right directory please."
 	exit 1
 end
-
-# default values for jmax conf
-# [could also use Dir.pwd or ENV['PWD'] to get the path...]
-$conf[:JMAX_SOURCES]= `pwd`.chomp + "/bundled/jmax"
-$conf[:JMAX_ARCH] = "i686-linux"
 
 while ARGV.length>0 do
 	arg=ARGV.shift
@@ -518,9 +521,7 @@ while ARGV.length>0 do
 		puts "Debug Harder Mode (even more error checking; even less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
 		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
-	when "--jmax-arch"; $conf[:JMAX_ARCH]=ARGV.shift
-	when "--jmax-dist-dir"; $conf[:JMAX_SOURCES]=ARGV.shift
-		$CFLAGS += " -I#{$conf[:JMAX_SOURCES]}/include"
+	when "--jmax-arch"; $conf[:DEFINES].find{|x| x[0]==:JMAX_ARCH }[1]=ARGV.shift
 	when "--help"; usage; exit 0
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
@@ -624,7 +625,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.7.0 configurator within Ruby version #{VERSION}"
+DUAL.puts "This is the GridFlow 0.7.1 configurator within Ruby version #{VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -637,7 +638,7 @@ $conf[:LDSOFLAGS].uniq!
 #--------------------------------#
 
 puts ""
-for z in [:JMAX_ARCH, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
+for z in [:LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
   puts "#{z}: #{$conf[z].inspect}"
 end
 puts ""
@@ -684,32 +685,12 @@ def make_makefile f
     f.puts
 end
 
-if $conf[:OPTIONS].include? "HAVE_JMAX_2_5" and not $conf[:JMAX_ARCH]
-	DUAL.puts "ERROR: compiling with jMax, but not having the --jmax-arch specified"
-	DUAL.puts "(try i686-linux or ppc-macosx or whatever that is supposed work)"
-	exit
-end
-
 puts "generating ./config.make"
 
 File.open("./config.make","w") {|f| f.puts "
 
 RUBYARCH=#{CONFIG['arch']}
-
-ifndef ARCH
-ARCH=#{$conf[:JMAX_ARCH]}
-endif
 "
-if $conf[:OPTIONS].include? "HAVE_JMAX_2_5"
-f.puts "
-JMAXROOTDIR=#{$conf[:JMAX_SOURCES]}
-JMAXDISTDIR=#{$conf[:JMAX_SOURCES]}
-"
-end
-
-if $conf[:OPTIONS].include? "HAVE_JMAX_4"
-f.puts "JMAX4_INSTALL_DIR="+`jmax-config --package-dir`
-end
 
 f.puts "BRIDGE_LDFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
 
@@ -720,13 +701,8 @@ else
 end
 f.puts "CFLAGS += " + $CFLAGS
 
-for z in $conf[:OPTIONS] do
-	f.puts "#{z}=yes"
-end
-
-for z in $conf[:DEFINES] do
-	f.puts "#{z[0]}=#{z[1]}"
-end
+for z in $conf[:OPTIONS] do f.puts "#{z}=yes" end
+for z in $conf[:DEFINES] do	f.puts "#{z[0]}=#{z[1]}" end
 
 $sources = %w(base/number.c base/grid.c base/main.c base/flow_objects.c)
 for format in $conf[:FORMATS] do
@@ -735,7 +711,7 @@ end
 f.puts "SOURCES = #{$sources.join(" ")} \\"
 f.puts ""
 #make_makefile f
-}
+} # end open config.make
 
 #--------------------------------#
 puts "generating config.h"
@@ -753,9 +729,8 @@ if $conf[:FORMATS]!=[] then
 	}.join(",\\\n")
 end
 
-for z in $conf[:OPTIONS] do
-	f.puts "#define #{z}"
-end
+for z in $conf[:OPTIONS] do f.puts "\#define #{z}" end
+for z in $conf[:DEFINES] do	f.puts "\#define #{z[0]} \"#{z[1]}\"" end
 
 if $conf[:FEATURES][:mpeg3]
 f.puts "
