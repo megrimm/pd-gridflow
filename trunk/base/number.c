@@ -72,7 +72,7 @@ int low_bit(uint32 n) {
 	while (n>3) { FOURTIMES(_x_) n-=4; } \
 	while (n--) { _x_ }
 
-static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	register uint32 t;
 	int i;
 	int hb[4];
@@ -87,10 +87,10 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 		switch($->bytes) {
 		case 2:
 			NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;)
-			return out;
+			return;
 		case 4:
 			NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;)
-			return out;
+			return;
 		}
 	}
 	
@@ -109,7 +109,6 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 		else
 			while (n--) {CONVERT2; WRITE_BE; in+=size;}
 	}
-	return out;
 }
 
 #define LOOP_UNPACK(_reader_) \
@@ -120,7 +119,7 @@ static Pt<uint8> default_pack(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out
 
 //			*out++ = ((temp & $->mask[i]) << 7) >> hb[i];
 
-static Pt<Number> default_unpack(BitPacking *$, int n, Pt</*const*/ uint8> in,
+static void default_unpack(BitPacking *$, int n, Pt</*const*/ uint8> in,
 Pt<Number> out) {
 	int hb[4];
 	for (int i=0; i<$->size; i++) hb[i] = high_bit($->mask[i]);
@@ -132,22 +131,19 @@ Pt<Number> out) {
 		/* biggest byte first */
 		LOOP_UNPACK(bytes=$->bytes;while(bytes--) { temp = (temp<<8) | *in++; })
 	}
-	return out;
 }
 
 /* **************************************************************** */
 
-static Pt<uint8> pack2_565(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void pack2_565(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	const int hb[3] = {15,10,4};
 	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 	register uint32 t;
 	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
-	return out;
 }
 
-static Pt<uint8> pack3_888(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
+static void pack3_888(BitPacking *$, int n, Pt<Number> in, Pt<uint8> out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
-	return out;
 }
 
 uint32 bitpacking_masks[][4] = {
@@ -210,11 +206,11 @@ bool BitPacking::is_le() {
 	return endian==1 || (endian ^ ::is_le())==3;
 }
 
-Pt<uint8> BitPacking::pack(int n, Pt<Number> in, Pt<uint8> out) {
+void BitPacking::pack(int n, Pt<Number> in, Pt<uint8> out) {
 	return packer(this,n,in,out);
 }
 
-Pt<Number> BitPacking::unpack(int n, Pt<uint8> in, Pt<Number> out) {
+void BitPacking::unpack(int n, Pt<uint8> in, Pt<Number> out) {
 	return unpacker(this,n,in,out);
 }
 
@@ -345,14 +341,21 @@ NumberType number_type_table[] = {
 	DECL_TYPE(    uint32, 32),
 	DECL_TYPE(     int32, 32),
 	DECL_TYPE(   float32, 32),
+	DECL_TYPE(   float64, 64),
 /*
 	DECL_TYPE(    uint64, 64),
 	DECL_TYPE(     int64, 64),
-	DECL_TYPE(   float64, 64),
 	DECL_TYPE( complex64, 64),
 	DECL_TYPE(complex128,128),
 */
 };
+
+NumberTypeIndex NumberType_find (Ruby sym) {
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
+	if (sym==SYM(int32)) return int32_type_i;
+	if (sym==SYM(uint8)) return uint8_type_i;
+	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
+}
 
 /* **************************************************************** */
 
@@ -545,23 +548,19 @@ Operator2 op2_table[] = {
 
 Ruby op1_dict = Qnil;
 Ruby op2_dict = Qnil;
+Ruby number_type_dict = Qnil;
+
+#define INIT_TABLE(_dict_,_table_) { \
+	rb_ivar_set(mGridFlow,rb_intern("@" #_dict_),_dict_=rb_hash_new()); \
+	for(int i=0; i<COUNT(_table_); i++) { \
+		_table_[i].sym = ID2SYM(rb_intern(_table_[i].name)); \
+		rb_hash_aset(_dict_,_table_[i].sym,PTR2FIX((_table_+i))); \
+	}}
 
 void startup_number () {
-	for (int i=0; i<COUNT(number_type_table); i++) {
-		number_type_table[i].sym = ID2SYM(rb_intern(number_type_table[i].name));
-	}
-
-	rb_ivar_set(mGridFlow,SI(@op1_dict),op1_dict=rb_hash_new());
-	for(int i=0; i<COUNT(op1_table); i++) {
-		op1_table[i].sym = ID2SYM(rb_intern(op1_table[i].name));
-		rb_hash_aset(op1_dict,op1_table[i].sym,PTR2FIX((op1_table+i)));
-	} 
-
-	rb_ivar_set(mGridFlow,SI(@op2_dict),op2_dict=rb_hash_new());
-	for(int i=0; i<COUNT(op2_table); i++) {
-		op2_table[i].sym = ID2SYM(rb_intern(op2_table[i].name));
-		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
-	} 
+	INIT_TABLE(op1_dict,op1_table)
+	INIT_TABLE(op2_dict,op2_table)
+	INIT_TABLE(number_type_dict,number_type_table)
 
 	Ruby cBitPacking =
 		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);

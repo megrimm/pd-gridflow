@@ -28,13 +28,6 @@
 
 /* **************************************************************** */
 
-static NumberTypeIndex NumberType_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol");
-	if (sym==SYM(int32)) return int32_type_i;
-	if (sym==SYM(uint8)) return uint8_type_i;
-	RAISE("unknown element type \"%s\"", rb_sym_name(sym));
-}
-
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
@@ -270,15 +263,17 @@ GRID_FLOW(GridStore,0) {
 
 	//!@#$ accelerate me.
 	if (r.nt==int32_type_i) {
+		Pt<int32> p = (Pt<int32>)r;
 		while (n>0) {
 			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,r.dim->v[i]);
-			out[0]->send(size,r.as_int32()+r.dim->calc_dex(v));
+			out[0]->send(size,p+r.dim->calc_dex(v));
 			n -= nc;
 		}
 	} else if (r.nt==uint8_type_i) {
+		Pt<uint8> p = (Pt<uint8>)r;
 		while (n>0) {
 			for (int i=0; i<nc; i++,data++) v[i] = mod(*data,r.dim->v[i]);
-			out[0]->send(size,r.as_uint8()+r.dim->calc_dex(v));
+			out[0]->send(size,p+r.dim->calc_dex(v));
 			n -= nc;
 		}
 	} else RAISE("unsupported type");
@@ -289,11 +284,11 @@ GRID_END(GridStore,0) {
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = r.dim->prod();
-		if (r.nt==int32_type_i) {
-			while (n--) o->send(size,r.as_int32());
-		} else if (r.nt==uint8_type_i) {
-			while (n--) o->send(size,r.as_uint8());
-		} else RAISE("unsupported type");
+		switch(r.nt) {
+		case int32_type_i: while (n--) o->send(size,(Pt<int32>)r); break;
+		case uint8_type_i: while (n--) o->send(size,(Pt<uint8>)r); break;
+		default: RAISE("unsupported type");
+		}
 	}
 	o->end();
 }
@@ -306,9 +301,9 @@ GRID_BEGIN(GridStore,1) {
 
 GRID_FLOW(GridStore,1) {
 	if (r.nt==int32_type_i) {
-		COPY(r.as_int32() + in->dex, data, n);
+		COPY((Pt<int32>)r + in->dex, data, n);
 	} else if (r.nt==uint8_type_i) {
-		uint8 *data2 = r.as_uint8() + in->dex;
+		uint8 *data2 = (Pt<uint8>)r + in->dex;
 		for(int i=0; i<n; i++) data2[i] = data[i];
 	} else RAISE("unsupported type");
 	in->dex += n;
@@ -382,7 +377,7 @@ GRID_BEGIN(GridOp2,0) { out[0]->begin(in->dim->dup()); }
 
 GRID_FLOW(GridOp2,0) {
 	if (r.is_empty()) RAISE("ARGH");
-	Pt<int32> rdata = r.as_int32();
+	Pt<int32> rdata = (Pt<int32>)r;
 	int loop = r.dim->prod();
 	if (loop>1) {
 		if (in->dex+n <= loop) {
@@ -414,7 +409,7 @@ METHOD3(GridOp2,init) {
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
 		r.init(new Dim(0,0),int32_type_i);
-		r.as_int32()[0] = 0;
+		((Pt<int32>)r)[0] = 0;
 	} else {
 		r.init_from_ruby(argv[1]);
 	}
@@ -468,7 +463,7 @@ GRID_FLOW(GridFold,0) {
 	int i=0;
 	int nn=n;
 	while (n) {
-		COPY(buf+i,r.as_int32(),zn);
+		COPY(buf+i,((Pt<int32>)r),zn);
 		op->on_int32.op_fold2(zn,buf+i,yn,data);
 		i += zn;
 		data += yn*zn;
@@ -487,7 +482,7 @@ METHOD3(GridFold,init) {
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
 		r.init(new Dim(0,0),int32_type_i);
-		r.as_int32()[0] = 0;
+		((Pt<int32>)r)[0] = 0;
 	} else {
 		r.init_from_ruby(argv[1]);
 	}
@@ -535,7 +530,7 @@ GRID_FLOW(GridScan,0) {
 	int nn=n;
 	while (n) {
 		COPY(buf,data,n);
-		op->on_int32.op_scan2(zn,r.as_int32(),yn,buf);
+		op->on_int32.op_scan2(zn,((Pt<int32>)r),yn,buf);
 		data += yn*zn;
 		n -= yn*zn;
 	}
@@ -552,7 +547,7 @@ METHOD3(GridScan,init) {
 	if (argc>2) RAISE("too many args");
 	if (argc<2) {
 		r.init(new Dim(0,0),int32_type_i);
-		r.as_int32()[0] = 0;
+		((Pt<int32>)r)[0] = 0;
 	} else {
 		r.init_from_ruby(argv[1]);
 	}
@@ -610,7 +605,7 @@ GRID_FLOW(GridInner,0) {
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0; j<chunks; j++) {
 			COPY(buf,&data[i],factor);
-			for (int k=0; k<factor; k++) bufr[k]=r.as_int32()[chunks*k+j];
+			for (int k=0; k<factor; k++) bufr[k]=((Pt<int32>)r)[chunks*k+j];
 			op_para->on_int32.op_array2(factor,buf,bufr);
 			buf2[j] = op_fold->on_int32.op_fold(rint,factor,buf);
 		}
@@ -627,7 +622,7 @@ GRID_BEGIN(GridInner,2) {
 	r.init(in->dim->dup());
 }
 
-GRID_FLOW(GridInner,2) { COPY(&r.as_int32()[in->dex], data, n); }
+GRID_FLOW(GridInner,2) { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 
 GRID_END(GridInner,2) {}
 
@@ -683,7 +678,7 @@ GRID_FLOW(GridInner2,0) {
 	for (int i=0; i<n; i+=factor) {
 		for (int j=0,k=0; j<b_prod; j+=factor,k++) {
 			COPY(buf,&data[i],factor);
-			op_para->on_int32.op_array2(factor,buf,r.as_int32()+j);
+			op_para->on_int32.op_array2(factor,buf,((Pt<int32>)r)+j);
 			buf2[k] = op_fold->on_int32.op_fold(rint,factor,buf);
 		}
 		out[0]->send(b_prod/factor,buf2);
@@ -699,7 +694,7 @@ GRID_BEGIN(GridInner2,2) {
 	r.init(in->dim->dup());
 }
 
-GRID_FLOW(GridInner2,2) { COPY(&r.as_int32()[in->dex], data, n); }
+GRID_FLOW(GridInner2,2) { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 
 GRID_END(GridInner2,2) {}
 
@@ -746,7 +741,7 @@ GRID_FLOW(GridOuter,0) {
 	STACK_ARRAY(Number,buf,b_prod);
 	while (n) {
 		for (int j=0; j<b_prod; j++) buf[j] = *data;
-		op->on_int32.op_array2(b_prod,buf,r.as_int32());
+		op->on_int32.op_array2(b_prod,buf,((Pt<int32>)r));
 		out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -760,7 +755,7 @@ GRID_BEGIN(GridOuter,1) {
 	r.init(in->dim->dup());
 }
 
-GRID_FLOW(GridOuter,1) { COPY(&r.as_int32()[in->dex], data, n); }
+GRID_FLOW(GridOuter,1) { COPY(&((Pt<int32>)r)[in->dex], data, n); }
 
 GRID_END(GridOuter,1) {}
 
@@ -824,7 +819,7 @@ GRID_FLOW(GridConvolve,0) {
 	int l  = dc->prod(2); /* "pixel" length of a,c */
 	int oy = ll*(my/2), ox = l*(mx/2);
 	int i = in->dex / factor; /* line number of a */
-	Pt<Number> base = c.as_int32()+(i+margy)*ll+margx*l;
+	Pt<Number> base = ((Pt<int32>)c)+(i+margy)*ll+margx*l;
 	
 	/* building c from a */
 	while (n) {
@@ -841,7 +836,7 @@ GRID_END(GridConvolve,0) {
 	int dbx = db->get(1), dax = da->get(1);
 	int l  = dc->prod(2);
 	int ll = dc->prod(1);
-	Pt<Number> cp = c.as_int32();
+	Pt<Number> cp = ((Pt<int32>)c);
 
 	/* finishing building c from a */
 	COPY(cp                      ,cp+da->get(0)*ll,margy*ll);
@@ -853,11 +848,11 @@ GRID_END(GridConvolve,0) {
 	STACK_ARRAY(Number,buf2,l*dbx*dby);
 	STACK_ARRAY(Number,buf ,l*dbx*dby);
 	Pt<Number> q=buf2;
-	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=b.as_int32()[i];
+	for (int i=0; i<dbx*dby; i++) for (int j=0; j<l; j++) *q++=((Pt<int32>)b)[i];
 
 	for (int iy=0; iy<day; iy++) {
 		for (int ix=0; ix<dax; ix++) {
-			Pt<Number> p = c.as_int32() + iy*ll + ix*l;
+			Pt<Number> p = ((Pt<int32>)c) + iy*ll + ix*l;
 			Pt<Number> r = buf;
 			for (int jy=dby; jy; jy--,p+=ll,r+=dbx*l) COPY(r,p,dbx*l);
 			for (int i=l-1; i>=0; i--) buf3[i]=rint;
@@ -881,7 +876,7 @@ GRID_BEGIN(GridConvolve,1) {
 	b.init(in->dim->dup());
 }
 
-GRID_FLOW(GridConvolve,1) { COPY(&b.as_int32()[in->dex], data, n); }
+GRID_FLOW(GridConvolve,1) { COPY(&((Pt<int32>)b)[in->dex], data, n); }
 
 GRID_END(GridConvolve,1) {}
 
@@ -935,9 +930,9 @@ METHOD3(GridFor,_0_bang) {
 	int n = from.dim->prod();
 	int nn[n+1];
 	STACK_ARRAY(Number,x,n);
-	Pt<Number> fromb = from.as_int32();
-	Pt<Number>   tob = to  .as_int32();
-	Pt<Number> stepb = step.as_int32();
+	Pt<Number> fromb = ((Pt<int32>)from);
+	Pt<Number>   tob = ((Pt<int32>)to  );
+	Pt<Number> stepb = ((Pt<int32>)step);
 	if (!from.dim->equal(to.dim) || !to.dim->equal(step.dim))
 		RAISE("dimension mismatch");
 	for (int i=step.dim->prod()-1; i>=0; i--)
@@ -1042,7 +1037,7 @@ GRID_FLOW(GridRedim,0) {
 	} else {
 		int a = in->dim->prod();
 		int n2 = min(n,a-i);
-		COPY(&temp.as_int32()[i],data,n2);
+		COPY(&((Pt<int32>)temp)[i],data,n2);
 		if (n2>0) out[0]->send(n2,data);
 	}
 }
@@ -1052,7 +1047,7 @@ GRID_END(GridRedim,0) {
 		int a = in->dim->prod(), b = dim->prod();
 		int i = a;
 		while (i<b) {
-			out[0]->send(min(a,b-i),temp.as_int32());
+			out[0]->send(min(a,b-i),(Pt<int32>)temp);
 			i += a;
 		}
 	}
@@ -1068,7 +1063,7 @@ METHOD3(GridRedim,init) {
 	Grid t;
 	t.init_from_ruby(argv[0]);
 	expect_dim_dim_list(t.dim);
-	dim = new Dim(t.dim->prod(),(int *)(Number *)t.as_int32());
+	dim = new Dim(t.dim->prod(),(int *)(Number *)(Pt<int32>)t);
 	return Qnil;
 }
 
@@ -1143,8 +1138,8 @@ static void expect_scale_factor (Dim *dim) {
 METHOD3(GridScaleBy,init) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	scaley = scale.as_int32()[0];
-	scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	scaley = ((Pt<int32>)scale)[0];
+	scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
 	if (scaley<1) scaley=1;
 	if (scalex<1) scalex=1;
 
@@ -1192,7 +1187,7 @@ GRID_BEGIN(GridDownscaleBy,0) {
 GRID_FLOW(GridDownscaleBy,0) {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp.dim->prod();
-	Pt<Number> buf = temp.as_int32();
+	Pt<Number> buf = ((Pt<int32>)temp);
 
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
@@ -1236,8 +1231,8 @@ GRID_END(GridDownscaleBy,0) { out[0]->end(); }
 METHOD3(GridDownscaleBy,init) {
 	scale.constrain(expect_scale_factor);
 	scale.init_from_ruby(argc<1 ? EVAL("[2]") : argv[0]);
-	scaley = scale.as_int32()[0];
-	scalex = scale.as_int32()[scale.dim->prod()==1 ? 0 : 1];
+	scaley = ((Pt<int32>)scale)[0];
+	scalex = ((Pt<int32>)scale)[scale.dim->prod()==1 ? 0 : 1];
 	if (scaley<1) scaley=1;
 	if (scalex<1) scalex=1;
 
@@ -1303,7 +1298,7 @@ GRID_BEGIN(GridLayer,0) {
 }
 
 GRID_FLOW(GridLayer,0) {
-	Pt<Number> rr = r.as_int32() + in->dex*3/4;
+	Pt<Number> rr = ((Pt<int32>)r) + in->dex*3/4;
 	STACK_ARRAY(Number,foo,n*3/4);
 	for (int i=0,j=0; i<n; i+=4,j+=3) {
 		foo[j+0] = (data[i+0]*data[i+3] + rr[j+0]*(256-data[i+3])) >> 8;

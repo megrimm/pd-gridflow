@@ -400,8 +400,10 @@ struct DimPattern {
 /* BitPacking objects encapsulate optimised loops of conversion */
 struct BitPacking;
 
-typedef Pt<uint8>(*Packer)(BitPacking *$, int n, Pt</*const*/ Number> in, Pt<uint8> out);
-typedef Pt<Number>(*Unpacker)(BitPacking *$, int n, Pt</*const*/ uint8> in, Pt<Number> out);
+/* those are the types of the optimised loops of conversion */ 
+/* inputs are const */
+typedef void (*  Packer)(BitPacking *$, int n, Pt<Number> in, Pt< uint8> out);
+typedef void (*Unpacker)(BitPacking *$, int n, Pt< uint8> in, Pt<Number> out);
 
 struct BitPacking {
 	Packer packer;
@@ -415,14 +417,15 @@ struct BitPacking {
 	BitPacking(int endian, int bytes, int size, uint32 *mask,
 		Packer packer=0, Unpacker unpacker=0);
 	void gfpost();
-	Pt<uint8> pack(int n, Pt</*const*/ Number> data, Pt<uint8> target);
-	Pt<Number> unpack(int n, Pt</*const*/ uint8> in, Pt<Number> out);
 	bool is_le();
 	bool eq(BitPacking *o);
+	DECL3(init);
 
+/* main entrances to Packers/Unpackers */
+	void pack(  int n, Pt<Number> in, Pt< uint8> out);
+	void unpack(int n, Pt< uint8> in, Pt<Number> out);
 	DECL3(pack2);
 	DECL3(unpack2);
-	DECL3(init);
 };
 
 int high_bit(uint32 n);
@@ -433,7 +436,7 @@ void swap16 (int n, Pt<uint16> data);
 #define DECL_TYPE(_name_,_size_) \
 	_name_##_type_i
 
-typedef enum NumberTypeIndex {
+enum NumberTypeIndex {
 	DECL_TYPE(     uint8,  8),
 	DECL_TYPE(      int8,  8),
 	DECL_TYPE(    uint16, 16),
@@ -441,15 +444,19 @@ typedef enum NumberTypeIndex {
 	DECL_TYPE(    uint32, 32),
 	DECL_TYPE(     int32, 32),
 	DECL_TYPE(   float32, 32),
-} NumberTypeIndex;
+	DECL_TYPE(   float64, 32),
+	number_type_table_end
+};
 
 #undef DECL_TYPE
 
-typedef struct NumberType {
+struct NumberType {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int size;
-} NumberType;
+};
+
+NumberTypeIndex NumberType_find (Ruby sym);
 
 /* Operator objects encapsulate optimised loops of simple operations */
 
@@ -491,6 +498,7 @@ struct Operator2 {
 };
 
 extern NumberType number_type_table[];
+extern Ruby number_type_dict; /* GridFlow.@number_type_dict={} */
 extern Ruby op1_dict; /* GridFlow.@op1_dict={} */
 extern Ruby op2_dict; /* GridFlow.@op2_dict={} */
 
@@ -522,8 +530,8 @@ struct Grid {
 	void init_from_ruby_list(int n, Ruby *a);
 	void del();
 	~Grid();
-	inline Pt<int32> as_int32() { return Pt<int32>((int32 *)data,dim->prod()); }
-	inline Pt<uint8> as_uint8() { return Pt<uint8>((uint8 *)data,dim->prod()); }
+	operator Pt<int32>() { return Pt<int32>((int32 *)data,dim->prod()); }
+	operator Pt<uint8>() { return Pt<uint8>((uint8 *)data,dim->prod()); }
 	inline bool is_empty() { return !dim; }
 	Dim *to_dim ();
 };
@@ -575,7 +583,7 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 	GRID_BEGIN(_class_,_inlet_) { \
 		_member_.del(); _member_.init(in->dim->dup(),int32_type_i); } \
 	GRID_FLOW(_class_,_inlet_) { \
-		COPY(&_member_.as_int32()[in->dex], data, n); } \
+		COPY(&((Pt<int32>)_member_)[in->dex], data, n); } \
 	GRID_END(_class_,_inlet_)
 
 typedef struct GridHandler {
@@ -593,6 +601,7 @@ struct GridInlet {
 
 /* grid progress info */
 	Dim *dim;
+	NumberTypeIndex nt;
 	int dex;
 
 /* grid receptor */
@@ -611,8 +620,8 @@ struct GridInlet {
 	bool is_busy();
 	bool is_busy_verbose(const char *where);
 	void begin( int argc, Ruby *argv);
-	void flow(  int argc, Ruby *argv);
-	void end(   int argc, Ruby *argv);
+	void flow(int mode, int n, Pt<Number> data);
+	void end();
 	void list(  int argc, Ruby *argv);
 	void int_(  int argc, Ruby *argv);
 	void float_(int argc, Ruby *argv);

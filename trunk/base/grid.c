@@ -69,7 +69,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		fill:
 		int nn = dim->prod();
 		n = min(n,nn);
-		Pt<Number> p = as_int32();
+		Pt<Number> p = (Pt<int32>)*this;
 		for (int i=0; i<n; i++) p[i] = INT(a[i]);
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i));
 }
@@ -79,7 +79,7 @@ void Grid::init_from_ruby(Ruby x) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		init(new Dim(0,0));
-		as_int32()[0] = INT(x);
+		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
@@ -88,7 +88,7 @@ void Grid::init_from_ruby(Ruby x) {
 }
 
 Dim *Grid::to_dim() {
-	return new Dim(dim->prod(),(int *)(Number *)as_int32());
+	return new Dim(dim->prod(),(int *)(Number *)(Pt<int32>)*this);
 }
 
 void Grid::del() {
@@ -109,6 +109,7 @@ GridInlet::GridInlet(GridObject *parent, const GridHandler *gh) {
 	this->gh    = gh;
 	assert(gh->begin && gh->flow && gh->end);
 	dim   = 0;
+	nt    = int32_type_i;
 	dex   = 0;
 	factor= 1;
 	buf   = Pt<Number>();
@@ -162,8 +163,12 @@ static Ruby GridInlet_begin$2(GridInlet *$) {
 
 void GridInlet::begin(int argc, Ruby *argv) {
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
+	nt = (NumberTypeIndex) INT(argv[2]);
 	sender = back_out->parent;
-	argc-=2, argv+=2;
+	argc-=3, argv+=3;
+
+	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
+		RAISE("unknown number type");
 
 	if (is_busy()) {
 		gfpost("grid inlet busy (aborting previous grid)");
@@ -187,15 +192,12 @@ void GridInlet::begin(int argc, Ruby *argv) {
 	back_out->callback(this);
 }
 
-void GridInlet::flow(int argc, Ruby *argv) {
-	int n = NUM2INT(argv[0]);
-	int mode = NUM2INT(argv[2]);
+void GridInlet::flow(int mode, int n, Pt<Number> data) {
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
 	}
 	if (n==0) return;
-	Pt<Number> data = Pt<Number>(FIX2PTR(Number,argv[1]),n);
 	if (!is_busy_verbose("flow")) return;
 	if (mode==4) {
 		int d = dex + bufn;
@@ -261,7 +263,7 @@ void GridInlet::abort() {
 	dex = 0;
 }
 
-void GridInlet::end(int argc, Ruby *argv) {
+void GridInlet::end() {
 	if (!is_busy_verbose("end")) return;
 /*	gfpost("%s: GridInlet_end()", INFO(parent)); */
 	if (dim->prod() != dex) {
@@ -287,7 +289,7 @@ void GridInlet::grid(Grid *g) {
 	dim = g->dim->dup();
 	gh->begin(parent,this);
 	if (n>0 && gh->mode!=0) {
-		Pt<Number> data = g->as_int32();
+		Pt<Number> data = (Pt<int32>)*g;
 		if (gh->mode==6) {
 			Pt<Number> d = data;
 			int size = g->dim->prod()*number_type_table[g->nt].size/8;
@@ -356,7 +358,7 @@ void GridOutlet::end() {
 	assert(this);
 	assert(is_busy());
 	flush();
-	for (int i=0; i<ninlets; i++) inlets[i]->end(0,0);
+	for (int i=0; i<ninlets; i++) inlets[i]->end();
 	delete dim;
 	dim = 0;
 	dex = 0;
@@ -374,12 +376,13 @@ void GridOutlet::begin(Dim *dim) {
 	ninlets = 0;
 	if (inlets) delete[] inlets.p;
 	inlets = Pt<GridInlet *>(new GridInlet*[MAX_CORDS],MAX_CORDS);
-	Ruby a[n+4];
+	Ruby a[n+5];
 	a[0] = INT2NUM(woutlet);
 	a[1] = sym_grid;
 	a[2] = PTR2FIXA(this);
 	a[3] = PTR2FIXB(this);
-	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
+	a[4] = int32_type_i;
+	for(int i=0; i<n; i++) a[5+i] = INT2NUM(dim->get(i));
 	FObject_send_out(COUNT(a),a,parent->peer);
 	frozen = 1;
 /*	gfpost("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
@@ -390,13 +393,13 @@ void GridOutlet::send_direct(int n, Pt<Number> data) {
 	assert(frozen);
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
-		Ruby a[] = { INT2NUM(pn), PTR2FIX(data), INT2NUM(4) };
-		for (int i=0; i<ninlets; i++) inlets[i]->flow(COUNT(a),a);
+		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
 		data += pn;
 		n -= pn;
 	}
 }
 
+/* buffering in outlet still is 8x faster...? */
 void GridOutlet::send(int n, Pt<Number> data) {
 	assert(is_busy());
 	assert(frozen);
@@ -411,9 +414,12 @@ void GridOutlet::send(int n, Pt<Number> data) {
 		COPY(buf+bufn,data,n);
 		bufn += n;
 	}
+/*
+	send_direct(n,data);
+*/
 }
 
-/* should use BitPacking */
+/* should use BitPacking? */
 void GridOutlet::send(int n, Pt<uint8> data) {
 	int bs = gf_max_packet_length;
 	STACK_ARRAY(Number,data2,bs);
@@ -433,8 +439,7 @@ void GridOutlet::give(int n, Pt<Number> data) {
 	flush();
 	if (ninlets==1 && inlets[0]->gh->mode == 6) {
 		/* this is the copyless buffer passing */
-		Ruby a[] = { INT2NUM(n), PTR2FIX(data), INT2NUM(6) };
-		inlets[0]->flow(COUNT(a),a);
+		inlets[0]->flow(6,n,data);
 	} else {
 		/* normal stuff */
 		send_direct(n,data);
