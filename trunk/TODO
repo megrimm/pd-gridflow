@@ -1,8 +1,10 @@
 /* $Id$ */
 
-"!" is planned for version 0.3.0
+"!" is planned for version 0.4.0
 
-
+Distribution
+[ ] prepare gridflow-images-0.4
+[ ] rearrange both web sites
 
 Installation
 [ ] add --fast switch to turn  on all optimizations
@@ -17,10 +19,9 @@ Documentation Update
 [ ] @, @!
 [ ] @fold, @inner, @outer
 [ ] @for, @dim, @redim
-[ ] @print, rtmetro, video4jmax
+[ ] @print, rtmetro, @global
 
 Documentation
-[ ] remove "format"
 [ ] XMLize reference section
 [ ] create JMAXML->HTML converter
 [ ] validate samples/outside
@@ -53,6 +54,7 @@ General
 [ ] @print
 [ ] how can I write unit tests or contracts?
 [ ] MMX memcpy() ?
+[ ] runtime configurable packet_length
 
 Computation Objects
 [ ] @cartprod (?), @slice (@splice ?)
@@ -94,11 +96,11 @@ Structure & Protocol
 Input/Output
 [ ] in-place editing (rw mode)
 [ ] implement byte-order support in BitPacking
-[ ] add PTC / TinyPTC / SDL support
-[ ] x11 shared memory working
+[ ] add Hermes support
 [ ] add messages "load", "save" as open,bang,close combos.
 [ ] add NTSC<->PAL option
 [ ] fix RGB<->BGR<->??? palette issues
+[ ] should disable x11 shared memory on remote displays.
 
 File Formats
 [ ] Targa write support
@@ -106,12 +108,11 @@ File Formats
 [ ] PNG support (and register ourselves in libpng.org's app list)
 [ ] QuickTime support
 [!] MPEG support
-[!] TCP support
+[!] TCP server
+[!] TCP no blocking
 [!] VDSP support
 [ ] multi-image (seq) (createable by cat, ar, tar or zip)
 [ ] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[!] install libmpeg
-[ ] design generic grid format (.grid)
 [ ] rewinding file
 [ ] FileFormat base class + inheritance + pre-written open() code, etc
 
@@ -123,17 +124,14 @@ Java/Swing
 [ ] 2d slider
 [ ] radial slider (angle chooser)
 
-Bugs
-[ ] @video_out causes delayed crash when closing its associated window
-[ ] object sending too much data causes *another* object to crash.
+UnitTesting/Bugs
+[ ] @out causes delayed crash when closing its associated window
 [ ] distinguish "mod" and "%" properly (re: rounding)
-[ ] @convolve crashes with some bad right-inlet input
 [ ] leak in all FileFormat#close
 [ ] add alloc-tracing to find all leaks
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
-[ ] v4j could have a runtime profiler for cpu+memory usage.
 
 ================
 vin_file_test_2.jmax / benchmark.jmax
