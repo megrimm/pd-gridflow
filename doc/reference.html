@@ -809,19 +809,44 @@ This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </t
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="unix_time">unix_time</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/unix_time-icon.png" alt="[unix_time]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br></td></tr><tr><td></td><td></td><td> </td></tr>
+ <p> 
+		This object returns the Unix timestamp. The first 
+		outlet does so with ASCII, the second in seconds and the third outlet 
+		outputs the fractions of seconds up to 1/100 000 th of a second which is useful for creating 
+		filenames. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;bang&gt; <b>(</b><b>)</b> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+Outputs the time and date in ASCII format <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;&lt;float&gt; <b>(</b><b>)</b> <br>
+Outputs the Unix timestamp in seconds <br><b>outlet&nbsp;2 </b><b>method</b>&nbsp;&lt;float&gt; <b>(</b><b>)</b> <br>
+Outputs the fractions of a second up to Outputs the 
+		fractions of a second up to 1/100000 th of a second <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ls">ls</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/ls-icon.png" alt="[ls]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p> 
+		This object is similar to the Unix list command 
+		'ls'. It returns the names of files in a given 
+		directory.  May be used with [listlength] to retrieve the number of files. 
+		Hidden files are displayed. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="exec">exec</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/exec-icon.png" alt="[exec]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p> 
+		This object launches a Unix shell program or script. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="renamefile">renamefile</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/renamefile-icon.png" alt="[renamefile]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p> 
+		This object accepts a list of two elements as arguments. 
+		The current file name being the first and the second is the desired change 
+		in name. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;list&gt; <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="plotter_control">plotter_control</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/plotter_control-icon.png" alt="[plotter_control]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
- <br></td></tr><tr><td></td><td></td><td> </td></tr>
+ <p> 
+		This object produces HPGL instructions in ASCII form 
+		that can be sent to the comport object in order to control an HPGL 
+		compatible plotter. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>

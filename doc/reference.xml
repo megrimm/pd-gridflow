@@ -1294,18 +1294,53 @@
 	</class>
 
 	<class name="unix_time">
+		<p>
+		This object returns the Unix timestamp. The first 
+		outlet does so with ASCII, the second in seconds and the third outlet 
+		outputs the fractions of seconds up to 1/100 000 th of a second which is useful for creating 
+		filenames.
+		</p>
+		<inlet id="0"><method name="&lt;bang&gt;"/></inlet>
+		<outlet id="0"><method name="&lt;symbol&gt;"/>Outputs the time and date in ASCII format</outlet>
+		<outlet id="1"><method name="&lt;float&gt;"/>Outputs the Unix timestamp in seconds</outlet>
+		<outlet id="2"><method name="&lt;float&gt;"/>Outputs the fractions of a second up to Outputs the 
+		fractions of a second up to 1/100000 th of a second</outlet>
 	</class>
 
 	<class name="ls">
+		<p>
+		This object is similar to the Unix list command 
+		'ls'. It returns the names of files in a given 
+		directory.  May be used with [listlength] to retrieve the number of files. 
+		Hidden files are displayed.
+		</p>
+		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
 	</class>
 
 	<class name="exec">
+		<p>
+		This object launches a Unix shell program or script.
+		</p>
+		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
 	</class>
 
 	<class name="renamefile">
+		<p>
+		This object accepts a list of two elements as arguments.  
+		The current file name being the first and the second is the desired change 
+		in name.
+		</p>
+		<inlet id="0"><method name="&lt;list&gt;"/></inlet>
 	</class>
 
 	<class name="plotter_control">
+		<p>
+		This object produces HPGL instructions in ASCII form 
+		that can be sent to the comport object in order to control an HPGL 
+		compatible plotter.
+		</p>
+		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
+		<outlet id="0"><method name="&lt;symbol&gt;"/>Outputs the HPGL commands in ASCII format</outlet>
 	</class>
 
 </section>
