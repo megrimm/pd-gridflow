@@ -30,7 +30,8 @@ include Config
 
 def make_expand(x)
   y=x.gsub(/\$\(([^\)]*)\)/) {CONFIG[$1]}
-  if x!=y then make_expand y else y end end
+  if x!=y then make_expand y else y end
+end
 
 def read_ld_so_conf
 	return [] unless File.exist?("/etc/ld.so.conf")
@@ -775,12 +776,18 @@ mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 #		then "cc -dynamic -bundle -undefined suppress -flat_namespace"
 #		else "$(CC)" end)
 
-mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CC)"
+mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
 
 # Adam Lindsay's Mac attempts.
 mf.sub! /-no-precomp/, "-no-cpp-precomp"
 
-#jMax conflict resolution
+# remove gcc3.2 warning about -I/usr/include
+mf.sub!(/^CPPFLAGS = (.*)$/) {
+	cpp = "CPPFLAGS = " +
+		make_expand($1).sub(%r"-I\s*/usr/include","")
+}
+
+# jMax conflict resolution (this must be done last)
 mf.gsub!(/prefix/,'rubyprefix')
 
 #p mf.length

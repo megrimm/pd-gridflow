@@ -134,11 +134,11 @@ end
 
 	(a = FObject["@scan + {#{nt} 0 0 0}"]).connect 0,e,0
 	x.expect([1,2,3,5,7,9,12,15,18]) {
-		a.send_in 0,:list,3,3,nt,hm,*(1..9) }
+		a.send_in 0,:list,3,3,nt,hm,*(1..9).to_a }
 
 	(a = FObject["@scan + {#{nt} # 0}"]).connect 0,e,0
 	x.expect([1,3,6, 4,9,15, 7,15,24]) {
-		a.send_in 0,:list,3,3,nt,hm,*(1..9) }
+		a.send_in 0,:list,3,3,nt,hm,*(1..9).to_a }
 
 	(a = FObject["@outer +"]).connect 0,e,0
 	x.expect([9,10,12,17,18,20,33,34,36]) {

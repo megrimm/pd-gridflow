@@ -131,7 +131,8 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
+		-DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -160,7 +161,8 @@ gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
 $(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) -DLINUXPC -DOPTIMIZE $< \
+	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
+		-DLINUXPC -DOPTIMIZE $< \
 		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 jmax-install::
@@ -234,8 +236,8 @@ endif
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF) $(RUBYA1)
-	$(CC) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $< \
-		-xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
+	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
+		$< -xnone $(RUBYA2) $(LIBS_LIBRUBY_A) -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
 
