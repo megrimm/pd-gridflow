@@ -58,16 +58,15 @@ $LD_LIBRARY_PATH = (
 #	puts "#{var}: #{eval(var.to_s).inspect}"
 #end
 
-# Ruby 1.8 is the latter case; Ruby 1.6, 1.7 the former case
-for x in ["#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
-"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}",
-"#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
-] do
+$CFLAGS += " -xc++ -fno-operator-names"
+
+ruby16a = "#{CONFIG['libdir']}/ruby/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/"\
+"#{CONFIG['arch']}/#{CONFIG['LIBRUBY_A']}"		
+ruby18a = "#{CONFIG['libdir']}/#{CONFIG['LIBRUBY_A']}"
+for x in [ruby16a,ruby18a] do
 	$LIBRUBY_A = make_expand x
 	break if File.exist? $LIBRUBY_A
 end
-
-$CFLAGS += " -xc++ -fno-operator-names"
 
 FILES = [
   [:directory, "base/",
@@ -92,6 +91,7 @@ FILES = [
 
 $conf={
 	:LDSOFLAGS => ["-lm"],
+	:BRIDGE_LDFLAGS => ["-lm"],
 	:FEATURES => {},
 	:FORMATS => [],
 	:OPTIONS => [],
@@ -189,6 +189,7 @@ class Feature
 	attr2 :name
 	attr2 :status #!@#$
 	attr2 :uses_so #!@#$
+	attr2 :uses_bridge_so #!@#$
 	attr2 :uses_o #!@#$
 	attr2 :uses_h #!@#$
 	attr2 :uses_feature #!@#$
@@ -216,6 +217,9 @@ Feature.new {
 	tag :librubystatic
 	unless_feature [:libruby]
 	name "Ruby as a static library"
+	uses_bridge_so ["-Wl,--whole-archive"+
+		" #{$LIBRUBY_A} #{CONFIG['LIBS']} "+
+		"-Wl,--no-whole-archive"]
 	test proc {
 		c_test "
 		#include <ruby.h>
@@ -223,10 +227,6 @@ Feature.new {
 		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
 	options ["HAVE_STATIC_RUBY"]
-	defines [[:LIBRUBY_A,
-		"-Wl,--whole-archive " +
-		$LIBRUBY_A + " " + CONFIG['LIBS'] +
-		" -Wl,--no-whole-archive"]]
 },
 Feature.new {
 	tag :fast
@@ -622,6 +622,7 @@ def try feature
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
+	$conf[:BRIDGE_LDFLAGS].concat(feature.uses_bridge_so||[])
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
@@ -638,11 +639,12 @@ ensure
 end
 
 $conf[:LDSOFLAGS].uniq!
+$conf[:BRIDGE_LDFLAGS].uniq!
 
 #--------------------------------#
 
 puts ""
-for z in [:LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
+for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
   puts "#{z}: #{$conf[z].inspect}"
 end
 puts ""
@@ -696,7 +698,7 @@ File.open("./config.make","w") {|f| f.puts "
 RUBYARCH=#{CONFIG['arch']}
 "
 
-f.puts "BRIDGE_LDFLAGS = " + $conf[:LDSOFLAGS].join(" ") + " " + $LDFLAGS
+f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].join(" ") + " " + $LDFLAGS
 
 if Config::CONFIG["arch"] =~ /darwin/ then
 	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
@@ -753,9 +755,7 @@ puts "",
 ""
 
 #--------------------------------#
-$LOCAL_LIBS = " -Wl,--whole-archive " +
-	$conf[:LDSOFLAGS].join(" ") +
-	" -Wl,--no-whole-archive "
+$LOCAL_LIBS = $conf[:LDSOFLAGS].join(" ")
 
 $objs = $sources.collect{|i| i.sub(/.c$/,".o") }
 dir_config("gridflow")
@@ -767,7 +767,7 @@ mf = File.readlines("Makefile").join""
 mf.gsub! /-c \$<$/, "-c \$< -o $@"
 mf.gsub! /\*\.o/, "*.o */*.o"
 mf.sub! /^install:.*/, "install: install2 site-install"
-mf.sub! /^all:/,"all: all2 "
+mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
 mf.gsub! /^(site-)?install:\n\n/,""
 mf.sub! /CC = gcc\n/, "CC = g++\n"
