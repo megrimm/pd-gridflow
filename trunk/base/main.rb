@@ -60,12 +60,10 @@ class<<self
 	attr_accessor :data_path
 	attr_accessor :post_header
 	attr_accessor :verbose
-	attr_reader :alloc_set
-	attr_reader :fobjects_set
-	attr_reader :fclasses_set
+	attr_reader :fobjects
+	attr_reader :fclasses
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
-	attr_reader :formats
 	attr_reader :bridge_name
 	alias gfpost post
 end
@@ -73,7 +71,6 @@ end
 @subprocesses={}
 @verbose=false
 @data_path=[]
-@formats={}
 
 def self.hunt_zombies
 	#STDERR.puts "GridFlow.hunt_zombies"
@@ -183,7 +180,7 @@ class FObject
 		@outlets[outlet].push [object, inlet]
 	end
 	def self.name_lookup sym
-		qlasses = GridFlow.instance_eval{@fclasses_set}
+		qlasses = GridFlow.fclasses
 		qlass = qlasses[sym.to_s]
 		if not qlass
 			return qlasses['broken'] if @broken_ok
@@ -359,8 +356,8 @@ require "gridflow/format/main.rb"
 }
 
 END {
-	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
-	GridFlow.fobjects_set.clear
+	GridFlow.fobjects.each {|k,v| k.delete if k.respond_to? :delete }
+	GridFlow.fobjects.clear
 	GC.start
 }
 
