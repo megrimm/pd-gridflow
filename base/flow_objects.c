@@ -50,13 +50,13 @@ static NumberTypeIndex NumberType_find (Ruby sym) {
 Operator1 *OP1(Ruby x) {
 	Ruby s = rb_hash_aref(op1_dict,x);
 	if (s==Qnil) RAISE("expected one-input-operator");
-	return (Operator1 *)FIX2PTR(s);
+	return FIX2PTR(Operator1,s);
 }
 
 Operator2 *OP2(Ruby x) {
 	Ruby s = rb_hash_aref(op2_dict,x);
 	if (s==Qnil) RAISE("expected two-input-operator");
-	return (Operator2 *)FIX2PTR(s);
+	return FIX2PTR(Operator2,s);
 }
 
 static void expect_dim_dim_list (Dim *d) {

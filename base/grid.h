@@ -105,11 +105,14 @@
 */
 
 #define PTR2FIX(ptr) INT2NUM(((long)(int32*)ptr)>>2)
-#define FIX2PTR(Ruby) (void *)(INT(Ruby)<<2)
+#define FIX2PTR(type,ruby) ((type *)(INT(ruby)<<2))
+
+//#define PTR2FIX(ptr) Pointer_new((void *)ptr)
+//#define FIX2PTR(v) Pointer_get(v)
 
 #define PTR2FIXA(ptr) INT2NUM(((long)(int32*)ptr)&0xffff)
 #define PTR2FIXB(ptr) INT2NUM((((long)(int32*)ptr)>>16)&0xffff)
-#define FIX2PTRAB(v1,v2) (void *)(INT(v1)+(INT(v2)<<16))
+#define FIX2PTRAB(type,v1,v2) ((type *)(INT(v1)+(INT(v2)<<16)))
 
 #define DEF(_class_,_name_,_argc_) \
 	rb_define_method(c##_class_,#_name_,(RFunc)_class_##_##_name_,_argc_)
@@ -783,9 +786,6 @@ void MainLoop_remove(void *data);
 
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
-
-//#define PTR2FIX(ptr) Pointer_new((void *)ptr)
-//#define FIX2PTR(v) Pointer_get(v)
 
 Ruby ruby_c_install(GridClass *gc, Ruby super);
 
