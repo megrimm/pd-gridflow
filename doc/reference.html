@@ -10,583 +10,696 @@
   <tr bgcolor="#00283c"> 
     <td colspan="4"><img src="images/jmax_titre.jpg" width="253" height="23"></td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100" valign="top">&nbsp;</td>
     <td width="405">&nbsp;</td>
-    <td width="49" rowspan="9">&nbsp;</td>
+    <td width="49" rowspan="17">&nbsp;</td>
   </tr>
-  <tr>
-    <td colspan="3" height="16">
+  <tr> 
+    <td colspan="3" height="16"> 
       <h4>video4jmax - reference</h4>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
       <h4>Grid classes</h4>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
-    <td width="405">
-      <p>There are seven of them and they are named with a "@" prefix because
-        they all have at least one inlet and/or outlet that can handle streamed
+    <td width="405"> 
+      <p>There are eight of them and they are named with a "@" prefix because 
+        they all have at least one inlet and/or outlet that can handle streamed 
         Grids. </p>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td colspan="2">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
+      <h5><a name="protocol_basics"></a>Grid Protocol Basics</h5>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td width="100">&nbsp;</td>
+    <td width="405"> 
+      <p>No matter how shapeful we can think Grids are, they are usually stored 
+        and transmitted in a quite flat sequential way. In an N-dimensional Grid, 
+        dimension 0 is called "outer" and dimension N-1 is called "inner" or "last". 
+        This inner/outer thing can be thought of this way: a Grid is an array 
+        of array of array of...; for example, a picture is an array of lines; 
+        a line is an array of pixels; a pixel is an array of integers. At each 
+        such level, elements are sent/stored in their numeric order, and are numbered 
+        using natural numbers starting at 0. This explains why you can see the 
+        picture result appear line by line (and not column by column, or channel 
+        by channel) </p>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
+      <h5><a name="picture_format"></a>Video4jmax Picture Format</h5>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td width="100">&nbsp;</td>
+    <td width="405"> 
+      <p>Most of what you should know about this topic is in the @video_out documentation. 
+        A small additional note: pictures are handled in 96 bpp and have to be 
+        downscaled to 24 bpp for display. That huge amount of slack is to improve 
+        speed and because if you create your own effects you often have intermediate 
+        results that need to be of higher precision. In the final conversion, 
+        high bits are just truncated. The black value is 0 and the maximum intensity 
+        value is 255; negative values are wrapped and values above 255 are wrapped 
+        too. If you want to clip them, you may use "@ max 0" and "@ min 255" objects.</p>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
+      <h4>Input / Output</h4>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
       <h5><a name="video_out"></a>@video_out</h5>
     </td>
   </tr>
-  <tr>
-    <td width="84" height="230" rowspan="2">&nbsp;</td>
-    <td width="100" height="48">
-      <h5><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" width="100" height="60" border="0" align="top" alt="video_out_patch"></a></h5>
-    </td>
-    <td width="405" height="230" rowspan="2">
-      <p>Each @video_out object creates a window when it is created. It is constructed
-        with two parameters. If you want to create a window that is 240 pixels
-        high and 320 pixels wide: @video_out 240 320. @video_out will use three
+  <tr> 
+    <td width="84" height="230" rowspan="3">&nbsp;</td>
+    <td width="100" height="48"><img src="images/video_out_240_320.jpg" width="123" height="18" alt="[@video_out 240 320]"></td>
+    <td width="405" height="230" rowspan="3"> 
+      <p>Each @video_out object creates a window when it is created. It is constructed 
+        with two parameters. If you want to create a window that is 240 pixels 
+        high and 320 pixels wide: @video_out 240 320. @video_out will use three 
         channels in RGB by default.<br>
         <br>
       </p>
       <p> </p>
       <p><b>Grid of size (rows, columns, 3)</b><br>
       </p>
-      <p>send it a picture as a 3D grid in which dimension 0 is the rows, dimension
-        1 is for the columns, and dimension 2 is for the channels; and in which
-        channel 0 is red, channel 1 is green, channel 2 is blue. The picture's
-        height and width must be of the same size as specified in the constructor.
+      <p>send it a picture as a 3D grid in which dimension 0 is the rows, dimension 
+        1 is for the columns, and dimension 2 is for the channels; and in which 
+        channel 0 is red, channel 1 is green, channel 2 is blue. The picture's 
+        height and width must be of the same size as specified in the constructor. 
         <br>
       </p>
       <p><b>bang </b><br>
-        asks for a repaint of the window. When part of a window gets hidden and
-        then exposed, it is not redrawn automatically. Use bang for this purpose.
+        asks for a repaint of the window. When part of a window gets hidden and 
+        then exposed, it is not redrawn automatically. Use bang for this purpose. 
       </p>
       <p> <b>autodraw </b><br>
-        sets the drawing mode. Send a message called "autodraw" along with an
+        sets the drawing mode. Send a message called "autodraw" along with an 
         integer argument.<br>
         0 makes all drawing manually activated (by bang).<br>
         1 displays when a whole picture has been received.<br>
         2 displays every line as it comes. <br>
       </p>
-      <p>@video_out sends a bang on its outlet when it has finished receiving
-        a picture. Destroying the object should close the window. Because of how
-        jMax works, this may be delayed until you do something else. Closing the
+      <p>@video_out sends a bang on its outlet when it has finished receiving 
+        a picture. Destroying the object should close the window. Because of how 
+        jMax works, this may be delayed until you do something else. Closing the 
         window yourself will make jMax crash. </p>
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td width="100" height="48"> 
+      <h5><a href="images/grab_video_out.png"><img src="images/ic_grab_video_out.jpg" width="100" height="60" border="0" align="top" alt="video_out_patch"></a></h5>
+    </td>
+  </tr>
+  <tr> 
     <td width="100" height="115">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
-    <td width="49" rowspan="13">&nbsp;</td>
+    <td width="49" rowspan="16">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
       <h5><a name="video_out_file"></a>@video_out_file</h5>
     </td>
   </tr>
-  <tr>
-    <td width="84" rowspan="2">&nbsp;</td>
-    <td width="100" height="41"><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" width="100" height="64" border="0"></a></td>
-    <td width="405" rowspan="2">
-      <p>This class is similar to the preceding one, but instead writes a PPM
+  <tr> 
+    <td width="84" rowspan="3">&nbsp;</td>
+    <td width="100" height="41"><img src="images/video_out_file.jpg" width="94" height="19" alt="[@video_out_file]"></td>
+    <td width="405" rowspan="3"> 
+      <p>This class is similar to the preceding one, but instead writes a PPM 
         file. <br>
       <p><br>
         <b>open </b><br>
-        you must open a file first. You do this by sending the message "open"
-        with a filename parameter.
+        you must open a file first. You do this by sending the message "open" 
+        with a filename parameter. 
       <p> <b>close </b><br>
-        you can send a "close" to close the file, but it's usually not necessary.
-        Sending a 2nd picture overwrites the first, like what happens to the video
+        you can send a "close" to close the file, but it's usually not necessary. 
+        Sending a 2nd picture overwrites the first, like what happens to the video 
         buffer inside a @video_out object. <br>
         <br>
         * there are no "autodraw" nor "bang" commands in this class. <br>
         <br>
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td width="100" height="41"><a href="images/grab_video_out_file.png"><img src="images/ic_grab_video_out_file.jpg" width="100" height="64" border="0"></a></td>
+  </tr>
+  <tr> 
     <td width="100">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
       <h5><a name="video_in_file"></a>@video_in_file</h5>
     </td>
   </tr>
-  <tr>
-    <td width="84" rowspan="2">&nbsp;</td>
-    <td width="100"><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" width="100" height="89" border="0"></a></td>
-    <td width="405" rowspan="2">
-      <p>This class is similar to @video_out_file in that it operates on files.
-        However some aspects of it are backwards because it's reading, not writing.
-        Objects of this class don't have a grid inlet, they have a grid outlet
+  <tr> 
+    <td width="84" rowspan="3">&nbsp;</td>
+    <td width="100"><img src="images/video_in_file.jpg" width="86" height="18" alt="[@video_in_file]"></td>
+    <td width="405" rowspan="3"> 
+      <p>This class is similar to @video_out_file in that it operates on files. 
+        However some aspects of it are backwards because it's reading, not writing. 
+        Objects of this class don't have a grid inlet, they have a grid outlet 
         instead. <br>
         <b><br>
         bang </b><br>
-        causes the object to send the picture from an open file through its outlet.
+        causes the object to send the picture from an open file through its outlet. 
         Several bangs reread the same picture over and over. <br>
         <br>
-        * You can send a "close" to close the file, but it's usually not necessary.
+        * You can send a "close" to close the file, but it's usually not necessary. 
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td width="100"><a href="images/grab_video_in.png"><img src="images/ic_grab_video_in.jpg" width="100" height="89" border="0"></a></td>
+  </tr>
+  <tr> 
     <td width="100">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
       <h5><a name="import"></a>@import</h5>
     </td>
   </tr>
-  <tr>
-    <td width="84" rowspan="2">&nbsp;</td>
-    <td width="100"><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" width="100" height="72" border="0"></a></td>
-    <td width="405" rowspan="2">
-      <p>Objects of this class have an inlet that can receive integers and reset
-        as well as Grid outlet. You specify the dimensions (all of them) in the
-        constructor. For a 240-row 320-column picture you'd say: @import 240 320
+  <tr> 
+    <td width="84" rowspan="3">&nbsp;</td>
+    <td width="100"><img src="images/@import_240_320_3.jpg" width="115" height="18" alt="[@ import 240 320 3]"></td>
+    <td width="405" rowspan="3"> 
+      <p>Objects of this class have an inlet that can receive integers and reset 
+        as well as Grid outlet. You specify the dimensions (all of them) in the 
+        constructor. For a 240-row 320-column picture you'd say: @import 240 320 
         3 </p>
-      <p>An import object accumulates the integers you send to it. They should
-        be<br>
-        in the 0-255 range. When you send 3 of them, they represent the red,<br>
-        green and blue values of one pixel. Successive pixels are ordered left<br>
-        to right and when there are enough of them they form a line. Successive<br>
-        lines are ordered top to bottom and when there are enough of them they<br>
-        form a frame. After a frame is completed a new frame begins replacing<br>
+      <p>An import object accumulates the integers you send to it. They should 
+        be
+        in the 0-255 range. When you send 3 of them, they represent the red,
+        green and blue values of one pixel. Successive pixels are ordered left
+        to right and when there are enough of them they form a line. Successive
+        lines are ordered top to bottom and when there are enough of them they
+        form a frame. After a frame is completed a new frame begins replacing
         the previous one.</p>
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td width="100"><a href="images/grab_import.png"><img src="images/ic_grab_import.jpg" width="100" height="72" border="0"></a></td>
+  </tr>
+  <tr> 
     <td width="100">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td colspan="2">
       <h5><a name="export"></a>@export</h5>
     </td>
-    <td width="49" rowspan="11">&nbsp;</td>
+    <td width="49" rowspan="22">&nbsp;</td>
   </tr>
   <tr>
     <td width="84">&nbsp;</td>
-    <td width="100">
-      <p>not implemented yet</p>
-    </td>
-    <td width="405">
+    <td width="100"><img src="images/@export.jpg" width="56" height="19" alt="[@export]"></td>
+    <td rowspan="2">
       <p>Objects of this class have a Grid inlet and a 0.1-compatible outlet.
         They do the opposite of @import and take no parameters. </p>
     </td>
   </tr>
   <tr>
     <td width="84">&nbsp;</td>
+    <td width="100">
+      <p><a href="images/grab_export.jpg"><img src="images/ic_grab_export.jpg" width="100" height="75"></a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="84">&nbsp;</td>
+    <td width="100">&nbsp;</td>
+    <td width="405">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
     <td width="405">&nbsp;</td>
   </tr>
   <tr>
     <td width="84">&nbsp;</td>
     <td colspan="2">
-      <h5><a name="at"></a>@</h5>
-    </td>
-  </tr>
-  <tr>
-    <td width="84">&nbsp;</td>
-    <td width="100"><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" width="100" height="95" border="0"></a></td>
-    <td width="405">
-      <p>This object computes a Grid by combining each of its elements with an
-        integer in its right inlet. This is not unlike built-in arithmetic objects,
-        except that the left inlet, and the outlet, work with Grids. This runs
-        up to 10 times faster than equivalent built-ins (but still probably slower
-        than equivalent DSP built-ins. Construction takes 2 parameters: a first
-        one is the operation's symbol, and a second optional one is the default
-        value for the right inlet. Operations provided are listed below in the
-        &quot;binary operations&quot; section. The latter two have no equivalent
-        that I know of in plain jMax. They return respectively the smallest and
-        the highest of two values. </p>
+      <h4>Transformation</h4>
     </td>
   </tr>
   <tr>
     <td width="84">&nbsp;</td>
     <td colspan="2">
+      <h5><a name="store"></a>@fold</h5>
+    </td>
+  </tr>
+  <tr>
+    <td width="84" rowspan="2">&nbsp;</td>
+    <td><img src="images/@fold_%2B.jpg" width="64" height="18" alt="[@fold +]"></td>
+    <td rowspan="2">
+      <p>this is the text for the fold object</p>
+    </td>
+  </tr>
+  <tr>
+    <td><a href="images/grab_fold.png"><img src="images/ic_grab_fold.jpg" width="100" height="93"></a></td>
+  </tr>
+  <tr> 
+    <td colspan="3">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
       <p> </p>
       <h5><a name="store"></a>@store</h5>
     </td>
   </tr>
-  <tr>
-    <td width="84" rowspan="2">&nbsp;</td>
-    <td width="100"><a href="images/grab_store.png"><img src="images/ic_store.jpg" width="100" height="97" border="0"></a></td>
-    <td width="405" rowspan="2">
-      <p>A @store object can store exactly one Grid. You store it via its right
-        inlet. You fetch it by sending a bang through its left inlet, which sends
-        the Grid on the outlet. You may also perform all kinds of coordinate transforms
-        with @store. You send in the left inlet a Grid whose two channels are
-        Y and X coordinates of pixels of the stored grid. Values too large or
-        too small are wrapped around (using uniform modulo). @store is even more
-        flexible than that: you can address whole lines and pixel parts too, by
-        sending appropriately-sized grids (non-3D). Advanced users can figure
+  <tr> 
+    <td width="84" rowspan="3">&nbsp;</td>
+    <td width="100"><img src="images/@store.jpg" width="64" height="19" alt="[@store]"></td>
+    <td width="405" rowspan="3"> 
+      <p>A @store object can store exactly one Grid. You store it via its right 
+        inlet. You fetch it by sending a bang through its left inlet, which sends 
+        the Grid on the outlet. You may also perform all kinds of coordinate transforms 
+        with @store. You send in the left inlet a Grid whose two channels are 
+        Y and X coordinates of pixels of the stored grid. Values too large or 
+        too small are wrapped around (using uniform modulo). @store is even more 
+        flexible than that: you can address whole lines and pixel parts too, by 
+        sending appropriately-sized grids (non-3D). Advanced users can figure 
         it out; beginners should simply ignore it. </p>
-      <p>If you send to @store a grid of 2 dimensions consisting of rows (y) and
+      <p>If you send to @store a grid of 2 dimensions consisting of rows (y) and 
         channels, in which the channel ... see the example</p>
-      <p>TODO @store takes one argument specifying its size, int32 (default) or
+      <p>TODO @store takes one argument specifying its size, int32 (default) or 
         uint8 (native format for ppm or tga formats) </p>
       <p>&nbsp;</p>
     </td>
   </tr>
-  <tr>
+  <tr> 
+    <td width="100"><a href="images/grab_store.png"><img src="images/ic_store.jpg" width="100" height="97" border="0"></a></td>
+  </tr>
+  <tr> 
     <td width="100"><a href="images/grab_cross_fade.png"><img src="images/ic_grab_cross_fade.jpg" width="100" height="103" border="0"></a></td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td colspan="2">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
-      <h5><a name="protocol_basics"></a>Grid Protocol Basics</h5>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
+      <h4>Reporting</h4>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td width="100">&nbsp;</td>
-    <td width="405">
-      <p>No matter how shapeful we can think Grids are, they are usually stored
-        and transmitted in a quite flat sequential way. In an N-dimensional Grid,
-        dimension 0 is called "outer" and dimension N-1 is called "inner" or "last".
-        This inner/outer thing can be thought of this way: a Grid is an array
-        of array of array of...; for example, a picture is an array of lines;
-        a line is an array of pixels; a pixel is an array of integers. At each
-        such level, elements are sent/stored in their numeric order, and are numbered
-        using natural numbers starting at 0. This explains why you can see the
-        picture result appear line by line (and not column by column, or channel
-        by channel) </p>
-    </td>
-  </tr>
-  <tr>
-    <td width="84">&nbsp;</td>
-    <td colspan="2">
-      <h5><a name="picture_format"></a>Video4jmax Picture Format</h5>
-    </td>
-    <td width="49" rowspan="7">&nbsp;</td>
-  </tr>
-  <tr>
-    <td width="84">&nbsp;</td>
-    <td width="100">&nbsp;</td>
-    <td width="405">
-      <p>Most of what you should know about this topic is in the @video_out documentation.
-        A small additional note: pictures are handled in 96 bpp and have to be
-        downscaled to 24 bpp for display. That huge amount of slack is to improve
-        speed and because if you create your own effects you often have intermediate
-        results that need to be of higher precision. In the final conversion,
-        high bits are just truncated. The black value is 0 and the maximum intensity
-        value is 255; negative values are wrapped and values above 255 are wrapped
-        too. If you want to clip them, you may use "@ max 0" and "@ min 255" objects.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="84">&nbsp;</td>
-    <td colspan="2">
-      <h5><a name="operations"></a>Binary Operations</h5>
+    <td colspan="2"> 
+      <h5><a name="protocol_basics"></a>@dim</h5>
     </td>
   </tr>
   <tr>
     <td width="84" rowspan="2">&nbsp;</td>
+    <td><img src="images/@dim.jpg" width="64" height="18"></td>
+    <td rowspan="2"> 
+      <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4),
+        @dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+      </td>
+  </tr>
+  <tr> 
+    <td><a href="images/grab_dim.png"><img src="images/ic_grab_dim.jpg" width="100" height="88"></a></td>
+  </tr>
+  <tr> 
+    <td colspan="3">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td colspan="3" rowspan="2">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="49" rowspan="13">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
+      <h4><a name="binary_operations"></a>Binary Operators</h4>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
+      <h5><a name="at"></a>@</h5>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td width="100">&nbsp;</td>
+    <td width="405">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
     <td width="100"><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" width="100" height="95" border="0"></a></td>
-    <td width="405" rowspan="2">
+    <td width="405"> 
+      <p>This object computes a Grid by combining each of its elements with an 
+        integer in its right inlet. This is not unlike built-in arithmetic objects, 
+        except that the left inlet, and the outlet, work with Grids. This runs 
+        up to 10 times faster than equivalent built-ins (but still probably slower 
+        than equivalent DSP built-ins. Construction takes 2 parameters: a first 
+        one is the operation's symbol, and a second optional one is the default 
+        value for the right inlet. Operations provided are listed below in the 
+        &quot;binary operations&quot; section. The latter two have no equivalent 
+        that I know of in plain jMax. They return respectively the smallest and 
+        the highest of two values. </p>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="3">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84" rowspan="2">&nbsp;</td>
+    <td width="100"><a href="images/grab_binary_operations.png"><img src="images/ic_grab_binary_operations.jpg" width="100" height="95" border="0"></a></td>
+    <td width="405" rowspan="2"> 
       <p>where A is the left value, and B is the right value. </p>
       <table width="100%" border="1" cellspacing="1">
-        <tr>
-          <td width="9%">
+        <tr> 
+          <td width="19%"> 
             <h5>name</h5>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <h5>meaning</h5>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <h5>status</h5>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>+</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_%2B.jpg" width="64" height="18" alt="[@ +]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A + B</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>-</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_-.jpg" width="64" height="18" alt="[@ -]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A - B</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>inv+</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_inv%2B.jpg" width="72" height="18" alt="[@ inv+]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>B - A</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>*</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_x.jpg" width="64" height="18" alt="[@ *]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A * B</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>/</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_division.jpg" width="64" height="18" alt="[@ /]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A / B, rounded downwards</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>inv*</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_invx.jpg" width="61" height="18" alt="[@ inv*]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>B / A, rounded downwards</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>%</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_modulo.jpg" width="60" height="18" alt="[@ %]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A % B, non-negative remainder</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>swap%</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_swap.jpg" width="71" height="18" alt="[@  swap%]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>B % A, non-negative remainder</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>|</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_a_or_b_bitwise.jpg" width="64" height="18" alt="[@ |]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A or B, bitwise</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>^</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_xor_bitwise.jpg" width="64" height="18" alt="[@ ^]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A xor B, bitwise</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&amp;</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_and.jpg" width="64" height="18" alt="[@ &amp;]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A and B, bitwise</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&lt;&lt;</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_shift_bits_left.jpg" width="64" height="18" alt="[@ &lt;&lt;]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A * (2**(B % 32)), which is left-shifting</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&gt;&gt;</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_shift_bits_right.jpg" width="64" height="18" alt="[@ &gt;&gt;]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>A / (2**(B % 32)), which is right-shifting</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>min</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_min.jpg" width="64" height="18" alt="[@ min]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>the lowest value in A,B</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>max</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_max.jpg" width="64" height="18" alt="[@ max]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>the highest value in A,B</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>==</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_equals.jpg" width="64" height="18" alt="[@ ==]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>is A equal to B ? 1=true, 0=false</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>!=</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_not_equal.jpg" width="64" height="18" alt="[@ !=]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>is A not equal to B ?</p>
           </td>
-          <td width="14%">
-            <p>broken</p>
+          <td width="14%"> 
+            <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&gt;</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_greater_than.jpg" width="64" height="18" alt="[@ &gt;]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>is A greater than B ?</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&lt;=</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_smaller_or_equal.jpg" width="64" height="18" alt="[@ &lt;=]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>is A not greater than B ?</p>
           </td>
-          <td width="14%">
-            <p>broken</p>
+          <td width="14%"> 
+            <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>&lt;</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_smaller_than.jpg" width="64" height="18" alt="[@ &lt;]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>is A less than B ?</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
+            <p>&nbsp;</p>
+          </td>
+        </tr>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_larger_or_equal_to.jpg" width="64" height="18" alt="[@ &gt;=]"></p>
+          </td>
+          <td width="67%"> 
+            <p>is A not less than B ?</p>
+          </td>
+          <td width="14%"> 
             <p>&nbsp;</p>
           </td>
         </tr>
         <tr>
-          <td width="9%">
-            <p>&gt;=</p>
+          <td width="19%"><img src="images/@_comp.jpg" width="64" height="18" alt="[@ cmp]"></td>
+          <td width="67%">
+            <p>cmp gives -1 if A&lt;B; 0 if A=B; 1 if A&gt;B</p>
           </td>
-          <td width="77%">
-            <p>is A not less than B ?</p>
-          </td>
-          <td width="14%">
-            <p>broken</p>
-          </td>
+          <td width="14%">&nbsp;</td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>sin*</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_sin.jpg" width="64" height="19" alt="[@ sin*]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>B * sin(A), where A is in hundredths of degrees</p>
           </td>
-          <td width="14%">
-            <p>untested</p>
+          <td width="14%"> 
+            <p>&nbsp;</p>
           </td>
         </tr>
-        <tr>
-          <td width="9%">
-            <p>cos*</p>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@_cos.jpg" width="64" height="18" alt="[@ cos*]"></p>
           </td>
-          <td width="77%">
+          <td width="67%"> 
             <p>B * cos(A)</p>
           </td>
-          <td width="14%">
+          <td width="14%"> 
             <p>untested</p>
           </td>
         </tr>
@@ -594,31 +707,84 @@
       <p>&nbsp;</p>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="100">&nbsp;</td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
-    <td colspan="2">
+    <td colspan="2"> 
+      <h4><a name="unary_operations"></a>Unary Operators</h4>
+    </td>
+  </tr>
+  <tr> 
+    <td width="84" height="80">&nbsp;</td>
+    <td height="80">&nbsp;</td>
+    <td height="80"> 
+      <table width="100%" border="1" cellspacing="1">
+        <tr> 
+          <td width="19%"> 
+            <h5>name</h5>
+          </td>
+          <td width="67%"> 
+            <h5>meaning</h5>
+          </td>
+          <td width="14%"> 
+            <h5>status</h5>
+          </td>
+        </tr>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@!_abs.jpg" width="64" height="18" alt="[@!  abs]"></p>
+          </td>
+          <td width="67%"> 
+            <p>absolute value of A</p>
+          </td>
+          <td width="14%"> 
+            <p>&nbsp;</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="19%"><img src="images/@!_rand.jpg" width="64" height="20" alt="[@! rand]"></td>
+          <td width="67%">
+            <p>produces an random number between 0 and A-1</p>
+          </td>
+          <td width="14%">&nbsp;</td>
+        </tr>
+        <tr> 
+          <td width="19%"> 
+            <p><img src="images/@!_sqrt.jpg" width="64" height="18" alt="[@! sqrt]"></p>
+          </td>
+          <td width="67%"> 
+            <p>square root of A, rounded downwards</p>
+          </td>
+          <td width="14%"> 
+            <p>&nbsp;</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="3" height="22">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td width="84">&nbsp;</td>
+    <td colspan="2"> 
       <h5>External Picture Formats</h5>
     </td>
   </tr>
-  <tr>
+  <tr> 
     <td width="84">&nbsp;</td>
     <td width="100">&nbsp;</td>
-    <td width="405">
+    <td width="405"> 
       <p>PPM: Read+Write. Subformat P6 only. RGB-24 only.</p>
-      <p>Targa: Read Only. BGR-24 and ABGR-32 (channels are in reverse order).
+      <p>Targa: Read Only. BGR-24 and ABGR-32 (channels are in reverse order). 
         Experimental.</p>
-      <p>VideoDev: Video4Linux-1 devices, RGB-24 only. Variable picture size.
+      <p>VideoDev: Video4Linux-1 devices, RGB-24 only. Variable picture size. 
         should work for bttv based cards and the dc1, possibly dc10plus.</p>
     </td>
   </tr>
 </table>
-<p><br>
-</p>
-<h5>&nbsp;</h5>
-<p><br>
-</p>
+<p>&nbsp;</p>
 </body>
 </html>
