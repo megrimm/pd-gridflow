@@ -408,7 +408,7 @@ void FormatVideoDev_channel (FormatVideoDev *$, int value) {
 }
 
 void FormatVideoDev_option (FormatVideoDev *$, ATOMLIST) {
-	fts_symbol_t sym = GET(0,symbol,SYM(foo));
+	Symbol sym = GET(0,symbol,SYM(foo));
 	int value = GET(1,int,42424242);
 	if (sym == SYM(channel)) {
 		FormatVideoDev_channel($,value);

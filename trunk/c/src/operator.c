@@ -85,7 +85,7 @@ Operator1 op1_table[] = {
 	DECL_OP1(rand,"rand"),
 };
 
-Operator1 *op1_table_find(fts_symbol_t sym) {
+Operator1 *op1_table_find(Symbol sym) {
 	int i;
 	for(i=0; i<COUNT(op1_table); i++) {
 		if (op1_table[i].sym == sym) return &op1_table[i];
@@ -198,7 +198,7 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**"),
 };
 
-Operator2 *op2_table_find(fts_symbol_t sym) {
+Operator2 *op2_table_find(Symbol sym) {
 	int i;
 	for(i=0; i<COUNT(op2_table); i++) {
 		if (op2_table[i].sym == sym) return &op2_table[i];

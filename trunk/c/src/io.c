@@ -28,6 +28,9 @@
 #include <sys/time.h>
 #include "grid.h"
 
+#define DECL(_cl_,_inlet_,_sym_,args...) \
+	{_inlet_,SYM(_sym_),METHOD_PTR(_cl_,_sym_),args}
+
 /* ---------------------------------------------------------------- */
 
 /* return and complain when file not open */
@@ -141,14 +144,14 @@ CLASS(GridIn) {
 	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int };
 
 	MethodDecl methods[] = {
-		{-1,fts_s_init,  METHOD_PTR(GridIn,init),  ARRAY(rien),-1},
-		{-1,fts_s_delete,METHOD_PTR(GridIn,delete),0,0,0},
-		{ 0,fts_s_bang,  METHOD_PTR(GridIn,bang),  ARRAY(rien),-1},
-		{ 0,sym_reset,   METHOD_PTR(GridIn,reset), ARRAY(rien),-1},
-		{ 0,sym_open,    METHOD_PTR(GridIn,open),  ARRAY(open_args),-1},
-		{ 0,sym_close,   METHOD_PTR(GridIn,close), 0,0,0},
-//		{ 0,SYM(frame),  METHOD_PTR(GridIn,frame), ARRAY(frame_args),-1},
-		{ 0,SYM(option), METHOD_PTR(GridIn,option),ARRAY(option_args),-1},
+		DECL(GridIn,-1,init,  ARRAY(rien),-1),
+		DECL(GridIn,-1,delete,0,0,0),
+		DECL(GridIn, 0,bang,  ARRAY(rien),-1),
+		DECL(GridIn, 0,reset, ARRAY(rien),-1),
+		DECL(GridIn, 0,open,  ARRAY(open_args),-1),
+		DECL(GridIn, 0,close, 0,0,0),
+//		DECL(GridIn, 0,frame, ARRAY(frame_args),-1),
+		DECL(GridIn, 0,option,ARRAY(option_args),-1),
 	};
 
 	/* initialize the class */
@@ -197,7 +200,7 @@ GRID_END(GridOut,0) {
 }
 
 METHOD(GridOut,option) {
-	fts_symbol_t sym = GET(0,symbol,SYM(foo));
+	Symbol sym = GET(0,symbol,SYM(foo));
 	CHECK_FILE_OPEN
 	if (sym == SYM(timelog)) {
 		$->timelog = GET(1,int,0);
@@ -276,12 +279,12 @@ CLASS(GridOut) {
 	fts_type_t option_args[]= { fts_t_symbol, fts_t_symbol, fts_t_int, fts_t_int };
 
 	MethodDecl methods[] = {
-		{-1,fts_s_init,  METHOD_PTR(GridOut,init),  ARRAY(init_args),1},
-		{-1,fts_s_delete,METHOD_PTR(GridOut,delete),0,0,0 },
-		{ 0,sym_open,    METHOD_PTR(GridOut,open),  ARRAY(open_args),1},
-		{ 0,sym_close,   METHOD_PTR(GridOut,close), 0,0,0 },
-//		{ 0,SYM(frame),  METHOD_PTR(GridOut,frame),  ARRAY(frame_args),-1},
-		{ 0,SYM(option), METHOD_PTR(GridOut,option), ARRAY(option_args),1},
+		DECL(GridOut,-1,init,   ARRAY(init_args),1),
+		DECL(GridOut,-1,delete, 0,0,0 ),
+		DECL(GridOut, 0,open,   ARRAY(open_args),1),
+		DECL(GridOut, 0,close,  0,0,0 ),
+//		DECL(GridOut, 0,frame,  ARRAY(frame_args),-1),
+		DECL(GridOut, 0,option, ARRAY(option_args),1),
 	};
 
 	/* initialize the class */
@@ -295,7 +298,10 @@ CLASS(GridOut) {
 
 /* ---------------------------------------------------------------- */
 
+#define INSTALL(_sym_,_name_) \
+	fts_class_install(fts_new_symbol(_sym_),_name_##_class_init)
+
 void startup_io (void) {
-	fts_class_install(fts_new_symbol("@in"),   GridIn_class_init);
-	fts_class_install(fts_new_symbol("@out"), GridOut_class_init);
+	INSTALL("@in",GridIn);
+	INSTALL("@out",GridOut);
 }

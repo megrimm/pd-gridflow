@@ -47,7 +47,7 @@ static int symbols_n = 0;
 /* **************************************************************** */
 /* Symbol */
 
-fts_symbol_t fts_new_symbol (const char *s) {
+Symbol fts_new_symbol (const char *s) {
 	int i;
 	if (!symbols) symbols = NEW(symbol_entry_t,1024);
 	for (i=0; i<symbols_n; i++) {
@@ -59,7 +59,7 @@ fts_symbol_t fts_new_symbol (const char *s) {
 	return symbols_n++;
 }
 
-const char *fts_symbol_name(fts_symbol_t sym) { return symbols[sym].s; }
+const char *fts_symbol_name(Symbol sym) { return symbols[sym].s; }
 
 /* **************************************************************** */
 /* Atom */
@@ -77,7 +77,7 @@ void *fts_get_ptr( const fts_atom_t *$) {assert(fts_is_ptr($)); return $->v.p;}
 void fts_set_int(   fts_atom_t *$, int v) {
 	$->type = fts_t_int;
 	$->v.i = v;}
-void fts_set_symbol(fts_atom_t *$, fts_symbol_t v) {
+void fts_set_symbol(fts_atom_t *$, Symbol v) {
 	$->type = fts_t_symbol;
 	$->v.s = v;}
 void fts_set_ptr(   fts_atom_t *$, void *v) {
@@ -112,7 +112,7 @@ n_outlets, int stuff) {
 	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0);
 }
 
-void fts_class_install(fts_symbol_t sym,
+void fts_class_install(Symbol sym,
 fts_status_t (*p)(fts_class_t *class, int ac, const fts_atom_t *at)) {
 	fts_class_t *$ = NEW(fts_class_t,1);
 	p($,0,0);
@@ -120,9 +120,9 @@ fts_status_t (*p)(fts_class_t *class, int ac, const fts_atom_t *at)) {
 	$->name = sym;
 }
 
-fts_symbol_t fts_get_class_name(fts_class_t *class) { return class->name; }
+Symbol fts_get_class_name(fts_class_t *class) { return class->name; }
 
-void fts_method_define_optargs(fts_class_t *$, int winlet, fts_symbol_t
+void fts_method_define_optargs(fts_class_t *$, int winlet, Symbol
 selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	MethodDecl *md = NEW(MethodDecl,1);
 	md->winlet = winlet;
@@ -149,7 +149,7 @@ void fts_object_set_error(fts_object_t *o, const char *s, ...) {
 }
 
 fts_object_t *fts_object_new(int ac, fts_atom_t *at) {
-	fts_symbol_t classname = fts_get_symbol(at);
+	Symbol classname = fts_get_symbol(at);
 	fts_class_t *class = symbols[classname].c;
 	if (!class) {
 		printf("ERROR: class not found: %s\n",fts_symbol_name(classname));
@@ -203,7 +203,7 @@ void fts_object_delete(fts_object_t *$) {
 }
 
 void fts_send2(fts_object_t *o, int inlet, int ac, const fts_atom_t *at) {
-	fts_symbol_t sel;
+	Symbol sel;
 	assert(ac>0);
 	if (fts_is_symbol(at)) {
 		sel = fts_get_symbol(at);
@@ -213,7 +213,7 @@ void fts_send2(fts_object_t *o, int inlet, int ac, const fts_atom_t *at) {
 	}
 }
 
-void fts_send(fts_object_t *o, int inlet, fts_symbol_t sel, int ac, const fts_atom_t *at) {
+void fts_send(fts_object_t *o, int inlet, Symbol sel, int ac, const fts_atom_t *at) {
 	Dict *d = o->head.cl->method_table[inlet+1];
 	MethodDecl *md = (MethodDecl *) Dict_get(d,(void *)sel);
 	if (md) {
@@ -232,7 +232,7 @@ void fts_connect(fts_object_t *oo, int outlet, fts_object_t *oi, int inlet) {
 	List_push(oo->outlets[outlet],d);
 }
 
-void fts_outlet_send(fts_object_t *o, int outlet, fts_symbol_t sel,
+void fts_outlet_send(fts_object_t *o, int outlet, Symbol sel,
 int ac, const fts_atom_t *at) {
 	List *l = o->outlets[outlet];
 	int i;
