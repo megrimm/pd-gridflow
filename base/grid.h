@@ -111,7 +111,7 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 */
 
 /* current version number as string literal */
-#define GF_VERSION "0.6.0"
+#define GF_VERSION "0.6.1"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #ifdef HAVE_SPEED
@@ -159,19 +159,6 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 /* returns the size of a statically defined array */
 #define COUNT(_array_) \
 	((int)(sizeof(_array_) / sizeof((_array_)[0])))
-
-/*
-  make sure an int is not too small nor too big;
-  warn and adjust outside values
-*/
-#define COERCE_INT_INTO_RANGE(_var_,_lower_,_upper_) \
-	if ((_var_) < (_lower_)) { \
-		whine("warning: %s=%d was smaller than %d\n", #_var_, (_var_), (_lower_)); \
-		(_var_) = (_lower_); \
-	} else if ((_var_) > (_upper_)) { \
-		whine("warning: %s=%d was bigger than %d\n", #_var_, (_var_), (_upper_)); \
-		(_var_) = (_upper_); \
-	}
 
 /* **************************************************************** */
 
