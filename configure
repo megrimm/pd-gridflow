@@ -419,7 +419,10 @@ Feature.new {
 Feature.new {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
-	uses_so ["-lSDL","-lpthread"]
+	uses_so {
+		a=["-lSDL","-lpthread"]
+		a<<"-lobjc" if Config::CONFIG["arch"] =~ /darwin/
+	}
 	#uses_h ["SDL/SDL.h"]
 	test proc {
 		c_test "
@@ -557,6 +560,7 @@ Feature.new {
 },
 Feature.new {
 	tag :quicktimehw
+	unless_feature :quicktimeapple
 	name "HeroineWarrior's QuickTime4Linux (or LibQuickTime)"
 	uses_so Or[
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],

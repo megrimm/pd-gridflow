@@ -80,7 +80,11 @@ static t_class *find_bfclass (t_symbol *sym) {
 	Ruby v = rb_hash_aref(
 		rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
 		rb_str_new2(sym->s_name));
-	if (v==Qnil) RAISE("class not found");
+//	if (v==Qnil) RAISE("class not found: '%s'",sym->s_name);
+	if (v==Qnil) {
+		post("class not found: '%s'",sym->s_name);
+		return Qnil;
+	}
 	return FIX2PTR(t_class,v);
 }
 
@@ -194,6 +198,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 
 static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
+	if (!qlass) return Qnil;
 	BFObject *bself = (BFObject *)pd_new(qlass);
 	bself->magic = OBJECT_MAGIC;
 	bself->check_magic();
