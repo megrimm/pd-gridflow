@@ -34,7 +34,7 @@
 	@finished @fold @for @four=@twothreefour @global @grade
 	@greyscale_to_rgb @import=@importexport @inner=@foldinnerouter
 	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
-	@! @ @perspective @posterize printargs @print @ravel @redim
+	@! #=@ @perspective @posterize printargs @print @ravel @redim
 	@rgb_to_greyscale rubyprint @scale_by @scale_to @scan @solarize
 	@spread @store @three=@twothreefour @two=@twothreefour
 ).each {|name|
