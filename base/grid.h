@@ -34,11 +34,11 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
-#include <version.h>
 
 extern "C" {
 #include <ruby.h>
 #include <rubyio.h>
+#include <version.h>
 };
 
 #ifndef RUBY_H
