@@ -593,7 +593,7 @@ static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
-static Ruby GridFlow_s_add_creator_2 (Ruby name_) {
+static Ruby GridFlow_s_add_creator_2 (Ruby rself, Ruby name_) {
 	t_symbol *name = gensym(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
 	class_addcreator((t_newmethod)BFObject_init,name,A_GIMME,0);
 	return Qnil;
@@ -675,12 +675,12 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
-	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   1);
+	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 
 	SDEF("clock_tick",clock_tick,0);
 	SDEF("clock_tick=",clock_tick_set,1);
 	SDEF("post_string",post_string,1);
-	SDEF("add_creator_2",add_creator_2,-1);
+	SDEF("add_creator_2",add_creator_2,1);
 	SDEF("gui",gui,-1);
 	SDEF("bind",bind,2);
 	// SDEF("add_to_menu",add_to_menu,-1);
