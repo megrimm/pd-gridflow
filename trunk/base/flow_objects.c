@@ -1090,6 +1090,46 @@ GRID_INLET(GridReverse,0) {
 \end class GridReverse
 
 //****************************************************************
+\class GridCentroid2 < GridObject
+struct GridCentroid2 : GridObject {
+	\decl void initialize ();
+	\grin 0 int
+	int sumx,sumy,sum,y; // temporaries
+};
+
+GRID_INLET(GridCentroid2,0) {
+	if (in->dim->n != 3) RAISE("expecting 3 dims");
+	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
+	in->set_factor(in->dim->prod(1));
+	out=new GridOutlet(this,0,new Dim(2), in->nt);
+	sumx=0; sumy=0; sum=0; y=0;
+} GRID_FLOW {
+	int sx = in->dim->v[1];
+	while (n) {
+		for (int x=0; x<sx; x++) {
+			sumx+=x*data[x];
+			sumy+=y*data[x];
+			sum +=  data[x];
+		}
+		n-=sx;
+		data+=sx;
+		y++;
+	}
+} GRID_FINISH {
+	STACK_ARRAY(int32,blah,2);
+	blah[0] = sumy/sum;
+	blah[1] = sumx/sum;
+	out->send(2,blah);
+} GRID_END
+
+\def void initialize () {
+	rb_call_super(argc,argv);
+}
+
+\classinfo { IEVAL(rself,"install '#centroid2',1,1"); }
+\end class GridCentroid2
+
+//****************************************************************
 \class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	\attr int32 z;
