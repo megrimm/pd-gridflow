@@ -498,7 +498,7 @@ void FormatX11_close (FormatX11 *$) {
 	/* XCloseDisplay(d->display); */
 }
 
-void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
+void FormatX11_option (FormatX11 *$, ATOMLIST) {
 	fts_symbol_t sym = GET(0,symbol,SYM(foo));
 	if (sym == SYM(out_size)) {
 		int sy = GET(1,int,0);
@@ -519,7 +519,7 @@ void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 	}
 }
 
-Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
+Format *FormatX11_open (FormatClass *qlass, ATOMLIST, int mode) {
 	FormatX11 *$ = NEW(FormatX11,1);
 
 	/* defaults */
@@ -639,10 +639,10 @@ FormatClass class_FormatX11 = {
 
 	open: FormatX11_open,
 	frames: 0,
-	frame:  FormatX11_frame,
-	begin:  GRID_BEGIN_PTR(FormatX11,0),
-	flow:    GRID_FLOW_PTR(FormatX11,0),
-	end:      GRID_END_PTR(FormatX11,0),
-	option: FormatX11_option,
-	close:  FormatX11_close,
+	frame:  (Format_frame_m)FormatX11_frame,
+	begin:  (GRID_BEGIN_(Format,(*)))GRID_BEGIN_PTR(FormatX11,0),
+	flow:    (GRID_FLOW_(Format,(*))) GRID_FLOW_PTR(FormatX11,0),
+	end:      (GRID_END_(Format,(*)))  GRID_END_PTR(FormatX11,0),
+	option: (Format_option_m)FormatX11_option,
+	close:  (Format_close_m)FormatX11_close,
 };

@@ -42,7 +42,7 @@ GridInlet *GridInlet_new(GridObject *parent, int winlet,
 	$->dex   = 0;
 	$->begin = b;
 	$->flow  = mode==4 ? f : 0;
-	$->flow2 = mode==6 ? f : 0;
+	$->flow2 = (GridFlow2)(mode==6 ? f : 0);
 	$->end   = e;
 	$->factor= 1;
 	$->buf   = 0;
@@ -97,7 +97,7 @@ void GridInlet_set_factor(GridInlet *$, int factor) {
 	}
 }
 
-void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_begin(GridInlet *$, ATOMLIST) {
 	int i;
 	int *v = NEW(int,ac-1);
 	GridOutlet *back_out = (GridOutlet *) GET(0,ptr,(void *)0xDeadBeef);
@@ -116,7 +116,7 @@ void GridInlet_begin(GridInlet *$, int ac, const fts_atom_t *at) {
 	GridOutlet_callback((GridOutlet *)back_out,$,$->mode);
 }
 
-void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_flow(GridInlet *$, ATOMLIST) {
 	int n = GET(0,int,-1);
 	const Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (GridInlet_idle_verbose($,"flow")) return;
@@ -164,7 +164,7 @@ void GridInlet_flow(GridInlet *$, int ac, const fts_atom_t *at) {
 	}
 }
 
-void GridInlet_flow2(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_flow2(GridInlet *$, ATOMLIST) {
 	int n = GET(0,int,-1);
 	Number *data = (Number *) GET(1,ptr,(void *)0xDeadBeef);
 	if (GridInlet_idle_verbose($,"flow2")) return;
@@ -179,7 +179,7 @@ void GridInlet_flow2(GridInlet *$, int ac, const fts_atom_t *at) {
 	}
 }
 
-void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_end(GridInlet *$, ATOMLIST) {
 	if (GridInlet_idle_verbose($,"end")) return;
 /*	whine("%s:i%d: GridInlet_end()", INFO($)); */
 	if (Dim_prod($->dim) != $->dex) {
@@ -191,7 +191,7 @@ void GridInlet_end(GridInlet *$, int ac, const fts_atom_t *at) {
 	$->dex = 0;
 }
 
-void GridInlet_list(GridInlet *$, int ac, const fts_atom_t *at) {
+void GridInlet_list(GridInlet *$, ATOMLIST) {
 	int i;
 	Number *v = NEW(Number,ac);
 	int n = ac;
