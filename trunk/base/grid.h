@@ -312,8 +312,8 @@ public:
 	Pt operator-=(Z	i) { p-=i; return *this; }
 	Pt operator++(     ) { p++;  return *this; }
 	Pt operator--(     ) { p--;  return *this; }
-	Pt operator++(Z  ) { Pt f(*this); ++*this; return f; }
-	Pt operator--(Z  ) { Pt f(*this); --*this; return f; }
+	Pt operator++(int) { Pt f(*this); ++*this; return f; }
+	Pt operator--(int) { Pt f(*this); --*this; return f; }
 	T &operator[](Z i) {
 #ifdef HAVE_DEBUG_HARDER
 		if (!(p+i>=start && p+i<start+n))
