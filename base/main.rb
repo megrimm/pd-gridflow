@@ -27,27 +27,12 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-#class NotImplementedError
-#	def initialize(*)
-#		#GridFlow.post "HELLO"
-#		Process.kill $$, 6
+# this should be done in base/bridge.c
+#for victim in [Thread, Continuation]
+#	def victim.new
+#		raise NotImplementedError, "class #{self} disabled because of jMax incompatibility"
 #	end
 #end
-
-#verbose,$VERBOSE=$VERBOSE,false
-for victim in [TCPSocket, TCPServer]
-	def victim.new
-		raise NotImplementedError, "upgrade to Ruby 1.6.6 "+
-		"(disabled because of bug in threadless sockets)"
-	end
-end if VERSION < "1.6.6"
-
-# this should be done in base/bridge.c
-for victim in [Thread, Continuation]
-	def victim.new
-		raise NotImplementedError, "class #{self} disabled because of jMax incompatibility"
-	end
-end
 #$VERBOSE=verbose
 
 # because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
@@ -81,7 +66,6 @@ def self.esmtick
 end
 
 def self.start_eval_server
-	require "gridflow/extra/eval_server.rb"
 	$esm = EvalServerManager.new
 	esmtick
 end
@@ -343,6 +327,102 @@ rescue Exception => e
 end end
 
 end # module GridFlow
+
+#----------------------------------------------------------------#
+# this is a telnet-accessible line-oriented server for accessing
+# the ruby part of a running GridFlow.
+# it must not use threads because Ruby-threads don't work with jMax.
+
+require "socket"
+require "fcntl"
+
+# in case of Ruby bug ("Error: Success")
+module Errno; class E000 < StandardError; end; end
+
+if Object.constants.include? :GridFlow
+  def log s; GridFlow.postln "%s", s; end
+else
+  def log s; STDERR.puts s; end
+end
+
+class IO
+  def nonblock= flag
+    bit = Fcntl::O_NONBLOCK
+    state = fcntl(Fcntl::F_GETFL, 0)
+    fcntl(Fcntl::F_SETFL, (state & ~bit) |
+      (if flag; bit else 0 end))
+  end
+end
+
+# this will accept and manage connections
+class EvalServerManager
+  def initialize
+    @conns = {}
+    for @port in 6400..6409
+      begin
+        @sock = TCPServer.new(@port)
+      rescue StandardError => e; GridFlow.post "ESM error: #{e}"
+      else break
+      end
+    end
+    raise "can't connect on any port in 6400..6409" if not @sock
+    STDERR.puts "eval-server launched on port #{@port}"
+    @sock.nonblock = true
+  end
+  def tick
+    STDERR.puts "esm tick begin"
+    begin
+      @conns[EvalServer.new(@sock.accept)]=1
+      STDERR.puts "NEW CONNECTION"
+    rescue Errno::EAGAIN
+    end
+    for s in @conns.keys do
+      begin s.tick
+      rescue Errno::EAGAIN
+      rescue EOFError, Errno::EPIPE
+        STDERR.puts "DEAD CONNECTION"
+        @conns.delete(s)
+      rescue Errno::E000
+        STDERR.puts "Error: Success (this is a bug in Ruby)"
+        @conns.delete(s)
+      end
+    end
+    STDERR.puts "esm tick end"
+  end
+end
+
+# this handles one server-side regular socket
+class EvalServer
+  def initialize sock
+    @sock = sock
+    @sock.nonblock = true
+  end
+  def tick
+    STDERR.puts "#{self} tick begin"
+    @sock.print "\e[0;36m"
+    @sock.flush
+    line = @sock.readline
+    begin
+      @sock.puts "\e[0;1;32m#{eval(line).inspect}"
+    rescue Exception => e
+      @sock.puts "\e[0;1;33m"+["#{e.class}: #{e}",*e.backtrace].join("\n")
+    end
+    @sock.flush
+    STDERR.puts "#{self} tick end"
+  end
+end
+
+def protect
+  yield
+rescue Exception => e
+  STDERR.puts "#{e.class}: #{e}"
+  STDERR.puts e.backtrace
+end
+
+if $0 == __FILE__
+  e = EvalServerManager.new
+  protect { loop { e.tick; sleep 0.1 }}
+end
 
 #----------------------------------------------------------------#
 
