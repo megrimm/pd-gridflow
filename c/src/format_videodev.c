@@ -225,7 +225,7 @@ typedef struct FormatVideoDev {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	uint8 *image;
-	int pending_frame;
+	int pending_frames[2], next_frame;
 	int current_channel;
 	int current_tuner;
 } FormatVideoDev;
@@ -234,7 +234,7 @@ typedef struct FormatVideoDev {
 	((ioctl(_f_,_name_,_arg_) < 0) && \
 		(whine("ioctl %s: %s",#_name_,strerror(errno)),1))
 
-void FormatVideoDev_size (Format *$, int height, int width) {
+void FormatVideoDev_size (FormatVideoDev *$, int height, int width) {
 	int v[] = {height, width, 3};
 	VideoWindow grab_win;
 
@@ -291,47 +291,19 @@ bool FormatVideoDev_alloc_image (FormatVideoDev *$) {
 	return true;
 }
 
-bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
-	int frame_id;
-
-	if (frame != -1) return 0;
-	if (!$->bit_packing) {
-		whine("no bit_packing");
-		return false;
-	}
-
-	if (!$->image) {
-		if (!FormatVideoDev_alloc_image($)) {
-			return false;
-		}
-	}
-
-	if ($->pending_frame < 0) {
-		$->pending_frame = 0;
-		$->vmmap.frame = $->pending_frame;
-		$->vmmap.format = VIDEO_PALETTE_RGB24;
-		$->vmmap.width  = Dim_get($->dim,1);
-		$->vmmap.height = Dim_get($->dim,0);
-		if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
-	}
-	frame_id = $->vmmap.frame;
-	if (WIOCTL($->stream, VIDIOCSYNC, &$->vmmap)) return false;
-
-	/* $->pending_frame = ($->pending_frame+1) % $->vmbuf.frames; */
-	$->pending_frame = ($->pending_frame+1) % $->vmbuf.frames;
-	/* $->pending_frame = ($->pending_frame+1) % 2; */
-
-	$->vmmap.frame = $->pending_frame;
+bool FormatVideoDev_frame_ask (FormatVideoDev *$) {
+	$->pending_frames[0] = $->pending_frames[1];
+	$->vmmap.frame = $->pending_frames[1] = $->next_frame;
 	$->vmmap.format = VIDEO_PALETTE_RGB24;
 	$->vmmap.width  = Dim_get($->dim,1);
 	$->vmmap.height = Dim_get($->dim,0);
 	if (WIOCTL($->stream, VIDIOCMCAPTURE, &$->vmmap)) return false;
+	$->next_frame = ($->pending_frames[1]+1) % $->vmbuf.frames;
+	return true;
+}
 
-	/* success goes here */
-
-	/* something wrong, missing sizeof(sometype) */
+void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
 	GridOutlet_begin(out,Dim_dup($->dim));
-
 
 	/* picture is converted here. */
 	{
@@ -341,13 +313,38 @@ bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
 		int bs = Dim_prod_start($->dim,1);
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
-			uint8 *b1 = $->image + $->vmbuf.offsets[frame_id] +
-				BitPacking_bytes($->bit_packing) * sx * y;
+			uint8 *b1 = buf + BitPacking_bytes($->bit_packing) * sx * y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
 			GridOutlet_send(out,bs,b2);
 		}
 	}
 	GridOutlet_end(out);
+}
+
+bool FormatVideoDev_frame (FormatVideoDev *$, GridOutlet *out, int frame) {
+	int finished_frame;
+
+	if (frame != -1) return 0;
+	if (!$->bit_packing) {
+		whine("no bit_packing");
+		return false;
+	}
+
+	if (!$->image) {
+		if (!FormatVideoDev_alloc_image($)) goto err;
+	}
+
+	if ($->pending_frames[0] < 0) {
+		$->next_frame = 0;
+		if (!FormatVideoDev_frame_ask($)) goto err;
+		if (!FormatVideoDev_frame_ask($)) goto err;
+	}
+
+	$->vmmap.frame = finished_frame = $->pending_frames[0];
+	if (WIOCTL($->stream, VIDIOCSYNC, &$->vmmap)) goto err;
+
+	FormatVideoDev_frame_finished($,out,$->image+$->vmbuf.offsets[finished_frame]);
+	if (!FormatVideoDev_frame_ask($)) goto err;
 	return true;
 err:
 	return false;
@@ -448,7 +445,8 @@ Format *FormatVideoDev_open (FormatClass *class, int ac, const fts_atom_t *at, i
 	const char *filename;
 	FormatVideoDev *$ = NEW(FormatVideoDev,1);
 	$->cl = &class_FormatVideoDev;
-	$->pending_frame = -1;
+	$->pending_frames[0] = -1;
+	$->pending_frames[1] = -1;
 	$->image = 0;
 
 	if (ac!=1) { whine("usage: videodev filename"); goto err; }
@@ -500,9 +498,10 @@ Format *FormatVideoDev_open (FormatClass *class, int ac, const fts_atom_t *at, i
 			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
 		break;
 		case VIDEO_PALETTE_RGB565:
+			/* I think the BTTV card is lying. */
 			/* BIG_HACK_FIX_ME */
 //			$->bit_packing = BitPacking_new(2,0xf800,0x07e0,0x001f);
-			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
+//			$->bit_packing = BitPacking_new(3,0x0000ff,0x00ff00,0xff0000);
 			$->bit_packing = BitPacking_new(3,0xff0000,0x00ff00,0x0000ff);
 //			$->bit_packing = BitPacking_new(3,0xff000000,0x00ff0000,0x0000ff00);
 		break;
