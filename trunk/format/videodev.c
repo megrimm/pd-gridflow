@@ -400,7 +400,7 @@ GRID_INLET(FormatVideoDev,0) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(tuner),1,INT2NUM(0));
+	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
 }
 
 \def void _0_frequency (int value) {
@@ -506,7 +506,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
-	rb_funcall(rself,SI(size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
+	rb_funcall(rself,SI(_0_size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 	WIOCTL(fd, VIDIOCGPICT, gp);
 	gfpost(gp);
 	char buf[1024] = "";
@@ -523,7 +523,7 @@ GRID_INLET(FormatVideoDev,0) {
 	}
 	gfpost("This card supports palettes: %s", buf);
 	_0_colorspace(0,0,SYM(RGB24));
-	rb_funcall(rself,SI(channel),1,INT2NUM(0));
+	rb_funcall(rself,SI(_0_channel),1,INT2NUM(0));
 	delete gp;
 }
 
