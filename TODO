@@ -23,6 +23,7 @@ Installation
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] reintroduce --puredata-dist-dir ?
+[ ] --ruby-prefix
 
 Documentation
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un
@@ -90,7 +91,7 @@ Computation Objects
 [ ] zero option in @convolve (?)
 [ ] shrink option in @convolve (?)
 [ ] @import~, @export~, @import*, @export*
-[ ] see APL/J/NArray/PDL reference
+[ ] see APL/J/NArray/PDL/Aplus reference
 [ ] see Yorick reference http://wuarchive.wustl.edu/languages/yorick/ydoc/manual/Arrays.html
 [ ] @queue, as a replacement for double-@store feedback, and such. (?)
 [ ] @foldr, @scanr
@@ -201,6 +202,9 @@ Bugs
 [ ] issues with fork() and X11 ?
 [ ] memory corruption when running GridFlow/PD for too long
 [ ] @scale_to is broken
+[ ] rtmetro does not stop
+[ ] method_missing does blackholing
+
 [ ] make test:
 	[gf] total 31476 lost bytes in 445 allocations
 	[gf] total 18604 lost bytes in 445 allocations
