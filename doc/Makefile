@@ -2,7 +2,7 @@ XML = \
 install.xml \
 project_policy.xml \
 reference.xml \
-reference_c.xml \
+internals.xml \
 architecture.xml
 
 HTML = $(subst .xml,.html,$(XML))

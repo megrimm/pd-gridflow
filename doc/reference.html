@@ -59,7 +59,7 @@
 <li><a href="#@!"><img src="images/@!.png" alt="[@!]" border="0"></a></li>
 <li><a href="#@fold"><img src="images/@fold.png" alt="[@fold +]" border="0"></a></li>
 <li><a href="#@outer"><img src="images/@outer.png" alt="[@outer +]" border="0"></a></li>
-<li><a href="#@inner"><img src="images/@inner.png" alt="[@inner * + 0]" border="0"></a></li>
+<li><a href="#@inner2"><img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="#@redim"><img src="images/@redim.png" alt="[@redim 2]" border="0"></a></li>
@@ -80,6 +80,7 @@
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
 <li><a href="#rtmetro">rtmetro</a></li>
+<li><a href="#pingpong">pingpong</a></li>
 <li><a href="#@global"><img src="images/@global.png" alt="[@global]" border="0"></a></li>
 </ul>
 <h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul>
@@ -108,7 +109,8 @@
 <tr><td colspan="4"><a name="One-Input_Operators"></a><h4>One-Input Operators</h4></td></tr> <tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/abs.jpg" border="0" alt="abs"></td><td> 
 		absolute value of A </td></tr> <tr><td><img src="images/op/rand.jpg" border="0" alt="rand"></td><td> 
 		randomly produces a non-negative number below A </td></tr> <tr><td><img src="images/op/sqrt.jpg" border="0" alt="sqrt"></td><td> 
-		square root of A, rounded downwards </td></tr> 
+		square root of A, rounded downwards </td></tr> <tr><td><img src="images/op/sq.jpg" border="0" alt="sq"></td><td> 
+		A times A </td></tr> 
 <tr><td>&nbsp;</td></tr></table> 
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -122,7 +124,7 @@
 		between Trigonometric and Hyperbolic functions that motivated me 
 		to use the same unit.</p> </td></tr> <tr><td></td><td></td><td><table border='1'><tr><td><img src="images/op/add.jpg" border="0" alt="add"></td><td> A + B </td></tr> <tr><td><img src="images/op/sub.jpg" border="0" alt="sub"></td><td> A - B </td></tr> <tr><td><img src="images/op/bus.jpg" border="0" alt="bus"></td><td> B - A </td></tr> <tr><td><img src="images/op/mul.jpg" border="0" alt="mul"></td><td> A * B </td></tr> <tr><td><img src="images/op/div.jpg" border="0" alt="div"></td><td> A / B, rounded downwards </td></tr> <tr><td><img src="images/op/vid.jpg" border="0" alt="vid"></td><td> B / A, rounded downwards </td></tr> <tr><td><img src="images/op/mod.jpg" border="0" alt="mod"></td><td> A % B, non-negative remainder </td></tr> <tr><td><img src="images/op/dom.jpg" border="0" alt="dom"></td><td> B % A, non-negative remainder </td></tr> <tr><td><img src="images/op/or.jpg" border="0" alt="or"></td><td> A or B, bitwise </td></tr> <tr><td><img src="images/op/xor.jpg" border="0" alt="xor"></td><td> A xor B, bitwise </td></tr> <tr><td><img src="images/op/and.jpg" border="0" alt="and"></td><td> A and B, bitwise </td></tr> <tr><td><img src="images/op/shl.jpg" border="0" alt="shl"></td><td> 
 		A * (2**(B % 32)), which is left-shifting </td></tr> <tr><td><img src="images/op/shr.jpg" border="0" alt="shr"></td><td> 
-		A / (2**(B % 32)), which is right-shifting </td></tr> <tr><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td> if A is zero then B else A </td></tr> <tr><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td> if A is zero then zero else B</td></tr> <tr><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td></tr> <tr><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td></tr> <tr><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A<B; 0 when A=B; 1 when A>B. </td></tr> <tr><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td> is A equal to B ? 1=true, 0=false </td></tr> <tr><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td> is A not equal to B ? </td></tr> <tr><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td> is A greater than B ? </td></tr> <tr><td><img src="images/op/le.jpg" border="0" alt="le"></td><td> is A not greater than B ? </td></tr> <tr><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td> is A less than B ? </td></tr> <tr><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>is A not less than B ? </td></tr> <tr><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td> B * sin(A) </td></tr> <tr><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td> B * cos(A) </td></tr> <tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td></tr> <tr><td><img src="images/op/tanh.jpg" border="0" alt="tanh"></td><td> tanh(A) </td></tr> <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr> <tr><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A raised to power B </td></tr> 
+		A / (2**(B % 32)), which is right-shifting </td></tr> <tr><td><img src="images/op/sc_or.jpg" border="0" alt="sc_or"></td><td> if A is zero then B else A </td></tr> <tr><td><img src="images/op/sc_and.jpg" border="0" alt="sc_and"></td><td> if A is zero then zero else B</td></tr> <tr><td><img src="images/op/min.jpg" border="0" alt="min"></td><td> the lowest value in A,B </td></tr> <tr><td><img src="images/op/max.jpg" border="0" alt="max"></td><td> the highest value in A,B </td></tr> <tr><td><img src="images/op/cmp.jpg" border="0" alt="cmp"></td><td> -1 when A<B; 0 when A=B; 1 when A>B. </td></tr> <tr><td><img src="images/op/eq.jpg" border="0" alt="eq"></td><td> is A equal to B ? 1=true, 0=false </td></tr> <tr><td><img src="images/op/ne.jpg" border="0" alt="ne"></td><td> is A not equal to B ? </td></tr> <tr><td><img src="images/op/gt.jpg" border="0" alt="gt"></td><td> is A greater than B ? </td></tr> <tr><td><img src="images/op/le.jpg" border="0" alt="le"></td><td> is A not greater than B ? </td></tr> <tr><td><img src="images/op/lt.jpg" border="0" alt="lt"></td><td> is A less than B ? </td></tr> <tr><td><img src="images/op/ge.jpg" border="0" alt="ge"></td><td>is A not less than B ? </td></tr> <tr><td><img src="images/op/sin.jpg" border="0" alt="sin"></td><td> B * sin(A) </td></tr> <tr><td><img src="images/op/cos.jpg" border="0" alt="cos"></td><td> B * cos(A) </td></tr> <tr><td><img src="images/op/atan.jpg" border="0" alt="atan"></td><td> arctan(A/B) </td></tr> <tr><td><img src="images/op/tanh.jpg" border="0" alt="tanh"></td><td> B * tanh(A) </td></tr> <tr><td><img src="images/op/gamma.jpg" border="0" alt="gamma"></td><td> floor(pow(a/256.0,256.0/b)*256.0) </td></tr> <tr><td><img src="images/op/pow.jpg" border="0" alt="pow"></td><td> A raised to power B </td></tr> 
 <tr><td>&nbsp;</td></tr></table> 
 <tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
@@ -144,6 +146,9 @@
 				close may be necessary if you operate on "/dev/video", 
 				which can only be read by one at a time. otherwise it's 
 				usually not necessary. <br>
+ <br><b>inlet 0</b> <b>method</b> int <b>(</b>frame_number<b>)</b>  
+				selects one picture from a multi-picture format 
+				and then does the same as a bang. <br>
  <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b> 
 				sends a grid through the outlet. the grid may be the 
 				result of reading from a file, acquiring from a device, 
@@ -151,9 +156,9 @@
 				this is format-specific. most formats 
 				produce <b>dim(</b>rows columns {red green blue}<b>)</b>. 
 				In formats that read from a file, reading another picture 
-				will continue if several pictures are concatenated in the 
-				file, but if the end of file is reached instead, it will 
-				rewind and send the first picture again. 
+				will continue if there are several pictures in the 
+				same file, but if the end of file is reached instead, 
+				it will rewind and send the first picture again. 
 				see section "External Picture Formats". <br>
  <br><b>inlet 0</b> <b>method</b> option <b>(</b>selector<b>,</b>stuff...<b>)</b>   
 				for format-specific options. 
@@ -367,12 +372,13 @@
 		applied on each  of the possible pairs combinations between numbers 
 		from the left grid  and the ones from the right. for example : 
 		(10,20,30) [@outer +] (1,2,3)  will give : 
-		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner">@inner</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@inner.png" alt="[@inner * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+		((11,12,13),(21,22,23),(31,32,33)) </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@inner2">@inner2</a></td></tr><tr><td></td><td valign='top'><br>
+<img src="images/@inner2.png" alt="[@inner2 * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@foldinnerouter.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>think of this one as a special combination of [@outer], [@] 
 		and [@fold]. this is one of the most complex operations. It is very 
 		useful for performing linear transforms like rotations, scalings, 
-		tilts, and color remappings. </p> <br><b>method</b> init <b>(</b>op_para<b>,</b>op_fold<b>,</b>base<b>)</b>    
+		tilts, and color remappings. </p> <p>This object has been renamed from @inner to @inner2 because a 
+		different @inner object will be added in the future.</p> <br><b>method</b> init <b>(</b>op_para<b>,</b>op_fold<b>,</b>base<b>)</b>    
 			op_para and op_fold are two operators picked from the table 
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
@@ -581,7 +587,17 @@
 <tr><td colspan="4"><a name="Special_Objects"></a><h4>Special Objects</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rtmetro">rtmetro</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
-		future use. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign='top'><br>
+		this is like jMax's builtin metro object. metro ensures that 
+		there is at least a given delay between bangs. rtmetro ensures 
+		that on average there is a given delay between bangs: it will 
+		compensate too long delays by shorter delays. of course this won't 
+		work if the system cannot keep up with the amount of work. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="pingpong">pingpong</a></td></tr><tr><td></td><td valign='top'><br>
+<br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		send a value in inlet 1 first. if successive increasing values are 
+		sent in inlet 0, then output values will be successive increasing 
+		until they reach the right inlet value and then decrease to zero. 
+		the formula is stateless and so same inputs give always same output. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@global.png" alt="[@global]" border="0"><br clear="left"><br><br><a href="images/help_@global.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> 
 		objects of this class do nothing by themselves and are just 
@@ -638,6 +654,10 @@
 			waits for a call (and answers) for this port on the 
 			local machine via InterNet or compatible network. 
 			Answers the call. <br>
+ <br><b>method</b> option type int32 <b>(</b><b>)</b> 
+			output will be as 32 bit signed integers. <br>
+ <br><b>method</b> option type uint8 <b>(</b><b>)</b> 
+			output will be as 8 bit unsigned integers. <br>
  <p> 
 		This is GridFlow's special file format. This is the only I/O 
 		format that can hold absolutely anything that the [@store] object can. 
@@ -651,7 +671,7 @@
 		should work for bttv based cards and the dc1 from miro, possibly 
 		dc10plus.</p> <p>If you suffer from color inversion, you may feed the list 
 		"<kbd>0 0 1 0 1 0 1 0 0</kbd>" to a [@redim 3 3] and feed that to the 
-		right side of a <kbd>[@inner * + 0]</kbd>. Use that @inner object as a 
+		right side of a <kbd>[@inner2 * + 0]</kbd>. Use that @inner2 object as a 
 		RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b> option brightness <b>(</b>level<b>)</b><br>
  <br><b>method</b> option hue <b>(</b>level<b>)</b><br>
  <br><b>method</b> option colour <b>(</b>level<b>)</b><br>

@@ -28,6 +28,9 @@
 	<operator-1 name="sqrt" cname="sqrt">
 		square root of A, rounded downwards
 	</operator-1>
+	<operator-1 name="sq" cname="sq">
+		A times A
+	</operator-1>
 </section>
 
 <section name="Two-Input Operators">
@@ -91,7 +94,7 @@
 	<operator-2 name="sin*" cname="sin"> B * sin(A) </operator-2>
 	<operator-2 name="cos*" cname="cos"> B * cos(A) </operator-2>
 	<operator-2 name="atan" cname="atan"> arctan(A/B) </operator-2>
-	<operator-2 name="tanh" cname="tanh"> tanh(A) </operator-2>
+	<operator-2 name="tanh" cname="tanh"> B * tanh(A) </operator-2>
 	<operator-2 name="gamma" cname="gamma"> floor(pow(a/256.0,256.0/b)*256.0) </operator-2>
 	<operator-2 name="**" cname="pow"> A raised to power B </operator-2>
 </section>
@@ -125,6 +128,11 @@
 				which can only be read by one at a time. otherwise it's
 				usually not necessary.
 			</method>
+			<method name="int">
+				<arg name="frame_number"/>
+				selects one picture from a multi-picture format
+				and then does the same as a bang.
+			</method>
 			<method name="bang">
 				sends a grid through the outlet. the grid may be the
 				result of reading from a file, acquiring from a device,
@@ -134,9 +142,9 @@
 				produce <dim>rows columns {red green blue}</dim>.
 
 				In formats that read from a file, reading another picture
-				will continue if several pictures are concatenated in the
-				file, but if the end of file is reached instead, it will
-				rewind and send the first picture again.
+				will continue if there are several pictures in the
+				same file, but if the end of file is reached instead,
+				it will rewind and send the first picture again.
 
 				see section "External Picture Formats".
 
@@ -531,15 +539,18 @@
 
 	</jmax-class>
 
-	<jmax-class name="@inner">
-		<icon text="[@inner * + 0]"/>
-		<help text="[@inner * + 0]" image="@foldinnerouter" />
+	<jmax-class name="@inner2">
+		<icon text="[@inner2 * + 0]"/>
+		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
 
 		<p>think of this one as a special combination of [@outer], [@]
 		and [@fold]. this is one of the most complex operations. It is very
 		useful for performing linear transforms like rotations, scalings,
 		tilts, and color remappings.
 		</p>
+
+		<p>This object has been renamed from @inner to @inner2 because a
+		different @inner object will be added in the future.</p>
 
 		<method name="init">
 			<arg name="op_para" type="symbol"/>
@@ -942,7 +953,19 @@
 
 <section name="Special Objects">
 	<jmax-class name="rtmetro">
-		future use.
+		this is like jMax's builtin metro object. metro ensures that
+		there is at least a given delay between bangs. rtmetro ensures
+		that on average there is a given delay between bangs: it will
+		compensate too long delays by shorter delays. of course this won't
+		work if the system cannot keep up with the amount of work.
+	</jmax-class>
+
+	<jmax-class name="pingpong">
+		send a value in inlet 1 first. if successive increasing values are
+		sent in inlet 0, then output values will be successive increasing
+		until they reach the right inlet value and then decrease to zero.
+
+		the formula is stateless and so same inputs give always same output.
 	</jmax-class>
 
 	<jmax-class name="@global">
@@ -1050,6 +1073,12 @@
 			local machine via InterNet or compatible network.
 			Answers the call.
 		</method>
+		<method name="option type int32">
+			output will be as 32 bit signed integers.
+		</method>
+		<method name="option type uint8">
+			output will be as 8 bit unsigned integers.
+		</method>
 
 		<p>
 		This is GridFlow's special file format. This is the only I/O
@@ -1073,7 +1102,7 @@
 
 		<p>If you suffer from color inversion, you may feed the list
 		"<k>0 0 1 0 1 0 1 0 0</k>" to a [@redim 3 3] and feed that to the
-		right side of a <k>[@inner * + 0]</k>. Use that @inner object as a
+		right side of a <k>[@inner2 * + 0]</k>. Use that @inner2 object as a
 		RGB-BGR converter.</p>
 
 		<p>color adjustments:
