@@ -26,8 +26,11 @@
 require "rbconfig"
 require "ftools"
 include Config
-DESTDIR = CONFIG["sitedir"] + "/" + CONFIG["MAJOR"] + "." + CONFIG["MINOR"]
+DESTDIR = "#{CONFIG['sitedir']}/#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}"
 RUBY = "ruby"
+LIBRUBY_A = "#{CONFIG['libdir']}/ruby/" +
+	"#{CONFIG['MAJOR']}.#{CONFIG['MINOR']}/" +
+	"#{CONFIG['arch']}/libruby.a"
 
 FILES = [
   [:directory, "base/",
@@ -121,6 +124,7 @@ class Feature
 	attr2 :options #!@#$
 	attr2 :unless_feature #!@#$
 	attr2 :action #!@#$
+	attr2 :defines #!@#$
 end
 
 $features = [
@@ -134,6 +138,21 @@ Feature.new {
 		int main (void) { return !rb_rescue; }
 		", "-lruby"
 	}
+},
+Feature.new {
+	tag :librubystatic
+	unless_feature [:libruby]
+	name "Ruby as a static library"
+	test proc {
+#		p "",l,File.exist?(l)
+		c_test "
+		#include <#{$conf[:RUBY_H]}>
+		int main (void) { return !rb_rescue; }
+		", LIBRUBY_A, *(CONFIG['LIBS'].split)
+	}
+	options ["HAVE_STATIC_RUBY"]
+	defines [["PATH_LIBRUBY_A",LIBRUBY_A],
+		["LIBS_LIBRUBY_A",CONFIG['LIBS']]]
 },
 Feature.new {
 	tag :fast
@@ -191,6 +210,19 @@ Feature.new {
 	options ["HAVE_X11_SHARED_MEMORY"]
 },
 Feature.new {
+	tag :sdl
+	name "Simple Directmedia Layer"
+	uses_so ["-lSDL"]
+	#uses_h ["SDL/SDL.h"]
+	test proc {
+		c_test "
+		#include <SDL/SDL.h>
+		int main (void) {return !SDL_MapRGB;}
+		", *uses_so
+	}
+	formats ["SDL"]
+},
+Feature.new {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
 	test proc {
@@ -243,7 +275,7 @@ Feature.new {
 Feature.new {
 	tag :jmax25
 	name "IRCAM's jMax 2.5"
-	uses_feature [:libruby]
+	uses_feature [Or[:libruby,:librubystatic]]
 	test proc {
 		has_jmax "-DLINUXPC" and #!@#$ nonportable
 		File.exist?($conf[:JMAX_SOURCES]+"/include/fts/lang/mess.h")
@@ -253,7 +285,7 @@ Feature.new {
 Feature.new {
 	tag :jmax30
 	name "IRCAM's jMax 3.0 / 3.1"
-	uses_feature [:libruby]
+	uses_feature [Or[:libruby,:librubystatic]]
 	unless_feature :jmax25
 	status :disabled
 	test proc {
@@ -265,8 +297,7 @@ Feature.new {
 Feature.new {
 	tag :puredata
 	name "Miller Puckette's Pure Data"
-	status :disabled
-	uses_feature [:libruby]
+	uses_feature [Or[:libruby,:librubystatic]]
 	options ["HAVE_PUREDATA"]
 	test proc {
 		c_test "
@@ -285,10 +316,9 @@ $conf={
 	:JMAX_ARCH => nil,
 	:LDSOFLAGS => ["-lm"],
 	:FEATURES => {},
-#	:FORMATS => ["PPM","Targa","Grid"],
 	:FORMATS => [],
 	:OPTIONS => [],
-	:DEFINES => {},
+	:DEFINES => [],
 }
 
 #--------------------------------#
@@ -362,8 +392,7 @@ DUAL.instance_eval {
 
 def try feature
 	if Or===feature.uses_h
-		a=feature.uses_h.a
-		for i in a do
+		for i in feature.uses_h.a do
 			e=feature.dup
 			e.uses_h i
 			e.name(e.name+" <#{e.uses_h}>")
@@ -375,9 +404,14 @@ def try feature
 	LOG.puts "-"*64, ""
 	DUAL.print "[#{feature.tag}] #{feature.name}: "
 	(feature.uses_feature||[]).find {|f|
-		if not $conf[:FEATURES][f]
-			DUAL.puts "disabled (would need #{f})"
-			return
+		if Or===f
+			f.a.find {|x| $conf[:FEATURES][x] } or
+					DUAL.puts "disabled (would need #{f})"
+		else
+			if not $conf[:FEATURES][f]
+				DUAL.puts "disabled (would need #{f})"
+				return
+			end
 		end
 	}
 	if feature.status == :disabled
@@ -415,10 +449,10 @@ def try feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
 	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
+	$conf[:DEFINES].concat(feature.defines||[])
 	true
 end
 
-require "rbconfig"
 $conf[:RUBY_H] = Config::CONFIG["archdir"] + "/ruby.h"
 $conf[:RUBYIO_H] = Config::CONFIG["archdir"] + "/rubyio.h"
 
@@ -501,12 +535,16 @@ include $(JMAXDISTDIR)/Makefiles/Makefile.$(ARCH)
 "
 end
 
-f.puts "GRIDFLOW_LDSOFLAGS += " + $conf[:LDSOFLAGS].join(" ")
+f.puts "GRIDFLOW_LDSOFLAGS  = " + $conf[:LDSOFLAGS].join(" ")
 f.puts "GRIDFLOW_LDSOFLAGS += " + $LDFLAGS
 f.puts "CFLAGS += -I#{$conf[:JMAX_SOURCES]}/include -xc++ " + $CFLAGS
 
 for z in $conf[:OPTIONS] do
 	f.puts "#{z}=yes"
+end
+
+for z in $conf[:DEFINES] do
+	f.puts "#{z[0]}=#{z[1]}"
 end
 
 $sources = sources = %w(
