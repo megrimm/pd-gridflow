@@ -301,9 +301,10 @@ void GridOutlet_end(GridOutlet *$) {
 void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	int i;
 	int n = Dim_count(dim);
-	VALUE a[MAX_DIMENSIONS+3];
 
 	assert($);
+
+	dim = Dim_dup(dim); /* leak */
 
 	/* if (GridOutlet_busy($)) GridOutlet_abort($); */
 
@@ -314,13 +315,16 @@ void GridOutlet_begin(GridOutlet *$, Dim *dim) {
 	$->ro  = 0;
 	$->rwn = 0;
 	$->rw  = 0;
-	a[0] = INT2NUM($->woutlet);
-	a[1] = sym_grid_begin;
-	a[2] = PTR2FIX($);
-	for(i=0; i<n; i++) a[3+i] = INT2NUM(Dim_get($->dim,i));
-	LEAVE_P;
-	FObject_send_out(n+3,a,$->parent->peer);
-	ENTER_P;
+	{
+		VALUE a[n+3];
+		a[0] = INT2NUM($->woutlet);
+		a[1] = sym_grid_begin;
+		a[2] = PTR2FIX($);
+		for(i=0; i<n; i++) a[3+i] = INT2NUM(Dim_get($->dim,i));
+		LEAVE_P;
+		FObject_send_out(n+3,a,$->parent->peer);
+		ENTER_P;
+	}
 	$->frozen = 1;
 /*	whine("$ = %p; $->ron = %d; $->rwn = %d", $, $->ron, $->rwn); */
 }
@@ -413,7 +417,7 @@ void GridObject_init(GridObject *$) {
 
 	{
 		GridClass *cl = $->grid_class;
-//		whine("cl=%p",cl);
+		whine("cl=%p\n",cl);
 		for (i=0; i<cl->handlersn; i++) {
 			GridHandler *gh = &cl->handlers[i];
 			$->in[gh->winlet] = GridInlet_new($,gh);
@@ -425,6 +429,22 @@ void GridObject_init(GridObject *$) {
 }
 
 /* category: input */
+
+static VALUE GridObject_instance_methods_wrap(int argc, VALUE *argv, VALUE rself) {
+	int i;
+	VALUE list = rb_call_super(argc,argv);
+	GridClass *grid_class = FIX2PTR(rb_ivar_get(rself,rb_intern("@grid_class")));
+	for (i=0; i<grid_class->handlersn; i++) {
+		GridHandler *gh = &grid_class->handlers[i];
+		char buf[256];
+		int inl = gh->winlet;
+		sprintf(buf,"_%d_grid_begin",inl); rb_ary_push(list,rb_str_new2(buf));
+		sprintf(buf,"_%d_grid_flow",inl);  rb_ary_push(list,rb_str_new2(buf));
+		sprintf(buf,"_%d_grid_end",inl);   rb_ary_push(list,rb_str_new2(buf));
+		sprintf(buf,"_%d_list",inl);       rb_ary_push(list,rb_str_new2(buf));
+	}
+	return list;
+}
 
 METHOD(GridObject,method_missing) {
 	char *name;
@@ -482,6 +502,16 @@ void GridObject_conf_class(VALUE $, int winlet) {
 		DECL(GridObject,-1,method_missing,"+"),
 	};
 	define_many_methods($,COUNT(methods),methods);
+	
+	{
+		MethodDecl clmethods[] = {
+			DECL(GridObject,-1,instance_methods,""),
+		};
+		define_many_methods(CLASS_OF($),COUNT(clmethods),clmethods);
+	}
+
+	rb_enable_super($,"method_missing");
+	rb_enable_super(CLASS_OF($),"instance_methods");
 }
 
 void GridObject_conf_class2(VALUE $, GridClass *grclass) {

@@ -29,6 +29,14 @@ require "base/MainLoop.rb"
 $mainloop = MainLoop.new
 $tasks = {}
 
+require "/home/projects/gridflow/extra/eval_server.rb"
+$esm = EvalServerManager.new
+def esmtick
+	$esm.tick
+	$mainloop.timers.after(0.1) { esmtick }
+end
+esmtick
+
 if true
 	$whine_log = File.open "/tmp/gridflow.log", "w"
 end
