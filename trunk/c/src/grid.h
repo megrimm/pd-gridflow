@@ -77,6 +77,12 @@ extern "C" {
   replacements for those.
 */
 
+/* those are helpers for profiling. */
+#define ENTER $->profiler_last = rdtsc();
+#define LEAVE $->profiler_cumul += rdtsc() - $->profiler_last;
+#define ENTER_P $->parent->profiler_last = rdtsc();
+#define LEAVE_P $->parent->profiler_cumul += rdtsc()-$->parent->profiler_last;
+
 /*
   lists the arguments suitable for any method of a given class.
   this includes a class-specific class name so you don't have to
@@ -97,6 +103,20 @@ extern "C" {
   a header for a given method in a given class.
 */
 #define METHOD(_class_,_name_) \
+	void _class_##_##_name_(METHOD_ARGS(_class_)); \
+	void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
+		ENTER; \
+		_class_##_##_name_(self,winlet,selector,ac,at); \
+		LEAVE; \
+	} \
+	void _class_##_##_name_(METHOD_ARGS(_class_))
+
+/*
+  now (0.3.1) using a separate macro for some things like decls
+  and for methods that should not be profiled.
+*/
+
+#define METHOD2(_class_,_name_) \
 	void _class_##_##_name_(METHOD_ARGS(_class_))
 
 /*
@@ -106,6 +126,10 @@ extern "C" {
   considered as a pointer to a similar, more elementary type.
 */
 #define METHOD_PTR(_class_,_name_) \
+	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_##_wrap)
+
+/* this is old-style METHOD_PTR */
+#define METHOD2PTR(_class_,_name_) \
 	((void(*)(METHOD_ARGS(fts_object_t))) _class_##_##_name_)
 
 /* a header for the class constructor */
@@ -234,6 +258,12 @@ static inline int max(int a, int b) { int c = -(a>b); return (a&c)|(b&~c); }
 */
 
 static inline int cmp(int a, int b) { return a < b ? -1 : a > b; }
+
+static inline uint64 rdtsc(void) {
+  uint64 x;
+  __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+  return x;}
+
 /* **************************************************************** */
 /* general purpose but jMax specific */
 
@@ -516,10 +546,10 @@ struct GridObject {
 
 	void GridObject_conf_class(fts_class_t *class, int winlet);
 
-	METHOD(GridObject,init);
-	METHOD(GridObject,grid_begin);
-	METHOD(GridObject,grid_flow);
-	METHOD(GridObject,grid_end);
+	METHOD2(GridObject,init);
+	METHOD2(GridObject,grid_begin);
+	METHOD2(GridObject,grid_flow);
+	METHOD2(GridObject,grid_end);
 	void GridObject_delete(GridObject *$);
 
 /* **************************************************************** */

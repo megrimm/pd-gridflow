@@ -300,33 +300,33 @@ typedef struct RtMetro {
 	int on;
 } RtMetro;
 
-METHOD(RtMetro,int) {
+METHOD2(RtMetro,int) {
 	$->on = !! GET(0,int,0);
 	whine("on = %d",$->on);
 }
 
-METHOD(RtMetro,rint) {
+METHOD2(RtMetro,rint) {
 	$->ms = GET(0,int,0);
 	whine("ms = %d",$->ms);
 }
 
-METHOD(RtMetro,init) {
+METHOD2(RtMetro,init) {
 	$->ms = GET(1,int,0);
 	$->on = 0;
 	whine("ms = %d",$->ms);
 	whine("on = %d",$->on);
 }
 
-METHOD(RtMetro,delete) {}
+METHOD2(RtMetro,delete) {}
 
 CLASS(RtMetro) {
 	fts_type_t int_args[]  = { fts_t_int };
 	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{  0, fts_s_int,    METHOD_PTR(RtMetro,int),    ARRAY(int_args),0 },
-		{  1, fts_s_int,    METHOD_PTR(RtMetro,rint),   ARRAY(int_args),0 },
-		{ -1, fts_s_init,   METHOD_PTR(RtMetro,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD_PTR(RtMetro,delete), 0,0,0 },
+		{  0, fts_s_int,    METHOD2PTR(RtMetro,int),    ARRAY(int_args),0 },
+		{  1, fts_s_int,    METHOD2PTR(RtMetro,rint),   ARRAY(int_args),0 },
+		{ -1, fts_s_init,   METHOD2PTR(RtMetro,init),   ARRAY(init_args),0 },
+		{ -1, fts_s_delete, METHOD2PTR(RtMetro,delete), 0,0,0 },
 	};
 
 	/* initialize the class */
@@ -346,7 +346,7 @@ typedef struct Video4jmax {
 	fts_object_t o;
 } Video4jmax;
 
-METHOD(Video4jmax,profiler_reset) {
+METHOD2(Video4jmax,profiler_reset) {
 	ObjectSet *os = video4jmax_object_set;
 	int i;
 	for(i=0;i<os->len;i++)  {
@@ -364,7 +364,7 @@ static int by_profiler_cumul(const void *a, const void *b) {
 	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
 }
 
-METHOD(Video4jmax,profiler_dump) {
+METHOD2(Video4jmax,profiler_dump) {
 	ObjectSet *os = video4jmax_object_set;
 	int i;
 	whine_line();
@@ -379,18 +379,18 @@ METHOD(Video4jmax,profiler_dump) {
 	whine_line();
 }
 
-METHOD(Video4jmax,init) {}
+METHOD2(Video4jmax,init) {}
 
-METHOD(Video4jmax,delete) {}
+METHOD2(Video4jmax,delete) {}
 
 CLASS(Video4jmax) {
 	fts_type_t   no_args[]  = { };
 	fts_type_t init_args[]  = { fts_t_symbol };
 	MethodDecl methods[] = {
-		{ -1, fts_s_init,   METHOD_PTR(Video4jmax,init),   ARRAY(init_args),0 },
-		{ -1, fts_s_delete, METHOD_PTR(Video4jmax,delete), 0,0,0 },
-		{  0, SYM(profiler_reset), METHOD_PTR(Video4jmax,profiler_reset),ARRAY(no_args),-1},
-		{  0, SYM(profiler_dump),  METHOD_PTR(Video4jmax,profiler_dump), ARRAY(no_args),-1},
+		{ -1, fts_s_init,   METHOD2PTR(Video4jmax,init),   ARRAY(init_args),0 },
+		{ -1, fts_s_delete, METHOD2PTR(Video4jmax,delete), 0,0,0 },
+		{  0, SYM(profiler_reset), METHOD2PTR(Video4jmax,profiler_reset),ARRAY(no_args),-1},
+		{  0, SYM(profiler_dump),  METHOD2PTR(Video4jmax,profiler_dump), ARRAY(no_args),-1},
 
 	};
 
