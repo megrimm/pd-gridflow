@@ -593,9 +593,20 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
 }
 
+/*
+  that DEVNULL thing is prolly not useful. we'll have to look into that.
+  DEVNULL here is just supposed to be some bogus filename that
+  will act as $0
+*/
+#ifdef __WIN32__
+#define DEVNULL "NUL:"
+#else
+#define DEVNULL "/dev/null"
+#endif
+
 extern "C" void gridflow_setup () {
 	gf_bridge2 = &gf_bridge3;
-	char *foo[] = {"Ruby-for-PureData","/dev/null"};
+	char *foo[] = {"Ruby-for-PureData",DEVNULL};
 	post("setting up Ruby-for-PureData...");
 
 	ruby_init();

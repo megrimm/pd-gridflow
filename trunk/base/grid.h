@@ -47,6 +47,15 @@ extern "C" {
 
 #include "../config.h"
 
+#ifdef __WIN32__
+#define INT winINT
+#define random rand
+#undef send
+#undef close
+#define sigjmp_buf jmp_buf
+#define siglongjmp longjmp
+#endif
+
 /* !@#$ what am I going to do about this? should this be changed? */
 /* should I wrap all of the Ruby API for C++-style convenience? */
 typedef VALUE Ruby;
@@ -410,6 +419,15 @@ EACH_NUMBER_TYPE(FOO)
 	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
 #endif
 };
+
+#ifndef IS_BRIDGE
+extern "C" void *gfmalloc(size_t n);
+extern "C" void gffree(void *p);
+inline void *::operator new   (size_t n) { return gfmalloc(n); }
+inline void *::operator new[] (size_t n) { return gfmalloc(n); }
+inline void  ::operator delete (void *p)   { gffree(p); }
+inline void  ::operator delete[] (void *p) { gffree(p); }
+#endif
 
 #define STACK_ARRAY(_type_,_name_,_count_) \
 	_type_ _name_##_foo[_count_]; Pt<_type_> _name_(_name_##_foo,_count_);
