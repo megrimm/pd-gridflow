@@ -134,7 +134,7 @@ def launch2(log,*command)
 	return ret<=0
 end
 
-def c_test code, *link
+def c_test_old code, *link
 	log = ""
 	log << code << "\n"
 	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
@@ -147,6 +147,33 @@ def c_test code, *link
 	true
 ensure
 	LOG.puts log
+end
+
+def c_test code, *link
+	ldlpath = ENV["LD_LIBRARY_PATH"]
+	ENV["LD_LIBRARY_PATH"] = ldlpath ? "/tmp:#{ldlpath}" : "/tmp"
+
+	log = ""
+	log << code << "\n"
+	File.open("/tmp/#{$$}.cpp","w") {|f| f.puts code }
+	File.open("/tmp/#{$$}b.cpp","w") {|f| f.puts "static void foo() {}" }
+	command = ["/usr/bin/env", $conf[:CC]] +
+		$CFLAGS.split(/ /).reject{|x| x.length==0 }
+
+	launch2 log,*(command+["/tmp/#{$$}.cpp","-shared", "-o",
+		"/tmp/lib#{$$}.so", *link]) and
+	  launch2 log,*(command+["/tmp/#{$$}b.cpp", "-xnone", "-L/tmp","-l#{$$}", "-o",
+		  "/tmp/#{$$}", *link]) and
+	  launch2 log,"/tmp/#{$$}" and
+	  return true
+
+	# test for .a when .so not found
+	launch2 log,*(command+["/tmp/#{$$}.cpp", "-o", "/tmp/#{$$}", *link]) and
+	  launch2 log,"/tmp/#{$$}" and
+	  return "static" # true
+ensure
+	LOG.puts log
+	ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
 end
 
 def asm_test code, *link
@@ -172,8 +199,7 @@ def launch stdin,stdout,stderr,*command # -> returncode
 		STDOUT.reopen stdout if stdout
 		STDERR.reopen stderr if stderr
 		exec *command
-		STDERR.puts "SHOULD NOT GET THERE"
-		exit!
+		#!@#$ what happens with exception upon exec ?
 	end
 	child
 end
@@ -239,7 +265,7 @@ Feature.new {
 		int main () { return rb_rescue==0; }
 		", "-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)
 	}
-	options ["HAVE_STATIC_RUBY"]
+	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
 },
 Feature.new {
 	tag :fast
@@ -250,9 +276,7 @@ Feature.new {
 	name "Pentium-compatible CPU"
 	# todo: -mcpu=pentiumpro, and so on.
 	#action proc { $CFLAGS += " -mcpu=pentium" }
-	action proc {
-		$conf[:DEFINES][:CPU] ||= "pentium"
-	}
+	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
 	test proc {
 		(CONFIG["arch"] =~ /i\d86/) and
 		c_test '
@@ -678,9 +702,20 @@ def try feature
 		end
 	end
 
+	
 	if feature.test
-		if feature.test.call(feature)
-			DUAL.puts "found"
+		tresult = feature.test.call(feature)
+		if tresult
+			DUAL.puts "found "+
+				(if tresult!=true then " (#{tresult})" else "" end)
+			if tresult == "static"
+				feature.uses_so.map! {|x|
+					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
+				} if feature.uses_so
+				feature.uses_bridge_so.map! {|x|
+					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
+				} if feature.uses_bridge_so
+			end
 		else
 			DUAL.puts "missing"
 			return false
@@ -889,7 +924,14 @@ mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
 mf << ".PRECIOUS: %.h.fcs %.c.fcs\n"
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
-mf.gsub!(/^((site-)?install:.*)/) {$1+" install2"}
+
+# GAAAH!!!
+if VERSION >= "1.8" then
+	mf.gsub!(/^((site-)?install:.*)/) {$1+" $(RUBYARCHDIR)/$(DLLIB) install2"}
+else
+	mf.gsub!(/^((site-)?install:.*)/) {$1+" install2"}
+end
+
 mf.gsub!(/^install:.*/) {"install:site-install"} # should i keep this line?
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
