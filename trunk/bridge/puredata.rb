@@ -130,6 +130,7 @@ module GridFlow
   end
 end
 
+if false
 GridFlow.whatever(:gui,%q{
 catch {
 	if {[file exists ${pd_guidir}/lib/gridflow/icons/peephole.gif]} {
@@ -142,3 +143,4 @@ catch {
 	}
 }
 })
+end
