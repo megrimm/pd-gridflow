@@ -489,6 +489,8 @@ DEF_OP2(mod, b==0 ? 0 : mod(a,b))
 DEF_OP2(dom, a==0 ? 0 : mod(b,a))
 DEF_OP2(rem, b==0 ? 0 : a%b)
 DEF_OP2(mer, a==0 ? 0 : b%a)
+DEF_OP2(gcd, gcd(a,b))
+DEF_OP2(lcm, a==0 || b==0 ? 0 : lcm(a,b))
 
 DEF_OP2(or , a|b)
 DEF_OP2(xor, a^b)
@@ -550,6 +552,8 @@ Operator2 op2_table[] = {
 	DECL_OP2_NOFLOAT(dom, "swap%", ""),
 	DECL_OP2_NOFLOAT(rem, "rem", ""),
 	DECL_OP2_NOFLOAT(mer, "swaprem", ""),
+	DECL_OP2_NOFLOAT(gcd, "gcd", "ASSO COMM"),
+	DECL_OP2_NOFLOAT(lcm, "lcm", "ASSO COMM"),
 
 	DECL_OP2_NOFLOAT(or , "|", "N=0 ASSO COMM"),
 	DECL_OP2_NOFLOAT(xor, "^", "N=0 ASSO COMM"),

@@ -208,6 +208,25 @@ static inline int min(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 static inline int max(int a, int b) { int c = (a-b)>>31; return (a&c)|(b&~c); }
 */
 
+/* greatest common divisor, by euclid's algorithm */
+/* this runs in log(a+b) */
+template <class T>
+static void gcd (T a, T b) {
+	while (b) {
+		T c=mod(a,b);
+		a=b;
+		b=c;
+	}
+	return a;
+}
+
+/* least common multiple */
+/* this runs in log(a+b) */
+template <class T>
+static inline void lcm (T a, T b) {
+	return a*b/gcd(a,b);
+}
+
 int highest_bit(uint32 n);
 int lowest_bit(uint32 n);
 
@@ -646,13 +665,13 @@ struct Grid {
 	GRID_INLET(_class_,_inlet_) { \
 		/*gfpost("is_busy(): %d",is_busy_except(in));*/\
 		if (is_busy_except(in)) { \
-			if (_member_.next == &_member_) { \
-				/*gfpost("object busy (backstoring data)"); */\
-				_member_.next = new Grid(); \
-				_member_.next->dc = _member_.dc; \
-			} else { \
-				RAISE("object busy and backstore busy (aborting)"); \
+			/*gfpost("object busy (backstoring data)"); */\
+			if (_member_.next != &_member_) { \
+				/*RAISE("object busy and backstore busy (aborting)");*/ \
+				delete _member_.next; \
 			} \
+			_member_.next = new Grid(); \
+			_member_.next->dc = _member_.dc; \
 		} \
 		_member_.next->init(in->dim->dup(),NumberTypeIndex_type_of(*data)); } \
 	GRID_FLOW { \

@@ -355,7 +355,7 @@ GRID_INLET(GridStore,0) {
 #define EMIT(type) { \
 		Pt<type> p = (Pt<type>)r; \
 		if (size<=16) { \
-			ARRAY_NEW(type,nd*size); \
+			Pt<T> foo = ARRAY_NEW(type,nd*size); \
 			for (int i=0; i<nd; i++) COPY(foo+size*i,p+size*v[i],size); \
 			out[0]->give(size*nd,foo); \
 		} else { \
