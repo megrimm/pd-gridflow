@@ -69,7 +69,7 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
   on Linux, this is <k>i686-linux</k>; if you have a recent Macintosh, this
   is <k>ppc-macosx</k> or <k>ppc-linux</k>)</li>
   
-  <li>Run <k>./configure --jmax25 --arch <i>your-system-type</i></k> from the <k>gridflow</k> directory.
+  <li>Run <k>./configure --arch <i>your-system-type</i></k> from the <k>gridflow</k> directory.
   note: if you didn't install GridFlow in the <k>packages</k> directory,
   then you have to add the option <k>--jmax-dist-dir
   <i>your-jmax-source-directory-goes-here</i></k></li>
@@ -112,13 +112,11 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 </prose></section>
 
 <section name="Installation process (without jMax)"><prose>
-	If you are not a C programmer you probably shouldn't do this.
 <list><li>
-	Use the <k>--nojmax</k> option instead of <k>--jmax25</k>.
-	Don't do the regular <k>make all</k>; you can only do a
-	<k>make standalone</k>. (note: You can also do <k>make standalone</k>
-	when installing with jMax. in any case that command creates 
-	<k>c/lib2/libgridflow.so</k> which can be used without jMax).
+	If you don't have jMax installed it won't be detected. Installation
+	will proceed normally except that the Ruby-for-jMax bridge won't be
+	installed. Try running 'make test'. Look at 'tests/test.rb' for
+	an example of how you may use GridFlow without jMax.
 </li></list>
 </prose></section>
 </jmax-doc>

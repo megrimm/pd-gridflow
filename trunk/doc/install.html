@@ -1,7 +1,7 @@
 <html>
 <head>
 <!-- $Id$ -->
-<title>GridFlow 0.5.0 - reference</title>
+<title>GridFlow 0.6.1 - reference</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -27,7 +27,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.5.0 - reference index</h4>
+    <h4>GridFlow 0.6.1 - reference index</h4>
 </td></tr>
 <tr> 
   <td width="5%" rowspan="2">&nbsp;</td>
@@ -82,7 +82,7 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
       unpack the images pack into that directory, which will create 
 	 another one called 'images'. </li> <li><b>2</b> : Find your system type (for AMD K6 and Pentium Pro and compatibles, 
   on Linux, this is <kbd>i686-linux</kbd>; if you have a recent Macintosh, this 
-  is <kbd>ppc-macosx</kbd> or <kbd>ppc-linux</kbd>)</li> <li><b>3</b> : Run <kbd>./configure --jmax25 --arch <i>your-system-type</i></kbd> from the <kbd>gridflow</kbd> directory. 
+  is <kbd>ppc-macosx</kbd> or <kbd>ppc-linux</kbd>)</li> <li><b>3</b> : Run <kbd>./configure --arch <i>your-system-type</i></kbd> from the <kbd>gridflow</kbd> directory. 
   note: if you didn't install GridFlow in the <kbd>packages</kbd> directory, 
   then you have to add the option <kbd>--jmax-dist-dir <i>your-jmax-source-directory-goes-here</i></kbd></li> <li><b>4</b> : <kbd>./configure</kbd> will try to detect some optional components (libmpeg, 
   pentium clock, etc); error messages may appear in case of a <kbd>no</kbd>. 
@@ -102,18 +102,18 @@ be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Installation_process_(without_jMax)"></a><h4>Installation process (without jMax)</h4></td></tr><tr><td></td><td></td><td> 
-	If you are not a C programmer you probably shouldn't do this. 
 <ul><li><b>1</b> :  
-	Use the <kbd>--nojmax</kbd> option instead of <kbd>--jmax25</kbd>. 
-	Don't do the regular <kbd>make all</kbd>; you can only do a <kbd>make standalone</kbd>. (note: You can also do <kbd>make standalone</kbd> 
-	when installing with jMax. in any case that command creates <kbd>c/lib2/libgridflow.so</kbd> which can be used without jMax). 
+	If you don't have jMax installed it won't be detected. Installation 
+	will proceed normally except that the Ruby-for-jMax bridge won't be 
+	installed. Try running 'make test'. Look at 'tests/test.rb' for 
+	an example of how you may use GridFlow without jMax. 
 </li></ul> 
 </td></tr><tr><td>&nbsp;</td></tr> 
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr> 
 <td colspan="4"> 
-<p><font size="-1">GridFlow 0.5.0 Documentation<br>
+<p><font size="-1">GridFlow 0.6.1 Documentation<br>
 by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
 and<br>
 Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
