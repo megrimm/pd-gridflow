@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -117,12 +117,7 @@ GFBridge *gf_bridge = &gf_bridge_default;
 
 void Dim::check() {
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
-	for (int i=0; i<n; i++) {
-		if (v[i]<0) {
-			fprintf(stderr,"negative index???\n");
-			::raise(11);
-		}
-	}
+	for (int i=0; i<n; i++) if (v[i]<0) RAISE("Dim: negative dimension");
 }
 
 
