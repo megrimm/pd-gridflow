@@ -354,7 +354,10 @@ end
 
 END {
 	puts "This is an END block"
-	GridFlow.fobjects_set.each {|k,v| k.delete if k.respond_to? :delete }
+	GridFlow.fobjects_set.each {|k,v|
+		# p k
+		k.delete if k.respond_to? :delete
+	}
 	GridFlow.fobjects_set.clear
 	GC.start
 }
