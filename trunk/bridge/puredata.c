@@ -67,27 +67,15 @@ static BuiltinSymbols *syms;
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
-static Ruby cPointer2=0;
 
-static uint64 time_now() {
-	struct timeval nowtv;
-	gettimeofday(&nowtv,0);
-	return nowtv.tv_sec * 1000000LL + nowtv.tv_usec;
-}
-
-//static void count_tick () {}
-
-/*
+/*static Ruby cPointer2=0;
 static Ruby Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, ptr);
 }
 
 static void *Pointer_get (Ruby rself) {
-	void *p;
-	Data_Get_Struct(rself,void *,p);
-	return p;
-}
-*/
+	void *p; Data_Get_Struct(rself,void *,p); return p;
+}*/
 
 static Ruby make_error_message () {
 	char buf[1000];
@@ -123,17 +111,10 @@ static void gf_same_version () {
 	}
 }
 
-/* -------- This is the big hack for what Ruby can't do for itself -------- */
-
 #ifndef STACK_GROW_DIRECTION
 #define STACK_GROW_DIRECTION -1
 #endif
-
-static volatile long bogus = 0; // to force *bp to be read in memory
-static sigjmp_buf rescue_segfault;
-static void trap_segfault (int patate) { siglongjmp(rescue_segfault,11); }
 extern "C" void Init_stack(VALUE *addr);
-
 static VALUE *localize_sysstack () {
 	long bp;
 	sscanf(RUBY_STACK_END,"0x%08lx",&bp);
@@ -141,22 +122,23 @@ static VALUE *localize_sysstack () {
 	// HACK (2004.08.29: alx has a problem; i hope it doesn't get worse)
 	// this rounds to the last word of a 4k block
 	// cross fingers that no other OS does it too different
+	// !@#$ doesn't use STACK_GROW_DIRECTION
 	bp=((bp+0xfff)&~0xfff)-sizeof(void*);
 	fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
 	return (VALUE *)bp;
 }
 
-/* reentrancy check */
+// reentrancy check
 static bool is_in_ruby = false;
 
-/* **************************************************************** */
-/* BFObject */
+//****************************************************************
+// BFObject
 
 struct BFObject : t_object {
-	int32 magic; /* paranoia */
+	int32 magic; // paranoia
 	Ruby rself;
-	int nin;  /* per object settings (not class) */
-	int nout; /* per object settings (not class) */
+	int nin;  // per object settings (not class)
+	int nout; // per object settings (not class)
 	t_outlet **out;
 
 	void check_magic () {
@@ -175,14 +157,16 @@ static t_class *find_bfclass (t_symbol *sym) {
 	SETSYMBOL(a,sym);
 	char buf[4096];
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
-	Ruby v = rb_hash_aref(
-		rb_ivar_get(mGridFlow2, SI(@bfclasses_set)),
-		rb_str_new2(buf));
+	Ruby v = rb_hash_aref(rb_ivar_get(mGridFlow2, SI(@fclasses_set)), rb_str_new2(buf));
 	if (v==Qnil) {
 		post("GF: class not found: '%s'",buf);
 		return 0;
 	}
-	return FIX2PTR(t_class,v);
+	if (Qnil==rb_ivar_get(v,SI(@bfclass))) {
+		post("@bfclass missing for '%s'",buf);
+		return 0;
+	}
+	return FIX2PTR(t_class,rb_ivar_get(v,SI(@bfclass)));
 }
 
 static t_class *BFProxy_class;
@@ -459,8 +443,8 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
-	rb_hash_aset(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),
-		rb_str_dup(name), PTR2FIX(qlass));
+	rb_p(rself);
+	rb_ivar_set(rself, SI(@bfclass), PTR2FIX(qlass));
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	rb_rescue2(
 		(RMethod)BFObject_class_init_1,(Ruby)qlass,
@@ -493,7 +477,7 @@ static Ruby bridge_help (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=2) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
 	Ruby path = rb_funcall(argv[1],SI(to_s),0);
-	Ruby qlassid = rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no such class: %s", rb_str_ptr(name));
 	t_class *qlass = FIX2PTR(t_class,qlassid);
 	class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
@@ -514,7 +498,7 @@ static Ruby bridge_bind (int argc, Ruby *argv, Ruby rself) {
 	RAISE("requires Pd 0.37");
 #else
 		Ruby name = rb_funcall(argv[0],SI(to_s),0);
-		Ruby qlassid = rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+		Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
 		if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 		t_pd *o = pd_newest();
@@ -534,7 +518,7 @@ static Ruby bridge_bind (int argc, Ruby *argv, Ruby rself) {
 static Ruby bridge_setwidget (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby qlassid = rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 	t_widgetbehavior *wb = new t_widgetbehavior;
 	wb->w_getrectfn    = bf_getrectfn;
@@ -587,7 +571,7 @@ static Ruby bridge_addoutlets (int argc, Ruby *argv, Ruby rself) {
 static Ruby bridge_addtomenu (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby qlassid = rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@bfclasses_set)),name);
+	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses_set)),name),SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 	//!@#$
 	return Qnil;
@@ -624,7 +608,7 @@ static Ruby bridge_getpos (int argc, Ruby *argv, Ruby rself) {
 	return a;
 }
 
-/* additional bridge-specific functionality */
+// additional bridge-specific functionality
 static Ruby bridge_whatever (int argc, Ruby *argv, Ruby rself) {
 	if (argc==0) RAISE("BLEH");
 #define DEMUX(sym) if (argv[0]==SYM(sym)) return bridge_##sym(argc-1,argv+1,rself); else
@@ -656,15 +640,34 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	is_in_ruby = false;
 }       
 
+Ruby GridFlow_clock_tick (Ruby rself) {
+	return rb_float_new(clock_tick);
+}
+
+Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
+	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
+	clock_tick = RFLOAT(tick)->value;
+	return tick;
+}
+
+Ruby GridFlow_post_string (Ruby rself, Ruby string) {
+	if (TYPE(string)!=T_STRING) RAISE("not a string!");
+	post("%s",rb_str_ptr(string));
+	return Qnil;
+}
+
 #define SDEF2(_name1_,_name2_,_argc_) \
 	rb_define_singleton_method(mGridFlow2,_name1_,(RMethod)_name2_,_argc_)
 
 Ruby gf_bridge_init (Ruby rself) {
 	gf_same_version();
-	rb_ivar_set(mGridFlow2, SI(@bfclasses_set), rb_hash_new());
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	rb_define_singleton_method(EVAL("GridFlow::FObject"),"install2",(RMethod)FObject_s_install2,1);
 	rb_define_method(EVAL("GridFlow::FObject"),"send_out2",(RMethod)FObject_send_out2,-1);
+	SDEF2("clock_tick",GridFlow_clock_tick,0);
+	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
+	SDEF2("post_string",GridFlow_post_string,1);
+	SDEF2("whatever",bridge_whatever,-1);
 	return Qnil;
 }
 
@@ -683,32 +686,14 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
 }
 
-/*
-  that DEVNULL thing is prolly not useful. we'll have to look into that.
-  DEVNULL here is just supposed to be some bogus filename that
-  will act as $0
-*/
+// that DEVNULL thing is prolly not useful. we'll have to look into that.
+// DEVNULL here is just supposed to be some bogus filename that
+// will act as $0
 #ifdef __WIN32__
 #define DEVNULL "NUL:"
 #else
 #define DEVNULL "/dev/null"
 #endif
-
-Ruby GridFlow_clock_tick (Ruby rself) {
-	return rb_float_new(clock_tick);
-}
-
-Ruby GridFlow_clock_tick_set (Ruby rself, Ruby tick) {
-	if (TYPE(tick)!=T_FLOAT) RAISE("expecting Float");
-	clock_tick = RFLOAT(tick)->value;
-	return tick;
-}
-
-Ruby GridFlow_post_string (Ruby rself, Ruby string) {
-	if (TYPE(string)!=T_STRING) RAISE("not a string!");
-	post("%s",rb_str_ptr(string));
-	return Qnil;
-}
 
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData",DEVNULL};
@@ -729,11 +714,6 @@ extern "C" void gridflow_setup () {
 	mGridFlow2 = EVAL(
 		"module GridFlow; class<<self; attr_reader :bridge_name; end; "
 		"@bridge_name = 'puredata'; self end");
-	SDEF2("clock_tick",GridFlow_clock_tick,0);
-	SDEF2("clock_tick=",GridFlow_clock_tick_set,1);
-	SDEF2("post_string",GridFlow_post_string,1);
-	SDEF2("whatever",bridge_whatever,-1);
-
 	post("(done)");
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
