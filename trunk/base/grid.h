@@ -220,7 +220,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 
 /* class constructor */
 
-#define GRCLASS(_name_,_inlets_,_outlets_,_handlers_,args...) \
+#define GRCLASS(_name_,_jname_,_inlets_,_outlets_,_handlers_,args...) \
 	static MethodDecl _name_ ## _methods[] = { args }; \
 	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _classinfo = { \
@@ -228,7 +228,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
-		#_name_ };
+		#_name_, _jname_ };
 
 #define FMTCLASS(_name_,symbol_name,description,flags,_inlets_,_outlets_,_handlers_,args...) \
 	FormatInfo _name_ ## _formatinfo = { symbol_name,description,flags }; \
@@ -239,7 +239,7 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
 		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
-		#_name_ };
+		#_name_, #_name_ };
 
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -328,34 +328,24 @@ struct Dim {
 	int n;
 	int v[MAX_DIMENSIONS];
 
-	inline void invariant() {
-		assert(this);
-		assert_range(this->n,0,MAX_DIMENSIONS);
-	}
+	void check();
 
 	Dim(int n, int *v) {
-		assert_range(n,0,MAX_DIMENSIONS);
-		assert(v);
 		this->n = n;
-		for (int i=0; i<n; i++) {
-			assert_range(v[i],0,MAX_INDICES);
-			this->v[i] = v[i];
-		}
-		invariant();
+		memcpy(this->v,v,n*sizeof(int));
+		check();
 	}
 
 	Dim *dup() { return new Dim(n,v); }
 
-	int count() { invariant(); return n; }
+	int count() {return n;}
+
 	int get(int i) {
-		invariant();
 		assert_range(i,0,n-1);
-		assert_range(v[i],0,MAX_INDICES);
 		return v[i];
 	}
 	int prod(int start=0) {
 		int tot=1;
-		invariant();
 		for (int i=start; i<n; i++) tot *= v[i];
 		return tot;
 	}
@@ -448,14 +438,19 @@ extern VALUE /*Hash*/ op2_dict;
 
 /* **************************************************************** */
 
-/* future use:
-typedef struct Grid {
+struct Grid {
 	Dim *dim;
-	Number *data;
-	// add: number type
-	// add: producer function
-} Grid;
-*/
+	NumberTypeIndex nt;
+	void *data;
+
+	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
+	void init_from_ruby(VALUE x);
+	void init_from_ruby_list(int n, VALUE *a);
+	void del();
+	inline int32 *as_int32() { return (int32 *)data; }
+	inline uint8 *as_uint8() { return (uint8 *)data; }
+	inline bool is_empty() { return !dim; }
+};
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
@@ -527,6 +522,7 @@ typedef struct GridClass {
 	int handlersn;
 	GridHandler *handlers;
 	const char *name;
+	const char *jname;
 } GridClass;
 
 #define LIST(args...) args
@@ -683,11 +679,10 @@ void MainLoop_remove(void *data);
 #define EARG(_reason_...) rb_raise(rb_eArgError, _reason_)
 
 #define INT(x) (INTEGER_P(x) ? NUM2INT(x) : (RAISE("expected Integer"),0))
-#define INSTALL(jname,rname) \
-	ruby_c_install(jname, #rname, &rname##_classinfo, GridObject_class);
+#define INSTALL(rname) \
+	ruby_c_install(&rname##_classinfo, GridObject_class);
 
-VALUE ruby_c_install(const char *jname, const char *rname, GridClass *gc,
-VALUE super);
+VALUE ruby_c_install(GridClass *gc, VALUE super);
 
 typedef VALUE (*RFunc)();
 

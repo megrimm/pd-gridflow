@@ -27,32 +27,6 @@
 #include "grid.h"
 
 /* **************************************************************** */
-/* Grid buffers */
-
-struct Grid {
-	Dim *dim;
-	NumberTypeIndex nt;
-	void *data;
-
-	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
-	void del();
-	inline int32 *as_int32() { return (int32 *)data; }
-	inline uint8 *as_uint8() { return (uint8 *)data; }
-	inline bool is_empty() { return !dim; }
-};
-
-void Grid::init(Dim *dim, NumberTypeIndex nt) {
-	this->nt = nt;
-	this->dim = dim;
-	this->data = dim ? NEW(char,dim->prod()*number_type_table[nt].size/8) : 0;
-}
-
-void Grid::del() {
-	FREE(dim);
-	FREE(data);
-}
-
-/* **************************************************************** */
 
 #define IV(s) rb_ivar_get(rself,SI(s))
 #define IVS(s,v) rb_ivar_set(rself,SI(s),v)
@@ -67,6 +41,12 @@ Operator2 *OP2(VALUE x) {
 	VALUE s = rb_hash_aref(op2_dict,x);
 	if (s==Qnil) RAISE("expected two-input-operator");
 	return (Operator2 *)FIX2PTR(s);
+}
+
+static void expect_dim_dim_list (Dim *d) {
+	if (d->count()!=1) RAISE("dimension list must have 1 dimension");
+	int n = d->get(0);
+	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 }
 
 /* **************************************************************** */
@@ -98,20 +78,13 @@ GRID_END(GridImport,0) {}
 /* same inlet 1 as @redim */
 
 GRID_BEGIN(GridImport,1) {
-	if (in->dim->count()!=1) RAISE("expected 1 dim");
-	int n = in->dim->get(0);
-	if (n>MAX_DIMENSIONS) RAISE("too big");
-	in->set_factor(n);
+	expect_dim_dim_list(in->dim);
+	if (in->dim->n) in->set_factor(in->dim->n);
 }
 
 GRID_FLOW(GridImport,1) {
-	int dim[n];
 	FREE($->dim);
-	for(int i=0;i<n;i++) {
-		dim[i]=data[i];
-		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
-	}
-	$->dim = new Dim(n,dim);
+	$->dim = new Dim(n,(int *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -119,14 +92,12 @@ GRID_FLOW(GridImport,1) {
 GRID_END(GridImport,1) {}
 
 METHOD(GridImport,init) {
-	int dim[argc];
 	rb_call_super(argc,argv);
-
-	for (int i=0; i<argc; i++) {
-		dim[i] = INT(argv[i]);
-		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
-	}
-	$->dim = new Dim(argc,dim);
+	if (argc!=1) RAISE("wrong number of args");
+	Grid t;
+	t.init_from_ruby(argv[0]);
+	expect_dim_dim_list(t.dim);
+	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
 }
 
 METHOD(GridImport,delete) {
@@ -147,7 +118,7 @@ METHOD(GridImport,_0_reset) {
 	if (out->is_busy()) out->abort();
 }
 
-GRCLASS(GridImport,inlets:2,outlets:1,
+GRCLASS(GridImport,"@import",inlets:2,outlets:1,
 LIST(GRINLET(GridImport,0),GRINLET(GridImport,1)),
 	DECL(GridImport,init),
 	DECL(GridImport,delete),
@@ -175,7 +146,7 @@ GRID_FLOW(GridExport,0) {
 
 GRID_END(GridExport,0) {}
 
-GRCLASS(GridExport,inlets:1,outlets:1,
+GRCLASS(GridExport,"@export",inlets:1,outlets:1,
 LIST(GRINLET(GridExport,0)))
 /* outlet 0 not used for grids */
 
@@ -207,7 +178,7 @@ GRID_END(GridExportList,0) {
 	$->list = 0;
 }
 
-GRCLASS(GridExportList,inlets:1,outlets:1,
+GRCLASS(GridExportList,"@export_list",inlets:1,outlets:1,
 LIST(GRINLET(GridExportList,0)))
 /* outlet 0 not used for grids */
 
@@ -335,7 +306,7 @@ METHOD(GridStore,_0_bang) {
 	$->out[0]->end();
 }
 
-GRCLASS(GridStore,inlets:2,outlets:1,
+GRCLASS(GridStore,"@store",inlets:2,outlets:1,
 LIST(GRINLET(GridStore,0),GRINLET(GridStore,1)),
 	DECL(GridStore,init),
 	DECL(GridStore,delete),
@@ -369,7 +340,7 @@ METHOD(GridOp1,init) {
 	$->op = OP1(argv[0]);
 }
 
-GRCLASS(GridOp1,inlets:1,outlets:1,
+GRCLASS(GridOp1,"@!",inlets:1,outlets:1,
 LIST(GRINLET(GridOp1,0)),
 	DECL(GridOp1,init))
 
@@ -392,6 +363,7 @@ GRID_BEGIN(GridOp2,0) {
 
 GRID_FLOW2(GridOp2,0) {
 	GridOutlet *out = $->out[0];
+	if ($->r.is_empty()) RAISE("ARGH");
 	int32 *rdata = $->r.as_int32();
 	int loop = $->r.dim->prod();
 	if (loop>1) {
@@ -399,6 +371,7 @@ GRID_FLOW2(GridOp2,0) {
 			$->op->op_array2(n,data,rdata+in->dex);
 		} else {
 			Number data2[n];
+			//!@#$ make this faster
 			for (int i=0; i<n; i++) {
 				data2[i] = rdata[(in->dex+i)%loop];
 			}
@@ -428,8 +401,13 @@ GRID_END(GridOp2,1) {}
 METHOD(GridOp2,init) {
 	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
-	$->r.init(new Dim(0,0),int32_type_i);
-	*$->r.as_int32() = argc<2 ? 0 : INT(argv[1]);
+	if (argc>2) RAISE("too many args");
+	if (argc<2) {
+		$->r.init(new Dim(0,0),int32_type_i);
+		$->r.as_int32()[0] = 0;
+	} else {
+		$->r.init_from_ruby(argv[1]);
+	}
 }
 
 METHOD(GridOp2,delete) {
@@ -443,7 +421,7 @@ METHOD(GridOp2,_1_int) {
 	*$->r.as_int32() = INT(argv[0]);
 }
 
-GRCLASS(GridOp2,inlets:2,outlets:1,
+GRCLASS(GridOp2,"@",inlets:2,outlets:1,
 LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
 	DECL(GridOp2,init),
 	DECL(GridOp2,delete),
@@ -500,7 +478,7 @@ METHOD(GridFold,_1_int) {
 	$->rint = INT(argv[0]);
 }
 
-GRCLASS(GridFold,inlets:2,outlets:1,
+GRCLASS(GridFold,"@fold",inlets:2,outlets:1,
 LIST(GRINLET(GridFold,0)),
 	DECL(GridFold,init),
 	DECL(GridFold,_1_int))
@@ -550,7 +528,7 @@ METHOD(GridScan,_1_int) {
 	$->rint = INT(argv[0]);
 }
 
-GRCLASS(GridScan,inlets:2,outlets:1,
+GRCLASS(GridScan,"@scan",inlets:2,outlets:1,
 LIST(GRINLET(GridScan,0)),
 	DECL(GridScan,init),
 	DECL(GridScan,_1_int))
@@ -639,7 +617,7 @@ METHOD(GridInner,delete) {
 	rb_call_super(argc,argv);
 }
 
-GRCLASS(GridInner,inlets:3,outlets:1,
+GRCLASS(GridInner,"@inner",inlets:3,outlets:1,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,init),
 	DECL(GridInner,delete))
@@ -716,7 +694,7 @@ METHOD(GridInner2,delete) {
 	rb_call_super(argc,argv);
 }
 
-GRCLASS(GridInner2,inlets:3,outlets:1,
+GRCLASS(GridInner2,"@inner2",inlets:3,outlets:1,
 LIST(GRINLET(GridInner2,0),GRINLET(GridInner2,2)),
 	DECL(GridInner2,init),
 	DECL(GridInner2,delete))
@@ -729,17 +707,16 @@ struct GridOuter : GridObject {
 };
 
 GRID_BEGIN(GridOuter,0) {
+	gfpost("hello");
 	Dim *a = in->dim;
 	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
-	{
-		int n = a->count()+b->count();
-		int v[n];
-		int i,j;
-		for (i=j=0; j<a->count(); i++,j++) { v[i] = a->get(j); }
-		for (  j=0; j<b->count(); i++,j++) { v[i] = b->get(j); }
-		$->out[0]->begin(new Dim(n,v));
-	}
+	int n = a->count()+b->count();
+	int v[n];
+	int i,j;
+	for (i=j=0; j<a->count(); i++,j++) { v[i] = a->get(j); }
+	for (  j=0; j<b->count(); i++,j++) { v[i] = b->get(j); }
+	$->out[0]->begin(new Dim(n,v));
 }
 
 GRID_FLOW(GridOuter,0) {
@@ -773,6 +750,9 @@ METHOD(GridOuter,init) {
 	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
 	$->r.init(0);
+	if (argc<1) RAISE("not enough args");
+	if (argc>2) RAISE("too many args");
+	if (argc==2) $->r.init_from_ruby(argv[1]);
 }
 
 METHOD(GridOuter,delete) {
@@ -780,7 +760,7 @@ METHOD(GridOuter,delete) {
 	rb_call_super(argc,argv);
 }
 
-GRCLASS(GridOuter,inlets:2,outlets:1,
+GRCLASS(GridOuter,"@outer",inlets:2,outlets:1,
 LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
 	DECL(GridOuter,init),
 	DECL(GridOuter,delete))
@@ -905,7 +885,7 @@ METHOD(GridConvolve,delete) {
 	rb_call_super(argc,argv);
 }
 
-GRCLASS(GridConvolve,inlets:2,outlets:1,
+GRCLASS(GridConvolve,"@convolve",inlets:2,outlets:1,
 LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
 	DECL(GridConvolve,init),
 	DECL(GridConvolve,delete))
@@ -948,7 +928,7 @@ METHOD(GridFor,_0_int) {
 	GridFor__0_bang($,rself,argc,argv);
 }
 
-GRCLASS(GridFor,inlets:3,outlets:1,
+GRCLASS(GridFor,"@for",inlets:3,outlets:1,
 LIST(),
 	DECL(GridFor,init),
 	DECL(GridFor,_0_bang),
@@ -973,7 +953,7 @@ GRID_FLOW(GridDim,0) {}
 
 GRID_END(GridDim,0) {}
 
-GRCLASS(GridDim,inlets:1,outlets:1,
+GRCLASS(GridDim,"@dim",inlets:1,outlets:1,
 LIST(GRINLET(GridDim,0)))
 
 /* **************************************************************** */
@@ -984,24 +964,27 @@ struct GridRedim : GridObject {
 };
 
 GRID_BEGIN(GridRedim,0) {
+	FREE($->data);
 	int a = in->dim->prod(), b = $->dim->prod();
 	if (a==0) {
+		//!@#$wrong
 		$->data = NEW2(Number,1);
 		$->data[0] = 0;
 	} else if (a<b) {
-		$->data = NEW2(Number,in->dim->prod());
+		$->data = NEW2(Number,a);
 	}
 	$->out[0]->begin($->dim->dup());
 }
 
 GRID_FLOW(GridRedim,0) {
-	int a = in->dim->prod(), b = $->dim->prod();
 	int i = in->dex;
 	if ($->data) {
+		int a = in->dim->prod();
 		int n2 = min(n,a-i);
 		memcpy(&$->data[i],data,n2*sizeof(Number));
 		if (n2>0) $->out[0]->send(n2,data);
 	} else {
+		int b = $->dim->prod();
 		int n2 = min(n,b-i);
 		if (n2>0) $->out[0]->send(n2,data);
 		/* discard other values if any */
@@ -1025,22 +1008,13 @@ GRID_END(GridRedim,0) {
 /* same inlet 1 as @import */
 
 GRID_BEGIN(GridRedim,1) {
-	if (in->dim->count()!=1)
-		RAISE("dimension list must have 1 dimension");
-	int n = in->dim->get(0);
-	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
-	if (n) in->set_factor(n);
+	expect_dim_dim_list(in->dim);
+	if (in->dim->n) in->set_factor(in->dim->n);
 }
 
 GRID_FLOW(GridRedim,1) {
-	int dim[n];
 	FREE($->dim);
-	for(int i=0;i<n;i++) {
-		dim[i]=data[i];
-		if (dim[i]<1 || dim[i]>MAX_INDICES)
-			RAISE("dim[%d]=%d is out of range",i,dim[i]);
-	}
-	$->dim = new Dim(n,dim);
+	$->dim = new Dim(n,(int *)data);
 	$->in[0]->abort();
 	$->out[0]->abort();
 }
@@ -1048,15 +1022,12 @@ GRID_FLOW(GridRedim,1) {
 GRID_END(GridRedim,1) {}
 
 METHOD(GridRedim,init) {
-	int i;
-	int dim[argc];
 	rb_call_super(argc,argv);
-
-	for (i=0; i<argc; i++) {
-		dim[i] = INT(argv[i]);
-		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
-	}
-	$->dim = new Dim(argc,dim);
+	if (argc!=1) RAISE("wrong number of args");
+	Grid t;
+	t.init_from_ruby(argv[0]);
+	expect_dim_dim_list(t.dim);
+	$->dim = new Dim(t.dim->prod(),(int *)t.as_int32());
 	$->data = 0;
 }
 
@@ -1066,7 +1037,7 @@ METHOD(GridRedim,delete) {
 	rb_call_super(argc,argv);
 }
 
-GRCLASS(GridRedim,inlets:2,outlets:1,
+GRCLASS(GridRedim,"@redim",inlets:2,outlets:1,
 LIST(GRINLET(GridRedim,0),GRINLET(GridRedim,1)),
 	DECL(GridRedim,init),
 	DECL(GridRedim,delete))
@@ -1102,7 +1073,7 @@ GRID_BEGIN(GridScaleBy,0) {
 /* this method processes one packet of grid content */
 GRID_FLOW(GridScaleBy,0) {
 	int scale = $->rint;
-	int rowsize = in->dim->get(1)*in->dim->get(2);
+	int rowsize = in->dim->prod(1);
 
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
@@ -1112,9 +1083,10 @@ GRID_FLOW(GridScaleBy,0) {
 		int p=0;
 		for (int i=0; i<rowsize; i+=3) {
 			for (int k=0; k<scale; k++) {
-				buf[p++]=data[i];
-				buf[p++]=data[i+1];
-				buf[p++]=data[i+2];
+				buf[p+0]=data[i+0];
+				buf[p+1]=data[i+1];
+				buf[p+2]=data[i+2];
+				p+=3;
 			}
 		}
 
@@ -1137,7 +1109,7 @@ METHOD(GridScaleBy,init) {
 }
 
 /* there's one inlet, one outlet, and two system methods (inlet #-1) */
-GRCLASS(GridScaleBy,inlets:1,outlets:1,
+GRCLASS(GridScaleBy,"@scale_by",inlets:1,outlets:1,
 LIST(GRINLET(GridScaleBy,0)),
 	DECL(GridScaleBy,init))
 
@@ -1189,7 +1161,7 @@ METHOD(GridRGBtoHSV,init) {
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
-GRCLASS(GridRGBtoHSV,inlets:1,outlets:1,
+GRCLASS(GridRGBtoHSV,"@rgb_to_hsv",inlets:1,outlets:1,
 LIST(GRINLET(GridRGBtoHSV,0)),
 	DECL(GridRGBtoHSV,init))
 
@@ -1229,7 +1201,7 @@ METHOD(GridHSVtoRGB,init) {
 	$->out[0] = new GridOutlet((GridObject *)$, 0);
 }
 
-GRCLASS(GridHSVtoRGB,inlets:1,outlets:1,
+GRCLASS(GridHSVtoRGB,"@hsv_to_rgb",inlets:1,outlets:1,
 LIST(GRINLET(GridHSVtoRGB,0)),
 	DECL(GridHSVtoRGB,init))
 
@@ -1325,7 +1297,7 @@ METHOD(RtMetro,init) {
 	gfpost("mode = %d",$->mode);
 }
 
-GRCLASS(RtMetro,inlets:2,outlets:1,
+GRCLASS(RtMetro,"rtmetro",inlets:2,outlets:1,
 LIST(),
 	DECL(RtMetro,_0_int),
 	DECL(RtMetro,_1_int),
@@ -1340,88 +1312,31 @@ LIST(),
 struct GridGlobal : GridObject {
 };
 
-static void profiler_reset$1(void*d,void*k,void*v) {
-	((GridObject *)k)->profiler_cumul = 0;
-}
-
-METHOD(GridGlobal,_0_profiler_reset) {
-/*
-	VALUE os = gf_object_set;
-	Dict_each(os,profiler_reset$1,0);
-*/
-}
-
-static int by_profiler_cumul(void **a, void **b) {
-	uint64 apc = (*(const GridObject **)a)->profiler_cumul;
-	uint64 bpc = (*(const GridObject **)b)->profiler_cumul;
-	return apc>bpc ? -1 : apc<bpc ? +1 : 0;
-}
-
-static void profiler_dump$1(void *d,void *k,void *v) {
-/*
-	List_push((List *)d,k);
-*/
-}
-
-METHOD(GridGlobal,_0_profiler_dump) {
-	/* if you blow 256 chars it's your own fault */
-/*
-	List *ol = List_new(0);
-
-	uint64 total=0;
-	int i;
-	gfpost("--------------------------------");
-	gfpost("         clock-ticks percent pointer  constructor");
-	Dict_each(gf_object_set,profiler_dump$1,ol);
-	List_sort(ol,by_profiler_cumul);
-	for(i=0;i<List_size(ol);i++) {
-		GridObject *o = List_get(ol,i);
-		total += o->profiler_cumul;
-	}
-	if (total<1) total=1;
-	for(i=0;i<List_size(ol);i++) {
-		GridObject *o = List_get(ol,i);
-		int ppm = o->profiler_cumul * 1000000 / total;
-		char *buf = "(fix-me)"; // !@#$
-		gfpost("%20lld %2d.%04d %08x [%s]\n",
-			o->profiler_cumul,
-			ppm/10000,
-			ppm%10000,
-			o,
-			buf);
-		FREE(buf);
-	}
-	gfpost("--------------------------------");
-*/
-}
-
-GRCLASS(GridGlobal,inlets:1,outlets:1,
-LIST(),
-	DECL(GridGlobal,_0_profiler_reset),
-	DECL(GridGlobal,_0_profiler_dump))
+GRCLASS(GridGlobal,"@global",inlets:1,outlets:1,
+LIST())
 
 /* **************************************************************** */
 
-void startup_flow_objects (void) {
-	INSTALL("@import",     GridImport);
-	INSTALL("@export",     GridExport);
-	INSTALL("@export_list",GridExportList);
-	INSTALL("@store",      GridStore);
-	INSTALL("@!",          GridOp1);
-	INSTALL("@",           GridOp2);
-	INSTALL("@fold",       GridFold);
-	INSTALL("@scan",       GridScan);
-	INSTALL("@inner",      GridInner);
-	INSTALL("@inner2",     GridInner2);
-	INSTALL("@outer",      GridOuter);
-	INSTALL("@convolve",   GridConvolve);
-	INSTALL("@for",        GridFor);
-	INSTALL("@dim",        GridDim);
-	INSTALL("@redim",      GridRedim);
-	INSTALL("@scale_by",   GridScaleBy);
-	INSTALL("@rgb_to_hsv", GridRGBtoHSV); /* buggy */
-	INSTALL("@hsv_to_rgb", GridHSVtoRGB); /* buggy */
-	INSTALL("rtmetro",     RtMetro);
-	INSTALL("@global",     GridGlobal);
+void startup_flow_objects () {
+	INSTALL(GridImport);
+	INSTALL(GridExport);
+	INSTALL(GridExportList);
+	INSTALL(GridStore);
+	INSTALL(GridOp1);
+	INSTALL(GridOp2);
+	INSTALL(GridFold);
+	INSTALL(GridScan);
+	INSTALL(GridInner);
+	INSTALL(GridInner2);
+	INSTALL(GridOuter);
+	INSTALL(GridConvolve);
+	INSTALL(GridFor);
+	INSTALL(GridDim);
+	INSTALL(GridRedim);
+	INSTALL(GridScaleBy);
+//	INSTALL(GridRGBtoHSV); /* buggy */
+//	INSTALL(GridHSVtoRGB); /* buggy */
+	INSTALL(RtMetro);
+	INSTALL(GridGlobal);
 }
 

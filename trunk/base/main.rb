@@ -104,13 +104,24 @@ end
 module GridFlow #------------------
 
 def self.parse(m)
-	m = m.split(/\s+/)
+	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
 		when Integer, Symbol; x
 		when /^[0-9]+$/; x.to_i
 		when String; x.intern
 		end
 	}
+	i=0
+	while i<m.length
+		if m[i]=="{".intern
+			j=i+1
+			j+=1 until m[j]=="}".intern
+			a = [m[i+1..j-1]]
+			m[i..j] = a
+		else
+			i+=1
+		end
+	end
 	m
 end
 
@@ -142,6 +153,14 @@ class FObject
 		end
 		send("_#{inlet}_#{sym}".intern,*m)
 	end
+	def self.name_lookup sym
+		qlasses = GridFlow.instance_eval{@fclasses_set}
+#		p qlasses
+		qlass = qlasses[sym.to_s]
+#		p qlass
+		raise "object class '#{sym}' not found" if not qlass
+		qlass
+	end
 	def self.[](*m)
 		o=nil
 		if m.length==1 and m[0] =~ / /
@@ -150,19 +169,9 @@ class FObject
 		else
 			o=m.inspect
 		end
-			
 		sym = m.shift
 		sym = sym.to_s if Symbol===sym
-		p sym
-		qlass = case sym
-			when "@"; GridFlow::GridOp2
-			when "@!"; GridFlow::GridOp1
-			when /^@/; GridFlow.const_get("Grid"+
-				("_"+sym[1..-1]).gsub(/_[a-z]/) {|s| s[1..1].upcase})
-			else
-				# raise ArgumentError, "GF names begin with @"
-			end
-		p qlass
+		qlass = name_lookup sym
 		r = qlass.new(*m)
 		r.args = o
 		r
@@ -270,6 +279,29 @@ class GridPrint < GridFlow::GridObject
 	end
 	install_rgrid 0
 	install "@print", 1, 0
+end
+
+class GridGlobal
+	def _0_profiler_reset
+		gf_object_set.each {|o| o.profiler_cumul = 0 }
+	end
+	def _0_profiler_dump
+		ol = []
+		total=0
+		gfpost "-"*32
+		gfpost "         clock-ticks percent pointer  constructor"
+		gf_object_set.each {|o| ol.push o }
+		ol.sort {|a,b| a.profiler_cumul <=> b.profiler_cumul }
+		ol.each {|o| total += o.profiler_cumul }
+		total=1 if total<1
+		ol.each {|o|
+			int ppm = o.profiler_cumul * 1000000 / total
+			gfpost "%20lld %2d.%04d %08x [%s]\n",
+				o.profiler_cumul, ppm/10000, ppm%10000,
+				o, o.info
+		}
+		gfpost "-"*32
+	end
 end
 
 #class RtMetro < GridFlow::FObject
