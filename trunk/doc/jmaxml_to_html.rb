@@ -33,6 +33,13 @@ require "xmlparser"
 
 =end
 
+if nil
+	alias real_print print
+	alias real_puts  puts
+	def print(*x); real_print "[#{caller[0]}]"; real_print *x; end
+	def puts (*x); real_print "[#{caller[0]}]"; real_puts  *x; end
+end
+
 def mk(tag,*values,&block)
 	raise "value-list's length must be even" if values.length % 2 != 0
 	print "<#{tag}"
@@ -159,7 +166,7 @@ class XNode
 			}
 			print "<tr>"
 			mk(:td) {}
-			print "<td valign='top'><br>"
+			print "<td valign='top'><br>\n"
 			icon   = contents.find {|x| XNode===x and x.tag == 'icon'   }
 			sample = contents.find {|x| XNode===x and x.tag == 'sample' }
 			if icon
@@ -177,7 +184,7 @@ class XNode
 			end
 			mk(:br,:clear,"left")
 			mk(:br)
-			print "</td><td><br>"
+			print "</td><td><br>\n"
 			e="<br></td>"
 		when "method"
 			print "<br>"
@@ -193,12 +200,12 @@ class XNode
 				end
 			}.compact.join "<b>,</b>"
 			print "<b>)</b>"
-			e="<br>"
+			e="<br>\n"
 		when "grid"
 			print "<br>"
 			print "<b>", $portnum.join(" "), "</b> " if $portnum
 			print "<b>grid</b> "
-			e="<br><br>"
+			e="<br>\n"
 		when "dim"
 			print "<b>dim(</b>"
 			e="<b>)</b>"
@@ -237,7 +244,9 @@ class XNode
 		end
 		contents.each {|x|
 			case x
-			when String; print x
+			when String;
+				x.gsub!(/[\r\n\t ]+$/," ")
+				print x
 			when XNode; x.print_contents
 			else raise "crap"
 			end
@@ -284,7 +293,7 @@ class JmaxmlParser < XMLParser
 		end
 	end
 
-	def produce x; puts x; end
+	def produce x; print x; end
 
 	def begin_p   t,a; produce  "<p>"  end; def end_p t;   produce  "</p>"  end
 	def begin_b   t,a; produce  "<b>"  end; def end_b t;   produce  "</b>"  end
