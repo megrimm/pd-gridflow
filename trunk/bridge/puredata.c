@@ -61,6 +61,18 @@ static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 static BuiltinSymbols *syms;
 
+void CObject_freeee (void *victim) {
+	CObject *self = (CObject *)victim;
+	self->check_magic();
+	if (!self->rself) {
+		fprintf(stderr,"attempt to free object that has no rself\n");
+		abort();
+	}
+	self->rself = 0; /* paranoia */
+	delete self;
+}
+
+
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
@@ -443,6 +455,8 @@ static void BFObject_class_init_1 (t_class *qlass) {
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
+\class FObject
+
 static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 	if (TYPE(name)!=T_STRING) RAISE("name must be String");
 	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
@@ -458,6 +472,7 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 }
 
 static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
+//\def Ruby send_out2(...) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
 	if (!bself) {
@@ -620,6 +635,41 @@ static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
 	return a;
 }
 
+\classinfo {}
+\end class FObject
+
+//****************************************************************
+
+\class Clock < CObject
+struct Clock : CObject {
+	t_clock *serf;
+	Ruby owner; /* copy of ptr that serf already has, for marking */
+	\decl void set  (double   systime);
+	\decl void delay(double delaytime);
+	\decl void unset();
+};
+
+void Clock_fn (Ruby rself) { rb_funcall(rself,SI(call),0); }
+void Clock_mark (Clock *self) { rb_gc_mark(self->owner); }
+void Clock_free (Clock *self) { clock_free(self->serf); CObject_freeee(self); }
+
+Ruby Clock_s_new (Ruby qlass, Ruby owner) {
+	Clock *self = new Clock();
+	self->rself = Data_Wrap_Struct(qlass, Clock_mark, Clock_free, self);
+	self->serf = clock_new((void*)owner,(t_method)Clock_fn);
+	self->owner = owner;
+	return self->rself;
+}
+
+\def void set  (double   systime) {   clock_set(serf,  systime); }
+\def void delay(double delaytime) { clock_delay(serf,delaytime); }
+\def void unset() { clock_unset(serf); }
+
+\classinfo {}
+\end class Clock
+
+//****************************************************************
+
 static t_clock *gf_alarm;
 
 static void gf_timer_handler_1 (VALUE blah) {
@@ -684,6 +734,9 @@ Ruby gf_bridge_init (Ruby rself) {
 	SDEF("gui",gui,-1);
 	SDEF("bind",bind,2);
 	// SDEF("add_to_menu",add_to_menu,-1);
+
+	\startall
+	rb_define_singleton_method(EVAL("GridFlow::Clock"),"new", (RMethod)Clock_s_new, 1);
 	return Qnil;
 }
 
@@ -702,17 +755,8 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
 }
 
-// that DEVNULL thing is prolly not useful. we'll have to look into that.
-// DEVNULL here is just supposed to be some bogus filename that
-// will act as $0
-#ifdef __WIN32__
-#define DEVNULL "NUL:"
-#else
-#define DEVNULL "/dev/null"
-#endif
-
 extern "C" void gridflow_setup () {
-	char *foo[] = {"Ruby-for-PureData",DEVNULL};
+	char *foo[] = {"Ruby-for-PureData","-w","-e",";"};
 	post("setting up Ruby-for-PureData...");
 
 	ruby_init();
@@ -733,7 +777,7 @@ extern "C" void gridflow_setup () {
 	post("(done)");
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"#{e.class}: #{e}: #{e.backtrace}\"; false; end"))
+		STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
 	{
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
