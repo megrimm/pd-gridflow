@@ -669,7 +669,28 @@
 			</method>
 		</inlet>
 		<inlet id="1">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/></method>
+			<method name="grid"><arg name="grid" type="grid(dims...)"/>
+			replace the whole grid, or a subpart of it (see other options on inlet 1)
+			</method>
+		</inlet>
+		<inlet id="1">
+			<method name="reassign">(Future Use): 
+				makes it so that sending a grid to inlet 1 detaches the old buffer from [@store]
+				and attaches a new one instead.  This is the default.
+			</method>
+			<method name="put_at"><rest name="indices"/>(Future Use): 
+				makes it so that sending a grid to inlet 1 writes into the existing buffer of [@store].
+				<p>
+				example: suppose you have [@store {10 240 320 3}]. then "put_at 3"
+				will allow to write a Dim[240,320,3] grid in indices (3,y,x,c) where y,x,c are indices of the incoming grid;
+				in other words, if that's a buffer of 10 RGB frames, you'd be replacing frame #3. Furthermore,
+				it also allows you to write a Dim[n,240,320,3] grid at (3+f,y,x,c) where f,y,x,c are indices of the incoming grid,
+				replacing frame #3, #4, ... up to #3+n-1. Here n is at most 7 because the last frame in the buffer is #9.
+				</p>
+				<p>that way of working extends to other kinds of data you'd put in Grids, in any numbers of dimensions;
+				because, as usual, [@store] wouldn't know the difference.
+				</p>
+			</method>
 		</inlet>
 		<outlet id="0">
 			grids as stored, as indexed, or as assembled from multiple
