@@ -31,42 +31,46 @@
 #include <m_pd.h>
 
 /* can't even refer to the other GridFlow_module before ruby loads gridflow */
-static VALUE GridFlow_module2=0;
-static VALUE Pointer_class2=0;
-static VALUE sym_ninlets=0, sym_noutlets=0;
-static VALUE sym_lparen=0, sym_rparen=0;
+static Ruby GridFlow_module2=0;
+static Ruby Pointer_class2=0;
+static Ruby sym_ninlets=0, sym_noutlets=0;
+static Ruby sym_lparen=0, sym_rparen=0;
 
 static bool is_in_ruby = false;
 
 #define rb_sym_name rb_sym_name_r4j
-static const char *rb_sym_name(VALUE sym) {return rb_id2name(SYM2ID(sym));}
+static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
-static VALUE Pointer_new (void *ptr) {
+static GFBridge *gf_bridge2;
+
+/*
+static Ruby Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(rb_eval_string("GridFlow::Pointer"), 0, 0, ptr);
 }
 
-static void *Pointer_get (VALUE self) {
+static void *Pointer_get (Ruby self) {
 	void *p;
 	Data_Get_Struct(self,void *,p);
 	return p;
 }
+*/
 
 /* **************************************************************** */
 /* BFObject */
 
 struct BFObject : t_object {
-	VALUE peer;
+	Ruby peer;
 	t_outlet *out[MAX_OUTLETS];
 
 	static t_class *find_bfclass (t_symbol *sym) {
-		VALUE v = rb_hash_aref(
+		Ruby v = rb_hash_aref(
 			rb_ivar_get(GridFlow_module2, SI(@bfclasses_set)),
 			rb_str_new2(sym->s_name));
 		if (v==Qnil) RAISE("class not found");
 		return (t_class *) FIX2PTR(v);
 	}
-	static VALUE find_fclass (t_symbol *sym) {
-		VALUE v = rb_hash_aref(
+	static Ruby find_fclass (t_symbol *sym) {
+		Ruby v = rb_hash_aref(
 			rb_ivar_get(GridFlow_module2, SI(@fclasses_set)),
 			rb_str_new2(sym->s_name));
 		if (v==Qnil) RAISE("class not found");
@@ -74,12 +78,12 @@ struct BFObject : t_object {
 	}
 };
 
-int ninlets_of (VALUE qlass) {
+int ninlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(sym_ninlets))) RAISE("no inlet count");
 	return INT(rb_ivar_get(qlass,SYM2ID(sym_ninlets)));
 }
 
-int noutlets_of (VALUE qlass) {
+int noutlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(sym_noutlets))) RAISE("no outlet count");
 	return INT(rb_ivar_get(qlass,SYM2ID(sym_noutlets)));
 }
@@ -91,12 +95,12 @@ struct BFProxy : t_object {
 	int inlet;
 };
 
-BFObject *FObject_peer(VALUE rself) {
+BFObject *FObject_peer(Ruby rself) {
 	DGS(GridObject);
 	return (BFObject *) $->foreign_peer;
 }
 
-void Bridge_export_value(VALUE arg, t_atom *at) {
+void Bridge_export_Ruby(Ruby arg, t_atom *at) {
 	if (INTEGER_P(arg)) {
 		SETFLOAT(at,NUM2INT(arg));
 	} else if (SYMBOL_P(arg)) {
@@ -113,15 +117,17 @@ void Bridge_export_value(VALUE arg, t_atom *at) {
 	}
 }
 
-VALUE Bridge_import_value(const t_atom *at) {
+Ruby Bridge_import_Ruby(const t_atom *at) {
 	t_atomtype t = at->a_type;
 	if (t==A_SYMBOL) {
 		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
 	} else if (t==A_FLOAT) {
 		return rb_float_new(at->a_w.w_float);
+/*
 	} else if (t==A_POINTER) {
 		return Pointer_new(at->a_w.w_gpointer);
-	} else {
+*/
+		} else {
 		return Qnil; /* unknown */
 	}
 }
@@ -131,7 +137,7 @@ VALUE Bridge_import_value(const t_atom *at) {
   PureData is not very sophisticated: it does not have a parser.
 */
 #include<unistd.h>
-int Bridge_import_list(int &ac, const t_atom *&at, VALUE *argv,
+int Bridge_import_list(int &ac, const t_atom *&at, Ruby *argv,
 int level=0) {
 	int argc=0;
 	while (ac) {
@@ -141,8 +147,8 @@ int level=0) {
 			const char *s=at->a_w.w_symbol->s_name;
 			if (strcmp(s,"(")==0) {
 				ac--; at++;
-				VALUE ary = rb_ary_new();
-				VALUE argv2[ac];
+				Ruby ary = rb_ary_new();
+				Ruby argv2[ac];
 				int argc2 = Bridge_import_list(ac,at,argv2,level+1);
 				for (int i=0; i<argc2; i++) rb_ary_push(ary,argv2[i]);
 				argv[argc++] = ary;
@@ -154,7 +160,7 @@ int level=0) {
 				RAISE("closing parenthese without opening");
 			}
 		}
-		argv[argc++]=Bridge_import_value(at);
+		argv[argc++]=Bridge_import_Ruby(at);
 		ac--; at++;
 	}
 	if (level) RAISE("opening %d parenthese(s) without closing",level);
@@ -171,27 +177,27 @@ typedef struct {
 	bool is_init;
 } kludge;
 
-static VALUE BFObject_method_missing$1 (kludge *k) {
+static Ruby BFObject_method_missing$1 (kludge *k) {
 	const char *s = k->selector->s_name;
 	char buf[256];
-	VALUE $ = k->$->peer;
+	Ruby $ = k->$->peer;
 	strcpy(buf+3,s);
 	buf[0] = buf[2] = '_';
 	buf[1] = '0' + k->winlet;
 	ID sel = rb_intern(buf);
 
-	VALUE argv[k->ac];
+	Ruby argv[k->ac];
 	int argc = Bridge_import_list(k->ac,k->at,argv);
 
 	rb_funcall2($,sel,argc,argv);
 	return Qnil;
 }
 
-static VALUE BFObject_rescue (kludge *k) {
+static Ruby BFObject_rescue (kludge *k) {
 //	rb_eval_string("STDERR.puts $!.inspect");
-//	VALUE error_array = rb_eval_string(
+//	Ruby error_array = rb_eval_string(
 //		"[\"ruby #{$!.class}: #{$!}\",*($!.backtrace)]");
-	VALUE error_array = rb_eval_string(
+	Ruby error_array = rb_eval_string(
 		"[\"ruby #{$!.class}: #{$!}\"]");
 //	for (int i=0; i<rb_ary_len(error_array); i++)
 //		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
@@ -221,8 +227,8 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 		return;
 	}
 	rb_rescue2(
-		(RFunc)BFObject_method_missing$1,(VALUE)&k,
-		(RFunc)BFObject_rescue,(VALUE)&k,
+		(RFunc)BFObject_method_missing$1,(Ruby)&k,
+		(RFunc)BFObject_rescue,(Ruby)&k,
 		rb_eException,0);
 }
 
@@ -240,15 +246,15 @@ t_symbol *s, int argc, t_atom *argv) {
 
 #define $R rself
 
-static VALUE BFObject_init$1 (kludge *k) {
-	VALUE argv[k->ac];
+static Ruby BFObject_init$1 (kludge *k) {
+	Ruby argv[k->ac];
 //	post("k->ac=%d k->at=%d\n",k->ac,(int)k->at);
 	int argc = Bridge_import_list(k->ac,k->at,argv);
 //	post("argc=%d\n",argc);
 
 	BFObject *j_peer = (BFObject *)k->$;
-	VALUE qlass = BFObject::find_fclass(k->selector);
-	VALUE rself = rb_funcall2(qlass,SI(new),argc,argv);
+	Ruby qlass = BFObject::find_fclass(k->selector);
+	Ruby rself = rb_funcall2(qlass,SI(new),argc,argv);
 	j_peer->peer = rself;
 	DGS(GridObject);
 	$->foreign_peer = (void *)j_peer;
@@ -289,8 +295,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	k.at = at;
 
 	rb_rescue2(
-		(RFunc)BFObject_init$1,(VALUE)&k,
-		(RFunc)BFObject_rescue,(VALUE)&k,
+		(RFunc)BFObject_init$1,(Ruby)&k,
+		(RFunc)BFObject_rescue,(Ruby)&k,
 		rb_eException,0);
 
 	/* now what do i do with constructors that raised exception? */
@@ -312,17 +318,17 @@ static void BFObject_delete (BFObject *$) {
 	k.at = 0;
 
 	rb_rescue2(
-		(RFunc)BFObject_delete$1,(VALUE)&k,
-		(RFunc)BFObject_rescue,(VALUE)&k,
+		(RFunc)BFObject_delete$1,(Ruby)&k,
+		(RFunc)BFObject_rescue,(Ruby)&k,
 		rb_eException,0);
 }
 
 static void BFObject_class_init$1 (t_class *qlass) {
-	VALUE $ = BFObject::find_fclass(gensym(class_getname(qlass)));
+	Ruby $ = BFObject::find_fclass(gensym(class_getname(qlass)));
 	class_addanything(qlass,(t_method)BFObject_method_missing0);
 }
 
-VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
+Ruby FObject_s_install_2(Ruby $, char *name2, Ruby inlets2, Ruby outlets2) {
 	t_class *qlass = class_new(gensym(name2),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject),
@@ -336,23 +342,23 @@ VALUE FObject_s_install_2(VALUE $, char *name2, VALUE inlets2, VALUE outlets2) {
 	k.$ = 0;
 	k.is_init = false;
 	rb_rescue2(
-		(RFunc)BFObject_class_init$1,(VALUE)qlass,
-		(RFunc)BFObject_rescue,(VALUE)&k,
+		(RFunc)BFObject_class_init$1,(Ruby)qlass,
+		(RFunc)BFObject_rescue,(Ruby)&k,
 		rb_eException,0);
 	return Qnil;
 }
 
-VALUE FObject_send_out_2(int argc, VALUE *argv, VALUE sym, int outlet, VALUE $) {
+Ruby FObject_send_out_2(int argc, Ruby *argv, Ruby sym, int outlet, Ruby $) {
 	BFObject *jo = (BFObject *) FObject_peer($);
 	if (!jo) return Qnil; /* Ruby-only object */
-	VALUE qlass = rb_funcall($,SI(class),0);
+	Ruby qlass = rb_funcall($,SI(class),0);
 	if (outlet<0 || outlet>=noutlets_of(qlass)) {
 		EARG("outlet %d does not exist",outlet);
 	}
 	t_atom at[argc];
 	t_atom sel;
-	Bridge_export_value(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
+	Bridge_export_Ruby(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_Ruby(argv[i],at+i);
 	t_outlet *out = jo->te_outlet;
 	outlet_anything(jo->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
@@ -378,14 +384,14 @@ void gf_timer_handler (t_clock *alarm, void *obj) {
 	long long time = RtMetro_now2();
 //	gfpost("tick");
 	rb_funcall(GridFlow_module2,SI(tick),0);
-	clock_delay(gf_alarm,GF_TIMER_GRANULARITY);
+	clock_delay(gf_alarm,gf_bridge2->clock_tick);
 //	gfpost("tick was: %lld\n",RtMetro_now2()-time);
 	is_in_ruby = false;
 	count++;
 }       
 
-VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
-	GFBridge *$ = (GFBridge *) FIX2PTR(p);
+Ruby gridflow_bridge_init (Ruby rself, Ruby p) {
+	GFBridge *$ = gf_bridge2 = (GFBridge *) FIX2PTR(p);
 	$->class_install = FObject_s_install_2;
 	$->send_out = FObject_send_out_2;
 	$->post = (void (*)(const char *, ...))post;
@@ -397,7 +403,7 @@ VALUE gridflow_bridge_init (VALUE rself, VALUE p) {
 }
 
 /*
-static VALUE gf_find_file(VALUE $, VALUE s) {
+static Ruby gf_find_file(Ruby $, Ruby s) {
 	char buf[1024];
 	if (TYPE(s)!=T_STRING) RAISE("expected string");
 	// unlikely buffer overflow ahead

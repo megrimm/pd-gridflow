@@ -106,7 +106,7 @@ static void startup (GridClass *$) {
 }
 
 GRCLASS(FormatQuickTime,"FormatQuickTime",
-inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatQuickTime,0)),
+inlets:1,outlets:1,startup:startup,LIST(GRINLET(FormatQuickTime,0,4)),
 DECL(FormatQuickTime,init),
 //DECL(FormatQuickTime,seek),
 DECL(FormatQuickTime,frame),

@@ -215,13 +215,13 @@ void swap16 (int n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
-static VALUE String_swap32_f (VALUE $) {
+static Ruby String_swap32_f (Ruby $) {
 	swap32(rb_str_len($)/4,
 		Pt<uint32>((uint32 *)rb_str_ptr($),rb_str_len($)/4));
 	return $;
 }
 
-static VALUE String_swap16_f (VALUE $) {
+static Ruby String_swap16_f (Ruby $) {
 	swap16(rb_str_len($)/2,
 		Pt<uint16>((uint16 *)rb_str_ptr($),rb_str_len($)/2));
 	return $;
@@ -239,7 +239,7 @@ METHOD2(BitPacking,pack2) {
 	int n = rb_str_len(argv[0]) / sizeof(Number) / $->size;
 	Pt<Number> in = Pt<Number>((Number *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes = n*$->bytes;
-	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	$->pack(n,Pt<Number>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes));
 	return out;
@@ -251,7 +251,7 @@ METHOD2(BitPacking,unpack2) {
 	int n = rb_str_len(argv[0]) / $->bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(argv[0]),rb_str_len(argv[0]));
 	int bytes = n*$->size*sizeof(Number);
-	VALUE out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
+	Ruby out = argc==2 ? rb_str_resize(argv[1],bytes) : rb_str_new("",bytes);
 	rb_str_modify(out);
 	memset(rb_str_ptr(out),255,n*4*$->size);
 	$->unpack(n,Pt<uint8>((uint8 *)in,bytes),Pt<Number>((Number *)rb_str_ptr(out),n));
@@ -259,20 +259,20 @@ METHOD2(BitPacking,unpack2) {
 	return out;
 }
 
-void BitPacking_mark (VALUE *$) {}
-void BitPacking_sweep (VALUE *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
+void BitPacking_mark (Ruby *$) {}
+void BitPacking_sweep (Ruby *$) {fprintf(stderr,"sweeping BitPacking %p\n",$);}
 
-static VALUE BitPacking_s_new(VALUE argc, VALUE *argv, VALUE qlass) {
-	VALUE keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
+static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
+	Ruby keep = rb_ivar_get(GridFlow_module, rb_intern("@fobjects_set"));
 	BitPacking *c_peer;
-	VALUE $; /* ruby_peer */
+	Ruby $; /* ruby_peer */
 
 	if (argc!=3) RAISE("bad args");
 	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
 
 	int endian = INT(argv[0]);
 	int bytes = INT(argv[1]);
-	VALUE *masks = rb_ary_ptr(argv[2]);
+	Ruby *masks = rb_ary_ptr(argv[2]);
 	uint32 masks2[4];
 	int size = rb_ary_len(argv[2]);
 	if (size<1) RAISE("not enough masks");
@@ -504,8 +504,8 @@ Operator2 op2_table[] = {
 	DECL_OP2(pow, "**"),
 };
 
-VALUE op1_dict = Qnil;
-VALUE op2_dict = Qnil;
+Ruby op1_dict = Qnil;
+Ruby op2_dict = Qnil;
 
 void startup_number () {
 	int foo = PTR2FIX("hello");
@@ -526,7 +526,7 @@ void startup_number () {
 		rb_hash_aset(op2_dict,op2_table[i].sym,PTR2FIX((op2_table+i)));
 	} 
 
-	VALUE BitPacking_class =
+	Ruby BitPacking_class =
 		rb_define_class_under(GridFlow_module, "BitPacking", rb_cObject);
 	define_many_methods(BitPacking_class,
 		BitPacking_classinfo.methodsn,
