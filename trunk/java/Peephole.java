@@ -128,7 +128,7 @@ implements FtsIntValueListener//, ImageObserver
 	public boolean isSquare() {return true;}
 
 	public void gotSqueack(int squeack, Point mouse, Point oldMouse) {
-		System.out.println("mouse "+squeack+","+mouse+","+oldMouse);
+		//System.out.println("mouse "+squeack+","+mouse+","+oldMouse);
 		super.gotSqueack(squeack,mouse,oldMouse);
 	}
 
@@ -156,9 +156,9 @@ implements FtsIntValueListener//, ImageObserver
 		int windowid = (int) Math.round(Math.random()*0x40000000);
 		String title = ((Frame)window).getTitle();
 		if (title==null) title="";
-		System.out.println("title was: "+title+" ("+title.length()+" bytes)");
+		//System.out.println("title was: "+title+" ("+title.length()+" bytes)");
 		if (title.indexOf("\t\t\t")<0) title+="\t\t\t"+windowid;
-		System.out.println("title is now: "+title+" ("+title.length()+" bytes)");
+		//System.out.println("title is now: "+title+" ("+title.length()+" bytes)");
 		((Frame)window).setTitle(title);
 		windowid = Integer.valueOf(title.substring(title.indexOf("\t\t\t")+3)).intValue();
 
