@@ -149,18 +149,18 @@
 */
 #ifdef HAVE_PROFILING
 #define METHOD(_class_,_name_) \
-	void _class_##_##_name_(METHOD_ARGS(_class_)); \
-	void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
+	static void _class_##_##_name_(METHOD_ARGS(_class_)); \
+	static void _class_##_##_name_##_wrap(METHOD_ARGS(_class_)) { \
 		ENTER; \
 		_class_##_##_name_(self,winlet,selector,ac,at); \
 		LEAVE; \
 	} \
-	void _class_##_##_name_(METHOD_ARGS(_class_))
+	static void _class_##_##_name_(METHOD_ARGS(_class_))
 #define METHOD_PTR(_class_,_name_) \
 	((FTSMethod) _class_##_##_name_##_wrap)
 #else
 #define METHOD(_class_,_name_) \
-	void _class_##_##_name_(METHOD_ARGS(_class_))
+	static void _class_##_##_name_(METHOD_ARGS(_class_))
 #define METHOD_PTR(_class_,_name_) \
 	((FTSMethod) _class_##_##_name_)
 #endif
@@ -171,7 +171,7 @@ typedef void(*FTSMethod)(METHOD_ARGS(fts_object_t));
 
 #define GRCLASS(_name_,_inlets_,_outlets_,_handlers_,args...) \
 	static MethodDecl _name_ ## _methods[] = { args }; \
-	GridHandler _name_ ## _handlers[] = { _handlers_ }; \
+	static GridHandler _name_ ## _handlers[] = { _handlers_ }; \
 	GridClass _name_ ## _class = { \
 		sizeof(_name_), \
 		ARRAY(_name_##_methods),\
@@ -430,10 +430,10 @@ typedef  GRID_FLOW_(GridObject, (*GridFlow));
 typedef GRID_FLOW2_(GridObject, (*GridFlow2));
 typedef   GRID_END_(GridObject, (*GridEnd));
 
-#define GRID_BEGIN(_cl_,_inlet_) GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
-#define  GRID_FLOW(_cl_,_inlet_)  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
-#define GRID_FLOW2(_cl_,_inlet_) GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow2)
-#define   GRID_END(_cl_,_inlet_)   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
+#define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
+#define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
+#define GRID_FLOW2(_cl_,_inlet_) static GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow2)
+#define   GRID_END(_cl_,_inlet_) static   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
 
 struct GridInlet {
 /* context information */
