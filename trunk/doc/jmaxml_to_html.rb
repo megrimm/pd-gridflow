@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.6.2"
+GF_VERSION = "0.6.3"
 
 require "xmlparser"
 
@@ -209,10 +209,12 @@ class XNode
 	end
 
 	def prc_jmax_class
+		tag = self.tag
+		if tag=="jmax_class" then tag="class" end # another hack
 		name = att['name'] or raise
 		mk(:tr) {
 		  mk(:td,:colspan,4,:bgcolor,"#ffb080") {
-		    mk(:b) { print "&nbsp;"*2, "class " }
+		    mk(:b) { print "&nbsp;"*2, "#{tag} " }
 		    mk(:a,:name,name) { print name }
 		  }
 		}

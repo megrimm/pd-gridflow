@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>GridFlow 0.6.2 - install</title>
+<title>GridFlow 0.6.3 - install</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="jmax.css" type="text/css">
 </head>
@@ -15,7 +15,7 @@
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="3" height="16">
-      <h4>GridFlow 0.6.2 - introduction</h4>
+      <h4>GridFlow 0.6.3 - introduction</h4>
   </td></tr>
 
   <tr> 
@@ -36,16 +36,25 @@
 	<p> GridFlow follows that philosophy: it first defines elementary
 	mathematical operations. Those can in turn be used as simple
 	visual effects or be combined to produce more complex effects.
-	
-	<p> You are provided with a number of pre-defined effects for
-        which peeking under the hood is <b>a double-click away</b>.
-	If the effect doesn't suit you, <b>you can modify it</b>. If you
-	find a bug in an effect <b>you can fix it</b>.
 
-	<p> In the end, every effect is made of other effects or of
-	elementary objects. Those elementary objects cannot be examined or
-	split into smaller parts, which is a good reason to keep them
-	limited in kinds. ;-)
+	<p> The strategy followed by most video plugins for jMax/Max/PureData is
+	to provide the user first with constructs for manipulating video
+	streams at a fairly high level. The strategy put forward by GridFlow
+	is different.
+	
+	<p> It can be said that in all those video plugins there are three layers:
+	the first, the low level, is not accessible to non-programmers (and fairly
+	difficult of access even to programmers); the second, mathematical, where
+	one needs not to be a C++ programmer, but still requires a good
+	understanding of how numbers and pixels and colours and geometry work; and
+	a third level that looks more like the software an artist would like to
+	use.
+
+	<p> In other video plugins there is a fairly low emphasis on the second
+	layer. In GridFlow that layer is very strong and opens many possibilities.
+	Even though the third layer in GridFlow is not as developed as it could,
+	the second layer may be used to produce third-layer object classes much
+	more quickly.
 
 	<p> GridFlow provides a unifying view of multimedia information. Several
 	kinds of data -- raster graphics in any number of channels, coordinate
@@ -54,10 +63,31 @@
 	are usually streamed from object to object, but they can also be stored in
 	memory, stored into a file, sent through the network.
 
-	<p> The goal of using Grids is to ensure that people who know the
-	math can build reasonably efficient graphical effects without being
-	C programmers. (the attentive reader will note that finding people
-	who know the math are not much easier to find. such is life.)
+	<p> The new GridFlow (0.6) also provides scripting, which inserts itself
+	between the first and second layer to provide additional functionality. The
+	language that has been chosen is Ruby, designed by Yukihiro Matsumoto
+	during the 90's. This new layer is used for portability between host
+	software (jMax vs PureData), for portability between platforms (Windows/Mac
+	versions do not exist but would be farther ahead if it wasn't for Ruby),
+	for independency from host software (GridFlow can be tested and used
+	independently of jMax/PureData), for quick extensibility (you can create
+	jMax/PureData object classes directly in GridFlow's configuration file), 
+	and so on.
+
+	<p> In short, GridFlow is a whole new world of possibilities for
+	the multimedia artist and programmer.
+
+	<p>- matju</p>
+</td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
+  <tr>
+    <td width="13%">&nbsp;</td>
+    <td width="82%">
+
+	<p> Here is an example of how things work in GridFlow. (if you want more
+	information, consult the rest of this manual)
 
 	<p> A picture is a three-dimensional Grid:<br>
 	<b>0</b> : rows <br>
@@ -77,18 +107,13 @@
 	things not directly related to raster pictures (e.g. sound recordings).
 	Those are all kinds of things you could actually develop <i>within</i> the
 	jMax / GridFlow framework. You don't need to wait for me.
-
-	<p> In short, GridFlow is a whole new world of possibilities for
-	the multimedia artist and programmer.
-
-	<p>- matju</p>
 </td>
 
   <tr><td>&nbsp;</td></tr>
   <tr><td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td></tr>
 
   <tr><td colspan="4">
-	<p><font size="-1">GridFlow 0.6.2 Documentation<br>
+	<p><font size="-1">GridFlow 0.6.3 Documentation<br>
         by Mathieu Bouchard <a href="mailto:matju@sympatico.ca">matju@sympatico.ca</a> 
         and<br>
         Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
