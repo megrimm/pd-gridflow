@@ -3,7 +3,7 @@
 ;
 #X obj 39 255 @downscale_by ( 15 20 ) smoothly;
 #X obj 38 279 @scale_by ( 32 32 );
-#X obj 39 311 @out x11;
+#X obj 39 311 @out window;
 #X obj 39 85 t a a;
 #X obj 39 109 @ -;
 #X obj 36 225 @ min 255;

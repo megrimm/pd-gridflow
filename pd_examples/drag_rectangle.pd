@@ -1,7 +1,7 @@
 #N canvas 231 129 521 289 10;
 #X obj 190 45 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
-#X obj 231 153 @out x11;
+#X obj 231 153 @out window;
 #X obj 231 175 route position;
 #X obj 231 213 s mouse;
 #X obj 73 178 hsl 128 15 0 319 0 0 h_end_o h_end_i horizontal_end -2

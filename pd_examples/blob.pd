@@ -37,7 +37,7 @@
 #X obj 67 265 print;
 #X obj 26 80 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
 ;
-#X obj 67 223 @out x11;
+#X obj 67 223 @out window;
 #X obj 415 289 @ +;
 #X obj 581 132 @ + 50;
 #X text 696 173 duplicate the angle\; make the 2nd 90 degrees apart
