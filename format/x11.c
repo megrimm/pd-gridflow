@@ -199,7 +199,7 @@ METHOD(FormatX11,frame) {
 		Number b2[bs];
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = $->image + $->ximage->bytes_per_line * y;
-			BitPacking_unpack($->bit_packing,sx,b1,b2);
+			$->bit_packing->unpack(sx,b1,b2);
 			$->out[0]->send(bs,b2);
 		}
 	}
@@ -360,7 +360,7 @@ GRID_FLOW(FormatX11,0) {
 	while (n>0) {
 		/* whine("bypl=%d sxc=%d sx=%d y=%d n=%d",bypl,sxc,sx,y,n); */
 		/* convert line */
-		BitPacking_pack($->bit_packing, sx, data, &$->image[y*bypl]);
+		$->bit_packing->pack(sx, data, &$->image[y*bypl]);
 		if ($->autodraw==2) FormatX11_show_section($,0,y,sx,1);
 		y++;
 		data += sxc;
@@ -534,11 +534,11 @@ METHOD(FormatX11,init) {
 		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
 		whine("is_le = %d",is_le());
 		whine("disp_is_le = %d", disp_is_le);
-		$->bit_packing = BitPacking_new(
+		$->bit_packing = new BitPacking(
 			disp_is_le, $->ximage->bits_per_pixel/8, 3, masks);
 	}
 
-	BitPacking_whine($->bit_packing);
+	$->bit_packing->whine();
 	MainLoop_add($,(void(*)(void*))FormatX11_alarm);
 }
 
