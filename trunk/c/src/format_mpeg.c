@@ -34,15 +34,11 @@
 ImageDesc *mpeg_id = 0;
 
 extern FormatClass class_FormatMPEG;
-/*
 typedef struct FormatMPEG {
 	Format_FIELDS;
 } FormatMPEG;
-*/
 
-typedef Format FormatMPEG;
-
-static bool FormatMPEG_frame (Format *$, GridOutlet *out, int frame) {
+static bool FormatMPEG_frame (FormatMPEG *$, GridOutlet *out, int frame) {
 	char *buf = NEW(char,mpeg_id->Size);
 	int npixels = mpeg_id->Height * mpeg_id->Width;
 /*	SetMPEGOption(MPEG_QUIET,1); */
@@ -81,7 +77,7 @@ GRID_BEGIN(FormatMPEG,0) { RAISE("libmpeg.so can't write MPEG"); }
 GRID_FLOW(FormatMPEG,0) {}
 GRID_END(FormatMPEG,0) {}
 
-static void FormatMPEG_close (Format *$) {
+static void FormatMPEG_close (FormatMPEG *$) {
 	if (mpeg_id) FREE(mpeg_id);
 	if ($->st) Stream_close($->st);
 	FREE($);
@@ -119,7 +115,7 @@ static Format *FormatMPEG_open (FormatClass *qlass, GridObject *parent, int mode
 
 	$->bit_packing = BitPacking_new(is_le(),4,0x0000ff,0x00ff00,0xff0000);
 
-	return $;
+	return (Format *)$;
 err:
 	$->cl->close((Format *)$);
 	return 0;
@@ -129,14 +125,14 @@ static GridHandler FormatMPEG_handler = GRINLET(FormatMPEG,0);
 FormatClass class_FormatMPEG = {
 	object_size: sizeof(FormatMPEG),
 	symbol_name: "mpeg",
-	long_name: "Motion Picture Expert Group Format",
+	long_name: "Motion Picture Expert Group Format (using Ward's)",
 	flags: FF_R,
 
 	open: FormatMPEG_open,
 	frames: 0,
-	frame:  FormatMPEG_frame,
+	frame:  (Format_frame_m)FormatMPEG_frame,
 	handler: &FormatMPEG_handler,
 	option: 0,
-	close:  FormatMPEG_close,
+	close:  (Format_close_m)FormatMPEG_close,
 };
 

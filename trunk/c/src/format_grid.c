@@ -254,7 +254,7 @@ static void FormatGrid_option (FormatGrid *$, ATOMLIST) {
 	Symbol sym = GET(0,symbol,SYM(foo));
 	if (sym == SYM(type)) {
 		/* bug: should not be able to modify this _during_ a transfer */
-		int value = GET(1,symbol,SYM(uint8));
+		Symbol value = GET(1,symbol,SYM(uint8));
 		if (value==SYM(uint8)) { $->bpv=8; }
 		else if (value==SYM(int32)) { $->bpv=32; }
 		whine("$->bpv = %d",$->bpv);
