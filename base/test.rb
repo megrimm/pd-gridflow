@@ -460,6 +460,7 @@ def test_anim msgs
 	GridFlow.verbose = false
 	gin = FObject["@in"]
 	gout1 = FObject["@out x11"]
+	#gout1 = FObject["@out quicktime file b.mov"]
 	fps = FObject["fps detailed"]
 	rpr = FObject["rubyprint"]
 	gout1.connect 0,fps,0
@@ -472,14 +473,25 @@ def test_anim msgs
 	gout2.connect 0,gout3,0
 =end
 
+	rpr = FObject["rubyprint"]
+	gin.connect 1,rpr,0
+
 	gin.connect 0,gout1,0
+#	scale = FObject["@scale_by 3"]
+#	gin.connect 0,scale,0
+#	scale.connect 0,gout1,0
+
 #	pr = FObject["rubyprint time"]; gout.connect 0,pr,0
 	msgs.each {|m| gin.send_in 0,m }
 	gin.send_in 0, "option cast uint8"
 #	gout.send_in 0,"option timelog 1"
 	d=Time.new
 	frames=500
-	frames.times {|n| GridFlow.post "%d", n; gin.send_in 0 }
+	frames.times {|n|
+		#GridFlow.post "%d", n
+		gin.send_in 0
+		#gin.send_in 0, rand(1000)
+	}
 #	loop { gin.send_in 0 }
 #	metro = FObject["rtmetro 80"]
 #	metro.connect 0,gin,0
@@ -490,6 +502,7 @@ def test_anim msgs
 	printf "%d frames in %.6f seconds (avg %.6f ms, %.6f fps)\n",
 		frames, d, 1000*d/frames, frames/d
 #	global.send_in 0,"dfgdfgdkfjgl"
+	gout1.send_in 0, :close
 	global = FObject["@global"]
 	global.send_in 0,"profiler_dump"
 end
@@ -852,6 +865,19 @@ def test_store2
 	$mainloop.loop
 end
 
+def test_remap
+	rem = FObject["@remap_image"]
+	rot = FObject["@rotate 4000"]
+	rem.connect 1,rot,0
+	rot.connect 0,rem,1
+	gin = FObject["@in ppm file #{$imdir}/teapot.ppm"]
+	gout = FObject["@out x11"]
+	gin.connect 0,rem,0
+	rem.connect 0,gout,0
+	gin.send_in 0
+	$mainloop.loop
+end
+
 def test_asm
 	GridFlow.verbose=false
 	a = FObject["@in ppm file images/r001.ppm"]
@@ -913,15 +939,16 @@ end
 #test_ppm2
 #test_anim ["open ppm file #{$imdir}/g001.ppm"]
 #test_anim ["open ppm file #{$animdir}/b.ppm.cat"]
+#test_anim ["open quicktime file b.mov"]
 #test_anim ["open quicktime file #{$imdir}/rgb_uncompressed.mov"]
-test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
+#test_anim ["open quicktime file #{$imdir}/test_mjpega.mov"]
 #test_anim ["open ppm gzfile motion_tracking.ppm.cat.gz"]
 #test_anim ["open videodev /dev/video","option channel 1","option size 480 640"]
 #test_anim ["open videodev /dev/video1 noinit","option transfer read"]
-#test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
+test_anim ["open videodev /dev/video","option channel 1","option size 120 160"]
 #test_anim ["open mpeg file /home/matju/net/Animations/washington_zoom_in.mpeg"]
 #test_anim ["open quicktime file #{$imdir}/gt.mov"]
-#test_anim ["open quicktime file /home/matju/domopers_hi.mov"]
+#test_anim ["open quicktime file /home/matju/pics/domopers_hi.mov"]
 #test_anim ["open quicktime file /home/matju/net/c.mov"]
 #test_formats
 #test_tcp

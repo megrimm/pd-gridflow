@@ -374,6 +374,7 @@ GRID_INLET(GridStore,0) {
 		}
 		if (i) op_add->zip(nd,v,v+nd*i);
 	}
+
 #define EMIT(type) { \
 		Pt<type> p = (Pt<type>)r; \
 		if (size<=16) { \
@@ -384,6 +385,7 @@ GRID_INLET(GridStore,0) {
 			for (int i=0; i<nd; i++) out[0]->send(size,p+size*v[i]); \
 		} \
 }
+
 	switch (r.nt) {
 	case uint8_type_i: EMIT(uint8); break;
 	case int16_type_i: EMIT(int16); break;
@@ -1294,7 +1296,7 @@ METHOD3(GridDownscaleBy,initialize) {
 	return Qnil;
 }
 
-GRCLASS(GridDownscaleBy,"@downscale_by",inlets:1,outlets:1,startup:0,
+GRCLASS(GridDownscaleBy,"@downscale_by",inlets:2,outlets:1,startup:0,
 LIST(GRINLET2(GridDownscaleBy,0,4),GRINLET(GridDownscaleBy,1,4)),
 	DECL(GridDownscaleBy,initialize))
 

@@ -64,7 +64,8 @@ void Grid::init(Dim *dim, NumberTypeIndex nt) {
 	this->dim = dim;
 	int size = dim->prod()*number_type_table[nt].size/8;
 //	fprintf(stderr,"allocating grid: %d bytes\n",size);
-	this->data = dim ? new char[size] : 0;
+	data = dim ? new char[size] : 0;
+//	for (int i=0; i<size; i++) ((char*)data)[i]=(i&3)*85;
 }
 
 void Grid::init_from_ruby_list(int n, Ruby *a) {
