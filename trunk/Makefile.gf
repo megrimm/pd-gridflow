@@ -259,7 +259,7 @@ gridflow-for-puredata:: $(PD_LIB)
 puredata-install::
 	mkdir -p $(PUREDATA_PATH)/doc/5.reference/gridflow
 	cp pd_help/*.pd $(PUREDATA_PATH)/doc/5.reference/gridflow
-	cp $(PD_LIB) $(PUREDATA_PATH)/externs
+	cp $(PD_LIB) pd_abstractions/*.pd $(PUREDATA_PATH)/externs
 
 else
 
