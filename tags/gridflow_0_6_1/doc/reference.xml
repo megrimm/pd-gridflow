@@ -1,0 +1,1195 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
+<!-- $Id$ -->
+<!--
+	GridFlow Reference Manual: Class Reference
+	Copyright (c) 2001,2002 by Mathieu Bouchard and Alexandre Castonguay
+-->
+
+<section name="Objects for Input/Output">
+
+	<jmax-class name="@in">
+		<icon text="[@in]"/>
+		<help text="[@in]" image="@inout"/>
+
+		<method name="init">
+			Creates an input object for an unspecified format. You
+			need to use the <k>open</k> command to decide that.
+
+			Remember that most formats produce dim(rows,columns,3) grids with
+			0-255 values. (Most.)
+		</method>
+
+		<inlet id="0">
+			<method name="open" min="1">
+				<arg name="format"/>
+				<rest name="format_specific_part"/>
+				This is the command that gives a particular resource
+				to a @out object. This is done through a "format"
+				(there is a list of formats in this manual). The other
+				arguments depend on the chosen format. The format may
+				be a file format or a protocol or a hardware device, etc.
+			</method>
+			<method name="close">
+				close may be necessary if you operate on "/dev/video",
+				which can only be read by one at a time. otherwise it's
+				usually not necessary.
+			</method>
+			<method name="int">
+				<arg name="frame_number"/>
+				selects one picture from a multi-picture format
+				and then does the same as a bang.
+			</method>
+			<method name="bang">
+				sends a grid through the outlet. the grid may be the
+				result of reading from a file, acquiring from a device,
+				capturing from the screen etc.
+
+				this is format-specific. most formats
+				produce <dim>rows columns {red green blue}</dim>.
+
+				In formats that read from a file, reading another picture
+				will continue if there are several pictures in the
+				same file, but if the end of file is reached instead,
+				it will rewind and send the first picture again.
+
+				see section "External Picture Formats".
+
+			</method>
+			<method name="option">
+				<arg name="selector" type="symbol"/>
+				<rest name="stuff"/>
+				for format-specific options.
+				(usually in devices that masquerade as formats).
+
+				see section "External Picture Formats".
+			</method>
+		</inlet>
+	</jmax-class>
+
+	<jmax-class name="@out">
+		<icon text="[@out]"/>
+		<help text="[@out]" image="@inout"/>
+
+		<method name="init">
+			Creates an output object for an unspecified format. You
+			need to use the <k>open</k> command to decide that.
+
+			Remember that most formats expect dim(rows,columns,3) grids with
+			0-255 values. (Most.)
+		</method>
+		<method name="init">
+			<arg name="rows" type="integer"/>
+			<arg name="columns" type="integer"/>
+
+			This alternate way to create an @out automatically calls
+			"open x11 here" and "option out_size <i>rows columns</i>".
+		</method>
+		<inlet id="0">
+			<method name="open" min="1">
+				<arg name="format"/>
+				<rest name="format_specific_part"/>
+				This is the command that gives a particular resource
+				to a @out object. This is done through a "format"
+				(there is a list of formats in this manual). The other
+				arguments depend on the chosen format. The format may
+				be a file format or a protocol or a hardware device, etc.
+			</method>
+			<grid>
+				this is format-specific. most formats
+				expect <dim>rows columns {red green blue}</dim>.
+
+				In formats that write to a file, sending a 2nd picture
+				overwrites the first.
+
+				see section "External Picture Formats".
+			</grid>
+			<method name="close">
+				closes the file. usually not necessary.
+			</method>
+			<method name="option">
+				<arg name="selector" type="symbol"/>
+				<rest name="stuff"/>
+				for format-specific options.
+				(usually in devices that masquerade as formats).
+
+				see section "External Picture Formats".
+			</method>
+			<method name="option timelog">
+				<arg name="status" type="0,1"/>
+				when status=1, current time (unix clock) and time since last
+				frame-end are printed in the console. when status=0, it is off.
+				default is 0.
+			</method>
+
+		</inlet>
+		<outlet id="0">
+			<method name="bang">
+				sent when a complete grid has been received.
+			</method>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@import">
+		<icon text="[@import {240 320 3}]"/>
+		<help text="[@import 240 320 3]" image="@importexport" />
+
+		<p>This object allows you to import non-grid jMax data, such as
+		integers and lists of integers. This object also reframes/resyncs
+		integers and grids so that multiple grids may be joined together, or
+		single grids may be split.</p>
+
+		<method name="init">
+			<arg name="dims" type="list(+integer)"/>
+			a list specifying a grid shape that the numbers
+			will fit into.
+		</method>
+		<inlet id="0">
+			<method name="int">
+				begins a new grid if there is no current grid.
+				puts that integer in the current grid.
+				ends the grid if it is full.
+				the constructed grid is not stored: it is streamed.
+				the stream is buffered, so the output is in packets
+				of about a thousand numbers.
+			</method>
+			<method name="reset">
+				aborts the current grid if there is one.
+			</method>
+			<grid><dim>dims...</dim>
+				this is the equivalent of filtering this grid through
+				an @export object and sending the resulting integers
+				to this @import object, except that it's about
+				10 times faster.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>rank</dim>
+				this grid is a dimension list that replaces the one
+				specified in the constructor.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid>
+				the grid produced from incoming integers and/or grids.
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@export">
+		<icon text="[@export]"/>
+		<help text="[@export]" image="@importexport" />
+
+		<p>this object is the opposite of @import.</p>
+		<method name="init">
+			this object is not configurable because there isn't
+			anything that could possibly be configured here.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				transforms this grid into a sequence of integer messages.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<method name="int">
+				elements of the incoming grid.
+			</method>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@export_list">
+		<icon text="[@export_list]"/>
+		<help text="[@export_list]" image="@importexport" />
+
+		<p>this object is another opposite of @import, which puts
+		all of its values in a jMax list.</p>
+		<method name="init">
+			this object is not configurable because there isn't
+			anything that could possibly be configured here.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				transforms this grid into a single message containing
+				a list of integers.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<method name="list">
+				elements of the incoming grid.
+			</method>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@two">
+		<icon text="[@two]"/>
+		<help text="[@two]" image="@twothreefour"/>
+
+		<p> holds two values, defaulting to (0,0). each time one is
+		changed (by sending an integer in that inlet), a Dim(2) grid
+		of those values is sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>2</dim></grid></outlet>
+	</jmax-class>
+
+	<jmax-class name="@three">
+		<icon text="[@three]"/>
+		<help text="[@three]" image="@twothreefour"/>
+
+		<p> holds three values, defaulting to (0,0,0). each time one is
+		changed (by sending an integer in that inlet), a Dim(3) grid 
+		of those values is sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<inlet id="2"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>3</dim></grid></outlet>
+	</jmax-class>
+
+	<jmax-class name="@four">
+		<icon text="[@four]"/>
+		<help text="[@four]" image="@twothreefour"/>
+
+		<p> holds four values, defaulting to (0,0,0,0). each time one is
+		changed (by sending an integer in that inlet), a Dim(4) grid
+		of those values is sent through the outlet.</p>
+		<method name="init">no arguments.</method>
+		<inlet id="0"><method name="int"/></inlet>
+		<inlet id="1"><method name="int"/></inlet>
+		<inlet id="2"><method name="int"/></inlet>
+		<inlet id="3"><method name="int"/></inlet>
+		<outlet id="0"><grid><dim>4</dim></grid></outlet>
+	</jmax-class>
+</section>
+
+<section name="Objects for Generating">
+	<jmax-class name="@for">
+		<icon text="[@for 0 320 1]"/>
+		<help text="[@for 0 320 1]"/>
+
+		<p>works like a regular [for] object plugged to a [@import] tuned
+		for a Dim(size) where size is the number of values produced by a bang
+		to that [for].</p>
+		<method name="init">
+			<arg name="from" type="integer"/>
+			<arg name="to" type="integer"/>
+			<arg name="step" type="integer"/>
+		</method>
+		<inlet id="0"><method name="int">
+			replaces the "from" value and produces output.
+		</method></inlet>
+		<inlet id="1"><method name="int">
+			replaces the "to" value.
+		</method></inlet>
+		<inlet id="2"><method name="int">
+			replaces the "step" value.
+		</method></inlet>
+		<outlet id="0">
+			<grid><dim>size</dim>
+				where size is floor((to-from+1)/step)
+			</grid>
+		</outlet>
+	</jmax-class>
+</section>
+
+<section name="Objects for Computing">
+	<jmax-class name="@">
+		<icon text="[@ +]" image="op/add.jpg" />
+		<help text="two-input operators"/>
+	
+		<p>This object outputs a grid by computing "in parallel" a same
+		operation on each left-hand element with its corresponding right-hand
+		element. This is a massively parallel version of jMax's builtin
+		arithmetic operators. In case you wonder, it's only parallel in the
+		sense that all those computations are independent; there's no
+		guarantee about how many of them will actually be computed at once.
+		</p>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="value" type="integer|grid"/>
+			the operator is one picked in the table of the 30 two-input
+			operators. the value (optional, zero by default) becomes
+			the initial value of the right inlet. it may be a grid.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				on each element of this grid, perform the operation
+				together with the corresponding element of inlet 1.
+				in the table of operators (at the top of this document)
+				elements of inlet 0 are called "A" and elements of inlet 1
+				are called "B". the resulting grid is the same size as the
+				one in inlet 0.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>dims...</dim>
+				any grid, preferably shaped like the one that will be put
+				in the left inlet, or like a subpart of it (the contents
+				will be redim'ed on the fly to fit the grid of inlet-0,
+				but the stored grid will not be modified itself)
+			</grid>
+			<method name="int">
+				stores a single int in the right inlet; the same int will
+				be applied in all computations; this is like sending a
+				Dim(1) or Dim() grid with that number in it.
+			</method>
+		</inlet>
+		<outlet id="0">
+			<grid>
+			</grid>
+		</outlet>
+	
+	</jmax-class>
+
+	<jmax-class name="@!">
+		<icon text="[@!]"/>
+		<help text="[@!]"/>
+
+		<p>This object computes a grid by computing "in parallel" a same
+		operation on each element of the grid.
+		</p>
+		
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			the operator is one picked in the table of the 3 one-input
+			operators.
+		</method>
+		<inlet id="0">
+			<grid>
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid>
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@fold">
+		<icon text="[@fold +]"/>
+		<help text="[@fold +]" image="@foldinnerouter"/>
+
+		<p><list>
+		<li>[@fold +] computes totals</li>
+		<li>[@fold inv+] is an alternated sum (+/-)</li>
+		<li>[@fold * 1] can compute the size of a grid using its dimension list</li>
+		<li>[@fold &amp; 1] can mean "for all"</li>
+		<li>[@fold | 0] can mean "there exists (at least one)"</li>
+		<li>[@fold ^ 0] can mean "there exists an odd number of..."</li>
+		<li>[@fold ^ 1] can mean "there exists an even number of...".</li>
+		</list></p>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="base" type="integer"/>
+			the base value is optional and defaults to 0.
+			the operator is one from the table of two-input operators.
+		</method>
+		
+		<inlet id="0">
+			<grid><dim>dims..., last</dim>
+				replaces every Dim(last) subgrid by the result of a cascade on that subgrid.
+				Doing that
+				with base value 0 and operation + on grid "2 3 5 7" will compute
+				((((0+2)+3)+5)+7) find the total "17".
+				produces a Dim(dims) grid.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to use.
+			</method>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+
+	</jmax-class>
+
+	<jmax-class name="@scan">
+		<!-- <icon text="[@scan +]"/> -->
+		<!-- <help text="[@scan +]"/> -->
+
+		<p>[@scan +] computes subtotals.</p>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="base" type="integer"/>
+			the base value is optional and defaults to 0.
+			the operator is one from the table of two-input operators.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>dims..., last</dim>
+				replaces every Dim(last) subgrid by all the result of a cascade on that
+				subgrid. Doing that with base value 0 and operation + on grid "2 3 5 7" will
+				compute 0+2=2, 2+3=5, 5+5=10, 10+7=17, and gives the subtotals "2 5 10 17".
+				produces a Dim(dims,last) grid.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to use.
+			</method>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+
+	</jmax-class>
+
+	<jmax-class name="@outer">
+		<icon text="[@outer +]"/>
+		<help text="[@outer +]" image="@foldinnerouter"/>
+
+		<method name="init">
+			<arg name="operator" type="symbol"/>
+			<arg name="value" type="grid"/>
+			the operator must be picked from the table of two-input operators.
+			the grid is optional and corresponds to inlet 1.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>anyA...</dim></grid>
+			produces a grid of size Dim(anyA..., anyB...), where numbers
+			are the results of the operation on every element of A and
+			every element of B. the resulting array can be very big. Don't
+			try this on two pictures (the result will have 6 dimensions)
+		</inlet>
+		<inlet id="1">
+			<grid><dim>anyB...</dim></grid>
+			stores the specified grid, to be used when inlet 0 is activated.
+		</inlet>
+		<outlet id="0">
+		</outlet>
+
+		<p>When given a grid of Dim(3) and a grid of Dim(5) [@outer] will
+		produce  a grid of Dim(3,5) with the selected two-input operation
+		applied on each  of the possible pairs combinations between numbers
+		from the left grid  and the ones from the right. for example :
+		(10,20,30) [@outer +] (1,2,3)  will give :
+		((11,12,13),(21,22,23),(31,32,33)) </p>
+
+	</jmax-class>
+
+	<jmax-class name="@inner">
+		<icon text="[@inner * + 0]"/>
+		<help text="[@inner * + 0]" image="@foldinnerouter" />
+
+		<p>think of this one as a special combination of [@outer], [@]
+		and [@fold]. this is one of the most complex operations. It is very
+		useful for performing linear transforms like rotations, scalings,
+		tilts, and color remappings. A linear transform is done by something called matrix
+		multiplication, which happens to be [@inner * + 0].
+		</p>
+
+		<p>This object has been renamed from @inner to @inner2 because a
+		different @inner object will be added in the future.</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"    type="integer"/>
+			op_para and op_fold are two operators picked from the table
+			of two-input operators.
+			the base value has to be specified (has no default value yet).
+		</method>
+		<inlet id="0">
+			<grid><dim>anyA..., lastA</dim>
+
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
+				of Dim(lastA) size.
+
+				Splits the Dim(firstB,anyB...) right-hand grid into Dim(anyB...) pieces
+				of Dim(firstB) size.
+
+				On every piece pair, does [@] using the specified
+				op_para operation, followed by a [@fold] using
+				the specified op_fold operator and base value.
+			
+				creates a Dim(anyA...,anyB...) grid by assembling all
+				the results together.
+
+				(note: lastA must be equal to firstB.)
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to that.
+			</method>
+		</inlet>
+		<inlet id="2">
+			<grid><dim>anyB..., lastB</dim>
+				changes the right-hand side grid to that.
+			</grid>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+	</jmax-class>
+	<jmax-class name="@inner2">
+		<icon text="[@inner2 * + 0]"/>
+		<help text="[@inner2 * + 0]" image="@foldinnerouter" />
+
+		<p>a variant on @inner.</p>
+
+		<p>This object used to be called @inner.</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"    type="integer"/>
+			op_para and op_fold are two operators picked from the table
+			of two-input operators.
+			the base value has to be specified (has no default value yet).
+		</method>
+		<inlet id="0">
+			<grid><dim>anyA..., lastA</dim>
+
+				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) pieces
+				of Dim(lastA) size.
+
+				Splits the Dim(anyA...,lastB) right-hand grid into Dim(anyB...) pieces
+				of Dim(lastB) size.
+
+				On every piece pair, does [@] using the specified
+				op_para operation, followed by a [@fold] using
+				the specified op_fold operator and base value.
+			
+				creates a Dim(anyA...,anyB...) grid by assembling all
+				the results together.
+
+				(note: lastA must be equal to lastB.)
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+				changes the base value to that.
+			</method>
+		</inlet>
+		<inlet id="2">
+			<grid><dim>anyB..., lastB</dim>
+				changes the right-hand side grid to that.
+			</grid>
+		</inlet>
+		<outlet id="0">
+		</outlet>
+	</jmax-class>
+</section>
+
+<section name="Objects for Coordinate Transforms">
+	<jmax-class name="@redim">
+		<icon text="[@redim {2}]"/>
+		<help text="[@redim 2]"/>
+
+		<method name="init">
+			<arg name="dims" type="list(+integer)"/>
+			a list specifying a grid shape that the numbers
+			will fit into.
+			(same as with @import)
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+			the elements of this grid are serialized. if the resulting grid
+			must be larger, the sequence is repeated as much as necessary.
+			if the resulting grid must be smaller, the sequence is truncated.
+			then the elements are deserialized to form the resulting grid.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>rank</dim>
+				this grid is a dimension list that replaces the one
+				specified in the constructor.
+				(same as with @import)
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid>
+				redimensioned grid potentially containing repeating data.
+			</grid>
+		</outlet>
+
+		<p>example: with a 240 320 RGB image, @redim 120 640 3 will visually
+		separate the even lines (left) from the odd lines (right). contrary
+		to this, @redim 640 120 3 will split every line and put its left half
+		on a even line and the right half on the following odd line. @redim
+		480 320 3 will repeat the input image twice in the output image.
+		@redim 240 50 3 will only keep the 50 top lines.</p>
+
+	</jmax-class>
+	<jmax-class name="@store">
+		<icon text="[@store]"/>
+		<help text="[@store]"/>
+
+		<p>A @store object can store exactly one grid, using the right
+		inlet. You fetch it back, or selected subparts thereof, using the left
+		inlet.</p>
+
+		<method name="init">
+			<arg name="number_type" type="int32 | uint8"/>
+			The number type argument is optional and by default is int32,
+			which allows the usual range of plus/minus two billions. With
+			uint8, values are wrapped into the 0..255 interval, and stored
+			in four times less memory.
+		</method>
+
+		<inlet id="0">
+			<method name="bang">
+				the stored grid is fully sent to the outlet.
+			</method>
+			<grid><dim>dims..., indices</dim>
+				in this grid, the last dimension refers to subparts of
+				the stored grid. sending a Dim(200,200,2) on a @store
+				that holds a Dim(240,320,3) will cause the @store to handle
+				the incoming grid as a Dim(200,200) of Dim(2)'s, where each
+				Dim(2) represents a position in a Dim(240,320) of Dim(3)'s.
+				therefore the resulting grid will be a Dim(200,200) of
+				Dim(3) which is a Dim(200,200,3). in practice this example
+				would be used for generating a 200*200 RGB picture from a
+				200*200 XY map and a 240*320 RGB picture. this object can
+				be logically used in the same way for many purposes
+				including color palettes, tables of probabilities, tables
+				of statistics, whole animations, etc.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>dims...</dim>
+				the received grid is stored. if the storage type is uint8,
+				the input is filtered to fit 0..255.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			grids as stored, as indexed, or as assembled from multiple
+			indexings.
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@identity_transform">
+		<icon text="[@identity_transform]"/>
+		<help text="[@identity_transform]"/>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<method name="bang">creates a coordinate map that can
+			be fed into the left input of @store to give the same result
+			as a bang in that input; that coordinate map is
+			Dim(height,width,2), where each Dim(2) is a (y,x) pair indexing
+			a pixel.</method>
+		</inlet>
+		<inlet id="1">
+			<method name="int">set the height.</method>
+		</inlet>
+		<inlet id="2">
+			<method name="int">set the width.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a coordinate map.</grid>
+		</outlet>
+
+		<p>@identity_transform builds a pixel-level transform grid suitable
+		for using with inlet 0 of @store. </p>
+
+		<p> Sending an integer to inlet 1 sets the height of the resulting
+		picture.</p>
+
+		<p> Sending a grid to inlet 0 generates said grid and sends it to
+		inlet 0. Not guaranteed to be fast (use an intermediate @store as a
+		cache if needed)</p>
+
+	</jmax-class>
+
+	<jmax-class name="@scale_to">
+		<icon text="[@scale_to]"/>
+		<help text="[@scale_to]"/>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid>a 3-channel picture to be scaled.</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">a height.</method>
+		</inlet>
+		<inlet id="2">
+			<method name="int">a width.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a scaled 3-channel picture.</grid>
+		</outlet>
+
+		<p>@scale_to is normally fed the same inlet 1,2 values as
+		@identity_transform, and chained from @identity_transform and to
+		@store. This will scale an image of any size to the size specified
+		in inlets 1,2. If it doesn't correspond the values of
+		@identity_transform, part of the image will be trimmed and/or
+		duplicated.</p>
+
+	</jmax-class>
+
+	<jmax-class name="@scale_by">
+		<icon text="[@scale_by]"/>
+		<help text="[@scale_by]"/>
+
+		<method name="init">
+			<arg name="factor" type="+integer"/>
+			factor is optional (2 by default).
+		</method>
+		<method name="init">
+			<arg name="factor_y"/>
+			<arg name="factor_x"/>
+			future use: will scale by those factors.
+		</method>
+		<inlet id="0">
+			<grid><dim>y x {r g b}</dim>
+			identical to @scale_to with arguments that are exactly
+			twice those of the incoming grid. It is several times faster.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>(factor*y) (factor*x) {r g b}</dim></grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@spread">
+		<icon text="[@spread]"/>
+		<help text="[@spread]"/>
+
+		<p>typically you plug a @identity_transform into this object,
+		and you plug this object into the left side of a @store. it will
+		scatter pixels around, giving an "unpolished glass" effect.</p>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid>a coordinate map.</grid>
+		</inlet>
+		<inlet id="1">
+			<method name="int">a spread factor.</method>
+		</inlet>
+		<outlet id="0">
+			<grid>a coordinate map.</grid>
+		</outlet>
+
+
+		<p>@spread scatters the pixels in an image. Not all original pixels
+		will  appear, and some may get duplicated (triplicated, etc)
+		randomly. Some  wrap-around effect will occur close to the edges.
+		</p>
+
+		<p> Sending an integer to inlet 1 sets the amount of spreading in
+		maximum  number of pixels + 1. even values translate the whole image
+		by half  a pixel due to rounding.</p>
+
+	</jmax-class>
+</section>
+
+<section name="Objects for Reporting">
+	<jmax-class name="@dim">
+		<icon text="[@dim]"/>
+		<help text="[@dim]"/>
+
+		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
+		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
+
+		<method name="init">
+			no arguments.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				ignores any data contained within.
+				sends a grid dim(length of dims) containing dims.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>rank</dim>
+				the list of dimensions of the incoming grid.
+			</grid>
+		</outlet>
+
+	</jmax-class>
+
+	<jmax-class name="@print">
+		<p>future use</p>
+	</jmax-class>
+</section>
+
+<section name="Objects for Picture Processing">
+	<jmax-class name="@convolve">
+		<icon text="[@convolve * + 0]"/>
+		<help text="[@convolve * + 0]"/>
+
+		<p>this is the object for blurring, sharpening, finding edges,
+		embossing, and many other uses.</p>
+
+		<method name="init">
+			<arg name="op_para" type="symbol"/>
+			<arg name="op_fold" type="symbol"/>
+			<arg name="base"   type="integer"/>
+		</method>
+		<inlet id="0">
+			<grid><dim>rows columns rest...</dim>
+				splits the incoming grid into dim(rest...) parts.
+				for each of those parts at (y,x), a rectangle of such
+				parts, centered around (y,x), is combined with the
+				convolution grid like a [@] of operation op_para. Then
+				each such result is folded like [@fold] of operation
+				op_fold and specified base. the results are assembled
+				into a grid that is sent to the outlet. near the borders of
+				the grid, coordinates wrap around. this means the whole grid
+				has to be received before production of the next grid
+				starts.
+			</grid>
+		</inlet>
+		<inlet id="1">
+			<grid><dim>rows2 columns2</dim>
+				this is the convolution grid and it gets stored in
+				the object. rows2 and columns2 must be odd numbers.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<grid><dim>rows columns rest...</dim>
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@contrast">
+		<icon text="[@contrast]"/>
+		<help text="[@contrast]"/> 
+
+		<method name="init">
+			no arguments.
+		</method>
+		
+		<inlet id="0">
+			<grid><dim>rows columns channels</dim>
+			produces a grid like the incoming grid but with
+			different constrast.
+			</grid>
+			<p>@contrast adjusts the intensity in an image.
+			resulting values outside 0-255 are automatically clipped.</p>
+		</inlet>
+		<inlet id="1">
+			<method name="int">
+			this is the secondary contrast. it makes the incoming black
+			correspond to a certain fraction between output black and the
+			master contrast value. no effect is 256. default value is 256.
+			</method>	
+		</inlet>
+		<inlet id="2">
+			<method name="int">
+			this is the master contrast. it makes the incoming white
+			correspond to a certain fraction between output black and output
+			white. no effect is 256. default value is 256.
+			</method>	
+		</inlet>
+		<outlet>
+			<grid><dim>rows columns channels</dim>
+			</grid>
+		</outlet>
+	</jmax-class>
+
+	<jmax-class name="@posterize">
+		<icon text="[@posterize]"/>
+		<help text="[@posterize]"/>
+
+		<p>@posterize reduces the number of possible intensities in an image;
+		it rounds the color values.The effect is mostly apparent with a low
+		number of levels.</p>
+
+		<method name="init">
+			no arguments.
+		</method>
+
+		<inlet id="0">
+			<grid><dim>rows columns channels</dim>
+				produces a posterized picture from the input picture.
+			</grid>
+		</inlet>
+
+		<inlet id="1">
+			<method name="int">
+				this is the number of possible levels per channel. the
+				levels are equally spaced, with the lowest at 0 and the
+				highest at 255. the minimum number of levels is 2, and the
+				default value is 2.
+			</method>
+		</inlet>
+		
+		<outlet id="0">
+		</outlet>
+
+		<p>example: simulate the 216-color "web" palette using 6 levels.
+		simulate a 15-bit display using 32 levels.</p>
+	</jmax-class>
+
+</section>
+
+<section name="Special Objects">
+	<jmax-class name="rtmetro">
+		this is like jMax's builtin metro object. metro ensures that
+		there is at least a given delay between bangs. rtmetro ensures
+		that on average there is a given delay between bangs: it will
+		compensate too long delays by shorter delays. of course this won't
+		work if the system cannot keep up with the amount of work.
+	</jmax-class>
+
+	<jmax-class name="pingpong">
+		send a value in inlet 1 first. if successive increasing values are
+		sent in inlet 0, then output values will be successive increasing
+		until they reach the right inlet value and then decrease to zero.
+
+		the formula is stateless and so same inputs give always same output.
+	</jmax-class>
+
+	<jmax-class name="@global">
+		<icon text="[@global]" />
+		<help text="[@global]" />
+
+		<p>
+		objects of this class do nothing by themselves and are just
+		an access point to features that don't belong to any object in
+		particular.
+		</p>
+		<method name="profiler_reset">
+			resets all the time counters.
+		</method>
+		<method name="profiler_dump">
+			displays the time counters in decreasing order, with
+			the names of the classes those objects are in. this is
+			an experimental feature. like most statistics,
+			it could be vaguely relied upon if
+			only you knew to which extent it is unreliable. more on this
+			in a future section called "profiling".
+		</method>
+	</jmax-class>
+</section>
+
+<section name="External Picture Formats">
+
+	<jmax-class name="format ppm @in/@out">
+		<icon image="format_ppm" text="[open ppm file filename.ppm]"/>
+
+		<p>Subformat P6 only.
+		Max-number can only be 255 (24-bit RGB).
+		</p>
+
+		<method name="open ppm file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+
+		<grid><dim>rows columns 3</dim>
+			values 0-255
+		</grid>
+	</jmax-class>
+
+	<jmax-class name="format targa @in">
+		<icon image="format_targa" text="[open targa file filename.tga]"/>
+		<p>Support for RGB-24 (3 channels).
+		If you bug me a bit you'll get ARGB-32 too.</p>
+
+		<method name="open ppm file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+
+		<grid><dim>rows columns 3</dim>
+			values 0-255
+		</grid>
+	</jmax-class>
+
+	<jmax-class name="format mpeg @in">
+		<icon image="format_mpeg" text="[open mpeg file filename.mpeg]"/>
+		<p>Support for MPEG Video Stream only.
+		Does not support MPEG System Stream (that is,
+		files that contain both audio and video).
+		</p>
+		<p>Can only open one file at once (libmpeg.so limitation).
+		May scream error messages in a rude way.
+		</p>
+		<p>By opposition to PPM and TARGA, this format driver only
+		allows a single MPEG stream per file (you cannot "cat"
+		several MPEG files together).
+		</p>
+		<p>Rewind / Frame Select not supported.
+		</p>
+
+		<method name="open mpeg file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+	</jmax-class>
+
+
+	<jmax-class name="format grid @in/@out">
+		<icon image="format_grid" text="[open grid file filename.grid]"/>
+		<icon image="format_grid_tcp" text="[open grid tcp artengine.ca 4242]"/>
+		<icon image="format_grid_tcpserver" text="[open grid tcpserver 4242]"/>
+
+		<method name="open file">
+			<arg name="filename" type="symbol"/>
+			opens the specified file, taken from the current
+			directory or one of the jMax-specified data directories.
+		</method>
+		<method name="open tcp">
+			<arg name="hostname" type="symbol"/>
+			<arg name="port" type="integer"/>
+			dials an specified hostname/port on the InterNet or
+			compatible network. the TCP protocol is used.
+		</method>
+		<method name="open tcpserver">
+			<arg name="port" type="integer"/>
+			waits for a call (and answers) for this port on the
+			local machine via InterNet or compatible network.
+			Answers the call.
+		</method>
+		<method name="option type int32">
+			output will be as 32 bit signed integers.
+		</method>
+		<method name="option type uint8">
+			output will be as 8 bit unsigned integers.
+		</method>
+
+		<p>
+		This is GridFlow's special file format. This is the only I/O
+		format that can hold absolutely anything that the [@store] object can.
+		However this can only be stored in 32 bits-per-value.
+		</p>
+		<p>
+		This is the only picture format that currently supports TCP
+		connections. This is still somewhat clunky: the socket only
+		opens in client mode only; and upon bang, jMax freezes until
+		the whole grid is received.
+		</p>
+	</jmax-class>
+
+	<jmax-class name="format videodev @in">
+		<icon image="format_videodev" text="[open videodev /dev/video0]"/>
+
+		<p>Video4Linux-1 devices, RGB-24 only. Variable picture size.
+		should work for bttv based cards and the dc1 from miro, possibly 
+		dc10plus.</p>
+
+		<p>If you suffer from color inversion, you may feed the list
+		"<k>3 3 # 0 0 1 0 1 0 1 0 0</k>" to the right side of a <k>[@inner2 * + 0]</k>.
+		Use that @inner2 object as a RGB-BGR converter.</p>
+
+		<p>color adjustments:
+		<method name="option brightness"><arg name="level" type="0-65535"/></method>
+		<method name="option hue"       ><arg name="level" type="0-65535"/></method>
+		<method name="option colour"    ><arg name="level" type="0-65535"/></method>
+		<method name="option contrast"  ><arg name="level" type="0-65535"/></method>
+		<method name="option whiteness" ><arg name="level" type="0-65535"/></method>
+		</p>
+		
+		<p>other options:
+		<method name="option channel"   ><arg name="level" type="integer"/></method>
+		<method name="option tuner"     ><arg name="level" type="integer"/></method>
+		<method name="option norm"      ><arg name="level" type="integer"/></method>
+		</p>
+
+		<method name="option size">
+			<arg name="height"/>
+			<arg name="width"/>
+			sets the input size, especially when using a video digitalizer
+			device
+		</method>
+	</jmax-class>
+
+	<jmax-class name="format x11 @in/@out">
+		<icon image="format_x11" text="[open x11 here]"/>
+		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
+
+		<method name="open x11 here">
+			connects to the default X11 server,
+			according to your environment variable "DISPLAY".
+		</method>
+
+		<method name="open x11 local">
+			<arg name="display_number" type="integer"/>
+			connects to a display server on this machine.
+		</method>
+		
+		<method name="open x11 remote">
+			<arg name="host_name" type="symbol"/>
+			<arg name="display_number" type="integer"/>
+			connects to a remote X11 display server using TCP.
+			Sorry, IP addresses are not supported (jMax limitation).
+			Port number will be 6000 plus the display number, because
+			of the X11 standard.
+		</method>
+		
+		<grid><dim>rows columns {red green blue}</dim>
+			resizes the window to the size of the grid;
+			encodes that grid in the display's pixel format;
+			also displays it if autodraw &gt; 0
+			the values must be in range 0-255,
+			or else they will be "wrapped".
+		</grid>
+
+		<method name="bang">
+			see format x11's option draw.
+		</method>
+
+		<method name="autodraw">
+			<arg type="integer"/>
+			see format x11's option autodraw.
+		</method>
+
+		<p>
+		Destroying the object (or sending "close") should close the window.
+		Because of how jMax works,
+		this may be delayed until you do something else.
+		</p>
+
+		<p>because of the design of Xlib, or if any of the connections
+		involved crashes, then the whole program (fts) has to be terminated.
+		(don't you love xlib). Something similar happens if you close any
+		of the windows yourself, but IIRC this could be fixed.</p>
+
+		<p>only one window may be used per connection (to simplify matters;
+		this doesn't reduce flexibility).</p>
+
+		<p>there is an additional argument that may be added to every
+		"open" message; if you don't put it, a new toplevel window is created.
+		if you put "root" then the screen's wallpaper will be used instead
+		(it may fail to work with some popular window managers). You can also
+		put a window number, e.g. <k>0x28003ff</k>, you may connect to
+		an existing window; you can find out the number of a window by using
+		a tool like <k>xwininfo</k>, part of X11 standard tools.</p>
+
+		<method name="option out_size">
+			<arg name="height" type="integer"/>
+			<arg name="width"  type="integer"/>
+			changes the window's size, just like sending a grid
+			dim(height,width,3) would.
+		</method>
+		
+		<method name="option draw">
+			forces a redraw of the window's contents.
+		</method>
+
+		<method name="option autodraw">
+			<arg name="level" type="0,1,2"/>
+			<list start="0">
+			<li>option draw() is never automatically invoked</li>
+			<li>option draw() is invoked after each grid is finished</li>
+			<li>option draw() is invoked incrementally after each row is
+			received. (but buffering may cause lines to come in groups
+			anyway)</li>
+			</list>
+		</method>
+
+	</jmax-class>
+</section>
+</jmax-doc>

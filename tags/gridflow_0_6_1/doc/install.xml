@@ -1,0 +1,152 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE jmax-doc SYSTEM 'jmax.dtd'>
+<jmax-doc>
+<!-- $Id$ -->
+<!--
+        GridFlow Installation
+        Copyright (c) 2001 by Mathieu Bouchard and Alexandre Castonguay
+-->
+
+<section name="Software (and Hardware) you Probably Need"><prose>
+<p>Required Hardware (One of...):<list>
+	<li>i386 : "old" IBM PC, or "new" IBM PC with old compiler</li>
+	<li>i686 : "new" IBM PC with recent compiler</li>
+	<li>ppc : "new" Macintosh (IS NOT SUPPORTED YET - HELP US)</li>
+	<li>armv4l : Corel Netwinder (but jMax does not run on this)</li>
+	<li>mips : Silicon Graphics, non-PC (only tested without jMax)</li>
+</list></p>
+<p>Required Software:<list>
+	<li>Ruby 1.6 (language interpreter)</li>
+	<li>GNU C Compiler (gcc)</li>
+	<li>GNU Make (gmake)</li>
+	<li>GNU Bash</li>
+</list></p>
+<p>Very Recommended:<list>
+	<li>jMax 2.5</li>
+	<li>jMax 3.0 support coming soon</li>
+	<li>jMax 2.4 support removed</li>
+	<li>X11 Display Server and MIT-Xlib (already in linux)</li>
+</list></p>
+<p>Optional:<list>
+	<li>HeroineWarrior's libmpeg3.so</li>
+	<li>HeroineWarrior's libquicktime.so</li>
+	<li>Greg Ward's libmpeg.so ("Berkeley/MNI")</li>
+	<li>a digitizer card with a Video4linux 1.x driver (videodev.h)</li>
+	<li>Ruby 1.6 with package "xmlparser" (for editing documentation)</li>
+</list></p>
+<p>NOTE: 
+for help on installing and compiling jMax, please see Christian Klippel's
+extensive help file at <link to="http://www.mamalala.de"/>
+as well as the jMax docs.</p>
+<p>Also Useful:<list>
+	<li>Pentium-compatible CPU (for profiling)</li>
+	<li>CVS (for live update)</li>
+</list></p>
+<p>NOTE:
+There are several different incompatible libmpeg's from different authors;
+I found four of them, some numbered 2 and 3 as if they were version numbers
+(but it seems they are not).
+</p>
+
+<p>NOTE: if one of your libraries are only available in .a format, you will not
+be able to compile GridFlow. All libraries GridFlow uses must be in .so format.
+</p>
+</prose></section>
+
+<section name="Installation process (for jMax 2.5)"><prose>
+<list>
+  <li>if you don't have jMax, get it at
+	<link to="http://www.ircam.fr/equipes/temps-reel/jmax/en/index.php3">
+	jMax's site
+	</link>.
+	If have only the RPM, you will need to install this:
+	<link to="http://www.artengine.ca/jmax/gridflow/download/jmax-headers-2.5.1.tar.gz">
+		jmax headers
+	</link>
+
+	in whichever directory as long as you tell it to GridFlow's
+	configurator. 
+
+  </li>
+  <li>Install Ruby 1.6.6 or any version released in 2002 or later (the
+latest from the 1.7 series work and are faster)  You will need the file
+<k>libruby.so</k>, which is not always included. If you're using an
+installer and you're missing the file, then look for another package of a
+similar name that may contain extra files (eg: "ruby-dev"). If you're
+installing from source code you have to configure with the
+<k>--enable-shared</k> option. If you install into a system directory, you
+have to recreate the library index using the <k>ldconfig</k> command too
+(auto-installers normally do this for you).
+  </li>
+
+  <li>Download the latest version of GridFlow
+      and download the images pack (gridflow-images-0.5.tar.gz).
+      The download site is
+	 <link to="http://www.artengine.ca/jmax/gridflow/download">artengine.ca</link>.
+      Unpack Gridflow in /usr/local/jmax/packages (or the path of your choice),
+      which will create a directory called 'gridflow';
+      unpack the images pack into that directory, which will create
+	 another one called 'images'.
+  </li>
+
+  <li>Find your jMax ARCH value. This is the one you use when installing
+  jMax (or other jMax plugins other than GridFlow) manually. For K6,
+  PentiumPro and such, on Linux, this is <k>i686-linux</k>. If you are
+  trying to run it on a Macintosh, this would be <k>ppc-macosx</k> or
+  <k>ppc-linux</k>.</li>
+
+  <li>Run <k>./configure --jmax-arch <i>your-ARCH</i></k> from the
+  <k>gridflow</k> directory. 
+  note: if you didn't install GridFlow in the <k>jmax/packages</k>
+  directory, then you have to add the option <k>--jmax-dist-dir
+  <i>your-jmax-source-directory-goes-here</i></k>. Giving
+  <k>/usr/lib/jmax</k> will not do because it wants <k>include</k> and
+  <k>Makefiles</k> subdirectories, which do not get installed with
+  jMax.</li>
+
+  <li><k>./configure</k> will try to detect some optional components (libmpeg,
+  pentium clock, etc); error messages may appear in case of a <k>no</k>.
+  usually a <k>yes</k> will not show anything else. In the end, the files
+  <k>config.make</k>,
+  <k>c/src/Sources</k> and
+  <k>c/src/config.h</k> will be generated.
+  </li>
+
+  <li>Stay in the same directory and do:
+      <list>
+        <li><k>make all</k></li>
+        <li><k>make install</k></li>
+      </list>
+      but if the first one stops because of "Error" you shouldn't try the second
+	 one.
+  </li>
+
+  <li>Load <k>~/.jmaxrc</k> (text). Go to the <k>when start</k> section.
+  Add a line that says <k>package require gridflow</k>.
+  Add this line that says <k>dataDirectory </k><i>gridflow-directory</i><k>/images</k>
+  </li>
+
+  <li>(Re)start jMax. </li>
+
+</list>
+
+  <p>Note: If there's a problem with libmpeg anywhere in the process,
+  you can add the option --no-mpeg to the configurator.</p>
+
+  <p>Note: If you want more speed, you can configure with the --fast
+  switch, which turns off many error-detection mechanisms; if you want
+  more speed, you could configure with --no-profiling too, but if you do
+  that, you can no longer find out which of the objects consume the most
+  time.</p>
+
+</prose></section>
+
+<section name="Installation process (without jMax)"><prose>
+<list><li>
+	If you don't have jMax installed it won't be detected. Installation
+	will proceed normally except that the Ruby-for-jMax bridge won't be
+	installed. Try running 'make test'. Look at 'tests/test.rb' for
+	an example of how you may use GridFlow without jMax.
+</li></list>
+</prose></section>
+</jmax-doc>
