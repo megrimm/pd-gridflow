@@ -608,20 +608,6 @@ Feature.new {
 	formats ["MPEG3"]
 },
 Feature.new {
-	tag :mpeg
-	name "Greg Ward's LibMPEG"
-	unless_feature :mpeg3
-	uses_so ["-lmpeg"]
-	uses_h ["mpeg.h"]
-	test proc {
-		c_test "
-		#include#
-		int main () { return GetMPEGFrame==0; }
-		"
-	}
-	formats ["MPEG"]
-},
-Feature.new {
 	tag :quicktimeapple
 	name "Apple's QuickTime"
 	uses_so [["-framework","Quicktime"]]
@@ -1063,7 +1049,7 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	"\t#{comp2}\n"
 }
 mf.gsub!(/^.SUFFIXES:.*$/, ".SUFFIXES:\n\n") or mf<<".SUFFIXES:\n\n"
-mf << ".PRECIOUS: %.h.fcs %.c.fcs\n"
+mf << ".PRECIOUS: %.h.fcs %.c.fcs %.m.fcs\n"
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"
 
