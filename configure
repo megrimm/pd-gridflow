@@ -70,12 +70,14 @@ end
 
 FILES = [
   [:directory, "base/",
-    [:ruby, "bridge_puredata.rb"],
     [:ruby, "main.rb"],
     [:ruby, "flow_objects.rb"],
     [:ruby, "test.rb"],
     [:ruby, "source_filter.rb"],
     [:ruby, "MainLoop.rb"],
+  ],
+  [:directory, "bridge/",
+    [:ruby, "puredata.rb"],
   ],
   [:directory, "format/",
     [:ruby, "main.rb"],
@@ -245,7 +247,7 @@ Feature.new {
 	tag :pentium
 	name "Pentium-compatible CPU"
 	# todo: -mcpu=pentiumpro, and so on.
-	uses_so ["-mcpu=pentium"]
+	action proc { $CFLAGS += " -mcpu=pentium" }
 	test proc {
 		(CONFIG["arch"] =~ /i\d86/) and
 		c_test '
@@ -734,7 +736,11 @@ f.puts "CFLAGS += " + $CFLAGS
 for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
 for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
 
-$sources = %w(base/grid.c base/main.c base/flow_objects.c base/number.c)
+$sources = %w(base/grid.c base/main.c base/number.c
+base/flow_objects.c
+base/flow_objects_for_image.c
+base/flow_objects_for_matrix.c
+)
 for format in $conf[:FORMATS] do
 	$sources << "format/#{format.downcase}.c"
 end
@@ -799,7 +805,7 @@ mf.sub!(/^.c.o:\s*\n\t(.*)\n/) {
 	comp << " -o $@" if not comp =~ /-o\s*\$@/
 	"%.o: %.c #{common_dependencies}\n"+
 	"\truby base/source_filter.rb $< $<.fcs\n"+
-	"\t#{comp}\n"
+	"\ttime #{comp}\n"
 }
 mf.gsub! /DESTDIR/, 'RUBYDESTDIR'
 mf.gsub! /\*\.o/, "*.o */*.o"

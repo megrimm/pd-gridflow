@@ -120,7 +120,7 @@ JMAX_LIB = libgridflow$(LSUF)
 gridflow-for-jmax:: $(JMAX_LIB)
 
 # the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): base/bridge_jmax4.c base/bridge.c base/grid.h $(CONF)
+$(JMAX_LIB): bridge/jmax4.c bridge/common.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
 		-xnone -o $@
@@ -144,13 +144,20 @@ include bundled/jmax/Makefiles/Makefile.$(ARCH)
 GFID = $(lib_install_dir)/packages/gridflow/
 
 JMAX_LIB = libgridflow$(LSUF)
-gridflow-for-jmax:: $(JMAX_LIB)
 
-#	echo $(LDSOFLAGS)
-#	echo $(CFLAGS)
+java/PathInfo.java: config.make
+	@echo "\
+package gridflow; \
+public class PathInfo { \
+public static String jmax_path = \"$(GFID)\";} \
+" > java/PathInfo.java
+
+gridflow-for-jmax:: $(JMAX_LIB) # java/PathInfo.java
+
+#	(cd java; make)
 
 # the -DLINUXPC part is suspect. sorry.
-$(JMAX_LIB): base/bridge_jmax.c base/bridge.c base/grid.h $(CONF)
+$(JMAX_LIB): bridge/jmax.c bridge/common.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) \
 		-DLINUXPC -DOPTIMIZE $< \
 		-xnone -o $@
@@ -166,6 +173,18 @@ jmax-install::
 	for f in templates/*.jmax help/*.tcl help/*.jmax; do \
 		$(INSTALL_DATA) $$f $(GFID)/$$f; \
 	done
+
+# disabled for now
+jmax-install-java::
+	$(INSTALL_DIR) $(GFID)/java/classes
+	$(INSTALL_LIB) java/gridflow.jar \
+		$(GFID)/java/classes/gridflow.jar
+	$(INSTALL_DIR) $(GFID)/images
+	$(INSTALL_DATA) java/peephole.gif \
+		$(GFID)/images/peephole.gif
+	$(INSTALL_DATA) java/peephole_cursor.gif \
+		$(GFID)/images/peephole_cursor.gif
+
 else
 
 $(JMAX_LIB):
@@ -224,7 +243,7 @@ endif
 
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): base/bridge_puredata.c base/bridge.c base/grid.h $(CONF)
+$(PD_LIB): bridge/puredata.c bridge/common.c base/grid.h $(CONF)
 	$(CXX) $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
