@@ -370,3 +370,4 @@ END {
 
 GridFlow.routine
 
+#set_trace_func proc {|a| p a }
