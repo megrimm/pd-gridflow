@@ -25,7 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <libmpeg3.h>
+//#include <libmpeg3.h>
+#include <libmpeg3/libmpeg3.h>
 
 extern FormatClass class_FormatMPEG3;
 typedef struct FormatMPEG3 {
