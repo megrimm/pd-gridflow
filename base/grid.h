@@ -260,7 +260,6 @@ typedef long Number;
 
 DECL_SYM(grid_begin)
 DECL_SYM(grid_flow)
-DECL_SYM(grid_flow2)
 DECL_SYM(grid_end)
 DECL_SYM(bang)
 DECL_SYM(int)
@@ -383,45 +382,39 @@ typedef   GRID_END_(GridObject, (*GridEnd));
 
 #define GRID_BEGIN(_cl_,_inlet_) static GRID_BEGIN_(_cl_,_cl_##_##_inlet_##_begin)
 #define  GRID_FLOW(_cl_,_inlet_) static  GRID_FLOW_(_cl_,_cl_##_##_inlet_##_flow)
-#define GRID_FLOW2(_cl_,_inlet_) static GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow2)
+#define GRID_FLOW2(_cl_,_inlet_) static GRID_FLOW2_(_cl_,_cl_##_##_inlet_##_flow)
 #define   GRID_END(_cl_,_inlet_) static   GRID_END_(_cl_,_cl_##_##_inlet_##_end)
+
+typedef struct GridHandler {
+	int       winlet;
+	GridBegin begin;
+	GridFlow  flow; /* or GridFlow2 */
+	GridEnd   end;
+	int       mode; /* 4=r=flow; 6=rw=flow2 */
+} GridHandler;
 
 struct GridInlet {
 /* context information */
 	GridObject *parent;
-	int winlet;
+	const GridHandler *gh;
 
 /* grid progress info */
 	Dim *dim;
 	int dex;
 
 /* grid receptor */
-	GridBegin begin;
-	GridFlow  flow;
-	GridFlow2 flow2;
-	GridEnd   end;
 
 	int factor; /* flow's n will be multiple of $->factor */
 	int bufn;
 	Number *buf; /* factor-chunk buffer */
-	int mode;
 };
 
-	GridInlet *GridInlet_new(GridObject *parent, int winlet,
-		GridBegin b, GridFlow f, GridEnd e, int mode);
+	GridInlet *GridInlet_new(GridObject *parent, const GridHandler *gh);
 	void GridInlet_delete(GridInlet *$);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 	void GridInlet_set_factor(GridInlet *$, int factor);
 	bool GridInlet_busy(GridInlet *$);
-
-typedef struct GridHandler {
-	int       winlet;
-	GridBegin begin;
-	GridFlow  flow; /* or flow2 */
-	GridEnd   end;
-	int       mode; /* 4=r=flow; 6=rw=flow2 */
-} GridHandler;
 
 typedef struct GridClass {
 	int objectsize;
@@ -442,7 +435,7 @@ typedef struct GridClass {
 
 #define GRINLET2(_class_,_winlet_) {_winlet_,\
 	((GridBegin)_class_##_##_winlet_##_begin), \
-	 ((GridFlow)_class_##_##_winlet_##_flow2), \
+	 ((GridFlow)_class_##_##_winlet_##_flow), \
 	  ((GridEnd)_class_##_##_winlet_##_end), 6 }
 
 /* **************************************************************** */
