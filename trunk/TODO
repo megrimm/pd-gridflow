@@ -72,6 +72,7 @@ Architecture
 [ ] make @store loopable
 
 Computation Objects
+[ ] @type, @cast
 [ ] @cartprod (?), @slice (@splice ?)
 [ ] black option in @store (?)
 [ ] @import~, @export~
@@ -86,6 +87,7 @@ Computation Objects
 [ ] @reverse (on given dimension number)
 [ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 	will replace @two, @three, @four.
+[ ] @scale_by with argument
 
 Effects
 [!] improve
