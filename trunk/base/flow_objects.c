@@ -348,7 +348,7 @@ GRID_INLET(GridStore,1) {
 	in->set_factor(cs);
 } GRID_FLOW {
 	if (!put_at) { // reassign
-		COPY(((Pt<T>)*(r.next ? r.next : &*r))+in->dex, data, n);
+		COPY(((Pt<T>)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
 		return;
 	}
 	// put_at ( ... )
@@ -962,7 +962,7 @@ template <class T> struct GradeFunction {
 	static int comparator (const void *a, const void *b) {
 		return **(T**)a - **(T**)b;}};
 #define FOO(S) \
-struct GradeFunction<S> { \
+template <> struct GradeFunction<S> { \
 	static int comparator (const void *a, const void *b) { \
 		S x = **(S**)a - **(S**)b; \
 		return x<0 ? -1 : x>0;}};
