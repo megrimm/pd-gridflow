@@ -1129,6 +1129,9 @@ class Peephole < GridFlow::FPatcher
 		#GridFlow.post "click: %d %d %d %d %d %d",xpix,ypix,shift,alt,dbl,doit
 		return 0
 	end
+	def pd_select(*a)
+		GridFlow.post "pd_select "+a.join(", ")
+	end
 	def set_geometry_for_real_now
 		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
 		if @fx>@sx or @fy>@sx then
@@ -1193,6 +1196,9 @@ class Peephole < GridFlow::FPatcher
 	end
 	def delete
 		GridFlow.post "deleting peephole"
+		GridFlow.whatever :gui, %{
+			#{@can} delete #{@rsym}
+		}
 		@fobjects[3].send_in 0, :close
 		super
 	end
