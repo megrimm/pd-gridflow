@@ -574,7 +574,7 @@ void Init_gridflow () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	signal(11,SIG_DFL); // paranoia
-	mGridFlow = EVAL("module GridFlow;"
+	mGridFlow = EVAL("module GridFlow; CObject = ::Object; "
 		"class<<self; attr_reader :bridge_name; end; "
 		"def post_string(s) STDERR.puts s end; "
 		"self end");

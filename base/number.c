@@ -39,9 +39,10 @@ NUMBER_TYPES(FOO)
 
 template <class T> class Op {
 public:
-	static T f(T a, T b);
-	static bool is_neutral(T x, LeftRight side) {}
-	static bool is_absorbent(T x, LeftRight side) {}
+	// I call abort() on those because I can't say they're purevirtual.
+	static T f(T a, T b) {abort();}
+	static bool is_neutral(T x, LeftRight side)   {abort();}
+	static bool is_absorbent(T x, LeftRight side) {abort();}
 };
 
 template <class O> class OpLoops {

@@ -1036,7 +1036,7 @@ class Display < FObject; include Gooey
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
 		case a
-		when Float; (sprintf "%.5f", a).gsub /\.?0+$/, ""
+		when Float; sprintf("%.5f",a).gsub(/\.?0+$/, "")
 		else a.to_s
 		end
 	end
