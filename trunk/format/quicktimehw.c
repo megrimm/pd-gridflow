@@ -57,7 +57,9 @@ struct FormatQuickTimeHW : Format {
 	\decl Ruby frame ();
 	\decl void seek (int frame);
 	\decl void force_size (int32 height, int32 width);
-	\decl void set_parameter (Symbol name, int32 value);
+	\decl void parameter (Symbol name, int32 value);
+	\decl void framerate (double f);
+	
 	GRINLET3(0);
 };
 
@@ -104,8 +106,12 @@ struct FormatQuickTimeHW : Format {
 }
 
 //!@#$ should also support symbol values (how?)
-\def void set_parameter (Symbol name, int32 value) {
+\def void parameter (Symbol name, int32 value) {
 	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
+}
+
+\def void framerate (float64 f) {
+	quicktime_set_framerate(anim, f);
 }
 
 GRID_INLET(FormatQuickTimeHW,0) {
