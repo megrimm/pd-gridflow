@@ -7,7 +7,7 @@ version 0.7.2 (2003.04.08):
  * added direct .jmax decoding
  * added direct .pd encoding
  * pd examples moved to separate directory
- * ported some .jmax examples to .pd (automated) (8 out of 21)
+ * ported some .jmax examples to .pd (automated) (9 out of 21)
  * added motion_detect.pd
  * new classes: demux, and more jmax emulations
  * @in,@out: keyword "option" may be omitted
