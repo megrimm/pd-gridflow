@@ -219,15 +219,14 @@ static void video_mmap_whine(VideoMmap *$) {
 
 /* **************************************************************** */
 
-typedef struct FormatVideoDev {
-	Format_FIELDS;
+struct FormatVideoDev : Format {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	uint8 *image;
 	int pending_frames[2], next_frame;
 	int current_channel;
 	int current_tuner;
-} FormatVideoDev;
+};
 
 #define WIOCTL(_f_,_name_,_arg_) \
 	((ioctl(_f_,_name_,_arg_) < 0) && \
@@ -310,7 +309,7 @@ METHOD(FormatVideoDev,frame_ask) {
 }
 
 static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, uint8 *buf) {
-	GridOutlet_begin(out,$->dim->dup());
+	out->begin($->dim->dup());
 
 	/* picture is converted here. */
 	{
@@ -322,10 +321,10 @@ static void FormatVideoDev_frame_finished (FormatVideoDev *$, GridOutlet *out, u
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + BitPacking_bytes($->bit_packing) * sx * y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send(out,bs,b2);
+			out->send(bs,b2);
 		}
 	}
-	GridOutlet_end(out);
+	out->end();
 }
 
 METHOD(FormatVideoDev,frame) {

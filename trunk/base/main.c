@@ -296,12 +296,6 @@ static VALUE GridFlow_exec (VALUE $, VALUE data, VALUE func) {
 /* **************************************************************** */
 /* Procs of somewhat general utility */
 
-void whine_time(const char *s) {
-	struct timeval t;
-	gettimeofday(&t,0);
-	whine("%s: %d.%06d\n",s,t.tv_sec,t.tv_usec);
-}
-
 void define_many_methods(VALUE $, int n, MethodDecl *methods) {
 	VALUE args[16]; /* not really used anymore */
 	int i;

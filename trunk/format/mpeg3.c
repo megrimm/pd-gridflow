@@ -27,10 +27,9 @@
 #include <string.h>
 #include <errno.h>
 
-typedef struct FormatMPEG3 {
-	Format_FIELDS;
+struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
-} FormatMPEG3;
+};
 
 METHOD(FormatMPEG3,seek) {
 	int frame = INT(argv[0]);
@@ -52,7 +51,7 @@ METHOD(FormatMPEG3,frame) {
 	result = mpeg3_read_frame($->mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,0);
 	{
 		int v[] = { sy, sx, 3 };
-		GridOutlet_begin($->out[0], new Dim(3,v));
+		$->out[0]->begin(new Dim(3,v));
 	}
 	{
 		int y;
@@ -63,11 +62,11 @@ METHOD(FormatMPEG3,frame) {
 		for(y=0; y<sy; y++) {
 			uint8 *b1 = buf + 3*sx*y;
 			BitPacking_unpack($->bit_packing,sx,b1,b2);
-			GridOutlet_send($->out[0],bs,b2);
+			$->out[0]->send(bs,b2);
 		}
 	}
 	FREE(buf);
-	GridOutlet_end($->out[0]);
+	$->out[0]->end();
 }
 
 GRID_BEGIN(FormatMPEG3,0) { RAISE("write support not implemented"); }
