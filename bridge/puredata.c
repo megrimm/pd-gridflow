@@ -329,11 +329,14 @@ struct RMessage {
 	VALUE *argv;
 };
 
-VALUE rb_funcall_rescue_1(RMessage *rm) {
+// this was called rb_funcall_rescue[...] but recently (ruby 1.8.2)
+// got a conflict with a new function in ruby.
+
+VALUE rb_funcall_myrescue_1(RMessage *rm) {
 	return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);
 }
 
-static Ruby rb_funcall_rescue_2 (RMessage *rm) {
+static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
 	Ruby error_array = make_error_message();
 //	for (int i=0; i<rb_ary_len(error_array); i++)
 //		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
@@ -341,7 +344,7 @@ static Ruby rb_funcall_rescue_2 (RMessage *rm) {
 	return Qnil;
 }
 
-VALUE rb_funcall_rescue(VALUE rself, ID sel, int argc, ...) {
+VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	va_list foo;
 	va_start(foo,argc);
 	VALUE argv[argc];
@@ -349,8 +352,8 @@ VALUE rb_funcall_rescue(VALUE rself, ID sel, int argc, ...) {
 	RMessage rm = { rself, sel, argc, argv };
 	va_end(foo);
 	return rb_rescue2(
-		(RMethod)rb_funcall_rescue_1,(Ruby)&rm,
-		(RMethod)rb_funcall_rescue_2,(Ruby)&rm,
+		(RMethod)rb_funcall_myrescue_1,(Ruby)&rm,
+		(RMethod)rb_funcall_myrescue_2,(Ruby)&rm,
 		rb_eException,0);
 }
 
@@ -359,7 +362,7 @@ void bf_getrectfn(t_gobj *x, struct _glist *glist,
 int *x1, int *y1, int *x2, int *y2) {
 	BFObject *bself = (BFObject*)x;
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	Ruby a = rb_funcall_rescue(bself->rself,SI(pd_getrect),1,can);
+	Ruby a = rb_funcall_myrescue(bself->rself,SI(pd_getrect),1,can);
 	if (TYPE(a)!=T_ARRAY || rb_ary_len(a)<4) {
 		post("bf_getrectfn: return value should be 4-element array");
 		*x1=*y1=*x2=*y2=0;
@@ -377,26 +380,26 @@ void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
 	BFObject *bself = (BFObject *)x;
 	bself->te_xpix+=dx;
 	bself->te_ypix+=dy;
-	rb_funcall_rescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
+	rb_funcall_myrescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
 	canvas_fixlinesfor(glist, (t_text *)x);
 }
 
 /* change color to show selection: */
 void bf_selectfn(t_gobj *x, struct _glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
 }
 
 /* change appearance to show activation/deactivation: */
 void bf_activatefn(t_gobj *x, struct _glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
 }
 
 /* warn a gobj it's about to be deleted */
 void bf_deletefn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
 
@@ -406,14 +409,14 @@ void bf_visfn(t_gobj *x, struct _glist *glist, int flag) {
 	Ruby rself = ((BFObject*)x)->rself;
 	DGS(FObject);
 	self->check_magic();
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
 }
 
 /* field a mouse click (when not in "edit" mode) */
 int bf_clickfn(t_gobj *x, struct _glist *glist,
 int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	Ruby ret = rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_click),7,can,
+	Ruby ret = rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_click),7,can,
 		INT2NUM(xpix),INT2NUM(ypix),
 		INT2NUM(shift),INT2NUM(alt),
 		INT2NUM(dbl),INT2NUM(doit));
@@ -424,23 +427,23 @@ int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 
 /* save to a binbuf */
 void bf_savefn(t_gobj *x, t_binbuf *b) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
 }
 
 /* open properties dialog */
 void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
 
 /* get keypresses during focus */
 void bf_keyfn(void *x, t_floatarg fkey) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
 }
 
 /* get motion diff during focus */
 void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
-	rb_funcall_rescue(((BFObject*)x)->rself,SI(pd_motion),2,
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_motion),2,
 		INT2NUM((int)dx), INT2NUM((int)dy));
 }
 
