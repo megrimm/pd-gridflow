@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -68,6 +68,15 @@ void Grid::init(Dim *dim, NumberTypeIndex nt) {
 //	for (int i=0; i<size; i++) ((char*)data)[i]=(i&3)*85;
 }
 
+static inline void NUM(Ruby x, uint8 &y) { y = INT(x); }
+static inline void NUM(Ruby x, int16 &y) { y = INT(x); }
+static inline void NUM(Ruby x, int32 &y) { y = INT(x); }
+static inline void NUM(Ruby x, float32 &y) {
+	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value;
+	else if (INTEGER_P(x)) y = INT(x);
+	else RAISE("expected Float (or at least Integer)");
+}
+
 void Grid::init_from_ruby_list(int n, Ruby *a) {
 		NumberTypeIndex nt = int32_type_i;
 		int dims = 1;
@@ -101,7 +110,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a) {
 		n = min(n,nn);
 #define FOO(type) { \
 		Pt<type> p = (Pt<type>)*this; \
-		for (int i=0; i<n; i++) p[i] = INT(a[i]); \
+		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }
 		TYPESWITCH(nt,FOO,)
 #undef FOO		
