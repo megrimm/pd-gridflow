@@ -383,7 +383,7 @@ METHOD(GridObject,init) {
 	int i;
 	for (i=0; i<MAX_INLETS;  i++) $->in[i]  = 0;
 	for (i=0; i<MAX_OUTLETS; i++) $->out[i] = 0;
-	Dict_put(gridflow_object_set,$,0);
+	Dict_put(gf_object_set,$,0);
 	$->profiler_cumul = 0;
 }
 
@@ -405,7 +405,7 @@ void GridObject_delete(GridObject *$) {
 /*		GridOutlet_delete($->out[i]); */
 		FREE($->out[i]);
 	}
-	Dict_del(gridflow_object_set,$);
+	Dict_del(gf_object_set,$);
 }
 
 void GridObject_conf_class(fts_class_t *class, int winlet) {

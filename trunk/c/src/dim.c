@@ -23,12 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
 #include "grid.h"
-
-//#if !defined(GRID_USE_INLINE) || (defined(GRID_USE_INLINE) && defined(PROC))
-#ifndef PROC
-#define PROC
 
 #define Dim_invariant(_self_) \
 	assert(_self_); \
@@ -80,7 +75,7 @@ int Dim_prod_start(Dim *$, int start) {
 	return v;
 }
 
-PROC int Dim_calc_dex(Dim *$, int *v) {
+int Dim_calc_dex(Dim *$, int *v) {
 	int dex=0;
 	int i;
 	for (i=0; i<$->n; i++) {
@@ -151,6 +146,3 @@ int Dim_equal_verbose_hwc(Dim *$, Dim *other) {
 	return 0;
 }
 
-#endif
-#undef PROC
-//#endif

@@ -89,7 +89,7 @@ err:
 GRID_BEGIN(FormatPPM,0) {
 	fprintf($->bstream,
 		"P6\n"
-		"# generated using GridFlow " GRIDFLOW_VERSION "\n"
+		"# generated using GridFlow " GF_VERSION "\n"
 		"%d %d\n"
 		"255\n",
 		Dim_get(in->dim,1),

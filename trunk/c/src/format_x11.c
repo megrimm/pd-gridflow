@@ -366,7 +366,7 @@ GRID_END(FormatX11,0) {
 }
 
 void FormatX11_close (FormatX11 *$) {
-	Dict_del(gridflow_alarm_set,$);
+	Dict_del(gf_alarm_set,$);
 	if (!$) {whine("stupid error: trying to close display NULL. =)"); return;}
 	if ($->is_owner) XDestroyWindow($->display,$->window);
 	XSync($->display,0);
@@ -547,7 +547,7 @@ Format *FormatX11_open (FormatClass *qlass, GridObject *parent, int mode, ATOMLI
 	}
 
 	BitPacking_whine($->bit_packing);
-	Dict_put(gridflow_alarm_set,$,FormatX11_alarm);
+	Dict_put(gf_alarm_set,$,FormatX11_alarm);
 	return (Format *)$;
 err:;
 	$->cl->close((Format *)$);
