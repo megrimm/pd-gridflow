@@ -757,9 +757,9 @@ METHOD(GridOuter,delete) { GridObject_delete((GridObject *)$); }
 CLASS(GridOuter) {
 	int i;
 	fts_type_t int_alone[]  = { fts_t_int };
-	fts_type_t rien[] = { fts_t_symbol };
+	fts_type_t init_args[] = { fts_t_symbol, fts_t_symbol };
 	MethodDecl methods[] = {
-		{-1, fts_s_init,   METHOD_PTR(GridOuter,init), ARRAY(rien),-1},
+		{-1, fts_s_init,   METHOD_PTR(GridOuter,init), ARRAY(init_args),-1},
 		{-1, fts_s_delete, METHOD_PTR(GridOuter,delete),0,0,0 },
 	};
 
@@ -968,14 +968,13 @@ CLASS(GridDim) {
 
 /* **************************************************************** */
 
-typedef struct GridRedim GridRedim;
-struct GridRedim {
+typedef struct GridRedim {
 	GridObject_FIELDS;
 	Dim *dim;
 	Number *data;
 	int n;
 	int *v;
-};
+} GridRedim;
 
 GRID_BEGIN(GridRedim,0) {
 	int a = Dim_prod(in->dim);

@@ -93,9 +93,10 @@ DEF_OP2(ge,  a >= b)
 
 DEF_OP2(sin, (Number)(b * sin(a * 2 * M_PI / 36000)))
 DEF_OP2(cos, (Number)(b * cos(a * 2 * M_PI / 36000)))
-DEF_OP2(pow, ipow(a,b))
-
+DEF_OP2(atan, (Number)(atan2(a,b)))
+DEF_OP2(tanh, (Number)(b * tanh(a * 2 * M_PI / 36000)))
 DEF_OP2(gamma, b<=0 ? 0 : (Number)(0+floor(pow(a/256.0,256.0/b)*256.0)))
+DEF_OP2(pow, ipow(a,b))
 
 #define DECL_OP2(_name_,_sym_) \
 	{ 0, _sym_, &op_##_name_, &op_array_##_name_, &op_fold_##_name_ }
@@ -133,8 +134,10 @@ Operator2 op2_table[] = {
 
 	DECL_OP2(sin, "sin*"),
 	DECL_OP2(cos, "cos*"),
-	DECL_OP2(pow, "**"),
+	DECL_OP2(atan, "atan"),
+	DECL_OP2(tanh, "tanh"),
 	DECL_OP2(gamma, "gamma"),
+	DECL_OP2(pow, "**"),
 };
 
 Operator2 *op2_table_find(fts_symbol_t sym) {
