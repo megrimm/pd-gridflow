@@ -99,25 +99,12 @@ for victim in [TCPSocket, TCPServer]
 	end
 end if VERSION < "1.6.6"
 
+# this should be done in base/bridge_jmax.c
 for victim in [Thread, Continuation]
 	def victim.new
 		raise NotImplementedError, "disabled because of jMax incompatibility"
 	end
 end
-
-# simple dataflow engine mixin for Ruby
-#module GridFlow; module RubyFlow
-#	def initialize
-#		...
-#		super
-#	end
-#	...
-#end end
-
-# dual system that can work with both Ruby dataflow and jMax dataflow
-#module GridFlow; class DFObject; include RubyFlow
-#	...
-#end end
 
 def GridFlow.parse(m)
 	m = m.split(/\s+/)

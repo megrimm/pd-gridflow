@@ -34,7 +34,7 @@ struct Grid {
 	NumberTypeIndex nt;
 	void *data;
 
-	void init(Dim *dim, NumberTypeIndex nt);
+	void init(Dim *dim, NumberTypeIndex nt=int32_type_i);
 	void del();
 	inline int32 *as_int32() { return (int32 *)data; }
 	inline uint8 *as_uint8() { return (uint8 *)data; }
@@ -98,18 +98,16 @@ GRID_END(GridImport,0) {}
 /* same inlet 1 as @redim */
 
 GRID_BEGIN(GridImport,1) {
-	int n;
 	if (in->dim->count()!=1) RAISE("expected 1 dim");
-	n = in->dim->get(0);
+	int n = in->dim->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too big");
 	in->set_factor(n);
 }
 
 GRID_FLOW(GridImport,1) {
-	int i;
 	int dim[n];
 	FREE($->dim);
-	for(i=0;i<n;i++) {
+	for(int i=0;i<n;i++) {
 		dim[i]=data[i];
 		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
@@ -121,11 +119,10 @@ GRID_FLOW(GridImport,1) {
 GRID_END(GridImport,1) {}
 
 METHOD(GridImport,init) {
-	int i;
 	int dim[argc];
 	rb_call_super(argc,argv);
 
-	for (i=0; i<argc; i++) {
+	for (int i=0; i<argc; i++) {
 		dim[i] = INT(argv[i]);
 		if (dim[i]<1 || dim[i]>MAX_INDICES) RAISE("dim[%d]=%d is out of range",i,dim[i]);
 	}
@@ -169,8 +166,7 @@ struct GridExport : GridObject {
 GRID_BEGIN(GridExport,0) {}
 
 GRID_FLOW(GridExport,0) {
-	int i;
-	for (i=0; i<n; i++) {
+	for (int i=0; i<n; i++) {
 		VALUE a[] = { INT2NUM(0), sym_int, INT2NUM(*data) };
 		FObject_send_out(COUNT(a),a,rself);
 		data++;
@@ -198,8 +194,7 @@ GRID_BEGIN(GridExportList,0) {
 }
 
 GRID_FLOW(GridExportList,0) {
-	int i;
-	for (i=0; i<n; i++, data++)
+	for (int i=0; i<n; i++, data++)
 		rb_ary_store($->list,in->dex+i,INT2NUM(*data));
 }
 		
@@ -255,13 +250,13 @@ GRID_FLOW(GridStore,0) {
 	int nb = $->r.dim->count();
 	int nc = in->dim->get(na-1);
 	int size = $->r.dim->prod(nc);
-	int i;
 	int v[nb];
 	assert((n % nc) == 0);
 	assert($->data);
 
 	while (n>0) {
 		int pos;
+		int i;
 		for (i=0; i<nc; i++,data++) v[i] = mod(*data,$->r.dim->v[i]);
 		while (i<nb) v[i++] = 0;
 		pos = $->r.dim->calc_dex(v);
@@ -276,7 +271,7 @@ GRID_FLOW(GridStore,0) {
 			uint8 *data2 = $->r.as_uint8() + pos;
 			int left = size;
 			while (left>=bs) {
-				for (i=0; i<bs; i++) { data3[i] = data2[i]; }
+				for (int i=0; i<bs; i++) { data3[i] = data2[i]; }
 				$->out[0]->send(bs,data3);
 				data2+=bs;
 				left-=bs;
@@ -296,7 +291,6 @@ GRID_FLOW(GridStore,0) {
 GRID_END(GridStore,0) { $->out[0]->end(); }
 
 GRID_BEGIN(GridStore,1) {
-	int length = in->dim->prod();
 	$->in[0]->abort();
 	NumberTypeIndex nt = $->r.nt;
 	$->r.del();
@@ -304,14 +298,13 @@ GRID_BEGIN(GridStore,1) {
 }
 
 GRID_FLOW(GridStore,1) {
-	int i;
 	switch ($->r.nt) {
 	case int32_type_i:{
 		Number *data2 = $->r.as_int32() + in->dex;
 		memcpy(data2, data, n*sizeof(Number)); break;}
 	case uint8_type_i:{
 		uint8 *data2 = $->r.as_uint8() + in->dex;
-		for(i=0; i<n; i++) data2[i] = data[i];
+		for(int i=0; i<n; i++) data2[i] = data[i];
 		break;}
 	default: assert(0);
 	}
@@ -404,9 +397,8 @@ GRID_FLOW2(GridOp2,0) {
 		if (in->dex+n <= loop) {
 			$->op->op_array2(n,data,rdata+in->dex);
 		} else {
-			int i;
 			Number data2[n];
-			for (i=0; i<n; i++) {
+			for (int i=0; i<n; i++) {
 				data2[i] = rdata[(in->dex+i)%loop];
 			}
 			$->op->op_array2(n,data,data2);
@@ -532,7 +524,6 @@ GRID_FLOW(GridScan,0) {
 	int factor = in->dim->get(in->dim->count()-1);
 	GridOutlet *out = $->out[0];
 	Number buf[n];
-	int i=0;
 	int nn=n;
 
 	assert (n % factor == 0);
@@ -565,17 +556,15 @@ LIST(GRINLET(GridScan,0)),
 
 /* **************************************************************** */
 struct GridInner : GridObject {
-	Dim *dim;
-	Number *data;
+	Grid r;
 	Number rint;
 	const Operator2 *op_para;
 	const Operator2 *op_fold;
 };
 
-/*
 GRID_BEGIN(GridInner,0) {
 	Dim *a = in->dim;
-	Dim *b = $->dim;
+	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	if (a->count()<1) RAISE("minimum 1 dimension");
 	{
@@ -591,22 +580,20 @@ GRID_BEGIN(GridInner,0) {
 		$->out[0]->begin(new Dim(n,v));
 		in->set_factor(a_last);
 	}	
-	return true;
 }
 
 GRID_FLOW(GridInner,0) {
 	GridOutlet *out = $->out[0];
 	int factor = in->dim->get(in->dim->count()-1);
-	int i,j;
-	int b_prod = $->dim->prod();
+	int b_prod = $->r.dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
 	Number *buf = NEW(Number,n/factor);
 	assert (n % factor == 0);
 
-	for (i=0; i<n; i+=factor) {
-		for (j=0; j<b_prod; j+=factor) {
+	for (int i=0; i<n; i+=factor) {
+		for (int j=0; j<b_prod; j+=factor) {
 			memcpy(buf,&data[i],factor*sizeof(Number));
-			$->op_para->op_array2(factor,buf,&$->data[j]);
+			$->op_para->op_array2(factor,buf,$->r.as_int32()+j);
 			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
 		}
 		out->send(b_prod/factor,buf2);
@@ -618,41 +605,29 @@ GRID_FLOW(GridInner,0) {
 GRID_END(GridInner,0) { $->out[0]->end(); }
 
 GRID_BEGIN(GridInner,2) {
-	int length = in->dim->prod();
 	$->in[0]->abort();
 	if (in->dim->count()<1) RAISE("minimum 1 dimension");
-	FREE($->dim);
-	FREE($->data);
-	$->dim = in->dim->dup();
-	$->data = NEW2(Number,length);
-	return true;
+	$->r.del();
+	$->r.init(in->dim->dup(),int32_type_i);
 }
 
 GRID_FLOW(GridInner,2) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
 	in->dex += n;
 }
 
 GRID_END(GridInner,2) {}
 
 METHOD(GridInner,init) {
-	VALUE sym_para = argv[0];
-	VALUE sym_fold = argv[1];
-	$->rint = INT(argv[2]);
-	$->dim = 0;
-	$->data = 0;
-
 	rb_call_super(argc,argv);
-
-	$->op_para = Dict_get(op2_dict,(void *)sym_para);
-	$->op_fold = Dict_get(op2_dict,(void *)sym_fold);
-	if (!$->op_para) RAISE2("unknown binary operator \"%s\"", sym_para);
-	if (!$->op_fold) RAISE2("unknown binary operator \"%s\"", sym_fold);
+	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
+	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
+	$->rint = argc<3 ? 0 : INT(argv[2]);
+	$->r.init(0);
 }
 
 METHOD(GridInner,delete) {
-	FREE($->dim);
-	FREE($->data);
+	$->r.del();
 	rb_call_super(argc,argv);
 }
 
@@ -660,14 +635,14 @@ GRCLASS(GridInner,inlets:3,outlets:1,
 LIST(GRINLET(GridInner,0),GRINLET(GridInner,2)),
 	DECL(GridInner,init),
 	DECL(GridInner,delete))
-*/
+
 /* **************************************************************** */
 
 typedef struct GridInner GridInner2;
 
 GRID_BEGIN(GridInner2,0) {
 	Dim *a = in->dim;
-	Dim *b = $->dim;
+	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	if (a->count()<1) RAISE("minimum 1 dimension");
 	{
@@ -688,16 +663,15 @@ GRID_BEGIN(GridInner2,0) {
 GRID_FLOW(GridInner2,0) {
 	GridOutlet *out = $->out[0];
 	int factor = in->dim->get(in->dim->count()-1);
-	int i,j;
-	int b_prod = $->dim->prod();
+	int b_prod = $->r.dim->prod();
 	Number *buf2 = NEW(Number,b_prod/factor);
 	Number *buf = NEW(Number,n/factor);
 	assert (n % factor == 0);
 
-	for (i=0; i<n; i+=factor) {
-		for (j=0; j<b_prod; j+=factor) {
+	for (int i=0; i<n; i+=factor) {
+		for (int j=0; j<b_prod; j+=factor) {
 			memcpy(buf,&data[i],factor*sizeof(Number));
-			$->op_para->op_array2(factor,buf,&$->data[j]);
+			$->op_para->op_array2(factor,buf,$->r.as_int32()+j);
 			buf2[j/factor] = $->op_fold->op_fold($->rint,factor,buf);
 		}
 		out->send(b_prod/factor,buf2);
@@ -709,17 +683,14 @@ GRID_FLOW(GridInner2,0) {
 GRID_END(GridInner2,0) { $->out[0]->end(); }
 
 GRID_BEGIN(GridInner2,2) {
-	int length = in->dim->prod();
 	$->in[0]->abort();
 	if (in->dim->count()<1) RAISE("minimum 1 dimension");
-	FREE($->dim);
-	FREE($->data);
-	$->dim = in->dim->dup();
-	$->data = NEW2(Number,length);
+	$->r.del();
+	$->r.init(in->dim->dup(),int32_type_i);
 }
 
 GRID_FLOW(GridInner2,2) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
 	in->dex += n;
 }
 
@@ -730,13 +701,11 @@ METHOD(GridInner2,init) {
 	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
 	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
-	$->dim = 0;
-	$->data = 0;
+	$->r.init(0);
 }
 
 METHOD(GridInner2,delete) {
-	FREE($->dim);
-	FREE($->data);
+	$->r.del();
 	rb_call_super(argc,argv);
 }
 
@@ -748,14 +717,13 @@ LIST(GRINLET(GridInner2,0),GRINLET(GridInner2,2)),
 /* **************************************************************** */
 
 struct GridOuter : GridObject {
-	Dim *dim;
-	Number *data;
+	Grid r;
 	const Operator2 *op;
 };
 
 GRID_BEGIN(GridOuter,0) {
 	Dim *a = in->dim;
-	Dim *b = $->dim;
+	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	{
 		int n = a->count()+b->count();
@@ -768,12 +736,11 @@ GRID_BEGIN(GridOuter,0) {
 }
 
 GRID_FLOW(GridOuter,0) {
-	int b_prod = $->dim->prod();
+	int b_prod = $->r.dim->prod();
 	Number *buf = NEW(Number,b_prod);
 	while (n) {
-		int j;
-		for (j=0; j<b_prod; j++) buf[j] = *data;
-		$->op->op_array2(b_prod,buf,$->data);
+		for (int j=0; j<b_prod; j++) buf[j] = *data;
+		$->op->op_array2(b_prod,buf,$->r.as_int32());
 		$->out[0]->send(b_prod,buf);
 		data++; n--;
 	}
@@ -783,16 +750,13 @@ GRID_FLOW(GridOuter,0) {
 GRID_END(GridOuter,0) { $->out[0]->end(); }
 
 GRID_BEGIN(GridOuter,1) {
-	int length = in->dim->prod();
 	$->in[0]->abort();
-	FREE($->dim);
-	FREE($->data);
-	$->dim = in->dim->dup();
-	$->data = NEW2(Number,length);
+	$->r.del();
+	$->r.init(in->dim->dup());
 }
 
 GRID_FLOW(GridOuter,1) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
 	in->dex += n;
 }
 
@@ -801,13 +765,11 @@ GRID_END(GridOuter,1) {}
 METHOD(GridOuter,init) {
 	rb_call_super(argc,argv);
 	$->op = OP2(argv[0]);
-	$->dim = 0;
-	$->data = 0;
+	$->r.init(0);
 }
 
 METHOD(GridOuter,delete) {
-	FREE($->dim);
-	FREE($->data);
+	$->r.del();
 	rb_call_super(argc,argv);
 }
 
@@ -819,8 +781,8 @@ LIST(GRINLET(GridOuter,0),GRINLET(GridOuter,1)),
 /* **************************************************************** */
 
 struct GridConvolve : GridObject {
-	Dim *dim;  Number *data;
-	Dim *diml; Number *datal;
+	Grid l;
+	Grid r;
 	const Operator2 *op_para;
 	const Operator2 *op_fold;
 	Number rint;
@@ -828,7 +790,7 @@ struct GridConvolve : GridObject {
 
 GRID_BEGIN(GridConvolve,0) {
 	Dim *a = in->dim;
-	Dim *b = $->dim;
+	Dim *b = $->r.dim;
 	if (!b) RAISE("right inlet has no grid");
 	if (a->count() < b->count())
 		RAISE("left grid has less dimensions than right grid");
@@ -839,27 +801,26 @@ GRID_BEGIN(GridConvolve,0) {
 		int v[MAX_DIMENSIONS];
 		int i;
 		for (i=0; i<a->count(); i++) v[i]=a->v[i];
-		v[0] += $->dim->get(0)/2*2;
-		v[1] += $->dim->get(1)/2*2;
-		$->diml = new Dim(a->count(),v);
+		v[0] += $->r.dim->get(0)/2*2;
+		v[1] += $->r.dim->get(1)/2*2;
+		$->l.init(new Dim(a->count(),v));
 	}
-	$->datal = NEW2(Number,$->diml->prod());
 	$->out[0]->begin(in->dim->dup());
 	in->set_factor(a->prod(1));
 }
 
 GRID_FLOW(GridConvolve,0) {
-	int my = $->dim->get(0), ny = $->diml->get(0) - my/2*2;
-	int mx = $->dim->get(1);
-	int oy = $->diml->prod(1) * (my/2);
-	int ox = $->diml->prod(2) * (mx/2);
+	int my = $->r.dim->get(0), ny = $->l.dim->get(0) - my/2*2;
+	int mx = $->r.dim->get(1);
+	int oy = $->l.dim->prod(1) * (my/2);
+	int ox = $->l.dim->prod(2) * (mx/2);
 	int factor = in->factor;
-	int ll = $->diml->prod(1);
-	int l = $->diml->prod(2);
+	int ll = $->l.dim->prod(1);
+	int l = $->l.dim->prod(2);
 	
 	while (n) {
 		int i = in->dex / factor;
-		Number *p = $->datal+oy+i*ll;
+		Number *p = $->l.as_int32()+oy+i*ll;
 		memcpy(p+ox,data,factor*sizeof(Number));
 		memcpy(p+ox+factor,data,(mx/2)*l*sizeof(Number));
 		memcpy(p,data+factor-ox,(mx/2)*l*sizeof(Number));
@@ -873,10 +834,10 @@ GRID_FLOW(GridConvolve,0) {
 
 GRID_END(GridConvolve,0) {
 	int iy,ix,jy,jx,k;
-	int my = $->dim->get(0), ny = $->diml->get(0) - my/2*2;
-	int mx = $->dim->get(1), nx = $->diml->get(1) - mx/2*2;
-	int l  = $->diml->prod(2);
-	int ll = $->diml->prod(1);
+	int my = $->r.dim->get(0), ny = $->l.dim->get(0) - my/2*2;
+	int mx = $->r.dim->get(1), nx = $->l.dim->get(1) - mx/2*2;
+	int l  = $->l.dim->prod(2);
+	int ll = $->l.dim->prod(1);
 	Number buf[l],buf2[l];
 	Number as[l];
 
@@ -884,8 +845,8 @@ GRID_END(GridConvolve,0) {
 
 	for (iy=0; iy<ny; iy++) {
 		for (ix=0; ix<nx; ix++) {
-			Number *d = $->data;
-			Number *p = $->datal + iy*ll + ix*l;
+			Number *d = $->r.as_int32();
+			Number *p = $->l.as_int32() + iy*ll + ix*l;
 			memcpy(buf,buf2,l*sizeof(Number));
 			for (jy=my; jy; jy--,p+=ll-mx*l) {
 				for (jx=mx; jx; jx--,p+=l) {
@@ -899,8 +860,7 @@ GRID_END(GridConvolve,0) {
 		}
 	}
 	$->out[0]->end();
-	FREE($->diml);
-	FREE($->datal);
+	$->l.del();
 }
 
 GRID_BEGIN(GridConvolve,1) {
@@ -910,14 +870,12 @@ GRID_BEGIN(GridConvolve,1) {
 	/* because odd * odd = odd */
 	if ((length & 1) == 0) RAISE("even number of elements");
 	$->in[0]->abort();
-	FREE($->dim);
-	FREE($->data);
-	$->dim = in->dim->dup();
-	$->data = NEW2(Number,length);
+	$->r.del();
+	$->r.init(in->dim->dup());
 }
 
 GRID_FLOW(GridConvolve,1) {
-	memcpy(&$->data[in->dex], data, n*sizeof(Number));
+	memcpy(&$->r.as_int32()[in->dex], data, n*sizeof(Number));
 }
 
 GRID_END(GridConvolve,1) {}
@@ -927,15 +885,13 @@ METHOD(GridConvolve,init) {
 	$->op_para = OP2(argc<1 ? SYM(*) : argv[0]);
 	$->op_fold = OP2(argc<2 ? SYM(*) : argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
-	$->dim = 0;
-	$->data = 0;
-	$->diml = 0;
-	$->datal = 0;
+	$->r.init(0);
+	$->l.init(0);
 }
 
 METHOD(GridConvolve,delete) {
-	FREE($->dim);  FREE($->diml);
-	FREE($->data); FREE($->datal);
+	$->r.del();
+	$->l.del();
 	rb_call_super(argc,argv);
 }
 
@@ -970,13 +926,9 @@ METHOD(GridFor,_0_bang) {
 	if (v<0) v=0;
 	$->out[0]->begin(new Dim(1,&v));
 	if ($->step > 0) {
-		for (x=$->from; x<$->to; x+=$->step) {
-			$->out[0]->send(1,&x);
-		}
+		for (x=$->from; x<$->to; x+=$->step) $->out[0]->send(1,&x);
 	} else {
-		for (x=$->from; x>$->to; x+=$->step) {
-			$->out[0]->send(1,&x);
-		}
+		for (x=$->from; x>$->to; x+=$->step) $->out[0]->send(1,&x);
 	}
 	$->out[0]->end();
 }
@@ -1024,7 +976,7 @@ LIST(GRINLET(GridDim,0)))
 
 struct GridRedim : GridObject {
 	Dim *dim;
-	Number *data;
+	Number *data; /* data not always used. so not using Grid here */
 };
 
 GRID_BEGIN(GridRedim,0) {
@@ -1076,19 +1028,17 @@ GRID_END(GridRedim,0) {
 /* same inlet 1 as @import */
 
 GRID_BEGIN(GridRedim,1) {
-	int n;
 	if (in->dim->count()!=1)
 		RAISE("dimension list must have 1 dimension");
-	n = in->dim->get(0);
+	int n = in->dim->get(0);
 	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
 	if (n) in->set_factor(n);
 }
 
 GRID_FLOW(GridRedim,1) {
-	int i;
 	int dim[n];
 	FREE($->dim);
-	for(i=0;i<n;i++) {
+	for(int i=0;i<n;i++) {
 		dim[i]=data[i];
 		if (dim[i]<1 || dim[i]>MAX_INDICES)
 			RAISE("dim[%d]=%d is out of range",i,dim[i]);
@@ -1156,15 +1106,15 @@ GRID_BEGIN(GridScaleBy,0) {
 GRID_FLOW(GridScaleBy,0) {
 	int scale = $->rint;
 	int rowsize = in->dim->get(1)*in->dim->get(2);
-	int i,j,k;
+
 	/* for every picture row in this packet... */
 	for (; n>0; data+=rowsize, n-=rowsize) {
 
 		/* scale the line x-wise */
 		Number buf[rowsize*scale];
 		int p=0;
-		for (i=0; i<rowsize; i+=3) {
-			for (k=0; k<scale; k++) {
+		for (int i=0; i<rowsize; i+=3) {
+			for (int k=0; k<scale; k++) {
 				buf[p++]=data[i];
 				buf[p++]=data[i+1];
 				buf[p++]=data[i+2];
@@ -1172,16 +1122,14 @@ GRID_FLOW(GridScaleBy,0) {
 		}
 
 		/* send the x-scaled line several times (thus y-scaling) */
-		for (j=0; j<scale; j++) {
+		for (int j=0; j<scale; j++) {
 			$->out[0]->send(rowsize*scale,buf);
 		}
 	}
 }
 
 /* not much to do here: when the input is done, the output is done too */
-GRID_END(GridScaleBy,0) {
-	$->out[0]->end();
-}
+GRID_END(GridScaleBy,0) { $->out[0]->end(); }
 
 /* the constructor accepts a scale factor as an argument */
 /* that argument is not modifiable through an inlet yet (that would be the right inlet) */
@@ -1220,8 +1168,7 @@ GRID_BEGIN(GridRGBtoHSV,0) {
 GRID_FLOW(GridRGBtoHSV,0) {
 	GridOutlet *out = $->out[0];
 	Number *buf = NEW(Number,n), *buf2=buf;
-	int i;
-	for (i=0; i<n; i+=3, buf+=3, data+=3) {
+	for (int i=0; i<n; i+=3, buf+=3, data+=3) {
 		int r=data[0], g=data[1], b=data[2];
 		int v=buf[2]=max(max(r,g),b);
 		int m=min(min(r,g),b);
@@ -1264,8 +1211,7 @@ GRID_BEGIN(GridHSVtoRGB,0) {
 GRID_FLOW(GridHSVtoRGB,0) {
 	GridOutlet *out = $->out[0];
 	Number *buf = NEW(Number,n), *buf2 = buf;
-	int i;
-	for (i=0; i<n; i+=3, buf+=3, data+=3) {
+	for (int i=0; i<n; i+=3, buf+=3, data+=3) {
 		int h=mod(data[0],252), s=data[1], v=data[2];
 		int j=h%42;
 		int k=h/42;
