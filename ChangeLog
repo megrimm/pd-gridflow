@@ -1,6 +1,29 @@
 /* $Id$ */
 
-version 0.6.3 (head):
+version 0.6.4 (2002.12.23):
+
+ * can now decode JPEG (using libjpeg.so)
+ * many bugs fixed (especially in file formats)
+ * operators: log* added; tanh renamed to tanh*
+ * @two,@three,@four are no longer specific to the jMax side
+ * format grid: option headerless for reading any kind of file
+ * format grid: option headerful (revert to actual .grid format mode)
+ * fixed problems with GNU C++ version 3
+ * format ppm: accelerated writing
+ * format modifier gzfile: gzip support also works with [@out]
+ * format x11: the "here" specifier is now optional
+ * added @checkers
+ * [@scale_by {y x}] for different y,x scale factors
+ * [@in blah blah] means "open blah blah" -> [@in] (and same with @out)
+ * added @downscale_by with or without smoothing
+ * format targa: can now decode 32 bit RGBA
+ * @layer: combines RGBA foreground with RGB background, yielding RGB.
+ * format grid options: endian big, endian little, endian same
+ * formats ppm,grid: use 'option rewind' to overwrite same file
+	(by default, rewind is no longer done after each frame)
+	('option rewind' also rewinds on reading)
+
+version 0.6.3 (2002.12.06):
 
  * removing the custom leak detector ("Valgrind" program used instead)
  * removed all (?) memory leaks
@@ -10,7 +33,7 @@ version 0.6.3 (head):
  * x11: option setcursor <0-63>, option hidecursor
  * x11: outlet 0 tells cursor position / button state
  * more C++ification of the code
- * many bugs fixed
+ * many bugs fixed (especially crashes)
 
 version 0.6.2 (2002.09.17):
 
