@@ -675,16 +675,11 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	hell: return rb_call_super(argc,argv);
 }
 
-/* moved the stuff to the other destructor */
-\def void delete_m () {
-	rb_call_super(argc,argv);
-}
-
 GRCLASS(GridObject,LIST(),
 	\grdecl
 ){
 	IEVAL(rself,"install 'GridObject',0,0");
-	/* define in Ruby-metaclass */
+	// define in Ruby-metaclass
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
 	rb_enable_super(rb_singleton_class(rself),"instance_methods");
@@ -707,7 +702,7 @@ void startup_grid () {
 */
 //static
 void make_gimmick () {
-//    exit(1); /* i warned you. */
+//    exit(1); // i warned you.
 	GridOutlet foo(0,0);
 #define FOO(S) foo.give(0,Pt<S>());
 EACH_NUMBER_TYPE(FOO)
