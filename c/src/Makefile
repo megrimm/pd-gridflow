@@ -1,8 +1,5 @@
 # $Id$
 include ../../config.make
-ARCH_CFLAGS += -Wall -Wno-unused -funroll-loops -g
-ARCH_CFLAGS += -fdollars-in-identifiers
-ARCH_CFLAGS += -fpic
 
 ifeq ($(JMAX_VERSION),24)
 
@@ -45,6 +42,10 @@ OBJS = $(addprefix ../obj2/,$(subst .c,.o,$(SOURCES)))
 FIX_LD = LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 LIB = ../lib2/lib$(PNAME).so
 # LIB2 = /home/matju/lib/$(LIB)
+
+ARCH_CFLAGS += -Wall -Wno-unused -O6 -funroll-loops -g
+ARCH_CFLAGS += -fdollars-in-identifiers
+ARCH_CFLAGS += -fpic
 
 standalone:: $(LIB)
 

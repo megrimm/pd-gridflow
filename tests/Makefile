@@ -2,7 +2,7 @@ include ../config.make
 
 FIX_LD = LD_LIBRARY_PATH=../c/lib2:${LD_LIBRARY_PATH}
 ARCH_CFLAGS += -Wall -Wno-unused
-ARCH_CFLAGS += -fno-unroll-all-loops -funroll-loops -g
+ARCH_CFLAGS += -O6 -fno-unroll-all-loops -funroll-loops -g
 ARCH_CFLAGS += -fdollars-in-identifiers
 LDSOFLAGS = $(GRIDFLOW_LDSOFLAGS)
 
