@@ -692,20 +692,43 @@ end # if not =~ jmax
 
 #-------- fClasses for: GUI
 
-class Peephole < GridFlow::FObject
+class Peephole < GridFlow::FPatcher
+	@fobjects = ["@dim","@export_list","@downscale_by 1 smoothly","@out"]
+	@wires = [-1,0,0,0, 0,0,1,0, -1,0,2,0, 2,0,3,0, 3,0,-1,0]
+	# 1,0,-1,2, 
 	def initialize(*args)
 		super
+		@fobjects[1].connect 0,self,2
 		GridFlow.post "Peephole#init: #{args.inspect}"
+		@scale = 1
+		@sy,@sx = 16,16
+		@y,@x = 0,0
 	end
-	def method_missing(*args)
-		GridFlow.post "Peephole#method_missing: #{args.inspect}"
+#	def method_missing(*args)
+#		return super if :_0_grid==args[0]
+#		GridFlow.post "Peephole#method_missing: #{args.inspect}"
+#	end
+	def _0_open(args)
+		GridFlow.post "%s", args.inspect
+		@fobjects[3].send_in 0, :open,:x11,:here,:embed,"MyTitle"
 	end
-	def _0_open(window,y,x,height,width)
-		@target = FObject[:@out,:x11,:here,:embed,"MyTitle",y,x,height,width]
+	def _0_set_geometry(y,x,sy,sx)
+		GridFlow.post "set_geometry %d %d %d %d", y,x,sy,sx
+		@fobjects[3].send_in 0, :set_geometry,y,x,sy,sx
+		@sy,@sx = sy,sx
+		@y,@x = y,x
 	end
-	def _0_grid(*a)
-		@target.send_in 0,:grid,*a if @target
-		send_out 0,:grid,*a
+	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
+	def _1_position(y,x,b) send_out 0,:position,y*@scale,x*@scale,b end
+	def _2_list(sy,sx,chans)
+		@scale = [(sy+@sy-1)/@sy,(sx+@sx-1)/@sx].max
+		#GridFlow.post "s=#{[sy,sx].inspect} @s=#{[@sy,@sx].inspect} @scale=#{@scale}"
+		@fobjects[2].send_in 1, @scale
+		@fobjects[3].send_in 0, :set_geometry,
+			y+(sy-@sy/@scale)/2,
+			x+(sy-@sy/@scale)/2,
+			@sy/@scale*@scale,
+			@sx/@scale*@scale
 	end
 	install "peephole", 1, 1
 end
