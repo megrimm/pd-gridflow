@@ -70,7 +70,6 @@ $conf={
 	:LDSOFLAGS => ["-lm"],
 	:BRIDGE_LDFLAGS => ["-lm"],
 	:FEATURES => {},
-	:FORMATS => [],
 	:OPTIONS => [],
 	:DEFINES => {
 		:RUBY_PREFIX => CONFIG['prefix'],
@@ -120,7 +119,6 @@ class Feature
 	attr2 :uses_h
 	attr2 :uses_feature
 	attr2 :test
-	attr2 :formats #!@#$
 	attr2 :options #!@#$
 	attr2 :unless_feature #!@#$
 	attr2 :action #!@#$
@@ -464,7 +462,7 @@ Feature.add {
 		"
 	}
 	options ["HAVE_1394"]
-	formats ["DC1394"]
+	uses_o ["format/dc1394.o"]
 }
 Feature.add {
 	tag :x11
@@ -477,7 +475,7 @@ Feature.add {
 		int main () {return XSetErrorHandler==0;}
 		"
 	}
-	formats ["X11"]
+	uses_o ["format/x11.o"]
 }
 Feature.add {
 	tag :x11_shm
@@ -509,7 +507,7 @@ Feature.add {
 		int main () {return glutInit==0;}
 		"
 	}
-	formats ["OpenGL"]
+	uses_o ["format/opengl.o"]
 }
 =end
 Feature.add {
@@ -527,7 +525,7 @@ Feature.add {
 		int main () {return SDL_MapRGB==0;}
 		"
 	}
-	formats ["SDL"]
+	uses_o ["format/sdl.o"]
 }
 Feature.add {
 	tag :objcpp
@@ -553,7 +551,7 @@ Feature.add {
 		int main () {return CGImageRelease==0;}
 		", nil, ["-xobjective-c++"]
 	}
-	formats ["Quartz"]
+	uses_o ["format/quartz.o"]
 }
 Feature.add {
 	tag :aalib
@@ -569,7 +567,7 @@ Feature.add {
 		int main () {return aa_init==0;}
 		"
 	}
-	formats ["AALib"]
+	uses_o ["format/aalib.o"]
 }
 Feature.add {
 	tag :jpeg
@@ -586,7 +584,7 @@ Feature.add {
 		return jpeg_write_scanlines==0;}
 		"
 	}
-	formats ["JPEG"]
+	uses_o ["format/jpeg.o"]
 }
 Feature.add {
 	tag :png
@@ -606,7 +604,7 @@ Feature.add {
 		return 0;}
 		`
 	}
-	formats ["PNG"]
+	uses_o ["format/png.o"]
 }
 Feature.add {
 	tag :videodev
@@ -618,7 +616,7 @@ Feature.add {
 		#include#
 		int main () { struct video_window foo; return 0; }"
 	}
-	formats ["VideoDev"]
+	uses_o ["format/videodev.o"]
 }
 Feature.add {
 	tag :mpeg3
@@ -632,7 +630,7 @@ Feature.add {
 		int main () { return mpeg3_open==0; }
 		"
 	}
-	formats ["MPEG3"]
+	uses_o ["format/mpeg3.o"]
 }
 Feature.add {
 	tag :quicktimeapple
@@ -645,7 +643,7 @@ Feature.add {
 		int main () { return EnterMovies==0; }
 		"
 	}
-	formats ["QuickTimeApple"]
+	uses_o ["format/quicktimeapple.o"]
 }
 Feature.add {
 	tag :quicktimehw
@@ -669,7 +667,7 @@ Feature.add {
 		); return quicktime_open==0; }
 		`
 	}
-	formats ["QuickTimeHW"]
+	uses_o ["format/quicktimehw.o"]
 }
 Feature.add {
 	tag :xine
@@ -687,7 +685,7 @@ Feature.add {
 			XINE_SUB_VERSION, XINE_VERSION);
 		return xine_new==0; }`
 	}
-	formats ["Xine"]
+	uses_o ["format/xine.o"]
 }
 #Feature.add {
 #	tag :example
@@ -892,7 +890,6 @@ def try feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
 	$conf[:BRIDGE_LDFLAGS].concat(feature.uses_bridge_so||[])
 	$conf[:OBJS].concat(feature.uses_o||[])
-	$conf[:FORMATS].concat(feature.formats||[])
 	$conf[:OPTIONS].concat(feature.options||[])
 	for k,v in feature.defines||{} do
 		$conf[:DEFINES][k]=(if Proc===v then v[] else v end)
@@ -923,7 +920,7 @@ $CFLAGS += " -falign-functions=4" if $conf[:FEATURES][:gcc3]
 #--------------------------------#
 
 LOG.puts "-"*64
-for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :FORMATS, :OPTIONS, :DEFINES, :OBJS] do
+for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
   LOG.puts "#{z}: #{$conf[z].inspect}"
 end
 LOG.puts "-"*64
@@ -999,12 +996,16 @@ base/flow_objects.c
 base/flow_objects_for_image.c
 base/flow_objects_for_matrix.c
 )
-for format in $conf[:FORMATS] do
-	x = "format/#{format.downcase}.c"
-	x = "format/#{format.downcase}.m" if not File.exist?(x)
-	raise "woops, missing file format/#{format.downcase}.*" if not File.exist?(x)
-	$sources << x
-end
+
+#for o in $conf[:OBJS] do
+#	o=o.downcase.chomp(".o")
+#	x = o.downcase+".c"
+#	x = o.downcase+".m" if not File.exist?(x)
+#	#raise "woops, missing file #{o.downcase}.*" if not File.exist?(x) and
+#	# o!="cpu/mmx"
+#	$sources << x
+#end
+
 f.puts "SOURCES = #{$sources.join(" ")} \\"
 f.puts ""
 } # end open config.make
@@ -1018,12 +1019,8 @@ File.open("config.h","w") {|f| f.puts "
 
 "
 
-if $conf[:FORMATS]!=[] then
-	f.puts "#define FORMAT_LIST(_pre_,_pre2_,_post_) \\"
-	f.puts $conf[:FORMATS].map {|fmt|
-		"  _pre_ _pre2_##Format#{fmt}##_post_"
-	}.join(",\\\n")
-end
+f.puts "#define STARTUP_LIST(PRE) \\"
+f.puts $conf[:OBJS].map {|o| "PRE startup_#{File.basename(o,'.o')}();" }.join("\\\n")
 
 for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
 for k,v in $conf[:DEFINES] do f.puts "\#define #{k} "+v.inspect end
