@@ -489,7 +489,7 @@ end
 # default values for jmax conf
 # [could also use Dir.pwd or ENV['PWD'] to get the path...]
 $conf[:JMAX_SOURCES]= `pwd`.chomp + "/bundled/jmax"
-$JMAX_ARCH = "i686-linux"
+$conf[:JMAX_ARCH] = "i686-linux"
 
 while ARGV.length>0 do
 	arg=ARGV.shift
