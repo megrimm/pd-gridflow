@@ -301,8 +301,7 @@ static uint64 RtMetro_now2(void) {
 void gf_timer_handler (t_clock *alarm, void *obj) {
 	long long time = RtMetro_now2();
 //	gfpost("tick");
-	rb_eval_string("begin $mainloop.one(0); rescue Exception => e;\
-		GridFlow.gfpost \"ruby #{e.class}: #{e}: #{e.backtrace}\"; end");
+	rb_funcall(GridFlow_module2,SI(tick),0);
 	clock_delay(gf_alarm,GF_TIMER_GRANULARITY);
 //	gfpost("tick was: %lld\n",RtMetro_now2()-time);
 }       

@@ -104,6 +104,7 @@ GridInlet::~GridInlet() {
 
 void GridInlet::abort() {
 	if (dim) {
+		if (dim->prod())
 		gfpost("%s: aborting grid: %d of %d", INFO(this), dex, dim->prod());
 		FREE(dim);
 		FREE(buf);
@@ -162,10 +163,9 @@ void GridInlet::begin(int argc, VALUE *argv) {
 
 	if (argc>MAX_DIMENSIONS) RAISE("too many dimensions (aborting grid)");
 
-	int *v = NEW(int,argc);
+	int v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	Dim *dim = this->dim = new Dim(argc,v);
-	FREE(v);
 
 	dex = 0;
 	int r = rb_ensure(
@@ -181,6 +181,7 @@ void GridInlet::flow(int argc, VALUE *argv) {
 //	gfpost("inlet=%08p dex=%06d prod=%06d",this,dex,dim->prod());
 	int n = NUM2INT(argv[0]);
 	int mode = NUM2INT(argv[2]);
+	if (n==0) return;
 	if (mode==4) {
 		const Number *data = (Number *) FIX2PTR(argv[1]);
 		if (!is_busy_verbose("flow")) return;
@@ -192,15 +193,17 @@ void GridInlet::flow(int argc, VALUE *argv) {
 			if (n<=0) return;
 		}
 		if (buf && bufn) {
-			while (n && bufn<factor) { buf[bufn++] = *data++; n--; }
+			int k = min(n,factor-bufn);
+			memcpy(buf+bufn,data,k*sizeof(Number));
+			bufn+=k; data+=k; n-=k;
 			if (bufn == factor) {
 				int newdex = dex + factor;
-				if (gh->mode==6 && gh->flow) {
+				if (gh->mode==6) {
 					Number *data2 = NEW2(Number,factor);
 					memcpy(data2,buf,factor*sizeof(Number));
-					((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,factor,data2);
+					((GridFlow2)gh->flow)(parent->peer,parent,this,factor,data2);
 				} else {
-					gh->flow(parent->peer,(GridObject *)parent,this,factor,buf);
+					gh->flow(parent->peer,parent,this,factor,buf);
 				}
 				dex = newdex;
 				bufn = 0;
@@ -209,29 +212,28 @@ void GridInlet::flow(int argc, VALUE *argv) {
 		int m = (n / factor) * factor;
 		if (m) {
 			int newdex = dex + m;
-			if (gh->mode==6 && gh->flow) {
+			if (gh->mode==6) {
 				Number *data2 = NEW2(Number,m);
 				memcpy(data2,data,m*sizeof(Number));
-				((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,m,data2);
+				((GridFlow2)gh->flow)(parent->peer,parent,this,m,data2);
 			} else {
-				gh->flow(parent->peer,(GridObject *)parent,this,m,data);
+				gh->flow(parent->peer,parent,this,m,data);
 			}
 			dex = newdex;
 		}
 		data += m;
 		n -= m;
-		if (buf) { while (n) { buf[bufn++] = *data++; n--; }}
+		if (buf) memcpy(buf+bufn,data,n*sizeof(Number)), bufn+=n;
 	} else if (mode==6) {
 		Number *data = (Number *)FIX2PTR(argv[1]);
 		if (!is_busy_verbose("flow")) return;
 		assert(n>0);
 		assert(factor==1);
-		assert(gh->flow);
 		int newdex = dex + n;
 		if (gh->mode==6) {
-			((GridFlow2)gh->flow)(parent->peer,(GridObject *)parent,this,n,data);
+			((GridFlow2)gh->flow)(parent->peer,parent,this,n,data);
 		} else if (gh->mode==4) {
-			gh->flow(parent->peer,(GridObject *)parent,this,n,data);
+			gh->flow(parent->peer,parent,this,n,data);
 			FREE(data);
 		}
 		dex = newdex;
@@ -247,7 +249,7 @@ void GridInlet::end(int argc, VALUE *argv) {
 		gfpost("%s: incomplete grid: %d of %d", INFO(this),
 			dex, dim->prod());
 	}
-	gh->end(parent->peer,(GridObject *)parent,this);
+	gh->end(parent->peer,parent,this);
 	FREE(dim);
 	dex = 0;
 }
@@ -362,17 +364,10 @@ void GridOutlet::send_direct(int n, const Number *data) {
 	assert(is_busy());
 	while (n>0) {
 		int pn = min(n,gf_max_packet_length);
-		VALUE a[] = {
-			INT2NUM(woutlet),
-			sym_grid_flow,
-			INT2NUM(pn),
-			PTR2FIX(data),
-			INT2NUM(4), // mode ro
-		};
+		VALUE a[] = { INT2NUM(pn), PTR2FIX(data), INT2NUM(4) };
 //		LEAVE_P;
-//		FObject_send_out(COUNT(a),a,parent->peer);
-		for (int i=0; i<ron; i++) ro[i]->flow(COUNT(a)-2,a+2);
-		for (int i=0; i<rwn; i++) rw[i]->flow(COUNT(a)-2,a+2);
+		for (int i=0; i<ron; i++) ro[i]->flow(COUNT(a),a);
+		for (int i=0; i<rwn; i++) rw[i]->flow(COUNT(a),a);
 //		ENTER_P;
 		data += pn;
 		n -= pn;
@@ -401,16 +396,9 @@ void GridOutlet::give(int n, Number *data) {
 	flush();
 	if (ron == 0 && rwn == 1) {
 		/* this is the copyless buffer passing */
-		VALUE a[] = {
-			INT2NUM(0),
-			sym_grid_flow,
-			INT2NUM(n),
-			PTR2FIX(data),
-			INT2NUM(6), /* mode rw */
-		};
+		VALUE a[] = { INT2NUM(n), PTR2FIX(data), INT2NUM(6) };
 //		LEAVE_P;
-//		FObject_send_out(COUNT(a),a,parent->peer);
-		rw[0]->flow(COUNT(a)-2,a+2);
+		rw[0]->flow(COUNT(a),a);
 //		ENTER_P;
 	} else {
 		/* normal stuff */
@@ -454,9 +442,7 @@ METHOD(GridObject,init) {
 		GridHandler *gh = &cl->handlers[i];
 		$->in[gh->winlet] = new GridInlet($,gh);
 	}
-	for (i=0; i<cl->outlets; i++) {
-		$->out[i] = new GridOutlet($,i);
-	}
+	for (i=0; i<cl->outlets; i++) $->out[i] = new GridOutlet($,i);
 //	for (i=0; i<MAX_INLETS; i++) gfpost("$=%p i=%d $->in[i]=%p",$,i,$->in[i]);
 	rb_call_super(0,0);
 }
@@ -480,10 +466,10 @@ METHOD2(GridObject,inlet_dim) {
 	GridInlet *in = $->in[INT(argv[0])];
 	if (!in) RAISE("no such inlet #%d");
 	if (!in->dim) return Qnil;
-	int i, n=in->dim->count();
+	int n=in->dim->count();
 	VALUE a = rb_ary_new2(n);
 //	gfpost("inlet_dim: %p,%p",in,in->dim);
-	for(i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
+	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(in->dim->v[i]));
 	return a;
 }
 
@@ -491,11 +477,10 @@ METHOD(GridObject,send_out_grid_begin) {
 	if (argc!=2 || TYPE(argv[1])!=T_ARRAY) RAISE("bad args");
 	int outlet = INT(argv[0]);
 	int n = rb_ary_len(argv[1]);
-	int i;
 	int v[n];
 	VALUE *p = rb_ary_ptr(argv[1]);
 	if (outlet<0 || outlet>=MAX_OUTLETS) RAISE("bad outlet");
-	for (i=0; i<n; i++) v[i] = INT(p[i]);
+	for (int i=0; i<n; i++) v[i] = INT(p[i]);
 	$->out[outlet]->begin(new Dim(n,v));
 }
 
@@ -628,15 +613,12 @@ FormatInfo *format_infos[] = {};
 
 METHOD(Format,init) {
 	int flags = INT(rb_ivar_get(CLASS_OF(rself),SI(@flags)));
-
 	rb_call_super(argc,argv);
-
 	$->mode = argv[0];
 	$->parent = 0;
 	$->bit_packing = 0;
 	$->dim = 0;
-
-	gfpost("flags=%d",flags);
+	//gfpost("flags=%d",flags);
 	/* FF_W, FF_R, FF_RW */
 	if ($->mode==SYM(in)) {
 		if ((flags & 4)==0) goto err;

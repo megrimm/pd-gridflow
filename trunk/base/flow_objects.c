@@ -201,8 +201,8 @@ GRID_BEGIN(GridStore,0) {
 	int v[MAX_DIMENSIONS];
 	if ($->r.is_empty()) RAISE("empty buffer, better luck next time.");
 
-	gfpost("a=%s",in->dim->to_s());
-	gfpost("b=%s",$->r.dim->to_s());
+//	gfpost("a=%s",in->dim->to_s());
+//	gfpost("b=%s",$->r.dim->to_s());
 
 	nb = $->r.dim->n;
 
@@ -222,7 +222,7 @@ GRID_BEGIN(GridStore,0) {
 	$->out[0]->begin(new Dim(nd,v));
 	in->set_factor(nc);
 
-	gfpost("c=%s",$->out[0]->dim->to_s());
+//	gfpost("c=%s",$->out[0]->dim->to_s());
 }
 
 void GridOutlet_send8(GridOutlet *$, int n, const uint8 *data) {
@@ -267,7 +267,7 @@ GRID_END(GridStore,0) {
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = $->r.dim->prod();
-		gfpost("n=%d",n);
+//		gfpost("n=%d",n);
 		if ($->r.nt==int32_type_i) {
 			while (n--) o->send(size,$->r.as_int32());
 		} else if ($->r.nt==uint8_type_i) {
@@ -609,7 +609,7 @@ GRID_BEGIN(GridInner,2) {
 	$->in[0]->abort();
 	if (in->dim->n<1) RAISE("minimum 1 dimension");
 	$->r.del();
-	$->r.init(in->dim->dup(),int32_type_i);
+	$->r.init(in->dim->dup());
 }
 
 GRID_FLOW(GridInner,2) {
@@ -620,10 +620,12 @@ GRID_END(GridInner,2) {}
 
 METHOD(GridInner,init) {
 	rb_call_super(argc,argv);
+	if (argc>4) RAISE("too many args");
 	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
 	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->r.init(0);
+	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
 METHOD(GridInner,delete) {
@@ -683,7 +685,7 @@ GRID_BEGIN(GridInner2,2) {
 	$->in[0]->abort();
 	if (in->dim->n<1) RAISE("minimum 1 dimension");
 	$->r.del();
-	$->r.init(in->dim->dup(),int32_type_i);
+	$->r.init(in->dim->dup());
 }
 
 GRID_FLOW(GridInner2,2) {
@@ -694,10 +696,12 @@ GRID_END(GridInner2,2) {}
 
 METHOD(GridInner2,init) {
 	rb_call_super(argc,argv);
+	if (argc>4) RAISE("too many args");
 	$->op_para = argc<1 ? OP2(SYM(*)) : OP2(argv[0]);
 	$->op_fold = argc<2 ? OP2(SYM(+)) : OP2(argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->r.init(0);
+	if (argc==4) $->r.init_from_ruby(argv[3]);
 }
 
 METHOD(GridInner2,delete) {
@@ -880,11 +884,13 @@ GRID_END(GridConvolve,1) {}
 
 METHOD(GridConvolve,init) {
 	rb_call_super(argc,argv);
+	if (argc>4) RAISE("too many args");
 	$->op_para = OP2(argc<1 ? SYM(*) : argv[0]);
 	$->op_fold = OP2(argc<2 ? SYM(+) : argv[1]);
 	$->rint = argc<3 ? 0 : INT(argv[2]);
 	$->c.init(0);
 	$->b.init(0);
+	if (argc==4) $->b.init_from_ruby(argv[3]);
 }
 
 METHOD(GridConvolve,delete) {
@@ -901,49 +907,83 @@ LIST(GRINLET(GridConvolve,0),GRINLET(GridConvolve,1)),
 /* **************************************************************** */
 
 struct GridFor : GridObject {
-	Number from;
-	Number to;
-	Number step;
+	Grid from;
+	Grid to;
+	Grid step;
 };
 
 METHOD(GridFor,init) {
 	rb_call_super(argc,argv);
-	$->from = INT(argv[0]);
-	$->to   = INT(argv[1]);
-	$->step = INT(argv[2]);
-	if (!$->step) $->step=1;
+	if (argc<3) RAISE("not enough arguments");
+	$->from.init_from_ruby(argv[0]);
+	$->to  .init_from_ruby(argv[1]);
+	$->step.init_from_ruby(argv[2]);
 }
 
-METHOD(GridFor,_0_set) { $->from = INT(argv[0]); }
-METHOD(GridFor,_1_int) { $->to   = INT(argv[0]); }
-METHOD(GridFor,_2_int) { $->step = INT(argv[0]); if (!$->step) $->step=1; }
-
 METHOD(GridFor,_0_bang) {
-	int v = ($->to - $->from + $->step - cmp($->step,0)) / $->step;
-	Number x;
-	if (v<0) v=0;
-	$->out[0]->begin(new Dim(1,&v));
-	if ($->step > 0) {
-		for (x=$->from; x<$->to; x+=$->step) $->out[0]->send(1,&x);
-	} else {
-		for (x=$->from; x>$->to; x+=$->step) $->out[0]->send(1,&x);
+	int n = $->from.dim->prod();
+	int nn[n+1];
+	Number x[n];
+	Number *from = $->from.as_int32();
+	Number *  to = $->to  .as_int32();
+	Number *step = $->step.as_int32();
+//	WATCH2(n,from);
+//	WATCH2(n,to);
+//	WATCH2(n,step);
+	if (!$->from.dim->equal($->to.dim) || !$->to.dim->equal($->step.dim))
+		RAISE("dimension mismatch");
+	for (int i=$->step.dim->prod()-1; i>=0; i--)
+		if (!$->step.as_int32()[i]) RAISE("step must not contain zeroes");
+	for (int i=0; i<n; i++) {
+		nn[i] = (to[i] - from[i] + step[i] - cmp(step[i],0)) / step[i];
+		if (nn[i]<0) nn[i]=0;
 	}
+	if ($->from.dim->n==0) {
+		$->out[0]->begin(new Dim(1,nn));
+	} else {
+		nn[n]=n;
+		$->out[0]->begin(new Dim(n+1,nn));
+	}
+	for(int d=0;;) {
+		/* here d is the dim# to reset; d=n for none */
+		for(;d<n;d++) x[d]=from[d];
+		d--;
+//		WATCH(x);
+		$->out[0]->send(n,x);
+		/* here d is the dim# to increment */
+		for(;;) {
+			if (d<0) goto end;
+//			fprintf(stderr,"d=%d\n",d);
+//			fprintf(stderr,"d=%d x[d]=%d step[d]=%d\n",d,x[d],step[d]);
+			x[d]+=step[d];
+			if (x[d]<to[d]) break;
+			d--;
+		}
+		d++;
+	}
+	end:
 	$->out[0]->end();
 }
 
-METHOD(GridFor,_0_int) {
-	$->from = INT(argv[0]);
-	GridFor__0_bang($,rself,argc,argv);
-}
+METHOD(GridFor,_0_set) { $->from.init_from_ruby(argv[0]); }
+
+#define GRID_INPUT_2(_class_,_inlet_,_member_) \
+	GRID_BEGIN(_class_,_inlet_) { \
+		if (in->dim->n > 1) RAISE("at most 1 dimension"); \
+		$->_member_.del(); $->_member_.init(in->dim->dup(),int32_type_i); } \
+	GRID_FLOW(_class_,_inlet_) { \
+		memcpy(&$->_member_.as_int32()[in->dex], data, n*sizeof(Number)); } \
+	GRID_END(_class_,_inlet_)
+
+GRID_INPUT_2(GridFor,2,step) {}
+GRID_INPUT_2(GridFor,1,to) {}
+GRID_INPUT_2(GridFor,0,from) {GridFor__0_bang($,rself,0,0);}
 
 GRCLASS(GridFor,"@for",inlets:3,outlets:1,
-LIST(),
+LIST(GRINLET(GridFor,0),GRINLET(GridFor,1),GRINLET(GridFor,2)),
 	DECL(GridFor,init),
 	DECL(GridFor,_0_bang),
-	DECL(GridFor,_0_int),
-	DECL(GridFor,_0_set),
-	DECL(GridFor,_1_int),
-	DECL(GridFor,_2_int))
+	DECL(GridFor,_0_set))
 
 /* **************************************************************** */
 
