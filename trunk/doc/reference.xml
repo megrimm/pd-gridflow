@@ -184,8 +184,8 @@
 <section name="Objects for Input/Output">
 
 	<jmax-class name="@in">
-		<icon image="@in" text="[@in]"/>
-		<help image="@inout" text="[@in]"/>
+		<icon text="[@in]"/>
+		<help text="[@in]" image="@inout"/>
 
 		<method name="init">
 			Creates an input object for an unspecified format. You
@@ -238,8 +238,8 @@
 	</jmax-class>
 
 	<jmax-class name="@out">
-		<icon image="@out" text="[@out]"/>
-		<help image="@inout" text="[@out]"/>
+		<icon text="[@out]"/>
+		<help text="[@out]" image="@inout"/>
 
 		<method name="init">
 			Creates an output object for an unspecified format. You
@@ -301,8 +301,8 @@
 	</jmax-class>
 
 	<jmax-class name="@import">
-		<icon text="[@ import 240 320 3]"/>
-		<help image="@importexport" text="[@import 240 320 3]"/>
+		<icon text="[@import 240 320 3]"/>
+		<help text="[@import 240 320 3]" image="@importexport" />
 
 		<p>This object allows you to import non-grid jMax data, such as
 		integers and lists of integers. This object also reframes/resyncs
@@ -348,7 +348,7 @@
 
 	<jmax-class name="@export">
 		<icon text="[@export]"/>
-		<help image="@importexport" text="[@export]"/>
+		<help text="[@export]" image="@importexport" />
 
 		<p>this object is the opposite of @import.</p>
 		<method name="init">
@@ -357,7 +357,7 @@
 		</method>
 		<inlet id="0">
 			<grid><dim>dims...</dim>
-				transforms this grid in a series of integers.
+				transforms this grid into a sequence of integer messages.
 			</grid>
 		</inlet>
 		<outlet id="0">
@@ -367,12 +367,35 @@
 		</outlet>
 	</jmax-class>
 
+	<jmax-class name="@export_list">
+		<icon text="[@export_list]"/>
+		<help text="[@export_list]" image="@importexport" />
+
+		<p>this object is another opposite of @import, which puts
+		all of its values in a jMax list.</p>
+		<method name="init">
+			this object is not configurable because there isn't
+			anything that could possibly be configured here.
+		</method>
+		<inlet id="0">
+			<grid><dim>dims...</dim>
+				transforms this grid into a single message containing
+				a list of integers.
+			</grid>
+		</inlet>
+		<outlet id="0">
+			<method name="list">
+				elements of the incoming grid.
+			</method>
+		</outlet>
+	</jmax-class>
+
 	<jmax-class name="@two">
 		<icon text="[@two]"/>
-		<help image="images/grab_two.png" text="[@two]"/>
+		<help text="[@two]" image="@twothreefour"/>
 
 		<p> holds two values, defaulting to (0,0). each time one is
-		changed (by sending an integer in that inlet), a dim(2) grid
+		changed (by sending an integer in that inlet), a Dim(2) grid
 		of those values is sent through the outlet.</p>
 		<method name="init">no arguments.</method>
 		<inlet id="0"><method name="int"/></inlet>
@@ -382,7 +405,7 @@
 
 	<jmax-class name="@three">
 		<icon text="[@three]"/>
-		<help image="images/grab_three.png" text="[@three]"/>
+		<help text="[@three]" image="@twothreefour"/>
 
 		<p> holds three values, defaulting to (0,0,0). each time one is
 		changed (by sending an integer in that inlet), a Dim(3) grid 
@@ -396,6 +419,7 @@
 
 	<jmax-class name="@four">
 		<icon text="[@four]"/>
+		<help text="[@four]" image="@twothreefour"/>
 
 		<p> holds four values, defaulting to (0,0,0,0). each time one is
 		changed (by sending an integer in that inlet), a Dim(4) grid
@@ -412,6 +436,8 @@
 <section name="Objects for Generating">
 	<jmax-class name="@for">
 		<icon text="[@for 0 320 1]"/>
+		<help text="[@for 0 320 1]"/>
+
 		<p>works like a regular [for] object plugged to a [@import] tuned
 		for a Dim(size) where size is the number of values produced by a bang
 		to that [for].</p>
@@ -439,8 +465,8 @@
 
 <section name="Objects for Computing">
 	<jmax-class name="@">
-		<icon image="op/add.jpg" text="[@ +]"/>
-		<help image="images/grab_binary_operations.png" text="two-input operators 1"/>
+		<icon text="[@ +]" image="op/add.jpg" />
+		<help text="two-input operators"/>
 	
 		<p>This object outputs a grid by computing "in parallel" a same
 		operation on each left-hand element with its corresponding right-hand
@@ -489,7 +515,8 @@
 	</jmax-class>
 
 	<jmax-class name="@!">
-		<icon image="@!" text="[@!]"/>
+		<icon text="[@!]"/>
+		<help text="[@!]"/>
 
 		<p>This object computes a grid by computing "in parallel" a same
 		operation on each element of the grid.
@@ -512,7 +539,7 @@
 
 	<jmax-class name="@fold">
 		<icon text="[@fold +]"/>
-		<help image="@foldinnerouter" text="[@fold +]"/>
+		<help text="[@fold +]" image="@foldinnerouter"/>
 
 		<p>
 		@fold makes the last dimension of a grid disappear by combining elements
@@ -559,7 +586,7 @@
 
 	<jmax-class name="@outer">
 		<icon text="[@outer +]"/>
-		<help image="@foldinnerouter" text="[@outer]"/>
+		<help text="[@outer +]" image="@foldinnerouter"/>
 
 		<method name="init">
 			<arg name="operator" type="symbol"/>
@@ -591,7 +618,7 @@
 
 	<jmax-class name="@inner">
 		<icon text="[@inner * + 0]"/>
-		<help image="@foldinnerouter" text="[@inner]"/>
+		<help text="[@inner * + 0]" image="@foldinnerouter" />
 
 		<p>think of this one as a special combination of [@outer], [@]
 		and [@fold]. this is one of the most complex operations. It is very
@@ -644,7 +671,7 @@
 <section name="Objects for Coordinate Transforms">
 	<jmax-class name="@redim">
 		<icon text="[@redim 2]"/>
-		<help image="images/grab_redim.png" text="[@redim 2]"/>
+		<help text="[@redim 2]"/>
 
 		<method name="init">
 			<rest name="dims" type="+integer"/>
@@ -683,7 +710,7 @@
 	</jmax-class>
 	<jmax-class name="@store">
 		<icon text="[@store]"/>
-		<help image="images/grab_cross_fade.png" text="[@store]"/>
+		<help text="[@store]"/>
 
 		<p>A @store object can store exactly one grid, using the right
 		inlet. You fetch it back, or selected subparts thereof, using the left
@@ -730,7 +757,7 @@
 
 	<jmax-class name="@identity_transform">
 		<icon text="[@identity_transform]"/>
-		<help image="images/grab_identity_transform.png" text="[@identity_transform]"/>
+		<help text="[@identity_transform]"/>
 
 		<method name="init">
 			no arguments.
@@ -767,14 +794,14 @@
 
 	<jmax-class name="@scale_to">
 		<icon text="[@scale_to]"/>
-		<help image="images/grab_scale_to.png" text="[@scale_to]"/>
+		<help text="[@scale_to]"/>
 
 		<method name="init">
 			no arguments.
 		</method>
 
 		<inlet id="0">
-			<grid>a picture to be scaled.</grid>
+			<grid>a 3-channel picture to be scaled.</grid>
 		</inlet>
 		<inlet id="1">
 			<method name="int">a height.</method>
@@ -783,9 +810,8 @@
 			<method name="int">a width.</method>
 		</inlet>
 		<outlet id="0">
-			<grid>a scaled picture.</grid>
+			<grid>a scaled 3-channel picture.</grid>
 		</outlet>
-
 
 		<p>@scale_to is normally fed the same inlet 1,2 values as
 		@identity_transform, and chained from @identity_transform and to
@@ -798,6 +824,8 @@
 
 	<jmax-class name="@scale_by">
 		<icon text="[@scale_by]"/>
+		<help text="[@scale_by]"/>
+
 		<method name="init">
 			no arguments. scales by 2.
 		</method>
@@ -817,13 +845,13 @@
 			</grid>
 		</inlet>
 		<outlet id="0">
-			<grid><dim>y x {r g b}</dim></grid>
+			<grid><dim>(2*y) (2*x) {r g b}</dim></grid>
 		</outlet>
 	</jmax-class>
 
 	<jmax-class name="@spread">
 		<icon text="[@spread]"/>
-		<help image="images/grab_spread.png" text="[@spread]"/>
+		<help text="[@spread]"/>
 
 		<p>typically you plug a @identity_transform into this object,
 		and you plug this object into the left side of a @store. it will
@@ -859,7 +887,7 @@
 <section name="Objects for Reporting">
 	<jmax-class name="@dim">
 		<icon text="[@dim]"/>
-		<help image="images/grab_dim.png"/>
+		<help text="[@dim]"/>
 
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p>
@@ -889,6 +917,7 @@
 <section name="Objects for Picture Processing">
 	<jmax-class name="@convolve">
 		<icon text="[@convolve * + 0]"/>
+		<help text="[@convolve * + 0]"/>
 
 		<p>this is the object for blurring, sharpening, finding edges,
 		embossing, and many other uses.</p>
@@ -925,8 +954,8 @@
 	</jmax-class>
 
 	<jmax-class name="@contrast">
-		<icon image="@contrast" text="[@contrast]"/>
-		<help image="images/grab_contrast.png" text="[@contrast]"/> 
+		<icon text="[@contrast]"/>
+		<help text="[@contrast]"/> 
 
 		<method name="init">
 			no arguments.
@@ -961,8 +990,8 @@
 	</jmax-class>
 
 	<jmax-class name="@posterize">
-		<icon image="@posterize" text="[@posterize]"/>
-		<help image="images/grab_posterize.png" text="[@posterize]"/>
+		<icon text="[@posterize]"/>
+		<help text="[@posterize]"/>
 
 		<p>@posterize reduces the number of possible intensities in an image;
 		it rounds the color values.The effect is mostly apparent with a low
@@ -1002,6 +1031,9 @@
 	</jmax-class>
 
 	<jmax-class name="@global">
+		<icon text="[@global]" />
+		<help text="[@global]" />
+
 		<p>
 		objects of this class do nothing by themselves and are just
 		an access point to features that don't belong to any object in

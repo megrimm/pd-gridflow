@@ -40,6 +40,11 @@ if nil
 	def puts (*x); real_print "[#{caller[0]}]"; real_puts  *x; end
 end
 
+def warn(text)
+	STDERR.print "\e[1;031mWARNING:\e[0m "
+	STDERR.puts text
+end
+
 def mk(tag,*values,&block)
 	raise "value-list's length must be even" if values.length % 2 != 0
 	print "<#{tag}"
@@ -224,9 +229,9 @@ class XNode
 		mk(:br,:clear,"left")
 		2.times { mk(:br) }
 		if help
-			big = help.att['image']
+			big = help.att['image'] || att['name']
 			if big[0]==?@ then big="images/help_#{big}.png" end
-			raise "#{big} not found" if not File.exist?(big)
+			warn "#{big} not found" if not File.exist?(big)
 			#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
 			mk(:a,:href,big) {
 				#mk(:img,:src,small,:border,0)

@@ -48,8 +48,9 @@
 <h4><a href="#Objects_for_Input/Output">Objects for Input/Output</a></h4><ul>
 <li><a href="#@in"><img src="images/@in.png" alt="[@in]" border="0"></a></li>
 <li><a href="#@out"><img src="images/@out.png" alt="[@out]" border="0"></a></li>
-<li><a href="#@import"><img src="images/@import.png" alt="[@ import 240 320 3]" border="0"></a></li>
+<li><a href="#@import"><img src="images/@import.png" alt="[@import 240 320 3]" border="0"></a></li>
 <li><a href="#@export"><img src="images/@export.png" alt="[@export]" border="0"></a></li>
+<li><a href="#@export_list"><img src="images/@export_list.png" alt="[@export_list]" border="0"></a></li>
 <li><a href="#@two"><img src="images/@two.png" alt="[@two]" border="0"></a></li>
 <li><a href="#@three"><img src="images/@three.png" alt="[@three]" border="0"></a></li>
 <li><a href="#@four"><img src="images/@four.png" alt="[@four]" border="0"></a></li>
@@ -83,7 +84,7 @@
 </ul>
 <h4><a href="#Special_Objects">Special Objects</a></h4><ul>
 <li><a href="#rtmetro">rtmetro</a></li>
-<li><a href="#@global">@global</a></li>
+<li><a href="#@global"><img src="images/@global.png" alt="[@global]" border="0"></a></li>
 </ul>
 <h4><a href="#External_Picture_Formats">External Picture Formats</a></h4><ul>
 <li><a href="#format ppm @in/@out"><img src="images/format_ppm.png" alt="[open ppm file filename.ppm]" border="0"></a></li>
@@ -248,7 +249,7 @@
    <br><b>outlet 0</b> <b>method</b> bang <b>(</b><b>)</b> 
 				sent when a complete grid has been received. <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@import">@import</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@import.png" alt="[@ import 240 320 3]" border="0"><br clear="left"><br><br><a href="images/help_@importexport.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@import.png" alt="[@import 240 320 3]" border="0"><br clear="left"><br><br><a href="images/help_@importexport.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>This object allows you to import non-grid jMax data, such as 
 		integers and lists of integers. This object also reframes/resyncs 
 		integers and grids so that multiple grids may be joined together, or 
@@ -280,19 +281,30 @@
 			this object is not configurable because there isn't 
 			anything that could possibly be configured here. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
-				transforms this grid in a series of integers. <br>
+				transforms this grid into a sequence of integer messages. <br>
    <br><b>outlet 0</b> <b>method</b> int <b>(</b><b>)</b> 
 				elements of the incoming grid. <br>
+  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@export_list">@export_list</a></td></tr><tr><td></td><td valign='top'><br>
+<img src="images/@export_list.png" alt="[@export_list]" border="0"><br clear="left"><br><br><a href="images/help_@importexport.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p>this object is another opposite of @import, which puts 
+		all of its values in a jMax list.</p> <br><b>method</b> init <b>(</b><b>)</b> 
+			this object is not configurable because there isn't 
+			anything that could possibly be configured here. <br>
+  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims...<b>)</b> 
+				transforms this grid into a single message containing 
+				a list of integers. <br>
+   <br><b>outlet 0</b> <b>method</b> list <b>(</b><b>)</b> 
+				elements of the incoming grid. <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds two values, defaulting to (0,0). each time one is 
-		changed (by sending an integer in that inlet), a dim(2) grid 
+		changed (by sending an integer in that inlet), a Dim(2) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>2<b>)</b><br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/grab_three.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds three values, defaulting to (0,0,0). each time one is 
 		changed (by sending an integer in that inlet), a Dim(3) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
@@ -301,8 +313,8 @@
  <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>3<b>)</b><br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@four.png" alt="[@four]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p> holds four values, defaulting to (0,0,0,0). each time one is 
+<img src="images/@four.png" alt="[@four]" border="0"><br clear="left"><br><br><a href="images/help_@twothreefour.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p> holds four values, defaulting to (0,0,0,0). each time one is 
 		changed (by sending an integer in that inlet), a Dim(4) grid 
 		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
@@ -316,8 +328,8 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Generating"></a><h4>Objects for Generating</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>works like a regular [for] object plugged to a [@import] tuned 
+<img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><a href="images/help_@for.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p>works like a regular [for] object plugged to a [@import] tuned 
 		for a Dim(size) where size is the number of values produced by a bang 
 		to that [for].</p> <br><b>method</b> init <b>(</b>from<b>,</b>to<b>,</b>step<b>)</b>    <br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> 
@@ -334,7 +346,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Computing"></a><h4>Objects for Computing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@">@</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/op/add.jpg" alt="[@ +]" border="0"><br clear="left"><br><br><a href="images/grab_binary_operations.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/op/add.jpg" alt="[@ +]" border="0"><br clear="left"><br><br><a href="images/help_@.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>This object outputs a grid by computing "in parallel" a same 
 		operation on each left-hand element with its corresponding right-hand 
 		element. This is a massively parallel version of jMax's builtin 
@@ -362,8 +374,8 @@
 				Dim(1) or Dim() grid with that number in it. <br>
    <br><b>outlet 0</b> <b>grid</b>  <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@!">@!</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@!.png" alt="[@!]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>This object computes a grid by computing "in parallel" a same 
+<img src="images/@!.png" alt="[@!]" border="0"><br clear="left"><br><br><a href="images/help_@!.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p>This object computes a grid by computing "in parallel" a same 
 		operation on each element of the grid. </p> <br><b>method</b> init <b>(</b>operator<b>)</b>  
 			the operator is one picked in the table of the 3 one-input 
 			operators. <br>
@@ -440,7 +452,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Coordinate_Transforms"></a><h4>Objects for Coordinate Transforms</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@redim">@redim</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@redim.png" alt="[@redim 2]" border="0"><br clear="left"><br><br><a href="images/grab_redim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@redim.png" alt="[@redim 2]" border="0"><br clear="left"><br><br><a href="images/help_@redim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b>dims...<b>)</b>  
 			the argument list specifies a grid shape that the numbers 
 			will fit into. 
@@ -462,7 +474,7 @@
 		on a even line and the right half on the following odd line. @redim 
 		480 320 3 will repeat the input image twice in the output image. 
 		@redim 240 50 3 will only keep the 50 top lines.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@store">@store</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@store.png" alt="[@store]" border="0"><br clear="left"><br><br><a href="images/grab_cross_fade.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@store.png" alt="[@store]" border="0"><br clear="left"><br><br><a href="images/help_@store.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>A @store object can store exactly one grid, using the right 
 		inlet. You fetch it back, or selected subparts thereof, using the left 
 		inlet.</p> <br><b>method</b> init <b>(</b>number_type<b>)</b>  
@@ -491,7 +503,7 @@
    
 			grids as stored, as indexed, or as assembled from multiple 
 			indexings.  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@identity_transform">@identity_transform</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@identity_transform.png" alt="[@identity_transform]" border="0"><br clear="left"><br><br><a href="images/grab_identity_transform.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@identity_transform.png" alt="[@identity_transform]" border="0"><br clear="left"><br><br><a href="images/help_@identity_transform.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b><b>)</b> 
 			no arguments. <br>
   <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>creates a coordinate map that can 
@@ -507,21 +519,21 @@
 		picture.</p> <p> Sending a grid to inlet 0 generates said grid and sends it to 
 		inlet 0. Not guaranteed to be fast (use an intermediate @store as a 
 		cache if needed)</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_to">@scale_to</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@scale_to.png" alt="[@scale_to]" border="0"><br clear="left"><br><br><a href="images/grab_scale_to.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@scale_to.png" alt="[@scale_to]" border="0"><br clear="left"><br><br><a href="images/help_@scale_to.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b><b>)</b> 
 			no arguments. <br>
-  <br><b>inlet 0</b> <b>grid</b> a picture to be scaled.<br>
+  <br><b>inlet 0</b> <b>grid</b> a 3-channel picture to be scaled.<br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>a height.<br>
    <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>a width.<br>
-   <br><b>outlet 0</b> <b>grid</b> a scaled picture.<br>
+   <br><b>outlet 0</b> <b>grid</b> a scaled 3-channel picture.<br>
   <p>@scale_to is normally fed the same inlet 1,2 values as 
 		@identity_transform, and chained from @identity_transform and to 
 		@store. This will scale an image of any size to the size specified 
 		in inlets 1,2. If it doesn't correspond the values of 
 		@identity_transform, part of the image will be trimmed and/or 
 		duplicated.</p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@scale_by">@scale_by</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@scale_by.png" alt="[@scale_by]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <br><b>method</b> init <b>(</b><b>)</b> 
+<img src="images/@scale_by.png" alt="[@scale_by]" border="0"><br clear="left"><br><br><a href="images/help_@scale_by.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <br><b>method</b> init <b>(</b><b>)</b> 
 			no arguments. scales by 2. <br>
  <br><b>method</b> init <b>(</b>factor<b>)</b>  
 			future use: will scale by that factor. <br>
@@ -530,9 +542,9 @@
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b> 
 			identical to @scale_to with arguments that are exactly 
 			twice those of the incoming grid. It is several times faster. <br>
-   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>y x {r g b}<b>)</b><br>
+   <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>(2*y) (2*x) {r g b}<b>)</b><br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@spread">@spread</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@spread.png" alt="[@spread]" border="0"><br clear="left"><br><br><a href="images/grab_spread.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@spread.png" alt="[@spread]" border="0"><br clear="left"><br><br><a href="images/help_@spread.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>typically you plug a @identity_transform into this object, 
 		and you plug this object into the left side of a @store. it will 
 		scatter pixels around, giving an "unpolished glass" effect.</p> <br><b>method</b> init <b>(</b><b>)</b> 
@@ -550,7 +562,7 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Reporting"></a><h4>Objects for Reporting</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@dim">@dim</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@dim.png" alt="[@dim]" border="0"><br clear="left"><br><br><a href="images/grab_dim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@dim.png" alt="[@dim]" border="0"><br clear="left"><br><br><a href="images/help_@dim.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
 		@dim will return a grid like Dim(3), whose values are 240, 320, 4. </p> <br><b>method</b> init <b>(</b><b>)</b> 
 			no arguments. <br>
@@ -567,8 +579,8 @@
 <td colspan="4" bgcolor="black"><img src="images/black.png" width="1" height="2"></td>
 </tr>
 <tr><td colspan="4"><a name="Objects_for_Picture_Processing"></a><h4>Objects for Picture Processing</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@convolve">@convolve</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>this is the object for blurring, sharpening, finding edges, 
+<img src="images/@convolve.png" alt="[@convolve * + 0]" border="0"><br clear="left"><br><br><a href="images/help_@convolve.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p>this is the object for blurring, sharpening, finding edges, 
 		embossing, and many other uses.</p> <br><b>method</b> init <b>(</b>op_para<b>,</b>op_fold<b>,</b>base<b>)</b>    <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b> 
 				splits the incoming grid into dim(rest...) parts. 
@@ -586,7 +598,7 @@
 				the object. rows2 and columns2 must be odd numbers. <br>
    <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>rows columns rest...<b>)</b> <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@contrast">@contrast</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@contrast.png" alt="[@contrast]" border="0"><br clear="left"><br><br><a href="images/grab_contrast.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@contrast.png" alt="[@contrast]" border="0"><br clear="left"><br><br><a href="images/help_@contrast.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <br><b>method</b> init <b>(</b><b>)</b> 
 			no arguments. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> 
@@ -603,7 +615,7 @@
 			white. no effect is 256. default value is 256. <br>
    <br><b>outlet </b> <b>grid</b> <b>dim(</b>rows columns channels<b>)</b> <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@posterize">@posterize</a></td></tr><tr><td></td><td valign='top'><br>
-<img src="images/@posterize.png" alt="[@posterize]" border="0"><br clear="left"><br><br><a href="images/grab_posterize.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+<img src="images/@posterize.png" alt="[@posterize]" border="0"><br clear="left"><br><br><a href="images/help_@posterize.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>@posterize reduces the number of possible intensities in an image; 
 		it rounds the color values.The effect is mostly apparent with a low 
 		number of levels.</p> <br><b>method</b> init <b>(</b><b>)</b> 
@@ -625,8 +637,8 @@
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		future use. <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@global">@global</a></td></tr><tr><td></td><td valign='top'><br>
-<br clear="left"><br><br><br clear="left"><br></td><td><br>
- <p> 
+<img src="images/@global.png" alt="[@global]" border="0"><br clear="left"><br><br><a href="images/help_@global.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
+   <p> 
 		objects of this class do nothing by themselves and are just 
 		an access point to features that don't belong to any object in 
 		particular. </p> <br><b>method</b> profiler_reset <b>(</b><b>)</b> 
