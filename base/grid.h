@@ -873,9 +873,12 @@ GRID_FINISH
 			_member_.next = new Grid(); \
 			_member_.next->dc = _member_.dc; \
 		} \
-		_member_.next->init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
+		(_member_.next ? _member_.next : &_member_) \
+		->init(in->dim->dup(),NumberTypeE_type_of(*data)); } \
 	GRID_FLOW { \
-		COPY(((Pt<T>)*_member_.next)+in->dex, data, n); } \
+		COPY(((Pt<T>)* \
+		(_member_.next ? _member_.next : &_member_) \
+		)+in->dex, data, n); } \
 	GRID_FINISH
 
 typedef struct GridInlet GridInlet;
