@@ -683,52 +683,12 @@ NumberTypeE NumberTypeE_find (Ruby sym);
     default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 #endif /*HAVE_LITE*/
 
-// Operator objects encapsulate optimised loops of simple operations
-
-template <class T>
-struct Numop1On : CObject {
-	typedef void (*Map)(int,T*);
-	Map op_map;
-	Numop1On(Map m=0) : op_map(m) {}
-	Numop1On(const Numop1On &z) { op_map = z.op_map; }
-};
-
-\class Numop1 < CObject
-struct Numop1 : CObject {
-	Ruby /*Symbol*/ sym;
-	const char *name;
-//private:
-#define FOO(T) \
-	Numop1On<T> on_##T; \
-	Numop1On<T> *on(T &foo) { \
-		if (!on_##T.op_map) RAISE("operator does not support this type"); \
-		return &on_##T;}
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-//public:
-	template <class T> inline void map(int n, Pt<T> as) {
-		as.will_use(n);
-		on(*as)->op_map(n,(T *)as);}
-
-	Numop1(Ruby /*Symbol*/ sym_, const char *name_,
-#define FOO(T) Numop1On<T> op_##T, 
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	bool bogosity=0) : sym(sym_), name(name_) {
-#define FOO(T) on_##T = op_##T;
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	}
-
-	\decl Symbol sym_m ();
-	\decl void map_m (NumberTypeE nt, int n, String as);
-};
-\end class
+// Numop objects encapsulate optimised loops of simple operations
 
 enum LeftRight { at_left, at_right };
 
 template <class T>
-struct Numop2On : CObject {
+struct NumopOn : CObject {
 	// Function Vectorisations
 	typedef void (*Map )(        int n, T *as, T  b ); Map  op_map;
 	typedef void (*Zip )(        int n, T *as, T *bs); Zip  op_zip;
@@ -739,30 +699,30 @@ struct Numop2On : CObject {
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
 	AlgebraicCheck is_neutral, is_absorbent;
-	Numop2On(Map m, Zip z, Fold f, Scan s, AlgebraicCheck n, AlgebraicCheck a) :
+	NumopOn(Map m, Zip z, Fold f, Scan s, AlgebraicCheck n, AlgebraicCheck a) :
 		op_map(m), op_zip(z), op_fold(f), op_scan(s),
 		is_neutral(n), is_absorbent(a) {}
-	Numop2On() {}
-	Numop2On(const Numop2On &z) {
+	NumopOn() {}
+	NumopOn(const NumopOn &z) {
 		op_map  = z.op_map;  op_zip  = z.op_zip;
 		op_fold = z.op_fold; op_scan = z.op_scan;
 		is_neutral = z.is_neutral; is_absorbent = z.is_absorbent; }
 };
 
 // semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c)
-#define OP2_ASSOC (1<<0)
+#define OP_ASSOC (1<<0)
 // abelian property: commutativity: f(a,b)=f(b,a)
-#define OP2_COMM  (1<<1)
+#define OP_COMM  (1<<1)
 
-\class Numop2 < CObject
-struct Numop2 : CObject {
+\class Numop < CObject
+struct Numop : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
 //private:
 #define FOO(T) \
-	Numop2On<T> on_##T; \
-	Numop2On<T> *on(T &foo) { \
+	NumopOn<T> on_##T; \
+	NumopOn<T> *on(T &foo) { \
 		if (!on_##T.op_map) RAISE("operator does not support this type"); \
 		return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
@@ -789,8 +749,8 @@ EACH_NUMBER_TYPE(FOO)
 	\decl void fold_m (NumberTypeE nt, int an, int n, String as, String bs);
 	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
 
-	Numop2(Ruby /*Symbol*/ sym_, const char *name_,
-#define FOO(T) Numop2On<T> op_##T, 
+	Numop(Ruby /*Symbol*/ sym_, const char *name_,
+#define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	int flags_) : sym(sym_), name(name_), flags(flags_) {
@@ -803,23 +763,17 @@ EACH_NUMBER_TYPE(FOO)
 
 extern NumberType number_type_table[];
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
-extern Ruby op1_dict; // GridFlow.@op1_dict={}
-extern Ruby op2_dict; // GridFlow.@op2_dict={}
+extern Ruby op_dict; // GridFlow.@op_dict={}
 
 static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
 	return NumberTypeE_find(x);
 }
 
 #ifndef IS_BRIDGE
-static Numop1 *convert(Ruby x, Numop1 **bogus) {
-	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op1_dict)),x);
-	if (s==Qnil) RAISE("expected one-input-operator");
-	return FIX2PTR(Numop1,s);
-}
-static Numop2 *convert(Ruby x, Numop2 **bogus) {
-	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op2_dict)),x);
+static Numop *convert(Ruby x, Numop **bogus) {
+	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op_dict)),x);
 	if (s==Qnil) RAISE("expected two-input-operator");
-	return FIX2PTR(Numop2,s);
+	return FIX2PTR(Numop,s);
 }
 #endif
 
@@ -1096,7 +1050,7 @@ void *Pointer_get (Ruby self);
 Ruby fclass_install(FClass *fc, Ruby super);
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
-extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
+extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and;
 
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
 #define SAME_TYPE(_a_,_b_) \

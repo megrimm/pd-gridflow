@@ -48,8 +48,8 @@ struct PlanEntry { int y,x; bool neutral; };
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
-	\attr Numop2 *op_para;
-	\attr Numop2 *op_fold;
+	\attr Numop *op_para;
+	\attr Numop *op_fold;
 	\attr PtrGrid seed;
 	\attr PtrGrid b;
 	PtrGrid a;
@@ -57,7 +57,7 @@ struct GridConvolve : GridObject {
 	PlanEntry *plan; //Pt?
 	int margx,margy; // margins
 	GridConvolve () : plan(0) { b.constrain(expect_convolution_matrix); plan=0; }
-	\decl void initialize (Numop2 *op_para=op2_mul, Numop2 *op_fold=op2_add, Grid *seed=0, Grid *r=0);
+	\decl void initialize (Numop *op_para=op_mul, Numop *op_fold=op_add, Grid *seed=0, Grid *r=0);
 	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
 	~GridConvolve () {if (plan) delete[] plan;}
@@ -78,7 +78,7 @@ template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x)
 	}
 }
 
-static Numop2 *OP2(Ruby x) {return FIX2PTR(Numop2,rb_hash_aref(op2_dict,x));}
+static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
 
 template <class T> void GridConvolve::make_plan (T bogus) {
 	P<Dim> da = a->dim, db = b->dim;
@@ -126,7 +126,7 @@ GRID_INLET(GridConvolve,0) {
 } GRID_FLOW {
 	COPY((Pt<T>)*a+in->dex, data, n);
 } GRID_FINISH {
-	Numop2 *op2_put = OP2(SYM(put));
+	Numop *op_put = OP(SYM(put));
 	make_plan((T)0);
 	int dbx = b->dim->get(1);
 	int day = a->dim->get(0);
@@ -137,7 +137,7 @@ GRID_INLET(GridConvolve,0) {
 	STACK_ARRAY(T,buf2,n2);
 	T orh=0;
 	for (int iy=0; iy<day; iy++) {
-		op2_put->map(n,buf,*(T *)*seed);
+		op_put->map(n,buf,*(T *)*seed);
 		for (int i=0; i<plann; i++) {
 			int jy = plan[i].y;
 			int jx = plan[i].x;
@@ -156,7 +156,7 @@ GRID_INLET(GridConvolve,0) {
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void initialize (Numop2 *op_para, Numop2 *op_fold, Grid *seed, Grid *r) {
+\def void initialize (Numop *op_para, Numop *op_fold, Grid *seed, Grid *r) {
 	rb_call_super(argc,argv);
 	this->op_para = op_para;
 	this->op_fold = op_fold;
@@ -279,7 +279,7 @@ GRID_INLET(GridDownscaleBy,0) {
 			#undef LOOP
 			y++;
 			if (y%scaley==0 && y/scaley<=in->dim->get(0)/scaley) {
-				op2_div->map(rowsize2,buf,(T)(scalex*scaley));
+				op_div->map(rowsize2,buf,(T)(scalex*scaley));
 				out->send(rowsize2,buf);
 				CLEAR(buf,rowsize2);
 			}
@@ -365,7 +365,7 @@ static void expect_polygon (P<Dim> d) {
 
 \class DrawPolygon < GridObject
 struct DrawPolygon : GridObject {
-	\attr Numop2 *op;
+	\attr Numop *op;
 	\attr PtrGrid color;
 	\attr PtrGrid polygon;
 	PtrGrid color2;
@@ -376,7 +376,7 @@ struct DrawPolygon : GridObject {
 		color.constrain(expect_max_one_dim);
 		polygon.constrain(expect_polygon);
 	}
-	\decl void initialize (Numop2 *op, Grid *color=0, Grid *polygon=0);
+	\decl void initialize (Numop *op, Grid *color=0, Grid *polygon=0);
 	\grin 0
 	\grin 1
 	\grin 2 int32
@@ -468,7 +468,7 @@ GRID_INLET(DrawPolygon,0) {
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
-\def void initialize (Numop2 *op, Grid *color, Grid *polygon) {
+\def void initialize (Numop *op, Grid *color, Grid *polygon) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	if (color) this->color=color;
@@ -486,7 +486,7 @@ static void expect_position(P<Dim> d) {
 
 \class DrawImage < GridObject
 struct DrawImage : GridObject {
-	\attr Numop2 *op;
+	\attr Numop *op;
 	\attr PtrGrid image;
 	\attr PtrGrid position;
 	\attr bool alpha;
@@ -497,7 +497,7 @@ struct DrawImage : GridObject {
 		image.constrain(expect_picture);
 	}
 
-	\decl void initialize (Numop2 *op, Grid *image=0, Grid *position=0);
+	\decl void initialize (Numop *op, Grid *image=0, Grid *position=0);
 	\decl void _0_alpha (bool v=true);
 	\decl void _0_tile (bool v=true);
 	\grin 0
@@ -591,7 +591,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 \def void _0_alpha (bool v=true) { alpha = v; }
 \def void _0_tile (bool v=true) {   tile = v; }
 
-\def void initialize (Numop2 *op, Grid *image, Grid *position) {
+\def void initialize (Numop *op, Grid *image, Grid *position) {
 	rb_call_super(argc,argv);
 	this->op = op;
 	if (image) this->image=image;

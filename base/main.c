@@ -293,7 +293,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
 	rb_ivar_set(rself,SI(@foreign_name),name2);
 	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses_set)), name2, rself);
-	rb_funcall(cFObject, SI(install2), 1, name2);
+	rb_funcall(rself, SI(install2), 1, name2);
 	return Qnil;
 }
 
@@ -599,8 +599,16 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	EVAL("module GridFlow; def FObject.install2(*) end end");
-	EVAL("module GridFlow; class FObject; def send_out2(*) end end end");
+	EVAL("module GridFlow\n"
+	    "def self.whatever(*) end\n"
+		"class FObject\n"
+		"def send_out2(*) end\n"
+		"def self.install2(*) end\n"
+		"def self.addcreator(name)\n"
+			"name=name.to_str.dup\n"
+			"GridFlow.instance_eval{@fclasses_set}[name]=self\n"
+			"GridFlow.whatever:addcreator,name end\n"
+		"end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);

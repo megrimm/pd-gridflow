@@ -358,6 +358,7 @@ def GridFlow.macerr(i)
 	end
 end
 
+GridOp.addcreator "@"
 end # module GridFlow
 
 #----------------------------------------------------------------#
@@ -470,9 +471,8 @@ def GridFlow.load_user_config
 end
 
 END {
-#	puts "This is an END block"
 	GridFlow.fobjects_set.each {|k,v|
-		# p k
+		p k
 		k.delete if k.respond_to? :delete
 	}
 	GridFlow.fobjects_set.clear
