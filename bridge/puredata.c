@@ -44,7 +44,6 @@ tries to call a Ruby method of the proper name.
 #include "g_canvas.h"
 
 /* **************************************************************** */
-
 struct BFObject;
 struct FMessage {
 	BFObject *self;
@@ -54,11 +53,9 @@ struct FMessage {
 	const t_atom *at;
 	bool is_init;
 };
-
 #include <sys/time.h>
 #include <signal.h>
 #include <setjmp.h>
-
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
@@ -72,7 +69,6 @@ static Ruby mGridFlow2=0;
 static Ruby Pointer_new (void *ptr) {
 	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, ptr);
 }
-
 static void *Pointer_get (Ruby rself) {
 	void *p; Data_Get_Struct(rself,void *,p); return p;
 }*/
@@ -123,7 +119,9 @@ static VALUE *localize_sysstack () {
 	// this rounds to the last word of a 4k block
 	// cross fingers that no other OS does it too different
 	// !@#$ doesn't use STACK_GROW_DIRECTION
-	bp=((bp+0xfff)&~0xfff)-sizeof(void*);
+	// bp=((bp+0xfff)&~0xfff)-sizeof(void*);
+	// GAAAH
+	bp=((bp+0xffff)&~0xffff)-sizeof(void*);
 	fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
 	return (VALUE *)bp;
 }
@@ -227,11 +225,9 @@ static Ruby BFObject_rescue (FMessage *fm) {
 
 static void BFObject_method_missing (BFObject *bself,
 int winlet, t_symbol *selector, int ac, t_atom *at) {
-	FMessage fm = { self: bself, winlet: winlet, selector: selector, ac: ac, at: at,
-		is_init: false };
+	FMessage fm = { bself, winlet, selector, ac, at, false };
 	if (!bself->rself) {
-		pd_error(bself,
-		"message to a dead object. (supposed to be impossible)");
+		pd_error(bself,"message to a dead object. (supposed to be impossible)");
 		return;
 	}
 	rb_rescue2(
@@ -453,8 +449,6 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 }
 
 static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
-	//post("argc=%d argv=0x%p rself=0x%p",argc,argv,rself);
-	//for (int i=0; i<argc; i++) post("argv[%d]=0x%p",i,argv[i]);
 	DGS(FObject);
 	BFObject *bself = self->bself;
 	if (!bself) {post("FObject#send_out2 : bself is NULL, rself=%08x",rself);return Qnil;}
@@ -727,3 +721,5 @@ extern "C" void gridflow_setup () {
 	bindpatcher = class_new(gensym("bindpatcher"),
 		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 }
+
+
