@@ -3,68 +3,62 @@
 --- make the development process more test-driven.
     --- *Especially* the debugging process.
 
-Bugs (High Priority)
-[ ] linear_transform.jmax crashes
-[ ] problem in @for with zero-sized grids?
-[ ] @for has a bug re negative step
+Bugs (High Priority) (!!! Fix all of these before 0.7.3 !!!)
+[ ] 2000 frames in 1.305321 seconds (avg 0.652660 ms, 1532.190166 fps)
+    (makes no sense whatsoever!)
+[ ] I messed with the installation
+[ ] GFStack overflows when accumulating errors
+[ ] 'make' removes temporaries? (*.fcs)
 [ ] format_grid: write test for other bpv's
 [ ] latency is not that good. (GC ?)
 [ ] tcp test is broken
 [ ] @export doesn't work in pd
-[ ] /opt/lib/ruby/site_ruby/1.8/gridflow/format/main.rb:198:in `initialize':
-    got String instead of Symbol in FormatMPEG3::initialize(Symbol mode ,
-    Symbol source , Symbol filename ) (ArgumentError) 
-[ ] @join with empty input
-[ ] too many open files (eg: jpeg writing)
 [ ] FormatGrid: not properly tested (crashes sometimes)
 [ ] stdout should be redirected if bridge is present
+[ ] error handling sometimes leads to crash
+[ ] error handling shows inanely useless messages (sometimes)
+[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[ ] format_x11 causes crash (resizing + shm, sometimes)
+[ ] format_x11 causes delayed crash when closing its associated window
+[ ] new "seed"s may leak ? (Grid vs Grid*)
+[ ] some seeds aren't typechecked
+[ ] doc/moulinette.rb crashes with ruby 1.8
+[ ] jpeg file cat crashes on second file (jpeglib buffering?)
+[ ] GRID_FINISH triggered while backstore ???
 
 Bugs (Low Priority)
-[ ] format_x11 causes delayed crash when closing its associated window
-[ ] format_x11 causes crash (resizing + shm, sometimes)
+[ ] source_filter.rb should check whether \decl,\def match
 [ ] TCP server socket busy even after kill
 [ ] make better detection of libmpeg version
-[ ] detect and reject .a linkage
 [ ] write unit tests about required functionality
 [ ] write unit tests about error checking
-[ ] Window does not close when @out is destroyed
-[ ] format/mpeg.c seems to crash more often?
-[ ] format/mpeg3.c,quicktime.c might cause lockup on exit
+[ ] make system to ensure everything is working before a release.
 [ ] potential issues between fork() and X11 ?
-[ ] don't try resizing the window before it opens (???) (loadbang?)
 [ ] [@export_list] blows up with >=125 elements (alx)
-[ ] doc/moulinette.rb crashes with ruby 1.8
-[ ] Format#init stopped initializing dim,bit_packing
-	(there may be bugs dating back to that change)
-[ ] cvs is not listed in the manual itself
 [ ] BitPacking has trouble with masks that extend beyond int25be
 [ ] remove the crap given by -w of ruby
 [ ] make: Dépendance circulaire site-install <- install abandonnée.
 	(with ruby 1.8)
 [ ] @in needs 2 inlets to work but should have only one.
-[ ] it's possible to crash by sending data in two inlets of a same object at once
+[ ] it's possible to crash by sending data in two inlets
+    of a same object at once
 [ ] <matju> -fomit-frame-pointer is not rubygc-compatible ?
 [ ] make vvtest: 204 bytes lost in 3 allocations (3*Dim)
-[ ] RtMetro crashes if deleted while turned on.
-[ ] RtMetro isn't reliably working
-[ ] jpeg file cat crashes on second file (jpeglib buffering?)
-[ ] videodev stays busy after closing patch ?
-[ ] GRID_FINISH triggered while backstore ???
-[ ] fts_class_install failed: Duplicated metaclass
-[ ] ruby SecurityError: Insecure operation - exist?
-	(trying to load ~/.gridflow_startup)
-	(this is one error message from HELL; makes no sense at all)
+[ ] RtMetro crashes if deleted while turned on; and isn't reliably working
 [ ] is there still a problem with videodev rgb vs bgr ?
 [ ] mess with options in format grid
 [ ] look for "!@#$" in source
+
+Bugs (Cannot reproduce)
+[ ] ruby SecurityError: Insecure operation - exist?
+	(trying to load ~/.gridflow_startup)
+	(this is one error message from HELL; makes no sense at all)
 
 Community
 [ ] put new examples on website
 
 Distribution
 [ ] should now plan which features are pre-1.0 and which are post-1.0
-[ ] add test plan
-[ ] follow test plan
 [ ] review all documentation
 [ ] review all examples
 [ ] make CDs
@@ -109,19 +103,14 @@ Documentation
 --- remember to keep doc/help/screenshots/examples up to date
 
 Architecture
+[ ] eliminate the Dim class, replacing by Grid itself.
 [ ] add \ruby \end blocks (multiline inlined rubyscripts)
-[ ] add preprocessing of grid.h
+[ ] attributes
 [ ] inlet-variables (variables associated to inlets)
-[ ] better error handling
-[ ] MMX memcpy() ?
-[ ] MMX _runtime_ autodetection
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
 	messages; etc... (?!?)
-[ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] op2: abs-
-[ ] remove fold/scan for ops for which it makes no sense.
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
@@ -129,10 +118,8 @@ Architecture
 [ ] GFBridge object visible from Ruby
 [ ] use C++ destructor for C++ fields...
 [ ] jMax/PD bridges should support list-literals inside messages
-[ ] DEF_OP2_BITWISE
 [ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
-[ ] bin op "avg" (average)
 [ ] dispatch on _n_-prefixed methods (one selector any inlet)
 	and     _#{i}_-named methods (any selector one inlet)
 [ ] security modes:
@@ -143,13 +130,9 @@ Architecture
 [ ] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its
 	corresponding Inlet#factor's.
-[ ] User-defined operators; compound operators... e.g.
-	[@ {{* 7} + {>> 3}}]
-[ ] n-ary operators... make [@] a metaclass
 [ ] lazy grids: Grid#operator Pt<T> makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
-[ ] number type aliases: int32 -> int -> i, float32 -> float -> f
 [ ] accounting: grids messages packets numbers bytes copybytes
 [ ] memory profiling
 [ ] compare Ruby API with both flext/pyext
@@ -159,72 +142,73 @@ Architecture
     (which tells to retry later with the same packet because another
     grid reception is not completed yet.) 
 [ ] add a deprecation system
-[ ] is "pluglet" a good common word for inlet and outlet?
+[ ] is "pluglet" a good common word for inlet and outlet? (or "port")
 [ ] interpret nested lists as n-dimensional.
+
+Operators
+[ ] User-defined operators; compound operators... e.g.
+	[@ {{* 7} + {>> 3}}]
+[ ] DEF_OP2_BITWISE
+[ ] n-ary operators... make [@] a metaclass
+[ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
+[ ] op2: abs- (absolute difference), avg (average)
+[ ] remove fold/scan for ops for which it makes no sense.
+[ ] MMX memcpy() ?
+[ ] MMX _runtime_ autodetection
 
 Bridge
 [ ] jMax metaclasses -> Ruby runtime subclass creation
 [ ] UnknownAtom class
 
 Computation Objects
-[ ] is @complex_sq backwards ?
-[ ] @splice
-[ ] zero option in @store (?)
+[ ] @inner inlet 2 -> 1, and other incompatibilities i wanted to introduce
+[ ] @for "step" argument should have default {1...}
 [ ] zero option in @convolve (?)
 [ ] @convolve2 (simpler)
 [ ] @convolve rewritten as combination of @convolve, @border
 [ ] @convolve(2): should allow n-D convolution
+[ ] @convolve: compute execution plan for acceleration
+    (for duplicate matrix values)
+[ ] @convolve: optimise out computations where rhand is neutral (eg: * 1)
+[ ] @convolve: optimise out computations rhand is absorbent (eg: * 0)
+[ ] @complex_sq is backwards
+[ ] @store: option zero (?)
 [ ] @import~, @export~
-[ ] see APL/J/NArray/PDL/Aplus/Yorick reference
-[ ] see Image Processing Operator Worksheets
 [ ] @fold, @scan: option reverse (right-to-left)
 [ ] @,@join: option swap (?)
 [ ] @matrix_inverse, @matrix_solve
 [ ] @transpose: dimension swapping
 [ ] @reverse (on given dimension number)
-[ ] timelines as in MM-Director
+[ ] @timeline (or rtmetro): sequencing of events from grid
 [ ] @replace_if
 [ ] @random_select, @markov_chain
-[ ] @two,@three,@four -> [@pack n] using metaclass
-[ ] @unpack
-[ ] make a class that is a color equivalent of aalib
+[ ] @pack, @unpack
+[ ] @sort, @slice, @splice
 [ ] @polygon_perimeter, @polygon_area, ...
 [ ] write a complete benchmark script
 [ ] @draw_polygon smoothly
-[ ] @sort
-[ ] @slice
 [ ] string operations to compensate for the feebleness of jMax/PD
     in that area. this includes [@sprintf].
+--- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
 
 Effects
-[ ] pinch
-[ ] turtle (logo style)
-[ ] gaussian blur
-[ ] @controid
-[ ] pixelize, despeckle
-[ ] abyss effect
-[ ] @dither
-[ ] image-sur-image (@pip)
-[ ] n-frame delaying
-[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
-[ ] HSV<->RGB; hue shifting
-[ ] HSV<->HSL
-[ ] effectv
-[ ] @draw_lines, @draw_points
-[ ] blinds, ...
-[ ] create templates for usage patterns
-[ ] see gimp for ideas
-[ ] kaleidoscopes
-[ ] @fire
-[ ] @border
+[ ] @mosaic
+[ ] @gaussian_blur, @sobel, @centroid, @pixelize, @despeckle (median)
+[ ] @dither, @draw_lines, @draw_points, @fire, @border, @queue
 [ ] @chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it @chroma_key though)
 	maybe @mask...
+[ ] turtle (logo style)
+[ ] effectv
+[ ] create templates for usage patterns
+[ ] see gimp for ideas
+[ ] kaleidoscopes
 [ ] FFTW
 
 Input/Output
-[ ] Grid: bpv 8,16,signed/unsigned
+[ ] Grid: bpv 8,16,64,signed/unsigned
 [ ] Grid: bpv 1,2,4
+[ ] Grid: float
 [ ] Grid: text version of the format (?)
 [ ] jMax4, Pixonix, Max, Gimp, GStreamer, ffmpeg, Hermes/PTC/TinyPTC,
 [ ] GEM, PDP, FreeFrame, MacOSX-Quartz, Win32-GDI, Win32-DirectX, OSC

@@ -11,12 +11,12 @@ version 0.7.3 (head):
  * rewrote the profiler subsystem (and removed bugs)
  * @scale_by: now works with any number of channels
  * renamed samples/ to jmax_examples/
- * @convolve: about three times faster
- * @outer: many % faster
+ * @convolve,@outer,@for: much faster
+ * @draw_image (picture-in-picture)
 
 soon:
 
- * added @draw_image, @matrix_solve
+ * added @matrix_solve
 
 version 0.7.2 (2003.04.24):
 
