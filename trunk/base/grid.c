@@ -127,17 +127,6 @@ bool GridInlet::is_busy() {
 	return !!dim;
 }
 
-bool GridInlet::is_busy_verbose(const char *where) {
-	assert(this);
-	if (!dim) {
-		gfpost("%s: (%s): no grid is being transferred (!)",
-			INFO(parent), where);
-	} else {
-		return 1;
-	}
-	return 0;
-}
-
 void GridInlet::set_factor(int factor) {
 	assert(dim);
 	assert(factor > 0);
@@ -146,7 +135,7 @@ void GridInlet::set_factor(int factor) {
 	this->factor = factor;
 	if (buf) {delete[] (Number *)buf; buf=Pt<Number>();}
 	if (factor > 1) {
-		buf = Pt<Number>(new Number[factor],factor);
+		buf = ARRAY_NEW(Number,factor);
 		bufn = 0;
 	}
 }
@@ -193,12 +182,12 @@ void GridInlet::begin(int argc, Ruby *argv) {
 }
 
 void GridInlet::flow(int mode, int n, Pt<Number> data) {
+	assert(!is_busy());
 	if (gh->mode==0) {
 		dex += n;
 		return; /* ignore data */
 	}
 	if (n==0) return;
-	if (!is_busy_verbose("flow")) return;
 	if (mode==4) {
 		int d = dex + bufn;
 		if (d+n > dim->prod()) {
@@ -214,7 +203,7 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 			if (bufn == factor) {
 				int newdex = dex + factor;
 				if (gh->mode==6) {
-					Pt<Number> data2 = Pt<Number>(new Number[factor],factor);
+					Pt<Number> data2 = ARRAY_NEW(Number,factor);
 					COPY(data2,buf,factor);
 					gh->flow(parent,this,factor,data2);
 				} else {
@@ -228,7 +217,7 @@ void GridInlet::flow(int mode, int n, Pt<Number> data) {
 		if (m) {
 			int newdex = dex + m;
 			if (gh->mode==6) {
-				Pt<Number> data2 = Pt<Number>(new Number[m],m);
+				Pt<Number> data2 = ARRAY_NEW(Number,m);
 				COPY(data2,data,m);
 				gh->flow(parent,this,m,data2);
 			} else {
@@ -264,7 +253,7 @@ void GridInlet::abort() {
 }
 
 void GridInlet::end() {
-	if (!is_busy_verbose("end")) return;
+	assert(!is_busy());
 /*	gfpost("%s: GridInlet_end()", INFO(parent)); */
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from %s to %s",
@@ -283,6 +272,7 @@ void GridInlet::end() {
 	gfpost("%s",foo); \
 }
 
+/* !@#$ something wrong with nt here */
 void GridInlet::grid(Grid *g) {
 	assert(gh);
 	int n = g->dim->prod();
@@ -327,7 +317,7 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet) {
 	this->woutlet = woutlet;
 	dim = 0;
 	dex = 0;
-	buf = Pt<Number>(new Number[gf_max_packet_length],gf_max_packet_length);
+	buf = ARRAY_NEW(Number,gf_max_packet_length);
 	bufn = 0;
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
@@ -375,7 +365,7 @@ void GridOutlet::begin(Dim *dim) {
 	frozen = 0;
 	ninlets = 0;
 	if (inlets) delete[] inlets.p;
-	inlets = Pt<GridInlet *>(new GridInlet*[MAX_CORDS],MAX_CORDS);
+	inlets = ARRAY_NEW(GridInlet *,MAX_CORDS);
 	Ruby a[n+5];
 	a[0] = INT2NUM(woutlet);
 	a[1] = sym_grid;

@@ -538,46 +538,44 @@ struct Grid {
 
 /* **************************************************************** */
 /* GridInlet represents a grid-aware inlet */
+/* Kids, remember that C++ can't even do typedef templates */
 
 typedef struct GridInlet  GridInlet;
 typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
 
 typedef void (*GridBegin)(GridObject *, GridInlet *);
-typedef void  (*GridFlow)(GridObject *, GridInlet *, int n, Pt<Number>data);
+//template <class T>
+//typedef void (*GridFlow)(GridObject *, GridInlet *, int n, Pt<T>data);
+typedef void (*GridFlow)(GridObject *, GridInlet *, int n, Pt<Number>data);
 typedef void   (*GridEnd)(GridObject *, GridInlet *);
 
 /* C++ */
 
-#define GRID_BEGIN_(_name_) void _name_(GridInlet *in)
-#define  GRID_FLOW_(_name_) void _name_(GridInlet *in, int n, Pt<Number>data)
-#define   GRID_END_(_name_) void _name_(GridInlet *in)
-
 #define GRID_BEGIN(_cl_,_inlet_) \
 	static void _cl_##__##_inlet_##_begin(_cl_ *$, GridInlet *in) { \
 		$->_##_inlet_##_begin(in); } \
-	GRID_BEGIN_(_cl_::_##_inlet_##_begin)
+	void _cl_::_##_inlet_##_begin(GridInlet *in)
 
 #define  GRID_FLOW(_cl_,_inlet_) \
-	static void _cl_##__##_inlet_##_flow(_cl_ *$, GridInlet *in, int n, Pt<Number> data) { \
-		$->_##_inlet_##_flow(in,n,data); } \
-	 GRID_FLOW_(_cl_::_##_inlet_##_flow)
+	static void _cl_##__##_inlet_##_flow(_cl_ *$, GridInlet *in, int n, \
+	Pt<Number> data) { $->_##_inlet_##_flow(in,n,data); } \
+	void _cl_::_##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data)
 
 #define   GRID_END(_cl_,_inlet_) \
 	static void _cl_##__##_inlet_##_end(_cl_ *$, GridInlet *in) { \
 		$->_##_inlet_##_end(in); } \
-	  GRID_END_(_cl_::_##_inlet_##_end)
+	void _cl_::_##_inlet_##_end(GridInlet *in)
 
 #define GRINLET3(_inlet_) \
-	GRID_BEGIN_(_##_inlet_##_begin); \
-	 GRID_FLOW_(_##_inlet_##_flow); \
-	  GRID_END_(_##_inlet_##_end);
+	void _##_inlet_##_begin(GridInlet *in); \
+	void _##_inlet_##_flow(GridInlet *in, int n, Pt<Number>data); \
+	void _##_inlet_##_end(GridInlet *in);
 
 #define GRINLET(_class_,_winlet_,_mode_) {_winlet_,\
 	((GridBegin)&_class_##__##_winlet_##_begin), \
 	 ((GridFlow)&_class_##__##_winlet_##_flow), \
 	  ((GridEnd)&_class_##__##_winlet_##_end), _mode_ }
-
 
 #define GRID_INPUT(_class_,_inlet_,_member_) \
 	GRID_BEGIN(_class_,_inlet_) { \
@@ -589,9 +587,10 @@ typedef void   (*GridEnd)(GridObject *, GridInlet *);
 typedef struct GridHandler {
 	int       winlet;
 	GridBegin begin;
-	GridFlow  flow; /* or GridFlow2 */
+//	GridFlow<int32> flow;
+	GridFlow flow;
 	GridEnd   end;
-	int       mode; /* 0=ignoreflow; 4=ro=flow; 6=rw=flow2 */
+	int       mode; /* 0=ignore; 4=ro; 6=rw */
 } GridHandler;
 
 struct GridInlet {
@@ -618,7 +617,6 @@ struct GridInlet {
 	void abort();
 	void set_factor(int factor);
 	bool is_busy();
-	bool is_busy_verbose(const char *where);
 	void begin( int argc, Ruby *argv);
 	void flow(int mode, int n, Pt<Number> data);
 	void end();
@@ -793,8 +791,6 @@ extern Ruby cFormat;
 uint64 RtMetro_now();
 
 Ruby gf_post_string (Ruby $, Ruby s);
-void FObject_mark (Ruby *$);
-void FObject_sweep (Ruby *$);
 Ruby FObject_send_out(int argc, Ruby *argv, Ruby $);
 Ruby FObject_s_install(Ruby $, Ruby name, Ruby inlets, Ruby outlets);
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass);

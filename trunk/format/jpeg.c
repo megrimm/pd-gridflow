@@ -34,7 +34,6 @@ struct FormatJPEG : Format {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
-	Dim *dim;
 	FILE *f;
 
 	DECL3(close);
@@ -48,8 +47,6 @@ GRID_BEGIN(FormatJPEG,0) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-	if (dim) delete dim;
-	dim = in->dim->dup();
 	in->set_factor(in->dim->get(1)*in->dim->get(2));
 	cjpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cjpeg);
@@ -107,7 +104,6 @@ METHOD3(FormatJPEG,close) {
 }
 
 METHOD3(FormatJPEG,init) {
-	dim = 0;
 	rb_call_super(argc,argv);
 	argv++, argc--;
 	if (argc!=2 || argv[0] != SYM(file)) RAISE("usage: jpeg file <filename>");
