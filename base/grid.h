@@ -240,7 +240,8 @@ typedef VALUE (*RMethod)(VALUE $, ...); /* !@#$ */
 		sizeof(_name_), \
 		COUNT(_name_##_methods),\
 		_name_##_methods,\
-		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers };
+		_inlets_,_outlets_,COUNT(_name_##_handlers),_name_##_handlers, \
+		#_name_ };
 
 #define SYM(_sym_) (ID2SYM(rb_intern(#_sym_)))
 
@@ -466,6 +467,7 @@ typedef struct GridClass {
 	int outlets;
 	int handlersn;
 	GridHandler *handlers;
+	const char *name;
 } GridClass;
 
 #define LIST(args...) args
@@ -537,8 +539,7 @@ struct GridObject {
 
 	void GridObject_init(GridObject *$);
 	void GridObject_delete(GridObject *$);
-	void GridObject_conf_class(VALUE $, int winlet);
-	void GridObject_conf_class2(VALUE $, GridClass *grclass);
+	void GridObject_conf_class(VALUE $, GridClass *grclass);
 
 /* **************************************************************** */
 /* io.c (part 1: streams) */

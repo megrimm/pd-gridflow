@@ -472,7 +472,7 @@ GRCLASS(GridOp2,inlets:2,outlets:1,
 LIST(GRINLET2(GridOp2,0),GRINLET(GridOp2,1)),
 	DECL(GridOp2,-1,init,  "ss;i"),
 	DECL(GridOp2,-1,delete,""),
-	DECL(GridOp2, 1,int,   ""),/*why zero?*/)
+	DECL(GridOp2, 1,int,   ""))
 
 /* **************************************************************** */
 /*
@@ -1339,6 +1339,8 @@ METHOD(GridOut,open) {
 		rb_sym_name(argv[0]));
 	qlass = FIX2PTR(format);
 
+	whine("method name is %s",rb_id2name(rb_frame_last_func()));
+
 	whine("file format: %s (%s)",qlass->symbol_name, qlass->long_name);
 	if ($->ff) $->ff->cl->close($->ff);
 	if (qlass->open) {
@@ -1730,7 +1732,7 @@ GridClass *gc) {
 		rb_str_new2(jname),
 		INT2NUM(gc->inlets),
 		INT2NUM(gc->outlets));
-	GridObject_conf_class2($,gc);
+	GridObject_conf_class($,gc);
 	return Qnil;
 }
 
