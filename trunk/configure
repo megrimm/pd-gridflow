@@ -511,6 +511,7 @@ $features.each {|f| $features_h[f.tag]=f }
 def usage
 	log = ""
 	log << "usage: ./configure "
+	log << "[--use-compiler compiler] "
 	log << "[--jmax-dist-dir directory] [--jmax-arch arch] "
 	log << "[--debug] [--debug-harder] [--ruby-prefix directory] "
 	log << "[--prefix directory]"
