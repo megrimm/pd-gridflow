@@ -96,14 +96,14 @@ def mke(tag)
 	print "</#{tag}>"
 end
 
-def mkimg(icon,alt=nil)
+def mkimg(icon,alt=nil,subdir="images")
 	icon.tag == 'icon' or raise "need icon"
 	url = icon.att["image"] || icon.parent.att["name"]
 	url = url.sub(/,.*$/,"")
 	raise icon.att.to_s if not url
-	url = "images/" + url if url !~ /^images\//
+	url = subdir+"/"+url if url !~ /^images\//
 	url += ".png" if url !~ /\.(png|jpe?g|gif)$/
-	raise "#{url} not found" if not File.exist? url
+	warn "#{url} not found" if not File.exist? url
 	mk(:img, :src, url,
 		:alt, alt || icon.att["text"],
 		:border, 0)
@@ -266,7 +266,7 @@ XNode.register("class") {public
 		print "<br>\n"
 		icon = contents.find {|x| XNode===x and x.tag == 'icon' }
 		help = contents.find {|x| XNode===x and x.tag == 'help' }
-		mkimg(icon) if icon
+		mkimg(icon,nil,"images/flow_classes") if icon
 		mk(:br,:clear,"left")
 		2.times { mk(:br) }
 		if help
