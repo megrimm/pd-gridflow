@@ -46,7 +46,8 @@ struct FormatQuickTimeHW : Format {
 	int channels;
 	bool started;
 	Dim *force;
-	
+	int length; /* in frames */
+
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
 		started(false), force(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
@@ -71,11 +72,16 @@ struct FormatQuickTimeHW : Format {
 
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
-	if (nframe >= quicktime_video_length(anim,track)) return Qfalse;
-	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
-	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
-		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
+	int length2 = quicktime_video_length(anim,track);
+//	gfpost("lengths: %3d %3d",length,length2);
+	if (nframe >= length) {
+//		gfpost("nframe=%d length=%d length2=%d",nframe,length,length2);
+		return Qfalse;
 	}
+	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
+/*	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
+		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
+	}*/
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
 	if (force) {
@@ -87,6 +93,7 @@ struct FormatQuickTimeHW : Format {
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	int result;
 	result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
+//	result = quicktime_decode_video (anim,                           rows,track);
 	int32 v[] = { sy, sx, channels };
 	out[0]->begin(new Dim(3,v), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out[0]->dim->prod(1);
@@ -110,7 +117,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	} else {
 		/* first frame: have to do setup */
 		dim = in->dim->dup();
-		quicktime_set_video(anim,1,dim->get(1),dim->get(0),15,codec);
+		quicktime_set_video(anim,1,dim->get(1),dim->get(0),30,codec);
 		quicktime_set_cmodel(anim,colorspace);
 	}
 	int sx = quicktime_video_width(anim,track);
@@ -137,12 +144,13 @@ GRID_INLET(FormatQuickTimeHW,0) {
 
 \def void colorspace_m (Symbol c) {
 	if (0) {
-	} else if (c==SYM(rgb))  { colorspace=BC_RGB888; channels=3;
-	} else if (c==SYM(rgba)) { colorspace=BC_RGBA8888; channels=4;
-	} else if (c==SYM(bgr))  { colorspace=BC_BGR888; channels=3;
-	} else if (c==SYM(bgrn)) { colorspace=BC_BGR8888; channels=4;
-	} else if (c==SYM(yuv))  { colorspace=BC_YUV888; channels=3;
-	} else if (c==SYM(yuva)) { colorspace=BC_YUVA8888; channels=4;
+	} else if (c==SYM(rgb))     { channels=3; colorspace=BC_RGB888; 
+	} else if (c==SYM(rgba))    { channels=4; colorspace=BC_RGBA8888;
+	} else if (c==SYM(bgr))     { channels=3; colorspace=BC_BGR888;
+	} else if (c==SYM(bgrn))    { channels=4; colorspace=BC_BGR8888;
+	} else if (c==SYM(yuv))     { channels=3; colorspace=BC_YUV888;
+	} else if (c==SYM(yuva))    { channels=4; colorspace=BC_YUVA8888;
+	} else if (c==SYM(YUV420P)) { channels=3; colorspace=BC_YUV420P;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
 }
 
@@ -160,12 +168,13 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
 	if (!anim) RAISE("can't open file `%s': %s", rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
-		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
+		length = quicktime_video_length(anim,track);
+	/*	gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),
 			quicktime_video_height(anim,track),
 			quicktime_video_width(anim,track),
 			quicktime_video_depth(anim,track),
-			quicktime_frame_rate(anim,track));
+			quicktime_frame_rate(anim,track));*/
 /* This doesn't really work: (is it just for encoding?)
 		if (!quicktime_supported_video(anim,track))
 			RAISE("quicktime: unsupported codec: %s",
@@ -173,6 +182,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 */
 	}
 	colorspace_m(0,0,SYM(rgb));
+	quicktime_set_cpus(anim,1);
 //	quicktime_stsd_table_t *tb = 
 //		anim->moov.trak[0]->mdia.minf.stbl.stsd.table;
 //	gfpost("MOOV says size=(%d,%d) and dpi=(%f,%f)",
