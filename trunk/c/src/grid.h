@@ -24,7 +24,6 @@
 #define __GRID_PROTOCOL_H
 
 #include <pthread.h>
-#include <assert.h>
 #include "config.h"
 #include "macros.h"
 
@@ -69,6 +68,11 @@ static inline int ipow(int a, int b) {
 	while(b-->0) r *= a;
 	return r;
 }	
+
+#undef min
+#undef max
+static inline int min(int a, int b) { return a<b?a:b; }
+static inline int max(int a, int b) { return a>b?a:b; }
 
 /* **************************************************************** */
 /* jMax specific */
@@ -168,11 +172,10 @@ typedef enum { false, true } bool;
   and can do some calculations on positions in that grid.
 */
 
-typedef struct Dim Dim;
-struct Dim {
+typedef struct Dim {
 	int n;
 	int v[1];
-};
+} Dim;
 
 	Dim *Dim_new(int n, int *v);
 	Dim *Dim_dup(Dim *$);
@@ -206,25 +209,23 @@ typedef struct BitPacking BitPacking;
 	int     BitPacking_bytes(BitPacking *$);
 
 
-typedef struct Operator1 Operator1;
-struct Operator1 {
+typedef struct Operator1 {
 	fts_symbol_t sym;
 	const char *name;
 	Number (*op)(Number);
 	void   (*op_array)(int,Number*);
-};
+} Operator1;
 
 	Operator1 *op1_table_find(fts_symbol_t sym);
 	extern Operator1 op1_table[];
 
-typedef struct Operator2 Operator2;
-struct Operator2 {
+typedef struct Operator2 {
 	fts_symbol_t sym;
 	const char *name;
 	Number (*op)(Number,Number);
 	void   (*op_array)(int,Number *,Number);
 	Number (*op_fold)(Number,int,const Number *);
-};
+} Operator2;
 
 	Operator2 *op2_table_find(fts_symbol_t sym);
 	extern Operator2 op2_table[];
@@ -234,7 +235,9 @@ struct Operator2 {
 /* GridInlet represents a grid-aware jmax inlet */
 
 typedef struct GridInlet GridInlet;
+typedef struct GridOutlet GridOutlet;
 typedef struct GridObject GridObject;
+/* typedef struct GridHandler GridHandler; */
 
 #define GRID_BEGIN_(_class_,_name_) bool _name_(_class_ *$, GridInlet *in)
 #define  GRID_FLOW_(_class_,_name_) void _name_(_class_ *$, GridInlet *in, int n, const Number *data)
@@ -248,55 +251,52 @@ typedef   GRID_END_(GridObject, (*GridEnd));
 #define  GRID_FLOW(_class_,_inlet_)  GRID_FLOW_(_class_,_class_##_##_inlet_##_flow)
 #define   GRID_END(_class_,_inlet_)   GRID_END_(_class_,_class_##_##_inlet_##_end)
 
-#define PGRID_BEGIN(_class_,_inlet_) ((GridBegin)_class_##_##_inlet_##_begin)
-#define  PGRID_FLOW(_class_,_inlet_)  ((GridFlow)_class_##_##_inlet_##_flow)
-#define   PGRID_END(_class_,_inlet_)   ((GridEnd)_class_##_##_inlet_##_end)
-
 struct GridInlet {
+/* context information */
 	GridObject *parent;
 	int winlet;
 
+/* grid progress info */
 	Dim *dim;
 	int dex;
 
-//	Number *buf; /* packet buffer */
-
-	/* grid reception functions */
+/* grid receptor */
 	GridBegin begin;
 	GridFlow  flow;
 	GridEnd   end;
 
-	int factor; /* for future use: flow's n will be multiple of $->factor */
-	int count; /* how many Numbers transferred */
+	int factor; /* flow's n will be multiple of $->factor */
+
+//	Number *buf; /* packet buffer */
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
 		GridBegin b, GridFlow f, GridEnd e);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
+	void GridInlet_set_factor(GridInlet *$, int factor);
 
 #define GridInlet_NEW3(_parent_,_class_,_winlet_) \
 	GridInlet_new((GridObject *)_parent_, _winlet_, \
-		PGRID_BEGIN(_class_,_winlet_), \
-		 PGRID_FLOW(_class_,_winlet_), \
-		  PGRID_END(_class_,_winlet_));
+		((GridBegin)_class_##_##_winlet_##_begin), \
+		 ((GridFlow)_class_##_##_winlet_##_flow), \
+		  ((GridEnd)_class_##_##_winlet_##_end))
 
 /* **************************************************************** */
 /* GridOutlet represents a grid-aware jmax outlet */
 
-typedef struct GridOutlet GridOutlet;
-
 struct GridOutlet {
+/* context information */
 	GridObject *parent;
 	int woutlet;
 
+/* grid progress info */
 	Dim *dim;
 	int dex;
 
-	Number *buf; /* packet buffer */
+/* buffering */
+	Number *buf;
 	int bufn;
-
-	int count; /* how many Numbers transferred */
 };
 
 	GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);

@@ -23,6 +23,7 @@
 
 #ifndef __MACROS_H
 #define __MACROS_H
+#include <assert.h>
 
 /*
   This file defines a few macros of general use. The goal of these is
@@ -122,13 +123,6 @@
 
 #define $ self
 
-#undef assert
-#define assert(_expr_) \
-	if (!(_expr_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
-			__FILE__, __LINE__, #_expr_); \
-		abort(); }
-
 #define assert_range(_var_,_lower_,_upper_) \
 	if ((_var_) < (_lower_) || (_var_) > (_upper_)) { \
 		fprintf(stderr, "%s:%d: assertion failed: %s=%d not in (%d..%d)\n", \
@@ -142,6 +136,13 @@
 	((_type_ *)malloc(sizeof(_type_)*(_count_)))
 
 /* ************************************ new macros for 0.2.2 */
+
+#undef assert
+#define assert(_expr_) \
+	if (!(_expr_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
+			__FILE__, __LINE__, #_expr_); \
+		abort(); }
 
 #define SYM(_sym_) fts_new_symbol(#_sym_)
 
