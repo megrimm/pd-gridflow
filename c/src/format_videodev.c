@@ -441,11 +441,15 @@ void FormatVideoDev_close (FormatVideoDev *$) {
 	FREE($);
 }
 
-Format *FormatVideoDev_open (FormatClass *class, const char *filename, int mode) {
+Format *FormatVideoDev_open (FormatClass *class, int ac, const fts_atom_t *at, int mode) {
+	const char *filename;
 	FormatVideoDev *$ = NEW(FormatVideoDev,1);
 	$->cl = &class_FormatVideoDev;
 	$->pending_frame = -1;
 	$->image = 0;
+
+	if (ac!=1) { whine("usage: videodev filename"); goto err; }
+	filename = fts_symbol_name(fts_get_symbol(at+0));
 
 	switch(mode) {
 	case 4: break;
@@ -465,10 +469,14 @@ Format *FormatVideoDev_open (FormatClass *class, const char *filename, int mode)
 
 	{
 		VideoCapability vcaps;
+		fts_atom_t at[3];
 		WIOCTL($->stream, VIDIOCGCAP, &vcaps);
 		VideoCapability_whine(&vcaps);
-	/*	$->cl->size($,vcaps.minheight,vcaps.minwidth); */
-		$->cl->size((Format *)$,vcaps.maxheight,vcaps.maxwidth);
+
+		fts_set_symbol(at+0,SYM(size));
+		fts_set_int(at+1,vcaps.maxheight);
+		fts_set_int(at+2,vcaps.maxwidth);
+		$->cl->option((Format *)$,3,at);
 	}
 
 	{
@@ -514,16 +522,13 @@ FormatClass class_FormatVideoDev = {
 	long_name: "Video4linux 1.x",
 	flags: (FormatFlags)0,
 	open: FormatVideoDev_open,
-	connect: 0,
 	chain_to: 0,
 
 	frames: 0,
 	frame:  FormatVideoDev_frame,
-	size:   FormatVideoDev_size,
 	begin:  GRID_BEGIN_PTR(FormatVideoDev,0),
 	flow:   GRID_FLOW_PTR(FormatVideoDev,0),
 	end:    GRID_END_PTR(FormatVideoDev,0),
-	color:  0,
 	option: FormatVideoDev_option,
 	close:  FormatVideoDev_close,
 

@@ -29,6 +29,7 @@
 /* #include <pthread.h> */
 
 /* a few C++ decls just in case you want to compile C++ code with this */
+/*
 #ifdef __cplusplus
 extern "C" {
 #define      new q_new
@@ -37,6 +38,7 @@ extern "C" {
 #define operator q_operator
 #define template q_template
 #endif
+*/
 
 /* #include <objc/Object.h> */
 
@@ -589,15 +591,14 @@ struct FormatClass {
 	  mode=4 is reading; mode=2 is writing;
 	  other values are not used yet (not even 6)
 	*/
-	Format *(*open   )(FormatClass *$, const char *filename, int mode);
-	Format *(*connect)(FormatClass *$, const char *target,   int mode);
+	Format *(*open    )(FormatClass *$, int ac, const fts_atom_t *at, int mode);
 
 	/* for future use */
-	Format *(*chain_to)(FormatClass *$, Format *other);
+	Format *(*chain_to)(FormatClass *$, int ac, const fts_atom_t *at, int mode, Format *other);
 
 /* methods on objects of this class */
 /* for reading, to outlet */
-	/* frames - how many frames are there (optional) */
+	/* frames - how many frames there are (optional) */
 	int  (*frames)(Format *$);
 	/*
 	  read a frame, sending to outlet
@@ -612,11 +613,6 @@ struct FormatClass {
 	GRID_END_(  Format,(*end));
 
 /* for both */
-	/* size - decide which (height,width) should incoming images have
-		(optional method) */
-	void (*size)  (Format *$, int height, int width);
-	/* choose color model (not used for now) */
-	void (*color) (Format *$, fts_symbol_t sym);
 	/* for misc options */
 	void (*option)(Format *$, int ac, const fts_atom_t *at);
 	void (*close) (Format *$);
@@ -649,8 +645,11 @@ void ObjectSet_add(ObjectSet *$, GridObject *obj);
 void ObjectSet_del(ObjectSet *$, GridObject *obj);
 extern ObjectSet *video4jmax_object_set;
 
+/* for C++ (see at the top of this file) */
+/*
 #ifdef __cplusplus
 };
 #endif
+*/
 
 #endif /* __GRID_H */

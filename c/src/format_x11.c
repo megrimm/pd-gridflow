@@ -595,21 +595,7 @@ void FormatX11_option (FormatX11 *$, int ac, const fts_atom_t *at) {
 	}
 }
 
-int strsplit(char *victim, int max, char **witnesses) {
-	int n=0;
-	for(;;) {
-		*witnesses++ = victim;
-		n++;
-		if (n==max) return n;
-		while (*victim != '/') {
-			if (!*victim) return n;
-			victim++;
-		}
-		*victim++ = 0;
-	}
-}
-
-Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
+Format *FormatX11_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
 	FormatX11 *$ = NEW(FormatX11,1);
 
 	/* defaults */
@@ -636,40 +622,37 @@ Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
 	}
 
 	/*
-		"here"
-		"local/0"
-		"remote/relayer/0"
+		{here}
+		{local 0}
+		{remote relayer 0}
 	*/
 
-	/* plenty of ways to crash this */
 	{
-		char *copy = strdup(target);
-		char *field[10];
-		int i=0,n=strsplit(copy,10,field);
-		char *t = copy+strlen(copy);
-		while (n<10) field[n++] = t;
-/*
-		{int j; for(j=0; j<10; j++) {
-			whine("field[%d] is `%s'",j,field[j]);
-		}}
-*/
-		if (strcmp(field[0],"here")==0) {
+		fts_symbol_t domain = fts_get_symbol(at+0);
+		int i;
+		// assert (ac>0);
+		for(i=0; i<ac; i++) {
+			char buf[256];
+			sprintf_atoms(buf,ac,at);
+			whine("field[%d] is `%s'",i,buf);
+		}
+		if (domain==SYM(here)) {
 			whine("mode `here'");
 			$->display = X11Display_new(0);
 			i=1;
-		} else if (strcmp(field[0],"local")==0) {
+		} else if (domain==SYM(local)) {
 			char host[64];
-			int dispnum = atoi(field[1]);
+			int dispnum = fts_get_int(at+1);
 			whine("mode `local'");
 			whine("display_number `%d'",dispnum);
 			sprintf(host,":%d",dispnum);
 			$->display = X11Display_new(host);
 			i=2;
-		} else if (strcmp(field[0],"remote")==0) {
+		} else if (domain==SYM(remote)) {
 			char host[64];
 			int dispnum = 0;
-			strcpy(host,field[1]);
-			dispnum = atoi(field[2]);
+			strcpy(host,fts_symbol_name(fts_get_symbol(at+1)));
+				dispnum = fts_get_int(at+2);
 			sprintf(host+strlen(host),":%d",dispnum);
 			whine("mode `remote'");
 			whine("host `%s'",host);
@@ -677,36 +660,42 @@ Format *FormatX11_connect (FormatClass *qlass, const char *target, int mode) {
 			$->display = X11Display_new(host);
 			i=3;
 		} else {
-			whine("error in target `%s'",target);
+			whine("x11 destination syntax error");
 			return 0;
 		}
 
 		if (!$->display) {
 			// ???
-			whine("can't open target `%s': %s", target, strerror(errno));
+			whine("can't open x11 connection: %s", strerror(errno));
 			goto err;
 		}
 
-		if (strcmp(field[i],"root")==0) {
-			$->window = $->display->root_window;
-			whine("will use root window (0x%x)", $->window);
-			$->not_ours = true;
+		if (i>=ac) {
+			whine("will create new window");
 		} else {
-			if (strncmp(field[i],"0x",2)==0) {
-				$->window = strtol(field[i]+2,0,16);
-			} else {
-				$->window = atoi(field[i]);
-			}
-			if ($->window) {
+			fts_symbol_t winspec = fts_get_symbol(at+i);
+			if (winspec==SYM(root)) {
+				$->window = $->display->root_window;
+				whine("will use root window (0x%x)", $->window);
 				$->not_ours = true;
-				whine("will use specified window (0x%x)", $->window);
 			} else {
-				whine("will create new window");
+				const char *winspec2 = fts_symbol_name(winspec);
+				if (strncmp(winspec2,"0x",2)==0) {
+					$->window = strtol(winspec2+2,0,16);
+				} else {
+					$->window = atoi(winspec2);
+				}
+				if ($->window) {
+					$->not_ours = true;
+					whine("will use specified window (0x%x)", $->window);
+				} else {
+					whine("bad window specification");
+				}
 			}
 		}
-		i++;
 	}
 
+	/* "resize" also takes care of creation */
 	FormatX11_resize_window($,sx,sy);
 	X11Display_vout_add($->display,$);
 
@@ -732,8 +721,7 @@ FormatClass class_FormatX11 = {
 	long_name: "X Window System Version 11.5",
 	flags: (FormatFlags)0,
 
-	open: 0,
-	connect: FormatX11_connect,
+	open: FormatX11_open,
 	chain_to: 0,
 
 	frames: 0,
@@ -743,9 +731,6 @@ FormatClass class_FormatX11 = {
 	flow:    GRID_FLOW_PTR(FormatX11,0),
 	end:      GRID_END_PTR(FormatX11,0),
 
-//	size:   FormatX11_size,
-	size:   0,
-	color:  0,
 	option: FormatX11_option,
 	close:  FormatX11_close,
 };
