@@ -28,7 +28,7 @@
 #include "lang.h"
 
 typedef int fts_status_t;
-#define fts_Success 1
+#define fts_Success 0
 
 typedef long Symbol;
 
@@ -96,7 +96,7 @@ typedef struct Timer {
 #define post printf
 #define fts_SystemInlet (-1)
 
-void fts_method_define_optargs(fts_class_t *, int winlet, Symbol
+fts_status_t fts_method_define_optargs(fts_class_t *, int winlet, Symbol
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
 int fts_file_open(const char *name, const char *mode);
 
@@ -124,13 +124,13 @@ void Var_put_ptr(Var *, void *);
 #define fts_get_ptr_arg(AC, AT, N, DEF)    ((N) < (AC) ? fts_get_ptr(&(AT)[N]) : (DEF))
 */
 
-void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, void *user_data);
+fts_status_t fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, void *user_data);
 
 Symbol fts_get_class_name(fts_class_t *class);
 
 void sprintf_vars(char *buf, int ac, Var *at);
 
-void fts_class_install(Symbol sym,
+fts_status_t fts_class_install(Symbol sym,
 	fts_status_t (*p)(fts_class_t *class, int ac, const Var *at));
 
 void Object_send_thru(FObject *o, int woutlet, Symbol selector, int ac, const Var *at);

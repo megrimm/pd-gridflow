@@ -94,11 +94,13 @@ VALUE gf_post_string (VALUE $, VALUE s) {
 	if (TYPE(s) != T_STRING) rb_raise(rb_eArgError, "not a String");
 
 	post("%s",RSTRING(s)->ptr);
+//	fprintf(stderr,"%s",RSTRING(s)->ptr);
 	return Qnil;
 }
 
 VALUE gf_ruby_init$1 (void *foo) {
 	gf_install_bridge();
+	disable_signal_handlers(); /* paranoid; help me with gdb */
 	rb_eval_string(
 		"begin\n"
 			"require '" GF_INSTALL_DIR "/ruby/main.rb'\n"

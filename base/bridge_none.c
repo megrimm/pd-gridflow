@@ -96,7 +96,7 @@ void sprintf_vars(char *buf, int ac, Var *at) {
 /* **************************************************************** */
 /* Class */
 
-void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int
+fts_status_t fts_class_init(fts_class_t *class, int object_size, int n_inlets, int
 n_outlets, void *user_data) {
 	int i;
 	class->object_size = object_size;
@@ -105,19 +105,21 @@ n_outlets, void *user_data) {
 	class->method_table = NEW(Dict *,n_inlets+1);
 	for (i=0; i<n_inlets+1; i++) class->method_table[i] = Dict_new(0,0);
 	class->user_data = user_data;
+	return 0;
 }
 
-void fts_class_install(Symbol sym,
+fts_status_t fts_class_install(Symbol sym,
 fts_status_t (*p)(fts_class_t *class, int ac, const Var *at)) {
 	fts_class_t *$ = NEW(fts_class_t,1);
 	p($,0,0);
 	Dict_put(classes,(void *)sym,$);
 	$->name = sym;
+	return 0;
 }
 
 Symbol fts_get_class_name(fts_class_t *class) { return class->name; }
 
-void fts_method_define_optargs(fts_class_t *$, int winlet, Symbol
+fts_status_t fts_method_define_optargs(fts_class_t *$, int winlet, Symbol
 selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	MethodDecl2 *md = NEW(MethodDecl2,1);
 	md->winlet = winlet;
@@ -131,6 +133,7 @@ selector, fts_method_t method, int n_args, fts_type_t *args, int min_args) {
 	md->min_args = min_args;
 */
 	Dict_put($->method_table[winlet+1],(void *)selector,md);
+	return 0;
 }
 
 /* **************************************************************** */

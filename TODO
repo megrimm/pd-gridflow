@@ -80,6 +80,9 @@ Architecture
 [ ] allow lists to appear in object constructors
 [ ] add special list syntax allowing for automatic @redim to n-d grid
 	{3 3 | 1 0 0 0} will create unit matrix, etc.
+[ ] pull mode (functional-style)
+[ ] bidirectional messages (constraint/relational-style)
+[ ] send-reply messages (imperative-style)
 
 Computation Objects
 [ ] @type, @cast
@@ -159,6 +162,10 @@ Format
 [ ] Raw: a new format for reading arbitrary data.
 [ ] X11: mouse input
 [ ] /dev/dsp
+[ ] /dev/mixer
+[ ] Generic SHM Driver
+[ ] Generic MMAP Driver
+[ ] Unix-for-jMax
 
 jMax-UI
 [ ] color picker
