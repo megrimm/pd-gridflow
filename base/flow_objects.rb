@@ -157,17 +157,30 @@ class GridPrint < GridFlow::GridObject
 	def initialize(name=nil)
 		super # don't forget super!!!
 		if name then @name = name.to_s+": " else @name="" end
+		@base=10; @format="d"
+	end
+
+	def _0_base(x)
+		case x
+		when 2; @format="b"
+		when 8; @format="o"
+		when 10; @format="d"
+		when 16; @format="x"
+		else raise "base #{x} not supported" end
+		@base = x
 	end
 
 	def make_columns udata
 		min = udata.min
 		max = udata.max
-		@columns = [sprintf("%d",min).length,sprintf("%d",max).length].max
+		@columns = [
+			sprintf("%#{@format}",min).length,
+			sprintf("%#{@format}",max).length].max
 	end
 
 	def unpack data
 		case @nt
-		when :uint8; data.unpack("c*")
+		when :uint8; data.unpack("C*")
 		when :int16; data.unpack("s*")
 		when :int32; data.unpack("l*")
 		when :float32; data.unpack("f*")
@@ -219,7 +232,7 @@ class GridPrint < GridFlow::GridObject
 	end
 
 	def dump udata
-		f = "%#{@columns}#{case @nt; when :float32; 'f'; else 'd' end}"
+		f = "%#{@columns}#{case @nt; when :float32; 'f'; else @format end}"
 		udata.map{|x| sprintf f,x }.join(" ")
 	end
 
