@@ -31,8 +31,8 @@
 #include "grid.h.fcs"
 #include <ctype.h>
 
-//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",parent->info(),__PRETTY_FUNCTION__,__FILE__,__LINE__);
-#define TRACE
+//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",parent->info(),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
+#define TRACE assert(this);
 
 // maximum number of grid cords per outlet per cord type
 #define MAX_CORDS 8
@@ -163,10 +163,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 #undef FOO
 }
 
-Ruby GridInlet::begin(int argc, Ruby *argv) {
-	TRACE;
-	assert(this);
-	//for (int i=0; i<argc; i++) gfpost("%s",rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
+Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!argc) return PTR2FIX(this);
 	GridOutlet *back_out = FIX2PTRAB(GridOutlet,argv[0],argv[1]);
 	nt = (NumberTypeE) INT(argv[2]);
@@ -199,17 +196,13 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {
 }
 
 template <class T>
-void GridInlet::flow(int mode, int n, Pt<T> data) {
-	TRACE;
+void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
 	PROF(parent) {
-	if (this->mode==0) {
-		dex += n;
-		return; /* ignore data */
-	}
-	if (n==0) return;
+	if (this->mode==0) {dex += n; return;} // ignore data
+	if (n==0) return; // no data
 	switch(mode) {
 	case 4:{
 		int d = dex + bufi;
@@ -264,14 +257,12 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 		if (this->mode==4) delete[] (T *)data;
 		dex = newdex;
 	}break;
-	case 0: break; /* nothing happens */
-	default: 
-		RAISE("%s: unknown inlet mode",parent->info());
-	}} /* PROF */
+	case 0: break; // ignore data
+	default: RAISE("%s: unknown inlet mode",parent->info());
+	}} // PROF
 }
 
-void GridInlet::end() {
-	TRACE;
+void GridInlet::end() {TRACE;
 	assert(this);
 	if (!is_busy()) RAISE("%s: inlet not busy",parent->info());
 	if (dim->prod() != dex) {
@@ -288,8 +279,7 @@ void GridInlet::end() {
 	dex=0;
 }
 
-template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
-	assert(gh);
+template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	nt = g->nt;
 	dim = g->dim;
 	int n = g->dim->prod();
@@ -323,7 +313,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	dex = 0;
 }
 
-void GridInlet::from_grid(Grid *g) {
+void GridInlet::from_grid(Grid *g) {TRACE;
 	if (!supports_type(g->nt))
 		RAISE("%s: number type %s not supported here",
 			parent->info(), number_type_table[g->nt].name);
@@ -332,18 +322,17 @@ void GridInlet::from_grid(Grid *g) {
 #undef FOO
 }
 
-void GridInlet::from_ruby_list(int argc, Ruby *argv, NumberTypeE nt) {
+void GridInlet::from_ruby_list(int argc, Ruby *argv, NumberTypeE nt) {TRACE;
 	Grid t(argc,argv,nt); from_grid(&t);
 }
 
-void GridInlet::from_ruby(int argc, Ruby *argv) {
+void GridInlet::from_ruby(int argc, Ruby *argv) {TRACE;
 	Grid t(argv[0]); from_grid(&t);
 }
 
 /* **************** GridOutlet ************************************ */
 
-GridOutlet::GridOutlet(GridObject *parent, int woutlet, P<Dim> dim, NumberTypeE nt) {
-	assert(this);
+GridOutlet::GridOutlet(GridObject *parent, int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->parent = parent;
 	this->woutlet = woutlet;
 	this->nt = int32_e;
@@ -354,17 +343,12 @@ GridOutlet::GridOutlet(GridObject *parent, int woutlet, P<Dim> dim, NumberTypeE 
 	frozen = 0;
 	inlets = Pt<GridInlet *>();
 	ninlets = 0;
-	if (dim) {begin(dim,nt);}
+	if (dim) begin(dim,nt);
 }
 
-GridOutlet::~GridOutlet() {
-	assert(this);
-	if (inlets) delete[] inlets.p;
-}
+GridOutlet::~GridOutlet() {TRACE; if (inlets) delete[] inlets.p;}
 
-void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {
-	assert(this);
-	TRACE;
+void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {TRACE;
 	int n = dim->count();
 	this->nt = nt;
 	this->dim = dim;
@@ -383,10 +367,8 @@ void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {
 	parent->send_out(COUNT(a),a);
 	frozen = 1;
 	if (!dim->prod()) {end(); return;}
-
 	int32 lcm_factor = 1;
 	for (int i=0; i<ninlets; i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
-
 	if (nt != buf->nt) {
 		// biggest packet size divisible by lcm_factor
 		int32 v[] = {(MAX_PACKET_SIZE/lcm_factor)*lcm_factor};
@@ -397,12 +379,9 @@ void GridOutlet::begin(P<Dim> dim, NumberTypeE nt) {
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(int n, Pt<T> data) {
-	assert(this);
-	assert(data);
-	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	CHECK_TYPE(*data);
-	CHECK_ALIGN(data);
+void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
+	assert(data); assert(frozen);
+	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
 		int pn = min(n,MAX_PACKET_SIZE);
 		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
@@ -410,9 +389,7 @@ void GridOutlet::send_direct(int n, Pt<T> data) {
 	}
 }
 
-void GridOutlet::flush() {
-	assert(this);
-	TRACE;
+void GridOutlet::flush() {TRACE;
 	if (!bufi) return;
 #define FOO(T) send_direct(bufi,(Pt<T>)*buf);
 	TYPESWITCH(buf->nt,FOO,)
@@ -425,17 +402,14 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
-/* buffering in outlet still is 8x faster...? */
-/* should use BitPacking for conversion...? */
-
-/* send modifies dex; send_direct doesn't */
+//!@#$ buffering in outlet still is 8x faster...?
+//!@#$ should use BitPacking for conversion...?
+// send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(int n, Pt<T> data) {
-	assert(this);
-	assert(data);
+void GridOutlet::send(int n, Pt<T> data) {TRACE;
+	assert(data); assert(frozen);
 	if (!n) return;
-	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	CHECK_ALIGN(data);
+	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
@@ -461,12 +435,9 @@ void GridOutlet::send(int n, Pt<T> data) {
 }
 
 template <class T>
-void GridOutlet::give(int n, Pt<T> data) {
-	assert(this);
-	assert(data);
-	TRACE; CHECK_BUSY(outlet); assert(frozen);
-	assert(dex+n <= dim->prod());
-	CHECK_ALIGN(data);
+void GridOutlet::give(int n, Pt<T> data) {TRACE;
+	assert(data); CHECK_BUSY(outlet); assert(frozen);
+	assert(dex+n <= dim->prod()); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		send(n,data);
 		delete[] (T *)data;
@@ -486,9 +457,8 @@ void GridOutlet::give(int n, Pt<T> data) {
 	if (dex==dim->prod()) end();
 }
 
-void GridOutlet::callback(GridInlet *in) {
-	assert(this);
-	TRACE; CHECK_BUSY(outlet); assert(!frozen);
+void GridOutlet::callback(GridInlet *in) {TRACE;
+	CHECK_BUSY(outlet); assert(!frozen);
 	int mode = in->mode;
 	assert(mode==6 || mode==4 || mode==0);
 	assert(ninlets<MAX_CORDS);
@@ -508,17 +478,8 @@ GridObject::~GridObject() {check_magic();}
 	if (rb_ivar_get(qlass,SI(@noutlets))==Qnil)
 		RAISE("not a GridObject subclass ???");
 	int noutlets = convert(rb_ivar_get(qlass,SI(@noutlets)),(int*)0);
-/*	Ruby handlers = rb_ivar_get(qlass,SI(@handlers));
-	if (handlers!=Qnil) {
-		for (int i=0; i<rb_ary_len(handlers); i++) {
-			GridHandler *gh = FIX2PTR(GridHandler,rb_ary_ptr(handlers)[i]);
-			in[gh->winlet] = new GridInlet(this,gh);
-		}
-	}*/
 	rb_call_super(argc,argv);
 }
-
-/* category: input */
 
 //!@#$ does not handle types properly
 //!@#$ most possibly a big hack
@@ -571,7 +532,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	Ruby *p = rb_ary_ptr(buf);
 	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
-	if (!out) out = new GridOutlet(this,outlet);
+	if (!out) out = new GridOutlet(this,outlet); // valgrind says leak?
 	out->begin(new Dim(n,v),nt);
 }
 
@@ -591,7 +552,7 @@ void send_out_grid_flow_2(P<GridOutlet> go, Ruby s, T bogus) {
 
 static void *GridObject_allocate ();
 
-/* install_rgrid(Integer inlet, Boolean multi_type? = true) */
+// install_rgrid(Integer inlet, Boolean multi_type? = true)
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");
 	GridHandler *gh = new GridHandler;
@@ -663,15 +624,8 @@ void startup_grid () {
 	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
 }
 
-/*
-  do not call this. I don't understand how to use templates properly,
-  so this is a hack to make some things work.
-  GCC 3.2 optimises so much that i have to make the following
-  kludge non-static and i can't even put exit(1) at the beginning of it.
-*/
-//static
+// never call this. this is a hack to make some things work.
 void make_gimmick () {
-//    exit(1); // i warned you.
 	GridOutlet foo(0,0);
 #define FOO(S) foo.give(0,Pt<S>());
 EACH_NUMBER_TYPE(FOO)

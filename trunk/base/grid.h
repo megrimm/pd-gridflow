@@ -536,6 +536,8 @@ void CObject_free (void *);
 struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 
+extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
+
 /* **************************************************************** */
 
 // a Dim is a list of dimensions that describe the shape of a grid
@@ -845,12 +847,12 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
 
 #ifndef IS_BRIDGE
 static Numop1 *convert(Ruby x, Numop1 **bogus) {
-	Ruby s = rb_hash_aref(op1_dict,x);
+	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op1_dict)),x);
 	if (s==Qnil) RAISE("expected one-input-operator");
 	return FIX2PTR(Numop1,s);
 }
 static Numop2 *convert(Ruby x, Numop2 **bogus) {
-	Ruby s = rb_hash_aref(op2_dict,x);
+	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op2_dict)),x);
 	if (s==Qnil) RAISE("expected two-input-operator");
 	return FIX2PTR(Numop2,s);
 }
@@ -863,9 +865,7 @@ struct Grid : CObject {
 	NumberTypeE nt;
 	void *data;
 	void *rdata;
-
 	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
-		//if (dc && dim) dc(dim);
 		if (!dim) RAISE("hell");
 		init(dim,nt);
 		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
@@ -878,23 +878,17 @@ struct Grid : CObject {
 	}
 	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
 	P<Dim> to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
-
 #define FOO(type) \
 	operator type *() { return (type *)data; } \
 	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	
 	Grid *dup () {
-		Grid *foo = new Grid(dim,nt);
-		assert(false);
+		Grid *foo=new Grid(dim,nt);
 		memcpy(foo->data,data,bytes());
 		return foo;
 	}
-	~Grid() {
-		if (rdata) delete[] (uint8 *)rdata;
-		dim=0; rdata=data=0;
-	}
+	~Grid() {if (rdata) delete[] (uint8 *)rdata;}
 private:
 	void init(P<Dim> dim, NumberTypeE nt) {
 		this->dim = dim;
@@ -931,36 +925,12 @@ struct PtrGrid : public P<Grid> {
 //****************************************************************
 // GridInlet represents a grid-aware inlet
 
-// macro for declaring an inlet inside a class{} block
-//#define GRINLET3(I)
-//	GridHandler C##_gh_##I = K(C,I);
-//	template <class T> void grin_##I(GridInlet *in, int n, Pt<T> data);
-
-//// macros for declaring an inlet inside GRCLASS() (GridHandler)
-// C is for class, I for inlet number
-// GRIN1 : int32 only
-// GRIN4 : all types
-// GRIN2 : integers only; no floats
-// GRINF : floats only; no integers
-#ifndef HAVE_LITE
-#define GRIN1(C,I) {I, 0,0,C::grinw_##I,0,0,0 }
-#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0 }
-#define GRINF(C,I) {I, 0,0,0,0,C::grinw_##I,C::grinw_##I }
-#else
-#define GRIN1(C,I) {I, 0,0,C::grinw_##I }
-#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
-#define GRINF(C,I) {I, 0,0,0 }
-#endif /* HAVE_LITE */
-
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(C,I) \
 	template <class T> void C::grinw_##I (GridInlet *in, int n, Pt<T> data) { \
 		((C*)(in->parent))->grin_##I(in,n,data); } \
-	template <class T> \
-	void C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
+	template <class T> void  C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
 #define GRID_FLOW else if (n>=0)
 #define GRID_FINISH else
@@ -978,7 +948,7 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 	GRID_INLET(C,I) { \
 		if (is_busy_except(in)) { \
 			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
-		} else V=new Grid(in->dim,NumberTypeE_type_of(*data)); \
+		} else V=        new Grid(in->dim,NumberTypeE_type_of(*data)); \
 	} GRID_FLOW { \
 		COPY(((Pt<T>)*(V.next?V.next:&*V))+in->dex, data, n); \
 	} GRID_FINISH
@@ -1001,7 +971,6 @@ struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
 	GridObject *sender;
-
 // grid progress info
 	P<Dim> dim;
 	NumberTypeE nt;
@@ -1035,11 +1004,25 @@ private:
 \end class GridInlet
 
 //****************************************************************
-// DECL/GRCLASS : Ruby<->C++ bridge
+// for use by source_filter.rb ONLY (for \grin and \classinfo)
 
-// FClass is to be used only at initialization, starting with GF-0.7.1.
-// relevant contents are now copied over to ruby classes.
-// In any case you shouldn't use it directly.
+// C is for class, I for inlet number
+// GRIN1 : int32 only
+// GRIN4 : all types
+// GRIN2 : integers only; no floats
+// GRINF : floats only; no integers
+#ifndef HAVE_LITE
+#define GRIN1(C,I) {I, 0,0,C::grinw_##I,0,0,0 }
+#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0 }
+#define GRINF(C,I) {I, 0,0,0,0,C::grinw_##I,C::grinw_##I }
+#else
+#define GRIN1(C,I) {I, 0,0,C::grinw_##I }
+#define GRIN4(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRIN2(C,I) {I, C::grinw_##I,C::grinw_##I,C::grinw_##I }
+#define GRINF(C,I) {I, 0,0,0 }
+#endif // HAVE_LITE
+
 struct FClass {
 	void *(*allocator)(); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
@@ -1047,20 +1030,8 @@ struct FClass {
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
 };
 
-// RMethod,MethodDecl,DECL,DECL3 should go here
-
-#define GRCLASS(_name_,_args_...) \
-	static void *_name_##_allocator () { return new _name_; } \
-	static MethodDecl _name_ ## _methods[] = { _args_ }; \
-	static void _name_ ## _startup (Ruby rself); \
-	FClass ci ## _name_ = { \
-		_name_##_allocator, _name_ ## _startup, #_name_, \
-		COUNT(_name_##_methods), _name_##_methods, }; \
-	static void _name_ ## _startup (Ruby rself)
-
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
-
 \class GridOutlet < CObject
 struct GridOutlet : CObject {
 // these are set only once, at outlet creation
@@ -1158,11 +1129,7 @@ struct GridObject : FObject {
 };
 \end class GridObject
 
-//****************************************************************
-
 typedef struct GridObject Format;
-
-extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 uint64 gf_timeofday();
 Ruby Pointer_new (void *ptr);
 void *Pointer_get (Ruby self);
