@@ -224,6 +224,7 @@ static void gfpost(VideoMmap *self) {
 
 \class FormatVideoDev < Format
 struct FormatVideoDev : Format {
+	VideoCapability vcaps;
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	Pt<uint8> image;
@@ -416,8 +417,7 @@ GRID_INLET(FormatVideoDev,0) {
 	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
-	/* !@#$ should this be an error or warning? */
-	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) gfpost("warning: no tuner #%d", value);
+	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
 	vtuner.mode = VIDEO_MODE_NTSC;
 	gfpost(&vtuner);
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
@@ -431,7 +431,7 @@ GRID_INLET(FormatVideoDev,0) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	rb_funcall(rself,SI(tuner),1,INT2NUM(0));
+	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(tuner),1,INT2NUM(0));
 }
 
 \def void frequency (int value) {
@@ -480,7 +480,6 @@ GRID_INLET(FormatVideoDev,0) {
 
 \def void initialize2 () {
 	int fd = GETFD;
-	VideoCapability vcaps;
 	VideoPicture *gp = new VideoPicture;
 
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
