@@ -117,7 +117,7 @@ inline Ruby *rb_ary_ptr(Ruby s) {return RARRAY(s)->ptr;}
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; \
 	p += sprintf(p,"%s: ",#ar); \
-	for (int q=0; q<n; q++) p += sprintf(p,"%ld ",(long)ar[q]); \
+	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	gfpost("%s",foo); \
 }
 
@@ -471,10 +471,23 @@ static bool  convert(Ruby x, bool  *foo) {
 	}
 }
 
+#ifndef IS_BRIDGE
+uint64 gf_num2ull(Ruby val);
+Ruby gf_ull2num(uint64 val);
+int64 gf_num2ll(Ruby val);
+Ruby gf_ll2num(int64 val);
+static  int64 convert(Ruby x,  int64 *foo) { return gf_num2ll(x); }
+static uint64 convert(Ruby x, uint64 *foo) { return gf_num2ull(x); }
+#endif
+
 static float64 convert(Ruby x, float64 *foo) {
+	//if (INTEGER_P(x)) return gf_num2ll(x);
+	if (INTEGER_P(x)) return INT(x);
 	if (TYPE(x)!=T_FLOAT) RAISE("not a Float");
 	return ((RFloat*)x)->value;}
 static float32 convert(Ruby x, float32 *foo) {
+	//if (INTEGER_P(x)) return gf_num2ll(x);
+	if (INTEGER_P(x)) return INT(x);
 	return (float32) convert(x,(float64 *)0);}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
@@ -850,13 +863,12 @@ struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	void *data;
+	void *rdata;
 
 	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
 		//if (dc && dim) dc(dim);
 		if (!dim) RAISE("hell");
-		this->nt = nt;
-		this->dim = dim;
-		data = dim ? new char[bytes()] : 0;
+		init(dim,nt);
 		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
 	}
 	Grid(Ruby x) : dim(0), nt(int32_e), data(0) {
@@ -867,7 +879,6 @@ struct Grid : CObject {
 	}
 	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
 	P<Dim> to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
-
 
 #define FOO(type) \
 	operator type *() { return (type *)data; } \
@@ -881,8 +892,19 @@ EACH_NUMBER_TYPE(FOO)
 		*foo = *this;
 		return foo;
 	}
-	~Grid() { if (data) delete[] (uint8 *)data; dim=0; data=0; }
+	~Grid() {
+		if (rdata) delete[] (uint8 *)rdata;
+		dim=0; rdata=data=0;
+	}
 private:
+	void init(P<Dim> dim, NumberTypeE nt) {
+		this->dim = dim;
+		this->nt = nt;
+		rdata = dim ? new int64[1+(bytes()+7)/8] : 0;
+		int align = ((long)rdata) & 7;
+		data = (char *)rdata + ((8-align)&7);
+		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
+	}
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
 };
@@ -1167,11 +1189,6 @@ Ruby fclass_install(FClass *fc, Ruby super=0); // super=cGridObject
 extern "C" void Init_gridflow ();
 void gfpost(const char *fmt, ...);
 extern Numop2 *op2_add,*op2_sub,*op2_mul,*op2_div,*op2_mod,*op2_shl,*op2_and;
-
-uint64 gf_num2ull(Ruby val);
-Ruby gf_ull2num(uint64 val);
-int64 gf_num2ll(Ruby val);
-Ruby gf_ll2num(int64 val);
 
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",this->info(), #_a_);
 #define SAME_TYPE(_a_,_b_) \

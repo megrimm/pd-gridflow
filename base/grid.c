@@ -52,6 +52,18 @@
 #define CHECK_BUSY(s) \
 	if (!is_busy()) RAISE("%s: " #s " not busy",parent->info());
 
+#define CHECK_ALIGN(d) \
+	{int bytes = number_type_table[nt].size/8; \
+	int align = ((long)(void*)d)%bytes; \
+	if (align) {L;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+		parent->info(), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
+
+#define CHECK_ALIGN2(d,nt) \
+	{int bytes = number_type_table[nt].size/8; \
+	int align = ((long)(void*)d)%bytes; \
+	if (align) {L;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
+		(void*)d,bytes,align);}}
+
 // **************** Grid ******************************************
 
 #define FOO(S) static inline void NUM(Ruby x, S &y) {y=convert(x,(int32*)0);}
@@ -61,7 +73,7 @@ EACH_INT_TYPE(FOO)
 #define FOO(S) \
 static inline void NUM(Ruby x, S &y) { \
 	if (TYPE(x)==T_FLOAT) y = RFLOAT(x)->value; \
-	else if (INTEGER_P(x)) y = convert(x,(int32*)0); \
+	else if (INTEGER_P(x)) y = convert(x,(S*)0); \
 	else RAISE("expected Float (or at least Integer)");}
 EACH_FLOAT_TYPE(FOO)
 #undef FOO
@@ -74,9 +86,8 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 			STACK_ARRAY(int32,v,i);
 			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
-			this->dim = new Dim(i,v);
-			this->nt = nt;
-			this->data = new char[bytes()];
+			init(new Dim(i,v),nt);
+			CHECK_ALIGN2(this->data,nt);
 			if (a[i] != delim) i++;
 			i++; a+=i; n-=i;
 			goto fill;
@@ -86,9 +97,8 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 		nt = NumberTypeE_find(a[0]);
 		a++, n--;
 	}
-	this->dim=new Dim(n);
-	this->nt=nt;
-	data = new char[bytes()];
+	init(new Dim(n),nt);
+	CHECK_ALIGN2(this->data,nt);
 	fill:
 	int nn = dim->prod();
 	n = min(n,nn);
@@ -107,9 +117,8 @@ void Grid::init_from_ruby(Ruby x) {
 		init_from_ruby_list(rb_ary_len(x),rb_ary_ptr(x));
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		STACK_ARRAY(int32,foo,1);
-		this->dim=new Dim();
-		this->nt=int32_e;
-		this->data = new char[bytes()];
+		init(new Dim(),int32_e);
+		CHECK_ALIGN2(this->data,nt);
 		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
@@ -190,6 +199,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 	TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
+	CHECK_ALIGN(data);
 	PROF(parent) {
 	if (gh->mode==0) {
 		dex += n;
@@ -216,8 +226,10 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 				if (gh->mode==6) {
 					Pt<T> data2 = ARRAY_NEW(T,bufn);
 					COPY(data2,bufd,bufn);
+					CHECK_ALIGN(data2);
 					gh->flow(this,bufn,data2);
 				} else {
+					CHECK_ALIGN(bufd);
 					gh->flow(this,bufn,bufd);
 				}
 				dex = newdex;
@@ -230,6 +242,7 @@ void GridInlet::flow(int mode, int n, Pt<T> data) {
 			if (gh->mode==6) {
 				Pt<T> data2 = ARRAY_NEW(T,m);
 				COPY(data2,data,m);
+				CHECK_ALIGN(data2);
 				gh->flow(this,m,data2);
 			} else {
 				gh->flow(this,m,data);
@@ -279,11 +292,13 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 	gh->flow(this,-1,Pt<T>());
 	if (n>0 && gh->mode!=0) {
 		Pt<T> data = (Pt<T>)*g;
+		CHECK_ALIGN(data);
 		int size = g->dim->prod();
 		if (gh->mode==6) {
 			Pt<T> d = data;
-			data = ARRAY_NEW(T,size);
+			data = ARRAY_NEW(T,size);  // problem with int64,float64 here.
 			COPY(data,d,size);
+			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
 		} else {
 			int m = MAX_PACKET_SIZE/factor();
@@ -291,6 +306,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {
 			m *= factor();
 			while (n) {
 				if (m>n) m=n;
+				CHECK_ALIGN(data);
 				gh->flow(this,m,data);
 				data+=m; n-=m; dex+=m;
 			}			
@@ -382,6 +398,7 @@ void GridOutlet::send_direct(int n, Pt<T> data) {
 	assert(data);
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	CHECK_TYPE(*data);
+	CHECK_ALIGN(data);
 	for (; n>0; ) {
 		int pn = min(n,MAX_PACKET_SIZE);
 		for (int i=0; i<ninlets; i++) inlets[i]->flow(4,pn,data);
@@ -414,6 +431,7 @@ void GridOutlet::send(int n, Pt<T> data) {
 	assert(data);
 	if (!n) return;
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
+	CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
@@ -444,6 +462,7 @@ void GridOutlet::give(int n, Pt<T> data) {
 	assert(data);
 	TRACE; CHECK_BUSY(outlet); assert(frozen);
 	assert(dex+n <= dim->prod());
+	CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		send(n,data);
 		delete[] (T *)data;

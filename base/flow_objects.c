@@ -204,7 +204,10 @@ struct GridExport : GridObject {
 
 template <class T>
 static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
-static Ruby INTORFLOAT2NUM(int64   value) {return    gf_ll2num(value);}
+static Ruby INTORFLOAT2NUM(int64   value) {
+	Ruby v = gf_ll2num(value);
+	//fprintf(stderr,"value=%lld cvt'd to %s\n",value,rb_str_ptr(rb_funcall(v,SI(to_s),0)));
+	return v;}
 static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
 
@@ -535,6 +538,10 @@ GRID_INLET(GridOp2,0) {
 	int loop = r->dim->prod();
 	//gfpost("left %d right %d",data[0],rdata[0]);
 	//gfpost("right.p %p right.next %p",r.p,r.next.p);
+	if (sizeof(T)==8) {
+		fprintf(stderr,"1: data=%p rdata=%p\n",data.p,rdata.p);
+		WATCH(n,data);
+	}
 	if (loop>1) {
 		if (in->dex+n <= loop) {
 			op->zip(n,data,rdata+in->dex);
@@ -547,7 +554,12 @@ GRID_INLET(GridOp2,0) {
 			int nn = m+((n-m)/loop)*loop;
 			for (int i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
 			if (n>nn) COPY(data2+nn,rdata,n-nn);
+			if (sizeof(T)==8) {
+				fprintf(stderr,"2: data=%p data2=%p\n",data.p,data2.p);
+				WATCH(n,data); WATCH(n,data2);
+			}
 			op->zip(n,data,data2);
+			if (sizeof(T)==8) {WATCH(n,data); WATCH(n,data2);}
 		}
 	} else {
 		op->map(n,data,*rdata);

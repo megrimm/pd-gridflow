@@ -543,6 +543,8 @@ extern "C" {
 void *gfmalloc(size_t n) {
 	uint64 t = rdtsc();
 	void *p = malloc(n);
+	long align = (long)p & 7;
+	if (align) fprintf(stderr,"malloc alignment = %ld mod 8\n",align);
 	t=rdtsc()-t;
 	malloc_time+=t;
 	malloc_calls++;
@@ -616,9 +618,9 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("malloc_time", GridFlow_malloc_time,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 
-#define FOO(A) fprintf(stderr,"sizeof("#A")=%d\n",sizeof(A));
-FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
-#undef FOO
+//#define FOO(A) fprintf(stderr,"sizeof("#A")=%d\n",sizeof(A));
+//FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
+//#undef FOO
 
 	rb_ivar_set(mGridFlow, SI(@fobjects_set), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses_set), rb_hash_new());
