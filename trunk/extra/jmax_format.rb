@@ -39,7 +39,7 @@ class JMaxFileHandler
 		[12, :pop_objs, :int],
 		[13, :make_obj, :int],
 		[14, :put_prop, :symbol],
-		[16, :obj_mess, :int, :int, :int],
+		[16, :obj_mess, :int, :symbol, :int],
 		[18, :push_obj_table, :int],
 		[19, :pop_obj_table],
 		[20, :connect],
@@ -59,6 +59,7 @@ class JObject
 	attr_accessor :parent_patcher
 	attr_reader :init_messages
 	attr_reader :connections
+	def self.[](*args) new(*args) end
 	def initialize(*args)
 		@args = args
 		@properties = {}
@@ -100,7 +101,7 @@ class JMaxFileReader < JMaxFileHandler
 		raise "@estack.size!=0" if @estack.size!=0
 		raise "@ostack.size!=1" if @ostack.size!=1
 		raise "@tstack.size!=0" if @tstack.size!=0
-		@ostack
+		@ostack[0]
 	end
 	def read_opcode
 		#puts "#{@index} of #{@code.size}"
@@ -125,8 +126,8 @@ class JMaxFileReader < JMaxFileHandler
 			end)
 			@index+=n
 		}
-		text = sprintf "%05d: %2d,%1d: %s", @index, op1, op2, entry[1]
-		text << "(" << args.map{|x|x.inspect}.join(",") << ")"
+		#text = sprintf "%05d: %2d,%1d: %s", @index, op1, op2, entry[1]
+		#text << "(" << args.map{|x|x.inspect}.join(",") << ")"
 		#puts text
 		send entry[1], *args
 	end
@@ -137,7 +138,7 @@ class JMaxFileReader < JMaxFileHandler
 	def put_prop x; @ostack[-1].properties[x] = @estack[-1] end
 	def make_obj x
 		patcher = @ostack[-1] if @ostack.size>0
-		baby = @factory.new(*(@estack[-x,x]))
+		baby = @factory[*(@estack[-x,x].reverse)]
 		@ostack << baby
 		@ostack[-1].parent_patcher = patcher
 		patcher.subobjects[baby]=true if patcher
@@ -147,7 +148,11 @@ class JMaxFileReader < JMaxFileHandler
 	def push_obj_table x; @tstack<<[] end
 	def mv_obj x; @tstack[-1][x]=@ostack[-1] end
 	def pop_objs x; @ostack[-x,x]=[] end
-	def obj_mess i,s,n; @ostack[-1].send_in i,s,*(@estack[-n,n]) end
+	def obj_mess i,s,n
+		o = @ostack[-1]
+		m = @estack[-n,n].reverse
+		if i<0 then o.send s,*m else o.send_in i,s,*m end
+	end
 	def push_obj x; @ostack<<@tstack[-1][x] end
 	def connect; @ostack[-1].connect @estack[-1],@ostack[-2],@estack[-2] end
 	def pop_obj_table; @tstack.pop end

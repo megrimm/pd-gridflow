@@ -43,13 +43,18 @@ class PureDataFileWriter
 
 	def list_to_s l
 		l.map {|x|
-			if Array===x then "( " + list_to_s(x) + " )" else x end
+			if Array===x then "( " + list_to_s(x) + " )" else escape(x.to_s) end
 		}.join " "
 	end
-		
+
+	def escape x
+		x.gsub(/[;,]/) {|x| "\\#{x}" }
+	end
+
 	def write_object o
 		pr = o.properties
-		classname = o.class.instance_eval{@foreign_name}
+		#classname = o.class.instance_eval{@foreign_name}
+		classname = o.classname
 		t = case classname
 		when "jcomment"; "text"
 		when "messbox"; "msg"
@@ -60,7 +65,7 @@ class PureDataFileWriter
 		when "button"
 			@f.print "bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1"
 		when "jcomment"
-			@f.print pr[:comment].to_s.gsub(/;/,"\;")
+			@f.print escape(pr[:comment].to_s)
 		when "messbox"
 			@f.print(list_to_s(o.argv[0]))
 		else		
