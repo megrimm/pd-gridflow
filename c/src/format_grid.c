@@ -42,13 +42,14 @@ extern FormatClass class_FormatGrid;
 
 typedef struct FormatGrid {
 	Format_FIELDS;
+	/* properties of currently recv'd image */
 	bool is_le; /* little endian: smallest digit first, like i386 */
 	int bpv;    /* bits per value: 32 only */
 } FormatGrid;
 
 static void swap32 (int n, uint32 *data) {
 	while(n--) {
-		int x = *data;
+		uint32 x = *data;
 		x = (x<<16) | (x>>16);
 		x = ((x&0xff00ff)<<8) | ((x>>8)&0xff00ff);
 		*data++ = x;
@@ -59,6 +60,10 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	int n_dim, prod;
 	if (frame!=-1) return 0;
 
+/*
+	the rewind code would go here.
+*/
+
 	/* header */
 	{
 		char buf[8];
@@ -66,10 +71,15 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 			whine("grid header: read error: %s",strerror(errno));
 			goto err;
 		}
+		if (is_le()) {
+			whine("we are smallest digit first");
+		} else {
+			whine("we are biggest digit first");
+		}
 		if (strncmp("\x7fGRID",buf,5)==0) {
-			$->is_le = false; whine("biggest digit first");
+			$->is_le = false; whine("this file is biggest digit first");
 		} else if (strncmp("\x7fgrid",buf,5)==0) {
-			$->is_le = true; whine("smallest digit first");
+			$->is_le = true; whine("this file is smallest digit first");
 		} else {
 			whine("grid header: invalid");
 			goto err;
@@ -92,12 +102,17 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 
 	/* dimension list */
 	{
-		int v[n_dim];
+		int v[n_dim],i;
 		if (0>read($->stream,v,sizeof(v))) {
 			whine("dimension list: read error: %s",strerror(errno));
 			goto err;
 		}
 		if ($->is_le != is_le()) swap32(n_dim,(uint32 *)v);
+		whine("there are %d dimensions",n_dim);
+		for (i=0; i<n_dim; i++) {
+			whine("dimension %d is %d indices",i,v[i]);
+			COERCE_INT_INTO_RANGE(v[i],0,MAX_INDICES);
+		}
 		$->dim = Dim_new(n_dim,v);
 		prod = Dim_prod($->dim);
 		if (prod <= 0 || prod > MAX_NUMBERS) {
@@ -110,7 +125,7 @@ bool FormatGrid_frame (FormatGrid *$, GridOutlet *out, int frame) {
 	{
 		Number *data = NEW2(Number,prod);
 		int i;
-		if (0>read($->stream,data,prod)) {
+		if (0>read($->stream,data,prod*sizeof(Number))) {
 			whine("body: read error: %s",strerror(errno));
 			goto err;
 		}
@@ -127,6 +142,8 @@ err:
 }
 
 GRID_BEGIN(FormatGrid,0) {
+	$->dim = in->dim;
+
 	/* header */
 	{
 		char buf[8];
@@ -151,19 +168,85 @@ GRID_BEGIN(FormatGrid,0) {
 
 GRID_FLOW(FormatGrid,0) {
 	Number data2[n];
-	memcpy(data2,data,n);
+	memcpy(data2,data,n*sizeof(Number));
 	if ($->is_le != is_le()) swap32(n,data2);
-	write($->stream,data2,n);
+	write($->stream,data2,n*sizeof(Number));
 }
 
 GRID_END(FormatGrid,0) {
-	/* nothing to do */
+	lseek($->stream,0,SEEK_SET);
 }
 
 void FormatGrid_close (Format *$) {
-	if ($->bstream) fclose($->bstream);
+/*	if ($->bstream) fclose($->bstream); */
+	$->bstream = 0;
+	$->stream = 0;
 	FREE($);
 }
+
+/* **************************************************************** */
+
+bool FormatGrid_open_file (Format *$, int ac, const fts_atom_t *at, int mode) {
+	const char *filename;
+	if (ac<1) { whine("not enough arguments"); goto err; }
+
+	if (!fts_is_symbol(at+0)) {
+		whine("bad argument"); goto err;
+	}
+
+	filename = fts_symbol_name(fts_get_symbol(at+0));
+	$->bstream = v4j_file_fopen(filename,mode);
+	if (!$->bstream) {
+		whine("can't open file `%s': %s", filename, strerror(errno));
+		goto err;
+	}
+	$->stream = fileno($->bstream);
+	return true;
+err:
+	return false;
+}
+
+/* **************************************************************** */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+bool FormatGrid_open_tcp (Format *$, int ac, const fts_atom_t *at, int mode) {
+	struct sockaddr_in address;
+
+	if (ac<2) { whine("not enough arguments"); goto err; }
+
+	if (!fts_is_symbol(at+0) || !fts_is_int(at+1)) {
+		whine("bad arguments"); goto err;
+	}
+
+	$->stream = socket(AF_INET,SOCK_STREAM,0);
+
+	address.sin_family = AF_INET;
+	address.sin_port = fts_get_int(at+1);
+
+	{
+		const char *hostname;
+		int port;
+		struct hostent *h = gethostbyname(fts_symbol_name(fts_get_symbol(at+0)));
+		if (!h) {
+			whine("open_tcp: ",strerror(errno));
+			goto err;
+		}
+		memcpy (&address.sin_addr.s_addr,h->h_addr_list[0],h->h_length);
+	}
+
+	if (0>connect($->stream,&address,sizeof(address))) {
+		whine("open_tcp: ",strerror(errno));
+		goto err;
+	}
+	return true;
+err:
+	return false;
+}
+
+/* **************************************************************** */
 
 Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int mode) {
 	Format *$ = NEW(Format,1);
@@ -173,23 +256,26 @@ Format *FormatGrid_open (FormatClass *qlass, int ac, const fts_atom_t *at, int m
 	$->stream = 0;
 	$->bstream = 0;
 
-	if (ac!=2 || fts_get_symbol(at+0) != SYM(file)) {
-		whine("usage: grid file <filename>"); goto err;
-	}
-	filename = fts_symbol_name(fts_get_symbol(at+1));
+	if (ac<1) { whine("not enough arguments"); goto err; }
 
 	switch(mode) {
 	case 4: case 2: break;
 	default: whine("unsupported mode (#%d)", mode); goto err;
 	}
 
-	$->bstream = v4j_file_fopen(filename,mode);
-	$->stream = fileno($->bstream);
-
-	if (!$->bstream) {
-		whine("can't open file `%s': %s", filename, strerror(errno));
-		goto err;
+	{
+		int result;
+		if (fts_get_symbol(at+0) == SYM(file)) {
+			result = FormatGrid_open_file($,ac-1,at+1,mode);
+		} else if (fts_get_symbol(at+0) == SYM(tcp)) {
+			result = FormatGrid_open_tcp($,ac-1,at+1,mode);
+		} else {
+			whine("unknown access method");
+			goto err;
+		}
+		if (!result) goto err;
 	}
+
 	return $;
 err:
 	$->cl->close($);
@@ -198,35 +284,17 @@ err:
 
 /* **************************************************************** */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-
-/*
-Format *FormatGrid_connect (FormatClass *qlass, const char *dest, int mode) {
-	// TCP Socket
-	int sock = socket(AF_INET,SOCK_STREAM,0);
-//	struct sockaddr_t address = { AF_INET, };
-	
-
-}
-*/
-
-/* **************************************************************** */
-
 FormatClass class_FormatGrid = {
-	symbol_name: "Grid",
+	symbol_name: "grid",
 	long_name: "Grid",
 	flags: (FormatFlags)0,
 
 	open: FormatGrid_open,
-
 	frames: 0,
 	frame:  FormatGrid_frame,
-
 	begin:  GRID_BEGIN_PTR(FormatGrid,0),
 	flow:    GRID_FLOW_PTR(FormatGrid,0),
 	end:      GRID_END_PTR(FormatGrid,0),
-
 	option: 0,
 	close:  FormatGrid_close,
 };
