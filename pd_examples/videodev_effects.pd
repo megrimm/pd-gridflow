@@ -1,0 +1,77 @@
+#N canvas 271 163 741 603 10;
+#X obj 161 576 print;
+#X msg 369 365 256;
+#X floatatom 400 366 5 0 0 0 - - -;
+#X obj 205 164 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 161 547 fps detailed;
+#X obj 161 525 @out x11;
+#X obj 40 54 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 306 365 loadbang;
+#X obj 172 452 @outer + ( 0 );
+#X obj 343 436 @for 0 256 1;
+#X obj 400 390 fork;
+#X obj 207 413 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 40 77 metro 5;
+#X obj 343 411 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 207 289 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 172 474 @store;
+#X obj 119 126 @in;
+#X obj 161 508 fork;
+#X obj 40 98 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 343 459 @ gamma;
+#X obj 158 68 @camera_control;
+#X obj 119 163 demultiplex;
+#X obj 119 288 demultiplex;
+#X obj 119 412 demultiplex;
+#X obj 191 319 @fade 8;
+#X obj 191 217 @motion_detection;
+#X floatatom 332 270 5 0 0 0 - displaced_numb -;
+#X obj 332 251 tgl 15 0 displaced empty empty 0 0 128 4 -233017 -62784
+-233017 0 1;
+#X text 354 250 <-- toggle displaced pixels on/off;
+#X obj 335 232 hsl 128 15 0 30 0 0 noise empty noise_reduction 10 6
+128 12 -233017 -1 -62784 0 0;
+#X text 383 271 <-- total number of displaced pixels (divided by 100000)
+;
+#X obj 332 193 tgl 15 0 snapshot empty empty 0 0 128 4 -233017 -258699
+-260818 0 1;
+#X text 355 192 <-- compare incoming images/ take a snapshot;
+#X obj 332 212 tgl 15 0 emboss empty empty 0 0 128 4 -233017 -62784
+-233017 0 1;
+#X text 354 211 <-- toggle find-edges vs emboss;
+#X text 283 68 <-- initialize the camera first;
+#X connect 1 0 2 0;
+#X connect 2 0 10 0;
+#X connect 3 0 21 1;
+#X connect 4 0 0 0;
+#X connect 5 0 4 0;
+#X connect 6 0 12 0;
+#X connect 7 0 1 0;
+#X connect 8 0 15 0;
+#X connect 9 0 19 0;
+#X connect 10 0 13 0;
+#X connect 10 1 19 1;
+#X connect 11 0 23 1;
+#X connect 12 0 18 0;
+#X connect 13 0 9 0;
+#X connect 14 0 22 1;
+#X connect 15 0 17 0;
+#X connect 16 0 21 0;
+#X connect 17 0 5 0;
+#X connect 18 0 16 0;
+#X connect 19 0 15 1;
+#X connect 20 0 16 0;
+#X connect 21 0 22 0;
+#X connect 21 1 25 0;
+#X connect 22 0 23 0;
+#X connect 22 1 24 0;
+#X connect 23 0 17 0;
+#X connect 23 1 8 0;
+#X connect 24 0 23 0;
+#X connect 25 0 22 0;
