@@ -54,10 +54,19 @@ Operator1 *op1_table_find(fts_symbol_t sym) {
 
 /* **************************************************************** */
 
+//	static void op_array_##_name_ (int n, Number *as, Number b) {
+//		while (n--) { Number a = *as; *as++ = _expr_; } }
+
 #define DEF_OP2(_name_,_expr_) \
 	static Number op_##_name_ (Number a, Number b) { return _expr_; } \
 	static void op_array_##_name_ (int n, Number *as, Number b) { \
-		while (n--) { Number a = *as; *as++ = _expr_; } } \
+		while ((n&3)!=0) { Number a = *as; *as++ = _expr_; n--; } \
+		while (n) { \
+			{ Number a = as[0]; as[0] = _expr_; } \
+			{ Number a = as[1]; as[1] = _expr_; } \
+			{ Number a = as[2]; as[2] = _expr_; } \
+			{ Number a = as[3]; as[3] = _expr_; } \
+		as+=4; n-=4; } } \
 	static Number op_fold_##_name_ (Number a, int n, const Number *as) { \
 		while (n--) { Number b = *as; a = _expr_; } return a; }
 

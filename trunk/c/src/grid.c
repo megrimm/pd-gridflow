@@ -227,10 +227,10 @@ void GridOutlet_send(GridOutlet *$, int n, const Number *data) {
 	assert(!GridOutlet_idle($));
 	$->dex += n;
 	assert($->dex <= Dim_prod($->dim));
-	if ($->bufn + n > PACKET_LENGTH) {
+	if (n > PACKET_LENGTH/2 || $->bufn + n > PACKET_LENGTH) {
 		GridOutlet_flush($);
 	}
-	if (n >= PACKET_LENGTH) {
+	if (n > PACKET_LENGTH/2) {
 		GridOutlet_send_direct($,n,data);
 	} else {
 		memcpy(&$->buf[$->bufn],data,n*sizeof(Number));
