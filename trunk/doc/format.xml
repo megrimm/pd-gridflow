@@ -586,10 +586,12 @@
 				<arg name="x" type="integer"/>
 				<arg name="buttons" type="integer"/>
 				
-				This is emitted every time the cursor moves inside
+				<p>This is emitted every time the cursor moves inside
 				the window connected to this format handler. This is also
 				emitted when the cursor is dragging from inside to outside
-				the window. The y and x coordinates are relative to the upper
+				the window. This is also emitted when a mouse button is pressed.</p>
+
+				<p>The y and x coordinates are relative to the upper
 				right corner of the window. Specific button states may be
 				extracted from the button value by applying [&gt;&gt;
 				buttonnumber] and then checking whether the result is odd.
@@ -608,18 +610,49 @@
 				<li>Right Button</li>
 				<li>Wheel Up</li>
 				<li>Wheel Down</li>
-				</list>
+				</list></p>
+				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
+			</method>
+			<method name="keypress">
+				<arg name="y" type="integer"/>
+				<arg name="x" type="integer"/>
+				<arg name="buttons" type="integer"/>
+				<arg name="keyname" type="symbol"/>
+				<p>Similar to <k>position</k> above, but this is emitted when a
+				keyboard key is pressed while this format handler's window
+				is active. Keynames follow the X11 standard, similarly to PureData's [keyname] object.
+				The only exception is that keynames that are digits get prefixed by a capital D so that
+				they don't get mistaken for actual numbers.</p>
+				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
+			</method>
+			<method name="keyrelease">
+				<arg name="y" type="integer"/>
+				<arg name="x" type="integer"/>
+				<arg name="buttons" type="integer"/>
+				<arg name="keyname" type="symbol"/>
+				Same as keypress but when a key gets released instead.
+				<p>NOTE: This message form may become longer in the future, but the already defined parts will stay the same.</p>
 			</method>
 		</outlet>
 	</class>
 
-	<class name="format sdl @out">
+	<class name="format quartz @out">
 		<method name="open">
-			opens a dim(480,640,3) rgb window.
+			opens a dim(240,320,3) rgb window (default).
 		</method>
 		<method name="grid">
 			<arg name="grid" type="grid(rows columns {red green blue})"/>
-			sends frame to screen. window is NOT resized.
+			Sends image to screen. Window will be resized to fit the image exactly.
+		</method>
+	</class>
+
+	<class name="format sdl @out">
+		<method name="open">
+			Opens a dim(240,320,3) rgb window (default).
+		</method>
+		<method name="grid">
+			<arg name="grid" type="grid(rows columns {red green blue})"/>
+			Sends image to screen. Window will be resized to fit the image exactly.
 		</method>
 	</class>
 
