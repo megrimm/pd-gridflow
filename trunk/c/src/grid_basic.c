@@ -697,7 +697,7 @@ GRID_FLOW(GridInner,2) {
 	in->dex += n;
 }
 
-GRID_END(GridInner,2) {}
+GRID_END(GridInner,2) { /* write me */ }
 
 METHOD(GridInner,init) {
 	fts_symbol_t sym_para = GET(1,symbol,op2_table[0].sym);
@@ -1210,6 +1210,7 @@ METHOD(GridRedim,init) {
 METHOD(GridRedim,delete) {
 	FREE($->dim);
 	FREE($->data);
+	GridObject_delete((GridObject *)$);
 }
 
 CLASS(GridRedim) {
