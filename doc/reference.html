@@ -286,16 +286,16 @@
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@two">@two</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@two.png" alt="[@two]" border="0"><br clear="left"><br><br><a href="images/grab_two.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds two values, defaulting to (0,0). each time one is 
-		changed (by sending an integer in that inlet), a dim(2) grid is 
-		sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+		changed (by sending an integer in that inlet), a dim(2) grid 
+		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>outlet 0</b> <b>grid</b> <b>dim(</b>2<b>)</b><br>
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@three">@three</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@three.png" alt="[@three]" border="0"><br clear="left"><br><br><a href="images/grab_three.png"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p> holds three values, defaulting to (0,0,0). each time one is 
-		changed (by sending an integer in that inlet), a dim(3) grid is 
-		sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+		changed (by sending an integer in that inlet), a Dim(3) grid 
+		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
@@ -303,8 +303,8 @@
  <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@four">@four</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@four.png" alt="[@four]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p> holds four values, defaulting to (0,0,0,0). each time one is 
-		changed (by sending an integer in that inlet), a dim(4) grid is 
-		sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
+		changed (by sending an integer in that inlet), a Dim(4) grid 
+		of those values is sent through the outlet.</p> <br><b>method</b> init <b>(</b><b>)</b>no arguments.<br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b><br>
  <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b><br>
@@ -318,7 +318,7 @@
 <tr><td colspan="4"><a name="Objects_for_Generating"></a><h4>Objects for Generating</h4></td></tr> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@for">@for</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@for.png" alt="[@for 0 320 1]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
   <p>works like a regular [for] object plugged to a [@import] tuned 
-		for a dim(size) where size is the number of values produced by a bang 
+		for a Dim(size) where size is the number of values produced by a bang 
 		to that [for].</p> <br><b>method</b> init <b>(</b>from<b>,</b>to<b>,</b>step<b>)</b>    <br>
  <br><b>inlet 0</b> <b>method</b> int <b>(</b><b>)</b> 
 			replaces the "from" value and produces output. <br>
@@ -359,7 +359,7 @@
  <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b> 
 				stores a single int in the right inlet; the same int will 
 				be applied in all computations; this is like sending a 
-				dim(1) or dim() grid with that number in it. <br>
+				Dim(1) or Dim() grid with that number in it. <br>
    <br><b>outlet 0</b> <b>grid</b>  <br>
   <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@!">@!</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/@!.png" alt="[@!]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -381,8 +381,8 @@
 			the base value is optional and defaults to 0. 
 			the operator is one from the table of two-input operators. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., last<b>)</b> 
-				produces a dim(dims) grid (the last dimension is removed). 
-				the incoming grid is split into dim(last) subparts; from 
+				produces a Dim(dims) grid (the last dimension is removed). 
+				the incoming grid is split into Dim(last) subparts; from 
 				each of those parts a result is produced by cascading the 
 				specified operation from the base value (specified in 
 				inlet 1) to all the elements in that subpart. (see examples 
@@ -400,7 +400,7 @@
 			the operator must be picked from the table of two-input operators. <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA...<b>)</b><br>
  
-			produces a grid of size dim(anyA..., anyB...), where numbers 
+			produces a grid of size Dim(anyA..., anyB...), where numbers 
 			are the results of the operation on every element of A and 
 			every element of B. the resulting array can be very big. Don't 
 			try this on two pictures (the result will have 6 dimensions)   <br><b>inlet 1</b> <b>grid</b> <b>dim(</b>anyB...<b>)</b><br>
@@ -420,9 +420,9 @@
 			of two-input operators. 
 			the base value has to be specified (has no default value yet). <br>
   <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>anyA..., lastA<b>)</b> 
-				creates a dim(anyA...,anyB...) grid by splitting the 
-				left-hand grid into dim(lastA) pieces, the right-hand grid 
-				into dim(lastB) pieces, doing an [@] on them with the 
+				creates a Dim(anyA...,anyB...) grid by splitting the 
+				left-hand grid into Dim(lastA) pieces, the right-hand grid 
+				into Dim(lastB) pieces, doing an [@] on them with the 
 				specified op_para operator, and then a [@fold] on that with 
 				the specified op_fold operator and base value. lastA must be 
 				equal to lastB. <br>
@@ -470,12 +470,12 @@
 				the stored grid is fully sent to the outlet. <br>
  <br><b>inlet 0</b> <b>grid</b> <b>dim(</b>dims..., indices<b>)</b> 
 				in this grid, the last dimension refers to subparts of 
-				the stored grid. sending a dim(200,200,2) on a @store 
-				that holds a dim(240,320,3) will cause the @store to handle 
-				the incoming grid as a dim(200,200) of dim(2)'s, where each 
-				dim(2) represents a position in a dim(240,320) of dim(3)'s. 
-				therefore the resulting grid will be a dim(200,200) of 
-				dim(3) which is a dim(200,200,3). in practice this example 
+				the stored grid. sending a Dim(200,200,2) on a @store 
+				that holds a Dim(240,320,3) will cause the @store to handle 
+				the incoming grid as a Dim(200,200) of Dim(2)'s, where each 
+				Dim(2) represents a position in a Dim(240,320) of Dim(3)'s. 
+				therefore the resulting grid will be a Dim(200,200) of 
+				Dim(3) which is a Dim(200,200,3). in practice this example 
 				would be used for generating a 200*200 RGB picture from a 
 				200*200 XY map and a 240*320 RGB picture. this object can 
 				be logically used in the same way for many purposes 
@@ -493,7 +493,7 @@
   <br><b>inlet 0</b> <b>method</b> bang <b>(</b><b>)</b>creates a coordinate map that can 
 			be fed into the left input of @store to give the same result 
 			as a bang in that input; that coordinate map is 
-			dim(height,width,2), where each dim(2) is a (y,x) pair indexing 
+			Dim(height,width,2), where each Dim(2) is a (y,x) pair indexing 
 			a pixel.<br>
    <br><b>inlet 1</b> <b>method</b> int <b>(</b><b>)</b>set the height.<br>
    <br><b>inlet 2</b> <b>method</b> int <b>(</b><b>)</b>set the width.<br>
