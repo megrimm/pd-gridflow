@@ -275,7 +275,6 @@ end
 
 def self.routine
 	$tasks.each {|k,v|
-		#GridFlow.post "#{k} #{v}"
 		case v
 		when Integer; GridFlow.exec k,v
 		when Proc; v[k]
@@ -286,10 +285,6 @@ def self.routine
 	# it should eventually play a more central role,
 	# but for now I rely on GridFlow.routine
 	$mainloop.timers.after(0.025) { routine }
-#	if not @nextgc or Time.new > @nextgc then
-#		GC.start
-#		@nextgc = Time.new + 5
-#	end
 end
 
 def GridFlow.find_file s
@@ -307,10 +302,7 @@ end
 def GridFlow.tick
 begin
 	$mainloop.one(0)
-#	self.routine
-#	GC.start
 rescue Exception => e
-	#GridFlow.post "GridFlow.clock_tick: #{e.class}: #{e}:\n" + e.backtrace.join("\n")
 	GridFlow.post "GridFlow.clock_tick: %s: %s:", e.class, e
 	b = e.backtrace
 	GridFlow.post "%s", b[0]

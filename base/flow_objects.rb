@@ -364,48 +364,35 @@ class GridOp1<FPatcher
   end
   install "@!", 1, 1
 end
+
 class OldFold<FPatcher
   @fobjects = ["#fold +","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
-  def initialize(op,seed=0)
-	super
-	@fobjects[0].send_in 0, :op, op
-	@fobjects[0].send_in 0, :seed, seed
-  end
+  def initialize(op,seed=0) super; o=@fobjects[0]
+	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
   install "@fold", 2, 1
 end
 class OldScan<FPatcher
   @fobjects = ["#scan +","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
-  def initialize(op,seed=0)
-	super
-	@fobjects[0].send_in 0, :op, op
-	@fobjects[0].send_in 0, :seed, seed
-  end
+  def initialize(op,seed=0) super; o=@fobjects[0]
+	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
   install "@scan", 2, 1
 end
 class OldInner<FPatcher
   @fobjects = ["#inner","gfmessagebox seed $1"]
   @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,0, 0,0,-1,0, -1,2,0,1]
-  def initialize(op=:*,fold=:+,seed=0,r=0)
-        super
-	@fobjects[0].send_in 0, :op, op
-	@fobjects[0].send_in 0, :fold, fold
-	@fobjects[0].send_in 0, :seed, seed
-	@fobjects[0].send_in 1, r
-  end
+  def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
+	o.send_in 0, :op, op; o.send_in 0, :fold, fold
+	o.send_in 0, :seed, seed; o.send_in 1, r end
   install "@inner", 3, 1
 end
 class OldConvolve<FPatcher
   @fobjects = ["#convolve"]
-  @wires = [-1,0,0,0, -1,2,0,1]
-  def initialize(op=:*,fold=:+,seed=0,r=0)
-        super
-	@fobjects[0].send_in 0, :op, op
-	@fobjects[0].send_in 0, :fold, fold
-	@fobjects[0].send_in 0, :seed, seed
-	@fobjects[0].send_in 1, r
-  end
+  @wires = [-1,0,0,0, -1,2,0,1, 0,0,-1,0]
+  def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
+	o.send_in 0, :op, op; o.send_in 0, :fold, fold
+	o.send_in 0, :seed, seed; o.send_in 1, r end
   install "@convolve", 2, 1
 end
 
