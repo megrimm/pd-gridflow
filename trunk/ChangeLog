@@ -1,16 +1,29 @@
 /* $Id$ */
 
-version 0.7.0 (head):
+version 0.7.0 (2003.01.31):
 
- * new classes: [@cast]
+ * new classes: @cast, @join, @ravel, @grade, @perspective
  * new grid protocol supports several number types (added uint8,int16)
+ * added number type support in most classes
+ * added "option cast" for @in in some formats
  * can now specify number types in grid literals
+ * added some MMX support (accelerates by 0%..40%)
+ * @import: added optional 2nd arg specifying type.
+ * @import: can convert symbols to grids of their ascii codes.
+ * new [@import per_message] yields one grid per incoming message
  * [fps]: added options "user" "system" "cpu" for selecting clock
  * aalib: added options autodraw, draw, dump
  * aalib: added raw input (two channels: characters, attributes)
  * x11: added support for 256-color mode using a private colormap.
  * x11: added "use_stripes" for alternate 256-color rendering.
+ * fixed problems with earlier versions of Ruby (like 1.6.2)
  * new samples: polygon.jmax
+ * videodev_effects.jmax: added sort-effects, centre-of-gravity-tracking
+ * the time profiler is back to working !!!
+ * @scale_by, @downscale_by: added right inlet, for configuration
+ * @store is a bit faster
+ * ppm: accelerated by large amount
+ * @outer,@inner,@inner2,@fold accelerated by obscene amount
 
 version 0.6.5 (2003.01.10):
 

@@ -1244,6 +1244,11 @@
 		that on average there is a given delay between bangs: it will
 		compensate too long delays by shorter delays. of course this won't
 		work if the system cannot keep up with the amount of work.
+
+		<p>WARNING: this class does not work as advertised.</p>
+
+		<method name="init"/>
+		<method name="init geiger"/>
 	</jmax-class>
 
 	<jmax-class name="pingpong">
