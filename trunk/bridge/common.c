@@ -45,6 +45,7 @@ static uint64 time_now() {
 }
 
 static void count_tick () {
+/*
 	static uint64 start_time = time_now();
 	static int count = 0;
 	static int next = 10000;
@@ -56,6 +57,7 @@ static void count_tick () {
 		next *= 2;
 	}
 	count++;
+*/
 }
 
 /*
@@ -119,14 +121,15 @@ static VALUE *localize_sysstack () {
 	volatile long * volatile bp = (volatile long *)&bp;
 	//sighandler_t old = signal(11,trap_segfault); // g++-2.95 doesn't take it
 	//fprintf(stderr,"trap_segfault = %08lx\n",(uint32)trap_segfault);
-	void (*old)(int) = signal(11,trap_segfault);
+	void (*old)(int) = signal(SIGSEGV,trap_segfault);
+	void (*old)(int) = signal(SIGBUS,trap_segfault);
 	//fprintf(stderr,"old = %08lx\n",(uint32)old);
 	// read stack until segfault; segfault is redefined as a break.
 	if (!sigsetjmp(rescue_segfault,0)) for (;;bp-=STACK_GROW_DIRECTION) bogus += *bp;
 	// restore signal handler
 	//void (*new_)(int) = signal(11,old);
 	signal(11,SIG_DFL); // because i've had problems with segfaults being ignored.(!?)
-	//fprintf(stderr,"new = %08lx\n",(uint32)new_);
+	//fprintf(stderr,"new = %08lx\n",(uint32)(bp+STACK_GROW_DIRECTION));
 	return (VALUE *)(bp+STACK_GROW_DIRECTION);
 }
 
