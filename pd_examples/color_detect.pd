@@ -1,82 +1,144 @@
-#N canvas 20 153 603 490 10;
-#X obj 215 85 @! sq;
-#X obj 9 228 @ > 0;
-#X obj 63 250 @ + 128;
-#X obj 9 207 demux 2;
-#X obj 9 90 @! sq;
-#X obj 259 86 hsl 128 15 0 255 0 0 empty empty tolerance 8 8 0 8 -262144
--1 -1 8100 1;
-#X obj 12 442 @out window;
-#X obj 9 109 @ *;
-#X obj 63 228 @ tanh* 127;
-#X obj 9 50 @store;
-#X text 18 272 apply alpha channel;
-#X obj 219 123 tgl 15 1 empty empty empty 0 -6 0 8 -261689 -258699
+#N canvas 22 172 644 587 10;
+#X obj 61 211 @! sq;
+#X obj 14 292 @ > 0;
+#X obj 68 314 @ + 128;
+#X obj 14 271 demux 2;
+#X obj 14 154 @! sq;
+#X obj 340 138 hsl 222 15 0 442 0 0 empty empty tolerance 8 8 0 8 -262144
+-1 -1 7800 1;
+#X obj 17 506 @out window;
+#X obj 14 173 @ *;
+#X obj 68 292 @ tanh* 127;
+#X obj 94 30 @store;
+#X text 23 336 apply alpha channel;
+#X obj 277 177 tgl 15 1 empty empty empty 0 -6 0 8 -261689 -258699
 -1 1 1;
-#X obj 13 3 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1;
-#X obj 16 25 @in;
-#X obj 9 71 @ -;
-#X obj 9 147 @ inv+;
-#X obj 9 250 @ << 8;
-#X obj 9 128 @fold +;
-#X obj 9 310 demux 2;
-#X obj 162 400 loadbang;
-#X obj 143 443 @checkers;
-#X obj 9 288 @outer ignore ( 3 # 0 );
-#X obj 31 2 metro 33.3667;
-#X obj 12 393 @ +;
-#X obj 12 370 @ *;
-#X obj 82 351 @ *;
-#X obj 12 414 @ >> 8;
-#X obj 82 329 @ inv+ 256;
-#X obj 59 415 @ min 255;
-#X obj 143 400 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 12 -28 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 31 10 @in;
+#X obj 14 135 @ -;
+#X obj 14 211 @ inv+;
+#X obj 14 314 @ << 8;
+#X obj 14 192 @fold +;
+#X obj 14 374 demux 2;
+#X obj 167 472 loadbang;
+#X obj 148 515 @checkers;
+#X obj 14 352 @outer ignore ( 3 # 0 );
+#X obj 31 -28 metro 33.3667;
+#X obj 17 457 @ +;
+#X obj 17 434 @ *;
+#X obj 87 415 @ *;
+#X obj 17 478 @ >> 8;
+#X obj 87 393 @ inv+ 256;
+#X obj 64 479 @ min 255;
+#X obj 148 472 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 216 24 @color;
-#X obj 43 25 @camera_control;
-#X obj 56 47 s image;
-#X obj 28 351 r image;
-#X text 210 -6 select a point in the color cube \; and a radius of
+#X obj 297 76 @color;
+#X obj 58 10 @camera_control;
+#X obj 87 52 s image;
+#X obj 33 415 r image;
+#X text 291 46 select a point in the color cube \; and a radius of
 accepted similarity.;
-#X obj 143 421 @for ( 0 0 ) ( 240 320 ) ( 1 1 );
-#X obj 219 142 @pack 3;
-#X obj 241 123 tgl 15 1 empty empty empty 0 -6 0 8 -225271 -24198 -1
+#X obj 148 493 @for ( 0 0 ) ( 240 320 ) ( 1 1 );
+#X obj 277 196 @pack 3;
+#X obj 299 177 tgl 15 1 empty empty empty 0 -6 0 8 -225271 -24198 -1
 1 1;
-#X obj 263 123 tgl 15 1 empty empty empty 0 -6 0 8 -228992 -62784 -1
+#X obj 321 177 tgl 15 1 empty empty empty 0 -6 0 8 -228992 -62784 -1
 1 1;
-#X text 213 107 enable selection on:;
-#X text 281 124 all three = select sphere in color cube \; pick two
+#X text 271 161 enable selection on:;
+#X text 339 178 all three = select sphere in color cube \; pick two
 = select circle in a color square \; pick one = select range in one
 channel;
-#X text 224 400 make background;
-#X obj 9 166 demux 2;
-#X obj 52 185 @ inv+;
-#X obj 214 177 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+#X text 229 472 make background;
+#X obj 14 230 demux 2;
+#X obj 57 249 @ inv+;
+#X obj 295 229 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
 -1 0;
-#X text 233 176 erase nonselected;
-#X text 233 193 erase selected;
-#X obj 214 217 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+#X text 314 228 erase nonselected;
+#X text 314 245 erase selected;
+#X obj 295 269 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
 -1 0;
-#X text 236 216 strict;
-#X text 235 232 fuzzy;
-#X obj 188 297 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+#X text 317 268 strict;
+#X text 316 284 fuzzy;
+#X obj 296 325 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
 -1 0;
-#X text 210 297 see filtered image on checkers;
-#X text 210 312 see opacity mask;
-#X obj 9 331 t a a;
+#X text 318 324 see filtered image on checkers;
+#X text 318 339 see opacity mask;
+#X obj 14 395 t a a;
+#N canvas 414 518 450 216 color 0;
+#X obj 25 3 inlet bang;
+#X obj 26 182 outlet image;
+#X obj 26 144 @ min 255;
+#X obj 26 163 @ max 0;
+#X obj 178 31 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 25 25 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 178 88 @outer + ( 0 0 9000 );
+#X obj 48 24 t b b;
+#X obj 26 81 @outer * ( 1 0 0 );
+#X obj 26 125 @yuv_to_rgb;
+#X obj 26 105 @ +;
+#X obj 178 132 @ + ( 0 128 128 );
+#X obj 178 48 @for 0 320 1;
+#X obj 179 67 @ * 113;
+#X obj 26 62 @outer + ( 320 # 0 );
+#X obj 26 43 @for -120 360 2;
+#X obj 178 155 @redim ( 240 320 3 );
+#X obj 178 109 @ cos* ( 0 128 128 );
+#X connect 0 0 7 0;
+#X connect 2 0 3 0;
+#X connect 3 0 1 0;
+#X connect 4 0 12 0;
+#X connect 5 0 15 0;
+#X connect 6 0 17 0;
+#X connect 7 0 5 0;
+#X connect 7 1 4 0;
+#X connect 8 0 10 0;
+#X connect 9 0 2 0;
+#X connect 10 0 9 0;
+#X connect 11 0 16 0;
+#X connect 12 0 13 0;
+#X connect 13 0 6 0;
+#X connect 14 0 8 0;
+#X connect 15 0 14 0;
+#X connect 16 0 10 1;
+#X connect 17 0 11 0;
+#X restore 142 52 pd color panorama;
+#X obj 144 32 loadbang;
+#X obj 31 -9 demux 2;
+#X obj 9 51 r image;
+#X obj 269 -25 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -66577
+-1 1;
+#X text 288 -26 on video;
+#X text 288 -10 on color panorama;
+#X floatatom 298 139 5 0 0 0 - - -;
+#X obj 76 270 @ *>>8 256;
+#X obj 338 302 hsl 129 15 4 4096 1 1 empty empty empty -2 -6 0 8 -262144
+-1 -1 6400 1;
+#X floatatom 295 302 5 0 0 0 - - -;
+#X obj 9 71 demux 2;
+#X obj 23 115 @rgb_to_yuv;
+#X obj 65 71 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -262144 -1
+-1 0;
+#X text 82 71 RGB;
+#X text 82 86 YUV;
+#X text 116 71 warning: in YUV mode \,;
+#X text 115 97 green slider = U chroma;
+#X text 122 110 blue slider = V chroma;
+#X text 129 84 red slider = Y luma;
 #X connect 0 0 15 1;
 #X connect 1 0 16 0;
 #X connect 2 0 21 0;
 #X connect 3 0 1 0;
-#X connect 3 1 8 0;
+#X connect 3 1 62 0;
 #X connect 4 0 7 0;
-#X connect 5 0 0 0;
+#X connect 5 0 61 0;
 #X connect 7 0 17 0;
 #X connect 8 0 2 0;
-#X connect 9 0 14 0;
+#X connect 9 0 32 0;
 #X connect 11 0 36 0;
 #X connect 12 0 22 0;
-#X connect 13 0 14 0;
 #X connect 13 0 32 0;
 #X connect 14 0 4 0;
 #X connect 15 0 42 0;
@@ -87,7 +149,7 @@ channel;
 #X connect 19 0 29 0;
 #X connect 20 0 25 1;
 #X connect 21 0 18 0;
-#X connect 22 0 13 0;
+#X connect 22 0 56 0;
 #X connect 23 0 26 0;
 #X connect 24 0 23 0;
 #X connect 25 0 23 1;
@@ -110,3 +172,17 @@ channel;
 #X connect 50 0 18 1;
 #X connect 53 0 24 0;
 #X connect 53 1 27 0;
+#X connect 54 0 9 1;
+#X connect 55 0 54 0;
+#X connect 56 0 13 0;
+#X connect 56 1 9 0;
+#X connect 57 0 65 0;
+#X connect 58 0 56 1;
+#X connect 61 0 0 0;
+#X connect 62 0 8 0;
+#X connect 63 0 64 0;
+#X connect 64 0 62 1;
+#X connect 65 0 14 0;
+#X connect 65 1 66 0;
+#X connect 66 0 14 0;
+#X connect 67 0 65 1;
