@@ -109,8 +109,13 @@ proc tcl_eval {} {
 	.tcl.entry delete 0 end
 
 }
-listener_new .tcl "Tcl"
-bind .tcl.entry <Return> {tcl_eval}
+if {[catch {
+	listener_new .tcl "Tcl"
+	bind .tcl.entry <Return> {tcl_eval}
+}]} {
+	listener_new .tcl "Tcl" {tcl_eval}
+}
+
 
 }
 # end of part duplicated from Impd
@@ -123,8 +128,12 @@ proc ruby_eval {} {
 	.ruby.entry delete 0 end
 }
 
-listener_new .ruby "Ruby"
-bind .ruby.entry <Return> {ruby_eval}
+if {[catch {
+	listener_new .ruby "Ruby"
+	bind .ruby.entry <Return> {ruby_eval}
+}]} {
+	listener_new .ruby "Ruby" {ruby_eval}
+}
 
 })
 
