@@ -64,17 +64,17 @@ GRID_BEGIN(GridImport,1) {
 
 GRID_FLOW(GridImport,1) {
 	int i;
-	for(i=0;i<n;i++) {
-		int v = data[in->dex+i];
-		COERCE_INT_INTO_RANGE(v,1,MAX_INDICES);
-		$->v[in->dex+i] = v;
-	}
+	for(i=0;i<n;i++) { $->v[in->dex+i] = data[in->dex+i]; }
 }
 
 GRID_END(GridImport,1) {
+	int i;
 /*	GridInlet_abort($->in[0]); */
 	if (!GridOutlet_idle($->out[0])) GridOutlet_abort($->out[0]);
 	FREE($->dim);
+	for(i=0;i<$->n;i++) {
+		COERCE_INT_INTO_RANGE($->v[i],1,MAX_INDICES);
+	}
 	$->dim = Dim_new($->n, $->v);
 	FREE($->v);
 }
@@ -200,6 +200,7 @@ typedef struct GridStore {
 	/* NumberType *nt; */
 	Number *data;
 	Dim *dim;
+
 	Number *buf;
 	int bufn;
 } GridStore;
@@ -240,6 +241,7 @@ GRID_BEGIN(GridStore,0) {
 	for (i=0; i<na-1; i++) v[i] = Dim_get(in->dim,i);
 	for (i=nc; i<nb; i++) v[na-1+i-nc] = Dim_get($->dim,i);
 	GridOutlet_begin($->out[0],Dim_new(nd,v));
+	GridInlet_set_factor(in,nc);
 	$->buf = NEW2(Number,nc);
 	$->bufn = 0;
 /*	whine("[r] %s",Dim_to_s($->out[0]->dim)); */
@@ -254,6 +256,8 @@ GRID_FLOW(GridStore,0) {
 	int size = Dim_prod_start($->dim,nc);
 	int v[nb];
 	int i;
+
+	assert((n % nc) == 0);
 
 	while(n>0) {
 		int bs = nc - $->bufn;

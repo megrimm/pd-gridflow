@@ -274,12 +274,13 @@ struct GridInlet {
 	GridEnd   end;
 
 	int factor; /* flow's n will be multiple of $->factor */
-
-//	Number *buf; /* packet buffer */
+	int bufn;
+	Number *buf; /* factor-chunk buffer */
 };
 
 	GridInlet *GridInlet_new(GridObject *parent, int winlet,
 		GridBegin b, GridFlow f, GridEnd e);
+	void GridInlet_delete(GridInlet *$);
 	GridObject *GridInlet_parent(GridInlet *$);
 	void GridInlet_abort(GridInlet *$);
 	void GridInlet_set_factor(GridInlet *$, int factor);
@@ -308,6 +309,7 @@ struct GridOutlet {
 };
 
 	GridOutlet *GridOutlet_new(GridObject *parent, int woutlet);
+	void GridOutlet_delete(GridOutlet *$);
 	GridObject *GridOutlet_parent(GridOutlet *$);
 	int  GridOutlet_idle   (GridOutlet *$);
 	void GridOutlet_abort  (GridOutlet *$);
