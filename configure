@@ -27,6 +27,7 @@ require "ftools"
 include Config
 LOG = File.open "./config.log", "w"
 
+$verbose=false
 LOG.puts "-"*64
 LOG.puts "Environment Variables: "
 ENV.each {|k,v| LOG.puts "#{k}=#{v}" }
@@ -768,10 +769,9 @@ while ARGV.length>0 do
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "--force: assuming #{name} is there"
 		$features_h[name].test nil
-	when "--static" #!@#$ not working.
-		raise "boo"
+	when "--static" # experimental
 		$conf[:STATIC]=true
-		$CFLAGS += " -static"
+		$conf[:LDSOFLAGS] << "-static"
 #		ARGV.unshift "--no-libruby"
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
@@ -793,6 +793,8 @@ while ARGV.length>0 do
 		$CFLAGS += " "+ARGV.shift
 	when "--use-cpu"
 		$conf[:DEFINES][:CPU] = ARGV.shift
+	when "--verbose"
+		$verbose=true
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -874,8 +876,9 @@ def try feature
 			end
 		else
 			DUAL.puts "missing "+(if e
-#				then "(#{e} @ #{e.backtrace.join', '})"
-				then "(#{e})"
+				then (if $verbose
+					then "(#{e} @ #{e.backtrace.join', '})"
+					else "(#{e})" end)
 				else "(return false)" end)
 			if e
 				LOG.puts e.inspect
