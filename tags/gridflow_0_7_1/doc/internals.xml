@@ -1,0 +1,197 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE documentation SYSTEM 'jmax.dtd'>
+<documentation>
+<!-- $Id$ -->
+<!--
+	GridFlow Internals Manual
+	Copyright (c) 2002 by Mathieu Bouchard
+-->
+<section name="notes"><prose>
+
+<p>In Ruby, GridFlow defines a namespace (module) called GridFlow. Most  of the
+constants it defines are part of that namespace. A GridFlow object is normally
+in two or three parts: a (Ruby) GridFlow::FObject that is the central part; a
+(C++) GridObject; a (C++/jMax) BFObject. The GridFlow::FObject is created as a
+RData kind of box using Ruby-C's Data_Make_Struct on a GridObject. This is how
+most Ruby-C programs inherit from Ruby classes. Note that Ruby's boxed objects
+have a maximum of five fields, and they're usually taken, so additional fields
+have to be outside of it. This is why RData exists.</p>
+
+<p>So basically you have a GridObject that is "part of" a GridFlow::FObject and
+they point to each other using peer pointers. Now, if jMax is enabled, then the
+GridObject will have an additional pointer to a fts_object_t derivative called
+BFObject (B for Bridge); that pointer is called foreign_peer. The BFObject
+links back to the RData box through another pointer called peer. </p>
+
+</prose></section>
+
+<section name="Objects for Scripting">
+	<class name="ruby class FObject extending Data">
+		Provides inlets and outlets to Ruby Objects.
+
+		<method name="init">
+		</method>
+
+		<method name="send_in">
+			<arg name="inlet" type="int"/>
+			<rest name="message"/>
+		</method>
+
+		<method name="send_out">
+			<arg name="outlet" type="int"/>
+			<rest name="message"/>
+		</method>
+
+	</class>
+
+	<class name="ruby class GridObject extending FObject">
+		Provides grid support to FObjects.
+
+		<method name="inlet_dim">
+			<arg name="inlet" type="Integer"/>
+			gives an array of Integers (dimension list)
+		</method>
+		
+		<method name="inlet_nt">
+			<arg name="inlet" type="Integer"/>
+			gives a Symbol (number type)
+		</method>
+
+		<method name="inlet_set_factor">
+			<arg name="inlet" type="Integer"/>
+			<arg name="factor" type="Integer"/>
+			ensures received packets have a size that is
+			a whole multiple of this size.
+			must be called from rgrid_begin.
+		</method>
+
+		<method name="send_out_grid_begin">
+			<arg name="outlet" type="Integer"/>
+			<arg name="dimensions" type="Array of Integer"/>
+			<arg name="nt" type="number type" default="int32"/>
+			establishes grid streams between an outlet and all inlets
+			connected to it.
+		</method>
+
+		<method name="send_out_grid_flow">
+			<arg name="outlet" type="Integer"/>
+			<arg name="data" type="String"/>
+			for sending a grid data packet through that outlet.
+		</method>
+		
+		<method name="send_out_grid_end">
+			<arg name="outlet" type="Integer"/>
+			(isn't this one obsolete?)
+		</method>
+
+		<inlet id="0">
+			<method name="rgrid_begin"/>
+			<method name="rgrid_flow">
+				<arg name="data" type="String"/>
+			</method>
+			<method name="rgrid_end"/>
+		</inlet>
+	</class>
+
+	<class name="ruby class BitPacking">
+		A BitPacking is a simple two-way converter between different
+		numeric layouts.
+	</class>
+
+	<class name="FPatcher extending FObject">
+		<p>This class is much like jMax's templates and subpatchers and
+		PureData's abstractions.</p>
+		<p>This is a container for objects. Its proper objects are numbered
+		starting with zero. The wire list is given in terms of those numbers:
+		(sourceobject,sourceinlet,destobject,destinlet). There is a
+		pseudo-object numbered #-1 which map to the container's own inlets
+		and outlets.</p>
+	</class>
+</section>
+
+<section name="Objects for Internals">
+	<class name="C++ class GridInlet">
+		GridInlets represent inlets that accept grids.
+	</class>
+
+	<class name="C++ class GridOutlet">
+		GridOutlets represent outlets that send grids.
+	</class>
+
+	<class name="C++ class Dim">
+		Dim represents a list of dimensions.
+	</class>
+
+	<class name="C++ class Grid">
+		Grid represents a grid that is fully stored in memory.
+	</class>
+
+	<class name="C++ class Operator1">
+		This represents a one-input operator.
+		Such an object contains a map() function that applies the operator
+		over a memory segment.
+	</class>
+
+	<class name="C++ class Operator2">
+		This represents a two-input operator.
+		Such an object contains four functions for each T, where
+		T is one of the types uint8, int16, int32, float32.
+
+		<method name="map">
+			<arg name="n" type="integer"/>
+			<arg name="as" type="T *"/>
+			<arg name="b" type="T"/>
+			for i in 0...n,
+			as[i] := f(as[i],b);
+			This is like [@] with a scalar righthand
+		</method>
+
+		<method name="zip">
+			<arg name="n" type="integer"/>
+			<arg name="as" type="T *"/>
+			<arg name="bs" type="T *"/>
+			for i in 0...n,
+			as[i] := f(as[i],bs[i]);
+			bs is not modified.
+			(This is like [@] with a nonscalar righthand)
+		</method>
+
+		<method name="fold">
+			<arg name="an" type="integer"/>
+			<arg name="n" type="integer"/>
+			<arg name="as" type="T *"/>
+			<arg name="bs" type="T *"/>
+
+			<p>
+			for i in 0...n,
+			for j in 0...an,
+			as[j] := f(as[j],bs[i*an+j]);
+			</p>
+
+			(this is like @fold)
+		</method>
+
+		<method name="scan">
+			<arg name="an" type="integer"/>
+			<arg name="n" type="integer"/>
+			<arg name="as" type="T *"/>
+			<arg name="bs" type="T *"/>
+
+			<p> for j in 0...an: bs[j] := f(as[j],bs[j]); </p>
+			<p> for i in 1...n: for j in 0...an:
+				bs[j] := f(bs[(i-1)*an+j],bs[i*an+j]); </p>
+
+			(this is like @scan)
+		</method>
+	</class>
+
+	<class name="C++ class GridClass">
+		This represents a class of GridObjects.
+	</class>
+
+	<class name="C++ class GFBridge">
+		This holds linkage information about jMax and PureData and such.
+	</class>
+</section>
+
+</documentation>
