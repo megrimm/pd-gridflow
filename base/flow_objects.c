@@ -322,12 +322,12 @@ GRID_INLET(GridStore,0) {
 	int nd = n/nc;
 	STACK_ARRAY(T,w,n);
 	Pt<T> v=w;
-	switch (nc) {
-	//case 1:  COPY(v,data,n); break;
-	case 1:  v=data; break;
-	default: for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j]; break;
+	if (sizeof(T)==1 && nc==1 && r.dim->v[0]<=256) {
+		v=data;
+		goto skip;
 	}
-	if (sizeof(T)==1 && nc==1 && r.dim->v[0]<=256) goto skip;
+	COPY(v,data,n);
+	for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j]; break;
 	for (int i=0; i<nc; i++) {
 		int32 wrap = r.dim->v[i];
 		bool is_power_of_two = lowest_bit(wrap)==highest_bit(wrap);
