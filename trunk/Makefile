@@ -23,3 +23,7 @@ install::
 	(cd templates; $(MAKE) $@)
 	#(cd java; $(MAKE) $@)
 	(cd c; $(MAKE) $@)
+kloc::
+	wc c/src/*.[ch] configure extra/*.rb
+
+
