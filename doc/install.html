@@ -49,11 +49,15 @@
         take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
-      <p>Files Changed by configure: <br>
+      <p>Files changed by configure: <br>
         video4jmax/Makefile <br>
         video4jmax/c/Makefile <br>
-        video4jmax/c/src/Makefile <br>
-        video4jmax/c/src/fts_redirect.h</p>
+        c/src/Makefile<br>
+        c/src/config.h<br>
+        c/src/Sources<br>
+        config.make</p>
+
+
       <p><br>
         3. From the packages/video4jmax directory, do this:</p>
       <ul>
@@ -66,10 +70,11 @@
       <br>
       <p>
       5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download">artengine.ca </a> or
-       <a href="hostname.2y.net/video4jmax/download">hostname.2y.net</a>
+       <a href="http://hostname.2y.net/video4jmax/download">hostname.2y.net</a>  Place the archive in /usr/local/jmax/packages/video4jmax
+        (or the path of your choice) and untar with 'tar -xvzf video4jmax-images-0.2.tar.gz'.
        </p>
 
-        6. Add "package require video4jmax" within the "when start" section of
+        <p>6. Add "package require video4jmax" within the "when start" section of
         ~/.jmaxrc</p>
       <p>7. Add this line to your ~/.jmaxrc file:<br>
         dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
@@ -84,11 +89,15 @@
         take care of adjusting the Makefiles to your current version and point
         to the right header for fts. <br>
       </p>
-      <p>Files Changed by configure: <br>
+         <p>Files changed by configure: <br>
         video4jmax/Makefile <br>
         video4jmax/c/Makefile <br>
-        video4jmax/c/src/Makefile <br>
-        video4jmax/c/src/fts_redirect.h </p>
+        c/src/Makefile<br>
+        c/src/config.h<br>
+        c/src/Sources<br>
+        config.make</p>
+
+
       <p><br>
         3. In file packages/Makefile change the C_PACKAGES list to include video4jmax
         (remove the old 'video' if you upgrade).</p>
@@ -102,10 +111,12 @@
       </p>
       <p><br>
          5. Get the images for the examples from <a href="http://www.artengine.ca/jmax/video4jmax/download"> artengine.ca </a> or
-       <a href="hostname.2y.net/video4jmax/download"> hostname.2y.net/~matju </a>
+       <a href="http://hostname.2y.net/video4jmax/download"> hostname.2y.net</a>. Place the archive in /usr/local/jmax/packages/video4jmax
+        (or the path of your choice) and untar with 'tar -xvzf video4jmax-images-0.2.tar.gz'.
+
        </p>
 
-        6. Add "package require video4jmax" within the "when start" section of
+       <p>6. Add "package require video4jmax" within the "when start" section of
         ~/.jmaxrc</p>
         <p>7. Add this line to your ~/.jmaxrc file:<br>
         dataDirectory /usr/local/jmax/packages/video4jmax/images (or any
