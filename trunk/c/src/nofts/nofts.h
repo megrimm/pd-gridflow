@@ -32,6 +32,7 @@ typedef int fts_status_t;
 typedef enum fts_symbol_t {
 	fts_t_symbol,
 	fts_t_int, fts_s_int = fts_t_int,
+	fts_t_float,
 	fts_t_list, fts_s_list = fts_t_list,
 	fts_t_ptr,
 	fts_s_init,
@@ -43,9 +44,21 @@ typedef enum fts_symbol_t {
 typedef fts_symbol_t fts_type_t;
 
 typedef struct fts_atom_t {
+	fts_type_t type;
+	union {
+		int i;
+		float f;
+		fts_symbol_t s;
+		void *p;
+	} v;
 } fts_atom_t;
 
 typedef struct fts_class_t {
+	fts_symbol_t name;
+	int object_size;
+	int n_inlets;
+	int n_outlets;
+	int stuff;
 } fts_class_t;
 
 typedef struct fts_object_t {
@@ -54,6 +67,7 @@ typedef struct fts_object_t {
 	} head;
 	int argc;
 	fts_atom_t *argv;
+	const char *error;
 } fts_object_t;
 
 typedef struct fts_module_t {
@@ -67,6 +81,10 @@ typedef struct fts_clock_t {
 } fts_clock_t;
 
 typedef struct fts_alarm_t {
+	fts_clock_t *clock;
+	void (*f)(struct fts_alarm_t *, void *);
+	float delay;
+	int armed;
 } fts_alarm_t;
 
 #define post printf
@@ -79,16 +97,19 @@ typedef void (*fts_method_t)();
 void fts_method_define_optargs(fts_class_t *, int winlet, fts_symbol_t
 selector, fts_method_t, int n_args, fts_type_t *args, int minargs);
 int fts_file_open(const char *name, const char *mode);
+
 int fts_is_int(const fts_atom_t *);
-int fts_get_int(const fts_atom_t *);
-void fts_set_int(const fts_atom_t *, int);
 int fts_is_float(const fts_atom_t *);
-int fts_get_float(const fts_atom_t *);
 int fts_is_symbol(const fts_atom_t *);
+
+int fts_get_int(const fts_atom_t *);
+int fts_get_float(const fts_atom_t *);
 int fts_get_symbol(const fts_atom_t *);
-void fts_set_symbol(const fts_atom_t *, fts_symbol_t);
 void *fts_get_ptr(const fts_atom_t *);
-void fts_set_ptr(const fts_atom_t *, void *);
+
+void fts_set_int(fts_atom_t *, int);
+void fts_set_symbol(fts_atom_t *, fts_symbol_t);
+void fts_set_ptr(fts_atom_t *, void *);
 
 #define fts_get_int_arg(AC, AT, N, DEF) \
 ((N) < (AC) ? (fts_is_int(&(AT)[N]) ? fts_get_int(&(AT)[N]) : \
@@ -97,8 +118,7 @@ void fts_set_ptr(const fts_atom_t *, void *);
 #define fts_get_symbol_arg(AC, AT, N, DEF) ((N) < (AC) ? fts_get_symbol(&(AT)[N]) : (DEF))
 #define fts_get_ptr_arg(AC, AT, N, DEF)    ((N) < (AC) ? fts_get_ptr(&(AT)[N]) : (DEF))
 
-void fts_class_init(fts_class_t *class,
-	int object_size, int n_inlets, int n_outlets, int stuff);
+void fts_class_init(fts_class_t *class, int object_size, int n_inlets, int n_outlets, int stuff);
 
 fts_symbol_t fts_get_class_name(fts_class_t *class);
 
@@ -116,6 +136,6 @@ fts_alarm_t *fts_alarm_new(fts_clock_t *foo,
 void fts_alarm_set_delay(fts_alarm_t *, float);
 void fts_alarm_arm(fts_alarm_t *);
 
-void video4jmax_init_standalone(void);
+int video4jmax_init_standalone(void);
 
 #endif /* __STANDALONE_H */
