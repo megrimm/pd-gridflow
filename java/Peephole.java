@@ -147,13 +147,20 @@ implements FtsIntValueListener//, ImageObserver
 			window = window.getParent();
 			//System.out.println("frame="+window.toString());
 		}
-		((Frame)window).setTitle("MyTitle");
+		int windowid = (int) Math.round(Math.random()*0x40000000);
+		String title = ((Frame)window).getTitle();
+		if (title==null) title="";
+		System.out.println("title was: "+title+" ("+title.length()+" bytes)");
+		if (title.indexOf("\n\n\n")<0) title+="\n\n\n"+windowid;
+		System.out.println("title is now: "+title+" ("+title.length()+" bytes)");
+		((Frame)window).setTitle(title);
+		windowid = Integer.valueOf(title.substring(title.indexOf("\n\n\n")+3)).intValue();
 
 		FtsAtom a[] = new FtsAtom[1];
 		for (int i=0; i<1; i++) a[i] = new FtsAtom();
-//		a[0].setSymbol(new FtsSymbol("patate"));
-//		a[1].setSymbol(new FtsSymbol("MyTitle")); // crap! whose bug is this?
-		a[0].setInt(0);
+		// apparently you can't pass symbols in those arglists???
+		// a[0].setSymbol(new FtsSymbol("patate"));
+		a[0].setInt(windowid);
 		ftsObject.sendMessage(0, "open", 1, a);
 		} catch (Throwable e) {
 			System.out.println("Peephole exception: "+e.toString()+": "+e.getMessage());
