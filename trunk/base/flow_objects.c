@@ -281,7 +281,10 @@ GRCLASS(GridExportList,LIST(GRINLET4(GridExportList,0,4)))
 struct GridStore : GridObject {
 	Grid r; //\attr
 	Grid put_at; //\attr
-	int32 wdex[MAX_DIMENSIONS]; /* temporary buffer, copy of put_at */
+	int32 wdex [MAX_DIMENSIONS]; /* temporary buffer, copy of put_at */
+	int32 fromb[MAX_DIMENSIONS];
+	int32 to2  [MAX_DIMENSIONS];
+	int lsd;
 	int d; /* goes with wdex */
 	\decl void initialize (Grid *r=0);
 	\decl void _0_bang ();
@@ -465,37 +468,54 @@ GRID_INLET(GridStore,1) {
 			r.next->dc = r.dc;
 		}
 		(r.next?r.next:&r)->init(in->dim->dup(),NumberTypeE_type_of(*data));
-	} else { // put_at ( ... )
-		//!@#$ should check types. if (r.nt!=in->nt) RAISE("shoo");
-		int nn = put_at.dim->prod();
-		COPY(Pt<int32>(wdex,n),(Pt<int32>)put_at,nn);
-		d=0;
+		return;
 	}
+	// put_at ( ... )
+	//!@#$ should check types. if (r.nt!=in->nt) RAISE("shoo");
+	int nn=r.dim->n, na=put_at.dim->v[0], nb=in->dim->n;
+	STACK_ARRAY(int32,sizeb,nn);
+	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
+	COPY(Pt<int32>(wdex,nn),       (Pt<int32>)put_at    ,put_at.dim->prod());
+	COPY(Pt<int32>(fromb,nn)+nn-na,(Pt<int32>)put_at    ,na);
+	COPY(Pt<int32>(sizeb,nn)+nn-nb,(Pt<int32>)in->dim->v,nb);
+	for (int i=0; i<nn; i++) to2[i] = fromb[i]+sizeb[i];
+	d=0;
+	/* find out when we can skip computing indices */
+	lsd=nn; /* lsd = Last Same Dimension */
+	while (lsd>=nn-in->dim->n) {
+		//!@#$ should actually also stop before blowing up packet size
+		lsd--;
+		int cs = in->dim->prod(lsd-nn+in->dim->n);
+#define MAX_PACKET_SIZE (1<<11) /* sorry! */
+		if (cs>MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r.dim->v[lsd]) break;
+	}
+	lsd++;
+	int cs = in->dim->prod(lsd-nn+in->dim->n);
+	in->set_factor(cs);
+	fprintf(stderr,"lsd=%d, cs=%d\n",lsd,cs);
+	//WATCH(nn,fromb);WATCH(nn,sizeb);WATCH(nn,to2);
 } GRID_FLOW {
 	if (put_at.is_empty()) { // reassign
 		COPY(((Pt<T>)*(r.next ? r.next : &r))+in->dex, data, n);
 		return;
 	}
 	// put_at ( ... )
-	int nn = r.dim->n;
+	int nn=r.dim->n;
+	//WATCH(nn,fromb);
+	//WATCH(nn,to2);
+	int cs = in->factor; // chunksize
+	STACK_ARRAY(int32,v,lsd);
 	Pt<int32> x = Pt<int32>(wdex,nn);
-	STACK_ARRAY(int32,v,nn);
-	STACK_ARRAY(int32,fromb,nn);
-	STACK_ARRAY(int32,sizeb,nn);
-	STACK_ARRAY(int32,to2,nn);
-	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
-	int na = put_at.dim->v[0];
-	COPY(fromb+nn-na,(Pt<int32>)put_at,na);
-	COPY(sizeb+nn-in->dim->n,(Pt<int32>)in->dim->v,in->dim->n);
-	for (int i=0; i<nn; i++) to2[i] = fromb[i]+sizeb[i];
-	while (data,n--) {
+	while (n) {
 		/* here d is the dim# to reset; d=n for none */
-		for(;d<nn;d++) x[d]=fromb[d];
+		for(;d<lsd;d++) x[d]=fromb[d];
 		/* do stuff here */
-		COPY(v,x,nn);
-		compute_indices(v,nn,1);
-		//fprintf(stderr,"n=%d: %ld %ld -> %ld\n",n,x[0],x[1],v[0]);
-		((Pt<T>)r)[v[0]] = *data++;
+		COPY(v,x,lsd);
+		compute_indices(v,lsd,1);
+		//fprintf(stderr,"x[0]=%ld x[1]=%ld *v=%ld d=%d\n",x[0],x[1],*v,d);
+		COPY(((Pt<T>)r)+v[0]*cs,data,cs);
+		data+=cs;
+		n-=cs;
 		/* find next set of indices; here d is the dim# to increment */
 		for(;;) {
 			d--;
@@ -503,9 +523,10 @@ GRID_INLET(GridStore,1) {
 			x[d]++;
 			if (x[d]<to2[d]) break;
 		}
-		end:;
+		end:; /* why here ??? or why at all? */
 		d++;
 	}
+	//end:; /* why not here ??? */
 } GRID_FINISH {
 } GRID_END
 
