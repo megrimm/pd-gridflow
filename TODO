@@ -5,6 +5,10 @@ Installation
 [ ] add --slow switch to turn off all optimizations
 
 Documentation
+[ ] op2: atan, **
+[ ] split reference.html into:
+	protocol.html operator.html format.html object.html
+[ ] document internals
 [ ] add credits
 [ ] add explanation of video4jmax vs jmax-videodsp
 [ ] things you type verbatim are all in KBD blocks
@@ -14,43 +18,47 @@ Documentation
 [ ] H5 font-size is smaller than regular P font-size ?
 [ ] make real documentation for templates
 [ ] recategorize objects+templates together
+[ ] find a good XML editor
+[ ] find a good DTD/Schema for jMax/v4j/C or create one
+[ ] XMLize reference section
+[ ] document use of [route grid_end], [route grid_begin]
+[ ] document our own release procedures, how our CVS works
+[ ] document how to report bugs, basic troubleshooting
+[ ] improve protocol description
+[ ] ascii conventions: [foo] vs "foo", etc.
+[ ] document asymptotic cpu+memory usage
 
 General
-[!] remove memory leaks, segmentation faults
 [ ] make FREE() handle #delete as possible
 [ ] better error handling
 [ ] @print
-[ ] @literal
-[ ] how can I write unit tests?
+[ ] how can I write unit tests or contracts?
 
 Computation Objects
 [!] @inner, @cartprod (?)
-[!] @convolution
 [!] @redim (APL bin rho)
-[ ] @iota and/or @for
-[ ] @resync (fast version of @export followed by @import)
 [!] @slice (@splice ?)
 [ ] black option in @store
-[!] uint8 option in @store
-[ ] @import~, @export~ (note:
-	DSP->Control is feasible
-	Control->DSP would be *very* kludgy)
-[ ] try to manually unroll some loops
+[ ] @export_list
+[ ] @import~, @export~
+[ ] @import*, @export*
+[ ] see APL/J/NArray/PDL reference
+[ ] @queue, as a replacement for double-@store feedback, and such. (?)
+[ ] listop, listfold
+[ ] @matrix_inverse, @matrix_solve
+[ ] @transpose (dimension swapping and/or index reversing)
+[ ] bidirectional vector<->int packer/unpacker (in C using metaclass...)
 
 Effects
-[!] blur
-[!] motion-blur (with or without feedback)
-[!] fire
 [!] ripple
 [!] overlay using alpha channel
-[ ] emboss, find edges, solarize, pinch, waves
-[ ] sharpen, pixelize, despeckle
-[ ] gamma correction
-[ ] *real* saturation, and hue change
+[ ] pinch, waves
+[ ] pixelize, despeckle
+[ ] hue change
 [ ] abyss effect
 [ ] image-sur-image
 [ ] n-frame delaying
-[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits)
+[ ] Y*X*RGBA <-> Y*X packing (96 <-> 32 bits) (???)
 [ ] HSL <-> HSV <-> RGB <-> YUV
 [ ] blinds, 
 [ ] split channels, join channels
@@ -61,20 +69,17 @@ Structure & Protocol
 [ ] change the protocol completely:
 	not based on messages, but rather a push/pull combination,
 	add GridStream objects, allow them to be passed in other
-	messages; GridInlet,GridOutlet have redundant info, like the
-	element counter, etc.
+	messages; etc... (?!?)
 [ ] unary ops: sq
 [ ] trinary ops? eg. */ *+ ?: minmax &<< >>&
 [ ] copy-on-write and similar tricks
+[ ] accept lists as 1D grids directly in constructors
 
 Input/Output
 [ ] in-place editing (rw mode)
-[ ] implement byte-order, bit-order support in BitPacking
-[ ] add PTC support
-[ ] add SDL support
+[ ] implement byte-order support in BitPacking
+[ ] add PTC / TinyPTC / SDL support
 [ ] x11 shared memory working
-[ ] x11 screen capture
-[ ] x11 multi-display
 [ ] add messages "load", "save" as open,bang,close combos.
 
 File Formats
@@ -85,34 +90,52 @@ File Formats
 [ ] MPEG support
 [!] multi-image (seq) (createable by cat, ar, tar or zip)
 [!] multi-file (multi) (by glob pattern, e.g.: foo*.ppm)
-[ ] install libmpeg, libquicktime
+[ ] install libmpeg
 [ ] design generic grid format (.grid)
+[ ] rewinding file
+[ ] FileFormat base class + inheritance + pre-written open() code, etc
 
 Java/Swing
-[ ] Color Picker
-[ ] Grid Editor
+[ ] color picker
+[ ] gridbox (akin to intbox) or grid edition dialog, etc.
+[ ] embedded display
+[ ] vector slider (n parallel sliders in one, Dim(n))
+[ ] 2d slider
+[ ] radial slider (angle chooser)
 
 Bugs
 [ ] @video_out causes delayed crash when closing its associated window
 [ ] object sending too much data causes *another* object to crash.
 [ ] distinguish "mod" and "%" properly (re: rounding)
+[ ] @convolve crashes with some bad right-inlet input
+[ ] leak in all FileFormat#close
+[ ] add alloc-tracing to find all leaks
 
 Misc
 [ ] find out what channel the small cam goes on and why it isn't displaying.
+[ ] v4j could have a runtime profiler for cpu+memory usage.
 
 ================
 vin_file_test_2.jmax
-0.2.0.pre3: 20 frames in 30 seconds.
-0.2.0.pre8: 20 frames in  8 seconds (packet=16)
-0.2.0.pre8: 20 frames in  4 seconds (packet=1k)
 
-store3:
+0.2.0.pre3      :   20 frames in 30   seconds :  0.66 fps
+0.2.0.pre8 ps=16:   20 frames in  8   seconds :  2.50 fps
+0.2.0      ps=1k:   20 frames in  4   seconds :  5.00 fps
+0.3.0.pre1 ps=1k:  100 frames in 16.5 seconds :  6.06 fps
+0.3.0.pre2 ps=1k:  100 frames in 11.4 seconds :  8.77 fps
+0.3.0.pre3 ps=1k:  100 frames in  6.5 seconds : 15.38 fps
+
+================
+feedback_fractal.jmax
+
 	28,36,128
 	336,557,140
 	179,15,183
-
 
 ================
 
 #003f69
 #400077
+
+(cd doc; for z in images/*.*; do fgrep -q $z *.html || echo "$z"; done)
+
