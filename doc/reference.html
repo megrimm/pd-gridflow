@@ -675,7 +675,10 @@
 		opens in client mode only; and upon bang, jMax freezes until 
 		the whole grid is received. </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format videodev @in">format videodev @in</a></td></tr><tr><td></td><td valign='top'><br>
 <img src="images/format_videodev.png" alt="[open videodev /dev/video0]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
-  <p>Video4Linux-1 devices, RGB-24 only. Variable picture size. 
+  <br><b>method</b> open <b>(</b>device<b>)</b>   <br>
+ <br><b>method</b> open noinit <b>(</b>device<b>)</b>   
+			This is the same except it is gentle with bad-tempered drivers. <br>
+ <p>Video4Linux-1 devices, RGB-24 only. Variable picture size. 
 		should work for bttv based cards and the dc1/dc10plus from Miro.</p> <p>If you suffer from color inversion, you may feed the list 
 		"<kbd>3 3 # 0 0 1 0 1 0 1 0 0</kbd>" to the right side of a <kbd>[@inner2 * + 0]</kbd>. 
 		Use that @inner2 object as a RGB-BGR converter.</p> <p>color adjustments: <br><b>method</b> option brightness <b>(</b><i>0-65535</i> level<b>)</b> <br>
@@ -683,13 +686,19 @@
  <br><b>method</b> option colour <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b> option contrast <b>(</b><i>0-65535</i> level<b>)</b> <br>
  <br><b>method</b> option whiteness <b>(</b><i>0-65535</i> level<b>)</b> <br>
- </p> <p>other options: <br><b>method</b> option channel <b>(</b><i>integer</i> level<b>)</b> <br>
- <br><b>method</b> option tuner <b>(</b><i>integer</i> level<b>)</b> <br>
- <br><b>method</b> option norm <b>(</b><i>integer</i> level<b>)</b> <br>
- </p> <br><b>method</b> option size <b>(</b>height<b>, </b>width<b>)</b>    
+ </p> <p>other options: <br><b>method</b> option channel <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> option tuner <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> option norm <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> option frequency <b>(</b><i>integer</i> <b>)</b> <br>
+ <br><b>method</b> option transfer mmap <b>(</b><b>)</b>  
+			This is the normal (and fast) way of transferring pictures 
+			from the camera. <br>
+ <br><b>method</b> option transfer read <b>(</b><b>)</b>  
+			Some cameras/drivers only support this instead of mmap. <br>
+ <br><b>method</b> option size <b>(</b>height<b>, </b>width<b>)</b>    
 			sets the input size, especially when using a video digitalizer 
 			device <br>
- <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign='top'><br>
+ </p> <br></td> <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="format sdl @out">format sdl @out</a></td></tr><tr><td></td><td valign='top'><br>
 <br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b> open <b>(</b><b>)</b>  
 			opens a dim(480,640,3) rgb window. <br>
