@@ -980,6 +980,7 @@ module Gooey # to be included in any FObject class
 		@canvas = nil # the canvas string
 		@y,@x = 0,0 # position on canvas
 		@sy,@sx = 16,16 # size on canvas
+		@font = "Courier -12"
 	end
 	attr_reader :canvas
 	attr_reader :selected
@@ -1020,6 +1021,11 @@ module Gooey # to be included in any FObject class
 		self.canvas||=can
 		@x,@y = get_position can if can
 	end
+	def highlight(color,ratio) # doesn't use self
+		c = /^#(..)(..)(..)/.match(color)[1..3].map {|x| x.hex }
+		c.map! {|x| [255,(x*ratio).to_i].min }
+		"#%02x%02x%02x" % c
+	end
 end
 
 class Display < FObject; include Gooey
@@ -1051,7 +1057,6 @@ class Display < FObject; include Gooey
 	def pd_show(can)
 		super
 		return if not canvas # can't show for now...
-		@font = "Courier -12"
 		GridFlow.gui %{
 			set canvas #{canvas}
 			$canvas delete #{@rsym}TEXT
@@ -1099,39 +1104,68 @@ class Display < FObject; include Gooey
 	gui_enable if GridFlow.bridge_name =~ /puredata/
 end
 
-class GridEdit < FPatcher; include Gooey
-	@fobjects = ["#store","#dim","#export_list"]
-	@wires = [-1,0,0,1, -1,0,1,0, 0,0,-1,1, 1,0,2,0, 2,0,-1,0]
+class GridEdit < GridObject; include Gooey
 	def initialize(grid)
 		super
-		@bg,@bgs,@fg = "#67A074","#0080ff","#ff80ff"
+		@store = GridStore.new
+		@store.connect 0,self,2
+		@fin = GridFinished.new
+		@fin.connect 0,self,3
+		@bg,@bgs,@fg = "#609068","#0080ff","#ff80ff"
+		@bghi = highlight(@bg,1.25) # "#80C891"   # highlighted @bg
+		#@bghihi = highlight(@bghi,1.5) # very highlighted @bg
 		@cellsy,@cellsx = 16,48
+		@i,@j = nil,nil # highlighted cell dex
 		send_in 0, grid
 	end
 	def _0_cell_size(sy,sx) @cellsy,@cellsx=sy,sx; update end
-	def _0_float(*) super; update end
-	def _0_list (*) super; update end
-	def _0_grid (*) super; update end
-	def _2_list (*dim)
-		@dim=dim
-		GridFlow.post "GridEdit#_2_list: "+dim.inspect
-	end
-	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
-		GridFlow.post "%s", [can,xpix,ypix,shift,alt,dbl,doit].inspect
-		i=(ypix-@y-1)/@cellsy
-		j=(xpix-@x-1)/@cellsx
-		GridFlow.post "%s %d %d", [can,xpix,ypix,shift,alt,dbl,doit].inspect, i, j
+	def _0_float(*a) @store.send_in 1,:float,*a; @store.send_in 0; update end
+	def _0_list (*a) @store.send_in 1, :list,*a; @store.send_in 0; update end
+	def _0_grid (*a) @store.send_in 1, :grid,*a;   @fin.send_in 0, :grid,*a end
+	def _3_bang; @store.send_in 0; update end
+	def edit_start(i,j)
+		edit_end if @i
+		@i,@j=i,j
 		GridFlow.gui %{
 			set canvas #{canvas}
-			$canvas itemconfigure #{@rsym}CELL_#{i}_#{j} -fill green
+			$canvas itemconfigure #{@rsym}CELL_#{@i}_#{@j} -fill #{@bghi}
 		}
+	end
+	def edit_end
+		GridFlow.gui %{
+			set canvas #{canvas}
+			$canvas itemconfigure #{@rsym}CELL_#{@i}_#{@j} -fill #{@bg}
+		}
+	end
+	def _2_rgrid_begin
+		@data = []
+		@dim = inlet_dim 2
+		@nt = inlet_nt 2
+		GridFlow.post "_2_rgrid_begin: dim=#{@dim.inspect} nt=#{@nt.inspect}"
+	end
+	def _2_rgrid_flow data
+		ps = GridFlow.packstring_for_nt @nt
+		@data[@data.length,0] = data.unpack(ps)		
+		GridFlow.post "_2_rgrid_flow: data=#{@data.inspect}"
+	end
+	def _2_rgrid_end
+		GridFlow.post "_2_rgrid_end"
+	end
+	def pd_click(can,xpix,ypix,shift,alt,dbl,doit)
+		#GridFlow.post "%s", [can,xpix,ypix,shift,alt,dbl,doit].inspect
+		return 0 if not doit!=0
+		i = (ypix-@y-1)/@cellsy
+		j = (xpix-@x-1)/@cellsx
+		GridFlow.post "%d,%d", i,j
+		ny = @dim[0] || 1
+		nx = @dim[1] || 1
+		edit_start i,j if (0...ny)===i and (0...nx)===j
 		return 0
 	end
 	def pd_show(can)
 		GridFlow.post "pd_show(#{can})"
 		super
 		return if not can
-		@font = "Courier -12"
 		ny = @dim[0] || 1
 		nx = @dim[1] || 1
 		@sy = 2+@cellsy*ny
@@ -1139,23 +1173,26 @@ class GridEdit < FPatcher; include Gooey
 		g = %{
 			set canvas #{canvas}
 			$canvas delete #{@rsym} #{@rsym}CELL
-			$canvas create rectangle #{@x} #{@y} \
-				[expr #{@x+@sx}] [expr #{@y+@sy}] -fill #{@bg} \
-				-tags #{@rsym} -outline #{outline}
+			$canvas create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} \
+				-fill #{@bg} -tags #{@rsym} -outline #{outline}
 		}
 		ny.times {|i|
 		  nx.times {|j|
 		    y1 = @y+1+i*@cellsy; y2 = y1+@cellsy
 		    x1 = @x+1+j*@cellsx; x2 = x1+@cellsx
+		    v = @data[i*nx+j]
 		    g << %{
 			$canvas create rectangle #{x1} #{y1} #{x2} #{y2} -fill #{@bg} \
 				-tags {#{@rsym}CELL #{@rsym}CELL_#{i}_#{j}} -outline #{outline}
+			$canvas create text #{x2-4} #{y1+2} -text "#{v}" -anchor ne -fill #ffffff \
+				-tags {#{@rsym}CELL_#{i}_#{j}_T}
 		    }
 		  }
 		}
 		GridFlow.gui g
 	end
 	install "#edit", 2, 1
+	install_rgrid 2, true
 	gui_enable if GridFlow.bridge_name =~ /puredata/
 end
 
