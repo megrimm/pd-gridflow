@@ -9,6 +9,7 @@ PACKAGEROOT = ..
 PACKAGELIB=$(LIBDIR)/lib$(PNAME).so
 include $(JMAXDISTDIR)/Makefiles/Makefile.package
 
+GRIDFLOW_LDSOFLAGS += -rdynamic
 LDSOFLAGS += $(GRIDFLOW_LDSOFLAGS)
 
 ### for hardcore malloc debugging; standalone only
