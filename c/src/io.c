@@ -21,7 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,6 +45,7 @@ typedef struct GridIn {
 	Format *ff; /* a file reader object */
 	bool timelog; /* future use */
 	struct timeval tv; /* future use */
+	int framecount;
 } GridIn;
 
 typedef struct GridOut {
@@ -53,6 +53,7 @@ typedef struct GridOut {
 	Format *ff; /* a file writer object */
 	bool timelog;
 	struct timeval tv;   /* time of the last grid_end */
+	int framecount;
 } GridOut;
 
 /* ---------------------------------------------------------------- */
@@ -61,14 +62,6 @@ static void GridIn_p_reset(GridIn *$) {
 	GridOutlet_abort($->out[0]);
 	CHECK_FILE_OPEN
 	/* $->ff->cl->frame($->ff,-1); */
-}
-
-METHOD(GridIn,init) {
-	GridObject_init((GridObject *)$,winlet,selector,ac,at);
-	$->out[0] = GridOutlet_new((GridObject *)$, 0);
-	$->ff = 0;
-	$->timelog = 0; /* not used in @in yet */
-	gettimeofday(&$->tv,0);
 }
 
 METHOD(GridIn,close) {
@@ -101,11 +94,6 @@ METHOD(GridIn,open) {
 	}
 }
 
-METHOD(GridIn,delete) {
-	if ($->ff) $->ff->cl->close($->ff);
-	GridObject_delete((GridObject *)$);
-}
-
 METHOD(GridIn,bang) {
 	CHECK_FILE_OPEN
 
@@ -126,6 +114,20 @@ METHOD(GridIn,option) {
 	} else {
 		whine("this format has no options");
 	}
+}
+
+METHOD(GridIn,init) {
+	GridObject_init((GridObject *)$,winlet,selector,ac,at);
+	$->out[0] = GridOutlet_new((GridObject *)$, 0);
+	$->ff = 0;
+	$->timelog = 0; /* not used in @in yet */
+	$->framecount = 0;
+	gettimeofday(&$->tv,0);
+}
+
+METHOD(GridIn,delete) {
+	if ($->ff) $->ff->cl->close($->ff);
+	GridObject_delete((GridObject *)$);
 }
 
 CLASS(GridIn) {
@@ -184,10 +186,13 @@ GRID_END(GridOut,0) {
 	{
 		struct timeval t;
 		gettimeofday(&t,0);
-		whine("@out:0:end: %d.%06d (diff %8d usec)\n",t.tv_sec,t.tv_usec,
-			(t.tv_sec-$->tv.tv_sec)*1000000 + (t.tv_usec-$->tv.tv_usec));
+		whine("@out:0:end: frame#%03d time: %6d.%03d s; minus last: %5d ms)\n",
+			$->framecount,
+			t.tv_sec%1000000, t.tv_usec/1000,
+			(t.tv_sec-$->tv.tv_sec)*1000 + (t.tv_usec-$->tv.tv_usec)/1000);
 		memcpy(&$->tv,&t,sizeof(struct timeval));
 	}
+	$->framecount+=1;
 	ENTER;
 }
 
@@ -242,6 +247,7 @@ METHOD(GridOut,open) {
 }
 
 METHOD(GridOut,init) {
+	$->framecount = 0;
 	$->timelog = 0;
 	gettimeofday(&$->tv,0);
 	GridObject_init((GridObject *)$,winlet,selector,ac,at);
