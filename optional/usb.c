@@ -313,7 +313,7 @@ static Ruby USB_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	USB *self = new USB();
 	Ruby rself = Data_Wrap_Struct(qlass, 0, CObject_free, self);
 	self->rself = rself;
-	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects_set"));
+	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects"));
 	rb_hash_aset(keep,rself,Qtrue); /* prevent sweeping (leak) (!@#$ WHAT??) */
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
