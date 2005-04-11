@@ -28,7 +28,7 @@ module GridFlow
 # a dummy class that gives access to any stuff global to GridFlow.
 FObject.subclass("gridflow",1,1) {
 	def _0_profiler_reset
-		GridFlow.fobjects_set.each {|o,*| o.total_time = 0 }
+		GridFlow.fobjects.each {|o,*| o.total_time = 0 }
 		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
 	end
 	def _0_profiler_dump
@@ -36,7 +36,7 @@ FObject.subclass("gridflow",1,1) {
 		total=0
 		post "-"*32
 		post "microseconds percent pointer  constructor"
-		GridFlow.fobjects_set.each {|o,*| ol.push o }
+		GridFlow.fobjects.each {|o,*| ol.push o }
 
 		# HACK: BitPacking is not a real fobject
 		# !@#$ is this still necessary?
