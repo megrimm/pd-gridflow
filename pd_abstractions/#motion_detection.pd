@@ -7,7 +7,7 @@
 #X obj 62 206 # -;
 #X obj 62 366 # min 255;
 #X obj 62 341 # max 0;
-#X obj 62 295 #! abs;
+#X obj 62 295 # abs-;
 #X obj 102 178 spigot;
 #X obj 86 109 inlet;
 #X obj 63 491 outlet;
@@ -31,7 +31,7 @@
 #X obj 134 242 r emboss;
 #X obj 134 295 # + 128;
 #X obj 62 230 # << 2;
-#X obj 62 267 demux 2;
+#X obj 62 267 shunt 2;
 #X connect 0 0 9 1;
 #X connect 1 0 9 1;
 #X connect 4 0 9 0;
