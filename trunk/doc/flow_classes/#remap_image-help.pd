@@ -1,0 +1,37 @@
+#N canvas 66 100 702 568 10;
+#X obj 48 315 #remap_image;
+#X msg 48 224 open b001.jpg;
+#X obj 13 163 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 48 253 #in;
+#X obj 13 190 t b b;
+#X obj 48 379 #out window;
+#X obj 148 348 #print;
+#X obj 159 139 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X floatatom 206 244 5 0 0 0 - - -;
+#X obj 164 177 #for (0 0) (240 320) (1 1);
+#X obj 196 139 metro 100;
+#X obj 196 112 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X obj 164 287 # +;
+#X obj 15 19 #remap_image;
+#X text 229 356 takes an image in the left inlet and outputs it to
+the left outlet applying transformations linked between the right outlet
+and the the right inlet.;
+#X text 120 19 Applies transformations to an image.;
+#X text 195 288 <-- changing the operator will change the transformation.
+;
+#X connect 0 0 5 0;
+#X connect 0 1 6 0;
+#X connect 1 0 3 0;
+#X connect 2 0 4 0;
+#X connect 3 0 0 0;
+#X connect 4 0 3 0;
+#X connect 4 1 1 0;
+#X connect 7 0 9 0;
+#X connect 8 0 12 1;
+#X connect 9 0 12 0;
+#X connect 10 0 9 0;
+#X connect 11 0 10 0;
+#X connect 12 0 0 1;
