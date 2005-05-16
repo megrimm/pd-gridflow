@@ -1,0 +1,136 @@
+#N canvas 65 33 861 634 10;
+#X obj 5 -9 cnv 15 90 1100 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 57 -1 #in;
+#X text 42 272 INLETS:;
+#X text 49 303 -LEFT:;
+#X text 102 -1 -IMPORTS GRIDS (IMAGES OR MOVIES);
+#X text 113 517 Message "close" closes the video input device. Only
+necessary if you are using a live capture device.;
+#X text 116 303 Bang sends a grid (static image or one frame of video)
+to [#out]. Successive bangs advance through the grid (frames of video).
+;
+#X text 15 679 ARGUMENTS:;
+#X text 30 735 OUTLETS:;
+#X text 44 766 -LEFT:;
+#X text 36 809 -RIGHT:;
+#X text 22 48 EXAMPLES:;
+#X text 115 562 Message "rewind" will rewind a video file to its beginning.
+;
+#X text 114 590 Message "loop 1" restarts a video each time it reaches
+the end. The loop option is on by default.;
+#X text 113 630 Message "loop 0" turns off the loop option. The video
+stops once it reaches the end.;
+#X text 16 949 SEE ALSO:;
+#X text 367 1067 updated for GridFlow version 0.8.0;
+#N canvas 135 17 680 586 More_Info 0;
+#X msg 52 283 option timelog \$1;
+#X obj 52 263 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
+;
+#X text 274 307 upload a grid;
+#X text 261 80 upload a grid;
+#X text 194 108 open default display for screenshot;
+#X msg 73 134 open videodev /dev/video0;
+#X text 260 136 open a video device;
+#X msg 75 332 open x11 here;
+#X msg 87 356 open x11 local 10;
+#X text 182 285 show/hide timing statistics;
+#X text 178 334 connect to default display;
+#X text 218 358 connect to display #10 on this machine;
+#X msg 100 380 open x11 remote.host.bla.net 0;
+#X text 324 382 connect to remote machine on display #0;
+#X text 290 161 open mpeg video stream;
+#X text 272 155 *;
+#X text 36 558 * path is where you started pd from. usually $home.
+;
+#X text 308 188 open an image file;
+#X msg 114 450 close;
+#X msg 90 161 open lsd.mpeg;
+#X msg 55 107 open x11 here;
+#X msg 35 80 open host.bla.net 7777;
+#X msg 113 404 open img/bla.jpg;
+#X text 300 405 open single file in jpg format;
+#X msg 108 186 open ./img/bla.jpg;
+#X text 35 481 incoming file is sent through the opened device/socket/file.
+in single file formats subsequent pictures overwrite the preceeding
+one. there are many more options. for more information see the reference
+manual in the "formats" and "objects for input/output" sections.;
+#X msg 65 307 open x.test.at 7777;
+#X msg 125 426 open window;
+#X text 228 426 opens a window x11 \, quartz or sdl;
+#X text 577 15 comment;
+#X obj 35 213 #in;
+#X obj 35 441 #out;
+#X text 14 15 #in \, #out communicating grids (pictures) to/from devices
+\, sockets \, files;
+#X connect 0 0 31 0;
+#X connect 1 0 0 0;
+#X connect 5 0 30 0;
+#X connect 7 0 31 0;
+#X connect 8 0 31 0;
+#X connect 12 0 31 0;
+#X connect 18 0 31 0;
+#X connect 19 0 30 0;
+#X connect 20 0 30 0;
+#X connect 21 0 30 0;
+#X connect 22 0 31 0;
+#X connect 24 0 30 0;
+#X connect 26 0 31 0;
+#X connect 27 0 31 0;
+#X connect 30 0 31 0;
+#X restore 105 951 pd More_Info;
+#X obj 105 990 #import ( 1 );
+#X obj 202 990 #export;
+#X obj 257 990 #export_list;
+#X obj 347 990 #export_symbol;
+#X obj 453 989 #pack;
+#X obj 109 146 #out window;
+#X obj 109 78 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X floatatom 363 114 5 0 0 0 - - -;
+#X msg 304 114 set 2;
+#X msg 117 100 open b001.jpg;
+#X text 123 52 for images:;
+#X obj 281 242 #out window;
+#X obj 281 73 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 281 195 #in;
+#X msg 287 92 open movie.mpeg;
+#X msg 365 164 loop 0;
+#X msg 427 166 loop 1;
+#X floatatom 297 221 5 0 0 0 - - -;
+#X msg 365 139 rewind;
+#X text 298 50 for video files:;
+#X obj 343 212 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 109 122 #in;
+#X text 117 681 filename \, [#in someimage.jpg] eliminates the need
+for message "open someimage.jpg" but limits the action to that one
+image.;
+#X text 117 765 Displays the resulting grid (image or video) when connected
+to [#out].;
+#X text 116 809 Integer \, a numbner box will identify the frame number
+corresponding to the frame currently displayed. Applies only to formats
+that have frame numbers.;
+#X text 117 859 Bang signals when a frame could not be read and signals
+the end of a file.;
+#X text 117 354 Message "open" followed by the filename \, ex: "open
+b001.jpg" gives a grid (most often an image) to [#out].;
+#X text 114 406 Message "set" \, followed by a number \, will select
+the video frame corresponding to the number. A bang must be sent to
+[#in] in order to display the frame.;
+#X text 111 467 Interger will display the frame number of the frame
+just sent. Applies to formats that have frame numbers like video.;
+#X connect 24 0 39 0;
+#X connect 25 0 31 0;
+#X connect 26 0 31 0;
+#X connect 27 0 39 0;
+#X connect 30 0 31 0;
+#X connect 31 0 29 0;
+#X connect 31 1 35 0;
+#X connect 31 1 38 0;
+#X connect 32 0 31 0;
+#X connect 33 0 31 0;
+#X connect 34 0 31 0;
+#X connect 36 0 31 0;
+#X connect 39 0 23 0;
