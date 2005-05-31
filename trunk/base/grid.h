@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 // current version number as string literal
-#define GF_VERSION "0.7.8"
+#define GF_VERSION "0.8.0"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -98,10 +98,10 @@ __attribute__ ((noreturn));
 // warning: does not work with STACK_ARRAY()
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
-static inline long rb_str_len(Ruby s) {return RSTRING(s)->len;}
+static inline long  rb_str_len(Ruby s) {return RSTRING(s)->len;}
 static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
-static inline long rb_ary_len(Ruby s) {return RARRAY(s)->len;}
-static inline Ruby *rb_ary_ptr(Ruby s) {return RARRAY(s)->ptr;}
+static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
+static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 
@@ -228,7 +228,7 @@ static int highest_bit(uint32 x) {int i=0;       FOO(16)FOO(8)FOO(4)FOO(2)FOO(1)
 static int highest_bit(uint64 x) {int i=0;FOO(32)FOO(16)FOO(8)FOO(4)FOO(2)FOO(1)return i;}
 #undef FOO
 // returns the position (0..31) of lowest bit set in a word, or 0 if none.
-template <class T> static T lowest_bit(T n) { return highest_bit((~n+1)&n); }
+template <class T> static int lowest_bit(T n) { return highest_bit((~n+1)&n); }
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 
@@ -314,13 +314,10 @@ public:
 	void will_use(int k) {
 #ifdef HAVE_DEBUG_HARDER
 		if (k==0) return;
-		if (!(p>=start && p<start+n))
-			BUG("BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx",
-				(long)p,(long)start,(long)(start+n));
-		T *q = p+k-1;
-		if (!(q>=start && q<start+n))
-			BUG("BUFFER OVERFLOW: 0x%08lx is not in 0x%08lx..0x%08lx",
-				(long)q,(long)start,(long)(start+n));
+		T *q = p+k;
+		if (!(p>=start && p<start+n && q>=start && q<=start+n))
+			BUG("BUFFER OVERFLOW: 0x%08lx...0x%08lx is not all inside 0x%08lx...0x%08lx",
+				(long)p,(long)q,start,(long)(start+n));
 #endif
 	}
 
@@ -858,8 +855,8 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 		((C*)(in->parent))->grin_##I(in,n,data); } \
 	template <class T> void  C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
-#define GRID_ALLOC else if (n==-3)
-#define GRID_FLOW else if (n>=0)
+#define GRID_ALLOC  else if (n==-3)
+#define GRID_FLOW   else if (n>=0)
 #define GRID_FINISH else if (n==-2)
 #define GRID_END }
 
@@ -899,10 +896,13 @@ struct GridInlet : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	int dex;
-	Pt<int32> (*get_target)(GridInlet *self);
 	PtrGrid buf;// factor-chunk buffer
 	int bufi;   // buffer index: how much of buf is filled
 	int mode; // 0=ignore; 4=ro; 6=rw
+
+	int allocfactor,allocmin,allocmax,allocn;
+	Pt<uint8> alloc;
+
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
@@ -992,12 +992,14 @@ struct GridOutlet : CObject {
 	template <class T> void send(int n, Pt<T> data);
 	void flush(); // goes with send();
 
-	// give: data must be dynamic. it should not be used by the caller
-	// beyond the call to give()
+	// give: data must be dynamically allocated as a whole: the data
+	// will be deleted eventually, and should not be used by the caller
+	// beyond the call to give().
 	template <class T> void give(int n, Pt<T> data);
 
-	// third way to send (new! GF-0.8) is called "ask"
-	template <class T> void ask(int factor, int min, int max);
+	// third way to send (upcoming, in GF-0.8.??) is called "ask".
+	template <class T> void ask(int &n, Pt<T> &data, int factor, int min, int max);
+
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(int n, Pt<T> data);
