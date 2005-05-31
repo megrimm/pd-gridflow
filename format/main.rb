@@ -79,6 +79,7 @@ class Format < GridObject
 		@mode = mode
 		@frame = 0
 		@parent = nil
+		@stream = nil
 		flags = self.class.instance_eval{if defined?@flags then @flags else 6 end}
 		# FF_W, FF_R, FF_RW
 		case mode
@@ -429,19 +430,11 @@ Format.subclass("#io:file",1,1) {
 	def self.new(mode,file)
 		file=file.to_s
 		a = [mode,:file,file]
-		case file
-		when /\.ppm$/i;   FormatPPM.new(*a)
-		when /\.tga$/i;   FormatTarga.new(*a)
-		when /\.jpe?g$/i; FormatJPEG.new(*a)
-		when /\.png$/i;   FormatPNG.new(*a)
-		when /\.grid$/i;  FormatGrid.new(*a)
-		else
-			if not /\./=~file then raise "no filename suffix?" end
-			suf=file.split(/\./)[-1]
-			h=Format.suffixes[suf]
-			if not h then raise "unknown suffix '.#{suf}'" end
-			h.new(*a)
-		end
+		if not /\./=~file then raise "no filename suffix?" end
+		suf=file.split(/\./)[-1]
+		h=Format.suffixes[suf]
+		if not h then raise "unknown suffix '.#{suf}'" end
+		h.new(*a)
 	end
 	@comment="format autodetection proxy"
 }
