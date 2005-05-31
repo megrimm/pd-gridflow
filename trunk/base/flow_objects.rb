@@ -909,6 +909,7 @@ module Gooey # to be included in any FObject class
 		@y,@x = 0,0 # position on canvas
 		@sy,@sx = 16,16 # size on canvas
 		@font = "Courier -12"
+		@vis = nil
 	end
 	attr_reader :canvas
 	attr_reader :selected
@@ -984,7 +985,7 @@ class Display < FObject; include Gooey
 	end
 	def pd_show(can)
 		super
-		return if not canvas # can't show for now...
+		return if not canvas or not @vis # can't show for now...
 		GridFlow.gui %{
 			set canvas #{canvas}
 			$canvas delete #{@rsym}TEXT
