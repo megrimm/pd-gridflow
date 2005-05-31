@@ -5,24 +5,18 @@ GridFlow 0.8.0
 Directory layout
 
   ./base:       object classes written in C++ and Ruby
-  ./format:     format handlers written in C++ and Ruby (optional)
-  ./optional:   optional classes but not format handlers
   ./bridge:     connectors between Ruby and jMax/PD/etc
-  ./cpu:	cpu-specific code
-  ./pd_abstractions: Pd object classes written in Pd
-
   ./bundled:    files from other packages, bundled here for convenience
+  ./cpu:	cpu-specific code
+  ./format:     format handlers written in C++ and Ruby (optional)
   ./doc:        complete documentation in HTML, with XML source
   ./doc/images: images that go with the HTML doc
   ./extra:      useful small programs (mostly in Ruby)
-  ./help:       jMax-style help: simple jMax programs showing off all
-                individual features of each object class.
+  ./optional:   optional classes but not format handlers
+  ./pd_abstractions: Pd object classes written in Pd
   ./pd_help:    Pd-style help (old; the new goes in ./doc)
   ./pd_examples: more complex Pd programs showing off more practical uses.
   ./images:     sample images shared by ./samples, ./help, ./doc
-                NOTE: bundled separately because they are big and
-                seldom change
-                http://artengine.ca/jmax/gridflow/download/gridflow-images-0.5.tar.gz
   ./CVSROOT:    project information for version control
                 (not in official releases)
 
