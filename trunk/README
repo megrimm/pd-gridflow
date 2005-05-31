@@ -1,7 +1,9 @@
-GridFlow 0.8.0
-
-Directory layout
-
+,-o----o----o----o-.
+|  GridFlow 0.8.0  |
+`-o--------------o-'
+  |
+.----------------------------------------------------------------
+| Directory layout
 
   ./base ............. object classes written in C++ and Ruby
   ./bin .............. programs startable as applications
