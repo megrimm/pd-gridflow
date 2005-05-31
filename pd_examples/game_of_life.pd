@@ -1,28 +1,28 @@
-#N canvas 76 239 444 328 10;
-#X msg 257 76 240 320 uint8 # 10;
-#X text 35 7 click here;
-#X obj 17 9 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1;
-#X obj 258 96 @! rand;
-#X obj 25 253 #out window;
-#X obj 25 232 #outer ignore ( 3 uint8 # );
-#X text 42 94 this is the feedback loop;
-#X obj 117 12 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#N canvas 475 213 719 454 10;
+#X msg 263 75 240 320 uint8 # 10;
+#X text 41 -19 click here;
+#X obj 23 -17 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+;
+#X obj 31 251 #out window;
+#X obj 31 230 #outer ignore ( 3 uint8 # );
+#X text 48 92 this is the feedback loop;
+#X obj 123 0 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 135 11 for 0 10 1;
-#X obj 257 55 loadbang;
-#X obj 135 75 #store;
-#X obj 135 31 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 141 -1 for 0 10 1;
+#X obj 263 53 loadbang;
+#X obj 141 73 #store;
+#X obj 141 19 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 25 293 print;
-#X obj 25 273 fps detailed;
-#X obj 25 115 fork;
-#X text 153 31 next;
-#X obj 25 211 # inv+ ( uint8 # 0 );
+#X obj 31 291 print;
+#X obj 31 271 fps detailed;
+#X obj 31 113 fork;
+#X text 159 19 next;
+#X obj 31 209 # inv+ ( uint8 # 0 );
 #N canvas 0 0 450 210 game 0;
 #X obj 28 64 inlet matrix;
 #X obj 28 141 outlet matrix;
-#X obj 28 103 #convolve ( 3 3 uint8 # 0 0 0 0 1
-) \, op >> \, seed ( uint8 # -5 );
+#X obj 28 103 #convolve ( 3 3 uint8 # 0 0 0 0 1 ) \, op >> \, seed
+( uint8 # -5 );
 #X obj 28 83 # << ( uint8 # 1 );
 #X obj 28 122 # < ( uint8 # 3 );
 #X text 18 14 this part at the left defines the rule of the game (this
@@ -32,27 +32,36 @@ but faster to compute.);
 #X connect 2 0 4 0;
 #X connect 3 0 2 0;
 #X connect 4 0 1 0;
-#X restore 25 74 pd game of life;
-#X text 254 22 init with a random map;
-#X obj 259 117 # == ( uint8 # 0 );
-#X text 256 37 10% white dots;
-#X text 27 181 convert this 1-bit matrix to standard RGB \; 1 becomes
+#X restore 31 72 pd game of life;
+#X text 260 20 init with a random map;
+#X obj 263 119 # == ( uint8 # 0 );
+#X text 262 35 10% white dots;
+#X text 33 179 convert this 1-bit matrix to standard RGB \; 1 becomes
 -1 becomes 255 \, but 0 stays 0;
-#X obj 17 27 metro 5;
-#X connect 0 0 3 0;
-#X connect 2 0 22 0;
-#X connect 3 0 19 0;
-#X connect 4 0 13 0;
-#X connect 5 0 4 0;
-#X connect 7 0 8 0;
-#X connect 8 0 11 0;
-#X connect 9 0 0 0;
-#X connect 10 0 17 0;
-#X connect 11 0 10 0;
-#X connect 13 0 12 0;
-#X connect 14 0 16 0;
-#X connect 14 1 10 1;
-#X connect 16 0 5 0;
-#X connect 17 0 14 0;
-#X connect 19 0 14 0;
-#X connect 22 0 10 0;
+#X obj 23 15 metro 5;
+#X obj 263 97 # rand;
+#X obj -15 339 cnv 15 780 30 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X text -7 346 GridFlow 0.8.0;
+#X text -7 346 GridFlow 0.8.0;
+#X obj -13 -85 cnv 15 780 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 0 -85 game_of_life.pd;
+#X text 0 -72 Copyright 2001 Mathieu Bouchard;
+#X connect 0 0 22 0;
+#X connect 2 0 21 0;
+#X connect 3 0 12 0;
+#X connect 4 0 3 0;
+#X connect 6 0 7 0;
+#X connect 7 0 10 0;
+#X connect 8 0 0 0;
+#X connect 9 0 16 0;
+#X connect 10 0 9 0;
+#X connect 12 0 11 0;
+#X connect 13 0 15 0;
+#X connect 13 1 9 1;
+#X connect 15 0 4 0;
+#X connect 16 0 13 0;
+#X connect 18 0 13 0;
+#X connect 21 0 9 0;
+#X connect 22 0 18 0;
