@@ -61,8 +61,6 @@ GRID_INLET(FormatPNG,0) {
 } GRID_END
 
 \def Ruby frame () {
-	if (feof(f)) return Qfalse;
-	
 	uint8 sig[8];
 	if (!fread(sig, 1, 8, f)) return Qfalse;
 	if (!png_check_sig(sig, 8)) RAISE("bad signature");
