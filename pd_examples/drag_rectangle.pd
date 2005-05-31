@@ -1,15 +1,15 @@
-#N canvas 1 218 522 408 10;
-#X obj 212 43 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+#N canvas 702 123 647 484 10;
+#X obj 231 -7 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
 ;
 #X obj 231 117 #out window;
-#X obj 1 158 hsl 128 15 0 319 0 0 h_end_o h_end_i empty -2 -8 1 10
--262144 -1 -1 12302 1;
-#X obj 1 10 hsl 128 15 0 319 0 0 h_start_o h_start_i empty 0 8 1 10
--262144 -66577 -258699 5693 0;
-#X obj -17 27 vsl 15 128 239 0 0 0 v_start_o v_start_i empty 0 -8 1
-10 -262144 -1 -1 7864 1;
-#X obj 131 27 vsl 15 128 239 0 0 0 v_end_o v_end_i empty 0 -8 1 10
--262144 -1 -1 2285 1;
+#X obj 21 144 hsl 128 15 0 319 0 0 h_end_o h_end_i empty -2 -8 1 10
+-262144 -1 -1 12700 1;
+#X obj 21 -4 hsl 128 15 0 319 0 0 h_start_o h_start_i empty 0 8 1 10
+-262144 -66577 -258699 0 0;
+#X obj 3 13 vsl 15 128 239 0 0 0 v_start_o v_start_i empty 0 -8 1 10
+-262144 -1 -1 12647 1;
+#X obj 151 13 vsl 15 128 239 0 0 0 v_end_o v_end_i empty 0 -8 1 10
+-262144 -1 -1 425 1;
 #N canvas 504 374 452 302 make_rectangle 0;
 #X obj 27 16 inlet;
 #X text 25 -3 image;
@@ -38,8 +38,8 @@
 #X connect 13 0 6 0;
 #X restore 231 97 pd make_rectangle;
 #X obj 231 43 metro 33.3667;
-#X text -42 9 start;
-#X text 135 158 end;
+#X text -22 -5 start;
+#X text 155 144 end;
 #X obj 328 23 loadbang;
 #X obj 231 72 #store;
 #X obj 393 25 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
@@ -56,18 +56,26 @@
 #X obj 378 65 loadbang;
 #X msg 378 85 0 0;
 #X obj 328 161 t a;
-#X obj 30 342 #out window;
-#X obj 13 279 #for ( 0 0 ) ( 0 0 ) ( 1 1 );
-#X obj 78 233 t b a;
-#X obj 30 306 #store;
-#X msg 14 255 set ( \$1 \$2 );
+#X obj 64 330 #out window;
+#X obj 47 267 #for ( 0 0 ) ( 0 0 ) ( 1 1 );
+#X obj 112 221 t b a;
+#X obj 64 294 #store;
+#X msg 48 243 set ( \$1 \$2 );
 #X obj 327 43 #in b001.jpg;
-#X text 10 49 drag the mouse;
-#X text 36 34 step 2:;
-#X text 19 65 inside the;
-#X text 17 80 first window;
-#X text 199 25 step 1: turn on;
-#X text 35 324 cropping (to 2nd window);
+#X text 30 35 drag the mouse;
+#X text 56 20 step 2:;
+#X text 39 51 inside the;
+#X text 37 66 first window;
+#X text 218 -25 step 1: turn on;
+#X text 69 312 cropping (to 2nd window);
+#X obj -41 373 cnv 15 640 30 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X text -33 380 GridFlow 0.8.0;
+#X text -33 380 GridFlow 0.8.0;
+#X obj -40 -77 cnv 15 640 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text -27 -64 Copyright 2002 Mathieu Bouchard;
+#X text -27 -77 drag_rectangle.pd;
 #X connect 0 0 7 0;
 #X connect 1 0 13 0;
 #X connect 6 0 1 0;
