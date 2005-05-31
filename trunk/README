@@ -1,14 +1,15 @@
 GridFlow 0.8.0
 
-
-
 Directory layout
 
-  ./base:       object classes written in C++ and Ruby
-  ./bridge:     connectors between Ruby and jMax/PD/etc
-  ./bundled:    files from other packages, bundled here for convenience
-  ./cpu:	cpu-specific code
-  ./format:     format handlers written in C++ and Ruby (optional)
+
+  ./base ............. object classes written in C++ and Ruby
+  ./bin .............. programs startable as applications
+  ./bridge ........... connectors between Ruby and PureData/etc
+  ./bundled .......... files from other packages, bundled here for convenience
+  ./cpu .............. cpu-specific code
+  ./format ........... format handlers written in C++ and Ruby (optional)
+  ./devices4ruby ..... misc Ruby plugins for hardware interfaces
   ./doc:        complete documentation in HTML, with XML source
   ./doc/images: images that go with the HTML doc
   ./extra:      useful small programs (mostly in Ruby)
