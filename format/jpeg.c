@@ -76,8 +76,19 @@ GRID_INLET(FormatJPEG,0) {
 	jpeg_destroy_compress(&cjpeg);
 } GRID_END
 
+static bool gfeof(FILE *f) {
+	off_t cur,end;
+	cur = ftell(f);
+	fseek(f,0,SEEK_END);
+	end = ftell(f);
+	fseek(f,cur,SEEK_SET);
+	return cur==end;
+}
+
 \def Ruby frame () {
-	if (feof(f)) return Qfalse;
+	off_t off = NUM2LONG(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(tell),0));
+	fseek(f,off,SEEK_SET);
+	if (gfeof(f)) return Qfalse;
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
 	jpeg_stdio_src(&djpeg,f);
