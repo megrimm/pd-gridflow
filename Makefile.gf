@@ -143,6 +143,7 @@ puredata-install::
 	cp pd_help/*.pd $(DOK)
 	cp doc/*.html $(DOK)
 	cp doc/flow_classes/*.p* $(DOK)/flow_classes
+	cp -r images/ $(PUREDATA_PATH)/extra/gridflow
 	cp $(PD_LIB) pd_abstractions/*.pd $(PUREDATA_PATH)/extra
 	for z in camera_control motion_detection color mouse centroid centre_of_gravity fade \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
