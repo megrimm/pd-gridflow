@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -131,7 +131,7 @@ extern "C" void Init_stack(VALUE *addr);
 static VALUE *localize_sysstack () {
 	long bp;
 	sscanf(RUBY_STACK_END,"0x%08lx",&bp);
-	fprintf(stderr,"old RUBY_STACK_END = %08lx\n",bp);
+	//fprintf(stderr,"old RUBY_STACK_END = %08lx\n",bp);
 	// HACK (2004.08.29: alx has a problem; i hope it doesn't get worse)
 	// this rounds to the last word of a 4k block
 	// cross fingers that no other OS does it too different
@@ -139,7 +139,7 @@ static VALUE *localize_sysstack () {
 	// bp=((bp+0xfff)&~0xfff)-sizeof(void*);
 	// GAAAH
 	bp=((bp+0xffff)&~0xffff)-sizeof(void*);
-	fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
+	//fprintf(stderr,"new RUBY_STACK_END = %08lx\n",bp);
 	return (VALUE *)bp;
 }
 
@@ -538,12 +538,8 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 }
 
 static Ruby FObject_s_gui_enable (Ruby rself) {
-	rb_p(rself);
-	//RAISE("BORK!");
-	//Ruby fcset = rb_ivar_get(mGridFlow2,SI(@fclasses));
-	//Ruby qlassid = rb_ivar_get(rb_hash_aref(fcset,name),SI(@bfclass));
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	//if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
+	if (qlassid==Qnil) RAISE("no class id ?");
 	t_widgetbehavior *wb = new t_widgetbehavior;
 	wb->w_getrectfn    = bf_getrectfn;
 	wb->w_displacefn   = bf_displacefn;
@@ -714,6 +710,8 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
 	mPointer = EVAL("GridFlow::Pointer");
+	EVAL("class<<GridFlow;attr_accessor :config; end");
+	EVAL("GridFlow.config = {'PUREDATA_PATH' => %{"PUREDATA_PATH"}}");
 	return Qnil;
 }
 
@@ -735,7 +733,16 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","-w","-e",";"};
 	post("setting up Ruby-for-PureData...");
-
+/*
+	post("pd_getfilename() = %s", pd_getfilename()->s_name);
+	post("pd_getdirname() = %s", pd_getdirname()->s_name);
+	post("canvas_getcurrentdir() = %p", canvas_getcurrentdir());
+	char *dirresult = new char[242];
+	char *nameresult;
+	int fd = open_via_path("","gridflow",".so",dirresult,&nameresult,242,1);
+	post("open_via_path: fd=%d dirresult=\"%s\" nameresult=\"%s\"",fd,dirresult,nameresult);
+	delete[] dirresult;
+*/
 	ruby_init();
 	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
