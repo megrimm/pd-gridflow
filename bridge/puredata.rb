@@ -29,6 +29,9 @@
 # @mouse=help_mouse @motion_detection=help_motion_detect @fade=help_fade
 # @apply_colormap_channelwise @checkers @complex_sq @contrast
 # @posterize @ravel @greyscale_to_rgb @rgb_to_greyscale @solarize @spread
+#rgb_to_yuv=#rgb_to_yuv_and_#yuv_to_rgb
+#yuv_to_rgb=#rgb_to_yuv_and_#yuv_to_rgb
+#clip #contrast #fade #numop #remap_image
 
 # NEW help files
 #!@#$ (what's #+-help.pd ? #print-help2.pd ?)
@@ -36,18 +39,16 @@
 	# #cast #dim #reverse
 	  #pack=#unpack-#pack
 	#unpack=#unpack-#pack
-	renamefile #clip #contrast #in plotter_control
-	#rgb_to_yuv=#rgb_to_yuv_and_#yuv_to_rgb
-	#yuv_to_rgb=#rgb_to_yuv_and_#yuv_to_rgb
+	renamefile
+	#in plotter_control
 	listelement exec ls #print unix_time
-	#fade #numop #remap_image
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
 		x = GridFlow.fclasses[name]
 		x.set_help "gridflow/flow_classes/#{file}-help.pd"
 	rescue Exception => e
-		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
+		GridFlow.post "for [#{name}], #{e.class}: #{e}" # + ":\n" + e.backtrace.join("\n")
 	end
 }
 
