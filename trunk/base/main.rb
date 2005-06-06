@@ -71,6 +71,9 @@ end
 @subprocesses={}
 @verbose=false
 @data_path=[]
+if GridFlow.respond_to? :config then
+  @data_path << GridFlow.config["PUREDATA_PATH"]+"/extra/gridflow/images"
+end
 
 def self.hunt_zombies
 	#STDERR.puts "GridFlow.hunt_zombies"
