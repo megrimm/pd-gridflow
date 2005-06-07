@@ -32,7 +32,8 @@ version 0.8.0 (2005.06.06):
  * new object classes:
    [display], [#reverse], [#unpack], [#centroid2], [ls], [renamefile], [unix_time],
    [exec], [plotter_control], [#text_to_image], [#hueshift], [rubyarray]
- * in pd_examples added Alx's epicycloid.pd and Matju's goop.pd
+ * in pd_examples added Alx's epicycloid.pd, scratch_video.pd, threshold.pd
+      and Matju's goop.pd
 
 version 0.7.7 (2004.08.24):
 
