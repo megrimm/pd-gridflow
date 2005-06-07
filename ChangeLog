@@ -1,26 +1,38 @@
 /* $Id$ */
 
-version 0.7.8 (head):
+version 0.8.0 (2005.06.06):
 
  * removed support for jMax 2.5 and jMax 4.1
  * added GCC 3.4 support
+ * added AMD64 support
+ * added support for puredata "datastructure" pointers (aka gpointer)
+ * changing the @-prefix for a #-prefix, where the old prefix still works
+   (the old syntax is backwards-compatible,
+    the new syntax is forwards-compatible)
  * 13 object-classes rewritten from Ruby to Pd abstractions
  * merged [@],[@!] -> [#] and added message "op"
  * removed all one-input ops (see next...)
  * new two-input ops: abs- sq- avg hypot sqrt rand (soon erf* clip+ clip-)
- * [#fold],[#scan] : removed seed argument and right outlet
- * [#fold],[#scan] : added messages "op" and "seed"
+ * [#fold],[#scan]: removed seed arg and right outlet; added msgs "op" and "seed"
+ * [#inner],[#convolve] : added msgs "op" and "seed"
+ * [#inner],[#convolve] : removed three first args (usually * + 0)
+ * [#inner] : removed middle inlet
  * major changes to the bridge API (Ruby<->PureData)
+ * project "Linux Devices For Ruby" got merged in, as devices4ruby/
  * source code cleanup
  * internals: split Grid into Grid+GridPtr
  * internals: GridObject no longer manages GridOutlet
  * internals: added classes P,PtrGrid,...
  * internals: beginning to use C++'s Standard Template Library (sometimes)
  * [gridflow] now has "formats" msg (to list available formats)
+ * [#store] added msg "op"
+ * [#out x11] removed flag "verbose"
+ * some spaces may now be omitted in gf-lists. e.g.:
+   ( ( 2 1 ) ( ) ) ( 3 4 ( 5 ) ) can be shortened to: ((2 1) ()) (3 4 (5))
  * new object classes:
-   [display], [#reverse], [#unpack], [#centroid2]
-Upcoming:
-   [#edit]
+   [display], [#reverse], [#unpack], [#centroid2], [ls], [renamefile], [unix_time],
+   [exec], [plotter_control], [#text_to_image], [#hueshift], [rubyarray]
+ * in pd_examples added Alx's epicycloid.pd and Matju's goop.pd
 
 version 0.7.7 (2004.08.24):
 
