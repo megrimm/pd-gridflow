@@ -1,6 +1,45 @@
 /* $Id$ */
 
+matju cvs update -dP :
+P format/quicktimeapple.c
+cvs update: warning: pd_examples/binary_operations.pd was lost
+C pd_examples/color_correction.pd
+C pd_examples/convolve.pd
+C pd_examples/drag_rectangle.pd
+C pd_examples/eclipse.pd
+C pd_examples/linear_transform.pd
+C pd_examples/waves.pd
+
+Checking in README;
+/home/cvs/gridflow/README,v  <--  README
+new revision: 1.22; previous revision: 1.21
+done
+$helo_domain: web.artengine.ca
+$from_address: matju@web.artengine.ca (matju)
+loginfo.rb is writing changelog...done
+loginfo.rb is parsing log message...done
+loginfo.rb is testing modules...log info for `/home/cvs/gridflow/README' is not ready
+done
+loginfo.rb is composing a mail...done
+loginfo.rb is posting email to gridflow ...ERROR: cannot send email using MTA on ns
+450 <gridflow>: Recipient address rejected: User unknown in local recipient table
+
+done
+loginfo.rb is deleting tmp files...done
+
+AMD64 :
+ char 1 1
+ short 2 2
+ int 4 4
+ long 4 8
+ long long 8 8
+ float 4 4
+ double 8 8
+ void * 4 8
+
 <ClaudiusMaximus> hmm, sending a [reassign( message to the right inlet of a [#store] segfaults Pd
+
+<ClaudiusMaximus> hmmm, i get a segfault with a simple patch sending "reassign, put_at ( 0 0 ), reassign" to the right inlet of [#store ( 3 3 # 0 )]
 
 <alx1> matju: for the ./configure, I often get an error from aalib since common installs do not put the headers
 <alx1> matju: would it be possible to make it a user defined choice like --with-aalib and turn it off by default?
@@ -27,18 +66,26 @@ test with waves.pd, 24 by 32.
 ==1673==    by 0x42093152: convert(unsigned long, Grid**) (base/grid.h.fcs:921)
 ==1673==    by 0x4208F72B: GridOuter::initialize_wrap(int, unsigned long*, unsigned long) (base/flow_objects.c.fcs:862)
 
+[ ] try removing or modifying -falign on PPC/OSX
+[ ] c++ typecasting is nuts (see class Pt<T>)
+[ ] make c++ refcount and ruby gc to cooperate.
+[ ] encoding of quicktime RGBA only works with [#cast b].
+[ ] add classmethod support to source filter
+[ ] document the source filter
+[ ] make example on separable convkernels
+[ ] add concepts of hot inlet and conf inlet at the code level
+[ ] [display] should use clocks to update tk less often
+[ ] [display] leaks in server ?
 [ ] optional args don't work in source_filter.rb
 [ ] deprecation warnings
 [ ] Add a video latency patch (in examples)
-[ ] #store mysteriously doesn't use ( # ) as a default argument
 [ ] can't have FPatcher and GridObject behaviour at once ??
-[ ] [rubysprintf] contains a nonsense line of code (a.each...)
+[ ] Numop: warn on misalignment
 [ ] wrap Dim (?)
 [ ] wrap GridInlet (?)
 [ ] wrap GridOutlet (?)
 [ ] wrap Grid (?)
 [ ] wrap Numop
-[ ] reenable DimConstraints
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
 [ ] [#change]
@@ -50,7 +97,6 @@ test with waves.pd, 24 by 32.
 [ ] consider including [mysql] [renamefile] [ls] [shell]
 [ ] re-enable int64,float64
 [ ] <alx_> #define RUBY_STACK_END "0xbfffd5c0" (!?!?!?)
-[ ] remove GridFlow.routine
 [ ] remember who i am supposed to credit for making pd_help back in march 2003... alx knows
 [ ] added #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
@@ -60,6 +106,8 @@ test with waves.pd, 24 by 32.
 [ ] internal grid protocol redesigned
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
 [ ] unbork make test and plain ruby mode.
+[ ] add support for "anything" methods (def _0_(sel,*a))
+[ ] look into -ftree-vectorize
 
 for 0.8.1:
 
@@ -88,7 +136,7 @@ pick a number: [147]
 [136] fix C_INCLUDE_PATH vs CPLUS_INCLUDE_PATH
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
-[129] jmax2pd: [display] should be translated to [messageprepend set] -> ""
+[129] jmax2pd: [display] should not be translated
 [128] jmax2pd(?): loadbang-messages (comma) don't get translated to .pd ??
 [119] osx: SDL doesn't work here
 [118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
@@ -293,6 +341,7 @@ Effects
 [ ] bicubic interpolation
 [ ] multilinear interpolation (n-dimensional?)
 [ ] #daltonism
+[ ] #perlin ?
 
 Input/Output
 [ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
@@ -322,6 +371,7 @@ Format
 [ ] PNM: P1,P2,P3,P4,P5 support
 [ ] XBM, XPM, GIF support
 [ ] fork: pseudoformat for launching format handler as separate process
+[ ] put_at/reassign in x11/sdl/quartz
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
@@ -441,3 +491,17 @@ matju 2002
 
 
 remember to check for volatile VALUEs if GC problems ever occur
+
+ruby -ve '[30,31,62,63].each {|x| printf "%d bits: %s\n",x,(1<<(x-1)).class }'
+
+linx:
+  http://cast.rubyforge.org (parsing C code)
+  http://ruby-contract.rubyforge.org/doc/
+  
+
+sand.pd differential mode, 0.8:
+fps   min   med   max   avg   stdev
+17.57 54.82 55.81 78.00 56.89 3.93 : before
+after ...
+
+
