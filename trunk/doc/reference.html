@@ -29,16 +29,19 @@
 <li><a href="##export_symbol"><img src="flow_classes/%23export_symbol-icon.png" alt="[#export_symbol]" border="0"></a></li>
 <li><a href="##pack"><img src="flow_classes/%23pack-icon.png" alt="[#pack]" border="0"></a></li>
 <li><a href="##color"><img src="flow_classes/%23color-icon.png" alt="[#color]" border="0"></a></li>
+<li><a href="##unpack"><img src="flow_classes/%23unpack-icon.png" alt="[#unpack]" border="0"></a></li>
+<li><a href="##centroid"><img src="flow_classes/%23centroid-icon.png" alt="[#centroid]" border="0"></a></li>
+<li><a href="##centroid2"><img src="flow_classes/%23centroid2-icon.png" alt="[#centroid2]" border="0"></a></li>
 <li><a href="##for"><img src="flow_classes/%23for-icon.png" alt="[#for]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Computing">Objects for Computing</a></h4><ul>
 <li><a href="##"><img src="flow_classes/%23-icon.png" alt="[#]" border="0"></a></li>
-<li><a href="##complex_sq"><img src="flow_classes/%23complex_sq-icon.png" alt="[#complex_sq]" border="0"></a></li>
+<li><a href="#@complex_sq"><img src="flow_classes/@complex_sq-icon.png" alt="[@complex_sq]" border="0"></a></li>
 <li><a href="##fold"><img src="flow_classes/%23fold-icon.png" alt="[#fold]" border="0"></a></li>
 <li><a href="##scan"><img src="flow_classes/%23scan-icon.png" alt="[#scan]" border="0"></a></li>
 <li><a href="##outer"><img src="flow_classes/%23outer-icon.png" alt="[#outer]" border="0"></a></li>
 <li><a href="##inner"><img src="flow_classes/%23inner-icon.png" alt="[#inner]" border="0"></a></li>
-<li><a href="##join"><img src="flow_classes/%23join-icon.png" alt="[#join]" border="0"></a></li>
+<li><a href="#@join"><img src="flow_classes/@join-icon.png" alt="[@join]" border="0"></a></li>
 <li><a href="##finished"><img src="flow_classes/%23finished-icon.png" alt="[#finished]" border="0"></a></li>
 <li><a href="##cast"><img src="flow_classes/%23cast-icon.png" alt="[#cast]" border="0"></a></li>
 <li><a href="##ravel"><img src="flow_classes/%23ravel-icon.png" alt="[#ravel]" border="0"></a></li>
@@ -47,6 +50,7 @@
 <li><a href="##transpose"><img src="flow_classes/%23transpose-icon.png" alt="[#transpose]" border="0"></a></li>
 <li><a href="##fade"><img src="flow_classes/%23fade-icon.png" alt="[#fade]" border="0"></a></li>
 <li><a href="##fade_lin"><img src="flow_classes/%23fade_lin-icon.png" alt="[#fade_lin]" border="0"></a></li>
+<li><a href="##reverse"><img src="flow_classes/%23reverse-icon.png" alt="[#reverse]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Coordinate_Transforms">Objects for Coordinate Transforms</a></h4><ul>
 <li><a href="##redim"><img src="flow_classes/%23redim-icon.png" alt="[#redim]" border="0"></a></li>
@@ -64,6 +68,7 @@
 <li><a href="##print"><img src="flow_classes/%23print-icon.png" alt="[#print]" border="0"></a></li>
 <li><a href="#rubyprint"><img src="flow_classes/rubyprint-icon.png" alt="[rubyprint]" border="0"></a></li>
 <li><a href="#printargs"><img src="flow_classes/printargs-icon.png" alt="[printargs]" border="0"></a></li>
+<li><a href="#display"><img src="flow_classes/display-icon.png" alt="[display]" border="0"></a></li>
 </ul>
 <h4><a href="#Objects_for_Color_Conversion">Objects for Color Conversion</a></h4><ul>
 <li><a href="##apply_colormap_channelwise"><img src="flow_classes/%23apply_colormap_channelwise-icon.png" alt="[#apply_colormap_channelwise]" border="0"></a></li>
@@ -81,6 +86,8 @@
 <li><a href="##layer"><img src="flow_classes/%23layer-icon.png" alt="[#layer]" border="0"></a></li>
 <li><a href="##draw_image"><img src="flow_classes/%23draw_image-icon.png" alt="[#draw_image]" border="0"></a></li>
 <li><a href="##draw_polygon"><img src="flow_classes/%23draw_polygon-icon.png" alt="[#draw_polygon]" border="0"></a></li>
+<li><a href="##text_to_image"><img src="flow_classes/%23text_to_image-icon.png" alt="[#text_to_image]" border="0"></a></li>
+<li><a href="##hueshift"><img src="flow_classes/%23hueshift-icon.png" alt="[#hueshift]" border="0"></a></li>
 </ul>
 <h4><a href="#Other_Objects">Other Objects</a></h4><ul>
 <li><a href="#rtmetro"><img src="flow_classes/rtmetro-icon.png" alt="[rtmetro]" border="0"></a></li>
@@ -93,6 +100,7 @@
 <li><a href="#exec"><img src="flow_classes/exec-icon.png" alt="[exec]" border="0"></a></li>
 <li><a href="#renamefile"><img src="flow_classes/renamefile-icon.png" alt="[renamefile]" border="0"></a></li>
 <li><a href="#plotter_control"><img src="flow_classes/plotter_control-icon.png" alt="[plotter_control]" border="0"></a></li>
+<li><a href="#rubyarray"><img src="flow_classes/rubyarray-icon.png" alt="[rubyarray]" border="0"></a></li>
 </ul>
 <h4><a href="#jMax_emulation">jMax emulation</a></h4><ul>
 <li><a href="#fork"><img src="flow_classes/fork-icon.png" alt="[fork]" border="0"></a></li>
@@ -202,6 +210,35 @@
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
 			Produces a Dim(3) grid of RGB values. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#unpack">#unpack</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23unpack-icon.png" alt="[#unpack]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><i>integer</i> outputs<b>)</b>   <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid(N) <b>(</b><b>)</b>  
+			the input vector is split in N parts containing one number each. 
+			numbers are sent left-to-right, that is, outlet 0 is triggered first, then outlet 1, etc. <br>
+ <br><b>outlet&nbsp;* </b><b>method</b>&nbsp;int <b>(</b><b>)</b>  <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#centroid">#centroid</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23centroid-icon.png" alt="[#centroid]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b><b>)</b> <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid(rows,columns,1) <b>(</b><b>)</b>  
+			will compute the centroid of the given grid, which 
+			is a weighted average, namely, the average position weighted 
+			by the pixel values. <br>
+  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid(2) <b>(</b><b>)</b>  
+			result <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#centroid2">#centroid2</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23centroid2-icon.png" alt="[#centroid2]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		a new experimental and faster version of #centroid. <br><b>method</b>&nbsp;init <b>(</b><b>)</b> <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid(rows,columns,1) <b>(</b><b>)</b>  
+			will compute the centroid of the given grid, which 
+			is a weighted average, namely, the average position weighted 
+			by the pixel values. <br>
+  <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid(2) <b>(</b><b>)</b>  
+			result <br>
+  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#for">#for</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/%23for-icon.png" alt="[#for]" border="0"><br clear="left"><br><br><a href="#for"><img src="images/see_screenshot.png" border="0"></a><br clear="left"><br></td><td><br>
    <p>when given scalar bounds, works like a regular <kbd><font color="#007777">[for]</font></kbd> object plugged 
@@ -249,8 +286,8 @@
 				Dim(1) or Dim() grid with that number in it. <br>
    <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid</i> grid<b>)</b>  <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#complex_sq">#complex_sq</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="flow_classes/%23complex_sq-icon.png" alt="[#complex_sq]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@complex_sq">@complex_sq</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/@complex_sq-icon.png" alt="[@complex_sq]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>this object computes the square of complex numbers. 
 		If seeing imaginary as Y and real as X, then this operation squares 
 		the distance of a point from origin and doubles the angle between it 
@@ -325,8 +362,8 @@
    <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(anyB..., lastB)</i> grid<b>)</b>  
 				changes the right-hand side grid to that. <br>
     <br></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#join">#join</a></td></tr><tr><td></td><td valign="top"><br>
-<img src="flow_classes/%23join-icon.png" alt="[#join]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="@join">@join</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/@join-icon.png" alt="[@join]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <br><b>method</b>&nbsp;init <b>(</b>which_dim<b>)</b>   
 			Which_dim is the number of the dimension by which the join will 
 			occur. For N-dimensional grids, the dimensions are numbered from 0 
@@ -414,6 +451,14 @@
 			incoming messages. For example, if maxraise=2 and maxdrop=4, then with each 
 			new message an output is produced that is at most 2 more or 4 less than the 
 			previous output. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#reverse">#reverse</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23reverse-icon.png" alt="[#reverse]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <br><b>method</b>&nbsp;init <b>(</b>whichdim<b>)</b>   
+			Whichdim is the number of the dimension by which the reverse will 
+			occur. For N-dimensional grids, the dimensions are numbered from 0 
+			to N-1. In addition, negative numbers from -N to -1 may be used, to 
+			which N will be added. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -564,7 +609,7 @@
 <img src="flow_classes/rubyprint-icon.png" alt="[rubyprint]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  
 		This is only for testing the translation from PD to Ruby. <br><b>method</b>&nbsp;init <b>(</b><b>)</b> <br>
-  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b><b>)</b>  
+  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;(any) <b>(</b><b>)</b>  
 			prints the message to the console. <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="printargs">printargs</a></td></tr><tr><td></td><td valign="top"><br>
@@ -572,6 +617,12 @@
  
 		This is only for testing the translation from PD to Ruby. <br><b>method</b>&nbsp;init <b>(</b>any...<b>)</b>   
 			prints everything. <br>
+ <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="display">display</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/display-icon.png" alt="[display]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ 
+		GUI object equivalent to [print] and [#print]. <br><b>method</b>&nbsp;(any) <b>(</b><b>)</b>  
+		Displays the received message in the box, resizing the box so that the message fits exactly. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
@@ -740,6 +791,12 @@
 				polygon is excluded, whereas it was included 
 				before, leading to slightly-wider-than-expected polygons. <br>
   <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#text_to_image">#text_to_image</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23text_to_image-icon.png" alt="[#text_to_image]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>inlet 2 receives a font grid, for example, [#in grid file lucida-typewriter-12.grid.gz]</p> <p>inlet 1 receives a 2 by 3 matrix representing the colours to use (e.g. (2 3 # 0 170 0 255 255 0) means yellow on green)</p> <p>inlet 0 receives a bang, transforming the data into an image suitable for #draw_image.</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#hueshift">#hueshift</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/%23hueshift-icon.png" alt="[#hueshift]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>inlet 1 receives an angle (0..36000)</p> <p>inlet 0 receives a RGB picture that gets hueshifted by a rotation in the colorwheel by the specified angle; it gets sent to outlet 0.</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -806,40 +863,42 @@ This class has been removed (0.7.7).<br></td></tr><tr><td></td><td></td><td> </t
 		This object returns the Unix timestamp. The first 
 		outlet does so with ASCII, the second in seconds and the third outlet 
 		outputs the fractions of seconds up to 1/100 000 th of a second which is useful for creating 
-		filenames. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;bang&gt; <b>(</b><b>)</b> <br>
- <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
-Outputs the time and date in ASCII format <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;&lt;float&gt; <b>(</b><b>)</b> <br>
-Outputs the Unix timestamp in seconds <br><b>outlet&nbsp;2 </b><b>method</b>&nbsp;&lt;float&gt; <b>(</b><b>)</b> <br>
-Outputs the fractions of a second up to Outputs the 
-		fractions of a second up to 1/100000 th of a second <br></td></tr><tr><td></td><td></td><td> </td></tr>
+		filenames. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;bang <b>(</b><b>)</b> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
+Outputs the time and date in ASCII format <br><b>outlet&nbsp;1 </b><b>method</b>&nbsp;float <b>(</b><b>)</b> <br>
+Outputs the Unix timestamp in seconds <br><b>outlet&nbsp;2 </b><b>method</b>&nbsp;float <b>(</b><b>)</b> <br>
+Outputs the fractions of a second up to 10 microseconds (?) (actual precision is platform-dependent afaik) <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="ls">ls</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/ls-icon.png" alt="[ls]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p> 
 		This object is similar to the Unix list command 
 		'ls'. It returns the names of files in a given 
 		directory.  May be used with [listlength] to retrieve the number of files. 
-		Hidden files are displayed. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+		Hidden files are displayed. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="exec">exec</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/exec-icon.png" alt="[exec]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p> 
-		This object launches a Unix shell program or script. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+		This object launches a Unix shell program or script. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="renamefile">renamefile</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/renamefile-icon.png" alt="[renamefile]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p> 
 		This object accepts a list of two elements as arguments. 
 		The current file name being the first and the second is the desired change 
-		in name. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;list&gt; <b>(</b><b>)</b> <br>
+		in name. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;list <b>(</b><b>)</b> <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="plotter_control">plotter_control</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/plotter_control-icon.png" alt="[plotter_control]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p> 
 		This object produces HPGL instructions in ASCII form 
 		that can be sent to the comport object in order to control an HPGL 
-		compatible plotter. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
- <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;&lt;symbol&gt; <b>(</b><b>)</b> <br>
+		compatible plotter. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
 Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><td> </td></tr>
+<tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="rubyarray">rubyarray</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/rubyarray-icon.png" alt="[rubyarray]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+ <p>inlet 0 float : sends the specified array entry to outlet 0</p> <p>inlet 1 list: writes that list as an array entry in position last specified by inlet 0.</p> <p>inlet 0 save(symbol filename): writes the array contents to a file of the given filename as a CSV</p> <p>inlet 0 save(symbol filename, symbol format): same thing but using a sprintf string such as %x,%f or whatever</p> <p>inlet 0 load(symbol filename): replace all array contents by the contents of a CSV file</p> <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -852,7 +911,7 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
  <p>Every incoming message is sent to inlet 1 and then sent to 
 		inlet 0 as well. Messages remain completely unaltered. Contrast 
 		with PureData's "t a a" objects, which have the same purpose but 
-		transform bangs into zeros and such.</p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;&lt;any&gt; <b>(</b><b>)</b> <br>
+		transform bangs into zeros and such.</p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;(any) <b>(</b><b>)</b> <br>
    <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="jmax_udpsend">jmax_udpsend</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/jmax_udpsend-icon.png" alt="[jmax_udpsend]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
