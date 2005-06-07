@@ -152,7 +152,6 @@
 		</method></inlet>
 	</class>
 
-<!--NYI
 	<class name="#unpack">
 		<method name="init">
 			<arg name="outputs" type="integer">
@@ -169,7 +168,34 @@
 		<outlet id="*"><method name="int">
 		</method></outlet>
 	</class>
--->
+
+	<class name="#centroid">
+		<method name="init"/>
+		<inlet id="0"><method name="grid(rows,columns,1)">
+			will compute the centroid of the given grid, which
+			is a weighted average, namely, the average position weighted
+			by the pixel values.
+		</method></inlet>
+		<outlet id="0">
+			<method name="grid(2)">
+			result
+			</method>
+		</outlet>
+	</class>
+	<class name="#centroid2">
+		a new experimental and faster version of #centroid.
+		<method name="init"/>
+		<inlet id="0"><method name="grid(rows,columns,1)">
+			will compute the centroid of the given grid, which
+			is a weighted average, namely, the average position weighted
+			by the pixel values.
+		</method></inlet>
+		<outlet id="0">
+			<method name="grid(2)">
+			result
+			</method>
+		</outlet>
+	</class>
 
 	<class name="#for">
 		<icon text="[#for 0 320 1]"/>
@@ -260,7 +286,7 @@
 	
 	</class>
 
-	<class name="#complex_sq">
+	<class name="@complex_sq">
 		<p>this object computes the square of complex numbers.
 		If seeing imaginary as Y and real as X, then this operation squares
 		the distance of a point from origin and doubles the angle between it
@@ -428,10 +454,9 @@
 		</outlet>
 	</class>
 
-	<class name="#join">
+	<class name="@join">
 		<method name="init">
 			<arg name="which_dim"/>
-
 			Which_dim is the number of the dimension by which the join will
 			occur. For N-dimensional grids, the dimensions are numbered from 0
 			to N-1. In addition, negative numbers from -N to -1 may be used, to
@@ -563,7 +588,15 @@
 		</method></inlet>
 	</class>
 
-
+	<class name="#reverse">
+		<method name="init">
+			<arg name="whichdim"/>
+			Whichdim is the number of the dimension by which the reverse will
+			occur. For N-dimensional grids, the dimensions are numbered from 0
+			to N-1. In addition, negative numbers from -N to -1 may be used, to
+			which N will be added.
+		</method>
+	</class>
 </section>
 
 <section name="Objects for Coordinate Transforms">
@@ -837,7 +870,7 @@
 		This is only for testing the translation from PD to Ruby.
 		<method name="init"/>
 		<inlet id="0">
-			<method name="&lt;any&gt;">
+			<method name="(any)">
 			prints the message to the console.
 			</method>
 		</inlet>
@@ -848,6 +881,13 @@
 		<method name="init">
 			<rest name="any"/>
 			prints everything.
+		</method>
+	</class>
+	
+	<class name="display">
+		GUI object equivalent to [print] and [#print].
+		<method name="(any)">
+		Displays the received message in the box, resizing the box so that the message fits exactly.
 		</method>
 	</class>
 </section>
@@ -1178,6 +1218,16 @@
 			</method>
 		</outlet>
 	</class>
+
+	<class name="#text_to_image">
+		<p>inlet 2 receives a font grid, for example, [#in grid file lucida-typewriter-12.grid.gz]</p>
+		<p>inlet 1 receives a 2 by 3 matrix representing the colours to use (e.g. (2 3 # 0 170 0 255 255 0) means yellow on green)</p>
+		<p>inlet 0 receives a bang, transforming the data into an image suitable for #draw_image.</p>
+	</class>
+	<class name="#hueshift">
+		<p>inlet 1 receives an angle (0..36000)</p>
+		<p>inlet 0 receives a RGB picture that gets hueshifted by a rotation in the colorwheel by the specified angle; it gets sent to outlet 0.</p>
+	</class>
 </section>
 
 <section name="Other Objects">
@@ -1279,11 +1329,10 @@
 		outputs the fractions of seconds up to 1/100 000 th of a second which is useful for creating 
 		filenames.
 		</p>
-		<inlet id="0"><method name="&lt;bang&gt;"/></inlet>
-		<outlet id="0"><method name="&lt;symbol&gt;"/>Outputs the time and date in ASCII format</outlet>
-		<outlet id="1"><method name="&lt;float&gt;"/>Outputs the Unix timestamp in seconds</outlet>
-		<outlet id="2"><method name="&lt;float&gt;"/>Outputs the fractions of a second up to Outputs the 
-		fractions of a second up to 1/100000 th of a second</outlet>
+		<inlet id="0"><method name="bang"/></inlet>
+		<outlet id="0"><method name="symbol"/>Outputs the time and date in ASCII format</outlet>
+		<outlet id="1"><method name="float"/>Outputs the Unix timestamp in seconds</outlet>
+		<outlet id="2"><method name="float"/>Outputs the fractions of a second up to 10 microseconds (?) (actual precision is platform-dependent afaik)</outlet>
 	</class>
 
 	<class name="ls">
@@ -1293,14 +1342,14 @@
 		directory.  May be used with [listlength] to retrieve the number of files. 
 		Hidden files are displayed.
 		</p>
-		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
+		<inlet id="0"><method name="symbol"/></inlet>
 	</class>
 
 	<class name="exec">
 		<p>
 		This object launches a Unix shell program or script.
 		</p>
-		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
+		<inlet id="0"><method name="symbol"/></inlet>
 	</class>
 
 	<class name="renamefile">
@@ -1309,7 +1358,7 @@
 		The current file name being the first and the second is the desired change 
 		in name.
 		</p>
-		<inlet id="0"><method name="&lt;list&gt;"/></inlet>
+		<inlet id="0"><method name="list"/></inlet>
 	</class>
 
 	<class name="plotter_control">
@@ -1318,10 +1367,17 @@
 		that can be sent to the comport object in order to control an HPGL 
 		compatible plotter.
 		</p>
-		<inlet id="0"><method name="&lt;symbol&gt;"/></inlet>
-		<outlet id="0"><method name="&lt;symbol&gt;"/>Outputs the HPGL commands in ASCII format</outlet>
+		<inlet id="0"><method name="symbol"/></inlet>
+		<outlet id="0"><method name="symbol"/>Outputs the HPGL commands in ASCII format</outlet>
 	</class>
-
+	
+	<class name="rubyarray">
+		<p>inlet 0 float : sends the specified array entry to outlet 0</p>
+		<p>inlet 1 list: writes that list as an array entry in position last specified by inlet 0.</p>
+		<p>inlet 0 save(symbol filename): writes the array contents to a file of the given filename as a CSV</p>
+		<p>inlet 0 save(symbol filename, symbol format): same thing but using a sprintf string such as %x,%f or whatever</p>
+		<p>inlet 0 load(symbol filename): replace all array contents by the contents of a CSV file</p>
+	</class>
 </section>
 
 <section name="jMax emulation">
@@ -1334,7 +1390,7 @@
 		with PureData's "t a a" objects, which have the same purpose but
 		transform bangs into zeros and such.</p>
 
-		<inlet id="0"><method name="&lt;any&gt;"/></inlet>
+		<inlet id="0"><method name="(any)"/></inlet>
 		<outlet id="0"/>
 		<outlet id="1"/>
 	</class>
