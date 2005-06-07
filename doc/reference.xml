@@ -67,7 +67,6 @@
 	</class>
 
 	<class name="#export">
-		<icon text="[#export]"/>
 		<help text="[#export]" image="#importexport" />
 
 		<p>this object is the opposite of #import.</p>
@@ -88,7 +87,6 @@
 	</class>
 
 	<class name="#export_list">
-		<icon text="[#export_list]"/>
 		<help text="[#export_list]" image="#importexport" />
 
 		<p>this object is another opposite of <k>[#import]</k>, which puts
@@ -214,7 +212,7 @@
 
 <section name="Objects for Computing">
 	<class name="#">
-		<icon text="[# +]" image="op/add.png" />
+		<icon text="[# +]" image="images/op/add.png" />
 		<help text="two-input operators"/>
 
 		<attr name="op" type="grid"/>
@@ -312,8 +310,8 @@
 	</class>
 
 	<class name="#scan">
-		<!-- <icon text="[#scan +]"/> -->
-		<!-- <help text="[#scan +]"/> -->
+		<icon text="[#scan +]"/>
+		<help text="[#scan +]"/>
 
 		<p><k>[#scan +]</k> computes subtotals; this can be used, for example,
 		to convert a regular probability distribution into a cumulative one.
@@ -379,8 +377,7 @@
 	</class>
 
 	<class name="#inner">
-		<icon text="[#inner * + 0]"/>
-		<help text="[#inner * + 0]" image="#foldinnerouter" />
+		<help text="[#inner]"/>
 
 		<p>think of this one as a special combination of <k>[#outer]</k>, <k>[#]</k> and
 		<k>[#fold]</k>. this is one of the most complex operations. It is very useful
@@ -388,11 +385,6 @@
 		and some kinds of color remappings. A linear transform is done by
 		something called matrix multiplication, which happens to be <k>[#inner * +
 		0]</k>. <k>[#inner]</k> also does dot product and other funny operations.</p>
-
-		<p><k>[#inner2]</k> is a variant on <k>[#inner]</k>; used to be called <k>[#inner</k> (GF-0.4.1
-		and before); the right-hand "matrix" is transposed upon reception (the
-		last dimension is swapped with the rest of the dimensions, so that the
-		last becomes first and the others stay in order)</p>
 
 		<method name="init">
 			<arg name="op_para" type="numop2"/>
@@ -436,10 +428,6 @@
 		</outlet>
 	</class>
 
-	<class name="#inner2">
-		 <k>[#inner2]</k> removed; instead use <k>[#transpose]</k> with <k>[#inner]</k>
-	</class>
-	
 	<class name="#join">
 		<method name="init">
 			<arg name="which_dim"/>
@@ -619,7 +607,6 @@
 
 	</class>
 	<class name="#store">
-		<icon text="[#store]"/>
 		<help text="[#store]"/>
 
 		<p>A <k>[#store]</k> object can store exactly one grid, using the right
@@ -680,7 +667,6 @@
 	</class>
 
 	<class name="#scale_to">
-		<icon text="[#scale_to]"/>
 		<help text="[#scale_to]"/>
 
 		<method name="init">
@@ -699,7 +685,6 @@
 	</class>
 
 	<class name="#scale_by">
-		<icon text="[#scale_by]"/>
 		<help text="[#scale_by]"/>
 
 		<method name="init">
@@ -746,7 +731,6 @@
 	</class>
 
 	<class name="#spread">
-		<icon text="[#spread]"/>
 		<help text="[#spread]"/>
 
 		<p>typically you plug a <k>[#for]</k> into this object,
@@ -812,7 +796,6 @@
 
 <section name="Objects for Reporting">
 	<class name="#dim">
-		<icon text="[#dim]"/>
 		<help text="[#dim]"/>
 
 		<p>Returns list of dimensions as a grid. Given a grid sized like Dim(240,320,4), 
@@ -937,8 +920,7 @@
 
 <section name="Objects for Miscellaneous Picture Processing">
 	<class name="#convolve">
-		<icon text="[#convolve * + 0]"/>
-		<help text="[#convolve * + 0]"/>
+		<help text="[#convolve]"/>
 
 		<p>this is the object for blurring, sharpening, finding edges,
 		embossing, cellular automata, and many other uses.</p>
@@ -987,7 +969,6 @@
 	</class>
 
 	<class name="#contrast">
-		<icon text="[#contrast]"/>
 		<help text="[#contrast]"/> 
 
 		<method name="init">
@@ -1027,7 +1008,6 @@
 	</class>
 
 	<class name="#posterize">
-		<icon text="[#posterize]"/>
 		<help text="[#posterize]"/>
 
 		<p><k>[#posterize]</k> reduces the number of possible intensities in an image;
@@ -1232,7 +1212,6 @@
 	</class>
 
 	<class name="#global">
-		<icon text="[#global]" />
 		<help text="[#global]" />
 
 		<p>

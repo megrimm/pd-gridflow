@@ -708,6 +708,7 @@
 	</class>
 
 	<class name="format quartz #out">
+		The equivalent of format x11 on MacOS 10.x, but with less features (sorry).
 		<method name="open">
 			opens a dim(240,320,3) rgb window (default).
 		</method>
