@@ -413,6 +413,8 @@ GRID_INLET(GridOp,0) {
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_mode(6);
+} GRID_ALLOC {
+	//out->ask(in->allocn,(Pt<T> &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
 } GRID_FLOW {
 	Pt<T> rdata = (Pt<T>)*r;
 	int loop = r->dim->prod();
@@ -1137,13 +1139,15 @@ GRID_INLET(GridCentroid2,0) {
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
 	out->send(2,blah);
+	rb_funcall(rself,SI(send_out),2,INT2NUM(1),INT2NUM(blah[0]));
+	rb_funcall(rself,SI(send_out),2,INT2NUM(2),INT2NUM(blah[1]));
 } GRID_END
 
 \def void initialize () {
 	rb_call_super(argc,argv);
 }
 
-\classinfo { IEVAL(rself,"install '#centroid2',1,1"); }
+\classinfo { IEVAL(rself,"install '#centroid',1,3"); }
 \end class GridCentroid2
 
 //****************************************************************
