@@ -1,14 +1,16 @@
+#!/usr/bin/env ruby
+
 $keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
-MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
+MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:static)
 Arg = Struct.new(:type,:name,:default)
 
 class MethodDecl
 	def ==(o)
-		return false unless rettype==o.rettype &&
+		return false unless rettype==o.rettype && static==o.static &&
 		maxargs==o.maxargs # && minargs==o.minargs 
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
@@ -35,11 +37,11 @@ def handle_class(line)
 end
 
 def parse_methoddecl(line,term)
-	/^(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
+	/^(static\s)?\s*(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
 		raise "syntax error #{where} #{line}"
-	rettype,selector,arglist = $1,$2,$3
+	static,rettype,selector,arglist = $1,$2,$3,$4
 	arglist,minargs,maxargs = parse_arglist arglist
-	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where)
+	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where,static)
 end
 
 def parse_arglist(arglist)
@@ -75,10 +77,9 @@ def handle_attr(line)
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	$stack[-1].attrs[name]=Arg.new(type,name,nil)
-	Out.print line
-	Out.puts "//FCS"
+	Out.print line.gsub(/\/\/.*$/,"") # hack!
 	handle_decl "void _0_#{name}_m (#{type} #{name});"
-	Out.puts "# #{$linenumber}"
+#	Out.puts "# #{$linenumber}"
 end
 
 def handle_decl(line)
@@ -88,16 +89,17 @@ def handle_decl(line)
 	m = parse_methoddecl(line,";\s*$")
 	$stack[-1].methods[m.selector] = m
 
+	Out.print "static " if m.static
 	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
 	Out.print "#{unparse_arglist m.arglist});"
 	Out.puts "static Ruby #{m.selector}_wrap"+
 	"(int argc, Ruby *argv, Ruby rself);//FCS"
-	Out.puts "# #{$linenumber+1}"
+#	Out.puts "# #{$linenumber}"
 end
 
 def handle_def(line)
-	m = parse_methoddecl(line,"\{?.*$")
+	m = parse_methoddecl(line,"\\{?.*$")
 	term = line[/\{.*/]
 	qlass = $stack[-1]
 	raise "missing \\class #{where}" if not qlass or not ClassDecl===qlass
