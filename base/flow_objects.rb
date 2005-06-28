@@ -70,7 +70,7 @@ FObject.subclass("gridflow",1,1) {
 	def _0_formats
 		post "-"*32
 		GridFlow.fclasses.each {|k,v|
-			next if not /#in:/ =~ k
+			next if not /#io:/ =~ k
 			modes = case v.flags
 			when 2; "#out"
 			when 4; "#in"
