@@ -121,7 +121,7 @@ static bool gfeof(FILE *f) {
 
 \classinfo {
 	IEVAL(rself,
-	"install '#in:jpeg',1,1;@mode=6;"
+	"install '#io:jpeg',1,1;@mode=6;"
 	"include GridFlow::EventIO; suffixes_are'jpeg','jpg'");
 }
 \end class FormatJPEG
