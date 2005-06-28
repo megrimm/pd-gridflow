@@ -88,7 +88,7 @@ struct FormatMPEG3 : Format {
 }
 
 \classinfo {
-	IEVAL(rself,"install '#in:mpeg',1,1;@flags=4;"
+	IEVAL(rself,"install '#io:mpeg',1,1;@flags=4;"
 	"@comment='Motion Picture Expert Group Format"
 	" (using HeroineWarrior\\'s)';suffixes_are'mpg,mpeg'");
 }
