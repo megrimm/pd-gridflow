@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 
 // current version number as string literal
-#define GF_VERSION "0.8.0"
+#define GF_VERSION "0.8.1"
 #define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
@@ -1081,6 +1081,8 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 // a stack for the profiler, etc.
 #define GF_STACK_MAX 256
+//#define NOINLINE(decl) decl __attribute__((noinline))
+#define NOINLINE(decl) decl
 struct GFStack {
 	struct GFStackFrame {
 		FObject *o;
@@ -1090,8 +1092,8 @@ struct GFStack {
 	GFStackFrame s[GF_STACK_MAX];
 	int n;
 	GFStack() { n = 0; }
-	void push (FObject *o) __attribute__((noinline));
-	void pop () __attribute__((noinline));
+	NOINLINE(void push (FObject *o));
+	NOINLINE(void pop ());
 };
 extern GFStack gf_stack;
 struct GFStackMarker {
