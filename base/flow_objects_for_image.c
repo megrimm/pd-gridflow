@@ -207,7 +207,7 @@ GRID_INLET(GridScaleBy,0) {
 		int p=0;
 		#define LOOP(z) \
 			for (int i=0; i<rowsize; i+=z) \
-			for (int k=0; k<scalex; k++, p+=3)
+			for (int k=0; k<scalex; k++, p+=z)
 		switch (chans) {
 		case 3: LOOP(3) {Z(0);Z(1);Z(2);} break;
 		case 4: LOOP(4) {Z(0);Z(1);Z(2);Z(3);} break;
