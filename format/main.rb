@@ -350,8 +350,7 @@ module EventIO
 		else
 			r.close
 			STDOUT.reopen w
-			STDIN.reopen @stream
-			@stream = File.open filename, "r"
+			STDIN.reopen filename, "r"
 			exec "gzip", "-dc"
 		end
 	end
@@ -364,8 +363,7 @@ module EventIO
 		else
 			w.close
 			STDIN.reopen r
-			STDOUT.reopen @stream
-			@stream = File.open filename, "w"
+			STDOUT.reopen filename, "w"
 			exec "gzip", "-c"
 		end
 	end
