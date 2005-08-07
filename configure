@@ -738,7 +738,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug] [--debug-harder]"
-	log << "[--ruby-prefix directory] "
+	log << "[--ruby-prefix directory] [--bindir directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -789,7 +789,7 @@ while ARGV.length>0 do
 	when "--verbose"
 		$verbose=true
 	when "--bindir"
-		$conv[:BINDIR] = ARGV.shift
+		$conf[:BINDIR] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
