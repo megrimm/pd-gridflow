@@ -1396,4 +1396,11 @@ FObject.subclass("rubyarray",2,1) {
   end
 }
 
+FObject.subclass("regsub",3,1) {
+  def initialize(from,to) _1_symbol(from); _2_symbol(to) end
+  def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
+  def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
+  def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
+}
+
 end # module GridFlow
