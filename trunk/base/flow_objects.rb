@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -1257,92 +1257,6 @@ end
 
 #-------- fClasses for: Hardware
 
-if const_defined? :USB
-
-class<<USB
-	attr_reader :busses
-end
-
-class DelcomUSB < GridFlow::FObject
-	Vendor,Product=0x0FC5,0x1222
-	def self.find
-		r=[]
-		USB.busses.each {|dir,bus|
-			bus.each {|dev|
-				r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
-			}
-		}
-		r
-	end
-	def initialize #(bus=nil,dev=nil)
-		r=DelcomUSB.find
-		raise "no such device" if r.length<1
-		raise "#{r.length} such devices (which one???)" if r.length>1
-		@usb=USB.new(r[0])
-		if_num=nil
-		r[0].config.each {|config|
-			config.interface.each {|interface|
-				if_num = interface.bInterfaceNumber
-			}
-		}
-		# post "Interface # %i\n", if_num
-		@usb.set_configuration 1
-		@usb.claim_interface if_num
-		@usb.set_altinterface 0 rescue ArgumentError
-	end
-	# libdelcom had this:
-        # uint8 recipient, deviceModel, major, minor, dataL, dataM;
-        # uint16 length; uint8[8] extension;
-	def _0_send_command(major,minor,dataL,dataM,extension="\0\0\0\0\0\0\0\0")
-		raise "closed" if not @usb
-		raise "extension.length!=8" if extension.length!=8
-		@usb.control_msg(
-			0x000000c8, 0x00000012,
-			minor*0x100+major,
-			dataM*0x100+dataL,
-			extension, 5000)
-	end
-	def delete; @usb.close; end
-	install "delcomusb", 1, 1
-end
-
-# Klippeltronics
-FObject.subclass("multio",1,1) {
-	Vendor,Product=0xDEAD,0xBEEF
-	def self.find
-	  r=[]
-	  USB.busses.each {|dir,bus|
-	    bus.each {|dev|
-	      post "dir=%s, vendor=%x, product=%x",
-		      dir, dev.idVendor, dev.idProduct
-	      r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
-	    }
-	  }
-	  r
-	end
-	def initialize
-		r=self.class.find
-		raise "no such device" if r.length<1
-		raise "#{r.length} such devices (which one???)" if r.length>1
-		$iobox=@usb=USB.new(r[0])
-		if_num=nil
-		r[0].config.each {|config|
-			config.interface.each {|interface|
-				#post "interface=%s", interface.to_s
-				if_num = interface.bInterfaceNumber
-			}
-		}
-		# post "Interface # %i\n", if_num
-		# @usb.set_configuration 0
-		@usb.claim_interface if_num
-		@usb.set_altinterface 0 rescue ArgumentError
-	end
-	#@usb.control_msg(0b10100001,0x01,0,0,"",1000)
-	#@usb.control_msg(0b10100001,0x01,0,1," ",0)
-	def delete; @usb.close; end
-}
-end # if const_defined? :USB
-
 # requires Ruby 1.8.0 because of bug in Ruby 1.6.x
 FObject.subclass("joystick_port",0,1) {
   def initialize(port)
@@ -1427,7 +1341,8 @@ FObject.subclass("parallel_port",1,3) {
 }
 
 (begin require "linux/SoundMixer"; true; rescue LoadError; false end) and
-FObject.subclass("SoundMixer",1,1) {
+#FObject.subclass("SoundMixer",1,1) {
+class GFSoundMixer < FObject; install "SoundMixer",1,1
   # BUG? i may have the channels (left,right) backwards
   def initialize(filename)
     super
@@ -1457,7 +1372,7 @@ FObject.subclass("SoundMixer",1,1) {
       @@vars.each {|var| _0_get var }
     end
   end
-}
+end#}
 
 # experimental
 FObject.subclass("rubyarray",2,1) {
