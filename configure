@@ -326,25 +326,49 @@ Feature.add {
 
 #----------------------------------------------------------------#
 
-$stack_end_test = %{
+Feature.add {
+	tag :libc_stack_end
+	name "Stack end defined by LibC"
+	test proc { c_test '
 	#include <stdio.h>
-	#include <ruby.h>
+	extern void *__libc_stack_end;
 	int main () {
-		void *bp;
-		printf("#define RUBY_STACK_END 0x%0*lx",sizeof(long)*2,(long)&bp);
-		return rb_rescue==0;
+		printf("#define STACK_END 0x%0*lx",sizeof(long)*2,__libc_stack_end);
+		return 0;
+	}
+	', uses_bridge_so }
+	defines :HAVE_LIBC_STACK_END
+	defines :STACK_END => proc {
+		m = /STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
 	}
 }
+=begin
+Feature.add {
+	tag :wild_stack_end
+	name "Stack end wild guess"
+	unless_feature [:libc_stack_end]
+	test proc { c_test '
+	#include <stdio.h>
+	int main () {
+		void *bp;
+		printf("#define STACK_END 0x%0*lx",sizeof(long)*2,(long)&bp);
+		return 0;
+	}
+	', uses_bridge_so }
+	defines :STACK_END => proc {
+		m = /STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
+}
+=end
 Feature.add {
 	tag :libruby
 	name "Ruby as a dynamic library"
 	uses_bridge_so ["-lruby"]
 	#uses_h ["ruby.h"] # is in special directory
-	defines :RUBY_STACK_END => proc {
-		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		m[1]
-	}
-	test proc { c_test $stack_end_test, uses_bridge_so }
+	test proc { c_test "#include <ruby.h>
+		int main () { return rb_rescue==0; }", uses_bridge_so }
 }
 Feature.add {
 	tag :librubystatic
@@ -358,11 +382,9 @@ Feature.add {
 		end
 		[lib]
 	}
-	defines :RUBY_STACK_END => proc {
-		m = /RUBY_STACK_END\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		m[1]
-	}
-	test proc { c_test $stack_end_test, ["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)] }
+	test proc { c_test "#include <ruby.h>
+		int main () { return rb_rescue==0; }",
+		["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)] }
 	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
 }
 #----------------------------------------------------------------#
@@ -473,7 +495,7 @@ Feature.add {
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so $LIB_X11
+	uses_so $LIBX11
 	uses_h ["X11/Xlib.h"]
 	test proc {
 		c_test "
