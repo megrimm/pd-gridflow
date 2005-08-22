@@ -331,7 +331,7 @@ $stack_end_test = %{
 	#include <ruby.h>
 	int main () {
 		void *bp;
-		printf("#define RUBY_STACK_END 0x%08lx",(long)&bp);
+		printf("#define RUBY_STACK_END 0x%0*lx",sizeof(long)*2,(long)&bp);
 		return rb_rescue==0;
 	}
 }
@@ -487,7 +487,7 @@ Feature.add {
 	tag :x11_shm
 	name "X11 acceleration through shared memory"
 	uses_feature [:x11]
-	uses_so LIBX11
+	uses_so $LIBX11
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	test proc {
 		c_test "
@@ -742,7 +742,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug] [--debug-harder]"
-	log << "[--ruby-prefix directory] [--bindir directory]"
+	log << "[--ruby-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -793,7 +793,7 @@ while ARGV.length>0 do
 	when "--verbose"
 		$verbose=true
 	when "--bindir"
-		$conf[:BINDIR] = ARGV.shift
+		$conv[:BINDIR] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
