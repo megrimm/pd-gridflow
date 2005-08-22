@@ -211,6 +211,8 @@ $LD_LIBRARY_PATH = (
 	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
 		read_ld_so_conf +
 		["/usr/lib","/lib"]).uniq
+$LIBX11DIR = ["-L/usr/X11R6/lib"]
+$LIBX11 = ["-L/usr/X11R6/lib","-lX11","-lXext"]
 
 # making it easier for everybody I hope:
 ["/Applications/Pd.app/Contents/Resources","/sw","/usr/local",ENV["home"]].each do|base|
@@ -260,6 +262,9 @@ FILES = [
   ],
   [:directory, "format/",
     [:ruby, "main.rb"],
+  ],
+  [:directory, "optional/",
+    [:ruby, "usb.rb"],
   ],
   [:directory, "extra/",
 	[:ruby, "smpte.rb"],
@@ -366,7 +371,7 @@ Feature.add {
 	name "Pentium-compatible CPU"
 	action proc { $conf[:DEFINES][:CPU] ||= "pentium" }
 	test proc {
-		(CONFIG["arch"] =~ /i\d86/) or raise "#{CONFIG["arch"]} instead"
+		(CONFIG["arch"] =~ /(i\d86|x86_64)/) or raise "#{CONFIG["arch"]} instead"
 		c_test '
 		#include <stdio.h>
 		char get_cpuid[]={
@@ -468,7 +473,7 @@ Feature.add {
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
-	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so $LIB_X11
 	uses_h ["X11/Xlib.h"]
 	test proc {
 		c_test "
@@ -482,7 +487,7 @@ Feature.add {
 	tag :x11_shm
 	name "X11 acceleration through shared memory"
 	uses_feature [:x11]
-	uses_so ["-L/usr/X11R6/lib","-lX11","-lXext"]
+	uses_so LIBX11
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	test proc {
 		c_test "
@@ -500,7 +505,7 @@ Feature.add {
 	tag :opengl
 	name "OpenGL (only as framebuffer)"
 	status :disabled
-	uses_so ["-L/usr/X11R6/lib","-lglut","-lGL","-lGLU"]
+	uses_so $LIBX11DIR+["-lglut","-lGL","-lGLU"]
 	uses_h ["GL/glut.h"]
 	test proc {
 		c_test "
@@ -622,8 +627,7 @@ Feature.add {
 Feature.add {
 	tag :mpeg3
 	name "HeroineWarrior LibMPEG3"
-	uses_so ["-lmpeg3","-lpthread","-lm",
-		"-L/usr/X11R6/lib"]
+	uses_so $LIBX11DIR+["-lmpeg3","-lpthread","-lm"]
 	uses_h Or["libmpeg3/libmpeg3.h","libmpeg3.h"]
 	test proc {|f|
 		f.c_test "
