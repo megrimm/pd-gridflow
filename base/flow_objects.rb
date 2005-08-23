@@ -644,7 +644,7 @@ class PDNetSocket < FObject
 				@socket.bind nil, port
 			end
 		when :tcp
-			if host=="-" then
+ 			if host=="-" then
 				@server = TCPServer.new("localhost",port)
 			else
 				@socket = TCPSocket.new(host,port)
@@ -722,7 +722,7 @@ PDNetSocket.subclass("pd_netreceive",0,2) {
 
 # bogus class for representing objects that have no recognized class.
 FObject.subclass("broken",0,0) {
-	def args; a=@args.dup; a[7,0] = " "+classname; a end
+ 	def args; a=@args.dup; a[7,0] = " "+classname; a end
 }
 
 FObject.subclass("fork",1,2) {
@@ -1308,6 +1308,13 @@ FObject.subclass("ascii",1,1) {
   x.each_byte {|b| send_out 0, b }
   end
   def _0_float x; puts "#{x.to_i}" end
+}
+
+# System, similar to shell
+FObject.subclass("system",1,1) {
+  def _0_system(*a)
+    system(a.join(" "))
+  end
 }
 
 (begin require "linux/ParallelPort"; true; rescue LoadError; false end) and
