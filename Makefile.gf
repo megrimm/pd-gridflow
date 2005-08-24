@@ -150,7 +150,7 @@ puredata-install::
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
 		cp pd_abstractions/\#$$z.pd $(PUREDATA_PATH)/extra/\@$$z.pd; done
 	mkdir -p $(PUREDATA_PATH)/extra/gridflow/icons
-	$(INSTALL_DATA) java/peephole.gif $(PUREDATA_PATH)/extra/gridflow/icons/peephole.gif
+	$(INSTALL_DATA) icons/peephole.gif $(PUREDATA_PATH)/extra/gridflow/icons/peephole.gif
 
 else
 
