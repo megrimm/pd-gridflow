@@ -844,7 +844,7 @@ while ARGV.length>0 do
 	when "--verbose"
 		$verbose=true
 	when "--bindir"
-		$conv[:BINDIR] = ARGV.shift
+		$conf[:BINDIR] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
