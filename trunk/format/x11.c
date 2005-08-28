@@ -44,19 +44,15 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 
 \class FormatX11 < Format
 struct FormatX11 : Format {
-	template <class T> void frame_by_type (T bogus);
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
 	Colormap colormap; /* for 256-color mode */
-	long black,white; /* color numbers in default colormap */
 	short depth;
 	bool use_shm;	   /* should use shared memory? */
 	bool use_stripes;  /* use alternate conversion in 256-color mode */
-	
 /* at the Window level */
-	int autodraw;        /* how much to send to the display at once */
 	Window window;       /* X11 window number */
 	Window parent;       /* X11 window number of the parent */
 	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
@@ -64,8 +60,7 @@ struct FormatX11 : Format {
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
-	int pos_x, pos_y;
-
+	int pos[2];
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	bool lock_size;
@@ -75,17 +70,15 @@ struct FormatX11 : Format {
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
 
-	Atom wmProtocolsAtom;
 	Atom wmDeleteAtom;
-
 	FormatX11 () : use_stripes(false), 
-	autodraw(1), window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
+	window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
 	{}
-
+	template <class T> void frame_by_type (T bogus);
 	void show_section(int x, int y, int sx, int sy);
 	void set_wm_hints (int sx, int sy);
 	void dealloc_image ();
@@ -95,27 +88,26 @@ struct FormatX11 : Format {
 	void report_pointer(int y, int x, int state);
 	void prepare_colormap();
 	Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level=0);
-
 	\decl void initialize (...);
 	\decl void frame ();
 	\decl void close ();
 	\decl void call ();
 	\decl void _0_out_size (int sy, int sx);
-	\decl void _0_draw ();
-	\decl void _0_autodraw (int autodraw);
 	\decl void _0_setcursor (int shape);
 	\decl void _0_hidecursor ();
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
 	\decl void _0_fall_thru (int flag);
+	\decl void _0_use_shm (int flag);
 	\grin 0 int
 };
 
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
-	if (y>dim->get(0)||x>dim->get(1)) return;
-	if (y+sy>dim->get(0)) sy=dim->get(0)-y;
-	if (x+sx>dim->get(1)) sx=dim->get(1)-x;
+	int zx=dim->get(0), zy=dim->get(1);
+	if (y>zy||x>zx) return;
+	if (y+sy>zy) sy=zx-y;
+	if (x+sx>zx) sx=zx-x;
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		XSync(display,False);
@@ -130,21 +122,16 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 /* window manager hints, defines the window as non-resizable */
 void FormatX11::set_wm_hints (int sx, int sy) {
 	if (!is_owner) return;
-	XWMHints wmhints;
-	XTextProperty window_name, icon_name;
-	XSizeHints hints;
-	// enable recommended, maximum and minimum size
-	hints.flags=PSize|PMaxSize|PMinSize;
-	// set those
-	hints.min_width  = hints.max_width  = hints.width  = sx;
-	hints.min_height = hints.max_height = hints.height = sy;
-
-	wmhints.input = True;
-	wmhints.flags = InputHint;
-	XStringListToTextProperty((char **)&name, 1, &window_name);
-	XStringListToTextProperty((char **)&name, 1, &icon_name);
-	XSetWMProperties(display, window,
-		&window_name, &icon_name, NULL, 0, &hints, &wmhints, NULL);
+	XWMHints wmh;
+ 	XTextProperty wname; XStringListToTextProperty((char **)&name, 1, &wname);
+	XTextProperty iname; XStringListToTextProperty((char **)&name, 1, &iname);
+	XSizeHints sh;
+	sh.flags=PSize|PMaxSize|PMinSize;
+	sh.min_width  = sh.max_width  = sh.width  = sx;
+	sh.min_height = sh.max_height = sh.height = sy;
+	wmh.input = True;
+	wmh.flags = InputHint;
+	XSetWMProperties(display,window,&wname,&iname,NULL,0,&sh,&wmh,NULL);
 }
 
 void FormatX11::report_pointer(int y, int x, int state) {
@@ -202,30 +189,16 @@ void FormatX11::report_pointer(int y, int x, int state) {
 			return;
 		}break;
 		case ConfigureNotify:break; // as if we cared
-		case ClientMessage:{
-			// tnx to vektor&walken
-			/*
-			if (e.xclient.message_type==wmProtocolsAtom
-			&& e.xclient.format==32
-			&& (Atom)(e.xclient.data.l[0])==wmDeleteAtom) {
-				gfpost("This window is being closed, so this handler will close too!");
-				rb_funcall(rself,SI(close),0);
-				return;
-			}
-			*/
-		}break;
 		}
 	}
 	IEVAL(rself,"@clock.delay 20");
 }
 
 \def void frame () {
-	XGetSubImage(display, window,
-		0, 0, dim->get(1), dim->get(0),
+	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	int sy=dim->get(0), sx=dim->get(1);
-	int bs=dim->prod(1);
+	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
@@ -241,7 +214,10 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 	gfpost("X11 reports Error: display=0x%08x",(int)d);
 	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
-	current_x11->use_shm = false;
+	if (current_x11->use_shm) {
+		gfpost("(note: turning shm off)");
+		current_x11->use_shm = false;
+	}
 	return 42; /* it seems that the return value is ignored. */
 }
 
@@ -252,15 +228,11 @@ void FormatX11::dealloc_image () {
 		shmdt(ximage->data);
 		XShmDetach(display,shm_info);
 		if (shm_info) {delete shm_info; shm_info=0;}
-		//ximage->data = new char[1]; // bogus
-		//ximage->data = 0;
-		//XDestroyImage(ximage);
 		XFree(ximage);
 		ximage = 0;
 		image = Pt<uint8>();
 	#endif	
 	} else {
-		//XDestroyImage(ximage);
 		XFree(ximage);
 		ximage = 0;
 		image = Pt<uint8>();
@@ -325,23 +297,13 @@ void FormatX11::resize_window (int sx, int sy) {
 		xswa.do_not_propagate_mask = 0; //?
 		xswa.override_redirect = override_redirect; //#!@#$
 		window = XCreateWindow(display,
-			parent, pos_x, pos_y, sx, sy, 0,
+			parent, pos[1], pos[0], sx, sy, 0,
 			CopyFromParent, InputOutput, CopyFromParent,
 			CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
 		set_wm_hints(sx,sy);
-		if (is_owner) {
-			// fall_thru 0
-			XSelectInput(display, window,
-			  ExposureMask | StructureNotifyMask | PointerMotionMask |
-			  ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-			  KeyPressMask | KeyReleaseMask);
-			XMapRaised(display, window);
-		} else {
-			// fall_thru 1
-			XSelectInput(display, window,
-			  ExposureMask | StructureNotifyMask);
-		}
+		_0_fall_thru(0,0,is_owner);
+		if (is_owner) XMapRaised(display, window);
 		imagegc = XCreateGC(display, window, 0, NULL);
 		if (visual->c_class == PseudoColor) prepare_colormap(); 
 	}
@@ -380,9 +342,8 @@ GRID_INLET(FormatX11,0) {
 			bit_packing->pack(sx, data, image+y*bypl);
 		}
 	}
-	if (autodraw==2) show_section(0,oy,sx,y-oy);
 } GRID_FINISH {
-	if (autodraw==1) show_section(0,0,in->dim->get(1),in->dim->get(0));
+	show_section(0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
 
 \def void close () {
@@ -398,13 +359,6 @@ GRID_INLET(FormatX11,0) {
 }
 
 \def void _0_out_size (int sy, int sx) { resize_window(sx,sy); }
-\def void _0_draw () { show_section(0,0,dim->get(1),dim->get(0)); }
-
-\def void _0_autodraw (int autodraw) {
-	if (autodraw<0 || autodraw>2)
-		RAISE("autodraw=%d is out of range",autodraw);
-	this->autodraw = autodraw;
-}
 
 \def void _0_setcursor (int shape) {
 	shape = 2*(shape&63);
@@ -462,8 +416,6 @@ void FormatX11::open_display(const char *disp_string) {
 	screen   = DefaultScreenOfDisplay(display);
 	screen_num = DefaultScreen(display);
 	visual   = DefaultVisual(display, screen_num);
-	white    = XWhitePixel(display,screen_num);
-	black    = XBlackPixel(display,screen_num);
 	root_window = DefaultRootWindow(display);
 	depth    = DefaultDepthOfScreen(screen);
 	colormap = 0;
@@ -514,26 +466,25 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \def void _0_set_geometry (int y, int x, int sy, int sx) {
-	pos_x = x;
-	pos_y = y;
+	pos[1] = x;
+	pos[0] = y;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
 	XFlush(display);
 }
 
 \def void _0_fall_thru (int flag) {
-	if (flag) {
-		gfpost("falling through!");
-		XSelectInput(display, window,
-			ExposureMask | StructureNotifyMask);
-	} else {
-		gfpost("NOT falling through!");
-		XSelectInput(display, window,
-			ExposureMask | StructureNotifyMask |
-			PointerMotionMask |
-			ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
-	}
+	int mask = ExposureMask | StructureNotifyMask;
+	if (flag) mask |= ExposureMask|StructureNotifyMask|PointerMotionMask|
+		ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+		KeyPressMask|KeyReleaseMask;
+	XSelectInput(display, window, mask);
 	XFlush(display);
+}
+
+\def void _0_use_shm (int flag=1) {
+	use_shm = !!flag;
+	gfpost("use_shm=%d",flag);
 }
 
 \def void initialize (...) {
@@ -542,27 +493,22 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 	int i;
+	char host[256];
 	if (domain==SYM(here)) {
 		open_display(0);
 		i=1;
 	} else if (domain==SYM(local)) {
 		if (argc<2) RAISE("open x11 local: not enough args");
-		char host[256];
-		int dispnum = NUM2INT(argv[1]);
-		sprintf(host,":%d",dispnum);
+		sprintf(host,":%d",NUM2INT(argv[1]));
 		open_display(host);
 		i=2;
 	} else if (domain==SYM(remote)) {
 		if (argc<3) RAISE("open x11 remote: not enough args");
-		char host[256];
-		strcpy(host,rb_sym_name(argv[1]));
-		int dispnum = NUM2INT(argv[2]);
-		sprintf(host+strlen(host),":%d",dispnum);
+		sprintf(host,"%s:%d",rb_sym_name(argv[1]),NUM2INT(argv[2]));
 		open_display(host);
 		i=3;
 	} else if (domain==SYM(display)) {
 		if (argc<2) RAISE("open x11 display: not enough args");
-		char host[256];
 		strcpy(host,rb_sym_name(argv[1]));
 		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
 		gfpost("mode `display', DISPLAY=`%s'",host);
@@ -574,16 +520,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 
 	for(;i<argc;i++) {
 		Ruby a=argv[i];
-		if (a==SYM(override_redirect)) {
-			override_redirect = true;
-		} else if (a==SYM(use_stripes)){
-			use_stripes = true;
-		} else {
-			break;
-		}
+		if (a==SYM(override_redirect)) override_redirect = true;
+		else if (a==SYM(use_stripes))  use_stripes = true;
+		else RAISE("argument '%s' not recognized",rb_sym_name(argv[i]));
 	}
 
-	pos_x=pos_y=0;
+	pos[1]=pos[0]=0;
 	parent = root_window;
 	if (i>=argc) {
 	} else {
@@ -594,7 +536,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		} else if (winspec==SYM(embed)) {
 			Ruby title_s = rb_funcall(argv[i+1],SI(to_s),0);
 			char *title = strdup(rb_str_ptr(title_s));
-			sy = sx = pos_y = pos_x = 0;
+			sy = sx = pos[0] = pos[1] = 0;
 			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
 			free(title);
 			if (parent == 0xDeadBeef) RAISE("Window not found.");
@@ -617,7 +559,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 				window = INT(winspec);
 			}
 			is_owner = false;
-			sy = sx = pos_y = pos_x = 0;
+			sy = sx = pos[0] = pos[1] = 0;
 		}
 	}
 
@@ -625,7 +567,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	resize_window(sx,sy);
 
 	if (is_owner) {
-		wmProtocolsAtom = XInternAtom(display, "WM_PROTOCOLS", False);
 		wmDeleteAtom    = XInternAtom(display, "WM_DELETE_WINDOW", False);
 		XSetWMProtocols(display,window,&wmDeleteAtom,1);
 	}
@@ -647,7 +588,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \classinfo {
-	IEVAL(rself,"install '#io:x11',1,1;@mode=6;@comment='X Window System Version 11.5'");
+	IEVAL(rself,"install '#io:x11',1,1;@mode=6;@comment='X Window System Version 11.x'");
 }
 \end class FormatX11
 void startup_x11 () {
