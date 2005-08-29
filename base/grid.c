@@ -32,10 +32,24 @@
 #include <ctype.h>
 
 /* copied from bridge/puredata.c (sorry: linkage issue) */
-struct Pointer : CObject { void *p; Pointer(void *_p) : p(_p) {}};
-Ruby Pointer_s_noo (void *ptr) {
-	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, new Pointer(ptr));}
-static void *Pointer_gut (Ruby rself) {DGS(Pointer); return self->p;}
+struct Pointer : CObject {
+	void *p;
+	Pointer(void *_p) : p(_p) {}
+};
+
+#define Pointer_s_new Pointer_s_new_2
+#define Pointer_get   Pointer_get_2
+
+static Ruby Pointer_s_new (void *ptr) {
+	Pointer *self = new Pointer(ptr);
+	Ruby rself = Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, CObject_free, self);
+	self->rself = rself;
+	return rself;
+}
+static void *Pointer_get (Ruby rself) {
+	DGS(Pointer);
+	return self->p;
+}
 
 //#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
 #define TRACE assert(this);
@@ -43,8 +57,7 @@ static void *Pointer_gut (Ruby rself) {DGS(Pointer); return self->p;}
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
-		INFO(parent), \
-		__PRETTY_FUNCTION__, \
+		INFO(parent), __PRETTY_FUNCTION__, \
 		number_type_table[NumberTypeE_type_of(d)].name, \
 		number_type_table[this->nt].name);
 
@@ -162,7 +175,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 
 Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!argc) return PTR2FIX(this);
-	GridOutlet *back_out = (GridOutlet *) Pointer_gut(argv[0]);
+	GridOutlet *back_out = (GridOutlet *) Pointer_get(argv[0]);
 	nt = (NumberTypeE) INT(argv[1]);
 	argc-=2, argv+=2;
 	PROF(parent) {
@@ -328,7 +341,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	Ruby a[n+4];
 	a[0] = INT2NUM(woutlet);
 	a[1] = bsym._grid;
-	a[2] = Pointer_s_noo(this);
+	a[2] = Pointer_s_new(this);
 	a[3] = INT2NUM(nt);
 	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
