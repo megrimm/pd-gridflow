@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -20,7 +20,6 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-
 #include "../base/grid.h.fcs"
 #include <ctype.h>
 #include <stdio.h>
@@ -28,10 +27,11 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/time.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
+
+#define L gfpost("%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
@@ -60,17 +60,14 @@ struct FormatX11 : Format {
 	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
-	int pos[2];
+	int32 pos[2];
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	bool lock_size;
 	bool override_redirect;
-
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
-
-	Atom wmDeleteAtom;
 	FormatX11 () : use_stripes(false), 
 	window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
@@ -104,15 +101,18 @@ struct FormatX11 : Format {
 /* ---------------------------------------------------------------- */
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
-	int zx=dim->get(0), zy=dim->get(1);
+	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
-	if (y+sy>zy) sy=zx-y;
+	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
 		XSync(display,False);
+		gfpost(
+		"XShmPutImage(0x%x,0x%x,0x%x,0x%x,%d,%d,%d,%d,%d,%d,False)",
+			display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
-		/* should completion events be waited for? looks like a bug */
+		// should completion events be waited for? looks like a bug
 	} else
 #endif
 		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
@@ -211,8 +211,9 @@ void FormatX11::report_pointer(int y, int x, int state) {
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
-	gfpost("X11 reports Error: display=0x%08x",(int)d);
-	gfpost("serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
+	gfpost("XErrorEvent: type=0x%08x display=0x%08x xid=0x%08x",
+		xee->type, xee->display, xee->resourceid);
+	gfpost("... serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	if (current_x11->use_shm) {
 		gfpost("(note: turning shm off)");
@@ -240,35 +241,28 @@ void FormatX11::dealloc_image () {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
-	dim = new Dim(sy, sx, 3);
+	dim = new Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
 #ifdef HAVE_X11_SHARED_MEMORY
 	if (use_shm) {
+		current_x11 = this;
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
-		if (!ximage) {
-			gfpost("shm got disabled (1), retrying...");
-			return alloc_image(sx,sy);}
+		XSync(display,0);
+		if (!use_shm) alloc_image(sx,sy);
 		shm_info->shmid = shmget(IPC_PRIVATE,
 			ximage->bytes_per_line*ximage->height, IPC_CREAT|0777);
 		if(shm_info->shmid < 0)
 			RAISE("ERROR: shmget failed: %s",strerror(errno));
-		ximage->data = shm_info->shmaddr =
-			(char *)shmat(shm_info->shmid,0,0);
-		image = Pt<uint8>((uint8 *)ximage->data,
-			ximage->bytes_per_line*sy);
+		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
+		image = Pt<uint8>((uint8 *)ximage->data,ximage->bytes_per_line*sy);
 		shm_info->readOnly = False;
-		current_x11 = this;
-		//XSetErrorHandler(FormatX11_error_handler);
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
-		//XSetErrorHandler(0);
 		/* yes, this can be done now. should cause auto-cleanup. */
 		shmctl(shm_info->shmid,IPC_RMID,0);
-		if (!use_shm) {
-			gfpost("shm got disabled (2), retrying...");
-			return alloc_image(sx,sy);}
+		if (!use_shm) alloc_image(sx,sy);
 	} else
 #endif
 	ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
@@ -278,6 +272,9 @@ bool FormatX11::alloc_image (int sx, int sy) {
 	int status = XInitImage(ximage);
 	if (status!=1) gfpost("XInitImage returned: %d", status);
 	return true;
+retry:
+	gfpost("shm got disabled, retrying...");
+	return alloc_image(sx,sy);
 }
 
 void FormatX11::resize_window (int sx, int sy) {
@@ -466,8 +463,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \def void _0_set_geometry (int y, int x, int sy, int sx) {
-	pos[1] = x;
-	pos[0] = y;
+	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
 	XFlush(display);
@@ -567,7 +563,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	resize_window(sx,sy);
 
 	if (is_owner) {
-		wmDeleteAtom    = XInternAtom(display, "WM_DELETE_WINDOW", False);
+		Atom wmDeleteAtom = XInternAtom(display, "WM_DELETE_WINDOW", False);
 		XSetWMProtocols(display,window,&wmDeleteAtom,1);
 	}
 	
@@ -583,8 +579,10 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		uint32 masks[3] = { 0x07, 0x38, 0xC0 };
 		bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
 	} break;
+	default: { RAISE("huh?"); }
 	}
 	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");
+	show_section(0,0,sx,sy);
 }
 
 \classinfo {
