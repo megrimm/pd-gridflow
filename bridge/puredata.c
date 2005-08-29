@@ -43,6 +43,9 @@ tries to call a Ruby method of the proper name.
 #include <unistd.h>
 #include "g_canvas.h"
 
+#define CObject_free CObject_freeee
+#define gfpost post
+
 /* **************************************************************** */
 struct BFObject;
 struct FMessage {
@@ -61,11 +64,11 @@ static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 static BuiltinSymbols *syms;
 
-void CObject_freeee (void *victim) {
+void CObject_free (void *victim) {
 	CObject *self = (CObject *)victim;
 	self->check_magic();
 	if (!self->rself) {
-		fprintf(stderr,"attempt to free object that has no rself\n");
+		L fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();
 	}
 	self->rself = 0; /* paranoia */
@@ -94,7 +97,10 @@ struct Pointer : CObject {
 );}
 \end class Pointer
 Ruby Pointer_s_new (void *ptr) {
-	return Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, 0, new Pointer(ptr));
+	Pointer *self = new Pointer(ptr);
+	Ruby rself = Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, CObject_free, self);
+	self->rself = rself;
+	return rself;
 }
 void *Pointer_get (Ruby rself) {
 	DGS(Pointer);
@@ -648,7 +654,7 @@ struct Clock : CObject {
 
 void Clock_fn (Ruby rself) { rb_funcall_myrescue(rself,SI(call),0); }
 void Clock_mark (Clock *self) { rb_gc_mark(self->owner); }
-void Clock_free (Clock *self) { clock_free(self->serf); CObject_freeee(self); }
+void Clock_free (Clock *self) { clock_free(self->serf); CObject_free(self); }
 
 Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 	Clock *self = new Clock();
