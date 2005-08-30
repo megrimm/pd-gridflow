@@ -557,11 +557,9 @@ Feature.add {
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
 }
-=begin
 Feature.add {
 	tag :opengl
 	name "OpenGL (only as framebuffer)"
-	status :disabled
 	uses_so $LIBX11DIR+["-lglut","-lGL","-lGLU"]
 	uses_h ["GL/glut.h"]
 	test proc {
@@ -572,7 +570,6 @@ Feature.add {
 	}
 	uses_o ["format/opengl.o"]
 }
-=end
 Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
