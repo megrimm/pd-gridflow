@@ -892,6 +892,18 @@ FObject.subclass("range",1,1) {
     post "setting a[#{m[1].to_i-1}] = #{a[0]}"
   end
 }
+FObject.subclass("listfind",2,1) {
+  def initialize(*a) _1_list(*a) end
+  def _1_list(*a) @a = a end
+  def _0_float(x)
+    i=0
+    while i<@a.length
+      (send_out 0,i; return) if @a[i]==x
+      i+=1
+    end
+    send_out 0,-1
+  end
+}
 
 #-------- fClasses for: GUI
 
@@ -1408,6 +1420,21 @@ FObject.subclass("regsub",3,1) {
   def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
   def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
   def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
+}
+
+FObject.subclass("memstat",1,1) {
+  def _0_bang
+    f = File.open("/proc/#{$$}/stat")
+    send_out 0, Float(f.gets.split(" ")[22]) / 1024.0
+    f.close
+  end
+}
+
+FObject.subclass("sendgui",1,0) {
+  def _0_list(*x)
+    GridFlow.gui x.join(" ").gsub(/`/,";")+"\n"
+  end
+  install "sys_vgui", 1, 0
 }
 
 end # module GridFlow
