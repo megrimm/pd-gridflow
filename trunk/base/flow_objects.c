@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -213,9 +213,9 @@ struct GridStore : GridObject {
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
-	int32 wdex [Dim::MAX_DIMENSIONS]; // temporary buffer, copy of put_at
-	int32 fromb[Dim::MAX_DIMENSIONS];
-	int32 to2  [Dim::MAX_DIMENSIONS];
+	int32 wdex [Dim::MAX_DIM]; // temporary buffer, copy of put_at
+	int32 fromb[Dim::MAX_DIM];
+	int32 to2  [Dim::MAX_DIM];
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
@@ -258,7 +258,7 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nb = r->dim->n;
 	int nc = in->dim->get(na-1);
-	STACK_ARRAY(int32,v,Dim::MAX_DIMENSIONS);
+	STACK_ARRAY(int32,v,Dim::MAX_DIM);
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 	int lastindexable = r->dim->prod()/r->dim->prod(nc) - 1;
 	int ngreatest = nt_greatest((T *)0);

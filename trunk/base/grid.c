@@ -90,6 +90,8 @@ static inline void NUM(Ruby x, S &y) { \
 EACH_FLOAT_TYPE(FOO)
 #undef FOO
 
+static inline void NUM(Ruby x, ruby &y) { y.r=x; }
+
 void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	Ruby delim = SYM(#);
 	for (int i=0; i<n; i++) {

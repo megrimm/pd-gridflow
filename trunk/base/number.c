@@ -162,15 +162,18 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 #define DECL_OP(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
 	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
-	DECL_OPON(OpLoops,op,float32), DECL_OPON(OpLoops,op,float64)), flags)
+	DECL_OPON(OpLoops,op,float32), DECL_OPON(OpLoops,op,float64), \
+	DECL_OPON(OpLoops,op,ruby)), flags)
 #define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
 	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
-	NumopOn<float32>(0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0)), flags)
+	NumopOn<float32>(0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0), \
+	DECL_OPON(OpLoops,op,ruby)), flags)
 #define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
 	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
 	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
-	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64)), flags)
+	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64), \
+	DECL_OPON_NOFOLD(OpLoops,op,ruby)), flags)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
@@ -202,10 +205,8 @@ DEF_OP(div, b==0 ? 0 : a/b, side==at_right && x==1, false)
 DEF_OP(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
 DEF_OP(vid, a==0 ? 0 : b/a, side==at_left && x==1, false)
 DEF_OP(vid2, a==0 ? 0 : div2(b,a), side==at_left && x==1, false)
-DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b),
-	false, side==at_left && x==0 || side==at_right && x==1)
-DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a),
-	false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), false, side==at_left && x==0 || side==at_right && x==1)
 //DEF_OPF(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
 //DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
 DEF_OP(rem, b==0?0:a%b, false, side==at_left&&x==0 || side==at_right&&x==1)
@@ -214,7 +215,7 @@ DEF_OP(mer, a==0?0:b%a, false, side==at_left&&x==0 || side==at_right&&x==1)
 #ifdef PASS2
 DEF_OP(gcd, gcd(a,b), x==0, x==1)
 DEF_OP(gcd2, gcd2(a,b), x==0, x==1) // should test those and pick one of the two
-DEF_OP(lcm, a==0 || b==0 ? 0 : lcm(a,b), x==1, x==0)
+DEF_OP(lcm, a==0 || b==0 ? (T)0 : lcm(a,b), x==1, x==0)
 DEF_OPF(or , a|b, (float32)((int32)a | (int32)b), x==0, x==nt_all_ones(&x))
 DEF_OPF(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
 DEF_OPF(and, a&b, (float32)((int32)a & (int32)b), x==nt_all_ones(&x), x==0)
@@ -237,9 +238,9 @@ DEF_OP(sin, (T)(b * sin(a * (M_PI / 18000))), false, false) // "LN=9000+36000n R
 DEF_OP(cos, (T)(b * cos(a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
 DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), false, false) // "LA=0"
 DEF_OP(tanh, (T)(b * tanh(a * (M_PI / 18000))), false, x==0)
-DEF_OP(gamma, b<=0 ? 0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
+DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
 DEF_OP(pow, ipow(a,b), false, false) // "RN=1"
-DEF_OP(log, (T)(a==0 ? 0 : b * log(gf_abs(a))), false, false) // "RA=0"
+DEF_OP(log, (T)(a==0 ? (T)0 : (T)(b * log(gf_abs(a)))), false, false) // "RA=0"
 // 0.7.8
 //DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
 //DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
@@ -248,7 +249,7 @@ DEF_OP(sqsub, (a-b)*(a-b), false, false)
 DEF_OP(avg, (a+b)/2, false, false)
 DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), false, false)
 DEF_OP(sqrt, (T)(0+floor(sqrt(a))), false, false)
-DEF_OP(rand, a==0 ? 0 : random()%(int32)a, false, false)
+DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), false, false)
 //DEF_OP(erf,"erf*", 0)
 #endif
 
