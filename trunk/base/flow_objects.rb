@@ -265,7 +265,7 @@ GridPack =
 GridObject.subclass("#pack",1,1) {
 	install_rgrid 0
 	class<<self;attr_reader :ninlets;end
-	def initialize(n=nil,cast=:int32)
+	def initialize(n=2,cast=:int32)
 		n||=self.class.ninlets
 		n>=16 and raise "too many inlets"
 		super
@@ -304,7 +304,7 @@ GridPack.subclass("@four", 4,1) { install_rgrid 0 }
 GridPack.subclass("@eight",8,1) { install_rgrid 0 }
 GridObject.subclass("#unpack",1,0) {
   install_rgrid 0, true
-  def initialize(n)
+  def initialize(n=2)
     @n=n
     n>=10 and raise "too many outlets"
     super
