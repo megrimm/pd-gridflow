@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -713,15 +713,16 @@ struct NumopOn : CObject {
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
+	T (*neutral)(LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
 	AlgebraicCheck is_neutral, is_absorbent;
-	NumopOn(Map m, Zip z, Fold f, Scan s, AlgebraicCheck n, AlgebraicCheck a) :
-		op_map(m), op_zip(z), op_fold(f), op_scan(s),
-		is_neutral(n), is_absorbent(a) {}
+	NumopOn(Map m, Zip z, Fold f, Scan s, T (*neu)(LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
+		op_map(m), op_zip(z), op_fold(f), op_scan(s), neutral(neu), is_neutral(n), is_absorbent(a) {}
 	NumopOn() {}
 	NumopOn(const NumopOn &z) {
 		op_map  = z.op_map;  op_zip  = z.op_zip;
 		op_fold = z.op_fold; op_scan = z.op_scan;
-		is_neutral = z.is_neutral; is_absorbent = z.is_absorbent; }
+		is_neutral = z.is_neutral; neutral = z.neutral;
+		is_absorbent = z.is_absorbent; }
 };
 
 // semigroup property: associativity: f(a,f(b,c))=f(f(a,b),c)
