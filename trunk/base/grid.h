@@ -35,6 +35,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
+#include <malloc.h>
 
 extern "C" {
 #include <ruby.h>
@@ -101,21 +102,16 @@ static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
-
-// shorthands
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
-
 // because of older versions of Ruby (1.6.?)
 #define rb_obj_class(o) rb_funcall((o),SI(class),0)
 
 #define WATCH(n,ar) { \
-	char foo[16*1024], *p=foo; \
-	p += sprintf(p,"%s: ",#ar); \
+	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
-	gfpost("%s",foo); \
-}
+	gfpost("%s",foo);}
 
 // we're gonna override assert, so load it first, to avoid conflicts
 #include <assert.h>
@@ -277,7 +273,7 @@ static inline uint64 rdtsc() {return 0;}
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
-struct Arg { Ruby a; };
+//struct Arg { Ruby a; };
 //struct ArgList { int n; Pt<Arg> v; };
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
@@ -371,17 +367,34 @@ typedef struct R {
 	R(double x) {r=rb_float_new(x);}
 	R( int64 x) {r= gf_ll2num(x);}
 	R(uint64 x) {r=gf_ull2num(x);}
+	operator bool() {return !!INT2NUM(r);}
 	operator uint8 () {return INT2NUM(r);}
-	R &operator  += (int x) {r=rb_funcall(r, SI(+),1,INT2NUM(x)); return *this;}
-	R &operator  -= (int x) {r=rb_funcall(r, SI(-),1,INT2NUM(x)); return *this;}
-	R &operator  *= (int x) {r=rb_funcall(r, SI(*),1,INT2NUM(x)); return *this;}
-	R &operator  /= (int x) {r=rb_funcall(r, SI(/),1,INT2NUM(x)); return *this;}
-	R &operator <<= (int x) {r=rb_funcall(r,SI(<<),1,INT2NUM(x)); return *this;}
-	R &operator >>= (int x) {r=rb_funcall(r,SI(>>),1,INT2NUM(x)); return *this;}
+	operator int16 () {return INT2NUM(r);}
+	operator int32 () {return INT2NUM(r);}
+	operator int64 () {return convert(r,(int64*)0);}
+	operator float32 () {return convert(r,(float32*)0);}
+	operator float64 () {return convert(r,(float64*)0);}
+#define FOO(As,Op) \
+	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
+	FOO(+=,+) FOO(-=,-) FOO(*=,*) FOO(/=,/) FOO(%=,%)
+	FOO(&=,&) FOO(|=,|) FOO(^=,^) FOO(<<=,<<) FOO(>>=,>>)
+#undef FOO
+//	bool operator  == (int x) {return rb_funcall(r,SI(==),1,INT2NUM(x));}
+#define FOO(Op) \
+	R operator Op (R x)   {return rb_funcall(r,SI(Op),1,x.r);} \
+	R operator Op (int x) {return rb_funcall(r,SI(Op),1,INT2NUM(x));}
+	FOO(+) FOO(-) FOO(*) FOO(/) FOO(%)
+	FOO(&) FOO(|) FOO(^) FOO(<<) FOO(>>)
+	FOO(<) FOO(>) FOO(<=) FOO(>=) FOO(==) FOO(!=)
+#undef FOO
 	static R value(VALUE r) {R x; x.r=r; return x;}
 } ruby;
 
+static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
+
 static inline R ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
+static inline R gf_abs(R a) { return R::value(rb_funcall(a.r,SI(abs),0)); }
+static inline R cmp(R a, R b) { return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 
 //****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
@@ -677,13 +690,12 @@ NumberTypeE NumberTypeE_find (Ruby sym);
 #define TYPESWITCH(T,C,E) switch (T) { \
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
   case int32_e:   C(int32) break; NONLITE(case int64_e: C(int64) break; \
-  case float32_e: C(float32) break; case float64_e: C(float64) break;) \
-  case ruby_e: C(ruby) break; \
+  case float32_e: C(float32) break; case float64_e: C(float64) break; \
+  case ruby_e: C(ruby) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
-#define TYPESWITCH_NOFLOAT(T,C,E) switch (T) { \
+#define TYPESWITCH_JUSTINT(T,C,E) switch (T) { \
   case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
-  case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;)\
-  case ruby_e: C(ruby) break; \
+  case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 // Numop objects encapsulate optimised loops of simple operations
@@ -791,7 +803,6 @@ struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	void *data;
-	void *rdata;
 	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
 		if (!dim) RAISE("hell");
 		init(dim,nt);
@@ -813,14 +824,13 @@ EACH_NUMBER_TYPE(FOO)
 		memcpy(foo->data,data,bytes());
 		return foo;
 	}
-	~Grid() {if (rdata) delete[] (uint8 *)rdata;}
+	~Grid() {if (data) free(data);}
 private:
 	void init(P<Dim> dim, NumberTypeE nt) {
 		this->dim = dim;
 		this->nt = nt;
-		rdata = dim ? new int64[1+(bytes()+7)/8] : 0;
-		int align = ((long)rdata) & 7;
-		data = (char *)rdata + ((8-align)&7);
+		data = 0;
+		if (dim) data = memalign(16,bytes()+16);
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
 	void init_from_ruby(Ruby x);
@@ -955,18 +965,18 @@ private:
 // C is for class, I for inlet number
 // GRIN1 : int32 only
 // GRIN4 : all types
-// GRIN2 : integers only; no floats
+// GRIN2 : integers only; no floats (no R either actually)
 // GRINF : floats only; no integers
 #ifndef HAVE_LITE
-#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TL,TF,TD}
+#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD,TR}
 #else
-#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI}
+#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI}
 #endif // HAVE_LITE
 
-#define GRIN1(C,I) GRIN(0,0,C::grinw_##I,0,0,0)
-#define GRIN4(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I)
-#define GRIN2(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0)
-#define GRINF(C,I) GRIN(0,0,0,0,C::grinw_##I,C::grinw_##I)
+#define GRIN1(C,I) GRIN(0,0,C::grinw_##I,0,0,0,0)
+#define GRIN4(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I)
+#define GRIN2(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0,0)
+#define GRINF(C,I) GRIN(0,0,0,0,C::grinw_##I,C::grinw_##I,0)
 
 struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 	void *(*allocator)(); // returns a new C++ object

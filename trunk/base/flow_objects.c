@@ -158,6 +158,7 @@ static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
 static Ruby INTORFLOAT2NUM(int64   value) {return    gf_ll2num(value);}
 static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
+static Ruby INTORFLOAT2NUM(ruby    value) {return value.r;}
 
 GRID_INLET(GridExport,0) {
 } GRID_FLOW {
@@ -789,7 +790,7 @@ void GridFor::trigger (T bogus) {
 	if (!from->dim->equal(to->dim) || !to->dim->equal(step->dim))
 		RAISE("dimension mismatch");
 #define FOO(T) trigger((T)0);
-	TYPESWITCH_NOFLOAT(from->nt,FOO,);
+	TYPESWITCH_JUSTINT(from->nt,FOO,);
 #undef FOO
 }
 

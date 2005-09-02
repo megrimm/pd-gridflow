@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -476,6 +476,7 @@ GRID_INLET(DrawPolygon,0) {
 		y++;
 	}
 } GRID_END
+
 
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END

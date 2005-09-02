@@ -200,17 +200,17 @@ DEF_OP(add, a+b, x==0, false)
 DEF_OP(sub, a-b, side==at_right && x==0, false)
 DEF_OP(bus, b-a, side==at_left  && x==0, false)
 DEF_OP(mul, a*b, x==1, x==0)
-DEF_OP(mulshr8, ((int32)a*(int32)b)>>8, (int64)x==256, x==0) //!@#$ bug with int64
-DEF_OP(div, b==0 ? 0 : a/b, side==at_right && x==1, false)
+DEF_OP(mulshr8, (a*b)>>8, x==256, x==0)
+DEF_OP(div, b==0 ? (T)0 : a/b, side==at_right && x==1, false)
 DEF_OP(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
-DEF_OP(vid, a==0 ? 0 : b/a, side==at_left && x==1, false)
+DEF_OP(vid, a==0 ? (T)0 : b/a, side==at_left && x==1, false)
 DEF_OP(vid2, a==0 ? 0 : div2(b,a), side==at_left && x==1, false)
 DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), false, side==at_left && x==0 || side==at_right && x==1)
 DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), false, side==at_left && x==0 || side==at_right && x==1)
 //DEF_OPF(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
 //DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
-DEF_OP(rem, b==0?0:a%b, false, side==at_left&&x==0 || side==at_right&&x==1)
-DEF_OP(mer, a==0?0:b%a, false, side==at_left&&x==0 || side==at_right&&x==1)
+DEF_OP(rem, b==0?(T)0:a%b, false, side==at_left&&x==0 || side==at_right&&x==1)
+DEF_OP(mer, a==0?(T)0:b%a, false, side==at_left&&x==0 || side==at_right&&x==1)
 #endif
 #ifdef PASS2
 DEF_OP(gcd, gcd(a,b), x==0, x==1)
@@ -234,13 +234,13 @@ DEF_OP(gt,  a >  b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x=
 DEF_OP(le,  a <= b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
 DEF_OP(lt,  a <  b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
 DEF_OP(ge,  a >= b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
-DEF_OP(sin, (T)(b * sin(a * (M_PI / 18000))), false, false) // "LN=9000+36000n RA=0 LA=..."
-DEF_OP(cos, (T)(b * cos(a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
+DEF_OP(sin, (T)((float64)b * sin((float64)a * (M_PI / 18000))), false, false) // "LN=9000+36000n RA=0 LA=..."
+DEF_OP(cos, (T)((float64)b * cos((float64)a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
 DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), false, false) // "LA=0"
-DEF_OP(tanh, (T)(b * tanh(a * (M_PI / 18000))), false, x==0)
-DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow(a/256.0,256.0/b)*256.0)), false, false) // "RN=256"
+DEF_OP(tanh, (T)((float64)b * tanh((float64)a * (M_PI / 18000))), false, x==0)
+DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), false, false) // "RN=256"
 DEF_OP(pow, ipow(a,b), false, false) // "RN=1"
-DEF_OP(log, (T)(a==0 ? (T)0 : (T)(b * log(gf_abs(a)))), false, false) // "RA=0"
+DEF_OP(log, (T)(a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a)))), false, false) // "RA=0"
 // 0.7.8
 //DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
 //DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
