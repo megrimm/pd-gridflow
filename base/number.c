@@ -136,29 +136,31 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 }
 
 // classic two-input operator
-#define DEF_OP(op,expr,neutral,absorbent) \
+#define DEF_OP(op,expr,neu,isneu,isorb) \
 	template <class T> class Y##op : Op<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
-		inline static bool is_neutral  (T x, LeftRight side) { return neutral; } \
-		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } };
-#define DEF_OPFT(op,expr,neutral,absorbent,T) \
+		inline static T neutral (LeftRight side) {return neu;} \
+		inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
+		inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
+#define DEF_OPFT(op,expr,neu,isneu,isorb,T) \
 	template <> class Y##op<T> : Op<T> { public: \
 		inline static T f(T a, T b) { return expr; } \
-		inline static bool is_neutral  (T x, LeftRight side) { return neutral; } \
-		inline static bool is_absorbent(T x, LeftRight side) { return absorbent; } }; \
+		inline static T neutral (LeftRight side) {return neu;} \
+		inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
+		inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
 // this macro is for operators that have different code for the float version
-#define DEF_OPF(op,expr,expr2,neutral,absorbent) \
-	DEF_OP( op,expr,      neutral,absorbent) \
-	DEF_OPFT(op,expr2,neutral,absorbent,float32) \
-	DEF_OPFT(op,expr2,neutral,absorbent,float64)
+#define DEF_OPF(op,expr,expr2,neu,isneu,isorb) \
+	DEF_OP( op,expr,      neu,isneu,isorb) \
+	DEF_OPFT(op,expr2,neu,isneu,isorb,float32) \
+	DEF_OPFT(op,expr2,neu,isneu,isorb,float64)
 
 #define DECL_OPON(base,op,T) NumopOn<T>( \
 	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, \
 	&base<Y##op<T> >::op_fold, &base<Y##op<T> >::op_scan, \
-	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
+	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
 #define DECL_OPON_NOFOLD(base,op,T) NumopOn<T>( \
 	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, 0,0, \
-	&Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
+	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
 #define DECL_OP(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
 	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
@@ -167,7 +169,7 @@ template <class T> static void quick_put_zip (int n, T *as, T *bs) {
 #define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
 	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
 	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
-	NumopOn<float32>(0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0), \
+	NumopOn<float32>(0,0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0,0), \
 	DECL_OPON(OpLoops,op,ruby)), flags)
 #define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
 	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
@@ -194,62 +196,62 @@ int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
 */
 
 #ifdef PASS1
-DEF_OP(ignore, a, side==at_right, side==at_left)
-DEF_OP(put, b, side==at_left, side==at_right)
-DEF_OP(add, a+b, x==0, false)
-DEF_OP(sub, a-b, side==at_right && x==0, false)
-DEF_OP(bus, b-a, side==at_left  && x==0, false)
-DEF_OP(mul, a*b, x==1, x==0)
-DEF_OP(mulshr8, (a*b)>>8, x==256, x==0)
-DEF_OP(div, b==0 ? (T)0 : a/b, side==at_right && x==1, false)
-DEF_OP(div2, b==0 ? 0 : div2(a,b), side==at_right && x==1, false)
-DEF_OP(vid, a==0 ? (T)0 : b/a, side==at_left && x==1, false)
-DEF_OP(vid2, a==0 ? 0 : div2(b,a), side==at_left && x==1, false)
-DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), false, side==at_left && x==0 || side==at_right && x==1)
-DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OP(ignore, a, 0, side==at_right, side==at_left)
+DEF_OP(put,    b, 0, side==at_left, side==at_right)
+DEF_OP(add,  a+b, 0, x==0, false)
+DEF_OP(sub,  a-b, 0, side==at_right && x==0, false)
+DEF_OP(bus,  b-a, 0, side==at_left  && x==0, false)
+DEF_OP(mul,  a*b, 1, x==1, x==0)
+DEF_OP(mulshr8, (a*b)>>8, 256, x==256, x==0)
+DEF_OP(div,  b==0 ? (T)0 :      a/b , 1, side==at_right && x==1, false)
+DEF_OP(div2, b==0 ?    0 : div2(a,b), 1, side==at_right && x==1, false)
+DEF_OP(vid,  a==0 ? (T)0 :      b/a , 1, side==at_left  && x==1, false)
+DEF_OP(vid2, a==0 ?    0 : div2(b,a), 1, side==at_left  && x==1, false)
+DEF_OPF(mod, b==0 ? 0 : mod(a,b), b==0 ? 0 : a-b*gf_floor(a/b), 0, false, side==at_left && x==0 || side==at_right && x==1)
+DEF_OPF(dom, a==0 ? 0 : mod(b,a), a==0 ? 0 : b-a*gf_floor(b/a), 0, false, side==at_left && x==0 || side==at_right && x==1)
 //DEF_OPF(rem, b==0 ? 0 : a%b, b==0 ? 0 : a-b*gf_trunc(a/b))
 //DEF_OPF(mer, a==0 ? 0 : b%a, a==0 ? 0 : b-a*gf_trunc(b/a))
-DEF_OP(rem, b==0?(T)0:a%b, false, side==at_left&&x==0 || side==at_right&&x==1)
-DEF_OP(mer, a==0?(T)0:b%a, false, side==at_left&&x==0 || side==at_right&&x==1)
+DEF_OP(rem, b==0?(T)0:a%b, 0, false, side==at_left&&x==0 || side==at_right&&x==1)
+DEF_OP(mer, a==0?(T)0:b%a, 0, false, side==at_left&&x==0 || side==at_right&&x==1)
 #endif
 #ifdef PASS2
-DEF_OP(gcd, gcd(a,b), x==0, x==1)
-DEF_OP(gcd2, gcd2(a,b), x==0, x==1) // should test those and pick one of the two
-DEF_OP(lcm, a==0 || b==0 ? (T)0 : lcm(a,b), x==1, x==0)
-DEF_OPF(or , a|b, (float32)((int32)a | (int32)b), x==0, x==nt_all_ones(&x))
-DEF_OPF(xor, a^b, (float32)((int32)a ^ (int32)b), x==0, false)
-DEF_OPF(and, a&b, (float32)((int32)a & (int32)b), x==nt_all_ones(&x), x==0)
-DEF_OPF(shl, a<<b, a*pow(2.0,+b), side==at_right && x==0, false)
-DEF_OPF(shr, a>>b, a*pow(2.0,-b), side==at_right && x==0, false)
-DEF_OP(sc_and, a ? b : a, side==at_left && x!=0, side==at_left && x==0)
-DEF_OP(sc_or,  a ? a : b, side==at_left && x==0, side==at_left && x!=0)
-DEF_OP(min, min(a,b), x==nt_greatest(&x), x==nt_smallest(&x))
-DEF_OP(max, max(a,b), x==nt_smallest(&x), x==nt_greatest(&x))
+DEF_OP(gcd,   gcd(a,b), 0, x==0, x==1)
+DEF_OP(gcd2, gcd2(a,b), 0, x==0, x==1) // should test those and pick one of the two
+DEF_OP(lcm, a==0 || b==0 ? (T)0 : lcm(a,b), 1, x==1, x==0)
+DEF_OPF(or , a|b, (float32)((int32)a | (int32)b), 0, x==0, x==nt_all_ones(&x))
+DEF_OPF(xor, a^b, (float32)((int32)a ^ (int32)b), 0, x==0, false)
+DEF_OPF(and, a&b, (float32)((int32)a & (int32)b), -1 /*nt_all_ones((T*)0)*/, x==nt_all_ones(&x), x==0)
+DEF_OPF(shl, a<<b, a*pow(2.0,+b), 0, side==at_right && x==0, false)
+DEF_OPF(shr, a>>b, a*pow(2.0,-b), 0, side==at_right && x==0, false)
+DEF_OP(sc_and, a ? b : a, 1, side==at_left && x!=0, side==at_left && x==0)
+DEF_OP(sc_or,  a ? a : b, 0, side==at_left && x==0, side==at_left && x!=0)
+DEF_OP(min, min(a,b), nt_greatest((T*)0), x==nt_greatest(&x), x==nt_smallest(&x))
+DEF_OP(max, max(a,b), nt_smallest((T*)0), x==nt_smallest(&x), x==nt_greatest(&x))
 #endif
 #ifdef PASS3
-DEF_OP(cmp, cmp(a,b), false, false)
-DEF_OP(eq,  a == b, false, false)
-DEF_OP(ne,  a != b, false, false)
-DEF_OP(gt,  a >  b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
-DEF_OP(le,  a <= b, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
-DEF_OP(lt,  a <  b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
-DEF_OP(ge,  a >= b, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
-DEF_OP(sin, (T)((float64)b * sin((float64)a * (M_PI / 18000))), false, false) // "LN=9000+36000n RA=0 LA=..."
-DEF_OP(cos, (T)((float64)b * cos((float64)a * (M_PI / 18000))), false, false) // "LN=36000n RA=0 LA=..."
-DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), false, false) // "LA=0"
-DEF_OP(tanh, (T)((float64)b * tanh((float64)a * (M_PI / 18000))), false, x==0)
-DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), false, false) // "RN=256"
-DEF_OP(pow, ipow(a,b), false, false) // "RN=1"
-DEF_OP(log, (T)(a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a)))), false, false) // "RA=0"
+DEF_OP(cmp, cmp(a,b), 0, false, false)
+DEF_OP(eq,  a == b, 0, false, false)
+DEF_OP(ne,  a != b, 0, false, false)
+DEF_OP(gt,  a >  b, 0, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
+DEF_OP(le,  a <= b, 0, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
+DEF_OP(lt,  a <  b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
+DEF_OP(ge,  a >= b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
+DEF_OP(sin, (T)((float64)b * sin((float64)a * (M_PI / 18000))), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
+DEF_OP(cos, (T)((float64)b * cos((float64)a * (M_PI / 18000))), 0, false, false) // "LN=36000n RA=0 LA=..."
+DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), 0, false, false) // "LA=0"
+DEF_OP(tanh, (T)((float64)b * tanh((float64)a * (M_PI / 18000))), 0, false, x==0)
+DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
+DEF_OP(pow, ipow(a,b), 0, false, false) // "RN=1"
+DEF_OP(log, (T)(a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a)))), 0, false, false) // "RA=0"
 // 0.7.8
-//DEF_OPF(clipadd, clipadd(a,b), a+b, x==0, false)
-//DEF_OPF(clipsub, clipsub(a,b), a-b, side==at_right && x==0, false)
-DEF_OP(abssub,  gf_abs(a-b), false, false)
-DEF_OP(sqsub, (a-b)*(a-b), false, false)
-DEF_OP(avg, (a+b)/2, false, false)
-DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), false, false)
-DEF_OP(sqrt, (T)(0+floor(sqrt(a))), false, false)
-DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), false, false)
+//DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
+//DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
+DEF_OP(abssub,  gf_abs(a-b), 0, false, false)
+DEF_OP(sqsub,   (a-b)*(a-b), 0, false, false)
+DEF_OP(avg,         (a+b)/2, 0, false, false)
+DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), 0, false, false)
+DEF_OP(sqrt,  (T)(0+floor(sqrt(a))),       0, false, false)
+DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), 0, false, false)
 //DEF_OP(erf,"erf*", 0)
 #endif
 
