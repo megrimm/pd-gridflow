@@ -91,7 +91,7 @@ void CObject_free (void *foo) {
 // Dim
 
 void Dim::check() {
-	if (n>MAX_DIMENSIONS) RAISE("too many dimensions");
+	if (n>MAX_DIM) RAISE("too many dimensions");
 	for (int i=0; i<n; i++) if (v[i]<0) RAISE("Dim: negative dimension");
 }
 
@@ -495,7 +495,8 @@ void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 extern "C" {
 void *gfmalloc(size_t n) {
 	uint64 t = rdtsc();
-	void *p = malloc(n);
+//	void *p = malloc(n);
+	void *p = memalign(16,n);
 	long align = (long)p & 7;
 	if (align) fprintf(stderr,"malloc alignment = %ld mod 8\n",align);
 	t=rdtsc()-t;
