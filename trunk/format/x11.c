@@ -19,6 +19,8 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+	Note: some of the code was adapted from PDP's (the XVideo stuff).
 */
 #include "../base/grid.h.fcs"
 #include <ctype.h>
@@ -30,17 +32,21 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/StringDefs.h>
-
-#define L gfpost("%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
-/* X11 Error Handler type */
-typedef int (*XEH)(Display *, XErrorEvent *);
-
 #ifdef HAVE_X11_SHARED_MEMORY
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
 #endif
+#ifdef HAVE_X11_XVIDEO
+#include <X11/extensions/Xv.h>
+#include <X11/extensions/Xvlib.h>
+#endif
+
+#undef L
+#define L gfpost("%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+
+/* X11 Error Handler type */
+typedef int (*XEH)(Display *, XErrorEvent *);
 
 \class FormatX11 < Format
 struct FormatX11 : Format {
@@ -50,7 +56,7 @@ struct FormatX11 : Format {
 	Window root_window;
 	Colormap colormap; /* for 256-color mode */
 	short depth;
-	bool use_shm;	   /* should use shared memory? */
+	int transfer;	   /* 0=plain 1=xshm 2=xvideo */
 	bool use_stripes;  /* use alternate conversion in 256-color mode */
 /* at the Window level */
 	Window window;       /* X11 window number */
@@ -68,7 +74,19 @@ struct FormatX11 : Format {
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
-	FormatX11 () : use_stripes(false), 
+#ifdef HAVE_X11_XVIDEO
+    int xv_format;
+    int xv_port;
+    XvImage *xvi;
+    unsigned char *data;
+    int last_encoding;
+    int  initialized;
+    int x_packet0;
+    int x_queue_id;
+    int  x_initialized;
+    int  x_autocreate;
+#endif
+	FormatX11 () : transfer(0), use_stripes(false), 
 	window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -94,29 +112,40 @@ struct FormatX11 : Format {
 	\decl void _0_hidecursor ();
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
 	\decl void _0_fall_thru (int flag);
-	\decl void _0_use_shm (int flag);
+	\decl void _0_transfer (Symbol s);
 	\grin 0 int
 };
 
 /* ---------------------------------------------------------------- */
 
+static const char *xfers[3] = {"plain","xshm","xvideo"};
+
 void FormatX11::show_section(int x, int y, int sx, int sy) {
+	gfpost("show_section: transfer=%s",xfers[transfer]);
 	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
+	switch (transfer) {
+	case 0: XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
+	XFlush(display);
+	break;
 #ifdef HAVE_X11_SHARED_MEMORY
-	if (use_shm) {
-		XSync(display,False);
+	case 1:	XSync(display,False);
 		gfpost(
 		"XShmPutImage(0x%x,0x%x,0x%x,0x%x,%d,%d,%d,%d,%d,%d,False)",
 			display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		// should completion events be waited for? looks like a bug
-	} else
+		break;
 #endif
-		XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
-	XFlush(display);
+#ifdef HAVE_X11_XVIDEO
+	case 2:
+		
+	break;
+#endif
+	default: RAISE("transfer mode '%s' not available", xfers[transfer]);
+	}
 }
 
 /* window manager hints, defines the window as non-resizable */
@@ -215,44 +244,31 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 		xee->type, xee->display, xee->resourceid);
 	gfpost("... serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
-	if (current_x11->use_shm) {
+	if (current_x11->transfer==1) {
 		gfpost("(note: turning shm off)");
-		current_x11->use_shm = false;
+		current_x11->transfer = 0;
 	}
 	return 42; /* it seems that the return value is ignored. */
 }
 
-void FormatX11::dealloc_image () {
-	if (!ximage) return;
-	if (use_shm) {
-	#ifdef HAVE_X11_SHARED_MEMORY
-		shmdt(ximage->data);
-		XShmDetach(display,shm_info);
-		if (shm_info) {delete shm_info; shm_info=0;}
-		XFree(ximage);
-		ximage = 0;
-		image = Pt<uint8>();
-	#endif	
-	} else {
-		XFree(ximage);
-		ximage = 0;
-		image = Pt<uint8>();
-	}
-}
-
 bool FormatX11::alloc_image (int sx, int sy) {
+	gfpost("show_section: transfer=%s",xfers[transfer]);
 	dim = new Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
+	current_x11 = this;
+	switch (transfer) {
+	case 0: ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0); break;
 #ifdef HAVE_X11_SHARED_MEMORY
-	if (use_shm) {
-		current_x11 = this;
+	case 1:
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
+                if (!ximage) {gfpost("shm got disabled, retrying..."); transfer=0;}
 		XSync(display,0);
-		if (!use_shm) alloc_image(sx,sy);
+		if (transfer==0) return alloc_image(sx,sy);
 		shm_info->shmid = shmget(IPC_PRIVATE,
-			ximage->bytes_per_line*ximage->height, IPC_CREAT|0777);
+			ximage->bytes_per_line*ximage->height, IPC_CREAT|0777); // what about IPC_EXCL???
+		gfpost("size = %d",ximage->bytes_per_line*ximage->height);
 		if(shm_info->shmid < 0)
 			RAISE("ERROR: shmget failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
@@ -260,12 +276,45 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
-		/* yes, this can be done now. should cause auto-cleanup. */
+		// yes, this can be done now. should cause auto-cleanup.
 		shmctl(shm_info->shmid,IPC_RMID,0);
-		if (!use_shm) alloc_image(sx,sy);
-	} else
+		if (transfer==0) return alloc_image(sx,sy);
+	break;
 #endif
-	ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
+#ifdef HAVE_X11_XVIDEO
+	case 2: {
+	unsigned int ver, rel, req, ev, err, i, j, adaptors, formats;
+	XvAdaptorInfo *ai;
+	if (Success != XvQueryExtension(display,&ver,&rel,&req,&ev,&err)) RAISE("XvQueryExtension problem");
+	/* find + lock port */
+	if (Success != XvQueryAdaptors(display,DefaultRootWindow(display),&adaptors,&ai)) RAISE("XvQueryAdaptors problem");
+	for (i = 0; i < adaptors; i++) {
+		if (ai[i].type&XvInputMask && ai[i].type&XvImageMask) {
+			for (j=0; j<ai[i].num_ports; j++) {
+				if (Success != XvGrabPort(display,ai[i].base_id+j,CurrentTime)) RAISE("XvGrabPort problem");
+				xv_port = ai[i].base_id + j;
+				goto breakout;
+			}
+		}
+	}
+	breakout:
+	XFree(ai);
+	if (!xv_port) RAISE("no xv_port");
+/*	unsigned int encn;
+	XvEncodingInfo *enc;
+	XvQueryEncodings(display,xv_port,&encn,&enc);
+	for (i=0; i<encn; i++) gfpost("XvEncodingInfo: name='%s' encoding_id=0x%08x",enc[i].name,enc[i].encoding_id);*/
+	gfpost("pdp_xvideo: grabbed port %d on adaptor %d",xv_port,i);
+	size_t size = sx*sy*4;
+	data = new uint8[size];
+	for (i=0; i<size; i++) data[i]=0;
+	xvi = XvCreateImage(display,xv_port,0x51525762,(char *)data,sx,sy);
+	last_encoding=-1;
+	if (!xvi) RAISE("XvCreateImage problem");
+	} break;
+#endif
+	default: RAISE("transfer mode '%s' not available", xfers[transfer]);
+	}
 	if (!ximage) RAISE("can't create image"); 
 	image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
 	ximage->data = (int8 *)image;
@@ -275,6 +324,33 @@ bool FormatX11::alloc_image (int sx, int sy) {
 retry:
 	gfpost("shm got disabled, retrying...");
 	return alloc_image(sx,sy);
+}
+
+void FormatX11::dealloc_image () {
+	if (!ximage) return;
+	switch (transfer) {
+	case 0: XFree(ximage); ximage=0; image=Pt<uint8>(); break;
+#ifdef HAVE_X11_SHARED_MEMORY
+	case 1:
+		shmdt(ximage->data);
+		XShmDetach(display,shm_info);
+		if (shm_info) {delete shm_info; shm_info=0;}
+		XFree(ximage);
+		ximage = 0;
+		image = Pt<uint8>();
+	break;
+#endif
+#ifdef HAVE_X11_XVIDEO
+	case 2: {
+		if (data) delete[] data;
+		if (xvi) XFree(xvi);
+		xvi=0;
+		data=0;
+	}
+	break;
+#endif
+	default: RAISE("transfer mode '%s' not available",xfers[transfer]);
+	}
 }
 
 void FormatX11::resize_window (int sx, int sy) {
@@ -399,40 +475,32 @@ void FormatX11::prepare_colormap() {
 }
 
 void FormatX11::open_display(const char *disp_string) {
-	int screen_num;
-	Screen *screen;
-
-	// Open an X11 connection
 	display = XOpenDisplay(disp_string);
 	if(!display) RAISE("ERROR: opening X11 display: %s",strerror(errno));
-
 	// btw don't expect too much from Xlib error handling.
 	// Xlib, you are so free of the ravages of intelligence...
 	XSetErrorHandler(FormatX11_error_handler);
-
-	screen   = DefaultScreenOfDisplay(display);
-	screen_num = DefaultScreen(display);
+	Screen *screen = DefaultScreenOfDisplay(display);
+	int screen_num = DefaultScreen(display);
 	visual   = DefaultVisual(display, screen_num);
 	root_window = DefaultRootWindow(display);
 	depth    = DefaultDepthOfScreen(screen);
 	colormap = 0;
 
 	switch(visual->c_class) {
-	case TrueColor: case DirectColor: /* without colormap */
-	break;
-	case PseudoColor: /* with colormap */
-		if (depth!=8)
-			RAISE("ERROR: with colormap, only supported depth is 8 (got %d)",
-				depth);
-	break;
-	default: RAISE("ERROR: visual type not supported (got %d)",
-		visual->c_class);
+	// without colormap
+	case TrueColor: case DirectColor: break;
+	// with colormap
+	case PseudoColor: if (depth!=8) RAISE("ERROR: with colormap, only supported depth is 8 (got %d)", depth); break;
+	default: RAISE("ERROR: visual type not supported (got %d)", visual->c_class);
 	}
 
-#ifdef HAVE_X11_SHARED_MEMORY
-	use_shm = !! XShmQueryExtension(display);
+#if defined(HAVE_X11_XVIDEO)
+	transfer = 2;
+#elif defined(HAVE_X11_SHARED_MEMORY)
+	transfer = !! XShmQueryExtension(display);
 #else
-	use_shm = false;
+	transfer = 0;
 #endif
 }
 
@@ -478,9 +546,11 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	XFlush(display);
 }
 
-\def void _0_use_shm (int flag=1) {
-	use_shm = !!flag;
-	gfpost("use_shm=%d",flag);
+\def void _0_transfer (Symbol s) {
+	if (s==SYM(plain))       transfer=0;
+	else if (s==SYM(xshm))   transfer=1;
+	else if (s==SYM(xvideo)) transfer=2;
+	else RAISE("unknown transfer mode (possible: plain xshm xvideo)");
 }
 
 \def void initialize (...) {
@@ -592,3 +662,4 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 void startup_x11 () {
 	\startall
 }
+
