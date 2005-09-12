@@ -43,7 +43,7 @@
 #endif
 
 #undef L
-#define L gfpost("%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define L gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
@@ -80,11 +80,6 @@ struct FormatX11 : Format {
     XvImage *xvi;
     unsigned char *data;
     int last_encoding;
-    int  initialized;
-    int x_packet0;
-    int x_queue_id;
-    int  x_initialized;
-    int  x_autocreate;
 #endif
 	FormatX11 () : transfer(0), use_stripes(false), 
 	window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
@@ -121,27 +116,24 @@ struct FormatX11 : Format {
 static const char *xfers[3] = {"plain","xshm","xvideo"};
 
 void FormatX11::show_section(int x, int y, int sx, int sy) {
-	gfpost("show_section: transfer=%s",xfers[transfer]);
 	int zy=dim->get(0), zx=dim->get(1);
 	if (y>zy||x>zx) return;
 	if (y+sy>zy) sy=zy-y;
 	if (x+sx>zx) sx=zx-x;
 	switch (transfer) {
 	case 0: XPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy);
-	XFlush(display);
+		XFlush(display);
 	break;
 #ifdef HAVE_X11_SHARED_MEMORY
 	case 1:	XSync(display,False);
-		gfpost(
-		"XShmPutImage(0x%x,0x%x,0x%x,0x%x,%d,%d,%d,%d,%d,%d,False)",
-			display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
 		XShmPutImage(display,window,imagegc,ximage,x,y,x,y,sx,sy,False);
+		XFlush(display);
+		//XPutImage( display,window,imagegc,ximage,x,y,x,y,sx,sy);
 		// should completion events be waited for? looks like a bug
 		break;
 #endif
 #ifdef HAVE_X11_XVIDEO
 	case 2:
-		
 	break;
 #endif
 	default: RAISE("transfer mode '%s' not available", xfers[transfer]);
@@ -252,34 +244,40 @@ static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
 }
 
 bool FormatX11::alloc_image (int sx, int sy) {
-	gfpost("show_section: transfer=%s",xfers[transfer]);
 	dim = new Dim(sy,sx,3);
 	dealloc_image();
 	if (sx==0 || sy==0) return false;
 	current_x11 = this;
 	switch (transfer) {
-	case 0: ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0); break;
+	case 0: {
+		ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
+		int size = ximage->bytes_per_line*ximage->height;
+		if (!ximage) RAISE("can't create image"); 
+		image = ARRAY_NEW(uint8,size);
+		ximage->data = (int8 *)image;
+	} break;
 #ifdef HAVE_X11_SHARED_MEMORY
-	case 1:
+	case 1: {
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
                 if (!ximage) {gfpost("shm got disabled, retrying..."); transfer=0;}
 		XSync(display,0);
 		if (transfer==0) return alloc_image(sx,sy);
-		shm_info->shmid = shmget(IPC_PRIVATE,
-			ximage->bytes_per_line*ximage->height, IPC_CREAT|0777); // what about IPC_EXCL???
-		gfpost("size = %d",ximage->bytes_per_line*ximage->height);
-		if(shm_info->shmid < 0)
-			RAISE("ERROR: shmget failed: %s",strerror(errno));
+		int size = ximage->bytes_per_line*ximage->height;
+		gfpost("size = %d",size);
+		shm_info->shmid = shmget(IPC_PRIVATE,size,IPC_CREAT|0777);
+		if(shm_info->shmid < 0) RAISE("shmget() failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
-		image = Pt<uint8>((uint8 *)ximage->data,ximage->bytes_per_line*sy);
+		if ((long)(shm_info->shmaddr) == -1) RAISE("shmat() failed: %s",strerror(errno));
+		gfpost("shmaddr=%p",shm_info->shmaddr);
+		image = Pt<uint8>((uint8 *)ximage->data,size);
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
 		// yes, this can be done now. should cause auto-cleanup.
 		shmctl(shm_info->shmid,IPC_RMID,0);
 		if (transfer==0) return alloc_image(sx,sy);
-	break;
+	} break;
 #endif
 #ifdef HAVE_X11_XVIDEO
 	case 2: {
@@ -315,9 +313,6 @@ bool FormatX11::alloc_image (int sx, int sy) {
 #endif
 	default: RAISE("transfer mode '%s' not available", xfers[transfer]);
 	}
-	if (!ximage) RAISE("can't create image"); 
-	image = ARRAY_NEW(uint8,ximage->bytes_per_line*sy);
-	ximage->data = (int8 *)image;
 	int status = XInitImage(ximage);
 	if (status!=1) gfpost("XInitImage returned: %d", status);
 	return true;
