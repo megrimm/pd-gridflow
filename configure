@@ -218,7 +218,7 @@ $LD_LIBRARY_PATH = (
 		read_ld_so_conf +
 		["/usr/lib","/lib"]).uniq
 $LIBX11DIR = ["-L/usr/X11R6/lib"]
-$LIBX11 = ["-L/usr/X11R6/lib","-lX11","-lXext"]
+$LIBX11 = ["-L/usr/X11R6/lib","-lX11"]
 
 # making it easier for everybody I hope:
 ["/Applications/Pd.app/Contents/Resources","/sw","/usr/local",ENV["home"]].each do|base|
@@ -283,10 +283,6 @@ FILES = [
 ]
 
 #----------------------------------------------------------------#
-Feature.add {
-	tag :fast
-	name "Compile for speed (and not debuggability)"
-}
 Feature.add {
 	tag :gcc3
 	name "GNU C++ Compiler 3"
@@ -542,9 +538,9 @@ Feature.add {
 }
 Feature.add {
 	tag :x11_shm
-	name "X11 acceleration through shared memory"
+	name "X11 acceleration by shared memory (XSHM plugin)"
 	uses_feature [:x11]
-	uses_so $LIBX11
+	uses_so $LIBX11+["-lXext"]
 	uses_h ["X11/Xlib.h","sys/shm.h","X11/extensions/XShm.h"]
 	test proc {
 		c_test "
@@ -558,10 +554,25 @@ Feature.add {
 	options ["HAVE_X11_SHARED_MEMORY"]
 }
 Feature.add {
+	tag :x11_xv
+	status :disabled
+	name "X11 acceleration (XVIDEO plugin)"
+	uses_feature [:x11]
+	uses_so $LIBX11+["-lXext","-lXv"]
+	uses_h ["X11/Xlib.h","X11/extensions/Xv.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return 0;}
+		"
+	}
+	options ["HAVE_X11_XVIDEO"]
+}
+Feature.add {
 	tag :opengl
 	name "OpenGL (only as framebuffer)"
 	uses_so $LIBX11DIR+["-lglut","-lGL","-lGLU"]
-	uses_h ["GL/glut.h"]
+	uses_h ["GL/gl.h","GL/glu.h","GL/glut.h"]
 	test proc {
 		c_test "
 		#include#
@@ -893,22 +904,23 @@ def try feature
 	LOG.puts "", "-"*64
 	line = "[#{feature.tag}] #{feature.name}: "
 	DUAL.print Light + "[#{Yellow}#{feature.tag}#{Light}] #{feature.name}: "
-	DUAL.print Dark + "-"*(78-line.length) + "> "+Red
+	arrow = "-"*(78-line.length)+ "> "
+	#DUAL.print Dark + arrow +Red
 	(feature.uses_feature||[]).find {|f|
 		if not (
 		  if Or===f then f.a.find {|x| $conf[:FEATURES][x] } else $conf[:FEATURES][f] end
 		) then 
-			DUAL.puts "disabled (would need #{f})"
+			DUAL.puts Red+arrow+"disabled (would need #{f})"
 			return
 		end
 	}
-	if feature.status==:disabled then DUAL.puts "disabled (by author)"; return end
-	if not $features_h[feature.tag] then DUAL.puts "disabled (by user)"; return end
+	if feature.status==:disabled then DUAL.puts Dark+arrow+"disabled (by author)"; return end
+	if not $features_h[feature.tag] then DUAL.puts Dark+arrow+"disabled (by user)"; return end
 	fu = feature.unless_feature || []
 	fu = [fu] if not Array===fu
 	for f in fu || [] do
 		if $conf[:FEATURES][f] then
-			DUAL.puts "disabled (using #{f} instead)"
+			DUAL.puts Red+arrow+"disabled (using #{f} instead)"
 			return
 		end
 	end
@@ -919,7 +931,7 @@ def try feature
 		rescue StandardError => e
 		end
 		if tresult
-			DUAL.puts Green + "found "+(if tresult!=true
+			DUAL.puts Green+arrow+"found "+(if tresult!=true
 				then " (#{tresult})"
 				else "" end)
 			if tresult == "static"
@@ -943,7 +955,7 @@ def try feature
 			return false
 		end
 	else
-		puts Green + "enabled"
+		puts Green+arrow+"enabled"
 		$conf[:FEATURES][feature.tag] = feature
 		feature.action.call if feature.action
 	end
