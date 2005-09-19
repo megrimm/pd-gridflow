@@ -338,8 +338,9 @@ GridObject.subclass("unix_time",1,3) {
     tt = t.to_s
     send_out_grid_begin 0, [tt.length], :uint8
     send_out_grid_flow 0, tt, :uint8
-    send_out 1, t.to_i
-    send_out 2, t.to_f-t.to_f.floor
+    send_out 1, t.to_i/86400, t.to_i%86400,
+	((t.to_f-t.to_f.floor)*1000000).to_i
+    send_out 2, t.year, t.month, t.day, t.hour, t.min, t.day
   end
 }
 ### test with "shell xlogo &" -> [exec]
@@ -420,10 +421,10 @@ FPatcher.subclass("@scale_to",2,1) {
 }
 
 #<vektor> told me to:
-# RGBtoYUV : @fobjects = ["#inner ( 3 3 # 66 -38 112 128 -74 -94 25 112 -18 )",
+# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)",
 #	"@ >> 8","@ + {16 128 128}"]
-# YUVtoRGB : @fobjects = ["@ - ( 16 128 128 )",
-#	"#inner ( 3 3 # 298 298 298 0 -100 516 409 -208 0 )","@ >> 8"]
+# YUVtoRGB : @fobjects = ["@ - (16 128 128)",
+#	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 FPatcher.subclass("#rotate",2,1) {
 	@fobjects = ["@inner * + 0","@ >> 8"]
