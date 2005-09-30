@@ -141,7 +141,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) BUG("unaligned pointer: %08x\n",(long)(ptr));
+	if ((p&3)!=0) BUG("unaligned pointer: %0*x\n",2*sizeof(long),(long)(ptr));
 	return LONG2NUM(p>>2);
 }
 #define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
