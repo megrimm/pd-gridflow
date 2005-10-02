@@ -84,7 +84,7 @@ static Ruby mPointer=0;
 \class Pointer < CObject
 struct Pointer : CObject {
 	void *p;
-	Pointer() { assert(!"DYING HORRIBLY"); }
+	Pointer() { assert(!"DYING HORRIBLY (GASP)"); }
 	Pointer(void *_p) : p(_p) {}
 	\decl Ruby ptr ();
 };
@@ -140,7 +140,6 @@ static VALUE *localize_sysstack () {
 	// HACK (2004.08.29: alx has a problem; i hope it doesn't get worse)
 	// this rounds to the last word of a 64k block (bug: doesn't use STACK_GROW_DIRECTION)
 	bp1=((bp0+0xffff)&~0xffff)-sizeof(void*);
-	fprintf(stderr,"\n",bp0);
 	fprintf(stderr,"STACK_END old=0x%08lx; new=0x%08lx\n",bp0,bp1);
 	return (VALUE *)bp1;
 }
@@ -314,7 +313,7 @@ static void BFObject_delete_1 (FMessage *fm) {
 	if (fm->self->rself) {
 		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
-		post("BFObject_delete is NOT handling BROKEN object at %08x",(int)fm);
+		post("BFObject_delete is NOT handling BROKEN object at %*lx",2*sizeof(long),(long)fm);
 	}
 }
 
