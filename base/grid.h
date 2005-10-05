@@ -141,7 +141,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) BUG("unaligned pointer: %0*x\n",2*sizeof(long),(long)(ptr));
+	if ((p&3)!=0) BUG("unaligned pointer: %0*lx\n",2*sizeof(long),(long)(ptr));
 	return LONG2NUM(p>>2);
 }
 #define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
@@ -495,10 +495,11 @@ public:
 #ifndef IS_BRIDGE
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
-inline void *::operator new   (size_t n) { return gfmalloc(n); }
-inline void *::operator new[] (size_t n) { return gfmalloc(n); }
-inline void  ::operator delete   (void *p) { gffree(p); }
-inline void  ::operator delete[] (void *p) { gffree(p); }
+// note that C++ (GCC 3.4) now refuses the :: prefix so i removed it in the 4 following lines:
+inline void *operator new   (size_t n) { return gfmalloc(n); }
+inline void *operator new[] (size_t n) { return gfmalloc(n); }
+inline void  operator delete   (void *p) { gffree(p); }
+inline void  operator delete[] (void *p) { gffree(p); }
 #endif
 
 #define STACK_ARRAY(T,V,N) T V##_foo[N]; Pt<T> V(V##_foo,N);
