@@ -985,7 +985,7 @@ puts Light
 $conf[:LDSOFLAGS].uniq!
 $conf[:BRIDGE_LDFLAGS].uniq!
 
-$CFLAGS += " -falign-functions=4" if $conf[:FEATURES][:gcc3]
+$CFLAGS += " -falign-functions=16" if $conf[:FEATURES][:gcc3]
 
 #if not $conf[:FEATURES][:gcc3]
 #  puts "You should install gcc 3.x; gcc 2.9.x is no longer supported"
@@ -1061,6 +1061,7 @@ $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
 #$CFLAGS += " -fprefetch-loop-arrays"
 #$CFLAGS += " -falign-jumps=4"
 #$CFLAGS += " -falign-loops=4"
+$CFLAGS += " -DMACOSX" if CONFIG["arch"] =~ /darwin/
 f.puts "CFLAGS += " + $CFLAGS
 
 for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
