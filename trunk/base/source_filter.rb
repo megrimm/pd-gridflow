@@ -178,7 +178,7 @@ def handle_classinfo(line)
 		c,s = frame.name,method.selector
 		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
 	}.join(",")
-	Out.puts "}; FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
+	Out.puts "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.puts "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
 	Out.puts "void #{frame.name}_startup (Ruby rself) "+line
 end
