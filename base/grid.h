@@ -35,7 +35,12 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
+
+#ifdef MACOSX
+static inline void *memalign (size_t a, size_t n) {return malloc(n);}
+#else
 #include <malloc.h>
+#endif
 
 extern "C" {
 #include <ruby.h>
