@@ -287,6 +287,7 @@ Feature.add {
 	tag :gcc3
 	name "GNU C++ Compiler 3"
 	options ["HAVE_GCC3"]
+=begin
 	test proc {
 		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
@@ -295,6 +296,20 @@ Feature.add {
 		if version < "3" then raise "version #{version} < 3" end
 		true
 	}
+=end
+	test proc {
+		c_test %{
+		#include <stdio.h>
+		int main () {
+			printf("GCC_VERSION %d.%d.%d\\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+			return !(__GNUC__>=3);
+		}}
+	}
+	defines :GCC_VERSION => proc {
+		m = /GCC_VERSION\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
+		m[1]
+	}
+
 }
 Feature.add {
 	tag :stl
