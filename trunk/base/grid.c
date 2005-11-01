@@ -181,11 +181,8 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	nt = (NumberTypeE) INT(argv[1]);
 	argc-=2, argv+=2;
 	PROF(parent) {
-	if (dim) {
-		gfpost("%s: grid inlet conflict; aborting %s in favour of %s",
+	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s",
 			INFO(parent), INFO(sender), INFO(back_out->parent));
-		abort();
-	}
 	sender = back_out->parent;
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",INFO(parent));
