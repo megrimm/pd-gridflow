@@ -63,7 +63,6 @@ struct FormatX11 : Format {
 	Window parent;       /* X11 window number of the parent */
 	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
 	XImage *ximage;      /* X11 image descriptor */
-	char *name;          /* window name (for use by window manager) */
 	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
 	int32 pos[2];
@@ -82,7 +81,7 @@ struct FormatX11 : Format {
     int last_encoding;
 #endif
 	FormatX11 () : transfer(0), use_stripes(false), 
-	window(0), ximage(0), name(0), image(Pt<uint8>()), is_owner(true),
+	window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
@@ -90,7 +89,7 @@ struct FormatX11 : Format {
 	{}
 	template <class T> void frame_by_type (T bogus);
 	void show_section(int x, int y, int sx, int sy);
-	void set_wm_hints (int sx, int sy);
+	void set_wm_hints ();
 	void dealloc_image ();
 	bool alloc_image (int sx, int sy);
 	void resize_window (int sx, int sy);
@@ -108,6 +107,7 @@ struct FormatX11 : Format {
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
 	\decl void _0_fall_thru (int flag);
 	\decl void _0_transfer (Symbol s);
+	\decl void _0_title (String s=Qnil);
 	\grin 0 int
 };
 
@@ -141,18 +141,24 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 }
 
 /* window manager hints, defines the window as non-resizable */
-void FormatX11::set_wm_hints (int sx, int sy) {
+void FormatX11::set_wm_hints () {
+	Ruby title = rb_ivar_get(rself,SI(@title));
 	if (!is_owner) return;
 	XWMHints wmh;
- 	XTextProperty wname; XStringListToTextProperty((char **)&name, 1, &wname);
-	XTextProperty iname; XStringListToTextProperty((char **)&name, 1, &iname);
+	char buf[256],*bufp=buf;
+	if (title==Qnil) {
+		sprintf(buf,"GridFlow (%d,%d,%d)",dim->get(0),dim->get(1),dim->get(2));
+	} else {
+		sprintf(buf,"%.255s",rb_str_ptr(title));
+	}
+	XTextProperty wtitle; XStringListToTextProperty((char **)&bufp, 1, &wtitle);
 	XSizeHints sh;
 	sh.flags=PSize|PMaxSize|PMinSize;
-	sh.min_width  = sh.max_width  = sh.width  = sx;
-	sh.min_height = sh.max_height = sh.height = sy;
+	sh.min_width  = sh.max_width  = sh.width  = dim->get(1);
+	sh.min_height = sh.max_height = sh.height = dim->get(0);
 	wmh.input = True;
 	wmh.flags = InputHint;
-	XSetWMProperties(display,window,&wname,&iname,NULL,0,&sh,&wmh,NULL);
+	XSetWMProperties(display,window,&wtitle,&wtitle,0,0,&sh,&wmh,0);
 }
 
 void FormatX11::report_pointer(int y, int x, int state) {
@@ -352,12 +358,9 @@ void FormatX11::resize_window (int sx, int sy) {
 	if (sy<16) sy=16; if (sy>4096) RAISE("height too big");
 	if (sx<16) sx=16; if (sx>4096) RAISE("width too big");
 	alloc_image(sx,sy);
-	if (name) delete name;
-	name = new char[64];
-	sprintf(name,"GridFlow (%d,%d,3)",sy,sx);
 	if (window) {
 		if (is_owner && !lock_size) {
-			set_wm_hints(sx,sy);
+			set_wm_hints();
 			XResizeWindow(display,window,sx,sy);
 		}
 	} else {
@@ -369,7 +372,7 @@ void FormatX11::resize_window (int sx, int sy) {
 			CopyFromParent, InputOutput, CopyFromParent,
 			CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
-		set_wm_hints(sx,sy);
+		set_wm_hints();
 		_0_fall_thru(0,0,is_owner);
 		if (is_owner) XMapRaised(display, window);
 		imagegc = XCreateGC(display, window, 0, NULL);
@@ -548,9 +551,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	else RAISE("unknown transfer mode (possible: plain xshm xvideo)");
 }
 
+\def void _0_title (String s=Qnil) {
+	rb_ivar_set(rself,SI(@title),s);
+	set_wm_hints();
+}
+
 \def void initialize (...) {
 	int sy=240, sx=320; // defaults
 	rb_call_super(argc,argv);
+	rb_ivar_set(rself,SI(title),Qnil);
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 	int i;
