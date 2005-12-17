@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2005/12/17 23:40:31  matju
+//  ...
+//
 //  Revision 1.1  2005/12/17 23:17:44  matju
 //  .
 //
@@ -126,6 +129,12 @@ bool _setStdString(std::string * pStr, const std::string & strValue)
 }
 
 //#include <iostream>
+
+#undef PACKAGE_NAME
+#undef PACKAGE_TARNAME
+#undef PACKAGE_STRING
+#undef PACKAGE_VERSION
+
 
 #include "ltiObject.h"
 //#include "ltiTypes.h"
@@ -449,7 +458,7 @@ typedef std::istream istream;
 
 using namespace lti;
 
-#include "src/lti_manual.h"
+#include "lti_manual.h"
 
 %}
 // **************************************************************************
@@ -909,6 +918,6 @@ void setQuantParameters(const lti::_kMColorQuantization::_kMColorQuantization_pa
 
 // **************************************************************************
 
-%include "src/lti_manual.h"
+%include "lti_manual.h"
 
 
