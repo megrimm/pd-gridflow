@@ -19,7 +19,8 @@ rblti_wrap.s: rblti_wrap.cxx
 
 rblti_wrap.cxx: rblti.i
 	swig -c++ -ruby -DHAVE_LIBJPEG -DHAVE_LIBPNG -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 rblti.i
+		$(INCS) -w509,-312,-362,-389,-801,-314 rblti.i \
+	|| true
 
 #rblti_wrap.cxx: rblti_wrap.cxx.bz2
 #	bzip -dc rblti_wrap.cxx.bz2 > rblti_wrap.cxx
