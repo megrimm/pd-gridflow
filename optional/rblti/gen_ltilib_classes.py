@@ -88,6 +88,7 @@ lst = [   (f('functor_1_1parameters'),               'lti::ioObject')
         , (f('ioBMP_1_1parameters'),                 g('ioFunctor'))
         , (f('ioPNG_1_1parameters'),                 g('ioFunctor'))
         , (f('ioJPEG_1_1parameters'),                g('ioFunctor'))
+	, (f('distanceTransform_1_1sedMask'),        None)
     ]
 
 # some constants
