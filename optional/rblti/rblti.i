@@ -1,79 +1,15 @@
 //******************************************************************************
-//
-//      project:  pylti
-//    copyright:  (c) 2005 by Michael Neuroth
-//
-//  description:  python modul for ltilib (using SWIG)
-//
-//  $Source$
-//  $Revision$
-//  $Date$
-// 
-//  $Log$
-//  Revision 1.2  2005/12/17 23:40:31  matju
-//  ...
-//
-//  Revision 1.1  2005/12/17 23:17:44  matju
-//  .
-//
-//  Revision 1.14  2005/07/04 20:02:11  Michael
-//  Cleaning up the code
-//
-//  Revision 1.13  2005/06/28 20:53:30  Michael
-//  Added new functors: cannyEdges and classifier
-//
-//  Revision 1.12  2005/06/20 19:25:53  Michael
-//  Support for colour space added.
-//
-//  Revision 1.11  2005/06/17 21:06:56  Michael
-//  Added and improved some %extend statements
-//
-//  Revision 1.10  2005/06/14 20:15:35  Michael
-//  Better template-support: %extend works also on templates, optimized typedeclaration sequence
-//
-//  Revision 1.9  2005/06/13 20:43:23  Michael
-//  Experiments for tree support.
-//
-//  Revision 1.8  2005/06/12 21:11:38  Michael
-//  Tests for the support for the tree.
-//
-//  Revision 1.7  2005/05/16 13:38:38  Michael
-//  Experimented with tree support. included lti_manual.cpp.
-//
-//  Revision 1.6  2005/05/01 10:40:12  Michael
-//  Added index-operator [] for generic vectors. Tests for support for trees.
-//
-//  Revision 1.5  2005/02/22 23:06:50  Michael
-//  Added more functors, improved classes with %extend command
-//
-//  Revision 1.4  2005/02/19 22:29:09  Michael
-//  Added some more functors and functions.
-//
-//  Revision 1.3  2005/02/14 22:16:38  Michael
-//  bugfix: swig has problems with %feature statement
-//
-//  Revision 1.2  2005/02/12 10:43:07  Michael
-//  generate an aditional doc strings and better support for inheritance of parameters classes
-//
-//  Revision 1.1.1.1  2005/02/09 21:41:11  Michael
-//  initial checkin
-//
-//
-//******************************************************************************
-//
-// generated swig-wrapper compiles only with VC++ 7.1 (.NET 2003), NOT with VC++ 6.0 ! 
-//
+// rblti, Copyright 2005 by Mathieu Bouchard and Heri Andria
+// pylti, Copyright 2005 by Michael Neuroth
+// a wrapper for ltilib using SWIG
 
 %module rblti
-
 %rename(inplace_add) operator +=;
 %rename(inplace_sub) operator -=;
 %rename(inplace_mul) operator *=;
 %rename(inplace_div) operator /=;
 %rename(not_equal)   operator !=;
-
 %include "std_list_ruby.i"
-
 %include "std_string.i"
 //%include "std_list.i"
 //%include "std_vector.i" 
@@ -112,29 +48,17 @@ bool _setStdString(std::string * pStr, const std::string & strValue);
 #include <string>
 
 // TODO: to be removed, only for tests
-std::string _getStdString(std::string * pStr)
-{
-    return *pStr;
+std::string _getStdString(std::string * pStr) {return *pStr;}
+bool _setStdString(std::string * pStr, const std::string & strValue) {
+    if(pStr) *pStr = strValue;
+    return !!pStr;
 }
-
-// TODO: to be removed, only for tests
-bool _setStdString(std::string * pStr, const std::string & strValue)
-{
-    if( pStr )
-    {
-        *pStr = strValue;
-        return true;
-    }
-    return false;
-}
-
-//#include <iostream>
+// </to-be-removed>
 
 #undef PACKAGE_NAME
 #undef PACKAGE_TARNAME
 #undef PACKAGE_STRING
 #undef PACKAGE_VERSION
-
 
 #include "ltiObject.h"
 //#include "ltiTypes.h"
@@ -163,136 +87,95 @@ bool _setStdString(std::string * pStr, const std::string & strValue)
 
 #include "ltiFunctor.h"
 // durch SWIG manipulierte typ parameters in functor wieder zurueck benennen
-#define _functor functor                                  // wegen Namenskonflikt mit schon deklarierter Klasse und dem Trick ueber den namespace um die Parameter-Klassen zu generieren (gen_ltilib_class.py)
-#define _functor_parameters parameters   // sezte den aus dem XML generierten Parameter-Klassen-Namen wieder zurueck auf den urspruenglichen Namen
-namespace lti {
-typedef lti::functor::parameters functor_parameters;    // notwendig fuer die plain Methoden lti::write(...) und lti::read(...)
-}
-
+#define _functor functor               // wegen Namenskonflikt mit schon deklarierter Klasse und dem Trick ueber den namespace um die Parameter-Klassen zu generieren (gen_ltilib_class.py)
+#define _functor_parameters parameters // sezte den aus dem XML generierten Parameter-Klassen-Namen wieder zurueck auf den urspruenglichen Namen
+// notwendig fuer die plain Methoden lti::write(...) und lti::read(...)
+namespace lti {typedef lti::functor::parameters functor_parameters;}
 #include "ltiModifier.h"
 #define _modifier modifier
 #define _modifier_parameters parameters
-namespace lti {
-typedef lti::modifier::parameters modifier_parameters;
-}
-
+namespace lti {typedef lti::modifier::parameters modifier_parameters;}
 #include "ltiFilter.h"
 #define _filter filter
 #define _filter_parameters parameters
-namespace lti {
-typedef lti::filter::parameters filter_parameters;
-}
+namespace lti {typedef lti::filter::parameters filter_parameters;}
 #include "ltiIOFunctor.h"
 #define _ioFunctor ioFunctor
 #define _ioFunctor_parameters parameters
-namespace lti {
-typedef lti::ioFunctor::parameters ioFunctor_parameters;
-}
+namespace lti {typedef lti::ioFunctor::parameters ioFunctor_parameters;}
 #include "ltiBMPFunctor.h"
 #define _ioBMP ioBMP
 #define _ioBMP_parameters parameters
 #define lti_ioBMP_parameters ioBMP_parameters      // TODO: PATCH !
-namespace lti {
-typedef lti::ioBMP::parameters ioBMP_parameters;
-}
+namespace lti {typedef lti::ioBMP::parameters ioBMP_parameters;}
 #include "ltiJPEGFunctor.h"
 #define _ioJPEG ioJPEG
 #define _ioJPEG_parameters parameters
 #define lti_ioJPEG_parameters ioJPEG_parameters      // TODO: PATCH !
-namespace lti {
-typedef lti::ioJPEG::parameters ioJPEG_parameters;
-}
+namespace lti {typedef lti::ioJPEG::parameters ioJPEG_parameters;}
 #include "ltiPNGFunctor.h"
 #define _ioPNG ioPNG
 #define _ioPNG_parameters parameters
 #define lti_ioPNG_parameters ioPNG_parameters     
-namespace lti {
-typedef lti::ioPNG::parameters ioPNG_parameters;
-}
+namespace lti {typedef lti::ioPNG::parameters ioPNG_parameters;}
 #include "ltiALLFunctor.h"
 #define _ioImage ioImage
 #define _ioImage_parameters parameters
 #define ioImage_parameters parameters                   // TODO: PATCH !
-namespace lti {
-typedef lti::ioImage::parameters ioImage_parameters;
-}
+namespace lti {typedef lti::ioImage::parameters ioImage_parameters;}
 #include "ltiViewerBase.h"
 #define _viewerBase viewerBase
 #define _viewerBase_parameters parameters
-namespace lti {
-typedef lti::viewerBase::parameters viewerBase_parameters;
-}
+namespace lti {typedef lti::viewerBase::parameters viewerBase_parameters;}
 #include "ltiExternViewer.h"
 #define _externViewer externViewer
 #define _externViewer_parameters parameters
-namespace lti {
-typedef lti::externViewer::parameters externViewer_parameters;
-}
+namespace lti {typedef lti::externViewer::parameters externViewer_parameters;}
 #include "ltiSplitImage.h"
 #include "ltiSplitImageTorgI.h"
 
 #include "ltiUsePalette.h"
 #define _usePalette usePalette
 #define _usePalette_parameters parameters
-namespace lti {
-typedef lti::usePalette::parameters usePalette_parameters;
-}
+namespace lti {typedef lti::usePalette::parameters usePalette_parameters;}
 #include "ltiTransform.h"
 #define _transform transform
 #define _transform_parameters parameters
-namespace lti {
-typedef lti::transform::parameters transform_parameters;
-}
+namespace lti {typedef lti::transform::parameters transform_parameters;}
 #include "ltiGradientFunctor.h"
 #define _gradientFunctor gradientFunctor
 #define _gradientFunctor_parameters parameters
 #define lti_gradientFunctor_parameters gradientFunctor_parameters      // TODO: PATCH !
-namespace lti {
-typedef lti::gradientFunctor::parameters gradientFunctor_parameters;
-}
+namespace lti {typedef lti::gradientFunctor::parameters gradientFunctor_parameters;}
 #include "ltiColorContrastGradient.h"
 #define _colorContrastGradient colorContrastGradient
 #define _colorContrastGradient_parameters parameters
 #define lti_colorContrastGradient_parameters colorContrastGradient_parameters      // TODO: PATCH !
-namespace lti {
-typedef lti::colorContrastGradient::parameters colorContrastGradient_parameters;
-}
+namespace lti {typedef lti::colorContrastGradient::parameters colorContrastGradient_parameters;}
 #include "ltiEdgeDetector.h"
 #define _edgeDetector edgeDetector
 #define _edgeDetector_parameters parameters
-namespace lti {
-typedef lti::edgeDetector::parameters edgeDetector_parameters;
-}
+namespace lti {typedef lti::edgeDetector::parameters edgeDetector_parameters;}
 #include "ltiClassicEdgeDetector.h"
 #define _classicEdgeDetector classicEdgeDetector
 #define _classicEdgeDetector_parameters parameters
-namespace lti {
-typedef lti::classicEdgeDetector::parameters classicEdgeDetector_parameters;
-}
+namespace lti {typedef lti::classicEdgeDetector::parameters classicEdgeDetector_parameters;}
 #include "ltiCannyEdges.h"
 #define _cannyEdges cannyEdges
 #define _cannyEdges_parameters parameters
-namespace lti {
-typedef lti::cannyEdges::parameters cannyEdges_parameters;
-}
+namespace lti {typedef lti::cannyEdges::parameters cannyEdges_parameters;}
 #include "ltiConvolution.h"
 #define _convolution convolution
 #define _convolution_parameters parameters
-namespace lti {
-typedef lti::convolution::parameters convolution_parameters;
-}
+namespace lti {typedef lti::convolution::parameters convolution_parameters;}
 #include "ltiSegmentation.h"
 #define _segmentation segmentation
 #define _segmentation_parameters parameters
-namespace lti {
-typedef lti::segmentation::parameters segmentation_parameters;
-}
+namespace lti {typedef lti::segmentation::parameters segmentation_parameters;}
 #include "ltiRegionGrowing.h"
 #define _regionGrowing regionGrowing
 #define _regionGrowing_parameters parameters
-namespace lti {
-typedef lti::regionGrowing::parameters regionGrowing_parameters;
-}
+namespace lti {typedef lti::regionGrowing::parameters regionGrowing_parameters;}
 #include "ltiObjectsFromMask.h"
 #define _objectsFromMask objectsFromMask
 #define _objectsFromMask_parameters parameters
@@ -312,15 +195,11 @@ typedef lti::objectsFromMask::parameters objectsFromMask_parameters;
 #include "ltiPolygonApproximation.h"
 #define _polygonApproximation polygonApproximation
 #define _polygonApproximation_parameters parameters
-namespace lti {
-typedef lti::polygonApproximation::parameters polygonApproximation_parameters;
-}
+namespace lti {typedef lti::polygonApproximation::parameters polygonApproximation_parameters;}
 #include "ltiColorQuantization.h"
 #define _colorQuantization colorQuantization
 #define _colorQuantization_parameters parameters
-namespace lti {
-typedef lti::colorQuantization::parameters colorQuantization_parameters;
-}
+namespace lti {typedef lti::colorQuantization::parameters colorQuantization_parameters;}
 #include "ltiKMColorQuantization.h"
 #define _kMColorQuantization kMColorQuantization
 #define _kMColorQuantization_parameters parameters
@@ -332,9 +211,7 @@ typedef lti::kMColorQuantization::parameters lti_kMColorQuantization_parameters;
 #include "ltiMeanShiftSegmentation.h"
 #define _meanShiftSegmentation meanShiftSegmentation
 #define _meanShiftSegmentation_parameters parameters
-namespace lti {
-typedef lti::meanShiftSegmentation::parameters meanShiftSegmentation_parameters;
-}
+namespace lti {typedef lti::meanShiftSegmentation::parameters meanShiftSegmentation_parameters;}
 #include "ltiKMeansSegmentation.h"
 #define _kMeansSegmentation kMeansSegmentation
 #define _kMeansSegmentation_parameters parameters
@@ -347,81 +224,55 @@ typedef lti::kMeansSegmentation::parameters lti_kMeansSegmentation_parameters;
 #include "ltiWhiteningSegmentation.h"
 #define _whiteningSegmentation whiteningSegmentation
 #define _whiteningSegmentation_parameters parameters
-namespace lti {
-typedef lti::whiteningSegmentation::parameters whiteningSegmentation_parameters;
-}
+namespace lti {typedef lti::whiteningSegmentation::parameters whiteningSegmentation_parameters;}
 #include "ltiCsPresegmentation.h"
 #define _csPresegmentation csPresegmentation
 #define _csPresegmentation_parameters parameters
-namespace lti {
-typedef lti::csPresegmentation::parameters csPresegmentation_parameters;
-}
+namespace lti {typedef lti::csPresegmentation::parameters csPresegmentation_parameters;}
 #include "ltiFeatureExtractor.h"
 #define _featureExtractor featureExtractor
 #define _featureExtractor_parameters parameters
-namespace lti {
-typedef lti::featureExtractor::parameters featureExtractor_parameters;
-}
+namespace lti {typedef lti::featureExtractor::parameters featureExtractor_parameters;}
 #include "ltiGlobalFeatureExtractor.h"
 #define _globalFeatureExtractor globalFeatureExtractor
 #define _globalFeatureExtractor_parameters parameters
-namespace lti {
-typedef lti::globalFeatureExtractor::parameters globalFeatureExtractor_parameters;
-}
+namespace lti {typedef lti::globalFeatureExtractor::parameters globalFeatureExtractor_parameters;}
 #include "ltiGeometricFeatures.h"
 #define _geometricFeatures geometricFeatures
 #define _geometricFeatures_parameters parameters
-namespace lti {
-typedef lti::geometricFeatures::parameters geometricFeatures_parameters;
-}
+namespace lti {typedef lti::geometricFeatures::parameters geometricFeatures_parameters;}
 #include "ltiChromaticityHistogram.h"
 #define _chromaticityHistogram chromaticityHistogram
 #define _chromaticityHistogram_parameters parameters
-namespace lti {
-typedef lti::chromaticityHistogram::parameters chromaticityHistogram_parameters;
-}
+namespace lti {typedef lti::chromaticityHistogram::parameters chromaticityHistogram_parameters;}
 #include "ltiLocalFeatureExtractor.h"
 #define _localFeatureExtractor localFeatureExtractor
 #define _localFeatureExtractor_parameters parameters
-namespace lti {
-typedef lti::localFeatureExtractor::parameters localFeatureExtractor_parameters;
-}
+namespace lti {typedef lti::localFeatureExtractor::parameters localFeatureExtractor_parameters;}
 #include "ltiLocalMoments.h"
 #define _localMoments localMoments
 #define _localMoments_parameters parameters
-namespace lti {
-typedef lti::localMoments::parameters localMoments_parameters;
-}
+namespace lti {typedef lti::localMoments::parameters localMoments_parameters;}
 #include "ltiMorphology.h"
 #define _morphology morphology
 #define _morphology_parameters parameters
-namespace lti {
-typedef lti::morphology::parameters morphology_parameters;
-}
+namespace lti {typedef lti::morphology::parameters morphology_parameters;}
 #include "ltiDilation.h"
 #define _dilation dilation
 #define _dilation_parameters parameters
-namespace lti {
-typedef lti::dilation::parameters dilation_parameters;
-}
+namespace lti {typedef lti::dilation::parameters dilation_parameters;}
 #include "ltiErosion.h"
 #define _erosion erosion
 #define _erosion_parameters parameters
-namespace lti {
-typedef lti::erosion::parameters erosion_parameters;
-}
+namespace lti {typedef lti::erosion::parameters erosion_parameters;}
 #include "ltiDistanceTransform.h"
 #define _distanceTransform distanceTransform
 #define _distanceTransform_parameters parameters
-namespace lti {
-typedef lti::distanceTransform::parameters distanceTransform_parameters;
-}
+namespace lti {typedef lti::distanceTransform::parameters distanceTransform_parameters;}
 #include "ltiSkeleton.h"
 #define _skeleton skeleton
 #define _skeleton_parameters parameters
-namespace lti {
-typedef lti::skeleton::parameters skeleton_parameters;
-}
+namespace lti {typedef lti::skeleton::parameters skeleton_parameters;}
 #include "ltiClassifier.h"
 #define _classifier classifier
 #define _classifier_parameters parameters
@@ -435,9 +286,7 @@ typedef lti::classifier::outputVector classifier_outputVector;
 #include "ltiSupervisedInstanceClassifier.h"
 #define _supervisedInstanceClassifier supervisedInstanceClassifier
 #define _supervisedInstanceClassifier_parameters parameters
-namespace lti {
-typedef lti::supervisedInstanceClassifier::parameters supervisedInstanceClassifier_parameters;
-}
+namespace lti {typedef lti::supervisedInstanceClassifier::parameters supervisedInstanceClassifier_parameters;}
 /* TODO
 #include "ltiDecisionTree.h"
 #define _decisionTree decisionTree
@@ -462,22 +311,22 @@ using namespace lti;
 
 %}
 // **************************************************************************
-// **************************************************************************
-
-// **************************************************************************
-// **************************************************************************
 // This part is for the swig parser phase !
-// This code will be used by swig to build up the type hirachy.
-
-// for successfull mapping of const ubyte & to simple data types !!!
-typedef unsigned char ubyte;
-typedef signed char byte;
+// This code will be used by swig to build up the type hierarchy.
+// for successful mapping of const ubyte & to simple data types !!!
+typedef unsigned      char ubyte;
+typedef   signed      char  byte;
 typedef unsigned short int uint16;
-typedef signed short int int16;
-typedef unsigned int uint32;
-typedef signed int int32;
-//typedef unsigned __int64 uint64;
-//typedef signed __int64 int64;
+typedef   signed short int  int16;
+typedef unsigned       int uint32;
+typedef   signed       int  int32;
+/* #ifdef LOSEDOWS
+typedef unsigned   __int64 uint64;
+typedef signed     __int64  int64;
+#else
+typedef unsigned long long uint64;
+typedef   signed long long  int64;
+#endif */
 typedef point<int> ipoint;
 
 %include "ltiObject.h"
@@ -543,10 +392,10 @@ namespace lti {
 	}
 }
 namespace lti {
-    %template(dgenericVector) genericVector<double>;
-    %template(fgenericVector) genericVector<float>;
-    %template(igenericVector) genericVector<int>;
-    %template(bgenericVector) genericVector<ubyte>;
+    %template(dgenericVector)   genericVector<double>;
+    %template(fgenericVector)   genericVector<float>;
+    %template(igenericVector)   genericVector<int>;
+    %template(bgenericVector)   genericVector<ubyte>;
     %template(rgbgenericVector) genericVector<rgbPixel>;
 }
 %include "ltiVector.h"
