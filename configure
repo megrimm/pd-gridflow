@@ -692,6 +692,31 @@ Feature.add {
 	}
 	uses_o ["format/png.o"]
 }
+#------------------------------------------------#
+
+
+#Feature.add {
+#	tag :ltilib
+#	name "Lti Library"
+##       optional/rblti.rb
+##       optional/rblti/rblti.so
+#	test proc {|f|
+#		f.c_test %`
+#		extern "C" {
+#		#include <stdio.h>
+#		#include#
+#		};
+#		int main () {
+#		#define T(a) printf("%s:%d; ",#a,sizeof(a));
+#		T(png_uint_32)T(long)puts("");
+#		if (!png_check_sig) return 1;
+#		return 0;}
+#		`
+#	}
+#	uses_o ["format/png.o"]
+#}
+#
+#-------------------------------------------#
 Feature.add {
 	tag :videodev
 	name "Video4linux Digitizer Driver Interface"
