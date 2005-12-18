@@ -1,145 +1,93 @@
+#!/usr/bin/env python
 #******************************************************************************
-#
-#      project:  pylti
-#    copyright:  (c) 2005 by Michael Neuroth
-#
-#  description:  python modul for ltilib (using SWIG)
-#
-#  $Source$
-#  $Revision$
-#  $Date$
-# 
-#  $Log$
-#  Revision 1.1  2005/12/18 00:16:55  matju
-#  .
-#
-#  Revision 1.9  2005/07/04 20:01:42  Michael
-#  Added support to build pylti as a misc-project in the ltilib distribution
-#
-#  Revision 1.8  2005/06/28 21:39:56  Michael
-#  write output files in a directory (generated).
-#
-#  Revision 1.7  2005/06/28 20:55:16  Michael
-#  Added new functors: cannyEdges and classifier and updated to doygen version 1.4.3
-#
-#  Revision 1.6  2005/05/01 10:41:32  Michael
-#  Added objectStruct. Tests for support for trees.
-#
-#  Revision 1.5  2005/02/22 23:08:41  Michael
-#  Added more functors
-#
-#  Revision 1.4  2005/02/19 22:29:09  Michael
-#  Added some more functors and functions.
-#
-#  Revision 1.3  2005/02/14 22:17:30  Michael
-#  updates for the new project structure
-#
-#  Revision 1.2  2005/02/12 10:41:34  Michael
-#  generate an aditional typedef declaration
-#
-#  Revision 1.1.1.1  2005/02/09 21:41:11  Michael
-#  initial checkin
-#
-#
+# rblti, Copyright 2005 by Mathieu Bouchard and Heri Andria
+# pylti, Copyright 2005 by Michael Neuroth
+# a wrapper for ltilib using SWIG
 #******************************************************************************
 #
 # Tool to generate header files for SWIG to process the nested classes "parameters"
 #
 # 1) generate XML files for the ltilib with doxygen (tested with version 1.4.3) (use this switch in doc.cfg file: GENERATE_XML = YES)
 # 2) generate the new header files for SWIG with this python script
-#  
 
 from xml.dom import minidom
 import os
+import sys
 from distutils.text_file import TextFile
-
 str_version = '0.32'
 
+basedir=None
 # handle the settings: WORKAREA has to be defined !
-basedir = None
-
-workarea = os.getenv('WORKAREA')
-
-# is pylti not part of the ltilib ? Yes --> than we need a directory structure of WORKAREA_PATH/import/ltilib/xml
-if workarea<>None:
-    basedir = workarea+os.sep+'import'+os.sep+'ltilib'+os.sep+'xml'+os.sep
-
-# check if we are in misc directory of the ltilib distribution (ltilib/misc/pylti)
-# very simple way: navigate up and navigate down again
-if workarea==None:    
-    strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'pylti'+'-'+str_version
-    try:
-        # try to read lti.i, this is a good indication of a pylti directory
-        aTestFile = TextFile(filename=strCheckPath+os.sep+'lti.i')
-        basedir = '..'+os.sep+'..'+os.sep+'xml'+os.sep        # move up ltipy and misc directory 
-    except IOError :
-        pass
-
+if len(sys.argv)>1:
+  basedir = sys.argv[1]
+else:
+  workarea = os.getenv('WORKAREA')
+  # is pylti not part of the ltilib ? Yes --> than we need a directory structure of WORKAREA_PATH/import/ltilib/xml
+  if workarea<>None:
+      basedir = workarea+os.sep+'import'+os.sep+'ltilib'+os.sep+'xml'+os.sep
+  # check if we are in misc directory of the ltilib distribution (ltilib/misc/pylti)
+  # very simple way: navigate up and navigate down again
+  else:
+      strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'pylti'+'-'+str_version
+      try:
+          # try to read lti.i, this is a good indication of a pylti directory
+          aTestFile = TextFile(filename=strCheckPath+os.sep+'lti.i')
+          basedir = '..'+os.sep+'..'+os.sep+'xml'+os.sep        # move up ltipy and misc directory 
+      except IOError: pass
 
 output_dir = 'generated'
+#output_dir = 'generated_ruby'
+
+def f(x): return 'classlti_1_1'+x+'.xml'
+#def g(x): return 'lti::_'+x+'::_'+x+'_parameters'
+def g(x): return 'lti::_'+x+'::'+x+'_parameters'
 
 # list of tuples with ( xml-file-name, full-qualified-name of the base class )
-lst = [   ('classlti_1_1functor_1_1parameters.xml',                 'lti::ioObject')
-        , ('classlti_1_1ioFunctor_1_1parameters.xml',              'lti::_functor::_functor_parameters') 
-        , ('classlti_1_1ioImage_1_1parameters.xml',                'lti::_ioFunctor::_ioFunctor_parameters') 
-                
-        , ('classlti_1_1usePalette_1_1parameters.xml',             'lti::_functor::_functor_parameters') 
-
-        , ('classlti_1_1segmentation_1_1parameters.xml',            'lti::_functor::_functor_parameters')
-        , ('classlti_1_1regionGrowing_1_1parameters.xml',          'lti::_segmentation::_segmentation_parameters')
-        , ('classlti_1_1meanShiftSegmentation_1_1parameters.xml', 'lti::_segmentation::_segmentation_parameters')
-        , ('classlti_1_1kMeansSegmentation_1_1parameters.xml',    'lti::_segmentation::_segmentation_parameters')
-        , ('classlti_1_1whiteningSegmentation_1_1parameters.xml',  'lti::_segmentation::_segmentation_parameters')
-        , ('classlti_1_1csPresegmentation_1_1parameters.xml',      'lti::_segmentation::_segmentation_parameters')
-
-        , ('classlti_1_1colorQuantization_1_1parameters.xml',      'lti::_functor::_functor_parameters')
-        , ('classlti_1_1kMColorQuantization_1_1parameters.xml',  'lti::_colorQuantization::_colorQuantization_parameters')
-
-        , ('classlti_1_1ioBMP_1_1parameters.xml',                'lti::_ioFunctor::_ioFunctor_parameters')
-#TODO: fuer JPEG parameters:        , ('',                'lti::_ioFunctor::_ioFunctor_parameters')
-#TODO: fuer PNG parameters:        , ('',                'lti::_ioFunctor::_ioFunctor_parameters')
-        , ('classlti_1_1viewerBase_1_1parameters.xml',             'lti::_functor::_functor_parameters')
-        , ('classlti_1_1externViewer_1_1parameters.xml',           'lti::_viewerBase::_viewerBase_parameters')
-
-        , ('classlti_1_1objectsFromMask_1_1parameters.xml',       'lti::_segmentation::_segmentation_parameters')
-        , ('classlti_1_1objectsFromMask_1_1objectStruct.xml',    'lti::ioObject')
-
-        , ('classlti_1_1tree_1_1node.xml',                          'lti::ioObject')
-
-        , ('classlti_1_1featureExtractor_1_1parameters.xml',        'lti::_functor::_functor_parameters')
-        , ('classlti_1_1globalFeatureExtractor_1_1parameters.xml', 'lti::_featureExtractor::_featureExtractor_parameters')
-        , ('classlti_1_1localFeatureExtractor_1_1parameters.xml',  'lti::_featureExtractor::_featureExtractor_parameters')
-        , ('classlti_1_1geometricFeatures_1_1parameters.xml',      'lti::_globalFeatureExtractor::_globalFeatureExtractor_parameters')
-        , ('classlti_1_1localMoments_1_1parameters.xml',            'lti::_localFeatureExtractor::_localFeatureExtractor_parameters')
-        , ('classlti_1_1chromaticityHistogram_1_1parameters.xml',  'lti::_globalFeatureExtractor::_globalFeatureExtractor_parameters')
-
-        , ('classlti_1_1modifier_1_1parameters.xml',                'lti::_functor::_functor_parameters')
-        , ('classlti_1_1polygonApproximation_1_1parameters.xml',  'lti::_modifier::_modifier_parameters')
-
-        , ('classlti_1_1transform_1_1parameters.xml',               'lti::_functor::_functor_parameters')
-        , ('classlti_1_1gradientFunctor_1_1parameters.xml',        'lti::_transform::_transform_parameters')
-        , ('classlti_1_1skeleton_1_1parameters.xml',                'lti::_transform::_transform_parameters')
-
-        , ('classlti_1_1colorContrastGradient_1_1parameters.xml', 'lti::_gradientFunctor::_gradientFunctor_parameters')
-
-        , ('classlti_1_1edgeDetector_1_1parameters.xml',            'lti::_modifier::_modifier_parameters')
-        , ('classlti_1_1classicEdgeDetector_1_1parameters.xml',    'lti::_edgeDetector::_edgeDetector_parameters')
-
-        , ('classlti_1_1cannyEdges_1_1parameters.xml',              'lti::_edgeDetector::_edgeDetector_parameters')
-
-        , ('classlti_1_1filter_1_1parameters.xml',                   'lti::_modifier::_modifier_parameters')
-        , ('classlti_1_1convolution_1_1parameters.xml',             'lti::_filter::_filter_parameters')
-
-        , ('classlti_1_1morphology_1_1parameters.xml',              'lti::_modifier::_modifier_parameters')
-        , ('classlti_1_1dilation_1_1parameters.xml',                'lti::_morphology::_morphology_parameters')
-        , ('classlti_1_1erosion_1_1parameters.xml',                 'lti::_morphology::_morphology_parameters')
-        , ('classlti_1_1distanceTransform_1_1parameters.xml',      'lti::_morphology::_morphology_parameters')
-
-        , ('classlti_1_1classifier_1_1parameters.xml',               'lti::ioObject')
-        , ('classlti_1_1classifier_1_1outputTemplate.xml',          'lti::ioObject')
-        , ('classlti_1_1classifier_1_1outputVector.xml',            'lti::ioObject')
-        
-        , ('classlti_1_1decisionTree_1_1parameters.xml',            'lti::_classifier::_classifier_parameters')
+lst = [   (f('functor_1_1parameters'),               'lti::ioObject')
+        , (f('ioFunctor_1_1parameters'),             g('functor')) 
+        , (f('ioImage_1_1parameters'),               g('ioFunctor'))
+        , (f('usePalette_1_1parameters'),            g('functor'))
+        , (f('segmentation_1_1parameters'),          g('functor'))
+        , (f('regionGrowing_1_1parameters'),         g('segmentation'))
+        , (f('meanShiftSegmentation_1_1parameters'), g('segmentation'))
+        , (f('kMeansSegmentation_1_1parameters'),    g('segmentation'))
+        , (f('whiteningSegmentation_1_1parameters'), g('segmentation'))
+        , (f('csPresegmentation_1_1parameters'),     g('segmentation'))
+        , (f('colorQuantization_1_1parameters'),     g('functor'))
+        , (f('kMColorQuantization_1_1parameters'),   g('colorQuantization'))
+        , (f('viewerBase_1_1parameters'),            g('functor'))
+        , (f('externViewer_1_1parameters'),          g('viewerBase'))
+        , (f('objectsFromMask_1_1parameters'),       g('segmentation'))
+        , (f('objectsFromMask_1_1objectStruct'),     'lti::ioObject')
+        , (f('tree_1_1node'),                        'lti::ioObject')
+        , (f('featureExtractor_1_1parameters'),      g('functor'))
+        , (f('globalFeatureExtractor_1_1parameters'),g('featureExtractor'))
+        , (f('localFeatureExtractor_1_1parameters'), g('featureExtractor'))
+        , (f('geometricFeatures_1_1parameters'),     g('globalFeatureExtractor'))
+        , (f('localMoments_1_1parameters'),          g('localFeatureExtractor'))
+        , (f('chromaticityHistogram_1_1parameters'), g('globalFeatureExtractor'))
+        , (f('modifier_1_1parameters'),              g('functor'))
+        , (f('polygonApproximation_1_1parameters'),  g('modifier'))
+        , (f('transform_1_1parameters'),             g('functor'))
+        , (f('gradientFunctor_1_1parameters'),       g('transform'))
+        , (f('skeleton_1_1parameters'),              g('transform'))
+        , (f('colorContrastGradient_1_1parameters'), g('gradientFunctor'))
+        , (f('edgeDetector_1_1parameters'),          g('modifier'))
+        , (f('classicEdgeDetector_1_1parameters'),   g('edgeDetector'))
+        , (f('cannyEdges_1_1parameters'),            g('edgeDetector'))
+        , (f('filter_1_1parameters'),                g('modifier'))
+        , (f('convolution_1_1parameters'),           g('filter'))
+        , (f('morphology_1_1parameters'),            g('modifier'))
+        , (f('dilation_1_1parameters'),              g('morphology'))
+        , (f('erosion_1_1parameters'),               g('morphology'))
+        , (f('distanceTransform_1_1parameters'),     g('morphology'))
+        , (f('classifier_1_1parameters'),            'lti::ioObject')
+        , (f('classifier_1_1outputTemplate'),        'lti::ioObject')
+        , (f('classifier_1_1outputVector'),          'lti::ioObject')
+        , (f('decisionTree_1_1parameters'),          g('classifier'))
+        , (f('ioBMP_1_1parameters'),                 g('ioFunctor'))
+        , (f('ioPNG_1_1parameters'),                 g('ioFunctor'))
+        , (f('ioJPEG_1_1parameters'),                g('ioFunctor'))
     ]
 
 # some constants
@@ -152,10 +100,6 @@ nl = '\n'
 #  --> 'type'               # Return Type
 #  --> 'param'             # Argumente
 #       --> 'type' 
-#
-#
-#
-#
 
 def WriteFile(name,txt):
     f = open(name,'w')
@@ -340,7 +284,8 @@ def ProcessHeaderFile(classname,theclassname,thenewclassname,members,baseclassna
     #s += '    /*pObj*/'+nl
     s += '};'+nl
     s += sClose
-    s += sTypedef+thenewclassname+' '+thenewclassname[1:]+';'+nl    # erstes _ vom Klassennamen entfernen
+#    s += sTypedef+thenewclassname+' '+thenewclassname[1:]+';'+nl    # erstes _ vom Klassennamen entfernen
+    s += sTypedef+thenewclassname+' '+thenewclassname+';'+nl
     s += '}'
     s += nl
     s += '#endif'+nl
@@ -379,13 +324,15 @@ def ProcessFile(filename,baseclassname,add_to_output=None):
     for i in range(len(nameitems)):
         # ignoriere das erste lti::
         if i>0:
-            s += '_'
+#            s += '_'
+            if i>1: s += '_'  #to prevent class names starting with '_', Ruby hates that
             s += nameitems[i]
         
     thenewclassname = s #classname.replace('::','_')           # lti_object
     print thenewclassname
     
-    outputfilename = thenewclassname
+#    outputfilename = thenewclassname
+    outputfilename = '_'+thenewclassname
     if add_to_output<>None:
         outputfilename += add_to_output
     outputfilename += '.h'
