@@ -710,6 +710,7 @@ void setQuantParameters(const lti::_kMColorQuantization::_kMColorQuantization_pa
 #undef parameters
 
 #define parameters distanceTransform_parameters
+%rename (distanceTransform_sedMask) lti::distanceTransform::sedMask;
 %include "_distanceTransform_parameters.h"
 %include "ltiDistanceTransform.h"
 #undef parameters
@@ -767,6 +768,6 @@ void setQuantParameters(const lti::_kMColorQuantization::_kMColorQuantization_pa
 
 // **************************************************************************
 
-%include "lti_manual.h"
+%include "src/lti_manual.h"
 
 
