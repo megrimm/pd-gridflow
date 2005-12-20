@@ -45,7 +45,7 @@ the operation on the pixel value would be higher than 255 Values above
 255 are counted from 0 For example: if a pixel has a red value of 240
 and 20 is added to it \, you get 5 instead of displaying 260 (240 +
 20 - 255 = 5);
-#X text 451 -583 aks matju to fix bug in [display]'s display;
+#X text 450 -583 aks matju to fix bug in [display]'s display;
 #X text 32 -301 The [#clip] object is used with numops in order to
 set an lower and upper range to pixel values in order to eliminate
 color wrapping (those nifty 60s effects).;
