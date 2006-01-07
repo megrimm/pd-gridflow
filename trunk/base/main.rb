@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -94,6 +94,7 @@ def self.packstring_for_nt(nt)
 	when :u, :u8,  :uint8; "C*"
 	when :s, :i16, :int16; "s*"
 	when :i, :i32, :int32; "l*"
+	when :l, :i64, :int64; raise "int64? lol"
 	when :f, :f32, :float32; "f*"
 	when :d, :f64, :float64; "d*"
 	else raise "no decoder for #{nt.inspect}"
@@ -161,7 +162,9 @@ class FObject
 	def self.subclass(*args,&b)
 		qlass = Class.new self
 		qlass.install(*args)
-		qlass.module_eval(&b)
+		#qlass.module_eval{qlass.instance_eval(&b)}
+		qlass.instance_eval{qlass.module_eval(&b)}
+		#qlass.module_eval(&b)
 	end
 	alias :total_time :total_time_get
 	alias :total_time= :total_time_set

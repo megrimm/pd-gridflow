@@ -693,7 +693,7 @@ Feature.add {
 	uses_o ["format/png.o"]
 }
 #------------------------------------------------#
-
+#------------------------------------------------#
 
 #Feature.add {
 #	tag :ltilib
@@ -840,6 +840,16 @@ Feature.add {
 $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
 
+#--------------------------------#
+Feature.add {
+	tag :gem
+	name "PureData GEM"
+	uses_feature :puredata
+	uses_o "optional/gem.o"
+	test proc {
+	
+	}
+}
 #--------------------------------#
 
 def usage

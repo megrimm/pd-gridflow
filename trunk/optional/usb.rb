@@ -69,16 +69,14 @@ FObject.subclass("delcomusb",1,1) {
 	def delete; @usb.close; end
 }
 
-# Klippeltronics
-FObject.subclass("multio",1,1) {
-	Vendor,Product=0xDEAD,0xBEEF
+FObject.subclass("klippeltronics",1,1) {
 	def self.find
 	  r=[]
 	  USB.busses.each {|dir,bus|
 	    bus.each {|dev|
-	      post "dir=%s, vendor=%x, product=%x",
+	      GridFlow.post "dir=%s, vendor=%x, product=%x",
 		      dir, dev.idVendor, dev.idProduct
-	      r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
+	      r<<dev if dev.idVendor==0xDead and dev.idProduct==0xBEEF
 	    }
 	  }
 	  r

@@ -16,35 +16,27 @@
 
 Compatibility:
 
-<list><li>
-	Should work with Ruby 1.6.6 and PureData 0.36, 0.37, 0.38
-</li></list>
+<list>
+	<li>Ruby 1.6.6 .. 1.6.9, 1.8.0 .. 1.8.2</li>
+	<li>PureData 0.37, 0.37-devel, 0.38, 0.38-devel, 0.39, 0.39-devel</li>
+</list>
 
 Release steps (<b>OPERATE WITH CAUTION</b>):
-
-<list>
-	<li>make vvtest # leak detection
-	</li><li>ruby base/test.rb formats
-	</li><li>cvs tag gridflow_0_7_7 .
-	</li><li>mkdir gridflow
-	</li><li>cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow
-			export -r gridflow_0_7_7 -d gridflow .
-	</li><li>cd gridflow
-	</li><li>rm -rf CVS CVSROOT
-	</li><li>chmod -R go=u-w .
-	</li><li>cd ..
-	</li><li>tar cfzvv gridflow-0.7.7.tar.gz gridflow
-	</li><li>rm -rf gridflow # caution!!!
-	</li><li>scp gridflow*gz gridflow@artengine.ca:download
-	</li><li>mv gridflow*gz /home/matju/net/GridFlow
-	</li><li>ssh gridflow@artengine.ca  : expand tarball into public_html/latest
-	</li><li>download somewhere else and try to compile
-	</li><li>update main page
-	</li><li>jmax/pd/ruby-talk mlists : post release (note: prefix subject with [ANN] !!!!)
-	</li><li>freshmeat.net : post release
-	</li><li>RAA : post release
-	</li>
-</list>
+make vvtest # leak detection
+test with debug-harder and stuff
+ruby base/test.rb formats
+dir=gridflow-0.8.0; tag=gridflow_0_8_0
+cvs tag $tag .
+cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow export -r $tag -d $dir .
+rm -rf $dir/CVSROOT && chmod -R go=u-w $dir && tar cfzvv $dir.tar.gz $dir && rm -rf $dir
+scp $dir.tar.gz gridflow@artengine.ca:public_html/download
+mv $dir.tar.gz /home/matju/net/GridFlow
+ssh gridflow@artengine.ca  : expand tarball into public_html/latest
+download somewhere else and try to compile
+update main page
+pd mlist : post release (note: prefix subject with [ANN] !!!!)
+freshmeat.net : post release
+RAA : post release
 </section>
 
 <section name="Documentation">

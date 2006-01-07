@@ -427,7 +427,7 @@ FPatcher.subclass("@scale_to",2,1) {
 #	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 FPatcher.subclass("#rotate",2,1) {
-	@fobjects = ["@inner * + 0","@ >> 8"]
+	@fobjects = ["#inner","# >> 8"]
 	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
 	def update_rotator
 		rotator = (0...@axis[2]).map {|i|

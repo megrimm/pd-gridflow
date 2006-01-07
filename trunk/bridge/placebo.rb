@@ -23,7 +23,9 @@
 
 class Object
   def self.dummy(sel)
-    self.module_eval "def #{sel}(*args) GridFlow.post \"dummy #{sel}: %s\", args.inspect end"
+    self.module_eval "def #{sel}(*args)
+	#GridFlow.post \"dummy #{sel}: %s\", args.inspect
+    end"
   end
 end
 
@@ -36,6 +38,7 @@ module GridFlow
   class Clock
     def initialize(victim) @victim=victim end
     dummy :delay
+    dummy :unset
   end
   class Pointer
     dummy :initialize
