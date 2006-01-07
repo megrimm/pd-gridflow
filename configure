@@ -841,6 +841,7 @@ $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
 
 #--------------------------------#
+=begin
 Feature.add {
 	tag :gem
 	name "PureData GEM"
@@ -850,6 +851,7 @@ Feature.add {
 	
 	}
 }
+=end
 #--------------------------------#
 
 def usage
