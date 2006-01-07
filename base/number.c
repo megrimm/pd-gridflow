@@ -182,19 +182,6 @@ template <class T> static inline T gf_floor (T a) {
 template <class T> static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
-/*
-uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
-int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
-int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
-int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1);
-	return c<(nt_smallest(0LL)/2?nt_smallest(0LL):c>nt_greatest(0LL)/2?nt_greatest(0LL):a+b; }
-uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
-int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
-int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
-int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
-	return c<(nt_smallest(0LL)/2?nt_smallest(0LL):c>nt_greatest(0LL)/2?nt_greatest(0LL):a-b; }
-*/
-
 #ifdef PASS1
 DEF_OP(ignore, a, 0, side==at_right, side==at_left)
 DEF_OP(put,    b, 0, side==at_left, side==at_right)
@@ -227,8 +214,6 @@ DEF_OP(sc_and, a ? b : a, 1, side==at_left && x!=0, side==at_left && x==0)
 DEF_OP(sc_or,  a ? a : b, 0, side==at_left && x==0, side==at_left && x!=0)
 DEF_OP(min, min(a,b), nt_greatest((T*)0), x==nt_greatest(&x), x==nt_smallest(&x))
 DEF_OP(max, max(a,b), nt_smallest((T*)0), x==nt_smallest(&x), x==nt_greatest(&x))
-#endif
-#ifdef PASS3
 DEF_OP(cmp, cmp(a,b), 0, false, false)
 DEF_OP(eq,  a == b, 0, false, false)
 DEF_OP(ne,  a != b, 0, false, false)
@@ -236,6 +221,8 @@ DEF_OP(gt,  a >  b, 0, false, side==at_left&&x==nt_smallest(&x)||side==at_right&
 DEF_OP(le,  a <= b, 0, false, side==at_left&&x==nt_smallest(&x)||side==at_right&&x==nt_greatest(&x))
 DEF_OP(lt,  a <  b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
 DEF_OP(ge,  a >= b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
+#endif
+#ifdef PASS3
 DEF_OP(sin, (T)((float64)b * sin((float64)a * (M_PI / 18000))), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
 DEF_OP(cos, (T)((float64)b * cos((float64)a * (M_PI / 18000))), 0, false, false) // "LN=36000n RA=0 LA=..."
 DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), 0, false, false) // "LA=0"
@@ -243,9 +230,9 @@ DEF_OP(tanh, (T)((float64)b * tanh((float64)a * (M_PI / 18000))), 0, false, x==0
 DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
 DEF_OP(pow, ipow(a,b), 0, false, false) // "RN=1"
 DEF_OP(log, (T)(a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a)))), 0, false, false) // "RA=0"
-// 0.7.8
-//DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
-//DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
+// 0.8
+DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
+DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
 DEF_OP(abssub,  gf_abs(a-b), 0, false, false)
 DEF_OP(sqsub,   (a-b)*(a-b), 0, false, false)
 DEF_OP(avg,         (a+b)/2, 0, false, false)
@@ -292,28 +279,43 @@ Numop op_table2[] = {
 	DECL_OP_NOFOLD(sc_or, "||", 0),
 	DECL_OP(min, "min", OP_ASSOC|OP_COMM),
 	DECL_OP(max, "max", OP_ASSOC|OP_COMM),
+	DECL_OP_NOFOLD(eq,   "==", OP_COMM),
+	DECL_OP_NOFOLD(ne,   "!=", OP_COMM),
+	DECL_OP_NOFOLD(gt,   ">", 0),
+	DECL_OP_NOFOLD(le,   "<=", 0),
+	DECL_OP_NOFOLD(lt,   "<", 0),
+	DECL_OP_NOFOLD(ge,   ">=", 0),
+	DECL_OP_NOFOLD(cmp,  "cmp", 0),
 };
 const long op_table2_n = COUNT(op_table2);
 #endif
 #ifdef PASS3
+uint8 clipadd(uint8 a, uint8 b) { int32 c=a+b; return c<0?0:c>255?255:c; }
+int16 clipadd(int16 a, int16 b) { int32 c=a+b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipadd(int32 a, int32 b) { int64 c=a+b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipadd(int64 a, int64 b) { int64 c=(a>>1)+(b>>1)+(a&b&1), p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
+	return c<p/2?p:c>q/2?q:a+b; }
+uint8 clipsub(uint8 a, uint8 b) { int32 c=a-b; return c<0?0:c>255?255:c; }
+int16 clipsub(int16 a, int16 b) { int32 c=a-b; return c<-0x8000?-0x8000:c>0x7fff?0x7fff:c; }
+int32 clipsub(int32 a, int32 b) { int64 c=a-b; return c<-0x80000000?-0x80000000:c>0x7fffffff?0x7fffffff:c; }
+int64 clipsub(int64 a, int64 b) { int64 c=(a>>1)-(b>>1); //???
+	int64 p=nt_smallest((int64 *)0), q=nt_greatest((int64 *)0);
+	return c<p/2?p:c>q/2?q:a-b; }
+
+ruby clipadd(ruby a, ruby b) { return a+b; }
+ruby clipsub(ruby a, ruby b) { return a-b; }
+
 Numop op_table3[] = {
-	DECL_OP_NOFOLD(eq,  "==", OP_COMM),
-	DECL_OP_NOFOLD(ne,  "!=", OP_COMM),
-	DECL_OP_NOFOLD(gt,  ">", 0),
-	DECL_OP_NOFOLD(le,  "<=", 0),
-	DECL_OP_NOFOLD(lt,  "<", 0),
-	DECL_OP_NOFOLD(ge,  ">=", 0),
-	DECL_OP_NOFOLD(cmp, "cmp", 0),
-	DECL_OP_NOFOLD(sin, "sin*", 0),
-	DECL_OP_NOFOLD(cos, "cos*", 0),
+	DECL_OP_NOFOLD(sin,  "sin*", 0),
+	DECL_OP_NOFOLD(cos,  "cos*", 0),
 	DECL_OP_NOFOLD(atan, "atan", 0),
 	DECL_OP_NOFOLD(tanh, "tanh*", 0),
 	DECL_OP_NOFOLD(gamma, "gamma", 0),
 	DECL_OP_NOFOLD(pow, "**", 0),
 	DECL_OP_NOFOLD(log, "log*", 0),
-// 0.7.8
-//	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
-//	DECL_OP(clipsub,"clip-", 0),
+// 0.8
+	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
+	DECL_OP(clipsub,"clip-", 0),
 	DECL_OP_NOFOLD(abssub,"abs-", OP_COMM),
 	DECL_OP_NOFOLD(sqsub,"sq-", OP_COMM),
 	DECL_OP_NOFOLD(avg,"avg", OP_COMM),

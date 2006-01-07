@@ -84,8 +84,8 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	
 	if (sameorder && size==3) {
 		switch(self->bytes) {
-		case 2:	NTIMES(t=CONVERT1; *((int16 *)out)=t; out+=2; in+=3;) return;
-		case 4:	NTIMES(t=CONVERT1; *((int32 *)out)=t; out+=4; in+=3;) return;
+		case 2:	NTIMES(CONVERT1; *((int16 *)out)=t; out+=2; in+=3;) return;
+		case 4:	NTIMES(CONVERT1; *((int32 *)out)=t; out+=4; in+=3;) return;
 		}
 	}
 	if (self->is_le()) {
@@ -136,7 +136,7 @@ static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 	uint32 chop[3] = {3,2,3};
 	uint32 slide[3] = {11,5,0};
 	uint32 t;
-	NTIMES( t=CONVERT1; *((short *)out)=t; out+=2; in+=3; )
+	NTIMES(CONVERT1; *((short *)out)=t; out+=2; in+=3;)
 }
 
 template <class T>

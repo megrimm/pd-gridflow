@@ -1051,7 +1051,8 @@ GRID_INLET(GridTranspose,0) {
 } GRID_FLOW {
 	STACK_ARRAY(T,res,na*nb*nc*nd);
 	if (dim1==dim2) { out->send(n,data); return; }
-	for (; n; n-=na*nb*nc*nd, data+=na*nb*nc*nd) {
+	int prod = na*nb*nc*nd;
+	for (; n; n-=prod, data+=prod) {
 		for (int a=0; a<na; a++)
 			for (int b=0; b<nb; b++)
 				for (int c=0; c<nc; c++)
@@ -1110,14 +1111,14 @@ GRID_INLET(GridReverse,0) {
 \end class GridReverse
 
 //****************************************************************
-\class GridCentroid2 < GridObject
-struct GridCentroid2 : GridObject {
+\class GridCentroid < GridObject
+struct GridCentroid : GridObject {
 	\decl void initialize ();
 	\grin 0 int
 	int sumx,sumy,sum,y; // temporaries
 };
 
-GRID_INLET(GridCentroid2,0) {
+GRID_INLET(GridCentroid,0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
 	in->set_factor(in->dim->prod(1));
@@ -1149,7 +1150,7 @@ GRID_INLET(GridCentroid2,0) {
 }
 
 \classinfo { IEVAL(rself,"install '#centroid',1,3"); }
-\end class GridCentroid2
+\end class GridCentroid
 
 //****************************************************************
 \class GridPerspective < GridObject

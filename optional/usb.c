@@ -354,5 +354,6 @@ void startup_usb () {
 		rb_hash_aset(busses,rb_str_new2(bus->dirname),usb_scan_bus(bus));
 	}
 	//IEVAL(cUSB,"STDERR.print '@busses = '; STDERR.puts @busses.inspect");
+	rb_require("gridflow/optional/usb.rb");
 }
 
