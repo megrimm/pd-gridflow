@@ -443,7 +443,7 @@ FPatcher.subclass("#rotate",2,1) {
 					(scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
 			}
 		}
-		@fobjects[0].send_in 2,
+		@fobjects[0].send_in 1,
 			@axis[2], @axis[2], "#".intern, *rotator.flatten
 	end
 	def _0_axis(from,to,total)
