@@ -2,7 +2,7 @@
 # $Id$
 =begin
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -25,6 +25,8 @@ require "rbconfig"
 require "mkmf"
 require "ftools"
 include Config
+OSX = !!( CONFIG["arch"] =~ /darwin/ )
+
 require "win32/process" if CONFIG["arch"] =~ /mingw/
 LOG = File.open "./config.log", "w"
 
@@ -82,6 +84,7 @@ $conf={
 		:PREFIX => "/usr/local",
 		:CPU => nil,
 		:RUBY_ARCH => CONFIG['arch'],
+		:GEM_SOURCE => "../Gem/src",
 	},
 	:CC => "g++",
 	:OBJS => [],
@@ -204,36 +207,45 @@ def read_ld_so_conf
 	x
 end
 
+def epath x; (ENV[x]||"").split(":") end
+
 $C_INCLUDE_PATH = (
-	(ENV["CPLUS_INCLUDE_PATH"]||"").split(":") +
-	(ENV["C_INCLUDE_PATH"]||"").split(":") +
+	epath("CPLUS_INCLUDE_PATH") +
+	epath("C_INCLUDE_PATH") +
 	["/usr/include"]).uniq
 
 $LIBRARY_PATH = (
-	(ENV["LIBRARY_PATH"]||"").split(":") +
+	epath("LIBRARY_PATH") +
 	["/usr/lib","/lib"]).uniq
 
 $LD_LIBRARY_PATH = (
-	(ENV["LD_LIBRARY_PATH"]||"").split(":") +
-		read_ld_so_conf +
-		["/usr/lib","/lib"]).uniq
+	epath("LD_LIBRARY_PATH") +
+	read_ld_so_conf +
+	["/usr/lib","/lib"]).uniq
 $LIBX11DIR = ["-L/usr/X11R6/lib"]
 $LIBX11 = ["-L/usr/X11R6/lib","-lX11"]
 
 # making it easier for everybody I hope:
-["/Applications/Pd.app/Contents/Resources","/sw","/usr/local",ENV["home"]].each do|base|
-	if not $LD_LIBRARY_PATH.include? "#{base}/lib" and
-	   not $LIBRARY_PATH.include? "#{base}/lib" then
-		$conf[:LDSOFLAGS].unshift "-L#{base}/lib"
-		$LD_LIBRARY_PATH.unshift "#{base}/lib"
-		$LIBRARY_PATH.unshift "#{base}/lib"
+def prepend_path base
+	bl = base+"/lib"
+	bi = base+"/include"
+	if not $LD_LIBRARY_PATH.include? bl and
+	   not $LIBRARY_PATH.include? bl then
+		$conf[:LDSOFLAGS].unshift "-L"+bl
+		$LD_LIBRARY_PATH.unshift bl
+		$LIBRARY_PATH.unshift bl
 	end
-	#and not $CPLUS_INCLUDE_PATH.include? "#{base}/include"
-	if not $C_INCLUDE_PATH.include? "#{base}/include" then
-		$CFLAGS += " -I#{base}/include"
-		$C_INCLUDE_PATH.unshift "#{base}/include"
+	#and not $CPLUS_INCLUDE_PATH.include? bi
+	if not $C_INCLUDE_PATH.include? bi then
+		$CFLAGS += " -I"+bi
+		$C_INCLUDE_PATH.unshift bi
 	end
 end
+prepend_path "/Applications/Pd.app/Contents/Resources" if OSX
+prepend_path "/sw" if OSX
+prepend_path "/usr/local"
+prepend_path ENV["HOME"]
+# prepend_path "."
 
 for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
@@ -423,9 +435,7 @@ Feature.add {
 	#uses_h ["ruby.h"] # is in special directory
 	uses_bridge_so {
 		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
-		unless CONFIG["arch"] =~ /darwin/
-			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive"
-		end
+			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive" unless OSX
 		[lib]
 	}
 	test proc { c_test "#include <ruby.h>
@@ -601,7 +611,7 @@ Feature.add {
 	name "Simple Directmedia Layer (experimental support)"
 	uses_so {
 		a=["-lSDL","-lpthread"]
-		a<<"-lobjc" if CONFIG["arch"] =~ /darwin/
+		a<<"-lobjc" if OSX
 		a
 	}
 	uses_h ["SDL/SDL.h"]
@@ -836,30 +846,38 @@ Feature.add {
 		`
 	}
 }
+#--------------------------------#
+Feature.add {
+	tag :gem
+	name "PureData GEM (source code)"
+#	uses_h [$conf[:DEFINES][:GEM_SOURCE]+"/src/Base/GemBase.h"]
+	uses_feature [:puredata]
+	uses_o ["optional/gem.o"]
+	test proc {
+		# hack
+		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_SOURCE]
+		$CFLAGS += " -I"+$conf[:DEFINES][ :GEM_SOURCE]
+		c_test %`
+			#include "Base/GemBase.h"
+			int main () {
+				return 0;
+			}
+		`
+	}
+}
+#--------------------------------#
 
 $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
 
-#--------------------------------#
-=begin
-Feature.add {
-	tag :gem
-	name "PureData GEM"
-	uses_feature :puredata
-	uses_o "optional/gem.o"
-	test proc {
-	
-	}
-}
-=end
-#--------------------------------#
 
 def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug] [--debug-harder]"
-	log << "[--ruby-prefix directory] "
+	log << "[--ruby-prefix directory] [--gem-source directory]"
+	# [--puredata-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -899,8 +917,11 @@ while ARGV.length>0 do
 		puts "Lite Mode (no float, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
 	when "--help"; usage; exit 0
-	when "--prefix", "--ruby-prefix"
-		$conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
+
+	when "--prefix", "--ruby-prefix"       : $conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
+	when "--pd-prefix", "--puredata-prefix": $conf[:DEFINES][  :PD_PREFIX]=ARGV.shift
+	when "--gem-source"                    : $conf[:DEFINES][ :GEM_SOURCE]=ARGV.shift
+
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
@@ -919,8 +940,7 @@ end
 CONFIG["ruby_version"] ||= "$(MAJOR).$(MINOR)"
 CONFIG["rubylibdir"] ||= "$(libdir)/ruby/$(ruby_version)"
 CONFIG["archdir"] ||= CONFIG["rubylibdir"] + "/" + CONFIG["arch"]
-
-$CFLAGS += " -I " + (make_expand CONFIG["archdir"])
+$CFLAGS += " -I" + (make_expand CONFIG["archdir"])
 
 #--------------------------------#
 
@@ -995,7 +1015,7 @@ def try feature
 				} if feature.uses_bridge_so
 			end
 		else
-			DUAL.puts "missing "+(if e
+			DUAL.puts Red+"missing "+(if e
 				then (if $verbose
 					then "(#{e} @ #{e.backtrace.join', '})"
 					else "(#{e})" end)
@@ -1102,7 +1122,7 @@ RUBYARCH=#{CONFIG['arch']}
 
 f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
 
-if CONFIG["arch"] =~ /darwin/ then
+if OSX then
 	f.puts "BRIDGE_LDFLAGS += -bundle -flat_namespace"
 else
 	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
@@ -1113,7 +1133,7 @@ $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
 #$CFLAGS += " -fprefetch-loop-arrays"
 #$CFLAGS += " -falign-jumps=4"
 #$CFLAGS += " -falign-loops=4"
-$CFLAGS += " -DMACOSX" if CONFIG["arch"] =~ /darwin/
+$CFLAGS += " -DMACOSX" if OSX
 f.puts "CFLAGS += " + $CFLAGS
 
 for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
