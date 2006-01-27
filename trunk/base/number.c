@@ -182,6 +182,10 @@ template <class T> static inline T gf_floor (T a) {
 template <class T> static inline T gf_trunc (T a) {
 	return (T) floor(abs((double)a)) * (a<0?-1:1); }
 
+// trying to avoid GCC warning about uint8 too small for ==256
+template <class T> static bool equal256 (T     x) {return x==256;}
+template <>        static bool equal256 (uint8 x) {return false;}
+
 #ifdef PASS1
 DEF_OP(ignore, a, 0, side==at_right, side==at_left)
 DEF_OP(put,    b, 0, side==at_left, side==at_right)
@@ -189,7 +193,7 @@ DEF_OP(add,  a+b, 0, x==0, false)
 DEF_OP(sub,  a-b, 0, side==at_right && x==0, false)
 DEF_OP(bus,  b-a, 0, side==at_left  && x==0, false)
 DEF_OP(mul,  a*b, 1, x==1, x==0)
-DEF_OP(mulshr8, (a*b)>>8, 256, x==256, x==0)
+DEF_OP(mulshr8, (a*b)>>8, 256, equal256(x), x==0)
 DEF_OP(div,  b==0 ? (T)0 :      a/b , 1, side==at_right && x==1, false)
 DEF_OP(div2, b==0 ?    0 : div2(a,b), 1, side==at_right && x==1, false)
 DEF_OP(vid,  a==0 ? (T)0 :      b/a , 1, side==at_left  && x==1, false)
