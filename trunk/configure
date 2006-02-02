@@ -772,9 +772,10 @@ Feature.add {
 	uses_so Or[
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
+	f = ["quicktime.h","colormodels.h","lqt.h","lqt_version.h","lqt_codecinfo.h"]
 	uses_h Or[
-		["quicktime/quicktime.h","quicktime/lqt_version.h"],
-		["lqt/quicktime.h","lqt/lqt_version.h"]]
+		f.map{|x| "quicktime/"+x },
+		f.map{|x| "lqt/"+x }]
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -1045,7 +1046,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.8.0 configurator within Ruby version #{RUBY_VERSION}"
+DUAL.puts "This is the GridFlow 0.8.1 configurator within Ruby version #{RUBY_VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -1173,13 +1174,19 @@ f.puts "#define STARTUP_LIST(PRE) \\"
 f.puts $conf[:OBJS].map {|o| "PRE startup_#{File.basename(o,'.o')}();" }.join("\\\n")
 for k   in $conf[:OPTIONS] do f.puts "\#define #{k}" end
 for k,v in $conf[:DEFINES] do f.puts "\#define #{k} "+v.inspect end
-if $conf[:FEATURES][:mpeg3]
-f.puts "
-\#ifdef LIBMPEG_INCLUDE_HERE
-\#include <#{$conf[:FEATURES][:mpeg3].uses_h}>
-\#endif
-"
+
+def include_here(f,a,b)
+  return unless $conf[:FEATURES][b]
+  f.puts "\#ifdef #{a}_INCLUDE_HERE"
+  for inc in $conf[:FEATURES][b].uses_h.to_a do
+    f.puts "\#include <#{inc}>"
+  end
+  f.puts "\#endif"
 end
+
+include_here f,"LIBMPEG", :mpeg3
+include_here f,"QUICKTIMEHW",:quicktimehw
+
 f.puts "
 \#define RUBY_BINDIR #{make_expand(CONFIG['bindir']).inspect}
 \#endif /* __CONFIG_H */"

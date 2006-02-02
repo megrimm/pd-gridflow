@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -21,18 +21,11 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#define QUICKTIMEHW_INCLUDE_HERE
 #include "../base/grid.h.fcs"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <quicktime/quicktime.h>
-#include <quicktime/colormodels.h>
-
-#include <quicktime/lqt_version.h>
-#ifdef LQT_VERSION
-#include <quicktime/lqt.h>
-#include <quicktime/lqt_codecinfo.h>
-#endif
 
 \class FormatQuickTimeHW < Format
 struct FormatQuickTimeHW : Format {
