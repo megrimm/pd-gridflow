@@ -352,7 +352,8 @@ FObject.subclass("renamefile",1,0) {
         def _0_list(a,b) File.rename(a.to_s,b.to_s) end
 }
 FObject.subclass("ls",1,1) {
-        def _0_symbol(s) send_out 0, :list, *Dir[s.to_s].map {|x| x.intern } end
+        def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x| x.intern } end
+        def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
 #-------- fClasses for: math
