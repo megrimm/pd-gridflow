@@ -1,7 +1,8 @@
 #LTIPREFIX = /usr/local
 LTIPREFIX = /home/matju
 LIBS = $(LTIPREFIX)/lib/ltilib/libltid.a -lpng -ljpeg
-INCS = -I$(LTIPREFIX)/include/ltilib -I/home/matju/share/swig/1.3.27/std
+INCS = -I$(LTIPREFIX)/include/ltilib
+# -I/home/matju/share/swig/1.3.27/std
 PINC = -I/usr/include/python
 RINC = -I`ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
 
@@ -19,6 +20,8 @@ rblti_wrap.s: rblti_wrap.cxx
 
 rblti_wrap.cxx: rblti.i
 	swig -c++ -ruby -DHAVE_LIBJPEG -DHAVE_LIBPNG -I./generated -I./patched \
+		-I/usr/share/swig1.3/std \
+		-fcompact -fvirtual \
 		$(INCS) -w509,-312,-362,-389,-801,-314 rblti.i \
 	|| true
 
