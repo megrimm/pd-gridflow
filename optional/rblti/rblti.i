@@ -458,7 +458,9 @@ namespace lti {
 %include "ltiImage.h"
 %include "ltiContour.h"
 
-%include "_objectsFromMask_objectStruct.h"        // has to be included AFTER the definition of borderPoints !!!
+// has to be included AFTER the definition of borderPoints !!!
+%include "_objectsFromMask_objectStruct.h"
+#include "_objectsFromMask_objectStruct.h"
 
 // TODO: add better tree support !
 //%include "ltiTree.h"
@@ -612,7 +614,7 @@ namespace lti {
 
 ////#define objectStruct objectsFromMask_objectStruct
 //%include "_objectsFromMask_objectStruct.h"
-////%include "ltiObjecsFromMask.h"
+////%include "ltiObjectsFromMask.h"
 ////#undef objectStruct
 
 #define parameters objectsFromMask_parameters
@@ -648,7 +650,7 @@ namespace lti {
 %extend lti::_kMeansSegmentation::_kMeansSegmentation_parameters {
 // TODO: is there a better way to support complex attributes ?
 // a helper method to set complex attributes of a parameters-class
-void setQuantParameters(const lti::_kMColorQuantization::_kMColorQuantization_parameters & value) 
+void setQuantParameters(const lti::_kMColorQuantization::kMColorQuantization_parameters & value) 
 {
     self->quantParameters = value;
 } 
@@ -768,6 +770,6 @@ void setQuantParameters(const lti::_kMColorQuantization::_kMColorQuantization_pa
 
 // **************************************************************************
 
-%include "src/lti_manual.h"
+%include "lti_manual.h"
 
 
