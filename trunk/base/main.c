@@ -435,7 +435,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 				s++;
 			}
 			const char *se = s+strlen(s);
-			while (se[-1]==')' || se[-1]=='}') { se--; close++; }
+			while (se>s && (se[-1]==')' || se[-1]=='}')) { se--; close++; }
 			if (s!=se) {
 				Ruby u = rb_str_new(s,se-s);
 				av[j++] = rb_funcall(rself,SI(FloatOrSymbol),1,u);
