@@ -44,8 +44,8 @@ template <class T> class Op {
 public:
 	// I call abort() on those because I can't say they're purevirtual.
 	static T f(T a, T b) {abort();}
-	static bool is_neutral(T x, LeftRight side)   {assert(!"Op::is_neutral called?");}
-	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?");}
+	static bool is_neutral(T x, LeftRight side)   {assert(!"Op::is_neutral called?");   return false;}
+	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
 
 template <class O> class OpLoops {
@@ -58,7 +58,7 @@ public:
 	}
 	template <class T> static void op_zip (int n, T *as, T *bs) {
 		if (!n) return;
-		int ba=bs-as; // really!
+		ptrdiff_t ba=bs-as; // really!
 #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
 	UNROLL_8(FOO,n,as)
 #undef FOO
@@ -66,7 +66,7 @@ public:
 	// disabled
 	template <class T> static void op_zip2 (int n, T *as, T *bs, T *cs) {
 		if (!n) return;
-		int ba=bs-as, ca=cs-as;
+		ptrdiff_t ba=bs-as, ca=cs-as;
 #define FOO(I) as[ca+I]=O::f(as[I],as[ba+I]);
 	UNROLL_8(FOO,n,as)
 #undef FOO
