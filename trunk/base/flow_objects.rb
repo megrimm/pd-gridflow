@@ -298,10 +298,10 @@ GridObject.subclass("#pack",1,1) {
 # the install_rgrids in the following are hacks so that
 # outlets can work. (install_rgrid is supposed to be for receiving)
 # maybe GF-0.8 doesn't need that.
-GridPack.subclass("@two",  2,1) { install_rgrid 0 }
-GridPack.subclass("@three",3,1) { install_rgrid 0 }
-GridPack.subclass("@four", 4,1) { install_rgrid 0 }
-GridPack.subclass("@eight",8,1) { install_rgrid 0 }
+GridPack.subclass("@two",  2,1) { install_rgrid 0; def initialize() super 2 end }
+GridPack.subclass("@three",3,1) { install_rgrid 0; def initialize() super 2 end  }
+GridPack.subclass("@four", 4,1) { install_rgrid 0; def initialize() super 2 end  }
+GridPack.subclass("@eight",8,1) { install_rgrid 0; def initialize() super 2 end  }
 GridObject.subclass("#unpack",1,0) {
   install_rgrid 0, true
   def initialize(n=2)
@@ -431,27 +431,23 @@ FPatcher.subclass("#rotate",2,1) {
 	@fobjects = ["#inner","# >> 8"]
 	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
 	def update_rotator
-		rotator = (0...@axis[2]).map {|i|
-			(0...@axis[2]).map {|j|
-				if i==j then 256 else 0 end
-			}
-		}
+		n = @axis[2]
+		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then 256 else 0 end }}
 		th = @angle * Math::PI / 18000
 		scale = 1<<8
-		(0...2).each {|i|
-			(0...2).each {|j|
-				rotator[@axis[i]][@axis[j]] =
-					(scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
-			}
-		}
-		@fobjects[0].send_in 1,
-			@axis[2], @axis[2], "#".intern, *rotator.flatten
+		(0...2).each {|i| (0...2).each {|j|
+				a = @axis[i].to_i
+				b = @axis[j].to_i
+				#GridFlow.post "(#{a},#{b}) #{rotator[a].inspect}"
+				rotator[a][b] = (scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
+		}}
+		@fobjects[0].send_in 1,n,n,"#".intern,*rotator.flatten
 	end
 	def _0_axis(from,to,total)
 		total>=0 or raise "total-axis number incorrect"
 		from>=0 and from<total or raise "from-axis number incorrect"
 		to  >=0 and to  <total or raise   "to-axis number incorrect"
-		@axis = [from,to,total]
+		@axis = [from.to_i,to.to_i,total.to_i]
 		update_rotator
 	end
 	def initialize(rot=0,axis=[0,1,2])
@@ -1440,3 +1436,11 @@ FObject.subclass("sendgui",1,0) {
 }
 
 end # module GridFlow
+
+begin
+  require "gridflow/rblti"
+  GridFlow.post "Ruby-LTI support loaded."
+rescue Exception => e
+  GridFlow.post "%s", e.inspect
+  #GridFlow.post "(rblti not found)"
+end
