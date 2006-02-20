@@ -169,7 +169,7 @@ class XNode
 	end
 	def inspect; "#<XNode #{tag}>"; end
 	def to_s; inspect; end
-	def << x; contents << x; end
+	def << x; contents << x; x.parent=self end
 end
 
 XNode.register("documentation") {}
@@ -565,6 +565,21 @@ end
 $nodes = {}
 XMLParserError = Exception if $use_rexml
 
+def harvest_doc_of_class xclass, v, way
+	doc = case way; when:in:v.doc;   when:out:v.doc_out end
+	tag = case way; when:in:"inlet"; when:out:"outlet" end
+	doc.keys.each {|sel|
+		text = v.doc[sel]
+		m=/^_(\d+)_(\w+)/.match sel.to_s
+		if m then
+			xclass << XNode[tag,{"id"=>Integer(m[1])},
+			  XNode["method",{"name"=>m[2]},XString.new(text)]]
+		else
+			xclass << XNode["method",{"name"=>sel.to_s},XString.new(text)]
+		end
+	}
+end
+
 def harvest_doc tree
 	kla = {}
 	tree.contents.find_all {|x| XNode===x and x.tag=="section" }.each {|sex|
@@ -581,7 +596,9 @@ def harvest_doc tree
 		next if /^@/=~k and GridFlow.fclasses[k.gsub(/^@/,"#")]
 		v = GridFlow.fclasses[k]
 		if v.doc then
-			nu << XNode["class",{"name"=>k}]
+			nu << (xclass=XNode["class",{"name"=>k}])
+			harvest_doc_of_class xclass, v, :in
+			harvest_doc_of_class xclass, v, :out
 		elsif not kla[k] then
 			un << XNode["p",{},XString.new("[#{k}]")]
 		end
