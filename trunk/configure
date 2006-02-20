@@ -80,7 +80,8 @@ $conf={
 	:FEATURES => {},
 	:OPTIONS => [],
 	:DEFINES => {
-		:RUBY_PREFIX => CONFIG['prefix'],
+#		:RUBY_PREFIX => CONFIG['prefix'],
+		:RUBY_PREFIX => nil,
 		:PREFIX => "/usr/local",
 		:CPU => nil,
 		:RUBY_ARCH => CONFIG['arch'],
@@ -1223,8 +1224,13 @@ mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
 	"gfbindir = #{$conf[:BINDIR]}\n"
 mf.sub!(/^site-install:\s*install/,"site-install: ")
-mf.sub! /^prefix\s*=.*$/,  "prefix = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
-mf.sub! /^sitedir\s*=.*$/, "sitedir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX])
+
+rp=$conf[:DEFINES][:RUBY_PREFIX]
+if rp
+  mf.sub! /^prefix\s*=.*$/,   "prefix = " + make_expand(rp)
+  mf.sub! /^sitedir\s*=.*$/, "sitedir = " + make_expand(rp)
+end
+
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
 # Adam Lindsay's Mac attempts.
 mf.sub! /-no-precomp/, "-no-cpp-precomp"

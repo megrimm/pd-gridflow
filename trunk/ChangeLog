@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.8.1 (2005.09.06):
+version 0.8.1 (2006.02.20):
 
  * [ls] now supports wildcards: ? [] * **
  * [#color] has new method: delegate
