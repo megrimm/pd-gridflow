@@ -157,6 +157,18 @@ class FObject
 		attr_accessor :do_loadbangs
 		attr_accessor :comment
 		def foreign_name; @foreign_name if defined? @foreign_name end
+		def doc(selector=nil,text=nil)
+			return @doc if not selector
+			if not defined? @doc; @doc={}; end
+			return @doc[selector] if not text
+			@doc[selector] = text
+		end
+		def doc_out(selector=nil,text=nil)
+			return @doc_out if not selector
+			if not defined? @doc_out; @doc_out={}; end
+			return @doc_out[selector] if not text
+			@doc_out[selector] = text
+		end
 	end
 	def post(*a) GridFlow.post(*a) end
 	def self.subclass(*args,&b)
