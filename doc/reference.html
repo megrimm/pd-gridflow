@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.8.0 - Reference Manual: Flow Classes</title>
+<title>GridFlow 0.8.1 - Reference Manual: Flow Classes</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.8.0 - Reference Manual: Flow Classes</h4>
+    <h4>GridFlow 0.8.1 - Reference Manual: Flow Classes</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -129,6 +129,11 @@
 <li><a href="#pd_netsend"><img src="flow_classes/pd_netsend-icon.png" alt="[pd_netsend]" border="0"></a></li>
 <li><a href="#pd_netreceive"><img src="flow_classes/pd_netreceive-icon.png" alt="[pd_netreceive]" border="0"></a></li>
 </ul>
+<h4><a href="#(new_documentation)">(new documentation)</a></h4><ul>
+<li><a href="#regsub"><img src="flow_classes/regsub-icon.png" alt="[regsub]" border="0"></a></li>
+</ul>
+<h4><a href="#(undocumented)">(undocumented)</a></h4><ul>
+</ul>
 <br><br>
 </div></td></tr> <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -208,6 +213,13 @@
 <img src="flow_classes/%23color-icon.png" alt="[#color]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
  <p>Triple slider for the selection of RGB values.</p> <br><b>method</b>&nbsp;init <b>(</b><i>float</i> min<b>, </b><i>float</i> max<b>, </b><i>0,1</i> hidepreview<b>)</b>     <br>
  <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
+			changes all three values (R,G,B). The grid must 
+			be a Dim(3). <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;delegate <b>(</b><b>)</b>  
+			sends the rest of the message to each of the three sliders. 
+			this relies on the fact that [#color] is implemented using 
+			three [hsl] and this might not still work in the far future. <br>
+ <br><b>outlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><b>)</b>  
 			Produces a Dim(3) grid of RGB values. <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="#unpack">#unpack</a></td></tr><tr><td></td><td valign="top"><br>
@@ -874,7 +886,11 @@ Outputs the fractions of a second up to 10 microseconds (?) (actual precision is
 		This object is similar to the Unix list command 
 		'ls'. It returns the names of files in a given 
 		directory.  May be used with [listlength] to retrieve the number of files. 
-		Hidden files are displayed. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b> <br>
+		Hidden files are displayed. </p> <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;symbol <b>(</b><b>)</b>  
+			lists all files in a given directory <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;glob <b>(</b><b>)</b>  
+			lists all files matching a given pattern. 
+			"symbol hello" is like "glob hello/*" <br>
  <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="exec">exec</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/exec-icon.png" alt="[exec]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -1057,13 +1073,73 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
  
 		same as jmax_udpreceive but for PureData UDP connections. <br></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
- <td colspan="4" bgcolor="black">
+ <tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="(new_documentation)"></a><h4>(new documentation)</h4></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="regsub">regsub</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/regsub-icon.png" alt="[regsub]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br></td></tr><tr><td>&nbsp;</td></tr>
+<tr><td colspan="4" bgcolor="black">
+<img src="images/black.png" width="1" height="2"></td></tr>
+<tr><td colspan="4"><a name="(undocumented)"></a><h4>(undocumented)</h4></td></tr><tr><td></td><td></td><td><p>[#edit]</p></td></tr>
+<tr><td></td><td></td><td><p>[#in]</p></td></tr>
+<tr><td></td><td></td><td><p>[#in:aalib]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:file]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:grid]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:jpeg]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:mpeg]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:opengl]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:png]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:ppm]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:quicktime]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:sdl]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:targa]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:tk]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:videodev]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:window]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:x11]</p></td></tr>
+<tr><td></td><td></td><td><p>[#matrix_solve]</p></td></tr>
+<tr><td></td><td></td><td><p>[#out]</p></td></tr>
+<tr><td></td><td></td><td><p>[#peephole]</p></td></tr>
+<tr><td></td><td></td><td><p>[@!]</p></td></tr>
+<tr><td></td><td></td><td><p>[@eight]</p></td></tr>
+<tr><td></td><td></td><td><p>[@four]</p></td></tr>
+<tr><td></td><td></td><td><p>[@global]</p></td></tr>
+<tr><td></td><td></td><td><p>[@scale_to]</p></td></tr>
+<tr><td></td><td></td><td><p>[@three]</p></td></tr>
+<tr><td></td><td></td><td><p>[@two]</p></td></tr>
+<tr><td></td><td></td><td><p>[GridObject]</p></td></tr>
+<tr><td></td><td></td><td><p>[SoundMixer]</p></td></tr>
+<tr><td></td><td></td><td><p>[ascii]</p></td></tr>
+<tr><td></td><td></td><td><p>[broken]</p></td></tr>
+<tr><td></td><td></td><td><p>[button]</p></td></tr>
+<tr><td></td><td></td><td><p>[delcomusb]</p></td></tr>
+<tr><td></td><td></td><td><p>[for]</p></td></tr>
+<tr><td></td><td></td><td><p>[gfmessagebox]</p></td></tr>
+<tr><td></td><td></td><td><p>[gridflow]</p></td></tr>
+<tr><td></td><td></td><td><p>[jcomment]</p></td></tr>
+<tr><td></td><td></td><td><p>[jmax4_udpreceive]</p></td></tr>
+<tr><td></td><td></td><td><p>[jmax4_udpsend]</p></td></tr>
+<tr><td></td><td></td><td><p>[joystick_port]</p></td></tr>
+<tr><td></td><td></td><td><p>[jpatcher]</p></td></tr>
+<tr><td></td><td></td><td><p>[klippeltronics]</p></td></tr>
+<tr><td></td><td></td><td><p>[listfind]</p></td></tr>
+<tr><td></td><td></td><td><p>[loadbang]</p></td></tr>
+<tr><td></td><td></td><td><p>[memstat]</p></td></tr>
+<tr><td></td><td></td><td><p>[messbox]</p></td></tr>
+<tr><td></td><td></td><td><p>[parallel_port]</p></td></tr>
+<tr><td></td><td></td><td><p>[pd_netsocket]</p></td></tr>
+<tr><td></td><td></td><td><p>[sendgui]</p></td></tr>
+<tr><td></td><td></td><td><p>[sys_vgui]</p></td></tr>
+<tr><td></td><td></td><td><p>[system]</p></td></tr>
+<tr><td></td><td></td><td><p>[toggle]</p></td></tr>
+<tr><td>&nbsp;</td></tr>
+<td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.8.0 Documentation<br>
-Copyright &copy; 2001,2002,2003,2004,2005 by Mathieu Bouchard
-<a href="mailto:matju@sympatico.ca">matju@artengine.ca</a>
+GridFlow 0.8.1 Documentation<br>
+Copyright &copy; 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
+<a href="mailto:matju@artengine.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
 
