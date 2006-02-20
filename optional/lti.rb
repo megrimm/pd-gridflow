@@ -55,6 +55,15 @@ class LTI<FObject; install "lti",1,1
       GridFlow.post "total %d others",@others.length
     end
   end
+  def LTI.to_pd datum
+    case datum
+    when String: datum.intern
+    when Float,Integer; datum
+    when true: 1
+    when false: 0
+    else raise "LTI.to_pd can't convert #{datum}, a #{datum.class}"
+    end
+  end
 end
 
 class LTIGridObject < GridObject
@@ -62,27 +71,50 @@ class LTIGridObject < GridObject
 end
 
 LTI.functors.each {|name|
-  LTIGridObject.subclass("lti."+name,1,1) {
+  LTIGridObject.subclass("lti."+name,1,2) {
     class << self
       attr_accessor  :param_class
       attr_accessor:functor_class
+      attr_accessor:attrs
+      attr_accessor:writers
     end
+
     @functor_class = const_get name
     @param_class = Rblti.const_get("R"+
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
-    GridFlow.post "%s, %s", name, @param_class
+    @writers = param_class.instance_methods.grep(/\w=$/)
+    @attrs = writers.map{|x|x.chop}
+
     def _0_help() self.class.help end
     def self.help()
-      setters = param_class.instance_methods.grep(/\w=$/)
-      getters = setters.map{|x|x.chop}
-      getters.each{|x|GridFlow.post "attribute %s",x}
-      GridFlow.post "total %d attributes", getters.length
+      @attrs.each{|x| GridFlow.post "attribute %s",x}
+      GridFlow.post "total %d attributes", @attrs.length
+      #---
+      pmo=param_class.instance_methods-attrs-writers-self.attrs-Object.instance_methods
+      pmo.each{|x| GridFlow.post "other param method %s",x}
+      GridFlow.post "total %d other param methods", pmo.length
+      #---
+      fm=functor_class.instance_methods-Object.instance_methods
+      fm.each{|x| GridFlow.post "functor method %s",x}
+      GridFlow.post "total %d functor methods", fm.length
     end
     def initialize
       c=self.class
       @functor = c.functor_class.new
       @param   = c.  param_class.new
+    end
+    def _0_get(sel=nil)
+      return @param.__send__(sel) if sel
+      self.class.attrs.each {|sel|
+        v=_0_get(sel)
+        begin
+          send_out 1, sel.intern, LTI.to_pd(v)
+	rescue StandardError=>e
+	  GridFlow.post "%s", e.inspect
+	  send_out 1, sel.intern, :some, v.class.to_s.intern
+	end
+      }
     end
   }
 }
