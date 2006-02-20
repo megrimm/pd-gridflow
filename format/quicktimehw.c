@@ -211,6 +211,8 @@ GRID_INLET(FormatQuickTimeHW,0) {
 \end ruby
 );
 
+//#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+
 #ifdef LQT_VERSION
 	lqt_registry_init();
 	int n = lqt_get_num_video_codecs();
@@ -218,6 +220,10 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	Ruby fourccs = rb_hash_new();
 	for (int i=0; i<n; i++) {
 		const lqt_codec_info_t *s = lqt_get_video_codec_info(i);
+		if (!s->name) {
+			fprintf(stderr,"[#in quicktime]: skipping codec with null name!\n");
+			continue;
+		}
 		Ruby name = rb_str_new2(s->name);
 		Ruby f = rb_ary_new2(s->num_fourccs);
 		for (int j=0; j<s->num_fourccs; j++) {
