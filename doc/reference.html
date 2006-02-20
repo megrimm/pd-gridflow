@@ -130,7 +130,11 @@
 <li><a href="#pd_netreceive"><img src="flow_classes/pd_netreceive-icon.png" alt="[pd_netreceive]" border="0"></a></li>
 </ul>
 <h4><a href="#(new_documentation)">(new documentation)</a></h4><ul>
+<li><a href="#listfind"><img src="flow_classes/listfind-icon.png" alt="[listfind]" border="0"></a></li>
+<li><a href="#memstat"><img src="flow_classes/memstat-icon.png" alt="[memstat]" border="0"></a></li>
 <li><a href="#regsub"><img src="flow_classes/regsub-icon.png" alt="[regsub]" border="0"></a></li>
+<li><a href="#sendgui"><img src="flow_classes/sendgui-icon.png" alt="[sendgui]" border="0"></a></li>
+<li><a href="#sys_vgui"><img src="flow_classes/sys_vgui-icon.png" alt="[sys_vgui]" border="0"></a></li>
 </ul>
 <h4><a href="#(undocumented)">(undocumented)</a></h4><ul>
 </ul>
@@ -1075,8 +1079,27 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
 <tr><td>&nbsp;</td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="(new_documentation)"></a><h4>(new documentation)</h4></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="regsub">regsub</a></td></tr><tr><td></td><td valign="top"><br>
+<tr><td colspan="4"><a name="(new_documentation)"></a><h4>(new documentation)</h4></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="listfind">listfind</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/listfind-icon.png" alt="[listfind]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br><b>method</b>&nbsp;_1_list <b>(</b><b>)</b> list to search into<br>
+<br><b>method</b>&nbsp;_0_float <b>(</b><b>)</b> float to find in that list<br>
+<br><b>method</b>&nbsp;_1_float <b>(</b><b>)</b> position of the incoming float in the stored list<br>
+<br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="memstat">memstat</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/memstat-icon.png" alt="[memstat]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br><b>method</b>&nbsp;_0_bang <b>(</b><b>)</b> lookup process stats for the currently running pd+ruby and figure out how much RAM it uses.<br>
+<br><b>method</b>&nbsp;_0_float <b>(</b><b>)</b> virtual size of RAM in kilobytes (includes swapped out and shared memory)<br>
+<br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="regsub">regsub</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/regsub-icon.png" alt="[regsub]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br><b>method</b>&nbsp;_1_symbol <b>(</b><b>)</b> a regexp pattern to be found inside of the string<br>
+<br><b>method</b>&nbsp;_0_symbol <b>(</b><b>)</b> a string to transform<br>
+<br><b>method</b>&nbsp;_2_symbol <b>(</b><b>)</b> a replacement for the found pattern<br>
+<br><b>method</b>&nbsp;_0_symbol <b>(</b><b>)</b> the transformed string<br>
+<br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="sendgui">sendgui</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/sendgui-icon.png" alt="[sendgui]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br><b>method</b>&nbsp;_0_list <b>(</b><b>)</b> a Tcl/Tk command to send to the pd client.<br>
+<br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="sys_vgui">sys_vgui</a></td></tr><tr><td></td><td valign="top"><br>
+<img src="flow_classes/sys_vgui-icon.png" alt="[sys_vgui]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
+<br><b>method</b>&nbsp;_0_list <b>(</b><b>)</b> a Tcl/Tk command to send to the pd client.<br>
 <br></td></tr><tr><td>&nbsp;</td></tr>
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
@@ -1122,14 +1145,10 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
 <tr><td></td><td></td><td><p>[joystick_port]</p></td></tr>
 <tr><td></td><td></td><td><p>[jpatcher]</p></td></tr>
 <tr><td></td><td></td><td><p>[klippeltronics]</p></td></tr>
-<tr><td></td><td></td><td><p>[listfind]</p></td></tr>
 <tr><td></td><td></td><td><p>[loadbang]</p></td></tr>
-<tr><td></td><td></td><td><p>[memstat]</p></td></tr>
 <tr><td></td><td></td><td><p>[messbox]</p></td></tr>
 <tr><td></td><td></td><td><p>[parallel_port]</p></td></tr>
 <tr><td></td><td></td><td><p>[pd_netsocket]</p></td></tr>
-<tr><td></td><td></td><td><p>[sendgui]</p></td></tr>
-<tr><td></td><td></td><td><p>[sys_vgui]</p></td></tr>
 <tr><td></td><td></td><td><p>[system]</p></td></tr>
 <tr><td></td><td></td><td><p>[toggle]</p></td></tr>
 <tr><td>&nbsp;</td></tr>
