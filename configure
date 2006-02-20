@@ -1226,10 +1226,7 @@ mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\
 mf.sub!(/^site-install:\s*install/,"site-install: ")
 
 rp=$conf[:DEFINES][:RUBY_PREFIX]
-if rp
-  mf.sub! /^prefix\s*=.*$/,   "prefix = " + make_expand(rp)
-  mf.sub! /^sitedir\s*=.*$/, "sitedir = " + make_expand(rp)
-end
+mf.sub! /^sitelibdir\s*=.*$/,   "sitelibdir = " + make_expand(rp) if rp
 
 mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
 # Adam Lindsay's Mac attempts.
