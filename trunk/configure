@@ -1024,7 +1024,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.8.1 configurator within Ruby version #{RUBY_VERSION}"
+DUAL.puts "This is the GridFlow 0.8.2 configurator within Ruby version #{RUBY_VERSION}"
 
 begin
   $features.each {|feature| try feature }
@@ -1219,6 +1219,7 @@ end
 mf.gsub!(/^install:.*/) {"install:site-install"} # should i keep this line?
 mf.sub!(/^all:(.*)$/) { "all: #{$1} all2" }
 mf.sub! /^clean:/,"clean: clean2 "
+mf.sub! /CC = gcc\n(CXX.*\n)?/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
 mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
