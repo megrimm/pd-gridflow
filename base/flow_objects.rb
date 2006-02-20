@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -1449,9 +1449,9 @@ FObject.subclass("sendgui",1,0) {
 end # module GridFlow
 
 begin
-  require "gridflow/rblti"
-  GridFlow.post "Ruby-LTI support loaded."
+  require "gridflow/optional/lti"
+  GridFlow.post "LTI support loaded."
 rescue Exception => e
-  #GridFlow.post "%s", e.inspect
-  #GridFlow.post "(rblti not found)"
+  GridFlow.post "%s", e.inspect
+  #GridFlow.post "(lti not found)"
 end
