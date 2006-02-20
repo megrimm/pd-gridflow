@@ -901,6 +901,9 @@ FObject.subclass("listfind",2,1) {
     end
     send_out 0,-1
   end
+  doc:_1_list,"list to search into"
+  doc:_0_float,"float to find in that list"
+  doc_out:_0_float,"position of the incoming float in the stored list"
 }
 
 #-------- fClasses for: GUI
@@ -1418,6 +1421,10 @@ FObject.subclass("regsub",3,1) {
   def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
   def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
   def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
+  doc:_0_symbol,"a string to transform"
+  doc:_1_symbol,"a regexp pattern to be found inside of the string"
+  doc:_2_symbol,"a replacement for the found pattern"
+  doc_out:_0_symbol,"the transformed string"
 }
 
 FObject.subclass("memstat",1,1) {
@@ -1426,6 +1433,9 @@ FObject.subclass("memstat",1,1) {
     send_out 0, Float(f.gets.split(" ")[22]) / 1024.0
     f.close
   end
+  doc:_0_bang,"lookup process stats for the currently running pd+ruby "+
+  	"and figure out how much RAM it uses."
+  doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
 }
 
 FObject.subclass("sendgui",1,0) {
@@ -1433,6 +1443,7 @@ FObject.subclass("sendgui",1,0) {
     GridFlow.gui x.join(" ").gsub(/`/,";")+"\n"
   end
   install "sys_vgui", 1, 0
+  doc:_0_list,"a Tcl/Tk command to send to the pd client."
 }
 
 end # module GridFlow
@@ -1441,6 +1452,6 @@ begin
   require "gridflow/rblti"
   GridFlow.post "Ruby-LTI support loaded."
 rescue Exception => e
-  GridFlow.post "%s", e.inspect
+  #GridFlow.post "%s", e.inspect
   #GridFlow.post "(rblti not found)"
 end
