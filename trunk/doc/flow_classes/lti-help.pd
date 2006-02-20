@@ -3,9 +3,15 @@
 #X msg 53 20 help;
 #X msg 53 40 help functors;
 #X msg 53 60 help others;
-#X msg 122 141 help;
+#X msg 124 112 help;
 #X obj 108 172 lti.MeanShiftSegmentation;
+#X msg 131 142 get;
+#X obj 278 191 print right;
+#X obj 108 191 print left;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;
 #X connect 3 0 0 0;
 #X connect 4 0 5 0;
+#X connect 5 0 8 0;
+#X connect 5 1 7 0;
+#X connect 6 0 5 0;
