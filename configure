@@ -299,9 +299,8 @@ FILES = [
 #----------------------------------------------------------------#
 Feature.add {
 	tag :gcc3
-	name "GNU C++ Compiler 3"
+	name "GNU C++ Compiler 3 (or 4)"
 	options ["HAVE_GCC3"]
-=begin
 	test proc {
 		pi=File.popen "#{$conf[:CC]} -v 2>&1", "r"
 		vline = pi.readlines.find {|l| /gcc version ([\d\.]+)/.match l }
@@ -310,7 +309,6 @@ Feature.add {
 		if version < "3" then raise "version #{version} < 3" end
 		true
 	}
-=end
 	test proc {
 		c_test %{
 		#include <stdio.h>
@@ -1108,7 +1106,8 @@ if OSX then
 else
 	f.puts "BRIDGE_LDFLAGS += -rdynamic -shared"
 end
-$CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU]
+$CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
+$CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
 $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
 #$CFLAGS += " -fforce-addr"
 #$CFLAGS += " -fprefetch-loop-arrays"
