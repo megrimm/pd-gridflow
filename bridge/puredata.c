@@ -267,7 +267,7 @@ static void BFProxy_method_missing(BFProxy *self,
 t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self->parent,self->inlet,s,argc,argv);
 }
-	
+
 static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac+1];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
@@ -279,10 +279,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	}
 
 #ifdef HAVE_GEM
-	CPPExtern::m_holder = (t_object *)fm->self;
+	BFObject *bself = fm->self;
+	CPPExtern::m_holder = (t_object *)bself;
 	CPPExtern::m_holdname = "keep_gem_happy";
-	//Obj_header *obj = (Obj_header *)fm->self;
-	//obj->data = (CPPExtern *)(GemPixObj *)this;
 #endif
 
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
@@ -291,6 +290,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	self->bself->rself = rself;
 
 #ifdef HAVE_GEM
+	//bself->gemself = (CPPExtern *)(GemPixObj *)self;
+	bself->gemself = (CPPExtern *)((void **)self+11);
 	CPPExtern::m_holder = NULL;
 	CPPExtern::m_holdname=NULL;
 #endif
