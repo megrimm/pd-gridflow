@@ -303,7 +303,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
 		} else {
-			int ntsz = number_type_table[nt].size;
+			//int ntsz = number_type_table[nt].size;
 			int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
 			if (!m) m++;
 			m *= factor();
@@ -543,7 +543,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	for (int i=0; i<rb_ary_len(handlers); i++) {
 		Ruby ghp = rb_ary_ptr(handlers)[i];
 		if (ghp==Qnil) continue;
-		GridHandler *gh = FIX2PTR(GridHandler,ghp);
+		//GridHandler *gh = FIX2PTR(GridHandler,ghp);
 		char buf[256];
 		for (int j=0; j<COUNT(names); j++) {
 			sprintf(buf,"_%d_%s",i,names[j]);
