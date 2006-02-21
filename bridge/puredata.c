@@ -46,6 +46,10 @@ tries to call a Ruby method of the proper name.
 #define CObject_free CObject_freeee
 #define gfpost post
 
+#ifdef HAVE_GEM
+#include "Base/GemPixDualObj.h"
+#endif
+
 /* **************************************************************** */
 struct BFObject;
 struct FMessage {
@@ -148,7 +152,9 @@ static VALUE *localize_sysstack () {
 // BFObject
 
 struct BFObject : t_object {
-	void *gemself; // for compatibility with GEM's Obj_header class
+#ifdef HAVE_GEM
+	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
+#endif
 	int32 magic; // paranoia
 	Ruby rself;
 	int nin;  // per object settings (not class)
@@ -272,10 +278,22 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		argv[0] = rb_str_new2(fm->selector->s_name);
 	}
 
+#ifdef HAVE_GEM
+	CPPExtern::m_holder = (t_object *)fm->self;
+	CPPExtern::m_holdname = "keep_gem_happy";
+	//Obj_header *obj = (Obj_header *)fm->self;
+	//obj->data = (CPPExtern *)(GemPixObj *)this;
+#endif
+
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
 	self->bself = fm->self;
 	self->bself->rself = rself;
+
+#ifdef HAVE_GEM
+	CPPExtern::m_holder = NULL;
+	CPPExtern::m_holdname=NULL;
+#endif
 
 	int ninlets  = self->bself->nin = ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = self->bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
