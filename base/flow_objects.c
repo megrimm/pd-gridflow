@@ -182,7 +182,7 @@ struct GridExportList : GridObject {
 
 GRID_INLET(GridExportList,0) {
 	int n = in->dim->prod();
-	if (n>250000) RAISE("list too big (%d elements)", n);
+	if (n>1000000) RAISE("list too big (%d elements, max 1000000)", n);
 	list = rb_ary_new2(n+2);
 	this->n = n;
 	rb_ivar_set(rself,SI(@list),list); // keep
