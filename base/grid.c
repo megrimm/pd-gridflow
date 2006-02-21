@@ -438,8 +438,7 @@ void GridOutlet::give(int n, Pt<T> data) {TRACE;
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
 	CHECK_BUSY(outlet); assert(!frozen);
-	int mode = in->mode;
-	assert(mode==6 || mode==4 || mode==0);
+	assert(in->mode==6 || in->mode==4 || in->mode==0);
 	inlets.push_back(in);
 }
 
