@@ -832,6 +832,7 @@ Feature.add {
 #	uses_h [$conf[:DEFINES][:GEM_SOURCE]+"/src/Base/GemBase.h"]
 	uses_feature [:puredata]
 	uses_o ["optional/gem.o"]
+	options ["HAVE_GEM"]
 	test proc {
 		# hack
 		$C_INCLUDE_PATH.unshift $conf[:DEFINES][ :GEM_SOURCE]
