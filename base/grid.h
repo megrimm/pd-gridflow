@@ -1013,7 +1013,7 @@ struct GridOutlet : CObject {
 // methods
 	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
 	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
-		int ntsz = number_type_table[nt].size;
+		//int ntsz = number_type_table[nt].size;
 		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
 		begin(woutlet,dim,nt);
 	}
