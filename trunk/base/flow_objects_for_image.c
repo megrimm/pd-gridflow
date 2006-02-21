@@ -577,7 +577,7 @@ GRID_INLET(DrawImage,0) {
 	int f = in->factor();
 	int y = in->dex/f;
 	if (position->nt != int32_e) RAISE("position has to be int32");
-	int py = ((int32*)*position)[0], rsy = image->dim->v[0], sy=in->dim->get(0);
+	int py = ((int32*)*position)[0], rsy = image->dim->v[0];
 	int px = ((int32*)*position)[1], rsx = image->dim->v[1], sx=in->dim->get(1);
 	for (; n; y++, n-=f, data+=f) {
 		int ty = div2(y-py,rsy);
