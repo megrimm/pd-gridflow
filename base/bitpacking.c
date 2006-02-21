@@ -130,9 +130,9 @@ static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 
 template <class T>
 static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
-	const int hb[3] = {15,10,4};
-	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
-	uint32 span[3] = {4,5,4};
+//	const int hb[3] = {15,10,4};
+//	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
+//	uint32 span[3] = {4,5,4};
 	uint32 chop[3] = {3,2,3};
 	uint32 slide[3] = {11,5,0};
 	uint32 t;
