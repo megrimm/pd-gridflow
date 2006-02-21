@@ -23,11 +23,11 @@ endif
 
 CFLAGS += -Wall # for cleanliness
 # but it's normal to have unused parameters
-#ifeq ($(HAVE_GCC3),yes)
-#CFLAGS += -Wno-unused-parameter
-#else
+ifeq ($(HAVE_GCC3),yes)
+CFLAGS += -Wno-unused -Wunused-variable
+else
 CFLAGS += -Wno-unused
-#endif
+endif
 
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O0 # debuggability
