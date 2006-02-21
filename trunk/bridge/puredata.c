@@ -148,6 +148,7 @@ static VALUE *localize_sysstack () {
 // BFObject
 
 struct BFObject : t_object {
+	void *gemself; // for compatibility with GEM's Obj_header class
 	int32 magic; // paranoia
 	Ruby rself;
 	int nin;  // per object settings (not class)
@@ -486,7 +487,6 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 		return Qnil;
 	}
 	bself->check_magic();
-	Ruby qlass = rb_funcall(rself,SI(class),0);
 	int outlet = INT(argv[0]);
 	Ruby sym = argv[1];
 	argc-=2;
@@ -494,7 +494,6 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	t_outlet *out = bself->te_outlet;
 	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
 }
