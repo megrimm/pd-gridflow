@@ -401,7 +401,6 @@ GRID_INLET(FormatX11,0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex/sxc;
-	int oy = y;
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		// convert line
 		if (use_stripes) {
