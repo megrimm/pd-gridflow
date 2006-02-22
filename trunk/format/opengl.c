@@ -28,7 +28,8 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <signal.h>
-#ifdef MACOSX
+#ifdef __APPLE__
+#include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
@@ -151,6 +152,11 @@ GRID_INLET(FormatOpenGL,0) {
 	if (in_use) RAISE("only one #io:opengl object at a time; sorry");
 	in_use=true;
 	if (mode!=SYM(out)) RAISE("write-only, sorry");
+	int dummy = 0;
+	glutInit(&dummy,0);
+	glutInitDisplayMode(GLUT_RGBA);
+	resize_window(0,0,320,240);
+	
 	gltex = 0;
 	glEnable(GL_TEXTURE_2D);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST); 
@@ -162,10 +168,7 @@ GRID_INLET(FormatOpenGL,0) {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	window = 0xDeadBeef;
-	int dummy = 0;
-	glutInit(&dummy,0);
-	glutInitDisplayMode(GLUT_RGBA);
-	resize_window(0,0,320,240);
+
 	uint32 mask[3] = {0xff000000,0x00ff0000,0x0000ff00};
 	bit_packing = new BitPacking(4,4,3,mask);
 	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");
