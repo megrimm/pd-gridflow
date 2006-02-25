@@ -6,7 +6,7 @@ PINC = -I/usr/include/python
 RINC = -I`ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
 CXX = g++-3.3
 
-default:: python
+default:: ruby
 
 python:: _pylti.so
 	python -c 'import pylti'
@@ -25,7 +25,7 @@ pylti_wrap.cxx: ./swig/pylti.i
 	#	$(INCS) -w509,-312,-362,-389 pylti.i
 
 ruby:: rblti.so
-	ruby testrblti.rb
+	ruby -I. testrblti.rb
 
 rblti.so: rblti_wrap.o Makefile
 	$(CXX) -shared -o rblti.so rblti_wrap.o $(LIBS) -lstdc++
@@ -36,9 +36,12 @@ rblti_wrap.o: rblti_wrap.cxx
 rblti_wrap.s: rblti_wrap.cxx
 	$(CXX) $(RINC) -Ipatched $(INCS) -S rblti_wrap.cxx
 
-rblti_wrap.cxx: ./swig/rblti.i
-	swig -v -c++ -ruby -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
+#rblti_wrap.cxx: ./swig/rblti.i
+#	swig -v -c++ -ruby -I./generated -I./patched \
+#		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
+
+rblti_wrap.cxx: rblti_wrap.cxx.bz2
+	bunzip2 -c rblti_wrap.cxx.bz2 > rblti_wrap.cxx
 
 clean::
 	rm -f \
