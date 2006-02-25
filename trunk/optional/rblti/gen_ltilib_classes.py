@@ -12,84 +12,127 @@
 
 from xml.dom import minidom
 import os
-import sys
 from distutils.text_file import TextFile
-str_version = '0.32'
 
-basedir=None
+str_version = '0.33.1'
+
+
 # handle the settings: WORKAREA has to be defined !
-if len(sys.argv)>1:
-  basedir = sys.argv[1]
-else:
-  workarea = os.getenv('WORKAREA')
-  # is pylti not part of the ltilib ? Yes --> than we need a directory structure of WORKAREA_PATH/import/ltilib/xml
-  if workarea<>None:
-      basedir = workarea+os.sep+'import'+os.sep+'ltilib'+os.sep+'xml'+os.sep
-  # check if we are in misc directory of the ltilib distribution (ltilib/misc/pylti)
-  # very simple way: navigate up and navigate down again
-  else:
-      strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'pylti'+'-'+str_version
-      try:
-          # try to read lti.i, this is a good indication of a pylti directory
-          aTestFile = TextFile(filename=strCheckPath+os.sep+'lti.i')
-          basedir = '..'+os.sep+'..'+os.sep+'xml'+os.sep        # move up ltipy and misc directory 
-      except IOError: pass
+basedir = None
+
+workarea = os.getenv("WORKAREA")
+
+# is pylti not part of the ltilib ? Yes --> than we need a directory structure of WORKAREA_PATH/import/ltilib/xml
+if workarea<>None:
+    basedir = workarea+os.sep+'import'+os.sep+'ltilib'+os.sep+'xml'+os.sep
+    
+# check if we are in misc directory of the ltilib distribution (ltilib/misc/pylti)
+# very simple way: navigate up and navigate down again
+
+if workarea==None:    
+    strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'pylti'+'-'+str_version
+    try:
+        # try to read lti.i, this is a good indication of a pylti directory
+        aTestFile = TextFile(filename=strCheckPath+os.sep+'swig'+os.sep+'lti.i')
+        basedir = '..'+os.sep+'..'+os.sep+'xml'+os.sep        # move up ltipy and misc directory 
+    except IOError :
+        pass
+
 
 output_dir = 'generated'
-#output_dir = 'generated_ruby'
 
 def f(x): return 'classlti_1_1'+x+'.xml'
 #def g(x): return 'lti::_'+x+'::_'+x+'_parameters'
-def g(x): return 'lti::_'+x+'::'+x+'_parameters'
+def g(x): return 'lti::_'+x+'::R'+x+'_parameters'             #replaced leading underscore in parameters classname with R
+
 
 # list of tuples with ( xml-file-name, full-qualified-name of the base class )
-lst = [   (f('functor_1_1parameters'),               'lti::ioObject')
-        , (f('ioFunctor_1_1parameters'),             g('functor')) 
-        , (f('ioImage_1_1parameters'),               g('ioFunctor'))
-        , (f('usePalette_1_1parameters'),            g('functor'))
-        , (f('segmentation_1_1parameters'),          g('functor'))
-        , (f('regionGrowing_1_1parameters'),         g('segmentation'))
-        , (f('meanShiftSegmentation_1_1parameters'), g('segmentation'))
-        , (f('kMeansSegmentation_1_1parameters'),    g('segmentation'))
-        , (f('whiteningSegmentation_1_1parameters'), g('segmentation'))
-        , (f('csPresegmentation_1_1parameters'),     g('segmentation'))
-        , (f('colorQuantization_1_1parameters'),     g('functor'))
-        , (f('kMColorQuantization_1_1parameters'),   g('colorQuantization'))
-        , (f('viewerBase_1_1parameters'),            g('functor'))
-        , (f('externViewer_1_1parameters'),          g('viewerBase'))
-        , (f('objectsFromMask_1_1parameters'),       g('segmentation'))
-        , (f('objectsFromMask_1_1objectStruct'),     'lti::ioObject')
-        , (f('tree_1_1node'),                        'lti::ioObject')
-        , (f('featureExtractor_1_1parameters'),      g('functor'))
-        , (f('globalFeatureExtractor_1_1parameters'),g('featureExtractor'))
-        , (f('localFeatureExtractor_1_1parameters'), g('featureExtractor'))
-        , (f('geometricFeatures_1_1parameters'),     g('globalFeatureExtractor'))
-        , (f('localMoments_1_1parameters'),          g('localFeatureExtractor'))
-        , (f('chromaticityHistogram_1_1parameters'), g('globalFeatureExtractor'))
-        , (f('modifier_1_1parameters'),              g('functor'))
-        , (f('polygonApproximation_1_1parameters'),  g('modifier'))
-        , (f('transform_1_1parameters'),             g('functor'))
-        , (f('gradientFunctor_1_1parameters'),       g('transform'))
-        , (f('skeleton_1_1parameters'),              g('transform'))
-        , (f('colorContrastGradient_1_1parameters'), g('gradientFunctor'))
-        , (f('edgeDetector_1_1parameters'),          g('modifier'))
-        , (f('classicEdgeDetector_1_1parameters'),   g('edgeDetector'))
-        , (f('cannyEdges_1_1parameters'),            g('edgeDetector'))
-        , (f('filter_1_1parameters'),                g('modifier'))
-        , (f('convolution_1_1parameters'),           g('filter'))
-        , (f('morphology_1_1parameters'),            g('modifier'))
-        , (f('dilation_1_1parameters'),              g('morphology'))
-        , (f('erosion_1_1parameters'),               g('morphology'))
-        , (f('distanceTransform_1_1parameters'),     g('morphology'))
-        , (f('classifier_1_1parameters'),            'lti::ioObject')
-        , (f('classifier_1_1outputTemplate'),        'lti::ioObject')
-        , (f('classifier_1_1outputVector'),          'lti::ioObject')
-        , (f('decisionTree_1_1parameters'),          g('classifier'))
-        , (f('ioBMP_1_1parameters'),                 g('ioFunctor'))
-        , (f('ioPNG_1_1parameters'),                 g('ioFunctor'))
-        , (f('ioJPEG_1_1parameters'),                g('ioFunctor'))
-	, (f('distanceTransform_1_1sedMask'),        None)
+lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
+        , (f('ioFunctor_1_1parameters'),                        g('functor') )
+        , (f('ioImage_1_1parameters'),                          g('ioFunctor'))
+        , (f('usePalette_1_1parameters'),                       g('functor') )
+            
+        # Statistics)
+        , (f('chiSquareFunctor_1_1parameters'),                 g('functor'))
+    
+        # Segmentation and Localization    )
+        , (f('segmentation_1_1parameters'),                     g('functor'))
+        , (f('regionGrowing_1_1parameters'),                    g('segmentation'))
+        , (f('meanShiftSegmentation_1_1parameters'),            g('segmentation'))
+        , (f('kMeansSegmentation_1_1parameters'),               g('segmentation'))
+        , (f('whiteningSegmentation_1_1parameters'),            g('segmentation'))
+        , (f('csPresegmentation_1_1parameters'),                g('segmentation'))
+        , (f('thresholding_1_1parameters'),                     g('modifier'))
+        , (f('thresholdSegmentation_1_1parameters'),            g('segmentation'))
+        , (f('watershedSegmentation_1_1parameters'),            g('segmentation'))
+        , (f('snake_1_1parameters'),                            g('segmentation'))
+        , (f('regionMerge_1_1parameters'),                      g('functor'))
+        , (f('similarityMatrix_1_1parameters'),                 g('functor'))
+        , (f('fastRelabeling_1_1parameters'),                   g('modifier'))
+        , (f('colorQuantization_1_1parameters'),                g('functor'))
+        , (f('kMColorQuantization_1_1parameters'),              g('colorQuantization'))
+        , (f('lkmColorQuantization_1_1parameters'),             g('colorQuantization'))
+	, (f('medianCut_1_1parameters'),                        g('colorQuantization'))
+        , (f('computePalette_1_1parameters'),              	g('functor'))
+        , (f('ioBMP_1_1parameters'),                		g('ioFunctor'))
+        , (f('viewerBase_1_1parameters'),             		g('functor'))
+        , (f('externViewer_1_1parameters'),           		g('viewerBase'))
+        , (f('objectsFromMask_1_1parameters'),       		g('segmentation'))
+        , (f('objectsFromMask_1_1objectStruct'),    		'lti::ioObject')
+        , (f('tree_1_1node'),                          		'lti::ioObject')
+        , (f('featureExtractor_1_1parameters'),        		g('functor'))
+        , (f('globalFeatureExtractor_1_1parameters'), 		g('featureExtractor'))
+        , (f('localFeatureExtractor_1_1parameters'),  		g('featureExtractor'))
+        , (f('geometricFeatures_1_1parameters'),      		g('globalFeatureExtractor'))
+        , (f('localMoments_1_1parameters'),            		g('localFeatureExtractor'))
+        , (f('chromaticityHistogram_1_1parameters'),  		g('globalFeatureExtractor'))
+        , (f('modifier_1_1parameters'),                		g('functor'))
+        , (f('transform_1_1parameters'),               		g('functor'))
+        , (f('realFFT_1_1parameters'),                		g('transform'))
+        , (f('qmf_1_1parameters'),                     		g('filter'))
+        , (f('orientedHLTransform_1_1parameters'),    		g('transform'))
+        , (f('gHoughTransform_1_1parameters'),        		g('modifier'))
+        , (f('orientationMap_1_1parameters'),        		g('transform'))
+        , (f('medianFilter_1_1parameters'),           		g('filter'))
+        , (f('kNearestNeighFilter_1_1parameters'),    		g('filter'))
+        , (f('gradientFunctor_1_1parameters'),        		g('transform'))
+        , (f('skeleton_1_1parameters'),                		g('transform'))
+        , (f('colorContrastGradient_1_1parameters'), 		g('gradientFunctor'))
+        , (f('cornerDetector_1_1parameters'),         		g('modifier'))
+        , (f('harrisCorners_1_1parameters'),          		g('modifier'))
+        , (f('edgeDetector_1_1parameters'),            		g('modifier'))
+        , (f('classicEdgeDetector_1_1parameters'),    		g('edgeDetector'))
+        , (f('cannyEdges_1_1parameters'),              		g('edgeDetector'))
+
+        # Points, Contours and Shape Manipulation    )
+        , (f('interpolator_1_1parameters'),            		g('functor'))
+        , (f('variablySpacedSamplesInterpolator_1_1parameters'),g('interpolator'))
+        , (f('cubicSpline_1_1parameters'),             		g('variablySpacedSampleInterpolator'))
+        , (f('borderExtrema_1_1parameters'),           		g('modifier'))
+        , (f('boundingBox_1_1parameters'),             		g('segmentation'))
+        , (f('polygonApproximation_1_1parameters'),  		g('modifier'))
+        , (f('convexHull_1_1parameters'),              		g('modifier'))
+        , (f('filter_1_1parameters'),                   	g('modifier'))
+        , (f('convolution_1_1parameters'),             		g('filter'))
+        , (f('correlation_1_1parameters'),             		g('filter'))
+        , (f('morphology_1_1parameters'),              		g('modifier'))
+        , (f('dilation_1_1parameters'),                		g('morphology'))
+        , (f('erosion_1_1parameters'),                 		g('morphology'))
+        , (f('distanceTransform_1_1parameters'),      		g('morphology'))
+        , (f('scaling_1_1parameters'),                 		g('modifier'))
+        , (f('rotation_1_1parameters'),                		g('modifier'))
+        , (f('flipImage_1_1parameters'),               		g('modifier'))
+        , (f('geometricTransform_1_1parameters'),      		g('modifier'))
+        , (f('classifier_1_1parameters'),               	'lti::ioObject')
+        , (f('classifier_1_1outputTemplate'),          		'lti::ioObject')
+        , (f('classifier_1_1outputVector'),            		'lti::ioObject')
+        , (f('decisionTree_1_1parameters'),            		g('classifier'))
+        , (f('serial_1_1parameters'),                  		'lti::ioObject')
+	, (f('ioPNG_1_1parameters'),                 		g('ioFunctor'))
+        , (f('ioJPEG_1_1parameters'),               		g('ioFunctor'))
+	, (f('distanceTransform_1_1sedMask'),                   None)
     ]
+    
 
 # some constants
 nl = '\n'
@@ -101,6 +144,10 @@ nl = '\n'
 #  --> 'type'               # Return Type
 #  --> 'param'             # Argumente
 #       --> 'type' 
+#
+#
+#
+#
 
 def WriteFile(name,txt):
     f = open(name,'w')
@@ -285,8 +332,7 @@ def ProcessHeaderFile(classname,theclassname,thenewclassname,members,baseclassna
     #s += '    /*pObj*/'+nl
     s += '};'+nl
     s += sClose
-#    s += sTypedef+thenewclassname+' '+thenewclassname[1:]+';'+nl    # erstes _ vom Klassennamen entfernen
-    s += sTypedef+thenewclassname+' '+thenewclassname+';'+nl
+    s += sTypedef+thenewclassname+' '+thenewclassname[1:]+';'+nl    # erstes _ vom Klassennamen entfernen
     s += '}'
     s += nl
     s += '#endif'+nl
@@ -325,15 +371,15 @@ def ProcessFile(filename,baseclassname,add_to_output=None):
     for i in range(len(nameitems)):
         # ignoriere das erste lti::
         if i>0:
-#            s += '_'
-            if i>1: s += '_'  #to prevent class names starting with '_', Ruby hates that
+	    if i > 1:           #avoid class name starting with an underscore
+                s += '_'
             s += nameitems[i]
-        
-    thenewclassname = s #classname.replace('::','_')           # lti_object
+    
+    outputfilename = '_'+s   #header file name still starts with underscore (to minimize changes in .i files)
+    
+    thenewclassname = 'R'+s  #replaced leading underscore in parameters classname with R
     print thenewclassname
     
-#    outputfilename = thenewclassname
-    outputfilename = '_'+thenewclassname
     if add_to_output<>None:
         outputfilename += add_to_output
     outputfilename += '.h'
@@ -351,4 +397,3 @@ def ProcessAllFiles(lst):
 
 ProcessAllFiles(lst)
 
-    
