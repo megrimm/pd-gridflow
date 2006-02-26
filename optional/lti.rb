@@ -116,5 +116,9 @@ LTI.functors.each {|name|
 	end
       }
     end
+    @attrs.each {|name|
+      GridFlow.post "defining _0_#{name}..."
+      module_eval "def _0_#{name}(value) @param.#{name} = value end"
+    }
   }
 }
