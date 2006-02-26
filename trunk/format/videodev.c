@@ -352,9 +352,9 @@ static int read3(int fd, uint8 *image, int n) {
 	}
 	while(queuesize<queuemax) rb_funcall(rself,SI(frame_ask),0);
 	vmmap.frame = queue[0];
-	uint64 t0 = gf_timeofday();
+	//uint64 t0 = gf_timeofday();
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
-	uint64 t1 = gf_timeofday();
+	//uint64 t1 = gf_timeofday();
 	//if (t1-t0 > 100) gfpost("VIDIOCSYNC delay: %d us",t1-t0);
 	frame_finished(image+vmbuf.offsets[queue[0]]);
 	queuesize--;
