@@ -30,7 +30,6 @@
 \class FormatMPEG3 < Format
 struct FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
-	P<BitPacking> bit_packing;
 	int track;
 	FormatMPEG3 () : track(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
@@ -44,23 +43,22 @@ struct FormatMPEG3 : Format {
 \def Ruby frame () {
 	int nframe = mpeg3_get_frame(mpeg,track);
 	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
-
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
-	int npixels = sx*sy;
+	//int npixels = sx*sy;
 	int channels = 3;
+	/* !@#$ the doc says "You must allocate 4 extra bytes in the
+	last output_row. This is scratch area for the MMX routines." */
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
-	int result = mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
-
+	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 	GridOutlet out(this,0,new Dim(sy, sx, channels),
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out.dim->prod(1);
 	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
 		Pt<uint8> row = buf+channels*sx*y;
-		/* bit_packing->unpack(sx,row,b2); out.send(bs,b2); */
 		out.send(bs,row);
 	}
 	delete[] (uint8 *)buf;
@@ -83,8 +81,6 @@ struct FormatMPEG3 : Format {
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	mpeg = mpeg3_open(rb_str_ptr(filename));
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
-	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
 \classinfo {

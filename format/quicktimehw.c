@@ -61,7 +61,7 @@ struct FormatQuickTimeHW : Format {
 
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
-	int length2 = quicktime_video_length(anim,track);
+//	int length2 = quicktime_video_length(anim,track);
 	if (nframe >= length) {
 //		gfpost("nframe=%d length=%d length2=%d",nframe,length,length2);
 		return Qfalse;
@@ -85,10 +85,9 @@ struct FormatQuickTimeHW : Format {
 	}
 	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels);
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
-	int result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
+	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
 	GridOutlet out(this,0,new Dim(sy, sx, channels),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
-	int bs = out.dim->prod(1);
+	NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	out.give(sy*sx*channels,buf);
 	started=true;
 	return INT2NUM(nframe);
