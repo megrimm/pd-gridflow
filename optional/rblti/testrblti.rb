@@ -42,4 +42,6 @@ def ProcessIt(argv)
  ShowImage(imgx)
 end
 
-ProcessIt('lemur.jpeg')
+#ProcessIt('lemur.jpeg')
+#ProcessIt('../../images/opensource.png')
+ ProcessIt('../../images/babbage.jpg')
