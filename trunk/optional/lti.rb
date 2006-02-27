@@ -67,7 +67,31 @@ class LTI<FObject; install "lti",1,1
 end
 
 class LTIGridObject < GridObject
-
+    def initialize
+      c=self.class
+      @functor = c.functor_class.new
+      @param   = c.  param_class.new
+    end
+    def send_out_lti_image o,m
+	send_out_grid_begin o,[m.rows,m.columns,3]
+	ps=GridFlow.packstring_for_nt(@nt)
+	sz=GridFlow.sizeof_nt(@nt)
+	for y in 0...@dim[0] do ro=m.getRow(y)
+	  for x in 0...@dim[1] do px=ro.at(x)
+	    send_out_grid_flow o,
+	      [px.getRed,px.getGreen,px.getBlue].pack(ps)
+	  end
+	end
+    end
+    def send_out_lti_imatrix o,m
+	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
+	sz=GridFlow.sizeof_nt(@nt)
+	for y in 0...@dim[0] do ro=m.getRow(y)
+	  for x in 0...@dim[1] do px=ro.at(x)
+	    send_out_grid_flow o, [px].pack("i"), :int32
+	  end
+	end
+    end
 end
 
 LTI.functors.each {|name|
@@ -98,11 +122,6 @@ LTI.functors.each {|name|
       fm=functor_class.instance_methods-Object.instance_methods
       fm.each{|x| GridFlow.post "functor method %s",x}
       GridFlow.post "total %d functor methods", fm.length
-    end
-    def initialize
-      c=self.class
-      @functor = c.functor_class.new
-      @param   = c.  param_class.new
     end
     def _0_get(sel=nil)
       return @param.__send__(sel) if sel
@@ -148,30 +167,8 @@ LTI.functors.each {|name|
 	@imatrix = Rblti::Imatrix.new
 	@palette = Rblti::Palette.new
 	@functor.apply @image, @imatrix, @palette
-	send_out_lti_image 0,@image
-	#send_out_lti_imatrix 0,@imatrix
-	#send_out_lti_palette 0,@palette
-    end
-    def send_out_lti_image o,m
-	send_out_grid_begin o,[m.rows,m.columns,3]
-	ps=GridFlow.packstring_for_nt(@nt)
-	sz=GridFlow.sizeof_nt(@nt)
-	for y in 0...@dim[0] do ro=m.getRow(y)
-	  for x in 0...@dim[1] do px=ro.at(x)
-	    send_out_grid_flow o,
-	      [px.getRed,px.getGreen,px.getBlue].pack(ps)
-	  end
-	end
-    end
-    def send_out_lti_imatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns],:float32
-	ps=GridFlow.packstring_for_nt(@nt)
-	sz=GridFlow.sizeof_nt(@nt)
-	for y in 0...@dim[0] do ro=m.getRow(y)
-	  for x in 0...@dim[1] do px=ro.at(x)
-	    send_out_grid_flow o, [px].pack(ps)
-	  end
-	end
+	#send_out_lti_palette 1,@palette
+	send_out_lti_imatrix 0,@imatrix
     end
     install_rgrid 0
   }
