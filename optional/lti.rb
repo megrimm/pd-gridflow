@@ -25,6 +25,11 @@ require "rblti"
 include GridFlow
 include Rblti
 
+class<<Functor
+  attr_accessor :inputs
+  attr_accessor:outputs
+end
+
 class LTI<FObject; install "lti",1,1
   class << self
     attr_accessor:functors
@@ -64,7 +69,19 @@ class LTI<FObject; install "lti",1,1
     else raise "LTI.to_pd can't convert #{datum}, a #{datum.class}"
     end
   end
+  def LTI.info(name,inputs,outputs)
+    Rblti.const_get(name).module_eval {
+      #@inputs=inputs;  def self.inputs; @inputs end
+      #@outputs=outputs def self.outputs; @outputs end
+      self.inputs = inputs
+      self.outputs = outputs
+    }
+  end
 end
+
+LTI.info         :Segmentation, [Image], [Imatrix,Palette]
+LTI.info   :KMeansSegmentation, [Image], [Imatrix,Palette]
+LTI.info:MeanShiftSegmentation, [Image], [Imatrix,Palette]
 
 class LTIGridObject < GridObject
     def initialize
@@ -76,18 +93,27 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[m.rows,m.columns,3]
 	ps=GridFlow.packstring_for_nt(@nt)
 	sz=GridFlow.sizeof_nt(@nt)
-	for y in 0...@dim[0] do ro=m.getRow(y)
-	  for x in 0...@dim[1] do px=ro.at(x)
+	for y in 0...m.rows do ro=m.getRow(y)
+	  for x in 0...m.columns do px=ro.at(x)
 	    send_out_grid_flow o,
 	      [px.getRed,px.getGreen,px.getBlue].pack(ps)
 	  end
 	end
     end
+    def send_out_lti_palette o,m
+	send_out_grid_begin o,[m.size,3]
+	ps=GridFlow.packstring_for_nt(@nt)
+	sz=GridFlow.sizeof_nt(@nt)
+	for x in 0...m.size do px=m.at(x)
+	  send_out_grid_flow o,
+	    [px.getRed,px.getGreen,px.getBlue].pack(ps)
+	end
+    end
     def send_out_lti_imatrix o,m
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	sz=GridFlow.sizeof_nt(@nt)
-	for y in 0...@dim[0] do ro=m.getRow(y)
-	  for x in 0...@dim[1] do px=ro.at(x)
+	for y in 0...m.rows do ro=m.getRow(y)
+	  for x in 0...m.columns do px=ro.at(x)
 	    send_out_grid_flow o, [px].pack("i"), :int32
 	  end
 	end
@@ -95,7 +121,10 @@ class LTIGridObject < GridObject
 end
 
 LTI.functors.each {|name|
-  LTIGridObject.subclass("lti."+name,1,2) {
+  fuc = Rblti.const_get name
+  fui = fuc. inputs || [Image]
+  fuo = fuc.outputs || [Image]
+  LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     class << self
       attr_accessor  :param_class
       attr_accessor:functor_class
@@ -103,7 +132,7 @@ LTI.functors.each {|name|
       attr_accessor:writers
     end
 
-    @functor_class = const_get name
+    @functor_class = fuc
     @param_class = Rblti.const_get("R"+
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
@@ -122,21 +151,26 @@ LTI.functors.each {|name|
       fm=functor_class.instance_methods-Object.instance_methods
       fm.each{|x| GridFlow.post "functor method %s",x}
       GridFlow.post "total %d functor methods", fm.length
-      ancestors.each{|x|
+      #anc = ancestors
+      anc = functor_class.ancestors
+      anc.each{|x|
 	y=x.to_s
         GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
       }
-      GridFlow.post "total %d ancestor classes", ancestors.length
+      GridFlow.post "total %d ancestor classes", anc.length
+      GridFlow.post "input types: %s",  (@functor_class.inputs.inspect  rescue "(#{$!})")
+      GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
     end
     def _0_get(sel=nil)
       return @param.__send__(sel) if sel
+      no=self.class.noutlets
       self.class.attrs.each {|sel|
         v=_0_get(sel)
         begin
-          send_out 1, sel.intern, LTI.to_pd(v)
+          send_out no-1, sel.intern, LTI.to_pd(v)
 	rescue StandardError=>e
 	  GridFlow.post "%s", e.inspect
-	  send_out 1, sel.intern, :some, v.class.to_s.intern
+	  send_out no-1, sel.intern, :some, v.class.to_s.intern
 	end
       }
     end
@@ -172,7 +206,7 @@ LTI.functors.each {|name|
 	@imatrix = Rblti::Imatrix.new
 	@palette = Rblti::Palette.new
 	@functor.apply @image, @imatrix, @palette
-	#send_out_lti_palette 1,@palette
+	send_out_lti_palette 1,@palette
 	send_out_lti_imatrix 0,@imatrix
     end
     install_rgrid 0
