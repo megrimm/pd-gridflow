@@ -25,6 +25,19 @@ require "rblti"
 include GridFlow
 include Rblti
 
+def GridFlow.post2(*a)
+  s = sprintf(*a)
+  t = []
+  i = 0
+  loop do
+    j = i
+    i = s.index(/ /,64)
+    t<<s[j...(i||s.length)]
+    break if not i
+  end
+  GridFlow.post "%s",t
+end
+
 class<<Functor
   attr_accessor :inputs
   attr_accessor:outputs
@@ -122,8 +135,8 @@ end
 
 LTI.functors.each {|name|
   fuc = Rblti.const_get name
-  fui = fuc. inputs || [Image]
-  fuo = fuc.outputs || [Image]
+  fui = (fuc. inputs rescue nil) || [Image]
+  fuo = (fuc.outputs rescue nil) || [Image]
   LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     class << self
       attr_accessor  :param_class
