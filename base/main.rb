@@ -100,6 +100,17 @@ def self.packstring_for_nt(nt)
 	else raise "no decoder for #{nt.inspect}"
 	end
 end
+def self.sizeof_nt(nt)
+	case nt
+	when :u, :u8,  :uint8; 1
+	when :s, :i16, :int16; 2
+	when :i, :i32, :int32; 4
+	when :l, :i64, :int64; 8
+	when :f, :f32, :float32; 4
+	when :d, :f64, :float64; 8
+	else raise "no decoder for #{nt.inspect}"
+	end
+end
 
 self.post_header = "[gf] "
 
@@ -382,3 +393,8 @@ END {
 	GC.start
 }
 
+#class Object
+#  def method_missing(name,*args)
+#    raise "undefined method \"#{name}\" for #{self.inspect} in class #{self.class}"
+#  end
+#end
