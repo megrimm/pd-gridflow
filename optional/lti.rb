@@ -122,6 +122,11 @@ LTI.functors.each {|name|
       fm=functor_class.instance_methods-Object.instance_methods
       fm.each{|x| GridFlow.post "functor method %s",x}
       GridFlow.post "total %d functor methods", fm.length
+      ancestors.each{|x|
+	y=x.to_s
+        GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
+      }
+      GridFlow.post "total %d ancestor classes", ancestors.length
     end
     def _0_get(sel=nil)
       return @param.__send__(sel) if sel
