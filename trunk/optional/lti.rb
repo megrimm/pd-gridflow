@@ -117,8 +117,55 @@ LTI.functors.each {|name|
       }
     end
     @attrs.each {|name|
-      GridFlow.post "defining _0_#{name}..."
       module_eval "def _0_#{name}(value) @param.#{name} = value end"
     }
+
+    def _0_rgrid_begin
+	@dim = inlet_dim 0
+	@nt = inlet_nt 0
+	GridFlow.post "%s %s",@dim,@nt
+	@dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{@dim.inspect}"
+	@dim[2]!=3 and raise "expecting 3 channels, got #{@dim.inspect}"
+	@image = Image.new @dim[0],@dim[1]
+	inlet_set_factor 0,@dim[0]*@dim[1]*@dim[2]
+    end
+    def _0_rgrid_flow data
+        i=0
+	ps=GridFlow.packstring_for_nt(@nt)+"3"
+	sz=GridFlow.sizeof_nt(@nt)*3
+        for y in 0...@dim[0]
+	  for x in 0...@dim[1]
+	    r,g,b = data[i,sz].unpack(ps)
+	    pixel=@image.getRow(y).at(x)
+	    pixel.setRed r
+	    pixel.setGreen g
+	    pixel.setBlue b
+	    i+=sz
+	  end
+	end
+    end
+    def _0_rgrid_end # to be generalized...
+	@imatrix = Rblti::Imatrix.new
+	@palette = Rblti::Palette.new
+	@functor.apply @image, @imatrix, @palette
+	send_out_lti_imatrix 0,@imatrix
+    end
+    def send_out_lti_imatrix o,m
+	#GridFlow.post "what's an imatrix and how do i send it?"
+	send_out_grid_begin o,[m.rows,m.columns],:float32
+	ps=GridFlow.packstring_for_nt(@nt)+"3"
+	sz=GridFlow.sizeof_nt(@nt)*3
+	for y in 0...@dim[0]
+	  GridFlow.post "starting row #{y}..."
+	  for x in 0...@dim[1]
+	    pixel=@image.getRow(y).at(x)
+	    send_out_grid_flow o, [pixel.getRed,pixel.getGreen,pixel.getBlue].pack(ps)
+	  end
+	end
+	GridFlow.post "grid finished."
+    end
+    install_rgrid 0
   }
 }
+
+
