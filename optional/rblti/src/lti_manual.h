@@ -1,7 +1,6 @@
-
 /*
 	Do not delete,
-
-	here you can add manual wraped functions and classes...
-
+	here you can add manually-wrapped functions and classes...
 */
+
+
