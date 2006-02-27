@@ -148,24 +148,31 @@ LTI.functors.each {|name|
 	@imatrix = Rblti::Imatrix.new
 	@palette = Rblti::Palette.new
 	@functor.apply @image, @imatrix, @palette
-	send_out_lti_imatrix 0,@imatrix
+	send_out_lti_image 0,@image
+	#send_out_lti_imatrix 0,@imatrix
+	#send_out_lti_palette 0,@palette
     end
-    def send_out_lti_imatrix o,m
-	#GridFlow.post "what's an imatrix and how do i send it?"
-	send_out_grid_begin o,[m.rows,m.columns],:float32
-	ps=GridFlow.packstring_for_nt(@nt)+"3"
-	sz=GridFlow.sizeof_nt(@nt)*3
-	for y in 0...@dim[0]
-	  GridFlow.post "starting row #{y}..."
-	  for x in 0...@dim[1]
-	    pixel=@image.getRow(y).at(x)
-	    send_out_grid_flow o, [pixel.getRed,pixel.getGreen,pixel.getBlue].pack(ps)
+    def send_out_lti_image o,m
+	send_out_grid_begin o,[m.rows,m.columns,3]
+	ps=GridFlow.packstring_for_nt(@nt)
+	sz=GridFlow.sizeof_nt(@nt)
+	for y in 0...@dim[0] do ro=m.getRow(y)
+	  for x in 0...@dim[1] do px=ro.at(x)
+	    send_out_grid_flow o,
+	      [px.getRed,px.getGreen,px.getBlue].pack(ps)
 	  end
 	end
-	GridFlow.post "grid finished."
+    end
+    def send_out_lti_imatrix o,m
+	send_out_grid_begin o,[m.rows,m.columns],:float32
+	ps=GridFlow.packstring_for_nt(@nt)
+	sz=GridFlow.sizeof_nt(@nt)
+	for y in 0...@dim[0] do ro=m.getRow(y)
+	  for x in 0...@dim[1] do px=ro.at(x)
+	    send_out_grid_flow o, [px].pack(ps)
+	  end
+	end
     end
     install_rgrid 0
   }
 }
-
-
