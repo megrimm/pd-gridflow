@@ -1446,6 +1446,12 @@ FObject.subclass("sendgui",1,0) {
   doc:_0_list,"a Tcl/Tk command to send to the pd client."
 }
 
+FObject.subclass("realtimer",2,1) {
+  def initialize() @t = Time.new end
+  def _0_bang()    @t = Time.new end
+  def _1_bang()    send_out 0, (Time.new - @t)*1000 end
+}
+
 end # module GridFlow
 
 begin
@@ -1455,3 +1461,4 @@ rescue Exception => e
   GridFlow.post "%s", e.inspect
   #GridFlow.post "(lti not found)"
 end
+
