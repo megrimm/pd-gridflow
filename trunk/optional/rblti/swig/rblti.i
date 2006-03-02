@@ -10,6 +10,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/03/02 21:55:32  matju
+//  fixed warnings.
+//  tried adding method "meat" to Image...
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -69,6 +73,13 @@
 
 %module rblti
 
+%{
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+%}
+
 %rename(inplace_add) operator +=;
 %rename(inplace_sub) operator -=;
 %rename(inplace_mul) operator *=;
@@ -118,19 +129,11 @@ bool _setStdString(std::string * pStr, const std::string & strValue);
 #include <string>
 
 // TODO: to be removed, only for tests
-std::string _getStdString(std::string * pStr)
-{
-    return *pStr;
-}
-
+std::string _getStdString(std::string * pStr) {return *pStr;}
 // TODO: to be removed, only for tests
-bool _setStdString(std::string * pStr, const std::string & strValue)
-{
-    if( pStr )
-    {
-        *pStr = strValue;
-        return true;
-    }
+
+bool _setStdString(std::string * pStr, const std::string & strValue) {
+    if (pStr) {*pStr = strValue; return true;}
     return false;
 }
 
@@ -604,3 +607,9 @@ typedef lti::location location;
 
 HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 
+%extend lti::image {
+  long meat() {
+    lti::rgbPixel &p = self->at(0,0);
+    return ((long)(void *)&p)>>2;
+  }
+}
