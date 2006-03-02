@@ -106,10 +106,13 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[m.rows,m.columns,3]
 	ps=GridFlow.packstring_for_nt(@nt)
 	sz=GridFlow.sizeof_nt(@nt)
+	a=[0,0,0]
 	for y in 0...m.rows do ro=m.getRow(y)
 	  for x in 0...m.columns do px=ro.at(x)
-	    send_out_grid_flow o,
-	      [px.getRed,px.getGreen,px.getBlue].pack(ps)
+	    a[0]=px.getRed
+	    a[1]=px.getGreen
+	    a[2]=px.getBlue
+	    send_out_grid_flow o, a.pack(ps)
 	  end
 	end
     end
@@ -117,17 +120,22 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[m.size,3]
 	ps=GridFlow.packstring_for_nt(@nt)
 	sz=GridFlow.sizeof_nt(@nt)
+	a=[0,0,0]
 	for x in 0...m.size do px=m.at(x)
-	  send_out_grid_flow o,
-	    [px.getRed,px.getGreen,px.getBlue].pack(ps)
+	  a[0]=px.getRed
+	  a[1]=px.getGreen
+	  a[2]=px.getBlue
+	  send_out_grid_flow o,a.pack(ps)
 	end
     end
     def send_out_lti_imatrix o,m
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	sz=GridFlow.sizeof_nt(@nt)
+	a=[0]
 	for y in 0...m.rows do ro=m.getRow(y)
 	  for x in 0...m.columns do px=ro.at(x)
-	    send_out_grid_flow o, [px].pack("i"), :int32
+	    a[0] = px
+	    send_out_grid_flow o, a.pack("i"), :int32
 	  end
 	end
     end
@@ -171,7 +179,7 @@ LTI.functors.each {|name|
         GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
       }
       GridFlow.post "total %d ancestor classes", anc.length
-      GridFlow.post "input types: %s",  (@functor_class.inputs.inspect  rescue "(#{$!})")
+      GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
       GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
     end
     def _0_get(sel=nil)
