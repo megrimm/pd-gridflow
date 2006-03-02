@@ -320,10 +320,11 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 \def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {}
 
 // !@#$ doesn't support number types
+// and the Pt<> look fishy
 \def String pack2 (String ins, String outs=Qnil) {
-	int n = rb_str_len(ins) / sizeof(int32) / size;
+	long n = rb_str_len(ins) / sizeof(int32) / size;
 	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(ins),rb_str_len(ins));
-	int bytes2 = n*bytes;
+	long bytes2 = n*bytes;
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
@@ -331,14 +332,31 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 }
 
 // !@#$ doesn't support number types
+// and the Pt<> look fishy
 \def String unpack2 (String ins, String outs=Qnil) {
-	int n = rb_str_len(argv[0]) / bytes;
+	long n = rb_str_len(argv[0]) / bytes;
 	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(ins),rb_str_len(ins));
-	int bytes2 = n*size*sizeof(int32);
+	long bytes2 = n*size*sizeof(int32);
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
 	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
 	return out;
+}
+
+\def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
+#define FOO(T) pack(n,\
+    Pt<    T>(FIX2PTR(    T, inqp),n*size),\
+    Pt<uint8>(FIX2PTR(uint8,outqp),n*size));
+	TYPESWITCH(nt,FOO,)
+#undef FOO
+}
+
+\def void unpack3 (long n, long inqp, long outqp, NumberTypeE nt) {
+#define FOO(T) unpack(n,\
+    Pt<uint8>(FIX2PTR(uint8, inqp),n*size),\
+    Pt<    T>(FIX2PTR(    T,outqp),n*size));
+	TYPESWITCH(nt,FOO,)
+#undef FOO
 }
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {

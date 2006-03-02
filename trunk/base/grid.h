@@ -543,7 +543,7 @@ struct CObject {
 			raise(11);
 		}
 	}
-	virtual ~CObject() { magic = 0xDEADBEEF; }
+	virtual ~CObject() { check_magic(); magic = 0xDEADBEEF; }
 	virtual void mark() {} // not used for now
 };
 void CObject_free (void *);
@@ -586,48 +586,7 @@ struct Dim : CObject {
 \end class Dim
 
 //****************************************************************
-//BitPacking objects encapsulate optimised loops of conversion
-struct BitPacking;
-// those are the types of the optimised loops of conversion 
-// inputs are const
-struct Packer {
-#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<S> in,   Pt<uint8> out);
-EACH_INT_TYPE(FOO)
-#undef FOO
-};
-struct Unpacker {
-#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<uint8> in, Pt<S> out);
-EACH_INT_TYPE(FOO)
-#undef FOO
-};
-
-\class BitPacking < CObject
-struct BitPacking : CObject {
-	Packer *packer;
-	Unpacker *unpacker;
-	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
-	int bytes;
-	int size;
-	uint32 mask[4];
-	BitPacking(){::abort();} // don't call, but don't remove. sorry.
-	BitPacking(int endian, int bytes, int size, uint32 *mask,
-		Packer *packer=0, Unpacker *unpacker=0);
-	bool is_le();
-	bool eq(BitPacking *o);
-	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
-	\decl String pack2(String ins, String outs=Qnil);
-	\decl String unpack2(String ins, String outs=Qnil);
-	\decl String to_s();
-// main entrances to Packers/Unpackers
-	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
-	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
-};
-\end class
-
-int high_bit(uint32 n);
-int  low_bit(uint32 n);
-void swap32 (int n, Pt<uint32> data);
-void swap16 (int n, Pt<uint16> data);
+//NumberTypeE is a very small int identifying the type of the (smallest) elements of a grid
 
 #define NT_UNSIGNED (1<<0)
 #define NT_FLOAT    (1<<1)
@@ -704,6 +663,53 @@ NumberTypeE NumberTypeE_find (Ruby sym);
   case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
+//****************************************************************
+//BitPacking objects encapsulate optimised loops of conversion
+struct BitPacking;
+// those are the types of the optimised loops of conversion 
+// inputs are const
+struct Packer {
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<S> in,   Pt<uint8> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
+};
+struct Unpacker {
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<uint8> in, Pt<S> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
+};
+
+\class BitPacking < CObject
+struct BitPacking : CObject {
+	Packer *packer;
+	Unpacker *unpacker;
+	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
+	int bytes;
+	int size;
+	uint32 mask[4];
+	BitPacking(){::abort();} // don't call, but don't remove. sorry.
+	BitPacking(int endian, int bytes, int size, uint32 *mask,
+		Packer *packer=0, Unpacker *unpacker=0);
+	bool is_le();
+	bool eq(BitPacking *o);
+	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
+	\decl String   pack2(String ins, String outs=Qnil);
+	\decl String unpack2(String ins, String outs=Qnil);
+	\decl void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
+	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
+	\decl String to_s();
+// main entrances to Packers/Unpackers
+	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
+	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
+};
+\end class
+
+int high_bit(uint32 n);
+int  low_bit(uint32 n);
+void swap32 (int n, Pt<uint32> data);
+void swap16 (int n, Pt<uint16> data);
+
+//****************************************************************
 // Numop objects encapsulate optimised loops of simple operations
 
 enum LeftRight { at_left, at_right };
