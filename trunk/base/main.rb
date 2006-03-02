@@ -117,7 +117,7 @@ self.post_header = "[gf] "
 def self.gfpost2(fmt,s); post("%s",s) end
 
 if GridFlow.bridge_name then
-  post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{RUBY_VERSION}"
+  post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
   post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
   post "Please use at least 1.6.6 if you plan to use sockets" if RUBY_VERSION<"1.6.6"
 end
