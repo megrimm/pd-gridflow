@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/03/02 22:11:42  matju
+//  longs for pointers oughta be unsigned.
+//
 //  Revision 1.2  2006/03/02 21:55:32  matju
 //  fixed warnings.
 //  tried adding method "meat" to Image...
@@ -610,6 +613,6 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 %extend lti::image {
   long meat() {
     lti::rgbPixel &p = self->at(0,0);
-    return ((long)(void *)&p)>>2;
+    return ((unsigned long)(void *)&p)>>2;
   }
 }
