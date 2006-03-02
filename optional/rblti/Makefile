@@ -1,10 +1,15 @@
 LTIPREFIX = /usr/local
 #LTIPREFIX = /home/matju
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg
-INCS = -I$(LTIPREFIX)/include/ltilib
+INCS = -I$(LTIPREFIX)/include/ltilib -I/home/matju/share/swig/1.3.27/std
+
 PINC = -I/usr/include/python
-RINC = -I`ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
-CXX = g++-3.3
+RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'`
+RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
+RINC = -I $(RDIR1)
+
+ CXX = g++-3.3
+#CXX = g++
 
 default:: ruby
 
@@ -36,16 +41,19 @@ rblti_wrap.o: rblti_wrap.cxx
 rblti_wrap.s: rblti_wrap.cxx
 	$(CXX) $(RINC) -Ipatched $(INCS) -S rblti_wrap.cxx
 
-#rblti_wrap.cxx: ./swig/rblti.i
-#	swig -v -c++ -ruby -I./generated -I./patched \
-#		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
+rblti_wrap.cxx: ./swig/rblti.i
+	swig -v -c++ -ruby -I./generated -I./patched \
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
 
-rblti_wrap.cxx: rblti_wrap.cxx.bz2
-	bunzip2 -c rblti_wrap.cxx.bz2 > rblti_wrap.cxx
+#rblti_wrap.cxx: rblti_wrap.cxx.bz2
+#	bunzip2 -c rblti_wrap.cxx.bz2 > rblti_wrap.cxx
 
 clean::
 	rm -f \
 		_pylti.so pylti_wrap.o pylti_wrap.cxx \
 		rblti.so rblti_wrap.o rblti_wrap.cxx
 
+
+install:: #rblti.so
+	cp rblti.so $(RDIR2)
 
