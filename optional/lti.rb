@@ -101,8 +101,10 @@ class LTIGridObject < GridObject
       c=self.class
       @functor = c.functor_class.new
       @param   = c.  param_class.new
+      @bp=BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
     end
     def send_out_lti_image o,m
+        GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns,3]
 	ps=GridFlow.packstring_for_nt(@nt)
 	sz=GridFlow.sizeof_nt(@nt)
@@ -117,6 +119,7 @@ class LTIGridObject < GridObject
 	end
     end
     def send_out_lti_palette o,m
+        #GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.size,3]
 	ps=GridFlow.packstring_for_nt(@nt)
 	sz=GridFlow.sizeof_nt(@nt)
@@ -129,6 +132,7 @@ class LTIGridObject < GridObject
 	end
     end
     def send_out_lti_imatrix o,m
+        #GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	sz=GridFlow.sizeof_nt(@nt)
 	a=[0]
@@ -210,18 +214,26 @@ LTI.functors.each {|name|
     end
     def _0_rgrid_flow data
         i=0
-	ps=GridFlow.packstring_for_nt(@nt)+"3"
-	sz=GridFlow.sizeof_nt(@nt)*3
-        for y in 0...@dim[0]
+	datameat = [data].pack("p").unpack("I")[0]>>2
+        GridFlow.post "4*meat=0x%08x",4*@image.meat
+        GridFlow.post "  data=0x%08x",datameat
+	@bp.pack3 @dim[0]*@dim[1],datameat,@image.meat,@nt
+	ps=GridFlow.packstring_for_nt(@nt) + (3*@dim[1]).to_s
+	sz=GridFlow.sizeof_nt(@nt)*3*@dim[1]
+=begin
+	for y in 0...@dim[0]
+	  dat = data[i,sz].unpack(ps)
+	  j=0
 	  for x in 0...@dim[1]
-	    r,g,b = data[i,sz].unpack(ps)
 	    pixel=@image.getRow(y).at(x)
-	    pixel.setRed r
-	    pixel.setGreen g
-	    pixel.setBlue b
-	    i+=sz
+	    pixel.setRed dat[j]
+	    pixel.setGreen dat[j+1]
+	    pixel.setBlue dat[j+2]
+	    j+=3
 	  end
+	  i+=sz
 	end
+=end
     end
     def _0_rgrid_end # to be generalized...
 	@imatrix = Rblti::Imatrix.new
