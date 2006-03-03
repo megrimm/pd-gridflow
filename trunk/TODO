@@ -5,10 +5,9 @@
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
-
+[ ] [#export_gem] is upside down
 [ ] pd_examples -> examples
 [ ] update doc
-[ ] 0.8.1
 [ ] make good use of the R type (automatic Ruby/C++ convs)
 [ ] ditch xml, switch to docstrings or whatever
 [ ] ...
@@ -483,4 +482,46 @@ fps   min   med   max   avg   stdev
 17.57 54.82 55.81 78.00 56.89 3.93 : before
 after ...
 
+
+
+==6998== Conditional jump or move depends on uninitialised value(s)
+==6998==    at 0x1DA9D7FF: lti::meanShiftSegmentation::init_matr(int*) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
+==6998==    by 0x1DA9DC6D: lti::meanShiftSegmentation::initializations(lti::image const&, std::vector<lti::trectangle<int, lti::rectSide<int> >, std::allocator<lti::trectangle<int, lti::rectSide<int> > > >&) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
+==6998==    by 0x1DA9E9C4: lti::meanShiftSegmentation::apply(lti::image const&, lti::matrix<int>&, lti::vector<lti::rgbPixel>&) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
+==6998==    by 0x1D7B7189: _wrap_meanShiftSegmentation_apply__SWIG_2(int, unsigned long*, unsigned long) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
+==6998==    by 0x1D7B7A0B: _wrap_meanShiftSegmentation_apply(int, unsigned long*, unsigned long) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
+==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
+==6998==    by 0x1CC7999F: rb_call0 (eval.c:5691)
+==6998==    by 0x1CC79AE5: rb_call (eval.c:5864)
+==6998==    by 0x1CC77A03: rb_eval (eval.c:3310)
+==6998==    by 0x1CC7986F: rb_call0 (eval.c:5772)
+==6998==    by 0x1CC79AE5: rb_call (eval.c:5864)
+==6998==    by 0x1CDD9339: send_in_2(Helper*) (main.c.fcs:176)
+
+==6998== Mismatched free() / delete / delete []
+==6998==    at 0x1B9016E8: operator delete(void*) (vg_replace_malloc.c:246)
+==6998==    by 0x1C0216DD: Pointer::~Pointer() (puredata.c.fcs:89)
+==6998==    by 0x1CDD7500: CObject_free(void*) (main.c.fcs:87)
+==6998==    by 0x1CC8DBBE: garbage_collect (gc.c:1183)
+==6998==    by 0x1CC8DE14: rb_newobj (gc.c:415)
+==6998==    by 0x1CCE74D5: str_alloc (string.c:61)
+==6998==    by 0x1CCE76EF: str_new3 (string.c:127)
+==6998==    by 0x1CC77539: rb_eval (eval.c:3687)
+==6998==    by 0x1CC7798A: rb_eval (eval.c:3305)
+==6998==    by 0x1CC76F69: rb_eval (eval.c:3320)
+==6998==    by 0x1CC7CC6F: rb_yield_0 (eval.c:4869)
+==6998==    by 0x1CC7DEE5: rb_yield (eval.c:4950)
+==6998==  Address 0x1BC3E9A0 is 0 bytes inside a block of size 20 alloc'd
+==6998==    at 0x1B901DF0: memalign (vg_replace_malloc.c:332)
+==6998==    by 0x1CDD5D37: gfmalloc (main.c.fcs:499)
+==6998==    by 0x1CDB7505: GridOutlet::begin(int, P<Dim>, NumberTypeE) (grid.h.fcs:504)
+==6998==    by 0x1CDCD4EA: GridOutlet::GridOutlet(GridObject*, int, P<Dim>, NumberTypeE) (grid.h.fcs:1018)
+==6998==    by 0x1CF5B4BB: void GridStore::grin_0<int>(GridInlet*, int, Pt<int>) (flow_objects.c.fcs:275)
+==6998==    by 0x1CF5EAE5: void GridStore::grinw_0<int>(GridInlet*, int, Pt<int>) (flow_objects.c.fcs:256)
+==6998==    by 0x1CDB59DA: GridInlet_begin_1(GridInlet*) (grid.h.fcs:921)
+==6998==    by 0x1CC6D589: rb_ensure (eval.c:5303)
+==6998==    by 0x1CDB8341: GridInlet::begin(int, unsigned long*) (grid.c.fcs:199)
+==6998==    by 0x1CF0DE7D: GridStore::_0_grid(int, unsigned long*) (flow_objects.c.fcs:404)
+==6998==    by 0x1CF15353: GridStore::_0_grid_wrap(int, unsigned long*, unsigned long) (flow_objects.c.fcs:404)
+==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
 
