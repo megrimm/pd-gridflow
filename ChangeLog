@@ -1,5 +1,12 @@
 /* $Id$ */
 
+version 0.8.2 (2006.03...):
+
+ * fixes of various compilation problems
+ * new object classes: [realtimer], [#export_pix]
+ * beginning support for LTIlib. new object classes:
+   [lti], [lti.meanShiftSegmentation], etc.
+
 version 0.8.1 (2006.02.20):
 
  * [ls] now supports wildcards: ? [] * **
