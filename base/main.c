@@ -343,20 +343,20 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	return out;
 }
 
+#define INT2PTR(T,v) ((T*)((v)<<2))
+
 \def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-	L fprintf(stderr,"n=%ld inqp=0x%08lx outqp=0x%08lx nt=%d\n", n, inqp, outqp, nt);
 #define FOO(T) pack(n,\
-    Pt<    T>(FIX2PTR(    T, inqp),n*size),\
-    Pt<uint8>(FIX2PTR(uint8,outqp),n*size));
+    Pt<    T>(INT2PTR(    T, inqp),n*size),\
+    Pt<uint8>(INT2PTR(uint8,outqp),n*bytes));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
 
 \def void unpack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-	L fprintf(stderr,"n=%ld inqp=0x%08lx outqp=0x%08lx nt=%d\n", n, inqp, outqp, nt);
 #define FOO(T) unpack(n,\
-    Pt<uint8>(FIX2PTR(uint8, inqp),n*size),\
-    Pt<    T>(FIX2PTR(    T,outqp),n*size));
+    Pt<uint8>(INT2PTR(uint8, inqp),n*bytes),\
+    Pt<    T>(INT2PTR(    T,outqp),n*size));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
