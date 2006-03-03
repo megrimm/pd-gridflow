@@ -1459,6 +1459,9 @@ begin
   GridFlow.post "LTI support loaded."
 rescue Exception => e
   GridFlow.post "%s", e.inspect
+  e.backtrace.each {|line|
+    GridFlow.post "%s", line
+  }
   #GridFlow.post "(lti not found)"
 end
 
