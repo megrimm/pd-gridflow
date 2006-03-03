@@ -1,0 +1,86 @@
+Rule 0: All classes and functions in pylib have the same name as in ltilib.
+
+Here are the exceptions of this rule:
+
+The parameter classes for all functors follow this pattern:
+
+lti::<functor>::parameters	--> lti._<functor>_parameters
+
+
+Mapping of ltilib template classes to pylti classes:
+
+pylti			ltilib
+------------------------------------------
+ipoint 			tpoint<int>
+fpoint 			tpoint<float>
+dpoint 			tpoint<double>
+ipoint3d 		tpoint3D<int>
+fpoint3d 		tpoint3D<float>
+dpoint3d 		tpoint3D<double>
+
+list_ipoint		std::list<lti::ipoint>
+
+pointList		tpointList<int>
+
+dgenericVector  	genericVector<double>
+fgenericVector  	genericVector<float>
+igenericVector  	genericVector<int>
+ugenericVector  	genericVector<ubyte>
+rgbgenericVector 	genericVector<rgbPixel>
+
+dvector			vector<double>
+fvector			vector<float>
+ivector			vector<int>
+uvector			vector<ubyte>
+palette			vector<rgbPixel>
+
+iarray			array<int>
+farray			array<float>
+darray			array<double>
+uarray			array<ubyte>
+
+ugenericMatrix		genericMatrix<ubyte>
+igenericMatrix		genericMatrix<int>
+fgenericMatrix		genericMatrix<float>
+dgenericMatrix		genericMatrix<double>
+rgbPixelgenericMatrix	genericMatrix<rgbPixel>
+
+imatrix			matrix<int>
+fmatrix			matrix<float>
+dmatrix			matrix<double>
+umatrix			matrix<ubyte>
+rgbPixelmatrix		matrix<rgbPixel>
+
+fhBaseMatrix3D		hMatrix< float,hPoint3D<float> >
+dhBaseMatrix3D		hMatrix< double,hPoint3D<double> >
+fhBaseMatrix2D		hMatrix< float,hPoint2D<float> >
+dhBaseMatrix2D		hMatrix< double,hPoint2D<double> >
+
+fhMatrix3D		hMatrix3D<float>
+dhMatrix3D		hMatrix3D<double>
+fhMatrix2D		hMatrix2D<float>
+dhMatrix2D		hMatrix2D<double>
+
+ikernel1D		kernel1D<int>
+fkernel1D		kernel1D<float>
+dkernel1D		kernel1D<double>
+ukernel1D		kernel1D<ubyte>
+ikernel2D		kernel2D<int>
+fkernel2D		kernel2D<float>
+dkernel2D		kernel2D<double>
+ukernel2D		kernel2D<ubyte>
+isepKernel		sepKernel<int>
+fsepKernel		sepKernel<float>
+dsepKernel		sepKernel<double>
+usepKernel		sepKernel<ubyte>
+
+iandoKernelXX		andoKernelXX<int>
+iandoKernelXY		andoKernelXY<int>
+iandoKernelYY		andoKernelYY<int>
+fandoKernelXX		andoKernelXX<float>
+fandoKernelXY		andoKernelXY<float>
+fandoKernelYY		andoKernelYY<float>
+
+list_ioPoints		std::list<lti::ioPoints>
+list_borderPoints	std::list<lti::borderPoints>
+list_areaPoints		std::list<lti::areaPoints>
