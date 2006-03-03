@@ -1,0 +1,5 @@
+GFSOURCE=$(dirname $(dirname $(which "$0")))
+
+valgrind --gen-suppressions=yes \
+--suppressions=$GFSOURCE/tests/suppressions.valg3 \
+"$@"
