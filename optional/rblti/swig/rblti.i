@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/03/04 18:08:24  matju
+//  added Imatrix.meat
+//
 //  Revision 1.3  2006/03/02 22:11:42  matju
 //  longs for pointers oughta be unsigned.
 //
@@ -611,8 +614,9 @@ typedef lti::location location;
 HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 
 %extend lti::image {
-  long meat() {
-    lti::rgbPixel &p = self->at(0,0);
-    return ((unsigned long)(void *)&p)>>2;
-  }
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
 }
+%extend lti::matrix<lti::int32> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
