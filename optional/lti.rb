@@ -25,6 +25,13 @@ require "rblti"
 include GridFlow
 include Rblti
 
+class String
+  # returns a Fixnum that is a pointer divided by 4  
+  def meat # warning: not 64-bit-safe
+    [self].pack("p").unpack("I")[0]>>2
+  end
+end
+
 def GridFlow.post2(*a)
   s = sprintf(*a)
   t = []
@@ -102,6 +109,7 @@ class LTIGridObject < GridObject
       @functor = c.functor_class.new
       @param   = c.  param_class.new
       @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
+      @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
     end
     def send_out_lti_image o,m
         GridFlow.post "4*meat=0x%08x",4*m.meat
@@ -132,9 +140,11 @@ class LTIGridObject < GridObject
 	end
     end
     def send_out_lti_imatrix o,m
-        #GridFlow.post "4*meat=0x%08x",4*m.meat
+        GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	sz=GridFlow.sizeof_nt(@nt)
+#	send_out_grid_flow o, data, :int32
+#=begin
 	a=[0]
 	for y in 0...m.rows do ro=m.getRow(y)
 	  for x in 0...m.columns do px=ro.at(x)
@@ -142,13 +152,16 @@ class LTIGridObject < GridObject
 	    send_out_grid_flow o, a.pack("i"), :int32
 	  end
 	end
+#=end
     end
 end
 
 LTI.functors.each {|name|
-  fuc = Rblti.const_get name
-  fui = (fuc. inputs rescue nil) || [Image]
-  fuo = (fuc.outputs rescue nil) || [Image]
+fuc = Rblti.const_get name
+next unless fuc.ancestors.include?(Functor)
+begin
+  fui = fuc. inputs || [Image]
+  fuo = fuc.outputs || [Image]
   LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     class << self
       attr_accessor  :param_class
@@ -213,9 +226,7 @@ LTI.functors.each {|name|
 	inlet_set_factor 0,@dim[0]*@dim[1]*@dim[2]
     end
     def _0_rgrid_flow data
-        i=0
-	datameat = [data].pack("p").unpack("I")[0]>>2
-	@image_bp.pack3 @dim[0]*@dim[1],datameat,@image.meat,@nt
+	@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
     end
     def _0_rgrid_end # to be generalized...
 	@imatrix = Rblti::Imatrix.new
@@ -226,4 +237,9 @@ LTI.functors.each {|name|
     end
     install_rgrid 0
   }
+rescue StandardError => e
+  GridFlow.post "%s", e
+  GridFlow.post "while handling lti class #{fuc}"
+  GridFlow.post "which has ancestors #{fuc.ancestors.join' '}"
+end
 }
