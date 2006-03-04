@@ -61,8 +61,9 @@ class LTI<FObject; install "lti",1,1
   cs=Rblti.constants
   cs.each{|c|
     next unless /^R(.)(\w+)_parameters/ =~ c
+    fucn = $1.upcase+$2
     @parameterses<<c
-    @functors<<$1.upcase+$2
+    @functors<<fucn if const_get(fucn).ancestors.include?(Functor)
   }
   @others = (cs-(@functors+@parameterses)).sort
   def _0_help(a=nil) self.class.help(a) end
@@ -143,7 +144,7 @@ class LTIGridObject < GridObject
         GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	sz=GridFlow.sizeof_nt(@nt)
-#	send_out_grid_flow o, data, :int32
+	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
 #=begin
 	a=[0]
 	for y in 0...m.rows do ro=m.getRow(y)
@@ -158,7 +159,6 @@ end
 
 LTI.functors.each {|name|
 fuc = Rblti.const_get name
-next unless fuc.ancestors.include?(Functor)
 begin
   fui = fuc. inputs || [Image]
   fuo = fuc.outputs || [Image]
