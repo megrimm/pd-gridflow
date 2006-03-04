@@ -165,14 +165,24 @@ begin
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
     @writers = param_class.instance_methods.grep(/\w=$/)
-    @attrs = writers.map{|x|x.chop}
+    @attrs = {}
+    para = @param_class.new
+    writers.each{|x|
+        tipe=nil
+        begin
+	  para.__send__(x,Object.new)
+	rescue Exception=>e
+	  /of type '([^']*)'/ .match e.to_s and tipe=$1
+	end
+    	@attrs[x.chop]=[tipe]
+    }
 
     def _0_help() self.class.help end
     def self.help()
-      @attrs.each{|x| GridFlow.post "attribute %s",x}
+      @attrs.each{|x,v| GridFlow.post "attribute %s: %s",x,v.inspect}
       GridFlow.post "total %d attributes", @attrs.length
       #---
-      pmo=param_class.instance_methods-attrs-writers-self.attrs-Object.instance_methods
+      pmo=param_class.instance_methods-attrs.keys-writers-Object.instance_methods
       pmo.each{|x| GridFlow.post "other param method %s",x}
       GridFlow.post "total %d other param methods", pmo.length
       #---
@@ -192,7 +202,7 @@ begin
     def _0_get(sel=nil)
       return @param.__send__(sel) if sel
       no=self.class.noutlets
-      self.class.attrs.each {|sel|
+      self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
           send_out no-1, sel.intern, LTI.to_pd(v)
@@ -202,14 +212,13 @@ begin
 	end
       }
     end
-    @attrs.each {|name|
+    @attrs.each_key {|name|
       module_eval "def _0_#{name}(value) @param.#{name} = value end"
     }
 
     def _0_rgrid_begin
 	@dim = inlet_dim 0
 	@nt = inlet_nt 0
-	GridFlow.post "%s %s",@dim,@nt
 	@dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{@dim.inspect}"
 	@dim[2]!=3 and raise "expecting 3 channels, got #{@dim.inspect}"
 	@image = Image.new @dim[0],@dim[1]
