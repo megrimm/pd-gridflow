@@ -149,7 +149,8 @@ static inline Ruby PTR2FIX (const void *ptr) {
 	if ((p&3)!=0) BUG("unaligned pointer: %p\n",ptr);
 	return LONG2NUM(p>>2);
 }
-#define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
+#define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
+#define INT2PTR(T,   v) ((T *)(          (v)<<2))
 
 //****************************************************************
 
@@ -664,6 +665,16 @@ NumberTypeE NumberTypeE_find (Ruby sym);
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 //****************************************************************
+//\class Buffer
+//struct Buffer {
+//  NumberTypeE nt;
+//  long n;
+//  void *p;
+//};
+//\end class
+
+
+//****************************************************************
 //BitPacking objects encapsulate optimised loops of conversion
 struct BitPacking;
 // those are the types of the optimised loops of conversion 
@@ -1093,8 +1104,9 @@ struct GridObject : FObject {
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, int factor);
-	\decl void send_out_grid_begin(int outlet, Array dim,  NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e);
+	\decl void send_out_grid_begin(int outlet, Array dim,        NumberTypeE nt=int32_e);
+	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
+	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
 };
 \end class GridObject
 
