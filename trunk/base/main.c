@@ -343,8 +343,6 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	return out;
 }
 
-#define INT2PTR(T,v) ((T*)((v)<<2))
-
 \def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
 #define FOO(T) pack(n,\
     Pt<    T>(INT2PTR(    T, inqp),n*size),\
