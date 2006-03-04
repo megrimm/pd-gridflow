@@ -90,6 +90,14 @@ class LTI<FObject; install "lti",1,1
     else raise "LTI.to_pd can't convert #{datum}, a #{datum.class}"
     end
   end
+  def LTI.from_pd datum, tipe
+    case tipe
+    when "float": datum.to_f
+    when "int":   datum.to_i
+    when "bool":  datum.to_i!=0
+    else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
+    end
+  end
   def LTI.info(name,inputs,outputs)
     Rblti.const_get(name).module_eval {
       #@inputs=inputs;  def self.inputs; @inputs end
@@ -212,8 +220,9 @@ begin
 	end
       }
     end
-    @attrs.each_key {|name|
-      module_eval "def _0_#{name}(value) @param.#{name} = value end"
+    @attrs.each {|name,zzz|
+      tipe, = zzz
+      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,\"#{tipe}\") end"
     }
 
     def _0_rgrid_begin
