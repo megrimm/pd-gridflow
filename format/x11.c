@@ -270,12 +270,10 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		XSync(display,0);
 		if (transfer==0) return alloc_image(sx,sy);
 		int size = ximage->bytes_per_line*ximage->height;
-		gfpost("size = %d",size);
 		shm_info->shmid = shmget(IPC_PRIVATE,size,IPC_CREAT|0777);
 		if(shm_info->shmid < 0) RAISE("shmget() failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		if ((long)(shm_info->shmaddr) == -1) RAISE("shmat() failed: %s",strerror(errno));
-		gfpost("shmaddr=%p",shm_info->shmaddr);
 		image = Pt<uint8>((uint8 *)ximage->data,size);
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
