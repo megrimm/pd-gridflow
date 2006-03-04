@@ -61,8 +61,11 @@ static void *Pointer_get (Ruby rself) {
 		number_type_table[NumberTypeE_type_of(d)].name, \
 		number_type_table[this->nt].name);
 
-#define CHECK_BUSY(s) \
+#define CHECK_BUSY1(s) \
 	if (!dim) RAISE("%s: " #s " not busy",INFO(parent));
+
+#define CHECK_BUSY(s) \
+	if (!dim) RAISE("%s: " #s " not busy (wanting to write %ld values)",INFO(parent),(long)n);
 
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
@@ -181,8 +184,9 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	nt = (NumberTypeE) INT(argv[1]);
 	argc-=2, argv+=2;
 	PROF(parent) {
-	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s",
-			INFO(parent), INFO(sender), INFO(back_out->parent));
+	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
+			INFO(parent), INFO(sender), INFO(back_out->parent),
+			(long)dex, (long)dim->prod());
 	sender = back_out->parent;
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",INFO(parent));
@@ -437,7 +441,7 @@ void GridOutlet::give(int n, Pt<T> data) {TRACE;
 }
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
-	CHECK_BUSY(outlet); assert(!frozen);
+	CHECK_BUSY1(outlet); assert(!frozen);
 	assert(in->mode==6 || in->mode==4 || in->mode==0);
 	inlets.push_back(in);
 }
@@ -498,16 +502,16 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	out = new GridOutlet(this,outlet,new Dim(n,v),nt); // valgrind says leak?
 }
 
-template <class T>
-void send_out_grid_flow_2(P<GridOutlet> go, Ruby s, T bogus) {
-	int n = rb_str_len(s) / sizeof(T);
-	Pt<T> p = rb_str_pt(s,T);
-	go->send(n,p);
+\def void send_out_grid_flow (int outlet,String buf, NumberTypeE nt=int32_e) {
+	if (outlet<0) RAISE("bad outlet number");
+#define FOO(T) out->send(rb_str_len(buf)/sizeof(T),rb_str_pt(buf,T));
+	TYPESWITCH(nt,FOO,)
+#undef FOO
 }
 
-\def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e) {
+\def void send_out_grid_flow_3 (int outlet, long n, long data, NumberTypeE nt=int32_e) {
 	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) send_out_grid_flow_2(out,argv[1],(T)0);
+#define FOO(T) out->send(n,Pt<T>(INT2PTR(T,data),n));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
