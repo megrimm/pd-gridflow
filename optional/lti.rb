@@ -106,6 +106,7 @@ LTI.info:MeanShiftSegmentation, [Image], [Imatrix,Palette]
 
 class LTIGridObject < GridObject
     def initialize
+      super
       c=self.class
       @functor = c.functor_class.new
       @param   = c.  param_class.new
@@ -141,19 +142,8 @@ class LTIGridObject < GridObject
 	end
     end
     def send_out_lti_imatrix o,m
-        GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
-	sz=GridFlow.sizeof_nt(@nt)
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
-#=begin
-	a=[0]
-	for y in 0...m.rows do ro=m.getRow(y)
-	  for x in 0...m.columns do px=ro.at(x)
-	    a[0] = px
-	    send_out_grid_flow o, a.pack("i"), :int32
-	  end
-	end
-#=end
     end
 end
 
@@ -231,7 +221,10 @@ begin
     def _0_rgrid_end # to be generalized...
 	@imatrix = Rblti::Imatrix.new
 	@palette = Rblti::Palette.new
+	#t=Time.new
 	@functor.apply @image, @imatrix, @palette
+	#t=Time.new-t
+	#GridFlow.post "time for apply: %f",t
 	send_out_lti_palette 1,@palette
 	send_out_lti_imatrix 0,@imatrix
     end
