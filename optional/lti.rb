@@ -61,6 +61,17 @@ end
 class<<Functor
   attr_accessor :inputs
   attr_accessor:outputs
+  attr_accessor :subclasses # only the adjacent ones
+end
+def Functor.post_hierarchy(level=0)
+  GridFlow.post "%*s%s", 4*level, "", self.inspect
+  n=1; level+=1
+  (subclasses||[]).each {|x| begin
+  	n += x.post_hierarchy level
+	rescue Exception=>e; GridFlow.post "%*s%s (doesn't have post_hierarchy)", 4*level, "", x.inspect
+	end
+  }
+  n
 end
 
 class LTI<FObject; install "lti",1,1
@@ -87,8 +98,9 @@ class LTI<FObject; install "lti",1,1
       GridFlow.post "  help functors"
       GridFlow.post "  help others"
     when:functors:
-      @functors.each{|x| GridFlow.post "  functor %s", x }
-      GridFlow.post "total %d functors",@functors.length
+      #@functors.each{|x| GridFlow.post "  functor %s", x }
+      GridFlow.post "total %d functors (post_hierarchy)",Functor.post_hierarchy
+      GridFlow.post "total %d functors (@functors)",     @functors.length
     when:others:
       @others.each{|x| GridFlow.post "  other %s", x }
       GridFlow.post "total %d others",@others.length
@@ -170,6 +182,11 @@ class LTIGridObject < GridObject
 end
 
 LTI.functors.each {|name|
+  qlas = Rblti.const_get(name)
+  qlas.subclasses = [] if qlas<=Functor
+}
+
+LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
   fui = fuc. inputs || [Image]
@@ -186,8 +203,10 @@ begin
     @param_class = Rblti.const_get("R"+
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
-    subparams = instance_methods.grep(/^set.*Parameters$/)
-    GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
+    #subparams = instance_methods.grep(/^set.*Parameters$/)
+    #GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
+    sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
+    
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
