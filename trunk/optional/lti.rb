@@ -59,8 +59,8 @@ def GridFlow.post2(*a)
 end
 
 class<<Functor
-  attr_accessor :inputs
-  attr_accessor:outputs
+  attr_writer    :inputs;  def inputs; if defined? @inputs then  @inputs else superclass. inputs end end
+  attr_writer   :outputs; def outputs; if defined?@outputs then @outputs else superclass.outputs end end
   attr_accessor :subclasses # only the adjacent ones
 end
 def Functor.post_hierarchy(level=0)
@@ -133,9 +133,8 @@ class LTI<FObject; install "lti",1,1
   end
 end
 
+LTI.info              :Functor, [], []
 LTI.info         :Segmentation, [Image], [Imatrix,Palette]
-LTI.info   :KMeansSegmentation, [Image], [Imatrix,Palette]
-LTI.info:MeanShiftSegmentation, [Image], [Imatrix,Palette]
 
 class LTIGridObject < GridObject
     def initialize
@@ -146,6 +145,14 @@ class LTIGridObject < GridObject
       @functor.setParameters @param
       @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
       @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+    end
+    def send_out_lti o,m
+      case m
+      when Imatrix: send_out_lti_imatrix o,m
+      when Image:   send_out_lti_image   o,m
+      when Palette: send_out_lti_palette o,m
+      else raise "don't know how to send_out a #{m.class}"
+      end
     end
     def send_out_lti_image o,m
         GridFlow.post "4*meat=0x%08x",4*m.meat
@@ -268,16 +275,16 @@ begin
     def _0_rgrid_flow data
 	@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
     end
-    def _0_rgrid_end # to be generalized...
-	@imatrix = Rblti::Imatrix.new
-	@palette = Rblti::Palette.new
-	#t=Time.new
+    def _0_rgrid_end
+        os=self.class.functor_class.outputs
+	k=os.length-1
+	outbufs = os.map{|o| o.new }
         @functor.setParameters @param
-	@functor.apply @image, @imatrix, @palette
+	#t=Time.new
+	@functor.apply @image, *outbufs
 	#t=Time.new-t
 	#GridFlow.post "time for apply: %f",t
-	send_out_lti_palette 1,@palette
-	send_out_lti_imatrix 0,@imatrix
+	while k>=0 do send_out_lti k,outbufs[k]; k-=1 end
     end
   }
 rescue StandardError => e
