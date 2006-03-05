@@ -123,7 +123,8 @@ class LTI<FObject; install "lti",1,1
     else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
     end
   end
-  def LTI.info(name,inputs,outputs)
+  def LTI.info(name,inputs=nil,outputs=nil)
+    return if not inputs
     Rblti.const_get(name).module_eval {
       #@inputs=inputs;  def self.inputs; @inputs end
       #@outputs=outputs def self.outputs; @outputs end
@@ -133,8 +134,70 @@ class LTI<FObject; install "lti",1,1
   end
 end
 
-LTI.info              :Functor, [], []
-LTI.info         :Segmentation, [Image], [Imatrix,Palette]
+ LTI.info :Functor, [], []
+ LTI.info     :ColorQuantization
+ LTI.info         :KMColorQuantization
+ LTI.info         :LkmColorQuantization
+ LTI.info     :ChiSquareFunctor
+ LTI.info     :IoFunctor
+ LTI.info         :IoJPEG
+ LTI.info         :IoBMP
+ LTI.info         :IoImage
+ LTI.info         :IoPNG
+ LTI.info     :Interpolator
+ LTI.info         :VariablySpacedSamplesInterpolator
+ LTI.info     :RegionMerge
+ LTI.info     :Transform
+ LTI.info         :GradientFunctor
+ LTI.info             :ColorContrastGradient
+ LTI.info         :Skeleton
+ LTI.info         :OrientedHLTransform
+ LTI.info         :OrientationMap
+ LTI.info         :RealFFT
+ LTI.info     :ComputePalette
+ LTI.info     :Modifier
+ LTI.info         :FastRelabeling
+ LTI.info             :GeometricFeaturesFromMask
+ LTI.info                 :MultiGeometricFeaturesFromMask
+ LTI.info         :Morphology
+ LTI.info             :Erosion
+ LTI.info             :DistanceTransform
+ LTI.info             :Dilation
+ LTI.info         :CornerDetector
+ LTI.info         :GeometricTransform
+ LTI.info         :Rotation
+ LTI.info         :FlipImage
+ LTI.info         :GHoughTransform
+ LTI.info         :Thresholding
+ LTI.info         :ConvexHull
+ LTI.info         :EdgeDetector
+ LTI.info             :CannyEdges
+ LTI.info             :ClassicEdgeDetector
+ LTI.info         :PolygonApproximation
+ LTI.info         :BorderExtrema
+ LTI.info         :Scaling
+ LTI.info         :Filter
+ LTI.info             :KNearestNeighFilter
+ LTI.info             :Convolution
+ LTI.info             :MedianFilter
+ LTI.info     :Segmentation, [Image], [Imatrix,Palette]
+ LTI.info         :ObjectsFromMask
+ LTI.info         :CsPresegmentation
+ LTI.info         :RegionGrowing
+ LTI.info         :WhiteningSegmentation
+ LTI.info         :WatershedSegmentation
+ LTI.info         :MeanShiftSegmentation
+ LTI.info         :Snake
+ LTI.info         :KMeansSegmentation
+ LTI.info         :BackgroundModel
+ LTI.info     :FeatureExtractor
+ LTI.info         :LocalFeatureExtractor
+ LTI.info             :LocalMoments
+ LTI.info         :GlobalFeatureExtractor
+ LTI.info             :ChromaticityHistogram
+ LTI.info             :GeometricFeatures
+ LTI.info     :SimilarityMatrix
+ LTI.info     :UsePalette
 
 class LTIGridObject < GridObject
     def initialize
@@ -196,8 +259,8 @@ LTI.functors.each {|name|
 LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
-  fui = fuc. inputs || [Image]
-  fuo = fuc.outputs || [Image]
+  fui = fuc. inputs || []
+  fuo = fuc.outputs || []
   LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     install_rgrid 0
     class << self
@@ -213,6 +276,15 @@ begin
     #subparams = instance_methods.grep(/^set.*Parameters$/)
     #GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
+    begin
+      @functor_class.new.apply rescue /\(0 for (\d+)\)/ =~ $!.inspect
+      argc = Integer $1
+      argv = fuc.inputs.dup
+      argv << nil while argv.length < argc
+      @functor_class.new.apply(*argv)
+    rescue Exception=>e
+      GridFlow.post "%s: %s", @functor_class, e.inspect if not /overloaded/ =~ e.inspect
+    end
     
     @attrs = {}
     def self.lti_attr(name)
