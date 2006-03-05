@@ -31,6 +31,17 @@ class String
     [self].pack("p").unpack("I")[0]>>2
   end
 end
+      
+RkMeansSegmentation_parameters.module_eval {
+  def initialize
+    super
+    @cq_params = RkMColorQuantization_parameters.new
+  end
+  ["maximalNumberOfIterations","thresholdDeltaPalette"].each{|att|
+    module_eval "def #{att}    ; @cq_params.#{att}     end"
+    module_eval "def #{att}=(v); @cq_params.#{att}=(v) end"
+  }
+}
 
 def GridFlow.post2(*a)
   s = sprintf(*a)
@@ -165,32 +176,34 @@ begin
       attr_accessor  :param_class
       attr_accessor:functor_class
       attr_accessor:attrs
-      attr_accessor:writers
     end
 
     @functor_class = fuc
     @param_class = Rblti.const_get("R"+
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
-    @writers = param_class.instance_methods.grep(/\w=$/)
+    subparams = instance_methods.grep(/^set.*Parameters$/)
+    GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
     @attrs = {}
-    para = @param_class.new
-    writers.each{|x|
-        tipe=nil
-        begin
-	  para.__send__(x,Object.new)
-	rescue Exception=>e
-	  /of type '([^']*)'/ .match e.to_s and tipe=$1
-	end
-    	@attrs[x.chop]=[tipe]
-    }
-
+    def self.lti_attr(name)
+      tipe=nil
+      begin
+        @param_class.new.__send__(name+"=",Object.new)
+      rescue Exception=>e
+	  /of type '([^']*)'/ .match e.to_s and tipe=$1 or
+	  GridFlow.post "%s",e.inspect
+      end
+      @attrs[name]=[tipe]
+      #GridFlow.post "%s", "defining #{name} for #{functor_class}"
+      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}') end"
+    end
+    param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     def _0_help() self.class.help end
     def self.help()
       @attrs.each{|x,v| GridFlow.post "attribute %s: %s",x,v.inspect}
       GridFlow.post "total %d attributes", @attrs.length
       #---
-      pmo=param_class.instance_methods-attrs.keys-writers-Object.instance_methods
+      pmo=param_class.instance_methods-attrs.keys-attrs.keys.map{|x|x+"="}-Object.instance_methods
       pmo.each{|x| GridFlow.post "other param method %s",x}
       GridFlow.post "total %d other param methods", pmo.length
       #---
@@ -220,10 +233,6 @@ begin
 	end
       }
     end
-    @attrs.each {|name,zzz|
-      tipe, = zzz
-      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,\"#{tipe}\") end"
-    }
 
     def _0_rgrid_begin
 	@dim = inlet_dim 0
@@ -250,7 +259,7 @@ begin
   }
 rescue StandardError => e
   GridFlow.post "%s", e
-  GridFlow.post "while handling lti class #{fuc}"
-  GridFlow.post "which has ancestors #{fuc.ancestors.join' '}"
+  GridFlow.post "while handling lti class %s, which has ancestors %s",
+    fuc,fuc.ancestors.join(' ')
 end
 }
