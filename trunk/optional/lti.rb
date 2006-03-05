@@ -31,15 +31,17 @@ class String
     [self].pack("p").unpack("I")[0]>>2
   end
 end
-      
+
+Rblti.const_set(:RkMeansSegmentation_parameters,Class.new(RkMeansSegmentation_parameters))
 RkMeansSegmentation_parameters.module_eval {
   def initialize
     super
     @cq_params = RkMColorQuantization_parameters.new
   end
-  ["maximalNumberOfIterations","thresholdDeltaPalette"].each{|att|
-    module_eval "def #{att}    ; @cq_params.#{att}     end"
-    module_eval "def #{att}=(v); @cq_params.#{att}=(v) end"
+  RkMColorQuantization_parameters.instance_methods.grep(/\w=$/).each{|writer|
+    att=writer.chop
+    module_eval "def #{att}    ; @cq_params.#{att} end"
+    module_eval "def #{att}=(v); @cq_params.#{att}=(v); setQuantParameters @cq_params end"
   }
 }
 
@@ -129,6 +131,7 @@ class LTIGridObject < GridObject
       c=self.class
       @functor = c.functor_class.new
       @param   = c.  param_class.new
+      @functor.setParameters @param
       @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
       @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
     end
@@ -172,6 +175,7 @@ begin
   fui = fuc. inputs || [Image]
   fuo = fuc.outputs || [Image]
   LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
+    install_rgrid 0
     class << self
       attr_accessor  :param_class
       attr_accessor:functor_class
@@ -195,7 +199,7 @@ begin
       end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}"
-      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}') end"
+      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
     end
     param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     def _0_help() self.class.help end
@@ -249,13 +253,13 @@ begin
 	@imatrix = Rblti::Imatrix.new
 	@palette = Rblti::Palette.new
 	#t=Time.new
+        @functor.setParameters @param
 	@functor.apply @image, @imatrix, @palette
 	#t=Time.new-t
 	#GridFlow.post "time for apply: %f",t
 	send_out_lti_palette 1,@palette
 	send_out_lti_imatrix 0,@imatrix
     end
-    install_rgrid 0
   }
 rescue StandardError => e
   GridFlow.post "%s", e
