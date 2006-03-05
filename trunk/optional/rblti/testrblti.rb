@@ -8,7 +8,8 @@ end
 def LoadImageJPEG(sName)
  img=Rblti::Image.new
  param = Rblti::RioJPEG_parameters.new
- Rblti::_setStdString(param.filename, sName)
+ #Rblti::_setStdString(param.filename, sName)
+ param.filename=sName
  lo = Rblti::LoadJPEG.new    
  lo.setParameters(param)    
  ok = lo.apply(img)    

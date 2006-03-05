@@ -11,8 +11,10 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.1  2006/02/25 23:43:56  matju
-//  0.33.1
+//  Revision 1.2  2006/03/05 01:18:55  heri
+//  More changes related to the added classes: backgroundModel,
+//  geometricFeaturesFromMask and
+//  multiGeometricFeaturesFromMask
 //
 //  Revision 1.1  2005/12/25 15:41:16  Michael
 //  splitted lti.i into different swig interface files
@@ -60,3 +62,4 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( objectsFromMask,         "ltiObjectsFromMask.h")
     typedef lti::objectsFromMask::objectStruct objectsFromMask_objectStruct;
     }
     %}
+HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
