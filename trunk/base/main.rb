@@ -180,6 +180,7 @@ class FObject
 			return @doc_out[selector] if not text
 			@doc_out[selector] = text
 		end
+		def inspect; foreign_name or super; end
 	end
 	def post(*a) GridFlow.post(*a) end
 	def self.subclass(*args,&b)
@@ -393,8 +394,10 @@ END {
 	GC.start
 }
 
-#class Object
-#  def method_missing(name,*args)
-#    raise "undefined method \"#{name}\" for #{self.inspect} in class #{self.class}"
-#  end
-#end
+class Object
+  def method_missing(name,*args)
+    obj = (case obj; when FObject: self.info; else self.inspect end)
+    qla = (case obj; when FObject: self.info; else self.class.inspect end)
+    raise "undefined method \"#{name}\" for #{obj} in class #{qla}"
+  end
+end
