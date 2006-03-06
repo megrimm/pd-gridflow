@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # $Id$
 
-LTI=ENV["HOME"]+"/Documents/ltilib_1.9.12"
-Headers=`find #{LTI}/src -iname '*.h'`
+LTI="."
+Headers=`find #{LTI} -iname '*.cxx'`
 Headers.each {|head|
   head.chomp!
   f=File.open head
@@ -15,5 +15,5 @@ Headers.each {|head|
   f.close
   puts head+":"
   text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
-  gets
+
 }
