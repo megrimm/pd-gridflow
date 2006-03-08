@@ -1,5 +1,5 @@
-GFSOURCE=$(dirname $(dirname $(which "$0")))
+GFSOURCE=$HOME/src/gridflow
+SUPPFILE=$GFSOURCE/tests/suppressions.valg3
 
-valgrind --gen-suppressions=yes \
---suppressions=$GFSOURCE/tests/suppressions.valg3 \
-"$@"
+valgrind --suppressions=$SUPPFILE --gen-suppressions=yes "$@"
+
