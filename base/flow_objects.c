@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -1177,9 +1177,62 @@ GRID_INLET(GridPerspective,0) {
 } GRID_END
 
 \def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z; }
+
 \classinfo { IEVAL(rself,"install '#perspective',1,1"); }
 \end class GridPerspective
 
+//****************************************************************
+\class GridBorder < GridObject
+struct GridBorder : GridObject {
+	\attr P<Dim> diml;
+	\attr P<Dim> dimr;
+	PtrGrid diml_grid;
+	PtrGrid dimr_grid;
+	\grin 0
+	\grin 1 int
+	\grin 2 int
+	\decl void initialize (Grid *dl, Grid *dr);
+};
+
+GRID_INLET(GridBorder,0) {
+	int n = in->dim->n;
+	if (n!=3) RAISE("only 3 dims supported for now");
+	if (diml->n != n) RAISE("diml mismatch");
+	if (dimr->n != n) RAISE("dimr mismatch");
+	if (diml->v[2] || dimr->v[2]) RAISE("can't augment channels (todo)");
+	STACK_ARRAY(int32,v,n);
+	for (int i=0; i<n; i++) v[i]=in->dim->v[i]+diml->v[i]+dimr->v[i];
+	in->set_factor(in->dim->prod());
+	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
+} GRID_FLOW {
+	int sy = in->dim->v[0];
+	int sx = in->dim->v[1]; int zx = sx+diml->v[1]+dimr->v[1];
+	int sc = in->dim->v[2]; int zc = sc+diml->v[2]+dimr->v[2];
+	int sxc = sx*sc; int zxc = zx*zc;
+	STACK_ARRAY(int32,duh,zxc);
+	for (int x=0; x<zxc; x++) duh[x]=0;
+	for (int y=0; y<diml->v[0]; y++) out->send(zxc,duh);
+	for (int y=0; y<sy; y++) {
+		out->send(diml->v[1]*sc,duh);
+		out->send(sxc,data+y*sxc);
+		out->send(dimr->v[1]*sc,duh);
+	}	
+	for (int i=0; i<dimr->v[0]; i++) out->send(zxc,duh);
+} GRID_END
+
+GRID_INPUT(GridBorder,1,diml_grid) { diml = diml_grid->to_dim(); } GRID_END
+GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
+
+\def void initialize (Grid *dl, Grid *dr) {
+	rb_call_super(argc,argv);
+	diml_grid=dl; diml = diml_grid->to_dim();
+	dimr_grid=dr; dimr = dimr_grid->to_dim();
+}
+
+\classinfo { IEVAL(rself,"install '#border',3,1"); }
+\end class GridBorder
+
+//****************************************************************
 static Numop *OP(Ruby x) { return FIX2PTR(Numop,rb_hash_aref(op_dict,x)); }
 
 void startup_flow_objects () {
