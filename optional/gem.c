@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -26,6 +26,9 @@
 #undef EXTERN
 #include "Base/GemPixDualObj.h"
 
+//  in 0: gem
+//  in 1: grid
+// out 0: gem
 \class GridExportPix < GridObject
 struct GridExportPix : GridObject, GemPixObj {
 	CPPEXTERN_HEADER(GridExportPix,GemPixObj)
@@ -47,28 +50,15 @@ public:
 	}
 	virtual ~GridExportPix () {}
 	\decl void initialize ();
-	\decl void _0_bang ();
 	\grin 1 int
 
 	virtual void startRendering() {m_pixBlock.newimage = 1;}
-	virtual void render    (GemState *state) {state->image = &m_pixBlock;}
-//	virtual void postrender(GemState *state) {m_pixBlock.newimage = 0;}
-	/*
-	virtual void processRGBAImage(imageStruct &image);
-        virtual void processRGBImage (imageStruct &image);
-	virtual void processGrayImage(imageStruct &image);
-        virtual void processYUVImage (imageStruct &image);
-	*/
+	virtual void render(GemState *state) {state->image = &m_pixBlock;}
 };
 CPPEXTERN_NEW(GridExportPix)
 
-\def void _0_bang () {
-	fprintf(stderr,"bang GridExportPix this=%p, this->x_obj=%p, bself=%p, rself=%p gemself=%p\n",
-//		this,this->x_obj,bself,(void *)rself,((void**)bself)[sizeof(t_object)/sizeof(void *)]);
-		this,this->x_obj,bself,(void *)rself,((Obj_header *)this->x_obj)->data);
-	fprintf(stderr,"bang GridExportPix this=%p, (GemPixObj *)this=%p\n",
-		this,(GemPixObj *)this);
-}
+//	fprintf(stderr,"bang GridExportPix this=%p, this->x_obj=%p, bself=%p, rself=%p gemself=%p\n", this,this->x_obj,bself,(void *)rself,((Obj_header *)this->x_obj)->data);
+//	fprintf(stderr,"bang GridExportPix this=%p, (GemPixObj *)this=%p\n", this,(GemPixObj *)this);
 
 GRID_INLET(GridExportPix,1) {
 	if (in->dim->n != 3)
@@ -93,8 +83,8 @@ GRID_INLET(GridExportPix,1) {
 } GRID_FLOW {
 	long size = in->dim->prod();
 	Pt<uint8> buf = Pt<uint8>(m_pixBlock.image.data,size);
+	/*!@#$ it would be nice to skip the bitpacking when we can */
 	bit_packing->pack(size/in->dim->get(2),data,buf);
-//	for (int i=0; i<size; i++) buf[i]=data[i];
 } GRID_END
 
 void GridExportPix::obj_setupCallback(t_class *) {}
@@ -109,10 +99,56 @@ void GridExportPix::obj_setupCallback(t_class *) {}
 	GridExportPix::real_obj_setupCallback(qlass);
 }
 \end class GridExportPix
+
+//------------------------------------------------------------------------
+//  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
+// out 0: grid
+\class GridImportPix < GridObject
+struct GridImportPix : GridObject, GemPixObj {
+	CPPEXTERN_HEADER(GridImportPix,GemPixObj)
+public:
+	P<BitPacking> bit_packing;
+	GridImportPix () {
+		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
+		bit_packing = new BitPacking(is_le(),4,4,mask);
+	}
+	\decl void initialize ();
+	virtual ~GridImportPix () {}
+	virtual void render(GemState *state) {
+		imageStruct &im = state->image->image;
+		if (im.format != GL_RGBA         ) {post("can't produce grid from pix format %d",im.format); return;}
+		if (im.type   != GL_UNSIGNED_BYTE) {post("can't produce grid from pix type %d",  im.type  ); return;}
+		int32 v[] = { im.ysize, im.xsize, im.csize };
+		GridOutlet out(this,0,new Dim(3,v));
+		int sxc = im.xsize*im.csize;
+		STACK_ARRAY(uint8,buf,sxc);
+		for (int i=0; i<v[0]; i++) {
+			Pt<uint8> data((uint8 *)im.data+sxc*i,sxc);
+			bit_packing->pack(im.xsize,Pt<uint8>(data,sxc),buf);
+			out.send(sxc,buf);
+		}
+	}
+};
+CPPEXTERN_NEW(GridImportPix)
+
+\def void initialize () {
+	rb_call_super(argc,argv);
+}
+
+void GridImportPix::obj_setupCallback(t_class *) {}
+
+\classinfo {
+	IEVAL(rself,"install '#import_pix',2,1;");
+	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridImportPix"),SI(@bfclass)));
+	GridExportPix::real_obj_setupCallback(qlass);
+}
+\end class GridImportPix
+
+//------------------------------------------------------------------------
+
 void startup_gem () {
 	\startall
 }
-
 
 /*
 virtual void processRGBAImage(imageStruct &image) {}
