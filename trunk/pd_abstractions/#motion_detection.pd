@@ -1,16 +1,16 @@
-#N canvas 0 0 450 300 10;
-#X obj 23 25 inlet camera_input;
-#X obj 327 23 inlet motion_or_presence;
-#X obj 113 466 outlet to_window;
-#X obj 188 142 # max 0;
-#X obj 247 124 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
--1 -1 0 1;
-#X obj 188 122 # -;
-#X text 242 142 noise reduction (on find-edges only);
-#X obj 255 65 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
+#N canvas 279 77 607 477 10;
+#X obj 18 -59 inlet camera_input;
+#X obj 322 -61 inlet motion_or_presence;
+#X obj 108 382 outlet to_window;
+#X obj 183 58 # max 0;
+#X obj 242 40 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
+-1 -1 12700 1;
+#X obj 183 38 # -;
+#X text 237 58 noise reduction (on find-edges only);
+#X obj 250 -19 vradio 15 1 0 2 empty empty empty 0 -6 0 8 -241291 -1
 -1 0;
-#X text 275 79 emboss;
-#X text 274 65 hilite;
+#X text 270 -5 emboss;
+#X text 269 -19 hilite;
 #N canvas 372 198 399 273 image 0;
 #X obj 15 113 # << 2;
 #X obj 15 162 @! abs;
@@ -41,7 +41,7 @@
 #X connect 11 0 10 1;
 #X connect 12 0 13 1;
 #X connect 13 0 3 1;
-#X restore 188 102 pd image difference;
+#X restore 183 18 pd image difference;
 #N canvas 52 305 399 248 motion 0;
 #X obj 60 49 inlet;
 #X obj 60 72 # +;
@@ -61,13 +61,13 @@
 #X connect 4 1 9 0;
 #X connect 8 0 4 0;
 #X connect 9 0 1 1;
-#X restore 191 178 pd motion fade;
-#X obj 533 135 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 0
-1;
-#X obj 129 289 shunt 2;
-#X obj 308 342 #centroid;
-#X obj 303 386 #export_list;
-#X obj 298 414 unpack 0 0;
+#X restore 204 114 pd motion fade;
+#X obj 528 51 tgl 15 0 empty empty empty 0 -6 0 8 -241291 -1 -1 1 1
+;
+#X obj 124 205 shunt 2;
+#X obj 303 258 #centroid;
+#X obj 298 302 #export_list;
+#X obj 293 330 unpack 0 0;
 #N canvas 639 147 477 267 crosshair 0;
 #X obj 12 224 outlet;
 #X obj 12 9 inlet;
@@ -88,22 +88,20 @@
 #X connect 6 0 7 0;
 #X connect 7 0 3 0;
 #X connect 8 0 0 0;
-#X restore 197 367 pd crosshair;
-#X obj 114 414 t a;
-#X text 557 135 designed to work with "hilite" above;
-#X obj 305 318 #rgb_to_greyscale;
-#X obj 474 225 #fold +;
-#X obj 474 247 #fold +;
-#X obj 474 267 #fold +;
-#X obj 480 291 #export;
-#X obj 483 311 / 100;
-#X obj 570 66 inlet crosshair;
-#X obj 501 462 outlet displaced_pixels;
-#X obj 287 463 outlet;
-#X obj 384 464 outlet;
-#X obj 372 63 inlet noise_reduction;
-#X obj 142 -102 hsl 128 15 0 127 0 0 empty empty empty -2 -6 0 8 -260818
--1 -1 0 1;
+#X restore 192 283 pd crosshair;
+#X obj 109 330 t a;
+#X text 552 51 designed to work with "hilite" above;
+#X obj 300 234 #rgb_to_greyscale;
+#X obj 469 141 #fold +;
+#X obj 469 163 #fold +;
+#X obj 469 183 #fold +;
+#X obj 475 207 #export;
+#X obj 478 227 / 100;
+#X obj 565 -18 inlet crosshair;
+#X obj 496 378 outlet displaced_pixels;
+#X obj 282 379 outlet;
+#X obj 379 380 outlet;
+#X obj 367 -21 inlet noise_reduction;
 #N canvas 67 462 236 230 detect 0;
 #X obj 66 59 # * ( -1 -1 2 );
 #X obj 66 171 # max 0;
@@ -118,7 +116,7 @@
 #X connect 3 0 5 0;
 #X connect 4 0 3 0;
 #X connect 6 0 1 0;
-#X restore 18 145 pd detect blue;
+#X restore 13 61 pd detect blue;
 #N canvas 67 462 236 230 detect 0;
 #X obj 66 171 # max 0;
 #X obj 66 31 inlet;
@@ -133,10 +131,14 @@
 #X connect 3 0 2 0;
 #X connect 5 0 0 0;
 #X connect 6 0 5 0;
-#X restore 18 126 pd detect red;
+#X restore 13 42 pd detect red;
+#X obj 183 83 shunt;
+#X obj 241 80 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+;
+#X obj 276 85 inlet fade;
 #X connect 0 0 10 0;
 #X connect 1 0 10 2;
-#X connect 3 0 11 0;
+#X connect 3 0 33 0;
 #X connect 4 0 5 1;
 #X connect 5 0 3 0;
 #X connect 7 0 10 1;
@@ -162,3 +164,8 @@
 #X connect 25 0 27 0;
 #X connect 26 0 12 0;
 #X connect 30 0 4 0;
+#X connect 33 0 11 0;
+#X connect 33 1 13 0;
+#X connect 33 1 21 0;
+#X connect 34 0 33 1;
+#X connect 35 0 34 0;
