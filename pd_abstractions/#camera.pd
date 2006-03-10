@@ -133,9 +133,10 @@ brightness 8 8 0 8 -260818 -1 -1 0 1;
 -1;
 #X msg -86 257 \; \$1-device 0 \; \$1-size 1 \; \$1-channel 1;
 #X text -62 28 <-- initialise camera;
-#X text -77 89 These options provide --> more controls. Scroll down
-for options for webcams.;
 #X text 132 22 select a camera;
+#X text -77 85 These options provide -->;
+#X text -76 100 more controls. Scroll down;
+#X text -78 115 for webcams options.;
 #X connect 6 0 25 0;
 #X connect 7 0 40 0;
 #X connect 8 0 33 0;
