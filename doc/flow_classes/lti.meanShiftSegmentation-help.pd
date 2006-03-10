@@ -12,7 +12,7 @@
 #X obj 88 166 r param;
 #X obj 68 363 #out window;
 #X obj 173 270 s param_get;
-#X obj 252 -76 cnv 15 220 600 empty empty empty 20 12 0 14 -195568
+#X obj 252 -76 cnv 15 220 555 empty empty empty 20 12 0 14 -195568
 -66577 0;
 #X obj 264 189 hsl 128 15 0 127 0 0 classThreshold empty classThreshold
 -2 -6 0 8 -233017 -1 -1 3200 1;
@@ -24,7 +24,7 @@
 -6 0 8 -233017 -1 -1 3400 1;
 #X obj 399 134 nbx 4 14 -1e+37 1e+37 0 0 empty autoRadius empty 0 -6
 0 10 -233017 -1 -1 34 256;
-#N canvas 338 161 623 407 parameters 1;
+#N canvas 118 68 623 407 parameters 0;
 #X msg 331 157 maxTrialRandomColor \$1;
 #X floatatom 331 143 5 0 0 0 - maxTrialRandomColor -;
 #X msg 332 196 classicAlgorithm \$1;

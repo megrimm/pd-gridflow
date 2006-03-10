@@ -1,0 +1,19 @@
+#N canvas 0 0 558 326 10;
+#X obj 39 151 mysql;
+#X obj 52 211 rubyprint;
+#X msg 66 92 symbol test;
+#X obj 70 185 print mysql;
+#X msg 39 24 connect server_url mysql_user some_password database_name
+;
+#X msg 53 54 query select thing from some_table;
+#X msg 162 76 query select * from some_table order by rand() limit
+1;
+#X msg 60 120 query insert into some_table (something) values (' \$1
+');
+#X connect 0 0 1 0;
+#X connect 0 0 3 0;
+#X connect 2 0 7 0;
+#X connect 4 0 0 0;
+#X connect 5 0 0 0;
+#X connect 6 0 0 0;
+#X connect 7 0 0 0;
