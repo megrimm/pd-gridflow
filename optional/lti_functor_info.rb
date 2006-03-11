@@ -39,17 +39,20 @@ end  #function def
 
 
 def get_type_errors text
-  nargs=text.scan(/^\s*if\s*\(\(argc\s*<\s*\d{1,2}/)[0].scan(/\d{1,2}/)[0].to_i   #now this is an abuse
+  #nargs=text.scan(/^\s*if\s*\(\(argc\s*<\s*\d{1,2}/)[0].scan(/\d{1,2}/)[0].to_i   #now this is an abuse
+  argnum=2
   funclines = text.split(/^/)
   typelines=Array.new
+  rxp=Regexp.new("argument \" \"" + argnum.to_s + "\"\" of type")
   for singleline in funclines
     singleline.gsub!(/\r?\n$/,"")
-    if singleline =~ /SWIG_TypeError\), "in method '" "apply" "', argument/
+    if singleline =~ rxp
       typelines.concat([singleline])
-    end #if
+      argnum+=1
+      rxp=Regexp.new("argument \" \"" + argnum.to_s + "\"\" of type")
+    end
   end #for
     
-  typelines.slice!(0)
   return typelines
 end  #function def
 
@@ -107,7 +110,7 @@ while tmp = get_next_apply_function(filehandle)
   types=fill_types errorlines
   p types
   
-  init=true  
+  init=true 
 end #while
 
 #puts head+":"
