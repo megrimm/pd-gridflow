@@ -554,6 +554,8 @@ struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
+#undef check
+
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 \class Dim < CObject
