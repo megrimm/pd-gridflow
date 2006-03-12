@@ -83,7 +83,7 @@ static void my_idle () { longjmp(hack,1); }
 	IEVAL(rself,"@clock.delay 100");
 }
 
-\def void resize_window (int sx, int sy) {L
+\def void resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
 	char foo[666];
 	sprintf(foo,"GridFlow/GL (%d,%d,3)",sy,sx);
