@@ -72,7 +72,7 @@ void CObject_free (void *victim) {
 	CObject *self = (CObject *)victim;
 	self->check_magic();
 	if (!self->rself) {
-		L fprintf(stderr,"attempt to free object that has no rself\n");
+		_L_ fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();
 	}
 	self->rself = 0; /* paranoia */
