@@ -70,13 +70,13 @@ static void *Pointer_get (Ruby rself) {
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {L;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
 		INFO(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 #define CHECK_ALIGN2(d,nt) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {L;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {_L_;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
 		(void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
