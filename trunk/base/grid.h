@@ -64,7 +64,7 @@ extern "C" {
 #endif
 
 #define BUG(s,args...) {fprintf(stderr,s "\nat: %s\n",args,__PRETTY_FUNCTION__); ::raise(11);}
-#define L gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,args)
