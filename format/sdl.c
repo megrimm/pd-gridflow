@@ -75,8 +75,6 @@ GRID_INLET(FormatSDL,0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex / sxc;
-	assert((in->dex % sxc) == 0);
-	assert((n       % sxc) == 0);
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */

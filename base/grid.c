@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -51,8 +51,8 @@ static void *Pointer_get (Ruby rself) {
 	return self->p;
 }
 
-//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
-#define TRACE assert(this);
+//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
+#define TRACE
 
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
@@ -263,7 +263,6 @@ template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
 		if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
 	}break;
 	case 6:{
-		assert(!buf);
 		int newdex = dex + n;
 		gh->flow(this,n,data);
 		if (this->mode==4) delete[] (T *)data;
@@ -275,7 +274,6 @@ template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
 }
 
 void GridInlet::end() {TRACE;
-	assert(this);
 	if (!dim) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
@@ -363,7 +361,6 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 // send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send_direct(int n, T * data) {TRACE;
-	assert(data); assert(frozen);
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
 		long pn = min((long)n,MAX_PACKET_SIZE);
@@ -390,7 +387,6 @@ static void convert_number_type(int n, T * out, S * in) {
 // send modifies dex; send_direct doesn't
 template <class T>
 void GridOutlet::send(int n, T * data) {TRACE;
-	assert(data); assert(frozen);
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -405,7 +401,6 @@ void GridOutlet::send(int n, T * data) {TRACE;
 #undef FOO
 	} else {
 		dex += n;
-		assert(dex <= dim->prod());
 		if (n > MIN_PACKET_SIZE || bufi + n > MAX_PACKET_SIZE) flush();
 		if (n > MIN_PACKET_SIZE) {
 			send_direct(n,data);
@@ -419,8 +414,8 @@ void GridOutlet::send(int n, T * data) {TRACE;
 
 template <class T>
 void GridOutlet::give(int n, T * data) {TRACE;
-	assert(data); CHECK_BUSY(outlet); assert(frozen);
-	assert(dex+n <= dim->prod()); CHECK_ALIGN(data);
+	CHECK_BUSY(outlet);
+	CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		send(n,data);
 		delete[] (T *)data;
@@ -441,8 +436,8 @@ void GridOutlet::give(int n, T * data) {TRACE;
 }
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
-	CHECK_BUSY1(outlet); assert(!frozen);
-	assert(in->mode==6 || in->mode==4 || in->mode==0);
+	CHECK_BUSY1(outlet);
+	if (!(in->mode==6 || in->mode==4 || in->mode==0)) RAISE("mode error");
 	inlets.push_back(in);
 }
 
