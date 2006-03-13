@@ -731,10 +731,10 @@ enum LeftRight { at_left, at_right };
 template <class T>
 struct NumopOn : CObject {
 	// Function Vectorisations
-	typedef void (*Map )(        int n, T *as, T  b ); Map  op_map;
-	typedef void (*Zip )(        int n, T *as, T *bs); Zip  op_zip;
-	typedef void (*Fold)(int an, int n, T *as, T *bs); Fold op_fold;
-	typedef void (*Scan)(int an, int n, T *as, T *bs); Scan op_scan;
+	typedef void (*Map )(         long n, T *as, T  b ); Map  op_map;
+	typedef void (*Zip )(         long n, T *as, T *bs); Zip  op_zip;
+	typedef void (*Fold)(long an, long n, T *as, T *bs); Fold op_fold;
+	typedef void (*Scan)(long an, long n, T *as, T *bs); Scan op_scan;
 	// Algebraic Properties (those involving simply numeric types)
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
@@ -771,30 +771,30 @@ struct Numop : CObject {
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 //public:
-	template <class T> inline void map(int n, Pt<T> as, T b) {
+	template <class T> inline void map(long n, Pt<T> as, T b) {
 		as.will_use(n);
 		on(*as)->op_map(n,(T *)as,b);}
-	template <class T> inline void zip(int n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void zip(long n, Pt<T> as, Pt<T> bs) {
 		as.will_use(n);
 		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void fold(long an, long n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		typename NumopOn<T>::Fold f = on(*as)->op_fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
-	template <class T> inline void scan(int an, int n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void scan(long an, long n, Pt<T> as, Pt<T> bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		typename NumopOn<T>::Scan f = on(*as)->op_scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
 
-	\decl void map_m  (NumberTypeE nt, int n, String as, String b);
-	\decl void zip_m  (NumberTypeE nt, int n, String as, String bs);
-	\decl void fold_m (NumberTypeE nt, int an, int n, String as, String bs);
-	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
+	\decl void map_m  (NumberTypeE nt,          long n, String as, String b);
+	\decl void zip_m  (NumberTypeE nt,          long n, String as, String bs);
+	\decl void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
+	\decl void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
 
 	Numop(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 

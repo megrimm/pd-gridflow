@@ -50,13 +50,13 @@ public:
 
 template <class O> class OpLoops {
 public:
-	template <class T> static void op_map (int n, T *as, T b) {
+	template <class T> static void op_map (long n, T *as, T b) {
 		if (!n) return;
 #define FOO(I) as[I]=O::f(as[I],b);
 	UNROLL_8(FOO,n,as)
 #undef FOO
 	}
-	template <class T> static void op_zip (int n, T *as, T *bs) {
+	template <class T> static void op_zip (long n, T *as, T *bs) {
 		if (!n) return;
 		ptrdiff_t ba=bs-as; // really!
 #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
@@ -64,7 +64,7 @@ public:
 #undef FOO
 	}
 	// disabled
-	template <class T> static void op_zip2 (int n, T *as, T *bs, T *cs) {
+	template <class T> static void op_zip2 (long n, T *as, T *bs, T *cs) {
 		if (!n) return;
 		ptrdiff_t ba=bs-as, ca=cs-as;
 #define FOO(I) as[ca+I]=O::f(as[I],as[ba+I]);
@@ -73,7 +73,7 @@ public:
 	}
 #define W(i) as[i]=O::f(as[i],bs[i]);
 #define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
-	template <class T> static void op_fold (int an, int n, T *as, T *bs) {
+	template <class T> static void op_fold (long an, long n, T *as, T *bs) {
 		switch (an) {
 		case 1: for (; (n&3)!=0; bs++, n--) W(0);
 			for (; n; bs+=4, n-=4) { Z(0,1); } break;
@@ -95,7 +95,7 @@ public:
 			}
 		}
 	}
-	template <class T> static void op_scan (int an, int n, T *as, T *bs) {
+	template <class T> static void op_scan (long an, long n, T *as, T *bs) {
 		for (; n--; as=bs-an) {
 			for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
 		}
@@ -103,35 +103,35 @@ public:
 };
 
 template <class T>
-static void quick_mod_map (int n, T *as, T b) {
+static void quick_mod_map (long n, T *as, T b) {
 	if (!b) return;
 #define FOO(I) as[I]=mod(as[I],b);
 	UNROLL_8(FOO,n,as)
 #undef FOO
 }
 
-template <class T> static void quick_ign_map (int n, T *as, T b) {}
-template <class T> static void quick_ign_zip (int n, T *as, T *bs) {}
-template <class T> static void quick_put_map (int n, T *as, T b) {
+template <class T> static void quick_ign_map (long n, T *as, T b) {}
+template <class T> static void quick_ign_zip (long n, T *as, T *bs) {}
+template <class T> static void quick_put_map (long n, T *as, T b) {
 #define FOO(I) as[I]=b;
 	UNROLL_8(FOO,n,as)
 #undef FOO
 }
 
 #ifdef PASS1
-void quick_put_map (int n, int16 *as, int16 b) {
+void quick_put_map (long n, int16 *as, int16 b) {
 	if (n&1!=0 && (long)as&4!=0) { *as++=b; n--; }
 	quick_put_map (n>>1, (int32 *)as, (int32)(b<<16)+b);
 	if (n&1!=0) *as++=b;
 }
-void quick_put_map (int n, uint8 *as, uint8 b) {
+void quick_put_map (long n, uint8 *as, uint8 b) {
 	while (n&3!=0 && (long)as&4!=0) { *as++=b; n--; }
 	int32 c=(b<<8)+b; c+=c<<16;
 	quick_put_map (n>>2, (int32 *)as, c);
 	while (n&3!=0) *as++=b;
 }
 #endif
-template <class T> static void quick_put_zip (int n, T *as, T *bs) {
+template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
