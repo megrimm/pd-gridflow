@@ -130,8 +130,6 @@ GRID_INLET(FormatOpenGL,0) {
 	int sx = in->dim->get(1);
 	int bypl = 4*sx;
 	int y = in->dex / sxc;
-	assert((in->dex % sxc) == 0);
-	assert((n       % sxc) == 0);
 	for (; n>0; y++, data+=sxc, n-=sxc) bit_packing->pack(sx, data, buf+y*bypl);
 	} GRID_FINISH {
 } GRID_END

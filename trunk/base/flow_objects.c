@@ -26,7 +26,7 @@
 #include <math.h>
 #include "grid.h.fcs"
 
-// BAD HACK: GCC complains: unimplemented (--debug|--debug-harder mode only)
+// BAD HACK: GCC complains: unimplemented (--debug mode only)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
 #else
@@ -278,7 +278,6 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
 	int size = r->dim->prod(nc);
-	assert((n % nc) == 0);
 	int nd = n/nc;
 	T w[n];
 	T *v=w;
@@ -571,9 +570,7 @@ template <class T> void inner_child_a (T *bt, T *dt, int rrows, int rcols, int c
 	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
 }
 template <class T, int rcols> void inner_child_b (T *bt, T *dt, int rrows, int chunk) {
-	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) {
-		for (int k=0; k<rcols; k++) bt[k] = *dt;
-	}
+	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
 }
 GRID_INLET(GridInner,0) {
 	SAME_TYPE(in,r);
@@ -873,9 +870,7 @@ GRID_INLET(GridRedim,0) {
 		if (a) {
 			for (int i=a; i<b; i+=a) out->send(min(a,b-i),(T *)*temp);
 		} else {
-			T foo[1];
-			foo[0]=0;
-			for (int i=0; i<b; i++) out->send(1,foo);
+			T foo[1]={0}; for (int i=0; i<b; i++) out->send(1,foo);
 		}
 	}
 	temp=0;
@@ -963,7 +958,7 @@ GRID_INPUT(GridJoin,1,r) {} GRID_END
 \def void initialize (int which_dim, Grid *r) {
 	rb_call_super(argc,argv);
 	this->which_dim = which_dim;
-	if (r) this->r=r;
+	this->r=r;
 }
 
 \classinfo { IEVAL(rself,"install '@join',2,1"); }
