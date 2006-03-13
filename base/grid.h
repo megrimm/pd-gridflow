@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -627,8 +627,9 @@ enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_e,
 NUMBER_TYPES(FOO)
 #undef FOO
-	number_type_table_end
+number_type_table_end
 };
+
 
 #define FOO(_type_) \
 inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
@@ -829,28 +830,33 @@ struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	void *data;
-	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
+	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
+	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) {
+		state=1; 
 		if (!dim) RAISE("hell");
 		init(dim,nt);
 		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
 	}
-	Grid(Ruby x) : dim(0), nt(int32_e), data(0) { init_from_ruby(x); }
-	Grid(int n, Ruby *a, NumberTypeE nt=int32_e) : dim(0), nt(int32_e), data(0) {
-		init_from_ruby_list(n,a,nt);
+	Grid(Ruby x) { state=1; init_from_ruby(x); }
+	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
+	template <class T> Grid(P<Dim> dim, Pt<T> data) {
+		state=0; this->dim=dim;
+		this->nt=NumberTypeE_type_of((T)0);
+		this->data = data;
 	}
-	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
+	long bytes() { return dim->prod()*number_type_table[nt].size/8; }
 	P<Dim> to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
 #define FOO(type) \
 	operator type *() { return (type *)data; } \
 	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	Grid *dup () {
+	Grid *dup () { /* always produce an owning grid even if from a borrowing grid */
 		Grid *foo=new Grid(dim,nt);
 		memcpy(foo->data,data,bytes());
 		return foo;
 	}
-	~Grid() {if (data) free(data);}
+	~Grid() {if (state==1 && data) free(data);}
 private:
 	void init(P<Dim> dim, NumberTypeE nt) {
 		this->dim = dim;
@@ -864,9 +870,7 @@ private:
 };
 \end class Grid
 
-static inline Grid *convert (Ruby r, Grid **bogus) {
-	return r ? new Grid(r) : 0;
-}
+static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
 
 // DimConstraint interface:
 // return if d is acceptable
