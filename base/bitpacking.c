@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -71,7 +71,7 @@ void swap16 (int n, Pt<uint16> data) {
 /* **************************************************************** */
 
 template <class T>
-static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+static void default_pack(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -112,7 +112,7 @@ static void default_pack(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
 template <class T>
-static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
+static void default_unpack(BitPacking *self, long n, Pt<uint8> in, Pt<T> out) {
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	if (is_le()) { // smallest byte first
@@ -129,7 +129,7 @@ static void default_unpack(BitPacking *self, int n, Pt<uint8> in, Pt<T> out) {
 /* **************************************************************** */
 
 template <class T>
-static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+static void pack2_565(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 //	const int hb[3] = {15,10,4};
 //	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 //	uint32 span[3] = {4,5,4};
@@ -140,7 +140,7 @@ static void pack2_565(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 }
 
 template <class T>
-static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+static void pack3_888(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 	Pt<int32> o32 = (Pt<int32>)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
@@ -155,7 +155,7 @@ static void pack3_888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 
 /*
 template <>
-static void pack3_888(BitPacking *self, int n, Pt<uint8> in, Pt<uint8> out) {
+static void pack3_888(BitPacking *self, long n, Pt<uint8> in, Pt<uint8> out) {
 	Pt<uint32> o32 = Pt<uint32>((uint32 *)out.p,n*3/4);
 	Pt<uint32> i32 = Pt<uint32>((uint32 *)in.p,n*3/4);
 	while (n>=4) {
@@ -177,7 +177,7 @@ static void pack3_888(BitPacking *self, int n, Pt<uint8> in, Pt<uint8> out) {
 */
 
 template <class T>
-static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+static void pack3_888b(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 	Pt<int32> o32 = (Pt<int32>)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];
@@ -193,7 +193,7 @@ static void pack3_888b(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
 // fishy
 template <class T>
-static void pack3_bgrn8888(BitPacking *self, int n, Pt<T> in, Pt<uint8> out) {
+static void pack3_bgrn8888(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
 	Pt<int32> i32 = (Pt<int32>)in;
 	Pt<int32> o32 = (Pt<int32>)out;
@@ -282,7 +282,7 @@ bool BitPacking::is_le() {
 }
 
 template <class T>
-void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
+void BitPacking::pack(long n, Pt<T> in, Pt<uint8> out) {
 	switch (NumberTypeE_type_of(*in)) {
 	case uint8_e: packer->as_uint8(this,n,(Pt<uint8>)in,out); break;
 	case int16_e: packer->as_int16(this,n,(Pt<int16>)in,out); break;
@@ -292,7 +292,7 @@ void BitPacking::pack(int n, Pt<T> in, Pt<uint8> out) {
 }
 
 template <class T>
-void BitPacking::unpack(int n, Pt<uint8> in, Pt<T> out) {
+void BitPacking::unpack(long n, Pt<uint8> in, Pt<T> out) {
 	switch (NumberTypeE_type_of(*out)) {
 	case uint8_e: unpacker->as_uint8(this,n,in,(Pt<uint8>)out); break;
 	case int16_e: unpacker->as_int16(this,n,in,(Pt<int16>)out); break;

@@ -683,12 +683,12 @@ struct BitPacking;
 // those are the types of the optimised loops of conversion 
 // inputs are const
 struct Packer {
-#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<S> in,   Pt<uint8> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, long n, Pt<S> in,   Pt<uint8> out);
 EACH_INT_TYPE(FOO)
 #undef FOO
 };
 struct Unpacker {
-#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<uint8> in, Pt<S> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, long n, Pt<uint8> in, Pt<S> out);
 EACH_INT_TYPE(FOO)
 #undef FOO
 };
@@ -713,8 +713,8 @@ struct BitPacking : CObject {
 	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl String to_s();
 // main entrances to Packers/Unpackers
-	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
-	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
+	template <class T> void pack(  long n, Pt<T> in, Pt<uint8> out);
+	template <class T> void unpack(long n, Pt<uint8> in, Pt<T> out);
 };
 \end class
 
