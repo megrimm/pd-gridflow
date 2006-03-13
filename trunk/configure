@@ -855,7 +855,7 @@ def usage
 	log = ""
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
-	log << "[--use-cpu cpu] [--lite] [--debug] [--debug-harder]"
+	log << "[--use-cpu cpu] [--lite] [--debug]"
 	log << "[--ruby-prefix directory] [--gem-source directory]"
 	# [--puredata-prefix directory] "
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
@@ -887,11 +887,6 @@ while ARGV.length>0 do
 	when "--debug"
 		puts "Debug Mode (more error checking; less speed)"
 		$conf[:OPTIONS].push :HAVE_DEBUG
-		$CFLAGS += " -fno-inline"
-	when "--debug-harder"
-		puts "Debug Harder Mode (even more error checking; even less speed)"
-		$conf[:OPTIONS].push :HAVE_DEBUG
-		$conf[:OPTIONS].push :HAVE_DEBUG_HARDER
 		$CFLAGS += " -fno-inline"
 	when "--lite"
 		puts "Lite Mode (no float, no int64)"
@@ -1136,7 +1131,10 @@ base/flow_objects_for_matrix.c
 #	$sources << x
 #end
 
-f.puts "SOURCES = #{$sources.join(" ")} \\"
+#WRITEME!
+#f.puts "sitelibdir = " + make_expand($conf[:DEFINES][:RUBY_PREFIX] or "")
+
+f.puts "SOURCES = #{$sources.join(" ")}"
 f.puts ""
 } # end open config.make
 
