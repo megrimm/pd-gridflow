@@ -26,18 +26,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//#define CONVERT0(z) (((in[z] << hb[z]) >> 7) & mask[z])
 #define CONVERT0(z) ((in[z] >> chop[z]) << slide[z])
-
-#define CONVERT1 t = \
-	CONVERT0(0) | CONVERT0(1) | CONVERT0(2)
-
-#define CONVERT2 \
-	for (t=0,i=0; i<self->size; i++) t |= CONVERT0(i);
-
-#define CONVERT3 \
-	for (t=0,i=0; i<self->size; i++) \
-		t |= (((unsigned)in[i]>>(7-hb[i]))|(in[i]<<(hb[i]-7))) & mask[i];
+#define CONVERT1 t = CONVERT0(0) | CONVERT0(1) | CONVERT0(2)
+#define CONVERT2 for (t=0,i=0; i<self->size; i++) t |= CONVERT0(i);
 
 #define WRITE_LE \
 	for (int bytes = self->bytes; bytes; bytes--, t>>=8) *out++ = t;

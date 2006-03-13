@@ -33,17 +33,13 @@ Arg = Struct.new(:type,:name,:default)
 class MethodDecl
 	def ==(o)
 		return false unless rettype==o.rettype && static==o.static &&
-		maxargs==o.maxargs # && minargs==o.minargs 
+			maxargs==o.maxargs
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
 end
 
-class Arg
-	def ==(o)
-		type==o.type && name==o.name # && default==o.default
-	end
-end
+class Arg; def ==(o) type==o.type && name==o.name end end
 
 In = File.open ARGV[0], "r"
 Out = File.open ARGV[1], "w"
@@ -83,15 +79,13 @@ end
 
 def unparse_arglist(arglist,with_default=true)
 	arglist.map {|arg|
-		x="#{arg.type} #{arg.name} "
+		x="#{arg.type} #{arg.name}"
 		x<<'='<<arg.default if with_default and arg.default
 		x
 	}.join(", ")
 end
 
-def where
-  "[#{ARGV[0]}:#{$linenumber}]"
-end
+def where; "[#{ARGV[0]}:#{$linenumber}]" end
 
 def handle_attr(line)
 	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
@@ -164,7 +158,7 @@ def handle_def(line)
 		when "String"
 			Out.print "if (argc>#{i} && TYPE(argv[#{i}])==T_SYMBOL) "+
 			"argv[#{i}]=rb_funcall(argv[#{i}],SI(to_s),0);"
-			Out.print "if (argc>#{i} && TYPE(argv[#{i}])!=T_STRING) "+
+			Out.print "else if (argc>#{i} && TYPE(argv[#{i}])!=T_STRING) "+
 			error[arg.type,"argv[#{i}]"]+";"
 		end
 	}
@@ -193,15 +187,15 @@ def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
-	Out.puts "static void #{cl}_startup (Ruby rself);"
-	Out.puts "static void *#{cl}_allocator () {return new #{cl};}"
-	Out.puts "static MethodDecl #{cl}_methods[] = {"
-	Out.puts frame.methods.map {|foo,method|
+	Out.print "static void #{cl}_startup (Ruby rself);"
+	Out.print "static void *#{cl}_allocator () {return new #{cl};}"
+	Out.print "static MethodDecl #{cl}_methods[] = {"
+	Out.print frame.methods.map {|foo,method|
 		c,s = frame.name,method.selector
 		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
 	}.join(",")
-	Out.puts "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
-	Out.puts "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
+	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
+	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
 	Out.puts "void #{frame.name}_startup (Ruby rself) "+line
 end
 
@@ -233,13 +227,15 @@ def handle_end(line)
 			handle_def "void _0_#{name}_m (#{type} #{name}) { this->#{name}=#{name}; }"
 		}
 		frame.grins.each {|i,v|
+			cli = "#{cl}::grinw_#{i}"
 			k = case v[1]
-			when nil; '4'
-			when 'int32'; '1'
-			when 'int'; '2'
-			when 'float'; 'F'
+			when     nil: [1,1,1,1,1,1,1]
+			when 'int32': [0,0,1,0,0,0,0]
+			when   'int': [1,1,1,1,0,0,0]
+			when 'float': [0,0,0,0,1,1,0]
 			else raise 'BORK BORK BORK' end
-			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN#{k}(#{cl},#{i});"
+			ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
+			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
 			handle_def "Ruby _#{i}_grid(...) {"+
 				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
@@ -247,7 +243,6 @@ def handle_end(line)
 
 		}
 		$stack.pop
-		Out.puts "# #{$linenumber}"
 	end
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
@@ -281,9 +276,7 @@ loop{
 		begin
 			send("handle_#{$1}",$2)
 		rescue StandardError => e
-			STDERR.puts e.inspect
-			STDERR.puts "at line #{$linenumber}"
-			STDERR.puts e.backtrace
+			STDERR.puts e.inspect, "at line #{$linenumber}", e.backtrace
 			File.unlink ARGV[1]
 			exit 1
 		end
