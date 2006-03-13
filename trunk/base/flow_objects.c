@@ -102,7 +102,7 @@ struct GridImport : GridObject {
 	template <class T> void process (int n, Pt<T> data) {
 		while (n) {
 			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
-			int32 n2 = min((int32)n,out->dim->prod()-out->dex);
+			long n2 = min((long)n,out->dim->prod()-out->dex);
 			out->send(n2,data);
 			n-=n2; data+=n2;
 		}
@@ -114,7 +114,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 
 \def void _0_symbol(Symbol x) {
 	const char *name = rb_sym_name(argv[0]);
-	int n = strlen(name);
+	long n = strlen(name);
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,Pt<uint8>((uint8 *)name,n));
 }

@@ -147,7 +147,7 @@ void Grid::init_from_ruby(Ruby x) {
 // must be set before the end of GRID_BEGIN phase, and so cannot be changed
 // afterwards. This is to allow some optimisations. Anyway there is no good reason
 // why this would be changed afterwards.
-void GridInlet::set_factor(int factor) {
+void GridInlet::set_factor(long factor) {
 	if(!dim) RAISE("huh?");
 	if(factor<=0) RAISE("%s: factor=%d should be >= 1",INFO(parent),factor);
 	if (dim->prod() && dim->prod() % factor)
@@ -227,7 +227,7 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		int bufn = factor();
 		if (buf && bufi) {
 			Pt<T> bufd = (Pt<T>)*buf;
-			int k = min(n,bufn-bufi);
+			long k = min((long)n,bufn-bufi);
 			COPY(bufd+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
@@ -366,7 +366,7 @@ void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
 	assert(data); assert(frozen);
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
-		int pn = min(n,MAX_PACKET_SIZE);
+		long pn = min((long)n,MAX_PACKET_SIZE);
 		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->flow(4,pn,data);
 		data+=pn, n-=pn;
 	}
@@ -485,7 +485,7 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	return a;
 }
 
-\def void inlet_set_factor (int inln, int factor) {
+\def void inlet_set_factor (int inln, long factor) {
 	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
