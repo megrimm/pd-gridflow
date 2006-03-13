@@ -835,7 +835,7 @@ struct Grid : CObject {
 		state=1; 
 		if (!dim) RAISE("hell");
 		init(dim,nt);
-		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
+		if (clear) {long size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
 	}
 	Grid(Ruby x) { state=1; init_from_ruby(x); }
 	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
@@ -953,12 +953,12 @@ struct GridInlet : CObject {
 	GridObject *sender;
 	P<Dim> dim;
 	NumberTypeE nt;
-	int dex;
+	long dex;
 	PtrGrid buf;// factor-chunk buffer
-	int bufi;   // buffer index: how much of buf is filled
+	long bufi;   // buffer index: how much of buf is filled
 	int mode; // 0=ignore; 4=ro; 6=rw
 
-	int allocfactor,allocmin,allocmax,allocn;
+	long allocfactor,allocmin,allocmax,allocn;
 	Pt<uint8> alloc;
 
 // methods
@@ -966,7 +966,7 @@ struct GridInlet : CObject {
 		parent(parent_), gh(gh_), sender(0),
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
-	void set_factor(int factor);
+	void set_factor(long factor);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	Ruby begin(int argc, Ruby *argv);
@@ -1021,8 +1021,8 @@ struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 struct GridOutlet : CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
-	static const int MIN_PACKET_SIZE = 1<<8;
-	static const int MAX_PACKET_SIZE = 1<<12;
+	static const long MIN_PACKET_SIZE = 1<<8;
+	static const long MAX_PACKET_SIZE = 1<<12;
 // those are set only once
 	GridObject *parent; // not a P<> because of circular refs
 	P<Dim> dim; // dimensions of the grid being sent
@@ -1031,8 +1031,8 @@ struct GridOutlet : CObject {
 	bool frozen; // is the "begin" phase finished?
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
-	int dex;  // how many numbers were already sent in this connection
-	int bufi; // number of bytes used in the buffer
+	long dex;  // how many numbers were already sent in this connection
+	long bufi; // number of bytes used in the buffer
 // methods
 	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
 	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
@@ -1056,7 +1056,7 @@ struct GridOutlet : CObject {
 	template <class T> void give(int n, Pt<T> data);
 
 	// third way to send (upcoming, in GF-0.8.??) is called "ask".
-	template <class T> void ask(int &n, Pt<T> &data, int factor, int min, int max);
+	template <class T> void ask(int &n, Pt<T> &data, long factor, long min, long max);
 
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
@@ -1109,8 +1109,8 @@ struct GridObject : FObject {
 	\decl Ruby method_missing(...);
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
-	\decl void inlet_set_factor(int inln, int factor);
-	\decl void send_out_grid_begin(int outlet, Array dim,        NumberTypeE nt=int32_e);
+	\decl void inlet_set_factor(int inln, long factor);
+	\decl void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
 };
