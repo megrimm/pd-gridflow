@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -47,7 +47,7 @@ struct FormatOpenGL : Format {
 	GLuint gltex;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	Pt<uint8> buf;
+	uint8 * buf;
 	\decl void call ();
 	\decl void initialize (Symbol mode);
 	\decl void close ();
@@ -93,7 +93,7 @@ static void my_idle () { longjmp(hack,1); }
 	} else {
 		glutReshapeWindow(sx,sy);
 	}
-	if (buf) delete buf.p;
+	if (buf) delete buf;
 	buf = ARRAY_NEW(uint8,sy*sx*4);
 	glViewport(0,0,sx,sy);
 	glMatrixMode(GL_PROJECTION);
@@ -139,7 +139,7 @@ GRID_INLET(FormatOpenGL,0) {
 \def void close () {
 	IEVAL(rself,"@clock.unset");
 	if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
-	if (buf) delete buf.p;
+	if (buf) delete buf;
 	in_use=false;
 	if ((unsigned)window!=0xDeadBeef) {
 		glutDestroyWindow(window);

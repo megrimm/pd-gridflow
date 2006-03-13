@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -54,7 +54,7 @@ GRID_INLET(FormatPNG,0) {
 	int rowsize2 = in->dim->get(1)*3;
 	uint8 row[rowsize2];
 	while (n) {
-		bit_packing->pack(in->dim->get(1),data,Pt<uint8>(row,rowsize));
+		bit_packing->pack(in->dim->get(1),data,row);
 		n-=rowsize; data+=rowsize;
 	}
 } GRID_FINISH {
@@ -96,7 +96,7 @@ GRID_INLET(FormatPNG,0) {
 
 	int rowbytes = png_get_rowbytes(png, info);
 	int channels = (int)png_get_channels(png, info);
-	Pt<uint8> image_data = ARRAY_NEW(uint8,rowbytes*height);
+	uint8 * image_data = ARRAY_NEW(uint8,rowbytes*height);
 	row_pointers = new png_bytep[height];
 	//gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
 	//	color_type, channels, width, rowbytes, height, gamma);

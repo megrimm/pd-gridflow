@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -39,9 +39,8 @@ struct FormatSDL : Format {
 	P<Dim> dim;
 	void resize_window (int sx, int sy);
 	void call ();
-	Pt<uint8> pixels () {
-		return Pt<uint8>((uint8 *)screen->pixels,
-			dim->prod(0,1)*bit_packing->bytes);
+	uint8 * pixels () {
+		return (uint8 *)screen->pixels;
 	}
 	\decl void initialize (Symbol mode);
 	\decl void close ();

@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -54,16 +54,16 @@ struct FormatX11 : Format {
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
-	Colormap colormap; /* for 256-color mode */
+	Colormap colormap;/* for 256-color mode */
 	short depth;
-	int transfer;	   /* 0=plain 1=xshm 2=xvideo */
-	bool use_stripes;  /* use alternate conversion in 256-color mode */
+	int transfer;	  /* 0=plain 1=xshm 2=xvideo */
+	bool use_stripes; /* use alternate conversion in 256-color mode */
 /* at the Window level */
-	Window window;       /* X11 window number */
-	Window parent;       /* X11 window number of the parent */
-	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
-	XImage *ximage;      /* X11 image descriptor */
-	Pt<uint8> image;     /* the real data (that XImage binds to) */
+	Window window;    /* X11 window number */
+	Window parent;    /* X11 window number of the parent */
+	GC imagegc;       /* X11 graphics context (like java.awt.Graphics) */
+	XImage *ximage;   /* X11 image descriptor */
+	uint8 *image;     /* the real data (that XImage binds to) */
 	bool is_owner;
 	int32 pos[2];
 	P<BitPacking> bit_packing;
@@ -81,7 +81,7 @@ struct FormatX11 : Format {
     int last_encoding;
 #endif
 	FormatX11 () : transfer(0), use_stripes(false), 
-	window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
+	window(0), ximage(0), image(0), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
@@ -228,8 +228,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
 	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
-		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
-			+ ximage->bytes_per_line * y;
+		uint8 *b1 = image + ximage->bytes_per_line * y;
 		bit_packing->unpack(sx,b1,b2);
 		out.send(bs,b2);
 	}
@@ -274,7 +273,7 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		if(shm_info->shmid < 0) RAISE("shmget() failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		if ((long)(shm_info->shmaddr) == -1) RAISE("shmat() failed: %s",strerror(errno));
-		image = Pt<uint8>((uint8 *)ximage->data,size);
+		image = (uint8 *)ximage->data;
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
@@ -328,7 +327,7 @@ retry:
 void FormatX11::dealloc_image () {
 	if (!ximage) return;
 	switch (transfer) {
-	case 0: XFree(ximage); ximage=0; image=Pt<uint8>(); break;
+	case 0: XFree(ximage); ximage=0; image=0; break;
 #ifdef HAVE_X11_SHARED_MEMORY
 	case 1:
 		shmdt(ximage->data);
@@ -336,7 +335,7 @@ void FormatX11::dealloc_image () {
 		if (shm_info) {delete shm_info; shm_info=0;}
 		XFree(ximage);
 		ximage = 0;
-		image = Pt<uint8>();
+		image = 0;
 	break;
 #endif
 #ifdef HAVE_X11_XVIDEO
