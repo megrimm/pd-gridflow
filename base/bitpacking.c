@@ -54,7 +54,7 @@
 	for (; n; n--) { _x_ }
 
 /* this could be faster (use asm) */
-void swap32 (long n, Pt<uint32> data) {
+void swap32 (long n, uint32 * data) {
 	NTIMES({
 		uint32 x = *data;
 		x = (x<<16) | (x>>16);
@@ -64,14 +64,14 @@ void swap32 (long n, Pt<uint32> data) {
 }
 
 /* this could be faster (use asm or do it in int32 chunks) */
-void swap16 (long n, Pt<uint16> data) {
+void swap16 (long n, uint16 * data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
 /* **************************************************************** */
 
 template <class T>
-static void default_pack(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
+static void default_pack(BitPacking *self, long n, T * in, uint8 * out) {
 	uint32 t;
 	int i;
 	int sameorder = self->endian==2 || self->endian==::is_le();
@@ -112,7 +112,7 @@ static void default_pack(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 //			*out++ = ((temp & self->mask[i]) << 7) >> hb[i];
 
 template <class T>
-static void default_unpack(BitPacking *self, long n, Pt<uint8> in, Pt<T> out) {
+static void default_unpack(BitPacking *self, long n, uint8 * in, T * out) {
 	int hb[4];
 	for (int i=0; i<self->size; i++) hb[i] = highest_bit(self->mask[i]);
 	if (is_le()) { // smallest byte first
@@ -129,7 +129,7 @@ static void default_unpack(BitPacking *self, long n, Pt<uint8> in, Pt<T> out) {
 /* **************************************************************** */
 
 template <class T>
-static void pack2_565(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
+static void pack2_565(BitPacking *self, long n, T * in, uint8 * out) {
 //	const int hb[3] = {15,10,4};
 //	const uint32 mask[3] = {0x0000f800,0x000007e0,0x0000001f};
 //	uint32 span[3] = {4,5,4};
@@ -140,8 +140,8 @@ static void pack2_565(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 }
 
 template <class T>
-static void pack3_888(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
-	Pt<int32> o32 = (Pt<int32>)out;
+static void pack3_888(BitPacking *self, long n, T * in, uint8 * out) {
+	int32 * o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
 		o32[1] = (in[7]<<24) | (in[ 8]<<16) | (in[ 3]<<8) | in[4];
@@ -149,15 +149,15 @@ static void pack3_888(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 		o32+=3; in+=12;
 		n-=4;
 	}
-	out = (Pt<uint8>)o32;
+	out = (uint8 *)o32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
 /*
 template <>
-static void pack3_888(BitPacking *self, long n, Pt<uint8> in, Pt<uint8> out) {
-	Pt<uint32> o32 = Pt<uint32>((uint32 *)out.p,n*3/4);
-	Pt<uint32> i32 = Pt<uint32>((uint32 *)in.p,n*3/4);
+static void pack3_888(BitPacking *self, long n, uint8 * in, uint8 * out) {
+	uint32 * o32 = uint32 *((uint32 *)out.p,n*3/4);
+	uint32 * i32 = uint32 *((uint32 *)in.p,n*3/4);
 	while (n>=4) {
 #define Z(w,i) ((word##w>>(i*8))&255)
 		uint32 word0 = i32[0];
@@ -170,15 +170,15 @@ static void pack3_888(BitPacking *self, long n, Pt<uint8> in, Pt<uint8> out) {
 		n-=4;
 	}
 #undef Z
-	out = (Pt<uint8>)o32;
-	in  = (Pt<uint8>)i32;
+	out = (uint8 *)o32;
+	in  = (uint8 *)i32;
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 */
 
 template <class T>
-static void pack3_888b(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
-	Pt<int32> o32 = (Pt<int32>)out;
+static void pack3_888b(BitPacking *self, long n, T * in, uint8 * out) {
+	int32 * o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[0]<<16) | (in[1]<<8) | in[2];
 		o32[1] = (in[3]<<16) | (in[4]<<8) | in[5];
@@ -193,10 +193,10 @@ static void pack3_888b(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
 // (R,G,B,?) -> B:8,G:8,R:8,0:8
 // fishy
 template <class T>
-static void pack3_bgrn8888(BitPacking *self, long n, Pt<T> in, Pt<uint8> out) {
+static void pack3_bgrn8888(BitPacking *self, long n, T * in, uint8 * out) {
 /* NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=4; in+=4; ) */
-	Pt<int32> i32 = (Pt<int32>)in;
-	Pt<int32> o32 = (Pt<int32>)out;
+	int32 * i32 = (int32 *)in;
+	int32 * o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = ((i32[0]&0xff)<<16) | (i32[0]&0xff00) | ((i32[0]>>16)&0xff);
 		o32[1] = ((i32[1]&0xff)<<16) | (i32[1]&0xff00) | ((i32[1]>>16)&0xff);
@@ -282,21 +282,21 @@ bool BitPacking::is_le() {
 }
 
 template <class T>
-void BitPacking::pack(long n, Pt<T> in, Pt<uint8> out) {
+void BitPacking::pack(long n, T * in, uint8 * out) {
 	switch (NumberTypeE_type_of(*in)) {
-	case uint8_e: packer->as_uint8(this,n,(Pt<uint8>)in,out); break;
-	case int16_e: packer->as_int16(this,n,(Pt<int16>)in,out); break;
-	case int32_e: packer->as_int32(this,n,(Pt<int32>)in,out); break;
+	case uint8_e: packer->as_uint8(this,n,(uint8 *)in,out); break;
+	case int16_e: packer->as_int16(this,n,(int16 *)in,out); break;
+	case int32_e: packer->as_int32(this,n,(int32 *)in,out); break;
 	default: RAISE("argh");
 	}
 }
 
 template <class T>
-void BitPacking::unpack(long n, Pt<uint8> in, Pt<T> out) {
+void BitPacking::unpack(long n, uint8 * in, T * out) {
 	switch (NumberTypeE_type_of(*out)) {
-	case uint8_e: unpacker->as_uint8(this,n,in,(Pt<uint8>)out); break;
-	case int16_e: unpacker->as_int16(this,n,in,(Pt<int16>)out); break;
-	case int32_e: unpacker->as_int32(this,n,in,(Pt<int32>)out); break;
+	case uint8_e: unpacker->as_uint8(this,n,in,(uint8 *)out); break;
+	case int16_e: unpacker->as_int16(this,n,in,(int16 *)out); break;
+	case int32_e: unpacker->as_int32(this,n,in,(int32 *)out); break;
 	default: RAISE("argh");
 	}
 }
@@ -306,8 +306,8 @@ void BitPacking::unpack(long n, Pt<uint8> in, Pt<T> out) {
 void make_hocus_pocus () {
 //	exit(1);
 #define FOO(S) \
-	((BitPacking*)0)->pack(0,Pt<S>(),Pt<uint8>()); \
-	((BitPacking*)0)->unpack(0,Pt<uint8>(),Pt<S>());
+	((BitPacking*)0)->pack(0,(S *)0,(uint8 *)0); \
+	((BitPacking*)0)->unpack(0,(uint8 *)0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }
