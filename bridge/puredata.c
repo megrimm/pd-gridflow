@@ -88,7 +88,7 @@ static Ruby mPointer=0;
 \class Pointer < CObject
 struct Pointer : CObject {
 	void *p;
-	Pointer() { assert(!"DYING HORRIBLY (GASP)"); }
+	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
 	Pointer(void *_p) : p(_p) {}
 	\decl Ruby ptr ();
 };
