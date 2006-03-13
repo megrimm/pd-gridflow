@@ -54,7 +54,7 @@ struct GridConvolve : GridObject {
 	\attr PtrGrid b;
 	PtrGrid a;
 	int plann;
-	PlanEntry *plan; //Pt?
+	PlanEntry *plan;
 	int margx,margy; // margins
 	GridConvolve () : plan(0) { b.constrain(expect_convolution_matrix); plan=0; }
 	\decl void initialize (Grid *r=0);
