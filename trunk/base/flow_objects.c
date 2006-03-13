@@ -33,7 +33,7 @@
 #define SCOPY(a,b,n) SCopy<n>::f(a,b)
 #endif
 
-template <int n> class SCopy {
+template <long n> class SCopy {
 public: template <class T> static inline void __attribute__((always_inline)) f(T * a, T * b) {
 		*a=*b; SCopy<n-1>::f(a+1,b+1);}};
 template <> class SCopy<0> {
@@ -99,7 +99,7 @@ struct GridImport : GridObject {
 	\decl void _1_per_message();
 	\grin 0
 	\grin 1 int32
-	template <class T> void process (int n, T * data) {
+	template <class T> void process (long n, T *data) {
 		while (n) {
 			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
 			long n2 = min((long)n,out->dim->prod()-out->dex);
@@ -227,7 +227,7 @@ struct GridStore : GridObject {
 	\grin 0 int
 	\grin 1
 	GridStore() { put_at.constrain(expect_max_one_dim); }
-	template <class T> void compute_indices(T * v, int nc, int nd);
+	template <class T> void compute_indices(T *v, long nc, long nd);
 };
 
 // takes the backstore of a grid and puts it back into place. a backstore
@@ -237,7 +237,7 @@ static void snap_backstore (PtrGrid &r) {
 	if (r.next) {r=r.next.p; r.next=0;}
 }
 
-template <class T> void GridStore::compute_indices(T * v, int nc, int nd) {
+template <class T> void GridStore::compute_indices(T * v, long nc, long nd) {
 	for (int i=0; i<nc; i++) {
 		uint32 wrap = r->dim->v[i];
 		bool fast = lowest_bit(wrap)==highest_bit(wrap); // is power of two?
@@ -258,7 +258,7 @@ GRID_INLET(GridStore,0) {
 	snap_backstore(r);
 	int na = in->dim->n;
 	int nb = r->dim->n;
-	int nc = in->dim->get(na-1);
+	long nc = in->dim->get(na-1);
 	int32 v[Dim::MAX_DIM];
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
 	int lastindexable = r->dim->prod()/r->dim->prod(nc) - 1;
@@ -269,7 +269,7 @@ GRID_INLET(GridStore,0) {
 	if (nc > nb)
 		RAISE("wrong number of elements in last dimension: "
 			"got %d, expecting <= %d", nc, nb);
-	int nd = nb - nc + na - 1;
+	int nd = nb-nc+na-1;
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r->dim->v+nc,nb-nc);
 	out=new GridOutlet(this,0,new Dim(nd,v),r->nt);
@@ -277,7 +277,7 @@ GRID_INLET(GridStore,0) {
 } GRID_FLOW {
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
-	int size = r->dim->prod(nc);
+	long size = r->dim->prod(nc);
 	int nd = n/nc;
 	T w[n];
 	T *v=w;
@@ -293,7 +293,7 @@ GRID_INLET(GridStore,0) {
 	type * p = (type *)*r; \
 	if (size<=16) { \
 		type * foo = new type[nd*size]; \
-		int i=0; \
+		long i=0; \
 		switch (size) { \
 		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
 			foo[0] = p[v[i+0]]; \
@@ -315,8 +315,8 @@ GRID_INLET(GridStore,0) {
 #undef FOO
 } GRID_FINISH {
 	if (in->dim->prod()==0) {
-		int n = in->dim->prod(0,-2);
-		int size = r->dim->prod();
+		long n = in->dim->prod(0,-2);
+		long size = r->dim->prod();
 #define FOO(T) while (n--) out->send(size,(T *)*r);
 		TYPESWITCH(r->nt,FOO,)
 #undef FOO
@@ -334,7 +334,7 @@ GRID_INLET(GridStore,1) {
 	}
 	// put_at ( ... )
 	//!@#$ should check types. if (r->nt!=in->nt) RAISE("shoo");
-	int nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
+	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
 	int32 sizeb[nn];
 	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
 	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim->prod());
@@ -377,10 +377,9 @@ GRID_INLET(GridStore,1) {
 			x[d]++;
 			if (x[d]<to2[d]) break;
 		}
-		end:; // why here ??? or why at all?
 		d++;
 	}
-	//end:; // why not here ???
+	end:;
 } GRID_END
 \def void _0_op(Numop *op) { this->op=op; }
 \def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
@@ -415,8 +414,8 @@ GRID_INLET(GridOp,0) {
 } GRID_ALLOC {
 	//out->ask(in->allocn,(T * &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
 } GRID_FLOW {
-	T * rdata = (T *)*r;
-	int loop = r->dim->prod();
+	T *rdata = (T *)*r;
+	long loop = r->dim->prod();
 	if (sizeof(T)==8) {
 		fprintf(stderr,"1: data=%p rdata=%p\n",data,rdata);
 		WATCH(n,data);
@@ -427,11 +426,11 @@ GRID_INLET(GridOp,0) {
 		} else {
 			// !@#$ should prebuild and reuse this array when "loop" is small
 			T data2[n];
-			int ii = mod(in->dex,loop);
-			int m = min(loop-ii,n);
+			long ii = mod(in->dex,loop);
+			long m = min(loop-ii,n);
 			COPY(data2,rdata+ii,m);
-			int nn = m+((n-m)/loop)*loop;
-			for (int i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
+			long nn = m+((n-m)/loop)*loop;
+			for (long i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
 			if (n>nn) COPY(data2+nn,rdata,n-nn);
 			if (sizeof(T)==8) {
 				fprintf(stderr,"2: data=%p data2=%p\n",data,data2);
@@ -448,13 +447,10 @@ GRID_INLET(GridOp,0) {
 
 GRID_INPUT2(GridOp,1,r) {} GRID_END
 \def void _0_op(Numop *op) { this->op=op; }
-
 \def void initialize(Numop *op, Grid *r=0) {
-	rb_call_super(argc,argv);
-	this->op=op;
-	this->r = r?r:new Grid(new Dim(),int32_e,true);
+  rb_call_super(argc,argv); this->op=op;
+  this->r=r?r:new Grid(new Dim(),int32_e,true);
 }
-
 \classinfo { IEVAL(rself,"install '#',2,1"); }
 \end class GridOp
 
@@ -535,9 +531,8 @@ GRID_INLET(GridScan,0) {
 	if (seed) {
 		for (int i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
 	} else {
-		T seed[zn];
-		CLEAR(seed,zn);
-		for (int i=0; i<n; i+=factor) op->scan(zn,yn,seed,buf+i);
+		T seed[zn]; CLEAR(seed,zn);
+		for (int i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
 	}
 	out->send(n,buf);
 } GRID_END
@@ -848,19 +843,17 @@ struct GridRedim : GridObject {
 };
 
 GRID_INLET(GridRedim,0) {
-	int a = in->dim->prod(), b = dim->prod();
+	long a=in->dim->prod(), b=dim->prod();
 	if (a<b) temp=new Grid(new Dim(a),in->nt);
 	out=new GridOutlet(this,0,dim,in->nt);
 } GRID_FLOW {
-	int i = in->dex;
+	long i = in->dex;
 	if (!temp) {
-		int b = dim->prod();
-		int n2 = min(n,b-i);
+		long n2 = min(n,dim->prod()-i);
 		if (n2>0) out->send(n2,data);
 		// discard other values if any
 	} else {
-		int a = in->dim->prod();
-		int n2 = min(n,a-i);
+		int n2 = min(n,in->dim->prod()-i);
 		COPY((T *)*temp+i,data,n2);
 		if (n2>0) out->send(n2,data);
 	}
@@ -970,14 +963,13 @@ struct GridGrade : GridObject {
 	\grin 0
 };
 
+typedef int (*comparator_t)(const void *, const void *);
+
 template <class T> struct GradeFunction {
-	static int comparator (const void *a, const void *b) {
-		return **(T**)a - **(T**)b;}};
-#define FOO(S) \
-template <> struct GradeFunction<S> { \
-	static int comparator (const void *a, const void *b) { \
-		S x = **(S**)a - **(S**)b; \
-		return x<0 ? -1 : x>0;}};
+	static int comparator (T **a, T **b) {return **a-**b;}};
+#define FOO(T) \
+template <> struct GradeFunction<T> { \
+	static int comparator (T **a, T **b) {T x = **a-**b; return x<0 ? -1 : x>0;}};
 FOO(int64)
 FOO(float32)
 FOO(float64)
@@ -987,12 +979,12 @@ GRID_INLET(GridGrade,0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_factor(in->dim->get(in->dim->n-1));
 } GRID_FLOW {
-	int m = in->factor();
+	long m = in->factor();
 	T* foo[m];
 	T  bar[m];
 	for (; n; n-=m,data+=m) {
 		for (int i=0; i<m; i++) foo[i] = &data[i];
-		qsort(foo,m,sizeof(T),GradeFunction<T>::comparator);
+		qsort(foo,m,sizeof(T),(comparator_t)GradeFunction<T>::comparator);
 		for (int i=0; i<m; i++) bar[i] = foo[i]-(T *)data;
 		out->send(m,bar);
 	}
@@ -1045,9 +1037,9 @@ GRID_INLET(GridTranspose,0) {
 	if (dim1==dim2) { out->send(n,data); return; }
 	int prod = na*nb*nc*nd;
 	for (; n; n-=prod, data+=prod) {
-		for (int a=0; a<na; a++)
-			for (int b=0; b<nb; b++)
-				for (int c=0; c<nc; c++)
+		for (long a=0; a<na; a++)
+			for (long b=0; b<nb; b++)
+				for (long c=0; c<nc; c++)
 					COPY(res +((c*nb+b)*na+a)*nd,
 					     data+((a*nb+b)*nc+c)*nd,nd);
 		out->send(na*nb*nc*nd,res);
@@ -1084,11 +1076,11 @@ GRID_INLET(GridReverse,0) {
 	out=new GridOutlet(this,0,new Dim(in->dim->n,in->dim->v), in->nt);
 	in->set_factor(in->dim->prod(d));
 } GRID_FLOW {
-	int f1=in->factor(), f2=in->dim->prod(d+1);
+	long f1=in->factor(), f2=in->dim->prod(d+1);
 	while (n) {
-		int hf1=f1/2;
+		long hf1=f1/2;
 		T * data2 = data+f1-f2;
-		for (int i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
+		for (long i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
 		out->send(f1,data);
 		data+=f1; n-=f1;
 	}

@@ -208,7 +208,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	return Qnil;
 }
 
-template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
+template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
@@ -360,7 +360,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(int n, T * data) {TRACE;
+void GridOutlet::send_direct(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
 		long pn = min((long)n,MAX_PACKET_SIZE);
@@ -386,7 +386,7 @@ static void convert_number_type(int n, T * out, S * in) {
 //!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(int n, T * data) {TRACE;
+void GridOutlet::send(long n, T *data) {TRACE;
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -413,7 +413,7 @@ void GridOutlet::send(int n, T * data) {TRACE;
 }
 
 template <class T>
-void GridOutlet::give(int n, T * data) {TRACE;
+void GridOutlet::give(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet);
 	CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -446,7 +446,7 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 //!@#$ does not handle types properly
 //!@#$ most possibly a big hack
 template <class T>
-void GridObject_r_flow(GridInlet *in, int n, T * data) {
+void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	GridObject *self = in->parent;
 	uint32 i;
 	for (i=0; i<self->in.size(); i++) if (in==self->in[i].p) break;
@@ -541,7 +541,6 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	for (int i=0; i<rb_ary_len(handlers); i++) {
 		Ruby ghp = rb_ary_ptr(handlers)[i];
 		if (ghp==Qnil) continue;
-		//GridHandler *gh = FIX2PTR(GridHandler,ghp);
 		char buf[256];
 		for (int j=0; j<COUNT(names); j++) {
 			sprintf(buf,"_%d_%s",i,names[j]);
@@ -592,7 +591,6 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	// define in Ruby-metaclass
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
-	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }
 \end class GridObject
 
