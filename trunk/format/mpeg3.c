@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -49,16 +49,15 @@ struct FormatMPEG3 : Format {
 	int channels = 3;
 	/* !@#$ the doc says "You must allocate 4 extra bytes in the
 	last output_row. This is scratch area for the MMX routines." */
-	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels+16);
+	uint8 * buf = ARRAY_NEW(uint8,sy*sx*channels+16);
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 	GridOutlet out(this,0,new Dim(sy, sx, channels),
 		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int bs = out.dim->prod(1);
-	STACK_ARRAY(int32,b2,bs);
 	for(int y=0; y<sy; y++) {
-		Pt<uint8> row = buf+channels*sx*y;
+		uint8 *row = buf+channels*sx*y;
 		out.send(bs,row);
 	}
 	delete[] (uint8 *)buf;

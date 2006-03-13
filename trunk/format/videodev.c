@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -179,7 +179,7 @@ struct FormatVideoDev : Format {
 	VideoCapability vcaps;
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
-	Pt<uint8> image;
+	uint8 * image;
 	int palette;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
@@ -188,7 +188,7 @@ struct FormatVideoDev : Format {
 	P<Dim> dim;
 
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
-	void frame_finished (Pt<uint8> buf);
+	void frame_finished (uint8 * buf);
 
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
 	\decl void initialize2 ();
@@ -259,7 +259,7 @@ struct FormatVideoDev : Format {
 		delete[] (uint8 *)image;
 	} else {
 		munmap(image, vmbuf.size);
-		image = Pt<uint8>();
+		image=0;
 	}
 }
 
@@ -270,13 +270,8 @@ struct FormatVideoDev : Format {
 	}
 	int fd = GETFD;
 	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-	image = Pt<uint8>((uint8 *)
-		mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0),
-		vmbuf.size);
-	if (((int)image)<=0) {
-		image=Pt<uint8>();
-		RAISE("mmap: %s", strerror(errno));
-	}
+	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	if (((int)image)<=0) {image=0; RAISE("mmap: %s", strerror(errno));}
 }
 
 \def void frame_ask () {
@@ -291,7 +286,7 @@ struct FormatVideoDev : Format {
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
-void FormatVideoDev::frame_finished (Pt<uint8> buf) {
+void FormatVideoDev::frame_finished (uint8 * buf) {
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
@@ -300,9 +295,9 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	if (palette==VIDEO_PALETTE_YUV420P) {
 		STACK_ARRAY(uint8,b2,bs);
 		for(int y=0; y<sy; y++) {
-			Pt<uint8> bufy = buf+sx*y;
-			Pt<uint8> bufu = buf+sx*sy    +(sx/2)*(y/2);
-			Pt<uint8> bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+			uint8 * bufy = buf+sx*y;
+			uint8 * bufu = buf+sx*sy    +(sx/2)*(y/2);
+			uint8 * bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
 			for (int x=0; x<sx; x++) {
 				b2[x*3+0]=bufy[x];
 				b2[x*3+1]=bufu[x/2];
@@ -313,7 +308,7 @@ void FormatVideoDev::frame_finished (Pt<uint8> buf) {
 	} else if (bit_packing) {
 		STACK_ARRAY(uint8,b2,bs);
 		for(int y=0; y<sy; y++) {
-			Pt<uint8> buf2 = buf+bit_packing->bytes*sx*y;
+			uint8 * buf2 = buf+bit_packing->bytes*sx*y;
 			bit_packing->unpack(sx,buf2,b2);
 			out.send(bs,b2);
 		}
@@ -529,7 +524,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
 	rb_call_super(argc,argv);
-	image = Pt<uint8>();
+	image=0;
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
 	rb_funcall(rself,SI(initialize2),0);
