@@ -486,7 +486,7 @@ static uint64 malloc_bytes = 0; /* only new not delete */
 static uint64 malloc_time  = 0; /* in cpu ticks */
 
 // don't touch.
-static void gfmemcopy32(int32 *as, int32 *bs, int n) {
+static void gfmemcopy32(int32 *as, int32 *bs, long n) {
 	int32 ba = bs-as;
 #define FOO(I) as[I] = (as+ba)[I];
 		UNROLL_8(FOO,n,as)
@@ -494,7 +494,7 @@ static void gfmemcopy32(int32 *as, int32 *bs, int n) {
 
 }
 
-void gfmemcopy(uint8 *out, const uint8 *in, int n) {
+void gfmemcopy(uint8 *out, const uint8 *in, long n) {
 	uint64 t = rdtsc();
 	memcpy_calls++;
 	memcpy_bytes+=n;

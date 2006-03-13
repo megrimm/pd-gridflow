@@ -54,7 +54,7 @@
 	for (; n; n--) { _x_ }
 
 /* this could be faster (use asm) */
-void swap32 (int n, Pt<uint32> data) {
+void swap32 (long n, Pt<uint32> data) {
 	NTIMES({
 		uint32 x = *data;
 		x = (x<<16) | (x>>16);
@@ -64,7 +64,7 @@ void swap32 (int n, Pt<uint32> data) {
 }
 
 /* this could be faster (use asm or do it in int32 chunks) */
-void swap16 (int n, Pt<uint16> data) {
+void swap16 (long n, Pt<uint16> data) {
 	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
 }
 
