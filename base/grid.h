@@ -98,7 +98,6 @@ __attribute__ ((noreturn));
 	self->check_magic();
 
 // returns the size of a statically defined array
-// warning: does not work with STACK_ARRAY()
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 static inline long  rb_str_len(Ruby s) {return RSTRING(s)->len;}
@@ -436,9 +435,6 @@ inline void *operator new[] (size_t n) { return gfmalloc(n); }
 inline void  operator delete   (void *p) { gffree(p); }
 inline void  operator delete[] (void *p) { gffree(p); }
 #endif
-
-#define STACK_ARRAY(T,V,N) T V[N];
-#define ARRAY_NEW(T,N) (new T[N])
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
 template <class T> inline void COPY(T *dest, T *src, long n) {

@@ -226,7 +226,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
-	STACK_ARRAY(uint8,b2,bs);
+	uint8 b2[bs];
 	for(int y=0; y<sy; y++) {
 		uint8 *b1 = image + ximage->bytes_per_line * y;
 		bit_packing->unpack(sx,b1,b2);
@@ -258,7 +258,7 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
 		int size = ximage->bytes_per_line*ximage->height;
 		if (!ximage) RAISE("can't create image"); 
-		image = ARRAY_NEW(uint8,size);
+		image = new uint8[size];
 		ximage->data = (int8 *)image;
 	} break;
 #ifdef HAVE_X11_SHARED_MEMORY

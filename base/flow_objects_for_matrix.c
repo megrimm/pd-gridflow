@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ GRID_INPUT(GridMatrixSolve,0,matrix) {
 	for (int j=0; j<n; j++) {
 		op_div->map(m,mat+j*m,mat[j*m+j]);
 		for (int i=j+1; i<n; i++) {
-			STACK_ARRAY(T,row,m);
+			T row[m];
 			COPY(row,mat+j,m);
 			op_mul->map(m,row,mat[i*m+j]);
 			op_sub->zip(m,mat+i*m,row);

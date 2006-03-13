@@ -94,7 +94,7 @@ static void my_idle () { longjmp(hack,1); }
 		glutReshapeWindow(sx,sy);
 	}
 	if (buf) delete buf;
-	buf = ARRAY_NEW(uint8,sy*sx*4);
+	buf = new uint8[sy*sx*4];
 	glViewport(0,0,sx,sy);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

@@ -265,7 +265,7 @@ struct FormatVideoDev : Format {
 
 \def void alloc_image () {
 	if (!use_mmap) {
-		image = ARRAY_NEW(uint8,dim->prod(0,1)*bit_packing->bytes);
+		image = new uint8[dim->prod(0,1)*bit_packing->bytes];
 		return;
 	}
 	int fd = GETFD;
@@ -293,7 +293,7 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
 	if (palette==VIDEO_PALETTE_YUV420P) {
-		STACK_ARRAY(uint8,b2,bs);
+		uint8 b2[bs];
 		for(int y=0; y<sy; y++) {
 			uint8 * bufy = buf+sx*y;
 			uint8 * bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -306,7 +306,7 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 			out.send(bs,b2);
 		}
 	} else if (bit_packing) {
-		STACK_ARRAY(uint8,b2,bs);
+		uint8 b2[bs];
 		for(int y=0; y<sy; y++) {
 			uint8 * buf2 = buf+bit_packing->bytes*sx*y;
 			bit_packing->unpack(sx,buf2,b2);

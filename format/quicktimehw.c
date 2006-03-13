@@ -83,7 +83,7 @@ struct FormatQuickTimeHW : Format {
 		sy = force->get(0);
 		sx = force->get(1);
 	}
-	uint8 *buf = ARRAY_NEW(uint8,sy*sx*channels);
+	uint8 *buf = new uint8[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
 	GridOutlet out(this,0,new Dim(sy, sx, channels),

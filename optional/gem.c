@@ -121,7 +121,7 @@ public:
 		int32 v[] = { im.ysize, im.xsize, im.csize };
 		GridOutlet out(this,0,new Dim(3,v));
 		int sxc = im.xsize*im.csize;
-		STACK_ARRAY(uint8,buf,sxc);
+		uint8 buf[sxc];
 		for (int i=0; i<v[0]; i++) {
 			uint8 *data = (uint8 *)im.data+sxc*i;
 			bit_packing->pack(im.xsize,data,buf);

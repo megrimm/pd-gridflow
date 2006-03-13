@@ -99,7 +99,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	Ruby delim = SYM(#);
 	for (int i=0; i<n; i++) {
 		if (a[i] == delim) {
-			STACK_ARRAY(int32,v,i);
+			int32 v[i];
 			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
 			init(new Dim(i,v),nt);
@@ -193,7 +193,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
 			INFO(parent), number_type_table[nt].name);
-	STACK_ARRAY(int32,v,argc);
+	int32 v[argc];
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	P<Dim> dim = this->dim = new Dim(argc,v);
 	dex=0;
@@ -233,7 +233,7 @@ template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
 			if (bufi==bufn) {
 				int newdex = dex+bufn;
 				if (this->mode==6) {
-					T *data2 = ARRAY_NEW(T,bufn);
+					T *data2 = new T[bufn];
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
 					gh->flow(this,bufn,data2);
@@ -249,7 +249,7 @@ template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
 		if (m) {
 			int newdex = dex + m;
 			if (this->mode==6) {
-				T *data2 = ARRAY_NEW(T,m);
+				T *data2 = new T[m];
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
 				gh->flow(this,m,data2);
@@ -302,7 +302,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 		int size = g->dim->prod();
 		if (this->mode==6) {
 			T * d = data;
-			data = ARRAY_NEW(T,size);  // problem with int64,float64 here.
+			data = new T[size];  // problem with int64,float64 here.
 			COPY(data,d,size);
 			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
@@ -396,7 +396,7 @@ void GridOutlet::send(int n, T * data) {TRACE;
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
-	STACK_ARRAY(T,data2,bs); \
+	T data2[bs]; \
 	for (;n>=bs;n-=bs,data+=bs) { \
 		convert_number_type(bs,data2,data); send(bs,data2);} \
 	convert_number_type(n,data2,data); \
@@ -497,7 +497,7 @@ void GridObject_r_flow(GridInlet *in, int n, T * data) {
 	if (outlet<0) RAISE("bad outlet number");
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
-	STACK_ARRAY(int32,v,n);
+	int32 v[n];
 	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
 	out = new GridOutlet(this,outlet,new Dim(n,v),nt); // valgrind says leak?
 }
