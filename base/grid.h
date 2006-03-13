@@ -106,7 +106,7 @@ static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
-#define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
+#define rb_str_pt(s,T) ((T*)rb_str_ptr(s),rb_str_len(s))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
@@ -280,7 +280,7 @@ static inline uint64 rdtsc() {return 0;}
 // my own little Ruby <-> C++ layer
 
 //struct Arg { Ruby a; };
-//struct ArgList { int n; Pt<Arg> v; };
+//struct ArgList { int n; Arg * v; };
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 #define INT(x) TO(int32,x)
@@ -405,77 +405,7 @@ static inline R cmp(R a, R b) { return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 //****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
 
-template <class T> class Pt {
-typedef ptrdiff_t /* and not int nor long */ Z;
-public:
-	T *p;
-#ifdef HAVE_DEBUG
-	T *start;
-	Z n;
-	Pt() : p(0), start(0), n(0) {}
-	Pt(T *q, Z _n) : p(q), start(q), n(_n) {}
-	Pt(T *q, Z _n, T *_start) : p(q), start(_start), n(_n) {}
-#else
-	Pt() : p(0) {}
-	Pt(T *q, Z _n, T *_start=0) : p(q) {}
-#endif
-	T &operator *() { return *p; }
-	Pt operator+=(Z i) { p+=i; return *this; }
-	Pt operator-=(Z	i) { p-=i; return *this; }
-	Pt operator++(   ) { p++;  return *this; }
-	Pt operator--(   ) { p--;  return *this; }
-	Pt operator++(int) { Pt f(*this); ++*this; return f; }
-	Pt operator--(int) { Pt f(*this); --*this; return f; }
-	T &operator[](Z i) {
-#ifdef HAVE_DEBUG_HARDER
-		if (!(p+i>=start && p+i<start+n))
-			BUG("BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx",
-				(long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
-#endif
-		return p[i];
-	}
-
-	void will_use(long k) {
-#ifdef HAVE_DEBUG_HARDER
-		if (k==0) return;
-		T *q = p+k;
-		if (!(p>=start && p<start+n && q>=start && q<=start+n))
-			BUG("BUFFER OVERFLOW: 0x%08lx...0x%08lx is not all inside 0x%08lx...0x%08lx",
-				(long)p,(long)q,start,(long)(start+n));
-#endif
-	}
-
-	Z operator-(Pt x) { return p-x.p; }
-	operator bool   () { return (bool   )p; }
-	operator void  *() { return (void  *)p; }
-	operator int8  *() { return (int8  *)p; }
-
-/* how do i make typecast operators that are not also default conversions??? */
-/* this should be found so i can clean up the following: */
-#define FOO(S) operator S *() { return (S *)p; }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#ifdef HAVE_DEBUG
-#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#else
-#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-#endif
-/* end 0.8 (TESTING) */
-	
-#ifdef HAVE_DEBUG
-	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
-	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
-#else
-	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
-	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
-#endif
-};
-
-//template <class T> class P : Pt<T> {};
+//template <class T> class P : T * {};
 //a reference counting pointer class
 template <class T> class P {
 public:
@@ -508,20 +438,20 @@ inline void  operator delete   (void *p) { gffree(p); }
 inline void  operator delete[] (void *p) { gffree(p); }
 #endif
 
-#define STACK_ARRAY(T,V,N) T V##_foo[N]; Pt<T> V(V##_foo,N);
-#define ARRAY_NEW(T,N) (Pt<T>((T *)new T[N],N))
+#define STACK_ARRAY(T,V,N) T V[N];
+#define ARRAY_NEW(T,N) (new T[N])
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
-template <class T> inline void COPY(Pt<T> dest, Pt<T> src, long n) {
+template <class T> inline void COPY(T *dest, T *src, long n) {
 	src.will_use(n); dest.will_use(n);
 	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
-template <class T> inline void CLEAR(Pt<T> dest, long n) {
+template <class T> inline void CLEAR(T *dest, long n) {
 	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
-template <class T> static void memswap (Pt<T> a, Pt<T> b, long n) {
-	STACK_ARRAY(T,c,n); COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
+template <class T> static void memswap (T *a, T *b, long n) {
+	T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
 }
 
 //****************************************************************
@@ -562,15 +492,13 @@ extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 struct Dim : CObject {
 	static const int MAX_DIM=16; // maximum number of dimensions in a grid
 	int n;
-	Pt<int32> v; // safe pointer
-	int32 v2[MAX_DIM]; // real stuff
+	int32 v[MAX_DIM]; // real stuff
 	void check(); // test invariants
-	Dim(int n, Pt<int32> v) { this->v = Pt<int32>(v2,MAX_DIM); this->n = n; COPY(this->v,v,n); check();}
-	Dim(int n,    int32 *v) { this->v = Pt<int32>(v2,MAX_DIM); this->n = n; COPY(this->v,Pt<int32>(v,n),n); check();}
-	Dim()                 {v=Pt<int32>(v2,MAX_DIM); n=0;                     check();}
-	Dim(int a)            {v=Pt<int32>(v2,MAX_DIM); n=1;v[0]=a;              check();}
-	Dim(int a,int b)      {v=Pt<int32>(v2,MAX_DIM); n=2;v[0]=a;v[1]=b;       check();}
-	Dim(int a,int b,int c){v=Pt<int32>(v2,MAX_DIM); n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	Dim(int n, int32 *v)  {this->n=n; COPY(this->v,v,n); check();}
+	Dim()                 {n=0;                     check();}
+	Dim(int a)            {n=1;v[0]=a;              check();}
+	Dim(int a,int b)      {n=2;v[0]=a;v[1]=b;       check();}
+	Dim(int a,int b,int c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
 	int count() {return n;}
 	int get(int i) { return v[i]; }
 	int32 prod(int start=0, int end=-1) {
@@ -683,12 +611,12 @@ struct BitPacking;
 // those are the types of the optimised loops of conversion 
 // inputs are const
 struct Packer {
-#define FOO(S) void (*as_##S)(BitPacking *self, long n, Pt<S> in,   Pt<uint8> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, long n, S *in, uint8 *out);
 EACH_INT_TYPE(FOO)
 #undef FOO
 };
 struct Unpacker {
-#define FOO(S) void (*as_##S)(BitPacking *self, long n, Pt<uint8> in, Pt<S> out);
+#define FOO(S) void (*as_##S)(BitPacking *self, long n, uint8 *in, S *out);
 EACH_INT_TYPE(FOO)
 #undef FOO
 };
@@ -713,15 +641,15 @@ struct BitPacking : CObject {
 	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl String to_s();
 // main entrances to Packers/Unpackers
-	template <class T> void pack(  long n, Pt<T> in, Pt<uint8> out);
-	template <class T> void unpack(long n, Pt<uint8> in, Pt<T> out);
+	template <class T> void pack(  long n, T * in, uint8 * out);
+	template <class T> void unpack(long n, uint8 * in, T * out);
 };
 \end class
 
 int high_bit(uint32 n);
 int  low_bit(uint32 n);
-void swap32 (long n, Pt<uint32> data);
-void swap16 (long n, Pt<uint16> data);
+void swap32 (long n, uint32 * data);
+void swap16 (long n, uint16 * data);
 
 //****************************************************************
 // Numop objects encapsulate optimised loops of simple operations
@@ -771,20 +699,20 @@ struct Numop : CObject {
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 //public:
-	template <class T> inline void map(long n, Pt<T> as, T b) {
+	template <class T> inline void map(long n, T * as, T b) {
 		as.will_use(n);
 		on(*as)->op_map(n,(T *)as,b);}
-	template <class T> inline void zip(long n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void zip(long n, T * as, T * bs) {
 		as.will_use(n);
 		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void fold(long an, long n, T * as, T * bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		typename NumopOn<T>::Fold f = on(*as)->op_fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
-	template <class T> inline void scan(long an, long n, Pt<T> as, Pt<T> bs) {
+	template <class T> inline void scan(long an, long n, T * as, T * bs) {
 		as.will_use(an);
 		bs.will_use(an*n);
 		typename NumopOn<T>::Scan f = on(*as)->op_scan;
@@ -835,20 +763,18 @@ struct Grid : CObject {
 		state=1; 
 		if (!dim) RAISE("hell");
 		init(dim,nt);
-		if (clear) {long size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
+		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
 	}
 	Grid(Ruby x) { state=1; init_from_ruby(x); }
 	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
-	template <class T> Grid(P<Dim> dim, Pt<T> data) {
+	template <class T> Grid(P<Dim> dim, T * data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T)0);
 		this->data = data;
 	}
 	long bytes() { return dim->prod()*number_type_table[nt].size/8; }
-	P<Dim> to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
-#define FOO(type) \
-	operator type *() { return (type *)data; } \
-	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
+	P<Dim> to_dim () { return new Dim(dim->prod(),(int32 *)*this); }
+#define FOO(T) operator T *() { return (T *)data; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	Grid *dup () { /* always produce an owning grid even if from a borrowing grid */
@@ -909,9 +835,9 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(C,I) \
-	template <class T> void C::grinw_##I (GridInlet *in, int n, Pt<T> data) { \
+	template <class T> void C::grinw_##I (GridInlet *in, int n, T * data) { \
 		((C*)(in->parent))->grin_##I(in,n,data); } \
-	template <class T> void  C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
+	template <class T> void  C::grin_##I (GridInlet *in, int n, T * data) { \
 	if (n==-1)
 #define GRID_ALLOC  else if (n==-3)
 #define GRID_FLOW   else if (n>=0)
@@ -922,7 +848,7 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 // V is a PtrGrid instance-var
 #define GRID_INPUT(C,I,V) \
 GRID_INLET(C,I) { V=new Grid(in->dim,NumberTypeE_type_of(*data)); } \
-GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
+GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
@@ -932,14 +858,14 @@ GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
 		} else V=        new Grid(in->dim,NumberTypeE_type_of(*data)); \
 	} GRID_FLOW { \
-		COPY(((Pt<T>)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
+		COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
 	} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 #define FOO(T) \
-	void (*flow_##T)(GridInlet *in, int n, Pt<T> data); \
-	void flow(GridInlet *in, int n, Pt<T> data) const { \
+	void (*flow_##T)(GridInlet *in, int n, T * data); \
+	void flow(GridInlet *in, int n, T * data) const { \
 		assert(flow_##T); flow_##T(in,n,data); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -959,7 +885,7 @@ struct GridInlet : CObject {
 	int mode; // 0=ignore; 4=ro; 6=rw
 
 	long allocfactor,allocmin,allocmax,allocn;
-	Pt<uint8> alloc;
+	uint8 * alloc;
 
 // methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
@@ -974,7 +900,7 @@ struct GridInlet : CObject {
 	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
 	// as an end-marker for inlet definitions... sorry for the confusion
 	// GF-0.8: n=-3 is alloc.
-	template <class T> void flow(int mode, int n, Pt<T> data);
+	template <class T> void flow(int mode, int n, T * data);
 	void end(); // this one ought to be called finish().
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
 		Grid t(argc,argv,nt); from_grid(&t);
@@ -1047,20 +973,20 @@ struct GridOutlet : CObject {
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
-	template <class T> void send(int n, Pt<T> data);
+	template <class T> void send(int n, T * data);
 	void flush(); // goes with send();
 
 	// give: data must be dynamically allocated as a whole: the data
 	// will be deleted eventually, and should not be used by the caller
 	// beyond the call to give().
-	template <class T> void give(int n, Pt<T> data);
+	template <class T> void give(int n, T * data);
 
 	// third way to send (upcoming, in GF-0.8.??) is called "ask".
-	template <class T> void ask(int &n, Pt<T> &data, long factor, long min, long max);
+	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
 
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
-	template <class T> void send_direct(int n, Pt<T> data);
+	template <class T> void send_direct(int n, T * data);
 	void end() {
 		flush();
 		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->end();
