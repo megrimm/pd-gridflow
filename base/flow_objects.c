@@ -34,17 +34,17 @@
 #endif
 
 template <int n> class SCopy {
-public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
+public: template <class T> static inline void __attribute__((always_inline)) f(T * a, T * b) {
 		*a=*b; SCopy<n-1>::f(a+1,b+1);}};
 template <> class SCopy<0> {
-public: template <class T> static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {}};
+public: template <class T> static inline void __attribute__((always_inline)) f(T * a, T * b) {}};
 
 /*template <> class SCopy<4> {
 public: template <class T>
-	static inline void __attribute__((always_inline)) f(Pt<T> a, Pt<T> b) {
+	static inline void __attribute__((always_inline)) f(T * a, T * b) {
 		*a=*b; SCopy<3>::f(a+1,b+1);}
 	// wouldn't gcc 2.95 complain here?
-	static inline void __attribute__((always_inline)) f(Pt<uint8> a, Pt<uint8> b)
+	static inline void __attribute__((always_inline)) f(uint8 * a, uint8 * b)
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
 
@@ -99,7 +99,7 @@ struct GridImport : GridObject {
 	\decl void _1_per_message();
 	\grin 0
 	\grin 1 int32
-	template <class T> void process (int n, Pt<T> data) {
+	template <class T> void process (int n, T * data) {
 		while (n) {
 			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
 			long n2 = min((long)n,out->dim->prod()-out->dex);
@@ -116,7 +116,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	const char *name = rb_sym_name(argv[0]);
 	long n = strlen(name);
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
-	process(n,Pt<uint8>((uint8 *)name,n));
+	process(n,(uint8 *)name);
 }
 
 \def void _0_cast(NumberTypeE cast) { this->cast = cast; }
@@ -227,7 +227,7 @@ struct GridStore : GridObject {
 	\grin 0 int
 	\grin 1
 	GridStore() { put_at.constrain(expect_max_one_dim); }
-	template <class T> void compute_indices(Pt<T> v, int nc, int nd);
+	template <class T> void compute_indices(T * v, int nc, int nd);
 };
 
 // takes the backstore of a grid and puts it back into place. a backstore
@@ -237,7 +237,7 @@ static void snap_backstore (PtrGrid &r) {
 	if (r.next) {r=r.next.p; r.next=0;}
 }
 
-template <class T> void GridStore::compute_indices(Pt<T> v, int nc, int nd) {
+template <class T> void GridStore::compute_indices(T * v, int nc, int nd) {
 	for (int i=0; i<nc; i++) {
 		uint32 wrap = r->dim->v[i];
 		bool fast = lowest_bit(wrap)==highest_bit(wrap); // is power of two?
@@ -281,7 +281,7 @@ GRID_INLET(GridStore,0) {
 	assert((n % nc) == 0);
 	int nd = n/nc;
 	STACK_ARRAY(T,w,n);
-	Pt<T> v=w;
+	T * v=w;
 	if (sizeof(T)==1 && nc==1 && r->dim->v[0]<=256) {
 		// bug? shouldn't modulo be done here?
 		v=data;
@@ -291,9 +291,9 @@ GRID_INLET(GridStore,0) {
 		compute_indices(v,nc,nd);
 	}
 #define FOO(type) { \
-	Pt<type> p = (Pt<type>)*r; \
+	type * p = (type *)*r; \
 	if (size<=16) { \
-		Pt<type> foo = ARRAY_NEW(type,nd*size); \
+		type * foo = ARRAY_NEW(type,nd*size); \
 		int i=0; \
 		switch (size) { \
 		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
@@ -318,7 +318,7 @@ GRID_INLET(GridStore,0) {
 	if (in->dim->prod()==0) {
 		int n = in->dim->prod(0,-2);
 		int size = r->dim->prod();
-#define FOO(T) while (n--) out->send(size,(Pt<T>)*r);
+#define FOO(T) while (n--) out->send(size,(T *)*r);
 		TYPESWITCH(r->nt,FOO,)
 #undef FOO
 	}
@@ -338,9 +338,9 @@ GRID_INLET(GridStore,1) {
 	int nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
 	STACK_ARRAY(int32,sizeb,nn);
 	for (int i=0; i<nn; i++) { fromb[i]=0; sizeb[i]=1; }
-	COPY(Pt<int32>(wdex,nn)       ,(Pt<int32>)*put_at   ,put_at->dim->prod());
-	COPY(Pt<int32>(fromb,nn)+nn-na,(Pt<int32>)*put_at   ,na);
-	COPY(Pt<int32>(sizeb,nn)+nn-nb,(Pt<int32>)in->dim->v,nb);
+	COPY(wdex       ,(int32 *)*put_at   ,put_at->dim->prod());
+	COPY(fromb+nn-na,(int32 *)*put_at   ,na);
+	COPY(sizeb+nn-nb,(int32 *)in->dim->v,nb);
 	for (int i=0; i<nn; i++) to2[i] = fromb[i]+sizeb[i];
 	d=0;
 	// find out when we can skip computing indices
@@ -356,20 +356,19 @@ GRID_INLET(GridStore,1) {
 	in->set_factor(cs);
 } GRID_FLOW {
 	if (!put_at) { // reassign
-		COPY(((Pt<T>)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
+		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
 		return;
 	}
 	// put_at ( ... )
-	int nn=r->dim->n;
 	int cs = in->factor(); // chunksize
 	STACK_ARRAY(int32,v,lsd);
-	Pt<int32> x = Pt<int32>(wdex,nn);
+	int32 *x = wdex;
 	while (n) {
 		// here d is the dim# to reset; d=n for none
 		for(;d<lsd;d++) x[d]=fromb[d];
 		COPY(v,x,lsd);
 		compute_indices(v,lsd,1);
-		op->zip(cs,(Pt<T>)*r+v[0]*cs,data);
+		op->zip(cs,(T *)*r+v[0]*cs,data);
 		data+=cs;
 		n-=cs;
 		// find next set of indices; here d is the dim# to increment
@@ -415,12 +414,12 @@ GRID_INLET(GridOp,0) {
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_mode(6);
 } GRID_ALLOC {
-	//out->ask(in->allocn,(Pt<T> &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
+	//out->ask(in->allocn,(T * &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
 } GRID_FLOW {
-	Pt<T> rdata = (Pt<T>)*r;
+	T * rdata = (T *)*r;
 	int loop = r->dim->prod();
 	if (sizeof(T)==8) {
-		fprintf(stderr,"1: data=%p rdata=%p\n",data.p,rdata.p);
+		fprintf(stderr,"1: data=%p rdata=%p\n",data,rdata);
 		WATCH(n,data);
 	}
 	if (loop>1) {
@@ -436,7 +435,7 @@ GRID_INLET(GridOp,0) {
 			for (int i=m; i<nn; i+=loop) COPY(data2+i,rdata,loop);
 			if (n>nn) COPY(data2+nn,rdata,n-nn);
 			if (sizeof(T)==8) {
-				fprintf(stderr,"2: data=%p data2=%p\n",data.p,data2.p);
+				fprintf(stderr,"2: data=%p data2=%p\n",data,data2);
 				WATCH(n,data); WATCH(n,data2);
 			}
 			op->zip(n,data,data2);
@@ -494,7 +493,7 @@ GRID_INLET(GridFold,0) {
 	int nn=n;
 	int yzn=yn*zn;
 	for (int i=0; n; i+=zn, data+=yzn, n-=yzn) {
-		if (seed) COPY(buf+i,((Pt<T>)*seed),zn);
+		if (seed) COPY(buf+i,((T *)*seed),zn);
 		else CLEAR(buf+i,zn);
 		op->fold(zn,yn,buf+i,data);
 	}
@@ -535,7 +534,7 @@ GRID_INLET(GridScan,0) {
 	STACK_ARRAY(T,buf,n);
 	COPY(buf,data,n);
 	if (seed) {
-		for (int i=0; i<n; i+=factor) op->scan(zn,yn,(Pt<T>)*seed,buf+i);
+		for (int i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
 	} else {
 		STACK_ARRAY(T,seed,zn);
 		CLEAR(seed,zn);
@@ -568,12 +567,10 @@ struct GridInner : GridObject {
 	\grin 1
 };
 
-template <class T> void inner_child_a (Pt<T> buf, Pt<T> data, int rrows, int rcols, int chunk) {
-	Pt<T> bt = buf, dt = data;
+template <class T> void inner_child_a (T *bt, T *dt, int rrows, int rcols, int chunk) {
 	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
 }
-template <class T, int rcols> void inner_child_b (Pt<T> buf, Pt<T> data, int rrows, int chunk) {
-	Pt<T> bt = buf, dt = data;
+template <class T, int rcols> void inner_child_b (T *bt, T *dt, int rrows, int chunk) {
 	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) {
 		for (int k=0; k<rcols; k++) bt[k] = *dt;
 	}
@@ -598,10 +595,10 @@ GRID_INLET(GridInner,0) {
 	int rrows = in->factor();
 	int rsize = r->dim->prod();
 	int rcols = rsize/rrows;
-	Pt<T> rdata = (Pt<T>)*r;
+	T * rdata = (T *)*r;
 	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	r2=new Grid(new Dim(chunk*rsize),r->nt);
-	Pt<T> buf3 = (Pt<T>)*r2;
+	T * buf3 = (T *)*r2;
 	for (int i=0; i<rrows; i++)
 		for (int j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
@@ -624,7 +621,7 @@ GRID_INLET(GridInner,0) {
 			case 4:  inner_child_b<T,4>(buf,data+i,rrows,chunk); break;
 			default: inner_child_a(buf,data+i,rrows,rcols,chunk);
 			}
-			op_para->zip(chunk*rcols,buf,(Pt<T>)*r2+i*off*rcols);
+			op_para->zip(chunk*rcols,buf,(T *)*r2+i*off*rcols);
 			op_fold->zip(chunk*rcols,buf2,buf);
 		}
 		out->send(chunk*rcols,buf2);
@@ -677,16 +674,16 @@ GRID_INLET(GridOuter,0) {
 		STACK_ARRAY(T,buf,b_prod);
 		while (n) {
 			for (int j=0; j<b_prod; j++) buf[j] = *data;
-			op->zip(b_prod,buf,(Pt<T>)*r);
+			op->zip(b_prod,buf,(T *)*r);
 			out->send(b_prod,buf);
 			data++; n--;
 		}
 		return;
 	}
 	n*=b_prod;
-	Pt<T> buf = ARRAY_NEW(T,n);
+	T * buf = ARRAY_NEW(T,n);
 	STACK_ARRAY(T,buf2,b_prod*64);
-	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(Pt<T>)*r,b_prod);
+	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(T *)*r,b_prod);
 	switch (b_prod) {
 	#define Z buf[k++]=data[i]
 	case 1:	for (int i=0,k=0; k<n; i++) {Z;} break;
@@ -748,9 +745,9 @@ void GridFor::trigger (T bogus) {
 	int n = from->dim->prod();
 	int32 nn[n+1];
 	STACK_ARRAY(T,x,64*n);
-	Pt<T> fromb = (Pt<T>)*from;
-	Pt<T>   tob = (Pt<T>)*to  ;
-	Pt<T> stepb = (Pt<T>)*step;
+	T * fromb = (T *)*from;
+	T *   tob = (T *)*to  ;
+	T * stepb = (T *)*step;
 	STACK_ARRAY(T,to2,n);
 	
 	for (int i=step->dim->prod()-1; i>=0; i--)
@@ -821,7 +818,7 @@ struct GridDim : GridObject {
 };
 GRID_INLET(GridDim,0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
-	out.send(in->dim->n,Pt<int32>(in->dim->v,in->dim->n));
+	out.send(in->dim->n,in->dim->v);
 	in->set_mode(0);
 } GRID_END
 \classinfo { IEVAL(rself,"install '#dim',1,1"); }
@@ -867,14 +864,14 @@ GRID_INLET(GridRedim,0) {
 	} else {
 		int a = in->dim->prod();
 		int n2 = min(n,a-i);
-		COPY((Pt<T>)*temp+i,data,n2);
+		COPY((T *)*temp+i,data,n2);
 		if (n2>0) out->send(n2,data);
 	}
 } GRID_FINISH {
 	if (!!temp) {
 		int a = in->dim->prod(), b = dim->prod();
 		if (a) {
-			for (int i=a; i<b; i+=a) out->send(min(a,b-i),(Pt<T>)*temp);
+			for (int i=a; i<b; i+=a) out->send(min(a,b-i),(T *)*temp);
 		} else {
 			STACK_ARRAY(T,foo,1);
 			foo[0]=0;
@@ -931,11 +928,11 @@ GRID_INLET(GridJoin,0) {
 	if (w<0) w+=in->dim->n;
 	int a = in->factor();
 	int b = r->dim->prod(w);
-	Pt<T> data2 = (Pt<T>)*r + in->dex*b/a;
+	T * data2 = (T *)*r + in->dex*b/a;
 	if (a==3 && b==1) {
 		int m = n+n*b/a;
 		STACK_ARRAY(T,data3,m);
-		Pt<T> data4 = data3;
+		T * data4 = data3;
 		while (n) {
 			SCOPY(data4,data,3); SCOPY(data4+3,data2,1);
 			n-=3; data+=3; data2+=1; data4+=4;
@@ -958,7 +955,7 @@ GRID_INLET(GridJoin,0) {
 		}
 	}
 } GRID_FINISH {
-	if (in->dim->prod()==0) out->send(r->dim->prod(),(Pt<T>)*r);
+	if (in->dim->prod()==0) out->send(r->dim->prod(),(T *)*r);
 } GRID_END
 
 GRID_INPUT(GridJoin,1,r) {} GRID_END
@@ -1095,7 +1092,7 @@ GRID_INLET(GridReverse,0) {
 	int f1=in->factor(), f2=in->dim->prod(d+1);
 	while (n) {
 		int hf1=f1/2;
-		Pt<T> data2 = data+f1-f2;
+		T * data2 = data+f1-f2;
 		for (int i=0; i<hf1; i+=f2) memswap(data+i,data2-i,f2);
 		out->send(f1,data);
 		data+=f1; n-=f1;

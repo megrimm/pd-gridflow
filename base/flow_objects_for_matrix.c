@@ -48,7 +48,7 @@ struct GridMatrixSolve : GridObject {
 GRID_INPUT(GridMatrixSolve,0,matrix) {
 	int n = matrix->dim->get(0); // # rows
 	int m = matrix->dim->get(1); // # columns
-	Pt<T> mat = (Pt<T>)*matrix;
+	T *mat = (T *)*matrix;
 	for (int j=0; j<n; j++) {
 		op_div->map(m,mat+j*m,mat[j*m+j]);
 		for (int i=j+1; i<n; i++) {

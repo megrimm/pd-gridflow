@@ -63,15 +63,15 @@ struct GridConvolve : GridObject {
 	\decl void _0_seed (Grid *seed);
 	\grin 0
 	\grin 1
-	template <class T> void copy_row (Pt<T> buf, int sx, int y, int x);
+	template <class T> void copy_row (T *buf, int sx, int y, int x);
 	template <class T> void make_plan (T bogus);
 	~GridConvolve () {if (plan) delete[] plan;}
 };
 
-template <class T> void GridConvolve::copy_row (Pt<T> buf, int sx, int y, int x) {
+template <class T> void GridConvolve::copy_row (T *buf, int sx, int y, int x) {
 	int day = a->dim->get(0), dax = a->dim->get(1), dac = a->dim->prod(2);
 	y=mod(y,day); x=mod(x,dax);
-	Pt<T> ap = (Pt<T>)*a + y*dax*dac;
+	T *ap = (T *)*a + y*dax*dac;
 	while (sx) {
 		int sx1 = min(sx,dax-x);
 		COPY(buf,ap+x*dac,sx1*dac);
@@ -92,7 +92,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	int i=0;
 	for (int y=0; y<dby; y++) {
 		for (int x=0; x<dbx; x++) {
-			T rh = ((Pt<T>)*b)[y*dbx+x];
+			T rh = ((T *)*b)[y*dbx+x];
 			bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
 			bool absorbent = op_para->on(rh)->is_absorbent(rh,at_right);
 			STACK_ARRAY(T,foo,1);
@@ -127,7 +127,7 @@ GRID_INLET(GridConvolve,0) {
 	a=new Grid(in->dim,in->nt);
 	out=new GridOutlet(this,0,da,in->nt);
 } GRID_FLOW {
-	COPY((Pt<T>)*a+in->dex, data, n);
+	COPY((T *)*a+in->dex, data, n);
 } GRID_FINISH {
 	Numop *op_put = OP(SYM(put));
 	make_plan((T)0);
@@ -144,7 +144,7 @@ GRID_INLET(GridConvolve,0) {
 		for (int i=0; i<plann; i++) {
 			int jy = plan[i].y;
 			int jx = plan[i].x;
-			T rh = ((Pt<T>)*b)[jy*dbx+jx];
+			T rh = ((T *)*b)[jy*dbx+jx];
 			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
 				copy_row(buf2,sx,iy+jy-margy,-margx);
 				if (!plan[i].neutral) op_para->map(n2,buf2,rh);
@@ -186,8 +186,8 @@ struct GridScaleBy : GridObject {
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
-		scaley = ((Pt<int32>)*scale)[0];
-		scalex = ((Pt<int32>)*scale)[scale->dim->prod()==1 ? 0 : 1];
+		scaley = ((int32 *)*scale)[0];
+		scalex = ((int32 *)*scale)[scale->dim->prod()==1 ? 0 : 1];
 		if (scaley<1) scaley=2;
 		if (scalex<1) scalex=2;
 	}
@@ -250,8 +250,8 @@ struct GridDownscaleBy : GridObject {
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
-		scaley = ((Pt<int32>)*scale)[0];
-		scalex = ((Pt<int32>)*scale)[scale->dim->prod()==1 ? 0 : 1];
+		scaley = ((int32 *)*scale)[0];
+		scalex = ((int32 *)*scale)[scale->dim->prod()==1 ? 0 : 1];
 		if (scaley<1) scaley=2;
 		if (scalex<1) scalex=2;
 	}
@@ -268,7 +268,7 @@ GRID_INLET(GridDownscaleBy,0) {
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	int rowsize2 = temp->dim->prod(1);
-	Pt<T> buf = (Pt<T>)*temp; //!@#$ maybe should be something else than T ?
+	T * buf = (T *)*temp; //!@#$ maybe should be something else than T ?
 	int xinc = in->dim->get(2)*scalex;
 	int y = in->dex / rowsize;
 	int chans=in->dim->get(2);
@@ -349,7 +349,7 @@ GRID_INLET(GridLayer,0) {
 	in->set_factor(a->prod(2));
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
-	Pt<T> rr = ((Pt<T>)*r) + in->dex*3/4;
+	T * rr = ((T *)*r) + in->dex*3/4;
 	STACK_ARRAY(T,foo,n*3/4);
 #define COMPUTE_ALPHA(c,a) \
 	foo[j+c] = (data[i+c]*data[i+a] + rr[j+c]*(256-data[i+a])) >> 8
@@ -399,15 +399,15 @@ struct DrawPolygon : GridObject {
 void DrawPolygon::init_lines () {
 	int nl = polygon->dim->get(0);
 	lines=new Grid(new Dim(nl,8), int32_e);
-	Pt<Line> ld = Pt<Line>((Line *)(int32 *)*lines,nl);
-	Pt<int32> pd = *polygon;
+	Line *ld = (Line *)(int32 *)*lines;
+	int32 *pd = *polygon;
 	for (int i=0,j=0; i<nl; i++) {
 		ld[i].y1 = pd[j+0];
 		ld[i].x1 = pd[j+1];
 		j=(j+2)%(2*nl);
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
-		if (ld[i].y1>ld[i].y2) memswap(Pt<int32>(ld+i)+0,Pt<int32>(ld+i)+2,2);
+		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
 	}
 }
 
@@ -434,14 +434,14 @@ GRID_INLET(DrawPolygon,0) {
 	qsort((int32 *)*lines,nl,sizeof(Line),order_by_starting_scanline);
 	int cn = color->dim->prod();
 	color2=new Grid(new Dim(cn*16), color->nt);
-	for (int i=0; i<16; i++) COPY((Pt<T>)*color2+cn*i,(Pt<T>)*color,cn);
+	for (int i=0; i<16; i++) COPY((T *)*color2+cn*i,(T *)*color,cn);
 } GRID_FLOW {
 	int nl = polygon->dim->get(0);
-	Pt<Line> ld = Pt<Line>((Line *)(int32 *)*lines,nl);
+	Line * ld = (Line *)(int32 *)*lines;
 	int f = in->factor();
 	int y = in->dex/f;
 	int cn = color->dim->prod();
-	Pt<T> cd = (Pt<T>)*color2;
+	T * cd = (T *)*color2;
 	
 	while (n) {
 		while (lines_stop != nl && ld[lines_stop].y1<=y) lines_stop++;
@@ -455,7 +455,7 @@ GRID_INLET(DrawPolygon,0) {
 			out->send(f,data);
 		} else {
 			int32 xl = in->dim->get(1);
-			Pt<T> data2 = ARRAY_NEW(T,f);
+			T * data2 = ARRAY_NEW(T,f);
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
@@ -518,7 +518,7 @@ struct DrawImage : GridObject {
 	\grin 2 int32
 	// draw row # ry of right image in row buffer buf, starting at xs
 	// overflow on both sides has to be handled automatically by this method
-	template <class T> void draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0);
+	template <class T> void draw_segment(T * obuf, T * ibuf, int ry, int x0);
 };
 
 #define COMPUTE_ALPHA(c,a) obuf[j+(c)] = ibuf[j+(c)] + (rbuf[a])*(obuf[j+(c)]-ibuf[j+(c)])/256;
@@ -528,11 +528,11 @@ struct DrawImage : GridObject {
 	COMPUTE_ALPHA(b+2,b+3); \
 	obuf[b+3] = rbuf[b+3] + (255-rbuf[b+3])*(ibuf[j+b+3])/256;
 
-template <class T> void DrawImage::draw_segment(Pt<T> obuf, Pt<T> ibuf, int ry, int x0) {
+template <class T> void DrawImage::draw_segment(T * obuf, T * ibuf, int ry, int x0) {
 	if (ry<0 || ry>=image->dim->get(0)) return; // outside of image
 	int sx = in[0]->dim->get(1), rsx = image->dim->get(1);
 	int sc = in[0]->dim->get(2), rsc = image->dim->get(2);
-	Pt<T> rbuf = (Pt<T>)*image + ry*rsx*rsc;
+	T * rbuf = (T *)*image + ry*rsx*rsc;
 	if (x0>sx || x0<=-rsx) return; // outside of buffer
 	int n=rsx;
 	if (x0+n>sx) n=sx-x0;
@@ -582,7 +582,7 @@ GRID_INLET(DrawImage,0) {
 	for (; n; y++, n-=f, data+=f) {
 		int ty = div2(y-py,rsy);
 		if (tile || ty==0) {
-			Pt<T> data2 = ARRAY_NEW(T,f);
+			T * data2 = ARRAY_NEW(T,f);
 			COPY(data2,data,f);
 			if (tile) {
 				for (int x=px-div2(px+rsx-1,rsx)*rsx; x<sx; x+=rsx) {

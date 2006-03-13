@@ -106,7 +106,6 @@ static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
-#define rb_str_pt(s,T) ((T*)rb_str_ptr(s),rb_str_len(s))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 #define rassert(_p_) if (!(_p_)) RAISE(#_p_);
@@ -443,11 +442,9 @@ inline void  operator delete[] (void *p) { gffree(p); }
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
 template <class T> inline void COPY(T *dest, T *src, long n) {
-	src.will_use(n); dest.will_use(n);
 	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
 template <class T> inline void CLEAR(T *dest, long n) {
-	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
 template <class T> static void memswap (T *a, T *b, long n) {
@@ -700,21 +697,14 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 //public:
 	template <class T> inline void map(long n, T * as, T b) {
-		as.will_use(n);
 		on(*as)->op_map(n,(T *)as,b);}
 	template <class T> inline void zip(long n, T * as, T * bs) {
-		as.will_use(n);
-		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
 	template <class T> inline void fold(long an, long n, T * as, T * bs) {
-		as.will_use(an);
-		bs.will_use(an*n);
 		typename NumopOn<T>::Fold f = on(*as)->op_fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
 	template <class T> inline void scan(long an, long n, T * as, T * bs) {
-		as.will_use(an);
-		bs.will_use(an*n);
 		typename NumopOn<T>::Scan f = on(*as)->op_scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
