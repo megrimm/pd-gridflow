@@ -435,7 +435,7 @@ public:
 		return p[i];
 	}
 
-	void will_use(int k) {
+	void will_use(long k) {
 #ifdef HAVE_DEBUG_HARDER
 		if (k==0) return;
 		T *q = p+k;
@@ -511,16 +511,16 @@ inline void  operator delete[] (void *p) { gffree(p); }
 #define STACK_ARRAY(T,V,N) T V##_foo[N]; Pt<T> V(V##_foo,N);
 #define ARRAY_NEW(T,N) (Pt<T>((T *)new T[N],N))
 
-void gfmemcopy(uint8 *out, const uint8 *in, int n);
-template <class T> inline void COPY(Pt<T> dest, Pt<T> src, int n) {
+void gfmemcopy(uint8 *out, const uint8 *in, long n);
+template <class T> inline void COPY(Pt<T> dest, Pt<T> src, long n) {
 	src.will_use(n); dest.will_use(n);
 	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
-template <class T> inline void CLEAR(Pt<T> dest, int n) {
+template <class T> inline void CLEAR(Pt<T> dest, long n) {
 	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
-template <class T> static void memswap (Pt<T> a, Pt<T> b, int n) {
+template <class T> static void memswap (Pt<T> a, Pt<T> b, long n) {
 	STACK_ARRAY(T,c,n); COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
 }
 
@@ -720,8 +720,8 @@ struct BitPacking : CObject {
 
 int high_bit(uint32 n);
 int  low_bit(uint32 n);
-void swap32 (int n, Pt<uint32> data);
-void swap16 (int n, Pt<uint16> data);
+void swap32 (long n, Pt<uint32> data);
+void swap16 (long n, Pt<uint16> data);
 
 //****************************************************************
 // Numop objects encapsulate optimised loops of simple operations
