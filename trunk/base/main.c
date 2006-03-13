@@ -295,13 +295,13 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 
 static Ruby String_swap32_f (Ruby rself) {
 	int n = rb_str_len(rself)/4;
-	swap32(n,Pt<uint32>((uint32 *)rb_str_ptr(rself),n));
+	swap32(n,(uint32 *)rb_str_ptr(rself));
 	return rself;
 }
 
 static Ruby String_swap16_f (Ruby rself) {
 	int n = rb_str_len(rself)/2;
-	swap16(n,Pt<uint16>((uint16 *)rb_str_ptr(rself),n));
+	swap16(n,(uint16 *)rb_str_ptr(rself));
 	return rself;
 }
 
@@ -323,11 +323,11 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 // and the Pt<> look fishy
 \def String pack2 (String ins, String outs=Qnil) {
 	long n = rb_str_len(ins) / sizeof(int32) / size;
-	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(ins),rb_str_len(ins));
+	int32 * in = (int32 *)rb_str_ptr(ins);
 	long bytes2 = n*bytes;
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
+	pack(n,in,(uint8 *)rb_str_ptr(out));
 	return out;
 }
 
@@ -335,26 +335,22 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 // and the Pt<> look fishy
 \def String unpack2 (String ins, String outs=Qnil) {
 	long n = rb_str_len(argv[0]) / bytes;
-	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(ins),rb_str_len(ins));
+	uint8 * in = (uint8 *)rb_str_ptr(ins);
 	long bytes2 = n*size*sizeof(int32);
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
+	unpack(n,in,(uint8 *)rb_str_ptr(out));
 	return out;
 }
 
 \def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) pack(n,\
-    Pt<    T>(INT2PTR(    T, inqp),n*size),\
-    Pt<uint8>(INT2PTR(uint8,outqp),n*bytes));
+#define FOO(T) pack(n,INT2PTR(T,inqp),INT2PTR(uint8,outqp));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
 
 \def void unpack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) unpack(n,\
-    Pt<uint8>(INT2PTR(uint8, inqp),n*bytes),\
-    Pt<    T>(INT2PTR(    T,outqp),n*size));
+#define FOO(T) unpack(n,INT2PTR(uint8,inqp),INT2PTR(T,outqp));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }

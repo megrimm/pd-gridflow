@@ -118,8 +118,8 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	fill:
 	int nn = dim->prod();
 	n = min(n,nn);
-#define FOO(type) { \
-	Pt<type> p = (Pt<type>)*this; \
+#define FOO(T) { \
+	T *p = (T *)*this; \
 	if (n==0) CLEAR(p,nn); \
 	else { \
 		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
@@ -134,7 +134,7 @@ void Grid::init_from_ruby(Ruby x) {
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
-		((Pt<int32>)*this)[0] = INT(x);
+		((int32 *)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
@@ -161,7 +161,7 @@ void GridInlet::set_factor(long factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
-#define FOO(T) self->gh->flow(self,-1,Pt<T>()); break;
+#define FOO(T) self->gh->flow(self,-1,(T *)0); break;
 	TYPESWITCH(self->nt,FOO,)
 #undef FOO
 	return Qnil;
@@ -208,7 +208,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	return Qnil;
 }
 
-template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
+template <class T> void GridInlet::flow(int mode, int n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
@@ -226,14 +226,14 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		}
 		int bufn = factor();
 		if (buf && bufi) {
-			Pt<T> bufd = (Pt<T>)*buf;
+			T *bufd = *buf;
 			long k = min((long)n,bufn-bufi);
 			COPY(bufd+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
 				int newdex = dex+bufn;
 				if (this->mode==6) {
-					Pt<T> data2 = ARRAY_NEW(T,bufn);
+					T *data2 = ARRAY_NEW(T,bufn);
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
 					gh->flow(this,bufn,data2);
@@ -249,7 +249,7 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		if (m) {
 			int newdex = dex + m;
 			if (this->mode==6) {
-				Pt<T> data2 = ARRAY_NEW(T,m);
+				T *data2 = ARRAY_NEW(T,m);
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
 				gh->flow(this,m,data2);
@@ -260,7 +260,7 @@ template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 		}
 		data += m;
 		n -= m;
-		if (buf && n>0) COPY((Pt<T>)*buf+bufi,data,n), bufi+=n;
+		if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
 	}break;
 	case 6:{
 		assert(!buf);
@@ -282,7 +282,7 @@ void GridInlet::end() {TRACE;
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
 	PROF(parent) {
-#define FOO(T) gh->flow(this,-2,Pt<T>());
+#define FOO(T) gh->flow(this,-2,(T *)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 	} // PROF
@@ -295,13 +295,13 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	nt = g->nt;
 	dim = g->dim;
 	int n = g->dim->prod();
-	gh->flow(this,-1,Pt<T>());
+	gh->flow(this,-1,(T *)0);
 	if (n>0 && this->mode!=0) {
-		Pt<T> data = (Pt<T>)*g;
+		T * data = (T *)*g;
 		CHECK_ALIGN(data);
 		int size = g->dim->prod();
 		if (this->mode==6) {
-			Pt<T> d = data;
+			T * d = data;
 			data = ARRAY_NEW(T,size);  // problem with int64,float64 here.
 			COPY(data,d,size);
 			CHECK_ALIGN(data);
@@ -319,7 +319,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			}			
 		}
 	}
-	gh->flow(this,-2,Pt<T>());
+	gh->flow(this,-2,(T *)0);
 	//!@#$ add error handling.
 	// rescue; abort(); end ???
 	dim = 0;
@@ -362,7 +362,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
+void GridOutlet::send_direct(int n, T * data) {TRACE;
 	assert(data); assert(frozen);
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
@@ -374,14 +374,14 @@ void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
 
 void GridOutlet::flush() {TRACE;
 	if (!bufi) return;
-#define FOO(T) send_direct(bufi,(Pt<T>)*buf);
+#define FOO(T) send_direct(bufi,(T *)*buf);
 	TYPESWITCH(buf->nt,FOO,)
 #undef FOO
 	bufi = 0;
 }
 
 template <class T, class S>
-static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
+static void convert_number_type(int n, T * out, S * in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
@@ -389,7 +389,7 @@ static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 //!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(int n, Pt<T> data) {TRACE;
+void GridOutlet::send(int n, T * data) {TRACE;
 	assert(data); assert(frozen);
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
@@ -410,7 +410,7 @@ void GridOutlet::send(int n, Pt<T> data) {TRACE;
 		if (n > MIN_PACKET_SIZE) {
 			send_direct(n,data);
 		} else {
-			COPY((Pt<T>)*buf+bufi,data,n);
+			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
 		if (dex==dim->prod()) end();
@@ -418,7 +418,7 @@ void GridOutlet::send(int n, Pt<T> data) {TRACE;
 }
 
 template <class T>
-void GridOutlet::give(int n, Pt<T> data) {TRACE;
+void GridOutlet::give(int n, T * data) {TRACE;
 	assert(data); CHECK_BUSY(outlet); assert(frozen);
 	assert(dex+n <= dim->prod()); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
@@ -451,7 +451,7 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 //!@#$ does not handle types properly
 //!@#$ most possibly a big hack
 template <class T>
-void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
+void GridObject_r_flow(GridInlet *in, int n, T * data) {
 	GridObject *self = in->parent;
 	uint32 i;
 	for (i=0; i<self->in.size(); i++) if (in==self->in[i].p) break;
@@ -504,14 +504,14 @@ void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 
 \def void send_out_grid_flow (int outlet,String buf, NumberTypeE nt=int32_e) {
 	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(rb_str_len(buf)/sizeof(T),rb_str_pt(buf,T));
+#define FOO(T) out->send(rb_str_len(buf)/sizeof(T),(T*)rb_str_ptr(buf));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
 
 \def void send_out_grid_flow_3 (int outlet, long n, long data, NumberTypeE nt=int32_e) {
 	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(n,Pt<T>(INT2PTR(T,data),n));
+#define FOO(T) out->send(n,INT2PTR(T,data));
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
@@ -612,7 +612,7 @@ void startup_grid () {
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
 	GridOutlet foo(0,0,0);
-#define FOO(S) foo.give(0,Pt<S>());
+#define FOO(S) foo.give(0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }
