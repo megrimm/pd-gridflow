@@ -72,12 +72,6 @@ extern "C" {
 #define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
 #endif
 
-// avoid ruby warning
-#ifndef rb_enable_super
-#define rb_enable_super(a,b) \
-	if (RUBY_RELEASE_CODE < 20030716) rb_enable_super(a,b)
-#endif
-
 typedef VALUE Ruby;
 
 /* undocumented function from Ruby that is one thing we need to fix a very elusive bug
@@ -107,30 +101,11 @@ static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
-#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
-// because of older versions of Ruby (1.6.?)
-#define rb_obj_class(o) rb_funcall((o),SI(class),0)
 
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	gfpost("%s",foo);}
-
-// we're gonna override assert, so load it first, to avoid conflicts
-#include <assert.h>
-
-#undef assert
-#define assert(_expr_) \
-	if (!(_expr_)) { \
-		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
-			__FILE__, __LINE__, #_expr_); \
-		::abort(); }
-
-// disabling assertion checking?
-#ifndef HAVE_DEBUG
-#undef assert
-#define assert(_foo_)
-#endif
 
 #ifdef HAVE_TSC_PROFILING
 #define HAVE_PROFILING
@@ -396,9 +371,9 @@ typedef struct R {
 
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 
-static inline R ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
-static inline R gf_abs(R a) { return R::value(rb_funcall(a.r,SI(abs),0)); }
-static inline R cmp(R a, R b) { return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
+static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
+static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
+static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 
 //****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
@@ -429,7 +404,6 @@ public:
 #ifndef IS_BRIDGE
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
-// note that C++ (GCC 3.4) now refuses the :: prefix so i removed it in the 4 following lines:
 inline void *operator new   (size_t n) { return gfmalloc(n); }
 inline void *operator new[] (size_t n) { return gfmalloc(n); }
 inline void  operator delete   (void *p) { gffree(p); }
@@ -799,6 +773,8 @@ struct PtrGrid : public P<Grid> {
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
+#undef INCR
+#undef DECR
 
 #ifndef IS_BRIDGE
 static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
@@ -821,9 +797,9 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(C,I) \
-	template <class T> void C::grinw_##I (GridInlet *in, int n, T * data) { \
+	template <class T> void C::grinw_##I (GridInlet *in, long n, T *data) { \
 		((C*)(in->parent))->grin_##I(in,n,data); } \
-	template <class T> void  C::grin_##I (GridInlet *in, int n, T * data) { \
+	template <class T> void  C::grin_##I (GridInlet *in, long n, T *data) { \
 	if (n==-1)
 #define GRID_ALLOC  else if (n==-3)
 #define GRID_FLOW   else if (n>=0)
@@ -850,9 +826,8 @@ GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 #define FOO(T) \
-	void (*flow_##T)(GridInlet *in, int n, T * data); \
-	void flow(GridInlet *in, int n, T * data) const { \
-		assert(flow_##T); flow_##T(in,n,data); }
+	void (*flow_##T)(GridInlet *in, long n, T *data); \
+	void flow(GridInlet *in, long n, T *data) const {flow_##T(in,n,data);}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
@@ -886,7 +861,7 @@ struct GridInlet : CObject {
 	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
 	// as an end-marker for inlet definitions... sorry for the confusion
 	// GF-0.8: n=-3 is alloc.
-	template <class T> void flow(int mode, int n, T * data);
+	template <class T> void flow(int mode, long n, T *data);
 	void end(); // this one ought to be called finish().
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
 		Grid t(argc,argv,nt); from_grid(&t);
@@ -959,20 +934,20 @@ struct GridOutlet : CObject {
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
-	template <class T> void send(int n, T * data);
+	template <class T> void send(long n, T *data);
 	void flush(); // goes with send();
 
 	// give: data must be dynamically allocated as a whole: the data
 	// will be deleted eventually, and should not be used by the caller
 	// beyond the call to give().
-	template <class T> void give(int n, T * data);
+	template <class T> void give(long n, T *data);
 
 	// third way to send (upcoming, in GF-0.8.??) is called "ask".
 	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
 
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
-	template <class T> void send_direct(int n, T * data);
+	template <class T> void send_direct(long n, T *data);
 	void end() {
 		flush();
 		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->end();
