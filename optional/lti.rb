@@ -21,6 +21,9 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+# btw here's a useful line for debugging ltilib's makefile:
+# ruby -i.bak -ne 'print $_.gsub(/^ {8}/,"\t") unless /@echo.*\\$/' Makefile
+
 require "rblti"
 include GridFlow
 include Rblti
@@ -102,7 +105,10 @@ class LTI<FObject; install "lti",1,1
       GridFlow.post "total %d functors (post_hierarchy)",Functor.post_hierarchy
       GridFlow.post "total %d functors (@functors)",     @functors.length
     when:others:
-      @others.each{|x| GridFlow.post "  other %s", x }
+      @others.each{|x|
+        v = const_get(x)
+	info = if Class===v then "ancestors="+v.ancestors.inspect else v.inspect end
+	GridFlow.post "  other %s (%s)", x, info }
       GridFlow.post "total %d others",@others.length
     end
   end
