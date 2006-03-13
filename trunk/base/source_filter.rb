@@ -187,8 +187,8 @@ def handle_grin(line)
 	fields = line.split(/\s+/)
 	i = fields[0].to_i
 	c = $stack[-1].name
-	Out.print "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);"
-	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, int n, Pt<T> data);"
+	Out.print "template <class T> void grin_#{i}(GridInlet *in, int n, T *data);"
+	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, int n, T *data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "Ruby _#{i}_grid(...);"
 	$stack[-1].grins[i] = fields.dup
