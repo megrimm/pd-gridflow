@@ -123,7 +123,7 @@ GRID_INLET(FormatAALib,0) {
 	GridOutlet out(this,0,new Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
 		for (int x=0; x<aa_scrwidth(context); x++) {
-			STACK_ARRAY(int32,data,2);
+			int32 data[2];
 			data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
 			data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
 			out.send(2,data);

@@ -49,7 +49,7 @@ struct FormatMPEG3 : Format {
 	int channels = 3;
 	/* !@#$ the doc says "You must allocate 4 extra bytes in the
 	last output_row. This is scratch area for the MMX routines." */
-	uint8 * buf = ARRAY_NEW(uint8,sy*sx*channels+16);
+	uint8 * buf = new uint8[sy*sx*channels+16];
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);

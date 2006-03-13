@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -95,7 +95,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 			T rh = ((T *)*b)[y*dbx+x];
 			bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
 			bool absorbent = op_para->on(rh)->is_absorbent(rh,at_right);
-			STACK_ARRAY(T,foo,1);
+			T foo[1];
 			if (absorbent) {
 				foo[0] = 0;
 				op_para->map(1,foo,rh);
@@ -136,8 +136,8 @@ GRID_INLET(GridConvolve,0) {
 	int n = a->dim->prod(1);
 	int sx = a->dim->get(1)+dbx-1;
 	int n2 = sx*a->dim->prod(2);
-	STACK_ARRAY(T,buf,n);
-	STACK_ARRAY(T,buf2,n2);
+	T buf[n];
+	T buf2[n2];
 	T orh=0;
 	for (int iy=0; iy<day; iy++) {
 		op_put->map(n,buf,*(T *)*seed);
@@ -200,7 +200,7 @@ GRID_INLET(GridScaleBy,0) {
 	in->set_factor(a->get(1)*a->get(2));
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
-	STACK_ARRAY(T,buf,rowsize*scalex);
+	T buf[rowsize*scalex];
 	int chans = in->dim->get(2);
 	#define Z(z) buf[p+z]=data[i+z]
 	for (; n>0; data+=rowsize, n-=rowsize) {
@@ -350,7 +350,7 @@ GRID_INLET(GridLayer,0) {
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
 	T * rr = ((T *)*r) + in->dex*3/4;
-	STACK_ARRAY(T,foo,n*3/4);
+	T foo[n*3/4];
 #define COMPUTE_ALPHA(c,a) \
 	foo[j+c] = (data[i+c]*data[i+a] + rr[j+c]*(256-data[i+a])) >> 8
 	for (int i=0,j=0; i<n; i+=4,j+=3) {
@@ -455,7 +455,7 @@ GRID_INLET(DrawPolygon,0) {
 			out->send(f,data);
 		} else {
 			int32 xl = in->dim->get(1);
-			T * data2 = ARRAY_NEW(T,f);
+			T * data2 = new T[f];
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
@@ -582,7 +582,7 @@ GRID_INLET(DrawImage,0) {
 	for (; n; y++, n-=f, data+=f) {
 		int ty = div2(y-py,rsy);
 		if (tile || ty==0) {
-			T * data2 = ARRAY_NEW(T,f);
+			T * data2 = new T[f];
 			COPY(data2,data,f);
 			if (tile) {
 				for (int x=px-div2(px+rsx-1,rsx)*rsx; x<sx; x+=rsx) {
