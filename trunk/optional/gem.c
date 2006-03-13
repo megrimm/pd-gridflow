@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ GRID_INLET(GridExportPix,1) {
 	*/
 } GRID_FLOW {
 	long size = in->dim->prod();
-	Pt<uint8> buf = Pt<uint8>(m_pixBlock.image.data,size);
+	uint8 *buf = (uint8 *)m_pixBlock.image.data;
 	/*!@#$ it would be nice to skip the bitpacking when we can */
 	bit_packing->pack(size/in->dim->get(2),data,buf);
 } GRID_END
@@ -123,8 +123,8 @@ public:
 		int sxc = im.xsize*im.csize;
 		STACK_ARRAY(uint8,buf,sxc);
 		for (int i=0; i<v[0]; i++) {
-			Pt<uint8> data((uint8 *)im.data+sxc*i,sxc);
-			bit_packing->pack(im.xsize,Pt<uint8>(data,sxc),buf);
+			uint8 *data = (uint8 *)im.data+sxc*i;
+			bit_packing->pack(im.xsize,data,buf);
 			out.send(sxc,buf);
 		}
 	}
