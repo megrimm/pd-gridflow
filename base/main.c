@@ -27,11 +27,9 @@
 #include <time.h>
 #include <stdarg.h>
 #include <string.h>
-#include <signal.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdarg.h>
 
 #include "grid.h.fcs"
 #include "../config.h"
@@ -211,8 +209,8 @@ static void send_in_3 (Helper *h) {
 	argv2[1] = sym;
 	rb_funcall2(rself,SI(send_out2), argc+2, argv2);
 
-	Ruby ary = rb_ivar_defined(rself,SYM2ID(bsym.iv_outlets)) ?
-		rb_ivar_get(rself,SYM2ID(bsym.iv_outlets)) : Qnil;
+	ID ol = SI(@outlets);
+	Ruby ary = rb_ivar_defined(rself,ol) ? rb_ivar_get(rself,ol) : Qnil;
 	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
@@ -397,7 +395,6 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0)
 			buf[strlen(buf)-2]=0;
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
-		rb_enable_super(rself,buf);
 		free(buf);
 	}
 }
@@ -483,7 +480,7 @@ static uint64 malloc_time  = 0; /* in cpu ticks */
 
 // don't touch.
 static void gfmemcopy32(int32 *as, int32 *bs, long n) {
-	int32 ba = bs-as;
+	ptrdiff_t ba = bs-as;
 #define FOO(I) as[I] = (as+ba)[I];
 		UNROLL_8(FOO,n,as)
 #undef FOO
@@ -561,7 +558,6 @@ void Init_gridflow () {
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	signal(11,SIG_DFL); // paranoia
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; "
 		"class<<self; attr_reader :bridge_name; end; "
 		"def post_string(s) STDERR.puts s end; "
@@ -632,7 +628,6 @@ BUILTIN_SYMBOLS(FOO)
 	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
 	EVAL("GridFlow.load_user_config");
-	signal(11,SIG_DFL); // paranoia
 }
 
 void GFStack::push (FObject *o) {

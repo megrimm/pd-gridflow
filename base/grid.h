@@ -63,7 +63,6 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-#define BUG(s,args...) {fprintf(stderr,s "\nat: %s\n",args,__PRETTY_FUNCTION__); ::raise(11);}
 #define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
@@ -119,7 +118,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) BUG("unaligned pointer: %p\n",ptr);
+	if ((p&3)!=0) RAISE("unaligned pointer: %p\n",ptr);
 	return LONG2NUM(p>>2);
 }
 #define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
@@ -157,8 +156,6 @@ static inline float64 gf_abs(float64 a) { return fabs(a); }
 template <class T> static inline T ipow(T a, T b) {
 	for(T r=1;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}
 }
-
-// kludge
 static inline float32 ipow(float32 a, float32 b) { return pow(a,b); }
 static inline float64 ipow(float64 a, float64 b) { return pow(a,b); }
 
@@ -209,18 +206,6 @@ static inline bool is_le() {int x=1; return ((char *)&x)[0];}
 #if defined(HAVE_PENTIUM)
 static inline uint64 rdtsc() {
 	uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;
-}
-#elif defined(HAVE_PPC)
-static inline uint64 rdtsc() {
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-/* see AbsoluteToNanoseconds(), Microseconds()
-http://www.simdtech.org/apps/group_public/email/altivec/msg01956.html
-and mach_absolute_time() and mach_timebase_info(&info),
-then ns=(time*info.numer)/info.denom;
-and the timebase_info is constant
-(double)mach_absolute_time*gTimeBaseToNS*/
-return 0;
 }
 #else
 static inline uint64 rdtsc() {return 0;}
@@ -327,9 +312,7 @@ typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(iv_outlets,"@outlets") \
-	MACRO(iv_ninlets,"@ninlets") \
-	MACRO(iv_noutlets,"@noutlets")
+	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets")
 extern struct BuiltinSymbols {
 #define FOO(_sym_,_str_) Ruby _sym_;
 BUILTIN_SYMBOLS(FOO)
@@ -455,29 +438,38 @@ extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
+typedef int32 Card; /* should be switched to long int soon */
 \class Dim < CObject
 struct Dim : CObject {
-	static const int MAX_DIM=16; // maximum number of dimensions in a grid
-	int n;
-	int32 v[MAX_DIM]; // real stuff
+	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
+	Card n;
+	Card v[MAX_DIM]; // real stuff
 	void check(); // test invariants
-	Dim(int n, int32 *v)  {this->n=n; COPY(this->v,v,n); check();}
-	Dim()                 {n=0;                     check();}
-	Dim(int a)            {n=1;v[0]=a;              check();}
-	Dim(int a,int b)      {n=2;v[0]=a;v[1]=b;       check();}
-	Dim(int a,int b,int c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
-	int count() {return n;}
-	int get(int i) { return v[i]; }
-	int32 prod(int start=0, int end=-1) {
+	Dim(Card n, Card *v){this->n=n; COPY(this->v,v,n); check();}
+	Dim()                    {n=0;                     check();}
+	Dim(Card a)              {n=1;v[0]=a;              check();}
+	Dim(Card a,Card b)       {n=2;v[0]=a;v[1]=b;       check();}
+	Dim(Card a,Card b,Card c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	Dim(Dim *a, Dim *b, Dim *c=0) {
+		n=a->n+b->n; if(c) n+=c->n;
+		if (n>Dim::MAX_DIM) RAISE("too many dims");
+		COPY(v     ,a->v,a->n);
+		COPY(v+a->n,b->v,b->n);
+		if(c) COPY(v+a->n+b->n,c->v,c->n);
+	}
+	Card count() {return n;}
+	Card get(Card i) {return v[i];}
+/*	Dim *range(Card i, Card j) {return new Dim(...);} */
+	Card prod(Card start=0, Card end=-1) {
 		if (end<0) end+=n;
-		int32 tot=1;
-		for (int i=start; i<=end; i++) tot *= v[i];
+		Card tot=1;
+		for (Card i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
 	char *to_s();
 	bool equal(P<Dim> o) {
 		if (n!=o->n) return false;
-		for (int i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
+		for (Card i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
 		return true;
 	}
 };
@@ -563,16 +555,6 @@ NumberTypeE NumberTypeE_find (Ruby sym);
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
 //****************************************************************
-//\class Buffer
-//struct Buffer {
-//  NumberTypeE nt;
-//  long n;
-//  void *p;
-//};
-//\end class
-
-
-//****************************************************************
 //BitPacking objects encapsulate optimised loops of conversion
 struct BitPacking;
 // those are the types of the optimised loops of conversion 
@@ -590,7 +572,7 @@ EACH_INT_TYPE(FOO)
 
 \class BitPacking < CObject
 struct BitPacking : CObject {
-	Packer *packer;
+	Packer   *  packer;
 	Unpacker *unpacker;
 	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
 	int bytes;
@@ -608,8 +590,8 @@ struct BitPacking : CObject {
 	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl String to_s();
 // main entrances to Packers/Unpackers
-	template <class T> void pack(  long n, T * in, uint8 * out);
-	template <class T> void unpack(long n, uint8 * in, T * out);
+	template <class T> void   pack(long n, T *in, uint8 *out);
+	template <class T> void unpack(long n, uint8 *in, T *out);
 };
 \end class
 
@@ -769,6 +751,7 @@ struct PtrGrid : public P<Grid> {
 	P<Grid> next;
 	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
+	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {          p=_p;   INCR;}
 	PtrGrid &operator =(  Grid *_p) {if(dc&&p)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
@@ -785,9 +768,7 @@ static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 }
 
 static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
-	PtrGrid pg;
-	pg = convert(x,(Grid **)0);
-	return pg;
+	return PtrGrid(convert(x,(Grid **)0));
 }
 #endif
 
@@ -844,11 +825,9 @@ struct GridInlet : CObject {
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
 	int mode; // 0=ignore; 4=ro; 6=rw
-
 	long allocfactor,allocmin,allocmax,allocn;
-	uint8 * alloc;
+	uint8 *alloc;
 
-// methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
@@ -878,24 +857,12 @@ private:
 
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin and \classinfo)
-
-// C is for class, I for inlet number
-// GRIN1 : int32 only
-// GRIN4 : all types
-// GRIN2 : integers only; no floats (no R either actually)
-// GRINF : floats only; no integers
 #ifndef HAVE_LITE
 #define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD,TR}
 #else
 #define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI}
 #endif // HAVE_LITE
-
-#define GRIN1(C,I) GRIN(0,0,C::grinw_##I,0,0,0,0)
-#define GRIN4(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I)
-#define GRIN2(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0,0)
-#define GRINF(C,I) GRIN(0,0,0,0,C::grinw_##I,C::grinw_##I,0)
-
-struct FClass { // 0.7.8: removed all GridObject-specific stuff.
+struct FClass {
 	void *(*allocator)(); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
