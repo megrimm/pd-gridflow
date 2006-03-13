@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -132,20 +132,6 @@ static int ninlets_of (Ruby qlass) {
 static int noutlets_of (Ruby qlass) {
 	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_noutlets))) RAISE("no outlet count");
 	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_noutlets)));
-}
-
-#ifndef STACK_GROW_DIRECTION
-#define STACK_GROW_DIRECTION -1
-#endif
-extern "C" void Init_stack(VALUE *addr);
-static VALUE *localize_sysstack () {
-	long bp0,bp1;
-	sscanf(STACK_END,"0x%08lx",&bp0);
-	// HACK (2004.08.29: alx has a problem; i hope it doesn't get worse)
-	// this rounds to the last word of a 64k block (bug: doesn't use STACK_GROW_DIRECTION)
-	bp1=((bp0+0xffff)&~0xffff)-sizeof(void*);
-	//fprintf(stderr,"STACK_END old=0x%08lx; new=0x%08lx\n",bp0,bp1);
-	return (VALUE *)bp1;
 }
 
 //****************************************************************
@@ -763,7 +749,6 @@ extern "C" void gridflow_setup () {
 	delete[] dirresult;
 */
 	ruby_init();
-	Init_stack(localize_sysstack());
 	ruby_options(COUNT(foo),foo);
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
