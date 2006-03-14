@@ -836,12 +836,10 @@ struct GridInlet : CObject {
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	Ruby begin(int argc, Ruby *argv);
+	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
-	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
-	// as an end-marker for inlet definitions... sorry for the confusion
-	// GF-0.8: n=-3 is alloc.
+	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
 	template <class T> void flow(int mode, long n, T *data);
-	void end(); // this one ought to be called finish().
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
 		Grid t(argc,argv,nt); from_grid(&t);
 	}
@@ -915,9 +913,9 @@ struct GridOutlet : CObject {
 private:
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(long n, T *data);
-	void end() {
+	void finish() {
 		flush();
-		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->end();
+		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->finish();
 		dim=0;
 	}
 };
