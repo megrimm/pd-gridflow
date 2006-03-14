@@ -1,0 +1,137 @@
+#N canvas 169 45 658 551 10;
+#X obj -16 3 cnv 15 653 30 empty empty empty 20 12 0 14 -233017 -355
+0;
+#X obj -16 520 cnv 15 653 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text -9 527 GridFlow 0.8.2;
+#X obj -16 37 cnv 15 653 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -4 36 lti.KMeansSegmentation;
+#X msg 18 269 help;
+#X msg 16 243 get;
+#X obj 89 191 #in;
+#X obj 64 108 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 89 445 #out window;
+#X obj 89 400 #store;
+#X obj 89 276 lti.KMeansSegmentation;
+#X obj 89 143 t b b;
+#X obj 89 468 fps detailed;
+#X obj 89 488 print fps;
+#X obj 89 105 metro 100;
+#X obj 89 81 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X text 184 372 transforms an Imatrix array (grid dim(y \, x));
+#X text 184 386 into a (grid dim(y \, x \, channel);
+#X obj 89 371 #outer + (0);
+#X obj 590 315 #print;
+#X msg 121 168 open litmus.jpg;
+#X obj 89 421 #scale_by 32;
+#X msg 135 133 open babbage.jpg;
+#X text 148 401 <-- applies the palette to the image \, paint by number
+style;
+#X text -2 7 GridFlow::Rblti;
+#X obj 297 70 cnv 15 340 210 empty empty empty 20 12 0 14 -249661 -66577
+0;
+#X msg 316 249 smoothFilter \$1;
+#X msg 316 221 quantparameters \$1;
+#X obj 317 87 hsl 128 15 0 127 0 0 kernelSize empty kernelSize -2 -6
+0 12 -262144 -1 -1 400 1;
+#X obj 458 87 nbx 5 14 -1e+37 1e+37 0 0 empty kernelSize empty 0 -6
+0 10 -262144 -1 -1 4 256;
+#N canvas 0 0 450 300 parameters 0;
+#X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
+#X obj 149 231 s param;
+#X floatatom 135 53 5 0 0 0 numberOfColors numberOfColors -;
+#X floatatom 135 77 5 0 0 0 thresholdDeltaPalette thresholdDeltaPalette
+-;
+#X floatatom 135 110 5 0 0 0 kernelSize maximalNumberOfIterations -
+;
+#X msg 197 23 kernelSize \$1;
+#X msg 194 51 numberOfColors \$1;
+#X msg 194 77 thresholdDeltaPalette \$1;
+#X msg 193 108 maximalNumberOfIterations \$1;
+#X connect 0 0 5 0;
+#X connect 2 0 6 0;
+#X connect 3 0 7 0;
+#X connect 4 0 8 0;
+#X connect 5 0 1 0;
+#X connect 6 0 1 0;
+#X connect 7 0 1 0;
+#X connect 8 0 1 0;
+#X restore 458 473 pd parameters;
+#X obj 317 121 hsl 128 15 0 127 0 0 numberOfColors empty numberOfColors
+-2 -6 0 12 -262144 -1 -1 3100 1;
+#X obj 458 121 nbx 5 14 -1e+37 1e+37 0 0 empty numberOfColors empty
+0 -6 0 10 -262144 -1 -1 31 256;
+#X obj 317 156 hsl 128 15 0 127 0 0 thresholdDeltaPalette empty thresholdDeltaPalette
+-2 -6 0 12 -262144 -1 -1 2700 1;
+#X obj 458 156 nbx 5 14 -1e+37 1e+37 0 0 empty thresholdDeltaPalette
+empty 0 -6 0 10 -262144 -1 -1 27 256;
+#X obj 317 194 hsl 128 15 0 127 0 0 maximalNumberOfIerations empty
+maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 3300 1;
+#X obj 458 194 nbx 5 14 -1e+37 1e+37 0 0 empty maximalNumberOfIerations
+empty 0 -6 0 10 -262144 -1 -1 33 256;
+#X obj 16 222 loadbang;
+#N canvas 0 0 450 300 parameters_get 1;
+#X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
+#X obj 149 231 s param;
+#X floatatom 135 53 5 0 0 0 numberOfColors numberOfColors -;
+#X floatatom 135 77 5 0 0 0 thresholdDeltaPalette thresholdDeltaPalette
+-;
+#X floatatom 135 110 5 0 0 0 kernelSize maximalNumberOfIterations -
+;
+#X msg 197 23 kernelSize \$1;
+#X msg 194 51 numberOfColors \$1;
+#X msg 194 77 thresholdDeltaPalette \$1;
+#X msg 193 108 maximalNumberOfIterations \$1;
+#X floatatom -3 338 5 0 0 0 - - -;
+#X floatatom 88 338 5 0 0 0 - - -;
+#X floatatom 180 337 5 0 0 0 - - -;
+#X obj 15 298 route kernelSize numberOfColors thresholdDeltaPalette
+maximalNumberOfIterations;
+#X floatatom 271 338 5 0 0 0 - - -;
+#X obj 18 260 r parameters_get;
+#X connect 0 0 5 0;
+#X connect 2 0 6 0;
+#X connect 3 0 7 0;
+#X connect 4 0 8 0;
+#X connect 5 0 1 0;
+#X connect 6 0 1 0;
+#X connect 7 0 1 0;
+#X connect 8 0 1 0;
+#X connect 12 0 9 0;
+#X connect 12 1 10 0;
+#X connect 12 2 11 0;
+#X connect 12 3 13 0;
+#X connect 14 0 12 0;
+#X restore 458 493 pd parameters_get;
+#X obj 249 334 s parameters_get;
+#X obj 238 354 print attributes;
+#X text 519 98 smaller than the;
+#X text 520 85 <-- needs to be;
+#X text 519 112 image height;
+#X text 459 223 <-- these belong to;
+#X text 459 239 unsupported classes;
+#X text 263 285 outlet0 outputs the Imatrix (the image with coded info
+;
+#X text 263 299 for the colors that corresponds to the palette);
+#X text 263 315 outlet1 outputs the palette \, try both with ->;
+#X connect 5 0 11 0;
+#X connect 6 0 11 0;
+#X connect 7 0 11 0;
+#X connect 8 0 12 0;
+#X connect 9 0 13 0;
+#X connect 10 0 22 0;
+#X connect 11 0 19 0;
+#X connect 11 1 10 1;
+#X connect 11 2 40 0;
+#X connect 11 2 41 0;
+#X connect 12 0 7 0;
+#X connect 12 1 21 0;
+#X connect 13 0 14 0;
+#X connect 15 0 12 0;
+#X connect 16 0 15 0;
+#X connect 19 0 10 0;
+#X connect 21 0 7 0;
+#X connect 22 0 9 0;
+#X connect 38 0 6 0;
