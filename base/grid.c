@@ -273,7 +273,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	}} // PROF
 }
 
-void GridInlet::end() {TRACE;
+void GridInlet::finish() {TRACE;
 	if (!dim) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
@@ -347,7 +347,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
 	frozen=true;
-	if (!dim->prod()) {end(); return;}
+	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	if (nt != buf->nt) {
@@ -408,7 +408,7 @@ void GridOutlet::send(long n, T *data) {TRACE;
 			COPY((T *)*buf+bufi,data,n);
 			bufi += n;
 		}
-		if (dex==dim->prod()) end();
+		if (dex==dim->prod()) finish();
 	}
 }
 
@@ -432,7 +432,7 @@ void GridOutlet::give(long n, T *data) {TRACE;
 		dex += n;
 		delete[] (T *)data;
 	}
-	if (dex==dim->prod()) end();
+	if (dex==dim->prod()) finish();
 }
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
