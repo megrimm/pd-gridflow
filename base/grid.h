@@ -502,10 +502,10 @@ NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE("all_ones"),0)
 #define NONLITE(x...) x
 #endif
 #define NUMBER_TYPES(MACRO) \
-	MACRO(  uint8, 8,NT_UNSIGNED, "u8,b")          MACRO( int8, 8,NT_UNIMPL, "i8") \
-	MACRO( uint16,16,NT_UNSIGNED|NT_UNIMPL, "u16") MACRO(int16,16,0, "i16,s") \
-	MACRO( uint32,32,NT_UNSIGNED|NT_UNIMPL, "u32") MACRO(int32,32,0, "i32,i") \
-	MACRO( uint64,64,NT_UNSIGNED|NT_UNIMPL, "u64") MACRO(int64,64,NT_NOTLITE, "i64,l") \
+	MACRO(uint8, 8,NT_UNSIGNED, "u8,b") \
+	MACRO(int16,16,0,           "i16,s") \
+	MACRO(int32,32,0,           "i32,i") \
+	MACRO(int64,64,NT_NOTLITE,  "i64,l") \
 	MACRO(float32,32,NT_NOTLITE|NT_FLOAT, "f32,f") \
 	MACRO(float64,64,NT_NOTLITE|NT_FLOAT, "f64,d") \
 	MACRO(   ruby,sizeof(long),NT_NOTLITE,"r")
@@ -638,25 +638,21 @@ struct Numop : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
-//private:
-#define FOO(T) \
-	NumopOn<T> on_##T; \
-	NumopOn<T> *on(T &foo) { \
-		if (!on_##T.op_map) \
-			RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
-		return &on_##T;}
+#define FOO(T) NumopOn<T> on_##T; \
+  NumopOn<T> *on(T &foo) { \
+    if (!on_##T.op_map) RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
+    return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-//public:
-	template <class T> inline void map(long n, T * as, T b) {
+	template <class T> inline void map(long n, T *as, T b) {
 		on(*as)->op_map(n,(T *)as,b);}
-	template <class T> inline void zip(long n, T * as, T * bs) {
+	template <class T> inline void zip(long n, T *as, T * bs) {
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, T * as, T * bs) {
+	template <class T> inline void fold(long an, long n, T *as, T *bs) {
 		typename NumopOn<T>::Fold f = on(*as)->op_fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
-	template <class T> inline void scan(long an, long n, T * as, T * bs) {
+	template <class T> inline void scan(long an, long n, T *as, T *bs) {
 		typename NumopOn<T>::Scan f = on(*as)->op_scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
@@ -818,15 +814,19 @@ typedef struct  GridObject GridObject;
 struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
+private:
 	GridObject *sender;
+public:
 	P<Dim> dim;
 	NumberTypeE nt;
 	long dex;
+private:
 	PtrGrid buf;// factor-chunk buffer
 	long bufi;   // buffer index: how much of buf is filled
+public:
 	int mode; // 0=ignore; 4=ro; 6=rw
-	long allocfactor,allocmin,allocmax,allocn;
-	uint8 *alloc;
+//	long allocfactor,allocmin,allocmax,allocn;
+//	uint8 *alloc;
 
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
@@ -879,15 +879,12 @@ struct GridOutlet : CObject {
 	GridObject *parent; // not a P<> because of circular refs
 	P<Dim> dim; // dimensions of the grid being sent
 	NumberTypeE nt;
-	PtrGrid buf; // temporary buffer
-	bool frozen; // is the "begin" phase finished?
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
 	long dex;  // how many numbers were already sent in this connection
-	long bufi; // number of bytes used in the buffer
-// methods
+
 	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
-	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
+	parent(parent_), dim(dim_), nt(nt_), dex(0), frozen(false), bufi(0) {
 		//int ntsz = number_type_table[nt].size;
 		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
 		begin(woutlet,dim,nt);
@@ -911,6 +908,9 @@ struct GridOutlet : CObject {
 	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
 
 private:
+	bool frozen; // is the "begin" phase finished?
+	PtrGrid buf; // temporary buffer
+	long bufi; // number of bytes used in the buffer
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
 	template <class T> void send_direct(long n, T *data);
 	void finish() {
