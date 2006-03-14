@@ -143,10 +143,8 @@ struct BFObject : t_object {
 #endif
 	int32 magic; // paranoia
 	Ruby rself;
-	int nin;  // per object settings (not class)
-	int nout; // per object settings (not class)
-	t_outlet **out;
-
+	int nin,nout;  // per object settings (not class)
+	t_outlet **out; // direct access to outlets (not linked lists)
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
 			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
@@ -183,32 +181,20 @@ struct BFProxy : t_object {
 };
 
 static void Bridge_export_value(Ruby arg, t_atom *at) {
-	if (INTEGER_P(arg)) {
-		SETFLOAT(at,NUM2INT(arg));
-	} else if (SYMBOL_P(arg)) {
-		const char *name = rb_sym_name(arg);
-		SETSYMBOL(at,gensym((char *)name));
-	} else if (FLOAT_P(arg)) {
-		SETFLOAT(at,RFLOAT(arg)->value);
-	} else if (rb_obj_class(arg)==mPointer) {
-		SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
-	} else {
-		RAISE("cannot convert argument of class '%s'",
-			rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
-	}
+	if      (INTEGER_P(arg)) SETFLOAT(at,NUM2INT(arg));
+	else if ( SYMBOL_P(arg)) SETSYMBOL(at,gensym((char *)rb_sym_name(arg)));
+	else if (  FLOAT_P(arg)) SETFLOAT(at,RFLOAT(arg)->value);
+	else if (rb_obj_class(arg)==mPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
+	else RAISE("cannot convert argument of class '%s'",
+		rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 }
 
 static Ruby Bridge_import_value(const t_atom *at) {
 	t_atomtype t = at->a_type;
-	if (t==A_SYMBOL) {
-		return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
-	} else if (t==A_FLOAT) {
-		return rb_float_new(at->a_w.w_float);
-	} else if (t==A_POINTER) {
-		return Pointer_s_new(at->a_w.w_gpointer);
-		} else {
-		return Qnil; /* unknown */
-	}
+	if (t==A_SYMBOL)  return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
+	if (t==A_FLOAT )  return rb_float_new(at->a_w.w_float);
+	if (t==A_POINTER) return Pointer_s_new(at->a_w.w_gpointer);
+	return Qnil; /* unknown */
 }
 
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
@@ -257,43 +243,35 @@ t_symbol *s, int argc, t_atom *argv) {
 static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[fm->ac+1];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
-
-	if (fm->selector==&s_list) {
-		argv[0] = rb_str_new2("list"); // pd is slightly broken here
-	} else {
-		argv[0] = rb_str_new2(fm->selector->s_name);
-	}
-
-#ifdef HAVE_GEM
+	// s_list is broken in some (?) versions of pd
+	argv[0] = fm->selector==&s_list ?
+		argv[0]=rb_str_new2("list") : rb_str_new2(fm->selector->s_name);
 	BFObject *bself = fm->self;
+#ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
-
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
-	self->bself = fm->self;
-	self->bself->rself = rself;
-
+	self->bself = bself;
+	bself->rself = rself;
 #ifdef HAVE_GEM
-	//bself->gemself = (CPPExtern *)(GemPixObj *)self;
 	bself->gemself = (CPPExtern *)((void **)self+11);
 	CPPExtern::m_holder = NULL;
 	CPPExtern::m_holdname=NULL;
 #endif
-
-	int ninlets  = self->bself->nin = ninlets_of(rb_funcall(rself,SI(class),0));
-	int noutlets = self->bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
+	int ninlets  = bself->nin  =  ninlets_of(rb_funcall(rself,SI(class),0));
+	int noutlets = bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
 
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = self->bself;
+		p->parent = bself;
 		p->inlet = i;
-		inlet_new(self->bself, &p->ob_pd, 0,0);
+		inlet_new(bself, &p->ob_pd, 0,0);
 	}
 	self->bself->out = new t_outlet*[noutlets];
 	for (int i=0; i<noutlets; i++) {
-		self->bself->out[i] = outlet_new(self->bself,&s_anything);
+		bself->out[i] = outlet_new(bself,&s_anything);
 	}
 	rb_funcall(rself,SI(initialize2),0);
 	return rself;
@@ -372,7 +350,7 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 }
 
 /* Call this to get a gobj's bounding rectangle in pixels */
-void bf_getrectfn(t_gobj *x, struct _glist *glist,
+void bf_getrectfn(t_gobj *x, t_glist *glist,
 int *x1, int *y1, int *x2, int *y2) {
 	BFObject *bself = (BFObject*)x;
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
@@ -382,14 +360,15 @@ int *x1, int *y1, int *x2, int *y2) {
 		*x1=*y1=*x2=*y2=0;
 		return;
 	}
-	*x1 = INT(rb_ary_ptr(a)[0]);
-	*y1 = INT(rb_ary_ptr(a)[1]);
-	*x2 = INT(rb_ary_ptr(a)[2]);
-	*y2 = INT(rb_ary_ptr(a)[3]);
+	Ruby *ap = rb_ary_ptr(a);
+	*x1 = INT(ap[0]);
+	*y1 = INT(ap[1]);
+	*x2 = INT(ap[2]);
+	*y2 = INT(ap[3]);
 }
 
 /* and this to displace a gobj: */
-void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
+void bf_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	BFObject *bself = (BFObject *)x;
 	bself->te_xpix+=dx;
@@ -399,26 +378,26 @@ void bf_displacefn(t_gobj *x, struct _glist *glist, int dx, int dy) {
 }
 
 /* change color to show selection: */
-void bf_selectfn(t_gobj *x, struct _glist *glist, int state) {
+void bf_selectfn(t_gobj *x, t_glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
 }
 
 /* change appearance to show activation/deactivation: */
-void bf_activatefn(t_gobj *x, struct _glist *glist, int state) {
+void bf_activatefn(t_gobj *x, t_glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
 }
 
 /* warn a gobj it's about to be deleted */
-void bf_deletefn(t_gobj *x, struct _glist *glist) {
+void bf_deletefn(t_gobj *x, t_glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
 
 /*  making visible or invisible */
-void bf_visfn(t_gobj *x, struct _glist *glist, int flag) {
+void bf_visfn(t_gobj *x, t_glist *glist, int flag) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby rself = ((BFObject*)x)->rself;
 	DGS(FObject);
@@ -427,7 +406,7 @@ void bf_visfn(t_gobj *x, struct _glist *glist, int flag) {
 }
 
 /* field a mouse click (when not in "edit" mode) */
-int bf_clickfn(t_gobj *x, struct _glist *glist,
+int bf_clickfn(t_gobj *x, t_glist *glist,
 int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby ret = rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_click),7,can,
@@ -445,7 +424,7 @@ void bf_savefn(t_gobj *x, t_binbuf *b) {
 }
 
 /* open properties dialog */
-void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
+void bf_propertiesfn(t_gobj *x, t_glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
@@ -578,30 +557,31 @@ static Ruby FObject_unfocus (Ruby rself, Ruby canvas_) {
 }
 
 static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
-	DGS(FObject);
-	if (!self->bself) RAISE("there is no bself");
+	DGS(FObject); BFObject *bself = self->bself;
+	if (!bself) RAISE("there is no bself");
 	int n = INT(n_);
-	for (int i=self->bself->nin; i<self->bself->nin+n; i++) {
+	for (int i=bself->nin; i<bself->nin+n; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = self->bself;
+		p->parent = bself;
 		p->inlet = i;
-		inlet_new(self->bself, &p->ob_pd, 0,0);
+		inlet_new(bself, &p->ob_pd, 0,0);
 	}
-	self->bself->nin+=n;
+	bself->nin+=n;
 	return Qnil;
 }
 
 static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
-	DGS(FObject);
-	if (!self->bself) RAISE("there is no bself");
+	DGS(FObject); BFObject *bself = self->bself;
+	if (!bself) RAISE("there is no bself");
 	int n = INT(n_);
-	t_outlet **oldouts = self->bself->out;
-	self->bself->out = new t_outlet*[self->bself->nout+n];
-	memcpy(self->bself->out,oldouts,self->bself->nout*sizeof(t_outlet*));
-	for (int i=self->bself->nout; i<self->bself->nout+n; i++) {
-		self->bself->out[i] = outlet_new(self->bself,&s_anything);
+	t_outlet **oldouts = bself->out;
+	int no = bself->nout;
+	bself->out = new t_outlet*[no+n];
+	memcpy(bself->out,oldouts,no*sizeof(t_outlet*));
+	for (int i=no; i<no+n; i++) {
+		bself->out[i] = outlet_new(bself,&s_anything);
 	}
-	self->bself->nout+=n;
+	bself->nout+=n;
 	return Qnil;
 }
 
@@ -735,19 +715,29 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
 }
 
+// note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
+// don't exist; also, canvas_getcurrentdir() isn't available during setup
+// (segfaults), in addition to libraries not being canvases ;-)
+// AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","-w","-e",";"};
 	post("setting up Ruby-for-PureData...");
-/*
-	post("pd_getfilename() = %s", pd_getfilename()->s_name);
-	post("pd_getdirname() = %s", pd_getdirname()->s_name);
-	post("canvas_getcurrentdir() = %p", canvas_getcurrentdir());
+
+	char *dirname   = new char[242];
 	char *dirresult = new char[242];
 	char *nameresult;
-	int fd = open_via_path("","gridflow",".so",dirresult,&nameresult,242,1);
-	post("open_via_path: fd=%d dirresult=\"%s\" nameresult=\"%s\"",fd,dirresult,nameresult);
+	if (getcwd(dirname,242)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
+	int fd = open_via_path(dirname,"gridflow",PDSUF,dirresult,&nameresult,242,1);
+	if (fd) {
+		post("%s was found in %s",nameresult,dirresult);
+		close(fd);
+	} else {
+		post("gridflow"PDSUF" was not found via the -path!");
+	}
 	delete[] dirresult;
-*/
+	delete[] dirname;
+	/* nameresult is only a pointer in dirresult space so don't delete[] it. don't we love pd */
+
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
