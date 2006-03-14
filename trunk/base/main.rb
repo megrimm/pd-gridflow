@@ -119,17 +119,9 @@ def self.gfpost2(fmt,s); post("%s",s) end
 if GridFlow.bridge_name then
   post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
   post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
-  post "Please use at least 1.6.6 if you plan to use sockets" if RUBY_VERSION<"1.6.6"
 end
 
-if not GridFlow.bridge_name then
-  require "gridflow/bridge/placebo"
-end
-
-Brace1 = "{".intern
-Brace2 = "}".intern
-Paren1 = "(".intern
-Paren2 = ")".intern
+require "gridflow/bridge/placebo" if not GridFlow.bridge_name
 
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
@@ -142,10 +134,7 @@ def self.parse(m)
 	m
 end
 
-def self.stringify_list(argv)
-	argv.map {|x| stringify x }.join(" ")
-end
-
+def self.stringify_list(argv) argv.map {|x| stringify x }.join(" ") end
 def self.stringify(arg)
 	case arg
 	when Integer, Float, Symbol; arg.to_s

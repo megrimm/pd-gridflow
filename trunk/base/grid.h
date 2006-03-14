@@ -23,10 +23,7 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-
-// current version number as string literal
 #define GF_VERSION "0.8.2"
-#define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
 #include <vector>
@@ -35,7 +32,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
-
 #ifdef __APPLE__
 static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #else
@@ -46,11 +42,10 @@ extern "C" {
 #include <ruby.h>
 #include <rubyio.h>
 #include <version.h>
-};
-
 #ifndef RUBY_H
 #error "Can't do anything without ruby.h"
 #endif
+};
 
 #include "../config.h"
 
@@ -72,11 +67,6 @@ extern "C" {
 #endif
 
 typedef VALUE Ruby;
-
-/* undocumented function from Ruby that is one thing we need to fix a very elusive bug
-that manifests itself when embedding ruby inside a plugin of another app. This exists
-for all versions of Ruby up to now, and I don't know when it gets fixed. */
-extern "C" void Init_stack(VALUE *addr);
 
 extern "C" {
 void rb_raise0(
@@ -127,12 +117,12 @@ static inline Ruby PTR2FIX (const void *ptr) {
 //****************************************************************
 
 /* int32 was long before, now int, because of amd64 */
-typedef char  int8;     typedef unsigned char  uint8;
-typedef short int16;    typedef unsigned short uint16;
-typedef int   int32;    typedef unsigned int  uint32;
-typedef long long int64;typedef unsigned long long uint64;
-typedef float  float32;
-typedef double float64;
+typedef char       int8; typedef unsigned char      uint8;
+typedef short     int16; typedef unsigned short     uint16;
+typedef int       int32; typedef unsigned int       uint32;
+typedef long long int64; typedef unsigned long long uint64;
+typedef float   float32;
+typedef double  float64;
 
 // three-way comparison (T is assumed Comparable)
 template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
@@ -140,12 +130,10 @@ template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
 // a remainder function such that div2(a,b)*b+mod(a,b) = a and for which
 // mod(a,b) is in [0;b) or (b;0]. in contrast to C-language builtin a%b,
 // this one has uniform behaviour around zero.
-static inline int mod(int a, int b) {
-int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
+static inline int mod(int a, int b) {return a<0 ? b-((-a)%b) : a%b;}
 
 // counterpart of mod(a,b), just like a/b and a%b are counterparts
-static inline int div2(int a, int b) {
-int c=a<0; return (a/b)-(c&&!!(a%b));}
+static inline int div2(int a, int b) {return (a/b)-((a<0)&&!!(a%b));}
 
 static inline int32   gf_abs(  int32 a) { return a>0?a:-a; }
 static inline int64   gf_abs(  int64 a) { return a>0?a:-a; }
@@ -188,14 +176,14 @@ template <class T> static T gcd2 (T a, T b) {
 // least common multiple; this runs in log(a+b) like gcd.
 template <class T> static inline T lcm (T a, T b) {return a*b/gcd(a,b);}
 
-// returns the position (0..31) of highest bit set in a word, or 0 if none.
+// returns the position (0..63) of highest bit set in a word, or 0 if none.
 #define Z(N) if ((x>>N)&(((typeof(x))1<<N)-1)) { x>>=N; i+=N; }
 static int highest_bit(uint8  x) {int i=0;              Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint16 x) {int i=0;          Z(8)Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint32 x) {int i=0;     Z(16)Z(8)Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint64 x) {int i=0;Z(32)Z(16)Z(8)Z(4)Z(2)Z(1)return i;}
 #undef Z
-// returns the position (0..31) of lowest bit set in a word, or 0 if none.
+// returns the position (0..63) of lowest bit set in a word, or 0 if none.
 template <class T> static int lowest_bit(T n) { return highest_bit((~n+1)&n); }
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }

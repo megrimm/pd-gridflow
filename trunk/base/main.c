@@ -30,10 +30,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-
 #include "grid.h.fcs"
 #include "../config.h"
-#include <assert.h>
 #include <limits.h>
 
 BuiltinSymbols bsym;
@@ -65,8 +63,8 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	rb_exc_raise(e);
 }};
 
-Ruby rb_ary_fetch(Ruby rself, int i) {
-	Ruby argv[] = { INT2NUM(i) };
+Ruby rb_ary_fetch(Ruby rself, long i) {
+	Ruby argv[] = { LONG2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
@@ -583,7 +581,7 @@ BUILTIN_SYMBOLS(FOO)
 	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
-	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
+	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	EVAL(
