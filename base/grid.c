@@ -150,8 +150,9 @@ void Grid::init_from_ruby(Ruby x) {
 void GridInlet::set_factor(long factor) {
 	if(!dim) RAISE("huh?");
 	if(factor<=0) RAISE("%s: factor=%d should be >= 1",INFO(parent),factor);
-	if (dim->prod() && dim->prod() % factor)
-		RAISE("%s: set_factor: expecting divisor",INFO(parent));
+	int i;
+	for (i=0; i<dim->n; i++) if (dim->prod(i)==factor) break;
+	if (i==dim->n) RAISE("%s: set_factor: expecting dim->prod(i) for some i",INFO(parent));
 	if (factor > 1) {
 		buf=new Grid(new Dim(factor), nt);
 		bufi=0;
