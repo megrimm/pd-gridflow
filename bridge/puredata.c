@@ -50,6 +50,10 @@ tries to call a Ruby method of the proper name.
 #include "Base/GemPixDualObj.h"
 #endif
 
+// call f(x) and if fails call g(y)
+#define RESCUE(f,x,g,y) \
+  rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
+
 /* **************************************************************** */
 struct BFObject;
 struct FMessage {
@@ -125,13 +129,15 @@ static Ruby make_error_message () {
 }
 
 static int ninlets_of (Ruby qlass) {
-	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_ninlets))) RAISE("no inlet count");
-	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_ninlets)));
+	ID id = SYM2ID(syms->iv_ninlets);
+	if (!rb_ivar_defined(qlass,id)) RAISE("no inlet count");
+	return INT(rb_ivar_get(qlass,id);
 }
 
 static int noutlets_of (Ruby qlass) {
-	if (!rb_ivar_defined(qlass,SYM2ID(syms->iv_noutlets))) RAISE("no outlet count");
-	return INT(rb_ivar_get(qlass,SYM2ID(syms->iv_noutlets)));
+	ID id = SYM2ID(syms->iv_noutlets);
+	if (!rb_ivar_defined(qlass,id)) RAISE("no outlet count");
+	return INT(rb_ivar_get(qlass,id));
 }
 
 //****************************************************************
@@ -224,10 +230,7 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 		pd_error(bself,"message to a dead object. (supposed to be impossible)");
 		return;
 	}
-	rb_rescue2(
-		(RMethod)BFObject_method_missing_1,(Ruby)&fm,
-		(RMethod)BFObject_rescue,(Ruby)&fm,
-		rb_eException,0);
+	RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
 }
 
 static void BFObject_method_missing0 (BFObject *self,
@@ -285,10 +288,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	bself->check_magic();
 	FMessage fm = { self: bself, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
-	long r = rb_rescue2(
-		(RMethod)BFObject_init_1,(Ruby)&fm,
-		(RMethod)BFObject_rescue,(Ruby)&fm,
-		rb_eException,0);
+	long r = RESCUE(BFObject_init_1,&fm,BFObject_rescue,&fm);
 	return r==Qnil ? 0 : (void *)bself; // return NULL if broken object
 }
 
@@ -305,10 +305,7 @@ static void BFObject_delete (BFObject *bself) {
 	bself->check_magic();
 	FMessage fm = { self: bself, winlet:-1, selector: gensym("delete"),
 		ac: 0, at: 0, is_init: false };
-	rb_rescue2(
-		(RMethod)BFObject_delete_1,(Ruby)&fm,
-		(RMethod)BFObject_rescue,(Ruby)&fm,
-		rb_eException,0);
+	RESCUE(BFObject_delete_1,&fm,BFObject_rescue,&fm);
 	bself->magic = 0xDeadBeef;
 }
 
@@ -343,10 +340,7 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	for (int i=0; i<argc; i++) argv[i] = va_arg(foo,VALUE);
 	RMessage rm = { rself, sel, argc, argv };
 	va_end(foo);
-	return rb_rescue2(
-		(RMethod)rb_funcall_myrescue_1,(Ruby)&rm,
-		(RMethod)rb_funcall_myrescue_2,(Ruby)&rm,
-		rb_eException,0);
+	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
 }
 
 /* Call this to get a gobj's bounding rectangle in pixels */
@@ -455,10 +449,7 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	rb_ivar_set(rself, SI(@bfclass), PTR2FIX(qlass));
 	FMessage fm = {0, -1, 0, 0, 0, false};
-	rb_rescue2(
-		(RMethod)BFObject_class_init_1,(Ruby)qlass,
-		(RMethod)BFObject_rescue,(Ruby)&fm,
-		rb_eException,0);
+	RESCUE(BFObject_class_init_1,qlass,BFObject_rescue,&fm,rb_eException,0);
 	return Qnil;
 }
 
@@ -608,8 +599,7 @@ static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
 	if (c->gl_havewindow || !c->gl_isgraph) {
 		x0=bself->te_xpix;
 		y0=bself->te_ypix;
-	}
-	else { // graph-on-parent: have to zoom
+	} else { // graph-on-parent: have to zoom
 		float zx = float(c->gl_x2 - c->gl_x1) / (c->gl_screenx2 - c->gl_screenx1);
 		float zy = float(c->gl_y2 - c->gl_y1) / (c->gl_screeny2 - c->gl_screeny1);
 		x0 = glist_xtopixels(c, c->gl_x1 + bself->te_xpix*zx);
