@@ -131,7 +131,7 @@ static Ruby make_error_message () {
 static int ninlets_of (Ruby qlass) {
 	ID id = SYM2ID(syms->iv_ninlets);
 	if (!rb_ivar_defined(qlass,id)) RAISE("no inlet count");
-	return INT(rb_ivar_get(qlass,id);
+	return INT(rb_ivar_get(qlass,id));
 }
 
 static int noutlets_of (Ruby qlass) {
@@ -449,7 +449,7 @@ static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	rb_ivar_set(rself, SI(@bfclass), PTR2FIX(qlass));
 	FMessage fm = {0, -1, 0, 0, 0, false};
-	RESCUE(BFObject_class_init_1,qlass,BFObject_rescue,&fm,rb_eException,0);
+	RESCUE(BFObject_class_init_1,qlass,BFObject_rescue,&fm);
 	return Qnil;
 }
 
@@ -752,5 +752,3 @@ extern "C" void gridflow_setup () {
 	bindpatcher = class_new(gensym("bindpatcher"),
 		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 }
-
-
