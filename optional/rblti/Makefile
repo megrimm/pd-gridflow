@@ -1,5 +1,9 @@
 # $Id$
 
+include ../../config.make
+
+#!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
+
 #LTIPREFIX = /usr/local
  LTIPREFIX = /home/matju
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg
@@ -10,8 +14,6 @@ RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'
 RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
 RINC = -I $(RDIR1)
 
-#CXX = g++-3.3
-CXX = g++
 SWIGFLAGS = -v -Wall
 CFLAGS += -Wall
 
