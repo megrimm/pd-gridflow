@@ -6,27 +6,31 @@ RUBY = ruby
 
 gfbindir = /home/matju
 SHELL = /bin/sh
-prefix = $(RUBYDESTDIR)/home/matju
-exec_prefix = $(prefix)
-libdir = $(exec_prefix)/lib
+libdir = /home/matju/lib
 LDSHARED = $(CC) -shared
-
 arch = i686-linux
 sitearch = i686-linux
 RM = rm -f
-
-#### End of system configuration section. ####
-
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
-
-LOCAL_LIBS = -lm -lusb -L/usr/X11R6/lib -lX11 -lXext -lglut -lGL -lGLU -lSDL -lpthread -laa -ljpeg -lpng -lz -lmpeg3 -lquicktime -ldl -lglib
 LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm   -lc
 SRCS = grid.c main.c number.1.c number.2.c number.3.c bitpacking.c flow_objects.c flow_objects_for_image.c flow_objects_for_matrix.c
 OBJS = base/grid.o base/main.o base/number.1.o base/number.2.o base/number.3.o base/bitpacking.o base/flow_objects.o base/flow_objects_for_image.o base/flow_objects_for_matrix.o cpu/mmx.o cpu/mmx_loader.o optional/usb.o format/x11.o format/opengl.o format/sdl.o format/aalib.o format/jpeg.o format/png.o format/videodev.o format/mpeg3.o format/quicktimehw.o optional/gem.o
-
 DLLIB = gridflow.so
-CLEANLIBS     = gridflow.so
-CLEANOBJS     = *.o */*.o *.so
+CLEANLIBS = gridflow.so
+CLEANOBJS = *.o */*.o *.so
+CFLAGS += -Wall -Wno-unused -Wunused-variable
+SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
+
+# suffixes (not properly used)
+ifeq (1,1) # Linux, MSWindows with Cygnus, etc
+OSUF = .o
+LSUF = .so
+ESUF =
+else # MSWindows without Cygnus (not supported yet)
+OSUF = .OBJ
+LSUF = .DLL
+ESUF = .EXE
+endif
 
 all:: $(DLLIB) gridflow-for-puredata
 
@@ -35,15 +39,6 @@ clean::
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 .SUFFIXES:
-
-.cc.o:
-	$(CXX) $(CFLAGS) -c $<
-.cxx.o:
-	$(CXX) $(CFLAGS) -c $<
-.cpp.o:
-	$(CXX) $(CFLAGS) -c $<
-.C.o:
-	$(CXX) $(CFLAGS) -c $<
 
 %.h.fcs: %.h $(COMMON_DEPS)
 	$(RUBY) -w base/source_filter.rb $< $@
@@ -67,33 +62,9 @@ clean::
 
 $(DLLIB): $(OBJS)
 	@-$(RM) $@
-	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS) $(LOCAL_LIBS) $(LIBS)
+	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS) $(LDSOFLAGS) $(LIBS)
 
-$(OBJS): ruby.h defines.h
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
-
-SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
-
-# suffixes (not properly used)
-ifeq (1,1) # Linux, MSWindows with Cygnus, etc
-OSUF = .o
-LSUF = .so
-ESUF =
-else # MSWindows without Cygnus (not supported yet)
-OSUF = .OBJ
-LSUF = .DLL
-ESUF = .EXE
-endif
-
-#----------------------------------------------------------------#
-
-CFLAGS += -Wall # for cleanliness
-# but it's normal to have unused parameters
-ifeq ($(HAVE_GCC3),yes)
-CFLAGS += -Wno-unused -Wunused-variable
-else
-CFLAGS += -Wno-unused
-endif
 
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O1 # debuggability
@@ -105,11 +76,8 @@ CFLAGS += -fno-omit-frame-pointer
 CFLAGS += -g    # gdb info
 CFLAGS += -fPIC # some OSes/machines need that for .so files
 
-#----------------------------------------------------------------#
-
 cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 	$(RUBY) cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
-
 cpu/mmx.o: cpu/mmx.asm
 	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
 
@@ -117,8 +85,6 @@ unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
 CONF = config.make config.h Makefile
-
-#----------------------------------------------------------------#
 
 ifeq ($(HAVE_PUREDATA),yes)
 ifeq (${SYSTEM},Darwin)

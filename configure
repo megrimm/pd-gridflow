@@ -28,8 +28,8 @@ end
 
 require "rbconfig"
 require "ftools"
-$CFLAGS = "" if not $CFLAGS
-$LDFLAGS="" if not $LDFLAGS
+$CFLAGS  = ""
+$LDFLAGS = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 
@@ -999,6 +999,7 @@ File.open("./config.make","w") {|f|
   #$CFLAGS += " -falign-loops=4"
   $CFLAGS += " -DMACOSX" if OSX
   f.puts "CFLAGS += " + $CFLAGS
+  f.puts "LDSOFLAGS += " + $conf[:LDSOFLAGS].flatten.join(" ")
 
   for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
   for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
@@ -1042,7 +1043,6 @@ f.puts "
 } # end open config.h
 
 #--------------------------------#
-$LOCAL_LIBS = $conf[:LDSOFLAGS].flatten.join(" ")
 $objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
 $objs[$objs.index("base/number.o"),1] = (1..3).map {|i| "base/number.#{i}.o" }
 # comp.sub!(/\(CC\)/,'(CXX)')
