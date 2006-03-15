@@ -30,9 +30,6 @@ localstatedir = $(prefix)/var
 sitelibdir = /home/matju/lib/pd/extra
 libexecdir = $(exec_prefix)/libexec
 
-CC = gcc
-CXX = g++-3.3
-CXX = g++-3.3
 LIBRUBY = $(LIBRUBY_SO)
 LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
 LIBRUBYARG_SHARED = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -l$(RUBY_SO_NAME)
@@ -43,7 +40,6 @@ CPPFLAGS = -I. -I. -I -I.
 CXXFLAGS = $(CFLAGS) -g -O2
 DLDFLAGS =   
 LDSHARED = $(CC) -shared
-LDSHAREDXX = $(CXX) -shared
 AR = ar
 EXEEXT = 
 
@@ -67,42 +63,23 @@ preload =
 
 libpath = $(libdir)
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
-DEFFILE = 
 
-CLEANFILES = 
-DISTCLEANFILES = 
-
-extout = 
-extout_prefix = 
-target_prefix = 
 LOCAL_LIBS = -lm -lusb -L/usr/X11R6/lib -lX11 -lXext -lglut -lGL -lGLU -lSDL -lpthread -laa -ljpeg -lpng -lz -lmpeg3 -lquicktime -ldl -lglib
 LIBS = $(LIBRUBYARG_SHARED)  -ldl -lcrypt -lm   -lc
 SRCS = grid.c main.c number.1.c number.2.c number.3.c bitpacking.c flow_objects.c flow_objects_for_image.c flow_objects_for_matrix.c
 OBJS = base/grid.o base/main.o base/number.1.o base/number.2.o base/number.3.o base/bitpacking.o base/flow_objects.o base/flow_objects_for_image.o base/flow_objects_for_matrix.o cpu/mmx.o cpu/mmx_loader.o optional/usb.o format/x11.o format/opengl.o format/sdl.o format/aalib.o format/jpeg.o format/png.o format/videodev.o format/mpeg3.o format/quicktimehw.o optional/gem.o
-TARGET = gridflow
-DLLIB = $(TARGET).so
-STATIC_LIB = 
 
-RUBYCOMMONDIR = $(sitedir)$(target_prefix)
-RUBYLIBDIR    = $(sitelibdir)$(target_prefix)
-RUBYARCHDIR   = $(sitearchdir)$(target_prefix)
+DLLIB = gridflow.so
+RUBYCOMMONDIR = $(sitedir)
+RUBYLIBDIR    = $(sitelibdir)
+RUBYARCHDIR   = $(sitearchdir)
+CLEANLIBS     = gridflow.so
+CLEANOBJS     = *.o */*.o *.so
 
-TARGET_SO     = $(DLLIB)
-CLEANLIBS     = $(TARGET).so $(TARGET).il? $(TARGET).tds $(TARGET).map
-CLEANOBJS     = *.o */*.o *.a *.s[ol] *.pdb *.exp *.bak
+all:: $(DLLIB) all2
 
-all: 		$(DLLIB) all2
-static:		$(STATIC_LIB)
-
-clean: clean2 
-		@-$(RM) $(CLEANLIBS) $(CLEANOBJS) $(CLEANFILES)
-
-distclean:	clean
-		@-$(RM) Makefile extconf.h conftest.* mkmf.log
-		@-$(RM) core ruby$(EXEEXT) *~ $(DISTCLEANFILES)
-
-realclean:	distclean
-
+clean:: clean2 
+	@-$(RM) $(CLEANLIBS) $(CLEANOBJS)
 
 install-so: $(RUBYARCHDIR)
 install-so: $(RUBYARCHDIR)/$(DLLIB)
@@ -115,7 +92,9 @@ pre-install-rb-default: Makefile
 $(RUBYARCHDIR):
 	$(MAKEDIRS) $@
 
-site-install: site-install-so site-install-rb $(RUBYARCHDIR)/$(DLLIB) install2
+site-install: site-install-so site-install-rb $(RUBYARCHDIR)/$(DLLIB) ruby-install puredata-install
+	(cd devices4ruby; make install)
+
 site-install-so: install-so
 site-install-rb: install-rb
 
@@ -223,9 +202,6 @@ cpu/mmx.o: cpu/mmx.asm
 
 clean2::
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
-
-install2:: ruby-install puredata-install
-	(cd devices4ruby; make install)
 
 uninstall:: ruby-uninstall
 	# add uninstallation of other files here.
