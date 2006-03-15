@@ -4,12 +4,9 @@ RUBY = ruby
 
 #--------#
 
-gfbindir = /home/matju
 SHELL = /bin/sh
 libdir = /home/matju/lib
-LDSHARED = $(CC) -shared
-arch = i686-linux
-sitearch = i686-linux
+LDSHARED = $(CXX) -shared
 RM = rm -f
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
 LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm
@@ -21,8 +18,15 @@ else
 	CFLAGS += -O3 -funroll-loops
 endif
 
-SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
+OBJS += base/main.o base/grid.o base/bitpacking.o \
+base/flow_objects.o \
+base/flow_objects_for_image.o \
+base/flow_objects_for_matrix.o \
+base/number.1.o \
+base/number.2.o \
+base/number.3.o \
 
+SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 # suffixes (not properly used)
 ifeq (1,1) # Linux, MSWindows with Cygnus, etc
 OSUF = .o
@@ -79,17 +83,14 @@ CONF = config.make config.h Makefile
 
 ifeq ($(HAVE_PUREDATA),yes)
 ifeq (${SYSTEM},Darwin)
-  OS = DARWIN
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -undefined suppress
 else
   ifeq (${SYSTEM},NT)
-    OS = NT
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
     # huh
   else
-    OS = LINUX
     PDSUF = .pd_linux
   endif
 endif

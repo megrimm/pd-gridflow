@@ -83,10 +83,7 @@ $conf={
 	:FEATURES => {},
 	:OPTIONS => [],
 	:DEFINES => {
-		:RUBY_PREFIX => nil,
-		:PREFIX => "/usr/local",
 		:CPU => nil,
-		:RUBY_ARCH => CONFIG['arch'],
 		:GEM_SOURCE => "../Gem/src",
 	},
 	:CC => "g++",
@@ -252,8 +249,6 @@ prepend_path ENV["HOME"]
 for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
 end
-
-$conf[:BINDIR] = make_expand CONFIG['bindir']
 
 LOG.puts "-"*64
 
@@ -712,7 +707,7 @@ Feature.add {
 	defines {
 		path = $C_INCLUDE_PATH.find {|x| File.exist?(x+"/m_pd.h")}
 		m = /PD_VERSION_INT\s+(.*)/.match(File.popen("tmp/#{$$}","r"){|f| f.read })
-		{:PUREDATA_PATH => File.dirname(path)+"/lib/pd", :PD_VERSION_INT => m[1].to_i}
+		{:PD_VERSION_INT => m[1].to_i}
 	}
 	uses_h ["m_pd.h"]
 	test proc {
@@ -777,8 +772,7 @@ def usage
 	log << "usage: ./configure "
 	log << "[--use-compiler compiler] [--use-compiler-option option]* "
 	log << "[--use-cpu cpu] [--lite] [--debug]"
-	log << "[--ruby-prefix directory] [--gem-source directory]"
-	# [--puredata-prefix directory] "
+	log << "[--gem-source directory]"
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--no-#{k}] " }
 	$features_h.keys.map {|k| k.to_s }.sort.each {|k| log << "[--force-#{k}] " }
 	puts
@@ -812,12 +806,10 @@ while ARGV.length>0 do
 	when "--lite"
 		puts "Lite Mode (no float, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
-	when "--help"; usage; exit 0
-
-	when "--prefix", "--ruby-prefix"       : $conf[:DEFINES][:RUBY_PREFIX]=ARGV.shift
-	when "--pd-prefix", "--puredata-prefix": $conf[:DEFINES][  :PD_PREFIX]=ARGV.shift
-	when "--gem-source"                    : $conf[:DEFINES][ :GEM_SOURCE]=ARGV.shift
-
+	when "--help"
+		usage; exit 0
+	when "--gem-source"
+		 $conf[:DEFINES][ :GEM_SOURCE]=ARGV.shift
 	when "--use-compiler"
 		$conf[:CC] = ARGV.shift
 	when "--use-compiler-option"
@@ -826,8 +818,6 @@ while ARGV.length>0 do
 		$conf[:DEFINES][:CPU] = ARGV.shift
 	when "--verbose"
 		$verbose=true
-	when "--bindir"
-		$conf[:BINDIR] = ARGV.shift
 	else puts "unknown option \"#{arg}\""; usage; exit 1
 	end
 end
@@ -1019,17 +1009,8 @@ File.open("./config.make","w") {|f|
 
   for k   in $conf[:OPTIONS] do f.puts "#{k}=yes" end
   for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
-  $sources = %w(
-    base/grid.c base/main.c base/number.c base/bitpacking.c
-    base/flow_objects.c
-    base/flow_objects_for_image.c
-    base/flow_objects_for_matrix.c)
-  f.puts "SOURCES = #{$sources.join(" ")}"
   f.puts "CXX = #{$conf[:CC]}"
-  $objs = $sources.map {|i| i.sub(/.[cm]$/,".o") }
-  $objs[$objs.index("base/number.o"),1] = (1..3).map {|i| "base/number.#{i}.o" }
-  $objs.concat $conf[:OBJS]
-  f.puts "OBJS = #{$objs.join(" ")}"
+  f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
   f.puts ""
 
 } # end open config.make
@@ -1058,21 +1039,13 @@ include_here f,"LIBMPEG", :mpeg3
 include_here f,"QUICKTIMEHW",:quicktimehw
 
 f.puts "
-\#define RUBY_BINDIR #{make_expand(CONFIG['bindir']).inspect}
 \#endif /* __CONFIG_H */"
 } # end open config.h
 
 #--------------------------------#
-#mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
-#mf.sub!(/^CPPFLAGS = (.*)$/) {cpp = "CPPFLAGS = " + make_expand($1).sub(%r"-I\s*/usr/include","")}
-
-#--------------------------------#
 puts "delegating to: devices4ruby/extconf.rb"
-r=$conf[:DEFINES][:RUBY_PREFIX]
-a=[]
-a<< "--prefix"<<r if r
 Dir.chdir "devices4ruby"
-system "/usr/bin/env", "ruby", "extconf.rb", *a
+system "/usr/bin/env", "ruby", "extconf.rb"
 Dir.chdir ".."
 puts "(back)"
 
