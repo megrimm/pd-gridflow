@@ -24,9 +24,27 @@
 
 \class GridFFT < GridObject
 struct GridFFT : GridObject {
+	fftwf_plan plan;
+	P<Dim> lastdim; /* of last input */
+	\attr int sign; /* -1 or +1 */
+	\attr int skip; /* 0.. */
+	\decl void _0_sign (int v);
+	\decl void _0_skip (int v);
 	\decl void initialize ();
 	\grin 0 float
 };
+
+\def void _0_sign (int v) {
+	if (v!=-1 && v!=1) RAISE("sign should be -1 or +1");
+	sign=v;
+	fftwf_destroy_plan(plan);
+}
+
+\def void _0_skip (int v) {
+	if (v<0 || v>1) RAISE("skip should be 0 or 1");
+	skip=v;
+	fftwf_destroy_plan(plan);
+}
 
 GRID_INLET(GridFFT,0) {
 	if (in->nt != float32_e)
@@ -38,12 +56,13 @@ GRID_INLET(GridFFT,0) {
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
 	float32 *buf = new float32[n];
-	fftwf_plan plan = fftwf_plan_dft_2d(
-		in->dim->v[0],in->dim->v[1],
-		(fftwf_complex *)data,
-		(fftwf_complex *)buf,-1,0);
-	fftwf_execute(plan);
-	fftwf_destroy_plan(plan);
+	if (plan && lastdim && lastdim!=in->dim) fftwf_destroy_plan(plan);
+	fftwf_complex *ip = (fftwf_complex *)data;
+	fftwf_complex *op = (fftwf_complex *)buf;
+	int v[] = {in->dim->v[0],in->dim->v[1]};
+	if (skip==0) plan = fftwf_plan_dft_2d(v[0],v[1],ip,op,sign,0);
+	if (skip==1) plan = fftwf_plan_many_dft(1,&v[1],v[0],ip,0,1,v[1],op,0,1,v[1],sign,0);
+	fftwf_execute_dft(plan,ip,op);
 	GridOutlet out(this,0,in->dim,in->nt);
 	out.send(n,buf);
 	delete[] buf;
@@ -51,6 +70,10 @@ GRID_INLET(GridFFT,0) {
 
 \def void initialize () {
 	rb_call_super(argc,argv);
+	sign = -1;
+	plan = 0;
+	lastdim = 0;
+	skip = 0;
 }
 
 \classinfo {
