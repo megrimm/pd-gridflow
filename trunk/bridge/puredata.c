@@ -686,7 +686,6 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
 	mPointer = EVAL("GridFlow::Pointer");
 	EVAL("class<<GridFlow;attr_accessor :config; end");
-	EVAL("GridFlow.config = {'PUREDATA_PATH' => %{"PUREDATA_PATH"}}");
 	return Qnil;
 }
 
@@ -742,7 +741,7 @@ extern "C" void gridflow_setup () {
 		"@bridge_name = 'puredata'; self end");
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
 	EVAL("STDERR.puts \"DIR = #{GridFlow::DIR}\"");
-	EVAL("$:.unshift GridFlow::DIR");
+	EVAL("$:.unshift GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
 
 	post("(done)");
 	if (!

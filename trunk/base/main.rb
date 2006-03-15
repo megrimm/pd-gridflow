@@ -72,7 +72,7 @@ end
 @verbose=false
 @data_path=[]
 if GridFlow.respond_to? :config then
-  @data_path << GridFlow.config["PUREDATA_PATH"]+"/extra/gridflow/images"
+  @data_path << GridFlow::DIR+"/images"
 end
 
 def self.hunt_zombies
@@ -297,12 +297,15 @@ def GridFlow.estimate_cpu_clock
 	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
 end
 
+GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
+GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
+
 begin
 	@cpu_hertz = (0...3).map {
 		GridFlow.estimate_cpu_clock
 	}.sort[1] # median of three tries
-rescue
-	GridFlow.post $!
+rescue Exception => e
+	GridFlow.post e,e.backtrace
 end
 
 def GridFlow.find_file s
