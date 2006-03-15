@@ -113,7 +113,7 @@ GRID_INLET(GridImport,0) {} GRID_FLOW { process(n,data); } GRID_END
 GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 
 \def void _0_symbol(Symbol x) {
-	const char *name = rb_sym_name(argv[0]);
+	const char *name = rb_sym_name(x);
 	long n = strlen(name);
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,(uint8 *)name);
@@ -137,11 +137,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	}
 }
 
-\def void _0_reset() {
-	int32 foo[1]; *foo=0;
-	while (out->dim) out->send(1,foo);
-}
-
+\def void _0_reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
 \classinfo { IEVAL(rself,"install '#import',2,1"); }
 \end class GridImport
 
@@ -155,10 +151,8 @@ struct GridExport : GridObject {
 
 GRID_INLET(GridExport,0) {
 } GRID_FLOW {
-	for (int i=0; i<n; i++) {
-		Ruby a[] = { INT2NUM(0), R(data[i]).r };
-		send_out(COUNT(a),a);
-	}
+	Ruby a[] = { INT2NUM(0), INT2NUM(0) };
+	for (int i=0; i<n; i++) {a[1]=R(data[i]).r; send_out(COUNT(a),a);}
 } GRID_END
 \classinfo { IEVAL(rself,"install '#export',1,1"); }
 \end class GridExport
@@ -568,22 +562,21 @@ GRID_INLET(GridInner,0) {
 	if (a->n<1) RAISE("a: minimum 1 dimension");
 	if (b->n<1) RAISE("b: minimum 1 dimension");
 	if (seed->dim->n != 0) RAISE("seed must be a scalar");
-	int a_last = a->get(a->n-1);
 	int n = a->n+b->n-2;
 	SAME_DIM(1,a,a->n-1,b,0);
 	int32 v[n];
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
-	in->set_factor(a_last);
+	in->set_factor(a->get(a->n-1));
 
 	int rrows = in->factor();
 	int rsize = r->dim->prod();
 	int rcols = rsize/rrows;
-	T * rdata = (T *)*r;
+	T *rdata = (T *)*r;
 	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	r2=new Grid(new Dim(chunk*rsize),r->nt);
-	T * buf3 = (T *)*r2;
+	T *buf3 = (T *)*r2;
 	for (int i=0; i<rrows; i++)
 		for (int j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
@@ -846,17 +839,17 @@ GRID_INLET(GridRedim,0) {
 		if (n2>0) out->send(n2,data);
 		// discard other values if any
 	} else {
-		int n2 = min(n,in->dim->prod()-i);
+		long n2 = min(n,in->dim->prod()-i);
 		COPY((T *)*temp+i,data,n2);
 		if (n2>0) out->send(n2,data);
 	}
 } GRID_FINISH {
 	if (!!temp) {
-		int a = in->dim->prod(), b = dim->prod();
+		long a = in->dim->prod(), b = dim->prod();
 		if (a) {
-			for (int i=a; i<b; i+=a) out->send(min(a,b-i),(T *)*temp);
+			for (long i=a; i<b; i+=a) out->send(min(a,b-i),(T *)*temp);
 		} else {
-			T foo[1]={0}; for (int i=0; i<b; i++) out->send(1,foo);
+			T foo[1]={0}; for (long i=0; i<b; i++) out->send(1,foo);
 		}
 	}
 	temp=0;
@@ -907,8 +900,8 @@ GRID_INLET(GridJoin,0) {
 } GRID_FLOW {
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
-	int a = in->factor();
-	int b = r->dim->prod(w);
+	long a = in->factor();
+	long b = r->dim->prod(w);
 	T * data2 = (T *)*r + in->dex*b/a;
 	if (a==3 && b==1) {
 		int m = n+n*b/a;

@@ -226,8 +226,6 @@ static inline uint64 rdtsc()
 
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
-#define INT(x) TO(int32,x)
-#define TO(t,x) convert(x,(t*)0)
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
@@ -320,6 +318,9 @@ typedef struct R {
 #undef FOO
 	static R value(VALUE r) {R x; x.r=r; return x;}
 } ruby;
+
+#define INT(x)  convert(x,(int32*)0)
+#define TO(T,x) convert(x,(T*)0)
 template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
 
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
@@ -907,7 +908,7 @@ struct FObject : CObject {
 		return rb_str_ptr(s);
 	}
 	\decl R total_time_get();
-	\decl Ruby total_time_set(Ruby x);
+	\decl R total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
 	\decl void delete_m ();
