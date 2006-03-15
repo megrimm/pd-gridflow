@@ -191,12 +191,11 @@ static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 // is little-endian
 static inline bool is_le() {int x=1; return ((char *)&x)[0];}
 
+static inline uint64 rdtsc()
 #if defined(HAVE_PENTIUM)
-static inline uint64 rdtsc() {
-	uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;
-}
+{uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;}
 #else
-static inline uint64 rdtsc() {return 0;}
+{return 0;}
 #endif
 
 #ifdef HAVE_LITE
@@ -225,80 +224,10 @@ static inline uint64 rdtsc() {return 0;}
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
-//struct Arg { Ruby a; };
-//struct ArgList { int n; Arg * v; };
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 #define INT(x) TO(int32,x)
 #define TO(t,x) convert(x,(t*)0)
-
-// not using NUM2INT because Ruby can convert Symbol to int
-// (by compatibility with Ruby 1.4)
-static inline int32 convert(Ruby x, int32 *foo) {
-	if (INTEGER_P(x)) return NUM2INT(x);
-	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
-	RAISE("expected Integer or Float (got %s)",
-		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
-}
-static int16 convert(Ruby x, int16 *foo) {
-	int v = INT(x);
-	if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
-	return v;}
-static uint16 convert(Ruby x, uint16 *foo) {
-	int v = INT(x);
-	if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
-	return v;}
-static bool  convert(Ruby x, bool  *foo) {
-	if (x==Qtrue) return true;
-	if (x==Qfalse) return false;
-	switch (TYPE(x)) {
-		case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!INT(x);
-		default: RAISE("can't convert to bool");
-	}
-}
-
-/*
-#ifdef HAVE_GCC64
-static Ruby gf_ull2num(uint64 val) { return ULONG2NUM(val); }
-static  Ruby gf_ll2num(uint64 val) { return  LONG2NUM(val); }
-#else
-static Ruby gf_ull2num(uint64 val) {
-    Ruby x = rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32));
-    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
-static Ruby gf_ll2num(int64 val) {
-    Ruby x = rb_funcall( INT2NUM(( int32)(val>>32)),SI(<<),1,INT2FIX(32));
-    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
-#endif
-*/
-
-#ifdef HAVE_GCC64
-static uint64 convert(Ruby val, uint64 *foo) { return NUM2ULONG(val); }
-static  int64 convert(Ruby val,  int64 *foo) { return NUM2ULONG(val); }
-#else
-static uint64 convert(Ruby val, uint64 *foo) {
-	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
-	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-static int64 convert(Ruby val, int64 *foo) {
-	if (FIXNUM_P(val)) return (int64)FIX2LONG(val);
-	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
-	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
-	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-#endif
-
-static long convert(Ruby x, long *foo) {
-	return sizeof(long)==sizeof(int32) ?
-		convert(x,(int32 *)0) :
-		convert(x,(int64 *)0);
-}
-
-static float64 convert(Ruby x, float64 *foo) {
-	if (INTEGER_P(x)) return INT(x);
-	if (TYPE(x)!=T_FLOAT) RAISE("not a Float");
-	return ((RFloat*)x)->value;}
-static float32 convert(Ruby x, float32 *foo) {
-	return (float32) convert(x,(float64 *)0);}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
@@ -316,14 +245,14 @@ BUILTIN_SYMBOLS(FOO)
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
-	R(int x) {r=INT2NUM(x);}
-	R(unsigned x) {r=UINT2NUM(x);}
-	R(long x) {r=LONG2NUM(x);}
+	R(int           x) {r=  INT2NUM(x);}
+	R(unsigned      x) {r= UINT2NUM(x);}
+	R(long          x) {r= LONG2NUM(x);}
 	R(unsigned long x) {r=ULONG2NUM(x);}
-	R(double x) {r=rb_float_new(x);}
+	R(double     x) {r=rb_float_new(x);}
 #ifdef HAVE_GCC64
-	R( int64 x) {r= LONG2NUM(val);}
-	R(uint64 x) {r=ULONG2NUM(val);}
+	R( int64 x) {r= LONG2NUM(x);}
+	R(uint64 x) {r=ULONG2NUM(x);}
 #else
 	R( int64 x) {
 		r = rb_funcall( INT2NUM(( int32)(x>>32)),SI(<<),1,INT2FIX(32));
@@ -332,13 +261,50 @@ typedef struct R {
 		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
 		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
 #endif
-	operator bool() {return !!INT2NUM(r);}
+	operator bool () {
+		if (r==Qtrue) return true;
+		if (r==Qfalse) return false;
+		switch (TYPE(r)) {
+			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
+			default: RAISE("can't convert to bool");}}
 	operator uint8 () {return INT2NUM(r);}
-	operator int16 () {return INT2NUM(r);}
-	operator int32 () {return INT2NUM(r);}
-	operator int64 () {return convert(r,(int64*)0);}
-	operator float32 () {return convert(r,(float32*)0);}
-	operator float64 () {return convert(r,(float64*)0);}
+	operator int16 () {
+		int v = (int32)*this;
+		if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
+		return v;}
+	operator uint16 () {
+		int v = (int32)*this;
+		if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
+		return v;}
+	operator int32 () {
+		// not using plain NUM2INT because Ruby can convert Symbol to int (compat Ruby1.4)
+		if (INTEGER_P(r)) return NUM2INT(r);
+		if (FLOAT_P(r)) return NUM2INT(rb_funcall(r,SI(round),0));
+		RAISE("expected Integer or Float (got %s)",
+			rb_str_ptr(rb_funcall(r,SI(inspect),0)));}
+	operator long () {
+		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
+
+#ifdef HAVE_GCC64
+	operator uint64 () {return NUM2ULONG(r);}
+	operator  int64 () {return NUM2ULONG(r);}
+#else
+	operator uint64 () {
+		if (FIXNUM_P(r)) return (uint64)FIX2LONG(r);
+		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
+		uint64 v = (uint64)NUM2UINT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
+		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
+	operator  int64 () {
+		if (FIXNUM_P(r)) return (int64)FIX2LONG(r);
+		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
+		int64 v = (int64)NUM2INT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
+		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
+#endif
+	operator float32 () {return (float64)*this;}
+	operator float64 () {
+		if (INTEGER_P(r)) return (float64)(int32)*this;
+		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
+		return ((RFloat*)r)->value;}
 #define FOO(As,Op) \
 	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
 	FOO(+=,+) FOO(-=,-) FOO(*=,*) FOO(/=,/) FOO(%=,%)
@@ -354,6 +320,7 @@ typedef struct R {
 #undef FOO
 	static R value(VALUE r) {R x; x.r=r; return x;}
 } ruby;
+template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
 
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 
