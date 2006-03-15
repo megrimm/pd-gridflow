@@ -329,10 +329,10 @@ Feature.add {
 Feature.add {
 	tag :libruby
 	name "Ruby as a dynamic library"
-	uses_bridge_so ["-lruby"]
+	uses_bridge_so Or[["-lruby"],["-lruby1.9"]]
 	#uses_h ["ruby.h"] # is in special directory
-	test proc { c_test "#include <ruby.h>
-		int main () { return rb_rescue==0; }", uses_bridge_so }
+	test proc {|f| c_test "#include <ruby.h>
+		int main () { return rb_rescue==0; }", f.uses_bridge_so }
 }
 Feature.add {
 	tag :librubystatic
@@ -837,21 +837,22 @@ DUAL.instance_eval {
 }
 
 def try feature
-
+	if Or===feature.uses_bridge_so
+		k=1; feature.uses_bridge_so.a.each {|i|
+			e=feature.dup; e.uses_bridge_so i; e.name(e.name+" (try \##{k})")
+			r=try e; k+=1; return r if r }
+		return false
+	end
 	if Or===feature.uses_so
-		k=1
-		feature.uses_so.a.each {|i|
+		k=1; feature.uses_so.a.each {|i|
 			e=feature.dup; e.uses_so i; e.name(e.name+" (try \##{k})")
-			r=try e; return r if r
-			k+=1
-		}
+			r=try e; k+=1; return r if r }
 		return false
 	end
 	if Or===feature.uses_h
-		feature.uses_h.a.each {|i|
+		k=1; feature.uses_h.a.each {|i|
 			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i.to_a[0]}>")
-			r=try e; return r if r
-		}
+			r=try e; k+=1; return r if r }
 		return false
 	end
 	LOG.puts "", "-"*64
