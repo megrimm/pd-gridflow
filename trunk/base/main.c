@@ -270,7 +270,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def Ruby total_time_get () {return gf_ull2num(total_time);}
+\def R total_time_get () {return total_time;}
 
 \def Ruby total_time_set (Ruby x) {
 	if (argc<1) RAISE("muh");
@@ -425,7 +425,7 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	return INT2NUM((int)arg);
 }
 
-Ruby GridFlow_rdtsc (Ruby rself) { return gf_ull2num(rdtsc()); }
+Ruby GridFlow_rdtsc (Ruby rself) { return R(rdtsc()).r; }
 
 /* This code handles nested lists because PureData (0.38) doesn't do it */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
@@ -522,11 +522,11 @@ void gffree(void *p) {
 }};
 
 Ruby GridFlow_memcpy_calls (Ruby rself) { return   LONG2NUM(memcpy_calls); }
-Ruby GridFlow_memcpy_bytes (Ruby rself) { return gf_ull2num(memcpy_bytes); }
-Ruby GridFlow_memcpy_time  (Ruby rself) { return gf_ull2num(memcpy_time); }
+R GridFlow_memcpy_bytes (Ruby rself) {return memcpy_bytes;}
+R GridFlow_memcpy_time  (Ruby rself) {return memcpy_time;}
 Ruby GridFlow_malloc_calls (Ruby rself) { return   LONG2NUM(malloc_calls); }
-Ruby GridFlow_malloc_bytes (Ruby rself) { return gf_ull2num(malloc_bytes); }
-Ruby GridFlow_malloc_time  (Ruby rself) { return gf_ull2num(malloc_time); }
+R GridFlow_malloc_bytes (Ruby rself) {return malloc_bytes;}
+R GridFlow_malloc_time  (Ruby rself) {return malloc_time;}
 
 Ruby GridFlow_profiler_reset2 (Ruby rself) {
 	memcpy_calls = memcpy_bytes = memcpy_time = 0;

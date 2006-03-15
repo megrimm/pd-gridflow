@@ -257,11 +257,23 @@ static bool  convert(Ruby x, bool  *foo) {
 	}
 }
 
+/*
+#ifdef HAVE_GCC64
+static Ruby gf_ull2num(uint64 val) { return ULONG2NUM(val); }
+static  Ruby gf_ll2num(uint64 val) { return  LONG2NUM(val); }
+#else
+static Ruby gf_ull2num(uint64 val) {
+    Ruby x = rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32));
+    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
+static Ruby gf_ll2num(int64 val) {
+    Ruby x = rb_funcall( INT2NUM(( int32)(val>>32)),SI(<<),1,INT2FIX(32));
+    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
+#endif
+*/
+
 #ifdef HAVE_GCC64
 static uint64 convert(Ruby val, uint64 *foo) { return NUM2ULONG(val); }
 static  int64 convert(Ruby val,  int64 *foo) { return NUM2ULONG(val); }
-static Ruby gf_ull2num(uint64 val) { return ULONG2NUM(val); }
-static  Ruby gf_ll2num(uint64 val) { return  LONG2NUM(val); }
 #else
 static uint64 convert(Ruby val, uint64 *foo) {
 	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
@@ -273,14 +285,8 @@ static int64 convert(Ruby val, int64 *foo) {
 	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
 	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
 	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
-static Ruby gf_ull2num(uint64 val) {
-    Ruby x = rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32));
-    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
-static Ruby gf_ll2num(int64 val) {
-    Ruby x = rb_funcall( INT2NUM(( int32)(val>>32)),SI(<<),1,INT2FIX(32));
-    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
 #endif
-    
+
 static long convert(Ruby x, long *foo) {
 	return sizeof(long)==sizeof(int32) ?
 		convert(x,(int32 *)0) :
@@ -315,8 +321,17 @@ typedef struct R {
 	R(long x) {r=LONG2NUM(x);}
 	R(unsigned long x) {r=ULONG2NUM(x);}
 	R(double x) {r=rb_float_new(x);}
-	R( int64 x) {r= gf_ll2num(x);}
-	R(uint64 x) {r=gf_ull2num(x);}
+#ifdef HAVE_GCC64
+	R( int64 x) {r= LONG2NUM(val);}
+	R(uint64 x) {r=ULONG2NUM(val);}
+#else
+	R( int64 x) {
+		r = rb_funcall( INT2NUM(( int32)(x>>32)),SI(<<),1,INT2FIX(32));
+		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
+	R(uint64 x) {
+		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
+		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
+#endif
 	operator bool() {return !!INT2NUM(r);}
 	operator uint8 () {return INT2NUM(r);}
 	operator int16 () {return INT2NUM(r);}
@@ -924,7 +939,7 @@ struct FObject : CObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
-	\decl Ruby total_time_get();
+	\decl R total_time_get();
 	\decl Ruby total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
