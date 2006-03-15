@@ -752,10 +752,25 @@ Feature.add {
 	}
 }
 #--------------------------------#
+Feature.add {
+	tag :fftw
+	name "FFTW (Fastest Fourier Transform in the West)"
+	uses_o ["optional/fftw.o"]
+	uses_so ["-lfftw3f","-lfftw3"]
+	options ["HAVE_FFTW"]
+	test proc {
+		c_test %`
+			#include <fftw3.h>
+			int main () {
+				return 0;
+			}
+		`
+	}
+}
+#--------------------------------#
 
 $features_h = {}
 $features.each {|f| $features_h[f.tag]=f }
-
 
 def usage
 	log = ""
@@ -1048,16 +1063,7 @@ f.puts "
 } # end open config.h
 
 #--------------------------------#
-
-#mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
-#mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
-#	"gfbindir = #{$conf[:BINDIR]}\n"
-#mf.sub!(/^site-install:\s*install/,"site-install: ")
-#rp=$conf[:DEFINES][:RUBY_PREFIX]
-#mf.sub! /^sitelibdir\s*=.*$/,   "sitelibdir = " + make_expand(rp) if rp
 #mf.sub! /^LDSHARED = g?cc/, "LDSHARED = $(CXX)"
-#mf.sub! /-no-precomp/, "-no-cpp-precomp"
-#mf.sub! /--driver-name=gcc/, "--driver-name=#{$conf[:CC]}"
 #mf.sub!(/^CPPFLAGS = (.*)$/) {cpp = "CPPFLAGS = " + make_expand($1).sub(%r"-I\s*/usr/include","")}
 
 #--------------------------------#
