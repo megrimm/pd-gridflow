@@ -30,7 +30,7 @@ CFLAGS += -Wno-unused
 endif
 
 ifeq ($(HAVE_DEBUG),yes)
-	CFLAGS += -O0 # debuggability
+	CFLAGS += -O1 # debuggability
 else
 	CFLAGS += -O3 -funroll-loops # speed
 endif
@@ -59,16 +59,6 @@ uninstall:: ruby-uninstall
 unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
-kloc::
-	wc base/*.[ch] format/*.[cm] bridge/*.c optional/*.c 2>/dev/null
-	wc base/*.rb   format/*.rb   bridge/*.rb devices4ruby/*.rb \
-	optional/*.rb configure extra/*.rb 2>/dev/null
-
-edit::
-	(nedit base/grid.[ch] base/number.c base/flow_objects.c \
-	base/flow_objects.rb base/main.c \
-	*/main.rb base/test.rb &)
-
 CONF = config.make config.h Makefile
 BACKTRACE = ([ -f core ] && gdb `which ruby` core)
 TEST = base/test.rb math
@@ -76,33 +66,6 @@ TEST = base/test.rb math
 test::
 	rm -f core
 	($(RUBY_INSTALL_NAME) -w $(TEST)) || $(BACKTRACE)
-
-VALG = NO_MMX=1 valgrind --suppressions=extra/gf.valgrind2 -v
-VALG += --num-callers=8
-VALG += --show-reachable=yes
-# VALG += --gdb-attach=yes
-
-vtest::
-	rm -f core
-	($(VALG) $(RUBY_INSTALL_NAME) -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
-	less gf-valgrind
-
-vvtest::
-	rm -f core
-	($(VALG) --leak-check=yes $(RUBY_INSTALL_NAME) -w $(TEST) &> gf-valgrind) || $(BACKTRACE)
-	less gf-valgrind
-
-testpd::
-	rm -f gridflow.pd_linux && make && \
-	rm -f /opt/lib/ruby/site_ruby/1.7/i586-linux/gridflow.so && \
-	make && make install && \
-	(pd -path . -lib gridflow test.pd || gdb `which pd` core)
-
-munchies::
-	$(RUBY_INSTALL_NAME) base/test.rb munchies
-
-foo::
-	@echo "LDSOFLAGS = $(LDSOFLAGS)"
 
 #----------------------------------------------------------------#
 
@@ -128,7 +91,7 @@ endif
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): bridge/puredata.c.fcs base/grid.h $(CONF)
-	$(CXX) -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
+	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
 gridflow-for-puredata:: $(PD_LIB)
@@ -146,9 +109,6 @@ puredata-install::
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
 		cp pd_abstractions/\#$$z.pd $(PUREDATA_PATH)/extra/\@$$z.pd; done
-	mkdir -p $(PUREDATA_PATH)/extra/gridflow/icons
-	$(INSTALL_DATA) icons/peephole.gif $(PUREDATA_PATH)/extra/gridflow/icons/peephole.gif
-
 else
 
 gridflow-for-puredata::
