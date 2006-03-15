@@ -13,8 +13,14 @@ sitearch = i686-linux
 RM = rm -f
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
 LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm   -lc
-SRCS = grid.c main.c number.1.c number.2.c number.3.c bitpacking.c flow_objects.c flow_objects_for_image.c flow_objects_for_matrix.c
 CFLAGS += -Wall -Wno-unused -Wunused-variable
+CFLAGS += -fno-omit-frame-pointer -g -fPIC
+ifeq ($(HAVE_DEBUG),yes)
+	CFLAGS += -O1
+else
+	CFLAGS += -O3 -funroll-loops
+endif
+
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 
 # suffixes (not properly used)
@@ -28,7 +34,7 @@ LSUF = .DLL
 ESUF = .EXE
 endif
 
-DLLIB = gridflow.$(LSUF)
+DLLIB = gridflow$(LSUF)
 
 all:: $(DLLIB) gridflow-for-puredata
 
@@ -36,17 +42,12 @@ clean::
 	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
-.SUFFIXES:
-
 %.h.fcs: %.h $(COMMON_DEPS)
 	$(RUBY) -w base/source_filter.rb $< $@
-
 %.c.fcs: %.c $(COMMON_DEPS) base/grid.h.fcs
 	$(RUBY) -w base/source_filter.rb $< $@
-
 %.m.fcs: %.m $(COMMON_DEPS) base/grid.h.fcs
 	$(RUBY) -w base/source_filter.rb $< $@
-
 %.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -c $< -o $@
 %.1.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
@@ -63,16 +64,6 @@ $(DLLIB): $(OBJS)
 	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS) $(LDSOFLAGS) $(LIBS)
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
-
-ifeq ($(HAVE_DEBUG),yes)
-	CFLAGS += -O1 # debuggability
-else
-	CFLAGS += -O3 -funroll-loops # speed
-endif
-
-CFLAGS += -fno-omit-frame-pointer
-CFLAGS += -g    # gdb info
-CFLAGS += -fPIC # some OSes/machines need that for .so files
 
 cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
 	$(RUBY) cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
