@@ -1,5 +1,5 @@
 include config.make
-COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb
+COMMON_DEPS = config.make Makefile base/source_filter.rb
 gfbindir = /home/matju
 
 SHELL = /bin/sh
@@ -163,7 +163,7 @@ $(DLLIB): $(OBJS)
 
 $(OBJS): ruby.h defines.h
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
-include Makefile.gf
+
 RUBY = $(RUBY_INSTALL_NAME)
 ruby-all::
 
