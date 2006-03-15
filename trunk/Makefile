@@ -18,13 +18,13 @@ else
 	CFLAGS += -O3 -funroll-loops
 endif
 
-OBJS += base/main.o base/grid.o base/bitpacking.o \
+OBJS2 = base/main.o base/grid.o base/bitpacking.o \
 base/flow_objects.o \
 base/flow_objects_for_image.o \
 base/flow_objects_for_matrix.o \
 base/number.1.o \
 base/number.2.o \
-base/number.3.o \
+base/number.3.o
 
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 # suffixes (not properly used)
@@ -44,7 +44,7 @@ all:: $(DLLIB) gridflow-for-puredata
 
 clean::
 	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
+	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 .SUFFIXES:
 
@@ -65,9 +65,9 @@ clean::
 %.o: %.m.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
 
-$(DLLIB): $(OBJS)
+$(DLLIB): $(OBJS2) $(OBJS)
 	@-$(RM) $@
-	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS) $(LDSOFLAGS) $(LIBS)
+	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS) $(LIBS)
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
 

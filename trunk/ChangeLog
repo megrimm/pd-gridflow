@@ -2,10 +2,14 @@
 
 version 0.8.2 (2006.03...):
 
+ * Ruby 1.9 required
+ * removed jmax2pd
  * fixes of various compilation problems
- * new object classes: [realtimer], [#export_pix]
+ * new object classes: [realtimer], [#export_pix], [#import_pix],
+   [#border], [#fft]
  * beginning support for LTIlib. new object classes:
    [lti], [lti.meanShiftSegmentation], etc.
+ * added "load" in [gridflow]. (thanks Claude)
 
 version 0.8.1 (2006.02.20):
 
