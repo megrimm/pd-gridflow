@@ -153,15 +153,6 @@ struct GridExport : GridObject {
 	\grin 0
 };
 
-/*
-template <class T>
-static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
-static Ruby INTORFLOAT2NUM(int64   value) {return    gf_ll2num(value);}
-static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
-static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
-static Ruby INTORFLOAT2NUM(ruby    value) {return value.r;}
-*/
-
 GRID_INLET(GridExport,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) {
