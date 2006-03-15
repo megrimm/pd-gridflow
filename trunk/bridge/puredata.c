@@ -717,12 +717,13 @@ extern "C" void gridflow_setup () {
 	char *dirresult = new char[242];
 	char *nameresult;
 	if (getcwd(dirname,242)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
-	int fd = open_via_path(dirname,"gridflow",PDSUF,dirresult,&nameresult,242,1);
-	if (fd) {
-		post("%s was found in %s",nameresult,dirresult);
+	int       fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,242,1);
+	if (fd<0) fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,242,1);
+	if (fd>=0) {
+		post("%s found itself in %s","gridflow"PDSUF,dirresult);
 		close(fd);
 	} else {
-		post("gridflow"PDSUF" was not found via the -path!");
+		post("%s was not found via the -path!","gridflow"PDSUF);
 	}
 	delete[] dirresult;
 	delete[] dirname;
