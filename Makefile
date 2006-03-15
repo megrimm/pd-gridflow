@@ -12,7 +12,7 @@ arch = i686-linux
 sitearch = i686-linux
 RM = rm -f
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
-LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm   -lc
+LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -fno-omit-frame-pointer -g -fPIC -I.
 ifeq ($(HAVE_DEBUG),yes)
@@ -41,6 +41,8 @@ all:: $(DLLIB) gridflow-for-puredata
 clean::
 	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
+
+.SUFFIXES:
 
 %.h.fcs: %.h $(COMMON_DEPS)
 	$(RUBY) -w base/source_filter.rb $< $@
