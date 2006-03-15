@@ -14,10 +14,6 @@ RM = rm -f
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
 LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm   -lc
 SRCS = grid.c main.c number.1.c number.2.c number.3.c bitpacking.c flow_objects.c flow_objects_for_image.c flow_objects_for_matrix.c
-OBJS = base/grid.o base/main.o base/number.1.o base/number.2.o base/number.3.o base/bitpacking.o base/flow_objects.o base/flow_objects_for_image.o base/flow_objects_for_matrix.o cpu/mmx.o cpu/mmx_loader.o optional/usb.o format/x11.o format/opengl.o format/sdl.o format/aalib.o format/jpeg.o format/png.o format/videodev.o format/mpeg3.o format/quicktimehw.o optional/gem.o
-DLLIB = gridflow.so
-CLEANLIBS = gridflow.so
-CLEANOBJS = *.o */*.o *.so
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 
@@ -32,10 +28,12 @@ LSUF = .DLL
 ESUF = .EXE
 endif
 
+DLLIB = gridflow.$(LSUF)
+
 all:: $(DLLIB) gridflow-for-puredata
 
 clean::
-	@-$(RM) $(CLEANLIBS) $(CLEANOBJS)
+	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
 	rm -f $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
 
 .SUFFIXES:
