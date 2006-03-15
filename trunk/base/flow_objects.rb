@@ -89,6 +89,7 @@ FObject.subclass("gridflow",1,1) {
 		post "ruby: %s", s
 		post "returns: %s", eval(s).inspect
 	end
+	def _0_load(s) load s.to_s end
 	add_creator "@global"
 	GridFlow.bind "gridflow", "gridflow" rescue Exception
 }
