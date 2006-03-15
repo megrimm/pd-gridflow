@@ -5,7 +5,7 @@
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
-[ ] [#export_gem] is upside down
+[ ] [#export_gem] is upside down?
 [ ] pd_examples -> examples
 [ ] update doc
 [ ] make good use of the R type (automatic Ruby/C++ convs)
@@ -13,21 +13,12 @@ ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](
 [ ] ...
 claude wants http://en.wikipedia.org/wiki/Graham_scan
 
-X Error of failed request:  BadValue (integer parameter out of range for operation)
-error=0x2
-request=0x91 (MIT-SHM)
-minor=0x3 (X_ShmPutImage)
-value in failed request: 0x04b008 == 240*320*4+8 (matju)
-
-invalid read of size 1 (main.c.fcs:438)
 malloc alignment = 4 mod 8 (en utilisant valgrind)
 
 ClaudiusMaximus matju: feature request:  [#store4], behaves like store but accepts grids 
 of floats as coordinates and interpolate using 4-point interpolation, eg, right inlet -> 
 (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5) outputs (0.5 0.5 0.5) 
 (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
-
-AMD64 diffs: long 4->8, void * 4->8
 
 <ClaudiusMaximus> hmm, sending a [reassign( message to the right inlet of a [#store] segfaults Pd
 <ClaudiusMaximus> hmmm, i get a segfault with a simple patch sending "reassign, put_at ( 0 0 ), reassign" to the right inlet of [#store ( 3 3 # 0 )]
@@ -39,7 +30,6 @@ AMD64 diffs: long 4->8, void * 4->8
 <alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
 
 http://oprofile.sourceforge.net/about/
-for 0.8.0:
 
 drag_rectangle.pd is fucked (x11 error)
 FObject#send_out2 : bself is NULL, rself=4097cbe8
@@ -48,7 +38,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 
 [ ] FIX LIBQUICKTIME CODE: #include <lqt/*> instead of <quicktime/*>
 [ ] try removing or modifying -falign on PPC/OSX
-[ ] c++ typecasting is nuts (see class Pt<T>)
 [ ] make c++ refcount and ruby gc to cooperate.
 [ ] encoding of quicktime RGBA only works with [#cast b].
 [ ] add classmethod support to source filter
@@ -73,7 +62,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] [#import~]
 [ ] [#export~]
 [ ] [#expr]
-[ ] 8-align STACK_ARRAY and ARRAY_NEW ?
 [ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
 [ ] re-enable int64,float64
@@ -87,7 +75,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] unbork make test and plain ruby mode.
 [ ] add support for "anything" methods (def _0_(sel,*a))
 [ ] look into -ftree-vectorize
-[ ] should STACK_ARRAY remain at all?
 
 for 0.8.1:
 
@@ -120,7 +107,6 @@ pick a number: [149]
 [128] jmax2pd(?): loadbang-messages (comma) don't get translated to .pd ??
 [118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
 [117] osx: [#store] crash instead of raising
-[112] Pt<T>: some casts aren't done properly
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
@@ -247,7 +233,7 @@ Architecture
 	  and     _#{i}_-named methods (any selector one inlet)
 [0.8] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
-[ ] lazy grids: Grid#operator Pt<T> makes sure all the grid is received
+[ ] lazy grids: Grid#operator T* makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
 [0.8] accounting: grids messages packets numbers bytes copybytes
@@ -304,13 +290,13 @@ Computation Objects
 Effects
 [ ] #mosaic
 [ ] #gaussian_blur, #sobel, #pixelize, #despeckle (median)
-[ ] #dither, #draw_lines, #draw_points, #fire, #border, #queue
+[ ] #dither, #draw_lines, #draw_points, #fire, #queue
 [ ] #chroma_key: i0=RGBpicture i1=RGBcolor i2=tolerance o0=RGBApicture
         with fuzzy flag; (don't call it #chroma_key though)
 	maybe #mask...
 [ ] turtle (logo style)
 [ ] effectv
-[ ] create abstractions for usage patterns (eg: like @remap_image)
+[ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] see gimp for ideas
 [ ] kaleidoscopes
 [ ] FFTW
@@ -320,6 +306,7 @@ Effects
 [ ] multilinear interpolation (n-dimensional?)
 [ ] #daltonism
 [ ] #perlin ?
+[ ] #centroid should have an arg (int n=2) for number of dimensions (and so number of outlets minus one?)
 
 Input/Output
 [ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
@@ -419,8 +406,6 @@ alx1->matju: détection de plusieurs personnes; détection avec deux caméras
 
 > http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
-
-... I am Jack's Overwritten Stack Pointer...
 
 <ircbridge> <GPS> Tcl_GetObjResult Tcl_GetErrorInfo ...
 <ircbridge> <GPS> Tcl_GetStringResult may also be helpful.  (note I can't
