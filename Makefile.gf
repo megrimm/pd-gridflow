@@ -121,3 +121,9 @@ endif # HAVE_PUREDATA
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
+
+install:
+	@echo -e "\033[0;1;33;41m"
+	@echo -e "1. move this folder to lib/pd/extra or add the folder to -path"
+	@echo -e "2. delete the old gridflow.pd_linux"
+	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
