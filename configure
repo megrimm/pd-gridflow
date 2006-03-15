@@ -296,8 +296,6 @@ FILES = [
 	[:ruby, "server_2.rb"],
 	[:ruby, "server_1_grid.rb"],
 	[:ruby, "server_1_ppm.rb"],
-	[:ruby, "jmax_format.rb"],
-	[:ruby, "puredata_format.rb"],
   ],
 ]
 
@@ -1019,7 +1017,6 @@ def make_makefile f
     f.puts "ruby-all::", ""
     f.puts "ruby-install::"
     my_install_files(f,"",FILES)
-    f.puts "\tcp bin/jmax2pd $(gfbindir); chmod 755 $(gfbindir)/jmax2pd\n"
     f.puts
     f.puts "ruby-uninstall::"
     my_uninstall_files(f,"",FILES)
