@@ -14,7 +14,7 @@ RM = rm -f
 LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
 LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm   -lc
 CFLAGS += -Wall -Wno-unused -Wunused-variable
-CFLAGS += -fno-omit-frame-pointer -g -fPIC
+CFLAGS += -fno-omit-frame-pointer -g -fPIC -I.
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O1
 else
