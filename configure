@@ -1010,6 +1010,10 @@ File.open("./config.make","w") {|f|
     base/flow_objects_for_matrix.c)
   f.puts "SOURCES = #{$sources.join(" ")}"
   f.puts "CXX = #{$conf[:CC]}"
+  $objs = $sources.map {|i| i.sub(/.[cm]$/,".o") }
+  $objs[$objs.index("base/number.o"),1] = (1..3).map {|i| "base/number.#{i}.o" }
+  $objs.concat $conf[:OBJS]
+  f.puts "OBJS = #{$objs.join(" ")}"
   f.puts ""
 
 } # end open config.make
@@ -1043,11 +1047,7 @@ f.puts "
 } # end open config.h
 
 #--------------------------------#
-$objs = $sources.collect{|i| i.sub(/.[cm]$/,".o") }
-$objs[$objs.index("base/number.o"),1] = (1..3).map {|i| "base/number.#{i}.o" }
-# comp.sub!(/\(CC\)/,'(CXX)')
-#mf.sub! /CC = gcc\n(CXX.*\n)?/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
-#mf.sub! /CC = gcc\n/, "CC = gcc\nCXX = #{$conf[:CC]}\n"
+
 #mf.sub! /^(OBJS = .*)$/, "\\1 #{$conf[:OBJS].join' '}"
 #mf[0,0] = "COMMON_DEPS = config.make Makefile Makefile.gf base/source_filter.rb\n"+
 #	"gfbindir = #{$conf[:BINDIR]}\n"
