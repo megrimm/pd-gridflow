@@ -28,6 +28,8 @@ end
 
 require "rbconfig"
 require "ftools"
+$CFLAGS = "" if not $CFLAGS
+$LDFLAGS="" if not $LDFLAGS
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 
@@ -242,7 +244,6 @@ def prepend_path base
 		$C_INCLUDE_PATH.unshift bi
 	end
 end
-prepend_path "/Applications/Pd.app/Contents/Resources" if OSX
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
 prepend_path ENV["HOME"]
@@ -256,7 +257,6 @@ $conf[:BINDIR] = make_expand CONFIG['bindir']
 
 LOG.puts "-"*64
 
-$CFLAGS = "" if not $CFLAGS
 $CFLAGS += " -xc++ -fno-operator-names -fno-omit-frame-pointer"
 $CFLAGS += " -I/usr/X11R6/include"
 $C_INCLUDE_PATH.unshift "/usr/X11R6/include"
@@ -981,8 +981,6 @@ def my_uninstall_files(f,base,entries,obase="$(sitelibdir)/gridflow/#{base}")
   }
 end
 
-$LDFLAGS="" if not $LDFLAGS
-
 puts "generating ./config.make"
 File.open("./config.make","w") {|f|
 
@@ -1010,6 +1008,7 @@ File.open("./config.make","w") {|f|
     base/flow_objects_for_image.c
     base/flow_objects_for_matrix.c)
   f.puts "SOURCES = #{$sources.join(" ")}"
+  f.puts "CXX = #{$conf[:CC]}"
   f.puts ""
 
 } # end open config.make
