@@ -153,17 +153,19 @@ struct GridExport : GridObject {
 	\grin 0
 };
 
+/*
 template <class T>
 static Ruby INTORFLOAT2NUM(T       value) {return      INT2NUM(value);}
 static Ruby INTORFLOAT2NUM(int64   value) {return    gf_ll2num(value);}
 static Ruby INTORFLOAT2NUM(float32 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(float64 value) {return rb_float_new(value);}
 static Ruby INTORFLOAT2NUM(ruby    value) {return value.r;}
+*/
 
 GRID_INLET(GridExport,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) {
-		Ruby a[] = { INT2NUM(0), INTORFLOAT2NUM(data[i]) };
+		Ruby a[] = { INT2NUM(0), R(data[i]).r };
 		send_out(COUNT(a),a);
 	}
 } GRID_END
@@ -190,7 +192,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ary_store(list,1,bsym._list);
 } GRID_FLOW {
 	for (int i=0; i<n; i++, data++)
-		rb_ary_store(list,in->dex+i+2,INTORFLOAT2NUM(*data));
+		rb_ary_store(list,in->dex+i+2,R(*data).r);
 } GRID_FINISH {
 	send_out(rb_ary_len(list),rb_ary_ptr(list));
 	list = 0;

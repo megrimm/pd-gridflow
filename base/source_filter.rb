@@ -174,7 +174,11 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-	Out.print ");"
+        if m.rettype=="R"
+	  Out.print ").r;"
+	else
+	  Out.print ");"
+	end
 	Out.print "self->check_magic();"
 	Out.print "return Qnil;" if m.rettype=="void"
 	Out.print "return foo;" if m.rettype!="void" ###
