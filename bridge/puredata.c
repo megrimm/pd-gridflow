@@ -717,16 +717,14 @@ extern "C" void gridflow_setup () {
 	char *dirresult = new char[242];
 	char *nameresult;
 	if (getcwd(dirname,242)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
-	int       fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,242,1);
-	if (fd<0) fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,242,1);
+	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,242,1);
+	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,242,1);
 	if (fd>=0) {
 		post("%s found itself in %s","gridflow"PDSUF,dirresult);
 		close(fd);
 	} else {
 		post("%s was not found via the -path!","gridflow"PDSUF);
 	}
-	delete[] dirresult;
-	delete[] dirname;
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. don't we love pd */
 
 	ruby_init();
@@ -742,6 +740,10 @@ extern "C" void gridflow_setup () {
 	mGridFlow2 = EVAL(
 		"module GridFlow; class<<self; attr_reader :bridge_name; end; "
 		"@bridge_name = 'puredata'; self end");
+	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
+	EVAL("STDERR.puts \"DIR = #{GridFlow::DIR}\"");
+	EVAL("$:.unshift GridFlow::DIR");
+
 	post("(done)");
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
@@ -752,4 +754,6 @@ extern "C" void gridflow_setup () {
 	}
 	bindpatcher = class_new(gensym("bindpatcher"),
 		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
+	delete[] dirresult;
+	delete[] dirname;
 }
