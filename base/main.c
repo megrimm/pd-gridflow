@@ -271,12 +271,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 }
 
 \def R total_time_get () {return total_time;}
-
-\def Ruby total_time_set (Ruby x) {
-	if (argc<1) RAISE("muh");
-	total_time = TO(uint64,x);
-	return argv[0];
-}
+\def R total_time_set (Ruby x) {return total_time = TO(uint64,x);}
 
 \def void delete_m () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
