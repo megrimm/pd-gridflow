@@ -562,6 +562,7 @@ GRID_INLET(DrawImage,0) {
 	NOTEMPTY(position);
 	SAME_TYPE(in,image);
 	if (in->dim->n!=3) RAISE("expecting 3 dimensions");
+	if (image->dim->n!=3) RAISE("expecting 3 dimensions in right_hand");
 	int lchan = in->dim->get(2);
 	int rchan = image->dim->get(2);
 	if (alpha && rchan!=4) {
