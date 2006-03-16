@@ -240,6 +240,7 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
 
+struct Numop;
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
@@ -259,6 +260,8 @@ typedef struct R {
 		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
 		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
 #endif
+	R(Numop *x);
+
 	operator bool () {
 		if (r==Qtrue) return true;
 		if (r==Qfalse) return false;
@@ -644,6 +647,8 @@ EACH_NUMBER_TYPE(FOO)
 	}
 };
 \end class
+
+inline R::R(Numop *x) {r=x->sym;}
 
 extern NumberType number_type_table[];
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}

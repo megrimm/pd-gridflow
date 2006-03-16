@@ -95,11 +95,13 @@ end
 def where; "[#{ARGV[0]}:#{$linenumber}]" end
 
 def handle_attr(line)
+	frame = $stack[-1]
 	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
 	name = type.slice!(/\w+$/)
 	raise "missing \\class #{where}" if
-		not $stack[-1] or not ClassDecl===$stack[-1]
-	$stack[-1].attrs[name]=Arg.new(type,name,nil)
+		not $stack[-1] or not ClassDecl===frame
+	handle_decl "void ___get(Symbol s);" if frame.attrs.size==0
+	frame.attrs[name]=Arg.new(type,name,nil)
 	Out.print line.gsub(/\/\/.*$/,"") # hack!
 	handle_decl "void _0_#{name} (#{type} #{name});"
 end
@@ -207,7 +209,10 @@ def handle_classinfo(line)
 	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
 #	STDERR.puts "attributes: "+
+	get="void ___get(Symbol s) {"
+	get << "Ruby _r_[3]={INT2NUM(convert(rb_ivar_get(rb_obj_class(rself),SI(@noutlets)),(int*)0)-1),s,Qnil};"
 	frame.attrs.each {|name,attr|
+		get << "if (s==SYM(#{name})) _r_[2]=R(#{name}).r; else "
 		if frame.methods["_0_"+name].done then
 			STDERR.puts "skipping already defined \\attr #{name}"
 			next
@@ -223,6 +228,10 @@ def handle_classinfo(line)
 	startup2 += "}"
 	line.gsub!(/{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
 		raise "\startup line should have a '{' (sorry)"
+
+	get << "RAISE(\"unknown attr %s\",rb_sym_name(s)); send_out(3,_r_);}"
+	handle_def get if frame.attrs.size>0
+
 	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
 end
 
