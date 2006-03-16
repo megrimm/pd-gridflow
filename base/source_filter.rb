@@ -28,7 +28,8 @@ $classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:static)
-Arg = Struct.new(:type,:name,:default)
+Arg  = Struct.new(:type,:name,:default)
+Attr = Struct.new(:type,:name,:default,:virtual)
 
 class MethodDecl
 	def ==(o)
@@ -95,30 +96,37 @@ end
 def where; "[#{ARGV[0]}:#{$linenumber}]" end
 
 def handle_attr(line)
+	line.gsub!(/\/\/.*$/,"") # remove comment
 	frame = $stack[-1]
 	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
+	virtual = !!type.slice!(/\(\)$/)
 	name = type.slice!(/\w+$/)
 	raise "missing \\class #{where}" if
 		not $stack[-1] or not ClassDecl===frame
 	handle_decl "void ___get(Symbol s);" if frame.attrs.size==0
-	frame.attrs[name]=Arg.new(type,name,nil)
-	Out.print line.gsub(/\/\/.*$/,"") # hack!
+	frame.attrs[name]=Attr.new(type,name,nil,virtual)
+	if virtual then
+		handle_decl "#{type} #{name}();"
+	else
+		Out.print line
+	end
 	handle_decl "void _0_#{name} (#{type} #{name});"
 end
 
 def handle_decl(line)
+	frame = $stack[-1]
 	raise "missing \\class #{where}" if
-		not $stack[-1] or not ClassDecl===$stack[-1]
-	classname = $stack[-1].name
+		not frame or not ClassDecl===frame
+	classname = frame.name
 	m = parse_methoddecl(line,";\s*$")
-	$stack[-1].methods[m.selector] = m
+	frame.methods[m.selector] = m
 
 	Out.print "static " if m.static
-	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
+	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print "," if m.arglist.length>0
 	Out.print "#{unparse_arglist m.arglist});"
 	Out.print "static Ruby #{m.selector}_wrap"+
-	"(int argc, Ruby *argv, Ruby rself); "
+	"(VA, Ruby rself); "
 end
 
 def handle_def(line)
@@ -139,7 +147,7 @@ def handle_def(line)
 	end
 
 	Out.print "Ruby #{classname}::#{m.selector}_wrap"+
-	"(int argc, Ruby *argv, Ruby rself) {"+
+	"(VA, Ruby rself) {"+
 	"static const char *methodspec = "+
 	"\"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"+
 	"DGS(#{classname});"
@@ -171,7 +179,7 @@ def handle_def(line)
 	}
 
 #	Out.print "return " if m.rettype!="void"
-	Out.print "VALUE foo = " if m.rettype!="void" ###
+	Out.print "#{m.rettype} foo = " if m.rettype!="void" ###
 
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -187,9 +195,15 @@ def handle_def(line)
 	  Out.print ");"
 	end
 	Out.print "self->check_magic();"
-	Out.print "return Qnil;" if m.rettype=="void"
-	Out.print "return foo;" if m.rettype!="void" ###
-	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
+	
+	case m.rettype
+	when "void": Out.print "return Qnil;"
+	when "Ruby": Out.print "return foo;"
+	else 
+		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
+		Out.print "return R(foo).r;"
+	end
+	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
 	Out.print "," if m.arglist.length>0
 	Out.print "#{unparse_arglist m.arglist, false})#{term} "
 	qlass.methods[m.selector].done=true
@@ -212,7 +226,8 @@ def handle_classinfo(line)
 	get="void ___get(Symbol s) {"
 	get << "Ruby _r_[3]={INT2NUM(convert(rb_ivar_get(rb_obj_class(rself),SI(@noutlets)),(int*)0)-1),s,Qnil};"
 	frame.attrs.each {|name,attr|
-		get << "if (s==SYM(#{name})) _r_[2]=R(#{name}).r; else "
+		virtual = if attr.virtual then "(0,0)" else "" end
+		get << "if (s==SYM(#{name})) _r_[2]=R(#{name}#{virtual}).r; else "
 		if frame.methods["_0_"+name].done then
 			STDERR.puts "skipping already defined \\attr #{name}"
 			next
