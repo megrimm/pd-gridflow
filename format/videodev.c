@@ -270,7 +270,7 @@ struct FormatVideoDev : Format {
 	int fd = GETFD;
 	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
 	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-	if (((int)image)<=0) {image=0; RAISE("mmap: %s", strerror(errno));}
+	if (((int)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 }
 
 \def void frame_ask () {
