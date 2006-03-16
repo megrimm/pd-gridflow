@@ -22,27 +22,31 @@
 #include "../base/grid.h.fcs"
 #include <fftw3.h>
 
+#define CHECK_ALIGN(d,nt) \
+	{int bytes = 16; \
+	int align = ((long)(void*)d)%bytes; \
+	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+		INFO(this), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
+
 \class GridFFT < GridObject
 struct GridFFT : GridObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input */
 	\attr int sign; /* -1 or +1 */
 	\attr int skip; /* 0.. */
-	\decl void _0_sign (int v);
-	\decl void _0_skip (int v);
 	\decl void initialize ();
 	\grin 0 float
 };
 
-\def void _0_sign (int v) {
-	if (v!=-1 && v!=1) RAISE("sign should be -1 or +1");
-	sign=v;
+\def void _0_sign (int sign) {
+	if (sign!=-1 && sign!=1) RAISE("sign should be -1 or +1");
+	this->sign=sign;
 	fftwf_destroy_plan(plan);
 }
 
-\def void _0_skip (int v) {
-	if (v<0 || v>1) RAISE("skip should be 0 or 1");
-	skip=v;
+\def void _0_skip (int skip) {
+	if (skip<0 || skip>1) RAISE("skip should be 0 or 1");
+	this->skip=skip;
 	fftwf_destroy_plan(plan);
 }
 
@@ -56,6 +60,8 @@ GRID_INLET(GridFFT,0) {
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
 	float32 *buf = new float32[n];
+	CHECK_ALIGN(data,in->nt)
+	CHECK_ALIGN(buf, in->nt)
 	if (plan && lastdim && lastdim!=in->dim) fftwf_destroy_plan(plan);
 	fftwf_complex *ip = (fftwf_complex *)data;
 	fftwf_complex *op = (fftwf_complex *)buf;
