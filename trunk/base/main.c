@@ -534,8 +534,6 @@ Ruby GridFlow_profiler_reset2 (Ruby rself) {
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
-void startup_flow_objects_for_image();
-void startup_flow_objects_for_matrix();
 
 Ruby cFormat;
 
@@ -610,8 +608,6 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	startup_flow_objects_for_image();
-	startup_flow_objects_for_matrix();
 	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
