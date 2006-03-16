@@ -209,13 +209,20 @@ def handle_classinfo(line)
 #	STDERR.puts "attributes: "+
 	frame.attrs.each {|name,attr|
 		if frame.methods["_0_"+name].done then
-			STDERR.puts "skipping already defined \attr #{name}"
+			STDERR.puts "skipping already defined \\attr #{name}"
 			next
 		end
 		type,name,default = attr.to_a
 		#STDERR.puts "type=#{type} name=#{name} default=#{default}"
 		handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
 	}
+	startup2 = "@gfattrs = {"
+	frame.attrs.each {|name,attr|
+		startup2 += ":#{name} => [],"
+	}
+	startup2 += "}"
+	line.gsub!(/{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
+		raise "\startup line should have a '{' (sorry)"
 	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
 end
 
