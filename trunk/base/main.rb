@@ -155,7 +155,6 @@ class FObject
 		# per-class
 		attr_reader :ninlets
 		attr_reader :noutlets
-		attr_reader :gfattrs # should it recurse into superclasses?
 		attr_accessor :do_loadbangs
 		attr_accessor :comment
 		def foreign_name; @foreign_name if defined? @foreign_name end
@@ -172,12 +171,14 @@ class FObject
 			@doc_out[selector] = text
 		end
 		def inspect; foreign_name or super; end
+		# should it recurse into superclasses?
+		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
 	end
 	def self.help
 		gfattrs.each{|x,v|
-			s =     "attr=%.8s" % x
-			s <<    "type=%.8s" % v[0] if v[0]
-			s << "default=%.8s" % v[1] if v[1]
+			s =      "attr=%-8s" % x
+			s <<    " type=%-8s" % v[0] if v[0]
+			s << " default=%-8s" % v[1] if v[1]
 			GridFlow.post "%s", s
 		}
 		GridFlow.post "total %d attributes", gfattrs.length
