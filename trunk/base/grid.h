@@ -61,7 +61,7 @@ extern "C" {
 #define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
-#define RAISE(args...) rb_raise(rb_eArgError,args)
+#define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
 #else
 #define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
 #endif
@@ -73,6 +73,7 @@ void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
 __attribute__ ((noreturn));
 };
+#define VA int argc, Ruby *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
 #define DGS(_class_) \
