@@ -37,9 +37,16 @@ class MethodDecl
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
+	attr_accessor:done
 end
 
-class Arg; def ==(o) type==o.type && name==o.name end end
+class Arg
+  def canon(type)
+    type="Grid *" if type=="PtrGrid"
+    type
+  end
+  def ==(o) canon(type)==canon(o.type) && name==o.name end
+end
 
 In = File.open ARGV[0], "r"
 Out = File.open ARGV[1], "w"
@@ -51,7 +58,7 @@ def handle_class(line)
 	q=ClassDecl.new($1,$2,{},{},{},false)
 	$stack << q
 	$classes << q
-	Out.puts ""
+	Out.print "/* begin class */"
 end
 
 def parse_methoddecl(line,term)
@@ -80,7 +87,7 @@ end
 def unparse_arglist(arglist,with_default=true)
 	arglist.map {|arg|
 		x="#{arg.type} #{arg.name}"
-		x<<'='<<arg.default if with_default and arg.default
+		x << '=' << arg.default if with_default and arg.default
 		x
 	}.join(", ")
 end
@@ -94,8 +101,7 @@ def handle_attr(line)
 		not $stack[-1] or not ClassDecl===$stack[-1]
 	$stack[-1].attrs[name]=Arg.new(type,name,nil)
 	Out.print line.gsub(/\/\/.*$/,"") # hack!
-	handle_decl "void _0_#{name}_m (#{type} #{name});"
-#	Out.puts "# #{$linenumber}"
+	handle_decl "void _0_#{name} (#{type} #{name});"
 end
 
 def handle_decl(line)
@@ -109,9 +115,8 @@ def handle_decl(line)
 	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
 	Out.print "#{unparse_arglist m.arglist});"
-	Out.puts "static Ruby #{m.selector}_wrap"+
-	"(int argc, Ruby *argv, Ruby rself);//FCS"
-#	Out.puts "# #{$linenumber}"
+	Out.print "static Ruby #{m.selector}_wrap"+
+	"(int argc, Ruby *argv, Ruby rself); "
 end
 
 def handle_def(line)
@@ -184,7 +189,8 @@ def handle_def(line)
 	Out.print "return foo;" if m.rettype!="void" ###
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
-	Out.puts "#{unparse_arglist m.arglist, false})#{term}//FCS"
+	Out.print "#{unparse_arglist m.arglist, false})#{term} "
+	qlass.methods[m.selector].done=true
 end
 
 def handle_classinfo(line)
@@ -200,7 +206,17 @@ def handle_classinfo(line)
 	}.join(",")
 	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
-	Out.puts "void #{frame.name}_startup (Ruby rself) "+line
+#	STDERR.puts "attributes: "+
+	frame.attrs.each {|name,attr|
+		if frame.methods["_0_"+name].done then
+			STDERR.puts "skipping already defined \attr #{name}"
+			next
+		end
+		type,name,default = attr.to_a
+		#STDERR.puts "type=#{type} name=#{name} default=#{default}"
+		handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
+	}
+	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
 end
 
 def handle_grin(line)
@@ -228,7 +244,7 @@ def handle_end(line)
 		frame.attrs.each {|name,attr|
 			type,name,default = attr.to_a
 			#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-			handle_def "void _0_#{name}_m (#{type} #{name}) { this->#{name}=#{name}; }"
+			#handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
 		}
 		frame.grins.each {|i,v|
 			cli = "#{cl}::grinw_#{i}"
@@ -251,7 +267,7 @@ def handle_end(line)
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
 	end
-	Out.puts ""
+	Out.print " /*end class*/ "
 end
 
 def handle_startall(line)
@@ -263,11 +279,9 @@ def handle_startall(line)
 			Out.print "Qnil);"
 		end
 	}
-	Out.puts ""
 end
 
 def handle_ruby(line)
-	Out.puts ""
 	$stack.push :ruby
 end
 
@@ -279,6 +293,7 @@ loop{
 	if /^\s*\\(\w+)\s*(.*)$/.match x then
 		begin
 			send("handle_#{$1}",$2)
+			Out.puts "//FCS"
 		rescue StandardError => e
 			STDERR.puts e.inspect, "at line #{$linenumber}", e.backtrace
 			File.unlink ARGV[1]
