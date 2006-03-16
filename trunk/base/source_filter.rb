@@ -198,7 +198,7 @@ def handle_def(line)
 	
 	case m.rettype
 	when "void": Out.print "return Qnil;"
-	when "Ruby": Out.print "return foo;"
+	when "Ruby","Symbol","Array","String": Out.print "return foo;"
 	else 
 		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
 		Out.print "return R(foo).r;"
