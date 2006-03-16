@@ -105,7 +105,6 @@ struct FormatX11 : Format {
 	\decl void _0_setcursor (int shape);
 	\decl void _0_hidecursor ();
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
-	\decl void _0_fall_thru (int flag);
 	\decl void _0_transfer (Symbol s);
 	\decl void _0_title (String s=Qnil);
 	\grin 0 int
@@ -370,7 +369,12 @@ void FormatX11::resize_window (int sx, int sy) {
 			CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
 		set_wm_hints();
-		_0_fall_thru(0,0,is_owner);
+
+		XSelectInput(display, window,
+			ExposureMask|StructureNotifyMask|PointerMotionMask|
+			ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+			KeyPressMask|KeyReleaseMask);
+
 		if (is_owner) XMapRaised(display, window);
 		imagegc = XCreateGC(display, window, 0, NULL);
 		if (visual->c_class == PseudoColor) prepare_colormap(); 
@@ -528,15 +532,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
-	XFlush(display);
-}
-
-\def void _0_fall_thru (int flag) {
-	int mask = ExposureMask | StructureNotifyMask;
-	if (flag) mask |= ExposureMask|StructureNotifyMask|PointerMotionMask|
-		ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-		KeyPressMask|KeyReleaseMask;
-	XSelectInput(display, window, mask);
 	XFlush(display);
 }
 
