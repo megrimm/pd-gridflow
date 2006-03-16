@@ -306,13 +306,14 @@ GridPack.subclass("@eight",8,1) { install_rgrid 0; def initialize() super 2 end 
 GridObject.subclass("#unpack",1,0) {
   install_rgrid 0, true
   def initialize(n=2)
+    super
     @n=n
     n>=10 and raise "too many outlets"
-    super
   end
   def initialize2; add_outlets @n end
   def _0_rgrid_begin
-    inlet_dim(0)==[@n] or raise "expecting Dim[#{@n}], got Dim#{@dim}"
+    dim = inlet_dim(0)
+    dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim}"
     inlet_set_factor 0,@n
   end
   def _0_rgrid_flow data
