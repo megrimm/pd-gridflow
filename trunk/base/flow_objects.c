@@ -92,7 +92,6 @@ struct GridImport : GridObject {
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() {}
 	\decl void initialize(Ruby x, NumberTypeE cast=int32_e);
-	\decl void _0_cast(NumberTypeE cast);
 	\decl void _0_reset();
 	\decl void _0_symbol(Symbol x);
 	\decl void _0_list(...);
@@ -118,8 +117,6 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,(uint8 *)name);
 }
-
-\def void _0_cast(NumberTypeE cast) { this->cast = cast; }
 
 \def void _0_list(...) {
 	if (in.size()<1 || !in[0]) _0_grid(0,0); //HACK: enable grid inlet...
@@ -208,7 +205,6 @@ struct GridStore : GridObject {
 	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
 	\decl void _0_bang ();
-	\decl void _0_op (Numop *op);
 	\decl void _1_reassign ();
 	\decl void _1_put_at (Grid *index);
 	\grin 0 int
@@ -368,7 +364,6 @@ GRID_INLET(GridStore,1) {
 	}
 	end:;
 } GRID_END
-\def void _0_op(Numop *op) { this->op=op; }
 \def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
 \def void _1_reassign () { put_at=0; }
 \def void _1_put_at (Grid *index) { put_at=index; }
@@ -390,7 +385,6 @@ struct GridOp : GridObject {
 	\decl void initialize(Numop *op, Grid *r=0);
 	\grin 0
 	\grin 1
-	\decl void _0_op(Numop *op);
 };
 
 GRID_INLET(GridOp,0) {
@@ -433,7 +427,6 @@ GRID_INLET(GridOp,0) {
 } GRID_END
 
 GRID_INPUT2(GridOp,1,r) {} GRID_END
-\def void _0_op(Numop *op) { this->op=op; }
 \def void initialize(Numop *op, Grid *r=0) {
   rb_call_super(argc,argv); this->op=op;
   this->r=r?r:new Grid(new Dim(),int32_e,true);
@@ -447,8 +440,6 @@ struct GridFold : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
 	\decl void initialize (Numop *op);
-	\decl void _0_op (Numop *op);
-	\decl void _0_seed (Grid *seed);
 	\grin 0
 };
 
@@ -482,8 +473,6 @@ GRID_INLET(GridFold,0) {
 	out->send(nn/yn,buf);
 } GRID_END
 
-\def void _0_op   (Numop *op ) { this->op  =op;   }
-\def void _0_seed (Grid *seed) { this->seed=seed; }
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
 \classinfo { IEVAL(rself,"install '#fold',1,1"); }
 \end class GridFold
@@ -493,8 +482,6 @@ struct GridScan : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
 	\decl void initialize (Numop *op);
-	\decl void _0_op (Numop *op);
-	\decl void _0_seed (Grid *seed);
 	\grin 0
 };
 
@@ -524,8 +511,6 @@ GRID_INLET(GridScan,0) {
 	out->send(n,buf);
 } GRID_END
 
-\def void _0_op   (Numop *op ) { this->op  =op;   }
-\def void _0_seed (Grid *seed) { this->seed=seed; }
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op = op; }
 \classinfo { IEVAL(rself,"install '#scan',1,1"); }
 \end class GridScan
@@ -534,16 +519,13 @@ GRID_INLET(GridScan,0) {
 //{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }
 \class GridInner < GridObject
 struct GridInner : GridObject {
-	\attr Numop *op_para;
-	\attr Numop *op_fold;
+	\attr Numop *op;
+	\attr Numop *fold;
 	\attr PtrGrid seed;
 	PtrGrid r;
 	PtrGrid r2;
 	GridInner() {}
 	\decl void initialize (Grid *r=0);
-	\decl void _0_op   (Numop *op);
-	\decl void _0_fold (Numop *op);
-	\decl void _0_seed (Grid *seed);
 	\grin 0
 	\grin 1
 };
@@ -599,8 +581,8 @@ GRID_INLET(GridInner,0) {
 			case 4:  inner_child_b<T,4>(buf,data+i,rrows,chunk); break;
 			default: inner_child_a(buf,data+i,rrows,rcols,chunk);
 			}
-			op_para->zip(chunk*rcols,buf,(T *)*r2+i*off*rcols);
-			op_fold->zip(chunk*rcols,buf2,buf);
+			op->zip(chunk*rcols,buf,(T *)*r2+i*off*rcols);
+			fold->zip(chunk*rcols,buf2,buf);
 		}
 		out->send(chunk*rcols,buf2);
 		n-=chunk*rrows;
@@ -614,15 +596,12 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 
 \def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	this->op_para = op_mul;
-	this->op_fold = op_add;
+	this->op = op_mul;
+	this->fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
 	this->r    = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\def void _0_op   (Numop *op ) { this->op_para=op; }
-\def void _0_fold (Numop *op ) { this->op_fold=op; }
-\def void _0_seed (Grid *seed) { this->seed=seed; }
 \classinfo { IEVAL(rself,"install '#inner',2,1"); }
 \end class GridInner
 
@@ -1224,8 +1203,8 @@ struct PlanEntry { int y,x; bool neutral; };
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
-	\attr Numop *op_para;
-	\attr Numop *op_fold;
+	\attr Numop *op;
+	\attr Numop *fold;
 	\attr PtrGrid seed;
 	\attr PtrGrid b;
 	PtrGrid a;
@@ -1234,9 +1213,6 @@ struct GridConvolve : GridObject {
 	int margx,margy; // margins
 	GridConvolve () : plan(0) { b.constrain(expect_convolution_matrix); plan=0; }
 	\decl void initialize (Grid *r=0);
-	\decl void _0_op   (Numop *op);
-	\decl void _0_fold (Numop *op);
-	\decl void _0_seed (Grid *seed);
 	\grin 0
 	\grin 1
 	template <class T> void copy_row (T *buf, int sx, int y, int x);
@@ -1269,13 +1245,13 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	for (int y=0; y<dby; y++) {
 		for (int x=0; x<dbx; x++) {
 			T rh = ((T *)*b)[y*dbx+x];
-			bool neutral = op_para->on(rh)->is_neutral(rh,at_right);
-			bool absorbent = op_para->on(rh)->is_absorbent(rh,at_right);
+			bool neutral = op->on(rh)->is_neutral(rh,at_right);
+			bool absorbent = op->on(rh)->is_absorbent(rh,at_right);
 			T foo[1];
 			if (absorbent) {
 				foo[0] = 0;
-				op_para->map(1,foo,rh);
-				absorbent = op_fold->on(rh)->is_neutral(foo[0],at_right);
+				op->map(1,foo,rh);
+				absorbent = fold->on(rh)->is_neutral(foo[0],at_right);
 			}
 			if (absorbent) continue;
 			plan[i].y = y;
@@ -1323,9 +1299,9 @@ GRID_INLET(GridConvolve,0) {
 			T rh = ((T *)*b)[jy*dbx+jx];
 			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
 				copy_row(buf2,sx,iy+jy-margy,-margx);
-				if (!plan[i].neutral) op_para->map(n2,buf2,rh);
+				if (!plan[i].neutral) op->map(n2,buf2,rh);
 			}
-			op_fold->zip(n,buf,buf2+jx*a->dim->prod(2));
+			fold->zip(n,buf,buf2+jx*a->dim->prod(2));
 			orh=rh;
 		}
 		out->send(n,buf);
@@ -1335,14 +1311,10 @@ GRID_INLET(GridConvolve,0) {
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void _0_op   (Numop *op ) { this->op_para=op; }
-\def void _0_fold (Numop *op ) { this->op_fold=op; }
-\def void _0_seed (Grid *seed) { this->seed=seed; }
-
 \def void initialize (Grid *r) {
 	rb_call_super(argc,argv);
-	this->op_para = op_mul;
-	this->op_fold = op_add;
+	this->op = op_mul;
+	this->fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
 	this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
 }
@@ -1687,8 +1659,6 @@ struct DrawImage : GridObject {
 	}
 
 	\decl void initialize (Numop *op, Grid *image=0, Grid *position=0);
-	\decl void _0_alpha (bool v=true);
-	\decl void _0_tile (bool v=true);
 	\grin 0
 	\grin 1
 	\grin 2 int32
@@ -1777,8 +1747,6 @@ GRID_INLET(DrawImage,0) {
 
 GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
-\def void _0_alpha (bool v=true) { alpha = v; gfpost("ALPHA=%d",v); }
-\def void _0_tile (bool v=true) {   tile = v; }
 
 \def void initialize (Numop *op, Grid *image, Grid *position) {
 	rb_call_super(argc,argv);
