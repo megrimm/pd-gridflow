@@ -115,7 +115,7 @@ end
 class ChoiceTypeBase; include Type, Nameable
 	attr_reader :index_to_val, :val_to_index
 
-	class<<self
+	class<< self
 		alias [] new
 		alias of new
 	end
@@ -169,7 +169,8 @@ class MultiChoiceType < ChoiceTypeBase; #extend Template
 
 	def initialize(*a)
 		super
-		@int_type = Uint32
+		#@int_type = Uint32
+		@int_type = Integer
 		@range = 0...1<<@index_to_val.length
 	end
 
@@ -190,7 +191,7 @@ end
 # Any, List
 
 class Any; include Type, Nameable, Contract; extend Template
-	class<<self
+	class<< self
 		alias instantiate_template new
 	end
 	def initialize(*alternatives)
@@ -214,7 +215,7 @@ end
 class List; include Type, Nameable, Contract; extend Template
 	attr_reader :element_type, :length, :options
 
-	class<<self
+	class<< self
 		alias instantiate_template new
 	end
 	def initialize(element_type,length=nil,options=nil)
@@ -240,7 +241,7 @@ end
 
 # subclasses must define #form.
 class FormBase
-	class<<self
+	class<< self
 		alias [] new
 		attr_reader :fields
 	end
@@ -253,7 +254,7 @@ end
 
 class Form < FormBase; extend Type; end
 
-class<<Form # metaclass
+class<< Form # metaclass
 
 	attr_reader :minimum_args
 
@@ -351,7 +352,7 @@ end
 # this is because of a chicken-and-egg issue.
 #!@#$ really? something can be done here.
 class Slot < Form
-	class<<self; alias [] new; end
+	class<< self; alias [] new; end
 	def sym    ; @form[0]; end
 	def vtype  ; @form[1]; end
 	def options; @form[2]; end
