@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -238,9 +238,17 @@ GridObject.subclass("#in",1,2) {
 	def _0_reset; check_file_open; @format.seek 0; end
 	def _1_grid(*a) send_out 0,:grid,*a end
 	def _0_load(*a); _0_open(*a); _0_bang; _0_close end
-	def _0_get s=nil
+	def _0_get(s=nil)
+		super
+		return if not @format
 		if s then @format._0_get s else @format._0_get end
 	end
+	def _0_help()
+		super
+		if not @format then GridFlow.post "no file or device currently open." end
+		@format._0_help
+	end
+
 }
 
 GridObject.subclass("#out",1,1) {
