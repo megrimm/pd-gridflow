@@ -238,6 +238,9 @@ GridObject.subclass("#in",1,2) {
 	def _0_reset; check_file_open; @format.seek 0; end
 	def _1_grid(*a) send_out 0,:grid,*a end
 	def _0_load(*a); _0_open(*a); _0_bang; _0_close end
+	def _0_get s=nil
+		if s then @format._0_get s else @format._0_get end
+	end
 }
 
 GridObject.subclass("#out",1,1) {
