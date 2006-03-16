@@ -117,7 +117,8 @@ self.post_header = "[gf] "
 def self.gfpost2(fmt,s); post("%s",s) end
 
 if GridFlow.bridge_name then
-  post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
+  post "This is GridFlow #{GridFlow::GF_VERSION} within "+
+	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
   post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
 end
 
@@ -148,12 +149,13 @@ end
 class FObject
 	@broken_ok = false
 	@do_loadbangs = true
-	class<<self
+	class << self
 		# global
 		attr_accessor :broken_ok
 		# per-class
 		attr_reader :ninlets
 		attr_reader :noutlets
+		attr_reader :gfattrs # should it recurse into superclasses?
 		attr_accessor :do_loadbangs
 		attr_accessor :comment
 		def foreign_name; @foreign_name if defined? @foreign_name end
@@ -170,6 +172,15 @@ class FObject
 			@doc_out[selector] = text
 		end
 		def inspect; foreign_name or super; end
+	end
+	def self.help
+		gfattrs.each{|x,v|
+			s =     "attr=%.8s" % x
+			s <<    "type=%.8s" % v[0] if v[0]
+			s << "default=%.8s" % v[1] if v[1]
+			GridFlow.post "%s", s
+		}
+		GridFlow.post "total %d attributes", gfattrs.length
 	end
 	def post(*a) GridFlow.post(*a) end
 	def self.subclass(*args,&b)
@@ -244,6 +255,7 @@ class FObject
 		@properties = {}
 		@init_messages = []
 	end
+	def _0_help; self.class.help end
 end
 
 class FPatcher < FObject
