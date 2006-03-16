@@ -18,10 +18,7 @@ else
 	CFLAGS += -O3 -funroll-loops
 endif
 
-OBJS2 = base/main.o base/grid.o base/bitpacking.o \
-base/flow_objects.o \
-base/flow_objects_for_image.o \
-base/flow_objects_for_matrix.o \
+OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
 base/number.1.o \
 base/number.2.o \
 base/number.3.o
