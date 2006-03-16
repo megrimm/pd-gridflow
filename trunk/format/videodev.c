@@ -203,15 +203,14 @@ struct FormatVideoDev : Format {
 	\decl void _0_norm (int value);
 	\decl void _0_tuner (int value);
 	\decl void _0_channel (int value);
-	\attr int frequency;
 	\decl void _0_transfer (Symbol sym, int queuemax=2);
 	\decl void _0_colorspace (Symbol c);
-	\decl void _0_get        (Symbol attr=0);
-	\attr uint16 brightness;
-	\attr uint16 hue;
-	\attr uint16 colour;
-	\attr uint16 contrast;
-	\attr uint16 whiteness;
+	\attr int    frequency();
+	\attr uint16 brightness();
+	\attr uint16 hue();
+	\attr uint16 colour();
+	\attr uint16 contrast();
+	\attr uint16 whiteness();
 };
 
 #define DEBUG(args...) 42
@@ -398,11 +397,6 @@ GRID_INLET(FormatVideoDev,0) {
 	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
 }
 
-\def void _0_frequency (int frequency) {
-	int fd = GETFD;
-	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %d",frequency);
-}
-
 \def void _0_transfer (Symbol sym, int queuemax=2) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
@@ -426,38 +420,32 @@ GRID_INLET(FormatVideoDev,0) {
 	vp._name_ = _name_; \
 	WIOCTL(fd, VIDIOCSPICT, &vp);}
 
-\def void _0_brightness (uint16 brightness) {PICTURE_ATTR(brightness)}
-\def void _0_hue        (uint16 hue)        {PICTURE_ATTR(hue)}
-\def void _0_colour     (uint16 colour)     {PICTURE_ATTR(colour)}
-\def void _0_contrast   (uint16 contrast)   {PICTURE_ATTR(contrast)}
-\def void _0_whiteness  (uint16 whiteness)  {PICTURE_ATTR(whiteness)}
-
-#define PICTURE_ATTR_GET(_name_) { \
+#define PICTURE_ATTRGET(_name_) { \
 	int fd = GETFD; \
 	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
-	Ruby argv[3] = {INT2NUM(1), SYM(_name_), INT2NUM(vp._name_)}; \
-	send_out(COUNT(argv),argv);}
+	gfpost("getting %s=%d",#_name_,vp._name_); \
+	return vp._name_;}
 
-\def void _0_get (Symbol attr) {
-	if (!attr) {
-		_0_get(0,0,SYM(brightness));
-		_0_get(0,0,SYM(hue       ));
-		_0_get(0,0,SYM(colour    ));
-		_0_get(0,0,SYM(contrast  ));
-		_0_get(0,0,SYM(whiteness ));
-		_0_get(0,0,SYM(frequency ));
-	} else if (attr==SYM(brightness)) { PICTURE_ATTR_GET(brightness);
-	} else if (attr==SYM(hue       )) { PICTURE_ATTR_GET(hue       );
-	} else if (attr==SYM(colour    )) { PICTURE_ATTR_GET(colour    );
-	} else if (attr==SYM(contrast  )) { PICTURE_ATTR_GET(contrast  );
-	} else if (attr==SYM(whiteness )) { PICTURE_ATTR_GET(whiteness );
-	} else if (attr==SYM(frequency )) {
-		int fd = GETFD;
-		int value;
-		WIOCTL(fd, VIDIOCGFREQ, &value);
-		{Ruby argv[3] ={INT2NUM(1), SYM(frequency), INT2NUM(value)}; send_out(COUNT(argv),argv);}
-	} else { RAISE("What you say?"); }
+\def uint16    brightness ()                 {PICTURE_ATTRGET(brightness)}
+\def void   _0_brightness (uint16 brightness){PICTURE_ATTR(   brightness)}
+\def uint16    hue        ()                 {PICTURE_ATTRGET(hue)}
+\def void   _0_hue        (uint16 hue)       {PICTURE_ATTR(   hue)}
+\def uint16    colour     ()                 {PICTURE_ATTRGET(colour)}
+\def void   _0_colour     (uint16 colour)    {PICTURE_ATTR(   colour)}
+\def uint16    contrast   ()                 {PICTURE_ATTRGET(contrast)}
+\def void   _0_contrast   (uint16 contrast)  {PICTURE_ATTR(   contrast)}
+\def uint16    whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
+\def void   _0_whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
+\def int frequency  () {
+	int fd = GETFD;
+	int value;
+	WIOCTL(fd, VIDIOCGFREQ, &value);
+	return value;
+}
+\def void _0_frequency (int frequency) {
+	int fd = GETFD;
+	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %d",frequency);
 }
 
 \def void close () {
@@ -530,7 +518,7 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \classinfo {
-	IEVAL(rself,"install '#io:videodev',1,1;@flags=4;@comment='Video4linux 1.x'");
+	IEVAL(rself,"install '#io:videodev',1,2;@flags=4;@comment='Video4linux 1.x'");
 }
 \end class FormatVideoDev
 void startup_videodev () {
