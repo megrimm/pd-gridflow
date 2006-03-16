@@ -256,6 +256,13 @@ class FObject
 		@init_messages = []
 	end
 	def _0_help; self.class.help end
+	def _0_get(s=nil)
+		if s then
+			___get s
+		else
+			self.class.gfattrs.each_key{|k| ___get k }
+		end
+	end
 end
 
 class FPatcher < FObject
