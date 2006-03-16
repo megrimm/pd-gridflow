@@ -203,15 +203,15 @@ struct FormatVideoDev : Format {
 	\decl void _0_norm (int value);
 	\decl void _0_tuner (int value);
 	\decl void _0_channel (int value);
-	\decl void _0_frequency (int value);
+	\attr int frequency;
 	\decl void _0_transfer (Symbol sym, int queuemax=2);
 	\decl void _0_colorspace (Symbol c);
 	\decl void _0_get        (Symbol attr=0);
-	\decl void _0_brightness (uint16 value);
-	\decl void _0_hue        (uint16 value);
-	\decl void _0_colour     (uint16 value);
-	\decl void _0_contrast   (uint16 value);
-	\decl void _0_whiteness  (uint16 value);
+	\attr uint16 brightness;
+	\attr uint16 hue;
+	\attr uint16 colour;
+	\attr uint16 contrast;
+	\attr uint16 whiteness;
 };
 
 #define DEBUG(args...) 42
@@ -398,9 +398,9 @@ GRID_INLET(FormatVideoDev,0) {
 	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
 }
 
-\def void _0_frequency (int value) {
+\def void _0_frequency (int frequency) {
 	int fd = GETFD;
-	if (0> IOCTL(fd, VIDIOCSFREQ, &value)) RAISE("can't set frequency to %d",value);
+	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %d",frequency);
 }
 
 \def void _0_transfer (Symbol sym, int queuemax=2) {
@@ -423,14 +423,14 @@ GRID_INLET(FormatVideoDev,0) {
 	int fd = GETFD; \
 	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
-	vp._name_ = value; \
+	vp._name_ = _name_; \
 	WIOCTL(fd, VIDIOCSPICT, &vp);}
 
-\def void _0_brightness (uint16 value) {PICTURE_ATTR(brightness)}
-\def void _0_hue      (uint16 value)   {PICTURE_ATTR(hue)}
-\def void _0_colour (uint16 value)     {PICTURE_ATTR(colour)}
-\def void _0_contrast (uint16 value)   {PICTURE_ATTR(contrast)}
-\def void _0_whiteness (uint16 value)  {PICTURE_ATTR(whiteness)}
+\def void _0_brightness (uint16 brightness) {PICTURE_ATTR(brightness)}
+\def void _0_hue        (uint16 hue)        {PICTURE_ATTR(hue)}
+\def void _0_colour     (uint16 colour)     {PICTURE_ATTR(colour)}
+\def void _0_contrast   (uint16 contrast)   {PICTURE_ATTR(contrast)}
+\def void _0_whiteness  (uint16 whiteness)  {PICTURE_ATTR(whiteness)}
 
 #define PICTURE_ATTR_GET(_name_) { \
 	int fd = GETFD; \
@@ -476,7 +476,6 @@ GRID_INLET(FormatVideoDev,0) {
 	gp->palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, gp);
 	WIOCTL(fd, VIDIOCGPICT, gp);
-	//if (bit_packing) { delete bit_packing; bit_packing=0; }
 	switch(palette) {
 	case VIDEO_PALETTE_RGB24:{
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
