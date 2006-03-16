@@ -177,15 +177,17 @@ static void gfpost(VideoMmap *self) {
 \class FormatVideoDev < Format
 struct FormatVideoDev : Format {
 	VideoCapability vcaps;
+	VideoPicture vp;
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
-	uint8 * image;
+	uint8 *image;
 	int palette;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
+	int fd;
 
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
 	void frame_finished (uint8 * buf);
@@ -234,7 +236,6 @@ struct FormatVideoDev : Format {
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
 \def void _0_size (int sy, int sx) {
-	int fd = GETFD;
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
 	dim = new Dim(sy,sx,3);
@@ -254,27 +255,25 @@ struct FormatVideoDev : Format {
 
 \def void dealloc_image () {
 	if (!image) return;
-	if (!use_mmap) {
-		delete[] (uint8 *)image;
-	} else {
+	if (use_mmap) {
 		munmap(image, vmbuf.size);
 		image=0;
+	} else {
+		delete[] (uint8 *)image;
 	}
 }
 
 \def void alloc_image () {
-	if (!use_mmap) {
+	if (use_mmap) {
+		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
+		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+		if (((int)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
+	} else {
 		image = new uint8[dim->prod(0,1)*bit_packing->bytes];
-		return;
 	}
-	int fd = GETFD;
-	WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-	image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-	if (((int)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 }
 
 \def void frame_ask () {
-	int fd = GETFD;
 	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
 	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	vmmap.frame = queue[queuesize++] = next_frame;
@@ -294,9 +293,9 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 	if (palette==VIDEO_PALETTE_YUV420P) {
 		uint8 b2[bs];
 		for(int y=0; y<sy; y++) {
-			uint8 * bufy = buf+sx*y;
-			uint8 * bufu = buf+sx*sy    +(sx/2)*(y/2);
-			uint8 * bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+			uint8 *bufy = buf+sx*y;
+			uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
+			uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
 			for (int x=0; x<sx; x++) {
 				b2[x*3+0]=bufy[x];
 				b2[x*3+1]=bufu[x/2];
@@ -316,12 +315,12 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 	}
 }
 
+// strange that read2 is not used and read3 is used instead
 static int read2(int fd, uint8 *image, int n) {
 	int r=0;
-	for (; n>0; ) {
+	while (n>0) {
 		int rr=read(fd,image,n);
-		if (rr<0) return rr;
-		r+=rr, image+=rr, n-=rr;
+		if (rr<0) return rr; else {r+=rr; image+=rr; n-=rr;}
 	}
 	return r;
 }
@@ -334,7 +333,6 @@ static int read3(int fd, uint8 *image, int n) {
 
 \def void frame () {
 	if (!image) rb_funcall(rself,SI(alloc_image),0);
-	int fd = GETFD;
 	if (!use_mmap) {
 		/* picture is read at once by frame() to facilitate debugging. */
 		int tot = dim->prod(0,1) * bit_packing->bytes;
@@ -363,7 +361,6 @@ GRID_INLET(FormatVideoDev,0) {
 } GRID_END
 
 \def void _0_norm (int value) {
-	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner;
 	if (value<0 || value>3) RAISE("norm must be in range 0..3");
@@ -377,7 +374,6 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \def void _0_tuner (int value) {
-	int fd = GETFD;
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
@@ -387,7 +383,6 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \def void _0_channel (int value) {
-	int fd = GETFD;
 	VideoChannel vchan;
 	vchan.channel = value;
 	current_channel = value;
@@ -414,15 +409,11 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 #define PICTURE_ATTR(_name_) {\
-	int fd = GETFD; \
-	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
 	vp._name_ = _name_; \
 	WIOCTL(fd, VIDIOCSPICT, &vp);}
 
 #define PICTURE_ATTRGET(_name_) { \
-	int fd = GETFD; \
-	VideoPicture vp; \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
 	gfpost("getting %s=%d",#_name_,vp._name_); \
 	return vp._name_;}
@@ -438,13 +429,11 @@ GRID_INLET(FormatVideoDev,0) {
 \def uint16    whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
 \def void   _0_whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
 \def int frequency  () {
-	int fd = GETFD;
 	int value;
 	WIOCTL(fd, VIDIOCGFREQ, &value);
 	return value;
 }
 \def void _0_frequency (int frequency) {
-	int fd = GETFD;
 	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %d",frequency);
 }
 
@@ -457,13 +446,10 @@ GRID_INLET(FormatVideoDev,0) {
 	if (c==SYM(RGB24)) palette=VIDEO_PALETTE_RGB24;
 	else if (c==SYM(YUV420P)) palette=VIDEO_PALETTE_YUV420P;
 	else RAISE("supported: RGB24, YUV420P");
-
-	int fd = GETFD;
-	VideoPicture *gp = new VideoPicture;
-	WIOCTL(fd, VIDIOCGPICT, gp);
-	gp->palette = palette;
-	WIOCTL(fd, VIDIOCSPICT, gp);
-	WIOCTL(fd, VIDIOCGPICT, gp);
+	WIOCTL(fd, VIDIOCGPICT, &vp);
+	vp.palette = palette;
+	WIOCTL(fd, VIDIOCSPICT, &vp);
+	WIOCTL(fd, VIDIOCGPICT, &vp);
 	switch(palette) {
 	case VIDEO_PALETTE_RGB24:{
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
@@ -472,32 +458,25 @@ GRID_INLET(FormatVideoDev,0) {
 	case VIDEO_PALETTE_YUV420P:{
 		// woops, special case already, can't do that with bit_packing
 	}
-	default:
-		RAISE("can't handle palette %d", gp->palette);
+	default: RAISE("can't handle palette %d", vp.palette);
 	}
-	delete gp;
 }
 
 \def void initialize2 () {
-	int fd = GETFD;
-	VideoPicture *gp = new VideoPicture;
-/*	long flags;
-	fcntl(fd,F_GETFL,&flags);
-	flags |= O_NONBLOCK;
-	fcntl(fd,F_SETFL,&flags); */
-
+//	long flags;          fcntl(fd,F_GETFL,&flags);
+//	flags |= O_NONBLOCK; fcntl(fd,F_SETFL,&flags);
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
 	rb_funcall(rself,SI(_0_size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
-	WIOCTL(fd, VIDIOCGPICT, gp);
-	gfpost(gp);
+	WIOCTL(fd, VIDIOCGPICT,&vp);
+	gfpost(&vp);
 	char buf[1024] = "";
 	int n = 17 /*COUNT(video_palette_choice)*/;
 	for (int i=0; i<n; i++) {
-		gp->palette = i;
-		ioctl(fd, VIDIOCSPICT, gp);
-		ioctl(fd, VIDIOCGPICT, gp);
-		if (gp->palette == i) {
+		vp.palette = i;
+		ioctl(fd, VIDIOCSPICT,&vp);
+		ioctl(fd, VIDIOCGPICT,&vp);
+		if (vp.palette == i) {
 			if (*buf) strcpy(buf+strlen(buf),", ");
 			//strcpy(buf+strlen(buf),video_palette_choice[i].name);
 			sprintf(buf+strlen(buf),"%d",i);
@@ -506,7 +485,6 @@ GRID_INLET(FormatVideoDev,0) {
 	gfpost("This card supports palettes: %s", buf);
 	_0_colorspace(0,0,SYM(RGB24));
 	rb_funcall(rself,SI(_0_channel),1,INT2NUM(0));
-	delete gp;
 }
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
@@ -514,6 +492,7 @@ GRID_INLET(FormatVideoDev,0) {
 	image=0;
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
+	fd = GETFD;
 	rb_funcall(rself,SI(initialize2),0);
 }
 
