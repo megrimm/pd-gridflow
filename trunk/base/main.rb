@@ -38,6 +38,8 @@ module Errno; class E000 < StandardError; end; end
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
+require "gridflow/base/Type.rb"
+
 class Array
 	def split(elem)
 		r=[]
