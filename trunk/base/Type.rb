@@ -150,6 +150,12 @@ class ChoiceType < ChoiceTypeBase; #extend Template
 			(raise TypeError, "value #{v.inspect} not in type #{self}")
 	end
 	def ===(v); !! @val_to_index[v]; end
+	def cast(v)
+		return v if @val_to_index[v]
+		i=@index_to_val[v]
+		return i if i
+		raise
+	end
 end
 
 # MultiChoice objects are similar but instead of dealing with single
@@ -286,13 +292,18 @@ class<< Form # metaclass
 			"while constructing a #{self}"
 		args.each_with_index {|a,i|
 			f = fields[i]
+#			GridFlow.post"%s %s",f.inspect,a.inspect
 			if not f.vtype === a then
+				fields[i] = f.vtype.cast a rescue
 				raise TypeError, "for an #{self}, "\
 					"supplied #{f.sym}=#{a.inspect} "\
-					"is not in type #{f.vtype.inspect}"
+					"is not in type #{f.vtype.inspect} (and cast failed: #{$!})"
 			end
 		}
 		args
+#	rescue Exception=>e
+#		GridFlow.post"%s",e.inspect
+#		e.backtrace.each{|x|GridFlow.post"%s",x}
 	end
 
 	#!@#$ are those really useful?
