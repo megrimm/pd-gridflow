@@ -106,9 +106,7 @@ struct Pointer : CObject {
 \end class Pointer
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
-	Ruby rself = Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, CObject_free, self);
-	self->rself = rself;
-	return rself;
+	return self->rself = Data_Wrap_Struct(mPointer, 0, CObject_free, self);
 }
 void *Pointer_get (Ruby rself) {
 	DGS(Pointer);
@@ -741,7 +739,7 @@ extern "C" void gridflow_setup () {
 		"@bridge_name = 'puredata'; self end");
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
 	EVAL("STDERR.puts \"DIR = #{GridFlow::DIR}\"");
-	EVAL("$:.unshift GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
+	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
 
 	post("(done)");
 	if (!
