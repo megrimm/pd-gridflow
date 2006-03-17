@@ -43,134 +43,241 @@ typedef video_mmap       VideoMmap      ;
 
 static const char *ruby_code =
 \ruby
-flags :name,:VideoTypeFlags,:start,0,:values,%w(
+module ::GridFlow
+add :VideoTypeFlags,MultiChoiceType[*%w(
 	CAPTURE TUNER TELETEXT OVERLAY CHROMAKEY CLIPPING FRAMERAM
 	SCALES MONOCHROME SUBCAPTURE
 	MPEG_DECODER MPEG_ENCODER MJPEG_DECODER MJPEG_ENCODER
-)
-flags :name,:TunerFlags,:start,0,:values,%w(
+).map{|x|x.intern}]
+add :VideoTunerFlags,MultiChoiceType[*%w(
 	PAL NTSC SECAM LOW NORM DUMMY5 DUMMY6 STEREO_ON RDS_ON MBS_ON
-)
-flags :name,:ChannelFlags,:start,0,:values,%w(
-	TUNER AUDIO NORM
-)
-choice :name,:VideoPaletteChoice,:start,0,:values,%w(
+).map{|x|x.intern}]
+add :VideoChannelFlags,MultiChoiceType[:TUNER,:AUDIO]
+add :VideoChannelType,MultiChoiceType[:TV,:CAMERA]
+add :VideoPalette,ChoiceType[%w(
 	NIL GREY HI240
 	RGB565 RGB24 RGB32 RGB555
 	YUV422 YUYV UYVY YUV420 YUV411 RAW
 	YUV422P YUV411P YUV420P YUV410P
-)
-choice :name,:VideoModeChoice,:start,0,:values,%w(
-	PAL NTSC SECAM AUTO
-)
+).map{|x|x.intern}]
+add :VideoTunerMode,ChoiceType[:PAL,:NTSC,:SECAM,:AUTO]
+
+Int = Integer
+Int32 = Integer
+Uint = Integer
+Uint32 = Integer
+Uint16 = Integer
+Ulong = Integer
+
+class VideoCapability<Form; fields_are \
+	[:name,String], # 32 chars
+	[:type,Int],
+	[:channels,Int],
+	[:audios,Int],
+	[:maxwidth,Int],
+	[:maxheight,Int],
+	[:minwidth,Int],
+	[:minheight,Int] end
+class VideoChannel<Form; fields_are \
+	[:channel, Int],
+	[:name, String], # 32 bytes
+	[:tuners,Int],
+	[:flags,VideoChannelFlags],
+	[:tipe,VideoChannelType], # type is a reserved name in Ruby
+	[:norm, Uint16] end
+class VideoTuner<Form; fields_are \
+	[:tuner,Int],
+	[:name, String], # 32 bytes
+	[:rangelow, Ulong],
+	[:rangehigh, Ulong],
+	[:flags, VideoTunerFlags],
+	[:mode, VideoTunerMode],
+	[:signal, Uint16] end
+class VideoPicture<Form; fields_are \
+	[:brightness,Uint16],
+	[:hue,Uint16],
+	[:colour,Uint16],
+	[:contrast,Uint16],
+	[:whiteness,Uint16],
+	[:depth,Uint16],
+	[:palette,Uint16] end
+VideoAudioFlags = MultiChoiceType[%w[MUTE MUTABLE VOLUME BASS TREBLE BALANCE].map{|x|x.intern}]
+VideoSoundFlags = MultiChoiceType[%w[MONO STEREO LANG1 LANG2].map{|x|x.intern}]
+class VideoAudio<Form; fields_are \
+	[:audio,Int],
+	[:volume,Uint16],
+	[:bass,Uint16],
+	[:treble,Uint16],
+	[:flags,VideoAudioFlags],
+	[:name, String], # 16 bytes
+	[:mode,Uint16],
+	[:balance,Uint16],
+	[:step,Uint16] end
+class VideoClip<Form; fields_are \
+	[:x,Int32],
+	[:y,Int32],
+	[:width,Int32],
+	[:height,Int32] end
+#	struct video_clip *next end
+VideoWindowFlags = MultiChoiceType[:INTERLACE,:FOO1,:FOO2,:FOO3,:CHROMAKEY]
+class VideoWindow<Form; fields_are \
+	[:x,Uint32],
+	[:y,Uint32],
+	[:width,Uint32],
+	[:height,Uint32],
+	[:chromakey,Uint32],
+	[:flags,VideoWindowFlags],
+#	struct	video_clip *clips;	/* Set only */
+	[:clipcount,Int] end
+#define VIDEO_CLIP_BITMAP	-1
+#/* bitmap is 1024x625, a '1' bit represents a clipped pixel */
+#define VIDEO_CLIPMAP_SIZE	(128 * 625)
+#class VideoCapture<Form; fields_are \
+#	__u32 	x,y
+#	__u32	width, height
+#	__u16	decimation
+#	__u16	flags
+#define VIDEO_CAPTURE_ODD
+#define VIDEO_CAPTURE_EVEN
+#class VideoBuffer<Form; fields_are \
+#	void	*base;
+#	int	height,width;
+#	int	depth;
+#	int	bytesperline;
+class VideoMmap<Form; fields_are \
+	[:frame,Uint],
+	[:height,Int],
+	[:width,Int],
+	[:format,Uint] end
+#class VideoKey<Form; fields_are \
+#	__u8	key[8];
+#	__u32	flags;
+#define VIDEO_MAX_FRAME		32
+class VideoMbuf<Form; fields_are \
+	[:size,Int],
+	[:frames,Int] end#,
+#	[:frames,Array.of(Int,VIDEO_MAX_FRAME) end
+#define 	VIDEO_NO_UNIT	(-1)
+class VideoUnit<Form; fields_are \
+	[:video,Int],
+	[:vbi,Int],
+	[:radio,Int],
+	[:audio,Int],
+	[:teletext,Int] end
+#class VBIFormat<Form; fields_are \
+#	__u32	sampling_rate
+#	__u32	samples_per_line
+#	__u32	sample_format
+#	__s32	start[2]
+#	__u32	count[2]
+#	__u32	flags
+#define	VBI_UNSYNC 1
+#define	VBI_INTERLACED 2
+class VideoInfo<Form; fields_are \
+	[:frame_count,Uint32],
+	[:h_size,Uint32],
+	[:v_size,Uint32],
+	[:smpte_timecode,Uint32],
+	[:picture_type,Uint32],
+	[:temporal_reference,Uint32] end
+#	[:user_data, Array[Byte,256] end
+#	/* user_data[0] contains user data flags, user_data[1] has count */
+
+class VideoPlayMode<Form; fields_are \
+	[:mode,Int],
+	[:p1,Int],
+	[:p2,Int] end
+
+#class VideoCode<Form; fields_are \
+#	char	loadwhat[16];
+#	int	datasize;
+#	__u8	*data;
+#
+#/* VIDIOCSWRITEMODE */
+VideoWrite = ChoiceType[%w[MPEG_AUD MPEG_VID OSD TTX CC MJPEG].map{|x|x.intern}]
+#/* VIDIOCSPLAYMODE */
+VideoPlay = ChoiceType[%w[
+VID_OUT_MODE GENLOCK NORMAL PAUSE
+SINGLE_FRAME FAST_FORWARD SLOW_MOTION IMMEDIATE_NORMAL
+SWITCH_CHANNELS FREEZE_FRAME STILL_MODE MASTER_MODE
+ACTIVE_SCANLINES 12
+RESET 13
+END_MARK 14
+].map{|x|x.intern}]
+
+VideoPlayMaster = ChoiceType[%w[
+FOO1 NONE VIDEO	AUDIO
+].map{|x|x.intern}]
+
+add:VideoHardware,ChoiceType[*%w[
+NIL BT848 QCAM_BW PMS QCAM_C PSEUDO SAA5249 AZTECH SF16MI RTRACK
+ZOLTRIX	SAA7146 VIDEUM RTRACK2 PERMEDIA2 RIVA128 PLANB BROADWAY GEMTEK TYPHOON
+VINO CADET TRUST TERRATEC CPIA ZR36120 ZR36067 OV511 ZR356700 W9966
+SE401 PWC MEYE CPIA2 VICAM SF16FMR2 W9968CF SAA7114H SN9C102 ARV
+].map{|x|x.intern}]
+
+#-------------------------------------------------------
+
+[VideoTypeFlags,VideoTunerFlags,VideoChannelFlags,VideoPalette,VideoTunerMode].each {|x|
+	GridFlow.post "%s: %s", x.inspect, x.index_to_val.inspect
+}
+def self.postit pickle
+#	head = pickle.shift
+#	stuff = const_get(head)[*pickle]
+#	GridFlow.post "%s",stuff.inspect
+	GridFlow.post "%s",pickle.inspect
+end
+end # module GridFlow
 \end ruby
 ;
-
-/* **************************************************************** */
-
-/*
-#define WH(_field_,_spec_) \
-	sprintf(buf+strlen(buf), "%s: " _spec_ "; ", #_field_, self->_field_);
-#define WHYX(_name_,_fieldy_,_fieldx_) \
-	sprintf(buf+strlen(buf), "%s: y=%d, x=%d; ", #_name_, self->_fieldy_, self->_fieldx_);
-#define WHFLAGS(_field_,_table_) { \
-	char *foo; \
-	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
-		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
-	delete[] foo;}
-#define WHCHOICE(_field_,_table_) { \
-	char *foo; \
-	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
-		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
-	delete[] foo;}
-static char *flags_to_s(int value, int n, named_int *table) {
-	char foo[256];
-	*foo = 0;
-	for(int i=0; i<n; i++) {
-		if ((value & (1<<i)) == 0) continue;
-		if (*foo) strcat(foo," | ");
-		strcat(foo,table[i].name);
-	}
-	if (!*foo) strcat(foo,"0");
-	return strdup(foo);
-}
-static char *choice_to_s(int value, int n, named_int *table) {
-	if (value < 0 || value >= n) {
-		char foo[64];
-		sprintf(foo,"(Unknown #%d)",value);
-		return strdup(foo);
-	} else {
-		return strdup(table[value].name);
-	}
-}
-*/
 
 class RStream {
 public:
 	Ruby a;
-	RStream(Ruby a) : a(a) {}
+	RStream(Ruby a) {this->a = a;}
+	RStream()       {this->a = rb_ary_new();}
 	RStream &operator <<(/*Ruby*/ void *v) { rb_ary_push(a,(Ruby)v); return *this; }
 	RStream &operator <<(int v) { return *this<<(void *)INT2NUM(v); }
 };
-
-static void gfpost(VideoChannel *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoChannel) << self->channel
-		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
-		<< self->tuners << self->flags << self->type << self->norm;
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoTuner *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoTuner) << self->tuner
-		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
-		<< self->rangelow << self->rangehigh
-		<< self->flags << self->mode << self->signal;
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoCapability *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoCapability)
-		<< (void *)rb_str_new(self->name,strnlen(self->name,32))
-		<< self->type
-		<< self->channels << self->audios
-		<< self->maxheight << self->maxwidth
-		<< self->minheight << self->minwidth;
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoWindow *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoWindow)
-		<< self->y << self->x 
-		<< self->height << self->width
-		<< self->chromakey << self->flags << self->clipcount;
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoPicture *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoPicture)
-		<< self->brightness << self->contrast << self->colour
-		<< self->hue << self->whiteness << self->depth << self->palette;
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoMbuf *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoMBuf) << self->size << self->frames;
+static void gfpost(RStream &rs) {rb_funcall(mGridFlow,SI(postit),1,rs.a);}
+static void gfpost(VideoChannel *self) {RStream rs;rs
+	<< (void *)SYM(VideoChannel) << self->channel
+	<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+	<< self->tuners << self->flags << self->type << self->norm
+;gfpost(rs);}
+static void gfpost(VideoTuner *self) {RStream rs;rs
+	<< (void *)SYM(VideoTuner) << self->tuner
+	<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+	<< self->rangelow << self->rangehigh
+	<< self->flags << self->mode << self->signal
+;gfpost(rs);}
+static void gfpost(VideoCapability *self) {RStream rs;rs
+	<< (void *)SYM(VideoCapability)
+	<< (void *)rb_str_new(self->name,strnlen(self->name,32))
+	<< self->type
+	<< self->channels << self->audios
+	<< self->maxheight << self->maxwidth
+	<< self->minheight << self->minwidth
+;gfpost(rs);}
+static void gfpost(VideoWindow *self) {RStream rs;rs
+	<< (void *)SYM(VideoWindow)
+	<< self->y << self->x 
+	<< self->height << self->width
+	<< self->chromakey << self->flags << self->clipcount
+;gfpost(rs);}
+static void gfpost(VideoPicture *self) {RStream rs;rs
+	<< (void *)SYM(VideoPicture)
+	<< self->brightness << self->contrast << self->colour
+	<< self->hue << self->whiteness << self->depth << self->palette
+;gfpost(rs);}
+static void gfpost(VideoMbuf *self) {RStream rs;rs
+	<< (void *)SYM(VideoMBuf) << self->size << self->frames;
 	for (int i=0; i<4; i++) rs << self->offsets[i];
-	rb_p(rs.a);
-}
-
-static void gfpost(VideoMmap *self) {
-	RStream rs(rb_ary_new());
-	rs << (void *)SYM(VideoMMap) << self->frame
-		<< self->height << self->width << self->format;
-	rb_p(rs.a);
-};
+;gfpost(rs);}
+static void gfpost(VideoMmap *self) {RStream rs;rs
+	<< (void *)SYM(VideoMMap) << self->frame
+	<< self->height << self->width << self->format
+;gfpost(rs);}
 
 /* **************************************************************** */
 
@@ -216,7 +323,7 @@ struct FormatVideoDev : Format {
 };
 
 #define DEBUG(args...) 42
-//#define DEBUG(args...) gfpost
+//#define DEBUG(args...) gfpost(args)
 
 #define IOCTL(_f_,_name_,_arg_) \
 	(DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
@@ -497,6 +604,7 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \classinfo {
+	IEVAL(rself,ruby_code);
 	IEVAL(rself,"install '#io:videodev',1,2;@flags=4;@comment='Video4linux 1.x'");
 }
 \end class FormatVideoDev
