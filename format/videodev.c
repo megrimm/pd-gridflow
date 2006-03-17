@@ -52,32 +52,43 @@ add :VideoTypeFlags,MultiChoiceType[*%w(
 add :VideoTunerFlags,MultiChoiceType[*%w(
 	PAL NTSC SECAM LOW NORM DUMMY5 DUMMY6 STEREO_ON RDS_ON MBS_ON
 ).map{|x|x.intern}]
-add :VideoChannelFlags,MultiChoiceType[:TUNER,:AUDIO]
-add :VideoChannelType,MultiChoiceType[:TV,:CAMERA]
 add :VideoPalette,ChoiceType[%w(
 	NIL GREY HI240
 	RGB565 RGB24 RGB32 RGB555
 	YUV422 YUYV UYVY YUV420 YUV411 RAW
 	YUV422P YUV411P YUV420P YUV410P
 ).map{|x|x.intern}]
-add :VideoTunerMode,ChoiceType[:PAL,:NTSC,:SECAM,:AUTO]
+add :VideoTunerMode,        ChoiceType[:PAL,:NTSC,:SECAM,:AUTO]
+add :VideoWindowFlags, MultiChoiceType[:INTERLACE,:FOO1,:FOO2,:FOO3,:CHROMAKEY]
+add :VideoAudioFlags,  MultiChoiceType[*%w[MUTE MUTABLE VOLUME BASS TREBLE BALANCE].map{|x|x.intern}]
+add :VideoSoundFlags,  MultiChoiceType[*%w[MONO STEREO LANG1 LANG2].map{|x|x.intern}]
+add :VideoChannelFlags,MultiChoiceType[:TUNER,:AUDIO]
+add :VideoChannelType, MultiChoiceType[:TV,:CAMERA]
+add :VideoPlayMaster,       ChoiceType[*%w[FOO1 NONE VIDEO AUDIO].map{|x|x.intern}]
+add :VideoWrite,            ChoiceType[*%w[MPEG_AUD MPEG_VID OSD TTX CC MJPEG].map{|x|x.intern}]
+add :VBIFormatFlags, MultiChoiceType[:UNSYNC,:VBI_INTERLACED]
+add :VideoPlay, ChoiceType[*%w[
+	VID_OUT_MODE GENLOCK NORMAL PAUSE SINGLE_FRAME
+	FAST_FORWARD SLOW_MOTION IMMEDIATE_NORMAL SWITCH_CHANNELS FREEZE_FRAME
+	STILL_MODE MASTER_MODE ACTIVE_SCANLINES RESET END_MARK
+].map{|x|x.intern}]
+add :VideoHardware, ChoiceType[*%w[
+	NIL BT848 QCAM_BW PMS QCAM_C PSEUDO SAA5249 AZTECH SF16MI RTRACK
+	ZOLTRIX	SAA7146 VIDEUM RTRACK2 PERMEDIA2 RIVA128 PLANB BROADWAY GEMTEK TYPHOON
+	VINO CADET TRUST TERRATEC CPIA ZR36120 ZR36067 OV511 ZR356700 W9966
+	SE401 PWC MEYE CPIA2 VICAM SF16FMR2 W9968CF SAA7114H SN9C102 ARV
+].map{|x|x.intern}]
 
-Int = Integer
-Int32 = Integer
-Uint = Integer
-Uint32 = Integer
-Uint16 = Integer
-Ulong = Integer
+ Int =  Long =  Int32          = Integer
+Uint = Ulong = Uint32 = Uint16 = Integer
 
 class VideoCapability<Form; fields_are \
 	[:name,String], # 32 chars
 	[:type,Int],
 	[:channels,Int],
 	[:audios,Int],
-	[:maxwidth,Int],
-	[:maxheight,Int],
-	[:minwidth,Int],
-	[:minheight,Int] end
+	[:maxwidth,Int], [:maxheight,Int],
+	[:minwidth,Int], [:minheight,Int] end
 class VideoChannel<Form; fields_are \
 	[:channel, Int],
 	[:name, String], # 32 bytes
@@ -101,8 +112,6 @@ class VideoPicture<Form; fields_are \
 	[:whiteness,Uint16],
 	[:depth,Uint16],
 	[:palette,Uint16] end
-VideoAudioFlags = MultiChoiceType[%w[MUTE MUTABLE VOLUME BASS TREBLE BALANCE].map{|x|x.intern}]
-VideoSoundFlags = MultiChoiceType[%w[MONO STEREO LANG1 LANG2].map{|x|x.intern}]
 class VideoAudio<Form; fields_are \
 	[:audio,Int],
 	[:volume,Uint16],
@@ -114,44 +123,37 @@ class VideoAudio<Form; fields_are \
 	[:balance,Uint16],
 	[:step,Uint16] end
 class VideoClip<Form; fields_are \
-	[:x,Int32],
-	[:y,Int32],
-	[:width,Int32],
-	[:height,Int32] end
+	[:x,    Int32], [:y,     Int32],
+	[:width,Int32], [:height,Int32] end
 #	struct video_clip *next end
-VideoWindowFlags = MultiChoiceType[:INTERLACE,:FOO1,:FOO2,:FOO3,:CHROMAKEY]
 class VideoWindow<Form; fields_are \
-	[:x,Uint32],
-	[:y,Uint32],
-	[:width,Uint32],
-	[:height,Uint32],
+	[:x,    Uint32], [:y,     Uint32],
+	[:width,Uint32], [:height,Uint32],
 	[:chromakey,Uint32],
 	[:flags,VideoWindowFlags],
 #	struct	video_clip *clips;	/* Set only */
 	[:clipcount,Int] end
 #define VIDEO_CLIP_BITMAP	-1
-#/* bitmap is 1024x625, a '1' bit represents a clipped pixel */
 #define VIDEO_CLIPMAP_SIZE	(128 * 625)
-#class VideoCapture<Form; fields_are \
-#	__u32 	x,y
-#	__u32	width, height
-#	__u16	decimation
-#	__u16	flags
+class VideoCapture<Form; fields_are \
+	[:x,    Uint32], [:y,     Uint32],
+	[:width,Uint32], [:height,Uint32],
+	[:decimation,Uint16] end
+#	[:flags,VideoCaptureFlags],
 #define VIDEO_CAPTURE_ODD
 #define VIDEO_CAPTURE_EVEN
-#class VideoBuffer<Form; fields_are \
-#	void	*base;
-#	int	height,width;
-#	int	depth;
-#	int	bytesperline;
+class VideoBuffer<Form; fields_are \
+	[:base,Long], # void*
+	[:height,Int], [:width,Int],
+	[:depth,Int],
+	[:bytesperline,Int] end
 class VideoMmap<Form; fields_are \
 	[:frame,Uint],
-	[:height,Int],
-	[:width,Int],
+	[:height,Int], [:width,Int],
 	[:format,Uint] end
-#class VideoKey<Form; fields_are \
-#	__u8	key[8];
-#	__u32	flags;
+class VideoKey<Form; fields_are \
+	[:key,String] end # 8 bytes
+#	[:flaga,VideoKeyFlags] end
 #define VIDEO_MAX_FRAME		32
 class VideoMbuf<Form; fields_are \
 	[:size,Int],
@@ -164,19 +166,16 @@ class VideoUnit<Form; fields_are \
 	[:radio,Int],
 	[:audio,Int],
 	[:teletext,Int] end
-#class VBIFormat<Form; fields_are \
-#	__u32	sampling_rate
-#	__u32	samples_per_line
-#	__u32	sample_format
-#	__s32	start[2]
-#	__u32	count[2]
-#	__u32	flags
-#define	VBI_UNSYNC 1
-#define	VBI_INTERLACED 2
+class VBIFormat<Form; fields_are \
+	[:sampling_rate,Uint32],
+	[:samples_per_line,Uint32],
+	[:sample_format,Uint32],
+#	[:start,Array.of( Int32,2)],
+#	[:count,Array.of(Uint32,2)],
+	[:flags,VBIFormatFlags] end
 class VideoInfo<Form; fields_are \
 	[:frame_count,Uint32],
-	[:h_size,Uint32],
-	[:v_size,Uint32],
+	[:h_size,Uint32], [:v_size,Uint32],
 	[:smpte_timecode,Uint32],
 	[:picture_type,Uint32],
 	[:temporal_reference,Uint32] end
@@ -188,33 +187,10 @@ class VideoPlayMode<Form; fields_are \
 	[:p1,Int],
 	[:p2,Int] end
 
-#class VideoCode<Form; fields_are \
-#	char	loadwhat[16];
-#	int	datasize;
+class VideoCode<Form; fields_are \
+	[:loadwhat,String], # 16 bytes
+	[:datasize,Int] end
 #	__u8	*data;
-#
-#/* VIDIOCSWRITEMODE */
-VideoWrite = ChoiceType[%w[MPEG_AUD MPEG_VID OSD TTX CC MJPEG].map{|x|x.intern}]
-#/* VIDIOCSPLAYMODE */
-VideoPlay = ChoiceType[%w[
-VID_OUT_MODE GENLOCK NORMAL PAUSE
-SINGLE_FRAME FAST_FORWARD SLOW_MOTION IMMEDIATE_NORMAL
-SWITCH_CHANNELS FREEZE_FRAME STILL_MODE MASTER_MODE
-ACTIVE_SCANLINES 12
-RESET 13
-END_MARK 14
-].map{|x|x.intern}]
-
-VideoPlayMaster = ChoiceType[%w[
-FOO1 NONE VIDEO	AUDIO
-].map{|x|x.intern}]
-
-add:VideoHardware,ChoiceType[*%w[
-NIL BT848 QCAM_BW PMS QCAM_C PSEUDO SAA5249 AZTECH SF16MI RTRACK
-ZOLTRIX	SAA7146 VIDEUM RTRACK2 PERMEDIA2 RIVA128 PLANB BROADWAY GEMTEK TYPHOON
-VINO CADET TRUST TERRATEC CPIA ZR36120 ZR36067 OV511 ZR356700 W9966
-SE401 PWC MEYE CPIA2 VICAM SF16FMR2 W9968CF SAA7114H SN9C102 ARV
-].map{|x|x.intern}]
 
 #-------------------------------------------------------
 
@@ -325,20 +301,12 @@ struct FormatVideoDev : Format {
 #define DEBUG(args...) 42
 //#define DEBUG(args...) gfpost(args)
 
-#define IOCTL(_f_,_name_,_arg_) \
-	(DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
-		ioctl(_f_,_name_,_arg_))
-
-#define WIOCTL(_f_,_name_,_arg_) \
-	(DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
-	ioctl(_f_,_name_,_arg_) < 0) && \
-		(gfpost("ioctl %s: %s",#_name_,strerror(errno)),1)
-
-#define WIOCTL2(_f_,_name_,_arg_) \
-	((DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",_f_,_name_,#_name_,_arg_), \
-	ioctl(_f_,_name_,_arg_) < 0) && \
-		(gfpost("ioctl %s: %s",#_name_,strerror(errno)), \
-		 RAISE("ioctl error"), 0))
+#define  IOCTL( F,NAME,ARG) \
+  (DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",F,NAME,#NAME,_arg_), ioctl(F,NAME,ARG))
+#define WIOCTL( F,NAME,ARG) \
+  (IOCTL(F,NAME,ARG)<0 && (gfpost("ioctl %s: %s",#NAME,strerror(errno)),1))
+#define WIOCTL2(F,NAME,ARG) \
+  (IOCTL(F,NAME,ARG)<0 && (gfpost("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
@@ -400,7 +368,7 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 	if (palette==VIDEO_PALETTE_YUV420P) {
 		uint8 b2[bs];
 		for(int y=0; y<sy; y++) {
-			uint8 *bufy = buf+sx*y;
+			uint8 *bufy = buf+sx* y;
 			uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
 			uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
 			for (int x=0; x<sx; x++) {
