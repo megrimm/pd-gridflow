@@ -43,7 +43,6 @@ public: template <class T> static inline void __attribute__((always_inline)) f(T
 public: template <class T>
 	static inline void __attribute__((always_inline)) f(T * a, T * b) {
 		*a=*b; SCopy<3>::f(a+1,b+1);}
-	// wouldn't gcc 2.95 complain here?
 	static inline void __attribute__((always_inline)) f(uint8 * a, uint8 * b)
 	{ *(int32 *)a=*(int32 *)b; }
 };*/
@@ -1207,6 +1206,7 @@ struct GridConvolve : GridObject {
 	\attr Numop *fold;
 	\attr PtrGrid seed;
 	\attr PtrGrid b;
+	\attr bool wrap;
 	PtrGrid a;
 	int plann;
 	PlanEntry *plan;
@@ -1237,13 +1237,13 @@ static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
 
 template <class T> void GridConvolve::make_plan (T bogus) {
 	P<Dim> da = a->dim, db = b->dim;
-	int dby = db->get(0);
-	int dbx = db->get(1);
+	long dby = db->get(0);
+	long dbx = db->get(1);
 	if (plan) delete[] plan;
 	plan = new PlanEntry[dbx*dby];
-	int i=0;
-	for (int y=0; y<dby; y++) {
-		for (int x=0; x<dbx; x++) {
+	long i=0;
+	for (long y=0; y<dby; y++) {
+		for (long x=0; x<dbx; x++) {
 			T rh = ((T *)*b)[y*dbx+x];
 			bool neutral = op->on(rh)->is_neutral(rh,at_right);
 			bool absorbent = op->on(rh)->is_absorbent(rh,at_right);
@@ -1266,7 +1266,7 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 GRID_INLET(GridConvolve,0) {
 	SAME_TYPE(in,b);
 	SAME_TYPE(in,seed);
-	P<Dim> da = in->dim, db = b->dim;
+	P<Dim> da=in->dim, db=b->dim;
 	if (!db) RAISE("right inlet has no grid");
 	if (!seed) RAISE("seed missing");
 	if (db->n != 2) RAISE("right grid must have two dimensions");
@@ -1276,32 +1276,35 @@ GRID_INLET(GridConvolve,0) {
 	if (da->get(1) < db->get(1)) RAISE("grid too small (x): %d < %d", da->get(1), db->get(1));
 	margy = (db->get(0)-1)/2;
 	margx = (db->get(1)-1)/2;
-	a=new Grid(in->dim,in->nt);
-	out=new GridOutlet(this,0,da,in->nt);
+	a=new Grid(da,in->nt);
+	int v[da->n]; COPY(v,da->v,da->n);
+	if (!wrap) {v[0]-=db->v[0]-1; v[1]-=db->v[1]-1;}
+	out=new GridOutlet(this,0,new Dim(da->n,v),in->nt);
 } GRID_FLOW {
 	COPY((T *)*a+in->dex, data, n);
 } GRID_FINISH {
 	Numop *op_put = OP(SYM(put));
 	make_plan((T)0);
-	int dbx = b->dim->get(1);
-	int day = a->dim->get(0);
-	int n = a->dim->prod(1);
-	int sx = a->dim->get(1)+dbx-1;
-	int n2 = sx*a->dim->prod(2);
+	long dbx = b->dim->get(1);
+	long day = out->dim->get(0);
+	long n = out->dim->prod(1);
+	long sx = out->dim->get(1)+dbx-1;
+	long sxc = sx*out->dim->prod(2);
 	T buf[n];
-	T buf2[n2];
+	T buf2[sxc];
 	T orh=0;
-	for (int iy=0; iy<day; iy++) {
+	for (long iy=0; iy<day; iy++) {
 		op_put->map(n,buf,*(T *)*seed);
-		for (int i=0; i<plann; i++) {
-			int jy = plan[i].y;
-			int jx = plan[i].x;
+		for (long i=0; i<plann; i++) {
+			long jy = plan[i].y;
+			long jx = plan[i].x;
 			T rh = ((T *)*b)[jy*dbx+jx];
 			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
-				copy_row(buf2,sx,iy+jy-margy,-margx);
-				if (!plan[i].neutral) op->map(n2,buf2,rh);
+				if (wrap) copy_row(buf2,sx,iy+jy-margy,-margx);
+				else      copy_row(buf2,sx,iy+jy,0);
+				if (!plan[i].neutral) op->map(sxc,buf2,rh);
 			}
-			fold->zip(n,buf,buf2+jx*a->dim->prod(2));
+			fold->zip(n,buf,buf2+jx*out->dim->prod(2));
 			orh=rh;
 		}
 		out->send(n,buf);
@@ -1317,6 +1320,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
 	this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
+	this->wrap = true;
 }
 
 \classinfo { IEVAL(rself,"install '#convolve',2,1"); }
