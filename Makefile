@@ -121,16 +121,32 @@ dupabs::
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
 	cp pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
 
-ruby/ruby: ruby/Makefile
-	make
+#--------#--------#--------#--------#--------#--------#--------#--------
 
+ruby/configure: ruby/configure.in
+	(cd ruby; autoconf)
+
+ruby/Makefile: ruby/configure
+	(prefix=$$(pwd); cd ruby; ./configure --enable-shared --prefix=$$prefix)
+
+ruby/ruby: ruby/Makefile
+	(cd ruby; make)
+
+ruby:: ruby/ruby
 
 ruby-checkout::
 	cvs -d :pserver:anonymous@cvs.ruby-lang.org:/src checkout -D 2005-10-01 ruby
+
+ruby-install:: ruby/Makefile
+	(cd ruby; make install)
+
+#--------#--------#--------#--------#--------#--------#--------#--------
 
 help::
 	@echo "do one of the following:";\
 	echo  "make all            compiles gridflow";\
 	echo  "make beep           beeps";\
+	echo  "make ruby           compiles ruby";\
+	echo  "make ruby-install   installs ruby into this directory";\
 	echo  "make ruby-checkout  downloads ruby";\
 	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
