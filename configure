@@ -1053,9 +1053,10 @@ puts "(back)"
 for s in [
 "See ./config.log if you want the details of the configuration tests.",
 "If you are satisfied with that configuration, you may go on,",
-"  and do \"make\" and then \"make install\".",
+"and do \"make\". \"make install\" is not needed anymore,",
+"just copy your gridflow directory to \"lib/pd/extra\".",
 "If you get stuck, you could contact the author about it,",
-"  but first make sure you read \"doc/install.html\". ",
+"but first make sure you read \"doc/install.html\". ",
 ""] do puts "\e[1m#{s}\e[0m" end
 
 #--------------------------------#
