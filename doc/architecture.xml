@@ -343,15 +343,15 @@
 	<row name="sq-" cname="sq"
 	> (A-B) times (A-B) </row>
 
-	<!-- 0.8.x -->
-	<row name="avg" cname="avg"
-	> (A+B)/2 </row>
-	<row name="hypot" cname="hypot"
-	> square root of (A*A+B*B) </row>
+	<!-- 0.8.0 -->
 	<row name="clip+" cname="clip+"
 	> like A+B but overflow causes clipping instead of wrapping around (coming soon) </row>
 	<row name="clip-" cname="clip-"
 	> like A-B but overflow causes clipping instead of wrapping around (coming soon) </row>
+	<row name="avg" cname="avg"
+	> (A+B)/2 </row>
+	<row name="hypot" cname="hypot"
+	> square root of (A*A+B*B) </row>
 	<row name="erf*" cname="erf"
 	> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </row>
 </table>

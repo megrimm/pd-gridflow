@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -27,11 +27,15 @@
 #include <time.h>
 #include <stdarg.h>
 #include <string.h>
+#include <signal.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdarg.h>
+
 #include "grid.h.fcs"
 #include "../config.h"
+#include <assert.h>
 #include <limits.h>
 
 BuiltinSymbols bsym;
@@ -63,8 +67,8 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	rb_exc_raise(e);
 }};
 
-Ruby rb_ary_fetch(Ruby rself, long i) {
-	Ruby argv[] = { LONG2NUM(i) };
+Ruby rb_ary_fetch(Ruby rself, int i) {
+	Ruby argv[] = { INT2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
@@ -197,7 +201,7 @@ static void send_in_3 (Helper *h) {
 		IEVAL(rself,"STDERR.puts inspect");
 		RAISE("don't know how many outlets this has");
 	}
-	//int noutlets = INT(noutlets2);
+	int noutlets = INT(noutlets2);
 	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 	// was PROF(0) a hack because of exception-handling problems?
 	PROF(0) {
@@ -207,8 +211,8 @@ static void send_in_3 (Helper *h) {
 	argv2[1] = sym;
 	rb_funcall2(rself,SI(send_out2), argc+2, argv2);
 
-	ID ol = SI(@outlets);
-	Ruby ary = rb_ivar_defined(rself,ol) ? rb_ivar_get(rself,ol) : Qnil;
+	Ruby ary = rb_ivar_defined(rself,SYM2ID(bsym.iv_outlets)) ?
+		rb_ivar_get(rself,SYM2ID(bsym.iv_outlets)) : Qnil;
 	if (ary==Qnil) goto end;
 	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
 	ary = rb_ary_fetch(ary,outlet);
@@ -270,8 +274,13 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def R total_time_get () {return total_time;}
-\def R total_time_set (Ruby x) {return total_time = TO(uint64,x);}
+\def Ruby total_time_get () {return gf_ull2num(total_time);}
+
+\def Ruby total_time_set (Ruby x) {
+	if (argc<1) RAISE("muh");
+	total_time = TO(uint64,x);
+	return argv[0];
+}
 
 \def void delete_m () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
@@ -286,13 +295,13 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 
 static Ruby String_swap32_f (Ruby rself) {
 	int n = rb_str_len(rself)/4;
-	swap32(n,(uint32 *)rb_str_ptr(rself));
+	swap32(n,Pt<uint32>((uint32 *)rb_str_ptr(rself),n));
 	return rself;
 }
 
 static Ruby String_swap16_f (Ruby rself) {
 	int n = rb_str_len(rself)/2;
-	swap16(n,(uint16 *)rb_str_ptr(rself));
+	swap16(n,Pt<uint16>((uint16 *)rb_str_ptr(rself),n));
 	return rself;
 }
 
@@ -311,39 +320,25 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 \def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {}
 
 // !@#$ doesn't support number types
-// and the Pt<> look fishy
 \def String pack2 (String ins, String outs=Qnil) {
-	long n = rb_str_len(ins) / sizeof(int32) / size;
-	int32 * in = (int32 *)rb_str_ptr(ins);
-	long bytes2 = n*bytes;
+	int n = rb_str_len(ins) / sizeof(int32) / size;
+	Pt<int32> in = Pt<int32>((int32 *)rb_str_ptr(ins),rb_str_len(ins));
+	int bytes2 = n*bytes;
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	pack(n,in,(uint8 *)rb_str_ptr(out));
+	pack(n,Pt<int32>(in,n),Pt<uint8>((uint8 *)rb_str_ptr(out),bytes2));
 	return out;
 }
 
 // !@#$ doesn't support number types
-// and the Pt<> look fishy
 \def String unpack2 (String ins, String outs=Qnil) {
-	long n = rb_str_len(argv[0]) / bytes;
-	uint8 * in = (uint8 *)rb_str_ptr(ins);
-	long bytes2 = n*size*sizeof(int32);
+	int n = rb_str_len(argv[0]) / bytes;
+	Pt<uint8> in = Pt<uint8>((uint8 *)rb_str_ptr(ins),rb_str_len(ins));
+	int bytes2 = n*size*sizeof(int32);
 	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
 	rb_str_modify(out);
-	unpack(n,in,(uint8 *)rb_str_ptr(out));
+	unpack(n,Pt<uint8>((uint8 *)in,bytes2),Pt<int32>((int32 *)rb_str_ptr(out),n));
 	return out;
-}
-
-\def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) pack(n,INT2PTR(T,inqp),INT2PTR(uint8,outqp));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
-}
-
-\def void unpack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) unpack(n,INT2PTR(uint8,inqp),INT2PTR(T,outqp));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
 }
 
 static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -388,6 +383,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0)
 			buf[strlen(buf)-2]=0;
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
+		rb_enable_super(rself,buf);
 		free(buf);
 	}
 }
@@ -420,7 +416,7 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	return INT2NUM((int)arg);
 }
 
-Ruby GridFlow_rdtsc (Ruby rself) { return R(rdtsc()).r; }
+Ruby GridFlow_rdtsc (Ruby rself) { return gf_ull2num(rdtsc()); }
 
 /* This code handles nested lists because PureData (0.38) doesn't do it */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
@@ -472,15 +468,15 @@ static uint64 malloc_bytes = 0; /* only new not delete */
 static uint64 malloc_time  = 0; /* in cpu ticks */
 
 // don't touch.
-static void gfmemcopy32(int32 *as, int32 *bs, long n) {
-	ptrdiff_t ba = bs-as;
+static void gfmemcopy32(int32 *as, int32 *bs, int n) {
+	int32 ba = bs-as;
 #define FOO(I) as[I] = (as+ba)[I];
 		UNROLL_8(FOO,n,as)
 #undef FOO
 
 }
 
-void gfmemcopy(uint8 *out, const uint8 *in, long n) {
+void gfmemcopy(uint8 *out, const uint8 *in, int n) {
 	uint64 t = rdtsc();
 	memcpy_calls++;
 	memcpy_bytes+=n;
@@ -517,11 +513,11 @@ void gffree(void *p) {
 }};
 
 Ruby GridFlow_memcpy_calls (Ruby rself) { return   LONG2NUM(memcpy_calls); }
-R GridFlow_memcpy_bytes (Ruby rself) {return memcpy_bytes;}
-R GridFlow_memcpy_time  (Ruby rself) {return memcpy_time;}
+Ruby GridFlow_memcpy_bytes (Ruby rself) { return gf_ull2num(memcpy_bytes); }
+Ruby GridFlow_memcpy_time  (Ruby rself) { return gf_ull2num(memcpy_time); }
 Ruby GridFlow_malloc_calls (Ruby rself) { return   LONG2NUM(malloc_calls); }
-R GridFlow_malloc_bytes (Ruby rself) {return malloc_bytes;}
-R GridFlow_malloc_time  (Ruby rself) {return malloc_time;}
+Ruby GridFlow_malloc_bytes (Ruby rself) { return gf_ull2num(malloc_bytes); }
+Ruby GridFlow_malloc_time  (Ruby rself) { return gf_ull2num(malloc_time); }
 
 Ruby GridFlow_profiler_reset2 (Ruby rself) {
 	memcpy_calls = memcpy_bytes = memcpy_time = 0;
@@ -534,6 +530,8 @@ Ruby GridFlow_profiler_reset2 (Ruby rself) {
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
+void startup_flow_objects_for_image();
+void startup_flow_objects_for_matrix();
 
 Ruby cFormat;
 
@@ -549,6 +547,7 @@ void Init_gridflow () {
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
+	signal(11,SIG_DFL); // paranoia
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; "
 		"class<<self; attr_reader :bridge_name; end; "
 		"def post_string(s) STDERR.puts s end; "
@@ -574,7 +573,7 @@ BUILTIN_SYMBOLS(FOO)
 	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
-	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
+	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(GF_COMPILE_TIME));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	EVAL(
@@ -608,6 +607,8 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
+	startup_flow_objects_for_image();
+	startup_flow_objects_for_matrix();
 	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
@@ -617,6 +618,7 @@ BUILTIN_SYMBOLS(FOO)
 	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
 	EVAL("GridFlow.load_user_config");
+	signal(11,SIG_DFL); // paranoia
 }
 
 void GFStack::push (FObject *o) {

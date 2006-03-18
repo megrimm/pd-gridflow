@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -23,7 +23,10 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#define GF_VERSION "0.8.2"
+
+// current version number as string literal
+#define GF_VERSION "0.8.1"
+#define GF_COMPILE_TIME __DATE__ ", " __TIME__
 
 #include <new>
 #include <vector>
@@ -32,6 +35,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <math.h>
+
 #ifdef __APPLE__
 static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #else
@@ -42,10 +46,11 @@ extern "C" {
 #include <ruby.h>
 #include <rubyio.h>
 #include <version.h>
+};
+
 #ifndef RUBY_H
 #error "Can't do anything without ruby.h"
 #endif
-};
 
 #include "../config.h"
 
@@ -58,22 +63,33 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define BUG(s,args...) {fprintf(stderr,s "\nat: %s\n",args,__PRETTY_FUNCTION__); ::raise(11);}
+#define L gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
-#define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
+#define RAISE(args...) rb_raise(rb_eArgError,args)
 #else
 #define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
 #endif
 
+// avoid ruby warning
+#ifndef rb_enable_super
+#define rb_enable_super(a,b) \
+	if (RUBY_RELEASE_CODE < 20030716) rb_enable_super(a,b)
+#endif
+
 typedef VALUE Ruby;
+
+/* undocumented function from Ruby that is one thing we need to fix a very elusive bug
+that manifests itself when embedding ruby inside a plugin of another app. This exists
+for all versions of Ruby up to now, and I don't know when it gets fixed. */
+extern "C" void Init_stack(VALUE *addr);
 
 extern "C" {
 void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
 __attribute__ ((noreturn));
 };
-#define VA int argc, Ruby *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
 #define DGS(_class_) \
@@ -82,6 +98,7 @@ __attribute__ ((noreturn));
 	self->check_magic();
 
 // returns the size of a statically defined array
+// warning: does not work with STACK_ARRAY()
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 static inline long  rb_str_len(Ruby s) {return RSTRING(s)->len;}
@@ -89,13 +106,33 @@ static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
+#define rb_str_pt(s,t) Pt<t>((t*)rb_str_ptr(s),rb_str_len(s))
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
+#define rassert(_p_) if (!(_p_)) RAISE(#_p_);
+// because of older versions of Ruby (1.6.?)
+#define rb_obj_class(o) rb_funcall((o),SI(class),0)
 
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	gfpost("%s",foo);}
+
+// we're gonna override assert, so load it first, to avoid conflicts
+#include <assert.h>
+
+#undef assert
+#define assert(_expr_) \
+	if (!(_expr_)) { \
+		fprintf(stderr, "%s:%d: assertion failed: %s is false\n", \
+			__FILE__, __LINE__, #_expr_); \
+		::abort(); }
+
+// disabling assertion checking?
+#ifndef HAVE_DEBUG
+#undef assert
+#define assert(_foo_)
+#endif
 
 #ifdef HAVE_TSC_PROFILING
 #define HAVE_PROFILING
@@ -109,21 +146,20 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
-	if ((p&3)!=0) RAISE("unaligned pointer: %p\n",ptr);
+	if ((p&3)!=0) BUG("unaligned pointer: %p\n",ptr);
 	return LONG2NUM(p>>2);
 }
-#define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
-#define INT2PTR(T,   v) ((T *)(          (v)<<2))
+#define FIX2PTR(type,ruby) ((type *)(TO(long,ruby)<<2))
 
 //****************************************************************
 
 /* int32 was long before, now int, because of amd64 */
-typedef char       int8; typedef unsigned char      uint8;
-typedef short     int16; typedef unsigned short     uint16;
-typedef int       int32; typedef unsigned int       uint32;
-typedef long long int64; typedef unsigned long long uint64;
-typedef float   float32;
-typedef double  float64;
+typedef char  int8;     typedef unsigned char  uint8;
+typedef short int16;    typedef unsigned short uint16;
+typedef int   int32;    typedef unsigned int  uint32;
+typedef long long int64;typedef unsigned long long uint64;
+typedef float  float32;
+typedef double float64;
 
 // three-way comparison (T is assumed Comparable)
 template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
@@ -131,10 +167,12 @@ template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
 // a remainder function such that div2(a,b)*b+mod(a,b) = a and for which
 // mod(a,b) is in [0;b) or (b;0]. in contrast to C-language builtin a%b,
 // this one has uniform behaviour around zero.
-static inline int mod(int a, int b) {return a<0 ? b-((-a)%b) : a%b;}
+static inline int mod(int a, int b) {
+int c=a%b; c+=b&-(c&&(a<0)^(b<0)); return c;}
 
 // counterpart of mod(a,b), just like a/b and a%b are counterparts
-static inline int div2(int a, int b) {return (a/b)-((a<0)&&!!(a%b));}
+static inline int div2(int a, int b) {
+int c=a<0; return (a/b)-(c&&!!(a%b));}
 
 static inline int32   gf_abs(  int32 a) { return a>0?a:-a; }
 static inline int64   gf_abs(  int64 a) { return a>0?a:-a; }
@@ -145,6 +183,8 @@ static inline float64 gf_abs(float64 a) { return fabs(a); }
 template <class T> static inline T ipow(T a, T b) {
 	for(T r=1;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}
 }
+
+// kludge
 static inline float32 ipow(float32 a, float32 b) { return pow(a,b); }
 static inline float64 ipow(float64 a, float64 b) { return pow(a,b); }
 
@@ -177,14 +217,14 @@ template <class T> static T gcd2 (T a, T b) {
 // least common multiple; this runs in log(a+b) like gcd.
 template <class T> static inline T lcm (T a, T b) {return a*b/gcd(a,b);}
 
-// returns the position (0..63) of highest bit set in a word, or 0 if none.
+// returns the position (0..31) of highest bit set in a word, or 0 if none.
 #define Z(N) if ((x>>N)&(((typeof(x))1<<N)-1)) { x>>=N; i+=N; }
 static int highest_bit(uint8  x) {int i=0;              Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint16 x) {int i=0;          Z(8)Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint32 x) {int i=0;     Z(16)Z(8)Z(4)Z(2)Z(1)return i;}
 static int highest_bit(uint64 x) {int i=0;Z(32)Z(16)Z(8)Z(4)Z(2)Z(1)return i;}
 #undef Z
-// returns the position (0..63) of lowest bit set in a word, or 0 if none.
+// returns the position (0..31) of lowest bit set in a word, or 0 if none.
 template <class T> static int lowest_bit(T n) { return highest_bit((~n+1)&n); }
 
 static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
@@ -192,11 +232,24 @@ static double drand() { return 1.0*rand()/(RAND_MAX+1.0); }
 // is little-endian
 static inline bool is_le() {int x=1; return ((char *)&x)[0];}
 
-static inline uint64 rdtsc()
 #if defined(HAVE_PENTIUM)
-{uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;}
+static inline uint64 rdtsc() {
+	uint64 x; __asm__ volatile (".byte 0x0f, 0x31":"=A"(x)); return x;
+}
+#elif defined(HAVE_PPC)
+static inline uint64 rdtsc() {
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+/* see AbsoluteToNanoseconds(), Microseconds()
+http://www.simdtech.org/apps/group_public/email/altivec/msg01956.html
+and mach_absolute_time() and mach_timebase_info(&info),
+then ns=(time*info.numer)/info.denom;
+and the timebase_info is constant
+(double)mach_absolute_time*gTimeBaseToNS*/
+return 0;
+}
 #else
-{return 0;}
+static inline uint64 rdtsc() {return 0;}
 #endif
 
 #ifdef HAVE_LITE
@@ -225,8 +278,74 @@ static inline uint64 rdtsc()
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
+//struct Arg { Ruby a; };
+//struct ArgList { int n; Pt<Arg> v; };
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
+#define INT(x) TO(int32,x)
+#define TO(t,x) convert(x,(t*)0)
+
+// not using NUM2INT because Ruby can convert Symbol to int
+// (by compatibility with Ruby 1.4)
+static inline int32 convert(Ruby x, int32 *foo) {
+	if (INTEGER_P(x)) return NUM2INT(x);
+	if (FLOAT_P(x)) return NUM2INT(rb_funcall(x,SI(round),0));
+	RAISE("expected Integer or Float (got %s)",
+		rb_str_ptr(rb_funcall(x,SI(inspect),0)));
+}
+static int16 convert(Ruby x, int16 *foo) {
+	int v = INT(x);
+	if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
+	return v;}
+static uint16 convert(Ruby x, uint16 *foo) {
+	int v = INT(x);
+	if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
+	return v;}
+static bool  convert(Ruby x, bool  *foo) {
+	if (x==Qtrue) return true;
+	if (x==Qfalse) return false;
+	switch (TYPE(x)) {
+		case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!INT(x);
+		default: RAISE("can't convert to bool");
+	}
+}
+
+#ifdef HAVE_GCC64
+static uint64 convert(Ruby val, uint64 *foo) { return NUM2ULONG(val); }
+static  int64 convert(Ruby val,  int64 *foo) { return NUM2ULONG(val); }
+static Ruby gf_ull2num(uint64 val) { return ULONG2NUM(val); }
+static  Ruby gf_ll2num(uint64 val) { return  LONG2NUM(val); }
+#else
+static uint64 convert(Ruby val, uint64 *foo) {
+	if (FIXNUM_P(val)) return (uint64)FIX2LONG(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	uint64 v = (uint64)NUM2UINT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
+static int64 convert(Ruby val, int64 *foo) {
+	if (FIXNUM_P(val)) return (int64)FIX2LONG(val);
+	if (TYPE(val)!=T_BIGNUM) RAISE("type error");
+	int64 v = (int64)NUM2INT(rb_funcall(val,SI(>>),1,INT2FIX(32))) << 32;
+	return v + NUM2UINT(rb_funcall(val,SI(&),1,UINT2NUM(0xffffffff)));}
+static Ruby gf_ull2num(uint64 val) {
+    Ruby x = rb_funcall(UINT2NUM((uint32)(val>>32)),SI(<<),1,INT2FIX(32));
+    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
+static Ruby gf_ll2num(int64 val) {
+    Ruby x = rb_funcall( INT2NUM(( int32)(val>>32)),SI(<<),1,INT2FIX(32));
+    return rb_funcall(x,SI(+),1,UINT2NUM((uint32)val));}
+#endif
+    
+static long convert(Ruby x, long *foo) {
+	return sizeof(long)==sizeof(int32) ?
+		convert(x,(int32 *)0) :
+		convert(x,(int64 *)0);
+}
+
+static float64 convert(Ruby x, float64 *foo) {
+	if (INTEGER_P(x)) return INT(x);
+	if (TYPE(x)!=T_FLOAT) RAISE("not a Float");
+	return ((RFloat*)x)->value;}
+static float32 convert(Ruby x, float32 *foo) {
+	return (float32) convert(x,(float64 *)0);}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
@@ -234,79 +353,32 @@ typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets")
+	MACRO(iv_outlets,"@outlets") \
+	MACRO(iv_ninlets,"@ninlets") \
+	MACRO(iv_noutlets,"@noutlets")
 extern struct BuiltinSymbols {
 #define FOO(_sym_,_str_) Ruby _sym_;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
 
-struct Numop;
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
-	R(int           x) {r=  INT2NUM(x);}
-	R(unsigned      x) {r= UINT2NUM(x);}
-	R(long          x) {r= LONG2NUM(x);}
+	R(int x) {r=INT2NUM(x);}
+	R(unsigned x) {r=UINT2NUM(x);}
+	R(long x) {r=LONG2NUM(x);}
 	R(unsigned long x) {r=ULONG2NUM(x);}
-	R(double     x) {r=rb_float_new(x);}
-#ifdef HAVE_GCC64
-	R( int64 x) {r= LONG2NUM(x);}
-	R(uint64 x) {r=ULONG2NUM(x);}
-#else
-	R( int64 x) {
-		r = rb_funcall( INT2NUM(( int32)(x>>32)),SI(<<),1,INT2FIX(32));
-		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
-	R(uint64 x) {
-		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
-		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
-#endif
-	R(Numop *x);
-
-	operator bool () {
-		if (r==Qtrue) return true;
-		if (r==Qfalse) return false;
-		switch (TYPE(r)) {
-			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
-			default: RAISE("can't convert to bool");}}
+	R(double x) {r=rb_float_new(x);}
+	R( int64 x) {r= gf_ll2num(x);}
+	R(uint64 x) {r=gf_ull2num(x);}
+	operator bool() {return !!INT2NUM(r);}
 	operator uint8 () {return INT2NUM(r);}
-	operator int16 () {
-		int v = (int32)*this;
-		if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
-		return v;}
-	operator uint16 () {
-		int v = (int32)*this;
-		if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
-		return v;}
-	operator int32 () {
-		// not using plain NUM2INT because Ruby can convert Symbol to int (compat Ruby1.4)
-		if (INTEGER_P(r)) return NUM2INT(r);
-		if (FLOAT_P(r)) return NUM2INT(rb_funcall(r,SI(round),0));
-		RAISE("expected Integer or Float (got %s)",
-			rb_str_ptr(rb_funcall(r,SI(inspect),0)));}
-	operator long () {
-		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
-
-#ifdef HAVE_GCC64
-	operator uint64 () {return NUM2ULONG(r);}
-	operator  int64 () {return NUM2ULONG(r);}
-#else
-	operator uint64 () {
-		if (FIXNUM_P(r)) return (uint64)FIX2LONG(r);
-		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
-		uint64 v = (uint64)NUM2UINT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
-		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
-	operator  int64 () {
-		if (FIXNUM_P(r)) return (int64)FIX2LONG(r);
-		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
-		int64 v = (int64)NUM2INT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
-		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
-#endif
-	operator float32 () {return (float64)*this;}
-	operator float64 () {
-		if (INTEGER_P(r)) return (float64)(int32)*this;
-		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
-		return ((RFloat*)r)->value;}
+	operator int16 () {return INT2NUM(r);}
+	operator int32 () {return INT2NUM(r);}
+	operator int64 () {return convert(r,(int64*)0);}
+	operator float32 () {return convert(r,(float32*)0);}
+	operator float64 () {return convert(r,(float64*)0);}
 #define FOO(As,Op) \
 	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
 	FOO(+=,+) FOO(-=,-) FOO(*=,*) FOO(/=,/) FOO(%=,%)
@@ -323,20 +395,86 @@ typedef struct R {
 	static R value(VALUE r) {R x; x.r=r; return x;}
 } ruby;
 
-#define INT(x)  convert(x,(int32*)0)
-#define TO(T,x) convert(x,(T*)0)
-template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
-
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 
-static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
-static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
-static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
+static inline R ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
+static inline R gf_abs(R a) { return R::value(rb_funcall(a.r,SI(abs),0)); }
+static inline R cmp(R a, R b) { return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 
 //****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
 
-//template <class T> class P : T * {};
+template <class T> class Pt {
+typedef ptrdiff_t /* and not int nor long */ Z;
+public:
+	T *p;
+#ifdef HAVE_DEBUG
+	T *start;
+	Z n;
+	Pt() : p(0), start(0), n(0) {}
+	Pt(T *q, Z _n) : p(q), start(q), n(_n) {}
+	Pt(T *q, Z _n, T *_start) : p(q), start(_start), n(_n) {}
+#else
+	Pt() : p(0) {}
+	Pt(T *q, Z _n, T *_start=0) : p(q) {}
+#endif
+	T &operator *() { return *p; }
+	Pt operator+=(Z i) { p+=i; return *this; }
+	Pt operator-=(Z	i) { p-=i; return *this; }
+	Pt operator++(   ) { p++;  return *this; }
+	Pt operator--(   ) { p--;  return *this; }
+	Pt operator++(int) { Pt f(*this); ++*this; return f; }
+	Pt operator--(int) { Pt f(*this); --*this; return f; }
+	T &operator[](Z i) {
+#ifdef HAVE_DEBUG_HARDER
+		if (!(p+i>=start && p+i<start+n))
+			BUG("BUFFER OVERFLOW: 0x%08lx[%ld]=0x%08lx is not in 0x%08lx..0x%08lx",
+				(long)p, (long)i, (long)(p+i),(long)start,(long)(start+n));
+#endif
+		return p[i];
+	}
+
+	void will_use(int k) {
+#ifdef HAVE_DEBUG_HARDER
+		if (k==0) return;
+		T *q = p+k;
+		if (!(p>=start && p<start+n && q>=start && q<=start+n))
+			BUG("BUFFER OVERFLOW: 0x%08lx...0x%08lx is not all inside 0x%08lx...0x%08lx",
+				(long)p,(long)q,start,(long)(start+n));
+#endif
+	}
+
+	Z operator-(Pt x) { return p-x.p; }
+	operator bool   () { return (bool   )p; }
+	operator void  *() { return (void  *)p; }
+	operator int8  *() { return (int8  *)p; }
+
+/* how do i make typecast operators that are not also default conversions??? */
+/* this should be found so i can clean up the following: */
+#define FOO(S) operator S *() { return (S *)p; }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#ifdef HAVE_DEBUG
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,n*sizeof(T)/1,(S *)start); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#else
+#define FOO(S) operator Pt<S>() { return Pt<S>((S *)p,0); }
+EACH_NUMBER_TYPE(FOO)
+#undef FOO
+#endif
+/* end 0.8 (TESTING) */
+	
+#ifdef HAVE_DEBUG
+	template <class U> Pt operator+(U x) { return Pt(p+x,n,start); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,n,start); }
+#else
+	template <class U> Pt operator+(U x) { return Pt(p+x,0); }
+	template <class U> Pt operator-(U x) { return Pt(p-x,0); }
+#endif
+};
+
+//template <class T> class P : Pt<T> {};
 //a reference counting pointer class
 template <class T> class P {
 public:
@@ -362,21 +500,27 @@ public:
 #ifndef IS_BRIDGE
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
+// note that C++ (GCC 3.4) now refuses the :: prefix so i removed it in the 4 following lines:
 inline void *operator new   (size_t n) { return gfmalloc(n); }
 inline void *operator new[] (size_t n) { return gfmalloc(n); }
 inline void  operator delete   (void *p) { gffree(p); }
 inline void  operator delete[] (void *p) { gffree(p); }
 #endif
 
-void gfmemcopy(uint8 *out, const uint8 *in, long n);
-template <class T> inline void COPY(T *dest, T *src, long n) {
+#define STACK_ARRAY(T,V,N) T V##_foo[N]; Pt<T> V(V##_foo,N);
+#define ARRAY_NEW(T,N) (Pt<T>((T *)new T[N],N))
+
+void gfmemcopy(uint8 *out, const uint8 *in, int n);
+template <class T> inline void COPY(Pt<T> dest, Pt<T> src, int n) {
+	src.will_use(n); dest.will_use(n);
 	gfmemcopy((uint8*)dest,(const uint8*)src,n*sizeof(T));
 }
-template <class T> inline void CLEAR(T *dest, long n) {
+template <class T> inline void CLEAR(Pt<T> dest, int n) {
+	dest.will_use(n);
 	memset(dest,0,n*sizeof(T));
 }
-template <class T> static void memswap (T *a, T *b, long n) {
-	T c[n]; COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
+template <class T> static void memswap (Pt<T> a, Pt<T> b, int n) {
+	STACK_ARRAY(T,c,n); COPY(c,a,n); COPY(a,b,n); COPY(b,c,n);
 }
 
 //****************************************************************
@@ -399,7 +543,7 @@ struct CObject {
 			raise(11);
 		}
 	}
-	virtual ~CObject() { check_magic(); magic = 0xDEADBEEF; }
+	virtual ~CObject() { magic = 0xDEADBEEF; }
 	virtual void mark() {} // not used for now
 };
 void CObject_free (void *);
@@ -409,49 +553,81 @@ struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 
-#undef check
-
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
-typedef int32 Card; /* should be switched to long int soon */
 \class Dim < CObject
 struct Dim : CObject {
-	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
-	Card n;
-	Card v[MAX_DIM]; // real stuff
+	static const int MAX_DIM=16; // maximum number of dimensions in a grid
+	int n;
+	Pt<int32> v; // safe pointer
+	int32 v2[MAX_DIM]; // real stuff
 	void check(); // test invariants
-	Dim(Card n, Card *v){this->n=n; COPY(this->v,v,n); check();}
-	Dim()                    {n=0;                     check();}
-	Dim(Card a)              {n=1;v[0]=a;              check();}
-	Dim(Card a,Card b)       {n=2;v[0]=a;v[1]=b;       check();}
-	Dim(Card a,Card b,Card c){n=3;v[0]=a;v[1]=b;v[2]=c;check();}
-	Dim(Dim *a, Dim *b, Dim *c=0) {
-		n=a->n+b->n; if(c) n+=c->n;
-		if (n>Dim::MAX_DIM) RAISE("too many dims");
-		COPY(v     ,a->v,a->n);
-		COPY(v+a->n,b->v,b->n);
-		if(c) COPY(v+a->n+b->n,c->v,c->n);
-	}
-	Card count() {return n;}
-	Card get(Card i) {return v[i];}
-/*	Dim *range(Card i, Card j) {return new Dim(...);} */
-	Card prod(Card start=0, Card end=-1) {
+	Dim(int n, Pt<int32> v) { this->v = Pt<int32>(v2,MAX_DIM); this->n = n; COPY(this->v,v,n); check();}
+	Dim(int n,    int32 *v) { this->v = Pt<int32>(v2,MAX_DIM); this->n = n; COPY(this->v,Pt<int32>(v,n),n); check();}
+	Dim()                 {v=Pt<int32>(v2,MAX_DIM); n=0;                     check();}
+	Dim(int a)            {v=Pt<int32>(v2,MAX_DIM); n=1;v[0]=a;              check();}
+	Dim(int a,int b)      {v=Pt<int32>(v2,MAX_DIM); n=2;v[0]=a;v[1]=b;       check();}
+	Dim(int a,int b,int c){v=Pt<int32>(v2,MAX_DIM); n=3;v[0]=a;v[1]=b;v[2]=c;check();}
+	int count() {return n;}
+	int get(int i) { return v[i]; }
+	int32 prod(int start=0, int end=-1) {
 		if (end<0) end+=n;
-		Card tot=1;
-		for (Card i=start; i<=end; i++) tot *= v[i];
+		int32 tot=1;
+		for (int i=start; i<=end; i++) tot *= v[i];
 		return tot;
 	}
 	char *to_s();
 	bool equal(P<Dim> o) {
 		if (n!=o->n) return false;
-		for (Card i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
+		for (int i=0; i<n; i++) if (v[i]!=o->v[i]) return false;
 		return true;
 	}
 };
 \end class Dim
 
 //****************************************************************
-//NumberTypeE is a very small int identifying the type of the (smallest) elements of a grid
+//BitPacking objects encapsulate optimised loops of conversion
+struct BitPacking;
+// those are the types of the optimised loops of conversion 
+// inputs are const
+struct Packer {
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<S> in,   Pt<uint8> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
+};
+struct Unpacker {
+#define FOO(S) void (*as_##S)(BitPacking *self, int n, Pt<uint8> in, Pt<S> out);
+EACH_INT_TYPE(FOO)
+#undef FOO
+};
+
+\class BitPacking < CObject
+struct BitPacking : CObject {
+	Packer *packer;
+	Unpacker *unpacker;
+	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
+	int bytes;
+	int size;
+	uint32 mask[4];
+	BitPacking(){::abort();} // don't call, but don't remove. sorry.
+	BitPacking(int endian, int bytes, int size, uint32 *mask,
+		Packer *packer=0, Unpacker *unpacker=0);
+	bool is_le();
+	bool eq(BitPacking *o);
+	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
+	\decl String pack2(String ins, String outs=Qnil);
+	\decl String unpack2(String ins, String outs=Qnil);
+	\decl String to_s();
+// main entrances to Packers/Unpackers
+	template <class T> void pack(  int n, Pt<T> in, Pt<uint8> out);
+	template <class T> void unpack(int n, Pt<uint8> in, Pt<T> out);
+};
+\end class
+
+int high_bit(uint32 n);
+int  low_bit(uint32 n);
+void swap32 (int n, Pt<uint32> data);
+void swap16 (int n, Pt<uint16> data);
 
 #define NT_UNSIGNED (1<<0)
 #define NT_FLOAT    (1<<1)
@@ -477,10 +653,10 @@ NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE("all_ones"),0)
 #define NONLITE(x...) x
 #endif
 #define NUMBER_TYPES(MACRO) \
-	MACRO(uint8, 8,NT_UNSIGNED, "u8,b") \
-	MACRO(int16,16,0,           "i16,s") \
-	MACRO(int32,32,0,           "i32,i") \
-	MACRO(int64,64,NT_NOTLITE,  "i64,l") \
+	MACRO(  uint8, 8,NT_UNSIGNED, "u8,b")          MACRO( int8, 8,NT_UNIMPL, "i8") \
+	MACRO( uint16,16,NT_UNSIGNED|NT_UNIMPL, "u16") MACRO(int16,16,0, "i16,s") \
+	MACRO( uint32,32,NT_UNSIGNED|NT_UNIMPL, "u32") MACRO(int32,32,0, "i32,i") \
+	MACRO( uint64,64,NT_UNSIGNED|NT_UNIMPL, "u64") MACRO(int64,64,NT_NOTLITE, "i64,l") \
 	MACRO(float32,32,NT_NOTLITE|NT_FLOAT, "f32,f") \
 	MACRO(float64,64,NT_NOTLITE|NT_FLOAT, "f64,d") \
 	MACRO(   ruby,sizeof(long),NT_NOTLITE,"r")
@@ -489,9 +665,8 @@ enum NumberTypeE {
 #define FOO(_sym_,args...) _sym_##_e,
 NUMBER_TYPES(FOO)
 #undef FOO
-number_type_table_end
+	number_type_table_end
 };
-
 
 #define FOO(_type_) \
 inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
@@ -529,53 +704,6 @@ NumberTypeE NumberTypeE_find (Ruby sym);
   case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 
-//****************************************************************
-//BitPacking objects encapsulate optimised loops of conversion
-struct BitPacking;
-// those are the types of the optimised loops of conversion 
-// inputs are const
-struct Packer {
-#define FOO(S) void (*as_##S)(BitPacking *self, long n, S *in, uint8 *out);
-EACH_INT_TYPE(FOO)
-#undef FOO
-};
-struct Unpacker {
-#define FOO(S) void (*as_##S)(BitPacking *self, long n, uint8 *in, S *out);
-EACH_INT_TYPE(FOO)
-#undef FOO
-};
-
-\class BitPacking < CObject
-struct BitPacking : CObject {
-	Packer   *  packer;
-	Unpacker *unpacker;
-	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
-	int bytes;
-	int size;
-	uint32 mask[4];
-	BitPacking(){::abort();} // don't call, but don't remove. sorry.
-	BitPacking(int endian, int bytes, int size, uint32 *mask,
-		Packer *packer=0, Unpacker *unpacker=0);
-	bool is_le();
-	bool eq(BitPacking *o);
-	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
-	\decl String   pack2(String ins, String outs=Qnil);
-	\decl String unpack2(String ins, String outs=Qnil);
-	\decl void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
-	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
-	\decl String to_s();
-// main entrances to Packers/Unpackers
-	template <class T> void   pack(long n, T *in, uint8 *out);
-	template <class T> void unpack(long n, uint8 *in, T *out);
-};
-\end class
-
-int high_bit(uint32 n);
-int  low_bit(uint32 n);
-void swap32 (long n, uint32 * data);
-void swap16 (long n, uint16 * data);
-
-//****************************************************************
 // Numop objects encapsulate optimised loops of simple operations
 
 enum LeftRight { at_left, at_right };
@@ -583,10 +711,10 @@ enum LeftRight { at_left, at_right };
 template <class T>
 struct NumopOn : CObject {
 	// Function Vectorisations
-	typedef void (*Map )(         long n, T *as, T  b ); Map  op_map;
-	typedef void (*Zip )(         long n, T *as, T *bs); Zip  op_zip;
-	typedef void (*Fold)(long an, long n, T *as, T *bs); Fold op_fold;
-	typedef void (*Scan)(long an, long n, T *as, T *bs); Scan op_scan;
+	typedef void (*Map )(        int n, T *as, T  b ); Map  op_map;
+	typedef void (*Zip )(        int n, T *as, T *bs); Zip  op_zip;
+	typedef void (*Fold)(int an, int n, T *as, T *bs); Fold op_fold;
+	typedef void (*Scan)(int an, int n, T *as, T *bs); Scan op_scan;
 	// Algebraic Properties (those involving simply numeric types)
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
@@ -613,29 +741,40 @@ struct Numop : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
-#define FOO(T) NumopOn<T> on_##T; \
-  NumopOn<T> *on(T &foo) { \
-    if (!on_##T.op_map) RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
-    return &on_##T;}
+//private:
+#define FOO(T) \
+	NumopOn<T> on_##T; \
+	NumopOn<T> *on(T &foo) { \
+		if (!on_##T.op_map) \
+			RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
+		return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	template <class T> inline void map(long n, T *as, T b) {
+//public:
+	template <class T> inline void map(int n, Pt<T> as, T b) {
+		as.will_use(n);
 		on(*as)->op_map(n,(T *)as,b);}
-	template <class T> inline void zip(long n, T *as, T * bs) {
+	template <class T> inline void zip(int n, Pt<T> as, Pt<T> bs) {
+		as.will_use(n);
+		bs.will_use(n);
 		on(*as)->op_zip(n,(T *)as,(T *)bs);}
-	template <class T> inline void fold(long an, long n, T *as, T *bs) {
+	template <class T> inline void fold(int an, int n, Pt<T> as, Pt<T> bs) {
+		as.will_use(an);
+		bs.will_use(an*n);
 		typename NumopOn<T>::Fold f = on(*as)->op_fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
-	template <class T> inline void scan(long an, long n, T *as, T *bs) {
+	template <class T> inline void scan(int an, int n, Pt<T> as, Pt<T> bs) {
+		as.will_use(an);
+		bs.will_use(an*n);
 		typename NumopOn<T>::Scan f = on(*as)->op_scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
 
-	\decl void map_m  (NumberTypeE nt,          long n, String as, String b);
-	\decl void zip_m  (NumberTypeE nt,          long n, String as, String bs);
-	\decl void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
-	\decl void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
+	\decl void map_m  (NumberTypeE nt, int n, String as, String b);
+	\decl void zip_m  (NumberTypeE nt, int n, String as, String bs);
+	\decl void fold_m (NumberTypeE nt, int an, int n, String as, String bs);
+	\decl void scan_m (NumberTypeE nt, int an, int n, String as, String bs);
 
 	Numop(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
@@ -648,8 +787,6 @@ EACH_NUMBER_TYPE(FOO)
 	}
 };
 \end class
-
-inline R::R(Numop *x) {r=x->sym;}
 
 extern NumberType number_type_table[];
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
@@ -673,31 +810,28 @@ struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
 	void *data;
-	int state; /* 0:borrowing 1:owning -1:expired(TODO) */
-	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) {
-		state=1; 
+	Grid(P<Dim> dim, NumberTypeE nt, bool clear=false) : dim(0), nt(int32_e), data(0) {
 		if (!dim) RAISE("hell");
 		init(dim,nt);
-		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
+		if (clear) {int size = bytes(); CLEAR(Pt<char>((char *)data,size),size);}
 	}
-	Grid(Ruby x) { state=1; init_from_ruby(x); }
-	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
-	template <class T> Grid(P<Dim> dim, T * data) {
-		state=0; this->dim=dim;
-		this->nt=NumberTypeE_type_of((T)0);
-		this->data = data;
+	Grid(Ruby x) : dim(0), nt(int32_e), data(0) { init_from_ruby(x); }
+	Grid(int n, Ruby *a, NumberTypeE nt=int32_e) : dim(0), nt(int32_e), data(0) {
+		init_from_ruby_list(n,a,nt);
 	}
-	long bytes() { return dim->prod()*number_type_table[nt].size/8; }
-	P<Dim> to_dim () { return new Dim(dim->prod(),(int32 *)*this); }
-#define FOO(T) operator T *() { return (T *)data; }
+	int32 bytes() { return dim->prod()*number_type_table[nt].size/8; }
+	P<Dim> to_dim () { return new Dim(dim->prod(),(Pt<int32>)*this); }
+#define FOO(type) \
+	operator type *() { return (type *)data; } \
+	operator Pt<type>() { return Pt<type>((type *)data,dim->prod()); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	Grid *dup () { /* always produce an owning grid even if from a borrowing grid */
+	Grid *dup () {
 		Grid *foo=new Grid(dim,nt);
 		memcpy(foo->data,data,bytes());
 		return foo;
 	}
-	~Grid() {if (state==1 && data) free(data);}
+	~Grid() {if (data) free(data);}
 private:
 	void init(P<Dim> dim, NumberTypeE nt) {
 		this->dim = dim;
@@ -711,7 +845,9 @@ private:
 };
 \end class Grid
 
-static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
+static inline Grid *convert (Ruby r, Grid **bogus) {
+	return r ? new Grid(r) : 0;
+}
 
 // DimConstraint interface:
 // return if d is acceptable
@@ -724,13 +860,10 @@ struct PtrGrid : public P<Grid> {
 	P<Grid> next;
 	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
-	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {          p=_p;   INCR;}
 	PtrGrid &operator =(  Grid *_p) {if(dc&&p)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
-#undef INCR
-#undef DECR
 
 #ifndef IS_BRIDGE
 static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
@@ -741,7 +874,9 @@ static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 }
 
 static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
-	return PtrGrid(convert(x,(Grid **)0));
+	PtrGrid pg;
+	pg = convert(x,(Grid **)0);
+	return pg;
 }
 #endif
 
@@ -751,9 +886,9 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 // four-part macro for defining the behaviour of a gridinlet in a class
 // C:Class I:Inlet
 #define GRID_INLET(C,I) \
-	template <class T> void C::grinw_##I (GridInlet *in, long n, T *data) { \
+	template <class T> void C::grinw_##I (GridInlet *in, int n, Pt<T> data) { \
 		((C*)(in->parent))->grin_##I(in,n,data); } \
-	template <class T> void  C::grin_##I (GridInlet *in, long n, T *data) { \
+	template <class T> void  C::grin_##I (GridInlet *in, int n, Pt<T> data) { \
 	if (n==-1)
 #define GRID_ALLOC  else if (n==-3)
 #define GRID_FLOW   else if (n>=0)
@@ -764,7 +899,7 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 // V is a PtrGrid instance-var
 #define GRID_INPUT(C,I,V) \
 GRID_INLET(C,I) { V=new Grid(in->dim,NumberTypeE_type_of(*data)); } \
-GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
+GRID_FLOW { COPY((Pt<T>)*(V)+in->dex, data, n); } GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
 // V is a PtrGrid instance-var
@@ -774,14 +909,15 @@ GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
 		} else V=        new Grid(in->dim,NumberTypeE_type_of(*data)); \
 	} GRID_FLOW { \
-		COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
+		COPY(((Pt<T>)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
 	} GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
 #define FOO(T) \
-	void (*flow_##T)(GridInlet *in, long n, T *data); \
-	void flow(GridInlet *in, long n, T *data) const {flow_##T(in,n,data);}
+	void (*flow_##T)(GridInlet *in, int n, Pt<T> data); \
+	void flow(GridInlet *in, int n, Pt<T> data) const { \
+		assert(flow_##T); flow_##T(in,n,data); }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
@@ -791,32 +927,32 @@ typedef struct  GridObject GridObject;
 struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
-private:
 	GridObject *sender;
-public:
 	P<Dim> dim;
 	NumberTypeE nt;
-	long dex;
-private:
+	int dex;
 	PtrGrid buf;// factor-chunk buffer
-	long bufi;   // buffer index: how much of buf is filled
-public:
+	int bufi;   // buffer index: how much of buf is filled
 	int mode; // 0=ignore; 4=ro; 6=rw
-//	long allocfactor,allocmin,allocmax,allocn;
-//	uint8 *alloc;
 
+	int allocfactor,allocmin,allocmax,allocn;
+	Pt<uint8> alloc;
+
+// methods
 	GridInlet(GridObject *parent_, const GridHandler *gh_) :
 		parent(parent_), gh(gh_), sender(0),
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
-	void set_factor(long factor);
+	void set_factor(int factor);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	Ruby begin(int argc, Ruby *argv);
-	void finish(); /* i thought this should be private but maybe it shouldn't. */
 
-	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
-	template <class T> void flow(int mode, long n, T *data);
+	// n=-1 is begin, and n=-2 is _finish_. the name "end" is now used
+	// as an end-marker for inlet definitions... sorry for the confusion
+	// GF-0.8: n=-3 is alloc.
+	template <class T> void flow(int mode, int n, Pt<T> data);
+	void end(); // this one ought to be called finish().
 	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
 		Grid t(argc,argv,nt); from_grid(&t);
 	}
@@ -832,12 +968,24 @@ private:
 
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin and \classinfo)
+
+// C is for class, I for inlet number
+// GRIN1 : int32 only
+// GRIN4 : all types
+// GRIN2 : integers only; no floats (no R either actually)
+// GRINF : floats only; no integers
 #ifndef HAVE_LITE
 #define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD,TR}
 #else
 #define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI}
 #endif // HAVE_LITE
-struct FClass {
+
+#define GRIN1(C,I) GRIN(0,0,C::grinw_##I,0,0,0,0)
+#define GRIN4(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I)
+#define GRIN2(C,I) GRIN(C::grinw_##I,C::grinw_##I,C::grinw_##I,C::grinw_##I,0,0,0)
+#define GRINF(C,I) GRIN(0,0,0,0,C::grinw_##I,C::grinw_##I,0)
+
+struct FClass { // 0.7.8: removed all GridObject-specific stuff.
 	void *(*allocator)(); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
@@ -850,19 +998,22 @@ struct FClass {
 struct GridOutlet : CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
-	static const long MIN_PACKET_SIZE = 1<<8;
-	static const long MAX_PACKET_SIZE = 1<<12;
+	static const int MIN_PACKET_SIZE = 1<<8;
+	static const int MAX_PACKET_SIZE = 1<<12;
 // those are set only once
 	GridObject *parent; // not a P<> because of circular refs
 	P<Dim> dim; // dimensions of the grid being sent
 	NumberTypeE nt;
+	PtrGrid buf; // temporary buffer
+	bool frozen; // is the "begin" phase finished?
 	std::vector<GridInlet *> inlets; // which inlets are we connected to
 // those are updated during transmission
-	long dex;  // how many numbers were already sent in this connection
-
+	int dex;  // how many numbers were already sent in this connection
+	int bufi; // number of bytes used in the buffer
+// methods
 	GridOutlet(GridObject *parent_, int woutlet, P<Dim> dim_, NumberTypeE nt_=int32_e) :
-	parent(parent_), dim(dim_), nt(nt_), dex(0), frozen(false), bufi(0) {
-		//int ntsz = number_type_table[nt].size;
+	parent(parent_), dim(dim_), nt(nt_), frozen(false), dex(0), bufi(0) {
+		int ntsz = number_type_table[nt].size;
 		buf=new Grid(new Dim(MAX_PACKET_SIZE/*/ntsz*/), nt);
 		begin(woutlet,dim,nt);
 	}
@@ -873,26 +1024,23 @@ struct GridOutlet : CObject {
 	// receiver doesn't modify the data; in send(), there is buffering;
 	// in send_direct(), there is not. When switching from buffered to
 	// unbuffered mode, flush() must be called
-	template <class T> void send(long n, T *data);
+	template <class T> void send(int n, Pt<T> data);
 	void flush(); // goes with send();
 
 	// give: data must be dynamically allocated as a whole: the data
 	// will be deleted eventually, and should not be used by the caller
 	// beyond the call to give().
-	template <class T> void give(long n, T *data);
+	template <class T> void give(int n, Pt<T> data);
 
 	// third way to send (upcoming, in GF-0.8.??) is called "ask".
-	template <class T> void ask(int &n, T * &data, long factor, long min, long max);
+	template <class T> void ask(int &n, Pt<T> &data, int factor, int min, int max);
 
 private:
-	bool frozen; // is the "begin" phase finished?
-	PtrGrid buf; // temporary buffer
-	long bufi; // number of bytes used in the buffer
 	void begin(int woutlet, P<Dim> dim, NumberTypeE nt=int32_e);
-	template <class T> void send_direct(long n, T *data);
-	void finish() {
+	template <class T> void send_direct(int n, Pt<T> data);
+	void end() {
 		flush();
-		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->finish();
+		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->end();
 		dim=0;
 	}
 };
@@ -913,8 +1061,8 @@ struct FObject : CObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
-	\decl R total_time_get();
-	\decl R total_time_set(Ruby x);
+	\decl Ruby total_time_get();
+	\decl Ruby total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
 	\decl void delete_m ();
@@ -938,10 +1086,9 @@ struct GridObject : FObject {
 	\decl Ruby method_missing(...);
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
-	\decl void inlet_set_factor(int inln, long factor);
-	\decl void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
+	\decl void inlet_set_factor(int inln, int factor);
+	\decl void send_out_grid_begin(int outlet, Array dim,  NumberTypeE nt=int32_e);
+	\decl void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e);
 };
 \end class GridObject
 

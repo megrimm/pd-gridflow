@@ -566,17 +566,15 @@ $nodes = {}
 XMLParserError = Exception if $use_rexml
 
 def harvest_doc_of_class xclass, v, way
-	STDERR.puts v.foreign_name
 	doc = case way; when:in:v.doc;   when:out:v.doc_out end
 	tag = case way; when:in:"inlet"; when:out:"outlet" end
 	doc.keys.each {|sel|
-		text = doc[sel]
+		text = v.doc[sel]
 		m=/^_(\d+)_(\w+)/.match sel.to_s
-		if m and m.length==2 then
+		if m then
 			xclass << XNode[tag,{"id"=>Integer(m[1])},
 			  XNode["method",{"name"=>m[2]},XString.new(text)]]
 		else
-			STDERR.puts "sel=#{sel} text=#{text}"
 			xclass << XNode["method",{"name"=>sel.to_s},XString.new(text)]
 		end
 	}
@@ -600,7 +598,7 @@ def harvest_doc tree
 		if v.doc then
 			nu << (xclass=XNode["class",{"name"=>k}])
 			harvest_doc_of_class xclass, v, :in
-			harvest_doc_of_class xclass, v, :out if v.doc_out
+			harvest_doc_of_class xclass, v, :out
 		elsif not kla[k] then
 			un << XNode["p",{},XString.new("[#{k}]")]
 		end
@@ -618,7 +616,6 @@ def read_one_page file
 		puts ""
 		puts ""
 		STDERR.puts e.inspect
-		STDERR.puts e.backtrace
 		i = parser.stack.length-1
 		(STDERR.puts "\tinside <#{parser.stack[i][0]}>"; i-=1) until i<1
 		# strange that line numbers are doubled.

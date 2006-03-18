@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -38,8 +38,6 @@ module Errno; class E000 < StandardError; end; end
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
-require "gridflow/base/Type.rb"
-
 class Array
 	def split(elem)
 		r=[]
@@ -74,7 +72,7 @@ end
 @verbose=false
 @data_path=[]
 if GridFlow.respond_to? :config then
-  @data_path << GridFlow::DIR+"/images"
+  @data_path << GridFlow.config["PUREDATA_PATH"]+"/extra/gridflow/images"
 end
 
 def self.hunt_zombies
@@ -102,29 +100,25 @@ def self.packstring_for_nt(nt)
 	else raise "no decoder for #{nt.inspect}"
 	end
 end
-def self.sizeof_nt(nt)
-	case nt
-	when :u, :u8,  :uint8; 1
-	when :s, :i16, :int16; 2
-	when :i, :i32, :int32; 4
-	when :l, :i64, :int64; 8
-	when :f, :f32, :float32; 4
-	when :d, :f64, :float64; 8
-	else raise "no decoder for #{nt.inspect}"
-	end
-end
 
 self.post_header = "[gf] "
 
 def self.gfpost2(fmt,s); post("%s",s) end
 
 if GridFlow.bridge_name then
-  post "This is GridFlow #{GridFlow::GF_VERSION} within "+
-	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
+  post "This is GridFlow #{GridFlow::GF_VERSION} within Ruby version #{RUBY_VERSION}"
   post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
+  post "Please use at least 1.6.6 if you plan to use sockets" if RUBY_VERSION<"1.6.6"
 end
 
-require "gridflow/bridge/placebo" if not GridFlow.bridge_name
+if not GridFlow.bridge_name then
+  require "gridflow/bridge/placebo"
+end
+
+Brace1 = "{".intern
+Brace2 = "}".intern
+Paren1 = "(".intern
+Paren2 = ")".intern
 
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
@@ -137,7 +131,10 @@ def self.parse(m)
 	m
 end
 
-def self.stringify_list(argv) argv.map {|x| stringify x }.join(" ") end
+def self.stringify_list(argv)
+	argv.map {|x| stringify x }.join(" ")
+end
+
 def self.stringify(arg)
 	case arg
 	when Integer, Float, Symbol; arg.to_s
@@ -151,7 +148,7 @@ end
 class FObject
 	@broken_ok = false
 	@do_loadbangs = true
-	class << self
+	class<<self
 		# global
 		attr_accessor :broken_ok
 		# per-class
@@ -172,18 +169,6 @@ class FObject
 			return @doc_out[selector] if not text
 			@doc_out[selector] = text
 		end
-		def inspect; foreign_name or super; end
-		# should it recurse into superclasses?
-		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
-	end
-	def self.help
-		gfattrs.each{|x,v|
-			s =      "attr=%-8s" % x
-			s <<    " type=%-8s" % v[0] if v[0]
-			s << " default=%-8s" % v[1] if v[1]
-			GridFlow.post "%s", s
-		}
-		GridFlow.post "total %d attributes", gfattrs.length
 	end
 	def post(*a) GridFlow.post(*a) end
 	def self.subclass(*args,&b)
@@ -258,14 +243,6 @@ class FObject
 		@properties = {}
 		@init_messages = []
 	end
-	def _0_help; self.class.help end
-	def _0_get(s=nil)
-		if s then
-			___get s
-		else
-			self.class.gfattrs.each_key{|k| ___get k }
-		end
-	end
 end
 
 class FPatcher < FObject
@@ -319,15 +296,12 @@ def GridFlow.estimate_cpu_clock
 	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
 end
 
-GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
-GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
-
 begin
 	@cpu_hertz = (0...3).map {
 		GridFlow.estimate_cpu_clock
 	}.sort[1] # median of three tries
-rescue Exception => e
-	GridFlow.post e,e.backtrace
+rescue
+	GridFlow.post $!
 end
 
 def GridFlow.find_file s
@@ -408,10 +382,3 @@ END {
 	GC.start
 }
 
-class Object
-  def method_missing(name,*args)
-    obj = (case obj; when FObject: self.info; else self.inspect end)
-    qla = (case obj; when FObject: self.info; else self.class.inspect end)
-    raise "undefined method \"#{name}\" for #{obj} in class #{qla}"
-  end
-end

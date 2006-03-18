@@ -167,17 +167,17 @@ GRID_INLET(FormatQuartz,0) {
 	if (c==3) {
 		while(n) {
 			data2[0]=255;
-			data2[1]=(uint8)data[0];
-			data2[2]=(uint8)data[1];
-			data2[3]=(uint8)data[2];
+			data2[1]=data[0];
+			data2[2]=data[1];
+			data2[3]=data[2];
 			data+=3; data2+=4; n-=3;
 		}
 	} else {
 		while(n) {
 			data2[0]=255;
-			data2[1]=(uint8)data[0];
-			data2[2]=(uint8)data[1];
-			data2[3]=(uint8)data[2];
+			data2[1]=data[0];
+			data2[2]=data[1];
+			data2[3]=data[2];
 			data+=4; data2+=4; n-=4;
 		}
 	}

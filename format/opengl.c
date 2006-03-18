@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -28,8 +28,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <signal.h>
-#ifdef __APPLE__
-#include <GLUT/glut.h>
+#ifdef MACOSX
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else
@@ -47,7 +46,7 @@ struct FormatOpenGL : Format {
 	GLuint gltex;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	uint8 * buf;
+	Pt<uint8> buf;
 	\decl void call ();
 	\decl void initialize (Symbol mode);
 	\decl void close ();
@@ -83,7 +82,7 @@ static void my_idle () { longjmp(hack,1); }
 	IEVAL(rself,"@clock.delay 100");
 }
 
-\def void resize_window (int sx, int sy) {
+\def void resize_window (int sx, int sy) {L
 	dim = new Dim(sy,sx,3);
 	char foo[666];
 	sprintf(foo,"GridFlow/GL (%d,%d,3)",sy,sx);
@@ -93,8 +92,8 @@ static void my_idle () { longjmp(hack,1); }
 	} else {
 		glutReshapeWindow(sx,sy);
 	}
-	if (buf) delete buf;
-	buf = new uint8[sy*sx*4];
+	if (buf) delete buf.p;
+	buf = ARRAY_NEW(uint8,sy*sx*4);
 	glViewport(0,0,sx,sy);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -130,6 +129,8 @@ GRID_INLET(FormatOpenGL,0) {
 	int sx = in->dim->get(1);
 	int bypl = 4*sx;
 	int y = in->dex / sxc;
+	assert((in->dex % sxc) == 0);
+	assert((n       % sxc) == 0);
 	for (; n>0; y++, data+=sxc, n-=sxc) bit_packing->pack(sx, data, buf+y*bypl);
 	} GRID_FINISH {
 } GRID_END
@@ -137,7 +138,7 @@ GRID_INLET(FormatOpenGL,0) {
 \def void close () {
 	IEVAL(rself,"@clock.unset");
 	if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
-	if (buf) delete buf;
+	if (buf) delete buf.p;
 	in_use=false;
 	if ((unsigned)window!=0xDeadBeef) {
 		glutDestroyWindow(window);
@@ -150,11 +151,6 @@ GRID_INLET(FormatOpenGL,0) {
 	if (in_use) RAISE("only one #io:opengl object at a time; sorry");
 	in_use=true;
 	if (mode!=SYM(out)) RAISE("write-only, sorry");
-	int dummy = 0;
-	glutInit(&dummy,0);
-	glutInitDisplayMode(GLUT_RGBA);
-	resize_window(0,0,320,240);
-	
 	gltex = 0;
 	glEnable(GL_TEXTURE_2D);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST); 
@@ -166,7 +162,10 @@ GRID_INLET(FormatOpenGL,0) {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	window = 0xDeadBeef;
-
+	int dummy = 0;
+	glutInit(&dummy,0);
+	glutInitDisplayMode(GLUT_RGBA);
+	resize_window(0,0,320,240);
 	uint32 mask[3] = {0xff000000,0x00ff0000,0x0000ff00};
 	bit_packing = new BitPacking(4,4,3,mask);
 	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");

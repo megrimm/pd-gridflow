@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ struct FormatQuickTimeHW : Format {
 
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
-//	int length2 = quicktime_video_length(anim,track);
+	int length2 = quicktime_video_length(anim,track);
 	if (nframe >= length) {
 //		gfpost("nframe=%d length=%d length2=%d",nframe,length,length2);
 		return Qfalse;
@@ -83,11 +83,12 @@ struct FormatQuickTimeHW : Format {
 		sy = force->get(0);
 		sx = force->get(1);
 	}
-	uint8 *buf = new uint8[sy*sx*channels];
+	Pt<uint8> buf = ARRAY_NEW(uint8,sy*sx*channels);
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
-	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
+	int result = quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
 	GridOutlet out(this,0,new Dim(sy, sx, channels),
-	NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	int bs = out.dim->prod(1);
 	out.give(sy*sx*channels,buf);
 	started=true;
 	return INT2NUM(nframe);
@@ -130,11 +131,11 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	uint8 *rows[sy];
 	if (sizeof(T)>1) {
 		uint8 data2[n];
-		bit_packing->pack(sx*sy,data,(uint8 *)data2);
+		bit_packing->pack(sx*sy,data,Pt<uint8>(data2,n));
 		for (int i=0; i<sy; i++) rows[i]=data2+i*sx*channels;
 		quicktime_encode_video(anim,rows,track);
 	} else {
-		for (int i=0; i<sy; i++) rows[i]=(uint8 *)data+i*sx*channels;
+		for (int i=0; i<sy; i++) rows[i]=data+i*sx*channels;
 		quicktime_encode_video(anim,rows,track);
 	}
 } GRID_FINISH {

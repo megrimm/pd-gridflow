@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -68,7 +68,7 @@ GRID_INLET(FormatJPEG,0) {
 	uint8 row[rowsize2];
 	uint8 *rows[1] = { row };
 	while (n) {
-		bit_packing->pack(in->dim->get(1),data,row);
+		bit_packing->pack(in->dim->get(1),data,Pt<uint8>(row,rowsize));
 		jpeg_write_scanlines(&cjpeg,rows,1);		
 		n-=rowsize; data+=rowsize;
 	}
@@ -102,7 +102,7 @@ static bool gfeof(FILE *f) {
 	uint8 *rows[1] = { row };
 	for (int n=0; n<sy; n++) {
 		jpeg_read_scanlines(&djpeg,rows,1);
-		out.send(sx*chans,row);
+		out.send(sx*chans,Pt<uint8>(row,sx*chans));
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);

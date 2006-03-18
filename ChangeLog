@@ -1,20 +1,5 @@
 /* $Id$ */
 
-version 0.8.2 (2006.03.17):
-
- * Ruby 1.9 required
- * removed jmax2pd
- * fixes of various compilation problems
- * new object classes: [realtimer], [#export_pix], [#import_pix],
-   [#border], [#fft]
- * beginning support for LTIlib. new object classes:
-   [lti], [lti.meanShiftSegmentation], etc.
- * added "load" method in [gridflow]. (thanks Claude)
- * automatic attribute generator for C++
- * added "help" and "get" methods to *all* classes (!!!)
- * no more "make install"
- * not using mkmf.rb (ruby's makefile generator) anymore
-
 version 0.8.1 (2006.02.20):
 
  * [ls] now supports wildcards: ? [] * **

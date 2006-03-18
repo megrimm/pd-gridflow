@@ -1,26 +1,4 @@
 #!/usr/bin/env ruby
-=begin
-	$Id$
-
-	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	See file ../COPYING for further informations on licensing terms.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-=end
 
 $keywords = %w(class decl def end grdecl)
 $stack = []
@@ -28,25 +6,21 @@ $classes = []
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:static)
-Arg  = Struct.new(:type,:name,:default)
-Attr = Struct.new(:type,:name,:default,:virtual)
+Arg = Struct.new(:type,:name,:default)
 
 class MethodDecl
 	def ==(o)
 		return false unless rettype==o.rettype && static==o.static &&
-			maxargs==o.maxargs
+		maxargs==o.maxargs # && minargs==o.minargs 
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
 	end
-	attr_accessor:done
 end
 
 class Arg
-  def canon(type)
-    type="Grid *" if type=="PtrGrid"
-    type
-  end
-  def ==(o) canon(type)==canon(o.type) && name==o.name end
+	def ==(o)
+		type==o.type && name==o.name # && default==o.default
+	end
 end
 
 In = File.open ARGV[0], "r"
@@ -59,7 +33,7 @@ def handle_class(line)
 	q=ClassDecl.new($1,$2,{},{},{},false)
 	$stack << q
 	$classes << q
-	Out.print "/* begin class */"
+	Out.puts ""
 end
 
 def parse_methoddecl(line,term)
@@ -87,46 +61,41 @@ end
 
 def unparse_arglist(arglist,with_default=true)
 	arglist.map {|arg|
-		x="#{arg.type} #{arg.name}"
-		x << '=' << arg.default if with_default and arg.default
+		x="#{arg.type} #{arg.name} "
+		x<<'='<<arg.default if with_default and arg.default
 		x
 	}.join(", ")
 end
 
-def where; "[#{ARGV[0]}:#{$linenumber}]" end
+def where
+  "[#{ARGV[0]}:#{$linenumber}]"
+end
 
 def handle_attr(line)
-	line.gsub!(/\/\/.*$/,"") # remove comment
-	frame = $stack[-1]
 	type = line.gsub(%r"//.*$","").gsub(%r"/\*.*\*/","").gsub(%r";?\s*$","")
-	virtual = !!type.slice!(/\(\)$/)
 	name = type.slice!(/\w+$/)
 	raise "missing \\class #{where}" if
-		not $stack[-1] or not ClassDecl===frame
-	handle_decl "void ___get(Symbol s);" if frame.attrs.size==0
-	frame.attrs[name]=Attr.new(type,name,nil,virtual)
-	if virtual then
-		handle_decl "#{type} #{name}();"
-	else
-		Out.print line
-	end
-	handle_decl "void _0_#{name} (#{type} #{name});"
+		not $stack[-1] or not ClassDecl===$stack[-1]
+	$stack[-1].attrs[name]=Arg.new(type,name,nil)
+	Out.print line.gsub(/\/\/.*$/,"") # hack!
+	handle_decl "void _0_#{name}_m (#{type} #{name});"
+#	Out.puts "# #{$linenumber}"
 end
 
 def handle_decl(line)
-	frame = $stack[-1]
 	raise "missing \\class #{where}" if
-		not frame or not ClassDecl===frame
-	classname = frame.name
+		not $stack[-1] or not ClassDecl===$stack[-1]
+	classname = $stack[-1].name
 	m = parse_methoddecl(line,";\s*$")
-	frame.methods[m.selector] = m
+	$stack[-1].methods[m.selector] = m
 
 	Out.print "static " if m.static
-	Out.print "#{m.rettype} #{m.selector}(VA"
+	Out.print "#{m.rettype} #{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
 	Out.print "#{unparse_arglist m.arglist});"
-	Out.print "static Ruby #{m.selector}_wrap"+
-	"(VA, Ruby rself); "
+	Out.puts "static Ruby #{m.selector}_wrap"+
+	"(int argc, Ruby *argv, Ruby rself);//FCS"
+#	Out.puts "# #{$linenumber}"
 end
 
 def handle_def(line)
@@ -147,7 +116,7 @@ def handle_def(line)
 	end
 
 	Out.print "Ruby #{classname}::#{m.selector}_wrap"+
-	"(VA, Ruby rself) {"+
+	"(int argc, Ruby *argv, Ruby rself) {"+
 	"static const char *methodspec = "+
 	"\"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"+
 	"DGS(#{classname});"
@@ -173,13 +142,13 @@ def handle_def(line)
 		when "String"
 			Out.print "if (argc>#{i} && TYPE(argv[#{i}])==T_SYMBOL) "+
 			"argv[#{i}]=rb_funcall(argv[#{i}],SI(to_s),0);"
-			Out.print "else if (argc>#{i} && TYPE(argv[#{i}])!=T_STRING) "+
+			Out.print "if (argc>#{i} && TYPE(argv[#{i}])!=T_STRING) "+
 			error[arg.type,"argv[#{i}]"]+";"
 		end
 	}
 
 #	Out.print "return " if m.rettype!="void"
-	Out.print "#{m.rettype} foo = " if m.rettype!="void" ###
+	Out.print "VALUE foo = " if m.rettype!="void" ###
 
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -189,73 +158,37 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-        if m.rettype=="R"
-	  Out.print ").r;"
-	else
-	  Out.print ");"
-	end
+	Out.print ");"
 	Out.print "self->check_magic();"
-	
-	case m.rettype
-	when "void": Out.print "return Qnil;"
-	when "Ruby","Symbol","Array","String": Out.print "return foo;"
-	else 
-		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
-		Out.print "return R(foo).r;"
-	end
-	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
+	Out.print "return Qnil;" if m.rettype=="void"
+	Out.print "return foo;" if m.rettype!="void" ###
+	Out.print "} #{m.rettype} #{classname}::#{m.selector}(int argc, Ruby *argv"
 	Out.print "," if m.arglist.length>0
-	Out.print "#{unparse_arglist m.arglist, false})#{term} "
-	qlass.methods[m.selector].done=true
+	Out.puts "#{unparse_arglist m.arglist, false})#{term}//FCS"
 end
 
 def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
-	Out.print "static void #{cl}_startup (Ruby rself);"
-	Out.print "static void *#{cl}_allocator () {return new #{cl};}"
-	Out.print "static MethodDecl #{cl}_methods[] = {"
-	Out.print frame.methods.map {|foo,method|
+	Out.puts "static void #{cl}_startup (Ruby rself);"
+	Out.puts "static void *#{cl}_allocator () {return new #{cl};}"
+	Out.puts "static MethodDecl #{cl}_methods[] = {"
+	Out.puts frame.methods.map {|foo,method|
 		c,s = frame.name,method.selector
 		"{ \"#{s}\",(RMethod)#{c}::#{s}_wrap }"
 	}.join(",")
-	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
-	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
-#	STDERR.puts "attributes: "+
-	get="void ___get(Symbol s) {"
-	get << "Ruby _r_[3]={INT2NUM(convert(rb_ivar_get(rb_obj_class(rself),SI(@noutlets)),(int*)0)-1),s,Qnil};"
-	frame.attrs.each {|name,attr|
-		virtual = if attr.virtual then "(0,0)" else "" end
-		get << "if (s==SYM(#{name})) _r_[2]=R(#{name}#{virtual}).r; else "
-		if frame.methods["_0_"+name].done then
-			STDERR.puts "skipping already defined \\attr #{name}"
-			next
-		end
-		type,name,default = attr.to_a
-		#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-		handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
-	}
-	startup2 = "@gfattrs = {"
-	frame.attrs.each {|name,attr|
-		startup2 += ":#{name} => [],"
-	}
-	startup2 += "}"
-	line.gsub!(/{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
-		raise "\startup line should have a '{' (sorry)"
-
-	get << "RAISE(\"unknown attr %s\",rb_sym_name(s)); send_out(3,_r_);}"
-	handle_def get if frame.attrs.size>0
-
-	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
+	Out.puts "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
+	Out.puts "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
+	Out.puts "void #{frame.name}_startup (Ruby rself) "+line
 end
 
 def handle_grin(line)
 	fields = line.split(/\s+/)
 	i = fields[0].to_i
 	c = $stack[-1].name
-	Out.print "template <class T> void grin_#{i}(GridInlet *in, long n, T *data);"
-	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
+	Out.print "template <class T> void grin_#{i}(GridInlet *in, int n, Pt<T> data);"
+	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, int n, Pt<T> data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "Ruby _#{i}_grid(...);"
 	$stack[-1].grins[i] = fields.dup
@@ -275,18 +208,16 @@ def handle_end(line)
 		frame.attrs.each {|name,attr|
 			type,name,default = attr.to_a
 			#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-			#handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
+			handle_def "void _0_#{name}_m (#{type} #{name}) { this->#{name}=#{name}; }"
 		}
 		frame.grins.each {|i,v|
-			cli = "#{cl}::grinw_#{i}"
 			k = case v[1]
-			when     nil: [1,1,1,1,1,1,1]
-			when 'int32': [0,0,1,0,0,0,0]
-			when   'int': [1,1,1,1,0,0,0]
-			when 'float': [0,0,0,0,1,1,0]
+			when nil; '4'
+			when 'int32'; '1'
+			when 'int'; '2'
+			when 'float'; 'F'
 			else raise 'BORK BORK BORK' end
-			ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
-			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
+			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN#{k}(#{cl},#{i});"
 			handle_def "Ruby _#{i}_grid(...) {"+
 				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
@@ -294,11 +225,12 @@ def handle_end(line)
 
 		}
 		$stack.pop
+		Out.puts "# #{$linenumber}"
 	end
 	if :ruby==frame then
 		if fields[0]!="ruby" then raise "expected \\end ruby" end
 	end
-	Out.print " /*end class*/ "
+	Out.puts ""
 end
 
 def handle_startall(line)
@@ -310,9 +242,11 @@ def handle_startall(line)
 			Out.print "Qnil);"
 		end
 	}
+	Out.puts ""
 end
 
 def handle_ruby(line)
+	Out.puts ""
 	$stack.push :ruby
 end
 
@@ -324,9 +258,10 @@ loop{
 	if /^\s*\\(\w+)\s*(.*)$/.match x then
 		begin
 			send("handle_#{$1}",$2)
-			Out.puts "//FCS"
 		rescue StandardError => e
-			STDERR.puts e.inspect, "at line #{$linenumber}", e.backtrace
+			STDERR.puts e.inspect
+			STDERR.puts "at line #{$linenumber}"
+			STDERR.puts e.backtrace
 			File.unlink ARGV[1]
 			exit 1
 		end

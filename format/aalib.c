@@ -38,7 +38,7 @@ AAAttr;
 struct FormatAALib : Format {
 	aa_context *context;
 	aa_renderparams *rparams;
-	\attr bool autodraw;
+	int autodraw; /* as for X11 */
 	bool raw_mode;
 
 	FormatAALib () : context(0), autodraw(1) {}
@@ -48,6 +48,7 @@ struct FormatAALib : Format {
 	\decl void _0_hidecursor ();
 	\decl void _0_print (int y, int x, int a, Symbol text);
 	\decl void _0_draw ();
+	\decl void _0_autodraw (int autodraw);
 	\decl void _0_dump ();
 	\grin 0 int
 };
@@ -112,13 +113,17 @@ GRID_INLET(FormatAALib,0) {
 	aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(text));
 	if (autodraw==1) aa_flush(context);
 }
-
+\def void _0_autodraw (int autodraw) {
+	if (autodraw<0 || autodraw>1)
+		RAISE("autodraw=%d is out of range",autodraw);
+	this->autodraw = autodraw;
+}
 \def void _0_dump () {
 	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
 	GridOutlet out(this,0,new Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
 		for (int x=0; x<aa_scrwidth(context); x++) {
-			int32 data[2];
+			STACK_ARRAY(int32,data,2);
 			data[0] = context->textbuffer[y*aa_scrwidth(context)+x];
 			data[1] = context->attrbuffer[y*aa_scrwidth(context)+x];
 			out.send(2,data);

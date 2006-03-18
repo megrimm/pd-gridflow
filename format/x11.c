@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -54,16 +54,16 @@ struct FormatX11 : Format {
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
 	Window root_window;
-	Colormap colormap;/* for 256-color mode */
+	Colormap colormap; /* for 256-color mode */
 	short depth;
-	int transfer;	  /* 0=plain 1=xshm 2=xvideo */
-	bool use_stripes; /* use alternate conversion in 256-color mode */
+	int transfer;	   /* 0=plain 1=xshm 2=xvideo */
+	bool use_stripes;  /* use alternate conversion in 256-color mode */
 /* at the Window level */
-	Window window;    /* X11 window number */
-	Window parent;    /* X11 window number of the parent */
-	GC imagegc;       /* X11 graphics context (like java.awt.Graphics) */
-	XImage *ximage;   /* X11 image descriptor */
-	uint8 *image;     /* the real data (that XImage binds to) */
+	Window window;       /* X11 window number */
+	Window parent;       /* X11 window number of the parent */
+	GC imagegc;          /* X11 graphics context (like java.awt.Graphics) */
+	XImage *ximage;      /* X11 image descriptor */
+	Pt<uint8> image;     /* the real data (that XImage binds to) */
 	bool is_owner;
 	int32 pos[2];
 	P<BitPacking> bit_packing;
@@ -81,7 +81,7 @@ struct FormatX11 : Format {
     int last_encoding;
 #endif
 	FormatX11 () : transfer(0), use_stripes(false), 
-	window(0), ximage(0), image(0), is_owner(true),
+	window(0), ximage(0), image(Pt<uint8>()), is_owner(true),
 	dim(0), lock_size(false), override_redirect(false)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
@@ -105,6 +105,7 @@ struct FormatX11 : Format {
 	\decl void _0_setcursor (int shape);
 	\decl void _0_hidecursor ();
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
+	\decl void _0_fall_thru (int flag);
 	\decl void _0_transfer (Symbol s);
 	\decl void _0_title (String s=Qnil);
 	\grin 0 int
@@ -225,9 +226,10 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
-	uint8 b2[bs];
+	STACK_ARRAY(uint8,b2,bs);
 	for(int y=0; y<sy; y++) {
-		uint8 *b1 = image + ximage->bytes_per_line * y;
+		Pt<uint8> b1 = Pt<uint8>(image,ximage->bytes_per_line*dim->get(0))
+			+ ximage->bytes_per_line * y;
 		bit_packing->unpack(sx,b1,b2);
 		out.send(bs,b2);
 	}
@@ -257,7 +259,7 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		ximage = XCreateImage(display,visual,depth,ZPixmap,0,0,sx,sy,8,0);
 		int size = ximage->bytes_per_line*ximage->height;
 		if (!ximage) RAISE("can't create image"); 
-		image = new uint8[size];
+		image = ARRAY_NEW(uint8,size);
 		ximage->data = (int8 *)image;
 	} break;
 #ifdef HAVE_X11_SHARED_MEMORY
@@ -268,11 +270,13 @@ bool FormatX11::alloc_image (int sx, int sy) {
 		XSync(display,0);
 		if (transfer==0) return alloc_image(sx,sy);
 		int size = ximage->bytes_per_line*ximage->height;
+		gfpost("size = %d",size);
 		shm_info->shmid = shmget(IPC_PRIVATE,size,IPC_CREAT|0777);
 		if(shm_info->shmid < 0) RAISE("shmget() failed: %s",strerror(errno));
 		ximage->data = shm_info->shmaddr = (char *)shmat(shm_info->shmid,0,0);
 		if ((long)(shm_info->shmaddr) == -1) RAISE("shmat() failed: %s",strerror(errno));
-		image = (uint8 *)ximage->data;
+		gfpost("shmaddr=%p",shm_info->shmaddr);
+		image = Pt<uint8>((uint8 *)ximage->data,size);
 		shm_info->readOnly = False;
 		if (!XShmAttach(display, shm_info)) RAISE("ERROR: XShmAttach: big problem");
 		XSync(display,0); // make sure the server picks it up
@@ -326,7 +330,7 @@ retry:
 void FormatX11::dealloc_image () {
 	if (!ximage) return;
 	switch (transfer) {
-	case 0: XFree(ximage); ximage=0; image=0; break;
+	case 0: XFree(ximage); ximage=0; image=Pt<uint8>(); break;
 #ifdef HAVE_X11_SHARED_MEMORY
 	case 1:
 		shmdt(ximage->data);
@@ -334,7 +338,7 @@ void FormatX11::dealloc_image () {
 		if (shm_info) {delete shm_info; shm_info=0;}
 		XFree(ximage);
 		ximage = 0;
-		image = 0;
+		image = Pt<uint8>();
 	break;
 #endif
 #ifdef HAVE_X11_XVIDEO
@@ -369,12 +373,7 @@ void FormatX11::resize_window (int sx, int sy) {
 			CWOverrideRedirect|CWDontPropagate, &xswa);
 		if(!window) RAISE("can't create window");
 		set_wm_hints();
-
-		XSelectInput(display, window,
-			ExposureMask|StructureNotifyMask|PointerMotionMask|
-			ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-			KeyPressMask|KeyReleaseMask);
-
+		_0_fall_thru(0,0,is_owner);
 		if (is_owner) XMapRaised(display, window);
 		imagegc = XCreateGC(display, window, 0, NULL);
 		if (visual->c_class == PseudoColor) prepare_colormap(); 
@@ -402,6 +401,7 @@ GRID_INLET(FormatX11,0) {
 	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1);
 	int y = in->dex/sxc;
+	int oy = y;
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		// convert line
 		if (use_stripes) {
@@ -532,6 +532,15 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
+	XFlush(display);
+}
+
+\def void _0_fall_thru (int flag) {
+	int mask = ExposureMask | StructureNotifyMask;
+	if (flag) mask |= ExposureMask|StructureNotifyMask|PointerMotionMask|
+		ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+		KeyPressMask|KeyReleaseMask;
+	XSelectInput(display, window, mask);
 	XFlush(display);
 }
 

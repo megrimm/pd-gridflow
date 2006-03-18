@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -89,7 +89,6 @@ FObject.subclass("gridflow",1,1) {
 		post "ruby: %s", s
 		post "returns: %s", eval(s).inspect
 	end
-	def _0_load(s) load s.to_s end
 	add_creator "@global"
 	GridFlow.bind "gridflow", "gridflow" rescue Exception
 }
@@ -306,14 +305,13 @@ GridPack.subclass("@eight",8,1) { install_rgrid 0; def initialize() super 2 end 
 GridObject.subclass("#unpack",1,0) {
   install_rgrid 0, true
   def initialize(n=2)
-    super
     @n=n
     n>=10 and raise "too many outlets"
+    super
   end
   def initialize2; add_outlets @n end
   def _0_rgrid_begin
-    dim = inlet_dim(0)
-    dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim}"
+    inlet_dim(0)==[@n] or raise "expecting Dim[#{@n}], got Dim#{@dim}"
     inlet_set_factor 0,@n
   end
   def _0_rgrid_flow data
@@ -1448,22 +1446,12 @@ FObject.subclass("sendgui",1,0) {
   doc:_0_list,"a Tcl/Tk command to send to the pd client."
 }
 
-FObject.subclass("realtimer",2,1) {
-  def initialize() @t = Time.new end
-  def _0_bang()    @t = Time.new end
-  def _1_bang()    send_out 0, (Time.new - @t)*1000 end
-}
-
 end # module GridFlow
 
 begin
-  require "gridflow/optional/lti"
-  GridFlow.post "LTI support loaded."
+  require "gridflow/rblti"
+  GridFlow.post "Ruby-LTI support loaded."
 rescue Exception => e
-  GridFlow.post "%s", e.inspect
-  e.backtrace.each {|line|
-    GridFlow.post "%s", line
-  }
-  #GridFlow.post "(lti not found)"
+  #GridFlow.post "%s", e.inspect
+  #GridFlow.post "(rblti not found)"
 end
-

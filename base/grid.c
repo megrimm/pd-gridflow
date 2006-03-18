@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -51,8 +51,8 @@ static void *Pointer_get (Ruby rself) {
 	return self->p;
 }
 
-//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);
-#define TRACE
+//#define TRACE fprintf(stderr,"%s %s [%s:%d]\n",INFO(parent),__PRETTY_FUNCTION__,__FILE__,__LINE__);assert(this);
+#define TRACE assert(this);
 
 #define CHECK_TYPE(d) \
 	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
@@ -61,22 +61,19 @@ static void *Pointer_get (Ruby rself) {
 		number_type_table[NumberTypeE_type_of(d)].name, \
 		number_type_table[this->nt].name);
 
-#define CHECK_BUSY1(s) \
-	if (!dim) RAISE("%s: " #s " not busy",INFO(parent));
-
 #define CHECK_BUSY(s) \
-	if (!dim) RAISE("%s: " #s " not busy (wanting to write %ld values)",INFO(parent),(long)n);
+	if (!dim) RAISE("%s: " #s " not busy",INFO(parent));
 
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {L;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
 		INFO(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 #define CHECK_ALIGN2(d,nt) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {L;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
 		(void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
@@ -99,7 +96,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	Ruby delim = SYM(#);
 	for (int i=0; i<n; i++) {
 		if (a[i] == delim) {
-			int32 v[i];
+			STACK_ARRAY(int32,v,i);
 			if (i!=0 && TYPE(a[i-1])==T_SYMBOL) nt=NumberTypeE_find(a[--i]);
 			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
 			init(new Dim(i,v),nt);
@@ -118,8 +115,8 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	fill:
 	int nn = dim->prod();
 	n = min(n,nn);
-#define FOO(T) { \
-	T *p = (T *)*this; \
+#define FOO(type) { \
+	Pt<type> p = (Pt<type>)*this; \
 	if (n==0) CLEAR(p,nn); \
 	else { \
 		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
@@ -134,7 +131,7 @@ void Grid::init_from_ruby(Ruby x) {
 	} else if (INTEGER_P(x) || FLOAT_P(x)) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
-		((int32 *)*this)[0] = INT(x);
+		((Pt<int32>)*this)[0] = INT(x);
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
@@ -147,12 +144,11 @@ void Grid::init_from_ruby(Ruby x) {
 // must be set before the end of GRID_BEGIN phase, and so cannot be changed
 // afterwards. This is to allow some optimisations. Anyway there is no good reason
 // why this would be changed afterwards.
-void GridInlet::set_factor(long factor) {
+void GridInlet::set_factor(int factor) {
 	if(!dim) RAISE("huh?");
 	if(factor<=0) RAISE("%s: factor=%d should be >= 1",INFO(parent),factor);
-	int i;
-	for (i=0; i<dim->n; i++) if (dim->prod(i)==factor) break;
-	if (i==dim->n) RAISE("%s: set_factor: expecting dim->prod(i) for some i",INFO(parent));
+	if (dim->prod() && dim->prod() % factor)
+		RAISE("%s: set_factor: expecting divisor",INFO(parent));
 	if (factor > 1) {
 		buf=new Grid(new Dim(factor), nt);
 		bufi=0;
@@ -162,7 +158,7 @@ void GridInlet::set_factor(long factor) {
 }
 
 static Ruby GridInlet_begin_1(GridInlet *self) {
-#define FOO(T) self->gh->flow(self,-1,(T *)0); break;
+#define FOO(T) self->gh->flow(self,-1,Pt<T>()); break;
 	TYPESWITCH(self->nt,FOO,)
 #undef FOO
 	return Qnil;
@@ -185,16 +181,15 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	nt = (NumberTypeE) INT(argv[1]);
 	argc-=2, argv+=2;
 	PROF(parent) {
-	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
-			INFO(parent), INFO(sender), INFO(back_out->parent),
-			(long)dex, (long)dim->prod());
+	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s",
+			INFO(parent), INFO(sender), INFO(back_out->parent));
 	sender = back_out->parent;
 	if ((int)nt<0 || (int)nt>=(int)number_type_table_end)
 		RAISE("%s: inlet: unknown number type",INFO(parent));
 	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
 			INFO(parent), number_type_table[nt].name);
-	int32 v[argc];
+	STACK_ARRAY(int32,v,argc);
 	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
 	P<Dim> dim = this->dim = new Dim(argc,v);
 	dex=0;
@@ -209,7 +204,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	return Qnil;
 }
 
-template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
+template <class T> void GridInlet::flow(int mode, int n, Pt<T> data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
@@ -227,14 +222,14 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		}
 		int bufn = factor();
 		if (buf && bufi) {
-			T *bufd = *buf;
-			long k = min((long)n,bufn-bufi);
+			Pt<T> bufd = (Pt<T>)*buf;
+			int k = min(n,bufn-bufi);
 			COPY(bufd+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
 				int newdex = dex+bufn;
 				if (this->mode==6) {
-					T *data2 = new T[bufn];
+					Pt<T> data2 = ARRAY_NEW(T,bufn);
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
 					gh->flow(this,bufn,data2);
@@ -250,7 +245,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		if (m) {
 			int newdex = dex + m;
 			if (this->mode==6) {
-				T *data2 = new T[m];
+				Pt<T> data2 = ARRAY_NEW(T,m);
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
 				gh->flow(this,m,data2);
@@ -261,9 +256,10 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		}
 		data += m;
 		n -= m;
-		if (buf && n>0) COPY((T *)*buf+bufi,data,n), bufi+=n;
+		if (buf && n>0) COPY((Pt<T>)*buf+bufi,data,n), bufi+=n;
 	}break;
 	case 6:{
+		assert(!buf);
 		int newdex = dex + n;
 		gh->flow(this,n,data);
 		if (this->mode==4) delete[] (T *)data;
@@ -274,14 +270,15 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	}} // PROF
 }
 
-void GridInlet::finish() {TRACE;
+void GridInlet::end() {TRACE;
+	assert(this);
 	if (!dim) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
 	PROF(parent) {
-#define FOO(T) gh->flow(this,-2,(T *)0);
+#define FOO(T) gh->flow(this,-2,Pt<T>());
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 	} // PROF
@@ -294,19 +291,19 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 	nt = g->nt;
 	dim = g->dim;
 	int n = g->dim->prod();
-	gh->flow(this,-1,(T *)0);
+	gh->flow(this,-1,Pt<T>());
 	if (n>0 && this->mode!=0) {
-		T * data = (T *)*g;
+		Pt<T> data = (Pt<T>)*g;
 		CHECK_ALIGN(data);
 		int size = g->dim->prod();
 		if (this->mode==6) {
-			T * d = data;
-			data = new T[size];  // problem with int64,float64 here.
+			Pt<T> d = data;
+			data = ARRAY_NEW(T,size);  // problem with int64,float64 here.
 			COPY(data,d,size);
 			CHECK_ALIGN(data);
 			gh->flow(this,n,data);
 		} else {
-			//int ntsz = number_type_table[nt].size;
+			int ntsz = number_type_table[nt].size;
 			int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
 			if (!m) m++;
 			m *= factor();
@@ -318,7 +315,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			}			
 		}
 	}
-	gh->flow(this,-2,(T *)0);
+	gh->flow(this,-2,Pt<T>());
 	//!@#$ add error handling.
 	// rescue; abort(); end ???
 	dim = 0;
@@ -348,7 +345,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
 	frozen=true;
-	if (!dim->prod()) {finish(); return;}
+	if (!dim->prod()) {end(); return;}
 	int32 lcm_factor = 1;
 	for (uint32 i=0; i<inlets.size(); i++) lcm_factor = lcm(lcm_factor,inlets[i]->factor());
 	if (nt != buf->nt) {
@@ -361,10 +358,11 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send_direct(long n, T *data) {TRACE;
+void GridOutlet::send_direct(int n, Pt<T> data) {TRACE;
+	assert(data); assert(frozen);
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
-		long pn = min((long)n,MAX_PACKET_SIZE);
+		int pn = min(n,MAX_PACKET_SIZE);
 		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->flow(4,pn,data);
 		data+=pn, n-=pn;
 	}
@@ -372,14 +370,14 @@ void GridOutlet::send_direct(long n, T *data) {TRACE;
 
 void GridOutlet::flush() {TRACE;
 	if (!bufi) return;
-#define FOO(T) send_direct(bufi,(T *)*buf);
+#define FOO(T) send_direct(bufi,(Pt<T>)*buf);
 	TYPESWITCH(buf->nt,FOO,)
 #undef FOO
 	bufi = 0;
 }
 
 template <class T, class S>
-static void convert_number_type(int n, T * out, S * in) {
+static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
@@ -387,13 +385,14 @@ static void convert_number_type(int n, T * out, S * in) {
 //!@#$ should use BitPacking for conversion...?
 // send modifies dex; send_direct doesn't
 template <class T>
-void GridOutlet::send(long n, T *data) {TRACE;
+void GridOutlet::send(int n, Pt<T> data) {TRACE;
+	assert(data); assert(frozen);
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
-	T data2[bs]; \
+	STACK_ARRAY(T,data2,bs); \
 	for (;n>=bs;n-=bs,data+=bs) { \
 		convert_number_type(bs,data2,data); send(bs,data2);} \
 	convert_number_type(n,data2,data); \
@@ -402,21 +401,22 @@ void GridOutlet::send(long n, T *data) {TRACE;
 #undef FOO
 	} else {
 		dex += n;
+		assert(dex <= dim->prod());
 		if (n > MIN_PACKET_SIZE || bufi + n > MAX_PACKET_SIZE) flush();
 		if (n > MIN_PACKET_SIZE) {
 			send_direct(n,data);
 		} else {
-			COPY((T *)*buf+bufi,data,n);
+			COPY((Pt<T>)*buf+bufi,data,n);
 			bufi += n;
 		}
-		if (dex==dim->prod()) finish();
+		if (dex==dim->prod()) end();
 	}
 }
 
 template <class T>
-void GridOutlet::give(long n, T *data) {TRACE;
-	CHECK_BUSY(outlet);
-	CHECK_ALIGN(data);
+void GridOutlet::give(int n, Pt<T> data) {TRACE;
+	assert(data); CHECK_BUSY(outlet); assert(frozen);
+	assert(dex+n <= dim->prod()); CHECK_ALIGN(data);
 	if (NumberTypeE_type_of(*data)!=nt) {
 		send(n,data);
 		delete[] (T *)data;
@@ -433,12 +433,13 @@ void GridOutlet::give(long n, T *data) {TRACE;
 		dex += n;
 		delete[] (T *)data;
 	}
-	if (dex==dim->prod()) finish();
+	if (dex==dim->prod()) end();
 }
 
 void GridOutlet::callback(GridInlet *in) {TRACE;
-	CHECK_BUSY1(outlet);
-	if (!(in->mode==6 || in->mode==4 || in->mode==0)) RAISE("mode error");
+	CHECK_BUSY(outlet); assert(!frozen);
+	int mode = in->mode;
+	assert(mode==6 || mode==4 || mode==0);
 	inlets.push_back(in);
 }
 
@@ -447,7 +448,7 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 //!@#$ does not handle types properly
 //!@#$ most possibly a big hack
 template <class T>
-void GridObject_r_flow(GridInlet *in, long n, T *data) {
+void GridObject_r_flow(GridInlet *in, int n, Pt<T> data) {
 	GridObject *self = in->parent;
 	uint32 i;
 	for (i=0; i<self->in.size(); i++) if (in==self->in[i].p) break;
@@ -481,7 +482,7 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	return a;
 }
 
-\def void inlet_set_factor (int inln, long factor) {
+\def void inlet_set_factor (int inln, int factor) {
 	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
@@ -493,21 +494,21 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	if (outlet<0) RAISE("bad outlet number");
 	int n = rb_ary_len(buf);
 	Ruby *p = rb_ary_ptr(buf);
-	int32 v[n];
+	STACK_ARRAY(int32,v,n);
 	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
 	out = new GridOutlet(this,outlet,new Dim(n,v),nt); // valgrind says leak?
 }
 
-\def void send_out_grid_flow (int outlet,String buf, NumberTypeE nt=int32_e) {
-	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(rb_str_len(buf)/sizeof(T),(T*)rb_str_ptr(buf));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
+template <class T>
+void send_out_grid_flow_2(P<GridOutlet> go, Ruby s, T bogus) {
+	int n = rb_str_len(s) / sizeof(T);
+	Pt<T> p = rb_str_pt(s,T);
+	go->send(n,p);
 }
 
-\def void send_out_grid_flow_3 (int outlet, long n, long data, NumberTypeE nt=int32_e) {
+\def void send_out_grid_flow (int outlet, String buf, NumberTypeE nt=int32_e) {
 	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(n,INT2PTR(T,data));
+#define FOO(T) send_out_grid_flow_2(out,argv[1],(T)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 }
@@ -542,6 +543,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	for (int i=0; i<rb_ary_len(handlers); i++) {
 		Ruby ghp = rb_ary_ptr(handlers)[i];
 		if (ghp==Qnil) continue;
+		GridHandler *gh = FIX2PTR(GridHandler,ghp);
 		char buf[256];
 		for (int j=0; j<COUNT(names); j++) {
 			sprintf(buf,"_%d_%s",i,names[j]);
@@ -592,6 +594,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 	// define in Ruby-metaclass
 	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
 	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
+	rb_enable_super(rb_singleton_class(rself),"instance_methods");
 }
 \end class GridObject
 
@@ -606,7 +609,7 @@ void startup_grid () {
 // i'm trying to circumvent either a bug in the compiler or i don't have a clue. :-(
 void make_gimmick () {
 	GridOutlet foo(0,0,0);
-#define FOO(S) foo.give(0,(S *)0);
+#define FOO(S) foo.give(0,Pt<S>());
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }

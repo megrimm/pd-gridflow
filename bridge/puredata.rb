@@ -42,7 +42,6 @@
 	renamefile
 	#in plotter_control
 	listelement exec ls #print unix_time
-	lti
 ).each {|name|
 	if name =~ /=/ then name,file = name.split(/=/) else file = name end
 	begin
