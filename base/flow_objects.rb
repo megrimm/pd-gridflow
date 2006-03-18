@@ -918,7 +918,7 @@ module Gooey # to be included in any FObject class
 		@bgb = "#000000" # black border
 		@bgs = "#0000ff" # blue border when selected
 		@fg  = "#000000" # black foreground
-		@rsym = "#{self.class}#{self.object_id}".intern # unique id for use in Tcl
+		@rsym = (self.class.to_s+":"+"%08x"%(2*self.object_id)).intern # unique id for use in Tcl
 		@can = nil    # the canvas number
 		@canvas = nil # the canvas string
 		@y,@x = 0,0 # position on canvas
@@ -939,9 +939,12 @@ module Gooey # to be included in any FObject class
 	def initialize2(*) GridFlow.bind self, @rsym.to_s end
 	def pd_displace(can,x,y) self.canvas||=can; @x+=x; @y+=y; pd_show(can) end
 	def pd_activate(can,*) self.canvas||=can end
-	def quote(text) # for tcl (isn't completely right ?)
-		text=text.gsub(/[\{\}]/) {|x| "\\"+x }
-		"{#{text}}"
+	def quote(text)
+		#STDERR.puts "quote  in: "+text
+		text=text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end }
+		text="\"#{text}\""
+		#STDERR.puts "quote out: "+text
+		text
 	end
 	def pd_vis(can,vis)
 	self.canvas||=can; @vis=vis!=0; update end
@@ -1018,7 +1021,7 @@ class Display < FObject; include Gooey
 				[expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} \
 				-tags #{@rsym} -outline #{outline}
 			$canvas lower #{@rsym} #{@rsym}TEXT
-			pd \"#{@rsym} set_size $sy $sx;\n\";
+			pd \"#{@rsym} set_size $sy $sx;\\n\"
 		}
 	end
 	def pd_delete(can)
