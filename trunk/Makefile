@@ -1,3 +1,6 @@
+#!/usr/bin/make
+# $Id$
+
 include config.make
 COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
@@ -96,7 +99,7 @@ $(PD_LIB): bridge/puredata.c.fcs base/grid.h $(CONF)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
-gridflow-for-puredata:: $(PD_LIB)
+gridflow-for-puredata:: $(PD_LIB) dupabs
 
 else
 gridflow-for-puredata::
@@ -106,14 +109,28 @@ endif # HAVE_PUREDATA
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
 
-install:
+install::
 	@echo -e "\033[0;1;33;41m"
 	@echo -e "1. move this folder to lib/pd/extra or add the folder to -path"
 	@echo -e "2. delete the old gridflow.pd_linux"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
-# for z in camera_control motion_detection color mouse centre_of_gravity fade \
-# apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
-# rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
-# cp pd_abstractions/\#$$z.pd $(PUREDATA_PATH)/extra/\@$$z.pd; done
+dupabs::
+	for z in camera_control motion_detection color mouse centre_of_gravity fade \
+	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
+	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
+	cp pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
 
+ruby/ruby: ruby/Makefile
+	make
+
+
+ruby-checkout::
+	cvs -d :pserver:anonymous@cvs.ruby-lang.org:/src checkout -D 2005-10-01 ruby
+
+help::
+	@echo "do one of the following:";\
+	echo  "make all            compiles gridflow";\
+	echo  "make beep           beeps";\
+	echo  "make ruby-checkout  downloads ruby";\
+	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
