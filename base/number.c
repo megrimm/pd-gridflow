@@ -58,15 +58,15 @@ public:
 	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
 
-template <class O> class OpLoops {
+template <class O, class T> class OpLoops: public NumopOn<T> {
 public:
-	template <class T> static void op_map (long n, T *as, T b) {
+	static void def_map (long n, T *as, T b) {
 		if (!n) return;
 #define FOO(I) as[I]=O::f(as[I],b);
 	UNROLL_8(FOO,n,as)
 #undef FOO
 	}
-	template <class T> static void op_zip (long n, T *as, T *bs) {
+	static void def_zip (long n, T *as, T *bs) {
 		if (!n) return;
 		ptrdiff_t ba=bs-as; // really!
 #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
@@ -75,7 +75,7 @@ public:
 	}
 #define W(i) as[i]=O::f(as[i],bs[i]);
 #define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
-	template <class T> static void op_fold (long an, long n, T *as, T *bs) {
+	static void def_fold (long an, long n, T *as, T *bs) {
 		switch (an) {
 		case 1: for (; (n&3)!=0; bs++, n--) W(0);
 			for (; n; bs+=4, n-=4) { Z(0,1); } break;
@@ -97,7 +97,7 @@ public:
 			}
 		}
 	}
-	template <class T> static void op_scan (long an, long n, T *as, T *bs) {
+	static void def_scan (long an, long n, T *as, T *bs) {
 		for (; n--; as=bs-an) {
 			for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
 		}
@@ -138,51 +138,50 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 }
 
 // classic two-input operator
-#define DEF_OP(op,expr,neu,isneu,isorb) \
-	template <class T> class Y##op : Op<T> { public: \
-		inline static T f(T a, T b) { return expr; } \
-		inline static T neutral (LeftRight side) {return neu;} \
-		inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
-		inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
-#define DEF_OPFT(op,expr,neu,isneu,isorb,T) \
-	template <> class Y##op<T> : Op<T> { public: \
-		inline static T f(T a, T b) { return expr; } \
-		inline static T neutral (LeftRight side) {return neu;} \
-		inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
-		inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
+
+#define DEF_OP(op,expr,neu,isneu,isorb) template <class T> class Y##op : Op<T> { public: \
+	inline static T f(T a, T b) { return expr; } \
+	inline static T neutral (LeftRight side) {return neu;} \
+	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
+	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
+#define DEF_OPFT(op,expr,neu,isneu,isorb,T) template <> class Y##op<T> : Op<T> { public: \
+	inline static T f(T a, T b) { return expr; } \
+	inline static T neutral (LeftRight side) {return neu;} \
+	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
+	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
 // this macro is for operators that have different code for the float version
 #define DEF_OPF(op,expr,expr2,neu,isneu,isorb) \
 	DEF_OP( op,expr,      neu,isneu,isorb) \
 	DEF_OPFT(op,expr2,neu,isneu,isorb,float32) \
 	DEF_OPFT(op,expr2,neu,isneu,isorb,float64)
 
-#define DECL_OPON(base,op,T) NumopOn<T>( \
-	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, \
-	&base<Y##op<T> >::op_fold, &base<Y##op<T> >::op_scan, \
+#define DECL_OPON(op,T) NumopOn<T>( \
+	&OpLoops<Y##op<T>,T>::def_map, &OpLoops<Y##op<T>,T>::def_zip, \
+	&OpLoops<Y##op<T>,T>::def_fold, &OpLoops<Y##op<T>,T>::def_scan, \
 	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
-#define DECL_OPON_NOFOLD(base,op,T) NumopOn<T>( \
-	&base<Y##op<T> >::op_map, &base<Y##op<T> >::op_zip, 0,0, \
+#define DECL_OPON_NOFOLD(op,T) NumopOn<T>( \
+	&OpLoops<Y##op<T>,T>::def_map, &OpLoops<Y##op<T>,T>::def_zip, 0,0, \
 	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
 #define DECL_OP(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
-	DECL_OPON(OpLoops,op,float32), DECL_OPON(OpLoops,op,float64), \
-	DECL_OPON(OpLoops,op,ruby)), flags)
+	DECL_OPON(op,uint8), DECL_OPON(op,int16), \
+	DECL_OPON(op,int32) NONLITE(, DECL_OPON(op,int64), \
+	DECL_OPON(op,float32), DECL_OPON(op,float64), \
+	DECL_OPON(op,ruby)), flags)
 #define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(OpLoops,op,uint8), DECL_OPON(OpLoops,op,int16), \
-	DECL_OPON(OpLoops,op,int32) NONLITE(, DECL_OPON(OpLoops,op,int64), \
-	NumopOn<float32>(0,0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0,0), \
-	DECL_OPON(OpLoops,op,ruby)), flags)
+	DECL_OPON(op,uint8), DECL_OPON(op,int16), \
+	DECL_OPON(op,int32) NONLITE(, DECL_OPON(op,int64), \
+	NumopOn<float32>(), NumopOn<float64>(), \
+	DECL_OPON(op,ruby)), flags)
 #define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
-	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
-	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
-	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64), \
-	DECL_OPON_NOFOLD(OpLoops,op,ruby)), flags)
+	DECL_OPON_NOFOLD(op,uint8), DECL_OPON_NOFOLD(op,int16), \
+	DECL_OPON_NOFOLD(op,int32) NONLITE(, DECL_OPON_NOFOLD(op,int64), \
+	DECL_OPON_NOFOLD(op,float32), DECL_OPON_NOFOLD(op,float64), \
+	DECL_OPON_NOFOLD(op,ruby)), flags)
 #define DECL_OP_NOFOLD_NOFLOAT(op,sym,flags) Numop(0, sym, \
-	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
-	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
-	NumopOn<float32>(0,0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0,0), \
-	DECL_OPON_NOFOLD(OpLoops,op,ruby)), flags)
+	DECL_OPON_NOFOLD(op,uint8), DECL_OPON_NOFOLD(op,int16), \
+	DECL_OPON_NOFOLD(op,int32) NONLITE(, DECL_OPON_NOFOLD(op,int64), \
+	NumopOn<float32>(), NumopOn<float64>(), \
+	DECL_OPON_NOFOLD(op,ruby)), flags)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
