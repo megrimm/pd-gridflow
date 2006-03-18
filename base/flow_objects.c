@@ -1207,6 +1207,7 @@ struct GridConvolve : GridObject {
 	\attr PtrGrid seed;
 	\attr PtrGrid b;
 	\attr bool wrap;
+	\attr bool anti;
 	PtrGrid a;
 	int plann;
 	PlanEntry *plan;
@@ -1244,7 +1245,8 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 	long i=0;
 	for (long y=0; y<dby; y++) {
 		for (long x=0; x<dbx; x++) {
-			T rh = ((T *)*b)[y*dbx+x];
+			long k = anti ? y*dbx+x : (dby-1-y)*dbx+(dbx-1-x);
+			T rh = ((T *)*b)[k];
 			bool neutral = op->on(rh)->is_neutral(rh,at_right);
 			bool absorbent = op->on(rh)->is_absorbent(rh,at_right);
 			T foo[1];
@@ -1286,10 +1288,11 @@ GRID_INLET(GridConvolve,0) {
 	Numop *op_put = OP(SYM(put));
 	make_plan((T)0);
 	long dbx = b->dim->get(1);
+	long dby = b->dim->get(0);
 	long day = out->dim->get(0);
-	long n = out->dim->prod(1);
-	long sx = out->dim->get(1)+dbx-1;
-	long sxc = sx*out->dim->prod(2);
+	long n =   out->dim->prod(1);
+	long sx =  out->dim->get(1)+dbx-1;
+	long sxc = out->dim->prod(2)*sx;
 	T buf[n];
 	T buf2[sxc];
 	T orh=0;
@@ -1298,8 +1301,9 @@ GRID_INLET(GridConvolve,0) {
 		for (long i=0; i<plann; i++) {
 			long jy = plan[i].y;
 			long jx = plan[i].x;
-			T rh = ((T *)*b)[jy*dbx+jx];
-			if (i==0 || plan[i].y!=plan[i-1].y || orh!=rh) {
+			long k = anti ? jy*dbx+jx : (dby-1-jy)*dbx+(dbx-1-jx);
+			T rh = ((T *)*b)[k];
+			if (i==0 || jy!=plan[i-1].y || orh!=rh) {
 				if (wrap) copy_row(buf2,sx,iy+jy-margy,-margx);
 				else      copy_row(buf2,sx,iy+jy,0);
 				if (!plan[i].neutral) op->map(sxc,buf2,rh);
@@ -1321,6 +1325,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->seed = new Grid(new Dim(),int32_e,true);
 	this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
 	this->wrap = true;
+	this->anti = true;
 }
 
 \classinfo { IEVAL(rself,"install '#convolve',2,1"); }
