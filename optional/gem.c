@@ -35,8 +35,10 @@ struct GridExportPix : GridObject, GemPixObj {
 public:
 	P<BitPacking> bit_packing;
 	pixBlock m_pixBlock;
+	\attr bool yflip;
 
 	GridExportPix () {
+		yflip = false;
 		imageStruct &im = m_pixBlock.image = imageStruct();
 		im.ysize = 1;
 		im.xsize = 1;
@@ -49,7 +51,6 @@ public:
 		bit_packing = new BitPacking(is_le(),4,4,mask);
 	}
 	virtual ~GridExportPix () {}
-	\decl void initialize ();
 	\grin 1 int
 
 	virtual void startRendering() {m_pixBlock.newimage = 1;}
@@ -65,7 +66,7 @@ GRID_INLET(GridExportPix,1) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 4)
 		RAISE("expecting 4 channels (got %d)",in->dim->get(2));
-	in->set_factor(in->dim->prod());
+	in->set_factor(in->dim->prod(1));
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
 	im.ysize = in->dim->get(0);
@@ -81,17 +82,21 @@ GRID_INLET(GridExportPix,1) {
 	}
 	*/
 } GRID_FLOW {
-	long size = in->dim->prod();
 	uint8 *buf = (uint8 *)m_pixBlock.image.data;
 	/*!@#$ it would be nice to skip the bitpacking when we can */
-	bit_packing->pack(size/in->dim->get(2),data,buf);
+	long sxc = in->dim->prod(1);
+	long sx = in->dim->v[1];
+	long sy = in->dim->v[0];
+	if (yflip) {
+		for (long y=     in->dex/sxc; n; data+=sxc, n-=sxc, y++)
+			bit_packing->pack(sx,data,buf+y*sxc);
+	} else {
+		for (long y=sy-1-in->dex/sxc; n; data+=sxc, n-=sxc, y--)
+			bit_packing->pack(sx,data,buf+y*sxc);
+	}
 } GRID_END
 
 void GridExportPix::obj_setupCallback(t_class *) {}
-
-\def void initialize () {
-	rb_call_super(argc,argv);
-}
 
 \classinfo {
 	IEVAL(rself,"install '#export_pix',2,1;");
@@ -108,22 +113,26 @@ struct GridImportPix : GridObject, GemPixObj {
 	CPPEXTERN_HEADER(GridImportPix,GemPixObj)
 public:
 	P<BitPacking> bit_packing;
+	\attr bool yflip;
 	GridImportPix () {
 		uint32 mask[4] = {0x0000ff,0x00ff00,0xff0000,0x000000};
 		bit_packing = new BitPacking(is_le(),4,4,mask);
+		yflip = false;
 	}
 	\decl void initialize ();
 	virtual ~GridImportPix () {}
 	virtual void render(GemState *state) {
+		if (!state->image) {gfpost("gemstate has no pix"); return;}
 		imageStruct &im = state->image->image;
-		if (im.format != GL_RGBA         ) {post("can't produce grid from pix format %d",im.format); return;}
-		if (im.type   != GL_UNSIGNED_BYTE) {post("can't produce grid from pix type %d",  im.type  ); return;}
+		if (im.format != GL_RGBA         ) {gfpost("can't produce grid from pix format %d",im.format); return;}
+		if (im.type   != GL_UNSIGNED_BYTE) {gfpost("can't produce grid from pix type %d",  im.type  ); return;}
 		int32 v[] = { im.ysize, im.xsize, im.csize };
 		GridOutlet out(this,0,new Dim(3,v));
-		int sxc = im.xsize*im.csize;
+		long sxc = im.xsize*im.csize;
+		long sy = v[0];
 		uint8 buf[sxc];
-		for (int i=0; i<v[0]; i++) {
-			uint8 *data = (uint8 *)im.data+sxc*i;
+		for (int y=0; y<v[0]; y++) {
+			uint8 *data = (uint8 *)im.data+sxc*(yflip?y:sy-1-y);
 			bit_packing->pack(im.xsize,data,buf);
 			out.send(sxc,buf);
 		}
