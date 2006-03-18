@@ -5,11 +5,9 @@ RUBY = ruby
 #--------#
 
 SHELL = /bin/sh
-libdir = /home/matju/lib
 LDSHARED = $(CXX) -shared
 RM = rm -f
-LIBPATH =  -L'$(libdir)' -Wl,-R'$(libdir)'
-LIBS = -Wl,-R -Wl,$(libdir) -L$(libdir) -L. -lruby -ldl -lcrypt -lm
+LIBS = -L. -lruby -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -fno-omit-frame-pointer -g -fPIC -I.
 ifeq ($(HAVE_DEBUG),yes)
@@ -41,7 +39,7 @@ all:: $(DLLIB) gridflow-for-puredata
 
 clean::
 	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs
+	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs optional/*.fcs
 
 .SUFFIXES:
 
