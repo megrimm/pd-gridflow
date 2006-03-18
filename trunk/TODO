@@ -67,7 +67,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] re-enable int64,float64
 [ ] added #matrix_solve, #slice
 [ ] Copy-on-Write (COW)
-[ ] < 10 bugs in buglist
 [ ] Fully hyperlinked manual
 [ ] internals documentation
 [ ] internal grid protocol redesigned
@@ -75,11 +74,8 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] unbork make test and plain ruby mode.
 [ ] add support for "anything" methods (def _0_(sel,*a))
 [ ] look into -ftree-vectorize
-
-for 0.8.1:
-
- * wrap Pd API completely.
- * test.rb should become much more serious. (the @pack bug really sucked)
+[ ] wrap Pd API completely.
+[ ] test.rb should become much more serious. (the @pack bug really sucked)
 
 Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
 
@@ -103,8 +99,6 @@ pick a number: [149]
 [136] fix C_INCLUDE_PATH vs CPLUS_INCLUDE_PATH
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
-[129] jmax2pd: [display] should not be translated
-[128] jmax2pd(?): loadbang-messages (comma) don't get translated to .pd ??
 [118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
 [117] osx: [#store] crash instead of raising
 [107] MMX computations may be done misaligned, which may be bad.
@@ -183,8 +177,7 @@ Installation
 [ ] --prefix (pour ruby)
 [ ] install vs site-install mess
 [ ] bridge should check that the gridflow.so file matches.
-[ ] make uninstall
-[ ] have option for gprof
+[ ] find a good profiler (not gridflow's internal...)
 [ ] cross-compile:
 	http://www.libsdl.org/extras/win32/cross/
 	http://rooster.stanford.edu/~ben/linux/cross.php
@@ -219,7 +212,6 @@ Source Filter
 [ ] \attr
 
 Architecture
-[0.8] <pat> aussi les erreurs que donne gf c'est beaucoup de ligne pour juste un file not found ;)
 [0.8] reentrancy of objects (to allow true recursion)
 [0.8] inlet-variables (variables associated to inlets)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
@@ -269,7 +261,7 @@ Computation Objects
 [ ] #convolve2 (simpler)
 [ ] #convolve rewritten as combination of #convolve2+#border ?
 [ ] #convolve(2): should allow n-D convolution
-[ ] #complex_sq is backwards
+[ ] @complex_sq is backwards
 [ ] #store: option zero (?)
 [ ] #import~, #export~
 [ ] #fold, #scan: option reverse (right-to-left)
