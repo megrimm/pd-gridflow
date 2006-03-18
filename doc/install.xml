@@ -20,8 +20,7 @@
 	<li>Windows with MinGW (very experimental)</li>
 </list></p>
 <p>Required Software:<list>
-	<li>Ruby 1.6.6 or more recent (1.8.0 recommended) (make sure you have the *.so and *.h files)
-	(on MacOS you may have to remove or hide the existing one and install a more complete package)</li>
+	<li>Ruby 1.9 2005 (make sure you have the *.so and *.h files)</li>
 </list></p>
 <p>Dataflow Software :<list>
 	<li>PureData 0.36 or later (recommended)</li>
@@ -37,6 +36,8 @@
 	<li>Ascii Art Library (aalib)</li>
 	<li>PCI video digitizer card  (and Video4linux 1 driver)</li>
 	<li>USB camera (and Video4linux 1 driver)</li>
+	<li>ltilib</li>
+	<li>FFTW3</li>
 </list></p>
 <p>Developer Tools (roll-your-own):<list>
 	<li>GNU C++ Compiler (gcc/g++) version 3.x or maybe 2.95</li>
@@ -91,8 +92,6 @@ directly a version of <k>gcc</k>, else you get <k>undefined symbol</k> problems.
 are troublesome.</li>
 
 <li>Run <k>make</k> to produce the executables <k>gridflow.so</k> and <k>gridflow.pd_linux</k> or similar</li>
-<li>Run <k>make install</k> to copy those executables and related files to their final locations.</li>
-<li>Run <k>make test</k> just to verify that GridFlow isn't working too bad.</li>
 <li>With a text editor, create <k>~/.gridflow_startup</k> and write something like
 <k>GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</k> to tell GridFlow where to find the
 images used in the examples. You may add more lines like that one if you have folders containing images
@@ -114,7 +113,6 @@ Note also that on Windows the dot-files are even more trouble.</li>
 <li>you just did a CVS update and now the program does not compile, or
 crashes, or changes didn't go through. 
 	<list>
-	<li>Did you forget the "make install" step?</li>
 	<li>If a new directory is created, you need to do <k>cvs update -d</k>.
 	  Many people just add that option to their configuration of the CVS software.</li>
 	<li>When some kinds of changes have happened, you may have to rerun the <k>configure</k>
@@ -126,7 +124,7 @@ crashes, or changes didn't go through.
 
 <li>PureData Crashing:
 	<list>
-	<li>you can start the debugger like <k>gdb `which pd` core.24255</k> where the latter part
+	<li>you can start the debugger like <k>gdb $(which pd) core.24255</k> where the latter part
 	is the name of a RAM dump file. You can enable those dumps using the shell command
 	<k>ulimit -c unlimited</k>. To avoid dumping, you can also start Pd from within the debugger
 	using <k>gdb `which pd`</k> then <k>run</k> then cause the crash.</li>

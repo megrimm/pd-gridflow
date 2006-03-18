@@ -14,6 +14,7 @@ version 0.8.2 (2006.03.17):
  * added "help" and "get" methods to *all* classes (!!!)
  * no more "make install"
  * not using mkmf.rb (ruby's makefile generator) anymore
+ * removed --debug-harder (use "valgrind" instead)
 
 version 0.8.1 (2006.02.20):
 
