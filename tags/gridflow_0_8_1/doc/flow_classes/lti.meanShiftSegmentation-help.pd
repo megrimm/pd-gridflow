@@ -1,0 +1,250 @@
+#N canvas 303 0 891 637 8;
+#X msg 23 161 help;
+#X obj 88 200 lti.MeanShiftSegmentation;
+#X msg 24 182 get;
+#X obj 174 233 print right;
+#X obj 88 230 print left;
+#X obj 62 122 #in;
+#X obj 42 84 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X msg 62 86 open babbage.jpg;
+#X text 8 -45 http://ltilib.sourceforge.net/doc/html;
+#X obj 88 166 r param;
+#X obj 68 363 #out window;
+#X obj 173 270 s param_get;
+#X obj 252 -76 cnv 15 220 555 empty empty empty 20 12 0 14 -195568
+-66577 0;
+#X obj 264 189 hsl 128 15 0 127 0 0 classThreshold empty classThreshold
+-2 -6 0 8 -233017 -1 -1 3200 1;
+#X obj 400 190 nbx 4 14 -1e+37 1e+37 0 0 empty classThreshold empty
+0 -6 0 10 -233017 -1 -1 32 256;
+#X obj 262 158 tgl 15 0 multivariateNormalKernel empty multivariateNormalKernel
+20 7 0 8 -233017 -1 -1 0 1;
+#X obj 263 133 hsl 128 15 0 127 0 0 autoRadius empty autoRadius -2
+-6 0 8 -233017 -1 -1 3400 1;
+#X obj 399 134 nbx 4 14 -1e+37 1e+37 0 0 empty autoRadius empty 0 -6
+0 10 -233017 -1 -1 34 256;
+#N canvas 118 68 623 407 parameters 0;
+#X msg 331 157 maxTrialRandomColor \$1;
+#X floatatom 331 143 5 0 0 0 - maxTrialRandomColor -;
+#X msg 332 196 classicAlgorithm \$1;
+#X obj 332 176 tgl 15 0 empty classicAlgorithm empty 0 -6 0 8 -262144
+-1 -1 0 1;
+#X text 354 175 <-- this is set to '1' \, always;
+#X msg 109 44 minRegionSize \$1;
+#X floatatom 109 30 5 0 0 0 - minRegionSize -;
+#X floatatom 109 62 5 0 0 0 - maxTrial -;
+#X msg 109 76 maxTrial \$1;
+#X floatatom 110 96 5 0 0 0 - sigmaR -;
+#X msg 110 109 sigmaR \$1;
+#X floatatom 110 131 5 0 0 0 - rectRadius -;
+#X msg 110 143 rectRadius \$1;
+#X text 186 141 <-- prob type!;
+#X floatatom 109 162 5 0 0 0 - trial2converge -;
+#X msg 109 174 trial2converge \$1;
+#X floatatom 108 192 5 0 0 0 - maxNeighbourColorDistance -;
+#X msg 108 206 maxNeighbourColorDistance \$1;
+#X floatatom 108 223 5 0 0 0 - autoRadius -;
+#X msg 108 237 autoRadius \$1;
+#X msg 109 273 multivariateNormalKernel \$1;
+#X obj 109 254 tgl 15 0 empty multivariateNormalKernel empty 0 -6 0
+8 -262144 -1 -1 0 1;
+#X floatatom 109 308 5 0 0 0 - - -;
+#X msg 109 322 classThreshold \$1;
+#X floatatom 332 15 5 0 0 0 - thresholdConverged -;
+#X obj 269 141 send param;
+#X obj 38 142 send param;
+#X msg 332 29 thresholdConverged \$1;
+#X floatatom 332 47 5 0 0 0 - minVar -;
+#X msg 332 61 minVar \$1;
+#X floatatom 332 79 5 0 0 0 - option -;
+#X floatatom 332 111 5 0 0 0 - speedup -;
+#X msg 332 93 option \$1;
+#X msg 332 125 speedup \$1;
+#X floatatom 334 216 5 0 0 0 - rects -;
+#X floatatom 334 248 5 0 0 0 - sigmaS -;
+#X msg 334 230 rects \$1;
+#X msg 334 262 sigmaS \$1;
+#X text 389 228 <-- probleme de type (vecteurs);
+#X text 452 30 <-- prob type (double);
+#X text 205 322 <-- prob type (double);
+#X text 185 236 <-- prob type!;
+#X obj 109 292 r classThreshold;
+#X connect 0 0 25 0;
+#X connect 1 0 0 0;
+#X connect 2 0 25 0;
+#X connect 3 0 2 0;
+#X connect 5 0 26 0;
+#X connect 6 0 5 0;
+#X connect 7 0 8 0;
+#X connect 8 0 26 0;
+#X connect 9 0 10 0;
+#X connect 10 0 26 0;
+#X connect 11 0 12 0;
+#X connect 12 0 26 0;
+#X connect 14 0 15 0;
+#X connect 15 0 26 0;
+#X connect 16 0 17 0;
+#X connect 17 0 26 0;
+#X connect 18 0 19 0;
+#X connect 19 0 26 0;
+#X connect 20 0 26 0;
+#X connect 21 0 20 0;
+#X connect 22 0 23 0;
+#X connect 23 0 26 0;
+#X connect 24 0 27 0;
+#X connect 27 0 25 0;
+#X connect 28 0 29 0;
+#X connect 29 0 25 0;
+#X connect 30 0 32 0;
+#X connect 31 0 33 0;
+#X connect 32 0 25 0;
+#X connect 33 0 25 0;
+#X connect 34 0 36 0;
+#X connect 35 0 37 0;
+#X connect 36 0 25 0;
+#X connect 37 0 25 0;
+#X connect 42 0 22 0;
+#X restore 8 -20 pd parameters;
+#X text 8 -59 meanShiftSegmentation;
+#X obj 63 273 #outer * (1 2 3);
+#X obj 264 102 hsl 128 15 0 127 0 0 maxNeighbourColorDistance empty
+maxNeighbourColorDistance -2 -6 0 8 -233017 -1 -1 2800 1;
+#X obj 400 103 nbx 4 14 -1e+37 1e+37 0 0 empty maxNeighbourColorDistance
+empty 0 -6 0 10 -233017 -1 -1 28 256;
+#X obj 82 301 #clip;
+#X obj 73 327 # * 30;
+#X obj 264 71 hsl 128 15 0 127 0 0 trial2converge empty trial2converge
+-2 -6 0 8 -233017 -1 -1 3500 1;
+#X obj 400 72 nbx 4 14 -1e+37 1e+37 0 0 empty trial2converge empty
+0 -6 0 10 -233017 -1 -1 35 256;
+#X obj 264 40 hsl 128 15 0 127 0 0 rectRadius empty rectRadius -2 -6
+0 8 -233017 -1 -1 3800 1;
+#X obj 400 41 nbx 4 14 -1e+37 1e+37 0 0 empty rectRadius empty 0 -6
+0 10 -233017 -1 -1 38 256;
+#X obj 264 10 hsl 128 15 0 127 0 0 sigmaR empty sigmaR -2 -6 0 8 -233017
+-1 -1 3600 1;
+#X obj 400 11 nbx 4 14 -1e+37 1e+37 0 0 empty sigmaR empty 0 -6 0 10
+-233017 -1 -1 36 256;
+#X obj 264 -19 hsl 128 15 0 127 0 0 maxTrial empty maxTrial -2 -6 0
+8 -233017 -1 -1 5500 1;
+#X obj 400 -18 nbx 4 14 -1e+37 1e+37 0 0 empty maxTrial empty 0 -6
+0 10 -233017 -1 -1 55 256;
+#X obj 264 -49 hsl 128 15 0 127 0 0 minRegionSize empty minRegionSize
+-2 -6 0 8 -233017 -1 -1 5500 1;
+#X obj 400 -48 nbx 4 14 -1e+37 1e+37 0 0 empty minRegionSize empty
+0 -6 0 10 -233017 -1 -1 55 256;
+#X obj 264 221 hsl 128 15 0 127 0 0 thresholdConverged empty thresholdConverged
+-2 -6 0 8 -233017 -1 -1 4700 1;
+#X obj 400 222 nbx 4 14 -1e+37 1e+37 0 0 empty thresholdConverged empty
+0 -6 0 10 -233017 -1 -1 47 256;
+#X obj 264 252 hsl 128 15 0 127 0 0 minVar empty minVar -2 -6 0 8 -233017
+-1 -1 4600 1;
+#X obj 400 253 nbx 4 14 -1e+37 1e+37 0 0 empty minVar empty 0 -6 0
+10 -233017 -1 -1 46 256;
+#X obj 264 282 hsl 128 15 0 127 0 0 option empty option -2 -6 0 8 -233017
+-1 -1 3200 1;
+#X obj 400 283 nbx 4 14 -1e+37 1e+37 0 0 empty option empty 0 -6 0
+10 -233017 -1 -1 32 256;
+#N canvas 338 161 623 407 parameters_get 0;
+#X obj 383 138 route maxTrialRandomColor;
+#X floatatom 381 164 5 0 0 0 - - -;
+#X obj 380 179 route classicAlgorithm;
+#X floatatom 156 44 5 0 0 0 - - -;
+#X obj 156 28 route minRegionSize;
+#X floatatom 155 76 5 0 0 0 - - -;
+#X obj 155 60 route maxTrial;
+#X floatatom 154 106 5 0 0 0 - - -;
+#X obj 154 90 route sigmaR;
+#X floatatom 154 137 5 0 0 0 - - -;
+#X obj 154 121 route rectRadius;
+#X floatatom 154 168 5 0 0 0 - - -;
+#X obj 154 152 route trial2converge;
+#X floatatom 155 198 5 0 0 0 - - -;
+#X obj 155 182 route maxNeighbourColorDistance;
+#X floatatom 155 228 5 0 0 0 - - -;
+#X obj 155 212 route autoRadius;
+#X floatatom 155 258 5 0 0 0 - - -;
+#X obj 155 242 route multivariateNormalKernel;
+#X floatatom 157 295 5 0 0 0 - - -;
+#X obj 155 273 route classThreshold;
+#X floatatom 383 43 5 0 0 0 - - -;
+#X obj 70 160 r param_get;
+#X obj 299 137 r param_get;
+#X obj 385 19 route thresholdConverged;
+#X floatatom 382 74 5 0 0 0 - - -;
+#X obj 382 58 route minVar;
+#X floatatom 390 103 5 0 0 0 - - -;
+#X obj 382 88 route option;
+#X obj 397 115 route speedup;
+#X obj 380 196 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X floatatom 380 232 5 0 0 0 - - -;
+#X floatatom 380 262 5 0 0 0 - - -;
+#X obj 380 216 route rects;
+#X obj 380 246 route sigmaS;
+#X connect 0 0 1 0;
+#X connect 2 0 30 0;
+#X connect 4 0 3 0;
+#X connect 6 0 5 0;
+#X connect 8 0 7 0;
+#X connect 10 0 9 0;
+#X connect 12 0 11 0;
+#X connect 14 0 13 0;
+#X connect 16 0 15 0;
+#X connect 18 0 17 0;
+#X connect 20 0 19 0;
+#X connect 22 0 4 0;
+#X connect 22 0 6 0;
+#X connect 22 0 8 0;
+#X connect 22 0 10 0;
+#X connect 22 0 12 0;
+#X connect 22 0 14 0;
+#X connect 22 0 16 0;
+#X connect 22 0 18 0;
+#X connect 22 0 20 0;
+#X connect 23 0 24 0;
+#X connect 23 0 26 0;
+#X connect 23 0 28 0;
+#X connect 23 0 29 0;
+#X connect 23 0 0 0;
+#X connect 23 0 2 0;
+#X connect 23 0 33 0;
+#X connect 23 0 34 0;
+#X connect 24 0 21 0;
+#X connect 26 0 25 0;
+#X connect 28 0 27 0;
+#X connect 33 0 31 0;
+#X connect 34 0 32 0;
+#X restore 8 0 pd parameters_get;
+#X obj 264 314 hsl 128 15 0 127 0 0 speedup empty speedup -2 -6 0 8
+-233017 -1 -1 5400 1;
+#X obj 400 315 nbx 4 14 -1e+37 1e+37 0 0 empty speedup empty 0 -6 0
+10 -233017 -1 -1 54 256;
+#X obj 264 345 hsl 128 15 0 127 0 0 maxTrialRandomColor empty maxTrialRandomColor
+-2 -6 0 8 -233017 -1 -1 3400 1;
+#X obj 400 346 nbx 4 14 -1e+37 1e+37 0 0 empty maxTrialRandomColor
+empty 0 -6 0 10 -233017 -1 -1 34 256;
+#X obj 264 412 hsl 128 15 0 127 0 0 rects empty rects -2 -6 0 8 -233017
+-1 -1 3400 1;
+#X obj 400 413 nbx 4 14 -1e+37 1e+37 0 0 empty rects empty 0 -6 0 10
+-233017 -1 -1 34 256;
+#X obj 264 442 hsl 128 15 0 127 0 0 sigmaS empty sigmaS -2 -6 0 8 -233017
+-1 -1 3900 1;
+#X obj 400 443 nbx 4 14 -1e+37 1e+37 0 0 empty sigmaS empty 0 -6 0
+10 -233017 -1 -1 39 256;
+#X obj 262 376 tgl 15 0 classicAlgorithm empty classicAlgorithm 20
+7 0 8 -233017 -1 -1 0 1;
+#X connect 0 0 1 0;
+#X connect 1 0 4 0;
+#X connect 1 0 20 0;
+#X connect 1 1 3 0;
+#X connect 1 1 11 0;
+#X connect 2 0 1 0;
+#X connect 5 0 1 0;
+#X connect 6 0 5 0;
+#X connect 7 0 5 0;
+#X connect 9 0 1 0;
+#X connect 20 0 23 0;
+#X connect 23 0 24 0;
+#X connect 24 0 10 0;

@@ -1,0 +1,121 @@
+{
+   dl1
+   Memcheck:Addr8
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+}
+{
+   gc1
+   Memcheck:Cond
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc2
+   Memcheck:Cond
+   fun:gc_mark
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc3
+   Memcheck:Value4
+   fun:gc_mark_children
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc3_64
+   Memcheck:Value8
+   fun:gc_mark_children
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc4
+   Memcheck:Value4
+   fun:gc_mark
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc5
+   Memcheck:Cond
+   fun:gc_mark_children
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc6
+   Memcheck:Value4
+   fun:st_lookup
+   fun:rb_mark_generic_ivar
+   fun:gc_mark_children
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+{
+   gc7
+   Memcheck:Cond
+   fun:st_lookup
+   fun:rb_mark_generic_ivar
+   fun:gc_mark_children
+   fun:mark_locations_array
+   fun:garbage_collect
+}
+
+{
+   libusb1
+   Memcheck:Param
+   ioctl(generic)
+   fun:ioctl
+   fun:usb_os_find_devices
+}
+{
+   libusb2
+   Memcheck:Param
+   ioctl(generic)
+   obj:/lib/ld-2.3.5.so
+   fun:ioctl
+   fun:usb_find_devices
+}
+
+
+{
+   unknown1
+   Memcheck:Cond
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+}
+{
+   unknown2
+   Memcheck:Cond
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/tls/i686/cmov/libc-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   fun:_dl_open
+   obj:/lib/tls/i686/cmov/libdl-2.3.5.so
+}
+{
+   unknown3
+   Memcheck:Cond
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   obj:/lib/tls/i686/cmov/libc-2.3.5.so
+   obj:/lib/ld-2.3.5.so
+   fun:_dl_open
+}
+{
+   libX11
+   Memcheck:Param
+   write(buf)
+   obj:/lib/ld-2.3.5.so
+   fun:__write_nocancel
+   obj:/usr/lib/libX11.so.6.2.0
+   fun:_X11TransWrite
+}
+
