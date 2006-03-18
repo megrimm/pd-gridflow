@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.8.1 - Installation</title>
+<title>GridFlow 0.8.2 - Installation</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.8.1 - Installation</h4>
+    <h4>GridFlow 0.8.2 - Installation</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -38,12 +38,11 @@
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Required OS (one of...):<ul> <li><b>1</b> : Linux (most any variant) (recommended)</li> <li><b>2</b> : MacOS 10.2 or later (experimental)</li> <li><b>3</b> : Windows with MinGW (very experimental)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.6.6 or more recent (1.8.0 recommended) (make sure you have the *.so and *.h files) 
-	(on MacOS you may have to remove or hide the existing one and install a more complete package)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.9 2005 (make sure you have the *.so and *.h files)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Dataflow Software :<ul> <li><b>1</b> : PureData 0.36 or later (recommended)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Multimedia Components (optional):<ul> <li><b>1</b> : libSDL (Simple Directmedia Layer)</li> <li><b>2</b> : libjpeg</li> <li><b>3</b> : libpng</li> <li><b>4</b> : libmpeg3 (.mpg reader, HeroineWarrior's)</li> <li><b>5</b> : libquicktime (.mov reader/writer, Burkhard Plaum's or HeroineWarrior's) </li> <li><b>6</b> : libmpeg (.mpg reader, Greg Ward's, old)</li> <li><b>7</b> : Apple QuickTime (.mov reader/writer)</li> <li><b>8</b> : Ascii Art Library (aalib)</li> <li><b>9</b> : PCI video digitizer card  (and Video4linux 1 driver)</li> <li><b>10</b> : USB camera (and Video4linux 1 driver)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Multimedia Components (optional):<ul> <li><b>1</b> : libSDL (Simple Directmedia Layer)</li> <li><b>2</b> : libjpeg</li> <li><b>3</b> : libpng</li> <li><b>4</b> : libmpeg3 (.mpg reader, HeroineWarrior's)</li> <li><b>5</b> : libquicktime (.mov reader/writer, Burkhard Plaum's or HeroineWarrior's) </li> <li><b>6</b> : libmpeg (.mpg reader, Greg Ward's, old)</li> <li><b>7</b> : Apple QuickTime (.mov reader/writer)</li> <li><b>8</b> : Ascii Art Library (aalib)</li> <li><b>9</b> : PCI video digitizer card  (and Video4linux 1 driver)</li> <li><b>10</b> : USB camera (and Video4linux 1 driver)</li> <li><b>11</b> : ltilib</li> <li><b>12</b> : FFTW3</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Developer Tools (roll-your-own):<ul> <li><b>1</b> : GNU C++ Compiler (gcc/g++) version 3.x or maybe 2.95</li> <li><b>2</b> : GNU Make (gmake)</li> <li><b>3</b> : CVS (for upgrading/collaboration)</li> <li><b>4</b> : Ruby library "xmlparser" (optional, for editing documentation)</li> <li><b>5</b> : Developer Tools CD dec 2002 (if MacOS 10.2)</li> <li><b>6</b> : XCODE (if MacOS 10.3)</li> <li><b>7</b> : FINK (if MacOS 10)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -89,9 +88,9 @@ may have to set both <kbd><font color="#007777">LIBRARY_PATH</font></kbd> and <k
 options. You can use them to ignore the presence of troublesome libraries 
 and select debugging level. With <kbd><font color="#007777">--use-compiler</font></kbd> you should use a version of <kbd><font color="#007777">g++</font></kbd>, not 
 directly a version of <kbd><font color="#007777">gcc</font></kbd>, else you get <kbd><font color="#007777">undefined symbol</font></kbd> problems. Some versions of gcc/g++ 
-are troublesome.</li> <li><b>6</b> : Run <kbd><font color="#007777">make</font></kbd> to produce the executables <kbd><font color="#007777">gridflow.so</font></kbd> and <kbd><font color="#007777">gridflow.pd_linux</font></kbd> or similar</li> <li><b>7</b> : Run <kbd><font color="#007777">make install</font></kbd> to copy those executables and related files to their final locations.</li> <li><b>8</b> : Run <kbd><font color="#007777">make test</font></kbd> just to verify that GridFlow isn't working too bad.</li> <li><b>9</b> : With a text editor, create <kbd><font color="#007777">~/.gridflow_startup</font></kbd> and write something like <kbd><font color="#007777">GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</font></kbd> to tell GridFlow where to find the 
+are troublesome.</li> <li><b>6</b> : Run <kbd><font color="#007777">make</font></kbd> to produce the executables <kbd><font color="#007777">gridflow.so</font></kbd> and <kbd><font color="#007777">gridflow.pd_linux</font></kbd> or similar</li> <li><b>7</b> : With a text editor, create <kbd><font color="#007777">~/.gridflow_startup</font></kbd> and write something like <kbd><font color="#007777">GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</font></kbd> to tell GridFlow where to find the 
 images used in the examples. You may add more lines like that one if you have folders containing images 
-or movies you want to use with GridFlow.</li> <li><b>10</b> : Loading GridFlow:<ul> <li><b>1</b> : PureData : With a text editor, modify or create <kbd><font color="#007777">~/.pdrc</font></kbd> and write <kbd><font color="#007777">-lib gridflow</font></kbd>. </li> <li><b>2</b> : ImpureData : In the ".pdrc editor", add <kbd><font color="#007777">gridflow</font></kbd> to the list of libraries.</li> <li><b>3</b> : plain Ruby : the command <kbd><font color="#007777">require "gridflow"</font></kbd> will load gridflow.so.</li> </ul> 
+or movies you want to use with GridFlow.</li> <li><b>8</b> : Loading GridFlow:<ul> <li><b>1</b> : PureData : With a text editor, modify or create <kbd><font color="#007777">~/.pdrc</font></kbd> and write <kbd><font color="#007777">-lib gridflow</font></kbd>. </li> <li><b>2</b> : ImpureData : In the ".pdrc editor", add <kbd><font color="#007777">gridflow</font></kbd> to the list of libraries.</li> <li><b>3</b> : plain Ruby : the command <kbd><font color="#007777">require "gridflow"</font></kbd> will load gridflow.so.</li> </ul> 
 Note that on MacOS the dot-files are invisible in the Finder but you do <kbd><font color="#007777">cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</font></kbd> to make an alias on the Desktop. 
 Note also that on Windows the dot-files are even more trouble.</li> </ul></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -100,10 +99,10 @@ Note also that on Windows the dot-files are even more trouble.</li> </ul></td></
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Other_Tips"></a><h4>Other Tips</h4></td></tr><tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><ul> <li><b>1</b> : you just did a CVS update and now the program does not compile, or 
-crashes, or changes didn't go through. <ul> <li><b>1</b> : Did you forget the "make install" step?</li> <li><b>2</b> : If a new directory is created, you need to do <kbd><font color="#007777">cvs update -d</font></kbd>. 
-	  Many people just add that option to their configuration of the CVS software.</li> <li><b>3</b> : When some kinds of changes have happened, you may have to rerun the <kbd><font color="#007777">configure</font></kbd> 
+crashes, or changes didn't go through. <ul> <li><b>1</b> : If a new directory is created, you need to do <kbd><font color="#007777">cvs update -d</font></kbd>. 
+	  Many people just add that option to their configuration of the CVS software.</li> <li><b>2</b> : When some kinds of changes have happened, you may have to rerun the <kbd><font color="#007777">configure</font></kbd> 
 	program before redoing <kbd><font color="#007777">make</font></kbd>. If you had previously reconfigured with specific options, 
-	don't forget to use them again in this case.</li> <li><b>4</b> : Maybe matju forgot to upload part of an important change. Tell him.</li> </ul></li> <li><b>2</b> : PureData Crashing: <ul> <li><b>1</b> : you can start the debugger like <kbd><font color="#007777">gdb `which pd` core.24255</font></kbd> where the latter part 
+	don't forget to use them again in this case.</li> <li><b>3</b> : Maybe matju forgot to upload part of an important change. Tell him.</li> </ul></li> <li><b>2</b> : PureData Crashing: <ul> <li><b>1</b> : you can start the debugger like <kbd><font color="#007777">gdb $(which pd) core.24255</font></kbd> where the latter part 
 	is the name of a RAM dump file. You can enable those dumps using the shell command <kbd><font color="#007777">ulimit -c unlimited</font></kbd>. To avoid dumping, you can also start Pd from within the debugger 
 	using <kbd><font color="#007777">gdb `which pd`</font></kbd> then <kbd><font color="#007777">run</font></kbd> then cause the crash.</li> <li><b>2</b> : In GDB, after a crash, you can use the <kbd><font color="#007777">where</font></kbd> to find out what Pd was doing at the moment 
 	of the crash. If instead Pd is frozen, you can force it to crash using Ctrl+C in the terminal. </li> <li><b>3</b> : To quit GDB use the <kbd><font color="#007777">quit</font></kbd> command. (really.)</li> </ul></li> </ul></td></tr>
@@ -113,7 +112,7 @@ crashes, or changes didn't go through. <ul> <li><b>1</b> : Did you forget the "m
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.8.1 Documentation<br>
+GridFlow 0.8.2 Documentation<br>
 Copyright &copy; 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
 <a href="mailto:matju@artengine.ca">matju@artengine.ca</a>
 </font></p>
