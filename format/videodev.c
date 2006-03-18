@@ -342,7 +342,7 @@ struct FormatVideoDev : Format {
 	if (use_mmap) {
 		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
-		if (((int)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
+		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 	} else {
 		image = new uint8[dim->prod(0,1)*bit_packing->bytes];
 	}
