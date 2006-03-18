@@ -139,49 +139,36 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 
 // classic two-input operator
 
+#define DEF_OP_COMMON(op,expr,neu,isneu,isorb,T) \
+	inline static T f(T a, T b) { return expr; } \
+	inline static T neutral (LeftRight side) {return neu;} \
+	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
+	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}
 #define DEF_OP(op,expr,neu,isneu,isorb) template <class T> class Y##op : Op<T> { public: \
-	inline static T f(T a, T b) { return expr; } \
-	inline static T neutral (LeftRight side) {return neu;} \
-	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
-	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
+	DEF_OP_COMMON(op,expr,neu,isneu,isorb,T);};
 #define DEF_OPFT(op,expr,neu,isneu,isorb,T) template <> class Y##op<T> : Op<T> { public: \
-	inline static T f(T a, T b) { return expr; } \
-	inline static T neutral (LeftRight side) {return neu;} \
-	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
-	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}};
+	DEF_OP_COMMON(op,expr,neu,isneu,isorb,T);};
 // this macro is for operators that have different code for the float version
 #define DEF_OPF(op,expr,expr2,neu,isneu,isorb) \
 	DEF_OP( op,expr,      neu,isneu,isorb) \
 	DEF_OPFT(op,expr2,neu,isneu,isorb,float32) \
 	DEF_OPFT(op,expr2,neu,isneu,isorb,float64)
 
-#define DECL_OPON(op,T) NumopOn<T>( \
-	&OpLoops<Y##op<T>,T>::def_map, &OpLoops<Y##op<T>,T>::def_zip, \
-	&OpLoops<Y##op<T>,T>::def_fold, &OpLoops<Y##op<T>,T>::def_scan, \
-	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
-#define DECL_OPON_NOFOLD(op,T) NumopOn<T>( \
-	&OpLoops<Y##op<T>,T>::def_map, &OpLoops<Y##op<T>,T>::def_zip, 0,0, \
-	&Y##op<T>::neutral, &Y##op<T>::is_neutral, &Y##op<T>::is_absorbent)
-#define DECL_OP(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(op,uint8), DECL_OPON(op,int16), \
-	DECL_OPON(op,int32) NONLITE(, DECL_OPON(op,int64), \
-	DECL_OPON(op,float32), DECL_OPON(op,float64), \
-	DECL_OPON(op,ruby)), flags)
-#define DECL_OP_NOFLOAT(op,sym,flags) Numop(0, sym, \
-	DECL_OPON(op,uint8), DECL_OPON(op,int16), \
-	DECL_OPON(op,int32) NONLITE(, DECL_OPON(op,int64), \
-	NumopOn<float32>(), NumopOn<float64>(), \
-	DECL_OPON(op,ruby)), flags)
-#define DECL_OP_NOFOLD(op,sym,flags) Numop(0, sym, \
-	DECL_OPON_NOFOLD(op,uint8), DECL_OPON_NOFOLD(op,int16), \
-	DECL_OPON_NOFOLD(op,int32) NONLITE(, DECL_OPON_NOFOLD(op,int64), \
-	DECL_OPON_NOFOLD(op,float32), DECL_OPON_NOFOLD(op,float64), \
-	DECL_OPON_NOFOLD(op,ruby)), flags)
-#define DECL_OP_NOFOLD_NOFLOAT(op,sym,flags) Numop(0, sym, \
-	DECL_OPON_NOFOLD(op,uint8), DECL_OPON_NOFOLD(op,int16), \
-	DECL_OPON_NOFOLD(op,int32) NONLITE(, DECL_OPON_NOFOLD(op,int64), \
-	NumopOn<float32>(), NumopOn<float64>(), \
-	DECL_OPON_NOFOLD(op,ruby)), flags)
+#define OL(O,T) OpLoops<Y##O<T>,T>
+#define DECL_OPON(O,T) NumopOn<T>( \
+	&OL(O,T)::def_map, &OL(O,T)::def_zip, &OL(O,T)::def_fold, &OL(O,T)::def_scan, \
+	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
+#define DECL_OPON_NOFOLD(O,T) NumopOn<T>( \
+	&OL(O,T)::def_map, &OL(O,T)::def_zip, 0,0, \
+	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
+#define DECLOP(M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
+	NONLITE(, M(O,int64), M(O,float32), M(O,float64), M(O,ruby)), flags)
+#define DECLOP_NOFLOAT(M,O,sym,flags) Numop(0,sym,M(O,uint8), M(O,int16), M(O,int32) \
+	NONLITE(, M(O,int64), NumopOn<float32>(), NumopOn<float64>(), M(O,ruby)), flags)
+#define DECL_OP(               O,sym,flags) DECLOP(        DECL_OPON       ,O,sym,flags)
+#define DECL_OP_NOFLOAT(       O,sym,flags) DECLOP_NOFLOAT(DECL_OPON       ,O,sym,flags)
+#define DECL_OP_NOFOLD(        O,sym,flags) DECLOP(        DECL_OPON_NOFOLD,O,sym,flags)
+#define DECL_OP_NOFOLD_NOFLOAT(O,sym,flags) DECLOP_NOFLOAT(DECL_OPON_NOFOLD,O,sym,flags)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
