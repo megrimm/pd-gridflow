@@ -27,6 +27,16 @@
 #include <stdio.h>
 #include <limits.h>
 
+static inline uint64 weight(uint64 x) {uint64 k;
+	k=0x5555555555555555ULL; x = (x&k) + ((x>> 1)&k); //(2**64-1)/(2**2**0-1)
+	k=0x3333333333333333ULL; x = (x&k) + ((x>> 2)&k); //(2**64-1)/(2**2**1-1)
+	k=0x0f0f0f0f0f0f0f0fULL; x = (x&k) + ((x>> 4)&k); //(2**64-1)/(2**2**2-1)
+	k=0x00ff00ff00ff00ffULL; x = (x&k) + ((x>> 8)&k); //(2**64-1)/(2**2**3-1)
+	k=0x0000ffff0000ffffULL; x = (x&k) + ((x>>16)&k); //(2**64-1)/(2**2**4-1)
+	k=0x00000000ffffffffULL; x = (x&k) + ((x>>32)&k); //(2**64-1)/(2**2**5-1)
+	return x;
+}
+
 #ifdef PASS1
 NumberType number_type_table[] = {
 #define FOO(_sym_,_size_,_flags_,args...) NumberType( #_sym_, _size_, _flags_, args ),
@@ -44,7 +54,7 @@ template <class T> class Op {
 public:
 	// I call abort() on those because I can't say they're purevirtual.
 	static T f(T a, T b) {abort();}
-	static bool is_neutral(T x, LeftRight side)   {assert(!"Op::is_neutral called?");   return false;}
+	static bool is_neutral  (T x, LeftRight side) {assert(!"Op::is_neutral called?");   return false;}
 	static bool is_absorbent(T x, LeftRight side) {assert(!"Op::is_absorbent called?"); return false;}
 };
 
@@ -60,14 +70,6 @@ public:
 		if (!n) return;
 		ptrdiff_t ba=bs-as; // really!
 #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
-	UNROLL_8(FOO,n,as)
-#undef FOO
-	}
-	// disabled
-	template <class T> static void op_zip2 (long n, T *as, T *bs, T *cs) {
-		if (!n) return;
-		ptrdiff_t ba=bs-as, ca=cs-as;
-#define FOO(I) as[ca+I]=O::f(as[I],as[ba+I]);
 	UNROLL_8(FOO,n,as)
 #undef FOO
 	}
@@ -176,6 +178,11 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
 	DECL_OPON_NOFOLD(OpLoops,op,float32), DECL_OPON_NOFOLD(OpLoops,op,float64), \
 	DECL_OPON_NOFOLD(OpLoops,op,ruby)), flags)
+#define DECL_OP_NOFOLD_NOFLOAT(op,sym,flags) Numop(0, sym, \
+	DECL_OPON_NOFOLD(OpLoops,op,uint8), DECL_OPON_NOFOLD(OpLoops,op,int16), \
+	DECL_OPON_NOFOLD(OpLoops,op,int32) NONLITE(, DECL_OPON_NOFOLD(OpLoops,op,int64), \
+	NumopOn<float32>(0,0,0,0,0,0,0), NumopOn<float64>(0,0,0,0,0,0,0), \
+	DECL_OPON_NOFOLD(OpLoops,op,ruby)), flags)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
@@ -244,6 +251,7 @@ DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), 0, false, false)
 DEF_OP(sqrt,  (T)(0+floor(sqrt(a))),       0, false, false)
 DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), 0, false, false)
 //DEF_OP(erf,"erf*", 0)
+DEF_OP(weight,(T)( weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8)))),0,false,false)
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[];
@@ -327,6 +335,7 @@ Numop op_table3[] = {
 	DECL_OP_NOFOLD(sqrt,"sqrt", 0),
 	DECL_OP_NOFOLD(rand,"rand", 0),
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
+	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 };
 const long op_table3_n = COUNT(op_table3);
 #endif
