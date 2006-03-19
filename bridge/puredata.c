@@ -250,7 +250,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	BFObject *bself = fm->self;
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
+#ifdef HAVE_HOLDNAME
 	CPPExtern::m_holdname = "keep_gem_happy";
+#endif
 #endif
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI([]),fm->ac+1,argv);
 	DGS(FObject);
@@ -259,7 +261,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)self+11);
 	CPPExtern::m_holder = NULL;
+#ifdef HAVE_HOLDNAME
 	CPPExtern::m_holdname=NULL;
+#endif
 #endif
 	int ninlets  = bself->nin  =  ninlets_of(rb_funcall(rself,SI(class),0));
 	int noutlets = bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
