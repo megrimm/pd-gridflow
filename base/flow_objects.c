@@ -1198,7 +1198,7 @@ static void expect_convolution_matrix (P<Dim> d) {
 }
 
 // entry in a compiled convolution kernel
-struct PlanEntry { int y,x; bool neutral; };
+struct PlanEntry { long y,x; bool neutral; };
 
 \class GridConvolve < GridObject
 struct GridConvolve : GridObject {
@@ -1216,17 +1216,17 @@ struct GridConvolve : GridObject {
 	\decl void initialize (Grid *r=0);
 	\grin 0
 	\grin 1
-	template <class T> void copy_row (T *buf, int sx, int y, int x);
+	template <class T> void copy_row (T *buf, long sx, long y, long x);
 	template <class T> void make_plan (T bogus);
 	~GridConvolve () {if (plan) delete[] plan;}
 };
 
-template <class T> void GridConvolve::copy_row (T *buf, int sx, int y, int x) {
-	int day = a->dim->get(0), dax = a->dim->get(1), dac = a->dim->prod(2);
+template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x) {
+	long day = a->dim->get(0), dax = a->dim->get(1), dac = a->dim->prod(2);
 	y=mod(y,day); x=mod(x,dax);
 	T *ap = (T *)*a + y*dax*dac;
 	while (sx) {
-		int sx1 = min(sx,dax-x);
+		long sx1 = min(sx,dax-x);
 		COPY(buf,ap+x*dac,sx1*dac);
 		x=0;
 		buf += sx1*dac;
@@ -1247,11 +1247,10 @@ template <class T> void GridConvolve::make_plan (T bogus) {
 		for (long x=0; x<dbx; x++) {
 			long k = anti ? y*dbx+x : (dby-1-y)*dbx+(dbx-1-x);
 			T rh = ((T *)*b)[k];
-			bool neutral = op->on(rh)->is_neutral(rh,at_right);
+			bool neutral   = op->on(rh)->is_neutral(  rh,at_right);
 			bool absorbent = op->on(rh)->is_absorbent(rh,at_right);
-			T foo[1];
+			T foo[1]={0};
 			if (absorbent) {
-				foo[0] = 0;
 				op->map(1,foo,rh);
 				absorbent = fold->on(rh)->is_neutral(foo[0],at_right);
 			}
@@ -1296,19 +1295,19 @@ GRID_INLET(GridConvolve,0) {
 	T buf[n];
 	T buf2[sxc];
 	T orh=0;
-	for (long iy=0; iy<day; iy++) {
+	for (long ay=0; ay<day; ay++) {
 		op_put->map(n,buf,*(T *)*seed);
 		for (long i=0; i<plann; i++) {
-			long jy = plan[i].y;
-			long jx = plan[i].x;
-			long k = anti ? jy*dbx+jx : (dby-1-jy)*dbx+(dbx-1-jx);
+			long by = plan[i].y;
+			long bx = plan[i].x;
+			long k = anti ? by*dbx+bx : (dby-1-by)*dbx+(dbx-1-bx);
 			T rh = ((T *)*b)[k];
-			if (i==0 || jy!=plan[i-1].y || orh!=rh) {
-				if (wrap) copy_row(buf2,sx,iy+jy-margy,-margx);
-				else      copy_row(buf2,sx,iy+jy,0);
+			if (i==0 || by!=plan[i-1].y || orh!=rh) {
+				if (wrap) copy_row(buf2,sx,ay+by-margy,-margx);
+				else      copy_row(buf2,sx,ay+by,0);
 				if (!plan[i].neutral) op->map(sxc,buf2,rh);
 			}
-			fold->zip(n,buf,buf2+jx*out->dim->prod(2));
+			fold->zip(n,buf,buf2+bx*out->dim->prod(2));
 			orh=rh;
 		}
 		out->send(n,buf);
