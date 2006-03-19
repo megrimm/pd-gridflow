@@ -151,8 +151,9 @@ void GridInlet::set_factor(long factor) {
 	if(!dim) RAISE("huh?");
 	if(factor<=0) RAISE("%s: factor=%d should be >= 1",INFO(parent),factor);
 	int i;
-	for (i=0; i<dim->n; i++) if (dim->prod(i)==factor) break;
-	if (i==dim->n) RAISE("%s: set_factor: expecting dim->prod(i) for some i",INFO(parent));
+	for (i=0; i<=dim->n; i++) if (dim->prod(i)==factor) break;
+	if (i>dim->n) RAISE("%s: set_factor: expecting dim->prod(i) for some i, "
+		"but factor=%ld and dim=%s",INFO(parent),factor,dim->to_s());
 	if (factor > 1) {
 		buf=new Grid(new Dim(factor), nt);
 		bufi=0;
