@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001,2002,2003,2004 by Mathieu Bouchard
+	Copyright (c) 2001-2006 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@
 #include <CoreServices/CoreServices.h>
 
 typedef ComponentInstance VideoDigitizerComponent, VDC;
-typedef ComponentResult VideoDigitizerError, VDE;
+typedef ComponentResult   VideoDigitizerError,     VDE;
 
 #if 0
 //enum {VDCType='vdig', vdigInterfaceRev=2 };
@@ -202,8 +202,7 @@ struct FormatQuickTimeCamera : Format {
 
 static int nn(int c) {return c?c:' ';}
 
-\def void initialize (Symbol mode, Symbol source, String filename) {
-  L
+\def void initialize (Symbol mode, Symbol source, String filename) {4
 //vdc = SGGetVideoDigitizerComponent(c);
   rb_call_super(argc,argv);
   dim = new Dim(240,320,4);
@@ -254,13 +253,13 @@ static int nn(int c) {return c?c:' ';}
     case 3: e=SGSetChannelPlayFlags(m_vc, channelPlayAllData); break;
   }
   int dataSize = dim->prod();
-  buf = ARRAY_NEW(uint8,dataSize); 
+  buf = new uint8[dataSize];
   m_rowBytes = dim->prod(1);
   e=QTNewGWorldFromPtr (&m_srcGWorld,k32ARGBPixelFormat,
     &rect,NULL,NULL,0,buf,m_rowBytes);
   if (0/*yuv*/) {
     int dataSize = dim->prod()*2/4;
-    buf = ARRAY_NEW(uint8,dataSize); 
+    buf = new uint8[dataSize];
     m_rowBytes = dim->prod(1)*2/4;
     e=QTNewGWorldFromPtr (&m_srcGWorld,k422YpCbCr8CodecType,
       &rect,NULL,NULL,0,buf,m_rowBytes);
@@ -307,10 +306,9 @@ void pix_videoDarwin :: DoVideoSettings(){
 \def void frame () {
     GridOutlet out(this,0,dim);
     out.send(dim->prod(),buf);
-L}
+}
 
 \def void close () {
-  L
   if (m_vc) {
     if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
     m_vc=0;
@@ -355,7 +353,7 @@ struct FormatQuickTimeApple : Format {
 	TimeValue time;
 	short movie_file;
 	GWorldPtr gw; /* just like an X11 Image or Pixmap, maybe. */
-	Pt<uint8> buffer;
+	uint8 *buffer;
 	P<Dim> dim;
 	int nframe, nframes;
 
@@ -396,7 +394,7 @@ struct FormatQuickTimeApple : Format {
 	SetMovieTimeValue(movie,nframe*duration);
 	MoviesTask(movie,0);
 	GridOutlet out(this,0,dim);
-	Pt<uint32> bufu32 = Pt<uint32>((uint32 *)buffer.p,dim->prod()/4);
+	uint32 *bufu32 = (uint32 *)buffer;
 	int n = dim->prod()/4;
 	int i;
 	for (i=0; i<n&-4; i+=4) {
@@ -472,7 +470,7 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	SetMovieBox(movie, &r);
 	dim = new Dim(r.bottom-r.top, r.right-r.left, 4);
 	SetMoviePlayHints(movie, hintsHighQuality, hintsHighQuality);
-	buffer = ARRAY_NEW(uint8,dim->prod());
+	buffer = new uint8[dim->prod()];
 	err = QTNewGWorldFromPtr(&gw, k32ARGBPixelFormat, &r,
 		NULL, NULL, 0, buffer, dim->prod(1));
 	if (err) goto err;
