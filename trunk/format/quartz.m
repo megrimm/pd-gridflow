@@ -63,7 +63,7 @@
 	gfpost("new size: y=%d x=%d",h,w);
 	imheight=h;
 	imwidth=w;
-	if (imdata) delete imdata.p;
+	if (imdata) delete imdata;
 	int size = [self imageDataSize];
 	imdata = new uint8[size];
 	CLEAR(imdata,size);
