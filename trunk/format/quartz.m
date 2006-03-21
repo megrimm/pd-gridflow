@@ -43,7 +43,7 @@
 #include "../base/grid.h.fcs"
 
 @interface GFView: NSView {
-	Pt<uint8> imdata;
+	uint8 *imdata;
 	int imwidth;
 	int imheight;
 }
@@ -65,8 +65,7 @@
 	imwidth=w;
 	if (imdata) delete imdata.p;
 	int size = [self imageDataSize];
-	imdata = ARRAY_NEW(uint8,size);
-	uint8 *p = imdata;
+	imdata = new uint8[size];
 	CLEAR(imdata,size);
 	NSSize s = {w,h};
 	[[self window] setContentSize: s];
@@ -75,7 +74,7 @@
 
 - (id) initWithFrame: (NSRect)r {
 	[super initWithFrame: r];
-	imdata=Pt<uint8>(); imwidth=-1; imheight=-1;
+	imdata=0; imwidth=-1; imheight=-1;
 	[self imageHeight: 240 width: 320];
 	return self;
 }	
@@ -102,9 +101,8 @@
 @end
 
 /* workaround: bus error in gcc */
-Pt<uint8> GFView_imageData(GFView *self) {
-	return Pt<uint8>([self imageData], [self imageDataSize]);
-}
+uint8 *GFView_imageData(GFView *self) {return (uint8 *)[self imageData];}
+
 void GFView_imageHeight_width(GFView *self, int height, int width) {
 	[self imageHeight: height width: width];
 }
@@ -147,7 +145,7 @@ static NSDate *distantFuture, *distantPast;
 }
 
 template <class T, class S>
-static void convert_number_type(int n, Pt<T> out, Pt<S> in) {
+static void convert_number_type(int n, T *out, S *in) {
 	for (int i=0; i<n; i++) out[i]=(T)in[i];
 }
 
@@ -162,7 +160,7 @@ GRID_INLET(FormatQuartz,0) {
 	int off = in->dex/in->dim->prod(2);
 	int c=in->dim->get(2);
 	NSView *w = widget;
-	Pt<uint8> data2 = GFView_imageData(w)+off*4;
+	uint8 *data2 = GFView_imageData(w)+off*4;
 //	convert_number_type(n,data2,data);
 	if (c==3) {
 		while(n) {
