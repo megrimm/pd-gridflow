@@ -63,6 +63,11 @@ clean::
 %.o: %.m.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
 
+%.s: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+	$(CXX) $(CFLAGS) -S $< -o $@
+%.e: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+	$(CXX) $(CFLAGS) -E $< -o $@
+
 $(DLLIB): $(OBJS2) $(OBJS)
 	@-$(RM) $@
 	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS) $(LIBS)
@@ -137,7 +142,7 @@ ruby:: ruby/ruby
 ruby-checkout::
 	cvs -d :pserver:anonymous@cvs.ruby-lang.org:/src checkout -D 2005-10-01 ruby
 
-ruby-install:: ruby/Makefile
+ruby-install:: ruby/ruby
 	(cd ruby; make install)
 
 #--------#--------#--------#--------#--------#--------#--------#--------
