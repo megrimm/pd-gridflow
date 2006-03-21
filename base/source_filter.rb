@@ -241,7 +241,7 @@ def handle_classinfo(line)
 		startup2 += ":#{name} => [],"
 	}
 	startup2 += "}"
-	line.gsub!(/{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
+	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
 		raise "\startup line should have a '{' (sorry)"
 
 	get << "RAISE(\"unknown attr %s\",rb_sym_name(s)); send_out(3,_r_);}"
