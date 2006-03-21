@@ -35,6 +35,7 @@
 typedef ComponentInstance VideoDigitizerComponent, VDC;
 typedef ComponentResult VideoDigitizerError, VDE;
 
+#if 0
 //enum {VDCType='vdig', vdigInterfaceRev=2 };
 //enum {ntscIn=0, currentIn=0, palIn, secamIn, ntscReallyIn };
 //enum {compositeIn, sVideoIn, rgbComponentIn, rgbComponentSyncIn, yuvComponentIn, yuvComponentSyncIn, tvTunerIn, sdiIn};
@@ -172,11 +173,12 @@ VDE VDGetUniqueIDs(UInt64 *outDeviceID, UInt64 *outInputID)
 VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 \end class VDC
 */
+#endif
 
 \class FormatQuickTimeCamera < Format
 struct FormatQuickTimeCamera : Format {
   P<Dim> dim;
-  Pt<uint8> buf;
+  uint8 *buf;
   VDC vdc;
   int m_newFrame; 
   SeqGrabComponent m_sg;
