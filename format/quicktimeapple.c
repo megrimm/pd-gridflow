@@ -202,7 +202,7 @@ struct FormatQuickTimeCamera : Format {
 
 static int nn(int c) {return c?c:' ';}
 
-\def void initialize (Symbol mode, Symbol source, String filename) {4
+\def void initialize (Symbol mode, Symbol source, String filename) {
 //vdc = SGGetVideoDigitizerComponent(c);
   rb_call_super(argc,argv);
   dim = new Dim(240,320,4);
