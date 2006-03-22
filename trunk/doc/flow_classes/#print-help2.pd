@@ -1,4 +1,4 @@
-#N canvas 186 33 771 654 10;
+#N canvas 126 26 771 654 10;
 #X obj 268 45 cnv 15 460 15 empty empty empty 20 12 0 14 -158509 -66577
 0;
 #X obj 278 65 cnv 15 450 15 empty empty empty 20 12 0 14 -233017 -66577
@@ -30,8 +30,6 @@ object.;
 0;
 #X obj 8 103 cnv 15 250 350 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X obj 150 73 f;
-#X text 126 73 OR;
 #X obj 452 489 pddp;
 #N canvas 58 22 261 146 Related_Objects 0;
 #X obj 3 87 cnv 15 250 15 empty empty empty 20 12 0 14 -158509 -66577
@@ -100,14 +98,14 @@ into nearly every graphics card and CPU available today.;
 #X text 12 106 view grid dimensions;
 #X text 71 190 view grid info;
 #X text 297 141 Integer - jhu;
-#X connect 30 0 36 0;
-#X connect 31 0 36 1;
-#X connect 32 0 36 2;
+#X connect 28 0 34 0;
+#X connect 29 0 34 1;
+#X connect 30 0 34 2;
+#X connect 31 0 33 0;
+#X connect 32 0 31 0;
 #X connect 33 0 35 0;
-#X connect 34 0 33 0;
-#X connect 35 0 37 0;
-#X connect 36 0 38 0;
+#X connect 34 0 36 0;
+#X connect 35 0 36 0;
 #X connect 37 0 38 0;
-#X connect 39 0 40 0;
-#X connect 40 0 38 0;
-#X connect 41 0 40 0;
+#X connect 38 0 36 0;
+#X connect 39 0 38 0;
