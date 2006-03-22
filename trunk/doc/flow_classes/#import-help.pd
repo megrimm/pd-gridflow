@@ -1,0 +1,45 @@
+#N canvas 119 230 748 467 10;
+#X msg 75 125 reset;
+#X obj 33 47 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+-1;
+#X msg 33 111 200;
+#X text 125 129 abort output of grid \, if any;
+#X obj 322 366 print export_list;
+#X obj 33 386 print export;
+#X text 70 283 gets the size of the picture;
+#X text 87 354 accepts grids and sends integers;
+#X text 416 328 accepts grids and sends lists of integers;
+#X obj 33 88 until;
+#X msg 33 67 230400;
+#X text 32 418 see also:;
+#X text 671 16 gridflow;
+#X obj 33 301 s size;
+#X obj 33 329 r size;
+#X obj 322 315 r size;
+#X text 14 9 #import \, #export \, #export_list converts integers to
+grids and back;
+#X obj 33 157 #import (240 320 3);
+#X obj 33 176 #out window;
+#X obj 33 260 #in;
+#X obj 33 281 #dim;
+#X obj 33 355 #export;
+#X obj 322 335 #export_list;
+#X text 188 158 syntax: #import ( <int columns> <int rows> <int dimension>
+);
+#X obj 101 421 #in;
+#X obj 128 421 #out;
+#X obj 162 421 #pack;
+#X msg 33 216 load r001.jpg;
+#X connect 0 0 17 0;
+#X connect 1 0 10 0;
+#X connect 2 0 17 0;
+#X connect 9 0 2 0;
+#X connect 10 0 9 0;
+#X connect 14 0 21 0;
+#X connect 15 0 22 0;
+#X connect 17 0 18 0;
+#X connect 19 0 20 0;
+#X connect 20 0 13 0;
+#X connect 21 0 5 0;
+#X connect 22 0 4 0;
+#X connect 27 0 19 0;
