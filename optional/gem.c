@@ -22,6 +22,7 @@
 */
 
 #include "../base/grid.h.fcs"
+#undef T_DATA
 #undef T_OBJECT
 #undef EXTERN
 #include "Base/GemPixDualObj.h"
