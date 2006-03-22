@@ -1,11 +1,11 @@
 /* $Id$ */
 
+[ ] vecops !!!
 [ ] SWIG: try -fcompact -fvirtual
 
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
-[ ] [#export_gem] is upside down?
 [ ] pd_examples -> examples
 [ ] update doc
 [ ] make good use of the R type (automatic Ruby/C++ convs)
@@ -21,10 +21,7 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
 
 <ClaudiusMaximus> hmm, sending a [reassign( message to the right inlet of a [#store] segfaults Pd
-<ClaudiusMaximus> hmmm, i get a segfault with a simple patch sending "reassign, put_at ( 0 0 ), reassign" to the right inlet of [#store ( 3 3 # 0 )]
-<alx1> matju: for the ./configure, I often get an error from aalib since common installs do not put the headers
-<alx1> matju: would it be possible to make it a user defined choice like --with-aalib and turn it off by default?
-<alx1> matju: not noticing that configure returns an error leads to an error when compiling
+<ClaudiusMaximus> hmmm, i get a segfault with a simple patch sending "reassign, put_at (0 0), reassign" to the right inlet of [#store (3 3 # 0)]
 <alx1> back to the [display] object, it lingers for a moment after deletion
 <alx1> and returns a 'pd_activate' error after I move it
 <alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
@@ -77,10 +74,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] wrap Pd API completely.
 [ ] test.rb should become much more serious. (the @pack bug really sucked)
 
-Bugs (High Priority) (!!! Fix all of these before 0.8.0 !!!)
-
-pick a number: [149]
-
 [147] [#store] blows up in nervous_video (reassign)
 [146] [#peephole] resize problem
 [145] "list -1"->[@import] only tells error message once every other time
@@ -104,7 +97,6 @@ pick a number: [149]
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
-[100] osx: libgridflow.so installs in wrong directory (of course)
 [090] doesn't check whether ruby/version.h matches .so / .a
 [027] tcp test is broken
 [089] is LINK TO="..." not properly handled? see part of install.xml that uses it.
@@ -150,9 +142,6 @@ Bugs (Low Priority)
 
 ===================
 
-Community
-[ ] put new examples on website
-
 Distribution
 [ ] should now plan which features are pre-1.0 and which are post-1.0
 [ ] review all documentation
@@ -160,23 +149,17 @@ Distribution
 [ ] make CDs
 
 Installation
-[ ] make the installer help the user more:
+[ ] make ./configure help the user more:
       * .h was found
       * compiled with .h correctly
       * .so|.a was found
       * linked with .so|.a correctly
-[ ] installable doc
-[ ] installable includes ?
 [ ] produce linux binaries ("static")
 [ ] produce cygwin32 or mingw32 binaries
 [ ] produce macosx binaries
 [ ] produce linux rpm/deb
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
-[ ] reintroduce --puredata-dist-dir ?
-[ ] --prefix (pour ruby)
-[ ] install vs site-install mess
-[ ] bridge should check that the gridflow.so file matches.
 [ ] find a good profiler (not gridflow's internal...)
 [ ] cross-compile:
 	http://www.libsdl.org/extras/win32/cross/
@@ -242,41 +225,30 @@ Architecture
 
 Operators
 [ ] User-defined operators; compound operators... e.g. [# {{* 7} + {>> 3}}]
-[ ] n-ary operators... make [#] variable-inlet
-[ ] binary ops to replace unaries : rand -> ???, sqrt -> ???
+[ ] [#] won't have n-ary operators... should they exist?
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
 [ ] numop2: rol, ror
-[ ] numop1: weight (in bits)
-
-Bridge
-[ ] UnknownAtom class
-[ ] Pd bridge should support list-literals inside messages
-[ ] GFBridge object visible from Ruby
 
 Computation Objects
 [ ] #counter (similar to #for)
-[ ] #inner inlet 2 -> 1, and other incompatibilities i wanted to introduce
 [ ] #for "step" argument should have default {1...}
 [ ] zero option in #convolve (?)
-[ ] #convolve2 (simpler)
-[ ] #convolve rewritten as combination of #convolve2+#border ?
-[ ] #convolve(2): should allow n-D convolution
+[ ] #conv (simpler #convolve) should allow n-D convolution
+[ ] #convolve rewritten as combination of #conv+#border ?
 [ ] @complex_sq is backwards
 [ ] #store: option zero (?)
 [ ] #import~, #export~
 [ ] #fold, #scan: option reverse (right-to-left)
 [ ] #join: option swap
 [ ] #matrix_inverse, #matrix_solve
-[ ] #reverse (on given dimension number)
 [ ] #timeline (or rtmetro): sequencing of events from grid
-[ ] #replace_if, #random_select, #markov_chain, #unpack, #sort, #slice, #splice
+[ ] #replace_if, #random_select, #markov_chain, #sort, #slice, #splice
 [ ] #polygon_perimeter, #polygon_area, #draw_polygon smoothly
 [ ] fuzzy #store (interpolate)
 [ ] write a complete benchmark script
 [ ] spatial biquads (ask Tom)
 [ ] string operations to compensate for the feebleness of PD in that area.
 	this includes [#sprintf].
-[ ] #pack should become type-conscious (cast option, like #import)
 --- see also APL/J/NArray/PDL/Aplus/Yorick/IPOW reference
 
 Effects
@@ -307,7 +279,7 @@ Input/Output
 [ ] Grid: support storage in all six types
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format
-[ ] Gimp, GStreamer, ffmpeg, xine, mplayer, GEM, PDP, OSC
+[ ] Gimp, GStreamer, ffmpeg, xine, mplayer, PDP, OSC
 [ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] get subtitling of tv channels
@@ -412,21 +384,16 @@ ClaudiusMaximus says: I want to be able to send output from Pd+Gridflow to a vid
 loopback device so that other v4l programs can access the stream.
 I found the video loopback device here: http://motion.sourceforge.net/vloopback/
 
-<alx2> matju: iSight on linux :
-http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
-<alx2> matju: apparently it needs something called 'coriander'...I'm checking into it
-<alx2> matju: the person who got it working mentions libdc1394
-<alx2> matju: ah coriander is a GUI for firewire
-<alx2> matju: on this page :
-http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
-<alx2> matju: I learn that the iSight is compliant with version 1.30 of IIDC
-<alx2> matju: the docs for coriander mention that the author needed to create a major and minor device for the camera.
-<alx2> matju: retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
-<alx2> matju: raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
-<matju> thanks
-<alx2> matju: any useful info?
-<matju> i'll see, doing something else at the moment
-<alx2> matju: having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
+<alx2>
+iSight on linux : http://episteme.arstechnica.com/6/ubb.x?a=tpc&s=50009562&f=8300945231&m=40110681
+needs something called 'coriander'. the person who got it working mentions libdc1394.
+http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html:
+I learn that the iSight is compliant with version 1.30 of IIDC.
+the docs for coriander mention that the author needed to create a major and minor device for the camera.
+retyping (damn pdf's) -> there are two devices to create: raw1394 and video1394
+raw1394 has major 171 and minor 0 while video1394 had major 171 and minor 16
+any useful info?
+having a camera like the iSight supported could be fantastic for video capture/detection on a laptop.  Not to mention that the bttv cards are getting harder to locate
 
 -mfpmath=sse2
 
@@ -444,7 +411,6 @@ http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/index.html
  //return (uint64)(1000LL*ms*-log(1-drand()));"
 matju 2002
 
-
 remember to check for volatile VALUEs if GC problems ever occur
 
 ruby -ve '[30,31,62,63].each {|x| printf "%d bits: %s\n",x,(1<<(x-1)).class }'
@@ -458,8 +424,6 @@ sand.pd differential mode, 0.8:
 fps   min   med   max   avg   stdev
 17.57 54.82 55.81 78.00 56.89 3.93 : before
 after ...
-
-
 
 ==6998== Conditional jump or move depends on uninitialised value(s)
 ==6998==    at 0x1DA9D7FF: lti::meanShiftSegmentation::init_matr(int*) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)

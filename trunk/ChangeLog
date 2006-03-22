@@ -1,5 +1,13 @@
 /* $Id$ */
 
+version 0.8.3 (2006.03...):
+
+ * added Makefile rules for downloading+installing ruby 1.9
+ * added numops: weight
+ * [#convolve]: added attr "wrap", "anti"
+ * now also works with older (non-CVS) versions of GEM
+ * new object classes: [#fastblur], [#t]
+
 version 0.8.2 (2006.03.17):
 
  * Ruby 1.9 required
