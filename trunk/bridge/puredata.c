@@ -150,6 +150,7 @@ struct BFObject : t_object {
 	Ruby rself;
 	int nin,nout;  // per object settings (not class)
 	t_outlet **out; // direct access to outlets (not linked lists)
+	t_canvas *mom;
 	void check_magic () {
 		if (magic != OBJECT_MAGIC) {
 			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
@@ -259,8 +260,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
+	bself->mom = (t_canvas *)canvas_getcurrent();
 #ifdef HAVE_GEM
-	bself->gemself = (CPPExtern *)((void **)self+11);
+	bself->gemself = (CPPExtern *)((void **)self+11); /* not 64-bit-safe */
 	CPPExtern::m_holder = NULL;
 #ifdef HAVE_HOLDNAME
 	CPPExtern::m_holdname=NULL;
@@ -550,6 +552,24 @@ static Ruby FObject_unfocus (Ruby rself, Ruby canvas_) {
 	return Qnil;
 }
 
+// from pd/src/g_canvas.c
+struct _canvasenvironment {
+    t_symbol *ce_dir;   /* directory patch lives in */
+    int ce_argc;        /* number of "$" arguments */
+    t_atom *ce_argv;    /* array of "$" arguments */
+    int ce_dollarzero;  /* value of "$0" */
+};
+
+static Ruby FObject_patcherargs (Ruby rself) {
+	DGS(FObject);
+	t_glist *canvas = self->bself->mom;
+	_canvasenvironment *env = canvas_getenv(canvas);
+	Ruby ar = rb_ary_new();
+	for (int i=0; i<env->ce_argc; i++)
+		rb_ary_push(ar, Bridge_import_value(env->ce_argv+i));
+	return ar;
+}
+
 static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself;
 	if (!bself) RAISE("there is no bself");
@@ -672,11 +692,11 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
-	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
+	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 
 	SDEF("post_string",post_string,1);
 	SDEF("add_creator_2",add_creator_2,1);
@@ -712,7 +732,7 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
-	char *foo[] = {"Ruby-for-PureData","-w","-e",";"};
+	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	post("setting up Ruby-for-PureData...");
 
 	char *dirname   = new char[242];
