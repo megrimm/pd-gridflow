@@ -36,6 +36,7 @@ tries to call a Ruby method of the proper name.
 #include "../base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
+#undef T_DATA
 #undef EXTERN
 #include <m_pd.h>
 #include <ctype.h>
