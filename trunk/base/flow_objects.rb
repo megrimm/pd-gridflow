@@ -406,28 +406,21 @@ FPatcher.subclass("@convolve",2,1) {
 
 #-------- fClasses for: video
 
-FPatcher.subclass("@scale_to",2,1) {
-	@fobjects = [
-		"@for {0 0} {42 42} {1 1}","@ *","@ /",
-		"@store","#dim","@redim {2}","#finished",
-	]
-	@wires = []
-	for i in 1..3 do @wires.concat [i-1,0,i,0] end
-	@wires.concat [3,0,-1,0, 4,0,5,0, 5,0,1,1, 6,0,0,0,
-		-1,0,4,0, -1,0,3,1, -1,0,6,0, -1,1,0,1, -1,1,2,1]
-	def initialize(size)
-		(size.length==2 and Numeric===size[0] and Numeric===size[1]) or
-			raise "expecting {height width}"
-		super
-		send_in 1, size
-	end
-}
-
 #<vektor> told me to:
 # RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)",
 #	"@ >> 8","@ + {16 128 128}"]
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",
 #	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
+
+FObject.subclass("args",1,2) {
+	def initialize() end
+	def _0_bang
+		pa=patcherargs
+		GridFlow.handle_braces! pa
+		GridFlow.post "patcherargs=%s", pa.inspect
+		send_out 0,:list,*pa
+	end
+}
 
 FPatcher.subclass("#rotate",2,1) {
 	@fobjects = ["#inner","# >> 8"]
