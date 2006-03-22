@@ -240,17 +240,16 @@ GRID_INLET(GridStore,0) {
 	snap_backstore(r);
 	int na = in->dim->n;
 	int nb = r->dim->n;
-	long nc = in->dim->get(na-1);
 	int32 v[Dim::MAX_DIM];
 	if (na<1) RAISE("must have at least 1 dimension.",na,1,1+nb);
+	long nc = in->dim->get(na-1);
+	if (nc > nb)
+		RAISE("got %d elements in last dimension, expecting <= %d", nc, nb);
 	int lastindexable = r->dim->prod()/r->dim->prod(nc) - 1;
 	int ngreatest = nt_greatest((T *)0);
 	if (lastindexable > ngreatest) {
 		RAISE("lastindexable=%d > ngreatest=%d (ask matju)",lastindexable,ngreatest);
 	}
-	if (nc > nb)
-		RAISE("wrong number of elements in last dimension: "
-			"got %d, expecting <= %d", nc, nb);
 	int nd = nb-nc+na-1;
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r->dim->v+nc,nb-nc);
@@ -260,7 +259,7 @@ GRID_INLET(GridStore,0) {
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
 	long size = r->dim->prod(nc);
-	int nd = n/nc;
+	long nd = n/nc;
 	T w[n];
 	T *v=w;
 	if (sizeof(T)==1 && nc==1 && r->dim->v[0]<=256) {
@@ -268,13 +267,13 @@ GRID_INLET(GridStore,0) {
 		v=data;
 	} else {
 		COPY(v,data,n);
-		for (int k=0,i=0; i<nc; i++) for (int j=0; j<n; j+=nc) v[k++] = data[i+j];
+		for (long k=0,i=0; i<nc; i++) for (long j=0; j<n; j+=nc) v[k++] = data[i+j];
 		compute_indices(v,nc,nd);
 	}
 #define FOO(type) { \
-	type * p = (type *)*r; \
+	type *p = (type *)*r; \
 	if (size<=16) { \
-		type * foo = new type[nd*size]; \
+		type *foo = new type[nd*size]; \
 		long i=0; \
 		switch (size) { \
 		case 1: for (; i<nd&-4; i+=4, foo+=4) { \
@@ -333,15 +332,15 @@ GRID_INLET(GridStore,1) {
 		if (cs>GridOutlet::MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
-	int cs = in->dim->prod(lsd-nn+in->dim->n);
+	long cs = in->dim->prod(lsd-nn+in->dim->n);
 	in->set_factor(cs);
 } GRID_FLOW {
 	if (!put_at) { // reassign
 		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
 		return;
 	}
-	// put_at ( ... )
-	int cs = in->factor(); // chunksize
+	// put_at (...)
+	long cs = in->factor(); // chunksize
 	int32 v[lsd];
 	int32 *x = wdex;
 	while (n) {
@@ -353,15 +352,8 @@ GRID_INLET(GridStore,1) {
 		data+=cs;
 		n-=cs;
 		// find next set of indices; here d is the dim# to increment
-		for(;;) {
-			d--;
-			if (d<0) goto end;
-			x[d]++;
-			if (x[d]<to2[d]) break;
-		}
-		d++;
+		for(;;d++) {d--; if (d<0) return; x[d]++; if (x[d]<to2[d]) break;}
 	}
-	end:;
 } GRID_END
 \def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
 \def void _1_reassign () { put_at=0; }
@@ -454,17 +446,17 @@ GRID_INLET(GridFold,0) {
 	COPY(v+yi,in->dim->v+an-bn,bn);
 	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
 	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
-	int k = seed ? seed->dim->prod() : 1;
+	long k = seed ? seed->dim->prod() : 1;
 	in->set_factor(in->dim->get(yi)*k);
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = seed?seed->dim->n:0;
-	int yn = in->dim->v[an-bn-1];
-	int zn = in->dim->prod(an-bn);
+	long yn = in->dim->v[an-bn-1];
+	long zn = in->dim->prod(an-bn);
 	T buf[n/yn];
-	int nn=n;
-	int yzn=yn*zn;
-	for (int i=0; n; i+=zn, data+=yzn, n-=yzn) {
+	long nn=n;
+	long yzn=yn*zn;
+	for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {
 		if (seed) COPY(buf+i,((T *)*seed),zn);
 		else CLEAR(buf+i,zn);
 		op->fold(zn,yn,buf+i,data);
@@ -496,16 +488,16 @@ GRID_INLET(GridScan,0) {
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = seed?seed->dim->n:0;
-	int yn = in->dim->v[an-bn-1];
-	int zn = in->dim->prod(an-bn);
-	int factor = in->factor();
+	long yn = in->dim->v[an-bn-1];
+	long zn = in->dim->prod(an-bn);
+	long factor = in->factor();
 	T buf[n];
 	COPY(buf,data,n);
 	if (seed) {
-		for (int i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
+		for (long i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
 	} else {
 		T seed[zn]; CLEAR(seed,zn);
-		for (int i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
+		for (long i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
 	}
 	out->send(n,buf);
 } GRID_END
@@ -551,28 +543,28 @@ GRID_INLET(GridInner,0) {
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 	in->set_factor(a->get(a->n-1));
 
-	int rrows = in->factor();
-	int rsize = r->dim->prod();
-	int rcols = rsize/rrows;
+	long rrows = in->factor();
+	long rsize = r->dim->prod();
+	long rcols = rsize/rrows;
 	T *rdata = (T *)*r;
-	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
+	long chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	r2=new Grid(new Dim(chunk*rsize),r->nt);
 	T *buf3 = (T *)*r2;
-	for (int i=0; i<rrows; i++)
-		for (int j=0; j<chunk; j++)
+	for (long i=0; i<rrows; i++)
+		for (long j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
 } GRID_FLOW {
-	int rrows = in->factor();
-	int rsize = r->dim->prod();
-	int rcols = rsize/rrows;
-	int chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
+	long rrows = in->factor();
+	long rsize = r->dim->prod();
+	long rcols = rsize/rrows;
+	long chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
 	T buf [chunk*rcols];
 	T buf2[chunk*rcols];
-	int off = chunk;
+	long off = chunk;
 	while (n) {
 		if (chunk*rrows>n) chunk=n/rrows;
 		op_put->map(chunk*rcols,buf2,*(T *)*seed);
-		for (int i=0; i<rrows; i++) {
+		for (long i=0; i<rrows; i++) {
 			switch (rcols) {
 			case 1:  inner_child_b<T,1>(buf,data+i,rrows,chunk); break;
 			case 2:  inner_child_b<T,2>(buf,data+i,rrows,chunk); break;
@@ -625,11 +617,11 @@ GRID_INLET(GridOuter,0) {
 	COPY(v+a->n,b->v,b->n);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 } GRID_FLOW {
-	int b_prod = r->dim->prod();
+	long b_prod = r->dim->prod();
 	if (b_prod > 4) {
 		T buf[b_prod];
 		while (n) {
-			for (int j=0; j<b_prod; j++) buf[j] = *data;
+			for (long j=0; j<b_prod; j++) buf[j] = *data;
 			op->zip(b_prod,buf,(T *)*r);
 			out->send(b_prod,buf);
 			data++; n--;
@@ -642,11 +634,11 @@ GRID_INLET(GridOuter,0) {
 	for (int i=0; i<64; i++) COPY(buf2+i*b_prod,(T *)*r,b_prod);
 	switch (b_prod) {
 	#define Z buf[k++]=data[i]
-	case 1:	for (int i=0,k=0; k<n; i++) {Z;} break;
-	case 2: for (int i=0,k=0; k<n; i++) {Z;Z;} break;
-	case 3:	for (int i=0,k=0; k<n; i++) {Z;Z;Z;} break;
-	case 4:	for (int i=0,k=0; k<n; i++) {Z;Z;Z;Z;} break;
-	default:for (int i=0,k=0; k<n; i++) for (int j=0; j<b_prod; j++, k++) Z;
+	case 1:	for (long i=0,k=0; k<n; i++) {Z;} break;
+	case 2: for (long i=0,k=0; k<n; i++) {Z;Z;} break;
+	case 3:	for (long i=0,k=0; k<n; i++) {Z;Z;Z;} break;
+	case 4:	for (long i=0,k=0; k<n; i++) {Z;Z;Z;Z;} break;
+	default:for (long i=0,k=0; k<n; i++) for (int j=0; j<b_prod; j++, k++) Z;
 	}
 	#undef Z
 	int ch=64*b_prod;
