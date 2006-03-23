@@ -26,6 +26,8 @@
 #undef T_OBJECT
 #undef EXTERN
 #include "Base/GemPixDualObj.h"
+#undef T_DATA
+#define T_DATA   0x12
 
 //  in 0: gem
 //  in 1: grid
