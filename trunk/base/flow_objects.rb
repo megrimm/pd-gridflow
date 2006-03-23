@@ -362,8 +362,8 @@ FObject.subclass("ls",1,1) {
 
 FPatcher.subclass("gfmessagebox",1,1) {
   def initialize(*a) @a=a end
-  def _0_float(x)  send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
-  def _0_symbol(x) send_out 0, *@a.map {|y| if y=="$1".intern then x else y end } end
+  def _0_float(x)  send_out 0, *@a.map {|y| if y==:"$1" then x else y end } end
+  def _0_symbol(x) send_out 0, *@a.map {|y| if y==:"$1" then x else y end } end
 }
 
 FPatcher.subclass("@!",1,1) {
@@ -412,13 +412,21 @@ FPatcher.subclass("@convolve",2,1) {
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",
 #	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
-FObject.subclass("args",1,2) {
-	def initialize() end
+FObject.subclass("args",1,1) {
+	def initialize(*argspecs) @argspecs = argspecs end
+	def initialize2; add_outlets @argspecs.length end
 	def _0_bang
 		pa=patcherargs
 		GridFlow.handle_braces! pa
 		GridFlow.post "patcherargs=%s", pa.inspect
-		send_out 0,:list,*pa
+		i=@argspecs.length-1
+		while i>=0 do
+			case pa[i]
+			when Symbol: send_out i,:symbol,pa[i]
+			else         send_out i,        pa[i]
+			end
+			i-=1
+		end
 	end
 }
 
@@ -436,7 +444,7 @@ FPatcher.subclass("#rotate",2,1) {
 				#GridFlow.post "(#{a},#{b}) #{rotator[a].inspect}"
 				rotator[a][b] = (scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
 		}}
-		@fobjects[0].send_in 1,n,n,"#".intern,*rotator.flatten
+		@fobjects[0].send_in 1,n,n,:"#",*rotator.flatten
 	end
 	def _0_axis(from,to,total)
 		total>=0 or raise "total-axis number incorrect"
@@ -1382,9 +1390,9 @@ class GFSoundMixer < FObject; install "SoundMixer",1,1
       raise if not @@vars_h.include? sel.to_s
       begin
         x = @file.send sel
-        send_out 0, sel, "(".intern, (x>>8)&255, x&255, ")".intern
+        send_out 0, sel, :"(", (x>>8)&255, x&255, :")"
       rescue
-        send_out 0, sel, "(".intern, -1, -1, ")".intern
+        send_out 0, sel, :"(", -1, -1, :")"
       end
     else
       @@vars.each {|var| _0_get var }
