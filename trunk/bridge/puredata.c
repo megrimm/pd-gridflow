@@ -51,6 +51,9 @@ tries to call a Ruby method of the proper name.
 #include "Base/GemPixDualObj.h"
 #endif
 
+#undef T_DATA
+#define T_DATA   0x12
+
 // call f(x) and if fails call g(y)
 #define RESCUE(f,x,g,y) \
   rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
