@@ -748,20 +748,6 @@ FObject.subclass("shunt",2,0) {
 
 #-------- fClasses for: jmax2pd
 
-	FObject.subclass("button",1,1) {
-		def method_missing(*) send_out 0 end
-	}
-	FObject.subclass("toggle",1,1) {
-		def _0_bang; @state ^= true; trigger end
-		def _0_int x; @state = x!=0; trigger end
-		def trigger; send_out 0, (if @state then 1 else 0 end) end
-	}
-	FObject.subclass("jpatcher",0,0) {
-		def initialize(*a) super; @subobjects={} end
-		attr_accessor :subobjects
-	}
-	FObject.subclass("jcomment",0,0) {}
-	FObject.subclass("loadbang",0,1) { def trigger; send_out 0 end }
 	FObject.subclass("messbox",1,1) {
 		def _0_bang; send_out 0, *@argv end
 		def clear; @argv=[]; end
