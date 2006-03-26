@@ -25,18 +25,7 @@ base/number.2.o \
 base/number.3.o
 
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
-# suffixes (not properly used)
-ifeq (1,1) # Linux, MSWindows with Cygnus, etc
-OSUF = .o
-LSUF = .so
-ESUF =
-else # MSWindows without Cygnus (not supported yet)
-OSUF = .OBJ
-LSUF = .DLL
-ESUF = .EXE
-endif
-
-DLLIB = gridflow$(LSUF)
+DLLIB = gridflow.$(DLEXT)
 
 all:: $(DLLIB) gridflow-for-puredata
 
@@ -123,7 +112,7 @@ install::
 dupabs: pd_abstractions/@color.pd
 
 pd_abstractions/@color.pd: pd_abstractions/\#color.pd
-	for z in camera_control motion_detection color mouse fade \
+	for z in camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
 	cp -a pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
