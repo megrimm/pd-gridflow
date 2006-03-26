@@ -35,42 +35,23 @@
 
 # NEW help files
 #!@#$ (what's #+-help.pd ? #print-help2.pd ?)
-%w(
-	# #cast #dim #reverse
-	  #pack=#unpack-#pack
-	#unpack=#unpack-#pack
-	renamefile
-	#in plotter_control
-	listelement exec ls #print unix_time
-	lti
-).each {|name|
-	if name =~ /=/ then name,file = name.split(/=/) else file = name end
-	begin
-		x = GridFlow.fclasses[name]
-		x.set_help "gridflow/flow_classes/#{file}-help.pd"
-	rescue Exception => e
-		GridFlow.post "for [#{name}], #{e.class}: #{e}" # + ":\n" + e.backtrace.join("\n")
-	end
-}
-
-# OLD help files
-%w(
-	@cast
-	@convolve @downscale_by @draw_polygon @export=@importexport
-	@finished @fold @for @global @grade
-	@import=@importexport @inner=@foldinnerouter
-	@in=@inout @join @layer @outer=@foldinnerouter @out=@inout
-	@! @perspective printargs @print @redim
-	rubyprint @scale_by @scale_to @scan
-	@store
-).each {|name|
-	if name =~ /=/ then name,file = name.split(/=/) else file = name end
-	begin
-		GridFlow.fclasses[name].set_help "gridflow/#{file}.pd"
-	rescue Exception => e
-		GridFlow.post "ruby #{e.class}: #{e}:\n" + e.backtrace.join("\n")
-	end
-}
+#%w(
+#	# #cast #dim #reverse
+#	  #pack=#unpack-#pack
+#	#unpack=#unpack-#pack
+#	renamefile
+#	#in plotter_control
+#	listelement exec ls #print unix_time
+#	lti
+#).each {|name|
+#	if name =~ /=/ then name,file = name.split(/=/) else file = name end
+#	begin
+#		x = GridFlow.fclasses[name]
+#		x.set_help "gridflow/flow_classes/#{file}-help.pd"
+#	rescue Exception => e
+#		GridFlow.post "for [#{name}], #{e.class}: #{e}" # + ":\n" + e.backtrace.join("\n")
+#	end
+#}
 
 #GridFlow.gui "frame .controls.gridflow -relief ridge -borderwidth 2\n"
 #GridFlow.gui "button .controls.gridflow.button -text FOO\n"
