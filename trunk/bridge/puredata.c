@@ -766,10 +766,9 @@ extern "C" void gridflow_setup () {
 		"module GridFlow; class<<self; attr_reader :bridge_name; end; "
 		"@bridge_name = 'puredata'; self end");
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
-	EVAL("STDERR.puts \"DIR = #{GridFlow::DIR}\"");
+	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
 	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
-
-	post("(done)");
+	post("Ruby's path = %s",rb_str_ptr(EVAL("$:.inspect")));
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
 		STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
