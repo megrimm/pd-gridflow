@@ -1025,6 +1025,7 @@ File.open("./config.make","w") {|f|
   for k,v in $conf[:DEFINES] do f.puts "#{k}=#{v}" end
   f.puts "CXX = #{$conf[:CC]}"
   f.puts "OBJS = #{$conf[:OBJS].join(" ")}"
+  f.puts "DLEXT = #{CONFIG['DLEXT']}"
   f.puts ""
 
 } # end open config.make
