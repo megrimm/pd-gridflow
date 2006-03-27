@@ -260,8 +260,10 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	} else {
 		RAISE("expect symbol or string");
 	}
-	inlets  =  INT(inlets2); if ( inlets<0 ||  inlets>9) RAISE("...");
-	outlets = INT(outlets2); if (outlets<0 || outlets>9) RAISE("...");
+	inlets  = TYPE( inlets2)==T_ARRAY ? rb_ary_len( inlets2) : INT( inlets2);
+	outlets = TYPE(outlets2)==T_ARRAY ? rb_ary_len(outlets2) : INT(outlets2);
+	if ( inlets<0 ||  inlets>9) RAISE("...");
+	if (outlets<0 || outlets>9) RAISE("...");
 	rb_ivar_set(rself,SI(@ninlets),INT2NUM(inlets));
 	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
 	rb_ivar_set(rself,SI(@foreign_name),name2);
@@ -449,7 +451,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 		}
 		i++;
 		while (close--) {
-			if (!stackn) RAISE("unbalanced '}' or ')'",av[i]);
+			if (!stackn) RAISE("close-paren without open-paren",av[i]);
 			Ruby a2 = rb_ary_new();
 			int j2 = stack[--stackn];
 			for (int k=j2; k<j; k++) rb_ary_push(a2,av[k]);
@@ -457,7 +459,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 			av[j++] = a2;
 		}
 	}
-	if (stackn) RAISE("unbalanced '{' or '(' (stackn=%d)",stackn);
+	if (stackn) RAISE("too many open-paren (%d)",stackn);
 	RARRAY(argv)->len = j;
 	return rself;
 }
@@ -644,3 +646,8 @@ uint64 gf_timeofday () {
 	gettimeofday(&t,0);
 	return t.tv_sec*1000000+t.tv_usec;
 }
+
+//void __cyg_profile_func_enter (void *this_fn, void *call_site) {_L_}
+//void __cyg_profile_func_exit  (void *this_fn, void *call_site) {_L_}
+
+
