@@ -507,31 +507,52 @@ GRID_INLET(GridScan,0) {
 \end class GridScan
 
 //****************************************************************
-//{ Dim[*As,C]<T>,Dim[C,*Bs]<T> -> Dim[*As,*Bs]<T> }
+// L      is a Dim[*si,sj,    *ss]<T>
+// R      is a Dim[    sj,*sk,*ss]<T>
+// Seed   is a Dim[           *ss]<T>
+// result is a Dim[*si,   *sk,*ss]<T>
+// Currently *ss can only be = Dim[]
 \class GridInner < GridObject
 struct GridInner : GridObject {
 	\attr Numop *op;
 	\attr Numop *fold;
 	\attr PtrGrid seed;
 	PtrGrid r;
-	PtrGrid r2;
+	PtrGrid r2; // temporary
+	bool use_dot;
 	GridInner() {}
 	\decl void initialize (Grid *r=0);
 	\grin 0
 	\grin 1
 };
 
-template <class T> void inner_child_a (T *bt, T *dt, int rrows, int rcols, int chunk) {
-	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
+// let's see this as a matrix product like L[i,j]*R[j,k] in Einstein notation
+//   L: matrix of size si by sj
+//   R: matrix of size sj by sk
+//  LR: matrix of size si by sk
+template <class T> void inner_child_a (T *as, T *bs, int sj, int sk, int chunk) {
+	for (int j=0; j<chunk; j++, as+=sk, bs+=sj) op_put->map(sk,as,*bs);}
+template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) {
+	for (int j=0; j<chunk; j++, as+=sk, bs+=sj) op_put->map(sk,as,*bs);}
+
+// Inner product in a Module on the (+,*) Ring
+//      | BBBBB
+//      j BBBBB
+//      | BBBBB
+// --j--*---k---
+// AAAAA  CCCCC
+template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {
+	for (int k=0; k<sk; k++) {
+		T c = 0;
+		for (int j=0; j<sj; j++) c += as[j]*bs[j*sk+k];
+		*cs++ = c;
+	}
 }
-template <class T, int rcols> void inner_child_b (T *bt, T *dt, int rrows, int chunk) {
-	for (int j=0; j<chunk; j++, bt+=rcols, dt+=rrows) op_put->map(rcols,bt,*dt);
-}
+
 GRID_INLET(GridInner,0) {
 	SAME_TYPE(in,r);
 	SAME_TYPE(in,seed);
-	P<Dim> a = in->dim;
-	P<Dim> b = r->dim;
+	P<Dim> a=in->dim, b=r->dim;
 	if (a->n<1) RAISE("a: minimum 1 dimension");
 	if (b->n<1) RAISE("b: minimum 1 dimension");
 	if (seed->dim->n != 0) RAISE("seed must be a scalar");
@@ -542,43 +563,50 @@ GRID_INLET(GridInner,0) {
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 	in->set_factor(a->get(a->n-1));
-
-	long rrows = in->factor();
-	long rsize = r->dim->prod();
-	long rcols = rsize/rrows;
+	long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
+	long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
 	T *rdata = (T *)*r;
-	long chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
-	r2=new Grid(new Dim(chunk*rsize),r->nt);
+	r2=new Grid(new Dim(chunk*sjk),r->nt);
 	T *buf3 = (T *)*r2;
-	for (long i=0; i<rrows; i++)
+	for (long i=0; i<sj; i++)
 		for (long j=0; j<chunk; j++)
-			COPY(buf3+(j+i*chunk)*rcols,rdata+i*rcols,rcols);
+			COPY(buf3+(j+i*chunk)*sk,rdata+i*sk,sk);
+	use_dot = op==op_mul && fold==op_add && seed->dim->n==0 && *(T *)*seed==0;
+	//gfpost("use_dot=%d",use_dot);
 } GRID_FLOW {
-	long rrows = in->factor();
-	long rsize = r->dim->prod();
-	long rcols = rsize/rrows;
-	long chunk = GridOutlet::MAX_PACKET_SIZE/rsize;
-	T buf [chunk*rcols];
-	T buf2[chunk*rcols];
-	long off = chunk;
+    long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
+    long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
+    T buf [chunk*sk];
+    T buf2[chunk*sk];
+    long off = chunk;
+    if (use_dot) {
 	while (n) {
-		if (chunk*rrows>n) chunk=n/rrows;
-		op_put->map(chunk*rcols,buf2,*(T *)*seed);
-		for (long i=0; i<rrows; i++) {
-			switch (rcols) {
-			case 1:  inner_child_b<T,1>(buf,data+i,rrows,chunk); break;
-			case 2:  inner_child_b<T,2>(buf,data+i,rrows,chunk); break;
-			case 3:  inner_child_b<T,3>(buf,data+i,rrows,chunk); break;
-			case 4:  inner_child_b<T,4>(buf,data+i,rrows,chunk); break;
-			default: inner_child_a(buf,data+i,rrows,rcols,chunk);
-			}
-			op->zip(chunk*rcols,buf,(T *)*r2+i*off*rcols);
-			fold->zip(chunk*rcols,buf2,buf);
-		}
-		out->send(chunk*rcols,buf2);
-		n-=chunk*rrows;
-		data+=chunk*rrows;
+		if (chunk*sj>n) chunk=n/sj;
+		for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
+		out->send(chunk*sk,buf2);
+		n-=chunk*sj;
+		data+=chunk*sj;
 	}
+    } else {
+	while (n) {
+		if (chunk*sj>n) chunk=n/sj;
+		op_put->map(chunk*sk,buf2,*(T *)*seed);
+		for (long i=0; i<sj; i++) {
+			switch (sk) {
+			case 1:  inner_child_b<T,1>(buf,data+i,sj,chunk); break;
+			case 2:  inner_child_b<T,2>(buf,data+i,sj,chunk); break;
+			case 3:  inner_child_b<T,3>(buf,data+i,sj,chunk); break;
+			case 4:  inner_child_b<T,4>(buf,data+i,sj,chunk); break;
+			default: inner_child_a(buf,data+i,sj,sk,chunk);
+			}
+			op->zip(chunk*sk,buf,(T *)*r2+i*off*sk);
+			fold->zip(chunk*sk,buf2,buf);
+		}
+		out->send(chunk*sk,buf2);
+		n-=chunk*sj;
+		data+=chunk*sj;
+	}
+    }
 } GRID_FINISH {
 	r2=0;
 } GRID_END
