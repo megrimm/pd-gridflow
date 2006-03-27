@@ -543,9 +543,14 @@ template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) 
 // AAAAA  CCCCC
 template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {
 	for (int k=0; k<sk; k++) {
-		T c = 0;
-		for (int j=0; j<sj; j++) c += as[j]*bs[j*sk+k];
-		*cs++ = c;
+		T c = 0; for (int j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
+		*cs++=c;
+	}
+}
+template <class T, int sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {
+	for (int k=0; k<sk; k++) {
+		T c = 0; for (int j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
+		*cs++=c;
 	}
 }
 
@@ -582,7 +587,13 @@ GRID_INLET(GridInner,0) {
     if (use_dot) {
 	while (n) {
 		if (chunk*sj>n) chunk=n/sj;
-		for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
+		switch (sj) {
+		case 1: for (int i=0; i<chunk; i++) dot_add_mul<T,1>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		case 2: for (int i=0; i<chunk; i++) dot_add_mul<T,2>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		case 3: for (int i=0; i<chunk; i++) dot_add_mul<T,3>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		case 4: for (int i=0; i<chunk; i++) dot_add_mul<T,4>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		default:for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
+		}
 		out->send(chunk*sk,buf2);
 		n-=chunk*sj;
 		data+=chunk*sj;
