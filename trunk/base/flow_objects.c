@@ -447,7 +447,13 @@ GRID_INLET(GridFold,0) {
 	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
 	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
 	long k = seed ? seed->dim->prod() : 1;
-	in->set_factor(in->dim->get(yi)*k);
+	long factor = in->dim->get(yi)*k;
+	if (factor) in->set_factor(factor);
+	else {
+		long n = out->dim->prod();
+		T x=0; x=op->on(x)->neutral(at_left);
+		for(long i=0; i<n; i++) out->send(1,&x);
+	}
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = seed?seed->dim->n:0;
@@ -458,10 +464,11 @@ GRID_INLET(GridFold,0) {
 	long yzn=yn*zn;
 	for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {
 		if (seed) COPY(buf+i,((T *)*seed),zn);
-		else CLEAR(buf+i,zn);
+		else op_put->map(zn,buf+i,op->on(*buf)->neutral(at_left));
 		op->fold(zn,yn,buf+i,data);
 	}
 	out->send(nn/yn,buf);
+} GRID_FINISH {
 } GRID_END
 
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
@@ -484,7 +491,8 @@ GRID_INLET(GridScan,0) {
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
 	if (seed) SAME_DIM(bn,in->dim,an-bn,seed->dim,0);
 	out=new GridOutlet(this,0,in->dim,in->nt);
-	in->set_factor(in->dim->prod(an-bn-1));
+	long factor = in->dim->prod(an-bn-1);
+	if (factor) in->set_factor(factor);
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = seed?seed->dim->n:0;
@@ -496,7 +504,7 @@ GRID_INLET(GridScan,0) {
 	if (seed) {
 		for (long i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
 	} else {
-		T seed[zn]; CLEAR(seed,zn);
+		T seed[zn]; op_put->map(zn,seed,op->on(*seed)->neutral(at_left));
 		for (long i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
 	}
 	out->send(n,buf);
@@ -772,7 +780,8 @@ void GridFor::trigger (T bogus) {
 	SAME_TYPE(from,to);
 	SAME_TYPE(from,step);
 	if (!from->dim->equal(to->dim) || !to->dim->equal(step->dim))
-		RAISE("dimension mismatch");
+		RAISE("dimension mismatch: from:%s to:%s step:%s",
+			from->dim->to_s(),to->dim->to_s(),step->dim->to_s());
 #define FOO(T) trigger((T)0);
 	TYPESWITCH_JUSTINT(from->nt,FOO,);
 #undef FOO
