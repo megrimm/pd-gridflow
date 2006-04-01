@@ -11,6 +11,13 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/04/01 04:58:43  heri
+//  - Added Class MeanshiftTracker.
+//  - All methods with the name "initialize" in lti-lib are renamed to "init" due to conflict with Ruby (including MeanshiftTracker::initialize).
+//  - Added template names to allow instantiation of Class Rectangle: Rect (int), Drect (double), Frect (float). Some arguments of MeanshiftTracker methods are of type Rectangle, this will be useful when using MeanshiftTracker.
+//  - Added template names for histogram classes: Histogram (double), Ihistogram, Fhistogram, Histogram1D, Histogram2D. Also needed as arguments to methods of MeanshiftTracker. "initialize" method of this class is also renamed to "init".
+//  - Added drawing class. A new interface file (drawing.i) has been added for these. Currently, there are two classes available: ImageDraw and ChannelDraw to draw on objects of type Image and Channel respectively. These classes enable drawing simple shapes and text on the canvas provided to them.
+//
 //  Revision 1.2  2006/03/05 01:18:55  heri
 //  More changes related to the added classes: backgroundModel,
 //  geometricFeaturesFromMask and
@@ -63,3 +70,14 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( objectsFromMask,         "ltiObjectsFromMask.h")
     }
     %}
 HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
+
+
+
+/*namespace lti {
+  %rename(init) meanshiftTracker::initialize(const image &, trectangle< int > &);
+  %rename(init) meanshiftTracker::initialize(const image &, trectangle< int > &, const channel8 &);
+  %rename(init) meanshiftTracker::initialize(const image &, trectangle< int > &, const channel &);
+}*/
+
+HANDLE_FUNCTOR_WITH_PARAMETERS( meanshiftTracker,         "ltiMeanshiftTracker.h")
+
