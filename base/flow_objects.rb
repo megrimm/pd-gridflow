@@ -22,6 +22,7 @@
 =end
 
 module GridFlow
+GridFlow = ::GridFlow # ruby is nuts... sometimes
 
 #-------- fClasses for: control + misc
 
@@ -265,7 +266,7 @@ GridObject.subclass("#print",1,0) {
 GridPack =
 GridObject.subclass("#pack",1,1) {
 	install_rgrid 0
-	class<<self;attr_reader :ninlets;end
+	class<< self;attr_reader :ninlets;end
 	def initialize(n=2,cast=:int32)
 		n||=self.class.ninlets
 		n>=16 and raise "too many inlets"
@@ -437,7 +438,7 @@ FPatcher.subclass("#rotate",2,1) {
 		n = @axis[2]
 		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then 256 else 0 end }}
 		th = @angle * Math::PI / 18000
-		scale = 1<<8
+		scale = 1 << 8
 		(0...2).each {|i| (0...2).each {|j|
 				a = @axis[i].to_i
 				b = @axis[j].to_i
@@ -734,13 +735,26 @@ FObject.subclass("fork",1,2) {
   end
 }
 FObject.subclass("shunt",2,0) {
-	def initialize(n=2,i=0) super; @n=n; @i=i end
+	gfattr :index
+	gfattr :mode
+	gfattr :hi
+	gfattr :lo
+	def initialize(n=2,i=0) super; @n=n; @hi=n-1; @lo=0; @mode=0; @index=i end
 	def initialize2; add_outlets @n end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
-		send_out @i,$2.intern,*args
+		send_out @index,$2.intern,*args
+		if @mode!=0 then
+			@index += @mode<=>0
+			if @index<@lo or @index>@hi then
+				k = @hi-@lo+1
+				m = @mode.abs
+				if m==1 then @index = ((@index-@lo) % k)+@lo
+				else @mode=-@mode; @index+=@mode end
+			end
+		end
 	end
-	def _1_int i; @i=i.to_i % @n end
+	def _1_int i; @index=i.to_i % @n end
 	alias :_1_float :_1_int
 	# hack: this is an alias.
 	class Demux < self; install "demux", 2, 0; end
@@ -751,7 +765,7 @@ FObject.subclass("shunt",2,0) {
 	FObject.subclass("messbox",1,1) {
 		def _0_bang; send_out 0, *@argv end
 		def clear; @argv=[]; end
-		def append(*argv) @argv<<argv; end
+		def append(*argv) @argv << argv; end
 	}
 
 #-------- fClasses for: list manipulation (jMax-compatible)
@@ -1291,7 +1305,7 @@ FObject.subclass("joystick_port",0,1) {
 # plotter control (HPGL)
 FObject.subclass("plotter_control",1,1) {
   def puts(x)
-    x<<"\n"
+    x << "\n"
     x.each_byte {|b| send_out 0, b }
     send_out 0
   end
