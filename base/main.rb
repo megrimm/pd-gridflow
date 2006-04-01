@@ -175,12 +175,18 @@ class FObject
 		def inspect; foreign_name or super; end
 		# should it recurse into superclasses?
 		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
+		def gfattr(s,*v)
+			s=s.intern if String===s
+			gfattrs[s]=v
+			attr_accessor s
+			module_eval "def _0_#{s}(o) self.#{s}=o end"
+		end
 	end
 	def self.help
 		gfattrs.each{|x,v|
 			s =      "attr=%-8s" % x
 			s <<    " type=%-8s" % v[0] if v[0]
-			s << " default=%-8s" % v[1] if v[1]
+			s << " default=%-8s" % v[1] if v[1] # what default="false" ?
 			GridFlow.post "%s", s
 		}
 		GridFlow.post "total %d attributes", gfattrs.length
@@ -260,10 +266,11 @@ class FObject
 	end
 	def _0_help; self.class.help end
 	def _0_get(s=nil)
+		s=s.intern if String===s
 		if s then
-			___get s
+			if respond_to? s then send_out noutlets-1,s,__send__(s) else ___get s end
 		else
-			self.class.gfattrs.each_key{|k| ___get k }
+			self.class.gfattrs.each_key{|k| _0_get k }
 		end
 	end
 end
@@ -318,9 +325,6 @@ def GridFlow.estimate_cpu_clock
 	u0,t0=GridFlow.rdtsc,Time.new.to_f; sleep 0.01
 	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
 end
-
-GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
-GridFlow.post "rdtsc=%s",(GridFlow.rdtsc rescue $!).inspect
 
 begin
 	@cpu_hertz = (0...3).map {
@@ -410,8 +414,10 @@ END {
 
 class Object
   def method_missing(name,*args)
-    obj = (case obj; when FObject: self.info; else self.inspect end)
-    qla = (case obj; when FObject: self.info; else self.class.inspect end)
-    raise "undefined method \"#{name}\" for #{obj} in class #{qla}"
+    oc = GridFlow::FObject
+    obj = (case obj; when oc: self.info; else self      .inspect end)
+    qla = (case obj; when oc: self.info; else self.class.inspect end)
+    #begin raise; rescue Exception => e; end
+    raise NameError, "undefined method \"#{name}\" for #{obj} in class #{qla}"#, ["hello"]+e.backtrace
   end
 end
