@@ -2,7 +2,7 @@
 
 [ ] vecops !!!
 [ ] SWIG: try -fcompact -fvirtual
-
+[ ] #inner is really slow, and doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
@@ -36,7 +36,9 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] FIX LIBQUICKTIME CODE: #include <lqt/*> instead of <quicktime/*>
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] make c++ refcount and ruby gc to cooperate.
-[ ] encoding of quicktime RGBA only works with [#cast b].
+[ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
+[ ] reading tux.tga is completely broken
+[ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
 [ ] add classmethod support to source filter
 [ ] document the source filter
 [ ] make example on separable convkernels
@@ -55,10 +57,10 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [ ] wrap Numop
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
-[ ] [#change]
 [ ] [#import~]
 [ ] [#export~]
 [ ] [#expr]
+[ ] [#line]? [#pipe]? [#delay]?
 [ ] #: option swap
 [ ] consider including [mysql] [renamefile] [ls] [shell]
 [ ] re-enable int64,float64
@@ -82,11 +84,10 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [140] is [@convolve] actually cross-convolution?
 	that is, convolves with a mirror image of the convolution matrix.
 [139] [#peephole]
-	<mis> matju: BUG-ALERT - peephole does not delete until a screen refresh
-	<mis> matju: I was just about to do that
-	<mis> matju: it works... almost
 	<mis> matju: if you try to move the GOPed abstraction the peepholes don't move along
-	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not move up or to the left of the low right corner of the peephole it contains.  Instead it will resize itself as you move it around.  
+	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not
+	move up or to the left of the low right corner of the peephole it contains.
+	Instead it will resize itself as you move it around.  
 [138] [#peephole] crash
 [137] [gf] peeperr: problem with set_geometry, wrong size.
 [136] fix C_INCLUDE_PATH vs CPLUS_INCLUDE_PATH
@@ -117,8 +118,6 @@ FObject#send_out2 : bself is NULL, rself=4097cbe8
 [038] some seeds aren't typechecked
 [039] jpeg file cat crashes on second file (jpeglib buffering?)
 [040] GRID_FINISH triggered while backstore ???
-
-Bugs (Low Priority)
 [079] can trap segfaults in codecs of libquicktime.
 [090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
 [076] EINTR not handled properly in a lot of code?
@@ -149,11 +148,6 @@ Distribution
 [ ] make CDs
 
 Installation
-[ ] make ./configure help the user more:
-      * .h was found
-      * compiled with .h correctly
-      * .so|.a was found
-      * linked with .so|.a correctly
 [ ] produce linux binaries ("static")
 [ ] produce cygwin32 or mingw32 binaries
 [ ] produce macosx binaries
@@ -196,7 +190,7 @@ Source Filter
 
 Architecture
 [0.8] reentrancy of objects (to allow true recursion)
-[0.8] inlet-variables (variables associated to inlets)
+[0.8] inlet-attrs (attrs associated to inlets)
 [ ] eliminate the Dim class, replacing by Grid itself (?).
 [ ] pull mode (functional-style)
 [ ] bidirectional messages (constraint/relational-style)
@@ -227,7 +221,6 @@ Operators
 [ ] User-defined operators; compound operators... e.g. [# {{* 7} + {>> 3}}]
 [ ] [#] won't have n-ary operators... should they exist?
 [ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
-[ ] numop2: rol, ror
 
 Computation Objects
 [ ] #counter (similar to #for)
@@ -263,7 +256,6 @@ Effects
 [ ] create abstractions for usage patterns (eg: like #remap_image)
 [ ] see gimp for ideas
 [ ] kaleidoscopes
-[ ] FFTW
 [ ] bilinear interpolation a+(b-a)*x+(c-a)*y+(a-b-c+d)*x*y (#scale_by smoothly?)
 [ ] #scale_by/#downscale_by fractional values
 [ ] bicubic interpolation
@@ -326,7 +318,6 @@ User Interface
 	(generated from class reflection/metadata)
 
 Extra/Examples/Etc
-[ ] make demo app(s) in Ruby/Tk: bin/playmovie
 [ ] .pd: read; write better
 [ ] examples/generique.pd
 [ ] add examples from the workshop, etc
@@ -360,10 +351,8 @@ possibles)
 mais ça pourrait aller plus loin. 
  j'ai pensé intégrer le manuel de référence de gridflow directement dans
 le programme, disponible au runtime, dans l'éventualité d'un GUI qui
-saurait en tirer avantage. sinon on pourrait faire des hacks cool genre un
-message "help" au inlet 0 enverrait une description de la classe dans le log.
- (sauf que dans ce cas: [rubyprint] est tenu d'afficher directement tout
-ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
+saurait en tirer avantage. (sauf que dans ce cas: [rubyprint] est tenu
+d'afficher directement tout ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
 
 alx1->matju: détection de plusieurs personnes; détection avec deux caméras
 (?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots

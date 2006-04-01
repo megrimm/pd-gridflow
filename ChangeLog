@@ -1,12 +1,20 @@
 /* $Id$ */
 
-version 0.8.3 (2006.03...):
+version 0.8.3 (2006.04...):
 
  * added Makefile rules for downloading+installing ruby 1.9
- * added numops: weight
+ * added numops: weight,rol,ror
  * [#convolve]: added attr "wrap", "anti"
+ * [#inner]: faster!
+ * [#shunt]: added attr index,mode,lo,hi
  * now also works with older (non-CVS) versions of GEM
- * new object classes: [#fastblur], [#t]
+ * new object classes: [#fastblur], [#t], [#rgb_to_rgba], [#rgba_to_rgb],
+   [#change], [#swap], [#polygon_perimetre], [#polygon_area], [args],
+   [#gamma], [#saturation]
+ * now autodetects the .gz suffix (goes with ppm/targa/grid formats)
+ * moved the rest of pd_help/ to doc/flow_classes/
+ * automatic attribute generator for Ruby
+   
 
 version 0.8.2 (2006.03.17):
 
