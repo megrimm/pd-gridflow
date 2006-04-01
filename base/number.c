@@ -152,15 +152,15 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 #define DECL_OPON_NOFOLD(O,T) NumopOn<T>( \
 	&OL(O,T)::def_map, &OL(O,T)::def_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECLOP(        M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
-	NONLITE(,M(O,int64),    M(O,float32),      M(O,float64),  M(O,ruby)), flags)
-#define DECLOP_NOFLOAT(M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
-	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags)
-//	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags)
-#define DECL_OP(               O,sym,flags) DECLOP(        DECL_OPON       ,O,sym,flags)
-#define DECL_OP_NOFLOAT(       O,sym,flags) DECLOP_NOFLOAT(DECL_OPON       ,O,sym,flags)
-#define DECL_OP_NOFOLD(        O,sym,flags) DECLOP(        DECL_OPON_NOFOLD,O,sym,flags)
-#define DECL_OP_NOFOLD_NOFLOAT(O,sym,flags) DECLOP_NOFLOAT(DECL_OPON_NOFOLD,O,sym,flags)
+#define DECLOP(        M,O,sym,flags,dim) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
+	NONLITE(,M(O,int64),    M(O,float32),      M(O,float64),  M(O,ruby)),flags,dim)
+#define DECLOP_NOFLOAT(M,O,sym,flags,dim) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
+	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags,dim)
+//	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags,dim)
+#define DECL_OP(               O,sym,flags,dim) DECLOP(        DECL_OPON       ,O,sym,flags,dim)
+#define DECL_OP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(DECL_OPON       ,O,sym,flags,dim)
+#define DECL_OP_NOFOLD(        O,sym,flags,dim) DECLOP(        DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECL_OP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(DECL_OPON_NOFOLD,O,sym,flags,dim)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
@@ -235,50 +235,53 @@ DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
 DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 #endif
 
-extern Numop      op_table1[], op_table2[], op_table3[];
-extern const long op_table1_n, op_table2_n, op_table3_n;
+//!!! replace by the real thing with DEF_VOP
+DEF_OP(cx_mul,  a*b, 1, x==1, x==0)
+
+extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
+extern const long op_table1_n, op_table2_n, op_table3_n, op_table4_n;
 
 #ifdef PASS1
 Numop op_table1[] = {
-	DECL_OP(ignore, "ignore", OP_ASSOC),
-	DECL_OP(put, "put", OP_ASSOC),
-	DECL_OP(add, "+", OP_ASSOC|OP_COMM), // "LINV=sub"
-	DECL_OP(sub, "-", 0),
-	DECL_OP(bus, "inv+", 0),
-	DECL_OP(mul, "*", OP_ASSOC|OP_COMM),
-	DECL_OP_NOFLOAT(mulshr8, "*>>8", OP_ASSOC|OP_COMM),
-	DECL_OP(div, "/", 0),
-	DECL_OP_NOFLOAT(div2, "div", 0),
-	DECL_OP(vid, "inv*", 0),
-	DECL_OP_NOFLOAT(vid2, "swapdiv", 0),
-	DECL_OP_NOFLOAT(mod, "%", 0),
-	DECL_OP_NOFLOAT(dom, "swap%", 0),
-	DECL_OP_NOFLOAT(rem, "rem", 0),
-	DECL_OP_NOFLOAT(mer, "swaprem", 0),
+	DECL_OP(ignore, "ignore", OP_ASSOC,1),
+	DECL_OP(put, "put", OP_ASSOC,1),
+	DECL_OP(add, "+", OP_ASSOC|OP_COMM,1), // "LINV=sub"
+	DECL_OP(sub, "-", 0,1),
+	DECL_OP(bus, "inv+", 0,1),
+	DECL_OP(mul, "*", OP_ASSOC|OP_COMM,1),
+	DECL_OP_NOFLOAT(mulshr8, "*>>8", OP_ASSOC|OP_COMM,1),
+	DECL_OP(div, "/", 0,1),
+	DECL_OP_NOFLOAT(div2, "div", 0,1),
+	DECL_OP(vid, "inv*", 0,1),
+	DECL_OP_NOFLOAT(vid2,"swapdiv", 0,1),
+	DECL_OP_NOFLOAT(mod, "%",       0,1),
+	DECL_OP_NOFLOAT(dom, "swap%",   0,1),
+	DECL_OP_NOFLOAT(rem, "rem",     0,1),
+	DECL_OP_NOFLOAT(mer, "swaprem", 0,1),
 };
 const long op_table1_n = COUNT(op_table1);
 #endif
 #ifdef PASS2
 Numop op_table2[] = {
-	DECL_OP_NOFLOAT(gcd, "gcd", OP_ASSOC|OP_COMM),
-	DECL_OP_NOFLOAT(gcd2, "gcd2", OP_ASSOC|OP_COMM),
-	DECL_OP_NOFLOAT(lcm, "lcm", OP_ASSOC|OP_COMM),
-	DECL_OP(or , "|", OP_ASSOC|OP_COMM),
-	DECL_OP(xor, "^", OP_ASSOC|OP_COMM),
-	DECL_OP(and, "&", OP_ASSOC|OP_COMM),
-	DECL_OP_NOFOLD(shl, "<<", 0),
-	DECL_OP_NOFOLD(shr, ">>", 0),
-	DECL_OP_NOFOLD(sc_and,"&&", 0),
-	DECL_OP_NOFOLD(sc_or, "||", 0),
-	DECL_OP(min, "min", OP_ASSOC|OP_COMM),
-	DECL_OP(max, "max", OP_ASSOC|OP_COMM),
-	DECL_OP_NOFOLD(eq,   "==", OP_COMM),
-	DECL_OP_NOFOLD(ne,   "!=", OP_COMM),
-	DECL_OP_NOFOLD(gt,   ">", 0),
-	DECL_OP_NOFOLD(le,   "<=", 0),
-	DECL_OP_NOFOLD(lt,   "<", 0),
-	DECL_OP_NOFOLD(ge,   ">=", 0),
-	DECL_OP_NOFOLD(cmp,  "cmp", 0),
+	DECL_OP_NOFLOAT(gcd,  "gcd",  OP_ASSOC|OP_COMM,1),
+	DECL_OP_NOFLOAT(gcd2, "gcd2", OP_ASSOC|OP_COMM,1),
+	DECL_OP_NOFLOAT(lcm,  "lcm",  OP_ASSOC|OP_COMM,1),
+	DECL_OP(or , "|", OP_ASSOC|OP_COMM,1),
+	DECL_OP(xor, "^", OP_ASSOC|OP_COMM,1),
+	DECL_OP(and, "&", OP_ASSOC|OP_COMM,1),
+	DECL_OP_NOFOLD(shl, "<<", 0,1),
+	DECL_OP_NOFOLD(shr, ">>", 0,1),
+	DECL_OP_NOFOLD(sc_and,"&&", 0,1),
+	DECL_OP_NOFOLD(sc_or, "||", 0,1),
+	DECL_OP(min, "min", OP_ASSOC|OP_COMM,1),
+	DECL_OP(max, "max", OP_ASSOC|OP_COMM,1),
+	DECL_OP_NOFOLD(eq,   "==", OP_COMM,1),
+	DECL_OP_NOFOLD(ne,   "!=", OP_COMM,1),
+	DECL_OP_NOFOLD(gt,   ">",  0,1),
+	DECL_OP_NOFOLD(le,   "<=", 0,1),
+	DECL_OP_NOFOLD(lt,   "<",  0,1),
+	DECL_OP_NOFOLD(ge,   ">=", 0,1),
+	DECL_OP_NOFOLD(cmp,  "cmp",0,1),
 };
 const long op_table2_n = COUNT(op_table2);
 #endif
@@ -299,28 +302,37 @@ ruby clipadd(ruby a, ruby b) { return a+b; }
 ruby clipsub(ruby a, ruby b) { return a-b; }
 
 Numop op_table3[] = {
-	DECL_OP_NOFOLD(sin,  "sin*", 0),
-	DECL_OP_NOFOLD(cos,  "cos*", 0),
-	DECL_OP_NOFOLD(atan, "atan", 0),
-	DECL_OP_NOFOLD(tanh, "tanh*", 0),
-	DECL_OP_NOFOLD(gamma, "gamma", 0),
-	DECL_OP_NOFOLD(pow, "**", 0),
-	DECL_OP_NOFOLD(log, "log*", 0),
+	DECL_OP_NOFOLD(sin,  "sin*", 0,1),
+	DECL_OP_NOFOLD(cos,  "cos*", 0,1),
+	DECL_OP_NOFOLD(atan, "atan", 0,1),
+	DECL_OP_NOFOLD(tanh, "tanh*", 0,1),
+	DECL_OP_NOFOLD(gamma, "gamma", 0,1),
+	DECL_OP_NOFOLD(pow, "**", 0,1),
+	DECL_OP_NOFOLD(log, "log*", 0,1),
 // 0.8
-	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
-	DECL_OP(clipsub,"clip-", 0),
-	DECL_OP_NOFOLD(abssub,"abs-", OP_COMM),
-	DECL_OP_NOFOLD(sqsub,"sq-", OP_COMM),
-	DECL_OP_NOFOLD(avg,"avg", OP_COMM),
-	DECL_OP_NOFOLD(hypot,"hypot", OP_COMM),
-	DECL_OP_NOFOLD(sqrt,"sqrt", 0),
-	DECL_OP_NOFOLD(rand,"rand", 0),
-	//DECL_OP_NOFOLD(erf,"erf*", 0),
-	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
-	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
-	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
+	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM,1),
+	DECL_OP(clipsub,"clip-", 0,1),
+	DECL_OP_NOFOLD(abssub,"abs-", OP_COMM,1),
+	DECL_OP_NOFOLD(sqsub, "sq-",  OP_COMM,1),
+	DECL_OP_NOFOLD(avg,   "avg",  OP_COMM,1),
+	DECL_OP_NOFOLD(hypot, "hypot",OP_COMM,1), // huh, almost OP_ASSOC
+	DECL_OP_NOFOLD(sqrt, "sqrt", 0,1),
+	DECL_OP_NOFOLD(rand, "rand", 0,1),
+	//DECL_OP_NOFOLD(erf,"erf*", 0,1),
+	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM,1),
+	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0,1),
+	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0,1),
 };
 const long op_table3_n = COUNT(op_table3);
+#endif
+#ifdef PASS4
+Numop op_table4[] = {
+	DECL_OP(cx_mul,     "C.*",     OP_ASSOC|OP_COMM,2),
+//	DECL_OP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
+//	DECL_OP(cx_div,     "C./",     OP_ASSOC|OP_COMM,2),
+//	DECL_OP(cx_divconj, "C./conj", OP_ASSOC|OP_COMM,2),
+};
+const long op_table4_n = COUNT(op_table4);
 #endif
 
 // D=dictionary, A=table, A##_n=table count.
@@ -330,12 +342,14 @@ const long op_table3_n = COUNT(op_table3);
 		rb_hash_aset(D,A[i].sym,PTR2FIX((A+i)));}}
 
 #ifdef PASS1
-Ruby op_dict = Qnil;
+Ruby  op_dict = Qnil;
+Ruby vop_dict = Qnil;
 Ruby number_type_dict = Qnil;
 void startup_number () {
-	INIT_TABLE(op_dict,op_table1)
-	INIT_TABLE(op_dict,op_table2)
-	INIT_TABLE(op_dict,op_table3)
+	INIT_TABLE( op_dict,op_table1)
+	INIT_TABLE( op_dict,op_table2)
+	INIT_TABLE( op_dict,op_table3)
+	INIT_TABLE(vop_dict,op_table4)
 	INIT_TABLE(number_type_dict,number_type_table)
 
 	for (int i=0; i<COUNT(number_type_table); i++) {
@@ -354,9 +368,9 @@ void startup_number () {
 // S:name; M:mode; F:replacement function;
 #define OVERRIDE_INT(S,M,F) { \
 	Numop *foo = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(S))); \
-	foo->on_uint8.op_##M=F; \
-	foo->on_int16.op_##M=F; \
-	foo->on_int32.op_##M=F; }
+	foo->on_uint8.M=F; \
+	foo->on_int16.M=F; \
+	foo->on_int32.M=F; }
 	OVERRIDE_INT(ignore,map,quick_ign_map);
 	OVERRIDE_INT(ignore,zip,quick_ign_zip);
 	//OVERRIDE_INT(put,map,quick_put_map);

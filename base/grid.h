@@ -590,10 +590,10 @@ enum LeftRight { at_left, at_right };
 template <class T>
 struct NumopOn : CObject {
 	// Function Vectorisations
-	typedef void (*Map )(         long n, T *as, T  b ); Map  op_map;
-	typedef void (*Zip )(         long n, T *as, T *bs); Zip  op_zip;
-	typedef void (*Fold)(long an, long n, T *as, T *bs); Fold op_fold;
-	typedef void (*Scan)(long an, long n, T *as, T *bs); Scan op_scan;
+	typedef void (*Map )(         long n, T *as, T  b ); Map  map;
+	typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
+	typedef void (*Fold)(long an, long n, T *as, T *bs); Fold fold;
+	typedef void (*Scan)(long an, long n, T *as, T *bs); Scan scan;
 	// Algebraic Properties (those involving simply numeric types)
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
@@ -602,13 +602,10 @@ struct NumopOn : CObject {
 	AlgebraicCheck is_neutral, is_absorbent;
 	NumopOn(Map m, Zip z, Fold f, Scan s,
 	T (*neu)(LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
-		op_map(m), op_zip(z), op_fold(f), op_scan(s),
-		neutral(neu), is_neutral(n), is_absorbent(a) {}
-	NumopOn() : op_map(0), op_zip(0), op_fold(0), op_scan(0),
-		neutral(0), is_neutral(0), is_absorbent(0) {}
+		map(m), zip(z), fold(f), scan(s), neutral(neu), is_neutral(n), is_absorbent(a) {}
+	NumopOn() : map(0),zip(0),fold(0),scan(0),neutral(0),is_neutral(0),is_absorbent(0) {}
 	NumopOn(const NumopOn &z) {
-		op_map  = z.op_map;  op_zip  = z.op_zip;
-		op_fold = z.op_fold; op_scan = z.op_scan;
+		map=z.map; zip=z.zip; fold=z.fold; scan=z.scan;
 		is_neutral = z.is_neutral; neutral = z.neutral;
 		is_absorbent = z.is_absorbent; }
 };
@@ -623,35 +620,34 @@ struct Numop : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
 	int flags;
+	int size; // numop=1; vecop>1
 #define FOO(T) NumopOn<T> on_##T; \
   NumopOn<T> *on(T &foo) { \
-    if (!on_##T.op_map) RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
+    if (!on_##T.map) RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
     return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	template <class T> inline void map(long n, T *as, T b) {
-		on(*as)->op_map(n,(T *)as,b);}
-	template <class T> inline void zip(long n, T *as, T * bs) {
-		on(*as)->op_zip(n,(T *)as,(T *)bs);}
+		on(*as)->map(n,(T *)as,b);}
+	template <class T> inline void zip(long n, T *as, T *bs) {
+		on(*as)->zip(n,(T *)as,(T *)bs);}
 	template <class T> inline void fold(long an, long n, T *as, T *bs) {
-		typename NumopOn<T>::Fold f = on(*as)->op_fold;
+		typename NumopOn<T>::Fold f = on(*as)->fold;
 		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
 	template <class T> inline void scan(long an, long n, T *as, T *bs) {
-		typename NumopOn<T>::Scan f = on(*as)->op_scan;
+		typename NumopOn<T>::Scan f = on(*as)->scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
-
 	\decl void map_m  (NumberTypeE nt,          long n, String as, String b);
 	\decl void zip_m  (NumberTypeE nt,          long n, String as, String bs);
 	\decl void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
 	\decl void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
-
 	Numop(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	int flags_) : sym(sym_), name(name_), flags(flags_) {
+	int flags_, int size_) : sym(sym_), name(name_), flags(flags_), size(size_) {
 #define FOO(T) on_##T = op_##T;
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
