@@ -93,14 +93,24 @@ are troublesome.</li>
 
 <li>Run <k>make</k> to produce the executables <k>gridflow.so</k> and <k>gridflow.pd_linux</k> or similar</li>
 <li>With a text editor, create <k>~/.gridflow_startup</k> and write something like
-<k>GridFlow.data_path &lt;&lt; "/usr/local/lib/pd/extra/gridflow/images"</k> to tell GridFlow where to find the
-images used in the examples. You may add more lines like that one if you have folders containing images
-or movies you want to use with GridFlow.</li>
+<k>GridFlow.data_path &lt;&lt; "/usr/local/lib/pd/extra/gridflow/images"</k> to tell GridFlow where to find additional folders 
+containing images or movies you want to use with GridFlow.</li>
+
+
+<li>Ltilib (optional, linux only): The LTI-Lib is an object oriented library with algorithms and data structures frequently used in 
+image processing and computer vision.
+
+<list>
+	<li>Download and install ltilib version 1.9.12 from http://ltilib.sourceforge.net</li>
+	<li>in /optional/rbtli do : ./configure && make</li>
+</list>
+
 <li>Loading GridFlow:<list>
 	<li>PureData : With a text editor, modify or create <k>~/.pdrc</k> and write <k>-lib gridflow</k>. </li>
 	<li>ImpureData : In the ".pdrc editor", add <k>gridflow</k> to the list of libraries.</li>
 	<li>plain Ruby : the command <k>require "gridflow"</k> will load gridflow.so.</li>
 </list>
+
 Note that on MacOS the dot-files are invisible in the Finder but you do
 <k>cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</k> to make an alias on the Desktop.
 Note also that on Windows the dot-files are even more trouble.</li>
