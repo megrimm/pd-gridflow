@@ -23,7 +23,7 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#define GF_VERSION "0.8.2"
+#define GF_VERSION "0.8.3"
 
 #include <new>
 #include <vector>
@@ -58,7 +58,8 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+//#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
@@ -307,6 +308,7 @@ typedef struct R {
 		if (INTEGER_P(r)) return (float64)(int32)*this;
 		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
 		return ((RFloat*)r)->value;}
+	static R value(VALUE r) {R x; x.r=r; return x;}
 #define FOO(As,Op) \
 	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
 	FOO(+=,+) FOO(-=,-) FOO(*=,*) FOO(/=,/) FOO(%=,%)
@@ -320,7 +322,10 @@ typedef struct R {
 	FOO(&) FOO(|) FOO(^) FOO(<<) FOO(>>)
 	FOO(<) FOO(>) FOO(<=) FOO(>=) FOO(==) FOO(!=)
 #undef FOO
-	static R value(VALUE r) {R x; x.r=r; return x;}
+#define FOO(Op) \
+	R operator Op ()   {return rb_funcall(r,SI(Op),0);}
+	FOO(-) FOO(~)
+#undef FOO
 } ruby;
 
 #define INT(x)  convert(x,(int32*)0)
@@ -345,7 +350,9 @@ public:
 	T *p;
 	P() : p(0) {}
 	P(T *_p)            { p = _p; INCR; }
-	P(const P<T> &_p) { p = _p.p; INCR; }
+	P(const P<T> &_p) {
+//fprintf(stderr,"350: &_p=%08x\n",(long)&_p); fprintf(stderr,"350: _p.p=%08x\n",(long)_p.p);
+ p = _p.p; INCR; }
 	P<T> &operator =(T *  _p) { DECR; p=_p;   INCR; return *this; }
 	P<T> &operator =(P<T> _p) { DECR; p=_p.p; INCR; return *this; }
 	bool operator ==(P<T> _p) { return p == _p.p; }
@@ -593,9 +600,12 @@ struct NumopOn : CObject {
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
 	T (*neutral)(LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
 	AlgebraicCheck is_neutral, is_absorbent;
-	NumopOn(Map m, Zip z, Fold f, Scan s, T (*neu)(LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
-		op_map(m), op_zip(z), op_fold(f), op_scan(s), neutral(neu), is_neutral(n), is_absorbent(a) {}
-	NumopOn() {}
+	NumopOn(Map m, Zip z, Fold f, Scan s,
+	T (*neu)(LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
+		op_map(m), op_zip(z), op_fold(f), op_scan(s),
+		neutral(neu), is_neutral(n), is_absorbent(a) {}
+	NumopOn() : op_map(0), op_zip(0), op_fold(0), op_scan(0),
+		neutral(0), is_neutral(0), is_absorbent(0) {}
 	NumopOn(const NumopOn &z) {
 		op_map  = z.op_map;  op_zip  = z.op_zip;
 		op_fold = z.op_fold; op_scan = z.op_scan;
@@ -724,8 +734,17 @@ struct PtrGrid : public P<Grid> {
 	P<Grid> next;
 	PtrGrid()                  : P<Grid>(), dc(0), next(0) {}
 	PtrGrid(const PtrGrid &_p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
-	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {          p=_p;   INCR;}
-	PtrGrid &operator =(  Grid *_p) {if(dc&&p)dc(_p->dim); DECR; p=_p;   INCR; return *this;}
+//	PtrGrid(       P<Grid> _p) : P<Grid>(), dc(0), next(0) {dc=_p.dc; p=_p.p; INCR;}
+	PtrGrid(         Grid *_p) : P<Grid>(), dc(0), next(0) {
+// fprintf(stderr,"&_p=%08x\n",(long)&_p);
+// fprintf(stderr,"_p=%08x\n",(long)_p);
+          p=_p;
+INCR;}
+	PtrGrid &operator =(  Grid *_p) {if(dc&&p)dc(_p->dim);
+// fprintf(stderr,"741: this=%08x\n",(long)this);
+// fprintf(stderr,"742: dc=%08x &_p=%08x\n",(long)this,&_p); fprintf(stderr,"742: _p=%08x\n",(long)_p);
+DECR; p=_p; INCR;
+return *this;}
 	PtrGrid &operator =(P<Grid> _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 	PtrGrid &operator =(PtrGrid _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
@@ -817,12 +836,10 @@ public:
 
 	// n=-1 is begin, and n=-2 is finish; GF-0.9 may have n=-3 meaning alloc (?).
 	template <class T> void flow(int mode, long n, T *data);
-	void from_ruby_list(int argc, Ruby *argv, NumberTypeE nt=int32_e) {
+	void from_ruby_list(VA, NumberTypeE nt=int32_e) {
 		Grid t(argc,argv,nt); from_grid(&t);
 	}
-	void from_ruby(int argc, Ruby *argv) {
-		Grid t(argv[0]); from_grid(&t);
-	}
+	void from_ruby(VA) {Grid t(argv[0]); from_grid(&t);}
 	void from_grid(Grid *g);
 	bool supports_type(NumberTypeE nt);
 private:
