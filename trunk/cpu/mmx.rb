@@ -140,7 +140,7 @@ def make_fun_map(op,type)
 	}
 	$decls << "void #{s}(long,#{type}*,#{type});\n"
 	$install << "FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(#{sym})))"
-	$install << "->on_#{type}.op_map = #{s};\n"
+	$install << "->on_#{type}.map = #{s};\n"
 	$count += 1
 end
 
@@ -191,7 +191,7 @@ s="mmx_#{type}_zip_#{op}"
 	#$decls << "void #{s}(long,#{type}*,#{type}*,#{type}*);\n"
 	$decls << "void #{s}(long,#{type}*,#{type}*);\n"
 	$install << "FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(#{sym})))"
-	$install << "->on_#{type}.op_zip = #{s};\n"
+	$install << "->on_#{type}.zip = #{s};\n"
 	$count += 1
 end
 
