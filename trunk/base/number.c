@@ -60,48 +60,39 @@ public:
 
 template <class O, class T> class OpLoops: public NumopOn<T> {
 public:
-	static void def_map (long n, T *as, T b) {
-		if (!n) return;
-#define FOO(I) as[I]=O::f(as[I],b);
-	UNROLL_8(FOO,n,as)
-#undef FOO
-	}
-	static void def_zip (long n, T *as, T *bs) {
-		if (!n) return;
-		ptrdiff_t ba=bs-as; // really!
-#define FOO(I) as[I]=O::f(as[I],as[ba+I]);
-	UNROLL_8(FOO,n,as)
-#undef FOO
-	}
-#define W(i) as[i]=O::f(as[i],bs[i]);
-#define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
-	static void def_fold (long an, long n, T *as, T *bs) {
-		switch (an) {
-		case 1: for (; (n&3)!=0; bs++, n--) W(0);
-			for (; n; bs+=4, n-=4) { Z(0,1); } break;
-		case 2: for (; (n&3)!=0; bs+=2, n--) { W(0); W(1); }
-			for (; n; bs+=8, n-=4) { Z(0,2); Z(1,2); } break;
-		case 3: for (; (n&3)!=0; bs+=3, n--) { W(0); W(1); W(2); }
-			for (; n; bs+=12, n-=4) { Z(0,3); Z(1,3); Z(2,3); } break;
-		case 4: for (; (n&3)!=0; bs+=4, n--) { W(0); W(1); W(2); W(3); }
-			for (; n; bs+=16, n-=4) { Z(0,4); Z(1,4); Z(2,4); Z(3,4); } break;
-		default:for (; n--; ) {
-				int i=0;
-				for (; i<(an&-4); i+=4, bs+=4) {
-					as[i+0]=O::f(as[i+0],bs[0]);
-					as[i+1]=O::f(as[i+1],bs[1]);
-					as[i+2]=O::f(as[i+2],bs[2]);
-					as[i+3]=O::f(as[i+3],bs[3]);
-				}
-				for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);
-			}
+  #define FOO(I) as[I]=O::f(as[I],b);
+  static void def_map (long n, T *as, T b) {if (!n) return; UNROLL_8(FOO,n,as)}
+  #undef FOO
+  #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
+  static void def_zip (long n, T *as, T *bs) {if (!n) return; ptrdiff_t ba=bs-as; UNROLL_8(FOO,n,as)}
+  #undef FOO
+  #define W(i) as[i]=O::f(as[i],bs[i]);
+  #define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
+  static void def_fold (long an, long n, T *as, T *bs) {
+    switch (an) {
+    case 1:for(;(n&3)!=0;bs+=1,n--){W(0)             } for (;n;bs+= 4,n-=4){Z(0,1)                  } break;
+    case 2:for(;(n&3)!=0;bs+=2,n--){W(0)W(1)         } for (;n;bs+= 8,n-=4){Z(0,2)Z(1,2)            } break;
+    case 3:for(;(n&3)!=0;bs+=3,n--){W(0)W(1)W(2)     } for (;n;bs+=12,n-=4){Z(0,3)Z(1,3)Z(2,3)      } break;
+    case 4:for(;(n&3)!=0;bs+=4,n--){W(0)W(1)W(2) W(3)} for (;n;bs+=16,n-=4){Z(0,4)Z(1,4)Z(2,4)Z(3,4)} break;
+	default:while (n--) {
+		int i=0;
+		for (; i<(an&-4); i+=4, bs+=4) {
+			as[i+0]=O::f(as[i+0],bs[0]);
+			as[i+1]=O::f(as[i+1],bs[1]);
+			as[i+2]=O::f(as[i+2],bs[2]);
+			as[i+3]=O::f(as[i+3],bs[3]);
 		}
+		for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);
 	}
-	static void def_scan (long an, long n, T *as, T *bs) {
-		for (; n--; as=bs-an) {
-			for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
-		}
 	}
+  }
+  #undef W
+  #undef Z
+  static void def_scan (long an, long n, T *as, T *bs) {
+    for (; n--; as=bs-an) {
+      for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
+    }
+  }
 };
 
 template <class T>
@@ -140,7 +131,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 // classic two-input operator
 
 #define DEF_OP_COMMON(op,expr,neu,isneu,isorb,T) \
-	inline static T f(T a, T b) { return expr; } \
+	inline static T f(T a, T b) { return (T)(expr); } \
 	inline static T neutral (LeftRight side) {return neu;} \
 	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
 	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}
@@ -161,10 +152,11 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 #define DECL_OPON_NOFOLD(O,T) NumopOn<T>( \
 	&OL(O,T)::def_map, &OL(O,T)::def_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECLOP(M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
-	NONLITE(, M(O,int64), M(O,float32), M(O,float64), M(O,ruby)), flags)
-#define DECLOP_NOFLOAT(M,O,sym,flags) Numop(0,sym,M(O,uint8), M(O,int16), M(O,int32) \
-	NONLITE(, M(O,int64), NumopOn<float32>(), NumopOn<float64>(), M(O,ruby)), flags)
+#define DECLOP(        M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
+	NONLITE(,M(O,int64),    M(O,float32),      M(O,float64),  M(O,ruby)), flags)
+#define DECLOP_NOFLOAT(M,O,sym,flags) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
+	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags)
+//	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags)
 #define DECL_OP(               O,sym,flags) DECLOP(        DECL_OPON       ,O,sym,flags)
 #define DECL_OP_NOFLOAT(       O,sym,flags) DECLOP_NOFLOAT(DECL_OPON       ,O,sym,flags)
 #define DECL_OP_NOFOLD(        O,sym,flags) DECLOP(        DECL_OPON_NOFOLD,O,sym,flags)
@@ -220,24 +212,27 @@ DEF_OP(lt,  a <  b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&
 DEF_OP(ge,  a >= b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
 #endif
 #ifdef PASS3
-DEF_OP(sin, (T)((float64)b * sin((float64)a * (M_PI / 18000))), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
-DEF_OP(cos, (T)((float64)b * cos((float64)a * (M_PI / 18000))), 0, false, false) // "LN=36000n RA=0 LA=..."
-DEF_OP(atan, (T)(atan2(a,b) * (18000 / M_PI)), 0, false, false) // "LA=0"
-DEF_OP(tanh, (T)((float64)b * tanh((float64)a * (M_PI / 18000))), 0, false, x==0)
+DEF_OP(sin, (float64)b * sin((float64)a * (M_PI / 18000)), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
+DEF_OP(cos, (float64)b * cos((float64)a * (M_PI / 18000)), 0, false, false) // "LN=36000n RA=0 LA=..."
+DEF_OP(atan, atan2(a,b) * (18000 / M_PI), 0, false, false) // "LA=0"
+DEF_OP(tanh, (float64)b * tanh((float64)a * (M_PI / 18000)), 0, false, x==0)
 DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
 DEF_OP(pow, ipow(a,b), 0, false, false) // "RN=1"
-DEF_OP(log, (T)(a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a)))), 0, false, false) // "RA=0"
+DEF_OP(log, a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a))), 0, false, false) // "RA=0"
 // 0.8
 DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
 DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
 DEF_OP(abssub,  gf_abs(a-b), 0, false, false)
 DEF_OP(sqsub,   (a-b)*(a-b), 0, false, false)
 DEF_OP(avg,         (a+b)/2, 0, false, false)
-DEF_OP(hypot, (T)(0+floor(sqrt(a*a+b*b))), 0, false, false)
-DEF_OP(sqrt,  (T)(0+floor(sqrt(a))),       0, false, false)
+DEF_OPF(hypot, floor(sqrt(a*a+b*b)), sqrt(a*a+b*b), 0, false, false)
+DEF_OPF(sqrt,  floor(sqrt(a)),       sqrt(a),       0, false, false)
 DEF_OP(rand, a==0 ? (T)0 : (T)(random()%(int32)a), 0, false, false)
 //DEF_OP(erf,"erf*", 0)
-DEF_OP(weight,(T)( weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8)))),0,false,false)
+DEF_OP(weight,weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),0,false,false)
+#define BITS(T) (sizeof(T)*8)
+DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
+DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[];
@@ -322,6 +317,8 @@ Numop op_table3[] = {
 	DECL_OP_NOFOLD(rand,"rand", 0),
 	//DECL_OP_NOFOLD(erf,"erf*", 0),
 	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
+	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
+	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
 };
 const long op_table3_n = COUNT(op_table3);
 #endif
