@@ -20,12 +20,11 @@ else
 endif
 
 OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
-base/number.1.o \
-base/number.2.o \
-base/number.3.o
+base/number.1.o base/number.2.o base/number.3.o base/number.4.o
 
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 DLLIB = gridflow.$(DLEXT)
+FILT = $(RUBY) -w base/source_filter.rb
 
 all:: $(DLLIB) gridflow-for-puredata
 
@@ -36,11 +35,11 @@ clean::
 .SUFFIXES:
 
 %.h.fcs: %.h $(COMMON_DEPS)
-	$(RUBY) -w base/source_filter.rb $< $@
+	$(FILT) $< $@
 %.c.fcs: %.c $(COMMON_DEPS) base/grid.h.fcs
-	$(RUBY) -w base/source_filter.rb $< $@
+	$(FILT) $< $@
 %.m.fcs: %.m $(COMMON_DEPS) base/grid.h.fcs
-	$(RUBY) -w base/source_filter.rb $< $@
+	$(FILT) $< $@
 %.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -c $< -o $@
 %.1.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
@@ -49,6 +48,8 @@ clean::
 	$(CXX) $(CFLAGS) -DPASS2 -c $< -o $@
 %.3.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -DPASS3 -c $< -o $@
+%.4.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+	$(CXX) $(CFLAGS) -DPASS4 -c $< -o $@
 %.o: %.m.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
 
