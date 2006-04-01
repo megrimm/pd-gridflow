@@ -10,6 +10,13 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/04/01 04:58:43  heri
+//  - Added Class MeanshiftTracker.
+//  - All methods with the name "initialize" in lti-lib are renamed to "init" due to conflict with Ruby (including MeanshiftTracker::initialize).
+//  - Added template names to allow instantiation of Class Rectangle: Rect (int), Drect (double), Frect (float). Some arguments of MeanshiftTracker methods are of type Rectangle, this will be useful when using MeanshiftTracker.
+//  - Added template names for histogram classes: Histogram (double), Ihistogram, Fhistogram, Histogram1D, Histogram2D. Also needed as arguments to methods of MeanshiftTracker. "initialize" method of this class is also renamed to "init".
+//  - Added drawing class. A new interface file (drawing.i) has been added for these. Currently, there are two classes available: ImageDraw and ChannelDraw to draw on objects of type Image and Channel respectively. These classes enable drawing simple shapes and text on the canvas provided to them.
+//
 //  Revision 1.4  2006/03/04 18:08:24  matju
 //  added Imatrix.meat
 //
@@ -247,55 +254,34 @@ HANDLE_SIMPLE_HEADER_FILE("ltiBoundaryType.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiMathObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiRGBPixel.h")
-HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
-// TODO --> hmm, hier gibt es noch Probleme mit der 'Reihenfolge' ?
-//    #ifdef SWIGPYTHON
-//    %{
-//    #include "ltiRGBPixel.h"
-//    %}
-//    %extend lti::rgbPixel {
-//        // add index support for python (Warning: this is Python-specific!) 
-//    	const T & __getitem__( int index )
-//    	{
-//    		return self->at(index);
-//    	}
-//    	void __setitem__( int index, const T & value )
-//    	{
-//    		(*self)[index] = value;
-//    	}
-//        int __len__()
-//        {
-//            return self->size();
-//        }
-//    }
-//    #endif
+
+
+
 HANDLE_SIMPLE_HEADER_FILE("ltiPoint.h")
-    #ifdef SWIGPYTHON
-    %extend lti::tpoint {
-        // add index support for python (Warning: this is Python-specific!) 
-    	const T & __getitem__( int index )
-    	{
-    		return (*self)[index];
-    	}
-    	void __setitem__( int index, const T & value )
-    	{
-    		(*self)[index] = value;
-    	}
-        int __len__()
-        {
-            return self->size();
-        }
-    }
-    #endif
-    namespace lti {
-        %template(ipoint) tpoint<int>;
-        %template(fpoint) tpoint<float>;
-        %template(dpoint) tpoint<double>;
-        %template(ipoint3d) tpoint3D<int>;
-        %template(fpoint3d) tpoint3D<float>;
-        %template(dpoint3d) tpoint3D<double>;
-    }
+
+namespace lti {
+  %template(ipoint) tpoint<int>;
+  %template(fpoint) tpoint<float>;
+  %template(dpoint) tpoint<double>;
+  %template(ipoint3d) tpoint3D<int>;
+  %template(fpoint3d) tpoint3D<float>;
+  %template(dpoint3d) tpoint3D<double>;
+}
+
+
+HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
+namespace lti {
+  %template(rect)  trectangle<int>;
+  //%template(irect) trectangle<int>;
+  %template(frect) trectangle<float>;
+  %template(drect) trectangle<double>;
+}
+
+
 //#ifndef SWIGRUBY
+//HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
+
+
 %wrapper %{
 namespace { using namespace lti;    // opening namespace using
 %}
@@ -338,15 +324,14 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
 }  // closing namespace using
 %}
 //#endif
+
 HANDLE_SIMPLE_HEADER_FILE("ltiLocation.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiPolygonPoints.h")
-    namespace lti {
-    //    %template(ipolygonPoints) tpolygonPoints<int>;        // PATCH in ltiPolygonPoints.h
-    }
 HANDLE_SIMPLE_HEADER_FILE("ltiGeometry.h")
     namespace lti {
     //TODO:    %template(iintersection) intersection<ipoint>;
     }
+
 HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
     #ifdef SWIGPYTHON
     %extend lti::genericVector {
@@ -373,6 +358,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
         %template(ugenericVector) genericVector<lti::ubyte>;
         %template(rgbgenericVector) genericVector<lti::rgbPixel>;
     }
+    
 HANDLE_SIMPLE_HEADER_FILE("ltiVector.h")
     namespace lti {
         %template(dvector) vector<double>;
@@ -381,6 +367,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiVector.h")
         %template(uvector) vector<lti::ubyte>;
         %template(palette) vector<rgbPixel>;
     }
+    
 HANDLE_SIMPLE_HEADER_FILE("ltiArray.h")
     namespace lti {
         %template(iarray) array<lti::int32>;
@@ -389,37 +376,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiArray.h")
         %template(uarray) array<lti::ubyte>;
     }
 HANDLE_SIMPLE_HEADER_FILE("ltiGenericMatrix.h")
-    #ifdef SWIGPYTHON
-    %extend lti::genericMatrix {
-        // add index support for python (Warning: this is Python-specific!) 
-//    	const T & __getitem__( int index )
-//    	{
-//    		return self->at(index);
-//    	}
-    	const lti::genericVector<T> & __getitem__( int index )
-    	{
-    		return self->getRow(index);
-    	}
-    	void __setitem__( int index, const genericVector<T> & value )
-    	{
-    		(*self)[index] = value;
-    	}
-        int __len__()
-        {
-            return self->rows();
-        }
-        // TODO: check
-        // The original at()-method makes some problems! is it because of 'inline' ?
-        const T & at( int row, int col )
-        {
-            return self->at(row,col);
-        }
-        void setAt( int row, int col, const T & value )
-        {
-    		(*self)[row][col] = value;
-        }
-    }
-    #endif
+    
     namespace lti {
         %template(ugenericMatrix) genericMatrix<lti::ubyte>;
         %template(igenericMatrix) genericMatrix<lti::int32>;
@@ -427,6 +384,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGenericMatrix.h")
         %template(dgenericMatrix) genericMatrix<double>;
         %template(rgbPixelgenericMatrix) genericMatrix<lti::rgbPixel>;
     }
+    
 HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
     namespace lti {
         %template(imatrix) matrix<lti::int32>;
@@ -436,19 +394,8 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
         %template(rgbPixelmatrix) matrix<lti::rgbPixel>;
     }
 HANDLE_SIMPLE_HEADER_FILE("ltiHTypes.h")
-    #ifdef SWIGPYTHON
-    %extend lti::hMatrix {
-        // add index support for python (Warning: this is Python-specific!) 
-    //	const T & __getitem__( int index )
-    //	{
-    //		return (*self)[index];
-    //	}
-    //	void __setitem__( int index, const genericVector<T> & value )
-    //	{
-    //		(*self)[index] = value;
-    //	}
-    }
-    #endif
+
+
     namespace lti {
     //    %template(fhPoint3D) hPoint3D<float>;
     //    %template(dhPoint3D) hPoint3D<double>;
@@ -541,7 +488,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiSecondDerivativeKernels.h")
 
 %{
 //template <typename T> typedef lti::tpointList<T> tpointList<T>;     // kommt erst noch in der zukunft !
-//TODO Template ! typedef lti::tpointList tpointList;
+//TODO Template ! typedef lti::tpointList tpointList;MeanshiftTracker
 template <class T>
 class tpointList : lti::tpointList<T>
 {
@@ -599,6 +546,7 @@ typedef lti::location location;
 %include manipulation.i    
 %include classifiers.i
 %include colorspaces.i
+%include drawing.i
 
 ////TODO: add better tree support !!!
 ////#define _tree tree

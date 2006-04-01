@@ -4,8 +4,8 @@ include ../../config.make
 
 #!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
 
-#LTIPREFIX = /usr/local
- LTIPREFIX = /home/matju
+LTIPREFIX = /usr/local
+#LTIPREFIX = /home/matju
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg
 INCS = -I$(LTIPREFIX)/include/ltilib
 
@@ -14,7 +14,7 @@ RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'
 RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
 RINC = -I $(RDIR1)
 
-SWIGFLAGS = -v -Wall
+SWIGFLAGS = -v
 CFLAGS += -Wall
 
 default:: ruby
