@@ -602,6 +602,17 @@ static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
 	return Qnil;
 }
 
+static Ruby FObject_noutlets (Ruby rself) {
+	DGS(FObject); BFObject *bself = self->bself;
+	if (!bself) RAISE("there is no bself");
+	return R(bself->nout).r;
+}
+static Ruby FObject_ninlets  (Ruby rself) {
+	DGS(FObject); BFObject *bself = self->bself;
+	if (!bself) RAISE("there is no bself");
+	return R(bself->nin ).r;
+}
+
 static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby name = rb_funcall(argv[0],SI(to_s),0);
@@ -697,6 +708,8 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
+	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
+	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
