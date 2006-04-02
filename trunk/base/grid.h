@@ -25,7 +25,23 @@
 #define __GF_GRID_H
 #define GF_VERSION "0.8.3"
 
-#include <new>
+#ifndef IS_BRIDGE
+#include <stdio.h>
+extern "C" void *gfmalloc(size_t n);
+extern "C" void gffree(void *p);
+#define AL static inline
+#include "base/new.h"
+AL void *operator new   (size_t n) throw (std::bad_alloc) {fprintf(stderr,"new: n=%ld\n",n);
+return gfmalloc(n);}
+AL void *operator new[] (size_t n) throw (std::bad_alloc) {fprintf(stderr,"new[]: n=%ld\n",n);
+return gfmalloc(n);}
+AL void *operator new   (size_t n, const std::nothrow_t&) throw () {
+fprintf(stderr,"new: n=%ld NOTHROW\n",n);  return gfmalloc(n);}
+AL void *operator new[] (size_t n, const std::nothrow_t&) throw () {
+fprintf(stderr,"new[]: n=%ld NOTHROW\n",n);return gfmalloc(n);}
+#endif
+
+//#include <new>
 #include <vector>
 #include <stdlib.h>
 #include <string.h>
@@ -367,37 +383,6 @@ public:
 //#undef INCR
 //#undef DECR
 };
-
-#ifndef IS_BRIDGE
-extern "C" void *gfmalloc(size_t n);
-extern "C" void gffree(void *p);
-/*
-namespace std {
-inline void *operator new   (size_t n) throw (std::bad_alloc) {
-fprintf(stderr,"new: n=%ld\n",n);
-return gfmalloc(n);}
-inline void *operator new[] (size_t n) throw (std::bad_alloc) {
-fprintf(stderr,"new[]: n=%ld\n",n);
-return gfmalloc(n);}
-inline void *operator new   (size_t n, const std::nothrow_t&) throw () {
-fprintf(stderr,"new: n=%ld NOTHROW\n",n);
-return gfmalloc(n);}
-inline void *operator new[] (size_t n, const std::nothrow_t&) throw () {
-fprintf(stderr,"new[]: n=%ld NOTHROW\n",n);
-return gfmalloc(n);}
-inline void *operator new   (size_t n, void *p) throw() {
-fprintf(stderr,"new: n=%ld p=%p\n",n,p);
-return p;}
-inline void *operator new[] (size_t n, void *p) throw() {
-fprintf(stderr,"new[]: n=%ld p=%p\n",n,p);
-return p;}
-//inline void  operator delete   (void *p) throw() {gffree(p);}
-//inline void  operator delete[] (void *p) throw() {gffree(p);}
-//inline void  operator delete   (void *p, const std::nothrow_t&) throw () {}
-//inline void  operator delete[] (void *p, const std::nothrow_t&) throw () {}
-};
-*/
-#endif
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
 template <class T> inline void COPY(T *dest, T *src, long n) {
