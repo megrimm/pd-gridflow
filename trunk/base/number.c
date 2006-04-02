@@ -249,10 +249,22 @@ DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 //!!! replace by the real thing with DEF_VOP
 #define U (typeof(a.x))
 #define NORM (b.x*b.x+b.y*b.y)
+
+template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
+inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
+inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
+
+template <class T> inline Plex<T>  cx_sqsub(Plex<T>& a, Plex<T>& b) {
+  T x = a.x-b.x; T y = a.y-b.y; return Plex<T>(U(x*x-y*y),U(x*y*2));}
+template <class T> inline Plex<T> cx_abssub(Plex<T>& a, Plex<T>& b) {
+  T x = a.x-b.x; T y = a.y-b.y; return Plex<T>(U(gf_sqrt(x*x+y*y)),U(0));}
+//!@#$ neutral,is_neutral,is_absorbent are WRONG here
 DEF_OP(cx_mul,     T(U( a.x*b.x - a.y*b.y )     ,U(( a.y*b.x + a.x*b.y )     )), 1, x==1, x==0)
 DEF_OP(cx_mulconj, T(U( a.x*b.x + a.y*b.y )     ,U(( a.y*b.x - a.x*b.y )     )), 1, x==1, x==0)
 DEF_OP(cx_div,     T(U( a.x*b.x + a.y*b.y )/NORM,U(( a.y*b.x - a.x*b.y )/NORM)), 1, x==1, x==0)
 DEF_OP(cx_divconj, T(U( a.x*b.x - a.y*b.y )/NORM,U(( a.y*b.x + a.x*b.y )/NORM)), 1, x==1, x==0)
+DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
+DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
 #undef U
 #undef NORM
 #endif
@@ -350,6 +362,8 @@ Numop op_table4[] = {
 	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_div,     "C./",     0,2),
 	DECL_VOP(cx_divconj, "C./conj", 0,2),
+	DECL_VOP(cx_sqsub,   "C.sq-",   OP_COMM,2),
+	DECL_VOP(cx_abssub,  "C.abs-",  OP_COMM,2),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
