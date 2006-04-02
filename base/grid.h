@@ -116,6 +116,8 @@ static inline Ruby PTR2FIX (const void *ptr) {
 #define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
 #define INT2PTR(T,   v) ((T *)(          (v)<<2))
 
+void gfpost(const char *fmt, ...);
+
 //****************************************************************
 
 /* int32 was long before, now int, because of amd64 */
@@ -668,7 +670,12 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
 #ifndef IS_BRIDGE
 static Numop *convert(Ruby x, Numop **bogus) {
 	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op_dict)),x);
-	if (s==Qnil) RAISE("expected two-input-operator");
+	if (s==Qnil) {
+		s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@vop_dict)),x);
+		if (s==Qnil) RAISE("expected two-input-operator, not %s",
+			rb_str_ptr(rb_funcall(x,SI(inspect),0)));
+		gfpost("warning: using vecop !!!");
+	}
 	return FIX2PTR(Numop,s);
 }
 #endif
@@ -960,7 +967,6 @@ struct GridObject : FObject {
 
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
-void gfpost(const char *fmt, ...);
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
 #define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
