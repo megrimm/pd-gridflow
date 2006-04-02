@@ -371,10 +371,32 @@ public:
 #ifndef IS_BRIDGE
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
-inline void *operator new   (size_t n) { return gfmalloc(n); }
-inline void *operator new[] (size_t n) { return gfmalloc(n); }
-inline void  operator delete   (void *p) { gffree(p); }
-inline void  operator delete[] (void *p) { gffree(p); }
+/*
+namespace std {
+inline void *operator new   (size_t n) throw (std::bad_alloc) {
+fprintf(stderr,"new: n=%ld\n",n);
+return gfmalloc(n);}
+inline void *operator new[] (size_t n) throw (std::bad_alloc) {
+fprintf(stderr,"new[]: n=%ld\n",n);
+return gfmalloc(n);}
+inline void *operator new   (size_t n, const std::nothrow_t&) throw () {
+fprintf(stderr,"new: n=%ld NOTHROW\n",n);
+return gfmalloc(n);}
+inline void *operator new[] (size_t n, const std::nothrow_t&) throw () {
+fprintf(stderr,"new[]: n=%ld NOTHROW\n",n);
+return gfmalloc(n);}
+inline void *operator new   (size_t n, void *p) throw() {
+fprintf(stderr,"new: n=%ld p=%p\n",n,p);
+return p;}
+inline void *operator new[] (size_t n, void *p) throw() {
+fprintf(stderr,"new[]: n=%ld p=%p\n",n,p);
+return p;}
+//inline void  operator delete   (void *p) throw() {gffree(p);}
+//inline void  operator delete[] (void *p) throw() {gffree(p);}
+//inline void  operator delete   (void *p, const std::nothrow_t&) throw () {}
+//inline void  operator delete[] (void *p, const std::nothrow_t&) throw () {}
+};
+*/
 #endif
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n);
