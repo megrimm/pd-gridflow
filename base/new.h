@@ -43,7 +43,7 @@
 #include <cstddef>
 #include <exception>
 
-#pragma GCC visibility push(default)
+//#pragma GCC visibility push(default)
 
 extern "C++" {
 
@@ -84,14 +84,14 @@ namespace std
  *  does nothing) may not be replaced by a user's program.
 */
 
-//void* operator new(std::size_t) throw (std::bad_alloc);
-//void* operator new[](std::size_t) throw (std::bad_alloc);
-void operator delete(void*) throw();
-void operator delete[](void*) throw();
-//void* operator new(std::size_t, const std::nothrow_t&) throw();
-//void* operator new[](std::size_t, const std::nothrow_t&) throw();
-void operator delete(void*, const std::nothrow_t&) throw();
-void operator delete[](void*, const std::nothrow_t&) throw();
+ALLOCPREFIX void* operator new(std::size_t) throw (std::bad_alloc);
+ALLOCPREFIX void* operator new[](std::size_t) throw (std::bad_alloc);
+ALLOCPREFIX void operator delete(void*) throw();
+ALLOCPREFIX void operator delete[](void*) throw();
+ALLOCPREFIX void* operator new(std::size_t, const std::nothrow_t&) throw();
+ALLOCPREFIX void* operator new[](std::size_t, const std::nothrow_t&) throw();
+ALLOCPREFIX void operator delete(void*, const std::nothrow_t&) throw();
+ALLOCPREFIX void operator delete[](void*, const std::nothrow_t&) throw();
 
 // Default placement versions of operator new.
 inline void* operator new(std::size_t, void* __p) throw() { return __p; }
@@ -103,6 +103,6 @@ inline void  operator delete[](void*, void*) throw() { }
 //@}
 } // extern "C++"
 
-#pragma GCC visibility pop
+//#pragma GCC visibility pop
 
 #endif
