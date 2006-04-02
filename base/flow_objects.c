@@ -394,7 +394,7 @@ GRID_INLET(GridOp,0) {
 	}
 	if (loop>1) {
 		if (in->dex+n <= loop) {
-			op->zip(n,data,rdata+in->dex);
+			op->zip(n/op->size,data,rdata+in->dex);
 		} else {
 			// !@#$ should prebuild and reuse this array when "loop" is small
 			T data2[n];
