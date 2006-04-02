@@ -383,6 +383,9 @@ GRID_INLET(GridOp,0) {
 	SAME_TYPE(in,r);
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	in->set_mode(6);
+	if (op->size>1 && (in->dim->get(in->dim->n-1)!=op->size || r->dim->get(r->dim->n-1)!=op->size))
+		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
+			op->name,op->size,in->dim->to_s(),out->dim->to_s());
 } GRID_ALLOC {
 	//out->ask(in->allocn,(T * &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
 } GRID_FLOW {
@@ -392,6 +395,7 @@ GRID_INLET(GridOp,0) {
 		fprintf(stderr,"1: data=%p rdata=%p\n",data,rdata);
 		WATCH(n,data);
 	}
+	//fprintf(stderr,"[#] op=%s loop=%ld\n",op->name,loop);
 	if (loop>1) {
 		if (in->dex+n <= loop) {
 			op->zip(n/op->size,data,rdata+in->dex);
@@ -408,7 +412,7 @@ GRID_INLET(GridOp,0) {
 				fprintf(stderr,"2: data=%p data2=%p\n",data,data2);
 				WATCH(n,data); WATCH(n,data2);
 			}
-			op->zip(n,data,data2);
+			op->zip(n/op->size,data,data2);
 			if (sizeof(T)==8) {WATCH(n,data); WATCH(n,data2);}
 		}
 	} else {
