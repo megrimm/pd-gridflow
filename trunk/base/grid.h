@@ -598,10 +598,10 @@ struct NumopOn : CObject {
 	typedef bool (*AlgebraicCheck)(T x, LeftRight side);
 	// neutral: right: forall y {f(x,y)=x}; left: forall x {f(x,y)=y};
 	// absorbent: right: exists a forall y {f(x,y)=a}; ...
-	T (*neutral)(LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
+	void (*neutral)(T *,LeftRight); // default neutral: e.g. 0 for addition, 1 for multiplication
 	AlgebraicCheck is_neutral, is_absorbent;
 	NumopOn(Map m, Zip z, Fold f, Scan s,
-	T (*neu)(LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
+	void (*neu)(T *,LeftRight), AlgebraicCheck n, AlgebraicCheck a) :
 		map(m), zip(z), fold(f), scan(s), neutral(neu), is_neutral(n), is_absorbent(a) {}
 	NumopOn() : map(0),zip(0),fold(0),scan(0),neutral(0),is_neutral(0),is_absorbent(0) {}
 	NumopOn(const NumopOn &z) {

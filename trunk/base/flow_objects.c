@@ -451,7 +451,7 @@ GRID_INLET(GridFold,0) {
 	if (factor) in->set_factor(factor);
 	else {
 		long n = out->dim->prod();
-		T x=0; x=op->on(x)->neutral(at_left);
+		T x=0; op->on(x)->neutral(&x,at_left);
 		for(long i=0; i<n; i++) out->send(1,&x);
 	}
 } GRID_FLOW {
@@ -464,7 +464,7 @@ GRID_INLET(GridFold,0) {
 	long yzn=yn*zn;
 	for (long i=0; n; i+=zn, data+=yzn, n-=yzn) {
 		if (seed) COPY(buf+i,((T *)*seed),zn);
-		else op_put->map(zn,buf+i,op->on(*buf)->neutral(at_left));
+		else {T neu; op->on(*buf)->neutral(&neu,at_left); op_put->map(zn,buf+i,neu);}
 		op->fold(zn,yn,buf+i,data);
 	}
 	out->send(nn/yn,buf);
@@ -504,7 +504,8 @@ GRID_INLET(GridScan,0) {
 	if (seed) {
 		for (long i=0; i<n; i+=factor) op->scan(zn,yn,(T *)*seed,buf+i);
 	} else {
-		T seed[zn]; op_put->map(zn,seed,op->on(*seed)->neutral(at_left));
+		T neu; op->on(*buf)->neutral(&neu,at_left);
+		T seed[zn]; op_put->map(zn,seed,neu);
 		for (long i=0; i<n; i+=factor) op->scan(zn,yn,      seed,buf+i);
 	}
 	out->send(n,buf);

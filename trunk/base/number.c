@@ -70,22 +70,17 @@ public:
   #define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
   static void def_fold (long an, long n, T *as, T *bs) {
     switch (an) {
-    case 1:for(;(n&3)!=0;bs+=1,n--){W(0)             } for (;n;bs+= 4,n-=4){Z(0,1)                  } break;
-    case 2:for(;(n&3)!=0;bs+=2,n--){W(0)W(1)         } for (;n;bs+= 8,n-=4){Z(0,2)Z(1,2)            } break;
-    case 3:for(;(n&3)!=0;bs+=3,n--){W(0)W(1)W(2)     } for (;n;bs+=12,n-=4){Z(0,3)Z(1,3)Z(2,3)      } break;
-    case 4:for(;(n&3)!=0;bs+=4,n--){W(0)W(1)W(2) W(3)} for (;n;bs+=16,n-=4){Z(0,4)Z(1,4)Z(2,4)Z(3,4)} break;
-	default:while (n--) {
-		int i=0;
+    case 1:for(;(n&3)!=0;bs+=1,n--){W(0)            } for (;n;bs+= 4,n-=4){Z(0,1)                  } break;
+    case 2:for(;(n&3)!=0;bs+=2,n--){W(0)W(1)        } for (;n;bs+= 8,n-=4){Z(0,2)Z(1,2)            } break;
+    case 3:for(;(n&3)!=0;bs+=3,n--){W(0)W(1)W(2)    } for (;n;bs+=12,n-=4){Z(0,3)Z(1,3)Z(2,3)      } break;
+    case 4:for(;(n&3)!=0;bs+=4,n--){W(0)W(1)W(2)W(3)} for (;n;bs+=16,n-=4){Z(0,4)Z(1,4)Z(2,4)Z(3,4)} break;
+    default:while (n--) {int i=0;
 		for (; i<(an&-4); i+=4, bs+=4) {
 			as[i+0]=O::f(as[i+0],bs[0]);
 			as[i+1]=O::f(as[i+1],bs[1]);
 			as[i+2]=O::f(as[i+2],bs[2]);
-			as[i+3]=O::f(as[i+3],bs[3]);
-		}
-		for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);
-	}
-	}
-  }
+			as[i+3]=O::f(as[i+3],bs[3]);}
+		for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);}}}
   #undef W
   #undef Z
   static void def_scan (long an, long n, T *as, T *bs) {
@@ -132,7 +127,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 
 #define DEF_OP_COMMON(op,expr,neu,isneu,isorb,T) \
 	inline static T f(T a, T b) { return (T)(expr); } \
-	inline static T neutral (LeftRight side) {return neu;} \
+	inline static void neutral (T *a, LeftRight side) {*a = neu;} \
 	inline static bool is_neutral  (T x, LeftRight side) {return isneu;} \
 	inline static bool is_absorbent(T x, LeftRight side) {return isorb;}
 #define DEF_OP(op,expr,neu,isneu,isorb) template <class T> class Y##op : Op<T> { public: \
@@ -140,10 +135,10 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 #define DEF_OPFT(op,expr,neu,isneu,isorb,T) template <> class Y##op<T> : Op<T> { public: \
 	DEF_OP_COMMON(op,expr,neu,isneu,isorb,T);};
 // this macro is for operators that have different code for the float version
-#define DEF_OPF(op,expr,expr2,neu,isneu,isorb) \
-	DEF_OP( op,expr,      neu,isneu,isorb) \
-	DEF_OPFT(op,expr2,neu,isneu,isorb,float32) \
-	DEF_OPFT(op,expr2,neu,isneu,isorb,float64)
+#define DEF_OPF( op,expr,expr2,neu,isneu,isorb) \
+	DEF_OP(  op,expr,      neu,isneu,isorb) \
+	DEF_OPFT(op,     expr2,neu,isneu,isorb,float32) \
+	DEF_OPFT(op,     expr2,neu,isneu,isorb,float64)
 
 #define OL(O,T) OpLoops<Y##O<T>,T>
 #define DECL_OPON(O,T) NumopOn<T>( \
