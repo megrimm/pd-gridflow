@@ -91,39 +91,6 @@ public:
   }
 };
 
-template <class O, class T> class VOpLoops: public NumopOn<T> {
-public:
-  static inline T f(T a, T b) {return O::f(a,b);}
-  #define FOO(I) as[I]=f(as[I],b);
-  static void _map (long n, T *as, T b) {if (!n) return; UNROLL_8(FOO,n,as)}
-  #undef FOO
-  #define FOO(I) as[I]=f(as[I],as[ba+I]);
-  static void _zip (long n, T *as, T *bs) {if (!n) return; ptrdiff_t ba=bs-as; UNROLL_8(FOO,n,as)}
-  #undef FOO
-  #define W(i) as[i]=f(as[i],bs[i]);
-  #define Z(i,j) as[i]=f(f(f(f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
-  static void _fold (long an, long n, T *as, T *bs) {
-    switch (an) {
-    case 1:for(;(n&3)!=0;bs+=1,n--){W(0)            } for (;n;bs+= 4,n-=4){Z(0,1)                  } break;
-    case 2:for(;(n&3)!=0;bs+=2,n--){W(0)W(1)        } for (;n;bs+= 8,n-=4){Z(0,2)Z(1,2)            } break;
-    case 3:for(;(n&3)!=0;bs+=3,n--){W(0)W(1)W(2)    } for (;n;bs+=12,n-=4){Z(0,3)Z(1,3)Z(2,3)      } break;
-    case 4:for(;(n&3)!=0;bs+=4,n--){W(0)W(1)W(2)W(3)} for (;n;bs+=16,n-=4){Z(0,4)Z(1,4)Z(2,4)Z(3,4)} break;
-    default:while (n--) {int i=0;
-		for (; i<(an&-4); i+=4, bs+=4) {
-			as[i+0]=f(as[i+0],bs[0]);
-			as[i+1]=f(as[i+1],bs[1]);
-			as[i+2]=f(as[i+2],bs[2]);
-			as[i+3]=f(as[i+3],bs[3]);}
-		for (; i<an; i++, bs++) as[i] = f(as[i],*bs);}}}
-  #undef W
-  #undef Z
-  static void _scan (long an, long n, T *as, T *bs) {
-    for (; n--; as=bs-an) {
-      for (int i=0; i<an; i++, as++, bs++) *bs=f(*as,*bs);
-    }
-  }
-};
-
 template <class T>
 static void quick_mod_map (long n, T *as, T b) {
 	if (!b) return;
@@ -181,8 +148,8 @@ template <class T> struct Plex {
 	DEF_OPFT(op,     expr2,neu,isneu,isorb,float32) \
 	DEF_OPFT(op,     expr2,neu,isneu,isorb,float64)
 
-#define  OL(O,T)  OpLoops<Y##O<T>,T>
-#define VOL(O,T) VOpLoops<Y##O<Plex<T> >,Plex<T> >
+#define  OL(O,T) OpLoops<Y##O<T>,T>
+#define VOL(O,T) OpLoops<Y##O<Plex<T> >,Plex<T> >
 #define DECL_OPON(L,O,T) NumopOn<T>( \
 	(NumopOn<T>::Map) L(O,T)::_map,  (NumopOn<T>::Zip) L(O,T)::_zip, \
 	(NumopOn<T>::Fold)L(O,T)::_fold, (NumopOn<T>::Scan)L(O,T)::_scan, \
