@@ -59,8 +59,7 @@ GRID_INLET(GridFFT,0) {
 		RAISE("expecting 2 channels: real,imaginary (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
-//	float32 *buf = new float32[n];
-	float32 *buf = (float32 *)gfmalloc(n*sizeof(float32));
+	float32 *buf = new float32[n];
 	CHECK_ALIGN(data,in->nt)
 	CHECK_ALIGN(buf, in->nt)
 	if (plan && lastdim && lastdim!=in->dim) fftwf_destroy_plan(plan);
@@ -72,8 +71,7 @@ GRID_INLET(GridFFT,0) {
 	fftwf_execute_dft(plan,ip,op);
 	GridOutlet out(this,0,in->dim,in->nt);
 	out.send(n,buf);
-	//delete[] buf;
-	free(buf);
+	delete[] buf;
 } GRID_END
 
 \def void initialize () {
