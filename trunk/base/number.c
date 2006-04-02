@@ -248,8 +248,8 @@ DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 
 //!!! replace by the real thing with DEF_VOP
 #define U (typeof(a.x))
-DEF_OP(cx_mul, T(U( a.x*b.x - a.y*b.y),U( a.x*b.y + a.y*b.x )), 1, x==1, x==0)
-DEF_OP(bogus, a, 0, side==at_right, side==at_left)
+DEF_OP(cx_mul,     T(U( a.x*b.x - a.y*b.y ),U(  a.x*b.y + a.y*b.x )), 1, x==1, x==0)
+DEF_OP(cx_mulconj, T(U( a.x*b.x + a.y*b.y ),U( -a.x*b.y + a.y*b.x )), 1, x==1, x==0)
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
@@ -342,10 +342,9 @@ const long op_table3_n = COUNT(op_table3);
 #ifdef PASS4
 Numop op_table4[] = {
 	DECL_VOP(cx_mul,     "C.*",     OP_ASSOC|OP_COMM,2),
-//	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
+	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
 //	DECL_VOP(cx_div,     "C./",     OP_ASSOC|OP_COMM,2),
 //	DECL_VOP(cx_divconj, "C./conj", OP_ASSOC|OP_COMM,2),
-	DECL_OP(bogus, "bogus", OP_ASSOC),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
