@@ -248,8 +248,13 @@ DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
 
 //!!! replace by the real thing with DEF_VOP
 #define U (typeof(a.x))
-DEF_OP(cx_mul,     T(U( a.x*b.x - a.y*b.y ),U(  a.x*b.y + a.y*b.x )), 1, x==1, x==0)
-DEF_OP(cx_mulconj, T(U( a.x*b.x + a.y*b.y ),U( -a.x*b.y + a.y*b.x )), 1, x==1, x==0)
+#define NORM (b.x*b.x+b.y*b.y)
+DEF_OP(cx_mul,     T(U( a.x*b.x - a.y*b.y )     ,U(( a.y*b.x + a.x*b.y )     )), 1, x==1, x==0)
+DEF_OP(cx_mulconj, T(U( a.x*b.x + a.y*b.y )     ,U(( a.y*b.x - a.x*b.y )     )), 1, x==1, x==0)
+DEF_OP(cx_div,     T(U( a.x*b.x + a.y*b.y )/NORM,U(( a.y*b.x - a.x*b.y )/NORM)), 1, x==1, x==0)
+DEF_OP(cx_divconj, T(U( a.x*b.x - a.y*b.y )/NORM,U(( a.y*b.x + a.x*b.y )/NORM)), 1, x==1, x==0)
+#undef U
+#undef NORM
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
@@ -343,8 +348,8 @@ const long op_table3_n = COUNT(op_table3);
 Numop op_table4[] = {
 	DECL_VOP(cx_mul,     "C.*",     OP_ASSOC|OP_COMM,2),
 	DECL_VOP(cx_mulconj, "C.*conj", OP_ASSOC|OP_COMM,2),
-//	DECL_VOP(cx_div,     "C./",     OP_ASSOC|OP_COMM,2),
-//	DECL_VOP(cx_divconj, "C./conj", OP_ASSOC|OP_COMM,2),
+	DECL_VOP(cx_div,     "C./",     0,2),
+	DECL_VOP(cx_divconj, "C./conj", 0,2),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
