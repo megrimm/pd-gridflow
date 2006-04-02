@@ -60,15 +60,16 @@ public:
 
 template <class O, class T> class OpLoops: public NumopOn<T> {
 public:
-  #define FOO(I) as[I]=O::f(as[I],b);
-  static void def_map (long n, T *as, T b) {if (!n) return; UNROLL_8(FOO,n,as)}
+  static inline T f(T a, T b) {return O::f(a,b);}
+  #define FOO(I) as[I]=f(as[I],b);
+  static void _map (long n, T *as, T b) {if (!n) return; UNROLL_8(FOO,n,as)}
   #undef FOO
-  #define FOO(I) as[I]=O::f(as[I],as[ba+I]);
-  static void def_zip (long n, T *as, T *bs) {if (!n) return; ptrdiff_t ba=bs-as; UNROLL_8(FOO,n,as)}
+  #define FOO(I) as[I]=f(as[I],as[ba+I]);
+  static void _zip (long n, T *as, T *bs) {if (!n) return; ptrdiff_t ba=bs-as; UNROLL_8(FOO,n,as)}
   #undef FOO
-  #define W(i) as[i]=O::f(as[i],bs[i]);
-  #define Z(i,j) as[i]=O::f(O::f(O::f(O::f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
-  static void def_fold (long an, long n, T *as, T *bs) {
+  #define W(i) as[i]=f(as[i],bs[i]);
+  #define Z(i,j) as[i]=f(f(f(f(as[i],bs[i]),bs[i+j]),bs[i+j+j]),bs[i+j+j+j]);
+  static void _fold (long an, long n, T *as, T *bs) {
     switch (an) {
     case 1:for(;(n&3)!=0;bs+=1,n--){W(0)            } for (;n;bs+= 4,n-=4){Z(0,1)                  } break;
     case 2:for(;(n&3)!=0;bs+=2,n--){W(0)W(1)        } for (;n;bs+= 8,n-=4){Z(0,2)Z(1,2)            } break;
@@ -76,16 +77,16 @@ public:
     case 4:for(;(n&3)!=0;bs+=4,n--){W(0)W(1)W(2)W(3)} for (;n;bs+=16,n-=4){Z(0,4)Z(1,4)Z(2,4)Z(3,4)} break;
     default:while (n--) {int i=0;
 		for (; i<(an&-4); i+=4, bs+=4) {
-			as[i+0]=O::f(as[i+0],bs[0]);
-			as[i+1]=O::f(as[i+1],bs[1]);
-			as[i+2]=O::f(as[i+2],bs[2]);
-			as[i+3]=O::f(as[i+3],bs[3]);}
-		for (; i<an; i++, bs++) as[i] = O::f(as[i],*bs);}}}
+			as[i+0]=f(as[i+0],bs[0]);
+			as[i+1]=f(as[i+1],bs[1]);
+			as[i+2]=f(as[i+2],bs[2]);
+			as[i+3]=f(as[i+3],bs[3]);}
+		for (; i<an; i++, bs++) as[i] = f(as[i],*bs);}}}
   #undef W
   #undef Z
-  static void def_scan (long an, long n, T *as, T *bs) {
+  static void _scan (long an, long n, T *as, T *bs) {
     for (; n--; as=bs-an) {
-      for (int i=0; i<an; i++, as++, bs++) *bs=O::f(*as,*bs);
+      for (int i=0; i<an; i++, as++, bs++) *bs=f(*as,*bs);
     }
   }
 };
@@ -141,21 +142,21 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	DEF_OPFT(op,     expr2,neu,isneu,isorb,float64)
 
 #define OL(O,T) OpLoops<Y##O<T>,T>
-#define DECL_OPON(O,T) NumopOn<T>( \
-	&OL(O,T)::def_map, &OL(O,T)::def_zip, &OL(O,T)::def_fold, &OL(O,T)::def_scan, \
+#define DECL_OPON(L,O,T) NumopOn<T>( \
+	&L(O,T)::_map, &L(O,T)::_zip, &L(O,T)::_fold, &L(O,T)::_scan, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECL_OPON_NOFOLD(O,T) NumopOn<T>( \
-	&OL(O,T)::def_map, &OL(O,T)::def_zip, 0,0, \
+#define DECL_OPON_NOFOLD(L,O,T) NumopOn<T>( \
+	&L(O,T)::_map, &L(O,T)::_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECLOP(        M,O,sym,flags,dim) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
-	NONLITE(,M(O,int64),    M(O,float32),      M(O,float64),  M(O,ruby)),flags,dim)
-#define DECLOP_NOFLOAT(M,O,sym,flags,dim) Numop(0,sym,M(O,uint8),M(O,int16),M(O,int32) \
-	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags,dim)
-//	NONLITE(,M(O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags,dim)
-#define DECL_OP(               O,sym,flags,dim) DECLOP(        DECL_OPON       ,O,sym,flags,dim)
-#define DECL_OP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(DECL_OPON       ,O,sym,flags,dim)
-#define DECL_OP_NOFOLD(        O,sym,flags,dim) DECLOP(        DECL_OPON_NOFOLD,O,sym,flags,dim)
-#define DECL_OP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECLOP(        L,M,O,sym,flags,dim) Numop(0,sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+	NONLITE(,M(L,O,int64),  M(L,O,float32),  M(L,O,float64),  M(L,O,ruby)),flags,dim)
+#define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop(0,sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags,dim)
+//	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags,dim)
+#define DECL_OP(               O,sym,flags,dim) DECLOP(        OL,DECL_OPON       ,O,sym,flags,dim)
+#define DECL_OP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(OL,DECL_OPON       ,O,sym,flags,dim)
+#define DECL_OP_NOFOLD(        O,sym,flags,dim) DECLOP(        OL,DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECL_OP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(OL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
