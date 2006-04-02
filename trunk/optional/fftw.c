@@ -24,9 +24,9 @@
 
 #define CHECK_ALIGN(d,nt) \
 	{int bytes = 16; \
-	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
-		INFO(this), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
+	int align = ((ulong)(void*)d)%bytes; \
+	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
+		INFO(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
 \class GridFFT < GridObject
 struct GridFFT : GridObject {
@@ -59,7 +59,8 @@ GRID_INLET(GridFFT,0) {
 		RAISE("expecting 2 channels: real,imaginary (got %d)",in->dim->get(2));
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
-	float32 *buf = new float32[n];
+//	float32 *buf = new float32[n];
+	float32 *buf = (float32 *)gfmalloc(n*sizeof(float32));
 	CHECK_ALIGN(data,in->nt)
 	CHECK_ALIGN(buf, in->nt)
 	if (plan && lastdim && lastdim!=in->dim) fftwf_destroy_plan(plan);
@@ -71,7 +72,8 @@ GRID_INLET(GridFFT,0) {
 	fftwf_execute_dft(plan,ip,op);
 	GridOutlet out(this,0,in->dim,in->nt);
 	out.send(n,buf);
-	delete[] buf;
+	//delete[] buf;
+	free(buf);
 } GRID_END
 
 \def void initialize () {
