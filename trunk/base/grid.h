@@ -29,16 +29,16 @@
 #include <stdio.h>
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
-#define AL static inline
+#define ALLOCPREFIX static inline
 #include "base/new.h"
-AL void *operator new   (size_t n) throw (std::bad_alloc) {fprintf(stderr,"new: n=%ld\n",n);
-return gfmalloc(n);}
-AL void *operator new[] (size_t n) throw (std::bad_alloc) {fprintf(stderr,"new[]: n=%ld\n",n);
-return gfmalloc(n);}
-AL void *operator new   (size_t n, const std::nothrow_t&) throw () {
-fprintf(stderr,"new: n=%ld NOTHROW\n",n);  return gfmalloc(n);}
-AL void *operator new[] (size_t n, const std::nothrow_t&) throw () {
-fprintf(stderr,"new[]: n=%ld NOTHROW\n",n);return gfmalloc(n);}
+ALLOCPREFIX void *operator new   (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
+ALLOCPREFIX void *operator new[] (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
+ALLOCPREFIX void *operator new   (size_t n, const std::nothrow_t&) throw () {return gfmalloc(n);}
+ALLOCPREFIX void *operator new[] (size_t n, const std::nothrow_t&) throw () {return gfmalloc(n);}
+ALLOCPREFIX void operator delete  (void*p) throw() {gffree(p);}
+ALLOCPREFIX void operator delete[](void*p) throw() {gffree(p);}
+ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffree(p);}
+ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
 #endif
 
 //#include <new>

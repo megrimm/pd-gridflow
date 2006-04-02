@@ -499,7 +499,7 @@ void gfmemcopy(uint8 *out, const uint8 *in, long n) {
 }
 
 extern "C" {
-void *gfmalloc(size_t n) {_L_
+void *gfmalloc(size_t n) {
 	uint64 t = rdtsc();
 	void *p = memalign(16,n);
 	long align = (long)p & 15;
