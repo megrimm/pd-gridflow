@@ -1275,8 +1275,6 @@ template <class T> void GridConvolve::copy_row (T *buf, long sx, long y, long x)
 	}
 }
 
-static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
-
 template <class T> void GridConvolve::make_plan (T bogus) {
 	P<Dim> da = a->dim, db = b->dim;
 	long dby = db->get(0);
@@ -1325,7 +1323,6 @@ GRID_INLET(GridConvolve,0) {
 } GRID_FLOW {
 	COPY((T *)*a+in->dex, data, n);
 } GRID_FINISH {
-	Numop *op_put = OP(SYM(put));
 	make_plan((T)0);
 	long dbx = b->dim->get(1);
 	long dby = b->dim->get(0);
@@ -1810,6 +1807,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 
 //****************************************************************
 
+static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
 void startup_flow_objects () {
 	op_add = OP(SYM(+));
 	op_sub = OP(SYM(-));
