@@ -79,7 +79,6 @@ namespace lti {
   #ifdef SWIGRUBY
   %rename (ltibegin) begin();
   %rename (ltiend) end();
-  %rename(init) initialize(const T& = T(0) );
   #endif
   #endif
   
@@ -812,9 +811,7 @@ namespace lti {
   // --------------------------------------------------------------------
 
 #ifdef SWIG
-    %template(histogram)  thistogram<double>;
-    %template(fhistogram) thistogram<float>;
-    %template(ihistogram) thistogram<int>;
+    %template(histogram) thistogram<double>;
 #endif
 
   /**
@@ -827,13 +824,6 @@ namespace lti {
    * @ingroup gAggregate
    */
   class histogram1D : public histogram {
-  
-  #ifdef SWIG
-  #ifdef SWIGRUBY
-  %rename(init) initialize(const value_type& = value_type(0) );
-  #endif
-  #endif
-  
   public:
 
     /**
@@ -1028,13 +1018,6 @@ namespace lti {
    * @ingroup gAggregate
    */
   class histogram2D : public histogram {
-  
-  #ifdef SWIG
-  #ifdef SWIGRUBY
-  %rename(init) initialize(const value_type& = value_type(0));
-  #endif
-  #endif
-  
   public:
     /**
      * default constructor creates an empty histogram;

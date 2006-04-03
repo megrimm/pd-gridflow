@@ -41,7 +41,6 @@ if workarea==None:
 
 output_dir = 'generated'
 
-
 def f(x): return 'classlti_1_1'+x+'.xml'
 #def g(x): return 'lti::_'+x+'::_'+x+'_parameters'
 def g(x): return 'lti::_'+x+'::R'+x+'_parameters'             #replaced leading underscore in parameters classname with R
@@ -136,7 +135,6 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('backgroundModel_1_1parameters'), 			g('segmentation'))
 	, (f('geometricFeaturesFromMask_1_1parameters'), 	g('fastRelabeling'))
 	, (f('multiGeometricFeaturesFromMask_1_1parameters'), 	g('geometricFeaturesFromMask'))
-	, (f('meanshiftTracker_1_1parameters'), 		g('modifier'))
 	
     ]
     

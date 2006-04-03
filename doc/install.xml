@@ -57,12 +57,12 @@ affects you, use *.so files instead.</p>
 the actual releases are more tested.</p>
 <p>However you may have various reasons to use the CVS edition, so here's how:</p>
 <p>Make sure you have the <k>cvs</k> program installed.</p>
-<p><k>mkdir -p /pd/extra/gridflow</k> (make a directory; it could be called otherwise if you like)</p>
-<p><k>cd /pd/extra/gridflow</k> (go in that directory)</p>
+<p><k>mkdir -p ~/src/gridflow</k> (make a directory; it could be called otherwise if you like)</p>
+<p><k>cd ~/src/gridflow</k> (go in that directory)</p>
 <p><k>cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow login</k> (the password is blank)</p>
 <p><k>cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow checkout .</k> (download the first time)</p>
 <p>And the subsequent times, you only do this:</p>
-<p><k>cd /pd/extra/gridflow</k></p>
+<p><k>cd ~/src/gridflow</k></p>
 <p><k>cvs update -dP</k></p>
 </section>
 
@@ -93,24 +93,14 @@ are troublesome.</li>
 
 <li>Run <k>make</k> to produce the executables <k>gridflow.so</k> and <k>gridflow.pd_linux</k> or similar</li>
 <li>With a text editor, create <k>~/.gridflow_startup</k> and write something like
-<k>GridFlow.data_path &lt;&lt; "/pd/extra/gridflow/images"</k> to tell GridFlow where to find additional folders 
-containing images or movies you want to use with GridFlow.</li>
-
-
-<li>Ltilib (optional, linux only): The LTI-Lib is an object oriented library with algorithms and data structures frequently used in 
-image processing and computer vision.
-
-<list>
-	<li>Download and install ltilib version 1.9.12 from http://ltilib.sourceforge.net</li>
-	<li>in /optional/rbtli do : ./configure && make</li>
-</list>
-
+<k>GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</k> to tell GridFlow where to find the
+images used in the examples. You may add more lines like that one if you have folders containing images
+or movies you want to use with GridFlow.</li>
 <li>Loading GridFlow:<list>
 	<li>PureData : With a text editor, modify or create <k>~/.pdrc</k> and write <k>-lib gridflow</k>. </li>
 	<li>ImpureData : In the ".pdrc editor", add <k>gridflow</k> to the list of libraries.</li>
 	<li>plain Ruby : the command <k>require "gridflow"</k> will load gridflow.so.</li>
 </list>
-
 Note that on MacOS the dot-files are invisible in the Finder but you do
 <k>cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</k> to make an alias on the Desktop.
 Note also that on Windows the dot-files are even more trouble.</li>
