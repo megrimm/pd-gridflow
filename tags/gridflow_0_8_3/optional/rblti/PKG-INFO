@@ -1,0 +1,17 @@
+Metadata-Version: 1.0
+Name: pylti
+Version: 0.33
+Summary: Python bindings for ltilib (ver. 1.9.12)
+Home-page: http://ltilib.sourceforge.net/doc/homepage/index.shtml
+Author: Michael Neuroth
+Author-email: michael.neuroth@freenet.de
+License: LGPL
+Description: Python bindings for ltilib.
+        
+        LTI-Lib is an object oriented computer vision library written in C++ for
+        Windows/MS-VC++ and Linux/gcc.
+        It provides lots of functionality to solve mathematical problems,
+        many image processing algorithms, some classification tools and much more...
+Keywords: images,imageprocessing,Python,ltilib
+Platform: nt
+Platform: posix

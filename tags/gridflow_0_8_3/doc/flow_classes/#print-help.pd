@@ -1,0 +1,63 @@
+#N canvas 38 0 738 404 10;
+#X obj 269 196 cnv 15 460 15 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X obj 279 217 cnv 15 450 15 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 7 369 cnv 15 720 30 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X obj 8 6 cnv 15 720 40 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 268 53 cnv 15 460 15 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X text 271 53 Arguments:;
+#X obj 8 53 cnv 15 250 15 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X text 11 53 Usage:;
+#X obj 8 73 cnv 15 250 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 271 305 cnv 15 460 15 empty empty empty 20 12 0 14 -200249 -66577
+0;
+#X text 272 196 Inlets: (Read left to right \, inlet "0" being the
+leftmost);
+#X text 282 217 0: (Leftmost);
+#X obj 105 79 #print;
+#X text 12 6 SUMMARY:;
+#X text 101 344 view result in console;
+#X text 274 305 Related objects:;
+#X obj 460 336 rubyprint;
+#X obj 530 336 printargs;
+#X obj 279 336 #dim;
+#X obj 314 336 #export;
+#X obj 369 336 #export_list;
+#X obj 600 336 print;
+#X text 15 376 GridFLow 0.8.0;
+#X text 73 6 Displays the dimensions of a grid in the console. If the
+grid has less than two dimensions it will display all grid data.;
+#X text 284 123 Symbol - Adds a symbol (text) as a prefix before the
+printed element in the console.;
+#X text 283 87 Integer - Adds a number as a prefix before the element
+printed in the console. See here;
+#X text 282 246 Grid - Receives and outputs the dimensions of a grid.
+;
+#X obj 8 109 cnv 15 250 250 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X floatatom 165 219 5 0 0 0 - - -;
+#X floatatom 187 240 5 0 0 0 - - -;
+#X floatatom 209 260 5 0 0 0 - - -;
+#X obj 165 279 #pack 3;
+#X obj 13 157 #in;
+#X text 153 196 view grid info;
+#X obj 13 326 #print paprika;
+#X obj 32 258 #import (3 3 3);
+#X msg 32 183 3 3 3 # 27;
+#X obj 32 233 # rand;
+#X msg 33 125 load r001.jpg;
+#X connect 28 0 31 0;
+#X connect 29 0 31 1;
+#X connect 30 0 31 2;
+#X connect 31 0 34 0;
+#X connect 32 0 34 0;
+#X connect 35 0 34 0;
+#X connect 36 0 37 0;
+#X connect 37 0 35 0;
+#X connect 38 0 32 0;

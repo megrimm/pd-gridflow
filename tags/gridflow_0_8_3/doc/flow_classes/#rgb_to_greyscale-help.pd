@@ -1,0 +1,15 @@
+#N canvas 119 122 514 375 10;
+#X obj 19 152 s xx;
+#X obj 18 215 r xx;
+#X text 444 11 gridflow;
+#X obj 19 100 #in;
+#X msg 19 72 load r001.jpg;
+#X text 14 15 #rgb_to_greyscale;
+#X obj 19 132 #rgb_to_greyscale;
+#X obj 18 235 #greyscale_to_rgb;
+#X obj 18 329 #out window;
+#X connect 1 0 7 0;
+#X connect 3 0 6 0;
+#X connect 4 0 3 0;
+#X connect 6 0 0 0;
+#X connect 7 0 8 0;
