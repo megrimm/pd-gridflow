@@ -1,9 +1,11 @@
 /* $Id$ */
 
-version 0.8.3 (2006.04...):
+version 0.8.3 (2006.04.02):
 
  * added Makefile rules for downloading+installing ruby 1.9
- * added numops: weight,rol,ror
+ * new numops: weight rol ror
+ * new vecops concept helps with complex numbers
+ * new vecops: C.* C.*conj C./ C./conj C.sq- C.abs-
  * [#convolve]: added attr "wrap", "anti"
  * [#inner]: faster!
  * [#shunt]: added attr index,mode,lo,hi
@@ -14,7 +16,6 @@ version 0.8.3 (2006.04...):
  * now autodetects the .gz suffix (goes with ppm/targa/grid formats)
  * moved the rest of pd_help/ to doc/flow_classes/
  * automatic attribute generator for Ruby
-   
 
 version 0.8.2 (2006.03.17):
 
