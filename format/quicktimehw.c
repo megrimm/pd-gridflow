@@ -161,7 +161,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	} else if (c==SYM(rgba))    { channels=4; colorspace=BC_RGBA8888;
 	} else if (c==SYM(bgr))     { channels=3; colorspace=BC_BGR888;
 	} else if (c==SYM(bgrn))    { channels=4; colorspace=BC_BGR8888;
-	} else if (c==SYM(yuv))     { channels=3; colorspace=BC_YUV888;
+//	} else if (c==SYM(yuv))     { channels=3; colorspace=BC_YUV888;
 	} else if (c==SYM(yuva))    { channels=4; colorspace=BC_YUVA8888;
 	} else if (c==SYM(YUV420P)) { channels=3; colorspace=BC_YUV420P;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
