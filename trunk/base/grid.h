@@ -23,13 +23,13 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#define GF_VERSION "0.8.3"
+#define GF_VERSION "0.8.4"
 
 #ifndef IS_BRIDGE
 #include <stdio.h>
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
-#define ALLOCPREFIX static inline
+#define ALLOCPREFIX inline
 #include "base/new.h"
 ALLOCPREFIX void *operator new   (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
 ALLOCPREFIX void *operator new[] (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
