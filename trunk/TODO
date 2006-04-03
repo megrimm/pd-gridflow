@@ -1,8 +1,8 @@
 /* $Id$ */
 
-[ ] vecops !!!
 [ ] SWIG: try -fcompact -fvirtual
-[ ] #inner is really slow, and doesnt support seeds of size>1, and isn't vecop-compatible, and ...
+[ ] #inner is and doesnt support seeds of size>1, and isn't vecop-compatible, and ...
+[ ] #inner could optimise permutation matrices?
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
 
@@ -28,12 +28,6 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 
 http://oprofile.sourceforge.net/about/
 
-drag_rectangle.pd is fucked (x11 error)
-FObject#send_out2 : bself is NULL, rself=4097cbe8
-[gf] ruby: ObjectSpace._id2ref(0x4097cbe8/2)
-[gf] returns: #<GridFlow::FormatX11 [FormatX11 out]>
-
-[ ] FIX LIBQUICKTIME CODE: #include <lqt/*> instead of <quicktime/*>
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] make c++ refcount and ruby gc to cooperate.
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
@@ -228,7 +222,6 @@ Computation Objects
 [ ] zero option in #convolve (?)
 [ ] #conv (simpler #convolve) should allow n-D convolution
 [ ] #convolve rewritten as combination of #conv+#border ?
-[ ] @complex_sq is backwards
 [ ] #store: option zero (?)
 [ ] #import~, #export~
 [ ] #fold, #scan: option reverse (right-to-left)
