@@ -604,7 +604,8 @@ static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
 
 static Ruby FObject_noutlets (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) RAISE("there is no bself");
+//	if (!bself) RAISE("there is no bself");
+	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@noutlets));
 	return R(bself->nout).r;
 }
 static Ruby FObject_ninlets  (Ruby rself) {
