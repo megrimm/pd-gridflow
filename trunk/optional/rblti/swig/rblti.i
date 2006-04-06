@@ -10,12 +10,11 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.5  2006/04/01 04:58:43  heri
-//  - Added Class MeanshiftTracker.
-//  - All methods with the name "initialize" in lti-lib are renamed to "init" due to conflict with Ruby (including MeanshiftTracker::initialize).
-//  - Added template names to allow instantiation of Class Rectangle: Rect (int), Drect (double), Frect (float). Some arguments of MeanshiftTracker methods are of type Rectangle, this will be useful when using MeanshiftTracker.
-//  - Added template names for histogram classes: Histogram (double), Ihistogram, Fhistogram, Histogram1D, Histogram2D. Also needed as arguments to methods of MeanshiftTracker. "initialize" method of this class is also renamed to "init".
-//  - Added drawing class. A new interface file (drawing.i) has been added for these. Currently, there are two classes available: ImageDraw and ChannelDraw to draw on objects of type Image and Channel respectively. These classes enable drawing simple shapes and text on the canvas provided to them.
+//  Revision 1.6  2006/04/06 21:31:35  heri
+//  Constructors with default pixel value for Image and Channel classes now
+//  work.
+//  e.g:  	image (const int &rows, const int &cols, const rgbPixel
+//  &iniValue=rgbPixel())
 //
 //  Revision 1.4  2006/03/04 18:08:24  matju
 //  added Imatrix.meat
@@ -421,6 +420,12 @@ HANDLE_SIMPLE_HEADER_FILE("ltiHistogram.h")
 %wrapper %{
 }  // closing namespace using
 %}
+
+namespace lti{
+%ignore image::image(const int& ,const int& ,const rgbPixel[]);
+%ignore channel8::channel8(const int& ,const int& ,const ubyte[]);
+%ignore channel::channel(const int& ,const int& ,const float[]);
+}
 HANDLE_SIMPLE_HEADER_FILE("ltiImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiContour.h")
 
