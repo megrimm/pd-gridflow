@@ -24,8 +24,8 @@ def SegmentImage(img,noOfColors=16)
     params = Rblti::RkMeansSegmentation_parameters.new  
     paramsColor = Rblti::RkMColorQuantization_parameters.new    
     paramsColor.numberOfColors = noOfColors    
-    params.setQuantParameters(paramsColor)    
-    functor.setParameters(params)    
+    params.setQuantParameters(paramsColor)
+    functor.setParameters(params)
     matrixout = Rblti::Imatrix.new    
     paletteout = Rblti::Palette.new    
     functor.apply(img,matrixout,paletteout)    
@@ -35,11 +35,11 @@ end
 def ProcessIt(argv)
  sFileName = argv
  img = LoadImageJPEG(sFileName)
- imgseg,palette = SegmentImage(img,16)
+ imgseg,palette = SegmentImage(img,4)
  convert = Rblti::UsePalette.new
  imgx = Rblti::Image.new
  convert.apply(imgseg,palette,imgx)
- ShowImage(img)
+# ShowImage(img)
  ShowImage(imgx)
 end
 

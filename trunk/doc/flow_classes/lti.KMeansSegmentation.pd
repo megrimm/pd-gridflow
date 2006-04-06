@@ -9,24 +9,23 @@
 #X text -4 36 lti.KMeansSegmentation;
 #X msg 18 269 help;
 #X msg 16 243 get;
-#X obj 89 191 #in;
-#X obj 64 108 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
+#X obj 29 170 #in;
+#X obj 4 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
 #X obj 89 445 #out window;
 #X obj 89 400 #store;
 #X obj 89 276 lti.KMeansSegmentation;
-#X obj 89 143 t b b;
+#X obj 29 122 t b b;
 #X obj 89 468 fps detailed;
 #X obj 89 488 print fps;
-#X obj 89 105 metro 100;
-#X obj 89 81 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 29 84 metro 100;
+#X obj 29 60 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X text 184 372 transforms an Imatrix array (grid dim(y \, x));
 #X text 184 386 into a (grid dim(y \, x \, channel);
 #X obj 89 371 #outer + (0);
-#X obj 590 315 #print;
-#X msg 121 168 open litmus.jpg;
-#X obj 89 421 #scale_by 32;
-#X msg 135 133 open babbage.jpg;
+#X obj 36 320 #print;
+#X obj 103 422 #scale_by 32;
+#X msg 58 143 open babbage.jpg;
 #X text 148 401 <-- applies the palette to the image \, paint by number
 style;
 #X text -2 7 GridFlow::Rblti;
@@ -35,9 +34,9 @@ style;
 #X msg 316 249 smoothFilter \$1;
 #X msg 316 221 quantparameters \$1;
 #X obj 317 87 hsl 128 15 0 127 0 0 kernelSize empty kernelSize -2 -6
-0 12 -262144 -1 -1 400 1;
+0 12 -262144 -1 -1 200 1;
 #X obj 458 87 nbx 5 14 -1e+37 1e+37 0 0 empty kernelSize empty 0 -6
-0 10 -262144 -1 -1 4 256;
+0 10 -262144 -1 -1 2 256;
 #N canvas 0 0 450 300 parameters 0;
 #X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
 #X obj 149 231 s param;
@@ -60,19 +59,19 @@ style;
 #X connect 8 0 1 0;
 #X restore 458 473 pd parameters;
 #X obj 317 121 hsl 128 15 0 127 0 0 numberOfColors empty numberOfColors
--2 -6 0 12 -262144 -1 -1 3100 1;
+-2 -6 0 12 -262144 -1 -1 400 1;
 #X obj 458 121 nbx 5 14 -1e+37 1e+37 0 0 empty numberOfColors empty
-0 -6 0 10 -262144 -1 -1 31 256;
+0 -6 0 10 -262144 -1 -1 4 256;
 #X obj 317 156 hsl 128 15 0 127 0 0 thresholdDeltaPalette empty thresholdDeltaPalette
--2 -6 0 12 -262144 -1 -1 2700 1;
+-2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 156 nbx 5 14 -1e+37 1e+37 0 0 empty thresholdDeltaPalette
-empty 0 -6 0 10 -262144 -1 -1 27 256;
+empty 0 -6 0 10 -262144 -1 -1 0 256;
 #X obj 317 194 hsl 128 15 0 127 0 0 maximalNumberOfIerations empty
-maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 3300 1;
+maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 194 nbx 5 14 -1e+37 1e+37 0 0 empty maximalNumberOfIerations
-empty 0 -6 0 10 -262144 -1 -1 33 256;
+empty 0 -6 0 10 -262144 -1 -1 0 256;
 #X obj 16 222 loadbang;
-#N canvas 0 0 450 300 parameters_get 1;
+#N canvas 0 0 450 300 parameters_get 0;
 #X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
 #X obj 149 231 s param;
 #X floatatom 135 53 5 0 0 0 numberOfColors numberOfColors -;
@@ -116,22 +115,32 @@ maximalNumberOfIterations;
 ;
 #X text 263 299 for the colors that corresponds to the palette);
 #X text 263 315 outlet1 outputs the palette \, try both with ->;
+#X msg 70 173 open /home/alx/litmus.jpg;
+#X obj 90 223 #out window;
+#X obj 5 142 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 75 199 #scale_by 32;
 #X connect 5 0 11 0;
 #X connect 6 0 11 0;
 #X connect 7 0 11 0;
+#X connect 7 0 52 0;
 #X connect 8 0 12 0;
 #X connect 9 0 13 0;
-#X connect 10 0 22 0;
+#X connect 10 0 21 0;
 #X connect 11 0 19 0;
 #X connect 11 1 10 1;
+#X connect 11 1 20 0;
+#X connect 11 2 39 0;
 #X connect 11 2 40 0;
-#X connect 11 2 41 0;
 #X connect 12 0 7 0;
-#X connect 12 1 21 0;
+#X connect 12 1 22 0;
 #X connect 13 0 14 0;
 #X connect 15 0 12 0;
 #X connect 16 0 15 0;
 #X connect 19 0 10 0;
-#X connect 21 0 7 0;
-#X connect 22 0 9 0;
-#X connect 38 0 6 0;
+#X connect 21 0 9 0;
+#X connect 22 0 7 0;
+#X connect 37 0 6 0;
+#X connect 49 0 7 0;
+#X connect 51 0 7 0;
+#X connect 52 0 50 0;
