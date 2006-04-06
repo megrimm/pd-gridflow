@@ -1,0 +1,28 @@
+#N canvas 354 179 450 300 10;
+#X obj 119 99 lti.MeanshiftTracker;
+#X obj 93 79 #camera;
+#X obj 93 60 metro 33;
+#X obj 76 60 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+;
+#X obj 94 242 #out window;
+#X obj 172 40 display;
+#X msg 254 80 2 2 # 100 140 140 180;
+#X obj 254 61 loadbang;
+#X obj 76 80 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 94 99 #t;
+#X obj 276 123 t a;
+#X obj 97 167 #draw_rect ^ (3 # 255);
+#X connect 0 0 5 0;
+#X connect 0 0 10 0;
+#X connect 1 0 9 0;
+#X connect 2 0 1 0;
+#X connect 3 0 2 0;
+#X connect 6 0 0 1;
+#X connect 6 0 10 0;
+#X connect 7 0 6 0;
+#X connect 8 0 1 0;
+#X connect 9 0 11 0;
+#X connect 9 1 0 0;
+#X connect 10 0 11 2;
+#X connect 11 0 4 0;
