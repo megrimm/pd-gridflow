@@ -169,6 +169,7 @@ end
  LTI.info             :Erosion
  LTI.info             :DistanceTransform
  LTI.info             :Dilation
+ LTI.info         :MeanshiftTracker, [Image], [Rect]
  LTI.info         :CornerDetector
  LTI.info         :GeometricTransform
  LTI.info         :Rotation
