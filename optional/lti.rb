@@ -89,8 +89,8 @@ class LTI<FObject; install "lti",1,1
   cs.each{|c|
     next unless /^R(.)(\w+)_parameters/ =~ c
     fucn = $1.upcase+$2
-    @parameterses<<c
-    @functors<<fucn if const_get(fucn).ancestors.include?(Functor)
+    @parameterses << c
+    @functors << fucn if const_get(fucn).ancestors.include?(Functor)
   }
   @others = (cs-(@functors+@parameterses)).sort
   def _0_help(a=nil) self.class.help(a) end
@@ -206,6 +206,9 @@ end
  LTI.info     :SimilarityMatrix
  LTI.info     :UsePalette
 
+LTI.info :MeanshiftTracker, [Image], [Rect]
+
+
 class LTIGridObject < GridObject
     def initialize
       super
@@ -221,6 +224,7 @@ class LTIGridObject < GridObject
       when Imatrix: send_out_lti_imatrix o,m
       when Image:   send_out_lti_image   o,m
       when Palette: send_out_lti_palette o,m
+      when Rect:    send_out_lti_rect    o,m
       else raise "don't know how to send_out a #{m.class}"
       end
     end
@@ -256,6 +260,10 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
     end
+    def send_out_lti_rect o,m
+	send_out_grid_begin o,[2,2]#,@out_nt
+	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
+    end
 end
 
 LTI.functors.each {|name|
@@ -283,7 +291,7 @@ begin
     #subparams = instance_methods.grep(/^set.*Parameters$/)
     #GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
-    begin
+=begin
       @functor_class.new.apply rescue /\(0 for (\d+)\)/ =~ $!.inspect
       argc = Integer $1
       argv = fuc.inputs.dup
@@ -291,17 +299,17 @@ begin
       @functor_class.new.apply(*argv)
     rescue Exception=>e
       GridFlow.post "%s: %s", @functor_class, e.inspect if not /overloaded/ =~ e.inspect
-    end
+=end
     
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
-      begin
+=begin
         @param_class.new.__send__(name+"=",Object.new)
       rescue Exception=>e
 	  /of type '([^']*)'/ .match e.to_s and tipe=$1 or
 	  GridFlow.post "%s",e.inspect
-      end
+=end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}"
       module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
