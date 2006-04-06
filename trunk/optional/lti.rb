@@ -64,6 +64,7 @@ end
 class<<Functor
   attr_writer    :inputs;  def inputs; if defined? @inputs then  @inputs else superclass. inputs end end
   attr_writer   :outputs; def outputs; if defined?@outputs then @outputs else superclass.outputs end end
+  attr_writer    :inouts; def  inouts; if defined? @inouts then  @inouts else superclass. inouts end end
   attr_accessor :subclasses # only the adjacent ones
 end
 def Functor.post_hierarchy(level=0)
@@ -129,13 +130,14 @@ class LTI<FObject; install "lti",1,1
     else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
     end
   end
-  def LTI.info(name,inputs=nil,outputs=nil)
+  def LTI.info(name,inputs=nil,outputs=nil, inouts=nil)
     return if not inputs
     Rblti.const_get(name).module_eval {
       #@inputs=inputs;  def self.inputs; @inputs end
       #@outputs=outputs def self.outputs; @outputs end
-      self.inputs = inputs
+      self.inputs  =  inputs
       self.outputs = outputs
+      self.inouts  =  inouts
     }
   end
 end
@@ -169,7 +171,7 @@ end
  LTI.info             :Erosion
  LTI.info             :DistanceTransform
  LTI.info             :Dilation
- LTI.info         :MeanshiftTracker, [Image], [Rect]
+ LTI.info         :MeanshiftTracker, [Image], [], [Rect]
  LTI.info         :CornerDetector
  LTI.info         :GeometricTransform
  LTI.info         :Rotation
@@ -205,9 +207,6 @@ end
  LTI.info             :GeometricFeatures
  LTI.info     :SimilarityMatrix
  LTI.info     :UsePalette
-
-LTI.info :MeanshiftTracker, [Image], [Rect]
-
 
 class LTIGridObject < GridObject
     def initialize
@@ -266,6 +265,8 @@ class LTIGridObject < GridObject
     end
 end
 
+class Array; def prod() r=1; each{|x| r*=x }; r end end
+
 LTI.functors.each {|name|
   qlas = Rblti.const_get(name)
   qlas.subclasses = [] if qlas<=Functor
@@ -274,10 +275,12 @@ LTI.functors.each {|name|
 LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
-  fui = fuc. inputs || []
-  fuo = fuc.outputs || []
-  LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
+  fui  = fuc. inputs || []
+  fuo  = fuc.outputs || []
+  fuio = fuc. inouts || []
+  LTIGridObject.subclass("lti."+name,fui.length+fuio.length,fuo.length+fuio.length+1) {
     install_rgrid 0
+    install_rgrid 1
     class << self
       attr_accessor  :param_class
       attr_accessor:functor_class
@@ -291,16 +294,6 @@ begin
     #subparams = instance_methods.grep(/^set.*Parameters$/)
     #GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
-=begin
-      @functor_class.new.apply rescue /\(0 for (\d+)\)/ =~ $!.inspect
-      argc = Integer $1
-      argv = fuc.inputs.dup
-      argv << nil while argv.length < argc
-      @functor_class.new.apply(*argv)
-    rescue Exception=>e
-      GridFlow.post "%s: %s", @functor_class, e.inspect if not /overloaded/ =~ e.inspect
-=end
-    
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
@@ -363,15 +356,33 @@ begin
 	@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
     end
     def _0_rgrid_end
-        os=self.class.functor_class.outputs
-	k=os.length-1
-	outbufs = os.map{|o| o.new }
+	fuc = self.class.functor_class
+        is = fuc.inputs + fuc.inouts
+        os = fuc.outputs + fuc.inouts
+	bufs = [@image]
+	bufs << @arg1 if is[1]
+	fuc.outputs.map{|o| o.new }
         @functor.setParameters @param
 	#t=Time.new
-	@functor.apply @image, *outbufs
+	@functor.apply(*bufs)
 	#t=Time.new-t
 	#GridFlow.post "time for apply: %f",t
-	while k>=0 do send_out_lti k,outbufs[k]; k-=1 end
+	k=os.length-1;
+	j = bufs.length-os.length
+	while k>=0 do send_out_lti k,bufs[j+k]; k-=1 end
+    end
+
+    def _1_rgrid_begin
+	@dim1 = inlet_dim 1
+	@nt1 = inlet_nt 1
+	inlet_set_factor 1,@dim1.prod
+	@arg1 = Rect.new
+    end
+    def _1_rgrid_flow data
+	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
+	@arg1.ul.y,@arg1.ul.x,@arg1.br.y,@arg1.br.x = data.unpack("I4")
+    end
+    def _1_rgrid_end
     end
   }
 rescue StandardError => e
