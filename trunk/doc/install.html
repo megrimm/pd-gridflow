@@ -1,6 +1,6 @@
 <html><head>
 <!-- $Id$ -->
-<title>GridFlow 0.8.3 - Installation</title>
+<title>GridFlow 0.8.4 - Installation</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="gridflow.css" type="text/css">
 </head>
@@ -14,7 +14,7 @@
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4" height="16"> 
-    <h4>GridFlow 0.8.3 - Installation</h4>
+    <h4>GridFlow 0.8.4 - Installation</h4>
 </td></tr>
 <tr> 
   <td width="5%"  rowspan="2">&nbsp;</td>
@@ -34,13 +34,13 @@
 </div></td></tr> <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Hardware_and_Software_you_Probably_Need"></a><h4>Hardware and Software you Probably Need</h4></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Required Computer/Processor (one of...):<ul> <li><b>1</b> : PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li> <li><b>2</b> : Macintosh : G3/G4/G5</li> <li><b>3</b> : Corel NetWinder : StrongARM V4L used to work</li> <li><b>4</b> : HP iPaq : some processor that works like the NetWinder</li> <li><b>5</b> : could work on SiliconGraphics and SPARCstation with a little nurture.</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Required Computer/Processor (one of...):<ul> <li><b>1</b> : PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li> <li><b>2</b> : Macintosh : G3/G4/G5 (anyone tried with an intel?)</li> <li><b>3</b> : Corel NetWinder : StrongARM V4L used to work</li> <li><b>4</b> : HP iPaq : some processor that works like the NetWinder</li> <li><b>5</b> : could work on SiliconGraphics and SPARCstation with a little nurture.</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Required OS (one of...):<ul> <li><b>1</b> : Linux (most any variant) (recommended)</li> <li><b>2</b> : FreeBSD, NetBSD, OpenBSD</li> <li><b>3</b> : MacOS 10.2 or later (experimental)</li> <li><b>4</b> : Windows with MinGW (very experimental)</li> <li><b>5</b> : Solaris (used to work)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Required Software:<ul> <li><b>1</b> : Ruby 1.9 2005 (make sure you have the *.so and *.h files)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Dataflow Software :<ul> <li><b>1</b> : PureData 0.36 or later (recommended)</li> </ul></p></td></tr>
+<tr><td></td><td></td><td><p>Dataflow Software:<ul> <li><b>1</b> : PureData 0.37 or later (recommended)</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Multimedia Components (optional):<ul> <li><b>1</b> : libSDL (Simple Directmedia Layer)</li> <li><b>2</b> : libjpeg</li> <li><b>3</b> : libpng</li> <li><b>4</b> : libmpeg3 (.mpg reader, HeroineWarrior's)</li> <li><b>5</b> : libquicktime (.mov reader/writer, Burkhard Plaum's or HeroineWarrior's) </li> <li><b>6</b> : libmpeg (.mpg reader, Greg Ward's, old)</li> <li><b>7</b> : Apple QuickTime (.mov reader/writer)</li> <li><b>8</b> : Ascii Art Library (aalib)</li> <li><b>9</b> : PCI video digitizer card  (and Video4linux 1 driver)</li> <li><b>10</b> : USB camera (and Video4linux 1 driver)</li> <li><b>11</b> : ltilib</li> <li><b>12</b> : FFTW3</li> </ul></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -60,9 +60,9 @@ the actual releases are more tested.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>Make sure you have the <kbd><font color="#007777">cvs</font></kbd> program installed.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p><kbd><font color="#007777">mkdir -p ~/src/gridflow</font></kbd> (make a directory; it could be called otherwise if you like)</p></td></tr>
+<tr><td></td><td></td><td><p><kbd><font color="#007777">mkdir -p /pd/extra/gridflow</font></kbd> (make a directory; it could be called otherwise if you like)</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p><kbd><font color="#007777">cd ~/src/gridflow</font></kbd> (go in that directory)</p></td></tr>
+<tr><td></td><td></td><td><p><kbd><font color="#007777">cd /pd/extra/gridflow</font></kbd> (go in that directory)</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p><kbd><font color="#007777">cvs -d :pserver:anonymous@cvs.gridflow.ca:/home/cvs/gridflow login</font></kbd> (the password is blank)</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -70,7 +70,7 @@ the actual releases are more tested.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p>And the subsequent times, you only do this:</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p><kbd><font color="#007777">cd ~/src/gridflow</font></kbd></p></td></tr>
+<tr><td></td><td></td><td><p><kbd><font color="#007777">cd /pd/extra/gridflow</font></kbd></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td></td><td></td><td><p><kbd><font color="#007777">cvs update -dP</font></kbd></p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -82,15 +82,15 @@ the actual releases are more tested.</p></td></tr>
 recommended to have <kbd><font color="#007777">libruby.so</font></kbd>. Those extra files may be in a package called <kbd><font color="#007777">ruby-dev</font></kbd> 
 if you are using RPM or DEB/FINK. If you are building Ruby yourself, it's better to configure ruby with <kbd><font color="#007777">--enable-shared</font></kbd>. If you install into a system directory, you may have to run <kbd><font color="#007777">ldconfig</font></kbd> 
 after installing Ruby.</li> <li><b>2</b> : Download GridFlow from the website and uncompress it, or get it from the CVS server.</li> <li><b>3</b> : Run <kbd><font color="#007777">./configure</font></kbd> from the <kbd><font color="#007777">gridflow</font></kbd> directory. Make sure it detects all the components 
-you want to use with GridFlow. In MacOS you would normally use FINK to install: <kbd><font color="#007777">libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</font></kbd> </li> <li><b>4</b> : Note: you may have to set <kbd><font color="#007777">CPLUS_INCLUDE_PATH</font></kbd> to indicate where to find *.h files, and you 
+you want to use with GridFlow. If your OS is Debian or Ubuntu you would run <kbd><font color="#007777">ruby1.9 configure</font></kbd> instead 
+so that it doesn't use ruby 1.8. In MacOS you would normally use FINK to install those extra components: <kbd><font color="#007777">libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</font></kbd> </li> <li><b>4</b> : Note: you may have to set <kbd><font color="#007777">CPLUS_INCLUDE_PATH</font></kbd> to indicate where to find *.h files, and you 
 may have to set both <kbd><font color="#007777">LIBRARY_PATH</font></kbd> and <kbd><font color="#007777">LD_LIBRARY_PATH</font></kbd> to indicate where to find 
 *.so  or *.aor *.dylib or *.bundle or *.dll or *.lib files.</li> <li><b>5</b> : Note: you can do <kbd><font color="#007777">./configure --help</font></kbd> to get a list of supported 
 options. You can use them to ignore the presence of troublesome libraries 
 and select debugging level. With <kbd><font color="#007777">--use-compiler</font></kbd> you should use a version of <kbd><font color="#007777">g++</font></kbd>, not 
 directly a version of <kbd><font color="#007777">gcc</font></kbd>, else you get <kbd><font color="#007777">undefined symbol</font></kbd> problems. Some versions of gcc/g++ 
-are troublesome.</li> <li><b>6</b> : Run <kbd><font color="#007777">make</font></kbd> to produce the executables <kbd><font color="#007777">gridflow.so</font></kbd> and <kbd><font color="#007777">gridflow.pd_linux</font></kbd> or similar</li> <li><b>7</b> : With a text editor, create <kbd><font color="#007777">~/.gridflow_startup</font></kbd> and write something like <kbd><font color="#007777">GridFlow.data_path &lt;&lt; "/home/myself/gridflow/images"</font></kbd> to tell GridFlow where to find the 
-images used in the examples. You may add more lines like that one if you have folders containing images 
-or movies you want to use with GridFlow.</li> <li><b>8</b> : Loading GridFlow:<ul> <li><b>1</b> : PureData : With a text editor, modify or create <kbd><font color="#007777">~/.pdrc</font></kbd> and write <kbd><font color="#007777">-lib gridflow</font></kbd>. </li> <li><b>2</b> : ImpureData : In the ".pdrc editor", add <kbd><font color="#007777">gridflow</font></kbd> to the list of libraries.</li> <li><b>3</b> : plain Ruby : the command <kbd><font color="#007777">require "gridflow"</font></kbd> will load gridflow.so.</li> </ul> 
+are troublesome.</li> <li><b>6</b> : Run <kbd><font color="#007777">make</font></kbd> to produce the executables <kbd><font color="#007777">gridflow.so</font></kbd> and <kbd><font color="#007777">gridflow.pd_linux</font></kbd> or similar</li> <li><b>7</b> : With a text editor, create <kbd><font color="#007777">~/.gridflow_startup</font></kbd> and write something like <kbd><font color="#007777">GridFlow.data_path &lt;&lt; "/pd/extra/gridflow/images"</font></kbd> to tell GridFlow where to find additional folders 
+containing images or movies you want to use with GridFlow.</li> <li><b>8</b> : Ltilib (optional, linux only): The LTI-Lib is an object oriented library with algorithms and data structures frequently used in image processing and computer vision.</li> <ul> <li><b>1</b> : Download and install ltilib version 1.9.12 from http://ltilib.sourceforge.net/</li> <li><b>2</b> : in optional/rblti do: <kbd><font color="#007777">./configure &amp;&amp; make</font></kbd></li> </ul> <li><b>9</b> : Loading GridFlow:<ul> <li><b>1</b> : PureData : With a text editor, modify or create <kbd><font color="#007777">~/.pdrc</font></kbd> and write <kbd><font color="#007777">-lib gridflow</font></kbd>. </li> <li><b>2</b> : ImpureData : In the ".pdrc editor", add <kbd><font color="#007777">gridflow</font></kbd> to the list of libraries.</li> <li><b>3</b> : plain Ruby : the command <kbd><font color="#007777">require "gridflow"</font></kbd> will load gridflow.so.</li> </ul> 
 Note that on MacOS the dot-files are invisible in the Finder but you do <kbd><font color="#007777">cd ~/Desktop; ln -s ../.pdrc "PureData Configuration"</font></kbd> to make an alias on the Desktop. 
 Note also that on Windows the dot-files are even more trouble.</li> </ul></td></tr>
 <tr><td></td><td></td><td> </td></tr>
@@ -112,7 +112,7 @@ crashes, or changes didn't go through. <ul> <li><b>1</b> : If a new directory is
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"> 
 <p><font size="-1">
-GridFlow 0.8.3 Documentation<br>
+GridFlow 0.8.4 Documentation<br>
 Copyright &copy; 2001-2006 by Mathieu Bouchard
 <a href="mailto:matju@artengine.ca">matju@artengine.ca</a>
 </font></p>
