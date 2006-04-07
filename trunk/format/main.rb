@@ -26,7 +26,7 @@ require "fcntl"
 
 module GridFlow
 
-class<<self
+class<< self
 	def max_rank; 16; end
 	def max_size; 64*1024**2; end
 	def max_packet; 1024*2; end
@@ -101,7 +101,7 @@ class Format < GridObject
 		}
 	end
 
-	class<<self
+	class<< self
 		attr_reader :symbol_name
 		attr_reader :description
 		attr_reader :flags
@@ -441,6 +441,7 @@ Format.subclass("#io:file",1,1) {
 		a = [mode,:file,file]
 		if not /\./=~file then raise "no filename suffix?" end
 		suf=file.split(/\./)[-1]
+		if suf=="gz" then a[1]=:gzfile; suf=file.split(/\./)[-2] end
 		h=Format.suffixes[suf]
 		if not h then raise "unknown suffix '.#{suf}'" end
 		h.new(*a)
