@@ -27,11 +27,6 @@
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
 
-# because Ruby1.6 has no #object_id and Ruby1.8 warns on #id
-unless Object.instance_methods(true).include? "object_id"
-	class Object; alias object_id id end
-end
-
 # in case of bug in Ruby ("Error: Success")
 module Errno; class E000 < StandardError; end; end
 
