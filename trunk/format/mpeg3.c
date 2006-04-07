@@ -45,7 +45,6 @@ struct FormatMPEG3 : Format {
 	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
-	//int npixels = sx*sy;
 	int channels = 3;
 	/* !@#$ the doc says "You must allocate 4 extra bytes in the
 	last output_row. This is scratch area for the MMX routines." */

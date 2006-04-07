@@ -39,9 +39,6 @@ struct FormatSDL : Format {
 	P<Dim> dim;
 	void resize_window (int sx, int sy);
 	void call ();
-	uint8 * pixels () {
-		return (uint8 *)screen->pixels;
-	}
 	\decl void initialize (Symbol mode);
 	\decl void close ();
 	\grin 0 int
@@ -78,7 +75,7 @@ GRID_INLET(FormatSDL,0) {
 	if (SDL_MUSTLOCK(screen)) if (SDL_LockSurface(screen) < 0) return; //???
 	for (; n>0; y++, data+=sxc, n-=sxc) {
 		/* convert line */
-		bit_packing->pack(sx, data, pixels()+y*bypl);
+		bit_packing->pack(sx, data, (uint8 *)screen->pixels+y*bypl);
 	}
 	if (SDL_MUSTLOCK(screen)) SDL_UnlockSurface(screen);
 } GRID_FINISH {
