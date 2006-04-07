@@ -4,26 +4,28 @@
 <!-- $Id$ -->
 <!--
         GridFlow Installation
-        Copyright (c) 2001,2002,2003,2004,2005 by Mathieu Bouchard
+        Copyright (c) 2001-2006 by Mathieu Bouchard
 -->
 <section name="Hardware and Software you Probably Need">
 <p>Required Computer/Processor (one of...):<list>
 	<li>PC : AMD K6/K7/K8 or Intel P2/P3/P4 (absolute minimum is 386)</li>
-	<li>Macintosh : G3/G4/G5</li>
-	<li>Corel NetWinder : StrongARM V4L</li>
+	<li>Macintosh : G3/G4/G5 (anyone tried with an intel?)</li>
+	<li>Corel NetWinder : StrongARM V4L used to work</li>
 	<li>HP iPaq : some processor that works like the NetWinder</li>
 	<li>could work on SiliconGraphics and SPARCstation with a little nurture.</li>
 </list></p>
 <p>Required OS (one of...):<list>
 	<li>Linux (most any variant) (recommended)</li>
+	<li>FreeBSD, NetBSD, OpenBSD</li>
 	<li>MacOS 10.2 or later (experimental)</li>
 	<li>Windows with MinGW (very experimental)</li>
+	<li>Solaris (used to work)</li>
 </list></p>
 <p>Required Software:<list>
 	<li>Ruby 1.9 2005 (make sure you have the *.so and *.h files)</li>
 </list></p>
-<p>Dataflow Software :<list>
-	<li>PureData 0.36 or later (recommended)</li>
+<p>Dataflow Software:<list>
+	<li>PureData 0.37 or later (recommended)</li>
 </list></p>
 <p>Multimedia Components (optional):<list>
 	<li>libSDL (Simple Directmedia Layer)</li>
@@ -77,7 +79,8 @@ after installing Ruby.</li>
 <li>Download GridFlow from the website and uncompress it, or get it from the CVS server.</li>
 
 <li>Run <k>./configure</k> from the <k>gridflow</k> directory. Make sure it detects all the components
-you want to use with GridFlow. In MacOS you would normally use FINK to install:
+you want to use with GridFlow. If your OS is Debian or Ubuntu you would run <k>ruby1.9 configure</k> instead
+so that it doesn't use ruby 1.8. In MacOS you would normally use FINK to install those extra components:
 	<k>libjpeg libjpeg-shlibs libpng-shlibs libpng3 libpng3-shlibs libmpeg libmpeg-shlibs</k>
 </li>
 
@@ -96,13 +99,11 @@ are troublesome.</li>
 <k>GridFlow.data_path &lt;&lt; "/pd/extra/gridflow/images"</k> to tell GridFlow where to find additional folders 
 containing images or movies you want to use with GridFlow.</li>
 
-
-<li>Ltilib (optional, linux only): The LTI-Lib is an object oriented library with algorithms and data structures frequently used in 
-image processing and computer vision.
+<li>Ltilib (optional, linux only): The LTI-Lib is an object oriented library with algorithms and data structures frequently used in image processing and computer vision.</li>
 
 <list>
-	<li>Download and install ltilib version 1.9.12 from http://ltilib.sourceforge.net</li>
-	<li>in /optional/rbtli do : ./configure && make</li>
+	<li>Download and install ltilib version 1.9.12 from http://ltilib.sourceforge.net/</li>
+	<li>in optional/rblti do: <k>./configure &amp;&amp; make</k></li>
 </list>
 
 <li>Loading GridFlow:<list>
@@ -130,7 +131,6 @@ crashes, or changes didn't go through.
 	don't forget to use them again in this case.</li>
 	<li>Maybe matju forgot to upload part of an important change. Tell him.</li>
 	</list></li>
-
 
 <li>PureData Crashing:
 	<list>
