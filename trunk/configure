@@ -651,8 +651,8 @@ Feature.add {
 		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
 	f = ["quicktime.h","colormodels.h","lqt.h","lqt_version.h","lqt_codecinfo.h"]
 	uses_h Or[
-		f.map{|x| "quicktime/"+x },
-		f.map{|x| "lqt/"+x }]
+		f.map{|x| "lqt/"+x },
+		f.map{|x| "quicktime/"+x }]
 	test proc {|f|
 		f.c_test %`
 		#include <stdio.h>
@@ -943,7 +943,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.8.3 configurator within "+
+DUAL.puts "This is the GridFlow 0.8.4 configurator within "+
 	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
 
 begin
