@@ -831,6 +831,20 @@ FObject.subclass("shunt",2,0) {
 		end
 	}
 
+FObject.subclass("route2",1,1) {
+	def initialize(*b)
+		super; @b=b; @bh={}
+		b.each_with_index {|x,i| @bh[x]=i }
+	end
+	def initialize2(*b) add_outlets @b.length end
+	def _0_(*a) i=@bh[a[0]]||@b.length; send_out i,*a end
+	def _1_list(*b) @b=b end
+	def method_missing(sym,*a)
+		(m = /(_\d_)(.*)/.match sym.to_s) or return super
+		_0_ m[2].intern, *a
+	end
+}
+
 # this was the original demo for the Ruby/jMax/PureData bridges
 # FObjects are Ruby Objects that are exported to the PureData system.
 # _0_bang means bang message on inlet 0
@@ -1466,6 +1480,6 @@ begin
 rescue Exception => e
   #GridFlow.post "%s", e.inspect
   #e.backtrace.each {|line| GridFlow.post "%s", line }
-  GridFlow.post "LTI support not found."
+  GridFlow.post "LTI support not found (%s)", e.inspect
 end
 
