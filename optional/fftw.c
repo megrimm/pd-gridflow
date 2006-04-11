@@ -22,6 +22,8 @@
 #include "../base/grid.h.fcs"
 #include <fftw3.h>
 
+typedef unsigned long ulong;
+
 #define CHECK_ALIGN(d,nt) \
 	{int bytes = 16; \
 	int align = ((ulong)(void*)d)%bytes; \
