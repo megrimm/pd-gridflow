@@ -161,12 +161,16 @@ template <class T> struct Plex {
 	NONLITE(,M(L,O,int64),  M(L,O,float32),  M(L,O,float64),  M(L,O,ruby)),flags,dim)
 #define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop(0,sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>(),NumopOn<ruby>()), flags,dim)
-//	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>(),M(O,ruby)), flags,dim)
+//	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>(),M(L,O,ruby)), flags,dim)
+#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop(0,sym,NumopOn<uint8>(),NumopOn<int16>(),NumopOn<int32>() \
+	NONLITE(,NumopOn<int64>(),M(L,O,float32),M(L,O,float64),NumopOn<ruby>()),flags,dim)
 
 #define DECL_OP(                O,sym,flags)     DECLOP(         OL,DECL_OPON       ,O,sym,flags,1)
 #define DECL_OP_NOFLOAT(        O,sym,flags)     DECLOP_NOFLOAT( OL,DECL_OPON       ,O,sym,flags,1)
 #define DECL_OP_NOFOLD(         O,sym,flags)     DECLOP(         OL,DECL_OPON_NOFOLD,O,sym,flags,1)
 #define DECL_OP_NOFOLD_NOFLOAT( O,sym,flags)     DECLOP_NOFLOAT( OL,DECL_OPON_NOFOLD,O,sym,flags,1)
+#define DECL_OP_NOFOLD_FLOAT(   O,sym,flags)     DECLOP_FLOAT(   OL,DECL_OPON_NOFOLD,O,sym,flags,1)
+
 #define DECL_VOP(               O,sym,flags,dim) DECLOP(        VOL,DECL_OPON       ,O,sym,flags,dim)
 #define DECL_VOP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(VOL,DECL_OPON       ,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD(        O,sym,flags,dim) DECLOP(        VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
@@ -222,13 +226,13 @@ DEF_OP(lt,  a <  b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&
 DEF_OP(ge,  a >= b, 0, false, side==at_left&&x==nt_greatest(&x)||side==at_right&&x==nt_smallest(&x))
 #endif
 #ifdef PASS3
-DEF_OP(sin, (float64)b * sin((float64)a * (M_PI / 18000)), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
-DEF_OP(cos, (float64)b * cos((float64)a * (M_PI / 18000)), 0, false, false) // "LN=36000n RA=0 LA=..."
+DEF_OP(sinmul, (float64)b * sin((float64)a * (M_PI / 18000)), 0, false, false) // "LN=9000+36000n RA=0 LA=..."
+DEF_OP(cosmul, (float64)b * cos((float64)a * (M_PI / 18000)), 0, false, false) // "LN=36000n RA=0 LA=..."
 DEF_OP(atan, atan2(a,b) * (18000 / M_PI), 0, false, false) // "LA=0"
-DEF_OP(tanh, (float64)b * tanh((float64)a * (M_PI / 18000)), 0, false, x==0)
+DEF_OP(tanhmul, (float64)b * tanh((float64)a * (M_PI / 18000)), 0, false, x==0)
 DEF_OP(gamma, b<=0 ? (T)0 : (T)(0+floor(pow((float64)a/256.0,256.0/(float64)b)*256.0)), 0, false, false) // "RN=256"
-DEF_OP(pow, ipow(a,b), 0, false, false) // "RN=1"
-DEF_OP(log, a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a))), 0, false, false) // "RA=0"
+DEF_OPF(pow, ipow(a,b), pow(a,b), 0, false, false) // "RN=1"
+DEF_OP(logmul, a==0 ? (T)0 : (T)((float64)b * log((float64)gf_abs(a))), 0, false, false) // "RA=0"
 // 0.8
 DEF_OPF(clipadd, clipadd(a,b), a+b, 0, x==0, false)
 DEF_OPF(clipsub, clipsub(a,b), a-b, 0, side==at_right && x==0, false)
@@ -243,6 +247,14 @@ DEF_OP(weight,weight((uint64)(a^b) & (0xFFFFFFFFFFFFFFFFULL>>(64-sizeof(T)*8))),
 #define BITS(T) (sizeof(T)*8)
 DEF_OP(rol,((uint64)a<<b)|((uint64)a>>(T)((-b)&(BITS(T)-1))),0,false,false)
 DEF_OP(ror,((uint64)a>>b)|((uint64)a<<(T)((-b)&(BITS(T)-1))),0,false,false)
+
+DEF_OP(sin,  sin(a-b),   0, false, false)
+DEF_OP(cos,  cos(a-b),   0, false, false)
+DEF_OP(atan2,atan2(a,b), 0, false, false)
+DEF_OP(tanh, tanh(a-b),  0, false, false)
+DEF_OP(exp,  exp(a-b),   0, false, false)
+DEF_OP(log,  log(a-b),   0, false, false)
+
 #endif
 #ifdef PASS4
 
@@ -333,13 +345,13 @@ ruby clipadd(ruby a, ruby b) { return a+b; }
 ruby clipsub(ruby a, ruby b) { return a-b; }
 
 Numop op_table3[] = {
-	DECL_OP_NOFOLD(sin,  "sin*", 0),
-	DECL_OP_NOFOLD(cos,  "cos*", 0),
-	DECL_OP_NOFOLD(atan, "atan", 0),
-	DECL_OP_NOFOLD(tanh, "tanh*", 0),
-	DECL_OP_NOFOLD(gamma, "gamma", 0),
-	DECL_OP_NOFOLD(pow, "**", 0),
-	DECL_OP_NOFOLD(log, "log*", 0),
+	DECL_OP_NOFOLD(sinmul, "sin*", 0),
+	DECL_OP_NOFOLD(cosmul, "cos*", 0),
+	DECL_OP_NOFOLD(atan,   "atan", 0),
+	DECL_OP_NOFOLD(tanhmul,"tanh*", 0),
+	DECL_OP_NOFOLD(gamma,  "gamma", 0),
+	DECL_OP_NOFOLD(pow,    "**", 0),
+	DECL_OP_NOFOLD(logmul, "log*", 0),
 // 0.8
 	DECL_OP(clipadd,"clip+", OP_ASSOC|OP_COMM),
 	DECL_OP(clipsub,"clip-", 0),
@@ -353,6 +365,14 @@ Numop op_table3[] = {
 	DECL_OP_NOFOLD_NOFLOAT(weight,"weight",OP_COMM),
 	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
 	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
+
+	DECL_OP_NOFOLD_FLOAT(sin,  "sin", 0),
+	DECL_OP_NOFOLD_FLOAT(cos,  "cos", 0),
+	DECL_OP_NOFOLD_FLOAT(atan2,"atan2", 0),
+	DECL_OP_NOFOLD_FLOAT(tanh, "tanh", 0),
+	DECL_OP_NOFOLD_FLOAT(exp,  "exp", 0),
+	DECL_OP_NOFOLD_FLOAT(log,  "log", 0),
+
 };
 const long op_table3_n = COUNT(op_table3);
 #endif
