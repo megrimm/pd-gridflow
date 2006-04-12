@@ -413,11 +413,19 @@ FPatcher.subclass("@convolve",2,1) {
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",
 #	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
+class Array
+	def split(a)
+		i=0; r=[[]]
+		each {|x| if a===x then r.last << x else r << [] end }
+		r
+	end
+end
+
 FObject.subclass("args",1,1) {
 	def initialize(*argspecs) @argspecs = argspecs end
 	def initialize2; add_outlets @argspecs.length end
 	def _0_bang
-		pa=patcherargs
+		pa,*loadbang=patcherargs.split(:",")
 		GridFlow.handle_braces! pa
 		GridFlow.post "patcherargs=%s", pa.inspect
 		i=@argspecs.length-1
@@ -428,6 +436,12 @@ FObject.subclass("args",1,1) {
 			end
 			i-=1
 		end
+		if pa.length > @argspecs.length then
+			GridFlow.post "warning: too many args (%d for %d)", pa.length, @argspecs.length
+			GridFlow.post "... argspecs=%s",@argspecs.inspect
+			GridFlow.post "... but got %s",pa.inspect
+		end
+		loadbang.each {|m| send_out @argspecs.length, *m }
 	end
 }
 
