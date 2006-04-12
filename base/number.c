@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
+#include <complex>
+//using namespace std;
 
 static inline uint64 weight(uint64 x) {uint64 k;
 	k=0x5555555555555555ULL; x = (x&k) + ((x>> 1)&k); //(2**64-1)/(2**2**0-1)
@@ -124,12 +126,16 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
+#define Plex std::complex
+/*
 template <class T> struct Plex {
 	T x; // real
 	T y; // imaginary
 	typedef T _T;
 	Plex(T x_, T y_) : x(x_), y(y_) {}
+	Plex operator -(Plex &r) {return Plex(x-r.x,y-r.y);}
 };
+*/
 
 // classic two-input operator
 
@@ -175,6 +181,7 @@ template <class T> struct Plex {
 #define DECL_VOP_NOFLOAT(       O,sym,flags,dim) DECLOP_NOFLOAT(VOL,DECL_OPON       ,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD(        O,sym,flags,dim) DECLOP(        VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 #define DECL_VOP_NOFOLD_NOFLOAT(O,sym,flags,dim) DECLOP_NOFLOAT(VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
+#define DECL_VOP_NOFOLD_FLOAT(  O,sym,flags,dim) DECLOP_FLOAT(  VOL,DECL_OPON_NOFOLD,O,sym,flags,dim)
 
 template <class T> static inline T gf_floor (T a) {
 	return (T) floor((double)a); }
@@ -266,17 +273,31 @@ template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
 inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
 inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
 
-template <class T> inline Plex<T>  cx_sqsub(Plex<T>& a, Plex<T>& b) {
-  T x = a.x-b.x; T y = a.y-b.y; return Plex<T>(U(x*x-y*y),U(x*y*2));}
-template <class T> inline Plex<T> cx_abssub(Plex<T>& a, Plex<T>& b) {
-  T x = a.x-b.x; T y = a.y-b.y; return Plex<T>(U(gf_sqrt(x*x+y*y)),U(0));}
+template <class T> inline Plex<T>  cx_sqsub(Plex<T>& a, Plex<T>& b) { Plex<T> v=a-b; return v*v; }
+template <class T> inline Plex<T> cx_abssub(Plex<T>& a, Plex<T>& b) { Plex<T> v=a-b; return norm(v); }
+/*
+template <class T> inline Plex<T> cx_atan2 (Plex<T>& a, Plex<T>& b) {
+  if (b==0) return 0;
+  Plex<T> v=a/b;
+  return (log(1+iz)-log(log(1-iz))/2i;
+  // but this is not taking care of sign stuff...
+  // and then what's the use of atan2 on complexes? (use C.log ...)
+}
+*/
+
 //!@#$ neutral,is_neutral,is_absorbent are WRONG here
-DEF_OP(cx_mul,     T(U( a.x*b.x - a.y*b.y )     ,U(( a.y*b.x + a.x*b.y )     )), 1, x==1, x==0)
-DEF_OP(cx_mulconj, T(U( a.x*b.x + a.y*b.y )     ,U(( a.y*b.x - a.x*b.y )     )), 1, x==1, x==0)
-DEF_OP(cx_div,     T(U( a.x*b.x + a.y*b.y )/NORM,U(( a.y*b.x - a.x*b.y )/NORM)), 1, x==1, x==0)
-DEF_OP(cx_divconj, T(U( a.x*b.x - a.y*b.y )/NORM,U(( a.y*b.x + a.x*b.y )/NORM)), 1, x==1, x==0)
+DEF_OP(cx_mul,     a*b,       1, x==1, x==0)
+DEF_OP(cx_mulconj, a*conj(b), 1, x==1, x==0)
+DEF_OP(cx_div,     a/b,       1, x==1, x==0)
+DEF_OP(cx_divconj, a/conj(b), 1, x==1, x==0)
 DEF_OP(cx_sqsub,   cx_sqsub(a,b), 0, false, false)
 DEF_OP(cx_abssub, cx_abssub(a,b), 0, false, false)
+DEF_OP(cx_sin,  sin(a-b),   0, false, false)
+DEF_OP(cx_cos,  cos(a-b),   0, false, false)
+//DEF_OP(cx_atan2,atan2(a,b), 0, false, false)
+DEF_OP(cx_tanh, tanh(a-b),  0, false, false)
+DEF_OP(cx_exp,  exp(a-b),   0, false, false)
+DEF_OP(cx_log,  log(a-b),   0, false, false)
 #undef U
 #undef NORM
 #endif
@@ -366,12 +387,12 @@ Numop op_table3[] = {
 	DECL_OP_NOFOLD_NOFLOAT(rol,"rol",0),
 	DECL_OP_NOFOLD_NOFLOAT(ror,"ror",0),
 
-	DECL_OP_NOFOLD_FLOAT(sin,  "sin", 0),
-	DECL_OP_NOFOLD_FLOAT(cos,  "cos", 0),
+	DECL_OP_NOFOLD_FLOAT(sin,  "sin",   0),
+	DECL_OP_NOFOLD_FLOAT(cos,  "cos",   0),
 	DECL_OP_NOFOLD_FLOAT(atan2,"atan2", 0),
-	DECL_OP_NOFOLD_FLOAT(tanh, "tanh", 0),
-	DECL_OP_NOFOLD_FLOAT(exp,  "exp", 0),
-	DECL_OP_NOFOLD_FLOAT(log,  "log", 0),
+	DECL_OP_NOFOLD_FLOAT(tanh, "tanh",  0),
+	DECL_OP_NOFOLD_FLOAT(exp,  "exp",   0),
+	DECL_OP_NOFOLD_FLOAT(log,  "log",   0),
 
 };
 const long op_table3_n = COUNT(op_table3);
@@ -384,6 +405,12 @@ Numop op_table4[] = {
 	DECL_VOP(cx_divconj, "C./conj", 0,2),
 	DECL_VOP(cx_sqsub,   "C.sq-",   OP_COMM,2),
 	DECL_VOP(cx_abssub,  "C.abs-",  OP_COMM,2),
+	DECL_VOP_NOFOLD_FLOAT(cx_sin,  "C.sin",  0,2),
+	DECL_VOP_NOFOLD_FLOAT(cx_cos,  "C.cos",  0,2),
+//	DECL_VOP_NOFOLD_FLOAT(cx_atan2,"C.atan2",0,2),
+	DECL_VOP_NOFOLD_FLOAT(cx_tanh, "C.tanh", 0,2),
+	DECL_VOP_NOFOLD_FLOAT(cx_exp,  "C.exp",  0,2),
+	DECL_VOP_NOFOLD_FLOAT(cx_log,  "C.log",  0,2),
 };
 const long op_table4_n = COUNT(op_table4);
 #endif
