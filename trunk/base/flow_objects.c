@@ -385,7 +385,7 @@ GRID_INLET(GridOp,0) {
 	in->set_mode(6);
 	if (op->size>1 && (in->dim->get(in->dim->n-1)!=op->size || r->dim->get(r->dim->n-1)!=op->size))
 		RAISE("using %s requires Dim(...,%d) in both inlets but got: left=%s right=%s",
-			op->name,op->size,in->dim->to_s(),out->dim->to_s());
+			op->name,op->size,in->dim->to_s(),r->dim->to_s());
 } GRID_ALLOC {
 	//out->ask(in->allocn,(T * &)in->alloc,in->allocfactor,in->allocmin,in->allocmax);
 } GRID_FLOW {
