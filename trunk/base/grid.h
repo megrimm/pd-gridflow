@@ -29,7 +29,11 @@
 #include <stdio.h>
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
+#if __GNUC__<4
+#define ALLOCPREFIX static inline
+#else
 #define ALLOCPREFIX inline
+#endif
 #include "base/new.h"
 ALLOCPREFIX void *operator new   (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
 ALLOCPREFIX void *operator new[] (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
@@ -334,8 +338,8 @@ typedef struct R {
 #undef FOO
 //	bool operator  == (int x) {return rb_funcall(r,SI(==),1,INT2NUM(x));}
 #define FOO(Op) \
-	R operator Op (R x)   {return rb_funcall(r,SI(Op),1,x.r);} \
-	R operator Op (int x) {return rb_funcall(r,SI(Op),1,INT2NUM(x));}
+	R operator Op (R x)   const {return rb_funcall(r,SI(Op),1,x.r);} \
+	R operator Op (int x) const {return rb_funcall(r,SI(Op),1,INT2NUM(x));}
 	FOO(+) FOO(-) FOO(*) FOO(/) FOO(%)
 	FOO(&) FOO(|) FOO(^) FOO(<<) FOO(>>)
 	FOO(<) FOO(>) FOO(<=) FOO(>=) FOO(==) FOO(!=)
