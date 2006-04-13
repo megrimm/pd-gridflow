@@ -198,7 +198,7 @@ end
  LTI.info         :MeanShiftSegmentation
  LTI.info         :Snake
  LTI.info         :KMeansSegmentation
- LTI.info         :BackgroundModel
+ LTI.info         :BackgroundModel, [Image], [Channel8]
  LTI.info     :FeatureExtractor
  LTI.info         :LocalFeatureExtractor
  LTI.info             :LocalMoments
