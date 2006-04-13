@@ -353,6 +353,7 @@ GRID_INLET(GridStore,1) {
 		n-=cs;
 		// find next set of indices; here d is the dim# to increment
 		for(;;) {d--; if (d<0) return; x[d]++; if (x[d]<to2[d]) break;}
+		d++;
 	}
 } GRID_END
 \def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
