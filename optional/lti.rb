@@ -381,6 +381,9 @@ begin
     def _1_rgrid_flow data
 	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
 	@arg1.ul.y,@arg1.ul.x,@arg1.br.y,@arg1.br.x = data.unpack("I4")
+	if !(@arg1.isConsistent)
+	   raise "Rectangle at inlet 1 is not consistent, does not follow (ul , br) format"   
+	end
     end
     def _1_rgrid_end
     end
