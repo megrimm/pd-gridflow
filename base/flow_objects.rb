@@ -1015,8 +1015,11 @@ class Display < FObject; include Gooey
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
+		# careful with the namespaces! apparently, Array is not ::Array in this context
+		# (i don't know why)
 		case a
-		when Float; sprintf("%.5f",a).gsub(/\.?0+$/, "")
+		when   Float; sprintf("%.5f",a).gsub(/\.?0+$/, "")
+		when ::Array; "(" + a.map{|x| atom_to_s x }.join(" ") + ")"
 		else a.to_s
 		end
 	end
