@@ -384,6 +384,7 @@ begin
 	if !(@arg1.isConsistent)
 	   raise "Rectangle at inlet 1 is not consistent, does not follow (ul , br) format"   
 	end
+	@functor.reset
     end
     def _1_rgrid_end
     end
