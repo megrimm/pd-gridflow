@@ -345,7 +345,7 @@ typedef struct R {
 	FOO(<) FOO(>) FOO(<=) FOO(>=) FOO(==) FOO(!=)
 #undef FOO
 #define FOO(Op) \
-	R operator Op ()   {return rb_funcall(r,SI(Op),0);}
+	R operator Op () const {return rb_funcall(r,SI(Op),0);}
 	FOO(-) FOO(~)
 #undef FOO
 } ruby;
