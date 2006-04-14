@@ -286,47 +286,47 @@ typedef struct R {
 #endif
 	R(Numop *x);
 
-	operator bool () {
+	operator bool () const {
 		if (r==Qtrue) return true;
 		if (r==Qfalse) return false;
 		switch (TYPE(r)) {
 			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
 			default: RAISE("can't convert to bool");}}
-	operator uint8 () {return INT2NUM(r);}
-	operator int16 () {
+	operator uint8 () const {return INT2NUM(r);}
+	operator int16 () const {
 		int v = (int32)*this;
 		if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
 		return v;}
-	operator uint16 () {
+	operator uint16 () const {
 		int v = (int32)*this;
 		if (v<0 || v>=0x10000) RAISE("value %d is out of range",v);
 		return v;}
-	operator int32 () {
+	operator int32 () const {
 		// not using plain NUM2INT because Ruby can convert Symbol to int (compat Ruby1.4)
 		if (INTEGER_P(r)) return NUM2INT(r);
 		if (FLOAT_P(r)) return NUM2INT(rb_funcall(r,SI(round),0));
 		RAISE("expected Integer or Float (got %s)",
 			rb_str_ptr(rb_funcall(r,SI(inspect),0)));}
-	operator long () {
+	operator long () const {
 		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
 
 #ifdef HAVE_GCC64
-	operator uint64 () {return NUM2ULONG(r);}
-	operator  int64 () {return NUM2ULONG(r);}
+	operator uint64 () const {return NUM2ULONG(r);}
+	operator  int64 () const {return NUM2ULONG(r);}
 #else
-	operator uint64 () {
+	operator uint64 () const {
 		if (FIXNUM_P(r)) return (uint64)FIX2LONG(r);
 		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
 		uint64 v = (uint64)NUM2UINT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
 		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
-	operator  int64 () {
+	operator  int64 () const {
 		if (FIXNUM_P(r)) return (int64)FIX2LONG(r);
 		if (TYPE(r)!=T_BIGNUM) RAISE("type error");
 		int64 v = (int64)NUM2INT(rb_funcall(r,SI(>>),1,INT2FIX(32))) << 32;
 		return v + NUM2UINT(rb_funcall(r,SI(&),1,UINT2NUM(0xffffffff)));}
 #endif
-	operator float32 () {return (float64)*this;}
-	operator float64 () {
+	operator float32 () const {return (float64)*this;}
+	operator float64 () const {
 		if (INTEGER_P(r)) return (float64)(int32)*this;
 		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
 		return ((RFloat*)r)->value;}
