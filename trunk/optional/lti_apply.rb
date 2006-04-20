@@ -1,757 +1,848 @@
+begin
 DgenericVector.form = [
-[[], ["double (*)(double)"]],
-[["GenericVector<double >"], ["double (*)(double)"]],
-[["double (*)(double const &)"], []],
-[["GenericVector<double >", "double (*)(double const &)"], []],
-[["GenericVector<double >", "double (*)(double const &,double const &)"], []],
-[["GenericVector<double >"], ["double (*)(double,double)"]],
-[["GenericVector<double >", "GenericVector<double >", "double (*)(double const &,double const &)"], []],
-[["GenericVector<double >", "GenericVector<double >"], ["double (*)(double,double)"]],
-]
+[Out["double (*)(double)"]],
+[In["GenericVector<double >"], Out["double (*)(double)"]],
+[In["double (*)(double const &)"]],
+[In["GenericVector<double >"], In["double (*)(double const &)"]],
+[In["GenericVector<double >"], In["double (*)(double const &,double const &)"]],
+[In["GenericVector<double >"], Out["double (*)(double,double)"]],
+[In["GenericVector<double >"], In["GenericVector<double >"], In["double (*)(double const &,double const &)"]],
+[In["GenericVector<double >"], In["GenericVector<double >"], Out["double (*)(double,double)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 FgenericVector.form = [
-[[], ["float (*)(float)"]],
-[["GenericVector<float >"], ["float (*)(float)"]],
-[["float (*)(float const &)"], []],
-[["GenericVector<float >", "float (*)(float const &)"], []],
-[["GenericVector<float >", "float (*)(float const &,float const &)"], []],
-[["GenericVector<float >"], ["float (*)(float,float)"]],
-[["GenericVector<float >", "GenericVector<float >", "float (*)(float const &,float const &)"], []],
-[["GenericVector<float >", "GenericVector<float >"], ["float (*)(float,float)"]],
-]
+[Out["float (*)(float)"]],
+[In["GenericVector<float >"], Out["float (*)(float)"]],
+[In["float (*)(float const &)"]],
+[In["GenericVector<float >"], In["float (*)(float const &)"]],
+[In["GenericVector<float >"], In["float (*)(float const &,float const &)"]],
+[In["GenericVector<float >"], Out["float (*)(float,float)"]],
+[In["GenericVector<float >"], In["GenericVector<float >"], In["float (*)(float const &,float const &)"]],
+[In["GenericVector<float >"], In["GenericVector<float >"], Out["float (*)(float,float)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 IgenericVector.form = [
-[[], ["int (*)(int)"]],
-[["GenericVector<int >"], ["int (*)(int)"]],
-[["int (*)(int const &)"], []],
-[["GenericVector<int >", "int (*)(int const &)"], []],
-[["GenericVector<int >", "int (*)(int const &,int const &)"], []],
-[["GenericVector<int >"], ["int (*)(int,int)"]],
-[["GenericVector<int >", "GenericVector<int >", "int (*)(int const &,int const &)"], []],
-[["GenericVector<int >", "GenericVector<int >"], ["int (*)(int,int)"]],
-]
+[Out["int (*)(int)"]],
+[In["GenericVector<int >"], Out["int (*)(int)"]],
+[In["int (*)(int const &)"]],
+[In["GenericVector<int >"], In["int (*)(int const &)"]],
+[In["GenericVector<int >"], In["int (*)(int const &,int const &)"]],
+[In["GenericVector<int >"], Out["int (*)(int,int)"]],
+[In["GenericVector<int >"], In["GenericVector<int >"], In["int (*)(int const &,int const &)"]],
+[In["GenericVector<int >"], In["GenericVector<int >"], Out["int (*)(int,int)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 UgenericVector.form = [
-[[], ["unsigned char (*)(unsigned char)"]],
-[["GenericVector<unsigned char >"], ["unsigned char (*)(unsigned char)"]],
-[["unsigned char (*)(unsigned char const &)"], []],
-[["GenericVector<unsigned char >", "unsigned char (*)(unsigned char const &)"], []],
-[["GenericVector<unsigned char >", "unsigned char (*)(unsigned char const &,unsigned char const &)"], []],
-[["GenericVector<unsigned char >"], ["unsigned char (*)(unsigned char,unsigned char)"]],
-[["GenericVector<unsigned char >", "GenericVector<unsigned char >", "unsigned char (*)(unsigned char const &,unsigned char const &)"], []],
-[["GenericVector<unsigned char >", "GenericVector<unsigned char >"], ["unsigned char (*)(unsigned char,unsigned char)"]],
-]
+[Out["unsigned char (*)(unsigned char)"]],
+[In["GenericVector<unsigned char >"], Out["unsigned char (*)(unsigned char)"]],
+[In["unsigned char (*)(unsigned char const &)"]],
+[In["GenericVector<unsigned char >"], In["unsigned char (*)(unsigned char const &)"]],
+[In["GenericVector<unsigned char >"], In["unsigned char (*)(unsigned char const &,unsigned char const &)"]],
+[In["GenericVector<unsigned char >"], Out["unsigned char (*)(unsigned char,unsigned char)"]],
+[In["GenericVector<unsigned char >"], In["GenericVector<unsigned char >"], In["unsigned char (*)(unsigned char const &,unsigned char const &)"]],
+[In["GenericVector<unsigned char >"], In["GenericVector<unsigned char >"], Out["unsigned char (*)(unsigned char,unsigned char)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 RgbgenericVector.form = [
-[[], ["RgbPixel (*)(lti::rgbPixel)"]],
-[["GenericVector<lti::rgbPixel >"], ["RgbPixel (*)(lti::rgbPixel)"]],
-[["RgbPixel (*)(lti::rgbPixel const &)"], []],
-[["GenericVector<lti::rgbPixel >", "RgbPixel (*)(lti::rgbPixel const &)"], []],
-[["GenericVector<lti::rgbPixel >", "RgbPixel (*)(lti::rgbPixel const &,lti::rgbPixel const &)"], []],
-[["GenericVector<lti::rgbPixel >"], ["RgbPixel (*)(lti::rgbPixel,lti::rgbPixel)"]],
-[["GenericVector<lti::rgbPixel >", "GenericVector<lti::rgbPixel >", "RgbPixel (*)(lti::rgbPixel const &,lti::rgbPixel const &)"], []],
-[["GenericVector<lti::rgbPixel >", "GenericVector<lti::rgbPixel >"], ["RgbPixel (*)(lti::rgbPixel,lti::rgbPixel)"]],
-]
+[Out["RgbPixel (*)(lti::rgbPixel)"]],
+[In["GenericVector<lti::rgbPixel >"], Out["RgbPixel (*)(lti::rgbPixel)"]],
+[In["RgbPixel (*)(lti::rgbPixel const &)"]],
+[In["GenericVector<lti::rgbPixel >"], In["RgbPixel (*)(lti::rgbPixel const &)"]],
+[In["GenericVector<lti::rgbPixel >"], In["RgbPixel (*)(lti::rgbPixel const &,lti::rgbPixel const &)"]],
+[In["GenericVector<lti::rgbPixel >"], Out["RgbPixel (*)(lti::rgbPixel,lti::rgbPixel)"]],
+[In["GenericVector<lti::rgbPixel >"], In["GenericVector<lti::rgbPixel >"], In["RgbPixel (*)(lti::rgbPixel const &,lti::rgbPixel const &)"]],
+[In["GenericVector<lti::rgbPixel >"], In["GenericVector<lti::rgbPixel >"], Out["RgbPixel (*)(lti::rgbPixel,lti::rgbPixel)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Iarray.form = [
-[[], ["int (*)(int)"]],
-[["Array<int >"], ["int (*)(int)"]],
-[["int (*)(int const &)"], []],
-[["Array<int >", "int (*)(int const &)"], []],
-[["Array<int >", "int (*)(int const &,int const &)"], []],
-[["Array<int >"], ["int (*)(int,int)"]],
-[["Array<int >", "Array<int >", "int (*)(int const &,int const &)"], []],
-[["Array<int >", "Array<int >"], ["int (*)(int,int)"]],
-]
+[Out["int (*)(int)"]],
+[In["Array<int >"], Out["int (*)(int)"]],
+[In["int (*)(int const &)"]],
+[In["Array<int >"], In["int (*)(int const &)"]],
+[In["Array<int >"], In["int (*)(int const &,int const &)"]],
+[In["Array<int >"], Out["int (*)(int,int)"]],
+[In["Array<int >"], In["Array<int >"], In["int (*)(int const &,int const &)"]],
+[In["Array<int >"], In["Array<int >"], Out["int (*)(int,int)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Farray.form = [
-[[], ["float (*)(float)"]],
-[["Array<float >"], ["float (*)(float)"]],
-[["float (*)(float const &)"], []],
-[["Array<float >", "float (*)(float const &)"], []],
-[["Array<float >", "float (*)(float const &,float const &)"], []],
-[["Array<float >"], ["float (*)(float,float)"]],
-[["Array<float >", "Array<float >", "float (*)(float const &,float const &)"], []],
-[["Array<float >", "Array<float >"], ["float (*)(float,float)"]],
-]
+[Out["float (*)(float)"]],
+[In["Array<float >"], Out["float (*)(float)"]],
+[In["float (*)(float const &)"]],
+[In["Array<float >"], In["float (*)(float const &)"]],
+[In["Array<float >"], In["float (*)(float const &,float const &)"]],
+[In["Array<float >"], Out["float (*)(float,float)"]],
+[In["Array<float >"], In["Array<float >"], In["float (*)(float const &,float const &)"]],
+[In["Array<float >"], In["Array<float >"], Out["float (*)(float,float)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Darray.form = [
-[[], ["double (*)(double)"]],
-[["Array<double >"], ["double (*)(double)"]],
-[["double (*)(double const &)"], []],
-[["Array<double >", "double (*)(double const &)"], []],
-[["Array<double >", "double (*)(double const &,double const &)"], []],
-[["Array<double >"], ["double (*)(double,double)"]],
-[["Array<double >", "Array<double >", "double (*)(double const &,double const &)"], []],
-[["Array<double >", "Array<double >"], ["double (*)(double,double)"]],
-]
+[Out["double (*)(double)"]],
+[In["Array<double >"], Out["double (*)(double)"]],
+[In["double (*)(double const &)"]],
+[In["Array<double >"], In["double (*)(double const &)"]],
+[In["Array<double >"], In["double (*)(double const &,double const &)"]],
+[In["Array<double >"], Out["double (*)(double,double)"]],
+[In["Array<double >"], In["Array<double >"], In["double (*)(double const &,double const &)"]],
+[In["Array<double >"], In["Array<double >"], Out["double (*)(double,double)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Uarray.form = [
-[[], ["unsigned char (*)(unsigned char)"]],
-[["Array<unsigned char >"], ["unsigned char (*)(unsigned char)"]],
-[["unsigned char (*)(unsigned char const &)"], []],
-[["Array<unsigned char >", "unsigned char (*)(unsigned char const &)"], []],
-[["Array<unsigned char >", "unsigned char (*)(unsigned char const &,unsigned char const &)"], []],
-[["Array<unsigned char >"], ["unsigned char (*)(unsigned char,unsigned char)"]],
-[["Array<unsigned char >", "Array<unsigned char >", "unsigned char (*)(unsigned char const &,unsigned char const &)"], []],
-[["Array<unsigned char >", "Array<unsigned char >"], ["unsigned char (*)(unsigned char,unsigned char)"]],
-]
+[Out["unsigned char (*)(unsigned char)"]],
+[In["Array<unsigned char >"], Out["unsigned char (*)(unsigned char)"]],
+[In["unsigned char (*)(unsigned char const &)"]],
+[In["Array<unsigned char >"], In["unsigned char (*)(unsigned char const &)"]],
+[In["Array<unsigned char >"], In["unsigned char (*)(unsigned char const &,unsigned char const &)"]],
+[In["Array<unsigned char >"], Out["unsigned char (*)(unsigned char,unsigned char)"]],
+[In["Array<unsigned char >"], In["Array<unsigned char >"], In["unsigned char (*)(unsigned char const &,unsigned char const &)"]],
+[In["Array<unsigned char >"], In["Array<unsigned char >"], Out["unsigned char (*)(unsigned char,unsigned char)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Histogram.form = [
-[[], ["double (*)(double)"]],
-[["double (*)(double const &)"], []],
-]
+[Out["double (*)(double)"]],
+[In["double (*)(double const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Fhistogram.form = [
-[[], ["float (*)(float)"]],
-[["float (*)(float const &)"], []],
-]
+[Out["float (*)(float)"]],
+[In["float (*)(float const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Ihistogram.form = [
-[[], ["int (*)(int)"]],
-[["int (*)(int const &)"], []],
-]
+[Out["int (*)(int)"]],
+[In["int (*)(int const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 IsepKernel.form = [
-[[], ["int (*)(int)"]],
-[["int (*)(int const &)"], []],
-[["SepKernel<int >"], ["int (*)(int)"]],
-[["SepKernel<int >", "int (*)(int const &)"], []],
-]
+[Out["int (*)(int)"]],
+[In["int (*)(int const &)"]],
+[In["SepKernel<int >"], Out["int (*)(int)"]],
+[In["SepKernel<int >"], In["int (*)(int const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 FsepKernel.form = [
-[[], ["float (*)(float)"]],
-[["float (*)(float const &)"], []],
-[["SepKernel<float >"], ["float (*)(float)"]],
-[["SepKernel<float >", "float (*)(float const &)"], []],
-]
+[Out["float (*)(float)"]],
+[In["float (*)(float const &)"]],
+[In["SepKernel<float >"], Out["float (*)(float)"]],
+[In["SepKernel<float >"], In["float (*)(float const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 DsepKernel.form = [
-[[], ["double (*)(double)"]],
-[["double (*)(double const &)"], []],
-[["SepKernel<double >"], ["double (*)(double)"]],
-[["SepKernel<double >", "double (*)(double const &)"], []],
-]
+[Out["double (*)(double)"]],
+[In["double (*)(double const &)"]],
+[In["SepKernel<double >"], Out["double (*)(double)"]],
+[In["SepKernel<double >"], In["double (*)(double const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 UsepKernel.form = [
-[[], ["unsigned char (*)(unsigned char)"]],
-[["unsigned char (*)(unsigned char const &)"], []],
-[["SepKernel<unsigned char >"], ["unsigned char (*)(unsigned char)"]],
-[["SepKernel<unsigned char >", "unsigned char (*)(unsigned char const &)"], []],
-]
+[Out["unsigned char (*)(unsigned char)"]],
+[In["unsigned char (*)(unsigned char const &)"]],
+[In["SepKernel<unsigned char >"], Out["unsigned char (*)(unsigned char)"]],
+[In["SepKernel<unsigned char >"], In["unsigned char (*)(unsigned char const &)"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Modifier.form = [
-[[], ["Fvector"]],
-[[], ["Ivector"]],
-[[], ["Vector<lti::ubyte >"]],
-[[], ["Channel"]],
-[[], ["Imatrix"]],
-[[], ["Channel8"]],
-[[], ["Image"]],
-[["Fvector"], ["Fvector"]],
-[["Ivector"], ["Ivector"]],
-[["Vector<lti::ubyte >"], ["Vector<lti::ubyte >"]],
-[["Channel"], ["Channel"]],
-[["Imatrix"], ["Imatrix"]],
-[["Channel8"], ["Channel8"]],
-[["Image"], ["Image"]],
-]
+[Out["Fvector"]],
+[Out["Ivector"]],
+[Out["Vector<lti::ubyte >"]],
+[Out["Channel"]],
+[Out["Imatrix"]],
+[Out["Channel8"]],
+[Out["Image"]],
+[In["Fvector"], Out["Fvector"]],
+[In["Ivector"], Out["Ivector"]],
+[In["Vector<lti::ubyte >"], Out["Vector<lti::ubyte >"]],
+[In["Channel"], Out["Channel"]],
+[In["Imatrix"], Out["Imatrix"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Image"], Out["Image"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 IoFunctor.form = [
-[[], ["Image"]],
-[[], ["Channel8", "Palette"]],
-[[], ["Image", "Channel8", "Palette"]],
-[["Image"], []],
-[["Channel"], []],
-[["Channel8", "Palette"], []],
-[["Channel8"], []],
-]
+[Out["Image"]],
+[Out["Channel8"], Out["Palette"]],
+[Out["Image"], Out["Channel8"], Out["Palette"]],
+[In["Image"]],
+[In["Channel"]],
+[In["Channel8"], In["Palette"]],
+[In["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LoadBMP.form = [
-[[], ["Image"]],
-[[], ["Channel8", "Palette"]],
-[[], ["Channel"]],
-[[], ["Image", "Channel8", "Palette"]],
-]
+[Out["Image"]],
+[Out["Channel8"], Out["Palette"]],
+[Out["Channel"]],
+[Out["Image"], Out["Channel8"], Out["Palette"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SaveBMP.form = [
-[["Image"], []],
-[["Channel"], []],
-[["Channel8", "Palette"], []],
-[["Channel8"], []],
-]
+[In["Image"]],
+[In["Channel"]],
+[In["Channel8"], In["Palette"]],
+[In["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LoadJPEG.form = [
-[[], ["Image"]],
-[[], ["Image", "bool"]],
-]
+[Out["Image"]],
+[Out["Image"], Out["bool"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SaveJPEG.form = [
-[["Image"], []],
-[["Channel"], []],
-[["Channel8"], []],
-]
+[In["Image"]],
+[In["Channel"]],
+[In["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LoadPNG.form = [
-[[], ["Image"]],
-[[], ["Channel8", "Palette"]],
-]
+[Out["Image"]],
+[Out["Channel8"], Out["Palette"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SavePNG.form = [
-[["Image"], []],
-[["Channel"], []],
-[["Channel8", "Palette"], []],
-[["Channel8"], []],
-]
+[In["Image"]],
+[In["Channel"]],
+[In["Channel8"], In["Palette"]],
+[In["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LoadImage.form = [
-[[], ["Image"]],
-[[], ["Channel8", "Palette"]],
-[[], ["Channel"]],
-]
+[Out["Image"]],
+[Out["Channel8"], Out["Palette"]],
+[Out["Channel"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SaveImage.form = [
-[["Image"], []],
-[["Channel"], []],
-[["Channel8", "Palette"], []],
-[["Channel8"], []],
-]
+[In["Image"]],
+[In["Channel"]],
+[In["Channel8"], In["Palette"]],
+[In["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ChiSquareFunctor.form = [
-[[], ["double"]],
-]
+[Out["double"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 RealFFT.form = [
-[["Vector<float >"], ["Vector<float >", "Vector<float >"]],
-[["Vector<double >"], ["Vector<double >", "Vector<double >"]],
-[["Matrix<float >"], ["Matrix<float >", "Matrix<float >"]],
-]
+[In["Vector<float >"], Out["Vector<float >"], Out["Vector<float >"]],
+[In["Vector<double >"], Out["Vector<double >"], Out["Vector<double >"]],
+[In["Matrix<float >"], Out["Matrix<float >"], Out["Matrix<float >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 OrientedHLTransform.form = [
-[["Channel", "Channel"], ["Channel32"]],
-[["Channel8", "Channel"], ["Channel32"]],
-[["Image", "Channel"], ["Channel32"]],
-[["Channel32", "Channel"], ["Channel32"]],
-]
+[In["Channel"], In["Channel"], Out["Channel32"]],
+[In["Channel8"], In["Channel"], Out["Channel32"]],
+[In["Image"], In["Channel"], Out["Channel32"]],
+[In["Channel32"], In["Channel"], Out["Channel32"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 GHoughTransform.form = [
-[["Channel"], ["std::list<lti::vector<float > >"]],
-[["Channel", "Channel"], ["std::list<lti::vector<float > >"]],
-[["TpointList<int >", "Channel"], ["std::list<lti::vector<float > >"]],
-]
+[In["Channel"], Out["std::list<lti::vector<float > >"]],
+[In["Channel"], In["Channel"], Out["std::list<lti::vector<float > >"]],
+[In["TpointList<int >"], In["Channel"], Out["std::list<lti::vector<float > >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 OrientationMap.form = [
-[["Channel"], ["Channel", "Channel"]],
-[["Channel8"], ["Channel8", "Channel8"]],
-]
+[In["Channel"], Out["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 MedianFilter.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 KNearestNeighFilter.form = [
-[[], ["Channel8"]],
-[["Channel8"], ["Channel8"]],
-[[], ["Imatrix"]],
-[["Imatrix"], ["Imatrix"]],
-]
+[Out["Channel8"]],
+[In["Channel8"], Out["Channel8"]],
+[Out["Imatrix"]],
+[In["Imatrix"], Out["Imatrix"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Convolution.form = [
-[[], ["Channel8"]],
-[[], ["Channel"]],
-[[], ["Dmatrix"]],
-[[], ["Vector<lti::channel8::value_type >"]],
-[[], ["Vector<lti::channel::value_type >"]],
-[[], ["Dvector"]],
-[["Channel8"], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Dmatrix"], ["Dmatrix"]],
-[["Vector<lti::channel8::value_type >"], ["Vector<lti::channel8::value_type >"]],
-[["Vector<lti::channel::value_type >"], ["Vector<lti::channel::value_type >"]],
-[["Dvector"], ["Dvector"]],
-[["Image"], ["Image"]],
-[[], ["Image"]],
-]
+[Out["Channel8"]],
+[Out["Channel"]],
+[Out["Dmatrix"]],
+[Out["Vector<lti::channel8::value_type >"]],
+[Out["Vector<lti::channel::value_type >"]],
+[Out["Dvector"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Dmatrix"], Out["Dmatrix"]],
+[In["Vector<lti::channel8::value_type >"], Out["Vector<lti::channel8::value_type >"]],
+[In["Vector<lti::channel::value_type >"], Out["Vector<lti::channel::value_type >"]],
+[In["Dvector"], Out["Dvector"]],
+[In["Image"], Out["Image"]],
+[Out["Image"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 GradientFunctor.form = [
-[["Channel"], ["Channel", "Channel"]],
-[["Channel"], ["Channel"]],
-[[], ["Channel"]],
-[["Channel8"], ["Channel", "Channel"]],
-]
+[In["Channel"], Out["Channel"], Out["Channel"]],
+[In["Channel"], Out["Channel"]],
+[Out["Channel"]],
+[In["Channel8"], Out["Channel"], Out["Channel"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ColorContrastGradient.form = [
-[["Image"], ["Channel", "Channel"]],
-[["Channel"], ["Channel", "Channel"]],
-[["Channel8"], ["Channel", "Channel"]],
-[["Channel", "Channel", "Channel"], ["Channel", "Channel"]],
-[["Channel", "Channel", "Channel"], ["Channel", "Channel", "float"]],
-[["Channel", "Channel"], ["Channel", "Channel", "float"]],
-[["Channel", "Channel", "Channel"], ["Channel", "Channel", "Channel", "float"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"]],
+[In["Channel"], Out["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel"], Out["Channel"]],
+[In["Channel"], In["Channel"], In["Channel"], Out["Channel"], Out["Channel"]],
+[In["Channel"], In["Channel"], In["Channel"], Out["Channel"], Out["Channel"], Out["float"]],
+[In["Channel"], In["Channel"], Out["Channel"], Out["Channel"], Out["float"]],
+[In["Channel"], In["Channel"], In["Channel"], Out["Channel"], Out["Channel"], Out["Channel"], Out["float"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ImaskFunctor.form = [
-[["Matrix<int >", "int (*)(int const &,int const &)"], ["Matrix<int >"]],
-[["int (*)(int const &,int const &)"], ["Matrix<int >"]],
-[["Matrix<int >", "Matrix<int >", "int (*)(int const &,int const &,int const &)"], ["Matrix<int >"]],
-[["Matrix<int >", "int (*)(int const &,int const &,int const &)"], ["Matrix<int >"]],
-[["Matrix<int >", "Matrix<int >"], ["Matrix<int >"]],
-[["Matrix<int >"], ["Matrix<int >"]],
-]
+[In["Matrix<int >"], Out["Matrix<int >"], In["int (*)(int const &,int const &)"]],
+[Out["Matrix<int >"], In["int (*)(int const &,int const &)"]],
+[In["Matrix<int >"], In["Matrix<int >"], Out["Matrix<int >"], In["int (*)(int const &,int const &,int const &)"]],
+[In["Matrix<int >"], Out["Matrix<int >"], In["int (*)(int const &,int const &,int const &)"]],
+[In["Matrix<int >"], In["Matrix<int >"], Out["Matrix<int >"]],
+[In["Matrix<int >"], Out["Matrix<int >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ColorQuantization.form = [
-[["Image"], ["Channel8", "Palette"]],
-[[], ["Image"]],
-[["Image"], ["Image"]],
-]
+[In["Image"], Out["Channel8"], Out["Palette"]],
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 KMColorQuantization.form = [
-[["Image"], ["Matrix<int >", "Palette"]],
-[["Image"], ["Channel8", "Palette"]],
-[[], ["Image"]],
-[["Image"], ["Image"]],
-]
+[In["Image"], Out["Matrix<int >"], Out["Palette"]],
+[In["Image"], Out["Channel8"], Out["Palette"]],
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LkmColorQuantization.form = [
-[["Image"], ["Channel8", "Palette"]],
-[[], ["Image"]],
-[["Image"], ["Image"]],
-]
+[In["Image"], Out["Channel8"], Out["Palette"]],
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ComputePalette.form = [
-[["Image", "Channel8"], ["Palette"]],
-[["Image", "Matrix<int >"], ["Palette"]],
-[["Image", "Channel8"], ["Palette", "Vector<lti::trgbPixel<float > >"]],
-[["Image", "Matrix<int >"], ["Palette", "Vector<lti::trgbPixel<float > >"]],
-[["Image", "Matrix<int >"], ["Vector<lti::trgbPixel<float > >", "Ivector", "int"]],
-[["Image", "Matrix<int >"], ["Vector<lti::trgbPixel<float > >", "Ivector"]],
-[["Image", "Channel8"], ["Palette", "Vector<lti::trgbPixel<float > >", "Vector<int >"]],
-[["Image", "Matrix<int >"], ["Palette", "Vector<lti::trgbPixel<float > >", "Vector<int >"]],
-[["Image", "Matrix<int >"], ["Vector<lti::trgbPixel<float > >", "std::vector<lti::matrix<float > >", "Vector<int >"]],
-[["Channel", "Channel", "Channel", "Matrix<int >"], ["Vector<lti::trgbPixel<float > >", "std::vector<lti::matrix<float > >", "Vector<int >"]],
-[["Channel", "Channel", "Channel", "Matrix<int >"], ["Vector<lti::trgbPixel<float > >", "Vector<int >"]],
-[["Channel", "Matrix<int >"], ["Vector<float >", "Vector<float >", "Vector<int >"]],
-[["Image", "Matrix<int >"], ["int", "TrgbPixel<float >", "Matrix<float >", "int"]],
-]
+[In["Image"], In["Channel8"], Out["Palette"]],
+[In["Image"], In["Matrix<int >"], Out["Palette"]],
+[In["Image"], In["Channel8"], Out["Palette"], Out["Vector<lti::trgbPixel<float > >"]],
+[In["Image"], In["Matrix<int >"], Out["Palette"], Out["Vector<lti::trgbPixel<float > >"]],
+[In["Image"], In["Matrix<int >"], Out["Vector<lti::trgbPixel<float > >"], Out["Ivector"], Out["int"]],
+[In["Image"], In["Matrix<int >"], Out["Vector<lti::trgbPixel<float > >"], Out["Ivector"]],
+[In["Image"], In["Channel8"], Out["Palette"], Out["Vector<lti::trgbPixel<float > >"], Out["Vector<int >"]],
+[In["Image"], In["Matrix<int >"], Out["Palette"], Out["Vector<lti::trgbPixel<float > >"], Out["Vector<int >"]],
+[In["Image"], In["Matrix<int >"], Out["Vector<lti::trgbPixel<float > >"], Out["std::vector<lti::matrix<float > >"], Out["Vector<int >"]],
+[In["Channel"], In["Channel"], In["Channel"], In["Matrix<int >"], Out["Vector<lti::trgbPixel<float > >"], Out["std::vector<lti::matrix<float > >"], Out["Vector<int >"]],
+[In["Channel"], In["Channel"], In["Channel"], In["Matrix<int >"], Out["Vector<lti::trgbPixel<float > >"], Out["Vector<int >"]],
+[In["Channel"], In["Matrix<int >"], Out["Vector<float >"], Out["Vector<float >"], Out["Vector<int >"]],
+[In["Image"], In["Matrix<int >"], Out["int"], Out["TrgbPixel<float >"], Out["Matrix<float >"], Out["int"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 UsePalette.form = [
-[["Matrix<lti::ubyte >"], ["Image"]],
-[["Matrix<int >"], ["Image"]],
-[["Matrix<lti::ubyte >", "Palette"], ["Image"]],
-[["Matrix<int >", "Palette"], ["Image"]],
-[["Matrix<lti::ubyte >", "Vector<float >"], ["Fmatrix"]],
-[["Matrix<int >", "Vector<float >"], ["Fmatrix"]],
-[["Image"], ["Matrix<lti::ubyte >"]],
-[["Image"], ["Matrix<int >"]],
-[["Image", "Palette"], ["Matrix<lti::ubyte >"]],
-[["Image", "Palette"], ["Matrix<int >"]],
-[["Image", "kdTree<lti::rgbPixel,int >"], ["Matrix<lti::ubyte >"]],
-[["Image", "kdTree<lti::rgbPixel,int >"], ["Matrix<int >"]],
-]
+[In["Matrix<lti::ubyte >"], Out["Image"]],
+[In["Matrix<int >"], Out["Image"]],
+[In["Matrix<lti::ubyte >"], In["Palette"], Out["Image"]],
+[In["Matrix<int >"], In["Palette"], Out["Image"]],
+[In["Matrix<lti::ubyte >"], In["Vector<float >"], Out["Fmatrix"]],
+[In["Matrix<int >"], In["Vector<float >"], Out["Fmatrix"]],
+[In["Image"], Out["Matrix<lti::ubyte >"]],
+[In["Image"], Out["Matrix<int >"]],
+[In["Image"], In["Palette"], Out["Matrix<lti::ubyte >"]],
+[In["Image"], In["Palette"], Out["Matrix<int >"]],
+[In["Image"], In["kdTree<lti::rgbPixel,int >"], Out["Matrix<lti::ubyte >"]],
+[In["Image"], In["kdTree<lti::rgbPixel,int >"], Out["Matrix<int >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImage.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageTorgI.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 MeanShiftSegmentation.form = [
-[["Image"], ["Image"]],
-[["Image"], ["Imatrix"]],
-[["Image"], ["Imatrix", "Palette"]],
-[["Channel8", "Channel8", "Channel8"], ["Imatrix"]],
-[["Image"], ["Image", "Image", "Imatrix", "Palette"]],
-]
+[In["Image"], Out["Image"]],
+[In["Image"], Out["Imatrix"]],
+[In["Image"], Out["Imatrix"], Out["Palette"]],
+[In["Channel8"], In["Channel8"], In["Channel8"], Out["Imatrix"]],
+[In["Image"], Out["Image"], Out["Image"], Out["Imatrix"], Out["Palette"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 KMeansSegmentation.form = [
-[["Image"], ["Matrix<int >"]],
-[["Image"], ["Channel8"]],
-[["Image"], ["Matrix<int >", "Palette"]],
-[["Image"], ["Channel8", "Palette"]],
-]
+[In["Image"], Out["Matrix<int >"]],
+[In["Image"], Out["Channel8"]],
+[In["Image"], Out["Matrix<int >"], Out["Palette"]],
+[In["Image"], Out["Channel8"], Out["Palette"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 WhiteningSegmentation.form = [
-[["Image", "principalComponents<float >"], ["Imatrix"]],
-[["Image", "DrgbPixel", "Dmatrix"], ["Imatrix"]],
-]
+[In["Image"], In["principalComponents<float >"], Out["Imatrix"]],
+[In["Image"], In["DrgbPixel"], In["Dmatrix"], Out["Imatrix"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 CsPresegmentation.form = [
-[["Image"], ["Channel8"]],
-]
+[In["Image"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Thresholding.form = [
-[[], ["Channel8"]],
-[["Channel8"], ["Channel8"]],
-[["Channel8"], ["Channel8", "float", "float", "bool", "bool"]],
-[["Channel8"], ["Channel8", "float", "float", "bool"]],
-[["Channel8"], ["Channel8", "float", "float"]],
-[["Channel8"], ["Channel8", "float"]],
-[[], ["Channel"]],
-[["Channel"], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel"], ["Channel", "float", "float", "bool", "bool", "float", "float"]],
-[["Channel"], ["Channel", "float", "float", "bool", "bool", "float"]],
-[["Channel"], ["Channel", "float", "float", "bool", "bool"]],
-[["Channel"], ["Channel", "float", "float", "bool"]],
-[["Channel"], ["Channel", "float", "float"]],
-[["Channel"], ["Channel", "float"]],
-[["Channel8"], ["AreaPoints"]],
-[["Channel"], ["AreaPoints"]],
-[["Channel8", "AreaPoints"], ["AreaPoints"]],
-[["Channel", "AreaPoints"], ["AreaPoints"]],
-]
+[Out["Channel8"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel8"], Out["Channel8"], Out["float"], Out["float"], Out["bool"], Out["bool"]],
+[In["Channel8"], Out["Channel8"], Out["float"], Out["float"], Out["bool"]],
+[In["Channel8"], Out["Channel8"], Out["float"], Out["float"]],
+[In["Channel8"], Out["Channel8"], Out["float"]],
+[Out["Channel"]],
+[In["Channel"], Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel"], Out["Channel"], Out["float"], Out["float"], Out["bool"], Out["bool"], Out["float"], Out["float"]],
+[In["Channel"], Out["Channel"], Out["float"], Out["float"], Out["bool"], Out["bool"], Out["float"]],
+[In["Channel"], Out["Channel"], Out["float"], Out["float"], Out["bool"], Out["bool"]],
+[In["Channel"], Out["Channel"], Out["float"], Out["float"], Out["bool"]],
+[In["Channel"], Out["Channel"], Out["float"], Out["float"]],
+[In["Channel"], Out["Channel"], Out["float"]],
+[In["Channel8"], Out["AreaPoints"]],
+[In["Channel"], Out["AreaPoints"]],
+[In["Channel8"], In["AreaPoints"], Out["AreaPoints"]],
+[In["Channel"], In["AreaPoints"], Out["AreaPoints"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 WatershedSegmentation.form = [
-[[], ["Channel8"]],
-[["Channel8"], ["Channel8"]],
-[["Channel8"], ["Matrix<int >"]],
-]
+[Out["Channel8"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel8"], Out["Matrix<int >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 RegionGrowing.form = [
-[[], ["Channel8"]],
-[[], ["Channel"]],
-[[], ["Image"]],
-[["Channel8"], ["Channel8"]],
-[["Channel"], ["Channel8"]],
-[["Image"], ["Channel8"]],
-]
+[Out["Channel8"]],
+[Out["Channel"]],
+[Out["Image"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel"], Out["Channel8"]],
+[In["Image"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Snake.form = [
-[["Image"], ["AreaPoints"]],
-]
+[In["Image"], Out["AreaPoints"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 RegionMerge.form = [
-[["Imatrix", "Dmatrix"], ["Imatrix"]],
-[["Imatrix", "Dmatrix", "Dvector"], ["Imatrix"]],
-]
+[In["Imatrix"], In["Dmatrix"], Out["Imatrix"]],
+[In["Imatrix"], In["Dmatrix"], In["Dvector"], Out["Imatrix"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SimilarityMatrix.form = [
-[["Image", "Imatrix"], ["int", "Dmatrix", "Dmatrix"]],
-[["Image", "std::list<lti::areaPoints >"], ["Dmatrix", "Dmatrix", "Imatrix"]],
-]
+[In["Image"], Out["int"], In["Imatrix"], Out["Dmatrix"], Out["Dmatrix"]],
+[In["Image"], In["std::list<lti::areaPoints >"], Out["Dmatrix"], Out["Dmatrix"], Out["Imatrix"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 FastRelabeling.form = [
-[[], ["Channel8"]],
-[[], ["Imatrix"]],
-[["Channel8"], ["Channel8"]],
-[["Channel8"], ["Imatrix"]],
-[["Imatrix"], ["Imatrix"]],
-[["Channel8"], ["Channel8", "Ivector"]],
-[["Channel8"], ["Imatrix", "Ivector"]],
-[["Imatrix"], ["Imatrix", "Ivector"]],
-[["Channel8"], ["Channel8", "Ivector", "std::vector<lti::areaPoints >"]],
-[["Channel8"], ["Imatrix", "Ivector", "std::vector<lti::areaPoints >"]],
-[["Imatrix"], ["Imatrix", "Ivector", "std::vector<lti::areaPoints >"]],
-[["Channel8"], ["Channel8", "Ivector", "int"]],
-[["Channel8"], ["Imatrix", "Ivector", "int"]],
-[["Imatrix"], ["Imatrix", "Ivector", "int"]],
-]
+[Out["Channel8"]],
+[Out["Imatrix"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel8"], Out["Imatrix"]],
+[In["Imatrix"], Out["Imatrix"]],
+[In["Channel8"], Out["Channel8"], Out["Ivector"]],
+[In["Channel8"], Out["Imatrix"], Out["Ivector"]],
+[In["Imatrix"], Out["Imatrix"], Out["Ivector"]],
+[In["Channel8"], Out["Channel8"], Out["Ivector"], Out["std::vector<lti::areaPoints >"]],
+[In["Channel8"], Out["Imatrix"], Out["Ivector"], Out["std::vector<lti::areaPoints >"]],
+[In["Imatrix"], Out["Imatrix"], Out["Ivector"], Out["std::vector<lti::areaPoints >"]],
+[In["Channel8"], Out["Channel8"], Out["Ivector"], Out["int"]],
+[In["Channel8"], Out["Imatrix"], Out["Ivector"], Out["int"]],
+[In["Imatrix"], Out["Imatrix"], Out["Ivector"], Out["int"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ObjectsFromMask.form = [
-[["Channel8"], ["std::list<lti::ioPoints >"]],
-[["Matrix<int >"], ["std::list<lti::ioPoints >"]],
-[["Channel8"], ["std::list<lti::borderPoints >"]],
-[["Imatrix"], ["std::list<lti::borderPoints >"]],
-[["Channel8"], ["std::list<lti::areaPoints >"]],
-[["Matrix<int >"], ["std::list<lti::areaPoints >"]],
-[["Channel8"], ["std::list<lti::areaPoints >", "Matrix<int >"]],
-[["Matrix<int >"], ["std::list<lti::areaPoints >", "Matrix<int >"]],
-[["Channel8"], ["tree<objectStruct >"]],
-[["Matrix<int >"], ["tree<objectStruct >"]],
-]
+[In["Channel8"], Out["std::list<lti::ioPoints >"]],
+[In["Matrix<int >"], Out["std::list<lti::ioPoints >"]],
+[In["Channel8"], Out["std::list<lti::borderPoints >"]],
+[In["Imatrix"], Out["std::list<lti::borderPoints >"]],
+[In["Channel8"], Out["std::list<lti::areaPoints >"]],
+[In["Matrix<int >"], Out["std::list<lti::areaPoints >"]],
+[In["Channel8"], Out["std::list<lti::areaPoints >"], Out["Matrix<int >"]],
+[In["Matrix<int >"], Out["std::list<lti::areaPoints >"], Out["Matrix<int >"]],
+[In["Channel8"], Out["tree<objectStruct >"]],
+[In["Matrix<int >"], Out["tree<objectStruct >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 BackgroundModel.form = [
-[["Image"], ["Channel"]],
-[["Image"], ["Channel8"]],
-]
+[In["Image"], Out["Channel"]],
+[In["Image"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 MeanshiftTracker.form = [
-[["Image"], ["Trectangle<int >"]],
-]
+[In["Image"], Out["Trectangle<int >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 CornerDetector.form = [
-[[], ["Channel8"]],
-[[], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["PointList"]],
-[["Channel"], ["PointList"]],
-]
+[Out["Channel8"]],
+[Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["PointList"]],
+[In["Channel"], Out["PointList"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 EdgeDetector.form = [
-[[], ["Channel8"]],
-[[], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel"], ["Channel8"]],
-[[], ["Image"]],
-[["Image"], ["Image"]],
-[["Image"], ["Channel8"]],
-]
+[Out["Channel8"]],
+[Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel"], Out["Channel8"]],
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+[In["Image"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ClassicEdgeDetector.form = [
-[["Channel"], ["Channel8"]],
-[[], ["Channel8"]],
-]
+[In["Channel"], Out["Channel8"]],
+[Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 CannyEdges.form = [
-[[], ["Channel8"]],
-[[], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-[["Channel8"], ["Channel8", "Channel"]],
-[["Channel"], ["Channel"]],
-[["Channel"], ["Channel8"]],
-[["Channel"], ["Channel8", "Channel"]],
-[["Image"], ["Channel8"]],
-[["Image"], ["Channel8", "Channel"]],
-[[], ["Image"]],
-[["Image"], ["Image"]],
-[["Channel", "Channel", "Channel"], ["Channel8", "Channel"]],
-]
+[Out["Channel8"]],
+[Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Channel8"], Out["Channel8"], Out["Channel"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel"], Out["Channel8"]],
+[In["Channel"], Out["Channel8"], Out["Channel"]],
+[In["Image"], Out["Channel8"]],
+[In["Image"], Out["Channel8"], Out["Channel"]],
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+[In["Channel"], In["Channel"], In["Channel"], Out["Channel8"], Out["Channel"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 GlobalFeatureExtractor.form = [
-[["Channel"], ["Dvector"]],
-[["Channel8"], ["Dvector"]],
-[["Image"], ["Dvector"]],
-]
+[In["Channel"], Out["Dvector"]],
+[In["Channel8"], Out["Dvector"]],
+[In["Image"], Out["Dvector"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LocalFeatureExtractor.form = [
-[["Channel", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-[["Channel8", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-[["std::list<lti::channel >", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-[["Image", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-[["Image", "Location"], ["Dvector"]],
-[["Channel", "Location"], ["Dvector"]],
-]
+[In["Channel"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+[In["Channel8"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+[In["std::list<lti::channel >"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+[In["Image"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+[In["Image"], In["Location"], Out["Dvector"]],
+[In["Channel"], In["Location"], Out["Dvector"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 LocalMoments.form = [
-[["Channel", "Location"], ["Dvector"]],
-[["Image", "Location"], ["Dvector"]],
-[["Image", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-[["Channel", "std::list<lti::location >"], ["std::list<lti::dvector >"]],
-]
+[In["Channel"], In["Location"], Out["Dvector"]],
+[In["Image"], In["Location"], Out["Dvector"]],
+[In["Image"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+[In["Channel"], In["std::list<lti::location >"], Out["std::list<lti::dvector >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 GeometricFeatures.form = [
-[["AreaPoints"], ["Dvector"]],
-[["BorderPoints"], ["Dvector"]],
-[["IoPoints"], ["Dvector"]],
-[["AreaPoints"], ["std::map<std::string,double >"]],
-[["BorderPoints"], ["std::map<std::string,double >"]],
-[["IoPoints"], ["std::map<std::string,double >"]],
-]
+[In["AreaPoints"], Out["Dvector"]],
+[In["BorderPoints"], Out["Dvector"]],
+[In["IoPoints"], Out["Dvector"]],
+[In["AreaPoints"], Out["std::map<std::string,double >"]],
+[In["BorderPoints"], Out["std::map<std::string,double >"]],
+[In["IoPoints"], Out["std::map<std::string,double >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ChromaticityHistogram.form = [
-[["Image"], ["Dvector"]],
-]
+[In["Image"], Out["Dvector"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 GeometricFeaturesFromMask.form = [
-[["Channel8"], ["std::vector<lti::rectangle >"]],
-[["Channel8"], ["Imatrix", "std::vector<lti::rectangle >"]],
-[["Channel8"], ["std::vector<geometricFeatureGroup0 >"]],
-[["Channel8"], ["Imatrix", "std::vector<geometricFeatureGroup0 >"]],
-]
+[In["Channel8"], Out["std::vector<lti::rectangle >"]],
+[In["Channel8"], Out["Imatrix"], Out["std::vector<lti::rectangle >"]],
+[In["Channel8"], Out["std::vector<geometricFeatureGroup0 >"]],
+[In["Channel8"], Out["Imatrix"], Out["std::vector<geometricFeatureGroup0 >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 MultiGeometricFeaturesFromMask.form = [
-[["Channel8"], ["std::vector<std::vector<lti::rectangle > >"]],
-[["Channel8"], ["Imatrix", "std::vector<std::vector<lti::rectangle > >"]],
-[["Channel8"], ["std::vector<std::vector<geometricFeatureGroup0 > >"]],
-[["Channel8"], ["Imatrix", "std::vector<std::vector<geometricFeatureGroup0 > >"]],
-]
+[In["Channel8"], Out["std::vector<std::vector<lti::rectangle > >"]],
+[In["Channel8"], Out["Imatrix"], Out["std::vector<std::vector<lti::rectangle > >"]],
+[In["Channel8"], Out["std::vector<std::vector<geometricFeatureGroup0 > >"]],
+[In["Channel8"], Out["Imatrix"], Out["std::vector<std::vector<geometricFeatureGroup0 > >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Morphology.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Erosion.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[[], ["Fvector"]],
-[[], ["Vector<lti::channel8::value_type >"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-[["Fvector"], ["Fvector"]],
-[["Vector<lti::channel8::value_type >"], ["Vector<lti::channel8::value_type >"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[Out["Fvector"]],
+[Out["Vector<lti::channel8::value_type >"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Fvector"], Out["Fvector"]],
+[In["Vector<lti::channel8::value_type >"], Out["Vector<lti::channel8::value_type >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Dilation.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[[], ["Fvector"]],
-[[], ["Vector<lti::channel8::value_type >"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-[["Fvector"], ["Fvector"]],
-[["Vector<lti::channel8::value_type >"], ["Vector<lti::channel8::value_type >"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[Out["Fvector"]],
+[Out["Vector<lti::channel8::value_type >"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+[In["Fvector"], Out["Fvector"]],
+[In["Vector<lti::channel8::value_type >"], Out["Vector<lti::channel8::value_type >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Skeleton.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Scaling.form = [
-[[], ["Image"]],
-[["Image"], ["Image"]],
-[[], ["Matrix<lti::ubyte >"]],
-[["Matrix<lti::ubyte >"], ["Matrix<lti::ubyte >"]],
-[[], ["Matrix<float >"]],
-[["Matrix<float >"], ["Matrix<float >"]],
-[[], ["Matrix<int >"]],
-[["Matrix<int >"], ["Matrix<int >"]],
-[[], ["float", "Image"]],
-[["Image"], ["float", "Image"]],
-[[], ["float", "Matrix<lti::ubyte >"]],
-[["Matrix<lti::ubyte >"], ["float", "Matrix<lti::ubyte >"]],
-[[], ["float", "Matrix<float >"]],
-[["Matrix<float >"], ["float", "Matrix<float >"]],
-[[], ["float", "Matrix<int >"]],
-[["Matrix<int >"], ["float", "Matrix<int >"]],
-[["Tpoint<float >"], ["Image"]],
-[["Tpoint<float >", "Image"], ["Image"]],
-[["Tpoint<float >"], ["Matrix<lti::ubyte >"]],
-[["Tpoint<float >", "Matrix<lti::ubyte >"], ["Matrix<lti::ubyte >"]],
-[["Tpoint<float >"], ["Matrix<float >"]],
-[["Tpoint<float >", "Matrix<float >"], ["Matrix<float >"]],
-[["Tpoint<float >"], ["Matrix<int >"]],
-[["Tpoint<float >", "Matrix<int >"], ["Matrix<int >"]],
-]
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+[Out["Matrix<lti::ubyte >"]],
+[In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+[Out["Matrix<float >"]],
+[In["Matrix<float >"], Out["Matrix<float >"]],
+[Out["Matrix<int >"]],
+[In["Matrix<int >"], Out["Matrix<int >"]],
+[Out["float"], Out["Image"]],
+[Out["float"], In["Image"], Out["Image"]],
+[Out["float"], Out["Matrix<lti::ubyte >"]],
+[Out["float"], In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+[Out["float"], Out["Matrix<float >"]],
+[Out["float"], In["Matrix<float >"], Out["Matrix<float >"]],
+[Out["float"], Out["Matrix<int >"]],
+[Out["float"], In["Matrix<int >"], Out["Matrix<int >"]],
+[In["Tpoint<float >"], Out["Image"]],
+[In["Tpoint<float >"], In["Image"], Out["Image"]],
+[In["Tpoint<float >"], Out["Matrix<lti::ubyte >"]],
+[In["Tpoint<float >"], In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+[In["Tpoint<float >"], Out["Matrix<float >"]],
+[In["Tpoint<float >"], In["Matrix<float >"], Out["Matrix<float >"]],
+[In["Tpoint<float >"], Out["Matrix<int >"]],
+[In["Tpoint<float >"], In["Matrix<int >"], Out["Matrix<int >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Rotation.form = [
-[[], ["Image"]],
-[["Image"], ["Image"]],
-[[], ["Matrix<lti::ubyte >"]],
-[["Matrix<lti::ubyte >"], ["Matrix<lti::ubyte >"]],
-[[], ["Matrix<float >"]],
-[["Matrix<float >"], ["Matrix<float >"]],
-[[], ["double", "Image"]],
-[["Image"], ["double", "Image"]],
-[[], ["double", "Matrix<lti::ubyte >"]],
-[["Matrix<lti::ubyte >"], ["double", "Matrix<lti::ubyte >"]],
-[[], ["double", "Matrix<float >"]],
-[["Matrix<float >"], ["double", "Matrix<float >"]],
-]
+[Out["Image"]],
+[In["Image"], Out["Image"]],
+[Out["Matrix<lti::ubyte >"]],
+[In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+[Out["Matrix<float >"]],
+[In["Matrix<float >"], Out["Matrix<float >"]],
+[Out["double"], Out["Image"]],
+[Out["double"], In["Image"], Out["Image"]],
+[Out["double"], Out["Matrix<lti::ubyte >"]],
+[Out["double"], In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+[Out["double"], Out["Matrix<float >"]],
+[Out["double"], In["Matrix<float >"], Out["Matrix<float >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 FlipImage.form = [
-[[], ["Matrix<lti::rgbPixel >"]],
-[["Matrix<lti::rgbPixel >"], ["Matrix<lti::rgbPixel >"]],
-[[], ["Matrix<float >"]],
-[["Matrix<float >"], ["Matrix<float >"]],
-[[], ["Matrix<lti::ubyte >"]],
-[["Matrix<lti::ubyte >"], ["Matrix<lti::ubyte >"]],
-]
+[Out["Matrix<lti::rgbPixel >"]],
+[In["Matrix<lti::rgbPixel >"], Out["Matrix<lti::rgbPixel >"]],
+[Out["Matrix<float >"]],
+[In["Matrix<float >"], Out["Matrix<float >"]],
+[Out["Matrix<lti::ubyte >"]],
+[In["Matrix<lti::ubyte >"], Out["Matrix<lti::ubyte >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 DistanceTransform.form = [
-[[], ["Channel"]],
-[[], ["Channel8"]],
-[["Channel"], ["Channel"]],
-[["Channel8"], ["Channel8"]],
-]
+[Out["Channel"]],
+[Out["Channel8"]],
+[In["Channel"], Out["Channel"]],
+[In["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 BorderExtrema.form = [
-[["BorderPoints"], ["PolygonPoints", "PolygonPoints"]],
-[["BorderPoints"], ["PolygonPoints"]],
-]
+[In["BorderPoints"], Out["PolygonPoints"], Out["PolygonPoints"]],
+[In["BorderPoints"], Out["PolygonPoints"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 PolygonApproximation.form = [
-[["BorderPoints"], ["PolygonPoints"]],
-[["BorderPoints", "PointList"], ["PolygonPoints"]],
-]
+[In["BorderPoints"], Out["PolygonPoints"]],
+[In["BorderPoints"], In["PointList"], Out["PolygonPoints"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 ConvexHull.form = [
-[["PointList"], ["PolygonPoints"]],
-[["IoPoints"], ["PolygonPoints"]],
-[["TpointList<float >"], ["TpolygonPoints<float >"]],
-[["TpointList<double >"], ["TpolygonPoints<double >"]],
-]
+[In["PointList"], Out["PolygonPoints"]],
+[In["IoPoints"], Out["PolygonPoints"]],
+[In["TpointList<float >"], Out["TpolygonPoints<float >"]],
+[In["TpointList<double >"], Out["TpolygonPoints<double >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 Rclassifier.form = [
-[["Dvector"], ["Classifier_outputVector"]],
-]
+[In["Dvector"], Out["Classifier_outputVector"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToHSI.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-[["RgbPixel"], []],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+[In["RgbPixel"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToRGB.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel", "Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["Image"], ["Channel8", "Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToHSV.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToHLS.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToXYZ.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToxyY.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToOCP.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToYIQ.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToCIELuv.form = [
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["RgbPixel"], ["float", "float", "float"]],
-]
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
 SplitImageToYUV.form = [
-[["RgbPixel"], ["float", "float", "float"]],
-[["RgbPixel"], ["Ubyte", "Ubyte", "Ubyte"]],
-[["Image"], ["Channel", "Channel", "Channel"]],
-[["Image"], ["Channel8", "Channel8", "Channel8"]],
-]
+[In["RgbPixel"], Out["float"], Out["float"], Out["float"]],
+[In["RgbPixel"], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
+[In["Image"], Out["Channel"], Out["Channel"], Out["Channel"]],
+[In["Image"], Out["Channel8"], Out["Channel8"], Out["Channel8"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 

@@ -142,6 +142,19 @@ class LTI<FObject; install "lti",1,1
   end
 end
 
+def Functor.form=(*a)
+  GridFlow.post "%s form: %s", self, a.inspect
+end
+
+class ArgMode
+  def initialize x; @x=x end
+  def inspect; "#{self.class}["+@x.inspect+"]" end
+  class << self; alias [] new end
+end
+class    In<ArgMode; end
+class   Out<ArgMode; end
+class InOut<ArgMode; end
+
  LTI.info :Functor, [], []
  LTI.info     :ColorQuantization
  LTI.info         :KMColorQuantization
