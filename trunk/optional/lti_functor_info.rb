@@ -92,7 +92,7 @@ while tmp = get_next_apply_function(filehandle)
   previousf=functorname
   errorlines = get_type_errors functiontext
   types=fill_types errorlines
-  types.each {|typ| print typ.inspect, ",\n" }
+  print types.inspect,",\n"
 
   init=true
 end #while
