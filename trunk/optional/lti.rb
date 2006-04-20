@@ -208,6 +208,8 @@ end
  LTI.info     :SimilarityMatrix
  LTI.info     :UsePalette
 
+require "gridflow/optional/lti_apply"
+
 class LTIGridObject < GridObject
     def initialize
       super
