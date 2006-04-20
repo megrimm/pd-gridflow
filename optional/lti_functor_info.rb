@@ -51,17 +51,25 @@ def get_type_errors text
   return typelines
 end  #function def
 
+class ArgMode
+  def initialize x; @x=x end
+  def inspect; "#{self.class}["+@x.inspect+"]" end
+  class << self; alias [] new end
+end
+class    In<ArgMode; end
+class   Out<ArgMode; end
+class InOut<ArgMode; end
+
 def fill_types lines
-  inputs=Array.new
-  outputs=Array.new
+  args=[]
   for sl in lines
     if sl =~ /const/
-      inputs.concat([get_type(sl)])
+      args << In[get_type(sl)]
     else
-      outputs.concat([get_type(sl)])
+      args << Out[get_type(sl)]
     end
   end #for
-  return [inputs, outputs]
+  return args
 end  #function def
 
 def get_type line
@@ -81,22 +89,27 @@ filehandle=File.open $wrap
 previousf=""
 init=false
 
+#termin="]\n\n"
+#termin="] rescue nil\n\n"
+ termin="]; rescue Exception=>e; GridFlow.post \"form error: %s\", e.inspect end\n\n"
+
 while tmp = get_next_apply_function(filehandle)
   functorname,functiontext=tmp
 
   if functorname != previousf
-    puts "]\n\n" if init
+    puts termin if init
+    puts "begin"
     puts functorname+".form = ["
   end
 
   previousf=functorname
   errorlines = get_type_errors functiontext
-  types=fill_types errorlines
+  types = fill_types errorlines
   print types.inspect,",\n"
 
   init=true
 end #while
-puts "]\n\n" if init
+puts termin if init
 
 #puts head+":"
 #text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
