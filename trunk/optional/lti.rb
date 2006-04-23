@@ -55,18 +55,23 @@ def GridFlow.post2(*a)
   loop do
     j = i
     i = s.index(/ /,64)
-    t<<s[j...(i||s.length)]
+    t << s[j...(i||s.length)]
     break if not i
   end
   GridFlow.post "%s",t
 end
 
-class<<Functor
-  attr_writer    :inputs;  def inputs; if defined? @inputs then  @inputs else superclass. inputs end end
-  attr_writer   :outputs; def outputs; if defined?@outputs then @outputs else superclass.outputs end end
-  attr_writer    :inouts; def  inouts; if defined? @inouts then  @inouts else superclass. inouts end end
+class << Functor
+  def form=(*a)
+    GridFlow.post "%s form: %s", self, a.inspect
+    @form = []
+  end
+  def form()
+    if defined? @form then @form else superclass.form end
+  end
   attr_accessor :subclasses # only the adjacent ones
 end
+
 def Functor.post_hierarchy(level=0)
   GridFlow.post "%*s%s", 4*level, "", self.inspect
   n=1; level+=1
@@ -130,96 +135,17 @@ class LTI<FObject; install "lti",1,1
     else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
     end
   end
-  def LTI.info(name,inputs=nil,outputs=nil, inouts=nil)
-    return if not inputs
-    Rblti.const_get(name).module_eval {
-      #@inputs=inputs;  def self.inputs; @inputs end
-      #@outputs=outputs def self.outputs; @outputs end
-      self.inputs  =  inputs
-      self.outputs = outputs
-      self.inouts  =  inouts
-    }
-  end
-end
-
-def Functor.form=(*a)
-  GridFlow.post "%s form: %s", self, a.inspect
 end
 
 class ArgMode
-  def initialize x; @x=x end
-  def inspect; "#{self.class}["+@x.inspect+"]" end
+  def initialize x; @of=of end
+  def inspect; "#{self.class}["+@of.inspect+"]" end
   class << self; alias [] new end
+  def of; @of end
 end
-class    In<ArgMode; end
-class   Out<ArgMode; end
-class InOut<ArgMode; end
-
- LTI.info :Functor, [], []
- LTI.info     :ColorQuantization
- LTI.info         :KMColorQuantization
- LTI.info         :LkmColorQuantization
- LTI.info     :ChiSquareFunctor
- LTI.info     :IoFunctor
- LTI.info         :IoJPEG
- LTI.info         :IoBMP
- LTI.info         :IoImage
- LTI.info         :IoPNG
- LTI.info     :Interpolator
- LTI.info         :VariablySpacedSamplesInterpolator
- LTI.info     :RegionMerge
- LTI.info     :Transform
- LTI.info         :GradientFunctor
- LTI.info             :ColorContrastGradient
- LTI.info         :Skeleton
- LTI.info         :OrientedHLTransform
- LTI.info         :OrientationMap
- LTI.info         :RealFFT
- LTI.info     :ComputePalette
- LTI.info     :Modifier
- LTI.info         :FastRelabeling
- LTI.info             :GeometricFeaturesFromMask
- LTI.info                 :MultiGeometricFeaturesFromMask
- LTI.info         :Morphology
- LTI.info             :Erosion
- LTI.info             :DistanceTransform
- LTI.info             :Dilation
- LTI.info         :MeanshiftTracker, [Image], [], [Rect]
- LTI.info         :CornerDetector
- LTI.info         :GeometricTransform
- LTI.info         :Rotation
- LTI.info         :FlipImage
- LTI.info         :GHoughTransform
- LTI.info         :Thresholding
- LTI.info         :ConvexHull
- LTI.info         :EdgeDetector
- LTI.info             :CannyEdges
- LTI.info             :ClassicEdgeDetector
- LTI.info         :PolygonApproximation
- LTI.info         :BorderExtrema
- LTI.info         :Scaling
- LTI.info         :Filter
- LTI.info             :KNearestNeighFilter
- LTI.info             :Convolution
- LTI.info             :MedianFilter
- LTI.info     :Segmentation, [Image], [Imatrix,Palette]
- LTI.info         :ObjectsFromMask
- LTI.info         :CsPresegmentation
- LTI.info         :RegionGrowing
- LTI.info         :WhiteningSegmentation
- LTI.info         :WatershedSegmentation
- LTI.info         :MeanShiftSegmentation
- LTI.info         :Snake
- LTI.info         :KMeansSegmentation
- LTI.info         :BackgroundModel, [Image], [Channel8]
- LTI.info     :FeatureExtractor
- LTI.info         :LocalFeatureExtractor
- LTI.info             :LocalMoments
- LTI.info         :GlobalFeatureExtractor
- LTI.info             :ChromaticityHistogram
- LTI.info             :GeometricFeatures
- LTI.info     :SimilarityMatrix
- LTI.info     :UsePalette
+class    In<ArgMode; def in?;  true end; def out?; false end end
+class   Out<ArgMode; def in?; false end; def out?;  true end end
+class InOut<ArgMode; def in?;  true end; def out?;  true end end
 
 require "gridflow/optional/lti_apply"
 
@@ -232,6 +158,7 @@ class LTIGridObject < GridObject
       @functor.setParameters @param
       @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
       @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
+      @fargs = c.functor_class.form.map {|x| x.new }
     end
     def send_out_lti o,m
       case m
@@ -256,6 +183,8 @@ class LTIGridObject < GridObject
 	    send_out_grid_flow o, a.pack(ps)
 	  end
 	end
+    end
+    def rgrid_begin_lti_image o,m
     end
     def send_out_lti_palette o,m
         #GridFlow.post "4*meat=0x%08x",4*m.meat
@@ -290,12 +219,12 @@ LTI.functors.each {|name|
 LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
-  fui  = fuc. inputs || []
-  fuo  = fuc.outputs || []
-  fuio = fuc. inouts || []
-  LTIGridObject.subclass("lti."+name,fui.length+fuio.length,fuo.length+fuio.length+1) {
+  fui  = fuc.form.find_all {|x| x.in?  }
+  fuo  = fuc.form.find_all {|x| x.out? }
+  LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     install_rgrid 0
     install_rgrid 1
+    install_rgrid 2
     class << self
       attr_accessor  :param_class
       attr_accessor:functor_class
@@ -306,18 +235,10 @@ begin
     @param_class = Rblti.const_get("R"+
 	name[0..0].downcase+
 	name[1..-1]+"_parameters")
-    #subparams = instance_methods.grep(/^set.*Parameters$/)
-    #GridFlow.post "%s has subparams: %s", @foreign_name, subparams if subparams.length>0
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
-=begin
-        @param_class.new.__send__(name+"=",Object.new)
-      rescue Exception=>e
-	  /of type '([^']*)'/ .match e.to_s and tipe=$1 or
-	  GridFlow.post "%s",e.inspect
-=end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}"
       module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
@@ -359,18 +280,29 @@ begin
       }
     end
 
-    def _0_rgrid_begin
-	@dim = inlet_dim 0
-	@nt = inlet_nt 0
+    def _0_rgrid_begin    ; _n_rgrid_begin(0) end
+    def _0_rgrid_flow data; _n_rgrid_flow(0,data) end
+    def _0_rgrid_end      ; _n_rgrid_end(0) end
+    def _1_rgrid_begin    ; _n_rgrid_begin(1) end
+    def _1_rgrid_flow data; _n_rgrid_flow(1,data) end
+    def _1_rgrid_end      ; _n_rgrid_end(1) end
+    def _2_rgrid_begin    ; _n_rgrid_begin(2) end
+    def _2_rgrid_flow data; _n_rgrid_flow(2,data) end
+    def _2_rgrid_end      ; _n_rgrid_end(2) end
+
+    def _n_rgrid_begin(inlet)
+	@dim[inlet] = inlet_dim inlet
+	@nt[inlet] = inlet_nt inlet
+	rgrid_lti_...
 	@dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{@dim.inspect}"
 	@dim[2]!=3 and raise "expecting 3 channels, got #{@dim.inspect}"
 	@image = Image.new @dim[0],@dim[1]
 	inlet_set_factor 0,@dim[0]*@dim[1]*@dim[2]
     end
-    def _0_rgrid_flow data
+    def _n_rgrid_flow(inlet,data)
 	@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
     end
-    def _0_rgrid_end
+    def _n_rgrid_end(inlet)
 	fuc = self.class.functor_class
         is = fuc.inputs + fuc.inouts
         os = fuc.outputs + fuc.inouts
