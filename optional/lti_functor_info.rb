@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 # $Id$
 
+$: << "rblti"
+require "rblti"
+include Rblti
+
 #LTI=ENV["HOME"]+"/Documents/ltilib_1.9.12"
 $wrap= "rblti/rblti_wrap.cxx"
 
@@ -63,14 +67,27 @@ class InOut<ArgMode; end
 def fill_types lines
   args=[]
   for sl in lines
+    t = adapt_type(get_type(sl))
     if sl =~ /const/
-      args << In[get_type(sl)]
+      args << In[t]
     else
-      args << Out[get_type(sl)]
+      args << Out[t]
     end
   end #for
   return args
 end  #function def
+
+def adapt_type type
+  case type
+  when "Matrix<lti::ubyte >": Umatrix
+  when "Matrix<int >"  :      Imatrix
+  when "Matrix<float >":      Fmatrix
+  when "Matrix<double >":     Dmatrix
+  else Rblti.const_get(type)
+  end
+rescue NameError
+    type
+end
 
 def get_type line
   type=line.scan(/type[\s.]*.*;/)[0]
