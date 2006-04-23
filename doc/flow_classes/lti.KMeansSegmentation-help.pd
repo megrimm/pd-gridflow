@@ -14,7 +14,7 @@
 ;
 #X obj 89 445 #out window;
 #X obj 89 400 #store;
-#X obj 89 276 lti.KMeansSegmentation;
+#X obj 90 277 lti.KMeansSegmentation;
 #X obj 29 122 t b b;
 #X obj 89 468 fps detailed;
 #X obj 89 488 print fps;
@@ -34,9 +34,9 @@ style;
 #X msg 316 249 smoothFilter \$1;
 #X msg 316 221 quantparameters \$1;
 #X obj 317 87 hsl 128 15 0 127 0 0 kernelSize empty kernelSize -2 -6
-0 12 -262144 -1 -1 200 1;
+0 12 -262144 -1 -1 0 1;
 #X obj 458 87 nbx 5 14 -1e+37 1e+37 0 0 empty kernelSize empty 0 -6
-0 10 -262144 -1 -1 2 256;
+0 10 -262144 -1 -1 0 256;
 #N canvas 0 0 450 300 parameters 0;
 #X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
 #X obj 149 231 s param;
@@ -59,9 +59,9 @@ style;
 #X connect 8 0 1 0;
 #X restore 458 473 pd parameters;
 #X obj 317 121 hsl 128 15 0 127 0 0 numberOfColors empty numberOfColors
--2 -6 0 12 -262144 -1 -1 400 1;
+-2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 121 nbx 5 14 -1e+37 1e+37 0 0 empty numberOfColors empty
-0 -6 0 10 -262144 -1 -1 4 256;
+0 -6 0 10 -262144 -1 -1 0 256;
 #X obj 317 156 hsl 128 15 0 127 0 0 thresholdDeltaPalette empty thresholdDeltaPalette
 -2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 156 nbx 5 14 -1e+37 1e+37 0 0 empty thresholdDeltaPalette
@@ -128,10 +128,6 @@ maximalNumberOfIterations;
 #X connect 9 0 13 0;
 #X connect 10 0 21 0;
 #X connect 11 0 19 0;
-#X connect 11 1 10 1;
-#X connect 11 1 20 0;
-#X connect 11 2 39 0;
-#X connect 11 2 40 0;
 #X connect 12 0 7 0;
 #X connect 12 1 22 0;
 #X connect 13 0 14 0;
