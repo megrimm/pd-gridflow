@@ -24,6 +24,14 @@
 # btw here's a useful line for debugging ltilib's makefile:
 # ruby -i.bak -ne 'print $_.gsub(/^ {8}/,"\t") unless /@echo.*\\$/' Makefile
 
+=begin
+        TODO list
+	- Learning period for BackgroundModel before apply can be used
+	- Reset for BackgroundModel
+	- Mask functors, operations 
+
+=end
+
 require "rblti"
 include GridFlow
 include Rblti
@@ -138,7 +146,7 @@ class LTI<FObject; install "lti",1,1
 end
 
 class ArgMode
-  def initialize x; @of=of end
+  def initialize(of) @of=of end
   def inspect; "#{self.class}["+@of.inspect+"]" end
   class << self; alias [] new end
   def of; @of end
@@ -239,6 +247,12 @@ begin
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
+      begin
+        @param_class.new.__send__(name+"=",Object.new)
+      rescue Exception=>e
+          /of type '([^']*)'/ .match e.to_s and tipe=$1 or
+          GridFlow.post "%s",e.inspect
+      end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}"
       module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
