@@ -133,7 +133,7 @@ while tmp = get_next_apply_function(filehandle)
     puts termin if $init
     if Rblti.const_defined?(functorname) and Rblti.const_get(functorname) < Functor then
       puts "begin"
-      puts functorname+".form = ["
+      puts functorname+".forms = ["
       $init=true
     else
       $init=false
@@ -155,3 +155,42 @@ puts termin if $init
 $stats.keys.sort_by{|k|-$stats[k]}.each {|k|
   printf "\# %3d %s\n", $stats[k], k
 }
+
+=begin
+ bool
+ Ubyte       int          Float     double      RgbPixel         TrgbPixel(f)         DrgbPixel
+ Uvector     Ivector      Fvector   Dvector                      Vector<trgbPixel(f)>
+ Channel8    Channel32    Channel               Image
+ Umatrix     Imatrix      Fmatrix   Dmatrix     Matrix<rgbPixel>
+                          Tpoint(f)
+             PointList
+             TpointList(i)      TpointList(f)     TpointList(d)
+                                TpolygonPoints(f) TpolygonPoints(d)
+             Trectangle(i)
+ Palette
+ AreaPoints
+ PolygonPoints
+ BorderPoints
+ Location
+ IoPoints
+ 
+ std::list<Fvector>
+ std::list<dvector>
+ std::list<location>
+ std::list<areaPoints>
+ std::vector<areaPoints>
+ std::map<std::string,double>
+ std::vector<std::vector<rectangle>>
+ std::vector<matrix<float>>
+ std::vector<std::vector<geometricFeatureGroup0>>
+ std::vector<geometricFeatureGroup0>
+ kdTree<rgbPixel,int>
+ tree<objectStruct>
+ std::list<borderPoints>
+ std::list<ioPoints>
+ std::vector<rectangle>
+ std::list<channel>
+ principalComponents(f)
+ int (*)(int const &,int const &,int const &)
+ int (*)(int const &,int const &)
+=end
