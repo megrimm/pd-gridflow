@@ -70,12 +70,9 @@ def GridFlow.post2(*a)
 end
 
 class << Functor
-  def form=(*a)
-    GridFlow.post "%s form: %s", self, a.inspect
-    @form = []
-  end
-  def form()
-    if defined? @form then @form else superclass.form end
+  def forms=(a) @forms=a end
+  def forms()
+    if defined? @forms then @forms else superclass.forms end
   end
   attr_accessor :subclasses # only the adjacent ones
 end
@@ -166,7 +163,7 @@ class LTIGridObject < GridObject
       @functor.setParameters @param
       @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
       @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-      @fargs = c.functor_class.form.map {|x| x.new }
+      @fargs = c.functor_class.forms[0].map {|x| x.of.new }
     end
     def send_out_lti o,m
       case m
@@ -227,8 +224,12 @@ LTI.functors.each {|name|
 LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
-  fui  = fuc.form.find_all {|x| x.in?  }
-  fuo  = fuc.form.find_all {|x| x.out? }
+  if fuc.forms.length==0 then
+  	GridFlow.post "no forms for %s ?", fuc
+	next
+  end
+  fui  = fuc.forms[0].find_all {|x| x.in?  }
+  fuo  = fuc.forms[0].find_all {|x| x.out? }
   LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
     install_rgrid 0
     install_rgrid 1
@@ -277,12 +278,16 @@ begin
         GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
       }
       GridFlow.post "total %d ancestor classes", anc.length
-      GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
-      GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
+      #GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
+      #GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
+      @functor_class.forms.each_with_index {|form,i|
+	GridFlow.post "form %d: %s", i, form.inspect
+      }
     end
     def _0_get(sel=nil)
       return @param.__send__(sel) if sel
       no=self.class.noutlets
+      if sel==:form or not sel then send_out no-1, :form end
       self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
@@ -293,7 +298,11 @@ begin
 	end
       }
     end
-
+    def _0_form i
+	n = self.class.functor_class.forms.length
+	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
+	@form = form
+    end
     def _0_rgrid_begin    ; _n_rgrid_begin(0) end
     def _0_rgrid_flow data; _n_rgrid_flow(0,data) end
     def _0_rgrid_end      ; _n_rgrid_end(0) end
