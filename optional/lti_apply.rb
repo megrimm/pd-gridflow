@@ -1,5 +1,5 @@
 begin
-Modifier.form = [
+Modifier.forms = [
 [Out[Rblti::Fvector]],
 [Out[Rblti::Ivector]],
 [Out[Rblti::Uvector]],
@@ -17,7 +17,7 @@ Modifier.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-IoFunctor.form = [
+IoFunctor.forms = [
 [Out[Rblti::Image]],
 [Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Palette]],
@@ -28,7 +28,7 @@ IoFunctor.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LoadBMP.form = [
+LoadBMP.forms = [
 [Out[Rblti::Image]],
 [Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Channel]],
@@ -36,7 +36,7 @@ LoadBMP.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SaveBMP.form = [
+SaveBMP.forms = [
 [In[Rblti::Image]],
 [In[Rblti::Channel]],
 [In[Rblti::Channel8], In[Rblti::Palette]],
@@ -44,26 +44,26 @@ SaveBMP.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LoadJPEG.form = [
+LoadJPEG.forms = [
 [Out[Rblti::Image]],
 [Out[Rblti::Image], Out["bool"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SaveJPEG.form = [
+SaveJPEG.forms = [
 [In[Rblti::Image]],
 [In[Rblti::Channel]],
 [In[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LoadPNG.form = [
+LoadPNG.forms = [
 [Out[Rblti::Image]],
 [Out[Rblti::Channel8], Out[Rblti::Palette]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SavePNG.form = [
+SavePNG.forms = [
 [In[Rblti::Image]],
 [In[Rblti::Channel]],
 [In[Rblti::Channel8], In[Rblti::Palette]],
@@ -71,14 +71,14 @@ SavePNG.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LoadImage.form = [
+LoadImage.forms = [
 [Out[Rblti::Image]],
 [Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Channel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SaveImage.form = [
+SaveImage.forms = [
 [In[Rblti::Image]],
 [In[Rblti::Channel]],
 [In[Rblti::Channel8], In[Rblti::Palette]],
@@ -86,19 +86,19 @@ SaveImage.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ChiSquareFunctor.form = [
+ChiSquareFunctor.forms = [
 [Out["double"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-RealFFT.form = [
+RealFFT.forms = [
 [In[Rblti::Fvector], Out[Rblti::Fvector], Out[Rblti::Fvector]],
 [In[Rblti::Dvector], Out[Rblti::Dvector], Out[Rblti::Dvector]],
 [In[Rblti::Fmatrix], Out[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-OrientedHLTransform.form = [
+OrientedHLTransform.forms = [
 [In[Rblti::Channel], In[Rblti::Channel], Out[Rblti::Channel32]],
 [In[Rblti::Channel8], In[Rblti::Channel], Out[Rblti::Channel32]],
 [In[Rblti::Image], In[Rblti::Channel], Out[Rblti::Channel32]],
@@ -106,20 +106,20 @@ OrientedHLTransform.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-GHoughTransform.form = [
+GHoughTransform.forms = [
 [In[Rblti::Channel], Out["std::list<vector<float > >"]],
 [In[Rblti::Channel], In[Rblti::Channel], Out["std::list<vector<float > >"]],
 [In["TpointList<int >"], In[Rblti::Channel], Out["std::list<vector<float > >"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-OrientationMap.form = [
+OrientationMap.forms = [
 [In[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-MedianFilter.form = [
+MedianFilter.forms = [
 [Out[Rblti::Channel]],
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel], Out[Rblti::Channel]],
@@ -127,7 +127,7 @@ MedianFilter.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-KNearestNeighFilter.form = [
+KNearestNeighFilter.forms = [
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
 [Out[Rblti::Imatrix]],
@@ -135,7 +135,7 @@ KNearestNeighFilter.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Convolution.form = [
+Convolution.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Channel]],
 [Out[Rblti::Dmatrix]],
@@ -153,7 +153,7 @@ Convolution.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-GradientFunctor.form = [
+GradientFunctor.forms = [
 [In[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Channel], Out[Rblti::Channel]],
 [Out[Rblti::Channel]],
@@ -161,7 +161,7 @@ GradientFunctor.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ColorContrastGradient.form = [
+ColorContrastGradient.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Channel8], Out[Rblti::Channel], Out[Rblti::Channel]],
@@ -172,7 +172,7 @@ ColorContrastGradient.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ImaskFunctor.form = [
+ImaskFunctor.forms = [
 [In[Rblti::Imatrix], Out[Rblti::Imatrix], In["int (*)(int const &,int const &)"]],
 [Out[Rblti::Imatrix], In["int (*)(int const &,int const &)"]],
 [In[Rblti::Imatrix], In[Rblti::Imatrix], Out[Rblti::Imatrix], In["int (*)(int const &,int const &,int const &)"]],
@@ -182,14 +182,14 @@ ImaskFunctor.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ColorQuantization.form = [
+ColorQuantization.forms = [
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Image]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-KMColorQuantization.form = [
+KMColorQuantization.forms = [
 [In[Rblti::Image], Out[Rblti::Imatrix], Out[Rblti::Palette]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Image]],
@@ -197,14 +197,14 @@ KMColorQuantization.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LkmColorQuantization.form = [
+LkmColorQuantization.forms = [
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Image]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ComputePalette.form = [
+ComputePalette.forms = [
 [In[Rblti::Image], In[Rblti::Channel8], Out[Rblti::Palette]],
 [In[Rblti::Image], In[Rblti::Imatrix], Out[Rblti::Palette]],
 [In[Rblti::Image], In[Rblti::Channel8], Out[Rblti::Palette], Out["Vector<trgbPixel<float > >"]],
@@ -221,7 +221,7 @@ ComputePalette.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-UsePalette.form = [
+UsePalette.forms = [
 [In[Rblti::Umatrix], Out[Rblti::Image]],
 [In[Rblti::Imatrix], Out[Rblti::Image]],
 [In[Rblti::Umatrix], In[Rblti::Palette], Out[Rblti::Image]],
@@ -237,7 +237,7 @@ UsePalette.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImage.form = [
+SplitImage.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -245,7 +245,7 @@ SplitImage.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageTorgI.form = [
+SplitImageTorgI.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -253,7 +253,7 @@ SplitImageTorgI.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-MeanShiftSegmentation.form = [
+MeanShiftSegmentation.forms = [
 [In[Rblti::Image], Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Imatrix]],
 [In[Rblti::Image], Out[Rblti::Imatrix], Out[Rblti::Palette]],
@@ -262,7 +262,7 @@ MeanShiftSegmentation.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-KMeansSegmentation.form = [
+KMeansSegmentation.forms = [
 [In[Rblti::Image], Out[Rblti::Imatrix]],
 [In[Rblti::Image], Out[Rblti::Channel8]],
 [In[Rblti::Image], Out[Rblti::Imatrix], Out[Rblti::Palette]],
@@ -270,18 +270,18 @@ KMeansSegmentation.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-WhiteningSegmentation.form = [
+WhiteningSegmentation.forms = [
 [In[Rblti::Image], In["principalComponents<float >"], Out[Rblti::Imatrix]],
 [In[Rblti::Image], In["DrgbPixel"], In[Rblti::Dmatrix], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-CsPresegmentation.form = [
+CsPresegmentation.forms = [
 [In[Rblti::Image], Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Thresholding.form = [
+Thresholding.forms = [
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::Channel8], Out[Rblti::Channel8], Out[Float], Out[Float], Out["bool"], Out["bool"]],
@@ -304,14 +304,14 @@ Thresholding.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-WatershedSegmentation.form = [
+WatershedSegmentation.forms = [
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::Channel8], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-RegionGrowing.form = [
+RegionGrowing.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Channel]],
 [Out[Rblti::Image]],
@@ -321,24 +321,24 @@ RegionGrowing.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Snake.form = [
+Snake.forms = [
 [In[Rblti::Image], Out[Rblti::AreaPoints]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-RegionMerge.form = [
+RegionMerge.forms = [
 [In[Rblti::Imatrix], In[Rblti::Dmatrix], Out[Rblti::Imatrix]],
 [In[Rblti::Imatrix], In[Rblti::Dmatrix], In[Rblti::Dvector], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SimilarityMatrix.form = [
+SimilarityMatrix.forms = [
 [In[Rblti::Image], Out["int"], In[Rblti::Imatrix], Out[Rblti::Dmatrix], Out[Rblti::Dmatrix]],
 [In[Rblti::Image], In["std::list<areaPoints >"], Out[Rblti::Dmatrix], Out[Rblti::Dmatrix], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-FastRelabeling.form = [
+FastRelabeling.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Imatrix]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
@@ -356,7 +356,7 @@ FastRelabeling.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ObjectsFromMask.form = [
+ObjectsFromMask.forms = [
 [In[Rblti::Channel8], Out["std::list<ioPoints >"]],
 [In[Rblti::Imatrix], Out["std::list<ioPoints >"]],
 [In[Rblti::Channel8], Out["std::list<borderPoints >"]],
@@ -370,18 +370,18 @@ ObjectsFromMask.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-BackgroundModel.form = [
+BackgroundModel.forms = [
 [In[Rblti::Image], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-MeanshiftTracker.form = [
+MeanshiftTracker.forms = [
 [In[Rblti::Image], Out["Trectangle<int >"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-CornerDetector.form = [
+CornerDetector.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Channel]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
@@ -391,7 +391,7 @@ CornerDetector.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-EdgeDetector.form = [
+EdgeDetector.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Channel]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
@@ -403,13 +403,13 @@ EdgeDetector.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ClassicEdgeDetector.form = [
+ClassicEdgeDetector.forms = [
 [In[Rblti::Channel], Out[Rblti::Channel8]],
 [Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-CannyEdges.form = [
+CannyEdges.forms = [
 [Out[Rblti::Channel8]],
 [Out[Rblti::Channel]],
 [In[Rblti::Channel8], Out[Rblti::Channel8]],
@@ -425,14 +425,14 @@ CannyEdges.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-GlobalFeatureExtractor.form = [
+GlobalFeatureExtractor.forms = [
 [In[Rblti::Channel], Out[Rblti::Dvector]],
 [In[Rblti::Channel8], Out[Rblti::Dvector]],
 [In[Rblti::Image], Out[Rblti::Dvector]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LocalFeatureExtractor.form = [
+LocalFeatureExtractor.forms = [
 [In[Rblti::Channel], In["std::list<location >"], Out["std::list<dvector >"]],
 [In[Rblti::Channel8], In["std::list<location >"], Out["std::list<dvector >"]],
 [In["std::list<channel >"], In["std::list<location >"], Out["std::list<dvector >"]],
@@ -442,7 +442,7 @@ LocalFeatureExtractor.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-LocalMoments.form = [
+LocalMoments.forms = [
 [In[Rblti::Channel], In[Rblti::Location], Out[Rblti::Dvector]],
 [In[Rblti::Image], In[Rblti::Location], Out[Rblti::Dvector]],
 [In[Rblti::Image], In["std::list<location >"], Out["std::list<dvector >"]],
@@ -450,7 +450,7 @@ LocalMoments.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-GeometricFeatures.form = [
+GeometricFeatures.forms = [
 [In[Rblti::AreaPoints], Out[Rblti::Dvector]],
 [In[Rblti::BorderPoints], Out[Rblti::Dvector]],
 [In[Rblti::IoPoints], Out[Rblti::Dvector]],
@@ -460,12 +460,12 @@ GeometricFeatures.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ChromaticityHistogram.form = [
+ChromaticityHistogram.forms = [
 [In[Rblti::Image], Out[Rblti::Dvector]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-GeometricFeaturesFromMask.form = [
+GeometricFeaturesFromMask.forms = [
 [In[Rblti::Channel8], Out["std::vector<rectangle >"]],
 [In[Rblti::Channel8], Out[Rblti::Imatrix], Out["std::vector<rectangle >"]],
 [In[Rblti::Channel8], Out["std::vector<geometricFeatureGroup0 >"]],
@@ -473,7 +473,7 @@ GeometricFeaturesFromMask.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-MultiGeometricFeaturesFromMask.form = [
+MultiGeometricFeaturesFromMask.forms = [
 [In[Rblti::Channel8], Out["std::vector<std::vector<rectangle > >"]],
 [In[Rblti::Channel8], Out[Rblti::Imatrix], Out["std::vector<std::vector<rectangle > >"]],
 [In[Rblti::Channel8], Out["std::vector<std::vector<geometricFeatureGroup0 > >"]],
@@ -481,7 +481,7 @@ MultiGeometricFeaturesFromMask.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Morphology.form = [
+Morphology.forms = [
 [Out[Rblti::Channel]],
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel], Out[Rblti::Channel]],
@@ -489,19 +489,7 @@ Morphology.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Erosion.form = [
-[Out[Rblti::Channel]],
-[Out[Rblti::Channel8]],
-[Out[Rblti::Fvector]],
-[Out[Rblti::Uvector]],
-[In[Rblti::Channel], Out[Rblti::Channel]],
-[In[Rblti::Channel8], Out[Rblti::Channel8]],
-[In[Rblti::Fvector], Out[Rblti::Fvector]],
-[In[Rblti::Uvector], Out[Rblti::Uvector]],
-]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
-
-begin
-Dilation.form = [
+Erosion.forms = [
 [Out[Rblti::Channel]],
 [Out[Rblti::Channel8]],
 [Out[Rblti::Fvector]],
@@ -513,7 +501,19 @@ Dilation.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Skeleton.form = [
+Dilation.forms = [
+[Out[Rblti::Channel]],
+[Out[Rblti::Channel8]],
+[Out[Rblti::Fvector]],
+[Out[Rblti::Uvector]],
+[In[Rblti::Channel], Out[Rblti::Channel]],
+[In[Rblti::Channel8], Out[Rblti::Channel8]],
+[In[Rblti::Fvector], Out[Rblti::Fvector]],
+[In[Rblti::Uvector], Out[Rblti::Uvector]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+Skeleton.forms = [
 [Out[Rblti::Channel]],
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel], Out[Rblti::Channel]],
@@ -521,7 +521,7 @@ Skeleton.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Scaling.form = [
+Scaling.forms = [
 [Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Image]],
 [Out[Rblti::Umatrix]],
@@ -549,7 +549,7 @@ Scaling.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-Rotation.form = [
+Rotation.forms = [
 [Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Image]],
 [Out[Rblti::Umatrix]],
@@ -565,7 +565,7 @@ Rotation.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-FlipImage.form = [
+FlipImage.forms = [
 [Out["Matrix<rgbPixel >"]],
 [In["Matrix<rgbPixel >"], Out["Matrix<rgbPixel >"]],
 [Out[Rblti::Fmatrix]],
@@ -575,7 +575,7 @@ FlipImage.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-DistanceTransform.form = [
+DistanceTransform.forms = [
 [Out[Rblti::Channel]],
 [Out[Rblti::Channel8]],
 [In[Rblti::Channel], Out[Rblti::Channel]],
@@ -583,19 +583,19 @@ DistanceTransform.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-BorderExtrema.form = [
+BorderExtrema.forms = [
 [In[Rblti::BorderPoints], Out[Rblti::PolygonPoints], Out[Rblti::PolygonPoints]],
 [In[Rblti::BorderPoints], Out[Rblti::PolygonPoints]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-PolygonApproximation.form = [
+PolygonApproximation.forms = [
 [In[Rblti::BorderPoints], Out[Rblti::PolygonPoints]],
 [In[Rblti::BorderPoints], In[Rblti::PointList], Out[Rblti::PolygonPoints]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-ConvexHull.form = [
+ConvexHull.forms = [
 [In[Rblti::PointList], Out[Rblti::PolygonPoints]],
 [In[Rblti::IoPoints], Out[Rblti::PolygonPoints]],
 [In["TpointList<float >"], Out["TpolygonPoints<float >"]],
@@ -603,7 +603,7 @@ ConvexHull.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToHSI.form = [
+SplitImageToHSI.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -612,7 +612,7 @@ SplitImageToHSI.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToRGB.form = [
+SplitImageToRGB.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
@@ -622,7 +622,7 @@ SplitImageToRGB.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToHSV.form = [
+SplitImageToHSV.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -630,7 +630,7 @@ SplitImageToHSV.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToHLS.form = [
+SplitImageToHLS.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -638,7 +638,7 @@ SplitImageToHLS.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToXYZ.form = [
+SplitImageToXYZ.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -646,7 +646,7 @@ SplitImageToXYZ.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToxyY.form = [
+SplitImageToxyY.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -654,7 +654,7 @@ SplitImageToxyY.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToOCP.form = [
+SplitImageToOCP.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -662,7 +662,7 @@ SplitImageToOCP.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToYIQ.form = [
+SplitImageToYIQ.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
@@ -670,13 +670,13 @@ SplitImageToYIQ.form = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToCIELuv.form = [
+SplitImageToCIELuv.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
-SplitImageToYUV.form = [
+SplitImageToYUV.forms = [
 [In[Rblti::RgbPixel], Out[Float], Out[Float], Out[Float]],
 [In[Rblti::RgbPixel], Out["Ubyte"], Out["Ubyte"], Out["Ubyte"]],
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
@@ -690,8 +690,8 @@ SplitImageToYUV.form = [
 #  68 Float
 #  33 Ubyte
 #  28 Rblti::Palette
-#  24 Rblti::Fmatrix
 #  24 Rblti::Umatrix
+#  24 Rblti::Fmatrix
 #  24 Rblti::RgbPixel
 #  20 Rblti::Ivector
 #  19 Rblti::Fvector
@@ -705,36 +705,36 @@ SplitImageToYUV.form = [
 #   7 double
 #   7 int
 #   7 Rblti::PolygonPoints
-#   6 Rblti::BorderPoints
 #   6 std::list<dvector >
 #   6 std::list<location >
-#   5 std::list<areaPoints >
+#   6 Rblti::BorderPoints
 #   5 Rblti::Channel32
+#   5 std::list<areaPoints >
 #   4 Rblti::Location
 #   4 Rblti::PointList
-#   3 Rblti::IoPoints
-#   3 std::list<vector<float > >
-#   3 std::vector<areaPoints >
-#   3 std::map<std::string,double >
 #   3 Matrix<rgbPixel >
-#   2 std::vector<std::vector<rectangle > >
-#   2 int (*)(int const &,int const &,int const &)
-#   2 std::vector<matrix<float > >
-#   2 std::vector<std::vector<geometricFeatureGroup0 > >
-#   2 std::vector<geometricFeatureGroup0 >
-#   2 int (*)(int const &,int const &)
-#   2 kdTree<rgbPixel,int >
-#   2 tree<objectStruct >
+#   3 Rblti::IoPoints
+#   3 std::map<std::string,double >
+#   3 std::vector<areaPoints >
+#   3 std::list<vector<float > >
 #   2 std::list<borderPoints >
-#   2 std::list<ioPoints >
+#   2 int (*)(int const &,int const &,int const &)
+#   2 tree<objectStruct >
+#   2 std::vector<std::vector<geometricFeatureGroup0 > >
+#   2 int (*)(int const &,int const &)
+#   2 std::vector<geometricFeatureGroup0 >
 #   2 std::vector<rectangle >
-#   1 TpointList<float >
+#   2 kdTree<rgbPixel,int >
+#   2 std::vector<matrix<float > >
+#   2 std::vector<std::vector<rectangle > >
+#   2 std::list<ioPoints >
+#   1 principalComponents<float >
 #   1 TpolygonPoints<double >
-#   1 TpolygonPoints<float >
+#   1 TpointList<float >
+#   1 std::list<channel >
 #   1 Trectangle<int >
 #   1 TpointList<int >
-#   1 std::list<channel >
 #   1 TrgbPixel<float >
 #   1 DrgbPixel
 #   1 TpointList<double >
-#   1 principalComponents<float >
+#   1 TpolygonPoints<float >
