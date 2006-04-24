@@ -80,20 +80,23 @@ end  #function def
 $stats={}
 def adapt_type type
   type = adapt_type2 type
-  $stats[type] ||= 0
-  $stats[type] += 1
+  if $init
+    $stats[type] ||= 0
+    $stats[type] += 1
+  end
   type
 end
 
 def adapt_type2 type
   type=type.gsub(/lti::/,"")
+  type=type.sub(/unsigned char/,"ubyte")
   type=type.sub(/channel8::value_type/,"ubyte")
   type=type.sub(/channel::value_type/,"float")
   case type
-  when "Matrix<ubyte >":  Umatrix
-  when "Matrix<int >"  :  Imatrix
-  when "Matrix<float >":  Fmatrix
-  when "Matrix<double >": Dmatrix
+  when "Matrix<ubyte >":  Umatrix; when "Vector<ubyte >":  Uvector
+  when "Matrix<int >"  :  Imatrix; when "Vector<int >":    Ivector
+  when "Matrix<float >":  Fmatrix; when "Vector<float >":  Fvector
+  when "Matrix<double >": Dmatrix; when "Vector<double >": Dvector
   when "float": Float
   else Rblti.const_get(type)
   end
@@ -116,29 +119,34 @@ end  #function def
 
 filehandle=File.open $wrap
 previousf=""
-init=false
+$init=false
 
 #termin="]\n\n"
 #termin="] rescue nil\n\n"
  termin="]; rescue Exception=>e; GridFlow.post \"form error: %s\", e.inspect end\n\n"
 
+
 while tmp = get_next_apply_function(filehandle)
   functorname,functiontext=tmp
 
   if functorname != previousf
-    puts termin if init
-    puts "begin"
-    puts functorname+".form = ["
+    puts termin if $init
+    if Rblti.const_defined?(functorname) and Rblti.const_get(functorname) < Functor then
+      puts "begin"
+      puts functorname+".form = ["
+      $init=true
+    else
+      $init=false
+    end
   end
 
   previousf=functorname
   errorlines = get_type_errors functiontext
   types = fill_types errorlines
-  print types.inspect,",\n"
+  print types.inspect,",\n" if $init
 
-  init=true
 end #while
-puts termin if init
+puts termin if $init
 
 #puts head+":"
 #text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
