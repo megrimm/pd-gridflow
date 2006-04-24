@@ -313,6 +313,7 @@ GRID_INLET(GridStore,1) {
 			r = new Grid(in->dim,nt);
 		return;
 	}
+	SAME_TYPE(in,r);
 	// put_at ( ... )
 	//!@#$ should check types. if (r->nt!=in->nt) RAISE("shoo");
 	long nn=r->dim->n, na=put_at->dim->v[0], nb=in->dim->n;
