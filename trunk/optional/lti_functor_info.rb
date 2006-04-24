@@ -77,12 +77,24 @@ def fill_types lines
   return args
 end  #function def
 
+$stats={}
 def adapt_type type
+  type = adapt_type2 type
+  $stats[type] ||= 0
+  $stats[type] += 1
+  type
+end
+
+def adapt_type2 type
+  type=type.gsub(/lti::/,"")
+  type=type.sub(/channel8::value_type/,"ubyte")
+  type=type.sub(/channel::value_type/,"float")
   case type
-  when "Matrix<lti::ubyte >": Umatrix
-  when "Matrix<int >"  :      Imatrix
-  when "Matrix<float >":      Fmatrix
-  when "Matrix<double >":     Dmatrix
+  when "Matrix<ubyte >":  Umatrix
+  when "Matrix<int >"  :  Imatrix
+  when "Matrix<float >":  Fmatrix
+  when "Matrix<double >": Dmatrix
+  when "float": Float
   else Rblti.const_get(type)
   end
 rescue NameError
@@ -132,3 +144,6 @@ puts termin if init
 #text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
 #gets
 
+$stats.keys.sort_by{|k|-$stats[k]}.each {|k|
+  printf "\# %3d %s\n", $stats[k], k
+}
