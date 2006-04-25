@@ -1225,7 +1225,7 @@ namespace lti {
                        const T& iniValue = T(),
                        const bool copyData=true,
                        const bool initNew=true);
-#ifndef SWIG
+
     /**
      * fills genericMatrix elements with <code>iniValue</code>.
      * The fill "area" is limited by <code>fromCol</code>,<code>toCol</code>,
@@ -1276,6 +1276,8 @@ namespace lti {
      */
     inline void fill(const T& iniValue,const irectangle& window);
 
+    
+#ifndef SWIG
     /**
      * fills genericMatrix elements with the data pointed by <code>data</code>.
      * The fill "area" is limited by <code>fromCol</code>,<code>toCol</code>,
@@ -1325,6 +1327,8 @@ namespace lti {
      * @param window the window to be filled
      */
     inline void fill(const T data[],const irectangle& window);
+
+#endif // SWIG
 
     /**
      * fills this genericMatrix between the "from's" and "to's" with
@@ -1387,8 +1391,8 @@ namespace lti {
                      const irectangle& window,
                      const ipoint& start=point(0,0));
 
-#endif // SWIG
-#ifndef SWIG
+
+//#ifndef SWIG
     /**
      * access element at the given row and column
      * @param row the row of the element
@@ -1450,7 +1454,7 @@ namespace lti {
      * @return a const reference to the vector element
      */
     inline const T& at(const ipoint& p) const;
-#endif // SWIG
+//#endif // SWIG
 
     /**
      * return genericMatrix-row as a vector.
@@ -1650,6 +1654,14 @@ namespace lti {
 
       return (*this);
     };
+
+#ifdef SWIG
+    %template(castFromInt) 	castFrom<int>;
+    %template(castFromFloat) 	castFrom<float>;
+    %template(castFromDouble) 	castFrom<double>;
+    %template(castFromUbyte) 	castFrom<ubyte>;
+    //%template(CastFromRgbPixel)	castFrom<rgbPixel>;
+#endif    
 
     /**
      * create a clone of this genericMatrix
