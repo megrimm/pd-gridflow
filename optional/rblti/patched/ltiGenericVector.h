@@ -1195,6 +1195,14 @@ namespace lti {
 
       return *this;
     };
+    
+#ifdef SWIG
+    %template(castFromInt) 	castFrom<int>;
+    %template(castFromFloat) 	castFrom<float>;
+    %template(castFromDouble) 	castFrom<double>;
+    %template(castFromUbyte) 	castFrom<ubyte>;
+    //%template(CastFromRgbPixel)	castFrom<rgbPixel>;
+#endif    
 
     /**
      * cast from a std::genericVector of the same type

@@ -11,10 +11,12 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.2  2006/04/24 22:08:02  heri
-//  I thought I already did this!
-//  Any change in swig directory will now prompt a build from the start.
-//  Added SWIG template for RgbPixel MaskFunctors
+//  Revision 1.3  2006/04/25 15:47:37  heri
+//  Fixed the following methods for matrix types, including Channel, Channel8, Image, Matrix templates:
+//  - at
+//  - fill: for this overloaded method, all the versions that take an array as argument are ignored because
+//   SWIG confuses an int for the array pointer. Anyway, C arrays cannot be used directly in rblti.
+//  - castFrom
 //
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
@@ -30,8 +32,11 @@
 // Mask Operators    
 HANDLE_SIMPLE_HEADER_FILE("ltiMaskFunctors.h")
     namespace lti {
+    class maskFunctor<rgbPixel>;
         %template(imaskFunctor)     	maskFunctor<int>;
-	%template(rbgPixelMaskFunctor)	maskFunctor<rgbPixel>;
+	%template(dmaskFunctor)		maskFunctor<double>;
+	//%template(rgbPixelMaskFunctor)	maskFunctor<rgbPixel>;
+	%template(umaskFunctor)		maskFunctor<ubyte>;
 //        %template(imaskAnd)         maskAnd<int>;
 //        %template(imaskOr)          maskOr<int>;
 //        %template(imaskNot)         maskNot<int>;
