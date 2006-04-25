@@ -10,8 +10,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.7  2006/04/25 19:35:54  heri
-//  Image cast from an RgbPixelMatrix now works
+//  Revision 1.8  2006/04/25 22:44:41  heri
+//  Started renaming "subtract" methods
 //
 //  Revision 1.6  2006/04/06 21:31:35  heri
 //  Constructors with default pixel value for Image and Channel classes now
@@ -397,6 +397,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGenericMatrix.h")
         %template(fgenericMatrix) genericMatrix<float>;
         %template(dgenericMatrix) genericMatrix<double>;
         %template(rgbPixelgenericMatrix) genericMatrix<lti::rgbPixel>;
+	
     }
     
 HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
@@ -406,6 +407,11 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
         %template(dmatrix) matrix<double>;
         %template(umatrix) matrix<lti::ubyte>;
         %template(rgbPixelmatrix) matrix<lti::rgbPixel>;
+	
+	%rename(substract) genericMatrix<lti::ubyte>::subtract(const matrix<lti::ubyte> &, const matrix<lti::ubyte> &);
+	%rename(substract) genericMatrix<lti::ubyte>::subtract(const lti::ubyte);
+	%rename(substract) genericMatrix<lti::ubyte>::subtract(const matrix<lti::ubyte> &, const lti::ubyte);
+	
     }
 HANDLE_SIMPLE_HEADER_FILE("ltiHTypes.h")
 
