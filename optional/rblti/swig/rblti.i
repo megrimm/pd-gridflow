@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.7  2006/04/25 19:35:54  heri
+//  Image cast from an RgbPixelMatrix now works
+//
 //  Revision 1.6  2006/04/06 21:31:35  heri
 //  Constructors with default pixel value for Image and Channel classes now
 //  work.
@@ -330,7 +333,19 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGeometry.h")
     namespace lti {
     //TODO:    %template(iintersection) intersection<ipoint>;
     }
+namespace lti {
+%ignore genericVector<int>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<float>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<double>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<rgbPixel>::castFrom(const genericVector<float> &);
+%ignore genericVector<rgbPixel>::castFrom(const genericVector<double> &);
 
+%ignore genericMatrix<int>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<float>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<double>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<float> &);
+%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<double> &);
+}
 HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
     #ifdef SWIGPYTHON
     %extend lti::genericVector {
@@ -569,6 +584,23 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 %extend lti::image {
   long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
 }
+
+namespace lti {
+%extend image {
+  image castFromRgbPixelMatrix(matrix<rgbPixel> other)
+  {
+  lti::rgbPixel pixel(0,0,0);
+  self->resize(other.rows(),other.columns(),pixel,false,false);
+  int y;
+  for (y=0;y<self->rows();y++) {
+      (self->getRow(y)).castFrom(other.getRow(y));
+      }
+  
+  return (*self);
+  }
+}
+}
+
 %extend lti::matrix<lti::int32> {
   long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
 }
