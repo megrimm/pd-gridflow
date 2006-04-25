@@ -420,17 +420,6 @@ int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	return 0;
 }
 
-/* save to a binbuf */
-void bf_savefn(t_gobj *x, t_binbuf *b) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
-}
-
-/* open properties dialog */
-void bf_propertiesfn(t_gobj *x, t_glist *glist) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
-}
-
 /* get keypresses during focus */
 void bf_keyfn(void *x, t_floatarg fkey) {
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
@@ -440,6 +429,17 @@ void bf_keyfn(void *x, t_floatarg fkey) {
 void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_motion),2,
 		INT2NUM((int)dx), INT2NUM((int)dy));
+}
+
+/* save to a binbuf (FOR FUTURE USE) */
+void bf_savefn(t_gobj *x, t_binbuf *b) {
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
+}
+
+/* open properties dialog */
+void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
+	Ruby can = PTR2FIX(glist_getcanvas(glist));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
 
 /* **************************************************************** */
@@ -534,6 +534,20 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	//wb->w_savefn       = bf_savefn;
 	//wb->w_propertiesfn = bf_propertiesfn;
 	class_setwidget(FIX2PTR(t_class,qlassid),wb);
+	return Qnil;
+}
+
+static Ruby FObject_s_save_enable (Ruby rself) {
+	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
+	if (qlassid==Qnil) RAISE("no class id ?");
+	class_setsavefn(FIX2PTR(t_class,qlassid), bf_savefn);
+	return Qnil;
+}
+
+static Ruby FObject_s_properties_enable (Ruby rself) {
+	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
+	if (qlassid==Qnil) RAISE("no class id ?");
+	class_setpropertiesfn(FIX2PTR(t_class,qlassid), bf_propertiesfn);
 	return Qnil;
 }
 
@@ -703,7 +717,9 @@ Ruby gf_bridge_init (Ruby rself) {
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	Ruby fo = EVAL("GridFlow::FObject");
 	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
-	rb_define_singleton_method(fo,"gui_enable", (RMethod)FObject_s_gui_enable, 0);
+	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
+	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
+	rb_define_singleton_method(fo,"properties_enable", (RMethod)FObject_s_properties_enable, 0);
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
