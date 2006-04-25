@@ -358,6 +358,13 @@ begin
     end
     def _1_rgrid_end
     end
+    def pd_properties canvas
+      cid = ".x%x"%(4*canvas)
+      GridFlow.gui %{
+        tk_messageBox -message "this would be a cool feature, eh?" -type yesno -icon question -parent #{cid}
+      }
+    end
+    properties_enable
   }
 rescue StandardError => e
   GridFlow.post "%s", e
