@@ -44,6 +44,7 @@ struct FormatJPEG : Format {
 	\decl Ruby frame ();
 	\decl void quality (short quality);
 	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void close ();
 	\grin 0 int
 };
 
@@ -114,6 +115,11 @@ static bool gfeof(FILE *f) {
 	// should the last arg ("baseline") be set to true ?
 	// and what is it for? is it for accuracy of the DC component?
 	jpeg_set_quality(&cjpeg,quality,false);
+}
+
+\def void close () {
+	if (f) {fclose(f); f=0;}
+	//if (f) {rb_funcall(stream,SI(close),0); f=0; fd=-1;}
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
