@@ -39,6 +39,7 @@ struct FormatPNG : Format {
 	FormatPNG () : bit_packing(0), png(0), f(0) {}
 	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void close ();
 	\grin 0 int
 };
 
@@ -115,6 +116,10 @@ GRID_INLET(FormatPNG,0) {
 	free(image_data);
 	png_destroy_read_struct(&png, &info, NULL);
 	return Qnil;
+}
+
+\def void close () {
+	if (f) {fclose(f); f=0;}
 }
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
