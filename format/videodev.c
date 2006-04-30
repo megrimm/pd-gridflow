@@ -194,9 +194,9 @@ class VideoCode<Form; fields_are \
 
 #-------------------------------------------------------
 
-[VideoTypeFlags,VideoTunerFlags,VideoChannelFlags,VideoPalette,VideoTunerMode].each {|x|
-	GridFlow.post "%s: %s", x.inspect, x.index_to_val.inspect
-}
+#[VideoTypeFlags,VideoTunerFlags,VideoChannelFlags,VideoPalette,VideoTunerMode].each {|x|
+#	GridFlow.post "%s: %s", x.inspect, x.index_to_val.inspect
+#}
 def self.postit pickle
 #	head = pickle.shift
 #	stuff = const_get(head)[*pickle]
