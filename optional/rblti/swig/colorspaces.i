@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/05/23 06:59:19  heri
+//  Merge channels to Image. Needed this for some tests but it will be useful later.
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -57,3 +60,16 @@ HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageToOCP.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageToYIQ.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageToCIELuv.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageToYUV.h")
+
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeYUVToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeRGBToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeHSVToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeYUVToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeHLSToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeXYZToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeCIELuvToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeYIQToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergexyYToImage.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiMergergIToImage.h")
+
+

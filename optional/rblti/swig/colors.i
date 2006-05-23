@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/05/23 06:59:19  heri
+//  Merge channels to Image. Needed this for some tests but it will be useful later.
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -35,3 +38,6 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( usePalette,              "ltiUsePalette.h")
 
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageTorgI.h")
+
+
+HANDLE_SIMPLE_HEADER_FILE("ltiMergeImage.h")
