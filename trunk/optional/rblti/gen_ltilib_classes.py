@@ -30,7 +30,7 @@ if workarea<>None:
 # very simple way: navigate up and navigate down again
 
 if workarea==None:    
-    strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'pylti'+'-'+str_version
+    strCheckPath = '..'+os.sep+'..'+os.sep+'misc'+os.sep+'rblti'
     try:
         # try to read lti.i, this is a good indication of a pylti directory
         aTestFile = TextFile(filename=strCheckPath+os.sep+'swig'+os.sep+'lti.i')
@@ -137,6 +137,7 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('geometricFeaturesFromMask_1_1parameters'), 	g('fastRelabeling'))
 	, (f('multiGeometricFeaturesFromMask_1_1parameters'), 	g('geometricFeaturesFromMask'))
 	, (f('meanshiftTracker_1_1parameters'), 		g('modifier'))
+	, (f('maskImage_1_1parameters'), 			g('functor'))
 	
     ]
     

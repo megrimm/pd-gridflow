@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/05/26 02:12:44  heri
+//  Added maskImage functor, templates for use with ObjectsFromMask
+//
 //  Revision 1.3  2006/04/25 15:47:37  heri
 //  Fixed the following methods for matrix types, including Channel, Channel8, Image, Matrix templates:
 //  - at
@@ -33,14 +36,16 @@
 HANDLE_SIMPLE_HEADER_FILE("ltiMaskFunctors.h")
     namespace lti {
     class maskFunctor<rgbPixel>;
+    
         %template(imaskFunctor)     	maskFunctor<int>;
 	%template(dmaskFunctor)		maskFunctor<double>;
 	//%template(rgbPixelMaskFunctor)	maskFunctor<rgbPixel>;
 	%template(umaskFunctor)		maskFunctor<ubyte>;
-//        %template(imaskAnd)         maskAnd<int>;
-//        %template(imaskOr)          maskOr<int>;
-//        %template(imaskNot)         maskNot<int>;
-//        %template(imaskInvert)      maskInvert<int>;
-//        %template(imaskMultiply)    maskMultiply<int>;
-//        %template(imaskAlgebraicSum) maskAlgebraicSum<int>;
+        //%template(imaskAnd)         maskAnd<int>;
+        //%template(imaskOr)          maskOr<int>;
+        //%template(imaskNot)         maskNot<int>;
+        //%template(imaskInvert)      maskInvert<int>;
+        //%template(imaskMultiply)    maskMultiply<int>;
+        //%template(imaskAlgebraicSum) maskAlgebraicSum<int>;
+		
     }

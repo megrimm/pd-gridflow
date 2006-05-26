@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.9  2006/05/26 02:12:44  heri
+//  Added maskImage functor, templates for use with ObjectsFromMask
+//
 //  Revision 1.8  2006/04/25 22:44:41  heri
 //  Started renaming "subtract" methods
 //
@@ -257,6 +260,11 @@ HANDLE_SIMPLE_HEADER_FILE("ltiIoObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiMathObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiRGBPixel.h")
 
+namespace lti {
+%template(frgbPixel) trgbPixel<float>;
+
+}
+
 
 
 HANDLE_SIMPLE_HEADER_FILE("ltiPoint.h")
@@ -463,12 +471,12 @@ namespace lti {
 // TODO PATCH    
 //%include "_objectsFromMask_objectStruct.h"        // has to be included AFTER the definition of borderPoints !!!
 
-#ifndef SWIGRUBY
-    // TODO: ok: mit SWIG 1.3.21 !!! und SWIG 1.3.24 + VC7
-    %template(list_ioPoints) std::list<lti::ioPoints>;
-    %template(list_borderPoints) std::list<lti::borderPoints>;
-    %template(list_areaPoints) std::list<lti::areaPoints>;
-#endif
+//#ifndef SWIGRUBY
+// TODO: ok: mit SWIG 1.3.21 !!! und SWIG 1.3.24 + VC7
+%template(list_ioPoints) std::list<lti::ioPoints>;
+%template(list_borderPoints) std::list<lti::borderPoints>;
+%template(list_areaPoints) std::list<lti::areaPoints>;
+//#endif
     
 // TODO: add better tree support !
 //%include "ltiTree.h"
