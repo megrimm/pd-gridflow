@@ -11,8 +11,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.3  2006/05/26 02:12:44  heri
-//  Added maskImage functor, templates for use with ObjectsFromMask
+//  Revision 1.4  2006/05/26 02:27:26  heri
+//  Let's try this again
 //
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
