@@ -10,8 +10,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.9  2006/05/26 02:12:44  heri
-//  Added maskImage functor, templates for use with ObjectsFromMask
+//  Revision 1.10  2006/05/26 02:27:26  heri
+//  Let's try this again
 //
 //  Revision 1.8  2006/04/25 22:44:41  heri
 //  Started renaming "subtract" methods

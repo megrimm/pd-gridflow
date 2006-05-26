@@ -11,8 +11,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.4  2006/05/26 02:12:44  heri
-//  Added maskImage functor, templates for use with ObjectsFromMask
+//  Revision 1.5  2006/05/26 02:27:26  heri
+//  Let's try this again
 //
 //  Revision 1.3  2006/04/25 15:47:37  heri
 //  Fixed the following methods for matrix types, including Channel, Channel8, Image, Matrix templates:
