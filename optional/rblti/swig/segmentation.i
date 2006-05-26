@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/05/26 02:12:44  heri
+//  Added maskImage functor, templates for use with ObjectsFromMask
+//
 //  Revision 1.3  2006/04/01 04:58:43  heri
 //  - Added Class MeanshiftTracker.
 //  - All methods with the name "initialize" in lti-lib are renamed to "init" due to conflict with Ruby (including MeanshiftTracker::initialize).
@@ -80,4 +83,7 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
 }*/
 
 HANDLE_FUNCTOR_WITH_PARAMETERS( meanshiftTracker,         "ltiMeanshiftTracker.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS( maskImage,                "ltiMaskImage.h")
+
+
 
