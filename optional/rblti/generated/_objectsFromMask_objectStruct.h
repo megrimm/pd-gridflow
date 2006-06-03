@@ -6,9 +6,9 @@ namespace _objectsFromMask {
 class RobjectsFromMask_objectStruct : public lti::ioObject
 {
 public:
-    virtual bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    virtual bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    virtual bool read ( ioHandler &  arg0, const bool &  arg1 );
+    virtual bool read ( ioHandler &  arg0, const bool  arg1 );
 
     ioPoints ioPointList  ;
     areaPoints areaPointList  ;

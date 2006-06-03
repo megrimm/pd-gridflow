@@ -20,9 +20,9 @@ public:
 
     virtual functor::RcubicSpline_parameters * clone (  ) const;
 
-    bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    bool read ( ioHandler &  arg0, const bool &  arg1 );
+    bool read ( ioHandler &  arg0, const bool  arg1 );
 
     bool useNaturalDerivatives  ;
     double derivativeAtFirstPoint  ;

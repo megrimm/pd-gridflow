@@ -22,7 +22,7 @@ public:
 
     int size (  ) const;
 
-    bool find ( const int &  arg0, int &  arg1 );
+    bool find ( const int &  arg0, int &  arg1 ) const;
 
     void setValues ( const dvector &  arg0 );
 
@@ -116,9 +116,9 @@ public:
 
     Rclassifier_outputVector & min ( const Rclassifier_outputVector &  arg0, const Rclassifier_outputVector &  arg1 );
 
-    bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    bool read ( ioHandler &  arg0, const bool &  arg1 );
+    bool read ( ioHandler &  arg0, const bool  arg1 );
 
     
     
