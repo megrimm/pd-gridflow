@@ -222,8 +222,10 @@ $LD_LIBRARY_PATH = (
 	epath("LD_LIBRARY_PATH") +
 	read_ld_so_conf +
 	["/usr/lib","/lib"]).uniq
-$LIBX11DIR = ["-L/usr/X11R6/lib"]
-$LIBX11 = ["-L/usr/X11R6/lib","-lX11"]
+$LIBX11DIR = [
+  "-L/usr/X11R6/lib",
+  "-L/usr/X11R6/lib64"]
+$LIBX11 = $LIBX11DIR + ["-lX11"]
 
 # making it easier for everybody I hope:
 def prepend_path base
