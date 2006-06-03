@@ -21,9 +21,9 @@ public:
 
     virtual functor::Rmodifier_parameters * clone (  ) const;
 
-    virtual bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    virtual bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    virtual bool read ( ioHandler &  arg0, const bool &  arg1 );
+    virtual bool read ( ioHandler &  arg0, const bool  arg1 );
 
     eBoundaryType boundaryType  ;
 };

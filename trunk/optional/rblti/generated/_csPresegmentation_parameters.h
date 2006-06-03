@@ -26,9 +26,9 @@ Nothing  =  0
 
     virtual functor::RcsPresegmentation_parameters * clone (  ) const;
 
-    virtual bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    virtual bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    virtual bool read ( ioHandler &  arg0, const bool &  arg1 );
+    virtual bool read ( ioHandler &  arg0, const bool  arg1 );
 
     int smoothingKernelSize  ;
     lti_kMColorQuantization_parameters quantParameters  ;

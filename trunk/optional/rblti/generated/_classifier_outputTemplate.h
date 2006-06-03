@@ -47,9 +47,9 @@ Ignore  =  0
 
     bool apply ( const dvector &  arg0, outputVector &  arg1 ) const;
 
-    bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    bool read ( ioHandler &  arg0, const bool &  arg1 );
+    bool read ( ioHandler &  arg0, const bool  arg1 );
 
     
     

@@ -24,9 +24,9 @@ public:
 
     void setKernel ( const mathObject &  arg0 );
 
-    virtual bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    virtual bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    virtual bool read ( ioHandler &  arg0, const bool &  arg1 );
+    virtual bool read ( ioHandler &  arg0, const bool  arg1 );
 
     kernel1D< float > kernel  ;
     int levels  ;

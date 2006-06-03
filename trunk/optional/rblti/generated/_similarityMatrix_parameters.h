@@ -25,9 +25,9 @@ BorderBased
 
     virtual functor::RsimilarityMatrix_parameters * clone (  ) const;
 
-    virtual bool write ( ioHandler &  arg0, const bool &  arg1 ) const;
+    virtual bool write ( ioHandler &  arg0, const bool  arg1 ) const;
 
-    virtual bool read ( ioHandler &  arg0, const bool &  arg1 );
+    virtual bool read ( ioHandler &  arg0, const bool  arg1 );
 
     eModeType mode  ;
     double(* distFunction )(const rgbPixel &, const rgbPixel &) ;

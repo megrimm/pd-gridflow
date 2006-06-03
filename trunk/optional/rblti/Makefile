@@ -48,6 +48,8 @@ rblti_wrap.s: rblti_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S rblti_wrap.cxx
 
 rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/*
+	echo $(CXX)
+	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
 	sed -i 's/int >>/int> >/' rblti_wrap.cxx
