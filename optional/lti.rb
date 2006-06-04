@@ -72,7 +72,7 @@ end
 class << Functor
   def forms=(a) @forms=a end
   def forms()
-    if defined? @forms then @forms else superclass.forms end
+    if defined? @forms then @forms elsif self.class<=Functor then superclass.forms else raise "huh?" end
   end
   attr_accessor :subclasses # only the adjacent ones
 end
