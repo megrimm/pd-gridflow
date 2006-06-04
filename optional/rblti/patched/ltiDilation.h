@@ -45,9 +45,30 @@ namespace lti {
    * Dilation functor.
    *
    * This functor implements the morphological operator "dilation".
-   * Through the parameters a "binary" or "gray scale" modus can be choosed,
+   * Through the parameters a "binary" or "gray scale" modus can be choosen,
    * and the structuring element (represented by a linear filter kernel) can
    * be given.
+   *
+   * For mode Binary the destination image is set to the norm value of
+   * the kernel used if there is a source element in the kernel region
+   * that is not zero and to zero otherwise.
+   *
+   * The definition for mode Gray can be found in e.g. Gonzalez,
+   * R. and Woods, R.  Digital Image Processing, 2nd Edition,
+   * pp. 550--553, Prentice Hall, 2002
+   *
+   * /code
+   * dest(s,t) = max(src(s-x, t-y) + kernel(x,y)) 
+   * /endcode
+   *
+   * where the regions of the kernel and source overlap. Qualitatively
+   * the Gray operation results in brightening esp. dark details. For
+   * channel8 the resulting values are clipped to be in the allowed
+   * range of [0,255]. Note that for channels the kernel values should
+   * be much lower than the default 1.f. Also note that when the
+   * kernel is separable (sepKernel) the values of all column and row
+   * kernels are subtracted. An example is chessBoardKernel.
+   *
    *
    * Example:
    *
@@ -55,7 +76,7 @@ namespace lti {
    * lti::dilation dilator;                    // the dilation functor
    * lti::dilation::parameters dilationParam;  // the parameters
    *
-   * lti::euclideanKernel<float> theKern(3);   // a 3x3 kernel (all values 1/3)
+   * lti::euclideanKernel<float> theKern(3);   // a circular kernel
    *
    * // binary dilation
    * dilationParam.mode = lti::dilation::parameters::Binary;
@@ -80,7 +101,8 @@ namespace lti {
     class parameters : public morphology::parameters {
     public:
       /**
-       * type to specify what kind of dilation should be applied
+       * type to specify what kind of dilation should be applied. See
+       * lti::dilation for more information.
        */
       enum eMode {
         Binary, /*!< Binary dilation */
@@ -141,7 +163,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const;
+      virtual bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * write the parameters in the given ioHandler
@@ -150,9 +172,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -160,7 +182,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead!
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -169,7 +191,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead!
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
       // ---------------------------------------------------
@@ -332,6 +354,30 @@ namespace lti {
       inline void accumulate(const T& filter,const T& src);
 
       /**
+       * Accumulate the values of T(0) and src
+       */
+      inline void accumulateZero(const T& src);
+
+      /**
+       * Accumulate the values of filter and srcL and srcR
+	   * for symmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateSym(const T& filter,const T& srcL,const T& srcR);
+
+      /**
+       * Accumulate the values of filter and src
+	   * for asymmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateASym(const T& filter,const T& srcL,const T& srcR);
+
+
+      /**
        * Get the state of the accumulator
        */
       inline T getResult() const;
@@ -380,6 +426,30 @@ namespace lti {
       inline void accumulate(const T& filter,const T& src);
 
       /**
+       * Accumulate the values of T(0) and src
+       */
+      inline void accumulateZero(const T& src);
+
+      /**
+       * Accumulate the values of filter and srcL and srcR
+	   * for symmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateSym(const T& filter,const T& srcL,const T& srcR);
+
+      /**
+       * Accumulate the values of filter and src
+	   * for asymmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateASym(const T& filter,const T& srcL,const T& srcR);
+
+
+      /**
        * Get the state of the accumulator
        */
       inline T getResult() const;
@@ -405,7 +475,7 @@ namespace lti {
        */
       T norm;
     };
-#endif
+#endif // SWIG
   };
 }
 

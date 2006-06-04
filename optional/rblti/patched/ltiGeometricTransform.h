@@ -227,7 +227,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const;
+      virtual bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * Write the parameters in the given ioHandler
@@ -236,7 +236,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
 #     ifdef _LTI_MSC_6
       /**
@@ -246,7 +246,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * This function is required by MSVC only, as a workaround for a
@@ -255,7 +255,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
       // ------------------------------------------------
@@ -547,7 +547,7 @@ namespace lti {
       a = rgbPixel(5,5,5);
       return ccollect;
     }
-#endif // SWIG
+#endif // SWIG   
 
     //@}
 

@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.11  2006/06/04 15:29:08  heri
+//  Support for LTI-lib 1.9.15
+//
 //  Revision 1.10  2006/05/26 02:27:26  heri
 //  Let's try this again
 //
@@ -256,6 +259,7 @@ typedef signed char MYBYTE;
 HANDLE_SIMPLE_HEADER_FILE("ltiObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoHandler.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiBoundaryType.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiStatus.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiMathObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiRGBPixel.h")

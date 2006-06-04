@@ -44,7 +44,6 @@
 #include <iostream>
 
 #include <list>
-//#include "ltiSmallObjectList.h"
 
 namespace lti {
   /**
@@ -74,7 +73,6 @@ namespace lti {
   template<class T>
   class tpointList : public ioObject {
   public:
-    // typedef smallObjectList<tpoint<T> > list_type;
     typedef std::list<tpoint<T> > list_type;
 
 #ifndef SWIG
@@ -267,7 +265,7 @@ namespace lti {
     void pop_back();
 
 #ifndef SWIG
-	/**
+    /**
      * returns a reference to the first element
      */
     reference front();
@@ -457,12 +455,12 @@ namespace lti {
     /**
      * write the point list in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the point list from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
 
 
   protected:

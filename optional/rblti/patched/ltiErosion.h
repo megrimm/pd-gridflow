@@ -28,7 +28,7 @@
  * organization: LTI, RWTH Aachen
  * creation ...: 19.7.2000
  * revisions ..: $Id$
- */
+*/
 
 #ifndef _LTI_EROSION_H_
 #define _LTI_EROSION_H_
@@ -49,13 +49,33 @@ namespace lti {
    * and the structuring element (represented by a linear filter kernel) can
    * be given.
    *
+   * For mode Binary the destination image is set to 0 if there is a
+   * source element in the kernel region that is zero and to the norm
+   * value of the used kernel otherwise.
+   *
+   * The definition for mode Gray can be found in e.g. Gonzalez,
+   * R. and Woods, R.  Digital Image Processing, 2nd Edition,
+   * pp. 550--553, Prentice Hall, 2002
+   *
+   * /code
+   * dest(s,t) = min(src(s-x, t-y) - kernel(x,y)) 
+   * /endcode
+   *
+   * where the regions of the kernel and source overlap. Qualitatively
+   * the Gray operation results in darkening esp. of bright
+   * details. For channel8 the resulting values are clipped to be in
+   * the allowed range of [0,255]. Note that for channels the kernel
+   * values should be much lower than the default 1.f. Also note that when the
+   * kernel is separable (sepKernel) the values of all column and row
+   * kernels are added. An example is chessBoardKernel.
+   *
    * Example:
    *
    * \code
-   * lti::erosion eroder;                      // the erosion functor
-   * lti::erosion::parameters erosionParam;    // the parameters
+   * lti::erosion eroder;                   // the erosion functor
+   * lti::erosion::parameters erosionParam; // the parameters
    *
-   * lti::gaussKernel2D<float> gauss(3,10000); // a 3x3 kernel (all values 1/3)
+   * lti::cityBlockKernel<float> kern(3);   // 3x3 diamond shaped kernel
    *
    * // binary erosion
    * erosionParam.mode = lti::erosion::parameters::Binary;
@@ -80,7 +100,8 @@ namespace lti {
     class parameters : public morphology::parameters {
     public:
       /**
-       * type to specify what kind of erosion should be applied
+       * type to specify what kind of erosion should be applied. See
+       * lti::erosion for details.
        */
       enum eMode {
         Binary, /*!< Binary erosion */
@@ -141,7 +162,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const;
+      virtual bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * write the parameters in the given ioHandler
@@ -150,9 +171,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -160,7 +181,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead!
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -169,7 +190,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead!
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
       // ---------------------------------------------------
@@ -317,6 +338,7 @@ namespace lti {
      * The (optional) type U is the type of the accumulator variable for
      * the filter.
      */
+     
 #ifndef SWIG
     template<class T,class U=T>
     class accumulatorGray {
@@ -330,6 +352,29 @@ namespace lti {
        * Accumulate the values of filter and src
        */
       inline void accumulate(const T& filter,const T& src);
+
+      /**
+       * Accumulate the values of T(0) and src
+       */
+      inline void accumulateZero(const T& src);
+
+      /**
+       * Accumulate the values of filter and srcL and srcR
+	   * for symmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateSym(const T& filter,const T& srcL,const T& srcR);
+
+      /**
+       * Accumulate the values of filter and src
+	   * for asymmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateASym(const T& filter,const T& srcL,const T& srcR);
 
       /**
        * Get the state of the accumulator
@@ -377,6 +422,30 @@ namespace lti {
        * Accumulate the values of filter and src
        */
       inline void accumulate(const T& filter,const T& src);
+
+      /**
+       * Accumulate the values of T(0) and src
+       */
+      inline void accumulateZero(const T& src);
+
+      /**
+       * Accumulate the values of filter and srcL and srcR
+	   * for symmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateSym(const T& filter,const T& srcL,const T& srcR);
+
+      /**
+       * Accumulate the values of filter and src
+	   * for asymmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateASym(const T& filter,const T& srcL,const T& srcR);
+
 
       /**
        * Get the state of the accumulator

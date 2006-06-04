@@ -87,7 +87,7 @@ namespace lti {
    *
    * \endcode
    *
-   * The image representation in the LTILib is based on the lti::matrix
+   * The image representation in the LTI-Lib is based on the lti::matrix
    * class.  It is quite confusing to use first the y-coordinate and then
    * the x-coordinate to access the image elements.  To avoid confusion use
    * the lti::point class to access the elements of the matrix:
@@ -528,13 +528,14 @@ namespace lti {
 
       return (*this);
     };
+    
 #ifdef SWIG
     %template(castFromInt) 	castFrom<int>;
     %template(castFromFloat) 	castFrom<float>;
     %template(castFromDouble) 	castFrom<double>;
     %template(castFromUbyte) 	castFrom<ubyte>;
     //%template(CastFromRgbPixel)	castFrom<rgbPixel>;
-#endif    
+#endif  
 
     /**
      * create a clone of this matrix
@@ -571,7 +572,7 @@ namespace lti {
      * of the vector.
      */
     //@{
-
+    
 #ifndef SWIG
     /**
      * applies a C-function to each element of the matrix.
@@ -654,8 +655,8 @@ namespace lti {
                      T (*function)(T,T));
 
     //@}
-#endif // SWIG
 
+#endif // SWIG    
     /**
      * @name Arithmetical Operations
      */

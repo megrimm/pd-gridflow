@@ -38,11 +38,32 @@
 
 #include "ltiMacroSymbols.h"
 
-#ifdef _LTI_MSC_VER
+// undefine symbols that may come from other libraries
+#undef PACKAGE_BUGREPORT 
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+
+#ifdef _LTI_WIN32
 #  include "ltiWinConfig.h"
 #else
 #  include "ltiLinConfig.h"
 #endif
+
+// rename symbols to be LTI-Lib specific
+#define LTI_PACKAGE_BUGREPORT PACKAGE_BUGREPORT
+#define LTI_PACKAGE_NAME PACKAGE_NAME
+#define LTI_PACKAGE_STRING PACKAGE_STRING
+#define LTI_PACKAGE_TARNAME PACKAGE_TARNAME
+#define LTI_PACKAGE_VERSION PACKAGE_VERSION
+
+// undefine symbols that may conflict with other libraries
+#undef PACKAGE_BUGREPORT 
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
 
 // Symbols defined to cope with some underscored symbols
 

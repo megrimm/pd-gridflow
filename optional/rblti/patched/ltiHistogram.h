@@ -723,12 +723,12 @@ namespace lti {
     /**
      * write the object in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the object from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
     //@}
 
   protected:
@@ -880,7 +880,7 @@ namespace lti {
      * This method is slower than getLastCell, since it need to make some
      * arithmetical operations.  You should use getLastCell instead.
      */
-    inline const int size() const;
+    inline int size() const;
 
     /**
      * change cell number of the histogram.  All data will
@@ -919,7 +919,7 @@ namespace lti {
               const int& from=0,
               const int& to=MaxInt32);
 
-	/**
+    /**
      * read-only access to the element x of the histogram
      * @param x index of the histogram element to be accessed.  It should
      *          be between getFirstCell() and getLastCell()
@@ -994,12 +994,12 @@ namespace lti {
     /**
      * write the object in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the object from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
 
   protected:
 
@@ -1112,7 +1112,7 @@ namespace lti {
      */
     void resize(const int& cellsY,const int& cellsX);
 
-	/**
+    /**
      * initialize all cells of the histogram with 0 (or another specified
      * number).
      */
@@ -1218,6 +1218,7 @@ namespace lti {
      */
     inline value_type getProbability(const point& p) const;
 
+
     /**
      * read-only access to the element of the row y and the column x of the
      * histogram as a discrete probability distribution term.  This is
@@ -1267,12 +1268,12 @@ namespace lti {
     /**
      * write the object in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the object from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
 
 
   protected:

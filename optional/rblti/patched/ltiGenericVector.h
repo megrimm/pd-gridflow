@@ -192,7 +192,7 @@ namespace lti {
      */
     class iterator {
       friend class genericVector<T>;
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       friend class const_iterator;
 #     else
       friend class genericVector<T>::const_iterator;
@@ -595,7 +595,7 @@ namespace lti {
        * DO NOT EXPLICITLY USE THIS CONSTRUCTOR. OTHERWISE YOUR CODE WILL NOT
        * COMPILE IN THE RELEASE VERSION!
        */
-      explicit const_iterator(const int& startPos,const genericVector<T>* vct)
+      explicit const_iterator(int startPos,const genericVector<T>* vct)
         : pos(startPos), theGenericVector(vct) {};
 
     private:
@@ -624,7 +624,7 @@ namespace lti {
      * @param theSize number of elements of the genericVector.
      * @param iniValue all elements will be initialized with this value.
      */
-    explicit genericVector(const int& theSize,const T& iniValue = T());
+    explicit genericVector(int theSize,const T& iniValue = T());
 
     /**
      * Create a genericVector of the given size and initialize it with the
@@ -633,7 +633,7 @@ namespace lti {
      * @param theSize number of elements of the genericVector.
      * @param data a pointer to the data that will be copied.
      */
-    genericVector(const int& theSize,const T data[]);
+    genericVector(int theSize,const T data[]);
 
     /**
      * Create a genericVector of the given size and initialize it with the
@@ -647,7 +647,7 @@ namespace lti {
      *                to resize the genericVector.  Despite this, the value of
      *                each element can be changed by the access operators.
      */
-    genericVector(const int& theSize,T data[],const bool constRef);
+    genericVector(int theSize,T data[],const bool constRef);
 
     /**
      * Create this genericVector as a copy of another genericVector
@@ -665,7 +665,7 @@ namespace lti {
      * @param to end point included.
      */
     genericVector(const genericVector<T>& other,
-                  const int& from, const int& to=MaxInt32);
+                  int from, int to=MaxInt32);
 
     /**
      * Create this genericVector as a copy of specified elements of
@@ -685,7 +685,7 @@ namespace lti {
 
     /**
      * If \a init is true this constructor is equivalent to calling
-     * genericVector(const int& theSize), and thus initializing
+     * genericVector(int theSize), and thus initializing
      * all elements with T(). However, in some cases the elements need
      * not be initialized during construction, since complex
      * initializion is required. Especially for large genericVectors, the
@@ -703,7 +703,7 @@ namespace lti {
      * @param init initialize matrix or not
      * @param theSize number of elements of the genericVector.
      */
-    genericVector(const bool& init, const int& theSize);
+    genericVector(bool init, int theSize);
 
     /**
      * destructor
@@ -776,7 +776,7 @@ namespace lti {
      * If \a theSize is greater than the allocated memory, the behaviour could
      * be unpredictible.
      */
-    void useExternData(const int& theSize,T* data,const bool& constRef=false);
+    void useExternData(int theSize,T* data,bool constRef=false);
 
     /**
      * Attach extern data to the matrix.
@@ -810,7 +810,7 @@ namespace lti {
      *                          //      block2!!
      * \endcode
      */
-    void attach(const int& theSize,T* data);
+    void attach(int theSize,T* data);
 
     /**
      * Free the data of this object and hand it over to the
@@ -971,8 +971,8 @@ namespace lti {
      * before the \b first valid element of the genericVector.
      */
     inline const_iterator inverseEnd() const;
-#endif // SWIG
-
+#endif // SWIG   
+ 
     /**
      * change dimension of the genericVector.
      * @param newSize the new size of the genericVector
@@ -1007,13 +1007,17 @@ namespace lti {
      *
      * \endcode
      *
-     * f the resize is possible (see useExternData()), this %object
-     * will always owns the data!
+     *
+     * If the new size is not equal to the old size, the genericVector
+     * always owns the data afterwards (i.e. new memory is allocated)
+     * even if it didn't own the data before. Otherwise the ownership
+     * remains unchanged. You can use restoreOwnership() if you just
+     * want to own the data.
      */
-    void resize(const int& newSize,
+    void resize(int newSize,
                 const T& iniValue = T(),
-                const bool& copyData = true,
-                const bool& initNew = true);
+                bool copyData = true,
+                bool initNew = true);
 
     /**
      * clears the genericVector (dimension 0)
@@ -1043,8 +1047,8 @@ namespace lti {
      *   myVct.fill(9,1,3);                // myVct=[0,9,9,9,0,0,0,0,0,0]
      * \endcode
      */
-    void fill(const T& iniValue,const int& from = 0,
-              const int& to = MaxInt32);
+    void fill(const T& iniValue,int from = 0,
+              int to = MaxInt32);
 
     /**
      * fills the genericVector elements with data pointed by \a data
@@ -1064,8 +1068,8 @@ namespace lti {
      *   myVct.fill(data,1,3);             // myVct=[0,2,4,8,0,0,0,0,0,0]
      * \endcode
      */
-    void fill(const T data[],const int& from = 0,
-                             const int& to = MaxInt32);
+    void fill(const T data[],int from = 0,
+                             int to = MaxInt32);
 
     /**
      * fills the genericVector elements from \a from to
@@ -1079,9 +1083,9 @@ namespace lti {
      * Example:  if a = [0 0 0 0 0] and b = [1 2 3], after a.fill(b,3,4,1)
      * results a = [0 0 0 2 3]
      */
-    void fill(const genericVector<T>& vct,const int& from = 0,
-        const int& to = MaxInt32,
-        const int& startAt = 0);
+    void fill(const genericVector<T>& vct,int from = 0,
+              int to = MaxInt32,
+              int startAt = 0);
 
 #ifndef SWIG
     /**
@@ -1123,7 +1127,7 @@ namespace lti {
      * @param to end point included.
      */
     genericVector<T>& copy(const genericVector<T>& other,
-                    const int& from, const int& to=MaxInt32);
+                    int from, int to=MaxInt32);
 
     /**
      * assignment operator.
@@ -1186,7 +1190,10 @@ namespace lti {
       typename genericVector<U>::const_iterator it,eit;
       typename genericVector<T>::iterator dit;
 
-      resize(other.size(),T(),false,false);
+      // only resize if necessary. castFrom doesn't guarantee ownership.
+      if (other.size() != size()) {
+        resize(other.size(),T(),false,false);
+      }
 
       for (it=other.begin(),dit=begin(),eit=other.end();
            it!=eit;++it,++dit) {
@@ -1195,7 +1202,7 @@ namespace lti {
 
       return *this;
     };
-    
+
 #ifdef SWIG
     %template(castFromInt) 	castFrom<int>;
     %template(castFromFloat) 	castFrom<float>;
@@ -1205,14 +1212,17 @@ namespace lti {
 #endif    
 
     /**
-     * cast from a std::genericVector of the same type
+     * cast from a std::vector of the same type
      */
     template<class U>
     genericVector<T>& castFrom(const std::vector<U>& other) {
       typename std::vector<U>::const_iterator it,eit;
       typename genericVector<T>::iterator dit;
 
-      resize(other.size(),T(),false,false);
+      // only resize if necessary. castFrom doesn't guarantee ownership.
+      if (static_cast<int>(other.size()) != size()) {
+        resize(static_cast<int>(other.size()),T(),false,false);
+      }
 
       for (it=other.begin(),dit=begin(),eit=other.end();
            it!=eit;++it,++dit) {
@@ -1348,12 +1358,12 @@ namespace lti {
     /**
      * write the object in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the object from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
     //@}
 
   protected:

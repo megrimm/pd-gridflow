@@ -66,7 +66,7 @@ namespace lti {
    * col) is possible to access an element directly.  With at(const
    * int row) you can get the row vector.  You cannot for instance
    * resize nor change the memory referenced in this vector (see
-   * lti::vector::resize).  For example:
+   * lti::genericVector::resize()).  For example:
    *
    * \code
    * float accu = 0; // initialize accumulator
@@ -86,30 +86,6 @@ namespace lti {
    *
    * \endcode
    *
-   * The image representation in the LTILib is based on the lti::genericMatrix
-   * class.  It is quite confusing to use first the y-coordinate and then
-   * the x-coordinate to access the image elements.  To avoid confusion use
-   * the lti::point class to access the elements of the genericMatrix:
-   *
-   * \code
-   *
-   * lti::channel8 aChannel(20,15); // creates an 8bit image
-   * lti::channel8::value_type tmp; // tmp is of the element type of the
-   *                                // channel8!
-   * lti::point p;
-   *
-   *
-   * for (p.y = 0; p.y < aChannel.rows(); p.y++) {
-   *   for (p.x = 0; p.x < aChannel.columns(); p.x++) {
-   *   tmp += aChannel.at(p); // access each element of the genericMatrix:
-   *                          // equivalent to: tmp += aChannel.at(p.y,p.x)!
-   *   }
-   * }
-   *
-   * \endcode
-   *
-   * @see lti::image, lti::channel, lti::channel8,
-   *      lti::dgenericMatrix, lti::fgenericMatrix, lti::igenericMatrix
    *
    * The genericMatrix has following methods:
    * - Constructors Constructors
@@ -134,16 +110,6 @@ namespace lti {
    *     wrapper-object to access external memory regions: useExternData().
    *     To check if a genericMatrix is a wrapper-object you can use 
    *     ownsData().
-   * - Mathematical operations
-   *   - GenericMatrix multiplication: multiply()
-   *   - Elementwise multiplication: emultiply()
-   *   - Add another genericMatrix to the actual genericMatrix: add()
-   *   - Add another <b>scaled</b> genericMatrix to the actual genericMatrix:
-   *     addScaled()
-   *   - Add a constant value to all elements of the genericMatrix: 
-   *     add(const T& cst)
-   *   - Subtract another vector from the actual vector: subtract()
-   *   - Multiply the vector with a constant value: multiply()
    * - Iterators
    *   - It is possible to iterate within the genericMatrix by making use of
    *     the genericMatrix iterators.  (see begin() for more information)
@@ -151,7 +117,6 @@ namespace lti {
    *     going backwards, due to faster execution times (see
    *     inverseBegin() for more information)
    *
-   * @ingroup gLinearAlgebra
    * @ingroup gAggregate
    */
   template<class T>
@@ -265,7 +230,7 @@ namespace lti {
     class iterator {
       friend class genericMatrix<T>;
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       friend class const_iterator;
 #     else
       friend class genericMatrix<T>::const_iterator;
@@ -406,7 +371,7 @@ namespace lti {
        * for internal use only!!!
        * This method does not exist in the release version!
        */
-      const int getPos() const {return pos;}
+      inline int getPos() const {return pos;}
 
       /**
        * for internal use only!!!
@@ -1013,22 +978,22 @@ namespace lti {
     /**
      * number of rows of the genericMatrix
      */
-    inline const int rows() const;
+    inline int rows() const;
 
     /**
      * number of columns of the genericMatrix
      */
-    inline const int columns() const;
+    inline int columns() const;
 
     /**
      * index of the last row (rows()-1)
      */
-    inline const int lastRow() const;
+    inline int lastRow() const;
 
     /**
      * Index of the last columns (columns()-1)
      */
-    inline const int lastColumn() const;
+    inline int lastColumn() const;
 
     /**
      * Number of "physical" rows of the matrix.
@@ -1041,7 +1006,7 @@ namespace lti {
      * submatrix with "no copy data", this value will return the size of the
      * original matrix.
      */
-    inline const int metaRows() const;
+    inline int metaRows() const;
 
     /**
      * Number of "physical" columns of the matrix.
@@ -1054,7 +1019,7 @@ namespace lti {
      * submatrix with "no copy data", this value will return the number of
      * columns of the original matrix.
      */
-    inline const int metaColumns() const;
+    inline int metaColumns() const;
 
     /**
      * return type of the size() member
@@ -1182,13 +1147,18 @@ namespace lti {
      *
      * \endcode
      *
-     * If the resize is possible (see useExternData()), this %object
-     * will always owns the data!
+     * If the new size is not equal to the old size, the genericMatrix
+     * always owns the data afterwards (i.e. new memory is allocated)
+     * even if it didn't own the data before. Otherwise the ownership
+     * remains unchanged. You can use restoreOwnership() if you just
+     * want to own the data.
      */
     void resize(const int newRows,const int newCols,
                 const T& iniValue = T(),
                 const bool copyData=true,
                 const bool initNew=true);
+		
+		
 #endif // SWIG
 
     /**
@@ -1216,9 +1186,9 @@ namespace lti {
      *                 elements are left uninitialized.
      *
      * If the resize is possible (see useExternData()), this %object
-     * will always owns the data!
+     * will always owns the data afterwards!
      *
-     * This is equivalte to call
+     * This is equivalent to call
      *   resize(newDim.y,newDim.x,iniValue,copyData,initNew)
      */
     inline void resize(const ipoint& newDim,
@@ -1276,7 +1246,6 @@ namespace lti {
      */
     inline void fill(const T& iniValue,const irectangle& window);
 
-    
 #ifndef SWIG
     /**
      * fills genericMatrix elements with the data pointed by <code>data</code>.
@@ -1327,7 +1296,7 @@ namespace lti {
      * @param window the window to be filled
      */
     inline void fill(const T data[],const irectangle& window);
-
+    
 #endif // SWIG
 
     /**
@@ -1391,8 +1360,6 @@ namespace lti {
                      const irectangle& window,
                      const ipoint& start=point(0,0));
 
-
-//#ifndef SWIG
     /**
      * access element at the given row and column
      * @param row the row of the element
@@ -1454,7 +1421,6 @@ namespace lti {
      * @return a const reference to the vector element
      */
     inline const T& at(const ipoint& p) const;
-//#endif // SWIG
 
     /**
      * return genericMatrix-row as a vector.
@@ -1547,6 +1513,19 @@ namespace lti {
     inline genericVector<T> getDiagonal() const;
 
     /**
+     * Sets the diagonal of the genericMatrix to the values given in
+     * the genericVector \a diag. Let \c r be the number of rows and
+     * \c c be the number of columns of the matrix. Then \c minRC is
+     * \c min(r,c). Also let \c d be the size of \a diag. Only \c
+     * min(minRC,d) values are copied from \a diag. If \c d is smaller
+     * than \c minRC the remaining values on the diagonal are left
+     * untouched. The copying always starts at (0,0) of the matrix.
+     *
+     * @param diag values to be copied into the diagonal of the matrix
+     */
+    void setDiagonal(const genericVector<T>& diag);
+
+    /**
      * copy the data of a vector in a given row
      * @param row the row that receives the data.
      * @param theRow the vector with the data to be copied
@@ -1561,8 +1540,6 @@ namespace lti {
     void setColumn(const int col,const genericVector<T>& theCol);
 
     /**
-     * assigment operator.
-     *
      * copy the contents of <code>other</code> in this object.
      *
      * The result of the copy is always a connected genericMatrix.
@@ -1574,13 +1551,12 @@ namespace lti {
     genericMatrix<T>& copy(const genericMatrix<T>& other);
 
     /**
-     * assigment operator.
-     *
-     * copy the contents of <code>other</code> in this object.
+     * copy the contents of the rectangle described by the indices of
+     * <code>other</code> into this object.
      *
      * The result of the copy is always a connected genericMatrix.
      * I.e. you cannot copy the sub-genericMatrix property of another
-     * genericMatrix.
+     * genericMatrix. 
      *
      * @param other the other genericMatrix to be copied
      * @param fromRow initial row of the other genericMatrix to be copied
@@ -1595,9 +1571,8 @@ namespace lti {
                            const int toCol=MaxInt32);
 
     /**
-     * assigment operator.
-     *
-     * copy the contents of <code>other</code> in this object.
+     * copy the contents in the rectangle \c windows of <code>other</code>
+     * in this object.
      *
      * The result of the copy is always a connected genericMatrix.
      * I.e. you cannot copy the sub-genericMatrix property of another
@@ -1610,8 +1585,6 @@ namespace lti {
                                   const irectangle& window);
 
     /**
-     * assigment operator.
-     *
      * copy the contents of the specified rows/columns of
      * <code>other</code> into this object. Multiple occurence of one
      * row/column index in <code>idx</code> is allowed. If the
@@ -1646,9 +1619,11 @@ namespace lti {
      */
     template<class U>
     genericMatrix<T>& castFrom(const genericMatrix<U>& other) {
-      resize(other.rows(),other.columns(),T(),false,false);
-      int y;
-      for (y=0;y<rows();y++) {
+      // only resize if necessary. castFrom doesn't guarantee ownership.
+      if (other.size() != size()) {
+        resize(other.rows(),other.columns(),T(),false,false);
+      }
+      for (int y=0;y<rows();y++) {
         getRow(y).castFrom(other.getRow(y));
       }
 
@@ -1663,6 +1638,9 @@ namespace lti {
     //%template(CastFromRgbPixel)	castFrom<rgbPixel>;
 #endif    
 
+    
+    
+    
     /**
      * create a clone of this genericMatrix
      * @return a pointer to a copy of this genericMatrix
@@ -1786,8 +1764,8 @@ namespace lti {
                      const genericMatrix<T>& b,
                      T (*function)(T,T));
 
-    //@}
 #endif // SWIG
+    //@}
 
     /**
      * @name Input and Output
@@ -1797,12 +1775,12 @@ namespace lti {
     /**
      * write the object in the given ioHandler
      */
-    virtual bool write(ioHandler& handler,const bool& complete = true) const;
+    virtual bool write(ioHandler& handler,const bool complete = true) const;
 
     /**
      * read the object from the given ioHandler
      */
-    virtual bool read(ioHandler& handler,const bool& complete = true);
+    virtual bool read(ioHandler& handler,const bool complete = true);
     //@}
 
   protected:

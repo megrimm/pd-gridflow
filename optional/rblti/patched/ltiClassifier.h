@@ -48,6 +48,7 @@
 #include "ltiMatrix.h"
 #include "ltiIoHandler.h"
 #include "ltiProgressInfo.h"
+#include "ltiStatus.h"
 
 # ifdef min
 #   undef min
@@ -87,7 +88,7 @@ namespace lti {
    * from the classification process.
    *
    */
-  class classifier : public ioObject {
+  class classifier : public ioObject, public status {
   public:
     /**
      * constant to indicate an unknown object
@@ -258,7 +259,7 @@ namespace lti {
        * @param pos the position of the id.
        * @return true if id was found, false otherwise
        */
-      bool find(const int& id, int& pos);
+      bool find(const int& id, int& pos) const;
 
       /**
        * Sets the values of the outputVector.
@@ -625,7 +626,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      bool write(ioHandler& handler,const bool& complete=true) const;
+      bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * read the objectProb from the given ioHandler
@@ -634,9 +635,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      bool read(ioHandler& handler,const bool& complete=true);
+      bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -644,7 +645,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -653,7 +654,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
     protected:
@@ -993,7 +994,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      bool write(ioHandler& handler,const bool& complete=true) const;
+      bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * read the outputTemplate from the given ioHandler
@@ -1002,9 +1003,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      bool read(ioHandler& handler,const bool& complete=true);
+      bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -1012,7 +1013,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -1021,7 +1022,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
     protected:
@@ -1129,7 +1130,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const;
+      virtual bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * read the parameters from the given ioHandler
@@ -1138,9 +1139,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -1148,7 +1149,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -1157,7 +1158,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
     };
@@ -1275,25 +1276,25 @@ namespace lti {
      */
     virtual const char* getTypeName() const;
 
-    /**
-     * return the last message set with setStatusString().  This will
-     * never return 0.  If no status-string has been set yet an empty string
-     * (pointer to a string with only the char(0)) will be returned.
-     */
-    virtual const char* getStatusString() const;
+//     /**
+//      * return the last message set with setStatusString().  This will
+//      * never return 0.  If no status-string has been set yet an empty string
+//      * (pointer to a string with only the char(0)) will be returned.
+//      */
+//     virtual const char* getStatusString() const;
 
-    /**
-     * set a status string.
-     *
-     * @param msg the const string to be reported next time by
-     * getStatusString().  The given string will be copied
-     * This message will be usually set within the apply methods to indicate
-     * an error cause.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void setStatusString(const char* msg) const;
+//     /**
+//      * set a status string.
+//      *
+//      * @param msg the const string to be reported next time by
+//      * getStatusString().  The given string will be copied
+//      * This message will be usually set within the apply methods to indicate
+//      * an error cause.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void setStatusString(const char* msg) const;
 
     /**
      * copy data of "other" functor.
@@ -1386,7 +1387,7 @@ namespace lti {
      *        be also written, otherwise only the data block will be written.
      * @return true if write was successful
      */
-    virtual bool write(ioHandler& handler,const bool& complete=true) const;
+    virtual bool write(ioHandler& handler,const bool complete=true) const;
 
     /**
      * read the classifier from the given ioHandler
@@ -1395,14 +1396,14 @@ namespace lti {
      *        be also written, otherwise only the data block will be written.
      * @return true if write was successful
      */
-    virtual bool read(ioHandler& handler,const bool& complete=true);
+    virtual bool read(ioHandler& handler,const bool complete=true);
 
 #ifndef SWIG
   typedef parameters classifier_parameters;
   typedef outputVector classifier_outputVector;
   typedef outputTemplate classifier_outputTemplate;
 #endif
-
+  
   protected:
     /**
      * returns current parameters. (non const! -> protected)
@@ -1419,15 +1420,15 @@ namespace lti {
      */
     progressInfo* progressBox;
 
-    /**
-     * the status string written with setStatusString
-     */
-    mutable char* statusString;
+//     /**
+//      * the status string written with setStatusString
+//      */
+//     mutable char* statusString;
 
-    /**
-     * the empty string returned if the statusString is empty
-     */
-    static const char *const emptyString;
+//     /**
+//      * the empty string returned if the statusString is empty
+//      */
+//     static const char *const emptyString;
 
     /**
      * The outputTemplate for this classifier
@@ -1443,7 +1444,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool write(ioHandler& handler,const classifier::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor::parameters from the given ioHandler.
@@ -1451,7 +1452,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool read(ioHandler& handler,classifier::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * write the classifier in the given ioHandler.
@@ -1459,7 +1460,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool write(ioHandler& handler,const classifier& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the classifier from the given ioHandler.
@@ -1467,7 +1468,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool read(ioHandler& handler,classifier& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * write the functor::parameters in the given ioHandler.
@@ -1475,7 +1476,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool write(ioHandler& handler,const classifier::outputVector& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor::parameters from the given ioHandler.
@@ -1483,7 +1484,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool read(ioHandler& handler,classifier::outputVector& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * write the functor::parameters in the given ioHandler.
@@ -1491,7 +1492,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool write(ioHandler& handler,const classifier::outputTemplate& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor::parameters from the given ioHandler.
@@ -1499,7 +1500,7 @@ namespace lti {
    * if the enclosing begin and end should be also be written or not
    */
   bool read(ioHandler& handler,classifier::outputTemplate& p,
-             const bool& complete = true);
+             const bool complete = true);
 
 }
 

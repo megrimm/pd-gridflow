@@ -57,7 +57,6 @@
  * - lti::dreal  (8 byte floating point)
  */
 
- 
 namespace lti {
 typedef unsigned _LTI_BYTE ubyte;
 typedef signed _LTI_BYTE byte;
@@ -69,7 +68,7 @@ typedef unsigned _LTI_WORD64 uint64;
 typedef signed _LTI_WORD64 int64;
 typedef float sreal;
 typedef double dreal;
-  
+
   const int32 MinInt32 = -0x7fffffff;
   const int32 MaxInt32 = +0x7fffffff;
 
@@ -77,7 +76,6 @@ typedef double dreal;
   const int32 MaxInt24 = +0x007fffff;
 
 }
-
 
 #endif
 
