@@ -70,6 +70,11 @@ namespace lti {
    * fixed point types (e.g. channel8), you must make use of the norm-term in
    * the kernel. (see kernel1D<T>::norm).
    *
+   * \b Note that the convolution with sepKernels that are symmetric,
+   * e.g gaussKernel2D or anti-symmetric like the gradient part of
+   * sobelKernelX is optimized. It is assumed (by definition) that the
+   * middle element of an anti-symmetric kernel is 0.
+   *
    * @ingroup gLinearFilters
    *
    * Example using a gaussian kernel
@@ -173,7 +178,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const;
+      virtual bool write(ioHandler& handler,const bool complete=true) const;
 
       /**
        * write the parameters in the given ioHandler
@@ -182,9 +187,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -192,7 +197,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead!
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -201,7 +206,7 @@ namespace lti {
        * there...  This method is public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead!
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
     protected:
@@ -254,7 +259,7 @@ namespace lti {
      *                will be left here too.
      * @return true if successful, false otherwise.
      */
-    bool apply(channel8& srcdest) const;
+    bool apply(matrix<channel8::value_type>& srcdest) const;
 
     /**
      * operates on the given %parameter.
@@ -262,7 +267,7 @@ namespace lti {
      *                will be left here too.
      * @return true if successful, false otherwise.
      */
-    bool apply(channel& srcdest) const;
+    bool apply(matrix<channel::value_type>& srcdest) const;
 
     /**
      * operates on the given %parameter.
@@ -300,19 +305,21 @@ namespace lti {
 
     /**
      * operates on a copy of the given parameters.
-     * @param src channel8 with the source data.
-     * @param dest channel8 where the result will be left.
+     * @param src matrix<channel8::value_type> with the source data.
+     * @param dest matrix<channel8::value_type> where the result will be left.
      * @return true if successful, false otherwise.
      */
-    bool apply(const channel8& src,channel8& dest) const;
+    bool apply(const matrix<channel8::value_type>& src,
+               matrix<channel8::value_type>& dest) const;
 
     /**
      * operates on a copy of the given parameters.
-     * @param src channel with the source data.
-     * @param dest channel where the result will be left.
+     * @param src matrix<channel::value_type> with the source data.
+     * @param dest matrix<channel::value_type> where the result will be left.
      * @return true if successful, false otherwise.
      */
-    bool apply(const channel& src,channel& dest) const;
+    bool apply(const matrix<channel::value_type>& src,
+               matrix<channel::value_type>& dest) const;
 
     /**
      * operates on a copy of the given parameters.
@@ -389,7 +396,7 @@ namespace lti {
     void setKernel(const mathObject& aKernel);
 
   private:
-#ifndef SWIG
+  #ifndef SWIG
     /**
      * This is the accumulator class needed by the convolution helper to
      * act as a linear convolution operator for gray valued images.
@@ -410,6 +417,29 @@ namespace lti {
        * Accumulate the values of filter and src
        */
       inline void accumulate(const T& filter,const T& src);
+
+      /**
+       * Accumulate the values of T(0) and src
+       */
+      inline void accumulateZero(const T& src);
+
+      /**
+       * Accumulate the values of filter and srcL and srcR
+	   * for symmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateSym(const T& filter,const T& srcL,const T& srcR);
+
+      /**
+       * Accumulate the values of filter and src
+	   * for asymmetric filter kernel
+	   * src:				srcL  *  middle  *  srcR
+	   * filter:			*  *  *  middle  *  *  *
+	   * used filter part:	*  *  *  middle
+       */
+      inline void accumulateASym(const T& filter,const T& srcL,const T& srcR);
 
       /**
        * Get the state of the accumulator
@@ -437,7 +467,7 @@ namespace lti {
        */
       T norm;
     };
-#endif
+ #endif
 
 
   };

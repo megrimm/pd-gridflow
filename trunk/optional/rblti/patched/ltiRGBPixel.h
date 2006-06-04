@@ -323,7 +323,7 @@ namespace lti {
     /**
      * Used to simulate the vector size
      */
-    inline const int size() const {
+    inline int size() const {
       return 3;
     }
 
@@ -342,14 +342,29 @@ namespace lti {
     };
 
     /**
-     * compare two pixels (true if equal!)
+     * Compares this pixel with the specified other pixel. 
+     * Two pixels are considered equal if all four (!) channels,
+     * i.e. R, G, B, and dummy, are equal. A call to this method
+     * is equivalent to this->getValue() == other.getValue().
      */
     inline bool isEqual(const rgbPixel& other) const {
       return (getValue() == other.getValue());
     }
 
     /**
-     * alias for compare()
+     * Compares the color of this pixel with the specified
+     * other pixel. Only the three RGB channels are considered;
+     * the dummy value is ignored.
+     */
+    inline bool isEqualColor(const rgbPixel& other) const {
+      return getRed() == other.getRed()
+        && getGreen() == other.getGreen() 
+        && getBlue() == other.getBlue();
+    }
+
+    /**
+     * Alias for isEqual(). Please note the difference between
+     * isEqual() and isEqualColor()!
      */
     inline bool operator==(const rgbPixel& other) const {
       return (isEqual(other));
@@ -654,7 +669,7 @@ namespace lti {
   /**
    * constant for the color black.
    */
-#ifndef SWIG
+  #ifndef SWIG
   const rgbPixel Black(0,0,0,0);
 
   /**
@@ -692,8 +707,7 @@ namespace lti {
    */
   const rgbPixel White(255,255,255,0);
   //@}
-#endif // SWIG
-
+#endif
   /**
    * read the vector from the given ioHandler.  The complete flag indicates
    * if the enclosing begin and end should be also be readed
@@ -1563,6 +1577,7 @@ namespace std {
 }
 
 #endif
+
 
 
 

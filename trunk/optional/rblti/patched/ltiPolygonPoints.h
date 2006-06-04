@@ -341,7 +341,7 @@ namespace lti {
 #ifdef SWIG
 %template(ipolygonPoints) lti::tpolygonPoints<int>;
 #endif
-
+  
   /**
    * Polygon Points of Integer Points
    */

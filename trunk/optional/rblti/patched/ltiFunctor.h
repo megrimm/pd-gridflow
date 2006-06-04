@@ -34,6 +34,7 @@
 #define _LTI_FUNCTOR_H_
 
 #include "ltiIoObject.h"
+#include "ltiStatus.h"
 #include "ltiException.h"
 #include "ltiIoHandler.h"
 
@@ -57,7 +58,7 @@ namespace lti  {
    * Each functor may have also other setABC() members, to allow the
    * change of just one parameter-item at the time.
    */
-  class functor : public ioObject {
+  class functor : public ioObject, public status {
   public:
     /**
      * Base class for all lti parameter objects
@@ -102,7 +103,7 @@ namespace lti  {
        * @return true if write was successful
        */
       virtual bool write(ioHandler& handler,
-                         const bool& complete=true) const;
+                         const bool complete=true) const;
 
       /**
        * read the parameters from the given ioHandler
@@ -111,9 +112,9 @@ namespace lti  {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -121,7 +122,7 @@ namespace lti  {
        * there...  This method is public due to another bug!, so please
        * NEVER EVER call this method directly
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -130,7 +131,7 @@ namespace lti  {
        * there...  This method is public due to another bug!, so please
        * NEVER EVER call this method directly
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
       
     protected:
@@ -336,80 +337,80 @@ typedef lti::functor::parameters functor_parameters;
      */
     const char* getTypeName() const;
 
-    /**
-     * return the last message set with setStatusString().  This will
-     * never return 0.  If no status-string has been set yet an empty string
-     * (pointer to a string with only the char(0)) will be returned.
-     */
-    virtual const char* getStatusString() const;
+//     /**
+//      * return the last message set with setStatusString().  This will
+//      * never return 0.  If no status-string has been set yet an empty string
+//      * (pointer to a string with only the char(0)) will be returned.
+//      */
+//     virtual const char* getStatusString() const;
 
-    /**
-     * set a status string.
-     *
-     * @param msg the const string to be reported next time by
-     * getStatusString(). The given string will be copied.
-     * This message will be usually set within the apply methods to indicate
-     * an error cause.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void setStatusString(const char* msg) const;
+//     /**
+//      * set a status string.
+//      *
+//      * @param msg the const string to be reported next time by
+//      * getStatusString(). The given string will be copied.
+//      * This message will be usually set within the apply methods to indicate
+//      * an error cause.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void setStatusString(const char* msg) const;
 
-    /**
-     * append a message to the current status string. Take care to
-     * reset the status string by calling setStatusString() for each
-     * call of an apply() or similar method. appendStatusString()
-     * should only be used after setStatusString() has been called.
-     *
-     * @param msg message to be appended to the current status string.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void appendStatusString(const char* msg) const;
+//     /**
+//      * append a message to the current status string. Take care to
+//      * reset the status string by calling setStatusString() for each
+//      * call of an apply() or similar method. appendStatusString()
+//      * should only be used after setStatusString() has been called.
+//      *
+//      * @param msg message to be appended to the current status string.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void appendStatusString(const char* msg) const;
 
-    /**
-     * append an integer value to the current status string. Take care
-     * to reset the status string by calling setStatusString() for
-     * each call of an apply() or similar method. appendStatusString()
-     * should only be used after setStatusString() has been called.
-     *
-     * @param msg integer value to be appended to the current status
-     * string.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void appendStatusString(const int& msg) const;
+//     /**
+//      * append an integer value to the current status string. Take care
+//      * to reset the status string by calling setStatusString() for
+//      * each call of an apply() or similar method. appendStatusString()
+//      * should only be used after setStatusString() has been called.
+//      *
+//      * @param msg integer value to be appended to the current status
+//      * string.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void appendStatusString(const int& msg) const;
 
-    /**
-     * append a double value to the current status string. Take care
-     * to reset the status string by calling setStatusString() for
-     * each call of an apply() or similar method. appendStatusString()
-     * should only be used after setStatusString() has been called.
-     *
-     * @param msg double value to be appended to the current status
-     * string.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void appendStatusString(const double&  msg) const;
+//     /**
+//      * append a double value to the current status string. Take care
+//      * to reset the status string by calling setStatusString() for
+//      * each call of an apply() or similar method. appendStatusString()
+//      * should only be used after setStatusString() has been called.
+//      *
+//      * @param msg double value to be appended to the current status
+//      * string.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void appendStatusString(const double&  msg) const;
 
-    /**
-     * Append the status string of another %functor to this functors
-     * status string. To achieve better readability of the resulting
-     * message a new line is started with the other functor's name and
-     * the message.
-     *
-     * @param other %functor whose status string is to be append to this
-     *        status string.
-     *
-     * Note that the change of the status string is not considered as
-     * a change in the functor status.
-     */
-    virtual void appendStatusString(const functor& other) const;
+//     /**
+//      * Append the status string of another %functor to this functors
+//      * status string. To achieve better readability of the resulting
+//      * message a new line is started with the other functor's name and
+//      * the message.
+//      *
+//      * @param other %functor whose status string is to be append to this
+//      *        status string.
+//      *
+//      * Note that the change of the status string is not considered as
+//      * a change in the functor status.
+//      */
+//     virtual void appendStatusString(const functor& other) const;
 
     /**
      * write the functor in the given ioHandler. The default implementation
@@ -420,7 +421,7 @@ typedef lti::functor::parameters functor_parameters;
      * @return true if write was successful
      */
     virtual bool write(ioHandler& handler,
-                       const bool& complete=true) const;
+                       const bool complete=true) const;
 
     /**
      * Read the functor from the given ioHandler. 
@@ -438,7 +439,7 @@ typedef lti::functor::parameters functor_parameters;
      *        be also written, otherwise only the data block will be written.
      * @return true if write was successful
      */
-    virtual bool read(ioHandler& handler,const bool& complete=true);
+    virtual bool read(ioHandler& handler,const bool complete=true);
 
   protected:
     /**
@@ -466,17 +467,16 @@ typedef lti::functor::parameters functor_parameters;
      */
     bool ownParams;
 
-    /**
-     * the status string written with setStatusString
-     */
-    mutable char* statusString;
+//     /**
+//      * the status string written with setStatusString
+//      */
+//     mutable char* statusString;
 
-    /**
-     * the empty string returned if the statusString is empty
-     */
-    static const char *const emptyString;
+//     /**
+//      * the empty string returned if the statusString is empty
+//      */
+//     static const char *const emptyString;
   };
-
 
   /**
    * write the functor::parameters in the given ioHandler.
@@ -484,7 +484,7 @@ typedef lti::functor::parameters functor_parameters;
    * if the enclosing begin and end should be also be written or not
    */
   bool write(ioHandler& handler,const functor::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor::parameters from the given ioHandler.
@@ -492,7 +492,7 @@ typedef lti::functor::parameters functor_parameters;
    * if the enclosing begin and end should be also be written or not
    */
   bool read(ioHandler& handler,functor::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * write the functor in the given ioHandler.
@@ -502,7 +502,7 @@ typedef lti::functor::parameters functor_parameters;
    * since most functors do not have a state.
    */
   bool write(ioHandler& handler,const functor& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor from the given ioHandler.
@@ -512,7 +512,7 @@ typedef lti::functor::parameters functor_parameters;
    * since most functors do not have a state.
    */
   bool read(ioHandler& handler,functor& p,
-             const bool& complete = true);
+             const bool complete = true);
 
 } // namespace lti
 

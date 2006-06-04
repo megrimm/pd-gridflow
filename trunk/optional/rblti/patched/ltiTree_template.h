@@ -126,11 +126,9 @@ namespace lti {
       ((empty() && other.empty()) || (!empty() && !other.empty()));
 
     if (result && !empty()) {
-		//const tree<T>::node & thisRoot = (const tree<T>::node &)root();
-		//tree<T>::node otherRoot = other.root();
-        //result = thisRoot.equals(otherRoot);
-		//result = theRoot->equals(  );
-		 result = false;	(*theRoot).equals( *(other.theRoot) );	// min patch !
+      //result = root().equals(other.root());
+      result = false;
+      (*theRoot).equals( *(other.theRoot) );
     }
 
     return result;
@@ -162,7 +160,7 @@ namespace lti {
    */
   template<class T>
   bool tree<T>::write(ioHandler& handler,
-                      const bool& complete) const {
+                      const bool complete) const {
     bool b = true;
     if (!empty()) {
       root().write(handler,complete);
@@ -185,7 +183,7 @@ namespace lti {
    * @return true if write was successful
    */
   template<class T>
-  bool tree<T>::read(ioHandler& handler,const bool& complete) {
+  bool tree<T>::read(ioHandler& handler,const bool complete) {
     bool b = true;
     clear();
 

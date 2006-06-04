@@ -95,7 +95,7 @@ namespace lti {
        * @return true if write was successful
        */
       virtual bool write(ioHandler& handler,
-                         const bool& complete=true) const;
+                         const bool complete=true) const;
 
       /**
        * read the parameters from the given ioHandler
@@ -104,9 +104,9 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true);
+      virtual bool read(ioHandler& handler,const bool complete=true);
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * this function is required by MSVC only, as a workaround for a
        * very awful bug, which exists since MSVC V.4.0, and still by
@@ -114,7 +114,7 @@ namespace lti {
        * there...  This method is public due to another bug!, so please
        * NEVER EVER call this method directly
        */
-      bool readMS(ioHandler& handler,const bool& complete=true);
+      bool readMS(ioHandler& handler,const bool complete=true);
 
       /**
        * this function is required by MSVC only, as a workaround for a
@@ -123,7 +123,7 @@ namespace lti {
        * there...  This method is public due to another bug!, so please
        * NEVER EVER call this method directly
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const;
+      bool writeMS(ioHandler& handler,const bool complete=true) const;
 #     endif
 
       // ------------------------
@@ -167,8 +167,8 @@ namespace lti {
 #ifndef SWIG
 typedef lti::viewerBase::parameters viewerBase_parameters;
 #endif
-
-    /**
+   
+   /**
      * default constructor
      */
     viewerBase();
@@ -354,7 +354,7 @@ typedef lti::viewerBase::parameters viewerBase_parameters;
    * @ingroup gStorable
    */
   bool write(ioHandler& handler,const viewerBase::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 
   /**
    * read the functor::parameters from the given ioHandler.
@@ -364,7 +364,7 @@ typedef lti::viewerBase::parameters viewerBase_parameters;
    * @ingroup gStorable
    */
   bool read(ioHandler& handler,viewerBase::parameters& p,
-             const bool& complete = true);
+             const bool complete = true);
 }
 
 #endif

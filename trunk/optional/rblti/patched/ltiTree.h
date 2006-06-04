@@ -111,7 +111,7 @@ namespace lti {
           // no more nodes free!
           // add a new node in theNodes
 
-          idx = theNodes.size();
+          idx = static_cast<int>(theNodes.size());
           node* newNode = new node(n,theNewParent,*this,newData,idx);
           theNodes.push_back(newNode);
 
@@ -145,7 +145,7 @@ namespace lti {
           // no more nodes free!
           // add a new node in theNodes
 
-          idx = theNodes.size();
+          idx = static_cast<int>(theNodes.size());
           node* newNode = new node(n,theNewParent,*this,newData,idx);
           theNodes.push_back(newNode);
 
@@ -406,9 +406,9 @@ namespace lti {
        * @return a reference to the new child
        */
       node& appendChild(const T& newChildData) {
-        int ldegree;
+//         int ldegree;
 
-        ldegree = degree();
+//         ldegree = degree();
 
         children.push_back(theOwner->createNode(*this,newChildData));
 
@@ -554,7 +554,7 @@ namespace lti {
        * @see numberOfChildren()
        */
       int degree() const {
-        return children.size();
+        return static_cast<int>(children.size());
       };
 
       /**
@@ -710,9 +710,9 @@ namespace lti {
        * node, you can do it explicitly with getData()==other.getData().
        */
       bool equals(const node& other) {
-        bool result = false;
-/*
-        result = (getData() == other.getData()) &&		// min patch ! 
+        bool result ;
+
+        result = (getData() == other.getData) &&
           (degree() == other.degree()) &&
           (size() == other.size()) &&
           (height() == other.height());
@@ -728,7 +728,6 @@ namespace lti {
           }
           i++;
         }
-*/
         return result;
       }
 
@@ -792,7 +791,7 @@ namespace lti {
        */
       //@{
 
-#     ifndef _LTI_MSC_VER
+#     ifndef _LTI_MSC_6
       /**
        * Write the parameters in the given ioHandler
        * @param handler the ioHandler to be used
@@ -800,7 +799,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool write(ioHandler& handler,const bool& complete=true) const
+      virtual bool write(ioHandler& handler,const bool complete=true) const
 #     else
       /**
        * This function is required by MSVC only, as a workaround for a
@@ -809,7 +808,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use write() instead
        */
-      bool writeMS(ioHandler& handler,const bool& complete=true) const
+      bool writeMS(ioHandler& handler,const bool complete=true) const
 #     endif
       {
         bool b = true;
@@ -849,7 +848,7 @@ namespace lti {
         return b;
       }
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * Write the parameters in the given ioHandler
        * @param handler the ioHandler to be used
@@ -858,7 +857,7 @@ namespace lti {
        * @return true if write was successful
        */
       bool write(ioHandler& handler,
-                 const bool& complete=true) const {
+                 const bool complete=true) const {
         // ...we need this workaround to cope with another really
         // awful MSVC bug.
         return writeMS(handler,complete);
@@ -866,7 +865,7 @@ namespace lti {
 #     endif
 
 
-#     ifndef _LTI_MSC_VER
+#     ifndef _LTI_MSC_6
       /**
        * Read the parameters from the given ioHandler
        * @param handler the ioHandler to be used
@@ -874,7 +873,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      virtual bool read(ioHandler& handler,const bool& complete=true)
+      virtual bool read(ioHandler& handler,const bool complete=true)
 #     else
       /**
        * This function is required by MSVC only, as a workaround for a
@@ -883,7 +882,7 @@ namespace lti {
        * there...  This method is also public due to another bug, so please
        * NEVER EVER call this method directly: use read() instead
        */
-      bool readMS(ioHandler& handler,const bool& complete=true)
+      bool readMS(ioHandler& handler,const bool complete=true)
 #     endif
       {
         bool b = true;
@@ -925,7 +924,7 @@ namespace lti {
         return b;
       }
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       /**
        * Read the parameters from the given ioHandler
        * @param handler the ioHandler to be used
@@ -933,7 +932,7 @@ namespace lti {
        *        be also written, otherwise only the data block will be written.
        * @return true if write was successful
        */
-      bool read(ioHandler& handler,const bool& complete=true) {
+      bool read(ioHandler& handler,const bool complete=true) {
         // ...we need this workaround to cope with another really awful MSVC
         // bug.
         return readMS(handler,complete);
@@ -1059,7 +1058,7 @@ namespace lti {
      */
     class iterator {
 
-#     ifdef _LTI_MSC_VER
+#     ifdef _LTI_MSC_6
       friend class const_iterator;
 #     else
       friend class tree<T>::const_iterator;
@@ -1108,9 +1107,9 @@ namespace lti {
       inline iterator& operator++() {
         assert(notNull(pointedNode)); // the end() cannot be incremented!
 
-        int i,size;
+        int i;
 
-        size = pointedNode->degree() - 1;
+        const int size = pointedNode->degree() - 1;
 
         for (i=size;i>=0;i--) {
           if (pointedNode->isChildValid(i)) {
@@ -1122,7 +1121,7 @@ namespace lti {
           pointedNode = 0;
         } else {
           do {
-            int idx = stack.front();
+            const int idx = stack.front();
             stack.pop_front();
 
             pointedNode = theOwner->getNode(idx);
@@ -1230,9 +1229,9 @@ namespace lti {
       inline const_iterator& operator++() {
         assert(notNull(pointedNode)); // the end() cannot be incremented!
 
-        int i,size;
+        int i;
 
-        size = pointedNode->degree() - 1;
+        const int size = pointedNode->degree() - 1;
 
         for (i=size;i>=0;i--) {
           if (pointedNode->isChildValid(i)) {
@@ -1244,7 +1243,7 @@ namespace lti {
           pointedNode = 0;
         } else {
           do {
-            int idx = stack.front();
+            const int idx = stack.front();
             stack.pop_front();
 
             pointedNode = theOwner->getNode(idx);
@@ -1260,11 +1259,11 @@ namespace lti {
        */
       inline const_iterator operator++(int) { // postfix
         assert(notNull(pointedNode)); // the end() cannot be incremented!
-        iterator tmp(*this);
+        const_iterator tmp(*this);
 
-        int i,size;
+        int i;
 
-        size = pointedNode->degree() - 1;
+        const int size = pointedNode->degree() - 1;
 
         for (i=size;i>=0;i--) {
           if (pointedNode->isChildValid(i)) {
@@ -1276,7 +1275,7 @@ namespace lti {
           pointedNode = 0;
         } else {
           do {
-            int idx = stack.front();
+            const int idx = stack.front();
             stack.pop_front();
 
             pointedNode = theOwner->getNode(idx);
@@ -1529,7 +1528,7 @@ namespace lti {
      * @return true if write was successful
      */
     virtual bool write(ioHandler& handler,
-                       const bool& complete=true) const;
+                       const bool complete=true) const;
 
     /**
      * Read the parameters from the given ioHandler. The default implementation
@@ -1539,7 +1538,7 @@ namespace lti {
      *        be also written, otherwise only the data block will be written.
      * @return true if write was successful
      */
-    virtual bool read(ioHandler& handler,const bool& complete=true);
+    virtual bool read(ioHandler& handler,const bool complete=true);
 
 
   protected:
@@ -1563,7 +1562,7 @@ namespace lti {
 } // namespace lti
 
 #include "ltiTree_inline.h"
-#include <ltiTree_template.h>
+#include "ltiTree_template.h"
 
 
 #endif
