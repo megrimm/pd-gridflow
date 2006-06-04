@@ -223,8 +223,8 @@ $LD_LIBRARY_PATH = (
 	read_ld_so_conf +
 	["/usr/lib","/lib"]).uniq
 $LIBX11DIR = [
-  "-L/usr/X11R6/lib",
-  "-L/usr/X11R6/lib64"]
+  "-L/usr/X11R6/lib",  "-L/opt/gnome/lib",
+  "-L/usr/X11R6/lib64","-L/opt/gnome/lib64"]
 $LIBX11 = $LIBX11DIR + ["-lX11"]
 
 # making it easier for everybody I hope:
@@ -649,8 +649,8 @@ Feature.add {
 	unless_feature :quicktimeapple
 	name "Plaum's LibQuickTime"
 	uses_so Or[
-		["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
-		["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
+		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib","-lz"],
+		$LIBX11DIR+["-lquicktime","-lpthread","-lpng","-ldl","-lglib-1.2","-lz"]]
 	f = ["quicktime.h","colormodels.h","lqt.h","lqt_version.h","lqt_codecinfo.h"]
 	uses_h Or[
 		f.map{|x| "lqt/"+x },
