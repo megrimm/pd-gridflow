@@ -246,7 +246,9 @@ end
 prepend_path "/sw" if OSX
 prepend_path "/usr/local"
 prepend_path ENV["HOME"]
-# prepend_path "."
+$CFLAGS += " -I."
+$C_INCLUDE_PATH.unshift "."
+
 
 for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
@@ -400,6 +402,7 @@ Feature.add {
 	}
 	options ["HAVE_MMX"]
 }
+=begin
 Feature.add {
 	tag :simd
 	uses_feature [:pentium]
@@ -413,6 +416,7 @@ Feature.add {
 	}
 	options ["HAVE_SIMD"]
 }
+=end
 Feature.add {
 	tag :profiler
 	name "profiler (speed measurements)"
@@ -435,9 +439,10 @@ Feature.add {
 	options ["HAVE_USB"]
 }
 #----------------------------------------------------------------#
+=begin
 Feature.add {
-	tag :ieee1394
-	name "IEEE1394 Libraries for Linux (raw1394/dc1394)"
+	tag :dc1394
+	name "DC1394 Libraries for Linux (raw1394/dc1394)"
 	status :disabled
 	uses_o ["optional/ieee1394.o"]
 	uses_so ["-lraw1394","-ldc1394_control"]
@@ -448,8 +453,22 @@ Feature.add {
 		int main () {return raw1394_get_libversion==0 || dc1394_get_camera_info==0;}
 		"
 	}
-	options ["HAVE_1394"]
+	options ["HAVE_DC1394"]
 	uses_o ["format/dc1394.o"]
+}
+=end
+Feature.add {
+	tag :dv1394
+	name "DV1394 for Linux"
+	uses_h ["format/dv1394.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return 0;}
+		"
+	}
+	options ["HAVE_DV1394"]
+	uses_o ["format/dv1394.o"]
 }
 Feature.add {
 	tag :x11
@@ -481,6 +500,7 @@ Feature.add {
 	}
 	options ["HAVE_X11_SHARED_MEMORY"]
 }
+=begin
 Feature.add {
 	tag :x11_xv
 	status :disabled
@@ -509,6 +529,7 @@ Feature.add {
 	}
 	uses_o ["format/opengl.o"]
 }
+=end
 Feature.add {
 	tag :sdl
 	name "Simple Directmedia Layer (experimental support)"
@@ -671,6 +692,7 @@ Feature.add {
 	}
 	uses_o ["format/quicktimehw.o"]
 }
+=begin
 Feature.add {
 	tag :xine
 	name "Xine movie decoder"
@@ -689,17 +711,18 @@ Feature.add {
 	}
 	uses_o ["format/xine.o"]
 }
-#Feature.add {
-#	tag :example
-#	name "example (example file optional/example.c)"
-#	uses_o ["optional/example.o"]
-#	test proc {|f|
-#		c_test %`
-#		#include <stdio.h>
-#		int main () {
-#		return 0 /* 0=ok, nonzero=bad */; }`
-#	}
-#}
+Feature.add {
+	tag :example
+	name "example (example file optional/example.c)"
+	uses_o ["optional/example.o"]
+	test proc {|f|
+		c_test %`
+		#include <stdio.h>
+		int main () {
+		return 0 /* 0=ok, nonzero=bad */; }`
+	}
+}
+=end
 #----------------------------------------------------------------#
 Feature.add {
 	tag :puredata
