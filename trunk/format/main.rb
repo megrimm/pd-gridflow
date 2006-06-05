@@ -32,13 +32,6 @@ class<< self
 	def max_packet; 1024*2; end
 end
 
-ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
-
-OurByteOrder = case [1].pack("L")
-        when "\0\0\0\1"; ENDIAN_BIG     # Mac, Sun, SiliconGraphics
-        when "\1\0\0\0"; ENDIAN_LITTLE  # Intel
-        else raise "Cannot determine byte order" end
-
 class Format < GridObject
 	FF_R,FF_W = 4,2 # flags indicating support of :in and :out respectively.
 	attr_accessor :parent
