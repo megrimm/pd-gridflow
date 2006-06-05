@@ -37,7 +37,7 @@ include GridFlow
 include Rblti
 
 class String
-  # returns a Fixnum that is a pointer divided by 4  
+  # returns a Fixnum that is a pointer divided by 4
   def meat # warning: not 64-bit-safe
     [self].pack("p").unpack("I")[0]>>2
   end
@@ -72,7 +72,7 @@ end
 class << Functor
   def forms=(a) @forms=a end
   def forms()
-    if defined? @forms then @forms elsif self.class<=Functor then superclass.forms else raise "huh?" end
+    if defined? @forms then @forms elsif self.class<=Functor then superclass.forms else [] end
   end
   attr_accessor :subclasses # only the adjacent ones
 end
@@ -155,16 +155,41 @@ class InOut<ArgMode; def in?;  true end; def out?;  true end end
 require "gridflow/optional/lti_apply"
 
 class LTIGridObject < GridObject
-    def initialize
-      super
-      c=self.class
-      @functor = c.functor_class.new
-      @param   = c.  param_class.new
-      @functor.setParameters @param
-      @image_bp=BitPacking.new(ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
-      @imatrix_bp=BitPacking.new(ENDIAN_LITTLE,1,[0xff])
-      @fargs = c.functor_class.forms[0].map {|x| x.of.new }
+    ImageBP   = BitPacking.new(GridFlow::ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
+    ImatrixBP = BitPacking.new(GridFlow::ENDIAN_LITTLE,1,[0xff]) # actually this would be for Umatrix
+
+    def initialize(formid=0)
+	super
+	c=self.class
+	@functor = c.functor_class.new
+	@param   = c.  param_class.new
+	@formid = formid
+	@functor.setParameters @param
+	@fargs = c.functor_class.forms[0].map {|x| x.of.new }
+	initialize3
     end
+
+    def _0_formid(f); self.formid=f end
+    def formid=(f); @formid=f; initialize3 end
+    def formid; @formid end
+
+    # initialize  : every ruby object, called by .new
+    # initialize2 : every GF object, just after the object is registered in Pd
+    # initialize3 : called by initialize and every time the form (the chosen "apply" type) changes
+    def initialize3
+	c = self.class
+	form = c.functor_class.forms[@formid]
+	GridFlow.post "will use form %d: %s", @formid, form.inspect
+	@dims = form.map{[]}
+	GridFlow.post "@dims = %s", @dims.inspect
+	@nts = form.map{:int32}
+	GridFlow.post " @nts = %s",  @nts.inspect
+	@stuffs = form.map{|stuffclass| stuffclass.of.new }
+	GridFlow.post " @stuffs = %s",  @stuffs.inspect
+    end
+
+#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#
+
     def send_out_lti o,m
       case m
       when Imatrix: send_out_lti_imatrix o,m
@@ -316,7 +341,7 @@ begin
     def _n_rgrid_begin(inlet)
 	@dim[inlet] = inlet_dim inlet
 	@nt[inlet] = inlet_nt inlet
-	rgrid_lti_...
+	#rgrid_lti_...
 	@dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{@dim.inspect}"
 	@dim[2]!=3 and raise "expecting 3 channels, got #{@dim.inspect}"
 	@image = Image.new @dim[0],@dim[1]
@@ -368,6 +393,7 @@ begin
   }
 rescue StandardError => e
   GridFlow.post "%s", e
+  GridFlow.post "%s", e.backtrace.join("\n")
   GridFlow.post "while handling lti class %s, which has ancestors %s",
     fuc,fuc.ancestors.join(' ')
 end
