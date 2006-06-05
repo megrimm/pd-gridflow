@@ -138,6 +138,7 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('multiGeometricFeaturesFromMask_1_1parameters'), 	g('geometricFeaturesFromMask'))
 	, (f('meanshiftTracker_1_1parameters'), 		g('modifier'))
 	, (f('maskImage_1_1parameters'), 			g('functor'))
+	, (f('labelAdjacencyMap_1_1parameters'), 		g('functor'))
 	
     ]
     
