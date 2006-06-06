@@ -460,6 +460,7 @@ Feature.add {
 Feature.add {
 	tag :dv1394
 	name "DV1394 for Linux"
+	uses_so ["-ldv"]
 	uses_h ["format/dv1394.h"]
 	test proc {
 		c_test "
