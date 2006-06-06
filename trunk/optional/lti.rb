@@ -28,7 +28,7 @@
         TODO list
 	- Learning period for BackgroundModel before apply can be used
 	- Reset for BackgroundModel
-	- Mask functors, operations 
+	- Mask functors, operations
 
 =end
 
@@ -165,7 +165,6 @@ class LTIGridObject < GridObject
 	@param   = c.  param_class.new
 	@formid = formid
 	@functor.setParameters @param
-	@fargs = c.functor_class.forms[0].map {|x| x.of.new }
 	initialize3
     end
 
@@ -186,9 +185,34 @@ class LTIGridObject < GridObject
 	GridFlow.post " @nts = %s",  @nts.inspect
 	@stuffs = form.map{|stuffclass| stuffclass.of.new }
 	GridFlow.post " @stuffs = %s",  @stuffs.inspect
+	@inletmap = []
+	form.each_with_index {|slot,i| case slot; when In,InOut; @inletmap << i end }
+	GridFlow.post "@inletmap = %s",  @inletmap.inspect
     end
 
-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#
+    def _n_rgrid_begin(inlet)
+	dim = inlet_dim inlet
+	nt  = inlet_nt  inlet
+	dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
+	dim[2]!=3 and raise "expecting 3 channels, got #{dim.inspect}"
+	slot = @inletmap[inlet] # slot into the apply()
+	@dims[  slot] = dim
+	@nts[   slot] = nt
+	@stuffs[slot] = Image.new dim[0],dim[1]
+	inlet_set_factor 0,dim.prod
+    end
+
+    def _n_rgrid_flow(inlet,data)
+	slot = @inletmap[inlet] # slot into the apply()
+	st=@stuffs[slot]
+	dim= @dims[slot]
+	nt =  @nts[slot]
+	case st
+	when Imatrix: LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+	when Image  : LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
+	end
+    end
 
     def send_out_lti o,m
       case m
@@ -199,6 +223,9 @@ class LTIGridObject < GridObject
       else raise "don't know how to send_out a #{m.class}"
       end
     end
+
+#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#
+
     def send_out_lti_image o,m
         GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns,3]
@@ -328,28 +355,14 @@ begin
 	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
 	@form = form
     end
-    def _0_rgrid_begin    ; _n_rgrid_begin(0) end
-    def _0_rgrid_flow data; _n_rgrid_flow(0,data) end
-    def _0_rgrid_end      ; _n_rgrid_end(0) end
-    def _1_rgrid_begin    ; _n_rgrid_begin(1) end
-    def _1_rgrid_flow data; _n_rgrid_flow(1,data) end
-    def _1_rgrid_end      ; _n_rgrid_end(1) end
-    def _2_rgrid_begin    ; _n_rgrid_begin(2) end
-    def _2_rgrid_flow data; _n_rgrid_flow(2,data) end
-    def _2_rgrid_end      ; _n_rgrid_end(2) end
+    [0,1,2].each {|i|
+      eval"
+	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
+	def _#{i}_rgrid_flow data; _n_rgrid_flow  #{i},data end
+	def _#{i}_rgrid_end;       _n_rgrid_end   #{i} end
+      "
+    }
 
-    def _n_rgrid_begin(inlet)
-	@dim[inlet] = inlet_dim inlet
-	@nt[inlet] = inlet_nt inlet
-	#rgrid_lti_...
-	@dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{@dim.inspect}"
-	@dim[2]!=3 and raise "expecting 3 channels, got #{@dim.inspect}"
-	@image = Image.new @dim[0],@dim[1]
-	inlet_set_factor 0,@dim[0]*@dim[1]*@dim[2]
-    end
-    def _n_rgrid_flow(inlet,data)
-	@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
-    end
     def _n_rgrid_end(inlet)
 	fuc = self.class.functor_class
         is = fuc.inputs + fuc.inouts
