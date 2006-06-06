@@ -159,11 +159,11 @@ class LTIGridObject < GridObject
     ImatrixBP = BitPacking.new(GridFlow::ENDIAN_LITTLE,1,[0xff]) # actually this would be for Umatrix
 
     def initialize(formid=0)
-	super
+	super()
 	c=self.class
 	@functor = c.functor_class.new
 	@param   = c.  param_class.new
-	@formid = formid
+	@formid = formid.to_i
 	@functor.setParameters @param
 	initialize3
     end
@@ -177,8 +177,9 @@ class LTIGridObject < GridObject
     # initialize3 : called by initialize and every time the form (the chosen "apply" type) changes
     def initialize3
 	c = self.class
+	GridFlow.post "this is class %s, functor_class %s", c.inspect, c.functor_class.inspect
 	form = c.functor_class.forms[@formid]
-	GridFlow.post "will use form %d: %s", @formid, form.inspect
+	GridFlow.post "will use form %s: %s", @formid.inspect, form.inspect
 	@dims = form.map{[]}
 	GridFlow.post "@dims = %s", @dims.inspect
 	@nts = form.map{:int32}
@@ -186,8 +187,13 @@ class LTIGridObject < GridObject
 	@stuffs = form.map{|stuffclass| stuffclass.of.new }
 	GridFlow.post " @stuffs = %s",  @stuffs.inspect
 	@inletmap = []
-	form.each_with_index {|slot,i| case slot; when In,InOut; @inletmap << i end }
-	GridFlow.post "@inletmap = %s",  @inletmap.inspect
+	@outletmap = []
+	form.each_with_index {|slot,i|
+		case slot; when  In,InOut;  @inletmap << i end
+		case slot; when Out,InOut; @outletmap << i end
+	}
+	GridFlow.post " @inletmap = %s",  @inletmap.inspect
+	GridFlow.post "@outletmap = %s", @outletmap.inspect
     end
 
     def _n_rgrid_begin(inlet)
@@ -212,6 +218,14 @@ class LTIGridObject < GridObject
 	when Image  : LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
+    end
+
+    def _n_rgrid_end(inlet)
+        @functor.setParameters @param
+	#t=Time.new
+	@functor.apply(*@stuffs)
+	#t=Time.new-t; GridFlow.post "time for apply: %f",t
+	@outletmap.each_with_index {|slot,i| send_out_lti i,@stuffs[slot] }
     end
 
     def send_out_lti o,m
@@ -362,23 +376,6 @@ begin
 	def _#{i}_rgrid_end;       _n_rgrid_end   #{i} end
       "
     }
-
-    def _n_rgrid_end(inlet)
-	fuc = self.class.functor_class
-        is = fuc.inputs + fuc.inouts
-        os = fuc.outputs + fuc.inouts
-	bufs = [@image]
-	bufs << @arg1 if is[1]
-	fuc.outputs.map{|o| o.new }
-        @functor.setParameters @param
-	#t=Time.new
-	@functor.apply(*bufs)
-	#t=Time.new-t
-	#GridFlow.post "time for apply: %f",t
-	k=os.length-1;
-	j = bufs.length-os.length
-	while k>=0 do send_out_lti k,bufs[j+k]; k-=1 end
-    end
 
     def _1_rgrid_begin
 	@dim1 = inlet_dim 1
