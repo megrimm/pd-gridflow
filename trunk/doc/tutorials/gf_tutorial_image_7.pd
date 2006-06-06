@@ -1,0 +1,29 @@
+#N canvas 79 206 438 353 10;
+#X obj 2 -37 cnv 15 430 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 -72 cnv 15 430 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 3 244 cnv 15 430 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 4 -15 To convert an image to greyscale use [#rgb_to_greyscale].
+It converts a colour information into a black to white gradient.;
+#X obj 12 207 cnv 15 25 15 empty empty empty 20 12 0 14 -260818 -66577
+0;
+#X text 11 207 Tip:;
+#X text 47 206 If you have trouble opening this image refer back to
+previous tutorials.;
+#X text 16 -67 2 Introduction to Images;
+#X text 16 -37 2.5 Greyscale;
+#X obj 15 132 cnv 15 120 15 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 15 99 #in;
+#X obj 27 73 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 15 161 #out window;
+#X obj 15 131 #rgb_to_greyscale;
+#X msg 15 49 open working.jpg;
+#X text 11 251 GridFlow 0.8.4;
+#X connect 10 0 13 0;
+#X connect 11 0 10 0;
+#X connect 13 0 12 0;
+#X connect 14 0 10 0;
