@@ -1,29 +1,68 @@
-#N canvas 119 122 762 396 10;
-#X text 14 17 @apply_colormap_channelweb;
-#X obj 203 168 random 255;
-#X msg 203 128 768;
-#X obj 203 148 until;
-#X text 305 108 colormap is a grid dim (2) (intensity channels);
-#X text 679 13 gridflow;
-#X msg 52 86 open bluemarble.jpg;
-#X text 304 54 this object is useful for color correction. for each
+#N canvas 317 0 510 624 10;
+#X obj 203 165 until;
+#X msg 52 121 open bluemarble.jpg;
+#X obj 19 74 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 19 94 fork;
+#X obj 203 224 #import (256 3);
+#X obj 19 146 #in;
+#X obj 19 268 #out window;
+#X obj 18 247 cnv 15 190 16 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 206 186 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 7072 1;
+#X obj 9 -4 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 -3 #apply_colormap_channelwise;
+#X obj 1 598 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 298 600 Help Files GridFlow 0.8.4;
+#X obj 22 464 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 298 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 321 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 25 322 Inlet_0;
+#X text 222 300 Inlets (2);
+#X text 231 466 Outlets (1);
+#X obj 21 544 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 225 545 Arguments (1);
+#X obj 21 391 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 22 485 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 26 486 Inlet_0;
+#X text 26 392 Inlet_1;
+#X text 23 347 GRID;
+#X text 23 419 GRID;
+#X text 27 509 GRID;
+#X text 88 510 Outputs the modified data as a grid.;
+#X floatatom 213 206 5 0 0 0 - - -;
+#X obj 19 246 #apply_colormap_channelwise;
+#X text 16 21 This object is useful for color correction. for each
 pixel it takes it apart \, looks up each part separately in the colormap
 and constructs a new pixel from that.;
-#X obj 19 40 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
--1;
-#X obj 19 59 fork;
-#X obj 203 190 #import (256 3);
-#X obj 19 118 #in;
-#X obj 19 239 #apply_colormap_channelwise;
-#X obj 19 366 #out window;
-#X connect 1 0 10 0;
+#X text 28 571 None;
+#X text 86 419 Colormap is a grid dim (2) (intensity channels);
+#X text 86 348 Accepts a grid that will be modified by the colormap
+;
+#X obj 273 144 loadbang;
+#X msg 203 144 728;
+#X msg 273 165 142;
+#X text 342 186 <-- vary this;
+#X connect 0 0 8 0;
+#X connect 1 0 5 0;
 #X connect 2 0 3 0;
-#X connect 3 0 1 0;
-#X connect 6 0 11 0;
-#X connect 8 0 9 0;
-#X connect 9 0 2 0;
-#X connect 9 0 11 0;
-#X connect 9 1 6 0;
-#X connect 10 0 12 1;
-#X connect 11 0 12 0;
-#X connect 12 0 13 0;
+#X connect 3 0 5 0;
+#X connect 3 0 36 0;
+#X connect 3 1 1 0;
+#X connect 4 0 30 1;
+#X connect 5 0 30 0;
+#X connect 8 0 4 0;
+#X connect 8 0 29 0;
+#X connect 30 0 6 0;
+#X connect 35 0 37 0;
+#X connect 36 0 0 0;
+#X connect 37 0 8 0;
