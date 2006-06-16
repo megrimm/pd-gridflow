@@ -64,14 +64,18 @@ class    In<ArgMode; end
 class   Out<ArgMode; end
 class InOut<ArgMode; end
 
-def fill_types lines
+def fill_types(lines,functorname)
+#  STDERR.puts "fill_types on #{functorname}"
   args=[]
   for sl in lines
     t = adapt_type(get_type(sl))
     if sl =~ /const/
       args << In[t]
     else
-      args << Out[t]
+      case functorname
+      when "MeanshiftTracker": args << InOut[t]
+      else args << Out[t]
+      end
     end
   end #for
   return args
@@ -97,6 +101,7 @@ def adapt_type2 type
   when "Matrix<int >"  :  Imatrix; when "Vector<int >":    Ivector
   when "Matrix<float >":  Fmatrix; when "Vector<float >":  Fvector
   when "Matrix<double >": Dmatrix; when "Vector<double >": Dvector
+  when "Trectangle<int >": Rect
   when "float": Float
   else Rblti.const_get(type)
   end
@@ -142,7 +147,7 @@ while tmp = get_next_apply_function(filehandle)
 
   previousf=functorname
   errorlines = get_type_errors functiontext
-  types = fill_types errorlines
+  types = fill_types(errorlines,functorname)
   print types.inspect,",\n" if $init
 
 end #while

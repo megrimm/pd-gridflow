@@ -182,6 +182,26 @@ ImaskFunctor.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+DmaskFunctor.forms = [
+[In[Rblti::Dmatrix], Out[Rblti::Dmatrix], In["double (*)(double const &,double const &)"]],
+[Out[Rblti::Dmatrix], In["double (*)(double const &,double const &)"]],
+[In[Rblti::Dmatrix], In[Rblti::Dmatrix], Out[Rblti::Dmatrix], In["double (*)(double const &,double const &,double const &)"]],
+[In[Rblti::Dmatrix], Out[Rblti::Dmatrix], In["double (*)(double const &,double const &,double const &)"]],
+[In[Rblti::Dmatrix], In[Rblti::Dmatrix], Out[Rblti::Dmatrix]],
+[In[Rblti::Dmatrix], Out[Rblti::Dmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+UmaskFunctor.forms = [
+[In[Rblti::Umatrix], Out[Rblti::Umatrix], In["ubyte (*)(unsigned char const &,unsigned char const &)"]],
+[Out[Rblti::Umatrix], In["ubyte (*)(unsigned char const &,unsigned char const &)"]],
+[In[Rblti::Umatrix], In[Rblti::Umatrix], Out[Rblti::Umatrix], In["ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)"]],
+[In[Rblti::Umatrix], Out[Rblti::Umatrix], In["ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)"]],
+[In[Rblti::Umatrix], In[Rblti::Umatrix], Out[Rblti::Umatrix]],
+[In[Rblti::Umatrix], Out[Rblti::Umatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 ColorQuantization.forms = [
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Palette]],
 [Out[Rblti::Image]],
@@ -377,7 +397,7 @@ BackgroundModel.forms = [
 
 begin
 MeanshiftTracker.forms = [
-[In[Rblti::Image], Out["Trectangle<int >"]],
+[In[Rblti::Image], InOut[Rblti::Rect]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
@@ -688,53 +708,57 @@ SplitImageToYUV.forms = [
 # 131 Rblti::Image
 #  84 Rblti::Imatrix
 #  68 Float
+#  37 Rblti::Umatrix
 #  33 Ubyte
 #  28 Rblti::Palette
-#  24 Rblti::Umatrix
-#  24 Rblti::Fmatrix
 #  24 Rblti::RgbPixel
+#  24 Rblti::Fmatrix
+#  23 Rblti::Dmatrix
 #  20 Rblti::Ivector
 #  19 Rblti::Fvector
 #  18 Rblti::Dvector
 #  12 Rblti::Uvector
 #  11 bool
-#  10 Rblti::Dmatrix
 #   9 Vector<trgbPixel<float > >
 #   9 Rblti::AreaPoints
 #   8 Tpoint<float >
+#   7 Rblti::PolygonPoints
 #   7 double
 #   7 int
-#   7 Rblti::PolygonPoints
-#   6 std::list<dvector >
 #   6 std::list<location >
 #   6 Rblti::BorderPoints
+#   6 std::list<dvector >
 #   5 Rblti::Channel32
 #   5 std::list<areaPoints >
-#   4 Rblti::Location
 #   4 Rblti::PointList
-#   3 Matrix<rgbPixel >
-#   3 Rblti::IoPoints
-#   3 std::map<std::string,double >
-#   3 std::vector<areaPoints >
+#   4 Rblti::Location
 #   3 std::list<vector<float > >
-#   2 std::list<borderPoints >
-#   2 int (*)(int const &,int const &,int const &)
+#   3 std::map<std::string,double >
+#   3 Rblti::IoPoints
+#   3 std::vector<areaPoints >
+#   3 Matrix<rgbPixel >
 #   2 tree<objectStruct >
-#   2 std::vector<std::vector<geometricFeatureGroup0 > >
 #   2 int (*)(int const &,int const &)
-#   2 std::vector<geometricFeatureGroup0 >
 #   2 std::vector<rectangle >
-#   2 kdTree<rgbPixel,int >
+#   2 int (*)(int const &,int const &,int const &)
 #   2 std::vector<matrix<float > >
+#   2 std::vector<geometricFeatureGroup0 >
+#   2 double (*)(double const &,double const &)
+#   2 ubyte (*)(unsigned char const &,unsigned char const &)
+#   2 std::vector<std::vector<geometricFeatureGroup0 > >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
+#   2 double (*)(double const &,double const &,double const &)
+#   2 kdTree<rgbPixel,int >
 #   2 std::vector<std::vector<rectangle > >
 #   2 std::list<ioPoints >
+#   2 std::list<borderPoints >
 #   1 principalComponents<float >
+#   1 Rblti::Rect
+#   1 TpolygonPoints<float >
 #   1 TpolygonPoints<double >
 #   1 TpointList<float >
 #   1 std::list<channel >
-#   1 Trectangle<int >
 #   1 TpointList<int >
 #   1 TrgbPixel<float >
 #   1 DrgbPixel
 #   1 TpointList<double >
-#   1 TpolygonPoints<float >
