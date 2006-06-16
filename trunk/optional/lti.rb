@@ -165,8 +165,9 @@ class LTIGridObject < GridObject
 	@param   = c.  param_class.new
 	@formid = formid.to_i
 	@functor.setParameters @param
-	initialize3
+	#form = c.functor_class.forms[@formid]
     end
+    def initialize2; initialize3 end
 
     def _0_formid(f); self.formid=f end
     def formid=(f); @formid=f; initialize3 end
@@ -194,6 +195,8 @@ class LTIGridObject < GridObject
 	}
 	GridFlow.post " @inletmap = %s",  @inletmap.inspect
 	GridFlow.post "@outletmap = %s", @outletmap.inspect
+	add_inlets @inletmap.length-1
+	add_outlets @outletmap.length
     end
 
     def _n_rgrid_begin(inlet)
@@ -246,7 +249,14 @@ class LTIGridObject < GridObject
 	t=Time.new
 	@functor.apply(*@stuffs)
 	t=Time.new-t; GridFlow.post "time for apply: %f",t
-	@outletmap.each_with_index {|slot,i| send_out_lti i,@stuffs[slot] }
+        GridFlow.post "@outletmap = %s", @outletmap.inspect
+        GridFlow.post "@stuffs = %s", @stuffs.inspect
+        i=@outletmap.length-1
+        while i>=0
+          slot = @outletmap[i]
+          send_out_lti i,@stuffs[slot]
+          i-=1
+        end
     end
 
     def send_out_lti o,m
@@ -264,8 +274,9 @@ class LTIGridObject < GridObject
     def send_out_lti_image o,m
         GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.rows,m.columns,3]
-	ps=GridFlow.packstring_for_nt(@nt)
-	sz=GridFlow.sizeof_nt(@nt)
+	nt = :int32
+	ps=GridFlow.packstring_for_nt(nt)
+	sz=GridFlow.sizeof_nt(nt)
 	a=[0,0,0]
 	for y in 0...m.rows do ro=m.getRow(y)
 	  for x in 0...m.columns do px=ro.at(x)
@@ -281,8 +292,9 @@ class LTIGridObject < GridObject
     def send_out_lti_palette o,m
         #GridFlow.post "4*meat=0x%08x",4*m.meat
 	send_out_grid_begin o,[m.size,3]
-	ps=GridFlow.packstring_for_nt(@nt)
-	sz=GridFlow.sizeof_nt(@nt)
+	nt = :int32
+	ps=GridFlow.packstring_for_nt(nt)
+	sz=GridFlow.sizeof_nt(nt)
 	a=[0,0,0]
 	for x in 0...m.size do px=m.at(x)
 	  a[0]=px.getRed
@@ -315,9 +327,7 @@ begin
   	GridFlow.post "no forms for %s ?", fuc
 	next
   end
-  fui  = fuc.forms[0].find_all {|x| x.in?  }
-  fuo  = fuc.forms[0].find_all {|x| x.out? }
-  LTIGridObject.subclass("lti."+name,fui.length,fuo.length+1) {
+  LTIGridObject.subclass("lti."+name,1,1) {
     install_rgrid 0
     install_rgrid 1
     install_rgrid 2
