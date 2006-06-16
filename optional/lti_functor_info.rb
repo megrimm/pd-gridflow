@@ -101,7 +101,9 @@ def adapt_type2 type
   when "Matrix<int >"  :  Imatrix; when "Vector<int >":    Ivector
   when "Matrix<float >":  Fmatrix; when "Vector<float >":  Fvector
   when "Matrix<double >": Dmatrix; when "Vector<double >": Dvector
-  when "Trectangle<int >": Rect
+  when "Trectangle<int >":    Rect
+  when "Trectangle<float >":  Frect
+  when "Trectangle<double >": Drect
   when "float": Float
   else Rblti.const_get(type)
   end
