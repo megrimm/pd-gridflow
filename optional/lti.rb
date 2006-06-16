@@ -199,13 +199,27 @@ class LTIGridObject < GridObject
     def _n_rgrid_begin(inlet)
 	dim = inlet_dim inlet
 	nt  = inlet_nt  inlet
-	dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
-	dim[2]!=3 and raise "expecting 3 channels, got #{dim.inspect}"
 	slot = @inletmap[inlet] # slot into the apply()
+#        GridFlow.post "inlet=%d slot=%d stuff=%s", inlet, slot, @stuffs[slot].inspect
+        @stuffs[slot] = 
+        case @stuffs[slot]
+        when Image:
+	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
+	  dim[2]!=3 and raise "expecting 3 channels, got #{dim.inspect}"
+          Image.new dim[0],dim[1]
+        when Imatrix:
+	  dim.length!=2 and raise "expecting 2 dims (rows,columns) but got #{dim.inspect}"
+          Imatrix.new dim[0],dim[1]
+        when Rect:
+	  dim.length!=2 and raise "expecting 2 dims (points,axes) but got #{dim.inspect}"
+          dim[0]!=2 and raise "expecting 2 points"
+          dim[1]!=2 and raise "expecting 2 axes"
+          Rect.new
+	else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
+        end
 	@dims[  slot] = dim
 	@nts[   slot] = nt
-	@stuffs[slot] = Image.new dim[0],dim[1]
-	inlet_set_factor 0,dim.prod
+	inlet_set_factor inlet,dim.prod
     end
 
     def _n_rgrid_flow(inlet,data)
@@ -216,15 +230,22 @@ class LTIGridObject < GridObject
 	case st
 	when Imatrix: LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
 	when Image  : LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+        when Rect:
+          d = data.unpack("I4")
+          #GridFlow.post "d=%s", d.inspect
+          dax = [d[1],d[3]].sort!
+          day = [d[0],d[2]].sort!
+          st.ul.x, st.ul.y = dax
+          st.br.x, st.br.y = day
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
 
     def _n_rgrid_end(inlet)
         @functor.setParameters @param
-	#t=Time.new
+	t=Time.new
 	@functor.apply(*@stuffs)
-	#t=Time.new-t; GridFlow.post "time for apply: %f",t
+	t=Time.new-t; GridFlow.post "time for apply: %f",t
 	@outletmap.each_with_index {|slot,i| send_out_lti i,@stuffs[slot] }
     end
 
@@ -377,22 +398,22 @@ begin
       "
     }
 
-    def _1_rgrid_begin
-	@dim1 = inlet_dim 1
-	@nt1 = inlet_nt 1
-	inlet_set_factor 1,@dim1.prod
-	@arg1 = Rect.new
-    end
-    def _1_rgrid_flow data
-	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
-	@arg1.ul.y,@arg1.ul.x,@arg1.br.y,@arg1.br.x = data.unpack("I4")
-	if !(@arg1.isConsistent)
-	   raise "Rectangle at inlet 1 is not consistent, does not follow (ul , br) format"   
-	end
-	@functor.reset
-    end
-    def _1_rgrid_end
-    end
+#    def _1_rgrid_begin
+#	@dim1 = inlet_dim 1
+#	@nt1 = inlet_nt 1
+#	inlet_set_factor 1,@dim1.prod
+#	@arg1 = Rect.new
+#    end
+#    def _1_rgrid_flow data
+#	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
+#	@arg1.ul.y,@arg1.ul.x,@arg1.br.y,@arg1.br.x = data.unpack("I4")
+#	if !(@arg1.isConsistent)
+#	   raise "Rectangle at inlet 1 is not consistent, does not follow (ul , br) format"   
+#	end
+#	@functor.reset
+#    end
+#    def _1_rgrid_end
+#    end
     def pd_properties canvas
       cid = ".x%x"%(4*canvas)
       GridFlow.gui %{
