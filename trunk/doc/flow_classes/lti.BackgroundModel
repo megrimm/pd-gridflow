@@ -1,0 +1,58 @@
+#N canvas 300 87 519 675 10;
+#X obj 100 45 #camera;
+#X obj 100 26 metro 33;
+#X obj 83 26 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 113 219 display;
+#X obj 83 46 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 158 145 lti.BackgroundModel;
+#X msg 32 67 help;
+#X msg 182 30 adaptModel 1;
+#X msg 19 92 get;
+#X obj 158 180 #print;
+#X obj 9 -55 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 158 180 #print;
+#X obj 20 -54 lti.BackgroundModel;
+#X obj 1 598 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 298 600 Help Files GridFlow 0.8.4;
+#X obj 22 464 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 298 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 321 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 25 322 Inlet_0;
+#X text 222 300 Inlets (2);
+#X text 231 466 Outlets (1);
+#X obj 21 544 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 225 545 Arguments (1);
+#X obj 21 391 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 22 485 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 26 486 Inlet_0;
+#X text 26 392 Inlet_1;
+#X text 23 347 GRID;
+#X text 23 419 GRID;
+#X text 27 509 GRID;
+#X text 28 571 None;
+#X text 17 -30 A starting point for presence detection \, it returns
+a single channel mask. The Model can be updated with new images.;
+#X text 86 348 Ac;
+#X text 86 419 Co;
+#X text 88 510 Out;
+#X msg 211 73 addBackground;
+#X connect 0 0 5 0;
+#X connect 1 0 0 0;
+#X connect 2 0 1 0;
+#X connect 4 0 0 0;
+#X connect 5 0 3 0;
+#X connect 5 0 9 0;
+#X connect 6 0 5 0;
+#X connect 7 0 5 0;
+#X connect 8 0 5 0;
+#X connect 35 0 5 0;
