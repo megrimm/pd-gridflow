@@ -28,7 +28,7 @@
 #define HAVE_FINITE 1
 
 /* defines if gtk libraries were found */
-/* #undef HAVE_GTK */
+#define HAVE_GTK 1
 
 /* define if std::ifstrean has constructor taking a file descriptor */
 /* #undef HAVE_IFSTREAM_FD_CTOR */
@@ -61,10 +61,10 @@
 #define HAVE_LIBZ 1
 
 /* defines if the local implementation for png loader/savers was found */
-#define HAVE_LOCALJPEG 1
+/* #undef HAVE_LOCALJPEG */
 
 /* defines if the local implementation for png loader/savers was found */
-#define HAVE_LOCALPNG 1
+/* #undef HAVE_LOCALPNG */
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -100,7 +100,7 @@
 #define HAVE_STRING_H 1
 
 /* defines if the susan algorithms are present in the library */
-#define HAVE_SUSAN 1
+/* #undef HAVE_SUSAN */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -136,7 +136,7 @@
 #define PACKAGE_VERSION "1.9.15"
 
 /* define processor type */
-#define PROCESSOR AMD Athlon(tm) XP 1800+
+#define PROCESSOR AMD Athlon(tm) XP 1900+
 
 /* define processor vendor */
 #define PROCESSOR_VENDOR AuthenticAMD

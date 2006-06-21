@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.12  2006/06/21 14:28:53  heri
+//  Renamed Rect to Irect to be consistent with template naming convention.
+//
 //  Revision 1.11  2006/06/04 15:29:08  heri
 //  Support for LTI-lib 1.9.15
 //
@@ -285,8 +288,7 @@ namespace lti {
 
 HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
 namespace lti {
-  %template(rect)  trectangle<int>;
-  //%template(irect) trectangle<int>;
+  %template(irect)  trectangle<int>;
   %template(frect) trectangle<float>;
   %template(drect) trectangle<double>;
 }
