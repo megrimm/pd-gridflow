@@ -39,7 +39,16 @@ include Rblti
 class String
   # returns a Fixnum that is a pointer divided by 4
   def meat # warning: not 64-bit-safe
-    [self].pack("p").unpack("I")[0]>>2
+    stuff = [self].pack("p")
+    if stuff.length == 4 then # 32 bit...
+      unpack("I")[0]>>2
+    elsif GridFlow::OurByteOrder==1 # 64 bit LE (AMD K8)
+      a,b=unpack("I2")
+      (a>>2)|(b<<30)
+    else # 64 bit BE (Apple G5)
+      b,a=unpack("I2")
+      (a>>2)|(b<<30)
+    end
   end
 end
 
