@@ -1,0 +1,222 @@
+#N canvas 236 0 576 610 10;
+#X obj 7 927 cnv 15 460 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 8 749 cnv 15 460 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 18 156 #out window;
+#X text 13 66 for images:;
+#X obj 10 6 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 20 7 #in;
+#X text 16 32 This object imports a grid \, usually an image \, video
+or live stream.;
+#X msg 27 110 open working.jpg;
+#X obj 19 90 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X text 146 111 <--click here;
+#X text 45 90 <-- then click here;
+#X obj 11 335 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 16 336 Inlet_0;
+#X text 11 364 Grid;
+#X text 77 362 A bang sends a grid to [#out]. Since frames from videos
+and live streams are read as a series of individual grids \, successive
+bangs advance through the frames.;
+#X text 11 409 Message:;
+#X text 76 440 "set" - followed by a number will select the corresponding
+video frame. A bang must be sent to [#in] in order to display the frame.
+;
+#X text 75 487 "close" - Closes the video input device. Only necessary
+when you are using a live capture device.;
+#X text 76 525 "rewind" - Will rewind video to the beginning.;
+#X text 76 549 "loop 1" - Restarts a video each time it reaches the
+end \, "loop 1" is the default setting.;
+#X text 76 581 "loop 0" - turns off the loop option. The video stops
+once it reaches the end.;
+#X text 77 710 Displays the frame number of the frame just sent. Applies
+to formats that have frame numbers \, i.e. video.;
+#X text 16 710 Integer;
+#X text 83 845 Signals the end of a file and when a file is unreadable.
+;
+#X text 16 846 Bang;
+#X text 195 927 Arguments;
+#X text 197 749 Outlets (2);
+#X obj 13 772 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 14 773 Outlet_0;
+#X text 82 797 Displays the resulting grid when connected to [#out
+window];
+#X obj 15 822 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 13 823 Outlet_1;
+#X text 13 796 Grid;
+#X text 15 873 Integer;
+#X text 79 875 Displays the frame number of the frame currently being
+viewed. Applies to formats that have frame numbers \, i.e. video.;
+#X text 7 949 file name;
+#X text 90 949 Including the file name of a grid into the [#in] object
+eliminates the need for an [open< message but limits the action to
+one specified grid.;
+#X obj 9 303 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 201 304 Inlets (1);
+#N canvas 82 93 663 454 quicktime 0;
+#X text 5 -3 The following messages can be used to set parameters for
+video (.mov) files.;
+#X text 124 271 different versions of LibQuickTime may include support
+for different codecs \, and some may also support entirely different
+wrapper formats such as AVI.;
+#X text 125 355 Codecs must be set before first frame is written.;
+#X text 124 318 QuickTime library for Macintosh: Apple QuickTime (some
+codecs/features may not be available).;
+#X obj 5 260 cnv 15 24 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X msg 34 218 codec jpg;
+#X msg 19 104 framerate 33;
+#X msg 29 191 colorspace rgb;
+#X msg 14 66 size 400 600;
+#X msg 24 133 force_size 400 600;
+#X obj 6 260 #in;
+#X text 141 105 Number of frames per second.;
+#X msg 28 159 parameter jpeg_quality 85;
+#X text 183 135 Determines window size when reading a video file.;
+#X text 125 218 quicktime library for linux accepts LibQuickTime (libquicktime.so).
+codecs currently available are: Raw \, jpeg \, png \, mipa \, yuv2
+\, yuv4.;
+#X text 130 72 Sets height and width. Must be set before setting the
+codec parameters and after setting framerate and codec.;
+#X text 103 218 <--;
+#X text 104 68 <--;
+#X text 115 106 <--;
+#X text 104 68 <--;
+#X text 104 68 <--;
+#X text 158 135 <--;
+#X text 208 161 <--;
+#X text 135 194 <--;
+#X text 233 164 Sets compression quality (100 being the highest quality
+\, but a large file. 75-85 is the standard setting).;
+#X text 159 197 Other colorspaces include rgba \, bgr \, bgra \, yuv
+\, yuva.;
+#X msg 6 42 open example.mov;
+#X connect 5 0 10 0;
+#X connect 6 0 10 0;
+#X connect 7 0 10 0;
+#X connect 8 0 10 0;
+#X connect 9 0 10 0;
+#X connect 12 0 10 0;
+#X connect 26 0 10 0;
+#X restore 148 678 pd quicktime file messages;
+#X obj 18 135 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 19 135 #in;
+#X obj 258 213 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X floatatom 265 105 5 0 0 0 - - -;
+#X msg 259 83 set 2;
+#X obj 259 273 #out window;
+#X obj 350 170 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X msg 277 152 loop 0;
+#X msg 280 173 loop 1;
+#X floatatom 275 255 5 0 0 0 - - -;
+#X msg 268 132 rewind;
+#X text 256 64 for video files:;
+#X obj 284 236 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 259 212 #in;
+#X text 372 124 <--click here;
+#X msg 376 175 open alea.mpg;
+#X obj 350 124 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+;
+#X obj 350 146 metro 33.3;
+#X obj 18 230 cnv 15 101 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 19 209 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 19 255 #out window;
+#X obj 19 230 #in sewing.jpg;
+#X text 41 209 <--click here;
+#X text 80 661 For info about messages specifically for quickTime files
+\, click on:;
+#N canvas 150 0 874 560 more 0;
+#X msg 287 400 open videodev \$1 \, get;
+#X msg 148 159 brightness 1000;
+#X msg 137 136 hue 1000;
+#X msg 122 113 color 1000;
+#X msg 161 183 contrast 1000;
+#X msg 110 90 whiteness 1000;
+#X msg 176 276 channel 2;
+#X msg 176 306 tuner 2;
+#X msg 177 336 norm 2;
+#X msg 177 364 frequency 2;
+#X msg 286 468 transfer mmap 4;
+#X msg 287 368 transfer read;
+#X msg 286 446 colorspace RGB24;
+#X msg 287 423 size 400 600;
+#X obj 110 453 #in;
+#X obj 288 184 #contrast;
+#X text 262 184 or;
+#X text 402 423 Sets height and width of the input.;
+#X text 418 500 In the case of mmap \, the extra numeric argument sets
+the queue length in number of frames \, so you can select an appropriate
+tradeoff between efficiency and latency.;
+#X text 112 24 Grid Settings;
+#X text 418 469 This is the standard and fastest way to receive pictures
+from the camera.;
+#X text 217 111 Message "get brightness" or "get" followed by any of
+the other colour attributes will display its values in the console.
+;
+#X text 471 402 Opens video device.;
+#X text 427 447 Supported values are RGB24 or YUV420P.;
+#X text 110 60 Color Adjustments;
+#X text 240 87 Values from 0 to 65535;
+#X text 379 424 <--;
+#X text 405 447 <--;
+#X text 498 447 <--;
+#X text 441 402 <--;
+#X text 396 468 <--;
+#X text 383 369 <--;
+#X text 406 369 Some cameras/drivers only support "transfer read" and
+not mmap.;
+#X text 102 532 see also :;
+#X obj 188 532 #camera;
+#X connect 0 0 14 0;
+#X connect 1 0 14 0;
+#X connect 2 0 14 0;
+#X connect 3 0 14 0;
+#X connect 4 0 14 0;
+#X connect 5 0 14 0;
+#X connect 6 0 14 0;
+#X connect 7 0 14 0;
+#X connect 8 0 14 0;
+#X connect 9 0 14 0;
+#X connect 10 0 14 0;
+#X connect 11 0 14 0;
+#X connect 12 0 14 0;
+#X connect 13 0 14 0;
+#X restore 145 633 pd more info about video devices;
+#X text 77 616 For info about messages specifically for video devices
+\, click on:;
+#X text 308 102 <-- vary this (and turn off the metro);
+#X text 77 409 "open" - followed by the filename \, sends a grid to
+[#out]. For example: "open sewing.jpg".;
+#X obj 10 1020 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 12 1021 Help Files GridFlow 0.8.4;
+#X connect 7 0 41 0;
+#X connect 8 0 41 0;
+#X connect 41 0 2 0;
+#X connect 43 0 53 0;
+#X connect 44 0 53 0;
+#X connect 46 0 53 0;
+#X connect 47 0 53 0;
+#X connect 48 0 53 0;
+#X connect 50 0 53 0;
+#X connect 53 0 45 0;
+#X connect 53 1 49 0;
+#X connect 53 1 52 0;
+#X connect 55 0 53 0;
+#X connect 56 0 57 0;
+#X connect 57 0 46 0;
+#X connect 59 0 61 0;
+#X connect 61 0 60 0;
