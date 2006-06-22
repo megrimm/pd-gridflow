@@ -1,67 +1,80 @@
-#N canvas 693 131 606 601 10;
-#X obj 360 381 #in;
-#X obj 360 422 # + 42;
-#X floatatom 404 400 5 0 0 0 - - -;
-#X obj 360 528 #out window;
-#X msg 390 358 open b001.jpg;
-#X obj 360 335 t b b;
-#X obj -1 0 cnv 15 90 600 empty empty empty 20 12 0 14 -233017 -66577
-0;
-#X obj 360 302 metro 100;
-#X obj 360 281 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+#N canvas 198 26 543 661 10;
+#X obj 167 106 #in;
+#X obj 167 132 # + 42;
+#X floatatom 204 109 5 0 0 0 - - -;
+#X obj 167 199 #out window;
+#X obj 167 60 t b b;
+#X obj 167 39 metro 100;
+#X obj 167 20 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
 ;
-#X floatatom 384 452 5 0 0 0 - - -;
-#X floatatom 434 452 5 0 0 0 - - -;
-#X text 38 36 INLETS:;
-#X text 38 51 - LEFT:;
-#X text 32 143 - RIGHT:;
-#X text 29 253 OUTLETS:;
-#X text 15 194 ARGUMENTS:;
-#X text 22 283 EXAMPLES:;
-#X text 20 565 SEE ALSO:;
-#X text 25 93 - CENTER:;
-#X obj 47 10 #clip;
-#X text 501 558 GridFlow 0.8.0;
-#X floatatom 119 397 5 0 0 0 - - -;
-#X floatatom 119 286 5 0 0 0 - - -;
-#X text 205 339 creation arguments;
-#X obj 119 342 #clip 255 0;
-#X text 107 191 Two - [int] accepts two integers as creation arguments
-which initializes the first values to be stored in the object and duplicate
-the functions of the second and third inlet.;
-#X obj 118 564 # min;
-#X obj 165 564 # max;
-#X obj 213 564 clip;
-#X text 109 91 Integer - An integer at the second inlet is stored for
-later use. It will be used as the high value at which to clip incoming
-Grid values at that left inlet.;
-#X text 109 142 Integer - An integer at the third inlet is stored for
-later use. It will be used as the low value at which to clip incoming
-Grid values at that left inlet.;
-#X text 108 12 - FORCE THE GRID VALUES INTO A RANGE;
-#X text 109 50 Grid - Grid values at the left inlet will be clipped
-to the high and low values stored in the object.;
-#X obj 360 485 #clip;
-#X text 419 483 no arguments (defaults to 255 \, 0);
-#X text 452 399 <-- change these;
-#X obj 119 312 #import (1);
-#X obj 119 370 #export;
-#X text 107 191 Two - [int] accepts two integers as creation arguments
-which initializes the first values to be stored in the object and duplicate
-the functions of the second and third inlet.;
-#X text 485 452 <--;
+#X floatatom 182 153 5 0 0 0 - - -;
+#X floatatom 224 152 5 0 0 0 - - -;
+#X text -8 -27 The [#clip] object is used with numops in order to set
+a lower and upper range to pixel values. This allows you to avoid over
+saturating the colours of your grid.;
+#X obj -11 -49 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -11 -50 #clip;
+#X text 388 -48 GridFlow 0.8.4;
+#X text 288 46;
+#X text 249 111 <-- vary this number;
+#X msg 173 83 open working.jpg;
+#X obj -12 225 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -11 251 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -11 311 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 166 178 cnv 15 38 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 167 177 #clip;
+#X text 50 277 Grid values are clipped to the high and low values stored
+in the object;
+#X text -12 338 INTEGER;
+#X text -9 253 Inlet 0;
+#X text -9 313 Inlet 1;
+#X text 190 227 Inlets (3);
+#X obj -11 368 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -8 370 Inlet 2;
+#X text 55 338 An integer can be used to vary the high range clipping
+value.;
+#X text -11 398 INTEGER;
+#X text 54 396 An integer can be used to vary the low range clipping
+value.;
+#X obj -13 493 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 189 495 Arguments (2);
+#X text -13 516 [#clip] accepts two integers as creation arguments
+that initialize the first values to be stored in the object. The first
+integer corresponds to the inlet 1 \, the second to inlet 2;
+#X obj -13 422 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 189 424 Outlets (1);
+#X obj -12 445 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -10 447 Outlet 0;
+#X text -11 275 GRID;
+#X text -10 468 GRID;
+#X text 49 468 Outputs the modified grid;
+#X text 204 173 <--if no creation argument is given the default range
+is 255 \, 0;
+#X obj -14 574 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -13 575 SEE ALSO:;
+#X obj 85 574 # min;
+#X obj 132 574 # max;
+#X obj 180 574 clip;
+#X text 226 573 #numop-help.pd;
+#X text 340 573 gf_tutorial_image_6.pd;
 #X connect 0 0 1 0;
-#X connect 1 0 33 0;
+#X connect 1 0 20 0;
 #X connect 2 0 1 1;
 #X connect 4 0 0 0;
-#X connect 5 0 0 0;
-#X connect 5 1 4 0;
-#X connect 7 0 5 0;
-#X connect 8 0 7 0;
-#X connect 9 0 33 1;
-#X connect 10 0 33 2;
-#X connect 22 0 36 0;
-#X connect 24 0 37 0;
-#X connect 33 0 3 0;
-#X connect 36 0 24 0;
-#X connect 37 0 21 0;
+#X connect 4 0 15 0;
+#X connect 5 0 4 0;
+#X connect 6 0 5 0;
+#X connect 7 0 20 1;
+#X connect 8 0 20 2;
+#X connect 15 0 0 0;
+#X connect 20 0 3 0;
