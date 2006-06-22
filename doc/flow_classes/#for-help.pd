@@ -1,16 +1,98 @@
-#N canvas 455 183 569 289 10;
-#X floatatom 20 73 5 0 0 0 - - -;
-#X floatatom 59 94 5 0 0 0 - - -;
-#X floatatom 99 116 5 0 0 0 - - -;
-#X text 137 141 works like a for object \, plugged to an @import tuned
-for a dim(size) where size is the number of values produced by a bang
-to that for. syntax: @for <from> <to> <step> outlet: grid dim(size)
-where size = floor(to-from+1)/step;
-#X text 490 16 gridflow;
-#X obj 20 136 #for 0 320 1;
-#X obj 20 199 #print;
-#X text 14 15 #for;
-#X connect 0 0 5 0;
-#X connect 1 0 5 1;
-#X connect 2 0 5 2;
-#X connect 5 0 6 0;
+#N canvas 447 0 508 965 10;
+#X floatatom -169 227 5 0 0 0 - - -;
+#X floatatom -137 249 5 0 0 0 - - -;
+#X floatatom -104 270 5 0 0 0 - - -;
+#X obj -169 365 #print;
+#X obj -182 2 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -172 659 cnv 15 500 17 empty empty empty 20 12 0 14 -228992
+-66577 0;
+#X obj -174 415 cnv 15 500 18 empty empty empty 20 12 0 14 -228992
+-66577 0;
+#X obj -174 438 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 37 661 Outlets (1);
+#X obj -173 757 cnv 15 500 18 empty empty empty 20 12 0 14 -228992
+-66577 0;
+#X obj -174 512 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -172 680 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -167 704 GRID;
+#X obj -175 3 #for 0 320 1;
+#X text 209 3 GridFlow 0.8.4;
+#X obj -149 332 display;
+#X text 28 417 Inlets (3);
+#X text 31 758 Arguments (3);
+#X obj -173 586 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -168 587 Inlet 2;
+#X text -169 514 Inlet 1;
+#X text -169 439 Inlet 0;
+#X obj -173 786 cnv 15 80 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -169 787 Argument 0;
+#X obj -174 852 cnv 15 80 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -174 908 cnv 15 80 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -170 853 Argument 1;
+#X text -170 909 Argument 2;
+#X obj -167 297 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text -59 270 <-- step value;
+#X text -88 247 <-- upper bound;
+#X text -122 224 <-- lower bound;
+#X obj -169 297 #for 0 8 1;
+#X obj 54 327 #print;
+#X obj 114 326 display;
+#X obj 96 295 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X msg 94 220 0 0;
+#X msg 159 268 1 1;
+#X obj 94 295 #for 0 8 1;
+#X msg 126 245 4 4;
+#X text -171 814 INTEGER;
+#X text -171 875 INTEGER;
+#X text -171 935 INTEGER;
+#X text -108 814;
+#X text -168 681 Outlet 0;
+#X text -77 875 Upper bound;
+#X text -76 935 Step value;
+#X text -76 815 Lower bound. As with the other arguments \, they are
+overwritten when another value is given.;
+#X text -171 488 LIST;
+#X text 204 268 <-- step value (1);
+#X text 173 244 <-- upper bound (2);
+#X text 139 219 <-- lower bound (3);
+#X text -156 38 When given scalar bounds \, works like a regular [for]
+object plugged to a [#import] tuned for a Dim(size) where size is the
+number of values produced by a bang to that [for].;
+#X text -156 84 When given vector bounds \, will work like any number
+of [for] objects producing all possible combinations of their values
+in the proper order.;
+#X text -147 193 scalar bounds;
+#X text 133 191 vector bounds;
+#X text -173 465 INTEGER;
+#X text -108 466 Sets the lower bound;
+#X text -171 558 LIST;
+#X text -173 535 INTEGER;
+#X text -108 536 Sets the upper bound;
+#X text -171 634 LIST;
+#X text -173 611 INTEGER;
+#X text -108 612 Sets the step value;
+#X text -106 707 The result of the operation is a single dimension
+grid in the case of scalar values and variable dimensions for vectors.
+;
+#X text -155 137 Syntax: #for <from> <to> <step> outlet: grid dim(size)
+where size = floor(to-from+1)/step.;
+#X connect 0 0 32 0;
+#X connect 1 0 32 1;
+#X connect 2 0 32 2;
+#X connect 32 0 15 0;
+#X connect 32 0 3 0;
+#X connect 36 0 38 0;
+#X connect 37 0 38 2;
+#X connect 38 0 34 0;
+#X connect 38 0 33 0;
+#X connect 39 0 38 1;
