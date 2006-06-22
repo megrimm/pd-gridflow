@@ -1,32 +1,52 @@
-#N canvas 449 187 546 331 10;
-#X obj 26 83 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X obj 137 217 print dimension;
-#X obj 18 241 print number_of_dimensions;
-#X text 18 282 see also:;
-#X obj 136 283 rubyprint;
-#X obj 206 283 printargs;
-#X msg 18 63 open bluemarble.jpg;
-#X text 438 10 GridFlow 0.8.0;
-#X obj 87 283 #print;
-#X obj 276 283 #export;
-#X obj 332 283 #export_list;
-#X obj 137 196 #export;
-#X obj 18 197 #dim;
-#X obj 18 217 #export;
-#X obj 18 127 #dim;
-#X obj 18 103 #in;
-#X text 14 15 [#dim];
-#X text 137 100 dim receives a grid \, doesn't look at the data within
-but only the list of dimensions and turns it into a one dimension grid.
-given a grid sized like dim(240 \, 320 \, 4) #dim will return a grid
-like dim(3) whose values are 240 \, 320 \, 4;
-#X connect 0 0 15 0;
-#X connect 6 0 0 0;
-#X connect 6 0 15 0;
-#X connect 11 0 1 0;
-#X connect 12 0 13 0;
-#X connect 13 0 2 0;
-#X connect 14 0 11 0;
-#X connect 14 0 12 0;
-#X connect 15 0 14 0;
+#N canvas 224 30 508 484 10;
+#X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 6 271 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 5 194 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 5 217 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 10 218 Inlet_0;
+#X text 215 273 Outlets (1);
+#X obj 4 392 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 6 292 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 10 293 Inlet_0;
+#X obj 16 -20 #dim;
+#X obj 29 67 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 22 158 print number_of_dimensions;
+#X obj 22 86 #in;
+#X obj 22 110 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 22 110 #dim;
+#X obj 22 134 #export;
+#X msg 22 46 open working.jpg;
+#X text 207 196 Inlets (1);
+#X text 8 250 GRID;
+#X text 397 -17 GridFlow 0.8.4;
+#X text 8 329 INTEGER;
+#X text 208 391 Arguments (none);
+#X text 15 17 Outputs grid dimensions (columns \, row \, channels).
+;
+#X obj 3 438 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 166 439 rubyprint;
+#X obj 236 439 printargs;
+#X obj 117 439 #print;
+#X obj 306 439 #export;
+#X obj 362 439 #export_list;
+#X text 25 440 see also:;
+#X text 70 250 Receives a grid \, ignores its content.;
+#X text 70 327 The received grid is output as a one dimensional grid
+representing grid dimensions. For example \, a grid sized like dim(240
+\, 320 \, 4) [#dim] will return a grid like dim(3) whose values are
+240 \, 320 \, 4;
+#X connect 10 0 12 0;
+#X connect 12 0 14 0;
+#X connect 14 0 15 0;
+#X connect 15 0 11 0;
+#X connect 16 0 12 0;
+#X connect 16 0 10 0;
