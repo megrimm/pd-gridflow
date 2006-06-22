@@ -1,45 +1,44 @@
-#N canvas 379 12 506 561 10;
-#X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 379 12 503 503 10;
+#X obj 2 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 6 345 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 320 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 240 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 240 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 263 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 263 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 207 347 Outlets (1);
-#X obj 6 434 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 203 322 Outlets (1);
+#X obj 2 409 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 207 435 Arguments (1);
-#X obj 6 366 cnv 15 65 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 2 341 cnv 15 65 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 14 -19 #pack;
+#X obj 12 -19 #pack;
 #X obj 23 158 #color;
 #X floatatom 85 57 5 0 0 0 - - -;
 #X floatatom 107 76 5 0 0 0 - - -;
 #X floatatom 129 95 5 0 0 0 - - -;
 #X text 14 8 Creates a one dimentional grid (Dim(N) vector) from individual
 integers.;
-#X text 10 464 INTEGER;
-#X text 77 464 An integer defines the number of inlets and the amount
+#X text 6 439 INTEGER;
+#X text 73 439 An integer defines the number of inlets and the amount
 of grid dimensions.;
-#X text 7 264 Inlet_All;
-#X text 206 242 Inlets (n);
-#X text 6 296 INTEGER;
-#X text 10 367 Outlet_0;
-#X text 14 400 GRID;
+#X text 204 242 Inlets (n);
+#X text 4 296 INTEGER;
+#X text 10 375 GRID;
 #X obj 263 160 display;
 #X text 162 70 <--click and drag to place numbers in the grid.;
 #X obj 85 115 cnv 15 51 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 85 115 #pack 3;
-#X text 76 397 Outputs values from each individual inlet.;
-#X text 78 295 Accepts integers.;
-#X obj 8 518 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X text 319 519 Help Files GridFlow 0.8.4;
-#X connect 10 0 24 0;
-#X connect 11 0 24 1;
-#X connect 12 0 24 2;
-#X connect 24 0 9 0;
-#X connect 24 0 21 0;
+#X text 76 295 Accepts integers.;
+#X text 395 -19 GridFlow 0.8.4;
+#X text 72 372 Outputs values from each individual inlet into a grid.
+;
+#X text 5 264 Inlet All;
+#X text 6 342 Outlet 0;
+#X text 204 410 Arguments;
+#X connect 9 0 21 0;
+#X connect 10 0 21 1;
+#X connect 11 0 21 2;
+#X connect 21 0 8 0;
+#X connect 21 0 18 0;
