@@ -1,45 +1,63 @@
-#N canvas 119 230 748 467 10;
-#X msg 75 125 reset;
-#X obj 33 47 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X msg 33 111 200;
-#X text 125 129 abort output of grid \, if any;
-#X obj 322 366 print export_list;
-#X obj 33 386 print export;
-#X text 70 283 gets the size of the picture;
-#X text 87 354 accepts grids and sends integers;
-#X text 416 328 accepts grids and sends lists of integers;
-#X obj 33 88 until;
-#X msg 33 67 230400;
-#X text 32 418 see also:;
-#X text 671 16 gridflow;
-#X obj 33 301 s size;
-#X obj 33 329 r size;
-#X obj 322 315 r size;
-#X text 14 9 #import \, #export \, #export_list converts integers to
-grids and back;
-#X obj 33 157 #import (240 320 3);
-#X obj 33 176 #out window;
-#X obj 33 260 #in;
-#X obj 33 281 #dim;
-#X obj 33 355 #export;
-#X obj 322 335 #export_list;
-#X text 188 158 syntax: #import ( <int columns> <int rows> <int dimension>
-);
-#X obj 101 421 #in;
-#X obj 128 421 #out;
-#X obj 162 421 #pack;
-#X msg 33 216 load r001.jpg;
-#X connect 0 0 17 0;
-#X connect 1 0 10 0;
-#X connect 2 0 17 0;
-#X connect 9 0 2 0;
-#X connect 10 0 9 0;
-#X connect 14 0 21 0;
-#X connect 15 0 22 0;
-#X connect 17 0 18 0;
-#X connect 19 0 20 0;
-#X connect 20 0 13 0;
-#X connect 21 0 5 0;
-#X connect 22 0 4 0;
-#X connect 27 0 19 0;
+#N canvas 297 0 502 678 10;
+#X obj 1 -67 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 451 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 157 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 180 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 453 Outlets (1);
+#X obj 1 549 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 548 Arguments (1);
+#X obj 1 472 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -66 GridFlow 0.8.4;
+#X text 2 181 Inlet 0;
+#X text 2 473 Outlet 0;
+#X obj 12 -67 #import;
+#X msg 58 75 reset;
+#X obj 16 11 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X msg 16 75 200;
+#X obj 16 52 until;
+#X msg 16 31 230400;
+#X obj 16 129 #out window;
+#X text 215 157 Inlets (1);
+#X obj 16 101 cnv 15 149 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 7 577 GRID;
+#X text 74 576 The argument establishes grid dimensions in parentheses
+in the order of columns \, rows and grid dimensions.;
+#X text 14 -40 Produces grids from non-grid data \, such as integers
+and lists of integers. Reframes/resyncs grids to join them or splits
+single grids.;
+#X obj 16 101 #import ( 240 320 3 );
+#X text 5 210 INTEGER;
+#X text 5 273 SYMBOL;
+#X text 76 272 Symbols are considered as a list of ascii characters.
+;
+#X text 76 209 An integer is either placed in the current grid \, placed
+at the end of a grid when it is full or placed at the beginning of
+a new grid if there if there is no current grid.;
+#X text 7 299 LIST;
+#X text 76 298 Like a sequence of ints sent one after another \, except
+in a single message.;
+#X text 7 334 MESSAGE;
+#X text 76 331 "reset" aborts the current grid if there is one.;
+#X text 6 354 GRID;
+#X text 77 354 This is almost equivalent to filtering the grid through
+an [#export] object however it is over ten times faster.;
+#X obj 1 401 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 2 402 Inlet 1;
+#X text 8 500 GRID;
+#X text 80 500 The grid resulting from the incoming integers and/or
+grids is output from the outlet.;
+#X connect 12 0 23 0;
+#X connect 13 0 16 0;
+#X connect 14 0 23 0;
+#X connect 15 0 14 0;
+#X connect 16 0 15 0;
+#X connect 23 0 17 0;
