@@ -1,65 +1,50 @@
-#N canvas 236 0 576 610 10;
-#X obj 7 927 cnv 15 460 15 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 98 0 518 610 10;
+#X obj 354 169 #out window;
+#X obj 7 6 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 8 749 cnv 15 460 15 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 18 156 #out window;
-#X text 13 66 for images:;
-#X obj 10 6 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
-0;
-#X obj 20 7 #in;
-#X text 16 32 This object imports a grid \, usually an image \, video
+#X obj 17 7 #in;
+#X text 13 31 This object imports a grid \, usually an image \, video
 or live stream.;
-#X msg 27 110 open working.jpg;
-#X obj 19 90 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
-;
-#X text 146 111 <--click here;
-#X text 45 90 <-- then click here;
-#X obj 11 335 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X msg 362 123 open working.jpg;
+#X obj 354 103 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X text 74 243 <--click here;
+#X obj 8 335 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 16 336 Inlet_0;
-#X text 11 364 Grid;
-#X text 77 362 A bang sends a grid to [#out]. Since frames from videos
+#X text 13 336 Inlet_0;
+#X text 79 362 A bang sends a grid to [#out]. Since frames from videos
 and live streams are read as a series of individual grids \, successive
 bangs advance through the frames.;
-#X text 11 409 Message:;
-#X text 76 440 "set" - followed by a number will select the corresponding
+#X text 77 449 "set" - followed by a number will select the corresponding
 video frame. A bang must be sent to [#in] in order to display the frame.
 ;
-#X text 75 487 "close" - Closes the video input device. Only necessary
+#X text 77 495 "close" - Closes the video input device. Only necessary
 when you are using a live capture device.;
-#X text 76 525 "rewind" - Will rewind video to the beginning.;
+#X text 76 529 "rewind" - Will rewind video to the beginning.;
 #X text 76 549 "loop 1" - Restarts a video each time it reaches the
 end \, "loop 1" is the default setting.;
-#X text 76 581 "loop 0" - turns off the loop option. The video stops
+#X text 76 583 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
 #X text 77 710 Displays the frame number of the frame just sent. Applies
 to formats that have frame numbers \, i.e. video.;
-#X text 16 710 Integer;
-#X text 83 845 Signals the end of a file and when a file is unreadable.
+#X text 81 845 Signals the end of a file and when a file is unreadable.
 ;
-#X text 16 846 Bang;
-#X text 195 927 Arguments;
-#X text 197 749 Outlets (2);
-#X obj 13 772 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 8 772 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 14 773 Outlet_0;
+#X text 9 773 Outlet_0;
 #X text 82 797 Displays the resulting grid when connected to [#out
 window];
-#X obj 15 822 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 10 822 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 13 823 Outlet_1;
-#X text 13 796 Grid;
-#X text 15 873 Integer;
-#X text 79 875 Displays the frame number of the frame currently being
+#X text 10 823 Outlet_1;
+#X text 81 875 Displays the frame number of the frame currently being
 viewed. Applies to formats that have frame numbers \, i.e. video.;
-#X text 7 949 file name;
 #X text 90 949 Including the file name of a grid into the [#in] object
 eliminates the need for an [open< message but limits the action to
 one specified grid.;
-#X obj 9 303 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 7 311 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 201 304 Inlets (1);
+#X text 201 312 Inlets (1);
 #N canvas 82 93 663 454 quicktime 0;
 #X text 5 -3 The following messages can be used to set parameters for
 video (.mov) files.;
@@ -105,38 +90,34 @@ codec parameters and after setting framerate and codec.;
 #X connect 9 0 10 0;
 #X connect 12 0 10 0;
 #X connect 26 0 10 0;
-#X restore 148 678 pd quicktime file messages;
-#X obj 18 135 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
+#X restore 145 671 pd quicktime file messages;
+#X obj 353 148 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 19 135 #in;
-#X obj 258 213 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 354 148 #in;
+#X obj 15 225 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X floatatom 265 105 5 0 0 0 - - -;
-#X msg 259 83 set 2;
-#X obj 259 273 #out window;
-#X obj 350 170 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X floatatom 202 192 5 0 0 0 - - -;
+#X msg 202 148 set 2;
+#X obj 16 284 #out window;
+#X msg 202 104 loop 0;
+#X msg 202 126 loop 1;
+#X floatatom 32 265 5 0 0 0 - - -;
+#X msg 202 170 rewind;
+#X obj 41 247 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X msg 277 152 loop 0;
-#X msg 280 173 loop 1;
-#X floatatom 275 255 5 0 0 0 - - -;
-#X msg 268 132 rewind;
-#X text 256 64 for video files:;
-#X obj 284 236 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 259 212 #in;
-#X text 372 124 <--click here;
-#X msg 376 175 open alea.mpg;
-#X obj 350 124 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
-;
-#X obj 350 146 metro 33.3;
-#X obj 18 230 cnv 15 101 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 16 225 #in;
+#X text 39 95 <--click here;
+#X msg 16 151 open alea.mpg;
+#X obj 17 95 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 17 117 metro 33.3;
+#X obj 355 252 cnv 15 101 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 19 209 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X obj 356 231 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 19 255 #out window;
-#X obj 19 230 #in sewing.jpg;
-#X text 41 209 <--click here;
-#X text 80 661 For info about messages specifically for quickTime files
+#X obj 356 277 #out window;
+#X obj 356 252 #in sewing.jpg;
+#X text 378 231 <--click here;
+#X text 77 654 For info about messages specifically for quickTime files
 \, click on:;
 #N canvas 150 0 874 560 more 0;
 #X msg 287 400 open videodev \$1 \, get;
@@ -194,29 +175,46 @@ not mmap.;
 #X connect 11 0 14 0;
 #X connect 12 0 14 0;
 #X connect 13 0 14 0;
-#X restore 145 633 pd more info about video devices;
-#X text 77 616 For info about messages specifically for video devices
+#X restore 145 632 pd more info about video devices;
+#X text 77 615 For info about messages specifically for video devices
 \, click on:;
-#X text 308 102 <-- vary this (and turn off the metro);
-#X text 77 409 "open" - followed by the filename \, sends a grid to
+#X text 77 415 "open" - followed by the filename \, sends a grid to
 [#out]. For example: "open sewing.jpg".;
-#X obj 10 1020 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 402 7 GridFlow 0.8.4;
+#X text 8 796 GRID;
+#X text 10 846 BANG;
+#X text 9 873 INTEGER;
+#X text 7 949 FILE NAME;
+#X text 9 364 GRID;
+#X text 9 416 MESSAGE;
+#X text 8 710 INTEGER;
+#X text 169 210 (and turn off the metro);
+#X text 244 192 <-- vary this;
+#X obj 7 748 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 12 1021 Help Files GridFlow 0.8.4;
-#X connect 7 0 41 0;
-#X connect 8 0 41 0;
-#X connect 41 0 2 0;
-#X connect 43 0 53 0;
-#X connect 44 0 53 0;
-#X connect 46 0 53 0;
-#X connect 47 0 53 0;
-#X connect 48 0 53 0;
-#X connect 50 0 53 0;
-#X connect 53 0 45 0;
-#X connect 53 1 49 0;
-#X connect 53 1 52 0;
-#X connect 55 0 53 0;
-#X connect 56 0 57 0;
-#X connect 57 0 46 0;
-#X connect 59 0 61 0;
-#X connect 61 0 60 0;
+#X text 197 749 Outlets (2);
+#X text 197 749 Outlets (2);
+#X obj 8 926 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 195 927 Arguments;
+#X text 352 71 IMAGE FILES:;
+#X text 12 69 VIDEO FILES:;
+#X obj 28 180 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X text 380 103 <-- click here;
+#X connect 4 0 28 0;
+#X connect 5 0 28 0;
+#X connect 28 0 0 0;
+#X connect 30 0 38 0;
+#X connect 31 0 38 0;
+#X connect 33 0 38 0;
+#X connect 34 0 38 0;
+#X connect 36 0 38 0;
+#X connect 38 0 32 0;
+#X connect 38 1 35 0;
+#X connect 38 1 37 0;
+#X connect 40 0 38 0;
+#X connect 41 0 42 0;
+#X connect 44 0 46 0;
+#X connect 46 0 45 0;
+#X connect 69 0 38 0;
