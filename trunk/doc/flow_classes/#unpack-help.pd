@@ -1,40 +1,40 @@
-#N canvas 471 54 511 513 10;
-#X obj 2 -54 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 286 66 511 484 10;
+#X obj 1 -54 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 3 262 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 262 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 171 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 171 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 194 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 194 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 2 355 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 355 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 203 356 Arguments (1);
-#X obj 3 283 cnv 15 79 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 283 cnv 15 79 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 315 426 Help Files GridFlow 0.8.4;
-#X text 17 392 INTEGER;
+#X text 15 392 INTEGER;
 #X text 15 314 INTEGER;
-#X text 18 228 GRID;
-#X obj 12 -53 #unpack;
-#X text 12 196 Inlet_0;
+#X text 17 228 GRID;
+#X obj 11 -53 #unpack;
 #X obj 17 7 #color;
 #X floatatom 17 141 5 0 0 0 - - -;
 #X floatatom 46 120 5 0 0 0 - - -;
 #X floatatom 75 98 5 0 0 0 - - -;
 #X text 204 264 Outlets (n);
 #X text 204 173 Inlets (1);
-#X text 7 284 Outlet_All;
-#X text 95 228 Accepts a grid.;
+#X text 91 228 Accepts a grid.;
 #X text 196 30 <--click and drag to view grid values.;
 #X text 12 -26 Outputs individual integer values from a grid.;
 #X obj 17 74 cnv 15 65 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
 #X obj 17 74 #unpack 3;
 #X text 87 315 Outputs grid dimensions as individual integers.;
-#X text 84 391 Defines the number of outlets \, it usually corresponds
+#X text 397 -53 GridFlow 0.8.4;
+#X text 11 196 Inlet 0;
+#X text 5 284 Outlet All;
+#X text 84 391 Defines the number of outlets \, usually corresponds
 to the number of grid dimensions.;
-#X connect 13 0 24 0;
-#X connect 24 0 14 0;
-#X connect 24 1 15 0;
-#X connect 24 2 16 0;
+#X connect 11 0 21 0;
+#X connect 21 0 12 0;
+#X connect 21 1 13 0;
+#X connect 21 2 14 0;
