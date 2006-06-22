@@ -1,61 +1,129 @@
-#N canvas 280 33 649 652 10;
-#X obj 35 213 @in;
-#X obj 52 263 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
+#N canvas 209 0 509 631 10;
+#X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 14 245 cnv 15 79 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 6 610 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 4 347 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 4 370 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 611 Outlets (1);
+#X obj 6 699 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 698 Arguments (1);
+#X obj 6 631 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 13 -19 #out;
+#X text 12 11 Displays or saves an incoming grid (usually an image
+or a video).;
+#X obj 15 275 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 362 242 #out;
+#X text 12 55 Displaying a grid:;
+#X text 342 59 Saving a grid:;
+#X text 6 431 MESSAGE;
+#X text 75 434 "open filename.format" (ex: "open r001.jpg") sends a
+grid to [#out].;
+#X text 8 399 GRID;
+#X text 7 468 MESSAGE;
+#X text 8 502 MESSAGE;
+#X text 77 503 "rewind" rewinds to the beginning of a video file. Will
+overwrite previous data.;
+#X text 79 541 "timelog 1" will display (in the console) the current
+time and the time since the last frame. Message "timelog 0" will hide
+this information. The default is "timelog 0".;
+#X text 8 536 MESSAGE;
+#X text 206 349 Inlets (1);
+#X text 31 727 window [#out window] opens a window in which the grid
+will be displayed.;
+#X text 7 665 BANG;
+#X msg 15 91 open working.jpg;
+#X msg 31 123 open b001.jpg;
+#X obj 42 169 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 15 201 #in;
+#X obj 15 245 #out window;
+#X msg 98 188 open window;
+#X msg 98 210 close;
+#X text 77 469 "close" closes the file and hides the display \, must
+be accompanied by message "open window" to reopen the display.;
+#X text 9 371 Inlet 0;
+#X text 7 633 Outlet 0;
+#X text 75 665 A bang notifies when a complete grid has been received.
 ;
-#X text 274 307 upload a grid;
-#X text 261 80 upload a grid;
-#X text 194 108 open default display for screenshot;
-#X msg 73 134 open videodev /dev/video0;
-#X text 260 136 open a video device;
-#X msg 75 332 open x11 here;
-#X msg 87 356 open x11 local 10;
-#X text 182 285 show/hide timing statistics;
-#X text 178 334 connect to default display;
-#X text 218 358 connect to display #10 on this machine;
-#X msg 100 380 open x11 remote.host.bla.net 0;
-#X text 324 382 connect to remote machine on display #0;
-#X text 290 161 open mpeg video stream;
-#X obj 35 441 @out;
-#X text 272 155 *;
+#X text 398 -19 GridFlow 0.8.4;
+#N canvas 140 137 570 631 More 0;
+#X obj 35 246 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
+;
+#X text 290 316 upload a grid;
+#X text 228 89 upload a grid;
+#X text 229 144 open default display for screenshot;
+#X msg 23 61 open videodev /dev/video0;
+#X text 228 61 open a video device;
+#X msg 187 392 open x11 here;
+#X msg 158 341 open x11 local 10;
+#X text 116 267 show/hide timing statistics;
+#X text 290 394 connect to default display;
+#X text 289 342 connect to display #10 on this machine;
+#X msg 65 293 open x11 remote.host.bla.net 0;
+#X text 289 295 connect to remote machine on display #0;
 #X text 36 558 * path is where you started pd from. usually $home.
 ;
-#X text 308 188 open an image file;
-#X msg 114 450 close;
-#X text 577 15 gridflow;
-#X text 37 590 see also:;
-#X msg 90 161 open lsd.mpeg;
-#X msg 55 107 open x11 here;
-#X msg 113 404 open img/bla.jpg;
-#X text 300 405 open single file in jpg format;
-#X msg 108 186 open ./img/bla.jpg;
-#X text 35 481 incoming file is sent through the opened device/socket/file.
-in single file formats subsequent pictures overwrite the preceeding
-one. there are many more options. for more information see the reference
+#X text 228 115 open an image file;
+#X msg 242 441 close;
+#X msg 109 171 open lsd.mpeg;
+#X msg 109 143 open x11 here;
+#X msg 45 88 open host.bla.net 7777;
+#X msg 165 367 open img/bla.jpg;
+#X text 290 366 open single file in jpg format;
+#X msg 143 315 open x.test.at 7777;
+#X msg 200 417 open window;
+#X text 291 417 opens a window x11 \, quartz or sdl;
+#X msg 35 268 timelog \$1;
+#X text 39 582 Message "open" followed by the format of the specific
+grid opens a grid (usually an image) to then be displayed or saved
+by [#out].;
+#X text 37 482 An incoming file is sent through the opened device/socket/file.
+In single file format \, a subsequent picture overwrite the preceeding
+one. There are many more options. for more information see the reference
 manual in the "formats" and "objects for input/output" sections.;
-#X msg 65 307 open x.test.at 7777;
-#X msg 125 426 open window;
-#X text 228 426 opens a window x11 \, quartz or sdl;
-#X text 14 15 #in \, #out communicating grids (pictures) to/from devices
+#X text 14 15 #in \, #out communicating grids (images) to/from devices
 \, sockets \, files;
-#X msg 35 80 open grid tcp host.bla.net 7777;
-#X msg 52 283 timelog \$1;
-#X obj 108 595 #import (1);
-#X obj 205 595 #export;
-#X obj 260 595 #export_list;
-#X obj 350 595 #export_symbol;
-#X obj 454 595 #pack;
-#X connect 0 0 15 0;
-#X connect 1 0 33 0;
-#X connect 5 0 0 0;
-#X connect 7 0 15 0;
-#X connect 8 0 15 0;
-#X connect 12 0 15 0;
-#X connect 19 0 15 0;
-#X connect 22 0 0 0;
-#X connect 23 0 0 0;
-#X connect 24 0 15 0;
-#X connect 26 0 0 0;
-#X connect 28 0 15 0;
-#X connect 29 0 15 0;
-#X connect 32 0 0 0;
-#X connect 33 0 15 0;
+#X text 229 170 open mpeg video stream;
+#X text 367 56 *;
+#X obj 23 215 cnv 15 23 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 23 215 #in;
+#X msg 79 115 open /img/bla.jpg;
+#X obj 23 460 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 23 460 @out;
+#X obj 5 -7 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 14 -6 #out;
+#X connect 0 0 24 0;
+#X connect 4 0 31 0;
+#X connect 6 0 34 0;
+#X connect 7 0 34 0;
+#X connect 11 0 34 0;
+#X connect 15 0 34 0;
+#X connect 16 0 31 0;
+#X connect 17 0 31 0;
+#X connect 18 0 31 0;
+#X connect 19 0 34 0;
+#X connect 21 0 34 0;
+#X connect 22 0 34 0;
+#X connect 24 0 34 0;
+#X connect 31 0 34 0;
+#X connect 32 0 31 0;
+#X restore 140 314 pd More info about this object;
+#X text 77 401 Receives a grid.;
+#X connect 26 0 29 0;
+#X connect 27 0 29 0;
+#X connect 28 0 29 0;
+#X connect 29 0 30 0;
+#X connect 30 0 11 0;
+#X connect 31 0 30 0;
+#X connect 32 0 30 0;
