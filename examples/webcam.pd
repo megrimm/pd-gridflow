@@ -1,0 +1,23 @@
+#N canvas 618 310 450 300 10;
+#X obj 45 96 #camera;
+#X obj 45 142 #out window;
+#X obj 19 23 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 45 23 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 45 175 fps detailed;
+#X obj 45 205 print;
+#X obj 45 49 metro 20;
+#X msg 172 137 transfer read;
+#X msg 172 161 colorspace YUV420P;
+#X text 172 183 and do the YUV -> RGB conversion;
+#X text 169 99 For logitech quickcam 4000 \, select the following in
+[#camera] :;
+#X text 15 244 * note that you need to have the pwc module loaded.
+The driver from http://www.saillard.org worked for the quickcam pro
+4000;
+#X connect 0 0 1 0;
+#X connect 1 0 4 0;
+#X connect 2 0 0 0;
+#X connect 3 0 6 0;
+#X connect 4 0 5 0;
+#X connect 6 0 0 0;
