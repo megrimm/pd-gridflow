@@ -11,8 +11,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.5  2006/05/26 02:27:26  heri
-//  Let's try this again
+//  Revision 1.6  2006/06/23 18:01:32  heri
+//  Fix for 64bit OS compilation error. Basically, just added gcc -fPIC flag.
 //
 //  Revision 1.3  2006/04/25 15:47:37  heri
 //  Fixed the following methods for matrix types, including Channel, Channel8, Image, Matrix templates:

@@ -11,8 +11,8 @@
 //  $Date$
 // 
 //  $Log$
-//  Revision 1.4  2006/05/26 02:27:26  heri
-//  Let's try this again
+//  Revision 1.5  2006/06/23 18:01:32  heri
+//  Fix for 64bit OS compilation error. Basically, just added gcc -fPIC flag.
 //
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1

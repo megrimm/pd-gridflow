@@ -15,7 +15,7 @@ RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'
 RINC = -I $(RDIR1)
 
 SWIGFLAGS = -v
-CFLAGS += -Wall
+CFLAGS += -Wall -fPIC
 
 default:: ruby
 
@@ -39,7 +39,7 @@ ruby:: rblti.so
 	ruby -I. testrblti.rb
 
 rblti.so: rblti_wrap.o Makefile
-	$(CXX) -shared -o rblti.so rblti_wrap.o $(LIBS) -lstdc++
+	$(CXX) -shared -fPIC -o rblti.so rblti_wrap.o $(LIBS) -lstdc++
 
 rblti_wrap.o: rblti_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c rblti_wrap.cxx
