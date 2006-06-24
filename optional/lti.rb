@@ -41,12 +41,12 @@ class String
   def meat # warning: not 64-bit-safe
     stuff = [self].pack("p")
     if stuff.length == 4 then # 32 bit...
-      unpack("I")[0]>>2
+      stuff.unpack("I")[0]>>2
     elsif GridFlow::OurByteOrder==1 # 64 bit LE (AMD K8)
-      a,b=unpack("I2")
+      a,b=stuff.unpack("I2")
       (a >> 2)|(b << 30)
     else # 64 bit BE (Apple G5)
-      b,a=unpack("I2")
+      b,a=stuff.unpack("I2")
       (a >> 2)|(b << 30)
     end
   end
@@ -240,7 +240,10 @@ class LTIGridObject < GridObject
 	dim= @dims[slot]
 	nt =  @nts[slot]
 	GridFlow.post "dim=%s", dim.inspect
-	GridFlow.post "data.meat=%s", dim.inspect
+	GridFlow.post "data.meat=%s", data.meat.inspect
+	GridFlow.post "data.inspect=%s", data.inspect
+	GridFlow.post "data.pack=%s", [data].pack("p").inspect
+	GridFlow.post "data.meat2=%s", ([data].pack("p").unpack("I")[0]>>2).inspect
 	case st
 	when Imatrix; LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
 	when Image  ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
@@ -414,7 +417,7 @@ begin
     def _0_form i
 	n = self.class.functor_class.forms.length
 	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
-	@form = form
+	@formid = form
     end
     [0,1,2].each {|i|
       eval"
