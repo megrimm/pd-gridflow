@@ -44,10 +44,10 @@ class String
       unpack("I")[0]>>2
     elsif GridFlow::OurByteOrder==1 # 64 bit LE (AMD K8)
       a,b=unpack("I2")
-      (a>>2)|(b<<30)
+      (a >> 2)|(b << 30)
     else # 64 bit BE (Apple G5)
       b,a=unpack("I2")
-      (a>>2)|(b<<30)
+      (a >> 2)|(b << 30)
     end
   end
 end
@@ -222,11 +222,11 @@ class LTIGridObject < GridObject
         when Imatrix:
 	  dim.length!=2 and raise "expecting 2 dims (rows,columns) but got #{dim.inspect}"
           Imatrix.new dim[0],dim[1]
-        when Rect:
+        when Irect:
 	  dim.length!=2 and raise "expecting 2 dims (points,axes) but got #{dim.inspect}"
           dim[0]!=2 and raise "expecting 2 points"
           dim[1]!=2 and raise "expecting 2 axes"
-          Rect.new
+          Irect.new
 	else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
@@ -239,10 +239,12 @@ class LTIGridObject < GridObject
 	st=@stuffs[slot]
 	dim= @dims[slot]
 	nt =  @nts[slot]
+	GridFlow.post "dim=%s", dim.inspect
+	GridFlow.post "data.meat=%s", dim.inspect
 	case st
-	when Imatrix: LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
-	when Image  : LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
-        when Rect:
+	when Imatrix; LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+	when Image  ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+        when Irect
           d = data.unpack("I4")
           #GridFlow.post "d=%s", d.inspect
           dax = [d[1],d[3]].sort!
@@ -253,11 +255,16 @@ class LTIGridObject < GridObject
 	end
     end
 
+    def apply
+	#GridFlow.post "would apply %s",@stuffs.inspect
+	@functor.apply(*@stuffs)
+    end
+
     def _n_rgrid_end(inlet)
         @functor.setParameters @param
-	t=Time.new
-	@functor.apply(*@stuffs)
-	t=Time.new-t; GridFlow.post "time for apply: %f",t
+#	t=Time.new
+	apply
+#	t=Time.new-t; GridFlow.post "time for apply: %f",t
         GridFlow.post "@outletmap = %s", @outletmap.inspect
         GridFlow.post "@stuffs = %s", @stuffs.inspect
         i=@outletmap.length-1
@@ -273,7 +280,7 @@ class LTIGridObject < GridObject
       when Imatrix: send_out_lti_imatrix o,m
       when Image:   send_out_lti_image   o,m
       when Palette: send_out_lti_palette o,m
-      when Rect:    send_out_lti_rect    o,m
+      when Irect:   send_out_lti_rect    o,m
       else raise "don't know how to send_out a #{m.class}"
       end
     end
@@ -421,7 +428,7 @@ begin
 #	@dim1 = inlet_dim 1
 #	@nt1 = inlet_nt 1
 #	inlet_set_factor 1,@dim1.prod
-#	@arg1 = Rect.new
+#	@arg1 = Irect.new
 #    end
 #    def _1_rgrid_flow data
 #	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
@@ -447,4 +454,31 @@ rescue StandardError => e
   GridFlow.post "while handling lti class %s, which has ancestors %s",
     fuc,fuc.ancestors.join(' ')
 end
+}
+
+GridFlow.fclasses["lti.BackgroundModel"].module_eval {
+  def initialize
+    super
+    @mode = :apply
+  end
+  def _0_mode(mode)
+    case mode
+    when :addBackground; #ok
+    when :adaptBackground; #ok
+    when :apply; #ok
+    else raise "unknown mode: #{mode}"
+    end
+    @mode = mode
+  end
+  def apply
+    case @mode
+    when :addBackground
+      @functor.addBackground(@stuffs[0])
+    when :adaptBackground
+      @functor.adaptBackground(@stuffs[0],@stuffs[1])
+    when :apply; super
+    else raise "unknown mode: #{mode}"
+    end
+  end
+  def _0_clear; @functor.clearMoldel end # really. that's a typo in the lti API
 }
