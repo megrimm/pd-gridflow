@@ -1,5 +1,12 @@
 /* $Id$ */
 
+version 0.8.4 (2006.06...):
+
+ * more LTIlib support!
+ * [#camera]: improved
+ * rblti supports ltilib 1.9.15 and gcc 4
+ * 
+
 version 0.8.3 (2006.04.02):
 
  * added Makefile rules for downloading+installing ruby 1.9
@@ -81,7 +88,7 @@ version 0.8.0 (2005.06.06):
    [exec], [plotter_control], [#text_to_image], [#hueshift], [rubyarray]
  * in pd_examples added Alx's epicycloid.pd, scratch_video.pd, threshold.pd
       and Matju's goop.pd
- * some new/updated help files by Stéphanie Brodeur & Darsha Hewitt
+ * some new/updated help files by Stphanie Brodeur & Darsha Hewitt
 
 version 0.7.7 (2004.08.24):
 
