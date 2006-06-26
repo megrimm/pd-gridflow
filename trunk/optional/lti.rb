@@ -102,15 +102,28 @@ class LTI<FObject; install "lti",1,1
     attr_accessor:functors
     attr_accessor:parameterses
     attr_accessor:others
+    attr_accessor:have_param
   end
   @functors=[]
   @parameterses=[]
+  @have_param=Hash.new(false)
+
   cs=Rblti.constants
+  iii=0
+  cs.sort!
   cs.each{|c|
-    next unless /^R(.)(\w+)_parameters/ =~ c
-    fucn = $1.upcase+$2
-    @parameterses << c
-    @functors << fucn if const_get(fucn).ancestors.include?(Functor)
+    GridFlow.post "%d Processing %s", iii, c
+    iii=iii+1
+    #next unless const_get(c).respond_to? "instance_methods"
+    next unless Class===Rblti.const_get(c)
+    next unless const_get(c).ancestors.include?(Functor)
+    parm = 'R'+c.sub(/^./) {|s| s.downcase}+ '_parameters'
+
+    if (cs.grep Regexp.new(parm)).size != 0
+       @have_param[c]=parm
+       @parameterses << parm
+    end
+    @functors << c
   }
   @others = (cs-(@functors+@parameterses)).sort
   def _0_help(a=nil) self.class.help(a) end
@@ -171,9 +184,20 @@ class LTIGridObject < GridObject
 	super()
 	c=self.class
 	@functor = c.functor_class.new
-	@param   = c.  param_class.new
 	@formid = formid.to_i
-	@functor.setParameters @param
+
+	@funcname = ""
+	fullname=c.to_s
+	(fullname.split("::")).each { |x|
+	   @funcname=x
+	}
+
+        @param=nil
+
+        if LTI.have_param[@funcname]
+	   @param   = c.  param_class.new
+	   @functor.setParameters @param
+	end
 	#form = c.functor_class.forms[@formid]
     end
     def initialize2; initialize3 end
@@ -264,7 +288,9 @@ class LTIGridObject < GridObject
     end
 
     def _n_rgrid_end(inlet)
-        @functor.setParameters @param
+        if LTI.have_param[@funcname]
+           @functor.setParameters @param
+	end
 #	t=Time.new
 	apply
 #	t=Time.new-t; GridFlow.post "time for apply: %f",t
@@ -357,32 +383,57 @@ begin
     end
 
     @functor_class = fuc
-    @param_class = Rblti.const_get("R"+
-	name[0..0].downcase+
-	name[1..-1]+"_parameters")
+    
+    if LTI.have_param[name]
+       @param_class = Rblti.const_get("R"+
+	   name[0..0].downcase+
+	   name[1..-1]+"_parameters")
+    end
+
+    @funcname = ""
+	fullname=fuc.to_s
+	(fullname.split("::")).each { |x|
+	   @funcname=x
+	}
+
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
     @attrs = {}
     def self.lti_attr(name)
       tipe=nil
       begin
-        @param_class.new.__send__(name+"=",Object.new)
+        if LTI.have_param[name]
+           @param_class.new.__send__(name+"=",Object.new)
+        end
       rescue Exception=>e
           /of type '([^']*)'/ .match e.to_s and tipe=$1 or
           GridFlow.post "%s",e.inspect
       end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}"
-      module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
+      if LTI.have_param[name]
+         module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
+      end
     end
-    param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
+
+    if LTI.have_param[name]
+       param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
+    end
+
     def _0_help() self.class.help end
     def self.help()
+      GridFlow.post "\n\nFunctor %s", @funcname
       @attrs.each{|x,v| GridFlow.post "attribute %s: %s",x,v.inspect}
       GridFlow.post "total %d attributes", @attrs.length
       #---
-      pmo=param_class.instance_methods-attrs.keys-attrs.keys.map{|x|x+"="}-Object.instance_methods
-      pmo.each{|x| GridFlow.post "other param method %s",x}
-      GridFlow.post "total %d other param methods", pmo.length
+      
+      if LTI.have_param[@funcname]
+         pmo=param_class.instance_methods-attrs.keys-attrs.keys.map{|x|x+"="}-Object.instance_methods
+         pmo.each{|x| GridFlow.post "other param method %s",x}
+         GridFlow.post "total %d other param methods", pmo.length
+      else
+         GridFlow.post "This functor has no parameter"
+      end
+
       #---
       fm=functor_class.instance_methods-Object.instance_methods
       fm.each{|x| GridFlow.post "functor method %s",x}
@@ -401,7 +452,9 @@ begin
       }
     end
     def _0_get(sel=nil)
-      return @param.__send__(sel) if sel
+      if LTI.have_param[@funcname]
+         return @param.__send__(sel) if sel
+      end
       no=self.class.noutlets
       if sel==:form or not sel then send_out no-1, :form end
       self.class.attrs.each_key {|sel|
