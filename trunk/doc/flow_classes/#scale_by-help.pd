@@ -1,32 +1,78 @@
-#N canvas 435 370 589 398 10;
-#X obj 113 29 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X obj 20 72 metro 10;
-#X obj 20 49 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
+#N canvas 132 38 508 600 10;
+#X obj 89 146 cnv 15 65 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 1 374 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 216 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 239 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 379 Outlets (1);
+#X obj 1 454 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 457 Arguments (1);
+#X obj 1 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 395 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -19 GridFlow 0.8.4;
+#X text 2 239 Inlet 0;
+#X text 2 313 Inlet 1;
+#X text 221 218 Inlets (2);
+#X text 2 399 Outlet 0;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 11 54 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
 ;
-#X text 26 359 see also:;
-#X floatatom 172 116 5 0 0 0 - - -;
-#X text 518 16 gridflow;
-#X text 157 198 identical to scale_to with arguments that are exactly
-twice that of the incoming grid. it's several times faster.;
-#X msg 136 71 open bluemarble.jpg;
-#X obj 113 50 fork;
-#X text 14 15 #scale_by;
-#X obj 113 101 #in;
-#X obj 113 157 #scale_by;
-#X obj 113 275 #out window;
-#X obj 102 358 #scale_to;
-#X obj 172 358 #downscale_by;
-#X obj 172 136 #pack;
-#X floatatom 212 116 5 0 0 0 - - -;
-#X connect 0 0 8 0;
-#X connect 1 0 10 0;
-#X connect 2 0 1 0;
-#X connect 4 0 15 0;
-#X connect 7 0 10 0;
-#X connect 8 0 10 0;
-#X connect 8 1 7 0;
-#X connect 10 0 11 0;
-#X connect 11 0 12 0;
-#X connect 15 0 11 1;
-#X connect 16 0 15 1;
+#X obj 11 74 metro 100;
+#X obj 89 113 #in;
+#X obj 284 139 #pack;
+#X obj 326 117 hsl 128 8 0 10 0 0 empty empty empty 0 -8 0 8 -262144
+-1 -1 0 1;
+#X obj 325 128 hsl 128 8 0 10 0 0 empty empty empty 0 -8 0 8 -262144
+-1 -1 0 1;
+#X text 210 457 Arguments (1);
+#X obj 2 523 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 217 526 See Also;
+#X obj 10 550 #scale_to;
+#X obj 80 550 #downscale_by;
+#X obj 413 156 #print;
+#X obj 412 77 #print;
+#X text 7 263 GRID;
+#X text 4 337 INT INT;
+#X text 460 113 height;
+#X text 460 125 width;
+#X text 62 337 A height width value pair in pixels.;
+#X text 3 424 GRID;
+#X text 64 424 Outputs the resulting scaled image.;
+#X text 3 486 INT INT;
+#X text 65 484 A (height width) pair of integers indicating the size
+to scale to image to. This initial argument is required.;
+#X text 62 263 The Grid passed at inlet 0 will be the image on which
+the scale_to will be performed.;
+#X text 284 38 2 grid size values y=500 x=500;
+#X obj 89 145 #scale_by;
+#X obj 89 172 #out window \, title #scale_by;
+#X msg 284 55 2 # 2 2;
+#X msg 89 57 open bluemarble.jpg \, bang;
+#X obj 9 -19 #scale_by;
+#X text 9 1 The [#scale_by] scales the image received by the x and
+y factors passed.;
+#X msg 284 74 2 # 1 1;
+#X msg 284 95 2 # 3 4;
+#X connect 15 0 16 0;
+#X connect 16 0 17 0;
+#X connect 17 0 39 0;
+#X connect 18 0 26 0;
+#X connect 18 0 39 1;
+#X connect 19 0 18 0;
+#X connect 20 0 18 1;
+#X connect 39 0 40 0;
+#X connect 41 0 27 0;
+#X connect 41 0 39 1;
+#X connect 42 0 17 0;
+#X connect 45 0 27 0;
+#X connect 45 0 39 1;
+#X connect 46 0 27 0;
+#X connect 46 0 39 1;
