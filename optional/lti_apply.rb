@@ -397,7 +397,7 @@ BackgroundModel.forms = [
 
 begin
 MeanshiftTracker.forms = [
-[In[Rblti::Image], InOut[Rblti::Rect]],
+[In[Rblti::Image], InOut[Rblti::Irect]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
@@ -760,5 +760,5 @@ SplitImageToYUV.forms = [
 #   1 TpointList<float >
 #   1 DrgbPixel
 #   1 principalComponents<float >
-#   1 Rblti::Rect
+#   1 Rblti::Irect
 #   1 TpointList<double >
