@@ -1,0 +1,59 @@
+#N canvas 104 0 505 631 10;
+#X msg 20 42 open working.jpg;
+#X obj 20 84 #in;
+#X obj 30 63 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 20 147 #out window;
+#X obj 2 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 369 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 183 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 206 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 216 371 Outlets (1);
+#X obj 2 466 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 211 465 Arguments (1);
+#X obj 2 259 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 390 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 399 -19 GridFlow 0.8.4;
+#X text 3 207 Inlet 0;
+#X text 3 260 Inlet 1;
+#X text 3 391 Outlet 0;
+#X obj 19 117 cnv 15 191 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 16 -20 #border;
+#X text 18 231 GRID;
+#X text 222 184 Inlets (3);
+#X obj 2 311 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 3 312 Inlet 2;
+#X text 15 8 Creates a black border around an image.;
+#X text 19 287 LIST;
+#X text 21 343 LIST;
+#X text 65 286 A list of three values in parentheses overides the argument.
+;
+#X text 65 342 A list of three values in parentheses overides the argument.
+;
+#X text 11 418 BORDER;
+#X text 16 493 LIST;
+#X obj 20 117 #border (10 10 0) (10 10 0);
+#X text 67 418 A border of \, in this case \, 10 X 10 X 10 X 10 pixels
+appears around the image. The values can be set to be assymetrical.
+;
+#X text 66 494 Two lists of three values in parentheses. The first
+value of the first list corresponds to the number of rows on top \,
+the second value corresponds to the number of colomns on the left.
+The first value of the second list corresponds to the number of rows
+on the bottom and the second value corresponds to the number of colomns
+on the right. The third values correspond to the channel however it
+it not in use yet.;
+#X text 65 234 Receives an image.;
+#X connect 0 0 1 0;
+#X connect 1 0 30 0;
+#X connect 2 0 1 0;
+#X connect 30 0 3 0;
