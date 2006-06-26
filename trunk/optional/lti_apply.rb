@@ -793,6 +793,14 @@ MergeYUVToImage.forms = [
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
+MaskImage.forms = [
+[In[Rblti::Image], In[Rblti::Channel8], In[Rblti::Palette], Out[Rblti::Image]],
+[In[Rblti::Image], In[Rblti::Imatrix], In[Rblti::Palette], Out[Rblti::Image]],
+[In[Rblti::Image], In[Rblti::Channel8], Out[Rblti::Image]],
+[In[Rblti::Image], In[Rblti::Imatrix], Out[Rblti::Image]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
 # 206 Rblti::Channel8
 # 169 Rblti::Channel
 # 163 Rblti::Image
