@@ -112,7 +112,7 @@ class LTI<FObject; install "lti",1,1
   iii=0
   cs.sort!
   cs.each{|c|
-    GridFlow.post "%d Processing %s", iii, c
+    #GridFlow.post "%d Processing %s", iii, c
     iii=iii+1
     #next unless const_get(c).respond_to? "instance_methods"
     next unless Class===Rblti.const_get(c)

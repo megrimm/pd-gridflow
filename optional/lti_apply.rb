@@ -703,16 +703,106 @@ SplitImageToYUV.forms = [
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
-# 172 Rblti::Channel
-# 170 Rblti::Channel8
-# 131 Rblti::Image
-#  84 Rblti::Imatrix
-#  68 Float
-#  37 Rblti::Umatrix
-#  33 Ubyte
-#  28 Rblti::Palette
-#  24 Rblti::RgbPixel
-#  24 Rblti::Fmatrix
+begin
+MergeImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeRGBToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeHSVToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeHLSToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergergIToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeXYZToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergexyYToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeOCPToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeYIQToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeCIELuvToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MergeYUVToImage.forms = [
+[In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+[Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
+[In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+# 206 Rblti::Channel8
+# 169 Rblti::Channel
+# 163 Rblti::Image
+# 101 Float
+#  86 Rblti::Imatrix
+#  66 Ubyte
+#  64 Rblti::Fmatrix
+#  46 Rblti::RgbPixel
+#  40 Rblti::Umatrix
+#  30 Rblti::Palette
 #  23 Rblti::Dmatrix
 #  20 Rblti::Ivector
 #  19 Rblti::Fvector
@@ -722,43 +812,44 @@ SplitImageToYUV.forms = [
 #   9 Rblti::AreaPoints
 #   9 Vector<trgbPixel<float > >
 #   8 Tpoint<float >
-#   7 Rblti::PolygonPoints
-#   7 int
 #   7 double
+#   7 int
+#   7 Rblti::PolygonPoints
 #   6 std::list<location >
 #   6 std::list<dvector >
 #   6 Rblti::BorderPoints
 #   5 Rblti::Channel32
 #   5 std::list<areaPoints >
-#   4 Rblti::Location
 #   4 Rblti::PointList
-#   3 std::map<std::string,double >
-#   3 std::list<vector<float > >
-#   3 Rblti::IoPoints
+#   4 Rblti::Location
 #   3 std::vector<areaPoints >
+#   3 std::list<vector<float > >
+#   3 std::map<std::string,double >
+#   3 Rblti::IoPoints
 #   3 Matrix<rgbPixel >
-#   2 std::vector<rectangle >
 #   2 int (*)(int const &,int const &)
-#   2 std::list<ioPoints >
-#   2 std::vector<std::vector<rectangle > >
-#   2 int (*)(int const &,int const &,int const &)
-#   2 std::vector<geometricFeatureGroup0 >
-#   2 kdTree<rgbPixel,int >
+#   2 tree<objectStruct >
+#   2 double (*)(double const &,double const &,double const &)
+#   2 double (*)(double const &,double const &)
+#   2 std::vector<matrix<float > >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &)
 #   2 std::vector<std::vector<geometricFeatureGroup0 > >
 #   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
-#   2 ubyte (*)(unsigned char const &,unsigned char const &)
-#   2 std::vector<matrix<float > >
-#   2 double (*)(double const &,double const &,double const &)
+#   2 std::vector<rectangle >
+#   2 std::list<ioPoints >
+#   2 int (*)(int const &,int const &,int const &)
 #   2 std::list<borderPoints >
-#   2 tree<objectStruct >
-#   2 double (*)(double const &,double const &)
-#   1 TpointList<int >
+#   2 std::vector<geometricFeatureGroup0 >
+#   2 std::vector<std::vector<rectangle > >
+#   2 kdTree<rgbPixel,int >
 #   1 TpolygonPoints<double >
-#   1 TrgbPixel<float >
 #   1 TpolygonPoints<float >
+#   1 TpointList<int >
 #   1 std::list<channel >
-#   1 TpointList<float >
-#   1 DrgbPixel
 #   1 principalComponents<float >
-#   1 Rblti::Irect
+#   1 TrgbPixel<float >
+#   1 TpointList<float >
 #   1 TpointList<double >
+#   1 DrgbPixel
+#   1 Rblti::Irect
+
