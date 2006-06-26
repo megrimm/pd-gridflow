@@ -1,28 +1,79 @@
-#N canvas 375 180 649 321 10;
-#X obj 20 49 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
+#N canvas 122 0 508 611 10;
+#X obj 90 136 cnv 15 135 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 1 374 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 216 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 239 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 379 Outlets (1);
+#X obj 1 454 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 457 Arguments (1);
+#X obj 1 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 395 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -19 GridFlow 0.8.4;
+#X text 2 239 Inlet 0;
+#X text 2 313 Inlet 1;
+#X text 221 218 Inlets (2);
+#X text 2 399 Outlet 0;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 11 55 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
 ;
-#X obj 270 23 vsl 15 128 0 640 0 0 empty empty empty 0 -8 0 8 -262144
--1 -1 8000 1;
-#X obj 293 23 vsl 15 128 0 480 0 0 empty empty empty 0 -8 0 8 -262144
--1 -1 9800 1;
-#X text 281 281 see also:;
-#X text 190 182 though not pointed out in the manual \, the initial
-arguments seem to be mandatory.;
-#X text 578 11 gridflow;
-#X obj 20 72 metro 100;
-#X obj 113 157 #scale_to (133 133);
-#X msg 113 64 open b001.jpg \, bang;
-#X obj 113 101 #in;
-#X obj 269 157 #pack;
-#X obj 113 262 #out window;
-#X obj 352 285 #scale_by;
-#X obj 423 285 #downscale_by;
-#X text 14 15 #scale_to;
-#X connect 0 0 6 0;
-#X connect 1 0 10 0;
-#X connect 2 0 10 1;
-#X connect 6 0 9 0;
-#X connect 7 0 11 0;
-#X connect 8 0 9 0;
-#X connect 9 0 7 0;
-#X connect 10 0 7 1;
+#X obj 11 74 metro 100;
+#X obj 89 137 #scale_to (133 133);
+#X obj 89 113 #in;
+#X obj 284 139 #pack;
+#X obj 325 118 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -262144
+-1 -1 8900 1;
+#X obj 325 128 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -262144
+-1 -1 7800 1;
+#X obj 9 -19 #scale_to;
+#X obj 89 188 #out window \, title #scale_to;
+#X text 210 457 Arguments (1);
+#X obj 2 523 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 217 526 See Also;
+#X obj 80 550 #downscale_by;
+#X msg 89 53 open scissors.jpg \, bang;
+#X obj 413 156 #print;
+#X msg 284 55 2 # 500 500;
+#X obj 412 77 #print;
+#X text 7 263 GRID;
+#X text 9 2 The [#scale_to] scales the image received to the x and
+y values passed. Initial creation arguments seem to be mandatory ((133
+133) in our example).;
+#X text 4 337 INT INT;
+#X msg 284 74 2 # 100 500;
+#X msg 285 95 2 # 500 100;
+#X text 460 113 height;
+#X text 460 125 width;
+#X text 62 337 A height width value pair in pixels.;
+#X text 3 424 GRID;
+#X text 64 424 Outputs the resulting scaled image.;
+#X text 3 486 INT INT;
+#X text 65 484 A (height width) pair of integers indicating the size
+to scale to image to. This initial argument is required.;
+#X text 62 263 The Grid passed at inlet 0 will be the image on which
+the scale_to will be performed.;
+#X text 284 38 2 grid size values y=500 x=500;
+#X obj 7 550 #scale_by;
+#X connect 15 0 16 0;
+#X connect 16 0 18 0;
+#X connect 17 0 23 0;
+#X connect 18 0 17 0;
+#X connect 19 0 17 1;
+#X connect 19 0 29 0;
+#X connect 20 0 19 0;
+#X connect 21 0 19 1;
+#X connect 28 0 18 0;
+#X connect 30 0 17 1;
+#X connect 30 0 31 0;
+#X connect 35 0 17 1;
+#X connect 35 0 31 0;
+#X connect 36 0 17 1;
+#X connect 36 0 31 0;
