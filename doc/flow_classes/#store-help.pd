@@ -1,8 +1,8 @@
 #N canvas 483 121 541 394 10;
-#X floatatom 18 86 5 0 0 0 - - -;
-#X floatatom 63 86 5 0 0 0 - - -;
+#X floatatom 17 72 5 0 0 0 - - -;
+#X floatatom 62 72 5 0 0 0 - - -;
 #X text 92 15 stores a single grid and can recall parts of it.;
-#X floatatom 111 184 5 0 0 0 - - -;
+#X floatatom 86 184 5 0 0 0 - - -;
 #X floatatom 73 351 5 0 0 0 - - -;
 #X text 56 352 R:;
 #X floatatom 134 351 5 0 0 0 - - -;
@@ -11,18 +11,19 @@
 #X text 178 352 B:;
 #X text 130 262 this example allows you to select a single pixel from
 the loaded picture and view its rgb value.;
-#X floatatom 164 185 5 0 0 0 - - -;
-#X text 92 185 X:;
-#X text 149 186 Y:;
+#X floatatom 139 185 5 0 0 0 - - -;
+#X text 67 185 X:;
+#X text 124 186 Y:;
 #X text 478 14 gridflow;
-#X obj 18 118 #pack;
-#X obj 294 119 #in;
-#X msg 294 92 load r001.jpg;
-#X obj 111 155 #unpack;
+#X obj 17 104 #pack;
+#X obj 237 201 #in;
+#X msg 237 174 load r001.jpg;
+#X obj 86 155 #unpack;
 #X obj 73 221 #redim (1 2);
 #X obj 73 266 #store;
 #X obj 73 326 #unpack 3;
 #X text 14 15 #store;
+#X msg 195 131 put_at 3;
 #X connect 0 0 15 0;
 #X connect 1 0 15 1;
 #X connect 15 0 18 0;
