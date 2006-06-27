@@ -1,8 +1,46 @@
-#N canvas 0 0 450 300 10;
-#X obj 2 -16 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 335 0 503 549 10;
+#X obj 0 -37 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 396 -18 GridFlow 0.8.4;
-#X obj -1 143 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 396 -35 GridFlow 0.8.4;
+#X obj -1 391 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 219 144 Inlets (1);
-#X obj 4 -15 #export_symbol;
+#X obj -1 286 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 213 393 Outlets (1);
+#X obj -1 489 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 412 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 0 310 Inlet 0;
+#X text 0 413 Outlet 0;
+#X text 213 286 Inlets (1);
+#X obj 10 196 cnv 15 100 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 4 337 GRID;
+#X obj 45 127 display;
+#X text 208 488 Arguments (0);
+#X obj 173 255 display;
+#X text 2 440 LIST;
+#X obj 1 -37 #export_symbol;
+#X obj 10 196 #export_symbol;
+#X obj 10 255 print exported_symbol;
+#X symbolatom 352 257 12 0 0 0 - - -;
+#X text 58 337 Accepts a grid that will be transformed into a symbol.
+;
+#X text 56 440 The grid is transformed into a single message containing
+a symbol.;
+#X text 10 -5 Produces a symbol from grid data in its input. The values
+are expected to be valid ASCII codes \, but no check will be performed
+for that \, and additionally \, no check will be made that the generated
+symbol only contains characters that can be put in a symbol.;
+#X msg 10 74 72 101 108 108 111 32 87 111 114 108 100 33;
+#X obj 10 101 #import (3 2 2);
+#X text 323 74 <-- create the grid here;
+#X connect 18 0 15 0;
+#X connect 18 0 19 0;
+#X connect 18 0 20 0;
+#X connect 24 0 25 0;
+#X connect 25 0 13 0;
+#X connect 25 0 18 0;
