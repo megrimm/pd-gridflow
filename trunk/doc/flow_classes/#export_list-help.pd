@@ -1,8 +1,42 @@
-#N canvas 265 90 515 324 10;
-#X obj 2 -16 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 379 49 502 472 10;
+#X obj 0 -37 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 396 -18 GridFlow 0.8.4;
-#X obj -1 143 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 396 -35 GridFlow 0.8.4;
+#X obj -1 315 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 219 144 Inlets (1);
-#X obj 4 -15 #export_list;
+#X obj -1 210 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 233 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 213 317 Outlets (1);
+#X obj -1 413 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 336 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 0 234 Inlet 0;
+#X text 0 337 Outlet 0;
+#X text 213 210 Inlets (1);
+#X obj 14 131 cnv 15 84 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 4 261 GRID;
+#X obj 13 54 #import ( 2 2 2 );
+#X obj 49 78 display;
+#X msg 13 27 1 2 3 4 5 6 7 8;
+#X text 208 412 Arguments (0);
+#X obj 1 -37 #export_list;
+#X obj 13 132 #export_list;
+#X obj 13 179 print exported_list;
+#X obj 160 180 display;
+#X text 58 261 Accepts a grid that will be transformed into a list.
+;
+#X text 2 364 LIST;
+#X text 56 364 The grid is transformed into a single message containing
+a sequence of integers.;
+#X text 11 -10 Produces a list from grid data. Useful for the integration
+into the rest of PureData.;
+#X text 129 26 <-- create the grid here;
+#X connect 13 0 14 0;
+#X connect 13 0 18 0;
+#X connect 15 0 13 0;
+#X connect 18 0 19 0;
+#X connect 18 0 20 0;

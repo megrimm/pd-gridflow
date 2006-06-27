@@ -21,9 +21,9 @@
 0;
 #X text 4 261 GRID;
 #X obj 14 151 #export;
-#X obj 14 70 #import ( 2 2 2 );
+#X obj 14 63 #import ( 2 2 2 );
 #X obj 50 96 display;
-#X msg 14 43 1 2 3 4 5 6 7 8;
+#X msg 14 36 1 2 3 4 5 6 7 8;
 #X obj 14 179 print exported_ints;
 #X text 3 364 INTEGER;
 #X text 208 412 Arguments (0);
@@ -33,6 +33,7 @@
 ;
 #X text 11 -10 Produces sequences of elements from grid data. Useful
 for the integration into the rest of PureData.;
+#X text 137 36 <-- create the grid here;
 #X connect 14 0 18 0;
 #X connect 15 0 16 0;
 #X connect 15 0 14 0;
