@@ -1,69 +1,72 @@
-#N canvas 84 26 502 510 10;
+#N canvas 526 103 502 584 10;
 #X obj -1 -82 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 396 -81 GridFlow 0.8.4;
-#X obj 121 -26 #color;
+#X obj 121 15 #color;
 #X text 0 -83 [#color];
-#X obj -2 44 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 88 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 0 72 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 116 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 1 73 Inlet 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 1 117 Inlet 0;
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -2 265 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -1 266 Outlet 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text -1 310 Outlet 0;
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -2 265 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -1 266 Outlet 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text -1 310 Outlet 0;
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -2 265 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -1 266 Outlet 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text -1 310 Outlet 0;
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 209 239 Outlets (1);
-#X obj -2 265 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 209 283 Outlets (1);
+#X obj -2 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -1 266 Outlet 0;
-#X text 310 -3 <-- vary these;
-#X text 218 45 Inlets (1);
-#X text -2 100 GRID;
-#X text -2 142 MESSAGE;
-#X text -2 296 GRID;
-#X text 58 296 [#color] produces a three dimensional grid of RBG values
+#X text -1 310 Outlet 0;
+#X text 310 38 <-- vary these;
+#X text 218 89 Inlets (1);
+#X text -2 144 GRID;
+#X text -2 186 MESSAGE;
+#X text -2 340 GRID;
+#X text 58 340 [#color] produces a three dimensional grid of RBG values
 ;
 #X text 1 -58 The [#color] object contains a triple slider for RGB
 value selection on each channel.;
-#X text 64 99 [#color] accepts three demensional grids and allows for
-colour value (RGB) changes on each channel;
-#X text 65 187 a message containing a list of three values between
+#X text 65 231 a message containing a list of three values between
 0 and 255 will asign each value to the corresponding position on each
 channel.;
-#X text 62 137 "delegate"- followed by a value between 0 and 255 will
+#X text 62 181 "delegate"- followed by a value between 0 and 255 will
 cause all the colour values on each channel to go to the value corresponding
 to that position.;
-#X obj -3 326 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -3 370 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -3 326 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -3 370 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -3 326 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -3 370 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -3 326 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -3 370 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 211 328 Arguments (0);
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 211 372 Arguments (0);
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -2 237 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -2 281 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj -5 374 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -5 418 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 209 239 Outlets (1);
-#X text -3 346 None;
-#X text -2 374 also see:;
+#X text 209 283 Outlets (1);
+#X text -3 390 None;
+#X text -2 418 also see:;
+#X text 209 -17 <-- click here;
+#X msg 137 -17 255 0 204;
+#X text 64 143 [#color] accepts three dimensional grids and allows
+for colour value (RGB) changes on each channel;
+#X connect 42 0 2 0;

@@ -12,11 +12,10 @@
 #X obj 29 170 #in;
 #X obj 4 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X obj 59 442 #out window;
 #X obj 89 400 #store;
 #X obj 29 122 t b b;
-#X obj 89 468 fps detailed;
-#X obj 89 488 print fps;
+#X obj 2 434 fps detailed;
+#X obj 2 454 print fps;
 #X obj 29 84 metro 100;
 #X obj 29 60 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X text 207 373 transforms an Imatrix array (grid dim(y \, x));
@@ -31,9 +30,9 @@ style;
 #X msg 316 249 smoothFilter \$1;
 #X msg 316 221 quantparameters \$1;
 #X obj 317 87 hsl 128 15 0 127 0 0 kernelSize empty kernelSize -2 -6
-0 12 -262144 -1 -1 1800 1;
+0 12 -262144 -1 -1 0 1;
 #X obj 458 87 nbx 5 14 -1e+37 1e+37 0 0 empty kernelSize empty 0 -6
-0 10 -262144 -1 -1 18 256;
+0 10 -262144 -1 -1 0 256;
 #N canvas 0 0 450 300 parameters 0;
 #X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
 #X obj 149 231 s param;
@@ -56,18 +55,17 @@ style;
 #X connect 8 0 1 0;
 #X restore 458 473 pd parameters;
 #X obj 317 121 hsl 128 15 0 127 0 0 numberOfColors empty numberOfColors
--2 -6 0 12 -262144 -1 -1 1700 1;
+-2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 121 nbx 5 14 -1e+37 1e+37 0 0 empty numberOfColors empty
-0 -6 0 10 -262144 -1 -1 17 256;
+0 -6 0 10 -262144 -1 -1 0 256;
 #X obj 317 156 hsl 128 15 0 127 0 0 thresholdDeltaPalette empty thresholdDeltaPalette
 -2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 156 nbx 5 14 -1e+37 1e+37 0 0 empty thresholdDeltaPalette
 empty 0 -6 0 10 -262144 -1 -1 0 256;
 #X obj 317 194 hsl 128 15 0 127 0 0 maximalNumberOfIerations empty
-maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 300 1;
+maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 0 1;
 #X obj 458 194 nbx 5 14 -1e+37 1e+37 0 0 empty maximalNumberOfIerations
-empty 0 -6 0 10 -262144 -1 -1 3 256;
-#X obj 16 222 loadbang;
+empty 0 -6 0 10 -262144 -1 -1 0 256;
 #N canvas 0 0 450 300 parameters_get 0;
 #X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
 #X obj 149 231 s param;
@@ -119,31 +117,30 @@ maximalNumberOfIterations;
 #X obj 75 199 #scale_by 1;
 #X obj 103 422 #scale_by 1;
 #X obj 89 371 #outer * (1 2 3);
-#X obj 90 277 lti.KMeansSegmentation 0;
 #X obj 2 410 #out window;
 #X obj 2 372 #clip;
 #X obj 2 391 # * 30;
 #X obj 2 353 #outer * (1 3 2);
-#X connect 5 0 52 0;
-#X connect 6 0 52 0;
-#X connect 7 0 49 0;
-#X connect 7 0 52 0;
-#X connect 8 0 11 0;
-#X connect 9 0 12 0;
-#X connect 10 0 50 0;
-#X connect 11 0 7 0;
-#X connect 11 1 19 0;
-#X connect 12 0 13 0;
-#X connect 14 0 11 0;
-#X connect 15 0 14 0;
-#X connect 19 0 7 0;
-#X connect 34 0 6 0;
+#X obj 90 277 lti.KMeansSegmentation 0;
+#X connect 5 0 54 0;
+#X connect 6 0 54 0;
+#X connect 7 0 47 0;
+#X connect 7 0 54 0;
+#X connect 8 0 10 0;
+#X connect 9 0 48 0;
+#X connect 10 0 7 0;
+#X connect 10 1 18 0;
+#X connect 11 0 12 0;
+#X connect 13 0 10 0;
+#X connect 14 0 13 0;
+#X connect 18 0 7 0;
+#X connect 44 0 7 0;
 #X connect 46 0 7 0;
-#X connect 48 0 7 0;
-#X connect 49 0 47 0;
-#X connect 51 0 10 0;
-#X connect 52 0 56 0;
-#X connect 52 1 18 0;
-#X connect 54 0 55 0;
-#X connect 55 0 53 0;
-#X connect 56 0 54 0;
+#X connect 47 0 45 0;
+#X connect 49 0 9 0;
+#X connect 50 0 11 0;
+#X connect 51 0 52 0;
+#X connect 52 0 50 0;
+#X connect 53 0 51 0;
+#X connect 54 0 53 0;
+#X connect 54 1 17 0;
