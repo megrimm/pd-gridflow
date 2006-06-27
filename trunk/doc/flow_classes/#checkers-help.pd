@@ -1,13 +1,37 @@
-#N canvas 431 74 440 305 10;
-#X obj 20 47 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
+#N canvas 40 127 504 404 10;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 239 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 148 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 171 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 241 Outlets (1);
+#X obj 1 329 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 260 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -19 GridFlow 0.8.4;
+#X text 2 172 Inlet 0;
+#X text 2 261 Outlet 0;
+#X obj 10 -20 #checkers;
+#X obj 156 43 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X obj 20 124 @checkers;
-#X text 216 217 see also;
-#X text 354 7 gridflow;
-#X obj 20 229 @out window;
-#X obj 20 81 #for (0 0) (128 128) (1 1);
-#X obj 278 218 #draw_polygon;
-#X text 16 7 #checkers;
-#X connect 0 0 5 0;
-#X connect 1 0 4 0;
-#X connect 5 0 1 0;
+#X obj 156 65 #for (0 0) (128 128) (1 1);
+#X obj 156 112 #out window \, title checkers;
+#X text 221 149 Inlets (1);
+#X text 11 202 GRID;
+#X text 69 204 Receives a grid: [#for (0 0) (height width) (1 1)];
+#X obj 155 88 cnv 15 66 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 156 88 #checkers;
+#X text 9 290 GRID;
+#X text 74 288 Results in a checkered pattern of 50% / 75% greys in
+8 X 8 squares.;
+#X text 225 331 Arguments;
+#X text 10 355 NONE;
+#X text 12 2 Displays a grid with a pattern of checkered squares.;
+#X connect 11 0 12 0;
+#X connect 12 0 18 0;
+#X connect 18 0 13 0;
