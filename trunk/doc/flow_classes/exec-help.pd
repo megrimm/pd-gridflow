@@ -1,13 +1,40 @@
-#N canvas 0 0 450 267 10;
-#X text 259 22 GridFlow 0.8.0;
-#X text 50 221 see also:;
-#X obj 126 221 renamefile;
-#X obj 241 221 unix_time;
-#X obj 61 130 exec;
-#X msg 35 78 shell xlogo &;
-#X msg 144 78 shell ftp ac@artengine.ca &;
-#X obj 209 221 ls;
-#X text 141 121 Executes a program or script. It is not return a result
-\, see the PureData shell after using the ftp command.;
-#X connect 5 0 4 0;
-#X connect 6 0 4 0;
+#N canvas 628 0 501 450 10;
+#X obj 10 85 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 1 253 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 126 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 149 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 304 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 2 150 Inlet 0;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 9 -19 exec;
+#X obj 10 85 exec;
+#X obj 13 387 renamefile;
+#X obj 128 387 unix_time;
+#X obj 96 387 ls;
+#X msg 10 57 shell xlogo &;
+#X msg 119 57 shell ftp ac@artengine.ca &;
+#X text 221 127 Inlets (1);
+#X text 398 -18 GridFlow 0.8.4;
+#X obj 1 359 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 360 See also;
+#X text 9 5 The [exec] launches a Unix shell program or script. It
+does not return a result \, see the PureData shell after using the
+ftp command.;
+#X text 9 177 SYMBOL;
+#X text 215 255 Outlets (0);
+#X text 15 277 No outlet;
+#X text 210 305 Arguments (0);
+#X text 64 334;
+#X text 14 332 No argument;
+#X text 56 176 Inlet 0 accepts a symbol made of the word "shell" which
+creates a Unix shell and the program or script to be executed in that
+shell like "xlogo &" or "ftp ftpsitename &" \, etc.;
+#X connect 12 0 8 0;
+#X connect 13 0 8 0;
