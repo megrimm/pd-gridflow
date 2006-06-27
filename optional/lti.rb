@@ -167,6 +167,7 @@ end
 class ArgMode
   def initialize(of) @of=of end
   def inspect; "#{self.class}["+@of.inspect+"]" end
+  def to_s; inspect; end
   class << self; alias [] new end
   def of; @of end
 end
@@ -178,7 +179,7 @@ require "gridflow/optional/lti_apply"
 
 class LTIGridObject < GridObject
     ImageBP   = BitPacking.new(GridFlow::ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
-    ImatrixBP = BitPacking.new(GridFlow::ENDIAN_LITTLE,1,[0xff]) # actually this would be for Umatrix
+    UmatrixBP = BitPacking.new(GridFlow::ENDIAN_LITTLE,1,[0xff])
 
     def initialize(formid=0)
 	super()
@@ -237,16 +238,20 @@ class LTIGridObject < GridObject
 	nt  = inlet_nt  inlet
 	slot = @inletmap[inlet] # slot into the apply()
 #        GridFlow.post "inlet=%d slot=%d stuff=%s", inlet, slot, @stuffs[slot].inspect
-        @stuffs[slot] = 
+        @stuffs[slot] =
         case @stuffs[slot]
-        when Image:
+        when Image
 	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
 	  dim[2]!=3 and raise "expecting 3 channels, got #{dim.inspect}"
           Image.new dim[0],dim[1]
-        when Imatrix:
-	  dim.length!=2 and raise "expecting 2 dims (rows,columns) but got #{dim.inspect}"
-          Imatrix.new dim[0],dim[1]
-        when Irect:
+        when Umatrix,Channel8, Imatrix,Channel32, Fmatrix,Channel
+	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
+	  dim[2]!=1 and raise "expecting 1 channel, got #{dim.inspect}"
+          case @stuffs[slot]
+	  when Fmatrix,Channel; nt==:float32 or raise "wanted float32"
+	  end
+          @stuffs[slot].new dim[0],dim[1]
+        when Irect
 	  dim.length!=2 and raise "expecting 2 dims (points,axes) but got #{dim.inspect}"
           dim[0]!=2 and raise "expecting 2 points"
           dim[1]!=2 and raise "expecting 2 axes"
@@ -268,9 +273,11 @@ class LTIGridObject < GridObject
 	GridFlow.post "data.inspect=%s", data.inspect
 	GridFlow.post "data.pack=%s", [data].pack("p").inspect
 	GridFlow.post "data.meat2=%s", ([data].pack("p").unpack("I")[0]>>2).inspect
-	case st
-	when Imatrix; LTIGridObject::ImatrixBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
-	when Image  ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1],data.meat,st.meat,nt
+	case st # we might pretend that N floats or N int32 are 4N uint8 instead.
+	when Umatrix, Channel8; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
+	when Imatrix,Channel32; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
+	when Fmatrix,  Channel; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
+	when Image            ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
         when Irect
           d = data.unpack("I4")
           #GridFlow.post "d=%s", d.inspect
@@ -306,10 +313,12 @@ class LTIGridObject < GridObject
 
     def send_out_lti o,m
       case m
-      when Imatrix: send_out_lti_imatrix o,m
-      when Image:   send_out_lti_image   o,m
-      when Palette: send_out_lti_palette o,m
-      when Irect:   send_out_lti_rect    o,m
+      when Umatrix, Channel8;  send_out_lti_umatrix o,m
+      when Imatrix, Channel32; send_out_lti_imatrix o,m
+      when Fmatrix, Channel;   send_out_lti_fmatrix o,m
+      when Image;   send_out_lti_image   o,m
+      when Palette; send_out_lti_palette o,m
+      when Irect;   send_out_lti_rect    o,m
       else raise "don't know how to send_out a #{m.class}"
       end
     end
@@ -348,9 +357,17 @@ class LTIGridObject < GridObject
 	  send_out_grid_flow o,a.pack(ps)
 	end
     end
+    def send_out_lti_umatrix o,m
+	send_out_grid_begin o,[m.rows,m.columns] #,@out_nt
+	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :uint8
+    end
     def send_out_lti_imatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns]#,@out_nt
+	send_out_grid_begin o,[m.rows,m.columns] #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
+    end
+    def send_out_lti_fmatrix o,m
+	send_out_grid_begin o,[m.rows,m.columns], :float32
+	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :float32
     end
     def send_out_lti_rect o,m
 	send_out_grid_begin o,[2,2]#,@out_nt
@@ -498,8 +515,22 @@ begin
 #    end
     def pd_properties canvas
       cid = ".x%x"%(4*canvas)
+      wid = ".x%x"%(4*self.object_id)
+      fc = self.class.functor_class
       GridFlow.gui %{
-        tk_messageBox -message "this would be a cool feature, eh?" -type yesno -icon question -parent #{cid}
+        # tk_messageBox -message "this would be a cool feature, eh?" -type yesno -icon question -parent #{cid}
+	toplevel #{wid}
+      }
+      fc.forms.each_with_index {|f,i|
+        GridFlow.gui %{
+	  pack [radiobutton #{wid}.#{i} -text {#{f}} -variable var#{wid}]
+        }
+      }
+      GridFlow.gui %{
+        pack [frame #{wid}.bar -bg red] -fill x
+        pack [button #{wid}.bar.cancel -command "pd #{wid} props_cancel" -text "Cancel"] -side left -padx 4
+        pack [button #{wid}.bar.apply  -command "pd #{wid} props_apply"  -text "Apply" ] -side left -padx 4
+        pack [button #{wid}.bar.ok     -command "pd #{wid} props_ok"     -text "Ok"    ] -side left -padx 4
       }
     end
     properties_enable
