@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.13  2006/06/27 17:45:02  heri
+//  meat() for Fmatrix, Umatrix, Channel, Channel8, Channel32.
+//
 //  Revision 1.12  2006/06/21 14:28:53  heri
 //  Renamed Rect to Irect to be consistent with template naming convention.
 //
@@ -605,6 +608,34 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
   long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
 }
 
+%extend lti::matrix<lti::int32> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::channel {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::channel8 {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::channel32 {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::matrix<double> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::matrix<float> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
+%extend lti::matrix<lti::ubyte> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+}
+
 namespace lti {
 %extend image {
   image castFromRgbPixelMatrix(matrix<rgbPixel> other)
@@ -621,7 +652,5 @@ namespace lti {
 }
 }
 
-%extend lti::matrix<lti::int32> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
+
 
