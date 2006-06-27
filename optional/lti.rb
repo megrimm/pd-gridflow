@@ -278,10 +278,8 @@ class LTIGridObject < GridObject
         when Irect
           d = data.unpack("I4")
           #GridFlow.post "d=%s", d.inspect
-          dax = [d[1],d[3]].sort!
-          day = [d[0],d[2]].sort!
-          st.ul.x, st.ul.y = dax
-          st.br.x, st.br.y = day
+          st.ul.x, st.br.x = [d[1],d[3]].sort!
+          st.ul.y, st.br.y = [d[0],d[2]].sort!
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
