@@ -1,53 +1,59 @@
-#N canvas 493 91 508 595 10;
-#X obj 6 415 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 76 32 504 500 10;
+#X obj 1 292 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 240 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 142 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 263 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 165 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 5 504 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 373 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 206 505 Arguments (1);
-#X obj 6 436 cnv 15 65 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 210 372 Arguments (1);
+#X obj 1 232 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 9 534 INTEGER;
-#X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 313 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 15 -20 shunt;
-#X text 394 -19 GridFlow 0.8.4;
-#X obj 180 143 cnv 15 52 17 empty empty empty 20 12 0 14 -241291 -66577
+#X text 398 -38 GridFlow 0.8.4;
+#X text 2 166 Inlet 0;
+#X text 2 233 Inlet 1;
+#X text 221 143 Inlets (2);
+#X obj 1 -39 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 181 143 shunt 4;
-#X text 206 242 Inlets (2);
-#X text 7 264 Inlet 0;
-#X obj 4 332 cnv 15 73 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 10 -39 shunt;
+#X obj 165 78 cnv 15 52 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X text 6 365 INTEGER;
-#X text 7 333 Inlet 1;
-#X text 78 364 Selects which outlet is active.;
-#X text 6 296 ANY;
-#X text 207 417 Outlets (n);
-#X text 10 437 Outlets;
-#X text 14 470 ANY;
-#X text 76 534 Defines the number of outlets.;
-#X floatatom 136 191 5 0 0 0 - - -;
-#X floatatom 178 191 5 0 0 0 - - -;
-#X floatatom 220 191 5 0 0 0 - - -;
-#X floatatom 262 191 5 0 0 0 - - -;
-#X floatatom 181 82 5 0 0 0 - - -;
-#X obj 225 111 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -260818 -1
--1 0;
-#X text 226 80 <-- vary this;
-#X text 293 110 <-- select output here;
-#X text 34 26 Routes a message to the active outlet.;
-#X text 78 295 Incoming message can be Grids \, Symbols \, Integers
+#X obj 166 78 shunt 4;
+#X floatatom 121 112 5 0 0 0 - - -;
+#X floatatom 163 112 5 0 0 0 - - -;
+#X floatatom 205 112 5 0 0 0 - - -;
+#X floatatom 247 112 5 0 0 0 - - -;
+#X floatatom 166 46 5 0 0 0 - - -;
+#X obj 210 46 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -260818 -1
+-1 1;
+#X text 272 45 <-- select output here;
+#X text 65 45 vary this -->;
+#X obj 346 80 shunt;
+#X text 63 256 The integer passed to inlet 1 determines which outlet
+is active.;
+#X text 6 190 ANY;
+#X text 61 190 Incoming message can be Grids \, Symbols \, Integers
 \, Lists \, etc.;
-#X text 79 469 Outputs incoming message value according to the selector
+#X text 65 400 [shunt] accepts an integer as a creation argument which
+defines the number of outlets desired. If [shunt] is created without
+an argument \, it will have 2 outlets.;
+#X text 215 294 Outlets (n);
+#X text 2 314 Outlets;
+#X text 10 341 ANY;
+#X text 64 341 Outputs incoming message value according to the selector
 value.;
-#X obj 33 128 shunt;
-#X connect 11 0 23 0;
-#X connect 11 1 24 0;
-#X connect 11 2 25 0;
-#X connect 11 3 26 0;
-#X connect 27 0 11 0;
-#X connect 28 0 11 1;
+#X text 6 256 INTEGER;
+#X text 10 399 INTEGER;
+#X text 7 -12 The [shunt] routes any type of data to its active outlet.
+The number of outlets is defined by the argument at creation and the
+active outlet is defined by its right most inlet.;
+#X text 395 -38 GridFlow 0.8.4;
+#X connect 14 0 15 0;
+#X connect 14 1 16 0;
+#X connect 14 2 17 0;
+#X connect 14 3 18 0;
+#X connect 19 0 14 0;
+#X connect 20 0 14 1;
