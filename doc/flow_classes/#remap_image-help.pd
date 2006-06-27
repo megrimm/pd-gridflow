@@ -1,78 +1,70 @@
-#N canvas 101 10 506 608 10;
-#X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 300 38 508 671 10;
+#X obj 3 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 37 255 cnv 15 86 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 46 209 cnv 15 86 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 4 706 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 457 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 57 419 A float at the left inlet will update the stored value
-of the object and will send the number immediately to the outlet.;
-#X text 7 420 FLOAT;
-#X text 56 478 A bang at the left inlet will force [float] to send
-its value to the outlet.;
-#X text 10 479 BANG;
-#X text 58 523 A list at the left inlet will be truncated to include
-only the first element. The first element in the list will update the
-stored value of the object and will send the number immediately to
-the outlet.;
-#X text 10 522 LIST;
-#X obj 4 371 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 3 307 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 394 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 3 330 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 9 395 Inlet_0;
-#X text 206 373 Inlets (2);
-#X text 213 708 Outlets (1);
-#X text 62 753 Outputs the stored floating point value of the object.
-;
-#X text 9 751 FLOAT;
-#X text 62 807 [float] accepts a single float as a creation argument
-which initializes the first value to be sent out the left outlet.;
-#X obj 4 779 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 8 331 Inlet_0;
+#X text 205 309 Inlets (2);
+#X obj 4 591 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 208 778 Arguments (1);
-#X obj 4 621 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 3 389 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 727 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 478 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 8 728 Inlet_0;
-#X text 58 649 A float at the right inlet is stored for later use.
-It will be sent to the left outlet when a float or bang is received
-in the left inlet.;
-#X text 6 645 FLOAT;
-#X text 9 622 Inlet_1;
-#X obj 20 -20 #remap_image;
+#X text 8 390 Inlet_1;
+#X obj 10 -20 #remap_image;
 #X text 19 6 Transforms a grid by displacing pixels.;
-#X obj 55 72 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
-;
-#X obj 37 98 #in;
-#X obj 37 328 #out window;
-#X obj 116 293 #print;
-#X obj 129 146 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+#X obj 27 134 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X floatatom 132 203 5 0 0 0 - - -;
-#X obj 116 97 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+#X obj 46 159 #in;
+#X floatatom 166 181 5 0 0 0 - - -;
+#X text 7 358 GRID;
+#X obj 150 209 # +;
+#X msg 61 133 open sewing.jpg;
+#X text 211 179 <-- Modify value to see transformation.;
+#X text 54 357 Accepts a grid.;
+#X text 178 132 <-- open image;
+#X text 401 -19 GridFlow 0.8.4;
+#X obj 46 261 #out window \, title remapped;
+#X obj 46 77 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 46 100 metro 33.3667;
+#X text 19 25 If you chain indexmap (coordinate) transformations from
+outlet 1 to inlet 1 \, then sending an image in inlet 0 will emit its
+deformation out of outlet 0;
+#X text 8 504 GRID;
+#X text 8 479 Outlet_0;
+#X text 55 503 The deformed grid.;
+#X obj 46 209 #remap_image;
+#X text 204 590 Arguments (0);
+#X text 206 459 Outlets (2);
+#X obj 4 532 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 8 558 GRID;
+#X text 8 533 Outlet_1;
+#X text 197 209 <-- change the numop to change the transformation;
+#X text 6 417 GRID;
+#X text 55 557;
+#X obj 4 626 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 12 625 See also :;
+#X obj 92 625 #rotate;
+#X text 53 416 Receives a grid that is to be used as the transformation
+map;
+#X text 55 558;
+#X text 55 557 The deformed grid that has received the last transformation.
 ;
-#X obj 37 255 #remap_image;
-#X text 9 588 GRID;
-#X obj 116 231 # +;
-#X msg 37 47 open sewing.jpg;
-#X obj 116 172 #for (0 0) (480 360) (1 1);
-#X obj 116 122 metro 100;
-#X text 177 202 <-- Modify value to see transformation.;
-#X text 141 97 <-- start the metro.;
-#X text 55 589 Accepts a grid.;
-#X text 151 45 <-- open image;
-#X text 402 -19 GridFlow 0.8.4;
-#X text 144 232 <-- change the numop to change the transformation;
-#X connect 27 0 28 0;
-#X connect 28 0 34 0;
-#X connect 31 0 38 0;
-#X connect 32 0 36 1;
-#X connect 33 0 39 0;
-#X connect 34 0 29 0;
-#X connect 34 1 30 0;
-#X connect 36 0 34 1;
-#X connect 37 0 28 0;
-#X connect 38 0 36 0;
-#X connect 39 0 38 0;
+#X connect 13 0 14 0;
+#X connect 14 0 30 0;
+#X connect 15 0 17 1;
+#X connect 17 0 30 1;
+#X connect 18 0 14 0;
+#X connect 24 0 25 0;
+#X connect 25 0 14 0;
+#X connect 30 0 23 0;
+#X connect 30 1 17 0;
