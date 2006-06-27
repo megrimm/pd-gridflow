@@ -1,4 +1,4 @@
-#N canvas 251 15 505 533 10;
+#N canvas 30 36 505 533 10;
 #X obj -8 -427 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj -8 -88 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
@@ -14,8 +14,6 @@
 #X text 196 15 Arguments (1);
 #X obj -8 -67 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -4 -66 Inlet_0;
-#X obj 2 -427 #cast;
 #X obj 5 -208 #print;
 #X obj 5 -228 cnv 15 93 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
@@ -50,7 +48,7 @@
 float32 \, float64. see doc/architecture.html for more info.;
 #X obj 117 -270 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 3 -402 Changes an entity of one data type into another. Returns
+#X text 3 -401 Changes an entity of one data type into another. Returns
 a grid of the same dimensions containing all the same values after
 type conversion. While casting to a smaller type \, overflowing values
 will be truncated.;
@@ -58,17 +56,20 @@ will be truncated.;
 the same values after type conversion.;
 #X obj 397 -314 nbx 8 14 -1e+37 1e+37 0 1 empty empty empty 0 -6 0
 10 -262144 -1 -1 45 256;
-#X connect 13 0 11 0;
-#X connect 17 0 14 0;
-#X connect 19 0 15 0;
-#X connect 25 0 13 0;
-#X connect 26 0 19 0;
-#X connect 27 0 31 0;
-#X connect 28 0 32 0;
-#X connect 29 0 32 1;
-#X connect 30 0 31 1;
-#X connect 31 0 17 0;
-#X connect 32 0 30 0;
-#X connect 33 0 25 0;
-#X connect 35 0 26 0;
-#X connect 38 0 32 2;
+#X text 109 -137 comment;
+#X text -9 -66 Outlet_0;
+#X obj 2 -427 #cast i;
+#X connect 11 0 9 0;
+#X connect 15 0 12 0;
+#X connect 17 0 13 0;
+#X connect 23 0 11 0;
+#X connect 24 0 17 0;
+#X connect 25 0 29 0;
+#X connect 26 0 30 0;
+#X connect 27 0 30 1;
+#X connect 28 0 29 1;
+#X connect 29 0 15 0;
+#X connect 30 0 28 0;
+#X connect 31 0 23 0;
+#X connect 33 0 24 0;
+#X connect 36 0 30 2;
