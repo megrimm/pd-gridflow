@@ -14,7 +14,7 @@
 #X obj 77 123 loadbang;
 #X msg 73 146 140 180 220;
 #X msg 335 65 2 4 # 240 320;
-#X obj 335 84 # rand;
+#X obj 335 111 # rand;
 #X connect 0 0 2 0;
 #X connect 2 0 7 0;
 #X connect 2 1 13 0;
