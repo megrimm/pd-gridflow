@@ -1,25 +1,38 @@
-#N canvas 362 183 662 404 10;
-#X obj 19 37 bng 15 250 50 0 empty empty empty 0 -6 0 8 -233017 -1
--1;
-#X msg 212 76 1 1 1 1 1 1 1 1 1;
-#X text 569 17 gridflow;
-#X text 18 363 see also:;
-#X obj 212 57 loadbang;
-#X msg 42 85 open bluemarble.jpg;
-#X text 70 155 here ^ is the parallel operator \, fold is indicated
+#N canvas 0 0 508 631 10;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 596 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 276 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 299 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 598 Outlets (1);
+#X obj 1 677 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 676 Arguments (1);
+#X obj 0 473 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 617 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -19 GridFlow 0.8.4;
+#X text 2 300 Inlet 0;
+#X text 1 474 Inlet 1;
+#X text 221 277 Inlets (2);
+#X text 2 618 Outlet 0;
+#X obj 10 -20 #convolve;
+#X obj 16 67 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X msg 228 115 1 1 1 1 1 1 1 1 1;
+#X obj 228 93 loadbang;
+#X msg 39 115 open bluemarble.jpg;
+#X text 27 707 here ^ is the parallel operator \, fold is indicated
 by + and 0 is its base.;
-#X obj 19 62 fork;
-#X obj 19 133 #convolve \, op ^ \, fold + \, seed 0;
-#X obj 212 96 #redim (3 3);
-#X obj 19 108 #in;
-#X text 14 15 #convolve blurs \, sharpens \, finds edges \, emboss
-& more ...;
-#X obj 19 309 #out window;
-#X obj 89 367 #contrast;
-#X obj 158 367 #posterize;
-#X obj 234 367 #solarize;
-#X obj 303 367 #layer;
-#X text 216 187 splits the incoming grid into dim(rest...) parts \,
+#X obj 16 92 fork;
+#X obj 228 137 #redim (3 3);
+#X obj 16 138 #in;
+#X obj 16 221 #out window;
+#X text 73 330 splits the incoming grid into dim(rest...) parts \,
 for each of those parts at (xy \, x). a rectangle of such parts \,
 centered around (y \, x) is combined with the convolution grid like
 a [#] of operation op_para. then each such result is folded like [#fold]
@@ -29,12 +42,34 @@ into a grid that is sent to the outlet. near the borders of the grid
 before production of the next grid starts. this is the convolution
 grid and it gets stored in the object. rows2 and columns2 must be odd
 numbers.;
-#X connect 0 0 7 0;
-#X connect 1 0 9 0;
-#X connect 4 0 1 0;
-#X connect 5 0 10 0;
-#X connect 7 0 10 0;
-#X connect 7 1 5 0;
-#X connect 8 0 12 0;
-#X connect 9 0 8 1;
-#X connect 10 0 8 0;
+#X obj 0 746 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 55 745 see also:;
+#X obj 126 749 #contrast;
+#X obj 195 749 #posterize;
+#X obj 271 749 #solarize;
+#X obj 340 749 #layer;
+#X obj 16 163 cnv 15 219 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 16 163 #convolve \, op ^ \, fold + \, seed 0;
+#X text 14 7 [#convolve] is used to perform various transformations
+on images such as blurring \, sharpening \, finding edges \, embossing
+\, cellular automata and many others.;
+#X text 29 326 GRID;
+#X text 28 649 GRID;
+#X text 23 505 GRID;
+#X text 70 503 This is the convolution grid and it gets stored in the
+other object. If rows2 and/or columns 2 are odd numbers \, then the
+centre of convolution is the middle of the convolution grid. If they
+are even numbers \, then the chosen centre will be slightly more to
+the left and/or to the top \, because the actual middle is between
+celle of the grid.;
+#X connect 15 0 20 0;
+#X connect 16 0 21 0;
+#X connect 17 0 16 0;
+#X connect 18 0 22 0;
+#X connect 20 0 22 0;
+#X connect 20 1 18 0;
+#X connect 21 0 32 1;
+#X connect 22 0 32 0;
+#X connect 32 0 23 0;
