@@ -27,7 +27,7 @@
 =begin
         TODO list
 	- Learning period for BackgroundModel before apply can be used
-	- Reset for BackgroundModel
+	- Reset for BackgroundModel (DONE: please see method "clear" in [lti.BackgroundModel])
 	- Mask functors, operations
 
 =end
@@ -289,7 +289,9 @@ class LTIGridObject < GridObject
 	@functor.apply(*@stuffs)
     end
 
-    def _n_rgrid_end(inlet)
+    def _n_rgrid_end(inlet) end
+
+    def _0_rgrid_end
         if LTI.have_param[@funcname]
            @functor.setParameters @param
 	end
@@ -482,7 +484,7 @@ begin
 	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
 	@formid = form
     end
-    [0,1,2].each {|i|
+    (0..2).each {|i|
       eval"
 	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
 	def _#{i}_rgrid_flow data; _n_rgrid_flow  #{i},data end
@@ -536,6 +538,8 @@ rescue StandardError => e
 end
 }
 
+# Special Cases:
+
 GridFlow.fclasses["lti.BackgroundModel"].module_eval {
   def initialize
     super
@@ -561,4 +565,16 @@ GridFlow.fclasses["lti.BackgroundModel"].module_eval {
     end
   end
   def _0_clear; @functor.clearMoldel end # really. that's a typo in the lti API
+}
+
+GridFlow.fclasses["lti.MeanshiftTracker"].module_eval {
+#  def apply
+  def _1_rgrid_end
+    GridFlow.post "isInitialized 1 = %s", @functor.isInitialized.inspect
+    @functor.reset if @functor.isInitialized
+    GridFlow.post "isInitialized 2 = %s", @functor.isInitialized.inspect
+    super
+    GridFlow.post "isInitialized 3 = %s", @functor.isInitialized.inspect
+  end
+  def _0_reset; @functor.reset end
 }
