@@ -1,8 +1,39 @@
-#N canvas 3 38 539 325 10;
-#X obj 0 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#N canvas 379 49 502 472 10;
+#X obj 0 -37 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 1 -20 #export;
-#X text 396 -18 GridFlow 0.8.4;
-#X obj -1 143 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 -37 #export;
+#X text 396 -35 GridFlow 0.8.4;
+#X obj -1 315 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 219 144 Inlets (1);
+#X obj -1 210 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 233 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 213 317 Outlets (1);
+#X obj -1 413 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 336 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 0 234 Inlet 0;
+#X text 0 337 Outlet 0;
+#X text 213 210 Inlets (1);
+#X obj 14 151 cnv 15 50 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 4 261 GRID;
+#X obj 14 151 #export;
+#X obj 14 70 #import ( 2 2 2 );
+#X obj 50 96 display;
+#X msg 14 43 1 2 3 4 5 6 7 8;
+#X obj 14 179 print exported_ints;
+#X text 3 364 INTEGER;
+#X text 208 412 Arguments (0);
+#X text 78 364 The grid is transformed into a sequence of integers.
+;
+#X text 58 261 Accepts a grid that will be transformed into its elements.
+;
+#X text 11 -10 Produces sequences of elements from grid data. Useful
+for the integration into the rest of PureData.;
+#X connect 14 0 18 0;
+#X connect 15 0 16 0;
+#X connect 15 0 14 0;
+#X connect 17 0 15 0;
