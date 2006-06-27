@@ -1,4 +1,4 @@
-#N canvas 113 134 502 394 10;
+#N canvas 113 134 502 431 10;
 #X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 1 279 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
@@ -27,9 +27,12 @@
 #X text 7 239 GRID;
 #X text 8 326 GRID;
 #X text 87 240 A color grid at the left inlet is accepted.;
-#X text 84 329 A grid equivalrnt to the original one is output in greyscale.
-;
 #X text 15 7 Creates a greyscale image from a color image.;
+#X obj 2 371 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 196 372 Arguments (none);
+#X text 84 329 A grid equivalent to the original one is output in greyscale.
+;
 #X connect 10 0 13 0;
 #X connect 13 0 16 0;
 #X connect 14 0 10 0;
