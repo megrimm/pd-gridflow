@@ -32,6 +32,8 @@
 
 =end
 
+#$lti_debug = true
+
 require "rblti"
 include GridFlow
 include Rblti
@@ -212,23 +214,23 @@ class LTIGridObject < GridObject
     # initialize3 : called by initialize and every time the form (the chosen "apply" type) changes
     def initialize3
 	c = self.class
-	GridFlow.post "this is class %s, functor_class %s", c.inspect, c.functor_class.inspect
+	GridFlow.post "this is class %s, functor_class %s", c.inspect, c.functor_class.inspect if $lti_debug
 	form = c.functor_class.forms[@formid]
-	GridFlow.post "will use form %s: %s", @formid.inspect, form.inspect
+	GridFlow.post "will use form %s: %s", @formid.inspect, form.inspect if $lti_debug
 	@dims = form.map{[]}
-	GridFlow.post "@dims = %s", @dims.inspect
+	GridFlow.post "@dims = %s", @dims.inspect if $lti_debug
 	@nts = form.map{:int32}
-	GridFlow.post " @nts = %s",  @nts.inspect
+	GridFlow.post " @nts = %s",  @nts.inspect if $lti_debug
 	@stuffs = form.map{|stuffclass| stuffclass.of.new }
-	GridFlow.post " @stuffs = %s",  @stuffs.inspect
+	GridFlow.post " @stuffs = %s",  @stuffs.inspect if $lti_debug
 	@inletmap = []
 	@outletmap = []
 	form.each_with_index {|slot,i|
 		case slot; when  In,InOut;  @inletmap << i end
 		case slot; when Out,InOut; @outletmap << i end
 	}
-	GridFlow.post " @inletmap = %s",  @inletmap.inspect
-	GridFlow.post "@outletmap = %s", @outletmap.inspect
+	GridFlow.post " @inletmap = %s",  @inletmap.inspect if $lti_debug
+	GridFlow.post "@outletmap = %s", @outletmap.inspect if $lti_debug
 	add_inlets @inletmap.length-1
 	add_outlets @outletmap.length
     end
@@ -268,11 +270,6 @@ class LTIGridObject < GridObject
 	st=@stuffs[slot]
 	dim= @dims[slot]
 	nt =  @nts[slot]
-	GridFlow.post "dim=%s", dim.inspect
-	GridFlow.post "data.meat=%s", data.meat.inspect
-	GridFlow.post "data.inspect=%s", data.inspect
-	GridFlow.post "data.pack=%s", [data].pack("p").inspect
-	GridFlow.post "data.meat2=%s", ([data].pack("p").unpack("I")[0]>>2).inspect
 	case st # we might pretend that N floats or N int32 are 4N uint8 instead.
 	when Umatrix, Channel8; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
 	when Imatrix,Channel32; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
@@ -301,8 +298,8 @@ class LTIGridObject < GridObject
 #	t=Time.new
 	apply
 #	t=Time.new-t; GridFlow.post "time for apply: %f",t
-        GridFlow.post "@outletmap = %s", @outletmap.inspect
-        GridFlow.post "@stuffs = %s", @stuffs.inspect
+        GridFlow.post "@outletmap = %s", @outletmap.inspect if $lti_debug
+        GridFlow.post "@stuffs = %s", @stuffs.inspect if $lti_debug
         i=@outletmap.length-1
         while i>=0
           slot = @outletmap[i]
@@ -326,7 +323,7 @@ class LTIGridObject < GridObject
 #-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#
 
     def send_out_lti_image o,m
-        GridFlow.post "4*meat=0x%08x",4*m.meat
+        GridFlow.post "4*meat=0x%08x",4*m.meat if $lti_debug
 	send_out_grid_begin o,[m.rows,m.columns,3]
 	nt = :int32
 	ps=GridFlow.packstring_for_nt(nt)
@@ -341,10 +338,8 @@ class LTIGridObject < GridObject
 	  end
 	end
     end
-    def rgrid_begin_lti_image o,m
-    end
     def send_out_lti_palette o,m
-        #GridFlow.post "4*meat=0x%08x",4*m.meat
+        GridFlow.post "4*meat=0x%08x",4*m.meat if $lti_debug
 	send_out_grid_begin o,[m.size,3]
 	nt = :int32
 	ps=GridFlow.packstring_for_nt(nt)
@@ -358,15 +353,15 @@ class LTIGridObject < GridObject
 	end
     end
     def send_out_lti_umatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns] #,@out_nt
+	send_out_grid_begin o,[m.rows,m.columns,1] #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :uint8
     end
     def send_out_lti_imatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns] #,@out_nt
+	send_out_grid_begin o,[m.rows,m.columns,1] #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
     end
     def send_out_lti_fmatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns], :float32
+	send_out_grid_begin o,[m.rows,m.columns,1], :float32
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :float32
     end
     def send_out_lti_rect o,m
@@ -386,7 +381,7 @@ LTI.functors.each {|name|
 fuc = Rblti.const_get name
 begin
   if fuc.forms.length==0 then
-  	GridFlow.post "no forms for %s ?", fuc
+  	GridFlow.post "no forms for %s ?", fuc if $lti_debug
 	next
   end
   LTIGridObject.subclass("lti."+name,1,1) {
@@ -423,10 +418,10 @@ begin
         end
       rescue Exception=>e
           /of type '([^']*)'/ .match e.to_s and tipe=$1 or
-          GridFlow.post "%s",e.inspect
+          GridFlow.post "%s",e.inspect if $lti_debug
       end
       @attrs[name]=[tipe]
-      #GridFlow.post "%s", "defining #{name} for #{functor_class}"
+      #GridFlow.post "%s", "defining #{name} for #{functor_class}" if $lti_debug
       if LTI.have_param[name]
          module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
       end
