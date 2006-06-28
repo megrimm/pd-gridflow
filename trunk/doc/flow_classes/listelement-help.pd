@@ -1,51 +1,52 @@
-#N canvas 243 0 509 590 10;
+#N canvas 92 61 509 554 10;
 #X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 6 342 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 6 303 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 195 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 156 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 218 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 179 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 9 219 Inlet_0;
-#X text 206 197 Inlets (2);
-#X text 215 344 Outlets (1);
-#X obj 8 448 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 9 180 Inlet_0;
+#X text 206 158 Inlets (2);
+#X text 215 305 Outlets (1);
+#X obj 6 409 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 212 447 Arguments (1);
-#X obj 5 280 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 212 408 Arguments (1);
+#X obj 5 241 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 6 363 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 6 324 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 10 281 Inlet_1;
-#X obj 17 -19 listelement;
-#X floatatom 245 160 5 0 0 0 - - -;
-#X floatatom 286 87 5 0 0 0 - - -;
-#X obj 200 158 print;
-#X msg 200 47 1 3 hello 8 13;
-#X obj 200 113 cnv 15 93 17 empty empty empty 20 12 0 14 -241291 -66577
+#X text 10 242 Inlet_1;
+#X obj 11 -19 listelement;
+#X floatatom 262 122 5 0 0 0 - - -;
+#X floatatom 281 68 5 0 0 0 - - -;
+#X obj 195 120 print;
+#X msg 195 43 1 3 hello 8 13;
+#X obj 195 91 cnv 15 93 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X text 7 365 Outlet_0;
-#X text 14 250 LIST;
-#X text 11 315 INTEGER;
-#X text 10 479 INTEGER;
-#X obj 200 113 listelement 0;
-#X text 78 250 Accepts a list of numbers or symbols.;
-#X text 14 5 Outputs one element from a list as selected by an integer.
+#X text 7 326 Outlet_0;
+#X text 14 211 LIST;
+#X text 10 440 INTEGER;
+#X obj 195 91 listelement 0;
+#X text 78 211 Accepts a list of numbers or symbols.;
+#X text 10 5 Outputs one element from a list as selected by an integer.
 ;
-#X text 78 315 Changes the value of the argument.;
-#X text 10 399 INTEGER;
-#X text 11 413 SYMBOL;
-#X text 75 392 The element selected by the index is sent to the outlet
+#X text 10 353 INTEGER;
+#X text 11 367 SYMBOL;
+#X text 75 353 The element selected by the index is sent to the outlet
 and can be viewed in the console using the print object or in a number
 box if displaying an integer.;
-#X text 75 478 An integer acts as an index \, it selects the position
+#X text 75 440 An integer acts as an index \, it selects the position
 of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
 #X text 396 -19 GridFlow 0.8.4;
-#X connect 14 0 22 1;
-#X connect 16 0 22 0;
-#X connect 22 0 13 0;
-#X connect 22 0 15 0;
+#X text 77 269 Changes the value of the argument i.e. changes the index
+into the list to get a different element.;
+#X text 11 270 INTEGER;
+#X connect 14 0 21 1;
+#X connect 16 0 21 0;
+#X connect 21 0 13 0;
+#X connect 21 0 15 0;
