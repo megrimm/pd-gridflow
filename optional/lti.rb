@@ -189,12 +189,8 @@ class LTIGridObject < GridObject
 	@functor = c.functor_class.new
 	@formid = formid.to_i
 
-	@funcname = ""
-	fullname=c.to_s
-	(fullname.split("::")).each { |x|
-	   @funcname=x
-	}
-
+	@funcname = c.funcname
+	printf "@funcname = %s\n", @funcname.inspect
         @param=nil
 
         if LTI.have_param[@funcname]
@@ -392,6 +388,7 @@ begin
       attr_accessor  :param_class
       attr_accessor:functor_class
       attr_accessor:attrs
+      attr_accessor:funcname
     end
 
     @functor_class = fuc
@@ -402,11 +399,7 @@ begin
 	   name[1..-1]+"_parameters")
     end
 
-    @funcname = ""
-	fullname=fuc.to_s
-	(fullname.split("::")).each { |x|
-	   @funcname=x
-	}
+    @funcname = name
 
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
     @attrs = {}
@@ -464,11 +457,14 @@ begin
       }
     end
     def _0_get(sel=nil)
+      printf "_0_get(%s)\n", sel.inspect
       if LTI.have_param[@funcname]
-         return @param.__send__(sel) if sel
+         return @param.__send__(sel.to_s) if sel
       end
       no=self.class.noutlets
-      if sel==:form or not sel then send_out no-1, :form end
+      if sel==:form then send_out no-1, :form; return end
+      if sel!=nil then raise "unknown parameter '#{sel}'" end
+      # here's the code to get ALL parameters (sel=nil)
       self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
