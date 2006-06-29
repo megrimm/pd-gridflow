@@ -235,7 +235,7 @@ class LTIGridObject < GridObject
 	dim = inlet_dim inlet
 	nt  = inlet_nt  inlet
 	slot = @inletmap[inlet] # slot into the apply()
-#        GridFlow.post "inlet=%d slot=%d stuff=%s", inlet, slot, @stuffs[slot].inspect
+#        GridFlow.post "Functor %s inlet=%d slot=%d stuff=%s", @funcname, inlet, slot, @stuffs[slot]
         @stuffs[slot] =
         case @stuffs[slot]
         when Image
@@ -248,7 +248,7 @@ class LTIGridObject < GridObject
           case @stuffs[slot]
 	  when Fmatrix,Channel; nt==:float32 or raise "wanted float32"
 	  end
-          @stuffs[slot].new dim[0],dim[1]
+          @stuffs[slot].class.new dim[0],dim[1]
         when Irect
 	  dim.length!=2 and raise "expecting 2 dims (points,axes) but got #{dim.inspect}"
           dim[0]!=2 and raise "expecting 2 points"
