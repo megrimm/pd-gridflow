@@ -707,7 +707,7 @@ begin
 MergeImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -717,7 +717,7 @@ MergeRGBToImage.forms = [
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -725,7 +725,7 @@ begin
 MergeHSVToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -733,7 +733,7 @@ begin
 MergeHLSToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -741,7 +741,7 @@ begin
 MergergIToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -749,7 +749,7 @@ begin
 MergeXYZToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -757,7 +757,7 @@ begin
 MergexyYToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -765,7 +765,7 @@ begin
 MergeOCPToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
@@ -773,21 +773,21 @@ begin
 MergeYIQToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
 MergeCIELuvToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
 MergeYUVToImage.forms = [
 [In[Rblti::Fmatrix], In[Rblti::Fmatrix], In[Rblti::Fmatrix], Out[Rblti::Image]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-[Out[Float], Out[Float], Out[Float], Out[Rblti::RgbPixel]],
+[In[Float], In[Float], In[Float], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 [Out["Ubyte"], Out["Ubyte"], Out["Ubyte"], Out[Rblti::RgbPixel]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
