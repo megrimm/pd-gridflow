@@ -1,0 +1,38 @@
+#N canvas 615 321 450 300 10;
+#X obj 108 22 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 108 64 #camera;
+#X obj 108 42 metro 30;
+#X msg 17 42 help;
+#X msg 17 64 get;
+#X msg 177 42 open babbage.jpg \, bang;
+#X obj 177 65 #in;
+#X obj 106 95 lti.SplitImageToRGB 2;
+#X msg 18 91 help;
+#X msg 18 113 get;
+#X obj 76 43 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 244 167 #out window \, title Original;
+#X obj 106 141 lti.MedianFilter 3;
+#X obj 106 191 #out window \, title Filtered;
+#X obj 106 167 #greyscale_to_rgb;
+#X obj 244 141 #greyscale_to_rgb;
+#X obj 106 217 fps detailed;
+#X obj 106 239 print fps;
+#X connect 0 0 2 0;
+#X connect 1 0 7 0;
+#X connect 2 0 1 0;
+#X connect 3 0 7 0;
+#X connect 4 0 7 0;
+#X connect 5 0 6 0;
+#X connect 6 0 7 0;
+#X connect 7 0 12 0;
+#X connect 7 0 15 0;
+#X connect 8 0 12 0;
+#X connect 9 0 12 0;
+#X connect 10 0 1 0;
+#X connect 12 0 14 0;
+#X connect 13 0 16 0;
+#X connect 14 0 13 0;
+#X connect 15 0 11 0;
+#X connect 16 0 17 0;
