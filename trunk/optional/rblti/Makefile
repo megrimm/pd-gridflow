@@ -38,8 +38,8 @@ pylti_wrap.cxx: ./swig/pylti.i
 ruby:: rblti.so
 	ruby -I. testrblti.rb
 
-rblti.so: rblti_wrap.o Makefile
-	$(CXX) -shared -fPIC -o rblti.so rblti_wrap.o $(LIBS) -lstdc++
+rblti.so: rblti_wrap.o Makefile alt_types.o
+	$(CXX) -shared -fPIC -o rblti.so alt_types.o rblti_wrap.o $(LIBS) -lstdc++
 
 rblti_wrap.o: rblti_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c rblti_wrap.cxx
@@ -47,12 +47,15 @@ rblti_wrap.o: rblti_wrap.cxx
 rblti_wrap.s: rblti_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S rblti_wrap.cxx
 
-rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/*
+rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
 	sed -i 's/int >>/int> >/' rblti_wrap.cxx
+
+alt_types.o: ./src/alt_types.cpp
+	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
 
 #rblti_wrap.cxx: rblti_wrap.cxx.bz2
 #	bunzip2 -c rblti_wrap.cxx.bz2 > rblti_wrap.cxx

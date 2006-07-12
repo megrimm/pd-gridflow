@@ -77,5 +77,25 @@ typedef double dreal;
 
 }
 
+//PATCHED
+//For float& and int& apply() arguments
+class Float{
+public:
+float val;
+float *getPtr();
+};
+
+class Integer{
+public:
+int val;
+int *getPtr();
+};
+
+class Ubyte{
+public:
+unsigned char val;
+unsigned char *getPtr();
+};
+
 #endif
 
