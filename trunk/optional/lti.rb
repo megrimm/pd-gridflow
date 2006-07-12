@@ -183,6 +183,13 @@ class LTIGridObject < GridObject
     ImageBP   = BitPacking.new(GridFlow::ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
     UmatrixBP = BitPacking.new(GridFlow::ENDIAN_LITTLE,1,[0xff])
 
+    class << self
+      attr_accessor  :param_class
+      attr_accessor:functor_class
+      attr_accessor:attrs
+      attr_accessor:funcname
+    end
+    
     def initialize(formid=0)
 	super()
 	c=self.class
@@ -201,9 +208,16 @@ class LTIGridObject < GridObject
     end
     def initialize2; initialize3 end
 
-    def _0_formid(f); self.formid=f end
     def formid=(f); @formid=f; initialize3 end
     def formid; @formid end
+    
+    # wtf is this?...
+    def _0_formid(f); self.formid=f end
+    def _0_form i
+	n = self.class.functor_class.forms.length
+	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
+	@formid = form
+    end
 
     # initialize  : every ruby object, called by .new
     # initialize2 : every GF object, just after the object is registered in Pd
@@ -231,6 +245,76 @@ class LTIGridObject < GridObject
 	add_outlets @outletmap.length
     end
 
+    def self.lti_attr(name)
+      tipe=nil
+      begin
+        if LTI.have_param[name]
+           @param_class.new.__send__(name+"=",Object.new)
+        end
+      rescue Exception=>e
+          /of type '([^']*)'/ .match e.to_s and tipe=$1 or
+          GridFlow.post "%s",e.inspect if $lti_debug
+      end
+      @attrs[name]=[tipe]
+      #GridFlow.post "%s", "defining #{name} for #{functor_class}" if $lti_debug
+      if LTI.have_param[name]
+         module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
+      end
+    end
+
+    def _0_help() self.class.help end
+    def self.help()
+      GridFlow.post "\n\nFunctor %s", @funcname
+      @attrs.each{|x,v| GridFlow.post "attribute %s: %s",x,v.inspect}
+      GridFlow.post "total %d attributes", @attrs.length
+      #---
+      
+      if LTI.have_param[@funcname]
+         pmo=param_class.instance_methods-attrs.keys-attrs.keys.map{|x|x+"="}-Object.instance_methods
+         pmo.each{|x| GridFlow.post "other param method %s",x}
+         GridFlow.post "total %d other param methods", pmo.length
+      else
+         GridFlow.post "This functor has no parameter"
+      end
+
+      #---
+      fm=functor_class.instance_methods-Object.instance_methods
+      fm.each{|x| GridFlow.post "functor method %s",x}
+      GridFlow.post "total %d functor methods", fm.length
+      #anc = ancestors
+      anc = functor_class.ancestors
+      anc.each{|x|
+	y=x.to_s
+        GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
+      }
+      GridFlow.post "total %d ancestor classes", anc.length
+      #GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
+      #GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
+      @functor_class.forms.each_with_index {|form,i|
+	GridFlow.post "form %d: %s", i, form.inspect
+      }
+    end
+
+    def _0_get(sel=nil)
+      printf "_0_get(%s)\n", sel.inspect
+      if LTI.have_param[@funcname]
+         return @param.__send__(sel.to_s) if sel
+      end
+      no=self.class.noutlets
+      if sel==:form then send_out no-1, :form; return end
+      if sel!=nil then raise "unknown parameter '#{sel}'" end
+      # here's the code to get ALL parameters (sel=nil)
+      self.class.attrs.each_key {|sel|
+        v=_0_get(sel)
+        begin
+          send_out no-1, sel.intern, LTI.to_pd(v)
+	rescue StandardError=>e
+	  GridFlow.post "%s", e.inspect
+	  send_out no-1, sel.intern, :some, v.class.to_s.intern
+	end
+      }
+    end
+        
     def _n_rgrid_begin(inlet)
 	dim = inlet_dim inlet
 	nt  = inlet_nt  inlet
@@ -316,8 +400,6 @@ class LTIGridObject < GridObject
       end
     end
 
-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#-=-=-=-=-#
-
     def send_out_lti_image o,m
         GridFlow.post "4*meat=0x%08x",4*m.meat if $lti_debug
 	send_out_grid_begin o,[m.rows,m.columns,3]
@@ -384,102 +466,20 @@ begin
     install_rgrid 0
     install_rgrid 1
     install_rgrid 2
-    class << self
-      attr_accessor  :param_class
-      attr_accessor:functor_class
-      attr_accessor:attrs
-      attr_accessor:funcname
-    end
-
     @functor_class = fuc
-    
     if LTI.have_param[name]
        @param_class = Rblti.const_get("R"+
 	   name[0..0].downcase+
 	   name[1..-1]+"_parameters")
     end
-
     @funcname = name
-
     sup=@functor_class.superclass; sup.subclasses << @functor_class if sup<=Functor
     @attrs = {}
-    def self.lti_attr(name)
-      tipe=nil
-      begin
-        if LTI.have_param[name]
-           @param_class.new.__send__(name+"=",Object.new)
-        end
-      rescue Exception=>e
-          /of type '([^']*)'/ .match e.to_s and tipe=$1 or
-          GridFlow.post "%s",e.inspect if $lti_debug
-      end
-      @attrs[name]=[tipe]
-      #GridFlow.post "%s", "defining #{name} for #{functor_class}" if $lti_debug
-      if LTI.have_param[name]
-         module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
-      end
-    end
-
+    
     if LTI.have_param[name]
        param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     end
 
-    def _0_help() self.class.help end
-    def self.help()
-      GridFlow.post "\n\nFunctor %s", @funcname
-      @attrs.each{|x,v| GridFlow.post "attribute %s: %s",x,v.inspect}
-      GridFlow.post "total %d attributes", @attrs.length
-      #---
-      
-      if LTI.have_param[@funcname]
-         pmo=param_class.instance_methods-attrs.keys-attrs.keys.map{|x|x+"="}-Object.instance_methods
-         pmo.each{|x| GridFlow.post "other param method %s",x}
-         GridFlow.post "total %d other param methods", pmo.length
-      else
-         GridFlow.post "This functor has no parameter"
-      end
-
-      #---
-      fm=functor_class.instance_methods-Object.instance_methods
-      fm.each{|x| GridFlow.post "functor method %s",x}
-      GridFlow.post "total %d functor methods", fm.length
-      #anc = ancestors
-      anc = functor_class.ancestors
-      anc.each{|x|
-	y=x.to_s
-        GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
-      }
-      GridFlow.post "total %d ancestor classes", anc.length
-      #GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
-      #GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
-      @functor_class.forms.each_with_index {|form,i|
-	GridFlow.post "form %d: %s", i, form.inspect
-      }
-    end
-    def _0_get(sel=nil)
-      printf "_0_get(%s)\n", sel.inspect
-      if LTI.have_param[@funcname]
-         return @param.__send__(sel.to_s) if sel
-      end
-      no=self.class.noutlets
-      if sel==:form then send_out no-1, :form; return end
-      if sel!=nil then raise "unknown parameter '#{sel}'" end
-      # here's the code to get ALL parameters (sel=nil)
-      self.class.attrs.each_key {|sel|
-        v=_0_get(sel)
-        begin
-          send_out no-1, sel.intern, LTI.to_pd(v)
-	rescue StandardError=>e
-	  GridFlow.post "%s", e.inspect
-	  send_out no-1, sel.intern, :some, v.class.to_s.intern
-	end
-      }
-    end
-    def _0_form i
-	n = self.class.functor_class.forms.length
-	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
-	@formid = form
-    end
     (0..2).each {|i|
       eval"
 	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
@@ -504,6 +504,7 @@ begin
 #    end
 #    def _1_rgrid_end
 #    end
+    
     def pd_properties canvas
       cid = ".x%x"%(4*canvas)
       wid = ".x%x"%(4*self.object_id)
