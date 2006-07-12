@@ -195,16 +195,13 @@ class LTIGridObject < GridObject
 	c=self.class
 	@functor = c.functor_class.new
 	@formid = formid.to_i
-
 	@funcname = c.funcname
-	printf "@funcname = %s\n", @funcname.inspect
+	GridFlow.post "@funcname = %s\n", @funcname.inspect if $lti_debug
         @param=nil
-
         if LTI.have_param[@funcname]
 	   @param   = c.  param_class.new
 	   @functor.setParameters @param
 	end
-	#form = c.functor_class.forms[@formid]
     end
     def initialize2; initialize3 end
 
@@ -277,7 +274,6 @@ class LTIGridObject < GridObject
          GridFlow.post "This functor has no parameter"
       end
 
-      #---
       fm=functor_class.instance_methods-Object.instance_methods
       fm.each{|x| GridFlow.post "functor method %s",x}
       GridFlow.post "total %d functor methods", fm.length
@@ -288,8 +284,6 @@ class LTIGridObject < GridObject
         GridFlow.post "ancestor class %s", (if y[0]==35 then "["+x.foreign_name+"]" else y end)
       }
       GridFlow.post "total %d ancestor classes", anc.length
-      #GridFlow.post "input types: %s",  (@functor_class. inputs.inspect rescue "(#{$!})")
-      #GridFlow.post "output types: %s", (@functor_class.outputs.inspect rescue "(#{$!})")
       @functor_class.forms.each_with_index {|form,i|
 	GridFlow.post "form %d: %s", i, form.inspect
       }
@@ -488,23 +482,6 @@ begin
       "
     }
 
-#    def _1_rgrid_begin
-#	@dim1 = inlet_dim 1
-#	@nt1 = inlet_nt 1
-#	inlet_set_factor 1,@dim1.prod
-#	@arg1 = Irect.new
-#    end
-#    def _1_rgrid_flow data
-#	#@image_bp.pack3 @dim[0]*@dim[1],data.meat,@image.meat,@nt
-#	@arg1.ul.y,@arg1.ul.x,@arg1.br.y,@arg1.br.x = data.unpack("I4")
-#	if !(@arg1.isConsistent)
-#	   raise "Rectangle at inlet 1 is not consistent, does not follow (ul , br) format"   
-#	end
-#	@functor.reset
-#    end
-#    def _1_rgrid_end
-#    end
-    
     def pd_properties canvas
       cid = ".x%x"%(4*canvas)
       wid = ".x%x"%(4*self.object_id)
@@ -567,11 +544,8 @@ GridFlow.fclasses["lti.BackgroundModel"].module_eval {
 GridFlow.fclasses["lti.MeanshiftTracker"].module_eval {
 #  def apply
   def _1_rgrid_end
-    GridFlow.post "isInitialized 1 = %s", @functor.isInitialized.inspect
     @functor.reset if @functor.isInitialized
-    GridFlow.post "isInitialized 2 = %s", @functor.isInitialized.inspect
     super
-    GridFlow.post "isInitialized 3 = %s", @functor.isInitialized.inspect
   end
   def _0_reset; @functor.reset end
 }
