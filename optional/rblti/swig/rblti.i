@@ -10,6 +10,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.14  2006/07/12 17:55:46  heri
+//  Last one.
+//  Wrapper added for basic data types: float, int, ubyte .
+//     Required for passing arguments of this type to rblti functors.
+//
 //  Revision 1.13  2006/06/27 17:45:02  heri
 //  meat() for Fmatrix, Umatrix, Channel, Channel8, Channel32.
 //
@@ -180,6 +185,7 @@ typedef std::istream istream;
 #ifndef SWIGPYTHON
 %include "ltiLinConfig.h"
 HANDLE_SIMPLE_HEADER_FILE("ltiTypes.h")                 // makes problems with byte type --> lti::byte and windows byte
+
 
 %{
 // anscheinend bug in ruby swig modul: int32 wird nicht lti::int32 wie in python modul
