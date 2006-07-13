@@ -10,11 +10,16 @@
 #X obj 106 95 lti.SplitImageToRGB 2;
 #X msg 63 113 help;
 #X msg 63 135 get;
-#X obj 106 145 lti.MergeRGBToImage 1;
+#X obj 106 213 lti.MergeRGBToImage 1;
 #X obj 76 43 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X obj 261 95 #out window \, title Original;
-#X obj 106 172 #out window \, title Recombined;
+#X obj 106 240 #out window \, title Recombined;
+#X obj 105 262 fps detailed;
+#X obj 104 281 display;
+#X obj 180 21 loadbang;
+#X obj 153 155 #reverse 0;
+#X obj 248 154 #reverse 1;
 #X connect 0 0 2 0;
 #X connect 1 0 7 0;
 #X connect 1 0 12 0;
@@ -25,9 +30,14 @@
 #X connect 6 0 7 0;
 #X connect 6 0 12 0;
 #X connect 7 0 10 0;
-#X connect 7 1 10 1;
-#X connect 7 2 10 2;
+#X connect 7 1 17 0;
+#X connect 7 2 18 0;
 #X connect 8 0 10 0;
 #X connect 9 0 10 0;
 #X connect 10 0 13 0;
 #X connect 11 0 1 0;
+#X connect 13 0 14 0;
+#X connect 14 0 15 0;
+#X connect 16 0 5 0;
+#X connect 17 0 10 1;
+#X connect 18 0 10 2;
