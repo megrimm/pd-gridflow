@@ -85,6 +85,13 @@ float val;
 float *getPtr();
 };
 
+class Double{
+public:
+double val;
+double *getPtr();
+};
+
+
 class Integer{
 public:
 int val;
