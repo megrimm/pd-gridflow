@@ -417,8 +417,8 @@ END {
 class Object
   def method_missing(name,*args)
     oc = GridFlow::FObject
-    obj = (case obj; when oc: self.info; else self      .inspect end)
-    qla = (case obj; when oc: self.info; else self.class.inspect end)
+    obj = (case obj; when oc; self.info; else self      .inspect end)
+    qla = (case obj; when oc; self.info; else self.class.inspect end)
     #begin raise; rescue Exception => e; end
     raise NameError, "undefined method \"#{name}\" for #{obj} in class #{qla}"#, ["hello"]+e.backtrace
   end
