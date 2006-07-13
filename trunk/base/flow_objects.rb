@@ -431,7 +431,7 @@ FObject.subclass("args",1,1) {
 		i=@argspecs.length-1
 		while i>=0 do
 			case pa[i]
-			when Symbol: send_out i,:symbol,pa[i]
+			when Symbol; send_out i,:symbol,pa[i]
 			else         send_out i,        pa[i]
 			end
 			i-=1
