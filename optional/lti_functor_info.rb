@@ -69,7 +69,7 @@ def fill_types(lines,functorname)
   args=[]
   for sl in lines
     t = adapt_type(get_type(sl))
-    if sl =~ /const/
+    if sl =~ /const/ or not(sl =~ /&/)
       args << In[t]
     else
       case functorname
@@ -104,7 +104,10 @@ def adapt_type2 type
   when "Trectangle<int >":    Irect
   when "Trectangle<float >":  Frect
   when "Trectangle<double >": Drect
-  when "float": Float
+  when "float": Rblti::Float
+  when "int": Rblti::Integer
+  when "ubyte": Rblti::Ubyte
+  when "double": Rblti::Double
   else Rblti.const_get(type)
   end
 rescue NameError
