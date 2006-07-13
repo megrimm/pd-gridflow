@@ -395,37 +395,16 @@ class LTIGridObject < GridObject
     end
 
     def send_out_lti_image o,m
-        GridFlow.post "4*meat=0x%08x",4*m.meat if $lti_debug
-	send_out_grid_begin o,[m.rows,m.columns,3] #,@out_nt
-	nt = :int32
-	ps=GridFlow.packstring_for_nt(nt)
-	sz=GridFlow.sizeof_nt(nt)
-	a=[0,0,0]
-	#for y in 0...m.rows do ro=m.getRow(y)
-	#  for x in 0...m.columns do px=ro.at(x)
-	#    a[0]=px.getRed
-	#    a[1]=px.getGreen
-	#    a[2]=px.getBlue
-	#    send_out_grid_flow o, a.pack(ps)
-	#  end
-	#end
 	foo="666"*m.columns*m.rows
 	LTIGridObject::ImageBP.unpack3 m.rows*m.columns,m.meat,foo.meat,:uint8
+	send_out_grid_begin o,[m.rows,m.columns,3] #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns*3, foo.meat, :uint8
     end
     def send_out_lti_palette o,m
-        GridFlow.post "4*meat=0x%08x",4*m.meat if $lti_debug
+	foo="666"*m.size
+	LTIGridObject::ImageBP.unpack3 m.size,m.meat,foo.meat,:uint8
 	send_out_grid_begin o,[m.size,3]
-	nt = :int32
-	ps=GridFlow.packstring_for_nt(nt)
-	sz=GridFlow.sizeof_nt(nt)
-	a=[0,0,0]
-	for x in 0...m.size do px=m.at(x)
-	  a[0]=px.getRed
-	  a[1]=px.getGreen
-	  a[2]=px.getBlue
-	  send_out_grid_flow o,a.pack(ps)
-	end
+	send_out_grid_flow_3 o, m.size*3, foo.meat, :uint8
     end
     def send_out_lti_umatrix o,m
 	send_out_grid_begin o,[m.rows,m.columns,1] #,@out_nt
