@@ -29,7 +29,8 @@
 	- Learning period for BackgroundModel before apply can be used
 	- Reset for BackgroundModel (DONE: please see method "clear" in [lti.BackgroundModel])
 	- Mask functors, operations
-
+	- Try to predict segfaults, e.g. in operations with arguments of the wrong sizes
+	- Support float/int/ubyte nonref args
 =end
 
 #$lti_debug = true
@@ -131,15 +132,15 @@ class LTI<FObject; install "lti",1,1
   def _0_help(a=nil) self.class.help(a) end
   def self.help(a=nil)
     case a
-    when nil:
+    when nil
       GridFlow.post "try one of:"
       GridFlow.post "  help functors"
       GridFlow.post "  help others"
-    when:functors:
+    when :functors
       #@functors.each{|x| GridFlow.post "  functor %s", x }
       GridFlow.post "total %d functors (post_hierarchy)",Functor.post_hierarchy
       GridFlow.post "total %d functors (@functors)",     @functors.length
-    when:others:
+    when :others
       @others.each{|x|
         v = const_get(x)
 	info = if Class===v then "ancestors="+v.ancestors.inspect else v.inspect end
@@ -149,18 +150,18 @@ class LTI<FObject; install "lti",1,1
   end
   def LTI.to_pd datum
     case datum
-    when String: datum.intern
+    when String; datum.intern
     when Float,Integer; datum
-    when true: 1
-    when false: 0
+    when true; 1
+    when false; 0
     else raise "LTI.to_pd can't convert #{datum}, a #{datum.class}"
     end
   end
   def LTI.from_pd datum, tipe
     case tipe
-    when "float": datum.to_f
-    when "int":   datum.to_i
-    when "bool":  datum.to_i!=0
+    when "float"; datum.to_f
+    when "int";   datum.to_i
+    when "bool";  datum.to_i!=0
     else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
     end
   end
