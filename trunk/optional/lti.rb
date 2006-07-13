@@ -40,7 +40,7 @@ include Rblti
 
 class String
   # returns a Fixnum that is a pointer divided by 4
-  def meat # warning: not 64-bit-safe
+  def meat
     stuff = [self].pack("p")
     if stuff.length == 4 then # 32 bit...
       stuff.unpack("I")[0]>>2
@@ -332,7 +332,10 @@ class LTIGridObject < GridObject
           dim[0]!=2 and raise "expecting 2 points"
           dim[1]!=2 and raise "expecting 2 axes"
           Irect.new
-	else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
+        when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
+          dim.length!=0 and raise "expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect}"
+          @stuffs[slot].class.new
+        else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
 	@nts[   slot] = nt
@@ -354,13 +357,36 @@ class LTIGridObject < GridObject
           #GridFlow.post "d=%s", d.inspect
           st.ul.x, st.br.x = [d[1],d[3]].sort!
           st.ul.y, st.br.y = [d[0],d[2]].sort!
+        when Rblti::Ubyte;   st.val= (data.unpack("C"))[0]
+        when Rblti::Integer; st.val= (data.unpack("I"))[0]
+        when Rblti::Float;   st.val= (data.unpack("f"))[0]
+        when Rblti::Double;  st.val= (data.unpack("d"))[0]
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
 
     def apply
 	#GridFlow.post "would apply %s",@stuffs.inspect
-	@functor.apply(*@stuffs)
+        realstuff=[]
+        for i in @outletmap
+           case @stuffs[i]
+           when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
+              realstuff[i]=@stuffs[i].getPtr
+           else
+              realstuff[i]=@stuffs[i]
+           end
+        end
+
+        for i in @inletmap
+           case @stuffs[i]
+           when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
+              realstuff[i]=@stuffs[i].val
+           else
+              realstuff[i]=@stuffs[i]
+           end
+        end
+        
+	@functor.apply(*realstuff)
     end
 
     def _n_rgrid_end(inlet) end
@@ -390,6 +416,10 @@ class LTIGridObject < GridObject
       when Image;   send_out_lti_image   o,m
       when Palette; send_out_lti_palette o,m
       when Irect;   send_out_lti_rect    o,m
+      when Rblti::Double;  send_out_lti_double o,m
+      when Rblti::Float;   send_out_lti_float o,m
+      when Rblti::Integer; send_out_lti_int o,m
+      when Rblti::Ubyte;   send_out_lti_ubyte o,m
       else raise "don't know how to send_out a #{m.class}"
       end
     end
@@ -422,6 +452,26 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[2,2]#,@out_nt
 	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
     end
+    def send_out_lti_double o,m
+	send_out_grid_begin o, [], :float64
+	send_out_grid_flow o, [m.val].pack("d"), :float64
+	#send_out o, m.val
+    end
+    def send_out_lti_float o,m
+	send_out_grid_begin o, [], :float32
+	send_out_grid_flow o, [m.val].pack("f"), :float32
+	#send_out o, m.val
+    end
+    def send_out_lti_int o,m
+	send_out_grid_begin o, [], :int32
+	send_out_grid_flow o, [m.val].pack("I"), :int32
+	#send_out o, m.val
+    end
+    def send_out_lti_ubyte o,m
+	send_out_grid_begin o, [], :uint8
+	send_out_grid_flow o, [m.val].pack("C"), :uint8
+	#send_out o, m.val
+    end
 end
 
 class Array; def prod() r=1; each{|x| r*=x }; r end end
@@ -439,9 +489,9 @@ begin
 	next
   end
   LTIGridObject.subclass("lti."+name,1,1) {
-    install_rgrid 0
-    install_rgrid 1
-    install_rgrid 2
+    install_rgrid 0, true
+    install_rgrid 1, true
+    install_rgrid 2, true
     @functor_class = fuc
     if LTI.have_param[name]
        @param_class = Rblti.const_get("R"+
