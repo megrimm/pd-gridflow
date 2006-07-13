@@ -197,8 +197,8 @@ def handle_def(line)
 	Out.print "self->check_magic();"
 	
 	case m.rettype
-	when "void": Out.print "return Qnil;"
-	when "Ruby","Symbol","Array","String": Out.print "return foo;"
+	when "void"; Out.print "return Qnil;"
+	when "Ruby","Symbol","Array","String"; Out.print "return foo;"
 	else 
 		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
 		Out.print "return R(foo).r;"
@@ -280,10 +280,10 @@ def handle_end(line)
 		frame.grins.each {|i,v|
 			cli = "#{cl}::grinw_#{i}"
 			k = case v[1]
-			when     nil: [1,1,1,1,1,1,1]
-			when 'int32': [0,0,1,0,0,0,0]
-			when   'int': [1,1,1,1,0,0,0]
-			when 'float': [0,0,0,0,1,1,0]
+			when     nil; [1,1,1,1,1,1,1]
+			when 'int32'; [0,0,1,0,0,0,0]
+			when   'int'; [1,1,1,1,0,0,0]
+			when 'float'; [0,0,0,0,1,1,0]
 			else raise 'BORK BORK BORK' end
 			ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
