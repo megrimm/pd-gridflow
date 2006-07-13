@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.15  2006/07/13 04:34:50  matju
+//  meat pointer for palette
+//
 //  Revision 1.14  2006/07/12 17:55:46  heri
 //  Last one.
 //  Wrapper added for basic data types: float, int, ubyte .
@@ -641,6 +644,11 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 %extend lti::matrix<lti::ubyte> {
   long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
 }
+
+%extend lti::vector<lti::rgbPixel> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
+}
+
 
 namespace lti {
 %extend image {
