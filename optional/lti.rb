@@ -2,7 +2,7 @@
 	$Id$
 
 	LTIlib-for-GridFlow
-	Copyright (c) 2006 by Mathieu Bouchard
+	Copyright (c) 2006 by Mathieu Bouchard and Heriniaina Andrianirina
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -166,8 +166,13 @@ class LTI<FObject; install "lti",1,1
   end
 end
 
+class Class
+  def tcl; to_s.gsub(/Rblti::/,"") end
+end
+
 class ArgMode
   def initialize(of) @of=of end
+  def tcl;    "{#{self.class} "+@of.tcl   + "}" end
   def inspect; "#{self.class}["+@of.inspect+"]" end
   def to_s; inspect; end
   class << self; alias [] new end
@@ -482,9 +487,22 @@ class LTIGridObject < GridObject
 	send_out_grid_flow o, [m.val].pack("C"), :uint8
 	#send_out o, m.val
     end
+    def pd_properties canvas
+      # cid = ".x%x"%(4*canvas)
+      wid = ".x%x"%(4*self.object_id)
+      fc = self.class.functor_class
+      GridFlow.gui %{
+        LTIPropertiesDialog_new #{wid} #{self.class.foreign_name} #{self.class.functor_class.forms.tcl}
+      }
+    end
 end
 
-class Array; def prod() r=1; each{|x| r*=x }; r end end
+GridFlow.gui "source #{GridFlow::DIR}/optional/lti-pd.tcl\n"
+
+class Array
+  def prod() r=1; each{|x| r*=x }; r end
+  def tcl() r="{"; each{|x| r << x.tcl << " " }; r[-1]="}"; r end
+end
 
 LTI.functors.each {|name|
   qlas = Rblti.const_get(name)
@@ -515,7 +533,6 @@ begin
     if LTI.have_param[name]
        param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     end
-
     (0..2).each {|i|
       eval"
 	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
@@ -523,31 +540,6 @@ begin
 	def _#{i}_rgrid_end;       _n_rgrid_end   #{i} end
       "
     }
-
-    def pd_properties canvas
-      cid = ".x%x"%(4*canvas)
-      wid = ".x%x"%(4*self.object_id)
-      fc = self.class.functor_class
-      GridFlow.gui %{
-        # tk_messageBox -message "this would be a cool feature, eh?" -type yesno -icon question -parent #{cid}
-	toplevel #{wid}
-      }
-      fc.forms.each_with_index {|f,i|
-        GridFlow.gui %{
-	  pack [radiobutton #{wid}.#{i} -text {#{f}} -variable var#{wid} -anchor w] -fill x -expand 1
-        }
-      }
-      GridFlow.gui %{
-        pack [frame #{wid}.bar] -side bottom -fill x -pady 2m
-	foreach {name Name} {cancel Cancel apply Apply ok Ok} {
-		pack [button #{wid}.bar.$name -command "pd #{wid} props_$name" -text $Name] \
-			-side left -expand 1
-	}
-	pack [frame #{wid}.sep -height 2 -borderwidth 1 -relief sunken] \
-		-side bottom -fill x -expand 1
-        wm protocol #{wid} WM_DELETE_WINDOW "destroy #{wid}"
-      }
-    end
     properties_enable
   }
 rescue StandardError => e
