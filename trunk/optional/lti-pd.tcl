@@ -24,20 +24,35 @@ proc cool {cid} {
   tk_messageBox -message $m -type yesno -icon question -parent $cid
 }
  
-proc LTIPropertiesDialog_new {wid class forms} {
-  toplevel $wid
+proc LTIPropertiesDialog_new {wid class formid forms} {
+  global _
+  set _($wid:formid) $formid
+  if {[catch {toplevel $wid}]} {raise $wid; focus $wid; wm deiconify $wid; return}
   wm title $wid "\[$class\]"
   set i 0
   foreach form $forms {
-    pack [radiobutton $wid.$i -text $form -variable var$wid -anchor w] -fill x -expand 1
+    pack [radiobutton $wid.$i -text "$i: $form" -variable _($wid:formid) -value $i -anchor w] -fill x -expand 1
     incr i
   }
   pack [frame $wid.bar] -side bottom -fill x -pady 2m
   foreach {name Name} {cancel Cancel apply Apply ok Ok} {
-    pack [button $wid.bar.$name -command "pd $wid props_$name" -text $Name] \
+    pack [button $wid.bar.$name -command "LTIPropertiesDialog_$name $wid" -text $Name] \
 	-side left -expand 1
   }
   pack [frame $wid.sep -height 2 -borderwidth 1 -relief sunken] \
 	-side bottom -fill x -expand 1
   wm protocol $wid WM_DELETE_WINDOW "destroy $wid"
+}
+
+proc LTIPropertiesDialog_cancel {wid} {
+  destroy $wid
+}
+
+proc LTIPropertiesDialog_apply  {wid} {
+  global _
+  pd $wid formid $_($wid:formid) \;
+}
+proc LTIPropertiesDialog_ok     {wid} {
+  LTIPropertiesDialog_apply  $wid
+  LTIPropertiesDialog_cancel $wid
 }
