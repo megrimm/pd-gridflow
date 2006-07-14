@@ -361,7 +361,7 @@ class LTIGridObject < GridObject
         when Rblti::Ubyte;   st.val= (data.unpack("C"))[0]
         when Rblti::Integer; st.val= (data.unpack("I"))[0]
         when Rblti::Float;   st.val= (data.unpack("f"))[0]
-        when Rblti::Double;  st.val= (data.unpack("d"))[0]
+        when Rblti::Double;  st.val= (data.unpack("f"))[0]
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
