@@ -358,10 +358,10 @@ class LTIGridObject < GridObject
           #GridFlow.post "d=%s", d.inspect
           st.ul.x, st.br.x = [d[1],d[3]].sort!
           st.ul.y, st.br.y = [d[0],d[2]].sort!
-        when Rblti::Ubyte;   st.val= (data.unpack("C"))[0]
-        when Rblti::Integer; st.val= (data.unpack("I"))[0]
-        when Rblti::Float;   st.val= (data.unpack("f"))[0]
-        when Rblti::Double;  st.val= (data.unpack("f"))[0]
+        when Rblti::Ubyte;   st.val= data.unpack("C")[0]
+        when Rblti::Integer; st.val= data.unpack("I")[0]
+        when Rblti::Float;   st.val= data.unpack("f")[0]
+        when Rblti::Double;  st.val= data.unpack("f")[0]
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
@@ -525,14 +525,18 @@ begin
       }
       fc.forms.each_with_index {|f,i|
         GridFlow.gui %{
-	  pack [radiobutton #{wid}.#{i} -text {#{f}} -variable var#{wid}]
+	  pack [radiobutton #{wid}.#{i} -text {#{f}} -variable var#{wid} -anchor w] -fill x -expand 1
         }
       }
       GridFlow.gui %{
-        pack [frame #{wid}.bar -bg red] -fill x
-        pack [button #{wid}.bar.cancel -command "pd #{wid} props_cancel" -text "Cancel"] -side left -padx 4
-        pack [button #{wid}.bar.apply  -command "pd #{wid} props_apply"  -text "Apply" ] -side left -padx 4
-        pack [button #{wid}.bar.ok     -command "pd #{wid} props_ok"     -text "Ok"    ] -side left -padx 4
+        pack [frame #{wid}.bar] -side bottom -fill x -pady 2m
+	foreach {name Name} {cancel Cancel apply Apply ok Ok} {
+		pack [button #{wid}.bar.$name -command "pd #{wid} props_$name" -text $Name] \
+			-side left -expand 1
+	}
+	pack [frame #{wid}.sep -height 2 -borderwidth 1 -relief sunken] \
+		-side bottom -fill x -expand 1
+        wm protocol #{wid} WM_DELETE_WINDOW "destroy #{wid}"
       }
     end
     properties_enable
