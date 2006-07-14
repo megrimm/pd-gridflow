@@ -30,7 +30,6 @@
 	- Reset for BackgroundModel (DONE: please see method "clear" in [lti.BackgroundModel])
 	- Mask functors, operations
 	- Try to predict segfaults, e.g. in operations with arguments of the wrong sizes
-	- Support float/int/ubyte nonref args
 =end
 
 #$lti_debug = true
