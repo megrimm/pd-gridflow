@@ -335,6 +335,16 @@ class LTIGridObject < GridObject
           Irect.new
         when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
           dim.length!=0 and raise "expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect}"
+          case @stuffs[slot]
+          when Rblti::Ubyte
+             nt==:uint8 or raise "wanted uint8"
+          when Rblti::Integer
+             nt==:int32 or raise "wanted int32"
+          when Rblti::Float
+             nt==:float32 or raise "wanted float32"
+          when Rblti::Double
+             nt==:float64 or raise "wanted float64"
+          end
           @stuffs[slot].class.new
         else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
         end
@@ -348,7 +358,7 @@ class LTIGridObject < GridObject
 	st=@stuffs[slot]
 	dim= @dims[slot]
 	nt =  @nts[slot]
-	case st # we might pretend that N floats or N int32 are 4N uint8 instead.
+	case st # we might pretend that N floats or N int32 are 4N uint8 instead, because UmatrixBP is really a memcpy
 	when Umatrix, Channel8; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
 	when Imatrix,Channel32; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
 	when Fmatrix,  Channel; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
@@ -361,7 +371,7 @@ class LTIGridObject < GridObject
         when Rblti::Ubyte;   st.val= data.unpack("C")[0]
         when Rblti::Integer; st.val= data.unpack("I")[0]
         when Rblti::Float;   st.val= data.unpack("f")[0]
-        when Rblti::Double;  st.val= data.unpack("f")[0]
+        when Rblti::Double;  st.val= data.unpack("d")[0]
 	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
 	end
     end
