@@ -505,6 +505,10 @@ class Array
   def tcl() r="{"; each{|x| r << x.tcl << " " }; r[-1]="}"; r end
 end
 
+class String
+  def tcl() inspect end
+end
+
 LTI.functors.each {|name|
   qlas = Rblti.const_get(name)
   qlas.subclasses = [] if qlas<=Functor
