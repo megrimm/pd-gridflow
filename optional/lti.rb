@@ -210,21 +210,21 @@ class LTIGridObject < GridObject
     end
     def initialize2; initialize3 end
 
-    def formid=(f); @formid=f; initialize3 end
     def formid; @formid end
-    
-    # wtf is this?...
-    def _0_formid(f); self.formid=f end
-    def _0_form i
+    def formid=(f)
+	f=f.to_i
 	n = self.class.functor_class.forms.length
-	if i<0 or i>=n then raise "no form numbered %d (try help)", i end
-	@formid = form
+	if f<0 or f>=n then raise "no form numbered %d (try help)", f end
+	@formid=f
+	initialize3
     end
+    def _0_formid(f); self.formid=f end
 
     # initialize  : every ruby object, called by .new
     # initialize2 : every GF object, just after the object is registered in Pd
     # initialize3 : called by initialize and every time the form (the chosen "apply" type) changes
     def initialize3
+        GridFlow.post "doing initialize3 with formid=#{formid}"
 	c = self.class
 	GridFlow.post "this is class %s, functor_class %s", c.inspect, c.functor_class.inspect if $lti_debug
 	form = c.functor_class.forms[@formid]
@@ -491,8 +491,9 @@ class LTIGridObject < GridObject
       # cid = ".x%x"%(4*canvas)
       wid = ".x%x"%(4*self.object_id)
       fc = self.class.functor_class
+      GridFlow.bind self,wid
       GridFlow.gui %{
-        LTIPropertiesDialog_new #{wid} #{self.class.foreign_name} #{self.class.functor_class.forms.tcl}
+        LTIPropertiesDialog_new #{wid} #{self.class.foreign_name} #{self.formid}  #{self.class.functor_class.forms.tcl}
       }
     end
 end
