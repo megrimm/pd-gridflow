@@ -30,6 +30,7 @@
 	- Reset for BackgroundModel (DONE: please see method "clear" in [lti.BackgroundModel])
 	- Mask functors, operations
 	- Try to predict segfaults, e.g. in operations with arguments of the wrong sizes
+        - Check proper types for parameter attributes.
 =end
 
 #$lti_debug = true
@@ -313,30 +314,43 @@ class LTIGridObject < GridObject
 	end
       }
     end
-        
+
+    def _0_param name, value=nil
+       GridFlow.post "Name: %s, value: %s", name, value.to_s #if $lti_debug
+       raise "This functor has no parameter" unless @param 
+       raise "The parameter class has no #{name} attribute" unless @param.respond_to? name
+       (@param.method(name.to_s+"=")).call value
+       @functor.setParameters @param
+    end
+ 
     def _n_rgrid_begin(inlet)
 	dim = inlet_dim inlet
 	nt  = inlet_nt  inlet
 	slot = @inletmap[inlet] # slot into the apply()
 #        GridFlow.post "Functor %s inlet=%d slot=%d stuff=%s", @funcname, inlet, slot, @stuffs[slot]
-        @stuffs[slot] =
+        #@stuffs[slot] =
         case @stuffs[slot]
         when Image
 	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
 	  dim[2]!=3 and raise "expecting 3 channels, got #{dim.inspect}"
-          Image.new dim[0],dim[1]
+          if @stuffs[slot].size.y != dim[0] or @stuffs[slot].size.x != dim[1]
+             @stuffs[slot].resize(Ipoint.new(dim[1], dim[0]))
+             GridFlow.post "Needs to resize!!" if $lti_debug
+          end
         when Umatrix,Channel8, Imatrix,Channel32, Fmatrix,Channel
 	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
 	  dim[2]!=1 and raise "expecting 1 channel, got #{dim.inspect}"
           case @stuffs[slot]
 	  when Fmatrix,Channel; nt==:float32 or raise "wanted float32"
 	  end
-          @stuffs[slot].class.new dim[0],dim[1]
+          if @stuffs[slot].size.y != dim[0] or @stuffs[slot].size.x != dim[1]
+             @stuffs[slot].resize(Ipoint.new(dim[1],dim[0]))
+             GridFlow.post "Needs to resize!!" if $lti_debug
+          end
         when Irect
 	  dim.length!=2 and raise "expecting 2 dims (points,axes) but got #{dim.inspect}"
           dim[0]!=2 and raise "expecting 2 points"
           dim[1]!=2 and raise "expecting 2 axes"
-          Irect.new
         when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
           dim.length!=0 and raise "expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect}"
           case @stuffs[slot]
@@ -345,11 +359,10 @@ class LTIGridObject < GridObject
           when Rblti::Integer
              nt==:int32 or raise "wanted int32"
           when Rblti::Float
-             nt==:float32 or raise "wanted float32"
+             nt==:float32 or raise "wanted float32, received #{nt}"
           when Rblti::Double
              nt==:float64 or raise "wanted float64"
           end
-          @stuffs[slot].class.new
         else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
@@ -362,6 +375,7 @@ class LTIGridObject < GridObject
 	st=@stuffs[slot]
 	dim= @dims[slot]
 	nt =  @nts[slot]
+        GridFlow.post "#{@funcname}: _#{inlet}_rgrid_flow, @stuffs = %s", @stuffs.inspect if $lti_debug
 	case st # we might pretend that N floats or N int32 are 4N uint8 instead, because UmatrixBP is really a memcpy
 	when Umatrix, Channel8; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
 	when Imatrix,Channel32; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
@@ -376,13 +390,13 @@ class LTIGridObject < GridObject
         when Rblti::Integer; st.val= data.unpack("I")[0]
         when Rblti::Float;   st.val= data.unpack("f")[0]
         when Rblti::Double;  st.val= data.unpack("d")[0]
-	else raise "don't know how to write into a #{st.class} for inlet #{inlet}"
+	else raise "#{@funcname}: don't know how to write into a #{st.class} for inlet #{inlet}\n@stuffs = #{@stuffs.inspect}"
 	end
     end
 
     def apply
 	#GridFlow.post "would apply %s",@stuffs.inspect
-        realstuff=[]
+        realstuff=[]  #realstuff contains the real value for ubyte, int, float and double args instead of the wrapper object
         for i in @outletmap
            case @stuffs[i]
            when Rblti::Ubyte, Rblti::Integer, Rblti::Float, Rblti::Double
@@ -407,9 +421,9 @@ class LTIGridObject < GridObject
     def _n_rgrid_end(inlet) end
 
     def _0_rgrid_end
-        if LTI.have_param[@funcname]
-           @functor.setParameters @param
-	end
+#        if LTI.have_param[@funcname]
+#           @functor.setParameters @param
+#	end
 #	t=Time.new
 	apply
 #	t=Time.new-t; GridFlow.post "time for apply: %f",t
