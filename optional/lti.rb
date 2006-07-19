@@ -251,17 +251,18 @@ class LTIGridObject < GridObject
     def self.lti_attr(name)
       tipe=nil
       begin
-        if LTI.have_param[name]
+        if LTI.have_param[@funcname]
            @param_class.new.__send__(name+"=",Object.new)
         end
       rescue Exception=>e
           /of type '([^']*)'/ .match e.to_s and tipe=$1 or
-          GridFlow.post "%s",e.inspect if $lti_debug
+          GridFlow.post "Type info: %s",e.inspect #if $lti_debug
       end
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}" if $lti_debug
-      if LTI.have_param[name]
-         module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); end"
+      if LTI.have_param[@funcname]
+         GridFlow.post "#{@funcname}, #{name}, type: #{tipe}"
+         module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); @functor.setParameters @param end"
       end
     end
 
@@ -316,7 +317,7 @@ class LTIGridObject < GridObject
     end
 
     def _0_param name, value=nil
-       GridFlow.post "Name: %s, value: %s", name, value.to_s #if $lti_debug
+       GridFlow.post "Name: %s, value: %s", name, value.to_s if $lti_debug
        raise "This functor has no parameter" unless @param 
        raise "The parameter class has no #{name} attribute" unless @param.respond_to? name
        (@param.method(name.to_s+"=")).call value
