@@ -1,7 +1,29 @@
 /* $Id$ */
 
-[ ] SWIG: try -fcompact -fvirtual
-[ ] #inner is and doesnt support seeds of size>1, and isn't vecop-compatible, and ...
+==12785== Invalid read of size 4
+==12785==    at 0x1E041F21: lti::backgroundModel::apply(lti::image const&, lti::channel&) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
+==12785==    by 0x1DDF28E7: _wrap_backgroundModel_apply__SWIG_0(int, unsigned long*, unsigned long) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
+==12785==    by 0x1DDF2C0E: _wrap_backgroundModel_apply(int, unsigned long*, unsigned long) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
+==12785==    by 0x1CC4C20B: call_cfunc (eval.c:5480)
+==12785==    by 0x1CC5831F: rb_call0 (eval.c:5691)
+==12785==    by 0x1CC58465: rb_call (eval.c:5864)
+==12785==    by 0x1CC56383: rb_eval (eval.c:3310)
+==12785==    by 0x1CC581EF: rb_call0 (eval.c:5772)
+==12785==    by 0x1CC58465: rb_call (eval.c:5864)
+==12785==    by 0x1CC5D477: rb_call_super (eval.c:5996)
+==12785==    by 0x1CC56105: rb_eval (eval.c:3373)
+==12785==    by 0x1CC581EF: rb_call0 (eval.c:5772)
+==12785==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==12785==
+==12785== ---- Print suppression ? --- [Return/N/n/Y/y/C/c] ----
+
+[ ] [display] bug, can't print nested lists, due to Array===[] returning false (???)
+
+ClaudiusMaximus matju: hmm, got a weird problem:  " error: ArgumentError: [rubypd] cannot convert argument of class 'Array' in send_out2 in method_missing"
+ClaudiusMaximus matju: i think "put_at ( ... )" might be getting mangled in [fork], let me check....
+ClaudiusMaximus matju: yep: "put_at ( 0 )"--[fork]--[#print]  ->  error message
+
+[ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
 ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](uint8), not a symbol
@@ -27,6 +49,8 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 <alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
 
 http://oprofile.sourceforge.net/about/
+also: qprofile, amd profiler, opreport -cl --demangle=smart
+
 
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] make c++ refcount and ruby gc to cooperate.
@@ -100,7 +124,6 @@ http://oprofile.sourceforge.net/about/
 [097] bin/backtrace does not detect scripts
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] #in#open problem with String argument.
-[010] separate bridge makefiles from other makefiles!!!
 [011] research bugs in nonblock IO with Ruby. (eg. serial port)
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
@@ -123,20 +146,17 @@ http://oprofile.sourceforge.net/about/
 [048] potential issues between fork() and X11 ?
 [051] remove the crap given by -w of ruby
 [054] it's possible to crash by sending data in two inlets of a same object at once
-[059] mess with options in format grid
 [060] look for "!@#$" in source
 [029] #join on small chunks is way too slow
 [009] T_DATA #dup #clone ???
 
 --- make the development process more test-driven:
     * file every feature request and bug report into base/test.rb so
-      that gridflow fails those tests;
-    * THEN make gridflow pass those tests.
+      that gridflow fails those tests THEN make gridflow pass those tests.
 
 ===================
 
 Distribution
-[ ] should now plan which features are pre-1.0 and which are post-1.0
 [ ] review all documentation
 [ ] review all examples
 [ ] make CDs
@@ -161,7 +181,6 @@ Documentation
 [ ] specify policy for <help>, <icon>, etc.
 [ ] things you type verbatim are all in KBD blocks
 [ ] placeholders for your own values are all in I blocks
-[ ] document our own release procedures, how our CVS works
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
@@ -176,7 +195,6 @@ Documentation
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
 --- remember to keep doc/help/screenshots/examples up to date
-[ ] <jtm_> the suggestion would be to add a link at the end of each section leading to the next section
 
 Source Filter
 [ ] add \ruby \end blocks (multiline inlined rubyscripts)
@@ -210,11 +228,6 @@ Architecture
 [ ] interpret nested lists as n-dimensional.
 [0.8] MMX memcpy() ?
 [0.8] MMX _runtime_ autodetection
-
-Operators
-[ ] User-defined operators; compound operators... e.g. [# {{* 7} + {>> 3}}]
-[ ] [#] won't have n-ary operators... should they exist?
-[ ] trinary ops? eg. */ *>> *+ ?: minmax &<< >>&
 
 Computation Objects
 [ ] #counter (similar to #for)
@@ -297,7 +310,7 @@ Format
 
 User Interface
 [ ] color picker
-[ ] gridbox (akin to intbox) or grid edition dialog, etc.
+[ ] #edit, grid edition dialog, etc.
 [ ] peephole:
     [ ] works without x11 (for osx...)
     [ ] does it really work with something other than 3 channels ?
@@ -379,33 +392,12 @@ having a camera like the iSight supported could be fantastic for video capture/d
 
 -mfpmath=sse2
 
-<MiS> <matju> alx2: btw you cannot set helpfiles explicitly on _abstractions_... 
-<MiS> yes you can
-<MiS> and specify -helppath to add a path to help.  So selecting 'Help'
-      in the pop-up on an abstraction will open a help fiel for that abstraction
-
-"Bangs in a geiger counter have a l*dt probability of occuring
- in a dt time interval. Therefore the time till the next event
- follows a Exp(l) law, for which:
- f(t) = l*exp(-l*t)
- F(t) = integral of l*exp(-l*t)*dt = 1-exp(-l*t)
- F^-1(p) = -log(1-p)/l
- //return (uint64)(1000LL*ms*-log(1-drand()));"
-matju 2002
-
 remember to check for volatile VALUEs if GC problems ever occur
-
-ruby -ve '[30,31,62,63].each {|x| printf "%d bits: %s\n",x,(1<<(x-1)).class }'
 
 linx:
   http://cast.rubyforge.org (parsing C code)
   http://ruby-contract.rubyforge.org/doc/
   
-
-sand.pd differential mode, 0.8:
-fps   min   med   max   avg   stdev
-17.57 54.82 55.81 78.00 56.89 3.93 : before
-after ...
 
 ==6998== Conditional jump or move depends on uninitialised value(s)
 ==6998==    at 0x1DA9D7FF: lti::meanShiftSegmentation::init_matr(int*) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
