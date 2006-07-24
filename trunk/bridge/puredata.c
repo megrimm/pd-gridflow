@@ -599,6 +599,16 @@ static Ruby FObject_patcherargs (Ruby rself) {
 	return ar;
 }
 
+static Ruby FObject_redraw (Ruby rself) {
+	DGS(FObject); BFObject *bself = self->bself;
+	if (bself->mom && glist_isvisible(bself->mom)) {
+		gobj_vis((t_gobj *)bself,bself->mom,0);
+		gobj_vis((t_gobj *)bself,bself->mom,1);
+		canvas_fixlinesfor(bself->mom,(t_text *)bself);
+	}
+	return Qnil;
+}
+
 /* warning: deleting inlets that are connected will cause pd to crash */
 static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
@@ -623,6 +633,7 @@ static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 			delete bself->in[bself->nin];
 		}
 	}
+	FObject_redraw(rself);
 	return Qnil;
 }
 
@@ -640,6 +651,7 @@ static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
 	} else {
 		while (bself->nout>n) outlet_free(bself->out[--bself->nout]);
 	}
+	FObject_redraw(rself);
 	return Qnil;
 }
 
