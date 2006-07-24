@@ -68,6 +68,8 @@ RkMeansSegmentation_parameters.module_eval {
   }
 }
 
+
+
 def GridFlow.post2(*a)
   s = sprintf(*a)
   t = []
@@ -208,6 +210,12 @@ class LTIGridObject < GridObject
 	   @param   = c.  param_class.new
 	   @functor.setParameters @param
 	end
+        if @funcname=="Erosion"
+           @kernel = IcityBlockKernel.new if @funcname=="Erosion"
+           @functor.setKernel @kernel
+           @param.kernelSize=3
+        end
+
     end
     def initialize2; initialize3 end
 
@@ -608,4 +616,18 @@ GridFlow.fclasses["lti.MeanshiftTracker"].module_eval {
     super
   end
   def _0_reset; @functor.reset end
+}
+
+Rerosion_parameters.module_eval{
+  attr_accessor :kernelSize
+  @kernelSize = 3
+}
+
+GridFlow.fclasses["lti.Erosion"].module_eval{
+  @attrs["kernelSize"]=["int"]
+  def _0_kernelSize(size)
+     @kernel = IcityBlockKernel.new (size.to_i)
+     @functor.setKernel @kernel
+     @param.kernelSize = size
+  end
 }
