@@ -22,7 +22,7 @@
 =end
 
 module GridFlow
-  def FObject
+  class FObject
     def  add_inlets(n) self. ninlets += n end
     def add_outlets(n) self.noutlets += n end
   end
