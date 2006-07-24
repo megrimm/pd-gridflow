@@ -588,9 +588,8 @@ static Ruby FObject_patcherargs (Ruby rself) {
 }
 
 static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself;
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_);
 	if (!bself) RAISE("there is no bself");
-	int n = INT(n_);
 	for (int i=bself->nin; i<bself->nin+n; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
 		p->parent = bself;
@@ -600,11 +599,9 @@ static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
 	bself->nin+=n;
 	return Qnil;
 }
-
 static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself;
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_);
 	if (!bself) RAISE("there is no bself");
-	int n = INT(n_);
 	t_outlet **oldouts = bself->out;
 	int no = bself->nout;
 	bself->out = new t_outlet*[no+n];
@@ -616,16 +613,23 @@ static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
 	return Qnil;
 }
 
-static Ruby FObject_noutlets (Ruby rself) {
-	DGS(FObject); BFObject *bself = self->bself;
-//	if (!bself) RAISE("there is no bself");
-	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@noutlets));
-	return R(bself->nout).r;
+static Ruby FObject_del_inlets (Ruby rself, Ruby n_) {
+	RAISE("...");
 }
+
+static Ruby FObject_del_outlets (Ruby rself, Ruby n_) {
+	RAISE("...");
+}
+
 static Ruby FObject_ninlets  (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) RAISE("there is no bself");
+	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@ninlets));
 	return R(bself->nin ).r;
+}
+static Ruby FObject_noutlets (Ruby rself) {
+	DGS(FObject); BFObject *bself = self->bself;
+	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@noutlets));
+	return R(bself->nout).r;
 }
 
 static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
@@ -725,6 +729,8 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
 	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
+	rb_define_method(fo,"del_inlets",  (RMethod)FObject_del_inlets,  1);
+	rb_define_method(fo,"del_outlets", (RMethod)FObject_del_outlets, 1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
