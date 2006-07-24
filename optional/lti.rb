@@ -619,7 +619,14 @@ GridFlow.fclasses["lti.MeanshiftTracker"].module_eval {
 }
 
 Rerosion_parameters.module_eval{
-  attr_accessor :kernelSize
+  attr_reader :kernelSize
+  def kernelSize=(size)
+     if (size % 2)== 0
+        size+=1
+     end
+     @kernelSize=size
+  end
+
   @kernelSize = 3
 }
 
@@ -628,6 +635,6 @@ GridFlow.fclasses["lti.Erosion"].module_eval{
   def _0_kernelSize(size)
      @kernel = IcityBlockKernel.new (size.to_i)
      @functor.setKernel @kernel
-     @param.kernelSize = size
+     @param.kernelSize = size.to_i
   end
 }
