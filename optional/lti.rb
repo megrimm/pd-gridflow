@@ -261,7 +261,7 @@ class LTIGridObject < GridObject
       @attrs[name]=[tipe]
       #GridFlow.post "%s", "defining #{name} for #{functor_class}" if $lti_debug
       if LTI.have_param[@funcname]
-         GridFlow.post "#{@funcname}, #{name}, type: #{tipe}"
+         GridFlow.post "#{@funcname}, #{name}, type: #{tipe}" if $lti_debug
          module_eval "def _0_#{name}(value) @param.#{name} = LTI.from_pd(value,'#{tipe}'); @functor.setParameters @param end"
       end
     end
@@ -308,12 +308,14 @@ class LTIGridObject < GridObject
       self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
-          send_out no-1, sel.intern, LTI.to_pd(v)
+          GridFlow.post "#{sel} = #{v}"
+          #send_out no-1, sel.intern, LTI.to_pd(v)
 	rescue StandardError=>e
 	  GridFlow.post "%s", e.inspect
 	  send_out no-1, sel.intern, :some, v.class.to_s.intern
 	end
       }
+      GridFlow.post"\n"
     end
 
     def _0_param name, value=nil
