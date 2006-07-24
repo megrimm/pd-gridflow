@@ -21,6 +21,13 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
+module GridFlow
+  def FObject
+    def  add_inlets(n) self. ninlets += n end
+    def add_outlets(n) self.noutlets += n end
+  end
+end
+
 #  <matju> alx1: in puredata.rb, just after the header, you have a %w() block,
 #  and in it you write the name of your object, and if your helpfile is not
 #  named like your object, then you add an equal sign and the filename

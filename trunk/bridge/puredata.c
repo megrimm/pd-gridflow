@@ -60,6 +60,9 @@ tries to call a Ruby method of the proper name.
 
 /* **************************************************************** */
 struct BFObject;
+static Ruby  FObject_ninlets_set (Ruby rself, Ruby n_);
+static Ruby FObject_noutlets_set (Ruby rself, Ruby n_);
+
 struct FMessage {
 	BFObject *self;
 	int winlet;
@@ -145,13 +148,20 @@ static int noutlets_of (Ruby qlass) {
 //****************************************************************
 // BFObject
 
+struct BFProxy : t_object {
+	BFObject *parent;
+	t_inlet *inlet;
+	int id;
+};
+
 struct BFObject : t_object {
 #ifdef HAVE_GEM
 	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
 #endif
 	int32 magic; // paranoia
 	Ruby rself;
-	int nin,nout;  // per object settings (not class)
+	int nin,nout;   // per object settings (not class)
+	BFProxy  **in;  // direct access to  inlets (not linked lists)
 	t_outlet **out; // direct access to outlets (not linked lists)
 	t_canvas *mom;
 	void check_magic () {
@@ -183,11 +193,6 @@ static t_class *find_bfclass (t_symbol *sym) {
 }
 
 static t_class *BFProxy_class;
-
-struct BFProxy : t_object {
-	BFObject *parent;
-	int inlet;
-};
 
 static void Bridge_export_value(Ruby arg, t_atom *at) {
 	if      (INTEGER_P(arg)) SETFLOAT(at,NUM2INT(arg));
@@ -243,7 +248,7 @@ t_symbol *s, int argc, t_atom *argv) {
 
 static void BFProxy_method_missing(BFProxy *self,
 t_symbol *s, int argc, t_atom *argv) {
-	BFObject_method_missing(self->parent,self->inlet,s,argc,argv);
+	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
 
 static Ruby BFObject_init_1 (FMessage *fm) {
@@ -271,9 +276,17 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname=NULL;
 #endif
 #endif
-	int ninlets  = bself->nin  =  ninlets_of(rb_funcall(rself,SI(class),0));
-	int noutlets = bself->nout = noutlets_of(rb_funcall(rself,SI(class),0));
-
+	int ninlets  =  ninlets_of(rb_funcall(rself,SI(class),0));
+	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
+	bself->nin  = 1;
+	bself->nout = 0;
+	self->bself->in  = new  BFProxy*[1];
+	self->bself->out = new t_outlet*[1];
+	FObject_ninlets_set( rself,INT2NUM( ninlets));
+	FObject_noutlets_set(rself,INT2NUM(noutlets));
+/*
+	bself->nin  =   ninlets;
+	bself->nout =  noutlets;
 	for (int i=1; i<ninlets; i++) {
 		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
 		p->parent = bself;
@@ -284,6 +297,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	for (int i=0; i<noutlets; i++) {
 		bself->out[i] = outlet_new(bself,&s_anything);
 	}
+*/
 	rb_funcall(rself,SI(initialize2),0);
 	return rself;
 }
@@ -465,10 +479,8 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 //\def Ruby send_out2(...) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
-	if (!bself) {
-		//post("FObject#send_out2 : bself is NULL, rself=%08x",rself);
-		return Qnil;
-	}
+	//post("FObject#send_out2 : rself=%08x, bself=%08x",rself,bself);
+	if (!bself) return Qnil;
 	bself->check_magic();
 	int outlet = INT(argv[0]);
 	Ruby sym = argv[1];
@@ -587,38 +599,48 @@ static Ruby FObject_patcherargs (Ruby rself) {
 	return ar;
 }
 
-static Ruby FObject_add_inlets (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_);
+/* warning: deleting inlets that are connected will cause pd to crash */
+static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
 	if (!bself) RAISE("there is no bself");
-	for (int i=bself->nin; i<bself->nin+n; i++) {
-		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = bself;
-		p->inlet = i;
-		inlet_new(bself, &p->ob_pd, 0,0);
+	//post("FObject_ninlets_set: %d -> %d",bself->nin,n_);
+	if (bself->nin<n) {
+		BFProxy **noo = new BFProxy*[n];
+		memcpy(noo,bself->in,bself->nin*sizeof(BFProxy*));
+		delete[] bself->in;
+		bself->in = noo;
+		while (bself->nin<n) {
+			BFProxy *p = bself->in[bself->nin] = (BFProxy *)pd_new(BFProxy_class);
+			p->parent = bself;
+			p->id = bself->nin;
+			p->inlet = inlet_new(bself, &p->ob_pd, 0,0);
+			bself->nin++;
+		}
+	} else {
+		while (bself->nin>n) {
+			bself->nin--;
+			inlet_free(bself->in[bself->nin]->inlet);
+			delete bself->in[bself->nin];
+		}
 	}
-	bself->nin+=n;
-	return Qnil;
-}
-static Ruby FObject_add_outlets (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_);
-	if (!bself) RAISE("there is no bself");
-	t_outlet **oldouts = bself->out;
-	int no = bself->nout;
-	bself->out = new t_outlet*[no+n];
-	memcpy(bself->out,oldouts,no*sizeof(t_outlet*));
-	for (int i=no; i<no+n; i++) {
-		bself->out[i] = outlet_new(bself,&s_anything);
-	}
-	bself->nout+=n;
 	return Qnil;
 }
 
-static Ruby FObject_del_inlets (Ruby rself, Ruby n_) {
-	RAISE("...");
-}
-
-static Ruby FObject_del_outlets (Ruby rself, Ruby n_) {
-	RAISE("...");
+/* warning: deleting outlets that are connected will cause pd to crash */
+static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<0) n=0;
+	if (!bself) RAISE("there is no bself");
+	//post("FObject_noutlets_set on rself=%08x bself=%08x: %d -> %d",rself,bself,bself->nout,n_);
+	if (bself->nout<n) {
+		t_outlet **noo = new t_outlet*[n>0?n:1];
+		memcpy(noo,bself->out,bself->nout*sizeof(t_outlet*));
+		delete[] bself->out;
+		bself->out = noo;
+		while (bself->nout<n) bself->out[bself->nout++] = outlet_new(bself,&s_anything);
+	} else {
+		while (bself->nout>n) outlet_free(bself->out[--bself->nout]);
+	}
+	return Qnil;
 }
 
 static Ruby FObject_ninlets  (Ruby rself) {
@@ -727,12 +749,10 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
-	rb_define_method(fo,"add_inlets",  (RMethod)FObject_add_inlets,  1);
-	rb_define_method(fo,"add_outlets", (RMethod)FObject_add_outlets, 1);
-	rb_define_method(fo,"del_inlets",  (RMethod)FObject_del_inlets,  1);
-	rb_define_method(fo,"del_outlets", (RMethod)FObject_del_outlets, 1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
+	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
+	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
