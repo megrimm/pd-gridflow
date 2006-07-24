@@ -22,7 +22,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-GF_VERSION = "0.8.1"
+GF_VERSION = "0.8.4"
 
 #$use_rexml = true
 $use_rexml = false
@@ -553,7 +553,7 @@ puts <<EOF
 <tr><td colspan="4"> 
 <p><font size="-1">
 GridFlow #{GF_VERSION} Documentation<br>
-Copyright &copy; 2001,2002,2003,2004,2005,2006 by Mathieu Bouchard
+Copyright &copy; 2001-2006 by Mathieu Bouchard
 <a href="mailto:matju@artengine.ca">matju@artengine.ca</a>
 </font></p>
 </td></tr></table></body></html>
