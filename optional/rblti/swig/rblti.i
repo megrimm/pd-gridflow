@@ -10,6 +10,12 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.16  2006/07/24 18:48:36  heri
+//  Added cityBlockKernel templates.
+//  Available versions are UcityBlockKernel, IcityBlockKernel, FcityBlockKernel, DcityBlockKernel.
+//
+//  These kernels are useful for [lti.Erosion]
+//
 //  Revision 1.15  2006/07/13 04:34:50  matju
 //  meat pointer for palette
 //
@@ -506,20 +512,20 @@ namespace lti {
 //%include "_tree_node.h"
 
 HANDLE_SIMPLE_HEADER_FILE("ltiLinearKernels.h")
-    namespace lti {
-        %template(ikernel1D) kernel1D<lti::int32>;
-        %template(fkernel1D) kernel1D<float>;
-        %template(dkernel1D) kernel1D<double>;
-        %template(ukernel1D) kernel1D<lti::ubyte>;
-        %template(ikernel2D) kernel2D<lti::int32>;
-        %template(fkernel2D) kernel2D<float>;
-        %template(dkernel2D) kernel2D<double>;
-        %template(ukernel2D) kernel2D<lti::ubyte>;
-        %template(isepKernel) sepKernel<lti::int32>;
-        %template(fsepKernel) sepKernel<float>;
-        %template(dsepKernel) sepKernel<double>;
-        %template(usepKernel) sepKernel<lti::ubyte>;
-    }
+namespace lti {
+%template(ikernel1D) kernel1D<lti::int32>;
+%template(fkernel1D) kernel1D<float>;
+%template(dkernel1D) kernel1D<double>;
+%template(ukernel1D) kernel1D<lti::ubyte>;
+%template(ikernel2D) kernel2D<lti::int32>;
+%template(fkernel2D) kernel2D<float>;
+%template(dkernel2D) kernel2D<double>;
+%template(ukernel2D) kernel2D<lti::ubyte>;
+%template(isepKernel) sepKernel<lti::int32>;
+%template(fsepKernel) sepKernel<float>;
+%template(dsepKernel) sepKernel<double>;
+%template(usepKernel) sepKernel<lti::ubyte>;
+}
 HANDLE_SIMPLE_HEADER_FILE("ltiGradientKernels.h")
     namespace lti {
         // TODO %template(igradientKernelX) gradientKernelX<int>;
@@ -527,14 +533,23 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGradientKernels.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiHessianKernels.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiLaplacianKernel.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSecondDerivativeKernels.h")
-    namespace lti {
-        %template(iandoKernelXX) andoKernelXX<int>;
-        %template(iandoKernelXY) andoKernelXY<int>;
-        %template(iandoKernelYY) andoKernelYY<int>;
-        %template(fandoKernelXX) andoKernelXX<float>;
-        %template(fandoKernelXY) andoKernelXY<float>;
-        %template(fandoKernelYY) andoKernelYY<float>;
-    }
+namespace lti {
+%template(iandoKernelXX) andoKernelXX<int>;
+%template(iandoKernelXY) andoKernelXY<int>;
+%template(iandoKernelYY) andoKernelYY<int>;
+%template(fandoKernelXX) andoKernelXX<float>;
+%template(fandoKernelXY) andoKernelXY<float>;
+%template(fandoKernelYY) andoKernelYY<float>;
+}
+HANDLE_SIMPLE_HEADER_FILE("ltiBinaryKernels.h")
+
+namespace lti {
+%template (icityBlockKernel) cityBlockKernel<int>;
+%template (ucityBlockKernel) cityBlockKernel<lti::ubyte>;
+%template (fcityBlockKernel) cityBlockKernel<float>;
+%template (dcityBlockKernel) cityBlockKernel<double>;
+}
+
 //HANDLE_SIMPLE_HEADER_FILE("ltiSplitImage.h")          // --> colors.i
 //HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageTorgI.h")
 
