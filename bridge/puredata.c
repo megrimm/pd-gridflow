@@ -599,6 +599,15 @@ static Ruby FObject_patcherargs (Ruby rself) {
 	return ar;
 }
 
+static Ruby FObject_undrawio (Ruby rself) {
+	DGS(FObject); BFObject *bself = self->bself;
+	if (bself->mom && glist_isvisible(bself->mom)) {
+		t_rtext *rt = glist_findrtext(bself->mom,bself);
+		if (rt) glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
+	}
+	return Qnil;
+}
+
 static Ruby FObject_redraw (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
 	if (bself->mom && glist_isvisible(bself->mom)) {
@@ -613,7 +622,9 @@ static Ruby FObject_redraw (Ruby rself) {
 static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
 	if (!bself) RAISE("there is no bself");
+	if ((Ruby)bself==Qnil) RAISE("bself is nil");
 	//post("FObject_ninlets_set: %d -> %d",bself->nin,n_);
+	FObject_undrawio(rself);
 	if (bself->nin<n) {
 		BFProxy **noo = new BFProxy*[n];
 		memcpy(noo,bself->in,bself->nin*sizeof(BFProxy*));
@@ -642,6 +653,7 @@ static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<0) n=0;
 	if (!bself) RAISE("there is no bself");
 	//post("FObject_noutlets_set on rself=%08x bself=%08x: %d -> %d",rself,bself,bself->nout,n_);
+	FObject_undrawio(rself);
 	if (bself->nout<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
 		memcpy(noo,bself->out,bself->nout*sizeof(t_outlet*));
