@@ -12,11 +12,12 @@ LDSHARED = $(CXX) -shared
 RM = rm -f
 LIBS = -L. -lruby -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
-CFLAGS += -fno-omit-frame-pointer -g -fPIC -I.
+CFLAGS += -g -fPIC -I.
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O1
 else
-	CFLAGS += -O3 -funroll-loops
+#	CFLAGS += -O3 -funroll-loops -fno-omit-frame-pointer
+	CFLAGS += -O2 -funroll-loops
 endif
 
 OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
