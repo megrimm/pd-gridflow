@@ -601,20 +601,21 @@ static Ruby FObject_patcherargs (Ruby rself) {
 
 static Ruby FObject_undrawio (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (bself->mom && glist_isvisible(bself->mom)) {
-		t_rtext *rt = glist_findrtext(bself->mom,bself);
-		if (rt) glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
-	}
+	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
+	t_rtext *rt = glist_findrtext(bself->mom,bself);
+	if (!rt) return Qnil;
+	glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
 	return Qnil;
 }
 
 static Ruby FObject_redraw (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (bself->mom && glist_isvisible(bself->mom)) {
-		gobj_vis((t_gobj *)bself,bself->mom,0);
-		gobj_vis((t_gobj *)bself,bself->mom,1);
-		canvas_fixlinesfor(bself->mom,(t_text *)bself);
-	}
+	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
+	t_rtext *rt = glist_findrtext(bself->mom,bself);
+	if (!rt) return Qnil;
+	gobj_vis((t_gobj *)bself,bself->mom,0);
+	gobj_vis((t_gobj *)bself,bself->mom,1);
+	canvas_fixlinesfor(bself->mom,(t_text *)bself);
 	return Qnil;
 }
 
