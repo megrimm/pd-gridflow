@@ -9,6 +9,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/07/26 15:40:13  heri
+//  Required parent class.
+//
 //  Revision 1.1  2006/07/26 14:49:12  matju
 //  added eigenSystem etc (don't work)
 //
@@ -16,9 +19,9 @@
 //******************************************************************************
 
 //%include utils.i
-
-HANDLE_FUNCTOR_WITH_PARAMETERS(matrixInversion,"ltiMatrixInversion.h")
-HANDLE_FUNCTOR_WITH_PARAMETERS(eigenSystem,    "ltiEigenSystem.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor, "ltiLinearAlgebraFunctor.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS(matrixInversion,      "ltiMatrixInversion.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS(eigenSystem,          "ltiEigenSystem.h")
 
 namespace lti {
 %template(MatrixInversionF) matrixInversion<float>;
