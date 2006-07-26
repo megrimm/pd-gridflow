@@ -808,6 +808,14 @@ MatrixInversion.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+CholeskyDecomposition.forms = [
+[Out[Rblti::Fmatrix]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 EigenSystem.forms = [
 [In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
@@ -817,56 +825,57 @@ EigenSystem.forms = [
 # 163 Rblti::Image
 # 101 Rblti::Float
 #  86 Rblti::Imatrix
-#  69 Rblti::Fmatrix
+#  75 Rblti::Fmatrix
 #  66 Rblti::Ubyte
 #  46 Rblti::RgbPixel
 #  40 Rblti::Umatrix
 #  30 Rblti::Palette
 #  23 Rblti::Dmatrix
-#  20 Rblti::Fvector
 #  20 Rblti::Ivector
+#  20 Rblti::Fvector
 #  18 Rblti::Dvector
 #  12 Rblti::Uvector
 #  11 bool
-#   9 Vector<trgbPixel<float > >
 #   9 Rblti::AreaPoints
+#   9 Vector<trgbPixel<float > >
 #   8 Tpoint<float >
-#   7 Rblti::Double
-#   7 Rblti::Integer
 #   7 Rblti::PolygonPoints
-#   6 std::list<location >
+#   7 Rblti::Integer
+#   7 Rblti::Double
 #   6 Rblti::BorderPoints
+#   6 std::list<location >
 #   6 std::list<dvector >
+#   5 Rblti::PointList
 #   5 std::list<areaPoints >
 #   5 Rblti::Channel32
-#   5 Rblti::PointList
 #   4 Rblti::Location
 #   3 Rblti::IoPoints
 #   3 std::map<std::string,double >
-#   3 std::list<vector<float > >
-#   3 Matrix<rgbPixel >
 #   3 std::vector<areaPoints >
-#   2 double (*)(double const &,double const &)
-#   2 int (*)(int const &,int const &)
-#   2 std::vector<rectangle >
-#   2 std::vector<std::vector<geometricFeatureGroup0 > >
-#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
-#   2 kdTree<rgbPixel,int >
-#   2 ubyte (*)(unsigned char const &,unsigned char const &)
+#   3 Matrix<rgbPixel >
+#   3 std::list<vector<float > >
 #   2 std::vector<geometricFeatureGroup0 >
-#   2 std::list<borderPoints >
-#   2 std::list<ioPoints >
-#   2 int (*)(int const &,int const &,int const &)
-#   2 std::vector<matrix<float > >
-#   2 std::vector<std::vector<rectangle > >
-#   2 double (*)(double const &,double const &,double const &)
 #   2 tree<objectStruct >
-#   1 TpolygonPoints<double >
-#   1 std::list<channel >
-#   1 TpolygonPoints<float >
-#   1 TrgbPixel<float >
+#   2 int (*)(int const &,int const &,int const &)
+#   2 kdTree<rgbPixel,int >
+#   2 std::list<ioPoints >
+#   2 std::vector<std::vector<geometricFeatureGroup0 > >
+#   2 int (*)(int const &,int const &)
+#   2 double (*)(double const &,double const &)
+#   2 std::list<borderPoints >
+#   2 std::vector<std::vector<rectangle > >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &)
+#   2 std::vector<matrix<float > >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
+#   2 std::vector<rectangle >
+#   2 double (*)(double const &,double const &,double const &)
+#   2 CholeskyDecomposition_parameters::eTriangularType
 #   1 DrgbPixel
-#   1 TpointList<float >
+#   1 std::list<channel >
 #   1 Rblti::Irect
+#   1 TpolygonPoints<double >
+#   1 TpolygonPoints<float >
 #   1 TpointList<double >
+#   1 TpointList<float >
 #   1 principalComponents<float >
+#   1 TrgbPixel<float >
