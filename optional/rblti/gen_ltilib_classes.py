@@ -142,6 +142,7 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('labelAdjacencyMap_1_1parameters'), 		g('functor'))
 
 	#More functors/classes added by Matju
+	, (f('linearAlgebraFunctor_1_1parameters'), 		g('functor'))
 	, (f('matrixInversion_1_1parameters'), 			g('linearAlgebraFunctor'))
 	, (f('eigenSystem_1_1parameters'), 			g('linearAlgebraFunctor'))
     ]
