@@ -9,6 +9,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/07/26 19:40:34  matju
+//  jacobi
+//
 //  Revision 1.4  2006/07/26 17:40:49  matju
 //  more about eigenSystem, matrixInversion
 //
@@ -41,11 +44,15 @@ typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
 #undef parameters
 %enddef
 
-HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor, "ltiLinearAlgebraFunctor.h")
-HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,"ltiMatrixInversion.h")
-HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(eigenSystem,    "ltiEigenSystem.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor,    "ltiLinearAlgebraFunctor.h")
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,     "ltiMatrixInversion.h")
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(    eigenSystem,         "ltiEigenSystem.h")
+//HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(fastEigenSystem,     "ltiFastEigenSystem.h")
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(jacobi,                  "ltiEigenSystem.h")
 
 namespace lti {
 %template(MatrixInversion) matrixInversion<float>;
-%template(EigenSystem)         eigenSystem<float>;
+%template(EigenSystem) eigenSystem<float>;
+//%template(FastEigenSystem) fastEigenSystem<float>;
+%template(Jacobi) jacobi<float>;
 }
