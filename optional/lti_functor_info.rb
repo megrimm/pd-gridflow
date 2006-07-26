@@ -73,7 +73,7 @@ def fill_types(lines,functorname)
       args << In[t]
     else
       case functorname
-      when "MeanshiftTracker": args << InOut[t]
+      when "MeanshiftTracker"; args << InOut[t]
       else args << Out[t]
       end
     end
@@ -97,17 +97,17 @@ def adapt_type2 type
   type=type.sub(/channel8::value_type/,"ubyte")
   type=type.sub(/channel::value_type/,"float")
   case type
-  when "Matrix<ubyte >":  Umatrix; when "Vector<ubyte >":  Uvector
-  when "Matrix<int >"  :  Imatrix; when "Vector<int >":    Ivector
-  when "Matrix<float >":  Fmatrix; when "Vector<float >":  Fvector
-  when "Matrix<double >": Dmatrix; when "Vector<double >": Dvector
-  when "Trectangle<int >":    Irect
-  when "Trectangle<float >":  Frect
-  when "Trectangle<double >": Drect
-  when "float": Rblti::Float
-  when "int": Rblti::Integer
-  when "ubyte": Rblti::Ubyte
-  when "double": Rblti::Double
+  when "Matrix<ubyte >";  Umatrix; when "Vector<ubyte >" ; Uvector
+  when "Matrix<int >"  ;  Imatrix; when "Vector<int >"   ; Ivector
+  when "Matrix<float >";  Fmatrix; when "Vector<float >" ; Fvector
+  when "Matrix<double >"; Dmatrix; when "Vector<double >"; Dvector
+  when "Trectangle<int >";    Irect
+  when "Trectangle<float >";  Frect
+  when "Trectangle<double >"; Drect
+  when "float" ; Rblti::Float
+  when "int"   ; Rblti::Integer
+  when "ubyte" ; Rblti::Ubyte
+  when "double"; Rblti::Double
   else Rblti.const_get(type)
   end
 rescue NameError
