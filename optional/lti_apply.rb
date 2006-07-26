@@ -109,7 +109,7 @@ begin
 GHoughTransform.forms = [
 [In[Rblti::Channel], Out["std::list<vector<float > >"]],
 [In[Rblti::Channel], In[Rblti::Channel], Out["std::list<vector<float > >"]],
-[In["TpointList<int >"], In[Rblti::Channel], Out["std::list<vector<float > >"]],
+[In[Rblti::PointList], In[Rblti::Channel], Out["std::list<vector<float > >"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
@@ -801,62 +801,72 @@ MergeYUVToImage.forms = [
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
+begin
+MatrixInversion.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+EigenSystem.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
 # 206 Rblti::Channel8
 # 169 Rblti::Channel
 # 163 Rblti::Image
 # 101 Rblti::Float
 #  86 Rblti::Imatrix
+#  69 Rblti::Fmatrix
 #  66 Rblti::Ubyte
-#  64 Rblti::Fmatrix
 #  46 Rblti::RgbPixel
 #  40 Rblti::Umatrix
 #  30 Rblti::Palette
 #  23 Rblti::Dmatrix
+#  20 Rblti::Fvector
 #  20 Rblti::Ivector
-#  19 Rblti::Fvector
 #  18 Rblti::Dvector
 #  12 Rblti::Uvector
 #  11 bool
 #   9 Vector<trgbPixel<float > >
 #   9 Rblti::AreaPoints
 #   8 Tpoint<float >
-#   7 Rblti::PolygonPoints
 #   7 Rblti::Double
 #   7 Rblti::Integer
+#   7 Rblti::PolygonPoints
 #   6 std::list<location >
-#   6 std::list<dvector >
 #   6 Rblti::BorderPoints
-#   5 Rblti::Channel32
+#   6 std::list<dvector >
 #   5 std::list<areaPoints >
+#   5 Rblti::Channel32
+#   5 Rblti::PointList
 #   4 Rblti::Location
-#   4 Rblti::PointList
-#   3 std::map<std::string,double >
 #   3 Rblti::IoPoints
+#   3 std::map<std::string,double >
 #   3 std::list<vector<float > >
-#   3 std::vector<areaPoints >
 #   3 Matrix<rgbPixel >
+#   3 std::vector<areaPoints >
+#   2 double (*)(double const &,double const &)
 #   2 int (*)(int const &,int const &)
-#   2 ubyte (*)(unsigned char const &,unsigned char const &)
-#   2 tree<objectStruct >
-#   2 std::vector<matrix<float > >
+#   2 std::vector<rectangle >
 #   2 std::vector<std::vector<geometricFeatureGroup0 > >
 #   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
-#   2 std::vector<rectangle >
-#   2 int (*)(int const &,int const &,int const &)
+#   2 kdTree<rgbPixel,int >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &)
 #   2 std::vector<geometricFeatureGroup0 >
 #   2 std::list<borderPoints >
-#   2 double (*)(double const &,double const &)
-#   2 double (*)(double const &,double const &,double const &)
 #   2 std::list<ioPoints >
+#   2 int (*)(int const &,int const &,int const &)
+#   2 std::vector<matrix<float > >
 #   2 std::vector<std::vector<rectangle > >
-#   2 kdTree<rgbPixel,int >
-#   1 principalComponents<float >
-#   1 Rblti::Irect
+#   2 double (*)(double const &,double const &,double const &)
+#   2 tree<objectStruct >
 #   1 TpolygonPoints<double >
-#   1 TpolygonPoints<float >
-#   1 TpointList<double >
-#   1 TpointList<int >
-#   1 TrgbPixel<float >
 #   1 std::list<channel >
+#   1 TpolygonPoints<float >
+#   1 TrgbPixel<float >
 #   1 DrgbPixel
 #   1 TpointList<float >
+#   1 Rblti::Irect
+#   1 TpointList<double >
+#   1 principalComponents<float >
