@@ -10,6 +10,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.18  2006/07/26 23:41:58  heri
+//  Conversion between grids and pPointlList, plus another helper method.
+//  Swapped two large blocks of code, this will show up in the number of modified lines.
+//
 //  Revision 1.17  2006/07/26 14:49:12  matju
 //  added eigenSystem etc (don't work)
 //
@@ -323,64 +327,10 @@ namespace lti {
 namespace { using namespace lti;    // opening namespace using
 %}
 
-%template(list_ipoint) std::list<lti::ipoint>;
-HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
-//%template(tpointList_int) lti::tpointList<int>;
-//    %swig_list_methods(lti::tpointList<T>);       // --> TODO: in die Klasse aufnehmen...
-    %extend lti::tpointList {
-    // TODO: add a better (pythonic) support for iterators
-    void * createIterator()
-    {
-        lti::tpointList<T>::iterator * pIter = new lti::tpointList<T>::iterator;
-        (*pIter) = self->begin();
-        return (void *) (pIter);
-    }
-    void deleteIterator(void *p) 
-    {
-        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
-        delete pIter;
-    }
-    bool isEnd(void *p) 
-    {
-        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
-        return *pIter == self->end();
-    }
-    lti::tpoint<T> nextElement(void * p) 
-    {
-        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
-        lti::tpoint<T> aPointOut = *(*pIter);
-        ++(*pIter);
-        return aPointOut;
-    }
-    }
-    
-    namespace lti {
-        %template(pointList) lti::tpointList<int>;
-    }
-%wrapper %{
-}  // closing namespace using
-%}
-//#endif
+/*****************************************************************************/
+/*                          MATRIX  starts                                   */
+/*****************************************************************************/
 
-HANDLE_SIMPLE_HEADER_FILE("ltiLocation.h")
-HANDLE_SIMPLE_HEADER_FILE("ltiPolygonPoints.h")
-HANDLE_SIMPLE_HEADER_FILE("ltiGeometry.h")
-    namespace lti {
-    //TODO:    %template(iintersection) intersection<ipoint>;
-    }
-namespace lti {
-%ignore genericVector<int>::castFrom(const genericVector<rgbPixel> &);
-%ignore genericVector<float>::castFrom(const genericVector<rgbPixel> &);
-%ignore genericVector<double>::castFrom(const genericVector<rgbPixel> &);
-%ignore genericVector<rgbPixel>::castFrom(const genericVector<float> &);
-%ignore genericVector<rgbPixel>::castFrom(const genericVector<double> &);
-
-%ignore genericMatrix<int>::castFrom(const genericMatrix<rgbPixel> &);
-%ignore genericMatrix<float>::castFrom(const genericMatrix<rgbPixel> &);
-%ignore genericMatrix<double>::castFrom(const genericMatrix<rgbPixel> &);
-%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<float> &);
-%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<double> &);
-}
 HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
     #ifdef SWIGPYTHON
     %extend lti::genericVector {
@@ -448,6 +398,107 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
 	%rename(substract) genericMatrix<lti::ubyte>::subtract(const matrix<lti::ubyte> &, const lti::ubyte);
 	
     }
+
+/*****************************************************************************/
+/*                          MATRIX  ends                                     */
+/*****************************************************************************/
+
+
+%template(list_ipoint) std::list<lti::ipoint>;
+HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
+//%template(tpointList_int) lti::tpointList<int>;
+//    %swig_list_methods(lti::tpointList<T>);       // --> TODO: in die Klasse aufnehmen...
+    %extend lti::tpointList {
+    // TODO: add a better (pythonic) support for iterators
+    void * createIterator()
+    {
+        lti::tpointList<T>::iterator * pIter = new lti::tpointList<T>::iterator;
+        (*pIter) = self->begin();
+        return (void *) (pIter);
+    }
+    void deleteIterator(void *p) 
+    {
+        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
+        delete pIter;
+    }
+    bool isEnd(void *p) 
+    {
+        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
+        return *pIter == self->end();
+    }
+    lti::tpoint<T> nextElement(void * p) 
+    {
+        lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
+        lti::tpoint<T> aPointOut = *(*pIter);
+        ++(*pIter);
+        return aPointOut;
+    }
+    
+    void to_matrix(lti::matrix<int> &result){
+        if (((result.size()).y != self->size()) || (2 != (result.size()).x))
+           result.resize(self->size(),2);
+     
+        std::list<lti::tpoint<int> >::const_iterator iter = self->begin() ;
+        for(int j=0; iter != self->end(); iter++, j++)
+        {
+           result.at(j,0)=(*iter).y;
+           result.at(j,1)=(*iter).x;
+        }
+    }
+    
+    void fill(const lti::matrix<int> &source){
+        if (0 != self->size())
+           self->erase(self->begin(), self->end());
+
+        int sz = (source.size()).y;
+        for(int j=0; j< sz ; j++)
+           self->push_back(lti::tpoint<int>(source.at(j,0), source.at(j,1)));
+    }
+    
+    lti::tpoint<T> at(int pos){
+        std::list<lti::tpoint<T> >::const_iterator iter = self->begin() ;
+        int sz = self->size();
+        if (pos >= sz)
+           iter = self->end();
+           iter--;
+        else {
+           for(int j=0; (j<pos) && (iter != self->end()); j++)
+              iter++;
+        }
+        return (*iter);
+    }
+    }
+    
+    namespace lti {
+        %template(pointList) lti::tpointList<int>;
+    }
+%wrapper %{
+}  // closing namespace using
+%}
+//#endif
+
+HANDLE_SIMPLE_HEADER_FILE("ltiLocation.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiPolygonPoints.h")
+HANDLE_SIMPLE_HEADER_FILE("ltiGeometry.h")
+    namespace lti {
+    //TODO:    %template(iintersection) intersection<ipoint>;
+    }
+namespace lti {
+%ignore genericVector<int>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<float>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<double>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<rgbPixel>::castFrom(const genericVector<float> &);
+%ignore genericVector<rgbPixel>::castFrom(const genericVector<double> &);
+
+%ignore genericMatrix<int>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<float>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<double>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<float> &);
+%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<double> &);
+}
+
+
+
 HANDLE_SIMPLE_HEADER_FILE("ltiHTypes.h")
 
 
@@ -668,6 +719,20 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
   long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
 }
 
+/*
+%extend lti::tpointList<int> {
+  void to_matrix(lti::matrix<int> &result){
+     if (((result.size()).y != self->size()) || ((2 != result.size()).x))
+        exit(1337);
+
+     for(const_iterator iter = self->begin(), int j=0; iter != self->end(); iter++, j++)
+     {
+        result.at(j,0)=(*iter).x;
+        result.at(j,1)=(*iter).y;
+     }
+  }
+}
+*/
 
 namespace lti {
 %extend image {
