@@ -392,6 +392,11 @@ class LTIGridObject < GridObject
 	when Imatrix,Channel32; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
 	when Fmatrix,  Channel; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
 	when Image            ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
+        when PointList
+           tmp=Imatrix.new(Ipoint.new(dim[1], dim[0]))
+           LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,tmp.meat,:uint8
+           GridFlow.post "Pointlist, Grid received size x:%d, y:%d", dim[1], dim[0]
+           st.fill tmp
         when Irect
           d = data.unpack("I4")
           #GridFlow.post "d=%s", d.inspect
@@ -460,6 +465,10 @@ class LTIGridObject < GridObject
       when Rblti::Float;   send_out_lti_float o,m
       when Rblti::Integer; send_out_lti_int o,m
       when Rblti::Ubyte;   send_out_lti_ubyte o,m
+      when Rblti::PointList
+          n = Imatrix.new(Ipoint.new(2, m.size))
+          m.to_matrix(n)
+          send_out_lti_imatrix o,n
       else raise "don't know how to send_out a #{m.class}"
       end
     end
