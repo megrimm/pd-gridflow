@@ -316,8 +316,8 @@ class LTIGridObject < GridObject
       self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
-          GridFlow.post "#{sel} = #{v}"
-          #send_out no-1, sel.intern, LTI.to_pd(v)
+          GridFlow.post "%s","#{sel} = #{v}"
+          send_out no-1, sel.intern, LTI.to_pd(v)
 	rescue StandardError=>e
 	  GridFlow.post "%s", e.inspect
 	  send_out no-1, sel.intern, :some, v.class.to_s.intern
@@ -521,6 +521,13 @@ class LTIGridObject < GridObject
         LTIPropertiesDialog_new #{wid} #{self.class.foreign_name} #{self.formid}  #{self.class.functor_class.forms.tcl}
       }
     end
+    (0..2).each {|i|
+      eval"
+	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
+	def _#{i}_rgrid_flow data; _n_rgrid_flow  #{i},data end
+	def _#{i}_rgrid_end;       _n_rgrid_end   #{i} end if i>0
+      "
+    }
 end
 
 GridFlow.gui "source #{GridFlow::DIR}/optional/lti-pd.tcl\n"
@@ -563,13 +570,6 @@ begin
     if LTI.have_param[name]
        param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     end
-    (0..2).each {|i|
-      eval"
-	def _#{i}_rgrid_begin;     _n_rgrid_begin #{i} end
-	def _#{i}_rgrid_flow data; _n_rgrid_flow  #{i},data end
-	def _#{i}_rgrid_end;       _n_rgrid_end   #{i} end
-      "
-    }
     properties_enable
   }
 rescue StandardError => e
