@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # $Id$
 
-$: << "rblti"
+$:.unshift "rblti"
 require "rblti"
 include Rblti
 
@@ -83,6 +83,7 @@ end  #function def
 
 $stats={}
 def adapt_type type
+#  STDERR.puts "adapt_type: #{type}"
   type = adapt_type2 type
   if $init
     $stats[type] ||= 0
@@ -140,6 +141,9 @@ $init=false
 while tmp = get_next_apply_function(filehandle)
   functorname,functiontext=tmp
 
+#  STDERR.puts "functorname = #{functorname}"
+#  STDERR.puts "  defined: #{Rblti.const_defined?(functorname)}"
+#  STDERR.puts "  subclass: #{Rblti.const_get(functorname) < Functor}" if Rblti.const_defined?(functorname)
   if functorname != previousf
     puts termin if $init
     if Rblti.const_defined?(functorname) and Rblti.const_get(functorname) < Functor then
