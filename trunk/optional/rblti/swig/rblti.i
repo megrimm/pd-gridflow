@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.17  2006/07/26 14:49:12  matju
+//  added eigenSystem etc (don't work)
+//
 //  Revision 1.16  2006/07/24 18:48:36  heri
 //  Added cityBlockKernel templates.
 //  Available versions are UcityBlockKernel, IcityBlockKernel, FcityBlockKernel, DcityBlockKernel.
@@ -613,6 +616,7 @@ typedef lti::location location;
 %include manipulation.i    
 %include classifiers.i
 %include colorspaces.i
+%include math.i
 %include drawing.i
 
 ////TODO: add better tree support !!!
