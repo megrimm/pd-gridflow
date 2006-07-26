@@ -3,7 +3,7 @@
 
 namespace lti {
 namespace _choleskyDecomposition {
-class RcholeskyDecomposition_parameters : public lti::_choleskyDecomposition::RcholeskyDecomposition_parameters
+class RcholeskyDecomposition_parameters : public lti::_linearAlgebraFunctor::RlinearAlgebraFunctor_parameters
 {
 public:
      RcholeskyDecomposition_parameters (  );
