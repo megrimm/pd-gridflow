@@ -9,6 +9,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/07/26 17:40:49  matju
+//  more about eigenSystem, matrixInversion
+//
 //  Revision 1.3  2006/07/26 16:27:17  matju
 //  attempt to un-!@#$ template...
 //
@@ -26,7 +29,7 @@
 %define HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(func_name,functor_header)
 %{
 #include functor_header
-#define _ ## func_name func_name
+#define _ ## func_name func_name<float>
 #define R ## func_name ## _parameters parameters
 namespace lti {
 typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
@@ -42,11 +45,7 @@ HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor, "ltiLinearAlgebraFunctor.h"
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,"ltiMatrixInversion.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(eigenSystem,    "ltiEigenSystem.h")
 
-/*
 namespace lti {
-%template(MatrixInversionF) matrixInversion<float>;
-%template(MatrixInversionD) matrixInversion<double>;
-%template(EigenSystemF) eigenSystem<float>;
-%template(EigenSystemD) eigenSystem<double>;
+%template(MatrixInversion) matrixInversion<float>;
+%template(EigenSystem)         eigenSystem<float>;
 }
-*/
