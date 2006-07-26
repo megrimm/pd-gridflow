@@ -149,7 +149,7 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('eigenSystem_1_1parameters'), 			g('linearAlgebraFunctor'))
 #	, (f('fastEigenSystem_1_1parameters'), 			g('eigenSystem'))
 	, (f('jacobi_1_1parameters'), 				g('eigenSystem'))
-	, (f('choleskyDecomposition_1_1parameters'), 		g('choleskyDecomposition'))
+	, (f('choleskyDecomposition_1_1parameters'), 		g('linearAlgebraFunctor'))
     ]
     
 
