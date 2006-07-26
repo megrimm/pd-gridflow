@@ -132,6 +132,7 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('ioPNG_1_1parameters'),                 		g('ioFunctor'))
         , (f('ioJPEG_1_1parameters'),               		g('ioFunctor'))
 	, (f('distanceTransform_1_1sedMask'),                   None)
+
 	#More functors/classes added by Heri
 	, (f('backgroundModel_1_1parameters'), 			g('segmentation'))
 	, (f('geometricFeaturesFromMask_1_1parameters'), 	g('fastRelabeling'))
@@ -139,7 +140,10 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('meanshiftTracker_1_1parameters'), 		g('modifier'))
 	, (f('maskImage_1_1parameters'), 			g('functor'))
 	, (f('labelAdjacencyMap_1_1parameters'), 		g('functor'))
-	
+
+	#More functors/classes added by Matju
+	, (f('matrixInversion_1_1parameters'), 			g('linearAlgebraFunctor'))
+	, (f('eigenSystem_1_1parameters'), 			g('linearAlgebraFunctor'))
     ]
     
 
