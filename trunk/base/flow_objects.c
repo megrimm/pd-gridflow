@@ -1148,6 +1148,90 @@ GRID_INLET(GridCentroid,0) {
 \end class GridCentroid
 
 //****************************************************************
+\class GridMoment < GridObject
+struct GridMoment : GridObject {
+	\decl void initialize (int order=1);
+	\grin 0 int
+	\grin 1 int
+	\attr int order; // order
+	\attr PtrGrid offset;
+	int64 sumy,sumxy,sumx,sum,y; // temporaries
+};
+
+GRID_INLET(GridMoment,0) {
+	if (in->dim->n != 3) RAISE("expecting 3 dims");
+	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
+	in->set_factor(in->dim->prod(1));
+	switch (order) {
+	    case 1: out=new GridOutlet(this,0,new Dim(2  ), in->nt); break;
+	    case 2: out=new GridOutlet(this,0,new Dim(2,2), in->nt); break;
+	    default: RAISE("supports only orders 1 and 2 for now");
+	}
+	sumx=0; sumy=0; sumxy=0; sum=0; y=0;
+} GRID_FLOW {
+	int sx = in->dim->v[1];
+	int oy = ((int*)*offset)[0];
+	int ox = ((int*)*offset)[1];
+	while (n) {
+		switch (order) {
+		    case 1:
+			for (int x=0; x<sx; x++) {
+				sumy+=y*data[x];
+				sumx+=x*data[x];
+				sum +=  data[x];
+			}
+		    break;
+		    case 2:
+			for (int x=0; x<sx; x++) {
+				int ty=y-oy;
+				int tx=x-ox;
+				sumy +=ty*ty*data[x];
+				sumxy+=tx*ty*data[x];
+				sumx +=tx*tx*data[x];
+				sum  +=      data[x];
+			}
+		}
+		n-=sx;
+		data+=sx;
+		y++;
+	}
+} GRID_FINISH {
+	int32 blah[4];
+	switch (order) {
+	    case 1: /* centroid vector */
+		blah[0] = sum ? sumy/sum : 0;
+		blah[1] = sum ? sumx/sum : 0;
+		out->send(2,blah);
+	    break;
+	    case 2: /* covariance matrix */
+		blah[0] = sum ? sumy/sum : 0;
+		blah[1] = sum ? sumxy/sum : 0;
+		blah[2] = sum ? sumxy/sum : 0;
+		blah[3] = sum ? sumx/sum : 0;
+		out->send(4,blah);
+	    break;
+	}
+} GRID_END
+
+GRID_INPUT(GridMoment,1,offset) {} GRID_END
+
+static void expect_pair (P<Dim> dim) {
+	if (dim->prod()!=2)
+		RAISE("expecting only two numbers. Dim(2)");
+}
+
+\def void initialize (int order=1) {
+	offset.constrain(expect_pair);
+	offset=new Grid(EVAL("[0,0]"));
+	if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
+	this->order=order;
+	rb_call_super(argc,argv);
+}
+
+\classinfo { IEVAL(rself,"install '#moment',2,1"); }
+\end class GridMoment
+
+//****************************************************************
 \class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	\attr int32 z;
@@ -1458,7 +1542,6 @@ struct GridDownscaleBy : GridObject {
 };
 
 GRID_INLET(GridDownscaleBy,0) {
-
 	P<Dim> a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
