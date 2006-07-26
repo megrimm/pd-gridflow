@@ -12,13 +12,15 @@
 
 from xml.dom import minidom
 import os
+import sys
 from distutils.text_file import TextFile
 
 str_version = '0.33.1'
 
-
 # handle the settings: WORKAREA has to be defined !
-basedir = None
+#basedir = None
+basedir = sys.argv[1]
+if basedir: basedir+="/xml/"
 
 workarea = os.getenv("WORKAREA")
 
