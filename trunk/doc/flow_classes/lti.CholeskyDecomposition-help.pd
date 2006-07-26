@@ -15,7 +15,7 @@
 #X obj 132 188 #outer ignore (1 f #);
 #X text 230 128 this will be decomposed:;
 #X text 230 338 this is reconstituted:;
-#X msg 133 29 3 3 f # 4 0 0 2 4 0 1 1 4;
+#X msg 133 29 3 3 f # 4 2 1 0 8 2 0 0 4;
 #X connect 0 0 12 0;
 #X connect 0 0 3 0;
 #X connect 1 0 4 0;
