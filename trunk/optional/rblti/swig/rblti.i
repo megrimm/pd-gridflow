@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.19  2006/07/27 00:01:47  heri
+//  OOPS
+//
 //  Revision 1.18  2006/07/26 23:41:58  heri
 //  Conversion between grids and pPointlList, plus another helper method.
 //  Swapped two large blocks of code, this will show up in the number of modified lines.
@@ -458,9 +461,10 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
     lti::tpoint<T> at(int pos){
         std::list<lti::tpoint<T> >::const_iterator iter = self->begin() ;
         int sz = self->size();
-        if (pos >= sz)
+        if (pos >= sz) {
            iter = self->end();
            iter--;
+        }
         else {
            for(int j=0; (j<pos) && (iter != self->end()); j++)
               iter++;
