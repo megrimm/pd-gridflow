@@ -9,6 +9,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.7  2006/07/27 22:59:23  matju
+//  added [lti.Jacobi] for real
+//
 //  Revision 1.6  2006/07/26 22:57:01  matju
 //  disabling Jacobi for now and enabling Cholesky
 //
@@ -50,14 +53,12 @@ typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
 HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor,    "ltiLinearAlgebraFunctor.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,     "ltiMatrixInversion.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(choleskyDecomposition,"ltiCholeskyDecomposition.h")
-HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(    eigenSystem,         "ltiEigenSystem.h")
-//HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(fastEigenSystem,     "ltiFastEigenSystem.h")
-//HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(jacobi,                  "ltiEigenSystem.h")
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(eigenSystem,       "ltiEigenSystemBase.h")
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(jacobi,            "ltiEigenSystem.h")
 
 namespace lti {
 %template(MatrixInversion) matrixInversion<float>;
 %template(CholeskyDecomposition) choleskyDecomposition<float>;
 %template(EigenSystem) eigenSystem<float>;
-//%template(FastEigenSystem) fastEigenSystem<float>;
-//%template(Jacobi) jacobi<float>;
+%template(Jacobi) jacobi<float>;
 }
