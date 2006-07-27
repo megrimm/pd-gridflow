@@ -455,9 +455,9 @@ class LTIGridObject < GridObject
 
     def send_out_lti o,m
       case m
-      when Umatrix, Channel8;  send_out_lti_umatrix o,m
-      when Imatrix, Channel32; send_out_lti_imatrix o,m
-      when Fmatrix, Channel;   send_out_lti_fmatrix o,m
+      when Channel8;  send_out_lti_umatrix o,m,true;  when Umatrix; send_out_lti_umatrix o,m,false
+      when Channel32; send_out_lti_imatrix o,m,true;  when Imatrix; send_out_lti_imatrix o,m,false
+      when Channel;   send_out_lti_fmatrix o,m,true;  when Fmatrix; send_out_lti_fmatrix o,m,false
       when Image;   send_out_lti_image   o,m
       when Palette; send_out_lti_palette o,m
       when Irect;   send_out_lti_rect    o,m
@@ -485,16 +485,23 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[m.size,3]
 	send_out_grid_flow_3 o, m.size*3, foo.meat, :uint8
     end
-    def send_out_lti_umatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns,1] #,@out_nt
+    def send_out_lti_umatrix o,m,use_chans=true
+	dim=[m.rows,m.columns]
+        dim<< 1 if use_chans
+        #dim=[m.rows,m.columns,1]
+	send_out_grid_begin o,dim #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :uint8
     end
-    def send_out_lti_imatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns,1] #,@out_nt
+    def send_out_lti_imatrix o,m,use_chans=true
+        dim=[m.rows,m.columns]
+        dim<< 1 if use_chans
+	send_out_grid_begin o,dim #,@out_nt
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :int32
     end
-    def send_out_lti_fmatrix o,m
-	send_out_grid_begin o,[m.rows,m.columns,1], :float32
+    def send_out_lti_fmatrix o,m,use_chans=true
+        dim=[m.rows,m.columns]
+        dim<< 1 if use_chans
+	send_out_grid_begin o,dim, :float32
 	send_out_grid_flow_3 o, m.rows*m.columns, m.meat, :float32
     end
     def send_out_lti_rect o,m
