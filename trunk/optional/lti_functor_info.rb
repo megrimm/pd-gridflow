@@ -109,7 +109,10 @@ def adapt_type2 type
   when "int"   ; Rblti::Integer
   when "ubyte" ; Rblti::Ubyte
   when "double"; Rblti::Double
-  when "TpointList<int >"; Rblti::PointList
+  when "TpointList<int >"           ; Rblti::PointList
+  when "std::list<ioPoints >"       ; Rblti::List_ioPoints
+  when "std::list<borderPoints >"   ; Rblti::List_borderPoints
+  when "std::list<areaPoints >"     ; Rblti::List_areaPoints
   else Rblti.const_get(type)
   end
 rescue NameError
