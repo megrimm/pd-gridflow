@@ -362,7 +362,7 @@ RegionMerge.forms = [
 begin
 SimilarityMatrix.forms = [
 [In[Rblti::Image], In[Rblti::Integer], In[Rblti::Imatrix], Out[Rblti::Dmatrix], Out[Rblti::Dmatrix]],
-[In[Rblti::Image], In["std::list<areaPoints >"], Out[Rblti::Dmatrix], Out[Rblti::Dmatrix], Out[Rblti::Imatrix]],
+[In[Rblti::Image], In[Rblti::List_areaPoints], Out[Rblti::Dmatrix], Out[Rblti::Dmatrix], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
@@ -385,14 +385,14 @@ FastRelabeling.forms = [
 
 begin
 ObjectsFromMask.forms = [
-[In[Rblti::Channel8], Out["std::list<ioPoints >"]],
-[In[Rblti::Imatrix], Out["std::list<ioPoints >"]],
-[In[Rblti::Channel8], Out["std::list<borderPoints >"]],
-[In[Rblti::Imatrix], Out["std::list<borderPoints >"]],
-[In[Rblti::Channel8], Out["std::list<areaPoints >"]],
-[In[Rblti::Imatrix], Out["std::list<areaPoints >"]],
-[In[Rblti::Channel8], Out["std::list<areaPoints >"], Out[Rblti::Imatrix]],
-[In[Rblti::Imatrix], Out["std::list<areaPoints >"], Out[Rblti::Imatrix]],
+[In[Rblti::Channel8], Out[Rblti::List_ioPoints]],
+[In[Rblti::Imatrix], Out[Rblti::List_ioPoints]],
+[In[Rblti::Channel8], Out[Rblti::List_borderPoints]],
+[In[Rblti::Imatrix], Out[Rblti::List_borderPoints]],
+[In[Rblti::Channel8], Out[Rblti::List_areaPoints]],
+[In[Rblti::Imatrix], Out[Rblti::List_areaPoints]],
+[In[Rblti::Channel8], Out[Rblti::List_areaPoints], Out[Rblti::Imatrix]],
+[In[Rblti::Imatrix], Out[Rblti::List_areaPoints], Out[Rblti::Imatrix]],
 [In[Rblti::Channel8], Out["tree<objectStruct >"]],
 [In[Rblti::Imatrix], Out["tree<objectStruct >"]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
@@ -842,40 +842,40 @@ EigenSystem.forms = [
 #   7 Rblti::PolygonPoints
 #   7 Rblti::Integer
 #   7 Rblti::Double
-#   6 Rblti::BorderPoints
 #   6 std::list<location >
 #   6 std::list<dvector >
-#   5 Rblti::PointList
-#   5 std::list<areaPoints >
+#   6 Rblti::BorderPoints
 #   5 Rblti::Channel32
+#   5 Rblti::PointList
+#   5 Rblti::List_areaPoints
 #   4 Rblti::Location
+#   3 std::vector<areaPoints >
+#   3 std::list<vector<float > >
 #   3 Rblti::IoPoints
 #   3 std::map<std::string,double >
-#   3 std::vector<areaPoints >
 #   3 Matrix<rgbPixel >
-#   3 std::list<vector<float > >
-#   2 std::vector<geometricFeatureGroup0 >
-#   2 tree<objectStruct >
-#   2 int (*)(int const &,int const &,int const &)
-#   2 kdTree<rgbPixel,int >
-#   2 std::list<ioPoints >
-#   2 std::vector<std::vector<geometricFeatureGroup0 > >
 #   2 int (*)(int const &,int const &)
+#   2 tree<objectStruct >
+#   2 CholeskyDecomposition_parameters::eTriangularType
+#   2 std::vector<rectangle >
+#   2 Rblti::List_borderPoints
+#   2 int (*)(int const &,int const &,int const &)
+#   2 std::vector<geometricFeatureGroup0 >
+#   2 std::vector<matrix<float > >
+#   2 std::vector<std::vector<geometricFeatureGroup0 > >
+#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
 #   2 double (*)(double const &,double const &)
-#   2 std::list<borderPoints >
+#   2 double (*)(double const &,double const &,double const &)
 #   2 std::vector<std::vector<rectangle > >
 #   2 ubyte (*)(unsigned char const &,unsigned char const &)
-#   2 std::vector<matrix<float > >
-#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
-#   2 std::vector<rectangle >
-#   2 double (*)(double const &,double const &,double const &)
-#   2 CholeskyDecomposition_parameters::eTriangularType
-#   1 DrgbPixel
-#   1 std::list<channel >
+#   2 Rblti::List_ioPoints
+#   2 kdTree<rgbPixel,int >
 #   1 Rblti::Irect
+#   1 principalComponents<float >
 #   1 TpolygonPoints<double >
 #   1 TpolygonPoints<float >
-#   1 TpointList<double >
+#   1 std::list<channel >
 #   1 TpointList<float >
-#   1 principalComponents<float >
 #   1 TrgbPixel<float >
+#   1 DrgbPixel
+#   1 TpointList<double >
