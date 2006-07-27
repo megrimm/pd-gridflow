@@ -820,62 +820,8 @@ EigenSystem.forms = [
 [In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
-# 206 Rblti::Channel8
-# 169 Rblti::Channel
-# 163 Rblti::Image
-# 101 Rblti::Float
-#  86 Rblti::Imatrix
-#  75 Rblti::Fmatrix
-#  66 Rblti::Ubyte
-#  46 Rblti::RgbPixel
-#  40 Rblti::Umatrix
-#  30 Rblti::Palette
-#  23 Rblti::Dmatrix
-#  20 Rblti::Ivector
-#  20 Rblti::Fvector
-#  18 Rblti::Dvector
-#  12 Rblti::Uvector
-#  11 bool
-#   9 Rblti::AreaPoints
-#   9 Vector<trgbPixel<float > >
-#   8 Tpoint<float >
-#   7 Rblti::PolygonPoints
-#   7 Rblti::Integer
-#   7 Rblti::Double
-#   6 std::list<location >
-#   6 std::list<dvector >
-#   6 Rblti::BorderPoints
-#   5 Rblti::Channel32
-#   5 Rblti::PointList
-#   5 Rblti::List_areaPoints
-#   4 Rblti::Location
-#   3 std::vector<areaPoints >
-#   3 std::list<vector<float > >
-#   3 Rblti::IoPoints
-#   3 std::map<std::string,double >
-#   3 Matrix<rgbPixel >
-#   2 int (*)(int const &,int const &)
-#   2 tree<objectStruct >
-#   2 CholeskyDecomposition_parameters::eTriangularType
-#   2 std::vector<rectangle >
-#   2 Rblti::List_borderPoints
-#   2 int (*)(int const &,int const &,int const &)
-#   2 std::vector<geometricFeatureGroup0 >
-#   2 std::vector<matrix<float > >
-#   2 std::vector<std::vector<geometricFeatureGroup0 > >
-#   2 ubyte (*)(unsigned char const &,unsigned char const &,unsigned char const &)
-#   2 double (*)(double const &,double const &)
-#   2 double (*)(double const &,double const &,double const &)
-#   2 std::vector<std::vector<rectangle > >
-#   2 ubyte (*)(unsigned char const &,unsigned char const &)
-#   2 Rblti::List_ioPoints
-#   2 kdTree<rgbPixel,int >
-#   1 Rblti::Irect
-#   1 principalComponents<float >
-#   1 TpolygonPoints<double >
-#   1 TpolygonPoints<float >
-#   1 std::list<channel >
-#   1 TpointList<float >
-#   1 TrgbPixel<float >
-#   1 DrgbPixel
-#   1 TpointList<double >
+begin
+Jacobi.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
