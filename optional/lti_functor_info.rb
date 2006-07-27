@@ -170,9 +170,9 @@ puts termin if $init
 #text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
 #gets
 
-$stats.keys.sort_by{|k|-$stats[k]}.each {|k|
-  printf "\# %3d %s\n", $stats[k], k
-}
+#$stats.keys.sort_by{|k|-$stats[k]}.each {|k|
+#  printf "\# %3d %s\n", $stats[k], k
+#}
 
 =begin
  bool
