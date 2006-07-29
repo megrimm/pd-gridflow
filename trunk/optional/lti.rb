@@ -533,6 +533,7 @@ class LTIGridObject < GridObject
     def pd_properties canvas
       # cid = ".x%x"%(4*canvas)
       wid = ".x%x"%(4*self.object_id)
+      wid.gsub!(/\.\.f/,"")
       fc = self.class.functor_class
       GridFlow.bind self,wid
       GridFlow.gui %{
