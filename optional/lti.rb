@@ -458,6 +458,7 @@ class LTIGridObject < GridObject
       when Channel8;  send_out_lti_umatrix o,m,true;  when Umatrix; send_out_lti_umatrix o,m,false
       when Channel32; send_out_lti_imatrix o,m,true;  when Imatrix; send_out_lti_imatrix o,m,false
       when Channel;   send_out_lti_fmatrix o,m,true;  when Fmatrix; send_out_lti_fmatrix o,m,false
+      when Fvector; send_out_lti_fvector o,m
       when Image;   send_out_lti_image   o,m
       when Palette; send_out_lti_palette o,m
       when Irect;   send_out_lti_rect    o,m
@@ -508,25 +509,26 @@ class LTIGridObject < GridObject
 	send_out_grid_begin o,[2,2]#,@out_nt
 	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
     end
+    def send_out_lti_fvector o,m
+        dim=[m.size]
+	send_out_grid_begin o,dim, :float32
+	send_out_grid_flow_3 o, m.size, m.meat, :float32
+    end
     def send_out_lti_double o,m
 	send_out_grid_begin o, [], :float64
 	send_out_grid_flow o, [m.val].pack("d"), :float64
-	#send_out o, m.val
     end
     def send_out_lti_float o,m
 	send_out_grid_begin o, [], :float32
 	send_out_grid_flow o, [m.val].pack("f"), :float32
-	#send_out o, m.val
     end
     def send_out_lti_int o,m
 	send_out_grid_begin o, [], :int32
 	send_out_grid_flow o, [m.val].pack("I"), :int32
-	#send_out o, m.val
     end
     def send_out_lti_ubyte o,m
 	send_out_grid_begin o, [], :uint8
 	send_out_grid_flow o, [m.val].pack("C"), :uint8
-	#send_out o, m.val
     end
     def pd_properties canvas
       # cid = ".x%x"%(4*canvas)
