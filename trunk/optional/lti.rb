@@ -349,8 +349,8 @@ class LTIGridObject < GridObject
              GridFlow.post "Needs to resize!!" if $lti_debug
           end
         when Umatrix,Channel8, Imatrix,Channel32, Fmatrix,Channel
-	  dim.length!=3 and raise "expecting 3 dims (rows,columns,channels) but got #{dim.inspect}"
-	  dim[2]!=1 and raise "expecting 1 channel, got #{dim.inspect}"
+	  (dim.length==3 and dim[2]==1) or dim.length==2 or \
+		raise "expecting 3 dims (rows,columns,1) or 2 dims (rows,columns) but got #{dim.inspect}"
           case @stuffs[slot]
 	  when Fmatrix,Channel; nt==:float32 or raise "wanted float32"
 	  end
