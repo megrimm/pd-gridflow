@@ -18,7 +18,7 @@ RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'
 RINC = -I $(RDIR1)
 
 SWIGFLAGS = -v
-CFLAGS += -Wall -fPIC
+CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
 
 default:: ruby
 
@@ -46,7 +46,7 @@ pylti_wrap.cxx: ./swig/pylti.i
 ruby:: rblti.so
 	ruby -I. testrblti.rb
 
-rblti.so: rblti_wrap.o Makefile alt_types.o
+rblti.so: rblti_wrap.o alt_types.o
 	$(CXX) -shared -fPIC -o rblti.so alt_types.o rblti_wrap.o $(LIBS) -lstdc++
 
 rblti_wrap.o: rblti_wrap.cxx
