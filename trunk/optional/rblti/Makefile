@@ -4,13 +4,11 @@ include ../../config.make
 
 #!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
 
- LTIPREFIX = /usr/local
+LTIPREFIX = /usr/local
 #LTIPREFIX = /home/matju
 
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg
-# INCS = -I$(LTIPREFIX)/include/ltilib
-# INCS = -I. -I$(LTIPREFIX)/include/ltilib -I.
-INCS = -Iinclude
+INCS = -I$(LTIPREFIX)/include/ltilib
 
 PINC = -I/usr/include/python
 RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'`
@@ -21,11 +19,6 @@ SWIGFLAGS = -v
 CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
 
 default:: ruby
-
-include:
-	mkdir include
-	cp $(LTIPREFIX)/include/ltilib/* include
-	cp -f ltiEigenSystem.h ltiEigenSystemBase.h include
 
 python:: _pylti.so
 	python -c 'import pylti'
@@ -55,7 +48,7 @@ rblti_wrap.o: rblti_wrap.cxx
 rblti_wrap.s: rblti_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S rblti_wrap.cxx
 
-rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o include
+rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
