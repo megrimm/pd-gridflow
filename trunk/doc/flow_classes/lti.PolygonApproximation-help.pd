@@ -1,0 +1,18 @@
+#N canvas 457 295 551 300 10;
+#X msg 82 120 get;
+#X msg 82 98 help;
+#X obj 150 52 #t;
+#X obj 151 169 display;
+#X obj 165 78 display;
+#X msg 150 26 1 8 # 1 1 1 100 100 100 100 1;
+#X msg 165 113 maxDistance 505.5;
+#X obj 150 145 lti.PolygonApproximation 0;
+#X msg 299 113 minStep 1;
+#X connect 0 0 7 0;
+#X connect 1 0 7 0;
+#X connect 2 0 4 0;
+#X connect 2 0 7 0;
+#X connect 5 0 2 0;
+#X connect 6 0 7 0;
+#X connect 7 0 3 0;
+#X connect 8 0 7 0;
