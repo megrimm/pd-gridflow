@@ -10,6 +10,13 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.20  2006/08/01 22:04:25  heri
+//  math.i is included before segmentation.i for eigenSystem functors to work.
+//
+//  Receiving and Sending PointLists now work.
+//  Pointlists are converted to 1xn grids following gridflow's convention:
+//  y1 x1 y2 x2 y3 x3 ...
+//
 //  Revision 1.19  2006/07/27 00:01:47  heri
 //  OOPS
 //
@@ -438,24 +445,29 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
     }
     
     void to_matrix(lti::matrix<int> &result){
-        if (((result.size()).y != self->size()) || (2 != (result.size()).x))
-           result.resize(self->size(),2);
+        if (((result.size()).x*2 != self->size()) || (1 != (result.size()).y))
+           result.resize(1,2*self->size());
      
         std::list<lti::tpoint<int> >::const_iterator iter = self->begin() ;
-        for(int j=0; iter != self->end(); iter++, j++)
+        for(int j=0; iter != self->end(); iter++, j=j+2)
         {
-           result.at(j,0)=(*iter).y;
-           result.at(j,1)=(*iter).x;
+           result.at(0,j)=(*iter).y;
+           result.at(0,j+1)=(*iter).x;
         }
     }
     
     void fill(const lti::matrix<int> &source){
         if (0 != self->size())
            self->erase(self->begin(), self->end());
-
         int sz = (source.size()).y;
-        for(int j=0; j< sz ; j++)
-           self->push_back(lti::tpoint<int>(source.at(j,0), source.at(j,1)));
+        if (1 != sz)
+        {
+           printf("Pointlist: expected 1 row in matrix but got %d\n", sz);
+           exit (1);
+        }
+        sz = (source.size()).x;
+        for(int j=0; j< sz ; j=j+2)
+           self->push_back(lti::tpoint<int>(source.at(0,j+1), source.at(0,j)));
     }
     
     lti::tpoint<T> at(int pos){
@@ -647,6 +659,7 @@ typedef lti::location location;
 %include io.i    
 %include statistics.i    
 %include filters.i
+%include math.i
 %include mask_op.i
 %include colors.i    
 %include segmentation.i    
@@ -671,7 +684,6 @@ typedef lti::location location;
 %include manipulation.i    
 %include classifiers.i
 %include colorspaces.i
-%include math.i
 %include drawing.i
 
 ////TODO: add better tree support !!!
