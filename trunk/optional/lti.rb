@@ -164,6 +164,7 @@ class LTI<FObject; install "lti",1,1
     when "float"; datum.to_f
     when "int";   datum.to_i
     when "bool";  datum.to_i!=0
+    when "double"; datum.to_f
     else raise "LTI.from_pd can't convert #{datum}, a #{datum.class}, to type '#{tipe}'"
     end
   end
@@ -366,15 +367,20 @@ class LTIGridObject < GridObject
           dim.length!=0 and raise "expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect}"
           case @stuffs[slot]
           when Rblti::Ubyte
-             nt==:uint8 or raise "wanted uint8"
+             nt==:uint8 or raise "wanted uint8 scalar"
           when Rblti::Integer
-             nt==:int32 or raise "wanted int32"
+             nt==:int32 or raise "wanted int32 scalar"
           when Rblti::Float
-             nt==:float32 or raise "wanted float32, received #{nt}"
+             nt==:float32 or raise "wanted float32 scalar, received #{nt}"
           when Rblti::Double
-             nt==:float64 or raise "wanted float64"
+             nt==:float64 or raise "wanted float64 scalar"
           end
-        else raise "don't know how to validate a #{st.class} for inlet #{inlet}"
+        when PointList
+          dim.size==2 or raise "expecting 2 dims (rows, columns) but got #{dim.inspect}"
+          if not ((dim[0]==1) and ((dim[1].modulo 2)==0))
+             raise "Invalid Pointlist, number of rows is not 1 or number of columns is not even"
+          end
+        else raise "don't know how to validate a #{@stuffs[slot].class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
 	@nts[   slot] = nt
@@ -393,7 +399,7 @@ class LTIGridObject < GridObject
 	when Fmatrix,  Channel; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
 	when Image            ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
         when PointList
-           tmp=Imatrix.new(Ipoint.new(dim[1], dim[0]))
+           tmp=Imatrix.new(Ipoint.new(dim[1], 1))
            LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,tmp.meat,:uint8
            GridFlow.post "Pointlist, Grid received size x:%d, y:%d", dim[1], dim[0]
            st.fill tmp
@@ -469,7 +475,7 @@ class LTIGridObject < GridObject
       when Rblti::PointList
           n = Imatrix.new(Ipoint.new(2, m.size))
           m.to_matrix(n)
-          send_out_lti_imatrix o,n
+          send_out_lti_imatrix o,n,false
       else raise "don't know how to send_out a #{m.class}"
       end
     end
