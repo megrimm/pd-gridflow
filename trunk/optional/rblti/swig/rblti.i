@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.21  2006/08/02 18:13:01  heri
+//  Pointlists in nx2 grids format.
+//
 //  Revision 1.20  2006/08/01 22:04:25  heri
 //  math.i is included before segmentation.i for eigenSystem functors to work.
 //
@@ -443,33 +446,35 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
         ++(*pIter);
         return aPointOut;
     }
-    
+
+    //fills result with the content of the pointlist
     void to_matrix(lti::matrix<int> &result){
-        if (((result.size()).x*2 != self->size()) || (1 != (result.size()).y))
-           result.resize(1,2*self->size());
-     
+        if (((result.size()).y != self->size()) || (2 != (result.size()).x))
+           result.resize(self->size(),2);
+
         std::list<lti::tpoint<int> >::const_iterator iter = self->begin() ;
-        for(int j=0; iter != self->end(); iter++, j=j+2)
+        for(int j=0; iter != self->end(); iter++, j++)
         {
-           result.at(0,j)=(*iter).y;
-           result.at(0,j+1)=(*iter).x;
+           result.at(j,0)=(*iter).y;
+           result.at(j,1)=(*iter).x;
         }
     }
-    
+
+    //Fills the pointlist with the content of source
     void fill(const lti::matrix<int> &source){
         if (0 != self->size())
            self->erase(self->begin(), self->end());
-        int sz = (source.size()).y;
-        if (1 != sz)
+        int sz = (source.size()).x;
+        if (2 != sz)
         {
-           printf("Pointlist: expected 1 row in matrix but got %d\n", sz);
+           printf("Pointlist: expected 2 columns in matrix but got %d\n", sz);
            exit (1);
         }
-        sz = (source.size()).x;
-        for(int j=0; j< sz ; j=j+2)
-           self->push_back(lti::tpoint<int>(source.at(0,j+1), source.at(0,j)));
+        sz = (source.size()).y;
+        for(int j=0; j< sz ; j++)
+           self->push_back(lti::tpoint<int>(source.at(j,1), source.at(j,0)));
     }
-    
+
     lti::tpoint<T> at(int pos){
         std::list<lti::tpoint<T> >::const_iterator iter = self->begin() ;
         int sz = self->size();

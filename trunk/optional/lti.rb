@@ -377,9 +377,7 @@ class LTIGridObject < GridObject
           end
         when PointList
           dim.size==2 or raise "expecting 2 dims (rows, columns) but got #{dim.inspect}"
-          if not ((dim[0]==1) and ((dim[1].modulo 2)==0))
-             raise "Invalid Pointlist, number of rows is not 1 or number of columns is not even"
-          end
+          raise "Invalid Pointlist, number of columns is not 2" unless dim[1]==2
         else raise "don't know how to validate a #{@stuffs[slot].class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
@@ -399,9 +397,9 @@ class LTIGridObject < GridObject
 	when Fmatrix,  Channel; LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,st.meat,:uint8
 	when Image            ; LTIGridObject::  ImageBP.pack3 dim[0]*dim[1]  ,data.meat,st.meat,nt
         when PointList
-           tmp=Imatrix.new(Ipoint.new(dim[1], 1))
+           tmp=Imatrix.new(Ipoint.new(2,dim[0]))
            LTIGridObject::UmatrixBP.pack3 dim[0]*dim[1]*4,data.meat,tmp.meat,:uint8
-           GridFlow.post "Pointlist, Grid received size x:%d, y:%d", dim[1], dim[0]
+           #GridFlow.post "Pointlist, Grid received size x:%d, y:%d", dim[1], dim[0]
            st.fill tmp
         when Irect
           d = data.unpack("I4")
