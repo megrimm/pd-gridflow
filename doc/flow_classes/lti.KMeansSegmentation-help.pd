@@ -1,138 +1,114 @@
-#N canvas 78 47 658 551 10;
+#N canvas 216 54 658 551 10;
 #X obj -16 3 cnv 15 653 30 empty empty empty 20 12 0 14 -233017 -355
 0;
 #X obj -16 520 cnv 15 653 30 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X text -9 527 GridFlow 0.8.2;
 #X obj -16 37 cnv 15 653 15 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text -4 36 lti.KMeansSegmentation;
-#X msg 18 269 help;
-#X msg 16 243 get;
-#X obj 29 170 #in;
+#X msg 68 224 help;
+#X obj 29 146 #in;
 #X obj 4 87 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X obj 90 400 #store;
-#X obj 29 122 t b b;
-#X obj 90 449 fps detailed;
-#X obj 90 469 print fps;
+#X obj 29 400 #store;
+#X obj 29 438 fps detailed;
+#X obj 29 457 print fps;
 #X obj 29 84 metro 100;
-#X obj 29 60 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
-#X text 207 373 transforms an Imatrix array (grid dim(y \, x));
-#X text 184 386 into a (grid dim(y \, x \, channel);
-#X msg 58 144 open babbage.jpg;
-#X text 148 401 <-- applies the palette to the image \, paint by number
+#X obj 29 60 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X text 87 401 <-- applies the palette to the image \, paint by number
 style;
 #X text -2 7 GridFlow::Rblti;
-#X obj 297 70 cnv 15 340 210 empty empty empty 20 12 0 14 -249661 -66577
-0;
-#X msg 316 249 smoothFilter \$1;
-#X msg 316 221 quantparameters \$1;
-#X obj 317 87 hsl 128 15 0 127 0 0 kernelSize empty kernelSize -2 -6
-0 12 -262144 -1 -1 0 1;
-#X obj 458 87 nbx 5 14 -1e+37 1e+37 0 0 empty kernelSize empty 0 -6
-0 10 -262144 -1 -1 0 256;
-#N canvas 208 0 450 300 parameters 0;
-#X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
-#X obj 149 231 s param;
-#X floatatom 135 53 5 0 0 0 numberOfColors numberOfColors -;
-#X floatatom 135 77 5 0 0 0 thresholdDeltaPalette thresholdDeltaPalette
--;
-#X floatatom 135 110 5 0 0 0 kernelSize maximalNumberOfIterations -
+#X text 202 285 outlet0 outputs the Imatrix (the image with coded info
 ;
-#X msg 197 23 kernelSize \$1;
-#X msg 194 51 numberOfColors \$1;
-#X msg 194 77 thresholdDeltaPalette \$1;
-#X msg 193 108 maximalNumberOfIterations \$1;
-#X connect 0 0 5 0;
-#X connect 2 0 6 0;
-#X connect 3 0 7 0;
-#X connect 4 0 8 0;
-#X connect 5 0 1 0;
-#X connect 6 0 1 0;
-#X connect 7 0 1 0;
-#X connect 8 0 1 0;
-#X restore 458 473 pd parameters;
-#X obj 317 121 hsl 128 15 0 127 0 0 numberOfColors empty numberOfColors
--2 -6 0 12 -262144 -1 -1 0 1;
-#X obj 317 156 hsl 128 15 0 127 0 0 thresholdDeltaPalette empty thresholdDeltaPalette
--2 -6 0 12 -262144 -1 -1 0 1;
-#X obj 458 156 nbx 5 14 -1e+37 1e+37 0 0 empty thresholdDeltaPalette
-empty 0 -6 0 10 -262144 -1 -1 0 256;
-#X obj 317 194 hsl 128 15 0 127 0 0 maximalNumberOfIerations empty
-maximalNumberOfIerations -2 -6 0 12 -262144 -1 -1 0 1;
-#X obj 458 194 nbx 5 14 -1e+37 1e+37 0 0 empty maximalNumberOfIerations
-empty 0 -6 0 10 -262144 -1 -1 0 256;
-#N canvas 0 0 450 300 parameters_get 0;
-#X floatatom 135 25 5 0 0 0 kernelSize kernelSize -;
-#X obj 149 231 s param;
-#X floatatom 135 53 5 0 0 0 numberOfColors numberOfColors -;
-#X floatatom 135 77 5 0 0 0 thresholdDeltaPalette thresholdDeltaPalette
--;
-#X floatatom 135 110 5 0 0 0 kernelSize maximalNumberOfIterations -
+#X text 202 299 for the colors that corresponds to the palette);
+#X text 202 315 outlet1 outputs the palette \, try both with ->;
+#X obj 29 277 lti.KMeansSegmentation 2;
+#X obj 36 247 r param;
+#X obj 55 171 #out window \, title original;
+#X obj 29 419 #out window \, title segmented;
+#N canvas 17 44 728 300 params 0;
+#X obj 12 12 cnv 15 196 196 empty empty lti.KMeansSegmentation.param
+2 8 0 11 -233017 -99865 0;
+#X msg 11 251 smoothFilter \$1;
+#X msg 11 232 quantparameters \$1;
+#X obj 19 43 hsl 128 15 0 127 0 0 \$0-kernelSize \$0-kernelSize kernelSize
+-2 -6 1 9 -262144 -1 -1 500 1;
+#X obj 151 43 nbx 5 15 -1e+37 1e+37 0 0 \$0-kernelSize \$0-kernelSize
+empty 0 -6 0 10 -262144 -1 -1 5 256;
+#X obj 19 75 hsl 128 15 0 127 0 0 \$0-numberOfColors empty numberOfColors
+-2 -6 1 9 -262144 -1 -1 0 1;
+#X obj 19 107 hsl 128 15 0 127 0 0 \$0-thresholdDeltaPalette \$0-thresholdDeltaPalette
+thresholdDeltaPalette -2 -6 1 9 -262144 -1 -1 20 1;
+#X obj 151 107 nbx 5 15 -1e+37 1e+37 0 0 \$0-thresholdDeltaPalette
+\$0-thresholdDeltaPalette empty 0 -6 0 10 -262144 -1 -1 0.2 256;
+#X obj 19 140 hsl 128 15 0 127 0 0 \$0-maximalNumberOfIterations \$0-maximalNumberOfIterations
+maximalNumberOfIterations -2 -6 1 9 -262144 -1 -1 5000 1;
+#X obj 151 140 nbx 5 15 -1e+37 1e+37 0 0 \$0-maximalNumberOfIterations
+\$0-maximalNumberOfIterations empty 0 -6 0 10 -262144 -1 -1 50 256
 ;
-#X msg 197 23 kernelSize \$1;
-#X msg 194 51 numberOfColors \$1;
-#X msg 194 77 thresholdDeltaPalette \$1;
-#X msg 193 108 maximalNumberOfIterations \$1;
-#X floatatom -3 338 5 0 0 0 - - -;
-#X floatatom 88 338 5 0 0 0 - - -;
-#X floatatom 180 337 5 0 0 0 - - -;
-#X obj 15 298 route kernelSize numberOfColors thresholdDeltaPalette
-maximalNumberOfIterations;
-#X floatatom 271 338 5 0 0 0 - - -;
-#X obj 18 260 r parameters_get;
-#X connect 0 0 5 0;
-#X connect 2 0 6 0;
-#X connect 3 0 7 0;
-#X connect 4 0 8 0;
-#X connect 5 0 1 0;
-#X connect 6 0 1 0;
-#X connect 7 0 1 0;
-#X connect 8 0 1 0;
-#X connect 12 0 9 0;
-#X connect 12 1 10 0;
-#X connect 12 2 11 0;
-#X connect 12 3 13 0;
-#X connect 14 0 12 0;
-#X restore 458 493 pd parameters_get;
-#X obj 249 334 s parameters_get;
-#X obj 238 354 print attributes;
-#X text 519 98 smaller than the;
-#X text 520 85 <-- needs to be;
-#X text 519 112 image height;
-#X text 459 223 <-- these belong to;
-#X text 459 239 unsupported classes;
-#X text 263 285 outlet0 outputs the Imatrix (the image with coded info
-;
-#X text 263 299 for the colors that corresponds to the palette);
-#X text 263 315 outlet1 outputs the palette \, try both with ->;
-#X obj 90 223 #out window;
-#X obj 5 142 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
--1;
-#X obj 90 425 #out window;
-#X obj 90 277 lti.KMeansSegmentation 2;
-#X msg 70 173 open litmus.jpg;
-#X obj 75 197 #scale_by 1;
-#X obj 97 247 r param;
-#X connect 5 0 45 0;
-#X connect 6 0 45 0;
-#X connect 7 0 45 0;
-#X connect 7 0 47 0;
-#X connect 8 0 10 0;
-#X connect 9 0 44 0;
-#X connect 10 0 7 0;
-#X connect 10 1 17 0;
-#X connect 11 0 12 0;
-#X connect 13 0 10 0;
-#X connect 14 0 13 0;
-#X connect 17 0 7 0;
-#X connect 43 0 7 0;
-#X connect 44 0 11 0;
-#X connect 45 0 9 0;
-#X connect 45 1 9 1;
-#X connect 45 2 32 0;
-#X connect 45 2 33 0;
-#X connect 46 0 7 0;
-#X connect 47 0 42 0;
-#X connect 48 0 45 0;
+#X text 211 55 smaller than the;
+#X text 212 43 <-- needs to be;
+#X text 211 67 image height;
+#X obj 340 10 inlet;
+#X text 9 214 unsupported:;
+#X msg 340 48 \$1;
+#X obj 340 29 t a a;
+#X obj 379 67 rubysprintf \$0-%s;
+#X msg 379 48 symbol \$1;
+#X obj 379 29 list prepend;
+#X msg 340 111 \; \$2 \$1;
+#X obj 340 92 pack f s;
+#X obj 151 75 nbx 5 15 -1e+37 1e+37 0 0 \$0-numberOfColors \$0-numberOfColors
+empty 0 -6 0 10 -262144 -1 -1 256 256;
+#X obj 236 162 r \$0-kernelSize;
+#X msg 236 181 kernelSize \$1;
+#X obj 345 162 r \$0-numberOfColors;
+#X msg 345 181 numberOfColors \$1;
+#X obj 482 162 r \$0-thresholdDeltaPalette;
+#X msg 482 181 thresholdDeltaPalette \$1;
+#X obj 264 276 outlet;
+#X msg 264 257 get;
+#X obj 264 238 loadbang;
+#X obj 414 220 r \$0-maximalNumberOfIterations;
+#X msg 414 239 maximalNumberOfIterations \$1;
+#X connect 13 0 16 0;
+#X connect 15 0 21 0;
+#X connect 16 0 15 0;
+#X connect 16 1 19 0;
+#X connect 17 0 21 1;
+#X connect 18 0 17 0;
+#X connect 19 0 18 0;
+#X connect 21 0 20 0;
+#X connect 23 0 24 0;
+#X connect 24 0 29 0;
+#X connect 25 0 26 0;
+#X connect 26 0 29 0;
+#X connect 27 0 28 0;
+#X connect 28 0 29 0;
+#X connect 30 0 29 0;
+#X connect 31 0 30 0;
+#X connect 32 0 33 0;
+#X connect 33 0 29 0;
+#X coords 0 -1 1 1 200 200 1 10 10;
+#X restore 327 61 pd params;
+#X obj 29 346 #outer ignore (0);
+#X text -9 527 GridFlow 0.8.4;
+#X text 154 346 transforms a grid of size dim(y \, x) to size dim(y
+\, x \, 1);
+#X msg 29 127 load babbage.jpg;
+#X connect 4 0 17 0;
+#X connect 5 0 17 0;
+#X connect 5 0 19 0;
+#X connect 6 0 25 0;
+#X connect 7 0 20 0;
+#X connect 8 0 9 0;
+#X connect 10 0 25 0;
+#X connect 11 0 10 0;
+#X connect 17 0 22 0;
+#X connect 17 1 7 1;
+#X connect 17 2 21 0;
+#X connect 18 0 17 0;
+#X connect 20 0 8 0;
+#X connect 21 0 17 0;
+#X connect 22 0 7 0;
+#X connect 25 0 5 0;
