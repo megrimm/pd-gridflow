@@ -1,0 +1,69 @@
+# $Id$
+
+include ../../config.make
+
+#!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
+
+LTIPREFIX = /usr/local
+#LTIPREFIX = /home/matju
+
+LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg
+INCS = -I$(LTIPREFIX)/include/ltilib
+
+PINC = -I/usr/include/python
+RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'`
+RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
+RINC = -I $(RDIR1)
+
+SWIGFLAGS = -v
+CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
+
+default:: ruby
+
+python:: _pylti.so
+	python -c 'import pylti'
+	python testpylti.py lemur.jpeg
+
+_pylti.so: pylti_wrap.o Makefile
+	$(CXX) -shared -o _pylti.so pylti_wrap.o $(LIBS)
+
+pylti_wrap.o: pylti_wrap.cxx
+	$(CXX) $(CFLAGS) $(PINC) -Ipatched $(INCS) -c pylti_wrap.cxx
+
+pylti_wrap.cxx: ./swig/pylti.i
+	swig $(SWIGFLAGS) -c++ -python -DHAVE_LIBJPEG -DHAVE_LIBPNG -I./generated -I./patched \
+		$(INCS) -w509,-312,-362,-389  -o ./pylti_wrap.cxx ./swig/pylti.i
+	#swig -c++ -python -DHAVE_LIBJPEG -DHAVE_LIBPNG -I./generated_python -I./patched \
+	#	$(INCS) -w509,-312,-362,-389 pylti.i
+
+ruby:: ltimath.so
+	ruby -e 'require "ltimath"'
+
+ltimath.so: ltimath_wrap.o alt_types.o
+	$(CXX) -shared -fPIC -o ltimath.so alt_types.o ltimath_wrap.o $(LIBS) -lstdc++
+
+ltimath_wrap.o: ltimath_wrap.cxx
+	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c ltimath_wrap.cxx
+
+ltimath_wrap.s: ltimath_wrap.cxx
+	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S ltimath_wrap.cxx
+
+ltimath_wrap.cxx: ./swig/ltimath.i ./patched/* ./generated/* alt_types.o
+	echo $(CXX)
+	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
+	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./ltimath_wrap.cxx ./swig/ltimath.i
+	sed -i 's/int >>/int> >/' ltimath_wrap.cxx
+
+alt_types.o: ./src/alt_types.cpp
+	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
+
+
+clean::
+	rm -f \
+		_pylti.so pylti_wrap.o pylti_wrap.cxx \
+		ltimath.so ltimath_wrap.o ltimath_wrap.cxx
+
+install:: #ltimath.so
+	cp ltimath.so $(RDIR2)
+
