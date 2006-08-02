@@ -310,18 +310,18 @@ class LTIGridObject < GridObject
       if LTI.have_param[@funcname]
          return @param.__send__(sel.to_s) if sel
       end
-      no=self.class.noutlets
-      if sel==:form then send_out no-1, :form; return end
+      no=self.noutlets-1
+      if sel==:form then send_out no, :form; return end
       if sel!=nil then raise "unknown parameter '#{sel}'" end
       # here's the code to get ALL parameters (sel=nil)
       self.class.attrs.each_key {|sel|
         v=_0_get(sel)
         begin
           GridFlow.post "%s","#{sel} = #{v}"
-          send_out no-1, sel.intern, LTI.to_pd(v)
+          send_out no, sel.intern, LTI.to_pd(v)
 	rescue StandardError=>e
 	  GridFlow.post "%s", e.inspect
-	  send_out no-1, sel.intern, :some, v.class.to_s.intern
+	  send_out no, sel.intern, :some, v.class.to_s.intern
 	end
       }
       GridFlow.post"\n"
