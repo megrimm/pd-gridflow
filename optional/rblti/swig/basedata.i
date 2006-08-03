@@ -5,137 +5,13 @@
 //
 //  description:  python modul for ltilib (using SWIG)
 //
-//  $Source$
-//  $Revision$
-//  $Date$
-// 
-//  $Log$
-//  Revision 1.22  2006/08/03 22:40:30  heri
-//  Splitting compilation into several steps.
-//
-//  Revision 1.21  2006/08/02 18:13:01  heri
-//  Pointlists in nx2 grids format.
-//
-//  Revision 1.20  2006/08/01 22:04:25  heri
-//  math.i is included before segmentation.i for eigenSystem functors to work.
-//
-//  Receiving and Sending PointLists now work.
-//  Pointlists are converted to 1xn grids following gridflow's convention:
-//  y1 x1 y2 x2 y3 x3 ...
-//
-//  Revision 1.19  2006/07/27 00:01:47  heri
-//  OOPS
-//
-//  Revision 1.18  2006/07/26 23:41:58  heri
-//  Conversion between grids and pPointlList, plus another helper method.
-//  Swapped two large blocks of code, this will show up in the number of modified lines.
-//
-//  Revision 1.17  2006/07/26 14:49:12  matju
-//  added eigenSystem etc (don't work)
-//
-//  Revision 1.16  2006/07/24 18:48:36  heri
-//  Added cityBlockKernel templates.
-//  Available versions are UcityBlockKernel, IcityBlockKernel, FcityBlockKernel, DcityBlockKernel.
-//
-//  These kernels are useful for [lti.Erosion]
-//
-//  Revision 1.15  2006/07/13 04:34:50  matju
-//  meat pointer for palette
-//
-//  Revision 1.14  2006/07/12 17:55:46  heri
-//  Last one.
-//  Wrapper added for basic data types: float, int, ubyte .
-//     Required for passing arguments of this type to rblti functors.
-//
-//  Revision 1.13  2006/06/27 17:45:02  heri
-//  meat() for Fmatrix, Umatrix, Channel, Channel8, Channel32.
-//
-//  Revision 1.12  2006/06/21 14:28:53  heri
-//  Renamed Rect to Irect to be consistent with template naming convention.
-//
-//  Revision 1.11  2006/06/04 15:29:08  heri
-//  Support for LTI-lib 1.9.15
-//
-//  Revision 1.10  2006/05/26 02:27:26  heri
-//  Let's try this again
-//
-//  Revision 1.8  2006/04/25 22:44:41  heri
-//  Started renaming "subtract" methods
-//
-//  Revision 1.6  2006/04/06 21:31:35  heri
-//  Constructors with default pixel value for Image and Channel classes now
-//  work.
-//  e.g:  	image (const int &rows, const int &cols, const rgbPixel
-//  &iniValue=rgbPixel())
-//
-//  Revision 1.4  2006/03/04 18:08:24  matju
-//  added Imatrix.meat
-//
-//  Revision 1.3  2006/03/02 22:11:42  matju
-//  longs for pointers oughta be unsigned.
-//
-//  Revision 1.2  2006/03/02 21:55:32  matju
-//  fixed warnings.
-//  tried adding method "meat" to Image...
-//
-//  Revision 1.1  2006/02/25 23:43:56  matju
-//  0.33.1
-//
-//  Revision 1.16  2005/12/25 15:44:24  Michael
-//  splitted lti.i into different interface files.
-//
-//  Revision 1.15  2005/07/24 18:46:20  Michael
-//  added simple geometric operations for images
-//
-//  Revision 1.14  2005/07/04 20:02:11  Michael
-//  Cleaning up the code
-//
-//  Revision 1.13  2005/06/28 20:53:30  Michael
-//  Added new functors: cannyEdges and classifier
-//
-//  Revision 1.12  2005/06/20 19:25:53  Michael
-//  Support for colour space added.
-//
-//  Revision 1.11  2005/06/17 21:06:56  Michael
-//  Added and improved some %extend statements
-//
-//  Revision 1.10  2005/06/14 20:15:35  Michael
-//  Better template-support: %extend works also on templates, optimized typedeclaration sequence
-//
-//  Revision 1.9  2005/06/13 20:43:23  Michael
-//  Experiments for tree support.
-//
-//  Revision 1.8  2005/06/12 21:11:38  Michael
-//  Tests for the support for the tree.
-//
-//  Revision 1.7  2005/05/16 13:38:38  Michael
-//  Experimented with tree support. included lti_manual.cpp.
-//
-//  Revision 1.6  2005/05/01 10:40:12  Michael
-//  Added index-operator [] for generic vectors. Tests for support for trees.
-//
-//  Revision 1.5  2005/02/22 23:06:50  Michael
-//  Added more functors, improved classes with %extend command
-//
-//  Revision 1.4  2005/02/19 22:29:09  Michael
-//  Added some more functors and functions.
-//
-//  Revision 1.3  2005/02/14 22:16:38  Michael
-//  bugfix: swig has problems with %feature statement
-//
-//  Revision 1.2  2005/02/12 10:43:07  Michael
-//  generate an aditional doc strings and better support for inheritance of parameters classes
-//
-//  Revision 1.1.1.1  2005/02/09 21:41:11  Michael
-//  initial checkin
-//
-//
 //******************************************************************************
-//
-// generated swig-wrapper compiles only with VC++ 7.1 (.NET 2003), NOT with VC++ 6.0 ! 
-//
 
-%module rblti
+#ifndef SWIGIMPORTED
+%module basedata
+%import utils.i
+%include dep.i
+#endif
 
 %{
 #undef PACKAGE_NAME
@@ -157,8 +33,6 @@
 %include "std_list_ruby.i"
 #endif
 
-//%include "std_vector.i" 
-//%include "std_map.i"
 
 using namespace std;
 
@@ -168,24 +42,6 @@ using namespace std;
 std::string _getStdString(std::string * pStr);
 bool _setStdString(std::string * pStr, const std::string & strValue);
 
-// for the access to c arrays
-%include "carrays.i"
-%array_functions(float,floatArray)
-%array_functions(double,doubleArray)
-%array_functions(int,intArray)
-%array_class(float,floatArr)
-%array_class(double,doubleArr)
-%array_class(int,intArr)
-
-//test:
-//namespace std {
-//    %template(sdmap) map<string,double>;		// TODO: does not work yet ...
-//}
-//namespace std {
-//    %template(vectordouble) vector<double>;
-//}
-
-%import utils.i
 
 // **************************************************************************
 // some helper functions for the bindings
@@ -241,19 +97,6 @@ typedef signed short int MYINT16;
 typedef unsigned int MYUINT32;
 typedef signed int MYINT32;
 }
-//using namespace lti;
-//typedef lti::ubyte ubyte;
-//typedef lti::byte byte;
-//typedef lti::uint32 uint32;
-//typedef lti::int32 int32;
-//typedef lti::uint16 uint16;
-//typedef lti::int16 int16;
-//#define ubyte lti::ubyte
-//#define byte lti::byte
-//#define uint32 lti::uint32
-//#define int32 lti::int32
-//#define uint16 lti::uint16
-//#define int16 lti::int16
 %}
 #else
 // +++ wrapping of simple data types +++
@@ -270,34 +113,6 @@ typedef signed int int32;
 %{
 // now the namespace lti is known !
 #include "ltiTypes.h"
-//typedef lti::int32 int32;
-//typedef lti::uint32 uint32;
-//typedef lti::int16 int16;
-//typedef lti::uint16 uint16;
-//typedef lti::ubyte ubyte;
-//typedef lti::byte byte;
-/*
-namespace {
-using namespace lti;              // WORKING (12.1.2006) removing this statement for ruby support !
-typedef unsigned int uint32;
-typedef lti::ubyte ubyte;
-typedef lti::byte byte;
-}
-*/
-/*
-typedef unsigned int MYUINT32;
-typedef int MYINT32;
-typedef unsigned short int MYUINT16;
-typedef short int MYINT16;
-typedef unsigned char MYUBYTE;
-typedef signed char MYBYTE;
-#define byte MYBYTE
-#define ubyte MYUBYTE
-#define uint32 MYUINT32
-#define int32 MYINT32
-#define uint16 MYUINT16
-#define int16 MYINT16
-*/
 %}
 #endif
 HANDLE_SIMPLE_HEADER_FILE("ltiObject.h")
@@ -335,14 +150,11 @@ namespace lti {
 }
 
 
-//#ifndef SWIGRUBY
-//HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
-
-
+/*
 %wrapper %{
 namespace { using namespace lti;    // opening namespace using
 %}
-
+*/
 /*****************************************************************************/
 /*                          MATRIX  starts                                   */
 /*****************************************************************************/
@@ -496,9 +308,11 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
     namespace lti {
         %template(pointList) lti::tpointList<int>;
     }
+/*
 %wrapper %{
 }  // closing namespace using
 %}
+*/
 //#endif
 
 HANDLE_SIMPLE_HEADER_FILE("ltiLocation.h")
@@ -560,34 +374,10 @@ namespace lti{
 HANDLE_SIMPLE_HEADER_FILE("ltiImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiContour.h")
 
-/*
-#ifdef SWIGRUBY
-%include "ltiPointList.h"
-HANDLE_SIMPLE_HEADER_FILE("ltiContour.h")
-namespace lti {
-%template(tpointList_int) tpointList<int>;
-}
-#endif
-*/
 
-// TODO PATCH    
-//%include "_objectsFromMask_objectStruct.h"        // has to be included AFTER the definition of borderPoints !!!
-
-//#ifndef SWIGRUBY
-// TODO: ok: mit SWIG 1.3.21 !!! und SWIG 1.3.24 + VC7
 %template(list_ioPoints) std::list<lti::ioPoints>;
 %template(list_borderPoints) std::list<lti::borderPoints>;
 %template(list_areaPoints) std::list<lti::areaPoints>;
-//#endif
-    
-// TODO: add better tree support !
-//%include "ltiTree.h"
-//namespace lti {
-//    //%template(tree_objectStruct) tree<objectsFromMask_objectStruct>;    // does not work because of a syntactical difference to tree<objectStruct>, unforunately is swig not so clever to handel that :-(
-//    %template(tree_objectStruct) tree<objectStruct>;    
-//}
-////#define node tree_objectStruct_node
-//%include "_tree_node.h"
 
 HANDLE_SIMPLE_HEADER_FILE("ltiLinearKernels.h")
 namespace lti {
@@ -628,8 +418,6 @@ namespace lti {
 %template (dcityBlockKernel) cityBlockKernel<double>;
 }
 
-//HANDLE_SIMPLE_HEADER_FILE("ltiSplitImage.h")          // --> colors.i
-//HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageTorgI.h")
 
 %{
 //template <typename T> typedef lti::tpointList<T> tpointList<T>;     // kommt erst noch in der zukunft !
@@ -662,7 +450,7 @@ typedef lti::location location;
     
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++ now stats the wrapping of the ltilib functor header files +++
-
+/*
 %include base_functors.i
 %include io.i    
 %include statistics.i    
@@ -672,20 +460,6 @@ typedef lti::location location;
 %include colors.i    
 %include segmentation.i    
 %include edge_detectors.i
-//%{
-//typedef lti::thresholding thresholding;
-//typedef lti::nonMaximaSuppression nonMaximaSuppression;
-//// TODO template ! typedef lti::principalComponents principalComponents;
-//template <class T>
-//class principalComponents : lti::principalComponents<T>
-//{
-//};
-//// TODO template ! kdTree
-//template <class T1, class T2, class T3>
-//class kdTree : lti::kdTree<T1,T2,T3>
-//{
-//};
-//%}
 %include feat_extr.i    
 %include morph_op.i    
 %include transformations.i
@@ -693,14 +467,7 @@ typedef lti::location location;
 %include classifiers.i
 %include colorspaces.i
 %include drawing.i
-
-////TODO: add better tree support !!!
-////#define _tree tree
-//#define _tree_objectStruct_node node
-//#define _tree tree<objectStruct>
-//namespace lti {
-//typedef lti::tree<objectStruct>::node tree_objectStruct_node;
-//}
+*/
 
 
 // **************************************************************************
