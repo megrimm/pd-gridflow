@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/08/03 22:40:03  heri
+//  Splitting compilation into several steps
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -19,15 +22,17 @@
 //
 //
 //******************************************************************************
-
-//%include utils.i
+#ifndef SWIGIMPORTED
+#ifndef IMPORTMODE
+%module base_functors
+%include utils.i
+%include dep.i
+%import basedata.i
+#endif
+#endif
 
 // Base Classes    
 HANDLE_FUNCTOR_WITH_PARAMETERS( functor,                 "ltiFunctor.h")
-    %{
-    //typedef lti::functor::parameters functor_parameters;
-    %}
-    
 HANDLE_FUNCTOR_WITH_PARAMETERS( modifier,                "ltiModifier.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( filter,                  "ltiFilter.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( ioFunctor,               "ltiIOFunctor.h")
