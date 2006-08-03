@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/08/03 22:40:30  heri
+//  Splitting compilation into several steps.
+//
 //  Revision 1.2  2006/08/03 02:52:11  heri
 //  Forgot this. It should have been part of the previous commit.
 //
@@ -25,7 +28,7 @@
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 %define HANDLE_SIMPLE_HEADER_FILE(headername)
-%inline %{
+%{
 #include headername
 %}
 %include headername
@@ -81,9 +84,15 @@ typedef lti:: ## func_name ## ::parameters func_name ## _parameters;
 //--> %include "_skeleton_parameters.h"
 //--> %include "ltiSkeleton.h"
 //--> #undef parameters
+
 #define parameters func_name ## _parameters
+#ifdef IMPORTMODE
+%import _ ## func_name ## _parameters.h
+%import functor_header
+#else
 %include _ ## func_name ## _parameters.h
 %include functor_header
+#endif
 #undef parameters
 %enddef
 
