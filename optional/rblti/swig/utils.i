@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/08/03 02:52:11  heri
+//  Forgot this. It should have been part of the previous commit.
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -26,6 +29,13 @@
 #include headername
 %}
 %include headername
+%enddef
+
+%define IMPORT_SIMPLE_HEADER_FILE(headername)
+%inline %{
+#include headername
+%}
+%import headername
 %enddef
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -76,6 +86,24 @@ typedef lti:: ## func_name ## ::parameters func_name ## _parameters;
 %include functor_header
 #undef parameters
 %enddef
+
+
+%define IMPORT_FUNCTOR_WITH_PARAMETERS(func_name,functor_header)
+%{
+#include functor_header
+#define _ ## func_name func_name
+#define R ## func_name ## _parameters parameters
+namespace lti {
+typedef lti:: ## func_name ## ::parameters func_name ## _parameters;
+}
+%}
+#define parameters func_name ## _parameters
+%import _ ## func_name ## _parameters.h
+%import functor_header
+#undef parameters
+%enddef
+
+
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // with this macro we handle all the shifting of namespaces for the nested parameters classes
