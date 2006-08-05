@@ -567,8 +567,8 @@ XMLParserError = Exception if $use_rexml
 
 def harvest_doc_of_class xclass, v, way
 	STDERR.puts v.foreign_name
-	doc = case way; when:in:v.doc;   when:out:v.doc_out end
-	tag = case way; when:in:"inlet"; when:out:"outlet" end
+	doc = case way; when :in; v.doc;   when :out; v.doc_out end
+	tag = case way; when :in; "inlet"; when :out; "outlet" end
 	doc.keys.each {|sel|
 		text = doc[sel]
 		m=/^_(\d+)_(\w+)/.match sel.to_s
