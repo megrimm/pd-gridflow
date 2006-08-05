@@ -68,13 +68,16 @@ the actual releases are more tested.</p>
 <p><k>cvs update -dP</k></p>
 </section>
 
-<section name="Installation instructions (incl. compilation)">
-<list>
-<li>Install Ruby. Make sure it contains <k>ruby.h</k> and <k>intern.h</k> and related files. It's also
-recommended to have <k>libruby.so</k>. Those extra files may be in a package called <k>ruby-dev</k>
-if you are using RPM or DEB/FINK. If you are building Ruby yourself, it's better to configure ruby with
-<k>--enable-shared</k>. If you install into a system directory, you may have to run <k>ldconfig</k>
-after installing Ruby.</li>
+<section name="Installation instructions (incl. compilation)"> <list> <li>Install Ruby. Make sure it contains <k>ruby.h</k> and 
+<k>intern.h</k> and related files. It's also recommended to have <k>libruby.so</k>. Those extra files may be in a package called 
+<k>ruby-dev</k> if you are using RPM or DEB/FINK. If you are building Ruby yourself, it's better to configure ruby with 
+<k>--enable-shared</k>, else you won't have libruby.so (but you will still have libruby.a). If you need to have two Rubies at once, 
+for example Ruby 1.8 for running Rails and Ruby 1.9 for running GridFlow, you may build Ruby 1.9 with the option 
+<k>--program-suffix=19</k> which will help distinguish the two Rubies. It's also possible to have two Rubies installed without that 
+option, but it might be complicated.
+
+ If you install into a system directory, 
+you may have to run <k>ldconfig</k> after installing Ruby.</li>
 
 <li>Download GridFlow from the website and uncompress it, or get it from the CVS server.</li>
 
