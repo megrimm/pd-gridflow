@@ -200,7 +200,7 @@ def handle_def(line)
 	when "void"; Out.print "return Qnil;"
 	when "Ruby","Symbol","Array","String"; Out.print "return foo;"
 	else 
-		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
+#		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
 		Out.print "return R(foo).r;"
 	end
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
