@@ -186,7 +186,7 @@ end
 GridFlow.gui %q{
 ############ properties_dialog #########
 
-proc color_popup_select {self name c} {
+proc gf_color_popup_select {self name c} {
 	global _ preset_colors
 	set _($self:$name) $c
 	.$self.$name.color configure \
@@ -194,7 +194,7 @@ proc color_popup_select {self name c} {
 		-highlightbackground [format #%6.6x $_($self:$name)]
 }
 
-proc color_popup {self w name i} {
+proc gf_color_popup {self w name i} {
 	set w $w.$name.popup
 	if [winfo exists $w] {destroy $w}
 	menu $w -tearoff false
@@ -203,7 +203,7 @@ proc color_popup {self w name i} {
 		set c [lindex $preset_colors $i]
 		$w add command -label "     " \
 		-background "#$c" -foreground "#$c" \
-		-command [list color_popup_select $self $name [expr 0x$c]]
+		-command [list gf_color_popup_select $self $name [expr 0x$c]]
 	}
 	tk_popup $w \
 		[expr [winfo rootx .$self.$name]] \
@@ -218,17 +218,17 @@ proc iemgui_choose_col {id var title} {
     set color [tk_chooseColor -title $title \
 	    -initialcolor [format "#%6.6x" [expr $c&0xFFFFFF]]]
     if {$color != ""} {
-	color_popup_select $self $var [expr [string replace $color 0 0 "0x"]&0xFFFFFF]
+	gf_color_popup_select $self $var [expr [string replace $color 0 0 "0x"]&0xFFFFFF]
     }
 }
 
-proc change_entry {self val} {
+proc gf_change_entry {self val} {
 	set v [expr [$self get]+$val]
 	$self delete 0 end
 	$self insert 0 $v
 }
 
-proc properties_dialog {self w ok which struct} {
+proc gf_properties_dialog {self w ok which struct} {
     global _ look
     foreach {name label type options} $struct {
 		set f $w.$name
@@ -259,7 +259,7 @@ proc properties_dialog {self w ok which struct} {
 			-relief sunken -background [format #%6.6x $c] \
 			-highlightbackground       [format #%6.6x $c]
 		
-		button $f.preset -text "..." -pady 2 -font {Helvetica 8} -command [list color_popup $self $w $name $i]
+		button $f.preset -text "..." -pady 2 -font {Helvetica 8} -command [list gf_color_popup $self $w $name $i]
 		pack  $f.label $f.color $f.preset -side left
 	    }
 	    choice {
@@ -282,7 +282,7 @@ proc properties_dialog {self w ok which struct} {
 	    choice_color {
 		frame $f
 		pack [label $f.label -text $label] -side left
-		button $f.color_chooser -bg $look($name) -activebackground $look($name) -command "color_popup $f $look($name)" \
+		button $f.color_chooser -bg $look($name) -activebackground $look($name) -command "gf_color_popup $f $look($name)" \
 					-width 17 
 		pack $f.color_chooser -side left
 		
@@ -315,12 +315,12 @@ proc properties_dialog {self w ok which struct} {
 		switch -regexp -- $type {
 		    integer|float|fontsize {
 			frame $f.b -borderwidth 0
-			button $f.b.1 -image icon_uparrow   -command "change_entry $f.entry +1"
-			button $f.b.2 -image icon_downarrow -command "change_entry $f.entry -1"
+			button $f.b.1 -image icon_uparrow   -command "gf_change_entry $f.entry +1"
+			button $f.b.2 -image icon_downarrow -command "gf_change_entry $f.entry -1"
 			pack $f.b.1 $f.b.2 -side top
 			pack $f.b -side left
-			bind $f.entry <Button-4> "change_entry $f.entry +1"
-			bind $f.entry <Button-5> "change_entry $f.entry -1"
+			bind $f.entry <Button-4> "gf_change_entry $f.entry +1"
+			bind $f.entry <Button-5> "gf_change_entry $f.entry -1"
 		    }
 		    entry {}
 		    default {
