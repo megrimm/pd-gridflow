@@ -67,12 +67,17 @@ end
 
 GridFlow.gui %q{
 
+if {[info command post] == ""} {
+	proc post {x} {puts $x}
+}
+
 if {[catch {
 	# pd 0.37
 	menu .mbar.gridflow -tearoff $pd_tearoff
 	.mbar add cascade -label "GridFlow" -menu .mbar.gridflow
 	set gfmenu .mbar.gridflow
 }]} {
+	puts "GF TK ERROR: $@"
 	# pd 0.36
 	###the problem is that GridFlow.bind requires 0.37
 }
@@ -82,13 +87,10 @@ $gfmenu add command -label "profiler_reset" -command {pd "gridflow profiler_rese
 $gfmenu add command -label "formats"        -command {pd "gridflow formats;"}
 }
 
-if {[string length [info command post]] == 0} {
-	proc post {x} {puts $x}
-}
-
 # if not running Impd:
 if {[string length [info command listener_new]] == 0} {
 # start of part duplicated from Impd
+post HELLO
 proc listener_new {self name} {
 	global _
 	set _($self:hist) {}
@@ -159,10 +161,15 @@ proc ruby_eval {} {
 }
 
 if {[catch {
+	# DesireData
+	Listener new .ruby "Ruby" {ruby_eval}
+}]} elseif {[catch {
+	# ImpureData (new)
+	listener_new .ruby "Ruby" {ruby_eval}
+}]} else {
+	# ImpureData (old)
 	listener_new .ruby "Ruby"
 	bind .ruby.entry <Return> {ruby_eval}
-}]} {
-	listener_new .ruby "Ruby" {ruby_eval}
 }
 
 } # GridFlow.gui
