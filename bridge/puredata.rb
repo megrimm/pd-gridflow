@@ -133,7 +133,7 @@ proc listener_append {self v} {
 	set _($self:histi) [llength $_($self:hist)]
 }
 
-proc tcl_eval {} {
+proc gf_tcl_eval {} {
 	set l [.tcl.entry get]
 	post "tcl: $l"
 	post "returns: [eval $l]"
@@ -145,7 +145,7 @@ proc tcl_eval {} {
 }
 # end of part duplicated from Impd
 
-proc ruby_eval {} {
+proc gf_ruby_eval {} {
 	set l {}
 	foreach c [split [.ruby.entry get] ""] {lappend l [scan $c %c]}
 	pd "gridflow eval $l;"
@@ -155,15 +155,15 @@ proc ruby_eval {} {
 
 if {[catch {
 	# DesireData
-	Listener new .ruby "Ruby" {ruby_eval}
+	Listener new .ruby "Ruby" {gf_ruby_eval}
 }]} elseif {[catch {
 	# ImpureData (new)
-	listener_new .ruby "Ruby" {ruby_eval}
-	listener_new  .tcl "Tcl"   {tcl_eval}
+	listener_new .ruby "Ruby" {gf_ruby_eval}
+	listener_new  .tcl "Tcl"   {gf_tcl_eval}
 }]} else {
 	# ImpureData (old)
-	listener_new .ruby "Ruby"; bind .ruby.entry <Return> {ruby_eval}
-	listener_new .tcl  "Tcl" ; bind  .tcl.entry <Return>  {tcl_eval}
+	listener_new .ruby "Ruby"; bind .ruby.entry <Return> {gf_ruby_eval}
+	listener_new .tcl  "Tcl" ; bind  .tcl.entry <Return>  {gf_tcl_eval}
 }
 
 } # GridFlow.gui
