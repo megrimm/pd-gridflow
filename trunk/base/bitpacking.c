@@ -131,7 +131,7 @@ static void pack2_565(BitPacking *self, long n, T * in, uint8 * out) {
 }
 
 template <class T>
-static void pack3_888(BitPacking *self, long n, T * in, uint8 * out) {
+static void pack3_888(BitPacking *self, long n, T *in, uint8 *out) {
 	int32 * o32 = (int32 *)out;
 	while (n>=4) {
 		o32[0] = (in[5]<<24) | (in[ 0]<<16) | (in[ 1]<<8) | in[2];
@@ -141,6 +141,11 @@ static void pack3_888(BitPacking *self, long n, T * in, uint8 * out) {
 		n-=4;
 	}
 	out = (uint8 *)o32;
+	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
+}
+
+template <class T>
+static void unpack3_888(BitPacking *self, long n, uint8 *in, T *out) {
 	NTIMES( out[2]=in[0]; out[1]=in[1]; out[0]=in[2]; out+=3; in+=3; )
 }
 
@@ -213,11 +218,12 @@ static Packer bp_packers[] = {
 
 static Unpacker bp_unpackers[] = {
 	{default_unpack, default_unpack, default_unpack},
+	{unpack3_888,  unpack3_888,  unpack3_888},
 };	
 
 static BitPacking builtin_bitpackers[] = {
 	BitPacking(2, 2, 3, bp_masks[0], &bp_packers[1], &bp_unpackers[0]),
-	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[0]),
+	BitPacking(1, 3, 3, bp_masks[1], &bp_packers[2], &bp_unpackers[1]),
 	BitPacking(1, 4, 3, bp_masks[1], &bp_packers[3], &bp_unpackers[0]),
 	BitPacking(1, 4, 4, bp_masks[1], &bp_packers[4], &bp_unpackers[0]),
 };
@@ -260,12 +266,10 @@ Packer *packer, Unpacker *unpacker) {
 		}
 	}
 end:;
-/*
 	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
 	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
 	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
-*/
 }
 
 bool BitPacking::is_le() {
