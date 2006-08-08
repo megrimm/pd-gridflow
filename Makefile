@@ -8,7 +8,7 @@ RUBY = ruby
 #--------#
 
 SHELL = /bin/sh
-LDSHARED = $(CXX) -shared
+LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 LIBS = -L. -lruby -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
@@ -86,6 +86,7 @@ else
     # huh
   else
     PDSUF = .pd_linux
+    PDBUNDLEFLAGS = -shared
   endif
 endif
 
