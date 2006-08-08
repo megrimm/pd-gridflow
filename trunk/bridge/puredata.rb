@@ -68,11 +68,6 @@ end
 GridFlow.gui "source #{GridFlow::DIR}/bridge/puredata.tcl\n"
 
 GridFlow.gui %q{
-} # GridFlow.gui
-end
-
-
-GridFlow.gui %q{
 ############ properties_dialog #########
 
 proc gf_color_popup_select {self name c} {

@@ -120,10 +120,6 @@ if {[catch {
   }
 }
 
-} # GridFlow.gui
-
-if false
-GridFlow.gui %q{
 catch {
 	if {[file exists ${pd_guidir}/lib/gridflow/icons/peephole.gif]} {
 		global pd_guidir
@@ -134,4 +130,3 @@ catch {
 		puts $stderr GAAAH
 	}
 }
-
