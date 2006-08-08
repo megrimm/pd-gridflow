@@ -141,13 +141,6 @@ proc tcl_eval {} {
 	.tcl.entry delete 0 end
 
 }
-if {[catch {
-	listener_new .tcl "Tcl"
-	bind .tcl.entry <Return> {tcl_eval}
-}]} {
-	listener_new .tcl "Tcl" {tcl_eval}
-}
-
 
 }
 # end of part duplicated from Impd
@@ -166,10 +159,11 @@ if {[catch {
 }]} elseif {[catch {
 	# ImpureData (new)
 	listener_new .ruby "Ruby" {ruby_eval}
+	listener_new  .tcl "Tcl"   {tcl_eval}
 }]} else {
 	# ImpureData (old)
-	listener_new .ruby "Ruby"
-	bind .ruby.entry <Return> {ruby_eval}
+	listener_new .ruby "Ruby"; bind .ruby.entry <Return> {ruby_eval}
+	listener_new .tcl  "Tcl" ; bind  .tcl.entry <Return>  {tcl_eval}
 }
 
 } # GridFlow.gui
