@@ -11,6 +11,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/08/08 19:55:02  heri
+//  Compilation of rblti as a single file stopped working when the compilation was split into
+//  several parts in the previous commit.
+//  Now it should work again.
+//
 //  Revision 1.2  2006/08/03 22:40:03  heri
 //  Splitting compilation into several steps
 //
@@ -24,10 +29,12 @@
 //******************************************************************************
 #ifndef SWIGIMPORTED
 #ifndef IMPORTMODE
+#ifndef RBLTI
 %module base_functors
 %include utils.i
 %include dep.i
 %import basedata.i
+#endif
 #endif
 #endif
 

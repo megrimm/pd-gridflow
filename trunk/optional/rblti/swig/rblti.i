@@ -10,6 +10,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.23  2006/08/08 19:55:02  heri
+//  Compilation of rblti as a single file stopped working when the compilation was split into
+//  several parts in the previous commit.
+//  Now it should work again.
+//
 //  Revision 1.22  2006/08/03 22:40:30  heri
 //  Splitting compilation into several steps.
 //
@@ -136,6 +141,7 @@
 //
 
 %module rblti
+#define RBLTI
 
 %{
 #undef PACKAGE_NAME
