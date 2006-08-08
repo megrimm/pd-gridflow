@@ -154,16 +154,18 @@ proc gf_ruby_eval {} {
 }
 
 if {[catch {
-	# DesireData
-	Listener new .ruby "Ruby" {gf_ruby_eval}
-}]} elseif {[catch {
-	# ImpureData (new)
-	listener_new .ruby "Ruby" {gf_ruby_eval}
-	listener_new  .tcl "Tcl"   {gf_tcl_eval}
-}]} else {
-	# ImpureData (old)
-	listener_new .ruby "Ruby"; bind .ruby.entry <Return> {gf_ruby_eval}
-	listener_new .tcl  "Tcl" ; bind  .tcl.entry <Return>  {gf_tcl_eval}
+  # DesireData
+  Listener new .ruby "Ruby" {gf_ruby_eval}
+}]} {
+  if {[catch {
+    # ImpureData (new)
+    listener_new .ruby "Ruby" {gf_ruby_eval}
+    listener_new  .tcl "Tcl"   {gf_tcl_eval}
+  }]} {
+    # ImpureData (old)
+    listener_new .ruby "Ruby"; bind .ruby.entry <Return> {gf_ruby_eval}
+    listener_new .tcl  "Tcl" ; bind  .tcl.entry <Return>  {gf_tcl_eval}
+  }
 }
 
 } # GridFlow.gui
