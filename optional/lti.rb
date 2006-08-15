@@ -253,8 +253,8 @@ class LTIGridObject < GridObject
 	}
 	GridFlow.post " @inletmap = %s",  @inletmap.inspect if $lti_debug
 	GridFlow.post "@outletmap = %s", @outletmap.inspect if $lti_debug
-	add_inlets @inletmap.length-1
-	add_outlets @outletmap.length
+	self.ninlets  =  @inletmap.length
+	self.noutlets = @outletmap.length+1 # extra outlet is for attributes (_0_get)
     end
 
     def self.lti_attr(name)
