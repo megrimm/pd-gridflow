@@ -474,6 +474,9 @@ class LTIGridObject < GridObject
           n = Imatrix.new(Ipoint.new(2, m.size))
           m.to_matrix(n)
           send_out_lti_imatrix o,n,false
+      when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints
+         send_out_grid_begin o, [], :int32
+	 send_out_grid_flow o, [m.getPtr].pack("I"), :int32
       else raise "don't know how to send_out a #{m.class}"
       end
     end
