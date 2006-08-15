@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.24  2006/08/15 15:42:29  heri
+//  Partial support for Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints.
+//
 //  Revision 1.23  2006/08/08 19:55:02  heri
 //  Compilation of rblti as a single file stopped working when the compilation was split into
 //  several parts in the previous commit.
@@ -584,6 +587,19 @@ namespace lti {
 %template(list_ioPoints) std::list<lti::ioPoints>;
 %template(list_borderPoints) std::list<lti::borderPoints>;
 %template(list_areaPoints) std::list<lti::areaPoints>;
+
+%extend std::list<lti::ioPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+}
+
+%extend std::list<lti::borderPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+}
+
+%extend std::list<lti::areaPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+}
+
 //#endif
     
 // TODO: add better tree support !
