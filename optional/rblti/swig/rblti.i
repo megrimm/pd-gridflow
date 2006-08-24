@@ -10,6 +10,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.25  2006/08/24 20:01:25  heri
+//  Added new interface file: tracking.i
+//  It contains 3 new functors for tracking objects:
+//  KalmanFilter, KalmanTracker and BlobEM
+//
 //  Revision 1.24  2006/08/15 15:42:29  heri
 //  Partial support for Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints.
 //
@@ -715,6 +720,7 @@ typedef lti::location location;
 %include classifiers.i
 %include colorspaces.i
 %include drawing.i
+%include tracking.i
 
 ////TODO: add better tree support !!!
 ////#define _tree tree
