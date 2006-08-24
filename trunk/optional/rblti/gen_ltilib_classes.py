@@ -150,6 +150,11 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 #	, (f('fastEigenSystem_1_1parameters'), 			g('eigenSystem'))
 	, (f('jacobi_1_1parameters'), 				g('eigenSystem'))
 	, (f('choleskyDecomposition_1_1parameters'), 		g('linearAlgebraFunctor'))
+	, (f('harrisCorners_1_1parameters'), 		        g('cornerDetector'))
+	, (f('kalmanFilter_1_1parameters'), 		        g('functor'))
+	, (f('kalmanTracker_1_1parameters'), 		        g('kalmanFilter'))
+	, (f('blobEM_1_1parameters'), 		                g('functor'))
+	, (f('blobEM_1_1gaussEllipse'), 		        None)
     ]
     
 
