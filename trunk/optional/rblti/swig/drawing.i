@@ -1,3 +1,14 @@
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
+
+
  HANDLE_SIMPLE_HEADER_FILE("ltiDrawBase.h")
  namespace lti {
  %template(imageDrawBase)       drawBase<rgbPixel>;

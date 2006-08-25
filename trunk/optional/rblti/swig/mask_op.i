@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.7  2006/08/25 23:32:12  heri
+//  A bunch of changes to split compilation into several parts (not yet working for some modules)
+//
 //  Revision 1.6  2006/06/23 18:01:32  heri
 //  Fix for 64bit OS compilation error. Basically, just added gcc -fPIC flag.
 //
@@ -31,6 +34,15 @@
 //******************************************************************************
 
 //%include utils.i
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
 
 // Mask Operators    
 HANDLE_SIMPLE_HEADER_FILE("ltiMaskFunctors.h")

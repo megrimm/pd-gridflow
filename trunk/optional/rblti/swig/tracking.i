@@ -1,4 +1,13 @@
- 
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
+
 HANDLE_FUNCTOR_WITH_PARAMETERS( kalmanFilter,                 "ltiKalmanFilter.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( kalmanTracker,                "ltiKalmanTracker.h")
 
@@ -9,6 +18,10 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( kalmanTracker,                "ltiKalmanTracker.
 %ignore read(ioHandler&, blobEM::blobEM_gaussEllipse&, const bool);
 %ignore write(ioHandler&, const blobEM::blobEM_gaussEllipse&);
 %ignore read(ioHandler&, blobEM::blobEM_gaussEllipse&);
+namespace lti {
+%rename(init) blobEM::initialize (const channel8 &, const std::vector< blobEM_gaussEllipse > &);
+%rename(init) blobEM::initialize (const channel8 &, const int &);
+}
 
 %{
 #include "ltiBlobEM.h"
@@ -28,4 +41,9 @@ typedef lti::blobEM::gaussEllipse blobEM_gaussEllipse;
 %include ltiBlobEM.h
 #undef parameters
 //#undef gaussEllipse
+
+/*
+namespace lti {
+%template(gaussEllipse_vector) std::vector< blobEM_gaussEllipse >;
+}*/
 

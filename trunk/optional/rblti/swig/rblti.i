@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.26  2006/08/25 23:32:12  heri
+//  A bunch of changes to split compilation into several parts (not yet working for some modules)
+//
 //  Revision 1.25  2006/08/24 20:01:25  heri
 //  Added new interface file: tracking.i
 //  It contains 3 new functors for tracking objects:
@@ -170,7 +173,6 @@
 #ifdef SWIGRUBY
 %include "std_list_ruby.i"
 #endif
-
 //%include "std_vector.i" 
 //%include "std_map.i"
 
@@ -689,6 +691,7 @@ typedef lti::location location;
     
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // +++ now stats the wrapping of the ltilib functor header files +++
+#define OLD_COMPILE
 
 %include base_functors.i
 %include io.i    

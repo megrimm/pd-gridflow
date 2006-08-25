@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.7  2006/08/25 23:32:12  heri
+//  A bunch of changes to split compilation into several parts (not yet working for some modules)
+//
 //  Revision 1.6  2006/06/23 18:01:32  heri
 //  Fix for 64bit OS compilation error. Basically, just added gcc -fPIC flag.
 //
@@ -33,6 +36,15 @@
 //******************************************************************************
 
 //%include utils.i
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
 
 // Segmentation and Localization    
 HANDLE_FUNCTOR_WITH_PARAMETERS( segmentation,            "ltiSegmentation.h")
@@ -72,6 +84,27 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( objectsFromMask,         "ltiObjectsFromMask.h")
     typedef lti::objectsFromMask::objectStruct objectsFromMask_objectStruct;
     }
     %}
+/*namespace lti{
+%ignore objectsFromMask::apply(const channel8 &, std::list< ioPoints > &);
+%ignore objectsFromMask::apply(const matrix< int > &, std::list< ioPoints > &);
+%ignore objectsFromMask::apply(const channel8 &, std::list< borderPoints > &);
+%ignore objectsFromMask::apply(const imatrix &, std::list< borderPoints > &);
+%ignore objectsFromMask::apply(const channel8 &, std::list< areaPoints > &);
+%ignore objectsFromMask::apply(const matrix< int > &, std::list< areaPoints > &);
+%ignore objectsFromMask::apply(const channel8 &, std::list< areaPoints > &, matrix< int > &);
+%ignore objectsFromMask::apply(const matrix< int > &, std::list< areaPoints > &, matrix< int > &);
+}
+extend lti::objectsFromMask {
+bool 	apply (const channel8 &src8, std::list< ioPoints > &lstIOPointLists)
+bool 	apply (const matrix< int > &src, std::list< ioPoints > &lstIOPointLists)
+bool 	apply (const channel8 &src8, std::list< borderPoints > &lstBorderPointLists)
+bool 	apply (const imatrix &src, std::list< borderPoints > &lstBorderPointLists)
+bool 	apply (const channel8 &src8, std::list< areaPoints > &lstAreaPointLists)
+bool 	apply (const matrix< int > &src, std::list< areaPoints > &lstAreaPointLists)
+bool 	apply (const channel8 &src8, std::list< areaPoints > &lstAreaPointLists, matrix< int > &labeledMask)
+bool 	apply (const matrix< int > &src, std::list< areaPoints > &lstAreaPointLists, matrix< int > &labeledMask)
+}*/
+
 HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
 
 

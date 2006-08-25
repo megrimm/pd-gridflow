@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/08/25 23:32:12  heri
+//  A bunch of changes to split compilation into several parts (not yet working for some modules)
+//
 //  Revision 1.2  2006/03/05 01:18:55  heri
 //  More changes related to the added classes: backgroundModel,
 //  geometricFeaturesFromMask and
@@ -23,6 +26,15 @@
 //******************************************************************************
 
 //%include utils.i
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
 
 // Feature Extraction    
 HANDLE_FUNCTOR_WITH_PARAMETERS( featureExtractor,               "ltiFeatureExtractor.h")
