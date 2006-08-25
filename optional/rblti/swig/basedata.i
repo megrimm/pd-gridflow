@@ -8,7 +8,8 @@
 //******************************************************************************
 
 #ifndef SWIGIMPORTED
-%module basedata
+//%module basedata
+%module rblti
 %import utils.i
 %include dep.i
 #endif

@@ -1,4 +1,5 @@
-%module ltimath
+//%module ltimath
+%module rblti
 %include utils.i
 %include dep.i
 %import basedata.i

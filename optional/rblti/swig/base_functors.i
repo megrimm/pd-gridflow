@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/08/25 20:34:14  heri
+//  Splitting compilation into several parts.
+//  This version works better, everything is in the same module (rblti).
+//
 //  Revision 1.3  2006/08/08 19:55:02  heri
 //  Compilation of rblti as a single file stopped working when the compilation was split into
 //  several parts in the previous commit.
@@ -30,7 +34,8 @@
 #ifndef SWIGIMPORTED
 #ifndef IMPORTMODE
 #ifndef RBLTI
-%module base_functors
+//%module base_functors
+%module rblti
 %include utils.i
 %include dep.i
 %import basedata.i
