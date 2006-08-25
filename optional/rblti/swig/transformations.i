@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.2  2006/08/25 23:32:12  heri
+//  A bunch of changes to split compilation into several parts (not yet working for some modules)
+//
 //  Revision 1.1  2006/02/25 23:43:56  matju
 //  0.33.1
 //
@@ -21,6 +24,15 @@
 //******************************************************************************
 
 //%include utils.i
+#ifndef OLD_COMPILE
+%module rblti
+%include utils.i
+%include dep.i
+%import basedata.i
+#define IMPORTMODE
+%include base_functors.i
+#undef IMPORTMODE
+#endif
 
 // Image Transformations    
 HANDLE_FUNCTOR_WITH_PARAMETERS( scaling,                 "ltiScaling.h")
