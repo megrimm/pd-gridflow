@@ -18,7 +18,7 @@ RINC = -I $(RDIR1)
 SWIGFLAGS = -v
 CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
 
-default:: basedata base_functors ruby
+default:: basedata base_functors ltimath
 
 python:: _pylti.so
 	python -c 'import pylti'
@@ -36,7 +36,7 @@ pylti_wrap.cxx: ./swig/pylti.i
 	#swig -c++ -python -DHAVE_LIBJPEG -DHAVE_LIBPNG -I./generated_python -I./patched \
 	#	$(INCS) -w509,-312,-362,-389 pylti.i
 
-ruby:: ltimath.so
+ltimath:: ltimath.so
 	ruby -e 'require "./basedata"; require "./base_functors"; require "./ltimath"'
 
 ltimath.so: ltimath_wrap.o alt_types.o base_functors.so
@@ -45,15 +45,13 @@ ltimath.so: ltimath_wrap.o alt_types.o base_functors.so
 ltimath_wrap.o: ltimath_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c ltimath_wrap.cxx
 
-ltimath_wrap.s: ltimath_wrap.cxx
-	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S ltimath_wrap.cxx
-
 ltimath_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./ltimath_wrap.cxx ./swig/ltimath.i
 	sed -i 's/int >>/int> >/' ltimath_wrap.cxx
+	sed -i 's/Init_rblti/Init_ltimath/' ltimath_wrap.cxx
 
 alt_types.o: ./src/alt_types.cpp
 	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
@@ -68,15 +66,13 @@ basedata.so: basedata_wrap.o alt_types.o
 basedata_wrap.o: basedata_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c basedata_wrap.cxx
 
-basedata_wrap.s: basedata_wrap.cxx
-	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S basedata_wrap.cxx
-
 basedata_wrap.cxx: ./swig/basedata.i ./swig/dep.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./basedata_wrap.cxx ./swig/basedata.i
 	sed -i 's/int >>/int> >/' basedata_wrap.cxx
+	sed -i 's/Init_rblti/Init_basedata/' basedata_wrap.cxx
 
 
 base_functors:: base_functors.so
@@ -88,26 +84,23 @@ base_functors.so: base_functors_wrap.o alt_types.o basedata.so
 base_functors_wrap.o: base_functors_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c base_functors_wrap.cxx
 
-base_functors_wrap.s: base_functors_wrap.cxx
-	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -S base_functors_wrap.cxx
-
 base_functors_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./base_functors_wrap.cxx ./swig/base_functors.i
 	sed -i 's/int >>/int> >/' base_functors_wrap.cxx
-
-
-
+	sed -i 's/Init_rblti/Init_base_functors/' base_functors_wrap.cxx
 
 
 
 clean::
 	rm -f \
 		_pylti.so pylti_wrap.o pylti_wrap.cxx \
-		ltimath.so ltimath_wrap.o ltimath_wrap.cxx
+		ltimath.so       ltimath_wrap.o       ltimath_wrap.cxx \
+		basedata.so      basedata_wrap.o      basedata_wrap.cxx \
+		base_functors.so base_functors.wrap.o base_functors_wrap.cxx
 
-install:: #ltimath.so
-	cp ltimath.so $(RDIR2)
+install:: ltimath basedata base_functors
+	cp basedata.so base_functors.so ltimath.so $(RDIR2)
 
