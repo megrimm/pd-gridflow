@@ -136,7 +136,7 @@ struct Helper {
 
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
 
-// inlet #-1 is reserved for SystemInlet messages
+// inlet #-1 is reserved for SystemInlet messages (jMax)
 // inlet #-2 is for inlet #0 messages that happen at start time
 static void send_in_2 (Helper *h) { PROF(h->self) {
 	int argc = h->argc;
@@ -424,7 +424,7 @@ static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 
 Ruby GridFlow_rdtsc (Ruby rself) { return R(rdtsc()).r; }
 
-/* This code handles nested lists because PureData (0.38) doesn't do it */
+/* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 	int stack[16];
 	int stackn=0;
@@ -460,7 +460,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 		}
 	}
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
-	RARRAY(argv)->len = j;
+	while (rb_ary_len(argv)>j) rb_ary_pop(argv);
 	return rself;
 }
 
