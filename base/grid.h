@@ -106,6 +106,8 @@ __attribute__ ((noreturn));
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
 #ifdef RARRAY_LEN
+#undef T_SYMBOL
+#define T_SYMBOL T_STRING
 static inline long  rb_str_len(Ruby s) {return RSTRING_LEN(s);}
 static inline char *rb_str_ptr(Ruby s) {return RSTRING_PTR(s);}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY_LEN(s);}
