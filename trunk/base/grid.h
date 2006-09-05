@@ -105,10 +105,17 @@ __attribute__ ((noreturn));
 // returns the size of a statically defined array
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
+#ifdef RARRAY_LEN
+static inline long  rb_str_len(Ruby s) {return RSTRING_LEN(s);}
+static inline char *rb_str_ptr(Ruby s) {return RSTRING_PTR(s);}
+static inline long  rb_ary_len(Ruby s) {return  RARRAY_LEN(s);}
+static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY_PTR(s);}
+#else
 static inline long  rb_str_len(Ruby s) {return RSTRING(s)->len;}
 static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
+#endif
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
