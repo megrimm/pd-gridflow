@@ -1410,7 +1410,7 @@ class GFSoundMixer < FObject; install "SoundMixer",1,1
   @@vars = Linux::SoundMixer.instance_methods.grep(/=/)
   @@vars_h = {}
   @@vars.each {|attr|
-    attr.chop!
+    attr=attr.chop
     eval %{ def _0_#{attr}(x) @file.#{attr} = x[0]*256+x[1] end }
     @@vars_h[attr]=true
   }
