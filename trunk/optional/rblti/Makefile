@@ -52,8 +52,8 @@ rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx ./swig/rblti.i
-	sed -i 's/int >>/int> >/' rblti_wrap.cxx
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx.shoo ./swig/rblti.i
+	./munge.rb < rblti_wrap.cxx.shoo > rblti_wrap.cxx
 
 alt_types.o: ./src/alt_types.cpp
 	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
