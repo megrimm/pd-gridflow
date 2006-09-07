@@ -17,6 +17,7 @@ RINC = -I $(RDIR1)
 
 SWIGFLAGS = -v
 CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
+CFLAGS += -fno-strict-aliasing
 
 default:: ruby
 
