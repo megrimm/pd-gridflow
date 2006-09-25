@@ -895,7 +895,8 @@ def try feature
 	end
 	if Or===feature.uses_h
 		k=1; feature.uses_h.a.each {|i|
-			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i.to_a[0]}>")
+			i=[i] if String===i
+			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i}>")
 			r=try e; k+=1; return r if r }
 		return false
 	end
