@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <complex>
+#include <assert.h>
 //using namespace std;
 
 static inline uint64 weight(uint64 x) {uint64 k;
