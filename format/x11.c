@@ -96,7 +96,7 @@ struct FormatX11 : Format {
 	void open_display(const char *disp_string);
 	void report_pointer(int y, int x, int state);
 	void prepare_colormap();
-	Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, int level=0);
+	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\decl void initialize (...);
 	\decl void frame ();
 	\decl void close ();
