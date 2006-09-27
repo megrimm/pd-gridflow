@@ -10,6 +10,12 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.28  2006/09/27 21:28:31  heri
+//  Support for List_ioPoints, List_areaPoints, List_borderPoints.
+//  Only the pointers are exchanged (as integers) for these.
+//  Attempted to do a return by reference in the convertFromPtr functions  but doesn't seem to work in SWIG (i.e. a return by vallue is done instead).
+//  May not be 64-bit safe.
+//
 //  Revision 1.27  2006/09/26 20:37:16  heri
 //  Getting closer to supporting list of pointlists.
 //
@@ -155,6 +161,7 @@
 //
 //TODO
 // - tracking.i
+// - RegionPolygonizer
 // - support for vectors
 // - 
 
@@ -604,7 +611,7 @@ namespace lti {
 
 %extend std::list<lti::ioPoints>{
 unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::ioPoints> convertFromPtr(unsigned long p){
+static std::list<lti::ioPoints>& convertFromPtr(unsigned long p){
 std::list<lti::ioPoints>* temp;
 temp = (std::list<lti::ioPoints>*) (p<<2);
 return *temp;}
@@ -613,12 +620,12 @@ return *temp;}
 
 %extend std::list<lti::borderPoints>{
 unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::borderPoints> convertFromPtr(unsigned long p){return *((std::list<lti::borderPoints>*) (p<<2));}
+static std::list<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::borderPoints>*) (p<<2));}
 }
 
 %extend std::list<lti::areaPoints>{
 unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::areaPoints> convertFromPtr(unsigned long p){return *((std::list<lti::areaPoints>*) (p<<2));}
+static std::list<lti::areaPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::areaPoints>*) (p<<2));}
 }
 
 /*namespace lti{
