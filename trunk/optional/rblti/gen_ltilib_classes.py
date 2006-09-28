@@ -155,6 +155,8 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('kalmanTracker_1_1parameters'), 		        g('kalmanFilter'))
 	, (f('blobEM_1_1parameters'), 		                g('functor'))
 	, (f('blobEM_1_1gaussEllipse'), 		        None)
+	, (f('maximumFilter_1_1parameters'), 		        g('filter'))
+	, (f('localMaxima_1_1parameters'), 		        g('maximumFilter'))
     ]
     
 

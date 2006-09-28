@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/09/28 19:16:36  heri
+//  Added HarrisCorners (Corner detection)
+//
 //  Revision 1.2  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -60,3 +63,8 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( colorContrastGradient,   "ltiColorContrastGradie
 //    #define lti_colorContrastGradient_parameters colorContrastGradient_parameters      // TODO: PATCH !
       #define lti_colorContrastGradient_parameters lti::colorContrastGradient::parameters      // TODO: PATCH !
     %}
+
+HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS( maximumFilter, "ltiMaximumFilter.h")
+namespace lti{
+%template(MaximumFilter) maximumFilter<float>;
+}

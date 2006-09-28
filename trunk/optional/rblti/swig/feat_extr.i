@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/09/28 19:16:36  heri
+//  Added HarrisCorners (Corner detection)
+//
 //  Revision 1.3  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -45,3 +48,23 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( geometricFeatures,              "ltiGeometricFea
 HANDLE_FUNCTOR_WITH_PARAMETERS( chromaticityHistogram,          "ltiChromaticityHistogram.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( geometricFeaturesFromMask,      "ltiGeometricFeaturesFromMask.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( multiGeometricFeaturesFromMask, "ltiMultiGeometricFeaturesFromMask.h")
+
+//HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS( localMaxima, "ltiLocalMaxima.h")
+%{
+#include "ltiLocalMaxima.h"
+#define _localMaxima localMaxima<float>
+#define RlocalMaxima_parameters parameters
+namespace lti {
+typedef lti::localMaxima<float>::parameters localMaxima_parameters;
+}
+%}
+#define parameters localMaxima_parameters
+#define T float
+%include _localMaxima_parameters.h
+#undef T
+%include "ltiLocalMaxima.h"
+#undef parameters
+
+namespace lti{
+%template(LocalMaxima) localMaxima<float>;
+}
