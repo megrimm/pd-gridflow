@@ -9,6 +9,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.8  2006/09/28 19:16:36  heri
+//  Added HarrisCorners (Corner detection)
+//
 //  Revision 1.7  2006/07/27 22:59:23  matju
 //  added [lti.Jacobi] for real
 //
@@ -35,20 +38,7 @@
 
 //%include utils.i
 
-%define HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(func_name,functor_header)
-%{
-#include functor_header
-#define _ ## func_name func_name<float>
-#define R ## func_name ## _parameters parameters
-namespace lti {
-typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
-}
-%}
-#define parameters func_name ## _parameters
-%include _ ## func_name ## _parameters.h
-%include functor_header
-#undef parameters
-%enddef
+
 
 HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor,    "ltiLinearAlgebraFunctor.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,     "ltiMatrixInversion.h")

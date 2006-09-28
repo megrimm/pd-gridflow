@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/09/28 19:16:36  heri
+//  Added HarrisCorners (Corner detection)
+//
 //  Revision 1.3  2006/08/03 22:40:30  heri
 //  Splitting compilation into several steps.
 //
@@ -150,3 +153,19 @@ typedef lti:: ## func_name ## ::parameters func_name ## _parameters;    // wegen
 %include functor_header
 #undef parameters
 %enddef
+
+%define HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(func_name,functor_header)
+%{
+#include functor_header
+#define _ ## func_name func_name<float>
+#define R ## func_name ## _parameters parameters
+namespace lti {
+typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
+}
+%}
+#define parameters func_name ## _parameters
+%include _ ## func_name ## _parameters.h
+%include functor_header
+#undef parameters
+%enddef
+
