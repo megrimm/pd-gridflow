@@ -693,6 +693,12 @@ ConvexHull.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+RegionsPolygonizer.forms = [
+[In[Rblti::Imatrix], In[Rblti::Integer], Out[Rblti::Vector_polygonPoints]],
+[In[Rblti::Imatrix], In[Rblti::Integer], Out[Rblti::Vector_polygonPoints], Out[Rblti::Vector_borderPoints], Out[Rblti::Imatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 SplitImageToHSI.forms = [
 [In[Rblti::Image], Out[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Channel]],
 [In[Rblti::Image], Out[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Channel8]],
