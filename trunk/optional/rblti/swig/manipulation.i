@@ -11,6 +11,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/09/28 22:43:06  heri
+//  RegionsPolygonizer now works in rblti.
+//  Templates for std::vector<polygonPoints> and std::vector<borderPoints>.
+//  In addition, helper functions (getPtr and convertFromPtr) are added to allow exchange in GF.
+//
 //  Revision 1.2  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -45,3 +50,4 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( variablySpacedSamplesInterpolator, "ltiVariablyS
 //TODO HANDLE_FUNCTOR_WITH_PARAMETERS( boundingBox,             "ltiBoundingBox.h")      // Template Klasse !!!
 HANDLE_FUNCTOR_WITH_PARAMETERS( polygonApproximation,    "ltiPolygonApproximation.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( convexHull,              "ltiConvexHull.h")
+HANDLE_FUNCTOR_WITH_PARAMETERS( regionsPolygonizer,      "ltiRegionsPolygonizer.h")

@@ -10,6 +10,11 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.29  2006/09/28 22:43:06  heri
+//  RegionsPolygonizer now works in rblti.
+//  Templates for std::vector<polygonPoints> and std::vector<borderPoints>.
+//  In addition, helper functions (getPtr and convertFromPtr) are added to allow exchange in GF.
+//
 //  Revision 1.28  2006/09/27 21:28:31  heri
 //  Support for List_ioPoints, List_areaPoints, List_borderPoints.
 //  Only the pointers are exchanged (as integers) for these.
@@ -187,7 +192,7 @@
 #ifdef SWIGRUBY
 %include "std_list_ruby.i"
 #endif
-//%include "std_vector.i" 
+%include "std_vector.i" 
 //%include "std_map.i"
 
 using namespace std;
@@ -330,6 +335,13 @@ typedef signed char MYBYTE;
 */
 %}
 #endif
+
+%template(std_ivector)     std::vector<int>;
+%template(std_ucharvector) std::vector<unsigned char>;
+%template(std_fvector)     std::vector<float>;
+%template(double_fvector)  std::vector<double>;
+
+
 HANDLE_SIMPLE_HEADER_FILE("ltiObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoHandler.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiBoundaryType.h")
@@ -627,6 +639,25 @@ static std::list<lti::borderPoints>& convertFromPtr(unsigned long p){return *((s
 unsigned long getPtr(){return (((unsigned long)self)>>2);}
 static std::list<lti::areaPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::areaPoints>*) (p<<2));}
 }
+
+namespace std{
+%template(vector_polygonPoints) vector<lti::polygonPoints>;
+%template(vector_borderPoints)  vector<lti::borderPoints>;
+}
+
+
+%extend std::vector<lti::polygonPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::vector<lti::polygonPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::polygonPoints>*) (p<<2));}
+}
+
+%extend std::vector<lti::borderPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::vector<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::borderPoints>*) (p<<2));}
+}
+
+
+
 
 /*namespace lti{
 
