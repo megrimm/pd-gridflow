@@ -172,6 +172,38 @@ ColorContrastGradient.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+MaximumFilter.forms = [
+[Out[Rblti::Fmatrix]],
+[Out[Rblti::Fvector]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[In[Rblti::Fvector], Out[Rblti::Fvector]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+MatrixInversion.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+CholeskyDecomposition.forms = [
+[Out[Rblti::Fmatrix]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+EigenSystem.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+Jacobi.forms = [
+[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 ImaskFunctor.forms = [
 [In[Rblti::Imatrix], Out[Rblti::Imatrix], In["int (*)(int const &,int const &)"]],
 [Out[Rblti::Imatrix], In["int (*)(int const &,int const &)"]],
@@ -461,6 +493,18 @@ CannyEdges.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+HarrisCorners.forms = [
+[Out[Rblti::Channel8]],
+[Out[Rblti::Channel]],
+[In[Rblti::Channel8], Out[Rblti::Channel8]],
+[In[Rblti::Channel], Out[Rblti::Channel]],
+[In[Rblti::Channel8], Out[Rblti::PointList]],
+[In[Rblti::Channel], Out[Rblti::PointList]],
+[In[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Float], Out[Rblti::PointList]],
+[In[Rblti::Channel], Out[Rblti::Channel], Out[Rblti::Float]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 GlobalFeatureExtractor.forms = [
 [In[Rblti::Channel], Out[Rblti::Dvector]],
 [In[Rblti::Channel8], Out[Rblti::Dvector]],
@@ -514,6 +558,16 @@ MultiGeometricFeaturesFromMask.forms = [
 [In[Rblti::Channel8], Out[Rblti::Imatrix], Out["std::vector<std::vector<rectangle > >"]],
 [In[Rblti::Channel8], Out["std::vector<std::vector<geometricFeatureGroup0 > >"]],
 [In[Rblti::Channel8], Out[Rblti::Imatrix], Out["std::vector<std::vector<geometricFeatureGroup0 > >"]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+LocalMaxima.forms = [
+[Out[Rblti::Fmatrix]],
+[Out[Rblti::Fvector]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
+[In[Rblti::Fmatrix], Out[Rblti::Fmatrix], Out[Rblti::PointList]],
+[In[Rblti::Fmatrix], Out[Rblti::PointList]],
+[In[Rblti::Fvector], Out[Rblti::Fvector]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
@@ -799,29 +853,5 @@ MergeYUVToImage.forms = [
 [In[Rblti::Ubyte], In[Rblti::Ubyte], In[Rblti::Ubyte], Out[Rblti::RgbPixel]],
 [In[Rblti::Ubyte], In[Rblti::Ubyte], In[Rblti::Ubyte], Out[Rblti::RgbPixel]],
 [In[Rblti::Channel8], In[Rblti::Channel8], In[Rblti::Channel8], Out[Rblti::Image]],
-]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
-
-begin
-MatrixInversion.forms = [
-[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
-[Out[Rblti::Fmatrix]],
-]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
-
-begin
-CholeskyDecomposition.forms = [
-[Out[Rblti::Fmatrix]],
-[In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
-[Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
-[In[Rblti::Fmatrix], Out[Rblti::Fmatrix], In["CholeskyDecomposition_parameters::eTriangularType"]],
-]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
-
-begin
-EigenSystem.forms = [
-[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
-]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
-
-begin
-Jacobi.forms = [
-[In[Rblti::Fmatrix], Out[Rblti::Fvector], Out[Rblti::Fmatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
