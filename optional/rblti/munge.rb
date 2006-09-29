@@ -2,10 +2,10 @@
 
 while gets
   $_.gsub! /int >>/, 'int> >'
-  $_.gsub! /RSTRING\((\w+)\)->len/, "StringValueLen(\\1)"
-  $_.gsub! /RSTRING\((\w+)\)->ptr/, "StringValuePtr(\\1)"
-  $_.gsub! /RARRAY\((\w+)\)->len/, "RARRAY_LEN(\\1)"
-  $_.gsub! /RARRAY\((\w+)\)->ptr/, "RARRAY_PTR(\\1)"
+  $_.gsub! /RSTRING\(([^\)]+)\)->len/, "StringValueLen(\\1)"
+  $_.gsub! /RSTRING\(([^\)]+)\)->ptr/, "StringValuePtr(\\1)"
+  $_.gsub!  /RARRAY\(([^\)]+)\)->len/, "RARRAY_LEN(\\1)"
+  $_.gsub!  /RARRAY\(([^\)]+)\)->ptr/, "RARRAY_PTR(\\1)"
 
   if /^#include <ruby.h>/
     $_ << %{
