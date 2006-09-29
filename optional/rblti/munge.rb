@@ -4,6 +4,18 @@ while gets
   $_.gsub! /int >>/, 'int> >'
   $_.gsub! /RSTRING\((\w+)\)->len/, "StringValueLen(\\1)"
   $_.gsub! /RSTRING\((\w+)\)->ptr/, "StringValuePtr(\\1)"
+  $_.gsub! /RARRAY\((\w+)\)->len/, "RARRAY_LEN(\\1)"
+  $_.gsub! /RARRAY\((\w+)\)->ptr/, "RARRAY_PTR(\\1)"
+
+  if /^#include <ruby.h>/
+    $_ << %{
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(a) RARRAY(a)->len
+#define RARRAY_PTR(a) RARRAY(a)->ptr
+#endif
+}
+  end
+
   if /^#define StringValueLen\(s\)/ =~ $_
     $_ = %{
 #ifdef RSTRING_LEN
