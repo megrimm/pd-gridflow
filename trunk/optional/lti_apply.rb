@@ -694,8 +694,8 @@ ConvexHull.forms = [
 
 begin
 RegionsPolygonizer.forms = [
-[In[Rblti::Imatrix], In[Rblti::Integer], Out[Rblti::Vector_polygonPoints]],
-[In[Rblti::Imatrix], In[Rblti::Integer], Out[Rblti::Vector_polygonPoints], Out[Rblti::Vector_borderPoints], Out[Rblti::Imatrix]],
+[In[Rblti::Imatrix], Out[Rblti::Vector_polygonPoints]],
+[In[Rblti::Imatrix], Out[Rblti::Vector_polygonPoints], Out[Rblti::Vector_borderPoints], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
