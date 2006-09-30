@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/09/30 05:37:29  heri
+//  Hardwired maxLabel argument in regionsPolygonizer::apply() to the maximum value in the imatrix argument (i.e. src.maximum()). Any other value seems to crash it. This solves the previous segfault problem.
+//
 //  Revision 1.3  2006/09/28 22:43:06  heri
 //  RegionsPolygonizer now works in rblti.
 //  Templates for std::vector<polygonPoints> and std::vector<borderPoints>.
@@ -50,4 +53,22 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( variablySpacedSamplesInterpolator, "ltiVariablyS
 //TODO HANDLE_FUNCTOR_WITH_PARAMETERS( boundingBox,             "ltiBoundingBox.h")      // Template Klasse !!!
 HANDLE_FUNCTOR_WITH_PARAMETERS( polygonApproximation,    "ltiPolygonApproximation.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( convexHull,              "ltiConvexHull.h")
+//%ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<float> &);
+namespace lti{
+%ignore regionsPolygonizer::apply(const matrix<int> &, const int, std::vector<polygonPoints> &) const;
+%ignore regionsPolygonizer::apply(const matrix<int> &, const int, std::vector<polygonPoints> &, 
+std::vector<borderPoints> &, matrix<int> &) const;
+}
 HANDLE_FUNCTOR_WITH_PARAMETERS( regionsPolygonizer,      "ltiRegionsPolygonizer.h")
+
+%extend lti::regionsPolygonizer{
+bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly)const {
+return self->apply(imat,imat.maximum(), poly);
+}
+
+bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly, std::vector<borderPoints>& border, 
+matrix<int>& neigh)const {       
+return self->apply(imat,imat.maximum(), poly, border, neigh);
+}
+} 
+
