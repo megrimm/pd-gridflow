@@ -379,8 +379,9 @@ class LTIGridObject < GridObject
           dim.size==2 or raise "expecting 2 dims (rows, columns) but got #{dim.inspect}"
           raise "Invalid Pointlist, number of columns is not 2" unless dim[1]==2
         when List_ioPoints, List_areaPoints, List_borderPoints, Vector_borderPoints, Vector_polygonPoints
-          dim.length!=0 and raise "Expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect}, list of pointlists should be passed by address"
-        else raise "don't know how to validate a #{@stuffs[slot].class} for inlet #{inlet}"
+          dim.length!=0 and raise "Expecting 0 dims (scalar) at inlet #{inlet} but got #{dim.inspect},"+
+		" list of pointlists should be passed by address"
+       else raise "don't know how to validate a #{@stuffs[slot].class} for inlet #{inlet}"
         end
 	@dims[  slot] = dim
 	@nts[   slot] = nt
@@ -412,12 +413,11 @@ class LTIGridObject < GridObject
         when Rblti::Integer; st.val= data.unpack("I")[0]
         when Rblti::Float;   st.val= data.unpack("f")[0]
         when Rblti::Double;  st.val= data.unpack("d")[0]
-        when List_ioPoints;     st= List_ioPoints.convertFromPtr(data.unpack("I")[0]) 
-        when List_areaPoints;   st= List_areaPoints.convertFromPtr(data.unpack("I")[0])
-        when List_borderPoints; st= List_borderPoints.convertFromPtr(data.unpack("I")[0])
-        when Vector_polygonPoints;   st= Vector_polygonPoints.convertFromPtr(data.unpack("I")[0])
-        when Vector_borderPoints;    st= Vector_borderPoints.convertFromPtr(data.unpack("I")[0])
-
+        when List_ioPoints;        st= List_ioPoints        .convertFromPtr(data.unpack("I")[0])
+        when List_areaPoints;      st= List_areaPoints      .convertFromPtr(data.unpack("I")[0])
+        when List_borderPoints;    st= List_borderPoints    .convertFromPtr(data.unpack("I")[0])
+        when Vector_polygonPoints; st= Vector_polygonPoints .convertFromPtr(data.unpack("I")[0])
+        when Vector_borderPoints;  st= Vector_borderPoints  .convertFromPtr(data.unpack("I")[0])
 	else raise "#{@funcname}: don't know how to write into a #{st.class} for inlet #{inlet}\n@stuffs = #{@stuffs.inspect}"
 	end
     end
@@ -483,9 +483,11 @@ class LTIGridObject < GridObject
           m.to_matrix(n)
           send_out_lti_imatrix o,n,false
       when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints, Vector_polygonPoints, Vector_borderPoints
-         send_out_grid_begin o, [], :int32
-	 send_out_grid_flow o, [m.getPtr].pack("I"), :int32
-      else raise "don't know how to send_out a #{m.class}"
+      #   send_out_grid_begin o, [], :int32
+      #   send_out_grid_flow o, [m.getPtr].pack("I"), :int32
+         m.each {|thing| send_out_lti o,thing }
+         send_out o,:end
+     else raise "don't know how to send_out a #{m.class}"
       end
     end
 
