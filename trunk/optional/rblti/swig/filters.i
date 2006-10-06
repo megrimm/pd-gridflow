@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/10/06 22:25:50  heri
+//  NonMaximaSuppression is actually included in this file
+//
 //  Revision 1.3  2006/09/28 19:16:36  heri
 //  Added HarrisCorners (Corner detection)
 //
@@ -42,7 +45,9 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( transform,               "ltiTransform.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( realFFT,                 "ltiRealFFT.h")
 //TODO HANDLE_FUNCTOR_WITH_PARAMETERS( qmf,                     "ltiQmf.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( orientedHLTransform,     "ltiOrientedHLTransform.h")
+
 HANDLE_FUNCTOR_WITH_PARAMETERS( gHoughTransform,         "ltiGHoughTransform.h")
+
 HANDLE_FUNCTOR_WITH_PARAMETERS( orientationMap,          "ltiOrientationMap.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( medianFilter,            "ltiMedianFilter.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( kNearestNeighFilter,     "ltiKNearestNeighFilter.h")
@@ -68,3 +73,5 @@ HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS( maximumFilter, "ltiMaximumFilter.h")
 namespace lti{
 %template(MaximumFilter) maximumFilter<float>;
 }
+
+HANDLE_FUNCTOR_WITH_PARAMETERS( nonMaximaSuppression, "ltiNonMaximaSuppression.h")
