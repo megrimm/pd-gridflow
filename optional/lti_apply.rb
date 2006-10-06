@@ -180,6 +180,14 @@ MaximumFilter.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+NonMaximaSuppression.forms = [
+[In[Rblti::Channel], In[Rblti::Channel], Out[Rblti::Channel8], In[Rblti::Float]],
+[In[Rblti::Channel], In[Rblti::Channel], Out[Rblti::Channel8]],
+[In[Rblti::Channel], In[Rblti::Channel], In[Rblti::Channel], Out[Rblti::Channel8], In[Rblti::Float]],
+[In[Rblti::Channel], In[Rblti::Channel], In[Rblti::Channel], Out[Rblti::Channel8]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 MatrixInversion.forms = [
 [In[Rblti::Fmatrix], Out[Rblti::Fmatrix]],
 [Out[Rblti::Fmatrix]],
@@ -568,6 +576,13 @@ LocalMaxima.forms = [
 [In[Rblti::Fmatrix], Out[Rblti::Fmatrix], Out[Rblti::PointList]],
 [In[Rblti::Fmatrix], Out[Rblti::PointList]],
 [In[Rblti::Fvector], Out[Rblti::Fvector]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
+FastLineExtraction.forms = [
+[In[Rblti::Channel8]],
+[In[Rblti::Channel]],
+[In[Rblti::Channel8], Out[Rblti::SegmEntry_vector]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin

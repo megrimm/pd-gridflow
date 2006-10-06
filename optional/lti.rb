@@ -478,11 +478,12 @@ class LTIGridObject < GridObject
       when Rblti::Float;   send_out_lti_float o,m
       when Rblti::Integer; send_out_lti_int o,m
       when Rblti::Ubyte;   send_out_lti_ubyte o,m
+      when RfastLineExtraction_segmEntry;	send_out_lti_segmentry o,m
       when Rblti::PointList
           n = Imatrix.new(Ipoint.new(2, m.size))
           m.to_matrix(n)
           send_out_lti_imatrix o,n,false
-      when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints, Vector_polygonPoints, Vector_borderPoints
+      when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints, Vector_polygonPoints, Vector_borderPoints, SegmEntry_vector
       #   send_out_grid_begin o, [], :int32
       #   send_out_grid_flow o, [m.getPtr].pack("I"), :int32
          m.each {|thing| send_out_lti o,thing }
@@ -525,6 +526,10 @@ class LTIGridObject < GridObject
     def send_out_lti_rect o,m
 	send_out_grid_begin o,[2,2]#,@out_nt
 	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
+    end
+    def send_out_lti_segmentry o,m
+        send_out_grid_begin o,[2,2]#,@out_nt
+        send_out_grid_flow o, [m.start.y, m.start.x, m.end.y, m.end.x].pack("I4"), :int32
     end
     def send_out_lti_fvector o,m
         dim=[m.size]

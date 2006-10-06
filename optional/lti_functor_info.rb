@@ -115,6 +115,7 @@ def adapt_type2 type
   when "std::list<areaPoints >"     ; Rblti::List_areaPoints
   when "std::vector<polygonPoints >"  ; Vector_polygonPoints
   when "std::vector<borderPoints >"   ; Vector_borderPoints
+  when "std::vector<fastLineExtraction_segmEntry >" ; SegmEntry_vector
   else Rblti.const_get(type)
   end
 rescue NameError
