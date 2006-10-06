@@ -122,7 +122,7 @@
 #X msg 22 73 256;
 #N canvas 0 0 450 300 graph4 0;
 #X array \$0-table 256 float 2;
-#X coords 0 1 255 -1 200 140 1;
+#X coords 0 100 256 0 200 140 1;
 #X restore 475 29 graph;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;
