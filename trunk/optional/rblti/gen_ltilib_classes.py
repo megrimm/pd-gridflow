@@ -157,6 +157,9 @@ lst = [   (f('functor_1_1parameters'),                          'lti::ioObject')
 	, (f('maximumFilter_1_1parameters'), 		        g('filter'))
 	, (f('localMaxima_1_1parameters'), 		        g('maximumFilter'))
 	, (f('regionsPolygonizer_1_1parameters'), 		g('functor'))
+	, (f('nonMaximaSuppression_1_1parameters'), 		g('transform'))
+	, (f('fastLineExtraction_1_1parameters'), 		g('featureExtractor'))
+        , ('structlti_1_1fastLineExtraction_1_1segmEntry.xml',   None)
     ]
     
 
