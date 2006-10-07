@@ -6,6 +6,8 @@ while gets
   $_.gsub! /RSTRING\(([^\)]+)\)->ptr/, "StringValuePtr(\\1)"
   $_.gsub!  /RARRAY\(([^\)]+)\)->len/, "RARRAY_LEN(\\1)"
   $_.gsub!  /RARRAY\(([^\)]+)\)->ptr/, "RARRAY_PTR(\\1)"
+  $_.gsub!  /lti::std::/, "std::"
+  $_.gsub!  /lti::vector<lti::_fastLine/, "std::vector<lti::_fastLine" 
 
   if /^#include <ruby.h>/
     $_ << %{
