@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/10/07 03:48:11  heri
+//  I apparently forgot the most important change for the new additions.
+//  FastLineExtraction included in this.
+//
 //  Revision 1.4  2006/09/28 19:16:36  heri
 //  Added HarrisCorners (Corner detection)
 //
@@ -67,4 +71,38 @@ typedef lti::localMaxima<float>::parameters localMaxima_parameters;
 
 namespace lti{
 %template(LocalMaxima) localMaxima<float>;
+}
+
+//HANDLE_FUNCTOR_WITH_PARAMETERS( fastLineExtraction, "ltiFastLineExtraction.h")
+
+%{
+#include "ltiFastLineExtraction.h"
+#define _fastLineExtraction fastLineExtraction
+#define RfastLineExtraction_parameters parameters
+#define RfastLineExtraction_segmEntry segmEntry
+namespace lti {
+typedef lti::fastLineExtraction::parameters fastLineExtraction_parameters;
+typedef lti::fastLineExtraction::segmEntry fastLineExtraction_segmEntry;
+}
+%}
+
+#define parameters fastLineExtraction_parameters
+#define segmEntry fastLineExtraction_segmEntry
+%include _fastLineExtraction_parameters.h
+%include _fastLineExtraction_segmEntry.h
+%include ltiFastLineExtraction.h
+#undef parameters
+//#undef segmEntry
+
+
+namespace lti {
+%template(segmEntry_vector) std::vector< fastLineExtraction_segmEntry >;
+}
+
+
+%extend lti::fastLineExtraction {
+void apply(const lti::channel8& chan, std::vector<segmEntry>& list){
+self->apply(chan);
+list = self->getLineList(0);
+}
 }
