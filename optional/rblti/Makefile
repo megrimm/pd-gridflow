@@ -51,6 +51,7 @@ rblti_wrap.s: rblti_wrap.cxx
 
 rblti_wrap.cxx: ./swig/*.i ./patched/* ./generated/* alt_types.o
 	echo $(CXX)
+	rm -f ./generated/_harrisCorners_parameters.h
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
 		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./rblti_wrap.cxx.shoo ./swig/rblti.i
