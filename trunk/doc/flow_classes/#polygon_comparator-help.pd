@@ -1,0 +1,56 @@
+#N canvas 790 216 411 385 10;
+#X obj 62 128 #outer + (0 9000);
+#X text 70 72 make regular triangle;
+#X obj 62 256 #rotate;
+#X obj 14 17 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+;
+#X obj 115 256 * 100;
+#X floatatom 115 240 5 0 0 0 - - -;
+#X obj 32 36 t b b;
+#X obj 62 275 #polygon_comparator;
+#X obj 13 36 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 62 185 #t;
+#X obj 33 17 metro 1000;
+#X text 117 9 BUG: first try doesn't work;
+#X text 154 20 please bang twice;
+#X msg 196 146 4 2 # 1 1 1 -1 -1 -1 -1 1;
+#X obj 237 192 display;
+#X obj 62 109 # * 12000;
+#X obj 62 90 #for 0 3 1;
+#X obj 196 166 # * (100 100);
+#X obj 62 166 # + (0 0);
+#X obj 62 147 # cos* (100 100);
+#X obj 22 307 #fold min;
+#X obj 102 307 #fold max;
+#X obj 22 326 #export;
+#X obj 102 326 #export;
+#X obj 197 125 loadbang;
+#X obj 22 345 nbx 8 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 9
+-262144 -1 -1 0.971547 256;
+#X obj 102 345 nbx 8 14 -1e+37 1e+37 0 0 empty empty empty 0 -6 0 9
+-262144 -1 -1 0.972781 256;
+#X connect 0 0 19 0;
+#X connect 2 0 7 0;
+#X connect 3 0 10 0;
+#X connect 4 0 2 1;
+#X connect 5 0 4 0;
+#X connect 6 1 16 0;
+#X connect 7 0 20 0;
+#X connect 7 0 21 0;
+#X connect 8 0 6 0;
+#X connect 9 0 2 0;
+#X connect 9 1 7 1;
+#X connect 10 0 6 0;
+#X connect 13 0 17 0;
+#X connect 15 0 0 0;
+#X connect 16 0 15 0;
+#X connect 17 0 14 0;
+#X connect 17 0 7 1;
+#X connect 18 0 9 0;
+#X connect 19 0 18 0;
+#X connect 20 0 22 0;
+#X connect 21 0 23 0;
+#X connect 22 0 25 0;
+#X connect 23 0 26 0;
+#X connect 24 0 13 0;
