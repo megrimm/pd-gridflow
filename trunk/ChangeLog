@@ -1,22 +1,22 @@
 /* $Id$ */
 
-version 0.8.4 (2006.06...):
+version 0.8.4 (2006.10....):
 
- * more LTIlib support!
+ * resuming support for Ruby 1.8 !
+ * added compatibility with more recent versions of Ruby 1.9
+ * added compatibility with more recent versions of GCC
+ * much more LTIlib support! (a few dozen more object classes)
  * [#camera]: improved
  * rblti supports ltilib 1.9.15 and gcc 4
- * new object classes: [#draw_rect], [route2]
+ * new object classes: [#draw_rect], [route2], [#polygon_each_edge],
+   [#polygon_moment], [#polygon_radial_map], [#polygon_comparator];
+   also [#edit_polygon] (but not finished).
  * new float-only numops:   sin   cos   tanh   exp   log atan2
  * new float-only vecops: C.sin C.cos C.tanh C.exp C.log
  * [#fft] can do RGB (per channel)
- *
- *
- *
- *
- *
-
- * LTI...
- * [#edit_polygon] (not finished)
+ * can show added inlets/outlets at runtime
+ * can remove inlets/outlets at runtime and show/erase them.
+ * much faster videodev !!!
 
 version 0.8.3 (2006.04.02):
 
