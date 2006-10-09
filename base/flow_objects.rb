@@ -1447,7 +1447,7 @@ end#}
 FObject.subclass("rubyarray",2,1) {
   def initialize() @a=[]; @i=0; end
   def _0_clear; @a.clear end
-  def _0_float i; @i=i; send_out 0, *@a[@i]; end
+  def _0_float i; @i=i; send_out 0, *@a[@i] if @a[@i]!=nil; end
   def _1_list(*l) @a[@i]=l; end
   def _0_save(filename,format=nil)
     f=File.open(filename.to_s,"w")
