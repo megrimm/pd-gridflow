@@ -427,12 +427,24 @@ FObject.subclass("args",1,1) {
 	def _0_bang
 		pa,*loadbang=patcherargs.split(:",")
 		GridFlow.handle_braces! pa
-		GridFlow.post "patcherargs=%s", pa.inspect
+		#GridFlow.post "patcherargs=%s", pa.inspect
 		i=@argspecs.length-1
 		while i>=0 do
+			#GridFlow.post "argspecs[%i]=%s", i, @argspecs[i].inspect
+			#GridFlow.post "      pa[%i] isa %s", i, @argspecs[i].class
+			#GridFlow.post "      pa[%i]=%s", i, pa[i].inspect
+			v = pa[i]
+			if not v then
+				if Array===@argspecs[i] and @argspecs[i][2] then
+					v = @argspecs[i][2]
+				else
+					raise "missing argument!"
+				end
+			end
 			case pa[i]
-			when Symbol; send_out i,:symbol,pa[i]
-			else         send_out i,        pa[i]
+			when Symbol; send_out i,:symbol,v
+			when  Array; send_out i,:list, *v
+			else         send_out i,        v
 			end
 			i-=1
 		end
@@ -1434,6 +1446,7 @@ end#}
 # experimental
 FObject.subclass("rubyarray",2,1) {
   def initialize() @a=[]; @i=0; end
+  def _0_clear; @a.clear end
   def _0_float i; @i=i; send_out 0, *@a[@i]; end
   def _1_list(*l) @a[@i]=l; end
   def _0_save(filename,format=nil)
