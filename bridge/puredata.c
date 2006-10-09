@@ -36,7 +36,7 @@ tries to call a Ruby method of the proper name.
 #include "../base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
-#undef T_DATA
+//#undef T_DATA
 #undef EXTERN
 #include <m_pd.h>
 #include <ctype.h>
@@ -51,8 +51,13 @@ tries to call a Ruby method of the proper name.
 #include "Base/GemPixDualObj.h"
 #endif
 
-#undef T_DATA
+/* I don't remember why we have to undefine Ruby's T_DATA;
+   on Linux there is no conflict with any other library */
+#if RUBY_VERSION_MINOR == 8
+#define T_DATA   0x22
+#else
 #define T_DATA   0x12
+#endif
 
 // call f(x) and if fails call g(y)
 #define RESCUE(f,x,g,y) \
@@ -479,7 +484,7 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 //\def Ruby send_out2(...) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
-	//post("FObject#send_out2 : rself=%08x, bself=%08x",rself,bself);
+	//post("FObject#send_out2 : rself=%08x, bself=%08x, argc=%d",rself,bself,argc);
 	if (!bself) return Qnil;
 	bself->check_magic();
 	int outlet = INT(argv[0]);
@@ -811,6 +816,18 @@ static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
 	return bself;
 }
 
+static t_clock *hack;
+
+extern "C" void Init_stack(void*);
+
+/* revival of the stack end crutch of 2003-2005... just in case */
+static void ruby_stack_end_hack () {
+	int bogus;
+	Init_stack(&bogus);
+	post("hello from ruby_stack_end_hack");
+	clock_free(hack);
+}
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -861,4 +878,7 @@ extern "C" void gridflow_setup () {
 		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 	delete[] dirresult;
 	delete[] dirname;
+//	dummy_owner = pd_new();
+	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
+	clock_delay(hack,0);
 }
