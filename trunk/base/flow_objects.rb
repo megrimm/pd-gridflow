@@ -1444,8 +1444,14 @@ class GFSoundMixer < FObject; install "SoundMixer",1,1
 end#}
 
 # experimental
-FObject.subclass("rubyarray",2,1) {
+FObject.subclass("rubyarray",2,2) {
   def initialize() @a=[]; @i=0; end
+  def _0_get(s=nil)
+    case s
+    when :size; send_out 1,:size,@a.size
+    when nil; _0_get :size
+    end
+  end
   def _0_clear; @a.clear end
   def _0_float i; @i=i; send_out 0, *@a[@i] if @a[@i]!=nil; end
   def _1_list(*l) @a[@i]=l; end
