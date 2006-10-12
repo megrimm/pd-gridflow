@@ -9,7 +9,7 @@ while gets
   $_.gsub!  /lti::std::/, "std::"
   $_.gsub!  /lti::vector<lti::_fastLine/, "std::vector<lti::_fastLine" 
 
-  if /^#include <ruby.h>/
+  if /^#include <ruby.h>/ =~ $_
     $_ << %{
 #ifndef RARRAY_LEN
 #define RARRAY_LEN(a) RARRAY(a)->len
