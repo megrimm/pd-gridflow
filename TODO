@@ -62,6 +62,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
 [ ] add classmethod support to source filter
 [ ] document the source filter
+[ ] document 0.8.4 classes
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
 [ ] [display] should use clocks to update tk less often
