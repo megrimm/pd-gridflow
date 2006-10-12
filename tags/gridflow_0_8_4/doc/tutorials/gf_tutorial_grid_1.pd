@@ -1,0 +1,32 @@
+#N canvas 0 51 956 272 10;
+#X obj 2 5 cnv 15 430 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 2 -30 cnv 15 970 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 2 -30 cnv 15 780 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 5 5 1.1 What is a grid?;
+#X text 7 -23 1 Introduction to Grids;
+#X text 4 135 Since GridFlow uses grids \, images and videos are represented
+as such. GridFlow objects that accept or produce grids are identified
+by the number sign "#" (a mini grid). From now on \, the term "grid"
+is used to identify an image or video.;
+#X text 499 114 image of grid to go here;
+#X text 5 28 A grid is composed of rows and columns that contain numeric
+data. Computers interpret images as three-dimensional grids: the rows
+(height and collumns (width) contain pixel positions. There are usually
+three channels (depth) of rows and columns. Each channel is a single
+colour \, usually red \, green and blue (RGB). The channels make up
+the colour information of an image. Videos are also interpreted as
+grids since each frame is a still image;
+#X obj 2 206 cnv 15 970 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 544 55 #in;
+#X msg 544 28 open r001.jpg;
+#X obj 544 86 #out tk;
+#X obj 522 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X text 14 213 GridFlow 0.8.4;
+#X connect 9 0 11 0;
+#X connect 10 0 9 0;
+#X connect 12 0 9 0;

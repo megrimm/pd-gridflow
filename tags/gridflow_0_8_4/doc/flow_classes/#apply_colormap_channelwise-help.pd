@@ -1,0 +1,66 @@
+#N canvas 92 0 503 594 10;
+#X obj 209 165 until;
+#X msg 57 144 open bluemarble.jpg;
+#X obj 25 74 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 25 94 fork;
+#X obj 209 224 #import (256 3);
+#X obj 25 169 #in;
+#X obj 25 268 #out window;
+#X obj 24 247 cnv 15 190 16 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 212 186 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 0 1;
+#X obj 0 -4 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 11 -3 #apply_colormap_channelwise;
+#X obj 0 463 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 0 297 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 0 320 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 5 321 Inlet_0;
+#X text 202 299 Inlets (2);
+#X text 211 465 Outlets (1);
+#X obj 0 543 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 0 390 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 0 484 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 4 485 Inlet_0;
+#X text 5 391 Inlet_1;
+#X text 3 346 GRID;
+#X text 2 418 GRID;
+#X text 5 508 GRID;
+#X text 68 509 Outputs the modified data as a grid.;
+#X floatatom 219 206 5 0 0 0 - - -;
+#X obj 25 246 #apply_colormap_channelwise;
+#X text 12 23 This object is useful for color correction. for each
+pixel it takes it apart \, looks up each part separately in the colormap
+and constructs a new pixel from that.;
+#X text 7 570 None;
+#X text 65 418 Colormap is a grid dim (2) (intensity channels);
+#X text 66 347 Accepts a grid that will be modified by the colormap
+;
+#X obj 279 144 loadbang;
+#X msg 209 144 728;
+#X msg 279 165 142;
+#X text 352 187 <-- vary this;
+#X text 390 -3 GridFlow 0.8.4;
+#X text 205 544 Arguments (0);
+#X connect 0 0 8 0;
+#X connect 1 0 5 0;
+#X connect 2 0 3 0;
+#X connect 3 0 5 0;
+#X connect 3 0 33 0;
+#X connect 3 1 1 0;
+#X connect 4 0 27 1;
+#X connect 5 0 27 0;
+#X connect 8 0 4 0;
+#X connect 8 0 26 0;
+#X connect 27 0 6 0;
+#X connect 32 0 34 0;
+#X connect 33 0 0 0;
+#X connect 34 0 8 0;

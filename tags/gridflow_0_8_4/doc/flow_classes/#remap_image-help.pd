@@ -1,0 +1,70 @@
+#N canvas 300 38 508 671 10;
+#X obj 3 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 46 209 cnv 15 86 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 4 457 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 3 307 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 3 330 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 8 331 Inlet_0;
+#X text 205 309 Inlets (2);
+#X obj 4 591 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 3 389 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 4 478 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 8 390 Inlet_1;
+#X obj 10 -20 #remap_image;
+#X text 19 6 Transforms a grid by displacing pixels.;
+#X obj 27 134 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 46 159 #in;
+#X floatatom 166 181 5 0 0 0 - - -;
+#X text 7 358 GRID;
+#X obj 150 209 # +;
+#X msg 61 133 open sewing.jpg;
+#X text 211 179 <-- Modify value to see transformation.;
+#X text 54 357 Accepts a grid.;
+#X text 178 132 <-- open image;
+#X text 401 -19 GridFlow 0.8.4;
+#X obj 46 261 #out window \, title remapped;
+#X obj 46 77 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 46 100 metro 33.3667;
+#X text 19 25 If you chain indexmap (coordinate) transformations from
+outlet 1 to inlet 1 \, then sending an image in inlet 0 will emit its
+deformation out of outlet 0;
+#X text 8 504 GRID;
+#X text 8 479 Outlet_0;
+#X text 55 503 The deformed grid.;
+#X obj 46 209 #remap_image;
+#X text 204 590 Arguments (0);
+#X text 206 459 Outlets (2);
+#X obj 4 532 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 8 558 GRID;
+#X text 8 533 Outlet_1;
+#X text 197 209 <-- change the numop to change the transformation;
+#X text 6 417 GRID;
+#X text 55 557;
+#X obj 4 626 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 12 625 See also :;
+#X obj 92 625 #rotate;
+#X text 53 416 Receives a grid that is to be used as the transformation
+map;
+#X text 55 558;
+#X text 55 557 The deformed grid that has received the last transformation.
+;
+#X connect 13 0 14 0;
+#X connect 14 0 30 0;
+#X connect 15 0 17 1;
+#X connect 17 0 30 1;
+#X connect 18 0 14 0;
+#X connect 24 0 25 0;
+#X connect 25 0 14 0;
+#X connect 30 0 23 0;
+#X connect 30 1 17 0;

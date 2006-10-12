@@ -1,0 +1,96 @@
+#N canvas 602 28 510 655 10;
+#X obj 1 418 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 7 309 FLOAT;
+#X obj 1 260 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 283 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 420 Outlets (1);
+#X obj 1 501 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 500 Arguments (1);
+#X obj 1 351 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 439 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 6 374 FLOAT;
+#X text 398 -19 GridFlow 0.8.4;
+#X text 2 284 Inlet 0;
+#X text 2 353 Inlet 1;
+#X text 221 261 Inlets (2);
+#X text 2 440 Outlet 0;
+#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 -18 GridFlow 0.8.4;
+#X obj 219 101 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 219 143 #in;
+#X obj 263 144 tgl 15 0 empty empty empty 0 -6 0 8 -260818 -1 -1 1
+1;
+#X obj 219 62 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
+;
+#X obj 219 165 shunt 2;
+#X text 369 120 image loader;
+#X msg 219 119 open r001.jpg \, bang;
+#X obj 219 81 metro 33.3667;
+#X obj 219 218 #out window \, title inv+;
+#X text 349 201 Outputs negated image;
+#X text 68 201 Outputs initial image;
+#X obj 338 172 hsl 128 8 1000 65000 0 0 empty empty empty -2 -6 0 8
+-262144 -1 -1 1600 1;
+#X text 10 528 FLOAT;
+#X obj 1 570 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 216 572 See also;
+#X obj 105 596 swap;
+#X obj 105 596 swap;
+#X floatatom 34 82 5 0 0 0 - - -;
+#X floatatom 57 100 5 0 0 0 - - -;
+#X floatatom 34 156 5 0 0 0 - - -;
+#X text 323 58 Another application inv+ as a numerical operator of
+the Grid object;
+#X obj 263 190 cnv 15 80 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 33 124 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 11 463 FLOAT;
+#X floatatom 105 84 5 0 0 0 - - -;
+#X floatatom 149 101 5 0 0 0 - - -;
+#X floatatom 105 158 5 0 0 0 - - -;
+#X obj 105 125 cnv 15 50 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 9 -20 inv*;
+#X obj 105 125 inv* 10;
+#X obj 34 124 inv*;
+#X text 62 528 [inv*] accepts a single float as a creation argument
+which initializes the first value to perform the operation with.;
+#X obj 12 596 inv+;
+#X obj 52 596 # inv*;
+#X text 8 4 The [inv*] performs an inversion on the data passed to
+it. If you consider inlet 0 as the variable "a" and inlet 1 as variable
+"b" \, [inv*] performs the operation "b/a" on the values passed to
+it.;
+#X text 62 310 A float in inlet 1 is stored as the value "a" to perform
+the "b/a" operation.;
+#X text 62 376 A float in inlet 1 is stored as the value "b" to perform
+the "b/a" operation.;
+#X text 64 465 Outputs the result of the operation "b/a".;
+#X obj 263 189 # inv* 4000;
+#X text 288 143 inversion;
+#X connect 17 0 23 0;
+#X connect 18 0 21 0;
+#X connect 19 0 21 1;
+#X connect 20 0 24 0;
+#X connect 21 0 25 0;
+#X connect 21 1 55 0;
+#X connect 23 0 18 0;
+#X connect 24 0 17 0;
+#X connect 28 0 55 1;
+#X connect 34 0 47 0;
+#X connect 35 0 47 1;
+#X connect 41 0 46 0;
+#X connect 42 0 46 1;
+#X connect 46 0 43 0;
+#X connect 47 0 36 0;
+#X connect 55 0 25 0;

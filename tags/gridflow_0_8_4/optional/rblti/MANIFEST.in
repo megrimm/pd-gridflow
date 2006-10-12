@@ -1,0 +1,2 @@
+prune examples/sample?/build
+include *.txt *.in *.i *.h *.py *.rb LICENSE patched/*.h generated/*.h src/*.h
