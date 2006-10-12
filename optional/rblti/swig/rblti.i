@@ -10,6 +10,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.30  2006/10/12 09:31:45  matju
+//  fvector's meat was missing???
+//
 //  Revision 1.29  2006/09/28 22:43:06  heri
 //  RegionsPolygonizer now works in rblti.
 //  Templates for std::vector<polygonPoints> and std::vector<borderPoints>.
@@ -843,6 +846,10 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 }
 
 %extend lti::vector<lti::rgbPixel> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
+}
+
+%extend lti::vector<float> {
   long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
 }
 

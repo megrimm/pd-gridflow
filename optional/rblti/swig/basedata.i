@@ -511,6 +511,10 @@ HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
   long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
 }
 
+%extend lti::vector<float> {
+  long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
+}
+
 
 namespace lti {
 %extend image {
