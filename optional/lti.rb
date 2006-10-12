@@ -528,8 +528,7 @@ class LTIGridObject < GridObject
 	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
     end
     def send_out_lti_segmentry o,m
-        #GridFlow.post("Here!")
-        send_out_grid_begin o,[2,2]#, @out_nt
+        send_out_grid_begin o,[2,2]#,@out_nt
         send_out_grid_flow o, [m.start.y, m.start.x, m.end.y, m.end.x].pack("I4"), :int32
     end
     def send_out_lti_fvector o,m
