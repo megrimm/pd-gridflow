@@ -129,10 +129,10 @@ static Ruby make_error_message () {
 	char buf[1000];
 	sprintf(buf,"%s: %s",rb_class2name(rb_obj_class(ruby_errinfo)),
 		rb_str_ptr(rb_funcall(ruby_errinfo,SI(to_s),0)));
-	Ruby ary = rb_ary_new2(2);
+	Ruby ary = rb_ary_new();
 	Ruby backtrace = rb_funcall(ruby_errinfo,SI(backtrace),0);
 	rb_ary_push(ary,rb_str_new2(buf));
-	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++)
+	for (int i=0; i<8 && i<rb_ary_len(backtrace); i++)
 		rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
 //	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
 	return ary;
