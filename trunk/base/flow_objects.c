@@ -987,7 +987,7 @@ FOO(float64)
 #undef FOO
 
 GRID_INLET(GridGrade,0) {
-	out=new GridOutlet(this,0,in->dim,in->nt);
+	out=new GridOutlet(this,0,in->dim);
 	in->set_factor(in->dim->get(in->dim->n-1));
 } GRID_FLOW {
 	long m = in->factor();
@@ -1893,6 +1893,48 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 
 \classinfo { IEVAL(rself,"install '#draw_image',3,1"); }
 \end class DrawImage
+
+//****************************************************************
+// Dim[*A],Dim[*B],Dim[C,size(A)-size(B)] -> Dim[*A]
+
+/* NOT FINISHED */
+\class GridDrawPoints < GridObject
+struct GridDrawPoints : GridObject {
+	\attr Numop *op;
+	\attr PtrGrid color;
+	\attr PtrGrid points;
+	\grin 0
+	\grin 1
+	\grin 2 int32
+	\decl void initialize (Numop *op, Grid *color=0, Grid *points=0);
+};
+
+GRID_INPUT(GridDrawPoints,1,color) {} GRID_END
+GRID_INPUT(GridDrawPoints,2,points) {} GRID_END
+
+GRID_INLET(GridDrawPoints,0) {
+	NOTEMPTY(color);
+	NOTEMPTY(points);
+	SAME_TYPE(in,color);
+	if (in->dim->n!=1) RAISE("only one dimension please");
+	out=new GridOutlet(this,0,in->dim,in->nt);
+	if (points->dim->n!=2) RAISE("urghhh");
+	if (points->dim->v[1] != in->dim->n - color->dim->n)
+		RAISE("wrong number of dimensions");
+	in->set_factor(in->dim->prod());
+} GRID_FLOW {
+//	out->send(data);
+} GRID_END
+
+\def void initialize (Numop *op, Grid *color, Grid *points) {
+	rb_call_super(argc,argv);
+	this->op = op;
+	if (color) this->color=color;
+	if (points) this->points=points;
+}
+
+\classinfo { IEVAL(rself,"install '#draw_points',2,1"); }
+\end class GridDrawPoints
 
 //****************************************************************
 
