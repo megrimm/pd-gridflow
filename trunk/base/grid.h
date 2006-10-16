@@ -23,7 +23,7 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#define GF_VERSION "0.8.4"
+#define GF_VERSION "0.8.5"
 
 #ifndef IS_BRIDGE
 #include <stdio.h>

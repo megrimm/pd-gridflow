@@ -1,8 +1,8 @@
 ,-o----o----o----o-.
-|  GridFlow 0.8.4  |
+|  GridFlow 0.8.5  |
 `-o--------------o-'
   |
-.----------------------------------------------------------------
+.-o--------------------------------------------------------------
 | Directory layout
 
   ./base ............. object classes written in C++ and Ruby
@@ -17,14 +17,16 @@
   ./doc .............. complete documentation in HTML, with XML source
   ./doc/flow_classes . help files (.pd)
   ./doc/images ....... images that go with the HTML doc
+  ./doc/tutorials .... tutorials
+  ./examples ......... more complex Pd programs showing off more practical uses.
+                       (this will replace ./pd_examples in the future).
   ./extra ............ useful small programs (mostly in Ruby)
   ./images ........... sample images shared by ./samples, ./help, ./doc
   ./optional ......... optional classes but not format handlers
   ./pd_abstractions .. Pd object classes written in Pd
   ./pd_examples ...... more complex Pd programs showing off more practical uses.
-
-
-
+  ./tests ............ will contain Pd programs that test GridFlow itself.
+                       (see also: the PureUnity project)
 Legalese
 
   This program is distributed in the hope that it will be useful,
