@@ -966,7 +966,7 @@ def try feature
 	true
 end
 
-DUAL.puts "This is the GridFlow 0.8.4 configurator within "+
+DUAL.puts "This is the GridFlow 0.8.5 configurator within "+
 	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
 
 begin
