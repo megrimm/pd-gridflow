@@ -457,6 +457,7 @@ FObject.subclass("args",1,1) {
 	end
 }
 
+#!@#$ please turn into abstraction.
 FPatcher.subclass("#rotate",2,1) {
 	@fobjects = ["#inner","# >> 8"]
 	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
@@ -748,11 +749,9 @@ PDNetSocket.subclass("pd_netreceive",0,2) {
 	def initialize(port) super("-",port) end
 }
 
-# bogus class for representing objects that have no recognized class.
-FObject.subclass("broken",0,0) {
- 	def args; a=@args.dup; a[7,0] = " "+classname; a end
-}
-
+# make this with variable number of outlets?
+# what about making it a gui object?
+# what about moving this to desiredata?
 FObject.subclass("fork",1,2) {
   def method_missing(sel,*args)
     sel.to_s =~ /^_(\d)_(.*)$/ or super
@@ -786,15 +785,8 @@ FObject.subclass("shunt",2,0) {
 	class Demux < self; install "demux", 2, 0; end
 }
 
-#-------- fClasses for: jmax2pd
-
-	FObject.subclass("messbox",1,1) {
-		def _0_bang; send_out 0, *@argv end
-		def clear; @argv=[]; end
-		def append(*argv) @argv << argv; end
-	}
-
 #-------- fClasses for: list manipulation (jMax-compatible)
+# maybe that some of them could be replaced by 0.39 abstractions
 
 	FObject.subclass("listmake",2,1) {
 		def initialize(*a) @a=a end
@@ -875,6 +867,7 @@ FObject.subclass("route2",1,1) {
 # FObjects are Ruby Objects that are exported to the PureData system.
 # _0_bang means bang message on inlet 0
 # FObject#send_out sends a message through an outlet
+#!@#$ turn this into an abstraction.
 FObject.subclass("for",3,1) {
 	attr_accessor :start, :stop, :step
 	def cast(key,val)
@@ -911,6 +904,8 @@ FObject.subclass("oneshot",2,1) {
 	alias _1_float _1_int
 	def _1_bang; @state=true end
 }
+
+#!@#$ turn into abstractions
 FObject.subclass("inv+",2,1) {
   def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b-a end
@@ -918,7 +913,8 @@ FObject.subclass("inv+",2,1) {
 FObject.subclass("inv*",2,1) {
   def initialize(b=0) @b=b end; def _1_float(b) @b=b end
   def _0_float(a) send_out 0, :float, @b/a end
-}  
+}
+
 FObject.subclass("range",1,1) {
   def initialize(*a) @a=a end
   def initialize2
