@@ -863,36 +863,7 @@ FObject.subclass("route2",1,1) {
 	end
 }
 
-# this was the original demo for the Ruby/jMax/PureData bridges
-# FObjects are Ruby Objects that are exported to the PureData system.
-# _0_bang means bang message on inlet 0
-# FObject#send_out sends a message through an outlet
-#!@#$ turn this into an abstraction.
-FObject.subclass("for",3,1) {
-	attr_accessor :start, :stop, :step
-	def cast(key,val)
-		val = Integer(val) if Float===val
-		raise ArgumentError, "#{key} isn't a number" unless Integer===val
-	end
-	def initialize(start,stop,step)
-		super
-		cast("start",start)
-		cast("stop",stop)
-		cast("step",step)
-		@start,@stop,@step = start,stop,step
-	end
-	def _0_bang
-		x = start
-		if step > 0
-			(send_out 0, x; x += step) while x < stop
-		elsif step < 0
-			(send_out 0, x; x += step) while x > stop
-		end
-	end
-	def _0_float(x) self.start=x; _0_bang end
-	alias _1_float stop=
-	alias _2_float stop=
-}
+# this could also be an abstraction
 FObject.subclass("oneshot",2,1) {
 	def initialize(state=true) @state=state!=0 end
 	def method_missing(sel,*a)
@@ -903,16 +874,6 @@ FObject.subclass("oneshot",2,1) {
 	def _1_int(state) @state=state!=0 end
 	alias _1_float _1_int
 	def _1_bang; @state=true end
-}
-
-#!@#$ turn into abstractions
-FObject.subclass("inv+",2,1) {
-  def initialize(b=0) @b=b end; def _1_float(b) @b=b end
-  def _0_float(a) send_out 0, :float, @b-a end
-}
-FObject.subclass("inv*",2,1) {
-  def initialize(b=0) @b=b end; def _1_float(b) @b=b end
-  def _0_float(a) send_out 0, :float, @b/a end
 }
 
 FObject.subclass("range",1,1) {
