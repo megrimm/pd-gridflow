@@ -64,6 +64,7 @@ alt_types.o: ./src/alt_types.cpp
 
 %_wrap.o: %_wrap.cxx
 	FOO=$$(echo $@ | sed 's/_wrap\.o$$//') ;\
+	rename $${FOO}_wrap.cxx $${FOO}_wrap.cxx_ ;\
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c $${FOO}_wrap.cxx
 
 %_wrap.cxx: ./swig/basedata.i ./swig/base_functors.i ./swig/dep.i ./swig/%.i  ./generated/* alt_types.o
