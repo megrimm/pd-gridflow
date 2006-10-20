@@ -284,10 +284,7 @@ GridObject.subclass("#pack",1,1) {
 		@cast = cast
 	end
 	def self.define_inlet i
-		module_eval "
-			def _#{i}_int   x; @data[#{i}]=x; _0_bang; end
-			def _#{i}_float x; @data[#{i}]=x; _0_bang; end
-		"
+		module_eval "def _#{i}_float x; @data[#{i}]=x; _0_bang; end"
 	end
 	(0...15).each {|x| define_inlet x }
 	def _0_bang
@@ -413,17 +410,19 @@ FPatcher.subclass("@convolve",2,1) {
 # YUVtoRGB : @fobjects = ["@ - (16 128 128)",
 #	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
-class Array
-	def split(a)
-		i=0; r=[[]]
-		each {|x| if a===x then r.last << x else r << [] end }
-		r
-	end
-end
-
 FObject.subclass("args",1,1) {
 	def initialize(*argspecs) @argspecs = argspecs end
-	def initialize2; add_outlets @argspecs.length end
+	#def initialize2; add_outlets @argspecs.length end
+	def initialize2; self.noutlets = @argspecs.length+1 end
+
+	# apparently, i can't define a Array#split,
+	# possibly because it's a reserved keyword, in a "duck taping" kind of way
+	# (#respond_to? and stuff)
+	def split(ary,sep)
+		i=0; r=[[]]
+		ary.each {|x| if sep===x then r.last << x else r << [] end }
+		r
+	end
 	def _0_bang
 		pa,*loadbang=patcherargs.split(:",")
 		GridFlow.handle_braces! pa
@@ -431,14 +430,15 @@ FObject.subclass("args",1,1) {
 		i=@argspecs.length-1
 		while i>=0 do
 			#GridFlow.post "argspecs[%i]=%s", i, @argspecs[i].inspect
-			#GridFlow.post "      pa[%i] isa %s", i, @argspecs[i].class
+			#GridFlow.post "argspecs[%i] isa %s", i, @argspecs[i].class
 			#GridFlow.post "      pa[%i]=%s", i, pa[i].inspect
 			v = pa[i]
 			if not v then
 				if Array===@argspecs[i] and @argspecs[i][2] then
 					v = @argspecs[i][2]
 				else
-					raise "missing argument!"
+					#raise "missing argument!"
+					GridFlow.post "missing argument!"; return
 				end
 			end
 			case pa[i]
@@ -487,10 +487,10 @@ FPatcher.subclass("#rotate",2,1) {
 		_0_axis(*axis)
 		send_in 1, rot
 	end
-	def _1_int(angle) @angle = angle; update_rotator end
-	alias _1_float _1_int
+	def _1_float(angle) @angle = angle; update_rotator end
 }
 
+# this could be an abstraction, but it would be rather slow.
 FObject.subclass("foreach",1,1) {
 	def initialize() super end
 	def _0_list(*a)
@@ -779,8 +779,7 @@ FObject.subclass("shunt",2,0) {
 			end
 		end
 	end
-	def _1_int i; @index=i.to_i % @n end
-	alias :_1_float :_1_int
+	def _1_float i; @index=i.to_i % @n end
 	# hack: this is an alias.
 	class Demux < self; install "demux", 2, 0; end
 }
@@ -800,7 +799,7 @@ FObject.subclass("shunt",2,0) {
 	}
 	FObject.subclass("listelement",2,1) {
 		def initialize(i=0) super; @i=i.to_i end
-		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
+		def _1_float(i) @i=i.to_i end
 		def _0_list(*a)
 			e=a[@i]
 			if Symbol===e then
@@ -812,8 +811,8 @@ FObject.subclass("shunt",2,0) {
 	}
 	FObject.subclass("listsublist",3,1) {
 		def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
-		def _1_int(i) @i=i.to_i end; alias _1_float _1_int
-		def _2_int(n) @n=n.to_i end; alias _2_float _2_int
+		def _1_float(i) @i=i.to_i end
+		def _2_float(n) @n=n.to_i end
 		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
 	}
 	FObject.subclass("listprepend",2,1) {
@@ -861,19 +860,6 @@ FObject.subclass("route2",1,1) {
 		(m = /(_\d_)(.*)/.match sym.to_s) or return super
 		_0_ m[2].intern, *a
 	end
-}
-
-# this could also be an abstraction
-FObject.subclass("oneshot",2,1) {
-	def initialize(state=true) @state=state!=0 end
-	def method_missing(sel,*a)
-		m = /^_0_(.*)$/.match(sel.to_s) or return super
-		send_out 0, m[1].intern, *a if @state
-		@state=false
-	end
-	def _1_int(state) @state=state!=0 end
-	alias _1_float _1_int
-	def _1_bang; @state=true end
 }
 
 FObject.subclass("range",1,1) {
@@ -1348,8 +1334,7 @@ FObject.subclass("parallel_port",1,3) {
     @clock.delay 0 if @clock
   end
   def delete; @clock.unset unless @manually; @f.close end
-  def _0_int(x) @f.write x.to_i.chr; @f.flush end
-  alias _0_float _0_int
+  def _0_float(x) @f.write x.to_i.chr; @f.flush end
   def call
     flags = @f.port_flags
     send_out 2, flags if @flags != flags
