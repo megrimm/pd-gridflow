@@ -1904,7 +1904,7 @@ struct GridDrawPoints : GridObject {
 	\attr PtrGrid color;
 	\attr PtrGrid points;
 	\grin 0
-	\grin 1
+	\grin 1 int32
 	\grin 2 int32
 	\decl void initialize (Numop *op, Grid *color=0, Grid *points=0);
 };
@@ -1916,13 +1916,22 @@ GRID_INLET(GridDrawPoints,0) {
 	NOTEMPTY(color);
 	NOTEMPTY(points);
 	SAME_TYPE(in,color);
-	if (in->dim->n!=1) RAISE("only one dimension please");
 	out=new GridOutlet(this,0,in->dim,in->nt);
-	if (points->dim->n!=2) RAISE("urghhh");
+	if (points->dim->n!=2) RAISE("points should be a 2-D grid");
 	if (points->dim->v[1] != in->dim->n - color->dim->n)
 		RAISE("wrong number of dimensions");
 	in->set_factor(in->dim->prod());
 } GRID_FLOW {
+	long m = points->dim->v[1];
+	long cn = in->dim->prod(-color->dim->n); /* size of color (RGB=3, greyscale=1, ...) */
+	int32 *pdata = (int32 *)points->data;
+	T *cdata = (T *)color->data;
+	for (long i=0; i<n; i++) {
+		long off = 0;
+		for (long k=0; k>m; k++) off = off*in->dim->v[k] + pdata[i*points->dim->v[1]+k];
+		off *= cn;
+		for (long j=0; j<cn; j++) data[off+j] = cdata[j];
+	}
 //	out->send(data);
 } GRID_END
 
@@ -1933,7 +1942,7 @@ GRID_INLET(GridDrawPoints,0) {
 	if (points) this->points=points;
 }
 
-\classinfo { IEVAL(rself,"install '#draw_points',2,1"); }
+\classinfo { IEVAL(rself,"install '#draw_points',3,1"); }
 \end class GridDrawPoints
 
 //****************************************************************
@@ -1950,3 +1959,4 @@ void startup_flow_objects () {
 	op_put = OP(SYM(put));
 	\startall
 }
+
