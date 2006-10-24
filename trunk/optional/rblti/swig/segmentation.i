@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.8  2006/10/24 22:07:59  heri
+//  Three more modules compiling.
+//  colors, segmentation, and edge_detectors
+//
 //  Revision 1.7  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -46,6 +50,8 @@
 #undef IMPORTMODE
 #endif
 
+
+
 // Segmentation and Localization    
 HANDLE_FUNCTOR_WITH_PARAMETERS( segmentation,            "ltiSegmentation.h")
 #ifdef SWIGRUBY
@@ -54,6 +60,16 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( segmentation,            "ltiSegmentation.h")
 %}
 #endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( meanShiftSegmentation,   "ltiMeanShiftSegmentation.h")
+
+IMPORT_FUNCTOR_WITH_PARAMETERS( colorQuantization,       "ltiColorQuantization.h")
+IMPORT_FUNCTOR_WITH_PARAMETERS(kMColorQuantization,     "ltiKMColorQuantization.h")
+
+#ifndef OLD_COMPILE
+%{
+typedef lti::kMColorQuantization::parameters lti_kMColorQuantization_parameters;
+using namespace lti;
+%}
+#endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( kMeansSegmentation,      "ltiKMeansSegmentation.h")
     %{
     typedef lti::kMeansSegmentation::parameters lti_kMeansSegmentation_parameters;
