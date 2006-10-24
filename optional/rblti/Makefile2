@@ -21,8 +21,8 @@ CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
 default:: all
 
 all:: alt_types.o basedata.so base_functors.so ltimath.so io.so statistics.so filters.so mask_op.so \
-		edge_detectors.so feat_extr.so morph_op.so transformations.so manipulation.so classifiers.so \
-		colorspaces.so drawing.so segmentation.so colors.so tracking.so
+		colors.so segmentation.so edge_detectors.so feat_extr.so morph_op.so transformations.so \
+		manipulation.so classifiers.so colorspaces.so drawing.so tracking.so
 
 
 basedata.so: basedata_wrap.o alt_types.o
@@ -35,8 +35,8 @@ basedata_wrap.cxx: ./swig/basedata.i ./swig/dep.i  ./generated/* alt_types.o
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./basedata_wrap.cxx ./swig/basedata.i
-	sed -i 's/int >>/int> >/' basedata_wrap.cxx
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./basedata_wrap.shoo ./swig/basedata.i
+	./munge.rb < basedata_wrap.shoo > basedata_wrap.cxx
 	sed -i 's/Init_rblti/Init_basedata/' basedata_wrap.cxx
 
 
@@ -51,12 +51,14 @@ base_functors_wrap.cxx: ./swig/basedata.i ./swig/dep.i ./swig/base_functors.i  .
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./base_functors_wrap.cxx ./swig/base_functors.i
-	sed -i 's/int >>/int> >/' base_functors_wrap.cxx
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./base_functors_wrap.shoo ./swig/base_functors.i
+	./munge.rb < base_functors_wrap.shoo > base_functors_wrap.cxx
 	sed -i 's/Init_rblti/Init_base_functors/' base_functors_wrap.cxx
 
 alt_types.o: ./src/alt_types.cpp
 	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
+
+.PRECIOUS: %_wrap.cxx
 
 %.so: %_wrap.o alt_types.o base_functors.so
 	FOO=$$(echo $@ | sed 's/\.so$$//') ;\
@@ -64,7 +66,6 @@ alt_types.o: ./src/alt_types.cpp
 
 %_wrap.o: %_wrap.cxx
 	FOO=$$(echo $@ | sed 's/_wrap\.o$$//') ;\
-	rename $${FOO}_wrap.cxx $${FOO}_wrap.cxx_ ;\
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c $${FOO}_wrap.cxx
 
 %_wrap.cxx: ./swig/basedata.i ./swig/base_functors.i ./swig/dep.i ./swig/%.i  ./generated/* alt_types.o
@@ -72,8 +73,8 @@ alt_types.o: ./src/alt_types.cpp
 	FOO=$$(echo $@ | sed 's/_wrap\.cxx$$//') ;\
 	echo FOO is $$FOO ;\
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
-		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./$${FOO}_wrap.cxx ./swig/$$FOO.i ;\
-	sed -i 's/int >>/int> >/' $@ ;\
+		$(INCS) -w509,-312,-362,-389,-801,-314 -o ./$${FOO}_wrap.shoo ./swig/$$FOO.i ;\
+	./munge.rb < $${FOO}_wrap.shoo > $${FOO}_wrap.cxx ;\
 	sed -i "s/Init_rblti/Init_$$FOO/" $@
 
 
