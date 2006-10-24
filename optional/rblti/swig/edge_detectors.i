@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/10/24 22:07:59  heri
+//  Three more modules compiling.
+//  colors, segmentation, and edge_detectors
+//
 //  Revision 1.4  2006/09/28 19:16:36  heri
 //  Added HarrisCorners (Corner detection)
 //
@@ -35,17 +39,45 @@
 %include utils.i
 %include dep.i
 %import basedata.i
-%{
-#include "ltiThresholding.h"
-#include "ltiNonMaximaSuppression.h"
-#include "ltiGradientFunctor.h"
-#include "ltiColorContrastGradient.h"
-%}
 #define IMPORTMODE
 %include base_functors.i
 #undef IMPORTMODE
+%{
+/*#include "ltiThresholding.h"
+#include "ltiNonMaximaSuppression.h"
+#include "ltiGradientFunctor.h"
+#include "ltiColorContrastGradient.h"*/
+using namespace lti;
+%}
 #endif
 
+#ifndef OLD_COMPILE
+IMPORT_FUNCTOR_WITH_PARAMETERS( thresholding,            "ltiThresholding.h")
+IMPORT_FUNCTOR_WITH_PARAMETERS( gradientFunctor,         "ltiGradientFunctor.h")
+
+%{
+#include "ltiLocalMaxima.h"
+#define _localMaxima localMaxima<float>
+#define RlocalMaxima_parameters parameters
+namespace lti {
+typedef lti::localMaxima<float>::parameters localMaxima_parameters;
+}
+%}
+#define parameters localMaxima_parameters
+#define T float
+%import _localMaxima_parameters.h
+#undef T
+%import "ltiLocalMaxima.h"
+#undef parameters
+
+
+IMPORT_FUNCTOR_WITH_PARAMETERS( colorContrastGradient,   "ltiColorContrastGradient.h")
+
+%{
+typedef lti::gradientFunctor::parameters lti_gradientFunctor_parameters;
+typedef lti::colorContrastGradient::parameters lti_colorContrastGradient_parameters;
+%}
+#endif
 
 // Edge and Corner Detectors    
 HANDLE_FUNCTOR_WITH_PARAMETERS( cornerDetector,          "ltiCornerDetector.h")

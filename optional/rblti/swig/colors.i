@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.7  2006/10/24 22:07:59  heri
+//  Three more modules compiling.
+//  colors, segmentation, and edge_detectors
+//
 //  Revision 1.6  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -47,7 +51,14 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( kMColorQuantization,     "ltiKMColorQuantization
 HANDLE_FUNCTOR_WITH_PARAMETERS( lkmColorQuantization,    "ltiLkmColorQuantization.h")
 //TODO HANDLE_FUNCTOR_WITH_PARAMETERS( medianCut,               "ltiMedianCut.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( computePalette,          "ltiComputePalette.h")
+
+#ifndef OLD_COMPILE
+%{
+using namespace lti;
+%}
+#endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( usePalette,              "ltiUsePalette.h")
+
 
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageTorgI.h")
