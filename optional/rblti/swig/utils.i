@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/10/26 18:28:38  heri
+//  Compilation in separate modules now working.
+//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
+//
 //  Revision 1.4  2006/09/28 19:16:36  heri
 //  Added HarrisCorners (Corner detection)
 //
@@ -108,6 +112,7 @@ typedef lti:: ## func_name ## ::parameters func_name ## _parameters;
 namespace lti {
 typedef lti:: ## func_name ## ::parameters func_name ## _parameters;
 }
+typedef lti:: ## func_name ## ::parameters lti_ ## func_name ## _parameters;
 %}
 #define parameters func_name ## _parameters
 %import _ ## func_name ## _parameters.h
@@ -166,6 +171,22 @@ typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
 #define parameters func_name ## _parameters
 %include _ ## func_name ## _parameters.h
 %include functor_header
+#undef parameters
+%enddef
+
+
+%define IMPORT_FUNCTOR_TEMPLATE_WITH_PARAMETERS(func_name,functor_header)
+%{
+#include functor_header
+#define _ ## func_name func_name<float>
+#define R ## func_name ## _parameters parameters
+namespace lti {
+typedef lti:: ## func_name<float> ## ::parameters func_name ## _parameters;
+}
+%}
+#define parameters func_name ## _parameters
+%import _ ## func_name ## _parameters.h
+%import functor_header
 #undef parameters
 %enddef
 

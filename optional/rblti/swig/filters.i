@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.5  2006/10/26 18:28:38  heri
+//  Compilation in separate modules now working.
+//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
+//
 //  Revision 1.4  2006/10/06 22:25:50  heri
 //  NonMaximaSuppression is actually included in this file
 //
@@ -35,9 +39,7 @@
 %include utils.i
 %include dep.i
 %import basedata.i
-#define IMPORTMODE
-%include base_functors.i
-#undef IMPORTMODE
+%include base_functors_imported.i
 #endif
 
 // Image Transformations    

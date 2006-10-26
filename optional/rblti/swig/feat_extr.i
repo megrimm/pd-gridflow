@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.6  2006/10/26 18:28:38  heri
+//  Compilation in separate modules now working.
+//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
+//
 //  Revision 1.5  2006/10/07 03:48:11  heri
 //  I apparently forgot the most important change for the new additions.
 //  FastLineExtraction included in this.
@@ -38,10 +42,19 @@
 %include utils.i
 %include dep.i
 %import basedata.i
-#define IMPORTMODE
-%include base_functors.i
-#undef IMPORTMODE
+%include base_functors_imported.i
+%{
+using namespace lti;
+%}
+
+
+IMPORT_FUNCTOR_WITH_PARAMETERS( fastRelabeling,          	"ltiFastRelabeling.h")
+IMPORT_FUNCTOR_TEMPLATE_WITH_PARAMETERS( maximumFilter, 	"ltiMaximumFilter.h")
+namespace lti{
+%template(MaximumFilter) maximumFilter<float>;
+}
 #endif
+
 
 // Feature Extraction    
 HANDLE_FUNCTOR_WITH_PARAMETERS( featureExtractor,               "ltiFeatureExtractor.h")
