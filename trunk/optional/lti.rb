@@ -35,9 +35,10 @@
 
 #$lti_debug = true
 
-require "rblti"
+#require "rblti"
+#include Rblti
+require "optional/lti_load"
 include GridFlow
-include Rblti
 
 class String
   # returns a Fixnum that is a pointer divided by 4
