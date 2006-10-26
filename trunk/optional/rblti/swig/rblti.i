@@ -10,6 +10,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.31  2006/10/26 18:28:38  heri
+//  Compilation in separate modules now working.
+//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
+//
 //  Revision 1.30  2006/10/12 09:31:45  matju
 //  fvector's meat was missing???
 //
@@ -799,6 +803,8 @@ typedef lti::location location;
 %include colorspaces.i
 %include drawing.i
 //%include tracking.i
+
+#undef OLD_COMPILE
 
 ////TODO: add better tree support !!!
 ////#define _tree tree

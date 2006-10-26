@@ -3,9 +3,10 @@
 %include utils.i
 %include dep.i
 %import basedata.i
-#define IMPORTMODE
-%include base_functors.i
-#undef IMPORTMODE
+%include base_functors_imported.i
+%{
+using namespace lti;
+%}
 #endif
 
 

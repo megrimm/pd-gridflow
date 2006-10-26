@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.3  2006/10/26 18:28:38  heri
+//  Compilation in separate modules now working.
+//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
+//
 //  Revision 1.2  2006/08/25 23:32:12  heri
 //  A bunch of changes to split compilation into several parts (not yet working for some modules)
 //
@@ -29,9 +33,10 @@
 %include utils.i
 %include dep.i
 %import basedata.i
-#define IMPORTMODE
-%include base_functors.i
-#undef IMPORTMODE
+%include base_functors_imported.i
+%{
+using namespace lti;
+%}
 #endif
 
 // Image Transformations    
@@ -45,6 +50,10 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( geometricTransform,      "ltiGeometricTransform.
 
 
 %rename (RdistanceTransform_sedMask) distanceTransform::sedMask;
+
+#ifndef OLD_COMPILE
+IMPORT_FUNCTOR_WITH_PARAMETERS( morphology,       "ltiMorphology.h")
+#endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( distanceTransform,       "ltiDistanceTransform.h")
 /*
 %{
