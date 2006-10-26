@@ -323,7 +323,7 @@ Feature.add {
 Feature.add {
 	tag :libruby
 	name "Ruby as a dynamic library"
-	uses_bridge_so [CONFIG["LIBRUBY_DLDFLAGS"]]
+	#uses_bridge_so [CONFIG["LIBRUBY_DLDFLAGS"]]
 	#uses_h ["ruby.h"] # is in special directory
 	test proc {|f| c_test "#include <ruby.h>
 		int main () { return rb_rescue==0; }", f.uses_bridge_so }
@@ -891,7 +891,7 @@ def try feature
 	if Or===feature.uses_h
 		k=1; feature.uses_h.a.each {|i|
 			i=[i] if String===i
-			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i}>")
+			e=feature.dup; e.uses_h i; e.name(e.name+" <#{i[0]}>")
 			r=try e; k+=1; return r if r }
 		return false
 	end
@@ -1028,9 +1028,6 @@ File.open("./config.make","w") {|f|
 
   f.puts "RUBYARCH=#{CONFIG['arch']}"
   f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
-  f.puts "BRIDGE_LDFLAGS += "+(if OSX
-	then "-bundle -flat_namespace"
-	else "-rdynamic -shared" end)
 
   $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
   $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
@@ -1056,7 +1053,7 @@ File.open("./config.make","w") {|f|
     f.puts "OS = linux"
   end
 
-  for k in ["LIBRUBY_DLDFLAGS"] do
+  for k in %w(LIBRUBY_DLDFLAGS LIBS LIBRUBYARG) do
     f.puts "#{k} = #{CONFIG[k]}"
   end
 
