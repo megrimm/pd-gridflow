@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-COMMON_DEPS = config.make Makefile base/source_filter.rb
+#COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -10,7 +10,6 @@ RUBY = ruby
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
-LIBS = -L. $(LIBRUBY_DLDFLAGS) -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
@@ -20,6 +19,9 @@ else
 #	CFLAGS += -O3 -funroll-loops -fno-omit-frame-pointer
 	CFLAGS += -O2 -funroll-loops
 endif
+
+BRIDGE_LDFLAGS += $(LIBRUBYARG) $(LIBS)
+
 
 OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
 base/number.1.o base/number.2.o base/number.3.o base/number.4.o
@@ -62,7 +64,7 @@ clean::
 
 $(DLLIB): $(OBJS2) $(OBJS)
 	@-$(RM) $@
-	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS) $(LIBS)
+	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS)
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
 
@@ -74,25 +76,23 @@ cpu/mmx.o: cpu/mmx.asm
 unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
-CONF = config.make config.h Makefile
-
 ifeq ($(OS),darwin)
   PDSUF = .pd_darwin
-  PDBUNDLEFLAGS = -bundle -undefined suppress
+  PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
 else
   ifeq ($(OS),nt)
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
   else
     PDSUF = .pd_linux
-    PDBUNDLEFLAGS = -shared
+    PDBUNDLEFLAGS = -shared -rdynamic
   endif
 endif
 
 ifeq ($(HAVE_PUREDATA),yes)
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): bridge/puredata.c.fcs base/grid.h $(CONF)
+$(PD_LIB): bridge/puredata.c.fcs base/grid.h $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
