@@ -10,7 +10,7 @@ RUBY = ruby
 SHELL = /bin/sh
 LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
-LIBS = -L. -lruby -ldl -lcrypt -lm
+LIBS = -L. $(LIBRUBY_DLDFLAGS) -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
@@ -76,7 +76,6 @@ unskew::
 
 CONF = config.make config.h Makefile
 
-ifeq ($(HAVE_PUREDATA),yes)
 ifeq ($(OS),darwin)
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -undefined suppress
@@ -84,13 +83,13 @@ else
   ifeq ($(OS),nt)
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
-    # huh
   else
     PDSUF = .pd_linux
     PDBUNDLEFLAGS = -shared
   endif
 endif
 
+ifeq ($(HAVE_PUREDATA),yes)
 PD_LIB = gridflow$(PDSUF)
 
 $(PD_LIB): bridge/puredata.c.fcs base/grid.h $(CONF)
