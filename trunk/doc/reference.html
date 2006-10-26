@@ -358,10 +358,7 @@
 		for performing linear transforms like rotations, scalings, shearings, 
 		and some kinds of color remappings. A linear transform is done by 
 		something called matrix multiplication, which happens to be <kbd><font color="#007777">[#inner * + 
-		0]</font></kbd>. <kbd><font color="#007777">[#inner]</font></kbd> also does dot product and other funny operations.</p> <br><b>method</b>&nbsp;init <b>(</b><i>numop2</i> op_para<b>, </b><i>numop2</i> op_fold<b>, </b><i>integer</i> base<b>, </b><i>grid</i> right_hand<b>)</b>      
-			op_para and op_fold are two operators picked from the table 
-			of two-input operators. 
-			the base value has to be specified (has no default value yet). <br>
+		0]</font></kbd>. <kbd><font color="#007777">[#inner]</font></kbd> also does dot product and other funny operations.</p> <br><b>method</b>&nbsp;init <b>(</b><i>grid</i> right_hand<b>)</b>   <br>
   <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(anyA..., lastA)</i> grid<b>)</b>  
 				Splits the Dim(anyA...,lastA) left-hand grid into Dim(anyA...) 
 				pieces of Dim(lastA) size. 
@@ -373,6 +370,12 @@
 				creates a Dim(anyA...,anyB...) grid by assembling all 
 				the results together. 
 				(note: lastA must be equal to firstB.) <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;op <b>(</b><i>numop</i> op<b>)</b>  
+				the operation that combines the values from the two grids together. 
+				this defaults to "*" (as in the matrix product) <br>
+ <br><b>inlet&nbsp;0 </b><b>method</b>&nbsp;fold <b>(</b><i>numop</i> op<b>)</b>  
+				the operation that combines the result of the "op" operations together. 
+				this defaults to "+" (as in the matrix product) <br>
    <br><b>inlet&nbsp;1 </b><b>method</b>&nbsp;int <b>(</b><b>)</b>  
 				changes the base value to that. <br>
    <br><b>inlet&nbsp;2 </b><b>method</b>&nbsp;grid <b>(</b><i>grid(anyB..., lastB)</i> grid<b>)</b>  
@@ -1091,8 +1094,8 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
 <br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="regsub">regsub</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/regsub-icon.png" alt="[regsub]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
 <br><b>method</b>&nbsp;_1_symbol <b>(</b><b>)</b> a regexp pattern to be found inside of the string<br>
-<br><b>method</b>&nbsp;_0_symbol <b>(</b><b>)</b> a string to transform<br>
 <br><b>method</b>&nbsp;_2_symbol <b>(</b><b>)</b> a replacement for the found pattern<br>
+<br><b>method</b>&nbsp;_0_symbol <b>(</b><b>)</b> a string to transform<br>
 <br><b>method</b>&nbsp;_0_symbol <b>(</b><b>)</b> the transformed string<br>
 <br></td></tr><tr><td colspan="4" bgcolor="#ffb080"><b>&nbsp;&nbsp;class </b><a name="sendgui">sendgui</a></td></tr><tr><td></td><td valign="top"><br>
 <img src="flow_classes/sendgui-icon.png" alt="[sendgui]" border="0"><br clear="left"><br><br><br clear="left"><br></td><td><br>
@@ -1103,14 +1106,17 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
 <br></td></tr><tr><td>&nbsp;</td></tr>
 <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
-<tr><td colspan="4"><a name="(undocumented)"></a><h4>(undocumented)</h4></td></tr><tr><td></td><td></td><td><p>[#edit]</p></td></tr>
+<tr><td colspan="4"><a name="(undocumented)"></a><h4>(undocumented)</h4></td></tr><tr><td></td><td></td><td><p>[#border]</p></td></tr>
+<tr><td></td><td></td><td><p>[#draw_points]</p></td></tr>
+<tr><td></td><td></td><td><p>[#edit]</p></td></tr>
+<tr><td></td><td></td><td><p>[#fft]</p></td></tr>
 <tr><td></td><td></td><td><p>[#in]</p></td></tr>
 <tr><td></td><td></td><td><p>[#in:aalib]</p></td></tr>
+<tr><td></td><td></td><td><p>[#io:dv1394]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:file]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:grid]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:jpeg]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:mpeg]</p></td></tr>
-<tr><td></td><td></td><td><p>[#io:opengl]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:png]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:ppm]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:quicktime]</p></td></tr>
@@ -1120,37 +1126,29 @@ Outputs the HPGL commands in ASCII format <br></td></tr><tr><td></td><td></td><t
 <tr><td></td><td></td><td><p>[#io:videodev]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:window]</p></td></tr>
 <tr><td></td><td></td><td><p>[#io:x11]</p></td></tr>
-<tr><td></td><td></td><td><p>[#matrix_solve]</p></td></tr>
+<tr><td></td><td></td><td><p>[#moment]</p></td></tr>
 <tr><td></td><td></td><td><p>[#out]</p></td></tr>
 <tr><td></td><td></td><td><p>[#peephole]</p></td></tr>
 <tr><td></td><td></td><td><p>[@!]</p></td></tr>
 <tr><td></td><td></td><td><p>[@eight]</p></td></tr>
 <tr><td></td><td></td><td><p>[@four]</p></td></tr>
 <tr><td></td><td></td><td><p>[@global]</p></td></tr>
-<tr><td></td><td></td><td><p>[@scale_to]</p></td></tr>
 <tr><td></td><td></td><td><p>[@three]</p></td></tr>
 <tr><td></td><td></td><td><p>[@two]</p></td></tr>
 <tr><td></td><td></td><td><p>[GridObject]</p></td></tr>
-<tr><td></td><td></td><td><p>[SoundMixer]</p></td></tr>
+<tr><td></td><td></td><td><p>[args]</p></td></tr>
 <tr><td></td><td></td><td><p>[ascii]</p></td></tr>
-<tr><td></td><td></td><td><p>[broken]</p></td></tr>
-<tr><td></td><td></td><td><p>[button]</p></td></tr>
 <tr><td></td><td></td><td><p>[delcomusb]</p></td></tr>
-<tr><td></td><td></td><td><p>[for]</p></td></tr>
 <tr><td></td><td></td><td><p>[gfmessagebox]</p></td></tr>
 <tr><td></td><td></td><td><p>[gridflow]</p></td></tr>
-<tr><td></td><td></td><td><p>[jcomment]</p></td></tr>
 <tr><td></td><td></td><td><p>[jmax4_udpreceive]</p></td></tr>
 <tr><td></td><td></td><td><p>[jmax4_udpsend]</p></td></tr>
 <tr><td></td><td></td><td><p>[joystick_port]</p></td></tr>
-<tr><td></td><td></td><td><p>[jpatcher]</p></td></tr>
 <tr><td></td><td></td><td><p>[klippeltronics]</p></td></tr>
-<tr><td></td><td></td><td><p>[loadbang]</p></td></tr>
-<tr><td></td><td></td><td><p>[messbox]</p></td></tr>
-<tr><td></td><td></td><td><p>[parallel_port]</p></td></tr>
 <tr><td></td><td></td><td><p>[pd_netsocket]</p></td></tr>
+<tr><td></td><td></td><td><p>[realtimer]</p></td></tr>
+<tr><td></td><td></td><td><p>[route2]</p></td></tr>
 <tr><td></td><td></td><td><p>[system]</p></td></tr>
-<tr><td></td><td></td><td><p>[toggle]</p></td></tr>
 <tr><td>&nbsp;</td></tr>
 <td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>

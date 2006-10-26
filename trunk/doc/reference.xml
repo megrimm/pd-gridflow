@@ -423,13 +423,7 @@
 		0]</k>. <k>[#inner]</k> also does dot product and other funny operations.</p>
 
 		<method name="init">
-			<arg name="op_para" type="numop2"/>
-			<arg name="op_fold" type="numop2"/>
-			<arg name="base"    type="integer"/>
 			<arg name="right_hand" type="grid"/>
-			op_para and op_fold are two operators picked from the table
-			of two-input operators.
-			the base value has to be specified (has no default value yet).
 		</method>
 		<inlet id="0">
 			<method name="grid"><arg name="grid" type="grid(anyA..., lastA)"/>
@@ -448,6 +442,14 @@
 				the results together.
 
 				(note: lastA must be equal to firstB.)
+			</method>
+			<method name="op"><arg name="op" type="numop"/>
+				the operation that combines the values from the two grids together.
+				this defaults to "*" (as in the matrix product)
+			</method>
+			<method name="fold"><arg name="op" type="numop"/>
+				the operation that combines the result of the "op" operations together.
+				this defaults to "+" (as in the matrix product)
 			</method>
 		</inlet>
 		<inlet id="1">
