@@ -13,6 +13,7 @@ RM = rm -f
 LIBS = -L. -lruby -ldl -lcrypt -lm
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
+# LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O1
 else
@@ -76,11 +77,11 @@ unskew::
 CONF = config.make config.h Makefile
 
 ifeq ($(HAVE_PUREDATA),yes)
-ifeq (${SYSTEM},Darwin)
+ifeq ($(OS),darwin)
   PDSUF = .pd_darwin
   PDBUNDLEFLAGS = -bundle -undefined suppress
 else
-  ifeq (${SYSTEM},NT)
+  ifeq ($(OS),nt)
     PDSUF = .dll
     PDBUNDLEFLAGS = -shared
     # huh
@@ -117,8 +118,8 @@ dupabs: pd_abstractions/@color.pd
 pd_abstractions/@color.pd: pd_abstractions/\#color.pd
 	for z in camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
-	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb; do \
-	cp -a pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
+	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate; do \
+	cp pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
