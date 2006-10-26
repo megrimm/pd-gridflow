@@ -27,6 +27,7 @@ GF_VERSION = "0.8.4"
 #$use_rexml = true
 $use_rexml = false
 
+$: << ".." << "../.."
 require "gridflow"
 
 if $use_rexml
