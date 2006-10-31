@@ -2,11 +2,12 @@
 # $Id$
 
 $:.unshift "rblti"
-require "rblti"
-include Rblti
+require "lti_load"
 
 #LTI=ENV["HOME"]+"/Documents/ltilib_1.9.12"
-$wrap= "rblti/rblti_wrap.cxx"
+$wrap= Dir["rblti/*_wrap.cxx"]
+$wrap.sort!
+$wrap.delete "rblti/rblti_wrap.cxx"
 
 def get_next_apply_function f
   while line=f.gets
@@ -115,6 +116,7 @@ def adapt_type2 type
   when "std::list<areaPoints >"     ; Rblti::List_areaPoints
   when "std::vector<polygonPoints >"  ; Vector_polygonPoints
   when "std::vector<borderPoints >"   ; Vector_borderPoints
+  when "std::vector<areaPoints >"   ; Vector_areaPoints
   when "std::vector<fastLineExtraction_segmEntry >" ; SegmEntry_vector
   else Rblti.const_get(type)
   end
@@ -135,39 +137,42 @@ def get_type line
   return type
 end  #function def
 
-filehandle=File.open $wrap
-previousf=""
-$init=false
 
-#termin="]\n\n"
-#termin="] rescue nil\n\n"
- termin="]; rescue Exception=>e; GridFlow.post \"form error: %s\", e.inspect end\n\n"
-
-
-while tmp = get_next_apply_function(filehandle)
-  functorname,functiontext=tmp
-
-#  STDERR.puts "functorname = #{functorname}"
-#  STDERR.puts "  defined: #{Rblti.const_defined?(functorname)}"
-#  STDERR.puts "  subclass: #{Rblti.const_get(functorname) < Functor}" if Rblti.const_defined?(functorname)
-  if functorname != previousf
-    puts termin if $init
-    if Rblti.const_defined?(functorname) and Rblti.const_get(functorname) < Functor then
-      puts "begin"
-      puts functorname+".forms = ["
-      $init=true
-    else
-      $init=false
-    end
-  end
-
-  previousf=functorname
-  errorlines = get_type_errors functiontext
-  types = fill_types(errorlines,functorname)
-  print types.inspect,",\n" if $init
-
-end #while
-puts termin if $init
+for filename in $wrap
+   filehandle=File.open filename
+   previousf=""
+   $init=false
+   
+   #termin="]\n\n"
+   #termin="] rescue nil\n\n"
+   termin="]; rescue Exception=>e; GridFlow.post \"form error: %s\", e.inspect end\n\n"
+   
+   
+   while tmp = get_next_apply_function(filehandle)
+   functorname,functiontext=tmp
+   
+   #  STDERR.puts "functorname = #{functorname}"
+   #  STDERR.puts "  defined: #{Rblti.const_defined?(functorname)}"
+   #  STDERR.puts "  subclass: #{Rblti.const_get(functorname) < Functor}" if Rblti.const_defined?(functorname)
+   if functorname != previousf
+   puts termin if $init
+   if Rblti.const_defined?(functorname) and Rblti.const_get(functorname) < Functor then
+   puts "begin"
+   puts functorname+".forms = ["
+   $init=true
+   else
+   $init=false
+   end
+   end
+   
+   previousf=functorname
+   errorlines = get_type_errors functiontext
+   types = fill_types(errorlines,functorname)
+   print types.inspect,",\n" if $init
+   
+   end #while
+   puts termin if $init
+end
 
 #puts head+":"
 #text.scan(/bool\s+apply\s*([^;{])*[;{]/) {|m| puts $& }
