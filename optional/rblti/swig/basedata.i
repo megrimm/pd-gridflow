@@ -410,6 +410,7 @@ static std::list<lti::areaPoints>& convertFromPtr(unsigned long p){return *((std
 namespace std{
 %template(vector_polygonPoints) vector<lti::polygonPoints>;
 %template(vector_borderPoints)  vector<lti::borderPoints>;
+%template(vector_areaPoints)  vector<lti::areaPoints>;
 }
 
 
