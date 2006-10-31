@@ -17,8 +17,9 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( kalmanTracker,                "ltiKalmanTracker.
 %ignore write(ioHandler&, const blobEM::blobEM_gaussEllipse&);
 %ignore read(ioHandler&, blobEM::blobEM_gaussEllipse&);
 namespace lti {
-%rename(init) blobEM::initialize (const channel8 &, const std::vector< blobEM_gaussEllipse > &);
-%rename(init) blobEM::initialize (const channel8 &, const int &);
+/*%rename(init) blobEM::initialize (const channel8 &, const std::vector< blobEM_gaussEllipse > &);
+%rename(init) blobEM::initialize (const channel8 &, const int &);*/
+%rename(init) blobEM::initialize;
 }
 
 %{
@@ -38,10 +39,10 @@ typedef lti::blobEM::gaussEllipse blobEM_gaussEllipse;
 %include _blobEM_gaussEllipse.h
 %include ltiBlobEM.h
 #undef parameters
-//#undef gaussEllipse
+#undef gaussEllipse
 
-/*
-namespace lti {
-%template(gaussEllipse_vector) std::vector< blobEM_gaussEllipse >;
-}*/
+
+namespace std {
+%template(vector_gaussEllipse) vector< lti::blobEM_gaussEllipse >;
+}
 
