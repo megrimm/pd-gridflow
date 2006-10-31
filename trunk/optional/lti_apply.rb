@@ -848,7 +848,7 @@ KalmanTracker.forms = [
 
 begin
 BlobEM.forms = [
-[In[Rblti::Channel8], Out["std::vector<blobEM_gaussEllipse >"]],
+[In[Rblti::Channel8], Out[Rblti::Vector_gaussEllipse]],
 [In[Rblti::Channel8], In[Rblti::Integer]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
