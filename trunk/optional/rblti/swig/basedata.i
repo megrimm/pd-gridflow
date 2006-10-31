@@ -33,7 +33,8 @@
 #ifdef SWIGRUBY
 %include "std_list_ruby.i"
 #endif
-
+%include "std_vector.i" 
+//%include "std_map.i"
 
 using namespace std;
 
@@ -116,6 +117,13 @@ typedef signed int int32;
 #include "ltiTypes.h"
 %}
 #endif
+
+%template(std_ivector)     std::vector<int>;
+%template(std_ucharvector) std::vector<unsigned char>;
+%template(std_fvector)     std::vector<float>;
+%template(std_dvector)     std::vector<double>;
+
+
 HANDLE_SIMPLE_HEADER_FILE("ltiObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoHandler.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiBoundaryType.h")
@@ -379,6 +387,75 @@ HANDLE_SIMPLE_HEADER_FILE("ltiContour.h")
 %template(list_ioPoints) std::list<lti::ioPoints>;
 %template(list_borderPoints) std::list<lti::borderPoints>;
 %template(list_areaPoints) std::list<lti::areaPoints>;
+
+%extend std::list<lti::ioPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::list<lti::ioPoints>& convertFromPtr(unsigned long p){
+std::list<lti::ioPoints>* temp;
+temp = (std::list<lti::ioPoints>*) (p<<2);
+return *temp;}
+//return *(std::list<lti::ioPoints>* (p<<2));}
+}
+
+%extend std::list<lti::borderPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::list<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::borderPoints>*) (p<<2));}
+}
+
+%extend std::list<lti::areaPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::list<lti::areaPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::areaPoints>*) (p<<2));}
+}
+
+namespace std{
+%template(vector_polygonPoints) vector<lti::polygonPoints>;
+%template(vector_borderPoints)  vector<lti::borderPoints>;
+}
+
+
+%extend std::vector<lti::polygonPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::vector<lti::polygonPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::polygonPoints>*) (p<<2));}
+}
+
+%extend std::vector<lti::borderPoints>{
+unsigned long getPtr(){return (((unsigned long)self)>>2);}
+static std::vector<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::borderPoints>*) (p<<2));}
+}
+
+
+
+
+/*namespace lti{
+
+std::list<lti::ioPoints> convertPtrToListIoPoints(unsigned long p)
+{
+return (std::list<lti::ioPoints>) *(p<<2);
+}
+
+std::list<lti::listPoints> convertPtrToListBorderPoints(unsigned long p)
+{
+return (std::list<lti::borderPoints>) *(p<<2);
+}
+
+std::list<lti::areaPoints> convertPtrToListAreaPoints(unsigned long p)
+{
+return (std::list<lti::areaPoints>) *(p<<2);
+}
+}*/
+
+
+
+//#endif
+    
+// TODO: add better tree support !
+//%include "ltiTree.h"
+//namespace lti {
+//    //%template(tree_objectStruct) tree<objectsFromMask_objectStruct>;    // does not work because of a syntactical difference to tree<objectStruct>, unforunately is swig not so clever to handel that :-(
+//    %template(tree_objectStruct) tree<objectStruct>;    
+//}
+////#define node tree_objectStruct_node
+//%include "_tree_node.h"
 
 HANDLE_SIMPLE_HEADER_FILE("ltiLinearKernels.h")
 namespace lti {
