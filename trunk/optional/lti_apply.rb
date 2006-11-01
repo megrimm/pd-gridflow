@@ -804,6 +804,7 @@ ObjectsFromMask.forms = [
 [In[Rblti::Imatrix], Out[Rblti::List_areaPoints], Out[Rblti::Imatrix]],
 [In[Rblti::Channel8], Out["tree<objectStruct >"]],
 [In[Rblti::Imatrix], Out["tree<objectStruct >"]],
+[In[Rblti::Channel8], In[Rblti::Integer], Out[Rblti::Channel8]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
