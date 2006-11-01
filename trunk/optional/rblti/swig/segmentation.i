@@ -11,6 +11,10 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.10  2006/11/01 21:20:47  heri
+//  Added another apply() method to ObjectsFromMask, which outputs a channel8 containing only
+//  the largest blobs from the input.
+//
 //  Revision 1.9  2006/10/26 18:28:38  heri
 //  Compilation in separate modules now working.
 //  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
@@ -101,6 +105,35 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( objectsFromMask,         "ltiObjectsFromMask.h")
     typedef lti::objectsFromMask::objectStruct objectsFromMask_objectStruct;
     }
     %}
+
+%extend lti::objectsFromMask {
+
+void apply(const lti::channel8& in, const int& minsize, lti::channel8& out)
+{
+   std::list<lti::areaPoints> objlist;
+   out.resize((in.size()).y, (in.size()).x, 0, false, true);
+   self->apply(in, objlist);
+   std::list<lti::areaPoints>::iterator objiter = objlist.begin();
+   
+   lti::ipoint pt;
+   lti::areaPoints blob;
+   lti::areaPoints::iterator ptiter;
+
+   //iterate through each blob found in the channel
+   for(; objiter != objlist.end(); objiter++)
+   {
+   blob = *(objiter);
+   ptiter = blob.begin();
+      if (blob.size() >= minsize)
+      {
+	for(; ptiter != blob.end(); ptiter++)
+	{
+		out.at((*ptiter).y, (*ptiter).x) = 255;
+	}
+      }
+   }
+}
+}
 /*namespace lti{
 %ignore objectsFromMask::apply(const channel8 &, std::list< ioPoints > &);
 %ignore objectsFromMask::apply(const matrix< int > &, std::list< ioPoints > &);
