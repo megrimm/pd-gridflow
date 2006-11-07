@@ -149,3 +149,19 @@ help::
 	echo  "make ruby-install   installs ruby into this directory";\
 	echo  "make ruby-checkout  downloads ruby";\
 	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
+
+#--------#--------#--------#--------#--------#--------#--------#--------
+
+# default:: tcl.pd_linux
+
+tcl.pd_linux: tcl_wrap.o Makefile
+	g++ -shared -o tcl.pd_linux tcl_wrap.o -ltcl8.4
+
+tcl_wrap.o: tcl_wrap.cxx
+	g++ -c -I/usr/local/include tcl_wrap.cxx
+
+tcl_wrap.cxx: tcl.i
+	swig -v -tcl -o tcl_wrap.cxx -I/usr/local/include tcl.i
+ 
+#clean::
+#	rm -f *.o *.so *.cxx
