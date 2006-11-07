@@ -154,25 +154,20 @@ help::
 
 # default:: tcl.pd_linux
 
-tcl.pd_linux: tcl_wrap.o Makefile
-	g++ -shared -o tcl.pd_linux tcl_wrap.o -ltcl8.4
+tcl.pd_linux: tcl_wrap.cxx tcl_extras.cxx tcl_extras.h Makefile
+	g++ -shared -DPDSUF=\"$(PDSUF)\" -o tcl.pd_linux -I/usr/local/include \
+		tcl_wrap.cxx tcl_extras.cxx -ltcl8.4
 
-tcl_wrap.o: tcl_wrap.cxx
-	g++ -c -I/usr/local/include tcl_wrap.cxx
-
-tcl_wrap.cxx: tcl.i
-	swig -v -tcl -o tcl_wrap.cxx -I/usr/local/include tcl.i
+tcl_wrap.cxx: tcl.i tcl_extras.h
+	swig -v -c++ -tcl -o tcl_wrap.cxx -I/usr/local/include tcl.i
  
 #clean::
 #	rm -f *.o *.so *.cxx
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
-gridflow2.pd_linux: gridflow2_wrap.o Makefile
-	g++ -shared -o gridflow2.so gridflow2_wrap.o
-
-gridflow2_wrap.o: gridflow2_wrap.cxx
-	g++ -c -DNORUBY $(CFLAGS) gridflow2_wrap.cxx
+gridflow2.so: gridflow2_wrap.cxx Makefile
+	g++ -shared -o gridflow2.so gridflow2_wrap.cxx
 
 gridflow2_wrap.cxx: gridflow2.i
 	swig -v -c++ -tcl -DNORUBY -o gridflow2_wrap.cxx -I/usr/local/include gridflow2.i \
