@@ -83,15 +83,22 @@ extern "C" {
 //#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
+#ifndef SWIG
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
 #else
 #define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
 #endif
-
-typedef VALUE Ruby;
+#define RAISE2(string) RAISE(string)
+#else
+extern Tcl_Interp *tcl_for_pd;
+#define RAISE2(string) Tcl_SetErrorCode(tcl_for_pd,Tcl_NewStringObj(string,strlen(string)))
+#define RAISE(args...) do { char meuh[666]; sprintf(meuh,args); RAISE2(meuh); } while (0);
+#endif
 
 #ifndef SWIG
+typedef VALUE Ruby;
+
 extern "C" {
 void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
@@ -110,6 +117,7 @@ __attribute__ ((noreturn));
 // returns the size of a statically defined array
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
+#ifndef SWIG
 #ifdef RARRAY_LEN
 #undef T_SYMBOL
 #define T_SYMBOL T_STRING
@@ -124,6 +132,8 @@ static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 #endif
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
+#endif
+
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
 
@@ -142,11 +152,13 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 #define PROF(_self_)
 #endif // HAVE_PROFILING
 
+#ifndef SWIG
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
 	if ((p&3)!=0) RAISE("unaligned pointer: %p\n",ptr);
 	return LONG2NUM(p>>2);
 }
+#endif
 #define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
 #define INT2PTR(T,   v) ((T *)(          (v)<<2))
 
@@ -243,7 +255,11 @@ static inline uint64 rdtsc()
 #define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32) MACRO(int64)
 #define EACH_FLOAT_TYPE(MACRO) MACRO(float32) MACRO(float64)
 #endif
+#ifndef SWIG
 #define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO) MACRO(ruby)
+#else
+#define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
+#endif
 
 // note: loop unrolling macros assume N!=0
 // btw this may cause alignment problems when 8 does not divide N
@@ -262,23 +278,29 @@ static inline uint64 rdtsc()
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
+#ifndef SWIG
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
+#endif
 
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
 	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets")
+
+#ifndef SWIG
 extern struct BuiltinSymbols {
 #define FOO(_sym_,_str_) Ruby _sym_;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
+#endif
 
 struct Numop;
+#ifndef SWIG
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
@@ -373,6 +395,7 @@ static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
 static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
 static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
+#endif
 
 //****************************************************************
 // hook into pointer manipulation. will help find memory corruption bugs.
@@ -419,6 +442,9 @@ template <class T> static void memswap (T *a, T *b, long n) {
 // because otherwise the vtable* isn't at the beginning of the object
 // and that's pretty confusing to a lot of people, especially when simple
 // casting causes a pointer to change its value.
+
+#ifndef SWIG
+/* Please stop existing... */
 struct CObject {
 #define OBJECT_MAGIC 1618033989
 	int32 magic;
@@ -442,6 +468,9 @@ void CObject_free (void *);
 struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
+#else
+struct CObject {};
+#endif
 
 #undef check
 
@@ -503,9 +532,11 @@ NUMBER_TYPE_LIMITS(  uint8,0,255,255)
 NUMBER_TYPE_LIMITS(  int16,-0x8000,0x7fff,-1)
 NUMBER_TYPE_LIMITS(  int32,-0x80000000,0x7fffffff,-1)
 NUMBER_TYPE_LIMITS(  int64,-0x8000000000000000LL,0x7fffffffffffffffLL,-1)
-NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
-NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
-NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE("all_ones"),0))
+NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
+NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
+#ifndef SWIG
+NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE2("all_ones"),0))
+#endif
 
 #ifdef HAVE_LITE
 #define NT_NOTLITE NT_UNIMPL
@@ -537,11 +568,15 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
+#ifdef SWIG
+typedef char *Symbol;
+#endif
+
 #ifndef SWIG
 \class NumberType < CObject
 #endif
 struct NumberType : CObject {
-	Ruby /*Symbol*/ sym;
+	Symbol sym;
 	const char *name;
 	int size;
 	int flags;
@@ -565,7 +600,7 @@ struct NumberType : CObject {
 \end class
 #endif
 
-NumberTypeE NumberTypeE_find (Ruby sym);
+NumberTypeE NumberTypeE_find (Symbol sym);
 
 #define TYPESWITCH(T,C,E) switch (T) { \
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
