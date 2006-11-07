@@ -132,6 +132,8 @@ static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 #endif
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
+#else
+static inline const char *rb_sym_name(const char *sym) {return sym;}
 #endif
 
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
@@ -570,6 +572,8 @@ EACH_NUMBER_TYPE(FOO)
 
 #ifdef SWIG
 typedef char *Symbol;
+typedef char *String;
+#define Qnil ""
 #endif
 
 #ifndef SWIG
@@ -652,7 +656,7 @@ struct BitPacking : CObject {
 	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl String to_s();
 #else
-	void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
+//	void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
 	String   pack2(String ins, String outs=Qnil);
 	String unpack2(String ins, String outs=Qnil);
 	void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
@@ -709,7 +713,7 @@ struct NumopOn : CObject {
 \class Numop < CObject
 #endif
 struct Numop : CObject {
-	Ruby /*Symbol*/ sym;
+	Symbol sym;
 	const char *name;
 	int flags;
 	int size; // numop=1; vecop>1
@@ -743,7 +747,7 @@ EACH_NUMBER_TYPE(FOO)
 	void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
 #endif
 
-	Numop(Ruby /*Symbol*/ sym_, const char *name_,
+	Numop(Symbol sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -755,11 +759,12 @@ EACH_NUMBER_TYPE(FOO)
 };
 #ifndef SWIG
 \end class
+inline R::R(Numop *x) {r=x->sym;}
 #endif
 
-inline R::R(Numop *x) {r=x->sym;}
-
 extern NumberType number_type_table[];
+
+#ifndef SWIG
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
 extern Ruby op_dict; // GridFlow.@op_dict={}
 
@@ -778,6 +783,7 @@ static Numop *convert(Ruby x, Numop **bogus) {
 	}
 	return FIX2PTR(Numop,s);
 }
+#endif
 #endif
 
 // ****************************************************************
