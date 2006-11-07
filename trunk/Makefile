@@ -165,3 +165,17 @@ tcl_wrap.cxx: tcl.i
  
 #clean::
 #	rm -f *.o *.so *.cxx
+
+#--------#--------#--------#--------#--------#--------#--------#--------
+
+gridflow2.pd_linux: gridflow2_wrap.o Makefile
+	g++ -shared -o gridflow2.so gridflow2_wrap.o
+
+gridflow2_wrap.o: gridflow2_wrap.cxx
+	g++ -c -DNORUBY $(CFLAGS) gridflow2_wrap.cxx
+
+gridflow2_wrap.cxx: gridflow2.i
+	swig -v -c++ -tcl -DNORUBY -o gridflow2_wrap.cxx -I/usr/local/include gridflow2.i \
+	|| (rm gridflow2_wrap.cxx && false)
+
+
