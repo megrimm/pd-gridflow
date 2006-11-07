@@ -58,6 +58,7 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #include <malloc.h>
 #endif
 
+#ifndef SWIG
 extern "C" {
 #include <ruby.h>
 #include <rubyio.h>
@@ -66,6 +67,7 @@ extern "C" {
 #error "Can't do anything without ruby.h"
 #endif
 };
+#endif
 
 #include "../config.h"
 
@@ -89,11 +91,14 @@ extern "C" {
 
 typedef VALUE Ruby;
 
+#ifndef SWIG
 extern "C" {
 void rb_raise0(
 const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
 __attribute__ ((noreturn));
 };
+#endif
+
 #define VA int argc, Ruby *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -443,7 +448,9 @@ extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 typedef int32 Card; /* should be switched to long int soon */
+#ifndef SWIG
 \class Dim < CObject
+#endif
 struct Dim : CObject {
 	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
 	Card n;
@@ -477,7 +484,9 @@ struct Dim : CObject {
 		return true;
 	}
 };
+#ifndef SWIG
 \end class Dim
+#endif
 
 //****************************************************************
 //NumberTypeE is a very small int identifying the type of the (smallest) elements of a grid
@@ -528,7 +537,9 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
+#ifndef SWIG
 \class NumberType < CObject
+#endif
 struct NumberType : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
@@ -538,12 +549,21 @@ struct NumberType : CObject {
 	NumberTypeE index;
 	NumberType(const char *name_, int size_, int flags_, const char *aliases_) :
 		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
+#ifndef SWIG
 	\decl Symbol sym_m();
 	\decl int size_m();
 	\decl int flags_m();
 	\decl int index_m();
+#else
+	Symbol sym_m();
+	int size_m();
+	int flags_m();
+	int index_m();
+#endif
 };
+#ifndef SWIG
 \end class
+#endif
 
 NumberTypeE NumberTypeE_find (Ruby sym);
 
@@ -574,7 +594,9 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
+#ifndef SWIG
 \class BitPacking < CObject
+#endif
 struct BitPacking : CObject {
 	Packer   *  packer;
 	Unpacker *unpacker;
@@ -587,17 +609,28 @@ struct BitPacking : CObject {
 		Packer *packer=0, Unpacker *unpacker=0);
 	bool is_le();
 	bool eq(BitPacking *o);
+#ifndef SWIG
 	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
 	\decl String   pack2(String ins, String outs=Qnil);
 	\decl String unpack2(String ins, String outs=Qnil);
 	\decl void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
 	\decl String to_s();
+#else
+	void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
+	String   pack2(String ins, String outs=Qnil);
+	String unpack2(String ins, String outs=Qnil);
+	void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
+	void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
+	String to_s();
+#endif
 // main entrances to Packers/Unpackers
 	template <class T> void   pack(long n, T *in, uint8 *out);
 	template <class T> void unpack(long n, uint8 *in, T *out);
 };
+#ifndef SWIG
 \end class
+#endif
 
 int high_bit(uint32 n);
 int  low_bit(uint32 n);
@@ -637,7 +670,9 @@ struct NumopOn : CObject {
 // abelian property: commutativity: f(a,b)=f(b,a)
 #define OP_COMM (1<<1)
 
+#ifndef SWIG
 \class Numop < CObject
+#endif
 struct Numop : CObject {
 	Ruby /*Symbol*/ sym;
 	const char *name;
@@ -661,10 +696,18 @@ EACH_NUMBER_TYPE(FOO)
 		typename NumopOn<T>::Scan f = on(*as)->scan;
 		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
 		f(an,n,(T *)as,(T *)bs);}
+#ifndef SWIG
 	\decl void map_m  (NumberTypeE nt,          long n, String as, String b);
 	\decl void zip_m  (NumberTypeE nt,          long n, String as, String bs);
 	\decl void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
 	\decl void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
+#else
+	void map_m  (NumberTypeE nt,          long n, String as, String b);
+	void zip_m  (NumberTypeE nt,          long n, String as, String bs);
+	void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
+	void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
+#endif
+
 	Numop(Ruby /*Symbol*/ sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
@@ -675,7 +718,9 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 };
+#ifndef SWIG
 \end class
+#endif
 
 inline R::R(Numop *x) {r=x->sym;}
 
@@ -701,7 +746,9 @@ static Numop *convert(Ruby x, Numop **bogus) {
 #endif
 
 // ****************************************************************
+#ifndef SWIG
 \class Grid < CObject
+#endif
 struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
@@ -742,7 +789,9 @@ private:
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
 };
+#ifndef SWIG
 \end class Grid
+#endif
 
 static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
 
@@ -829,7 +878,9 @@ EACH_NUMBER_TYPE(FOO)
 } GridHandler;
 
 typedef struct  GridObject GridObject;
+#ifndef SWIG
 \class GridInlet < CObject
+#endif
 struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
@@ -868,7 +919,9 @@ public:
 private:
 	template <class T> void from_grid2(Grid *g, T foo);
 };
+#ifndef SWIG
 \end class GridInlet
+#endif
 
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin and \classinfo)
@@ -886,7 +939,9 @@ struct FClass {
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
+#ifndef SWIG
 \class GridOutlet < CObject
+#endif
 struct GridOutlet : CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
@@ -936,14 +991,18 @@ private:
 		dim=0;
 	}
 };
+#ifndef SWIG
 \end class GridOutlet
+#endif
 
 //****************************************************************
 
 typedef struct BFObject BFObject; // Pd t_object or something
 
 // represents objects that have inlets/outlets
+#ifndef SWIG
 \class FObject < CObject
+#endif
 struct FObject : CObject {
 	BFObject *bself; // point to PD peer
 	uint64 total_time;
@@ -953,15 +1012,28 @@ struct FObject : CObject {
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
+#ifndef SWIG
 	\decl R total_time_get();
 	\decl R total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
 	\decl void delete_m ();
-};
-\end class FObject
+#else
+//	R total_time_get();
+//	R total_time_set(Ruby x);
+	void send_in (...);
+	void send_out (...);
+	void delete_m ();
+#endif
 
+};
+#ifndef SWIG
+\end class FObject
+#endif
+
+#ifndef SWIG
 \class GridObject < FObject
+#endif
 struct GridObject : FObject {
 	std::vector<P<GridInlet> >  in;
 	P<GridOutlet> out;
@@ -975,6 +1047,7 @@ struct GridObject : FObject {
 			if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
+#ifndef SWIG
 	\decl Ruby method_missing(...);
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
@@ -982,8 +1055,19 @@ struct GridObject : FObject {
 	\decl void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
+#else
+	Ruby method_missing(...);
+	Array inlet_dim(int inln);
+	Symbol inlet_nt(int inln);
+	void inlet_set_factor(int inln, long factor);
+	void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
+	void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
+	void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
+#endif
 };
+#ifndef SWIG
 \end class GridObject
+#endif
 
 uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
