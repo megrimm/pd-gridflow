@@ -23,7 +23,7 @@
 
 #ifndef __GF_GRID_H
 #define __GF_GRID_H
-#define GF_VERSION "0.8.5"
+#define GF_VERSION "0.9.0"
 
 #ifndef IS_BRIDGE
 #include <stdio.h>
@@ -286,6 +286,11 @@ static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
+#else
+typedef Tcl_Obj *Ruby;
+typedef char *Symbol;
+typedef char *String;
+#define Qnil ""
 #endif
 
 #define BUILTIN_SYMBOLS(MACRO) \
@@ -569,12 +574,6 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 	return _type_##_e; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-
-#ifdef SWIG
-typedef char *Symbol;
-typedef char *String;
-#define Qnil ""
-#endif
 
 #ifndef SWIG
 \class NumberType < CObject
