@@ -1,8 +1,9 @@
 #include "m_pd.h"
+#include <tcl.h>
 
 typedef struct t_tcl {
   t_object o;
-  char *self;
+  Tcl_Obj *self;
 } t_tcl;
 
 void poststring2 (const char *s);
