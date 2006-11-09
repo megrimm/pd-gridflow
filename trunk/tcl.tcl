@@ -2,6 +2,9 @@ proc post {args} {
   poststring2 [eval [concat [list format] $args]]
 }
 
+tclpd_class_new tcl 0
+proc tcl {args} {}
+
 #--------#--------#--------#--------#--------#--------#--------#--------#
 # this is a personalized helloworld using tcl.pd_linux but without objective.tcl
 
