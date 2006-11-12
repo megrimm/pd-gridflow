@@ -13,6 +13,13 @@
 /* functions that are only in Miller's pd, not in devel_0_39/DesireData */
 %ignore sys_idlehook;
 
+/* functions that are not supported by DesireData */
+
+%ignore class_getpropertiesfn;
+%ignore class_setpropertiesfn;
+%ignore class_getwidget;
+%ignore class_setwidget;
+
 /* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
 %ignore class_new;
