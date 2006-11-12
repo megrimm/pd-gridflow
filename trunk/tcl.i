@@ -1,4 +1,6 @@
 %module tclpd
+
+/* functions that are in m_pd.h but don't exist in modern versions of pd */
 %ignore pd_getfilename;
 %ignore pd_getdirname;
 %ignore pd_anything;
@@ -7,7 +9,16 @@
 %ignore garray_get;
 %ignore c_extern;
 %ignore c_addmess;
+
+/* functions that are only in Miller's pd, not in devel_0_39/DesireData */
+%ignore sys_idlehook;
+
+/* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
+%ignore class_new;
+
+/* end of ignore-list */
+
 %include "m_pd.h"
 %include "tcl_extras.h"
 
