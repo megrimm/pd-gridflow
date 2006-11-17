@@ -47,6 +47,7 @@ extern "C" void tcl_setup (void) {
   }
   post("loading Tcl-for-Pd");
   tcl_for_pd = Tcl_CreateInterp();
+  Tcl_Init(tcl_for_pd);
   Tclpd_SafeInit(tcl_for_pd);
 
   char *dirname   = new char[242];
@@ -68,9 +69,9 @@ extern "C" void tcl_setup (void) {
   delete[] dirname;
 
   if (Tcl_Eval(tcl_for_pd,"source $DIR/tcl.tcl") != TCL_OK)
-    post("tcl error: %s\n", Tcl_GetString(Tcl_GetObjResult(tcl_for_pd)));
+    post("tcl error: %s", Tcl_GetString(Tcl_GetObjResult(tcl_for_pd)));
   if (Tcl_Eval(tcl_for_pd,"source $env(HOME)/.pd.tcl") != TCL_OK)
-    post("tcl error: %s\n", Tcl_GetString(Tcl_GetObjResult(tcl_for_pd)));
+    post("tcl error: %s", Tcl_GetString(Tcl_GetObjResult(tcl_for_pd)));
 }
 
 %}
