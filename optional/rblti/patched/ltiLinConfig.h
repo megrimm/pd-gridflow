@@ -28,7 +28,7 @@
 #define HAVE_FINITE 1
 
 /* defines if gtk libraries were found */
-#define HAVE_GTK 1
+/* #undef HAVE_GTK */
 
 /* define if std::ifstrean has constructor taking a file descriptor */
 /* #undef HAVE_IFSTREAM_FD_CTOR */
@@ -82,7 +82,7 @@
 #define HAVE_SSE 1
 
 /* define if processor has intel SSE2 */
-/* #undef HAVE_SSE2 */
+#define HAVE_SSE2 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -136,7 +136,7 @@
 #define PACKAGE_VERSION "1.9.15"
 
 /* define processor type */
-#define PROCESSOR AMD Athlon(tm) XP 1900+
+#define PROCESSOR AMD Athlon(tm) 64 Processor 3200+
 
 /* define processor vendor */
 #define PROCESSOR_VENDOR AuthenticAMD
