@@ -25,8 +25,8 @@ all:: alt_types.o ltiPointList_extra.o basedata.so base_functors.so ltimath.so i
 		transformations.so manipulation.so classifiers.so colorspaces.so drawing.so
 
 
-basedata.so: basedata_wrap.o alt_types.o ltiPointList_extra.o
-	$(CXX) -shared -fPIC -o basedata.so alt_types.o basedata_wrap.o ltiPointList_extra.o $(LIBS) -lstdc++
+basedata.so: basedata_wrap.o alt_types.o
+	$(CXX) -shared -fPIC -o basedata.so alt_types.o basedata_wrap.o $(LIBS) -lstdc++
 
 basedata_wrap.o: basedata_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c basedata_wrap.cxx
@@ -41,8 +41,8 @@ basedata_wrap.cxx: ./swig/basedata.i ./swig/dep.i  ./generated/* alt_types.o
 
 
 
-base_functors.so: base_functors_wrap.o alt_types.o ltiPointList_extra.o
-	$(CXX) -shared -fPIC -o base_functors.so alt_types.o ltiPointList_extra.o base_functors_wrap.o $(LIBS) -lstdc++
+base_functors.so: base_functors_wrap.o alt_types.o
+	$(CXX) -shared -fPIC -o base_functors.so alt_types.o base_functors_wrap.o $(LIBS) -lstdc++
 
 base_functors_wrap.o: base_functors_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c base_functors_wrap.cxx
@@ -82,7 +82,7 @@ ltiPointList_extra.o: ./src/ltiPointList_extra.cpp
 	sed -i "s/Init_rblti/Init_$$FOO/" $@
 
 tracking.so: tracking_wrap.o alt_types.o ltiPointList_extra.o blobEMTracker.o
-	$(CXX) -shared -fPIC -o tracking.so alt_types.o blobEMTracker.o tracking_wrap.o $(LIBS) -lstdc++
+	$(CXX) -shared -fPIC -o tracking.so ltiPointList_extra.o alt_types.o blobEMTracker.o tracking_wrap.o $(LIBS) -lstdc++
 
 blobEMTracker.o: ./src/blobEMTracker.cpp  ./patched/blobEMTracker.h
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -o ./blobEMTracker.o -c ./src/blobEMTracker.cpp
