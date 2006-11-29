@@ -22,7 +22,7 @@ default:: all
 
 all:: alt_types.o ltiPointList_extra.o basedata.so base_functors.so ltimath.so io.so statistics.so filters.so \
 		mask_op.so colors.so segmentation.so edge_detectors.so feat_extr.so morph_op.so \
-		transformations.so manipulation.so classifiers.so colorspaces.so drawing.so
+		transformations.so manipulation.so classifiers.so colorspaces.so drawing.so tracking.so
 
 
 basedata.so: basedata_wrap.o alt_types.o
