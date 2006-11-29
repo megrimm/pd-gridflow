@@ -46,3 +46,5 @@ namespace std {
 %template(vector_gaussEllipse) vector< lti::blobEM_gaussEllipse >;
 }
 
+HANDLE_FUNCTOR_WITH_PARAMETERS( blobEMTracker,                "blobEMTracker.h")
+
