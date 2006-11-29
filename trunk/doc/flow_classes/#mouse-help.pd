@@ -1,8 +1,8 @@
 #N canvas 215 0 776 547 10;
-#X msg 147 123 option setcursor 32;
+#X msg 147 123 setcursor 32;
 #X text 49 22 How to get the mouse coordinates and hide / change the
 cursor?;
-#X msg 128 100 option hidecursor;
+#X msg 128 100 hidecursor;
 #X text 273 98 <-- removes the cursor;
 #X text 307 120 <-- accepts 0 - 63;
 #X obj 206 168 print xy_clicked;
