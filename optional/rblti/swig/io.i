@@ -11,6 +11,9 @@
 //  $Date$
 // 
 //  $Log$
+//  Revision 1.4  2006/11/29 20:50:21  heri
+//  Blob Tracker part V, plus some other minor previous changes.
+//
 //  Revision 1.3  2006/10/26 18:28:38  heri
 //  Compilation in separate modules now working.
 //  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
@@ -63,3 +66,7 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( ioImage,                 "ltiALLFunctor.h")
 // Misc    
 HANDLE_FUNCTOR_WITH_PARAMETERS( viewerBase,              "ltiViewerBase.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( externViewer,            "ltiExternViewer.h")
+namespace lti {
+%ignore fastViewer::setParameters;
+}
+HANDLE_FUNCTOR_WITH_PARAMETERS( fastViewer,              "ltiFastViewer.h")

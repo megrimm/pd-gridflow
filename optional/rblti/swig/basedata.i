@@ -150,6 +150,11 @@ namespace lti {
   %template(dpoint3d) tpoint3D<double>;
 }
 
+%extend lti::tpoint<int> {
+   lti::tpoint<int> castFrom2(tpoint<double> dpt){
+	return self->castFrom(dpt);
+}
+}
 
 HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
 namespace lti {
@@ -311,6 +316,37 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
               iter++;
         }
         return (*iter);
+    }
+    
+    bool contains(const lti::tpoint<int>& cmp)
+    {
+        lti::tpointList<int>::iterator it;
+        for (it = self->begin(); it != self->end(); it++)
+            {
+            if ((*it) == cmp)
+                return true;
+            }
+        //not found, return false 
+        return false;
+    }
+
+    tpoint<int> cog()
+    {
+    lti::tpoint<int> acc(0,0);
+    lti::tpointList<int>::iterator it;
+        for (it = self->begin(); it != self->end(); it++)
+            {
+            acc.x += (*it).x;
+            acc.y += (*it).y;
+            }
+
+        //compute the cog
+        if (self->size() != 0)
+            {
+            acc.x /= self->size();
+            acc.y /= self->size();
+            }
+        return acc;
     }
     }
     
