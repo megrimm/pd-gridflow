@@ -5,7 +5,7 @@
 namespace lti{
 
 bool contains(const tpointList<int>&, const tpoint<int>&);
-ipoint cog(const pointList& );
+tpoint<int> cog(const tpointList<int>& );
 }
 
 #endif
