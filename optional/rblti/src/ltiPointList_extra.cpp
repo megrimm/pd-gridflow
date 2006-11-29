@@ -14,7 +14,7 @@ bool contains(const tpointList<int>& pl, const tpoint<int>& cmp)
         return false;
     }
 
-ipoint cog(const pointList& pl)
+tpoint<int> cog(const tpointList<int>& pl)
     {
     tpoint<int> acc(0,0);
     lti::tpointList<int>::const_iterator it;
