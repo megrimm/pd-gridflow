@@ -56,11 +56,11 @@ namespace lti {
                 i=0;
                 found = false;
                 while (!found && i< vLen)
-                        found = contains(tempBlob, center2.castFrom(gaussVec[i++].center));
+                    found = lti::contains(tempBlob, center2.castFrom(gaussVec[i++].center));
                 
                 if(!found)   //This is a new blob
                 {
-                    center1 = cog(tempBlob);
+                    center1 = lti::cog(tempBlob);
                     //Create new gaussEllipse to track the new blob and insert in vector
                     blobEM::gaussEllipse newEll(lti::tpoint<double>((double)center1.x,(double)center1.y), 11., 10., 0.0);
                     gaussVec.push_back(newEll);
@@ -81,7 +81,7 @@ namespace lti {
                 center1.castFrom(tempEll.center);
                 
                 for(blobIt = blobList.begin(); (blobIt != blobList.end()) && (!found); blobIt++)
-                    found = contains((*blobIt), center1);
+                    found = lti::contains((*blobIt), center1);
                 
                 if(!found) //a blob disappeared, erase it
                     gaussVec.erase(vecIt);
