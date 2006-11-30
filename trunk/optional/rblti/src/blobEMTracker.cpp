@@ -47,7 +47,7 @@ namespace lti {
         const parameters& par = getParameters();
         ofmPar.minSize = par.minSize;
         ofm.setParameters(ofmPar);
-        printf("Changing internal objectsFromMask parameter minSize attribute to %d", par.minSize);
+        //printf("Changing internal objectsFromMask parameter minSize attribute to %d\n", par.minSize);
         return validParameters();
     }
     
