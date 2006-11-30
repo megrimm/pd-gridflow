@@ -11,20 +11,27 @@
 
 namespace lti{
 
-    class blobEMTracker{
+    class blobEMTracker: public functor {
         public:
-        class parameters{
+        class parameters : public functor::parameters {
             public:
             
             parameters();
+            virtual ~parameters();
+            parameters(const parameters&);
+            virtual functor::parameters* clone() const;
             //Blobs must be larger than this size to be recognized
             int minSize;
         };
         
         blobEMTracker();
-        void setParameters(const parameters& param);
+        blobEMTracker(const blobEMTracker&);
+        virtual ~blobEMTracker();
+        virtual functor* clone() const;
+        virtual bool updateParameters();
+        const parameters& getParameters() const;
         void apply(const channel8 &, matrix<int> &);
-        
+                
         private:
         blobEM tracker;
         int blobCount;
@@ -34,7 +41,6 @@ namespace lti{
         objectsFromMask::parameters ofmPar;
         std::list< areaPoints > blobList;
         std::vector<blobEM::gaussEllipse> gaussVec;
-        parameters params;
     };
 }
 
