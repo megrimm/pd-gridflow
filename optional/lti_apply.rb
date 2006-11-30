@@ -854,6 +854,11 @@ BlobEM.forms = [
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
+BlobEMTracker.forms = [
+[In[Rblti::Channel8], Out[Rblti::Imatrix]],
+]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
+
+begin
 Scaling.forms = [
 [Out[Rblti::Image]],
 [In[Rblti::Image], Out[Rblti::Image]],
