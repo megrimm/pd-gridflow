@@ -7,9 +7,10 @@ ToDo: - Try 4-neighbourhood distance for distanceTransform
 
 namespace lti {
 
-    blobEMTracker::blobEMTracker() : tracker(), ofm(), ofmPar(), dt(), dtPar()
+    blobEMTracker::blobEMTracker() : functor(), tracker(), ofm(), ofmPar(), dt(), dtPar()
     {
-        params.minSize =100;
+        parameters defaultPar;
+        setParameters(defaultPar);
         ofmPar.sortByArea = true;
         ofmPar.minSize = 100;
         ofmPar.meltHoles = true;
@@ -19,11 +20,44 @@ namespace lti {
         blobCount = 0;
     }
     
-    void blobEMTracker::setParameters(const parameters& param)
+    blobEMTracker::blobEMTracker(const blobEMTracker& other) : functor()
     {
-        params.minSize = param.minSize;
-        ofmPar.minSize = param.minSize;
+        functor::copy(other);
+        tracker.copy(other.tracker);
+        ofm.copy(other.ofm);
+        ofmPar.copy(other.ofmPar);
+        dt.copy(other.dt);
+        dtPar.copy(other.dtPar);
+        blobCount = other.blobCount;
+        blobList = other.blobList;
+        gaussVec = other.gaussVec;
+    }
+    
+    blobEMTracker::~blobEMTracker()
+    {
+    }
+    
+    functor* blobEMTracker::clone() const 
+    {
+        return new blobEMTracker(*this);
+    }
+    
+    bool blobEMTracker::updateParameters()
+    {
+        const parameters& par = getParameters();
+        ofmPar.minSize = par.minSize;
         ofm.setParameters(ofmPar);
+        printf("Changing internal objectsFromMask parameter minSize attribute to %d", par.minSize);
+        return validParameters();
+    }
+    
+    const blobEMTracker::parameters& blobEMTracker::getParameters() const 
+    {
+        const parameters* par = dynamic_cast<const parameters*>(&functor::getParameters());
+        if(isNull(par)) {
+            throw invalidParametersException(getTypeName());
+        }
+        return *par;
     }
     
     void blobEMTracker::apply(const channel8& inChan, matrix<int>& outMat)
@@ -102,9 +136,29 @@ namespace lti {
         }
     }
     
-    blobEMTracker::parameters::parameters()
+    //***************************************************************************************************
+    //***************************************************************************************************
+    
+    
+    blobEMTracker::parameters::parameters() : functor::parameters()
     {
         minSize=100;
     }
+    
+    blobEMTracker::parameters::~parameters()
+    {
+    }
+        
+    blobEMTracker::parameters::parameters(const parameters& other) : functor::parameters()
+    {
+        functor::parameters::copy(other);
+        minSize = other.minSize;
+    }
+    
+    functor::parameters* blobEMTracker::parameters::clone() const
+    {
+        return new parameters(*this);
+    }
+    
 
 }
