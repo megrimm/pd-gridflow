@@ -3,10 +3,13 @@
 
 namespace lti {
 namespace _blobEMTracker {
-class RblobEMTracker_parameters 
+class RblobEMTracker_parameters : public lti::_functor::Rfunctor_parameters
 {
 public:
      RblobEMTracker_parameters ();
+     ~RblobEMTracker_parameters (  );
+     RblobEMTracker_parameters (const RblobEMTracker_parameters&);
+     functor::RblobEMTracker_parameters * clone (  ) const;
      int minSize;
 };
 }
