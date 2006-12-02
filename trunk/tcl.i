@@ -20,6 +20,9 @@
 %ignore class_setwidget;
 %ignore sys_fontwidth;
 %ignore sys_fontheight;
+%ignore sys_queuegui;
+%ignore sys_unqueuegui;
+%ignore sys_pretendguibytes;
 
 /* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
