@@ -77,7 +77,15 @@ struct FormatMPEG3 : Format {
 	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
 	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+#ifdef MPEG3_UNDEFINED_ERROR
+	{
+		int err;
+		mpeg = mpeg3_open(rb_str_ptr(filename),&err);
+		gfpost("mpeg error code = %d",err);
+	}
+#else
 	mpeg = mpeg3_open(rb_str_ptr(filename));
+#endif
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 }
 
