@@ -60,7 +60,7 @@ namespace lti {
         return *par;
     }
     
-    void blobEMTracker::apply(const channel8& inChan, matrix<int>& outMat)
+    void blobEMTracker::apply(const channel8& inChan, channel8& outChan, matrix<int>& outMat)
     {
         int newBlobCount;
         
@@ -69,7 +69,10 @@ namespace lti {
         newBlobCount = blobList.size();
         
         //resize the output matrix according to the number of blobs
-        outMat.resize(newBlobCount, 3, 0, false, true);
+        if (newBlobCount > 0)
+            outMat.resize(newBlobCount, 4, 0, false, true);
+        else
+            outMat.resize(1, 4, 0, false, true);   //output matrix must have at least one row
         
         bool found;
         int i, vLen = gaussVec.size();
@@ -90,7 +93,12 @@ namespace lti {
                 i=0;
                 found = false;
                 while (!found && i< vLen)
-                    found = lti::contains(tempBlob, center2.castFrom(gaussVec[i++].center));
+                {
+                    found = lti::contains(tempBlob, center2.castFrom(gaussVec[i].center));
+                    if (found)
+                        outMat.at(i,3) = (*blobIt).size();
+                    i++;
+                }
                 
                 if(!found)   //This is a new blob
                 {
@@ -98,6 +106,8 @@ namespace lti {
                     //Create new gaussEllipse to track the new blob and insert in vector
                     blobEM::gaussEllipse newEll(lti::tpoint<double>((double)center1.x,(double)center1.y), 11., 10., 0.0);
                     gaussVec.push_back(newEll);
+                    outMat.at(gaussVec.size()-1,3) = (*blobIt).size();
+                    printf("found new blob at (%d, %d), size is %d, position %d in vector\n", center1.x, center1.y, (*blobIt).size(), gaussVec.size()-1);
                 }
             }
         }
@@ -108,26 +118,65 @@ namespace lti {
             //Identify the blob that disappeared
             //Two blobs are assumed the same if the center of gravity (cog) of one
             //of them is contained inside the other
-            for (vecIt = gaussVec.begin(); vecIt != gaussVec.end(); vecIt++)
+            vecIt = gaussVec.begin();
+            i=0;
+            while ((vecIt != gaussVec.end()) && (0 != gaussVec.size()))
             {
+                printf("here, %d\n", gaussVec.size());
                 tempEll = (*vecIt);
                 found = false;
                 center1.castFrom(tempEll.center);
                 
                 for(blobIt = blobList.begin(); (blobIt != blobList.end()) && (!found); blobIt++)
+                {
                     found = lti::contains((*blobIt), center1);
+                    if(found)
+                        outMat.at(i,3) = (*blobIt).size();
+                }
                 
                 if(!found) //a blob disappeared, erase it
-                    gaussVec.erase(vecIt);
+                {
+                    gaussVec.erase(vecIt); 
+                    vecIt = gaussVec.begin();
+                    i = 0;
+                    printf("erased blob, %d left\n", gaussVec.size());
+                    if(vecIt == gaussVec.end())
+                        printf("Iterator at the end of vector\n");
+                }
+                else
+                { 
+                    i++;
+                    vecIt++;
+                }
             }
         }
         
         blobCount = newBlobCount;
         //track blobs as usual using blobEM
         channel8 dtChan(inChan.size(),(ubyte)0);
-        dt.apply(inChan, dtChan);
+        
+        outChan.resize((inChan.size()).y, (inChan.size()).x, 0, false, true);
+        std::list<areaPoints>::iterator objiter = blobList.begin();
+   
+        areaPoints blob;
+        areaPoints::iterator ptiter;
+
+        //iterate through each blob found in the channel
+        for(; objiter != blobList.end(); objiter++)
+        {
+            blob = *(objiter);
+            ptiter = blob.begin();
+            for(; ptiter != blob.end(); ptiter++)
+                    outChan.at((*ptiter).y, (*ptiter).x) = 255;
+        }
+
+        dt.apply(outChan, dtChan);
         tracker.apply(dtChan, gaussVec);
         
+        if (gaussVec.size() != blobList.size())
+            printf("wth?? bloblist.size = %d, gaussVec.size = %d\n", blobList.size(), gaussVec.size());
+        
+        assert(gaussVec.size() == blobList.size());
         //Put the centers of the blobs into outMat
         for (vecIt = gaussVec.begin(), i=0; vecIt != gaussVec.end(); vecIt++, i++)
         {
