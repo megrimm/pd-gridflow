@@ -855,7 +855,7 @@ BlobEM.forms = [
 
 begin
 BlobEMTracker.forms = [
-[In[Rblti::Channel8], Out[Rblti::Imatrix]],
+[In[Rblti::Channel8], Out[Rblti::Channel8], Out[Rblti::Imatrix]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin
