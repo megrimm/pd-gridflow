@@ -30,7 +30,7 @@ namespace lti{
         virtual functor* clone() const;
         virtual bool updateParameters();
         const parameters& getParameters() const;
-        void apply(const channel8 &, matrix<int> &);
+        void apply(const channel8 & , channel8 & , matrix<int> &);
                 
         private:
         blobEM tracker;
