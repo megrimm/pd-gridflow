@@ -90,7 +90,7 @@ blobEMTracker.o: ./src/blobEMTracker.cpp  ./patched/blobEMTracker.h
 tracking_wrap.o: tracking_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c tracking_wrap.cxx
 
-tracking_wrap.cxx: ./swig/tracking.i ./swig/dep.i  ./generated/* alt_types.o
+tracking_wrap.cxx: ./swig/tracking.i ./swig/dep.i  ./generated/* alt_types.o ./patched/blobEMTracker.h
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
