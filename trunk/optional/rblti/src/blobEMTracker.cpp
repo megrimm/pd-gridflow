@@ -182,6 +182,13 @@ namespace lti {
         {
             outMat.at(i,1) = (int) ((*vecIt).center.y);
             outMat.at(i,2) = (int) ((*vecIt).center.x);
+            
+            for (blobIt = blobList.begin(); blobIt != blobList.end(); blobIt++)
+            {
+                if (contains((*blobIt), center2.castFrom((*vecIt).center)))
+                    outMat.at(i,3) = (*blobIt).size();
+            }
+            outMat.at(i,0) = (int) &(*vecIt);
         }
     }
     
