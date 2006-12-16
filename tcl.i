@@ -23,6 +23,9 @@
 %ignore sys_queuegui;
 %ignore sys_unqueuegui;
 %ignore sys_pretendguibytes;
+%ignore class_setparentwidget;
+%ignore pd_getparentwidget;
+%ignore getzbytes;
 
 /* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
@@ -62,7 +65,7 @@ extern "C" void tcl_setup (void) {
   int       fd=open_via_path(dirname,"gridflow/tcl",PDSUF,dirresult,&nameresult,242,1);
   if (fd<0) fd=open_via_path(dirname,         "tcl",PDSUF,dirresult,&nameresult,242,1);
   if (fd>=0) {
-    post("%s found itself in %s","tcl"PDSUF,dirresult);
+    //post("%s found itself in %s","tcl"PDSUF,dirresult);
     close(fd);
   } else {
     post("%s was not found via the -path!","tcl"PDSUF);
