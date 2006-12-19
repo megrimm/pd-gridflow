@@ -26,6 +26,8 @@
 %ignore class_setparentwidget;
 %ignore pd_getparentwidget;
 %ignore getzbytes;
+%ignore gfxstub_new;
+%ignore gfxstub_deleteforkey;
 
 /* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
