@@ -445,6 +445,7 @@ class LTIGridObject < GridObject
         end
         
 	@functor.apply(*realstuff)
+	true
     end
 
     def _n_rgrid_end(inlet) end
@@ -454,7 +455,7 @@ class LTIGridObject < GridObject
 #           @functor.setParameters @param
 #	end
 #	t=Time.new
-	apply
+	apply or return
 #	t=Time.new-t; GridFlow.post "time for apply: %f",t
         GridFlow.post "@outletmap = %s", @outletmap.inspect if $lti_debug
         GridFlow.post "@stuffs = %s", @stuffs.inspect if $lti_debug
@@ -529,7 +530,7 @@ class LTIGridObject < GridObject
 	send_out_grid_flow o, [m.ul.y, m.ul.x, m.br.y, m.br.x].pack("I4"), :int32
     end
     def send_out_lti_segmentry o,m
-        #GridFlow.post("Here!")
+        #GridFlow.post("%d, %d, %d, %d", m.start.y, m.start.x, m.end.y, m.end.x)
         send_out_grid_begin o,[2,2]#, @out_nt
         send_out_grid_flow o, [m.start.y, m.start.x, m.end.y, m.end.x].pack("I4"), :int32
     end
@@ -626,9 +627,9 @@ end
 # Special Cases:
 
 GridFlow.fclasses["lti.BackgroundModel"].module_eval {
-  def initialize
+  def initialize(*)
     super
-    @mode = :apply
+    @mode = :addBackground
   end
   def _0_mode(mode)
     case mode
@@ -638,16 +639,21 @@ GridFlow.fclasses["lti.BackgroundModel"].module_eval {
     else raise "unknown mode: #{mode}"
     end
     @mode = mode
+    GridFlow.post "Changed mode %s", @mode.to_s
   end
   def apply
     case @mode
     when :addBackground
       @functor.addBackground(@stuffs[0])
+      return false
     when :adaptBackground
       @functor.adaptBackground(@stuffs[0],@stuffs[1])
-    when :apply; super
+      return false
+    when :apply
+      super
     else raise "unknown mode: #{mode}"
     end
+    true
   end
   def _0_clear; @functor.clearMoldel end # really. that's a typo in the lti API
 }
