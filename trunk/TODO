@@ -1,5 +1,9 @@
 /* $Id$ */
 
+> [ ] [for] has a bug in "from".
+> [ ] #out x11 doesn't accept 0-sized grids
+> [ ] #print   doesn't accept 0-sized grids
+
 > Generic Image Library
 > http://opensource.adobe.com/gil/html/giltutorial.html
 

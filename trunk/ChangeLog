@@ -1,5 +1,10 @@
 /* $Id$ */
 
+version 0.9.0
+
+ * -lib tcl
+ * [seq_fold]
+
 version 0.8.4 (2006.10.12):
 
  * resuming support for Ruby 1.8 !
