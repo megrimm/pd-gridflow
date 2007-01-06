@@ -6,13 +6,14 @@ include ../../config.make
 
 LTIPREFIX = /usr/local
 #LTIPREFIX = /home/matju
+RUBY = ruby
 
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg -L/usr/X11R6/lib -lX11
 INCS = -I$(LTIPREFIX)/include/ltilib
 
 PINC = -I/usr/include/python
-RDIR2 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'`
-RDIR1 = `ruby -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
+RDIR2 = `$(RUBY) -rrbconfig -e'h=Config::CONFIG;puts h["sitelibdir"]+"/"+h["arch"]'`
+RDIR1 = `$(RUBY) -rrbconfig -e'h=Config::CONFIG;puts h["rubylibdir"]+"/"+h["arch"]'`
 RINC = -I $(RDIR1)
 
 SWIGFLAGS = -v
