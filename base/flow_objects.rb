@@ -228,7 +228,7 @@ GridObject.subclass("#print",1,0) {
 			post head
 			udata = unpack @data
 			make_columns udata
-			sz = udata.length/@dim[0]
+			sz = udata.length/@dim[0] if @dim[0]>0
 			rown = 1
 			for row in 0...@dim[0] do
 				post trunc(dump(udata[sz*row,sz]))
@@ -238,7 +238,7 @@ GridObject.subclass("#print",1,0) {
 		elsif @dim.length == 3 then
 			post head
 			make_columns unpack(@data)
-			sz = @data.length/@dim[0]
+			sz = @data.length/@dim[0] if @dim[0]>0
 			sz2 = sz/@dim[1]
 			rown = 1
 			for row in 0...@dim[0]
