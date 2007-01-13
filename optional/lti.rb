@@ -682,7 +682,7 @@ Rerosion_parameters.module_eval{
 GridFlow.fclasses["lti.Erosion"].module_eval{
   @attrs["kernelSize"]=["int"]
   def _0_kernelSize(size)
-     @kernel = IcityBlockKernel.new (size.to_i)
+     @kernel = IcityBlockKernel.new(size.to_i)
      @functor.setKernel @kernel
      @param.kernelSize = size.to_i
   end
