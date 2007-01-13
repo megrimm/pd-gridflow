@@ -828,6 +828,17 @@ static void ruby_stack_end_hack () {
 	clock_free(hack);
 }
 
+struct t_namelist;
+extern t_namelist *sys_searchpath, *sys_helppath;
+extern "C" void namelist_append_files(t_namelist *, char *);
+static void add_to_path(char *dir) {
+	char bof[1024];
+	sprintf(bof,"%s/pd_abstractions",dir);
+	namelist_append_files(sys_searchpath,bof);
+	sprintf(bof,"%s/doc/flow_classes",dir);
+	namelist_append_files(sys_helppath,bof);
+}
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -848,7 +859,9 @@ extern "C" void gridflow_setup () {
 	} else {
 		post("%s was not found via the -path!","gridflow"PDSUF);
 	}
-	/* nameresult is only a pointer in dirresult space so don't delete[] it. don't we love pd */
+	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
+
+	add_to_path(dirresult);
 
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
