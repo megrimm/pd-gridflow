@@ -438,12 +438,6 @@ Feature.add {
 	}
 	options ["HAVE_MMX"]
 }
-Feature.add {
-	tag :profiler
-	name "profiler (speed measurements)"
-	uses_feature [:pentium]
-	options ["HAVE_TSC_PROFILING"]
-}
 #----------------------------------------------------------------#
 Feature.add {
 	tag :usb
