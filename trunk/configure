@@ -352,6 +352,7 @@ File.popen("tclsh","r+") {|f|
   f.puts %{puts $tcl_version}
   $tcl_version = f.gets.chomp
 }
+#STDERR.puts "$tcl_version = #{$tcl_version}"
 
 Feature.add {
 	tag :libtclh
@@ -367,6 +368,7 @@ Feature.add {
 		if r==true
 			$TCLH = f.find_h(f.uses_h[0])+"/"+f.uses_h[0]
 			$CFLAGS += " -I"+File.dirname($TCLH)
+			#STDERR.puts "$TCLH = #{$TCLH}"
 		end
 		r
 	}
