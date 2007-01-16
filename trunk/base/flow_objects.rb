@@ -28,34 +28,7 @@ GridFlow = ::GridFlow # ruby is nuts... sometimes
 
 # a dummy class that gives access to any stuff global to GridFlow.
 FObject.subclass("gridflow",1,1) {
-	def _0_profiler_reset
-		GridFlow.fobjects.each {|o,*| o.total_time = 0 }
-		GridFlow.profiler_reset2 if GridFlow.respond_to? :profiler_reset2
-	end
 	def _0_profiler_dump
-		ol = []
-		total=0
-		post "-"*32
-		post "microseconds percent pointer  constructor"
-		GridFlow.fobjects.each {|o,*| ol.push o }
-
-		# HACK: BitPacking is not a real fobject
-		# !@#$ is this still necessary?
-		ol.delete_if {|o| not o.respond_to? :total_time }
-
-		ol.sort! {|a,b| a.total_time <=> b.total_time }
-		ol.each {|o| total += o.total_time }
-		total=1 if total<1
-		total_us = 0
-		ol.each {|o|
-			ppm = o.total_time * 1000000 / total
-			us = (o.total_time*1E6/GridFlow.cpu_hertz).to_i
-			total_us += us
-			post "%12d %2d.%04d %08x %s", us,
-				ppm/10000, ppm%10000, o.object_id, o.args
-		}
-		post "-"*32
-		post "sum of accounted microseconds: #{total_us}"
 		if GridFlow.respond_to? :memcpy_calls then
 			post "memcpy calls: #{GridFlow.memcpy_calls} "+
 				"; bytes: #{GridFlow.memcpy_bytes}"+
@@ -66,7 +39,6 @@ FObject.subclass("gridflow",1,1) {
 				"; bytes: #{GridFlow.malloc_bytes}"+
 				"; time: #{GridFlow.malloc_time}"
 		end
-		post "-"*32
 	end
 	def _0_formats
 		post "-"*32
@@ -76,6 +48,7 @@ FObject.subclass("gridflow",1,1) {
 			when 2; "#out"
 			when 4; "#in"
 			when 6; "#in/#out"
+			else "??? #{v.flags}"
 			end
 			post "%s %s: %s", modes, k, v.description
 			if v.respond_to? :info then
