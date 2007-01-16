@@ -386,7 +386,7 @@ class LTIGridObject < GridObject
         end
 	@dims[  slot] = dim
 	@nts[   slot] = nt
-	inlet_set_factor inlet,dim.prod
+	inlet_set_chunk inlet,0
     end
 
     def _n_rgrid_flow(inlet,data)

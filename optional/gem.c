@@ -75,7 +75,7 @@ GRID_INLET(GridExportPix,1) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 4)
 		RAISE("expecting 4 channels (got %d)",in->dim->get(2));
-	in->set_factor(in->dim->prod(1));
+	in->set_chunk(1);
 	imageStruct &im = m_pixBlock.image;
 	im.clear();
 	im.ysize = in->dim->get(0);

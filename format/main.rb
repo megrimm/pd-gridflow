@@ -720,7 +720,7 @@ Format.subclass("#io:ppm",1,1) {
 		@stream.write "# generated using GridFlow #{GF_VERSION}\n"
 		@stream.write "#{dim[1]} #{dim[0]}\n255\n"
 		@stream.flush
-		inlet_set_factor 0, 3
+		inlet_set_chunk 0,2
 	end
 	def _0_rgrid_flow(data) @stream.write @bp.pack(data) end
 	def _0_rgrid_end; @stream.flush end
@@ -804,7 +804,7 @@ targa header is like:
 		@stream.write [comment.length,colortype=0,colors=2,"\0"*9,
 		dim[1],dim[0],8*dim[2],(8*(dim[2]-3))|32,comment].pack("ccca9vvcca*")
 		set_bitpacking 8*dim[2]
-		inlet_set_factor 0, dim[2]
+		inlet_set_chunk 0,2
 	end
 	def _0_rgrid_flow data; @stream.write @bp.pack(data) end
 	def _0_rgrid_end; @stream.flush end

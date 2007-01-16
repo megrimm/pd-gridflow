@@ -285,7 +285,7 @@ GridObject.subclass("#unpack",1,0) {
   def _0_rgrid_begin
     dim = inlet_dim(0)
     dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim}"
-    inlet_set_factor 0,@n
+    inlet_set_chunk 0,0
   end
   def _0_rgrid_flow data
     @ps = GridFlow.packstring_for_nt inlet_nt(0)
