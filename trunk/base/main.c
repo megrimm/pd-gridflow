@@ -35,7 +35,6 @@
 #include <limits.h>
 
 BuiltinSymbols bsym;
-GFStack gf_stack;
 Ruby mGridFlow;
 Ruby cFObject;
 
@@ -53,12 +52,7 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
 	buf2[BUFSIZ-1]=0;
 	VALUE ary = rb_funcall(e,SI(caller),0);
-	if (gf_stack.n) {
-		rb_funcall(ary,SI(unshift),2,rb_str_new2(buf2),
-			rb_str_new2(INFO(gf_stack.s[gf_stack.n-1].o)));
-	} else {
-		rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
-	}
+	rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
 	rb_funcall(e,SI(set_backtrace),1,ary);
 	rb_exc_raise(e);
 }};
@@ -131,7 +125,6 @@ struct Helper {
 	Ruby *argv;
 	FObject *self;
 	Ruby rself;
-	int n; // stack level
 };
 
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
@@ -172,12 +165,9 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
 } /* PROF */ }
 
-static void send_in_3 (Helper *h) {
-	while (gf_stack.n > h->n) gf_stack.pop();
-}
-
+static void send_in_3 (Helper *h) {}
 \def void send_in (...) {
-	Helper h = {argc,argv,this,rself,gf_stack.n};
+	Helper h = {argc,argv,this,rself};
 	rb_ensure(
 		(RMethod)send_in_2,(Ruby)&h,
 		(RMethod)send_in_3,(Ruby)&h);
@@ -614,20 +604,6 @@ BUILTIN_SYMBOLS(FOO)
 	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
 	EVAL("GridFlow.load_user_config");
-}
-
-void GFStack::push (FObject *o) {
-	void *bp = &o; // really. just finding our position on the stack.
-	if (n>=GF_STACK_MAX)
-		RAISE("stack overflow (maximum %d FObject activations at once)", GF_STACK_MAX);
-	s[n].o = o;
-	s[n].bp = bp;
-	n++;
-}
-
-void GFStack::pop () {
-	if (!n) RAISE("stack underflow (WHAT?)");
-	n--;
 }
 
 uint64 gf_timeofday () {

@@ -149,7 +149,7 @@ static inline const char *rb_sym_name(const char *sym) {return sym;}
 #endif
 
 #ifdef HAVE_PROFILING
-#define PROF(_self_) for (GFStackMarker gf_marker(_self_);gf_marker.once();)
+#define PROF(_self_)
 #else
 #define PROF(_self_)
 #endif // HAVE_PROFILING
@@ -1118,32 +1118,6 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 			RAISE("mismatch: left dim #%d is %d, right dim #%d is %d",
 				ai+i, a->v[ai+i],
 				bi+i, b->v[bi+i]);}}}
-
-// a stack for the profiler, etc.
-#define GF_STACK_MAX 256
-//#define NO_INLINE(decl) decl __attribute__((noinline))
-#define NO_INLINE(decl) decl
-struct GFStack {
-	struct GFStackFrame {
-		FObject *o;
-		void *bp; // a pointer into system stack
-	}; // sizeof() == 16 (in 32-bit mode)
-	GFStackFrame s[GF_STACK_MAX];
-	int n;
-	GFStack() { n = 0; }
-	NO_INLINE(void push (FObject *o));
-	NO_INLINE(void pop ());
-};
-extern GFStack gf_stack;
-struct GFStackMarker {
-	int n;
-	bool flag;
-	GFStackMarker(FObject *o) { n = gf_stack.n; gf_stack.push(o); flag=true; }
-	~GFStackMarker() { while (gf_stack.n != n) gf_stack.pop(); }
-	bool once () {
-		if (flag) { flag=false; return true; } else return false;
-	}
-};
 
 typedef GridObject Format;
 
