@@ -109,10 +109,7 @@ __attribute__ ((noreturn));
 #define VA int argc, Ruby *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
-#define DGS(_class_) \
-	_class_ *self; \
-	Data_Get_Struct(rself,_class_,self); \
-	self->check_magic();
+#define DGS(_class_) _class_ *self; Data_Get_Struct(rself,_class_,self);
 
 // returns the size of a statically defined array
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
