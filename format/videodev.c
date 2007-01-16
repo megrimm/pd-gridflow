@@ -380,11 +380,14 @@ void FormatVideoDev::frame_finished (uint8 * buf) {
 		}
 	} else if (bit_packing) {
 		uint8 b2[bs];
+//		uint64 t = gf_timeofday();
 		for(int y=0; y<sy; y++) {
 			uint8 * buf2 = buf+bit_packing->bytes*sx*y;
 			bit_packing->unpack(sx,buf2,b2);
 			out.send(bs,b2);
 		}
+//		t=gf_timeofday()-t;
+//		fprintf(stderr,"decoding frame took %lld us\n",t);
 	} else {
 		out.send(sy*bs,buf);
 	}
@@ -457,11 +460,13 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 }
 
+#define warn(fmt,stuff...) gfpost("warning: " fmt,stuff)
+
 \def void _0_channel (int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	current_channel = value;
-	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) RAISE("no channel #%d", value);
+	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) warn("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
 	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
@@ -518,22 +523,30 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \def void _0_colorspace (Symbol c) {
-	if (c==SYM(RGB24)) palette=VIDEO_PALETTE_RGB24;
+	if      (c==SYM(RGB24))   palette=VIDEO_PALETTE_RGB24;
+	else if (c==SYM(YUYV))    palette=VIDEO_PALETTE_YUYV;
 	else if (c==SYM(YUV420P)) palette=VIDEO_PALETTE_YUV420P;
-	else RAISE("supported: RGB24, YUV420P");
+	else RAISE("supported: RGB24, YUYV, YUV420P");
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	vp.palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
+	if (vp.palette != palette) {
+		// RAISE is prolly a bad idea
+		gfpost("driver can't handle palette %d",palette);
+		return;
+	}
 	switch(palette) {
 	case VIDEO_PALETTE_RGB24:{
 		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 		bit_packing = new BitPacking(is_le(),3,3,masks);
 	}break;
+	case VIDEO_PALETTE_YUYV:
 	case VIDEO_PALETTE_YUV420P:{
 		// woops, special case already, can't do that with bit_packing
+		break; /* and don't forget to break!!! */
 	}
-	default: RAISE("can't handle palette %d", vp.palette);
+	default: RAISE("should never get this error message.");
 	}
 }
 

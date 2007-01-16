@@ -114,7 +114,7 @@ struct FormatQuickTimeHW : Format {
 GRID_INLET(FormatQuickTimeHW,0) {
 	if (in->dim->n != 3)           RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2)!=channels) RAISE("expecting %d channels (got %d)",channels,in->dim->get(2));
-	in->set_factor(in->dim->prod());
+	in->set_chunk(0);
 	if (dim) {
 		if (!dim->equal(in->dim)) RAISE("all frames should be same size");
 	} else {
@@ -178,7 +178,8 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
-	if (!anim) RAISE("can't open file `%s': %s", rb_str_ptr(filename), strerror(errno));
+	if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
+		rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		length = quicktime_video_length(anim,track);
 		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
