@@ -60,7 +60,7 @@ GRID_INLET(GridFFT,0) {
 		RAISE("expecting 3 or 4 dimensions: rows,columns,channels?,complex");
 	if (in->dim->get(in->dim->n-1)!=2)
 		RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
-	in->set_factor(in->dim->prod());
+	in->set_chunk(0);
 } GRID_FLOW {
 	float32 *buf = new float32[n];
 	long chans = in->dim->prod(2)/2;
