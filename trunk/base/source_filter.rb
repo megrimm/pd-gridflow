@@ -194,7 +194,6 @@ def handle_def(line)
 	else
 	  Out.print ");"
 	end
-	Out.print "self->check_magic();"
 	
 	case m.rettype
 	when "void"; Out.print "return Qnil;"

@@ -68,7 +68,6 @@ Ruby rb_ary_fetch(Ruby rself, long i) {
 static void CObject_mark (void *z) {}
 void CObject_free (void *foo) {
 	CObject *self = (CObject *)foo;
-	self->check_magic();
 	if (!self->rself) {
 		fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();

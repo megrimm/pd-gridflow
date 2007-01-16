@@ -439,20 +439,10 @@ template <class T> static void memswap (T *a, T *b, long n) {
 #ifndef SWIG
 /* Please stop existing... */
 struct CObject {
-#define OBJECT_MAGIC 1618033989
-	int32 magic;
 	int32 refcount;
 	Ruby rself; // point to Ruby peer
-	CObject() : magic(OBJECT_MAGIC), refcount(0), rself(0) {}
-	void check_magic () {
-		if (magic != OBJECT_MAGIC) {
-			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
-			for (int i=-2; i<=2; i++)
-				fprintf(stderr,"this[%d]=0x%08x\n",i,((int*)this)[i]);
-			raise(11);
-		}
-	}
-	virtual ~CObject() { check_magic(); magic = 0xDEADBEEF; }
+	CObject() : refcount(0), rself(0) {}
+	virtual ~CObject() {}
 	virtual void mark() {} // not used for now
 };
 void CObject_free (void *);
@@ -1059,7 +1049,7 @@ struct GridObject : FObject {
 	// two are quite equivalent and should never make an object "crashable".
 	// C++'s delete is called by Ruby's garbage collector or by PureData's delete.
 	GridObject() {}
-	~GridObject() {check_magic();}
+	~GridObject() {}
 	bool is_busy_except(P<GridInlet> gin) {
 		for (uint32 i=0; i<in.size(); i++)
 			if (in[i] && in[i]!=gin && in[i]->dim) return true;
