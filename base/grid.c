@@ -188,8 +188,7 @@ bool GridInlet::supports_type(NumberTypeE nt) {
 Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!argc) return PTR2FIX(this);
 	GridOutlet *back_out = (GridOutlet *) Pointer_get(argv[0]);
-	nt = (NumberTypeE) INT(argv[1]);
-	argc-=2, argv+=2;
+	nt = back_out->nt;
 	PROF(parent) {
 	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
 			INFO(parent), INFO(sender), INFO(back_out->parent),
@@ -200,9 +199,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!supports_type(nt))
 		RAISE("%s: number type %s not supported here",
 			INFO(parent), number_type_table[nt].name);
-	int32 v[argc];
-	for (int i=0; i<argc; i++) v[i] = NUM2INT(argv[i]);
-	P<Dim> dim = this->dim = new Dim(argc,v);
+	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
 	int r = rb_ensure(
@@ -321,7 +318,7 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 				CHECK_ALIGN(data);
 				gh->flow(this,m,data);
 				data+=m; n-=m; dex+=m;
-			}			
+			}
 		}
 	}
 	gh->flow(this,-2,(T *)0);
@@ -343,15 +340,12 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 /* **************** GridOutlet ************************************ */
 
 void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
-	int n = dim->count();
 	this->nt = nt;
 	this->dim = dim;
-	Ruby a[n+4];
+	Ruby a[3];
 	a[0] = INT2NUM(woutlet);
 	a[1] = bsym._grid;
 	a[2] = Pointer_s_new(this);
-	a[3] = INT2NUM(nt);
-	for(int i=0; i<n; i++) a[4+i] = INT2NUM(dim->get(i));
 	parent->send_out(COUNT(a),a);
 	frozen=true;
 	if (!dim->prod()) {finish(); return;}
