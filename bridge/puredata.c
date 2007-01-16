@@ -86,7 +86,6 @@ static BuiltinSymbols *syms;
 
 void CObject_free (void *victim) {
 	CObject *self = (CObject *)victim;
-	self->check_magic();
 	if (!self->rself) {
 		_L_ fprintf(stderr,"attempt to free object that has no rself\n");
 		abort();
@@ -163,21 +162,11 @@ struct BFObject : t_object {
 #ifdef HAVE_GEM
 	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
 #endif
-	int32 magic; // paranoia
 	Ruby rself;
 	int nin,nout;   // per object settings (not class)
 	BFProxy  **in;  // direct access to  inlets (not linked lists)
 	t_outlet **out; // direct access to outlets (not linked lists)
 	t_canvas *mom;
-	void check_magic () {
-		if (magic != OBJECT_MAGIC) {
-			fprintf(stderr,"Object memory corruption! (ask the debugger)\n");
-			for (int i=-1; i<=1; i++) {
-				fprintf(stderr,"this[0]=0x%08x\n",((int*)this)[i]);
-			}
-			raise(11);
-		}
-	}
 };
 
 static t_class *find_bfclass (t_symbol *sym) {
@@ -221,7 +210,6 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	argv[0] = INT2NUM(fm->winlet);
 	argv[1] = ID2SYM(rb_intern(fm->selector->s_name));
 	for (int i=0; i<fm->ac; i++) argv[2+i] = Bridge_import_value(fm->at+i);
-	fm->self->check_magic();
 	rb_funcall2(fm->self->rself,SI(send_in),fm->ac+2,argv);
 	return Qnil;
 }
@@ -311,8 +299,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
 	if (!qlass) return 0;
 	BFObject *bself = (BFObject *)pd_new(qlass);
-	bself->magic = OBJECT_MAGIC;
-	bself->check_magic();
 	FMessage fm = { self: bself, winlet:-1, selector: classsym,
 		ac: ac, at: at, is_init: true };
 	long r = RESCUE(BFObject_init_1,&fm,BFObject_rescue,&fm);
@@ -320,7 +306,6 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	fm->self->check_magic();
 	if (fm->self->rself) {
 		rb_funcall(fm->self->rself,SI(delete),0);
 	} else {
@@ -329,11 +314,9 @@ static void BFObject_delete_1 (FMessage *fm) {
 }
 
 static void BFObject_delete (BFObject *bself) {
-	bself->check_magic();
 	FMessage fm = { self: bself, winlet:-1, selector: gensym("delete"),
 		ac: 0, at: 0, is_init: false };
 	RESCUE(BFObject_delete_1,&fm,BFObject_rescue,&fm);
-	bself->magic = 0xDeadBeef;
 }
 
 /* **************************************************************** */
@@ -422,7 +405,6 @@ void bf_visfn(t_gobj *x, t_glist *glist, int flag) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby rself = ((BFObject*)x)->rself;
 	DGS(FObject);
-	self->check_magic();
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
 }
 
@@ -486,7 +468,6 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	BFObject *bself = self->bself;
 	//post("FObject#send_out2 : rself=%08x, bself=%08x, argc=%d",rself,bself,argc);
 	if (!bself) return Qnil;
-	bself->check_magic();
 	int outlet = INT(argv[0]);
 	Ruby sym = argv[1];
 	argc-=2;
