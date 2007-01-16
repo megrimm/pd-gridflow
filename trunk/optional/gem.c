@@ -27,7 +27,13 @@
 #undef EXTERN
 #include "Base/GemPixDualObj.h"
 #undef T_DATA
+/* I don't remember why we have to undefine Ruby's T_DATA;
+   on Linux there is no conflict with any other library */
+#if RUBY_VERSION_MINOR == 8
+#define T_DATA   0x22
+#else
 #define T_DATA   0x12
+#endif
 
 //  in 0: gem
 //  in 1: grid
