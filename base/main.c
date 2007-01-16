@@ -523,8 +523,7 @@ R GridFlow_memcpy_time  (Ruby rself) {return memcpy_time;}
 Ruby GridFlow_malloc_calls (Ruby rself) { return   LONG2NUM(malloc_calls); }
 R GridFlow_malloc_bytes (Ruby rself) {return malloc_bytes;}
 R GridFlow_malloc_time  (Ruby rself) {return malloc_time;}
-
-Ruby GridFlow_profiler_reset2 (Ruby rself) {
+Ruby GridFlow_profiler_reset (Ruby rself) {
 	memcpy_calls = memcpy_bytes = memcpy_time = 0;
 	malloc_calls = malloc_bytes = malloc_time = 0;
 	return Qnil;
@@ -557,7 +556,7 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
-	SDEF2("profiler_reset2",GridFlow_profiler_reset2,0);
+	SDEF2("profiler_reset",GridFlow_profiler_reset,0);
 	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
 	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
 	SDEF2("memcpy_time", GridFlow_memcpy_time,0);
