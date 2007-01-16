@@ -252,16 +252,12 @@ static inline uint64 rdtsc()
 
 #ifdef HAVE_LITE
 #define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32)
-#define EACH_FLOAT_TYPE(MACRO)
+#define EACH_FLOAT_TYPE(MACRO) MACRO(float32)
 #else
 #define EACH_INT_TYPE(MACRO) MACRO(uint8) MACRO(int16) MACRO(int32) MACRO(int64)
 #define EACH_FLOAT_TYPE(MACRO) MACRO(float32) MACRO(float64)
 #endif
-#ifndef SWIG
-#define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO) MACRO(ruby)
-#else
 #define EACH_NUMBER_TYPE(MACRO) EACH_INT_TYPE(MACRO) EACH_FLOAT_TYPE(MACRO)
-#endif
 
 // note: loop unrolling macros assume N!=0
 // btw this may cause alignment problems when 8 does not divide N
@@ -541,9 +537,6 @@ NUMBER_TYPE_LIMITS(  int32,-0x80000000,0x7fffffff,-1)
 NUMBER_TYPE_LIMITS(  int64,-0x8000000000000000LL,0x7fffffffffffffffLL,-1)
 NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
 NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
-#ifndef SWIG
-NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE2("all_ones"),0))
-#endif
 
 #ifdef HAVE_LITE
 #define NT_NOTLITE NT_UNIMPL
@@ -557,7 +550,7 @@ NUMBER_TYPE_LIMITS(   ruby,ruby(-HUGE_VAL),ruby(+HUGE_VAL),(RAISE2("all_ones"),0
 	MACRO(int16,16,0,           "i16,s") \
 	MACRO(int32,32,0,           "i32,i") \
 	MACRO(int64,64,NT_NOTLITE,  "i64,l") \
-	MACRO(float32,32,NT_NOTLITE|NT_FLOAT, "f32,f") \
+	MACRO(float32,32,NT_FLOAT,  "f32,f") \
 	MACRO(float64,64,NT_NOTLITE|NT_FLOAT, "f64,d") \
 	MACRO(   ruby,sizeof(long),NT_NOTLITE,"r")
 
@@ -607,9 +600,8 @@ NumberTypeE NumberTypeE_find (Symbol sym);
 
 #define TYPESWITCH(T,C,E) switch (T) { \
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
-  case int32_e:   C(int32) break; NONLITE(case int64_e: C(int64) break; \
-  case float32_e: C(float32) break; case float64_e: C(float64) break; \
-  case ruby_e: C(ruby) break;) \
+  case int32_e:   C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
+  case float32_e: C(float32) break; NONLITE(case float64_e: C(float64) break;) \
   default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
 #define TYPESWITCH_JUSTINT(T,C,E) switch (T) { \
   case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
@@ -943,6 +935,7 @@ public:
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
 	void set_factor(long factor);
+	void set_chunk(long whichdim);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
 	Ruby begin(int argc, Ruby *argv);
@@ -966,9 +959,9 @@ private:
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin and \classinfo)
 #ifndef HAVE_LITE
-#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD,TR}
+#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD}
 #else
-#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI}
+#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TF}
 #endif // HAVE_LITE
 struct FClass {
 	void *(*allocator)(); // returns a new C++ object
@@ -1092,6 +1085,7 @@ struct GridObject : FObject {
 	\decl Array inlet_dim(int inln);
 	\decl Symbol inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, long factor);
+	\decl void inlet_set_chunk(int inln, long chunk);
 	\decl void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
 	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
