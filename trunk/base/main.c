@@ -131,7 +131,7 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
 
 // inlet #-1 is reserved for SystemInlet messages (jMax)
 // inlet #-2 is for inlet #0 messages that happen at start time
-static void send_in_2 (Helper *h) { PROF(h->self) {
+static void send_in_2 (Helper *h) {
 	int argc = h->argc;
 	Ruby *argv = h->argv;
 	if (h->argc<1) RAISE("not enough args");
@@ -163,7 +163,7 @@ static void send_in_2 (Helper *h) { PROF(h->self) {
 	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
 	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
-} /* PROF */ }
+}
 
 static void send_in_3 (Helper *h) {}
 \def void send_in (...) {
@@ -190,7 +190,6 @@ static void send_in_3 (Helper *h) {}
 	//int noutlets = INT(noutlets2);
 	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 	// was PROF(0) a hack because of exception-handling problems?
-	PROF(0) {
 	Ruby argv2[argc+2];
 	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
 	argv2[0] = INT2NUM(outlet);
@@ -213,7 +212,6 @@ static void send_in_3 (Helper *h) {}
 		argv2[0] = INT2NUM(inl);
 		rb_funcall2(rec,SI(send_in),argc+2,argv2);
 	}
-	} /* PROF */
 end:;
 }
 

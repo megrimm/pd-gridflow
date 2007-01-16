@@ -144,16 +144,6 @@ static inline const char *rb_sym_name(const char *sym) {return sym;}
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	gfpost("%s",foo);}
 
-#ifdef HAVE_TSC_PROFILING
-#define HAVE_PROFILING
-#endif
-
-#ifdef HAVE_PROFILING
-#define PROF(_self_)
-#else
-#define PROF(_self_)
-#endif // HAVE_PROFILING
-
 #ifndef SWIG
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
