@@ -194,8 +194,6 @@ class FObject
 		qlass.instance_eval{qlass.module_eval(&b)}
 		#qlass.module_eval(&b)
 	end
-	alias :total_time :total_time_get
-	alias :total_time= :total_time_set
 	attr_writer :args # String
 	attr_accessor :argv # Array
 	attr_reader :outlets
