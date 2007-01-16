@@ -189,7 +189,6 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!argc) return PTR2FIX(this);
 	GridOutlet *back_out = (GridOutlet *) Pointer_get(argv[0]);
 	nt = back_out->nt;
-	PROF(parent) {
 	if (dim) RAISE("%s: grid inlet conflict; aborting %s in favour of %s, index %ld of %ld",
 			INFO(parent), INFO(sender), INFO(back_out->parent),
 			(long)dex, (long)dim->prod());
@@ -208,7 +207,7 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	if (!r) {abort(); goto hell;}
 	this->dim = dim;
 	back_out->callback(this);
-	hell:;} // PROF
+	hell:;
 	return Qnil;
 }
 
@@ -216,7 +215,6 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
 	CHECK_ALIGN(data);
-	PROF(parent) {
 	if (this->mode==0) {dex += n; return;} // ignore data
 	if (n==0) return; // no data
 	switch(mode) {
@@ -274,7 +272,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	}break;
 	case 0: break; // ignore data
 	default: RAISE("%s: unknown inlet mode",INFO(parent));
-	}} // PROF
+	}
 }
 
 void GridInlet::finish() {TRACE;
@@ -283,11 +281,9 @@ void GridInlet::finish() {TRACE;
 		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
-	PROF(parent) {
 #define FOO(T) gh->flow(this,-2,(T *)0);
 	TYPESWITCH(nt,FOO,)
 #undef FOO
-	} // PROF
 	dim=0;
 	buf=0;
 	dex=0;
