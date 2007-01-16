@@ -1,4 +1,4 @@
-#N canvas 0 40 629 319 10;
+#N canvas 263 56 629 290 10;
 #X obj 182 12 cnv 15 216 76 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 253 22 hradio 18 1 0 4 \$0-channel \$0-channel _0__1__2__3_
@@ -138,42 +138,42 @@
 0;
 #X text 19 17 device:;
 #X obj 71 16 vradio 15 1 0 6 \$0-device \$0-device empty 0 -6 0 8 -241291
--1 -1 0;
+-1 -1 1;
 #X text 88 15 OFF;
 #X text 88 29 /dev/video0;
 #X text 88 44 /dev/video1;
 #X text 88 59 /dev/video2;
 #X text 88 74 /dev/video3;
 #X text 88 90 DV(1394);
-#X obj 14 120 cnv 15 160 100 empty empty empty 20 12 0 14 -233017 -66577
+#X obj 14 120 cnv 15 160 160 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 47 138 \$0;
 #X obj 30 138 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
 #X text 18 124 presets for bt878-rca;
-#X obj 182 96 cnv 15 216 124 empty empty empty 20 12 0 14 -233017 -66577
+#X obj 182 96 cnv 15 216 184 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 256 134 hsl 128 15 0 65535 0 0 \$0-brightness \$0-brightness
-brightness 8 8 0 8 -260818 -1 -1 0 1;
+brightness 8 8 0 8 -260818 -1 -1 6152 0;
 #X obj 256 168 hsl 128 15 0 65535 0 0 \$0-hue \$0-hue hue 8 8 0 8 -260818
--1 -1 0 1;
+-1 -1 12700 0;
 #X obj 256 117 hsl 128 15 0 65535 0 0 \$0-contrast \$0-contrast contrast
-8 8 0 8 -260818 -1 -1 0 1;
+8 8 0 8 -260818 -1 -1 12502 0;
 #X obj 256 185 hsl 128 15 0 65635 0 0 \$0-whiteness \$0-whiteness whiteness
-8 8 0 8 -260818 -1 -1 0 1;
+8 8 0 8 -260818 -1 -1 6340 0;
 #X obj 256 151 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour
-8 8 0 8 -260818 -1 -1 0 1;
+8 8 0 8 -260818 -1 -1 6350 0;
 #X obj 197 118 nbx 5 14 0 65535 0 0 \$0-contrast \$0-contrast empty
-0 -6 0 10 -260818 -1 -1 0 256;
+0 -6 0 10 -260818 -1 -1 64512 256;
 #X obj 197 135 nbx 5 14 0 65535 0 0 \$0-brightness \$0-brightness empty
-0 -6 0 10 -260818 -1 -1 0 256;
+0 -6 0 10 -260818 -1 -1 31744 256;
 #X obj 197 152 nbx 5 14 0 65535 0 0 \$0-colour \$0-colour empty 0 -6
-0 10 -260818 -1 -1 0 256;
+0 10 -260818 -1 -1 32768 256;
 #X obj 197 169 nbx 5 14 0 65535 0 0 \$0-hue \$0-hue empty 0 -6 0 10
--260818 -1 -1 0 256;
+-260818 -1 -1 65535 256;
 #X obj 197 186 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
-0 -6 0 10 -260818 -1 -1 0 256;
-#X obj 406 180 cnv 15 216 124 empty empty empty 20 12 0 14 -233017
+0 -6 0 10 -260818 -1 -1 32768 256;
+#X obj 406 180 cnv 15 216 100 empty empty empty 20 12 0 14 -233017
 -66577 0;
 #X obj 405 12 cnv 15 216 160 empty empty empty 20 12 0 14 -233017 -66577
 0;
@@ -184,18 +184,16 @@ brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X text 419 36 size:;
 #X text 455 20 height;
 #X text 513 20 width;
-#X msg 415 279 colorspace YUV420P;
+#X msg 519 239 colorspace YUV420P;
 #X msg 415 199 transfer mmap;
 #X msg 415 239 transfer read;
-#X msg 415 259 colorspace RGB24;
+#X msg 519 199 colorspace RGB24;
 #X text 415 183 Special options:;
 #X msg 415 219 transfer mmap 4;
 #X obj 415 372 s \$0-o;
-#X obj 14 228 cnv 15 216 76 empty empty empty 20 12 0 14 -233017 -66577
-0;
-#X obj 32 252 vradio 15 1 0 2 \$0-conv \$0-conv empty 0 -6 0 8 -241291
--258699 -1 0;
-#X text 51 266 YUV->RGB;
+#X obj 205 361 vradio 15 1 0 2 \$0-conv \$0-conv empty 0 -6 0 8 -241291
+-258699 -1 1;
+#X text 224 375 YUV->RGB;
 #X text 418 67 presets;
 #X obj 489 89 bng 15 250 50 0 \$0-size0 empty empty 0 -6 0 8 -241291
 -1 -1;
@@ -222,17 +220,19 @@ brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X obj 504 150 bng 15 250 50 0 \$0-size7 empty empty 0 -6 0 8 -241291
 -1 -1;
 #X obj 126 358 print camera;
-#X obj 238 228 cnv 15 160 76 empty empty empty 20 12 0 14 -233017 -66577
-0;
-#X text 258 249 this space left;
-#X text 249 265 intentionally blank;
 #X obj 72 386 r \$0-conv;
-#X text 23 235 colorspaces:;
-#X text 51 250 no conversion (RGB->RGB);
+#X text 196 344 colorspaces:;
+#X text 224 359 no conversion (RGB->RGB);
 #X msg 47 157 \; \$1-device 1 \; \$1-size 240 320 \; \$1-channel 1
 ;
+#X msg 519 219 colorspace YUYV;
+#X obj 486 398 s \$0-conv;
+#X msg 473 349 0;
+#X msg 496 349 1;
+#X text 196 322 This part is now automatically decided;
+#X text 197 332 assuming everybody uses RGB;
 #X connect 2 0 4 0;
-#X connect 2 0 73 0;
+#X connect 2 0 72 0;
 #X connect 3 0 14 0;
 #X connect 4 0 6 0;
 #X connect 4 1 2 0;
@@ -241,11 +241,17 @@ brightness 8 8 0 8 -260818 -1 -1 0 1;
 #X connect 7 0 4 0;
 #X connect 11 0 4 0;
 #X connect 14 0 5 0;
-#X connect 25 0 80 0;
+#X connect 25 0 76 0;
 #X connect 26 0 25 0;
 #X connect 46 0 52 0;
+#X connect 46 0 80 0;
 #X connect 47 0 52 0;
 #X connect 48 0 52 0;
 #X connect 49 0 52 0;
+#X connect 49 0 79 0;
 #X connect 51 0 52 0;
-#X connect 77 0 6 1;
+#X connect 73 0 6 1;
+#X connect 77 0 52 0;
+#X connect 77 0 80 0;
+#X connect 79 0 78 0;
+#X connect 80 0 78 0;
