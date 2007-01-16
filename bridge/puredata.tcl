@@ -23,22 +23,6 @@ if {[info command post] == ""} {
 	proc post {x} {puts $x}
 }
 
-if {[catch {
-	# pd 0.37
-	menu .mbar.gridflow -tearoff $pd_tearoff
-	.mbar add cascade -label "GridFlow" -menu .mbar.gridflow
-	set gfmenu .mbar.gridflow
-}]} {
-	puts "GF TK ERROR: $@"
-	# pd 0.36
-	###the problem is that GridFlow.bind requires 0.37
-}
-catch {
-$gfmenu add command -label "profiler_dump"  -command {pd "gridflow profiler_dump;"}
-$gfmenu add command -label "profiler_reset" -command {pd "gridflow profiler_reset;"}
-$gfmenu add command -label "formats"        -command {pd "gridflow formats;"}
-}
-
 # if not running Impd:
 if {[string length [info command listener_new]] == 0} {
 # start of part duplicated from Impd
