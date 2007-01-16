@@ -120,10 +120,9 @@ GRID_INLET(FormatOpenGL,0) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels: red,green,blue (got %d)",in->dim->get(2));
-	int sxc = in->dim->prod(1);
 	int sx = in->dim->get(1), osx = dim->get(1);
 	int sy = in->dim->get(0), osy = dim->get(0);
-	in->set_factor(sxc);
+	in->set_chunk(1);
 	if (sx!=osx || sy!=osy) resize_window(0,0,sx,sy);
 } GRID_FLOW {
 	int sxc = in->dim->prod(1);

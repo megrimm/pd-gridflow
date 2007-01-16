@@ -48,7 +48,7 @@ GRID_INLET(FormatPNG,0) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	in->set_chunk(1);
 	RAISE("bother, said pooh, as the PNG encoding was found unimplemented");
 } GRID_FLOW {
 	int rowsize = in->dim->get(1)*in->dim->get(2);
@@ -118,9 +118,7 @@ GRID_INLET(FormatPNG,0) {
 	return Qnil;
 }
 
-\def void close () {
-	if (f) {fclose(f); f=0;}
-}
+\def void close () {if (f) {fclose(f); f=0;}}
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);

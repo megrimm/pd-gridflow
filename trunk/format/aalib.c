@@ -62,7 +62,7 @@ GRID_INLET(FormatAALib,0) {
 	default:
 		RAISE("expecting 1 greyscale channel (got %d)",in->dim->get(2));
 	}
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	in->set_chunk(1);
 } GRID_FLOW {
 	int f = in->factor();
 	if (raw_mode) {

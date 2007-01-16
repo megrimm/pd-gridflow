@@ -254,7 +254,7 @@ GRID_INLET(GridStore,0) {
 	COPY(v,in->dim->v,na-1);
 	COPY(v+na-1,r->dim->v+nc,nb-nc);
 	out=new GridOutlet(this,0,new Dim(nd,v),r->nt);
-	if (nc>0) in->set_factor(nc);
+	if (nc>0) in->set_chunk(na-1);
 } GRID_FLOW {
 	int na = in->dim->n;
 	int nc = in->dim->get(na-1);
@@ -333,8 +333,7 @@ GRID_INLET(GridStore,1) {
 		if (cs>GridOutlet::MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
-	long cs = in->dim->prod(lsd-nn+in->dim->n);
-	in->set_factor(cs);
+	in->set_chunk(lsd-nn+in->dim->n);
 } GRID_FLOW {
 	if (!put_at) { // reassign
 		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
@@ -452,10 +451,8 @@ GRID_INLET(GridFold,0) {
 	COPY(v+yi,in->dim->v+an-bn,bn);
 	if (seed) SAME_DIM(an-(yi+1),in->dim,(yi+1),seed->dim,0);
 	out=new GridOutlet(this,0,new Dim(an-1,v),in->nt);
-	long k = seed ? seed->dim->prod() : 1;
-	long factor = in->dim->get(yi)*k;
-	if (factor) in->set_factor(factor);
-	else {
+	in->set_chunk(yi);
+	if (in->dim->prod(yi)==0) {
 		long n = out->dim->prod();
 		T x=0; op->on(x)->neutral(&x,at_left);
 		for(long i=0; i<n; i++) out->send(1,&x);
@@ -497,8 +494,7 @@ GRID_INLET(GridScan,0) {
 	if (an<=bn) RAISE("minimum 1 more dimension than the right hand");
 	if (seed) SAME_DIM(bn,in->dim,an-bn,seed->dim,0);
 	out=new GridOutlet(this,0,in->dim,in->nt);
-	long factor = in->dim->prod(an-bn-1);
-	if (factor) in->set_factor(factor);
+	in->set_chunk(an-bn-1);
 } GRID_FLOW {
 	int an = in->dim->n;
 	int bn = seed?seed->dim->n:0;
@@ -582,7 +578,7 @@ GRID_INLET(GridInner,0) {
 	COPY(v,a->v,a->n-1);
 	COPY(v+a->n-1,b->v+1,b->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
-	in->set_factor(a->get(a->n-1));
+	in->set_chunk(a->n-1);
 	long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
 	long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
 	T *rdata = (T *)*r;
@@ -921,7 +917,7 @@ GRID_INLET(GridJoin,0) {
 		}
 	}
 	out=new GridOutlet(this,0,new Dim(d->n,v),in->nt);
-	if (d->prod(w)) in->set_factor(d->prod(w));
+	in->set_chunk(w);
 } GRID_FLOW {
 	int w = which_dim;
 	if (w<0) w+=in->dim->n;
@@ -988,7 +984,7 @@ FOO(float64)
 
 GRID_INLET(GridGrade,0) {
 	out=new GridOutlet(this,0,in->dim);
-	in->set_factor(in->dim->get(in->dim->n-1));
+	in->set_chunk(in->dim->n-1);
 } GRID_FLOW {
 	long m = in->factor();
 	T* foo[m];
@@ -1040,7 +1036,7 @@ GRID_INLET(GridTranspose,0) {
 		nb = in->dim->prod(1+min(d1,d2))/nc/nd;
 		na = in->dim->v[min(d1,d2)];
 		out=new GridOutlet(this,0,new Dim(in->dim->n,v), in->nt);
-		in->set_factor(na*nb*nc*nd);
+		in->set_chunk(min(d1,d2));
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
@@ -1085,7 +1081,7 @@ GRID_INLET(GridReverse,0) {
 		RAISE("would reverse dimension %d but this grid has only %d dimensions",
 			dim1,in->dim->n);
 	out=new GridOutlet(this,0,new Dim(in->dim->n,in->dim->v), in->nt);
-	in->set_factor(in->dim->prod(d));
+	in->set_chunk(d);
 } GRID_FLOW {
 	long f1=in->factor(), f2=in->dim->prod(d+1);
 	while (n) {
@@ -1116,7 +1112,7 @@ struct GridCentroid : GridObject {
 GRID_INLET(GridCentroid,0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
-	in->set_factor(in->dim->prod(1));
+	in->set_chunk(1);
 	out=new GridOutlet(this,0,new Dim(2), in->nt);
 	sumx=0; sumy=0; sum=0; y=0;
 } GRID_FLOW {
@@ -1161,7 +1157,7 @@ struct GridMoment : GridObject {
 GRID_INLET(GridMoment,0) {
 	if (in->dim->n != 3) RAISE("expecting 3 dims");
 	if (in->dim->v[2] != 1) RAISE("expecting 1 channel");
-	in->set_factor(in->dim->prod(1));
+	in->set_chunk(1);
 	switch (order) {
 	    case 1: out=new GridOutlet(this,0,new Dim(2  ), in->nt); break;
 	    case 2: out=new GridOutlet(this,0,new Dim(2,2), in->nt); break;
@@ -1244,7 +1240,7 @@ GRID_INLET(GridPerspective,0) {
 	int32 v[n];
 	COPY(v,in->dim->v,n);
 	v[n-1]--;
-	in->set_factor(in->dim->get(in->dim->n-1));
+	in->set_chunk(in->dim->n-1);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 } GRID_FLOW {
 	int m = in->factor();
@@ -1281,7 +1277,7 @@ GRID_INLET(GridBorder,0) {
 	if (diml->v[2] || dimr->v[2]) RAISE("can't augment channels (todo)");
 	int32 v[n];
 	for (int i=0; i<n; i++) v[i]=in->dim->v[i]+diml->v[i]+dimr->v[i];
-	in->set_factor(in->dim->prod());
+	in->set_chunk(0);
 	out=new GridOutlet(this,0,new Dim(n,v),in->nt);
 } GRID_FLOW {
 	int sy = in->dim->v[0];
@@ -1481,7 +1477,7 @@ GRID_INLET(GridScaleBy,0) {
 	P<Dim> a = in->dim;
 	expect_picture(a);
 	out=new GridOutlet(this,0,new Dim(a->get(0)*scaley,a->get(1)*scalex,a->get(2)),in->nt);
-	in->set_factor(a->get(1)*a->get(2));
+	in->set_chunk(1);
 } GRID_FLOW {
 	int rowsize = in->dim->prod(1);
 	T buf[rowsize*scalex];
@@ -1545,7 +1541,7 @@ GRID_INLET(GridDownscaleBy,0) {
 	P<Dim> a = in->dim;
 	if (a->n!=3) RAISE("(height,width,chans) please");
 	out=new GridOutlet(this,0,new Dim(a->get(0)/scaley,a->get(1)/scalex,a->get(2)),in->nt);
-	in->set_factor(a->get(1)*a->get(2));
+	in->set_chunk(1);
 	// i don't remember why two rows instead of just one.
 	temp=new Grid(new Dim(2,in->dim->get(1)/scalex,in->dim->get(2)),in->nt);
 } GRID_FLOW {
@@ -1629,7 +1625,7 @@ GRID_INLET(GridLayer,0) {
 	expect_rgba_picture(a);
 	if (a->get(1)!=r->dim->get(1)) RAISE("same width please");
 	if (a->get(0)!=r->dim->get(0)) RAISE("same height please");
-	in->set_factor(a->prod(2));
+	in->set_chunk(2);
 	out=new GridOutlet(this,0,r->dim);
 } GRID_FLOW {
 	T * rr = ((T *)*r) + in->dex*3/4;
@@ -1712,7 +1708,7 @@ GRID_INLET(DrawPolygon,0) {
 		RAISE("image does not have same number of channels as stored color");
 	out=new GridOutlet(this,0,in->dim,in->nt);
 	lines_start = lines_stop = 0;
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	in->set_chunk(1);
 	int nl = polygon->dim->get(0);
 	qsort((int32 *)*lines,nl,sizeof(Line),order_by_starting_scanline);
 	int cn = color->dim->prod();
@@ -1854,7 +1850,7 @@ GRID_INLET(DrawImage,0) {
 			rchan, alpha?1:0, lchan, rchan-(alpha?1:0), rchan);
 	}
 	out=new GridOutlet(this,0,in->dim,in->nt);
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	in->set_chunk(1);
 } GRID_FLOW {
 	int f = in->factor();
 	int y = in->dex/f;
@@ -1920,7 +1916,7 @@ GRID_INLET(GridDrawPoints,0) {
 	if (points->dim->n!=2) RAISE("points should be a 2-D grid");
 	if (points->dim->v[1] != in->dim->n - color->dim->n)
 		RAISE("wrong number of dimensions");
-	in->set_factor(in->dim->prod());
+	in->set_chunk(0);
 } GRID_FLOW {
 	long m = points->dim->v[1];
 	long cn = in->dim->prod(-color->dim->n); /* size of color (RGB=3, greyscale=1, ...) */

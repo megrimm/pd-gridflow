@@ -53,7 +53,7 @@ GRID_INLET(FormatJPEG,0) {
 		RAISE("expecting 3 dimensions: rows,columns,channels");
 	if (in->dim->get(2) != 3)
 		RAISE("expecting 3 channels (got %d)",in->dim->get(2));
-	in->set_factor(in->dim->get(1)*in->dim->get(2));
+	in->set_chunk(1);
 	cjpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cjpeg);
 	jpeg_stdio_dest(&cjpeg,f);
