@@ -162,6 +162,11 @@ void GridInlet::set_factor(long factor) {
 	}
 }
 
+void GridInlet::set_chunk(long whichdim) {
+	long n = dim->prod(whichdim);
+	if (n) set_factor(n);
+}
+
 static Ruby GridInlet_begin_1(GridInlet *self) {
 #define FOO(T) self->gh->flow(self,-1,(T *)0); break;
 	TYPESWITCH(self->nt,FOO,)
@@ -487,7 +492,15 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
 	if (!inl->dim) RAISE("inlet #%d not active",inln);
-	inl->set_factor(factor);
+//	inl->set_factor(factor);
+}
+
+\def void inlet_set_chunk (int inln, long whichdim) {
+	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
+	P<GridInlet> inl = in[inln];
+	if (!inl) RAISE("no such inlet #%d",inln);
+	if (!inl->dim) RAISE("inlet #%d not active",inln);
+	inl->set_chunk(whichdim);
 }
 
 \def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_e) {
