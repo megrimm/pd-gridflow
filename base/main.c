@@ -272,9 +272,6 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def R total_time_get () {return total_time;}
-\def R total_time_set (Ruby x) {return total_time = TO(uint64,x);}
-
 \def void delete_m () {
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	rb_funcall(keep,SI(delete),1,rself);
@@ -623,20 +620,14 @@ void GFStack::push (FObject *o) {
 	void *bp = &o; // really. just finding our position on the stack.
 	if (n>=GF_STACK_MAX)
 		RAISE("stack overflow (maximum %d FObject activations at once)", GF_STACK_MAX);
-	uint64 t = rdtsc();
-	if (n) s[n-1].time = t - s[n-1].time;
 	s[n].o = o;
 	s[n].bp = bp;
-	s[n].time = t;
 	n++;
 }
 
 void GFStack::pop () {
-	uint64 t = rdtsc();
 	if (!n) RAISE("stack underflow (WHAT?)");
 	n--;
-	if (s[n].o) s[n].o->total_time += t - s[n].time;
-	if (n) s[n-1].time = t - s[n-1].time;
 }
 
 uint64 gf_timeofday () {

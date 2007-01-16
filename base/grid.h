@@ -1038,22 +1038,17 @@ typedef struct BFObject BFObject; // Pd t_object or something
 #endif
 struct FObject : CObject {
 	BFObject *bself; // point to PD peer
-	uint64 total_time;
-	FObject() : bself(0), total_time(0) {}
+	FObject() : bself(0) {}
 	const char *args() {
 		Ruby s=rb_funcall(rself,SI(args),0);
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
 	}
 #ifndef SWIG
-	\decl R total_time_get();
-	\decl R total_time_set(Ruby x);
 	\decl void send_in (...);
 	\decl void send_out (...);
 	\decl void delete_m ();
 #else
-//	R total_time_get();
-//	R total_time_set(Ruby x);
 	void send_in (...);
 	void send_out (...);
 	void delete_m ();
@@ -1132,7 +1127,6 @@ struct GFStack {
 	struct GFStackFrame {
 		FObject *o;
 		void *bp; // a pointer into system stack
-		uint64 time;
 	}; // sizeof() == 16 (in 32-bit mode)
 	GFStackFrame s[GF_STACK_MAX];
 	int n;
