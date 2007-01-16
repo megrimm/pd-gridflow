@@ -28,18 +28,6 @@ GridFlow = ::GridFlow # ruby is nuts... sometimes
 
 # a dummy class that gives access to any stuff global to GridFlow.
 FObject.subclass("gridflow",1,1) {
-	def _0_profiler_dump
-		if GridFlow.respond_to? :memcpy_calls then
-			post "memcpy calls: #{GridFlow.memcpy_calls} "+
-				"; bytes: #{GridFlow.memcpy_bytes}"+
-				"; time: #{GridFlow.memcpy_time}"
-		end
-		if GridFlow.respond_to? :malloc_calls then
-			post "malloc calls: #{GridFlow.malloc_calls} "+
-				"; bytes: #{GridFlow.malloc_bytes}"+
-				"; time: #{GridFlow.malloc_time}"
-		end
-	end
 	def _0_formats
 		post "-"*32
 		GridFlow.fclasses.each {|k,v|

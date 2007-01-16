@@ -227,7 +227,6 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 		void*(*alloc)() = (void*(*)())FIX2PTR(void,allocator);
 		self = (FObject *)alloc();
 	}
-	self->check_magic();
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
 	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
@@ -450,13 +449,6 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 
 /* ---------------------------------------------------------------- */
 
-static uint32 memcpy_calls = 0;
-static uint64 memcpy_bytes = 0;
-static uint64 memcpy_time  = 0;
-static uint32 malloc_calls = 0; /* only new not delete */
-static uint64 malloc_bytes = 0; /* only new not delete */
-static uint64 malloc_time  = 0; /* in cpu ticks */
-
 // don't touch.
 static void gfmemcopy32(int32 *as, int32 *bs, long n) {
 	ptrdiff_t ba = bs-as;
@@ -467,9 +459,6 @@ static void gfmemcopy32(int32 *as, int32 *bs, long n) {
 }
 
 void gfmemcopy(uint8 *out, const uint8 *in, long n) {
-	uint64 t = rdtsc();
-	memcpy_calls++;
-	memcpy_bytes+=n;
 	for (; n>16; in+=16, out+=16, n-=16) {
 		((int32*)out)[0] = ((int32*)in)[0];
 		((int32*)out)[1] = ((int32*)in)[1];
@@ -478,40 +467,17 @@ void gfmemcopy(uint8 *out, const uint8 *in, long n) {
 	}
 	for (; n>4; in+=4, out+=4, n-=4) { *(int32*)out = *(int32*)in; }
 	for (; n; in++, out++, n--) { *out = *in; }
-	t=rdtsc()-t;
-	memcpy_time+=t;
 }
 
 extern "C" {
 void *gfmalloc(size_t n) {
-	uint64 t = rdtsc();
 	void *p = memalign(16,n);
 	long align = (long)p & 15;
 	if (align) fprintf(stderr,"malloc alignment = %ld mod 16\n",align);
-	t=rdtsc()-t;
-	malloc_time+=t;
-	malloc_calls++;
-	malloc_bytes+=n;
 	return p;
 }
-void gffree(void *p) {
-	uint64 t = rdtsc();
-	free(p);
-	t=rdtsc()-t;
-	malloc_time+=t;
-}};
-
-Ruby GridFlow_memcpy_calls (Ruby rself) { return   LONG2NUM(memcpy_calls); }
-R GridFlow_memcpy_bytes (Ruby rself) {return memcpy_bytes;}
-R GridFlow_memcpy_time  (Ruby rself) {return memcpy_time;}
-Ruby GridFlow_malloc_calls (Ruby rself) { return   LONG2NUM(malloc_calls); }
-R GridFlow_malloc_bytes (Ruby rself) {return malloc_bytes;}
-R GridFlow_malloc_time  (Ruby rself) {return malloc_time;}
-Ruby GridFlow_profiler_reset (Ruby rself) {
-	memcpy_calls = memcpy_bytes = memcpy_time = 0;
-	malloc_calls = malloc_bytes = malloc_time = 0;
-	return Qnil;
-}
+void gffree(void *p) {free(p);}
+};
 
 /* ---------------------------------------------------------------- */
 
@@ -540,13 +506,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
-	SDEF2("profiler_reset",GridFlow_profiler_reset,0);
-	SDEF2("memcpy_calls",GridFlow_memcpy_calls,0);
-	SDEF2("memcpy_bytes",GridFlow_memcpy_bytes,0);
-	SDEF2("memcpy_time", GridFlow_memcpy_time,0);
-	SDEF2("malloc_calls",GridFlow_malloc_calls,0);
-	SDEF2("malloc_bytes",GridFlow_malloc_bytes,0);
-	SDEF2("malloc_time", GridFlow_malloc_time,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 	SDEF2("fclass_install",GridFlow_fclass_install,2);
 
@@ -608,8 +567,3 @@ uint64 gf_timeofday () {
 	gettimeofday(&t,0);
 	return t.tv_sec*1000000+t.tv_usec;
 }
-
-//void __cyg_profile_func_enter (void *this_fn, void *call_site) {_L_}
-//void __cyg_profile_func_exit  (void *this_fn, void *call_site) {_L_}
-
-
