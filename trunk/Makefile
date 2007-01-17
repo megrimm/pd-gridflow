@@ -38,23 +38,25 @@ clean::
 
 .SUFFIXES:
 
+H = gridflow2.h base/grid.h.fcs
+
 %.h.fcs: %.h $(COMMON_DEPS)
 	$(FILT) $< $@
-%.c.fcs: %.c $(COMMON_DEPS) base/grid.h.fcs
+%.c.fcs: %.c $(COMMON_DEPS) $(H)
 	$(FILT) $< $@
-%.m.fcs: %.m $(COMMON_DEPS) base/grid.h.fcs
+%.m.fcs: %.m $(COMMON_DEPS) $(H)
 	$(FILT) $< $@
-%.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -c $< -o $@
-%.1.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.1.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS1 -c $< -o $@
-%.2.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.2.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS2 -c $< -o $@
-%.3.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.3.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS3 -c $< -o $@
-%.4.o: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.4.o: %.c.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -DPASS4 -c $< -o $@
-%.o: %.m.fcs $(COMMON_DEPS) base/grid.h.fcs
+%.o: %.m.fcs $(COMMON_DEPS) $(H)
 	$(CXX) $(CFLAGS) -xobjective-c++ -c $< -o $@
 
 %.s: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
@@ -92,7 +94,7 @@ endif
 ifeq ($(HAVE_PUREDATA),yes)
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): bridge/puredata.c.fcs base/grid.h $(COMMON_DEPS)
+$(PD_LIB): bridge/puredata.c.fcs base/grid.h gridflow2.h $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
@@ -122,32 +124,10 @@ pd_abstractions/@color.pd: pd_abstractions/\#color.pd
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
-ruby/configure: ruby/configure.in
-	(cd ruby; autoconf)
-
-ruby/Makefile: ruby/configure
-	(prefix=$$(pwd); cd ruby; ./configure --enable-shared --prefix=$$prefix)
-
-ruby/ruby: ruby/Makefile
-	(cd ruby; make)
-
-ruby:: ruby/ruby
-
-ruby-checkout::
-	cvs -d :pserver:anonymous@cvs.ruby-lang.org:/src checkout -D 2005-10-01 ruby
-
-ruby-install:: ruby/ruby
-	(cd ruby; make install)
-
-#--------#--------#--------#--------#--------#--------#--------#--------
-
 help::
 	@echo "do one of the following:";\
 	echo  "make all            compiles gridflow";\
 	echo  "make beep           beeps";\
-	echo  "make ruby           compiles ruby";\
-	echo  "make ruby-install   installs ruby into this directory";\
-	echo  "make ruby-checkout  downloads ruby";\
 	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
 
 #--------#--------#--------#--------#--------#--------#--------#--------
@@ -155,8 +135,8 @@ help::
 # default:: tcl.pd_linux
 
 tcl.pd_linux: tcl_wrap.cxx tcl_extras.cxx tcl_extras.h Makefile
-	g++ -shared -DPDSUF=\"$(PDSUF)\" -o tcl.pd_linux -I/usr/local/include \
-		tcl_wrap.cxx tcl_extras.cxx -ltcl8.4
+	g++ $(CFLAGS) -shared -DPDSUF=\"$(PDSUF)\" -o tcl.pd_linux \
+		tcl_wrap.cxx tcl_extras.cxx -ltcl8.5
 
 tcl_wrap.cxx: tcl.i tcl_extras.h
 	swig -v -c++ -tcl -o tcl_wrap.cxx -I/usr/local/include tcl.i
