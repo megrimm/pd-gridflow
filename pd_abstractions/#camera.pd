@@ -1,10 +1,10 @@
-#N canvas 263 56 629 290 10;
+#N canvas 589 344 629 290 10;
 #X obj 182 12 cnv 15 216 76 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 253 22 hradio 18 1 0 4 \$0-channel \$0-channel _0__1__2__3_
 0 14 0 8 -241291 -258699 -1 0;
-#N canvas 509 63 600 478 camera 0;
-#X obj 290 369 outlet;
+#N canvas 509 63 600 478 camera 1;
+#X obj 288 378 outlet;
 #X obj 11 9 inlet;
 #X msg 140 126 contrast \$1;
 #X msg 140 186 whiteness \$1;
@@ -61,6 +61,18 @@
 #X obj 356 300 range 1 5 6;
 #X msg 340 337 close;
 #X obj 400 391 rubysprintf /dev/video%d;
+#X msg 140 86 framerate \$1;
+#X obj 233 86 r \$0-framerate;
+#X obj 305 450 t b a b;
+#X obj 68 352 spigot;
+#X msg 112 300 0;
+#X msg 112 323 1;
+#X msg 140 46 white_red \$1;
+#X obj 233 46 r \$0-white_red;
+#X msg 140 26 white_mode \$1;
+#X obj 233 26 r \$0-white_mode;
+#X obj 233 66 r \$0-white_blue;
+#X msg 140 66 white_blue \$1;
 #X connect 1 0 25 0;
 #X connect 2 0 14 0;
 #X connect 3 0 14 0;
@@ -74,8 +86,8 @@
 #X connect 11 0 14 0;
 #X connect 12 0 14 0;
 #X connect 13 0 12 0;
-#X connect 14 0 0 0;
-#X connect 15 0 0 0;
+#X connect 14 0 60 0;
+#X connect 15 0 59 0;
 #X connect 16 0 14 0;
 #X connect 17 0 16 0;
 #X connect 18 0 54 0;
@@ -112,25 +124,39 @@
 #X connect 50 0 19 0;
 #X connect 51 0 44 0;
 #X connect 52 0 56 0;
-#X connect 53 0 0 0;
+#X connect 53 0 59 0;
 #X connect 54 0 55 0;
 #X connect 54 1 52 0;
 #X connect 54 2 53 0;
 #X connect 55 0 0 0;
 #X connect 56 0 15 0;
+#X connect 57 0 14 0;
+#X connect 58 0 57 0;
+#X connect 59 0 62 0;
+#X connect 59 1 0 0;
+#X connect 59 2 61 0;
+#X connect 60 0 0 0;
+#X connect 61 0 60 1;
+#X connect 62 0 60 1;
+#X connect 63 0 14 0;
+#X connect 64 0 63 0;
+#X connect 65 0 14 0;
+#X connect 66 0 65 0;
+#X connect 67 0 68 0;
+#X connect 68 0 14 0;
 #X restore 55 358 pd camera;
 #X obj 82 407 #yuv_to_rgb;
 #X obj 28 358 #in;
 #X obj 28 445 outlet image;
 #X obj 28 407 shunt 2;
-#X obj 29 339 inlet;
+#X obj 28 328 inlet;
 #X obj 253 42 hradio 18 1 0 4 \$0-tuner \$0-tuner _0__1__2__3_ 0 14
 0 8 -241291 -258699 -1 0;
 #X obj 256 62 hsl 128 15 0 65635 0 0 \$0-frequency \$0-frequency frequency
 8 8 0 8 -62784 -44926 -44926 0 1;
 #X obj 197 63 nbx 5 14 0 65535 0 0 \$0-frequency \$0-frequency empty
 0 -6 0 10 -62784 -44926 -44926 0 256;
-#X obj 68 338 r \$0-o;
+#X obj 67 327 r \$0-o;
 #X text 194 23 channel:;
 #X text 208 43 tuner:;
 #X obj 82 426 #clip;
@@ -138,7 +164,7 @@
 0;
 #X text 19 17 device:;
 #X obj 71 16 vradio 15 1 0 6 \$0-device \$0-device empty 0 -6 0 8 -241291
--1 -1 1;
+-1 -1 0;
 #X text 88 15 OFF;
 #X text 88 29 /dev/video0;
 #X text 88 44 /dev/video1;
@@ -154,36 +180,36 @@
 #X obj 182 96 cnv 15 216 184 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 256 134 hsl 128 15 0 65535 0 0 \$0-brightness \$0-brightness
-brightness 8 8 0 8 -260818 -1 -1 6152 0;
+brightness 8 8 0 8 -260818 -1 -1 0 0;
 #X obj 256 168 hsl 128 15 0 65535 0 0 \$0-hue \$0-hue hue 8 8 0 8 -260818
--1 -1 12700 0;
+-1 -1 0 0;
 #X obj 256 117 hsl 128 15 0 65535 0 0 \$0-contrast \$0-contrast contrast
-8 8 0 8 -260818 -1 -1 12502 0;
+8 8 0 8 -260818 -1 -1 0 0;
 #X obj 256 185 hsl 128 15 0 65635 0 0 \$0-whiteness \$0-whiteness whiteness
-8 8 0 8 -260818 -1 -1 6340 0;
+8 8 0 8 -260818 -1 -1 0 0;
 #X obj 256 151 hsl 128 15 0 65535 0 0 \$0-colour \$0-colour colour
-8 8 0 8 -260818 -1 -1 6350 0;
+8 8 0 8 -260818 -1 -1 0 0;
 #X obj 197 118 nbx 5 14 0 65535 0 0 \$0-contrast \$0-contrast empty
-0 -6 0 10 -260818 -1 -1 64512 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 197 135 nbx 5 14 0 65535 0 0 \$0-brightness \$0-brightness empty
-0 -6 0 10 -260818 -1 -1 31744 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 197 152 nbx 5 14 0 65535 0 0 \$0-colour \$0-colour empty 0 -6
-0 10 -260818 -1 -1 32768 256;
+0 10 -260818 -1 -1 0 256;
 #X obj 197 169 nbx 5 14 0 65535 0 0 \$0-hue \$0-hue empty 0 -6 0 10
--260818 -1 -1 65535 256;
+-260818 -1 -1 0 256;
 #X obj 197 186 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
-0 -6 0 10 -260818 -1 -1 32768 256;
+0 -6 0 10 -260818 -1 -1 0 256;
 #X obj 406 180 cnv 15 216 100 empty empty empty 20 12 0 14 -233017
 -66577 0;
 #X obj 405 12 cnv 15 216 160 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X obj 456 37 nbx 5 14 -1e+37 1e+37 0 0 \$0-height \$0-height empty
+#X obj 456 29 nbx 5 14 -1e+37 1e+37 0 0 \$0-height \$0-height empty
 0 -6 0 10 -241291 -1 -1 0 256;
-#X obj 510 37 nbx 5 14 -1e+37 1e+37 0 0 \$0-width \$0-width empty 0
+#X obj 510 29 nbx 5 14 -1e+37 1e+37 0 0 \$0-width \$0-width empty 0
 -6 0 10 -241291 -1 -1 0 256;
-#X text 419 36 size:;
-#X text 455 20 height;
-#X text 513 20 width;
+#X text 419 28 size:;
+#X text 455 12 height;
+#X text 513 12 width;
 #X msg 519 239 colorspace YUV420P;
 #X msg 415 199 transfer mmap;
 #X msg 415 239 transfer read;
@@ -192,9 +218,9 @@ brightness 8 8 0 8 -260818 -1 -1 6152 0;
 #X msg 415 219 transfer mmap 4;
 #X obj 415 372 s \$0-o;
 #X obj 205 361 vradio 15 1 0 2 \$0-conv \$0-conv empty 0 -6 0 8 -241291
--258699 -1 1;
+-258699 -1 0;
 #X text 224 375 YUV->RGB;
-#X text 418 67 presets;
+#X text 417 76 presets;
 #X obj 489 89 bng 15 250 50 0 \$0-size0 empty empty 0 -6 0 8 -241291
 -1 -1;
 #X text 434 89 120x160;
@@ -231,6 +257,22 @@ brightness 8 8 0 8 -260818 -1 -1 6152 0;
 #X msg 496 349 1;
 #X text 196 322 This part is now automatically decided;
 #X text 197 332 assuming everybody uses RGB;
+#X obj 562 62 nbx 5 14 -1e+37 1e+37 0 0 \$0-framerate \$0-framerate
+empty 0 -6 0 10 -241291 -1 -1 0 256;
+#X text 567 44 fps;
+#X text 518 59 pwc-only;
+#X obj 256 255 hsl 128 15 0 65635 0 0 \$0-white_blue \$0-white_blue
+white_blue 8 8 0 8 -260818 -1 -1 0 0;
+#X obj 197 256 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
+0 -6 0 10 -260818 -1 -1 0 256;
+#X text 218 205 -------- PWC ONLY: --------;
+#X obj 256 238 hsl 128 15 0 65635 0 0 \$0-white_red \$0-white_red white_red
+8 8 0 8 -260818 -1 -1 0 0;
+#X obj 197 239 nbx 5 14 0 65535 0 0 \$0-whiteness \$0-whiteness empty
+0 -6 0 10 -260818 -1 -1 0 256;
+#X obj 197 222 tgl 15 0 \$0-white_mode \$0-white_mode empty 20 7 0
+7 -241291 -1 -1 0 1;
+#X text 216 220 manual white balance;
 #X connect 2 0 4 0;
 #X connect 2 0 72 0;
 #X connect 3 0 14 0;

@@ -32,7 +32,7 @@
 #include <sys/mman.h>
 #include "pwc-ioctl.h"
 
-#define error printf
+#define error gfpost
 
 /* **************************************************************** */
 
@@ -299,6 +299,10 @@ struct FormatVideoDev : Format {
 	\attr uint16 colour();
 	\attr uint16 contrast();
 	\attr uint16 whiteness();
+	\attr uint16 framerate();
+	\attr uint16 white_mode(); /* 0..1 */
+	\attr uint16 white_red();
+	\attr uint16 white_blue();
 };
 
 #define DEBUG(args...) 42
@@ -498,7 +502,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 #define PICTURE_ATTRGET(_name_) { \
 	WIOCTL(fd, VIDIOCGPICT, &vp); \
-	gfpost("getting %s=%d",#_name_,vp._name_); \
+	/*gfpost("getting %s=%d",#_name_,vp._name_);*/ \
 	return vp._name_;}
 
 \def uint16    brightness ()                 {PICTURE_ATTRGET(brightness)}
@@ -561,39 +565,54 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
 	pma.tilt = tilt;
 	WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);
 }
-void set_framerate(int fd, int framerate) {
+\def uint16 framerate() {
 	struct video_window vwin;
 	WIOCTL(fd, VIDIOCGWIN, &vwin);
-	if (vwin.flags & PWC_FPS_FRMASK) {
-		vwin.flags &= ~PWC_FPS_FRMASK;
-		vwin.flags |= (framerate << PWC_FPS_SHIFT);
-		WIOCTL(fd, VIDIOCSWIN, &vwin);
-	} else {
-		error("can't set framerate.");
-		return;
-	}
+	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
+}
+
+\def void _0_framerate(uint16 framerate) {
+	struct video_window vwin;
+	WIOCTL(fd, VIDIOCGWIN, &vwin);
+	vwin.flags &= ~PWC_FPS_FRMASK;
+	vwin.flags |= (framerate << PWC_FPS_SHIFT) & PWC_FPS_FRMASK;
+	WIOCTL(fd, VIDIOCSWIN, &vwin);
 }
 
 /* those functions are still mostly unused */
 void set_compression_preference(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
 void set_automatic_gain_control(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSAGC, &pref);}
 void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
-void set_automatic_white_balance_mode(int fd, char *mode) {
+\def uint16 white_mode () {
 	struct pwc_whitebalance pwcwb;
 	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
-	if      (strcasecmp(mode, "auto") == 0)    pwcwb.mode = PWC_WB_AUTO;
-	else if (strcasecmp(mode, "manual") == 0)  pwcwb.mode = PWC_WB_MANUAL;
-	else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;
-	else if (strcasecmp(mode, "outdoor") == 0) pwcwb.mode = PWC_WB_OUTDOOR;
-	else if (strcasecmp(mode, "fl") == 0)      pwcwb.mode = PWC_WB_FL;
-	else {error("unknown mode '%s'", mode); return;}
+	if (pwcwb.mode==PWC_WB_AUTO)   return 0;
+	if (pwcwb.mode==PWC_WB_MANUAL) return 1;
+	return 2;
+}
+
+\def void _0_white_mode (uint16 white_mode) {
+	struct pwc_whitebalance pwcwb;
+	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	if      (white_mode==0) pwcwb.mode = PWC_WB_AUTO;
+	else if (white_mode==1) pwcwb.mode = PWC_WB_MANUAL;
+	/*else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;*/
+	/*else if (strcasecmp(mode, "outdoor") == 0) pwcwb.mode = PWC_WB_OUTDOOR;*/
+	/*else if (strcasecmp(mode, "fl") == 0)      pwcwb.mode = PWC_WB_FL;*/
+	else {error("unknown mode '%s'", white_mode); return;}
 	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
-void set_automatic_white_balance_mode_red(int fd, int val) {
+
+\def uint16 white_red() {
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_red;}
+\def uint16 white_blue() {
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_blue;}
+\def void _0_white_red(uint16 white_red) {
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
-	pwcwb.manual_red = val;        WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
-void set_automatic_white_balance_mode_blue(int fd, int val) {
+	pwcwb.manual_red = white_red;  WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+\def void _0_white_blue(uint16 val) {
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
-	pwcwb.manual_blue = val;       WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+	pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+
 void set_automatic_white_balance_speed(int fd, int val) {
 	struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 	pwcwbs.control_speed = val; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
