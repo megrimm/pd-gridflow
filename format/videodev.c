@@ -30,6 +30,9 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include "pwc-ioctl.h"
+
+#define error printf
 
 /* **************************************************************** */
 
@@ -549,6 +552,64 @@ GRID_INLET(FormatVideoDev,0) {
 	default: RAISE("should never get this error message.");
 	}
 }
+
+void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
+	struct pwc_mpt_angles pma;
+	pma.absolute=1;
+	WIOCTL(fd, VIDIOCPWCMPTGANGLE, &pma);
+	pma.pan = pan;
+	pma.tilt = tilt;
+	WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);
+}
+void set_framerate(int fd, int framerate) {
+	struct video_window vwin;
+	WIOCTL(fd, VIDIOCGWIN, &vwin);
+	if (vwin.flags & PWC_FPS_FRMASK) {
+		vwin.flags &= ~PWC_FPS_FRMASK;
+		vwin.flags |= (framerate << PWC_FPS_SHIFT);
+		WIOCTL(fd, VIDIOCSWIN, &vwin);
+	} else {
+		error("can't set framerate.");
+		return;
+	}
+}
+
+/* those functions are still mostly unused */
+void set_compression_preference(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
+void set_automatic_gain_control(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSAGC, &pref);}
+void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
+void set_automatic_white_balance_mode(int fd, char *mode) {
+	struct pwc_whitebalance pwcwb;
+	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	if      (strcasecmp(mode, "auto") == 0)    pwcwb.mode = PWC_WB_AUTO;
+	else if (strcasecmp(mode, "manual") == 0)  pwcwb.mode = PWC_WB_MANUAL;
+	else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;
+	else if (strcasecmp(mode, "outdoor") == 0) pwcwb.mode = PWC_WB_OUTDOOR;
+	else if (strcasecmp(mode, "fl") == 0)      pwcwb.mode = PWC_WB_FL;
+	else {error("unknown mode '%s'", mode); return;}
+	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+void set_automatic_white_balance_mode_red(int fd, int val) {
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	pwcwb.manual_red = val;        WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+void set_automatic_white_balance_mode_blue(int fd, int val) {
+	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
+	pwcwb.manual_blue = val;       WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
+void set_automatic_white_balance_speed(int fd, int val) {
+	struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+	pwcwbs.control_speed = val; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+void set_automatic_white_balance_delay(int fd, int val) {
+	struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+	pwcwbs.control_delay = val; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+void set_led_on_time(int fd, int val) {
+	struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
+	pwcl.led_on = val;    WIOCTL(fd, VIDIOCPWCSLED, &pwcl);}
+void set_led_off_time(int fd, int val) {
+	struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
+	pwcl.led_off = val;   WIOCTL(fd, VIDIOCPWCSLED, &pwcl);}
+void set_sharpness(int fd, int val) {WIOCTL(fd, VIDIOCPWCSCONTOUR, &val);}
+void set_backlight_compensation(int fd, int val) {WIOCTL(fd, VIDIOCPWCSBACKLIGHT, &val);}
+void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);}
+void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);}
 
 \def void initialize2 () {
 //	long flags;          fcntl(fd,F_GETFL,&flags);
