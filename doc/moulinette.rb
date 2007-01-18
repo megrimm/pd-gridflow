@@ -24,25 +24,8 @@
 
 GF_VERSION = "0.8.4"
 
-#$use_rexml = true
-$use_rexml = false
-
-$: << ".." << "../.."
-require "gridflow"
-
-if $use_rexml
-	# this is a pure ruby xml-parser
-	begin
-		require "rexml/sax2parser"
-	rescue LoadError
-		require "rexml/parsers/sax2parser"
-		include REXML::Parsers
-	end
-	include REXML
-else
-	# this uses libexpat.so
-	require "xmlparser"
-end
+# this uses libexpat.so
+require "xmlparser"
 
 =begin todo
 
@@ -158,16 +141,7 @@ class XNode
 		contents.each {|x| next unless XNode===x; x.show_index }
 	end
 
-	# this method segfaults in ruby 1.8
-	# because of method lookup on Qundef or whatever.
-	def show
-		#STDERR.puts GridFlow.get_id(contents)
-		#STDERR.puts self
-		contents.each {|x|
-			# STDERR.puts GridFlow.get_id(x)
-			x.show
-		}
-	end
+	def show; contents.each {|x| x.show } end
 	def inspect; "#<XNode #{tag}>"; end
 	def to_s; inspect; end
 	def << x; contents << x; x.parent=self end
@@ -459,33 +433,19 @@ XNode.register("inlet","outlet") {}
 
 #----------------------------------------------------------------#
 
-if $use_rexml
-	class GFDocParser
-		def initialize(file)
-			@sax = SAX2Parser.new(File.open(file))
-			@xml_lists = []
-			@stack = [[]]
-			@sax.listen(:start_element) {|a,b,c,d| startElement(b,d) }
-			@sax.listen(  :end_element) {|a,b,c|   endElement(b) }
-			@sax.listen(   :characters) {|a| @gfdoc.character(a) }
-		end
-		def do_it; @sax.parse; end
+class GFDocParser
+	def initialize(file)
+		@xml = XMLParser.new("ISO-8859-1")
+		foo=self; @xml.instance_eval { @gfdoc=foo }
+		def @xml.startElement(tag,attrs) @gfdoc.startElement(tag,attrs) end
+		def @xml.endElement(tag) @gfdoc.endElement(tag) end
+		def @xml.character(text) @gfdoc.character(text) end
+		@file = File.open file
+		@xml_lists = []
+		@stack = [[]]
 	end
-else
-	class GFDocParser
-		def initialize(file)
-			@xml = XMLParser.new("ISO-8859-1")
-			foo=self; @xml.instance_eval { @gfdoc=foo }
-			def @xml.startElement(tag,attrs) @gfdoc.startElement(tag,attrs) end
-			def @xml.endElement(tag) @gfdoc.endElement(tag) end
-			def @xml.character(text) @gfdoc.character(text) end
-			@file = File.open file
-			@xml_lists = []
-			@stack = [[]]
-		end
-		def do_it; @xml.parse(@file.readlines.join("\n"), true) end
-		def method_missing(sel,*args) @xml.send(sel,*args) end
-	end
+	def do_it; @xml.parse(@file.readlines.join("\n"), true) end
+	def method_missing(sel,*args) @xml.send(sel,*args) end
 end
 
 class GFDocParser
@@ -566,55 +526,12 @@ end
 $nodes = {}
 XMLParserError = Exception if $use_rexml
 
-def harvest_doc_of_class xclass, v, way
-	STDERR.puts v.foreign_name
-	doc = case way; when :in; v.doc;   when :out; v.doc_out end
-	tag = case way; when :in; "inlet"; when :out; "outlet" end
-	doc.keys.each {|sel|
-		text = doc[sel]
-		m=/^_(\d+)_(\w+)/.match sel.to_s
-		if m and m.length==2 then
-			xclass << XNode[tag,{"id"=>Integer(m[1])},
-			  XNode["method",{"name"=>m[2]},XString.new(text)]]
-		else
-			STDERR.puts "sel=#{sel} text=#{text}"
-			xclass << XNode["method",{"name"=>sel.to_s},XString.new(text)]
-		end
-	}
-end
-
-def harvest_doc tree
-	kla = {}
-	tree.contents.find_all {|x| XNode===x and x.tag=="section" }.each {|sex|
-		sex.contents.each {|y|
-			next unless XNode===y and y.tag=="class"
-			kla[y.att["name"]] = y
-		}
-	}
-	#STDERR.puts kla.inspect
-	tree << (nu=XNode["section",{"name"=>"(new documentation)"}])
-	tree << (un=XNode["section",{"name"=>"(undocumented)"}])
-	alph = GridFlow.fclasses.keys.sort
-	alph.each {|k|
-		next if /^@/=~k and GridFlow.fclasses[k.gsub(/^@/,"#")]
-		v = GridFlow.fclasses[k]
-		if v.doc then
-			nu << (xclass=XNode["class",{"name"=>k}])
-			harvest_doc_of_class xclass, v, :in
-			harvest_doc_of_class xclass, v, :out if v.doc_out
-		elsif not kla[k] then
-			un << XNode["p",{},XString.new("[#{k}]")]
-		end
-	}
-end
-
 def read_one_page file
 	begin
 		STDERR.puts "reading #{file}"
 		parser = GFDocParser.new(file)
 		parser.do_it
 		$nodes[file] = parser.stack[0][0]
-		if file=="reference.xml" then harvest_doc $nodes[file] end
 	rescue Exception => e
 		puts ""
 		puts ""
