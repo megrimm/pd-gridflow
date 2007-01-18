@@ -931,6 +931,10 @@ if not $conf[:FEATURES][:gcc3]
   exit 1
 end
 
+if not $conf[:FEATURES][:puredata]
+  puts "PureData support is required (since GridFlow 0.9.0)"
+end
+
 #--------------------------------#
 
 LOG.puts "-"*64

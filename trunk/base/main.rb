@@ -119,8 +119,6 @@ if GridFlow.bridge_name then
   post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
 end
 
-require "gridflow/bridge/placebo" if not GridFlow.bridge_name
-
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
