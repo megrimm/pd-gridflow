@@ -80,23 +80,6 @@ def mke(tag)
 	print "</#{tag}>"
 end
 
-def mkimg(parent,alt=nil,prefix=nil)
-	#STDERR.puts parent.to_s
-	icon = parent.contents.find {|x| XNode===x and x.tag == 'icon' }
-	name = parent.att["name"]
-	url = prefix+"/"+name+"-icon.png"
-	if icon and icon.att["src"]
-		url = icon.att["src"]
-		STDERR.puts "overriding #{url} with #{icon.att["src"]}"
-	end
-	url = url.sub(/,.*$/,"") # what's this for again?
-	warn "icon #{url} not found" if not File.exist? url
-	url = url.gsub(%r"#") {|x| sprintf "%%%02x", x[0] }
-	alt = icon.att["text"] if icon and not alt
-	alt = "[#{name}]"
-	mk(:img, :src, url, :alt, alt, :border, 0)
-end
-
 class XString < String
 	def show
 		print html_quote(gsub(/[\r\n\t ]+$/," "))
@@ -149,7 +132,7 @@ end
 
 XNode.register("documentation") {}
 
-XNode.register(*%w( icon help arg rest )) {public
+XNode.register(*%w( arg rest )) {public
 	def show; end
 }
 
@@ -247,20 +230,8 @@ XNode.register("class") {public
 		mk(:td) {}
 		mk(:td,:valign,:top) {
 		print "<br>\n"
-		help = contents.find {|x| XNode===x and x.tag == 'help' }
-		mkimg(self,nil,"flow_classes") if /reference|format/ =~ $file
 		mk(:br,:clear,"left")
 		2.times { mk(:br) }
-		if help
-			big = help.att['image'] || att['name']
-			if big[0]==?@ then big="images/help_#{big}.png" end
-			warn "help #{big} not found" if not File.exist?(big)
-			#small = big.gsub(/png$/, 'jpg').gsub(/\//, '/ic_')
-			mk(:a,:href,big) {
-				#mk(:img,:src,small,:border,0)
-				mk(:img,:src,"images/see_screenshot.png",:border,0)
-			}
-		end
 		mk(:br,:clear,"left")
 		mk(:br)
 		}#/td
@@ -276,9 +247,7 @@ XNode.register("class") {public
 		if not att["name"] then
 			raise "name tag missing?"
 		end
-		mk(:li) { mk(:a,:href,"\#"+att["name"]) {
-			mkimg(self,att["cname"],"flow_classes")
-		}}
+		mk(:li) { mk(:a,:href,"\#"+att["name"]) {puts att["name"]}}
 		puts
 		super
 	end
@@ -410,21 +379,7 @@ XNode.register("row") {public
 		columns = parent.contents.find_all {|x| XNode===x && x.tag=="column" }
 		mk(:tr) { columns.each {|x| mk(:td,:bgcolor,bgcolor) {
 			id = x.att["id"]
-			case x.att["type"]
-			when "icon" # should fix this for non-op icons
-				x = "op/#{att['cname']}-icon.png"
-				if not File.exist? x
-					warn "no icon for #{att['name']} (#{x})\n"
-				end
-				mk(:img,:src,x,:border,0,:alt,att["name"])
-			else
-				if id==""
-				then contents.each {|x| x.show }
-				else
-#					print html_quote(att[id] || "--")
-					print multicode(att[id] || "--")
-				end
-			end
+			if id==""; then contents.each {|x| x.show } else print multicode(att[id] || "--") end
 		}}}
 	end
 }
