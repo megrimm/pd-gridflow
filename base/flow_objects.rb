@@ -108,25 +108,6 @@ FObject.subclass("fps",1,1) {
 	end
 }
 
-# to see what the messages look like when they get on the Ruby side.
-FObject.subclass("rubyprint",1,0) {
-	def initialize(*a)
-		super
-		@time = !!(a.length and a[0]==:time)
-	end
-
-	def method_missing(s,*a)
-		s=s.to_s
-		pre = if @time then sprintf "%10.6f  ", Time.new.to_f else "" end
-		case s
-		when /^_0_/; post "%s","#{pre}#{s[3..-1]}: #{a.inspect}"
-		else super
-		end
-	end
-}
-FObject.subclass("printargs",0,0) {
-	def initialize(*a) super; post a.inspect end
-}
 GridObject.subclass("#print",1,0) {
 	install_rgrid 0, true
 	attr_accessor :name
@@ -158,8 +139,7 @@ GridObject.subclass("#print",1,0) {
 	end
 	def _0_maxrows(x) @maxrows = x.to_i end
 	def make_columns udata
-		@columns = 10
-		return
+		# @columns = 10; return
 		min = udata.min
 		max = udata.max
 		@columns = "" # huh?
