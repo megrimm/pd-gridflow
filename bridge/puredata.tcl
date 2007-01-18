@@ -26,7 +26,6 @@ if {[info command post] == ""} {
 # if not running Impd:
 if {[string length [info command listener_new]] == 0} {
 # start of part duplicated from Impd
-post HELLO
 proc listener_new {self name} {
 	global _
 	set _($self:hist) {}
