@@ -1283,6 +1283,33 @@ FObject.subclass("system",1,1) {
   end
 }
 
+=begin
+devices/linux
+
+AUTHOR
+        Mathieu Bouchard <matju@artengine.ca>
+        irc: irc.freenode.net / #ruby-lang / matju
+        (note: I can't read Japanese; write in French or English please)
+
+OVERVIEW
+This is a collection of simple modules that you extend IO objects with, to
+give them support for specific devices.  For example:
+
+        require "linux/SoundMixer"
+        f = File.open "/dev/mixer"
+        f.extend Linux::SoundMixer
+
+        # f now has special accessors for driver variables, e.g:
+
+        f.treble = left_speaker_percent + 256 * right_speaker_percent
+
+The modules are made of automatically generated methods, much like Ruby's
+accessors. those generators are called ioctl_reader, ioctl_writer,
+ioctl_accessor. Writing expects an integer in -2**31...2**31; reading will
+return the same. You may browse the source to find out which accessors are
+available, and it's easy to add support for more features.
+=end
+
 # general-purpose code for performing less-than-trivial IOCTL operations. (was part of devices4ruby)
 module IoctlClass
 	def ioctl_reader(sym,cmd_in)
@@ -1593,6 +1620,8 @@ class GFSoundMixer < FObject; install "SoundMixer",1,1
     end
   end
 end#}
+
+# end of devices4ruby
 
 # experimental
 FObject.subclass("rubyarray",2,2) {
