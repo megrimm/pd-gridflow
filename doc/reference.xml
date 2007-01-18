@@ -4,7 +4,7 @@
 <!-- $Id$ -->
 <!--
 	GridFlow Reference Manual: Class Reference
-	Copyright (c) 2001,2002,2003,2004,2005,2006
+	Copyright (c) 2001-2007
 	by Mathieu Bouchard and Alexandre Castonguay
 -->
 
@@ -878,24 +878,6 @@
 		</inlet>
 	</class>
 
-	<class name="rubyprint">
-		This is only for testing the translation from PD to Ruby.
-		<method name="init"/>
-		<inlet id="0">
-			<method name="(any)">
-			prints the message to the console.
-			</method>
-		</inlet>
-	</class>
-
-	<class name="printargs">
-		This is only for testing the translation from PD to Ruby.
-		<method name="init">
-			<rest name="any"/>
-			prints everything.
-		</method>
-	</class>
-	
 	<class name="display">
 		GUI object equivalent to [print] and [#print].
 		<method name="(any)">
@@ -1412,37 +1394,6 @@
 		<outlet id="0"/>
 		<outlet id="1"/>
 	</class>
-	<class name="jmax_udpsend">
-		Sends messages (but not grids nor dspsignals) via UDP (which
-		does not involve a connection, and may lose packets in case of
-		network overload or noise or etc).
-
-		<p>This works with jMax 2.5 and 4.1 but not 4.0.</p>
-
-		<method name="init">
-			<arg name="host" type="host"/>
-			<arg name="port" type="integer"/>
-		</method>
-
-		<inlet id="0"><method name="&lt;any&gt;"/></inlet>
-	</class>
-	<class name="jmax_udpreceive">
-		<p>Counterpart of jmax_udpsend</p>
-
-		<p>This works with jMax 2.5 and 4.1 but not 4.0.</p>
-
-		<method name="init">
-			<arg name="port" type="integer"/>
-		</method>
-		<outlet id="0"><method name="&lt;any&gt;"/></outlet>
-		<outlet id="1"><method name="list">
-			<arg name="protocol_name"/>
-			<arg name="sender_port"/>
-			<arg name="sender_host"/>
-			<arg name="sender_ip_address"/>
-		</method>
-		</outlet>
-	</class>
 	<class name="foreach">
 		<inlet id="0"><method name="list"><rest/>
 			Outputs N messages, one per list element, in order.
@@ -1596,14 +1547,4 @@
 		</method></inlet>
 	</class>
 </section>
-
-<section name="PureData emulation">
-	<class name="pd_netsend">
-		same as jmax_udpsend but for PureData UDP connections.
-	</class>
-	<class name="pd_netreceive">
-		same as jmax_udpreceive but for PureData UDP connections.
-	</class>
-</section>
-
 </documentation>
