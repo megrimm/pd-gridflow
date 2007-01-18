@@ -267,13 +267,14 @@ struct FormatVideoDev : Format {
 	VideoMbuf vmbuf;
 	VideoMmap vmmap;
 	uint8 *image;
-	int palette;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
 	bool use_mmap;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	int fd;
+	Symbol colorspace;
+	int palettes; /* bitfield */
 
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
 	void frame_finished (uint8 * buf);
@@ -359,42 +360,60 @@ struct FormatVideoDev : Format {
 	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
 	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	vmmap.frame = queue[queuesize++] = next_frame;
-	vmmap.format = palette;
+	vmmap.format = vp.palette;
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
-void FormatVideoDev::frame_finished (uint8 * buf) {
+static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
+
+void FormatVideoDev::frame_finished (uint8 *buf) {
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
-	if (palette==VIDEO_PALETTE_YUV420P) {
+	if (vp.palette==VIDEO_PALETTE_YUV420P) {
 		uint8 b2[bs];
-		for(int y=0; y<sy; y++) {
-			uint8 *bufy = buf+sx* y;
-			uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
-			uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
-			for (int x=0; x<sx; x++) {
-				b2[x*3+0]=bufy[x];
-				b2[x*3+1]=bufu[x/2];
-				b2[x*3+2]=bufv[x/2];
+		if (colorspace==SYM(y)) {
+			out.send(sy*sx,buf);
+		} else if (colorspace==SYM(rgb)) {
+			for(int y=0; y<sy; y++) {
+				uint8 *bufy = buf+sx* y;
+				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
+				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+				for (int x=0; x<sx; x++) {
+					int Y=bufy[x]   - 16;
+					int U=bufu[x/2] - 128;
+					int V=bufv[x/2] - 128;
+					b2[x*3+0]=clip((298*Y         + 409*V)>>8);
+					b2[x*3+1]=clip((298*Y - 100*U - 208*V)>>8);
+					b2[x*3+2]=clip((298*Y + 516*U        )>>8);
+				}
+				out.send(bs,b2);
 			}
-			out.send(bs,b2);
+		} else if (colorspace==SYM(yuv)) {
+			for(int y=0; y<sy; y++) {
+				uint8 *bufy = buf+sx* y;
+				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
+				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
+				for (int x=0; x<sx; x++) {
+					b2[x*3+0]=bufy[x];
+					b2[x*3+1]=bufu[x/2];
+					b2[x*3+2]=bufv[x/2];
+				}
+				out.send(bs,b2);
+			}
 		}
 	} else if (bit_packing) {
 		uint8 b2[bs];
-//		uint64 t = gf_timeofday();
 		for(int y=0; y<sy; y++) {
 			uint8 * buf2 = buf+bit_packing->bytes*sx*y;
 			bit_packing->unpack(sx,buf2,b2);
 			out.send(bs,b2);
 		}
-//		t=gf_timeofday()-t;
-//		fprintf(stderr,"decoding frame took %lld us\n",t);
 	} else {
 		out.send(sy*bs,buf);
 	}
@@ -529,32 +548,27 @@ GRID_INLET(FormatVideoDev,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void _0_colorspace (Symbol c) {
-	if      (c==SYM(RGB24))   palette=VIDEO_PALETTE_RGB24;
-	else if (c==SYM(YUYV))    palette=VIDEO_PALETTE_YUYV;
-	else if (c==SYM(YUV420P)) palette=VIDEO_PALETTE_YUV420P;
-	else RAISE("supported: RGB24, YUYV, YUV420P");
+\def void _0_colorspace (Symbol c) { /* y yuv rgb */
+	if      (c==SYM(y)) {}
+	else if (c==SYM(yuv)) {}
+	else if (c==SYM(rgb)) {}
+	else RAISE("supported: y yuv rgb");
 	WIOCTL(fd, VIDIOCGPICT, &vp);
+	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 : VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
-		// RAISE is prolly a bad idea
-		gfpost("driver can't handle palette %d",palette);
+		gfpost("this driver is unsupported: it wants palette %d",palette);
 		return;
 	}
-	switch(palette) {
-	case VIDEO_PALETTE_RGB24:{
-		uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
-		bit_packing = new BitPacking(is_le(),3,3,masks);
-	}break;
-	case VIDEO_PALETTE_YUYV:
-	case VIDEO_PALETTE_YUV420P:{
-		// woops, special case already, can't do that with bit_packing
-		break; /* and don't forget to break!!! */
+	if (c==SYM(yuv) && palette==VIDEO_PALETTE_RGB24) {
+		gfpost("sorry, this conversion is currently unsupported");
+		return;
 	}
-	default: RAISE("should never get this error message.");
-	}
+	uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff }; /* for use by RGB mode */
+	bit_packing = new BitPacking(is_le(),3,3,masks);
+	colorspace=c;
 }
 
 void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
@@ -609,7 +623,7 @@ void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 \def void _0_white_red(uint16 white_red) {
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_red = white_red;  WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
-\def void _0_white_blue(uint16 val) {
+\def void _0_white_blue(uint16 white_blue) {
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
@@ -631,27 +645,20 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);}
 
 \def void initialize2 () {
-//	long flags;          fcntl(fd,F_GETFL,&flags);
-//	flags |= O_NONBLOCK; fcntl(fd,F_SETFL,&flags);
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
 	rb_funcall(rself,SI(_0_size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	gfpost(&vp);
-	char buf[1024] = "";
-	int n = 17 /*COUNT(video_palette_choice)*/;
-	for (int i=0; i<n; i++) {
-		vp.palette = i;
+	palettes=0;
+	int checklist[] = {VIDEO_PALETTE_RGB24,VIDEO_PALETTE_YUV420P};
+	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
+		vp.palette = checklist[i];
 		ioctl(fd, VIDIOCSPICT,&vp);
 		ioctl(fd, VIDIOCGPICT,&vp);
-		if (vp.palette == i) {
-			if (*buf) strcpy(buf+strlen(buf),", ");
-			//strcpy(buf+strlen(buf),video_palette_choice[i].name);
-			sprintf(buf+strlen(buf),"%d",i);
-		}
+		if (vp.palette == checklist[i]) palettes |= (1<<checklist[i]);
 	}
-	gfpost("This card supports palettes: %s", buf);
-	_0_colorspace(0,0,SYM(RGB24));
+	_0_colorspace(0,0,SYM(rgb));
 	rb_funcall(rself,SI(_0_channel),1,INT2NUM(0));
 }
 
