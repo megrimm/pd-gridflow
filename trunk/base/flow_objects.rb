@@ -158,6 +158,8 @@ GridObject.subclass("#print",1,0) {
 	end
 	def _0_maxrows(x) @maxrows = x.to_i end
 	def make_columns udata
+		@columns = 10
+		return
 		min = udata.min
 		max = udata.max
 		@columns = "" # huh?
@@ -1223,10 +1225,8 @@ end
 
 #-------- fClasses for: Hardware
 
-# requires Ruby 1.8.0 because of bug in Ruby 1.6.x
 FObject.subclass("joystick_port",0,1) {
   def initialize(port)
-    raise "sorry, requires Ruby 1.8" if RUBY_VERSION<"1.8"
     @f = File.open(port.to_s,"r+")
     @status = nil
     @clock = Clock.new self
@@ -1283,7 +1283,109 @@ FObject.subclass("system",1,1) {
   end
 }
 
-(begin require "linux/ParallelPort"; true; rescue LoadError; false end) and
+# general-purpose code for performing less-than-trivial IOCTL operations. (was part of devices4ruby)
+module IoctlClass
+	def ioctl_reader(sym,cmd_in)
+		module_eval %{def #{sym}
+			ioctl_intp_in(#{cmd_in})
+		end}
+	end
+	def ioctl_writer(sym,cmd_out)
+		module_eval %{def #{sym}=(v)
+			ioctl_intp_out(#{cmd_out},v)
+			#{sym} if respond_to? :#{sym}
+		end}
+	end
+	def ioctl_accessor(sym,cmd_in,cmd_out)
+		ioctl_reader(sym,cmd_in)
+		ioctl_writer(sym,cmd_out)
+	end
+end
+module Ioctl
+	# this method is not used anymore
+	def int_from_4(foo)
+		# if it crashes, just insert foo=foo.reverse here.
+		(foo[0]+0x100*foo[1])+0x10000*(foo[2]+0x100*foo[3])
+	end
+	def ioctl_intp_out(arg1,arg2)
+		ioctl(arg1,[arg2].pack("l"))
+	end
+	def ioctl_intp_in(arg1)
+		ioctl(arg1,s="blah")
+		return s.unpack("l")[0]
+	end
+
+end
+
+class IO; include Ioctl; end
+
+# Linux::ParallelPort
+# Copyright (c) 2001, 2003 by Mathieu Bouchard
+# this is published under the Ruby license
+
+=begin
+  if using a DB-25 female connector as found on a PC,
+  then the pin numbering is like:
+  13 _____ 1
+  25 \___/ 14
+
+  1 = STROBE = the clock line is a square wave, often at 9600 Hz,
+      which determines the data rate in usual circumstances.
+  2..9 = D0..D7 = the eight ordinary data bits
+  10 = -ACK (status bit 6 ?)
+  11 = BUSY (status bit 7)
+  12 = PAPER_END (status bit 5)
+  13 = SELECT (status bit 4 ?)
+  14 = -AUTOFD
+  15 = -ERROR (status bit 3 ?)
+  16 = -INIT
+  17 = -SELECT_IN
+  18..25 = GROUND
+=end
+
+module Linux; module ParallelPort
+	extend IoctlClass
+	@port_flags = %w[
+	LP_EXIST
+	LP_SELEC
+	LP_BUSY
+	LP_OFFL
+	LP_NOPA
+	LP_ERR
+	LP_ABORT
+	LP_CAREFUL
+	LP_ABORTOPEN
+	LP_TRUST_IRQ
+	]
+	@port_status = %w[
+		nil,
+		nil,
+		nil,
+		LP_PERRORP  # unchanged input, active low
+		LP_PSELECD  # unchanged input, active high
+		LP_POUTPA   # unchanged input, active high
+		LP_PACK     # unchanged input, active low
+		LP_PBUSY    # inverted input, active high
+	]
+	LPCHAR = 0x0601
+	LPTIME = 0x0602
+	LPABORT = 0x0604
+	LPSETIRQ = 0x0605
+	LPGETIRQ = 0x0606
+	LPWAIT = 0x0608
+	LPCAREFUL = 0x0609 # obsoleted??? wtf?
+	LPABORTOPEN = 0x060a
+	LPGETSTATUS = 0x060b # return LP_S(minor)
+	LPRESET = 0x060c # reset printer
+	LPGETSTATS = 0x060d # struct lp_stats (most likely turned off)
+	LPGETFLAGS = 0x060e # get status flags
+	LPTRUSTIRQ = 0x060f # set/unset the LP_TRUST_IRQ flag
+	ioctl_reader :port_flags , :LPGETFLAGS
+	ioctl_reader :port_status, :LPGETSTATUS
+	ioctl_writer :port_careful,:LPCAREFUL
+	ioctl_writer :port_char,   :LPCHAR
+end end
+
 FObject.subclass("parallel_port",1,3) {
   def initialize(port,manually=0)
     @f = File.open(port.to_s,"r+")
@@ -1312,8 +1414,154 @@ FObject.subclass("parallel_port",1,3) {
   # outlet 0 reserved (future use)
 }
 
-(begin require "linux/SoundMixer"; true; rescue LoadError; false end) and
+module Linux; module SoundMixer
+	extend IoctlClass
+	MIXER_NRDEVICES    = 0x00000019
+	MIXER_VOLUME       = 0x00000000
+	MIXER_BASS         = 0x00000001
+	MIXER_TREBLE       = 0x00000002
+	MIXER_SYNTH        = 0x00000003
+	MIXER_PCM          = 0x00000004
+	MIXER_SPEAKER      = 0x00000005
+	MIXER_LINE         = 0x00000006
+	MIXER_MIC          = 0x00000007
+	MIXER_CD           = 0x00000008
+	MIXER_IMIX         = 0x00000009
+	MIXER_ALTPCM       = 0x0000000a
+	MIXER_RECLEV       = 0x0000000b
+	MIXER_IGAIN        = 0x0000000c
+	MIXER_OGAIN        = 0x0000000d
+	MIXER_LINE1        = 0x0000000e
+	MIXER_LINE2        = 0x0000000f
+	MIXER_LINE3        = 0x00000010
+	MIXER_DIGITAL1     = 0x00000011
+	MIXER_DIGITAL2     = 0x00000012
+	MIXER_DIGITAL3     = 0x00000013
+	MIXER_PHONEIN      = 0x00000014
+	MIXER_PHONEOUT     = 0x00000015
+	MIXER_VIDEO        = 0x00000016
+	MIXER_RADIO        = 0x00000017
+	MIXER_MONITOR      = 0x00000018
+	ONOFF_MIN          = 0x0000001c
+	ONOFF_MAX          = 0x0000001e
+	MIXER_NONE         = 0x0000001f
+	MIXER_ENHANCE      = 0x0000001f
+	MIXER_MUTE         = 0x0000001f
+	MIXER_LOUD         = 0x0000001f
+	MIXER_RECSRC       = 0x000000ff
+	MIXER_DEVMASK      = 0x000000fe
+	MIXER_RECMASK      = 0x000000fd
+	MIXER_CAPS         = 0x000000fc
+	MIXER_STEREODEVS   = 0x000000fb
+	MIXER_OUTSRC       = 0x000000fa
+	MIXER_OUTMASK      = 0x000000f9
+	MASK_VOLUME        = 0x00000001
+	MASK_BASS          = 0x00000002
+	MASK_TREBLE        = 0x00000004
+	MASK_SYNTH         = 0x00000008
+	MASK_PCM           = 0x00000010
+	MASK_SPEAKER       = 0x00000020
+	MASK_LINE          = 0x00000040
+	MASK_MIC           = 0x00000080
+	MASK_CD            = 0x00000100
+	MASK_IMIX          = 0x00000200
+	MASK_ALTPCM        = 0x00000400
+	MASK_RECLEV        = 0x00000800
+	MASK_IGAIN         = 0x00001000
+	MASK_OGAIN         = 0x00002000
+	MASK_LINE1         = 0x00004000
+	MASK_LINE2         = 0x00008000
+	MASK_LINE3         = 0x00010000
+	MASK_DIGITAL1      = 0x00020000
+	MASK_DIGITAL2      = 0x00040000
+	MASK_DIGITAL3      = 0x00080000
+	MASK_PHONEIN       = 0x00100000
+	MASK_PHONEOUT      = 0x00200000
+	MASK_RADIO         = 0x00800000
+	MASK_VIDEO         = 0x00400000
+	MASK_MONITOR       = 0x01000000
+	MASK_MUTE          = 0x80000000
+	MASK_ENHANCE       = 0x80000000
+	MASK_LOUD          = 0x80000000
+	MIXER_READ_VOLUME  = 0x80044d00
+	MIXER_READ_BASS    = 0x80044d01
+	MIXER_READ_TREBLE  = 0x80044d02
+	MIXER_READ_SYNTH   = 0x80044d03
+	MIXER_READ_PCM     = 0x80044d04
+	MIXER_READ_SPEAKER = 0x80044d05
+	MIXER_READ_LINE    = 0x80044d06
+	MIXER_READ_MIC     = 0x80044d07
+	MIXER_READ_CD      = 0x80044d08
+	MIXER_READ_IMIX    = 0x80044d09
+	MIXER_READ_ALTPCM  = 0x80044d0a
+	MIXER_READ_RECLEV  = 0x80044d0b
+	MIXER_READ_IGAIN   = 0x80044d0c
+	MIXER_READ_OGAIN   = 0x80044d0d
+	MIXER_READ_LINE1   = 0x80044d0e
+	MIXER_READ_LINE2   = 0x80044d0f
+	MIXER_READ_LINE3   = 0x80044d10
+	MIXER_READ_MUTE    = 0x80044d1f
+	MIXER_READ_ENHANCE = 0x80044d1f
+	MIXER_READ_LOUD    = 0x80044d1f
+	MIXER_READ_RECSRC  = 0x80044dff
+	MIXER_READ_DEVMASK = 0x80044dfe
+	MIXER_READ_RECMASK = 0x80044dfd
+	MIXER_READ_STEREODEVS = 0x80044dfb
+	MIXER_READ_CAPS    = 0x80044dfc
+	MIXER_WRITE_VOLUME = 0xc0044d00
+	MIXER_WRITE_BASS   = 0xc0044d01
+	MIXER_WRITE_TREBLE = 0xc0044d02
+	MIXER_WRITE_SYNTH  = 0xc0044d03
+	MIXER_WRITE_PCM    = 0xc0044d04
+	MIXER_WRITE_SPEAKER = 0xc0044d05
+	MIXER_WRITE_LINE   = 0xc0044d06
+	MIXER_WRITE_MIC    = 0xc0044d07
+	MIXER_WRITE_CD     = 0xc0044d08
+	MIXER_WRITE_IMIX   = 0xc0044d09
+	MIXER_WRITE_ALTPCM = 0xc0044d0a
+	MIXER_WRITE_RECLEV = 0xc0044d0b
+	MIXER_WRITE_IGAIN  = 0xc0044d0c
+	MIXER_WRITE_OGAIN  = 0xc0044d0d
+	MIXER_WRITE_LINE1  = 0xc0044d0e
+	MIXER_WRITE_LINE2  = 0xc0044d0f
+	MIXER_WRITE_LINE3  = 0xc0044d10
+	MIXER_WRITE_MUTE   = 0xc0044d1f
+	MIXER_WRITE_ENHANCE = 0xc0044d1f
+	MIXER_WRITE_LOUD   = 0xc0044d1f
+	MIXER_WRITE_RECSRC = 0xc0044dff
+	MIXER_INFO         = 0x805c4d65
+	MIXER_ACCESS       = 0xc0804d66
+	MIXER_AGC          = 0xc0044d67
+	MIXER_3DSE         = 0xc0044d68
+	MIXER_PRIVATE1     = 0xc0044d6f
+	MIXER_PRIVATE2     = 0xc0044d70
+	MIXER_PRIVATE3     = 0xc0044d71
+	MIXER_PRIVATE4     = 0xc0044d72
+	MIXER_PRIVATE5     = 0xc0044d73
+	MIXER_GETLEVELS    = 0xc0a44d74
+	MIXER_SETLEVELS    = 0xc0a44d75
+	DEVICE_LABELS = [
+		"Vol ", "Bass ", "Trebl", "Synth", "Pcm ",
+		"Spkr ","Line ", "Mic ",  "CD ",   "Mix ",
+		"Pcm2 ","Rec ",  "IGain", "OGain",
+		"Line1", "Line2", "Line3", "Digital1", "Digital2", "Digital3",
+		"PhoneIn", "PhoneOut", "Video", "Radio", "Monitor"
+	]
+	DEVICE_NAMES = [
+		"vol", "bass", "treble", "synth", "pcm", "speaker", "line",
+		"mic", "cd", "mix", "pcm2", "rec", "igain", "ogain",
+		"line1", "line2", "line3", "dig1", "dig2", "dig3",
+		"phin", "phout", "video", "radio", "monitor"
+	]
+	DEVICE_NAMES.each_with_index {|name,i|
+		ioctl_accessor name,
+			MIXER_READ_VOLUME+i,
+			MIXER_WRITE_VOLUME+i
+	}
+end end
+
 #FObject.subclass("SoundMixer",1,1) {
+# using 'class' because in Ruby 1.8 (but not 1.6 nor 1.9) scoping rules are different for Class#instance_eval.
 class GFSoundMixer < FObject; install "SoundMixer",1,1
   # BUG? i may have the channels (left,right) backwards
   def initialize(filename)
