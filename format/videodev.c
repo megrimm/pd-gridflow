@@ -384,25 +384,33 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
 				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
-				for (int x=0; x<sx; x++) {
-					int Y=bufy[x]   - 16;
-					int U=bufu[x/2] - 128;
-					int V=bufv[x/2] - 128;
-					b2[x*3+0]=clip((298*Y         + 409*V)>>8);
-					b2[x*3+1]=clip((298*Y - 100*U - 208*V)>>8);
-					b2[x*3+2]=clip((298*Y + 516*U        )>>8);
+				int Y1,Y2,U,V;
+				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+					Y1=bufy[x]   - 16;
+					Y2=bufy[x+1] - 16;
+					U=bufu[x/2] - 128;
+					V=bufv[x/2] - 128;
+					b2[xx+0]=clip((298*Y1         + 409*V)>>8);
+					b2[xx+1]=clip((298*Y1 - 100*U - 208*V)>>8);
+					b2[xx+2]=clip((298*Y1 + 516*U        )>>8);
+					b2[xx+3]=clip((298*Y2         + 409*V)>>8);
+					b2[xx+4]=clip((298*Y2 - 100*U - 208*V)>>8);
+					b2[xx+5]=clip((298*Y2 + 516*U        )>>8);
 				}
 				out.send(bs,b2);
 			}
 		} else if (colorspace==SYM(yuv)) {
+			/* this should convert from video range to jpeg range because the latter is GF's standard */
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
 				uint8 *bufv = buf+sx*sy*5/4+(sx/2)*(y/2);
-				for (int x=0; x<sx; x++) {
-					b2[x*3+0]=bufy[x];
-					b2[x*3+1]=bufu[x/2];
-					b2[x*3+2]=bufv[x/2];
+				int U,V;
+				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+					U=bufu[x/2];
+					V=bufv[x/2];
+					b2[xx+0]=bufy[x+0]; b2[xx+1]=U; b2[xx+2]=V;
+					b2[xx+3]=bufy[x+1]; b2[xx+4]=U; b2[xx+5]=V;
 				}
 				out.send(bs,b2);
 			}
@@ -569,6 +577,7 @@ GRID_INLET(FormatVideoDev,0) {
 	uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff }; /* for use by RGB mode */
 	bit_packing = new BitPacking(is_le(),3,3,masks);
 	colorspace=c;
+	dim = new Dim(dim->v[0],dim->v[1],c==SYM(y)?1:3);
 }
 
 void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
