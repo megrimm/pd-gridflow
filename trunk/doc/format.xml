@@ -7,11 +7,7 @@
 -->
 
 <section name="Objects for Input/Output">
-
 	<class name="#in">
-		<icon text="[#in]"/>
-		<help text="[#in]" image="#inout"/>
-
 		<method name="init" min="0">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
@@ -102,11 +98,7 @@
 			</method>
 		</outlet>
 	</class>
-
 	<class name="#out">
-		<icon text="[#out]"/>
-		<help text="[#out]" image="#inout"/>
-
 		<method name="init" min="0">
 				<arg name="format"/>
 				<rest name="format_specific_part"/>
@@ -229,8 +221,6 @@
 <section name="Picture/Movie Formats">
 
 	<class name="format ppm #in/#out">
-		<icon image="format_ppm" text="[open filename.ppm]"/>
-
 		<p>Subformat P6 only.
 		Max-number can only be 255 (24-bit RGB).
 		</p>
@@ -253,7 +243,6 @@
 	</class>
 
 	<class name="format targa #in/#out">
-		<icon image="format_targa" text="[open filename.tga]"/>
 		<p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p>
 
 		<method name="open targa file">
@@ -272,7 +261,6 @@
 	</class>
 
 	<class name="format jpeg #in/#out">
-		<!--<icon image="format_jpeg" text="[open foo.jpg]"/>-->
 		<p>Support for RGB non-progressive</p>
 		
 		<method name="open jpeg file">
@@ -287,7 +275,6 @@
 	</class>
 
 	<class name="format png #in">
-		<!--<icon image="format_jpeg" text="[open foo.jpg]"/>-->
 		<p>Support for RGB non-progressive</p>
 		
 		<method name="open png file">
@@ -363,7 +350,6 @@
 	</class>
 
 	<class name="format mpeg #in">
-		<icon image="format_mpeg" text="[open mpeg file filename.mpeg]"/>
 		<p>support for .mpeg files</p>
 		<p>this format supports frame-seek and frame-tell.</p>
 		<p>Two different libraries are available for dealing with
@@ -386,10 +372,6 @@
 	</class>
 
 	<class name="format grid #in/#out">
-		<icon image="format_grid" text="[open grid file filename.grid]"/>
-		<icon image="format_grid_tcp" text="[open grid tcp artengine.ca 4242]"/>
-		<icon image="format_grid_tcpserver" text="[open grid tcpserver 4242]"/>
-
 		<p>
 		This is GridFlow's special file format. This is the only I/O
 		format that can hold anything that the <k>[#store]</k> object can.
@@ -462,10 +444,7 @@
 </section>
 
 <section name="Acquisition Devices">
-
 	<class name="format videodev #in">
-		<icon image="format_videodev" text="[open /dev/video0]"/>
-
 		<method name="open">
 			<arg name="device"/>
 		</method>
@@ -543,9 +522,6 @@
 <section name="Window Output">
 
 	<class name="format x11 #in/#out">
-		<icon image="format_x11" text="[open window]"/>
-		<icon image="format_x11_remote" text="[open x11 remote artengine.ca 10]"/>
-
 		<p>supports 15,16,24,32-bit truecolor displays</p>
 
 		<p>now also support 8-bit indexed displays, using a private colormap
