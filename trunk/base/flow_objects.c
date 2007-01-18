@@ -1228,6 +1228,69 @@ static void expect_pair (P<Dim> dim) {
 \end class GridMoment
 
 //****************************************************************
+\class GridLabeling < GridObject
+struct GridLabeling : GridObject {
+	\grin 0
+};
+
+struct Stats {
+	int64 yy,yx,xx,y,x,area;
+	Stats() {yy=yx=xx=y=x=area=0;}
+};
+
+#define AT(y,x) dat[(y)*sx+(x)]
+template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *stat, int label) {
+	//fprintf(stderr,"2. y,x = %d,%d\n",y,x);
+	int x2; for (x2=x; x2<sx && AT(y,x2  )==1; x2++) {}
+	int x1; for (x1=x; x1>0  && AT(y,x1+1)==1; x1--) {}
+	for (x=x1; x<x2; x++) {
+		AT(y,x)=label;
+		stat->yy += y*y; stat->y += y;
+		stat->yx += y*x; stat->area++;
+		stat->xx += x*x; stat->x += x;
+	}
+	for (x=x1; x<x2; x++) {
+		if (y>0    && AT(y-1,x)==1) flood_fill(dat,sy,sx,y-1,x,stat,label);
+		if (y<sy-1 && AT(y+1,x)==1) flood_fill(dat,sy,sx,y+1,x,stat,label);
+	}
+}
+
+GRID_INLET(GridLabeling,0) {
+	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
+	in->set_chunk(0);
+} GRID_FLOW {
+	int sy=in->dim->v[0], sx=in->dim->v[1];
+	T *dat = new T[n];
+	for (int i=0; i<n; i++) dat[i]=data[i];
+	int y,x=0,label=2;
+	for (y=0; y<sy; y++) for (x=0; x<sx; x++) {
+		if (dat[y*sx+x]!=1) continue;
+		Stats s;
+		flood_fill(dat,sy,sx,y,x,&s,label);
+		float32 cooked[6] = {
+			(s.yy-s.y*s.y/s.area)/s.area,
+			(s.yx-s.y*s.x/s.area)/s.area,
+			(s.yx-s.y*s.x/s.area)/s.area,
+			(s.xx-s.x*s.x/s.area)/s.area,
+			s.y/s.area,
+			s.x/s.area};
+		Ruby a[] = {INT2NUM(3),INT2NUM(s.area)};
+		send_out(2,a);
+		GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
+		GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
+		//goto done;
+		label++;
+	}
+	done:;
+	out = new GridOutlet(this,0,new Dim(sy,sx,1),in->nt);
+	out->send(n,dat);
+	delete[] dat;
+} GRID_END
+
+\classinfo { IEVAL(rself,"install '#labeling',1,4"); }
+\end class GridLabeling
+
+//****************************************************************
 \class GridPerspective < GridObject
 struct GridPerspective : GridObject {
 	\attr int32 z;
@@ -1940,6 +2003,22 @@ GRID_INLET(GridDrawPoints,0) {
 
 \classinfo { IEVAL(rself,"install '#draw_points',3,1"); }
 \end class GridDrawPoints
+
+//****************************************************************
+\class GridPolygonize < GridObject
+struct GridPolygonize : GridObject {
+	\grin 0
+};
+
+GRID_INLET(GridPolygonize,0) {
+	if (in->dim->n<2 || in->dim->prod(2)!=1) RAISE("requires dim (y,x) or (y,x,1)");
+	in->set_chunk(0);
+} GRID_FLOW {
+	/* WRITE ME */
+} GRID_END
+
+\classinfo { IEVAL(rself,"install '#polygonize',1,1"); }
+\end class GridPolygonize
 
 //****************************************************************
 
