@@ -1,35 +1,32 @@
 /* $Id$ */
 
-> [ ] [for] has a bug in "from".
-> [ ] #out x11 doesn't accept 0-sized grids
-> [ ] #print   doesn't accept 0-sized grids
++-------+-------+-------+-------+-------+-------+-------+-------
+GridFlow 0.9.0 :
 
-> Generic Image Library
-> http://opensource.adobe.com/gil/html/giltutorial.html
+[ ] switch from ruby to tcl
+[ ] distinguish between C++ types Grid* and GridFlow*
 
-==12785== Invalid read of size 4
-==12785==    at 0x1E041F21: lti::backgroundModel::apply(lti::image const&, lti::channel&) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
-==12785==    by 0x1DDF28E7: _wrap_backgroundModel_apply__SWIG_0(int, unsigned long*, unsigned long) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
-==12785==    by 0x1DDF2C0E: _wrap_backgroundModel_apply(int, unsigned long*, unsigned long) (in /debian64/home/matju/src/gridflow/optional/rblti/rblti.so)
-==12785==    by 0x1CC4C20B: call_cfunc (eval.c:5480)
-==12785==    by 0x1CC5831F: rb_call0 (eval.c:5691)
-==12785==    by 0x1CC58465: rb_call (eval.c:5864)
-==12785==    by 0x1CC56383: rb_eval (eval.c:3310)
-==12785==    by 0x1CC581EF: rb_call0 (eval.c:5772)
-==12785==    by 0x1CC58465: rb_call (eval.c:5864)
-==12785==    by 0x1CC5D477: rb_call_super (eval.c:5996)
-==12785==    by 0x1CC56105: rb_eval (eval.c:3373)
-==12785==    by 0x1CC581EF: rb_call0 (eval.c:5772)
-==12785==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
-==12785==
-==12785== ---- Print suppression ? --- [Return/N/n/Y/y/C/c] ----
+[ ] replace source_filter.rb by SWIG completely
+[ ] make [#draw_points] [#draw_rect] [#edit_polygon]
+[ ] redo [#rotate] as abstr
+[ ] Salsaman recommends supporting Videojack because of unicap support which means getting DV support for free.
+[ ] sync <tcl.h> detection with -ltcl* detection (still buggy)
+[ ] tcl.pd_linux that does all of the same as gridflow.pd_linux but for
+    tcl instead of ruby.
+[ ] rewrite MétaRuby Type.rb in tcl ?
+[ ] expand OOP system as necessary: C-based objects, AOP, static methods, SELF inheritance, ...
 
++-------+-------+-------+-------+-------+-------+-------+-------
+See Also :
+[ ] Generic Image Library: http://opensource.adobe.com/gil/html/giltutorial.html
+[ ] OpenCV
+
++-------+-------+-------+-------+-------+-------+-------+-------
+
+[ ] [for] has a bug in "from".
+[ ] #out x11 doesn't accept 0-sized grids
+[ ] #print   doesn't accept 0-sized grids
 [ ] [display] bug, can't print nested lists, due to Array===[] returning false (???)
-
-ClaudiusMaximus matju: hmm, got a weird problem:  " error: ArgumentError: [rubypd] cannot convert argument of class 'Array' in send_out2 in method_missing"
-ClaudiusMaximus matju: i think "put_at ( ... )" might be getting mangled in [fork], let me check....
-ClaudiusMaximus matju: yep: "put_at ( 0 )"--[fork]--[#print]  ->  error message
-
 [ ] #inner doesnt support seeds of size>1, and isn't vecop-compatible, and ...
 [ ] #inner could optimise permutation matrices?
 ClaudiusMaximus matju: [#draw_image] inlet 0 method "op <opname>" is undocumented, but very useful :)
@@ -37,10 +34,10 @@ ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](
 
 [ ] pd_examples -> examples
 [ ] update doc
-[ ] make good use of the R type (automatic Ruby/C++ convs)
+[ ] replace the unimplemented "r" numtype (Ruby) by an implemented "t" numtype (Tcl)
 [ ] ditch xml, switch to docstrings or whatever
-[ ] ...
-claude wants http://en.wikipedia.org/wiki/Graham_scan
+
+[ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 
 malloc alignment = 4 mod 8 (en utilisant valgrind)
 
@@ -64,14 +61,10 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
 [ ] reading tux.tga is completely broken
 [ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
-[ ] add classmethod support to source filter
-[ ] document the source filter
-[ ] document 0.8.4 classes
 [ ] make example on separable convkernels
 [ ] add concepts of hot inlet and conf inlet at the code level
 [ ] [display] should use clocks to update tk less often
 [ ] [display] leaks in server ?
-[ ] optional args don't work in source_filter.rb
 [ ] deprecation warnings
 [ ] Add a video latency patch (in examples)
 [ ] can't have FPatcher and GridObject behaviour at once ??
@@ -96,7 +89,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] internals documentation
 [ ] internal grid protocol redesigned
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
-[ ] unbork make test and plain ruby mode.
 [ ] add support for "anything" methods (def _0_(sel,*a))
 [ ] look into -ftree-vectorize
 [ ] wrap Pd API completely.
@@ -106,7 +98,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [146] [#peephole] resize problem
 [145] "list -1"->[@import] only tells error message once every other time
 [144] small leak remaining in x11. may have to do with non-use of XDestroyImage.
-[141] shouldn't be able to call Pd from a non-main Ruby thread.
 [140] is [@convolve] actually cross-convolution?
 	that is, convolves with a mirror image of the convolution matrix.
 [139] [#peephole]
@@ -124,7 +115,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
-[090] doesn't check whether ruby/version.h matches .so / .a
 [027] tcp test is broken
 [089] is LINK TO="..." not properly handled? see part of install.xml that uses it.
 [088] FIX MOULINETTE.RB ! <attr name type default>
@@ -132,7 +122,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [097] bin/backtrace does not detect scripts
 [005] can't open "": Success; loading a nonquicktime file using quicktime
 [006] #in#open problem with String argument.
-[011] research bugs in nonblock IO with Ruby. (eg. serial port)
 [025] format_grid: write test for other bpv's
 [026] latency is not that good. (GC ?)
 [030] FormatGrid: not properly tested (crashes sometimes)
@@ -152,7 +141,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [046] write unit tests about error checking
 [047] make system to ensure everything is working before a release.
 [048] potential issues between fork() and X11 ?
-[051] remove the crap given by -w of ruby
 [054] it's possible to crash by sending data in two inlets of a same object at once
 [060] look for "!@#$" in source
 [029] #join on small chunks is way too slow
@@ -204,9 +192,6 @@ Documentation
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
 --- remember to keep doc/help/screenshots/examples up to date
 
-Source Filter
-[ ] add \ruby \end blocks (multiline inlined rubyscripts)
-[ ] \attr
 
 Architecture
 [0.8] reentrancy of objects (to allow true recursion)
@@ -216,7 +201,6 @@ Architecture
 [ ] bidirectional messages (constraint/relational-style)
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (#global:classes, #global:methods, ...)
-[ ] use MétaRuby typing to make things friendlier.
 [ ] transmitting grids by diffs?
 [0.8] dispatch on _n_-prefixed methods (one selector any inlet)
 	  and     _#{i}_-named methods (any selector one inlet)
@@ -286,7 +270,6 @@ Input/Output
 [ ] Grid: bpv 1,2,4 uint
 [ ] Grid: text version of the format
 [ ] Gimp, GStreamer, ffmpeg, xine, mplayer, PDP, OSC
-[ ] RubyX11 0.6
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] get subtitling of tv channels
 [ ] add messages "load", "save" as open,bang,close combos. (?)
@@ -323,7 +306,6 @@ User Interface
     [ ] works without x11 (for osx...)
     [ ] does it really work with something other than 3 channels ?
     [ ] add a popup menu that makes sense
-[ ] make ruby/tcl evaluator boxes retractable
 [ ] vector slider (n parallel sliders in one, Dim(n))
 [ ] 2d slider
 [ ] radial slider (angle chooser)
@@ -342,7 +324,7 @@ videodev" -> "open videodev /dev/video0, option channel 1, option size 240 320"
 maybe there should be a separate ~/.gridflow_config that would be saveable from
 gridflow, and ~/.gridflow_startup would be edited only by the user but
 ~/.gridflow_config would still be a text file.  i say that
-because the startup is a ruby script so gridflow couldn't just do
+because the startup is a script so gridflow couldn't just do
 search-and-replace in there, because the option could be inside a "if"
 expression and such... at most, gridflow could _append_ text to
 .gridflow_startup, to be non-intrusive...
@@ -461,3 +443,5 @@ the same will be done for recording later.
 ==6998==    by 0x1CF15353: GridStore::_0_grid_wrap(int, unsigned long*, unsigned long) (flow_objects.c.fcs:404)
 ==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
 
+
+rational numbers: http://wiki.tcl.tk/13877

@@ -1,9 +1,21 @@
 /* $Id$ */
 
-version 0.9.0
+version 0.9.0 (2007.02...):
 
- * -lib tcl
- * [seq_fold]
+ * added the "tcl" external for pd, which allows to write
+   externals in the Tcl language, but server-side.
+ * new object classes: [#slice], [#sort], [#line_to_polygon].
+ * rewrote some object classes from Ruby to Pd.
+ * split compilation of the LTIlib support allows to compile
+   it with reasonable amounts of RAM.
+ * [seq_fold], [#seq_fold], [#.var]
+ * updated [#camera]
+ * added PWC-specific options: framerate white_mode white_red white_blue
+ * colorspace conversion directly in [#in videodev] (faster)
+ * grid messages no longer contain dim and numbertype (just a pointer)
+ * GridOutlet: set_chunk, ...
+ * removed GridFlow menu
+ * faster [#inner] for small matrix sizes
 
 version 0.8.4 (2006.10.12):
 
@@ -15,14 +27,15 @@ version 0.8.4 (2006.10.12):
  * rblti supports ltilib 1.9.15 and gcc 4
  * new object classes: [route2], [#polygon_each_edge],
    [#polygon_moment], [#polygon_radial_map], [#polygon_comparator],
-   [#moment_polar];
-   (also unfinished [#edit_polygon] and [#draw_rect]).
+   [#moment_polar].
  * new float-only numops:   sin   cos   tanh   exp   log atan2
  * new float-only vecops: C.sin C.cos C.tanh C.exp C.log
  * [#fft] can do RGB (per channel)
- * can show added inlets/outlets at runtime
- * can remove inlets/outlets at runtime and show/erase them.
+ * can show added inlets/outlets at runtime.
+ * can remove inlets/outlets at runtime (and erase them from screen).
  * much faster videodev !!!
+
+   (also unfinished [#edit_polygon] and [#draw_rect]).
 
 version 0.8.3 (2006.04.02):
 
@@ -105,7 +118,7 @@ version 0.8.0 (2005.06.06):
    [exec], [plotter_control], [#text_to_image], [#hueshift], [rubyarray]
  * in pd_examples added Alx's epicycloid.pd, scratch_video.pd, threshold.pd
       and Matju's goop.pd
- * some new/updated help files by Stphanie Brodeur & Darsha Hewitt
+ * some new/updated help files by St�hanie Brodeur & Darsha Hewitt
 
 version 0.7.7 (2004.08.24):
 
@@ -202,7 +215,7 @@ version 0.7.5 (2003.09.28):
      pd_netreceive: receive from a pd system via UDP
      @eight: (like @four, but with eight of them ;-)
      peephole: like [@out x11] but as inset of a patcher (jMax 2.5 only)
- * support for upcoming jMax 4.1        
+ * support for upcoming jMax 4.1
  * "open file" autodetects how to handle a file, by filename suffix
 
 version 0.7.2 (2003.04.24):
@@ -523,4 +536,22 @@ version 0.0.5 (2001.03.05):
 
  * vout class, two params: width, height; 24-bit BGR only; refresh by
 finishing scanline or sending bang; "grab" (hack); "reset" for resetting
-the pixel pointer. 
+the pixel pointer.
+
+
+
+a very short history of GridFlow:
+
+video4jmax 0.1 (mar 2001): sending int messages to a window in jMax
+video4jmax 0.2 (may 2001): grids
+GridFlow   0.4 (nov 2001): xml manual; can compile without jMax
+GridFlow   0.5 (jun 2002): mpeg; cvs goes to artengine.ca
+GridFlow   0.6 (aug 2002): ruby; c++; literals
+GridFlow   0.6.2 - 0.6.5 : pd; jpeg; big speedups; 1 grid = 1 message
+GridFlow   0.7.0 (feb 2003): number types; mmx; other big speedups
+GridFlow   0.7.2 - 0.7.5 : pd support gets stable; float grids; @draw_image; source_filter.rb
+GridFlow   0.7.6 to 7 (2004): permanently switching from jmax to pd; #pack, #color, #camera
+GridFlow   0.8 (2005): attributes; # prefix
+GridFlow   0.8.1 to 4 (2006): LTI; FFT; complex numbers; GEM pix compatibility
+GridFlow   0.9.0 : replacing Ruby by Tcl+SWIG.
+GridFlow   2.0 : ...
