@@ -269,7 +269,6 @@ static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r))
 #endif
 
 //****************************************************************
-// hook into pointer manipulation. will help find memory corruption bugs.
 
 //template <class T> class P : T * {};
 //a reference counting pointer class
@@ -425,9 +424,6 @@ inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
-#ifndef SWIG
-\class NumberType < CObject
-#endif
 struct NumberType : CObject {
 	Symbol sym;
 	const char *name;
@@ -437,21 +433,7 @@ struct NumberType : CObject {
 	NumberTypeE index;
 	NumberType(const char *name_, int size_, int flags_, const char *aliases_) :
 		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
-#ifndef SWIG
-	\decl Symbol sym_m();
-	\decl int size_m();
-	\decl int flags_m();
-	\decl int index_m();
-#else
-	Symbol sym_m();
-	int size_m();
-	int flags_m();
-	int index_m();
-#endif
 };
-#ifndef SWIG
-\end class
-#endif
 
 NumberTypeE NumberTypeE_find (Symbol sym);
 
@@ -557,9 +539,6 @@ struct NumopOn : CObject {
 // abelian property: commutativity: f(a,b)=f(b,a)
 #define OP_COMM (1<<1)
 
-#ifndef SWIG
-\class Numop < CObject
-#endif
 struct Numop : CObject {
 	Symbol sym;
 	const char *name;
@@ -599,7 +578,6 @@ EACH_NUMBER_TYPE(FOO)
 	}
 };
 #ifndef SWIG
-\end class
 inline R::R(Numop *x) {r=x->sym;}
 #endif
 
@@ -628,9 +606,6 @@ static Numop *convert(Ruby x, Numop **bogus) {
 #endif
 
 // ****************************************************************
-#ifndef SWIG
-\class Grid < CObject
-#endif
 struct Grid : CObject {
 	P<Dim> dim;
 	NumberTypeE nt;
@@ -671,9 +646,6 @@ private:
 	void init_from_ruby(Ruby x);
 	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
 };
-#ifndef SWIG
-\end class Grid
-#endif
 
 static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
 
