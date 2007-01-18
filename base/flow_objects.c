@@ -553,14 +553,20 @@ template <class T, int sk> void inner_child_b (T *as, T *bs, int sj, int chunk) 
 // --j--*---k---
 // AAAAA  CCCCC
 template <class T> void dot_add_mul (long sk, long sj, T *cs, T *as, T *bs) {
-	for (int k=0; k<sk; k++) {
-		T c = 0; for (int j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
+	for (long k=0; k<sk; k++) {
+		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
 		*cs++=c;
 	}
 }
-template <class T, int sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {
-	for (int k=0; k<sk; k++) {
-		T c = 0; for (int j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
+template <class T, long sj> void dot_add_mul (long sk, T *cs, T *as, T *bs) {
+	for (long k=0; k<sk; k++) {
+		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
+		*cs++=c;
+	}
+}
+template <class T, long sj, long sk> void dot_add_mul (T *cs, T *as, T *bs) {
+	for (long k=0; k<sk; k++) {
+		T c = 0; for (long j=0; j<sj; j++) c+=as[j]*bs[j*sk+k];
 		*cs++=c;
 	}
 }
@@ -588,7 +594,6 @@ GRID_INLET(GridInner,0) {
 		for (long j=0; j<chunk; j++)
 			COPY(buf3+(j+i*chunk)*sk,rdata+i*sk,sk);
 	use_dot = op==op_mul && fold==op_add && seed->dim->n==0 && *(T *)*seed==0;
-	//gfpost("use_dot=%d",use_dot);
 } GRID_FLOW {
     long sjk=r->dim->prod(), sj=in->factor(), sk=sjk/sj;
     long chunk = GridOutlet::MAX_PACKET_SIZE/sjk;
@@ -598,11 +603,30 @@ GRID_INLET(GridInner,0) {
     if (use_dot) {
 	while (n) {
 		if (chunk*sj>n) chunk=n/sj;
-		switch (sj) {
-		case 1: for (int i=0; i<chunk; i++) dot_add_mul<T,1>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
-		case 2: for (int i=0; i<chunk; i++) dot_add_mul<T,2>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
-		case 3: for (int i=0; i<chunk; i++) dot_add_mul<T,3>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
-		case 4: for (int i=0; i<chunk; i++) dot_add_mul<T,4>(sk,buf2+sk*i,data+sj*i,(T *)*r); break;
+		if (sj<=4 && sk<=4) switch ((sj-1)*4+(sk-1)) {
+#define DOT_ADD_MUL_3(sj,sk) for (int i=0; i<chunk; i++) dot_add_mul<T,sj,sk>( buf2+sk*i,data+sj*i,(T *)*r);
+		case  0: DOT_ADD_MUL_3(1,1); break;
+		case  1: DOT_ADD_MUL_3(1,2); break;
+		case  2: DOT_ADD_MUL_3(1,3); break;
+		case  3: DOT_ADD_MUL_3(1,4); break;
+		case  4: DOT_ADD_MUL_3(2,1); break;
+		case  5: DOT_ADD_MUL_3(2,2); break;
+		case  6: DOT_ADD_MUL_3(2,3); break;
+		case  7: DOT_ADD_MUL_3(2,4); break;
+		case  8: DOT_ADD_MUL_3(3,1); break;
+		case  9: DOT_ADD_MUL_3(3,2); break;
+		case 10: DOT_ADD_MUL_3(3,3); break;
+		case 11: DOT_ADD_MUL_3(3,4); break;
+		case 12: DOT_ADD_MUL_3(4,1); break;
+		case 13: DOT_ADD_MUL_3(4,2); break;
+		case 14: DOT_ADD_MUL_3(4,3); break;
+		case 15: DOT_ADD_MUL_3(4,4); break;
+		} else switch (sj) {
+#define DOT_ADD_MUL_2(sj) for (int i=0; i<chunk; i++) dot_add_mul<T,sj>(sk,buf2+sk*i,data+sj*i,(T *)*r);
+		case 1: DOT_ADD_MUL_2(1); break;
+		case 2: DOT_ADD_MUL_2(2); break;
+		case 3: DOT_ADD_MUL_2(3); break;
+		case 4: DOT_ADD_MUL_2(4); break;
 		default:for (int i=0; i<chunk; i++) dot_add_mul(sk,sj,buf2+sk*i,data+sj*i,(T *)*r);
 		}
 		out->send(chunk*sk,buf2);
