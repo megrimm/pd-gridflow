@@ -194,14 +194,13 @@ should make many circuits simpler. </p></td></tr>
  <tr><td colspan="4" bgcolor="black">
 <img src="images/black.png" width="1" height="2"></td></tr>
 <tr><td colspan="4"><a name="Bridges"></a><h4>Bridges</h4></td></tr><tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Starting with version 0.6, GridFlow is Ruby-centric instead of jMax-centric. 
-jMax support has been added back as a <b>Bridge</b>.</p></td></tr>
+<tr><td></td><td></td><td><p>Starting with GridFlow 0.6, GridFlow comes with a bridge (a converter) between Ruby and Pd. With GridFlow 0.9, there's 
+an additional converted between Tcl and Pd, and some of the code of the main library now bypasses the bridge. The goal is to remove all of the 
+Ruby dependency in 2007. Historically, the bridge has served the purpose of making GridFlow work on both PureData and jMax.</p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
-<tr><td></td><td></td><td><p>Bridges, for the most part, plug into the FObject class, which is the common 
-root of most of GridFlow's classes. Under the current design, the bridge is 
-compiled separately, and is directly loaded by the host software; then the 
-bridge starts Ruby and makes it load the main GridFlow; then the bridge hooks 
-with the main part. </p></td></tr>
+<tr><td></td><td></td><td><p>Under the current design, the bridge is compiled separately of the main library, 
+and is directly loaded by PureData; then the bridge starts Ruby and makes it load the main library; 
+then the bridge hooks with the main library. </p></td></tr>
 <tr><td></td><td></td><td> </td></tr>
 <tr><td>&nbsp;</td></tr>
  <td colspan="4" bgcolor="black">
