@@ -375,8 +375,8 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
+	uint8 b2[bs];
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		uint8 b2[bs];
 		if (colorspace==SYM(y)) {
 			out.send(sy*sx,buf);
 		} else if (colorspace==SYM(rgb)) {
@@ -401,6 +401,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			}
 		} else if (colorspace==SYM(yuv)) {
 			/* this should convert from video range to jpeg range because the latter is GF's standard */
+			/* (but it doesn't) */
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -415,17 +416,39 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		}
-	} else if (bit_packing) {
-		uint8 b2[bs];
-		for(int y=0; y<sy; y++) {
-			uint8 * buf2 = buf+bit_packing->bytes*sx*y;
-			bit_packing->unpack(sx,buf2,b2);
-			out.send(bs,b2);
+	} else if (vp.palette==VIDEO_PALETTE_RGB24) {
+		if (colorspace==SYM(y)) {
+			for(int y=0; y<sy; y++) {
+				uint8 *rgb = buf+sx*y*3;
+				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+					b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
+					b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
+				}
+				out.send(bs,b2);
+			}
+		} else if (colorspace==SYM(rgb)) {
+			uint8 b2[bs];
+//			uint64 t = gf_timeofday();
+			for(int y=0; y<sy; y++) {
+				uint8 *buf2 = buf+bit_packing->bytes*sx*y;
+				bit_packing->unpack(sx,buf2,b2);
+				out.send(bs,b2);
+			}
+//			t=gf_timeofday()-t;
+//			fprintf(stderr,"decoding frame took %lld us\n",t);
+		} else if (colorspace==SYM(yuv)) {
+			/* unimplemented??? */
+			// Y =   76*R + 150*G +  29*B
+			// U = - 44*R -  85*G + 108*B
+			// V =  128*R - 108*G -  21*B
 		}
-	} else {
-		out.send(sy*bs,buf);
 	}
 }
+
+/* these are factors for RGB to analog YUV */
+// Y =   66*R + 129*G +  25*B
+// U = - 38*R -  74*G + 112*B
+// V =  112*R -  94*G -  18*B
 
 // strange that read2 is not used and read3 is used instead
 static int read2(int fd, uint8 *image, int n) {
