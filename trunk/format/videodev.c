@@ -400,8 +400,6 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		} else if (colorspace==SYM(yuv)) {
-			/* this should convert from video range to jpeg range because the latter is GF's standard */
-			/* (but it doesn't) */
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -410,8 +408,11 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					U=bufu[x/2];
 					V=bufv[x/2];
-					b2[xx+0]=bufy[x+0]; b2[xx+1]=U; b2[xx+2]=V;
-					b2[xx+3]=bufy[x+1]; b2[xx+4]=U; b2[xx+5]=V;
+					//b2[xx+0]=bufy[x+0]; b2[xx+1]=U; b2[xx+2]=V;
+					//b2[xx+3]=bufy[x+1]; b2[xx+4]=U; b2[xx+5]=V;
+					b2[xx+0]=clip(((bufy[x+0]-16)*298)>>8);
+					b2[xx+1]=clip(((U-128)*293)>>8);
+					b2[xx+2]=clip(((V-128)*293)>>8);
 				}
 				out.send(bs,b2);
 			}
