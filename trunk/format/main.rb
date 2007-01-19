@@ -21,7 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-require "socket"
 require "fcntl"
 
 module GridFlow
@@ -316,7 +315,6 @@ module EventIO
 
 	def try_accept
 		#!@#$ use setsockopt(SO_REUSEADDR) here???
-		TCPSocket.do_not_reverse_lookup = true # hack
 		@acceptor.nonblock = true
 		@stream = @acceptor.accept
 		@stream.nonblock = true
@@ -396,27 +394,6 @@ module EventIO
 				@frame = 0
 			end unless @rewind_redefined
 			@rewind_redefined = true
-		when :tcp
-			if RUBY_VERSION < "1.6.6"
-				raise "use at least 1.6.6 (reason: bug in socket code)"
-			end
-			post "-----------"
-			time = Time.new
-			TCPSocket.do_not_reverse_lookup = true # hack
-			@stream = TCPSocket.open(args[0].to_s,args[1].to_i)
-			post "----------- #{Time.new-time}"
-			@stream.nonblock = true
-			@stream.sync = true
-			@clock.delay @delay
-		when :tcpserver
-			TCPSocket.do_not_reverse_lookup = true # hack
-			TCPServer.do_not_reverse_lookup = true # hack
-			post "-----------"
-			time = Time.new
-			@acceptor = TCPServer.open(args[0].to_s)
-			post "----------- #{Time.new-time}"
-			@acceptor.nonblock = true
-			#$tasks[self] = proc {self.try_accept} #!!!!!
 		else
 			raise "unknown access method '#{source}'"
 		end
@@ -464,7 +441,7 @@ Format.subclass("#io:grid",1,1) {
 	attr_accessor :bpv # Fixnum: bits-per-value
 	# endianness
 	# attr_accessor :endian # ENDIAN_LITTLE or ENDIAN_BIG
-	# IO or File or TCPSocket
+	# IO or File
 	attr_reader :stream
 	# nil=headerful; array=assumed dimensions of received grids
 	#attr_accessor :headerless
@@ -500,11 +477,8 @@ Format.subclass("#io:grid",1,1) {
 		else
 			on_read(8) {|data| frame1 data }
 		end
-		post "----- 2"
-		(try_read nil while read_wait?) if not TCPSocket===@stream
-		post "----- 3"
+		try_read nil while read_wait?
 		super
-		post "----- 4"
 	end
 
 	def set_bufsize
