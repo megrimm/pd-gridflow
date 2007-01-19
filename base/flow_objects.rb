@@ -1185,8 +1185,6 @@ module Ioctl
 
 end
 
-class IO; include Ioctl; end
-
 # Linux::ParallelPort
 # Copyright (c) 2001, 2003 by Mathieu Bouchard
 # this is published under the Ruby license
@@ -1530,6 +1528,8 @@ FObject.subclass("realtimer",2,1) {
 }
 
 end # module GridFlow
+
+class IO; include GridFlow::Ioctl; end
 
 begin
   require "gridflow/optional/lti"
