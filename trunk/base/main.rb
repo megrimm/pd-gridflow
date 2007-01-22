@@ -266,52 +266,6 @@ class FObject
 	end
 end
 
-class FPatcher < FObject
-	class << self
-		attr_reader :fobjects
-		attr_reader :wires
-	end
-	def initialize(*)
-		super
-		fobjects = self.class.fobjects
-		wires = self.class.wires
-		@fobjects = fobjects.map {|x| if String===x then FObject[x] else x.call end }
-		@inlets = []
-		@ninlets = self.class.ninlets or raise "oops"
-		i=0
-		@fobjects << self
-		while i<wires.length do
-			a,b,c,d = wires[i,4]
-			if a==-1 then
-				a=self
-				@inlets[b]||=[]
-				@inlets[b] << [@fobjects[c],d]
-			else
-				if c==-1 then
-					@fobjects[a].connect b,self,d+@ninlets
-				else
-					@fobjects[a].connect b,@fobjects[c],d
-				end
-			end
-			i+=4
-		end
-	end
-	def method_missing(sym,*args)
-		sym=sym.to_s
-		if sym =~ /^_(\d)_(.*)/ then
-			inl = Integer $1
-			sym = $2.intern
-			if inl<@ninlets then
-			raise "#{inspect} has not @inlets[#{inl}]" if not @inlets[inl]
-				for x in @inlets[inl] do
-				 x[0].send_in x[1],sym,*args end
-			else
-				send_out(inl-@ninlets,sym,*args)
-			end
-		else super end
-	end
-end
-
 def GridFlow.estimate_cpu_clock
 	u0,t0=GridFlow.rdtsc,Time.new.to_f; sleep 0.01
 	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
@@ -398,9 +352,10 @@ require "gridflow/format/main.rb"
   # #for #finished #type #dim #transpose #perspective #store #outer
   #grade #redim #import #export #export_list #cast
   #scale_by #downscale_by #draw_polygon #draw_image #layer
-  #print #pack #export_symbol #rotate
+  #print #pack #export_symbol
   #in #out
 ).each {|k|
+ #rotate
 	GridFlow::FObject.name_lookup(k).add_creator k.gsub(/#/,"@")
 }
 
