@@ -425,7 +425,7 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 
 struct NumberType : CObject {
-	Symbol sym;
+//	Symbol sym;
 	const char *name;
 	int size;
 	int flags;
@@ -441,11 +441,11 @@ NumberTypeE NumberTypeE_find (Symbol sym);
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
   case int32_e:   C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
   case float32_e: C(float32) break; NONLITE(case float64_e: C(float64) break;) \
-  default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+  default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
 #define TYPESWITCH_JUSTINT(T,C,E) switch (T) { \
   case uint8_e: C(uint8) break; case int16_e: C(int16) break; \
   case int32_e: C(int32) break;   NONLITE(case int64_e: C(int64) break;) \
-  default: E; RAISE("type '%s' not available here",number_type_table[T].sym);}
+  default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
 
 //****************************************************************
 //BitPacking objects encapsulate optimised loops of conversion
@@ -512,7 +512,7 @@ void swap16 (long n, uint16 * data);
 enum LeftRight { at_left, at_right };
 
 template <class T>
-struct NumopOn : CObject {
+struct NumopOn /*: CObject*/ {
 	// Function Vectorisations
 	typedef void (*Map )(         long n, T *as, T  b ); Map  map;
 	typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
@@ -539,14 +539,14 @@ struct NumopOn : CObject {
 // abelian property: commutativity: f(a,b)=f(b,a)
 #define OP_COMM (1<<1)
 
-struct Numop : CObject {
-	Symbol sym;
+struct Numop /*: CObject*/ {
+//	Symbol sym;
 	const char *name;
 	int flags;
 	int size; // numop=1; vecop>1
 #define FOO(T) NumopOn<T> on_##T; \
   NumopOn<T> *on(T &foo) { \
-    if (!on_##T.map) RAISE("operator %s does not support type "#T,rb_sym_name(sym)); \
+    if (!on_##T.map) RAISE("operator %s does not support type "#T,name); \
     return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -556,11 +556,11 @@ EACH_NUMBER_TYPE(FOO)
 		on(*as)->zip(n,(T *)as,(T *)bs);}
 	template <class T> inline void fold(long an, long n, T *as, T *bs) {
 		typename NumopOn<T>::Fold f = on(*as)->fold;
-		if (!f) RAISE("operator %s does not support fold",rb_sym_name(sym));
+		if (!f) RAISE("operator %s does not support fold",name);
 		f(an,n,(T *)as,(T *)bs);}
 	template <class T> inline void scan(long an, long n, T *as, T *bs) {
 		typename NumopOn<T>::Scan f = on(*as)->scan;
-		if (!f) RAISE("operator %s does not support scan",rb_sym_name(sym));
+		if (!f) RAISE("operator %s does not support scan",name);
 		f(an,n,(T *)as,(T *)bs);}
 	void map_m  (NumberTypeE nt,          long n, String as, String b);
 	void zip_m  (NumberTypeE nt,          long n, String as, String bs);
@@ -571,14 +571,14 @@ EACH_NUMBER_TYPE(FOO)
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
-	int flags_, int size_) : sym(sym_), name(name_), flags(flags_), size(size_) {
+	int flags_, int size_) : name(name_), flags(flags_), size(size_) {
 #define FOO(T) on_##T = op_##T;
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 };
 #ifndef SWIG
-inline R::R(Numop *x) {r=x->sym;}
+inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
 #endif
 
 extern NumberType number_type_table[];

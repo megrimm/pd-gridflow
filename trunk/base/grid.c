@@ -458,12 +458,14 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	}
 }
 
+static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
+
 \def Symbol inlet_nt (int inln) {
 	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
 	if (!inl->dim) return Qnil;
-	return number_type_table[inl->nt].sym;
+	return rb_gensym(number_type_table[inl->nt].name);
 }
 
 \def Array inlet_dim (int inln) {

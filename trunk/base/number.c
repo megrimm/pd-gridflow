@@ -418,9 +418,7 @@ const long op_table4_n = COUNT(op_table4);
 
 // D=dictionary, A=table, A##_n=table count.
 #define INIT_TABLE(D,A) { D=IEVAL(mGridFlow,"@"#D" ||= {}"); \
-	for(int i=0; i<A##_n; i++) { \
-		A[i].sym = ID2SYM(rb_intern(A[i].name)); \
-		rb_hash_aset(D,A[i].sym,PTR2FIX((A+i)));}}
+	for(int i=0; i<A##_n; i++) {rb_hash_aset(D,ID2SYM(rb_intern(A[i].name)),PTR2FIX((A+i)));}}
 
 #ifdef PASS1
 Ruby  op_dict = Qnil;
