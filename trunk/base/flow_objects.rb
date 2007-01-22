@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -299,52 +299,6 @@ FObject.subclass("ls",1,1) {
         def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
-#-------- fClasses for: math
-
-FPatcher.subclass("gfmessagebox",1,1) {
-  def initialize(*a) @a=a end
-  def _0_float(x)  send_out 0, *@a.map {|y| if y==:"$1" then x else y end } end
-  def _0_symbol(x) send_out 0, *@a.map {|y| if y==:"$1" then x else y end } end
-}
-
-FPatcher.subclass("@!",1,1) {
-  @fobjects = ["# +","#type","gfmessagebox list $1 #"]
-  @wires = [-1,0,1,0, 1,0,2,0, 2,0,0,1, -1,0,0,0, 0,0,-1,0]
-  def initialize(sym)
-	super
-	@fobjects[0].send_in 0, case sym
-		when :rand; "op rand"; when :sqrt; "op sqrt"
-		when :abs;  "op abs-"; when :sq;   "op sq-"
-		else raise "bork BORK bork" end
-  end
-}
-FPatcher.subclass("@fold",2,1) {
-  @fobjects = ["#fold +","gfmessagebox seed $1"]
-  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
-  def initialize(op,seed=0) super; o=@fobjects[0]
-	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
-}
-FPatcher.subclass("@scan",2,1) {
-  @fobjects = ["#scan +","gfmessagebox seed $1"]
-  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,1, 0,0,-1,0]
-  def initialize(op,seed=0) super; o=@fobjects[0]
-	o.send_in 0, :op, op; o.send_in 0, :seed, seed end
-}
-FPatcher.subclass("@inner",3,1) {
-  @fobjects = ["#inner","gfmessagebox seed $1"]
-  @wires = [-1,0,0,0, -1,1,1,0, 1,0,0,0, 0,0,-1,0, -1,2,0,1]
-  def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
-	o.send_in 0, :op, op; o.send_in 0, :fold, fold
-	o.send_in 0, :seed, seed; o.send_in 1, r end
-}
-FPatcher.subclass("@convolve",2,1) {
-  @fobjects = ["#convolve"]
-  @wires = [-1,0,0,0, -1,2,0,1, 0,0,-1,0]
-  def initialize(op=:*,fold=:+,seed=0,r=0) super; o=@fobjects[0]
-	o.send_in 0, :op, op; o.send_in 0, :fold, fold
-	o.send_in 0, :seed, seed; o.send_in 1, r end
-}
-
 #-------- fClasses for: video
 
 #<vektor> told me to:
@@ -400,37 +354,31 @@ FObject.subclass("args",1,1) {
 	end
 }
 
-#!@#$ please turn into abstraction.
-FPatcher.subclass("#rotate",2,1) {
-	@fobjects = ["#inner","# >> 8"]
-	@wires = [-1,0,0,0, 0,0,1,0, 1,0,-1,0]
-	def update_rotator
+GridObject.subclass("#rotatificator",2,1) {
+	def _0_float(scale)
 		n = @axis[2]
-		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then 256 else 0 end }}
+		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then scale else 0 end }}
 		th = @angle * Math::PI / 18000
-		scale = 1 << 8
 		(0...2).each {|i| (0...2).each {|j|
 				a = @axis[i].to_i
 				b = @axis[j].to_i
-				#GridFlow.post "(#{a},#{b}) #{rotator[a].inspect}"
 				rotator[a][b] = (scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
 		}}
-		@fobjects[0].send_in 1,n,n,:"#",*rotator.flatten
+		send_out_grid_begin 0,[n,n]
+		send_out_grid_flow 0, rotator.flatten.pack("i#{n*n}")
 	end
 	def _0_axis(from,to,total)
 		total>=0 or raise "total-axis number incorrect"
 		from>=0 and from<total or raise "from-axis number incorrect"
 		to  >=0 and to  <total or raise   "to-axis number incorrect"
 		@axis = [from.to_i,to.to_i,total.to_i]
-		update_rotator
 	end
-	def initialize(rot=0,axis=[0,1,2])
+	def initialize(axis=[0,1,2])
 		super
 		@angle=0
 		_0_axis(*axis)
-		send_in 1, rot
 	end
-	def _1_float(angle) @angle = angle; update_rotator end
+	def _1_float(angle) @angle = angle end
 }
 
 # this could be an abstraction, but it would be rather slow.
@@ -770,7 +718,8 @@ class Display < FObject; include Gooey
 		@sel = nil; @args = [] # contents of last received message
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
-		@bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
+		# @bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
+		  @bg = "#cccccc"
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
@@ -837,9 +786,8 @@ class Display < FObject; include Gooey
 		gp.send_in 0, :maxrows, 20
 		gp.send_in 0, :grid, *foo
 	end
-
 	install "display", 1, 1
-	gui_enable if GridFlow.bridge_name =~ /puredata/
+	gui_enable
 end
 
 class GridEdit < GridObject; include Gooey
@@ -953,9 +901,11 @@ class GridEdit < GridObject; include Gooey
 	end
 	install "#edit", 2, 1
 	install_rgrid 2, true
-	gui_enable if GridFlow.bridge_name =~ /puredata/
 end
 
+=begin
+# FPatcher doesn't exist anymore, but this hasn't been working for years anyway,
+# and yet no-one made me notice, which shows me how useful this is.
 class Peephole < FPatcher; include Gooey
 	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","#out","#scale_by 1",
 	proc{Demux.new(2)}]
@@ -1010,8 +960,7 @@ class Peephole < FPatcher; include Gooey
 			@fobjects[5].send_in 1, (if @down then 0 else 1 end)
 			x2=@y+(@sy-sy2)/2
 			y2=@x+(@sx-sx2)/2
-			@fobjects[3].send_in 0, :set_geometry,
-				x2, y2, sy2, sx2
+			@fobjects[3].send_in 0, :set_geometry, x2, y2, sy2, sx2
 		rescue StandardError => e
 			post "peeperr: %s", e.inspect
 		end
@@ -1030,39 +979,23 @@ class Peephole < FPatcher; include Gooey
 		@y,@x = y,x
 		set_geometry_for_real_now
 	end
-	def _0_fall_thru(flag) # never worked ?
-		post "fall_thru: #{flag}"
-		@fobjects[3].send_in 0, :fall_thru, flag
-	end
 	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
 	def _1_position(y,x,b)
 		s=@scale
 		if @down then y*=s;x*=s else y*=s;x*=s end
 		send_out 0,:position,y,x,b
 	end
-	def _2_list(sy,sx,chans)
-		@fy,@fx = sy,sx
-		set_geometry_for_real_now
-	end
-	def _0_paint()
-		post "paint()"
-		@fobjects[3].send_in 0, "draw"
-	end
+	def _2_list(sy,sx,chans); @fy,@fx = sy,sx; set_geometry_for_real_now; end
+	def _0_paint() @fobjects[3].send_in 0, "draw"; end
 	def delete
-		post "deleting peephole"
 		GridFlow.gui %{ #{canvas} delete #{@rsym} \n}
 		@fobjects[3].send_in 0, :close
 		super
 	end
-	def method_missing(s,*a)
-		#post "%s: %s", s.to_s, a.inspect
-		super rescue NameError
-	end
-
+	def method_missing(s,*a) super rescue NameError; end
 	install "#peephole", 1, 1
-	gui_enable if GridFlow.bridge_name =~ /puredata/
-	#GridFlow.addtomenu "#peephole" # was this IMPD-specific ?
 end
+=end
 
 #-------- fClasses for: Hardware
 
