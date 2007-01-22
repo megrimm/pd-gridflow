@@ -25,8 +25,21 @@
 #include <stdlib.h>
 #include <math.h>
 #include "grid.h.fcs"
+//#include "gridflow2.h"
+//#include "m_pd.h"
 
-// BAD HACK: GCC complains: unimplemented (--debug mode only)
+/* ---------------------------------------------------------------- */
+/* stuff for using source_filter.rb without <ruby.h>: */
+
+#if 0
+#define SI(arg) gensym(#arg)
+#define SYM(arg) gensym(#arg)
+#endif
+
+/* end of stuff for using source_filter.rb without <ruby.h>. */
+/* ---------------------------------------------------------------- */
+
+// BAD HACK: GCC complains: unimplemented (--debug mode only) (i don't remember which GCC this was)
 #ifdef HAVE_DEBUG
 #define SCOPY(a,b,n) COPY(a,b,n)
 #else
@@ -34,10 +47,10 @@
 #endif
 
 template <long n> class SCopy {
-public: template <class T> static inline void __attribute__((always_inline)) f(T * a, T * b) {
+public: template <class T> static inline void __attribute__((always_inline)) f(T *a, T *b) {
 		*a=*b; SCopy<n-1>::f(a+1,b+1);}};
 template <> class SCopy<0> {
-public: template <class T> static inline void __attribute__((always_inline)) f(T * a, T * b) {}};
+public: template <class T> static inline void __attribute__((always_inline)) f(T *a, T *b) {}};
 
 /*template <> class SCopy<4> {
 public: template <class T>
@@ -851,8 +864,9 @@ GRID_INLET(GridDim,0) {
 struct GridType : GridObject {
 	\grin 0
 };
+static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
 GRID_INLET(GridType,0) {
-	Ruby a[] = { INT2NUM(0), SYM(symbol), number_type_table[in->nt].sym };
+	Ruby a[] = { INT2NUM(0), SYM(symbol), rb_gensym(number_type_table[in->nt].name) };
 	send_out(COUNT(a),a);
 	in->set_mode(0);
 } GRID_END
