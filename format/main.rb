@@ -454,19 +454,11 @@ Format.subclass("#io:grid",1,1) {
 		raw_open mode,source,*args
 	end
 
-	def post(*s)
-		# because i'm using miller_0_38 and it can't disable the console
-		# i am using fprintf stderr instead of post.
-		### STDERR.puts(sprintf(*s))
-		# disabled because i don't need it now
-	end
-
 	# rewinding and starting
 	def frame
 		raise "can't get frame when there is no connection" if not @stream
 		raise "already waiting for input" if read_wait?
 		return false if eof?
-		post "----- 1"
 		if @headerless then
 			@n_dim=@headerless.length
 			@dim = @headerless
@@ -493,7 +485,6 @@ Format.subclass("#io:grid",1,1) {
 
 	# the header
 	def frame1 data
-		post "----- frame1"
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
 		@endian = case head
 			when "\x7fGRID"; ENDIAN_BIG
@@ -514,7 +505,6 @@ Format.subclass("#io:grid",1,1) {
 
 	# the dimension list
 	def frame2 data
-		post "----- frame2"
 		@dim = data.unpack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end)
 		set_bufsize
 		if @prod > GridFlow.max_size
@@ -530,7 +520,6 @@ Format.subclass("#io:grid",1,1) {
 
 	# for each slice of the body
 	def frame3 data
-		post "----- frame3 with dex=#{@dex.inspect}, prod=#{@prod.inspect}"
 		n = data.length
 		nn = n*8/@bpv
 		# is/was there a problem with the size of the data being read?
@@ -560,7 +549,6 @@ Format.subclass("#io:grid",1,1) {
 			raise "can't send frame when there is no connection"
 		end
 		@dim = inlet_dim 0
-		post "@dim=#{@dim.inspect}"
 		return if @headerless
 		# header
 		@stream.write(
@@ -760,8 +748,6 @@ targa header is like:
 		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
 		comment = @stream.read(comment_length)
 		raise "unsupported color format: #{colors}" if colors != 2
-#		post "tga: size y=#{h} x=#{w} depth=#{depth} colortype=#{colortype}"
-#		post "tga: comment: \"#{comment}\""
 		set_bitpacking depth
 		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
 		frame_read_body h, w, depth/8
