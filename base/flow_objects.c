@@ -1735,7 +1735,7 @@ GRID_INPUT(GridLayer,1,r) {} GRID_END
 
 // ****************************************************************
 // pad1,pad2 only are there for 32-byte alignment
-struct Line { int32 y1,x1,y2,x2,x,m,pad1,pad2; };
+struct Line { int32 y1,x1,y2,x2,x,m,dx,dy; };
 
 static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
@@ -1774,6 +1774,9 @@ void DrawPolygon::init_lines () {
 		ld[i].y2 = pd[j+0];
 		ld[i].x2 = pd[j+1];
 		if (ld[i].y1>ld[i].y2) memswap((int32 *)(ld+i)+0,(int32 *)(ld+i)+2,2);
+		long dy = ld[i].y2-ld[i].y1;
+		long dx = ld[i].x2-ld[i].x1;
+		ld[i].m = dy ? (dx<<16)/dy : 0;
 	}
 }
 
@@ -1825,7 +1828,8 @@ GRID_INLET(DrawPolygon,0) {
 			COPY(data2,data,f);
 			for (int i=lines_start; i<lines_stop; i++) {
 				Line &l = ld[i];
-				l.x = l.x1 + (y-l.y1)*(l.x2-l.x1+1)/(l.y2-l.y1+1);
+				//l.x = l.x1 + (y-l.y1)*(l.x2-l.x1+1)/(l.y2-l.y1+1);
+				l.x = l.x1 + (((y-l.y1)*l.m)>>16);
 			}
 			qsort(ld+lines_start,lines_stop-lines_start,
 				sizeof(Line),order_by_column);
