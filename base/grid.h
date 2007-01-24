@@ -36,7 +36,7 @@ extern "C" void gffree(void *p);
 #else
 #define ALLOCPREFIX inline
 #endif
-#include "base/new.h"
+#include "./new.h"
 ALLOCPREFIX void *operator new   (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
 ALLOCPREFIX void *operator new[] (size_t n)          throw (std::bad_alloc) {return gfmalloc(n);}
 ALLOCPREFIX void *operator new   (size_t n, const std::nothrow_t&) throw () {return gfmalloc(n);}
@@ -313,8 +313,6 @@ template <class T> static void memswap (T *a, T *b, long n) {
 // and that's pretty confusing to a lot of people, especially when simple
 // casting causes a pointer to change its value.
 
-#ifndef SWIG
-/* Please stop existing... */
 struct CObject {
 	int32 refcount;
 	Ruby rself; // point to Ruby peer
@@ -324,12 +322,11 @@ struct CObject {
 };
 void CObject_free (void *);
 
+#ifndef SWIG
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
 struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
 extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
-#else
-struct CObject {};
 #endif
 
 #undef check
@@ -417,15 +414,15 @@ NUMBER_TYPES(FOO)
 number_type_table_end
 };
 
-
+#ifndef SWIG
 #define FOO(_type_) \
 inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
 	return _type_##_e; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+#endif
 
 struct NumberType : CObject {
-//	Symbol sym;
 	const char *name;
 	int size;
 	int flags;
@@ -453,14 +450,18 @@ struct BitPacking;
 // those are the types of the optimised loops of conversion 
 // inputs are const
 struct Packer {
+#ifndef SWIG
 #define FOO(S) void (*as_##S)(BitPacking *self, long n, S *in, uint8 *out);
 EACH_INT_TYPE(FOO)
 #undef FOO
+#endif
 };
 struct Unpacker {
+#ifndef SWIG
 #define FOO(S) void (*as_##S)(BitPacking *self, long n, uint8 *in, S *out);
 EACH_INT_TYPE(FOO)
 #undef FOO
+#endif
 };
 
 #ifndef SWIG
@@ -512,7 +513,7 @@ void swap16 (long n, uint16 * data);
 enum LeftRight { at_left, at_right };
 
 template <class T>
-struct NumopOn /*: CObject*/ {
+struct NumopOn {
 	// Function Vectorisations
 	typedef void (*Map )(         long n, T *as, T  b ); Map  map;
 	typedef void (*Zip )(         long n, T *as, T *bs); Zip  zip;
@@ -539,17 +540,18 @@ struct NumopOn /*: CObject*/ {
 // abelian property: commutativity: f(a,b)=f(b,a)
 #define OP_COMM (1<<1)
 
-struct Numop /*: CObject*/ {
-//	Symbol sym;
+struct Numop {
 	const char *name;
 	int flags;
 	int size; // numop=1; vecop>1
+#ifndef SWIG
 #define FOO(T) NumopOn<T> on_##T; \
   NumopOn<T> *on(T &foo) { \
     if (!on_##T.map) RAISE("operator %s does not support type "#T,name); \
     return &on_##T;}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+#endif
 	template <class T> inline void map(long n, T *as, T b) {
 		on(*as)->map(n,(T *)as,b);}
 	template <class T> inline void zip(long n, T *as, T *bs) {
@@ -567,6 +569,7 @@ EACH_NUMBER_TYPE(FOO)
 	void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
 	void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
 
+#ifndef SWIG
 	Numop(Symbol sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
@@ -576,6 +579,7 @@ EACH_NUMBER_TYPE(FOO)
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
+#endif
 };
 #ifndef SWIG
 inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
@@ -626,9 +630,18 @@ struct Grid : CObject {
 	}
 	long bytes() { return dim->prod()*number_type_table[nt].size/8; }
 	P<Dim> to_dim () { return new Dim(dim->prod(),(int32 *)*this); }
+#ifdef SWIG /* has trouble with my macros */
+operator uint8 *() { return (uint8 *)data; }
+operator int16 *() { return (int16 *)data; }
+operator int32 *() { return (int32 *)data; }
+operator int64 *() { return (int64 *)data; }
+operator float32 *() { return (float32 *)data; }
+operator float64 *() { return (float64 *)data; }
+#else
 #define FOO(T) operator T *() { return (T *)data; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+#endif
 	Grid *dup () { /* always produce an owning grid even if from a borrowing grid */
 		Grid *foo=new Grid(dim,nt);
 		memcpy(foo->data,data,bytes());
@@ -724,11 +737,13 @@ GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 
 typedef struct GridInlet GridInlet;
 typedef struct GridHandler {
+#ifndef SWIG
 #define FOO(T) \
 	void (*flow_##T)(GridInlet *in, long n, T *data); \
 	void flow(GridInlet *in, long n, T *data) const {flow_##T(in,n,data);}
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+#endif
 } GridHandler;
 
 typedef struct  GridObject GridObject;
@@ -789,7 +804,9 @@ struct FClass {
 	void *(*allocator)(); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
+#ifndef SWIG
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
+#endif
 };
 
 //****************************************************************
