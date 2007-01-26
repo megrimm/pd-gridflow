@@ -591,7 +591,7 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
-		gfpost("this driver is unsupported: it wants palette %d",palette);
+		gfpost("this driver is unsupported: it wants palette %d instead of %d",palette,vp.palette);
 		return;
 	}
 	if (c==SYM(yuv) && palette==VIDEO_PALETTE_RGB24) {
@@ -685,11 +685,19 @@ void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);
 	gfpost(&vp);
 	palettes=0;
 	int checklist[] = {VIDEO_PALETTE_RGB24,VIDEO_PALETTE_YUV420P};
+#if 0
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
-		vp.palette = checklist[i];
+		int p = checklist[i];
+#else
+	for (size_t p=0; p<17; p++) {
+#endif
+		vp.palette = p;
 		ioctl(fd, VIDIOCSPICT,&vp);
 		ioctl(fd, VIDIOCGPICT,&vp);
-		if (vp.palette == checklist[i]) palettes |= (1<<checklist[i]);
+		if (vp.palette == p) {
+			palettes |= 1<<p;
+			gfpost("palette %d supported",p);
+		}
 	}
 	_0_colorspace(0,0,SYM(rgb));
 	rb_funcall(rself,SI(_0_channel),1,INT2NUM(0));
