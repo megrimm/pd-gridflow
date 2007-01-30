@@ -187,7 +187,7 @@ class    In<ArgMode; def in?;  true end; def out?; false end end
 class   Out<ArgMode; def in?; false end; def out?;  true end end
 class InOut<ArgMode; def in?;  true end; def out?;  true end end
 
-require "gridflow/optional/lti_apply"
+require "optional/lti_apply"
 
 class LTIGridObject < GridObject
     ImageBP   = BitPacking.new(GridFlow::ENDIAN_LITTLE,4,[0xff0000,0x00ff00,0x0000ff])
