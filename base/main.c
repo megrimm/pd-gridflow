@@ -30,10 +30,16 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "grid.h.fcs"
 #include "../config.h"
 #include <limits.h>
 
+#ifdef SWIG
+#include "grid.h"
+#else
+#include "grid.h.fcs"
+#endif
+
+#ifndef SWIG
 BuiltinSymbols bsym;
 Ruby mGridFlow;
 Ruby cFObject;
@@ -61,6 +67,7 @@ Ruby rb_ary_fetch(Ruby rself, long i) {
 	Ruby argv[] = { LONG2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
+#endif
 
 //----------------------------------------------------------------
 // CObject
@@ -551,7 +558,7 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	if (!EVAL("begin require 'gridflow/base/main.rb'; true\n"
+	if (!EVAL("begin require 'base/main.rb'; true\n"
 		"rescue Exception => e; "
 		"STDERR.puts \"can't load: #{$!}\n"
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
