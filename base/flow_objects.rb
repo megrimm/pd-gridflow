@@ -1465,7 +1465,7 @@ end # module GridFlow
 class IO; include GridFlow::Ioctl; end
 
 begin
-  require "gridflow/optional/lti"
+  require "optional/lti"
   GridFlow.post "LTI support loaded."
 rescue Exception => e
   GridFlow.post "%s", e.inspect
