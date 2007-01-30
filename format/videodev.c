@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -20,6 +20,10 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+/* bt878 on matju's comp supports only palette 4 */
+/* bt878 on heri's comp supports palettes 3, 6, 7, 8, 9, 13 */
+/* pwc supports palettes 12 and 15 */
 
 #include "../base/grid.h.fcs"
 #include <errno.h>
@@ -370,13 +374,13 @@ struct FormatVideoDev : Format {
 static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
 void FormatVideoDev::frame_finished (uint8 *buf) {
-	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	/* picture is converted here. */
 	int sy = dim->get(0);
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
 	uint8 b2[bs];
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
+		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
 			out.send(sy*sx,buf);
 		} else if (colorspace==SYM(rgb)) {
@@ -418,6 +422,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			}
 		}
 	} else if (vp.palette==VIDEO_PALETTE_RGB24) {
+		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
 			for(int y=0; y<sy; y++) {
 				uint8 *rgb = buf+sx*y*3;
@@ -443,6 +448,8 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			// U = - 44*R -  85*G + 108*B
 			// V =  128*R - 108*G -  21*B
 		}
+	} else {
+		RAISE("unsupported palette %d",vp.palette);
 	}
 }
 
@@ -591,7 +598,7 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
-		gfpost("this driver is unsupported: it wants palette %d instead of %d",palette,vp.palette);
+		gfpost("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
 	if (c==SYM(yuv) && palette==VIDEO_PALETTE_RGB24) {
