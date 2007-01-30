@@ -33,7 +33,7 @@ module Errno; class E000 < StandardError; end; end
 #$post_log = File.open "/tmp/gridflow.log", "w"
 $post_log = nil
 
-require "gridflow/base/Type.rb"
+require "base/Type.rb"
 
 class Array
 	def split(elem)
@@ -335,7 +335,7 @@ rescue Exception => e
 end
 
 def GridFlow.load_user_config
-	require "gridflow/bridge/puredata.rb" if GridFlow.bridge_name == "puredata"
+	require "bridge/puredata.rb" if GridFlow.bridge_name == "puredata"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
 	begin
 		load user_config_file if File.exist? user_config_file
@@ -345,8 +345,8 @@ def GridFlow.load_user_config
 	end
 end
 
-require "gridflow/base/flow_objects.rb"
-require "gridflow/format/main.rb"
+require "base/flow_objects.rb"
+require "format/main.rb"
 
 %w(
   # #for #finished #type #dim #transpose #perspective #store #outer
