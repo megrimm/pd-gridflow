@@ -1,4 +1,4 @@
-#N canvas 757 413 502 475 10;
+#N canvas 982 332 502 475 10;
 #X obj 29 221 #in;
 #X obj 29 -37 tgl 15 0 empty empty empty 17 7 0 10 -24198 -1 -1 0 1
 ;
@@ -33,6 +33,7 @@
 #X obj 99 245 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
 -1;
 #X text 123 244 <-- outputs a bang when finished;
+#X text 139 -82 see also [#in]'s help file;
 #X connect 0 0 8 0;
 #X connect 0 1 27 0;
 #X connect 0 1 28 0;
