@@ -4,8 +4,8 @@ include ../../config.make
 
 #!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
 
-LTIPREFIX = /usr/local
-#LTIPREFIX = /home/matju
+#LTIPREFIX = /usr/local
+LTIPREFIX = /home/matju
 RUBY = ruby
 
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg -L/usr/X11R6/lib -lX11
@@ -18,6 +18,8 @@ RINC = -I $(RDIR1)
 
 SWIGFLAGS = -v
 CFLAGS += -Wall -fPIC -g -O2 -fno-omit-frame-pointer -fno-inline
+# CFLAGS += -Wall -fPIC -g -O0 -fno-inline -fno-strict-aliasing
+
 
 default:: all
 
@@ -102,7 +104,7 @@ tracking_wrap.cxx: ./swig/tracking.i ./swig/dep.i  ./generated/* alt_types.o ./p
 
 
 clean::
-	rm -f *.so *_wrap.o *.cxx
+	rm -f *.so *_wrap.o *_wrap.shoo *.cxx
 
 install:: ltimath.so basedata.so base_functors.so io.so
 	cp *.so $(RDIR2)
