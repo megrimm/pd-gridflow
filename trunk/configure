@@ -1035,13 +1035,6 @@ f.puts "
 } # end open config.h
 
 #--------------------------------#
-puts "delegating to: devices4ruby/extconf.rb"
-Dir.chdir "devices4ruby"
-system "/usr/bin/env", "ruby", "extconf.rb"
-Dir.chdir ".."
-puts "(back)"
-
-#--------------------------------#
 for s in [
 "See ./config.log if you want the details of the configuration tests.",
 "If you are satisfied with that configuration, you may go on,",
