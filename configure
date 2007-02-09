@@ -663,7 +663,7 @@ Feature.add {
 #----------------------------------------------------------------#
 Feature.add {
 	tag :puredata
-	name "Miller Puckette's Pure Data"
+	name "PureData (or DesireData)"
 	uses_feature [Or[:libruby,:librubystatic]]
 	options ["HAVE_PUREDATA"]
 	defines {
@@ -688,6 +688,19 @@ Feature.add {
 		`
 	}
 }
+Feature.add {
+	tag :desiredata
+	name "DesireData"
+	uses_h ["m_pd.h"]
+	test proc {
+		c_test %`
+			#include#
+			int main () { return !gobj_subscribe; }
+		`
+	}
+	defines ["HAVE_DESIREDATA"]
+}
+
 #--------------------------------#
 Feature.add {
 	tag :gem09
