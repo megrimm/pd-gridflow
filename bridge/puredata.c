@@ -47,7 +47,9 @@ tries to call a Ruby method of the proper name.
 /* desire.h ought to be fixed so that it can be used outside of desiredata... */
 //#include <desire.h>
 typedef struct _canvasenvironment t_canvasenvironment;
+extern "C" {
 EXTERN t_canvasenvironment *canvas_getenv(t_canvas *x);
+};
 #else
 #include "g_canvas.h"
 #endif
