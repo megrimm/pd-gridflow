@@ -42,7 +42,15 @@ tries to call a Ruby method of the proper name.
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
+
+#ifdef HAVE_DESIREDATA /* assuming a recent enough version */
+/* desire.h ought to be fixed so that it can be used outside of desiredata... */
+//#include <desire.h>
+typedef struct _canvasenvironment t_canvasenvironment;
+EXTERN t_canvasenvironment *canvas_getenv(t_canvas *x);
+#else
 #include "g_canvas.h"
+#endif
 
 #define CObject_free CObject_freeee
 #define gfpost post
@@ -353,6 +361,8 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
 }
 
+#ifndef HAVE_DESIREDATA
+
 /* Call this to get a gobj's bounding rectangle in pixels */
 void bf_getrectfn(t_gobj *x, t_glist *glist,
 int *x1, int *y1, int *x2, int *y2) {
@@ -432,15 +442,17 @@ void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
 		INT2NUM((int)dx), INT2NUM((int)dy));
 }
 
-/* save to a binbuf (FOR FUTURE USE) */
-void bf_savefn(t_gobj *x, t_binbuf *b) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
-}
-
 /* open properties dialog */
 void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
+}
+
+#endif /* HAVE_DESIREDATA */
+
+/* save to a binbuf (FOR FUTURE USE) */
+void bf_savefn(t_gobj *x, t_binbuf *b) {
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
 }
 
 /* **************************************************************** */
@@ -518,6 +530,7 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	return Qnil;
 }
 
+#ifndef HAVE_DESIREDATA
 static Ruby FObject_s_gui_enable (Ruby rself) {
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no class id ?");
@@ -535,13 +548,6 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	return Qnil;
 }
 
-static Ruby FObject_s_save_enable (Ruby rself) {
-	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no class id ?");
-	class_setsavefn(FIX2PTR(t_class,qlassid), bf_savefn);
-	return Qnil;
-}
-
 static Ruby FObject_s_properties_enable (Ruby rself) {
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
 	if (qlassid==Qnil) RAISE("no class id ?");
@@ -549,6 +555,16 @@ static Ruby FObject_s_properties_enable (Ruby rself) {
 	return Qnil;
 }
 
+#endif /* HAVE_DESIREDATA */
+
+static Ruby FObject_s_save_enable (Ruby rself) {
+	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
+	if (qlassid==Qnil) RAISE("no class id ?");
+	class_setsavefn(FIX2PTR(t_class,qlassid), bf_savefn);
+	return Qnil;
+}
+
+#ifndef HAVE_DESIREDATA
 static Ruby FObject_focus (Ruby rself, Ruby canvas_, Ruby x_, Ruby y_) {
 	DGS(FObject);
 	t_glist *canvas = FIX2PTR(t_glist,canvas_);
@@ -566,6 +582,7 @@ static Ruby FObject_unfocus (Ruby rself, Ruby canvas_) {
 	glist_grab(canvas,0,0,0,0,0);
 	return Qnil;
 }
+#endif /* HAVE_DESIREDATA */
 
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
@@ -586,15 +603,18 @@ static Ruby FObject_patcherargs (Ruby rself) {
 }
 
 static Ruby FObject_undrawio (Ruby rself) {
+#ifndef HAVE_DESIREDATA
 	DGS(FObject); BFObject *bself = self->bself;
 	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
 	if (!rt) return Qnil;
 	glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
+#endif
 	return Qnil;
 }
 
 static Ruby FObject_redraw (Ruby rself) {
+#ifndef HAVE_DESIREDATA
 	DGS(FObject); BFObject *bself = self->bself;
 	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
@@ -602,6 +622,7 @@ static Ruby FObject_redraw (Ruby rself) {
 	gobj_vis((t_gobj *)bself,bself->mom,0);
 	gobj_vis((t_gobj *)bself,bself->mom,1);
 	canvas_fixlinesfor(bself->mom,(t_text *)bself);
+#endif
 	return Qnil;
 }
 
@@ -680,6 +701,7 @@ static Ruby GridFlow_s_add_creator_2 (Ruby rself, Ruby name_) {
 	return Qnil;
 }
 
+#ifndef HAVE_DESIREDATA
 static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
 	DGS(FObject);
 	t_text *bself = (t_text *)(self->bself);
@@ -699,6 +721,7 @@ static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
 	rb_ary_push(a,INT2NUM((int)y0));
 	return a;
 }
+#endif
 
 \classinfo {}
 \end class FObject
@@ -754,18 +777,25 @@ Ruby gf_bridge_init (Ruby rself) {
 	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	Ruby fo = EVAL("GridFlow::FObject");
 	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
+
+#ifndef HAVE_DESIREDATA
 	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
-	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
 	rb_define_singleton_method(fo,"properties_enable", (RMethod)FObject_s_properties_enable, 0);
+#endif
+
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
+	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
+
+#ifndef HAVE_DESIREDATA
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
+	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
+	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
+#endif
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
-	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
-	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 
 	SDEF("post_string",post_string,1);
