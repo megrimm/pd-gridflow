@@ -4,8 +4,8 @@ include ../../config.make
 
 #!@#$ would swig -O be better? what about gcc -O2 ? -fastinit ?
 
-#LTIPREFIX = /usr/local
-LTIPREFIX = /home/matju
+LTIPREFIX = /usr/local
+#LTIPREFIX = /home/matju
 RUBY = ruby
 
 LIBS = $(LTIPREFIX)/lib/ltilib/libltir.a -lpng -ljpeg -L/usr/X11R6/lib -lX11
@@ -34,7 +34,7 @@ basedata.so: basedata_wrap.o alt_types.o
 basedata_wrap.o: basedata_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c basedata_wrap.cxx
 
-basedata_wrap.cxx: ./swig/basedata.i ./swig/dep.i  ./generated/* alt_types.o
+basedata_wrap.cxx: ./swig/basedata.i ./swig/dep.i  ./generated/*
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
@@ -50,7 +50,7 @@ base_functors.so: base_functors_wrap.o alt_types.o
 base_functors_wrap.o: base_functors_wrap.cxx
 	$(CXX) $(CFLAGS) $(RINC) -Ipatched $(INCS) -c base_functors_wrap.cxx
 
-base_functors_wrap.cxx: ./swig/dep.i ./swig/base_functors.i  ./generated/* alt_types.o
+base_functors_wrap.cxx: ./swig/dep.i ./swig/base_functors.i  ./generated/*
 	echo $(CXX)
 	cp $(LTIPREFIX)/include/ltilib/config.h ./patched/ltiLinConfig.h
 	swig $(SWIGFLAGS) -c++ -ruby -I./generated -I./patched \
@@ -59,10 +59,10 @@ base_functors_wrap.cxx: ./swig/dep.i ./swig/base_functors.i  ./generated/* alt_t
 	sed -i 's/Init_rblti/Init_base_functors/' base_functors_wrap.cxx
 
 alt_types.o: ./src/alt_types.cpp
-	g++ -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
+	$(CXX) $(CFLAGS) -c -I./generated -I./patched $(INCS) ./src/alt_types.cpp
 
 ltiPointList_extra.o: ./src/ltiPointList_extra.cpp
-	g++ -c -I./generated -I./patched $(INCS) ./src/ltiPointList_extra.cpp
+	$(CXX) $(CFLAGS) -c -I./generated -I./patched $(INCS) ./src/ltiPointList_extra.cpp
 
 
 .PRECIOUS: %_wrap.cxx
