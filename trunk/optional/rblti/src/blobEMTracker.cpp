@@ -188,7 +188,7 @@ namespace lti {
                 if (contains((*blobIt), center2.castFrom((*vecIt).center)))
                     outMat.at(i,3) = (*blobIt).size();
             }
-            outMat.at(i,0) = (int) &(*vecIt);
+            outMat.at(i,0) = (long) &(*vecIt);
         }
     }
     
