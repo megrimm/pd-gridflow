@@ -713,7 +713,6 @@ end
 
 if FObject.respond_to?(:gui_enable)
 class Display < FObject; include Gooey
-	gui_enable
 	attr_accessor :text
 	def initialize()
 		super
@@ -789,6 +788,7 @@ class Display < FObject; include Gooey
 		gp.send_in 0, :grid, *foo
 	end
 	install "display", 1, 1
+	gui_enable
 end
 end # respond to gui_enable
 
