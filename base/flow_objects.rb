@@ -249,7 +249,7 @@ GridObject.subclass("#unpack",1,0) {
   def initialize(n=2)
     super
     @n=n
-    n>=10 and raise "too many outlets"
+    n>64 and raise "too many outlets"
   end
   def initialize2; add_outlets @n end
   def _0_rgrid_begin
