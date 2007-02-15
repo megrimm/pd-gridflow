@@ -183,8 +183,7 @@ static void send_in_3 (Helper *h) {}
 	int n=0;
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
-	if (outlet<0 || outlet>9 /*|| outlet>real_outlet_max*/)
-		RAISE("invalid outlet number: %d",outlet);
+	if (outlet<0 || outlet>=64) RAISE("invalid outlet number: %d",outlet);
 	argc--, argv++;
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,this);
