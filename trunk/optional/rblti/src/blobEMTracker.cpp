@@ -7,7 +7,7 @@ ToDo: - Try 4-neighbourhood distance for distanceTransform
 
 namespace lti {
 
-    blobEMTracker::blobEMTracker() : functor(), tracker(), ofm(), ofmPar(), dt(), dtPar()
+    blobEMTracker::blobEMTracker() : functor(), tracker(), ofm(), ofmPar(), dt(), dtPar(), cHull()
     {
         parameters defaultPar;
         setParameters(defaultPar);
@@ -31,6 +31,7 @@ namespace lti {
         blobCount = other.blobCount;
         blobList = other.blobList;
         gaussVec = other.gaussVec;
+        cHull.copy(other.cHull);
     }
     
     blobEMTracker::~blobEMTracker()
@@ -62,31 +63,47 @@ namespace lti {
     
     void blobEMTracker::apply(const channel8& inChan, channel8& outChan, matrix<int>& outMat)
     {
-        int newBlobCount;
+        unsigned int newBlobCount;
+        bool found;
+        unsigned int i, vLen = gaussVec.size();
+        std::list<areaPoints>::const_iterator blobIt;
+        areaPoints tempBlob;
+        ipoint center1, center2;
+        std::vector<blobEM::gaussEllipse>::iterator vecIt;
+        polygonPoints polyContour;
         
-        //Extract the blobs from the image
-        ofm.apply(inChan, blobList);
-        newBlobCount = blobList.size();
+        //Preprocessing
+        std::list<ioPoints>::iterator tmpBlobIt;
+        std::list<ioPoints> tmpBlobList;
+        channel8 tmpChan;
+        
+        ofm.apply(inChan, tmpBlobList);
+        
+        tmpChan.resize((inChan.size()).y, (inChan.size()).x, 0, false, true);
+        //Make sure all blobs are convex
+        for (tmpBlobIt = tmpBlobList.begin(); tmpBlobIt != tmpBlobList.end() ; tmpBlobIt++)
+        {
+            cHull.apply((*tmpBlobIt), polyContour); //get convexhull of contour
+            tempBlob.castFrom(polyContour);
+            drawBlobInChannel(tempBlob, tmpChan);
+        }
         
         //resize the output matrix according to the number of blobs
+        ofm.apply(tmpChan, blobList);
+        newBlobCount = blobList.size();  // !!!!!!!!!!!!!!!!!!!!!!!!!***************
+        
         if (newBlobCount > 0)
             outMat.resize(newBlobCount, 4, 0, false, true);
         else
             outMat.resize(1, 4, 0, false, true);   //output matrix must have at least one row
         
-        bool found;
-        int i, vLen = gaussVec.size();
-        std::list<areaPoints>::const_iterator blobIt;
-        areaPoints tempBlob;
-        ipoint center1, center2;
-        std::vector<blobEM::gaussEllipse>::iterator vecIt;
         //Check if any new blobs appeared in this iteration
         if (newBlobCount > blobCount)
         {
             //Identify the blobs we already had and the new one
             //Two blobs are assumed the same if the center of gravity (cog) of one
             //of them is contained inside the other 
-            for (blobIt = blobList.begin(); blobIt != blobList.end(); blobIt++)
+            for (blobIt = blobList.begin(); (blobIt != blobList.end() && (newBlobCount != gaussVec.size())); blobIt++)
             {
                 //Compare each ellipse to the ones from objectsFromMask
                 tempBlob = (*blobIt);
@@ -107,7 +124,7 @@ namespace lti {
                     blobEM::gaussEllipse newEll(lti::tpoint<double>((double)center1.x,(double)center1.y), 11., 10., 0.0);
                     gaussVec.push_back(newEll);
                     outMat.at(gaussVec.size()-1,3) = (*blobIt).size();
-                    printf("found new blob at (%d, %d), size is %d, position %d in vector\n", center1.x, center1.y, (*blobIt).size(), gaussVec.size()-1);
+                    printf("found new blob at (%d, %d), size is %d, position %d in vector\n", center1.x, center1.y, (*blobIt).size(), (int)gaussVec.size()-1);
                 }
             }
         }
@@ -120,7 +137,8 @@ namespace lti {
             //of them is contained inside the other
             vecIt = gaussVec.begin();
             i=0;
-            while ((vecIt != gaussVec.end()) && (0 != gaussVec.size()))
+            //Go through each ellipse
+            while ((vecIt != gaussVec.end()) && (0 != gaussVec.size()) && (newBlobCount != gaussVec.size()))
             {
                 printf("here, %d\n", gaussVec.size());
                 tempEll = (*vecIt);
@@ -131,7 +149,11 @@ namespace lti {
                 {
                     found = lti::contains((*blobIt), center1);
                     if(found)
+                    {
+                        if(i>= newBlobCount)
+                            printf("wth? index %d larger than matrix size %d\n", i, newBlobCount);
                         outMat.at(i,3) = (*blobIt).size();
+                    }
                 }
                 
                 if(!found) //a blob disappeared, erase it
@@ -216,5 +238,11 @@ namespace lti {
         return new parameters(*this);
     }
     
-
+    void blobEMTracker::drawBlobInChannel(const tpointList<int>& blob, channel8& chan)
+    {
+    	lti::tpointList<int>::const_iterator it;
+    	
+    	for (it = blob.begin(); it != blob.end(); it++)
+    	    chan.at((*it).y, (*it).x) = 255;
+    }
 }
