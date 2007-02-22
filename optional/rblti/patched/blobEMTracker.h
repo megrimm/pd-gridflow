@@ -8,6 +8,7 @@
 #include "ltiImage.h"
 #include "ltiPointList_extra.h"
 #include "ltiContour.h"
+#include "ltiConvexHull.h"
 
 namespace lti{
 
@@ -31,10 +32,12 @@ namespace lti{
         virtual bool updateParameters();
         const parameters& getParameters() const;
         void apply(const channel8 & , channel8 & , matrix<int> &);
+        void drawBlobInChannel(const tpointList<int> &, channel8 &);
                 
         private:
         blobEM tracker;
-        int blobCount;
+        convexHull cHull;
+        unsigned int blobCount;
         distanceTransform dt;
         distanceTransform::parameters dtPar;
         objectsFromMask ofm;
