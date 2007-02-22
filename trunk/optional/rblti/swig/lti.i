@@ -1,67 +1,6 @@
 //******************************************************************************
-//
-//      project:  pylti
-//    copyright:  (c) 2005 by Michael Neuroth
-//
-//  description:  python modul for ltilib (using SWIG)
-//
-//  $Source$
-//  $Revision$
-//  $Date$
-// 
-//  $Log$
-//  Revision 1.1  2006/02/25 23:43:56  matju
-//  0.33.1
-//
-//  Revision 1.16  2005/12/25 15:44:24  Michael
-//  splitted lti.i into different interface files.
-//
-//  Revision 1.15  2005/07/24 18:46:20  Michael
-//  added simple geometric operations for images
-//
-//  Revision 1.14  2005/07/04 20:02:11  Michael
-//  Cleaning up the code
-//
-//  Revision 1.13  2005/06/28 20:53:30  Michael
-//  Added new functors: cannyEdges and classifier
-//
-//  Revision 1.12  2005/06/20 19:25:53  Michael
-//  Support for colour space added.
-//
-//  Revision 1.11  2005/06/17 21:06:56  Michael
-//  Added and improved some %extend statements
-//
-//  Revision 1.10  2005/06/14 20:15:35  Michael
-//  Better template-support: %extend works also on templates, optimized typedeclaration sequence
-//
-//  Revision 1.9  2005/06/13 20:43:23  Michael
-//  Experiments for tree support.
-//
-//  Revision 1.8  2005/06/12 21:11:38  Michael
-//  Tests for the support for the tree.
-//
-//  Revision 1.7  2005/05/16 13:38:38  Michael
-//  Experimented with tree support. included lti_manual.cpp.
-//
-//  Revision 1.6  2005/05/01 10:40:12  Michael
-//  Added index-operator [] for generic vectors. Tests for support for trees.
-//
-//  Revision 1.5  2005/02/22 23:06:50  Michael
-//  Added more functors, improved classes with %extend command
-//
-//  Revision 1.4  2005/02/19 22:29:09  Michael
-//  Added some more functors and functions.
-//
-//  Revision 1.3  2005/02/14 22:16:38  Michael
-//  bugfix: swig has problems with %feature statement
-//
-//  Revision 1.2  2005/02/12 10:43:07  Michael
-//  generate an aditional doc strings and better support for inheritance of parameters classes
-//
-//  Revision 1.1.1.1  2005/02/09 21:41:11  Michael
-//  initial checkin
-//
-//
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
 //******************************************************************************
 //
 // generated swig-wrapper compiles only with VC++ 7.1 (.NET 2003), NOT with VC++ 6.0 ! 

@@ -1,50 +1,6 @@
 //******************************************************************************
-//
-//      project:  pylti
-//    copyright:  (c) 2005 by Michael Neuroth
-//
-//  description:  python modul for ltilib (using SWIG)
-//                    ltilib extras functions and classes
-//
-//  $Source$
-//  $Revision$
-//  $Date$
-// 
-//  $Log$
-//  Revision 1.10  2006/11/01 21:20:47  heri
-//  Added another apply() method to ObjectsFromMask, which outputs a channel8 containing only
-//  the largest blobs from the input.
-//
-//  Revision 1.9  2006/10/26 18:28:38  heri
-//  Compilation in separate modules now working.
-//  basedata and base_functors MUST be loaded before any other modules, otherwise you get a segfault.
-//
-//  Revision 1.8  2006/10/24 22:07:59  heri
-//  Three more modules compiling.
-//  colors, segmentation, and edge_detectors
-//
-//  Revision 1.7  2006/08/25 23:32:12  heri
-//  A bunch of changes to split compilation into several parts (not yet working for some modules)
-//
-//  Revision 1.6  2006/06/23 18:01:32  heri
-//  Fix for 64bit OS compilation error. Basically, just added gcc -fPIC flag.
-//
-//  Revision 1.3  2006/04/01 04:58:43  heri
-//  - Added Class MeanshiftTracker.
-//  - All methods with the name "initialize" in lti-lib are renamed to "init" due to conflict with Ruby (including MeanshiftTracker::initialize).
-//  - Added template names to allow instantiation of Class Rectangle: Rect (int), Drect (double), Frect (float). Some arguments of MeanshiftTracker methods are of type Rectangle, this will be useful when using MeanshiftTracker.
-//  - Added template names for histogram classes: Histogram (double), Ihistogram, Fhistogram, Histogram1D, Histogram2D. Also needed as arguments to methods of MeanshiftTracker. "initialize" method of this class is also renamed to "init".
-//  - Added drawing class. A new interface file (drawing.i) has been added for these. Currently, there are two classes available: ImageDraw and ChannelDraw to draw on objects of type Image and Channel respectively. These classes enable drawing simple shapes and text on the canvas provided to them.
-//
-//  Revision 1.2  2006/03/05 01:18:55  heri
-//  More changes related to the added classes: backgroundModel,
-//  geometricFeaturesFromMask and
-//  multiGeometricFeaturesFromMask
-//
-//  Revision 1.1  2005/12/25 15:41:16  Michael
-//  splitted lti.i into different swig interface files
-//
-//
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
 //******************************************************************************
 
 //%include utils.i
