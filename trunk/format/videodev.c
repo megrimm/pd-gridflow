@@ -258,7 +258,7 @@ struct FormatVideoDev : Format {
 	\decl void _0_channel (int value);
 	\decl void _0_transfer (Symbol sym, int queuemax=2);
 	\decl void _0_colorspace (Symbol c);
-	\attr int    frequency();
+	\attr long   frequency();
 	\attr uint16 brightness();
 	\attr uint16 hue();
 	\attr uint16 colour();
@@ -533,13 +533,13 @@ GRID_INLET(FormatVideoDev,0) {
 \def void   _0_contrast   (uint16 contrast)  {PICTURE_ATTR(   contrast)}
 \def uint16    whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
 \def void   _0_whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
-\def int frequency  () {
-	int value;
+\def long frequency  () {
+	long value;
 	WIOCTL(fd, VIDIOCGFREQ, &value);
 	return value;
 }
-\def void _0_frequency (int frequency) {
-	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %d",frequency);
+\def void _0_frequency (long frequency) {
+	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %ld",frequency);
 }
 
 \def void close () {
