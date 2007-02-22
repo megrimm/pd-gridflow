@@ -1,3 +1,7 @@
+//******************************************************************************
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
+
 #ifndef OLD_COMPILE
 %module rblti
 %include utils.i

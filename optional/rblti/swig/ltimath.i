@@ -1,3 +1,7 @@
+//******************************************************************************
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
+
 //%module ltimath
 %module rblti
 %include utils.i

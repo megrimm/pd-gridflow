@@ -1,3 +1,7 @@
+//******************************************************************************
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
+
 // for the access to c arrays
 %include "carrays.i"
 %array_functions(float,floatArray)

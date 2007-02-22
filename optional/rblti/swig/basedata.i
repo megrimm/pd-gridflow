@@ -1,10 +1,6 @@
 //******************************************************************************
-//
-//      project:  pylti
-//    copyright:  (c) 2005 by Michael Neuroth
-//
-//  description:  python modul for ltilib (using SWIG)
-//
+// Rblti, Copyright 2005,2006 by Michael Neuroth and Heri Andria
+//  $Id$
 //******************************************************************************
 
 #ifndef SWIGIMPORTED
