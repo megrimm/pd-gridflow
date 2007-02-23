@@ -1,6 +1,6 @@
-#N canvas 459 0 519 638 10;
+#N canvas 301 82 524 683 10;
 #X obj 88 10 metro 33;
-#X obj 71 10 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+#X obj 71 10 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
 #X obj 71 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
@@ -64,6 +64,9 @@ a single channel mask. The Model can be updated with new images.;
 #X obj 88 275 print;
 #X obj 88 255 fps detailed;
 #X obj 339 211 #out window \, title cam;
+#X text 432 147 '0' for greyscale;
+#X text 506 119 first add a new model;
+#X text 483 87 then apply;
 #X connect 0 0 36 0;
 #X connect 1 0 0 0;
 #X connect 2 0 36 0;
