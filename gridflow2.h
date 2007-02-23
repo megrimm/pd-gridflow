@@ -25,6 +25,8 @@
 /* some of those things might still be in grid.h instead though. */
 #ifndef __GRIDFLOW2_H
 #define __GRIDFLOW2_H
+#include "m_pd.h"
+#undef T_OBJECT
 #include "config.h"
 #include <vector>
 #include <stdlib.h>
