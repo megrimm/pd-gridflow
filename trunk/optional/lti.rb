@@ -485,7 +485,7 @@ class LTIGridObject < GridObject
           n = Imatrix.new(Ipoint.new(2, m.size))
           m.to_matrix(n)
           send_out_lti_imatrix o,n,false
-      when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints, Vector_polygonPoints, Vector_borderPoints, SegmEntry_vector
+      when Rblti::List_ioPoints, Rblti::List_borderPoints, Rblti::List_areaPoints, Vector_polygonPoints, Vector_borderPoints, Vector_segmEntry
       #   send_out_grid_begin o, [], :int32
       #   send_out_grid_flow o, [m.getPtr].pack("I"), :int32
          m.each {|thing| send_out_lti o,thing }
