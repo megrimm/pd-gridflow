@@ -17,20 +17,6 @@
 %enddef
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//%define HANDLE_SIMPLE_HEADER_FILE_NAMESPACE(headername)
-//%wrapper %{
-//namespace { using namespace lti;
-//%}
-//%include headername
-//%inline %{
-//#include headername
-//%}
-//%wrapper %{
-//}
-//%}
-//%enddef
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // with this macro we handle all the shifting of namespaces for the nested parameters classes
 %define HANDLE_FUNCTOR_WITH_PARAMETERS(func_name,functor_header)
 // *************************************************
