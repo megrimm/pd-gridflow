@@ -127,6 +127,7 @@ namespace lti {
                     printf("found new blob at (%d, %d), size is %d, position %d in vector\n", center1.x, center1.y, (*blobIt).size(), (int)gaussVec.size()-1);
                 }
             }
+            assert(outMat.size().y == blobCount);
         }
         //Check if some blobs disappeared
         else if (newBlobCount < blobCount)
@@ -152,7 +153,8 @@ namespace lti {
                     {
                         if(i>= newBlobCount)
                             printf("wth? index %d larger than matrix size %d\n", i, newBlobCount);
-                        outMat.at(i,3) = (*blobIt).size();
+                        else
+                            outMat.at(i,3) = (*blobIt).size();
                     }
                 }
                 
@@ -183,7 +185,7 @@ namespace lti {
         areaPoints blob;
         areaPoints::iterator ptiter;
 
-        //iterate through each blob found in the channel
+        //Draw the blobs in the output channel
         for(; objiter != blobList.end(); objiter++)
         {
             blob = *(objiter);
