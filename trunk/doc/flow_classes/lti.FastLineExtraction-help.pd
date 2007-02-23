@@ -1,69 +1,85 @@
-#N canvas 0 0 659 365 10;
-#X obj 11 32 #in;
-#X msg 109 178 help;
-#X obj 178 13 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+#N canvas 426 104 655 598 10;
+#X obj 11 43 #in;
+#X msg 103 239 help;
+#X obj 168 11 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
 ;
-#X obj 208 55 #out window \, title Original;
-#X obj 198 33 #camera;
-#X obj 80 305 fps detailed;
-#X obj 81 326 display;
-#X obj 198 12 metro 10;
-#X msg 109 198 get;
-#X obj 198 181 lti.CannyEdges 10;
-#X obj 80 281 #out window \, title Edge_detection;
-#X obj 228 121 t a a;
-#X obj 228 145 # avg;
-#X obj 198 99 shunt;
-#X obj 228 76 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1 1
+#X obj 177 85 #out window \, title Original;
+#X obj 167 63 #camera;
+#X obj 105 425 fps detailed;
+#X obj 106 446 display;
+#X msg 103 259 get;
+#X obj 167 242 lti.CannyEdges 10;
+#X obj 105 401 #out window \, title Edge_detection;
+#X obj 167 129 shunt;
+#X obj 197 106 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X text 219 104 <-- Click to reduce noise by 30%;
+#X msg 205 187 kernelSize \$1;
+#X obj 205 170 nbx 5 14 0 1e+37 0 1 empty empty kernelSize 0 -6 0 10
+-262144 -1 -1 16 256;
+#X msg 310 187 variance \$1;
+#X obj 310 170 nbx 5 14 0 128 0 1 empty empty variance 0 -6 0 10 -262144
+-1 -1 2 256;
+#X obj 471 135 hsl 128 15 0 1 0 0 empty empty empty -2 -6 0 8 -262144
+-1 -1 7300 1;
+#X obj 408 160 #cast f;
+#X obj 408 182 # *;
+#X obj 468 160 #pack 1 f;
+#X obj 408 203 #cast i;
+#X obj 167 289 lti.FastLineExtraction 2;
+#X obj 167 264 #rgb_to_greyscale;
+#X obj 321 252 nbx 5 14 0 1e+37 0 1 empty empty minLineLen 0 -6 0 10
+-262144 -1 -1 12 256;
+#X msg 321 269 minLineLen \$1;
+#X msg 11 23 load scissors.jpg;
+#X obj 315 357 print line;
+#X obj 146 62 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 1 -55 cnv 15 650 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 518 cnv 15 650 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 12 -54 lti.FastLineExtraction;
+#X text 448 520 Help Files GridFlow 0.8.5;
+#X obj 315 336 #export_list;
+#X obj 167 310 route end;
+#X obj 167 335 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X text 189 335 <-- all done!;
+#X text 413 335 <-- sends out all line coords (y0 \, x0)(y1 \, x1)
 ;
-#X text 250 74 <-- Click to reduce noise by 30%;
-#X msg 272 145 kernelSize \$1;
-#X obj 272 128 nbx 5 14 0 1e+37 0 1 empty empty kernelSize 0 -6 0 10
--262144 -1 -1 7 256;
-#X msg 377 145 variance \$1;
-#X obj 377 128 nbx 5 14 0 128 0 1 empty empty variance 0 -6 0 10 -262144
--1 -1 1 256;
-#X obj 538 93 hsl 128 15 0 1 0 0 empty empty empty -2 -6 0 8 -262144
--1 -1 2800 1;
-#X obj 475 118 #cast f;
-#X obj 475 140 # *;
-#X obj 535 118 #pack 1 f;
-#X obj 475 161 #cast i;
-#X obj 198 228 lti.FastLineExtraction 2;
-#X obj 325 254 display;
-#X obj 198 203 #rgb_to_greyscale;
-#X obj 352 191 nbx 5 14 0 1e+37 0 1 empty empty minLineLen 0 -6 0 10
--262144 -1 -1 7 256;
-#X msg 352 208 minLineLen \$1;
-#X msg 11 12 load scissors.jpg;
+#X obj 168 39 metro 100;
+#X text 245 39 <-- slow metro values...;
 #X connect 0 0 3 0;
-#X connect 0 0 9 0;
-#X connect 1 0 25 0;
-#X connect 2 0 7 0;
+#X connect 0 0 8 0;
+#X connect 1 0 22 0;
+#X connect 2 0 38 0;
 #X connect 4 0 3 0;
-#X connect 4 0 13 0;
+#X connect 4 0 10 0;
 #X connect 5 0 6 0;
-#X connect 7 0 4 0;
-#X connect 8 0 25 0;
-#X connect 9 0 10 0;
-#X connect 9 0 27 0;
-#X connect 10 0 5 0;
-#X connect 11 0 12 1;
-#X connect 11 1 12 0;
-#X connect 13 0 9 0;
-#X connect 13 1 21 0;
-#X connect 14 0 13 1;
-#X connect 16 0 9 0;
-#X connect 17 0 16 0;
-#X connect 18 0 9 0;
-#X connect 19 0 18 0;
-#X connect 20 0 23 0;
-#X connect 21 0 22 0;
-#X connect 22 0 24 0;
-#X connect 23 0 22 1;
-#X connect 24 0 9 0;
-#X connect 25 0 26 0;
-#X connect 27 0 25 0;
-#X connect 28 0 29 0;
-#X connect 29 0 25 0;
-#X connect 30 0 0 0;
+#X connect 7 0 22 0;
+#X connect 8 0 9 0;
+#X connect 8 0 23 0;
+#X connect 9 0 5 0;
+#X connect 10 0 8 0;
+#X connect 10 1 18 0;
+#X connect 11 0 10 1;
+#X connect 13 0 8 0;
+#X connect 14 0 13 0;
+#X connect 15 0 8 0;
+#X connect 16 0 15 0;
+#X connect 17 0 20 0;
+#X connect 18 0 19 0;
+#X connect 19 0 21 0;
+#X connect 20 0 19 1;
+#X connect 21 0 8 0;
+#X connect 22 0 34 0;
+#X connect 23 0 22 0;
+#X connect 24 0 25 0;
+#X connect 25 0 22 0;
+#X connect 26 0 0 0;
+#X connect 28 0 4 0;
+#X connect 33 0 27 0;
+#X connect 34 0 35 0;
+#X connect 34 1 33 0;
+#X connect 38 0 4 0;
