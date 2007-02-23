@@ -43,7 +43,7 @@
 #endif
 
 #undef L
-#define L gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define L post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
@@ -210,7 +210,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 			report_pointer(em->y,em->x,em->state);
 		}break;
 		case DestroyNotify:{
-			gfpost("This window is being closed, so this handler will close too!");
+			post("This window is being closed, so this handler will close too!");
 			rb_funcall(rself,SI(close),0);
 			return;
 		}break;
@@ -236,12 +236,12 @@ void FormatX11::report_pointer(int y, int x, int state) {
 /* loathe Xlib's error handlers */
 static FormatX11 *current_x11;
 static int FormatX11_error_handler (Display *d, XErrorEvent *xee) {
-	gfpost("XErrorEvent: type=0x%08x display=0x%08x xid=0x%08x",
+	post("XErrorEvent: type=0x%08x display=0x%08x xid=0x%08x",
 		xee->type, xee->display, xee->resourceid);
-	gfpost("... serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
+	post("... serial=0x%08x error=0x%08x request=0x%08lx minor=0x%08x",
 		xee->serial, xee->error_code, xee->request_code, xee->minor_code);
 	if (current_x11->transfer==1) {
-		gfpost("(note: turning shm off)");
+		post("(note: turning shm off)");
 		current_x11->transfer = 0;
 	}
 	return 42; /* it seems that the return value is ignored. */
@@ -264,7 +264,7 @@ bool FormatX11::alloc_image (int sx, int sy) {
 	case 1: {
 		shm_info = new XShmSegmentInfo;
 		ximage = XShmCreateImage(display,visual,depth,ZPixmap,0,shm_info,sx,sy);
-                if (!ximage) {gfpost("shm got disabled, retrying..."); transfer=0;}
+                if (!ximage) {post("shm got disabled, retrying..."); transfer=0;}
 		XSync(display,0);
 		if (transfer==0) return alloc_image(sx,sy);
 		int size = ximage->bytes_per_line*ximage->height;
@@ -303,8 +303,8 @@ bool FormatX11::alloc_image (int sx, int sy) {
 /*	unsigned int encn;
 	XvEncodingInfo *enc;
 	XvQueryEncodings(display,xv_port,&encn,&enc);
-	for (i=0; i<encn; i++) gfpost("XvEncodingInfo: name='%s' encoding_id=0x%08x",enc[i].name,enc[i].encoding_id);*/
-	gfpost("pdp_xvideo: grabbed port %d on adaptor %d",xv_port,i);
+	for (i=0; i<encn; i++) post("XvEncodingInfo: name='%s' encoding_id=0x%08x",enc[i].name,enc[i].encoding_id);*/
+	post("pdp_xvideo: grabbed port %d on adaptor %d",xv_port,i);
 	size_t size = sx*sy*4;
 	data = new uint8[size];
 	for (i=0; i<size; i++) data[i]=0;
@@ -316,10 +316,10 @@ bool FormatX11::alloc_image (int sx, int sy) {
 	default: RAISE("transfer mode '%s' not available", xfers[transfer]);
 	}
 	int status = XInitImage(ximage);
-	if (status!=1) gfpost("XInitImage returned: %d", status);
+	if (status!=1) post("XInitImage returned: %d", status);
 	return true;
 retry:
-	gfpost("shm got disabled, retrying...");
+	post("shm got disabled, retrying...");
 	return alloc_image(sx,sy);
 }
 
@@ -571,7 +571,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 		if (argc<2) RAISE("open x11 display: not enough args");
 		strcpy(host,rb_sym_name(argv[1]));
 		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
-		gfpost("mode `display', DISPLAY=`%s'",host);
+		post("mode `display', DISPLAY=`%s'",host);
 		open_display(host);
 		i=2;
 	} else {

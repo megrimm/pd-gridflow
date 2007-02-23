@@ -81,7 +81,7 @@ struct FormatMPEG3 : Format {
 	{
 		int err;
 		mpeg = mpeg3_open(rb_str_ptr(filename),&err);
-		gfpost("mpeg error code = %d",err);
+		post("mpeg error code = %d",err);
 	}
 #else
 	mpeg = mpeg3_open(rb_str_ptr(filename));

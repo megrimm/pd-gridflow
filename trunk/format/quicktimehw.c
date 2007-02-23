@@ -63,7 +63,7 @@ struct FormatQuickTimeHW : Format {
 	int nframe = quicktime_video_position(anim,track);
 //	int length2 = quicktime_video_length(anim,track);
 	if (nframe >= length) {
-//		gfpost("nframe=%d length=%d length2=%d",nframe,length,length2);
+//		post("nframe=%d length=%d length2=%d",nframe,length,length2);
 		return Qfalse;
 	}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
@@ -77,7 +77,7 @@ struct FormatQuickTimeHW : Format {
 	switch (sz) {
 	case 24: colorspace=BC_RGB888; break;
 	case 32: colorspace=BC_RGBA8888; break;
-	default: gfpost("strange quicktime. ask matju."); break;
+	default: post("strange quicktime. ask matju."); break;
 	}
 	if (force) {
 		sy = force->get(0);
@@ -182,7 +182,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		length = quicktime_video_length(anim,track);
-		gfpost("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
+		post("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),
 			quicktime_video_height(anim,track),
 			quicktime_video_width(anim,track),

@@ -70,13 +70,13 @@ static void *Pointer_get (Ruby rself) {
 #define CHECK_ALIGN(d) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {_L_;post("%s(%s): Alignment Warning: %p is not %d-aligned: %d", \
 		INFO(parent), __PRETTY_FUNCTION__, (void*)d,bytes,align);}}
 
 #define CHECK_ALIGN2(d,nt) \
 	{int bytes = number_type_table[nt].size/8; \
 	int align = ((long)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("Alignment Warning: %p is not %d-aligned: %d", \
+	if (align) {_L_;post("Alignment Warning: %p is not %d-aligned: %d", \
 		(void*)d,bytes,align);}}
 
 // **************** Grid ******************************************
@@ -221,7 +221,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	case 4:{
 		int d = dex + bufi;
 		if (d+n > dim->prod()) {
-			gfpost("grid input overflow: %d of %d from [%s] to [%s]",
+			post("grid input overflow: %d of %d from [%s] to [%s]",
 				d+n, dim->prod(), INFO(sender), 0);
 			n = dim->prod() - d;
 			if (n<=0) return;
@@ -278,7 +278,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 void GridInlet::finish() {TRACE;
 	if (!dim) RAISE("%s: inlet not busy",INFO(parent));
 	if (dim->prod() != dex) {
-		gfpost("incomplete grid: %d of %d from [%s] to [%s]",
+		post("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
 #define FOO(T) gh->flow(this,-2,(T *)0);
