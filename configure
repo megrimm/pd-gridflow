@@ -605,8 +605,8 @@ Feature.add {
 		#include#
 		int main () { struct video_window foo; return 0; }"
 	}
-	#uses_o ["format/videodev.o"]
-	uses_o ["format/videodev-old.o"]
+	uses_o ["format/videodev.o"]
+	#uses_o ["format/videodev-old.o"]
 }
 Feature.add {
 	tag :mpeg3
