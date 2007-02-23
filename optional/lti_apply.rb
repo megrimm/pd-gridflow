@@ -411,7 +411,7 @@ begin
 FastLineExtraction.forms = [
 [In[Rblti::Channel8]],
 [In[Rblti::Channel]],
-[In[Rblti::Channel8], Out[Rblti::SegmEntry_vector]],
+[In[Rblti::Channel8], Out[Rblti::Vector_segmEntry]],
 ]; rescue Exception=>e; GridFlow.post "form error: %s", e.inspect end
 
 begin

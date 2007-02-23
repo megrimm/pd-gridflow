@@ -117,7 +117,7 @@ def adapt_type2 type
   when "std::vector<polygonPoints >"  ; Vector_polygonPoints
   when "std::vector<borderPoints >"   ; Vector_borderPoints
   when "std::vector<areaPoints >"   ; Vector_areaPoints
-  when "std::vector<fastLineExtraction_segmEntry >" ; SegmEntry_vector
+  when "std::vector<fastLineExtraction_segmEntry >" ; Vector_segmEntry
   when "std::vector<blobEM_gaussEllipse >" ; Vector_gaussEllipse
   else Rblti.const_get(type)
   end
