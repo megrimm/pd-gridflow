@@ -37,8 +37,7 @@ tries to call a Ruby method of the proper name.
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #undef T_DATA
-#undef EXTERN
-#include <m_pd.h>
+//#undef EXTERN
 #include <ctype.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -51,7 +50,9 @@ extern "C" {
 EXTERN t_canvasenvironment *canvas_getenv(t_canvas *x);
 };
 #else
+extern "C" {
 #include "g_canvas.h"
+};
 #endif
 
 #define CObject_free CObject_freeee
