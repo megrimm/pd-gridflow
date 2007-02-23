@@ -3,10 +3,6 @@
 //  $Id$
 //******************************************************************************
 
-//%include utils.i
-
-
-
 HANDLE_FUNCTOR_WITH_PARAMETERS(linearAlgebraFunctor,    "ltiLinearAlgebraFunctor.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(matrixInversion,     "ltiMatrixInversion.h")
 HANDLE_FUNCTOR_TEMPLATE_WITH_PARAMETERS(choleskyDecomposition,"ltiCholeskyDecomposition.h")
