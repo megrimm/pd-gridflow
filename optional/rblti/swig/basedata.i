@@ -217,26 +217,22 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
 //%template(tpointList_int) lti::tpointList<int>;
 //    %swig_list_methods(lti::tpointList<T>);       // --> TODO: in die Klasse aufnehmen...
-    %extend lti::tpointList {
+  %extend lti::tpointList {
     // TODO: add a better (pythonic) support for iterators
-    void * createIterator()
-    {
+    void * createIterator() {
         lti::tpointList<T>::iterator * pIter = new lti::tpointList<T>::iterator;
         (*pIter) = self->begin();
         return (void *) (pIter);
     }
-    void deleteIterator(void *p) 
-    {
+    void deleteIterator(void *p) {
         lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
         delete pIter;
     }
-    bool isEnd(void *p) 
-    {
+    bool isEnd(void *p) {
         lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
         return *pIter == self->end();
     }
-    lti::tpoint<T> nextElement(void * p) 
-    {
+    lti::tpoint<T> nextElement(void * p) {
         lti::tpointList<T>::iterator * pIter = (lti::tpointList<T>::iterator *)p;
         lti::tpoint<T> aPointOut = *(*pIter);
         ++(*pIter);
@@ -248,9 +244,8 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
         if (((result.size()).y != self->size()) || (2 != (result.size()).x))
            result.resize(self->size(),2);
 
-        std::list<lti::tpoint<int> >::const_iterator iter = self->begin() ;
-        for(int j=0; iter != self->end(); iter++, j++)
-        {
+        std::list<lti::tpoint<int> >::const_iterator iter = self->begin();
+        for(int j=0; iter != self->end(); iter++, j++) {
            result.at(j,0)=(*iter).y;
            result.at(j,1)=(*iter).x;
         }
@@ -261,8 +256,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
         if (0 != self->size())
            self->erase(self->begin(), self->end());
         int sz = (source.size()).x;
-        if (2 != sz)
-        {
+        if (2 != sz) {
            printf("Pointlist: expected 2 columns in matrix but got %d\n", sz);
            exit (1);
         }
@@ -277,55 +271,39 @@ HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
         if (pos >= sz) {
            iter = self->end();
            iter--;
+        } else {
+           for(int j=0; (j<pos) && (iter != self->end()); j++) iter++;
         }
-        else {
-           for(int j=0; (j<pos) && (iter != self->end()); j++)
-              iter++;
-        }
-        return (*iter);
+        return *iter;
     }
-    
-    bool contains(const lti::tpoint<int>& cmp)
-    {
+
+    bool contains(const lti::tpoint<int>& cmp) {
         lti::tpointList<int>::iterator it;
-        for (it = self->begin(); it != self->end(); it++)
-            {
-            if ((*it) == cmp)
-                return true;
-            }
-        //not found, return false 
+        for (it = self->begin(); it != self->end(); it++) {
+            if ((*it) == cmp) return true;
+        }
+        //not found, return false
         return false;
     }
 
-    tpoint<int> cog()
-    {
-    lti::tpoint<int> acc(0,0);
-    lti::tpointList<int>::iterator it;
-        for (it = self->begin(); it != self->end(); it++)
-            {
+    tpoint<int> cog() {
+        lti::tpoint<int> acc(0,0);
+        lti::tpointList<int>::iterator it;
+        for (it = self->begin(); it != self->end(); it++) {
             acc.x += (*it).x;
             acc.y += (*it).y;
-            }
-
+        }
         //compute the cog
-        if (self->size() != 0)
-            {
+        if (self->size() != 0) {
             acc.x /= self->size();
             acc.y /= self->size();
-            }
+        }
         return acc;
     }
-    }
-    
-    namespace lti {
-        %template(pointList) lti::tpointList<int>;
-    }
-/*
-%wrapper %{
-}  // closing namespace using
-%}
-*/
-//#endif
+  }
+  namespace lti {
+    %template(pointList) lti::tpointList<int>;
+  }
 
 HANDLE_SIMPLE_HEADER_FILE("ltiLocation.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiPolygonPoints.h")
@@ -334,15 +312,15 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGeometry.h")
     //TODO:    %template(iintersection) intersection<ipoint>;
     }
 namespace lti {
-%ignore genericVector<int>::castFrom(const genericVector<rgbPixel> &);
-%ignore genericVector<float>::castFrom(const genericVector<rgbPixel> &);
-%ignore genericVector<double>::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<int>     ::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<float>   ::castFrom(const genericVector<rgbPixel> &);
+%ignore genericVector<double>  ::castFrom(const genericVector<rgbPixel> &);
 %ignore genericVector<rgbPixel>::castFrom(const genericVector<float> &);
 %ignore genericVector<rgbPixel>::castFrom(const genericVector<double> &);
 
-%ignore genericMatrix<int>::castFrom(const genericMatrix<rgbPixel> &);
-%ignore genericMatrix<float>::castFrom(const genericMatrix<rgbPixel> &);
-%ignore genericMatrix<double>::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<int>     ::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<float>   ::castFrom(const genericMatrix<rgbPixel> &);
+%ignore genericMatrix<double>  ::castFrom(const genericMatrix<rgbPixel> &);
 %ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<float> &);
 %ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<double> &);
 }
@@ -380,55 +358,28 @@ namespace lti{
 HANDLE_SIMPLE_HEADER_FILE("ltiImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiContour.h")
 
-
 %template(list_ioPoints) std::list<lti::ioPoints>;
 %template(list_borderPoints) std::list<lti::borderPoints>;
 %template(list_areaPoints) std::list<lti::areaPoints>;
-
-%extend std::list<lti::ioPoints>{
-unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::ioPoints>& convertFromPtr(unsigned long p){
-std::list<lti::ioPoints>* temp;
-temp = (std::list<lti::ioPoints>*) (p<<2);
-return *temp;}
-//return *(std::list<lti::ioPoints>* (p<<2));}
-}
 
 %define PATATE(A,B)
 %extend A<lti::B> { \
   unsigned long getPtr(){return (((unsigned long)self)>>2);} \
   static A<lti::B>& convertFromPtr(unsigned long p) { \
-    return *((A<lti::B>*) (p<<2));}}
+    return *(A<lti::B>*)(p<<2);}}
 %enddef
 
-namespace std{
+namespace std {
 %template(vector_polygonPoints) vector<lti::polygonPoints>;
 %template(vector_borderPoints)  vector<lti::borderPoints>;
-%template(vector_areaPoints)  vector<lti::areaPoints>;
+%template(vector_areaPoints)    vector<lti::areaPoints>;
 }
 
+PATATE(std::list,ioPoints)
 PATATE(std::list,borderPoints)
 PATATE(std::list,areaPoints)
 PATATE(std::vector,polygonPoints)
 PATATE(std::vector,borderPoints)
-
-/*namespace lti{
-
-std::list<lti::ioPoints> convertPtrToListIoPoints(unsigned long p)
-{
-return (std::list<lti::ioPoints>) *(p<<2);
-}
-
-std::list<lti::listPoints> convertPtrToListBorderPoints(unsigned long p)
-{
-return (std::list<lti::borderPoints>) *(p<<2);
-}
-
-std::list<lti::areaPoints> convertPtrToListAreaPoints(unsigned long p)
-{
-return (std::list<lti::areaPoints>) *(p<<2);
-}
-}*/
 
 //#endif
     
@@ -481,26 +432,11 @@ namespace lti {
 }
 
 %{
-//template <typename T> typedef lti::tpointList<T> tpointList<T>;     // kommt erst noch in der zukunft !
+//template <typename T> typedef lti::tpointList<T> tpointList<T>; // kommt erst noch in der zukunft !
 //TODO Template ! typedef lti::tpointList tpointList;MeanshiftTracker
-template <class T>
-class tpointList : lti::tpointList<T>
-{
-};
-
-template <class T>
-class tpoint : lti::tpoint<T>
-{
-};
-
-template <class T>
-class trectangle : lti::trectangle<T>
-{
-};
-/*
-*/
-
-
+template <class T> class tpointList : lti::tpointList<T> {};
+template <class T> class tpoint     : lti::tpoint<T>     {};
+template <class T> class trectangle : lti::trectangle<T> {};
 typedef lti::pointList pointList;
 typedef lti::irectangle irectangle;
 typedef lti::rectangle rectangle;
@@ -508,89 +444,30 @@ typedef lti::rectangle rectangle;
 typedef lti::eBoundaryType eBoundaryType;
 typedef lti::location location;
 %}
-    
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++ now stats the wrapping of the ltilib functor header files +++
-/*
-%include base_functors.i
-%include io.i    
-%include statistics.i    
-%include filters.i
-%include math.i
-%include mask_op.i
-%include colors.i    
-%include segmentation.i    
-%include edge_detectors.i
-%include feat_extr.i    
-%include morph_op.i    
-%include transformations.i
-%include manipulation.i    
-%include classifiers.i
-%include colorspaces.i
-%include drawing.i
-*/
-
 
 // **************************************************************************
-
 HANDLE_SIMPLE_HEADER_FILE("../src/lti_manual.h")
 
-%extend lti::image {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::matrix<lti::int32> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::channel {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::channel8 {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::channel32 {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::matrix<double> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::matrix<float> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::matrix<lti::ubyte> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
-}
-
-%extend lti::vector<lti::rgbPixel> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
-}
-
-%extend lti::vector<float> {
-  long meat() {return ((unsigned long)(void *)&(self->at(0)  ))>>2;}
-}
-
+#define DEFMEAT long meat() {return ((unsigned long)(void *)&(self->at(0,0)))>>2;}
+%extend lti::image {              DEFMEAT}
+%extend lti::matrix<lti::int32> { DEFMEAT}
+%extend lti::channel {            DEFMEAT}
+%extend lti::channel8 {           DEFMEAT}
+%extend lti::channel32 {          DEFMEAT}
+%extend lti::matrix<double> {     DEFMEAT}
+%extend lti::matrix<float> {      DEFMEAT}
+%extend lti::matrix<lti::ubyte> { DEFMEAT}
+#define DEFMEAT2 long meat() {return ((unsigned long)(void *)&(self->at(0)))>>2;}
+%extend lti::vector<lti::rgbPixel> { DEFMEAT2}
+%extend lti::vector<float> {         DEFMEAT2}
 
 namespace lti {
-%extend image {
-  image castFromRgbPixelMatrix(matrix<rgbPixel> other)
-  {
-  lti::rgbPixel pixel(0,0,0);
-  self->resize(other.rows(),other.columns(),pixel,false,false);
-  int y;
-  for (y=0;y<self->rows();y++) {
-      (self->getRow(y)).castFrom(other.getRow(y));
-      }
-  
-  return (*self);
+  %extend image {
+    image castFromRgbPixelMatrix(matrix<rgbPixel> other) {
+      lti::rgbPixel pixel(0,0,0);
+      self->resize(other.rows(),other.columns(),pixel,false,false);
+      for (int y=0; y<self->rows(); y++) self->getRow(y).castFrom(other.getRow(y));
+      return *self;
+    }
   }
 }
-}
-
-
-
