@@ -1,35 +1,51 @@
-#N canvas 0 0 529 475 10;
-#X msg 144 38 load babbage.jpg;
-#X obj 144 59 #in;
-#X msg 10 283 help;
-#X obj 40 40 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
-#X obj 65 81 lti.SplitImageToRGB 2;
-#X obj 65 358 #greyscale_to_rgb;
-#X obj 77 124 #out window \, title Original;
-#X obj 77 103 #greyscale_to_rgb;
-#X obj 65 60 #camera;
-#X obj 77 167 hsl 128 15 0 1 0 1 empty empty Threshold -2 -6 0 8 -262144
+#N canvas 141 0 600 566 10;
+#X msg 144 82 load babbage.jpg;
+#X obj 144 103 #in;
+#X msg 10 338 help;
+#X obj 40 84 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 65 125 lti.SplitImageToRGB 2;
+#X obj 65 413 #greyscale_to_rgb;
+#X obj 77 168 #out window \, title Original;
+#X obj 77 147 #greyscale_to_rgb;
+#X obj 65 104 #camera;
+#X obj 77 211 hsl 128 15 0 1 0 1 empty empty Threshold -2 -6 0 8 -262144
 -1 -1 4800 1;
-#X obj 65 403 fps detailed;
-#X obj 66 425 display;
-#X obj 65 39 metro 10;
-#X obj 65 223 lti.Thresholding 1;
-#X msg 10 303 get;
-#X msg 74 189 lowThreshold \$1;
-#X msg 211 190 keepInRegion \$1;
-#X obj 211 167 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+#X obj 65 458 fps detailed;
+#X obj 66 480 display;
+#X obj 65 83 metro 10;
+#X obj 65 267 lti.Thresholding 1;
+#X msg 10 358 get;
+#X msg 74 233 lowThreshold \$1;
+#X msg 211 234 keepInRegion \$1;
+#X obj 211 211 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
-#X text 232 166 <--- Gives binary image when not selected;
-#X obj 65 334 lti.ObjectsFromMask 10;
-#X floatatom 214 313 5 0 0 0 - - -;
-#X obj 270 265 #greyscale_to_rgb;
-#X obj 270 286 #out window \, title Thresholded;
-#X obj 65 379 #out window \, title ObjectsFromMask;
-#X msg 105 311 sortObjects \$1;
-#X obj 105 293 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+#X text 232 210 <--- Gives binary image when not selected;
+#X obj 65 389 lti.ObjectsFromMask 10;
+#X floatatom 214 368 5 0 0 0 - - -;
+#X obj 162 290 #greyscale_to_rgb;
+#X obj 162 311 #out window \, title Thresholded;
+#X obj 65 434 #out window \, title ObjectsFromMask;
+#X msg 105 366 sortObjects \$1;
+#X obj 105 348 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
-#X msg 87 272 level \$1;
-#X floatatom 87 254 5 0 1 0 - - -;
+#X msg 87 327 level \$1;
+#X floatatom 87 309 5 0 1 0 - - -;
+#X obj 268 348 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
+-262144 -1 -1 199 256;
+#X msg 268 368 minSize \$1;
+#X obj 43 110 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
+-1;
+#X text 157 331 <-- 0 = will not look inside blobs for other blobs
+;
+#X obj -17 1 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -355
+0;
+#X obj -17 35 cnv 15 600 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text -3 5 GridFlow::Rblti;
+#X text -5 34 lti.ObjectsFromMask;
+#X obj -16 536 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text -9 542 GridFlow 0.9.0;
 #X connect 0 0 1 0;
 #X connect 1 0 4 0;
 #X connect 2 0 19 0;
@@ -56,3 +72,6 @@
 #X connect 25 0 24 0;
 #X connect 26 0 19 0;
 #X connect 27 0 26 0;
+#X connect 28 0 29 0;
+#X connect 29 0 19 0;
+#X connect 30 0 8 0;
