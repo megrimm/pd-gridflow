@@ -837,8 +837,10 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 //****************************************************************
 \class GridFinished < GridObject
 struct GridFinished : GridObject {
+	\decl void initialize ();
 	\grin 0
 };
+\def void initialize () {}
 GRID_INLET(GridFinished,0) {
 	in->set_mode(0);
 } GRID_FINISH {
@@ -850,8 +852,10 @@ GRID_INLET(GridFinished,0) {
 
 \class GridDim < GridObject
 struct GridDim : GridObject {
+	\decl void initialize ();
 	\grin 0
 };
+\def void initialize () {}
 GRID_INLET(GridDim,0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
 	out.send(in->dim->n,in->dim->v);
@@ -862,8 +866,10 @@ GRID_INLET(GridDim,0) {
 
 \class GridType < GridObject
 struct GridType : GridObject {
+	\decl void initialize ();
 	\grin 0
 };
+\def void initialize () {}
 static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
 GRID_INLET(GridType,0) {
 	Ruby a[] = { INT2NUM(0), SYM(symbol), rb_gensym(number_type_table[in->nt].name) };
