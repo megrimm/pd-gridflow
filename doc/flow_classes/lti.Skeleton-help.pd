@@ -1,49 +1,57 @@
-#N canvas 517 82 695 365 10;
-#X msg 45 12 load babbage.jpg;
-#X obj 132 34 #in;
-#X msg 113 190 help;
-#X obj 178 13 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
+#N canvas 336 121 623 487 10;
+#X msg 10 34 load babbage.jpg;
+#X obj 97 56 #in;
+#X msg 78 212 help;
+#X obj 143 35 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
 ;
-#X obj 198 33 #camera;
-#X obj 198 281 fps detailed;
-#X obj 199 303 display;
-#X obj 198 12 metro 10;
-#X msg 113 210 get;
-#X obj 198 209 lti.Skeleton 3;
-#X obj 198 86 #inner (3 1 # 0 1 0);
-#X obj 198 234 #greyscale_to_rgb;
-#X obj 339 234 #out window \, title Original;
-#X obj 339 210 #greyscale_to_rgb;
-#X obj 198 258 #out window \, title Skeleton;
-#X obj 198 176 lti.Thresholding 1;
-#X msg 113 143 help;
-#X msg 113 163 get;
-#X msg 210 138 lowThreshold \$1;
-#X obj 213 119 hsl 128 15 0 1 0 1 empty empty lowThreshold -2 -6 0
-8 -262144 -1 -1 4800 1;
-#X msg 356 139 keepInRegion \$1;
-#X obj 356 120 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+#X obj 163 55 #camera;
+#X obj 163 303 fps detailed;
+#X obj 164 325 display;
+#X obj 163 34 metro 10;
+#X msg 78 232 get;
+#X obj 163 108 #inner (3 1 # 0 1 0);
+#X obj 163 256 #greyscale_to_rgb;
+#X obj 304 256 #out window \, title Original;
+#X obj 304 232 #greyscale_to_rgb;
+#X obj 163 280 #out window \, title Skeleton;
+#X obj 163 198 lti.Thresholding 1;
+#X msg 78 165 help;
+#X msg 78 185 get;
+#X msg 175 160 lowThreshold \$1;
+#X obj 178 141 hsl 128 15 0 1 0 1 empty empty lowThreshold -2 -6 0
+8 -262144 -1 -1 4200 1;
+#X msg 321 161 keepInRegion \$1;
+#X obj 321 142 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 1
 1;
-#X obj 198 61 #downscale_by 2 smoothly;
+#X obj 163 83 #downscale_by 2 smoothly;
+#X obj -1 409 cnv 15 620 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj -1 -55 cnv 15 620 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 10 -54 lti.Skeleton;
+#X text 6 411 Help Files GridFlow 0.8.5;
+#X obj 163 231 lti.Skeleton 3;
+#X text 10 -25 Skeleton takes the maximum of the distance transform
+;
 #X connect 0 0 1 0;
-#X connect 1 0 22 0;
-#X connect 2 0 9 0;
+#X connect 1 0 21 0;
+#X connect 2 0 26 0;
 #X connect 3 0 7 0;
-#X connect 4 0 22 0;
+#X connect 4 0 21 0;
 #X connect 5 0 6 0;
 #X connect 7 0 4 0;
-#X connect 8 0 9 0;
-#X connect 9 0 11 0;
-#X connect 10 0 15 0;
-#X connect 11 0 14 0;
-#X connect 13 0 12 0;
-#X connect 14 0 5 0;
-#X connect 15 0 9 0;
-#X connect 15 0 13 0;
-#X connect 16 0 15 0;
-#X connect 17 0 15 0;
-#X connect 18 0 15 0;
-#X connect 19 0 18 0;
-#X connect 20 0 15 0;
-#X connect 21 0 20 0;
-#X connect 22 0 10 0;
+#X connect 8 0 26 0;
+#X connect 9 0 14 0;
+#X connect 10 0 13 0;
+#X connect 12 0 11 0;
+#X connect 13 0 5 0;
+#X connect 14 0 12 0;
+#X connect 14 0 26 0;
+#X connect 15 0 14 0;
+#X connect 16 0 14 0;
+#X connect 17 0 14 0;
+#X connect 18 0 17 0;
+#X connect 19 0 14 0;
+#X connect 20 0 19 0;
+#X connect 21 0 9 0;
+#X connect 26 0 10 0;
