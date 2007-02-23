@@ -339,6 +339,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
 	uint8 b2[bs];
+	//gfpost("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
 		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
@@ -381,11 +382,13 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		}
-	} else if (vp.palette==VIDEO_PALETTE_RGB24) {
+	} else if (vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
 		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+		uint8 rgb[sx*3];
+		uint8 b2[sx*3];
 		if (colorspace==SYM(y)) {
 			for(int y=0; y<sy; y++) {
-				uint8 *rgb = buf+sx*y*3;
+			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					b2[x+0] = (76*rgb[xx+0]+150*rgb[xx+1]+29*rgb[xx+2])>>8;
 					b2[x+1] = (76*rgb[xx+3]+150*rgb[xx+4]+29*rgb[xx+5])>>8;
@@ -393,20 +396,23 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		} else if (colorspace==SYM(rgb)) {
-			uint8 b2[bs];
-//			uint64 t = gf_timeofday();
 			for(int y=0; y<sy; y++) {
-				uint8 *buf2 = buf+bit_packing->bytes*sx*y;
-				bit_packing->unpack(sx,buf2,b2);
+			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
+				out.send(bs,rgb);
+			}
+		} else if (colorspace==SYM(yuv)) {
+			for(int y=0; y<sy; y++) {
+				bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
+				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
+					b2[xx+0] = clip(    ((  76*rgb[xx+0] + 150*rgb[xx+1] +  29*rgb[xx+2])>>8));
+					b2[xx+1] = clip(128+((- 44*rgb[xx+0] -  85*rgb[xx+1] + 108*rgb[xx+2])>>8));
+					b2[xx+2] = clip(128+(( 128*rgb[xx+0] - 108*rgb[xx+1] -  21*rgb[xx+2])>>8));
+					b2[xx+3] = clip(    ((  76*rgb[xx+3] + 150*rgb[xx+4] +  29*rgb[xx+5])>>8));
+					b2[xx+4] = clip(128+((- 44*rgb[xx+3] -  85*rgb[xx+4] + 108*rgb[xx+5])>>8));
+					b2[xx+5] = clip(128+(( 128*rgb[xx+3] - 108*rgb[xx+4] -  21*rgb[xx+5])>>8));
+				}
 				out.send(bs,b2);
 			}
-//			t=gf_timeofday()-t;
-//			fprintf(stderr,"decoding frame took %lld us\n",t);
-		} else if (colorspace==SYM(yuv)) {
-			/* unimplemented??? */
-			// Y =   76*R + 150*G +  29*B
-			// U = - 44*R -  85*G + 108*B
-			// V =  128*R - 108*G -  21*B
 		}
 	} else {
 		RAISE("unsupported palette %d",vp.palette);
@@ -553,7 +559,9 @@ GRID_INLET(FormatVideoDev,0) {
 	else if (c==SYM(rgb)) {}
 	else RAISE("supported: y yuv rgb");
 	WIOCTL(fd, VIDIOCGPICT, &vp);
-	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 : VIDEO_PALETTE_YUV420P;
+	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 :
+	              (palettes&(1<<VIDEO_PALETTE_RGB565)) ? VIDEO_PALETTE_RGB565 :
+                      VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
@@ -561,12 +569,14 @@ GRID_INLET(FormatVideoDev,0) {
 		gfpost("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
-	if (c==SYM(yuv) && palette==VIDEO_PALETTE_RGB24) {
-		gfpost("sorry, this conversion is currently unsupported");
-		return;
+        if (palette == VIDEO_PALETTE_RGB565) {
+            //uint32 masks[3] = { 0x00fc00,0x003e00,0x00001f };
+            uint32 masks[3] = { 0x00f800,0x007e0,0x00001f };
+	    bit_packing = new BitPacking(is_le(),2,3,masks);
+	} else {
+            uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+	    bit_packing = new BitPacking(is_le(),3,3,masks);
 	}
-	uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff }; /* for use by RGB mode */
-	bit_packing = new BitPacking(is_le(),3,3,masks);
 	colorspace=c;
 	dim = new Dim(dim->v[0],dim->v[1],c==SYM(y)?1:3);
 }
