@@ -11,3 +11,6 @@ List of undocumented methods in rblti. This includes methods added with %extende
           minimumsize: objects smaller than this size are discarded from the output.
           outputchannel: binary image with only the largest blobs kept.
 
+- FastLineExtraction: an extra apply method with the following prototype has been added:
+	void apply(const lti::channel8& chan, std::vector<segmEntry>& list)
+        list is a vector whose elements are the segments extracted from the image.
