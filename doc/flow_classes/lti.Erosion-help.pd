@@ -1,42 +1,51 @@
-#N canvas 328 0 613 478 10;
-#X msg 144 38 load babbage.jpg;
-#X obj 144 59 #in;
-#X msg 11 164 help;
-#X obj 40 40 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
-#X obj 65 81 lti.SplitImageToRGB 2;
-#X obj 65 259 #greyscale_to_rgb;
-#X obj 77 124 #out window \, title Original;
-#X obj 77 103 #greyscale_to_rgb;
-#X obj 65 60 #camera;
-#X obj 77 156 hsl 128 15 0 1 0 1 empty empty Threshold -2 -6 0 8 -262144
--1 -1 2500 1;
-#X obj 65 304 fps detailed;
-#X obj 66 326 display;
-#X obj 65 39 metro 10;
-#X obj 65 203 lti.Thresholding 1;
-#X msg 11 184 get;
-#X msg 74 178 lowThreshold \$1;
-#X msg 211 179 keepInRegion \$1;
-#X obj 211 156 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+#N canvas 281 112 604 519 10;
+#X msg 144 -16 load babbage.jpg;
+#X obj 144 5 #in;
+#X msg 11 110 help;
+#X obj 40 -14 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
+;
+#X obj 65 27 lti.SplitImageToRGB 2;
+#X obj 65 205 #greyscale_to_rgb;
+#X obj 77 70 #out window \, title Original;
+#X obj 77 49 #greyscale_to_rgb;
+#X obj 65 6 #camera;
+#X obj 77 102 hsl 128 15 0 1 0 1 empty empty Threshold -2 -6 0 8 -262144
+-1 -1 3800 1;
+#X obj 65 250 fps detailed;
+#X obj 66 272 display;
+#X obj 65 -15 metro 10;
+#X obj 65 149 lti.Thresholding 1;
+#X msg 11 130 get;
+#X msg 74 124 lowThreshold \$1;
+#X msg 211 125 keepInRegion \$1;
+#X obj 211 102 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 0
 1;
-#X text 232 155 <--- Gives binary image when not selected;
-#X msg 10 207 help;
-#X msg 10 227 get;
-#X obj 65 236 lti.Erosion 5;
-#X obj 65 280 #out window \, title Eroded;
-#X obj 284 257 #out window \, title Thresholded;
-#X obj 284 237 #greyscale_to_rgb;
-#X obj 10 61 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
--1;
-#X obj 67 390 #convolve (3 3 # 0 1 0 1 1 1);
-#X obj 67 410 # > 1024;
-#X obj 350 392 #convolve (3 3 # 0 1 0 1 1 1);
-#X obj 350 411 # - 1024;
-#X obj 350 431 #clip;
-#X obj 67 431 # * 255;
-#X msg 283 216 kernelSize \$1;
-#X obj 283 200 nbx 5 14 1 100 0 1 empty empty empty 0 -6 0 10 -262144
--1 -1 3 256;
+#X text 232 101 <--- Gives binary image when not selected;
+#X msg 10 153 help;
+#X msg 10 173 get;
+#X obj 65 182 lti.Erosion 5;
+#X obj 65 226 #out window \, title Eroded;
+#X obj 284 203 #out window \, title Thresholded;
+#X obj 284 183 #greyscale_to_rgb;
+#X obj 10 7 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1 -1
+;
+#X obj 67 350 #convolve (3 3 # 0 1 0 1 1 1);
+#X obj 67 370 # > 1024;
+#X obj 350 352 #convolve (3 3 # 0 1 0 1 1 1);
+#X obj 350 371 # - 1024;
+#X obj 350 391 #clip;
+#X obj 67 391 # * 255;
+#X msg 228 161 kernelSize \$1;
+#X obj 228 145 nbx 5 14 1 100 0 1 empty empty empty 0 -6 0 10 -262144
+-1 -1 10 256;
+#X obj 0 -54 cnv 15 600 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 11 -53 lti.Erosion 5;
+#X text 64 312 You can achieve an erosion this these other gridflow
+objects \, this example takes greyscale images;
+#X obj 1 438 cnv 15 600 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 409 440 Help Files GridFlow 0.8.5;
 #X connect 0 0 1 0;
 #X connect 1 0 4 0;
 #X connect 2 0 13 0;
