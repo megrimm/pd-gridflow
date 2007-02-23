@@ -27,7 +27,7 @@ typedef unsigned long ulong;
 #define CHECK_ALIGN(d,nt) \
 	{int bytes = 16; \
 	int align = ((ulong)(void*)d)%bytes; \
-	if (align) {_L_;gfpost("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
+	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
 		INFO(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
 \class GridFFT < GridObject
@@ -80,7 +80,7 @@ GRID_INLET(GridFFT,0) {
 		fftwf_execute_dft(plan,ip,op);
 	}
 	if (skip==1) {
-		//gfpost("skip=%ld chans=%ld",skip,chans);
+		//post("skip=%ld chans=%ld",skip,chans);
 		if (!plan) plan=fftwf_plan_many_dft(1,&v[1],chans,ip,0,chans,1,op,0,chans,1,sign,0);
 		//plan = fftwf_plan_many_dft(1,&v[1],v[0],ip,0,1,v[1],op,0,1,v[1],sign,0);
 		long incr = v[1]*chans;
