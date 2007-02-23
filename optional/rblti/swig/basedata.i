@@ -75,12 +75,12 @@ HANDLE_SIMPLE_HEADER_FILE("ltiTypes.h")                 // makes problems with b
 
 %{
 // anscheinend bug in ruby swig modul: int32 wird nicht lti::int32 wie in python modul
-typedef unsigned int MYUINT32;
-typedef int MYINT32;
-typedef unsigned short int MYUINT16;
-typedef short int MYINT16;
 typedef unsigned char MYUBYTE;
 typedef signed char MYBYTE;
+typedef unsigned short int MYUINT16;
+typedef short int MYINT16;
+typedef unsigned int MYUINT32;
+typedef int MYINT32;
 #define byte MYBYTE
 #define ubyte MYUBYTE
 #define uint32 MYUINT32
@@ -119,7 +119,6 @@ typedef signed int int32;
 %template(std_fvector)     std::vector<float>;
 %template(std_dvector)     std::vector<double>;
 
-
 HANDLE_SIMPLE_HEADER_FILE("ltiObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiIoHandler.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiBoundaryType.h")
@@ -129,11 +128,8 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMathObject.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiRGBPixel.h")
 
 namespace lti {
-%template(frgbPixel) trgbPixel<float>;
-
+  %template(frgbPixel) trgbPixel<float>;
 }
-
-
 
 HANDLE_SIMPLE_HEADER_FILE("ltiPoint.h")
 
@@ -147,9 +143,9 @@ namespace lti {
 }
 
 %extend lti::tpoint<int> {
-   lti::tpoint<int> castFrom2(tpoint<double> dpt){
-	return self->castFrom(dpt);
-}
+  lti::tpoint<int> castFrom2(tpoint<double> dpt) {
+    return self->castFrom(dpt);
+  }
 }
 
 HANDLE_SIMPLE_HEADER_FILE("ltiRectangle.h")
@@ -159,12 +155,6 @@ namespace lti {
   %template(drect) trectangle<double>;
 }
 
-
-/*
-%wrapper %{
-namespace { using namespace lti;    // opening namespace using
-%}
-*/
 /*****************************************************************************/
 /*                          MATRIX  starts                                   */
 /*****************************************************************************/
@@ -174,18 +164,9 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
     %extend lti::genericVector {
         //%swig_container_methods(lti::genericVector);      // maybe a better way...
         // add index support for python (Warning: this is Python-specific!) 
-    	const T & __getitem__( int index )
-    	{
-    		return self->at(index);
-    	}
-    	void __setitem__( int index, const T & value )
-    	{
-    		(*self)[index] = value;
-    	}
-        int __len__()
-        {
-            return self->size();
-        }
+    	const T & __getitem__( int index) {return self->at(index);}
+    	void __setitem__(int index, const T & value) { (*self)[index] = value; }
+        int __len__() { return self->size(); }
     }
     #endif
     namespace lti {
@@ -195,7 +176,7 @@ HANDLE_SIMPLE_HEADER_FILE("ltiGenericVector.h")
         %template(ugenericVector) genericVector<lti::ubyte>;
         %template(rgbgenericVector) genericVector<lti::rgbPixel>;
     }
-    
+
 HANDLE_SIMPLE_HEADER_FILE("ltiVector.h")
     namespace lti {
         %template(dvector) vector<double>;
@@ -204,7 +185,6 @@ HANDLE_SIMPLE_HEADER_FILE("ltiVector.h")
         %template(uvector) vector<lti::ubyte>;
         %template(palette) vector<rgbPixel>;
     }
-    
 HANDLE_SIMPLE_HEADER_FILE("ltiArray.h")
     namespace lti {
         %template(iarray) array<lti::int32>;
@@ -213,16 +193,13 @@ HANDLE_SIMPLE_HEADER_FILE("ltiArray.h")
         %template(uarray) array<lti::ubyte>;
     }
 HANDLE_SIMPLE_HEADER_FILE("ltiGenericMatrix.h")
-    
     namespace lti {
         %template(ugenericMatrix) genericMatrix<lti::ubyte>;
         %template(igenericMatrix) genericMatrix<lti::int32>;
         %template(fgenericMatrix) genericMatrix<float>;
         %template(dgenericMatrix) genericMatrix<double>;
         %template(rgbPixelgenericMatrix) genericMatrix<lti::rgbPixel>;
-	
     }
-    
 HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
     namespace lti {
         %template(imatrix) matrix<lti::int32>;
@@ -230,17 +207,11 @@ HANDLE_SIMPLE_HEADER_FILE("ltiMatrix.h")
         %template(dmatrix) matrix<double>;
         %template(umatrix) matrix<lti::ubyte>;
         %template(rgbPixelmatrix) matrix<lti::rgbPixel>;
-	
-	%rename(substract) genericMatrix<lti::ubyte>::subtract(const matrix<lti::ubyte> &, const matrix<lti::ubyte> &);
-	%rename(substract) genericMatrix<lti::ubyte>::subtract(const lti::ubyte);
-	%rename(substract) genericMatrix<lti::ubyte>::subtract(const matrix<lti::ubyte> &, const lti::ubyte);
-	
     }
 
 /*****************************************************************************/
 /*                          MATRIX  ends                                     */
 /*****************************************************************************/
-
 
 %template(list_ipoint) std::list<lti::ipoint>;
 HANDLE_SIMPLE_HEADER_FILE("ltiPointList.h")
@@ -376,28 +347,22 @@ namespace lti {
 %ignore genericMatrix<rgbPixel>::castFrom(const genericMatrix<double> &);
 }
 
-
-
 HANDLE_SIMPLE_HEADER_FILE("ltiHTypes.h")
-
 
     namespace lti {
     //    %template(fhPoint3D) hPoint3D<float>;
     //    %template(dhPoint3D) hPoint3D<double>;
     //    %template(fhPoint2D) hPoint2D<float>;
     //    %template(dhPoint2D) hPoint2D<double>;
-    
         %template(fhBaseMatrix3D) hMatrix< float,hPoint3D<float> >;
         %template(dhBaseMatrix3D) hMatrix< double,hPoint3D<double> >;
         %template(fhBaseMatrix2D) hMatrix< float,hPoint2D<float> >;
         %template(dhBaseMatrix2D) hMatrix< double,hPoint2D<double> >;
-    
         %template(fhMatrix3D) hMatrix3D<float>;
         %template(dhMatrix3D) hMatrix3D<double>;
         %template(fhMatrix2D) hMatrix2D<float>;
         %template(dhMatrix2D) hMatrix2D<double>;
     }
-
 
 %wrapper %{
 namespace { using namespace lti;    // opening namespace using
@@ -429,15 +394,12 @@ return *temp;}
 //return *(std::list<lti::ioPoints>* (p<<2));}
 }
 
-%extend std::list<lti::borderPoints>{
-unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::borderPoints>*) (p<<2));}
-}
-
-%extend std::list<lti::areaPoints>{
-unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::list<lti::areaPoints>& convertFromPtr(unsigned long p){return *((std::list<lti::areaPoints>*) (p<<2));}
-}
+%define PATATE(A,B)
+%extend A<lti::B> { \
+  unsigned long getPtr(){return (((unsigned long)self)>>2);} \
+  static A<lti::B>& convertFromPtr(unsigned long p) { \
+    return *((A<lti::B>*) (p<<2));}}
+%enddef
 
 namespace std{
 %template(vector_polygonPoints) vector<lti::polygonPoints>;
@@ -445,19 +407,10 @@ namespace std{
 %template(vector_areaPoints)  vector<lti::areaPoints>;
 }
 
-
-%extend std::vector<lti::polygonPoints>{
-unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::vector<lti::polygonPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::polygonPoints>*) (p<<2));}
-}
-
-%extend std::vector<lti::borderPoints>{
-unsigned long getPtr(){return (((unsigned long)self)>>2);}
-static std::vector<lti::borderPoints>& convertFromPtr(unsigned long p){return *((std::vector<lti::borderPoints>*) (p<<2));}
-}
-
-
-
+PATATE(std::list,borderPoints)
+PATATE(std::list,areaPoints)
+PATATE(std::vector,polygonPoints)
+PATATE(std::vector,borderPoints)
 
 /*namespace lti{
 
@@ -476,8 +429,6 @@ std::list<lti::areaPoints> convertPtrToListAreaPoints(unsigned long p)
 return (std::list<lti::areaPoints>) *(p<<2);
 }
 }*/
-
-
 
 //#endif
     
@@ -528,7 +479,6 @@ namespace lti {
 %template (fcityBlockKernel) cityBlockKernel<float>;
 %template (dcityBlockKernel) cityBlockKernel<double>;
 }
-
 
 %{
 //template <typename T> typedef lti::tpointList<T> tpointList<T>;     // kommt erst noch in der zukunft !
