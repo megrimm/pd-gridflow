@@ -145,7 +145,7 @@ GRID_INLET(FormatAALib,0) {
 	rparams = aa_getrenderparams();
 	if (!context) RAISE("opening aalib didn't work");
 	int32 v[]={context->imgheight,context->imgwidth,1};
-	gfpost("aalib image size: %s",(new Dim(3,v))->to_s());
+	post("aalib image size: %s",(new Dim(3,v))->to_s());
 }
 
 \classinfo {

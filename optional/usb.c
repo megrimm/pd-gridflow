@@ -276,7 +276,7 @@ public:
 	TRAP(usb_bulk_write(h, ep, rb_str_ptr(s), rb_str_len(s), timeout));}
 \def int bulk_read (int ep, String s, int timeout) {
 	if (!h) RAISE("USB closed");
-	gfpost("%d, '%s', %d",ep,rb_str_ptr(s),timeout);
+	//post("%d, '%s', %d",ep,rb_str_ptr(s),timeout);
 	TRAP(usb_bulk_read(h, ep, rb_str_ptr(s), rb_str_len(s), timeout));}
 \def int claim_interface(int interface) {
 	TRAP(usb_claim_interface(h, interface));}

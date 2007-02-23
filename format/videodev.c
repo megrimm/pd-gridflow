@@ -36,7 +36,7 @@
 #include <sys/mman.h>
 #include "pwc-ioctl.h"
 
-#define error gfpost
+//#define error post
 
 /* **************************************************************** */
 
@@ -159,7 +159,7 @@ static void gfpost(VideoChannel *self) {
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
 	WH(norm,"%d");
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoTuner *self) {
@@ -171,7 +171,7 @@ static void gfpost(VideoTuner *self) {
 	WHFLAGS(flags,tuner_flags);
 	WHCHOICE(mode,video_mode_choice);
 	WH(signal,"%d");
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoCapability *self) {
@@ -182,7 +182,7 @@ static void gfpost(VideoCapability *self) {
 	WH(audios,"%d");
 	WHYX(maxsize,maxheight,maxwidth);
 	WHYX(minsize,minheight,minwidth);
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoWindow *self) {
@@ -192,7 +192,7 @@ static void gfpost(VideoWindow *self) {
 	WH(chromakey,"0x%08x");
 	WH(flags,"0x%08x");
 	WH(clipcount,"%d");
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoPicture *self) {
@@ -203,7 +203,7 @@ static void gfpost(VideoPicture *self) {
 	WH(whiteness,"%d");
 	WH(depth,"%d");
 	WHCHOICE(palette,video_palette_choice);
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoMbuf *self) {
@@ -211,7 +211,7 @@ static void gfpost(VideoMbuf *self) {
 	WH(size,"%d");
 	WH(frames,"%d");
 	for (int i=0; i<4; i++) WH(offsets[i],"%d");
-	gfpost("%s",buf);
+	post("%s",buf);
 }
 
 static void gfpost(VideoMmap *self) {
@@ -219,7 +219,7 @@ static void gfpost(VideoMmap *self) {
 	WH(frame,"%u");
 	WHYX(size,height,width);
 	WHCHOICE(format,video_palette_choice);
-	gfpost("%s",buf);
+	post("%s",buf);
 };
 
 /* **************************************************************** */
@@ -276,9 +276,9 @@ struct FormatVideoDev : Format {
 #define  IOCTL( F,NAME,ARG) \
   (DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",F,NAME,#NAME,_arg_), ioctl(F,NAME,ARG))
 #define WIOCTL( F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (gfpost("ioctl %s: %s",#NAME,strerror(errno)),1))
+  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
 #define WIOCTL2(F,NAME,ARG) \
-  (IOCTL(F,NAME,ARG)<0 && (gfpost("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
+  (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
@@ -474,7 +474,7 @@ GRID_INLET(FormatVideoDev,0) {
 	vtuner.tuner = current_tuner;
 	if (value<0 || value>3) RAISE("norm must be in range 0..3");
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) {
-		gfpost("no tuner #%d", value);
+		post("no tuner #%d", value);
 	} else {
 		vtuner.mode = value;
 		gfpost(&vtuner);
@@ -491,7 +491,7 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSTUNER, &vtuner);
 }
 
-#define warn(fmt,stuff...) gfpost("warning: " fmt,stuff)
+#define warn(fmt,stuff...) post("warning: " fmt,stuff)
 
 \def void _0_channel (int value) {
 	VideoChannel vchan;
@@ -507,14 +507,14 @@ GRID_INLET(FormatVideoDev,0) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
-		gfpost("transfer read");
+		post("transfer read");
 	} else if (sym == SYM(mmap)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = true;
 		rb_funcall(rself,SI(alloc_image),0);
 		queuemax=min(queuemax,vmbuf.frames);
-		gfpost("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)"
-			,queuemax,vmbuf.frames);
+		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)",
+			queuemax,vmbuf.frames);
 		this->queuemax=queuemax;
 	} else RAISE("don't know that transfer mode");
 }
@@ -566,7 +566,7 @@ GRID_INLET(FormatVideoDev,0) {
 	WIOCTL(fd, VIDIOCSPICT, &vp);
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	if (vp.palette != palette) {
-		gfpost("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
+		post("this driver is unsupported: it wants palette %d instead of %d",vp.palette,palette);
 		return;
 	}
         if (palette == VIDEO_PALETTE_RGB565) {
@@ -673,7 +673,7 @@ void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);
 		ioctl(fd, VIDIOCGPICT,&vp);
 		if (vp.palette == p) {
 			palettes |= 1<<p;
-			gfpost("palette %d supported",p);
+			post("palette %d supported",p);
 		}
 	}
 	_0_colorspace(0,0,SYM(rgb));
