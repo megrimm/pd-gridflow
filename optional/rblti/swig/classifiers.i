@@ -3,8 +3,6 @@
 //  $Id$
 //******************************************************************************
 
-//%include utils.i
-#ifndef OLD_COMPILE
 %module rblti
 %include utils.i
 %include dep.i
@@ -14,7 +12,6 @@
 using namespace lti;
 typedef std::ostream ostream;
 %}
-#endif
 
 // Classifiers
     
@@ -25,9 +22,9 @@ typedef std::ostream ostream;
 #define Rclassifier_outputTemplate outputTemplate
 #define Rclassifier_outputVector outputVector
 namespace lti {
-typedef lti::classifier::parameters classifier_parameters;
-typedef lti::classifier::outputTemplate classifier_outputTemplate;
-typedef lti::classifier::outputVector classifier_outputVector;
+  typedef lti::classifier::parameters classifier_parameters;
+  typedef lti::classifier::outputTemplate classifier_outputTemplate;
+  typedef lti::classifier::outputVector classifier_outputVector;
 }
 %}
 #define parameters classifier_parameters
@@ -45,7 +42,7 @@ typedef lti::classifier::outputVector classifier_outputVector;
 #define _supervisedInstanceClassifier supervisedInstanceClassifier
 #define _supervisedInstanceClassifier_parameters parameters
 namespace lti {
-typedef lti::supervisedInstanceClassifier::parameters supervisedInstanceClassifier_parameters;
+  typedef lti::supervisedInstanceClassifier::parameters supervisedInstanceClassifier_parameters;
 }
 %}
 #define parameters supervisedInstanceClassifier_parameters

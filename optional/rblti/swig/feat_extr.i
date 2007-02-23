@@ -3,25 +3,20 @@
 //  $Id$
 //******************************************************************************
 
-//%include utils.i
-#ifndef OLD_COMPILE
 %module rblti
 %include utils.i
 %include dep.i
 %import basedata.i
 %include base_functors_imported.i
 %{
-using namespace lti;
+  using namespace lti;
 %}
-
 
 IMPORT_FUNCTOR_WITH_PARAMETERS( fastRelabeling,          	"ltiFastRelabeling.h")
 IMPORT_FUNCTOR_TEMPLATE_WITH_PARAMETERS( maximumFilter, 	"ltiMaximumFilter.h")
-namespace lti{
-%template(MaximumFilter) maximumFilter<float>;
+namespace lti {
+  %template(MaximumFilter) maximumFilter<float>;
 }
-#endif
-
 
 // Feature Extraction    
 HANDLE_FUNCTOR_WITH_PARAMETERS( featureExtractor,               "ltiFeatureExtractor.h")
@@ -39,7 +34,7 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( multiGeometricFeaturesFromMask, "ltiMultiGeometr
 #define _localMaxima localMaxima<float>
 #define RlocalMaxima_parameters parameters
 namespace lti {
-typedef lti::localMaxima<float>::parameters localMaxima_parameters;
+  typedef lti::localMaxima<float>::parameters localMaxima_parameters;
 }
 %}
 #define parameters localMaxima_parameters
@@ -49,8 +44,8 @@ typedef lti::localMaxima<float>::parameters localMaxima_parameters;
 %include "ltiLocalMaxima.h"
 #undef parameters
 
-namespace lti{
-%template(LocalMaxima) localMaxima<float>;
+namespace lti {
+  %template(LocalMaxima) localMaxima<float>;
 }
 
 //HANDLE_FUNCTOR_WITH_PARAMETERS( fastLineExtraction, "ltiFastLineExtraction.h")
@@ -61,8 +56,8 @@ namespace lti{
 #define RfastLineExtraction_parameters parameters
 #define RfastLineExtraction_segmEntry segmEntry
 namespace lti {
-typedef lti::fastLineExtraction::parameters fastLineExtraction_parameters;
-typedef lti::fastLineExtraction::segmEntry fastLineExtraction_segmEntry;
+  typedef lti::fastLineExtraction::parameters fastLineExtraction_parameters;
+  typedef lti::fastLineExtraction::segmEntry fastLineExtraction_segmEntry;
 }
 %}
 
@@ -74,15 +69,13 @@ typedef lti::fastLineExtraction::segmEntry fastLineExtraction_segmEntry;
 #undef parameters
 //#undef segmEntry
 
-
 namespace lti {
-%template(vector_segmEntry) std::vector< fastLineExtraction_segmEntry >;
+  %template(vector_segmEntry) std::vector< fastLineExtraction_segmEntry >;
 }
-
 
 %extend lti::fastLineExtraction {
-void apply(const lti::channel8& chan, std::vector<segmEntry>& list){
-self->apply(chan);
-list = self->getLineList(0);
-}
+  void apply(const lti::channel8& chan, std::vector<segmEntry>& list) {
+    self->apply(chan);
+    list = self->getLineList(0);
+  }
 }

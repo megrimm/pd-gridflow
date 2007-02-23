@@ -4,13 +4,11 @@
 //******************************************************************************
 
 //%include utils.i
-#ifndef OLD_COMPILE
 %module rblti
 %include utils.i
 %include dep.i
 %import basedata.i
 %include base_functors_imported.i
-#endif
 
 // Points, Contours and Shape Manipulation    
 HANDLE_FUNCTOR_WITH_PARAMETERS( borderExtrema,           "ltiBorderExtrema.h")
@@ -32,13 +30,11 @@ std::vector<borderPoints> &, matrix<int> &) const;
 HANDLE_FUNCTOR_WITH_PARAMETERS( regionsPolygonizer,      "ltiRegionsPolygonizer.h")
 
 %extend lti::regionsPolygonizer{
-bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly)const {
-return self->apply(imat,imat.maximum(), poly);
+  bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly)const {
+    return self->apply(imat,imat.maximum(), poly);
+  }
+  bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly,
+  std::vector<borderPoints>& border, matrix<int>& neigh) const {
+    return self->apply(imat,imat.maximum(), poly, border, neigh);
+  }
 }
-
-bool apply(const matrix<int>& imat, std::vector<polygonPoints>& poly, std::vector<borderPoints>& border, 
-matrix<int>& neigh)const {       
-return self->apply(imat,imat.maximum(), poly, border, neigh);
-}
-} 
-

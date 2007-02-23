@@ -3,22 +3,17 @@
 //  $Id$
 //******************************************************************************
 
-//%include utils.i
-#ifndef OLD_COMPILE
 %module rblti
 %include utils.i
 %include dep.i
 %import basedata.i
 %include base_functors_imported.i
-#endif
-
-
 
 // Segmentation and Localization    
 HANDLE_FUNCTOR_WITH_PARAMETERS( segmentation,            "ltiSegmentation.h")
 #ifdef SWIGRUBY
 %{
-#undef connect
+  #undef connect
 %}
 #endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( meanShiftSegmentation,   "ltiMeanShiftSegmentation.h")
@@ -26,11 +21,9 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( meanShiftSegmentation,   "ltiMeanShiftSegmentati
 IMPORT_FUNCTOR_WITH_PARAMETERS( colorQuantization,       "ltiColorQuantization.h")
 IMPORT_FUNCTOR_WITH_PARAMETERS(kMColorQuantization,     "ltiKMColorQuantization.h")
 
-#ifndef OLD_COMPILE
 %{
-using namespace lti;
+  using namespace lti;
 %}
-#endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( kMeansSegmentation,      "ltiKMeansSegmentation.h")
     %{
     typedef lti::kMeansSegmentation::parameters lti_kMeansSegmentation_parameters;
@@ -54,66 +47,37 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( regionMerge,             "ltiRegionMerge.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( similarityMatrix,        "ltiSimilarityMatrix.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( fastRelabeling,          "ltiFastRelabeling.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( objectsFromMask,         "ltiObjectsFromMask.h")
-    %{
+%{
     #define RobjectsFromMask_objectStruct objectStruct
     namespace lti {
     typedef lti::objectsFromMask::objectStruct objectStruct;
     typedef lti::objectsFromMask::objectStruct objectsFromMask_objectStruct;
     }
-    %}
+%}
 
 %extend lti::objectsFromMask {
-
-void apply(const lti::channel8& in, const int& minsize, lti::channel8& out)
-{
-   std::list<lti::areaPoints> objlist;
-   out.resize((in.size()).y, (in.size()).x, 0, false, true);
-   self->apply(in, objlist);
-   std::list<lti::areaPoints>::iterator objiter = objlist.begin();
-   
-   lti::ipoint pt;
-   lti::areaPoints blob;
-   lti::areaPoints::iterator ptiter;
-
-   //iterate through each blob found in the channel
-   for(; objiter != objlist.end(); objiter++)
-   {
-   blob = *(objiter);
-   ptiter = blob.begin();
-      if (blob.size() >= minsize)
-      {
-	for(; ptiter != blob.end(); ptiter++)
-	{
-		out.at((*ptiter).y, (*ptiter).x) = 255;
-	}
-      }
-   }
+  void apply(const lti::channel8& in, const int& minsize, lti::channel8& out) {
+    std::list<lti::areaPoints> objlist;
+    out.resize((in.size()).y, (in.size()).x, 0, false, true);
+    self->apply(in, objlist);
+    std::list<lti::areaPoints>::iterator objiter = objlist.begin();
+    lti::ipoint pt;
+    lti::areaPoints blob;
+    lti::areaPoints::iterator ptiter;
+    //iterate through each blob found in the channel
+    for(; objiter != objlist.end(); objiter++) {
+    blob = *objiter;
+    ptiter = blob.begin();
+       if (blob.size() >= minsize) {
+	 for(; ptiter != blob.end(); ptiter++) {
+	    out.at(ptiter->y, ptiter->x) = 255;
+	 }
+       }
+    }
+  }
 }
-}
-/*namespace lti{
-%ignore objectsFromMask::apply(const channel8 &, std::list< ioPoints > &);
-%ignore objectsFromMask::apply(const matrix< int > &, std::list< ioPoints > &);
-%ignore objectsFromMask::apply(const channel8 &, std::list< borderPoints > &);
-%ignore objectsFromMask::apply(const imatrix &, std::list< borderPoints > &);
-%ignore objectsFromMask::apply(const channel8 &, std::list< areaPoints > &);
-%ignore objectsFromMask::apply(const matrix< int > &, std::list< areaPoints > &);
-%ignore objectsFromMask::apply(const channel8 &, std::list< areaPoints > &, matrix< int > &);
-%ignore objectsFromMask::apply(const matrix< int > &, std::list< areaPoints > &, matrix< int > &);
-}
-extend lti::objectsFromMask {
-bool 	apply (const channel8 &src8, std::list< ioPoints > &lstIOPointLists)
-bool 	apply (const matrix< int > &src, std::list< ioPoints > &lstIOPointLists)
-bool 	apply (const channel8 &src8, std::list< borderPoints > &lstBorderPointLists)
-bool 	apply (const imatrix &src, std::list< borderPoints > &lstBorderPointLists)
-bool 	apply (const channel8 &src8, std::list< areaPoints > &lstAreaPointLists)
-bool 	apply (const matrix< int > &src, std::list< areaPoints > &lstAreaPointLists)
-bool 	apply (const channel8 &src8, std::list< areaPoints > &lstAreaPointLists, matrix< int > &labeledMask)
-bool 	apply (const matrix< int > &src, std::list< areaPoints > &lstAreaPointLists, matrix< int > &labeledMask)
-}*/
 
 HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
-
-
 
 /*namespace lti {
   %rename(init) meanshiftTracker::initialize(const image &, trectangle< int > &);
@@ -123,6 +87,3 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( backgroundModel,         "ltiBackgroundModel.h")
 
 HANDLE_FUNCTOR_WITH_PARAMETERS( meanshiftTracker,         "ltiMeanshiftTracker.h")
 HANDLE_FUNCTOR_WITH_PARAMETERS( maskImage,                "ltiMaskImage.h")
-
-
-
