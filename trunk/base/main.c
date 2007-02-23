@@ -360,18 +360,6 @@ static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 \classinfo
 \end class BitPacking
 
-void gfpost(const char *fmt, ...) {
-	va_list args;
-	int length;
-	va_start(args,fmt);
-	const int n=256;
-	char post_s[n];
-	length = vsnprintf(post_s,n,fmt,args);
-	if (length<0 || length>=n) sprintf(post_s+n-6,"[...]"); /* safety */
-	va_end(args);
-	rb_funcall(mGridFlow,SI(gfpost2),2,rb_str_new2(fmt),rb_str_new2(post_s));
-}
-
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];

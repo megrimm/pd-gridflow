@@ -68,7 +68,7 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-//#define _L_ gfpost("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+//#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifndef SWIG
@@ -127,7 +127,7 @@ static inline const char *rb_sym_name(const char *sym) {return sym;}
 #define WATCH(n,ar) { \
 	char foo[16*1024], *p=foo; p += sprintf(p,"%s: ",#ar); \
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
-	gfpost("%s",foo);}
+	post("%s",foo);}
 
 #ifndef SWIG
 static inline Ruby PTR2FIX (const void *ptr) {
@@ -138,8 +138,6 @@ static inline Ruby PTR2FIX (const void *ptr) {
 #endif
 #define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
 #define INT2PTR(T,   v) ((T *)(          (v)<<2))
-
-void gfpost(const char *fmt, ...);
 
 //****************************************************************
 // my own little Ruby <-> C++ layer
@@ -602,7 +600,7 @@ static Numop *convert(Ruby x, Numop **bogus) {
 		s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@vop_dict)),x);
 		if (s==Qnil) RAISE("expected two-input-operator, not %s",
 			rb_str_ptr(rb_funcall(x,SI(inspect),0)));
-		gfpost("warning: using vecop !!!");
+		post("warning: using vecop !!!");
 	}
 	return FIX2PTR(Numop,s);
 }
