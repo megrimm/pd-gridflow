@@ -76,7 +76,7 @@ typedef lti::fastLineExtraction::segmEntry fastLineExtraction_segmEntry;
 
 
 namespace lti {
-%template(segmEntry_vector) std::vector< fastLineExtraction_segmEntry >;
+%template(vector_segmEntry) std::vector< fastLineExtraction_segmEntry >;
 }
 
 
