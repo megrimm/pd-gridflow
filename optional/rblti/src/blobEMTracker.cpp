@@ -127,43 +127,34 @@ namespace lti {
                     printf("found new blob at (%d, %d), size is %d, position %d in vector\n", center1.x, center1.y, (*blobIt).size(), (int)gaussVec.size()-1);
                 }
             }
-            assert(outMat.size().y == blobCount);
+            //assert(outMat.size().y == newBlobCount);
         }
         //Check if some blobs disappeared
         else if (newBlobCount < blobCount)
         {
-            blobEM::gaussEllipse tempEll;
+
+
             //Identify the blob that disappeared
             //Two blobs are assumed the same if the center of gravity (cog) of one
             //of them is contained inside the other
             vecIt = gaussVec.begin();
             i=0;
-            //Go through each ellipse
+            
+            //First, erase any ellipse whose center is not inside a blob
             while ((vecIt != gaussVec.end()) && (0 != gaussVec.size()) && (newBlobCount != gaussVec.size()))
             {
-                printf("here, %d\n", gaussVec.size());
-                tempEll = (*vecIt);
+                printf("Currently %d blobs\n", gaussVec.size());
                 found = false;
-                center1.castFrom(tempEll.center);
-                
-                for(blobIt = blobList.begin(); (blobIt != blobList.end()) && (!found); blobIt++)
-                {
-                    found = lti::contains((*blobIt), center1);
-                    if(found)
-                    {
-                        if(i>= newBlobCount)
-                            printf("wth? index %d larger than matrix size %d\n", i, newBlobCount);
-                        else
-                            outMat.at(i,3) = (*blobIt).size();
-                    }
-                }
-                
-                if(!found) //a blob disappeared, erase it
+                center1.castFrom((*vecIt).center);
+
+                //Check if the center of the ellipse is inside a blob
+                //If not, a blob disappeared, erase it
+                if(255 != tmpChan.at(center1))
                 {
                     gaussVec.erase(vecIt); 
                     vecIt = gaussVec.begin();
                     i = 0;
-                    printf("erased blob, %d left\n", gaussVec.size());
+                    printf("Blob disappeared, %d left\n", gaussVec.size());
                     if(vecIt == gaussVec.end())
                         printf("Iterator at the end of vector\n");
                 }
@@ -173,7 +164,44 @@ namespace lti {
                     vecIt++;
                 }
             }
+            
+            
+	   //***************************************************************************
+            
+            //Now, go trough each blob and check if any two ellipse correspond to the same blob
+            //this allows detection of merged blobs
+            bool cnt;
+            for (blobIt = blobList.begin(); (blobIt != blobList.end() && (newBlobCount != gaussVec.size())); blobIt++)
+            {
+                //Compare each ellipse to the ones from objectsFromMask
+                tempBlob = (*blobIt);
+                found = false;
+                vLen = gaussVec.size();
+                
+                vecIt = gaussVec.begin();
+                while ((vecIt != gaussVec.end()) && (newBlobCount != gaussVec.size()))
+                {
+                    cnt = lti::contains(tempBlob, center2.castFrom(vecIt->center));
+                    if ((!found) && cnt) //found the first ellipse corresponding to this blob
+                        found = true;
+                    else if (found && cnt)  //found another ellipse corresponding to this blob
+                    {
+                        //Erase the ellipse
+                        gaussVec.erase(vecIt); 
+                        vecIt = gaussVec.begin();
+                        printf("Blob merged with another, %d left\n", gaussVec.size());
+                        if(vecIt == gaussVec.end())
+                            printf("Iterator at the end of vector\n");
+                    }
+                    vecIt++;
+                }
+            }
+
+	   //***************************************************************************
+
         }
+        
+        //assert(newBlobCount == gaussVec.size());
         
         blobCount = newBlobCount;
         //track blobs as usual using blobEM
@@ -200,7 +228,7 @@ namespace lti {
         if (gaussVec.size() != blobList.size())
             printf("wth?? bloblist.size = %d, gaussVec.size = %d\n", blobList.size(), gaussVec.size());
         
-        assert(gaussVec.size() == blobList.size());
+        //assert(gaussVec.size() == blobList.size());
         //Put the centers of the blobs into outMat
         for (vecIt = gaussVec.begin(), i=0; vecIt != gaussVec.end(); vecIt++, i++)
         {
