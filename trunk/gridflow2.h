@@ -21,7 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/* this file should contain the things moved from grid.h that are expected to stick around in GridFlow 2. */
+/* this file should contain the things moved from grid.h that are expected to stick around in GridFlow 2, plus some extra things. */
 /* some of those things might still be in grid.h instead though. */
 #ifndef __GRIDFLOW2_H
 #define __GRIDFLOW2_H
@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <math.h>
 #ifdef __APPLE__
@@ -143,5 +144,13 @@ static inline uint64 rdtsc()
 	switch (n__) { start: \
 		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
+
+class Barf {
+public:
+  char *text;
+  Barf(const char *s, ...);
+  Barf(const char *file, int line, const char *func, const char *s, ...);
+  ~Barf() {free(text);}
+};
 
 #endif /* __GRIDFLOW2_H */
