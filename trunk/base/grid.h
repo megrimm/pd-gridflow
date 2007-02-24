@@ -75,7 +75,8 @@ extern "C" {
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
 #else
-#define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
+//#define RAISE(args...) rb_raise0(__FILE__,__LINE__,__PRETTY_FUNCTION__,rb_eArgError,args)
+#define RAISE(args...) throw new Barf(__FILE__,__LINE__,__PRETTY_FUNCTION__,args)
 #endif
 #define RAISE2(string) RAISE(string)
 #else
