@@ -24,9 +24,13 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
+
+//#define SWIG
 #include "grid.h.fcs"
+#define install(name,ins,outs) rb_funcall(rself,SI(install),3, \
+	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
+
 //#include "gridflow2.h"
-//#include "m_pd.h"
 
 /* ---------------------------------------------------------------- */
 /* stuff for using source_filter.rb without <ruby.h>: */
@@ -90,7 +94,7 @@ GRID_INLET(GridCast,0) {
 	this->nt = nt;
 }
 
-\classinfo { IEVAL(rself,"install '#cast',1,1"); }
+\classinfo { install("#cast",1,1); }
 \end class GridCast
 
 //****************************************************************
@@ -147,7 +151,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 }
 
 \def void _0_reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
-\classinfo { IEVAL(rself,"install '#import',2,1"); }
+\classinfo { install("#import",2,1); }
 \end class GridImport
 
 //****************************************************************
@@ -163,7 +167,7 @@ GRID_INLET(GridExport,0) {
 	Ruby a[] = { INT2NUM(0), INT2NUM(0) };
 	for (int i=0; i<n; i++) {a[1]=R(data[i]).r; send_out(COUNT(a),a);}
 } GRID_END
-\classinfo { IEVAL(rself,"install '#export',1,1"); }
+\classinfo { install("#export",1,1); }
 \end class GridExport
 
 /* **************************************************************** */
@@ -193,7 +197,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); // unkeep
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '#export_list',1,1"); }
+\classinfo { install("#export_list",1,1); }
 \end class GridExportList
 
 /* **************************************************************** */
@@ -377,7 +381,7 @@ GRID_INLET(GridStore,1) {
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	op = op_put;
 }
-\classinfo { IEVAL(rself,"install '#store',2,1"); }
+\classinfo { install("#store",2,1); }
 \end class GridStore
 
 //****************************************************************
@@ -440,7 +444,7 @@ GRID_INPUT2(GridOp,1,r) {} GRID_END
   rb_call_super(argc,argv); this->op=op;
   this->r=r?r:new Grid(new Dim(),int32_e,true);
 }
-\classinfo { IEVAL(rself,"install '#',2,1"); }
+\classinfo { install("#",2,1); }
 \end class GridOp
 
 //****************************************************************
@@ -488,7 +492,7 @@ GRID_INLET(GridFold,0) {
 } GRID_END
 
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
-\classinfo { IEVAL(rself,"install '#fold',1,1"); }
+\classinfo { install("#fold",1,1); }
 \end class GridFold
 
 \class GridScan < GridObject
@@ -527,7 +531,7 @@ GRID_INLET(GridScan,0) {
 } GRID_END
 
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op = op; }
-\classinfo { IEVAL(rself,"install '#scan',1,1"); }
+\classinfo { install("#scan",1,1); }
 \end class GridScan
 
 //****************************************************************
@@ -680,7 +684,7 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 	this->r    = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '#inner',2,1"); }
+\classinfo { install("#inner",2,1); }
 \end class GridInner
 
 /* **************************************************************** */
@@ -743,7 +747,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '#outer',2,1"); }
+\classinfo { install("#outer",2,1); }
 \end class GridOuter
 
 //****************************************************************
@@ -831,7 +835,7 @@ void GridFor::trigger (T bogus) {
 GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
-\classinfo { IEVAL(rself,"install '#for',3,1"); }
+\classinfo { install("#for",3,1); }
 \end class GridFor
 
 //****************************************************************
@@ -847,7 +851,7 @@ GRID_INLET(GridFinished,0) {
 	Ruby a[] = { INT2NUM(0), bsym._bang };
 	send_out(COUNT(a),a);
 } GRID_END
-\classinfo { IEVAL(rself,"install '#finished',1,1"); }
+\classinfo { install("#finished",1,1); }
 \end class GridFinished
 
 \class GridDim < GridObject
@@ -861,7 +865,7 @@ GRID_INLET(GridDim,0) {
 	out.send(in->dim->n,in->dim->v);
 	in->set_mode(0);
 } GRID_END
-\classinfo { IEVAL(rself,"install '#dim',1,1"); }
+\classinfo { install("#dim",1,1); }
 \end class GridDim
 
 \class GridType < GridObject
@@ -876,7 +880,7 @@ GRID_INLET(GridType,0) {
 	send_out(COUNT(a),a);
 	in->set_mode(0);
 } GRID_END
-\classinfo { IEVAL(rself,"install '#type',1,1"); }
+\classinfo { install("#type",1,1); }
 \end class GridType
 
 //****************************************************************
@@ -928,7 +932,7 @@ GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	dim = dim_grid->to_dim();
 }
 
-\classinfo { IEVAL(rself,"install '#redim',2,1"); }
+\classinfo { install("#redim",2,1); }
 \end class GridRedim
 
 //****************************************************************
@@ -1005,7 +1009,7 @@ GRID_INPUT(GridJoin,1,r) {} GRID_END
 	this->r=r;
 }
 
-\classinfo { IEVAL(rself,"install '@join',2,1"); }
+\classinfo { install("@join",2,1); }
 \end class GridJoin
 
 //****************************************************************
@@ -1041,7 +1045,7 @@ GRID_INLET(GridGrade,0) {
 	}
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '#grade',1,1"); }
+\classinfo { install("#grade",1,1); }
 \end class GridGrade
 
 //****************************************************************
@@ -1103,7 +1107,7 @@ GRID_INLET(GridTranspose,0) {
 	this->dim2 = dim2;
 }
 
-\classinfo { IEVAL(rself,"install '#transpose',3,1"); }
+\classinfo { install("#transpose",3,1); }
 \end class GridTranspose
 
 //****************************************************************
@@ -1142,7 +1146,7 @@ GRID_INLET(GridReverse,0) {
 	this->dim1 = dim1;
 }
 
-\classinfo { IEVAL(rself,"install '#reverse',2,1"); }
+\classinfo { install("#reverse",2,1); }
 \end class GridReverse
 
 //****************************************************************
@@ -1184,7 +1188,7 @@ GRID_INLET(GridCentroid,0) {
 	rb_call_super(argc,argv);
 }
 
-\classinfo { IEVAL(rself,"install '#centroid',1,3"); }
+\classinfo { install("#centroid",1,3); }
 \end class GridCentroid
 
 //****************************************************************
@@ -1268,7 +1272,7 @@ static void expect_pair (P<Dim> dim) {
 	rb_call_super(argc,argv);
 }
 
-\classinfo { IEVAL(rself,"install '#moment',2,1"); }
+\classinfo { install("#moment",2,1); }
 \end class GridMoment
 
 //****************************************************************
@@ -1331,7 +1335,7 @@ GRID_INLET(GridLabeling,0) {
 	delete[] dat;
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '#labeling',1,4"); }
+\classinfo { install("#labeling",1,4); }
 \end class GridLabeling
 
 //****************************************************************
@@ -1360,7 +1364,7 @@ GRID_INLET(GridPerspective,0) {
 
 \def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z; }
 
-\classinfo { IEVAL(rself,"install '#perspective',1,1"); }
+\classinfo { install("#perspective",1,1); }
 \end class GridPerspective
 
 //****************************************************************
@@ -1411,7 +1415,7 @@ GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
 	dimr_grid=dr; dimr = dimr_grid->to_dim();
 }
 
-\classinfo { IEVAL(rself,"install '#border',3,1"); }
+\classinfo { install("#border",3,1); }
 \end class GridBorder
 
 static void expect_picture (P<Dim> d) {
@@ -1558,7 +1562,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->anti = true;
 }
 
-\classinfo { IEVAL(rself,"install '#convolve',2,1"); }
+\classinfo { install("#convolve",2,1); }
 \end class GridConvolve
 
 /* ---------------------------------------------------------------- */
@@ -1621,7 +1625,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-\classinfo { IEVAL(rself,"install '#scale_by',2,1"); }
+\classinfo { install("#scale_by",2,1); }
 \end class GridScaleBy
 
 // ----------------------------------------------------------------
@@ -1713,7 +1717,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-\classinfo { IEVAL(rself,"install '#downscale_by',2,1"); }
+\classinfo { install("#downscale_by",2,1); }
 \end class GridDownscaleBy
 
 //****************************************************************
@@ -1750,7 +1754,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-\classinfo { IEVAL(rself,"install '#layer',2,1"); }
+\classinfo { install("#layer",2,1); }
 \end class GridLayer
 
 // ****************************************************************
@@ -1878,7 +1882,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-\classinfo { IEVAL(rself,"install '#draw_polygon',3,1"); }
+\classinfo { install("#draw_polygon",3,1); }
 \end class DrawPolygon
 
 //****************************************************************
@@ -1998,7 +2002,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-\classinfo { IEVAL(rself,"install '#draw_image',3,1"); }
+\classinfo { install("#draw_image",3,1); }
 \end class DrawImage
 
 //****************************************************************
@@ -2049,7 +2053,7 @@ GRID_INLET(GridDrawPoints,0) {
 	if (points) this->points=points;
 }
 
-\classinfo { IEVAL(rself,"install '#draw_points',3,1"); }
+\classinfo { install("#draw_points",3,1); }
 \end class GridDrawPoints
 
 //****************************************************************
@@ -2065,7 +2069,7 @@ GRID_INLET(GridPolygonize,0) {
 	/* WRITE ME */
 } GRID_END
 
-\classinfo { IEVAL(rself,"install '#polygonize',1,1"); }
+\classinfo { install("#polygonize",1,1); }
 \end class GridPolygonize
 
 //****************************************************************
