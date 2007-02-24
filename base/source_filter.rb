@@ -178,9 +178,12 @@ def handle_def(line)
 		end
 	}
 
-#	Out.print "return " if m.rettype!="void"
-	Out.print "#{m.rettype} foo = " if m.rettype!="void" ###
-
+	if m.rettype=="void"
+		Out.print "try {"
+	else
+		Out.print "#{m.rettype} foo; try { foo = "
+	end
+	
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
 		if arg.default then
@@ -194,7 +197,8 @@ def handle_def(line)
 	else
 	  Out.print ");"
 	end
-	
+	Out.print "} catch (Barf *oozy) {"
+	Out.print "rb_raise(rb_eArgError,\"%s\",oozy->text);}"
 	case m.rettype
 	when "void"; Out.print "return Qnil;"
 	when "Ruby","Symbol","Array","String"; Out.print "return foo;"
