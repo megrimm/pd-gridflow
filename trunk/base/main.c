@@ -63,6 +63,26 @@ const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
 	rb_exc_raise(e);
 }};
 
+Barf::Barf(const char *s, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap,s);
+    vsnprintf(buf,1024,s,ap);
+    buf[1023]=0;
+    va_end(ap);
+    text = strdup(buf);
+}
+Barf::Barf(const char *file, int line, const char *func, const char *s, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap,s);
+    int n = vsnprintf(buf,1024,s,ap);
+    if (n<1024) snprintf(buf+n, 1024-n, "\n%s:%d:in `%s'", file, line, func);
+    buf[1023]=0;
+    va_end(ap);
+    text = strdup(buf);
+}
+
 Ruby rb_ary_fetch(Ruby rself, long i) {
 	Ruby argv[] = { LONG2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
