@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -265,11 +265,13 @@ Packer *packer, Unpacker *unpacker) {
 			goto end;
 		}
 	}
-end:;/*
-	::gfpost("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
+end:;
+#if 1
+	::post("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
-	::gfpost("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
-	::gfpost("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);*/
+	::post("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
+	::post("  mask=[0x%08x,0x%08x,0x%08x,0x%08x]",mask[0],mask[1],mask[2],mask[3]);
+#endif
 }
 
 bool BitPacking::is_le() {
