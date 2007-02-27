@@ -271,7 +271,7 @@ struct FormatVideoDev : Format {
 };
 
 #define DEBUG(args...) 42
-//#define DEBUG(args...) gfpost(args)
+//#define DEBUG(args...) post(args)
 
 #define  IOCTL( F,NAME,ARG) \
   (DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",F,NAME,#NAME,_arg_), ioctl(F,NAME,ARG))
@@ -339,7 +339,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
 	uint8 b2[bs];
-	//gfpost("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
+	post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
 		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
@@ -378,6 +378,9 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 					b2[xx+0]=clip(((bufy[x+0]-16)*298)>>8);
 					b2[xx+1]=clip(((U-128)*293)>>8);
 					b2[xx+2]=clip(((V-128)*293)>>8);
+					b2[xx+3]=clip(((bufy[x+1]-16)*298)>>8);
+					b2[xx+4]=clip(((U-128)*293)>>8);
+					b2[xx+5]=clip(((V-128)*293)>>8);
 				}
 				out.send(bs,b2);
 			}
