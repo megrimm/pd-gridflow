@@ -266,7 +266,7 @@ Packer *packer, Unpacker *unpacker) {
 		}
 	}
 end:;
-#if 1
+#if 0
 	::post("Bitpacking: endian=%d bytes=%d size=%d packeri=%d",
 		endian, bytes, size, packeri);
 	::post("  packer=0x%08x unpacker=0x%08x",this->packer,this->unpacker);
