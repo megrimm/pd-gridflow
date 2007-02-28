@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -201,10 +201,18 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
+/*
 	int r = rb_ensure(
 		(RMethod)GridInlet_begin_1,(Ruby)this,
 		(RMethod)GridInlet_begin_2,(Ruby)this);
 	if (!r) {abort(); goto hell;}
+*/
+	try {
+		GridInlet_begin_1(this);
+	} catch (Barf *barf) {
+		GridInlet_begin_2(this);
+		throw;
+	}
 	this->dim = dim;
 	back_out->callback(this);
 	hell:;
