@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -22,6 +22,7 @@
 */
 
 #include <stdlib.h>
+//#include <cstdlib>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
@@ -32,6 +33,11 @@
 #include <unistd.h>
 #include "../config.h"
 #include <limits.h>
+
+/* for exception-handling in 0.9.0 */
+#include <exception>
+#include <execinfo.h>
+using namespace std;
 
 #ifdef SWIG
 #include "grid.h"
@@ -508,8 +514,19 @@ Ruby cFormat;
 
 STARTUP_LIST(void)
 
+void blargh () {
+  void *array[25];
+  int nSize = backtrace(array, 25);
+  char **symbols = backtrace_symbols(array, nSize);
+  for (int i=0; i<nSize; i++) fprintf(stderr,"%d: %s\n",i,symbols[i]);
+  free(symbols);
+}
+
 // Ruby's entrypoint.
 void Init_gridflow () {
+	//set_terminate(__gnu_cxx::__verbose_terminate_handler);
+	set_terminate(blargh);
+
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
