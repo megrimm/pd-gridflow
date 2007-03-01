@@ -152,6 +152,9 @@ def handle_def(line)
 	"\"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"+
 	"DGS(#{classname});"
 
+	Out.print "#{m.rettype} foo;" if m.rettype!="void"
+	Out.print "try {"
+
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\""+
@@ -178,12 +181,7 @@ def handle_def(line)
 		end
 	}
 
-	if m.rettype=="void"
-		Out.print "try {"
-	else
-		Out.print "#{m.rettype} foo; try { foo = "
-	end
-	
+	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
 		if arg.default then
