@@ -226,12 +226,18 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		}
 		Ruby name = rb_str_new2(s->name);
 		Ruby f = rb_ary_new2(s->num_fourccs);
+		if (!s->fourccs) {
+			post("WARNING: no fourccs (quicktime library is broken?)");
+			goto hell;
+		}
+		//fprintf(stderr,"num_fourccs=%d fourccs=%p\n",s->num_fourccs,s->fourccs);
 		for (int j=0; j<s->num_fourccs; j++) {
 			Ruby fn = rb_str_new2(s->fourccs[j]);
 			rb_ary_push(f,fn);
 			rb_hash_aset(fourccs,fn,name);
 		}
 		rb_hash_aset(codecs,name,f);
+		hell:;
 	}
 	rb_ivar_set(rself,SI(@codecs),codecs);
 	rb_ivar_set(rself,SI(@fourccs),fourccs);
