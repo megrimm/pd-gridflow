@@ -775,12 +775,12 @@ while ARGV.length>0 do
 		i=arg.index '='
 		ARGV.unshift arg[0..i-1], arg[i+1..-1]
 	when /^--no-/
-		name = arg[5..-1].intern
+		name = arg[5..-1].untaint.intern
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "--no: won't check for feature #{name}"
 		$features_h.delete name
 	when /^--force-/
-		name = arg[8..-1].intern
+		name = arg[8..-1].untaint.intern
 		puts "there is no feature called #{name}" if not $features_h[name]
 		puts "--force: assuming #{name} is there"
 		$features_h[name].test nil
