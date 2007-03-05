@@ -27,6 +27,23 @@
 #include <string.h>
 #include <errno.h>
 
+/* move these to grid.h maybe */
+struct BFProxy : t_object {
+	BFObject *parent;
+	t_inlet *inlet;
+	int id;
+};
+struct BFObject : t_object {
+#ifdef HAVE_GEM
+	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
+#endif
+	Ruby rself;
+	int nin,nout;   // per object settings (not class)
+	BFProxy  **in;  // direct access to  inlets (not linked lists)
+	t_outlet **out; // direct access to outlets (not linked lists)
+	t_canvas *mom;
+};
+
 \class FormatQuickTimeHW < Format
 struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
@@ -53,6 +70,7 @@ struct FormatQuickTimeHW : Format {
 	\decl void _0_parameter (Symbol name, int32 value);
 	\decl void _0_framerate (float64 f);
 	\decl void _0_size (int32 height, int32 width);
+	\decl void _0_get ();
 	\grin 0 int
 };
 
@@ -61,9 +79,8 @@ struct FormatQuickTimeHW : Format {
 
 \def Ruby frame () {
 	int nframe = quicktime_video_position(anim,track);
-//	int length2 = quicktime_video_length(anim,track);
 	if (nframe >= length) {
-//		post("nframe=%d length=%d length2=%d",nframe,length,length2);
+//		post("nframe=%d length=%d",nframe,length);
 		return Qfalse;
 	}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
@@ -172,6 +189,17 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	rb_call_super(argc,argv);
 }
 
+\def void _0_get () {
+/*
+	t_atom a[1];
+	SETFLOAT(a,(float)length);
+	outlet_anything(bself->out[1],gensym("frames"),1,a);
+*/
+	Ruby a[] = {INT2NUM(1),SYM(frames),INT2NUM(length)};
+	send_out(2,a);
+	//rb_call_super(argc,argv);
+}
+
 // libquicktime may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
@@ -182,6 +210,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		length = quicktime_video_length(anim,track);
+
 		post("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),
 			quicktime_video_height(anim,track),
@@ -203,7 +232,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 \classinfo {
 	IEVAL(rself,
 \ruby
-  install '#io:quicktime',1,1
+  install '#io:quicktime',1,2
   @comment=%[Burkhard Plaum's (or HeroineWarrior's) libquicktime]
   suffixes_are 'mov'
   @flags=6
