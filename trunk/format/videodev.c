@@ -268,6 +268,9 @@ struct FormatVideoDev : Format {
 	\attr uint16 white_mode(); /* 0..1 */
 	\attr uint16 white_red();
 	\attr uint16 white_blue();
+	\attr uint16 white_speed();
+	\attr uint16 white_delay();
+	\attr int    auto_gain();
 };
 
 #define DEBUG(args...) 42
@@ -339,7 +342,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	int sx = dim->get(1);
 	int bs = dim->prod(1);
 	uint8 b2[bs];
-	post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
+	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
 		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
@@ -376,11 +379,11 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 					//b2[xx+0]=bufy[x+0]; b2[xx+1]=U; b2[xx+2]=V;
 					//b2[xx+3]=bufy[x+1]; b2[xx+4]=U; b2[xx+5]=V;
 					b2[xx+0]=clip(((bufy[x+0]-16)*298)>>8);
-					b2[xx+1]=clip(((U-128)*293)>>8);
-					b2[xx+2]=clip(((V-128)*293)>>8);
+					b2[xx+1]=clip(128+(((U-128)*293)>>8));
+					b2[xx+2]=clip(128+(((V-128)*293)>>8));
 					b2[xx+3]=clip(((bufy[x+1]-16)*298)>>8);
-					b2[xx+4]=clip(((U-128)*293)>>8);
-					b2[xx+5]=clip(((V-128)*293)>>8);
+					b2[xx+4]=clip(128+(((U-128)*293)>>8));
+					b2[xx+5]=clip(128+(((V-128)*293)>>8));
 				}
 				out.send(bs,b2);
 			}
@@ -608,8 +611,12 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
 
 /* those functions are still mostly unused */
 void set_compression_preference(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
-void set_automatic_gain_control(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSAGC, &pref);}
+
+\def uint16 auto_gain() {int auto_gain; WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
+\def void _0_auto_gain(int auto_gain) {WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
+
 void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
+
 \def uint16 white_mode () {
 	struct pwc_whitebalance pwcwb;
 	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
@@ -640,12 +647,17 @@ void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
-void set_automatic_white_balance_speed(int fd, int val) {
-	struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-	pwcwbs.control_speed = val; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-void set_automatic_white_balance_delay(int fd, int val) {
-	struct pwc_wb_speed pwcwbs; WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
-	pwcwbs.control_delay = val; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+\def uint16 white_speed() {
+	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
+\def uint16 white_delay() {
+	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
+\def void _0_white_speed(uint16 white_speed) {
+	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+	pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+\def void _0_white_delay(uint16 white_delay) {
+	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
+	pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
+
 void set_led_on_time(int fd, int val) {
 	struct pwc_leds pwcl; WIOCTL(fd, VIDIOCPWCGLED, &pwcl);
 	pwcl.led_on = val;    WIOCTL(fd, VIDIOCPWCSLED, &pwcl);}
