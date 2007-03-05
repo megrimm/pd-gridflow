@@ -196,7 +196,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	outlet_anything(bself->out[1],gensym("frames"),1,a);
 */
 	Ruby a[] = {INT2NUM(1),SYM(frames),INT2NUM(length)};
-	send_out(2,a);
+	send_out(3,a);
 	//rb_call_super(argc,argv);
 }
 
