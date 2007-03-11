@@ -620,6 +620,7 @@ FObject.subclass("range",1,1) {
     add_inlets  @a.length
     add_outlets @a.length
   end
+  def _0_list(x) _0_float(x) end
   def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
   def method_missing(sel,*a)
     m = /^(_\d+_)(.*)/.match(sel.to_s) or return super
