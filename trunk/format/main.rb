@@ -164,7 +164,7 @@ end
 # common parts between GridIn and GridOut
 module GridIO
 	def check_file_open; if not @format then raise "can't do that: file not open" end end
-	def _0_close; check_file_open; @format.close; @format = nil end
+	def _0_close; (@format.close; @format = nil) if @format end
 	def delete; @format.close if @format; @format = nil; super end
 	attr_reader :format
 
