@@ -18,7 +18,7 @@
 #X obj 70 188 # inv* 256;
 #X obj 21 213 t a a;
 #X text 19 34 also faster (uses *>>8 instead of /);
-#X obj 190 107 args slope;
+#X obj 190 107 args (slope a 1);
 #X connect 0 0 2 0;
 #X connect 2 0 11 0;
 #X connect 3 0 2 1;
