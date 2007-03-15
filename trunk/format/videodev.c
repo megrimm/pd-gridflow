@@ -37,6 +37,7 @@
 #include "pwc-ioctl.h"
 
 //#define error post
+static bool debug=0;
 
 /* **************************************************************** */
 
@@ -115,17 +116,17 @@ static const char *video_mode_choice[] = {
 };
 
 #define WH(_field_,_spec_) \
-	sprintf(buf+strlen(buf), "%s: " _spec_ "; ", #_field_, self->_field_);
+	sprintf(buf+strlen(buf), "%s=" _spec_ " ", #_field_, self->_field_);
 #define WHYX(_name_,_fieldy_,_fieldx_) \
-	sprintf(buf+strlen(buf), "%s: y=%d, x=%d; ", #_name_, self->_fieldy_, self->_fieldx_);
+	sprintf(buf+strlen(buf), "%s=(%d %d) ", #_name_, self->_fieldy_, self->_fieldx_);
 #define WHFLAGS(_field_,_table_) { \
 	char *foo; \
-	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
+	sprintf(buf+strlen(buf), "%s:%s ", #_field_, \
 		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
 	delete[] foo;}
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
-	sprintf(buf+strlen(buf), "%s: %s; ", #_field_, \
+	sprintf(buf+strlen(buf), "%s=%s; ", #_field_, \
 		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
 	delete[] foo;}
 
@@ -290,17 +291,17 @@ struct FormatVideoDev : Format {
 	// !@#$ bug here: won't flush the frame queue
 	dim = new Dim(sy,sx,3);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	gfpost(&grab_win);
+	if (debug) gfpost(&grab_win);
 	grab_win.clipcount = 0;
 	grab_win.flags = 0;
 	if (sy && sx) {
 		grab_win.height = sy;
 		grab_win.width  = sx;
 	}
-	gfpost(&grab_win);
+	if (debug) gfpost(&grab_win);
 	WIOCTL(fd, VIDIOCSWIN, &grab_win);
 	WIOCTL(fd, VIDIOCGWIN, &grab_win);
-	gfpost(&grab_win);
+	if (debug) gfpost(&grab_win);
 }
 
 \def void dealloc_image () {
