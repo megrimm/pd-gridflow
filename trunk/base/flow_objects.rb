@@ -1471,8 +1471,6 @@ begin
   require "optional/lti"
   GridFlow.post "LTI support loaded."
 rescue Exception => e
-  GridFlow.post "%s", e.inspect
-  e.backtrace.each {|line| GridFlow.post "%s", line }
-  GridFlow.post "LTI support not found (%s)", e.inspect
+  GridFlow.post "LTI support not found (%s)", e.message
 end
 
