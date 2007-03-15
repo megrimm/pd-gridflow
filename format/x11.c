@@ -105,6 +105,7 @@ struct FormatX11 : Format {
 	\decl void _0_setcursor (int shape);
 	\decl void _0_hidecursor ();
 	\decl void _0_set_geometry (int y, int x, int sy, int sx);
+	\decl void _0_move (int y, int x);
 	\decl void _0_transfer (Symbol s);
 	\decl void _0_title (String s=Qnil);
 	\grin 0 int
@@ -525,6 +526,12 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	}
 	if (children_r) XFree(children_r);
 	return target;
+}
+
+\def void _0_move (int y, int x) {
+	pos[0]=y; pos[1]=x;
+	XMoveWindow(display,window,x,y);
+	XFlush(display);
 }
 
 \def void _0_set_geometry (int y, int x, int sy, int sx) {
