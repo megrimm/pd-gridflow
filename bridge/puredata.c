@@ -142,7 +142,7 @@ static Ruby make_error_message () {
 	Ruby ary = rb_ary_new();
 	Ruby backtrace = rb_funcall(ruby_errinfo,SI(backtrace),0);
 	rb_ary_push(ary,rb_str_new2(buf));
-	for (int i=0; i<8 && i<rb_ary_len(backtrace); i++)
+	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++)
 		rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
 //	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
 	return ary;
@@ -838,7 +838,7 @@ extern "C" void Init_stack(void*);
 static void ruby_stack_end_hack () {
 	int bogus;
 	Init_stack(&bogus);
-	post("hello from ruby_stack_end_hack");
+//	post("hello from ruby_stack_end_hack");
 	clock_free(hack);
 }
 
@@ -851,6 +851,10 @@ static void add_to_path(char *dir) {
 	namelist_append_files(sys_searchpath,bof);
 	sprintf(bof,"%s/doc/flow_classes",dir);
 	namelist_append_files(sys_helppath,bof);
+}
+
+static void boo (int boo) {
+
 }
 
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
@@ -893,7 +897,7 @@ extern "C" void gridflow_setup () {
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
 	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
 	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
-	post("Ruby's path = %s",rb_str_ptr(EVAL("$:.inspect")));
+//	post("Ruby's path = %s",rb_str_ptr(EVAL("$:.inspect")));
 	if (!
 	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
 		STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
@@ -908,4 +912,8 @@ extern "C" void gridflow_setup () {
 //	dummy_owner = pd_new();
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
 	clock_delay(hack,0);
+//	signal(SIGSEGV,boo);
+	signal(SIGSEGV,SIG_DFL);
+	signal(SIGABRT,SIG_DFL);
+	signal(SIGBUS, SIG_DFL);
 }
