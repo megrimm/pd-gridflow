@@ -552,7 +552,7 @@ GRID_INLET(FormatVideoDev,0) {
 	return value;
 }
 \def void _0_frequency (long frequency) {
-	if (0> IOCTL(fd, VIDIOCSFREQ, &frequency)) RAISE("can't set frequency to %ld",frequency);
+	WIOCTL(fd, VIDIOCSFREQ, &frequency);
 }
 
 \def void close () {
