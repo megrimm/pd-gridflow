@@ -601,7 +601,7 @@ static Numop *convert(Ruby x, Numop **bogus) {
 		s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@vop_dict)),x);
 		if (s==Qnil) RAISE("expected two-input-operator, not %s",
 			rb_str_ptr(rb_funcall(x,SI(inspect),0)));
-		post("warning: using vecop !!!");
+//		post("warning: using vecop !!!");
 	}
 	return FIX2PTR(Numop,s);
 }
