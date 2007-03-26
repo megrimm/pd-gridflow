@@ -254,7 +254,7 @@ GridObject.subclass("#unpack",1,0) {
   def initialize2; add_outlets @n end
   def _0_rgrid_begin
     dim = inlet_dim(0)
-    dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim}"
+    dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim.inspect}"
     inlet_set_chunk 0,0
   end
   def _0_rgrid_flow data
