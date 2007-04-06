@@ -186,7 +186,7 @@ static void send_in_2 (Helper *h) {
 		rb_ary_push(init_messages, rb_ary_new4(argc,argv));
 		inlet=0;
 	}
-	if (inlet<0 || inlet>9 /*|| inlet>real_inlet_max*/)
+	if (inlet<0 || inlet>=64)
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,h->self);
@@ -220,7 +220,6 @@ static void send_in_3 (Helper *h) {}
 	}
 	//int noutlets = INT(noutlets2);
 	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
-	// was PROF(0) a hack because of exception-handling problems?
 	Ruby argv2[argc+2];
 	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
 	argv2[0] = INT2NUM(outlet);
