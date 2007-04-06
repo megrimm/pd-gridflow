@@ -8,9 +8,10 @@ version 0.9.0 (2007.02...):
  * rewrote some object classes from Ruby to Pd.
  * split compilation of the LTIlib support allows to compile
    it with reasonable amounts of RAM.
- * [seq_fold], [#seq_fold], [#.var]
+ * new classes: [seq_fold], [#seq_fold], [#.var], [#noise_gate_yuvs]
  * updated [#camera]
  * added PWC-specific options: framerate white_mode white_red white_blue
+   compression noise_reduction
  * colorspace conversion directly in [#in videodev] (faster)
  * grid messages no longer contain dim and numbertype (just a pointer)
  * GridOutlet: set_chunk, ...
