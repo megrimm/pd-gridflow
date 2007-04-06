@@ -136,7 +136,11 @@ def self.stringify(arg)
 	end
 end
 
-::Object.module_eval do def FloatOrSymbol(x) Float(x) rescue x.intern end end
+# ::Object.module_eval do def FloatOrSymbol(x) ::Float(x) rescue x.intern end end
+
+class ::Object
+  def FloatOrSymbol(x) Float(x) rescue x.intern end
+end
 
 # adding some functionality to that:
 class FObject
