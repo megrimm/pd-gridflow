@@ -272,13 +272,15 @@ struct FormatVideoDev : Format {
 	\attr uint16 white_speed();
 	\attr uint16 white_delay();
 	\attr int    auto_gain();
+	\attr int    noise_reduction(); /* 0..3 */
+	\attr int    compression();     /* 0..3 */
 };
 
 #define DEBUG(args...) 42
 //#define DEBUG(args...) post(args)
 
 #define  IOCTL( F,NAME,ARG) \
-  (DEBUG("fd%d.ioctl(0x%08x(:%s),0x%08x)\n",F,NAME,#NAME,_arg_), ioctl(F,NAME,ARG))
+  (DEBUG("fd%d.ioctl(0x%08x,0x%08x)",F,NAME,ARG), ioctl(F,NAME,ARG))
 #define WIOCTL( F,NAME,ARG) \
   (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)),1))
 #define WIOCTL2(F,NAME,ARG) \
@@ -338,14 +340,17 @@ struct FormatVideoDev : Format {
 static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
 void FormatVideoDev::frame_finished (uint8 *buf) {
+	int downscale = colorspace==SYM(magic);
 	/* picture is converted here. */
-	int sy = dim->get(0);
-	int sx = dim->get(1);
-	int bs = dim->prod(1);
+	int sy = dim->get(0)>>downscale;
+	int sx = dim->get(1)>>downscale;
+	int bs = dim->prod(1)>>downscale;
 	uint8 b2[bs];
+	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
 	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+		GridOutlet out(this,0,colorspace==SYM(magic)?new Dim(sy,sx,3):dim,
+			NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		if (colorspace==SYM(y)) {
 			out.send(sy*sx,buf);
 		} else if (colorspace==SYM(rgb)) {
@@ -377,14 +382,24 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
 					U=bufu[x/2];
 					V=bufv[x/2];
-					//b2[xx+0]=bufy[x+0]; b2[xx+1]=U; b2[xx+2]=V;
-					//b2[xx+3]=bufy[x+1]; b2[xx+4]=U; b2[xx+5]=V;
 					b2[xx+0]=clip(((bufy[x+0]-16)*298)>>8);
 					b2[xx+1]=clip(128+(((U-128)*293)>>8));
 					b2[xx+2]=clip(128+(((V-128)*293)>>8));
 					b2[xx+3]=clip(((bufy[x+1]-16)*298)>>8);
 					b2[xx+4]=clip(128+(((U-128)*293)>>8));
 					b2[xx+5]=clip(128+(((V-128)*293)>>8));
+				}
+				out.send(bs,b2);
+			}
+		} else if (colorspace==SYM(magic)) {
+			for(int y=0; y<sy; y++) {
+				uint8 *bufy = buf        +4*sx*y;
+				uint8 *bufu = buf+4*sx*sy+  sx*y;
+				uint8 *bufv = buf+5*sx*sy+  sx*y;
+				for (int x=0,xx=0; x<sx; x++,xx+=3) {
+					b2[xx+0]=bufy[x+x];
+					b2[xx+1]=bufu[x];
+					b2[xx+2]=bufv[x];
 				}
 				out.send(bs,b2);
 			}
@@ -420,6 +435,8 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
+		} else if (colorspace==SYM(magic)) {
+			RAISE("magic colorspace not supported with a RGB palette");
 		}
 	} else {
 		RAISE("unsupported palette %d",vp.palette);
@@ -564,7 +581,8 @@ GRID_INLET(FormatVideoDev,0) {
 	if      (c==SYM(y)) {}
 	else if (c==SYM(yuv)) {}
 	else if (c==SYM(rgb)) {}
-	else RAISE("supported: y yuv rgb");
+	else if (c==SYM(magic)) {}
+	else RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",rb_sym_name(c));
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 :
 	              (palettes&(1<<VIDEO_PALETTE_RGB565)) ? VIDEO_PALETTE_RGB565 :
@@ -588,7 +606,7 @@ GRID_INLET(FormatVideoDev,0) {
 	dim = new Dim(dim->v[0],dim->v[1],c==SYM(y)?1:3);
 }
 
-void set_pan_and_tilt(int fd, char what, int pan, int tilt) {
+void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	struct pwc_mpt_angles pma;
 	pma.absolute=1;
 	WIOCTL(fd, VIDIOCPWCMPTGANGLE, &pma);
@@ -634,7 +652,7 @@ void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 	/*else if (strcasecmp(mode, "indoor") == 0)  pwcwb.mode = PWC_WB_INDOOR;*/
 	/*else if (strcasecmp(mode, "outdoor") == 0) pwcwb.mode = PWC_WB_OUTDOOR;*/
 	/*else if (strcasecmp(mode, "fl") == 0)      pwcwb.mode = PWC_WB_FL;*/
-	else {error("unknown mode '%s'", white_mode); return;}
+	else {error("unknown mode number %d", white_mode); return;}
 	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
 \def uint16 white_red() {
@@ -668,7 +686,23 @@ void set_led_off_time(int fd, int val) {
 void set_sharpness(int fd, int val) {WIOCTL(fd, VIDIOCPWCSCONTOUR, &val);}
 void set_backlight_compensation(int fd, int val) {WIOCTL(fd, VIDIOCPWCSBACKLIGHT, &val);}
 void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);}
-void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);}
+
+\def int noise_reduction() {
+	int noise_reduction;
+	WIOCTL(fd, VIDIOCPWCGDYNNOISE, &noise_reduction);
+	return noise_reduction;
+}
+\def void _0_noise_reduction(int noise_reduction) {
+	WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);
+}
+\def int compression() {
+	int compression;
+	WIOCTL(fd, VIDIOCPWCSCQUAL, &compression);
+	return compression;
+}
+\def void _0_compression(int compression) {
+	WIOCTL(fd, VIDIOCPWCGCQUAL, &compression);
+}
 
 \def void initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
@@ -677,8 +711,8 @@ void set_noise_reduction(int fd, int val) {WIOCTL(fd, VIDIOCPWCSDYNNOISE, &val);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	gfpost(&vp);
 	palettes=0;
-	int checklist[] = {VIDEO_PALETTE_RGB24,VIDEO_PALETTE_YUV420P};
-#if 0
+	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_YUV420P};
+#if 1
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
 		int p = checklist[i];
 #else
