@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -2071,6 +2071,37 @@ GRID_INLET(GridPolygonize,0) {
 
 \classinfo { install("#polygonize",1,1); }
 \end class GridPolygonize
+
+//****************************************************************
+\class GridNoiseGateYuvs < GridObject
+struct GridNoiseGateYuvs : GridObject {
+	\grin 0
+	int thresh;
+	\decl void _1_float(int v);
+	\decl void initialize(int v=0);
+};
+
+GRID_INLET(GridNoiseGateYuvs,0) {
+	if (in->dim->n!=3) RAISE("requires 3 dimensions: dim(y,x,3)");
+	if (in->dim->v[2]!=3) RAISE("requires 3 channels");
+	out=new GridOutlet(this,0,in->dim,in->nt);
+	in->set_chunk(2);
+} GRID_FLOW {
+	T tada[n];
+	for (long i=0; i<n; i+=3) {
+		if (data[i+0]<=thresh) {
+			tada[i+0]=0;         tada[i+1]=0;         tada[i+2]=0;
+		} else {
+			tada[i+0]=data[i+0]; tada[i+1]=data[i+1]; tada[i+2]=data[i+2];
+		}
+	}
+	out->send(n,tada);
+} GRID_END
+
+\def void _1_float(int v) {thresh=v;}
+\def void initialize(int v=0) {thresh=v;}
+\classinfo { install("#noise_gate_yuvs",2,1); }
+\end class GridNoiseGateYuvs
 
 //****************************************************************
 
