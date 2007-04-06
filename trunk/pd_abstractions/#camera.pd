@@ -1,4 +1,4 @@
-#N canvas 544 0 422 266 10;
+#N canvas 544 0 422 290 10;
 #X obj 82 6 cnv 15 184 56 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 144 9 hradio 12 1 0 4 \$0-channel \$0-channel _0_1_2_3 -2 7
@@ -61,9 +61,9 @@
 #X msg 140 136 framerate \$1;
 #X obj 233 136 r \$0-framerate;
 #X obj 305 450 t b a b;
-#X obj 48 372 spigot;
-#X msg 92 320 0;
-#X msg 92 343 1;
+#X obj 45 419 spigot;
+#X msg 89 367 0;
+#X msg 89 390 1;
 #X msg 140 36 white_red \$1;
 #X obj 233 36 r \$0-white_red;
 #X msg 140 16 white_mode \$1;
@@ -81,6 +81,10 @@
 #X obj 520 281 loadbang;
 #X obj 520 338 s \$0-device;
 #X obj 520 319 mod 9;
+#X msg 140 316 noise_reduction \$1;
+#X msg 140 336 compression \$1;
+#X obj 273 336 r \$0-compression;
+#X obj 273 316 r \$0-noise_reduction;
 #X connect 1 0 25 0;
 #X connect 2 0 14 0;
 #X connect 3 0 14 0;
@@ -158,6 +162,10 @@
 #X connect 73 0 76 0;
 #X connect 74 0 73 0;
 #X connect 76 0 75 0;
+#X connect 77 0 14 0;
+#X connect 78 0 14 0;
+#X connect 79 0 78 0;
+#X connect 80 0 77 0;
 #X restore 45 394 pd camera;
 #X obj 18 394 #in;
 #X obj 18 413 outlet image;
@@ -175,29 +183,29 @@
 0;
 #X text 9 7 device:;
 #X obj 11 25 vradio 15 1 0 9 \$0-device \$0-device empty 0 -6 0 8 -241291
--1 -1 8;
-#X obj 82 67 cnv 15 184 148 empty empty empty 20 12 0 14 -233017 -66577
+-1 -1 0;
+#X obj 82 67 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X obj 134 81 hsl 129 12 0 65535 0 0 \$0-brightness \$0-brightness
-brightness 4 7 1 10 -200256 -1 -1 0 0;
+brightness 4 7 1 10 -200256 -1 -1 6300 0;
 #X obj 134 105 hsl 129 12 0 65535 0 0 \$0-hue \$0-hue hue 4 7 1 10
--200256 -1 -1 0 0;
+-200256 -1 -1 12800 0;
 #X obj 134 69 hsl 129 12 0 65535 0 0 \$0-contrast \$0-contrast contrast
-4 7 1 10 -200256 -1 -1 0 0;
+4 7 1 10 -200256 -1 -1 12600 0;
 #X obj 134 117 hsl 129 12 0 65535 0 0 \$0-whiteness \$0-whiteness whiteness
-4 7 1 10 -200256 -1 -1 0 0;
+4 7 1 10 -200256 -1 -1 7600 0;
 #X obj 134 93 hsl 129 12 0 65535 0 0 \$0-colour \$0-colour colour 4
-7 1 10 -200256 -1 -1 0 0;
+7 1 10 -200256 -1 -1 6336 0;
 #X obj 84 69 nbx 5 12 0 65535 0 0 \$0-contrast \$0-contrast empty 4
-7 1 10 -200256 -1 -1 0 256;
+7 1 10 -200256 -1 -1 64512 256;
 #X obj 84 81 nbx 5 12 0 65535 0 0 \$0-brightness \$0-brightness empty
-4 7 1 10 -200256 -1 -1 0 256;
+4 7 1 10 -200256 -1 -1 32256 256;
 #X obj 84 93 nbx 5 12 0 65535 0 0 \$0-colour \$0-colour empty 4 7 1
-10 -200256 -1 -1 0 256;
+10 -200256 -1 -1 32441 256;
 #X obj 84 105 nbx 5 12 0 65535 0 0 \$0-hue \$0-hue empty 4 7 1 10 -200256
--1 -1 0 256;
+-1 -1 65535 256;
 #X obj 84 117 nbx 5 12 0 65535 0 0 \$0-whiteness \$0-whiteness empty
-4 7 1 10 -200256 -1 -1 0 256;
+4 7 1 10 -200256 -1 -1 38912 256;
 #X obj 271 139 cnv 15 144 120 empty empty empty 20 12 0 14 -233017
 -66577 0;
 #X obj 271 6 cnv 15 144 128 empty empty empty 20 12 0 14 -233017 -66577
@@ -213,7 +221,7 @@ brightness 4 7 1 10 -200256 -1 -1 0 0;
 #X msg 274 189 transfer read;
 #X text 274 139 Special options:;
 #X msg 274 172 transfer mmap 4;
-#X obj 282 342 s \$0-o;
+#X obj 311 342 s \$0-o;
 #X obj 326 69 bng 12 250 50 0 \$0-size0 empty 120x160 -46 6 1 10 -241291
 -1 -1;
 #X obj 341 69 bng 12 250 50 0 \$0-size1 empty 120x180 16 6 1 10 -241291
@@ -231,39 +239,41 @@ brightness 4 7 1 10 -200256 -1 -1 0 0;
 #X obj 341 117 bng 12 250 50 0 \$0-size7 empty 288x352 16 6 1 10 -241291
 -1 -1;
 #X obj 309 36 nbx 5 14 -1e+37 1e+37 0 0 \$0-framerate \$0-framerate
-empty 0 -6 1 10 -241291 -1 -1 0 256;
+empty 0 -6 1 10 -241291 -1 -1 5 256;
 #X obj 134 165 hsl 129 12 0 65535 0 0 \$0-white_blue \$0-white_blue
-white_blue 4 7 1 10 -200256 -1 -1 0 0;
+white_blue 4 7 1 10 -200256 -1 -1 7050 0;
 #X obj 84 165 nbx 5 12 0 65535 0 0 \$0-white_blue \$0-white_blue empty
-4 7 1 10 -200256 -1 -1 0 256;
+4 7 1 10 -200256 -1 -1 36096 256;
 #X obj 134 153 hsl 129 12 0 65535 0 0 \$0-white_red \$0-white_red white_red
-4 7 1 10 -200256 -1 -1 0 0;
+4 7 1 10 -200256 -1 -1 4300 0;
 #X obj 84 153 nbx 5 12 0 65535 0 0 \$0-white_red \$0-white_red empty
-4 7 1 10 -200256 -1 -1 0 256;
+4 7 1 10 -200256 -1 -1 22016 256;
 #X obj 84 141 tgl 12 0 \$0-white_mode \$0-white_mode manual_white_balance
-20 7 1 10 -241291 -1 -1 0 1;
-#N canvas 0 0 450 300 (subpatch) 0;
-#X obj 23 97 outlet;
-#X obj 46 78 outlet;
+20 7 1 10 -241291 -1 -1 1 1;
+#N canvas 0 0 450 157 (subpatch) 0;
+#X obj 23 116 outlet;
+#X obj 58 97 outlet;
 #X obj 23 21 r \$0-colorspace;
-#X obj 23 40 route y yuv rgb;
-#X obj 69 59 outlet;
-#X connect 2 0 3 0;
-#X connect 3 0 0 0;
-#X connect 3 1 1 0;
-#X connect 3 2 4 0;
+#X obj 94 78 outlet;
+#X obj 23 40 route y yuv rgb magic;
+#X obj 129 59 outlet;
+#X connect 2 0 4 0;
+#X connect 4 0 0 0;
+#X connect 4 1 1 0;
+#X connect 4 2 3 0;
+#X connect 4 3 5 0;
 #X restore 269 317 pd;
 #X msg 285 223 colorspace yuv;
 #X msg 284 206 colorspace y;
 #X msg 285 240 colorspace rgb;
 #X obj 134 189 hsl 129 12 0 65535 0 0 \$0-white_delay \$0-white_delay
-white_delay 4 7 1 10 -200256 -1 -1 0 0;
+white_delay 4 7 1 10 -200256 -1 -1 11400 0;
 #X obj 84 189 nbx 5 12 0 65535 0 0 \$0-white_delay \$0-white_delay
-empty 4 7 1 10 -200256 -1 -1 0 256;
+empty 4 7 1 10 -200256 -1 -1 58368 256;
 #X obj 134 177 hsl 129 12 0 65535 0 0 \$0-white_speed \$0-white_speed
-white_speed 4 7 1 10 -200256 -1 -1 0 0;
+white_speed 4 7 1 10 -200256 -1 -1 397 0;
 #X obj 84 177 nbx 5 12 0 65535 0 0 \$0-white_speed \$0-white_speed
-empty 4 7 1 10 -200256 -1 -1 0 256;
+empty 4 7 1 10 -200256 -1 -1 2032 256;
 #X obj 134 201 hsl 129 12 0 65535 0 0 \$0-auto_gain \$0-auto_gain auto_gain
 4 7 1 10 -200256 -1 -1 0 0;
 #X obj 84 201 nbx 5 12 0 65535 0 0 \$0-auto_gain \$0-auto_gain empty
@@ -331,6 +341,11 @@ label_pos 4 7;
 #X restore 106 413 pd stuff;
 #X text 91 129 ------- PWC ONLY: -------;
 #X text 358 36 pwc-only;
+#X obj 84 213 hradio 12 1 0 4 \$0-noise_reduction \$0-noise_reduction
+_0_1_2_3_noise_reduction -2 7 1 10 -241291 -258699 -1 1;
+#X obj 84 225 hradio 12 1 0 4 \$0-compression \$0-compression _0_1_2_3_compression
+-2 7 1 10 -241291 -258699 -1 0;
+#X msg 303 262 colorspace magic;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 3 1 2 0;
@@ -346,3 +361,4 @@ label_pos 4 7;
 #X connect 54 0 37 0;
 #X connect 55 0 37 0;
 #X connect 62 0 3 0;
+#X connect 79 0 37 0;
