@@ -212,7 +212,7 @@ GridObject.subclass("#pack",1,1) {
 	class<< self;attr_reader :ninlets;end
 	def initialize(n=2,cast=:int32)
 		n||=self.class.ninlets
-		n>=16 and raise "too many inlets"
+		n>=32 and raise "too many inlets"
 		super
 		@data=[0]*n
 		@cast=cast
@@ -229,7 +229,7 @@ GridObject.subclass("#pack",1,1) {
 	def self.define_inlet i
 		module_eval "def _#{i}_float x; @data[#{i}]=x; _0_bang; end"
 	end
-	(0...15).each {|x| define_inlet x }
+	(0...32).each {|x| define_inlet x }
 	def _0_bang
 		send_out_grid_begin 0, [@data.length], @cast
 		send_out_grid_flow 0, @data.pack(@ps), @cast
