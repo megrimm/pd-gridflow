@@ -428,6 +428,7 @@ Ruby GridFlow_rdtsc (Ruby rself) { return R(rdtsc()).r; }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
+    try {
 	int stack[16];
 	int stackn=0;
 	Ruby *av = rb_ary_ptr(argv);
@@ -464,6 +465,9 @@ static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv) {
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
 	while (rb_ary_len(argv)>j) rb_ary_pop(argv);
 	return rself;
+    } catch (Barf *oozy) {
+        rb_raise(rb_eArgError,"%s",oozy->text);
+    }
 }
 
 /* ---------------------------------------------------------------- */
