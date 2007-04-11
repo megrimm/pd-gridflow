@@ -173,6 +173,7 @@ GRID_INLET(GridExport,0) {
 /* **************************************************************** */
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
+/* exporting floats may be crashy because [#export_list] doesn't handle GC */
 \class GridExportList < GridObject
 struct GridExportList : GridObject {
 	Ruby /*Array*/ list;
@@ -1088,7 +1089,8 @@ GRID_INLET(GridTranspose,0) {
 	}
 	// Turns a Grid[*,na,*nb,nc,*nd] into a Grid[*,nc,*nb,na,*nd].
 } GRID_FLOW {
-	T res[na*nb*nc*nd];
+	//T res[na*nb*nc*nd];
+	T *res = new T[na*nb*nc*nd];
 	if (dim1==dim2) { out->send(n,data); return; }
 	int prod = na*nb*nc*nd;
 	for (; n; n-=prod, data+=prod) {
@@ -1099,6 +1101,7 @@ GRID_INLET(GridTranspose,0) {
 					     data+((a*nb+b)*nc+c)*nd,nd);
 		out->send(na*nb*nc*nd,res);
 	}
+	delete[] res; // if an exception was thrown by out->send, this never gets done
 } GRID_END
 
 \def void initialize (int dim1=0, int dim2=1) {
