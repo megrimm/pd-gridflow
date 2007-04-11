@@ -234,14 +234,14 @@ struct FormatVideoDev : Format {
 	uint8 *image;
 	int queue[8], queuesize, queuemax, next_frame;
 	int current_channel, current_tuner;
-	bool use_mmap;
+	bool use_mmap, is_pwc;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	int fd;
 	Symbol colorspace;
 	int palettes; /* bitfield */
 
-	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), bit_packing(0), dim(0) {}
+	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), is_pwc(true), bit_packing(0), dim(0) {}
 	void frame_finished (uint8 * buf);
 
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
@@ -607,6 +607,7 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
+	// if (!is_pwc) return;
 	struct pwc_mpt_angles pma;
 	pma.absolute=1;
 	WIOCTL(fd, VIDIOCPWCMPTGANGLE, &pma);
@@ -615,12 +616,14 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);
 }
 \def uint16 framerate() {
+	if (!is_pwc) return 0;
 	struct video_window vwin;
 	WIOCTL(fd, VIDIOCGWIN, &vwin);
 	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
 }
 
 \def void _0_framerate(uint16 framerate) {
+	if (!is_pwc) return;
 	struct video_window vwin;
 	WIOCTL(fd, VIDIOCGWIN, &vwin);
 	vwin.flags &= ~PWC_FPS_FRMASK;
@@ -629,14 +632,15 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 }
 
 /* those functions are still mostly unused */
-void set_compression_preference(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
+//void set_compression_preference(int fd, int pref) {if (is_pwc) WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
 
-\def uint16 auto_gain() {int auto_gain; WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
-\def void _0_auto_gain(int auto_gain) {WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
+\def uint16 auto_gain() {int auto_gain=0; if (is_pwc) WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
+\def void _0_auto_gain  (int auto_gain) {if (is_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
 
-void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
+//void set_shutter_speed(int fd, int pref) {if (is_pwc) WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 
 \def uint16 white_mode () {
+	if (!is_pwc) return 0;
 	struct pwc_whitebalance pwcwb;
 	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	if (pwcwb.mode==PWC_WB_AUTO)   return 0;
@@ -645,6 +649,7 @@ void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 }
 
 \def void _0_white_mode (uint16 white_mode) {
+	if (!is_pwc) return;
 	struct pwc_whitebalance pwcwb;
 	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	if      (white_mode==0) pwcwb.mode = PWC_WB_AUTO;
@@ -655,25 +660,25 @@ void set_shutter_speed(int fd, int pref) {WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 	else {error("unknown mode number %d", white_mode); return;}
 	WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
-\def uint16 white_red() {
+\def uint16 white_red() {if (!is_pwc) return 0;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_red;}
-\def uint16 white_blue() {
+\def uint16 white_blue() {if (!is_pwc) return 0;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_blue;}
-\def void _0_white_red(uint16 white_red) {
+\def void _0_white_red(uint16 white_red) {if (!is_pwc) return;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_red = white_red;  WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
-\def void _0_white_blue(uint16 white_blue) {
+\def void _0_white_blue(uint16 white_blue) {if (!is_pwc) return;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
-\def uint16 white_speed() {
+\def uint16 white_speed() {if (!is_pwc) return 0;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
-\def uint16 white_delay() {
+\def uint16 white_delay() {if (!is_pwc) return 0;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
-\def void _0_white_speed(uint16 white_speed) {
+\def void _0_white_speed(uint16 white_speed) {if (!is_pwc) return;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 	pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-\def void _0_white_delay(uint16 white_delay) {
+\def void _0_white_delay(uint16 white_delay) {if (!is_pwc) return;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 	pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
 
@@ -688,19 +693,23 @@ void set_backlight_compensation(int fd, int val) {WIOCTL(fd, VIDIOCPWCSBACKLIGHT
 void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);}
 
 \def int noise_reduction() {
+	if (!is_pwc) return 0;
 	int noise_reduction;
 	WIOCTL(fd, VIDIOCPWCGDYNNOISE, &noise_reduction);
 	return noise_reduction;
 }
 \def void _0_noise_reduction(int noise_reduction) {
+	if (!is_pwc) return;
 	WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);
 }
 \def int compression() {
+	if (!is_pwc) return 0;
 	int compression;
 	WIOCTL(fd, VIDIOCPWCSCQUAL, &compression);
 	return compression;
 }
 \def void _0_compression(int compression) {
+	if (!is_pwc) return;
 	WIOCTL(fd, VIDIOCPWCGCQUAL, &compression);
 }
 
