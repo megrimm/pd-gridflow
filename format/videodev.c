@@ -324,7 +324,7 @@ struct FormatVideoDev : Format {
 \def void alloc_image () {
 	if (use_mmap) {
 		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
-		gfpost(&vmbuf);
+		//gfpost(&vmbuf);
 		//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
@@ -341,7 +341,7 @@ struct FormatVideoDev : Format {
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
-	gfpost(&vmmap);
+	//gfpost(&vmmap);
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
