@@ -155,7 +155,7 @@ static char *choice_to_s(int value, int n, const char **table) {
 static void gfpost(VideoChannel *self) {
 	char buf[256] = "[VideoChannel] ";
 	WH(channel,"%d");
-	WH(name,"%.32s");
+	WH(name,"\"%.32s\"");
 	WH(tuners,"%d");
 	WHFLAGS(flags,channel_flags);
 	WH(type,"0x%04x");
@@ -166,7 +166,7 @@ static void gfpost(VideoChannel *self) {
 static void gfpost(VideoTuner *self) {
 	char buf[256] = "[VideoTuner] ";
 	WH(tuner,"%d");
-	WH(name,"%.32s");
+	WH(name,"\"%.32s\"");
 	WH(rangelow,"%lu");
 	WH(rangehigh,"%lu");
 	WHFLAGS(flags,tuner_flags);
@@ -177,7 +177,7 @@ static void gfpost(VideoTuner *self) {
 
 static void gfpost(VideoCapability *self) {
 	char buf[256] = "[VideoCapability] ";
-	WH(name,"%.20s");
+	WH(name,"\"%.32s\"");
 	WHFLAGS(type,video_type_flags);
 	WH(channels,"%d");
 	WH(audios,"%d");
@@ -211,7 +211,12 @@ static void gfpost(VideoMbuf *self) {
 	char buf[256] = "[VideoMBuf] ";
 	WH(size,"%d");
 	WH(frames,"%d");
-	for (int i=0; i<4; i++) WH(offsets[i],"%d");
+	sprintf(buf+strlen(buf), "offsets=[");
+	for (int i=0; i<self->frames; i++) {
+		/* WH(offsets[i],"%d"); */
+	        sprintf(buf+strlen(buf), "%d%s", self->offsets[i],
+			i+1==self->frames?"]":", ");
+	}
 	post("%s",buf);
 }
 
@@ -319,6 +324,8 @@ struct FormatVideoDev : Format {
 \def void alloc_image () {
 	if (use_mmap) {
 		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
+		gfpost(&vmbuf);
+		//size_t size = vmbuf.frames > 4 ? vmbuf.offsets[4] : vmbuf.size;
 		image = (uint8 *)mmap(0,vmbuf.size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 		if (((long)image)==-1) {image=0; RAISE("mmap: %s", strerror(errno));}
 	} else {
@@ -334,6 +341,7 @@ struct FormatVideoDev : Format {
 	vmmap.width  = dim->get(1);
 	vmmap.height = dim->get(0);
 	WIOCTL2(fd, VIDIOCMCAPTURE, &vmmap);
+	gfpost(&vmmap);
 	next_frame = (next_frame+1) % vmbuf.frames;
 }
 
@@ -615,6 +623,7 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	pma.tilt = tilt;
 	WIOCTL(fd, VIDIOCPWCMPTSANGLE, &pma);
 }
+
 \def uint16 framerate() {
 	if (!is_pwc) return 0;
 	struct video_window vwin;
