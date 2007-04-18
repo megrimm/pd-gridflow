@@ -8,10 +8,9 @@ proc pd_mess_split {e} {
 	regsub -all "\n" $e " " y
 	regsub -all {\\;} $y "\n" z
 	foreach mess [split $z ";"] {
-		if {$mess != ""} {
-			regsub -all "\n" $mess "\\;" x
-			lappend r [string trimleft $x]
-		}
+		regsub -all "\n" $mess "\\;" mess
+		set mess [string trimleft $mess]
+		if {$mess != ""} {lappend r $mess}
 	}
 	return $r
 }
@@ -38,22 +37,36 @@ proc pd_pickle {l} {
 	return $t
 }
 
-foreach filename $argv {
-  set lines [pd_read_file $filename]
+# for the recursion to work properly, restore should be checked before #N, and the check
+# for #N shouldn't do "continue", as well as other tricky index stuff.
+proc find_top_left {lines i} {
+  global filename
+  set j $i
   set xmin +9999; set ymin +9999
   set xmax -9999; set ymax -9999
-  foreach line $lines {
-    set list [split $line " "]
-    if {[string compare [lindex $list 0] "#X"]} {continue}
-    if {![string compare [lindex $list 1] "connect"]} {continue}
+  while {$i < [llength $lines]} {
+    set list [split [lindex $lines $i] " "]
+    if {[string compare [lindex $list 1] "connect"]==0} {incr i; continue}
+    if {[string compare [lindex $list 1] "restore"]==0} {break}
+    if {[string compare [lindex $list 0] "#N"]==0} {
+      set i [find_top_left $lines [expr $i+1]]
+      #continue
+    }
     set x [lindex $list 2]
     set y [lindex $list 3]
     if {$xmin > $x} {set xmin $x}
     if {$ymin > $y} {set ymin $y}
     if {$xmax < $x} {set xmax $x}
     if {$ymax < $y} {set ymax $y}
+    incr i
   }
-  puts [format "filename=%-32s from (%d,%d) to (%d,%d)" $filename $xmin $ymin $xmax $ymax]
+  puts [format "filename=%-32s patch at lines %4d thru %4d has xmin=%d ymin=%d xmax=%d ymax=%d" $filename $j $i $xmin $ymin $xmax $ymax]
+  return $i
+}
+
+foreach filename $argv {
+  set lines [pd_read_file $filename]
+  find_top_left $lines 1
   #set fout [open [lindex $argv 0].new w]
   #foreach line $lines {
   #  if {[llength $line]==0} {continue}
@@ -61,4 +74,3 @@ foreach filename $argv {
   #}
   #close $fout
 }
-
