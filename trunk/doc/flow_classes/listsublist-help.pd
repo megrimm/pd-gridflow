@@ -51,7 +51,6 @@ the index specified.;
 #X text 64 440 Outputs the sublist as specified by the inlets or the
 arguments.;
 #X text 6 498 Integers specifying index and length of the sublist;
-#X text 4 508 comment;
 #X text 9 3 The [listsublist] outputs consecutive elements of the list
 \, as selected by index (inlet 1 or arg 1) and length (inlet 2 or arg
 2). A negative index will start from the end of the list (like -1 means
@@ -60,8 +59,8 @@ last element in the list).;
 #X floatatom 269 107 5 0 0 0 - - -;
 #X obj 169 126 listsublist 2 3;
 #X obj 10 -20 listsublist;
-#X connect 23 0 44 0;
-#X connect 25 0 44 0;
-#X connect 42 0 44 1;
-#X connect 43 0 44 2;
-#X connect 44 0 26 0;
+#X connect 23 0 43 0;
+#X connect 25 0 43 0;
+#X connect 41 0 43 1;
+#X connect 42 0 43 2;
+#X connect 43 0 26 0;
