@@ -1,67 +1,67 @@
-#N canvas 122 0 508 611 10;
-#X obj 90 136 cnv 15 135 17 empty empty empty 20 12 0 14 -241291 -66577
+#N canvas 122 0 504 602 10;
+#X obj 90 127 cnv 15 135 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 1 374 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 351 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 1 216 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 193 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 1 239 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 216 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 215 379 Outlets (1);
-#X obj 1 454 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 215 356 Outlets (1);
+#X obj 1 431 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 210 457 Arguments (1);
-#X obj 1 309 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 210 434 Arguments (1);
+#X obj 1 286 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 1 395 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 372 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 398 -19 GridFlow 0.8.4;
-#X text 2 239 Inlet 0;
-#X text 2 313 Inlet 1;
-#X text 221 218 Inlets (2);
-#X text 2 399 Outlet 0;
-#X obj 1 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 398 -40 GridFlow 0.8.4;
+#X text 2 216 Inlet 0;
+#X text 2 290 Inlet 1;
+#X text 221 195 Inlets (2);
+#X text 2 376 Outlet 0;
+#X obj 1 -43 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 11 55 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 1 1
-;
-#X obj 11 74 metro 100;
-#X obj 89 137 #scale_to (133 133);
-#X obj 89 113 #in;
-#X obj 284 139 #pack;
-#X obj 325 118 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -262144
--1 -1 8900 1;
-#X obj 325 128 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -262144
--1 -1 7800 1;
-#X obj 9 -19 #scale_to;
-#X obj 89 188 #out window \, title #scale_to;
-#X text 210 457 Arguments (1);
-#X obj 2 523 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 11 32 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
+#X obj 11 51 metro 100;
+#X obj 89 128 #scale_to (133 133);
+#X obj 89 90 #in;
+#X obj 284 116 #pack;
+#X obj 325 95 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -260818
+-1 -1 4300 1;
+#X obj 325 105 hsl 128 8 0 640 0 0 empty empty empty 0 -8 0 8 -260818
+-1 -1 6200 1;
+#X obj 9 -42 #scale_to;
+#X obj 89 165 #out window \, title #scale_to;
+#X text 210 434 Arguments (1);
+#X obj 2 500 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 217 526 See Also;
-#X obj 80 550 #downscale_by;
-#X msg 89 53 open scissors.jpg \, bang;
-#X obj 413 156 #print;
-#X msg 284 55 2 # 500 500;
-#X obj 412 77 #print;
-#X text 7 263 GRID;
-#X text 9 2 The [#scale_to] scales the image received to the x and
-y values passed. Initial creation arguments seem to be mandatory ((133
-133) in our example).;
-#X text 4 337 INT INT;
-#X msg 284 74 2 # 100 500;
-#X msg 285 95 2 # 500 100;
-#X text 460 113 height;
-#X text 460 125 width;
-#X text 62 337 A height width value pair in pixels.;
-#X text 3 424 GRID;
-#X text 64 424 Outputs the resulting scaled image.;
-#X text 3 486 INT INT;
-#X text 65 484 A (height width) pair of integers indicating the size
+#X text 217 503 See Also;
+#X obj 80 527 #downscale_by;
+#X msg 89 30 open scissors.jpg \, bang;
+#X obj 300 140 #print;
+#X msg 284 32 2 # 500 500;
+#X obj 412 54 #print;
+#X text 7 240 GRID;
+#X msg 284 51 2 # 100 500;
+#X msg 285 72 2 # 500 100;
+#X text 460 90 height;
+#X text 460 102 width;
+#X text 62 314 A height width value pair in pixels.;
+#X text 3 401 GRID;
+#X text 64 401 Outputs the resulting scaled image.;
+#X text 3 463 INT INT;
+#X text 65 461 A (height width) pair of integers indicating the size
 to scale to image to. This initial argument is required.;
-#X text 62 263 The Grid passed at inlet 0 will be the image on which
+#X text 62 241 The Grid passed at inlet 0 will be the image on which
 the scale_to will be performed.;
-#X text 284 38 2 grid size values y=500 x=500;
-#X obj 7 550 #scale_by;
+#X text 284 15 2 grid size values y=500 x=500;
+#X obj 7 527 #scale_by;
+#X text 395 -41 GridFlow 0.9.0;
+#X text 9 -21 The [#scale_to] scales the image received to the x and
+y values passed. Initial creation arguments are mandatory (0 0) otherwise.
+;
+#X text 3 315 INT INT;
 #X connect 15 0 16 0;
 #X connect 16 0 18 0;
 #X connect 17 0 23 0;
@@ -73,7 +73,7 @@ the scale_to will be performed.;
 #X connect 28 0 18 0;
 #X connect 30 0 17 1;
 #X connect 30 0 31 0;
-#X connect 35 0 17 1;
-#X connect 35 0 31 0;
-#X connect 36 0 17 1;
-#X connect 36 0 31 0;
+#X connect 33 0 17 1;
+#X connect 33 0 31 0;
+#X connect 34 0 17 1;
+#X connect 34 0 31 0;

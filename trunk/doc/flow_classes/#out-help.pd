@@ -1,129 +1,159 @@
-#N canvas 209 0 509 631 10;
+#N canvas 512 0 508 877 10;
 #X obj 4 -20 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 14 245 cnv 15 79 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 13 276 cnv 15 185 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 6 610 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 6 657 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 347 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 352 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 4 370 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 4 375 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 215 611 Outlets (1);
-#X obj 6 699 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 215 658 Outlets (1);
+#X obj 6 746 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 210 698 Arguments (1);
-#X obj 6 631 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 210 745 Arguments (1);
+#X obj 6 678 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 13 -19 #out;
-#X text 12 11 Displays or saves an incoming grid (usually an image
-or a video).;
-#X obj 15 275 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 15 306 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 362 242 #out;
-#X text 12 55 Displaying a grid:;
-#X text 342 59 Saving a grid:;
-#X text 6 431 MESSAGE;
-#X text 75 434 "open filename.format" (ex: "open r001.jpg") sends a
-grid to [#out].;
-#X text 8 399 GRID;
-#X text 7 468 MESSAGE;
-#X text 8 502 MESSAGE;
-#X text 77 503 "rewind" rewinds to the beginning of a video file. Will
+#X text 10 51 Displaying a grid:;
+#X text 342 53 Saving a grid:;
+#X text 6 436 MESSAGE;
+#X text 8 404 GRID;
+#X text 7 473 MESSAGE;
+#X text 8 549 MESSAGE;
+#X text 75 549 "rewind" rewinds to the beginning of a video file. Will
 overwrite previous data.;
-#X text 79 541 "timelog 1" will display (in the console) the current
+#X text 79 586 "timelog 1" will display (in the console) the current
 time and the time since the last frame. Message "timelog 0" will hide
 this information. The default is "timelog 0".;
-#X text 8 536 MESSAGE;
-#X text 206 349 Inlets (1);
-#X text 31 727 window [#out window] opens a window in which the grid
+#X text 8 583 MESSAGE;
+#X text 206 354 Inlets (1);
+#X text 31 774 window [#out window] opens a window in which the grid
 will be displayed.;
-#X text 7 665 BANG;
-#X msg 15 91 open working.jpg;
-#X msg 31 123 open b001.jpg;
-#X obj 42 169 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
--1;
-#X obj 15 201 #in;
-#X obj 15 245 #out window;
-#X msg 98 188 open window;
-#X msg 98 210 close;
-#X text 77 469 "close" closes the file and hides the display \, must
-be accompanied by message "open window" to reopen the display.;
-#X text 9 371 Inlet 0;
-#X text 7 633 Outlet 0;
-#X text 75 665 A bang notifies when a complete grid has been received.
+#X text 7 712 BANG;
+#X msg 45 130 open working.jpg;
+#X obj 15 80 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X text 398 -19 GridFlow 0.8.4;
+#X obj 15 201 #in;
+#X msg 66 209 open window;
+#X msg 65 232 close;
+#X text 75 473 "close" closes the file and hides the display \, must
+be accompanied by message "open window" to reopen the display.;
+#X text 9 376 Inlet 0;
+#X text 7 680 Outlet 0;
+#X text 75 712 A bang notifies when a complete grid has been received.
+;
 #N canvas 140 137 570 631 More 0;
 #X obj 35 246 tgl 15 0 empty empty empty 0 -6 0 8 -233017 -1 -1 0 1
 ;
-#X text 290 316 upload a grid;
-#X text 228 89 upload a grid;
-#X text 229 144 open default display for screenshot;
-#X msg 23 61 open videodev /dev/video0;
-#X text 228 61 open a video device;
-#X msg 187 392 open x11 here;
-#X msg 158 341 open x11 local 10;
+#X text 203 123 open default display for screenshot;
+#X msg 82 177 open videodev /dev/video0;
+#X text 277 176 open a video device;
+#X msg 187 368 open x11 here;
+#X msg 158 317 open x11 local 10;
 #X text 116 267 show/hide timing statistics;
-#X text 290 394 connect to default display;
-#X text 289 342 connect to display #10 on this machine;
+#X text 298 370 connect to default display;
+#X text 297 318 connect to display #10 on this machine;
 #X msg 65 293 open x11 remote.host.bla.net 0;
-#X text 289 295 connect to remote machine on display #0;
-#X text 36 558 * path is where you started pd from. usually $home.
-;
-#X text 228 115 open an image file;
-#X msg 242 441 close;
-#X msg 109 171 open lsd.mpeg;
-#X msg 109 143 open x11 here;
-#X msg 45 88 open host.bla.net 7777;
-#X msg 165 367 open img/bla.jpg;
-#X text 290 366 open single file in jpg format;
-#X msg 143 315 open x.test.at 7777;
-#X msg 200 417 open window;
-#X text 291 417 opens a window x11 \, quartz or sdl;
+#X text 297 295 connect to remote machine on display #0;
+#X text 202 94 open an image file;
+#X msg 242 417 close;
+#X msg 83 122 open x11 here;
+#X msg 200 393 open window;
+#X text 299 393 opens a window x11 \, quartz or sdl;
 #X msg 35 268 timelog \$1;
-#X text 39 582 Message "open" followed by the format of the specific
-grid opens a grid (usually an image) to then be displayed or saved
-by [#out].;
 #X text 37 482 An incoming file is sent through the opened device/socket/file.
 In single file format \, a subsequent picture overwrite the preceeding
 one. There are many more options. for more information see the reference
 manual in the "formats" and "objects for input/output" sections.;
-#X text 14 15 #in \, #out communicating grids (images) to/from devices
-\, sockets \, files;
-#X text 229 170 open mpeg video stream;
-#X text 367 56 *;
-#X obj 23 215 cnv 15 23 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 23 203 cnv 15 23 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 23 215 #in;
-#X msg 79 115 open /img/bla.jpg;
+#X obj 23 203 #in;
 #X obj 23 460 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 23 460 @out;
 #X obj 5 -7 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 14 -6 #out;
-#X connect 0 0 24 0;
-#X connect 4 0 31 0;
-#X connect 6 0 34 0;
-#X connect 7 0 34 0;
-#X connect 11 0 34 0;
-#X connect 15 0 34 0;
-#X connect 16 0 31 0;
-#X connect 17 0 31 0;
-#X connect 18 0 31 0;
-#X connect 19 0 34 0;
-#X connect 21 0 34 0;
-#X connect 22 0 34 0;
-#X connect 24 0 34 0;
-#X connect 31 0 34 0;
-#X connect 32 0 31 0;
+#X obj 23 460 #out;
+#X msg 53 94 open sewing.jpg;
+#X obj 23 52 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X obj 23 73 t b b;
+#X msg 83 150 open lsd.mov;
+#X text 203 149 open a quicktime video;
+#X obj 97 54 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X msg 165 343 open save_here.jpg;
+#X text 298 342 select file to write to in jpg format;
+#X text 39 559 Message "open" followed by the format of the specific
+grid opens a grid (usually an image) to then be displayed or saved
+by [#out].;
+#X text 14 16 #out communicating grids (images) to/from devices \,
+sockets \, files;
+#X connect 0 0 16 0;
+#X connect 2 0 19 0;
+#X connect 4 0 23 0;
+#X connect 5 0 23 0;
+#X connect 9 0 23 0;
+#X connect 12 0 23 0;
+#X connect 13 0 19 0;
+#X connect 14 0 23 0;
+#X connect 16 0 23 0;
+#X connect 19 0 23 0;
+#X connect 24 0 19 0;
+#X connect 25 0 26 0;
+#X connect 26 0 19 0;
+#X connect 26 1 24 0;
+#X connect 27 0 19 0;
+#X connect 29 0 19 0;
+#X connect 30 0 23 0;
 #X restore 140 314 pd More info about this object;
-#X text 77 401 Receives a grid.;
-#X connect 26 0 29 0;
-#X connect 27 0 29 0;
-#X connect 28 0 29 0;
-#X connect 29 0 30 0;
-#X connect 30 0 11 0;
-#X connect 31 0 30 0;
-#X connect 32 0 30 0;
+#X text 77 406 Receives a grid.;
+#X text 398 -20 GridFlow 0.9.0;
+#X text 12 12 Displays or saves an incoming grid (usually an image
+or a video).;
+#X obj 15 276 #out window \, title example;
+#X msg 207 125 open sewing.jpg;
+#X obj 15 106 t b b;
+#X obj 177 101 t b b;
+#X obj 177 77 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 96 826 #record;
+#X msg 366 208 open somefile.jpg;
+#X text 9 825 see also :;
+#X text 73 431 "open filename.format" (ex: "open somefile.jpg") sets
+the filename to write to.;
+#X msg 381 124 open sewing.jpg;
+#X obj 351 100 t b b;
+#X obj 351 76 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
+-1;
+#X obj 351 170 #in;
+#X obj 351 247 cnv 15 30 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X obj 351 246 #out;
+#X msg 127 242 hidecursor;
+#X text 205 241 <-- linux only;
+#X text 7 513 MESSAGE;
+#X text 75 513 "hidecursor" (linux only) hides the mouse cursor.;
+#X connect 23 0 25 0;
+#X connect 24 0 38 0;
+#X connect 25 0 36 0;
+#X connect 26 0 36 0;
+#X connect 27 0 36 0;
+#X connect 36 0 10 0;
+#X connect 37 0 25 0;
+#X connect 38 0 25 0;
+#X connect 38 1 23 0;
+#X connect 39 0 25 0;
+#X connect 39 1 37 0;
+#X connect 40 0 39 0;
+#X connect 42 0 50 0;
+#X connect 45 0 48 0;
+#X connect 46 0 48 0;
+#X connect 46 1 45 0;
+#X connect 47 0 46 0;
+#X connect 48 0 50 0;
+#X connect 51 0 36 0;
