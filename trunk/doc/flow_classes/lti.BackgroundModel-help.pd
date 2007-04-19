@@ -1,72 +1,72 @@
 #N canvas 301 82 524 683 10;
-#X obj 88 10 metro 33;
-#X obj 71 10 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
+#X obj 88 65 metro 33;
+#X obj 71 65 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0 1
 ;
-#X obj 71 30 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+#X obj 71 85 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X msg 8 130 help;
-#X msg 8 150 get;
-#X obj 9 -55 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X msg 8 185 help;
+#X msg 8 205 get;
+#X obj 9 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 20 -54 lti.BackgroundModel;
-#X obj 1 598 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 20 1 lti.BackgroundModel;
+#X obj 1 653 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 298 600 Help Files GridFlow 0.8.4;
-#X obj 22 464 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X text 298 655 Help Files GridFlow 0.8.4;
+#X obj 22 519 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 20 298 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 20 353 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 20 321 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 20 376 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 25 322 Inlet_0;
-#X text 222 300 Inlets (2);
-#X text 231 466 Outlets (1);
-#X obj 21 544 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 25 377 Inlet_0;
+#X text 222 355 Inlets (2);
+#X text 231 521 Outlets (1);
+#X obj 21 599 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 225 545 Arguments (1);
-#X obj 21 391 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 225 600 Arguments (1);
+#X obj 21 446 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 22 485 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 22 540 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 26 486 Inlet_0;
-#X text 26 392 Inlet_1;
-#X text 23 347 GRID;
-#X text 23 419 GRID;
-#X text 27 509 GRID;
-#X text 28 571 None;
-#X text 11 -34 A starting point for presence detection \, it returns
+#X text 26 541 Inlet_0;
+#X text 26 447 Inlet_1;
+#X text 23 402 GRID;
+#X text 23 474 GRID;
+#X text 27 564 GRID;
+#X text 28 626 None;
+#X text 11 21 A starting point for presence detection \, it returns
 a single channel mask. The Model can be updated with new images.;
-#X text 86 348 Ac;
-#X text 86 419 Co;
-#X text 88 510 Out;
-#X msg 364 119 mode addBackground;
-#X msg 397 87 mode apply;
-#X msg 246 174 clear;
-#X obj 246 197 print R;
-#X obj 88 236 #out window;
-#X obj 88 217 #greyscale_to_rgb;
-#X obj 366 47 hradio 15 1 1 2 empty empty empty 0 -6 0 8 -260818 -1
+#X text 86 403 Ac;
+#X text 86 474 Co;
+#X text 88 565 Out;
+#X msg 364 174 mode addBackground;
+#X msg 397 142 mode apply;
+#X msg 246 229 clear;
+#X obj 246 252 print R;
+#X obj 88 291 #out window;
+#X obj 88 272 #greyscale_to_rgb;
+#X obj 366 102 hradio 15 1 1 2 empty empty empty 0 -6 0 8 -260818 -1
 -1 0;
-#X obj 88 29 #camera;
-#X obj 88 197 lti.BackgroundModel 1;
-#X msg 123 146 alpha \$1;
-#X obj 123 129 nbx 5 14 0 1 0 1 empty empty empty 0 -6 0 10 -262144
+#X obj 88 84 #camera;
+#X obj 88 252 lti.BackgroundModel 1;
+#X msg 123 201 alpha \$1;
+#X obj 123 184 nbx 5 14 0 1 0 1 empty empty empty 0 -6 0 10 -262144
 -1 -1 0.17 256;
-#X msg 316 147 binaryOutput 1;
-#X msg 113 108 adaptationThreshold \$1;
-#X obj 113 91 nbx 5 14 0 1e+37 0 1 empty empty empty 0 -6 0 10 -262144
+#X msg 316 202 binaryOutput 1;
+#X msg 113 163 adaptationThreshold \$1;
+#X obj 113 146 nbx 5 14 0 1e+37 0 1 empty empty empty 0 -6 0 10 -262144
 -1 -1 43 256;
-#X msg 101 68 outputThreshold \$1;
-#X obj 101 51 nbx 5 14 0 1e+37 0 1 empty empty empty 0 -6 0 10 -262144
+#X msg 101 123 outputThreshold \$1;
+#X obj 101 106 nbx 5 14 0 1e+37 0 1 empty empty empty 0 -6 0 10 -262144
 -1 -1 32 256;
-#X obj 316 25 loadbang;
-#X obj 364 65 sel 0;
-#X obj 88 275 print;
-#X obj 88 255 fps detailed;
-#X obj 339 211 #out window \, title cam;
-#X text 432 147 '0' for greyscale;
-#X text 506 119 first add a new model;
-#X text 483 87 then apply;
+#X obj 316 80 loadbang;
+#X obj 364 120 sel 0;
+#X obj 88 330 print;
+#X obj 88 310 fps detailed;
+#X obj 339 266 #out window \, title cam;
+#X text 432 202 '0' for greyscale;
+#X text 506 174 first add a new model;
+#X text 483 142 then apply;
 #X connect 0 0 36 0;
 #X connect 1 0 0 0;
 #X connect 2 0 36 0;
