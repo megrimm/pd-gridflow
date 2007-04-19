@@ -43,6 +43,8 @@ set toplefts {}
 # for #N shouldn't do "continue", as well as other tricky index stuff.
 proc find_top_left {lines i} {
   global filename toplefts
+  set toplefts_i [llength $toplefts]
+  lappend toplefts [list patate poil] ;# temporary dummy value so that subpatches are represented in the correct order
   set j $i
   set xmin +9999; set ymin +9999
   set xmax -9999; set ymax -9999
@@ -56,7 +58,7 @@ proc find_top_left {lines i} {
     incr i
   }
   puts [format "filename=%-32s patch at lines %4d thru %4d has xmin=%d ymin=%d xmax=%d ymax=%d" $filename $j $i $xmin $ymin $xmax $ymax]
-  lappend toplefts [list $xmin $ymin]
+  lset toplefts $toplefts_i [list $xmin $ymin]
   return $i
 }
 
