@@ -28,7 +28,7 @@
 #X floatatom 247 112 5 0 0 0 - - -;
 #X floatatom 166 46 5 0 0 0 - - -;
 #X obj 210 46 hradio 15 1 0 4 empty empty empty 0 -6 0 8 -260818 -1
--1 1;
+-1 0;
 #X text 272 45 <-- select output here;
 #X text 65 45 vary this -->;
 #X obj 346 80 shunt;
@@ -47,10 +47,10 @@ an argument \, it will have 2 outlets.;
 value.;
 #X text 6 256 INTEGER;
 #X text 10 399 INTEGER;
-#X text 7 -12 The [shunt] routes any type of data to its active outlet.
+#X text 7 -10 The [shunt] routes any type of data to its active outlet.
 The number of outlets is defined by the argument at creation and the
 active outlet is defined by its right most inlet.;
-#X text 395 -38 GridFlow 0.8.4;
+#X text 395 -38 GridFlow 0.9.0;
 #X connect 14 0 15 0;
 #X connect 14 1 16 0;
 #X connect 14 2 17 0;

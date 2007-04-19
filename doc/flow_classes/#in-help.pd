@@ -1,4 +1,4 @@
-#N canvas 870 13 518 1000 10;
+#N canvas 870 13 518 928 10;
 #X obj 354 169 #out window;
 #X obj 7 6 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
@@ -21,12 +21,8 @@ video frame. A bang must be sent to [#in] in order to display the frame.
 #X text 77 495 "close" - Closes the video input device. Only necessary
 when you are using a live capture device.;
 #X text 76 529 "rewind" - Will rewind video to the beginning.;
-#X text 76 549 "loop 1" - Restarts a video each time it reaches the
-end \, "loop 1" is the default setting.;
 #X text 76 583 "loop 0" - turns off the loop option. The video stops
 once it reaches the end.;
-#X text 77 710 Displays the frame number of the frame just sent. Applies
-to formats that have frame numbers \, i.e. video.;
 #X text 81 845 Signals the end of a file and when a file is unreadable.
 ;
 #X obj 8 772 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
@@ -39,13 +35,10 @@ window];
 #X text 10 823 Outlet_1;
 #X text 81 875 Displays the frame number of the frame currently being
 viewed. Applies to formats that have frame numbers \, i.e. video.;
-#X text 90 949 Including the file name of a grid into the [#in] object
-eliminates the need for an [open< message but limits the action to
-one specified grid.;
 #X obj 7 311 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 201 312 Inlets (1);
-#N canvas 82 93 663 454 quicktime 0;
+#N canvas 82 93 663 454 quicktime 1;
 #X text 5 -3 The following messages can be used to set parameters for
 video (.mov) files.;
 #X text 124 271 different versions of LibQuickTime may include support
@@ -60,7 +53,6 @@ codecs/features may not be available).;
 #X msg 19 104 framerate 33;
 #X msg 29 191 colorspace rgb;
 #X msg 14 66 size 400 600;
-#X msg 24 133 force_size 400 600;
 #X obj 6 260 #in;
 #X text 141 105 Number of frames per second.;
 #X msg 28 159 parameter jpeg_quality 85;
@@ -78,18 +70,21 @@ codec parameters and after setting framerate and codec.;
 #X text 158 135 <--;
 #X text 208 161 <--;
 #X text 135 194 <--;
-#X text 233 164 Sets compression quality (100 being the highest quality
+#X text 233 162 Sets compression quality (100 being the highest quality
 \, but a large file. 75-85 is the standard setting).;
 #X text 159 197 Other colorspaces include rgba \, bgr \, bgra \, yuv
 \, yuva.;
 #X msg 6 42 open example.mov;
-#X connect 5 0 10 0;
-#X connect 6 0 10 0;
-#X connect 7 0 10 0;
-#X connect 8 0 10 0;
-#X connect 9 0 10 0;
-#X connect 12 0 10 0;
-#X connect 26 0 10 0;
+#X msg 24 133 force_size 480 640;
+#X obj 99 415 #record;
+#X text 11 415 see also :;
+#X connect 5 0 9 0;
+#X connect 6 0 9 0;
+#X connect 7 0 9 0;
+#X connect 8 0 9 0;
+#X connect 11 0 9 0;
+#X connect 25 0 9 0;
+#X connect 26 0 9 0;
 #X restore 145 671 pd quicktime file messages;
 #X obj 353 148 cnv 15 25 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
@@ -106,7 +101,7 @@ codec parameters and after setting framerate and codec.;
 -1;
 #X obj 16 225 #in;
 #X text 39 95 <--click here;
-#X obj 17 95 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 17 93 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
 #X obj 17 117 metro 33.3;
 #X obj 355 252 cnv 15 101 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
@@ -151,7 +146,6 @@ the other colour attributes will display its values in the console.
 #X text 240 87 Values from 0 to 65535;
 #X text 379 424 <--;
 #X text 405 447 <--;
-#X text 498 447 <--;
 #X text 441 402 <--;
 #X text 396 468 <--;
 #X text 383 369 <--;
@@ -176,8 +170,6 @@ not mmap.;
 #X restore 145 632 pd more info about video devices;
 #X text 77 615 For info about messages specifically for video devices
 \, click on:;
-#X text 77 415 "open" - followed by the filename \, sends a grid to
-[#out]. For example: "open sewing.jpg".;
 #X text 8 796 GRID;
 #X text 10 846 BANG;
 #X text 9 873 INTEGER;
@@ -202,22 +194,31 @@ not mmap.;
 #X text 68 245 <-- sends a bang upon reaching;
 #X text 97 258 the end of the file;
 #X msg 24 144 open looting.mov;
-#X obj 16 284 #out window \, title video;
+#X obj 16 288 #out window \, title video;
 #X text 402 7 GridFlow 0.9.0;
-#X connect 4 0 28 0;
-#X connect 5 0 28 0;
-#X connect 28 0 0 0;
-#X connect 30 0 37 0;
-#X connect 31 0 37 0;
-#X connect 32 0 37 0;
-#X connect 33 0 37 0;
-#X connect 35 0 37 0;
-#X connect 37 0 71 0;
-#X connect 37 1 34 0;
-#X connect 37 1 36 0;
-#X connect 39 0 40 0;
-#X connect 40 0 37 0;
-#X connect 42 0 44 0;
-#X connect 44 0 43 0;
-#X connect 66 0 37 0;
-#X connect 70 0 37 0;
+#X text 90 949 Including the file name of a grid into the [#in] object
+eliminates the need for an "open" message but limits the action to
+one specified grid.;
+#X text 77 415 "open" - followed by the filename \, sends it as a resource
+to [#out]. For example: "open sewing.jpg".;
+#X text 77 710 Outputs the frame that corresponds to the value. Applies
+to formats that have frame numbers \, i.e. video.;
+#X text 76 549 "loop 1" - Restarts a video each time it reaches the
+end (default setting).;
+#X connect 4 0 25 0;
+#X connect 5 0 25 0;
+#X connect 25 0 0 0;
+#X connect 27 0 34 0;
+#X connect 28 0 34 0;
+#X connect 29 0 34 0;
+#X connect 30 0 34 0;
+#X connect 32 0 34 0;
+#X connect 34 0 67 0;
+#X connect 34 1 31 0;
+#X connect 34 1 33 0;
+#X connect 36 0 37 0;
+#X connect 37 0 34 0;
+#X connect 39 0 41 0;
+#X connect 41 0 40 0;
+#X connect 62 0 34 0;
+#X connect 66 0 34 0;
