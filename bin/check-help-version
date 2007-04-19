@@ -1,0 +1,34 @@
+#!/usr/bin/tclsh
+
+set argh0 [file normalize [file join [pwd] $argv0]]
+source [file dirname $argh0]/pd-tools.tcl
+
+proc find_version_strings {lines i} {
+  global filename
+  lappend toplefts [list patate poil] ;# temporary dummy value so that subpatches are represented in the correct order
+  set j $i
+  set versions {}
+  while {$i < [llength $lines]} {
+    set list [split [lindex $lines $i] " "]
+    switch -- [lindex $list 1] {
+	text {
+		set comment [join [lrange $list 4 end] " "]
+		if {[regexp {^GridFlow (\d\.\d\.\d)} $comment v0 v1]} {
+			lappend versions $v1
+		}
+	}
+	connect {incr i; continue}
+	restore {break}
+    }
+    # recurse into subpatches (disabled because not necessary; can treat the file as one flat patch anyway)
+    ### if {[string compare [lindex $list 0] "#N"]==0} {set i [find_version_strings $lines [expr $i+1]]}
+    incr i
+  }
+  puts [format "%40s: %s" $filename $versions]
+  return $i
+}
+
+foreach filename $argv {
+  set lines [pd_read_file $filename]
+  find_version_strings $lines 1
+}
