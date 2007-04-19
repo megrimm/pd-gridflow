@@ -18,18 +18,11 @@
 0;
 #X obj 10 0 listlength;
 #X text 398 2 GridFlow 0.8.4;
-#X text 56 196;
-#X text 36 76;
-#X text 16 84;
-#X text 33 76;
 #X text 8 26 The [listlength] outputs the number of elements in the
 incoming list.;
 #X text 221 169 Inlets (1);
-#X text 8 319 Integer;
-#X text 64 320 Outputs the number of elements in the list.;
+#X text 61 320 Outputs the number of elements in the list.;
 #X text 9 380 No argument;
-#X text 58 218 The lenght of the list passed to the left inlet will
-be returned in the outlet.;
 #X text 211 354 Arguments (0);
 #X text 9 380 No argument;
 #X obj 3 411 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
@@ -50,7 +43,10 @@ be returned in the outlet.;
 0;
 #X obj 139 102 listlength;
 #X msg 246 78 1 12 a b c d e f g h i j k l;
-#X connect 37 0 39 0;
-#X connect 39 0 35 0;
-#X connect 39 0 36 0;
-#X connect 40 0 39 0;
+#X text 58 218 The length of the list passed to the left inlet will
+be returned in the outlet.;
+#X text 8 319 INT;
+#X connect 31 0 33 0;
+#X connect 33 0 29 0;
+#X connect 33 0 30 0;
+#X connect 34 0 33 0;

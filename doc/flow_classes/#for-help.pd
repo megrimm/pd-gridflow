@@ -1,4 +1,4 @@
-#N canvas 61 49 616 941 10;
+#N canvas 694 0 506 928 10;
 #X floatatom 13 227 5 0 0 0 - - -;
 #X floatatom 45 249 5 0 0 0 - - -;
 #X floatatom 78 270 5 0 0 0 - - -;
@@ -20,7 +20,6 @@
 0;
 #X text 15 704 GRID;
 #X obj 7 3 #for 0 320 1;
-#X text 391 3 GridFlow 0.8.4;
 #X obj 33 332 display;
 #X text 210 417 Inlets (3);
 #X text 213 758 Arguments (3);
@@ -40,18 +39,18 @@
 #X text 12 909 Argument 2;
 #X obj 15 297 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X text 123 270 <-- step value;
-#X text 94 247 <-- upper bound;
+#X text 119 270 <-- step value;
+#X text 90 247 <-- upper bound;
 #X text 60 224 <-- lower bound;
 #X obj 13 297 #for 0 8 1;
-#X obj 236 327 #print;
-#X obj 296 326 display;
-#X obj 278 295 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 264 364 #print;
+#X obj 284 334 display;
+#X obj 266 303 cnv 15 70 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X msg 276 220 0 0;
-#X msg 341 268 1 1;
-#X obj 276 295 #for 0 8 1;
-#X msg 308 245 4 4;
+#X msg 264 228 0 0;
+#X msg 329 276 1 1;
+#X obj 264 303 #for 0 8 1;
+#X msg 296 253 4 4;
 #X text 11 814 INTEGER;
 #X text 11 875 INTEGER;
 #X text 11 935 INTEGER;
@@ -61,9 +60,9 @@
 #X text 106 815 Lower bound. As with the other arguments \, they are
 overwritten when another value is given.;
 #X text 11 488 LIST;
-#X text 386 268 <-- step value (1);
-#X text 355 244 <-- upper bound (2);
-#X text 321 219 <-- lower bound (3);
+#X text 374 276 <-- step value (1);
+#X text 343 252 <-- upper bound (2);
+#X text 309 227 <-- lower bound (3);
 #X text 26 38 When given scalar bounds \, works like a regular [for]
 object plugged to a [#import] tuned for a Dim(size) where size is the
 number of values produced by a bang to that [for].;
@@ -71,7 +70,7 @@ number of values produced by a bang to that [for].;
 of [for] objects producing all possible combinations of their values
 in the proper order.;
 #X text 35 193 scalar bounds;
-#X text 315 191 vector bounds;
+#X text 303 196 vector bounds;
 #X text 9 465 INTEGER;
 #X text 74 466 Sets the lower bound;
 #X text 11 558 LIST;
@@ -81,17 +80,17 @@ in the proper order.;
 #X text 9 611 INTEGER;
 #X text 74 612 Sets the step value;
 #X text 76 707 The result of the operation is a single dimension grid
-in the case of scalar values and variable dimensions for vectors. 
-;
+in the case of scalar values and variable dimensions for vectors.;
 #X text 27 137 Syntax: #for <from> <to> <step> outlet: grid dim(size)
 where size = floor(to-from+1)/step.;
-#X connect 0 0 32 0;
-#X connect 1 0 32 1;
-#X connect 2 0 32 2;
-#X connect 32 0 15 0;
-#X connect 32 0 3 0;
-#X connect 36 0 38 0;
-#X connect 37 0 38 2;
-#X connect 38 0 34 0;
-#X connect 38 0 33 0;
-#X connect 39 0 38 1;
+#X text 391 3 GridFlow 0.9.0;
+#X connect 0 0 31 0;
+#X connect 1 0 31 1;
+#X connect 2 0 31 2;
+#X connect 31 0 14 0;
+#X connect 31 0 3 0;
+#X connect 35 0 37 0;
+#X connect 36 0 37 2;
+#X connect 37 0 33 0;
+#X connect 37 0 32 0;
+#X connect 38 0 37 1;

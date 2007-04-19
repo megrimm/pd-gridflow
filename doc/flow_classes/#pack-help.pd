@@ -31,12 +31,12 @@ of grid dimensions.;
 0;
 #X obj 85 135 #pack 3;
 #X text 76 315 Accepts integers.;
-#X text 395 1 GridFlow 0.8.4;
 #X text 72 392 Outputs values from each individual inlet into a grid.
 ;
 #X text 5 284 Inlet All;
 #X text 6 362 Outlet 0;
 #X text 204 430 Arguments;
+#X text 395 1 GridFlow 0.9.0;
 #X connect 9 0 21 0;
 #X connect 10 0 21 1;
 #X connect 11 0 21 2;
