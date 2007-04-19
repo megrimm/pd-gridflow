@@ -28,7 +28,7 @@ proc pd_pickle {l} {
 	set n [llength $l]
 	foreach e $l {
 		incr n -1
-		set e [regsub -all "," $e "\\\\,"]
+		#regsub -all "," $e "\\," e
 		append t $e
 		incr i [string length $e]
 		if {$i>65} {set i 0; append t "\n"} elseif {$n>0} {incr i; append t " "}
@@ -64,16 +64,17 @@ proc find_top_left {lines i} {
 proc move_objects {lines i} {
   global toplefts fout
   set xymin [lindex $toplefts 0]
-  set xmin [lindex $xymin 0]; if {$xmin < 0} {set xmin 0}
-  set ymin [lindex $xymin 1]; if {$ymin < 0} {set ymin 0}
+  set xmin [lindex $xymin 0]; if {$xmin > 0} {set xmin 0}
+  set ymin [lindex $xymin 1]; if {$ymin > 0} {set ymin 0}
   set toplefts [lrange $toplefts 1 end]
   while {$i < [llength $lines]} {
     set list [split [lindex $lines $i] " "]
-    if {[string compare [lindex $list 1] "connect"]==0} {incr i; puts $fout [pd_pickle $list]; continue}
+    if {[string compare [lindex $list 1] "connect"]==0} {puts $fout [pd_pickle $list]; incr i; continue}
     if {[string compare [lindex $list 1] "restore"]==0} {break}
     if {[string compare [lindex $list 0] "#N"]==0} {
+      puts $fout [pd_pickle $list]
       set i [move_objects $lines [expr $i+1]]
-      #continue
+      set list [split [lindex $lines $i] " "]
     }
     set x [expr [lindex $list 2]-$xmin]
     set y [expr [lindex $list 3]-$ymin]
@@ -87,8 +88,11 @@ proc move_objects {lines i} {
 foreach filename $argv {
   set lines [pd_read_file $filename]
   find_top_left $lines 1
-  set fout [open [lindex $argv 0].new w]
+  #continue
+  set fout [open $filename.new w]
   puts $fout [pd_pickle [lindex $lines 0]]
   move_objects $lines 1
   close $fout
+  exec mv $filename $filename.old
+  exec mv $filename.new $filename
 }
