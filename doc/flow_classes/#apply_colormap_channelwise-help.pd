@@ -1,55 +1,55 @@
 #N canvas 92 0 503 594 10;
-#X obj 209 165 until;
-#X msg 57 144 open bluemarble.jpg;
-#X obj 25 74 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+#X obj 209 169 until;
+#X msg 57 148 open bluemarble.jpg;
+#X obj 25 78 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
-#X obj 25 94 fork;
-#X obj 209 224 #import (256 3);
-#X obj 25 169 #in;
-#X obj 25 268 #out window;
-#X obj 24 247 cnv 15 190 16 empty empty empty 20 12 0 14 -241291 -66577
+#X obj 25 98 fork;
+#X obj 209 228 #import (256 3);
+#X obj 25 173 #in;
+#X obj 25 272 #out window;
+#X obj 24 251 cnv 15 190 16 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X obj 212 186 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
+#X obj 212 190 hsl 128 15 0 255 0 0 empty empty empty -2 -6 0 8 -262144
 -1 -1 0 1;
-#X obj 0 -4 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 11 -3 #apply_colormap_channelwise;
-#X obj 0 463 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 11 1 #apply_colormap_channelwise;
+#X obj 0 467 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 0 297 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 301 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 0 320 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 324 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 5 321 Inlet_0;
-#X text 202 299 Inlets (2);
-#X text 211 465 Outlets (1);
-#X obj 0 543 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 5 325 Inlet_0;
+#X text 202 303 Inlets (2);
+#X text 211 469 Outlets (1);
+#X obj 0 547 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 0 390 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 394 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 0 484 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 488 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 4 485 Inlet_0;
-#X text 5 391 Inlet_1;
-#X text 3 346 GRID;
-#X text 2 418 GRID;
-#X text 5 508 GRID;
-#X text 68 509 Outputs the modified data as a grid.;
-#X floatatom 219 206 5 0 0 0 - - -;
-#X obj 25 246 #apply_colormap_channelwise;
-#X text 12 23 This object is useful for color correction. for each
+#X text 4 489 Inlet_0;
+#X text 5 395 Inlet_1;
+#X text 3 350 GRID;
+#X text 2 422 GRID;
+#X text 5 512 GRID;
+#X text 68 513 Outputs the modified data as a grid.;
+#X floatatom 219 210 5 0 0 0 - - -;
+#X obj 25 250 #apply_colormap_channelwise;
+#X text 12 27 This object is useful for color correction. for each
 pixel it takes it apart \, looks up each part separately in the colormap
 and constructs a new pixel from that.;
-#X text 7 570 None;
-#X text 65 418 Colormap is a grid dim (2) (intensity channels);
-#X text 66 347 Accepts a grid that will be modified by the colormap
+#X text 7 574 None;
+#X text 65 422 Colormap is a grid dim (2) (intensity channels);
+#X text 66 351 Accepts a grid that will be modified by the colormap
 ;
-#X obj 279 144 loadbang;
-#X msg 209 144 728;
-#X msg 279 165 142;
-#X text 352 187 <-- vary this;
-#X text 390 -3 GridFlow 0.8.4;
-#X text 205 544 Arguments (0);
+#X obj 279 148 loadbang;
+#X msg 209 148 728;
+#X msg 279 169 142;
+#X text 352 191 <-- vary this;
+#X text 390 1 GridFlow 0.8.4;
+#X text 205 548 Arguments (0);
 #X connect 0 0 8 0;
 #X connect 1 0 5 0;
 #X connect 2 0 3 0;

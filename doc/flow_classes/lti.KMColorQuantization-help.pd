@@ -1,29 +1,29 @@
 #N canvas 174 90 634 417 10;
-#X msg 45 82 load babbage.jpg;
-#X obj 45 103 #in;
-#X msg 163 148 help;
-#X obj 173 83 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
+#X msg 57 92 load babbage.jpg;
+#X obj 57 113 #in;
+#X msg 175 158 help;
+#X obj 185 93 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1
 ;
-#X obj 212 134 #out window \, title Original;
-#X obj 198 103 #camera;
-#X obj 198 260 fps detailed;
-#X obj 199 282 display;
-#X obj 198 82 metro 10;
-#X msg 163 168 get;
-#X msg 213 188 numberOfColors \$1;
-#X obj 198 213 lti.KMColorQuantization 3;
-#X obj 198 236 #out window \, title Quantized;
-#X obj 213 167 nbx 5 14 2 256 0 1 empty empty numberOfColors 0 -6 0
+#X obj 224 144 #out window \, title Original;
+#X obj 210 113 #camera;
+#X obj 210 270 fps detailed;
+#X obj 211 292 display;
+#X obj 210 92 metro 10;
+#X msg 175 178 get;
+#X msg 225 198 numberOfColors \$1;
+#X obj 210 223 lti.KMColorQuantization 3;
+#X obj 210 246 #out window \, title Quantized;
+#X obj 225 177 nbx 5 14 2 256 0 1 empty empty numberOfColors 0 -6 0
 10 -262144 -1 -1 4 256;
-#X obj -11 -10 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017
--355 0;
-#X obj -11 24 cnv 15 1100 15 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 0 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017 -355
 0;
-#X text 3 -6 GridFlow::Rblti;
-#X text 1 23 lti.KMColorQuantization;
-#X obj -12 357 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017
--66577 0;
-#X text 3 365 GridFlow 0.8.4;
+#X obj 1 34 cnv 15 1100 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 15 4 GridFlow::Rblti;
+#X text 13 33 lti.KMColorQuantization;
+#X obj 0 367 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 15 375 GridFlow 0.8.4;
 #X connect 0 0 1 0;
 #X connect 1 0 11 0;
 #X connect 1 0 4 0;

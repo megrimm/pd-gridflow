@@ -1,44 +1,45 @@
 #N canvas 64 77 605 446 10;
-#X obj 87 81 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1;
-#X obj 87 123 #camera;
-#X obj 87 101 metro 30;
-#X msg -4 101 help;
-#X msg -4 123 get;
-#X msg 156 101 open babbage.jpg \, bang;
-#X obj 156 124 #in;
-#X obj 85 154 lti.SplitImageToRGB 2;
-#X msg 42 172 help;
-#X msg 42 194 get;
-#X obj 85 312 lti.MergeRGBToImage 1;
-#X obj 55 102 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+#X obj 103 81 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 1 1
+;
+#X obj 103 123 #camera;
+#X obj 103 101 metro 30;
+#X msg 12 101 help;
+#X msg 12 123 get;
+#X msg 172 101 open babbage.jpg \, bang;
+#X obj 172 124 #in;
+#X obj 101 154 lti.SplitImageToRGB 2;
+#X msg 58 172 help;
+#X msg 58 194 get;
+#X obj 101 312 lti.MergeRGBToImage 1;
+#X obj 71 102 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
-#X obj 240 154 #out window \, title Original;
-#X obj 85 339 #out window \, title Recombined;
-#X obj 84 361 fps detailed;
-#X obj 83 380 display;
-#X obj 159 80 loadbang;
-#X obj 132 214 #reverse 0;
-#X obj 227 235 #reverse 1;
-#X obj 320 236 #remap_image;
-#X obj -16 3 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -355
+#X obj 256 154 #out window \, title Original;
+#X obj 101 339 #out window \, title Recombined;
+#X obj 100 361 fps detailed;
+#X obj 99 380 display;
+#X obj 175 80 loadbang;
+#X obj 148 214 #reverse 0;
+#X obj 243 235 #reverse 1;
+#X obj 336 236 #remap_image;
+#X obj 0 3 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -355
 0;
-#X obj -16 37 cnv 15 600 15 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 0 37 cnv 15 600 15 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text -2 7 GridFlow::Rblti;
-#X obj -16 416 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -66577
+#X text 14 7 GridFlow::Rblti;
+#X obj 0 416 cnv 15 600 30 empty empty empty 20 12 0 14 -233017 -66577
 0;
-#X obj 271 200 shunt;
-#X obj 318 201 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 1
+#X obj 287 200 shunt;
+#X obj 334 201 tgl 15 0 empty empty empty 17 7 0 10 -241291 -1 -1 1
 1;
-#X obj 487 212 #pack 2;
-#X floatatom 531 192 5 0 0 0 - - -;
-#X floatatom 487 192 5 0 0 0 - - -;
-#X text -9 422 GridFlow 0.9.0;
-#X obj 172 271 #remap_image;
-#X obj 132 188 shunt;
-#X obj 267 271 # + (-10 15);
-#X obj 415 236 # + (10 15);
-#X text -4 36 lti.MergeRGBToImage;
+#X obj 503 212 #pack 2;
+#X floatatom 547 192 5 0 0 0 - - -;
+#X floatatom 503 192 5 0 0 0 - - -;
+#X text 7 422 GridFlow 0.9.0;
+#X obj 188 271 #remap_image;
+#X obj 148 188 shunt;
+#X obj 283 271 # + (-10 15);
+#X obj 431 236 # + (10 15);
+#X text 12 36 lti.MergeRGBToImage;
 #X connect 0 0 2 0;
 #X connect 1 0 7 0;
 #X connect 1 0 12 0;
