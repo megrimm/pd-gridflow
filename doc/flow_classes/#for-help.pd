@@ -1,4 +1,4 @@
-#N canvas 447 0 508 965 10;
+#N canvas 61 49 616 941 10;
 #X floatatom -169 227 5 0 0 0 - - -;
 #X floatatom -137 249 5 0 0 0 - - -;
 #X floatatom -104 270 5 0 0 0 - - -;
@@ -55,7 +55,6 @@
 #X text -171 814 INTEGER;
 #X text -171 875 INTEGER;
 #X text -171 935 INTEGER;
-#X text -108 814;
 #X text -168 681 Outlet 0;
 #X text -77 875 Upper bound;
 #X text -76 935 Step value;
