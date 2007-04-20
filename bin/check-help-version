@@ -3,8 +3,10 @@
 set argh0 [file normalize [file join [pwd] $argv0]]
 source [file dirname $argh0]/pd-tools.tcl
 
+set report {}
+
 proc find_version_strings {lines i} {
-  global filename
+  global filename report
   lappend toplefts [list patate poil] ;# temporary dummy value so that subpatches are represented in the correct order
   set j $i
   set versions {}
@@ -24,11 +26,16 @@ proc find_version_strings {lines i} {
     ### if {[string compare [lindex $list 0] "#N"]==0} {set i [find_version_strings $lines [expr $i+1]]}
     incr i
   }
-  puts [format "%40s: %s" $filename $versions]
+  lappend report [list $filename [lsort $versions]]
   return $i
 }
 
 foreach filename $argv {
   set lines [pd_read_file $filename]
   find_version_strings $lines 1
+}
+
+foreach line [lsort -decreasing -index 1 $report] {
+  foreach {filename versions} $line {}
+  puts [format "%40s: %s" $filename $versions]
 }
