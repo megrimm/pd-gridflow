@@ -32,6 +32,8 @@ and the 'anything' method translates the whole message to Ruby objects and
 tries to call a Ruby method of the proper name.
 */
 
+bool print_class_list;
+
 #define IS_BRIDGE
 #include "../base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
@@ -466,8 +468,11 @@ static void BFObject_class_init_1 (t_class *qlass) {
 
 \class FObject
 
+#define class_new(NAME,ARGS...) (print_class_list ? fprintf(stderr,"class_new %s\n",(NAME)->s_name) : 0, class_new(NAME,ARGS))
+
 static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 	if (TYPE(name)!=T_STRING) RAISE("name must be String");
+	//if (print_class_list) printf("class_new %s\n",rb_str_ptr(name));
 	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
@@ -854,7 +859,6 @@ static void add_to_path(char *dir) {
 }
 
 static void boo (int boo) {
-
 }
 
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
@@ -864,6 +868,9 @@ static void boo (int boo) {
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	post("setting up Ruby-for-PureData...");
+
+	const char *pcl = getenv("PRINT_CLASS_LIST");
+        if (pcl && strcmp(pcl,"yes")==0) print_class_list=true;
 
 	char *dirname   = new char[242];
 	char *dirresult = new char[242];
