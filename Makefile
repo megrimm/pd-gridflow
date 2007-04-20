@@ -2,7 +2,7 @@
 # $Id$
 
 include config.make
-#COMMON_DEPS = config.make Makefile base/source_filter.rb
+COMMON_DEPS = config.make Makefile base/source_filter.rb
 RUBY = ruby
 
 #--------#
@@ -34,7 +34,7 @@ all:: $(DLLIB) gridflow-for-puredata
 
 clean::
 	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
-	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs cpu/*.fcs optional/*.fcs
+	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs
 
 .SUFFIXES:
 
@@ -70,10 +70,10 @@ $(DLLIB): $(OBJS2) $(OBJS)
 
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
 
-cpu/mmx.asm cpu/mmx_loader.c: cpu/mmx.rb
-	$(RUBY) cpu/mmx.rb cpu/mmx.asm cpu/mmx_loader.c
-cpu/mmx.o: cpu/mmx.asm
-	nasm -f elf cpu/mmx.asm -o cpu/mmx.o
+base/mmx.asm base/mmx_loader.c: base/mmx.rb
+	$(RUBY) base/mmx.rb base/mmx.asm base/mmx_loader.c
+base/mmx.o: base/mmx.asm
+	nasm -f elf base/mmx.asm -o base/mmx.o
 
 unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
