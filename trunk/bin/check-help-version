@@ -35,6 +35,14 @@ foreach filename $argv {
   find_version_strings $lines 1
 }
 
+set env(PRINT_CLASS_LIST) yes
+set f [open "| pd -nogui -send {pd quit} 2&>1" r+]
+while {![eof $f]} {
+	if {[regexp {^class_new (.*)} [gets $f] m0 m1]} {
+		puts $m1
+	}
+}
+
 foreach line [lsort -decreasing -index 1 $report] {
   foreach {filename versions} $line {}
   puts [format "%40s: %s" $filename $versions]
