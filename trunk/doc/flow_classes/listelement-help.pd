@@ -42,10 +42,10 @@ of an element in a list. The selected element is output \, for example:
 integer "0" selects and outputs the first element in a list \, integer
 "1" selects and outputs the second element in a list \, integers "-1"
 selects and outputs the last element in a list.;
-#X text 396 1 GridFlow 0.8.4;
 #X text 77 289 Changes the value of the argument i.e. changes the index
 into the list to get a different element.;
 #X text 11 290 INTEGER;
+#X text 396 1 GridFlow 0.9.0;
 #X connect 14 0 21 1;
 #X connect 16 0 21 0;
 #X connect 21 0 13 0;

@@ -12,11 +12,10 @@
 0;
 #X obj 1 352 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 398 1 GridFlow 0.8.4;
 #X text 2 205 Inlet 0;
 #X text 2 272 Inlet 1;
 #X text 221 182 Inlets (2);
-#X obj 1 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X obj -1 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 10 0 shunt;
 #X obj 165 117 cnv 15 52 17 empty empty empty 20 12 0 14 -241291 -66577
@@ -50,10 +49,10 @@ value.;
 #X text 7 29 The [shunt] routes any type of data to its active outlet.
 The number of outlets is defined by the argument at creation and the
 active outlet is defined by its right most inlet.;
-#X text 395 1 GridFlow 0.9.0;
-#X connect 14 0 15 0;
-#X connect 14 1 16 0;
-#X connect 14 2 17 0;
-#X connect 14 3 18 0;
-#X connect 19 0 14 0;
-#X connect 20 0 14 1;
+#X text 398 2 GridFlow 0.9.0;
+#X connect 13 0 14 0;
+#X connect 13 1 15 0;
+#X connect 13 2 16 0;
+#X connect 13 3 17 0;
+#X connect 18 0 13 0;
+#X connect 19 0 13 1;
