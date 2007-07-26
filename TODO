@@ -4,7 +4,33 @@
 [ ] ...
 
 +-------+-------+-------+-------+-------+-------+-------+-------
+Common Video Framework :
+
+[ ] a common library for all video IO (cameras, files, web), which is the
+    project of Thomas H and Johannes.
+
+[ ] a six-way converter for GEM/PDP/GridFlow. There are already
+    converters between GEM and PDP and between GEM and GridFlow but
+    there is none between PDP and GridFlow and then some things could
+    be easier to install and run in a cross-platform way.
+
+[ ] a way to make GEM/PDP/GF conversions *implicitly* instead of
+    having objects for that.
+
+[ ] threads for video?
+
+[ ] GEM geos vs 3DP: how do they compare?
+
+[ ] is there anything else deserving to be unified between the video
+    plugins?
+
+[ ] videojack
+[ ] http://gstreamer.freedesktop.org/
+
++-------+-------+-------+-------+-------+-------+-------+-------
 GridFlow 0.9.0 :
+
+[ ] 266678 bytes of Ruby left to delete
 
 [ ] switch from ruby to tcl
 [ ] distinguish between C++ types Grid* and GridFlow*
@@ -17,7 +43,9 @@ GridFlow 0.9.0 :
 [ ] tcl.pd_linux that does all of the same as gridflow.pd_linux but for
     tcl instead of ruby.
 [ ] rewrite MétaRuby Type.rb in tcl ?
-[ ] expand OOP system as necessary: C-based objects, AOP, static methods, SELF inheritance, ...
+[ ] expand poe.tcl system as necessary: C-based objects, AOP, static methods, SELF inheritance, ...
+
+[ ] look at camorama
 
 +-------+-------+-------+-------+-------+-------+-------+-------
 See Also :
@@ -38,8 +66,7 @@ ClaudiusMaximus matju: [unix_time] is maldocumented, outlet 0 is a grid Dim[28](
 [ ] pd_examples -> examples
 [ ] update doc
 [ ] replace the unimplemented "r" numtype (Ruby) by an implemented "t" numtype (Tcl)
-[ ] ditch xml, switch to docstrings or whatever
-
+[ ] ditch xml (switch to helppatches)
 [ ] claude wants http://en.wikipedia.org/wiki/Graham_scan
 
 malloc alignment = 4 mod 8 (en utilisant valgrind)
@@ -60,7 +87,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
-[ ] make c++ refcount and ruby gc to cooperate.
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
 [ ] reading tux.tga is completely broken
 [ ] install of libquicktime is very wrong on my system (is it 0.9.8?)
@@ -97,6 +123,8 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] wrap Pd API completely.
 [ ] test.rb should become much more serious. (the @pack bug really sucked)
 
+[ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
+
 [147] [#store] blows up in nervous_video (reassign)
 [146] [#peephole] resize problem
 [145] "list -1"->[@import] only tells error message once every other time
@@ -110,17 +138,12 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 	Instead it will resize itself as you move it around.  
 [138] [#peephole] crash
 [137] [gf] peeperr: problem with set_geometry, wrong size.
-[136] fix C_INCLUDE_PATH vs CPLUS_INCLUDE_PATH
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
-[118] error messages can be unclear (eg. file not open... is it #in's, or #out's?)
 [117] osx: [#store] crash instead of raising
 [107] MMX computations may be done misaligned, which may be bad.
 [105] when file not found, mpeg error messages are wrong, they say the filename is "".
 [102] osx: error: shmget failed (cannot allocate memory) in X11, for regular pictures
-[027] tcp test is broken
-[089] is LINK TO="..." not properly handled? see part of install.xml that uses it.
-[088] FIX MOULINETTE.RB ! <attr name type default>
 [078] "unsupported codec" bogus errors.
 [097] bin/backtrace does not detect scripts
 [005] can't open "": Success; loading a nonquicktime file using quicktime
@@ -137,17 +160,12 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [040] GRID_FINISH triggered while backstore ???
 [079] can trap segfaults in codecs of libquicktime.
 [090] http://poynton.com/notes/colour_and_gamma/ColorFAQ.html#RTFToC30
-[076] EINTR not handled properly in a lot of code?
 [041] what would be a way to make GF work well with Pd's idea of a list?
-[043] TCP server socket busy even after kill
 [045] write unit tests about required functionality
 [046] write unit tests about error checking
 [047] make system to ensure everything is working before a release.
 [048] potential issues between fork() and X11 ?
 [054] it's possible to crash by sending data in two inlets of a same object at once
-[060] look for "!@#$" in source
-[029] #join on small chunks is way too slow
-[009] T_DATA #dup #clone ???
 
 --- make the development process more test-driven:
     * file every feature request and bug report into base/test.rb so
@@ -155,16 +173,7 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 
 ===================
 
-Distribution
-[ ] review all documentation
-[ ] review all examples
-[ ] make CDs
-
 Installation
-[ ] produce linux binaries ("static")
-[ ] produce cygwin32 or mingw32 binaries
-[ ] produce macosx binaries
-[ ] produce linux rpm/deb
 [ ] less compile-time checks and more run-time checks
 [ ] should GridFlow be bundled with some of its own dependencies?
 [ ] find a good profiler (not gridflow's internal...)
@@ -176,25 +185,18 @@ Documentation
 [ ] make a short feature list as a promo
 [ ] add credits
 [ ] indiquer comment faire un rapport à propos d'une carte v4l ou d'un mode x11 non-supporté
-[ ] project_policy.xml
-[ ] specify policy for <help>, <icon>, etc.
-[ ] things you type verbatim are all in KBD blocks
-[ ] placeholders for your own values are all in I blocks
 [ ] document how to report bugs, basic troubleshooting
 [ ] document our distribution of the archives
 [ ] ascii conventions: [foo] vs "foo", etc.
 [ ] document internals
 [ ] describe indexmap in doc
 [ ] document backward compatibility issues
-[ ] typical uses: <typical></typical>
 [ ] architecture: class->type/shape->use->role
-[ ] it should be indicated whether an object is supported by pd/ruby/c++
 [ ] heavily hyperlink documentation
 [ ] automate more parts of the documentation
 [ ] benchmarks (especially: simple video i/o)
 [ ] mimic [pdp_help_input] [pdp_help_output]: they are convenient
 --- remember to keep doc/help/screenshots/examples up to date
-
 
 Architecture
 [0.8] reentrancy of objects (to allow true recursion)
@@ -214,7 +216,6 @@ Architecture
 	specified part of the grid is received.
 [0.8] accounting: grids messages packets numbers bytes copybytes
 [0.8] memory profiling
-[0.8] compare Ruby API with both flext/pyext
 [ ] add a "query" class for debugging other objects?
     (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something
@@ -276,13 +277,11 @@ Input/Output
 [ ] support for output inside of a GUI app (Tk/Gtk/Qt/...)
 [ ] get subtitling of tv channels
 [ ] add messages "load", "save" as open,bang,close combos. (?)
-[ ] use 1.8.0's IO#read(Integer,String)->String
 [ ] SDL: should support multiple windows
 [ ] x11,sdl,aalib: use buffering to synchronise frames at a constant rate.
 [ ] x11: sync with the actual vsync of the monitor
 [ ] x11: maybe vram-to-vram copy using X11's Pixmap remote-objects
 [ ] shell object?
-[ ] #import, 'grid tcp': option: sudden vs gradual transmission through gridflow.
 [ ] HPGL, [unixtime]
 [ ] [parallel_port], [serial_port], [usb_mouse]
 
@@ -296,8 +295,6 @@ Format
 [ ] /dev/dsp, /dev/mixer
 [ ] Generic SHM/MMAP Drivers
 [ ] "open grid pipe" and such.
-[ ] TCP: non-blocking write
-[ ] TCP: buffer n grids
 [ ] multi: multi-file (by glob pattern, e.g.: foo*.ppm)
 [ ] AVI
 [ ] format grid: "headerless until 10" (text files)
@@ -342,19 +339,15 @@ From: Alexandre Castonguay <acastonguay@artengine.ca>
   [ ] support for audio in the mpeg streams
 
 <matju> alx:
- le tab completion ne donnerait pas seulement les noms possibles pour le
+le tab completion ne donnerait pas seulement les noms possibles pour le
 prochain argument dans le objectbox; il donnerait aussi une description de
 l'argument (surtout dans le cas où l'argument a beaucoup de valeurs
-possibles) 
- je pense que le help de Pd est une bonne idée (le concept hands-on)
-mais ça pourrait aller plus loin. 
- j'ai pensé intégrer le manuel de référence de gridflow directement dans
-le programme, disponible au runtime, dans l'éventualité d'un GUI qui
-saurait en tirer avantage. (sauf que dans ce cas: [rubyprint] est tenu
-d'afficher directement tout ce qu'il reçoit. alors doit-il écrire "help" ou écrire le help ? 
+possibles). je pense que le help de Pd est une bonne idée (le concept hands-on)
+mais ça pourrait aller plus loin. j'ai pensé intégrer le manuel de référence de
+gridflow directement dans le programme, disponible au runtime, dans l'éventualité
+d'un GUI qui saurait en tirer avantage.
 
-alx1->matju: détection de plusieurs personnes; détection avec deux caméras
-(?);  détecter les formes; détecter les couleurs; support mpeg4; hotspots
+<alx1> matju: détecter les formes; détecter les couleurs; support mpeg4; hotspots
 
 > http://redshift.sourceforge.net/debugging-GC/ [ruby-talk:53835]
 > You might also want to search the web for "malloc debugger".
@@ -387,12 +380,6 @@ having a camera like the iSight supported could be fantastic for video capture/d
 
 remember to check for volatile VALUEs if GC problems ever occur
 
-linx:
-  http://cast.rubyforge.org (parsing C code)
-  http://ruby-contract.rubyforge.org/doc/
-  
-
-
 Tom Schouten wrote: "
 added demo/rawvideo.pf and some support scripts in bin/pf-rawvideo.*
 this is an example on how to use external programs for raw video input.
@@ -403,21 +390,6 @@ input codecs in pf, the best alternative is to have mplayer (actually
 mencoder) or ffmpeg as a subprocess.
 the same will be done for recording later.
 "
-
-
-==6998== Conditional jump or move depends on uninitialised value(s)
-==6998==    at 0x1DA9D7FF: lti::meanShiftSegmentation::init_matr(int*) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
-==6998==    by 0x1DA9DC6D: lti::meanShiftSegmentation::initializations(lti::image const&, std::vector<lti::trectangle<int, lti::rectSide<int> >, std::allocator<lti::trectangle<int, lti::rectSide<int> > > >&) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
-==6998==    by 0x1DA9E9C4: lti::meanShiftSegmentation::apply(lti::image const&, lti::matrix<int>&, lti::vector<lti::rgbPixel>&) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
-==6998==    by 0x1D7B7189: _wrap_meanShiftSegmentation_apply__SWIG_2(int, unsigned long*, unsigned long) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
-==6998==    by 0x1D7B7A0B: _wrap_meanShiftSegmentation_apply(int, unsigned long*, unsigned long) (in /debian64/home/matju/lib/ruby/site_ruby/1.9/i686-linux/rblti.so)
-==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
-==6998==    by 0x1CC7999F: rb_call0 (eval.c:5691)
-==6998==    by 0x1CC79AE5: rb_call (eval.c:5864)
-==6998==    by 0x1CC77A03: rb_eval (eval.c:3310)
-==6998==    by 0x1CC7986F: rb_call0 (eval.c:5772)
-==6998==    by 0x1CC79AE5: rb_call (eval.c:5864)
-==6998==    by 0x1CDD9339: send_in_2(Helper*) (main.c.fcs:176)
 
 ==6998== Mismatched free() / delete / delete []
 ==6998==    at 0x1B9016E8: operator delete(void*) (vg_replace_malloc.c:246)
@@ -445,6 +417,5 @@ the same will be done for recording later.
 ==6998==    by 0x1CF0DE7D: GridStore::_0_grid(int, unsigned long*) (flow_objects.c.fcs:404)
 ==6998==    by 0x1CF15353: GridStore::_0_grid_wrap(int, unsigned long*, unsigned long) (flow_objects.c.fcs:404)
 ==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
-
 
 rational numbers: http://wiki.tcl.tk/13877
