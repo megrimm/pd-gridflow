@@ -614,7 +614,8 @@ begin
     if LTI.have_param[name]
        param_class.instance_methods.grep(/\w=$/).each{|x| self.lti_attr x.chop }
     end
-    properties_enable
+    # this is not available in DesireData and should be replaced by an equivalent mechanism there.
+    properties_enable rescue NameError
   }
 rescue StandardError => e
   GridFlow.post "%s", e
