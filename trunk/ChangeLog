@@ -11,12 +11,20 @@ version 0.9.0 (2007.02...):
  * new classes: [seq_fold], [#seq_fold], [#.var], [#noise_gate_yuvs]
  * updated [#camera]
  * added PWC-specific options: framerate white_mode white_red white_blue
-   compression noise_reduction
+   white_speed white_delay auto_gain compression noise_reduction
  * colorspace conversion directly in [#in videodev] (faster)
  * grid messages no longer contain dim and numbertype (just a pointer)
- * GridOutlet: set_chunk, ...
+ * GridOutlet: added set_chunk (so set_factor is obsolete)
  * removed GridFlow menu
  * faster [#inner] for small matrix sizes
+ * GridFlow won't work in plain Ruby anymore (without Pd)
+ * removed [pd_netsend] [jmax_udpsend] [jmax4_udpsend] [pd_netreceive]
+   [jmax_udpreceive] [jmax4_udpreceive] [printargs] [rubyprint]
+ * removed Type.rb and Contract.rb and their use in videodev.c
+ * [#in quicktime]: added method "get"
+
+ * removed old documentation: *-icon.png and SOON reference.*ml
+ * videodev.c should be upgraded to V4L2 asap.
 
 version 0.8.4 (2006.10.12):
 
