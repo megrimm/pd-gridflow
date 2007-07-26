@@ -1,4 +1,9 @@
+#set i 0
+#foreach c [info commands] {if {[string compare [string range $c 0 1] t_]} {incr i}}
+#puts $i
+
 package require poe
+#load ./gridflow2.so
 
 proc post {args} {
   poststring2 [eval [concat [list format] $args]]
@@ -38,14 +43,14 @@ proc list_change {self args} {
     "eval \[concat \[list list_change_\$selector $self\] \$args\]"
   return $self
 }
- 
+
 proc list_change_0_list {self args} {
   global _
   set _($self:oldlist) $_($self:curlist)
   set _($self:curlist) $args
   list_change_check $self
 }
- 
+
 proc list_change_check {self} {
   global _
   set l [llength $_($self:curlist)]
