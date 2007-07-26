@@ -454,6 +454,7 @@ Feature.add {
 	options ["HAVE_USB"]
 }
 #----------------------------------------------------------------#
+=begin
 Feature.add {
 	tag :dv1394
 	name "DV1394 for Linux"
@@ -468,6 +469,7 @@ Feature.add {
 	options ["HAVE_DV1394"]
 	uses_o ["format/dv1394.o"]
 }
+=end
 Feature.add {
 	tag :x11
 	name "X11 Display Protocol"
@@ -793,7 +795,7 @@ while ARGV.length>0 do
 		$conf[:OPTIONS].push :HAVE_DEBUG
 		$CFLAGS += " -fno-inline"
 	when "--lite"
-		puts "Lite Mode (no float, no int64)"
+		puts "Lite Mode (no float64, no int64)"
 		$conf[:OPTIONS].push :HAVE_LITE
 	when "--help"
 		usage; exit 0
