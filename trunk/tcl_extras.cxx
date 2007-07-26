@@ -1,10 +1,13 @@
 #include "tcl_extras.h"
-#include <map>
+//#include <map>
+#include <ext/hash_map>
 #include <string>
 using namespace std;
+using namespace __gnu_cxx; /* hash_map is not standard */
 extern Tcl_Interp *tcl_for_pd;
 void poststring2 (const char *s) {post("%s",s);}
-map<string,t_class*> class_table;
+//map<string,t_class*> class_table;
+hash_map<string,t_class*> class_table;
 static long cereal=0;
 
 static Tcl_Obj *pd_to_tcl (t_atom *a) {
@@ -24,6 +27,12 @@ static Tcl_Obj *pd_to_tcl (t_atom *a) {
       return Tcl_NewStringObj(s,strlen(s));
     }
   }
+}
+
+static void tcl_to_pd (Tcl_Obj *a, t_atom *b) {
+  double d;
+  if (Tcl_GetDoubleFromObj(tcl_for_pd,a,&d) == TCL_OK) {SETFLOAT(b,d); return;}
+  SETSYMBOL(b,gensym(Tcl_GetStringFromObj(a,0)));
 }
 
 static void *tclpd_init (t_symbol *classsym, int ac, t_atom *at) {
@@ -73,4 +82,3 @@ t_class *tclpd_class_new (char *name, int flags) {
   class_addanything(qlass,tclpd_anything);
   return qlass;
 }
-
