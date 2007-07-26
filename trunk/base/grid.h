@@ -80,6 +80,7 @@ extern "C" {
 #endif
 #define RAISE2(string) RAISE(string)
 #else
+#include <tcl.h>
 extern Tcl_Interp *tcl_for_pd;
 #define RAISE2(string) Tcl_SetErrorCode(tcl_for_pd,Tcl_NewStringObj(string,strlen(string)))
 #define RAISE(args...) do { char meuh[666]; sprintf(meuh,args); RAISE2(meuh); } while (0);
@@ -153,6 +154,7 @@ typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 typedef Tcl_Obj *Ruby;
 typedef char *Symbol;
 typedef char *String;
+typedef std::vector<long> Array; /* huh? */
 #define Qnil ""
 #endif
 
@@ -317,7 +319,6 @@ struct CObject {
 	Ruby rself; // point to Ruby peer
 	CObject() : refcount(0), rself(0) {}
 	virtual ~CObject() {}
-	virtual void mark() {} // not used for now
 };
 void CObject_free (void *);
 
@@ -770,7 +771,7 @@ public:
 		parent(parent_), gh(gh_), sender(0),
 		dim(0), nt(int32_e), dex(0), bufi(0), mode(4) {}
 	~GridInlet() {}
-	void set_factor(long factor);
+	void set_factor(long factor); // obsolete
 	void set_chunk(long whichdim);
 	void set_mode(int mode_) { mode=mode_; }
 	int32 factor() {return buf?buf->dim->prod():1;}
@@ -878,9 +879,13 @@ struct FObject : CObject {
 	BFObject *bself; // point to PD peer
 	FObject() : bself(0) {}
 	const char *args() {
+#ifdef SWIG
+		return "unknown";
+#else
 		Ruby s=rb_funcall(rself,SI(args),0);
 		if (s==Qnil) return 0;
 		return rb_str_ptr(s);
+#endif
 	}
 #ifndef SWIG
 	\decl void send_in (...);
