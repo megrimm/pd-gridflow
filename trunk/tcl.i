@@ -28,6 +28,7 @@
 %ignore getzbytes;
 %ignore gfxstub_new;
 %ignore gfxstub_deleteforkey;
+%ignore glist_grab;
 
 /* functions that we can't auto-wrap, because they have varargs */
 %ignore post;
