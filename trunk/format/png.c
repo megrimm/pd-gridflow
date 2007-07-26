@@ -68,12 +68,8 @@ GRID_INLET(FormatPNG,0) {
 	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) RAISE("!png");
 	info = png_create_info_struct(png);
-	if (!info) {
-		png_destroy_read_struct(&png, NULL, NULL); RAISE("!info");
-	}
-	if (setjmp(png_jmpbuf(png))) {
-		png_destroy_read_struct(&png, &info, NULL); RAISE("png read error");
-	}
+	if (!info) {png_destroy_read_struct(&png, NULL, NULL); RAISE("!info");}
+	if (setjmp(png_jmpbuf(png))) {png_destroy_read_struct(&png, &info, NULL); RAISE("png read error");}
 	png_init_io(png, f);
 	png_set_sig_bytes(png, 8);  // we already read the 8 signature bytes
 	png_read_info(png, info);   // read all PNG info up to image data
@@ -97,23 +93,20 @@ GRID_INLET(FormatPNG,0) {
 
 	int rowbytes = png_get_rowbytes(png, info);
 	int channels = (int)png_get_channels(png, info);
-	uint8 * image_data = new uint8[rowbytes*height];
+	uint8 *image_data = new uint8[rowbytes*height];
 	row_pointers = new png_bytep[height];
 	//gfpost("png: color_type=%d channels=%d, width=%d, rowbytes=%ld, height=%ld, gamma=%f",
 	//	color_type, channels, width, rowbytes, height, gamma);
 	for (int i=0; i<(int)height; i++) row_pointers[i] = image_data + i*rowbytes;
 	if ((uint32)rowbytes != width*channels)
-		RAISE("rowbytes mismatch: %d is not %d*%d=%d",
-			rowbytes, width, channels, width*channels);
+		RAISE("rowbytes mismatch: %d is not %d*%d=%d", rowbytes, width, channels, width*channels);
 	png_read_image(png, row_pointers);
-	delete row_pointers;
+	delete[] row_pointers;
 	row_pointers = 0;
 	png_read_end(png, 0);
-
-	GridOutlet out(this,0,new Dim(height, width, channels),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(height, width, channels), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	out.send(rowbytes*height,image_data);
-	free(image_data);
+	delete[] image_data;
 	png_destroy_read_struct(&png, &info, NULL);
 	return Qnil;
 }
