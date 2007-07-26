@@ -12,6 +12,10 @@ LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
+
+# comment this out for normal compilation
+# CFLAGS += -DSWIG
+
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 ifeq ($(HAVE_DEBUG),yes)
 	CFLAGS += -O1
@@ -132,7 +136,7 @@ help::
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
-# default:: tcl.pd_linux
+tcl:: tcl.pd_linux
 
 tcl.pd_linux: tcl_wrap.cxx tcl_extras.cxx tcl_extras.h Makefile
 	g++ $(CFLAGS) -shared -DPDSUF=\"$(PDSUF)\" -o tcl.pd_linux \
@@ -146,11 +150,19 @@ tcl_wrap.cxx: tcl.i tcl_extras.h
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
-gridflow2.so: gridflow2_wrap.cxx Makefile
-	g++ -shared -o gridflow2.so gridflow2_wrap.cxx
+gridflow2:: gridflow2.so
+	pd -lib tcl
+
+gridflow2.so: gridflow2_wrap.o
+	g++ -shared -o gridflow2.so gridflow2_wrap.o
+
+gridflow2_wrap.o: gridflow2_wrap.cxx Makefile
+	g++ -c gridflow2_wrap.cxx
 
 gridflow2_wrap.cxx: gridflow2.i
 	swig -v -c++ -tcl -DNORUBY -o gridflow2_wrap.cxx -I/usr/local/include gridflow2.i \
 	|| (rm gridflow2_wrap.cxx && false)
 
 
+kloc::
+	wc configure */*.rb
