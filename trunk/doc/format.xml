@@ -598,21 +598,6 @@
 
 			this affects the size of screen captures too.
 		</method>
-		
-		<method name="draw">
-			forces a redraw of the window's contents.
-		</method>
-
-		<method name="autodraw">
-			<arg name="level" type="0,1,2"/>
-			<list start="0">
-			<li>draw() is never automatically invoked</li>
-			<li>draw() is invoked after each grid is finished</li>
-			<li>draw() is invoked incrementally after each row is
-			received. (but buffering may cause lines to come in groups
-			anyway)</li>
-			</list>
-		</method>
 
 		<method name="setcursor">
 			<arg name="cursor" type="0..63"/>
