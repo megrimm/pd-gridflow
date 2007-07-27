@@ -7,20 +7,17 @@
 #X obj 50 73 r events;
 #X obj 41 95 t a;
 #X obj 122 181 print unused_events;
-#X msg 225 107 3 2 # 0 0 100 200 200 100;
-#X obj 225 88 loadbang;
 #X obj 41 181 route2 grid;
 #X obj 41 238 route bang;
-#X obj 41 147 #edit_polygon put (3 # 255) (3 2 #);
+#X obj 41 147 #edit_polygon put (3 # 255) (3 2 # 0 0 100 200 200 100)
+;
 #X connect 0 0 2 0;
 #X connect 1 0 0 0;
 #X connect 2 0 6 0;
-#X connect 3 0 11 0;
+#X connect 3 0 9 0;
 #X connect 5 0 6 0;
-#X connect 6 0 12 0;
-#X connect 8 0 12 2;
-#X connect 9 0 8 0;
-#X connect 10 0 3 0;
-#X connect 10 1 7 0;
-#X connect 11 1 4 0;
-#X connect 12 0 10 0;
+#X connect 6 0 10 0;
+#X connect 8 0 3 0;
+#X connect 8 1 7 0;
+#X connect 9 1 4 0;
+#X connect 10 0 8 0;
