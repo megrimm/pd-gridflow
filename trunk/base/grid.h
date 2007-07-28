@@ -106,8 +106,12 @@ __attribute__ ((noreturn));
 
 #ifndef SWIG
 #ifdef RARRAY_LEN
+#if RUBY_VERSION >= "1.9.0"
+// T_SYMBOL stops existing when RARRAY_LEN was introduced in 1.9 mid-2006 ?
+// but at the same time you can't do this with 1.8.5 which has RARRAY_LEN too
 #undef T_SYMBOL
 #define T_SYMBOL T_STRING
+#endif // 1.9.0
 static inline long  rb_str_len(Ruby s) {return RSTRING_LEN(s);}
 static inline char *rb_str_ptr(Ruby s) {return RSTRING_PTR(s);}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY_LEN(s);}
@@ -117,11 +121,11 @@ static inline long  rb_str_len(Ruby s) {return RSTRING(s)->len;}
 static inline char *rb_str_ptr(Ruby s) {return RSTRING(s)->ptr;}
 static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
-#endif
+#endif // RARRAY_LEN
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 #else
 static inline const char *rb_sym_name(const char *sym) {return sym;}
-#endif
+#endif // SWIG
 
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
