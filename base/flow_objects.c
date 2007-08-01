@@ -1282,27 +1282,49 @@ static void expect_pair (P<Dim> dim) {
 \class GridLabeling < GridObject
 struct GridLabeling : GridObject {
 	\grin 0
+	\attr int form();
+	\attr int form_val;
+	\decl void initialize(int form=0);
+	\decl void initialize2();
+	\decl void initialize3();
 };
 
 struct Stats {
 	int64 yy,yx,xx,y,x,area;
+	int64 x1,x2;
 	Stats() {yy=yx=xx=y=x=area=0;}
 };
 
 #define AT(y,x) dat[(y)*sx+(x)]
-template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *stat, int label) {
-	//fprintf(stderr,"2. y,x = %d,%d\n",y,x);
+template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *stat, int label, int form) {
+/* jan 2007
 	int x2; for (x2=x; x2<sx && AT(y,x2  )==1; x2++) {}
 	int x1; for (x1=x; x1>0  && AT(y,x1+1)==1; x1--) {}
-	for (x=x1; x<x2; x++) {
-		AT(y,x)=label;
-		stat->yy += y*y; stat->y += y;
-		stat->yx += y*x; stat->area++;
-		stat->xx += x*x; stat->x += x;
-	}
-	for (x=x1; x<x2; x++) {
-		if (y>0    && AT(y-1,x)==1) flood_fill(dat,sy,sx,y-1,x,stat,label);
-		if (y<sy-1 && AT(y+1,x)==1) flood_fill(dat,sy,sx,y+1,x,stat,label);
+*/
+/* may 2007: correct  */
+	int x2; for (x2=x; x2<sx-1; x2++) if (AT(y,x2  )!=1) break;
+	int x1; for (x1=x; x1>0 ; x1--) if (AT(y,x1+1)!=1) break;
+	/* here x2 is the last pixel */
+	x2++;
+	/* now x2 is just after the last pixel */
+	if (form==0) {
+		for (x=x1; x<x2; x++) {
+			AT(y,x)=label;
+			stat->yy += y*y; stat->y += y;
+			stat->yx += y*x; stat->area++;
+			stat->xx += x*x; stat->x += x;
+		}
+		for (x=x1; x<x2; x++) {
+			if (y>0    && AT(y-1,x)==1) flood_fill(dat,sy,sx,y-1,x,stat,label,form);
+			if (y<sy-1 && AT(y+1,x)==1) flood_fill(dat,sy,sx,y+1,x,stat,label,form);
+		}
+	} else {
+		for (x=x1; x<x2; x++) {
+			AT(y,x)=label;
+		}
+		stat->y=y;
+		stat->x1=x1;
+		stat->x2=x2;
 	}
 }
 
@@ -1317,28 +1339,46 @@ GRID_INLET(GridLabeling,0) {
 	for (y=0; y<sy; y++) for (x=0; x<sx; x++) {
 		if (dat[y*sx+x]!=1) continue;
 		Stats s;
-		flood_fill(dat,sy,sx,y,x,&s,label);
-		float32 cooked[6] = {
-			(s.yy-s.y*s.y/s.area)/s.area,
-			(s.yx-s.y*s.x/s.area)/s.area,
-			(s.yx-s.y*s.x/s.area)/s.area,
-			(s.xx-s.x*s.x/s.area)/s.area,
-			s.y/s.area,
-			s.x/s.area};
-		Ruby a[] = {INT2NUM(3),INT2NUM(s.area)};
-		send_out(2,a);
-		GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
-		GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
-		//goto done;
+		flood_fill(dat,sy,sx,y,x,&s,label,form_val);
+		if (form_val==0) {
+			float32 cooked[6] = {
+				(s.yy-s.y*s.y/s.area)/s.area,
+				(s.yx-s.y*s.x/s.area)/s.area,
+				(s.yx-s.y*s.x/s.area)/s.area,
+				(s.xx-s.x*s.x/s.area)/s.area,
+				s.y/s.area,
+				s.x/s.area};
+			Ruby a[] = {INT2NUM(3),INT2NUM(s.area)};
+			send_out(2,a);
+			GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
+			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
+		} else {
+			float32 cooked[4] = {s.y,s.x1,s.y,s.x2};
+			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
+		}
 		label++;
 	}
-	done:;
 	out = new GridOutlet(this,0,new Dim(sy,sx,1),in->nt);
 	out->send(n,dat);
 	delete[] dat;
 } GRID_END
 
-\classinfo { install("#labeling",1,4); }
+\def void initialize(int form=0) {
+	rb_call_super(argc,argv);
+	form_val=form;
+}
+\def void initialize2() {initialize3(0,0);}
+\def int form() {return form_val;}
+\def void _0_form(int form) {
+	if (form<0 || form>1) RAISE("form must be 0 or 1, not %d",form);
+	form_val=form;
+	initialize3(0,0);
+}
+\def void initialize3() {
+	rb_funcall(rself,SI(noutlets=),1,form_val ? INT2NUM(2) : INT2NUM(4));
+}
+
+\classinfo { install("#labeling",1,0); }
 \end class GridLabeling
 
 //****************************************************************
@@ -1365,7 +1405,7 @@ GRID_INLET(GridPerspective,0) {
 	}	
 } GRID_END
 
-\def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z; }
+\def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z;}
 
 \classinfo { install("#perspective",1,1); }
 \end class GridPerspective
