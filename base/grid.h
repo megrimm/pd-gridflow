@@ -106,7 +106,7 @@ __attribute__ ((noreturn));
 
 #ifndef SWIG
 #ifdef RARRAY_LEN
-#if RUBY_VERSION_MAJOR > 1 || RUBY_VERSION_MAJOR >= 9
+#if RUBY_VERSION_MAJOR > 1 || RUBY_VERSION_MINOR >= 9
 // T_SYMBOL stops existing when RARRAY_LEN was introduced in 1.9 mid-2006 ?
 // but at the same time you can't do this with 1.8.5 which has RARRAY_LEN too
 #undef T_SYMBOL
