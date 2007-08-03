@@ -83,9 +83,7 @@ class Format < GridObject
 			" does not support mode '#{mode}'"
 	end
 
-	def close
-		@stream.close if defined? @stream and @stream
-	end
+	def close; @stream.close if defined? @stream and @stream end
 
 	def self.suffixes_are(*suffixes)
 		suffixes.map{|s|s.split(/[, ]/)}.flatten.each {|suffix|
@@ -259,15 +257,19 @@ GridObject.subclass("#out",1,1) {
 		else
 			_0_open(*a)
 		end
+		@finished = FObject["#finished"]
+		@finished.connect 0, self, 1
 	end
 
-	def _0_list(*a) @format._0_list(*a) end
+	def _0_autoclose(v=1) @autoclose = !!v end
+	def _0_list(*a) @format._0_list(*a); _0_close if @autoclose end
 
 	# hacks
 	def _1_grid(*a) send_out 0,:grid,*a end # for aalib
 	def _1_position(*a) send_out 0,:position,*a end
 	def _1_keypress(*a) send_out 0,:keypress,*a end
 	def _1_keyrelease(*a) send_out 0,:keyrelease,*a end
+	def _1_bang(*a) _0_close if @autoclose end
 
 	def _0_grid(*a)
 		check_file_open
@@ -275,6 +277,7 @@ GridObject.subclass("#out",1,1) {
 		send_out 0,:bang
 		log if @timelog
 		@framecount+=1
+		@finished.send_in 0, :grid, *a
 	end
 
 	def log
