@@ -1297,16 +1297,10 @@ struct Stats {
 
 #define AT(y,x) dat[(y)*sx+(x)]
 template <class T> void flood_fill(T *dat, int sy, int sx, int y, int x, Stats *stat, int label, int form) {
-/* jan 2007
-	int x2; for (x2=x; x2<sx && AT(y,x2  )==1; x2++) {}
-	int x1; for (x1=x; x1>0  && AT(y,x1+1)==1; x1--) {}
-*/
-/* may 2007: correct  */
-	int x2; for (x2=x; x2<sx-1; x2++) if (AT(y,x2  )!=1) break;
-	int x1; for (x1=x; x1>0 ; x1--) if (AT(y,x1+1)!=1) break;
-	/* here x2 is the last pixel */
-	x2++;
-	/* now x2 is just after the last pixel */
+	/* find x1,x2 such that all the x of that horizontal segment are x1<=x<x2 */
+	int x2; for (x2=x; x2<sx; x2++) if (AT(y,x2)!=1) break;
+	int x1; for (x1=x; x1>=0; x1--) if (AT(y,x1)!=1) break;
+	x1++;
 	if (form==0) {
 		for (x=x1; x<x2; x++) {
 			AT(y,x)=label;
