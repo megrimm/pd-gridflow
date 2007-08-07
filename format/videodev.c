@@ -412,7 +412,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				out.send(bs,b2);
 			}
 		}
-	} else if (vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
+	} else if (vp.palette==VIDEO_PALETTE_RGB32 || vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
 		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 		uint8 rgb[sx*3];
 		uint8 b2[sx*3];
@@ -593,6 +593,7 @@ GRID_INLET(FormatVideoDev,0) {
 	else RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",rb_sym_name(c));
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 :
+	              (palettes&(1<<VIDEO_PALETTE_RGB32)) ? VIDEO_PALETTE_RGB32 :
 	              (palettes&(1<<VIDEO_PALETTE_RGB565)) ? VIDEO_PALETTE_RGB565 :
                       VIDEO_PALETTE_YUV420P;
 	vp.palette = palette;
@@ -606,6 +607,9 @@ GRID_INLET(FormatVideoDev,0) {
             //uint32 masks[3] = { 0x00fc00,0x003e00,0x00001f };
             uint32 masks[3] = { 0x00f800,0x007e0,0x00001f };
 	    bit_packing = new BitPacking(is_le(),2,3,masks);
+	} else if (palette == VIDEO_PALETTE_RGB32) {
+            uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
+	    bit_packing = new BitPacking(is_le(),4,3,masks);
 	} else {
             uint32 masks[3] = { 0xff0000,0x00ff00,0x0000ff };
 	    bit_packing = new BitPacking(is_le(),3,3,masks);
@@ -729,7 +733,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	gfpost(&vp);
 	palettes=0;
-	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_YUV420P};
+	int checklist[] = {VIDEO_PALETTE_RGB565,VIDEO_PALETTE_RGB24,VIDEO_PALETTE_RGB32,VIDEO_PALETTE_YUV420P};
 #if 1
 	for (size_t i=0; i<sizeof(checklist)/sizeof(*checklist); i++) {
 		int p = checklist[i];
