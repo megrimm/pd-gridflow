@@ -274,7 +274,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
-	bself->mom = (t_canvas *)canvas_getcurrent();
+	bself->mom = 0;
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)self+11); /* not 64-bit-safe */
 	CPPExtern::m_holder = NULL;
@@ -305,6 +305,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	}
 */
 	rb_funcall(rself,SI(initialize2),0);
+	bself->mom = (t_canvas *)canvas_getcurrent();
 	return rself;
 }
 
