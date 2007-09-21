@@ -19,7 +19,6 @@ HANDLE_FUNCTOR_WITH_PARAMETERS( computePalette,          "ltiComputePalette.h")
   typedef lti::kMColorQuantization::parameters lti_kMColorQuantization_parameters;
   using namespace lti;
 %}
-#endif
 HANDLE_FUNCTOR_WITH_PARAMETERS( usePalette,              "ltiUsePalette.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImage.h")
 HANDLE_SIMPLE_HEADER_FILE("ltiSplitImageTorgI.h")
