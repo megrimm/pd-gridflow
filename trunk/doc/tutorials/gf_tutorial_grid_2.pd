@@ -1,4 +1,4 @@
-#N canvas 20 138 985 419 10;
+#N canvas 376 138 1022 422 10;
 #X obj 1 14 cnv 15 460 15 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 4 14 1.2 How to create a grid.;
@@ -20,7 +20,7 @@ and from the top to the bottom.;
 you want as grid dimensions. By indicating 3 3 in brackets following
 [#import] \, you are creating a grid that has 3 rows and 3 columns.
 A 3 by 3 grid will displays 9 numbers.;
-#X text 8 292 3 - Connect the objects to a [display] object or a [print]
+#X text 8 291 3 - Connect the objects to a [display] object or a [print]
 object to see the resulting grid. You can alter your grid without actually
 seeing the image.;
 #X obj 1 -30 cnv 15 1020 30 empty empty empty 20 12 0 14 -233017 -66577
@@ -57,7 +57,7 @@ of the grid).;
 #X text 592 287 <-- the display object outputs results.;
 #X text 611 50 <-- step 1: click here to view the numbers from the
 list in a grid.;
-#X text 9 363 GridFlow 0.8.4;
+#X text 9 363 GridFlow 0.9.0;
 #X connect 14 0 19 0;
 #X connect 19 0 13 0;
 #X connect 20 0 19 0;
