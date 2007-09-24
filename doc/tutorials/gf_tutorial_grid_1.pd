@@ -1,4 +1,4 @@
-#N canvas 485 101 701 272 10;
+#N canvas 534 92 701 272 10;
 #X obj 2 5 cnv 15 430 15 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 2 -30 cnv 15 700 30 empty empty empty 20 12 0 14 -233017 -66577
@@ -13,7 +13,6 @@ is used to identify an image or video.;
 0;
 #X obj 523 56 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1
 -1;
-#X text 14 213 GridFlow 0.8.4;
 #X obj 537 119 #out window;
 #X text 5 28 A grid is composed of rows and columns that contain numeric
 data. Computers interpret images as three-dimensional grids: the rows
@@ -23,5 +22,6 @@ colour \, usually red \, green and blue (RGB). The channels make up
 the colour information of an image. Videos are also interpreted as
 grids since each frame is a still image;
 #X obj 537 88 #in david.jpg;
-#X connect 6 0 10 0;
-#X connect 10 0 8 0;
+#X text 14 213 GridFlow 0.9.0;
+#X connect 6 0 9 0;
+#X connect 9 0 7 0;
