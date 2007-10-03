@@ -687,13 +687,13 @@ struct PtrGrid : public P<Grid> {
 // fprintf(stderr,"_p=%08x\n",(long)_p);
           p=_p;
 INCR;}
-	PtrGrid &operator =(  Grid *_p) {if(dc&&p)dc(_p->dim);
+	PtrGrid &operator =(  Grid *_p) {if(dc&&_p)dc(_p->dim);
 // fprintf(stderr,"741: this=%08x\n",(long)this);
 // fprintf(stderr,"742: dc=%08x &_p=%08x\n",(long)this,&_p); fprintf(stderr,"742: _p=%08x\n",(long)_p);
 DECR; p=_p; INCR;
 return *this;}
-	PtrGrid &operator =(P<Grid> _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
-	PtrGrid &operator =(PtrGrid _p) {if(dc&&p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
+	PtrGrid &operator =(P<Grid> _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
+	PtrGrid &operator =(PtrGrid _p) {if(dc&&_p)dc(_p->dim); DECR; p=_p.p; INCR; return *this;}
 };
 #undef INCR
 #undef DECR
