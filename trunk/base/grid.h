@@ -627,12 +627,13 @@ struct Grid : CObject {
 	}
 	Grid(Ruby x) { state=1; init_from_ruby(x); }
 	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
-	template <class T> Grid(P<Dim> dim, T * data) {
+	template <class T> Grid(P<Dim> dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T)0);
 		this->data = data;
 	}
-	long bytes() { return dim->prod()*number_type_table[nt].size/8; }
+	// parens are necessary to prevent overflow at 1/16th of the word size (256 megs)
+	long bytes() { return dim->prod()*(number_type_table[nt].size/8); }
 	P<Dim> to_dim () { return new Dim(dim->prod(),(int32 *)*this); }
 #ifdef SWIG /* has trouble with my macros */
 operator uint8 *() { return (uint8 *)data; }
@@ -657,7 +658,10 @@ private:
 		this->dim = dim;
 		this->nt = nt;
 		data = 0;
-		if (dim) data = memalign(16,bytes()+16);
+		if (dim) {
+			data = memalign(16,bytes()+16);
+			if (!data) RAISE("out of memory (?) trying to get %ld bytes",bytes());
+		}
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
 	void init_from_ruby(Ruby x);
