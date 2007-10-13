@@ -736,7 +736,17 @@ Feature.add {
 			int main () {return 0;}`
 	}
 }
-
+Feature.add {
+	tag :opencv
+	name "Intel OpenCV"
+	uses_o ["optional/opencv.o"]
+	options ["HAVE_OPENCV"]
+	test proc {
+		c_test %`
+			#include <opencv/cv.h>
+			int main () {return 0;}`
+	}
+}
 #--------------------------------#
 Feature.add {
 	tag :fftw
