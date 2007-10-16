@@ -57,6 +57,8 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	P<Dim> d = g->dim;
 	int channels=1;
 	int dims=g->dim->n;
+	post("mode=%d",(int)mode);
+	if (mode==cv_mode_channels && g->dim->n==0) RAISE("channels dimension required for 'mode channels'");
 	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
 	post("channels=%d dims=%d",channels,dims);
 	return 0;
@@ -73,15 +75,18 @@ struct CvAdd : GridObject {
 };
 \def void initialize () {
 	rb_call_super(argc,argv);
+	this->r = r?r:new Grid(new Dim(),int32_e,true);
+	mode = cv_mode_auto;
 }
 GRID_INPUT2(CvAdd,0,l) {
+	post("l=%p, r=%p", &*l, &*r);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
-	post("hello world");
+	post("a=%p, b=%p", a, b);
 } GRID_END
 GRID_INPUT2(CvAdd,1,r) {} GRID_END
 
-\classinfo { install("cv.add",1,1); }
+\classinfo { install("cv.add",2,1); }
 \end class CvAdd
 
 void startup_opencv() {
