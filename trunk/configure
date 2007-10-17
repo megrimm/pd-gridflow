@@ -740,6 +740,7 @@ Feature.add {
 	tag :opencv
 	name "Intel OpenCV"
 	uses_o ["optional/opencv.o"]
+	uses_so ["-lcv"]
 	options ["HAVE_OPENCV"]
 	test proc {
 		c_test %`
