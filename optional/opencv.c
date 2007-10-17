@@ -61,7 +61,14 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	if (mode==cv_mode_channels && g->dim->n==0) RAISE("channels dimension required for 'mode channels'");
 	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
 	post("channels=%d dims=%d",channels,dims);
-	return 0;
+	//if (dims==2) return cvMat(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt),g->data);
+	if (dims==2) {
+		CvMat *a = cvCreateMatHeader(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt));
+		cvSetData(a,g->data,g->dim->prod(1)*number_type_table[g->nt].size);
+		return a;
+	}
+	RAISE("unsupported number of dimensions (got %d)",g->dim->n);
+	//return 0;
 }
 
 \class CvAdd < GridObject
@@ -83,6 +90,8 @@ GRID_INPUT2(CvAdd,0,l) {
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
 	post("a=%p, b=%p", a, b);
+	cvAdd(a,b,a,0);
+	//out->send(l->dim->prod(),l->data);
 } GRID_END
 GRID_INPUT2(CvAdd,1,r) {} GRID_END
 
