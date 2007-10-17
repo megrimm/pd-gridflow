@@ -27,7 +27,7 @@
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3, \
 	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
 
-int cv_eltype(NumberTypeE e) {
+int ipl_eltype(NumberTypeE e) {
   switch (e) {
     case uint8_e: return IPL_DEPTH_8U;
     // IPL_DEPTH_8S not supported
@@ -36,6 +36,19 @@ int cv_eltype(NumberTypeE e) {
     case int32_e: return IPL_DEPTH_32S;
     case float32_e: return IPL_DEPTH_32F;
     case float64_e: return IPL_DEPTH_64F;
+    default: RAISE("unsupported type %s",number_type_table[e].name);
+  }
+}
+
+int cv_eltype(NumberTypeE e) {
+  switch (e) {
+    case uint8_e: return CV_8U;
+    // CV_8S not supported
+    // CV_16U not supported
+    case int16_e: return CV_16S;
+    case int32_e: return CV_32S;
+    case float32_e: return CV_32F;
+    case float64_e: return CV_64F;
     default: RAISE("unsupported type %s",number_type_table[e].name);
   }
 }
