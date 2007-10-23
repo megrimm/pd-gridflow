@@ -323,7 +323,7 @@ GRID_INLET(GridStore,0) {
 } GRID_END
 
 GRID_INLET(GridStore,1) {
-	NumberTypeE nt = NumberTypeE_type_of(*data);
+	NumberTypeE nt = NumberTypeE_type_of(data);
 	if (!put_at) { // reassign
 		if (in[0].dim)
 			r.next = new Grid(in->dim,nt);
