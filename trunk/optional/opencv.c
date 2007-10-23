@@ -89,11 +89,11 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 struct CvOp2 : GridObject {
 	\attr CvMode mode;
 	PtrGrid r;
-	\decl void initialize ();
+	\decl void initialize (Grid *r=0);
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
 	\grin 1
 };
-\def void initialize () {
+\def void initialize (Grid *r=0) {
 	rb_call_super(argc,argv);
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	mode = cv_mode_auto;
