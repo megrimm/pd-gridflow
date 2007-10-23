@@ -91,6 +91,7 @@ struct CvOp2 : GridObject {
 	PtrGrid r;
 	\decl void initialize (Grid *r=0);
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
+	\grin 0
 	\grin 1
 };
 \def void initialize (Grid *r=0) {
@@ -98,16 +99,7 @@ struct CvOp2 : GridObject {
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	mode = cv_mode_auto;
 }
-GRID_INPUT2(CvOp2,1,r) {} GRID_END
-\classinfo {}
-\end class CvOp2
-
-\class CvAdd < CvOp2
-struct CvAdd : CvOp2 {
-	\grin 0
-	virtual void func(CvArr *l, CvArr *r, CvArr *o) {cvAdd(l,r,o,0);}
-};
-GRID_INLET(CvAdd,0) {
+GRID_INLET(CvOp2,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
@@ -121,10 +113,35 @@ GRID_INLET(CvAdd,0) {
 	out = new GridOutlet(this,0,in->dim,in->nt);
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
+GRID_INPUT2(CvOp2,1,r) {} GRID_END
+\classinfo {}
+\end class CvOp2
 
+#define FUNC virtual void func(CvArr *l, CvArr *r, CvArr *o)
+
+\class CvAdd < CvOp2
+struct CvAdd : CvOp2 {FUNC {cvAdd(l,r,o,0);}};
 \classinfo { install("cv.Add",2,1); }
 \end class CvAdd
+\class CvSub < CvOp2
+struct CvSub : CvOp2 {FUNC {cvSub(l,r,o,0);}};
+\classinfo { install("cv.Sub",2,1); }
+\end class CvSub
+\class CvMul < CvOp2
+struct CvMul : CvOp2 {FUNC {cvMul(l,r,o,0);}};
+\classinfo { install("cv.Mul",2,1); }
+\end class CvMul
+\class CvDiv < CvOp2
+struct CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,0);}};
+\classinfo { install("cv.Div",2,1); }
+\end class CvDiv
+
+static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
+	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
+	RAISE("OpenCV error: status=%d func_name=%s err_msg=\"%s\" file_name=%s line=%d",status,func_name,err_msg,file_name,line);
+}
 
 void startup_opencv() {
+	CvErrorCallback z = cvRedirectError(erreur_handleur);
 	\startall
 }
