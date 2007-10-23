@@ -70,14 +70,15 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	P<Dim> d = g->dim;
 	int channels=1;
 	int dims=g->dim->n;
-	post("mode=%d",(int)mode);
+	//post("mode=%d",(int)mode);
 	if (mode==cv_mode_channels && g->dim->n==0) RAISE("channels dimension required for 'mode channels'");
 	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
-	post("channels=%d dims=%d",channels,dims);
+	//post("channels=%d dims=%d nt=%d",channels,dims,g->nt);
+	//post("bits=%d",number_type_table[g->nt].size);
 	//if (dims==2) return cvMat(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt),g->data);
 	if (dims==2) {
-		CvMat *a = cvCreateMatHeader(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt));
-		cvSetData(a,g->data,g->dim->prod(1)*number_type_table[g->nt].size);
+		CvMat *a = cvCreateMatHeader(g->dim->v[0],g->dim->v[1],CV_MAKETYPE(cv_eltype(g->nt),channels));
+		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
 		return a;
 	}
 	RAISE("unsupported number of dimensions (got %d)",g->dim->n);
@@ -99,12 +100,13 @@ struct CvAdd : GridObject {
 	mode = cv_mode_auto;
 }
 GRID_INPUT2(CvAdd,0,l) {
-	post("l=%p, r=%p", &*l, &*r);
+	//post("l=%p, r=%p", &*l, &*r);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
-	post("a=%p, b=%p", a, b);
+	//post("a=%p, b=%p", a, b);
 	cvAdd(a,b,a,0);
-	//out->send(l->dim->prod(),l->data);
+	out = new GridOutlet(this,0,l->dim,l->nt);
+	out->send(l->dim->prod(),(T *)l->data);
 } GRID_END
 GRID_INPUT2(CvAdd,1,r) {} GRID_END
 
