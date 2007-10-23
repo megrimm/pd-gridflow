@@ -420,7 +420,7 @@ number_type_table_end
 
 #ifndef SWIG
 #define FOO(_type_) \
-inline NumberTypeE NumberTypeE_type_of(_type_ &x) { \
+inline NumberTypeE NumberTypeE_type_of(_type_ *x) { \
 	return _type_##_e; }
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -629,7 +629,7 @@ struct Grid : CObject {
 	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
 	template <class T> Grid(P<Dim> dim, T *data) {
 		state=0; this->dim=dim;
-		this->nt=NumberTypeE_type_of((T)0);
+		this->nt=NumberTypeE_type_of((T *)0);
 		this->data = data;
 	}
 	// parens are necessary to prevent overflow at 1/16th of the word size (256 megs)
@@ -729,7 +729,7 @@ static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 /* macro for defining a gridinlet's behaviour as just storage (no backstore) */
 // V is a PtrGrid instance-var
 #define GRID_INPUT(C,I,V) \
-GRID_INLET(C,I) { V=new Grid(in->dim,NumberTypeE_type_of(*data)); } \
+GRID_INLET(C,I) { V=new Grid(in->dim,NumberTypeE_type_of(data)); } \
 GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 
 // macro for defining a gridinlet's behaviour as just storage (with backstore)
@@ -737,8 +737,8 @@ GRID_FLOW { COPY((T *)*(V)+in->dex, data, n); } GRID_FINISH
 #define GRID_INPUT2(C,I,V) \
 	GRID_INLET(C,I) { \
 		if (is_busy_except(in)) { \
-			V.next = new Grid(in->dim,NumberTypeE_type_of(*data)); \
-		} else V=        new Grid(in->dim,NumberTypeE_type_of(*data)); \
+			V.next = new Grid(in->dim,NumberTypeE_type_of(data)); \
+		} else V=        new Grid(in->dim,NumberTypeE_type_of(data)); \
 	} GRID_FLOW { \
 		COPY(((T *)*(V.next?V.next.p:&*V.p))+in->dex, data, n); \
 	} GRID_FINISH

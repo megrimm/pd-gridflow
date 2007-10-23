@@ -55,10 +55,10 @@ static void *Pointer_get (Ruby rself) {
 #define TRACE
 
 #define CHECK_TYPE(d) \
-	if (NumberTypeE_type_of(d)!=this->nt) RAISE("%s(%s): " \
+	if (NumberTypeE_type_of(&d)!=this->nt) RAISE("%s(%s): " \
 		"type mismatch during transmission (got %s expecting %s)", \
 		INFO(parent), __PRETTY_FUNCTION__, \
-		number_type_table[NumberTypeE_type_of(d)].name, \
+		number_type_table[NumberTypeE_type_of(&d)].name, \
 		number_type_table[this->nt].name);
 
 #define CHECK_BUSY1(s) \
@@ -394,7 +394,7 @@ template <class T>
 void GridOutlet::send(long n, T *data) {TRACE;
 	if (!n) return;
 	CHECK_BUSY(outlet); CHECK_ALIGN(data);
-	if (NumberTypeE_type_of(*data)!=nt) {
+	if (NumberTypeE_type_of(data)!=nt) {
 		int bs = MAX_PACKET_SIZE;
 #define FOO(T) { \
 	T data2[bs]; \
@@ -421,7 +421,7 @@ template <class T>
 void GridOutlet::give(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet);
 	CHECK_ALIGN(data);
-	if (NumberTypeE_type_of(*data)!=nt) {
+	if (NumberTypeE_type_of(data)!=nt) {
 		send(n,data);
 		delete[] (T *)data;
 		return;
