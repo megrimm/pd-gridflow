@@ -85,13 +85,12 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	//return 0;
 }
 
-\class CvAdd < GridObject
-struct CvAdd : GridObject {
+\class CvOp2 < GridObject
+struct CvOp2 : GridObject {
 	\attr CvMode mode;
-	PtrGrid l;
 	PtrGrid r;
 	\decl void initialize ();
-	\grin 0
+	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
 	\grin 1
 };
 \def void initialize () {
@@ -99,18 +98,31 @@ struct CvAdd : GridObject {
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	mode = cv_mode_auto;
 }
-GRID_INPUT2(CvAdd,0,l) {
+GRID_INPUT2(CvOp2,1,r) {} GRID_END
+\classinfo {}
+\end class CvOp2
+
+\class CvAdd < CvOp2
+struct CvAdd : CvOp2 {
+	\grin 0
+	virtual void func(CvArr *l, CvArr *r, CvArr *o) {cvAdd(l,r,o,0);}
+};
+GRID_INLET(CvAdd,0) {
+	in->set_chunk(0);
+} GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	PtrGrid o = new Grid(in->dim,in->nt);
 	CvArr *a = cvGrid(l,mode);
 	CvArr *b = cvGrid(r,mode);
+	CvArr *c = cvGrid(o,mode);
 	//post("a=%p, b=%p", a, b);
-	cvAdd(a,b,a,0);
-	out = new GridOutlet(this,0,l->dim,l->nt);
-	out->send(l->dim->prod(),(T *)l->data);
+	func(a,b,c);
+	out = new GridOutlet(this,0,in->dim,in->nt);
+	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
-GRID_INPUT2(CvAdd,1,r) {} GRID_END
 
-\classinfo { install("cv.add",2,1); }
+\classinfo { install("cv.Add",2,1); }
 \end class CvAdd
 
 void startup_opencv() {
