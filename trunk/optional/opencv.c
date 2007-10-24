@@ -128,17 +128,19 @@ struct CvSub : CvOp2 {FUNC {cvSub(l,r,o,0);}};
 \classinfo { install("cv.Sub",2,1); }
 \end class CvSub
 \class CvMul < CvOp2
-struct CvMul : CvOp2 {FUNC {cvMul(l,r,o,0);}};
+struct CvMul : CvOp2 {FUNC {cvMul(l,r,o,1);}};
 \classinfo { install("cv.Mul",2,1); }
 \end class CvMul
 \class CvDiv < CvOp2
-struct CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,0);}};
+struct CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,1);}};
 \classinfo { install("cv.Div",2,1); }
 \end class CvDiv
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
 	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
 	RAISE("OpenCV error: status=%d func_name=%s err_msg=\"%s\" file_name=%s line=%d",status,func_name,err_msg,file_name,line);
+	// if this breaks OpenCV, then we will have to use post() or a custom hybrid of post() and RAISE() that does not cause a
+	// longjmp when any OpenCV functions are on the stack.
 }
 
 void startup_opencv() {
