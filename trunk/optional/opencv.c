@@ -100,6 +100,8 @@ struct CvOp2 : GridObject {
 	mode = cv_mode_auto;
 }
 GRID_INLET(CvOp2,0) {
+	SAME_TYPE(in,r);
+	if (!in->dim->equal(r->dim)) RAISE("dimension mismatch: left:%s right:%s",in->dim->to_s(),r->dim->to_s());
 	in->set_chunk(0);
 } GRID_FLOW {
 	//post("l=%p, r=%p", &*l, &*r);
