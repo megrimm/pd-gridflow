@@ -78,8 +78,8 @@ extern "C" {
 
 /* **************************************************************** */
 struct BFObject;
-static Ruby  FObject_ninlets_set (Ruby rself, Ruby n_);
-static Ruby FObject_noutlets_set (Ruby rself, Ruby n_);
+static void  BFObject_ninlets_set (BFObject *bself, int n);
+static void BFObject_noutlets_set (BFObject *bself, int n);
 
 struct FMessage {
 	BFObject *self;
@@ -288,8 +288,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->nout = 0;
 	self->bself->in  = new  BFProxy*[1];
 	self->bself->out = new t_outlet*[1];
-	FObject_ninlets_set( rself,INT2NUM( ninlets));
-	FObject_noutlets_set(rself,INT2NUM(noutlets));
+	BFObject_ninlets_set( bself, ninlets);
+	BFObject_noutlets_set(bself,noutlets);
 /*
 	bself->nin  =   ninlets;
 	bself->nout =  noutlets;
@@ -611,37 +611,32 @@ static Ruby FObject_patcherargs (Ruby rself) {
 	return ar;
 }
 
-static Ruby FObject_undrawio (Ruby rself) {
+static void BFObject_undrawio (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
-	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
+	if (!bself->mom || !glist_isvisible(bself->mom)) return;
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
-	if (!rt) return Qnil;
+	if (!rt) return;
 	glist_eraseiofor(bself->mom,bself,rtext_gettag(rt));
 #endif
-	return Qnil;
 }
 
-static Ruby FObject_redraw (Ruby rself) {
+static void BFObject_redraw (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
-	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself->mom || !glist_isvisible(bself->mom)) return Qnil;
+	if (!bself->mom || !glist_isvisible(bself->mom)) return;
 	t_rtext *rt = glist_findrtext(bself->mom,bself);
-	if (!rt) return Qnil;
+	if (!rt) return;
 	gobj_vis((t_gobj *)bself,bself->mom,0);
 	gobj_vis((t_gobj *)bself,bself->mom,1);
 	canvas_fixlinesfor(bself->mom,(t_text *)bself);
 #endif
-	return Qnil;
 }
 
 /* warning: deleting inlets that are connected will cause pd to crash */
-static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
+static void BFObject_ninlets_set (BFObject *bself, int n) {
 	if (!bself) RAISE("there is no bself");
 	if ((Ruby)bself==Qnil) RAISE("bself is nil");
 	//post("FObject_ninlets_set: %d -> %d",bself->nin,n_);
-	FObject_undrawio(rself);
+	BFObject_undrawio(bself);
 	if (bself->nin<n) {
 		BFProxy **noo = new BFProxy*[n];
 		memcpy(noo,bself->in,bself->nin*sizeof(BFProxy*));
@@ -661,16 +656,13 @@ static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 			delete bself->in[bself->nin];
 		}
 	}
-	FObject_redraw(rself);
-	return Qnil;
+	BFObject_redraw(bself);
 }
-
 /* warning: deleting outlets that are connected will cause pd to crash */
-static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<0) n=0;
+static void BFObject_noutlets_set (BFObject *bself, int n) {
 	if (!bself) RAISE("there is no bself");
 	//post("FObject_noutlets_set on rself=%08x bself=%08x: %d -> %d",rself,bself,bself->nout,n_);
-	FObject_undrawio(rself);
+	BFObject_undrawio(bself);
 	if (bself->nout<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
 		memcpy(noo,bself->out,bself->nout*sizeof(t_outlet*));
@@ -680,9 +672,19 @@ static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
 	} else {
 		while (bself->nout>n) outlet_free(bself->out[--bself->nout]);
 	}
-	FObject_redraw(rself);
-	return Qnil;
+	BFObject_redraw(bself);
 }
+
+static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
+	BFObject_ninlets_set(bself,n);
+	return Qnil;
+};
+static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
+	BFObject_noutlets_set(bself,n);
+	return Qnil;
+};
 
 static Ruby FObject_ninlets  (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
