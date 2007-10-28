@@ -73,6 +73,7 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	//post("mode=%d",(int)mode);
 	if (mode==cv_mode_channels && g->dim->n==0) RAISE("channels dimension required for 'mode channels'");
 	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
+	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
 	//post("channels=%d dims=%d nt=%d",channels,dims,g->nt);
 	//post("bits=%d",number_type_table[g->nt].size);
 	//if (dims==2) return cvMat(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt),g->data);
@@ -85,9 +86,32 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	//return 0;
 }
 
-\class CvOp2 < GridObject
-struct CvOp2 : GridObject {
+IplImage *cvImageGrid(PtrGrid g, CvMode mode) {
+	P<Dim> d = g->dim;
+	if (d->n!=3) RAISE("expected 3 dimensions, got %s",d->to_s());
+	int channels=g->dim->v[2];
+	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
+	CvSize size = {d->v[1],d->v[0]};
+	IplImage *a = cvCreateImageHeader(size,ipl_eltype(g->nt),channels);
+	cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
+	return a;
+}
+
+\class CvOp1 < GridObject
+struct CvOp1 : GridObject {
 	\attr CvMode mode;
+	\decl void initialize ();
+	/* has no default \grin 0 handler so far. */
+};
+\def void initialize () {
+	rb_call_super(0,0);
+	mode = cv_mode_auto;
+}
+\classinfo {}
+\end class CvOp1
+
+\class CvOp2 < CvOp1
+struct CvOp2 : CvOp1 {
 	PtrGrid r;
 	\decl void initialize (Grid *r=0);
 	virtual void func(CvArr *l, CvArr *r, CvArr *o) {/* rien */}
@@ -95,9 +119,8 @@ struct CvOp2 : GridObject {
 	\grin 1
 };
 \def void initialize (Grid *r=0) {
-	rb_call_super(argc,argv);
+	rb_call_super(0,0);
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
-	mode = cv_mode_auto;
 }
 GRID_INLET(CvOp2,0) {
 	SAME_TYPE(in,r);
@@ -137,6 +160,39 @@ struct CvMul : CvOp2 {FUNC {cvMul(l,r,o,1);}};
 struct CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,1);}};
 \classinfo { install("cv.Div",2,1); }
 \end class CvDiv
+
+\class CvSplit < CvOp1
+struct CvSplit : CvOp1 {
+	\decl void initialize (int channels);
+};
+\def void initialize (int channels) {
+	rb_call_super(0,0);
+}
+\classinfo {}
+\end class CvSplit
+
+\class CvHaarDetectObjects < GridObject
+struct CvHaarDetectObjects : GridObject {
+	\attr double scale_factor; /*=1.1*/
+	\attr int min_neighbors;   /*=3*/
+	\attr int flags;           /*=0*/
+	\decl void initialize ();
+};
+\def void initialize () {
+	scale_factor=1.1;
+	min_neighbors=3;
+	flags=0;
+}
+/*GRID_INLET(CvHaarDetectObjects,0) {
+} GRID_FLOW {
+	IplImage *img = ;
+	CvHidHaarClassifierCascade* cascade = ;
+	CvMemStorage* storage = ;
+	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
+	return ret;
+}*/
+\classinfo { install("cv.HaarDetectObjects",2,1); }
+\end class CvHaarDetectObjects
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
 	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
