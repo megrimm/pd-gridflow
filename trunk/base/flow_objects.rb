@@ -266,7 +266,7 @@ GridObject.subclass("#unpack",1,0) {
   def _0_rgrid_end; end
 }
 
-GridObject.subclass("#export_symbol",1,1) {
+GridObject.subclass("#to_symbol",1,1) {
 	install_rgrid 0
 	def _0_rgrid_begin; @data="" end
 	def _0_rgrid_flow data; @data << data; end

@@ -27,9 +27,8 @@
 
 //#define SWIG
 #include "grid.h.fcs"
-#define install(name,ins,outs) rb_funcall(rself,SI(install),3, \
-	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
-
+#define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
+//#define add_creator(name) rb_funcall(rself,SI(add_creator),1,rb_str_new2(name))
 //#include "gridflow2.h"
 
 /* ---------------------------------------------------------------- */
@@ -167,7 +166,7 @@ GRID_INLET(GridExport,0) {
 	Ruby a[] = { INT2NUM(0), INT2NUM(0) };
 	for (int i=0; i<n; i++) {a[1]=R(data[i]).r; send_out(COUNT(a),a);}
 } GRID_END
-\classinfo { install("#export",1,1); }
+\classinfo { install("#to_float",1,1); }
 \end class GridExport
 
 /* **************************************************************** */
@@ -198,7 +197,7 @@ GRID_INLET(GridExportList,0) {
 	rb_ivar_set(rself,SI(@list),Qnil); // unkeep
 } GRID_END
 
-\classinfo { install("#export_list",1,1); }
+\classinfo { install("#to_list",1,1); /*add_creator("#export_list");*/ }
 \end class GridExportList
 
 /* **************************************************************** */
@@ -1369,7 +1368,7 @@ GRID_INLET(GridLabeling,0) {
 	initialize3(0,0);
 }
 \def void initialize3() {
-	rb_funcall(rself,SI(noutlets=),1,form_val ? INT2NUM(2) : INT2NUM(4));
+	bself->ninlets_set(form_val ? 2 : 4);
 }
 
 \classinfo { install("#labeling",1,0); }
