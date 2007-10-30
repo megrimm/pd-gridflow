@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.0 (2007.02...):
+version 0.9.0 (2007.10...):
 
  * added the "tcl" external for pd, which allows to write
    externals in the Tcl language, but server-side.
@@ -22,8 +22,13 @@ version 0.9.0 (2007.02...):
    [jmax_udpreceive] [jmax4_udpreceive] [printargs] [rubyprint]
  * removed Type.rb and Contract.rb and their use in videodev.c
  * [#in quicktime]: added method "get"
-
- * removed old documentation: *-icon.png and SOON reference.*ml
+ * [#out]: added method "autoclose"
+ * removed old documentation: *-icon.png
+ * renamed [#export]        to [#to_float]
+ * renamed [#export_list]   to [#to_list]
+ * renamed [#export_symbol] to [#to_symbol]
+soon:
+ * removed reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
 
 version 0.8.4 (2006.10.12):
