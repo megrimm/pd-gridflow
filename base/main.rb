@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2007 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -331,6 +331,10 @@ end
 
 require "base/flow_objects.rb"
 require "format/main.rb"
+
+GridFlow::FObject.name_lookup("#to_list")  .add_creator "#export_list"
+GridFlow::FObject.name_lookup("#to_float") .add_creator "#export"
+GridFlow::FObject.name_lookup("#to_symbol").add_creator "#export_symbol"
 
 %w(
   # #for #finished #type #dim #transpose #perspective #store #outer
