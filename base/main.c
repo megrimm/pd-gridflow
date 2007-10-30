@@ -527,6 +527,7 @@ void blargh () {
 
 // Ruby's entrypoint.
 void Init_gridflow () {
+        srandom(rdtsc());
 	//set_terminate(__gnu_cxx::__verbose_terminate_handler);
 	set_terminate(blargh);
 
