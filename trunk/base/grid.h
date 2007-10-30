@@ -972,4 +972,22 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 typedef GridObject Format;
 
+
+/************************************ 2007 *************************************/
+
+
+struct BFProxy;
+struct BFObject : t_object {
+#ifdef HAVE_GEM
+	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
+#endif
+	Ruby rself;
+	int nin,nout;   // per object settings (not class)
+	BFProxy  **in;  // direct access to  inlets (not linked lists)
+	t_outlet **out; // direct access to outlets (not linked lists)
+	t_canvas *mom;
+	void  ninlets_set(int n);
+	void noutlets_set(int n);
+};
+
 #endif // __GF_GRID_H
