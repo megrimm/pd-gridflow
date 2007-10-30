@@ -78,8 +78,6 @@ extern "C" {
 
 /* **************************************************************** */
 struct BFObject;
-static void  BFObject_ninlets_set (BFObject *bself, int n);
-static void BFObject_noutlets_set (BFObject *bself, int n);
 
 struct FMessage {
 	BFObject *self;
@@ -106,7 +104,6 @@ void CObject_free (void *victim) {
 	self->rself = 0; /* paranoia */
 	delete self;
 }
-
 
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
@@ -169,17 +166,6 @@ struct BFProxy : t_object {
 	BFObject *parent;
 	t_inlet *inlet;
 	int id;
-};
-
-struct BFObject : t_object {
-#ifdef HAVE_GEM
-	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
-#endif
-	Ruby rself;
-	int nin,nout;   // per object settings (not class)
-	BFProxy  **in;  // direct access to  inlets (not linked lists)
-	t_outlet **out; // direct access to outlets (not linked lists)
-	t_canvas *mom;
 };
 
 static t_class *find_bfclass (t_symbol *sym) {
@@ -288,8 +274,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->nout = 0;
 	self->bself->in  = new  BFProxy*[1];
 	self->bself->out = new t_outlet*[1];
-	BFObject_ninlets_set( bself, ninlets);
-	BFObject_noutlets_set(bself,noutlets);
+	bself->ninlets_set(ninlets);
+	bself->noutlets_set(noutlets);
 /*
 	bself->nin  =   ninlets;
 	bself->nout =  noutlets;
@@ -632,57 +618,55 @@ static void BFObject_redraw (BFObject *bself) {
 }
 
 /* warning: deleting inlets that are connected will cause pd to crash */
-static void BFObject_ninlets_set (BFObject *bself, int n) {
-	if (!bself) RAISE("there is no bself");
-	if ((Ruby)bself==Qnil) RAISE("bself is nil");
-	//post("FObject_ninlets_set: %d -> %d",bself->nin,n_);
-	BFObject_undrawio(bself);
-	if (bself->nin<n) {
+void BFObject::ninlets_set (int n) {
+	if (!this) RAISE("there is no bself");
+	if ((Ruby)this==Qnil) RAISE("bself is nil");
+	BFObject_undrawio(this);
+	if (nin<n) {
 		BFProxy **noo = new BFProxy*[n];
-		memcpy(noo,bself->in,bself->nin*sizeof(BFProxy*));
-		delete[] bself->in;
-		bself->in = noo;
-		while (bself->nin<n) {
-			BFProxy *p = bself->in[bself->nin] = (BFProxy *)pd_new(BFProxy_class);
-			p->parent = bself;
-			p->id = bself->nin;
-			p->inlet = inlet_new(bself, &p->ob_pd, 0,0);
-			bself->nin++;
+		memcpy(noo,in,nin*sizeof(BFProxy*));
+		delete[] in;
+		in = noo;
+		while (nin<n) {
+			BFProxy *p = in[nin] = (BFProxy *)pd_new(BFProxy_class);
+			p->parent = this;
+			p->id = nin;
+			p->inlet = inlet_new(this, &p->ob_pd, 0,0);
+			nin++;
 		}
 	} else {
-		while (bself->nin>n) {
-			bself->nin--;
-			inlet_free(bself->in[bself->nin]->inlet);
-			delete bself->in[bself->nin];
+		while (nin>n) {
+			nin--;
+			inlet_free(in[nin]->inlet);
+			delete in[nin];
 		}
 	}
-	BFObject_redraw(bself);
+	BFObject_redraw(this);
 }
 /* warning: deleting outlets that are connected will cause pd to crash */
-static void BFObject_noutlets_set (BFObject *bself, int n) {
-	if (!bself) RAISE("there is no bself");
-	//post("FObject_noutlets_set on rself=%08x bself=%08x: %d -> %d",rself,bself,bself->nout,n_);
-	BFObject_undrawio(bself);
-	if (bself->nout<n) {
+void BFObject::noutlets_set (int n) {
+	if (!this) RAISE("there is no bself");
+	BFObject_undrawio(this);
+	if (nout<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
-		memcpy(noo,bself->out,bself->nout*sizeof(t_outlet*));
-		delete[] bself->out;
-		bself->out = noo;
-		while (bself->nout<n) bself->out[bself->nout++] = outlet_new(bself,&s_anything);
+		memcpy(noo,out,nout*sizeof(t_outlet*));
+		delete[] out;
+		out = noo;
+		while (nout<n) out[nout++] = outlet_new(this,&s_anything);
 	} else {
-		while (bself->nout>n) outlet_free(bself->out[--bself->nout]);
+		while (nout>n) outlet_free(out[--nout]);
 	}
-	BFObject_redraw(bself);
+	BFObject_redraw(this);
 }
 
 static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
-	BFObject_ninlets_set(bself,n);
+	bself->ninlets_set(n);
 	return Qnil;
 };
 static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
-	BFObject_noutlets_set(bself,n);
+	bself->noutlets_set(n);
 	return Qnil;
 };
 
