@@ -27,23 +27,6 @@
 #include <string.h>
 #include <errno.h>
 
-/* move these to grid.h maybe */
-struct BFProxy : t_object {
-	BFObject *parent;
-	t_inlet *inlet;
-	int id;
-};
-struct BFObject : t_object {
-#ifdef HAVE_GEM
-	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
-#endif
-	Ruby rself;
-	int nin,nout;   // per object settings (not class)
-	BFProxy  **in;  // direct access to  inlets (not linked lists)
-	t_outlet **out; // direct access to outlets (not linked lists)
-	t_canvas *mom;
-};
-
 \class FormatQuickTimeHW < Format
 struct FormatQuickTimeHW : Format {
 	quicktime_t *anim;
