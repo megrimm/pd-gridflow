@@ -108,7 +108,7 @@ GRID_INLET(GridExportPix,1) {
 void GridExportPix::obj_setupCallback(t_class *) {}
 
 \classinfo {
-	IEVAL(rself,"install '#export_pix',2,1;");
+	IEVAL(rself,"install '#to_pix',2,1;");
 	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridExportPix"),SI(@bfclass)));
 	GridExportPix::real_obj_setupCallback(qlass);
 }
