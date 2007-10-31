@@ -219,9 +219,12 @@ struct GridStore : GridObject {
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
-	int32 wdex [Dim::MAX_DIM]; // temporary buffer, copy of put_at
-	int32 fromb[Dim::MAX_DIM];
-	int32 to2  [Dim::MAX_DIM];
+	//int32 wdex [Dim::MAX_DIM]; // temporary buffer, copy of put_at
+	//int32 fromb[Dim::MAX_DIM];
+	//int32 to2  [Dim::MAX_DIM];
+	int32 *wdex ; // temporary buffer, copy of put_at
+	int32 *fromb;
+	int32 *to2  ;
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
@@ -351,12 +354,14 @@ GRID_INLET(GridStore,1) {
 	lsd=nn;
 	while (lsd>=nn-in->dim->n) {
 		lsd--;
-		int cs = in->dim->prod(lsd-nn+in->dim->n);
-		if (cs>GridOutlet::MAX_PACKET_SIZE || fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
+		//int cs = in->dim->prod(lsd-nn+in->dim->n);
+		if (/*cs*(number_type_table[in->nt].size/8)>GridOutlet::MAX_PACKET_SIZE ||*/
+			fromb[lsd]!=0 || sizeb[lsd]!=r->dim->v[lsd]) break;
 	}
 	lsd++;
 	in->set_chunk(lsd-nn+in->dim->n);
 } GRID_FLOW {
+	fprintf(stderr,"d=%d\n",d);
 	if (!put_at) { // reassign
 		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
 		return;
@@ -385,6 +390,9 @@ GRID_INLET(GridStore,1) {
 	rb_call_super(argc,argv);
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	op = op_put;
+	wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
+	fromb = new int32[Dim::MAX_DIM];
+	to2   = new int32[Dim::MAX_DIM];
 }
 \classinfo { install("#store",2,1); }
 \end class GridStore
