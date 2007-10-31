@@ -12,6 +12,7 @@ version 0.9.0 (2007.10...):
  * updated [#camera]
  * added PWC-specific options: framerate white_mode white_red white_blue
    white_speed white_delay auto_gain compression noise_reduction
+ * added "pwc" option in [#camera], for enabling PWC-specific options.
  * colorspace conversion directly in [#in videodev] (faster)
  * grid messages no longer contain dim and numbertype (just a pointer)
  * GridOutlet: added set_chunk (so set_factor is obsolete)
@@ -27,9 +28,8 @@ version 0.9.0 (2007.10...):
  * renamed [#export]        to [#to_float]
  * renamed [#export_list]   to [#to_list]
  * renamed [#export_symbol] to [#to_symbol]
-soon:
- * removed reference.*ml
- * videodev.c should be upgraded to V4L2 asap.
+ * fixed 256MB limit bug
+ * fixed reassign bug
 
 version 0.8.4 (2006.10.12):
 
