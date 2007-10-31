@@ -163,10 +163,14 @@ struct CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,1);}};
 
 \class CvSplit < CvOp1
 struct CvSplit : CvOp1 {
+	int channels;
 	\decl void initialize (int channels);
 };
 \def void initialize (int channels) {
 	rb_call_super(0,0);
+	if (channels<0 || channels>64) RAISE("channels=%d is not in 1..64",channels);
+	this->channels = channels;
+	bself->noutlets_set(channels);
 }
 \classinfo {}
 \end class CvSplit
