@@ -70,9 +70,9 @@ static void expect_dim_dim_list (P<Dim> d) {
 //static void expect_min_one_dim (P<Dim> d) {
 //	if (d->n<1) RAISE("minimum 1 dimension");}
 static void expect_max_one_dim (P<Dim> d) {
-	if (d->n>1) { RAISE("expecting Dim[] or Dim[n], got %s",d->to_s()); }}
+	if (d->n>1) RAISE("expecting Dim[] or Dim[n], got %s",d->to_s());}
 //static void expect_exactly_one_dim (P<Dim> d) {
-//	if (d->n!=1) { RAISE("expecting Dim[n], got %s",d->to_s()); }}
+//	if (d->n!=1) RAISE("expecting Dim[n], got %s",d->to_s());}
 
 //****************************************************************
 \class GridCast < GridObject
@@ -124,7 +124,11 @@ struct GridImport : GridObject {
 };
 
 GRID_INLET(GridImport,0) {} GRID_FLOW { process(n,data); } GRID_END
-GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
+GRID_INPUT(GridImport,1,dim_grid) {
+	P<Dim> d = dim_grid->to_dim();
+	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
+	dim = d;
+} GRID_END
 
 \def void _0_symbol(Symbol x) {
 	const char *name = rb_sym_name(x);
@@ -146,6 +150,7 @@ GRID_INPUT(GridImport,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
 		dim = dim_grid->to_dim();
+		if (!dim->prod()) RAISE("target grid size must not be zero");
 	}
 }
 
@@ -924,12 +929,17 @@ GRID_INLET(GridRedim,0) {
 	temp=0;
 } GRID_END
 
-GRID_INPUT(GridRedim,1,dim_grid) { dim = dim_grid->to_dim(); } GRID_END
+GRID_INPUT(GridRedim,1,dim_grid) {
+	P<Dim> d = dim_grid->to_dim();
+//	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
+	dim = d;
+} GRID_END
 
 \def void initialize (Grid *d) {
 	rb_call_super(argc,argv);
 	dim_grid=d;
 	dim = dim_grid->to_dim();
+//	if (!dim->prod()) RAISE("target grid size must not be zero");
 }
 
 \classinfo { install("#redim",2,1); }
