@@ -335,6 +335,7 @@ require "format/main.rb"
 GridFlow::FObject.name_lookup("#to_list")  .add_creator "#export_list"
 GridFlow::FObject.name_lookup("#to_float") .add_creator "#export"
 GridFlow::FObject.name_lookup("#to_symbol").add_creator "#export_symbol"
+GridFlow::FObject.name_lookup("#to_pix")   .add_creator "#export_pix" rescue nil
 
 %w(
   # #for #finished #type #dim #transpose #perspective #store #outer
