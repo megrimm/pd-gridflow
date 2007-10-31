@@ -30,10 +30,10 @@
 #X text 4 401 FLOAT;
 #X text 79 401 The grid is transformed into a sequence of floats.;
 #X obj 15 188 #to_float;
-#X obj 15 216 print exported_float;
 #X text 12 27 Produces sequences of floats from grid data. Useful for
 the integration into the rest of PureData.;
+#X obj 15 216 print converted_grid;
 #X connect 12 0 13 0;
 #X connect 12 0 22 0;
 #X connect 14 0 12 0;
-#X connect 22 0 23 0;
+#X connect 22 0 24 0;

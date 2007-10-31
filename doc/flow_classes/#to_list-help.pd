@@ -1,4 +1,4 @@
-#N canvas 379 49 502 472 10;
+#N canvas 544 108 502 472 10;
 #X obj 1 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 0 352 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
@@ -22,7 +22,6 @@
 #X obj 50 115 display;
 #X msg 14 64 1 2 3 4 5 6 7 8;
 #X text 209 449 Arguments (0);
-#X obj 14 216 print exported_list;
 #X obj 161 217 display;
 #X text 59 298 Accepts a grid that will be transformed into a list.
 ;
@@ -35,8 +34,9 @@ into the rest of PureData.;
 #X obj 2 0 #to_list;
 #X text 397 1 GridFlow 0.9.0;
 #X obj 14 161 #to_list;
+#X obj 14 216 print converted_grid;
 #X connect 12 0 13 0;
-#X connect 12 0 25 0;
+#X connect 12 0 24 0;
 #X connect 14 0 12 0;
-#X connect 25 0 16 0;
-#X connect 25 0 17 0;
+#X connect 24 0 16 0;
+#X connect 24 0 25 0;
