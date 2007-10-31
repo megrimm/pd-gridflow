@@ -1,6 +1,6 @@
 /* $Id$ */
 
-version 0.9.0 (2007.10...):
+version 0.9.0 (2007.10.31):
 
  * added the "tcl" external for pd, which allows to write
    externals in the Tcl language, but server-side.
@@ -28,6 +28,7 @@ version 0.9.0 (2007.10...):
  * renamed [#export]        to [#to_float]
  * renamed [#export_list]   to [#to_list]
  * renamed [#export_symbol] to [#to_symbol]
+ * renamed [#export_pix]    to [#to_pix]
  * fixed 256MB limit bug
  * fixed reassign bug
 
