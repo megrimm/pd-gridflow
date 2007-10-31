@@ -1,4 +1,4 @@
-#N canvas 89 46 571 412 10;
+#N canvas 1036 267 571 412 10;
 #X obj 235 302 #out;
 #X msg 235 190 close;
 #X obj 75 41 inlet filename;
@@ -13,7 +13,7 @@
 #X msg 124 240 0;
 #X obj 205 106 t b b;
 #X obj 324 101 vradio 15 1 0 4 \$0-framerate \$0-framerate select_framerate
-0 -6 0 12 -241291 -258699 -1 0;
+0 -6 0 12 -241291 -258699 -1 2;
 #X text 350 99 10 fps;
 #X text 350 116 24 fps;
 #X text 350 132 25 fps;
@@ -21,29 +21,29 @@
 #N canvas 691 426 273 271 framerate 0;
 #X obj 95 37 r \$0-framerate;
 #X floatatom 103 67 5 0 0 0 - - -;
-#X obj 54 114 == 0;
-#X obj 89 114 == 1;
-#X obj 124 114 == 2;
-#X obj 159 114 == 3;
 #X obj 107 225 outlet;
 #X msg 54 153 10;
 #X msg 85 153 24;
 #X msg 120 152 25;
 #X msg 153 152 30;
 #X msg 107 198 framerate \$1;
+#X obj 54 114 sel 0;
+#X obj 89 114 sel 1;
+#X obj 124 115 sel 2;
+#X obj 159 114 sel 3;
 #X connect 0 0 1 0;
-#X connect 1 0 2 0;
-#X connect 1 0 3 0;
-#X connect 1 0 4 0;
-#X connect 1 0 5 0;
-#X connect 2 0 7 0;
-#X connect 3 0 8 0;
-#X connect 4 0 9 0;
-#X connect 5 0 10 0;
-#X connect 7 0 11 0;
-#X connect 8 0 11 0;
-#X connect 9 0 11 0;
-#X connect 10 0 11 0;
+#X connect 1 0 8 0;
+#X connect 1 0 9 0;
+#X connect 1 0 10 0;
+#X connect 1 0 11 0;
+#X connect 3 0 7 0;
+#X connect 4 0 7 0;
+#X connect 5 0 7 0;
+#X connect 6 0 7 0;
+#X connect 7 0 2 0;
+#X connect 8 0 3 0;
+#X connect 9 0 4 0;
+#X connect 10 0 5 0;
 #X connect 11 0 6 0;
 #X restore 283 278 pd framerate;
 #X obj 75 149 s openfilename;
@@ -52,6 +52,7 @@
 #X text 108 335 I'd like to use [#peephole] to monitor what is being
 recorded but it's too buggy at the moment.;
 #X msg 283 221 codec jpeg;
+#X text 343 178 the framerate option;
 #X connect 1 0 0 0;
 #X connect 2 0 6 0;
 #X connect 3 0 12 0;
