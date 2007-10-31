@@ -1,7 +1,15 @@
 /* $Id$ */
 
+[ ] CVS #*
+[ ] [cv.split]
+[ ] bugs roman
+[ ] release GridFlow 0.9.0
 [ ] add claude's fixes
 [ ] ...
+
+soon:
+ * removed reference.*ml
+ * videodev.c should be upgraded to V4L2 asap.
 
 +-------+-------+-------+-------+-------+-------+-------+-------
 Common Video Framework :
