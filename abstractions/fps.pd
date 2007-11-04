@@ -1,0 +1,9 @@
+#N canvas 616 255 450 300 10;
+#X obj 18 21 inlet;
+#X obj 18 40 route detailed mode;
+#X obj 82 59 route real user system cpu;
+#X obj 24 203 #slice;
+#X obj 24 184 #sort;
+#X connect 0 0 1 0;
+#X connect 1 1 2 0;
+#X connect 4 0 3 0;
