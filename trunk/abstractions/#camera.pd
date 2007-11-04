@@ -1,0 +1,382 @@
+#N canvas 544 0 422 290 10;
+#X obj 82 6 cnv 15 184 56 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 144 9 hradio 12 1 0 4 \$0-channel \$0-channel _0_1_2_3 -2 7
+1 10 -241291 -258699 -1 0;
+#N canvas 202 0 764 484 camera 0;
+#X obj 305 409 outlet;
+#X obj 11 9 inlet;
+#X msg 140 176 contrast \$1;
+#X msg 140 236 whiteness \$1;
+#X msg 140 156 brightness \$1;
+#X msg 140 277 channel \$1;
+#X obj 233 156 r \$0-brightness;
+#X obj 233 176 r \$0-contrast;
+#X obj 233 236 r \$0-whiteness;
+#X obj 233 276 r \$0-channel;
+#X obj 233 216 r \$0-hue;
+#X msg 140 216 hue \$1;
+#X msg 140 196 colour \$1;
+#X obj 233 196 r \$0-colour;
+#X obj 23 198 t a;
+#X msg 439 390 open videodev \$1 \, get;
+#X msg 140 256 frequency \$1;
+#X obj 233 256 r \$0-frequency;
+#X obj 439 319 r \$0-device;
+#X msg 431 275 size \$1 \$2;
+#X obj 12 98 rubysprintf %d-%s;
+#X obj 11 117 pack s f;
+#X obj 12 77 t a a;
+#X msg 68 77 \$3;
+#X msg 11 136 \; \$1 \$2;
+#X obj 11 56 messageprepend \$0;
+#X msg 140 297 tuner \$1;
+#X obj 233 296 r \$0-tuner;
+#X obj 356 10 r \$0-size0;
+#X msg 431 10 120 160;
+#X msg 431 29 120 180;
+#X obj 356 29 r \$0-size1;
+#X msg 431 48 240 320;
+#X msg 431 67 240 360;
+#X obj 356 48 r \$0-size2;
+#X obj 356 67 r \$0-size3;
+#X obj 356 86 r \$0-size4;
+#X obj 356 105 r \$0-size5;
+#X msg 431 86 480 640;
+#X msg 431 105 480 720;
+#X obj 356 124 r \$0-size6;
+#X obj 356 143 r \$0-size7;
+#X msg 431 124 576 720;
+#X msg 431 143 288 352;
+#X obj 431 170 unpack 0 0;
+#X obj 512 189 s \$0-width;
+#X obj 431 189 s \$0-height;
+#X obj 431 209 r \$0-height;
+#X obj 512 209 r \$0-width;
+#X obj 431 237 #pack;
+#X obj 431 256 #export_list;
+#X obj 493 146 r \$0-size;
+#X msg 305 383 close;
+#X obj 439 371 rubysprintf /dev/video%d;
+#X msg 140 136 framerate \$1;
+#X obj 233 136 r \$0-framerate;
+#X obj 305 450 t b a b;
+#X obj 45 419 spigot;
+#X msg 89 367 0;
+#X msg 89 390 1;
+#X msg 140 36 white_red \$1;
+#X obj 233 36 r \$0-white_red;
+#X msg 140 16 white_mode \$1;
+#X obj 233 16 r \$0-white_mode;
+#X obj 233 56 r \$0-white_blue;
+#X msg 140 56 white_blue \$1;
+#X msg 140 76 white_speed \$1;
+#X msg 141 96 white_delay \$1;
+#X obj 233 76 r \$0-white_speed;
+#X obj 233 96 r \$0-white_delay;
+#X msg 141 116 auto_gain \$1;
+#X obj 233 116 r \$0-auto_gain;
+#X obj 439 338 range 8;
+#X obj 520 300 args (device a -1);
+#X obj 520 281 loadbang;
+#X obj 520 338 s \$0-device;
+#X obj 520 319 mod 9;
+#X msg 140 316 noise_reduction \$1;
+#X msg 140 336 compression \$1;
+#X obj 273 336 r \$0-compression;
+#X obj 273 316 r \$0-noise_reduction;
+#X obj 273 356 r \$0-pwc;
+#X msg 140 356 pwc \$1;
+#X obj 45 441 route pwc;
+#X obj 139 465 t b a b;
+#X msg 45 460 pwc \$1 \, get;
+#X connect 1 0 25 0;
+#X connect 2 0 14 0;
+#X connect 3 0 14 0;
+#X connect 4 0 14 0;
+#X connect 5 0 14 0;
+#X connect 6 0 4 0;
+#X connect 7 0 2 0;
+#X connect 8 0 3 0;
+#X connect 9 0 5 0;
+#X connect 10 0 11 0;
+#X connect 11 0 14 0;
+#X connect 12 0 14 0;
+#X connect 13 0 12 0;
+#X connect 14 0 57 0;
+#X connect 15 0 56 0;
+#X connect 16 0 14 0;
+#X connect 17 0 16 0;
+#X connect 18 0 72 0;
+#X connect 19 0 0 0;
+#X connect 20 0 21 0;
+#X connect 21 0 24 0;
+#X connect 22 0 20 0;
+#X connect 22 1 23 0;
+#X connect 23 0 21 1;
+#X connect 25 0 22 0;
+#X connect 26 0 14 0;
+#X connect 27 0 26 0;
+#X connect 28 0 29 0;
+#X connect 29 0 44 0;
+#X connect 30 0 44 0;
+#X connect 31 0 30 0;
+#X connect 32 0 44 0;
+#X connect 33 0 44 0;
+#X connect 34 0 32 0;
+#X connect 35 0 33 0;
+#X connect 36 0 38 0;
+#X connect 37 0 39 0;
+#X connect 38 0 44 0;
+#X connect 39 0 44 0;
+#X connect 40 0 42 0;
+#X connect 41 0 43 0;
+#X connect 42 0 44 0;
+#X connect 43 0 44 0;
+#X connect 44 0 46 0;
+#X connect 44 1 45 0;
+#X connect 47 0 49 0;
+#X connect 48 0 49 1;
+#X connect 49 0 50 0;
+#X connect 50 0 19 0;
+#X connect 51 0 44 0;
+#X connect 52 0 0 0;
+#X connect 53 0 15 0;
+#X connect 54 0 14 0;
+#X connect 55 0 54 0;
+#X connect 56 0 59 0;
+#X connect 56 1 0 0;
+#X connect 56 2 58 0;
+#X connect 57 0 83 0;
+#X connect 58 0 57 1;
+#X connect 59 0 57 1;
+#X connect 60 0 14 0;
+#X connect 61 0 60 0;
+#X connect 62 0 14 0;
+#X connect 63 0 62 0;
+#X connect 64 0 65 0;
+#X connect 65 0 14 0;
+#X connect 66 0 14 0;
+#X connect 67 0 14 0;
+#X connect 68 0 66 0;
+#X connect 69 0 67 0;
+#X connect 70 0 14 0;
+#X connect 71 0 70 0;
+#X connect 72 0 53 0;
+#X connect 72 1 52 0;
+#X connect 73 0 76 0;
+#X connect 74 0 73 0;
+#X connect 76 0 75 0;
+#X connect 77 0 14 0;
+#X connect 78 0 14 0;
+#X connect 79 0 78 0;
+#X connect 80 0 77 0;
+#X connect 81 0 82 0;
+#X connect 82 0 14 0;
+#X connect 83 0 85 0;
+#X connect 83 1 0 0;
+#X connect 84 0 59 0;
+#X connect 84 1 0 0;
+#X connect 84 2 58 0;
+#X connect 85 0 84 0;
+#X restore 45 394 pd camera;
+#X obj 18 394 #in;
+#X obj 18 413 outlet image;
+#X obj 18 356 inlet;
+#X obj 144 21 hradio 12 1 0 4 \$0-tuner \$0-tuner _0_1_2_3 -2 7 1 10
+-241291 -258699 -1 0;
+#X obj 134 45 hsl 129 12 0 65635 0 0 \$0-frequency \$0-frequency frequency
+4 7 1 10 -200256 -1 -1 0 1;
+#X obj 84 45 nbx 5 12 0 65535 0 0 \$0-frequency \$0-frequency empty
+4 7 1 10 -200256 -1 -1 0 256;
+#X obj 57 356 r \$0-o;
+#X text 85 10 channel:;
+#X text 99 22 tuner:;
+#X obj 6 6 cnv 15 70 180 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 9 7 device:;
+#X obj 11 25 vradio 15 1 0 9 \$0-device \$0-device empty 0 -6 0 8 -241291
+-1 -1 0;
+#X obj 82 67 cnv 15 184 172 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 134 81 hsl 129 12 0 65535 0 0 \$0-brightness \$0-brightness
+brightness 4 7 1 10 -200256 -1 -1 6200 0;
+#X obj 134 105 hsl 129 12 0 65535 0 0 \$0-hue \$0-hue hue 4 7 1 10
+-200256 -1 -1 12800 0;
+#X obj 134 69 hsl 129 12 0 65535 0 0 \$0-contrast \$0-contrast contrast
+4 7 1 10 -200256 -1 -1 12600 0;
+#X obj 134 117 hsl 129 12 0 65535 0 0 \$0-whiteness \$0-whiteness whiteness
+4 7 1 10 -200256 -1 -1 12400 0;
+#X obj 134 93 hsl 129 12 0 65535 0 0 \$0-colour \$0-colour colour 4
+7 1 10 -200256 -1 -1 12787 0;
+#X obj 84 69 nbx 5 12 0 65535 0 0 \$0-contrast \$0-contrast empty 4
+7 1 10 -200256 -1 -1 64512 256;
+#X obj 84 81 nbx 5 12 0 65535 0 0 \$0-brightness \$0-brightness empty
+4 7 1 10 -200256 -1 -1 31744 256;
+#X obj 84 93 nbx 5 12 0 65535 0 0 \$0-colour \$0-colour empty 4 7 1
+10 -200256 -1 -1 65468 256;
+#X obj 84 105 nbx 5 12 0 65535 0 0 \$0-hue \$0-hue empty 4 7 1 10 -200256
+-1 -1 65535 256;
+#X obj 84 117 nbx 5 12 0 65535 0 0 \$0-whiteness \$0-whiteness empty
+4 7 1 10 -200256 -1 -1 63488 256;
+#X obj 271 139 cnv 15 144 140 empty empty empty 20 12 0 14 -233017
+-66577 0;
+#X obj 271 6 cnv 15 144 128 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X obj 309 22 nbx 5 14 -1e+37 1e+37 0 0 \$0-height \$0-height empty
+0 -6 1 10 -241291 -1 -1 0 256;
+#X obj 357 22 nbx 5 14 -1e+37 1e+37 0 0 \$0-width \$0-width empty 0
+-6 1 10 -241291 -1 -1 0 256;
+#X text 272 21 size:;
+#X text 308 5 height;
+#X text 358 5 width;
+#X msg 274 155 transfer mmap;
+#X msg 274 189 transfer read;
+#X text 274 139 Special options:;
+#X msg 274 172 transfer mmap 4;
+#X obj 258 307 s \$0-o;
+#X obj 326 69 bng 12 250 50 0 \$0-size0 empty 120x160 -46 6 1 10 -241291
+-1 -1;
+#X obj 341 69 bng 12 250 50 0 \$0-size1 empty 120x180 16 6 1 10 -241291
+-1 -1;
+#X obj 326 81 bng 12 250 50 0 \$0-size2 empty 240x320 -46 6 1 10 -241291
+-1 -1;
+#X obj 341 81 bng 12 250 50 0 \$0-size3 empty 240x360 16 6 1 10 -241291
+-1 -1;
+#X obj 326 93 bng 12 250 50 0 \$0-size4 empty 480x640 -46 6 1 10 -241291
+-1 -1;
+#X obj 341 93 bng 12 250 50 0 \$0-size5 empty 480x720 16 6 1 10 -241291
+-1 -1;
+#X obj 341 105 bng 12 250 50 0 \$0-size6 empty 576x720 16 6 1 10 -241291
+-1 -1;
+#X obj 341 117 bng 12 250 50 0 \$0-size7 empty 288x352 16 6 1 10 -241291
+-1 -1;
+#X obj 309 36 nbx 5 14 -1e+37 1e+37 0 0 \$0-framerate \$0-framerate
+empty 0 -6 1 10 -241291 -1 -1 5 256;
+#X obj 134 165 hsl 129 12 0 65535 0 0 \$0-white_blue \$0-white_blue
+white_blue 4 7 1 10 -200256 -1 -1 0 0;
+#X obj 84 165 nbx 5 12 0 65535 0 0 \$0-white_blue \$0-white_blue empty
+4 7 1 10 -200256 -1 -1 0 256;
+#X obj 134 153 hsl 129 12 0 65535 0 0 \$0-white_red \$0-white_red white_red
+4 7 1 10 -200256 -1 -1 0 0;
+#X obj 84 153 nbx 5 12 0 65535 0 0 \$0-white_red \$0-white_red empty
+4 7 1 10 -200256 -1 -1 0 256;
+#X obj 84 141 tgl 12 0 \$0-white_mode \$0-white_mode manual_white_balance
+20 7 1 10 -241291 -1 -1 0 1;
+#N canvas 0 0 450 157 (subpatch) 0;
+#X obj 23 116 outlet;
+#X obj 58 97 outlet;
+#X obj 23 21 r \$0-colorspace;
+#X obj 94 78 outlet;
+#X obj 23 40 route y yuv rgb magic;
+#X obj 129 59 outlet;
+#X connect 2 0 4 0;
+#X connect 4 0 0 0;
+#X connect 4 1 1 0;
+#X connect 4 2 3 0;
+#X connect 4 3 5 0;
+#X restore 226 306 pd;
+#X msg 285 223 colorspace yuv;
+#X msg 284 206 colorspace y;
+#X msg 285 240 colorspace rgb;
+#X obj 134 189 hsl 129 12 0 65535 0 0 \$0-white_delay \$0-white_delay
+white_delay 4 7 1 10 -200256 -1 -1 0 0;
+#X obj 84 189 nbx 5 12 0 65535 0 0 \$0-white_delay \$0-white_delay
+empty 4 7 1 10 -200256 -1 -1 0 256;
+#X obj 134 177 hsl 129 12 0 65535 0 0 \$0-white_speed \$0-white_speed
+white_speed 4 7 1 10 -200256 -1 -1 8731 0;
+#X obj 84 177 nbx 5 12 0 65535 0 0 \$0-white_speed \$0-white_speed
+empty 4 7 1 10 -200256 -1 -1 44704 256;
+#X obj 134 201 hsl 129 12 0 65535 0 0 \$0-auto_gain \$0-auto_gain auto_gain
+4 7 1 10 -200256 -1 -1 0 0;
+#X obj 84 201 nbx 5 12 0 65535 0 0 \$0-auto_gain \$0-auto_gain empty
+4 7 1 10 -200256 -1 -1 0 256;
+#N canvas 0 0 450 300 command_filter 0;
+#X obj 22 24 inlet;
+#X obj 22 92 outlet;
+#X obj 22 43 route bang device;
+#X obj 79 122 s \$0-device;
+#X connect 0 0 2 0;
+#X connect 2 0 1 0;
+#X connect 2 1 3 0;
+#X connect 2 2 1 0;
+#X restore 18 375 pd command_filter;
+#X text 29 145 *OFF*;
+#X text 279 35 fps:;
+#X text 30 24 #0;
+#X text 30 39 #1;
+#X text 30 54 #2;
+#X text 30 69 #3;
+#X text 30 84 #4;
+#X text 30 99 #5;
+#X text 30 114 #6;
+#X text 30 129 #7;
+#X text 314 51 presets:;
+#N canvas 442 82 499 300 stuff 0;
+#X obj 31 74 s \$0-contrast;
+#X obj 31 94 s \$0-brightness;
+#X obj 31 114 s \$0-colour;
+#X obj 31 134 s \$0-hue;
+#X obj 31 154 s \$0-whiteness;
+#X obj 31 174 s \$0-white_red;
+#X obj 31 194 s \$0-white_blue;
+#X obj 31 214 s \$0-white_speed;
+#X obj 31 234 s \$0-white_delay;
+#X obj 31 254 s \$0-auto_gain;
+#X obj 31 36 t a;
+#X obj 225 115 #color;
+#X obj 225 194 #fold |;
+#X obj 225 213 # inv+ -1;
+#X obj 225 175 # << (16 8 0);
+#X obj 225 232 #export;
+#X msg 225 251 color \$1 -1 -1;
+#X obj 31 55 s \$0-frequency;
+#X msg 30 4 label_font 1 10 \, nbx:size 5 12 \, hsl:size 129 12 \,
+label_pos 4 7;
+#X connect 10 0 0 0;
+#X connect 10 0 1 0;
+#X connect 10 0 2 0;
+#X connect 10 0 3 0;
+#X connect 10 0 4 0;
+#X connect 10 0 5 0;
+#X connect 10 0 6 0;
+#X connect 10 0 7 0;
+#X connect 10 0 8 0;
+#X connect 10 0 9 0;
+#X connect 10 0 17 0;
+#X connect 11 0 14 0;
+#X connect 12 0 13 0;
+#X connect 13 0 15 0;
+#X connect 14 0 12 0;
+#X connect 15 0 16 0;
+#X connect 16 0 10 0;
+#X connect 18 0 10 0;
+#X restore 106 413 pd stuff;
+#X text 91 129 ------- PWC ONLY: -------;
+#X text 358 36 pwc-only;
+#X obj 84 213 hradio 12 1 0 4 \$0-noise_reduction \$0-noise_reduction
+_0_1_2_3_noise_reduction -2 7 1 10 -241291 -258699 -1 3;
+#X obj 84 225 hradio 12 1 0 4 \$0-compression \$0-compression _0_1_2_3_compression
+-2 7 1 10 -241291 -258699 -1 0;
+#X msg 285 257 colorspace magic;
+#X obj 11 169 tgl 12 0 \$0-pwc \$0-pwc empty 20 7 1 10 -241291 -1 -1
+1 1;
+#X text 26 167 use PWC;
+#X msg 133 334 get;
+#X connect 2 0 3 0;
+#X connect 3 0 4 0;
+#X connect 3 1 2 0;
+#X connect 5 0 62 0;
+#X connect 9 0 3 0;
+#X connect 33 0 37 0;
+#X connect 34 0 37 0;
+#X connect 36 0 37 0;
+#X connect 52 0 54 0;
+#X connect 52 1 53 0;
+#X connect 52 2 55 0;
+#X connect 53 0 37 0;
+#X connect 54 0 37 0;
+#X connect 55 0 37 0;
+#X connect 62 0 3 0;
+#X connect 79 0 37 0;
+#X connect 82 0 3 0;
