@@ -118,13 +118,13 @@ install::
 	@echo -e "2. delete the old gridflow.pd_linux"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
-dupabs: pd_abstractions/@color.pd
+dupabs: abstractions/@color.pd
 
-pd_abstractions/@color.pd: pd_abstractions/\#color.pd
+abstractions/@color.pd: abstractions/\#color.pd
 	for z in camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate; do \
-	cp pd_abstractions/\#$$z.pd pd_abstractions/\@$$z.pd; done
+	cp abstractions/\#$$z.pd abstractions/\@$$z.pd; done
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
