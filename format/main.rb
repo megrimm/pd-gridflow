@@ -277,7 +277,7 @@ GridObject.subclass("#out",1,1) {
 		send_out 0,:bang
 		log if @timelog
 		@framecount+=1
-		@finished.send_in 0, :grid, *a
+		@finished.send_in 0, :grid, *a if @finished ;# why do i need this condition?
 	end
 
 	def log
