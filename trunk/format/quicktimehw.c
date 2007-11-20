@@ -40,8 +40,10 @@ struct FormatQuickTimeHW : Format {
 	int length; // in frames
 	float64 framerate;
 	P<BitPacking> bit_packing;
+	int jpeg_quality; // in theory we shouldn't need this, but...
+
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
-		started(false), force(0), framerate(29.97), bit_packing(0) {}
+		started(false), force(0), framerate(29.97), bit_packing(0), jpeg_quality(75) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
 	\decl void close ();
 	\decl Ruby frame ();
@@ -95,7 +97,10 @@ struct FormatQuickTimeHW : Format {
 
 //!@#$ should also support symbol values (how?)
 \def void _0_parameter (Symbol name, int32 value) {
-	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &value);
+	int val = value;
+	//post("quicktime_set_parameter %s %d",(char*)rb_sym_name(name), val);
+	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &val);
+	if (name==SYM(jpeg_quality)) jpeg_quality=value;
 }
 
 \def void _0_framerate (float64 f) {
@@ -124,6 +129,8 @@ GRID_INLET(FormatQuickTimeHW,0) {
 		quicktime_set_cmodel(anim,colorspace);
 		quicktime_set_depth(anim,8*channels,track);
 	}
+	//post("quicktime jpeg_quality %d", jpeg_quality);
+	quicktime_set_parameter(anim, (char*)"jpeg_quality", &jpeg_quality);
 } GRID_FLOW {
 	int sx = quicktime_video_width(anim,track);
 	int sy = quicktime_video_height(anim,track);
