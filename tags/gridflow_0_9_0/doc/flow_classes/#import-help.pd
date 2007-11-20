@@ -1,0 +1,63 @@
+#N canvas 297 0 502 678 10;
+#X obj 1 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 518 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 224 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X obj 1 247 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 215 520 Outlets (1);
+#X obj 1 616 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 210 615 Arguments (1);
+#X obj 1 539 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 398 1 GridFlow 0.8.4;
+#X text 2 248 Inlet 0;
+#X text 2 540 Outlet 0;
+#X obj 12 0 #import;
+#X msg 58 142 reset;
+#X obj 16 78 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
+;
+#X msg 16 142 200;
+#X obj 16 119 until;
+#X msg 16 98 230400;
+#X obj 16 196 #out window;
+#X text 215 224 Inlets (1);
+#X obj 16 168 cnv 15 149 17 empty empty empty 20 12 0 14 -241291 -66577
+0;
+#X text 7 644 GRID;
+#X text 74 643 The argument establishes grid dimensions in parentheses
+in the order of columns \, rows and grid dimensions.;
+#X text 14 27 Produces grids from non-grid data \, such as integers
+and lists of integers. Reframes/resyncs grids to join them or splits
+single grids.;
+#X obj 16 168 #import ( 240 320 3 );
+#X text 5 277 INTEGER;
+#X text 5 340 SYMBOL;
+#X text 76 339 Symbols are considered as a list of ascii characters.
+;
+#X text 76 276 An integer is either placed in the current grid \, placed
+at the end of a grid when it is full or placed at the beginning of
+a new grid if there if there is no current grid.;
+#X text 7 366 LIST;
+#X text 76 365 Like a sequence of ints sent one after another \, except
+in a single message.;
+#X text 7 401 MESSAGE;
+#X text 76 398 "reset" aborts the current grid if there is one.;
+#X text 6 421 GRID;
+#X text 77 421 This is almost equivalent to filtering the grid through
+an [#export] object however it is over ten times faster.;
+#X obj 1 468 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 2 469 Inlet 1;
+#X text 8 567 GRID;
+#X text 80 567 The grid resulting from the incoming integers and/or
+grids is output from the outlet.;
+#X connect 12 0 23 0;
+#X connect 13 0 16 0;
+#X connect 14 0 23 0;
+#X connect 15 0 14 0;
+#X connect 16 0 15 0;
+#X connect 23 0 17 0;

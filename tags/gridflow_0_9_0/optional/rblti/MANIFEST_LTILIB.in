@@ -1,0 +1,6 @@
+prune examples/sample?/build
+prune analysis.py
+prune check_bluesky.py
+prune test_lti.py
+prune todo.txt
+include *.txt *.i *.h LICENSE lti_wrap.cpp patched/*.h generated/*.h src/*.h

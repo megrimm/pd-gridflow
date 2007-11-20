@@ -1,0 +1,114 @@
+#N canvas 162 112 1120 618 10;
+#X msg 156 71 load babbage.jpg;
+#X obj 156 92 #in;
+#X obj 52 73 tgl 15 0 empty empty empty 0 -6 0 8 -24198 -1 -1 0 1;
+#X obj 77 114 lti.SplitImageToRGB 2;
+#X obj 77 332 #greyscale_to_rgb;
+#X obj 77 353 #out window \, title Thresholded;
+#X obj 77 93 #camera;
+#X obj 89 149 hsl 128 15 0 1 0 1 empty empty Threshold -2 -6 0 8 -262144
+-1 -1 12700 1;
+#X obj 77 377 fps detailed;
+#X obj 78 403 display;
+#X obj 77 72 metro 10;
+#X obj 77 205 lti.Thresholding 1;
+#X msg 86 171 lowThreshold \$1;
+#X msg 223 172 keepInRegion \$1;
+#X obj 223 149 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X obj 77 265 lti.FastRelabeling 3;
+#X obj 52 92 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
+-1;
+#X obj 77 310 #outer + (0);
+#X obj 78 288 # << 4;
+#X msg 507 75 minimumObjectSize \$1;
+#X floatatom 472 55 5 0 0 0 - - -;
+#X msg 507 123 minThreshold \$1;
+#X floatatom 471 101 5 0 0 0 - - -;
+#X floatatom 467 464 5 0 0 0 - - -;
+#X msg 509 491 maxThreshold \$1;
+#X msg 506 162 assumeLabeledMask;
+#X obj 471 140 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X msg 507 235 sortSize;
+#X obj 470 218 tgl 15 0 empty empty empty 0 -6 0 8 -262144 -1 -1 0
+1;
+#X msg 511 542 boundaryType \$1;
+#X obj 469 381 tgl 15 1 empty empty empty 0 -6 0 8 -262144 -1 -1 1
+1;
+#X msg 507 403 fourNeighborhood;
+#X text 661 397 If true \, a 4-neighborhood will be used to detect
+the adjacent pixels \, otherwise an 8-neighborhood will be used. Due
+to the lesser number of required comparisons \, the 4-neighborhood
+allows a faster relabeling. Sometimes however the 8-neighborhood is
+required. Default value: true (i.e. 4-neighborhood);
+#X text 659 154 If true \, each integer value in the original image
+will be considered as a new region label. If false \, only two "values"
+will be taken: within the threshold interval or outside it. Default
+value: true;
+#X text 658 489 All values in the original mask below or equal this
+maximum threshold will be considered as candidates to relabeling. Default
+value: std::numeric_limits<int>::max();
+#X text 659 107 All values in the original mask above or equal this
+minimum threshold will be considered as candidates to relabeling. Default
+value: 1;
+#X text 661 56 If the number of pixels of an object is less than the
+minimumObjectSize \, it will be assigned to the background label (0).
+Default value: 1 (i.e. consider all objects);
+#X text 659 231 If sortSize is true \, the object labels will be assigned
+according to the number of pixels of each object. Warning: There is
+an exception. The label 0 has a special meaning and it will always
+be assigned to the background (everything outside the given interval
+between minThreshold and maxThreshold) independently of its size. This
+means the regions will be sorted decreasingly but begining with the
+second element. The first one is always the background. If you set
+minThreshold to zero \, the first element is always empty. Default
+value: false;
+#X obj 419 296 s param;
+#X msg 23 221 help;
+#X msg 23 241 get;
+#X obj 97 236 r param;
+#X obj 0 586 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017 -66577
+0;
+#X text 15 594 GridFlow 0.8.4;
+#X obj 1 0 cnv 15 1100 30 empty empty empty 20 12 0 14 -233017 -355
+0;
+#X obj 1 34 cnv 15 1100 15 empty empty empty 20 12 0 14 -228992 -66577
+0;
+#X text 13 33 lti.KMeansSegmentation;
+#X text 15 4 GridFlow::Rblti;
+#X text 244 142 <--- Gives binary image when not selected;
+#X connect 0 0 1 0;
+#X connect 1 0 3 0;
+#X connect 2 0 10 0;
+#X connect 3 0 11 0;
+#X connect 4 0 5 0;
+#X connect 5 0 8 0;
+#X connect 6 0 3 0;
+#X connect 7 0 12 0;
+#X connect 8 0 9 0;
+#X connect 10 0 6 0;
+#X connect 11 0 15 0;
+#X connect 12 0 11 0;
+#X connect 13 0 11 0;
+#X connect 14 0 13 0;
+#X connect 15 0 18 0;
+#X connect 16 0 6 0;
+#X connect 17 0 4 0;
+#X connect 18 0 17 0;
+#X connect 19 0 38 0;
+#X connect 20 0 19 0;
+#X connect 21 0 38 0;
+#X connect 22 0 21 0;
+#X connect 23 0 24 0;
+#X connect 24 0 38 0;
+#X connect 25 0 38 0;
+#X connect 26 0 25 0;
+#X connect 27 0 38 0;
+#X connect 28 0 27 0;
+#X connect 29 0 38 0;
+#X connect 30 0 31 0;
+#X connect 31 0 38 0;
+#X connect 39 0 15 0;
+#X connect 40 0 15 0;
+#X connect 41 0 15 0;

@@ -1,0 +1,45 @@
+change history
+==============
+
+ver. 0.33.1 (Heri)
+
+	Modified files:
+	
+	
+	gen_ltilib_classes.py
+	generated directory content
+	utils.i: #define _functor_parameters parameters --> #define Rfunctor_parameters parameters; HANDLE_SIMPLE_HEADER_FILE
+	classifiers.i
+	segmentation.i
+	transformations.i
+	testpylti.py
+	rblti.i: operators; begin and end in patched/ltiHistogram.h
+	patched/ltiHistogram.h
+	patched/ltiTypes.h: unchanged but copied into /patched
+	patched/ltiConfig.h: idem
+	patched/ltiLinConfig.h: used to be config.h, renamed, conflict with same name file in ruby headers
+	copied std_list_ruby.i from previous work in 0.32 to ./swig .
+	
+	
+	
+	Loose ends:
+	
+	_supervisedInstanceClassifier_parameters.h refered to in classifiers.i but file inexistant???
+	Why is this line : "%include "_objectsFromMask_objectStruct.h" in line 453 of rblti.i when objectfommask is included later in segmentation.i ??
+	
+	
+	
+	toDo:
+	
+	lti::distanceTransform::sedMask
+	there is config.h in lti headers and in ruby headers, solve this
+
+
+ver. 0.33
+        - defined a swig macro to simplify the wrapping of functors
+		- created swig directory for all the wrapper files
+		- cleaned up nameing convention for template classes (for: ubyte)
+		- split pylti into different modules (ltimisc, ltiextras)
+		- added more functors
+
+ver. 0.32	initial release

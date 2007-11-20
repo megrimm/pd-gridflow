@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+
+<title>GridFlow 0.9.0 - Introduction</title><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="gridflow.css" type="text/css"></head>
+<body leftmargin="0" topmargin="0" bgcolor="#ffffff" marginheight="0" marginwidth="0">
+<br>
+<table border="0" cellspacing="5" width="100%">
+  <tbody><tr><td colspan="4" bgcolor="#082069">
+	<img src="images/titre_gridflow.png" height="23" width="253"></td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+
+  <tr><td colspan="3" height="16">
+      <h4>GridFlow 0.9.0 - introduction</h4>
+  </td></tr>
+
+  <tr> 
+    <td height="4" width="12%">&nbsp;</td>
+    <td height="4" width="80%">&nbsp;</td>
+    <td height="4" width="12%">&nbsp;</td>
+  </tr>
+
+  <tr>
+    <td width="13%">&nbsp;</td>
+    <td width="82%">
+
+	<p> The philosophy that guides PureData is a simple but powerful one:
+	the software must first provide the user with generic tools
+	rather than imposing pre-cooked effects. In other words the user
+	should have total freedom. 
+
+	</p><p> GridFlow follows that philosophy: it first defines elementary
+	mathematical operations. Those can in turn be used as simple
+	visual effects or be combined to produce more complex effects.
+
+	</p><p> The strategy followed by most video plugins for PureData and MAX/MSP, is
+	to provide the user first with constructs for manipulating video
+	streams at a fairly high level. The strategy put forward by GridFlow
+	is different.
+
+	</p><p> It can be said that in all those video plugins there are three layers:
+	the first, the low level, is not accessible to non-programmers (and fairly
+	difficult of access even to programmers); the second, mathematical, where
+	one needs not to be a C++ programmer, but still requires a good
+	understanding of how numbers and pixels and colours and geometry work; and
+	a third level that looks more like the software an artist would like to
+	use.
+
+	</p><p> In other video plugins there is a fairly low emphasis on the second
+	layer. In GridFlow that layer is very strong and opens many possibilities.
+	Even though the third layer in GridFlow is not as developed as it could,
+	the second layer may be used to produce third-layer object classes much
+	more quickly.
+
+	</p><p> GridFlow provides a unifying view of multimedia information. Several
+	kinds of data -- raster graphics in any number of channels, coordinate
+	transforms, matrices, vectors -- may all be represented by <b>Grids</b>
+	(also known as multi-dimensional arrays). Grids exist in several ways: they
+	are usually streamed from object to object, but they can also be stored in
+	memory, stored into a file, sent through the network.
+
+	</p><p> As of version 0.6 GridFlow provides scripting, which inserts itself
+	between the first and second layer to provide additional functionality. The
+	language that has been chosen is Ruby, designed by Yukihiro Matsumoto
+	during the 90's. This new layer is used for portability between host
+	software (PureData vs jMax at the time), for portability between platforms (Windows/Mac
+	versions do not exist but would be farther ahead if it wasn't for Ruby),&nbsp;for quick extensibility (you can create
+	PureData object classes directly in GridFlow's configuration file), 
+	and so on.
+
+	</p><p> In short, GridFlow is a whole new world of possibilities for
+	the multimedia artist and programmer.
+
+	</p><p>- matju</p>
+</td></tr>
+
+  <tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+  <tr>
+    <td width="13%">&nbsp;</td>
+    <td width="82%">
+
+	<p> Here is an example of how things work in GridFlow. (if you want more
+	information, consult the rest of this manual)
+
+	</p><p> A picture is a three-dimensional Grid:<br>
+	<b>0</b> : rows <br>
+	<b>1</b> : columns <br>
+	<b>2</b> : channels <br>
+
+	</p><p>
+	Pictures come in all sorts of heights and widths. The channels, however,
+	are more limited in number. Usually it's three: Red, Green, Blue.
+
+	</p><p> A coordinate transform, when specified pixel by pixel, may be a
+	three-dimensional Grid in which the two "channels" are Y and X,
+	representing row-and-column positions in a separate picture.
+	
+	</p><p> Other shapes of grids could be designed to represent various things;
+	for example, configuration for blur effects. Grids could be useful for
+	things not directly related to raster pictures (e.g. sound recordings).
+	Those are all kinds of things you could actually develop <i>within</i> the
+	PureData / GridFlow framework. You don't need to wait for me.
+</p></td>
+
+  </tr><tr><td>&nbsp;</td></tr>
+  <tr><td colspan="4" bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+
+  <tr><td colspan="4">
+	<p><font size="-1">GridFlow 0.9.0 Documentation<br>
+        by Mathieu Bouchard <a href="mailto:matju@artengine.ca">matju@artengine.ca</a> 
+        and<br>
+        Alexandre Castonguay <a href="mailto:acastonguay@artengine.ca">acastonguay@artengine.ca</a></font></p>
+    </td>
+  </tr>
+
+</tbody></table>
+</body></html>
