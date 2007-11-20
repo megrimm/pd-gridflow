@@ -126,7 +126,8 @@ struct GridImport : GridObject {
 GRID_INLET(GridImport,0) {} GRID_FLOW { process(n,data); } GRID_END
 GRID_INPUT(GridImport,1,dim_grid) {
 	P<Dim> d = dim_grid->to_dim();
-	if (!d->prod()) RAISE("target grid size must not be zero"); else post("d->prod=%d",d->prod());
+	if (!d->prod()) RAISE("target grid size must not be zero");
+	//post("d->prod=%d",d->prod());
 	dim = d;
 } GRID_END
 
@@ -361,7 +362,7 @@ GRID_INLET(GridStore,1) {
 	lsd++;
 	in->set_chunk(lsd-nn+in->dim->n);
 } GRID_FLOW {
-	fprintf(stderr,"d=%d\n",d);
+	//fprintf(stderr,"d=%d\n",d);
 	if (!put_at) { // reassign
 		COPY(((T *)*(r.next ? r.next.p : &*r.p))+in->dex, data, n);
 		return;
