@@ -1,9 +1,7 @@
 /* $Id$ */
 
-version 0.9.0 (2007.10.31):
+version 0.9.0 (2007.11.20):
 
- * added the "tcl" external for pd, which allows to write
-   externals in the Tcl language, but server-side.
  * new object classes: [#slice], [#sort], [#line_to_polygon].
  * rewrote some object classes from Ruby to Pd.
  * split compilation of the LTIlib support allows to compile
@@ -22,7 +20,9 @@ version 0.9.0 (2007.10.31):
  * removed [pd_netsend] [jmax_udpsend] [jmax4_udpsend] [pd_netreceive]
    [jmax_udpreceive] [jmax4_udpreceive] [printargs] [rubyprint]
  * removed Type.rb and Contract.rb and their use in videodev.c
- * [#in quicktime]: added method "get"
+ * [#in quicktime]: added workaround for jpeg_quality problem
+ * [#in quicktime]: added method "get", that produces message "frames"
+   that gives the number of frames in a video
  * [#out]: added method "autoclose"
  * removed old documentation: *-icon.png
  * renamed [#export]        to [#to_float]
