@@ -190,7 +190,10 @@ struct CvHaarDetectObjects : GridObject {
 	min_neighbors=3;
 	flags=0;
 	//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
-	cascade = (CvHaarClassifierCascade *)cvLoad(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml");
+	cascade = (CvHaarClassifierCascade *)cvLoad(OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml",0,0,0);
+	int s = cvGetErrStatus();
+	post("cascade=%p, cvGetErrStatus=%d cvErrorStr=%s",cascade,s,cvErrorStr(s));
+
 	//cascade = cvLoadHaarClassifierCascade(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml",cvSize(24,24));
 	storage = cvCreateMemStorage(0);
 }
@@ -201,10 +204,10 @@ GRID_INLET(CvHaarDetectObjects,0) {
 	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
 	int n = ret ? ret->total : 0;
-	out = new GridOutlet(this,0,new Dim(n));
+	out = new GridOutlet(this,0,new Dim(n,2,2));
 	for (int i=0; i<n; i++) {
 		CvRect *r = (CvRect *)cvGetSeqElem(ret,i);
-		int32 duh[] = {r->y,r->x,r->height,r->width};
+		int32 duh[] = {r->y,r->x,r->y+r->height,r->x+r->width};
 		out->send(4,duh);
 	}
 } GRID_END
