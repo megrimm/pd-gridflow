@@ -189,7 +189,9 @@ struct CvHaarDetectObjects : GridObject {
 	scale_factor=1.1;
 	min_neighbors=3;
 	flags=0;
-	cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
+	//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
+	cascade = (CvHaarClassifierCascade *)cvLoad(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml");
+	//cascade = cvLoadHaarClassifierCascade(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml",cvSize(24,24));
 	storage = cvCreateMemStorage(0);
 }
 GRID_INLET(CvHaarDetectObjects,0) {
