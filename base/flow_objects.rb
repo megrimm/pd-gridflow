@@ -161,7 +161,10 @@ GridObject.subclass("#print",1,0) {
 		head = "#{name}Dim[#{@dim.join','}]"
 		head << "(#{@nt})" if @nt!=:int32
 		head << ": "
-		if @dim.length > 3 then
+		n=1; @dim.each {|x| n*=x }
+		if n==0 then
+			post head
+                elsif @dim.length > 3 then
 			post head+" (not printed)"
 		elsif @dim.length < 2 then
 			udata = unpack @data
@@ -1468,7 +1471,7 @@ end # module GridFlow
 class IO; include GridFlow::Ioctl; end
 
 begin
-  require "optional/lti"
+#  require "optional/lti"
   GridFlow.post "LTI support loaded."
 rescue Exception => e
   GridFlow.post "LTI support not found (%s)", e.message
