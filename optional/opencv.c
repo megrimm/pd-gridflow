@@ -86,7 +86,7 @@ CvArr *cvGrid(PtrGrid g, CvMode mode) {
 	//return 0;
 }
 
-IplImage *cvImageGrid(PtrGrid g, CvMode mode) {
+IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	P<Dim> d = g->dim;
 	if (d->n!=3) RAISE("expected 3 dimensions, got %s",d->to_s());
 	int channels=g->dim->v[2];
@@ -181,20 +181,31 @@ struct CvHaarDetectObjects : GridObject {
 	\attr int min_neighbors;   /*=3*/
 	\attr int flags;           /*=0*/
 	\decl void initialize ();
+	CvHaarClassifierCascade *cascade;
+	CvMemStorage* storage;
+	\grin 0
 };
 \def void initialize () {
 	scale_factor=1.1;
 	min_neighbors=3;
 	flags=0;
+	cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
+	storage = cvCreateMemStorage(0);
 }
-/*GRID_INLET(CvHaarDetectObjects,0) {
+GRID_INLET(CvHaarDetectObjects,0) {
+	in->set_chunk(0);
 } GRID_FLOW {
-	IplImage *img = ;
-	CvHidHaarClassifierCascade* cascade = ;
-	CvMemStorage* storage = ;
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	IplImage *img = cvImageGrid(l);
 	CvSeq *ret = cvHaarDetectObjects(img,cascade,storage,scale_factor,min_neighbors,flags);
-	return ret;
-}*/
+	int n = ret ? ret->total : 0;
+	out = new GridOutlet(this,0,new Dim(n));
+	for (int i=0; i<n; i++) {
+		CvRect *r = (CvRect *)cvGetSeqElem(ret,i);
+		int32 duh[] = {r->y,r->x,r->height,r->width};
+		out->send(4,duh);
+	}
+} GRID_END
 \classinfo { install("cv.HaarDetectObjects",2,1); }
 \end class CvHaarDetectObjects
 
@@ -206,6 +217,6 @@ static int erreur_handleur (int status, const char* func_name, const char* err_m
 }
 
 void startup_opencv() {
-	CvErrorCallback z = cvRedirectError(erreur_handleur);
+	/* CvErrorCallback z = */ cvRedirectError(erreur_handleur);
 	\startall
 }
