@@ -190,10 +190,13 @@ struct CvHaarDetectObjects : GridObject {
 	min_neighbors=3;
 	flags=0;
 	//cascade = cvLoadHaarClassifierCascade("<default_face_cascade>",cvSize(24,24));
-	cascade = (CvHaarClassifierCascade *)cvLoad(OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml",0,0,0);
+	const char *filename = OPENCV_SHARE_PATH "/haarcascades/haarcascade_frontalface_alt2.xml";
+	FILE *f = fopen(filename,"f");
+	if (!f) ERROR("error opening %s: %s",filename,strerror(errno));
+	fclose(f);
+	cascade = (CvHaarClassifierCascade *)cvLoad(filename,0,0,0);
 	int s = cvGetErrStatus();
 	post("cascade=%p, cvGetErrStatus=%d cvErrorStr=%s",cascade,s,cvErrorStr(s));
-
 	//cascade = cvLoadHaarClassifierCascade(OPENCV_SHARE_PATH "/data/haarcascades/haarcascade_frontalface_alt2.xml",cvSize(24,24));
 	storage = cvCreateMemStorage(0);
 }
