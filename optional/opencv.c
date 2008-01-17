@@ -40,6 +40,19 @@ int ipl_eltype(NumberTypeE e) {
   }
 }
 
+NumberTypeE gf_ipltype(int e) {
+  switch (e) {
+    case IPL_DEPTH_8U: return uint8_e;
+    // IPL_DEPTH_8S not supported
+    // IPL_DEPTH_16U not supported
+    case IPL_DEPTH_16S: return int16_e;
+    case IPL_DEPTH_32S: return int32_e;
+    case IPL_DEPTH_32F: return float32_e;
+    case IPL_DEPTH_64F: return float64_e;
+    default: RAISE("unsupported IPL type %d",e);
+  }
+}
+
 int cv_eltype(NumberTypeE e) {
   switch (e) {
     case uint8_e: return CV_8U;
@@ -50,6 +63,19 @@ int cv_eltype(NumberTypeE e) {
     case float32_e: return CV_32F;
     case float64_e: return CV_64F;
     default: RAISE("unsupported type %s",number_type_table[e].name);
+  }
+}
+
+NumberTypeE gf_cveltype(int e) {
+  switch (e) {
+    case CV_8U: return uint8_e;
+    // CV_8S not supported
+    // CV_16U not supported
+    case CV_16S: return int16_e;
+    case CV_32S: return int32_e;
+    case CV_32F: return float32_e;
+    case CV_64F: return float64_e;
+    default: RAISE("unsupported CV type %d",e);
   }
 }
 
@@ -216,6 +242,56 @@ GRID_INLET(CvHaarDetectObjects,0) {
 } GRID_END
 \classinfo { install("cv.HaarDetectObjects",2,1); }
 \end class CvHaarDetectObjects
+
+\class CvKalmanWrapper < GridObject
+struct CvKalmanWrapper : GridObject {
+	CvKalman *k;
+	\decl void initialize (int dynam_params, int measure_params, int control_params=0);
+	 CvKalmanWrapper () : k(0) {}
+	~CvKalmanWrapper () {if (k) cvReleaseKalman(&k);}
+	\decl void _0_bang ();
+	\grin 0
+	\grin 1
+};
+
+\def void initialize (int dynam_params, int measure_params, int control_params=0) {
+	k = cvCreateKalman(dynam_params,measure_params,control_params);
+}
+
+\def void _0_bang () {
+	const CvMat *r = cvKalmanPredict(k,0);
+	int m = r->rows;
+	int n = r->cols;
+	int e = CV_MAT_TYPE(cvGetElemType(r));
+	int c = CV_MAT_CN(  cvGetElemType(r));
+	out = new GridOutlet(this,0,new Dim(m,n));
+	for (int i=0; i<m; i++) {
+		uchar *meuh = cvPtr2D(r,i,0,0);
+		switch (e) {
+		  case CV_8U:  out->send(c*n,  (uint8 *)meuh); break;
+		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
+		  case CV_32S: out->send(c*n,  (int32 *)meuh); break;
+		  case CV_32F: out->send(c*n,(float32 *)meuh); break;
+		  case CV_64F: out->send(c*n,(float64 *)meuh); break;
+		}
+	}
+}
+
+GRID_INLET(CvKalmanWrapper,0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	const CvMat *cvKalmanPredict(const CvMat* control=NULL);
+} GRID_END
+
+GRID_INLET(CvKalmanWrapper,1) {
+	in->set_chunk(0);
+} GRID_FLOW {
+/* Updates Kalman filter by measurement
+   (corrects state of the system and internal matrices) */
+const CvMat* cvKalmanCorrect(const CvMat* measurement );
+} GRID_END
+\classinfo { install("cv.Kalman",2,1); }
+\end class CvKalmanWrapper
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
 	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
