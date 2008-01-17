@@ -3,7 +3,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -110,7 +110,12 @@ def handle_attr(line)
 	else
 		Out.print line
 	end
-	handle_decl "void _0_#{name} (#{type} #{name});"
+	type.gsub!(/\s+/,"")
+	if type=="bool" then
+		handle_decl "void _0_#{name} (#{type} #{name}=true);"
+	else
+		handle_decl "void _0_#{name} (#{type} #{name});"
+	end
 end
 
 def handle_decl(line)
