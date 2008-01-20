@@ -92,17 +92,18 @@ CvMode convert (Ruby x, CvMode *foo) {
 	RAISE("invalid CvMode");
 }
 
-CvArr *cvGrid(PtrGrid g, CvMode mode) {
+CvArr *cvGrid(PtrGrid g, CvMode mode, int reqdims=-1) {
 	P<Dim> d = g->dim;
 	int channels=1;
 	int dims=g->dim->n;
 	//post("mode=%d",(int)mode);
-	if (mode==cv_mode_channels && g->dim->n==0) RAISE("channels dimension required for 'mode channels'");
+	if (mode==cv_mode_channels && g->dim->n==0) RAISE("CV: channels dimension required for 'mode channels'");
 	if (mode==cv_mode_auto && g->dim->n>=3 || mode==cv_mode_channels) channels=g->dim->v[--dims];
-	if (channels>64) RAISE("too many channels. max 64, got %d",channels);
+	if (channels>64) RAISE("CV: too many channels. max 64, got %d",channels);
 	//post("channels=%d dims=%d nt=%d",channels,dims,g->nt);
 	//post("bits=%d",number_type_table[g->nt].size);
 	//if (dims==2) return cvMat(g->dim->v[0],g->dim->v[1],cv_eltype(g->nt),g->data);
+	if (reqdims>=0 && reqdims!=dims) RAISE("CV: wrong number of dimensions. expected %d, got %d", reqdims, dims);
 	if (dims==2) {
 		CvMat *a = cvCreateMatHeader(g->dim->v[0],g->dim->v[1],CV_MAKETYPE(cv_eltype(g->nt),channels));
 		cvSetData(a,g->data,g->dim->prod(1)*(number_type_table[g->nt].size/8));
@@ -243,30 +244,29 @@ GRID_INLET(CvHaarDetectObjects,0) {
 \classinfo { install("cv.HaarDetectObjects",2,1); }
 \end class CvHaarDetectObjects
 
-\class CvKalmanWrapper < GridObject
-struct CvKalmanWrapper : GridObject {
-	CvKalman *k;
+\class CvKalmanWrapper < CvOp1
+struct CvKalmanWrapper : CvOp1 {
+	CvKalman *kal;
 	\decl void initialize (int dynam_params, int measure_params, int control_params=0);
-	 CvKalmanWrapper () : k(0) {}
-	~CvKalmanWrapper () {if (k) cvReleaseKalman(&k);}
+	 CvKalmanWrapper () : kal(0) {}
+	~CvKalmanWrapper () {if (kal) cvReleaseKalman(&kal);}
 	\decl void _0_bang ();
 	\grin 0
 	\grin 1
 };
 
 \def void initialize (int dynam_params, int measure_params, int control_params=0) {
-	k = cvCreateKalman(dynam_params,measure_params,control_params);
+	kal = cvCreateKalman(dynam_params,measure_params,control_params);
 }
 
-\def void _0_bang () {
-	const CvMat *r = cvKalmanPredict(k,0);
-	int m = r->rows;
-	int n = r->cols;
-	int e = CV_MAT_TYPE(cvGetElemType(r));
-	int c = CV_MAT_CN(  cvGetElemType(r));
-	out = new GridOutlet(this,0,new Dim(m,n));
+void cvMatSend(const CvMat *self, GridObject *obj, int outno) {
+	int m = self->rows;
+	int n = self->cols;
+	int e = CV_MAT_TYPE(cvGetElemType(self));
+	int c = CV_MAT_CN(  cvGetElemType(self));
+	GridOutlet *out = new GridOutlet(obj,0,new Dim(m,n));
 	for (int i=0; i<m; i++) {
-		uchar *meuh = cvPtr2D(r,i,0,0);
+		uchar *meuh = cvPtr2D(self,i,0,0);
 		switch (e) {
 		  case CV_8U:  out->send(c*n,  (uint8 *)meuh); break;
 		  case CV_16S: out->send(c*n,  (int16 *)meuh); break;
@@ -277,18 +277,27 @@ struct CvKalmanWrapper : GridObject {
 	}
 }
 
+\def void _0_bang () {
+	const CvMat *r = cvKalmanPredict(kal,0);
+	cvMatSend(r,this,0);
+}
+
 GRID_INLET(CvKalmanWrapper,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	const CvMat *cvKalmanPredict(const CvMat* control=NULL);
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	CvMat *a = (CvMat *)cvGrid(l,mode,2);
+	const CvMat *r = cvKalmanPredict(kal,a);
+	cvMatSend(r,this,0);
 } GRID_END
 
 GRID_INLET(CvKalmanWrapper,1) {
 	in->set_chunk(0);
 } GRID_FLOW {
-/* Updates Kalman filter by measurement
-   (corrects state of the system and internal matrices) */
-const CvMat* cvKalmanCorrect(const CvMat* measurement );
+	PtrGrid l = new Grid(in->dim,(T *)data);
+	CvMat *a = (CvMat *)cvGrid(l,mode,2);
+	const CvMat* r = cvKalmanCorrect(kal,a);
+	cvMatSend(r,this,0);
 } GRID_END
 \classinfo { install("cv.Kalman",2,1); }
 \end class CvKalmanWrapper
