@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -219,6 +219,8 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	return Qnil;
 }
 
+#define CATCH_IT catch (Barf *slimy) {post("error during flow: %s",slimy->text);}
+
 template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	CHECK_BUSY(inlet);
 	CHECK_TYPE(*data);
@@ -227,10 +229,9 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	if (n==0) return; // no data
 	switch(mode) {
 	case 4:{
-		int d = dex + bufi;
+		long d = dex + bufi;
 		if (d+n > dim->prod()) {
-			post("grid input overflow: %d of %d from [%s] to [%s]",
-				d+n, dim->prod(), INFO(sender), 0);
+			post("grid input overflow: %d of %d from [%s] to [%s]", d+n, dim->prod(), INFO(sender), 0);
 			n = dim->prod() - d;
 			if (n<=0) return;
 		}
@@ -241,15 +242,15 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 			COPY(bufd+bufi,data,k);
 			bufi+=k; data+=k; n-=k;
 			if (bufi==bufn) {
-				int newdex = dex+bufn;
+				long newdex = dex+bufn;
 				if (this->mode==6) {
-					T *data2 = new T[bufn];
+					T *data2 = new T[bufn];//!
 					COPY(data2,bufd,bufn);
 					CHECK_ALIGN(data2);
-					gh->flow(this,bufn,data2);
+					try {gh->flow(this,bufn,data2);} CATCH_IT;
 				} else {
 					CHECK_ALIGN(bufd);
-					gh->flow(this,bufn,bufd);
+					try {gh->flow(this,bufn,bufd);} CATCH_IT;
 				}
 				dex = newdex;
 				bufi = 0;
@@ -259,12 +260,12 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 		if (m) {
 			int newdex = dex + m;
 			if (this->mode==6) {
-				T *data2 = new T[m];
+				T *data2 = new T[m];//!
 				COPY(data2,data,m);
 				CHECK_ALIGN(data2);
-				gh->flow(this,m,data2);
+				try {gh->flow(this,m,data2);} CATCH_IT;
 			} else {
-				gh->flow(this,m,data);
+				try {gh->flow(this,m,data);} CATCH_IT;
 			}
 			dex = newdex;
 		}
@@ -274,7 +275,7 @@ template <class T> void GridInlet::flow(int mode, long n, T *data) {TRACE;
 	}break;
 	case 6:{
 		int newdex = dex + n;
-		gh->flow(this,n,data);
+		try {gh->flow(this,n,data);} CATCH_IT;
 		if (this->mode==4) delete[] (T *)data;
 		dex = newdex;
 	}break;
@@ -289,7 +290,7 @@ void GridInlet::finish() {TRACE;
 		post("incomplete grid: %d of %d from [%s] to [%s]",
 			dex, dim->prod(), INFO(sender), INFO(parent));
 	}
-#define FOO(T) gh->flow(this,-2,(T *)0);
+#define FOO(T) try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	TYPESWITCH(nt,FOO,)
 #undef FOO
 	dim=0;
@@ -308,10 +309,10 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 		int size = g->dim->prod();
 		if (this->mode==6) {
 			T * d = data;
-			data = new T[size];  // problem with int64,float64 here.
+			data = new T[size];  //! problem with int64,float64 here.
 			COPY(data,d,size);
 			CHECK_ALIGN(data);
-			gh->flow(this,n,data);
+			try {gh->flow(this,n,data);} CATCH_IT;
 		} else {
 			//int ntsz = number_type_table[nt].size;
 			int m = GridOutlet::MAX_PACKET_SIZE/*/ntsz*//factor();
@@ -320,12 +321,12 @@ template <class T> void GridInlet::from_grid2(Grid *g, T foo) {TRACE;
 			while (n) {
 				if (m>n) m=n;
 				CHECK_ALIGN(data);
-				gh->flow(this,m,data);
+				try {gh->flow(this,m,data);} CATCH_IT;
 				data+=m; n-=m; dex+=m;
 			}
 		}
 	}
-	gh->flow(this,-2,(T *)0);
+	try {gh->flow(this,-2,(T *)0);} CATCH_IT;
 	//!@#$ add error handling.
 	// rescue; abort(); end ???
 	dim = 0;
@@ -369,7 +370,7 @@ void GridOutlet::send_direct(long n, T *data) {TRACE;
 	CHECK_BUSY(outlet); CHECK_TYPE(*data); CHECK_ALIGN(data);
 	for (; n>0; ) {
 		long pn = min((long)n,MAX_PACKET_SIZE);
-		for (uint32 i=0; i<inlets.size(); i++) inlets[i]->flow(4,pn,data);
+		for (uint32 i=0; i<inlets.size(); i++) try {inlets[i]->flow(4,pn,data);} CATCH_IT;
 		data+=pn, n-=pn;
 	}
 }
@@ -429,7 +430,7 @@ void GridOutlet::give(long n, T *data) {TRACE;
 	if (inlets.size()==1 && inlets[0]->mode == 6) {
 		// this is the copyless buffer passing
 		flush();
-		inlets[0]->flow(6,n,data);
+		try {inlets[0]->flow(6,n,data);} CATCH_IT;
 		dex += n;
 	} else {
 		flush();
