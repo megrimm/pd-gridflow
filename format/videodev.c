@@ -123,12 +123,12 @@ static const char *video_mode_choice[] = {
 	char *foo; \
 	sprintf(buf+strlen(buf), "%s:%s ", #_field_, \
 		foo=flags_to_s(self->_field_,COUNT(_table_),_table_)); \
-	delete[] foo;}
+	free(foo);}
 #define WHCHOICE(_field_,_table_) { \
 	char *foo; \
 	sprintf(buf+strlen(buf), "%s=%s; ", #_field_, \
 		foo=choice_to_s(self->_field_,COUNT(_table_),_table_));\
-	delete[] foo;}
+	free(foo);}
 
 static char *flags_to_s(int value, int n, const char **table) {
 	char foo[256];
