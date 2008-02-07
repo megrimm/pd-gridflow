@@ -108,6 +108,7 @@ struct FormatX11 : Format {
 	\decl void _0_move (int y, int x);
 	\decl void _0_transfer (Symbol s);
 	\decl void _0_title (String s=Qnil);
+	\decl void _0_warp (int y, int x);
 	\grin 0 int
 };
 
@@ -546,6 +547,11 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	else if (s==SYM(xshm))   transfer=1;
 	else if (s==SYM(xvideo)) transfer=2;
 	else RAISE("unknown transfer mode (possible: plain xshm xvideo)");
+}
+
+\def void _0_warp (int y, int x) {
+	XWarpPointer(display,None,None,0,0,0,0,x,y);
+	XFlush(display);
 }
 
 \def void _0_title (String s=Qnil) {
