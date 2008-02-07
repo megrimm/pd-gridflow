@@ -62,7 +62,7 @@ GRID_INLET(GridFFT,0) {
 		RAISE("expecting Dim(...,2): real,imaginary (got %d)",in->dim->get(2));
 	in->set_chunk(0);
 } GRID_FLOW {
-	float32 *buf = new float32[n];
+	float32 *buf = (float32 *)memalign(16,n*sizeof(float32));
 	long chans = in->dim->prod(2)/2;
 	CHECK_ALIGN(data,in->nt)
 	CHECK_ALIGN(buf, in->nt)
@@ -88,7 +88,7 @@ GRID_INLET(GridFFT,0) {
 	}
 	GridOutlet out(this,0,in->dim,in->nt);
 	out.send(n,buf);
-	delete[] buf;
+	free(buf);
 	lastdim=in->dim; lastchans=chans;
 } GRID_END
 
