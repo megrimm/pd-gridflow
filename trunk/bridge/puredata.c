@@ -619,8 +619,10 @@ static void BFObject_redraw (BFObject *bself) {
 
 /* warning: deleting inlets that are connected will cause pd to crash */
 void BFObject::ninlets_set (int n) {
+	//fprintf(stderr,"ninlets_set... nin=%d n=%d\n",nin,n);
 	if (!this) RAISE("there is no bself");
 	if ((Ruby)this==Qnil) RAISE("bself is nil");
+	if (n<1) RAISE("ninlets_set: n=%x must be at least 1",n);
 	BFObject_undrawio(this);
 	if (nin<n) {
 		BFProxy **noo = new BFProxy*[n];
@@ -646,6 +648,7 @@ void BFObject::ninlets_set (int n) {
 /* warning: deleting outlets that are connected will cause pd to crash */
 void BFObject::noutlets_set (int n) {
 	if (!this) RAISE("there is no bself");
+	if (n<0) RAISE("noutlets_set: n=%d must be at least 0",n);
 	BFObject_undrawio(this);
 	if (nout<n) {
 		t_outlet **noo = new t_outlet*[n>0?n:1];
