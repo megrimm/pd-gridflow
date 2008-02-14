@@ -136,19 +136,5 @@ help::
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
-gridflow2:: gridflow2.so
-	pd -lib tcl
-
-gridflow2.so: gridflow2_wrap.o
-	g++ -shared -o gridflow2.so gridflow2_wrap.o
-
-gridflow2_wrap.o: gridflow2_wrap.cxx Makefile
-	g++ -c gridflow2_wrap.cxx
-
-gridflow2_wrap.cxx: gridflow2.i
-	swig -v -c++ -tcl -DNORUBY -o gridflow2_wrap.cxx -I/usr/local/include gridflow2.i \
-	|| (rm gridflow2_wrap.cxx && false)
-
-
 kloc::
 	wc configure */*.rb
