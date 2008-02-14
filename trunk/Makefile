@@ -98,7 +98,7 @@ endif
 ifeq ($(HAVE_PUREDATA),yes)
 PD_LIB = gridflow$(PDSUF)
 
-$(PD_LIB): bridge/puredata.c.fcs base/grid.h gridflow2.h $(COMMON_DEPS)
+$(PD_LIB): rubyext.c.fcs base/grid.h gridflow2.h $(COMMON_DEPS)
 	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
 		$< -xnone -o $@
 
@@ -133,20 +133,6 @@ help::
 	echo  "make all            compiles gridflow";\
 	echo  "make beep           beeps";\
 	echo  "make unskew         removes timestamps in the future (if you have clock issues)"
-
-#--------#--------#--------#--------#--------#--------#--------#--------
-
-tcl:: tcl.pd_linux
-
-tcl.pd_linux: tcl_wrap.cxx tcl_extras.cxx tcl_extras.h Makefile
-	g++ $(CFLAGS) -shared -DPDSUF=\"$(PDSUF)\" -o tcl.pd_linux \
-		tcl_wrap.cxx tcl_extras.cxx -ltcl8.5
-
-tcl_wrap.cxx: tcl.i tcl_extras.h
-	swig -v -c++ -tcl -o tcl_wrap.cxx -I/usr/local/include tcl.i
- 
-#clean::
-#	rm -f *.o *.so *.cxx
 
 #--------#--------#--------#--------#--------#--------#--------#--------
 
