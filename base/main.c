@@ -192,9 +192,13 @@ static void send_in_2 (Helper *h) {
 	FObject_prepare_message(argc,argv,sym,h->self);
 //	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) gfpost m.inspect
 	char buf[256];
-	if (inlet==-1) sprintf(buf,"_sys_%s",rb_sym_name(sym));
-	else           sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
+	sprintf(buf,"_n_%s",rb_sym_name(sym));
+	if (rb_obj_respond_to(h->rself,rb_intern(buf),0)) {
+		rb_funcall(h->rself,rb_intern(buf),argc+1,argv-1); // yes, it's really argc+1,argv-1
+	} else {
+		sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
+		rb_funcall2(h->rself,rb_intern(buf),argc,argv);
+	}
 }
 
 static void send_in_3 (Helper *h) {}
