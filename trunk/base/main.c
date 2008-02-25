@@ -143,6 +143,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 		sym = *argv;
 		argc--, argv++;
 	} else if (argc==1 && TYPE(*argv)==T_ARRAY) {
+		RAISE("oh really? (in FObject_prepare_message)");
 		sym = bsym._list;
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
@@ -194,11 +195,12 @@ static void send_in_2 (Helper *h) {
 	char buf[256];
 	sprintf(buf,"_n_%s",rb_sym_name(sym));
 	if (rb_obj_respond_to(h->rself,rb_intern(buf),0)) {
-		rb_funcall(h->rself,rb_intern(buf),argc+1,argv-1); // yes, it's really argc+1,argv-1
+		argc++, argv--; // really
+		argv[0] = inlet*2+1; // convert to Ruby Integer
 	} else {
 		sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-		rb_funcall2(h->rself,rb_intern(buf),argc,argv);
 	}
+	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
 }
 
 static void send_in_3 (Helper *h) {}
