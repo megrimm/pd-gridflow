@@ -35,7 +35,7 @@ tries to call a Ruby method of the proper name.
 bool print_class_list;
 
 #define IS_BRIDGE
-#include "../base/grid.h.fcs"
+#include "base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
 #undef T_DATA
@@ -622,7 +622,7 @@ void BFObject::ninlets_set (int n) {
 	//fprintf(stderr,"ninlets_set... nin=%d n=%d\n",nin,n);
 	if (!this) RAISE("there is no bself");
 	if ((Ruby)this==Qnil) RAISE("bself is nil");
-	if (n<1) RAISE("ninlets_set: n=%x must be at least 1",n);
+	if (n<1) RAISE("ninlets_set: n=%d must be at least 1",n);
 	BFObject_undrawio(this);
 	if (nin<n) {
 		BFProxy **noo = new BFProxy*[n];
