@@ -28,4 +28,4 @@ module GridFlow
   end
 end
 
-GridFlow.gui "source #{GridFlow::DIR}/bridge/puredata.tcl\n"
+GridFlow.gui "source #{GridFlow::DIR}/rubyext.tcl\n"
