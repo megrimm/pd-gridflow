@@ -319,7 +319,7 @@ rescue Exception => e
 end
 
 def GridFlow.load_user_config
-	require "bridge/puredata.rb" if GridFlow.bridge_name == "puredata"
+	require "rubyext.rb"
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
 	begin
 		load user_config_file if File.exist? user_config_file
