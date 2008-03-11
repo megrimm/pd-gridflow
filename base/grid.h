@@ -186,8 +186,8 @@ typedef struct R {
 		// not using plain NUM2INT because Ruby can convert Symbol to int (compat Ruby1.4)
 		if (INTEGER_P(r)) return NUM2INT(r);
 		if (FLOAT_P(r)) return NUM2INT(rb_funcall(r,SI(round),0));
-		RAISE("expected Integer or Float (got %s)",
-			rb_str_ptr(rb_funcall(r,SI(inspect),0)));}
+		volatile Ruby meuh = rb_funcall(r,SI(inspect),0);
+		RAISE("expected Integer or Float (got %s)",rb_str_ptr(meuh));}
 	operator long () const {
 		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
 
@@ -679,7 +679,7 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 } GridHandler;
 
-typedef struct  GridObject GridObject;
+struct GridObject;
 \class GridInlet < CObject
 struct GridInlet : CObject {
 	GridObject *parent;
@@ -792,7 +792,20 @@ private:
 
 //****************************************************************
 
-typedef struct BFObject BFObject; // Pd t_object or something
+struct BFProxy;
+struct BFObject : t_object {
+#ifdef HAVE_GEM
+	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
+#endif
+	Ruby rself;
+	int nin,nout;   // per object settings (not class)
+	BFProxy  **in;  // direct access to  inlets (not linked lists)
+	t_outlet **out; // direct access to outlets (not linked lists)
+	t_canvas *mom;
+	void  ninlets_set(int n);
+	void noutlets_set(int n);
+};
+
 
 // represents objects that have inlets/outlets
 \class FObject < CObject
@@ -806,6 +819,11 @@ struct FObject : CObject {
 	}
 	\decl void send_in (...);
 	\decl void send_out (...);
+	template <class T> void send_out(int outlet, int argc, T *argv) {
+		t_atom foo[argc];
+		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
+		outlet_list(bself->out[outlet],&s_list,argc,foo);
+	}
 	\decl void delete_m ();
 };
 \end class FObject
@@ -857,23 +875,5 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 				bi+i, b->v[bi+i]);}}}
 
 typedef GridObject Format;
-
-
-/************************************ 2007 *************************************/
-
-
-struct BFProxy;
-struct BFObject : t_object {
-#ifdef HAVE_GEM
-	void *gemself; // a CPPExtern * for binary-compat with GEM's Obj_header class
-#endif
-	Ruby rself;
-	int nin,nout;   // per object settings (not class)
-	BFProxy  **in;  // direct access to  inlets (not linked lists)
-	t_outlet **out; // direct access to outlets (not linked lists)
-	t_canvas *mom;
-	void  ninlets_set(int n);
-	void noutlets_set(int n);
-};
 
 #endif // __GF_GRID_H
