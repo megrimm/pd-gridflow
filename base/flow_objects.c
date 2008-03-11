@@ -2160,6 +2160,77 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 
 //****************************************************************
 
+\class GridPack < GridObject
+struct GridPack : GridObject {
+	int n;
+	PtrGrid a;
+	GridPack() : n(0xdeadbeef) {}
+	\decl void initialize (int n=2, NumberTypeE nt=float32_e);
+	\decl void initialize2 ();
+	\decl void _n_float (int inlet, float f);
+	\decl void _0_bang ();
+	//\grin 0
+};
+
+\def void initialize (int n=2, NumberTypeE nt=float32_e) {
+	if (n<1) RAISE("n=%d must be at least 1",n);
+	if (n>32) RAISE("n=%d is too many?",n);
+	rb_call_super(argc,argv);
+	a = new Grid(new Dim(n),nt,true);
+	this->n=n;
+}
+
+\def void initialize2 () {
+	rb_call_super(argc,argv);
+	bself->ninlets_set(this->n);
+}
+\def void _n_float (int inlet, float f) {
+#define FOO(T) ((T *)*a)[inlet] = (T)f;
+TYPESWITCH(a->nt,FOO,);
+#undef FOO
+	_0_bang(argc,argv);
+}
+
+\def void _0_bang () {
+	out=new GridOutlet(this,0,a->dim,a->nt);
+#define FOO(T) out->send(n,(T *)*a);
+TYPESWITCH(a->nt,FOO,);
+#undef FOO
+}
+
+\classinfo { install("#pack",1,1); }
+\end class GridPack
+
+\class GridUnpack < GridObject
+struct GridUnpack : GridObject {
+	int n;
+	\decl void initialize (int n=2);
+	\decl void initialize2 ();
+	\grin 0
+};
+
+GRID_INLET(GridUnpack,0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	for (int i=0; i<n; i++) send_out(i,1,data+i);
+} GRID_END
+
+\def void initialize (int n=2) {
+	if (n<1) RAISE("n=%d must be at least 1",n);
+	if (n>32) RAISE("n=%d is too many?",n);
+	rb_call_super(argc,argv);
+	this->n=n;
+}
+\def void initialize2 () {
+	rb_call_super(argc,argv);
+	bself->noutlets_set(this->n);
+}
+
+\classinfo { install("#unpack",1,0); }
+\end class GridUnpack
+
+//****************************************************************
+
 static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
 void startup_flow_objects () {
 	op_add = OP(SYM(+));
