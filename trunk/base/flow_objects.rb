@@ -209,65 +209,6 @@ GridObject.subclass("#print",1,0) {
 		if s.length>@trunc then s[0...@trunc]+" [...]" else s end
 	end
 }
-GridPack =
-GridObject.subclass("#pack",1,1) {
-	install_rgrid 0
-	class<< self;attr_reader :ninlets;end
-	def initialize(n=2,cast=:int32)
-		n||=self.class.ninlets
-		n>=32 and raise "too many inlets"
-		super
-		@data=[0]*n
-		@cast=cast
-		@ps  =GridFlow.packstring_for_nt cast
-	end
-	def initialize2
-		return if self.class.ninlets>1
-		add_inlets @data.length-1
-	end
-	def _0_cast(cast)
-		@ps   = GridFlow.packstring_for_nt cast
-		@cast = cast
-	end
-	def self.define_inlet i
-		module_eval "def _#{i}_float x; @data[#{i}]=x; _0_bang; end"
-	end
-	(0...32).each {|x| define_inlet x }
-	def _0_bang
-		send_out_grid_begin 0, [@data.length], @cast
-		send_out_grid_flow 0, @data.pack(@ps), @cast
-	end
-	self
-}
-
-# the install_rgrids in the following are hacks so that
-# outlets can work. (install_rgrid is supposed to be for receiving)
-# maybe GF-0.8 doesn't need that.
-GridPack.subclass("@two",  2,1) { install_rgrid 0; def initialize() super 2 end }
-GridPack.subclass("@three",3,1) { install_rgrid 0; def initialize() super 2 end  }
-GridPack.subclass("@four", 4,1) { install_rgrid 0; def initialize() super 2 end  }
-GridPack.subclass("@eight",8,1) { install_rgrid 0; def initialize() super 2 end  }
-GridObject.subclass("#unpack",1,0) {
-  install_rgrid 0, true
-  def initialize(n=2)
-    super
-    @n=n
-    n>64 and raise "too many outlets"
-  end
-  def initialize2; add_outlets @n end
-  def _0_rgrid_begin
-    dim = inlet_dim(0)
-    dim==[@n] or raise "expecting Dim[#{@n}], got Dim#{dim.inspect}"
-    inlet_set_chunk 0,0
-  end
-  def _0_rgrid_flow data
-    @ps = GridFlow.packstring_for_nt inlet_nt(0)
-    duh = data.unpack(@ps)
-    i=duh.size-1
-    until i<0 do send_out i,duh[i]; i-=1 end
-  end
-  def _0_rgrid_end; end
-}
 
 GridObject.subclass("#to_symbol",1,1) {
 	install_rgrid 0
