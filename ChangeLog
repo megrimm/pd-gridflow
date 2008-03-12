@@ -1,10 +1,11 @@
 /* $Id$ */
 
+version 0.9.1 (2008.03...):
 
-
-version 0.9.1 (2008.03.14):
-
- * Switched to SVN
+ * switched from CVS to SVN
+ * removed LTIlib support
+ * added OpenCV support: ...
+ * x11: added "warp" method for moving mouse cursor around
 
 version 0.9.0 (2007.11.20):
 
@@ -574,5 +575,5 @@ GridFlow   0.7.2 - 0.7.5 : pd support gets stable; float grids; @draw_image; sou
 GridFlow   0.7.6 to 7 (2004): permanently switching from jmax to pd; #pack, #color, #camera
 GridFlow   0.8 (2005): attributes; # prefix
 GridFlow   0.8.1 to 4 (2006): LTI; FFT; complex numbers; GEM pix compatibility
-GridFlow   0.9.0 : replacing Ruby by Tcl+SWIG.
+GridFlow   0.9.0 (2008): removing Ruby, removing LTI, adding OpenCV
 GridFlow   2.0 : ...
