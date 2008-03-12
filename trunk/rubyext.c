@@ -233,13 +233,10 @@ int winlet, t_symbol *selector, int ac, t_atom *at) {
 	RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
 }
 
-static void BFObject_method_missing0 (BFObject *self,
-t_symbol *s, int argc, t_atom *argv) {
+static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self,0,s,argc,argv);
 }
-
-static void BFProxy_method_missing(BFProxy *self,
-t_symbol *s, int argc, t_atom *argv) {
+static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
 
@@ -842,10 +839,9 @@ extern t_namelist *sys_searchpath, *sys_helppath;
 extern "C" void namelist_append_files(t_namelist *, char *);
 static void add_to_path(char *dir) {
 	char bof[1024];
-	sprintf(bof,"%s/abstractions",dir);
-	namelist_append_files(sys_searchpath,bof);
-	sprintf(bof,"%s/doc/flow_classes",dir);
-	namelist_append_files(sys_helppath,bof);
+	sprintf(bof,"%s/abstractions",dir);        namelist_append_files(sys_searchpath,bof);
+	sprintf(bof,"%s/deprecated",dir);          namelist_append_files(sys_searchpath,bof);
+	sprintf(bof,"%s/doc/flow_classes",dir);    namelist_append_files(sys_helppath,  bof);
 }
 
 static void boo (int boo) {
@@ -862,12 +858,12 @@ extern "C" void gridflow_setup () {
 	const char *pcl = getenv("PRINT_CLASS_LIST");
         if (pcl && strcmp(pcl,"yes")==0) print_class_list=true;
 
-	char *dirname   = new char[242];
-	char *dirresult = new char[242];
+	char *dirname   = new char[MAXPDSTRING];
+	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
-	if (getcwd(dirname,242)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
-	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,242,1);
-	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,242,1);
+	if (getcwd(dirname,MAXPDSTRING)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
+	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
+	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd>=0) {
 		post("%s found itself in %s","gridflow"PDSUF,dirresult);
 		close(fd);
