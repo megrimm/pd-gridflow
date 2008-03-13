@@ -93,6 +93,7 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 http://oprofile.sourceforge.net/about/
 also: qprofile, amd profiler, opreport -cl --demangle=smart
 
+[ ] cvs2svn
 [ ] -ftree-vectorizer-verbose
 [ ] try removing or modifying -falign on PPC/OSX
 [ ] encoding of quicktime RGBA only works with [#cast b] (is that still true?)
@@ -427,3 +428,16 @@ the same will be done for recording later.
 ==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
 
 rational numbers: http://wiki.tcl.tk/13877
+
+
+
+
+
+very old bookmarks:
+	http://pdl.perl.org/
+	http://www.opendragon.com/Pages/MaxObjects.shtml (not responding)
+	gstreamer
+	Arts Builder
+	http://homepages.inf.ed.ac.uk/rbf/HIPR2/wksheets.htm
+	http://freej.dyne.org/
+
