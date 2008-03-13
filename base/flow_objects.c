@@ -2231,6 +2231,26 @@ GRID_INLET(GridUnpack,0) {
 
 //****************************************************************
 
+\class ForEach < FObject
+struct ForEach : FObject {
+	\decl void _0_list (...);
+};
+
+\def void _0_list (...) {
+	t_outlet *o = bself->out[0];
+	R *a = (R *)argv;
+	for (int i=0; i<argc; i++) {
+		if      (TYPE(argv[i])==T_FLOAT)  outlet_float( o,a[i]);
+		else if (TYPE(argv[i])==T_SYMBOL) outlet_symbol(o,a[i]);
+		else RAISE("oops. unsupported.");
+	}
+}
+
+\classinfo { install("foreach",1,1); }
+\end class ForEach
+
+//****************************************************************
+
 static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
 void startup_flow_objects () {
 	op_add = OP(SYM(+));
