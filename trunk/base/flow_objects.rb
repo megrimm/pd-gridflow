@@ -325,19 +325,6 @@ GridObject.subclass("#rotatificator",2,1) {
 	def _1_float(angle) @angle = angle end
 }
 
-# this could be an abstraction, but it would be rather slow.
-FObject.subclass("foreach",1,1) {
-	def initialize() super end
-	def _0_list(*a)
-		a.each {|e|
-			if Symbol===e then
-				send_out 0,:symbol,e
-			else
-				send_out 0,e
-			end
-		}
-	end
-}
 FObject.subclass("listflatten",1,1) {
 	def initialize() super end
 	def _0_list(*a) send_out 0,:list,*a.flatten end
@@ -446,7 +433,6 @@ end
 #-------- fClasses for: jMax compatibility
 
 # make this with variable number of outlets?
-# what about making it a gui object?
 # what about moving this to desiredata?
 FObject.subclass("fork",1,2) {
   def method_missing(sel,*args)
@@ -1399,12 +1385,6 @@ FObject.subclass("sendgui",1,0) {
   end
   install "sys_vgui", 1, 0
   doc:_0_list,"a Tcl/Tk command to send to the pd client."
-}
-
-FObject.subclass("realtimer",2,1) {
-  def initialize() @t = Time.new end
-  def _0_bang()    @t = Time.new end
-  def _1_bang()    send_out 0, (Time.new - @t)*1000 end
 }
 
 end # module GridFlow
