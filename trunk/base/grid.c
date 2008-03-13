@@ -31,7 +31,7 @@
 #include "grid.h.fcs"
 #include <ctype.h>
 
-/* copied from bridge/puredata.c (sorry: linkage issue) */
+/* copied from rubyext.c (sorry: linkage issue) */
 struct Pointer : CObject {
 	void *p;
 	Pointer(void *_p) : p(_p) {}
