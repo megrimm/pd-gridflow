@@ -211,6 +211,10 @@ typedef struct R {
 		if (INTEGER_P(r)) return (float64)(int32)*this;
 		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
 		return ((RFloat*)r)->value;}
+	operator t_symbol * () {
+		if (TYPE(r)!=T_SYMBOL) RAISE("not a Symbol");
+		return gensym((char *)rb_sym_name(r));
+	}
 	static R value(VALUE r) {R x; x.r=r; return x;}
 #define FOO(As,Op) \
 	R &operator As (int x) {r=rb_funcall(r, SI(Op),1,INT2NUM(x)); return *this;}
