@@ -162,7 +162,6 @@ struct Helper {
 
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
 
-// inlet #-1 is reserved for SystemInlet messages (jMax)
 // inlet #-2 is for inlet #0 messages that happen at start time
 static void send_in_2 (Helper *h) {
 	int argc = h->argc;
