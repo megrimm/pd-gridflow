@@ -127,7 +127,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
-typedef std::complex Plex;
+#define Plex std::complex
 
 // classic two-input operator
 
