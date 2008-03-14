@@ -127,16 +127,7 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 	gfmemcopy((uint8 *)as, (uint8 *)bs, n*sizeof(T));
 }
 
-#define Plex std::complex
-/*
-template <class T> struct Plex {
-	T x; // real
-	T y; // imaginary
-	typedef T _T;
-	Plex(T x_, T y_) : x(x_), y(y_) {}
-	Plex operator -(Plex &r) {return Plex(x-r.x,y-r.y);}
-};
-*/
+typedef std::complex Plex;
 
 // classic two-input operator
 
@@ -266,10 +257,6 @@ DEF_OP(log,  log(a-b),   0, false, false)
 #endif
 #ifdef PASS4
 
-//!!! replace by the real thing with DEF_VOP
-#define U (typeof(a.x))
-#define NORM (b.x*b.x+b.y*b.y)
-
 template <class T> inline T gf_sqrt(T a) {return (T)floor(sqrt( a));}
 inline        float32 gf_sqrt(float32 a) {return          sqrtf(a) ;}
 inline        float64 gf_sqrt(float64 a) {return          sqrt( a) ;}
@@ -299,8 +286,6 @@ DEF_OP(cx_cos,  cos(a-b),   0, false, false)
 DEF_OP(cx_tanh, tanh(a-b),  0, false, false)
 DEF_OP(cx_exp,  exp(a-b),   0, false, false)
 DEF_OP(cx_log,  log(a-b),   0, false, false)
-#undef U
-#undef NORM
 #endif
 
 extern Numop      op_table1[], op_table2[], op_table3[], op_table4[];
