@@ -210,14 +210,6 @@ GridObject.subclass("#print",1,0) {
 	end
 }
 
-GridObject.subclass("#to_symbol",1,1) {
-	install_rgrid 0
-	def _0_rgrid_begin; @data="" end
-	def _0_rgrid_flow data; @data << data; end
-	def _0_rgrid_end
-		send_out 0, :symbol, @data.unpack("I*").pack("c*").intern
-	end
-}
 GridObject.subclass("unix_time",1,3) {
   install_rgrid 0
   def _0_bang
