@@ -541,12 +541,11 @@ class Display < FObject; include Gooey
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
 		# @bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
-		  @bg = "#cccccc"
+		@bg = "#cccccc"
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
-		# careful with the namespaces! apparently, Array is not ::Array in this context
-		# (i don't know why)
+		# careful with the namespaces! apparently, Array is not ::Array in this context (i don't know why)
 		case a
 		when   Float; sprintf("%.5f",a).gsub(/\.?0+$/, "")
 		when ::Array; "(" + a.map{|x| atom_to_s x }.join(" ") + ")"
@@ -587,9 +586,7 @@ class Display < FObject; include Gooey
 		}
 	end
 	def pd_delete(can)
-		if @vis
-			GridFlow.gui %{ #{canvas} delete #{@rsym} #{@rsym}TEXT \n}
-		end
+		GridFlow.gui %{ #{canvas} delete #{@rsym} #{@rsym}TEXT \n} if @vis
 		super
 	end
 	def delete; super end
@@ -613,6 +610,7 @@ class Display < FObject; include Gooey
 end
 end # respond to gui_enable
 
+=begin
 class GridEdit < GridObject; include Gooey
 	def initialize(grid)
 		super
@@ -725,100 +723,6 @@ class GridEdit < GridObject; include Gooey
 	install "#edit", 2, 1
 	install_rgrid 2, true
 end
-
-=begin
-# FPatcher doesn't exist anymore, but this hasn't been working for years anyway,
-# and yet no-one made me notice, which shows me how useful this is.
-class Peephole < FPatcher; include Gooey
-	@fobjects = ["#dim","#export_list","#downscale_by 1 smoothly","#out","#scale_by 1",
-	proc{Demux.new(2)}]
-	@wires = [-1,0,0,0, 0,0,1,0, -1,0,5,0, 2,0,3,0, 4,0,3,0, 5,0,2,0, 5,1,4,0, 3,0,-1,0]
-	def initialize(sy=32,sx=32,*args)
-		super
-		@fobjects[1].connect 0,self,2
-		post "Peephole#initialize: #{sx} #{sy} #{args.inspect}"
-		@scale = 1
-		@down = false
-		@sy,@sx = sy,sx # size of the widget
-		@fy,@fx = 0,0   # size of last frame after downscale
-		@bg,@bgs = "#A07467","#00ff80"
-	end
-	def pd_show(can)
-		super
-		return if not can
-		if not @open
-			GridFlow.gui %{
-				pd \"#{@rsym} open [eval list [winfo id #{@canvas}]] 1;\n\";
-			}
-			@open=true
-		end
-		# round-trip to ensure this is done after the open
-		GridFlow.gui %{
-			pd \"#{@rsym} set_geometry #{@y} #{@x} #{@sy} #{@sx};\n\";
-		}
-		GridFlow.gui %{
-			set canvas #{canvas}
-			$canvas delete #{@rsym}
-			$canvas create rectangle #{@x} #{@y} #{@x+@sx} #{@y+@sy} \
-				-fill #{@bg} -tags #{@rsym} -outline #{outline}
-		}
-		set_geometry_for_real_now
-	end
-	def set_geometry_for_real_now
-		@fy,@fx=@sy,@sx if @fy<1 or @fx<1
-		@down = (@fx>@sx or @fy>@sx)
-		if @down then
-			@scale = [(@fy+@sy-1)/@sy,(@fx+@sx-1)/@sx].max
-			@scale=1 if @scale<1 # what???
-			@fobjects[2].send_in 1, @scale
-			sy2 = @fy/@scale
-			sx2 = @fx/@scale
-		else
-			@scale = [@sy/@fy,@sx/@fx].min
-			@fobjects[4].send_in 1, @scale
-			sy2 = @fy*@scale
-			sx2 = @fx*@scale
-		end
-		begin
-			@fobjects[5].send_in 1, (if @down then 0 else 1 end)
-			x2=@y+(@sy-sy2)/2
-			y2=@x+(@sx-sx2)/2
-			@fobjects[3].send_in 0, :set_geometry, x2, y2, sy2, sx2
-		rescue StandardError => e
-			post "peeperr: %s", e.inspect
-		end
-		post "set_geometry_for_real_now (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)",
-			@x+1,@y+1,@sx,@sy,@fx,@fy,sx2,sy2,x2,y2
-	end
-	def _0_open(wid,use_subwindow)
-		post "%s", [wid,use_subwindow].inspect
-		@use_subwindow = use_subwindow==0 ? false : true
-		if @use_subwindow then
-			@fobjects[3].send_in 0, :open,:x11,:here,:embed_by_id,wid
-		end
-	end
-	def _0_set_geometry(y,x,sy,sx)
-		@sy,@sx = sy,sx
-		@y,@x = y,x
-		set_geometry_for_real_now
-	end
-	# note: the numbering here is a FPatcher gimmick... -1,0 goes to _1_.
-	def _1_position(y,x,b)
-		s=@scale
-		if @down then y*=s;x*=s else y*=s;x*=s end
-		send_out 0,:position,y,x,b
-	end
-	def _2_list(sy,sx,chans); @fy,@fx = sy,sx; set_geometry_for_real_now; end
-	def _0_paint() @fobjects[3].send_in 0, "draw"; end
-	def delete
-		GridFlow.gui %{ #{canvas} delete #{@rsym} \n}
-		@fobjects[3].send_in 0, :close
-		super
-	end
-	def method_missing(s,*a) super rescue NameError; end
-	install "#peephole", 1, 1
-end
-=end
 
 #-------- fClasses for: Hardware
 
