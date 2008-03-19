@@ -147,6 +147,8 @@ BUILTIN_SYMBOLS(FOO)
 } bsym;
 
 struct Numop;
+struct Pointer;
+extern Ruby mPointer;
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
@@ -169,6 +171,12 @@ typedef struct R {
 	R(t_symbol *x) {r = ID2SYM(rb_intern(x->s_name));}
 
 	operator bool () const {
+		if (r==Qtrue) return true;
+		if (r==Qfalse) return false;
+		switch (TYPE(r)) {
+			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
+			default: RAISE("can't convert to bool");}}
+	operator bool () { // added a non-const copy so that gcc stops complaining. C++ is weird
 		if (r==Qtrue) return true;
 		if (r==Qfalse) return false;
 		switch (TYPE(r)) {
@@ -215,6 +223,10 @@ typedef struct R {
 	operator t_symbol * () {
 		if (TYPE(r)!=T_SYMBOL) RAISE("not a Symbol");
 		return gensym((char *)rb_sym_name(r));
+	}
+	operator Pointer * () {
+		if (CLASS_OF(r)!=mPointer) RAISE("not a Pointer");
+		return (Pointer *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
 	}
 	static R value(VALUE r) {R x; x.r=r; return x;}
 #define FOO(As,Op) \
