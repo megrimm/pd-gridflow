@@ -470,7 +470,6 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 //\def Ruby send_out2(...) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
-	//post("FObject#send_out2 : rself=%08x, bself=%08x, argc=%d",rself,bself,argc);
 	if (!bself) return Qnil;
 	int outlet = INT(argv[0]);
 	Ruby sym = argv[1];
@@ -520,6 +519,21 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 		pd_bind(o,s);
 	}
 	return Qnil;
+}
+
+static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
+	if (argc<0) RAISE("not enough args (%d for 0)",argc,0);
+	Ruby sym = argv[0];
+	argc--;
+	argv++;
+	t_atom sel, at[argc];
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
+	pd_typedmess(&pd_objectmaker,atom_getsymbol(&sel),argc,at);
+	//rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI(new),0,0);
+	//DGS(FObject);
+	//self->bself = pd_newest;
+	return Pointer_s_new((void *)pd_newest);
 }
 
 #ifndef HAVE_DESIREDATA
@@ -797,6 +811,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	SDEF("add_creator_2",add_creator_2,1);
 	SDEF("gui",gui,-1);
 	SDEF("bind",bind,2);
+	SDEF("objectmaker",objectmaker,-1);
 	// SDEF("add_to_menu",add_to_menu,-1);
 
 	\startall
@@ -885,7 +900,7 @@ extern "C" void gridflow_setup () {
 		(RMethod)gf_bridge_init,0);
 
 	mGridFlow2 = EVAL(
-		"module GridFlow; class<<self; attr_reader :bridge_name; end; "
+		"module GridFlow; class<<self; attr_reader :bridge_name; end; Pd=GridFlow; "
 		"@bridge_name = 'puredata'; self end");
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
 	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
