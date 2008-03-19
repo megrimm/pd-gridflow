@@ -176,13 +176,13 @@ typedef struct R {
 		switch (TYPE(r)) {
 			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
 			default: RAISE("can't convert to bool");}}
-	operator bool () { // added a non-const copy so that gcc stops complaining. C++ is weird
+/*	operator bool () { // added a non-const copy so that gcc stops complaining. C++ is weird
 		if (r==Qtrue) return true;
 		if (r==Qfalse) return false;
 		switch (TYPE(r)) {
 			case T_FIXNUM: case T_BIGNUM: case T_FLOAT: return !!NUM2INT(r);
 			default: RAISE("can't convert to bool");}}
-	operator uint8 () const {return INT2NUM(r);}
+*/	operator uint8 () const {return INT2NUM(r);}
 	operator int16 () const {
 		int v = (int32)*this;
 		if (v<-0x8000 || v>=0x8000) RAISE("value %d is out of range",v);
@@ -220,11 +220,11 @@ typedef struct R {
 		if (INTEGER_P(r)) return (float64)(int32)*this;
 		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
 		return ((RFloat*)r)->value;}
-	operator t_symbol * () {
+	operator t_symbol * () const {
 		if (TYPE(r)!=T_SYMBOL) RAISE("not a Symbol");
 		return gensym((char *)rb_sym_name(r));
 	}
-	operator Pointer * () {
+	operator Pointer * () const {
 		if (CLASS_OF(r)!=mPointer) RAISE("not a Pointer");
 		return (Pointer *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
 	}
