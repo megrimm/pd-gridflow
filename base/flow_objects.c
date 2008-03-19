@@ -24,12 +24,29 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <math.h>
-
-//#define SWIG
+#include <string>
+#include <sstream>
 #include "grid.h.fcs"
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
 //#define add_creator(name) rb_funcall(rself,SI(add_creator),1,rb_str_new2(name))
 //#include "gridflow2.h"
+
+/* both oprintf are copied from desiredata */
+
+//using namespace std; // can't
+
+static void voprintf(std::ostream &buf, const char *s, va_list args) {
+    char *b;
+    vasprintf(&b,s,args);
+    buf << b;
+    free(b);
+}
+static void oprintf(std::ostream &buf, const char *s, ...) {
+    va_list args;
+    va_start(args,s);
+    voprintf(buf,s,args);
+    va_end(args);
+}
 
 /* ---------------------------------------------------------------- */
 /* stuff for using source_filter.rb without <ruby.h>: */
@@ -186,7 +203,6 @@ GRID_INLET(GridToSymbol,0) {
 \classinfo { install("#to_symbol",1,1); }
 \end class GridToSymbol
 
-
 /* **************************************************************** */
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
@@ -216,6 +232,137 @@ GRID_INLET(GridExportList,0) {
 
 \classinfo { install("#to_list",1,1); /*add_creator("#export_list");*/ }
 \end class GridExportList
+
+/* **************************************************************** */
+\class GridPrint < GridObject {
+	\attr t_symbol *name;
+	\grin 0
+	int base;
+	uint32 trunc;
+	int maxrows;
+	int columns;
+	\decl void initialize (t_symbol *name=0);
+	\decl void end_hook ();
+	\decl void _0_base (int x);
+	\decl void _0_trunc (int x);
+	\decl void _0_maxrows (int y);
+	template <class T> void make_columns (int n, T *data);
+	template <class T> void dump(std::ostream &s, int n, T *data, char sep=' ', int trunc=-1) {
+		if (trunc<0) trunc=this->trunc;
+		std::string f = format(NumberTypeE_type_of(data));
+		for (int i=0; i<n; i++) {
+			if (base!=2) oprintf(s,f.data(),data[i]);
+			else {
+				T x = data[i];
+				if (x<0) x=-x;
+				int ndigits = 1+highest_bit(uint64(x));
+				for (int j=columns-ndigits-(data[i]<0); j>=0; j--) s<<' ';
+				if (data[i]<0) s<<'-';
+				for (int j=ndigits-1; j>=0; j--) {
+					s<<char('0'+(((long)x>>j)&1));
+				}
+			}
+			if (i<n-1) s << sep;
+		}
+	}
+	void dump_dims(std::ostream &s, GridInlet *in) {
+		if (name) s << name << ": ";
+		s << "Dim[";
+		for (int i=0; i<in->dim->n; i++) {
+			s << in->dim->v[i];
+			if (i<in->dim->n-1) s << ',';
+		}
+		s << "]";
+		if (in->nt!=int32_e) s << "(" << in->nt << ")";
+		s << ": ";
+	}
+	std::string format (NumberTypeE nt) {
+		if (nt==float32_e) return "%6.6f";
+		if (nt==float64_e) return "%14.14f";
+		std::ostringstream r;
+		r << "%";
+		r << columns;
+		//if (nt==int64_e) r << "l";
+		if (base==2)  r << "b"; else
+		if (base==8)  r << "o"; else
+		if (base==10) r << "d"; else
+		if (base==16) r << "x";
+		return r.str();
+	}
+};
+\def void initialize(t_symbol *name=0) {
+	rb_call_super(argc,argv);
+	this->name = name;
+	base=10; trunc=70; maxrows=50;
+}
+\def void end_hook () {}
+\def void _0_base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
+\def void _0_trunc (int x) {
+	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
+	trunc = x;
+}
+\def void _0_maxrows (int y) { maxrows = y; }
+template <class T> void GridPrint::make_columns (int n, T *data) {
+	long maxv=0;
+	long minv=0;
+	for (int i=0; i<n; i++) {
+		if (maxv<data[i]) maxv=long(data[i]);
+		if (minv>data[i]) minv=long(data[i]);
+	}
+	int maxd = maxv<0; maxd += int(log(max(1.,fabs(maxv)))/log(base));
+	int mind = minv<0; mind += int(log(max(1.,fabs(minv)))/log(base));
+	columns = max(maxd,mind);
+}
+GRID_INLET(GridPrint,0) {
+	in->set_chunk(0);
+} GRID_FLOW {
+	std::ostringstream head;
+	dump_dims(head,in);
+	int ndim = in->dim->n;
+	if (ndim > 3) {
+		post("%s (not printed)",head.str().data());
+	} else if (ndim < 2) {
+		make_columns(n,data);
+		dump(head,n,data,' ',trunc);
+		post("%s",head.str().data());
+	} else if (ndim == 2) {
+		post("%s",head.str().data());
+		make_columns(n,data);
+		long sy = in->dim->v[0];
+		long sx = n/sy;
+		for (int row=0; row<in->dim->v[0]; row++) {
+			std::ostringstream body;
+			dump(body,sx,&data[sx*row],' ',trunc);
+			post("%s",body.str().data());
+			if (row>maxrows) {post("..."); break;}
+		}
+	} else if (ndim == 3) {
+		post("%s",head.str().data());
+		make_columns(n,data);
+		int sy = in->dim->v[0];
+		int sx = in->dim->v[1];
+		int sz = n/sy;
+		int sz2 = sz/in->dim->v[1];
+		for (int row=0; row<sy; row++) {
+			std::ostringstream str;
+			for (int col=0; col<sx; col++) {
+				str << "(";
+				dump(str,sz2,&data[sz*row+sz2*col],' ',trunc);
+				str << ")";
+				if (str.str().size()>trunc) break;
+			}
+			post("%s",str.str().data());
+			if (row>maxrows) {post("..."); break;}
+		}
+	}
+	end_hook(0,0);
+} GRID_FINISH {
+	std::ostringstream head;
+	dump_dims(head,in);
+	if (in->dim->prod()==0) post("%s",head.str().data());
+} GRID_END
+\classinfo { install("#print2",1,1); }
+\end class
 
 /* **************************************************************** */
 // GridStore ("@store") is the class for storing a grid and restituting
@@ -255,7 +402,7 @@ static void snap_backstore (PtrGrid &r) {
 	if (r.next) {r=r.next.p; r.next=0;}
 }
 
-template <class T> void GridStore::compute_indices(T * v, long nc, long nd) {
+template <class T> void GridStore::compute_indices(T *v, long nc, long nd) {
 	for (int i=0; i<nc; i++) {
 		uint32 wrap = r->dim->v[i];
 		bool fast = lowest_bit(wrap)==highest_bit(wrap); // is power of two?
