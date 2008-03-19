@@ -31,12 +31,6 @@
 #include "grid.h.fcs"
 #include <ctype.h>
 
-/* copied from rubyext.c (sorry: linkage issue) */
-struct Pointer : CObject {
-	void *p;
-	Pointer(void *_p) : p(_p) {}
-};
-
 #define Pointer_s_new Pointer_s_new_2
 #define Pointer_get   Pointer_get_2
 

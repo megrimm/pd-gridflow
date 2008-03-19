@@ -166,6 +166,7 @@ typedef struct R {
 		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
 		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
 	R(Numop *x);
+	R(t_symbol *x) {r = ID2SYM(rb_intern(x->s_name));}
 
 	operator bool () const {
 		if (r==Qtrue) return true;
@@ -429,8 +430,7 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
-\class BitPacking < CObject
-struct BitPacking : CObject {
+\class BitPacking < CObject {
 	Packer   *  packer;
 	Unpacker *unpacker;
 	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
@@ -684,8 +684,7 @@ EACH_NUMBER_TYPE(FOO)
 } GridHandler;
 
 struct GridObject;
-\class GridInlet < CObject
-struct GridInlet : CObject {
+\class GridInlet < CObject {
 	GridObject *parent;
 	const GridHandler *gh;
 private:
@@ -742,8 +741,7 @@ struct FClass {
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
-\class GridOutlet < CObject
-struct GridOutlet : CObject {
+\class GridOutlet < CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
 	static const long MIN_PACKET_SIZE = 1<<8;
@@ -810,10 +808,8 @@ struct BFObject : t_object {
 	void noutlets_set(int n);
 };
 
-
 // represents objects that have inlets/outlets
-\class FObject < CObject
-struct FObject : CObject {
+\class FObject < CObject {
 	BFObject *bself; // point to PD peer
 	FObject() : bself(0) {}
 	const char *args() {
@@ -832,9 +828,8 @@ struct FObject : CObject {
 };
 \end class FObject
 
-\class GridObject < FObject
-struct GridObject : FObject {
-	std::vector<P<GridInlet> >  in;
+\class GridObject < FObject {
+	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
 	// Make sure you distinguish #close/#delete, and C++'s delete. The first
 	// two are quite equivalent and should never make an object "crashable".
@@ -879,5 +874,13 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 				bi+i, b->v[bi+i]);}}}
 
 typedef GridObject Format;
+
+\class Pointer < CObject {
+	void *p;
+	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
+	Pointer(void *_p) : p(_p) {}
+	\decl Ruby ptr ();
+};
+\end class Pointer
 
 #endif // __GF_GRID_H

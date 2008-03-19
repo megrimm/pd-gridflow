@@ -111,12 +111,6 @@ static Ruby mGridFlow2=0;
 static Ruby mPointer=0;
 
 \class Pointer < CObject
-struct Pointer : CObject {
-	void *p;
-	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
-	Pointer(void *_p) : p(_p) {}
-	\decl Ruby ptr ();
-};
 \def Ruby ptr () { return LONG2NUM(((long)p)); }
 \classinfo {
 	IEVAL(rself,
@@ -536,6 +530,22 @@ static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
 	return Pointer_s_new((void *)pd_newest);
 }
 
+static t_pd *rp_to_pd (Ruby pointer) {
+	Pointer *foo;
+	Data_Get_Struct(pointer,Pointer,foo);
+	return (t_pd *)foo->p;
+}
+
+/*
+static Ruby GridFlow_s_connect (Ruby from, Ruby outlet, Ruby to, Ruby inlet) {
+	if (CLASS_OF(from)!=mPointer) RAISE("'from' is not a Pointer");
+	if (CLASS_OF(to  )!=mPointer) RAISE(  "'to' is not a Pointer");
+	if (TYPE(outlet)!=T_FIXNUM) RAISE("'outlet' is not a Fixnum");
+	if (TYPE( inlet)!=T_FIXNUM) RAISE( "'inlet' is not a Fixnum");
+	obj_connect(rp_to_pd(from),NUM2INT(outlet),rp_to_pd(to),NUM2INT(inlet));
+}
+*/
+
 #ifndef HAVE_DESIREDATA
 static Ruby FObject_s_gui_enable (Ruby rself) {
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
@@ -812,6 +822,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	SDEF("gui",gui,-1);
 	SDEF("bind",bind,2);
 	SDEF("objectmaker",objectmaker,-1);
+	//SDEF("connect",connect,4);
 	// SDEF("add_to_menu",add_to_menu,-1);
 
 	\startall
@@ -893,11 +904,9 @@ extern "C" void gridflow_setup () {
 	ruby_options(COUNT(foo),foo);
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
-	BFProxy_class = class_new(gensym("ruby_proxy"),
-		NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
+	BFProxy_class = class_new(gensym("ruby_proxy"), NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
-	rb_define_singleton_method(cData,"gf_bridge_init",
-		(RMethod)gf_bridge_init,0);
+	rb_define_singleton_method(cData,"gf_bridge_init",(RMethod)gf_bridge_init,0);
 
 	mGridFlow2 = EVAL(
 		"module GridFlow; class<<self; attr_reader :bridge_name; end; Pd=GridFlow; "
