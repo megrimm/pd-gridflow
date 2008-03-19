@@ -39,13 +39,8 @@
 #include <execinfo.h>
 using namespace std;
 
-#ifdef SWIG
-#include "grid.h"
-#else
 #include "grid.h.fcs"
-#endif
 
-#ifndef SWIG
 BuiltinSymbols bsym;
 Ruby mGridFlow;
 Ruby cFObject;
@@ -93,7 +88,6 @@ Ruby rb_ary_fetch(Ruby rself, long i) {
 	Ruby argv[] = { LONG2NUM(i) };
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
-#endif
 
 //----------------------------------------------------------------
 // CObject
@@ -403,6 +397,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 
 static Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
 	FClass *fc = FIX2PTR(FClass,fc_);
+	//fc = (FClass *)(NUM2ULONG(fc_)<<2); // wtf?
 	Ruby rself = super!=Qnil ?
 		rb_define_class_under(mGridFlow, fc->name, super) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
@@ -579,11 +574,8 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, new, -1);
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
-	Ruby cBitPacking =
-		rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
-	define_many_methods(cBitPacking,
-		ciBitPacking.methodsn,
-		ciBitPacking.methods);
+	Ruby cBitPacking = rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
+	define_many_methods(cBitPacking, ciBitPacking.methodsn, ciBitPacking.methods);
 	SDEF(BitPacking,new,-1);
 	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
 	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
@@ -607,3 +599,4 @@ uint64 gf_timeofday () {
 	gettimeofday(&t,0);
 	return t.tv_sec*1000000+t.tv_usec;
 }
+
