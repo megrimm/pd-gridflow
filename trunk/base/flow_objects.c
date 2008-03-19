@@ -123,7 +123,7 @@ GRID_INLET(GridCast,0) {
 	~GridImport() {}
 	\decl void initialize(Ruby x, NumberTypeE cast=int32_e);
 	\decl void _0_reset();
-	\decl void _0_symbol(Symbol x);
+	\decl void _0_symbol(t_symbol *x);
 	\decl void _0_list(...);
 	\decl void _1_per_message();
 	\grin 0
@@ -146,8 +146,8 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	dim = d;
 } GRID_END
 
-\def void _0_symbol(Symbol x) {
-	const char *name = rb_sym_name(x);
+\def void _0_symbol(t_symbol *x) {
+	const char *name = x->s_name;
 	long n = strlen(name);
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,(uint8 *)name);
@@ -208,7 +208,6 @@ GRID_INLET(GridToSymbol,0) {
 /* in0: integer nt */
 /* exporting floats may be crashy because [#export_list] doesn't handle GC */
 \class GridExportList < GridObject {
-	Ruby /*Array*/ list;
 	int n;
 	\grin 0
 };
@@ -216,18 +215,12 @@ GRID_INLET(GridToSymbol,0) {
 GRID_INLET(GridExportList,0) {
 	long n = in->dim->prod();
 	if (n>1000000) RAISE("list too big (%ld elements, max 1000000)", n);
-	list = rb_ary_new2(n+2);
 	this->n = n;
-	rb_ivar_set(rself,SI(@list),list); // keep
-	rb_ary_store(list,0,INT2NUM(0));
-	rb_ary_store(list,1,bsym._list);
+	in->set_chunk(0);
 } GRID_FLOW {
-	for (int i=0; i<n; i++, data++)
-		rb_ary_store(list,in->dex+i+2,R(*data).r);
+	send_out(0,n,data);
 } GRID_FINISH {
-	send_out(rb_ary_len(list),rb_ary_ptr(list));
-	list = 0;
-	rb_ivar_set(rself,SI(@list),Qnil); // unkeep
+	if (in->dim->prod()==0) send_out(0,0,data);
 } GRID_END
 
 \classinfo { install("#to_list",1,1); /*add_creator("#export_list");*/ }
@@ -309,8 +302,9 @@ template <class T> void GridPrint::make_columns (int n, T *data) {
 		if (maxv<data[i]) maxv=long(data[i]);
 		if (minv>data[i]) minv=long(data[i]);
 	}
-	int maxd = maxv<0; maxd += int(log(max(1.,fabs(maxv)))/log(base));
-	int mind = minv<0; mind += int(log(max(1.,fabs(minv)))/log(base));
+	int maxd = 1 + (maxv<0) + int(log(max(1.,fabs(maxv)))/log(base));
+	int mind = 1 + (minv<0) + int(log(max(1.,fabs(minv)))/log(base));
+	//fprintf(stderr,"v=(%d,%d) d=(%d,%d)\n",minv,maxv,mind,maxd);
 	columns = max(maxd,mind);
 }
 GRID_INLET(GridPrint,0) {
@@ -1038,8 +1032,7 @@ GRID_INLET(GridDim,0) {
 \def void initialize () {}
 static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
 GRID_INLET(GridType,0) {
-	Ruby a[] = { INT2NUM(0), SYM(symbol), rb_gensym(number_type_table[in->nt].name) };
-	send_out(COUNT(a),a);
+	outlet_symbol(bself->out[0],gensym((char *)number_type_table[in->nt].name));
 	in->set_mode(0);
 } GRID_END
 \classinfo { install("#type",1,1); }
@@ -1315,7 +1308,6 @@ GRID_INLET(GridReverse,0) {
 
 //****************************************************************
 \class GridCentroid < GridObject {
-	\decl void initialize ();
 	\grin 0 int
 	int sumx,sumy,sum,y; // temporaries
 };
@@ -1343,13 +1335,9 @@ GRID_INLET(GridCentroid,0) {
 	blah[0] = sum ? sumy/sum : 0;
 	blah[1] = sum ? sumx/sum : 0;
 	out->send(2,blah);
-	rb_funcall(rself,SI(send_out),2,INT2NUM(1),INT2NUM(blah[0]));
-	rb_funcall(rself,SI(send_out),2,INT2NUM(2),INT2NUM(blah[1]));
+	outlet_float(bself->out[1],blah[0]);
+	outlet_float(bself->out[2],blah[1]);
 } GRID_END
-
-\def void initialize () {
-	rb_call_super(argc,argv);
-}
 
 \classinfo { install("#centroid",1,3); }
 \end class GridCentroid
@@ -2357,7 +2345,6 @@ GRID_INLET(GridUnpack,0) {
 \end class GridUnpack
 
 //****************************************************************
-
 \class ForEach < FObject {
 	\decl void _0_list (...);
 };
