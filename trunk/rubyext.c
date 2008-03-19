@@ -108,7 +108,7 @@ void CObject_free (void *victim) {
 /* can't even refer to the other mGridFlow because we don't link
    statically to the other gridflow.so */
 static Ruby mGridFlow2=0;
-static Ruby mPointer=0;
+Ruby cPointer=0;
 
 \class Pointer < CObject
 \def Ruby ptr () { return LONG2NUM(((long)p)); }
@@ -121,7 +121,7 @@ static Ruby mPointer=0;
 \end class Pointer
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
-	return self->rself = Data_Wrap_Struct(mPointer, 0, CObject_free, self);
+	return self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
 }
 void *Pointer_get (Ruby rself) {
 	DGS(Pointer);
@@ -185,7 +185,7 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 	if      (INTEGER_P(arg)) SETFLOAT(at,NUM2INT(arg));
 	else if ( SYMBOL_P(arg)) SETSYMBOL(at,gensym((char *)rb_sym_name(arg)));
 	else if (  FLOAT_P(arg)) SETFLOAT(at,RFLOAT(arg)->value);
-	else if (rb_obj_class(arg)==mPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
+	else if (rb_obj_class(arg)==cPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
 	else RAISE("cannot convert argument of class '%s'",
 		rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 }
@@ -538,8 +538,8 @@ static t_pd *rp_to_pd (Ruby pointer) {
 
 /*
 static Ruby GridFlow_s_connect (Ruby from, Ruby outlet, Ruby to, Ruby inlet) {
-	if (CLASS_OF(from)!=mPointer) RAISE("'from' is not a Pointer");
-	if (CLASS_OF(to  )!=mPointer) RAISE(  "'to' is not a Pointer");
+	if (CLASS_OF(from)!=cPointer) RAISE("'from' is not a Pointer");
+	if (CLASS_OF(to  )!=cPointer) RAISE(  "'to' is not a Pointer");
 	if (TYPE(outlet)!=T_FIXNUM) RAISE("'outlet' is not a Fixnum");
 	if (TYPE( inlet)!=T_FIXNUM) RAISE( "'inlet' is not a Fixnum");
 	obj_connect(rp_to_pd(from),NUM2INT(outlet),rp_to_pd(to),NUM2INT(inlet));
@@ -828,7 +828,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
-	mPointer = EVAL("GridFlow::Pointer");
+	cPointer = EVAL("GridFlow::Pointer");
 	EVAL("class<<GridFlow;attr_accessor :config; end");
 	return Qnil;
 }
