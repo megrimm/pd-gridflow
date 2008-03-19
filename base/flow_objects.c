@@ -361,7 +361,7 @@ GRID_INLET(GridPrint,0) {
 	dump_dims(head,in);
 	if (in->dim->prod()==0) post("%s",head.str().data());
 } GRID_END
-\classinfo { install("#print2",1,1); }
+\classinfo { install("#print",1,1); }
 \end class
 
 /* **************************************************************** */
