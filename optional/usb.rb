@@ -27,46 +27,4 @@ class<<USB
 	attr_reader :busses
 end
 
-FObject.subclass("delcomusb",1,1) {
-	Vendor,Product=0x0FC5,0x1222
-	def self.find
-		r=[]
-		USB.busses.each {|dir,bus|
-			bus.each {|dev|
-				r<<dev if dev.idVendor==Vendor and dev.idProduct==Product
-			}
-		}
-		r
-	end
-	def initialize #(bus=nil,dev=nil)
-		r=DelcomUSB.find
-		raise "no such device" if r.length<1
-		raise "#{r.length} such devices (which one???)" if r.length>1
-		@usb=USB.new(r[0])
-		if_num=nil
-		r[0].config.each {|config|
-			config.interface.each {|interface|
-				if_num = interface.bInterfaceNumber
-			}
-		}
-		# post "Interface # %i\n", if_num
-		@usb.set_configuration 1
-		@usb.claim_interface if_num
-		@usb.set_altinterface 0 rescue ArgumentError
-	end
-	# libdelcom had this:
-        # uint8 recipient, deviceModel, major, minor, dataL, dataM;
-        # uint16 length; uint8[8] extension;
-	def _0_send_command(major,minor,dataL,dataM,extension="\0\0\0\0\0\0\0\0")
-		raise "closed" if not @usb
-		raise "extension.length!=8" if extension.length!=8
-		@usb.control_msg(
-			0x000000c8, 0x00000012,
-			minor*0x100+major,
-			dataM*0x100+dataL,
-			extension, 5000)
-	end
-	def delete; @usb.close; end
-}
-
 end # module GridFlow
