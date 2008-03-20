@@ -7,6 +7,8 @@ version 0.9.1 (2008.03...):
  * removed LTIlib support
  * added OpenCV support: ...
  * x11: added "warp" method for moving mouse cursor around
+ * rewrote some object classes from Ruby to C++, most notably:
+   [#pack] [#unpack] [#print] [display]
 
 version 0.9.0 (2007.11.20):
 
