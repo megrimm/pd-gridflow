@@ -542,6 +542,14 @@ class Display < FObject; include Gooey
 		@sy,@sx = 16,80 # default size of the widget
 		# @bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
 		@bg = "#cccccc"
+		# hijacking a [#print]
+		@gp = Pd.objectmaker(:"#print")
+		#@gp.send_in 0, :trunc, 70
+		Pd.send_in @gp, 0, :maxrows, 20
+	end
+	def initialize2()
+		super
+		Pd.send_in @gp, 0, :dest, bself
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
@@ -565,48 +573,34 @@ class Display < FObject; include Gooey
 	def pd_show(can)
 		super
 		return if not canvas or not @vis # can't show for now...
-		GridFlow.gui %{
-			set canvas #{canvas}
-			$canvas delete #{@rsym}TEXT
-			set y #{@y+2}
-			foreach line [split #{quote @text} \\n] {
-				$canvas create text #{@x+2} $y -fill #{@fg} -font #{quote @font}\
-					-text $line -anchor nw -tag #{@rsym}TEXT
-				set y [expr $y+14]
-			}
-			foreach {x1 y1 x2 y2} [$canvas bbox #{@rsym}TEXT] {}
-			set sx [expr $x2-$x1+1]
-			set sy [expr $y2-$y1+3]
-			$canvas delete #{@rsym}
-			$canvas create rectangle #{@x} #{@y} \
-				[expr #{@x}+$sx] [expr #{@y}+$sy] -fill #{@bg} \
-				-tags #{@rsym} -outline #{outline}
-			$canvas lower #{@rsym} #{@rsym}TEXT
-			pd \"#{@rsym} set_size $sy $sx;\\n\"
-		}
+		cmd = "display_update #{@rsym} #{@x} #{@y} #{@fg} #{@bg} #{outline} #{quote @font} #{canvas} #{quote @text}\n"
+		#puts "CMD=#{cmd}"
+		GridFlow.gui cmd
 	end
 	def pd_delete(can)
 		GridFlow.gui %{ #{canvas} delete #{@rsym} #{@rsym}TEXT \n} if @vis
 		super
 	end
-	def delete; super end
-	def _0_grid(*foo) # big hack!
-		# hijacking a [#print]
-		gp = FObject["#print"]
-		@text = ""
-		overlord = self
-		gp.instance_eval { @overlord = overlord }
-		def gp.post(fmt,*args) @overlord.text << sprintf(fmt,*args) << "\n" end
-		def gp.end_hook
-			@overlord.instance_eval{@text.chomp!}
-			@overlord.update
-		end
-		#gp.send_in 0, :trunc, 70
-		gp.send_in 0, :maxrows, 20
-		gp.send_in 0, :grid, *foo
-	end
-	install "display", 1, 1
+	def _0_grid(*foo) @gp.send_in 0, :grid, *foo end
+	install "display", 2, 1
 	gui_enable
+
+	GridFlow.gui %{
+		proc display_update {self x y fg bg outline font canvas text} {
+			$canvas delete ${self}TEXT
+			$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT
+			foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {}
+			incr x -1
+			incr y -1
+			set sx [expr $x2-$x1+2]
+			set sy [expr $y2-$y1+4]
+			$canvas delete ${self}
+			$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline
+			$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline
+			$canvas lower $self ${self}TEXT
+			pd \"$self set_size $sy $sx;\\n\"
+		}
+	}
 end
 end # respond to gui_enable
 
