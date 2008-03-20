@@ -47,6 +47,7 @@ ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffre
 ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
 #endif
 
+#ifdef USE_RUBY
 extern "C" {
 #include <ruby.h>
 #include <rubyio.h>
@@ -55,6 +56,7 @@ extern "C" {
 #error "Can't do anything without ruby.h"
 #endif
 };
+#endif
 
 #ifdef __WIN32__
 #define INT winINT
@@ -75,11 +77,15 @@ extern "C" {
 #endif
 #define RAISE2(string) RAISE(string)
 
+#ifdef USE_RUBY
 typedef VALUE Ruby;
+#else
+typedef long Ruby;
+#endif
 
 extern "C" {
 void rb_raise0(
-const char *file, int line, const char *func, VALUE exc, const char *fmt, ...)
+const char *file, int line, const char *func, Ruby exc, const char *fmt, ...)
 __attribute__ ((noreturn));
 };
 
@@ -91,6 +97,7 @@ __attribute__ ((noreturn));
 // returns the size of a statically defined array
 #define COUNT(_array_) ((int)(sizeof(_array_) / sizeof((_array_)[0])))
 
+#ifdef USE_RUBY
 #ifdef RARRAY_LEN
 #if RUBY_VERSION_MAJOR > 1 || RUBY_VERSION_MINOR >= 9
 // T_SYMBOL stops existing when RARRAY_LEN was introduced in 1.9 mid-2006 ?
@@ -109,6 +116,8 @@ static inline long  rb_ary_len(Ruby s) {return  RARRAY(s)->len;}
 static inline Ruby *rb_ary_ptr(Ruby s) {return  RARRAY(s)->ptr;}
 #endif // RARRAY_LEN
 static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
+#else // USE_RUBY
+#endif // USE_RUBY
 
 #define IEVAL(_self_,s) rb_funcall(_self_,SI(instance_eval),1,rb_str_new2(s))
 #define EVAL(s) rb_eval_string(s)
@@ -118,6 +127,7 @@ static inline const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));
 	for (int q=0; q<n; q++) p += sprintf(p,"%lld ",(long long)ar[q]); \
 	post("%s",foo);}
 
+#ifdef USE_RUBY
 static inline Ruby PTR2FIX (const void *ptr) {
 	long p = (long)ptr;
 	if ((p&3)!=0) RAISE("unaligned pointer: %p\n",ptr);
@@ -125,15 +135,25 @@ static inline Ruby PTR2FIX (const void *ptr) {
 }
 #define FIX2PTR(T,ruby) ((T *)(TO(long,ruby)<<2))
 #define INT2PTR(T,   v) ((T *)(          (v)<<2))
+#endif
 
 //****************************************************************
 // my own little Ruby <-> C++ layer
 
+#ifdef USE_RUBY
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
 typedef Ruby Symbol, Array, String, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
+#else
+typedef t_symbol *Symbol;
+//typedef std::string String;
+typedef const char *String;
+//#define Qnil 4
+#define Qnil 0
+typedef void *(*RMethod)(...); /* !@#$ fishy */
+#endif // USE_RUBY
 
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
@@ -141,7 +161,7 @@ typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets")
 
 extern struct BuiltinSymbols {
-#define FOO(_sym_,_str_) Ruby _sym_;
+#define FOO(_sym_,_str_) Symbol _sym_;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
@@ -149,6 +169,7 @@ BUILTIN_SYMBOLS(FOO)
 struct Numop;
 struct Pointer;
 extern Ruby cPointer;
+#ifdef USE_RUBY
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
@@ -167,6 +188,7 @@ typedef struct R {
 	R(uint64 x) {
 		r = rb_funcall(UINT2NUM((uint32)(x>>32)),SI(<<),1,INT2FIX(32));
 		r = rb_funcall(r,SI(+),1,UINT2NUM((uint32)x));}
+#endif
 	R(Numop *x);
 	R(t_symbol *x) {r = ID2SYM(rb_intern(x->s_name));}
 
@@ -247,17 +269,14 @@ typedef struct R {
 	FOO(-) FOO(~)
 #undef FOO
 } ruby;
-
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
 template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
-
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
-
 static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
 static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
 static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
-#endif
+#endif // USE_RUBY
 
 //****************************************************************
 
@@ -541,17 +560,20 @@ EACH_NUMBER_TYPE(FOO)
 #undef FOO
 	}
 };
+#ifdef USE_RUBY
 inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
+#endif
 
 extern NumberType number_type_table[];
 
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
 extern Ruby op_dict; // GridFlow.@op_dict={}
 
-static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {
-	return NumberTypeE_find(x);
-}
+#ifdef USE_RUBY
+static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberTypeE_find(x);}
+#endif
 
+#ifdef USE_RUBY
 #ifndef IS_BRIDGE
 static Numop *convert(Ruby x, Numop **bogus) {
 	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op_dict)),x);
@@ -563,6 +585,7 @@ static Numop *convert(Ruby x, Numop **bogus) {
 	}
 	return FIX2PTR(Numop,s);
 }
+#endif
 #endif
 
 // ****************************************************************
