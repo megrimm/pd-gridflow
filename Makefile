@@ -12,9 +12,7 @@ LDSHARED = $(CXX) $(PDBUNDLEFLAGS)
 RM = rm -f
 CFLAGS += -Wall -Wno-unused -Wunused-variable
 CFLAGS += -g -fPIC -I.
-
-# comment this out for normal compilation
-# CFLAGS += -DSWIG
+CFLAGS += -DUSE_RUBY
 
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 ifeq ($(HAVE_DEBUG),yes)
@@ -118,7 +116,9 @@ install::
 	@echo -e "2. delete the old gridflow.pd_linux"
 	@echo -e "3. and don't do \"make install\" anymore\033[0m\n"
 
-deprecated::
+deprecated:: deprecated/@fade.pd
+
+deprecated/@fade.pd: abstractions/\#fade.pd
 	for z in camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
 	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate; do \
