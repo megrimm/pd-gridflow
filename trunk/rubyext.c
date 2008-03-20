@@ -112,7 +112,9 @@ Ruby cPointer=0;
 
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
-	return self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
+	self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
+	//fprintf(stderr,"making rself=%p self=%p, a Pointer to %p\n",self->rself,self,ptr);
+	return self->rself;
 }
 void *Pointer_get (Ruby rself) {
 	DGS(Pointer);

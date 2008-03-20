@@ -549,7 +549,9 @@ class Display < FObject; include Gooey
 	end
 	def initialize2()
 		super
-		Pd.send_in @gp, 0, :dest, bself
+		b=bself
+		STDERR.puts "initialize2: bself=#{b.inspect}"
+		Pd.send_in @gp, 0, :dest, b
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
@@ -581,7 +583,7 @@ class Display < FObject; include Gooey
 		GridFlow.gui %{ #{canvas} delete #{@rsym} #{@rsym}TEXT \n} if @vis
 		super
 	end
-	def _0_grid(*foo) @gp.send_in 0, :grid, *foo end
+	def _0_grid(*foo) Pd.send_in @gp, 0, :grid, *foo end
 	install "display", 2, 1
 	gui_enable
 
