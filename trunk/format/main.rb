@@ -22,18 +22,12 @@
 =end
 
 require "fcntl"
-
 module GridFlow
-
 class<< self
 	def max_rank; 16; end
 	def max_size; 64*1024**2; end
 	def max_packet; 1024*2; end
 end
-
-class Format < GridObject
-	FF_R,FF_W = 4,2 # flags indicating support of :in and :out respectively.
-	attr_accessor :parent
 =begin API (version 0.8)
 	mode is :in or :out
 	def initialize(mode,*args) :
@@ -63,7 +57,9 @@ class Format < GridObject
 	outlet 0 : grid : frame just read
 	outlet 1 : everything else
 =end
-
+class Format < GridObject
+	FF_R,FF_W = 4,2 # flags indicating support of :in and :out respectively.
+	attr_accessor :parent
 	def initialize(mode,*)
 		super
 		@cast = :int32
@@ -82,15 +78,12 @@ class Format < GridObject
 			"Format '#{self.class.instance_eval{@symbol_name}}'"\
 			" does not support mode '#{mode}'"
 	end
-
 	def close; @stream.close if defined? @stream and @stream end
-
 	def self.suffixes_are(*suffixes)
 		suffixes.map{|s|s.split(/[, ]/)}.flatten.each {|suffix|
 			Format.suffixes[suffix] = self
 		}
 	end
-
 	class<< self
 		attr_reader :symbol_name
 		attr_reader :description
@@ -102,7 +95,6 @@ class Format < GridObject
 		(rewind; return) if frame == 0
 		raise "don't know how to seek for frame other than # 0"
 	end
-
 	# this is what you should use to rewind
 	# different file-sources may redefine this as something else
 	# (eg: gzip)
@@ -111,7 +103,6 @@ class Format < GridObject
 		@stream.seek 0,IO::SEEK_SET
 		@frame = 0
 	end
-
 	# This is different from IO#eof, which waits until a read has failed
 	# doesn't work in nonblocking mode? (I don't recall why)
 	def eof?
@@ -122,11 +113,9 @@ class Format < GridObject
 	rescue Errno::ESPIPE # just ignore if seek is not possible
 		return false
 	end
-
 	# "ideal" buffer size or something
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
-
 	def _0_headerless(*args) #!@#$ goes in FormatGrid ?
 		args=args[0] if Array===args[0]
 		#raise "expecting dimension list..."
@@ -165,7 +154,6 @@ module GridIO
 	def _0_close; (@format.close; @format = nil) if @format end
 	def delete; @format.close if @format; @format = nil; super end
 	attr_reader :format
-
 	def _0_open(sym,*a)
 		sym = sym.intern if String===sym
 		if a.length==0 and /\./ =~ sym.to_s then a=[sym]; sym=:file end
@@ -260,17 +248,13 @@ GridObject.subclass("#out",1,1) {
 		@finished = FObject["#finished"]
 		@finished.connect 0, self, 1
 	end
-
 	def _0_autoclose(v=1) @autoclose = !!v end
 	def _0_list(*a) @format._0_list(*a); _0_close if @autoclose end
-
-	# hacks
 	def _1_grid(*a) send_out 0,:grid,*a end # for aalib
 	def _1_position(*a) send_out 0,:position,*a end
 	def _1_keypress(*a) send_out 0,:keypress,*a end
 	def _1_keyrelease(*a) send_out 0,:keyrelease,*a end
 	def _1_bang(*a) _0_close if @autoclose end
-
 	def _0_grid(*a)
 		check_file_open
 		@format._0_grid(*a)
@@ -279,7 +263,6 @@ GridObject.subclass("#out",1,1) {
 		@framecount+=1
 		@finished.send_in 0, :grid, *a if @finished ;# why do i need this condition?
 	end
-
 	def log
 		time = Time.new
 		post("\#out: frame#%04d time: %10.3f s; diff: %5d ms",
@@ -288,7 +271,6 @@ GridObject.subclass("#out",1,1) {
 	end
 	install_rgrid 0
 }
-
 class BitPacking
 	alias pack pack2
 	alias unpack unpack2
@@ -297,7 +279,6 @@ end
 # adding event-driven IO to a Format class
 module EventIO
 	def read_wait?; !!@action; end
-
 	def initialize(*)
 		@acceptor = nil
 		@buffer = nil
@@ -308,14 +289,11 @@ module EventIO
 		@delay = 100 # ms
 		super
 	end
-
 	def call() try_read end
-
 	def on_read(n,&action)
 		@action = action
 		@chunksize = n
 	end
-
 	def try_accept
 		#!@#$ use setsockopt(SO_REUSEADDR) here???
 		@acceptor.nonblock = true
@@ -326,7 +304,6 @@ module EventIO
 #		send_out 0, :accept # does not work
 	rescue Errno::EAGAIN
 	end
-
 	def try_read(dummy=nil)
 		n = @chunksize-(if @buffer then @buffer.length else 0 end)
 		t = @stream.read(n) # or raise EOFError
@@ -345,7 +322,6 @@ module EventIO
 	rescue Errno::EAGAIN
 		post "read would block"
 	end
-
 	def raw_open_gzip_in(filename)
 		r,w = IO.pipe
 		if pid=fork
@@ -422,11 +398,6 @@ Format.subclass("#io:file",1,1) {
 	@comment="format autodetection proxy"
 }
 
-Format.subclass("#io:grid",1,1) {
-	include EventIO
-	install_rgrid 0
-	@comment = "GridFlow file format"
-	suffixes_are "grid"
 =begin
 	This is the Grid format I defined:
 	1 uint8: 0x7f
@@ -440,6 +411,11 @@ Format.subclass("#io:grid",1,1) {
 	N uint32: number of elements per dimension D[0]..D[N-1]
 	raw data goes there.
 =end
+Format.subclass("#io:grid",1,1) {
+	include EventIO
+	install_rgrid 0
+	@comment = "GridFlow file format"
+	suffixes_are "grid"
 	# bits per value: 32 only
 	attr_accessor :bpv # Fixnum: bits-per-value
 	# endianness
@@ -448,7 +424,6 @@ Format.subclass("#io:grid",1,1) {
 	attr_reader :stream
 	# nil=headerful; array=assumed dimensions of received grids
 	#attr_accessor :headerless
-
 	def initialize(mode,source,*args)
 		super
 		@bpv = 32
@@ -456,7 +431,6 @@ Format.subclass("#io:grid",1,1) {
 		@endian = OurByteOrder
 		raw_open mode,source,*args
 	end
-
 	# rewinding and starting
 	def frame
 		raise "can't get frame when there is no connection" if not @stream
@@ -475,7 +449,6 @@ Format.subclass("#io:grid",1,1) {
 		try_read nil while read_wait?
 		super
 	end
-
 	def set_bufsize
 		@prod = 1
 		@dim.each {|x| @prod *= x }
@@ -485,7 +458,6 @@ Format.subclass("#io:grid",1,1) {
 		@bufsize = k*n*@bpv/8
 		@bufsize = @prod if @bufsize > @prod
 	end
-
 	# the header
 	def frame1 data
 		head,@bpv,reserved,@n_dim = data.unpack "a5ccc"
@@ -505,7 +477,6 @@ Format.subclass("#io:grid",1,1) {
 		end
 		on_read(4*@n_dim) {|data| frame2 data }
 	end
-
 	# the dimension list
 	def frame2 data
 		@dim = data.unpack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end)
@@ -518,9 +489,7 @@ Format.subclass("#io:grid",1,1) {
 		on_read(bufsize) {|data| frame3 data }
 		@dex = 0
 	end
-
 	attr_reader :bufsize
-
 	# for each slice of the body
 	def frame3 data
 		n = data.length
@@ -546,7 +515,6 @@ Format.subclass("#io:grid",1,1) {
 			on_read(bufsize) {|data| frame3 data }
 		end
 	end
-
 	def _0_rgrid_begin
 		if not @stream
 			raise "can't send frame when there is no connection"
@@ -561,7 +529,6 @@ Format.subclass("#io:grid",1,1) {
 		@stream.write(
 			@dim.to_a.pack(if @endian==ENDIAN_LITTLE then "V*" else "N*" end))
 	end
-
 	def _0_rgrid_flow data
 		case @bpv
 		when 8, 16
@@ -571,9 +538,7 @@ Format.subclass("#io:grid",1,1) {
 			@stream.write data
 		end
 	end
-
 	def _0_rgrid_end; @stream.flush end
-
 	def endian(a)
 		@endian = case a
 		when :little; ENDIAN_LITTLE
@@ -582,7 +547,6 @@ Format.subclass("#io:grid",1,1) {
 		else raise "argh"
 		end
 	end
-
 	def headerless(*args)
 		args=args[0] if Array===args[0]
 		args.map! {|a|
@@ -591,9 +555,7 @@ Format.subclass("#io:grid",1,1) {
 		}
 		@headerless = args
 	end
-
 	def headerful; @headerless = nil end
-
 	#!@#$ method name conflict ?
 	def type(nt)
 		#!@#$ bug: should not be able to modify this _during_ a transfer
@@ -676,7 +638,6 @@ Format.subclass("#io:ppm",1,1) {
 		frame_read_body metrics[1], metrics[0], 3
 		super
 	end
-
 	def _0_rgrid_begin
 		dim = inlet_dim 0
 		raise "expecting (rows,columns,channels)" if dim.length!=3
@@ -712,11 +673,6 @@ Format.subclass("#io:ppm",1,1) {
 	alias close delete
 }
 
-Format.subclass("#io:targa",1,1) {
-	install_rgrid 0
-	@comment = "TrueVision Targa"
-	suffixes_are "tga"
-	include EventIO, PPMandTarga
 =begin
 targa header is like:
 	[:comment, Uint8, :length],
@@ -729,11 +685,12 @@ targa header is like:
 	[:depth, Uint8], 1,
 	[:comment, String8Unpadded, :data],
 =end
-	def initialize(mode,source,*args)
-		super
-		raw_open mode,source,*args
-	end
-
+Format.subclass("#io:targa",1,1) {
+	install_rgrid 0
+	@comment = "TrueVision Targa"
+	suffixes_are "tga"
+	include EventIO, PPMandTarga
+	def initialize(mode,source,*args); super; raw_open mode,source,*args end
 	def set_bitpacking depth
 		@bp = case depth
 		#!@#$ endian here doesn't seem to be changing much ?
@@ -744,7 +701,6 @@ targa header is like:
 			raise "tga: unsupported colour depth: #{depth}\n"
 		end
 	end
-
 	def frame
 		return false if eof?
 		head = @stream.read(18)
@@ -756,7 +712,6 @@ targa header is like:
 		frame_read_body h, w, depth/8
 		super
 	end
-
 	def _0_rgrid_begin
 		dim = inlet_dim 0
 		raise "expecting (rows,columns,channels)" if dim.length!=3
