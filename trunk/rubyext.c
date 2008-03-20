@@ -506,8 +506,14 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	return Qnil;
 }
 
+static t_pd *rp_to_pd (Ruby pointer) {
+       Pointer *foo;
+       Data_Get_Struct(pointer,Pointer,foo);
+       return (t_pd *)foo->p;
+}
+
 static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
-	if (argc<0) RAISE("not enough args (%d for 0)",argc,0);
+	if (argc<1) RAISE("not enough args (%d, need at least 1)",argc,0);
 	Ruby sym = argv[0];
 	argc--;
 	argv++;
@@ -515,27 +521,22 @@ static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
 	pd_typedmess(&pd_objectmaker,atom_getsymbol(&sel),argc,at);
-	//rself = rb_funcall2(rb_const_get(mGridFlow2,SI(FObject)),SI(new),0,0);
-	//DGS(FObject);
-	//self->bself = pd_newest;
-	return Pointer_s_new((void *)pd_newest);
+	return Pointer_s_new((void *)pd_newest());
 }
 
-static t_pd *rp_to_pd (Ruby pointer) {
-	Pointer *foo;
-	Data_Get_Struct(pointer,Pointer,foo);
-	return (t_pd *)foo->p;
+static Ruby GridFlow_s_send_in (int argc, Ruby *argv, Ruby rself) {
+	if (argc<2) RAISE("not enough args (%d, need at least 2)",argc,0);
+	Ruby ptr = argv[0];
+	Ruby sym = argv[1];
+	if (CLASS_OF(ptr)!=cPointer) RAISE("usage: send_in(aPointer,aSelector,...)");
+	argc-=2;
+	argv+=2;
+	t_atom sel, at[argc];
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
+	pd_typedmess((t_pd *)(rp_to_pd(ptr)),atom_getsymbol(&sel),argc,at);
+	return Qnil;
 }
-
-/*
-static Ruby GridFlow_s_connect (Ruby from, Ruby outlet, Ruby to, Ruby inlet) {
-	if (CLASS_OF(from)!=cPointer) RAISE("'from' is not a Pointer");
-	if (CLASS_OF(to  )!=cPointer) RAISE(  "'to' is not a Pointer");
-	if (TYPE(outlet)!=T_FIXNUM) RAISE("'outlet' is not a Fixnum");
-	if (TYPE( inlet)!=T_FIXNUM) RAISE( "'inlet' is not a Fixnum");
-	obj_connect(rp_to_pd(from),NUM2INT(outlet),rp_to_pd(to),NUM2INT(inlet));
-}
-*/
 
 #ifndef HAVE_DESIREDATA
 static Ruby FObject_s_gui_enable (Ruby rself) {
@@ -696,15 +697,6 @@ static Ruby FObject_noutlets (Ruby rself) {
 	return R(bself->nout).r;
 }
 
-static Ruby bridge_add_to_menu (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=1) RAISE("bad args");
-	Ruby name = rb_funcall(argv[0],SI(to_s),0);
-	Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow2,SI(@fclasses)),name),SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
-	//!@#$
-	return Qnil;
-}
-
 static Ruby GridFlow_s_add_creator_2 (Ruby rself, Ruby name_) {
 	t_symbol *name = gensym(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
 	class_addcreator((t_newmethod)BFObject_init,name,A_GIMME,0);
@@ -824,8 +816,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	SDEF("gui",gui,-1);
 	SDEF("bind",bind,2);
 	SDEF("objectmaker",objectmaker,-1);
-	//SDEF("connect",connect,4);
-	// SDEF("add_to_menu",add_to_menu,-1);
+	SDEF("send_in",send_in,-1);
 
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
