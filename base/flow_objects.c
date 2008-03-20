@@ -234,11 +234,24 @@ GRID_INLET(GridExportList,0) {
 	uint32 trunc;
 	int maxrows;
 	int columns;
+	t_pd *dest;
+	\decl void _0_dest (Pointer *p);
 	\decl void initialize (t_symbol *name=0);
 	\decl void end_hook ();
 	\decl void _0_base (int x);
 	\decl void _0_trunc (int x);
 	\decl void _0_maxrows (int y);
+	void puts (const char *s) {
+		if (!dest) post("%s",s);
+		else {
+			int n = strlen(s);
+			t_atom a[n];
+			for (int i=0; i<n; i++) SETFLOAT(a+i,s[i]);
+			pd_list(dest,&s_list,n,a);
+		}
+	}
+	void puts (std::string s) {puts(s.data());}
+	void puts (std::ostringstream &s) {puts(s.str());}
 	template <class T> void make_columns (int n, T *data);
 	template <class T> void dump(std::ostream &s, int n, T *data, char sep=' ', int trunc=-1) {
 		if (trunc<0) trunc=this->trunc;
@@ -259,14 +272,14 @@ GRID_INLET(GridExportList,0) {
 		}
 	}
 	void dump_dims(std::ostream &s, GridInlet *in) {
-		if (name) s << name << ": ";
+		if (name && name!=&s_) s << name << ": ";
 		s << "Dim[";
 		for (int i=0; i<in->dim->n; i++) {
 			s << in->dim->v[i];
 			if (i<in->dim->n-1) s << ',';
 		}
 		s << "]";
-		if (in->nt!=int32_e) s << "(" << in->nt << ")";
+		if (in->nt!=int32_e) s << "(" << number_type_table[in->nt].name << ")";
 		s << ": ";
 	}
 	std::string format (NumberTypeE nt) {
@@ -285,8 +298,12 @@ GRID_INLET(GridExportList,0) {
 };
 \def void initialize(t_symbol *name=0) {
 	rb_call_super(argc,argv);
+	this->dest = 0;
 	this->name = name;
 	base=10; trunc=70; maxrows=50;
+}
+\def void _0_dest (Pointer *p) {
+
 }
 \def void end_hook () {}
 \def void _0_base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
@@ -314,24 +331,25 @@ GRID_INLET(GridPrint,0) {
 	dump_dims(head,in);
 	int ndim = in->dim->n;
 	if (ndim > 3) {
-		post("%s (not printed)",head.str().data());
+		head << " (not printed)";
+		puts(head);
 	} else if (ndim < 2) {
 		make_columns(n,data);
 		dump(head,n,data,' ',trunc);
-		post("%s",head.str().data());
+		puts(head);
 	} else if (ndim == 2) {
-		post("%s",head.str().data());
+		puts(head);
 		make_columns(n,data);
 		long sy = in->dim->v[0];
 		long sx = n/sy;
 		for (int row=0; row<in->dim->v[0]; row++) {
 			std::ostringstream body;
 			dump(body,sx,&data[sx*row],' ',trunc);
-			post("%s",body.str().data());
-			if (row>maxrows) {post("..."); break;}
+			puts(body);
+			if (row>maxrows) {puts("..."); break;}
 		}
 	} else if (ndim == 3) {
-		post("%s",head.str().data());
+		puts(head);
 		make_columns(n,data);
 		int sy = in->dim->v[0];
 		int sx = in->dim->v[1];
@@ -345,15 +363,15 @@ GRID_INLET(GridPrint,0) {
 				str << ")";
 				if (str.str().size()>trunc) break;
 			}
-			post("%s",str.str().data());
-			if (row>maxrows) {post("..."); break;}
+			puts(str);
+			if (row>maxrows) {puts("..."); break;}
 		}
 	}
 	end_hook(0,0);
 } GRID_FINISH {
 	std::ostringstream head;
 	dump_dims(head,in);
-	if (in->dim->prod()==0) post("%s",head.str().data());
+	if (in->dim->prod()==0) puts(head);
 } GRID_END
 \classinfo { install("#print",1,1); }
 \end class
