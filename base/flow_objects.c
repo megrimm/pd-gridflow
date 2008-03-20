@@ -247,6 +247,8 @@ GRID_INLET(GridExportList,0) {
 			int n = strlen(s);
 			t_atom a[n];
 			for (int i=0; i<n; i++) SETFLOAT(a+i,s[i]);
+			//fprintf(stderr,"dest=%p\n",dest);
+			//fprintf(stderr,"*dest={%08x,%08x,%08x,%08x,...}\n",dest[0],dest[1],dest[2],dest[3]);
 			pd_list(dest,&s_list,n,a);
 		}
 	}
@@ -301,7 +303,6 @@ GRID_INLET(GridExportList,0) {
 	this->dest = 0;
 	this->name = name;
 	base=10; trunc=70; maxrows=50;
-	fprintf(stderr,"#print:initialize rself=%lx self=%p bself=%p\n",rself,this,bself);
 }
 /*static t_pd *rp_to_pd (Ruby pointer) {
        Pointer *foo;
@@ -309,8 +310,8 @@ GRID_INLET(GridExportList,0) {
        return (t_pd *)foo->p;
 }*/
 \def void _0_dest (Pointer *p) {
-	fprintf(stderr,"#print:_0_dest    rself=%lx self=%p bself=%p\n",rself,this,bself);
-	dest = (t_pd *)(p->p);
+	dest = *(t_pd **)(p->p); // what's THIS ???
+	//fprintf(stderr,"#print:_0_dest    rself=%lx self=%p bself=%p p=%p dest=%p\n",rself,this,bself,p,dest);
 }
 \def void end_hook () {}
 \def void _0_base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
@@ -2306,7 +2307,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 	int n;
 	PtrGrid a;
 	GridPack() : n(0xdeadbeef) {}
-	\decl void initialize (int n=2, NumberTypeE nt=float32_e);
+	\decl void initialize (int n=2, NumberTypeE nt=int32_e);
 	\decl void initialize2 ();
 	\decl void _n_float (int inlet, float f);
 	\decl void _0_bang ();
