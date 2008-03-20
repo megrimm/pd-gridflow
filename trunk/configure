@@ -400,21 +400,6 @@ Feature.add {
 	options ["HAVE_MMX"]
 }
 #----------------------------------------------------------------#
-Feature.add {
-	tag :usb
-	name "USB Library"
-	uses_h ["usb.h"]
-	uses_o ["optional/usb.o"]
-	uses_so ["-lusb"]
-	test proc {
-		c_test "
-		#include#
-		int main () {return usb_open==0 || usb_get_busses==0;}
-		"
-	}
-	options ["HAVE_USB"]
-}
-#----------------------------------------------------------------#
 =begin
 Feature.add {
 	tag :dv1394
