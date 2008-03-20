@@ -301,9 +301,16 @@ GRID_INLET(GridExportList,0) {
 	this->dest = 0;
 	this->name = name;
 	base=10; trunc=70; maxrows=50;
+	fprintf(stderr,"#print:initialize rself=%lx self=%p bself=%p\n",rself,this,bself);
 }
+/*static t_pd *rp_to_pd (Ruby pointer) {
+       Pointer *foo;
+       Data_Get_Struct(pointer,Pointer,foo);
+       return (t_pd *)foo->p;
+}*/
 \def void _0_dest (Pointer *p) {
-
+	fprintf(stderr,"#print:_0_dest    rself=%lx self=%p bself=%p\n",rself,this,bself);
+	dest = (t_pd *)(p->p);
 }
 \def void end_hook () {}
 \def void _0_base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
