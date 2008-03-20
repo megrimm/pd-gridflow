@@ -107,7 +107,7 @@ def self.sizeof_nt(nt)
 	end
 end
 
-self.post_header = "[gf] "
+self.post_header = ""
 
 def self.gfpost2(fmt,s); post("%s",s) end
 
@@ -132,7 +132,7 @@ def self.stringify_list(argv) argv.map {|x| stringify x }.join(" ") end
 def self.stringify(arg)
 	case arg
 	when Integer, Float, Symbol; arg.to_s
-	when Array; "{#{stringify_list arg}}"
+	when Array; "(#{stringify_list arg})"
 	end
 end
 
@@ -144,16 +144,10 @@ end
 
 # adding some functionality to that:
 class FObject
-	@broken_ok = false
-	@do_loadbangs = true
 	class << self
-		# global
-		attr_accessor :broken_ok
 		# per-class
 		attr_reader :ninlets
 		attr_reader :noutlets
-		attr_accessor :do_loadbangs
-		attr_accessor :comment
 		def foreign_name; @foreign_name if defined? @foreign_name end
 		def doc(selector=nil,text=nil)
 			return @doc if not selector
@@ -197,17 +191,9 @@ class FObject
 	attr_writer :args # String
 	attr_accessor :argv # Array
 	attr_reader :outlets
-	attr_accessor :parent_patcher
 	attr_accessor :properties
-	attr_accessor :classname
 	def initialize2; end
-	def args
-		if defined? @args
-			@args
-		else
-			"[#{self.class} ...]"
-		end
-	end
+	def args() if defined? @args then @args else "[#{self.class} ...]" end end
 	alias info args
 	def connect outlet, object, inlet
 		@outlets ||= []
@@ -218,7 +204,6 @@ class FObject
 		qlasses = GridFlow.fclasses
 		qlass = qlasses[sym.to_s]
 		if not qlass
-			return qlasses['broken'] if @broken_ok
 			raise "object class '#{sym}' not found"
 		end
 		qlass
@@ -238,9 +223,8 @@ class FObject
 		qlassname = qlass.to_s
 		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
-		r.classname = qlassname
 		GridFlow.post "%s",r.args if GridFlow.verbose
-		for x in ms do r.send_in(-2, *x) end if FObject.do_loadbangs
+		for x in ms do r.send_in(-2, *x) end
 		r
 	end
 	def inspect
@@ -253,7 +237,6 @@ class FObject
 		@args << (self.class.foreign_name || self.to_s)
 		@args << " " if s.length>0
 		@args << s << "]"
-		@parent_patcher = nil
 		@properties = {}
 		@init_messages = []
 	end
