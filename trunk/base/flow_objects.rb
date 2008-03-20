@@ -533,8 +533,9 @@ module Gooey # to be included in any FObject class
 end
 
 if FObject.respond_to?(:gui_enable)
-class Display < FObject; include Gooey
+class Display < GridObject; include Gooey
 	attr_accessor :text
+	install_rgrid 0
 	def initialize()
 		super
 		@sel = nil; @args = [] # contents of last received message
@@ -546,11 +547,12 @@ class Display < FObject; include Gooey
 		@gp = Pd.objectmaker(:"#print")
 		#@gp.send_in 0, :trunc, 70
 		Pd.send_in @gp, 0, :maxrows, 20
+		@clock = Clock.new self
 	end
 	def initialize2()
 		super
 		b=bself
-		STDERR.puts "initialize2: bself=#{b.inspect}"
+		#STDERR.puts "initialize2: bself=#{b.inspect}"
 		Pd.send_in @gp, 0, :dest, b
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
@@ -570,7 +572,7 @@ class Display < FObject; include Gooey
 			when :float; atom_to_s @args[0]
 			else @sel.to_s + ": " + @args.map{|a| atom_to_s a }.join(' ')
 			end
-		update
+		@clock.delay 0
 	end
 	def pd_show(can)
 		super
@@ -583,8 +585,13 @@ class Display < FObject; include Gooey
 		GridFlow.gui %{ #{canvas} delete #{@rsym} #{@rsym}TEXT \n} if @vis
 		super
 	end
-	def _0_grid(*foo) Pd.send_in @gp, 0, :grid, *foo end
-	install "display", 2, 1
+	def _0_grid(*foo) @text=""; Pd.send_in @gp, 0, :grid, *foo; @clock.delay 0 end
+	def call; update; end
+	def _0_very_long_name_that_nobody_uses(*list)
+		@text << "\n" if @text.length>0
+		list.each {|x| @text<<x.to_i }
+	end
+	install "display", 1, 1
 	gui_enable
 
 	GridFlow.gui %{

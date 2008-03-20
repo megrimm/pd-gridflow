@@ -249,7 +249,7 @@ GRID_INLET(GridExportList,0) {
 			for (int i=0; i<n; i++) SETFLOAT(a+i,s[i]);
 			//fprintf(stderr,"dest=%p\n",dest);
 			//fprintf(stderr,"*dest={%08x,%08x,%08x,%08x,...}\n",dest[0],dest[1],dest[2],dest[3]);
-			pd_list(dest,&s_list,n,a);
+			pd_typedmess(dest,gensym("very_long_name_that_nobody_uses"),n,a);
 		}
 	}
 	void puts (std::string s) {puts(s.data());}
