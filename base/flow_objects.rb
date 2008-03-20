@@ -39,9 +39,7 @@ FObject.subclass("gridflow",1,1) {
 			else "??? #{v.flags}"
 			end
 			post "%s %s: %s", modes, k, v.description
-			if v.respond_to? :info then
-				post "-> %s", v.info
-			end
+			post "-> %s", v.args
 		}
 		post "-"*32
 	end
@@ -589,7 +587,7 @@ class Display < GridObject; include Gooey
 	def call; update; end
 	def _0_very_long_name_that_nobody_uses(*list)
 		@text << "\n" if @text.length>0
-		list.each {|x| @text<<x.to_i }
+		list.each {|x| @text << x.to_i }
 	end
 	install "display", 1, 1
 	gui_enable
@@ -612,6 +610,18 @@ class Display < GridObject; include Gooey
 	}
 end
 end # respond to gui_enable
+
+FObject.subclass("printargs",1,0) {
+  def initialize(*args)
+    @aaargh = args
+    @clock = Clock.new self
+    @clock.delay 0
+  end
+  def call
+    post "ruby=%s", @aaargh.inspect
+    post "  pd=%s",    args.inspect
+  end
+}
 
 #-------- fClasses for: Hardware
 

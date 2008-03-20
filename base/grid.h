@@ -891,12 +891,10 @@ uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
-#define INFO(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(info),0))
-//#define INFO(OBJ) "(bleh)"
-#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",INFO(this), #_a_);
+#define ARGS(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(args),0))
+#define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",ARGS(this), #_a_);
 #define SAME_TYPE(_a_,_b_) \
-	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", \
-		INFO(this), \
+	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", ARGS(this), \
 		#_a_, number_type_table[(_a_)->nt].name, \
 		#_b_, number_type_table[(_b_)->nt].name);
 static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
