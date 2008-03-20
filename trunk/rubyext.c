@@ -110,15 +110,6 @@ void CObject_free (void *victim) {
 static Ruby mGridFlow2=0;
 Ruby cPointer=0;
 
-\class Pointer < CObject
-\def Ruby ptr () { return LONG2NUM(((long)p)); }
-\classinfo {
-	IEVAL(rself,
-"self.module_eval{"
-"def inspect; p=('%08x'%ptr).gsub(/^\\.\\.f/,''); \"#<Pointer:#{p}>\" % ptr; end;"
-"alias to_s inspect }"
-);}
-\end class Pointer
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
 	return self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
@@ -747,8 +738,7 @@ static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
 
 //****************************************************************
 
-\class Clock < CObject
-struct Clock : CObject {
+\class Clock < CObject {
 	t_clock *serf;
 	Ruby owner; /* copy of ptr that serf already has, for marking */
 	\decl void set  (double   systime);
@@ -774,6 +764,18 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 
 \classinfo {}
 \end class Clock
+
+//****************************************************************
+
+\class Pointer < CObject
+\def Ruby ptr () { return LONG2NUM(((long)p)); }
+\classinfo {
+	IEVAL(rself,
+"self.module_eval{"
+"def inspect; p=('%08x'%ptr).gsub(/^\\.\\.f/,''); \"#<Pointer:#{p}>\" % ptr; end;"
+"alias to_s inspect }"
+);}
+\end class Pointer
 
 //****************************************************************
 
