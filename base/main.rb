@@ -30,26 +30,18 @@
 # in case of bug in Ruby ("Error: Success")
 module Errno; class E000 < StandardError; end; end
 
-#$post_log = File.open "/tmp/gridflow.log", "w"
-$post_log = nil
-
 class Array
 	def split(elem)
 		r=[]
 		j=0
-		for i in 0...length
-			(r<<self[j,i-j]; j=i+1) if self[i]==elem
-		end
+		for i in 0...length do (r<<self[j,i-j]; j=i+1) if self[i]==elem end
 		r<<self[j,length-j]
 	end
 end
 
 module GridFlow #------------------
 
-def self.post(s,*a)
-	post_string(sprintf("%s"+s,post_header,*a))
-	($post_log << sprintf(s,*a); $post_log.flush) if $post_log
-end
+def self.post(s,*a) post_string(sprintf("%s"+s,post_header,*a)) end
 
 class<<self
 	attr_accessor :data_path
@@ -60,7 +52,6 @@ class<<self
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
 	attr_reader :bridge_name
-	alias gfpost post
 end
 
 @subprocesses={}
@@ -109,8 +100,6 @@ end
 
 self.post_header = ""
 
-def self.gfpost2(fmt,s); post("%s",s) end
-
 if GridFlow.bridge_name then
   post "This is GridFlow #{GridFlow::GF_VERSION} within "+
 	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
@@ -128,19 +117,7 @@ def self.parse(m)
 	m
 end
 
-def self.stringify_list(argv) argv.map {|x| stringify x }.join(" ") end
-def self.stringify(arg)
-	case arg
-	when Integer, Float, Symbol; arg.to_s
-	when Array; "(#{stringify_list arg})"
-	end
-end
-
-# ::Object.module_eval do def FloatOrSymbol(x) ::Float(x) rescue x.intern end end
-
-class ::Object
-  def FloatOrSymbol(x) Float(x) rescue x.intern end
-end
+class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
 
 # adding some functionality to that:
 class FObject
@@ -188,7 +165,6 @@ class FObject
 		qlass.instance_eval{qlass.module_eval(&b)}
 		#qlass.module_eval(&b)
 	end
-	attr_accessor :argv # Array
 	attr_reader :outlets
 	attr_accessor :properties
 	def initialize2; end

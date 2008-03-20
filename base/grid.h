@@ -847,11 +847,6 @@ struct BFObject : t_object {
 \class FObject < CObject {
 	BFObject *bself; // point to PD peer
 	FObject() : bself(0) {}
-	const char *args() {
-		Ruby s=rb_funcall(rself,SI(args),0);
-		if (s==Qnil) return 0;
-		return rb_str_ptr(s);
-	}
 	\decl void send_in (...);
 	\decl void send_out (...);
 	template <class T> void send_out(int outlet, int argc, T *argv) {
