@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -184,7 +184,6 @@ static void send_in_2 (Helper *h) {
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,h->self);
-//	if (rb_const_get(mGridFlow,SI(@verbose))==Qtrue) gfpost m.inspect
 	char buf[256];
 	sprintf(buf,"_n_%s",rb_sym_name(sym));
 	if (rb_obj_respond_to(h->rself,rb_intern(buf),0)) {
@@ -534,20 +533,12 @@ void Init_gridflow () {
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	mGridFlow = EVAL("module GridFlow; CObject = ::Object; "
-		"class<<self; attr_reader :bridge_name; end; "
-		"def post_string(s) STDERR.puts s end; "
-		"self end");
+	mGridFlow = EVAL("module GridFlow; CObject = ::Object; class<<self; end; def post_string(s) STDERR.puts s end; self end");
 	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
 	SDEF2("fclass_install",GridFlow_fclass_install,2);
-
-//#define FOO(A) fprintf(stderr,"sizeof("#A")=%d\n",sizeof(A));
-//FOO(Dim) FOO(BitPacking) FOO(GridHandler) FOO(GridInlet) FOO(GridOutlet) FOO(GridObject)
-//#undef FOO
-
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));

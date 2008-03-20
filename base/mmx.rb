@@ -210,7 +210,7 @@ $loader.puts %`
 void startup_mmx_loader () {/*bogus*/}
 void startup_mmx () {
 	if (getenv("NO_MMX")) return;
-	if (EVAL(\"GridFlow.bridge_name\")!=Qnil) post(\"startup_cpu: using MMX optimisations\");
+	post(\"startup_cpu: using MMX optimisations\");
 	#{$install}
 }`
 
