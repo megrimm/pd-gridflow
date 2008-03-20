@@ -148,7 +148,7 @@ BUILTIN_SYMBOLS(FOO)
 
 struct Numop;
 struct Pointer;
-extern Ruby mPointer;
+extern Ruby cPointer;
 typedef struct R {
 	VALUE r;
 	R() {r=Qnil;}
@@ -225,7 +225,7 @@ typedef struct R {
 		return gensym((char *)rb_sym_name(r));
 	}
 	operator Pointer * () const {
-		if (CLASS_OF(r)!=mPointer) RAISE("not a Pointer");
+		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
 		return (Pointer *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
 	}
 	static R value(VALUE r) {R x; x.r=r; return x;}
