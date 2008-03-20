@@ -127,7 +127,6 @@ class Feature
 	attr2 :unless_feature
 	attr2 :action
 	attr2 :defines
-
 	def find_h name
 		if name[0..0]=="/" then
 			File.exist?(name)
@@ -135,7 +134,6 @@ class Feature
 			$C_INCLUDE_PATH.find {|x| File.exist?(x+"/"+name)}
 		end
 	end
-
 	def c_test code, link=nil, options=[], feature=nil
 		link = (uses_so||[]).dup if not link
 		link=link.flatten
@@ -174,7 +172,6 @@ class Feature
 		LOG.puts log
 		ENV["LD_LIBRARY_PATH"] = ldlpath if ldlpath
 	end
-
 	def asm_test code, *link
 		log = ""
 		log << code << "\n"
@@ -346,42 +343,6 @@ Feature.add {
 		int main () { return rb_rescue==0; }",
 		["-xnone", $LIBRUBY_A, *(CONFIG['LIBS'].split)] }
 	options ["HAVE_STATIC_RUBY"] #!@#$ useless?
-}
-
-File.popen("tclsh","r+") {|f|
-  f.puts %{puts $tcl_version}
-  $tcl_version = f.gets.chomp
-}
-#STDERR.puts "$tcl_version = #{$tcl_version}"
-
-Feature.add {
-	tag :libtclh
-	name "Tcl headers"
-	uses_h Or[["tcl.h"],
-		["tcl8.5/tcl.h"],
-		["tcl8.4/tcl.h"],
-		["tcl8.3/tcl.h"]]
-	test proc {|f|
-		r = f.c_test "
-			#include#
-			int main () {return 0;}"
-		if r==true
-			$TCLH = f.find_h(f.uses_h[0])+"/"+f.uses_h[0]
-			$CFLAGS += " -I"+File.dirname($TCLH)
-			#STDERR.puts "$TCLH = #{$TCLH}"
-		end
-		r
-	}
-}
-Feature.add {
-	tag :libtcl
-	name "Tcl as a dynamic library"
-	uses_h []
-	uses_so ["-L/usr/lib","-ltcl"+$tcl_version]
-	test proc { c_test "
-		#include <tcl.h>
-		int main () {Tcl_CreateInterp(); return 0;}
-	" }
 }
 
 #----------------------------------------------------------------#
@@ -889,7 +850,6 @@ def try feature
 			return
 		end
 	end
-
 	if feature.test
 		begin
 			tresult = feature.test.call(feature)
@@ -1057,7 +1017,6 @@ def include_here(f,a,b)
   end
   f.puts "\#endif"
 end
-include_here f,"TCL", :libtclh
 include_here f,"LIBMPEG", :mpeg3
 include_here f,"QUICKTIMEHW",:quicktimehw
 
