@@ -28,7 +28,7 @@ typedef unsigned long ulong;
 	{int bytes = 16; \
 	int align = ((ulong)(void*)d)%bytes; \
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
-		INFO(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
+		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
 \class GridFFT < GridObject
 struct GridFFT : GridObject {

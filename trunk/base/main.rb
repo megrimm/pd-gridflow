@@ -188,13 +188,10 @@ class FObject
 		qlass.instance_eval{qlass.module_eval(&b)}
 		#qlass.module_eval(&b)
 	end
-	attr_writer :args # String
 	attr_accessor :argv # Array
 	attr_reader :outlets
 	attr_accessor :properties
 	def initialize2; end
-	def args() if defined? @args then @args else "[#{self.class} ...]" end end
-	alias info args
 	def connect outlet, object, inlet
 		@outlets ||= []
 		@outlets[outlet] ||= []
@@ -212,7 +209,7 @@ class FObject
 		o=nil
 		if m.length==1 and m[0] =~ / /
 			o="[#{m[0]}]"
-			m=GridFlow.parse(m[0]) 
+			m=GridFlow.parse(m[0])
 		else
 			o=m.inspect
 		end
@@ -223,20 +220,12 @@ class FObject
 		qlassname = qlass.to_s
 		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
-		GridFlow.post "%s",r.args if GridFlow.verbose
+		GridFlow.post "[%s]",r.args if GridFlow.verbose
 		for x in ms do r.send_in(-2, *x) end
 		r
 	end
-	def inspect
-		if args then "#<#{self.class} #{args}>" else super end
-	end
+	def inspect; if args then "[#{args}]" else super end end
 	def initialize(*argv)
-		s = GridFlow.stringify_list argv
-		@argv = argv
-		@args = "["
-		@args << (self.class.foreign_name || self.to_s)
-		@args << " " if s.length>0
-		@args << s << "]"
 		@properties = {}
 		@init_messages = []
 	end
@@ -338,10 +327,10 @@ END {
 }
 
 class Object
-  def method_missing(name,*args)
+  def method_missing(name,*)
     oc = GridFlow::FObject
-    obj = (case obj; when oc; self.info; else self      .inspect end)
-    qla = (case obj; when oc; self.info; else self.class.inspect end)
+    obj = (case obj; when oc; self.args; else self      .inspect end)
+    qla = (case obj; when oc; self.args; else self.class.inspect end)
     #begin raise; rescue Exception => e; end
     raise NameError, "undefined method \"#{name}\" for #{obj} in class #{qla}"#, ["hello"]+e.backtrace
   end

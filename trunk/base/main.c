@@ -142,7 +142,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
 	} else {
-		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?INFO(foo):"", argc,
+		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?ARGS(foo):"", argc,
 			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
 	}
 }

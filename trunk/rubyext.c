@@ -624,8 +624,22 @@ struct _canvasenvironment {
     int ce_dollarzero;  /* value of "$0" */
 };
 
+static Ruby FObject_args (Ruby rself) {
+	DGS(FObject);
+	if (!self->bself) RAISE("can't use this in initialize");
+	char *buf;
+	int length;
+	t_binbuf *b = self->bself->te_binbuf;
+	if (!b) return Qnil;
+	binbuf_gettext(b, &buf, &length);
+	Ruby r = rb_str_new(buf,length);
+	free(buf);
+	return r;
+}
+
 static Ruby FObject_patcherargs (Ruby rself) {
 	DGS(FObject);
+	if (!self->bself) RAISE("can't use this in initialize");
 	t_glist *canvas = self->bself->mom;
 	_canvasenvironment *env = canvas_getenv(canvas);
 	Ruby ar = rb_ary_new();
@@ -834,6 +848,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
+	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
 	rb_define_method(fo,"bself",       (RMethod)FObject_bself,0);
 
 	SDEF("post_string",post_string,1);
