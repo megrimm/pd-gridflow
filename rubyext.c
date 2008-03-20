@@ -467,6 +467,12 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
+static Ruby FObject_bself(Ruby rself) {
+	DGS(FObject);
+	if (!self->bself) RAISE("there is no bself during #initialize. use #initialize2");
+	return Pointer_s_new(self->bself);
+}
+
 static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
 	path = rb_funcall(path,SI(to_s),0);
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
@@ -525,16 +531,32 @@ static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
 }
 
 static Ruby GridFlow_s_send_in (int argc, Ruby *argv, Ruby rself) {
-	if (argc<2) RAISE("not enough args (%d, need at least 2)",argc,0);
+	if (argc<3) RAISE("not enough args (%d, need at least 3)",argc,0);
 	Ruby ptr = argv[0];
-	Ruby sym = argv[1];
-	if (CLASS_OF(ptr)!=cPointer) RAISE("usage: send_in(aPointer,aSelector,...)");
-	argc-=2;
-	argv+=2;
+	Ruby inn = argv[1];
+	Ruby sym = argv[2];
+	if (CLASS_OF(ptr)!=cPointer) RAISE("$1 is not a Pointer");
+	int ini = INT(inn);
+	if (ini<0) RAISE("negative inlet number?");
+	t_pd *o = (t_pd *)rp_to_pd(ptr);
+	if (ini>0) {
+		RAISE("inlet numbers greater than 0 are not supported yet (ask matju)");
+		/*inn--;
+		t_inlet *inlet = ((t_object *)o)->ob_inlet;
+		while (1) {
+			if (!inlet) RAISE("nonexistent inlet");
+			if (!inn) break;
+			inlet = inlet->i_next;
+			inn--;
+		}
+		o = inlet;*/
+	}
+	argc-=3;
+	argv+=3;
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	pd_typedmess((t_pd *)(rp_to_pd(ptr)),atom_getsymbol(&sel),argc,at);
+	pd_typedmess(o,atom_getsymbol(&sel),argc,at);
 	return Qnil;
 }
 
@@ -810,6 +832,7 @@ Ruby gf_bridge_init (Ruby rself) {
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
+	rb_define_method(fo,"bself",       (RMethod)FObject_bself,0);
 
 	SDEF("post_string",post_string,1);
 	SDEF("add_creator_2",add_creator_2,1);
