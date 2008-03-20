@@ -58,7 +58,6 @@ extern "C" {
 #endif
 
 #define CObject_free CObject_freeee
-#define gfpost post
 
 #ifdef HAVE_GEM
 #include "Base/GemPixDualObj.h"
@@ -913,10 +912,8 @@ static void boo (int boo) {
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	post("setting up Ruby-for-PureData...");
-
 	const char *pcl = getenv("PRINT_CLASS_LIST");
         if (pcl && strcmp(pcl,"yes")==0) print_class_list=true;
-
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
@@ -930,9 +927,7 @@ extern "C" void gridflow_setup () {
 		post("%s was not found via the -path!","gridflow"PDSUF);
 	}
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
-
 	add_to_path(dirresult);
-
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
 	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
@@ -940,26 +935,19 @@ extern "C" void gridflow_setup () {
 	BFProxy_class = class_new(gensym("ruby_proxy"), NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	rb_define_singleton_method(cData,"gf_bridge_init",(RMethod)gf_bridge_init,0);
-
-	mGridFlow2 = EVAL(
-		"module GridFlow; class<<self; attr_reader :bridge_name; end; Pd=GridFlow; "
-		"@bridge_name = 'puredata'; self end");
+	mGridFlow2 = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; self end");
 	rb_const_set(mGridFlow2,SI(DIR),rb_str_new2(dirresult));
 	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
 	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
-//	post("Ruby's path = %s",rb_str_ptr(EVAL("$:.inspect")));
-	if (!
-	EVAL("begin require 'gridflow'; true; rescue Exception => e;\
-		STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
+	if (!EVAL("begin require 'gridflow'; true; rescue Exception => e; "
+		"STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
 	{
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
 	}
-	bindpatcher = class_new(gensym("bindpatcher"),
-		(t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
+	bindpatcher = class_new(gensym("bindpatcher"), (t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 	delete[] dirresult;
 	delete[] dirname;
-//	dummy_owner = pd_new();
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
 	clock_delay(hack,0);
 //	signal(SIGSEGV,boo);
