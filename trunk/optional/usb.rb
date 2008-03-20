@@ -69,39 +69,4 @@ FObject.subclass("delcomusb",1,1) {
 	def delete; @usb.close; end
 }
 
-FObject.subclass("klippeltronics",1,1) {
-	def self.find
-	  r=[]
-	  USB.busses.each {|dir,bus|
-	    bus.each {|dev|
-	      GridFlow.post "dir=%s, vendor=%x, product=%x",
-		      dir, dev.idVendor, dev.idProduct
-	      r<<dev if dev.idVendor==0xDead and dev.idProduct==0xBEEF
-	    }
-	  }
-	  r
-	end
-	def initialize
-		r=self.class.find
-		post "%s", r.inspect
-		raise "no such device" if r.length<1
-		raise "#{r.length} such devices (which one???)" if r.length>1
-		$iobox=@usb=USB.new(r[0])
-		if_num=nil
-		r[0].config.each {|config|
-			config.interface.each {|interface|
-				#post "interface=%s", interface.to_s
-				if_num = interface.bInterfaceNumber
-			}
-		}
-		# post "Interface # %i\n", if_num
-		# @usb.set_configuration 0
-		@usb.claim_interface if_num
-		@usb.set_altinterface 0 rescue ArgumentError
-	end
-	#@usb.control_msg(0b10100001,0x01,0,0,"",1000)
-	#@usb.control_msg(0b10100001,0x01,0,1," ",0)
-	def delete; @usb.close; end
-}
-
 end # module GridFlow
