@@ -75,29 +75,6 @@ def self.hunt_zombies
 	died.each {|x| subprocesses.delete x }
 end
 
-def self.packstring_for_nt(nt)
-	case nt
-	when :u, :u8,  :uint8; "C*"
-	when :s, :i16, :int16; "s*"
-	when :i, :i32, :int32; "l*"
-	when :l, :i64, :int64; raise "int64? lol"
-	when :f, :f32, :float32; "f*"
-	when :d, :f64, :float64; "d*"
-	else raise "no decoder for #{nt.inspect}"
-	end
-end
-def self.sizeof_nt(nt)
-	case nt
-	when :u, :u8,  :uint8; 1
-	when :s, :i16, :int16; 2
-	when :i, :i32, :int32; 4
-	when :l, :i64, :int64; 8
-	when :f, :f32, :float32; 4
-	when :d, :f64, :float64; 8
-	else raise "no decoder for #{nt.inspect}"
-	end
-end
-
 self.post_header = ""
 
 if GridFlow.bridge_name then
@@ -161,9 +138,7 @@ class FObject
 	def self.subclass(*args,&b)
 		qlass = Class.new self
 		qlass.install(*args)
-		#qlass.module_eval{qlass.instance_eval(&b)}
 		qlass.instance_eval{qlass.module_eval(&b)}
-		#qlass.module_eval(&b)
 	end
 	attr_reader :outlets
 	attr_accessor :properties
@@ -257,13 +232,6 @@ class IO
     fcntl(Fcntl::F_SETFL, (state & ~bit) |
       (if flag; bit else 0 end))
   end
-end
-
-def protect
-  yield
-rescue Exception => e
-  STDERR.puts "#{e.class}: #{e}"
-  STDERR.puts e.backtrace
 end
 
 def GridFlow.load_user_config
