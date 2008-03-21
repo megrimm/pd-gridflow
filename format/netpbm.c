@@ -94,8 +94,7 @@ GRID_INLET(FormatNetPBM,0) {
 	fflush(f);
 } GRID_END
 
-\classinfo { IEVAL(rself,"install('#io:netpbm',1,1);@mode=6;include GridFlow::EventIO, GridFlow::PPMandTarga; "
-	"suffixes_are 'ppm','pgm','pnm','pam'"); }
+\classinfo { IEVAL(rself,"install('#io:netpbm',1,1);@mode=6; suffixes_are 'ppm','pgm','pnm','pam'"); }
 \end class FormatNetPBM
 
 void startup_netpbm () {
