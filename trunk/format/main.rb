@@ -605,73 +605,31 @@ module PPMandTarga
 	end
 end
 
-Format.subclass("#io:ppm",1,1) {
-	install_rgrid 0
-	@comment = "Portable PixMap (PPM) File Format"
-	suffixes_are "ppm"
-	include EventIO, PPMandTarga
-
-	def initialize(mode,source,*args)
-		@bp = if mode==:out
-			BitPacking.new(ENDIAN_LITTLE,3,[0x0000ff,0x00ff00,0xff0000])
-		else nil end
-		super
-		raw_open mode,source,*args
-	end
-	def frame
-		#@stream.sync = false
-		metrics=[]
-		return false if eof?
-		line = @stream.gets
-		(rewind; line = @stream.gets) if not line # hack
-		line.chomp!
-		if line != "P6" then raise "Wrong format (needing PPM P6)" end
-		while metrics.length<3
-			line = @stream.gets
-			next if line =~ /^#/
-			metrics.push(*(line.split(/\s+/).map{|x| Integer x }))
-		end
-		metrics[2]==255 or
-			raise "Wrong color depth (max_value=#{metrics[2]} instead of 255)"
-
-		send_out_grid_begin 0, [metrics[1], metrics[0], 3], @cast
-		frame_read_body metrics[1], metrics[0], 3
-		super
-	end
-	def _0_rgrid_begin
-		dim = inlet_dim 0
-		raise "expecting (rows,columns,channels)" if dim.length!=3
-		raise "expecting channels=3" if dim[2]!=3
-		@stream.write "P6\n"
-		@stream.write "# generated using GridFlow #{GF_VERSION}\n"
-		@stream.write "#{dim[1]} #{dim[0]}\n255\n"
-		@stream.flush
-		inlet_set_chunk 0,2
-	end
-	def _0_rgrid_flow(data) @stream.write @bp.pack(data) end
-	def _0_rgrid_end; @stream.flush end
-	self
-}.subclass("#io:tk",1,1) {
+=begin
+FormatPPM.subclass("#io:tk",1,1) {
 	install_rgrid 0
 	def initialize(mode)
+		@id = sprintf("x%08x",object_id)
+		@filename = "/tmp/tk-#{$$}-#{@id}.ppm"
 		if mode!=:out then raise "only #out" end
-		super(mode,:file,"/tmp/tk-#{$$}-#{object_id}.ppm")
-		GridFlow.gui "toplevel .#{object_id}\n"
+		super(mode,:file,@filename)
+		GridFlow.gui "toplevel .#{@id}\n"
 		GridFlow.gui "wm title . GridFlow/Tk\n"
-		GridFlow.gui "image create photo #{object_id} -width 320 -height 240\n"
-		GridFlow.gui "pack [label .#{object_id}.im -image #{object_id}]\n"
+		GridFlow.gui "image create photo gf#{@id} -width 320 -height 240\n"
+		GridFlow.gui "pack [label .#{@id}.im -image #{@id}]\n"
 	end
 	def _0_rgrid_end
 		super
 		@stream.seek 0,IO::SEEK_SET
-		GridFlow.gui "image create photo #{object_id} -file /tmp/tk-#{$$}-#{object_id}.ppm\n"
+		GridFlow.gui "image create photo #{@id} -file #{@filename}\n"
 	end
 	def delete
-		GridFlow.gui "destroy .#{object_id}\n"
-		GridFlow.gui "image delete #{object_id}\n"
+		GridFlow.gui "destroy .#{@id}\n"
+		GridFlow.gui "image delete #{@id}\n"
 	end
 	alias close delete
 }
+=end
 
 =begin
 targa header is like:
