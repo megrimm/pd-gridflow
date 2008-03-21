@@ -245,7 +245,6 @@ prepend_path ENV["HOME"]
 $CFLAGS += " -I."
 $C_INCLUDE_PATH.unshift "."
 
-
 for var in [:$C_INCLUDE_PATH, :$LIBRARY_PATH, :$LD_LIBRARY_PATH] do
 	LOG.puts "#{var}: #{eval(var.to_s).inspect}"
 end
@@ -504,6 +503,19 @@ Feature.add {
 		"
 	}
 	uses_o ["format/aalib.o"]
+}
+Feature.add {
+	tag :netpbm
+	name "NetPBM 10 Library"
+	uses_so ["-lnetpbm"]
+	uses_h ["pam.h"]
+	test proc {
+		c_test "
+		#include#
+		int main () {return pm_init==0;}
+		"
+	}
+	uses_o ["format/netpbm.o"]
 }
 Feature.add {
 	tag :jpeg
