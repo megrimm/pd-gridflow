@@ -506,6 +506,7 @@ void gffree(void *p) {free(p);}
 void startup_number();
 void startup_grid();
 void startup_flow_objects();
+void startup_format();
 
 Ruby cFormat;
 
@@ -580,6 +581,7 @@ BUILTIN_SYMBOLS(FOO)
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
 	cFormat = EVAL("GridFlow::Format");
+	startup_format();
 	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
 	EVAL("GridFlow.load_user_config");
