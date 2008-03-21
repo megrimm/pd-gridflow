@@ -921,7 +921,7 @@ extern "C" void gridflow_setup () {
 	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd>=0) {
-		post("%s found itself in %s","gridflow"PDSUF,dirresult);
+		//post("%s found itself in %s","gridflow"PDSUF,dirresult);
 		close(fd);
 	} else {
 		post("%s was not found via the -path!","gridflow"PDSUF);
@@ -930,7 +930,7 @@ extern "C" void gridflow_setup () {
 	add_to_path(dirresult);
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
-	post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
+	//post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	Ruby cData = rb_const_get(rb_cObject,SI(Data));
 	BFProxy_class = class_new(gensym("ruby_proxy"), NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
