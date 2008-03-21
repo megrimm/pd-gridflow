@@ -21,8 +21,6 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-# ENV["RUBY_VERBOSE_GC"]="yes"
-
 # this file gets loaded by main.c upon startup
 # module GridFlow is supposed to be created by main.c
 # this includes GridFlow.post_string(s)
@@ -41,21 +39,17 @@ end
 
 module GridFlow #------------------
 
-def self.post(s,*a) post_string(sprintf("%s"+s,post_header,*a)) end
+def self.post(s,*a) post_string(sprintf(s,*a)) end
 
 class<<self
 	attr_accessor :data_path
-	attr_accessor :post_header
-	attr_accessor :verbose
 	attr_reader :fobjects
 	attr_reader :fclasses
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
-	attr_reader :bridge_name
 end
 
 @subprocesses={}
-@verbose=false
 @data_path=[]
 if GridFlow.respond_to? :config then
   @data_path << GridFlow::DIR+"/images"
@@ -157,13 +151,6 @@ class FObject
 		qlass
 	end
 	def self.[](*m)
-		o=nil
-		if m.length==1 and m[0] =~ / /
-			o="[#{m[0]}]"
-			m=GridFlow.parse(m[0])
-		else
-			o=m.inspect
-		end
 		GridFlow.handle_braces!(m)
 		ms = m.split ','.intern
 		m = ms.shift
@@ -171,7 +158,6 @@ class FObject
 		qlassname = qlass.to_s
 		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
-		GridFlow.post "[%s]",r.args if GridFlow.verbose
 		for x in ms do r.send_in(-2, *x) end
 		r
 	end
