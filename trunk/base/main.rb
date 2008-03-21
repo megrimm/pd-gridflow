@@ -69,13 +69,7 @@ def self.hunt_zombies
 	died.each {|x| subprocesses.delete x }
 end
 
-self.post_header = ""
-
-if GridFlow.bridge_name then
-  post "This is GridFlow #{GridFlow::GF_VERSION} within "+
-	"Ruby version #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
-  post "base/main.c was compiled on #{GridFlow::GF_COMPILE_TIME}"
-end
+post "GridFlow #{GridFlow::GF_VERSION} loaded, with Ruby #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
 
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
