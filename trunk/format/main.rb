@@ -568,43 +568,6 @@ Format.subclass("#io:grid",1,1) {
 	end
 }
 
-module PPMandTarga
-	# "and false" disables features that may cause crashes and don't
-	# accelerate gridflow that much.
-	def frame_read_body height, width, channels
-		bs = width*channels
-		n = bs*height
-		bs = (self.class.buffersize/bs)*bs+bs # smallest multiple of bs over BufferSize
-		buf = ""
-		if RUBY_VERSION >= "1.8.0" and false
-			data = "x"*bs # must preallocate (bug in 1.8.0.pre1-3)
-			while n>0 do
-				bs=n if bs>n
-				@stream.read(bs,data) or raise EOFError
-				if @bp then
-					send_out_grid_flow 0, @bp.unpack(data,buf)
-				else
-					send_out_grid_flow 0, data, :uint8
-				end
-				n-=bs
-			end
-		else
-			nothing = ""
-			while n>0 do
-				bs=n if bs>n
-				data = @stream.read(bs) or raise EOFError
-				if @bp then
-					send_out_grid_flow 0, @bp.unpack(data,buf)
-				else
-					send_out_grid_flow 0, data, :uint8
-				end
-				data.replace nothing and false # prevent clogging memory
-				n-=bs
-			end
-		end
-	end
-end
-
 =begin
 FormatPPM.subclass("#io:tk",1,1) {
 	install_rgrid 0
@@ -631,58 +594,4 @@ FormatPPM.subclass("#io:tk",1,1) {
 }
 =end
 
-=begin
-targa header is like:
-	[:comment, Uint8, :length],
-	[:colortype, Uint8],
-	[:colors,  Uint8], 5,
-	[:origin_x, Int16],
-	[:origin_y, Int16],
-	[:w, Uint16],
-	[:h, Uint16],
-	[:depth, Uint8], 1,
-	[:comment, String8Unpadded, :data],
-=end
-Format.subclass("#io:targa",1,1) {
-	install_rgrid 0
-	@comment = "TrueVision Targa"
-	suffixes_are "tga"
-	include EventIO, PPMandTarga
-	def initialize(mode,source,*args); super; raw_open mode,source,*args end
-	def set_bitpacking depth
-		@bp = case depth
-		#!@#$ endian here doesn't seem to be changing much ?
-		when 24; BitPacking.new(ENDIAN_LITTLE,3,[0xff0000,0x00ff00,0x0000ff])
-		when 32; BitPacking.new(ENDIAN_LITTLE,4,
-			[0x00ff0000,0x0000ff00,0x000000ff,0xff000000])
-		else
-			raise "tga: unsupported colour depth: #{depth}\n"
-		end
-	end
-	def frame
-		return false if eof?
-		head = @stream.read(18)
-		comment_length,colortype,colors,w,h,depth = head.unpack("cccx9vvcx")
-		comment = @stream.read(comment_length)
-		raise "unsupported color format: #{colors}" if colors != 2
-		set_bitpacking depth
-		send_out_grid_begin 0, [ h, w, depth/8 ], @cast
-		frame_read_body h, w, depth/8
-		super
-	end
-	def _0_rgrid_begin
-		dim = inlet_dim 0
-		raise "expecting (rows,columns,channels)" if dim.length!=3
-		raise "expecting channels=3 or 4" if dim[2]!=3 and dim[2]!=4
-		# comment = "created using GridFlow"
-		#!@#$ why did i use that comment again?
-		comment = "generated using GridFlow #{GF_VERSION}"
-		@stream.write [comment.length,colortype=0,colors=2,"\0"*9,
-		dim[1],dim[0],8*dim[2],(8*(dim[2]-3))|32,comment].pack("ccca9vvcca*")
-		set_bitpacking 8*dim[2]
-		inlet_set_chunk 0,2
-	end
-	def _0_rgrid_flow data; @stream.write @bp.pack(data) end
-	def _0_rgrid_end; @stream.flush end
-}
 end # module GridFlow
