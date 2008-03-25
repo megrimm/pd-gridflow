@@ -341,8 +341,7 @@ extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 typedef int32 Card; /* should be switched to long int soon */
-\class Dim < CObject
-struct Dim : CObject {
+\class Dim : CObject {
 	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
 	Card n;
 	Card v[MAX_DIM]; // real stuff
@@ -461,7 +460,7 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
-\class BitPacking < CObject {
+\class BitPacking : CObject {
 	Packer   *  packer;
 	Unpacker *unpacker;
 	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
@@ -726,7 +725,7 @@ EACH_NUMBER_TYPE(FOO)
 } GridHandler;
 
 struct GridObject;
-\class GridInlet < CObject {
+\class GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
 private:
@@ -783,7 +782,7 @@ struct FClass {
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
-\class GridOutlet < CObject {
+\class GridOutlet : CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
 	static const long MIN_PACKET_SIZE = 1<<8;
@@ -851,7 +850,7 @@ struct BFObject : t_object {
 };
 
 // represents objects that have inlets/outlets
-\class FObject < CObject {
+\class FObject : CObject {
 	BFObject *bself; // point to PD peer
 	FObject() : bself(0) {}
 	\decl void send_in (...);
@@ -865,7 +864,7 @@ struct BFObject : t_object {
 };
 \end class FObject
 
-\class GridObject < FObject {
+\class GridObject : FObject {
 	std::vector<P<GridInlet> > in;
 	P<GridOutlet> out;
 	// Make sure you distinguish #close/#delete, and C++'s delete. The first
@@ -910,7 +909,7 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 typedef GridObject Format;
 
-\class Pointer < CObject {
+\class Pointer : CObject {
 	void *p;
 	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
 	Pointer(void *_p) : p(_p) {}
@@ -919,5 +918,7 @@ typedef GridObject Format;
 \end class Pointer
 
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
-
+#define install_format(name,ins,outs,mode,suff) rb_funcall(rself,SI(install_format),5, \
+	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs), INT2NUM(mode), rb_str_new2(suff))
+#define SUPER rb_call_super(argc,argv);
 #endif // __GF_GRID_H
