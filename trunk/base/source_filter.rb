@@ -72,6 +72,10 @@ def parse_methoddecl(line,term)
 	/^(static\s)?\s*(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
 		raise "syntax error #{where} #{line}"
 	static,rettype,selector,arglist = $1,$2,$3,$4
+	if /^\d+$/ =~ rettype then
+		selector = "_"+rettype+"_"+selector
+		rettype = "void"
+	end
 	arglist,minargs,maxargs = parse_arglist arglist
 	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where,static)
 end
