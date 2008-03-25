@@ -305,10 +305,9 @@ class RNM; %{
 \end ruby
 ;
 
-\class FormatDC1394 < Format
-struct FormatDC1394 : Format {
+\class FormatDC1394 : Format {
 	\decl void initialize (Symbol mode);
-	\decl void frame ();
+	\decl 0 bang ();
 };
 
 \def void initialize(Symbol mode) {
@@ -330,12 +329,12 @@ struct FormatDC1394 : Format {
 	dc1394_destroy_handle(rh);
 }
 
-\def void frame () {
+\def 0 bang () {
 	gfpost("i'd like to get a frame from the cam, but how?");
 }
 
 \classinfo {
-	IEVAL(rself,"install '#io:dc1394',1,1;@flags=4;@comment='Video4linux 1.x'");
+	install_format("#io:dc1394",1,1,4,"");
 	//IEVAL(rself,ruby_code);
 	rb_funcall(rself,SI(instance_eval),3,rb_str_new2(ruby_code),
 		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));

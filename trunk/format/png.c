@@ -29,17 +29,16 @@ extern "C" {
 #include <libpng12/png.h>
 };
 
-\class FormatPNG < Format
-struct FormatPNG : Format {
+\class FormatPNG : Format {
 	P<BitPacking> bit_packing;
 	png_structp png;
 	png_infop info;
 	int fd;
 	FILE *f;
 	FormatPNG () : bit_packing(0), png(0), f(0) {}
-	\decl Ruby frame ();
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	\decl void close ();
+	\decl 0 bang ();
+	\decl 0 close ();
 	\grin 0 int
 };
 
@@ -61,9 +60,9 @@ GRID_INLET(FormatPNG,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def Ruby frame () {
+\def 0 bang () {
 	uint8 sig[8];
-	if (!fread(sig, 1, 8, f)) return Qfalse;
+	if (!fread(sig, 1, 8, f)) {outlet_bang(bself->out[1]); return;}
 	if (!png_check_sig(sig, 8)) RAISE("bad signature");
 	png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) RAISE("!png");
@@ -108,10 +107,9 @@ GRID_INLET(FormatPNG,0) {
 	out.send(rowbytes*height,image_data);
 	delete[] image_data;
 	png_destroy_read_struct(&png, &info, NULL);
-	return Qnil;
 }
 
-\def void close () {if (f) {fclose(f); f=0;}}
+\def 0 close () {if (f) {fclose(f); f=0;}}
 
 \def void initialize (Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
@@ -124,10 +122,7 @@ GRID_INLET(FormatPNG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo {
-	IEVAL(rself,
-	"install '#io:png',1,1;@mode=4;include GridFlow::EventIO; suffixes_are'png'");
-}
+\classinfo { install_format("#io:png",1,1,4,"png"); }
 \end class FormatPNG
 void startup_png () {
 	\startall

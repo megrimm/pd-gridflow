@@ -141,7 +141,6 @@ static char *flags_to_s(int value, int n, const char **table) {
 	if (!*foo) strcat(foo,"0");
 	return strdup(foo);
 }
-
 static char *choice_to_s(int value, int n, const char **table) {
 	if (value < 0 || value >= n) {
 		char foo[64];
@@ -151,7 +150,6 @@ static char *choice_to_s(int value, int n, const char **table) {
 		return strdup(table[value]);
 	}
 }
-
 static void gfpost(VideoChannel *self) {
 	char buf[256] = "[VideoChannel] ";
 	WH(channel,"%d");
@@ -162,7 +160,6 @@ static void gfpost(VideoChannel *self) {
 	WH(norm,"%d");
 	post("%s",buf);
 }
-
 static void gfpost(VideoTuner *self) {
 	char buf[256] = "[VideoTuner] ";
 	WH(tuner,"%d");
@@ -174,7 +171,6 @@ static void gfpost(VideoTuner *self) {
 	WH(signal,"%d");
 	post("%s",buf);
 }
-
 static void gfpost(VideoCapability *self) {
 	char buf[256] = "[VideoCapability] ";
 	WH(name,"\"%.32s\"");
@@ -185,7 +181,6 @@ static void gfpost(VideoCapability *self) {
 	WHYX(minsize,minheight,minwidth);
 	post("%s",buf);
 }
-
 static void gfpost(VideoWindow *self) {
 	char buf[256] = "[VideoWindow] ";
 	WHYX(pos,y,x);
@@ -195,7 +190,6 @@ static void gfpost(VideoWindow *self) {
 	WH(clipcount,"%d");
 	post("%s",buf);
 }
-
 static void gfpost(VideoPicture *self) {
 	char buf[256] = "[VideoPicture] ";
 	WH(brightness,"%d");
@@ -206,7 +200,6 @@ static void gfpost(VideoPicture *self) {
 	WHCHOICE(palette,video_palette_choice);
 	post("%s",buf);
 }
-
 static void gfpost(VideoMbuf *self) {
 	char buf[256] = "[VideoMBuf] ";
 	WH(size,"%d");
@@ -219,7 +212,6 @@ static void gfpost(VideoMbuf *self) {
 	}
 	post("%s",buf);
 }
-
 static void gfpost(VideoMmap *self) {
 	char buf[256] = "[VideoMMap] ";
 	WH(frame,"%u");
@@ -230,8 +222,7 @@ static void gfpost(VideoMmap *self) {
 
 /* **************************************************************** */
 
-\class FormatVideoDev < Format
-struct FormatVideoDev : Format {
+\class FormatVideoDev : Format {
 	VideoCapability vcaps;
 	VideoPicture vp;
 	VideoMbuf vmbuf;
@@ -249,21 +240,21 @@ struct FormatVideoDev : Format {
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), use_pwc(false), bit_packing(0), dim(0) {}
 	void frame_finished (uint8 * buf);
 
+	void alloc_image ();
+	void dealloc_image ();
+	void frame_ask ();
 	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
 	\decl void initialize2 ();
-	\decl void close ();
-	\decl void alloc_image ();
-	\decl void dealloc_image ();
-	\decl void frame ();
-	\decl void frame_ask ();
+	\decl 0 close ();
+	\decl 0 bang ();
 	\grin 0 int
 
-	\decl void _0_size (int sy, int sx);
-	\decl void _0_norm (int value);
-	\decl void _0_tuner (int value);
-	\decl void _0_channel (int value);
-	\decl void _0_transfer (Symbol sym, int queuemax=2);
-	\decl void _0_colorspace (Symbol c);
+	\decl 0 size (int sy, int sx);
+	\decl 0 norm (int value);
+	\decl 0 tuner (int value);
+	\decl 0 channel (int value);
+	\decl 0 transfer (Symbol sym, int queuemax=2);
+	\decl 0 colorspace (Symbol c);
 	\attr long   frequency();
 	\attr uint16 brightness();
 	\attr uint16 hue();
@@ -295,7 +286,7 @@ struct FormatVideoDev : Format {
 
 #define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
 
-\def void _0_size (int sy, int sx) {
+\def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
 	dim = new Dim(sy,sx,3);
@@ -313,7 +304,7 @@ struct FormatVideoDev : Format {
 	if (debug) gfpost(&grab_win);
 }
 
-\def void dealloc_image () {
+void FormatVideoDev::dealloc_image () {
 	if (!image) return;
 	if (use_mmap) {
 		munmap(image, vmbuf.size);
@@ -323,7 +314,7 @@ struct FormatVideoDev : Format {
 	}
 }
 
-\def void alloc_image () {
+void FormatVideoDev::alloc_image () {
 	if (use_mmap) {
 		WIOCTL2(fd, VIDIOCGMBUF, &vmbuf);
 		//gfpost(&vmbuf);
@@ -335,7 +326,7 @@ struct FormatVideoDev : Format {
 	}
 }
 
-\def void frame_ask () {
+void FormatVideoDev::frame_ask () {
 	if (queuesize>=queuemax) RAISE("queue is full (queuemax=%d)",queuemax);
 	if (queuesize>=vmbuf.frames) RAISE("queue is full (vmbuf.frames=%d)",vmbuf.frames);
 	vmmap.frame = queue[queuesize++] = next_frame;
@@ -474,7 +465,7 @@ static int read3(int fd, uint8 *image, int n) {
 	return n;
 }
 
-\def void frame () {
+\def 0 bang () {
 	if (!image) rb_funcall(rself,SI(alloc_image),0);
 	if (!use_mmap) {
 		/* picture is read at once by frame() to facilitate debugging. */
@@ -485,7 +476,7 @@ static int read3(int fd, uint8 *image, int n) {
 		if (n < tot) RAISE("unexpectedly short picture: %d of %d",n,tot);
 		return;
 	}
-	while(queuesize<queuemax) rb_funcall(rself,SI(frame_ask),0);
+	while(queuesize<queuemax) frame_ask();
 	vmmap.frame = queue[0];
 	//uint64 t0 = gf_timeofday();
 	WIOCTL2(fd, VIDIOCSYNC, &vmmap);
@@ -494,7 +485,7 @@ static int read3(int fd, uint8 *image, int n) {
 	frame_finished(image+vmbuf.offsets[queue[0]]);
 	queuesize--;
 	for (int i=0; i<queuesize; i++) queue[i]=queue[i+1];
-	rb_funcall(rself,SI(frame_ask),0);
+	frame_ask();
 }
 
 GRID_INLET(FormatVideoDev,0) {
@@ -503,7 +494,7 @@ GRID_INLET(FormatVideoDev,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void _0_norm (int value) {
+\def 0 norm (int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner;
 	if (value<0 || value>3) RAISE("norm must be in range 0..3");
@@ -516,7 +507,7 @@ GRID_INLET(FormatVideoDev,0) {
 	}
 }
 
-\def void _0_tuner (int value) {
+\def 0 tuner (int value) {
 	VideoTuner vtuner;
 	vtuner.tuner = current_tuner = value;
 	if (0> IOCTL(fd, VIDIOCGTUNER, &vtuner)) RAISE("no tuner #%d", value);
@@ -527,7 +518,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 #define warn(fmt,stuff...) post("warning: " fmt,stuff)
 
-\def void _0_channel (int value) {
+\def 0 channel (int value) {
 	VideoChannel vchan;
 	vchan.channel = value;
 	current_channel = value;
@@ -537,7 +528,7 @@ GRID_INLET(FormatVideoDev,0) {
 	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
 }
 
-\def void _0_transfer (Symbol sym, int queuemax=2) {
+\def 0 transfer (Symbol sym, int queuemax=2) {
 	if (sym == SYM(read)) {
 		rb_funcall(rself,SI(dealloc_image),0);
 		use_mmap = false;
@@ -563,31 +554,31 @@ GRID_INLET(FormatVideoDev,0) {
 	/*gfpost("getting %s=%d",#_name_,vp._name_);*/ \
 	return vp._name_;}
 
-\def uint16    brightness ()                 {PICTURE_ATTRGET(brightness)}
-\def void   _0_brightness (uint16 brightness){PICTURE_ATTR(   brightness)}
-\def uint16    hue        ()                 {PICTURE_ATTRGET(hue)}
-\def void   _0_hue        (uint16 hue)       {PICTURE_ATTR(   hue)}
-\def uint16    colour     ()                 {PICTURE_ATTRGET(colour)}
-\def void   _0_colour     (uint16 colour)    {PICTURE_ATTR(   colour)}
-\def uint16    contrast   ()                 {PICTURE_ATTRGET(contrast)}
-\def void   _0_contrast   (uint16 contrast)  {PICTURE_ATTR(   contrast)}
-\def uint16    whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
-\def void   _0_whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
+\def uint16 brightness ()                 {PICTURE_ATTRGET(brightness)}
+\def 0      brightness (uint16 brightness){PICTURE_ATTR(   brightness)}
+\def uint16 hue        ()                 {PICTURE_ATTRGET(hue)}
+\def 0      hue        (uint16 hue)       {PICTURE_ATTR(   hue)}
+\def uint16 colour     ()                 {PICTURE_ATTRGET(colour)}
+\def 0      colour     (uint16 colour)    {PICTURE_ATTR(   colour)}
+\def uint16 contrast   ()                 {PICTURE_ATTRGET(contrast)}
+\def 0      contrast   (uint16 contrast)  {PICTURE_ATTR(   contrast)}
+\def uint16 whiteness  ()                 {PICTURE_ATTRGET(whiteness)}
+\def 0      whiteness  (uint16 whiteness) {PICTURE_ATTR(   whiteness)}
 \def long frequency  () {
 	long value;
 	WIOCTL(fd, VIDIOCGFREQ, &value);
 	return value;
 }
-\def void _0_frequency (long frequency) {
+\def 0 frequency (long frequency) {
 	WIOCTL(fd, VIDIOCSFREQ, &frequency);
 }
 
-\def void close () {
+\def 0 close () {
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
 	rb_call_super(argc,argv);
 }
 
-\def void _0_colorspace (Symbol c) { /* y yuv rgb */
+\def 0 colorspace (Symbol c) { /* y yuv rgb */
 	if      (c==SYM(y)) {}
 	else if (c==SYM(yuv)) {}
 	else if (c==SYM(rgb)) {}
@@ -620,8 +611,8 @@ GRID_INLET(FormatVideoDev,0) {
 	dim = new Dim(dim->v[0],dim->v[1],c==SYM(y)?1:3);
 }
 
-\def bool    pwc ()         {return use_pwc;}
-\def void _0_pwc (bool pwc) {use_pwc=pwc;}
+\def bool pwc ()         {return use_pwc;}
+\def 0    pwc (bool pwc) {use_pwc=pwc;}
 
 void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	// if (!use_pwc) return;
@@ -640,7 +631,7 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	return (vwin.flags & PWC_FPS_MASK) >> PWC_FPS_SHIFT;
 }
 
-\def void _0_framerate(uint16 framerate) {
+\def 0 framerate(uint16 framerate) {
 	if (!use_pwc) return;
 	struct video_window vwin;
 	WIOCTL(fd, VIDIOCGWIN, &vwin);
@@ -652,8 +643,8 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 /* those functions are still mostly unused */
 //void set_compression_preference(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSCQUAL, &pref);}
 
-\def uint16 auto_gain() {int auto_gain=0; if (use_pwc) WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
-\def void _0_auto_gain  (int auto_gain) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
+\def int auto_gain() {int auto_gain=0; if (use_pwc) WIOCTL(fd, VIDIOCPWCGAGC, &auto_gain); return auto_gain;}
+\def 0   auto_gain   (int auto_gain) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSAGC, &auto_gain);}
 
 //void set_shutter_speed(int fd, int pref) {if (use_pwc) WIOCTL(fd, VIDIOCPWCSSHUTTER, &pref);}
 
@@ -666,7 +657,7 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	return 2;
 }
 
-\def void _0_white_mode (uint16 white_mode) {
+\def 0 white_mode (uint16 white_mode) {
 	if (!use_pwc) return;
 	struct pwc_whitebalance pwcwb;
 	WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
@@ -682,10 +673,10 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_red;}
 \def uint16 white_blue() {if (!use_pwc) return 0;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb); return pwcwb.manual_blue;}
-\def void _0_white_red(uint16 white_red) {if (!use_pwc) return;
+\def 0 white_red(uint16 white_red) {if (!use_pwc) return;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_red = white_red;  WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
-\def void _0_white_blue(uint16 white_blue) {if (!use_pwc) return;
+\def 0 white_blue(uint16 white_blue) {if (!use_pwc) return;
 	struct pwc_whitebalance pwcwb; WIOCTL(fd, VIDIOCPWCGAWB, &pwcwb);
 	pwcwb.manual_blue = white_blue;WIOCTL(fd, VIDIOCPWCSAWB, &pwcwb);}
 
@@ -693,10 +684,10 @@ void set_pan_and_tilt(int fd, char what, int pan, int tilt) { /*unused*/
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_speed;}
 \def uint16 white_delay() {if (!use_pwc) return 0;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs); return pwcwbs.control_delay;}
-\def void _0_white_speed(uint16 white_speed) {if (!use_pwc) return;
+\def 0 white_speed(uint16 white_speed) {if (!use_pwc) return;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 	pwcwbs.control_speed = white_speed; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
-\def void _0_white_delay(uint16 white_delay) {if (!use_pwc) return;
+\def 0 white_delay(uint16 white_delay) {if (!use_pwc) return;
 	struct pwc_wb_speed pwcwbs;         WIOCTL(fd, VIDIOCPWCGAWBSPEED, &pwcwbs);
 	pwcwbs.control_delay = white_delay; WIOCTL(fd, VIDIOCPWCSAWBSPEED, &pwcwbs);}
 
@@ -716,7 +707,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	WIOCTL(fd, VIDIOCPWCGDYNNOISE, &noise_reduction);
 	return noise_reduction;
 }
-\def void _0_noise_reduction(int noise_reduction) {
+\def 0 noise_reduction(int noise_reduction) {
 	if (!use_pwc) return;
 	WIOCTL(fd, VIDIOCPWCSDYNNOISE, &noise_reduction);
 }
@@ -726,7 +717,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	WIOCTL(fd, VIDIOCPWCSCQUAL, &compression);
 	return compression;
 }
-\def void _0_compression(int compression) {
+\def 0 compression(int compression) {
 	if (!use_pwc) return;
 	WIOCTL(fd, VIDIOCPWCGCQUAL, &compression);
 }
@@ -766,10 +757,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	rb_funcall(rself,SI(initialize2),0);
 }
 
-\classinfo {
-	IEVAL(rself,"install '#io:videodev',1,2;@flags=4;@comment='Video4linux 1.x'");
-}
-\end class FormatVideoDev
+\end class FormatVideoDev {install_format("#io:videodev",1,2,4,"");}
 void startup_videodev () {
 	\startall
 }
