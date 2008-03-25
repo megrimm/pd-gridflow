@@ -27,7 +27,6 @@
 #include <string>
 #include <sstream>
 #include "grid.h.fcs"
-#define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
 //#define add_creator(name) rb_funcall(rself,SI(add_creator),1,rb_str_new2(name))
 //#include "gridflow2.h"
 

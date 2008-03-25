@@ -918,4 +918,6 @@ typedef GridObject Format;
 };
 \end class Pointer
 
+#define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
+
 #endif // __GF_GRID_H
