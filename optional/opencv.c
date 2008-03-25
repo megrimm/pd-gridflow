@@ -24,9 +24,6 @@
 #include "../base/grid.h.fcs"
 #include <opencv/cv.h>
 
-#define install(name,ins,outs) rb_funcall(rself,SI(install),3, \
-	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
-
 int ipl_eltype(NumberTypeE e) {
   switch (e) {
     case uint8_e: return IPL_DEPTH_8U;
