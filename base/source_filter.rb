@@ -25,6 +25,7 @@
 $keywords = %w(class decl def end grdecl)
 $stack = []
 $classes = []
+$exit = 0
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
 MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:static)
@@ -148,9 +149,10 @@ def handle_def(line)
 	if qlass.methods[m.selector]
 		n = m; m = qlass.methods[m.selector]
 		if m!=n then
-			STDERR.puts "warning: def does not match decl:"
+			STDERR.puts "ERROR: def does not match decl:"
 			STDERR.puts "#{m.where}: \\decl #{m.inspect}"
 			STDERR.puts "#{n.where}: \\def #{n.inspect}"
+			$exit = 1
 		end
 	else
 		qlass.methods[m.selector] = m
@@ -209,7 +211,7 @@ def handle_def(line)
 	when "void"; Out.print "return Qnil;"
 	when "Ruby","Symbol","Array","String"; Out.print "return foo;"
 	else 
-#		Out.print "gfpost(\"returning 0x%08x\",R(foo).r);"
+#		Out.print "post(\"returning 0x%08x\",R(foo).r);"
 		Out.print "return R(foo).r;"
 	end
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
@@ -348,3 +350,5 @@ loop{
 	end
 	$linenumber+=1
 }
+
+exit $exit
