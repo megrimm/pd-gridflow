@@ -175,8 +175,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 */
 #endif
 
-\class FormatQuickTimeCamera < Format
-struct FormatQuickTimeCamera : Format {
+\class FormatQuickTimeCamera : Format {
   P<Dim> dim;
   uint8 *buf;
   VDC vdc;
@@ -193,8 +192,8 @@ struct FormatQuickTimeCamera : Format {
 //int m_colorspace;
   FormatQuickTimeCamera() : vdc(0) {}
   \decl void initialize (Symbol mode, Symbol source, String filename);
-  \decl void frame ();
-  \decl void close ();
+  \decl 0 frame ();
+  \decl 0 close ();
   \grin 0 int
 };
 
@@ -303,12 +302,12 @@ void pix_videoDarwin :: DoVideoSettings(){
 }
 */
 
-\def void frame () {
+\def 0 frame () {
     GridOutlet out(this,0,dim);
     out.send(dim->prod(),buf);
 }
 
-\def void close () {
+\def 0 close () {
   if (m_vc) {
     if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
     m_vc=0;
@@ -336,19 +335,9 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
+\end class FormatQuickTimeCamera {install_format("#io:quicktimecamera",1,1,4,"");}
 
-\classinfo {
-	IEVAL(rself,
-\ruby
-    install '#io:quicktimecamera',1,1
-    @comment="Apple Quicktime (CAMERA MODULE)"
-    @flags=4
-\end ruby
-);}
-\end class FormatQuickTimeCamera
-
-\class FormatQuickTimeApple < Format
-struct FormatQuickTimeApple : Format {
+\class FormatQuickTimeApple : Format {
 	Movie movie;
 	TimeValue time;
 	short movie_file;
@@ -356,23 +345,20 @@ struct FormatQuickTimeApple : Format {
 	uint8 *buffer;
 	P<Dim> dim;
 	int nframe, nframes;
-
 	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
 		buffer(), dim(0), nframe(0), nframes(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	\decl void close ();
-	\decl void codec_m (String c);
-	\decl void colorspace_m (Symbol c);
-	\decl Ruby frame ();
-	\decl void seek (int frame);
+	\decl 0 close ();
+	\decl 0 codec_m (String c);
+	\decl 0 colorspace_m (Symbol c);
+	\decl 0 bang ();
+	\decl 0 seek (int frame);
 	\grin 0
 };
 
-\def void seek (int frame) {
-	nframe=frame;
-}
+\def 0 seek (int frame) {nframe=frame;}
 
-\def Ruby frame () {
+\def 0 bang () {
 	CGrafPtr savedPort;
 	GDHandle savedDevice;
 	SetMovieGWorld(movie,gw,GetGWorldDevice(gw));
@@ -425,10 +411,10 @@ GRID_INLET(FormatQuickTimeApple,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void codec_m      (String c) { RAISE("Unimplemented. Sorry."); }
-\def void colorspace_m (Symbol c) { RAISE("Unimplemented. Sorry."); }
+\def 0 codec_m      (String c) { RAISE("Unimplemented. Sorry."); }
+\def 0 colorspace_m (Symbol c) { RAISE("Unimplemented. Sorry."); }
 
-\def void close () {
+\def 0 close () {
 //!@#$
 	if (movie) {
 		DisposeMovie(movie);
@@ -483,12 +469,9 @@ err:
 
 \classinfo {
 	EnterMovies();
+	install_format("#io:quicktime",1,1,4,"mov");
 IEVAL(rself,
 \ruby
-  install '#io:quicktime',1,1
-  @comment="Apple Quicktime (using Apple's)"
-  @flags=4
-  suffixes_are'mov'
   def self.new(mode,source,filename)
     if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
   end

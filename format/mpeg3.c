@@ -27,22 +27,23 @@
 #include <string.h>
 #include <errno.h>
 
-\class FormatMPEG3 < Format
-struct FormatMPEG3 : Format {
+\class FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	int track;
 	FormatMPEG3 () : track(0) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	\decl void seek (int frame);
-	\decl Ruby frame ();
-	\decl void close ();
+	\decl 0 seek (int frame);
+	\decl 0 bang ();
+	\decl 0 close ();
 };
 
-\def void seek (int frame) { mpeg3_set_frame(mpeg,frame,track); }
+\def 0 seek (int frame) { mpeg3_set_frame(mpeg,frame,track); }
 
-\def Ruby frame () {
+\def 0 bang () {
 	int nframe = mpeg3_get_frame(mpeg,track);
-	if (nframe >= mpeg3_video_frames(mpeg,track)) return Qfalse;
+	int nframes = mpeg3_video_frames(mpeg,track);
+	post("track=%d; nframe=%d; nframes=%d",track,nframe,nframes);
+	if (nframe >= nframes) {outlet_bang(bself->out[1]); return;}
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
 	int channels = 3;
@@ -60,10 +61,10 @@ struct FormatMPEG3 : Format {
 		out.send(bs,row);
 	}
 	delete[] (uint8 *)buf;
-	return INT2NUM(nframe);
+//	return INT2NUM(nframe);
 }
 
-\def void close () {
+\def 0 close () {
 //	fprintf(stderr, "begin mpeg3_close...\n");
 	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
 	rb_call_super(argc,argv);
@@ -89,11 +90,7 @@ struct FormatMPEG3 : Format {
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 }
 
-\classinfo {
-	IEVAL(rself,"install '#io:mpeg',1,1;@flags=4;"
-	"@comment='Motion Picture Expert Group Format"
-	" (using HeroineWarrior\\'s)';suffixes_are'mpg,mpeg'");
-}
+\classinfo {install_format("#io:mpeg",1,1,4,"mpg mpeg");}
 \end class FormatMPEG3
 void startup_mpeg3 () {
 	\startall
