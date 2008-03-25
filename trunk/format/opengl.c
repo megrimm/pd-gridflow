@@ -41,17 +41,16 @@
 
 static bool in_use = false;
 
-\class FormatOpenGL < Format
-struct FormatOpenGL : Format {
+\class FormatOpenGL : Format {
 	int window;
 	GLuint gltex;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
-	uint8 * buf;
+	uint8 *buf;
 	\decl void call ();
 	\decl void initialize (Symbol mode);
-	\decl void close ();
-	\decl void resize_window (int sx, int sy);
+	\decl 0 close ();
+	\decl 0 resize_window (int sx, int sy);
 	\grin 0
 };
 
@@ -83,7 +82,7 @@ static void my_idle () { longjmp(hack,1); }
 	IEVAL(rself,"@clock.delay 100");
 }
 
-\def void resize_window (int sx, int sy) {
+\def 0 resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
 	char foo[666];
 	sprintf(foo,"GridFlow/GL (%d,%d,3)",sy,sx);
@@ -133,7 +132,7 @@ GRID_INLET(FormatOpenGL,0) {
 	} GRID_FINISH {
 } GRID_END
 
-\def void close () {
+\def 0 close () {
 	IEVAL(rself,"@clock.unset");
 	if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
 	if (buf) delete buf;
@@ -172,9 +171,7 @@ GRID_INLET(FormatOpenGL,0) {
 	gfpost("@clock = Clock.new self");
 }
 
-\classinfo {
-	IEVAL(rself,"install '#io:opengl',1,1;@comment='Silicon Graphics OpenGL'");
-}
+\classinfo {install_format("#io:opengl",1,1,2,"");}
 \end class FormatOpenGL
 void startup_opengl () {
 	\startall

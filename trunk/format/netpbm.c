@@ -26,13 +26,13 @@ extern "C" {
 #include <pam.h>
 };
 
-\class FormatNetPBM < Format {
+\class FormatNetPBM : Format {
 	struct pam inpam, outpam;
 	int fd;
 	FILE *f;
 	\grin 0
 	\decl void initialize(Symbol mode, Symbol source, String filename);
-	\decl void frame ();
+	\decl 0 bang ();
 };
 \def void initialize(Symbol mode, Symbol source, String filename) {
 	rb_call_super(argc,argv);
@@ -44,7 +44,7 @@ extern "C" {
 	memset(& inpam,sizeof(pam),0);
 	memset(&outpam,sizeof(pam),0);
 }
-\def void frame () {
+\def 0 bang () {
 	//inpam.allocation_depth = 3;
 	pnm_readpaminit(f, &inpam, /*PAM_STRUCT_SIZE(tuple_type)*/ sizeof(struct pam));
 	tuple *tuplerow = pnm_allocpamrow(&inpam);
@@ -94,10 +94,10 @@ GRID_INLET(FormatNetPBM,0) {
 	fflush(f);
 } GRID_END
 
-\classinfo { IEVAL(rself,"install('#io:netpbm',1,1);@mode=6; suffixes_are 'ppm','pgm','pnm','pam'"); }
+\classinfo {install_format("#io:netpbm",1,1,6,"ppm pgm pnm pam");}
 \end class FormatNetPBM
 
 void startup_netpbm () {
-	pm_init(0, 0);
+	pm_init(0,0);
 	\startall
 }

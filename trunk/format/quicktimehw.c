@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -27,8 +27,7 @@
 #include <string.h>
 #include <errno.h>
 
-\class FormatQuickTimeHW < Format
-struct FormatQuickTimeHW : Format {
+\class FormatQuickTimeHW : Format {
 	quicktime_t *anim;
 	int track;
 	P<Dim> dim;
@@ -41,33 +40,28 @@ struct FormatQuickTimeHW : Format {
 	float64 framerate;
 	P<BitPacking> bit_packing;
 	int jpeg_quality; // in theory we shouldn't need this, but...
-
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
 		started(false), force(0), framerate(29.97), bit_packing(0), jpeg_quality(75) {}
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	\decl void close ();
-	\decl Ruby frame ();
-	\decl void seek (int frame);
-
-	\decl void _0_force_size (int32 height, int32 width);
-	\decl void _0_codec (String c);
-	\decl void _0_colorspace (Symbol c);
-	\decl void _0_parameter (Symbol name, int32 value);
-	\decl void _0_framerate (float64 f);
-	\decl void _0_size (int32 height, int32 width);
-	\decl void _0_get ();
+	\decl 0 close ();
+	\decl 0 bang ();
+	\decl 0 seek (int frame);
+	\decl 0 force_size (int32 height, int32 width);
+	\decl 0 codec (String c);
+	\decl 0 colorspace (Symbol c);
+	\decl 0 parameter (Symbol name, int32 value);
+	\decl 0 framerate (float64 f);
+	\decl 0 size (int32 height, int32 width);
+	\decl 0 get ();
 	\grin 0 int
 };
 
-\def void _0_force_size (int32 height, int32 width) { force = new Dim(height, width); }
-\def void seek (int frame) {quicktime_set_video_position(anim,frame,track);}
+\def 0 force_size (int32 height, int32 width) { force = new Dim(height, width); }
+\def 0 seek (int frame) {quicktime_set_video_position(anim,frame,track);}
 
-\def Ruby frame () {
+\def 0 bang () {
 	int nframe = quicktime_video_position(anim,track);
-	if (nframe >= length) {
-//		post("nframe=%d length=%d",nframe,length);
-		return Qfalse;
-	}
+	if (nframe >= length) {outlet_bang(bself->out[1]); return;}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
 	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
 		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
@@ -92,23 +86,23 @@ struct FormatQuickTimeHW : Format {
 	NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
 	out.give(sy*sx*channels,buf);
 	started=true;
-	return INT2NUM(nframe);
+//	return INT2NUM(nframe);
 }
 
 //!@#$ should also support symbol values (how?)
-\def void _0_parameter (Symbol name, int32 value) {
+\def 0 parameter (Symbol name, int32 value) {
 	int val = value;
 	//post("quicktime_set_parameter %s %d",(char*)rb_sym_name(name), val);
 	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &val);
 	if (name==SYM(jpeg_quality)) jpeg_quality=value;
 }
 
-\def void _0_framerate (float64 f) {
+\def 0 framerate (float64 f) {
 	framerate=f;
 	quicktime_set_framerate(anim, f);
 }
 
-\def void _0_size (int32 height, int32 width) {
+\def 0 size (int32 height, int32 width) {
 	if (dim) RAISE("video size already set!");
 	// first frame: have to do setup
 	dim = new Dim(height, width, 3);
@@ -147,7 +141,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void _0_codec (String c) {
+\def 0 codec (String c) {
 	//fprintf(stderr,"codec = %s\n",rb_str_ptr(rb_inspect(c)));
 #ifdef LQT_VERSION
 	char buf[5];
@@ -162,7 +156,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	codec = strdup(buf);
 }
 
-\def void _0_colorspace (Symbol c) {
+\def 0 colorspace (Symbol c) {
 	if (0) {
 	} else if (c==SYM(rgb))     { channels=3; colorspace=BC_RGB888; 
 	} else if (c==SYM(rgba))    { channels=4; colorspace=BC_RGBA8888;
@@ -174,14 +168,13 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
 }
 
-\def void close () {
+\def 0 close () {
 	if (anim) { quicktime_close(anim); anim=0; }
 	rb_call_super(argc,argv);
 }
 
-\def void _0_get () {
-/*
-	t_atom a[1];
+\def 0 get () {
+/*	t_atom a[1];
 	SETFLOAT(a,(float)length);
 	outlet_anything(bself->out[1],gensym("frames"),1,a);
 */
@@ -219,19 +212,9 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo {
-	IEVAL(rself,
-\ruby
-  install '#io:quicktime',1,2
-  @comment=%[Burkhard Plaum's (or HeroineWarrior's) libquicktime]
-  suffixes_are 'mov'
-  @flags=6
-  def self.info; %[codecs: #{@codecs.keys.join' '}] end
-\end ruby
-);
-
+\classinfo {install_format("#io:quicktime",1,2,6,"mov");
+//  def self.info; %[codecs: #{@codecs.keys.join' '}] end
 //#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
-
 #ifdef LQT_VERSION
 	lqt_registry_init();
 	int n = lqt_get_num_video_codecs();
