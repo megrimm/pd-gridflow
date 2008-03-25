@@ -48,8 +48,7 @@
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
 
-\class FormatX11 < Format
-struct FormatX11 : Format {
+\class FormatX11 : Format {
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
 	Visual *visual;   /* screen properties */
@@ -98,17 +97,17 @@ struct FormatX11 : Format {
 	void prepare_colormap();
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\decl void initialize (...);
-	\decl void frame ();
-	\decl void close ();
+	\decl 0 bang ();
+	\decl 0 close ();
 	\decl void call ();
-	\decl void _0_out_size (int sy, int sx);
-	\decl void _0_setcursor (int shape);
-	\decl void _0_hidecursor ();
-	\decl void _0_set_geometry (int y, int x, int sy, int sx);
-	\decl void _0_move (int y, int x);
-	\decl void _0_transfer (Symbol s);
-	\decl void _0_title (String s=Qnil);
-	\decl void _0_warp (int y, int x);
+	\decl 0 out_size (int sy, int sx);
+	\decl 0 setcursor (int shape);
+	\decl 0 hidecursor ();
+	\decl 0 set_geometry (int y, int x, int sy, int sx);
+	\decl 0 move (int y, int x);
+	\decl 0 transfer (Symbol s);
+	\decl 0 title (String s=Qnil);
+	\decl 0 warp (int y, int x);
 	\grin 0 int
 };
 
@@ -222,7 +221,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	IEVAL(rself,"@clock.delay 20");
 }
 
-\def void frame () {
+\def 0 bang () {
 	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0),
 		(unsigned)-1, ZPixmap, ximage, 0, 0);
 	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
@@ -418,7 +417,7 @@ GRID_INLET(FormatX11,0) {
 	show_section(0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
 
-\def void close () {
+\def 0 close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
 	bit_packing=0;
 	IEVAL(rself,"@clock.unset");
@@ -430,16 +429,16 @@ GRID_INLET(FormatX11,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void _0_out_size (int sy, int sx) { resize_window(sx,sy); }
+\def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
 
-\def void _0_setcursor (int shape) {
+\def 0 setcursor (int shape) {
 	shape = 2*(shape&63);
 	Cursor c = XCreateFontCursor(display,shape);
 	XDefineCursor(display,window,c);
 	XFlush(display);
 }
 
-\def void _0_hidecursor () {
+\def 0 hidecursor () {
 	Font font = XLoadFont(display,"fixed");
 	XColor color; /* bogus */
 	Cursor c = XCreateGlyphCursor(display,font,font,' ',' ',&color,&color);
@@ -529,32 +528,32 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	return target;
 }
 
-\def void _0_move (int y, int x) {
+\def 0 move (int y, int x) {
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
 	XFlush(display);
 }
 
-\def void _0_set_geometry (int y, int x, int sy, int sx) {
+\def 0 set_geometry (int y, int x, int sy, int sx) {
 	pos[0]=y; pos[1]=x;
 	XMoveWindow(display,window,x,y);
 	resize_window(sx,sy);
 	XFlush(display);
 }
 
-\def void _0_transfer (Symbol s) {
+\def 0 transfer (Symbol s) {
 	if (s==SYM(plain))       transfer=0;
 	else if (s==SYM(xshm))   transfer=1;
 	else if (s==SYM(xvideo)) transfer=2;
 	else RAISE("unknown transfer mode (possible: plain xshm xvideo)");
 }
 
-\def void _0_warp (int y, int x) {
+\def 0 warp (int y, int x) {
 	XWarpPointer(display,None,None,0,0,0,0,x,y);
 	XFlush(display);
 }
 
-\def void _0_title (String s=Qnil) {
+\def 0 title (String s=Qnil) {
 	rb_ivar_set(rself,SI(@title),s);
 	set_wm_hints();
 }
@@ -662,10 +661,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	show_section(0,0,sx,sy);
 }
 
-\classinfo {
-	IEVAL(rself,"install '#io:x11',1,1;@mode=6;@comment='X Window System Version 11.x'");
-}
-\end class FormatX11
+\end class FormatX11 {install_format("#io:x11",1,1,6,"");}
 void startup_x11 () {
 	\startall
 }
