@@ -114,16 +114,15 @@ void GFView_display(GFView *self) {
 	[self display];
 }
 
-\class FormatQuartz < Format
-struct FormatQuartz : Format {
+\class FormatQuartz : Format {
 	NSWindow *window;
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
 	NSDate *distantFuture;
 	\decl void initialize (Symbol mode);
-	\decl void delete_m ();
-	\decl void close ();
-	\decl void call ();
+	\decl 0 delete_m ();
+	\decl 0 close ();
+	\decl 0 call ();
 	\grin 0
 };
 
@@ -207,11 +206,11 @@ GRID_INLET(FormatQuartz,0) {
 	[window setBackgroundColor: color];
 }
 
-\def void delete_m () {
+\def 0 delete_m () {
 	[window autorelease];
 }
 
-\def void close () {
+\def 0 close () {
 	IEVAL(rself,"@clock.unset");
 	rb_call_super(argc,argv);
 	[window autorelease];
@@ -224,11 +223,7 @@ GRID_INLET(FormatQuartz,0) {
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
-	IEVAL(rself,
-\ruby
-	install '#io:quartz',1,1
-	@comment = "Apple Quartz/Cocoa"
-	@flags = 2
+	install_format("#io:quartz",1,1,2,"");
 \end ruby
 );}
 

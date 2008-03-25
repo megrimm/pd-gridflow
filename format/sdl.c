@@ -32,15 +32,14 @@
 
 static bool in_use = false;
 
-\class FormatSDL < Format
-struct FormatSDL : Format {
+\class FormatSDL : Format {
 	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	void resize_window (int sx, int sy);
 	void call ();
 	\decl void initialize (Symbol mode);
-	\decl void close ();
+	\decl 0 close ();
 	\grin 0 int
 };
 
@@ -81,7 +80,7 @@ GRID_INLET(FormatSDL,0) {
 	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
 
-\def void close () {
+\def 0 close () {
 	IEVAL(rself,"@clock.unset");
 	in_use=false;
 }
@@ -107,10 +106,7 @@ GRID_INLET(FormatSDL,0) {
 	IEVAL(rself,"@clock = Clock.new self");
 }
 
-\classinfo {
-	IEVAL(rself,"install '#io:sdl',1,1;@flags=2;@comment='Simple Directmedia Layer'");
-}
-\end class FormatSDL
+\end class FormatSDL {install_format("#io:sdl",1,1,2,"");}
 void startup_sdl () {
 	\startall
 }
