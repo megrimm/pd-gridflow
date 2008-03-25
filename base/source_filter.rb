@@ -56,7 +56,7 @@ Out = File.open ARGV[1], "w"
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	#STDERR.puts "class: #{line}"
-	/^(\w+)(?:\s*<\s*(\w+))?\s*(\{?)\s*$/.match line or raise "syntax error #{where}"
+	/^(\w+)(?:\s*[:<]\s*(\w+))?\s*(\{?)\s*$/.match line or raise "syntax error #{where}"
 	q=ClassDecl.new($1,$2,{},{},{},false)
 	$stack << q
 	$classes << q
@@ -252,12 +252,9 @@ def handle_classinfo(line)
 		startup2 += ":#{name} => [],"
 	}
 	startup2 += "}"
-	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
-		raise "\\startup line should have a '{' (sorry)"
-
+	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or raise "\\startup line should have a '{' (sorry)"
 	get << "RAISE(\"unknown attr %s\",rb_sym_name(s)); send_out(3,_r_);}"
 	handle_def get if frame.attrs.size>0
-
 	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
 end
 
