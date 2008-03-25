@@ -253,7 +253,7 @@ def handle_classinfo(line)
 	}
 	startup2 += "}"
 	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or
-		raise "\startup line should have a '{' (sorry)"
+		raise "\\startup line should have a '{' (sorry)"
 
 	get << "RAISE(\"unknown attr %s\",rb_sym_name(s)); send_out(3,_r_);}"
 	handle_def get if frame.attrs.size>0
@@ -279,9 +279,8 @@ def handle_end(line)
 	if ClassDecl===frame then
 		#handle_classinfo if not frame.info
 		cl = frame.name
-		if fields[0]!="class" or
-		(n>1 and fields[1]!=cl)
-		then raise "end not matching #{where}" end
+		if fields[0]!="class" or (n>1 and fields[1]!=cl) then raise "end not matching #{where}" end
+		if /^class\s+(\w+\s+)?\{(.*)/ =~ line then $stack.push frame; handle_classinfo("{"+$2); $stack.pop end
 		$stack.push frame
 		frame.attrs.each {|name,attr|
 			type,name,default = attr.to_a
