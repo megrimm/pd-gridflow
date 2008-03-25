@@ -33,18 +33,17 @@ extern "C" {
 #include <jpeglib.h>
 };
 
-\class FormatJPEG < Format
-struct FormatJPEG : Format {
+\class FormatJPEG < Format {
 	P<BitPacking> bit_packing;
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
 	int fd;
 	FILE *f;
-	\decl Ruby frame ();
-	\decl void quality (short quality);
 	\decl void initialize (Symbol mode, Symbol source, String filename);
-	\decl void close ();
+	\decl 0 bang ();
+	\decl 0 quality (short quality);
+	\decl 0 close ();
 	\grin 0 int
 };
 
@@ -70,7 +69,7 @@ GRID_INLET(FormatJPEG,0) {
 	uint8 *rows[1] = { row };
 	while (n) {
 		bit_packing->pack(in->dim->get(1),data,row);
-		jpeg_write_scanlines(&cjpeg,rows,1);		
+		jpeg_write_scanlines(&cjpeg,rows,1);
 		n-=rowsize; data+=rowsize;
 	}
 } GRID_FINISH {
@@ -87,10 +86,10 @@ static bool gfeof(FILE *f) {
 	return cur==end;
 }
 
-\def Ruby frame () {
+\def 0 bang () {
 	off_t off = NUM2LONG(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(tell),0));
 	fseek(f,off,SEEK_SET);
-	if (gfeof(f)) return Qfalse;
+	if (gfeof(f)) {outlet_bang(bself->out[1]); return;}
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
 	jpeg_stdio_src(&djpeg,f);
@@ -107,17 +106,16 @@ static bool gfeof(FILE *f) {
 	}
 	jpeg_finish_decompress(&djpeg);
 	jpeg_destroy_decompress(&djpeg);
-	return Qnil;
 }
 
-\def void quality (short quality) {
+\def 0 quality (short quality) {
 	quality = min(max((int)quality,0),100);
 	// should the last arg ("baseline") be set to true ?
 	// and what is it for? is it for accuracy of the DC component?
 	jpeg_set_quality(&cjpeg,quality,false);
 }
 
-\def void close () {
+\def 0 close () {
 	if (f) {fclose(f); f=0;}
 	//if (f) {rb_funcall(stream,SI(close),0); f=0; fd=-1;}
 }
@@ -133,11 +131,7 @@ static bool gfeof(FILE *f) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo {
-	IEVAL(rself,
-	"install '#io:jpeg',1,1;@mode=6;"
-	"include GridFlow::EventIO; suffixes_are'jpeg','jpg'");
-}
+\classinfo {install_format("#io:jpeg",1,1,6,"jpeg jpg");}
 \end class FormatJPEG
 void startup_jpeg () {
 	\startall
