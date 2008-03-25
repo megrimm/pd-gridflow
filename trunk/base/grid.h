@@ -487,8 +487,15 @@ EACH_INT_TYPE(FOO)
 
 int high_bit(uint32 n);
 int  low_bit(uint32 n);
-void swap32 (long n, uint32 * data);
-void swap16 (long n, uint16 * data);
+void swap16(long n, uint16 *data);
+void swap32(long n, uint32 *data);
+void swap64(long n, uint64 *data);
+inline void swap_endian(long n,   uint8 *data) {}
+inline void swap_endian(long n,   int16 *data) {swap16(n,(uint16 *)data);}
+inline void swap_endian(long n,   int32 *data) {swap32(n,(uint32 *)data);}
+inline void swap_endian(long n,   int64 *data) {swap64(n,(uint64 *)data);}
+inline void swap_endian(long n, float32 *data) {swap32(n,(uint32 *)data);}
+inline void swap_endian(long n, float64 *data) {swap64(n,(uint64 *)data);}
 
 //****************************************************************
 // Numop objects encapsulate optimised loops of simple operations

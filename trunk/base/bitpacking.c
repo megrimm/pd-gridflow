@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -35,17 +35,28 @@
 
 #define WRITE_BE { int bytes; \
 	bytes = self->bytes; \
-	while (bytes--) { out[bytes] = t; t>>=8; }\
+	while (bytes--) {out[bytes] = t; t>>=8;}\
 	out += self->bytes; }
 
 /* this macro would be faster if the _increment_
    was done only once every loop. or maybe gcc does it, i dunno */
 #define NTIMES(_x_) \
-	for (; n>=4; n-=4) { _x_ _x_ _x_ _x_ } \
-	for (; n; n--) { _x_ }
+	for (; n>=4; n-=4) {_x_ _x_ _x_ _x_} \
+	for (; n; n--) {_x_}
 
 /* this could be faster (use asm) */
-void swap32 (long n, uint32 * data) {
+void swap64 (long n, uint64 *data) {
+	NTIMES({
+		uint64 x = *data;
+		x = (x<<32) | (x>>32);
+		x = ((x&0x0000ffff0000ffffLL)<<16) | ((x>>16)&0x0000ffff0000ffffLL);
+		x = ((x&0x00ff00ff00ff00ffLL)<< 8) | ((x>> 8)&0x00ff00ff00ff00ffLL);
+		*data++ = x;
+	})
+}
+
+/* this could be faster (use asm) */
+void swap32 (long n, uint32 *data) {
 	NTIMES({
 		uint32 x = *data;
 		x = (x<<16) | (x>>16);
@@ -55,9 +66,7 @@ void swap32 (long n, uint32 * data) {
 }
 
 /* this could be faster (use asm or do it in int32 chunks) */
-void swap16 (long n, uint16 * data) {
-	NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })
-}
+void swap16 (long n, uint16 *data) {NTIMES({ uint16 x = *data; *data++ = (x<<8) | (x>>8); })}
 
 /* **************************************************************** */
 
