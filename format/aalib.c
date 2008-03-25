@@ -34,21 +34,18 @@ typedef
 #endif
 AAAttr;
 
-\class FormatAALib < Format
-struct FormatAALib : Format {
+\class FormatAALib : Format {
 	aa_context *context;
 	aa_renderparams *rparams;
 	\attr bool autodraw;
 	bool raw_mode;
-
 	FormatAALib () : context(0), autodraw(1) {}
-
 	\decl void initialize (Symbol mode, Symbol target);
-	\decl void close ();
-	\decl void _0_hidecursor ();
-	\decl void _0_print (int y, int x, int a, Symbol text);
-	\decl void _0_draw ();
-	\decl void _0_dump ();
+	\decl 0 close ();
+	\decl 0 hidecursor ();
+	\decl 0 print (int y, int x, int a, Symbol text);
+	\decl 0 draw ();
+	\decl 0 dump ();
 	\grin 0 int
 };
 
@@ -99,21 +96,21 @@ GRID_INLET(FormatAALib,0) {
 	if (autodraw==1) aa_flush(context);
 } GRID_END
 
-\def void close () {
+\def 0 close () {
 	if (context) {
 		aa_close(context);
 		context=0;
 	}
 }
 
-\def void _0_hidecursor () { aa_hidemouse(context); }
-\def void _0_draw () { aa_flush(context); }
-\def void _0_print (int y, int x, int a, Symbol text) {
+\def 0 hidecursor () { aa_hidemouse(context); }
+\def 0 draw () { aa_flush(context); }
+\def 0 print (int y, int x, int a, Symbol text) {
 	aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(text));
 	if (autodraw==1) aa_flush(context);
 }
 
-\def void _0_dump () {
+\def 0 dump () {
 	int32 v[] = {aa_scrheight(context), aa_scrwidth(context), 2};
 	GridOutlet out(this,0,new Dim(3,v));
 	for (int y=0; y<aa_scrheight(context); y++) {
@@ -155,7 +152,7 @@ GRID_INLET(FormatAALib,0) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
 	}
 // IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
-	IEVAL(rself,"install '#in:aalib',1,1;@flags=2;@comment='Ascii Art Library'");
+	install_format("#in:aalib",1,1,2,"");
 }
 \end class FormatAALib
 void startup_aalib () {
