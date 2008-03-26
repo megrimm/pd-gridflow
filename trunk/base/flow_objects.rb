@@ -24,8 +24,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-#-------- fClasses for: control + misc
-
 # a dummy class that gives access to any stuff global to GridFlow.
 FObject.subclass("gridflow",1,1) {
 	def _0_formats
@@ -131,8 +129,6 @@ FObject.subclass("ls",1,1) {
         def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
-#-------- fClasses for: video
-
 #<vektor> told me to:
 # RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)",
 #	"@ >> 8","@ + {16 128 128}"]
@@ -143,15 +139,11 @@ FObject.subclass("args",1,1) {
 	def initialize(*argspecs) @argspecs = argspecs end
 	#def initialize2; add_outlets @argspecs.length end
 	def initialize2; self.noutlets = @argspecs.length+1 end
-
-	# apparently, i can't define a Array#split,
-	# possibly because it's a reserved keyword, in a "duck taping" kind of way
-	# (#respond_to? and stuff)
-	def split(ary,sep)
-		i=0; r=[[]]
-		ary.each {|x| if sep===x then r.last << x else r << [] end }
-		r
-	end
+#	def split(ary,sep)
+#		i=0; r=[[]]
+#		ary.each {|x| if sep===x then r.last << x else r << [] end }
+#		r
+#	end
 	def _0_bang
 		pa,*loadbang=patcherargs.split(:",")
 		GridFlow.handle_braces! pa
@@ -165,10 +157,16 @@ FObject.subclass("args",1,1) {
 			if not v then
 				if Array===@argspecs[i] and @argspecs[i][2] then
 					v = @argspecs[i][2]
-				else
+				elsif @argspecs[i].to_s!="*"
 					#raise "missing argument!"
-					GridFlow.post "missing argument!"; return
+					GridFlow.post "missing %d argument", i+1
+					next
 				end
+			end
+			if @argspecs[i].to_s=="*" then
+				rest = pa[i..-1]||[]
+				send_out i,:list,*rest
+				break
 			end
 			case pa[i]
 			when Symbol; send_out i,:symbol,v
@@ -318,8 +316,6 @@ class PDNetSocket < FObject
 	install "pd_netsocket", 2, 2
 end
 
-#-------- fClasses for: jMax compatibility
-
 # make this with variable number of outlets?
 # what about moving this to desiredata?
 FObject.subclass("fork",1,2) {
@@ -354,9 +350,7 @@ FObject.subclass("shunt",2,0) {
 	class Demux < self; install "demux", 2, 0; end
 }
 
-#-------- fClasses for: list manipulation (jMax-compatible)
 # maybe that some of them could be replaced by 0.39 abstractions
-
 	FObject.subclass("listmake",2,1) {
 		def initialize(*a) @a=a end
 		def _0_list(*a) @a=a; _0_bang end
@@ -462,8 +456,6 @@ FObject.subclass("listfind",2,1) {
   doc:_0_float,"float to find in that list"
   doc_out:_0_float,"position of the incoming float in the stored list"
 }
-
-#-------- fClasses for: GUI
 
 module Gooey # to be included in any FObject class
 	def initialize(*)
@@ -623,8 +615,6 @@ FObject.subclass("printargs",1,0) {
   end
 }
 
-#-------- fClasses for: Hardware
-
 FObject.subclass("joystick_port",0,1) {
   def initialize(port)
     @f = File.open(port.to_s,"r+")
@@ -734,7 +724,6 @@ module Ioctl
 		ioctl(arg1,s="blah")
 		return s.unpack("l")[0]
 	end
-
 end
 
 # Linux::ParallelPort
