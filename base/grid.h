@@ -907,8 +907,6 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 				ai+i, a->v[ai+i],
 				bi+i, b->v[bi+i]);}}}
 
-typedef GridObject Format;
-
 \class Pointer : CObject {
 	void *p;
 	Pointer() { RAISE("trying to construct a (ruby) Pointer without an argument"); }
@@ -921,4 +919,13 @@ typedef GridObject Format;
 #define install_format(name,ins,outs,mode,suff) rb_funcall(rself,SI(install_format),5, \
 	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs), INT2NUM(mode), rb_str_new2(suff))
 #define SUPER rb_call_super(argc,argv);
+
+\class Format : GridObject {
+	int fd;
+	FILE *f;
+	Format() : fd(-1), f(0) {}
+	void open (String mode, String filename);
+	void close ();
+};
+
 #endif // __GF_GRID_H
