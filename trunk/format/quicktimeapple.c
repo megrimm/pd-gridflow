@@ -191,7 +191,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
   int m_quality;
 //int m_colorspace;
   FormatQuickTimeCamera() : vdc(0) {}
-  \decl void initialize (Symbol mode, Symbol source, String filename);
+  \decl void initialize (Symbol mode, String filename);
   \decl 0 frame ();
   \decl 0 close ();
   \grin 0 int
@@ -201,7 +201,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 
 static int nn(int c) {return c?c:' ';}
 
-\def void initialize (Symbol mode, Symbol source, String filename) {
+\def void initialize (Symbol mode, String filename) {
 //vdc = SGGetVideoDigitizerComponent(c);
   rb_call_super(argc,argv);
   dim = new Dim(240,320,4);
@@ -347,7 +347,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	int nframe, nframes;
 	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
 		buffer(), dim(0), nframe(0), nframes(0) {}
-	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void initialize (Symbol mode, String filename);
 	\decl 0 close ();
 	\decl 0 codec_m (String c);
 	\decl 0 colorspace_m (Symbol c);
@@ -425,22 +425,18 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	rb_call_super(argc,argv);
 }
 
-\def void initialize (Symbol mode, Symbol source, String filename) {
+\def void initialize (Symbol mode, String filename) {
 	int err;
 	rb_call_super(argc,argv);
-	if (source==SYM(file)) {
-		filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
-		FSSpec fss;
-		FSRef fsr;
-		err = FSPathMakeRef((const UInt8 *)rb_str_ptr(filename), &fsr, NULL);
-		if (err) goto err;
-		err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
-		if (err) goto err;
-		err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
-		if (err) goto err;
-	} else {
-		RAISE("usage: quicktime [file <filename> | camera bleh]");
-	}
+	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+	FSSpec fss;
+	FSRef fsr;
+	err = FSPathMakeRef((const UInt8 *)rb_str_ptr(filename), &fsr, NULL);
+	if (err) goto err;
+	err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
+	if (err) goto err;
+	err = OpenMovieFile(&fss,&movie_file,fsRdPerm);
+	if (err) goto err;
 	NewMovieFromFile(&movie, movie_file, NULL, NULL, newMovieActive, NULL);
 	Rect r;
 	GetMovieBox(movie, &r);
@@ -470,13 +466,7 @@ err:
 \classinfo {
 	EnterMovies();
 	install_format("#io:quicktime",1,1,4,"mov");
-IEVAL(rself,
-\ruby
-  def self.new(mode,source,filename)
-    if source==:camera then FormatQuickTimeCamera.new(mode,source,filename) else super end
-  end
-\end ruby
-);}
+}
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {
 	\startall

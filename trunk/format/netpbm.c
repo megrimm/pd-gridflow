@@ -31,13 +31,12 @@ extern "C" {
 	int fd;
 	FILE *f;
 	\grin 0
-	\decl void initialize(Symbol mode, Symbol source, String filename);
+	\decl void initialize(Symbol mode, String filename);
 	\decl 0 bang ();
 };
-\def void initialize(Symbol mode, Symbol source, String filename) {
+\def void initialize(Symbol mode, String filename) {
 	rb_call_super(argc,argv);
-	if (source!=SYM(file)) RAISE("usage: netpbm file <filename>");
-	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
+	rb_funcall(rself,SI(raw_open),3,mode,filename);
 	Ruby stream = rb_ivar_get(rself,SI(@stream));
 	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
 	f = fdopen(fd,mode==SYM(in)?"r":"w");
