@@ -112,7 +112,7 @@ GRID_INLET(FormatPNG,0) {
 \def 0 close () {if (f) {fclose(f); f=0;}}
 
 \def void initialize (Symbol mode, String filename) {
-	rb_call_super(argc,argv);
+	SUPER;
 	rb_funcall(rself,SI(raw_open),3,mode,filename);
 	Ruby stream = rb_ivar_get(rself,SI(@stream));
 	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));

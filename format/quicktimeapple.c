@@ -203,7 +203,7 @@ static int nn(int c) {return c?c:' ';}
 
 \def void initialize (Symbol mode, String filename) {
 //vdc = SGGetVideoDigitizerComponent(c);
-  rb_call_super(argc,argv);
+  SUPER;
   dim = new Dim(240,320,4);
   OSErr e;
   rect.top=rect.left=0;
@@ -422,12 +422,12 @@ GRID_INLET(FormatQuickTimeApple,0) {
 		CloseMovieFile(movie_file);
 		movie_file=0;
 	}
-	rb_call_super(argc,argv);
+	SUPER;
 }
 
 \def void initialize (Symbol mode, String filename) {
 	int err;
-	rb_call_super(argc,argv);
+	SUPER;
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	FSSpec fss;
 	FSRef fsr;

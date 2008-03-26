@@ -575,7 +575,7 @@ GRID_INLET(FormatVideoDev,0) {
 
 \def 0 close () {
 	if (image) rb_funcall(rself,SI(dealloc_image),0);
-	rb_call_super(argc,argv);
+	SUPER;
 }
 
 \def 0 colorspace (Symbol c) { /* y yuv rgb */
@@ -749,7 +749,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 }
 
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
-	rb_call_super(argc,argv);
+	SUPER;
 	image=0;
 	rb_ivar_set(rself,SI(@stream),
 		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));

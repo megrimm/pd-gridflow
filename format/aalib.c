@@ -125,7 +125,7 @@ GRID_INLET(FormatAALib,0) {
 
 /* !@#$ varargs missing here */
 \def void initialize (Symbol mode, Symbol target) {
-	rb_call_super(argc,argv);
+	SUPER;
 	argc-=2; argv+=2;
 	char *argv2[argc];
 	for (int i=0; i<argc; i++)

@@ -87,7 +87,7 @@ GRID_INLET(FormatSDL,0) {
 
 \def void initialize (Symbol mode) {
 	dim=0;screen=0;
-	rb_call_super(argc,argv);
+	SUPER;
 	if (in_use) RAISE("only one FormatSDL object at a time; sorry");
 	in_use=true;
 	if (SDL_Init(SDL_INIT_VIDEO)<0)

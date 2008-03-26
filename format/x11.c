@@ -426,7 +426,7 @@ GRID_INLET(FormatX11,0) {
 	dealloc_image();
 	XCloseDisplay(display);
 	display=0;
-	rb_call_super(argc,argv);
+	SUPER;
 }
 
 \def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
@@ -560,7 +560,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 
 \def void initialize (...) {
 	int sy=240, sx=320; // defaults
-	rb_call_super(argc,argv);
+	SUPER;
 	rb_ivar_set(rself,SI(@title),Qnil);
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];

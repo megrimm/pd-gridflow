@@ -170,7 +170,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 
 \def 0 close () {
 	if (anim) { quicktime_close(anim); anim=0; }
-	rb_call_super(argc,argv);
+	SUPER;
 }
 
 \def 0 get () {
@@ -180,12 +180,12 @@ GRID_INLET(FormatQuickTimeHW,0) {
 */
 	Ruby a[] = {INT2NUM(1),SYM(frames),INT2NUM(length)};
 	send_out(3,a);
-	//rb_call_super(argc,argv);
+	//SUPER;
 }
 
 // libquicktime may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, String filename) {
-	rb_call_super(argc,argv);
+	SUPER;
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
 	if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
