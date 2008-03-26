@@ -155,7 +155,8 @@ class FObject
 		for x in ms do r.send_in(-2, *x) end
 		r
 	end
-	def inspect; if args then "[#{args}]" else super end end
+	#def inspect; if args then "[#{args}]" else super end end
+	def inspect; "some object" end
 	def initialize(*argv)
 		@properties = {}
 		@init_messages = []
@@ -238,7 +239,6 @@ GridFlow::FObject.name_lookup("#to_pix")   .add_creator "#export_pix" rescue nil
   #grade #redim #import #export #export_list #cast
   #scale_by #downscale_by #draw_polygon #draw_image #layer
   #print #pack #export_symbol
-  #in #out
 ).each {|k|
  #rotate
 	GridFlow::FObject.name_lookup(k).add_creator k.gsub(/#/,"@")
@@ -255,7 +255,6 @@ class Object
     oc = GridFlow::FObject
     obj = (case obj; when oc; self.args; else self      .inspect end)
     qla = (case obj; when oc; self.args; else self.class.inspect end)
-    #begin raise; rescue Exception => e; end
     raise NameError, "undefined method \"#{name}\" for #{obj} in class #{qla}"#, ["hello"]+e.backtrace
   end
 end
