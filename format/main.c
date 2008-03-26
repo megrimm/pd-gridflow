@@ -42,7 +42,7 @@ struct GridHeader {
 	NumberTypeE nt;
 	P<Dim> headerless; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
-	\decl void initialize(Symbol mode, Symbol source, String filename);
+	\decl void initialize(Symbol mode, String filename);
 	\decl 0 bang ();
 	\decl 0 headerless_m (...);
 	\decl 0 headerful ();
@@ -50,14 +50,14 @@ struct GridHeader {
 	\decl 0 close();
 	\decl void raw_open_gzip_in(String filename);
 	\decl void raw_open_gzip_out(String filename);
-	\decl void raw_open(Symbol mode, Symbol source, String filename);
+	\decl void raw_open(Symbol mode, String filename);
 };
 
-\def void initialize(Symbol mode, Symbol source, String filename) {
+\def void initialize(Symbol mode, String filename) {
 	rb_call_super(argc,argv);
 	strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
 	head.type = 32;
-	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
+	rb_funcall(rself,SI(raw_open),3,mode,filename);
 	Ruby stream = rb_ivar_get(rself,SI(@stream));
 	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
 	f = fdopen(fd,mode==SYM(in)?"r":"w");
@@ -137,24 +137,20 @@ TYPESWITCH(nt,FOO,)
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
 	//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
 }
-\def void raw_open(Symbol mode, Symbol source, String filename) {
+\def void raw_open(Symbol mode, String filename) {
 	const char *fmode;
 	if (mode==SYM(in))  fmode="r"; else
 	if (mode==SYM(out)) fmode="w"; else
 	RAISE("bad mode");
 	//@stream.close if @stream
-	if (source==SYM(file)) {
-		if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
-		RAISE("raw_open code missing here");
-		//@stream = File.open(filename,fmode); break;
-	}
+	if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
+	RAISE("raw_open code missing here");
+	//@stream = File.open(filename,fmode); break;
 //	case gzfile:
 //		if (mode==SYM(in)) {filename = GridFlow.find_file(filename);}
 //		if (mode==:in) {raw_open_gzip_in filename; else raw_open_gzip_out filename;}
 //		def self.rewind() raw_open(*@raw_open_args); @frame = 0 end unless @rewind_redefined
 //		@rewind_redefined = true
-//	default: raise "unknown access method '#{source}'"
-//	}
 }
 \def 0 close () {
 	//@stream.close if @stream

@@ -85,8 +85,6 @@ class Format < GridObject
 		}
 	end
 	class<< self
-		attr_reader :symbol_name
-		attr_reader :description
 		attr_reader :flags
 		attr_reader :suffixes
 	end
@@ -116,18 +114,6 @@ class Format < GridObject
 	# "ideal" buffer size or something
 	# the buffer may be bigger than this but usually not by much.
 	def self.buffersize; 16384 end
-	def _0_headerless(*args) #!@#$ goes in FormatGrid ?
-		args=args[0] if Array===args[0]
-		#raise "expecting dimension list..."
-		args.map! {|a|
-			Numeric===a or raise "expecting dimension list..."
-			a.to_i
-		}
-		@headerless = args
-	end
-	def _0_headerful #!@#$ goes in FormatGrid ?
-		@headerless = nil
-	end
 	def _0_type arg
 		#!@#$ goes in FormatGrid ?
 		#!@#$ bug: should not be able to modify this _during_ a transfer
@@ -146,19 +132,35 @@ class Format < GridObject
 		end
 	end
 	def frame; @frame+=1; @frame-1 end
+	def self.install_format(a,b,c,d,e) install(a,b,c); @mode=d; suffixes_are e.split(" ") end
 end
 
 # common parts between GridIn and GridOut
-module GridIO
+class GridIO < GridObject
 	def check_file_open; if not @format then raise "can't do that: file not open" end end
 	def _0_close; (@format.close; @format = nil) if @format end
 	def delete; @format.close if @format; @format = nil; super end
 	attr_reader :format
+	def initialize(*)
+		super
+		@format = nil
+		@timelog = false
+		@framecount = 0
+		@time = Time.new
+	end
 	def _0_open(sym,*a)
-		sym = sym.intern if String===sym
-		if a.length==0 and /\./ =~ sym.to_s then a=[sym]; sym=:file end
-		qlass = GridFlow.fclasses["\#io:#{sym}"]
-		if not qlass then raise "unknown file format identifier: #{sym}" end
+		sym = sym.to_s
+		if a.length==0 and /\./ =~ sym then
+			a = [mode,sym]
+			suf=sym.split(/\./)[-1]
+			#if suf=="gz" then a[1]=:gzfile; suf=file.split(/\./)[-2] end
+			h=Format.suffixes[suf]
+			if not h then raise "unknown suffix '.#{suf}'" end
+			@format = h.new(*a)
+		else
+			qlass = GridFlow.fclasses["\#io:#{sym}"]
+			if not qlass then raise "unknown file format identifier: #{sym}" end
+		end
 		_0_close if @format
 		@format = qlass.new @mode, *a
 		@format.connect 0,self,1
@@ -184,15 +186,10 @@ module GridIO
 	end
 end
 
-GridObject.subclass("#in",1,2) {
+GridIO.subclass("#in",1,2) {
 	install_rgrid 0
-	include GridIO
 	def initialize(*a)
 		super
-		@format = nil
-		@timelog = false
-		@framecount = 0
-		@time = Time.new
 		@mode = :in
 		return if a.length==0
 		_0_open(*a)
@@ -229,18 +226,13 @@ GridObject.subclass("#in",1,2) {
 
 }
 
-GridObject.subclass("#out",1,1) {
-	include GridIO
+GridIO.subclass("#out",1,1) {
 	def initialize(*a)
 		super
-		@format = nil
-		@timelog = false
-		@framecount = 0
-		@time = Time.new
 		@mode = :out
 		return if a.length==0
-		if Integer===a[0] or Float===a[0]
-			_0_open :x11,:here
+		if Numeric===a[0]
+			_0_open :window
 			_0_out_size a[0],a[1]
 		else
 			_0_open(*a)
@@ -265,8 +257,7 @@ GridObject.subclass("#out",1,1) {
 	end
 	def log
 		time = Time.new
-		post("\#out: frame#%04d time: %10.3f s; diff: %5d ms",
-			@framecount, time, ((time-@time)*1000).to_i)
+		post("\#out: frame#%04d time: %10.3f s; diff: %5d ms", @framecount, time, ((time-@time)*1000).to_i)
 		@time = time
 	end
 	install_rgrid 0
@@ -275,20 +266,6 @@ class BitPacking
 	alias pack pack2
 	alias unpack unpack2
 end
-
-Format.subclass("#io:file",1,1) {
-	def self.new(mode,file)
-		file=file.to_s
-		a = [mode,:file,file]
-		if not /\./=~file then raise "no filename suffix?" end
-		suf=file.split(/\./)[-1]
-		if suf=="gz" then a[1]=:gzfile; suf=file.split(/\./)[-2] end
-		h=Format.suffixes[suf]
-		if not h then raise "unknown suffix '.#{suf}'" end
-		h.new(*a)
-	end
-	@comment="format autodetection proxy"
-}
 
 =begin
 FormatPPM.subclass("#io:tk",1,1) {

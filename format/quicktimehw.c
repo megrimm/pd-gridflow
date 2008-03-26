@@ -42,7 +42,7 @@
 	int jpeg_quality; // in theory we shouldn't need this, but...
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
 		started(false), force(0), framerate(29.97), bit_packing(0), jpeg_quality(75) {}
-	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void initialize (Symbol mode, String filename);
 	\decl 0 close ();
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
@@ -184,16 +184,14 @@ GRID_INLET(FormatQuickTimeHW,0) {
 }
 
 // libquicktime may be nice, but it won't take a filehandle, only filename
-\def void initialize (Symbol mode, Symbol source, String filename) {
+\def void initialize (Symbol mode, String filename) {
 	rb_call_super(argc,argv);
-	if (source!=SYM(file)) RAISE("usage: quicktime file <filename>");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 	anim = quicktime_open(rb_str_ptr(filename),mode==SYM(in),mode==SYM(out));
 	if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
 		rb_str_ptr(filename), strerror(errno));
 	if (mode==SYM(in)) {
 		length = quicktime_video_length(anim,track);
-
 		post("quicktime: codec=%s height=%d width=%d depth=%d framerate=%f",
 			quicktime_video_compressor(anim,track),
 			quicktime_video_height(anim,track),

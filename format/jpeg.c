@@ -40,7 +40,7 @@ extern "C" {
 	struct jpeg_error_mgr jerr;
 	int fd;
 	FILE *f;
-	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void initialize (Symbol mode, String filename);
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
 	\decl 0 close ();
@@ -120,10 +120,9 @@ static bool gfeof(FILE *f) {
 	//if (f) {rb_funcall(stream,SI(close),0); f=0; fd=-1;}
 }
 
-\def void initialize (Symbol mode, Symbol source, String filename) {
+\def void initialize (Symbol mode, String filename) {
 	rb_call_super(argc,argv);
-	if (source!=SYM(file)) RAISE("usage: jpeg file <filename>");
-	rb_funcall(rself,SI(raw_open),3,mode,source,filename);
+	rb_funcall(rself,SI(raw_open),3,mode,filename);
 	Ruby stream = rb_ivar_get(rself,SI(@stream));
 	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
 	f = fdopen(fd,mode==SYM(in)?"r":"w");

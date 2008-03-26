@@ -31,7 +31,7 @@
 	mpeg3_t *mpeg;
 	int track;
 	FormatMPEG3 () : track(0) {}
-	\decl void initialize (Symbol mode, Symbol source, String filename);
+	\decl void initialize (Symbol mode, String filename);
 	\decl 0 seek (int frame);
 	\decl 0 bang ();
 	\decl 0 close ();
@@ -72,10 +72,9 @@
 }
 
 // libmpeg3 may be nice, but it won't take a filehandle, only filename
-\def void initialize (Symbol mode, Symbol source, String filename) {
+\def void initialize (Symbol mode, String filename) {
 	rb_call_super(argc,argv);
 	if (mode!=SYM(in)) RAISE("read-only, sorry");
-	if (source!=SYM(file)) RAISE("usage: mpeg file <filename>");
 	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
 #ifdef MPEG3_UNDEFINED_ERROR
