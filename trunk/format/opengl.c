@@ -144,7 +144,7 @@ GRID_INLET(FormatOpenGL,0) {
 }
 
 \def void initialize (Symbol mode) {
-	rb_call_super(argc,argv);
+	SUPER;
 	if (in_use) RAISE("only one #io:opengl object at a time; sorry");
 	in_use=true;
 	if (mode!=SYM(out)) RAISE("write-only, sorry");

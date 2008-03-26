@@ -54,7 +54,7 @@ struct GridHeader {
 };
 
 \def void initialize(Symbol mode, String filename) {
-	rb_call_super(argc,argv);
+	SUPER;
 	strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
 	head.type = 32;
 	rb_funcall(rself,SI(raw_open),3,mode,filename);

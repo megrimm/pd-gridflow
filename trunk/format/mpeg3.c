@@ -65,15 +65,13 @@
 }
 
 \def 0 close () {
-//	fprintf(stderr, "begin mpeg3_close...\n");
 	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
-	rb_call_super(argc,argv);
-//	fprintf(stderr, "end mpeg3_close...\n");
+	SUPER;
 }
 
 // libmpeg3 may be nice, but it won't take a filehandle, only filename
 \def void initialize (Symbol mode, String filename) {
-	rb_call_super(argc,argv);
+	SUPER;
 	if (mode!=SYM(in)) RAISE("read-only, sorry");
 	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
 	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);

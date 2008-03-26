@@ -183,7 +183,7 @@ GRID_INLET(FormatQuartz,0) {
 } GRID_END
 
 \def void initialize (Symbol mode) {
-	rb_call_super(argc,argv);
+	SUPER;
 	NSRect r = {{0,0}, {320,240}};
 	window = [[NSWindow alloc]
 		initWithContentRect: r
@@ -212,7 +212,7 @@ GRID_INLET(FormatQuartz,0) {
 
 \def 0 close () {
 	IEVAL(rself,"@clock.unset");
-	rb_call_super(argc,argv);
+	SUPER;
 	[window autorelease];
 	[window setReleasedWhenClosed: YES];
 	[window close];
