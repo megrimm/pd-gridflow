@@ -26,7 +26,7 @@ BRIDGE_LDFLAGS += $(LIBRUBYARG) $(LIBS)
 
 
 OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
-base/number.1.o base/number.2.o base/number.3.o base/number.4.o
+base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
 
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
 DLLIB = gridflow.$(DLEXT)
@@ -121,7 +121,7 @@ deprecated:: deprecated/@fade.pd
 deprecated/@fade.pd: abstractions/\#fade.pd
 	for z in camera_control motion_detection color mouse fade scale_to \
 	apply_colormap_channelwise checkers contrast posterize ravel remap_image solarize spread \
-	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate; do \
+	rgb_to_greyscale greyscale_to_rgb rgb_to_yuv yuv_to_rgb rotate in out; do \
 		cp abstractions/\#$$z.pd deprecated/\@$$z.pd; done
 
 #--------#--------#--------#--------#--------#--------#--------#--------
@@ -135,4 +135,4 @@ help::
 #--------#--------#--------#--------#--------#--------#--------#--------
 
 kloc::
-	wc configure */*.rb
+	wc configure base/*.rb format/*.rb rubyext.rb
