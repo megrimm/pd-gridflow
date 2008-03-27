@@ -918,7 +918,7 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 void suffixes_are (const char *name, const char *suffixes);
 
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
-#define install_format(name,ins,outs,mode,suffixes) do {install(name,ins,outs); suffixes_are(name,suffixes);} while(0)
+#define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
 
 #define SUPER rb_call_super(argc,argv);
 
