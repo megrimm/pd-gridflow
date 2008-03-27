@@ -281,7 +281,6 @@ def handle_end(line)
 		#handle_classinfo if not frame.info
 		cl = frame.name
 		if fields[0]!="class" or (n>1 and fields[1]!=cl) then raise "end not matching #{where}" end
-		if /^class\s+(\w+\s+)?\{(.*)/ =~ line then $stack.push frame; handle_classinfo("{"+$2); $stack.pop end
 		$stack.push frame
 		frame.attrs.each {|name,attr|
 			type,name,default = attr.to_a
@@ -304,6 +303,7 @@ def handle_end(line)
 				"return in[#{i}]->begin(argc,argv);}"
 
 		}
+		if /^class\s+(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 		$stack.pop
 	end
 	if :ruby==frame then
