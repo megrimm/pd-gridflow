@@ -43,7 +43,7 @@
 	int nframe = mpeg3_get_frame(mpeg,track);
 	int nframes = mpeg3_video_frames(mpeg,track);
 	post("track=%d; nframe=%d; nframes=%d",track,nframe,nframes);
-	if (nframe >= nframes) {outlet_bang(bself->out[1]); return;}
+	if (nframe >= nframes) {outlet_bang(bself->te_outlet); return;}
 	int sx = mpeg3_video_width(mpeg,track);
 	int sy = mpeg3_video_height(mpeg,track);
 	int channels = 3;

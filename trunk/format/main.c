@@ -181,7 +181,7 @@ struct GridHeader {
 }
 \def 0 bang () {
 	P<Dim> dim;
-	if (feof(f)) {outlet_bang(bself->out[1]); return;}
+	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
 	if (headerless) {
 		dim = headerless;
 	} else {
