@@ -284,8 +284,6 @@ static void gfpost(VideoMmap *self) {
 #define WIOCTL2(F,NAME,ARG) \
   (IOCTL(F,NAME,ARG)<0 && (error("ioctl %s: %s",#NAME,strerror(errno)), RAISE("ioctl error"), 0))
 
-#define GETFD NUM2INT(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(fileno),0))
-
 \def 0 size (int sy, int sx) {
 	VideoWindow grab_win;
 	// !@#$ bug here: won't flush the frame queue
@@ -751,10 +749,8 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 \def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
 	SUPER;
 	image=0;
-	rb_ivar_set(rself,SI(@stream),
-		rb_funcall(rb_cFile,SI(open),2,filename,rb_str_new2("r+")));
-	fd = GETFD;
-	rb_funcall(rself,SI(initialize2),0);
+	f = fopen(rb_str_ptr(filename),"r+");
+	rb_funcall(rself,SI(initialize2),0); // name conflict...
 }
 
 \end class FormatVideoDev {install_format("#io:videodev",1,2,4,"");}

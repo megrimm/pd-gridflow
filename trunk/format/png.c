@@ -38,7 +38,6 @@ extern "C" {
 	FormatPNG () : bit_packing(0), png(0), f(0) {}
 	\decl void initialize (Symbol mode, String filename);
 	\decl 0 bang ();
-	\decl 0 close ();
 	\grin 0 int
 };
 
@@ -109,14 +108,9 @@ GRID_INLET(FormatPNG,0) {
 	png_destroy_read_struct(&png, &info, NULL);
 }
 
-\def 0 close () {if (f) {fclose(f); f=0;}}
-
 \def void initialize (Symbol mode, String filename) {
 	SUPER;
-	rb_funcall(rself,SI(raw_open),3,mode,filename);
-	Ruby stream = rb_ivar_get(rself,SI(@stream));
-	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
-	f = fdopen(fd,mode==SYM(in)?"r":"w");
+	Format::_0_open(0,0,mode,filename);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }

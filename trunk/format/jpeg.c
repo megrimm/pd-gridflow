@@ -43,7 +43,6 @@ extern "C" {
 	\decl void initialize (Symbol mode, String filename);
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
-	\decl 0 close ();
 	\grin 0 int
 };
 
@@ -87,8 +86,8 @@ static bool gfeof(FILE *f) {
 }
 
 \def 0 bang () {
-	off_t off = NUM2LONG(rb_funcall(rb_ivar_get(rself,SI(@stream)),SI(tell),0));
-	fseek(f,off,SEEK_SET);
+	//off_t off = ftell(f);
+	//fseek(f,off,SEEK_SET);
 	if (gfeof(f)) {outlet_bang(bself->out[1]); return;}
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
@@ -115,17 +114,9 @@ static bool gfeof(FILE *f) {
 	jpeg_set_quality(&cjpeg,quality,false);
 }
 
-\def 0 close () {
-	if (f) {fclose(f); f=0;}
-	//if (f) {rb_funcall(stream,SI(close),0); f=0; fd=-1;}
-}
-
 \def void initialize (Symbol mode, String filename) {
 	SUPER;
-	rb_funcall(rself,SI(raw_open),3,mode,filename);
-	Ruby stream = rb_ivar_get(rself,SI(@stream));
-	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
-	f = fdopen(fd,mode==SYM(in)?"r":"w");
+	Format::_0_open(0,0,mode,filename);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
