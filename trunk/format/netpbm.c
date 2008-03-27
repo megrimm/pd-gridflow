@@ -28,8 +28,6 @@ extern "C" {
 
 \class FormatNetPBM : Format {
 	struct pam inpam, outpam;
-	int fd;
-	FILE *f;
 	\grin 0
 	\decl void initialize(String mode, String filename);
 	\decl 0 bang ();

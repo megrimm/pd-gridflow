@@ -33,9 +33,7 @@ extern "C" {
 	P<BitPacking> bit_packing;
 	png_structp png;
 	png_infop info;
-	int fd;
-	FILE *f;
-	FormatPNG () : bit_packing(0), png(0), f(0) {}
+	FormatPNG () : bit_packing(0), png(0) {}
 	\decl void initialize (Symbol mode, String filename);
 	\decl 0 bang ();
 	\grin 0 int

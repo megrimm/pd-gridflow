@@ -38,8 +38,6 @@ extern "C" {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
-	int fd;
-	FILE *f;
 	\decl void initialize (Symbol mode, String filename);
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
