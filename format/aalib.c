@@ -128,15 +128,13 @@ GRID_INLET(FormatAALib,0) {
 	SUPER;
 	argc-=2; argv+=2;
 	char *argv2[argc];
-	for (int i=0; i<argc; i++)
-		argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
+	for (int i=0; i<argc; i++) argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
 	if (mode!=SYM(out)) RAISE("write-only, sorry");
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc; i++) free(argv2[i]);
 	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
 	Ruby driver_address = rb_hash_aref(drivers,target);
-	if (driver_address==Qnil)
-		RAISE("unknown aalib driver '%s'",rb_sym_name(target));
+	if (driver_address==Qnil) RAISE("unknown aalib driver '%s'",rb_sym_name(target));
 	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
 	context = aa_init(driver,&aa_defparams,0);
 	rparams = aa_getrenderparams();

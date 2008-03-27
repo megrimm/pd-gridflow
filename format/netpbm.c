@@ -31,12 +31,12 @@ extern "C" {
 	int fd;
 	FILE *f;
 	\grin 0
-	\decl void initialize(Symbol mode, String filename);
+	\decl void initialize(String mode, String filename);
 	\decl 0 bang ();
 };
-\def void initialize(Symbol mode, String filename) {
+\def void initialize(String mode, String filename) {
 	SUPER;
-	rb_funcall(rself,SI(raw_open),3,mode,filename);
+	Format::_0_open(0,0,mode,filename);
 	Ruby stream = rb_ivar_get(rself,SI(@stream));
 	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
 	f = fdopen(fd,mode==SYM(in)?"r":"w");
