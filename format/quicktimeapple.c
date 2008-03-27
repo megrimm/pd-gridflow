@@ -335,7 +335,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 } GRID_FLOW {
 } GRID_FINISH {
 } GRID_END
-\end class FormatQuickTimeCamera {install_format("#io:quicktimecamera",1,1,4,"");}
+\end class FormatQuickTimeCamera {install_format("#io:quicktimecamera",4,"");}
 
 \class FormatQuickTimeApple : Format {
 	Movie movie;
@@ -465,7 +465,7 @@ err:
 
 \classinfo {
 	EnterMovies();
-	install_format("#io:quicktime",1,1,4,"mov");
+	install_format("#io:quicktime",4,"mov");
 }
 \end class FormatQuickTimeApple
 void startup_quicktimeapple () {

@@ -334,7 +334,7 @@ class RNM; %{
 }
 
 \classinfo {
-	install_format("#io:dc1394",1,1,4,"");
+	install_format("#io:dc1394",4,"");
 	//IEVAL(rself,ruby_code);
 	rb_funcall(rself,SI(instance_eval),3,rb_str_new2(ruby_code),
 		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));

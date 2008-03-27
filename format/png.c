@@ -115,7 +115,7 @@ GRID_INLET(FormatPNG,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo { install_format("#io:png",1,1,4,"png"); }
+\classinfo { install_format("#io:png",4,"png"); }
 \end class FormatPNG
 void startup_png () {
 	\startall

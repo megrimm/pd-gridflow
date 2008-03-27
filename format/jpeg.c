@@ -121,7 +121,7 @@ static bool gfeof(FILE *f) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo {install_format("#io:jpeg",1,1,6,"jpeg jpg");}
+\classinfo {install_format("#io:jpeg",6,"jpeg jpg");}
 \end class FormatJPEG
 void startup_jpeg () {
 	\startall

@@ -150,7 +150,7 @@ GRID_INLET(FormatAALib,0) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
 	}
 // IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
-	install_format("#in:aalib",1,1,2,"");
+	install_format("#in:aalib",2,"");
 }
 \end class FormatAALib
 void startup_aalib () {

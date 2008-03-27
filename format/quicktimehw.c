@@ -210,7 +210,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
-\classinfo {install_format("#io:quicktime",1,2,6,"mov");
+\classinfo {install_format("#io:quicktime",6,"mov");
 //  def self.info; %[codecs: #{@codecs.keys.join' '}] end
 //#define L fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #ifdef LQT_VERSION
