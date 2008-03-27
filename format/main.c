@@ -22,6 +22,128 @@
 */
 
 #include "../base/grid.h.fcs"
+#include <string>
+#include <map>
+
+/* API (version 0.9.1)
+	mode is :in or :out
+	def initialize(mode,*args) :
+		open a file handler (do it via .new of class)
+	attr_reader :description :
+		a _literal_ (constant) string describing the format handler
+	def self.info() optional :
+		return a string describing the format handler differently
+		than self.description(). in particular, it can list
+		compile-time options and similar things. for example,
+		quicktime returns a list of codecs.
+	def 0 bang() :
+		read one frame, send through outlet 0
+		return values :
+			Integer >= 0 : frame number of frame read.
+			false : no frame was read : end of sequence.
+			nil : a frame was read, but can't say its number.
+		note that trying to read a nonexistent frame should no longer
+		rewind automatically (@in handles that part), nor re-read the
+		last frame (mpeg/quicktime used to do this)
+	def 0 seek(Integer i) :     select one frame to be read next (by number)
+	def 0 length() : ^Integer   returns number of frames (never implemented ?)
+	def 0 close() :             close a handler
+	def 0 grid() : frame to write
+	def 0 ...() : options
+	outlet 0 grid() frame just read
+	outlet 1 ...() everything else
+*/
+
+std::map<std::string,std::string> suffix_table;
+void suffixes_are (const char *name, const char *suffixes) {
+	std::string name2 = name;
+	char *suff2 = strdup(suffixes);
+	char *suff3 = suff2+strlen(suff2);
+	for (char *s=suff2; s<suff3; s++) if (*s==' ' || *s==',') *s=0;
+	for (char *s=suff2; s<suff3; s+=strlen(s)+1) {
+		std::string ss = s;
+		suffix_table[ss]=name2;
+	}
+}
+
+\class SuffixLookup < GridObject {
+  \decl void initialize ();
+  \decl 0 symbol (String str);
+};
+\def void initialize () {}
+\def 0 symbol (String str) {
+	char *s = strdup(rb_str_ptr(str));
+	char *t = strrchr(s,'.');
+	if (!t) outlet_symbol(bself->out[2],gensym(s));
+	else {
+		*t = 0;
+		outlet_symbol(bself->out[1],gensym(t+1));
+		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
+		if (u!=suffix_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
+	}
+}
+\end class SuffixLookup {install("gf.suffix_lookup",1,3);}
+
+\class Format < GridObject
+\def void initialize (Symbol mode, ...) {
+	SUPER;
+	this->mode = mode;
+	this->frame = 0;
+//	case mode
+//	when  :in; flags[2]==1
+//	when :out; flags[1]==1
+//	else raise "Format opening mode is incorrect"
+//	//end or raise "Format '#{self.class.instance_eval{@symbol_name}}' does not support mode '#{mode}'"
+}
+
+\def 0 open(Symbol mode, String filename) {
+	const char *fmode;
+	if (mode==SYM(in))  fmode="r"; else
+	if (mode==SYM(out)) fmode="w"; else
+	RAISE("bad mode");
+	if (f) _0_close(0,0);
+	if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
+	f = fopen(rb_str_ptr(filename),fmode);
+	fd = fileno(f);
+	//@stream = File.open(filename,fmode); break;
+//	case gzfile:
+//		if (mode==SYM(in)) {filename = GridFlow.find_file(filename);}
+//		if (mode==:in) {raw_open_gzip_in filename; else raw_open_gzip_out filename;}
+//		def self.rewind() raw_open(*@raw_open_args); @frame = 0 end unless @rewind_redefined
+//		@rewind_redefined = true
+}
+\def 0 close() {if (f) {fclose(f); f=0; fd=-1;}}
+\def 0 cast(NumberTypeE nt) {cast = nt;}
+
+\def 0 seek(int frame) {
+	if (!frame) {_0_rewind(0,0); return;}
+	RAISE("don't know how to seek for frame other than # 0");
+}
+
+// this is what you should use to rewind
+// different file-sources may redefine this as something else
+// (eg: gzip)
+\def 0 rewind () {
+	if (!f) RAISE("Nothing to rewind about...");
+	fseek(f,0,SEEK_SET);
+	frame = 0;
+}
+
+// This is different from IO#eof, which waits until a read has failed
+// doesn't work in nonblocking mode? (I don't recall why)
+//\def 0 eof () {
+//	thispos = (@stream.seek 0,IO::SEEK_CUR; @stream.tell)
+//	lastpos = (@stream.seek 0,IO::SEEK_END; @stream.tell)
+//	@stream.seek thispos,IO::SEEK_SET
+//	return thispos == lastpos
+//rescue Errno::ESPIPE # just ignore if seek is not possible
+//	return false
+//}
+
+// "ideal" buffer size or something
+// the buffer may be bigger than this but usually not by much.
+// def self.buffersize; 16384 end
+\end class Format {}
 
 /* This is the Grid format I defined: */
 struct GridHeader {
@@ -34,7 +156,7 @@ struct GridHeader {
 	// raw data goes after that
 };
 
-\class FormatGrid < Format {
+\class FormatGrid : Format {
 	GridHeader head;
 	int fd;
 	FILE *f;
@@ -48,19 +170,15 @@ struct GridHeader {
 	\decl 0 headerful ();
 	\decl 0 type (NumberTypeE nt);
 	\decl 0 close();
-	\decl void raw_open_gzip_in(String filename);
-	\decl void raw_open_gzip_out(String filename);
-	\decl void raw_open(Symbol mode, String filename);
+//	\decl void raw_open_gzip_in(String filename);
+//	\decl void raw_open_gzip_out(String filename);
 };
 
 \def void initialize(Symbol mode, String filename) {
 	SUPER;
 	strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
 	head.type = 32;
-	rb_funcall(rself,SI(raw_open),3,mode,filename);
-	Ruby stream = rb_ivar_get(rself,SI(@stream));
-	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
-	f = fdopen(fd,mode==SYM(in)?"r":"w");
+	_0_open(0,0,mode,filename);
 }
 \def 0 bang () {
 	P<Dim> dim;
@@ -125,33 +243,16 @@ TYPESWITCH(nt,FOO,)
 	}
 	this->nt = nt;
 }
-\def void raw_open_gzip_in(String filename) {
-	RAISE("temporarily disabled. ask matju.");
+
+//\def void raw_open_gzip_in(String filename) {
 	//r,w = IO.pipe
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; w.close; @stream = r;}
 	//else {r.close; STDOUT.reopen w; STDIN.reopen filename, "r"; exec "gzip", "-dc";}
-}
-\def void raw_open_gzip_out(String filename) {
-	RAISE("temporarily disabled. ask matju.");
+//\def void raw_open_gzip_out(String filename) {
 	//r,w = IO.pipe
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
 	//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
-}
-\def void raw_open(Symbol mode, String filename) {
-	const char *fmode;
-	if (mode==SYM(in))  fmode="r"; else
-	if (mode==SYM(out)) fmode="w"; else
-	RAISE("bad mode");
-	//@stream.close if @stream
-	if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
-	RAISE("raw_open code missing here");
-	//@stream = File.open(filename,fmode); break;
-//	case gzfile:
-//		if (mode==SYM(in)) {filename = GridFlow.find_file(filename);}
-//		if (mode==:in) {raw_open_gzip_in filename; else raw_open_gzip_out filename;}
-//		def self.rewind() raw_open(*@raw_open_args); @frame = 0 end unless @rewind_redefined
-//		@rewind_redefined = true
-}
+
 \def 0 close () {
 	//@stream.close if @stream
 	//GridFlow.hunt_zombies
