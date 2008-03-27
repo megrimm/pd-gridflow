@@ -53,8 +53,7 @@
 	uint8 *rows[sy];
 	for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
-	GridOutlet out(this,0,new Dim(sy, sx, channels),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(sy,sx,channels),cast);
 	int bs = out.dim->prod(1);
 	for(int y=0; y<sy; y++) {
 		uint8 *row = buf+channels*sx*y;

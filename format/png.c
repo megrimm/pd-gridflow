@@ -100,7 +100,7 @@ GRID_INLET(FormatPNG,0) {
 	delete[] row_pointers;
 	row_pointers = 0;
 	png_read_end(png, 0);
-	GridOutlet out(this,0,new Dim(height, width, channels), NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(height, width, channels), cast);
 	out.send(rowbytes*height,image_data);
 	delete[] image_data;
 	png_destroy_read_struct(&png, &info, NULL);

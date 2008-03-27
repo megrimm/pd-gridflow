@@ -222,9 +222,8 @@ void FormatX11::report_pointer(int y, int x, int state) {
 }
 
 \def 0 bang () {
-	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0),
-		(unsigned)-1, ZPixmap, ximage, 0, 0);
-	GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0), (unsigned)-1, ZPixmap, ximage, 0, 0);
+	GridOutlet out(this,0,dim,cast);
 	int sy=dim->get(0), sx=dim->get(1), bs=dim->prod(1);
 	uint8 b2[bs];
 	for(int y=0; y<sy; y++) {
