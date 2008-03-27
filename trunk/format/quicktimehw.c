@@ -82,8 +82,7 @@
 	uint8 *buf = new uint8[sy*sx*channels];
 	uint8 *rows[sy]; for (int i=0; i<sy; i++) rows[i]=buf+i*sx*channels;
 	quicktime_decode_scaled(anim,0,0,sx,sy,sx,sy,colorspace,rows,track);
-	GridOutlet out(this,0,new Dim(sy, sx, channels),
-	NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(sy,sx,channels),cast);
 	out.give(sy*sx*channels,buf);
 	started=true;
 //	return INT2NUM(nframe);

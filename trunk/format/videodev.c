@@ -348,8 +348,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
 	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		GridOutlet out(this,0,colorspace==SYM(magic)?new Dim(sy,sx,3):dim,
-			NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+		GridOutlet out(this,0,colorspace==SYM(magic)?new Dim(sy,sx,3):dim,cast);
 		if (colorspace==SYM(y)) {
 			out.send(sy*sx,buf);
 		} else if (colorspace==SYM(rgb)) {
@@ -404,7 +403,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 			}
 		}
 	} else if (vp.palette==VIDEO_PALETTE_RGB32 || vp.palette==VIDEO_PALETTE_RGB24 || vp.palette==VIDEO_PALETTE_RGB565) {
-		GridOutlet out(this,0,dim,NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+		GridOutlet out(this,0,dim,cast);
 		uint8 rgb[sx*3];
 		uint8 b2[sx*3];
 		if (colorspace==SYM(y)) {

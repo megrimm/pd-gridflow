@@ -45,8 +45,7 @@ extern "C" {
 	//inpam.allocation_depth = 3;
 	pnm_readpaminit(f, &inpam, /*PAM_STRUCT_SIZE(tuple_type)*/ sizeof(struct pam));
 	tuple *tuplerow = pnm_allocpamrow(&inpam);
-	GridOutlet out(this,0,new Dim(inpam.height, inpam.width, inpam.depth),
-		NumberTypeE_find(rb_ivar_get(rself,SI(@cast))));
+	GridOutlet out(this,0,new Dim(inpam.height,inpam.width,inpam.depth),cast);
 	uint8 buf[inpam.width*3];
 	for (int i=0; i<inpam.height; i++) {
 		pnm_readpamrow(&inpam, tuplerow);
