@@ -24,6 +24,7 @@
 #include "../base/grid.h.fcs"
 #include <string>
 #include <map>
+#define L _L_
 
 /* API (version 0.9.1)
 	mode is :in or :out
@@ -104,8 +105,8 @@ void suffixes_are (const char *name, const char *suffixes) {
 	if (f) _0_close(0,0);
 	if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
 	f = fopen(rb_str_ptr(filename),fmode);
+	if (!f) RAISE("can't open file '%s': %s",rb_str_ptr(filename),strerror(errno));
 	fd = fileno(f);
-	//@stream = File.open(filename,fmode); break;
 //	case gzfile:
 //		if (mode==SYM(in)) {filename = GridFlow.find_file(filename);}
 //		if (mode==:in) {raw_open_gzip_in filename; else raw_open_gzip_out filename;}
@@ -158,8 +159,6 @@ struct GridHeader {
 
 \class FormatGrid : Format {
 	GridHeader head;
-	int fd;
-	FILE *f;
 	int endian;
 	NumberTypeE nt;
 	P<Dim> headerless; // if null: headerful; if Dim: it is the assumed dimensions of received grids
