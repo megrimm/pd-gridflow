@@ -61,7 +61,7 @@
 
 \def 0 bang () {
 	int nframe = quicktime_video_position(anim,track);
-	if (nframe >= length) {outlet_bang(bself->out[1]); return;}
+	if (nframe >= length) {outlet_bang(bself->te_outlet); return;}
 	/* if it works, only do it once, to avoid silly stderr messages forgotten in LQT */
 	if (!quicktime_reads_cmodel(anim,colorspace,0) && !started) {
 		RAISE("LQT says this video cannot be decoded into the chosen colorspace");
@@ -176,7 +176,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 \def 0 get () {
 /*	t_atom a[1];
 	SETFLOAT(a,(float)length);
-	outlet_anything(bself->out[1],gensym("frames"),1,a);
+	outlet_anything(bself->te_outlet,gensym("frames"),1,a);
 */
 	Ruby a[] = {INT2NUM(1),SYM(frames),INT2NUM(length)};
 	send_out(3,a);

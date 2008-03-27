@@ -86,7 +86,7 @@ static bool gfeof(FILE *f) {
 \def 0 bang () {
 	//off_t off = ftell(f);
 	//fseek(f,off,SEEK_SET);
-	if (gfeof(f)) {outlet_bang(bself->out[1]); return;}
+	if (gfeof(f)) {outlet_bang(bself->te_outlet); return;}
 	djpeg.err = jpeg_std_error(&jerr);
 	jpeg_create_decompress(&djpeg);
 	jpeg_stdio_src(&djpeg,f);
