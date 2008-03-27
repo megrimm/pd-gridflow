@@ -209,7 +209,6 @@ GRID_INLET(FormatQuartz,0) {
 \def 0 delete_m () {
 	[window autorelease];
 }
-
 \def 0 close () {
 	IEVAL(rself,"@clock.unset");
 	SUPER;
@@ -217,17 +216,13 @@ GRID_INLET(FormatQuartz,0) {
 	[window setReleasedWhenClosed: YES];
 	[window close];
 }
-
-\classinfo {
+\end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
 	install_format("#io:quartz",2,"");
-\end ruby
-);}
-
-\end class FormatQuartz
+}
 void startup_quartz () {
         \startall
 }

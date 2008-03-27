@@ -143,16 +143,16 @@ GRID_INLET(FormatAALib,0) {
 	post("aalib image size: %s",(new Dim(3,v))->to_s());
 }
 
-\classinfo {
+\end class FormatAALib {
+
 	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
 	const aa_driver *const *p = aa_drivers;
 	for (; *p; p++) {
 		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
 	}
 // IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
-	install_format("#in:aalib",2,"");
+	install_format("#io.aalib",2,"");
 }
-\end class FormatAALib
 void startup_aalib () {
 	\startall
 }

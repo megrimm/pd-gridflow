@@ -333,13 +333,7 @@ class RNM; %{
 	gfpost("i'd like to get a frame from the cam, but how?");
 }
 
-\classinfo {
-	install_format("#io:dc1394",4,"");
-	//IEVAL(rself,ruby_code);
-	rb_funcall(rself,SI(instance_eval),3,rb_str_new2(ruby_code),
-		rb_str_new2(__FILE__),INT2NUM(ruby_lineno+3));
-}
-\end class FormatDC1394
+\end class FormatDC1394 {install_format("#io.dc1394",4,"");}
 void startup_dc1394 () {
 	\startall
 }

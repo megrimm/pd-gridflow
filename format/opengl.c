@@ -171,7 +171,7 @@ GRID_INLET(FormatOpenGL,0) {
 	gfpost("@clock = Clock.new self");
 }
 
-\classinfo {install_format("#io:opengl",2,"");}
+\classinfo {install_format("#io.opengl",2,"");}
 \end class FormatOpenGL
 void startup_opengl () {
 	\startall
