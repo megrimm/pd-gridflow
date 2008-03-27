@@ -915,17 +915,26 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 };
 \end class Pointer
 
+void suffixes_are (const char *name, const char *suffixes);
+
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
-#define install_format(name,ins,outs,mode,suff) rb_funcall(rself,SI(install_format),5, \
-	rb_str_new2(name),INT2NUM(ins),INT2NUM(outs), INT2NUM(mode), rb_str_new2(suff))
+#define install_format(name,ins,outs,mode,suffixes) do {install(name,ins,outs); suffixes_are(name,suffixes);} while(0)
+
 #define SUPER rb_call_super(argc,argv);
 
 \class Format : GridObject {
+	int mode;
 	int fd;
 	FILE *f;
-	Format() : fd(-1), f(0) {}
-	void open (String mode, String filename);
-	void close ();
+	NumberTypeE cast;
+	long frame;
+	Format() : mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
+	\decl void initialize (Symbol mode, ...);
+	\decl 0 open (String mode, String filename);
+	\decl 0 close ();
+	\decl 0 cast (NumberTypeE nt);
+	\decl 0 seek(int frame);
+	\decl 0 rewind ();
 };
 
 #endif // __GF_GRID_H

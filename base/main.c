@@ -508,8 +508,6 @@ void startup_grid();
 void startup_flow_objects();
 void startup_format();
 
-Ruby cFormat;
-
 #define SDEF(_class_,_name_,_argc_) \
 	rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 #define SDEF2(_name1_,_name2_,_argc_) \
@@ -580,7 +578,6 @@ BUILTIN_SYMBOLS(FOO)
 		"STDERR.puts \"can't load: #{$!}\n"
 		"backtrace: #{$!.backtrace.join\"\n\"}\n"
 		"$: = #{$:.inspect}\"\n; false end")) return;
-	cFormat = EVAL("GridFlow::Format");
 	startup_format();
 	STARTUP_LIST()
 	EVAL("h=GridFlow.fclasses; h['#io:window'] = h['#io:quartz']||h['#io:x11']||h['#io:sdl']");
