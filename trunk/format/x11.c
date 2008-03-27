@@ -661,7 +661,7 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	show_section(0,0,sx,sy);
 }
 
-\end class FormatX11 {install_format("#io:x11",1,1,6,"");}
+\end class FormatX11 {install_format("#io:x11",6,"");}
 void startup_x11 () {
 	\startall
 }

@@ -223,7 +223,7 @@ GRID_INLET(FormatQuartz,0) {
 	distantFuture = [NSDate distantFuture];
 	distantPast = [NSDate distantPast];
 	[NSApplication sharedApplication];
-	install_format("#io:quartz",1,1,2,"");
+	install_format("#io:quartz",2,"");
 \end ruby
 );}
 

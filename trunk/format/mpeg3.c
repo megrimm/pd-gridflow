@@ -87,7 +87,7 @@
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
 }
 
-\classinfo {install_format("#io:mpeg",1,1,4,"mpg mpeg");}
+\classinfo {install_format("#io:mpeg",4,"mpg mpeg");}
 \end class FormatMPEG3
 void startup_mpeg3 () {
 	\startall

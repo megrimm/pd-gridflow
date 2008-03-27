@@ -93,7 +93,7 @@ GRID_INLET(FormatNetPBM,0) {
 	fflush(f);
 } GRID_END
 
-\classinfo {install_format("#io:netpbm",1,1,6,"ppm pgm pnm pam");}
+\classinfo {install_format("#io:netpbm",6,"ppm pgm pnm pam");}
 \end class FormatNetPBM
 
 void startup_netpbm () {

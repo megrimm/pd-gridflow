@@ -257,7 +257,7 @@ TYPESWITCH(nt,FOO,)
 	//@stream.close if @stream
 	//GridFlow.hunt_zombies
 }
-\end class FormatGrid {install_format("#io:grid",1,1,6,"grid");}
+\end class FormatGrid {install_format("#io:grid",6,"grid");}
 
 void startup_format () {
 	\startall
