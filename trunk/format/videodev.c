@@ -752,7 +752,7 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	rb_funcall(rself,SI(initialize2),0); // name conflict...
 }
 
-\end class FormatVideoDev {install_format("#io:videodev",4,"");}
+\end class FormatVideoDev {install_format("#io.videodev",4,"");}
 void startup_videodev () {
 	\startall
 }

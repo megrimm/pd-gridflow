@@ -106,7 +106,7 @@ GRID_INLET(FormatSDL,0) {
 	IEVAL(rself,"@clock = Clock.new self");
 }
 
-\end class FormatSDL {install_format("#io:sdl",2,"");}
+\end class FormatSDL {install_format("#io.sdl",2,"");}
 void startup_sdl () {
 	\startall
 }

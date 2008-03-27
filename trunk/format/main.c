@@ -56,6 +56,7 @@
 */
 
 std::map<std::string,std::string> suffix_table;
+std::map<std::string,std::string> format_table;
 void suffixes_are (const char *name, const char *suffixes) {
 	std::string name2 = name;
 	char *suff2 = strdup(suffixes);
@@ -67,7 +68,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 	}
 }
 
-\class SuffixLookup < GridObject {
+\class SuffixLookup : FObject {
   \decl void initialize ();
   \decl 0 symbol (String str);
 };
@@ -82,8 +83,24 @@ void suffixes_are (const char *name, const char *suffixes) {
 		std::map<std::string,std::string>::iterator u = suffix_table.find(std::string(t+1));
 		if (u!=suffix_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
 	}
+	free(s);
 }
 \end class SuffixLookup {install("gf.suffix_lookup",1,3);}
+
+// not in use
+\class FormatLookup : FObject {
+  \decl void initialize ();
+  \decl 0 symbol (String str);
+};
+\def void initialize () {}
+\def 0 symbol (String str) {
+	char *s = strdup(rb_str_ptr(str));
+	std::map<std::string,std::string>::iterator u = format_table.find(std::string(s));
+	if (u!=format_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
+	else outlet_bang(bself->out[0]);
+	free(s);
+}
+\end class FormatLookup {install("gf.format_lookup",1,1);}
 
 \class Format < GridObject
 \def void initialize (Symbol mode, ...) {
@@ -256,7 +273,7 @@ TYPESWITCH(nt,FOO,)
 	//@stream.close if @stream
 	//GridFlow.hunt_zombies
 }
-\end class FormatGrid {install_format("#io:grid",6,"grid");}
+\end class FormatGrid {install_format("#io.grid",6,"grid");}
 
 void startup_format () {
 	\startall
