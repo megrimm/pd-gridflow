@@ -937,7 +937,7 @@ void suffixes_are (const char *name, const char *suffixes);
 	long frame;
 	Format() : mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
 	\decl void initialize (t_symbol *mode, ...);
-	\decl 0 open (String mode, String filename);
+	\decl 0 open (t_symbol *mode, string filename);
 	\decl 0 close ();
 	\decl 0 cast (NumberTypeE nt);
 	\decl 0 seek(int frame);
