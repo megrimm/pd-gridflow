@@ -944,4 +944,6 @@ void suffixes_are (const char *name, const char *suffixes);
 	\decl 0 rewind ();
 };
 
+static inline string gf_find_file (string x) {return string(rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,rb_str_new2(x.data()))));}
+
 #endif // __GF_GRID_H
