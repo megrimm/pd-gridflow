@@ -124,7 +124,7 @@ char *Dim::to_s() {
 }
 
 //----------------------------------------------------------------
-\class FObject < CObject
+\class FObject : CObject
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *foo=0) {
 	if (argc<1) {
@@ -288,8 +288,9 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 }
 
 \def void delete_m () {
-	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
-	rb_funcall(keep,SI(delete),1,rself);
+	rb_funcall(rb_ivar_get(mGridFlow, SI(@fobjects)),SI(delete),1,rself);
+	DATA_PTR(rself) = 0; // really!
+	delete this; // really!
 }
 
 \classinfo
@@ -319,7 +320,7 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 }
 
 /* **************************************************************** */
-\class BitPacking < CObject
+\class BitPacking : CObject
 
 \def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {}
 
