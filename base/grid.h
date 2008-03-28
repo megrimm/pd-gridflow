@@ -67,8 +67,8 @@ extern "C" {
 #define siglongjmp longjmp
 #endif
 
-#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
-//#define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+//#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
+#define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
 #ifdef IS_BRIDGE
 #define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
@@ -243,8 +243,9 @@ typedef struct R {
 		if (TYPE(r)!=T_FLOAT) RAISE("not a Float");
 		return ((RFloat*)r)->value;}
 	operator t_symbol * () const {
-		if (TYPE(r)!=T_SYMBOL) RAISE("not a Symbol");
-		return gensym((char *)rb_sym_name(r));
+		if (TYPE(r)==T_SYMBOL) return gensym((char *)rb_sym_name(r));
+		if (TYPE(r)==T_STRING) return gensym((char *)rb_str_ptr(r));
+ 		RAISE("want Symbol or String");
 	}
 	operator Pointer * () const {
 		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
@@ -929,7 +930,7 @@ void suffixes_are (const char *name, const char *suffixes);
 	NumberTypeE cast;
 	long frame;
 	Format() : mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
-	\decl void initialize (Symbol mode, ...);
+	\decl void initialize (t_symbol *mode, ...);
 	\decl 0 open (String mode, String filename);
 	\decl 0 close ();
 	\decl 0 cast (NumberTypeE nt);

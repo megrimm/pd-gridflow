@@ -103,9 +103,11 @@ void suffixes_are (const char *name, const char *suffixes) {
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 
 \class Format < GridObject
-\def void initialize (Symbol mode, ...) {
+\def void initialize (t_symbol *mode, ...) {
 	SUPER;
-	this->mode = mode;
+	if (mode==gensym("out")) this->mode=2; else
+	if (mode==gensym("in"))  this->mode=4; else
+		RAISE("unknown mode");
 	this->frame = 0;
 //	case mode
 //	when  :in; flags[2]==1
@@ -115,6 +117,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 }
 
 \def 0 open(Symbol mode, String filename) {
+	if (TYPE(mode)==T_STRING) mode=ID2SYM(rb_intern(rb_str_ptr(mode))); // source_filter doesn't figure this out.
 	const char *fmode;
 	if (mode==SYM(in))  fmode="r"; else
 	if (mode==SYM(out)) fmode="w"; else
