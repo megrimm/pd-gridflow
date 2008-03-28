@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -91,7 +91,7 @@ static void expect_max_one_dim (P<Dim> d) {
 //	if (d->n!=1) RAISE("expecting Dim[n], got %s",d->to_s());}
 
 //****************************************************************
-\class GridCast < GridObject {
+\class GridCast : GridObject {
 	\attr NumberTypeE nt;
 	\decl void initialize (NumberTypeE nt);
 	\grin 0
@@ -114,7 +114,7 @@ GRID_INLET(GridCast,0) {
 //****************************************************************
 //{ ?,Dim[B] -> Dim[*Cs] }
 // out0 nt to be specified explicitly
-\class GridImport < GridObject {
+\class GridImport : GridObject {
 	\attr NumberTypeE cast;
 	\attr P<Dim> dim; // size of grids to send
 	PtrGrid dim_grid;
@@ -176,7 +176,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 //****************************************************************
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
-\class GridToFloat < GridObject {
+\class GridToFloat : GridObject {
 	\grin 0
 };
 
@@ -187,7 +187,7 @@ GRID_INLET(GridToFloat,0) {
 \classinfo { install("#to_float",1,1); }
 \end class GridToFloat
 
-\class GridToSymbol < GridObject {
+\class GridToSymbol : GridObject {
 	\grin 0
 };
 
@@ -206,7 +206,7 @@ GRID_INLET(GridToSymbol,0) {
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
 /* exporting floats may be crashy because [#export_list] doesn't handle GC */
-\class GridExportList < GridObject {
+\class GridExportList : GridObject {
 	int n;
 	\grin 0
 };
@@ -226,7 +226,7 @@ GRID_INLET(GridExportList,0) {
 \end class GridExportList
 
 /* **************************************************************** */
-\class GridPrint < GridObject {
+\class GridPrint : GridObject {
 	\attr t_symbol *name;
 	\grin 0
 	int base;
@@ -384,15 +384,14 @@ GRID_INLET(GridPrint,0) {
 \end class
 
 /* **************************************************************** */
-// GridStore ("@store") is the class for storing a grid and restituting
-// it on demand. The right inlet receives the grid. The left inlet receives
-// either a bang (which forwards the whole image) or a grid describing what
-// to send.
+// [#store] is the class for storing a grid and restituting it on demand.
+// The right inlet receives the grid. The left inlet receives either a bang
+// (which forwards the whole image) or a grid describing what to send.
 //{ Dim[*As,B],Dim[*Cs,*Ds] -> Dim[*As,*Ds] }
 // in0: integer nt
 // in1: whatever nt
 // out0: same nt as in1
-\class GridStore < GridObject {
+\class GridStore : GridObject {
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
@@ -577,7 +576,7 @@ GRID_INLET(GridStore,1) {
 //****************************************************************
 //{ Dim[*As]<T> -> Dim[*As]<T> } or
 //{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As]<T> }
-\class GridOp < GridObject {
+\class GridOp : GridObject {
 	\attr Numop *op;
 	PtrGrid r;
 	\decl void initialize(Numop *op, Grid *r=0);
@@ -637,7 +636,7 @@ GRID_INPUT2(GridOp,1,r) {} GRID_END
 \end class GridOp
 
 //****************************************************************
-\class GridFold < GridObject {
+\class GridFold : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
 	\decl void initialize (Numop *op);
@@ -683,7 +682,7 @@ GRID_INLET(GridFold,0) {
 \classinfo { install("#fold",1,1); }
 \end class GridFold
 
-\class GridScan < GridObject {
+\class GridScan : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
 	\decl void initialize (Numop *op);
@@ -727,7 +726,7 @@ GRID_INLET(GridScan,0) {
 // Seed   is a Dim[           *ss]<T>
 // result is a Dim[*si,   *sk,*ss]<T>
 // Currently *ss can only be = Dim[]
-\class GridInner < GridObject {
+\class GridInner : GridObject {
 	\attr Numop *op;
 	\attr Numop *fold;
 	\attr PtrGrid seed;
@@ -875,7 +874,7 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 
 /* **************************************************************** */
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
-\class GridOuter < GridObject {
+\class GridOuter : GridObject {
 	\attr Numop *op;
 	PtrGrid r;
 	\decl void initialize (Numop *op, Grid *r=0);
@@ -938,7 +937,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 //****************************************************************
 //{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> } or
 //{ Dim[B]<T>,Dim[B]<T>,Dim[B]<T> -> Dim[*As,B]<T> }
-\class GridFor < GridObject {
+\class GridFor : GridObject {
 	\attr PtrGrid from;
 	\attr PtrGrid to;
 	\attr PtrGrid step;
@@ -1023,7 +1022,7 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 \end class GridFor
 
 //****************************************************************
-\class GridFinished < GridObject {
+\class GridFinished : GridObject {
 	\decl void initialize ();
 	\grin 0
 };
@@ -1037,7 +1036,7 @@ GRID_INLET(GridFinished,0) {
 \classinfo { install("#finished",1,1); }
 \end class GridFinished
 
-\class GridDim < GridObject {
+\class GridDim : GridObject {
 	\decl void initialize ();
 	\grin 0
 };
@@ -1050,7 +1049,7 @@ GRID_INLET(GridDim,0) {
 \classinfo { install("#dim",1,1); }
 \end class GridDim
 
-\class GridType < GridObject {
+\class GridType : GridObject {
 	\decl void initialize ();
 	\grin 0
 };
@@ -1065,7 +1064,7 @@ GRID_INLET(GridType,0) {
 
 //****************************************************************
 //{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
-\class GridRedim < GridObject {
+\class GridRedim : GridObject {
 	\attr P<Dim> dim;
 	PtrGrid dim_grid;
 	PtrGrid temp; // temp->dim is not of the same shape as dim
@@ -1120,7 +1119,7 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 \end class GridRedim
 
 //****************************************************************
-\class GridJoin < GridObject {
+\class GridJoin : GridObject {
 	\attr int which_dim;
 	PtrGrid r;
 	\grin 0
@@ -1196,7 +1195,7 @@ GRID_INPUT(GridJoin,1,r) {} GRID_END
 \end class GridJoin
 
 //****************************************************************
-\class GridGrade < GridObject {
+\class GridGrade : GridObject {
 	\grin 0
 };
 
@@ -1231,10 +1230,10 @@ GRID_INLET(GridGrade,0) {
 \end class GridGrade
 
 //****************************************************************
-//\class GridMedian < GridObject
+//\class GridMedian : GridObject
 //****************************************************************
 
-\class GridTranspose < GridObject {
+\class GridTranspose : GridObject {
 	\attr int dim1;
 	\attr int dim2;
 	int d1,d2,na,nb,nc,nd; // temporaries
@@ -1294,7 +1293,7 @@ GRID_INLET(GridTranspose,0) {
 \end class GridTranspose
 
 //****************************************************************
-\class GridReverse < GridObject {
+\class GridReverse : GridObject {
 	\attr int dim1; // dimension to act upon
 	int d; // temporaries
 	\decl void initialize (int dim1=0);
@@ -1332,7 +1331,7 @@ GRID_INLET(GridReverse,0) {
 \end class GridReverse
 
 //****************************************************************
-\class GridCentroid < GridObject {
+\class GridCentroid : GridObject {
 	\grin 0 int
 	int sumx,sumy,sum,y; // temporaries
 };
@@ -1368,7 +1367,7 @@ GRID_INLET(GridCentroid,0) {
 \end class GridCentroid
 
 //****************************************************************
-\class GridMoment < GridObject {
+\class GridMoment : GridObject {
 	\decl void initialize (int order=1);
 	\grin 0 int
 	\grin 1 int
@@ -1451,7 +1450,7 @@ static void expect_pair (P<Dim> dim) {
 \end class GridMoment
 
 //****************************************************************
-\class GridLabeling < GridObject {
+\class GridLabeling : GridObject {
 	\grin 0
 	\attr int form();
 	\attr int form_val;
@@ -1547,7 +1546,7 @@ GRID_INLET(GridLabeling,0) {
 \end class GridLabeling
 
 //****************************************************************
-\class GridPerspective < GridObject {
+\class GridPerspective : GridObject {
 	\attr int32 z;
 	\grin 0
 	\decl void initialize (int32 z=256);
@@ -1575,7 +1574,7 @@ GRID_INLET(GridPerspective,0) {
 \end class GridPerspective
 
 //****************************************************************
-\class GridBorder < GridObject {
+\class GridBorder : GridObject {
 	\attr P<Dim> diml;
 	\attr P<Dim> dimr;
 	PtrGrid diml_grid;
@@ -1644,7 +1643,7 @@ static void expect_convolution_matrix (P<Dim> d) {
 // entry in a compiled convolution kernel
 struct PlanEntry { long y,x; bool neutral; };
 
-\class GridConvolve < GridObject {
+\class GridConvolve : GridObject {
 	\attr Numop *op;
 	\attr Numop *fold;
 	\attr PtrGrid seed;
@@ -1773,7 +1772,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 /* ---------------------------------------------------------------- */
 /* "#scale_by" does quick scaling of pictures by integer factors */
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
-\class GridScaleBy < GridObject {
+\class GridScaleBy : GridObject {
 	\attr PtrGrid scale; // integer scale factor
 	int scaley;
 	int scalex;
@@ -1834,7 +1833,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
 // ----------------------------------------------------------------
 //{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }
-\class GridDownscaleBy < GridObject {
+\class GridDownscaleBy : GridObject {
 	\attr PtrGrid scale;
 	\attr bool smoothly;
 	int scaley;
@@ -1924,7 +1923,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 \end class GridDownscaleBy
 
 //****************************************************************
-\class GridLayer < GridObject {
+\class GridLayer : GridObject {
 	PtrGrid r;
 	GridLayer() { r.constrain(expect_rgb_picture); }
 	\grin 0 int
@@ -1967,7 +1966,7 @@ static void expect_polygon (P<Dim> d) {
 	if (d->n!=2 || d->get(1)!=2) RAISE("expecting Dim[n,2] polygon");
 }
 
-\class DrawPolygon < GridObject {
+\class DrawPolygon : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid color;
 	\attr PtrGrid polygon;
@@ -2092,7 +2091,7 @@ static void expect_position(P<Dim> d) {
 	if (d->v[0]!=2) RAISE("position dim 0 should have 2 elements, not %d", d->v[0]);
 }
 
-\class DrawImage < GridObject {
+\class DrawImage : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid image;
 	\attr PtrGrid position;
@@ -2209,7 +2208,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 // Dim[*A],Dim[*B],Dim[C,size(A)-size(B)] -> Dim[*A]
 
 /* NOT FINISHED */
-\class GridDrawPoints < GridObject {
+\class GridDrawPoints : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid color;
 	\attr PtrGrid points;
@@ -2256,7 +2255,7 @@ GRID_INLET(GridDrawPoints,0) {
 \end class GridDrawPoints
 
 //****************************************************************
-\class GridPolygonize < GridObject {
+\class GridPolygonize : GridObject {
 	\grin 0
 };
 
@@ -2271,7 +2270,7 @@ GRID_INLET(GridPolygonize,0) {
 \end class GridPolygonize
 
 //****************************************************************
-\class GridNoiseGateYuvs < GridObject {
+\class GridNoiseGateYuvs : GridObject {
 	\grin 0
 	int thresh;
 	\decl void _1_float(int v);
@@ -2302,7 +2301,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 
 //****************************************************************
 
-\class GridPack < GridObject {
+\class GridPack : GridObject {
 	int n;
 	PtrGrid a;
 	GridPack() : n(0xdeadbeef) {}
@@ -2342,7 +2341,7 @@ TYPESWITCH(a->nt,FOO,);
 \classinfo { install("#pack",1,1); }
 \end class GridPack
 
-\class GridUnpack < GridObject {
+\class GridUnpack : GridObject {
 	int n;
 	\decl void initialize (int n=2);
 	\decl void initialize2 ();
