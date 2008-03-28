@@ -26,6 +26,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <map>
+#include <vector>
+
+static std::map<string,std::vector<string> *> codecs;
+static std::map<string,string> fourccs;
 
 \class FormatQuickTimeHW : Format {
 	quicktime_t *anim;
@@ -47,9 +52,9 @@
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 force_size (int32 height, int32 width);
-	\decl 0 codec (String c);
-	\decl 0 colorspace (Symbol c);
-	\decl 0 parameter (Symbol name, int32 value);
+	\decl 0 codec (string c);
+	\decl 0 colorspace (string c);
+	\decl 0 parameter (string name, int32 value);
 	\decl 0 framerate (float64 f);
 	\decl 0 size (int32 height, int32 width);
 	\decl 0 get ();
@@ -89,11 +94,11 @@
 }
 
 //!@#$ should also support symbol values (how?)
-\def 0 parameter (Symbol name, int32 value) {
+\def 0 parameter (string name, int32 value) {
 	int val = value;
-	//post("quicktime_set_parameter %s %d",(char*)rb_sym_name(name), val);
-	quicktime_set_parameter(anim, (char*)rb_sym_name(name), &val);
-	if (name==SYM(jpeg_quality)) jpeg_quality=value;
+	//post("quicktime_set_parameter %s %d",name.data(), val);
+	quicktime_set_parameter(anim, (char *)name.data(), &val);
+	if (name=="jpeg_quality") jpeg_quality=value;
 }
 
 \def 0 framerate (float64 f) {
@@ -140,31 +145,28 @@ GRID_INLET(FormatQuickTimeHW,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def 0 codec (String c) {
-	//fprintf(stderr,"codec = %s\n",rb_str_ptr(rb_inspect(c)));
+\def 0 codec (string c) {
 #ifdef LQT_VERSION
 	char buf[5];
-	strncpy(buf,rb_str_ptr(c),4);
-	for (int i=rb_str_len(c); i<4; i++) buf[i]=' ';
+	strncpy(buf,c.data(),4);
+	for (int i=c.length(); i<4; i++) buf[i]=' ';
 	buf[4]=0;
-	Ruby fourccs = rb_ivar_get(rb_obj_class(rself),SI(@fourccs));
-	if (Qnil==rb_hash_aref(fourccs,rb_str_new2(buf)))
-		RAISE("warning: unknown fourcc '%s' (%s)",
-			buf, rb_str_ptr(rb_inspect(rb_funcall(fourccs,SI(keys),0))));
+	if (fourccs.find(string(buf))==fourccs.end())
+		RAISE("warning: unknown fourcc '%s'" /*" (%s)"*/, buf /*, rb_str_ptr(rb_inspect(rb_funcall(fourccs,SI(keys),0)))*/);
 #endif	
 	codec = strdup(buf);
 }
 
-\def 0 colorspace (Symbol c) {
+\def 0 colorspace (string c) {
 	if (0) {
-	} else if (c==SYM(rgb))     { channels=3; colorspace=BC_RGB888; 
-	} else if (c==SYM(rgba))    { channels=4; colorspace=BC_RGBA8888;
-	} else if (c==SYM(bgr))     { channels=3; colorspace=BC_BGR888;
-	} else if (c==SYM(bgrn))    { channels=4; colorspace=BC_BGR8888;
-//	} else if (c==SYM(yuv))     { channels=3; colorspace=BC_YUV888;
-	} else if (c==SYM(yuva))    { channels=4; colorspace=BC_YUVA8888;
-	} else if (c==SYM(YUV420P)) { channels=3; colorspace=BC_YUV420P;
-	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",rb_sym_name(c));
+	} else if (c=="rgb")     { channels=3; colorspace=BC_RGB888; 
+	} else if (c=="rgba")    { channels=4; colorspace=BC_RGBA8888;
+	} else if (c=="bgr")     { channels=3; colorspace=BC_BGR888;
+	} else if (c=="bgrn")    { channels=4; colorspace=BC_BGR8888;
+//	} else if (c=="yuv")     { channels=3; colorspace=BC_YUV888;
+	} else if (c=="yuva")    { channels=4; colorspace=BC_YUVA8888;
+	} else if (c=="YUV420P") { channels=3; colorspace=BC_YUV420P;
+	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",c.data());
 }
 
 \def 0 close () {
@@ -203,7 +205,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 			      quicktime_video_compressor(anim,track));
 */
 	}
-	_0_colorspace(0,0,SYM(rgb));
+	_0_colorspace(0,0,string("rgb"));
 	quicktime_set_cpus(anim,1);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
 	bit_packing = new BitPacking(is_le(),3,3,mask);
@@ -215,31 +217,27 @@ GRID_INLET(FormatQuickTimeHW,0) {
 #ifdef LQT_VERSION
 	lqt_registry_init();
 	int n = lqt_get_num_video_codecs();
-	Ruby codecs = rb_hash_new();
-	Ruby fourccs = rb_hash_new();
 	for (int i=0; i<n; i++) {
 		const lqt_codec_info_t *s = lqt_get_video_codec_info(i);
 		if (!s->name) {
 			fprintf(stderr,"[#in quicktime]: skipping codec with null name!\n");
 			continue;
 		}
-		Ruby name = rb_str_new2(s->name);
-		Ruby f = rb_ary_new2(s->num_fourccs);
+		string name = string(s->name);
+		std::vector<string> *f = new std::vector<string>(s->num_fourccs);
 		if (!s->fourccs) {
 			post("WARNING: no fourccs (quicktime library is broken?)");
 			goto hell;
 		}
 		//fprintf(stderr,"num_fourccs=%d fourccs=%p\n",s->num_fourccs,s->fourccs);
 		for (int j=0; j<s->num_fourccs; j++) {
-			Ruby fn = rb_str_new2(s->fourccs[j]);
-			rb_ary_push(f,fn);
-			rb_hash_aset(fourccs,fn,name);
+			string fn = string(s->fourccs[j]);
+			f->push_back(fn);
+			fourccs[fn]=name;
 		}
-		rb_hash_aset(codecs,name,f);
+		codecs[name]=f;
 		hell:;
 	}
-	rb_ivar_set(rself,SI(@codecs),codecs);
-	rb_ivar_set(rself,SI(@fourccs),fourccs);
 #endif
 }
 \end class FormatQuickTimeHW

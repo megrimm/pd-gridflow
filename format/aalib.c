@@ -24,6 +24,7 @@
 #include "../base/grid.h.fcs"
 #define aa_hardwareparams aa_hardware_params
 #include <aalib.h>
+#include <map>
 
 /* MINNOR is a typo in aalib.h, sorry */
 typedef
@@ -40,10 +41,10 @@ AAAttr;
 	\attr bool autodraw;
 	bool raw_mode;
 	FormatAALib () : context(0), autodraw(1) {}
-	\decl void initialize (Symbol mode, Symbol target);
+	\decl void initialize (t_symbol *mode, string target);
 	\decl 0 close ();
 	\decl 0 hidecursor ();
-	\decl 0 print (int y, int x, int a, Symbol text);
+	\decl 0 print (int y, int x, int a, string text);
 	\decl 0 draw ();
 	\decl 0 dump ();
 	\grin 0 int
@@ -105,8 +106,8 @@ GRID_INLET(FormatAALib,0) {
 
 \def 0 hidecursor () { aa_hidemouse(context); }
 \def 0 draw () { aa_flush(context); }
-\def 0 print (int y, int x, int a, Symbol text) {
-	aa_puts(context,x,y,(AAAttr)a,(char *)rb_sym_name(text));
+\def 0 print (int y, int x, int a, string text) {
+	aa_puts(context,x,y,(AAAttr)a,(char *)text.data());
 	if (autodraw==1) aa_flush(context);
 }
 
@@ -123,19 +124,19 @@ GRID_INLET(FormatAALib,0) {
 	}		
 }
 
+static std::map<string,const aa_driver *> drivers;
+
 /* !@#$ varargs missing here */
-\def void initialize (Symbol mode, Symbol target) {
+\def void initialize (t_symbol *mode, string target) {
 	SUPER;
 	argc-=2; argv+=2;
 	char *argv2[argc];
 	for (int i=0; i<argc; i++) argv2[i] = strdup(rb_str_ptr(rb_funcall(argv[i],SI(to_s),0)));
-	if (mode!=SYM(out)) RAISE("write-only, sorry");
+	if (mode!=gensym("out")) RAISE("write-only, sorry");
 	aa_parseoptions(0,0,&argc,argv2);
 	for (int i=0; i<argc; i++) free(argv2[i]);
-	Ruby drivers = rb_ivar_get(rb_obj_class(rself),SI(@drivers));
-	Ruby driver_address = rb_hash_aref(drivers,target);
-	if (driver_address==Qnil) RAISE("unknown aalib driver '%s'",rb_sym_name(target));
-	aa_driver *driver = FIX2PTR(aa_driver,driver_address);
+	if (drivers.find(target)==drivers.end()) RAISE("unknown aalib driver '%s'",target.data());
+	const aa_driver *driver = drivers[target];
 	context = aa_init(driver,&aa_defparams,0);
 	rparams = aa_getrenderparams();
 	if (!context) RAISE("opening aalib didn't work");
@@ -143,8 +144,11 @@ GRID_INLET(FormatAALib,0) {
 	post("aalib image size: %s",(new Dim(3,v))->to_s());
 }
 
-/*const aa_driver *const *p = aa_drivers; for (; *p; p++) rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));*/
-\end class FormatAALib {install_format("#io.aalib",2,"");}
+\end class FormatAALib {
+	const aa_driver *const *p = aa_drivers;
+	for (; *p; p++) drivers[(*p)->shortname] = *p;
+	install_format("#io.aalib",2,"");
+}
 void startup_aalib () {
 	\startall
 }
