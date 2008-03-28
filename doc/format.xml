@@ -84,6 +84,7 @@
 				<arg name="flag" type="bool"/>
 				controls the automatic looping of movies.
 			</method>
+			
 		</inlet>
 
 		<outlet id="1">
@@ -165,6 +166,9 @@
 			<method name="rewind">
 				rewinds to beginning of file if applicable.
 				will overwrite the previous data.
+			</method>
+			<method name="autoclose">
+				...
 			</method>
 		</inlet>
 		<outlet id="0">

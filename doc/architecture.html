@@ -59,18 +59,18 @@
 <td class="c3"><b>size (bytes)</b></td>
 <td class="c3"><b>precision</b></td>
 <td class="c3"><b>description</b></td></tr>
-<tr><td class="c1">uint8</td><td class="c1">u8 b</td><td class="c1">0..255</td><td class="c1">1</td><td class="c1">1</td><td class="c1"> 
+<tr class="c1"><td>uint8</td><td>u8 b</td><td>0..255</td><td>1</td><td>1</td><td> 
 			unsigned 8-bit integer. 
 			this is the usual size of numbers taken from files and cameras, and 
 			written to files and to windows. (however this gets converted to <kbd>int32</kbd>
 			unless otherwise specified.) </td></tr> 
-<tr><td class="c2">int16</td><td class="c2">i16 s</td><td class="c2">±2<sup>15</sup> = -32768..32767</td><td class="c2">2</td><td class="c2">1</td><td class="c2">...</td></tr> 
-<tr><td class="c1">int32</td><td class="c1">i32 i</td><td class="c1">±2<sup>31</sup> = -2147483648..2147483647</td><td class="c1">4</td><td class="c1">1</td><td class="c1"> 
+<tr class="c2"><td>int16</td><td>i16 s</td><td>±2<sup>15</sup> = -32768..32767</td><td>2</td><td>1</td><td>...</td></tr> 
+<tr class="c1"><td>int32</td><td>i32 i</td><td>±2<sup>31</sup> = -2147483648..2147483647</td><td>4</td><td>1</td><td> 
 			signed 32-bit integer. 
 			this is used for most computations. </td></tr> 
-<tr><td class="c2">int64</td><td class="c2">i64 l</td><td class="c2">±2<sup>63</sup></td><td class="c2">8</td><td class="c2">1</td><td class="c2">...</td></tr> 
-<tr><td class="c1">float32</td><td class="c1">f32 f</td><td class="c1">±10<sup>±38</sup></td><td class="c1">4</td><td class="c1">23 bits = 0.000012% (about 7 digits)</td><td class="c1">...</td></tr> 
-<tr><td class="c2">float64</td><td class="c2">f64 d</td><td class="c2">±10<sup>±308</sup></td><td class="c2">8</td><td class="c2">52 bits (about 15 digits)</td><td class="c2">...</td></tr> </table></td></tr></table></td></tr>
+<tr class="c2"><td>int64</td><td>i64 l</td><td>±2<sup>63</sup></td><td>8</td><td>1</td><td>...</td></tr> 
+<tr class="c1"><td>float32</td><td>f32 f</td><td>±10<sup>±38</sup></td><td>4</td><td>23 bits = 0.000012% (about 7 digits)</td><td>...</td></tr> 
+<tr class="c2"><td>float64</td><td>f64 d</td><td>±10<sup>±308</sup></td><td>8</td><td>52 bits (about 15 digits)</td><td>...</td></tr> </table></td></tr></table></td></tr>
  
 <tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
 <tr><td><h4><a name="Grid_Literals">Grid Literals</a></h4>
@@ -141,60 +141,93 @@
 <tr><td><p>Hyperbolic functions (tanh) work with our angles too, so the 
 		same conversions apply.</p></td></tr>
 
-<tr></tr><tr><td><table bgcolor="black" border="0" cellspacing="1">
+<tr><td><table bgcolor="black" border="0" cellspacing="1">
 <tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
-<tr><td class="c3"><b>name</b></td><td class="c3"><b>description</b></td><td class="c3"><b>meaning in pixel context (pictures, palettes)</b></td><td class="c3"><b>meaning in spatial context (indexmaps, polygons)</b></td></tr>
+<tr class="c3"><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr>
 
-<tr><td class="c1">ignore</td><td class="c1"> A </td><td class="c1">no effect</td><td class="c1">no effect</td></tr> 
-<tr><td class="c2">put</td><td class="c2"> B </td><td class="c2">replace by</td><td class="c2">replace by</td></tr> 
-<tr><td class="c1">+</td><td class="c1"> A + B </td><td class="c1">brightness, crossfade</td><td class="c1">move, morph</td></tr> 
-<tr><td class="c2">-</td><td class="c2"> A - B </td><td class="c2">brightness, motion detection</td><td class="c2">move, motion detection</td></tr> 
-<tr><td class="c1">inv+</td><td class="c1"> B - A </td><td class="c1">negate then contrast</td><td class="c1">180 degree rotate then move</td></tr> 
-<tr><td class="c2">*</td><td class="c2"> A * B </td><td class="c2">contrast</td><td class="c2">zoom out</td></tr> 
-<tr><td class="c1">/</td><td class="c1"> A / B, rounded towards zero </td><td class="c1">contrast</td><td class="c1">zoom in</td></tr> 
-<tr><td class="c2">div</td><td class="c2"> A / B, rounded downwards </td><td class="c2">contrast</td><td class="c2">zoom in</td></tr> 
-<tr><td class="c1">inv*</td><td class="c1"> B / A, rounded towards zero </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">swapdiv</td><td class="c2"> B / A, rounded downwards </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">%</td><td class="c1"> A % B, modulo (goes with div) </td><td class="c1">--</td><td class="c1">tile</td></tr> 
-<tr><td class="c2">swap%</td><td class="c2"> B % A, modulo (goes with div) </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">rem</td><td class="c1"> A % B, remainder (goes with /) </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">swaprem</td><td class="c2"> B % A, remainder (goes with /) </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">gcd</td><td class="c1"> 
-	greatest common divisor</td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">lcm</td><td class="c2"> 
-	least common multiple</td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">|</td><td class="c1"> A or B, bitwise </td><td class="c1">bright munchies</td><td class="c1">bottomright munchies</td></tr> 
-<tr><td class="c2">^</td><td class="c2"> A xor B, bitwise </td><td class="c2">symmetric munchies (fractal checkers)</td><td class="c2">symmetric munchies (fractal checkers)</td></tr> 
-<tr><td class="c1">&amp;</td><td class="c1"> A and B, bitwise </td><td class="c1">dark munchies</td><td class="c1">topleft munchies</td></tr> 
-<tr><td class="c2">&lt;&lt;</td><td class="c2"> A * (2**(B % 32)), which is left-shifting </td><td class="c2">like *</td><td class="c2">like *</td></tr> 
-<tr><td class="c1">&gt;&gt;</td><td class="c1"> A / (2**(B % 32)), which is right-shifting </td><td class="c1">like /,div</td><td class="c1">like /,div</td></tr> 
-<tr><td class="c2">||</td><td class="c2"> if A is zero then B else A </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">&amp;&amp;</td><td class="c1"> if A is zero then zero else B</td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">min</td><td class="c2"> the lowest value in A,B </td><td class="c2">clipping</td><td class="c2">clipping (of individual points)</td></tr> 
-<tr><td class="c1">max</td><td class="c1"> the highest value in A,B </td><td class="c1">clipping</td><td class="c1">clipping (of individual points)</td></tr> 
-<tr><td class="c2">cmp</td><td class="c2"> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">==</td><td class="c1"> is A equal to B ? 1=true, 0=false </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">!=</td><td class="c2"> is A not equal to B ? </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">&gt;</td><td class="c1"> is A greater than B ? </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">&lt;=</td><td class="c2"> is A not greater than B ? </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">&lt;</td><td class="c1"> is A less than B ? </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">&gt;=</td><td class="c2">is A not less than B ? </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">sin*</td><td class="c1"> B * sin(A) </td><td class="c1">--</td><td class="c1">waves, rotations</td></tr> 
-<tr><td class="c2">cos*</td><td class="c2"> B * cos(A) </td><td class="c2">--</td><td class="c2">waves, rotations</td></tr> 
-<tr><td class="c1">atan</td><td class="c1"> arctan(A/B) </td><td class="c1">--</td><td class="c1">find angle to origin (part of polar transform)</td></tr> 
-<tr><td class="c2">tanh*</td><td class="c2"> B * tanh(A) </td><td class="c2">smooth clipping</td><td class="c2">smooth clipping (of individual points), neural sigmoid, fuzzy logic</td></tr> 
-<tr><td class="c1">log*</td><td class="c1"> B * log(A) (in base e) </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">gamma</td><td class="c2"> floor(pow(a/256.0,256.0/b)*256.0) </td><td class="c2">gamma correction</td><td class="c2">--</td></tr> 
-<tr><td class="c1">**</td><td class="c1"> A**B, that is, A raised to power B </td><td class="c1">gamma correction</td><td class="c1">--</td></tr> 
-<tr><td class="c2">abs-</td><td class="c2"> absolute value of (A-B) </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">rand</td><td class="c1"> randomly produces a non-negative number below A </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">sqrt</td><td class="c2"> square root of A, rounded downwards </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">sq-</td><td class="c1"> (A-B) times (A-B) </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">avg</td><td class="c2"> (A+B)/2 </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">hypot</td><td class="c1"> square root of (A*A+B*B) </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">clip+</td><td class="c2"> like A+B but overflow causes clipping instead of wrapping around (coming soon) </td><td class="c2">--</td><td class="c2">--</td></tr> 
-<tr><td class="c1">clip-</td><td class="c1"> like A-B but overflow causes clipping instead of wrapping around (coming soon) </td><td class="c1">--</td><td class="c1">--</td></tr> 
-<tr><td class="c2">erf*</td><td class="c2"> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </td><td class="c2">--</td><td class="c2">--</td></tr> </table></td></tr></table></td></tr>
+<tr class="c1"><td>ignore</td><td> A </td><td>no effect</td><td>no effect</td></tr> 
+<tr class="c2"><td>put</td><td> B </td><td>replace by</td><td>replace by</td></tr> 
+<tr class="c1"><td>+</td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr> 
+<tr class="c2"><td>-</td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr> 
+<tr class="c1"><td>inv+</td><td> B - A </td><td>negate then contrast</td><td>180 degree rotate then move</td></tr> 
+<tr class="c2"><td>*</td><td> A * B </td><td>contrast</td><td>zoom out</td></tr> 
+<tr class="c1"><td>/</td><td> A / B, rounded towards zero </td><td>contrast</td><td>zoom in</td></tr> 
+<tr class="c2"><td>div</td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr> 
+<tr class="c1"><td>inv*</td><td> B / A, rounded towards zero </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>swapdiv</td><td> B / A, rounded downwards </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>%</td><td> A % B, modulo (goes with div) </td><td>--</td><td>tile</td></tr> 
+<tr class="c2"><td>swap%</td><td> B % A, modulo (goes with div) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>rem</td><td> A % B, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>swaprem</td><td> B % A, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>gcd</td><td> 
+	greatest common divisor</td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>lcm</td><td> 
+	least common multiple</td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>|</td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr> 
+<tr class="c2"><td>^</td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr> 
+<tr class="c1"><td>&amp;</td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr> 
+<tr class="c2"><td>&lt;&lt;</td><td> A * (2**(B % 32)), which is left-shifting </td><td>like *</td><td>like *</td></tr> 
+<tr class="c1"><td>&gt;&gt;</td><td> A / (2**(B % 32)), which is right-shifting </td><td>like /,div</td><td>like /,div</td></tr> 
+<tr class="c2"><td>||</td><td> if A is zero then B else A </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&amp;&amp;</td><td> if A is zero then zero else B</td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>min</td><td> the lowest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
+<tr class="c1"><td>max</td><td> the highest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
+<tr class="c2"><td>cmp</td><td> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>==</td><td> is A equal to B ? 1=true, 0=false </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>!=</td><td> is A not equal to B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&gt;</td><td> is A greater than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>&lt;=</td><td> is A not greater than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&lt;</td><td> is A less than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>&gt;=</td><td>is A not less than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>sin*</td><td> B * sin(A) </td><td>--</td><td>waves, rotations</td></tr> 
+<tr class="c2"><td>cos*</td><td> B * cos(A) </td><td>--</td><td>waves, rotations</td></tr> 
+<tr class="c1"><td>atan</td><td> arctan(A/B) </td><td>--</td><td>find angle to origin (part of polar transform)</td></tr> 
+<tr class="c2"><td>tanh*</td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid, fuzzy logic</td></tr> 
+<tr class="c1"><td>log*</td><td> B * log(A) (in base e) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>gamma</td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>--</td></tr> 
+<tr class="c1"><td>**</td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>--</td></tr> 
+<tr class="c2"><td>abs-</td><td> absolute value of (A-B) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>rand</td><td> randomly produces a non-negative number below A </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>sqrt</td><td> square root of A, rounded downwards </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>sq-</td><td> (A-B) times (A-B) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>avg</td><td> (A+B)/2 </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>hypot</td><td> square root of (A*A+B*B) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>clip+</td><td> like A+B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>clip-</td><td> like A-B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>erf*</td><td> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>weight</td><td> number of "1" bits in an integer</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>sin</td><td>sin(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>cos</td><td>cos(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>atan2</td><td>atan2(A,B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>tanh</td><td>tanh(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>exp</td><td>exp(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>log</td><td>log(A-B), float only</td><td>--</td><td>--</td></tr>
+
+</table></td></tr></table></td></tr>
+
+<p>The following are called VecOps because each operation happens between more than just two numbers.</p>
+<p>A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
+If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.</p>
+<p>All the complex number operators are only for floats.</p>
+<p>TODO: fill the last two columns of this table.</p>
+
+<tr><td><table bgcolor="black" border="0" cellspacing="1">
+<tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
+<tr class="c3"><td><b>name</b></td><td><b>description</b></td><td><b>meaning in geometric context (indexmaps, polygons, in which each complex number is a point)</b></td><td><b>meaning in spectrum context (FFT) in which each number is a (cosine,sine) pair</b></td></tr>
+
+<tr class="c1"><td>C.*    </td><td>A*B</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.*conj</td><td>A*conj(B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C./    </td><td>A/B</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C./conj</td><td>A/conj(B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.sq-  </td><td>(A-B)*(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.abs- </td><td>abs(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.sin  </td><td>sin(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.cos  </td><td>cos(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.tanh </td><td>tanh(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.exp  </td><td>exp(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.log  </td><td>log(A-B)</td><td>--</td><td>--</td></tr>
+
+</table></td></tr></table></td></tr>
 
 <tr><td bgcolor="black">
 <img src="images/black.png" height="2" width="1"></td></tr>
@@ -212,14 +245,10 @@ should make many circuits simpler. </p>
 
 <tr><td><h4><a name="Bridges">Bridges</a></h4>
 <p>Starting with GridFlow 0.6, GridFlow comes
-with a bridge (a converter) between Ruby and Pd. With GridFlow 0.9,
-there's an additional converted between Tcl and Pd, and some of the
-code of the main library now bypasses the bridge. The goal is to remove
-all of the Ruby dependency in 2007. Historically, the bridge has served
-the purpose of making GridFlow work on both PureData and jMax.</p>
-<p>Under the current design, the bridge is compiled separately of the main library, 
-and is directly loaded by PureData; then the bridge starts Ruby and makes it load the main library; 
-then the bridge hooks with the main library. </p></td></tr>
+with a bridge (a converter) between Ruby and Pd.
+During the GridFlow 0.9 series, GridFlow will be made to work directly with Pd instead.
+Thus Ruby will become optional and essentially separate from GridFlow.
+</p></td></tr>
 
 <tr><td bgcolor="black">
 <img src="images/black.png" height="2" width="1"></td></tr>
