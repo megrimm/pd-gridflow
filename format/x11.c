@@ -199,11 +199,13 @@ void FormatX11::call() {
 			char buf[64];
 			if (!kss) return; /* unknown keys ignored */
 			if (isdigit(*kss)) sprintf(buf,"D%s",kss); else strcpy(buf,kss);
-			Ruby argv[6] = {
-				INT2NUM(0), e.type==KeyPress ? SYM(keypress) : SYM(keyrelease),
-				INT2NUM(ek->y), INT2NUM(ek->x), INT2NUM(ek->state),
-				rb_funcall(rb_str_new2(buf),SI(intern),0) };
-			send_out(COUNT(argv),argv);
+			t_atom at[4];
+			t_symbol *sel = gensym((char *)(e.type==KeyPress ? "keypress" : "keyrelease"));
+			SETFLOAT(at+0,ek->y);
+			SETFLOAT(at+1,ek->x);
+			SETFLOAT(at+2,ek->state);
+			SETSYMBOL(at+3,gensym(buf));
+			pd_typedmess((t_pd *)bself,sel,4,at);
 			//XFree(kss);
 		}break;
 		case MotionNotify:{

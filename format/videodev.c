@@ -234,7 +234,7 @@ static void gfpost(VideoMmap *self) {
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	int fd;
-	Symbol colorspace;
+	string colorspace;
 	int palettes; /* bitfield */
 
 	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), use_pwc(false), bit_packing(0), dim(0) {}
@@ -243,8 +243,8 @@ static void gfpost(VideoMmap *self) {
 	void alloc_image ();
 	void dealloc_image ();
 	void frame_ask ();
-	\decl void initialize (Symbol mode, String filename, Symbol option=Qnil);
-	\decl void initialize2 ();
+	\decl void initialize (string mode, string filename);
+	void initialize2 ();
 	\decl 0 close ();
 	\decl 0 bang ();
 	\grin 0 int
@@ -253,8 +253,8 @@ static void gfpost(VideoMmap *self) {
 	\decl 0 norm (int value);
 	\decl 0 tuner (int value);
 	\decl 0 channel (int value);
-	\decl 0 transfer (Symbol sym, int queuemax=2);
-	\decl 0 colorspace (Symbol c);
+	\decl 0 transfer (string sym, int queuemax=2);
+	\decl 0 colorspace (string c);
 	\attr long   frequency();
 	\attr uint16 brightness();
 	\attr uint16 hue();
@@ -339,19 +339,19 @@ void FormatVideoDev::frame_ask () {
 static uint8 clip(int x) {return x<0?0 : x>255?255 : x;}
 
 void FormatVideoDev::frame_finished (uint8 *buf) {
-	int downscale = colorspace==SYM(magic);
+	int downscale = colorspace=="magic";
 	/* picture is converted here. */
 	int sy = dim->get(0)>>downscale;
 	int sx = dim->get(1)>>downscale;
 	int bs = dim->prod(1)>>downscale;
 	uint8 b2[bs];
 	//post("sy=%d sx=%d bs=%d",sy,sx,bs);
-	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,rb_sym_name(colorspace));
+	//post("frame_finished, vp.palette = %d; colorspace = %s",vp.palette,colorspace.data());
 	if (vp.palette==VIDEO_PALETTE_YUV420P) {
-		GridOutlet out(this,0,colorspace==SYM(magic)?new Dim(sy,sx,3):dim,cast);
-		if (colorspace==SYM(y)) {
+		GridOutlet out(this,0,colorspace=="magic"?new Dim(sy,sx,3):dim,cast);
+		if (colorspace=="y") {
 			out.send(sy*sx,buf);
-		} else if (colorspace==SYM(rgb)) {
+		} else if (colorspace=="rgb") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -371,7 +371,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace==SYM(yuv)) {
+		} else if (colorspace=="yuv") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf+sx* y;
 				uint8 *bufu = buf+sx*sy    +(sx/2)*(y/2);
@@ -389,7 +389,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace==SYM(magic)) {
+		} else if (colorspace=="magic") {
 			for(int y=0; y<sy; y++) {
 				uint8 *bufy = buf        +4*sx*y;
 				uint8 *bufu = buf+4*sx*sy+  sx*y;
@@ -406,7 +406,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 		GridOutlet out(this,0,dim,cast);
 		uint8 rgb[sx*3];
 		uint8 b2[sx*3];
-		if (colorspace==SYM(y)) {
+		if (colorspace=="y") {
 			for(int y=0; y<sy; y++) {
 			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
@@ -415,12 +415,12 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace==SYM(rgb)) {
+		} else if (colorspace=="rgb") {
 			for(int y=0; y<sy; y++) {
 			        bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				out.send(bs,rgb);
 			}
-		} else if (colorspace==SYM(yuv)) {
+		} else if (colorspace=="yuv") {
 			for(int y=0; y<sy; y++) {
 				bit_packing->unpack(sx,buf+y*sx*bit_packing->bytes,rgb);
 				for (int x=0,xx=0; x<sx; x+=2,xx+=6) {
@@ -433,7 +433,7 @@ void FormatVideoDev::frame_finished (uint8 *buf) {
 				}
 				out.send(bs,b2);
 			}
-		} else if (colorspace==SYM(magic)) {
+		} else if (colorspace=="magic") {
 			RAISE("magic colorspace not supported with a RGB palette");
 		}
 	} else {
@@ -463,7 +463,7 @@ static int read3(int fd, uint8 *image, int n) {
 }
 
 \def 0 bang () {
-	if (!image) rb_funcall(rself,SI(alloc_image),0);
+	if (!image) alloc_image();
 	if (!use_mmap) {
 		/* picture is read at once by frame() to facilitate debugging. */
 		int tot = dim->prod(0,1) * bit_packing->bytes;
@@ -522,21 +522,21 @@ GRID_INLET(FormatVideoDev,0) {
 	if (0> IOCTL(fd, VIDIOCGCHAN, &vchan)) warn("no channel #%d", value);
 	gfpost(&vchan);
 	WIOCTL(fd, VIDIOCSCHAN, &vchan);
-	if (vcaps.type & VID_TYPE_TUNER) rb_funcall(rself,SI(_0_tuner),1,INT2NUM(0));
+	//if (vcaps.type & VID_TYPE_TUNER) {t_atom a[1]; SETFLOAT(a,0); pd_typedmess((t_pd *)bself,gensym("tuner"),1,a);}
+	if (vcaps.type & VID_TYPE_TUNER) _0_tuner(0,0,0);
 }
 
-\def 0 transfer (Symbol sym, int queuemax=2) {
-	if (sym == SYM(read)) {
-		rb_funcall(rself,SI(dealloc_image),0);
+\def 0 transfer (string sym, int queuemax=2) {
+	if (sym=="read") {
+		dealloc_image();
 		use_mmap = false;
 		post("transfer read");
-	} else if (sym == SYM(mmap)) {
-		rb_funcall(rself,SI(dealloc_image),0);
+	} else if (sym=="mmap") {
+		dealloc_image();
 		use_mmap = true;
-		rb_funcall(rself,SI(alloc_image),0);
+		alloc_image();
 		queuemax=min(queuemax,vmbuf.frames);
-		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)",
-			queuemax,vmbuf.frames);
+		post("transfer mmap with queuemax=%d (max max is vmbuf.frames=%d)", queuemax,vmbuf.frames);
 		this->queuemax=queuemax;
 	} else RAISE("don't know that transfer mode");
 }
@@ -571,16 +571,16 @@ GRID_INLET(FormatVideoDev,0) {
 }
 
 \def 0 close () {
-	if (image) rb_funcall(rself,SI(dealloc_image),0);
+	if (image) dealloc_image();
 	SUPER;
 }
 
-\def 0 colorspace (Symbol c) { /* y yuv rgb */
-	if      (c==SYM(y)) {}
-	else if (c==SYM(yuv)) {}
-	else if (c==SYM(rgb)) {}
-	else if (c==SYM(magic)) {}
-	else RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",rb_sym_name(c));
+\def 0 colorspace (string c) { /* y yuv rgb */
+	if      (c=="y") {}
+	else if (c=="yuv") {}
+	else if (c=="rgb") {}
+	else if (c=="magic") {}
+	else RAISE("got '%s' but supported colorspaces are: y yuv rgb magic",c.data());
 	WIOCTL(fd, VIDIOCGPICT, &vp);
 	int palette = (palettes&(1<<VIDEO_PALETTE_RGB24)) ? VIDEO_PALETTE_RGB24 :
 	              (palettes&(1<<VIDEO_PALETTE_RGB32)) ? VIDEO_PALETTE_RGB32 :
@@ -605,7 +605,7 @@ GRID_INLET(FormatVideoDev,0) {
 	    bit_packing = new BitPacking(is_le(),3,3,masks);
 	}
 	colorspace=c;
-	dim = new Dim(dim->v[0],dim->v[1],c==SYM(y)?1:3);
+	dim = new Dim(dim->v[0],dim->v[1],c=="y"?1:3);
 }
 
 \def bool pwc ()         {return use_pwc;}
@@ -719,10 +719,10 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 	WIOCTL(fd, VIDIOCPWCGCQUAL, &compression);
 }
 
-\def void initialize2 () {
+void FormatVideoDev::initialize2 () {
 	WIOCTL(fd, VIDIOCGCAP, &vcaps);
 	gfpost(&vcaps);
-	rb_funcall(rself,SI(_0_size),2,INT2NUM(vcaps.maxheight),INT2NUM(vcaps.maxwidth));
+	_0_size(0,0,vcaps.maxheight,vcaps.maxwidth);
 	WIOCTL(fd, VIDIOCGPICT,&vp);
 	gfpost(&vp);
 	palettes=0;
@@ -741,15 +741,15 @@ void set_antiflicker_mode(int fd, int val) {WIOCTL(fd, VIDIOCPWCSFLICKER, &val);
 			post("palette %d supported",p);
 		}
 	}
-	_0_colorspace(0,0,SYM(rgb));
-	rb_funcall(rself,SI(_0_channel),1,INT2NUM(0));
+	_0_colorspace(0,0,"rgb");
+	_0_channel(0,0,0);
 }
 
-\def void initialize (Symbol mode, String filename, Symbol option=Qnil) {
+\def void initialize (string mode, string filename) {
 	SUPER;
 	image=0;
-	f = fopen(rb_str_ptr(filename),"r+");
-	rb_funcall(rself,SI(initialize2),0); // name conflict...
+	f = fopen(filename.data(),"r+");
+	initialize2(); // name conflict...
 }
 
 \end class FormatVideoDev {install_format("#io.videodev",4,"");}
