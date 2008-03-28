@@ -48,11 +48,11 @@
 		last frame (mpeg/quicktime used to do this)
 	def 0 seek(Integer i) :     select one frame to be read next (by number)
 	def 0 length() : ^Integer   returns number of frames (never implemented ?)
-	def 0 close() :             close a handler
 	def 0 grid() : frame to write
 	def 0 ...() : options
 	outlet 0 grid() frame just read
 	outlet 1 ...() everything else
+	destructor : close a handler
 */
 
 std::map<std::string,std::string> suffix_table;
@@ -100,7 +100,7 @@ void suffixes_are (const char *name, const char *suffixes) {
 }
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 
-\class Format < GridObject
+\class Format : GridObject
 \def void initialize (t_symbol *mode, ...) {
 	SUPER;
 	if (mode==gensym("out")) this->mode=2; else
@@ -185,7 +185,10 @@ struct GridHeader {
 	\decl 0 headerless_m (...);
 	\decl 0 headerful ();
 	\decl 0 type (NumberTypeE nt);
-	\decl 0 close();
+	~FormatGrid() {
+		//@stream.close if @stream
+		//GridFlow.hunt_zombies
+	}
 //	\decl void raw_open_gzip_in(String filename);
 //	\decl void raw_open_gzip_out(String filename);
 };
@@ -269,10 +272,6 @@ TYPESWITCH(nt,FOO,)
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
 	//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}
 
-\def 0 close () {
-	//@stream.close if @stream
-	//GridFlow.hunt_zombies
-}
 \end class FormatGrid {install_format("#io.grid",6,"grid");}
 
 void startup_format () {

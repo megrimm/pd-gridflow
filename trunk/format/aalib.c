@@ -42,7 +42,7 @@ AAAttr;
 	bool raw_mode;
 	FormatAALib () : context(0), autodraw(1) {}
 	\decl void initialize (t_symbol *mode, string target);
-	\decl 0 close ();
+	~FormatAALib () {if (context) aa_close(context);}
 	\decl 0 hidecursor ();
 	\decl 0 print (int y, int x, int a, string text);
 	\decl 0 draw ();
@@ -96,13 +96,6 @@ GRID_INLET(FormatAALib,0) {
 	}
 	if (autodraw==1) aa_flush(context);
 } GRID_END
-
-\def 0 close () {
-	if (context) {
-		aa_close(context);
-		context=0;
-	}
-}
 
 \def 0 hidecursor () { aa_hidemouse(context); }
 \def 0 draw () { aa_flush(context); }

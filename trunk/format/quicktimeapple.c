@@ -191,9 +191,15 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
   int m_quality;
 //int m_colorspace;
   FormatQuickTimeCamera() : vdc(0) {}
+  ~FormatQuickTimeCamera() {
+    if (m_vc) if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
+    if (m_sg) {
+      if (::CloseComponent(m_sg)) RAISE("CloseComponent");
+      if (m_srcGWorld) ::DisposeGWorld(m_srcGWorld);
+    }
+  }
   \decl void initialize (t_symbol *mode, string filename);
   \decl 0 frame ();
-  \decl 0 close ();
   \grin 0 int
 };
 
@@ -307,23 +313,6 @@ void pix_videoDarwin :: DoVideoSettings(){
     out.send(dim->prod(),buf);
 }
 
-\def 0 close () {
-  if (m_vc) {
-    if (::SGDisposeChannel(m_sg, m_vc)) RAISE("SGDisposeChannel");
-    m_vc=0;
-  }
-  if (m_sg) {
-    if (::CloseComponent(m_sg)) RAISE("CloseComponent");
-    m_sg = NULL;
-    if (m_srcGWorld) {
-	::DisposeGWorld(m_srcGWorld);
-	m_pixMap = NULL;
-	m_srcGWorld = NULL;
-	m_baseAddr = NULL;
-    }
-  }
-}
-
 GRID_INLET(FormatQuickTimeCamera,0) {
 	RAISE("Unimplemented. Sorry.");
 //!@#$
@@ -347,8 +336,14 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	int nframe, nframes;
 	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
 		buffer(), dim(0), nframe(0), nframes(0) {}
+	~FormatQuickTimeApple() {
+		if (movie) {
+			DisposeMovie(movie);
+			DisposeGWorld(gw);
+			CloseMovieFile(movie_file);
+		}
+	}
 	\decl void initialize (t_symbol *mode, string filename);
-	\decl 0 close ();
 	\decl 0 codec_m (String c);
 	\decl 0 colorspace_m (Symbol c);
 	\decl 0 bang ();
@@ -413,17 +408,6 @@ GRID_INLET(FormatQuickTimeApple,0) {
 
 \def 0 codec_m      (String c) { RAISE("Unimplemented. Sorry."); }
 \def 0 colorspace_m (Symbol c) { RAISE("Unimplemented. Sorry."); }
-
-\def 0 close () {
-//!@#$
-	if (movie) {
-		DisposeMovie(movie);
-		DisposeGWorld(gw);
-		CloseMovieFile(movie_file);
-		movie_file=0;
-	}
-	SUPER;
-}
 
 \def void initialize (t_symbol *mode, string filename) {
 	int err;

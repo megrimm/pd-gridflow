@@ -120,9 +120,16 @@ void GFView_display(GFView *self) {
 	GFView *widget; /* GridFlow's Cocoa widget */
 	NSDate *distantFuture;
 	t_clock *clock;
+	~FormatQuartz () {
+		clock_unset(clock);
+		clock_free(clock);
+		clock = 0;
+		[window autorelease];
+		[window setReleasedWhenClosed: YES];
+		[window close];
+	}
 	\decl void initialize (Symbol mode);
 	\decl 0 delete_m ();
-	\decl 0 close ();
 	\decl 0 call ();
 	\grin 0
 };
@@ -210,15 +217,6 @@ GRID_INLET(FormatQuartz,0) {
 
 \def 0 delete_m () {
 	[window autorelease];
-}
-\def 0 close () {
-	clock_unset(clock);
-	clock_free(clock);
-	clock = 0;
-	SUPER;
-	[window autorelease];
-	[window setReleasedWhenClosed: YES];
-	[window close];
 }
 \end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
