@@ -26,7 +26,7 @@
 #include <aalib.h>
 
 /* MINNOR is a typo in aalib.h, sorry */
-typedef 
+typedef
 #if AA_LIB_MINNOR == 2
       int
 #else
@@ -143,16 +143,8 @@ GRID_INLET(FormatAALib,0) {
 	post("aalib image size: %s",(new Dim(3,v))->to_s());
 }
 
-\end class FormatAALib {
-
-	Ruby drivers = rb_ivar_set(rself,SI(@drivers),rb_hash_new());
-	const aa_driver *const *p = aa_drivers;
-	for (; *p; p++) {
-		rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));
-	}
-// IEVAL(rself,"GridFlow.post('aalib supports: %s', @drivers.keys.join(', '))");
-	install_format("#io.aalib",2,"");
-}
+/*const aa_driver *const *p = aa_drivers; for (; *p; p++) rb_hash_aset(drivers,ID2SYM(rb_intern((*p)->shortname)), PTR2FIX(*p));*/
+\end class FormatAALib {install_format("#io.aalib",2,"");}
 void startup_aalib () {
 	\startall
 }

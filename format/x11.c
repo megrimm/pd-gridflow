@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <string>
 #include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -70,6 +71,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	bool lock_size;
 	bool override_redirect;
 	t_clock *clock;
+	std::string title;
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
@@ -107,7 +109,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 move (int y, int x);
 	\decl 0 transfer (Symbol s);
-	\decl 0 title (String s=Qnil);
+	\decl 0 title (string title="");
 	\decl 0 warp (int y, int x);
 	\grin 0 int
 };
@@ -143,14 +145,13 @@ void FormatX11::show_section(int x, int y, int sx, int sy) {
 
 /* window manager hints, defines the window as non-resizable */
 void FormatX11::set_wm_hints () {
-	Ruby title = rb_ivar_get(rself,SI(@title));
 	if (!is_owner) return;
 	XWMHints wmh;
 	char buf[256],*bufp=buf;
-	if (title==Qnil) {
+	if (title=="") {
 		sprintf(buf,"GridFlow (%d,%d,%d)",dim->get(0),dim->get(1),dim->get(2));
 	} else {
-		sprintf(buf,"%.255s",rb_str_ptr(title));
+		sprintf(buf,"%.255s",title.data());
 	}
 	XTextProperty wtitle; XStringListToTextProperty((char **)&bufp, 1, &wtitle);
 	XSizeHints sh;
@@ -552,15 +553,11 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	XFlush(display);
 }
 
-\def 0 title (String s=Qnil) {
-	rb_ivar_set(rself,SI(@title),s);
-	set_wm_hints();
-}
+\def 0 title (string title="") {this->title = title; set_wm_hints();}
 
 \def void initialize (...) {
 	int sy=240, sx=320; // defaults
 	SUPER;
-	rb_ivar_set(rself,SI(@title),Qnil);
 	argv++, argc--;
 	VALUE domain = argc<1 ? SYM(here) : argv[0];
 	int i;
