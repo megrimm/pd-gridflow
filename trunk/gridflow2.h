@@ -29,6 +29,8 @@
 #undef T_OBJECT
 #include "config.h"
 #include <vector>
+#include <string>
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
