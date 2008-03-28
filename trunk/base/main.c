@@ -37,7 +37,7 @@
 /* for exception-handling in 0.9.0 */
 #include <exception>
 #include <execinfo.h>
-using namespace std;
+//using namespace std;
 
 #include "grid.h.fcs"
 
@@ -311,8 +311,7 @@ static Ruby String_swap16_f (Ruby rself) {
 }
 
 NumberTypeE NumberTypeE_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)",
-		rb_str_ptr(rb_inspect(rb_obj_class(sym))));
+	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)", rb_str_ptr(rb_inspect(rb_obj_class(sym))));
 	Ruby nt_dict = rb_ivar_get(mGridFlow,SI(@number_type_dict));
 	Ruby v = rb_hash_aref(nt_dict,sym);
 	if (v!=Qnil) return FIX2PTR(NumberType,v)->index;
@@ -401,7 +400,7 @@ static Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
 		rb_define_class_under(mGridFlow, fc->name, super) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
 	define_many_methods(rself,fc->methodsn,fc->methods);
-	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator))); //#!@$??
+	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator)));
 	if (fc->startup) fc->startup(rself);
 	return Qnil;
 }
@@ -526,8 +525,8 @@ void blargh () {
 // Ruby's entrypoint.
 void Init_gridflow () {
         srandom(rdtsc());
-	//set_terminate(__gnu_cxx::__verbose_terminate_handler);
-	set_terminate(blargh);
+	//std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+	std::set_terminate(blargh);
 
 #define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
 BUILTIN_SYMBOLS(FOO)
