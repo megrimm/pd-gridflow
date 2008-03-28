@@ -29,15 +29,12 @@ extern "C" {
 \class FormatNetPBM : Format {
 	struct pam inpam, outpam;
 	\grin 0
-	\decl void initialize(String mode, String filename);
+	\decl void initialize(t_symbol *mode, string filename);
 	\decl 0 bang ();
 };
-\def void initialize(String mode, String filename) {
+\def void initialize(t_symbol *mode, string filename) {
 	SUPER;
 	Format::_0_open(0,0,mode,filename);
-	Ruby stream = rb_ivar_get(rself,SI(@stream));
-	fd = NUM2INT(rb_funcall(stream,SI(fileno),0));
-	f = fdopen(fd,mode==SYM(in)?"r":"w");
 	memset(& inpam,sizeof(pam),0);
 	memset(&outpam,sizeof(pam),0);
 }

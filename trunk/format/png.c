@@ -34,7 +34,7 @@ extern "C" {
 	png_structp png;
 	png_infop info;
 	FormatPNG () : bit_packing(0), png(0) {}
-	\decl void initialize (Symbol mode, String filename);
+	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 bang ();
 	\grin 0 int
 };
@@ -106,7 +106,7 @@ GRID_INLET(FormatPNG,0) {
 	png_destroy_read_struct(&png, &info, NULL);
 }
 
-\def void initialize (Symbol mode, String filename) {
+\def void initialize (t_symbol *mode, string filename) {
 	SUPER;
 	Format::_0_open(0,0,mode,filename);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};

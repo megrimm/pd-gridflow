@@ -70,11 +70,11 @@ void suffixes_are (const char *name, const char *suffixes) {
 
 \class SuffixLookup : FObject {
   \decl void initialize ();
-  \decl 0 symbol (String str);
+  \decl 0 symbol (t_symbol *str);
 };
 \def void initialize () {}
-\def 0 symbol (String str) {
-	char *s = strdup(rb_str_ptr(str));
+\def 0 symbol (t_symbol *str) {
+	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
 	if (!t) outlet_symbol(bself->out[2],gensym(s));
 	else {
@@ -90,15 +90,13 @@ void suffixes_are (const char *name, const char *suffixes) {
 // not in use
 \class FormatLookup : FObject {
   \decl void initialize ();
-  \decl 0 symbol (String str);
+  \decl 0 symbol (string str);
 };
 \def void initialize () {}
-\def 0 symbol (String str) {
-	char *s = strdup(rb_str_ptr(str));
-	std::map<std::string,std::string>::iterator u = format_table.find(std::string(s));
+\def 0 symbol (string str) {
+	std::map<std::string,std::string>::iterator u = format_table.find(str);
 	if (u!=format_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
 	else outlet_bang(bself->out[0]);
-	free(s);
 }
 \end class FormatLookup {install("gf.format_lookup",1,1);}
 
@@ -116,16 +114,15 @@ void suffixes_are (const char *name, const char *suffixes) {
 //	//end or raise "Format '#{self.class.instance_eval{@symbol_name}}' does not support mode '#{mode}'"
 }
 
-\def 0 open(Symbol mode, String filename) {
-	if (TYPE(mode)==T_STRING) mode=ID2SYM(rb_intern(rb_str_ptr(mode))); // source_filter doesn't figure this out.
+\def 0 open(t_symbol *mode, string filename) {
 	const char *fmode;
-	if (mode==SYM(in))  fmode="r"; else
-	if (mode==SYM(out)) fmode="w"; else
+	if (mode==gensym("in"))  fmode="r"; else
+	if (mode==gensym("out")) fmode="w"; else
 	RAISE("bad mode");
 	if (f) _0_close(0,0);
-	if (mode==SYM(in)) {filename = rb_funcall(mGridFlow,SI(find_file),1,filename);}
-	f = fopen(rb_str_ptr(filename),fmode);
-	if (!f) RAISE("can't open file '%s': %s",rb_str_ptr(filename),strerror(errno));
+	if (mode==gensym("in")) {filename = gf_find_file(filename);}
+	f = fopen(filename.data(),fmode);
+	if (!f) RAISE("can't open file '%s': %s",filename.data(),strerror(errno));
 	fd = fileno(f);
 //	case gzfile:
 //		if (mode==SYM(in)) {filename = GridFlow.find_file(filename);}
@@ -183,7 +180,7 @@ struct GridHeader {
 	NumberTypeE nt;
 	P<Dim> headerless; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
-	\decl void initialize(Symbol mode, String filename);
+	\decl void initialize(t_symbol *mode, string filename);
 	\decl 0 bang ();
 	\decl 0 headerless_m (...);
 	\decl 0 headerful ();
@@ -193,7 +190,7 @@ struct GridHeader {
 //	\decl void raw_open_gzip_out(String filename);
 };
 
-\def void initialize(Symbol mode, String filename) {
+\def void initialize(t_symbol *mode, string filename) {
 	SUPER;
 	strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
 	head.type = 32;

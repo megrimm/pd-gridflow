@@ -38,7 +38,7 @@ extern "C" {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
-	\decl void initialize (Symbol mode, String filename);
+	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
 	\grin 0 int
@@ -111,7 +111,7 @@ static bool gfeof(FILE *f) {
 	jpeg_set_quality(&cjpeg,quality,false);
 }
 
-\def void initialize (Symbol mode, String filename) {
+\def void initialize (t_symbol *mode, string filename) {
 	SUPER;
 	Format::_0_open(0,0,mode,filename);
 	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
