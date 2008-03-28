@@ -186,7 +186,7 @@ GRID_INLET(FormatQuickTimeHW,0) {
 \def void initialize (t_symbol *mode, string filename) {
 	SUPER;
 	filename = gf_find_file(filename);
-	anim = quicktime_open(filename.data(),mode==gensym("in"),mode==gensym("out"));
+	anim = quicktime_open((char *)filename.data(),mode==gensym("in"),mode==gensym("out"));
 	if (!anim) RAISE("can't open file `%s': %s (or some other reason that libquicktime won't tell us)",
 		filename.data(), strerror(errno));
 	if (mode==gensym("in")) {
