@@ -69,6 +69,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	P<Dim> dim;
 	bool lock_size;
 	bool override_redirect;
+	t_clock *clock;
 #ifdef HAVE_X11_SHARED_MEMORY
 	XShmSegmentInfo *shm_info; /* to share memory with X11/Unix */
 #endif
@@ -81,7 +82,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 #endif
 	FormatX11 () : transfer(0), use_stripes(false), 
 	window(0), ximage(0), image(0), is_owner(true),
-	dim(0), lock_size(false), override_redirect(false)
+	dim(0), lock_size(false), override_redirect(false), clock(0)
 #ifdef HAVE_X11_SHARED_MEMORY
 		, shm_info(0)
 #endif
@@ -99,7 +100,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	\decl void initialize (...);
 	\decl 0 bang ();
 	\decl 0 close ();
-	\decl void call ();
+	void call ();
 	\decl 0 out_size (int sy, int sx);
 	\decl 0 setcursor (int shape);
 	\decl 0 hidecursor ();
@@ -168,7 +169,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 	send_out(COUNT(argv),argv);
 }
 
-\def void call() {
+void FormatX11::call() {
 	XEvent e;
 	for (;;) {
 		int xpending = XEventsQueued(display, QueuedAfterFlush);
@@ -177,9 +178,7 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		switch (e.type) {
 		case Expose:{
 			XExposeEvent *ex = (XExposeEvent *)&e;
-			if (rb_ivar_get(rself,SI(@mode)) == SYM(out)) {
-				show_section(ex->x,ex->y,ex->width,ex->height);
-			}
+			if (mode==2) show_section(ex->x,ex->y,ex->width,ex->height);
 		}break;
 		case ButtonPress:{
 			XButtonEvent *eb = (XButtonEvent *)&e;
@@ -218,8 +217,9 @@ void FormatX11::report_pointer(int y, int x, int state) {
 		case ConfigureNotify:break; // as if we cared
 		}
 	}
-	IEVAL(rself,"@clock.delay 20");
+	clock_delay(clock,20);
 }
+void FormatX11_call(FormatX11 *p) {p->call();}
 
 \def 0 bang () {
 	XGetSubImage(display, window, 0, 0, dim->get(1), dim->get(0), (unsigned)-1, ZPixmap, ximage, 0, 0);
@@ -419,7 +419,7 @@ GRID_INLET(FormatX11,0) {
 \def 0 close () {
 	if (!this) RAISE("stupid error: trying to close display NULL. =)");
 	bit_packing=0;
-	IEVAL(rself,"@clock.unset");
+	clock_unset(clock);
 	if (is_owner) XDestroyWindow(display,window);
 	XSync(display,0);
 	dealloc_image();
@@ -656,7 +656,8 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	} break;
 	default: { RAISE("huh?"); }
 	}
-	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");
+	clock = clock_new(this,(t_method)FormatX11_call);
+	clock_delay(clock,0);
 	show_section(0,0,sx,sy);
 }
 

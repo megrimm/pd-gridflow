@@ -47,6 +47,7 @@ static bool in_use = false;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
 	uint8 *buf;
+	t_clock *clock;
 	\decl void call ();
 	\decl void initialize (Symbol mode);
 	\decl 0 close ();
@@ -79,7 +80,7 @@ static void my_idle () { longjmp(hack,1); }
 	if(!setjmp(hack)) glutMainLoop();
 	//done
 
-	IEVAL(rself,"@clock.delay 100");
+	clock_delay(clock,100);
 }
 
 \def 0 resize_window (int sx, int sy) {
@@ -133,7 +134,7 @@ GRID_INLET(FormatOpenGL,0) {
 } GRID_END
 
 \def 0 close () {
-	IEVAL(rself,"@clock.unset");
+	clock_unset(clock);
 	if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
 	if (buf) delete buf;
 	in_use=false;
@@ -155,11 +156,11 @@ GRID_INLET(FormatOpenGL,0) {
 	
 	gltex = 0;
 	glEnable(GL_TEXTURE_2D);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST); 
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);         
+	glDisable(GL_CULL_FACE);
 	glDisable(GL_DITHER);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -167,8 +168,8 @@ GRID_INLET(FormatOpenGL,0) {
 
 	uint32 mask[3] = {0xff000000,0x00ff0000,0x0000ff00};
 	bit_packing = new BitPacking(4,4,3,mask);
-	IEVAL(rself,"@clock = Clock.new self; @clock.delay 0");
-	gfpost("@clock = Clock.new self");
+	clock = clock_new(this,(t_method)FormatOpenGL_call);
+	clock_delay(clock,0);
 }
 
 \classinfo {install_format("#io.opengl",2,"");}
