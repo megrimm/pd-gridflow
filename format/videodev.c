@@ -245,7 +245,8 @@ static void gfpost(VideoMmap *self) {
 	void frame_ask ();
 	\decl void initialize (string mode, string filename);
 	void initialize2 ();
-	\decl 0 close ();
+	~FormatVideoDev () {if (image) dealloc_image();}
+
 	\decl 0 bang ();
 	\grin 0 int
 
@@ -568,11 +569,6 @@ GRID_INLET(FormatVideoDev,0) {
 }
 \def 0 frequency (long frequency) {
 	WIOCTL(fd, VIDIOCSFREQ, &frequency);
-}
-
-\def 0 close () {
-	if (image) dealloc_image();
-	SUPER;
 }
 
 \def 0 colorspace (string c) { /* y yuv rgb */

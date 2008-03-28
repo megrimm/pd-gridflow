@@ -89,6 +89,13 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 		, shm_info(0)
 #endif
 	{}
+	~FormatX11 () {
+		clock_unset(clock);
+		if (is_owner) XDestroyWindow(display,window);
+		XSync(display,0);
+		dealloc_image();
+		XCloseDisplay(display);
+	}
 	template <class T> void frame_by_type (T bogus);
 	void show_section(int x, int y, int sx, int sy);
 	void set_wm_hints ();
@@ -101,7 +108,6 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
 	\decl void initialize (...);
 	\decl 0 bang ();
-	\decl 0 close ();
 	void call ();
 	\decl 0 out_size (int sy, int sx);
 	\decl 0 setcursor (int shape);
@@ -418,18 +424,6 @@ GRID_INLET(FormatX11,0) {
 } GRID_FINISH {
 	show_section(0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
-
-\def 0 close () {
-	if (!this) RAISE("stupid error: trying to close display NULL. =)");
-	bit_packing=0;
-	clock_unset(clock);
-	if (is_owner) XDestroyWindow(display,window);
-	XSync(display,0);
-	dealloc_image();
-	XCloseDisplay(display);
-	display=0;
-	SUPER;
-}
 
 \def 0 out_size (int sy, int sx) { resize_window(sx,sy); }
 

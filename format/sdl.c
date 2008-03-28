@@ -40,8 +40,12 @@ static bool in_use = false;
 	void resize_window (int sx, int sy);
 	void call ();
 	\decl void initialize (Symbol mode);
-	\decl 0 close ();
 	\grin 0 int
+	~FormatSDL () {
+		clock_unset(clock);
+		clock_free(clock);
+		in_use=false;
+	}
 };
 
 void FormatSDL::call() {
@@ -81,13 +85,6 @@ GRID_INLET(FormatSDL,0) {
 } GRID_FINISH {
 	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
-
-\def 0 close () {
-	clock_unset(clock);
-	clock_free(clock);
-	clock = 0;
-	in_use=false;
-}
 
 \def void initialize (Symbol mode) {
 	dim=0;screen=0;

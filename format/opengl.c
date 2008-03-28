@@ -50,9 +50,18 @@ static bool in_use = false;
 	t_clock *clock;
 	\decl void call ();
 	\decl void initialize (Symbol mode);
-	\decl 0 close ();
 	\decl 0 resize_window (int sx, int sy);
 	\grin 0
+	~FormatOpenGL () {
+		clock_unset(clock);
+		if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
+		if (buf) delete buf;
+		in_use=false;
+		if ((unsigned)window!=0xDeadBeef) {
+			glutDestroyWindow(window);
+			window=0xDeadBeef;
+		}
+	}
 };
 
 static jmp_buf hack;
@@ -133,17 +142,6 @@ GRID_INLET(FormatOpenGL,0) {
 	for (; n>0; y++, data+=sxc, n-=sxc) bit_packing->pack(sx, data, buf+y*bypl);
 	} GRID_FINISH {
 } GRID_END
-
-\def 0 close () {
-	clock_unset(clock);
-	if (gltex) glDeleteTextures(1, (GLuint*)&gltex);
-	if (buf) delete buf;
-	in_use=false;
-	if ((unsigned)window!=0xDeadBeef) {
-		glutDestroyWindow(window);
-		window=0xDeadBeef;
-	}
-}
 
 \def void initialize (Symbol mode) {
 	SUPER;

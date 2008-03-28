@@ -31,10 +31,10 @@
 	mpeg3_t *mpeg;
 	int track;
 	FormatMPEG3 () : track(0) {}
+	~FormatMPEG3 () {if (mpeg) {mpeg3_close(mpeg); mpeg=0;}}
 	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 seek (int frame);
 	\decl 0 bang ();
-	\decl 0 close ();
 };
 
 \def 0 seek (int frame) { mpeg3_set_frame(mpeg,frame,track); }
@@ -58,11 +58,6 @@
 	for(int y=0; y<sy; y++) out.send(bs,buf+channels*sx*y);
 	delete[] (uint8 *)buf;
 //	return INT2NUM(nframe);
-}
-
-\def 0 close () {
-	if (mpeg) { mpeg3_close(mpeg); mpeg=0; }
-	SUPER;
 }
 
 // libmpeg3 may be nice, but it won't take a filehandle, only filename

@@ -47,8 +47,8 @@ static std::map<string,string> fourccs;
 	int jpeg_quality; // in theory we shouldn't need this, but...
 	FormatQuickTimeHW() : track(0), dim(0), codec(QUICKTIME_RAW), 
 		started(false), force(0), framerate(29.97), bit_packing(0), jpeg_quality(75) {}
+	~FormatQuickTimeHW() {if (anim) quicktime_close(anim);}
 	\decl void initialize (t_symbol *mode, string filename);
-	\decl 0 close ();
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\decl 0 force_size (int32 height, int32 width);
@@ -167,11 +167,6 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	} else if (c=="yuva")    { channels=4; colorspace=BC_YUVA8888;
 	} else if (c=="YUV420P") { channels=3; colorspace=BC_YUV420P;
 	} else RAISE("unknown colorspace '%s' (supported: rgb, rgba, bgr, bgrn, yuv, yuva)",c.data());
-}
-
-\def 0 close () {
-	if (anim) { quicktime_close(anim); anim=0; }
-	SUPER;
 }
 
 \def 0 get () {
