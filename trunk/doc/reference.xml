@@ -818,16 +818,6 @@
 		<outlet id="0"><method name="&lt;numeric type symbol&gt;"/></outlet>
 	</class>
 
-	<class name="#print">
-		<method name="init"/>
-		<inlet id="0">
-			<method name="grid"><arg name="grid" type="grid(dims...)"/>
-			prints the dimensions of the grid.
-			prints all the grid data if there are 2 dimensions or less.
-			</method>
-		</inlet>
-	</class>
-
 	<class name="display">
 		GUI object equivalent to [print] and [#print].
 		<method name="(any)">
