@@ -119,6 +119,7 @@ void GFView_display(GFView *self) {
 	NSWindowController *wc;
 	GFView *widget; /* GridFlow's Cocoa widget */
 	NSDate *distantFuture;
+	t_clock *clock;
 	\decl void initialize (Symbol mode);
 	\decl 0 delete_m ();
 	\decl 0 close ();
@@ -140,8 +141,9 @@ static NSDate *distantFuture, *distantPast;
 	}
 	[NSApp updateWindows];
 	[this->window flushWindowIfNeeded];
-	IEVAL(rself,"@clock.delay 20");
+	clock_delay(clock,20);
 }
+FormatQuartz_call(FormatQuartz *self) {self->call(0,0);}
 
 template <class T, class S>
 static void convert_number_type(int n, T *out, S *in) {
@@ -198,7 +200,7 @@ GRID_INLET(FormatQuartz,0) {
 	[window orderFrontRegardless];
 	wc = [[NSWindowController alloc]
 		initWithWindow: window];
-	IEVAL(rself,"@clock = Clock.new self");
+	clock = clock_new(this,(t_method)FormatQuartz_call);
 	[window makeFirstResponder: widget];
 	gfpost("mainWindow = %08lx",(long)[NSApp mainWindow]);
 	gfpost(" keyWindow = %08lx",(long)[NSApp keyWindow]);
@@ -210,7 +212,9 @@ GRID_INLET(FormatQuartz,0) {
 	[window autorelease];
 }
 \def 0 close () {
-	IEVAL(rself,"@clock.unset");
+	clock_unset(clock);
+	clock_free(clock);
+	clock = 0;
 	SUPER;
 	[window autorelease];
 	[window setReleasedWhenClosed: YES];

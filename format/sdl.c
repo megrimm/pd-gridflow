@@ -36,6 +36,7 @@ static bool in_use = false;
 	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
 	P<Dim> dim;
+	t_clock *clock;
 	void resize_window (int sx, int sy);
 	void call ();
 	\decl void initialize (Symbol mode);
@@ -46,8 +47,9 @@ static bool in_use = false;
 void FormatSDL::call() {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {}
-	IEVAL(rself,"@clock.delay 20");
+	clock_delay(clock,20);
 }
+void FormatSDL_call(FormatSDL *self) {self->call();}
 
 void FormatSDL::resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
@@ -81,7 +83,9 @@ GRID_INLET(FormatSDL,0) {
 } GRID_END
 
 \def 0 close () {
-	IEVAL(rself,"@clock.unset");
+	clock_unset(clock);
+	clock_free(clock);
+	clock = 0;
 	in_use=false;
 }
 
@@ -103,7 +107,7 @@ GRID_INLET(FormatSDL,0) {
 		break;
 	default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
 	}
-	IEVAL(rself,"@clock = Clock.new self");
+	clock = clock_new(this,(t_method)FormatSDL_call);
 }
 
 \end class FormatSDL {install_format("#io.sdl",2,"");}
