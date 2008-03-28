@@ -154,6 +154,7 @@ typedef const char *String;
 #define Qnil 0
 typedef void *(*RMethod)(...); /* !@#$ fishy */
 #endif // USE_RUBY
+typedef std::string string;
 
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
@@ -245,6 +246,11 @@ typedef struct R {
 	operator t_symbol * () const {
 		if (TYPE(r)==T_SYMBOL) return gensym((char *)rb_sym_name(r));
 		if (TYPE(r)==T_STRING) return gensym((char *)rb_str_ptr(r));
+ 		RAISE("want Symbol or String");
+	}
+	operator std::string () const {
+		if (TYPE(r)==T_SYMBOL) return std::string(rb_sym_name(r));
+		if (TYPE(r)==T_STRING) return std::string(rb_str_ptr(r));
  		RAISE("want Symbol or String");
 	}
 	operator Pointer * () const {
