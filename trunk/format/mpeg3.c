@@ -31,7 +31,7 @@
 	mpeg3_t *mpeg;
 	int track;
 	FormatMPEG3 () : track(0) {}
-	\decl void initialize (Symbol mode, String filename);
+	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 seek (int frame);
 	\decl 0 bang ();
 	\decl 0 close ();
@@ -55,10 +55,7 @@
 	mpeg3_read_frame(mpeg,rows,0,0,sx,sy,sx,sy,MPEG3_RGB888,track);
 	GridOutlet out(this,0,new Dim(sy,sx,channels),cast);
 	int bs = out.dim->prod(1);
-	for(int y=0; y<sy; y++) {
-		uint8 *row = buf+channels*sx*y;
-		out.send(bs,row);
-	}
+	for(int y=0; y<sy; y++) out.send(bs,buf+channels*sx*y);
 	delete[] (uint8 *)buf;
 //	return INT2NUM(nframe);
 }
@@ -69,21 +66,20 @@
 }
 
 // libmpeg3 may be nice, but it won't take a filehandle, only filename
-\def void initialize (Symbol mode, String filename) {
+\def void initialize (t_symbol *mode, string filename) {
 	SUPER;
-	if (mode!=SYM(in)) RAISE("read-only, sorry");
-	if (TYPE(filename)!=T_STRING) RAISE("PATATE POILUE");
-	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+	if (mode!=gensym("in")) RAISE("read-only, sorry");
+	filename = gf_find_file(filename);
 #ifdef MPEG3_UNDEFINED_ERROR
 	{
 		int err;
-		mpeg = mpeg3_open(rb_str_ptr(filename),&err);
+		mpeg = mpeg3_open((char *)filename.data(),&err);
 		post("mpeg error code = %d",err);
 	}
 #else
-	mpeg = mpeg3_open(rb_str_ptr(filename));
+	mpeg = mpeg3_open(filename.data());
 #endif
-	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename, strerror(errno));
+	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
 }
 
 \classinfo {install_format("#io.mpeg",4,"mpg mpeg");}

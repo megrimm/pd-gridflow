@@ -191,7 +191,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
   int m_quality;
 //int m_colorspace;
   FormatQuickTimeCamera() : vdc(0) {}
-  \decl void initialize (Symbol mode, String filename);
+  \decl void initialize (t_symbol *mode, string filename);
   \decl 0 frame ();
   \decl 0 close ();
   \grin 0 int
@@ -201,7 +201,7 @@ VDE VDSelectUniqueIDs(const UInt64 *inDeviceID, const UInt64 *inInputID)
 
 static int nn(int c) {return c?c:' ';}
 
-\def void initialize (Symbol mode, String filename) {
+\def void initialize (t_symbol *mode, string filename) {
 //vdc = SGGetVideoDigitizerComponent(c);
   SUPER;
   dim = new Dim(240,320,4);
@@ -347,7 +347,7 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 	int nframe, nframes;
 	FormatQuickTimeApple() : movie(0), time(0), movie_file(0), gw(0),
 		buffer(), dim(0), nframe(0), nframes(0) {}
-	\decl void initialize (Symbol mode, String filename);
+	\decl void initialize (t_symbol *mode, string filename);
 	\decl 0 close ();
 	\decl 0 codec_m (String c);
 	\decl 0 colorspace_m (Symbol c);
@@ -425,13 +425,13 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	SUPER;
 }
 
-\def void initialize (Symbol mode, String filename) {
+\def void initialize (t_symbol *mode, string filename) {
 	int err;
 	SUPER;
-	filename = rb_funcall(mGridFlow,SI(find_file),1,filename);
+	filename = gf_find_file(filename);
 	FSSpec fss;
 	FSRef fsr;
-	err = FSPathMakeRef((const UInt8 *)rb_str_ptr(filename), &fsr, NULL);
+	err = FSPathMakeRef((const UInt8 *)filename.data(), &fsr, NULL);
 	if (err) goto err;
 	err = FSGetCatalogInfo(&fsr, kFSCatInfoNone, NULL, NULL, &fss, NULL);
 	if (err) goto err;
@@ -458,8 +458,7 @@ GRID_INLET(FormatQuickTimeApple,0) {
 	if (err) goto err;
 	return;
 err:
-	RAISE("can't open file `%s': error #%d (%s)", rb_str_ptr(filename),
-		err,
+	RAISE("can't open file `%s': error #%d (%s)", filename.data(), err,
 		rb_str_ptr(rb_funcall(mGridFlow,SI(macerr),1,INT2NUM(err))));
 }
 
