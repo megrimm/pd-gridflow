@@ -82,6 +82,7 @@ static void my_idle () { longjmp(hack,1); }
 
 	clock_delay(clock,100);
 }
+void FormatOpenGL_call (FormatOpenGL *self) {self->call();}
 
 \def 0 resize_window (int sx, int sy) {
 	dim = new Dim(sy,sx,3);
