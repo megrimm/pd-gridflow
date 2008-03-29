@@ -1,20 +1,20 @@
-#N canvas 1318 164 502 697 10;
+#N canvas 1318 164 502 740 10;
 #X obj 1 0 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X obj 1 525 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
+#X obj 1 555 cnv 15 500 17 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 1 222 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X obj 1 245 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 215 527 Outlets (1);
-#X obj 1 623 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 215 557 Outlets (1);
+#X obj 1 653 cnv 15 500 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
-#X text 210 622 Arguments (1);
-#X obj 1 546 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
+#X text 210 652 Arguments (1);
+#X obj 1 576 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 2 246 Inlet 0;
-#X text 2 547 Outlet 0;
+#X text 2 577 Outlet 0;
 #X msg 55 123 reset;
 #X obj 13 59 bng 15 250 50 0 empty empty empty 0 -6 0 8 -24198 -1 -1
 ;
@@ -25,8 +25,8 @@
 #X text 215 222 Inlets (1);
 #X obj 13 149 cnv 15 129 17 empty empty empty 20 12 0 14 -241291 -66577
 0;
-#X text 7 651 GRID;
-#X text 74 650 The argument establishes grid dimensions in parentheses
+#X text 7 681 GRID;
+#X text 74 680 The argument establishes grid dimensions in parentheses
 in the order of columns \, rows and grid dimensions.;
 #X obj 13 149 #import ( 240 320 3 );
 #X text 4 274 INTEGER;
@@ -42,8 +42,8 @@ in a single message.;
 #X obj 1 461 cnv 15 60 18 empty empty empty 20 12 0 14 -228992 -66577
 0;
 #X text 2 462 Inlet 1;
-#X text 8 574 GRID;
-#X text 80 574 The grid resulting from the incoming integers and/or
+#X text 8 604 GRID;
+#X text 80 604 The grid resulting from the incoming integers and/or
 grids is output from the outlet.;
 #X obj 12 0 #import ();
 #X text 398 1 GridFlow 0.9.1;
@@ -63,8 +63,10 @@ that integer in the current grid. ends the grid if it is full. the
 constructed grid is not stored: it is streamed. the stream is buffered
 \, so the output is in packets of about a thousand numbers.;
 #X text 7 493 MESSAGE;
-#X text 81 491 "per message" : the grid will shape itself according
-to the;
+#X text 81 492 "per message" : the grid will shape itself according
+to the incoming data. Almost obsolete as sending a list to any grid
+inlet will result in the same except the latter can not be cast to
+other than int32.;
 #X connect 10 0 20 0;
 #X connect 11 0 14 0;
 #X connect 12 0 20 0;
