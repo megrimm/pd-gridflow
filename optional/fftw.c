@@ -1,6 +1,6 @@
 /*
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -30,8 +30,7 @@ typedef unsigned long ulong;
 	if (align) {_L_;post("%s(%s): Alignment Warning: %s=%p is not %d-aligned: %d", \
 		ARGS(this), __PRETTY_FUNCTION__,#d,(void*)d,bytes,align);}}
 
-\class GridFFT < GridObject
-struct GridFFT : GridObject {
+\class GridFFT : GridObject {
 	fftwf_plan plan;
 	P<Dim> lastdim; /* of last input (for plan cache) */
 	long lastchans; /* of last input (for plan cache) */
@@ -40,19 +39,16 @@ struct GridFFT : GridObject {
 	\decl void initialize ();
 	\grin 0 float
 };
-
 \def void _0_sign (int sign) {
 	if (sign!=-1 && sign!=1) RAISE("sign should be -1 or +1");
 	this->sign=sign;
 	fftwf_destroy_plan(plan);
 }
-
 \def void _0_skip (int skip) {
 	if (skip<0 || skip>1) RAISE("skip should be 0 or 1");
 	this->skip=skip;
 	if (plan) {fftwf_destroy_plan(plan); plan=0;}
 }
-
 GRID_INLET(GridFFT,0) {
 	if (in->nt != float32_e)
 		RAISE("expecting float32");
@@ -91,22 +87,15 @@ GRID_INLET(GridFFT,0) {
 	free(buf);
 	lastdim=in->dim; lastchans=chans;
 } GRID_END
-
 \def void initialize () {
-	rb_call_super(argc,argv);
+	SUPER;
 	sign = -1;
 	plan = 0;
 	lastdim = 0;
 	lastchans = 0;
 	skip = 0;
 }
-
-\classinfo {
-	IEVAL(rself,"install '#fft',1,1;");
-}
-\end class GridFFT
-
+\end class {install("#fft",1,1);}
 void startup_fftw () {
 	\startall
 }
-
