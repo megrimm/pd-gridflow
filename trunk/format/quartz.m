@@ -129,7 +129,6 @@ void GFView_display(GFView *self) {
 		[window close];
 	}
 	\decl void initialize (Symbol mode);
-	\decl 0 delete_m ();
 	\decl 0 call ();
 	\grin 0
 };
@@ -215,9 +214,6 @@ GRID_INLET(FormatQuartz,0) {
 	[window setBackgroundColor: color];
 }
 
-\def 0 delete_m () {
-	[window autorelease];
-}
 \end class FormatQuartz {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	distantFuture = [NSDate distantFuture];
