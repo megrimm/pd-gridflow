@@ -102,7 +102,7 @@ GRID_INLET(GridCast,0) {
 	out->send(n,data);
 } GRID_END
 \def void initialize (NumberTypeE nt) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->nt = nt;
 }
 \end class {install("#cast",1,1);}
@@ -156,7 +156,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 \def void _1_per_message() { dim=0; dim_grid=0; }
 
 \def void initialize(Ruby x, NumberTypeE cast) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->cast = cast;
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
@@ -289,7 +289,7 @@ GRID_INLET(GridExportList,0) {
 	}
 };
 \def void initialize(t_symbol *name=0) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->dest = 0;
 	this->name = name;
 	base=10; trunc=70; maxrows=50;
@@ -553,7 +553,7 @@ GRID_INLET(GridStore,1) {
 \def void _1_reassign () { put_at=0; }
 \def void _1_put_at (Grid *index) { put_at=index; }
 \def void initialize (Grid *r) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
 	op = op_put;
 	wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
@@ -618,7 +618,7 @@ GRID_INLET(GridOp,0) {
 
 GRID_INPUT2(GridOp,1,r) {} GRID_END
 \def void initialize(Numop *op, Grid *r=0) {
-  rb_call_super(argc,argv); this->op=op;
+  SUPER; this->op=op;
   this->r=r?r:new Grid(new Dim(),int32_e,true);
 }
 \end class {install("#",2,1);}
@@ -666,7 +666,7 @@ GRID_INLET(GridFold,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
+\def void initialize (Numop *op) { SUPER; this->op=op; }
 \end class {install("#fold",1,1);}
 
 \class GridScan : GridObject {
@@ -703,7 +703,7 @@ GRID_INLET(GridScan,0) {
 	out->send(n,buf);
 } GRID_END
 
-\def void initialize (Numop *op) { rb_call_super(argc,argv); this->op = op; }
+\def void initialize (Numop *op) { SUPER; this->op = op; }
 \end class {install("#scan",1,1);}
 
 //****************************************************************
@@ -848,7 +848,7 @@ GRID_INLET(GridInner,0) {
 GRID_INPUT(GridInner,1,r) {} GRID_END
 
 \def void initialize (Grid *r) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op_mul;
 	this->fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
@@ -911,7 +911,7 @@ GRID_INLET(GridOuter,0) {
 GRID_INPUT(GridOuter,1,r) {} GRID_END
 
 \def void initialize (Numop *op, Grid *r) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op;
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
 }
@@ -940,7 +940,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 };
 
 \def void initialize (Grid *from, Grid *to, Grid *step) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->from=from;
 	this->to  =to;
 	this->step=step;
@@ -1089,7 +1089,7 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 } GRID_END
 
 \def void initialize (Grid *d) {
-	rb_call_super(argc,argv);
+	SUPER;
 	dim_grid=d;
 	dim = dim_grid->to_dim();
 //	if (!dim->prod()) RAISE("target grid size must not be zero");
@@ -1165,7 +1165,7 @@ GRID_INLET(GridJoin,0) {
 GRID_INPUT(GridJoin,1,r) {} GRID_END
 
 \def void initialize (int which_dim, Grid *r) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->which_dim = which_dim;
 	this->r=r;
 }
@@ -1261,7 +1261,7 @@ GRID_INLET(GridTranspose,0) {
 } GRID_END
 
 \def void initialize (int dim1=0, int dim2=1) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->dim1 = dim1;
 	this->dim2 = dim2;
 }
@@ -1299,7 +1299,7 @@ GRID_INLET(GridReverse,0) {
 } GRID_END
 
 \def void initialize (int dim1=0) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->dim1 = dim1;
 }
 
@@ -1417,7 +1417,7 @@ static void expect_pair (P<Dim> dim) {
 	offset=new Grid(EVAL("[0,0]"));
 	if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
 	this->order=order;
-	rb_call_super(argc,argv);
+	SUPER;
 }
 
 \end class {install("#moment",2,1);}
@@ -1501,7 +1501,7 @@ GRID_INLET(GridLabeling,0) {
 } GRID_END
 
 \def void initialize(int form=0) {
-	rb_call_super(argc,argv);
+	SUPER;
 	form_val=form;
 }
 \def void initialize2() {initialize3(0,0);}
@@ -1540,7 +1540,7 @@ GRID_INLET(GridPerspective,0) {
 	}	
 } GRID_END
 
-\def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z;}
+\def void initialize (int32 z) {SUPER; this->z=z;}
 
 \end class {install("#perspective",1,1);}
 
@@ -1586,7 +1586,7 @@ GRID_INPUT(GridBorder,1,diml_grid) { diml = diml_grid->to_dim(); } GRID_END
 GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
 
 \def void initialize (Grid *dl, Grid *dr) {
-	rb_call_super(argc,argv);
+	SUPER;
 	diml_grid=dl; diml = diml_grid->to_dim();
 	dimr_grid=dr; dimr = dimr_grid->to_dim();
 }
@@ -1727,7 +1727,7 @@ GRID_INLET(GridConvolve,0) {
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
 \def void initialize (Grid *r) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op_mul;
 	this->fold = op_add;
 	this->seed = new Grid(new Dim(),int32_e,true);
@@ -1791,7 +1791,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
 \def void initialize (Grid *factor) {
 	scale.constrain(expect_scale_factor);
-	rb_call_super(argc,argv);
+	SUPER;
 	scale=new Grid(INT2NUM(2));
 	if (factor) scale=factor;
 	prepare_scale_factor();
@@ -1880,7 +1880,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
 \def void initialize (Grid *factor, Symbol option) {
 	scale.constrain(expect_scale_factor);
-	rb_call_super(argc,argv);
+	SUPER;
 	scale=new Grid(INT2NUM(2));
 	if (factor) scale=factor;
 	prepare_scale_factor();
@@ -2042,7 +2042,7 @@ GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
 \def void initialize (Numop *op, Grid *color, Grid *polygon) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op;
 	if (color) this->color=color;
 	if (polygon) { this->polygon=polygon; init_lines(); }
@@ -2159,7 +2159,7 @@ GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
 
 \def void initialize (Numop *op, Grid *image, Grid *position) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op;
 	if (image) this->image=image;
 	if (position) this->position=position;
@@ -2209,7 +2209,7 @@ GRID_INLET(GridDrawPoints,0) {
 } GRID_END
 
 \def void initialize (Numop *op, Grid *color, Grid *points) {
-	rb_call_super(argc,argv);
+	SUPER;
 	this->op = op;
 	if (color) this->color=color;
 	if (points) this->points=points;
@@ -2275,12 +2275,12 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 \def void initialize (int n=2, NumberTypeE nt=float32_e) {
 	if (n<1) RAISE("n=%d must be at least 1",n);
 	if (n>32) RAISE("n=%d is too many?",n);
-	rb_call_super(argc,argv);
+	SUPER;
 	a = new Grid(new Dim(n),nt,true);
 	this->n=n;
 }
 \def void initialize2 () {
-	rb_call_super(argc,argv);
+	SUPER;
 	bself->ninlets_set(this->n);
 }
 \def void _n_float (int inlet, float f) {
@@ -2311,11 +2311,11 @@ GRID_INLET(GridUnpack,0) {
 \def void initialize (int n=2) {
 	if (n<1) RAISE("n=%d must be at least 1",n);
 	if (n>32) RAISE("n=%d is too many?",n);
-	rb_call_super(argc,argv);
+	SUPER;
 	this->n=n;
 }
 \def void initialize2 () {
-	rb_call_super(argc,argv);
+	SUPER;
 	bself->noutlets_set(this->n);
 }
 \end class {install("#unpack",1,0);}
