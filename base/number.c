@@ -402,13 +402,12 @@ const long op_table4_n = COUNT(op_table4);
 #endif
 
 // D=dictionary, A=table, A##_n=table count.
-#define INIT_TABLE(D,A) { D=IEVAL(mGridFlow,"@"#D" ||= {}"); \
-	for(int i=0; i<A##_n; i++) {rb_hash_aset(D,ID2SYM(rb_intern(A[i].name)),PTR2FIX((A+i)));}}
+#define INIT_TABLE(D,A) for(int i=0; i<A##_n; i++) D[string(A[i].name)]=&A[i];
 
 #ifdef PASS1
-Ruby  op_dict = Qnil;
-Ruby vop_dict = Qnil;
-Ruby number_type_dict = Qnil;
+std::map<string,NumberType *> number_type_dict;
+std::map<string,Numop *> op_dict;
+std::map<string,Numop *> vop_dict;
 void startup_number () {
 	INIT_TABLE( op_dict,op_table1)
 	INIT_TABLE( op_dict,op_table2)
@@ -423,15 +422,13 @@ void startup_number () {
 		char *b = strchr(a,',');
 		if (b) {
 			*b=0;
-			rb_hash_aset(number_type_dict, ID2SYM(rb_intern(b+1)),
-				PTR2FIX(&number_type_table[i]));
+			number_type_dict[string(b+1)]=&number_type_table[i];
 		}
-		rb_hash_aset(number_type_dict, ID2SYM(rb_intern(a)),
-				PTR2FIX(&number_type_table[i]));
+		number_type_dict[string(a)]=&number_type_table[i];
 	}
 // S:name; M:mode; F:replacement function;
 #define OVERRIDE_INT(S,M,F) { \
-	Numop *foo = FIX2PTR(Numop,rb_hash_aref(op_dict,SYM(S))); \
+	Numop *foo = op_dict[string(#S)]; \
 	foo->on_uint8.M=F; \
 	foo->on_int16.M=F; \
 	foo->on_int32.M=F; }
