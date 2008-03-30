@@ -299,18 +299,6 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 /* ---------------------------------------------------------------- */
 /* C++<->Ruby bridge for classes/functions in base/number.c */
 
-static Ruby String_swap32_f (Ruby rself) {
-	int n = rb_str_len(rself)/4;
-	swap32(n,(uint32 *)rb_str_ptr(rself));
-	return rself;
-}
-
-static Ruby String_swap16_f (Ruby rself) {
-	int n = rb_str_len(rself)/2;
-	swap16(n,(uint16 *)rb_str_ptr(rself));
-	return rself;
-}
-
 NumberTypeE NumberTypeE_find (string s) {
 	if (number_type_dict.find(s)==number_type_dict.end()) RAISE("unknown number type \"%s\"", s.data());
 	return number_type_dict[s]->index;
