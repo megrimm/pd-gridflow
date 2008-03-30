@@ -139,7 +139,7 @@ def make_fun_map(op,type)
 		puts "emms"
 	}
 	$decls << "void #{s}(long,#{type}*,#{type});\n"
-	$install << "op_dict[string(\"#{sym})\")]->on_#{type}.map = #{s};\n"
+	$install << "op_dict[string(\"#{sym}\")]->on_#{type}.map = #{s};\n"
 	$count += 1
 end
 
