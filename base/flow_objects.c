@@ -2345,12 +2345,6 @@ GRID_INLET(GridUnpack,0) {
 \def void _0_list (...) {}
 \end class {install("gf.error",1,0);}
 
-\class UnixTime : FObject {
-	\decl void initialize ();
-};
-\def void initialize () {}
-\end class {install("unix_time2",1,3);}
-
 //****************************************************************
 
 #define OP(x) op_dict[string(#x)]
