@@ -105,7 +105,7 @@ GRID_INLET(GridCast,0) {
 	rb_call_super(argc,argv);
 	this->nt = nt;
 }
-\end class GridCast {install("#cast",1,1);}
+\end class {install("#cast",1,1);}
 
 //****************************************************************
 //{ ?,Dim[B] -> Dim[*Cs] }
@@ -166,7 +166,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 }
 
 \def void _0_reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
-\end class GridImport {install("#import",2,1);}
+\end class {install("#import",2,1);}
 
 //****************************************************************
 /*{ Dim[*As] -> ? }*/
@@ -179,7 +179,7 @@ GRID_INLET(GridToFloat,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) outlet_float(bself->out[0],data[i]);
 } GRID_END
-\end class GridToFloat {install("#to_float",1,1);}
+\end class {install("#to_float",1,1);}
 
 \class GridToSymbol : GridObject {
 	\grin 0
@@ -193,7 +193,7 @@ GRID_INLET(GridToSymbol,0) {
 	c[n]=0;
 	outlet_symbol(bself->out[0],gensym(c));
 } GRID_END
-\end class GridToSymbol {install("#to_symbol",1,1);}
+\end class {install("#to_symbol",1,1);}
 
 /* **************************************************************** */
 /*{ Dim[*As] -> ? }*/
@@ -215,7 +215,7 @@ GRID_INLET(GridExportList,0) {
 	if (in->dim->prod()==0) send_out(0,0,data);
 } GRID_END
 
-\end class GridExportList {install("#to_list",1,1); /*add_creator("#export_list");*/}
+\end class {install("#to_list",1,1); /*add_creator("#export_list");*/}
 
 /* **************************************************************** */
 \class GridPrint : GridObject {
@@ -372,7 +372,7 @@ GRID_INLET(GridPrint,0) {
 	dump_dims(head,in);
 	if (in->dim->prod()==0) puts(head);
 } GRID_END
-\end class GridPrint {install("#print",1,1);}
+\end class {install("#print",1,1);}
 
 /* **************************************************************** */
 // [#store] is the class for storing a grid and restituting it on demand.
@@ -561,7 +561,7 @@ GRID_INLET(GridStore,1) {
 	fromb = new int32[Dim::MAX_DIM];
 	to2   = new int32[Dim::MAX_DIM];
 }
-\end class GridStore {install("#store",2,1);}
+\end class {install("#store",2,1);}
 
 //****************************************************************
 //{ Dim[*As]<T> -> Dim[*As]<T> } or
@@ -622,7 +622,7 @@ GRID_INPUT2(GridOp,1,r) {} GRID_END
   rb_call_super(argc,argv); this->op=op;
   this->r=r?r:new Grid(new Dim(),int32_e,true);
 }
-\end class GridOp {install("#",2,1);}
+\end class {install("#",2,1);}
 
 //****************************************************************
 \class GridFold : GridObject {
@@ -668,7 +668,7 @@ GRID_INLET(GridFold,0) {
 } GRID_END
 
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op=op; }
-\end class GridFold {install("#fold",1,1);}
+\end class {install("#fold",1,1);}
 
 \class GridScan : GridObject {
 	\attr Numop *op;
@@ -705,7 +705,7 @@ GRID_INLET(GridScan,0) {
 } GRID_END
 
 \def void initialize (Numop *op) { rb_call_super(argc,argv); this->op = op; }
-\end class GridScan {install("#scan",1,1);}
+\end class {install("#scan",1,1);}
 
 //****************************************************************
 // L      is a Dim[*si,sj,    *ss]<T>
@@ -856,7 +856,7 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 	this->r    = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\end class GridInner {install("#inner",2,1);}
+\end class {install("#inner",2,1);}
 
 /* **************************************************************** */
 /*{ Dim[*As]<T>,Dim[*Bs]<T> -> Dim[*As,*Bs]<T> }*/
@@ -917,7 +917,7 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	this->r = r ? r : new Grid(new Dim(),int32_e,true);
 }
 
-\end class GridOuter {install("#outer",2,1);}
+\end class {install("#outer",2,1);}
 
 //****************************************************************
 //{ Dim[]<T>,Dim[]<T>,Dim[]<T> -> Dim[A]<T> } or
@@ -1003,7 +1003,7 @@ void GridFor::trigger (T bogus) {
 GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
-\end class GridFor {install("#for",3,1);}
+\end class {install("#for",3,1);}
 
 //****************************************************************
 \class GridFinished : GridObject {
@@ -1017,7 +1017,7 @@ GRID_INLET(GridFinished,0) {
 	Ruby a[] = { INT2NUM(0), bsym._bang };
 	send_out(COUNT(a),a);
 } GRID_END
-\end class GridFinished {install("#finished",1,1);}
+\end class {install("#finished",1,1);}
 
 \class GridDim : GridObject {
 	\decl void initialize ();
@@ -1029,7 +1029,7 @@ GRID_INLET(GridDim,0) {
 	out.send(in->dim->n,in->dim->v);
 	in->set_mode(0);
 } GRID_END
-\end class GridDim {install("#dim",1,1);}
+\end class {install("#dim",1,1);}
 
 \class GridType : GridObject {
 	\decl void initialize ();
@@ -1041,7 +1041,7 @@ GRID_INLET(GridType,0) {
 	outlet_symbol(bself->out[0],gensym((char *)number_type_table[in->nt].name));
 	in->set_mode(0);
 } GRID_END
-\end class GridType {install("#type",1,1);}
+\end class {install("#type",1,1);}
 
 //****************************************************************
 //{ Dim[*As]<T>,Dim[B] -> Dim[*Cs]<T> }
@@ -1096,7 +1096,7 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 //	if (!dim->prod()) RAISE("target grid size must not be zero");
 }
 
-\end class GridRedim {install("#redim",2,1);}
+\end class {install("#redim",2,1);}
 
 //****************************************************************
 \class GridJoin : GridObject {
@@ -1171,7 +1171,7 @@ GRID_INPUT(GridJoin,1,r) {} GRID_END
 	this->r=r;
 }
 
-\end class GridJoin {install("@join",2,1);}
+\end class {install("@join",2,1);}
 
 //****************************************************************
 \class GridGrade : GridObject {
@@ -1205,7 +1205,7 @@ GRID_INLET(GridGrade,0) {
 	}
 } GRID_END
 
-\end class GridGrade {install("#grade",1,1);}
+\end class {install("#grade",1,1);}
 
 //****************************************************************
 //\class GridMedian : GridObject
@@ -1267,7 +1267,7 @@ GRID_INLET(GridTranspose,0) {
 	this->dim2 = dim2;
 }
 
-\end class GridTranspose {install("#transpose",3,1);}
+\end class {install("#transpose",3,1);}
 
 //****************************************************************
 \class GridReverse : GridObject {
@@ -1304,7 +1304,7 @@ GRID_INLET(GridReverse,0) {
 	this->dim1 = dim1;
 }
 
-\end class GridReverse {install("#reverse",2,1);}
+\end class {install("#reverse",2,1);}
 
 //****************************************************************
 \class GridCentroid : GridObject {
@@ -1339,7 +1339,7 @@ GRID_INLET(GridCentroid,0) {
 	outlet_float(bself->out[2],blah[1]);
 } GRID_END
 
-\end class GridCentroid {install("#centroid",1,3);}
+\end class {install("#centroid",1,3);}
 
 //****************************************************************
 \class GridMoment : GridObject {
@@ -1421,7 +1421,7 @@ static void expect_pair (P<Dim> dim) {
 	rb_call_super(argc,argv);
 }
 
-\end class GridMoment {install("#moment",2,1);}
+\end class {install("#moment",2,1);}
 
 //****************************************************************
 \class GridLabeling : GridObject {
@@ -1516,7 +1516,7 @@ GRID_INLET(GridLabeling,0) {
 	bself->ninlets_set(form_val ? 2 : 4);
 }
 
-\end class GridLabeling {install("#labeling",1,0);}
+\end class {install("#labeling",1,0);}
 
 //****************************************************************
 \class GridPerspective : GridObject {
@@ -1543,7 +1543,7 @@ GRID_INLET(GridPerspective,0) {
 
 \def void initialize (int32 z) {rb_call_super(argc,argv); this->z=z;}
 
-\end class GridPerspective {install("#perspective",1,1);}
+\end class {install("#perspective",1,1);}
 
 //****************************************************************
 \class GridBorder : GridObject {
@@ -1592,7 +1592,7 @@ GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
 	dimr_grid=dr; dimr = dimr_grid->to_dim();
 }
 
-\end class GridBorder {install("#border",3,1);}
+\end class {install("#border",3,1);}
 
 static void expect_picture (P<Dim> d) {
 	if (d->n!=3) RAISE("(height,width,chans) dimensions please");}
@@ -1737,7 +1737,7 @@ GRID_INPUT(GridConvolve,1,b) {} GRID_END
 	this->anti = true;
 }
 
-\end class GridConvolve {install("#convolve",2,1);}
+\end class {install("#convolve",2,1);}
 
 /* ---------------------------------------------------------------- */
 /* "#scale_by" does quick scaling of pictures by integer factors */
@@ -1798,7 +1798,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	prepare_scale_factor();
 }
 
-\end class GridScaleBy {install("#scale_by",2,1);}
+\end class {install("#scale_by",2,1);}
 
 // ----------------------------------------------------------------
 //{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }
@@ -1888,7 +1888,7 @@ GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	smoothly = option==SYM(smoothly);
 }
 
-\end class GridDownscaleBy {install("#downscale_by",2,1);}
+\end class {install("#downscale_by",2,1);}
 
 //****************************************************************
 \class GridLayer : GridObject {
@@ -1923,7 +1923,7 @@ GRID_INLET(GridLayer,0) {
 
 GRID_INPUT(GridLayer,1,r) {} GRID_END
 
-\end class GridLayer {install("#layer",2,1);}
+\end class {install("#layer",2,1);}
 
 // ****************************************************************
 // pad1,pad2 only are there for 32-byte alignment
@@ -2049,7 +2049,7 @@ GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 	if (polygon) { this->polygon=polygon; init_lines(); }
 }
 
-\end class DrawPolygon {install("#draw_polygon",3,1);}
+\end class {install("#draw_polygon",3,1);}
 
 //****************************************************************
 static void expect_position(P<Dim> d) {
@@ -2167,7 +2167,7 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	else this->position=new Grid(new Dim(2),int32_e,true);
 }
 
-\end class DrawImage {install("#draw_image",3,1);}
+\end class {install("#draw_image",3,1);}
 
 //****************************************************************
 // Dim[*A],Dim[*B],Dim[C,size(A)-size(B)] -> Dim[*A]
@@ -2216,7 +2216,7 @@ GRID_INLET(GridDrawPoints,0) {
 	if (points) this->points=points;
 }
 
-\end class GridDrawPoints {install("#draw_points",3,1);}
+\end class {install("#draw_points",3,1);}
 
 //****************************************************************
 \class GridPolygonize : GridObject {
@@ -2230,7 +2230,7 @@ GRID_INLET(GridPolygonize,0) {
 	/* WRITE ME */
 } GRID_END
 
-\end class GridPolygonize {install("#polygonize",1,1);}
+\end class {install("#polygonize",1,1);}
 
 //****************************************************************
 \class GridNoiseGateYuvs : GridObject {
@@ -2259,7 +2259,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 
 \def void _1_float(int v) {thresh=v;}
 \def void initialize(int v=0) {thresh=v;}
-\end class GridNoiseGateYuvs {install("#noise_gate_yuvs",2,1);}
+\end class {install("#noise_gate_yuvs",2,1);}
 
 //****************************************************************
 
@@ -2296,7 +2296,7 @@ TYPESWITCH(a->nt,FOO,);
 TYPESWITCH(a->nt,FOO,);
 #undef FOO
 }
-\end class GridPack {install("#pack",1,1);}
+\end class {install("#pack",1,1);}
 
 \class GridUnpack : GridObject {
 	int n;
@@ -2319,7 +2319,7 @@ GRID_INLET(GridUnpack,0) {
 	rb_call_super(argc,argv);
 	bself->noutlets_set(this->n);
 }
-\end class GridUnpack {install("#unpack",1,0);}
+\end class {install("#unpack",1,0);}
 
 //****************************************************************
 \class ForEach : FObject {
@@ -2336,7 +2336,7 @@ GRID_INLET(GridUnpack,0) {
 	}
 }
 
-\end class ForEach {install("foreach",1,1);}
+\end class {install("foreach",1,1);}
 
 \class GFError : FObject {
 	\decl void initialize ();
@@ -2344,7 +2344,13 @@ GRID_INLET(GridUnpack,0) {
 };
 \def void initialize () {}
 \def void _0_list (...) {}
-\end class GFError {install("gf.error",1,0);}
+\end class {install("gf.error",1,0);}
+
+\class UnixTime : FObject {
+	\decl void initialize ();
+};
+\def void initialize () {}
+\end class {install("unix_time2",1,3);}
 
 //****************************************************************
 
