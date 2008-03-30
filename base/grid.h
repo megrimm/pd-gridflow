@@ -581,6 +581,7 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberType
 #ifdef USE_RUBY
 #ifndef IS_BRIDGE
 static Numop *convert(Ruby x, Numop **bogus) {
+	if (TYPE(x)!=T_STRING) x=rb_funcall(x,SI(to_s),0);
 	string k = string(rb_str_ptr(x));
 	if (op_dict.find(k)==op_dict.end()) {
 		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not %s", rb_str_ptr(rb_funcall(x,SI(inspect),0)));
