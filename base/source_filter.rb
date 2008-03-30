@@ -56,15 +56,18 @@ Out = File.open ARGV[1], "w"
 def handle_class(line)
 	raise "already in class #{where}" if $stack[-1] and ClassDecl===$stack[-1]
 	#STDERR.puts "class: #{line}"
-	/^(\w+)(?:\s*[:<]\s*(\w+))?\s*(\{?)\s*$/.match line or raise "syntax error #{where}"
-	q=ClassDecl.new($1,$2,{},{},{},false)
+	/^(\w+)(?:\s*[:<]\s*(\w+))?\s*(\{.*)?/.match line or raise "syntax error #{where}"
+	classname = $1
+	superclassname = $2
+	rest = $3
+	q=ClassDecl.new(classname,superclassname,{},{},{},false)
 	$stack << q
 	$classes << q
 	Out.print "/* begin class */"
-	if $3 == "{" then
-		Out.print "struct #{$1} "
-		Out.print ": #{$2}" if $2
-		Out.print "{"
+	if rest and /^\{/ =~ rest then
+		Out.print "struct #{classname} "
+		Out.print ": #{superclassname}" if superclassname
+		Out.print rest
 	end
 end
 
