@@ -130,7 +130,7 @@ IplImage *cvImageGrid(PtrGrid g /*, CvMode mode */) {
 	SUPER;
 	mode = cv_mode_auto;
 }
-\end class CvOp1 {}
+\end class {}
 
 \class CvOp2 : CvOp1 {
 	PtrGrid r;
@@ -160,18 +160,18 @@ GRID_INLET(CvOp2,0) {
 	out->send(o->dim->prod(),(T *)o->data);
 } GRID_END
 GRID_INPUT2(CvOp2,1,r) {} GRID_END
-\end class CvOp2 {}
+\end class {}
 
 #define FUNC virtual void func(CvArr *l, CvArr *r, CvArr *o)
 
 \class CvAdd : CvOp2 {FUNC {cvAdd(l,r,o,0);}};
-\end class CvAdd {install("cv.Add",2,1);}
+\end class {install("cv.Add",2,1);}
 \class CvSub : CvOp2 {FUNC {cvSub(l,r,o,0);}};
-\end class CvSub {install("cv.Sub",2,1);}
+\end class {install("cv.Sub",2,1);}
 \class CvMul : CvOp2 {FUNC {cvMul(l,r,o,1);}};
-\end class CvMul {install("cv.Mul",2,1);}
+\end class {install("cv.Mul",2,1);}
 \class CvDiv : CvOp2 {FUNC {cvDiv(l,r,o,1);}};
-\end class CvDiv {install("cv.Div",2,1);}
+\end class {install("cv.Div",2,1);}
 
 \class CvSplit : CvOp1 {
 	int channels;
@@ -183,7 +183,7 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 	this->channels = channels;
 	bself->noutlets_set(channels);
 }
-\end class CvSplit {}
+\end class {}
 
 \class CvHaarDetectObjects : GridObject {
 	\attr double scale_factor; /*=1.1*/
@@ -191,7 +191,7 @@ GRID_INPUT2(CvOp2,1,r) {} GRID_END
 	\attr int flags;           /*=0*/
 	\decl void initialize ();
 	CvHaarClassifierCascade *cascade;
-	CvMemStorage* storage;
+	CvMemStorage *storage;
 	\grin 0
 };
 \def void initialize () {
@@ -223,7 +223,7 @@ GRID_INLET(CvHaarDetectObjects,0) {
 		out->send(4,duh);
 	}
 } GRID_END
-\end class CvHaarDetectObjects {install("cv.HaarDetectObjects",2,1);}
+\end class {install("cv.HaarDetectObjects",2,1);}
 
 \class CvKalmanWrapper : CvOp1 {
 	CvKalman *kal;
@@ -279,7 +279,7 @@ GRID_INLET(CvKalmanWrapper,1) {
 	const CvMat* r = cvKalmanCorrect(kal,a);
 	cvMatSend(r,this,0);
 } GRID_END
-\end class CvKalmanWrapper {install("cv.Kalman",2,1);}
+\end class {install("cv.Kalman",2,1);}
 
 static int erreur_handleur (int status, const char* func_name, const char* err_msg, const char* file_name, int line, void *userdata) {
 	// we might be looking for trouble because we don't know whether OpenCV is longjmp-proof.
