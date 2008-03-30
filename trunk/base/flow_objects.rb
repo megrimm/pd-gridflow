@@ -104,16 +104,16 @@ FObject.subclass("fps",1,1) {
 	end
 }
 
-GridObject.subclass("unix_time",1,3) {
-  install_rgrid 0
+FObject.subclass("unix_time",1,3) {
   def _0_bang
     t = Time.new
     tt = t.to_s
-    send_out_grid_begin 0, [tt.length], :uint8
-    send_out_grid_flow 0, tt, :uint8
+    send_out 2, t.year, t.month, t.day, t.hour, t.min, t.day
     send_out 1, t.to_i/86400, t.to_i%86400,
 	((t.to_f-t.to_f.floor)*1000000).to_i
-    send_out 2, t.year, t.month, t.day, t.hour, t.min, t.day
+    a=[]
+    for char in tt.split("") do a << char[0] end
+    send_out 0, :list, *a
   end
 }
 ### test with "shell xlogo &" -> [exec]
@@ -184,7 +184,7 @@ FObject.subclass("args",1,1) {
 	end
 }
 
-GridObject.subclass("#rotatificator",2,1) {
+FObject.subclass("#rotatificator",2,1) {
 	def _0_float(scale)
 		n = @axis[2]
 		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then scale else 0 end }}
@@ -194,8 +194,7 @@ GridObject.subclass("#rotatificator",2,1) {
 				b = @axis[j].to_i
 				rotator[a][b] = (scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
 		}}
-		send_out_grid_begin 0,[n,n]
-		send_out_grid_flow 0, rotator.flatten.pack("i#{n*n}")
+		send_out 0,:list,n,n,:"#",*rotator.flatten
 	end
 	def _0_axis(from,to,total)
 		total>=0 or raise "total-axis number incorrect"
