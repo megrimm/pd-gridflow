@@ -349,7 +349,7 @@ extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
 //****************************************************************
 // a Dim is a list of dimensions that describe the shape of a grid
 typedef int32 Card; /* should be switched to long int soon */
-\class Dim : CObject {
+struct Dim : CObject {
 	static const Card MAX_DIM=16; // maximum number of dimensions in a grid
 	Card n;
 	Card v[MAX_DIM]; // real stuff
@@ -382,7 +382,6 @@ typedef int32 Card; /* should be switched to long int soon */
 		return true;
 	}
 };
-\end class Dim
 
 //****************************************************************
 //NumberTypeE is a very small int identifying the type of the (smallest) elements of a grid
@@ -483,7 +482,6 @@ struct BitPacking : CObject {
 	template <class T> void   pack(long n, T *in, uint8 *out);
 	template <class T> void unpack(long n, uint8 *in, T *out);
 };
-\end class
 
 int high_bit(uint32 n);
 int  low_bit(uint32 n);
@@ -572,7 +570,6 @@ inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
 #endif
 
 extern NumberType number_type_table[];
-
 extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
 extern Ruby op_dict; // GridFlow.@op_dict={}
 
@@ -726,7 +723,7 @@ EACH_NUMBER_TYPE(FOO)
 } GridHandler;
 
 struct GridObject;
-\class GridInlet : CObject {
+struct GridInlet : CObject {
 	GridObject *parent;
 	const GridHandler *gh;
 private:
@@ -765,7 +762,6 @@ public:
 private:
 	template <class T> void from_grid2(Grid *g, T foo);
 };
-\end class GridInlet
 
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin and \classinfo)
@@ -783,7 +779,7 @@ struct FClass {
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
-\class GridOutlet : CObject {
+struct GridOutlet : CObject {
 // number of (minimum,maximum) BYTES to send at once
 // starting with version 0.8, this is amount of BYTES, not amount of NUMBERS.
 	static const long MIN_PACKET_SIZE = 1<<8;
@@ -832,7 +828,6 @@ private:
 		dim=0;
 	}
 };
-\end class GridOutlet
 
 //****************************************************************
 
