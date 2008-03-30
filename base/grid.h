@@ -159,7 +159,8 @@ typedef std::string string;
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets")
+	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets") \
+	MACRO(_in,"in") MACRO(_out,"out")
 
 extern struct BuiltinSymbols {
 #define FOO(_sym_,_str_) Symbol _sym_;
@@ -452,10 +453,9 @@ NumberTypeE NumberTypeE_find (Symbol sym);
   default: E; RAISE("type '%s' not available here",number_type_table[T].name);}
 
 //****************************************************************
-//BitPacking objects encapsulate optimised loops of conversion
+//BitPacking objects encapsulate optimised loops of bitfield conversion (mostly for I/O)
 struct BitPacking;
-// those are the types of the optimised loops of conversion 
-// inputs are const
+// those are the types of the optimised loops of conversion; inputs are const
 struct Packer {
 #define FOO(S) void (*as_##S)(BitPacking *self, long n, S *in, uint8 *out);
 EACH_INT_TYPE(FOO)
@@ -467,7 +467,7 @@ EACH_INT_TYPE(FOO)
 #undef FOO
 };
 
-\class BitPacking : CObject {
+struct BitPacking : CObject {
 	Packer   *  packer;
 	Unpacker *unpacker;
 	unsigned int endian; // 0=big, 1=little, 2=same, 3=different
@@ -479,12 +479,6 @@ EACH_INT_TYPE(FOO)
 		Packer *packer=0, Unpacker *unpacker=0);
 	bool is_le();
 	bool eq(BitPacking *o);
-	\decl void initialize(Ruby foo1, Ruby foo2, Ruby foo3);
-	\decl String   pack2(String ins, String outs=Qnil);
-	\decl String unpack2(String ins, String outs=Qnil);
-	\decl void     pack3(long n, long inqp, long outqp, NumberTypeE nt);
-	\decl void   unpack3(long n, long inqp, long outqp, NumberTypeE nt);
-	\decl String to_s();
 // main entrances to Packers/Unpackers
 	template <class T> void   pack(long n, T *in, uint8 *out);
 	template <class T> void unpack(long n, uint8 *in, T *out);

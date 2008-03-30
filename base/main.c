@@ -320,69 +320,6 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 }
 
 /* **************************************************************** */
-\class BitPacking : CObject
-
-\def void initialize(Ruby foo1, Ruby foo2, Ruby foo3) {}
-
-// !@#$ doesn't support number types
-// and the Pt<> look fishy
-\def String pack2 (String ins, String outs=Qnil) {
-	long n = rb_str_len(ins) / sizeof(int32) / size;
-	int32 * in = (int32 *)rb_str_ptr(ins);
-	long bytes2 = n*bytes;
-	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
-	rb_str_modify(out);
-	pack(n,in,(uint8 *)rb_str_ptr(out));
-	return out;
-}
-
-// !@#$ doesn't support number types
-// and the Pt<> look fishy
-\def String unpack2 (String ins, String outs=Qnil) {
-	long n = rb_str_len(argv[0]) / bytes;
-	uint8 * in = (uint8 *)rb_str_ptr(ins);
-	long bytes2 = n*size*sizeof(int32);
-	Ruby out = outs!=Qnil ? rb_str_resize(outs,bytes2) : rb_str_new("",bytes2);
-	rb_str_modify(out);
-	unpack(n,in,(uint8 *)rb_str_ptr(out));
-	return out;
-}
-
-\def void   pack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) pack(n,INT2PTR(T,inqp),INT2PTR(uint8,outqp));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
-}
-
-\def void unpack3 (long n, long inqp, long outqp, NumberTypeE nt) {
-#define FOO(T) unpack(n,INT2PTR(uint8,inqp),INT2PTR(T,outqp));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
-}
-
-static Ruby BitPacking_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby keep = rb_ivar_get(mGridFlow, rb_intern("@fobjects"));
-	if (argc!=3) RAISE("bad args");
-	if (TYPE(argv[2])!=T_ARRAY) RAISE("bad mask");
-	int endian = INT(argv[0]);
-	int bytes = INT(argv[1]);
-	Ruby *masks = rb_ary_ptr(argv[2]);
-	uint32 masks2[4];
-	int size = rb_ary_len(argv[2]);
-	if (size<1) RAISE("not enough masks");
-	if (size>4) RAISE("too many masks (%d)",size);
-	for (int i=0; i<size; i++) masks2[i] = NUM2UINT(masks[i]);
-	BitPacking *self = new BitPacking(endian,bytes,size,masks2);
-	Ruby rself = Data_Wrap_Struct(qlass, 0, CObject_free, self);
-	self->rself = rself;
-	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping (leak) (!@#$ WHAT???)
-	rb_funcall2(rself,SI(initialize),argc,argv);
-	return rself;
-}
-
-\classinfo
-\end class BitPacking
-
 void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
@@ -564,12 +501,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, new, -1);
 	ID gbi = SI(gf_bridge_init);
 	if (rb_respond_to(rb_cData,gbi)) rb_funcall(rb_cData,gbi,0);
-	Ruby cBitPacking = rb_define_class_under(mGridFlow, "BitPacking", rb_cObject);
-	define_many_methods(cBitPacking, ciBitPacking.methodsn, ciBitPacking.methods);
-	SDEF(BitPacking,new,-1);
-	rb_define_method(rb_cString, "swap32!", (RMethod)String_swap32_f, 0);
-	rb_define_method(rb_cString, "swap16!", (RMethod)String_swap16_f, 0);
-
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
