@@ -107,12 +107,11 @@ GRID_INLET(GridExportPix,1) {
 
 void GridExportPix::obj_setupCallback(t_class *) {}
 
-\classinfo {
-	IEVAL(rself,"install '#to_pix',2,1;");
+\end class {
+	install("#to_pix",2,1);
 	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridExportPix"),SI(@bfclass)));
 	GridExportPix::real_obj_setupCallback(qlass);
 }
-\end class GridExportPix
 
 //------------------------------------------------------------------------
 //  in 0: gem (todo: auto 0 = manual mode; bang = send next frame; type = number type attr)
@@ -149,18 +148,14 @@ public:
 };
 CPPEXTERN_NEW(GridImportPix)
 
-\def void initialize () {
-	rb_call_super(argc,argv);
-}
-
+\def void initialize () {SUPER;}
 void GridImportPix::obj_setupCallback(t_class *) {}
 
-\classinfo {
-	IEVAL(rself,"install '#import_pix',2,1;");
+\end class {
+	install("#import_pix",2,1);
 	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridImportPix"),SI(@bfclass)));
 	GridExportPix::real_obj_setupCallback(qlass);
 }
-\end class GridImportPix
 
 //------------------------------------------------------------------------
 
