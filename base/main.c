@@ -311,12 +311,14 @@ static Ruby String_swap16_f (Ruby rself) {
 	return rself;
 }
 
+NumberTypeE NumberTypeE_find (string s) {
+	if (number_type_dict.find(s)==number_type_dict.end()) RAISE("unknown number type \"%s\"", s.data());
+	return number_type_dict[s]->index;
+}
+
 NumberTypeE NumberTypeE_find (Ruby sym) {
-	if (TYPE(sym)!=T_SYMBOL) RAISE("expected symbol (not %s)", rb_str_ptr(rb_inspect(rb_obj_class(sym))));
-	Ruby nt_dict = rb_ivar_get(mGridFlow,SI(@number_type_dict));
-	Ruby v = rb_hash_aref(nt_dict,sym);
-	if (v!=Qnil) return FIX2PTR(NumberType,v)->index;
-	RAISE("unknown number type \"%s\"", rb_sym_name(sym));
+	if (TYPE(sym)!=T_STRING) sym=rb_funcall(sym,SI(to_s),0);
+	return NumberTypeE_find(string(rb_str_ptr(sym)));
 }
 
 /* **************************************************************** */
