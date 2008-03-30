@@ -581,14 +581,11 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberType
 #ifdef USE_RUBY
 #ifndef IS_BRIDGE
 static Numop *convert(Ruby x, Numop **bogus) {
-	Ruby s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@op_dict)),x);
-	if (s==Qnil) {
-		s = rb_hash_aref(rb_ivar_get(mGridFlow,SI(@vop_dict)),x);
-		if (s==Qnil) RAISE("expected two-input-operator, not %s",
-			rb_str_ptr(rb_funcall(x,SI(inspect),0)));
-//		post("warning: using vecop !!!");
-	}
-	return FIX2PTR(Numop,s);
+	string k = string(rb_str_ptr(x));
+	if (op_dict.find(k)==op_dict.end()) {
+		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not %s", rb_str_ptr(rb_funcall(x,SI(inspect),0)));
+		return vop_dict[k];
+	} else return op_dict[k];
 }
 #endif
 #endif
