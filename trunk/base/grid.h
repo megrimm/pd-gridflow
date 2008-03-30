@@ -570,8 +570,9 @@ inline R::R(Numop *x) {r=ID2SYM(rb_intern(x->name));}
 #endif
 
 extern NumberType number_type_table[];
-extern Ruby number_type_dict; // GridFlow.@number_type_dict={}
-extern Ruby op_dict; // GridFlow.@op_dict={}
+extern std::map<string,NumberType *> number_type_dict;
+extern std::map<string,Numop *> op_dict;
+extern std::map<string,Numop *> vop_dict;
 
 #ifdef USE_RUBY
 static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberTypeE_find(x);}

@@ -198,7 +198,6 @@ GRID_INLET(GridToSymbol,0) {
 /* **************************************************************** */
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
-/* exporting floats may be crashy because [#export_list] doesn't handle GC */
 \class GridExportList : GridObject {
 	int n;
 	\grin 0
@@ -2354,7 +2353,7 @@ GRID_INLET(GridUnpack,0) {
 
 //****************************************************************
 
-static Numop *OP(Ruby x) {return FIX2PTR(Numop,rb_hash_aref(op_dict,x));}
+#define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
 	op_add = OP(SYM(+));
 	op_sub = OP(SYM(-));
