@@ -439,7 +439,10 @@ struct NumberType : CObject {
 		name(name_), size(size_), flags(flags_), aliases(aliases_) {}
 };
 
+NumberTypeE NumberTypeE_find (string sym);
+#ifdef USE_RUBY
 NumberTypeE NumberTypeE_find (Symbol sym);
+#endif
 
 #define TYPESWITCH(T,C,E) switch (T) { \
   case uint8_e:   C(uint8) break;         case int16_e: C(int16) break; \
@@ -550,10 +553,6 @@ EACH_NUMBER_TYPE(FOO)
 		typename NumopOn<T>::Scan f = on(*as)->scan;
 		if (!f) RAISE("operator %s does not support scan",name);
 		f(an,n,(T *)as,(T *)bs);}
-	void map_m  (NumberTypeE nt,          long n, String as, String b);
-	void zip_m  (NumberTypeE nt,          long n, String as, String bs);
-	void fold_m (NumberTypeE nt, long an, long n, String as, String bs);
-	void scan_m (NumberTypeE nt, long an, long n, String as, String bs);
 
 	Numop(Symbol sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
@@ -877,9 +876,6 @@ struct BFObject : t_object {
 	\decl Symbol inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, long factor);
 	\decl void inlet_set_chunk(int inln, long chunk);
-	\decl void send_out_grid_begin (int outlet, Array dim,        NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow  (int outlet, String buf,       NumberTypeE nt=int32_e);
-	\decl void send_out_grid_flow_3(int outlet, long n, long buf, NumberTypeE nt=int32_e);
 };
 \end class GridObject
 

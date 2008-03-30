@@ -495,29 +495,6 @@ static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
 	inl->set_chunk(whichdim);
 }
 
-\def void send_out_grid_begin (int outlet, Array buf, NumberTypeE nt=int32_e) {
-	if (outlet<0) RAISE("bad outlet number");
-	int n = rb_ary_len(buf);
-	Ruby *p = rb_ary_ptr(buf);
-	int32 v[n];
-	for (int i=0; i<n; i++) v[i] = convert(p[i],(int32*)0);
-	out = new GridOutlet(this,outlet,new Dim(n,v),nt); // valgrind says leak?
-}
-
-\def void send_out_grid_flow (int outlet,String buf, NumberTypeE nt=int32_e) {
-	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(rb_str_len(buf)/sizeof(T),(T*)rb_str_ptr(buf));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
-}
-
-\def void send_out_grid_flow_3 (int outlet, long n, long data, NumberTypeE nt=int32_e) {
-	if (outlet<0) RAISE("bad outlet number");
-#define FOO(T) out->send(n,INT2PTR(T,data));
-	TYPESWITCH(nt,FOO,)
-#undef FOO
-}
-
 // install_rgrid(Integer inlet, Boolean multi_type? = true)
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");
