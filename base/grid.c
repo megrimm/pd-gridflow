@@ -340,7 +340,7 @@ void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->dim = dim;
 	Ruby a[3];
 	a[0] = INT2NUM(woutlet);
-	a[1] = bsym._grid;
+	a[1] = SYM(grid);
 	a[2] = Pointer_s_new(this);
 	parent->send_out(COUNT(a),a);
 	frozen=true;
@@ -458,14 +458,12 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	}
 }
 
-static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
-
-\def Symbol inlet_nt (int inln) {
+\def Ruby inlet_nt (int inln) {
 	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
 	P<GridInlet> inl = in[inln];
 	if (!inl) RAISE("no such inlet #%d",inln);
 	if (!inl->dim) return Qnil;
-	return rb_gensym(number_type_table[inl->nt].name);
+	return ID2SYM(rb_intern(number_type_table[inl->nt].name));
 }
 
 \def Array inlet_dim (int inln) {
