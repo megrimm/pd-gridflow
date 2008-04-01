@@ -143,11 +143,10 @@ static inline Ruby PTR2FIX (const void *ptr) {
 #ifdef USE_RUBY
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
-typedef Ruby Symbol, Array, Integer;
+typedef Ruby Array, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 #else
-typedef t_symbol *Symbol;
 //#define Qnil 4
 #define Qnil 0
 typedef void *(*RMethod)(...); /* !@#$ fishy */
@@ -157,11 +156,10 @@ typedef std::string string;
 #define BUILTIN_SYMBOLS(MACRO) \
 	MACRO(_grid,"grid") MACRO(_bang,"bang") MACRO(_float,"float") \
 	MACRO(_list,"list") MACRO(_sharp,"#") \
-	MACRO(iv_ninlets,"@ninlets") MACRO(iv_noutlets,"@noutlets") \
 	MACRO(_in,"in") MACRO(_out,"out")
 
 extern struct BuiltinSymbols {
-#define FOO(_sym_,_str_) Symbol _sym_;
+#define FOO(_sym_,_str_) t_symbol *_sym_;
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 } bsym;
@@ -439,7 +437,7 @@ struct NumberType : CObject {
 
 NumberTypeE NumberTypeE_find (string sym);
 #ifdef USE_RUBY
-NumberTypeE NumberTypeE_find (Symbol sym);
+NumberTypeE NumberTypeE_find (Ruby sym);
 #endif
 
 #define TYPESWITCH(T,C,E) switch (T) { \
@@ -552,7 +550,7 @@ EACH_NUMBER_TYPE(FOO)
 		if (!f) RAISE("operator %s does not support scan",name);
 		f(an,n,(T *)as,(T *)bs);}
 
-	Numop(Symbol sym_, const char *name_,
+	Numop(Ruby sym_, const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -871,7 +869,7 @@ struct BFObject : t_object {
 	}
 	\decl Ruby method_missing(...);
 	\decl Array inlet_dim(int inln);
-	\decl Symbol inlet_nt(int inln);
+	\decl Ruby inlet_nt(int inln);
 	\decl void inlet_set_factor(int inln, long factor);
 	\decl void inlet_set_chunk(int inln, long chunk);
 };
