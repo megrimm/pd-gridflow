@@ -138,7 +138,6 @@ def handle_decl(line)
 	classname = frame.name
 	m = parse_methoddecl(line,";\s*$")
 	frame.methods[m.selector] = m
-
 	Out.print "static " if m.static
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
@@ -195,9 +194,7 @@ def handle_def(line)
 	case m.rettype
 	when "void"; Out.print "return Qnil;"
 	when "Ruby"; Out.print "return foo;"
-	else 
-#		Out.print "post(\"returning 0x%08x\",R(foo).r);"
-		Out.print "return R(foo).r;"
+	else         Out.print "return R(foo).r;"
 	end
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
 	Out.print ",#{unparse_arglist m.arglist, false}" if m.arglist.length>0
@@ -232,9 +229,7 @@ def handle_classinfo(line)
 		handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
 	}
 	startup2 = "@gfattrs = {"
-	frame.attrs.each {|name,attr|
-		startup2 += ":#{name} => [],"
-	}
+	frame.attrs.each {|name,attr| startup2 += ":#{name} => []," }
 	startup2 += "}"
 	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or raise "\\classinfo line should have a '{' (sorry)"
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->out[bself->nout-1],s,1,a);}"

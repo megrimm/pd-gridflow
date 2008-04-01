@@ -60,9 +60,7 @@ def self.hunt_zombies
 	# the $$ value is bogus
 	begin
 		died = []
-		subprocesses.each {|x,v|
-			Process.waitpid2(x,Process::WNOHANG) and died<<x
-		}
+		subprocesses.each {|x,v| Process.waitpid2(x,Process::WNOHANG) and died << x }
 	rescue Errno::ECHILD
 	end
 	#STDERR.puts died.inspect
@@ -142,7 +140,7 @@ class FObject
 	end
 	#def inspect; if args then "[#{args}]" else super end end
 	def inspect; "some object" end
-	def initialize(*argv) @init_messages = [] end
+	def initialize(*) end
 	def _0_help; self.class.help end
 	def _0_get(s=nil)
 		s=s.intern if String===s
@@ -158,7 +156,6 @@ def GridFlow.estimate_cpu_clock
 	u0,t0=GridFlow.rdtsc,Time.new.to_f; sleep 0.01
 	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
 end
-
 begin
 	@cpu_hertz = (0...3).map {GridFlow.estimate_cpu_clock}.sort[1] # median of three tries
 rescue Exception => e
@@ -170,11 +167,7 @@ def GridFlow.find_file s
 	if s==File.basename(s) then
 		dir = GridFlow.data_path.find {|x| File.exist? "#{x}/#{s}" }
 		if dir then "#{dir}/#{s}" else s end
-	elsif GridFlow.respond_to? :find_file_2
-		GridFlow.find_file_2 s
-	else
-		s
-	end
+	else s end
 end
 
 ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
