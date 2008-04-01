@@ -1013,8 +1013,7 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 GRID_INLET(GridFinished,0) {
 	in->set_mode(0);
 } GRID_FINISH {
-	Ruby a[] = { INT2NUM(0), bsym._bang };
-	send_out(COUNT(a),a);
+	outlet_bang(bself->out[0]);
 } GRID_END
 \end class {install("#finished",1,1);}
 
@@ -1035,7 +1034,6 @@ GRID_INLET(GridDim,0) {
 	\grin 0
 };
 \def void initialize () {}
-static Symbol rb_gensym(const char *s) {return ID2SYM(rb_intern(s));}
 GRID_INLET(GridType,0) {
 	outlet_symbol(bself->out[0],gensym((char *)number_type_table[in->nt].name));
 	in->set_mode(0);
@@ -1807,7 +1805,7 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	int scaley;
 	int scalex;
 	PtrGrid temp;
-	\decl void initialize (Grid *factor=0, Symbol option=Qnil);
+	\decl void initialize (Grid *factor=0, t_symbol *option=0);
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
@@ -1878,13 +1876,13 @@ GRID_INLET(GridDownscaleBy,0) {
 
 GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
-\def void initialize (Grid *factor, Symbol option) {
+\def void initialize (Grid *factor, t_symbol *option=0) {
 	scale.constrain(expect_scale_factor);
 	SUPER;
 	scale=new Grid(INT2NUM(2));
 	if (factor) scale=factor;
 	prepare_scale_factor();
-	smoothly = option==SYM(smoothly);
+	smoothly = option==gensym("smoothly");
 }
 
 \end class {install("#downscale_by",2,1);}
