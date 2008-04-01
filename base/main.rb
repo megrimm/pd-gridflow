@@ -130,7 +130,7 @@ class FObject
 		qlassname = qlass.to_s
 		qlass = name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
-		for x in ms do r.send_in(-2, *x) end
+		for x in ms do r.send_in(0,*x) end
 		r
 	end
 	#def inspect; if args then "[#{args}]" else super end end

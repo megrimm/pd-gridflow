@@ -185,7 +185,6 @@ struct Helper {
 
 static Ruby GridFlow_handle_braces(Ruby rself, Ruby argv);
 
-// inlet #-2 is for inlet #0 messages that happen at start time
 static void send_in_2 (Helper *h) {
 	int argc = h->argc;
 	Ruby *argv = h->argv;
@@ -203,11 +202,6 @@ static void send_in_2 (Helper *h) {
 		GridFlow_handle_braces(0,foo);
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
-	}
-	if (inlet==-2) {
-		Ruby init_messages = rb_ivar_get(h->rself,SI(@init_messages));
-		rb_ary_push(init_messages, rb_ary_new4(argc,argv));
-		inlet=0;
 	}
 	if (inlet<0 || inlet>=64)
 		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
