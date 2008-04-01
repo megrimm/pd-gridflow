@@ -927,6 +927,6 @@ void suffixes_are (const char *name, const char *suffixes);
 };
 
 static inline string gf_find_file (string x) {return string(rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,rb_str_new2(x.data()))));}
-int pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
+void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
 
 #endif // __GF_GRID_H
