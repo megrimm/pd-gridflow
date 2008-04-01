@@ -164,40 +164,18 @@ def handle_def(line)
 	else
 		qlass.methods[m.selector] = m
 	end
-
 	Out.print "Ruby #{classname}::#{m.selector}_wrap(VA, Ruby rself) {"
 	Out.print "static const char *methodspec = \"#{qlass.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
 	Out.print "DGS(#{classname});"
-
 	Out.print "#{m.rettype} foo;" if m.rettype!="void"
 	Out.print "try {"
-
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
-	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\""+
-		",argc,#{m.minargs},#{m.maxargs},methodspec);"
-
+	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
 	error = proc {|x,y|
 		"RAISE(\"got %s instead of #{x} in %s\","+
 		"rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)"
 	}
-
-	m.arglist.each_with_index{|arg,i|
-		case arg.type
-		when "Symbol"
-			Out.print "if (argc>#{i} && TYPE(argv[#{i}])!=T_SYMBOL) "+
-			error[arg.type,"argv[#{i}]"]+";"
-		when "Array"
-			Out.print "if (argc>#{i} && TYPE(argv[#{i}])!=T_ARRAY) "+
-			error[arg.type,"argv[#{i}]"]+";"
-		when "String"
-			Out.print "if (argc>#{i} && TYPE(argv[#{i}])==T_SYMBOL) "+
-			"argv[#{i}]=rb_funcall(argv[#{i}],SI(to_s),0);"
-			Out.print "else if (argc>#{i} && TYPE(argv[#{i}])!=T_STRING) "+
-			error[arg.type,"argv[#{i}]"]+";"
-		end
-	}
-
 	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -216,7 +194,7 @@ def handle_def(line)
 	Out.print "rb_raise(rb_eArgError,\"%s\",oozy->text);}"
 	case m.rettype
 	when "void"; Out.print "return Qnil;"
-	when "Ruby","Symbol","Array","String"; Out.print "return foo;"
+	when "Ruby"; Out.print "return foo;"
 	else 
 #		Out.print "post(\"returning 0x%08x\",R(foo).r);"
 		Out.print "return R(foo).r;"
