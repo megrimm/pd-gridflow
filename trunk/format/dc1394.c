@@ -306,17 +306,17 @@ class RNM; %{
 ;
 
 \class FormatDC1394 : Format {
-	\decl void initialize (Symbol mode);
+	\decl void initialize (t_symbol *mode);
 	\decl 0 bang ();
 };
 
-\def void initialize(Symbol mode) {
+\def void initialize(t_symbol *mode) {
 	gfpost("DC1394: hello world");
 	RH rh = raw1394_new_handle();
 	int numPorts = raw1394_get_port_info(rh,0,0);
 	raw1394_destroy_handle(rh);
 	gfpost("there are %d Feuerweuer ports",numPorts);
-	if (mode!=SYM(in)) RAISE("sorry, read-only");
+	if (mode!="in") RAISE("sorry, read-only");
 	for(int port=0; port<numPorts; port++) {
 		gfpost("trying port #%d...",port);
 		RH rh = dc1394_create_handle(port);
