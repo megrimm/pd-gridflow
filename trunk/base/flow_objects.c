@@ -2375,14 +2375,14 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 
 #define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
-	op_add = OP(SYM(+));
-	op_sub = OP(SYM(-));
-	op_mul = OP(SYM(*));
-	op_shl = OP(SYM(<<));
-	op_mod = OP(SYM(%));
-	op_and = OP(SYM(&));
-	op_div = OP(SYM(/));
-	op_put = OP(SYM(put));
+	op_add = OP(+);
+	op_sub = OP(-);
+	op_mul = OP(*);
+	op_shl = OP(<<);
+	op_mod = OP(%);
+	op_and = OP(&);
+	op_div = OP(/);
+	op_put = OP(put);
 	\startall
 }
 
