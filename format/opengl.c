@@ -49,7 +49,7 @@ static bool in_use = false;
 	uint8 *buf;
 	t_clock *clock;
 	\decl void call ();
-	\decl void initialize (Symbol mode);
+	\decl void initialize (t_symbol *mode);
 	\decl 0 resize_window (int sx, int sy);
 	\grin 0
 	~FormatOpenGL () {
