@@ -868,7 +868,6 @@ struct BFObject : t_object {
 			if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
-	\decl Ruby meuthod_missing(...);
 };
 \end class GridObject
 

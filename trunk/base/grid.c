@@ -436,44 +436,9 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 	inlets.push_back(in);
 }
 
-\class GridObject < FObject
-
-// this does auto-conversion of list/float to grid
-// this also (will) do grid inputs for ruby stuff.
-\def Ruby meuthod_missing (...) {
-    {
-	if (argc<1) RAISE("not enough arguments");
-	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
-	const char *name = rb_sym_name(argv[0]);
-	char *endp;
-	if (*name++!='_') goto hell;
-	int i = strtol(name,&endp,10);
-	if (name==endp) goto hell;
-	if (*endp++!='_') goto hell;
-	if (strcmp(endp,"grid")==0) {
-		Ruby handlers = rb_ivar_get(rb_obj_class(rself),SI(@handlers));
-		if (TYPE(handlers)!=T_ARRAY) {
-			rb_p(handlers);
-			RAISE("gridhandler-list missing while trying to receive on inlet %d",i);
-		}
-		if (i>=rb_ary_len(handlers)) RAISE("BORK");
-		GridHandler *gh = FIX2PTR(GridHandler, rb_ary_ptr(handlers)[i]);
-		if (in.size()<=(uint32)i) in.resize(i+1);
-		if (!in[i]) in[i]=new GridInlet((GridObject *)this,gh);
-		return in[i]->begin(argc-1,argv+1);
-	}
-	// we call the grid method recursively to ask it its GridInlet*
-	// don't do this before checking the missing method is exactly that =)
-	char foo[42];
-	sprintf(foo,"_%d_grid",i);
-	P<GridInlet> inl = FIX2PTR(GridInlet,rb_funcall(rself,rb_intern(foo),0));
-	if (strcmp(endp,"list" )==0) return inl->from_ruby_list(argc-1,argv+1), Qnil;
-	if (strcmp(endp,"float")==0) return inl->from_ruby     (argc-1,argv+1), Qnil;
-    }
-    hell: return rb_call_super(argc,argv);
-}
+\class GridObject : FObject
 \classinfo {}
-\end class GridObject
+\end class
 
 void startup_grid () {
 	\startall
