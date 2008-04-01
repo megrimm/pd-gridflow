@@ -338,11 +338,9 @@ void GridInlet::from_grid(Grid *g) {TRACE;
 void GridOutlet::begin(int woutlet, P<Dim> dim, NumberTypeE nt) {TRACE;
 	this->nt = nt;
 	this->dim = dim;
-	Ruby a[3];
-	a[0] = INT2NUM(woutlet);
-	a[1] = SYM(grid);
-	a[2] = Pointer_s_new(this);
-	parent->send_out(COUNT(a),a);
+	t_atom a[3];
+	SETPOINTER(a,(t_gpointer *)this); // hack
+	outlet_anything(parent->bself->out[woutlet],bsym._grid,1,a);
 	frozen=true;
 	if (!dim->prod()) {finish(); return;}
 	int32 lcm_factor = 1;

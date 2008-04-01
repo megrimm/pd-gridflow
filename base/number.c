@@ -155,12 +155,12 @@ template <class T> static void quick_put_zip (long n, T *as, T *bs) {
 #define DECL_OPON_NOFOLD(L,O,T) NumopOn<T>( \
 	(NumopOn<T>::Map)L(O,T)::_map, (NumopOn<T>::Zip)L(O,T)::_zip, 0,0, \
 	&Y##O<T>::neutral, &Y##O<T>::is_neutral, &Y##O<T>::is_absorbent)
-#define DECLOP(        L,M,O,sym,flags,dim) Numop(0,sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+#define DECLOP(        L,M,O,sym,flags,dim) Numop(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64)),  M(L,O,float32)   NONLITE(,M(L,O,float64)),flags,dim)
-#define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop(0,sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
+#define DECLOP_NOFLOAT(L,M,O,sym,flags,dim) Numop(sym,M(L,O,uint8),M(L,O,int16),M(L,O,int32) \
 	NONLITE(,M(L,O,int64)),NumopOn<float32>() NONLITE(,NumopOn<float64>()), flags,dim)
 //	NONLITE(,M(L,O,int64),NumopOn<float32>(),NumopOn<float64>()), flags,dim)
-#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop(0,sym,NumopOn<uint8>(),NumopOn<int16>(),NumopOn<int32>() \
+#define DECLOP_FLOAT(  L,M,O,sym,flags,dim) Numop(sym,NumopOn<uint8>(),NumopOn<int16>(),NumopOn<int32>() \
 	NONLITE(,NumopOn<int64>()),M(L,O,float32) NONLITE(,M(L,O,float64)),flags,dim)
 
 #define DECL_OP(                O,sym,flags)     DECLOP(         OL,DECL_OPON       ,O,sym,flags,1)
