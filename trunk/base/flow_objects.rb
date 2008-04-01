@@ -522,9 +522,8 @@ module Gooey # to be included in any FObject class
 end
 
 if FObject.respond_to?(:gui_enable)
-class Display < GridObject; include Gooey
+class Display < FObject; include Gooey
 	attr_accessor :text
-	install_rgrid 0
 	def initialize()
 		super
 		@sel = nil; @args = [] # contents of last received message
