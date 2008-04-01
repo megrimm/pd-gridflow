@@ -745,6 +745,7 @@ void FormatVideoDev::initialize2 () {
 	SUPER;
 	image=0;
 	f = fopen(filename.data(),"r+");
+	fd = fileno(f);
 	initialize2(); // name conflict...
 }
 
