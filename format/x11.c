@@ -170,10 +170,11 @@ void FormatX11::set_wm_hints () {
 }
 
 void FormatX11::report_pointer(int y, int x, int state) {
-	Ruby argv[5] = {
-		INT2NUM(0), SYM(position),
-		INT2NUM(y), INT2NUM(x), INT2NUM(state) };
-	send_out(COUNT(argv),argv);
+	t_atom a[3];
+	SETFLOAT(a+0,y);
+	SETFLOAT(a+1,x);
+	SETFLOAT(a+2,state);
+	outlet_anything(bself->out[0],gensym("position"),COUNT(a),a);
 }
 
 void FormatX11::call() {
