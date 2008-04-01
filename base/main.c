@@ -89,7 +89,7 @@ Ruby rb_ary_fetch(Ruby rself, long i) {
 	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
-int pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
+void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	int i=0;
 	for (; *s; s++) {
 		if (*s!='%') {o << (char)*s; continue;}
@@ -101,7 +101,7 @@ int pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 		}
 		if (*s=='s') {
 			if (!argc) RAISE("not enough args");
-			if (argv[i].a_type != A_SYMBOL) RAISE("expected float");
+			if (argv[i].a_type != A_SYMBOL) RAISE("expected symbol");
 			o << argv[i].a_w.w_symbol->s_name;
 		}
 		if (*s=='_') {
