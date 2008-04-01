@@ -458,41 +458,6 @@ void GridObject_r_flow(GridInlet *in, long n, T *data) {
 	}
 }
 
-\def Ruby inlet_nt (int inln) {
-	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
-	P<GridInlet> inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->dim) return Qnil;
-	return ID2SYM(rb_intern(number_type_table[inl->nt].name));
-}
-
-\def Array inlet_dim (int inln) {
-	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
-	P<GridInlet> inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->dim) return Qnil;
-	int n=inl->dim->count();
-	Ruby a = rb_ary_new2(n);
-	for(int i=0; i<n; i++) rb_ary_push(a,INT2NUM(inl->dim->v[i]));
-	return a;
-}
-
-\def void inlet_set_factor (int inln, long factor) {
-	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
-	P<GridInlet> inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->dim) RAISE("inlet #%d not active",inln);
-//	inl->set_factor(factor);
-}
-
-\def void inlet_set_chunk (int inln, long whichdim) {
-	if (inln<0 || inln>=(int)in.size()) RAISE("bad inlet number");
-	P<GridInlet> inl = in[inln];
-	if (!inl) RAISE("no such inlet #%d",inln);
-	if (!inl->dim) RAISE("inlet #%d not active",inln);
-	inl->set_chunk(whichdim);
-}
-
 // install_rgrid(Integer inlet, Boolean multi_type? = true)
 static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
 	if (argc<1 || argc>2) RAISE("er...");

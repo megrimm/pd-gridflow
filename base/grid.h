@@ -868,10 +868,6 @@ struct BFObject : t_object {
 		return false;
 	}
 	\decl Ruby method_missing(...);
-	\decl Array inlet_dim(int inln);
-	\decl Ruby inlet_nt(int inln);
-	\decl void inlet_set_factor(int inln, long factor);
-	\decl void inlet_set_chunk(int inln, long chunk);
 };
 \end class GridObject
 
