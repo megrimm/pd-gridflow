@@ -440,7 +440,7 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 
 // this does auto-conversion of list/float to grid
 // this also (will) do grid inputs for ruby stuff.
-\def Ruby method_missing (...) {
+\def Ruby meuthod_missing (...) {
     {
 	if (argc<1) RAISE("not enough arguments");
 	if (!SYMBOL_P(argv[0])) RAISE("expected symbol");
@@ -472,15 +472,11 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
     }
     hell: return rb_call_super(argc,argv);
 }
-
 \classinfo {}
 \end class GridObject
 
-Ruby cGridObject;
-
 void startup_grid () {
 	\startall
-	cGridObject = rb_const_get(mGridFlow,SI(GridObject));
 }
 
 // never call this. this is a hack to make some things work.
