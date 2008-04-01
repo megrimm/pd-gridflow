@@ -529,6 +529,7 @@ struct NumopOn {
 
 struct Numop {
 	const char *name;
+	t_symbol *sym;
 	int flags;
 	int size; // numop=1; vecop>1
 #define FOO(T) NumopOn<T> on_##T; \
@@ -550,7 +551,7 @@ EACH_NUMBER_TYPE(FOO)
 		if (!f) RAISE("operator %s does not support scan",name);
 		f(an,n,(T *)as,(T *)bs);}
 
-	Numop(Ruby sym_, const char *name_,
+	Numop(const char *name_,
 #define FOO(T) NumopOn<T> op_##T, 
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
@@ -558,6 +559,7 @@ EACH_NUMBER_TYPE(FOO)
 #define FOO(T) on_##T = op_##T;
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+		sym=gensym((char *)name);
 	}
 };
 #ifdef USE_RUBY
@@ -922,5 +924,14 @@ void suffixes_are (const char *name, const char *suffixes);
 
 static inline string gf_find_file (string x) {return string(rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,rb_str_new2(x.data()))));}
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
+
+inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
+inline void set_atom (t_atom *a, int16     v) {SETFLOAT(a,(float)v);}
+inline void set_atom (t_atom *a, int32     v) {SETFLOAT(a,(float)v);}
+inline void set_atom (t_atom *a, long      v) {SETFLOAT(a,(float)v);}
+inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
+inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
+inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
+inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
 
 #endif // __GF_GRID_H

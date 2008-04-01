@@ -242,10 +242,10 @@ def handle_classinfo(line)
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
 #	STDERR.puts "attributes: "+
 	get="void ___get(t_symbol *s) {"
-	get << "Ruby _r_[3]={INT2NUM(convert(rb_ivar_get(rb_obj_class(rself),SI(@noutlets)),(int*)0)-1),ID2SYM(rb_intern(s->s_name)),Qnil};"
+	get << "t_atom a[1];"
 	frame.attrs.each {|name,attr|
 		virtual = if attr.virtual then "(0,0)" else "" end
-		get << "if (s==gensym(\"#{name})\")) _r_[2]=R(#{name}#{virtual}).r; else "
+		get << "if (s==gensym(\"#{name})\")) set_atom(a,#{name}#{virtual}); else "
 		if frame.methods["_0_"+name].done then
 			STDERR.puts "skipping already defined \\attr #{name}"
 			next
@@ -259,7 +259,7 @@ def handle_classinfo(line)
 	}
 	startup2 += "}"
 	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or raise "\\classinfo line should have a '{' (sorry)"
-	get << "RAISE(\"unknown attr %s\",s->s_name); send_out(3,_r_);}"
+	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->out[bself->nout-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
 	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
 end
