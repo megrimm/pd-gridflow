@@ -116,11 +116,6 @@ class FObject
 	end
 	attr_reader :outlets
 	def initialize2; end
-	def connect outlet, object, inlet
-		@outlets ||= []
-		@outlets[outlet] ||= []
-		@outlets[outlet].push [object, inlet]
-	end
 	def self.name_lookup sym
 		qlasses = GridFlow.fclasses
 		qlass = qlasses[sym.to_s]
