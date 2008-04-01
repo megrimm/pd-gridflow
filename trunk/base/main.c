@@ -157,17 +157,17 @@ char *Dim::to_s() {
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *foo=0) {
 	if (argc<1) {
-		sym = bsym._bang;
+		sym = SYM(bang);
 	} else if (argc>1 && !SYMBOL_P(*argv)) {
-		sym = bsym._list;
+		sym = SYM(list);
 	} else if (INTEGER_P(*argv)||FLOAT_P(*argv)) {
-		sym = bsym._float;
+		sym = SYM(float);
 	} else if (SYMBOL_P(*argv)) {
 		sym = *argv;
 		argc--, argv++;
 	} else if (argc==1 && TYPE(*argv)==T_ARRAY) {
 		RAISE("oh really? (in FObject_prepare_message)");
-		sym = bsym._list;
+		sym = SYM(list);
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
 	} else {
@@ -485,7 +485,7 @@ void Init_gridflow () {
 	//std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
 	std::set_terminate(blargh);
 
-#define FOO(_sym_,_name_) bsym._sym_ = ID2SYM(rb_intern(_name_));
+#define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; class<<self; end; def post_string(s) STDERR.puts s end; self end");
@@ -496,7 +496,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("fclass_install",GridFlow_fclass_install,2);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
-	rb_ivar_set(mGridFlow, SI(@bsym), PTR2FIX(&bsym));
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
