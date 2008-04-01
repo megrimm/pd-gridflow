@@ -174,8 +174,9 @@ GRID_INLET(FormatQuickTimeHW,0) {
 	SETFLOAT(a,(float)length);
 	outlet_anything(bself->te_outlet,gensym("frames"),1,a);
 */
-	Ruby a[] = {INT2NUM(1),SYM(frames),INT2NUM(length)};
-	send_out(3,a);
+	t_atom a[1];
+	SETFLOAT(a,length);
+	outlet_anything(bself->out[0],gensym("frames"),1,a);
 	//SUPER;
 }
 
