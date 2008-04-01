@@ -39,7 +39,7 @@ static bool in_use = false;
 	t_clock *clock;
 	void resize_window (int sx, int sy);
 	void call ();
-	\decl void initialize (Symbol mode);
+	\decl void initialize (t_symbol *mode);
 	\grin 0 int
 	~FormatSDL () {
 		clock_unset(clock);
@@ -86,7 +86,7 @@ GRID_INLET(FormatSDL,0) {
 	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
 
-\def void initialize (Symbol mode) {
+\def void initialize (t_symbol *mode) {
 	dim=0;screen=0;
 	SUPER;
 	if (in_use) RAISE("only one FormatSDL object at a time; sorry");
