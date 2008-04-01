@@ -119,7 +119,7 @@ GRID_INLET(GridCast,0) {
 	\decl void initialize(Ruby x, NumberTypeE cast=int32_e);
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
-	\decl 0 list(...);
+	//\decl 0 list(...); !@#$
 	\decl 1 per_message();
 	\grin 0
 	\grin 1 int32
@@ -148,10 +148,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	process(n,(uint8 *)name);
 }
 
-\def 0 list(...) {
-	if (in.size()<1 || !in[0]) _0_grid(0,0); //HACK: enable grid inlet...
-	in[0]->from_ruby_list(argc,argv,cast);
-}
+//\def 0 list(...) {in[0]->from_ruby_list(argc,argv,cast);} !@#$
 
 \def 1 per_message() { dim=0; dim_grid=0; }
 
@@ -225,7 +222,7 @@ GRID_INLET(GridExportList,0) {
 	int maxrows;
 	int columns;
 	t_pd *dest;
-	\decl 0 dest (Pointer *p);
+	\decl 0 dest (void *p);
 	\decl void initialize (t_symbol *name=0);
 	\decl void end_hook ();
 	\decl 0 base (int x);
@@ -299,10 +296,7 @@ GRID_INLET(GridExportList,0) {
        Data_Get_Struct(pointer,Pointer,foo);
        return (t_pd *)foo->p;
 }*/
-\def 0 dest (Pointer *p) {
-	dest = *(t_pd **)(p->p); // what's THIS ???
-	//fprintf(stderr,"#print:_0_dest    rself=%lx self=%p bself=%p p=%p dest=%p\n",rself,this,bself,p,dest);
-}
+\def 0 dest (void *p) {dest = (t_pd *)p;}
 \def void end_hook () {}
 \def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
 \def 0 trunc (int x) {

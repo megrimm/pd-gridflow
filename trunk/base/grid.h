@@ -249,9 +249,9 @@ typedef struct R {
 		if (TYPE(r)==T_STRING) return std::string(rb_str_ptr(r));
  		RAISE("want symbol");
 	}
-	operator Pointer * () const {
+	operator void * () const {
 		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
-		return (Pointer *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
+		return (void *)NUM2ULONG(rb_funcall(r,SI(ptr),0));
 	}
 	static R value(VALUE r) {R x; x.r=r; return x;}
 #define FOO(As,Op) \
@@ -337,7 +337,7 @@ void CObject_free (void *);
 // you shouldn't use MethodDecl directly (used by source_filter.rb)
 struct MethodDecl { const char *selector; RMethod method; };
 void define_many_methods(Ruby rself, int n, MethodDecl *methods);
-extern Ruby mGridFlow, cFObject, cGridObject, cFormat;
+extern Ruby mGridFlow, cFObject, cFormat;
 
 #undef check
 
@@ -759,7 +759,7 @@ private:
 };
 
 //****************************************************************
-// for use by source_filter.rb ONLY (for \grin and \classinfo)
+// for use by source_filter.rb ONLY (for \grin)
 #ifndef HAVE_LITE
 #define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD}
 #else
@@ -868,7 +868,7 @@ struct BFObject : t_object {
 			if (in[i] && in[i]!=gin && in[i]->dim) return true;
 		return false;
 	}
-	\decl Ruby method_missing(...);
+	\decl Ruby meuthod_missing(...);
 };
 \end class GridObject
 

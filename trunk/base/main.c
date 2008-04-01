@@ -233,7 +233,6 @@ static void send_in_3 (Helper *h) {}
 }
 
 \def void send_out (...) {
-	int n=0;
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
 	if (outlet<0 || outlet>=64) RAISE("invalid outlet number: %d",outlet);
@@ -303,9 +302,8 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	DATA_PTR(rself) = 0; // really!
 	delete this; // really!
 }
-
 \classinfo
-\end class FObject
+\end class
 
 /* ---------------------------------------------------------------- */
 /* C++<->Ruby bridge for classes/functions in base/number.c */

@@ -125,9 +125,9 @@ def handle_attr(line)
 	end
 	type.gsub!(/\s+/,"")
 	if type=="bool" then
-		handle_decl "void _0_#{name} (#{type} #{name}=true);"
+		handle_decl "0 #{name} (#{type} #{name}=true);"
 	else
-		handle_decl "void _0_#{name} (#{type} #{name});"
+		handle_decl "0 #{name} (#{type} #{name});"
 	end
 end
 
@@ -215,7 +215,6 @@ def handle_classinfo(line)
 	}.join(",")
 	Out.print "}; static FClass ci#{cl} = { #{cl}_allocator, #{cl}_startup,"
 	Out.print "#{cl.inspect}, COUNT(#{cl}_methods), #{cl}_methods };"
-#	STDERR.puts "attributes: "+
 	get="void ___get(t_symbol *s) {"
 	get << "t_atom a[1];"
 	frame.attrs.each {|name,attr|
@@ -231,10 +230,10 @@ def handle_classinfo(line)
 	startup2 = "@gfattrs = {"
 	frame.attrs.each {|name,attr| startup2 += ":#{name} => []," }
 	startup2 += "}"
-	line.gsub!(/\{/,"{"+"IEVAL(rself,\"#{startup2}\");") or raise "\\classinfo line should have a '{' (sorry)"
+	line.gsub!(/^\s*(\w+\s*)?\{/,"")
 	get << "RAISE(\"unknown attr %s\",s->s_name); outlet_anything(bself->out[bself->nout-1],s,1,a);}"
 	handle_def get if frame.attrs.size>0
-	Out.print "void #{frame.name}_startup (Ruby rself) "+line.chomp
+	Out.print "void #{frame.name}_startup (Ruby rself) {IEVAL(rself,\"#{startup2}\");"+line.chomp
 end
 
 def handle_grin(line)
@@ -244,7 +243,9 @@ def handle_grin(line)
 	Out.print "template <class T> void grin_#{i}(GridInlet *in, long n, T *data);"
 	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
-	handle_decl "Ruby _#{i}_grid(...);"
+	handle_decl "#{i} grid(void *foo);"
+	handle_decl "#{i} list(...);"
+	handle_decl "#{i} float(float f);"
 	$stack[-1].grins[i] = fields.dup
 end
 
@@ -260,7 +261,7 @@ def handle_end(line)
 		frame.attrs.each {|name,attr|
 			type,name,default = attr.to_a
 			#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-			#handle_def "void _0_#{name} (#{type} #{name}) { this->#{name}=#{name}; }"
+			#handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
 		}
 		frame.grins.each {|i,v|
 			cli = "#{cl}::grinw_#{i}"
@@ -272,11 +273,19 @@ def handle_end(line)
 			else raise 'BORK BORK BORK' end
 			ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
 			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
-			handle_def "Ruby _#{i}_grid(...) {"+
+			handle_def "#{i} grid(void *foo) {"+
 				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-				"return in[#{i}]->begin(argc,argv);}"
-
+				"in[#{i}]->begin(argc,argv);}"
+			handle_def "#{i} list(...) {"+
+				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
+				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+				"in[#{i}]->from_ruby_list(argc,argv,int32_e);}"
+			handle_def "#{i} float(float f) {"+
+				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
+				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+				"Ruby a[]={rb_float_new(f)};"+
+				"in[#{i}]->from_ruby(1,a);}"
 		}
 		if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 		$stack.pop
