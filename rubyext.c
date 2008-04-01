@@ -2,7 +2,7 @@
 	$Id$
 
 	GridFlow
-	Copyright (c) 2001-2006 by Mathieu Bouchard
+	Copyright (c) 2001-2008 by Mathieu Bouchard
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -180,6 +180,10 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 	else if (rb_obj_class(arg)==cPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
 	else RAISE("cannot convert argument of class '%s'",
 		rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
+}
+
+void ruby2pd (int argc, Ruby *argv, t_atom *at) {
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],&at[i]);
 }
 
 static Ruby Bridge_import_value(const t_atom *at) {
@@ -636,6 +640,7 @@ static Ruby FObject_args (Ruby rself) {
 	return r;
 }
 
+
 static Ruby FObject_patcherargs (Ruby rself) {
 	DGS(FObject);
 	if (!self->bself) RAISE("can't use this in initialize");
@@ -940,7 +945,7 @@ extern "C" void gridflow_setup () {
 	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
 	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR, GridFlow::DIR+'/optional/rblti'");
 	if (!EVAL("begin require 'gridflow'; true; rescue Exception => e; "
-		"GridFlow.post \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
+		"STDERR.puts \"[#{e.class}] [#{e.message}]:\n#{e.backtrace.join'\n'}\"; false; end"))
 	{
 		post("ERROR: Cannot load GridFlow-for-Ruby (gridflow.so)\n");
 		return;
