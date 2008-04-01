@@ -117,10 +117,10 @@ GRID_INLET(GridCast,0) {
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() {}
 	\decl void initialize(Ruby x, NumberTypeE cast=int32_e);
-	\decl void _0_reset();
-	\decl void _0_symbol(t_symbol *x);
-	\decl void _0_list(...);
-	\decl void _1_per_message();
+	\decl 0 reset();
+	\decl 0 symbol(t_symbol *x);
+	\decl 0 list(...);
+	\decl 1 per_message();
 	\grin 0
 	\grin 1 int32
 	template <class T> void process (long n, T *data) {
@@ -141,19 +141,19 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	dim = d;
 } GRID_END
 
-\def void _0_symbol(t_symbol *x) {
+\def 0 symbol(t_symbol *x) {
 	const char *name = x->s_name;
 	long n = strlen(name);
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,(uint8 *)name);
 }
 
-\def void _0_list(...) {
+\def 0 list(...) {
 	if (in.size()<1 || !in[0]) _0_grid(0,0); //HACK: enable grid inlet...
 	in[0]->from_ruby_list(argc,argv,cast);
 }
 
-\def void _1_per_message() { dim=0; dim_grid=0; }
+\def 1 per_message() { dim=0; dim_grid=0; }
 
 \def void initialize(Ruby x, NumberTypeE cast) {
 	SUPER;
@@ -165,7 +165,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	}
 }
 
-\def void _0_reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
+\def 0 reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
 \end class {install("#import",2,1);}
 
 //****************************************************************
@@ -225,12 +225,12 @@ GRID_INLET(GridExportList,0) {
 	int maxrows;
 	int columns;
 	t_pd *dest;
-	\decl void _0_dest (Pointer *p);
+	\decl 0 dest (Pointer *p);
 	\decl void initialize (t_symbol *name=0);
 	\decl void end_hook ();
-	\decl void _0_base (int x);
-	\decl void _0_trunc (int x);
-	\decl void _0_maxrows (int y);
+	\decl 0 base (int x);
+	\decl 0 trunc (int x);
+	\decl 0 maxrows (int y);
 	void puts (const char *s) {
 		if (!dest) post("%s",s);
 		else {
@@ -299,17 +299,17 @@ GRID_INLET(GridExportList,0) {
        Data_Get_Struct(pointer,Pointer,foo);
        return (t_pd *)foo->p;
 }*/
-\def void _0_dest (Pointer *p) {
+\def 0 dest (Pointer *p) {
 	dest = *(t_pd **)(p->p); // what's THIS ???
 	//fprintf(stderr,"#print:_0_dest    rself=%lx self=%p bself=%p p=%p dest=%p\n",rself,this,bself,p,dest);
 }
 \def void end_hook () {}
-\def void _0_base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
-\def void _0_trunc (int x) {
+\def 0 base (int x) { if (x==2 || x==8 || x==10 || x==16) base=x; else RAISE("base %d not supported",x); }
+\def 0 trunc (int x) {
 	if (x<0 || x>240) RAISE("out of range (not in 0..240 range)");
 	trunc = x;
 }
-\def void _0_maxrows (int y) { maxrows = y; }
+\def 0 maxrows (int y) { maxrows = y; }
 template <class T> void GridPrint::make_columns (int n, T *data) {
 	long maxv=0;
 	long minv=0;
@@ -394,9 +394,9 @@ GRID_INLET(GridPrint,0) {
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
 	\decl void initialize (Grid *r=0);
-	\decl void _0_bang ();
-	\decl void _1_reassign ();
-	\decl void _1_put_at (Grid *index);
+	\decl 0 bang ();
+	\decl 1 reassign ();
+	\decl 1 put_at (Grid *index);
 	\grin 0 int
 	\grin 1
 	GridStore() { put_at.constrain(expect_max_one_dim); }
@@ -549,9 +549,9 @@ GRID_INLET(GridStore,1) {
 		d++;
 	}
 } GRID_END
-\def void _0_bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
-\def void _1_reassign () { put_at=0; }
-\def void _1_put_at (Grid *index) { put_at=index; }
+\def 0 bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
+\def 1 reassign () { put_at=0; }
+\def 1 put_at (Grid *index) { put_at=index; }
 \def void initialize (Grid *r) {
 	SUPER;
 	this->r = r?r:new Grid(new Dim(),int32_e,true);
@@ -931,8 +931,8 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 		step.constrain(expect_max_one_dim);
 	}
 	\decl void initialize (Grid *from, Grid *to, Grid *step);
-	\decl void _0_set (Grid *r=0);
-	\decl void _0_bang ();
+	\decl 0 set (Grid *r=0);
+	\decl 0 bang ();
 	\grin 0 int
 	\grin 1 int
 	\grin 2 int
@@ -987,7 +987,7 @@ void GridFor::trigger (T bogus) {
 	end: if (k) out->send(k,x);
 }
 
-\def void _0_bang () {
+\def 0 bang () {
 	SAME_TYPE(from,to);
 	SAME_TYPE(from,step);
 	if (!from->dim->equal(to->dim) || !to->dim->equal(step->dim))
@@ -998,7 +998,7 @@ void GridFor::trigger (T bogus) {
 #undef FOO
 }
 
-\def void _0_set (Grid *r) { from=new Grid(argv[0]); }
+\def 0 set (Grid *r) { from=new Grid(argv[0]); }
 GRID_INPUT(GridFor,2,step) {} GRID_END
 GRID_INPUT(GridFor,1,to) {} GRID_END
 GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
@@ -1213,13 +1213,13 @@ GRID_INLET(GridGrade,0) {
 	\attr int dim2;
 	int d1,d2,na,nb,nc,nd; // temporaries
 	\decl void initialize (int dim1=0, int dim2=1);
-	\decl void _1_float (int dim1);
-	\decl void _2_float (int dim2);
+	\decl 1 float (int dim1);
+	\decl 2 float (int dim2);
 	\grin 0
 };
 
-\def void _1_float (int dim1) { this->dim1=dim1; }
-\def void _2_float (int dim2) { this->dim2=dim2; }
+\def 1 float (int dim1) { this->dim1=dim1; }
+\def 2 float (int dim2) { this->dim2=dim2; }
 
 GRID_INLET(GridTranspose,0) {
 	int32 v[in->dim->n];
@@ -1271,11 +1271,11 @@ GRID_INLET(GridTranspose,0) {
 	\attr int dim1; // dimension to act upon
 	int d; // temporaries
 	\decl void initialize (int dim1=0);
-	\decl void _1_float (int dim1);
+	\decl 1 float (int dim1);
 	\grin 0
 };
 
-\def void _1_float (int dim1) { this->dim1=dim1; }
+\def 1 float (int dim1) { this->dim1=dim1; }
 
 GRID_INLET(GridReverse,0) {
 	d=dim1;
@@ -1483,8 +1483,8 @@ GRID_INLET(GridLabeling,0) {
 				(s.xx-s.x*s.x/s.area)/s.area,
 				s.y/s.area,
 				s.x/s.area};
-			Ruby a[] = {INT2NUM(3),INT2NUM(s.area)};
-			send_out(2,a);
+			float a[] = {s.area};
+			send_out(1,1,a);
 			GridOutlet o2(this,2,new Dim(2));   o2.send(2,cooked+4);
 			GridOutlet o1(this,1,new Dim(2,2)); o1.send(4,cooked);
 		} else {
@@ -1504,7 +1504,7 @@ GRID_INLET(GridLabeling,0) {
 }
 \def void initialize2() {initialize3(0,0);}
 \def int form() {return form_val;}
-\def void _0_form(int form) {
+\def 0 form(int form) {
 	if (form<0 || form>1) RAISE("form must be 0 or 1, not %d",form);
 	form_val=form;
 	initialize3(0,0);
@@ -2233,7 +2233,7 @@ GRID_INLET(GridPolygonize,0) {
 \class GridNoiseGateYuvs : GridObject {
 	\grin 0
 	int thresh;
-	\decl void _1_float(int v);
+	\decl 1 float(int v);
 	\decl void initialize(int v=0);
 };
 
@@ -2254,7 +2254,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 	out->send(n,tada);
 } GRID_END
 
-\def void _1_float(int v) {thresh=v;}
+\def 1 float(int v) {thresh=v;}
 \def void initialize(int v=0) {thresh=v;}
 \end class {install("#noise_gate_yuvs",2,1);}
 
@@ -2267,7 +2267,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 	\decl void initialize (int n=2, NumberTypeE nt=int32_e);
 	\decl void initialize2 ();
 	\decl void _n_float (int inlet, float f);
-	\decl void _0_bang ();
+	\decl 0 bang ();
 	//\grin 0
 };
 \def void initialize (int n=2, NumberTypeE nt=float32_e) {
@@ -2287,7 +2287,7 @@ TYPESWITCH(a->nt,FOO,);
 #undef FOO
 	_0_bang(argc,argv);
 }
-\def void _0_bang () {
+\def 0 bang () {
 	out=new GridOutlet(this,0,a->dim,a->nt);
 #define FOO(T) out->send(n,(T *)*a);
 TYPESWITCH(a->nt,FOO,);
@@ -2320,10 +2320,10 @@ GRID_INLET(GridUnpack,0) {
 
 //****************************************************************
 \class ForEach : FObject {
-	\decl void _0_list (...);
+	\decl 0 list (...);
 };
 
-\def void _0_list (...) {
+\def 0 list (...) {
 	t_outlet *o = bself->out[0];
 	R *a = (R *)argv;
 	for (int i=0; i<argc; i++) {
@@ -2361,7 +2361,7 @@ void ruby2pd (int argc, Ruby *argv, t_atom *at);
 \def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
 
 extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
-\def void _0_list (...) {
+\def 0 list (...) {
 	std::ostringstream o;
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
