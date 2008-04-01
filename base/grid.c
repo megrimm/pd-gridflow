@@ -438,63 +438,6 @@ void GridOutlet::callback(GridInlet *in) {TRACE;
 
 \class GridObject < FObject
 
-//!@#$ does not handle types properly
-//!@#$ most possibly a big hack
-template <class T>
-void GridObject_r_flow(GridInlet *in, long n, T *data) {
-	GridObject *self = in->parent;
-	uint32 i;
-	for (i=0; i<self->in.size(); i++) if (in==self->in[i].p) break;
-	if (i==self->in.size()) RAISE("inlet not found?");
-	if (n==-1) {
-		rb_funcall(self->rself,SI(send_in),2,INT2NUM(i),SYM(rgrid_begin));
-	} else if (n>=0) {
-		Ruby buf = rb_str_new((char *)((uint8 *)data),n*sizeof(T));
-		rb_funcall(self->rself,SI(send_in),3,INT2NUM(i),SYM(rgrid_flow),buf);
-	} else {
-		rb_funcall(self->rself,SI(send_in),2,INT2NUM(i),SYM(rgrid_end));
-	}
-}
-
-// install_rgrid(Integer inlet, Boolean multi_type? = true)
-static Ruby GridObject_s_install_rgrid(int argc, Ruby *argv, Ruby rself) {
-	if (argc<1 || argc>2) RAISE("er...");
-	IEVAL(rself,"@handlers||=[]");
-	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
-	GridHandler *gh = new GridHandler;
-	bool mt = argc>1 ? argv[1]==Qtrue : 0; /* multi_type? */
-	if (mt) {
-#define FOO(S) gh->flow_##S = GridObject_r_flow;
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	} else {
-#define FOO(S) gh->flow_##S = 0;
-EACH_NUMBER_TYPE(FOO)
-#undef FOO
-	}
-	gh->flow_int32 = GridObject_r_flow;
-	//IEVAL(rself,"self.class_eval { def _0_grid(*a) ___grid(0,*a) end }");
-	rb_funcall(handlers,SI([]=),2,INT2NUM(INT(argv[0])),PTR2FIX(gh));
-	return Qnil;
-}
-
-static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
-	static const char *names[] = {"grid","list","float"};
-	Ruby list = rb_class_instance_methods(argc,argv,rself);
-	Ruby handlers = rb_ivar_get(rself,SI(@handlers));
-	if (handlers==Qnil) return list;
-	for (int i=0; i<rb_ary_len(handlers); i++) {
-		Ruby ghp = rb_ary_ptr(handlers)[i];
-		if (ghp==Qnil) continue;
-		char buf[256];
-		for (int j=0; j<COUNT(names); j++) {
-			sprintf(buf,"_%d_%s",i,names[j]);
-			rb_ary_push(list,rb_str_new2(buf));
-		}
-	}
-	return list;
-}
-
 // this does auto-conversion of list/float to grid
 // this also (will) do grid inputs for ruby stuff.
 \def Ruby method_missing (...) {
@@ -511,8 +454,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
 		Ruby handlers = rb_ivar_get(rb_obj_class(rself),SI(@handlers));
 		if (TYPE(handlers)!=T_ARRAY) {
 			rb_p(handlers);
-			RAISE("gridhandler-list missing (maybe forgot install_rgrid ?)"
-			" while trying to receive on inlet %d",i);
+			RAISE("gridhandler-list missing while trying to receive on inlet %d",i);
 		}
 		if (i>=rb_ary_len(handlers)) RAISE("BORK");
 		GridHandler *gh = FIX2PTR(GridHandler, rb_ary_ptr(handlers)[i]);
@@ -531,12 +473,7 @@ static Ruby GridObject_s_instance_methods(int argc, Ruby *argv, Ruby rself) {
     hell: return rb_call_super(argc,argv);
 }
 
-\classinfo {
-	IEVAL(rself,"install 'GridObject',0,0");
-	// define in Ruby-metaclass
-	rb_define_singleton_method(rself,"instance_methods",(RMethod)GridObject_s_instance_methods,-1);
-	rb_define_singleton_method(rself,"install_rgrid",(RMethod)GridObject_s_install_rgrid,-1);
-}
+\classinfo {}
 \end class GridObject
 
 Ruby cGridObject;
