@@ -252,24 +252,6 @@ static void send_in_3 (Helper *h) {}
 	argv2[0] = INT2NUM(outlet);
 	argv2[1] = sym;
 	rb_funcall2(rself,SI(send_out2), argc+2, argv2);
-
-	ID ol = SI(@outlets);
-	Ruby ary = rb_ivar_defined(rself,ol) ? rb_ivar_get(rself,ol) : Qnil;
-	if (ary==Qnil) goto end;
-	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
-	ary = rb_ary_fetch(ary,outlet);
-	if (ary==Qnil) goto end;
-	if (TYPE(ary)!=T_ARRAY) RAISE("send_out: expected array");
-	n = rb_ary_len(ary);
-
-	for (int i=0; i<n; i++) {
-		Ruby conn = rb_ary_fetch(ary,i);
-		Ruby rec = rb_ary_fetch(conn,0);
-		int inl = INT(rb_ary_fetch(conn,1));
-		argv2[0] = INT2NUM(inl);
-		rb_funcall2(rec,SI(send_in),argc+2,argv2);
-	}
-end:;
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {

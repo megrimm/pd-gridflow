@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 #include "../gridflow2.h"
 
-#define GF_VERSION "0.9.0"
+#define GF_VERSION "0.9.1"
 
 #ifndef IS_BRIDGE
 #include <stdio.h>
