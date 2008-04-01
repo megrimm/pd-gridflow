@@ -92,8 +92,6 @@ struct FMessage {
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
-static BuiltinSymbols *syms;
-
 void CObject_free (void *victim) {
 	CObject *self = (CObject *)victim;
 	if (!self->rself) {
@@ -134,13 +132,13 @@ static Ruby make_error_message () {
 }
 
 static int ninlets_of (Ruby qlass) {
-	ID id = SYM2ID(syms->iv_ninlets);
+	ID id = rb_intern("@ninlets");
 	if (!rb_ivar_defined(qlass,id)) RAISE("no inlet count");
 	return INT(rb_ivar_get(qlass,id));
 }
 
 static int noutlets_of (Ruby qlass) {
-	ID id = SYM2ID(syms->iv_noutlets);
+	ID id = rb_intern("@noutlets");
 	if (!rb_ivar_defined(qlass,id)) RAISE("no outlet count");
 	return INT(rb_ivar_get(qlass,id));
 }
@@ -829,7 +827,6 @@ Ruby gf_bridge_init (Ruby rself) {
 			"main library is '%s'; bridge is '%s'",
 			rb_str_ptr(ver), GF_VERSION);
 	}
-	syms = FIX2PTR(BuiltinSymbols,rb_ivar_get(mGridFlow2,SI(@bsym)));
 	Ruby fo = EVAL("GridFlow::FObject");
 	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
 
