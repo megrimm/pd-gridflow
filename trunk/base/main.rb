@@ -91,18 +91,6 @@ class FObject
 		attr_reader :ninlets
 		attr_reader :noutlets
 		def foreign_name; @foreign_name if defined? @foreign_name end
-		def doc(selector=nil,text=nil)
-			return @doc if not selector
-			if not defined? @doc; @doc={}; end
-			return @doc[selector] if not text
-			@doc[selector] = text
-		end
-		def doc_out(selector=nil,text=nil)
-			return @doc_out if not selector
-			if not defined? @doc_out; @doc_out={}; end
-			return @doc_out[selector] if not text
-			@doc_out[selector] = text
-		end
 		def inspect; foreign_name or super; end
 		# should it recurse into superclasses?
 		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
@@ -129,7 +117,6 @@ class FObject
 		qlass.instance_eval{qlass.module_eval(&b)}
 	end
 	attr_reader :outlets
-	attr_accessor :properties
 	def initialize2; end
 	def connect outlet, object, inlet
 		@outlets ||= []
@@ -139,9 +126,7 @@ class FObject
 	def self.name_lookup sym
 		qlasses = GridFlow.fclasses
 		qlass = qlasses[sym.to_s]
-		if not qlass
-			raise "object class '#{sym}' not found"
-		end
+		raise "object class '#{sym}' not found" if not qlass
 		qlass
 	end
 	def self.[](*m)
@@ -157,10 +142,7 @@ class FObject
 	end
 	#def inspect; if args then "[#{args}]" else super end end
 	def inspect; "some object" end
-	def initialize(*argv)
-		@properties = {}
-		@init_messages = []
-	end
+	def initialize(*argv) @init_messages = [] end
 	def _0_help; self.class.help end
 	def _0_get(s=nil)
 		s=s.intern if String===s
@@ -178,9 +160,7 @@ def GridFlow.estimate_cpu_clock
 end
 
 begin
-	@cpu_hertz = (0...3).map {
-		GridFlow.estimate_cpu_clock
-	}.sort[1] # median of three tries
+	@cpu_hertz = (0...3).map {GridFlow.estimate_cpu_clock}.sort[1] # median of three tries
 rescue Exception => e
 	GridFlow.post e,e.backtrace
 end
