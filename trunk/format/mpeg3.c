@@ -72,7 +72,7 @@
 		post("mpeg error code = %d",err);
 	}
 #else
-	mpeg = mpeg3_open(filename.data());
+	mpeg = mpeg3_open((char *)filename.data());
 #endif
 	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
 }
