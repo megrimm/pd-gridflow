@@ -344,8 +344,8 @@ GRID_INLET(FormatQuickTimeCamera,0) {
 		}
 	}
 	\decl void initialize (t_symbol *mode, string filename);
-	\decl 0 codec_m (String c);
-	\decl 0 colorspace_m (Symbol c);
+	\decl 0 codec_m (string c);
+	\decl 0 colorspace_m (string c);
 	\decl 0 bang ();
 	\decl 0 seek (int frame);
 	\grin 0
@@ -406,8 +406,8 @@ GRID_INLET(FormatQuickTimeApple,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def 0 codec_m      (String c) { RAISE("Unimplemented. Sorry."); }
-\def 0 colorspace_m (Symbol c) { RAISE("Unimplemented. Sorry."); }
+\def 0 codec_m      (string c) { RAISE("Unimplemented. Sorry."); }
+\def 0 colorspace_m (string c) { RAISE("Unimplemented. Sorry."); }
 
 \def void initialize (t_symbol *mode, string filename) {
 	int err;

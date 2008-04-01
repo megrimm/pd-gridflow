@@ -114,7 +114,7 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	\decl 0 hidecursor ();
 	\decl 0 set_geometry (int y, int x, int sy, int sx);
 	\decl 0 move (int y, int x);
-	\decl 0 transfer (Symbol s);
+	\decl 0 transfer (string s);
 	\decl 0 title (string title="");
 	\decl 0 warp (int y, int x);
 	\grin 0 int
@@ -220,7 +220,7 @@ void FormatX11::call() {
 		}break;
 		case DestroyNotify:{
 			post("This window is being closed, so this handler will close too!");
-			rb_funcall(rself,SI(close),0);
+			delete this; /* really! what else could i do here anyway? */
 			return;
 		}break;
 		case ConfigureNotify:break; // as if we cared
@@ -537,10 +537,10 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 	XFlush(display);
 }
 
-\def 0 transfer (Symbol s) {
-	if (s==SYM(plain))       transfer=0;
-	else if (s==SYM(xshm))   transfer=1;
-	else if (s==SYM(xvideo)) transfer=2;
+\def 0 transfer (string s) {
+	if (s=="plain")       transfer=0;
+	else if (s=="xshm")   transfer=1;
+	else if (s=="xvideo") transfer=2;
 	else RAISE("unknown transfer mode (possible: plain xshm xvideo)");
 }
 

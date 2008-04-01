@@ -128,7 +128,7 @@ void GFView_display(GFView *self) {
 		[window setReleasedWhenClosed: YES];
 		[window close];
 	}
-	\decl void initialize (Symbol mode);
+	\decl void initialize (t_symbol *mode);
 	\decl 0 call ();
 	\grin 0
 };
@@ -190,7 +190,7 @@ GRID_INLET(FormatQuartz,0) {
 	GFView_display(widget);
 } GRID_END
 
-\def void initialize (Symbol mode) {
+\def void initialize (t_symbol *mode) {
 	SUPER;
 	NSRect r = {{0,0}, {320,240}};
 	window = [[NSWindow alloc]

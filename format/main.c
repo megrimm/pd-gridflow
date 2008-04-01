@@ -189,8 +189,8 @@ struct GridHeader {
 		//@stream.close if @stream
 		//GridFlow.hunt_zombies
 	}
-//	\decl void raw_open_gzip_in(String filename);
-//	\decl void raw_open_gzip_out(String filename);
+//	\decl void raw_open_gzip_in(string filename);
+//	\decl void raw_open_gzip_out(string filename);
 };
 
 \def void initialize(t_symbol *mode, string filename) {
@@ -263,11 +263,11 @@ TYPESWITCH(nt,FOO,)
 	this->nt = nt;
 }
 
-//\def void raw_open_gzip_in(String filename) {
+//\def void raw_open_gzip_in(string filename) {
 	//r,w = IO.pipe
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; w.close; @stream = r;}
 	//else {r.close; STDOUT.reopen w; STDIN.reopen filename, "r"; exec "gzip", "-dc";}
-//\def void raw_open_gzip_out(String filename) {
+//\def void raw_open_gzip_out(string filename) {
 	//r,w = IO.pipe
 	//if (pid=fork) {GridFlow.subprocesses[pid]=true; r.close; @stream = w;}
 	//else {w.close; STDIN.reopen r; STDOUT.reopen filename, "w"; exec "gzip", "-c";}

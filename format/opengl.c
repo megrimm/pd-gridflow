@@ -143,11 +143,11 @@ GRID_INLET(FormatOpenGL,0) {
 	} GRID_FINISH {
 } GRID_END
 
-\def void initialize (Symbol mode) {
+\def void initialize (t_symbol *mode) {
 	SUPER;
 	if (in_use) RAISE("only one #io:opengl object at a time; sorry");
 	in_use=true;
-	if (mode!=SYM(out)) RAISE("write-only, sorry");
+	if (mode!="out") RAISE("write-only, sorry");
 	int dummy = 0;
 	glutInit(&dummy,0);
 	glutInitDisplayMode(GLUT_RGBA);
