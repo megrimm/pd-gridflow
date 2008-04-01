@@ -2337,12 +2337,40 @@ GRID_INLET(GridUnpack,0) {
 
 \end class {install("foreach",1,1);}
 
+void ruby2pd (int argc, Ruby *argv, t_atom *at);
 \class GFError : FObject {
-	\decl void initialize ();
-	\decl void _0_list (...);
+	string format;
+	\decl void initialize (...);
+	\decl 0 bang ();
+	\decl 0 float (float f);
+	\decl 0 symbol (t_symbol *s);
+	\decl 0 list (...);
 };
-\def void initialize () {}
-\def void _0_list (...) {}
+\def void initialize (...) {
+	std::ostringstream o;
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	char buf[MAXPDSTRING];
+	for (int i=0; i<argc; i++) {
+		atom_string(&at[i],buf,MAXPDSTRING);
+		o << buf;
+		if (i!=argc-1) o << ' ';
+	}
+	format = o.str();
+}
+\def 0 bang () {_0_list(0,0);}
+\def 0 float (float f) {_0_list(argc,argv);}
+\def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
+
+extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
+\def void _0_list (...) {
+	std::ostringstream o;
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	pd_oprintf(o,format.data(),argc,at);
+	t_canvas *canvas = canvas_getrootfor(bself->mom);
+	pd_error(canvas,"%s",o.str().data());
+}
 \end class {install("gf.error",1,0);}
 
 //****************************************************************
