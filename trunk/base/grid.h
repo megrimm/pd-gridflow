@@ -143,13 +143,11 @@ static inline Ruby PTR2FIX (const void *ptr) {
 #ifdef USE_RUBY
 static inline bool INTEGER_P(Ruby x) {return FIXNUM_P(x)||TYPE(x)==T_BIGNUM;}
 static inline bool FLOAT_P(Ruby x)   {return TYPE(x)==T_FLOAT;}
-typedef Ruby Symbol, Array, String, Integer;
+typedef Ruby Symbol, Array, Integer;
 static Ruby convert(Ruby x, Ruby *bogus) { return x; }
 typedef Ruby (*RMethod)(...); /* !@#$ fishy */
 #else
 typedef t_symbol *Symbol;
-//typedef std::string String;
-typedef const char *String;
 //#define Qnil 4
 #define Qnil 0
 typedef void *(*RMethod)(...); /* !@#$ fishy */
@@ -247,12 +245,12 @@ typedef struct R {
 	operator t_symbol * () const {
 		if (TYPE(r)==T_SYMBOL) return gensym((char *)rb_sym_name(r));
 		if (TYPE(r)==T_STRING) return gensym((char *)rb_str_ptr(r));
- 		RAISE("want Symbol or String");
+ 		RAISE("want symbol");
 	}
 	operator std::string () const {
 		if (TYPE(r)==T_SYMBOL) return std::string(rb_sym_name(r));
 		if (TYPE(r)==T_STRING) return std::string(rb_str_ptr(r));
- 		RAISE("want Symbol or String");
+ 		RAISE("want symbol");
 	}
 	operator Pointer * () const {
 		if (CLASS_OF(r)!=cPointer) RAISE("not a Pointer");
@@ -929,5 +927,6 @@ void suffixes_are (const char *name, const char *suffixes);
 };
 
 static inline string gf_find_file (string x) {return string(rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,rb_str_new2(x.data()))));}
+int pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
 
 #endif // __GF_GRID_H
