@@ -44,6 +44,21 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #include <malloc.h>
 #endif
 
+#ifndef DESIREDATA
+#ifdef PD_PLUSPLUS_FACE
+typedef struct t_list : t_pd {
+#else
+typedef struct t_list {
+    t_pd *pd;
+#endif
+    struct _atom *v;
+    size_t capa;
+    size_t refcount;
+    size_t n;
+} t_list;
+#define A_LIST 13
+#endif
+
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
 typedef int       int32; typedef unsigned int       uint32;
@@ -148,8 +163,7 @@ static inline uint64 rdtsc()
 		case 0:MACRO(0); case 1:MACRO(1); case 2:MACRO(2); case 3:MACRO(3); \
 		PTR+=4; N-=4; ARGS; if (N) goto start; }
 
-class Barf {
-public:
+struct Barf {
   char *text;
   Barf(const char *s, ...);
   Barf(const char *file, int line, const char *func, const char *s, ...);
