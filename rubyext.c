@@ -34,7 +34,6 @@ tries to call a Ruby method of the proper name.
 
 bool print_class_list;
 
-#define IS_BRIDGE
 #include "base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT

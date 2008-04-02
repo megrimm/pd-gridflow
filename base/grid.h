@@ -27,7 +27,6 @@
 
 #define GF_VERSION "0.9.1"
 
-#ifndef IS_BRIDGE
 #include <stdio.h>
 extern "C" void *gfmalloc(size_t n);
 extern "C" void gffree(void *p);
@@ -45,7 +44,6 @@ ALLOCPREFIX void operator delete  (void*p) throw() {gffree(p);}
 ALLOCPREFIX void operator delete[](void*p) throw() {gffree(p);}
 ALLOCPREFIX void operator delete  (void*p, const std::nothrow_t&) throw() {gffree(p);}
 ALLOCPREFIX void operator delete[](void*p, const std::nothrow_t&) throw() {gffree(p);}
-#endif
 
 #ifdef USE_RUBY
 extern "C" {
@@ -70,12 +68,7 @@ extern "C" {
 //#define _L_ post("%s:%d in %s",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 #define _L_ fprintf(stderr,"%s:%d in %s\n",__FILE__,__LINE__,__PRETTY_FUNCTION__);
 
-#ifdef IS_BRIDGE
-#define RAISE(args...) rb_raise(rb_eArgError,"[rubypd] "args)
-#else
 #define RAISE(args...) throw new Barf(__FILE__,__LINE__,__PRETTY_FUNCTION__,args)
-#endif
-#define RAISE2(string) RAISE(string)
 
 #ifdef USE_RUBY
 typedef VALUE Ruby;
@@ -388,8 +381,8 @@ NUMBER_TYPE_LIMITS(  uint8,0,255,255)
 NUMBER_TYPE_LIMITS(  int16,-0x8000,0x7fff,-1)
 NUMBER_TYPE_LIMITS(  int32,-0x80000000,0x7fffffff,-1)
 NUMBER_TYPE_LIMITS(  int64,-0x8000000000000000LL,0x7fffffffffffffffLL,-1)
-NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
-NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE2("all_ones"),0))
+NUMBER_TYPE_LIMITS(float32,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
+NUMBER_TYPE_LIMITS(float64,-HUGE_VAL,+HUGE_VAL,(RAISE("all_ones"),0))
 
 #ifdef HAVE_LITE
 #define NT_NOTLITE NT_UNIMPL
@@ -570,7 +563,6 @@ static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberType
 #endif
 
 #ifdef USE_RUBY
-#ifndef IS_BRIDGE
 static Numop *convert(Ruby x, Numop **bogus) {
 	if (TYPE(x)!=T_STRING) x=rb_funcall(x,SI(to_s),0);
 	string k = string(rb_str_ptr(x));
@@ -579,7 +571,6 @@ static Numop *convert(Ruby x, Numop **bogus) {
 		return vop_dict[k];
 	} else return op_dict[k];
 }
-#endif
 #endif
 
 // ****************************************************************
@@ -658,7 +649,6 @@ return *this;}
 #undef INCR
 #undef DECR
 
-#ifndef IS_BRIDGE
 static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 	Grid *d = convert(x,(Grid **)0);
 	if (!d) RAISE("urgh");
@@ -669,7 +659,6 @@ static inline P<Dim> convert(Ruby x, P<Dim> *foo) {
 static inline PtrGrid convert(Ruby x, PtrGrid *foo) {
 	return PtrGrid(convert(x,(Grid **)0));
 }
-#endif
 
 //****************************************************************
 // GridInlet represents a grid-aware inlet
