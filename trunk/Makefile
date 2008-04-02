@@ -22,20 +22,30 @@ else
 	CFLAGS += -O2 -funroll-loops
 endif
 
-BRIDGE_LDFLAGS += $(LIBRUBYARG) $(LIBS)
-
-
+LDSOFLAGS += -lm
+BRIDGE_LDFLAGS += -lm $(LIBRUBYARG) $(LIBS)
 OBJS2 = base/main.o base/grid.o base/bitpacking.o base/flow_objects.o \
 base/number.1.o base/number.2.o base/number.3.o base/number.4.o format/main.o
-
 SYSTEM = $(shell uname -s | sed -e 's/^MINGW.*/NT/')
-DLLIB = gridflow.$(DLEXT)
 FILT = $(RUBY) -w base/source_filter.rb
+ifeq ($(OS),darwin)
+  PDSUF = .pd_darwin
+  PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
+else
+  ifeq ($(OS),nt)
+    PDSUF = .dll
+    PDBUNDLEFLAGS = -shared
+  else
+    PDSUF = .pd_linux
+    PDBUNDLEFLAGS = -shared -rdynamic
+  endif
+endif
+PD_LIB = gridflow$(PDSUF)
 
-all:: $(DLLIB) gridflow-for-puredata
+all:: $(PD_LIB) deprecated
 
 clean::
-	@-$(RM) $(DLLIB) gridflow.pd_linux *.o */*.o *.so
+	@-$(RM) gridflow.pd_linux *.o */*.o *.so
 	rm -f $(OBJS2) $(OBJS) base/*.fcs format/*.fcs optional/*.fcs
 
 .SUFFIXES:
@@ -66,10 +76,6 @@ H = gridflow2.h base/grid.h.fcs
 %.e: %.c.fcs $(COMMON_DEPS) base/grid.h.fcs
 	$(CXX) $(CFLAGS) -E $< -o $@
 
-$(DLLIB): $(OBJS2) $(OBJS)
-	@-$(RM) $@
-	$(LDSHARED) $(LIBPATH) -o $@ $(OBJS2) $(OBJS) $(LDSOFLAGS)
-
 .PRECIOUS: %.h.fcs %.c.fcs %.m.fcs
 
 base/mmx.asm base/mmx_loader.c: base/mmx.rb
@@ -80,32 +86,9 @@ base/mmx.o: base/mmx.asm
 unskew::
 	find . -mtime -0 -ls -exec touch '{}' ';'
 
-ifeq ($(OS),darwin)
-  PDSUF = .pd_darwin
-  PDBUNDLEFLAGS = -bundle -flat_namespace -undefined suppress
-else
-  ifeq ($(OS),nt)
-    PDSUF = .dll
-    PDBUNDLEFLAGS = -shared
-  else
-    PDSUF = .pd_linux
-    PDBUNDLEFLAGS = -shared -rdynamic
-  endif
-endif
-
-ifeq ($(HAVE_PUREDATA),yes)
-PD_LIB = gridflow$(PDSUF)
-
-$(PD_LIB): rubyext.c.fcs base/grid.h gridflow2.h $(COMMON_DEPS)
-	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) \
-		$< -xnone -o $@
-
-gridflow-for-puredata:: $(PD_LIB) deprecated
-
-else
-gridflow-for-puredata::
-	@#nothing
-endif # HAVE_PUREDATA
+$(PD_LIB): rubyext.c.fcs $(OBJS2) $(OBJS) base/grid.h gridflow2.h $(COMMON_DEPS)
+	$(CXX) -DPDSUF=\"$(PDSUF)\" -Ibundled/pd $(LDSOFLAGS) $(BRIDGE_LDFLAGS) $(CFLAGS) $(PDBUNDLEFLAGS) $(LIBPATH) \
+		rubyext.c.fcs -xnone $(OBJS2) $(OBJS) -o $@
 
 beep::
 	@for z in 1 2 3 4 5; do echo -ne '\a'; sleep 1; done
