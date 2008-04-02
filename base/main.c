@@ -316,14 +316,6 @@ static Ruby GridFlow_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
 // GridFlow.class
 //\class GridFlow_s < patate
 
-typedef void (*Callback)(void*);
-static Ruby GridFlow_exec (Ruby rself, Ruby data, Ruby func) {
-	void *data2 = FIX2PTR(void,data);
-	Callback func2 = (Callback) FIX2PTR(void,func);
-	func2(data2);
-	return Qnil;
-}
-
 static Ruby GridFlow_get_id (Ruby rself, Ruby arg) {
 	fprintf(stderr,"%ld\n",arg);
 	return INT2NUM((int)arg);
@@ -439,7 +431,6 @@ void Init_gridflow () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; class<<self; end; def post_string(s) STDERR.puts s end; self end");
-	SDEF2("exec",GridFlow_exec,2);
 	SDEF2("get_id",GridFlow_get_id,1);
 	SDEF2("rdtsc",GridFlow_rdtsc,0);
 	SDEF2("handle_braces!",GridFlow_handle_braces,1);
