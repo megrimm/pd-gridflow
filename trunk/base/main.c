@@ -474,20 +474,11 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	EVAL(
-\ruby
-	module GridFlow
-		class FObject
-		def send_out2(*) end
-		def self.install2(*) end
-		def self.add_creator(name)
-			name=name.to_str.dup
-			GridFlow.fclasses[name]=self
-			GridFlow.add_creator_2 name end
-		end
-	end
-\end ruby
-);
+	EVAL("module GridFlow; class FObject;"
+		"def send_out2(*) end;"
+		"def self.install2(*) end;"
+		"def self.add_creator(name) name=name.to_str.dup; GridFlow.fclasses[name]=self; GridFlow.add_creator_2 name end;"
+		"end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
