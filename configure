@@ -24,7 +24,6 @@
 require "rbconfig"
 require "ftools"
 $CFLAGS  = ""
-$LDFLAGS = ""
 include Config
 OSX = !!( CONFIG["arch"] =~ /darwin/ )
 
@@ -73,8 +72,7 @@ def launch2(log,*command)
 end
 
 $conf={
-	:LDSOFLAGS => ["-lm"],
-	:BRIDGE_LDFLAGS => ["-lm"],
+	:LDSOFLAGS => [],
 	:FEATURES => {},
 	:OPTIONS => [],
 	:DEFINES => {
@@ -118,7 +116,6 @@ class Feature
 	attr2 :name
 	attr2 :status
 	attr2 :uses_so
-	attr2 :uses_bridge_so
 	attr2 :uses_o
 	attr2 :uses_h
 	attr2 :uses_feature
@@ -323,17 +320,16 @@ Feature.add {
 Feature.add {
 	tag :libruby
 	name "Ruby as a dynamic library"
-	#uses_bridge_so [CONFIG["LIBRUBY_DLDFLAGS"]]
 	#uses_h ["ruby.h"] # is in special directory
 	test proc {|f| c_test "#include <ruby.h>
-		int main () { return rb_rescue==0; }", f.uses_bridge_so }
+		int main () { return rb_rescue==0; }", f.uses_so }
 }
 Feature.add {
 	tag :librubystatic
 	unless_feature [:libruby]
 	name "Ruby as a static library"
 	#uses_h ["ruby.h"] # is in special directory
-	uses_bridge_so {
+	uses_so {
 		lib = " #{$LIBRUBY_A} #{CONFIG['LIBS']} "
 			lib = "-Wl,--whole-archive"+lib+"-Wl,--no-whole-archive" unless OSX
 		[lib]
@@ -803,12 +799,6 @@ DUAL.instance_eval {
 }
 
 def try feature
-	if Or===feature.uses_bridge_so
-		k=1; feature.uses_bridge_so.a.each {|i|
-			e=feature.dup; e.uses_bridge_so i; e.name(e.name+" (try \##{k})")
-			r=try e; k+=1; return r if r }
-		return false
-	end
 	if Proc===feature.uses_so then feature.uses_so(feature.uses_so[]) end
 	if Or===feature.uses_so
 		k=1; feature.uses_so.a.each {|i|
@@ -860,9 +850,6 @@ def try feature
 				feature.uses_so.map! {|x|
 					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
 				} if feature.uses_so
-				feature.uses_bridge_so.map! {|x|
-					"-Wl,--whole-archive #{x} -Wl,--no-whole-archive"
-				} if feature.uses_bridge_so
 			end
 		else
 			DUAL.puts Red+arrow+"missing "+(if e
@@ -884,7 +871,6 @@ def try feature
 	feature.action.call if feature.action
 	$conf[:FEATURES][feature.tag] = feature
 	$conf[:LDSOFLAGS].concat(feature.uses_so||[])
-	$conf[:BRIDGE_LDFLAGS].concat(feature.uses_bridge_so||[])
 	$conf[:OBJS].concat(feature.uses_o||[])
 	$conf[:OPTIONS].concat(feature.options||[])
 	for k,v in feature.defines||{} do
@@ -906,8 +892,6 @@ end
 puts Light
 
 $conf[:LDSOFLAGS].uniq!
-$conf[:BRIDGE_LDFLAGS].uniq!
-
 $CFLAGS += " -falign-functions=16" if $conf[:FEATURES][:gcc3]
 
 if not $conf[:FEATURES][:gcc3]
@@ -923,7 +907,7 @@ end
 #--------------------------------#
 
 LOG.puts "-"*64
-for z in [:BRIDGE_LDFLAGS, :LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
+for z in [:LDSOFLAGS, :OPTIONS, :DEFINES, :OBJS] do
   LOG.puts "#{z}: #{$conf[z].inspect}"
 end
 LOG.puts "-"*64
@@ -959,8 +943,6 @@ puts "generating ./config.make"
 File.open("./config.make","w") {|f|
 
   f.puts "RUBYARCH=#{CONFIG['arch']}"
-  f.puts "BRIDGE_LDFLAGS = " + $conf[:BRIDGE_LDFLAGS].flatten.join(" ") + " " + $LDFLAGS
-
   $CFLAGS +=  " -mcpu=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] <  "4"
   $CFLAGS += " -mtune=$(CPU)" if $conf[:DEFINES][:CPU] and $conf[:DEFINES][:GCC_VERSION] >= "4"
   $CFLAGS += " -march=$(CPU)" if $conf[:DEFINES][:CPU]
