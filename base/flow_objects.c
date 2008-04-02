@@ -116,7 +116,7 @@ GRID_INLET(GridCast,0) {
 	PtrGrid dim_grid;
 	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridImport() {}
-	\decl void initialize(Ruby x, NumberTypeE cast=int32_e);
+	\decl void initialize(...);
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
 	//\decl 0 list(...); !@#$
@@ -152,9 +152,10 @@ GRID_INPUT(GridImport,1,dim_grid) {
 
 \def 1 per_message() { dim=0; dim_grid=0; }
 
-\def void initialize(Ruby x, NumberTypeE cast) {
+\def void initialize(...) {
 	SUPER;
-	this->cast = cast;
+	this->cast = argc>=1 ? NumberTypeE_find(argv[1]) : int32_e;
+	if (argc>=2) RAISE("too many arguments");
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
 		dim = dim_grid->to_dim();
