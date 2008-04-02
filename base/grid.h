@@ -83,12 +83,6 @@ typedef VALUE Ruby;
 typedef long Ruby;
 #endif
 
-extern "C" {
-void rb_raise0(
-const char *file, int line, const char *func, Ruby exc, const char *fmt, ...)
-__attribute__ ((noreturn));
-};
-
 #define VA int argc, Ruby *argv
 #define SI(_sym_) (rb_intern(#_sym_))
 #define SYM(_sym_) (ID2SYM(SI(_sym_)))
@@ -244,6 +238,7 @@ typedef struct R {
 		if (TYPE(r)==T_STRING) return gensym((char *)rb_str_ptr(r));
  		RAISE("want symbol");
 	}
+	//operator NumberTypeE () const {return NumberTypeE_find((t_symbol *)*this);}
 	operator std::string () const {
 		if (TYPE(r)==T_SYMBOL) return std::string(rb_sym_name(r));
 		if (TYPE(r)==T_STRING) return std::string(rb_str_ptr(r));
