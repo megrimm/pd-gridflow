@@ -45,25 +45,6 @@ BuiltinSymbols bsym;
 Ruby mGridFlow;
 Ruby cFObject;
 
-extern "C"{
-void rb_raise0(
-const char *file, int line, const char *func, VALUE exc, const char *fmt, ...) {
-	va_list args;
-	char buf[BUFSIZ];
-	va_start(args,fmt);
-	vsnprintf(buf, BUFSIZ, fmt, args);
-	buf[BUFSIZ-1]=0;
-	va_end(args);
-	VALUE e = rb_exc_new2(exc, buf);
-	char buf2[BUFSIZ];
-	snprintf(buf2, BUFSIZ, "%s:%d:in `%s'", file, line, func);
-	buf2[BUFSIZ-1]=0;
-	VALUE ary = rb_funcall(e,SI(caller),0);
-	rb_funcall(ary,SI(unshift),1,rb_str_new2(buf2));
-	rb_funcall(e,SI(set_backtrace),1,ary);
-	rb_exc_raise(e);
-}};
-
 Barf::Barf(const char *s, ...) {
     char buf[1024];
     va_list ap;
@@ -82,11 +63,6 @@ Barf::Barf(const char *file, int line, const char *func, const char *s, ...) {
     buf[1023]=0;
     va_end(ap);
     text = strdup(buf);
-}
-
-Ruby rb_ary_fetch(Ruby rself, long i) {
-	Ruby argv[] = { LONG2NUM(i) };
-	return rb_ary_aref(COUNT(argv),argv,rself);
 }
 
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
