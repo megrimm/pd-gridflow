@@ -253,46 +253,42 @@ def handle_end(line)
 	frame = $stack.pop
 	fields = line.split(/\s+/)
 	n = fields.length
-	if ClassDecl===frame then
-		#handle_classinfo if not frame.info
-		cl = frame.name
-		if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
-		$stack.push frame
-		frame.attrs.each {|name,attr|
-			type,name,default = attr.to_a
-			#STDERR.puts "type=#{type} name=#{name} default=#{default}"
-			#handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
-		}
-		frame.grins.each {|i,v|
-			cli = "#{cl}::grinw_#{i}"
-			k = case v[1]
-			when     nil; [1,1,1,1,1,1,1]
-			when 'int32'; [0,0,1,0,0,0,0]
-			when   'int'; [1,1,1,1,0,0,0]
-			when 'float'; [0,0,0,0,1,1,0]
-			else raise 'BORK BORK BORK' end
-			ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
-			Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
-			handle_def "#{i} grid(void *foo) {"+
-				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-				"in[#{i}]->begin(argc,argv);}"
-			handle_def "#{i} list(...) {"+
-				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-				"in[#{i}]->from_ruby_list(argc,argv,int32_e);}"
-			handle_def "#{i} float(float f) {"+
-				"if (in.size()<=#{i}) in.resize(#{i}+1);"+
-				"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-				"Ruby a[]={rb_float_new(f)};"+
-				"in[#{i}]->from_ruby(1,a);}"
-		}
-		if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
-		$stack.pop
-	end
-	if :ruby==frame then
-		if fields[0]!="ruby" then raise "expected \\end ruby" end
-	end
+	if not ClassDecl===frame then raise "\\end: frame is not a \\class" end
+	#handle_classinfo if not frame.info
+	cl = frame.name
+	if fields[0]!="class" or (n>1 and not /^\{/ =~ fields[1] and fields[1]!=cl) then raise "end not matching #{where}" end
+	$stack.push frame
+	frame.attrs.each {|name,attr|
+		type,name,default = attr.to_a
+		#STDERR.puts "type=#{type} name=#{name} default=#{default}"
+		#handle_def "0 #{name} (#{type} #{name}) { this->#{name}=#{name}; }"
+	}
+	frame.grins.each {|i,v|
+		cli = "#{cl}::grinw_#{i}"
+		k = case v[1]
+		when     nil; [1,1,1,1,1,1,1]
+		when 'int32'; [0,0,1,0,0,0,0]
+		when   'int'; [1,1,1,1,0,0,0]
+		when 'float'; [0,0,0,0,1,1,0]
+		else raise 'BORK BORK BORK' end
+		ks = k.map{|ke| if ke==0 then 0 else cli end}.join(",")
+		Out.print "static GridHandler #{cl}_grid_#{i}_hand = GRIN(#{ks});"
+		handle_def "#{i} grid(void *foo) {"+
+			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
+			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+			"in[#{i}]->begin(argc,argv);}"
+		handle_def "#{i} list(...) {"+
+			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
+			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}"
+		handle_def "#{i} float(float f) {"+
+			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
+			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
+			"Ruby a[]={rb_float_new(f)};"+
+			"in[#{i}]->from_ruby(1,a);}"
+	}
+	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
+	$stack.pop
 	Out.print " /*end class*/ "
 end
 
@@ -305,10 +301,6 @@ def handle_startall(line)
 			Out.print "Qnil);"
 		end
 	}
-end
-
-def handle_ruby(line)
-	$stack.push :ruby
 end
 
 $rubymode=false
