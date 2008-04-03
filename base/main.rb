@@ -67,8 +67,6 @@ def self.hunt_zombies
 	died.each {|x| subprocesses.delete x }
 end
 
-post "GridFlow #{GridFlow::GF_VERSION} loaded, with Ruby #{RUBY_VERSION}-#{RUBY_RELEASE_DATE}"
-
 def self.parse(m)
 	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
 	m.map! {|x| case x
@@ -165,13 +163,6 @@ def GridFlow.find_file s
 	else s end
 end
 
-ENDIAN_BIG,ENDIAN_LITTLE,ENDIAN_SAME,ENDIAN_DIFF = 0,1,2,3
-
-OurByteOrder = case [1].pack("L")
-        when "\0\0\0\1"; ENDIAN_BIG     # Mac, Sun, SiliconGraphics
-        when "\1\0\0\0"; ENDIAN_LITTLE  # Intel
-        else raise "Cannot determine byte order" end
-
 end # module GridFlow
 
 class IO
@@ -195,7 +186,6 @@ def GridFlow.load_user_config
 end
 
 require "base/flow_objects.rb"
-require "format/main.rb"
 
 GridFlow::FObject.name_lookup("#to_list")  .add_creator "#export_list"
 GridFlow::FObject.name_lookup("#to_float") .add_creator "#export"
