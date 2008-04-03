@@ -380,19 +380,6 @@ int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	post("bf_clickfn: expected Fixnum");
 	return 0;
 }
-/* get keypresses during focus */
-void bf_keyfn(void *x, t_floatarg fkey) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
-}
-/* get motion diff during focus */
-void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_motion),2,INT2NUM((int)dx), INT2NUM((int)dy));
-}
-/* open properties dialog */
-void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
-}
 #endif /* HAVE_DESIREDATA */
 
 /* save to a binbuf (FOR FUTURE USE) */
@@ -568,7 +555,6 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	wb->w_visfn        = bf_visfn;
 	wb->w_clickfn      = bf_clickfn;
 	//wb->w_savefn       = bf_savefn;
-	//wb->w_propertiesfn = bf_propertiesfn;
 	class_setwidget(qlass,wb);
 	return Qnil;
 }
