@@ -2366,6 +2366,157 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 
 //****************************************************************
 
+static void display_update(void *x);
+
+string ssprintf(const char *fmt, ...) {
+	std::ostringstream os;
+	va_list va;
+	va_start(va,fmt);
+	voprintf(os,fmt,va);
+	va_end(va);
+	return os.str();
+}
+
+#ifndef HAVE_DESIREDATA
+extern "C" {
+#include "bundled/pd/g_canvas.h"
+};
+\class Display : FObject {
+	bool selected;
+	t_glist *canvas;
+	t_symbol *rsym;
+	int y,x,sy,sx;
+	bool vis;
+	std::ostringstream text;
+	t_clock *clock;
+	t_pd *gp;
+	Display () : selected(false), canvas(0), y(0), x(0), sy(16), sx(80), vis(false) {
+		std::ostringstream os;
+		rsym = gensym((char *)ssprintf("display:%08x",bself).data());
+		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
+		gp = pd_newest();
+		t_atom a[1];
+		SETFLOAT(a,20);
+		pd_typedmess(gp,gensym("maxrows"),1,a);
+		text << "...";
+	}
+	\decl void initialize2();
+	\decl void method_missing (...);
+	\decl 0 set_size(int sy, int sx);
+	\decl 0 grid(...);
+	\decl 0 very_long_name_that_nobody_uses(...);
+ 	void show() {
+		std::ostringstream quoted;
+	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
+		const char *s = text.str().data();
+		for (;*s;s++) {
+			if (*s=='\n') quoted << "\\n";
+			else if (strchr("\"[]$",*s)) quoted << "\\" << (char)*s;
+			else quoted << (char)*s;
+		}
+		//return if not canvas or not @vis # can't show for now...
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier 12} .x%x.c \"%s\"\n",
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,quoted.str().data());
+	}
+};
+static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
+	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	*x1 = bself->te_xpix-1;
+	*y1 = bself->te_ypix-1;
+	*x2 = bself->te_xpix+1+self->sx;
+	*y2 = bself->te_ypix+1+self->sy;
+}
+static void display_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
+	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	bself->te_xpix+=dx;
+	bself->te_ypix+=dy;
+	self->canvas = glist_getcanvas(glist);
+	self->show();
+	canvas_fixlinesfor(glist, (t_text *)x);
+}
+static void display_selectfn(t_gobj *x, t_glist *glist, int state) {
+	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	self->selected=!!state;
+	sys_vgui(".x%x.c itemconfigure %s -outline %s\n",glist_getcanvas(glist),self->rsym->s_name,self->selected?"#0000ff":"#000000");
+}
+static void display_deletefn(t_gobj *x, t_glist *glist) {
+	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	if (self->vis) sys_vgui(".x%x.c delete %s %sTEXT\n",glist_getcanvas(glist),self->rsym->s_name,self->rsym->s_name);
+	canvas_deletelinesfor(glist, (t_text *)x);
+}
+static void display_visfn(t_gobj *x, t_glist *glist, int flag) {
+	BFObject *bself = (BFObject*)x; Ruby rself = bself->rself; DGS(Display); self->canvas = glist;
+	self->vis = !!flag;
+	display_update(self);
+}
+static void display_update(void *x) {
+	Display *self = (Display *)x;
+	if (self->vis) self->show();
+}
+\def void initialize2 () {
+	pd_bind((t_pd *)bself,rsym);
+	t_atom a[1];
+	SETPOINTER(a,(t_gpointer *)bself);
+	pd_typedmess(gp,gensym("dest"),1,a);
+	clock = clock_new((void *)this,(void(*)())display_update);
+	fprintf(stderr,"clock %p for this=%p rself=%p bself=%p\n",clock,this,rself,bself);
+}
+\def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
+\def void method_missing (...) {
+	string sel = string(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0)));
+	text.clear();
+	if (sel != "float") text << sel;
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	char buf[MAXPDSTRING];
+	for (int i=0; i<argc; i++) {
+		atom_string(&at[i],buf,MAXPDSTRING);
+		text << " " << buf;
+	}
+	clock_delay(clock,0);
+}
+\def 0 grid(...) {
+	text.clear();
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	pd_typedmess(gp,gensym("grid"),argc,at);
+	clock_delay(clock,0);
+}
+\def 0 very_long_name_that_nobody_uses(...) {
+	if (text.str().length()) text << "\n";
+	for (int i=0; i<argc; i++) text << (char)INT(argv[i]);
+}
+\end class {
+	install("display",1,0);
+	t_class *qlass = fclasses_ruby[rself]->bfclass;
+	t_widgetbehavior *wb = new t_widgetbehavior;
+	wb->w_getrectfn    = display_getrectfn;
+	wb->w_displacefn   = display_displacefn;
+	wb->w_selectfn     = display_selectfn;
+	wb->w_activatefn   = 0;
+	wb->w_deletefn     = display_deletefn;
+	wb->w_visfn        = display_visfn;
+	wb->w_clickfn      = 0;
+	class_setwidget(qlass,wb);
+	sys_vgui("proc display_update {self x y fg bg outline font canvas text} { \n\
+		$canvas delete ${self}TEXT \n\
+		$canvas create text [expr $x+2] [expr $y+2] -fill $fg -font $font -text $text -anchor nw -tag ${self}TEXT \n\
+		foreach {x1 y1 x2 y2} [$canvas bbox ${self}TEXT] {} \n\
+		incr x -1 \n\
+		incr y -1 \n\
+		set sx [expr $x2-$x1+2] \n\
+		set sy [expr $y2-$y1+4] \n\
+		$canvas delete ${self} \n\
+		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
+		$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline \n\
+		$canvas lower $self ${self}TEXT \n\
+		pd \"$self set_size $sy $sx;\\n\" \n\
+	}\n");
+}
+#endif // ndef HAVE_DESIREDATA
+
+//****************************************************************
+
 #define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
 	op_add = OP(+);
