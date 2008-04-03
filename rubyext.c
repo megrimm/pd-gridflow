@@ -32,8 +32,6 @@ and the 'anything' method translates the whole message to Ruby objects and
 tries to call a Ruby method of the proper name.
 */
 
-bool print_class_list;
-
 #include "base/grid.h.fcs"
 /* resolving conflict: T_OBJECT will be PD's, not Ruby's */
 #undef T_OBJECT
@@ -73,8 +71,7 @@ extern "C" {
 #endif
 
 // call f(x) and if fails call g(y)
-#define RESCUE(f,x,g,y) \
-  rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
+#define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
 
 /* **************************************************************** */
 struct BFObject;
@@ -156,14 +153,8 @@ static t_class *find_bfclass (t_symbol *sym) {
 	char buf[4096];
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
 	Ruby v = rb_hash_aref(rb_ivar_get(mGridFlow, SI(@fclasses)), rb_str_new2(buf));
-	if (v==Qnil) {
-		post("GF: class not found: '%s'",buf);
-		return 0;
-	}
-	if (Qnil==rb_ivar_get(v,SI(@bfclass))) {
-		post("@bfclass missing for '%s'",buf);
-		return 0;
-	}
+	if (v==Qnil) {post("GF: class not found: '%s'",buf); return 0;}
+	if (Qnil==rb_ivar_get(v,SI(@bfclass))) {post("@bfclass missing for '%s'",buf); return 0;}
 	return FIX2PTR(t_class,rb_ivar_get(v,SI(@bfclass)));
 }
 
@@ -297,8 +288,7 @@ static void BFObject_delete_1 (FMessage *fm) {
 }
 
 static void BFObject_delete (BFObject *bself) {
-	FMessage fm = { self: bself, winlet:-1, selector: gensym("delete"),
-		ac: 0, at: 0, is_init: false };
+	FMessage fm = {self:bself, winlet:-1, selector:gensym("delete"), ac:0, at:0, is_init:false};
 	RESCUE(BFObject_delete_1,&fm,BFObject_rescue,&fm);
 }
 
@@ -314,14 +304,11 @@ struct RMessage {
 // this was called rb_funcall_rescue[...] but recently (ruby 1.8.2)
 // got a conflict with a new function in ruby.
 
-VALUE rb_funcall_myrescue_1(RMessage *rm) {
-	return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);
-}
+VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
 
 static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
 	Ruby error_array = make_error_message();
-//	for (int i=0; i<rb_ary_len(error_array); i++)
-//		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	post("%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	return Qnil;
 }
@@ -337,10 +324,8 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 }
 
 #ifndef HAVE_DESIREDATA
-
 /* Call this to get a gobj's bounding rectangle in pixels */
-void bf_getrectfn(t_gobj *x, t_glist *glist,
-int *x1, int *y1, int *x2, int *y2) {
+void bf_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
 	BFObject *bself = (BFObject*)x;
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby a = rb_funcall_myrescue(bself->rself,SI(pd_getrect),1,can);
@@ -355,7 +340,6 @@ int *x1, int *y1, int *x2, int *y2) {
 	*x2 = INT(ap[2]);
 	*y2 = INT(ap[3]);
 }
-
 /* and this to displace a gobj: */
 void bf_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
@@ -365,26 +349,22 @@ void bf_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
 	rb_funcall_myrescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
 	canvas_fixlinesfor(glist, (t_text *)x);
 }
-
 /* change color to show selection: */
 void bf_selectfn(t_gobj *x, t_glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
 }
-
 /* change appearance to show activation/deactivation: */
 void bf_activatefn(t_gobj *x, t_glist *glist, int state) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
 }
-
 /* warn a gobj it's about to be deleted */
 void bf_deletefn(t_gobj *x, t_glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
 	canvas_deletelinesfor(glist, (t_text *)x);
 }
-
 /*  making visible or invisible */
 void bf_visfn(t_gobj *x, t_glist *glist, int flag) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
@@ -392,43 +372,33 @@ void bf_visfn(t_gobj *x, t_glist *glist, int flag) {
 	DGS(FObject);
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
 }
-
 /* field a mouse click (when not in "edit" mode) */
 int bf_clickfn(t_gobj *x, t_glist *glist,
 int xpix, int ypix, int shift, int alt, int dbl, int doit) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	Ruby ret = rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_click),7,can,
-		INT2NUM(xpix),INT2NUM(ypix),
-		INT2NUM(shift),INT2NUM(alt),
-		INT2NUM(dbl),INT2NUM(doit));
+		INT2NUM(xpix),INT2NUM(ypix),INT2NUM(shift),INT2NUM(alt),INT2NUM(dbl),INT2NUM(doit));
 	if (TYPE(ret) == T_FIXNUM) return INT(ret);
 	post("bf_clickfn: expected Fixnum");
 	return 0;
 }
-
 /* get keypresses during focus */
 void bf_keyfn(void *x, t_floatarg fkey) {
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_key),1,INT2NUM((int)fkey));
 }
-
 /* get motion diff during focus */
 void bf_motionfn(void *x, t_floatarg dx, t_floatarg dy) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_motion),2,
-		INT2NUM((int)dx), INT2NUM((int)dy));
+	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_motion),2,INT2NUM((int)dx), INT2NUM((int)dy));
 }
-
 /* open properties dialog */
 void bf_propertiesfn(t_gobj *x, struct _glist *glist) {
 	Ruby can = PTR2FIX(glist_getcanvas(glist));
 	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_properties),1,can);
 }
-
 #endif /* HAVE_DESIREDATA */
 
 /* save to a binbuf (FOR FUTURE USE) */
-void bf_savefn(t_gobj *x, t_binbuf *b) {
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);
-}
+void bf_savefn(t_gobj *x, t_binbuf *b) {rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);}
 
 //****************************************************************
 
@@ -471,20 +441,12 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 );}
 \end class Pointer
 
-
-
-
-static void BFObject_class_init_1 (t_class *qlass) {
-	class_addanything(qlass,(t_method)BFObject_method_missing0);
-}
+static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 
 \class FObject
 
-#define class_new(NAME,ARGS...) (print_class_list ? fprintf(stderr,"class_new %s\n",(NAME)->s_name) : 0, class_new(NAME,ARGS))
-
 static Ruby FObject_s_install2(Ruby rself, Ruby name) {
 	if (TYPE(name)!=T_STRING) RAISE("name must be String");
-	//if (print_class_list) printf("class_new %s\n",rb_str_ptr(name));
 	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
@@ -1101,8 +1063,6 @@ void blargh () {
 extern "C" void gridflow_setup () {
 	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	post("setting up Ruby-for-PureData...");
-	const char *pcl = getenv("PRINT_CLASS_LIST");
-        if (pcl && strcmp(pcl,"yes")==0) print_class_list=true;
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
@@ -1155,24 +1115,13 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, new, -1);
 
 //begin gf_bridge_init
-	Ruby ver = EVAL("GridFlow::GF_VERSION");
-	if (strcmp(rb_str_ptr(ver), GF_VERSION) != 0) {
-		RAISE("GridFlow version mismatch: "
-			"main library is '%s'; bridge is '%s'",
-			rb_str_ptr(ver), GF_VERSION);
-	}
-	Ruby fo = EVAL("GridFlow::FObject");
+	Ruby fo = cFObject;
 	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
-
+	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
+	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
 #ifndef HAVE_DESIREDATA
 	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
 	rb_define_singleton_method(fo,"properties_enable", (RMethod)FObject_s_properties_enable, 0);
-#endif
-
-	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
-	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
-
-#ifndef HAVE_DESIREDATA
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
