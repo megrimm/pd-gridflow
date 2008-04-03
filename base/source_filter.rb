@@ -142,8 +142,7 @@ def handle_decl(line)
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ");"
-	Out.print "static Ruby #{m.selector}_wrap"+
-	"(VA, Ruby rself); "
+	Out.print "static Ruby #{m.selector}_wrap(VA, Ruby rself); "
 end
 
 def handle_def(line)
@@ -294,11 +293,11 @@ end
 
 def handle_startall(line)
 	$classes.each {|q|
-		Out.print "rb_funcall(EVAL(\"GridFlow\"),SI(fclass_install),2,PTR2FIX(&ci#{q.name}),"
+		Out.print "fclass_install(&ci#{q.name},"
 		if q.supername then
-			Out.print "EVAL(\"GridFlow::#{q.supername}\"));"
+			Out.print "\"#{q.supername}\");"
 		else
-			Out.print "Qnil);"
+			Out.print "0);"
 		end
 	}
 end

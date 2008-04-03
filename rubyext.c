@@ -73,6 +73,9 @@ extern "C" {
 // call f(x) and if fails call g(y)
 #define RESCUE(f,x,g,y) rb_rescue2((RMethod)(f),(Ruby)(x),(RMethod)(g),(Ruby)(y),rb_eException,0);
 
+std::map<string,FClass2 *> fclasses;
+std::map<Ruby,FClass2 *> fclasses_ruby;
+
 /* **************************************************************** */
 struct BFObject;
 
@@ -126,17 +129,8 @@ static Ruby make_error_message () {
 	return ary;
 }
 
-static int ninlets_of (Ruby qlass) {
-	ID id = rb_intern("@ninlets");
-	if (!rb_ivar_defined(qlass,id)) RAISE("no inlet count");
-	return INT(rb_ivar_get(qlass,id));
-}
-
-static int noutlets_of (Ruby qlass) {
-	ID id = rb_intern("@noutlets");
-	if (!rb_ivar_defined(qlass,id)) RAISE("no outlet count");
-	return INT(rb_ivar_get(qlass,id));
-}
+static int  ninlets_of (Ruby qlass) {return fclasses_ruby[qlass]->ninlets;}
+static int noutlets_of (Ruby qlass) {return fclasses_ruby[qlass]->noutlets;}
 
 //****************************************************************
 // BFObject
@@ -152,10 +146,10 @@ static t_class *find_bfclass (t_symbol *sym) {
 	SETSYMBOL(a,sym);
 	char buf[4096];
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
-	Ruby v = rb_hash_aref(rb_ivar_get(mGridFlow, SI(@fclasses)), rb_str_new2(buf));
-	if (v==Qnil) {post("GF: class not found: '%s'",buf); return 0;}
-	if (Qnil==rb_ivar_get(v,SI(@bfclass))) {post("@bfclass missing for '%s'",buf); return 0;}
-	return FIX2PTR(t_class,rb_ivar_get(v,SI(@bfclass)));
+	string name = string(buf);
+	if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",buf); return 0;}
+	fprintf(stderr,"fclasses[\"%s\"]=%p\n",name.data(),(void *)fclasses[name]);
+	return fclasses[name]->bfclass;
 }
 
 static t_class *BFProxy_class;
@@ -217,8 +211,11 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
 
+static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv);
+
 static Ruby BFObject_init_1 (FMessage *fm) {
-	Ruby argv[fm->ac+1];
+	int argc=fm->ac+1;
+	Ruby argv[argc];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 	// s_list is broken in some (?) versions of pd
 	argv[0] = fm->selector==&s_list ?
@@ -230,7 +227,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
-	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),fm->ac+1,argv);
+
+	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),argc,argv);
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -445,17 +443,6 @@ static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_m
 
 \class FObject
 
-static Ruby FObject_s_install2(Ruby rself, Ruby name) {
-	if (TYPE(name)!=T_STRING) RAISE("name must be String");
-	t_class *qlass = class_new(gensym(rb_str_ptr(name)),
-		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
-		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
-	rb_ivar_set(rself, SI(@bfclass), PTR2FIX(qlass));
-	FMessage fm = {0, -1, 0, 0, 0, false};
-	RESCUE(BFObject_class_init_1,qlass,BFObject_rescue,&fm);
-	return Qnil;
-}
-
 static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 //\def Ruby send_out2(...) {
 	DGS(FObject);
@@ -500,8 +487,6 @@ static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	RAISE("requires Pd 0.37");
 #else
 		Ruby name = rb_funcall(argv0,SI(to_s),0);
-		Ruby qlassid = rb_ivar_get(rb_hash_aref(rb_ivar_get(mGridFlow,SI(@fclasses)),name),SI(@bfclass));
-		if (qlassid==Qnil) RAISE("no such class: %s",rb_str_ptr(name));
 		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
 		t_pd *o = pd_newest();
 		pd_bind(o,gensym(rb_str_ptr(argv1)));
@@ -565,10 +550,15 @@ static Ruby GridFlow_s_send_in (int argc, Ruby *argv, Ruby rself) {
 	return Qnil;
 }
 
+static Ruby GridFlow_s_name_lookup (Ruby rself, Ruby name2) {
+	string name = string(rb_str_ptr(rb_funcall(name2,SI(to_s),0)));
+	if (fclasses.find(name)==fclasses.end()) RAISE("class not found: %s",name.data());
+	return fclasses[name]->rself;
+}
+
 #ifndef HAVE_DESIREDATA
 static Ruby FObject_s_gui_enable (Ruby rself) {
-	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no class id ?");
+	t_class *qlass = fclasses_ruby[rself]->bfclass;
 	t_widgetbehavior *wb = new t_widgetbehavior;
 	wb->w_getrectfn    = bf_getrectfn;
 	wb->w_displacefn   = bf_displacefn;
@@ -579,7 +569,7 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	wb->w_clickfn      = bf_clickfn;
 	//wb->w_savefn       = bf_savefn;
 	//wb->w_propertiesfn = bf_propertiesfn;
-	class_setwidget(FIX2PTR(t_class,qlassid),wb);
+	class_setwidget(qlass,wb);
 	return Qnil;
 }
 
@@ -639,7 +629,6 @@ static Ruby FObject_args (Ruby rself) {
 	free(buf);
 	return r;
 }
-
 
 static Ruby FObject_patcherargs (Ruby rself) {
 	DGS(FObject);
@@ -739,9 +728,15 @@ static Ruby FObject_noutlets (Ruby rself) {
 	return R(bself->nout).r;
 }
 
-static Ruby GridFlow_s_add_creator_2 (Ruby rself, Ruby name_) {
-	t_symbol *name = gensym(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
-	class_addcreator((t_newmethod)BFObject_init,name,A_GIMME,0);
+static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
+	if (TYPE(name_)!=T_STRING) RAISE("argh");
+	char *name = strdup(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
+	if (fclasses_ruby.find(rself)==fclasses_ruby.end()) RAISE("uh");
+	string fname = fclasses_ruby[rself]->name;
+	fprintf(stderr,"aliasing %s to %s\n",fname.data(),name);
+	fclasses[string(name)] = fclasses[fname];
+	class_addcreator((t_newmethod)BFObject_init,gensym(name),A_GIMME,0);
+	free(name);
 	return Qnil;
 }
 
@@ -830,16 +825,13 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	}
 }
 
-static Ruby GridFlow_s_fclass_install(Ruby rself_, Ruby fc_, Ruby super) {
-	FClass *fc = FIX2PTR(FClass,fc_);
-	//fc = (FClass *)(NUM2ULONG(fc_)<<2); // wtf?
-	Ruby rself = super!=Qnil ?
-		rb_define_class_under(mGridFlow, fc->name, super) :
+void fclass_install(FClass *fc, const char *super) {
+	Ruby rself = super ?
+		rb_define_class_under(mGridFlow, fc->name, rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(super))) :
 		rb_funcall(mGridFlow,SI(const_get),1,rb_str_new2(fc->name));
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator)));
 	if (fc->startup) fc->startup(rself);
-	return Qnil;
 }
 
 static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *foo=0) {
@@ -869,8 +861,6 @@ struct Helper {
 	FObject *self;
 	Ruby rself;
 };
-
-static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv);
 
 static void send_in_2 (Helper *h) {
 	int argc = h->argc;
@@ -920,13 +910,6 @@ static void send_in_3 (Helper *h) {}
 	argc--, argv++;
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,this);
-	Ruby noutlets2 = rb_ivar_get(rb_obj_class(rself),SYM2ID(SYM(@noutlets)));
-	if (TYPE(noutlets2)!=T_FIXNUM) {
-		IEVAL(rself,"STDERR.puts inspect");
-		RAISE("don't know how many outlets this has");
-	}
-	//int noutlets = INT(noutlets2);
-	//if (outlet<0 || outlet>=noutlets) RAISE("outlet %d does not exist",outlet);
 	Ruby argv2[argc+2];
 	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
 	argv2[0] = INT2NUM(outlet);
@@ -958,23 +941,23 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 
 Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	int inlets, outlets;
-	Ruby name2;
-	if (SYMBOL_P(name)) {
-		name2 = rb_funcall(name,SI(to_str),0);
-	} else if (TYPE(name) == T_STRING) {
-		name2 = rb_funcall(name,SI(dup),0);
-	} else {
-		RAISE("expect symbol or string");
-	}
+	name = rb_funcall(name,SI(to_str),0);
 	inlets  = TYPE( inlets2)==T_ARRAY ? rb_ary_len( inlets2) : INT( inlets2);
 	outlets = TYPE(outlets2)==T_ARRAY ? rb_ary_len(outlets2) : INT(outlets2);
 	if ( inlets<0 ||  inlets>9) RAISE("...");
 	if (outlets<0 || outlets>9) RAISE("...");
-	rb_ivar_set(rself,SI(@ninlets),INT2NUM(inlets));
-	rb_ivar_set(rself,SI(@noutlets),INT2NUM(outlets));
-	rb_ivar_set(rself,SI(@foreign_name),name2);
-	rb_hash_aset(rb_ivar_get(mGridFlow,SI(@fclasses)), name2, rself);
-	rb_funcall(rself, SI(install2), 1, name2);
+	FClass2 *fclass = new FClass2;
+	fclasses_ruby[rself] = fclass;
+	fclass->ninlets = inlets;
+	fclass->noutlets = outlets;
+	fclass->name = string(rb_str_ptr(name));
+	fclass->rself = rself;
+	fclass->bfclass = class_new(gensym(rb_str_ptr(name)),
+		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
+		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
+	fclasses[string(rb_str_ptr(name))] = fclass;
+	FMessage fm = {0, -1, 0, 0, 0, false};
+	RESCUE(BFObject_class_init_1,fclass->bfclass,BFObject_rescue,&fm);
 	return Qnil;
 }
 
@@ -1061,6 +1044,9 @@ void blargh () {
 // (segfaults), in addition to libraries not being canvases ;-)
 // AND ALSO, CONTRARY TO WHAT m_pd.h SAYS, open_via_path()'s args are reversed!!!
 extern "C" void gridflow_setup () {
+    //std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
+    std::set_terminate(blargh);
+    try {
 	char *foo[] = {"Ruby-for-PureData","-e",";"};
 	post("setting up Ruby-for-PureData...");
 	char *dirname   = new char[MAXPDSTRING];
@@ -1089,8 +1075,6 @@ extern "C" void gridflow_setup () {
 
 // begin Init_gridflow
         srandom(rdtsc());
-	//std::set_terminate(__gnu_cxx::__verbose_terminate_handler);
-	std::set_terminate(blargh);
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
@@ -1098,25 +1082,22 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF2("get_id",get_id,1);
 	SDEF2("rdtsc",rdtsc,0);
 	SDEF2("handle_braces!",handle_braces,1);
-	SDEF2("fclass_install",fclass_install,2);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
-	rb_ivar_set(mGridFlow, SI(@fclasses), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	EVAL("module GridFlow; class FObject;"
+		"def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect; end; "
 		"def send_out2(*) end;"
-		"def self.install2(*) end;"
-		"def self.add_creator(name) name=name.to_str.dup; GridFlow.fclasses[name]=self; GridFlow.add_creator_2 name end;"
 		"end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
+	SDEF(FObject,add_creator,1);
 
 //begin gf_bridge_init
 	Ruby fo = cFObject;
-	rb_define_singleton_method(fo,"install2",(RMethod)FObject_s_install2,1);
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
 #ifndef HAVE_DESIREDATA
@@ -1136,11 +1117,11 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"bself",       (RMethod)FObject_bself,0);
 
 	SDEF2("post_string",post_string,1);
-	SDEF2("add_creator_2",add_creator_2,1);
 	SDEF2("gui",gui,-1);
 	SDEF2("bind",bind,2);
 	SDEF2("objectmaker",objectmaker,-1);
 	SDEF2("send_in",send_in,-1);
+	SDEF2("name_lookup",name_lookup,1);
 
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
@@ -1170,4 +1151,7 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGSEGV,SIG_DFL);
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
+    } catch (Barf *oozy) {
+        post("Init_gridflow error: %s",oozy->text);
+    }
 }

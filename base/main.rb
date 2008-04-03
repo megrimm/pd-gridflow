@@ -44,7 +44,6 @@ def self.post(s,*a) post_string(sprintf(s,*a)) end
 class<<self
 	attr_accessor :data_path
 	attr_reader :fobjects
-	attr_reader :fclasses
 	attr_reader :cpu_hertz
 	attr_reader :subprocesses
 end
@@ -86,8 +85,7 @@ class FObject
 		# per-class
 		attr_reader :ninlets
 		attr_reader :noutlets
-		def foreign_name; @foreign_name if defined? @foreign_name end
-		def inspect; foreign_name or super; end
+		def inspect; @pdname or super; end
 		# should it recurse into superclasses?
 		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
 		def gfattr(s,*v)
@@ -112,27 +110,18 @@ class FObject
 		qlass.install(*args)
 		qlass.instance_eval{qlass.module_eval(&b)}
 	end
-	attr_reader :outlets
 	def initialize2; end
-	def self.name_lookup sym
-		qlasses = GridFlow.fclasses
-		qlass = qlasses[sym.to_s]
-		raise "object class '#{sym}' not found" if not qlass
-		qlass
-	end
 	def self.[](*m)
 		GridFlow.handle_braces!(m)
 		ms = m.split ','.intern
 		m = ms.shift
 		qlass = m.shift
 		qlassname = qlass.to_s
-		qlass = name_lookup qlass.to_s unless Class===qlass
+		qlass = GridFlow.name_lookup qlass.to_s unless Class===qlass
 		r = qlass.new(*m)
 		for x in ms do r.send_in(0,*x) end
 		r
 	end
-	#def inspect; if args then "[#{args}]" else super end end
-	def inspect; "some object" end
 	def initialize(*) end
 	def _0_help; self.class.help end
 	def _0_get(s=nil)
@@ -186,21 +175,6 @@ def GridFlow.load_user_config
 end
 
 require "base/flow_objects.rb"
-
-GridFlow::FObject.name_lookup("#to_list")  .add_creator "#export_list"
-GridFlow::FObject.name_lookup("#to_float") .add_creator "#export"
-GridFlow::FObject.name_lookup("#to_symbol").add_creator "#export_symbol"
-GridFlow::FObject.name_lookup("#to_pix")   .add_creator "#export_pix" rescue nil
-
-%w(
-  # #for #finished #type #dim #transpose #perspective #store #outer
-  #grade #redim #import #export #export_list #cast
-  #scale_by #downscale_by #draw_polygon #draw_image #layer
-  #print #pack #export_symbol
-).each {|k|
- #rotate
-	GridFlow::FObject.name_lookup(k).add_creator k.gsub(/#/,"@")
-}
 
 END {
 	GridFlow.fobjects.each {|k,v| k.delete if k.respond_to? :delete }
