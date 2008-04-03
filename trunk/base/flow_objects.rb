@@ -32,7 +32,6 @@ FObject.subclass("gridflow",1,1) {
 		post "ruby: %s", s
 		post "returns: %s", eval(s).inspect
 	end
-	def _0_load(s) load s.to_s end
 	add_creator "@global"
 	GridFlow.bind "gridflow", "gridflow" rescue Exception
 }
@@ -441,8 +440,10 @@ FObject.subclass("listfind",2,1) {
   #doc_out:_0_float,"position of the incoming float in the stored list"
 }
 
-module Gooey # to be included in any FObject class
-	def initialize(*)
+
+if FObject.respond_to?(:gui_enable)
+class Display < FObject
+	def initialize
 		super
 		@selected=false
 		@bg  = "#ffffff" # white background
@@ -456,9 +457,17 @@ module Gooey # to be included in any FObject class
 		@sy,@sx = 16,16 # size on canvas
 		@font = "Courier -12"
 		@vis = nil
+		@sel = nil; @args = [] # contents of last received message
+		@text = "..."
+		@sy,@sx = 16,80 # default size of the widget
+		@bg = "#cccccc"
+		@gp = Pd.objectmaker(:"#print")
+		Pd.send_in @gp, 0, :maxrows, 20
+		@clock = Clock.new self
 	end
 	attr_reader :canvas
 	attr_reader :selected
+	attr_accessor :text
 	def canvas=(can)
 		@can = can if Integer===can
 		@canvas = case can
@@ -467,7 +476,11 @@ module Gooey # to be included in any FObject class
 		  else raise "huh?"
 		end
 	end
-	def initialize2(*) GridFlow.bind self, @rsym.to_s end
+	def initialize2(*)
+		GridFlow.bind self, @rsym.to_s
+		b=bself
+		Pd.send_in @gp, 0, :dest, b
+	end
 	def pd_displace(can,x,y) self.canvas||=can; @x+=x; @y+=y; pd_show(can) end
 	def pd_activate(can,*) self.canvas||=can end
 	def quote(text)
@@ -495,38 +508,10 @@ module Gooey # to be included in any FObject class
 		GridFlow.gui %{ #{canvas} itemconfigure #{@rsym} -outline #{outline} \n }
 	end
 	def pd_delete(can) end
-	def pd_show(can)
-		self.canvas||=can
-		@x,@y = get_position can if can
-	end
 	def highlight(color,ratio) # doesn't use self
 		c = /^#(..)(..)(..)/.match(color)[1..3].map {|x| x.hex }
 		c.map! {|x| [255,(x*ratio).to_i].min }
 		"#%02x%02x%02x" % c
-	end
-end
-
-if FObject.respond_to?(:gui_enable)
-class Display < FObject; include Gooey
-	attr_accessor :text
-	def initialize()
-		super
-		@sel = nil; @args = [] # contents of last received message
-		@text = "..."
-		@sy,@sx = 16,80 # default size of the widget
-		# @bg,@bgs,@fg = "#6774A0","#00ff80","#ffff80"
-		@bg = "#cccccc"
-		# hijacking a [#print]
-		@gp = Pd.objectmaker(:"#print")
-		#@gp.send_in 0, :trunc, 70
-		Pd.send_in @gp, 0, :maxrows, 20
-		@clock = Clock.new self
-	end
-	def initialize2()
-		super
-		b=bself
-		#STDERR.puts "initialize2: bself=#{b.inspect}"
-		Pd.send_in @gp, 0, :dest, b
 	end
 	def _0_set_size(sy,sx) @sy,@sx=sy,sx end
 	def atom_to_s a
@@ -548,7 +533,8 @@ class Display < FObject; include Gooey
 		@clock.delay 0
 	end
 	def pd_show(can)
-		super
+		self.canvas||=can
+		@x,@y = get_position can if can
 		return if not canvas or not @vis # can't show for now...
 		cmd = "display_update #{@rsym} #{@x} #{@y} #{@fg} #{@bg} #{outline} #{quote @font} #{canvas} #{quote @text}\n"
 		#puts "CMD=#{cmd}"
@@ -695,11 +681,6 @@ module IoctlClass
 	end
 end
 module Ioctl
-	# this method is not used anymore
-	def int_from_4(foo)
-		# if it crashes, just insert foo=foo.reverse here.
-		(foo[0]+0x100*foo[1])+0x10000*(foo[2]+0x100*foo[3])
-	end
 	def ioctl_intp_out(arg1,arg2)
 		ioctl(arg1,[arg2].pack("l"))
 	end
