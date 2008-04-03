@@ -581,26 +581,6 @@ static Ruby FObject_s_save_enable (Ruby rself) {
 	return Qnil;
 }
 
-#ifndef HAVE_DESIREDATA
-static Ruby FObject_focus (Ruby rself, Ruby canvas_, Ruby x_, Ruby y_) {
-	DGS(FObject);
-	t_glist *canvas = FIX2PTR(t_glist,canvas_);
-	t_gobj  *bself = (t_gobj *)(self->bself);
-	int x = INT(x_);
-	int y = INT(y_);
-	glist_grab(canvas,bself, bf_motionfn, bf_keyfn, x,y);
-	return Qnil;
-}
-
-// doesn't use rself but still is aside FObject_focus for symmetry reasons.
-static Ruby FObject_unfocus (Ruby rself, Ruby canvas_) {
-	DGS(FObject);
-	t_glist *canvas = FIX2PTR(t_glist,canvas_);
-	glist_grab(canvas,0,0,0,0,0);
-	return Qnil;
-}
-#endif /* HAVE_DESIREDATA */
-
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
     t_symbol *ce_dir;   /* directory patch lives in */
@@ -1095,8 +1075,6 @@ BUILTIN_SYMBOLS(FOO)
 #ifndef HAVE_DESIREDATA
 	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
-	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
-	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
 #endif
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
