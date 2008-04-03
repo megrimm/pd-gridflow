@@ -755,6 +755,7 @@ struct FClass {
 	const char *name; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
 };
+void fclass_install(FClass *fc, const char *super);
 
 //****************************************************************
 // GridOutlet represents a grid-aware outlet
@@ -886,6 +887,7 @@ void suffixes_are (const char *name, const char *suffixes);
 
 #define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
+#define add_creator(name) rb_funcall(rself,SI(add_creator),1,rb_str_new2(name))
 
 #define SUPER rb_call_super(argc,argv);
 
@@ -915,5 +917,14 @@ inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
+
+struct FClass2 {
+	int ninlets;
+	int noutlets;
+	t_class *bfclass;
+	string name;
+	Ruby rself;
+};
+extern std::map<string,FClass2 *> fclasses;
 
 #endif // __GF_GRID_H
