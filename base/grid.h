@@ -926,5 +926,6 @@ struct FClass2 {
 	Ruby rself;
 };
 extern std::map<string,FClass2 *> fclasses;
+extern std::map<Ruby,FClass2 *> fclasses_ruby;
 
 #endif // __GF_GRID_H
