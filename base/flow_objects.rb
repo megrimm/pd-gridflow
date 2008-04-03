@@ -440,16 +440,11 @@ FObject.subclass("listfind",2,1) {
   #doc_out:_0_float,"position of the incoming float in the stored list"
 }
 
-
 if FObject.respond_to?(:gui_enable)
 class Display < FObject
 	def initialize
 		super
 		@selected=false
-		@bg  = "#ffffff" # white background
-		@bgb = "#000000" # black border
-		@bgs = "#0000ff" # blue border when selected
-		@fg  = "#000000" # black foreground
 		@rsym = (self.class.to_s+":"+"%08x"%(2*self.object_id)).intern # unique id for use in Tcl
 		@can = nil    # the canvas number
 		@canvas = nil # the canvas string
@@ -460,7 +455,6 @@ class Display < FObject
 		@sel = nil; @args = [] # contents of last received message
 		@text = "..."
 		@sy,@sx = 16,80 # default size of the widget
-		@bg = "#cccccc"
 		@gp = Pd.objectmaker(:"#print")
 		Pd.send_in @gp, 0, :maxrows, 20
 		@clock = Clock.new self
@@ -484,14 +478,11 @@ class Display < FObject
 	def pd_displace(can,x,y) self.canvas||=can; @x+=x; @y+=y; pd_show(can) end
 	def pd_activate(can,*) self.canvas||=can end
 	def quote(text)
-		#STDERR.puts "quote  in: "+text
 		text=text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end }
-		text="\"#{text}\""
-		#STDERR.puts "quote out: "+text
+		text= "\"" + text + "\""
 		text
 	end
-	def pd_vis(can,vis)
-	self.canvas||=can; @vis=vis!=0; update end
+	def pd_vis(can,vis) self.canvas||=can; @vis=vis!=0; update end
 	def update; pd_show @can if @vis end
 	def pd_getrect(can)
 		self.canvas||=can
@@ -501,7 +492,7 @@ class Display < FObject
 		[@x-1,@y-1,@x+@sx+1,@y+@sy+1]
 	end
 	def pd_click(can,x,y,shift,alt,dbl,doit) return 0 end
-	def outline; if selected then @bgs else "#000000" end end
+	def outline; if selected then "#0000ff" else "#000000" end end
 	def pd_select(can,sel)
 		self.canvas||=can
 		@selected=sel!=0
@@ -536,7 +527,7 @@ class Display < FObject
 		self.canvas||=can
 		@x,@y = get_position can if can
 		return if not canvas or not @vis # can't show for now...
-		cmd = "display_update #{@rsym} #{@x} #{@y} #{@fg} #{@bg} #{outline} #{quote @font} #{canvas} #{quote @text}\n"
+		cmd = "display_update #{@rsym} #{@x} #{@y} \#000000 \#cccccc #{outline} #{quote @font} #{canvas} #{quote @text}\n"
 		#puts "CMD=#{cmd}"
 		GridFlow.gui cmd
 	end
