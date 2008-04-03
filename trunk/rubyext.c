@@ -572,14 +572,6 @@ static Ruby FObject_s_gui_enable (Ruby rself) {
 	class_setwidget(qlass,wb);
 	return Qnil;
 }
-
-static Ruby FObject_s_properties_enable (Ruby rself) {
-	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no class id ?");
-	class_setpropertiesfn(FIX2PTR(t_class,qlassid), bf_propertiesfn);
-	return Qnil;
-}
-
 #endif /* HAVE_DESIREDATA */
 
 static Ruby FObject_s_save_enable (Ruby rself) {
@@ -1102,7 +1094,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
 #ifndef HAVE_DESIREDATA
 	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
-	rb_define_singleton_method(fo,"properties_enable", (RMethod)FObject_s_properties_enable, 0);
 	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
 	rb_define_method(fo,"unfocus",     (RMethod)FObject_unfocus, 1);
 	rb_define_method(fo,  "focus",     (RMethod)FObject_focus,   3);
