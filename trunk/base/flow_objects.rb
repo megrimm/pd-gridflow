@@ -26,21 +26,6 @@ GridFlow = ::GridFlow # ruby is nuts... sometimes
 
 # a dummy class that gives access to any stuff global to GridFlow.
 FObject.subclass("gridflow",1,1) {
-	def _0_formats
-		post "-"*32
-		GridFlow.fclasses.each {|k,v|
-			next if not /#io:/ =~ k
-			modes = case v.flags
-			when 2; "#out"
-			when 4; "#in"
-			when 6; "#in/#out"
-			else "??? #{v.flags}"
-			end
-			post "%s %s: %s", modes, k, v.description
-			post "-> %s", v.args
-		}
-		post "-"*32
-	end
 	# security issue if patches shouldn't be allowed to do anything they want
 	def _0_eval(*l)
 		s = l.map{|x|x.to_i.chr}.join""
