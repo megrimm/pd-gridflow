@@ -319,11 +319,6 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
 
-static Ruby FObject_bself(Ruby rself) {
-	DGS(FObject);
-	if (!self->bself) RAISE("there is no bself during #initialize. use #initialize2");
-	return Pointer_s_new(self->bself);
-}
 static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
 	path = rb_funcall(path,SI(to_s),0);
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
@@ -358,18 +353,6 @@ static t_pd *rp_to_pd (Ruby pointer) {
        Pointer *foo;
        Data_Get_Struct(pointer,Pointer,foo);
        return (t_pd *)foo->p;
-}
-
-static Ruby GridFlow_s_objectmaker (int argc, Ruby *argv, Ruby rself) {
-	if (argc<1) RAISE("not enough args (%d, need at least 1)",argc,0);
-	Ruby sym = argv[0];
-	argc--;
-	argv++;
-	t_atom sel, at[argc];
-	Bridge_export_value(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	pd_typedmess(&pd_objectmaker,atom_getsymbol(&sel),argc,at);
-	return Pointer_s_new((void *)pd_newest());
 }
 
 static Ruby GridFlow_s_send_in (int argc, Ruby *argv, Ruby rself) {
@@ -878,11 +861,9 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
-	rb_define_method(fo,"bself",       (RMethod)FObject_bself,0);
 
 	SDEF2("post_string",post_string,1);
 	SDEF2("bind",bind,2);
-	SDEF2("objectmaker",objectmaker,-1);
 	SDEF2("send_in",send_in,-1);
 	SDEF2("name_lookup",name_lookup,1);
 
