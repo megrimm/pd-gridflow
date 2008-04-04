@@ -349,11 +349,7 @@ FObject.subclass("shunt",2,0) {
 		def _1_float(i) @i=i.to_i end
 		def _0_list(*a)
 			e=a[@i]
-			if Symbol===e then
-				send_out 0, :symbol, e
-			else
-				send_out 0, e
-			end
+			if Symbol===e then send_out 0, :symbol, e else send_out 0, e end
 		end
 	}
 	FObject.subclass("listsublist",3,1) {
@@ -883,14 +879,6 @@ FObject.subclass("memstat",1,1) {
   end
   #doc:_0_bang,"lookup process stats for the currently running pd+ruby and figure out how much RAM it uses."
   #doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
-}
-
-FObject.subclass("sendgui",1,0) {
-  def _0_list(*x)
-    GridFlow.gui x.join(" ").gsub(/`/,";")+"\n"
-  end
-  install "sys_vgui", 1, 0
-  #doc:_0_list,"a Tcl/Tk command to send to the pd client."
 }
 
 end # module GridFlow

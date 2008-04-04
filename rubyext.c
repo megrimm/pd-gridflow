@@ -346,12 +346,6 @@ static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
 	class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
 	return Qnil;
 }
-static Ruby GridFlow_s_gui (int argc, Ruby *argv, Ruby rself) {
-	if (argc!=1) RAISE("bad args");
-	Ruby command = rb_funcall(argv[0],SI(to_s),0);
-	sys_gui(rb_str_ptr(command));
-	return Qnil;
-}
 
 static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	if (TYPE(argv0)==T_STRING) {
