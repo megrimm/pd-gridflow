@@ -30,7 +30,7 @@ typedef nodeid_t NID;
 
 static const int ruby_lineno = __LINE__;
 static const char *ruby_code =
-\ruby
+#if 0
 
 def choice(*)end
 class CStruct
@@ -302,7 +302,7 @@ class RNM; %{
   set_format7_value_setting(); //huh?
 }end
 
-\end ruby
+#endif
 ;
 
 \class FormatDC1394 : Format {
