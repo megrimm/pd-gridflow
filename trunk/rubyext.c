@@ -741,6 +741,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(rb_str_ptr(name));
+	fprintf(stderr,"s_install %s\n",fclass->name.data());
 	fclass->rself = rself;
 	fclass->bfclass = class_new(gensym(rb_str_ptr(name)),
 		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
@@ -899,7 +900,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"bself",       (RMethod)FObject_bself,0);
 
 	SDEF2("post_string",post_string,1);
-	SDEF2("gui",gui,-1);
 	SDEF2("bind",bind,2);
 	SDEF2("objectmaker",objectmaker,-1);
 	SDEF2("send_in",send_in,-1);
