@@ -294,8 +294,7 @@ FObject.subclass("shunt",2,0) {
 		end
 	end
 	def _1_float i; @index=i.to_i % @n end
-	# hack: this is an alias.
-	class Demux < self; install "demux", 2, 0; end
+	add_creator "demux"
 }
 
 FObject.subclass("listelement",2,1) {
@@ -311,10 +310,6 @@ FObject.subclass("listsublist",3,1) {
 	def _1_float(i) @i=i.to_i end
 	def _2_float(n) @n=n.to_i end
 	def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-}
-FObject.subclass("listreverse",1,1) {
-	def initialize() super end
-	def _0_list(*a) send_out 0,:list,*a.reverse end
 }
 
 FObject.subclass("route2",1,1) {

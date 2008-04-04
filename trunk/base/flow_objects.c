@@ -542,7 +542,12 @@ GRID_INLET(GridStore,1) {
 		d++;
 	}
 } GRID_END
-\def 0 bang () { rb_funcall(rself,SI(_0_list),3,INT2NUM(0),SYM(#),INT2NUM(0)); }
+\def 0 bang () {
+	t_atom a[2];
+	SETFLOAT(a+0,0);
+	SETSYMBOL(a+1,gensym("#"));
+	pd_list((t_pd *)bself,&s_list,2,a);
+}
 \def 1 reassign () { put_at=0; }
 \def 1 put_at (Grid *index) { put_at=index; }
 \def void initialize (Grid *r) {
@@ -2328,6 +2333,8 @@ GRID_INLET(GridUnpack,0) {
 
 \end class {install("foreach",1,1);}
 
+//****************************************************************
+
 void ruby2pd (int argc, Ruby *argv, t_atom *at);
 \class GFError : FObject {
 	string format;
@@ -2363,6 +2370,23 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 	pd_error(canvas,"%s",o.str().data());
 }
 \end class {install("gf.error",1,0);}
+
+//****************************************************************
+
+template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
+
+\class ListReverse : FObject {
+	\decl void initialize();
+	\decl 0 list(...);
+};
+\def void initialize () {SUPER;}
+\def 0 list (...) {
+	for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	outlet_list(bself->te_outlet,&s_list,argc,at);
+}
+\end class {install("listreverse",1,1);}
 
 //****************************************************************
 
