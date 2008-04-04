@@ -1,3 +1,5 @@
 #N canvas 604 106 450 300 10;
 #X obj 24 26 args-2-test a 1 b 2 c 3 d 4 \, canadiens 5 \, nordiques
 2;
+#X obj 24 46 args-2-test a 1 b;
+#X obj 24 66 args-2-test;
