@@ -84,8 +84,6 @@ of floats as coordinates and interpolate using 4-point interpolation, eg, right 
 (3 3 f # 0 0 0 1 1 1 2 4 8), left inlet -> (1 # 0.5) outputs (0.5 0.5 0.5) 
 (or whatever the interpolation would really be), left inlet (2 # 1.5 1.5) outputs (3)
 
-<ClaudiusMaximus> hmm, sending a [reassign( message to the right inlet of a [#store] segfaults Pd
-<ClaudiusMaximus> hmmm, i get a segfault with a simple patch sending "reassign, put_at (0 0), reassign" to the right inlet of [#store (3 3 # 0)]
 <alx1> back to the [display] object, it lingers for a moment after deletion
 <alx1> and returns a 'pd_activate' error after I move it
 <alx1> matju: once I delete it, unlike the other gui objects, it takes about one second before it dissapears, maybe a difference in tcl versions?
@@ -107,11 +105,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] Add a video latency patch (in examples)
 [ ] can't have FPatcher and GridObject behaviour at once ??
 [ ] Numop: warn on misalignment
-[ ] wrap Dim (?)
-[ ] wrap GridInlet (?)
-[ ] wrap GridOutlet (?)
-[ ] wrap Grid (?)
-[ ] wrap Numop
 [ ] remove GridInlet* ?
 [ ] configure chokes if GCC3 doesn't have the C++ plugin
 [ ] [#import~]
@@ -129,13 +122,10 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 [ ] raise limit of in/outlets from 10 to 100 or unlimited.
 [ ] add support for "anything" methods (def _0_(sel,*a))
 [ ] look into -ftree-vectorize
-[ ] wrap Pd API completely.
 [ ] test.rb should become much more serious. (the @pack bug really sucked)
 
 [ ] look at Tetra Piccolo capture cards, as well as ImpactVCB (Hauppauge)
 
-[147] [#store] blows up in nervous_video (reassign)
-[146] [#peephole] resize problem
 [145] "list -1"->[@import] only tells error message once every other time
 [144] small leak remaining in x11. may have to do with non-use of XDestroyImage.
 [140] is [@convolve] actually cross-convolution?
@@ -145,7 +135,6 @@ also: qprofile, amd profiler, opreport -cl --demangle=smart
 	<mis> he :)  better yet, the abstraction's bounding box's lower right corner will not
 	move up or to the left of the low right corner of the peephole it contains.
 	Instead it will resize itself as you move it around.  
-[138] [#peephole] crash
 [137] [gf] peeperr: problem with set_geometry, wrong size.
 [134] #import with zero size crashes?
 [133] numop ** can freeze GF
@@ -216,15 +205,14 @@ Architecture
 [ ] send-reply messages (imperative-style)
 [ ] add reflection (#global:classes, #global:methods, ...)
 [ ] transmitting grids by diffs?
-[0.8] dispatch on _n_-prefixed methods (one selector any inlet)
-	  and     _#{i}_-named methods (any selector one inlet)
-[0.8] generalize the backstore
+[ ] dispatch on _#{i}_-named methods (any selector one inlet)
+[0.9] generalize the backstore
 [ ] Outlet#buffer should harmonise with the lcm of its corresponding Inlet#factor's.
 [ ] lazy grids: Grid#operator T* makes sure all the grid is received
 	and Grid#range(int start, int n, T bogus) makes sure the
 	specified part of the grid is received.
-[0.8] accounting: grids messages packets numbers bytes copybytes
-[0.8] memory profiling
+[0.9] accounting: grids messages packets numbers bytes copybytes
+[0.9] memory profiling
 [ ] add a "query" class for debugging other objects?
     (would be able to extract extra info from each object/class)
 [ ] add a GridFlow::LaterException or something
@@ -273,7 +261,11 @@ Effects
 [ ] multilinear interpolation (n-dimensional?)
 [ ] #daltonism
 [ ] #perlin ?
-[ ] #centroid should have an arg (int n=2) for number of dimensions (and so number of outlets minus one?)
+[ ] #moment could support more than 2 dimensions
+
+#<vektor> told me to:
+# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + {16 128 128}"]
+# YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 Input/Output
 [ ] replace "open <driver> <source> <filename>" by "open <driver> <mrl>"
@@ -428,10 +420,6 @@ the same will be done for recording later.
 ==6998==    by 0x1CC6D88B: call_cfunc (eval.c:5480)
 
 rational numbers: http://wiki.tcl.tk/13877
-
-
-
-
 
 very old bookmarks:
 	http://pdl.perl.org/
