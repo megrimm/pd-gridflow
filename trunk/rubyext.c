@@ -213,8 +213,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 #endif
 	bself->nin  = 1;
 	bself->nout = 0;
-	self->bself->in  = new  BFProxy*[1];
-	self->bself->out = new t_outlet*[1];
+	bself->in  = new  BFProxy*[1];
+	bself->out = new t_outlet*[1];
 	bself->ninlets_set(  ninlets_of(rb_funcall(rself,SI(class),0)));
 	bself->noutlets_set(noutlets_of(rb_funcall(rself,SI(class),0)));
 	rb_funcall(rself,SI(initialize2),0);
@@ -318,15 +318,6 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
-
-static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
-	path = rb_funcall(path,SI(to_s),0);
-	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	if (qlassid==Qnil) RAISE("@bfclass==nil ???");
-	t_class *qlass = FIX2PTR(t_class,qlassid);
-	class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
-	return Qnil;
-}
 
 static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
 	if (TYPE(argv0)==T_STRING) {
@@ -555,9 +546,6 @@ static void add_to_path(char *dir) {
 	sprintf(bof,"%s/doc/flow_classes",dir);    namelist_append_files(sys_helppath,  bof);
 }
 
-static void boo (int boo) {
-}
-
 //----------------------------------------------------------------
 
 static void CObject_mark (void *z) {}
@@ -628,8 +616,7 @@ static void send_in_2 (Helper *h) {
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
 	}
-	if (inlet<0 || inlet>=64)
-		if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
+	if (inlet<0 || inlet>=64) if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,h->self);
 	char buf[256];
@@ -830,10 +817,7 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	EVAL("module GridFlow; class FObject;"
-		"def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect; end; "
-		"def send_out2(*) end;"
-		"end end");
+	EVAL("module GridFlow; class FObject;def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect end end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
@@ -841,7 +825,6 @@ BUILTIN_SYMBOLS(FOO)
 
 //begin gf_bridge_init
 	Ruby fo = cFObject;
-	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
@@ -877,7 +860,6 @@ BUILTIN_SYMBOLS(FOO)
 	delete[] dirname;
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
 	clock_delay(hack,0);
-//	signal(SIGSEGV,boo);
 	signal(SIGSEGV,SIG_DFL);
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
