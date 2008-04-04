@@ -1,7 +1,7 @@
 /* $Id$ */
 
 
-version 0.9.1 (2008.03...):
+version 0.9.1 (2008.04...):
 
  * switched from CVS to SVN
  * removed LTIlib support
@@ -13,6 +13,8 @@ version 0.9.1 (2008.03...):
    (apt-get install libnetpbm10-dev)
  * removed broken Targa support
  * removed timelog feature in [#in]/[#out] (redundant)
+ * added [gf.error]
+
 version 0.9.0 (2007.11.20):
 
  * new object classes: [#slice], [#sort], [#line_to_polygon].
