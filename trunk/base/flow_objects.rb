@@ -297,21 +297,6 @@ FObject.subclass("shunt",2,0) {
 	add_creator "demux"
 }
 
-FObject.subclass("listelement",2,1) {
-	def initialize(i=0) super; @i=i.to_i end
-	def _1_float(i) @i=i.to_i end
-	def _0_list(*a)
-		e=a[@i]
-		if Symbol===e then send_out 0, :symbol, e else send_out 0, e end
-	end
-}
-FObject.subclass("listsublist",3,1) {
-	def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
-	def _1_float(i) @i=i.to_i end
-	def _2_float(n) @n=n.to_i end
-	def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-}
-
 FObject.subclass("route2",1,1) {
 	def initialize(*b)
 		super; @b=b; @bh={}
