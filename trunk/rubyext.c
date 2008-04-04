@@ -45,19 +45,6 @@ tries to call a Ruby method of the proper name.
 #include <exception>
 #include <execinfo.h>
 
-#ifdef HAVE_DESIREDATA /* assuming a recent enough version */
-/* desire.h ought to be fixed so that it can be used outside of desiredata... */
-//#include <desire.h>
-typedef struct _canvasenvironment t_canvasenvironment;
-extern "C" {
-EXTERN t_canvasenvironment *canvas_getenv(t_canvas *x);
-};
-#else
-extern "C" {
-#include "g_canvas.h"
-};
-#endif
-
 #ifdef HAVE_GEM
 #include "Base/GemPixDualObj.h"
 #endif
@@ -148,7 +135,6 @@ static t_class *find_bfclass (t_symbol *sym) {
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
 	string name = string(buf);
 	if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",buf); return 0;}
-	fprintf(stderr,"fclasses[\"%s\"]=%p\n",name.data(),(void *)fclasses[name]);
 	return fclasses[name]->bfclass;
 }
 
@@ -321,70 +307,6 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
 }
 
-#ifndef HAVE_DESIREDATA
-/* Call this to get a gobj's bounding rectangle in pixels */
-void bf_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
-	BFObject *bself = (BFObject*)x;
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	Ruby a = rb_funcall_myrescue(bself->rself,SI(pd_getrect),1,can);
-	if (TYPE(a)!=T_ARRAY || rb_ary_len(a)<4) {
-		post("bf_getrectfn: return value should be 4-element array");
-		*x1=*y1=*x2=*y2=0;
-		return;
-	}
-	Ruby *ap = rb_ary_ptr(a);
-	*x1 = INT(ap[0]);
-	*y1 = INT(ap[1]);
-	*x2 = INT(ap[2]);
-	*y2 = INT(ap[3]);
-}
-/* and this to displace a gobj: */
-void bf_displacefn(t_gobj *x, t_glist *glist, int dx, int dy) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	BFObject *bself = (BFObject *)x;
-	bself->te_xpix+=dx;
-	bself->te_ypix+=dy;
-	rb_funcall_myrescue(bself->rself,SI(pd_displace),3,can,INT2NUM(dx),INT2NUM(dy));
-	canvas_fixlinesfor(glist, (t_text *)x);
-}
-/* change color to show selection: */
-void bf_selectfn(t_gobj *x, t_glist *glist, int state) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_select),2,can,INT2NUM(state));
-}
-/* change appearance to show activation/deactivation: */
-void bf_activatefn(t_gobj *x, t_glist *glist, int state) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_activate),2,can,INT2NUM(state));
-}
-/* warn a gobj it's about to be deleted */
-void bf_deletefn(t_gobj *x, t_glist *glist) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_delete),1,can);
-	canvas_deletelinesfor(glist, (t_text *)x);
-}
-/*  making visible or invisible */
-void bf_visfn(t_gobj *x, t_glist *glist, int flag) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	Ruby rself = ((BFObject*)x)->rself;
-	DGS(FObject);
-	rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_vis),2,can,INT2NUM(flag));
-}
-/* field a mouse click (when not in "edit" mode) */
-int bf_clickfn(t_gobj *x, t_glist *glist,
-int xpix, int ypix, int shift, int alt, int dbl, int doit) {
-	Ruby can = PTR2FIX(glist_getcanvas(glist));
-	Ruby ret = rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_click),7,can,
-		INT2NUM(xpix),INT2NUM(ypix),INT2NUM(shift),INT2NUM(alt),INT2NUM(dbl),INT2NUM(doit));
-	if (TYPE(ret) == T_FIXNUM) return INT(ret);
-	post("bf_clickfn: expected Fixnum");
-	return 0;
-}
-#endif /* HAVE_DESIREDATA */
-
-/* save to a binbuf (FOR FUTURE USE) */
-void bf_savefn(t_gobj *x, t_binbuf *b) {rb_funcall_myrescue(((BFObject*)x)->rself,SI(pd_save),1,Qnil);}
-
 //****************************************************************
 
 \class Clock < CObject {
@@ -543,30 +465,6 @@ static Ruby GridFlow_s_name_lookup (Ruby rself, Ruby name2) {
 	return fclasses[name]->rself;
 }
 
-#ifndef HAVE_DESIREDATA
-static Ruby FObject_s_gui_enable (Ruby rself) {
-	t_class *qlass = fclasses_ruby[rself]->bfclass;
-	t_widgetbehavior *wb = new t_widgetbehavior;
-	wb->w_getrectfn    = bf_getrectfn;
-	wb->w_displacefn   = bf_displacefn;
-	wb->w_selectfn     = bf_selectfn;
-	wb->w_activatefn   = bf_activatefn;
-	wb->w_deletefn     = bf_deletefn;
-	wb->w_visfn        = bf_visfn;
-	wb->w_clickfn      = bf_clickfn;
-	//wb->w_savefn       = bf_savefn;
-	class_setwidget(qlass,wb);
-	return Qnil;
-}
-#endif /* HAVE_DESIREDATA */
-
-static Ruby FObject_s_save_enable (Ruby rself) {
-	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
-	if (qlassid==Qnil) RAISE("no class id ?");
-	class_setsavefn(FIX2PTR(t_class,qlassid), bf_savefn);
-	return Qnil;
-}
-
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
     t_symbol *ce_dir;   /* directory patch lives in */
@@ -587,6 +485,8 @@ static Ruby FObject_args (Ruby rself) {
 	free(buf);
 	return r;
 }
+
+#include "bundled/pd/g_canvas.h"
 
 static Ruby FObject_patcherargs (Ruby rself) {
 	DGS(FObject);
@@ -691,34 +591,11 @@ static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
 	char *name = strdup(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
 	if (fclasses_ruby.find(rself)==fclasses_ruby.end()) RAISE("uh");
 	string fname = fclasses_ruby[rself]->name;
-	fprintf(stderr,"aliasing %s to %s\n",fname.data(),name);
 	fclasses[string(name)] = fclasses[fname];
 	class_addcreator((t_newmethod)BFObject_init,gensym(name),A_GIMME,0);
 	free(name);
 	return Qnil;
 }
-
-#ifndef HAVE_DESIREDATA
-static Ruby FObject_get_position (Ruby rself, Ruby canvas) {
-	DGS(FObject);
-	t_text *bself = (t_text *)(self->bself);
-	t_glist *c = FIX2PTR(t_glist,canvas);
-	float x0,y0;
-	if (c->gl_havewindow || !c->gl_isgraph) {
-		x0=bself->te_xpix;
-		y0=bself->te_ypix;
-	} else { // graph-on-parent: have to zoom
-		float zx = float(c->gl_x2 - c->gl_x1) / (c->gl_screenx2 - c->gl_screenx1);
-		float zy = float(c->gl_y2 - c->gl_y1) / (c->gl_screeny2 - c->gl_screeny1);
-		x0 = glist_xtopixels(c, c->gl_x1 + bself->te_xpix*zx);
-		y0 = glist_ytopixels(c, c->gl_y1 + bself->te_ypix*zy);
-	}
-	Ruby a = rb_ary_new();
-	rb_ary_push(a,INT2NUM((int)x0));
-	rb_ary_push(a,INT2NUM((int)y0));
-	return a;
-}
-#endif
 
 //****************************************************************
 
@@ -876,8 +753,7 @@ static void send_in_3 (Helper *h) {}
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
-	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ?
-		rb_ivar_get(qlass,SI(@allocator)) : Qnil;
+	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ? rb_ivar_get(qlass,SI(@allocator)) : Qnil;
 	FObject *self;
 	if (allocator==Qnil) {
 		// this is a pure-ruby FObject/GridObject
@@ -890,8 +766,7 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	}
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
-	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
-	self->rself = rself;
+	Ruby rself = self->rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
@@ -944,13 +819,13 @@ static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv) {
 		int close=0;
 		if (SYMBOL_P(av[i])) {
 			const char *s = rb_sym_name(av[i]);
-			while (*s=='(' || *s=='{') {
+			while (*s=='(') {
 				if (stackn==16) RAISE("too many nested lists (>16)");
 				stack[stackn++]=j;
 				s++;
 			}
 			const char *se = s+strlen(s);
-			while (se>s && (se[-1]==')' || se[-1]=='}')) { se--; close++; }
+			while (se>s && se[-1]==')') {se--; close++;}
 			if (s!=se) {
 				Ruby u = rb_str_new(s,se-s);
 				av[j++] = rb_funcall(rself,SI(FloatOrSymbol),1,u);
@@ -1057,11 +932,6 @@ BUILTIN_SYMBOLS(FOO)
 //begin gf_bridge_init
 	Ruby fo = cFObject;
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
-	rb_define_singleton_method(fo,"save_enable",       (RMethod)FObject_s_save_enable, 0);
-#ifndef HAVE_DESIREDATA
-	rb_define_singleton_method(fo,"gui_enable",        (RMethod)FObject_s_gui_enable, 0);
-	rb_define_method(fo,"get_position",(RMethod)FObject_get_position,1);
-#endif
 	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
