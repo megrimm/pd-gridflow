@@ -533,19 +533,6 @@ Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 
 struct BFGridFlow : t_object {};
 
-t_class *bindpatcher;
-static void *bindpatcher_init (t_symbol *classsym, int ac, t_atom *at) {
-	t_pd *bself = pd_new(bindpatcher);
-	if (ac!=1 || at->a_type != A_SYMBOL) {
-		post("bindpatcher: oops");
-	} else {
-		t_symbol *s = atom_getsymbol(at);
-		post("binding patcher to: %s",s->s_name);
-		pd_bind((t_pd *)canvas_getcurrent(),s);
-	}
-	return bself;
-}
-
 static t_clock *hack;
 
 extern "C" void Init_stack(void*);
@@ -886,7 +873,6 @@ BUILTIN_SYMBOLS(FOO)
 	STARTUP_LIST()
 	EVAL("GridFlow.load_user_config");
 // end Init_gridflow
-	bindpatcher = class_new(gensym("bindpatcher"), (t_newmethod)bindpatcher_init, 0, sizeof(t_object),CLASS_DEFAULT,A_GIMME,0);
 	delete[] dirresult;
 	delete[] dirname;
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
