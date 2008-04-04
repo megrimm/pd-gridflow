@@ -2,11 +2,11 @@
 
 [ ] CVS #*
 [ ] [cv.split]
+[ ] reestablish 'gzfile' feature in a better way. (gzfile is disabled for now)
 [ ] bugs roman
-[ ] release GridFlow 0.9.0
 [ ] add claude's fixes
 [ ] ...
-
+[ ] fix re-broken [#import] list (cast)
 soon:
  * removed reference.*ml
  * videodev.c should be upgraded to V4L2 asap.
