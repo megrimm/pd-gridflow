@@ -319,27 +319,6 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
 
-static Ruby GridFlow_s_bind (Ruby rself, Ruby argv0, Ruby argv1) {
-	if (TYPE(argv0)==T_STRING) {
-#if PD_VERSION_INT < 37
-	RAISE("requires Pd 0.37");
-#else
-		Ruby name = rb_funcall(argv0,SI(to_s),0);
-		pd_typedmess(&pd_objectmaker,gensym(rb_str_ptr(name)),0,0);
-		t_pd *o = pd_newest();
-		pd_bind(o,gensym(rb_str_ptr(argv1)));
-#endif
-	} else {
-		Ruby rself = argv0;
-		DGS(FObject);
-		t_symbol *s = gensym(rb_str_ptr(argv1));
-		t_pd *o = (t_pd *)(self->bself);
-		//fprintf(stderr,"binding %08x to: \"%s\" (%08x %s)\n",o,rb_str_ptr(argv[1]),s,s->s_name);
-		pd_bind(o,s);
-	}
-	return Qnil;
-}
-
 static t_pd *rp_to_pd (Ruby pointer) {
        Pointer *foo;
        Data_Get_Struct(pointer,Pointer,foo);
@@ -766,8 +745,6 @@ extern "C" void gridflow_setup () {
 	rb_const_set(mGridFlow,SI(DIR),rb_str_new2(dirresult));
 	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
 	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR");
-
-// begin Init_gridflow
         srandom(rdtsc());
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
@@ -781,13 +758,11 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-	EVAL("module GridFlow; class FObject;def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect end end end");
+//	EVAL("module GridFlow; class FObject;def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect end end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 	SDEF(FObject,add_creator,1);
-
-//begin gf_bridge_init
 	Ruby fo = cFObject;
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
@@ -795,18 +770,12 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
-
 	SDEF2("post_string",post_string,1);
-	SDEF2("bind",bind,2);
 	SDEF2("name_lookup",name_lookup,1);
-
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
 	cPointer = EVAL("GridFlow::Pointer");
-	EVAL("class<<GridFlow;attr_accessor :config; end");
-//end gf_bridge_init
-
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
@@ -818,7 +787,6 @@ BUILTIN_SYMBOLS(FOO)
 	startup_format();
 	STARTUP_LIST()
 	EVAL("GridFlow.load_user_config");
-// end Init_gridflow
 	delete[] dirresult;
 	delete[] dirname;
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);

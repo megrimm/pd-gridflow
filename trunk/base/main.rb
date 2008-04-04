@@ -49,10 +49,7 @@ class<<self
 end
 
 @subprocesses={}
-@data_path=[]
-if GridFlow.respond_to? :config then
-  @data_path << GridFlow::DIR+"/images"
-end
+@data_path=[GridFlow::DIR+"/images"]
 
 def self.hunt_zombies
 	#STDERR.puts "GridFlow.hunt_zombies"
