@@ -187,7 +187,7 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 
 static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv);
 
-static int handle_braces(int ac, Ruby *av);
+int handle_braces(int ac, Ruby *av);
 
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc=fm->ac+1;
@@ -207,6 +207,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	for (j=0; j<argc; j++) if (argv[j]==comma) break;
 
 	int jj = handle_braces(j,argv);
+	fprintf(stderr,"argc=%d j=%d jj=%d\n",argc,j,jj);
 	Ruby rself = rb_funcall2(fclasses[string(rb_str_ptr(argv[0]))]->rself,SI(new),jj-1,argv+1);
 
 	DGS(FObject);
@@ -631,7 +632,7 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 Ruby GridFlow_s_rdtsc (Ruby rself) { return R(rdtsc()).r; }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
-static int handle_braces(int ac, Ruby *av) {
+int handle_braces(int ac, Ruby *av) {
     try {
 	int stack[16];
 	int stackn=0;
@@ -665,7 +666,7 @@ static int handle_braces(int ac, Ruby *av) {
 		}
 	}
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
-	return ac;
+	return j;
     } catch (Barf *oozy) {
         rb_raise(rb_eArgError,"%s",oozy->text);
     }
