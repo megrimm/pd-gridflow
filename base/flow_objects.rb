@@ -20,21 +20,14 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
-
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-# a dummy class that gives access to any stuff global to GridFlow.
-FObject.subclass("gridflow",1,1) {
-	# security issue if patches shouldn't be allowed to do anything they want
-	def _0_eval(*l)
-		s = l.map{|x|x.to_i.chr}.join""
-		post "ruby: %s", s
-		post "returns: %s", eval(s).inspect
-	end
-	add_creator "@global"
-	GridFlow.bind "gridflow", "gridflow" rescue Exception
-}
+class FObject
+  def  add_inlets(n) self. ninlets += n end
+  def add_outlets(n) self.noutlets += n end
+end
+
 FObject.subclass("fps",1,1) {
 	def initialize(*options)
 		super
