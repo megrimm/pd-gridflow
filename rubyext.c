@@ -205,9 +205,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	int j;
 	Ruby comma = ID2SYM(rb_intern(","));
 	for (j=0; j<argc; j++) if (argv[j]==comma) break;
-
 	int jj = handle_braces(j,argv);
-	fprintf(stderr,"argc=%d j=%d jj=%d\n",argc,j,jj);
 	Ruby rself = rb_funcall2(fclasses[string(rb_str_ptr(argv[0]))]->rself,SI(new),jj-1,argv+1);
 
 	DGS(FObject);
@@ -539,11 +537,6 @@ static void send_in_2 (Helper *h) {
 	int inlet = INT(argv[0]);
 	argc--, argv++;
 	Ruby foo;
-	if (argc==1 && TYPE(argv[0])==T_STRING /* && argv[0] =~ / / */) {
-		foo = rb_funcall(mGridFlow,SI(parse),1,argv[0]);
-		argc = rb_ary_len(foo);
-		argv = rb_ary_ptr(foo);
-	}
 	if (argc>1) {
 		foo = rb_ary_new4(argc,argv);
 		GridFlow_s_handle_braces(0,foo);

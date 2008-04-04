@@ -63,25 +63,12 @@ def self.hunt_zombies
 	died.each {|x| subprocesses.delete x }
 end
 
-def self.parse(m)
-	m = m.gsub(/(\{|\})/," \\1 ").split(/\s+/)
-	m.map! {|x| case x
-		when Integer, Symbol; x
-		when /^[+\-]?[0-9]+$/; x.to_i
-		when String; x.intern
-		end
-	}
-	m
-end
-
 class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
 
 # adding some functionality to that:
 class FObject
 	class << self
 		# per-class
-		attr_reader :ninlets
-		attr_reader :noutlets
 		def inspect; @pdname or super; end
 		# should it recurse into superclasses?
 		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
