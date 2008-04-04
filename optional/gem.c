@@ -109,7 +109,8 @@ void GridExportPix::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#to_pix",2,1);
-	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridExportPix"),SI(@bfclass)));
+	add_creator("#export_pix");
+	t_class *qlass = fclasses[string("#to_pix")];
 	GridExportPix::real_obj_setupCallback(qlass);
 }
 
@@ -153,7 +154,7 @@ void GridImportPix::obj_setupCallback(t_class *) {}
 
 \end class {
 	install("#import_pix",2,1);
-	t_class *qlass = FIX2PTR(t_class,rb_ivar_get(EVAL("GridFlow::GridImportPix"),SI(@bfclass)));
+	t_class *qlass = fclasses[string("#import_pix")];
 	GridExportPix::real_obj_setupCallback(qlass);
 }
 
