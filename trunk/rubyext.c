@@ -319,20 +319,6 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
 \class FObject
 
-static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
-	DGS(FObject);
-	BFObject *bself = self->bself;
-	if (!bself) return Qnil;
-	int outlet = INT(argv[0]);
-	Ruby sym = argv[1];
-	argc-=2;
-	argv+=2;
-	t_atom sel, at[argc];
-	Bridge_export_value(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
-	return Qnil;
-}
 static Ruby FObject_bself(Ruby rself) {
 	DGS(FObject);
 	if (!self->bself) RAISE("there is no bself during #initialize. use #initialize2");
@@ -702,11 +688,10 @@ static void send_in_3 (Helper *h) {}
 	argc--, argv++;
 	Ruby sym;
 	FObject_prepare_message(argc,argv,sym,this);
-	Ruby argv2[argc+2];
-	for (int i=0; i<argc; i++) argv2[2+i] = argv[i];
-	argv2[0] = INT2NUM(outlet);
-	argv2[1] = sym;
-	rb_funcall2(rself,SI(send_out2), argc+2, argv2);
+	t_atom sel, at[argc];
+	Bridge_export_value(sym,&sel);
+	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
+	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -730,21 +715,18 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 }
 
 Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
-	int inlets, outlets;
 	name = rb_funcall(name,SI(to_str),0);
-	inlets  = TYPE( inlets2)==T_ARRAY ? rb_ary_len( inlets2) : INT( inlets2);
-	outlets = TYPE(outlets2)==T_ARRAY ? rb_ary_len(outlets2) : INT(outlets2);
+	int inlets  = TYPE( inlets2)==T_ARRAY ? rb_ary_len( inlets2) : INT( inlets2);
+	int outlets = TYPE(outlets2)==T_ARRAY ? rb_ary_len(outlets2) : INT(outlets2);
 	if ( inlets<0 ||  inlets>9) RAISE("...");
 	if (outlets<0 || outlets>9) RAISE("...");
-	FClass2 *fclass = new FClass2;
-	fclasses_ruby[rself] = fclass;
+	FClass2 *fclass = fclasses_ruby[rself] = new FClass2;
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
 	fclass->name = string(rb_str_ptr(name));
-	fprintf(stderr,"s_install %s\n",fclass->name.data());
+	//fprintf(stderr,"s_install %s\n",fclass->name.data());
 	fclass->rself = rself;
-	fclass->bfclass = class_new(gensym(rb_str_ptr(name)),
-		(t_newmethod)BFObject_init, (t_method)BFObject_delete,
+	fclass->bfclass = class_new(gensym(rb_str_ptr(name)), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
 	fclasses[string(rb_str_ptr(name))] = fclass;
 	FMessage fm = {0, -1, 0, 0, 0, false};
@@ -890,7 +872,6 @@ BUILTIN_SYMBOLS(FOO)
 //begin gf_bridge_init
 	Ruby fo = cFObject;
 	rb_define_singleton_method(fo,"set_help", (RMethod)FObject_s_set_help, 1);
-	rb_define_method(fo,"send_out2",   (RMethod)FObject_send_out2,-1);
 	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
