@@ -168,6 +168,7 @@ static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
 //	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
+	fprintf(stderr,"%s\n",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
@@ -199,7 +200,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
+	fprintf(stderr,"BFObject_init_1: bself=%p\n",bself);
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),argc,argv);
+	fprintf(stderr,"BFObject_init_1: bself=%p rself=%p\n",bself,(void *)rself);
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -246,25 +249,14 @@ static void BFObject_delete (BFObject *bself) {
 
 /* **************************************************************** */
 
-struct RMessage {
-	VALUE rself;
-	ID sel;
-	int argc;
-	VALUE *argv;
-};
-
-// this was called rb_funcall_rescue[...] but recently (ruby 1.8.2)
-// got a conflict with a new function in ruby.
-
+struct RMessage {VALUE rself; ID sel; int argc; VALUE *argv;};
 static VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
-
 static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
 	Ruby error_array = make_error_message();
 //	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	post("%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	return Qnil;
 }
-
 static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	va_list foo;
 	va_start(foo,argc);
@@ -341,6 +333,7 @@ struct _canvasenvironment {
 
 static Ruby FObject_args (Ruby rself) {
 	DGS(FObject);
+	fprintf(stderr,"FObject_args rself=%p self=%p bself=%p\n",(void *)rself,self,self->bself);
 	if (!self->bself) RAISE("can't use this in initialize");
 	char *buf;
 	int length;
@@ -430,23 +423,15 @@ void BFObject::noutlets_set (int n) {
 	BFObject_redraw(this);
 }
 
-static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
-	bself->ninlets_set(n);  return Qnil;};
-static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<0) n=0;
-	bself->noutlets_set(n); return Qnil;};
+static Ruby FObject_ninlets_set  (Ruby rself, Ruby n_) {DGS(FObject); int n = INT(n_); if (n<1) n=1;
+	self->bself->ninlets_set(n);  return Qnil;};
+static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {DGS(FObject); int n = INT(n_); if (n<0) n=0;
+	self->bself->noutlets_set(n); return Qnil;};
 
-static Ruby FObject_ninlets  (Ruby rself) {
-	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) return fclasses_ruby[rb_obj_class(rself)]->ninlets;
-	return R(bself->nin ).r;
-}
-static Ruby FObject_noutlets (Ruby rself) {
-	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) return fclasses_ruby[rb_obj_class(rself)]->noutlets;
-	return R(bself->nout).r;
-}
+static Ruby FObject_ninlets  (Ruby rself) {DGS(FObject); BFObject *bself = self->bself;
+	return bself ? R(bself->nin ).r : fclasses_ruby[rb_obj_class(rself)]->ninlets;}
+static Ruby FObject_noutlets (Ruby rself) {DGS(FObject); BFObject *bself = self->bself;
+	return bself ? R(bself->nout).r : fclasses_ruby[rb_obj_class(rself)]->noutlets;}
 
 static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
 	if (TYPE(name_)!=T_STRING) RAISE("argh");
@@ -467,15 +452,12 @@ Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 	return Qnil;
 }
 
-static t_clock *hack;
-
-extern "C" void Init_stack(void*);
-
 /* revival of the stack end crutch of 2003-2005... just in case */
+static t_clock *hack;
+extern "C" void Init_stack(void*);
 static void ruby_stack_end_hack () {
 	int bogus;
 	Init_stack(&bogus);
-//	post("hello from ruby_stack_end_hack");
 	clock_free(hack);
 }
 
@@ -497,8 +479,7 @@ void define_many_methods(Ruby rself, int n, MethodDecl *methods) {
 	for (int i=0; i<n; i++) {
 		MethodDecl *md = &methods[i];
 		char *buf = strdup(md->selector);
-		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0)
-			buf[strlen(buf)-2]=0;
+		if (strlen(buf)>2 && strcmp(buf+strlen(buf)-2,"_m")==0) buf[strlen(buf)-2]=0;
 		rb_define_method(rself,buf,(RMethod)md->method,-1);
 		free(buf);
 	}
@@ -528,10 +509,8 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 		sym = SYM(list);
 		argc = rb_ary_len(*argv);
 		argv = rb_ary_ptr(*argv);
-	} else {
-		RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?ARGS(foo):"", argc,
+	} else RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?ARGS(foo):"", argc,
 			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
-	}
 }
 
 struct Helper {
@@ -567,9 +546,7 @@ static void send_in_2 (Helper *h) {
 	if (rb_obj_respond_to(h->rself,rb_intern(buf),0)) {
 		argc++, argv--; // really
 		argv[0] = inlet*2+1; // convert to Ruby Integer
-	} else {
-		sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-	}
+	} else sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
 	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
 }
 
@@ -638,11 +615,6 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	rb_funcall(rb_ivar_get(mGridFlow, SI(@fobjects)),SI(delete),1,rself);
 	DATA_PTR(rself) = 0; // really!
 	delete this; // really!
-}
-
-static Ruby GridFlow_s_get_id (Ruby rself, Ruby arg) {
-	fprintf(stderr,"%ld\n",arg);
-	return INT2NUM((int)arg);
 }
 
 Ruby GridFlow_s_rdtsc (Ruby rself) { return R(rdtsc()).r; }
@@ -728,17 +700,11 @@ extern "C" void gridflow_setup () {
 	if (getcwd(dirname,MAXPDSTRING)<0) {post("AAAARRRRGGGGHHHH!"); exit(69);}
 	int       fd=open_via_path(dirname,"gridflow/gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
 	if (fd<0) fd=open_via_path(dirname,         "gridflow",PDSUF,dirresult,&nameresult,MAXPDSTRING,1);
-	if (fd>=0) {
-		//post("%s found itself in %s","gridflow"PDSUF,dirresult);
-		close(fd);
-	} else {
-		post("%s was not found via the -path!","gridflow"PDSUF);
-	}
+	if (fd>=0) close(fd); else post("%s was not found via the -path!","gridflow"PDSUF);
 	/* nameresult is only a pointer in dirresult space so don't delete[] it. */
 	add_to_path(dirresult);
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
-	//post("we are using Ruby version %s",rb_str_ptr(EVAL("RUBY_VERSION")));
 	BFProxy_class = class_new(gensym("ruby_proxy"), NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	mGridFlow = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; end");
@@ -750,7 +716,6 @@ extern "C" void gridflow_setup () {
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; class<<self; end; def post_string(s) STDERR.puts s end; self end");
-	SDEF2("get_id",get_id,1);
 	SDEF2("rdtsc",rdtsc,0);
 	SDEF2("handle_braces!",handle_braces,1);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
@@ -758,7 +723,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
-//	EVAL("module GridFlow; class FObject;def add_creator(*args) STDERR.puts 'add_creator: '+args.inspect end end end");
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
