@@ -108,17 +108,6 @@ class FObject
 		qlass.instance_eval{qlass.module_eval(&b)}
 	end
 	def initialize2; end
-	def self.[](*m)
-		GridFlow.handle_braces!(m)
-		ms = m.split ','.intern
-		m = ms.shift
-		qlass = m.shift
-		qlassname = qlass.to_s
-		qlass = GridFlow.name_lookup qlass.to_s unless Class===qlass
-		r = qlass.new(*m)
-		for x in ms do r.send_in(0,*x) end
-		r
-	end
 	def initialize(*) end
 	def _0_help; self.class.help end
 	def _0_get(s=nil)
