@@ -2392,7 +2392,7 @@ extern "C" {
 	t_pd *gp;
 	Display () : selected(false), canvas(0), y(0), x(0), sy(16), sx(80), vis(false) {
 		std::ostringstream os;
-		rsym = gensym((char *)ssprintf("display:%08x",bself).data());
+		rsym = gensym((char *)ssprintf("display:%08x",this).data());
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
 		gp = pd_newest();
 		t_atom a[1];
@@ -2409,14 +2409,20 @@ extern "C" {
 		std::ostringstream quoted;
 	//	def quote(text) "\"" + text.gsub(/["\[\]\n\$]/m) {|x| if x=="\n" then "\\n" else "\\"+x end } + "\"" end
 		const char *s = text.str().data();
-		for (;*s;s++) {
-			if (*s=='\n') quoted << "\\n";
-			else if (strchr("\"[]$",*s)) quoted << "\\" << (char)*s;
-			else quoted << (char)*s;
+		int n = text.str().length();
+		for (int i=0;i<n;i++) {
+			if (s[i]=='\n') quoted << "\\n";
+			else if (strchr("\"[]$",s[i])) quoted << "\\" << (char)s[i];
+			else quoted << (char)s[i];
 		}
+		//fprintf(stderr,"text=%s\n",    text.str().data());
+		//fprintf(stderr,"quoted=%s\n",quoted.str().data());
 		//return if not canvas or not @vis # can't show for now...
-		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier 12} .x%x.c \"%s\"\n",
-			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,quoted.str().data());
+		/* we're not using quoting for now because there's a bug in it. */
+		/* btw, this quoting is using "", but we're gonna use {} instead for now, because of newlines */
+		sys_vgui("display_update %s %d %d #000000 #cccccc %s {Courier 12} .x%x.c {%s}\n",
+			rsym->s_name,bself->te_xpix,bself->te_ypix,selected?"#0000ff":"#000000",canvas,
+			text.str().data());
 	}
 };
 static void display_getrectfn(t_gobj *x, t_glist *glist, int *x1, int *y1, int *x2, int *y2) {
@@ -2459,24 +2465,24 @@ static void display_update(void *x) {
 	SETPOINTER(a,(t_gpointer *)bself);
 	pd_typedmess(gp,gensym("dest"),1,a);
 	clock = clock_new((void *)this,(void(*)())display_update);
-	fprintf(stderr,"clock %p for this=%p rself=%p bself=%p\n",clock,this,rself,bself);
 }
 \def 0 set_size(int sy, int sx) {this->sy=sy; this->sx=sx;}
 \def void method_missing (...) {
-	string sel = string(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0)));
-	text.clear();
-	if (sel != "float") text << sel;
+	string sel = string(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0))+3);
+	text.str("");
+	if (sel != "float") {text << sel; if (argc>1) text << " ";}
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
 	char buf[MAXPDSTRING];
-	for (int i=0; i<argc; i++) {
+	for (int i=1; i<argc; i++) {
 		atom_string(&at[i],buf,MAXPDSTRING);
-		text << " " << buf;
+		text << buf;
+		if (i!=argc-1) text << " ";
 	}
 	clock_delay(clock,0);
 }
 \def 0 grid(...) {
-	text.clear();
+	text.str("");
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
 	pd_typedmess(gp,gensym("grid"),argc,at);
@@ -2510,7 +2516,7 @@ static void display_update(void *x) {
 		$canvas create rectangle $x $y [expr $x+$sx] [expr $y+$sy] -fill $bg -tags $self -outline $outline \n\
 		$canvas create rectangle $x $y [expr $x+7]         $y      -fill red -tags $self -outline $outline \n\
 		$canvas lower $self ${self}TEXT \n\
-		pd \"$self set_size $sy $sx;\\n\" \n\
+		pd \"$self set_size $sy $sx;\" \n\
 	}\n");
 }
 #endif // ndef HAVE_DESIREDATA
