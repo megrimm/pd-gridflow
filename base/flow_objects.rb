@@ -95,10 +95,6 @@ FObject.subclass("ls",1,1) {
         def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
-#<vektor> told me to:
-# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + {16 128 128}"]
-# YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
-
 FObject.subclass("args",1,1) {
 	def initialize(*argspecs) @argspecs = argspecs end
 	def initialize2; self.noutlets = @argspecs.length+1 end
@@ -124,16 +120,17 @@ FObject.subclass("args",1,1) {
 			if @argspecs[i].to_s=="*" then
 				rest = pa[i..-1]||[]
 				send_out i,:list,*rest
-				break
-			end
-			case pa[i]
-			when Symbol; send_out i,:symbol,v
-			when  Array; send_out i,:list, *v
-			else         send_out i,        v
+			else
+				case v
+				when Symbol; send_out i,:symbol,v
+				when  Array; send_out i,:list, *v
+				when    nil; GridFlow.post "would send nil for pa[#{i}], but..."
+				else         send_out i,        v
+				end
 			end
 			i-=1
 		end
-		if pa.length > @argspecs.length then
+		if pa.length > @argspecs.length and @argspecs[-1].to_s!="*" then
 			GridFlow.post "warning: too many args (%d for %d)", pa.length, @argspecs.length
 			GridFlow.post "... argspecs=%s",@argspecs.inspect
 			GridFlow.post "... but got %s",pa.inspect
