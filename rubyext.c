@@ -200,9 +200,10 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
-	fprintf(stderr,"BFObject_init_1: bself=%p\n",bself);
-	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),argc,argv);
-	fprintf(stderr,"BFObject_init_1: bself=%p rself=%p\n",bself,(void *)rself);
+	int j;
+	Ruby comma = ID2SYM(rb_intern(","));
+	for (j=0; j<argc; j++) if (argv[j]==comma) break;
+	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),j,argv);
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -222,6 +223,12 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->noutlets_set(noutlets_of(rb_funcall(rself,SI(class),0)));
 	rb_funcall(rself,SI(initialize2),0);
 	bself->mom = (t_canvas *)canvas_getcurrent();
+	while (j<argc) {
+		argv[j]=INT2NUM(0);
+		int k=j;
+		for (j++; j<argc; j++) if (argv[j]==comma) break;
+		rb_funcall2(rself,SI(send_in),j-k,argv+k);
+	}
 	return rself;
 }
 
@@ -333,7 +340,6 @@ struct _canvasenvironment {
 
 static Ruby FObject_args (Ruby rself) {
 	DGS(FObject);
-	fprintf(stderr,"FObject_args rself=%p self=%p bself=%p\n",(void *)rself,self,self->bself);
 	if (!self->bself) RAISE("can't use this in initialize");
 	char *buf;
 	int length;
