@@ -298,12 +298,6 @@ FObject.subclass("shunt",2,0) {
 	class Demux < self; install "demux", 2, 0; end
 }
 
-FObject.subclass("listmake",2,1) {
-	def initialize(*a) @a=a end
-	def _0_list(*a) @a=a; _0_bang end
-	def _1_list(*a) @a=a end
-	def _0_bang; send_out 0, :list, *@a end
-}
 FObject.subclass("listelement",2,1) {
 	def initialize(i=0) super; @i=i.to_i end
 	def _1_float(i) @i=i.to_i end
