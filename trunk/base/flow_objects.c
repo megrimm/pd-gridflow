@@ -2265,6 +2265,7 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 	\decl void initialize (int n=2, NumberTypeE nt=int32_e);
 	\decl void initialize2 ();
 	\decl void _n_float (int inlet, float f);
+	\decl void _n_list  (int inlet, float f);
 	\decl 0 bang ();
 	//\grin 0
 };
@@ -2285,6 +2286,7 @@ TYPESWITCH(a->nt,FOO,);
 #undef FOO
 	_0_bang(argc,argv);
 }
+\def void _n_list (int inlet, float f) {_n_float(argc,argv,inlet,f);}
 \def 0 bang () {
 	out=new GridOutlet(this,0,a->dim,a->nt);
 #define FOO(T) out->send(n,(T *)*a);
@@ -2302,7 +2304,7 @@ TYPESWITCH(a->nt,FOO,);
 GRID_INLET(GridUnpack,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
-	for (int i=0; i<n; i++) send_out(i,1,data+i);
+	for (int i=n-1; i>=0; i--) outlet_float(bself->out[i],(t_float)data[i]);
 } GRID_END
 \def void initialize (int n=2) {
 	if (n<1) RAISE("n=%d must be at least 1",n);
