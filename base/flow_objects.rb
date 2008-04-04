@@ -299,62 +299,62 @@ FObject.subclass("shunt",2,0) {
 }
 
 # can't be replaced by 0.39-based abstractions because the following can handle nested lists (to some extent)
-	FObject.subclass("listmake",2,1) {
-		def initialize(*a) @a=a end
-		def _0_list(*a) @a=a; _0_bang end
-		def _1_list(*a) @a=a end
-		def _0_bang; send_out 0, :list, *@a end
-	}
-	FObject.subclass("listlength",1,1) {
-		def initialize() super end
-		def _0_list(*a) send_out 0, a.length end
-	}
-	FObject.subclass("listelement",2,1) {
-		def initialize(i=0) super; @i=i.to_i end
-		def _1_float(i) @i=i.to_i end
-		def _0_list(*a)
-			e=a[@i]
-			if Symbol===e then send_out 0, :symbol, e else send_out 0, e end
-		end
-	}
-	FObject.subclass("listsublist",3,1) {
-		def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
-		def _1_float(i) @i=i.to_i end
-		def _2_float(n) @n=n.to_i end
-		def _0_list(*a) send_out 0, :list, *a[@i,@n] end
-	}
-	FObject.subclass("listprepend",2,1) {
-		def initialize(*b) super; @b=b end
-		def _0_list(*a) a[0,0]=@b; send_out 0, :list, *a end
-		def _1_list(*b) @b=b end
-	}
-	FObject.subclass("listappend",2,1) {
-		def initialize(*b) super; @b=b end
-		def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
-		def _1_list(*b) @b=b end
-	}
-	FObject.subclass("listreverse",1,1) {
-		def initialize() super end
-		def _0_list(*a) send_out 0,:list,*a.reverse end
-	}
-	FObject.subclass("messageprepend",2,1) {
-		def initialize(*b) super; @b=b end
-		def _0_(*a) a[0,0]=@b; send_out 0, *a end
-		def _1_list(*b) @b=b end
-		def method_missing(sym,*a)
-			(m = /(_\d_)(.*)/.match sym.to_s) or return super
-			_0_ m[2].intern, *a
-		end
-	}
-	FObject.subclass("messageappend",2,1) {
-		def initialize(*b) super; @b=b end
-		def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
-		def _1_list(*b) @b=b end
-		def method_missing(sym,*a)
-			(m = /(_\d_)(.*)/.match sym.to_s) or return super
-			_0_ m[2].intern, *a
-		end
-	}
+FObject.subclass("listmake",2,1) {
+	def initialize(*a) @a=a end
+	def _0_list(*a) @a=a; _0_bang end
+	def _1_list(*a) @a=a end
+	def _0_bang; send_out 0, :list, *@a end
+}
+FObject.subclass("listlength",1,1) {
+	def initialize() super end
+	def _0_list(*a) send_out 0, a.length end
+}
+FObject.subclass("listelement",2,1) {
+	def initialize(i=0) super; @i=i.to_i end
+	def _1_float(i) @i=i.to_i end
+	def _0_list(*a)
+		e=a[@i]
+		if Symbol===e then send_out 0, :symbol, e else send_out 0, e end
+	end
+}
+FObject.subclass("listsublist",3,1) {
+	def initialize(i=0,n=1) super; @i,@n=i.to_i,n.to_i end
+	def _1_float(i) @i=i.to_i end
+	def _2_float(n) @n=n.to_i end
+	def _0_list(*a) send_out 0, :list, *a[@i,@n] end
+}
+FObject.subclass("listprepend",2,1) {
+	def initialize(*b) super; @b=b end
+	def _0_list(*a) a[0,0]=@b; send_out 0, :list, *a end
+	def _1_list(*b) @b=b end
+}
+FObject.subclass("listappend",2,1) {
+	def initialize(*b) super; @b=b end
+	def _0_list(*a) a[a.length,0]=@b; send_out 0, :list, *a end
+	def _1_list(*b) @b=b end
+}
+FObject.subclass("listreverse",1,1) {
+	def initialize() super end
+	def _0_list(*a) send_out 0,:list,*a.reverse end
+}
+FObject.subclass("messageprepend",2,1) {
+	def initialize(*b) super; @b=b end
+	def _0_(*a) a[0,0]=@b; send_out 0, *a end
+	def _1_list(*b) @b=b end
+	def method_missing(sym,*a)
+		(m = /(_\d_)(.*)/.match sym.to_s) or return super
+		_0_ m[2].intern, *a
+	end
+}
+FObject.subclass("messageappend",2,1) {
+	def initialize(*b) super; @b=b end
+	def _0_(*a) a[a.length,0]=@b; send_out 0, *a end
+	def _1_list(*b) @b=b end
+	def method_missing(sym,*a)
+		(m = /(_\d_)(.*)/.match sym.to_s) or return super
+		_0_ m[2].intern, *a
+	end
+}
 
 FObject.subclass("route2",1,1) {
 	def initialize(*b)
