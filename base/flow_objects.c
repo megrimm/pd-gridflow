@@ -2373,6 +2373,41 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 
 //****************************************************************
 
+\class GridRotatificator : GridObject {
+	int angle;
+	int from, to, n;
+	\decl 0 float (int scale);
+	\decl 0 axis (int from, int to, int n);
+	\decl void initialize(int from=0, int to=1, int n=2);
+	\decl 1 float(int angle);
+};
+\def 0 float (int scale) {
+	int32 rotator[n*n];
+	for (int i=0; i<n; i++) for (int j=0; j<n; j++) rotator[i*n+j] = scale * (i==j);
+	float th = angle * M_PI / 18000;
+	for (int i=0; i<2; i++) for (int j=0; j<2; j++)
+		rotator[(i?to:from)*n+(j?to:from)] = (int32)round(scale*cos(th+(j-i)*M_PI/2));
+	GridOutlet out(this,0,new Dim(n,n),int32_e);
+	out.send(n*n,rotator);
+}
+\def 0 axis(int from, int to, int n) {
+	if (n<0) RAISE("n-axis number incorrect");
+	if (from<0 || from>=n) RAISE("from-axis number incorrect");
+	if (to  <0 || to  >=n) RAISE(  "to-axis number incorrect");
+	this->from = from;
+	this->  to =   to;
+	this->   n =    n;
+}
+\def void initialize(int from=0, int to=1, int n=2) {
+	SUPER;
+	angle=0;
+	_0_axis(0,0,from,to,n);
+}
+\def 1 float(int angle) {this->angle = angle;}
+\end class {install("#rotatificator",2,1);}
+
+//****************************************************************
+
 template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 \class ListReverse : FObject {
@@ -2387,6 +2422,18 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 	outlet_list(bself->te_outlet,&s_list,argc,at);
 }
 \end class {install("listreverse",1,1);}
+
+\class ListFlatten : FObject {
+	\decl void initialize();
+	\decl 0 list(...);
+};
+\def void initialize () {SUPER;}
+\def 0 list (...) {
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	outlet_list(bself->te_outlet,&s_list,argc,at);
+}
+\end class {install("listflatten",1,1);}
 
 //****************************************************************
 

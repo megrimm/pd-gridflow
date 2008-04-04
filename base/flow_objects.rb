@@ -142,36 +142,6 @@ FObject.subclass("args",1,1) {
 	end
 }
 
-FObject.subclass("#rotatificator",2,1) {
-	def _0_float(scale)
-		n = @axis[2]
-		rotator = (0...n).map {|i| (0...n).map {|j| if i==j then scale else 0 end }}
-		th = @angle * Math::PI / 18000
-		(0...2).each {|i| (0...2).each {|j|
-				a = @axis[i].to_i
-				b = @axis[j].to_i
-				rotator[a][b] = (scale*Math.cos(th+(j-i)*Math::PI/2)).to_i
-		}}
-		send_out 0,:list,n,n,:"#",*rotator.flatten
-	end
-	def _0_axis(from,to,total)
-		total>=0 or raise "total-axis number incorrect"
-		from>=0 and from<total or raise "from-axis number incorrect"
-		to  >=0 and to  <total or raise   "to-axis number incorrect"
-		@axis = [from.to_i,to.to_i,total.to_i]
-	end
-	def initialize(axis=[0,1,2])
-		super
-		@angle=0
-		_0_axis(*axis)
-	end
-	def _1_float(angle) @angle = angle end
-}
-
-FObject.subclass("listflatten",1,1) {
-	def initialize() super end
-	def _0_list(*a) send_out 0,:list,*a.flatten end
-}
 FObject.subclass("rubysprintf",2,1) {
   def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
