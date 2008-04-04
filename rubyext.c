@@ -346,36 +346,6 @@ static t_pd *rp_to_pd (Ruby pointer) {
        return (t_pd *)foo->p;
 }
 
-static Ruby GridFlow_s_send_in (int argc, Ruby *argv, Ruby rself) {
-	if (argc<3) RAISE("not enough args (%d, need at least 3)",argc,0);
-	Ruby ptr = argv[0];
-	Ruby inn = argv[1];
-	Ruby sym = argv[2];
-	if (CLASS_OF(ptr)!=cPointer) RAISE("$1 is not a Pointer");
-	int ini = INT(inn);
-	if (ini<0) RAISE("negative inlet number?");
-	t_pd *o = (t_pd *)rp_to_pd(ptr);
-	if (ini>0) {
-		RAISE("inlet numbers greater than 0 are not supported yet (ask matju)");
-		/*inn--;
-		t_inlet *inlet = ((t_object *)o)->ob_inlet;
-		while (1) {
-			if (!inlet) RAISE("nonexistent inlet");
-			if (!inn) break;
-			inlet = inlet->i_next;
-			inn--;
-		}
-		o = inlet;*/
-	}
-	argc-=3;
-	argv+=3;
-	t_atom sel, at[argc];
-	Bridge_export_value(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	pd_typedmess(o,atom_getsymbol(&sel),argc,at);
-	return Qnil;
-}
-
 static Ruby GridFlow_s_name_lookup (Ruby rself, Ruby name2) {
 	string name = string(rb_str_ptr(rb_funcall(name2,SI(to_s),0)));
 	if (fclasses.find(name)==fclasses.end()) RAISE("class not found: %s",name.data());
@@ -483,23 +453,19 @@ void BFObject::noutlets_set (int n) {
 
 static Ruby FObject_ninlets_set (Ruby rself, Ruby n_) {
 	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
-	bself->ninlets_set(n);
-	return Qnil;
-};
+	bself->ninlets_set(n);  return Qnil;};
 static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {
-	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<1) n=1;
-	bself->noutlets_set(n);
-	return Qnil;
-};
+	DGS(FObject); BFObject *bself = self->bself; int n = INT(n_); if (n<0) n=0;
+	bself->noutlets_set(n); return Qnil;};
 
 static Ruby FObject_ninlets  (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@ninlets));
+	if (!bself) return fclasses_ruby[rb_obj_class(rself)]->ninlets;
 	return R(bself->nin ).r;
 }
 static Ruby FObject_noutlets (Ruby rself) {
 	DGS(FObject); BFObject *bself = self->bself;
-	if (!bself) return rb_ivar_get(rb_obj_class(rself),SI(@noutlets));
+	if (!bself) return fclasses_ruby[rb_obj_class(rself)]->noutlets;
 	return R(bself->nout).r;
 }
 
@@ -521,8 +487,6 @@ Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
 	post("%s",rb_str_ptr(string));
 	return Qnil;
 }
-
-struct BFGridFlow : t_object {};
 
 static t_clock *hack;
 
@@ -834,7 +798,6 @@ BUILTIN_SYMBOLS(FOO)
 
 	SDEF2("post_string",post_string,1);
 	SDEF2("bind",bind,2);
-	SDEF2("send_in",send_in,-1);
 	SDEF2("name_lookup",name_lookup,1);
 
 	\startall
