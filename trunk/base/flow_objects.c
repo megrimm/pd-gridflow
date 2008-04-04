@@ -2461,7 +2461,7 @@ extern "C" {
 	std::ostringstream text;
 	t_clock *clock;
 	t_pd *gp;
-	Display () : selected(false), canvas(0), y(0), x(0), sy(16), sx(80), vis(false) {
+	Display () : selected(false), canvas(0), y(0), x(0), sy(16), sx(80), vis(false), clock(0) {
 		std::ostringstream os;
 		rsym = gensym((char *)ssprintf("display:%08x",this).data());
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
@@ -2470,6 +2470,10 @@ extern "C" {
 		SETFLOAT(a,20);
 		pd_typedmess(gp,gensym("maxrows"),1,a);
 		text << "...";
+	}
+	~Display () {
+		pd_unbind((t_pd *)bself,rsym);
+		if (clock) clock_free(clock);
 	}
 	\decl void initialize2();
 	\decl void method_missing (...);
