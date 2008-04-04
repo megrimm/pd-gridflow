@@ -187,6 +187,8 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 
 static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv);
 
+static int handle_braces(int ac, Ruby *av);
+
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc=fm->ac+1;
 	Ruby argv[argc];
@@ -203,7 +205,10 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	int j;
 	Ruby comma = ID2SYM(rb_intern(","));
 	for (j=0; j<argc; j++) if (argv[j]==comma) break;
-	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),j,argv);
+
+	int jj = handle_braces(j,argv);
+	Ruby rself = rb_funcall2(fclasses[string(rb_str_ptr(argv[0]))]->rself,SI(new),jj-1,argv+1);
+
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -626,12 +631,10 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 Ruby GridFlow_s_rdtsc (Ruby rself) { return R(rdtsc()).r; }
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
-static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv) {
+static int handle_braces(int ac, Ruby *av) {
     try {
 	int stack[16];
 	int stackn=0;
-	Ruby *av = rb_ary_ptr(argv);
-	int ac = rb_ary_len(argv);
 	int j=0;
 	for (int i=0; i<ac; ) {
 		int close=0;
@@ -646,7 +649,7 @@ static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv) {
 			while (se>s && se[-1]==')') {se--; close++;}
 			if (s!=se) {
 				Ruby u = rb_str_new(s,se-s);
-				av[j++] = rb_funcall(rself,SI(FloatOrSymbol),1,u);
+				av[j++] = rb_funcall(mGridFlow,SI(FloatOrSymbol),1,u);
 			}
 		} else {
 			av[j++]=av[i];
@@ -662,11 +665,15 @@ static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv) {
 		}
 	}
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
-	while (rb_ary_len(argv)>j) rb_ary_pop(argv);
-	return rself;
+	return ac;
     } catch (Barf *oozy) {
         rb_raise(rb_eArgError,"%s",oozy->text);
     }
+}
+static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby args) {
+	int argc = handle_braces(rb_ary_len(args),rb_ary_ptr(args));
+	while (rb_ary_len(args)>argc) rb_ary_pop(args);
+	return rself;
 }
 
 \classinfo {}
