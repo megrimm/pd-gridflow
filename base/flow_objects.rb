@@ -23,11 +23,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-class FObject
-  def  add_inlets(n) self. ninlets += n end
-  def add_outlets(n) self.noutlets += n end
-end
-
 FObject.subclass("fps",1,1) {
 	def initialize(*options)
 		super
@@ -93,34 +88,20 @@ FObject.subclass("unix_time",1,3) {
     send_out 0, :list, *a
   end
 }
-### test with "shell xlogo &" -> [exec]
-FObject.subclass("exec",1,0) {
-        def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end
-}
-FObject.subclass("renamefile",1,0) {
-        def initialize; end
-        def _0_list(a,b) File.rename(a.to_s,b.to_s) end
-}
+FObject.subclass("exec",1,0) {def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end}
+FObject.subclass("renamefile",1,0) {def initialize; end; def _0_list(a,b) File.rename(a.to_s,b.to_s) end}
 FObject.subclass("ls",1,1) {
         def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x| x.intern } end
         def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
 #<vektor> told me to:
-# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)",
-#	"@ >> 8","@ + {16 128 128}"]
-# YUVtoRGB : @fobjects = ["@ - (16 128 128)",
-#	"#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
+# RGBtoYUV : @fobjects = ["#inner (3 3 # 66 -38 112 128 -74 -94 25 112 -18)","@ >> 8","@ + {16 128 128}"]
+# YUVtoRGB : @fobjects = ["@ - (16 128 128)",#inner (3 3 # 298 298 298 0 -100 516 409 -208 0)","@ >> 8"]
 
 FObject.subclass("args",1,1) {
 	def initialize(*argspecs) @argspecs = argspecs end
-	#def initialize2; add_outlets @argspecs.length end
 	def initialize2; self.noutlets = @argspecs.length+1 end
-#	def split(ary,sep)
-#		i=0; r=[[]]
-#		ary.each {|x| if sep===x then r.last << x else r << [] end }
-#		r
-#	end
 	def _0_bang
 		pa,*loadbang=patcherargs.split(:",")
 		GridFlow.handle_braces! pa
@@ -307,7 +288,7 @@ FObject.subclass("shunt",2,0) {
 	gfattr :hi
 	gfattr :lo
 	def initialize(n=2,i=0) super; @n=n; @hi=n-1; @lo=0; @mode=0; @index=i end
-	def initialize2; add_outlets @n end
+	def initialize2; self.noutlets= @n end
 	def method_missing(sel,*args)
 		sel.to_s =~ /^_(\d)_(.*)$/ or super
 		send_out @index,$2.intern,*args
@@ -326,7 +307,7 @@ FObject.subclass("shunt",2,0) {
 	class Demux < self; install "demux", 2, 0; end
 }
 
-# maybe that some of them could be replaced by 0.39 abstractions
+# can't be replaced by 0.39-based abstractions because the following can handle nested lists (to some extent)
 	FObject.subclass("listmake",2,1) {
 		def initialize(*a) @a=a end
 		def _0_list(*a) @a=a; _0_bang end
@@ -389,7 +370,7 @@ FObject.subclass("route2",1,1) {
 		super; @b=b; @bh={}
 		b.each_with_index {|x,i| @bh[x]=i }
 	end
-	def initialize2(*b) add_outlets @b.length end
+	def initialize2(*b) self.noutlets= 1+@b.length end
 	def _0_(*a) i=@bh[a[0]]||@b.length; send_out i,*a end
 	def _1_list(*b) @b=b end
 	def method_missing(sym,*a)
@@ -401,8 +382,8 @@ FObject.subclass("route2",1,1) {
 FObject.subclass("range",1,1) {
   def initialize(*a) @a=a end
   def initialize2
-    add_inlets  @a.length
-    add_outlets @a.length
+    self.ninlets=  1+@a.length
+    self.noutlets= 1+@a.length
   end
   def _0_list(x) _0_float(x) end
   def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
@@ -644,7 +625,6 @@ FObject.subclass("parallel_port",1,3) {
 
 module Linux; module SoundMixer
 	extend IoctlClass
-	MIXER_NRDEVICES    = 0x00000019
 	MIXER_VOLUME       = 0x00000000
 	MIXER_BASS         = 0x00000001
 	MIXER_TREBLE       = 0x00000002
@@ -683,51 +663,10 @@ module Linux; module SoundMixer
 	MIXER_STEREODEVS   = 0x000000fb
 	MIXER_OUTSRC       = 0x000000fa
 	MIXER_OUTMASK      = 0x000000f9
-	MASK_VOLUME        = 0x00000001
-	MASK_BASS          = 0x00000002
-	MASK_TREBLE        = 0x00000004
-	MASK_SYNTH         = 0x00000008
-	MASK_PCM           = 0x00000010
-	MASK_SPEAKER       = 0x00000020
-	MASK_LINE          = 0x00000040
-	MASK_MIC           = 0x00000080
-	MASK_CD            = 0x00000100
-	MASK_IMIX          = 0x00000200
-	MASK_ALTPCM        = 0x00000400
-	MASK_RECLEV        = 0x00000800
-	MASK_IGAIN         = 0x00001000
-	MASK_OGAIN         = 0x00002000
-	MASK_LINE1         = 0x00004000
-	MASK_LINE2         = 0x00008000
-	MASK_LINE3         = 0x00010000
-	MASK_DIGITAL1      = 0x00020000
-	MASK_DIGITAL2      = 0x00040000
-	MASK_DIGITAL3      = 0x00080000
-	MASK_PHONEIN       = 0x00100000
-	MASK_PHONEOUT      = 0x00200000
-	MASK_RADIO         = 0x00800000
-	MASK_VIDEO         = 0x00400000
-	MASK_MONITOR       = 0x01000000
 	MASK_MUTE          = 0x80000000
 	MASK_ENHANCE       = 0x80000000
 	MASK_LOUD          = 0x80000000
 	MIXER_READ_VOLUME  = 0x80044d00
-	MIXER_READ_BASS    = 0x80044d01
-	MIXER_READ_TREBLE  = 0x80044d02
-	MIXER_READ_SYNTH   = 0x80044d03
-	MIXER_READ_PCM     = 0x80044d04
-	MIXER_READ_SPEAKER = 0x80044d05
-	MIXER_READ_LINE    = 0x80044d06
-	MIXER_READ_MIC     = 0x80044d07
-	MIXER_READ_CD      = 0x80044d08
-	MIXER_READ_IMIX    = 0x80044d09
-	MIXER_READ_ALTPCM  = 0x80044d0a
-	MIXER_READ_RECLEV  = 0x80044d0b
-	MIXER_READ_IGAIN   = 0x80044d0c
-	MIXER_READ_OGAIN   = 0x80044d0d
-	MIXER_READ_LINE1   = 0x80044d0e
-	MIXER_READ_LINE2   = 0x80044d0f
-	MIXER_READ_LINE3   = 0x80044d10
 	MIXER_READ_MUTE    = 0x80044d1f
 	MIXER_READ_ENHANCE = 0x80044d1f
 	MIXER_READ_LOUD    = 0x80044d1f
@@ -737,22 +676,6 @@ module Linux; module SoundMixer
 	MIXER_READ_STEREODEVS = 0x80044dfb
 	MIXER_READ_CAPS    = 0x80044dfc
 	MIXER_WRITE_VOLUME = 0xc0044d00
-	MIXER_WRITE_BASS   = 0xc0044d01
-	MIXER_WRITE_TREBLE = 0xc0044d02
-	MIXER_WRITE_SYNTH  = 0xc0044d03
-	MIXER_WRITE_PCM    = 0xc0044d04
-	MIXER_WRITE_SPEAKER = 0xc0044d05
-	MIXER_WRITE_LINE   = 0xc0044d06
-	MIXER_WRITE_MIC    = 0xc0044d07
-	MIXER_WRITE_CD     = 0xc0044d08
-	MIXER_WRITE_IMIX   = 0xc0044d09
-	MIXER_WRITE_ALTPCM = 0xc0044d0a
-	MIXER_WRITE_RECLEV = 0xc0044d0b
-	MIXER_WRITE_IGAIN  = 0xc0044d0c
-	MIXER_WRITE_OGAIN  = 0xc0044d0d
-	MIXER_WRITE_LINE1  = 0xc0044d0e
-	MIXER_WRITE_LINE2  = 0xc0044d0f
-	MIXER_WRITE_LINE3  = 0xc0044d10
 	MIXER_WRITE_MUTE   = 0xc0044d1f
 	MIXER_WRITE_ENHANCE = 0xc0044d1f
 	MIXER_WRITE_LOUD   = 0xc0044d1f
@@ -761,20 +684,9 @@ module Linux; module SoundMixer
 	MIXER_ACCESS       = 0xc0804d66
 	MIXER_AGC          = 0xc0044d67
 	MIXER_3DSE         = 0xc0044d68
-	MIXER_PRIVATE1     = 0xc0044d6f
-	MIXER_PRIVATE2     = 0xc0044d70
-	MIXER_PRIVATE3     = 0xc0044d71
-	MIXER_PRIVATE4     = 0xc0044d72
-	MIXER_PRIVATE5     = 0xc0044d73
 	MIXER_GETLEVELS    = 0xc0a44d74
 	MIXER_SETLEVELS    = 0xc0a44d75
-	DEVICE_LABELS = [
-		"Vol ", "Bass ", "Trebl", "Synth", "Pcm ",
-		"Spkr ","Line ", "Mic ",  "CD ",   "Mix ",
-		"Pcm2 ","Rec ",  "IGain", "OGain",
-		"Line1", "Line2", "Line3", "Digital1", "Digital2", "Digital3",
-		"PhoneIn", "PhoneOut", "Video", "Radio", "Monitor"
-	]
+
 	DEVICE_NAMES = [
 		"vol", "bass", "treble", "synth", "pcm", "speaker", "line",
 		"mic", "cd", "mix", "pcm2", "rec", "igain", "ogain",
