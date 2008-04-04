@@ -554,47 +554,17 @@ end
 
 module Linux; module ParallelPort
 	extend IoctlClass
-	@port_flags = %w[
-	LP_EXIST
-	LP_SELEC
-	LP_BUSY
-	LP_OFFL
-	LP_NOPA
-	LP_ERR
-	LP_ABORT
-	LP_CAREFUL
-	LP_ABORTOPEN
-	LP_TRUST_IRQ
-	]
-	@port_status = %w[
-		nil,
-		nil,
-		nil,
-		LP_PERRORP  # unchanged input, active low
-		LP_PSELECD  # unchanged input, active high
-		LP_POUTPA   # unchanged input, active high
-		LP_PACK     # unchanged input, active low
-		LP_PBUSY    # inverted input, active high
-	]
+	@port_flags = [LP_EXIST,LP_SELEC,LP_BUSY,LP_OFFL,LP_NOPA,LP_ERR,LP_ABORT,LP_CAREFUL,LP_ABORTOPEN,LP_TRUST_IRQ]
+	@port_status = [nil,nil,nil,LP_PERRORP,LP_PSELECD,LP_POUTPA,LP_PACK,LP_PBUSY]
 	LPCHAR = 0x0601
-	LPTIME = 0x0602
-	LPABORT = 0x0604
-	LPSETIRQ = 0x0605
-	LPGETIRQ = 0x0606
-	LPWAIT = 0x0608
 	LPCAREFUL = 0x0609 # obsoleted??? wtf?
-	LPABORTOPEN = 0x060a
 	LPGETSTATUS = 0x060b # return LP_S(minor)
-	LPRESET = 0x060c # reset printer
-	LPGETSTATS = 0x060d # struct lp_stats (most likely turned off)
 	LPGETFLAGS = 0x060e # get status flags
-	LPTRUSTIRQ = 0x060f # set/unset the LP_TRUST_IRQ flag
 	ioctl_reader :port_flags , :LPGETFLAGS
 	ioctl_reader :port_status, :LPGETSTATUS
 	ioctl_writer :port_careful,:LPCAREFUL
 	ioctl_writer :port_char,   :LPCHAR
 end end
-
 FObject.subclass("parallel_port",1,3) {
   def initialize(port,manually=0)
     @f = File.open(port.to_s,"r+")
@@ -625,81 +595,13 @@ FObject.subclass("parallel_port",1,3) {
 
 module Linux; module SoundMixer
 	extend IoctlClass
-	MIXER_VOLUME       = 0x00000000
-	MIXER_BASS         = 0x00000001
-	MIXER_TREBLE       = 0x00000002
-	MIXER_SYNTH        = 0x00000003
-	MIXER_PCM          = 0x00000004
-	MIXER_SPEAKER      = 0x00000005
-	MIXER_LINE         = 0x00000006
-	MIXER_MIC          = 0x00000007
-	MIXER_CD           = 0x00000008
-	MIXER_IMIX         = 0x00000009
-	MIXER_ALTPCM       = 0x0000000a
-	MIXER_RECLEV       = 0x0000000b
-	MIXER_IGAIN        = 0x0000000c
-	MIXER_OGAIN        = 0x0000000d
-	MIXER_LINE1        = 0x0000000e
-	MIXER_LINE2        = 0x0000000f
-	MIXER_LINE3        = 0x00000010
-	MIXER_DIGITAL1     = 0x00000011
-	MIXER_DIGITAL2     = 0x00000012
-	MIXER_DIGITAL3     = 0x00000013
-	MIXER_PHONEIN      = 0x00000014
-	MIXER_PHONEOUT     = 0x00000015
-	MIXER_VIDEO        = 0x00000016
-	MIXER_RADIO        = 0x00000017
-	MIXER_MONITOR      = 0x00000018
-	ONOFF_MIN          = 0x0000001c
-	ONOFF_MAX          = 0x0000001e
-	MIXER_NONE         = 0x0000001f
-	MIXER_ENHANCE      = 0x0000001f
-	MIXER_MUTE         = 0x0000001f
-	MIXER_LOUD         = 0x0000001f
-	MIXER_RECSRC       = 0x000000ff
-	MIXER_DEVMASK      = 0x000000fe
-	MIXER_RECMASK      = 0x000000fd
-	MIXER_CAPS         = 0x000000fc
-	MIXER_STEREODEVS   = 0x000000fb
-	MIXER_OUTSRC       = 0x000000fa
-	MIXER_OUTMASK      = 0x000000f9
-	MASK_MUTE          = 0x80000000
-	MASK_ENHANCE       = 0x80000000
-	MASK_LOUD          = 0x80000000
 	MIXER_READ_VOLUME  = 0x80044d00
-	MIXER_READ_MUTE    = 0x80044d1f
-	MIXER_READ_ENHANCE = 0x80044d1f
-	MIXER_READ_LOUD    = 0x80044d1f
-	MIXER_READ_RECSRC  = 0x80044dff
-	MIXER_READ_DEVMASK = 0x80044dfe
-	MIXER_READ_RECMASK = 0x80044dfd
-	MIXER_READ_STEREODEVS = 0x80044dfb
-	MIXER_READ_CAPS    = 0x80044dfc
 	MIXER_WRITE_VOLUME = 0xc0044d00
-	MIXER_WRITE_MUTE   = 0xc0044d1f
-	MIXER_WRITE_ENHANCE = 0xc0044d1f
-	MIXER_WRITE_LOUD   = 0xc0044d1f
-	MIXER_WRITE_RECSRC = 0xc0044dff
-	MIXER_INFO         = 0x805c4d65
-	MIXER_ACCESS       = 0xc0804d66
-	MIXER_AGC          = 0xc0044d67
-	MIXER_3DSE         = 0xc0044d68
-	MIXER_GETLEVELS    = 0xc0a44d74
-	MIXER_SETLEVELS    = 0xc0a44d75
-
-	DEVICE_NAMES = [
-		"vol", "bass", "treble", "synth", "pcm", "speaker", "line",
-		"mic", "cd", "mix", "pcm2", "rec", "igain", "ogain",
-		"line1", "line2", "line3", "dig1", "dig2", "dig3",
-		"phin", "phout", "video", "radio", "monitor"
-	]
-	DEVICE_NAMES.each_with_index {|name,i|
-		ioctl_accessor name,
-			MIXER_READ_VOLUME+i,
-			MIXER_WRITE_VOLUME+i
-	}
+	DEVICE_NAMES = ["vol", "bass", "treble", "synth", "pcm", "speaker", "line",
+		"mic", "cd", "mix", "pcm2", "rec", "igain", "ogain", "line1", "line2", "line3", "dig1", "dig2", "dig3",
+		"phin", "phout", "video", "radio", "monitor"]
+	DEVICE_NAMES.each_with_index {|name,i| ioctl_accessor name, MIXER_READ_VOLUME+i, MIXER_WRITE_VOLUME+i}
 end end
-
 #FObject.subclass("SoundMixer",1,1) {
 # using 'class' because in Ruby 1.8 (but not 1.6 nor 1.9) scoping rules are different for Class#instance_eval.
 class GFSoundMixer < FObject; install "SoundMixer",1,1
