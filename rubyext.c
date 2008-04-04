@@ -82,16 +82,12 @@ static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 
 void CObject_free (void *victim) {
 	CObject *self = (CObject *)victim;
-	if (!self->rself) {
-		fprintf(stderr,"attempt to free object that has no rself\n");
-		abort();
-	}
+	if (!self->rself) {fprintf(stderr,"attempt to free object that has no rself\n"); abort();}
 	self->rself = 0; /* paranoia */
 	delete self;
 }
 
 Ruby cPointer=0;
-
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
 	self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
@@ -105,13 +101,11 @@ void *Pointer_get (Ruby rself) {
 
 static Ruby make_error_message () {
 	char buf[1000];
-	sprintf(buf,"%s: %s",rb_class2name(rb_obj_class(ruby_errinfo)),
-		rb_str_ptr(rb_funcall(ruby_errinfo,SI(to_s),0)));
+	sprintf(buf,"%s: %s",rb_class2name(rb_obj_class(ruby_errinfo)), rb_str_ptr(rb_funcall(ruby_errinfo,SI(to_s),0)));
 	Ruby ary = rb_ary_new();
 	Ruby backtrace = rb_funcall(ruby_errinfo,SI(backtrace),0);
 	rb_ary_push(ary,rb_str_new2(buf));
-	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++)
-		rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
+	for (int i=0; i<2 && i<rb_ary_len(backtrace); i++) rb_ary_push(ary,rb_funcall(backtrace,SI([]),1,INT2NUM(i)));
 //	rb_ary_push(ary,rb_funcall(rb_funcall(backtrace,SI(length),0),SI(to_s),0));
 	return ary;
 }
@@ -131,7 +125,7 @@ struct BFProxy : t_object {
 static t_class *find_bfclass (t_symbol *sym) {
 	t_atom a[1];
 	SETSYMBOL(a,sym);
-	char buf[4096];
+	char buf[MAXPDSTRING];
 	if (sym==&s_list) strcpy(buf,"list"); else atom_string(a,buf,sizeof(buf));
 	string name = string(buf);
 	if (fclasses.find(name)==fclasses.end()) {post("GF: class not found: '%s'",buf); return 0;}
@@ -172,24 +166,17 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 
 static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
-//	for (int i=0; i<rb_ary_len(error_array); i++)
-//		post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(
-		rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
+//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	if (fm->self && fm->is_init) fm->self = 0;
 	return Qnil;
 }
 
-static void BFObject_method_missing (BFObject *bself,
-int winlet, t_symbol *selector, int ac, t_atom *at) {
+static void BFObject_method_missing (BFObject *bself, int winlet, t_symbol *selector, int ac, t_atom *at) {
 	FMessage fm = { bself, winlet, selector, ac, at, false };
-	if (!bself->rself) {
-		pd_error(bself,"message to a dead object. (supposed to be impossible)");
-		return;
-	}
+	if (!bself->rself) {pd_error(bself,"message to a dead object. (supposed to be impossible)"); return;}
 	RESCUE(BFObject_method_missing_1,&fm,BFObject_rescue,(Ruby)&fm);
 }
-
 static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self,0,s,argc,argv);
 }
@@ -204,8 +191,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby argv[argc];
 	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
 	// s_list is broken in some (?) versions of pd
-	argv[0] = fm->selector==&s_list ?
-		argv[0]=rb_str_new2("list") : rb_str_new2(fm->selector->s_name);
+	argv[0] = fm->selector==&s_list ? argv[0]=rb_str_new2("list") : rb_str_new2(fm->selector->s_name);
 	BFObject *bself = fm->self;
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
@@ -213,7 +199,6 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
-
 	Ruby rself = rb_funcall2(rb_const_get(mGridFlow,SI(FObject)),SI([]),argc,argv);
 	DGS(FObject);
 	self->bself = bself;
@@ -226,28 +211,12 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname=NULL;
 #endif
 #endif
-	int ninlets  =  ninlets_of(rb_funcall(rself,SI(class),0));
-	int noutlets = noutlets_of(rb_funcall(rself,SI(class),0));
 	bself->nin  = 1;
 	bself->nout = 0;
 	self->bself->in  = new  BFProxy*[1];
 	self->bself->out = new t_outlet*[1];
-	bself->ninlets_set(ninlets);
-	bself->noutlets_set(noutlets);
-/*
-	bself->nin  =   ninlets;
-	bself->nout =  noutlets;
-	for (int i=1; i<ninlets; i++) {
-		BFProxy *p = (BFProxy *)pd_new(BFProxy_class);
-		p->parent = bself;
-		p->inlet = i;
-		inlet_new(bself, &p->ob_pd, 0,0);
-	}
-	self->bself->out = new t_outlet*[noutlets];
-	for (int i=0; i<noutlets; i++) {
-		bself->out[i] = outlet_new(bself,&s_anything);
-	}
-*/
+	bself->ninlets_set(  ninlets_of(rb_funcall(rself,SI(class),0)));
+	bself->noutlets_set(noutlets_of(rb_funcall(rself,SI(class),0)));
 	rb_funcall(rself,SI(initialize2),0);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	return rself;
@@ -257,8 +226,7 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 	t_class *qlass = find_bfclass(classsym);
 	if (!qlass) return 0;
 	BFObject *bself = (BFObject *)pd_new(qlass);
-	FMessage fm = { self: bself, winlet:-1, selector: classsym,
-		ac: ac, at: at, is_init: true };
+	FMessage fm = {self:bself, winlet:-1, selector:classsym, ac:ac, at:at, is_init:true};
 	long r = RESCUE(BFObject_init_1,&fm,BFObject_rescue,&fm);
 	return r==Qnil ? 0 : (void *)bself; // return NULL if broken object
 }
@@ -288,7 +256,7 @@ struct RMessage {
 // this was called rb_funcall_rescue[...] but recently (ruby 1.8.2)
 // got a conflict with a new function in ruby.
 
-VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
+static VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
 
 static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
 	Ruby error_array = make_error_message();
@@ -297,7 +265,7 @@ static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
 	return Qnil;
 }
 
-VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
+static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	va_list foo;
 	va_start(foo,argc);
 	VALUE argv[argc];
@@ -309,7 +277,7 @@ VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 
 //****************************************************************
 
-\class Clock < CObject {
+\class Clock : CObject {
 	t_clock *serf;
 	Ruby owner; /* copy of ptr that serf already has, for marking */
 	\decl void set  (double   systime);
@@ -338,7 +306,7 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 
 //****************************************************************
 
-\class Pointer < CObject
+\class Pointer : CObject
 \def Ruby ptr () { return LONG2NUM(((long)p)); }
 \classinfo {
 	IEVAL(rself,
@@ -349,11 +317,9 @@ Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 \end class Pointer
 
 static void BFObject_class_init_1 (t_class *qlass) {class_addanything(qlass,(t_method)BFObject_method_missing0);}
-
 \class FObject
 
 static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
-//\def Ruby send_out2(...) {
 	DGS(FObject);
 	BFObject *bself = self->bself;
 	if (!bself) return Qnil;
@@ -367,13 +333,11 @@ static Ruby FObject_send_out2(int argc, Ruby *argv, Ruby rself) {
 	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
 	return Qnil;
 }
-
 static Ruby FObject_bself(Ruby rself) {
 	DGS(FObject);
 	if (!self->bself) RAISE("there is no bself during #initialize. use #initialize2");
 	return Pointer_s_new(self->bself);
 }
-
 static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
 	path = rb_funcall(path,SI(to_s),0);
 	Ruby qlassid = rb_ivar_get(rself,SI(@bfclass));
@@ -382,7 +346,6 @@ static Ruby FObject_s_set_help (Ruby rself, Ruby path) {
 	class_sethelpsymbol(qlass,gensym(rb_str_ptr(path)));
 	return Qnil;
 }
-
 static Ruby GridFlow_s_gui (int argc, Ruby *argv, Ruby rself) {
 	if (argc!=1) RAISE("bad args");
 	Ruby command = rb_funcall(argv[0],SI(to_s),0);
