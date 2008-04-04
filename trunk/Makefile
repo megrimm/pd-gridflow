@@ -16,7 +16,7 @@ CFLAGS += -DUSE_RUBY
 
 # LDFLAGS += ../gem-cvs/Gem/Gem.pd_linux
 ifeq ($(HAVE_DEBUG),yes)
-	CFLAGS += -O1
+	CFLAGS += -O0
 else
 #	CFLAGS += -O3 -funroll-loops -fno-omit-frame-pointer
 	CFLAGS += -O2 -funroll-loops
