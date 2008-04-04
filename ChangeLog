@@ -9,7 +9,10 @@ version 0.9.1 (2008.03...):
  * x11: added "warp" method for moving mouse cursor around
  * rewrote some object classes from Ruby to C++, most notably:
    [#pack] [#unpack] [#print] [display]
-
+ * rewrote PPM support. now relies on libnetpbm.
+   (apt-get install libnetpbm10-dev)
+ * removed broken Targa support
+ * removed timelog feature in [#in]/[#out] (redundant)
 version 0.9.0 (2007.11.20):
 
  * new object classes: [#slice], [#sort], [#line_to_polygon].
