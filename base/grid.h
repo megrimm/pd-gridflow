@@ -745,9 +745,9 @@ private:
 //****************************************************************
 // for use by source_filter.rb ONLY (for \grin)
 #ifndef HAVE_LITE
-#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TL,TF,TD}
+#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TL,TF,TD}
 #else
-#define GRIN(TB,TS,TI,TL,TF,TD,TR) {TB,TS,TI,TF}
+#define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TF}
 #endif // HAVE_LITE
 struct FClass {
 	void *(*allocator)(); // returns a new C++ object
