@@ -246,11 +246,8 @@ static void *BFObject_init (t_symbol *classsym, int ac, t_atom *at) {
 }
 
 static void BFObject_delete_1 (FMessage *fm) {
-	if (fm->self->rself) {
-		rb_funcall(fm->self->rself,SI(delete),0);
-	} else {
-		post("BFObject_delete is NOT handling BROKEN object at %*lx",2*sizeof(long),(long)fm);
-	}
+	if (fm->self->rself) rb_funcall(fm->self->rself,SI(delete),0);
+	else post("BFObject_delete is NOT handling BROKEN object at %*lx",2*sizeof(long),(long)fm);
 }
 
 static void BFObject_delete (BFObject *bself) {
@@ -360,11 +357,9 @@ static Ruby FObject_args (Ruby rself) {
 static Ruby FObject_patcherargs (Ruby rself) {
 	DGS(FObject);
 	if (!self->bself) RAISE("can't use this in initialize");
-	t_glist *canvas = self->bself->mom;
-	_canvasenvironment *env = canvas_getenv(canvas);
+	_canvasenvironment *env = canvas_getenv(self->bself->mom);
 	Ruby ar = rb_ary_new();
-	for (int i=0; i<env->ce_argc; i++)
-		rb_ary_push(ar, Bridge_import_value(env->ce_argv+i));
+	for (int i=0; i<env->ce_argc; i++) rb_ary_push(ar, Bridge_import_value(env->ce_argv+i));
 	return ar;
 }
 
