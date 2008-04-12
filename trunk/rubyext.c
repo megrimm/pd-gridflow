@@ -717,9 +717,11 @@ extern "C" void gridflow_setup () {
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
-	mGridFlow = EVAL("module GridFlow; CObject = ::Object; class<<self; end; def post_string(s) STDERR.puts s end; self end");
+	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	SDEF2("rdtsc",rdtsc,0);
 	SDEF2("handle_braces!",handle_braces,1);
+	SDEF2("post_string",post_string,1);
+	SDEF2("name_lookup",name_lookup,1);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
@@ -736,8 +738,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
-	SDEF2("post_string",post_string,1);
-	SDEF2("name_lookup",name_lookup,1);
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
@@ -745,11 +745,8 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	if (!EVAL("begin require 'base/main.rb'; true\n"
-		"rescue Exception => e; "
-		"STDERR.puts \"can't load: #{$!}\n"
-		"backtrace: #{$!.backtrace.join\"\n\"}\n"
-		"$: = #{$:.inspect}\"\n; false end")) return;
+	if (!EVAL("begin require 'base/main.rb'; true; rescue Exception => e; "
+		"STDERR.puts \"can't load: #{$!}\nbacktrace: #{$!.backtrace.join\"\n\"}\n$:=#{$:.inspect}\"\n; false end")) return;
 	startup_format();
 	STARTUP_LIST()
 	EVAL("GridFlow.load_user_config");
