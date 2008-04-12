@@ -45,18 +45,7 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #endif
 
 #ifndef DESIREDATA
-#ifdef PD_PLUSPLUS_FACE
-typedef struct t_list : t_pd {
-#else
-typedef struct t_list {
-    t_pd *pd;
-#endif
-    struct _atom *v;
-    size_t capa;
-    size_t refcount;
-    size_t n;
-} t_list;
-#define A_LIST 13
+#define A_LIST 13 /* (t_binbuf *) */
 #endif
 
 typedef char       int8; typedef unsigned char      uint8;
