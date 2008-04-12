@@ -27,6 +27,11 @@
 #include <string>
 #include <sstream>
 #include "grid.h.fcs"
+#ifndef DESIREDATA
+extern "C" {
+#include "bundled/pd/g_canvas.h"
+};
+#endif
 
 /* both oprintf are copied from desiredata */
 
@@ -2451,9 +2456,6 @@ string ssprintf(const char *fmt, ...) {
 }
 
 #ifndef HAVE_DESIREDATA
-extern "C" {
-#include "bundled/pd/g_canvas.h"
-};
 \class Display : FObject {
 	bool selected;
 	t_glist *canvas;
@@ -2597,6 +2599,97 @@ static void display_update(void *x) {
 	}\n");
 }
 #endif // ndef HAVE_DESIREDATA
+
+//****************************************************************
+
+// from pd/src/g_canvas.c
+struct _canvasenvironment {
+    t_symbol *ce_dir;   /* directory patch lives in */
+    int ce_argc;        /* number of "$" arguments */
+    t_atom *ce_argv;    /* array of "$" arguments */
+    int ce_dollarzero;  /* value of "$0" */
+};
+
+struct ArgSpec {
+	t_symbol *name;
+	t_symbol *type;
+	t_atom defaultv;
+};
+
+\class Args : FObject {
+	ArgSpec *sargv;
+	int sargc;
+	\decl void initialize (...);
+	\decl void initialize2 ();
+	\decl 0 bang ();
+	void process_args (int argc, t_atom *argv);
+};
+\def void initialize(...) {
+	sargc = argc;
+	sargv = new ArgSpec[argc];
+	for (int i=0; i<argc; i++) {
+		if (TYPE(argv[i])==T_ARRAY) {
+			int ac = rb_ary_len(argv[i]);
+			t_atom at[ac];
+			ruby2pd(ac,rb_ary_ptr(argv[i]),at);
+			sargv[i].name = atom_getsymbolarg(0,ac,at);
+			sargv[i].type = atom_getsymbolarg(1,ac,at);
+			if (ac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = at[2];
+		}
+	}
+}
+Ruby GridFlow_s_handle_braces(Ruby rself, Ruby args);
+\def void initialize2 () {bself->noutlets_set(sargc+1);}
+void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
+	if (!argc) outlet_bang(o);
+	else if (argv[0].a_type==A_SYMBOL) outlet_anything(o,argv[0].a_w.w_symbol,argc-1,argv+1);
+	else if (argv[0].a_type==A_FLOAT && argc==1) outlet_float(o,argv[0].a_w.w_float);
+	else outlet_anything(o,&s_list,argc,argv);
+}
+\def 0 bang () {
+	_canvasenvironment *env = canvas_getenv(bself->mom);
+	int ac = env->ce_argc;
+	t_atom av[ac];
+	for (int i=0; i<ac; i++) av[i] = env->ce_argv[i];
+	//ac = handle_braces(ac,av);
+
+	int j;
+	t_symbol *comma = gensym(",");
+	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_w.w_symbol==comma) break;
+	int jj = handle_braces(j,av);
+	process_args(jj-1,av+1);
+	while (j<ac) {
+		j++;
+		int k=j;
+		for (; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_w.w_symbol==comma) break;
+		outlet_anything2(bself->out[sargc],j-k,av+k);
+	}
+}
+void Args::process_args (int argc, t_atom *argv) {
+	t_symbol *wildcard = gensym("*");
+	for (int i=sargc-1; i>=0; i--) {
+		t_atom *v;
+		if (i>=argc) {
+			if (sargv[i].defaultv.a_type != A_NULL) {
+				v = &sargv[i].defaultv;
+			} else if (sargv[i].name!=wildcard) {
+				post("missing argument $%d named \"%s\"", i+1,sargv[i].name);
+				continue;
+			}
+		} else v = &argv[i];
+		if (sargv[i].name==wildcard) {
+			outlet_list(bself->out[i],&s_list,argc-i,argv+i);
+		} else {
+			if (v->a_type==A_LIST) {
+				t_binbuf *b = (t_binbuf *)v->a_w.w_gpointer;
+				outlet_list(bself->out[i],&s_list,binbuf_getnatom(b),binbuf_getvec(b));
+			} else if (v->a_type==A_SYMBOL) outlet_symbol(bself->out[i],v->a_w.w_symbol);
+			else outlet_anything2(bself->out[i],1,v);
+		}
+	}
+	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d)", argc, sargc);
+}
+\end class {install("args",1,1);}
 
 //****************************************************************
 
