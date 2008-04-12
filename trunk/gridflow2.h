@@ -48,8 +48,8 @@ static inline void *memalign (size_t a, size_t n) {return malloc(n);}
 #define A_LIST t_atomtype(13) /* (t_binbuf *) */
 #endif
 // the use of w_gpointer here is fake, just because there's no suitable member in the union
-void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_w.w_gpointer = (t_gpointer *)b;}
-void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_w.w_gpointer = 0;}
+static inline void SETLIST(t_atom *a, t_binbuf *b) {a->a_type = A_LIST; a->a_w.w_gpointer = (t_gpointer *)b;}
+static inline void SETNULL(t_atom *a)              {a->a_type = A_NULL; a->a_w.w_gpointer = 0;}
 
 typedef char       int8; typedef unsigned char      uint8;
 typedef short     int16; typedef unsigned short     uint16;
