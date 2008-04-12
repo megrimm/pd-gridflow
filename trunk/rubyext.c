@@ -214,9 +214,9 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->mom = 0;
 #ifdef HAVE_GEM
 	bself->gemself = (CPPExtern *)((void **)self+11); /* not 64-bit-safe */
-	CPPExtern::m_holder = NULL;
+	CPPExtern::m_holder = 0;
 #ifdef HAVE_HOLDNAME
-	CPPExtern::m_holdname=NULL;
+	CPPExtern::m_holdname=0;
 #endif
 #endif
 	bself->nin  = 1;
@@ -617,11 +617,46 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	delete this; // really!
 }
 
-Ruby GridFlow_s_rdtsc (Ruby rself) { return R(rdtsc()).r; }
+Ruby GridFlow_s_rdtsc (Ruby rself) {return R(rdtsc()).r;}
 
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
+int handle_braces(int ac, t_atom *av) {
+	int stack[16];
+	int stackn=0;
+	int j=0;
+	t_binbuf *buf = binbuf_new(); // leaks if RAISE
+	for (int i=0; i<ac; ) {
+		int close=0;
+		if (av[i].a_type==A_SYMBOL) {
+			const char *s = av[i].a_w.w_symbol->s_name;
+			while (*s=='(') {
+				if (stackn==16) RAISE("too many nested lists (>16)");
+				stack[stackn++]=j;
+				s++;
+			}
+			const char *se = s+strlen(s);
+			while (se>s && se[-1]==')') {se--; close++;}
+			if (s!=se) {
+				binbuf_text(buf,(char *)s,se-s);
+				av[j++] = binbuf_getvec(buf)[0];
+			}
+		} else av[j++]=av[i];
+		i++;
+		while (close--) {
+			if (!stackn) RAISE("close-paren without open-paren",av[i]);
+			t_binbuf *a2 = binbuf_new();
+			int j2 = stack[--stackn];
+			binbuf_add(a2,j-j2,av+j2);
+			j=j2;
+			SETLIST(av+j,a2);
+			j++;
+		}
+	}
+	if (stackn) RAISE("too many open-paren (%d)",stackn);
+	return j;
+}
+
 int handle_braces(int ac, Ruby *av) {
-    try {
 	int stack[16];
 	int stackn=0;
 	int j=0;
@@ -636,13 +671,8 @@ int handle_braces(int ac, Ruby *av) {
 			}
 			const char *se = s+strlen(s);
 			while (se>s && se[-1]==')') {se--; close++;}
-			if (s!=se) {
-				Ruby u = rb_str_new(s,se-s);
-				av[j++] = rb_funcall(mGridFlow,SI(FloatOrSymbol),1,u);
-			}
-		} else {
-			av[j++]=av[i];
-		}
+			if (s!=se) av[j++] = rb_funcall(mGridFlow,SI(FloatOrSymbol),1,rb_str_new(s,se-s));
+		} else av[j++]=av[i];
 		i++;
 		while (close--) {
 			if (!stackn) RAISE("close-paren without open-paren",av[i]);
@@ -655,14 +685,14 @@ int handle_braces(int ac, Ruby *av) {
 	}
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
 	return j;
-    } catch (Barf *oozy) {
-        rb_raise(rb_eArgError,"%s",oozy->text);
-    }
 }
+
 static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby args) {
+    try {
 	int argc = handle_braces(rb_ary_len(args),rb_ary_ptr(args));
 	while (rb_ary_len(args)>argc) rb_ary_pop(args);
 	return rself;
+    } catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
 }
 
 \classinfo {}
@@ -707,7 +737,7 @@ extern "C" void gridflow_setup () {
 	add_to_path(dirresult);
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
-	BFProxy_class = class_new(gensym("ruby_proxy"), NULL,NULL,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
+	BFProxy_class = class_new(gensym("ruby_proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	mGridFlow = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; end");
 	rb_const_set(mGridFlow,SI(DIR),rb_str_new2(dirresult));
