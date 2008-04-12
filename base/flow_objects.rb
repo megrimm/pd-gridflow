@@ -546,11 +546,3 @@ FObject.subclass("memstat",1,1) {
 end # module GridFlow
 
 class IO; include GridFlow::Ioctl; end
-
-begin
-#  require "optional/lti"
-  GridFlow.post "LTI support loaded."
-rescue Exception => e
-  GridFlow.post "LTI support not found (%s)", e.message
-end
-
