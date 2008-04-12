@@ -58,31 +58,29 @@ typedef double  float64;
 // three-way comparison (T is assumed Comparable)
 template <class T> static inline T cmp(T a, T b) { return a<b ? -1 : a>b; }
 
-// a remainder function such that div2(a,b)*b+mod(a,b) = a and for which
-// mod(a,b) is in [0;b) or (b;0]. in contrast to C-language builtin a%b,
-// this one has uniform behaviour around zero.
+// a remainder function such that div2(a,b)*b+mod(a,b) = a and for which mod(a,b) is in [0;b) or (b;0].
+// in contrast to C-language builtin a%b, this one has uniform behaviour around zero,
+// that is, the same as around any other whole number.
 static inline int mod(int a, int b) {return a<0 ? b-((-a)%b) : a%b;}
 
 // counterpart of mod(a,b), just like a/b and a%b are counterparts
 static inline int div2(int a, int b) {return (a/b)-((a<0)&&!!(a%b));}
 
-static inline int32   gf_abs(  int32 a) { return a>0?a:-a; }
-static inline int64   gf_abs(  int64 a) { return a>0?a:-a; }
-static inline float32 gf_abs(float32 a) { return fabs(a); }
-static inline float64 gf_abs(float64 a) { return fabs(a); }
+static inline int32   gf_abs(  int32 a) {return a>0?a:-a;}
+static inline int64   gf_abs(  int64 a) {return a>0?a:-a;}
+static inline float32 gf_abs(float32 a) {return fabs(a);}
+static inline float64 gf_abs(float64 a) {return fabs(a);}
 
 // integer powers in log(b) time. T is assumed Integer
-template <class T> static inline T ipow(T a, T b) {
-	for(T r=1;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}
-}
-static inline float32 ipow(float32 a, float32 b) { return pow(a,b); }
-static inline float64 ipow(float64 a, float64 b) { return pow(a,b); }
+template <class T> static inline T ipow(T a, T b) {T r=1; for(;;) {if (b&1) r*=a; b>>=1; if (!b) return r; a*=a;}}
+static inline float32 ipow(float32 a, float32 b) {return pow(a,b);}
+static inline float64 ipow(float64 a, float64 b) {return pow(a,b);}
 
 #undef min
 #undef max
 // minimum/maximum functions; T is assumed to be Comparable
-template <class T> static inline T min(T a, T b) { return a<b?a:b; }
-template <class T> static inline T max(T a, T b) { return a>b?a:b; }
+template <class T> static inline T min(T a, T b) {return a<b?a:b;}
+template <class T> static inline T max(T a, T b) {return a>b?a:b;}
 //template <class T> inline T min(T a, T b) { T c = (a-b)>>31; return (a&c)|(b&~c); }
 
 // greatest common divisor, by euclid's algorithm
