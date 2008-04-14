@@ -76,18 +76,6 @@ FObject.subclass("fps",1,1) {
 	end
 }
 
-FObject.subclass("unix_time",1,3) {
-  def _0_bang
-    t = Time.new
-    tt = t.to_s
-    send_out 2, t.year, t.month, t.day, t.hour, t.min, t.day
-    send_out 1, t.to_i/86400, t.to_i%86400,
-	((t.to_f-t.to_f.floor)*1000000).to_i
-    a=[]
-    for char in tt.split("") do a << char[0] end
-    send_out 0, :list, *a
-  end
-}
 FObject.subclass("exec",1,0) {def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end}
 FObject.subclass("renamefile",1,0) {def initialize; end; def _0_list(a,b) File.rename(a.to_s,b.to_s) end}
 FObject.subclass("ls",1,1) {
