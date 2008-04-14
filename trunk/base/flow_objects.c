@@ -2626,18 +2626,23 @@ struct ArgSpec {
 \def void initialize(...) {
 	sargc = argc;
 	sargv = new ArgSpec[argc];
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
 	for (int i=0; i<argc; i++) {
-		if (TYPE(argv[i])==T_ARRAY) {
-			int ac = rb_ary_len(argv[i]);
-			t_atom at[ac];
-			ruby2pd(ac,rb_ary_ptr(argv[i]),at);
-			sargv[i].name = atom_getsymbolarg(0,ac,at);
-			sargv[i].type = atom_getsymbolarg(1,ac,at);
-			if (ac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = at[2];
-		}
+		if (at[i].a_type==A_LIST) {
+			t_binbuf *b = (t_binbuf *)at[i].a_w.w_gpointer;
+			int bac = binbuf_getnatom(b);
+			t_atom *bat = binbuf_getvec(b);
+			sargv[i].name = atom_getsymbolarg(0,bac,bat);
+			sargv[i].type = atom_getsymbolarg(1,bac,bat);
+			if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
+		} else if (at[i].a_type==A_SYMBOL) {
+			sargv[i].name = at[i].a_w.w_symbol;
+			sargv[i].type = gensym("a");
+			SETNULL(&sargv[i].defaultv);
+		} else RAISE("expected symbol or nested list");
 	}
 }
-Ruby GridFlow_s_handle_braces(Ruby rself, Ruby args);
 \def void initialize2 () {bself->noutlets_set(sargc+1);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
@@ -2686,7 +2691,8 @@ void Args::process_args (int argc, t_atom *argv) {
 			else outlet_anything2(bself->out[i],1,v);
 		}
 	}
-	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d)", argc, sargc);
+	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d), sargv[-1]=%s", argc, sargc,
+		sargv[sargc-1].name->s_name);
 }
 \end class {install("args",1,1);}
 
