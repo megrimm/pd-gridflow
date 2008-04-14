@@ -2441,6 +2441,39 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 }
 \end class {install("listflatten",1,1);}
 
+\class Range : FObject {
+	t_float *mosusses;
+	int nmosusses;
+	\decl void initialize(...);
+	\decl void initialize2();
+	\decl 0 float(float f);
+	\decl 0 list(float f);
+	\decl void _n_float(int i, float f);
+};
+\def void initialize(...) {
+	nmosusses = argc;
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	for (int i=0; i<argc; i++) if (at[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
+	mosusses = new t_float[argc];
+	for (int i=0; i<argc; i++) mosusses[i]=at[i].a_w.w_float;
+}
+\def void initialize2() {
+	bself-> ninlets_set(1+nmosusses);
+	bself->noutlets_set(1+nmosusses);
+}
+\def 0 list(float f) {_0_float(argc,argv,f);}
+\def 0 float(float f) {
+	int i;
+	for (i=0; i<nmosusses; i++) if (f<mosusses[i]) break;
+	outlet_float(bself->out[i],f);
+}
+\def void _n_float(int i, float f) {
+	if (!i) _0_float(argc,argv,f); // precedence problem in rubyext...
+	else mosusses[i-1] = f;
+}
+\end class {install("range",1,1);}
+
 //****************************************************************
 
 static void display_update(void *x);
