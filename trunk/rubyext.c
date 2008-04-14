@@ -79,20 +79,12 @@ struct FMessage {
 #include <setjmp.h>
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
-
-void CObject_free (void *victim) {
-	CObject *self = (CObject *)victim;
-	if (!self->rself) {fprintf(stderr,"attempt to free object that has no rself\n"); abort();}
-	self->rself = 0; /* paranoia */
-	delete self;
-}
+void CObject_free (void *victim) {delete (CObject *)victim;}
 
 Ruby cPointer=0;
 Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
-	self->rself = Data_Wrap_Struct(cPointer, 0, CObject_free, self);
-	//fprintf(stderr,"making rself=%p self=%p, a Pointer to %p\n",self->rself,self,ptr);
-	return self->rself;
+	return Data_Wrap_Struct(cPointer, 0, CObject_free, self);
 }
 void *Pointer_get (Ruby rself) {
 	DGS(Pointer);
@@ -298,10 +290,9 @@ void Clock_free (Clock *self) { clock_free(self->serf); CObject_free(self); }
 
 Ruby Clock_s_new (Ruby qlass, Ruby owner) {
 	Clock *self = new Clock();
-	self->rself = Data_Wrap_Struct(qlass, Clock_mark, Clock_free, self);
 	self->serf = clock_new((void*)owner,(t_method)Clock_fn);
 	self->owner = owner;
-	return self->rself;
+	return Data_Wrap_Struct(qlass, Clock_mark, Clock_free, self);
 }
 
 \def void set  (double   systime) {   clock_set(serf,  systime); }
@@ -360,15 +351,6 @@ static Ruby FObject_args (Ruby rself) {
 }
 
 #include "bundled/pd/g_canvas.h"
-
-static Ruby FObject_patcherargs (Ruby rself) {
-	DGS(FObject);
-	if (!self->bself) RAISE("can't use this in initialize");
-	_canvasenvironment *env = canvas_getenv(self->bself->mom);
-	Ruby ar = rb_ary_new();
-	for (int i=0; i<env->ce_argc; i++) rb_ary_push(ar, Bridge_import_value(env->ce_argv+i));
-	return ar;
-}
 
 static void BFObject_undrawio (BFObject *bself) {
 #ifndef HAVE_DESIREDATA
@@ -558,24 +540,26 @@ static void send_in_2 (Helper *h) {
 }
 
 static void send_in_3 (Helper *h) {}
-\def void send_in (...) {
-	Helper h = {argc,argv,this,rself};
+void FObject_send_in (int argc, Ruby *argv, Ruby rself) {
+	DGS(FObject);
+	Helper h = {argc,argv,self,rself};
 	rb_ensure(
 		(RMethod)send_in_2,(Ruby)&h,
 		(RMethod)send_in_3,(Ruby)&h);
 }
 
-\def void send_out (...) {
+void FObject_send_out (int argc, Ruby *argv, Ruby rself) {
+	DGS(FObject);
 	if (argc<1) RAISE("not enough args");
 	int outlet = INT(*argv);
 	if (outlet<0 || outlet>=64) RAISE("invalid outlet number: %d",outlet);
 	argc--, argv++;
 	Ruby sym;
-	FObject_prepare_message(argc,argv,sym,this);
+	FObject_prepare_message(argc,argv,sym,self);
 	t_atom sel, at[argc];
 	Bridge_export_value(sym,&sel);
 	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	outlet_anything(bself->out[outlet],atom_getsymbol(&sel),argc,at);
+	outlet_anything(self->bself->out[outlet],atom_getsymbol(&sel),argc,at);
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
@@ -592,7 +576,7 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	}
 	Ruby keep = rb_ivar_get(mGridFlow, SI(@fobjects));
 	self->bself = 0;
-	Ruby rself = self->rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
+	Ruby rself = Data_Wrap_Struct(qlass, CObject_mark, CObject_free, self);
 	rb_hash_aset(keep,rself,Qtrue); // prevent sweeping
 	rb_funcall2(rself,SI(initialize),argc,argv);
 	return rself;
@@ -618,10 +602,12 @@ Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
 	return Qnil;
 }
 
-\def void delete_m () {
+Ruby FObject_delete (Ruby rself) {
+	DGS(FObject);
 	rb_funcall(rb_ivar_get(mGridFlow, SI(@fobjects)),SI(delete),1,rself);
 	DATA_PTR(rself) = 0; // really!
-	delete this; // really!
+	delete self; // really!
+	return Qnil;
 }
 
 Ruby GridFlow_s_rdtsc (Ruby rself) {return R(rdtsc()).r;}
@@ -773,8 +759,10 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
 	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
 	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
-	rb_define_method(fo,"patcherargs", (RMethod)FObject_patcherargs,0);
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
+	rb_define_method(fo,"send_in",     (RMethod)FObject_send_in,-1);
+	rb_define_method(fo,"send_out",    (RMethod)FObject_send_out,-1);
+	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
