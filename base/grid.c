@@ -37,7 +37,6 @@
 static Ruby Pointer_s_new (void *ptr) {
 	Pointer *self = new Pointer(ptr);
 	Ruby rself = Data_Wrap_Struct(EVAL("GridFlow::Pointer"), 0, CObject_free, self);
-	self->rself = rself;
 	return rself;
 }
 static void *Pointer_get (Ruby rself) {
@@ -451,5 +450,6 @@ void make_gimmick () {
 #define FOO(S) foo.give(0,(S *)0);
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
+	//foo.send(0,(float64 *)0); // this doesn't work, when trying to fix the new link problem in --lite mode.
 }
 

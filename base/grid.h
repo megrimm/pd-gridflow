@@ -316,8 +316,7 @@ template <class T> static void memswap (T *a, T *b, long n) {
 
 struct CObject {
 	int32 refcount;
-	Ruby rself; // point to Ruby peer
-	CObject() : refcount(0), rself(0) {}
+	CObject() : refcount(0) {}
 	virtual ~CObject() {}
 };
 void CObject_free (void *);
@@ -829,14 +828,11 @@ struct BFObject : t_object {
 \class FObject : CObject {
 	BFObject *bself; // point to PD peer
 	FObject() : bself(0) {}
-	\decl void send_in (...);
-	\decl void send_out (...);
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
 		outlet_list(bself->out[outlet],&s_list,argc,foo);
 	}
-	\decl void delete_m ();
 };
 \end class FObject
 
@@ -860,7 +856,7 @@ uint64 gf_timeofday();
 extern "C" void Init_gridflow ();
 extern Numop *op_add,*op_sub,*op_mul,*op_div,*op_mod,*op_shl,*op_and,*op_put;
 
-#define ARGS(OBJ) rb_str_ptr(rb_funcall(OBJ->rself,SI(args),0))
+#define ARGS(OBJ) "(some object...)"
 #define NOTEMPTY(_a_) if (!(_a_)) RAISE("in [%s], '%s' is empty",ARGS(this), #_a_);
 #define SAME_TYPE(_a_,_b_) \
 	if ((_a_)->nt != (_b_)->nt) RAISE("%s: same type please (%s has %s; %s has %s)", ARGS(this), \
