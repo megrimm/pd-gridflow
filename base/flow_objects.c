@@ -2875,16 +2875,19 @@ end end
 }
 void ParallelPort_call(ParallelPort *self) {self->call();}
 void ParallelPort::call() {
-	ioctl(fd,LPGETFLAGS,&flags);
+	int flags;
+	if (ioctl(fd,LPGETFLAGS,&flags)<0) post("ioctl: %s",strerror(errno));
 	if (this->flags!=flags) outlet_float(bself->out[2],flags);
 	this->flags = flags;
-	ioctl(fd,LPGETSTATUS,&status);
+	int status;
+	if (ioctl(fd,LPGETSTATUS,&status)<0) post("ioctl: %s",strerror(errno));
 	if (this->status!=status) outlet_float(bself->out[1],status);
 	this->status = status;
-	if (clock) clock_delay(clock,20);
+	if (clock) clock_delay(clock,2000);
 }
 \def void initialize (string port, bool manually=0) {
 	f = fopen(port.data(),"r+");
+	if (!f) RAISE("open %s: %s",port.data(),strerror(errno));
 	fd = fileno(f);
 	status = 0xdeadbeef;
 	flags  = 0xdeadbeef;
