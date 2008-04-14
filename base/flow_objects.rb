@@ -234,21 +234,6 @@ FObject.subclass("route2",1,1) {
 	end
 }
 
-FObject.subclass("range",1,1) {
-  def initialize(*a) @a=a end
-  def initialize2
-    self.ninlets=  1+@a.length
-    self.noutlets= 1+@a.length
-  end
-  def _0_list(x) _0_float(x) end
-  def _0_float(x) i=0; i+=1 until @a[i]==nil or x<@a[i]; send_out i,x end
-  def method_missing(sel,*a)
-    m = /^(_\d+_)(.*)/.match(sel.to_s) or return super
-    m[2]=="float" or return super
-    @a[m[1].to_i-1] = a[0]
-    post "setting a[#{m[1].to_i-1}] = #{a[0]}"
-  end
-}
 FObject.subclass("listfind",2,1) {
   def initialize(*a) _1_list(*a) end
   def _1_list(*a) @a = a end
