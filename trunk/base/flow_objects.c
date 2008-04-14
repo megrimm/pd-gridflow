@@ -2731,6 +2731,39 @@ void Args::process_args (int argc, t_atom *argv) {
 
 //****************************************************************
 
+\class UnixTime : FObject {
+	\decl void initialize ();
+	\decl 0 bang ();
+};
+\def void initialize () {}
+\def 0 bang () {
+	timeval tv;
+	gettimeofday(&tv,0);
+	time_t t = time(0);
+	struct tm *tmp = localtime(&t);
+	if (!tmp) RAISE("localtime: %s",strerror(errno));
+	char tt[MAXPDSTRING];
+	strftime(tt,MAXPDSTRING,"%a %b %d %H:%M:%S %Z %Y",tmp);
+	t_atom a[6];
+	SETFLOAT(a+0,tmp->tm_year+1900);
+	SETFLOAT(a+1,tmp->tm_mon-1);
+	SETFLOAT(a+2,tmp->tm_mday);
+	SETFLOAT(a+3,tmp->tm_hour);
+	SETFLOAT(a+4,tmp->tm_min);
+	SETFLOAT(a+5,tmp->tm_sec);
+	t_atom b[3];
+	SETFLOAT(b+0,tv.tv_sec/86400);
+	SETFLOAT(b+1,mod(tv.tv_sec,86400));
+	SETFLOAT(b+2,tv.tv_usec);
+	outlet_anything(bself->out[2],&s_list,6,a);
+	outlet_anything(bself->out[1],&s_list,3,b);
+	send_out(0,strlen(tt),tt);
+}
+
+\end class UnixTime {install("unix_time",1,3);}
+
+//****************************************************************
+
 #define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
 	op_add = OP(+);
