@@ -917,6 +917,7 @@ inline void set_atom (t_atom *a, float32   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, float64   v) {SETFLOAT(a,v);}
 inline void set_atom (t_atom *a, t_symbol *v) {SETSYMBOL(a,v);}
 inline void set_atom (t_atom *a, Numop    *v) {SETSYMBOL(a,v->sym);}
+inline void set_atom (t_atom *a, t_binbuf *v) {SETLIST(a,v);}
 
 struct FClass2 {
 	int ninlets;
@@ -927,5 +928,6 @@ struct FClass2 {
 };
 extern std::map<string,FClass2 *> fclasses;
 extern std::map<Ruby,FClass2 *> fclasses_ruby;
+int handle_braces(int ac, t_atom *av);
 
 #endif // __GF_GRID_H
