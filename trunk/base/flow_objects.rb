@@ -256,30 +256,6 @@ FObject.subclass("printargs",1,0) {
   end
 }
 
-FObject.subclass("joystick_port",0,1) {
-  def initialize(port)
-    @f = File.open(port.to_s,"r+")
-    @status = nil
-    @clock = Clock.new self
-    @clock.delay 0
-    @f.nonblock=true
-  end
-  def delete; @clock.unset; @f.close end
-  def call
-    loop{
-      begin
-        event = @f.read(8)
-      rescue Errno::EAGAIN
-	@clock.delay 0
-        return
-      end
-      return if not event
-      return if event.length<8
-      send_out 0, *event.unpack("IsCC")
-    }
-  end
-}
-
 # plotter control (HPGL)
 FObject.subclass("plotter_control",1,1) {
   def puts(x)
