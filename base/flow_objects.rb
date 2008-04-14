@@ -332,48 +332,6 @@ FObject.subclass("parallel_port",1,3) {
   # outlet 0 reserved (future use)
 }
 
-module Linux; module SoundMixer; extend IoctlClass
-	MIXER_READ_VOLUME  = 0x80044d00
-	MIXER_WRITE_VOLUME = 0xc0044d00
-	DEVICE_NAMES = ["vol", "bass", "treble", "synth", "pcm", "speaker", "line",
-		"mic", "cd", "mix", "pcm2", "rec", "igain", "ogain", "line1", "line2", "line3", "dig1", "dig2", "dig3",
-		"phin", "phout", "video", "radio", "monitor"]
-	DEVICE_NAMES.each_with_index {|name,i| ioctl_accessor name, MIXER_READ_VOLUME+i, MIXER_WRITE_VOLUME+i}
-end end
-#FObject.subclass("SoundMixer",1,1) {
-# using 'class' because in Ruby 1.8 (but not 1.6 nor 1.9) scoping rules are different for Class#instance_eval.
-class GFSoundMixer < FObject; install "SoundMixer",1,1
-  # BUG? i may have the channels (left,right) backwards
-  def initialize(filename)
-    super
-    @file = File.open filename.to_s, 0
-    @file.extend Linux::SoundMixer
-    $sm = self
-  end
-  @@vars = Linux::SoundMixer.instance_methods.grep(/=/)
-  @@vars_h = {}
-  @@vars.each {|attr|
-    attr=attr.chop
-    eval %{ def _0_#{attr}(x) @file.#{attr} = x[0]*256+x[1] end }
-    @@vars_h[attr]=true
-  }
-  def _0_get(sel=nil)
-    if sel then
-      sels=sel.to_s
-      sel=sels.intern
-      raise if not @@vars_h.include? sel.to_s
-      begin
-        x = @file.send sel
-        send_out 0, sel, :"(", (x>>8)&255, x&255, :")"
-      rescue
-        send_out 0, sel, :"(", -1, -1, :")"
-      end
-    else
-      @@vars.each {|var| _0_get var }
-    end
-  end
-end#}
-
 # end of devices4ruby
 
 # experimental
