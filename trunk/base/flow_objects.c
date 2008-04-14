@@ -252,11 +252,10 @@ GRID_INLET(GridExportList,0) {
 		for (int i=0; i<n; i++) {
 			if (base!=2) oprintf(s,f.data(),data[i]);
 			else {
-				T x = data[i];
-				if (x<0) x=-x;
+				T x = gf_abs(data[i]);
 				int ndigits = 1+highest_bit(uint64(x));
-				for (int j=columns-ndigits-(data[i]<0); j>=0; j--) s<<' ';
-				if (data[i]<0) s<<'-';
+				for (int j=columns-ndigits-(data[i]!=x); j>=0; j--) s<<' ';
+				if (data[i]!=x) s<<'-';
 				for (int j=ndigits-1; j>=0; j--) {
 					s<<char('0'+(((long)x>>j)&1));
 				}
