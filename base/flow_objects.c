@@ -2661,7 +2661,7 @@ void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	t_symbol *comma = gensym(",");
 	for (j=0; j<ac; j++) if (av[j].a_type==A_SYMBOL && av[j].a_w.w_symbol==comma) break;
 	int jj = handle_braces(j,av);
-	process_args(jj-1,av+1);
+	process_args(jj,av);
 	while (j<ac) {
 		j++;
 		int k=j;
@@ -2682,7 +2682,8 @@ void Args::process_args (int argc, t_atom *argv) {
 			}
 		} else v = &argv[i];
 		if (sargv[i].name==wildcard) {
-			outlet_list(bself->out[i],&s_list,argc-i,argv+i);
+			if (argc-i>0) outlet_list(bself->out[i],&s_list,argc-i,argv+i);
+			else outlet_bang(bself->out[i]);
 		} else {
 			if (v->a_type==A_LIST) {
 				t_binbuf *b = (t_binbuf *)v->a_w.w_gpointer;
@@ -2691,8 +2692,7 @@ void Args::process_args (int argc, t_atom *argv) {
 			else outlet_anything2(bself->out[i],1,v);
 		}
 	}
-	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d), sargv[-1]=%s", argc, sargc,
-		sargv[sargc-1].name->s_name);
+	if (argc>sargc && sargv[sargc-1].name!=wildcard) post("warning: too many args (got %d, want %d)", argc, sargc);
 }
 \end class {install("args",1,1);}
 
