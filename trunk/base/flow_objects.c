@@ -2808,6 +2808,94 @@ void Args::process_args (int argc, t_atom *argv) {
 
 \end class UnixTime {install("unix_time",1,3);}
 
+
+//****************************************************************
+
+/* if using a DB-25 female connector as found on a PC, then the pin numbering is like:
+  13 _____ 1
+  25 \___/ 14
+  1 = STROBE = the clock line is a square wave, often at 9600 Hz,
+      which determines the data rate in usual circumstances.
+  2..9 = D0..D7 = the eight ordinary data bits
+  10 = -ACK (status bit 6 ?)
+  11 = BUSY (status bit 7)
+  12 = PAPER_END (status bit 5)
+  13 = SELECT (status bit 4 ?)
+  14 = -AUTOFD
+  15 = -ERROR (status bit 3 ?)
+  16 = -INIT
+  17 = -SELECT_IN
+  18..25 = GROUND
+*/
+
+/*
+module Ioctl
+	def ioctl_intp_out(arg1,arg2) ioctl(arg1,[arg2].pack("l")) end
+	def ioctl_intp_in(arg1)       ioctl(arg1,s="blah"); return s.unpack("l")[0] end
+end
+module Linux; module ParallelPort
+	def self.ioctl_reader(sym,cmd_in)  module_eval %{def #{sym};    ioctl_intp_in( #{cmd_in})                                   end} end
+	def self.ioctl_writer(sym,cmd_out) module_eval %{def #{sym}=(v);ioctl_intp_out(#{cmd_out},v); #{sym} if respond_to? :#{sym} end} end
+	def self.ioctl_accessor(sym,cmd_in,cmd_out)
+		ioctl_reader(sym,cmd_in)
+		ioctl_writer(sym,cmd_out)
+	end
+	ioctl_reader :port_flags , :LPGETFLAGS
+	ioctl_reader :port_status, :LPGETSTATUS
+	ioctl_writer :port_careful,:LPCAREFUL
+	ioctl_writer :port_char,   :LPCHAR
+end end
+*/
+
+//#include <linux/parport.h>
+#define LPCHAR 0x0601
+#define LPCAREFUL 0x0609 /* obsoleted??? wtf? */
+#define LPGETSTATUS 0x060b /* return LP_S(minor) */
+#define LPGETFLAGS 0x060e /* get status flags */
+
+#include <sys/ioctl.h>
+
+\class ParallelPort : FObject {
+	FILE *f;
+	int fd;
+	int status;
+	int flags;
+	bool manually;
+	t_clock *clock;
+	~ParallelPort () {if (clock) clock_free(clock); if (f) fclose(f);}
+	\decl void initialize (string port, bool manually=0);
+	void call ();
+	\decl 0 float (float x);
+	\decl 0 bang ();
+};
+\def 0 float (float x) {
+  uint8 foo = (uint8) x;
+  fwrite(&foo,1,1,f);
+  fflush(f);
+}
+void ParallelPort_call(ParallelPort *self) {self->call();}
+void ParallelPort::call() {
+	ioctl(fd,LPGETFLAGS,&flags);
+	if (this->flags!=flags) outlet_float(bself->out[2],flags);
+	this->flags = flags;
+	ioctl(fd,LPGETSTATUS,&status);
+	if (this->status!=status) outlet_float(bself->out[1],status);
+	this->status = status;
+	if (clock) clock_delay(clock,20);
+}
+\def void initialize (string port, bool manually=0) {
+	f = fopen(port.data(),"r+");
+	fd = fileno(f);
+	status = 0xdeadbeef;
+	flags  = 0xdeadbeef;
+	this->manually = manually;
+	clock = manually ? 0 : clock_new(this,(void(*)())ParallelPort_call);
+	clock_delay(clock,0);
+}
+\def 0 bang () {status = flags = 0xdeadbeef; call();}
+//outlet 0 reserved (future use)
+\end class {install("parallel_port",1,3);}
+
 //****************************************************************
 
 #define OP(x) op_dict[string(#x)]
