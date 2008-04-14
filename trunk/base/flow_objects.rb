@@ -261,15 +261,6 @@ FObject.subclass("ascii",1,1) {
 # System, similar to shell
 FObject.subclass("system",1,1) { def _0_system(*a) system(a.join(" ")) end }
 
-# general-purpose code for performing less-than-trivial IOCTL operations. (was part of devices4ruby)
-module IoctlClass
-	def ioctl_reader(sym,cmd_in)  module_eval %{def #{sym};    ioctl_intp_in( #{cmd_in})                                   end} end
-	def ioctl_writer(sym,cmd_out) module_eval %{def #{sym}=(v);ioctl_intp_out(#{cmd_out},v); #{sym} if respond_to? :#{sym} end} end
-	def ioctl_accessor(sym,cmd_in,cmd_out)
-		ioctl_reader(sym,cmd_in)
-		ioctl_writer(sym,cmd_out)
-	end
-end
 module Ioctl
 	def ioctl_intp_out(arg1,arg2) ioctl(arg1,[arg2].pack("l")) end
 	def ioctl_intp_in(arg1)       ioctl(arg1,s="blah"); return s.unpack("l")[0] end
@@ -294,7 +285,13 @@ end
   17 = -SELECT_IN
   18..25 = GROUND
 =end
-module Linux; module ParallelPort; extend IoctlClass
+module Linux; module ParallelPort
+	def self.ioctl_reader(sym,cmd_in)  module_eval %{def #{sym};    ioctl_intp_in( #{cmd_in})                                   end} end
+	def self.ioctl_writer(sym,cmd_out) module_eval %{def #{sym}=(v);ioctl_intp_out(#{cmd_out},v); #{sym} if respond_to? :#{sym} end} end
+	def self.ioctl_accessor(sym,cmd_in,cmd_out)
+		ioctl_reader(sym,cmd_in)
+		ioctl_writer(sym,cmd_out)
+	end
 	LPCHAR = 0x0601
 	LPCAREFUL = 0x0609 # obsoleted??? wtf?
 	LPGETSTATUS = 0x060b # return LP_S(minor)
