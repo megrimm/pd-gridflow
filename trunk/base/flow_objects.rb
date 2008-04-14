@@ -109,16 +109,10 @@ class PDNetSocket < FObject
 		case protocol
 		when :udp
 			@socket = UDPSocket.new
-			if host=="-" then
-				@socket.bind nil, port
-			end
+			if host=="-" then @socket.bind nil, port end
 		when :tcp
- 			if host=="-" then
-				@server = TCPServer.new("localhost",port)
-			else
-				@socket = TCPSocket.new(host,port)
-			end
-			
+ 			if host=="-" then @server = TCPServer.new("localhost",port)
+			else              @socket = TCPSocket.new(host,port) end
 		end
 		@clock = Clock.new self
 		@clock.delay 0
@@ -220,22 +214,6 @@ FObject.subclass("route2",1,1) {
 		(m = /(_\d_)(.*)/.match sym.to_s) or return super
 		_0_ m[2].intern, *a
 	end
-}
-
-FObject.subclass("listfind",2,1) {
-  def initialize(*a) _1_list(*a) end
-  def _1_list(*a) @a = a end
-  def _0_float(x)
-    i=0
-    while i<@a.length
-      (send_out 0,i; return) if @a[i]==x
-      i+=1
-    end
-    send_out 0,-1
-  end
-  #doc:_1_list,"list to search into"
-  #doc:_0_float,"float to find in that list"
-  #doc_out:_0_float,"position of the incoming float in the stored list"
 }
 
 FObject.subclass("printargs",1,0) {

@@ -2441,6 +2441,52 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 }
 \end class {install("listflatten",1,1);}
 
+// does not do recursive comparison of lists.
+static bool atom_eq (t_atom &a, t_atom &b) {
+	if (a.a_type!=b.a_type) return false;
+	if (a.a_type==A_FLOAT)   return a.a_w.w_float   ==b.a_w.w_float;
+	if (a.a_type==A_SYMBOL)  return a.a_w.w_symbol  ==b.a_w.w_symbol;
+	if (a.a_type==A_POINTER) return a.a_w.w_gpointer==b.a_w.w_gpointer;
+	if (a.a_type==A_LIST)    return a.a_w.w_gpointer==b.a_w.w_gpointer;
+	RAISE("don't know how to compare elements of type %d",a.a_type);
+}
+
+\class ListFind : FObject {
+	int ac;
+	t_atom *at;
+	ListFind() : ac(0), at(0) {}
+	~ListFind() {if (at) delete[] at;}
+	\decl void initialize(...);
+	\decl 0 list(...);
+	\decl 1 list(...);
+	\decl 0 float(float f);
+};
+\def void initialize(...) {_1_list(argc,argv);}
+\def 1 list (...) {
+	if (at) delete[] at;
+	ac = argc;
+	at = new t_atom[argc];
+	ruby2pd(argc,argv,at);
+}
+\def 0 list (...) {
+	t_atom a[1];
+	if (argc<1) RAISE("empty input");
+	ruby2pd(1,argv,at);
+	int i=0;
+	for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	outlet_float(bself->out[0],i==ac?-1:i);
+}
+\def 0 float (float f) {
+	t_atom a[1]; SETFLOAT(a,f);
+	int i=0;
+	for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	outlet_float(bself->out[0],i==ac?-1:i);
+}
+//doc:_1_list,"list to search into"
+//doc:_0_float,"float to find in that list"
+//doc_out:_0_float,"position of the incoming float in the stored list"
+\end class {install("listfind",2,1);}
+
 \class Range : FObject {
 	t_float *mosusses;
 	int nmosusses;
