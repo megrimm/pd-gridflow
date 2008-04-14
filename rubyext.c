@@ -139,7 +139,14 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 	else if ( SYMBOL_P(arg)) SETSYMBOL(at,gensym((char *)rb_sym_name(arg)));
 	else if (  FLOAT_P(arg)) SETFLOAT(at,RFLOAT(arg)->value);
 	else if (rb_obj_class(arg)==cPointer) SETPOINTER(at,(t_gpointer*)Pointer_get(arg));
-	else RAISE("cannot convert argument of class '%s'",
+	else if (TYPE(arg)==T_ARRAY) {
+		t_binbuf *b = binbuf_new();
+		t_atom a;
+		int n=rb_ary_len(arg);
+		Ruby *p=rb_ary_ptr(arg);
+		for (int i=0; i<n; i++) {Bridge_export_value(p[i],&a); binbuf_add(b,1,&a);}
+		SETLIST(at,b);
+	} else RAISE("cannot convert argument of class '%s'",
 		rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 }
 
@@ -787,7 +794,5 @@ BUILTIN_SYMBOLS(FOO)
 	signal(SIGSEGV,SIG_DFL);
 	signal(SIGABRT,SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
-    } catch (Barf *oozy) {
-        post("Init_gridflow error: %s",oozy->text);
-    }
+    } catch (Barf *oozy) {post("Init_gridflow error: %s",oozy->text);}
 }
