@@ -95,50 +95,6 @@ FObject.subclass("ls",1,1) {
         def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
 }
 
-FObject.subclass("args",1,1) {
-	def initialize(*argspecs) @argspecs = argspecs end
-	def initialize2; self.noutlets = @argspecs.length+1 end
-	def _0_bang
-		pa,*loadbang=patcherargs.split(:",")
-		GridFlow.handle_braces! pa
-		#GridFlow.post "patcherargs=%s", pa.inspect
-		i=@argspecs.length-1
-		while i>=0 do
-			#GridFlow.post "argspecs[%i]=%s", i, @argspecs[i].inspect
-			#GridFlow.post "argspecs[%i] isa %s", i, @argspecs[i].class
-			#GridFlow.post "      pa[%i]=%s", i, pa[i].inspect
-			v = pa[i]
-			if not v then
-				if Array===@argspecs[i] and @argspecs[i][2] then
-					v = @argspecs[i][2]
-				elsif @argspecs[i].to_s!="*"
-					#raise "missing argument!"
-					GridFlow.post "missing %d argument", i+1
-					next
-				end
-			end
-			if @argspecs[i].to_s=="*" then
-				rest = pa[i..-1]||[]
-				send_out i,:list,*rest
-			else
-				case v
-				when Symbol; send_out i,:symbol,v
-				when  Array; send_out i,:list, *v
-				when    nil; GridFlow.post "would send nil for pa[#{i}], but..."
-				else         send_out i,        v
-				end
-			end
-			i-=1
-		end
-		if pa.length > @argspecs.length and @argspecs[-1].to_s!="*" then
-			GridFlow.post "warning: too many args (%d for %d)", pa.length, @argspecs.length
-			GridFlow.post "... argspecs=%s",@argspecs.inspect
-			GridFlow.post "... but got %s",pa.inspect
-		end
-		loadbang.each {|m| send_out @argspecs.length, *m }
-	end
-}
-
 FObject.subclass("rubysprintf",2,1) {
   def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
