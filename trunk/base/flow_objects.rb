@@ -76,11 +76,6 @@ FObject.subclass("plotter_control",1,1) {
   end
 }
 
-# ASCII, useful for controlling pics
-FObject.subclass("ascii",1,1) {
-  def puts(x) x.each_byte {|b| send_out 0, b } end
-  def _0_float x; puts "#{x.to_i}" end
-}
 # System, similar to shell
 FObject.subclass("system",1,1) { def _0_system(*a) system(a.join(" ")) end }
 
