@@ -925,5 +925,6 @@ struct FClass2 {
 extern std::map<string,FClass2 *> fclasses;
 extern std::map<Ruby,FClass2 *> fclasses_ruby;
 int handle_braces(int ac, t_atom *av);
+void ruby2pd (int argc, Ruby *argv, t_atom *at);
 
 #endif // __GF_GRID_H
