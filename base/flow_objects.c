@@ -2652,13 +2652,19 @@ static void display_update(void *x) {
 	string sel = string(rb_str_ptr(rb_funcall(argv[0],SI(to_s),0))+3);
 	text.str("");
 	if (sel != "float") {text << sel; if (argc>1) text << " ";}
+	long col = text.str().length();
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
 	char buf[MAXPDSTRING];
 	for (int i=1; i<argc; i++) {
 		atom_string(&at[i],buf,MAXPDSTRING);
 		text << buf;
-		if (i!=argc-1) text << " ";
+		col += strlen(buf);
+		if (i!=argc-1) {
+			text << " ";
+			col++;
+			if (col>56) {text << "\\\\\n"; col=0;}
+		}
 	}
 	clock_delay(clock,0);
 }
