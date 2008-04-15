@@ -2460,6 +2460,7 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 	\decl 0 list(...);
 	\decl 1 list(...);
 	\decl 0 float(float f);
+	\decl 0 symbol(t_symbol *s);
 };
 \def void initialize(...) {_1_list(argc,argv);}
 \def 1 list (...) {
@@ -2472,14 +2473,17 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 	t_atom a[1];
 	if (argc<1) RAISE("empty input");
 	ruby2pd(1,argv,at);
-	int i=0;
-	for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
 	outlet_float(bself->out[0],i==ac?-1:i);
 }
 \def 0 float (float f) {
 	t_atom a[1]; SETFLOAT(a,f);
-	int i=0;
-	for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
+	outlet_float(bself->out[0],i==ac?-1:i);
+}
+\def 0 symbol (t_symbol *s) {
+	t_atom a[1]; SETSYMBOL(a,s);
+	int i=0; for (; i<ac; i++) if (atom_eq(at[i],*a)) break;
 	outlet_float(bself->out[0],i==ac?-1:i);
 }
 //doc:_1_list,"list to search into"
