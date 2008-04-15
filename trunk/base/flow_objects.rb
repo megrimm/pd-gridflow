@@ -72,7 +72,7 @@ FObject.subclass("plotter_control",1,1) {
   def _0_other(command,*v) puts "#{command.to_s.upcase}#{v.join','};" end
   def _0_print(*text) puts "LB#{text.join(' ')}\003;" end
   def _0_print_from_ascii(*codes)
-    _0_print codes.map{|code| code.chr }.join("")
+    _0_print codes.map{|code| code.to_i.chr }.join("")
   end
 }
 
