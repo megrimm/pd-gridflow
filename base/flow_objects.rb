@@ -202,20 +202,6 @@ FObject.subclass("shunt",2,0) {
 	add_creator "demux"
 }
 
-FObject.subclass("route2",1,1) {
-	def initialize(*b)
-		super; @b=b; @bh={}
-		b.each_with_index {|x,i| @bh[x]=i }
-	end
-	def initialize2(*b) self.noutlets= 1+@b.length end
-	def _0_(*a) i=@bh[a[0]]||@b.length; send_out i,*a end
-	def _1_list(*b) @b=b end
-	def method_missing(sym,*a)
-		(m = /(_\d_)(.*)/.match sym.to_s) or return super
-		_0_ m[2].intern, *a
-	end
-}
-
 FObject.subclass("printargs",1,0) {
   def initialize(*args)
     super
