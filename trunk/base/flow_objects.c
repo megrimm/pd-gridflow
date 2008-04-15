@@ -2979,6 +2979,29 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 \end class {install("shunt",2,0); add_creator("demux");}
 
 //****************************************************************
+#include <sys/times.h>
+\class UserTime : FObject {
+	clock_t time;
+	\decl void initialize ();
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def void initialize () {_0_bang(argc,argv);}
+\def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],t.tms_utime-time);}
+\end class {install("usertime",2,1);}
+\class SystemTime : FObject {
+	clock_t time;
+	\decl void initialize ();
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def void initialize () {_0_bang(argc,argv);}
+\def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],t.tms_stime-time);}
+\end class {install("systemtime",2,1);}
+
+//****************************************************************
 
 #define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
