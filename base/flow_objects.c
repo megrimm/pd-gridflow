@@ -180,7 +180,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	SUPER;
 	this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
 	if (argc>2) RAISE("too many arguments");
-	if (argv[0]!=SYM(per_message)) {
+	if (argc>0 && argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
 		dim = dim_grid->to_dim();
 		if (!dim->prod()) RAISE("target grid size must not be zero");
