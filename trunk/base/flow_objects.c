@@ -122,7 +122,7 @@ GRID_INLET(GridCast,0) {
 	\decl void initialize(...);
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
-	//\decl 0 list(...); !@#$
+	//\decl 0 list(...);
 	\decl 1 per_message();
 	\grin 0
 	\grin 1 int32
@@ -140,7 +140,6 @@ GRID_INLET(GridImport,0) {} GRID_FLOW { process(n,data); } GRID_END
 GRID_INPUT(GridImport,1,dim_grid) {
 	P<Dim> d = dim_grid->to_dim();
 	if (!d->prod()) RAISE("target grid size must not be zero");
-	//post("d->prod=%d",d->prod());
 	dim = d;
 } GRID_END
 
@@ -151,14 +150,17 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	process(n,(uint8 *)name);
 }
 
-//\def 0 list(...) {in[0]->from_ruby_list(argc,argv,cast);} !@#$
-
-\def 1 per_message() { dim=0; dim_grid=0; }
+GridHandler *stromgol;
+\def 0 list(...) {//first two lines are there until grins become strictly initialized.
+	if (in.size()<=0) in.resize(1);
+	if (!in[0]) in[0]=new GridInlet((GridObject *)this,stromgol);
+	in[0]->from_ruby_list(argc,argv,cast);}
+\def 1 per_message() {dim=0; dim_grid=0;}
 
 \def void initialize(...) {
 	SUPER;
-	this->cast = argc>=1 ? NumberTypeE_find(argv[1]) : int32_e;
-	if (argc>=2) RAISE("too many arguments");
+	this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
+	if (argc>2) RAISE("too many arguments");
 	if (argv[0]!=SYM(per_message)) {
 		dim_grid=new Grid(argv[0]);
 		dim = dim_grid->to_dim();
@@ -167,7 +169,7 @@ GRID_INPUT(GridImport,1,dim_grid) {
 }
 
 \def 0 reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
-\end class {install("#import",2,1); add_creator("@import");}
+\end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
 
 //****************************************************************
 /*{ Dim[*As] -> ? }*/
