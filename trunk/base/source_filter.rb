@@ -243,8 +243,8 @@ def handle_grin(line)
 	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "#{i} grid(void *foo);"
-	handle_decl "#{i} list(...);"       if not frame.methods["_#{i}_list"]
-	handle_decl "#{i} float(float f);"  if not frame.methods["_#{i}_float"]
+	handle_decl "#{i} list(...);"
+	handle_decl "#{i} float(float f);"
 	$stack[-1].grins[i] = fields.dup
 end
 
@@ -279,12 +279,12 @@ def handle_end(line)
 		handle_def "#{i} list(...) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"]
+			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"].done
 		handle_def "#{i} float(float f) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
 			"Ruby a[]={rb_float_new(f)};"+
-			"in[#{i}]->from_ruby(1,a);}" if not frame.methods["_#{i}_float"]
+			"in[#{i}]->from_ruby(1,a);}" if not frame.methods["_#{i}_float"].done
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop
