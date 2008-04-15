@@ -2979,7 +2979,20 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 \end class {install("shunt",2,0); add_creator("demux");}
 
 //****************************************************************
+//#ifdef UNISTD
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/times.h>
+#include <sys/param.h>
+#include <unistd.h>
+//#endif
+#if defined (__APPLE__) || defined (__FreeBSD__)
+#define HZ CLK_TCK
+#endif
+
+uint64 cpu_hertz;
+int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
+
 \class UserTime : FObject {
 	clock_t time;
 	\decl void initialize ();
@@ -2988,7 +3001,7 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 };
 \def void initialize () {_0_bang(argc,argv);}
 \def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],t.tms_utime-time);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
@@ -2998,8 +3011,30 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 };
 \def void initialize () {_0_bang(argc,argv);}
 \def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
-\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],t.tms_stime-time);}
+\def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
+\class TSCTime : FObject {
+	uint64 time;
+	\decl void initialize ();
+	\decl 0 bang ();
+	\decl 1 bang ();
+};
+\def void initialize () {_0_bang(argc,argv);}
+\def 0 bang () {time=rdtsc();}
+\def 1 bang () {outlet_float(bself->out[0],(rdtsc()-time)*1000.0/cpu_hertz);}
+\end class {install("tsctime",2,1);
+	struct timeval t0,t1;
+	uint64 u0,u1;
+	uint64 estimates[3];
+	for (int i=0; i<3; i++) {
+		u0=rdtsc(); gettimeofday(&t0,0); usleep(10000);
+		u1=rdtsc(); gettimeofday(&t1,0);
+		uint64 t = (t1.tv_sec-t0.tv_sec)*1000000+(t1.tv_usec-t0.tv_usec);
+		estimates[i] = (u1-u0)*1000000/t;
+	}
+	qsort(estimates,3,sizeof(uint64),(comparator_t)uint64_compare);
+	cpu_hertz = estimates[1];
+}
 
 //****************************************************************
 
