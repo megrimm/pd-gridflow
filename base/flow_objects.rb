@@ -23,59 +23,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-FObject.subclass("fps",1,1) {
-	def initialize(*options)
-		super
-		@history = []   # list of delays between incoming messages
-		@last = 0.0     # when was last time
-		@duration = 0.0 # how much delay since last summary
-		@period = 1     # minimum delay between summaries
-		@detailed = false
-		@mode = :real
-		options.each {|o|
-			case o
-			when :detailed; @detailed=true
-			when :real,:user,:system,:cpu; @mode=o
-			end
-		}
-		def @history.moment(n=1)
-			sum = 0
-			each {|x| sum += x**n }
-			sum/length
-		end
-	end
-	def method_missing(*a) end # ignore non-bangs
-	def _0_period x; @period=x end
-	def publish
-		@history.sort!
-		n=@history.length
-		fps = @history.length/@duration
-		if not @detailed then send_out 0, fps; return end
-		send_out 0, fps,
-			1000*@history.min,
-			500*(@history[n/2]+@history[(n-1)/2]),
-			1000*@history.max,
-			1000/fps,
-			1000*(@history.moment(2) - @history.moment(1)**2)**0.5
-	end
-	def _0_bang
-		t = case @mode
-		when :real; Time.new.to_f
-		when :user; Process.times.utime
-		when :system; Process.times.stime
-		when :cpu; GridFlow.rdtsc/GridFlow.cpu_hertz
-		end
-		@history.push t-@last
-		@duration += t-@last
-		@last = t
-		return if @duration<@period
-		fps = @history.length/@duration
-		publish if fps>0.001
-		@history.clear
-		@duration = 0
-	end
-}
-
 FObject.subclass("exec",1,0) {def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end}
 FObject.subclass("renamefile",1,0) {def initialize; end; def _0_list(a,b) File.rename(a.to_s,b.to_s) end}
 FObject.subclass("ls",1,1) {
