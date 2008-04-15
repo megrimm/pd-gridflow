@@ -111,6 +111,9 @@ GRID_INLET(GridCast,0) {
 \end class {install("#cast",1,1); add_creator("@cast");}
 
 //****************************************************************
+
+GridHandler *stromgol; // remove this asap
+
 //{ ?,Dim[B] -> Dim[*Cs] }
 // out0 nt to be specified explicitly
 \class GridImport : GridObject {
@@ -122,11 +125,14 @@ GRID_INLET(GridCast,0) {
 	\decl void initialize(...);
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
+	\decl 0 to_ascii(...);
 	//\decl 0 list(...);
 	\decl 1 per_message();
 	\grin 0
 	\grin 1 int32
 	template <class T> void process (long n, T *data) {
+		if (in.size()<=0) in.resize(1);
+		if (!in[0]) in[0]=new GridInlet((GridObject *)this,stromgol);
 		while (n) {
 			if (!out || !out->dim) out = new GridOutlet(this,0,dim?dim:in[0]->dim,cast);
 			long n2 = min((long)n,out->dim->prod()-out->dex);
@@ -149,8 +155,21 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	if (!dim) out=new GridOutlet(this,0,new Dim(n));
 	process(n,(uint8 *)name);
 }
+\def 0 to_ascii(...) {
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	char buf[MAXPDSTRING];
+	std::ostringstream os;
+	for (int i=0; i<argc; i++) {
+		atom_string(at+i,buf,MAXPDSTRING);
+		os << buf;
+		if (i!=argc-1) os << ' ';
+	}
+	long n = os.str().length();
+	if (!dim) out=new GridOutlet(this,0,new Dim(n),cast);
+	process(n,(uint8 *)os.str().data());
+}
 
-GridHandler *stromgol;
 \def 0 list(...) {//first two lines are there until grins become strictly initialized.
 	if (in.size()<=0) in.resize(1);
 	if (!in[0]) in[0]=new GridInlet((GridObject *)this,stromgol);
@@ -2343,7 +2362,6 @@ GRID_INLET(GridUnpack,0) {
 
 //****************************************************************
 
-void ruby2pd (int argc, Ruby *argv, t_atom *at);
 \class GFError : FObject {
 	string format;
 	\decl void initialize (...);
