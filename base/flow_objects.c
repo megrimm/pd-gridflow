@@ -2935,6 +2935,45 @@ void ParallelPort::call() {
 }
 \end class {install("route2",1,1);}
 
+template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
+
+\class Shunt : FObject {
+	int n;
+	\attr int index;
+	\attr int mode;
+	\attr int hi;
+	\attr int lo;
+	\decl void initialize(int n=2, int i=0);
+	\decl void initialize2();
+	\decl void method_missing(...);
+	\decl 1 float(int i);
+};
+\def void initialize(int n=2, int i=0) {
+	SUPER;
+	this->n=n;
+	this->hi=n-1;
+	this->lo=0;
+	this->mode=0;
+	this->index=i;
+}
+\def void initialize2() {bself->noutlets_set(n);}
+\def void method_missing(...) {
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	t_symbol *sel = gensym(at[0].a_w.w_symbol->s_name+3);
+	outlet_anything(bself->out[index],sel,argc-1,at+1);
+	if (mode) {
+		index += sgn(mode);
+		if (index<lo || index>hi) {
+			int k = max(hi-lo+1,0);
+			int m = gf_abs(mode);
+			if (m==1) index = mod(index-lo,k)+lo; else {mode=-mode; index+=mode;}
+		}
+	}
+}
+\def 1 float(int i) {index = mod(i,n);}
+\end class {install("shunt",2,0); add_creator("demux");}
+
 //****************************************************************
 
 #define OP(x) op_dict[string(#x)]

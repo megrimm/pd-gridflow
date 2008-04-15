@@ -178,30 +178,6 @@ class PDNetSocket < FObject
 	install "pd_netsocket", 2, 2
 end
 
-FObject.subclass("shunt",2,0) {
-	gfattr :index
-	gfattr :mode
-	gfattr :hi
-	gfattr :lo
-	def initialize(n=2,i=0) super; @n=n; @hi=n-1; @lo=0; @mode=0; @index=i end
-	def initialize2; self.noutlets= @n end
-	def method_missing(sel,*args)
-		sel.to_s =~ /^_(\d)_(.*)$/ or super
-		send_out @index,$2.intern,*args
-		if @mode!=0 then
-			@index += @mode<=>0
-			if @index<@lo or @index>@hi then
-				k = @hi-@lo+1
-				m = @mode.abs
-				if m==1 then @index = ((@index-@lo) % k)+@lo
-				else @mode=-@mode; @index+=@mode end
-			end
-		end
-	end
-	def _1_float i; @index=i.to_i % @n end
-	add_creator "demux"
-}
-
 FObject.subclass("printargs",1,0) {
   def initialize(*args)
     super
