@@ -2901,6 +2901,42 @@ void ParallelPort::call() {
 
 //****************************************************************
 
+\class Route2 : FObject {
+	int nsels;
+	t_symbol **sels;
+	Route2() : nsels(0), sels(0) {}
+	~Route2() {if (sels) delete[] sels;}
+	\decl void initialize(...);
+	\decl void initialize2();
+	\decl void method_missing(...);
+	\decl 1 list(...);
+};
+\def void initialize(...) {
+	SUPER;
+	_1_list(argc,argv);
+}
+\def void initialize2() {bself->noutlets_set(1+nsels);}
+\def void method_missing(...) {
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	t_symbol *sel = gensym(at[0].a_w.w_symbol->s_name+3);
+	int i=0;
+	for (i=0; i<nsels; i++) if (sel==sels[i]) break;
+	outlet_anything(bself->out[i],sel,argc-1,at+1);
+}
+\def 1 list(...) {
+	t_atom at[argc];
+	ruby2pd(argc,argv,at);
+	for (int i=0; i<argc; i++) if (at[i].a_type!=A_SYMBOL) {delete[] sels; RAISE("$%d: expected symbol",i+1);}
+	if (sels) delete[] sels;
+	nsels = argc;
+	sels = new t_symbol*[argc];
+	for (int i=0; i<argc; i++) sels[i] = at[i].a_w.w_symbol;
+}
+\end class {install("route2",1,1);}
+
+//****************************************************************
+
 #define OP(x) op_dict[string(#x)]
 void startup_flow_objects () {
 	op_add = OP(+);
