@@ -188,8 +188,7 @@ def handle_def(line)
 	else
 	  Out.print ");"
 	end
-	Out.print "} catch (Barf *oozy) {"
-	Out.print "rb_raise(rb_eArgError,\"%s\",oozy->text);}"
+	Out.print "} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}"
 	case m.rettype
 	when "void"; Out.print "return Qnil;"
 	when "Ruby"; Out.print "return foo;"
@@ -239,12 +238,13 @@ def handle_grin(line)
 	fields = line.split(/\s+/)
 	i = fields[0].to_i
 	c = $stack[-1].name
+	frame = $stack[-1]
 	Out.print "template <class T> void grin_#{i}(GridInlet *in, long n, T *data);"
 	Out.print "template <class T> static void grinw_#{i} (GridInlet *in, long n, T *data);"
 	Out.print "static GridHandler grid_#{i}_hand;"
 	handle_decl "#{i} grid(void *foo);"
-	handle_decl "#{i} list(...);"
-	handle_decl "#{i} float(float f);"
+	handle_decl "#{i} list(...);"       if not frame.methods["_#{i}_list"]
+	handle_decl "#{i} float(float f);"  if not frame.methods["_#{i}_float"]
 	$stack[-1].grins[i] = fields.dup
 end
 
@@ -279,12 +279,12 @@ def handle_end(line)
 		handle_def "#{i} list(...) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
-			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}"
+			"in[#{i}]->from_ruby_list(argc,argv,int32_e);}" if not frame.methods["_#{i}_list"]
 		handle_def "#{i} float(float f) {"+
 			"if (in.size()<=#{i}) in.resize(#{i}+1);"+
 			"if (!in[#{i}]) in[#{i}]=new GridInlet((GridObject *)this,&#{cl}_grid_#{i}_hand);"+
 			"Ruby a[]={rb_float_new(f)};"+
-			"in[#{i}]->from_ruby(1,a);}"
+			"in[#{i}]->from_ruby(1,a);}" if not frame.methods["_#{i}_float"]
 	}
 	if /^class\s*(\w+\s+)?\{(.*)/ =~ line then handle_classinfo("{"+$2) end
 	$stack.pop
