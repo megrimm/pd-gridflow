@@ -2756,7 +2756,7 @@ void Args::process_args (int argc, t_atom *argv) {
 			if (sargv[i].defaultv.a_type != A_NULL) {
 				v = &sargv[i].defaultv;
 			} else if (sargv[i].name!=wildcard) {
-				post("missing argument $%d named \"%s\"", i+1,sargv[i].name);
+				post("missing argument $%d named \"%s\"", i+1,sargv[i].name->s_name);
 				continue;
 			}
 		} else v = &argv[i];
