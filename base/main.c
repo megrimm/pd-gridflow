@@ -70,7 +70,9 @@ void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
 		if (t==A_POINTER) o << "(pointer)";
 		if (t==A_LIST) {
 			t_binbuf *b = (t_binbuf *)argv[i].a_w.w_gpointer;
+			o << "[";
 			pd_oprint(o,binbuf_getnatom(b),binbuf_getvec(b));
+			o << "]";
 		}
 		if (i!=argc-1) o << " ";
 	}
