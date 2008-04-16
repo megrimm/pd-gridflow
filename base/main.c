@@ -452,3 +452,15 @@ void make_hocus_pocus () {
 EACH_NUMBER_TYPE(FOO)
 #undef FOO
 }
+
+std::vector<string> gf_data_path;
+string gf_find_file (string x) {
+	if (strchr(x.data(),'/')) return x;
+	int n = gf_data_path.size();
+	struct stat dummy;
+	for (int i=0; i<n; i++) {
+		string s = gf_data_path[i]+"/"+x;
+		if (lstat(s.data(),&dummy)==0) return s;
+	}
+	return x;
+}

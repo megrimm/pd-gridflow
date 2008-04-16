@@ -902,7 +902,8 @@ void suffixes_are (const char *name, const char *suffixes);
 	\decl 0 rewind ();
 };
 
-static inline string gf_find_file (string x) {return string(rb_str_ptr(rb_funcall(mGridFlow,SI(find_file),1,rb_str_new2(x.data()))));}
+extern std::vector<string> gf_data_path;
+string gf_find_file (string x);
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
 
 inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
