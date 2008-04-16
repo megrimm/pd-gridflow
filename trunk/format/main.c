@@ -69,10 +69,9 @@ void suffixes_are (const char *name, const char *suffixes) {
 }
 
 \class SuffixLookup : FObject {
-  \decl void initialize ();
+  \constructor () {}
   \decl 0 symbol (t_symbol *str);
 };
-\def void initialize () {}
 \def 0 symbol (t_symbol *str) {
 	char *s = strdup(str->s_name);
 	char *t = strrchr(s,'.');
@@ -89,10 +88,9 @@ void suffixes_are (const char *name, const char *suffixes) {
 
 // not in use
 \class FormatLookup : FObject {
-  \decl void initialize ();
+  \constructor () {}
   \decl 0 symbol (string str);
 };
-\def void initialize () {}
 \def 0 symbol (string str) {
 	std::map<std::string,std::string>::iterator u = format_table.find(str);
 	if (u!=format_table.end()) outlet_symbol(bself->out[0],gensym((char *)u->second.data()));
@@ -180,7 +178,11 @@ struct GridHeader {
 	NumberTypeE nt;
 	P<Dim> headerless; // if null: headerful; if Dim: it is the assumed dimensions of received grids
 	\grin 0
-	\decl void initialize(t_symbol *mode, string filename);
+	\constructor (t_symbol *mode, string filename) {
+		strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
+		head.type = 32;
+		_0_open(0,0,mode,filename);
+	}
 	\decl 0 bang ();
 	\decl 0 headerless_m (...);
 	\decl 0 headerful ();
@@ -192,13 +194,6 @@ struct GridHeader {
 //	\decl void raw_open_gzip_in(string filename);
 //	\decl void raw_open_gzip_out(string filename);
 };
-
-\def void initialize(t_symbol *mode, string filename) {
-	SUPER;
-	strncpy(head.magic,is_le()?"\7fgrid":"\7fGRID",5);
-	head.type = 32;
-	_0_open(0,0,mode,filename);
-}
 \def 0 bang () {
 	P<Dim> dim;
 	if (feof(f)) {outlet_bang(bself->te_outlet); return;}
