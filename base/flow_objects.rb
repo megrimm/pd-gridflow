@@ -23,7 +23,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-FObject.subclass("exec",1,0) {def _0_shell(*a) system(a.map!{|x| x.to_s }.join(" ")) end}
 FObject.subclass("renamefile",1,0) {def initialize; end; def _0_list(a,b) File.rename(a.to_s,b.to_s) end}
 FObject.subclass("ls",1,1) {
         def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x| x.intern } end
@@ -57,9 +56,6 @@ FObject.subclass("plotter_control",1,1) {
     _0_print codes.map{|code| code.to_i.chr }.join("")
   end
 }
-
-# System, similar to shell
-FObject.subclass("system",1,1) { def _0_system(*a) system(a.join(" ")) end }
 
 FObject.subclass("regsub",3,1) {
   def initialize(from,to) _1_symbol(from); _2_symbol(to) end
