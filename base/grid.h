@@ -905,6 +905,8 @@ void suffixes_are (const char *name, const char *suffixes);
 extern std::vector<string> gf_data_path;
 string gf_find_file (string x);
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv);
+void pd_oprint (std::ostream &o, int argc, t_atom *argv);
+void pd_post (const char *s, int argc, t_atom *argv);
 
 inline void set_atom (t_atom *a, uint8     v) {SETFLOAT(a,(float)v);}
 inline void set_atom (t_atom *a, int16     v) {SETFLOAT(a,(float)v);}
