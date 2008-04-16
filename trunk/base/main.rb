@@ -21,14 +21,7 @@
 	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 =end
 
-# this file gets loaded by main.c upon startup
-# module GridFlow is supposed to be created by main.c
-# this includes GridFlow.post_string(s)
-
-# in case of bug in Ruby ("Error: Success")
-module Errno; class E000 < StandardError; end; end
-
-module GridFlow #------------------
+module GridFlow
 def self.post(s,*a) post_string(sprintf(s,*a)) end
 class<<self
 	attr_accessor :data_path
@@ -93,11 +86,6 @@ def GridFlow.load_user_config
 		GridFlow.post "while loading ~/.gridflow_startup"
 	end
 end
-END {
-	GridFlow.fobjects.each {|k,v| k.delete if k.respond_to? :delete }
-	GridFlow.fobjects.clear
-	GC.start
-}
 class Object
   def method_missing(name,*)
     oc = GridFlow::FObject
