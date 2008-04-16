@@ -195,11 +195,9 @@ int handle_braces(int ac, Ruby *av);
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = fm->ac;
 	t_atom at[argc];
-	Ruby argv[argc];
 	for (int i=0; i<argc; i++) at[i] = fm->at[i];
 	argc = handle_braces(argc,at);
 	pd_post(fm->selector->s_name,argc,at);
-	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(at+i);
 	BFObject *bself = fm->self;
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
@@ -207,12 +205,13 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	CPPExtern::m_holdname = "keep_gem_happy";
 #endif
 #endif
+
 	int j;
-	Ruby comma = ID2SYM(rb_intern(","));
-	for (j=0; j<argc; j++) if (argv[j]==comma) break;
-	int jj = handle_braces(j,argv);
-	Ruby rself = rb_funcall2(fclasses[fm->selector->s_name]->rself,SI(new),jj,argv);
-	
+	for (j=0; j<argc; j++) if (at[j].a_type==A_COMMA) break;
+	Ruby argv[j];
+	for (int i=0; i<j; i++) argv[i] = Bridge_import_value(at+i);
+	Ruby rself = rb_funcall2(fclasses[fm->selector->s_name]->rself,SI(new),j,argv);
+
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
@@ -235,7 +234,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	while (j<argc) {
 		argv[j]=INT2NUM(0);
 		int k=j;
-		for (j++; j<argc; j++) if (argv[j]==comma) break;
+		for (j++; j<argc; j++) if (at[j].a_type==A_COMMA) break;
+		for (int i=k+1; i<j; i++) argv[i] = Bridge_import_value(at+i);
 		rb_funcall2(rself,SI(send_in),j-k,argv+k);
 	}
 	return rself;
