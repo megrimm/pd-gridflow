@@ -287,34 +287,6 @@ static VALUE rb_funcall_myrescue2(VALUE rself, ID sel, int argc, Ruby *argv) {
 
 //****************************************************************
 
-\class Clock : CObject {
-	t_clock *serf;
-	Ruby owner; /* copy of ptr that serf already has, for marking */
-	\decl void set  (double   systime);
-	\decl void delay(double delaytime);
-	\decl void unset();
-};
-
-void Clock_fn (Ruby rself) { rb_funcall_myrescue(rself,SI(call),0); }
-void Clock_mark (Clock *self) { rb_gc_mark(self->owner); }
-void Clock_free (Clock *self) { clock_free(self->serf); CObject_free(self); }
-
-Ruby Clock_s_new (Ruby qlass, Ruby owner) {
-	Clock *self = new Clock();
-	self->serf = clock_new((void*)owner,(t_method)Clock_fn);
-	self->owner = owner;
-	return Data_Wrap_Struct(qlass, Clock_mark, Clock_free, self);
-}
-
-\def void set  (double   systime) {   clock_set(serf,  systime); }
-\def void delay(double delaytime) { clock_delay(serf,delaytime); }
-\def void unset() { clock_unset(serf); }
-
-\classinfo {}
-\end class Clock
-
-//****************************************************************
-
 \class Pointer : CObject
 \def Ruby ptr () { return LONG2NUM(((long)p)); }
 \classinfo {
@@ -341,19 +313,6 @@ struct _canvasenvironment {
     t_atom *ce_argv;    /* array of "$" arguments */
     int ce_dollarzero;  /* value of "$0" */
 };
-
-static Ruby FObject_args (Ruby rself) {
-	DGS(FObject);
-	if (!self->bself) RAISE("can't use this in initialize");
-	char *buf;
-	int length;
-	t_binbuf *b = self->bself->te_binbuf;
-	if (!b) return Qnil;
-	binbuf_gettext(b, &buf, &length);
-	Ruby r = rb_str_new(buf,length);
-	free(buf);
-	return r;
-}
 
 #include "bundled/pd/g_canvas.h"
 
@@ -656,12 +615,10 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, new, -1);
 	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;
-	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
 	rb_define_method(fo,"initialize2", (RMethod)FObject_dummy,-1);
 	\startall
-	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);
 	cPointer = EVAL("GridFlow::Pointer");
 	startup_number();
