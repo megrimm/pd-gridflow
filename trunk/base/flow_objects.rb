@@ -23,12 +23,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-FObject.subclass("renamefile",1,0) {def initialize; end; def _0_list(a,b) File.rename(a.to_s,b.to_s) end}
-FObject.subclass("ls",1,1) {
-        def _0_symbol(s) send_out 0, :list, *Dir.new(s.to_s).map {|x| x.intern } end
-        def _0_glob  (s) send_out 0, :list, *Dir[    s.to_s].map {|x| x.intern } end
-}
-
 FObject.subclass("rubysprintf",2,1) {
   def initialize(*format) _1_list(format) end
   def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
