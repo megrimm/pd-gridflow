@@ -269,7 +269,9 @@ static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
 static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 #endif // USE_RUBY
 
-#define a_float a_w.w_float
+#define a_float    a_w.w_float
+#define a_symbol   a_w.w_float
+#define a_gpointer a_w.w_gpointer
 
 // trick to be able to define methods in t_atom
 struct t_atom2 : t_atom {
