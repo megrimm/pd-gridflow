@@ -1,26 +1,3 @@
-=begin
-	$Id$
-
-	GridFlow
-	Copyright (c) 2001-2007 by Mathieu Bouchard
-
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	See file ../COPYING for further informations on licensing terms.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-=end
-
 module GridFlow
 def self.post(s,*a) post_string(sprintf(s,*a)) end
 class << self
@@ -38,7 +15,6 @@ class FObject
 		attr_accessor s
 		module_eval "def _0_#{s}(o) self.#{s}=o end"
 	end
-	def post(*a) GridFlow.post(*a) end
 	def initialize2; end
 	def initialize(*) end
 	def _0_get(s=nil)
@@ -66,12 +42,4 @@ def GridFlow.load_user_config
 		GridFlow.post "#{e.class}: #{e}:\n" + e.backtrace.join("\n")
 		GridFlow.post "while loading ~/.gridflow_startup"
 	end
-end
-class Object
-  def method_missing(name,*)
-    oc = GridFlow::FObject
-    obj = (case obj; when oc; self.args; else self      .inspect end)
-    qla = (case obj; when oc; self.args; else self.class.inspect end)
-    raise NameError, "undefined method \"#{name}\" for #{obj} in class #{qla}"#, ["hello"]+e.backtrace
-  end
 end
