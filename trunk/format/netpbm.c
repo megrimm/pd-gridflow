@@ -29,15 +29,13 @@ extern "C" {
 \class FormatNetPBM : Format {
 	struct pam inpam, outpam;
 	\grin 0
-	\decl void initialize(t_symbol *mode, string filename);
+	\constructor (t_symbol *mode, string filename) {
+		Format::_0_open(0,0,mode,filename);
+		memset(& inpam,sizeof(pam),0);
+		memset(&outpam,sizeof(pam),0);
+	}
 	\decl 0 bang ();
 };
-\def void initialize(t_symbol *mode, string filename) {
-	SUPER;
-	Format::_0_open(0,0,mode,filename);
-	memset(& inpam,sizeof(pam),0);
-	memset(&outpam,sizeof(pam),0);
-}
 \def 0 bang () {
 	//inpam.allocation_depth = 3;
 	pnm_readpaminit(f, &inpam, /*PAM_STRUCT_SIZE(tuple_type)*/ sizeof(struct pam));
