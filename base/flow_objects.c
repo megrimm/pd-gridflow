@@ -2858,25 +2858,6 @@ void Args::process_args (int argc, t_atom *argv) {
   18..25 = GROUND
 */
 
-/*
-module Ioctl
-	def ioctl_intp_out(arg1,arg2) ioctl(arg1,[arg2].pack("l")) end
-	def ioctl_intp_in(arg1)       ioctl(arg1,s="blah"); return s.unpack("l")[0] end
-end
-module Linux; module ParallelPort
-	def self.ioctl_reader(sym,cmd_in)  module_eval %{def #{sym};    ioctl_intp_in( #{cmd_in})                                   end} end
-	def self.ioctl_writer(sym,cmd_out) module_eval %{def #{sym}=(v);ioctl_intp_out(#{cmd_out},v); #{sym} if respond_to? :#{sym} end} end
-	def self.ioctl_accessor(sym,cmd_in,cmd_out)
-		ioctl_reader(sym,cmd_in)
-		ioctl_writer(sym,cmd_out)
-	end
-	ioctl_reader :port_flags , :LPGETFLAGS
-	ioctl_reader :port_status, :LPGETSTATUS
-	ioctl_writer :port_careful,:LPCAREFUL
-	ioctl_writer :port_char,   :LPCHAR
-end end
-*/
-
 //#include <linux/parport.h>
 #define LPCHAR 0x0601
 #define LPCAREFUL 0x0609 /* obsoleted??? wtf? */
