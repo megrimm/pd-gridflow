@@ -44,7 +44,6 @@ def self.post(s,*a) post_string(sprintf(s,*a)) end
 class<<self
 	attr_accessor :data_path
 	attr_reader :fobjects
-	attr_reader :cpu_hertz
 	attr_reader :subprocesses
 end
 
@@ -105,16 +104,6 @@ class FObject
 			self.class.gfattrs.each_key{|k| _0_get k }
 		end
 	end
-end
-
-def GridFlow.estimate_cpu_clock
-	u0,t0=GridFlow.rdtsc,Time.new.to_f; sleep 0.01
-	u1,t1=GridFlow.rdtsc,Time.new.to_f; (u1-u0)/(t1-t0)
-end
-begin
-	@cpu_hertz = (0...3).map {GridFlow.estimate_cpu_clock}.sort[1] # median of three tries
-rescue Exception => e
-	GridFlow.post e,e.backtrace
 end
 
 def GridFlow.find_file s
