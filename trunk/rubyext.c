@@ -667,8 +667,6 @@ BUILTIN_SYMBOLS(FOO)
 	startup_number();
 	startup_grid();
 	startup_flow_objects();
-	if (!EVAL("begin require 'base/main.rb'; true; rescue Exception => e; "
-		"STDERR.puts \"can't load: #{$!}\nbacktrace: #{$!.backtrace.join\"\n\"}\n$:=#{$:.inspect}\"\n; false end")) return;
 	startup_format();
 	STARTUP_LIST()
 	delete[] dirresult;
