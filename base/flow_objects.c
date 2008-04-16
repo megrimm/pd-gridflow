@@ -96,7 +96,7 @@ static void expect_max_one_dim (P<Dim> d) {
 //****************************************************************
 \class GridCast : GridObject {
 	\attr NumberTypeE nt;
-	\decl void initialize (NumberTypeE nt);
+	\constructor (NumberTypeE nt) {this->nt = nt;}
 	\grin 0
 };
 GRID_INLET(GridCast,0) {
@@ -104,10 +104,6 @@ GRID_INLET(GridCast,0) {
 } GRID_FLOW {
 	out->send(n,data);
 } GRID_END
-\def void initialize (NumberTypeE nt) {
-	SUPER;
-	this->nt = nt;
-}
 \end class {install("#cast",1,1); add_creator("@cast");}
 
 //****************************************************************
@@ -120,9 +116,17 @@ GridHandler *stromgol; // remove this asap
 	\attr NumberTypeE cast;
 	\attr P<Dim> dim; // size of grids to send
 	PtrGrid dim_grid;
-	GridImport() { dim_grid.constrain(expect_dim_dim_list); }
+	\constructor (...) {
+		dim_grid.constrain(expect_dim_dim_list);
+		this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
+		if (argc>2) RAISE("too many arguments");
+		if (argc>0 && argv[0]!=gensym("per_message")) {
+			dim_grid=new Grid(argv[0]);
+			dim = dim_grid->to_dim();
+			if (!dim->prod()) RAISE("target grid size must not be zero");
+		}
+	}
 	~GridImport() {}
-	\decl void initialize(...);
 	\decl 0 reset();
 	\decl 0 symbol(t_symbol *x);
 	\decl 0 to_ascii(...);
@@ -176,17 +180,6 @@ GRID_INPUT(GridImport,1,dim_grid) {
 	in[0]->from_ruby_list(argc,argv,cast);}
 \def 1 per_message() {dim=0; dim_grid=0;}
 
-\def void initialize(...) {
-	SUPER;
-	this->cast = argc>=2 ? NumberTypeE_find(argv[1]) : int32_e;
-	if (argc>2) RAISE("too many arguments");
-	if (argc>0 && argv[0]!=SYM(per_message)) {
-		dim_grid=new Grid(argv[0]);
-		dim = dim_grid->to_dim();
-		if (!dim->prod()) RAISE("target grid size must not be zero");
-	}
-}
-
 \def 0 reset() {int32 foo[1]={0}; while (out->dim) out->send(1,foo);}
 \end class {install("#import",2,1); add_creator("@import"); stromgol = &GridImport_grid_0_hand;}
 
@@ -194,9 +187,9 @@ GRID_INPUT(GridImport,1,dim_grid) {
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
 \class GridToFloat : GridObject {
+	\constructor () {}
 	\grin 0
 };
-
 GRID_INLET(GridToFloat,0) {
 } GRID_FLOW {
 	for (int i=0; i<n; i++) outlet_float(bself->out[0],data[i]);
@@ -204,9 +197,9 @@ GRID_INLET(GridToFloat,0) {
 \end class {install("#to_float",1,1); add_creator("#export"); add_creator("@export");}
 
 \class GridToSymbol : GridObject {
+	\constructor () {}
 	\grin 0
 };
-
 GRID_INLET(GridToSymbol,0) {
 	in->set_chunk(0);
 } GRID_FLOW {
@@ -217,10 +210,10 @@ GRID_INLET(GridToSymbol,0) {
 } GRID_END
 \end class {install("#to_symbol",1,1); add_creator("#export_symbol"); add_creator("@export_symbol");}
 
-/* **************************************************************** */
 /*{ Dim[*As] -> ? }*/
 /* in0: integer nt */
 \class GridExportList : GridObject {
+	\constructor () {}
 	int n;
 	\grin 0
 };
@@ -240,6 +233,11 @@ GRID_INLET(GridExportList,0) {
 
 /* **************************************************************** */
 \class GridPrint : GridObject {
+	\constructor (t_symbol *name=0) {
+		this->dest = 0;
+		this->name = name;
+		base=10; trunc=70; maxrows=50;
+	}
 	\attr t_symbol *name;
 	\grin 0
 	int base;
@@ -248,7 +246,6 @@ GRID_INLET(GridExportList,0) {
 	int columns;
 	t_pd *dest;
 	\decl 0 dest (void *p);
-	\decl void initialize (t_symbol *name=0);
 	\decl void end_hook ();
 	\decl 0 base (int x);
 	\decl 0 trunc (int x);
@@ -309,12 +306,6 @@ GRID_INLET(GridExportList,0) {
 		return r.str();
 	}
 };
-\def void initialize(t_symbol *name=0) {
-	SUPER;
-	this->dest = 0;
-	this->name = name;
-	base=10; trunc=70; maxrows=50;
-}
 /*static t_pd *rp_to_pd (Ruby pointer) {
        Pointer *foo;
        Data_Get_Struct(pointer,Pointer,foo);
@@ -400,6 +391,7 @@ GRID_INLET(GridPrint,0) {
 // in1: whatever nt
 // out0: same nt as in1
 \class GridStore : GridObject {
+
 	PtrGrid r; // can't be \attr
 	PtrGrid put_at; // can't be //\attr
 	\attr Numop *op;
@@ -411,13 +403,19 @@ GRID_INLET(GridPrint,0) {
 	int32 *to2  ;
 	int lsd; // lsd = Last Same Dimension (for put_at)
 	int d; // goes with wdex
-	\decl void initialize (Grid *r=0);
+	\constructor (Grid *r=0) {
+		put_at.constrain(expect_max_one_dim);
+		this->r = r?r:new Grid(new Dim(),int32_e,true);
+		op = op_put;
+		wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
+		fromb = new int32[Dim::MAX_DIM];
+		to2   = new int32[Dim::MAX_DIM];
+	}
 	\decl 0 bang ();
 	\decl 1 reassign ();
 	\decl 1 put_at (Grid *index);
 	\grin 0 int
 	\grin 1
-	GridStore() { put_at.constrain(expect_max_one_dim); }
 	template <class T> void compute_indices(T *v, long nc, long nd);
 };
 
@@ -575,14 +573,6 @@ GRID_INLET(GridStore,1) {
 }
 \def 1 reassign () { put_at=0; }
 \def 1 put_at (Grid *index) { put_at=index; }
-\def void initialize (Grid *r) {
-	SUPER;
-	this->r = r?r:new Grid(new Dim(),int32_e,true);
-	op = op_put;
-	wdex  = new int32[Dim::MAX_DIM]; // temporary buffer, copy of put_at
-	fromb = new int32[Dim::MAX_DIM];
-	to2   = new int32[Dim::MAX_DIM];
-}
 \end class {install("#store",2,1); add_creator("@store");}
 
 //****************************************************************
@@ -591,7 +581,10 @@ GRID_INLET(GridStore,1) {
 \class GridOp : GridObject {
 	\attr Numop *op;
 	PtrGrid r;
-	\decl void initialize(Numop *op, Grid *r=0);
+	\constructor (Numop *op, Grid *r=0) {
+		this->op=op;
+		this->r=r?r:new Grid(new Dim(),int32_e,true);
+	}
 	\grin 0
 	\grin 1
 };
@@ -640,17 +633,13 @@ GRID_INLET(GridOp,0) {
 } GRID_END
 
 GRID_INPUT2(GridOp,1,r) {} GRID_END
-\def void initialize(Numop *op, Grid *r=0) {
-  SUPER; this->op=op;
-  this->r=r?r:new Grid(new Dim(),int32_e,true);
-}
 \end class {install("#",2,1); add_creator("@");}
 
 //****************************************************************
 \class GridFold : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop *op);
+	\constructor (Numop *op) {this->op=op;}
 	\grin 0
 };
 
@@ -689,13 +678,12 @@ GRID_INLET(GridFold,0) {
 } GRID_FINISH {
 } GRID_END
 
-\def void initialize (Numop *op) { SUPER; this->op=op; }
 \end class {install("#fold",1,1);}
 
 \class GridScan : GridObject {
 	\attr Numop *op;
 	\attr PtrGrid seed;
-	\decl void initialize (Numop *op);
+	\constructor (Numop *op) {this->op = op;}
 	\grin 0
 };
 
@@ -726,7 +714,6 @@ GRID_INLET(GridScan,0) {
 	out->send(n,buf);
 } GRID_END
 
-\def void initialize (Numop *op) { SUPER; this->op = op; }
 \end class {install("#scan",1,1);}
 
 //****************************************************************
@@ -742,8 +729,12 @@ GRID_INLET(GridScan,0) {
 	PtrGrid r;
 	PtrGrid r2; // temporary
 	bool use_dot;
-	GridInner() {}
-	\decl void initialize (Grid *r=0);
+	\constructor (Grid *r=0) {
+		this->op = op_mul;
+		this->fold = op_add;
+		this->seed = new Grid(new Dim(),int32_e,true);
+		this->r    = r ? r : new Grid(new Dim(),int32_e,true);
+	}
 	\grin 0
 	\grin 1
 };
@@ -870,14 +861,6 @@ GRID_INLET(GridInner,0) {
 
 GRID_INPUT(GridInner,1,r) {} GRID_END
 
-\def void initialize (Grid *r) {
-	SUPER;
-	this->op = op_mul;
-	this->fold = op_add;
-	this->seed = new Grid(new Dim(),int32_e,true);
-	this->r    = r ? r : new Grid(new Dim(),int32_e,true);
-}
-
 \end class {install("#inner",2,1);}
 
 /* **************************************************************** */
@@ -885,7 +868,10 @@ GRID_INPUT(GridInner,1,r) {} GRID_END
 \class GridOuter : GridObject {
 	\attr Numop *op;
 	PtrGrid r;
-	\decl void initialize (Numop *op, Grid *r=0);
+	\constructor (Numop *op, Grid *r=0) {
+		this->op = op;
+		this->r = r ? r : new Grid(new Dim(),int32_e,true);
+	}
 	\grin 0
 	\grin 1
 };
@@ -933,12 +919,6 @@ GRID_INLET(GridOuter,0) {
 
 GRID_INPUT(GridOuter,1,r) {} GRID_END
 
-\def void initialize (Numop *op, Grid *r) {
-	SUPER;
-	this->op = op;
-	this->r = r ? r : new Grid(new Dim(),int32_e,true);
-}
-
 \end class {install("#outer",2,1); add_creator("@outer");}
 
 //****************************************************************
@@ -948,12 +928,14 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	\attr PtrGrid from;
 	\attr PtrGrid to;
 	\attr PtrGrid step;
-	GridFor () {
-		from.constrain(expect_max_one_dim);
-		to  .constrain(expect_max_one_dim);
-		step.constrain(expect_max_one_dim);
+	\constructor (Grid *from, Grid *to, Grid *step) {
+		this->from.constrain(expect_max_one_dim);
+		this->to  .constrain(expect_max_one_dim);
+		this->step.constrain(expect_max_one_dim);
+		this->from=from;
+		this->to  =to;
+		this->step=step;
 	}
-	\decl void initialize (Grid *from, Grid *to, Grid *step);
 	\decl 0 set (Grid *r=0);
 	\decl 0 bang ();
 	\grin 0 int
@@ -961,13 +943,6 @@ GRID_INPUT(GridOuter,1,r) {} GRID_END
 	\grin 2 int
 	template <class T> void trigger (T bogus);
 };
-
-\def void initialize (Grid *from, Grid *to, Grid *step) {
-	SUPER;
-	this->from=from;
-	this->to  =to;
-	this->step=step;
-}
 
 template <class T>
 void GridFor::trigger (T bogus) {
@@ -1029,10 +1004,9 @@ GRID_INPUT(GridFor,0,from) {_0_bang(0,0);} GRID_END
 
 //****************************************************************
 \class GridFinished : GridObject {
-	\decl void initialize ();
+	\constructor () {}
 	\grin 0
 };
-\def void initialize () {}
 GRID_INLET(GridFinished,0) {
 	in->set_mode(0);
 } GRID_FINISH {
@@ -1041,10 +1015,9 @@ GRID_INLET(GridFinished,0) {
 \end class {install("#finished",1,1); add_creator("@finished");}
 
 \class GridDim : GridObject {
-	\decl void initialize ();
+	\constructor () {}
 	\grin 0
 };
-\def void initialize () {}
 GRID_INLET(GridDim,0) {
 	GridOutlet out(this,0,new Dim(in->dim->n));
 	out.send(in->dim->n,in->dim->v);
@@ -1053,10 +1026,9 @@ GRID_INLET(GridDim,0) {
 \end class {install("#dim",1,1); add_creator("@dim");}
 
 \class GridType : GridObject {
-	\decl void initialize ();
+	\constructor () {}
 	\grin 0
 };
-\def void initialize () {}
 GRID_INLET(GridType,0) {
 	outlet_symbol(bself->out[0],gensym((char *)number_type_table[in->nt].name));
 	in->set_mode(0);
@@ -1069,9 +1041,13 @@ GRID_INLET(GridType,0) {
 	\attr P<Dim> dim;
 	PtrGrid dim_grid;
 	PtrGrid temp; // temp->dim is not of the same shape as dim
-	GridRedim() { dim_grid.constrain(expect_dim_dim_list); }
 	~GridRedim() {}
-	\decl void initialize (Grid *d);
+	\constructor (Grid *d) {
+		dim_grid.constrain(expect_dim_dim_list);
+		dim_grid=d;
+		dim = dim_grid->to_dim();
+	//	if (!dim->prod()) RAISE("target grid size must not be zero");
+	}
 	\grin 0
 	\grin 1 int32
 };
@@ -1109,13 +1085,6 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 	dim = d;
 } GRID_END
 
-\def void initialize (Grid *d) {
-	SUPER;
-	dim_grid=d;
-	dim = dim_grid->to_dim();
-//	if (!dim->prod()) RAISE("target grid size must not be zero");
-}
-
 \end class {install("#redim",2,1); add_creator("@redim");}
 
 //****************************************************************
@@ -1124,7 +1093,10 @@ GRID_INPUT(GridRedim,1,dim_grid) {
 	PtrGrid r;
 	\grin 0
 	\grin 1
-	\decl void initialize (int which_dim=-1, Grid *r=0);
+	\constructor (int which_dim=-1, Grid *r=0) {
+		this->which_dim = which_dim;
+		this->r=r;
+	}
 };
 
 GRID_INLET(GridJoin,0) {
@@ -1185,16 +1157,11 @@ GRID_INLET(GridJoin,0) {
 
 GRID_INPUT(GridJoin,1,r) {} GRID_END
 
-\def void initialize (int which_dim, Grid *r) {
-	SUPER;
-	this->which_dim = which_dim;
-	this->r=r;
-}
-
 \end class {install("@join",2,1);}
 
 //****************************************************************
 \class GridGrade : GridObject {
+	\constructor () {}
 	\grin 0
 };
 
@@ -1235,7 +1202,10 @@ GRID_INLET(GridGrade,0) {
 	\attr int dim1;
 	\attr int dim2;
 	int d1,d2,na,nb,nc,nd; // temporaries
-	\decl void initialize (int dim1=0, int dim2=1);
+	\constructor (int dim1=0, int dim2=1) {
+		this->dim1 = dim1;
+		this->dim2 = dim2;
+	}
 	\decl 1 float (int dim1);
 	\decl 2 float (int dim2);
 	\grin 0
@@ -1281,19 +1251,13 @@ GRID_INLET(GridTranspose,0) {
 	delete[] res; // if an exception was thrown by out->send, this never gets done
 } GRID_END
 
-\def void initialize (int dim1=0, int dim2=1) {
-	SUPER;
-	this->dim1 = dim1;
-	this->dim2 = dim2;
-}
-
 \end class {install("#transpose",3,1); add_creator("@transpose");}
 
 //****************************************************************
 \class GridReverse : GridObject {
 	\attr int dim1; // dimension to act upon
 	int d; // temporaries
-	\decl void initialize (int dim1=0);
+	\constructor (int dim1=0) {this->dim1 = dim1;}
 	\decl 1 float (int dim1);
 	\grin 0
 };
@@ -1319,15 +1283,11 @@ GRID_INLET(GridReverse,0) {
 	}
 } GRID_END
 
-\def void initialize (int dim1=0) {
-	SUPER;
-	this->dim1 = dim1;
-}
-
 \end class {install("#reverse",2,1);}
 
 //****************************************************************
 \class GridCentroid : GridObject {
+	\constructor () {}
 	\grin 0 int
 	int sumx,sumy,sum,y; // temporaries
 };
@@ -1362,8 +1322,15 @@ GRID_INLET(GridCentroid,0) {
 \end class {install("#centroid",1,3);}
 
 //****************************************************************
+static void expect_pair (P<Dim> dim) {if (dim->prod()!=2) RAISE("expecting only two numbers. Dim(2)");}
+
 \class GridMoment : GridObject {
-	\decl void initialize (int order=1);
+	\constructor (int order=1) {
+		offset.constrain(expect_pair);
+		offset=new Grid(EVAL("[0,0]"));
+		if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
+		this->order=order;
+	}
 	\grin 0 int
 	\grin 1 int
 	\attr int order; // order
@@ -1428,19 +1395,6 @@ GRID_INLET(GridMoment,0) {
 
 GRID_INPUT(GridMoment,1,offset) {} GRID_END
 
-static void expect_pair (P<Dim> dim) {
-	if (dim->prod()!=2)
-		RAISE("expecting only two numbers. Dim(2)");
-}
-
-\def void initialize (int order=1) {
-	offset.constrain(expect_pair);
-	offset=new Grid(EVAL("[0,0]"));
-	if (order!=1 && order!=2) RAISE("supports only orders 1 and 2 for now");
-	this->order=order;
-	SUPER;
-}
-
 \end class {install("#moment",2,1);}
 
 //****************************************************************
@@ -1448,7 +1402,7 @@ static void expect_pair (P<Dim> dim) {
 	\grin 0
 	\attr int form();
 	\attr int form_val;
-	\decl void initialize(int form=0);
+	\constructor (int form=0) {form_val=form;}
 	\decl void initialize2();
 	\decl void initialize3();
 };
@@ -1521,10 +1475,6 @@ GRID_INLET(GridLabeling,0) {
 	delete[] dat;
 } GRID_END
 
-\def void initialize(int form=0) {
-	SUPER;
-	form_val=form;
-}
 \def void initialize2() {initialize3(0,0);}
 \def int form() {return form_val;}
 \def 0 form(int form) {
@@ -1542,9 +1492,8 @@ GRID_INLET(GridLabeling,0) {
 \class GridPerspective : GridObject {
 	\attr int32 z;
 	\grin 0
-	\decl void initialize (int32 z=256);
+	\constructor (int32 z=256) {this->z=z;}
 };
-
 GRID_INLET(GridPerspective,0) {
 	int n = in->dim->n;
 	int32 v[n];
@@ -1560,9 +1509,6 @@ GRID_INLET(GridPerspective,0) {
 		out->send(m-1,data);
 	}	
 } GRID_END
-
-\def void initialize (int32 z) {SUPER; this->z=z;}
-
 \end class {install("#perspective",1,1); add_creator("@perspective");}
 
 //****************************************************************
@@ -1574,7 +1520,10 @@ GRID_INLET(GridPerspective,0) {
 	\grin 0
 	\grin 1 int
 	\grin 2 int
-	\decl void initialize (Grid *dl, Grid *dr);
+	\constructor (Grid *dl, Grid *dr) {
+		diml_grid=dl; diml = diml_grid->to_dim();
+		dimr_grid=dr; dimr = dimr_grid->to_dim();
+	}
 };
 
 GRID_INLET(GridBorder,0) {
@@ -1605,12 +1554,6 @@ GRID_INLET(GridBorder,0) {
 
 GRID_INPUT(GridBorder,1,diml_grid) { diml = diml_grid->to_dim(); } GRID_END
 GRID_INPUT(GridBorder,2,dimr_grid) { dimr = dimr_grid->to_dim(); } GRID_END
-
-\def void initialize (Grid *dl, Grid *dr) {
-	SUPER;
-	diml_grid=dl; diml = diml_grid->to_dim();
-	dimr_grid=dr; dimr = dimr_grid->to_dim();
-}
 
 \end class {install("#border",3,1);}
 
@@ -1645,8 +1588,16 @@ struct PlanEntry { long y,x; bool neutral; };
 	int plann;
 	PlanEntry *plan;
 	int margx,margy; // margins
-	GridConvolve () : plan(0) { b.constrain(expect_convolution_matrix); plan=0; }
-	\decl void initialize (Grid *r=0);
+	\constructor (Grid *r=0) {
+		plan=0;
+		b.constrain(expect_convolution_matrix); plan=0;
+		this->op = op_mul;
+		this->fold = op_add;
+		this->seed = new Grid(new Dim(),int32_e,true);
+		this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
+		this->wrap = true;
+		this->anti = true;
+	}
 	\grin 0
 	\grin 1
 	template <class T> void copy_row (T *buf, long sx, long y, long x);
@@ -1747,26 +1698,27 @@ GRID_INLET(GridConvolve,0) {
 
 GRID_INPUT(GridConvolve,1,b) {} GRID_END
 
-\def void initialize (Grid *r) {
-	SUPER;
-	this->op = op_mul;
-	this->fold = op_add;
-	this->seed = new Grid(new Dim(),int32_e,true);
-	this->b= r ? r : new Grid(new Dim(1,1),int32_e,true);
-	this->wrap = true;
-	this->anti = true;
-}
-
 \end class {install("#convolve",2,1);}
 
 /* ---------------------------------------------------------------- */
 /* "#scale_by" does quick scaling of pictures by integer factors */
 /*{ Dim[A,B,3]<T> -> Dim[C,D,3]<T> }*/
+
+static void expect_scale_factor (P<Dim> dim) {
+	if (dim->prod()!=1 && dim->prod()!=2)
+		RAISE("expecting only one or two numbers");
+}
+
 \class GridScaleBy : GridObject {
 	\attr PtrGrid scale; // integer scale factor
 	int scaley;
 	int scalex;
-	\decl void initialize (Grid *factor=0);
+	\constructor (Grid *factor=0) {
+		scale.constrain(expect_scale_factor);
+		scale=new Grid(INT2NUM(2));
+		if (factor) scale=factor;
+		prepare_scale_factor();
+	}
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
@@ -1803,20 +1755,7 @@ GRID_INLET(GridScaleBy,0) {
 	#undef Z
 } GRID_END
 
-static void expect_scale_factor (P<Dim> dim) {
-	if (dim->prod()!=1 && dim->prod()!=2)
-		RAISE("expecting only one or two numbers");
-}
-
 GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
-
-\def void initialize (Grid *factor) {
-	scale.constrain(expect_scale_factor);
-	SUPER;
-	scale=new Grid(INT2NUM(2));
-	if (factor) scale=factor;
-	prepare_scale_factor();
-}
 
 \end class {install("#scale_by",2,1); add_creator("@scale_by");}
 
@@ -1828,7 +1767,13 @@ GRID_INPUT(GridScaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 	int scaley;
 	int scalex;
 	PtrGrid temp;
-	\decl void initialize (Grid *factor=0, t_symbol *option=0);
+	\constructor (Grid *factor=0, t_symbol *option=0) {
+		scale.constrain(expect_scale_factor);
+		scale=new Grid(INT2NUM(2));
+		if (factor) scale=factor;
+		prepare_scale_factor();
+		smoothly = option==gensym("smoothly");
+	}
 	\grin 0
 	\grin 1
 	void prepare_scale_factor () {
@@ -1899,21 +1844,12 @@ GRID_INLET(GridDownscaleBy,0) {
 
 GRID_INPUT(GridDownscaleBy,1,scale) { prepare_scale_factor(); } GRID_END
 
-\def void initialize (Grid *factor, t_symbol *option=0) {
-	scale.constrain(expect_scale_factor);
-	SUPER;
-	scale=new Grid(INT2NUM(2));
-	if (factor) scale=factor;
-	prepare_scale_factor();
-	smoothly = option==gensym("smoothly");
-}
-
 \end class {install("#downscale_by",2,1); add_creator("@downscale_by");}
 
 //****************************************************************
 \class GridLayer : GridObject {
 	PtrGrid r;
-	GridLayer() { r.constrain(expect_rgb_picture); }
+	\constructor () {r.constrain(expect_rgb_picture);}
 	\grin 0 int
 	\grin 1 int
 };
@@ -1961,11 +1897,13 @@ static void expect_polygon (P<Dim> d) {
 	PtrGrid lines;
 	int lines_start;
 	int lines_stop;
-	DrawPolygon() {
-		color.constrain(expect_max_one_dim);
-		polygon.constrain(expect_polygon);
+	\constructor (Numop *op, Grid *color=0, Grid *polygon=0) {
+		this->color.constrain(expect_max_one_dim);
+		this->polygon.constrain(expect_polygon);
+		this->op = op;
+		if (color) this->color=color;
+		if (polygon) {this->polygon=polygon; init_lines();}
 	}
-	\decl void initialize (Numop *op, Grid *color=0, Grid *polygon=0);
 	\grin 0
 	\grin 1
 	\grin 2 int32
@@ -2062,13 +2000,6 @@ GRID_INLET(DrawPolygon,0) {
 GRID_INPUT(DrawPolygon,1,color) {} GRID_END
 GRID_INPUT(DrawPolygon,2,polygon) {init_lines();} GRID_END
 
-\def void initialize (Numop *op, Grid *color, Grid *polygon) {
-	SUPER;
-	this->op = op;
-	if (color) this->color=color;
-	if (polygon) { this->polygon=polygon; init_lines(); }
-}
-
 \end class {install("#draw_polygon",3,1); add_creator("@draw_polygon");}
 
 //****************************************************************
@@ -2083,13 +2014,15 @@ static void expect_position(P<Dim> d) {
 	\attr PtrGrid position;
 	\attr bool alpha;
 	\attr bool tile;
-	
-	DrawImage() : alpha(false), tile(false) {
-		position.constrain(expect_position);
-		image.constrain(expect_picture);
+	\constructor (Numop *op, Grid *image=0, Grid *position=0) {
+		alpha=false; tile=false;
+		this->op = op;
+		this->position.constrain(expect_position);
+		this->image.constrain(expect_picture);
+		if (image) this->image=image;
+		if (position) this->position=position;
+		else this->position=new Grid(new Dim(2),int32_e,true);
 	}
-
-	\decl void initialize (Numop *op, Grid *image=0, Grid *position=0);
 	\grin 0
 	\grin 1
 	\grin 2 int32
@@ -2179,14 +2112,6 @@ GRID_INLET(DrawImage,0) {
 GRID_INPUT(DrawImage,1,image) {} GRID_END
 GRID_INPUT(DrawImage,2,position) {} GRID_END
 
-\def void initialize (Numop *op, Grid *image, Grid *position) {
-	SUPER;
-	this->op = op;
-	if (image) this->image=image;
-	if (position) this->position=position;
-	else this->position=new Grid(new Dim(2),int32_e,true);
-}
-
 \end class {install("#draw_image",3,1); add_creator("@draw_image");}
 
 //****************************************************************
@@ -2200,7 +2125,11 @@ GRID_INPUT(DrawImage,2,position) {} GRID_END
 	\grin 0
 	\grin 1 int32
 	\grin 2 int32
-	\decl void initialize (Numop *op, Grid *color=0, Grid *points=0);
+	\constructor (Numop *op, Grid *color=0, Grid *points=0) {
+		this->op = op;
+		if (color) this->color=color;
+		if (points) this->points=points;
+	}
 };
 
 GRID_INPUT(GridDrawPoints,1,color) {} GRID_END
@@ -2228,18 +2157,11 @@ GRID_INLET(GridDrawPoints,0) {
 	}
 //	out->send(data);
 } GRID_END
-
-\def void initialize (Numop *op, Grid *color, Grid *points) {
-	SUPER;
-	this->op = op;
-	if (color) this->color=color;
-	if (points) this->points=points;
-}
-
 \end class {install("#draw_points",3,1);}
 
 //****************************************************************
 \class GridPolygonize : GridObject {
+	\constructor () {}
 	\grin 0
 };
 
@@ -2257,7 +2179,7 @@ GRID_INLET(GridPolygonize,0) {
 	\grin 0
 	int thresh;
 	\decl 1 float(int v);
-	\decl void initialize(int v=0);
+	\constructor (int v=0) {thresh=v;}
 };
 
 GRID_INLET(GridNoiseGateYuvs,0) {
@@ -2278,7 +2200,6 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 } GRID_END
 
 \def 1 float(int v) {thresh=v;}
-\def void initialize(int v=0) {thresh=v;}
 \end class {install("#noise_gate_yuvs",2,1);}
 
 //****************************************************************
@@ -2286,21 +2207,18 @@ GRID_INLET(GridNoiseGateYuvs,0) {
 \class GridPack : GridObject {
 	int n;
 	PtrGrid a;
-	GridPack() : n(0xdeadbeef) {}
-	\decl void initialize (int n=2, NumberTypeE nt=int32_e);
+	\constructor (int n=2, NumberTypeE nt=int32_e) {
+		if (n<1) RAISE("n=%d must be at least 1",n);
+		if (n>32) RAISE("n=%d is too many?",n);
+		a = new Grid(new Dim(n),nt,true);
+		this->n=n;
+	}
 	\decl void initialize2 ();
 	\decl void _n_float (int inlet, float f);
 	\decl void _n_list  (int inlet, float f);
 	\decl 0 bang ();
 	//\grin 0
 };
-\def void initialize (int n=2, NumberTypeE nt=float32_e) {
-	if (n<1) RAISE("n=%d must be at least 1",n);
-	if (n>32) RAISE("n=%d is too many?",n);
-	SUPER;
-	a = new Grid(new Dim(n),nt,true);
-	this->n=n;
-}
 \def void initialize2 () {
 	SUPER;
 	bself->ninlets_set(this->n);
@@ -2322,7 +2240,11 @@ TYPESWITCH(a->nt,FOO,);
 
 \class GridUnpack : GridObject {
 	int n;
-	\decl void initialize (int n=2);
+	\constructor (int n=2) {
+		if (n<1) RAISE("n=%d must be at least 1",n);
+		if (n>32) RAISE("n=%d is too many?",n);
+		this->n=n;
+	}
 	\decl void initialize2 ();
 	\grin 0
 };
@@ -2331,12 +2253,6 @@ GRID_INLET(GridUnpack,0) {
 } GRID_FLOW {
 	for (int i=n-1; i>=0; i--) outlet_float(bself->out[i],(t_float)data[i]);
 } GRID_END
-\def void initialize (int n=2) {
-	if (n<1) RAISE("n=%d must be at least 1",n);
-	if (n>32) RAISE("n=%d is too many?",n);
-	SUPER;
-	this->n=n;
-}
 \def void initialize2 () {
 	SUPER;
 	bself->noutlets_set(this->n);
@@ -2345,9 +2261,9 @@ GRID_INLET(GridUnpack,0) {
 
 //****************************************************************
 \class ForEach : FObject {
+	\constructor () {}
 	\decl 0 list (...);
 };
-
 \def 0 list (...) {
 	t_outlet *o = bself->out[0];
 	R *a = (R *)argv;
@@ -2357,31 +2273,27 @@ GRID_INLET(GridUnpack,0) {
 		else RAISE("oops. unsupported.");
 	}
 }
-
 \end class {install("foreach",1,1);}
 
 //****************************************************************
 
 \class GFError : FObject {
 	string format;
-	\decl void initialize (...);
+	\constructor (...) {
+		std::ostringstream o;
+		char buf[MAXPDSTRING];
+		for (int i=0; i<argc; i++) {
+			atom_string(&argv[i],buf,MAXPDSTRING);
+			o << buf;
+			if (i!=argc-1) o << ' ';
+		}
+		format = o.str();
+	}
 	\decl 0 bang ();
 	\decl 0 float (float f);
 	\decl 0 symbol (t_symbol *s);
 	\decl 0 list (...);
 };
-\def void initialize (...) {
-	std::ostringstream o;
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	char buf[MAXPDSTRING];
-	for (int i=0; i<argc; i++) {
-		atom_string(&at[i],buf,MAXPDSTRING);
-		o << buf;
-		if (i!=argc-1) o << ' ';
-	}
-	format = o.str();
-}
 \def 0 bang () {_0_list(0,0);}
 \def 0 float (float f) {_0_list(argc,argv);}
 \def 0 symbol (t_symbol *s) {_0_list(argc,argv);}
@@ -2404,7 +2316,10 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 	int from, to, n;
 	\decl 0 float (int scale);
 	\decl 0 axis (int from, int to, int n);
-	\decl void initialize(int from=0, int to=1, int n=2);
+	\constructor (int from=0, int to=1, int n=2) {
+		angle=0;
+		_0_axis(0,0,from,to,n);
+	}
 	\decl 1 float(int angle);
 };
 \def 0 float (int scale) {
@@ -2424,11 +2339,6 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 	this->  to =   to;
 	this->   n =    n;
 }
-\def void initialize(int from=0, int to=1, int n=2) {
-	SUPER;
-	angle=0;
-	_0_axis(0,0,from,to,n);
-}
 \def 1 float(int angle) {this->angle = angle;}
 \end class {install("#rotatificator",2,1);}
 
@@ -2437,10 +2347,9 @@ extern "C" t_canvas *canvas_getrootfor(t_canvas *x);
 template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 
 \class ListReverse : FObject {
-	\decl void initialize();
+	\constructor () {}
 	\decl 0 list(...);
 };
-\def void initialize () {SUPER;}
 \def 0 list (...) {
 	for (int i=(argc-1)/2; i>=0; i--) swap(argv[i],argv[argc-i-1]);
 	t_atom at[argc];
@@ -2450,10 +2359,9 @@ template <class T> void swap (T &a, T &b) {T c; c=a; a=b; b=c;}
 \end class {install("listreverse",1,1);}
 
 \class ListFlatten : FObject {
-	\decl void initialize();
+	\constructor () {}
 	\decl 0 list(...);
 };
-\def void initialize () {SUPER;}
 \def 0 list (...) {
 	t_atom at[argc];
 	ruby2pd(argc,argv,at);
@@ -2474,15 +2382,13 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 \class ListFind : FObject {
 	int ac;
 	t_atom *at;
-	ListFind() : ac(0), at(0) {}
 	~ListFind() {if (at) delete[] at;}
-	\decl void initialize(...);
+	\constructor (...) {ac=0; at=0; Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _1_list(argc,argv2);}
 	\decl 0 list(...);
 	\decl 1 list(...);
 	\decl 0 float(float f);
 	\decl 0 symbol(t_symbol *s);
 };
-\def void initialize(...) {_1_list(argc,argv);}
 \def 1 list (...) {
 	if (at) delete[] at;
 	ac = argc;
@@ -2514,20 +2420,17 @@ static bool atom_eq (t_atom &a, t_atom &b) {
 \class Range : FObject {
 	t_float *mosusses;
 	int nmosusses;
-	\decl void initialize(...);
+	\constructor (...) {
+		nmosusses = argc;
+		for (int i=0; i<argc; i++) if (argv[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
+		mosusses = new t_float[argc];
+		for (int i=0; i<argc; i++) mosusses[i]=argv[i].a_w.w_float;
+	}
 	\decl void initialize2();
 	\decl 0 float(float f);
 	\decl 0 list(float f);
 	\decl void _n_float(int i, float f);
 };
-\def void initialize(...) {
-	nmosusses = argc;
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	for (int i=0; i<argc; i++) if (at[i].a_type!=A_FLOAT) RAISE("$%d: expected float",i+1);
-	mosusses = new t_float[argc];
-	for (int i=0; i<argc; i++) mosusses[i]=at[i].a_w.w_float;
-}
 \def void initialize2() {
 	bself-> ninlets_set(1+nmosusses);
 	bself->noutlets_set(1+nmosusses);
@@ -2567,7 +2470,8 @@ string ssprintf(const char *fmt, ...) {
 	std::ostringstream text;
 	t_clock *clock;
 	t_pd *gp;
-	Display () : selected(false), canvas(0), y(0), x(0), sy(16), sx(80), vis(false), clock(0) {
+	\constructor () {
+		selected=false; canvas=0; y=0; x=0; sy=16; sx=80; vis=false; clock=0;
 		std::ostringstream os;
 		rsym = gensym((char *)ssprintf("display:%08x",this).data());
 		pd_typedmess(&pd_objectmaker,gensym("#print"),0,0);
@@ -2727,31 +2631,28 @@ struct ArgSpec {
 \class Args : FObject {
 	ArgSpec *sargv;
 	int sargc;
-	\decl void initialize (...);
+	\constructor (...) {
+		sargc = argc;
+		sargv = new ArgSpec[argc];
+		for (int i=0; i<argc; i++) {
+			if (argv[i].a_type==A_LIST) {
+				t_binbuf *b = (t_binbuf *)argv[i].a_w.w_gpointer;
+				int bac = binbuf_getnatom(b);
+				t_atom *bat = binbuf_getvec(b);
+				sargv[i].name = atom_getsymbolarg(0,bac,bat);
+				sargv[i].type = atom_getsymbolarg(1,bac,bat);
+				if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
+			} else if (argv[i].a_type==A_SYMBOL) {
+				sargv[i].name = argv[i].a_w.w_symbol;
+				sargv[i].type = gensym("a");
+				SETNULL(&sargv[i].defaultv);
+			} else RAISE("expected symbol or nested list");
+		}
+	}
 	\decl void initialize2 ();
 	\decl 0 bang ();
 	void process_args (int argc, t_atom *argv);
 };
-\def void initialize(...) {
-	sargc = argc;
-	sargv = new ArgSpec[argc];
-	t_atom at[argc];
-	ruby2pd(argc,argv,at);
-	for (int i=0; i<argc; i++) {
-		if (at[i].a_type==A_LIST) {
-			t_binbuf *b = (t_binbuf *)at[i].a_w.w_gpointer;
-			int bac = binbuf_getnatom(b);
-			t_atom *bat = binbuf_getvec(b);
-			sargv[i].name = atom_getsymbolarg(0,bac,bat);
-			sargv[i].type = atom_getsymbolarg(1,bac,bat);
-			if (bac<3) SETNULL(&sargv[i].defaultv); else sargv[i].defaultv = bat[2];
-		} else if (at[i].a_type==A_SYMBOL) {
-			sargv[i].name = at[i].a_w.w_symbol;
-			sargv[i].type = gensym("a");
-			SETNULL(&sargv[i].defaultv);
-		} else RAISE("expected symbol or nested list");
-	}
-}
 \def void initialize2 () {bself->noutlets_set(sargc+1);}
 void outlet_anything2 (t_outlet *o, int argc, t_atom *argv) {
 	if (!argc) outlet_bang(o);
@@ -2808,10 +2709,9 @@ void Args::process_args (int argc, t_atom *argv) {
 //****************************************************************
 
 \class UnixTime : FObject {
-	\decl void initialize ();
+	\constructor () {}
 	\decl 0 bang ();
 };
-\def void initialize () {}
 \def 0 bang () {
 	timeval tv;
 	gettimeofday(&tv,0);
@@ -2866,6 +2766,8 @@ void Args::process_args (int argc, t_atom *argv) {
 
 #include <sys/ioctl.h>
 
+struct ParallelPort;
+void ParallelPort_call(ParallelPort *self);
 \class ParallelPort : FObject {
 	FILE *f;
 	int fd;
@@ -2874,7 +2776,16 @@ void Args::process_args (int argc, t_atom *argv) {
 	bool manually;
 	t_clock *clock;
 	~ParallelPort () {if (clock) clock_free(clock); if (f) fclose(f);}
-	\decl void initialize (string port, bool manually=0);
+	\constructor (string port, bool manually=0) {
+		f = fopen(port.data(),"r+");
+		if (!f) RAISE("open %s: %s",port.data(),strerror(errno));
+		fd = fileno(f);
+		status = 0xdeadbeef;
+		flags  = 0xdeadbeef;
+		this->manually = manually;
+		clock = manually ? 0 : clock_new(this,(void(*)())ParallelPort_call);
+		clock_delay(clock,0);
+	}
 	void call ();
 	\decl 0 float (float x);
 	\decl 0 bang ();
@@ -2896,16 +2807,6 @@ void ParallelPort::call() {
 	this->status = status;
 	if (clock) clock_delay(clock,2000);
 }
-\def void initialize (string port, bool manually=0) {
-	f = fopen(port.data(),"r+");
-	if (!f) RAISE("open %s: %s",port.data(),strerror(errno));
-	fd = fileno(f);
-	status = 0xdeadbeef;
-	flags  = 0xdeadbeef;
-	this->manually = manually;
-	clock = manually ? 0 : clock_new(this,(void(*)())ParallelPort_call);
-	clock_delay(clock,0);
-}
 \def 0 bang () {status = flags = 0xdeadbeef; call();}
 //outlet 0 reserved (future use)
 \end class {install("parallel_port",1,3);}
@@ -2915,17 +2816,12 @@ void ParallelPort::call() {
 \class Route2 : FObject {
 	int nsels;
 	t_symbol **sels;
-	Route2() : nsels(0), sels(0) {}
 	~Route2() {if (sels) delete[] sels;}
-	\decl void initialize(...);
+	\constructor (...) {nsels=0; sels=0; Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _1_list(argc,argv2);}
 	\decl void initialize2();
 	\decl void method_missing(...);
 	\decl 1 list(...);
 };
-\def void initialize(...) {
-	SUPER;
-	_1_list(argc,argv);
-}
 \def void initialize2() {bself->noutlets_set(1+nsels);}
 \def void method_missing(...) {
 	t_atom at[argc];
@@ -2954,19 +2850,17 @@ template <class T> int sgn(T a, T b=0) {return a<b?-1:a>b;}
 	\attr int mode;
 	\attr int hi;
 	\attr int lo;
-	\decl void initialize(int n=2, int i=0);
+	\constructor (int n=2, int i=0) {
+		this->n=n;
+		this->hi=n-1;
+		this->lo=0;
+		this->mode=0;
+		this->index=i;
+	}
 	\decl void initialize2();
 	\decl void method_missing(...);
 	\decl 1 float(int i);
 };
-\def void initialize(int n=2, int i=0) {
-	SUPER;
-	this->n=n;
-	this->hi=n-1;
-	this->lo=0;
-	this->mode=0;
-	this->index=i;
-}
 \def void initialize2() {bself->noutlets_set(n);}
 \def void method_missing(...) {
 	t_atom at[argc];
@@ -3002,31 +2896,28 @@ int uint64_compare(uint64 &a, uint64 &b) {return a<b?-1:a>b;}
 
 \class UserTime : FObject {
 	clock_t time;
-	\decl void initialize ();
+	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
-\def void initialize () {_0_bang(argc,argv);}
 \def 0 bang () {struct tms t; times(&t); time = t.tms_utime;}
 \def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_utime-time)*1000/HZ);}
 \end class {install("usertime",2,1);}
 \class SystemTime : FObject {
 	clock_t time;
-	\decl void initialize ();
+	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
-\def void initialize () {_0_bang(argc,argv);}
 \def 0 bang () {struct tms t; times(&t); time = t.tms_stime;}
 \def 1 bang () {struct tms t; times(&t); outlet_float(bself->out[0],(t.tms_stime-time)*1000/HZ);}
 \end class {install("systemtime",2,1);}
 \class TSCTime : FObject {
 	uint64 time;
-	\decl void initialize ();
+	\constructor () {Ruby argv2[argc]; pd2ruby(argc,argv2,argv); _0_bang(argc,argv2);}
 	\decl 0 bang ();
 	\decl 1 bang ();
 };
-\def void initialize () {_0_bang(argc,argv);}
 \def 0 bang () {time=rdtsc();}
 \def 1 bang () {outlet_float(bself->out[0],(rdtsc()-time)*1000.0/cpu_hertz);}
 \end class {install("tsctime",2,1);
