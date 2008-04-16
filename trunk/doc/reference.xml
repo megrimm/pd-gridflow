@@ -65,7 +65,7 @@
 		</outlet>
 	</class>
 
-	<class name="#export">
+	<class name="#to_float,#export">
 		<p>this object is the opposite of #import.</p>
 		<method name="init">
 			this object is not configurable because there isn't
@@ -83,7 +83,7 @@
 		</outlet>
 	</class>
 
-	<class name="#export_list">
+	<class name="#to_list,#export_list">
 		<p>this object is another opposite of <k>[#import]</k>, which puts
 		all of its values in a list.</p>
 		<method name="init" />
@@ -100,7 +100,7 @@
 		</outlet>
 	</class>
 
-	<class name="#export_symbol">
+	<class name="#to_symbol,#export_symbol">
 		<p>this object is another opposite of #import, which constructs a symbol
 		from its input. The values are expected to be valid ASCII codes, but no check
 		will be performed for that, and additionally, no check will be made that the generated
@@ -1159,17 +1159,6 @@
 </section>
 
 <section name="Other Objects">
-	<class name="rtmetro">This class has been removed (0.7.7).</class>
-
-	<class name="bindpatcher">
-		<p>sets the receive-symbol for the Pd patcher it is in.</p>
-		<p>has no inlets, no outlets.</p>
-		<p>EXPERIMENTAL.</p>
-		<method name="init">
-			<arg name="symbol" type="symbol"/>
-		</method>
-	</class>
-
 	<class name="pingpong">
 		Transforms linear counting (0, 1, 2, 3, 4, ...)  into a back-and-forth counting (0, 1, 2, 1, 0, ...)
 		from 0 to a specified upper bound.
@@ -1188,26 +1177,6 @@
 			</method>
 		</inlet>
 	</class>
-
-	<class name="#global">
-		<p>
-		objects of this class do nothing by themselves and are just
-		an access point to features that don't belong to any object in
-		particular.
-		</p>
-		<method name="profiler_reset">
-			resets all the time counters.
-		</method>
-		<method name="profiler_dump">
-			displays the time counters in decreasing order, with
-			the names of the classes those objects are in. this is
-			an experimental feature. like most statistics,
-			it could be vaguely relied upon if
-			only you knew to which extent it is unreliable. more on this
-			in a future section called "profiling".
-		</method>
-	</class>
-
 	<class name="fps">
 		<method name="init">
 			<arg name="clocktype" type="symbol(real|user|system|cpu)">
