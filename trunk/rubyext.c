@@ -102,9 +102,6 @@ static Ruby make_error_message () {
 	return ary;
 }
 
-static int  ninlets_of (Ruby qlass) {return fclasses_ruby[qlass]->ninlets;}
-static int noutlets_of (Ruby qlass) {return fclasses_ruby[qlass]->noutlets;}
-
 /* **************************************************************** */
 
 struct RMessage {VALUE rself; ID sel; int argc; VALUE *argv;};
@@ -207,7 +204,6 @@ static Ruby BFObject_method_missing_1 (FMessage *fm) {
 
 static Ruby BFObject_rescue (FMessage *fm) {
 	Ruby error_array = make_error_message();
-//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
 	if (fm->self) pd_error(fm->self,"%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	fprintf(stderr,"%s\n",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
 	if (fm->self && fm->is_init) fm->self = 0;
@@ -261,8 +257,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	bself->nout = 0;
 	bself->in  = new  BFProxy*[1];
 	bself->out = new t_outlet*[1];
-	bself->ninlets_set(  ninlets_of(rb_funcall(rself,SI(class),0)));
-	bself->noutlets_set(noutlets_of(rb_funcall(rself,SI(class),0)));
+	bself->ninlets_set( fclasses_ruby[rb_funcall(rself,SI(class),0)]->ninlets);
+	bself->noutlets_set(fclasses_ruby[rb_funcall(rself,SI(class),0)]->noutlets);
 	rb_funcall(rself,SI(initialize2),0);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	while (j<argc) {
@@ -464,24 +460,17 @@ Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	return rself;
 }
 
-Ruby FObject_s_install(Ruby rself, Ruby name, Ruby inlets2, Ruby outlets2) {
-	name = rb_funcall(name,SI(to_str),0);
-	int inlets  = TYPE( inlets2)==T_ARRAY ? rb_ary_len( inlets2) : INT( inlets2);
-	int outlets = TYPE(outlets2)==T_ARRAY ? rb_ary_len(outlets2) : INT(outlets2);
-	if ( inlets<0 ||  inlets>9) RAISE("...");
-	if (outlets<0 || outlets>9) RAISE("...");
+void install2(Ruby rself, const char *name, int inlets, int outlets) {
 	FClass2 *fclass = fclasses_ruby[rself] = new FClass2;
 	fclass->ninlets = inlets;
 	fclass->noutlets = outlets;
-	fclass->name = string(rb_str_ptr(name));
-	//fprintf(stderr,"s_install %s\n",fclass->name.data());
+	fclass->name = string(name);
 	fclass->rself = rself;
-	fclass->bfclass = class_new(gensym(rb_str_ptr(name)), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
+	fclass->bfclass = class_new(gensym((char *)name), (t_newmethod)BFObject_init, (t_method)BFObject_delete,
 		sizeof(BFObject), CLASS_DEFAULT, A_GIMME,0);
-	fclasses[string(rb_str_ptr(name))] = fclass;
+	fclasses[string(name)] = fclass;
 	FMessage fm = {0, -1, 0, 0, 0, false};
 	RESCUE(BFObject_class_init_1,fclass->bfclass,BFObject_rescue,&fm);
-	return Qnil;
 }
 
 Ruby FObject_delete (Ruby rself) {
@@ -587,7 +576,6 @@ BUILTIN_SYMBOLS(FOO)
 	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
-	SDEF(FObject, install, 3);
 	SDEF(FObject, new, -1);
 	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;

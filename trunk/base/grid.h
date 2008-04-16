@@ -881,7 +881,9 @@ static void SAME_DIM(int n, P<Dim> a, int ai, P<Dim> b, int bi) {
 
 void suffixes_are (const char *name, const char *suffixes);
 
-#define install(name,ins,outs) rb_funcall(rself,SI(install),3,rb_str_new2(name),INT2NUM(ins),INT2NUM(outs))
+#define install(name,inlets,outlets) install2(rself,name,inlets,outlets)
+void install2(Ruby rself, const char *name, int inlets, int outlets);
+
 #define install_format(name,mode,suffixes) do {install(name,1,1); suffixes_are(name,suffixes);} while(0)
 #define add_creator(name) rb_funcall(rself,SI(add_creator),1,rb_str_new2(name))
 
