@@ -1216,7 +1216,6 @@
 			</method>
 		</outlet>
 	</class>
-
 	<class name="unix_time">
 		<p>
 		This object returns the Unix timestamp. The first 
@@ -1229,39 +1228,6 @@
 		<outlet id="1"><method name="float"/>Outputs the Unix timestamp in seconds</outlet>
 		<outlet id="2"><method name="float"/>Outputs the fractions of a second up to 10 microseconds (?) (actual precision is platform-dependent afaik)</outlet>
 	</class>
-
-	<class name="ls">
-		<p>
-		This object is similar to the Unix list command 
-		'ls'. It returns the names of files in a given 
-		directory.  May be used with [listlength] to retrieve the number of files. 
-		Hidden files are displayed.
-		</p>
-		<inlet id="0"><method name="symbol">
-			lists all files in a given directory
-		</method>
-		<method name="glob">
-			lists all files matching a given pattern.
-			"symbol hello" is like "glob hello/*"
-		</method></inlet>
-	</class>
-
-	<class name="exec">
-		<p>
-		This object launches a Unix shell program or script.
-		</p>
-		<inlet id="0"><method name="symbol"/></inlet>
-	</class>
-
-	<class name="renamefile">
-		<p>
-		This object accepts a list of two elements as arguments.  
-		The current file name being the first and the second is the desired change 
-		in name.
-		</p>
-		<inlet id="0"><method name="list"/></inlet>
-	</class>
-
 	<class name="plotter_control">
 		<p>
 		This object produces HPGL instructions in ASCII form 
@@ -1270,14 +1236,6 @@
 		</p>
 		<inlet id="0"><method name="symbol"/></inlet>
 		<outlet id="0"><method name="symbol"/>Outputs the HPGL commands in ASCII format</outlet>
-	</class>
-	
-	<class name="rubyarray">
-		<p>inlet 0 float : sends the specified array entry to outlet 0</p>
-		<p>inlet 1 list: writes that list as an array entry in position last specified by inlet 0.</p>
-		<p>inlet 0 save(symbol filename): writes the array contents to a file of the given filename as a CSV</p>
-		<p>inlet 0 save(symbol filename, symbol format): same thing but using a sprintf string such as %x,%f or whatever</p>
-		<p>inlet 0 load(symbol filename): replace all array contents by the contents of a CSV file</p>
 	</class>
 </section>
 
