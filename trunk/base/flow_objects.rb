@@ -39,24 +39,6 @@ FObject.subclass("rubysprintf",2,1) {
   alias _1_symbol _1_list
 }
 
-FObject.subclass("printargs",1,0) {
-  def initialize(*args)
-    super
-    @aaargh = args
-  end
-  def initialize2()
-    @clock = Clock.new self
-    @clock.delay 0
-  end
-  def call
-    post "ruby=%s", @aaargh.inspect
-    post "  pd=%s",    args.inspect
-  end
-  def method_missing(*a)
-    post "message: %s", *a.inspect
-  end
-}
-
 # plotter control (HPGL)
 FObject.subclass("plotter_control",1,1) {
   def puts(x)
@@ -78,35 +60,6 @@ FObject.subclass("plotter_control",1,1) {
 
 # System, similar to shell
 FObject.subclass("system",1,1) { def _0_system(*a) system(a.join(" ")) end }
-
-# experimental
-FObject.subclass("rubyarray",2,2) {
-  def initialize() @a=[]; @i=0; end
-  def _0_get(s=nil)
-    case s
-    when :size; send_out 1,:size,@a.size
-    when nil; _0_get :size
-    end
-  end
-  def _0_clear; @a.clear end
-  def _0_float i; @i=i; send_out 0, *@a[@i] if @a[@i]!=nil; end
-  def _1_list(*l) @a[@i]=l; end
-  def _0_save(filename,format=nil)
-    f=File.open(filename.to_s,"w")
-    if format then
-      @a.each {|x| f.puts(format.to_s%x) }
-    else
-      @a.each {|x| f.puts(x.join(",")) }
-    end
-    f.close
-  end
-  def _0_load(filename)
-    f=File.open(filename.to_s,"r")
-    @a.clear
-    f.each {|x| @a.push x.split(",").map {|y| Float(y) rescue y.intern }}
-    f.close
-  end
-}
 
 FObject.subclass("regsub",3,1) {
   def initialize(from,to) _1_symbol(from); _2_symbol(to) end
