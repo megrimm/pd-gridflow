@@ -138,8 +138,7 @@ static void Bridge_export_value(Ruby arg, t_atom *at) {
 		Ruby *p=rb_ary_ptr(arg);
 		for (int i=0; i<n; i++) {Bridge_export_value(p[i],&a); binbuf_add(b,1,&a);}
 		SETLIST(at,b);
-	} else RAISE("cannot convert argument of class '%s'",
-		rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
+	} else RAISE("cannot convert argument of class '%s'",rb_str_ptr(rb_funcall(rb_funcall(arg,SI(class),0),SI(inspect),0)));
 }
 
 void ruby2pd (int argc, Ruby *argv, t_atom *at) {
@@ -151,6 +150,13 @@ static Ruby Bridge_import_value(const t_atom *at) {
 	if (t==A_SYMBOL)  return ID2SYM(rb_intern(at->a_w.w_symbol->s_name));
 	if (t==A_FLOAT )  return rb_float_new(at->a_w.w_float);
 	if (t==A_POINTER) return Pointer_s_new(at->a_w.w_gpointer);
+	if (t==A_LIST) {
+		Ruby a = rb_ary_new();
+		t_binbuf *b = (t_binbuf *)at->a_w.w_gpointer;
+		int n = binbuf_getnatom(b);
+		for (int i=0; i<n; i++) rb_ary_push(a,Bridge_import_value(binbuf_getvec(b)+i));
+		return a;
+	}
 	return Qnil; /* unknown */
 }
 
@@ -187,11 +193,13 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 int handle_braces(int ac, Ruby *av);
 
 static Ruby BFObject_init_1 (FMessage *fm) {
-	int argc=fm->ac+1;
+	int argc = fm->ac;
+	t_atom at[argc];
 	Ruby argv[argc];
-	for (int i=0; i<fm->ac; i++) argv[i+1] = Bridge_import_value(fm->at+i);
-	// s_list is broken in some (?) versions of pd
-	argv[0] = fm->selector==&s_list ? argv[0]=rb_str_new2("list") : rb_str_new2(fm->selector->s_name);
+	for (int i=0; i<argc; i++) at[i] = fm->at[i];
+	argc = handle_braces(argc,at);
+	pd_post(fm->selector->s_name,argc,at);
+	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(at+i);
 	BFObject *bself = fm->self;
 #ifdef HAVE_GEM
 	CPPExtern::m_holder = (t_object *)bself;
@@ -203,8 +211,8 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	Ruby comma = ID2SYM(rb_intern(","));
 	for (j=0; j<argc; j++) if (argv[j]==comma) break;
 	int jj = handle_braces(j,argv);
-	Ruby rself = rb_funcall2(fclasses[string(rb_str_ptr(argv[0]))]->rself,SI(new),jj-1,argv+1);
-
+	Ruby rself = rb_funcall2(fclasses[fm->selector->s_name]->rself,SI(new),jj,argv);
+	
 	DGS(FObject);
 	self->bself = bself;
 	bself->rself = rself;
