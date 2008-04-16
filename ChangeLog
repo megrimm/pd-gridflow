@@ -1,27 +1,27 @@
 /* $Id$ */
 
 
-version 0.9.1 (2008.04...):
+version 0.9.1 (2008.04.16):
 
  * switched from CVS to SVN
  * removed LTIlib support
  * added OpenCV support: ...
  * x11: added "warp" method for moving mouse cursor around
- * rewrote some object classes from Ruby to C++, most notably:
-   [#pack] [#unpack] [#print] [display]
+ * removed all Ruby code (rewritten in C++ or Pd)
  * rewrote PPM support. now relies on libnetpbm.
    (apt-get install libnetpbm10-dev)
  * removed broken Targa support
  * removed timelog feature in [#in]/[#out] (redundant)
  * removed [joystick_port], [SoundMixer], [pd_netsocket], [rubyarray],
-   [system], [exec], [regsub], [memstat]
-   and some other very seldom used object classes
-   (!@#$ INSERT A LIST OF THEM HERE)
-   (contact me if you need them)
- * added [gf.error], [usertime], [systemtime]
+   [system], [exec], [regsub], [memstat], [#edit], [peephole],[listmake],
+   [gridflow]/[#global], [sendgui], [realtimer], [bindpatcher]
+   (contact me if you need any of them)
+ * added [gf.error], [usertime], [systemtime], [tsctime]
  * added method to_ascii in [#import]
  * [display] word-wrap
  * [#import] defaults to per_message mode
+ * removed support for ~/.gridflow_startup and GridFlow.data_path
+   (contact me if you need them)
 
 version 0.9.0 (2007.11.20):
 
