@@ -1258,33 +1258,9 @@
 			Outputs N messages, one per list element, in order.
 		</method></inlet>
 	</class>
-	<class name="rubysprintf">
-		<method name="init">
-			<arg name="format" type="symbol"/>
-		</method>
-		<inlet id="0"><method name="list">
-			Outputs the format string with %-codes replaced
-			by elements of the list formatted as the %-codes say.
-			To get a list of those codes, consult a Ruby manual
-			(Equivalently, Perl, Python, Tcl and C all have equivalents of this,
-			and it's almost always called sprintf, or the % operator, or both)
-		</method></inlet>
-		<inlet id="1" attr="format" type="symbol"/>
-	</class>
 	<class name="listflatten">
 		<inlet id="0"><method name="list"><rest/>
 		</method></inlet>
-	</class>
-	<class name="listmake">
-		Emulation of jMax's [list] (but there cannot be a class named [list] in Pd)
-		<method name="init">
-			<rest name="list" isattr="yes"/>
-		</method>
-		<inlet id="0">
-			<method name="bang">send "list" to outlet 0</method>
-			<method name="list">as sending to inlet 1 and then banging; that is, passes thru and remembers.</method>
-		</inlet>
-		<inlet id="1" attr="list"/>
 	</class>
 	<class name="listlength">
 		<inlet id="0"><method name="list">
