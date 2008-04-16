@@ -28,13 +28,13 @@ $classes = []
 $exit = 0
 
 ClassDecl = Struct.new(:name,:supername,:methods,:grins,:attrs,:info)
-MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where,:static)
+MethodDecl = Struct.new(:rettype,:selector,:arglist,:minargs,:maxargs,:where)
 Arg  = Struct.new(:type,:name,:default)
 Attr = Struct.new(:type,:name,:default,:virtual)
 
 class MethodDecl
 	def ==(o)
-		return false unless rettype==o.rettype && static==o.static &&
+		return false unless rettype==o.rettype &&
 			maxargs==o.maxargs
 		arglist.each_index{|i| arglist[i] == o.arglist[i] or return false }
 		return true
@@ -72,15 +72,15 @@ def handle_class(line)
 end
 
 def parse_methoddecl(line,term)
-	/^(static\s)?\s*(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
+	/^(\w+)\s+(\w+)\s*\(([^\)]*)\)\s*#{term}/.match line or
 		raise "syntax error #{where} #{line}"
-	static,rettype,selector,arglist = $1,$2,$3,$4
+	rettype,selector,arglist = $1,$2,$3,$4
 	if /^\d+$/ =~ rettype then
 		selector = "_"+rettype+"_"+selector
 		rettype = "void"
 	end
 	arglist,minargs,maxargs = parse_arglist arglist
-	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where,static)
+	MethodDecl.new(rettype,selector,arglist,minargs,maxargs,where)
 end
 
 def parse_arglist(arglist)
@@ -133,12 +133,10 @@ end
 
 def handle_decl(line)
 	frame = $stack[-1]
-	raise "missing \\class #{where}" if
-		not frame or not ClassDecl===frame
+	raise "missing \\class #{where}" if not frame or not ClassDecl===frame
 	classname = frame.name
 	m = parse_methoddecl(line,";\s*$")
 	frame.methods[m.selector] = m
-	Out.print "static " if m.static
 	Out.print "#{m.rettype} #{m.selector}(VA"
 	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
 	Out.print ");"
@@ -170,10 +168,7 @@ def handle_def(line)
 	Out.print "if (argc<#{m.minargs}"
 	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
 	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
-	error = proc {|x,y|
-		"RAISE(\"got %s instead of #{x} in %s\","+
-		"rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)"
-	}
+	#error = proc {|x,y| "RAISE(\"got %s instead of #{x} in %s\",rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)" }
 	Out.print "foo = " if m.rettype!="void"
 	Out.print " self->#{m.selector}(argc,argv"
 	m.arglist.each_with_index{|arg,i|
@@ -183,15 +178,9 @@ def handle_def(line)
 			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
 		end
 	}
-        if m.rettype=="R"
-	  Out.print ").r;"
-	else
-	  Out.print ");"
-	end
-	Out.print "} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}"
+	Out.print ");} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}"
 	case m.rettype
 	when "void"; Out.print "return Qnil;"
-	when "Ruby"; Out.print "return foo;"
 	else         Out.print "return R(foo).r;"
 	end
 	Out.print "} #{m.rettype} #{classname}::#{m.selector}(VA"
@@ -200,12 +189,38 @@ def handle_def(line)
 	qlass.methods[m.selector].done=true
 end
 
+def handle_constructor(line)
+	frame = $stack[-1]
+	raise "missing \\class #{where}" if not frame or not ClassDecl===frame
+	m = parse_methoddecl("void constructor"+line,"(.*)$")
+	Out.print "#{frame.name}(MESSAGE) : #{frame.supername}(MESSAGE2) {"
+	Out.print "static const char *methodspec = \"#{frame.name}::#{m.selector}(#{unparse_arglist m.arglist,false})\";"
+
+	Out.print "try {"
+	Out.print "if (argc<#{m.minargs}"
+	Out.print "||argc>#{m.maxargs}" if m.maxargs!=-1
+	Out.print ") RAISE(\"got %d args instead of %d..%d in %s\",argc,#{m.minargs},#{m.maxargs},methodspec);"
+	#error = proc {|x,y| "RAISE(\"got %s instead of #{x} in %s\",rb_str_ptr(rb_inspect(rb_obj_class(#{y}))),methodspec)" }
+	Out.print "#{m.selector}(sel,argc,argv"
+	m.arglist.each_with_index{|arg,i|
+		if arg.default then
+			Out.print ",argc<#{i+1}?#{arg.default}:convert(argv[#{i}],(#{arg.type}*)0)"
+		else
+			Out.print ",convert(argv[#{i}],(#{arg.type}*)0)"
+		end
+	}
+	Out.print ");} catch (Barf *oozy) {rb_raise(rb_eArgError,\"%s\",oozy->text);}}"
+	Out.print "#{m.rettype} #{m.selector}(MESSAGE"
+	Out.print ", #{unparse_arglist m.arglist}" if m.arglist.length>0
+	Out.print ") "+line[/\{.*/]
+end
+
 def handle_classinfo(line)
 	frame = $stack[-1]
 	cl = frame.name
 	line="{}" if /^\s*$/ =~ line
 	Out.print "static void #{cl}_startup (Ruby rself);"
-	Out.print "static void *#{cl}_allocator () {return new #{cl};}"
+	Out.print "static void *#{cl}_allocator (MESSAGE) {return new #{cl}(sel,argc,argv);}"
 	Out.print "static MethodDecl #{cl}_methods[] = {"
 	Out.print frame.methods.map {|foo,method|
 		c,s = frame.name,method.selector
