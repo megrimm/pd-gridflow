@@ -80,6 +80,7 @@ struct FMessage {
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 void CObject_free (void *victim) {delete (CObject *)victim;}
+static void send_in (Ruby rself, int inlet, int argc, Ruby *argv);
 
 Ruby cPointer=0;
 Ruby Pointer_s_new (void *ptr) {
@@ -161,11 +162,10 @@ static Ruby Bridge_import_value(const t_atom *at) {
 }
 
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
-	Ruby argv[fm->ac+2];
-	argv[0] = INT2NUM(fm->winlet);
-	argv[1] = ID2SYM(rb_intern(fm->selector->s_name));
-	for (int i=0; i<fm->ac; i++) argv[2+i] = Bridge_import_value(fm->at+i);
-	rb_funcall2(fm->self->rself,SI(send_in),fm->ac+2,argv);
+	Ruby argv[fm->ac+1];
+	argv[0] = ID2SYM(rb_intern(fm->selector->s_name));
+	for (int i=0; i<fm->ac; i++) argv[1+i] = Bridge_import_value(fm->at+i);
+	send_in(fm->self->rself,fm->winlet,fm->ac+1,argv);
 	return Qnil;
 }
 
@@ -232,11 +232,11 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 	rb_funcall(rself,SI(initialize2),0);
 	bself->mom = (t_canvas *)canvas_getcurrent();
 	while (j<argc) {
-		argv[j]=INT2NUM(0);
+		j++;
 		int k=j;
-		for (j++; j<argc; j++) if (at[j].a_type==A_COMMA) break;
-		for (int i=k+1; i<j; i++) argv[i] = Bridge_import_value(at+i);
-		rb_funcall2(rself,SI(send_in),j-k,argv+k);
+		for (; j<argc; j++) if (at[j].a_type==A_COMMA) break;
+		for (int i=k; i<j; i++) argv[i] = Bridge_import_value(at+i);
+		send_in(rself,0,j-k,argv+k);
 	}
 	return rself;
 }
@@ -277,6 +277,10 @@ static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
 	for (int i=0; i<argc; i++) argv[i] = va_arg(foo,VALUE);
 	RMessage rm = { rself, sel, argc, argv };
 	va_end(foo);
+	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
+}
+static VALUE rb_funcall_myrescue2(VALUE rself, ID sel, int argc, Ruby *argv) {
+	RMessage rm = { rself, sel, argc, argv };
 	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
 }
 
@@ -491,19 +495,7 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
 }
 
-struct Helper {
-	int argc;
-	Ruby *argv;
-	FObject *self;
-	Ruby rself;
-};
-
-static void send_in_2 (Helper *h) {
-	int argc = h->argc;
-	Ruby *argv = h->argv;
-	if (h->argc<1) RAISE("not enough args");
-	int inlet = INT(argv[0]);
-	argc--, argv++;
+static void send_in (Ruby rself, int inlet, int argc, Ruby *argv) {
 	Ruby foo;
 	if (argc>1) {
 		foo = rb_ary_new4(argc,argv);
@@ -515,23 +507,15 @@ static void send_in_2 (Helper *h) {
 	}
 	if (inlet<0 || inlet>=64) if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
-	FObject_prepare_message(argc,argv,sym,h->self);
+	DGS(FObject);
+	try {FObject_prepare_message(argc,argv,sym,self);} catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
 	char buf[256];
 	sprintf(buf,"_n_%s",rb_sym_name(sym));
-	if (rb_obj_respond_to(h->rself,rb_intern(buf),0)) {
+	if (rb_obj_respond_to(rself,rb_intern(buf),0)) {
 		argc++, argv--; // really
 		argv[0] = inlet*2+1; // convert to Ruby Integer
 	} else sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-	rb_funcall2(h->rself,rb_intern(buf),argc,argv);
-}
-
-static void send_in_3 (Helper *h) {}
-void FObject_send_in (int argc, Ruby *argv, Ruby rself) {
-	DGS(FObject);
-	Helper h = {argc,argv,self,rself};
-	rb_ensure(
-		(RMethod)send_in_2,(Ruby)&h,
-		(RMethod)send_in_3,(Ruby)&h);
+	rb_funcall_myrescue2(rself,rb_intern(buf),argc,argv);
 }
 
 void FObject_send_out (int argc, Ruby *argv, Ruby rself) {
@@ -727,7 +711,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
-	rb_define_method(fo,"send_in",     (RMethod)FObject_send_in,-1);
 	rb_define_method(fo,"send_out",    (RMethod)FObject_send_out,-1);
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
