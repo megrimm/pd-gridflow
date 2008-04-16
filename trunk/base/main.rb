@@ -2,7 +2,6 @@ module GridFlow
 def self.post(s,*a) post_string(sprintf(s,*a)) end
 class << self
 	attr_accessor :data_path
-	attr_reader :fobjects
 end
 @data_path=[GridFlow::DIR+"/images"]
 class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
@@ -34,12 +33,3 @@ def GridFlow.find_file s
 	else s end
 end
 end # module GridFlow
-def GridFlow.load_user_config
-	user_config_file = ENV["HOME"] + "/.gridflow_startup"
-	begin
-		load user_config_file if File.exist? user_config_file
-	rescue Exception => e
-		GridFlow.post "#{e.class}: #{e}:\n" + e.backtrace.join("\n")
-		GridFlow.post "while loading ~/.gridflow_startup"
-	end
-end

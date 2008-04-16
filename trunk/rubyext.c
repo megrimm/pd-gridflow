@@ -184,8 +184,6 @@ static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_a
 	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
 
-static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby argv);
-
 int handle_braces(int ac, Ruby *av);
 
 static Ruby BFObject_init_1 (FMessage *fm) {
@@ -523,7 +521,9 @@ static void send_in_2 (Helper *h) {
 	Ruby foo;
 	if (argc>1) {
 		foo = rb_ary_new4(argc,argv);
-		GridFlow_s_handle_braces(0,foo);
+		try {
+		    handle_braces(rb_ary_len(foo),rb_ary_ptr(foo));
+		} catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
 		argc = rb_ary_len(foo);
 		argv = rb_ary_ptr(foo);
 	}
@@ -680,14 +680,6 @@ int handle_braces(int ac, Ruby *av) {
 	return j;
 }
 
-static Ruby GridFlow_s_handle_braces(Ruby rself, Ruby args) {
-    try {
-	int argc = handle_braces(rb_ary_len(args),rb_ary_ptr(args));
-	while (rb_ary_len(args)>argc) rb_ary_pop(args);
-	return rself;
-    } catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
-}
-
 \classinfo {}
 \end class
 
@@ -742,7 +734,6 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	SDEF2("rdtsc",rdtsc,0);
-	SDEF2("handle_braces!",handle_braces,1);
 	SDEF2("post_string",post_string,1);
 	SDEF2("name_lookup",name_lookup,1);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
@@ -774,7 +765,6 @@ BUILTIN_SYMBOLS(FOO)
 		"STDERR.puts \"can't load: #{$!}\nbacktrace: #{$!.backtrace.join\"\n\"}\n$:=#{$:.inspect}\"\n; false end")) return;
 	startup_format();
 	STARTUP_LIST()
-	EVAL("GridFlow.load_user_config");
 	delete[] dirresult;
 	delete[] dirname;
 	hack = clock_new((void*)0,(t_method)ruby_stack_end_hack);
