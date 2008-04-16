@@ -162,10 +162,13 @@ static Ruby Bridge_import_value(const t_atom *at) {
 }
 
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
+	t_atom at[fm->ac];
+	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
 	Ruby argv[fm->ac+1];
 	argv[0] = ID2SYM(rb_intern(fm->selector->s_name));
-	for (int i=0; i<fm->ac; i++) argv[1+i] = Bridge_import_value(fm->at+i);
-	send_in(fm->self->rself,fm->winlet,fm->ac+1,argv);
+	int argc = handle_braces(fm->ac,at);
+	for (int i=0; i<argc; i++) argv[1+i] = Bridge_import_value(at+i);
+	send_in(fm->self->rself,fm->winlet,argc+1,argv);
 	return Qnil;
 }
 
@@ -189,8 +192,6 @@ static void BFObject_method_missing0 (BFObject *self, t_symbol *s, int argc, t_a
 static void BFProxy_method_missing   (BFProxy *self,  t_symbol *s, int argc, t_atom *argv) {
 	BFObject_method_missing(self->parent,self->id,s,argc,argv);
 }
-
-int handle_braces(int ac, Ruby *av);
 
 static Ruby BFObject_init_1 (FMessage *fm) {
 	int argc = fm->ac;
@@ -496,16 +497,6 @@ static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *
 }
 
 static void send_in (Ruby rself, int inlet, int argc, Ruby *argv) {
-	Ruby foo;
-	if (argc>1) {
-		foo = rb_ary_new4(argc,argv);
-		try {
-		    handle_braces(rb_ary_len(foo),rb_ary_ptr(foo));
-		} catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
-		argc = rb_ary_len(foo);
-		argv = rb_ary_ptr(foo);
-	}
-	if (inlet<0 || inlet>=64) if (inlet!=-3 && inlet!=-1) RAISE("invalid inlet number: %d", inlet);
 	Ruby sym;
 	DGS(FObject);
 	try {FObject_prepare_message(argc,argv,sym,self);} catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
@@ -597,37 +588,6 @@ int handle_braces(int ac, t_atom *av) {
 			j=j2;
 			SETLIST(av+j,a2);
 			j++;
-		}
-	}
-	if (stackn) RAISE("too many open-paren (%d)",stackn);
-	return j;
-}
-
-int handle_braces(int ac, Ruby *av) {
-	int stack[16];
-	int stackn=0;
-	int j=0;
-	for (int i=0; i<ac; ) {
-		int close=0;
-		if (SYMBOL_P(av[i])) {
-			const char *s = rb_sym_name(av[i]);
-			while (*s=='(') {
-				if (stackn==16) RAISE("too many nested lists (>16)");
-				stack[stackn++]=j;
-				s++;
-			}
-			const char *se = s+strlen(s);
-			while (se>s && se[-1]==')') {se--; close++;}
-			if (s!=se) av[j++] = rb_funcall(mGridFlow,SI(FloatOrSymbol),1,rb_str_new(s,se-s));
-		} else av[j++]=av[i];
-		i++;
-		while (close--) {
-			if (!stackn) RAISE("close-paren without open-paren",av[i]);
-			Ruby a2 = rb_ary_new();
-			int j2 = stack[--stackn];
-			for (int k=j2; k<j; k++) rb_ary_push(a2,av[k]);
-			j=j2;
-			av[j++] = a2;
 		}
 	}
 	if (stackn) RAISE("too many open-paren (%d)",stackn);
