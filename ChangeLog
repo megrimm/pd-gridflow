@@ -13,7 +13,15 @@ version 0.9.1 (2008.04...):
    (apt-get install libnetpbm10-dev)
  * removed broken Targa support
  * removed timelog feature in [#in]/[#out] (redundant)
- * added [gf.error]
+ * removed [joystick_port], [SoundMixer], [pd_netsocket], [rubyarray],
+   [system], [exec], [regsub], [memstat]
+   and some other very seldom used object classes
+   (!@#$ INSERT A LIST OF THEM HERE)
+   (contact me if you need them)
+ * added [gf.error], [usertime], [systemtime]
+ * added method to_ascii in [#import]
+ * [display] word-wrap
+ * [#import] defaults to per_message mode
 
 version 0.9.0 (2007.11.20):
 
