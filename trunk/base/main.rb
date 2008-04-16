@@ -28,28 +28,14 @@
 # in case of bug in Ruby ("Error: Success")
 module Errno; class E000 < StandardError; end; end
 
-class Array
-	def split(elem)
-		r=[]
-		j=0
-		for i in 0...length do (r<<self[j,i-j]; j=i+1) if self[i]==elem end
-		r<<self[j,length-j]
-	end
-end
-
 module GridFlow #------------------
-
 def self.post(s,*a) post_string(sprintf(s,*a)) end
-
 class<<self
 	attr_accessor :data_path
 	attr_reader :fobjects
 end
 @data_path=[GridFlow::DIR+"/images"]
-
 class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
-
-# adding some functionality to that:
 class FObject
 	class << self
 		# per-class
@@ -90,7 +76,6 @@ class FObject
 		end
 	end
 end
-
 def GridFlow.find_file s
 	s=s.to_s
 	if s==File.basename(s) then
@@ -98,18 +83,7 @@ def GridFlow.find_file s
 		if dir then "#{dir}/#{s}" else s end
 	else s end
 end
-
 end # module GridFlow
-
-class IO
-  def nonblock= flag
-    bit = Fcntl::O_NONBLOCK
-    state = fcntl(Fcntl::F_GETFL, 0)
-    fcntl(Fcntl::F_SETFL, (state & ~bit) |
-      (if flag; bit else 0 end))
-  end
-end
-
 def GridFlow.load_user_config
 	user_config_file = ENV["HOME"] + "/.gridflow_startup"
 	begin
@@ -119,13 +93,11 @@ def GridFlow.load_user_config
 		GridFlow.post "while loading ~/.gridflow_startup"
 	end
 end
-
 END {
 	GridFlow.fobjects.each {|k,v| k.delete if k.respond_to? :delete }
 	GridFlow.fobjects.clear
 	GC.start
 }
-
 class Object
   def method_missing(name,*)
     oc = GridFlow::FObject
