@@ -588,8 +588,6 @@ Ruby FObject_delete (Ruby rself) {
 	return Qnil;
 }
 
-Ruby GridFlow_s_rdtsc (Ruby rself) {return R(rdtsc()).r;}
-
 /* This code handles nested lists because PureData (all versions including 0.40) doesn't do it */
 int handle_braces(int ac, t_atom *av) {
 	int stack[16];
@@ -704,15 +702,12 @@ extern "C" void gridflow_setup () {
 	BFProxy_class = class_new(gensym("ruby_proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	mGridFlow = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; end");
-	rb_const_set(mGridFlow,SI(DIR),rb_str_new2(dirresult));
-	post("DIR = %s",rb_str_ptr(EVAL("GridFlow::DIR.inspect")));
-	EVAL("$:.unshift GridFlow::DIR+'/..', GridFlow::DIR");
+	gf_data_path.push_back(string(dirresult)+"/images");
         srandom(rdtsc());
 #define FOO(_sym_,_name_) bsym._sym_ = gensym(_name_);
 BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
-	SDEF2("rdtsc",rdtsc,0);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
