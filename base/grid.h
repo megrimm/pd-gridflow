@@ -262,7 +262,7 @@ typedef struct R {
 } ruby;
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
-template <class T> T convert(Ruby          x, T *foo) {R r; r.r = x; return (T)r;}
+template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
 static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
@@ -270,13 +270,18 @@ static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r))
 #endif // USE_RUBY
 
 #define a_float    a_w.w_float
-#define a_symbol   a_w.w_float
+#define a_symbol   a_w.w_symbol
 #define a_gpointer a_w.w_gpointer
 
 // trick to be able to define methods in t_atom
 struct t_atom2 : t_atom {
 	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_w.w_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
+	operator bool () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		float f = round(a_float);
+		if (f<0 || f>=2) RAISE("value %d is out of range",f);
+		return (bool)f;}
 	operator uint8 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		float f = round(a_float);
@@ -312,6 +317,13 @@ struct t_atom2 : t_atom {
 	operator float64 () const {
 		if (a_type!=A_FLOAT) RAISE("expected float");
 		return a_float;}
+	operator t_symbol * () const {
+		if (a_type!=A_SYMBOL) RAISE("expected symbol");
+ 		return a_symbol;}
+	operator std::string () const {
+		if (a_type!=A_SYMBOL) RAISE("expected symbol");
+		return std::string(a_symbol->s_name);
+	}
 };
 
 template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
@@ -622,6 +634,14 @@ static Numop *convert(Ruby x, Numop **bogus) {
 	} else return op_dict[k];
 }
 #endif
+static Numop *convert(const t_atom &x, Numop **bogus) {
+	if (x.a_type!=A_SYMBOL) RAISE("expected numop (as symbol)");
+	string k = string(x.a_symbol->s_name);
+	if (op_dict.find(k)==op_dict.end()) {
+		if (vop_dict.find(k)==vop_dict.end()) RAISE("expected two-input-operator, not '%s'", k.data());
+		return vop_dict[k];
+	} else return op_dict[k];
+}
 
 // ****************************************************************
 struct Grid : CObject {
@@ -673,7 +693,8 @@ private:
 	void init_from_list(     int n, t_atom *a, NumberTypeE nt=int32_e);
 };
 
-static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
+static inline Grid *convert (Ruby          r, Grid **bogus) {return r?new Grid(r):0;}
+static inline Grid *convert (const t_atom &r, Grid **bogus) {return new Grid(r);}
 
 // DimConstraint interface:
 // return if d is acceptable
