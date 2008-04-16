@@ -86,8 +86,6 @@ static inline void NUM(Ruby x, S &y) { \
 EACH_FLOAT_TYPE(FOO)
 #undef FOO
 
-static inline void NUM(Ruby x, ruby &y) { y.r=x; }
-
 void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	t_atom2 *a = (t_atom2 *)aa;
 	t_symbol *delim = gensym("#");
@@ -116,7 +114,7 @@ void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
 	T *p = (T *)*this; \
 	if (n==0) CLEAR(p,nn); \
 	else { \
-		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
+		for (int i=0; i<n; i++) p[i] = a[i]; \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 	TYPESWITCH(nt,FOO,)
 #undef FOO
@@ -149,7 +147,7 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	T *p = (T *)*this; \
 	if (n==0) CLEAR(p,nn); \
 	else { \
-		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
+		for (int i=0; i<n; i++) p[i] = a[i]; \
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 	TYPESWITCH(nt,FOO,)
 #undef FOO
@@ -157,12 +155,12 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 
 void Grid::init_from_atom(const t_atom &x) {
 	if (x.a_type==A_LIST) {
-		t_binbuf *b = (t_binbuf *)x->a_w.w_gpointer;
-		init_from_list(binbuf_getnatom(x),binbuf_getvec(x));
+		t_binbuf *b = (t_binbuf *)x.a_gpointer;
+		init_from_list(binbuf_getnatom(b),binbuf_getvec(b));
 	} else if (x.a_type==A_FLOAT) {
 		init(new Dim(),int32_e);
 		CHECK_ALIGN2(this->data,nt);
-		((int32 *)*this)[0] = x.a_w.w_float;
+		((int32 *)*this)[0] = x.a_float;
 	} else {
 		rb_funcall(
 		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
