@@ -23,43 +23,24 @@
 
 module GridFlow
 def self.post(s,*a) post_string(sprintf(s,*a)) end
-class<<self
+class << self
 	attr_accessor :data_path
 	attr_reader :fobjects
 end
 @data_path=[GridFlow::DIR+"/images"]
 class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
 class FObject
-	class << self
-		# per-class
-		def inspect; @pdname or super; end
-		# should it recurse into superclasses?
-		def gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
-		def gfattr(s,*v)
-			s=s.intern if String===s
-			gfattrs[s]=v
-			attr_accessor s
-			module_eval "def _0_#{s}(o) self.#{s}=o end"
-		end
-	end
-	def self.help
-		gfattrs.each{|x,v|
-			s =      "attr=%-8s" % x
-			s <<    " type=%-8s" % v[0] if v[0]
-			s << " default=%-8s" % v[1] if v[1] # what default="false" ?
-			GridFlow.post "%s", s
-		}
-		GridFlow.post "total %d attributes", gfattrs.length
+	def self.inspect; @pdname or super; end
+	def self.gfattrs; @gfattrs={} if not defined? @gfattrs; @gfattrs end
+	def self.gfattr(s,*v)
+		s=s.intern if String===s
+		gfattrs[s]=v
+		attr_accessor s
+		module_eval "def _0_#{s}(o) self.#{s}=o end"
 	end
 	def post(*a) GridFlow.post(*a) end
-	def self.subclass(*args,&b)
-		qlass = Class.new self
-		qlass.install(*args)
-		qlass.instance_eval{qlass.module_eval(&b)}
-	end
 	def initialize2; end
 	def initialize(*) end
-	def _0_help; self.class.help end
 	def _0_get(s=nil)
 		s=s.intern if String===s
 		if s then
