@@ -262,18 +262,57 @@ typedef struct R {
 } ruby;
 #define INT(x)  convert(x,(int32*)0)
 #define TO(T,x) convert(x,(T*)0)
-template <class T> T convert(Ruby x, T *foo) {R r; r.r = x; return (T)r;}
+template <class T> T convert(Ruby          x, T *foo) {R r; r.r = x; return (T)r;}
 static R operator -(int a, R b) {return rb_funcall(a,SI(Op),1,INT2NUM(b.r));}
 static inline R   ipow(R a, R b) {return R::value(rb_funcall(a.r,SI(**),1,b.r));}
 static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
 static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 #endif // USE_RUBY
 
+#define a_float a_w.w_float
+
 // trick to be able to define methods in t_atom
 struct t_atom2 : t_atom {
 	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_w.w_symbol==b;}
 	bool operator != (t_symbol *b) {return !(*this==b);}
+	operator uint8 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		float f = round(a_float);
+		if (f<0 || f>=0x100) RAISE("value %d is out of range",f);
+		return (uint8)f;}
+	operator int16 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		float f = round(a_float);
+		if (f<-0x8000 || f>=0x8000) RAISE("value %d is out of range",f);
+		return (int16)f;}
+	operator uint16 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		float f = round(a_float);
+		if (f<0 || f>=0x10000) RAISE("value %d is out of range",f);
+		return (uint16)round(f);}
+	operator int32 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		float f = round(a_float);
+		if (f<-0x80000000 || f>=0x80000000) RAISE("value %d is out of range",f);
+		return (int32)round(f);}
+	operator long () const {
+		return sizeof(long)==sizeof(int32) ? (int32)*this : (int64)*this;}
+
+	operator uint64 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		return (uint64)round(a_float);}
+	operator int64 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		return (int64)round(a_float);}
+	operator float32 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		return a_float;}
+	operator float64 () const {
+		if (a_type!=A_FLOAT) RAISE("expected float");
+		return a_float;}
 };
+
+template <class T> T convert(const t_atom &x, T *foo) {const t_atom2 *xx = (const t_atom2 *)&x; return (T)*xx;}
 
 //****************************************************************
 
