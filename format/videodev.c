@@ -237,7 +237,13 @@ static void gfpost(VideoMmap *self) {
 	string colorspace;
 	int palettes; /* bitfield */
 
-	FormatVideoDev () : queuesize(0), queuemax(2), next_frame(0), use_mmap(true), use_pwc(false), bit_packing(0), dim(0) {}
+	\constructor (string mode, string filename) {
+		queuesize=0; queuemax=2; next_frame=0; use_mmap=true; use_pwc=false; bit_packing=0; dim=0;
+		image=0;
+		f = fopen(filename.data(),"r+");
+		fd = fileno(f);
+		initialize2(); // name conflict...
+	}
 	void frame_finished (uint8 * buf);
 
 	void alloc_image ();
@@ -739,14 +745,6 @@ void FormatVideoDev::initialize2 () {
 	}
 	_0_colorspace(0,0,"rgb");
 	_0_channel(0,0,0);
-}
-
-\def void initialize (string mode, string filename) {
-	SUPER;
-	image=0;
-	f = fopen(filename.data(),"r+");
-	fd = fileno(f);
-	initialize2(); // name conflict...
 }
 
 \end class FormatVideoDev {install_format("#io.videodev",4,"");}

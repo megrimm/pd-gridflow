@@ -30,9 +30,21 @@
 \class FormatMPEG3 : Format {
 	mpeg3_t *mpeg;
 	int track;
-	FormatMPEG3 () : track(0) {}
 	~FormatMPEG3 () {if (mpeg) {mpeg3_close(mpeg); mpeg=0;}}
-	\decl void initialize (t_symbol *mode, string filename);
+	\constructor (t_symbol *mode, string filename) {
+		track=0;
+	// libmpeg3 may be nice, but it won't take a filehandle, only filename
+		if (mode!=gensym("in")) RAISE("read-only, sorry");
+		filename = gf_find_file(filename);
+	#ifdef MPEG3_UNDEFINED_ERROR
+		int err;
+		mpeg = mpeg3_open((char *)filename.data(),&err);
+		post("mpeg error code = %d",err);
+	#else
+		mpeg = mpeg3_open((char *)filename.data());
+	#endif
+		if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
+	}
 	\decl 0 seek (int frame);
 	\decl 0 bang ();
 };
@@ -58,23 +70,6 @@
 	for(int y=0; y<sy; y++) out.send(bs,buf+channels*sx*y);
 	delete[] (uint8 *)buf;
 //	return INT2NUM(nframe);
-}
-
-// libmpeg3 may be nice, but it won't take a filehandle, only filename
-\def void initialize (t_symbol *mode, string filename) {
-	SUPER;
-	if (mode!=gensym("in")) RAISE("read-only, sorry");
-	filename = gf_find_file(filename);
-#ifdef MPEG3_UNDEFINED_ERROR
-	{
-		int err;
-		mpeg = mpeg3_open((char *)filename.data(),&err);
-		post("mpeg error code = %d",err);
-	}
-#else
-	mpeg = mpeg3_open((char *)filename.data());
-#endif
-	if (!mpeg) RAISE("IO Error: can't open file `%s': %s", filename.data(), strerror(errno));
 }
 
 \classinfo {install_format("#io.mpeg",4,"mpg mpeg");}
