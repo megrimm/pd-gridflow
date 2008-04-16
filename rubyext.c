@@ -181,6 +181,10 @@ static Ruby Bridge_import_value(const t_atom *at) {
 	return Qnil; /* unknown */
 }
 
+void pd2ruby (int argc, Ruby *argv, t_atom *at) {
+	for (int i=0; i<argc; i++) argv[i] = Bridge_import_value(&at[i]);
+}
+
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	t_atom at[fm->ac];
 	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
