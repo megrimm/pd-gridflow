@@ -25,7 +25,7 @@
 #define __GF_GRID_H
 #include "../gridflow2.h"
 
-#define GF_VERSION "0.9.1"
+#define GF_VERSION "0.9.2"
 
 #include <stdio.h>
 extern "C" void *gfmalloc(size_t n);
@@ -269,6 +269,12 @@ static inline R gf_abs(R a)      {return R::value(rb_funcall(a.r,SI(abs),0));}
 static inline R    cmp(R a, R b) {return R::value(rb_funcall(a.r,SI(<=>),1,b.r));}
 #endif // USE_RUBY
 
+// trick to be able to define methods in t_atom
+struct t_atom2 : t_atom {
+	bool operator == (t_symbol *b) {return this->a_type==A_SYMBOL && this->a_w.w_symbol==b;}
+	bool operator != (t_symbol *b) {return !(*this==b);}
+};
+
 //****************************************************************
 
 //template <class T> class P : T * {};
@@ -422,6 +428,7 @@ struct NumberType : CObject {
 };
 
 NumberTypeE NumberTypeE_find (string sym);
+NumberTypeE NumberTypeE_find (const t_atom &sym);
 #ifdef USE_RUBY
 NumberTypeE NumberTypeE_find (Ruby sym);
 #endif
@@ -560,6 +567,9 @@ extern std::map<string,Numop *> vop_dict;
 #ifdef USE_RUBY
 static inline NumberTypeE convert(Ruby x, NumberTypeE *bogus) {return NumberTypeE_find(x);}
 #endif
+static inline NumberTypeE convert(const t_atom &x, NumberTypeE *bogus) {
+	if (x.a_type!=A_SYMBOL) RAISE("expected number-type"); return NumberTypeE_find(string(x.a_w.w_symbol->s_name));}
+
 
 #ifdef USE_RUBY
 static Numop *convert(Ruby x, Numop **bogus) {
@@ -584,8 +594,10 @@ struct Grid : CObject {
 		init(dim,nt);
 		if (clear) {long size = bytes(); CLEAR((char *)data,size);}
 	}
-	Grid(Ruby x) { state=1; init_from_ruby(x); }
-	Grid(int n, Ruby *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
+	Grid(Ruby          x) {state=1; init_from_ruby(x);}
+	Grid(const t_atom &x) {state=1; init_from_atom(x);}
+	Grid(int n, Ruby   *a, NumberTypeE nt_=int32_e) {state=1; init_from_ruby_list(n,a,nt_);}
+	Grid(int n, t_atom *a, NumberTypeE nt_=int32_e) {state=1; init_from_list(n,a,nt_);}
 	template <class T> Grid(P<Dim> dim, T *data) {
 		state=0; this->dim=dim;
 		this->nt=NumberTypeE_type_of((T *)0);
@@ -615,7 +627,9 @@ private:
 		//fprintf(stderr,"rdata=%p data=%p align=%d\n",rdata,data,align);
 	}
 	void init_from_ruby(Ruby x);
-	void init_from_ruby_list(int n, Ruby *a, NumberTypeE nt=int32_e);
+	void init_from_atom(const t_atom &x);
+	void init_from_ruby_list(int n, Ruby   *a, NumberTypeE nt=int32_e);
+	void init_from_list(     int n, t_atom *a, NumberTypeE nt=int32_e);
 };
 
 static inline Grid *convert (Ruby r, Grid **bogus) {return r?new Grid(r):0;}
@@ -748,8 +762,10 @@ private:
 #else
 #define GRIN(TB,TS,TI,TL,TF,TD) {TB,TS,TI,TF}
 #endif // HAVE_LITE
+#define MESSAGE t_symbol *sel, int argc, t_atom2 *argv
+#define MESSAGE2 sel,argc,argv
 struct FClass {
-	void *(*allocator)(); // returns a new C++ object
+	void *(*allocator)(MESSAGE); // returns a new C++ object
 	void (*startup)(Ruby rself); // initializer for the Ruby class
 	const char *name; // C++/Ruby name (not PD name)
 	int methodsn; MethodDecl *methods; // C++ -> Ruby methods
@@ -827,7 +843,7 @@ struct BFObject : t_object {
 // represents objects that have inlets/outlets
 \class FObject : CObject {
 	BFObject *bself; // point to PD peer
-	FObject() : bself(0) {}
+	FObject(MESSAGE) : bself(0) {}
 	template <class T> void send_out(int outlet, int argc, T *argv) {
 		t_atom foo[argc];
 		for (int i=0; i<argc; i++) SETFLOAT(&foo[i],argv[i]);
@@ -842,7 +858,7 @@ struct BFObject : t_object {
 	// Make sure you distinguish #close/#delete, and C++'s delete. The first
 	// two are quite equivalent and should never make an object "crashable".
 	// C++'s delete is called by Ruby's garbage collector or by PureData's delete.
-	GridObject() {}
+	GridObject(MESSAGE) : FObject(MESSAGE2) {}
 	~GridObject() {}
 	bool is_busy_except(P<GridInlet> gin) {
 		for (uint32 i=0; i<in.size(); i++)
@@ -897,7 +913,7 @@ void add_creator2(Ruby rself, const char *name);
 	FILE *f;
 	NumberTypeE cast;
 	long frame;
-	Format() : mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
+	Format(MESSAGE) : GridObject(MESSAGE2), mode(0), fd(-1), f(0), cast(int32_e), frame(0) {}
 	\decl void initialize (t_symbol *mode, ...);
 	\decl 0 open (t_symbol *mode, string filename);
 	\decl 0 close ();
