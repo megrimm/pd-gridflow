@@ -146,8 +146,6 @@ def GridFlow.load_user_config
 	end
 end
 
-require "base/flow_objects.rb"
-
 END {
 	GridFlow.fobjects.each {|k,v| k.delete if k.respond_to? :delete }
 	GridFlow.fobjects.clear
