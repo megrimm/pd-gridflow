@@ -246,24 +246,6 @@
 		</method>
 	</class>
 
-	<class name="format targa #in/#out">
-		<p>Support for RGB-24 (3 channels) and RGBA-32 (4 channels)</p>
-
-		<method name="open targa file">
-			<arg name="filename" type="symbol"/>
-			opens the specified file, taken from the current
-			directory.
-		</method>
-
-		<method name="open targa gzfile">
-			<arg name="filename" type="symbol"/>
-			same but for .tga.gz files
-		</method>
-
-		<method name="grid"><arg name="grid" type="grid(rows columns 3)"/>RGB-24</method>
-		<method name="grid"><arg name="grid" type="grid(rows columns 4)"/>RGBA-32</method>
-	</class>
-
 	<class name="format jpeg #in/#out">
 		<p>Support for RGB non-progressive</p>
 		
@@ -393,18 +375,6 @@
 		<method name="open grid gzfile">
 			<arg name="filename" type="symbol"/>
 			same but for .grid.gz files
-		</method>
-		<method name="open grid tcp">
-			<arg name="hostname" type="symbol"/>
-			<arg name="port" type="integer"/>
-			dials an specified hostname/port on the InterNet or
-			compatible network. the TCP protocol is used.
-		</method>
-		<method name="open grid tcpserver">
-			<arg name="port" type="integer"/>
-			waits for a call (and answers) for this port on the
-			local machine via InterNet or compatible network.
-			Answers the call.
 		</method>
 		<method name="type int32">
 			output will be as 32 bit signed integers.
