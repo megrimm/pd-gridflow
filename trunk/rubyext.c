@@ -80,7 +80,6 @@ struct FMessage {
 #define rb_sym_name rb_sym_name_r4j
 static const char *rb_sym_name(Ruby sym) {return rb_id2name(SYM2ID(sym));}
 void CObject_free (void *victim) {delete (CObject *)victim;}
-static void send_in (Ruby rself, int inlet, int argc, Ruby *argv);
 
 Ruby cPointer=0;
 Ruby Pointer_s_new (void *ptr) {
@@ -105,6 +104,30 @@ static Ruby make_error_message () {
 
 static int  ninlets_of (Ruby qlass) {return fclasses_ruby[qlass]->ninlets;}
 static int noutlets_of (Ruby qlass) {return fclasses_ruby[qlass]->noutlets;}
+
+/* **************************************************************** */
+
+struct RMessage {VALUE rself; ID sel; int argc; VALUE *argv;};
+static VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
+static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
+	Ruby error_array = make_error_message();
+//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
+	post("%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
+	return Qnil;
+}
+static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
+	va_list foo;
+	va_start(foo,argc);
+	VALUE argv[argc];
+	for (int i=0; i<argc; i++) argv[i] = va_arg(foo,VALUE);
+	RMessage rm = { rself, sel, argc, argv };
+	va_end(foo);
+	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
+}
+static VALUE rb_funcall_myrescue2(VALUE rself, ID sel, int argc, Ruby *argv) {
+	RMessage rm = { rself, sel, argc, argv };
+	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
+}
 
 //****************************************************************
 // BFObject
@@ -164,11 +187,21 @@ static Ruby Bridge_import_value(const t_atom *at) {
 static Ruby BFObject_method_missing_1 (FMessage *fm) {
 	t_atom at[fm->ac];
 	for (int i=0; i<fm->ac; i++) at[i] = fm->at[i];
-	Ruby argv[fm->ac+1];
-	argv[0] = ID2SYM(rb_intern(fm->selector->s_name));
 	int argc = handle_braces(fm->ac,at);
+
+	Ruby argv[argc+1];
+	argv[0] = fm->winlet*2+1; // convert to Ruby Integer
 	for (int i=0; i<argc; i++) argv[1+i] = Bridge_import_value(at+i);
-	send_in(fm->self->rself,fm->winlet,argc+1,argv);
+	Ruby rself = fm->self->rself;
+	DGS(FObject);
+	char buf[256];
+	sprintf(buf,"_n_%s",fm->selector->s_name);
+	if (rb_obj_respond_to(rself,rb_intern(buf),0)) {
+		rb_funcall_myrescue2(rself,rb_intern(buf),argc+1,argv);
+	} else {
+		sprintf(buf,"_%d_%s",fm->winlet,fm->selector->s_name);
+		rb_funcall_myrescue2(rself,rb_intern(buf),argc,argv+1);
+	}
 	return Qnil;
 }
 
@@ -236,8 +269,7 @@ static Ruby BFObject_init_1 (FMessage *fm) {
 		j++;
 		int k=j;
 		for (; j<argc; j++) if (at[j].a_type==A_COMMA) break;
-		for (int i=k; i<j; i++) argv[i] = Bridge_import_value(at+i);
-		send_in(rself,0,j-k,argv+k);
+		if (at[k].a_type==A_SYMBOL) pd_typedmess((t_pd *)bself,at[k].a_w.w_symbol,j-k-1,at+k+1);
 	}
 	return rself;
 }
@@ -259,30 +291,6 @@ static void BFObject_delete_1 (FMessage *fm) {
 static void BFObject_delete (BFObject *bself) {
 	FMessage fm = {self:bself, winlet:-1, selector:gensym("delete"), ac:0, at:0, is_init:false};
 	RESCUE(BFObject_delete_1,&fm,BFObject_rescue,&fm);
-}
-
-/* **************************************************************** */
-
-struct RMessage {VALUE rself; ID sel; int argc; VALUE *argv;};
-static VALUE rb_funcall_myrescue_1(RMessage *rm) {return rb_funcall2(rm->rself,rm->sel,rm->argc,rm->argv);}
-static Ruby rb_funcall_myrescue_2 (RMessage *rm) {
-	Ruby error_array = make_error_message();
-//	for (int i=0; i<rb_ary_len(error_array); i++) post("%s\n",rb_str_ptr(rb_ary_ptr(error_array)[i]));
-	post("%s",rb_str_ptr(rb_funcall(error_array,SI(join),1,rb_str_new2("\n"))));
-	return Qnil;
-}
-static VALUE rb_funcall_myrescue(VALUE rself, ID sel, int argc, ...) {
-	va_list foo;
-	va_start(foo,argc);
-	VALUE argv[argc];
-	for (int i=0; i<argc; i++) argv[i] = va_arg(foo,VALUE);
-	RMessage rm = { rself, sel, argc, argv };
-	va_end(foo);
-	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
-}
-static VALUE rb_funcall_myrescue2(VALUE rself, ID sel, int argc, Ruby *argv) {
-	RMessage rm = { rself, sel, argc, argv };
-	return RESCUE(rb_funcall_myrescue_1,&rm,rb_funcall_myrescue_2,&rm);
 }
 
 //****************************************************************
@@ -434,38 +442,6 @@ void fclass_install(FClass *fc, const char *super) {
 	define_many_methods(rself,fc->methodsn,fc->methods);
 	rb_ivar_set(rself,SI(@allocator),PTR2FIX((void*)(fc->allocator)));
 	if (fc->startup) fc->startup(rself);
-}
-
-static void FObject_prepare_message(int &argc, Ruby *&argv, Ruby &sym, FObject *foo=0) {
-	if (argc<1) {
-		sym = SYM(bang);
-	} else if (argc>1 && !SYMBOL_P(*argv)) {
-		sym = SYM(list);
-	} else if (INTEGER_P(*argv)||FLOAT_P(*argv)) {
-		sym = SYM(float);
-	} else if (SYMBOL_P(*argv)) {
-		sym = *argv;
-		argc--, argv++;
-	} else if (argc==1 && TYPE(*argv)==T_ARRAY) {
-		RAISE("oh really? (in FObject_prepare_message)");
-		sym = SYM(list);
-		argc = rb_ary_len(*argv);
-		argv = rb_ary_ptr(*argv);
-	} else RAISE("%s received bad message: argc=%d; argv[0]=%s",foo?ARGS(foo):"", argc,
-			argc ? rb_str_ptr(rb_inspect(argv[0])) : "");
-}
-
-static void send_in (Ruby rself, int inlet, int argc, Ruby *argv) {
-	Ruby sym;
-	DGS(FObject);
-	try {FObject_prepare_message(argc,argv,sym,self);} catch (Barf *oozy) {rb_raise(rb_eArgError,"%s",oozy->text);}
-	char buf[256];
-	sprintf(buf,"_n_%s",rb_sym_name(sym));
-	if (rb_obj_respond_to(rself,rb_intern(buf),0)) {
-		argc++, argv--; // really
-		argv[0] = inlet*2+1; // convert to Ruby Integer
-	} else sprintf(buf,"_%d_%s",inlet,rb_sym_name(sym));
-	rb_funcall_myrescue2(rself,rb_intern(buf),argc,argv);
 }
 
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
