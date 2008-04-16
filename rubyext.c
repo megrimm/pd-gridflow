@@ -385,15 +385,11 @@ void BFObject::noutlets_set (int n) {
 	BFObject_redraw(this);
 }
 
-static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
-	if (TYPE(name_)!=T_STRING) RAISE("argh");
-	char *name = strdup(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
+void add_creator2(Ruby rself, const char *name) {
 	if (fclasses_ruby.find(rself)==fclasses_ruby.end()) RAISE("uh");
 	string fname = fclasses_ruby[rself]->name;
 	fclasses[string(name)] = fclasses[fname];
-	class_addcreator((t_newmethod)BFObject_init,gensym(name),A_GIMME,0);
-	free(name);
-	return Qnil;
+	class_addcreator((t_newmethod)BFObject_init,gensym((char *)name),A_GIMME,0);
 }
 
 //****************************************************************
@@ -577,7 +573,6 @@ BUILTIN_SYMBOLS(FOO)
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, new, -1);
-	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
