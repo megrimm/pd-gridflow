@@ -49,6 +49,9 @@
 /* X11 Error Handler type */
 typedef int (*XEH)(Display *, XErrorEvent *);
 
+struct FormatX11;
+void FormatX11_call(FormatX11 *p);
+
 \class FormatX11 : Format {
 /* at the Display/Screen level */
 	Display *display; /* connection to xserver */
@@ -82,13 +85,6 @@ typedef int (*XEH)(Display *, XErrorEvent *);
     unsigned char *data;
     int last_encoding;
 #endif
-	FormatX11 () : transfer(0), use_stripes(false), 
-	window(0), ximage(0), image(0), is_owner(true),
-	dim(0), lock_size(false), override_redirect(false), clock(0)
-#ifdef HAVE_X11_SHARED_MEMORY
-		, shm_info(0)
-#endif
-	{}
 	~FormatX11 () {
 		clock_unset(clock);
 		if (is_owner) XDestroyWindow(display,window);
@@ -106,7 +102,102 @@ typedef int (*XEH)(Display *, XErrorEvent *);
 	void report_pointer(int y, int x, int state);
 	void prepare_colormap();
 	Window search_window_tree (Window xid, Atom key, const char *value, int level=0);
-	\decl void initialize (...);
+	\constructor (...) {
+		transfer=0; use_stripes=false; window=0; ximage=0; image=0; is_owner=true;
+		dim=0; lock_size=false; override_redirect=false; clock=0;
+#ifdef HAVE_X11_SHARED_MEMORY
+		shm_info=0;
+#endif
+		int sy=240, sx=320; // defaults
+		argv++, argc--;
+		t_symbol *domain = argc<1 ? gensym("here") : argv[0];
+		int i;
+		char host[256];
+		if (domain==gensym("here")) {
+			open_display(0);
+			i=1;
+		} else if (domain==gensym("local")) {
+			if (argc<2) RAISE("open x11 local: not enough args");
+			sprintf(host,":%ld",long(argv[1]));
+			open_display(host);
+			i=2;
+		} else if (domain==gensym("remote")) {
+			if (argc<3) RAISE("open x11 remote: not enough args");
+			sprintf(host,"%s:%ld",string(argv[1]).data(),long(argv[2]));
+			open_display(host);
+			i=3;
+		} else if (domain==gensym("display")) {
+			if (argc<2) RAISE("open x11 display: not enough args");
+			strcpy(host,string(argv[1]).data());
+			for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
+			post("mode `display', DISPLAY=`%s'",host);
+			open_display(host);
+			i=2;
+		} else RAISE("x11 destination syntax error");
+		for(;i<argc;i++) {
+			if (argv[i]==gensym("override_redirect")) override_redirect = true;
+			else if (argv[i]==gensym("use_stripes"))  use_stripes = true;
+			else RAISE("argument '%s' not recognized",string(argv[i]).data());
+		}
+		pos[1]=pos[0]=0;
+		parent = root_window;
+		if (i>=argc) {
+		} else {
+			const t_atom2 &winspec = argv[i];
+			if (winspec==gensym("root")) {
+				window = root_window;
+				is_owner = false;
+			} else if (winspec==gensym("embed")) {
+				string title = argv[i+1];
+				sy = sx = pos[0] = pos[1] = 0;
+				parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title.data());
+				if (parent == 0xDeadBeef) RAISE("Window not found.");
+			} else if (winspec==gensym("embed_by_id")) {
+				const char *winspec2 = string(argv[i+1]).data();
+				if (strncmp(winspec2,"0x",2)==0) {
+					parent = strtol(winspec2+2,0,16);
+				} else {
+					parent = atoi(winspec2);
+				}
+			} else {
+				if (winspec.a_type==A_SYMBOL) {
+					const char *winspec2 = string(winspec).data();
+					if (strncmp(winspec2,"0x",2)==0) {
+						window = strtol(winspec2+2,0,16);
+					} else {
+						window = atoi(winspec2); // huh?
+					}
+				} else {
+					window = INT(winspec);
+				}
+				is_owner = false;
+				sy = sx = pos[0] = pos[1] = 0;
+			}
+		}
+		resize_window(sx,sy); // "resize" also takes care of creation
+		if (is_owner) {
+			Atom wmDeleteAtom = XInternAtom(display, "WM_DELETE_WINDOW", False);
+			XSetWMProtocols(display,window,&wmDeleteAtom,1);
+		}
+		Visual *v = visual;
+		int disp_is_le = !ImageByteOrder(display);
+		int bpp = ximage->bits_per_pixel;
+		switch(visual->c_class) {
+		case TrueColor: case DirectColor: {
+			uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
+			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
+		} break;
+		case PseudoColor: {
+			uint32 masks[3] = { 0x07, 0x38, 0xC0 };
+			bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
+		} break;
+		default: { RAISE("huh?"); }
+		}
+		clock = clock_new(this,(t_method)FormatX11_call);
+		clock_delay(clock,0);
+		show_section(0,0,sx,sy);
+	}
+
 	\decl 0 bang ();
 	void call ();
 	\decl 0 out_size (int sy, int sx);
@@ -551,109 +642,6 @@ Window FormatX11::search_window_tree (Window xid, Atom key, const char *value, i
 }
 
 \def 0 title (string title="") {this->title = title; set_wm_hints();}
-
-\def void initialize (...) {
-	int sy=240, sx=320; // defaults
-	SUPER;
-	argv++, argc--;
-	VALUE domain = argc<1 ? SYM(here) : argv[0];
-	int i;
-	char host[256];
-	if (domain==SYM(here)) {
-		open_display(0);
-		i=1;
-	} else if (domain==SYM(local)) {
-		if (argc<2) RAISE("open x11 local: not enough args");
-		sprintf(host,":%ld",NUM2LONG(argv[1]));
-		open_display(host);
-		i=2;
-	} else if (domain==SYM(remote)) {
-		if (argc<3) RAISE("open x11 remote: not enough args");
-		sprintf(host,"%s:%ld",rb_sym_name(argv[1]),NUM2LONG(argv[2]));
-		open_display(host);
-		i=3;
-	} else if (domain==SYM(display)) {
-		if (argc<2) RAISE("open x11 display: not enough args");
-		strcpy(host,rb_sym_name(argv[1]));
-		for (int k=0; host[k]; k++) if (host[k]=='%') host[k]==':';
-		post("mode `display', DISPLAY=`%s'",host);
-		open_display(host);
-		i=2;
-	} else {
-		RAISE("x11 destination syntax error");
-	}
-
-	for(;i<argc;i++) {
-		Ruby a=argv[i];
-		if (a==SYM(override_redirect)) override_redirect = true;
-		else if (a==SYM(use_stripes))  use_stripes = true;
-		else RAISE("argument '%s' not recognized",rb_sym_name(argv[i]));
-	}
-
-	pos[1]=pos[0]=0;
-	parent = root_window;
-	if (i>=argc) {
-	} else {
-		VALUE winspec = argv[i];
-		if (winspec==SYM(root)) {
-			window = root_window;
-			is_owner = false;
-		} else if (winspec==SYM(embed)) {
-			Ruby title_s = rb_funcall(argv[i+1],SI(to_s),0);
-			char *title = strdup(rb_str_ptr(title_s));
-			sy = sx = pos[0] = pos[1] = 0;
-			parent = search_window_tree(root_window,XInternAtom(display,"WM_NAME",0),title);
-			free(title);
-			if (parent == 0xDeadBeef) RAISE("Window not found.");
-		} else if (winspec==SYM(embed_by_id)) {
-			const char *winspec2 = rb_sym_name(argv[i+1]);
-			if (strncmp(winspec2,"0x",2)==0) {
-				parent = strtol(winspec2+2,0,16);
-			} else {
-				parent = atoi(winspec2);
-			}
-		} else {
-			if (TYPE(winspec)==T_SYMBOL) {
-				const char *winspec2 = rb_sym_name(winspec);
-				if (strncmp(winspec2,"0x",2)==0) {
-					window = strtol(winspec2+2,0,16);
-				} else {
-					window = atoi(winspec2); // huh?
-				}
-			} else {
-				window = INT(winspec);
-			}
-			is_owner = false;
-			sy = sx = pos[0] = pos[1] = 0;
-		}
-	}
-
-	// "resize" also takes care of creation
-	resize_window(sx,sy);
-
-	if (is_owner) {
-		Atom wmDeleteAtom = XInternAtom(display, "WM_DELETE_WINDOW", False);
-		XSetWMProtocols(display,window,&wmDeleteAtom,1);
-	}
-	
-	Visual *v = visual;
-	int disp_is_le = !ImageByteOrder(display);
-	int bpp = ximage->bits_per_pixel;
-	switch(visual->c_class) {
-	case TrueColor: case DirectColor: {
-		uint32 masks[3] = { v->red_mask, v->green_mask, v->blue_mask };
-		bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
-	} break;
-	case PseudoColor: {
-		uint32 masks[3] = { 0x07, 0x38, 0xC0 };
-		bit_packing = new BitPacking(disp_is_le, bpp/8, 3, masks);
-	} break;
-	default: { RAISE("huh?"); }
-	}
-	clock = clock_new(this,(t_method)FormatX11_call);
-	clock_delay(clock,0);
-	show_section(0,0,sx,sy);
-}
 
 \end class FormatX11 {install_format("#io.x11",6,"");}
 void startup_x11 () {
