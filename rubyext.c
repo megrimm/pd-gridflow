@@ -518,20 +518,6 @@ static void send_in (Ruby rself, int inlet, int argc, Ruby *argv) {
 	rb_funcall_myrescue2(rself,rb_intern(buf),argc,argv);
 }
 
-void FObject_send_out (int argc, Ruby *argv, Ruby rself) {
-	DGS(FObject);
-	if (argc<1) RAISE("not enough args");
-	int outlet = INT(*argv);
-	if (outlet<0 || outlet>=64) RAISE("invalid outlet number: %d",outlet);
-	argc--, argv++;
-	Ruby sym;
-	FObject_prepare_message(argc,argv,sym,self);
-	t_atom sel, at[argc];
-	Bridge_export_value(sym,&sel);
-	for (int i=0; i<argc; i++) Bridge_export_value(argv[i],at+i);
-	outlet_anything(self->bself->out[outlet],atom_getsymbol(&sel),argc,at);
-}
-
 Ruby FObject_s_new(Ruby argc, Ruby *argv, Ruby qlass) {
 	Ruby allocator = rb_ivar_defined(qlass,SI(@allocator)) ? rb_ivar_get(qlass,SI(@allocator)) : Qnil;
 	FObject *self;
@@ -711,7 +697,6 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
-	rb_define_method(fo,"send_out",    (RMethod)FObject_send_out,-1);
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
 	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
 	rb_define_method(fo,"initialize2", (RMethod)FObject_dummy,-1);
