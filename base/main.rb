@@ -44,23 +44,8 @@ def self.post(s,*a) post_string(sprintf(s,*a)) end
 class<<self
 	attr_accessor :data_path
 	attr_reader :fobjects
-	attr_reader :subprocesses
 end
-
-@subprocesses={}
 @data_path=[GridFlow::DIR+"/images"]
-
-def self.hunt_zombies
-	#STDERR.puts "GridFlow.hunt_zombies"
-	# the $$ value is bogus
-	begin
-		died = []
-		subprocesses.each {|x,v| Process.waitpid2(x,Process::WNOHANG) and died << x }
-	rescue Errno::ECHILD
-	end
-	#STDERR.puts died.inspect
-	died.each {|x| subprocesses.delete x }
-end
 
 class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
 
