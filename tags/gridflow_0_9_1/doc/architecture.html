@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><!-- $Id$ -->
+<title>GridFlow 0.9.1 - Reference Manual: Architecture</title><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet" href="gridflow.css" type="text/css"></head><body leftmargin="0" topmargin="0" bgcolor="#ffffff" marginheight="0" marginwidth="0">
+
+<table width="100%" cellspacing="10">
+<tr><td>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+  <td>             <img src="images/header1.png" alt="GridFlow" width="384"  height="64"></td>
+  <td width="100%"><img src="images/header2.png" alt="GridFlow" width="100%" height="64"></td>
+  <td>             <img src="images/header3.png" alt="GridFlow" width="32"   height="64"></td>
+</table>
+</td></tr></table>
+<blockquote>
+
+<table bgcolor="white" border="0" cellspacing="2" width="100%">
+<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td height="16"><h4>GridFlow 0.9.1 - Reference Manual: Architecture</h4>
+<ul>
+<li><a href="#Numbers">Numbers</a>
+<li><a href="#Grid_Literals">Grid Literals</a>
+<li><a href="#Grid_Protocol">Grid Protocol</a>
+<li><a href="#Picture_Protocol">Picture Protocol</a>
+<li><a href="#Numeric_Operators">Numeric Operators</a>
+<li><a href="#Synchronisation">Synchronisation</a>
+<li><a href="#Bridges">Bridges</a>
+</ul>
+<br></td></tr>
+<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td><h4><a name="Numbers">Numbers</a></h4>
+<p>High-performance computation requires precise and quite peculiar 
+	definitions of numbers and their representation.</p>
+<p>Inside most programs, numbers are written down as strings of 
+	bits. A bit is either zero or one. Just like the decimal system 
+	uses units, tens, hundreds, the binary system uses units, twos, 
+	fours, eights, sixteens, and so on, doubling every time.</p>
+<p>One notation, called integer allows for only integer values to be 
+	written (no fractions). when it is unsigned, no negative values may 
+	be written. when it is signed, one bit indicates whether the number 
+	is positive or negative. Integer storage is usually fixed-size, so you have 
+	bounds on the size of numbers, and if a result is too big it "wraps around", truncating the biggest 
+	bits.</p>
+<p>Another notation, called floating point (or float) stores numbers using 
+	a fixed number of significant digits, and a scale factor that allows for huge numbers 
+	and tiny fractions at once. Note that 1/3 has periodic digits, but even 0.1 has periodic digits, 
+	in binary coding; so expect some slight roundings; the precision offered should be 
+	sufficient for most purposes. Make sure the errors of rounding don't accumulate, though.</p>
+<p>This little program of mine prints 1/3 in base 2 (only digits after the period): <kbd>ruby -e 'x=1/3.0;for i in 0..52 do x*=2;y=x.floor;print y;x-=y end;puts'</kbd></p>
+<p>In GridFlow, there are six kinds of numbers:</p>
+<table bgcolor="black" border="0" cellspacing="1">
+<tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
+<tr>
+<td class="c3"><b>name</b></td>
+<td class="c3"><b>aliases</b></td>
+<td class="c3"><b>range</b></td>
+<td class="c3"><b>size (bytes)</b></td>
+<td class="c3"><b>precision</b></td>
+<td class="c3"><b>description</b></td></tr>
+<tr class="c1"><td>uint8</td><td>u8 b</td><td>0..255</td><td>1</td><td>1</td><td> 
+			unsigned 8-bit integer. 
+			this is the usual size of numbers taken from files and cameras, and 
+			written to files and to windows. (however this gets converted to <kbd>int32</kbd>
+			unless otherwise specified.) </td></tr> 
+<tr class="c2"><td>int16</td><td>i16 s</td><td>±2<sup>15</sup> = -32768..32767</td><td>2</td><td>1</td><td>...</td></tr> 
+<tr class="c1"><td>int32</td><td>i32 i</td><td>±2<sup>31</sup> = -2147483648..2147483647</td><td>4</td><td>1</td><td> 
+			signed 32-bit integer. 
+			this is used for most computations. </td></tr> 
+<tr class="c2"><td>int64</td><td>i64 l</td><td>±2<sup>63</sup></td><td>8</td><td>1</td><td>...</td></tr> 
+<tr class="c1"><td>float32</td><td>f32 f</td><td>±10<sup>±38</sup></td><td>4</td><td>23 bits = 0.000012% (about 7 digits)</td><td>...</td></tr> 
+<tr class="c2"><td>float64</td><td>f64 d</td><td>±10<sup>±308</sup></td><td>8</td><td>52 bits (about 15 digits)</td><td>...</td></tr> </table></td></tr></table></td></tr>
+ 
+<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+<tr><td><h4><a name="Grid_Literals">Grid Literals</a></h4>
+<p>	In every grid-accepting inlet, a list may be sent instead; if 
+	it consists only of integers, it will be converted to a 
+	one-dimensional grid. Else it may contain a single "#" sign and 
+	integers on both sides of it, where the ones to the left of it are 
+	fed as arguments to an imaginary <kbd>[#redim]</kbd> object and the one to the 
+	right of it are fed through that <kbd>[#redim]</kbd>. </p>
+<p> 	In every grid-accepting inlet, an integer or float may also be sent; 
+	it will be converted to a zero-dimensional grid (a <b>scalar</b>). </p></td></tr>
+
+
+<tr><td bgcolor="black">
+<img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td><h4><a name="Grid_Protocol">Grid Protocol</a></h4>
+<p>	a grid has an associated number type that defines what are the possible values for its elements 
+	(and how much space it takes). the default is <b>int32</b>. </p>
+<p>	a single-dimensional grid of 3 elements (a triplet) is called dim(3). a 
+	three-dimensional grid of 240 rows of 320 columns of triplets is called 
+	dim(240,320,3). </p>
+<p> 	There is a sequence in which elements of a Grid are stored and 
+	transmitted.  Dimension 0 is called "first" and dimension N-1 is 
+	called "last". They are called so because if you select a 
+	position in the first dimension of a grid, the selected part is of the same 
+	shape minus the first dimension; so in dim(240,320,3) if you select 
+	row 51 (or whichever valid row number), you get a dim(320,3). if you select 
+	a subpart two more times you get to a single number. </p>
+<p> 	At each such level, elements are sent/stored in their numeric order, 
+	and are numbered using natural numbers starting at 0. This ordering usually 
+	does not matter, but sometimes it does. Most notably, <kbd>[#import]</kbd>, <kbd>[#export]</kbd> and <kbd>[#redim]</kbd> care about it. </p>
+<p>	On the other hand, order of dimensions usually does matter; this is 
+	what distinguishes rows from columns and channels, for example. 
+	Most objects care about the distinction. </p>
+<p>	A grid with only 1 element in a given dimension is different from one 
+	lacking that dimension; it won't have the same meaning. You can use this 
+	property to your advantage sometimes. </p>
+<p>	Zero-dimensional grids exist. They are called dim(). They can only contain 
+	a single number. </p>
+<tr><td bgcolor="black">
+<img src="images/black.png" height="2" width="1"></td></tr>
+<tr><td><h4><a name="Picture_Protocol">Picture Protocol</a></h4>
+<p><i>This section is useful if you want to know what a picture is in terms of a grid. </i></p>
+<p>A picture is a three-dimensional Grid: </p><ul> <li><b>0</b> : rows</li> <li><b>1</b> : columns</li> <li><b>2</b> : channels</li> </ul>
+
+<p>Channels for the RGB color model are: </p><ul> <li><b>0</b> : red</li> <li><b>1</b> : green</li> <li><b>2</b> : blue</li> </ul>
+<p> 	Because Grids are made of 32-bit integers, a three-channel picture uses 
+	96 bpp (bits per pixel), and have to be downscaled to 24 bpp (or 16 bpp) 
+	for display. That huge amount of slack is there because when you create 
+	your own effects you often have intermediate results that need to be of 
+	higher precision than a normal picture. Especially, results of multiplications 
+	are big and should not overflow before you divide them back to normal; 
+	and similarly, you can have negative values all over, as long as you take 
+	care of them before they get to the display.
+<p> 	In the final conversion, high bits are just ignored. This means: black is 
+	0, maximum is 255, and values wrap like with <kbd>% 256</kbd>. If you want to 
+	clip them, you may use <kbd>[# max 0]</kbd> and <kbd>[# min 255]</kbd> objects.
+
+<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+<tr><td><h4><a name="Numeric_Operators">Numeric Operators</a></h4></td></tr>
+<tr><td><p>In the following table, A is the value entered to the 
+		left, and B is the value entered to the right.</p></td></tr>
+<tr><td><p>Angles are in hundredths of degrees. This means a full circle 
+		(two pi radians) is 36000. You convert from degrees to our angles 
+		by multiplying by 100. You convert from radians to our angles by 
+		multiplying by 18000/pi.</p></td></tr>
+<tr><td><p>Hyperbolic functions (tanh) work with our angles too, so the 
+		same conversions apply.</p></td></tr>
+
+<tr><td><table bgcolor="black" border="0" cellspacing="1">
+<tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
+<tr class="c3"><td><b>name</b></td><td><b>description</b></td><td><b>meaning in pixel context (pictures, palettes)</b></td><td><b>meaning in spatial context (indexmaps, polygons)</b></td></tr>
+
+<tr class="c1"><td>ignore</td><td> A </td><td>no effect</td><td>no effect</td></tr> 
+<tr class="c2"><td>put</td><td> B </td><td>replace by</td><td>replace by</td></tr> 
+<tr class="c1"><td>+</td><td> A + B </td><td>brightness, crossfade</td><td>move, morph</td></tr> 
+<tr class="c2"><td>-</td><td> A - B </td><td>brightness, motion detection</td><td>move, motion detection</td></tr> 
+<tr class="c1"><td>inv+</td><td> B - A </td><td>negate then contrast</td><td>180 degree rotate then move</td></tr> 
+<tr class="c2"><td>*</td><td> A * B </td><td>contrast</td><td>zoom out</td></tr> 
+<tr class="c1"><td>/</td><td> A / B, rounded towards zero </td><td>contrast</td><td>zoom in</td></tr> 
+<tr class="c2"><td>div</td><td> A / B, rounded downwards </td><td>contrast</td><td>zoom in</td></tr> 
+<tr class="c1"><td>inv*</td><td> B / A, rounded towards zero </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>swapdiv</td><td> B / A, rounded downwards </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>%</td><td> A % B, modulo (goes with div) </td><td>--</td><td>tile</td></tr> 
+<tr class="c2"><td>swap%</td><td> B % A, modulo (goes with div) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>rem</td><td> A % B, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>swaprem</td><td> B % A, remainder (goes with /) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>gcd</td><td> 
+	greatest common divisor</td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>lcm</td><td> 
+	least common multiple</td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>|</td><td> A or B, bitwise </td><td>bright munchies</td><td>bottomright munchies</td></tr> 
+<tr class="c2"><td>^</td><td> A xor B, bitwise </td><td>symmetric munchies (fractal checkers)</td><td>symmetric munchies (fractal checkers)</td></tr> 
+<tr class="c1"><td>&amp;</td><td> A and B, bitwise </td><td>dark munchies</td><td>topleft munchies</td></tr> 
+<tr class="c2"><td>&lt;&lt;</td><td> A * (2**(B % 32)), which is left-shifting </td><td>like *</td><td>like *</td></tr> 
+<tr class="c1"><td>&gt;&gt;</td><td> A / (2**(B % 32)), which is right-shifting </td><td>like /,div</td><td>like /,div</td></tr> 
+<tr class="c2"><td>||</td><td> if A is zero then B else A </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&amp;&amp;</td><td> if A is zero then zero else B</td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>min</td><td> the lowest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
+<tr class="c1"><td>max</td><td> the highest value in A,B </td><td>clipping</td><td>clipping (of individual points)</td></tr> 
+<tr class="c2"><td>cmp</td><td> -1 when A&lt;B; 0 when A=B; 1 when A&gt;B. </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>==</td><td> is A equal to B ? 1=true, 0=false </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>!=</td><td> is A not equal to B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&gt;</td><td> is A greater than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>&lt;=</td><td> is A not greater than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>&lt;</td><td> is A less than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>&gt;=</td><td>is A not less than B ? </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>sin*</td><td> B * sin(A) </td><td>--</td><td>waves, rotations</td></tr> 
+<tr class="c2"><td>cos*</td><td> B * cos(A) </td><td>--</td><td>waves, rotations</td></tr> 
+<tr class="c1"><td>atan</td><td> arctan(A/B) </td><td>--</td><td>find angle to origin (part of polar transform)</td></tr> 
+<tr class="c2"><td>tanh*</td><td> B * tanh(A) </td><td>smooth clipping</td><td>smooth clipping (of individual points), neural sigmoid, fuzzy logic</td></tr> 
+<tr class="c1"><td>log*</td><td> B * log(A) (in base e) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>gamma</td><td> floor(pow(a/256.0,256.0/b)*256.0) </td><td>gamma correction</td><td>--</td></tr> 
+<tr class="c1"><td>**</td><td> A**B, that is, A raised to power B </td><td>gamma correction</td><td>--</td></tr> 
+<tr class="c2"><td>abs-</td><td> absolute value of (A-B) </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>rand</td><td> randomly produces a non-negative number below A </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>sqrt</td><td> square root of A, rounded downwards </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>sq-</td><td> (A-B) times (A-B) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>avg</td><td> (A+B)/2 </td><td>--</td><td>--</td></tr> 
+<tr class="c1"><td>hypot</td><td> square root of (A*A+B*B) </td><td>--</td><td>--</td></tr> 
+<tr class="c2"><td>clip+</td><td> like A+B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>clip-</td><td> like A-B but overflow causes clipping instead of wrapping around (coming soon) </td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>erf*</td><td> integral of e^(-x*x) dx ... (coming soon; what ought to be the scaling factor?) </td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>weight</td><td> number of "1" bits in an integer</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>sin</td><td>sin(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>cos</td><td>cos(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>atan2</td><td>atan2(A,B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>tanh</td><td>tanh(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>exp</td><td>exp(A-B), float only</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>log</td><td>log(A-B), float only</td><td>--</td><td>--</td></tr>
+
+</table></td></tr></table></td></tr>
+
+<p>The following are called VecOps because each operation happens between more than just two numbers.</p>
+<p>A first kind of VecOp are those that arise when a pair of numbers (A0,A1) is considered as a single number A0+A1*sqrt(-1).
+If you need complex numbers but don't know yet how they work, learn them using a math tutorial and then those VecOps will begin to seem familiar.</p>
+<p>All the complex number operators are only for floats.</p>
+<p>TODO: fill the last two columns of this table.</p>
+
+<tr><td><table bgcolor="black" border="0" cellspacing="1">
+<tr><td align="left" valign="top"><table bgcolor="white" border="0" cellpadding="4" cellspacing="1">
+<tr class="c3"><td><b>name</b></td><td><b>description</b></td><td><b>meaning in geometric context (indexmaps, polygons, in which each complex number is a point)</b></td><td><b>meaning in spectrum context (FFT) in which each number is a (cosine,sine) pair</b></td></tr>
+
+<tr class="c1"><td>C.*    </td><td>A*B</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.*conj</td><td>A*conj(B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C./    </td><td>A/B</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C./conj</td><td>A/conj(B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.sq-  </td><td>(A-B)*(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.abs- </td><td>abs(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.sin  </td><td>sin(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.cos  </td><td>cos(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c1"><td>C.tanh </td><td>tanh(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.exp  </td><td>exp(A-B)</td><td>--</td><td>--</td></tr>
+<tr class="c2"><td>C.log  </td><td>log(A-B)</td><td>--</td><td>--</td></tr>
+
+</table></td></tr></table></td></tr>
+
+<tr><td bgcolor="black">
+<img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td><h4><a name="Synchronisation">Synchronisation</a></h4>
+<p>In GridFlow you cannot send two grids in different inlets at the 
+same time. You have to use <kbd>[#finished]</kbd> together with (possibly) <kbd>[fork]</kbd> and <kbd>[#store]</kbd>, 
+which can be cumbersome. If you don't do this, the result is undefined 
+behaviour (or crash!).</p>
+<p>In GridFlow 0.7.1 this is beginning to change. <kbd>[#store]</kbd> and # now allow 
+right-inlet grids to be buffered if an operation is occuring on left inlet. This 
+should make many circuits simpler. </p>
+<p>(more to come)</p>
+<tr><td bgcolor="black"><img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td><h4><a name="Bridges">Bridges</a></h4>
+<p>Starting with GridFlow 0.6, GridFlow comes
+with a bridge (a converter) between Ruby and Pd.
+During the GridFlow 0.9 series, GridFlow will be made to work directly with Pd instead.
+Thus Ruby will become optional and essentially separate from GridFlow.
+</p></td></tr>
+
+<tr><td bgcolor="black">
+<img src="images/black.png" height="2" width="1"></td></tr>
+
+<tr><td>
+<p><font size="-1">
+GridFlow 0.9.1 Documentation<br>
+Copyright © 2001-2008 by Mathieu Bouchard
+<a href="mailto:matju@artengine.ca">matju@artengine.ca</a>
+</p>
+</font>
+</td></tr></table>
+</blockquote></body></html>
