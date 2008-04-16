@@ -32,6 +32,9 @@
 
 static bool in_use = false;
 
+struct FormatSDL;
+void FormatSDL_call(FormatSDL *self);
+
 \class FormatSDL : Format {
 	SDL_Surface *screen;
 	P<BitPacking> bit_packing;
@@ -39,7 +42,24 @@ static bool in_use = false;
 	t_clock *clock;
 	void resize_window (int sx, int sy);
 	void call ();
-	\decl void initialize (t_symbol *mode);
+	\constructor (t_symbol *mode) {
+		dim=0;screen=0;
+		if (in_use) RAISE("only one FormatSDL object at a time; sorry");
+		in_use=true;
+		if (SDL_Init(SDL_INIT_VIDEO)<0) RAISE("SDL_Init() error: %s",SDL_GetError());
+		atexit(SDL_Quit);
+		resize_window(320,240);
+		SDL_PixelFormat *f = screen->format;
+		uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
+		switch (f->BytesPerPixel) {
+		case 1: RAISE("8 bpp not supported"); break;
+		case 2: case 3: case 4:
+			bit_packing = new BitPacking(is_le(),f->BytesPerPixel,3,mask);
+			break;
+		default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
+		}
+		clock = clock_new(this,(t_method)FormatSDL_call);
+	}
 	\grin 0 int
 	~FormatSDL () {
 		clock_unset(clock);
@@ -85,27 +105,6 @@ GRID_INLET(FormatSDL,0) {
 } GRID_FINISH {
 	SDL_UpdateRect(screen,0,0,in->dim->get(1),in->dim->get(0));
 } GRID_END
-
-\def void initialize (t_symbol *mode) {
-	dim=0;screen=0;
-	SUPER;
-	if (in_use) RAISE("only one FormatSDL object at a time; sorry");
-	in_use=true;
-	if (SDL_Init(SDL_INIT_VIDEO)<0)
-		RAISE("SDL_Init() error: %s",SDL_GetError());
-	atexit(SDL_Quit);
-	resize_window(320,240);
-	SDL_PixelFormat *f = screen->format;
-	uint32 mask[3] = {f->Rmask,f->Gmask,f->Bmask};
-	switch (f->BytesPerPixel) {
-	case 1: RAISE("8 bpp not supported"); break;
-	case 2: case 3: case 4:
-		bit_packing = new BitPacking(is_le(),f->BytesPerPixel,3,mask);
-		break;
-	default: RAISE("%d bytes/pixel: how do I deal with that?",f->BytesPerPixel); break;
-	}
-	clock = clock_new(this,(t_method)FormatSDL_call);
-}
 
 \end class FormatSDL {install_format("#io.sdl",2,"");}
 void startup_sdl () {

@@ -33,8 +33,11 @@ extern "C" {
 	P<BitPacking> bit_packing;
 	png_structp png;
 	png_infop info;
-	FormatPNG () : bit_packing(0), png(0) {}
-	\decl void initialize (t_symbol *mode, string filename);
+	\constructor (t_symbol *mode, string filename) {
+		Format::_0_open(0,0,mode,filename);
+		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+		bit_packing = new BitPacking(is_le(),3,3,mask);
+	}
 	\decl 0 bang ();
 	\grin 0 int
 };
@@ -104,13 +107,6 @@ GRID_INLET(FormatPNG,0) {
 	out.send(rowbytes*height,image_data);
 	delete[] image_data;
 	png_destroy_read_struct(&png, &info, NULL);
-}
-
-\def void initialize (t_symbol *mode, string filename) {
-	SUPER;
-	Format::_0_open(0,0,mode,filename);
-	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
 \classinfo {install_format("#io.png",4,"png");}

@@ -38,7 +38,11 @@ extern "C" {
 	struct jpeg_compress_struct cjpeg;
 	struct jpeg_decompress_struct djpeg;
 	struct jpeg_error_mgr jerr;
-	\decl void initialize (t_symbol *mode, string filename);
+	\constructor (t_symbol *mode, string filename) {
+		Format::_0_open(0,0,mode,filename);
+		uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
+		bit_packing = new BitPacking(is_le(),3,3,mask);
+	}
 	\decl 0 bang ();
 	\decl 0 quality (short quality);
 	\grin 0 int
@@ -109,13 +113,6 @@ static bool gfeof(FILE *f) {
 	// should the last arg ("baseline") be set to true ?
 	// and what is it for? is it for accuracy of the DC component?
 	jpeg_set_quality(&cjpeg,quality,false);
-}
-
-\def void initialize (t_symbol *mode, string filename) {
-	SUPER;
-	Format::_0_open(0,0,mode,filename);
-	uint32 mask[3] = {0x0000ff,0x00ff00,0xff0000};
-	bit_packing = new BitPacking(is_le(),3,3,mask);
 }
 
 \classinfo {install_format("#io.jpeg",6,"jpeg jpg");}
