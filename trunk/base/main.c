@@ -66,14 +66,16 @@ void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
 	for (int i=0; i<argc; i++) {
 		t_atomtype t = argv[i].a_type;
 		if (t==A_FLOAT) o << argv[i].a_w.w_float;
-		if (t==A_SYMBOL) o << argv[i].a_w.w_symbol->s_name;
-		if (t==A_POINTER) o << "(pointer)";
-		if (t==A_LIST) {
+		else if (t==A_SYMBOL) o << argv[i].a_w.w_symbol->s_name;
+		else if (t==A_POINTER) o << "(pointer)";
+ 		else if (t==A_COMMA) o << ",";
+ 		else if (t==A_SEMI) o << ";";
+		else if (t==A_LIST) {
 			t_binbuf *b = (t_binbuf *)argv[i].a_w.w_gpointer;
 			o << "[";
 			pd_oprint(o,binbuf_getnatom(b),binbuf_getvec(b));
 			o << "]";
-		}
+		} else o << "(atom of type " << t << ")";
 		if (i!=argc-1) o << " ";
 	}
 }
@@ -146,6 +148,12 @@ NumberTypeE NumberTypeE_find (Ruby sym) {
 	if (TYPE(sym)!=T_STRING) sym=rb_funcall(sym,SI(to_s),0);
 	return NumberTypeE_find(string(rb_str_ptr(sym)));
 }
+
+NumberTypeE NumberTypeE_find (t_atom &x) {
+	if (x.a_type!=A_SYMBOL) RAISE("expected number-type (as symbol)");
+	return NumberTypeE_find(string(x.a_w.w_symbol->s_name));
+}
+
 
 /* ---------------------------------------------------------------- */
 
