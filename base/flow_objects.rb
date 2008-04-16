@@ -51,25 +51,4 @@ FObject.subclass("plotter_control",1,1) {
   end
 }
 
-FObject.subclass("regsub",3,1) {
-  def initialize(from,to) _1_symbol(from); _2_symbol(to) end
-  def _0_symbol(s) send_out 0, :symbol, s.to_s.gsub(@from, @to).intern end
-  def _1_symbol(from) @from = Regexp.new(from.to_s.gsub(/`/,"\\")) end
-  def _2_symbol(to)   @to = to.to_s.gsub(/`/,"\\") end
-  #doc:_0_symbol,"a string to transform"
-  #doc:_1_symbol,"a regexp pattern to be found inside of the string"
-  #doc:_2_symbol,"a replacement for the found pattern"
-  #doc_out:_0_symbol,"the transformed string"
-}
-
-FObject.subclass("memstat",1,1) {
-  def _0_bang
-    f = File.open("/proc/#{$$}/stat")
-    send_out 0, Float(f.gets.split(" ")[22]) / 1024.0
-    f.close
-  end
-  #doc:_0_bang,"lookup process stats for the currently running pd+ruby and figure out how much RAM it uses."
-  #doc_out:_0_float,"virtual size of RAM in kilobytes (includes swapped out and shared memory)"
-}
-
 end # module GridFlow
