@@ -23,15 +23,6 @@
 module GridFlow
 GridFlow = ::GridFlow # ruby is nuts... sometimes
 
-FObject.subclass("rubysprintf",2,1) {
-  def initialize(*format) _1_list(format) end
-  def _0_list(*a) send_out 0, :symbol, (sprintf @format, *a).intern end
-  alias _0_float _0_list
-  alias _0_symbol _0_list
-  def _1_list(*format) @format = format.join(" ") end
-  alias _1_symbol _1_list
-}
-
 # plotter control (HPGL)
 FObject.subclass("plotter_control",1,1) {
   def puts(x)
