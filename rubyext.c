@@ -557,7 +557,7 @@ extern "C" void gridflow_setup () {
 	add_to_path(dirresult);
 	ruby_init();
 	ruby_options(COUNT(foo),foo);
-	BFProxy_class = class_new(gensym("ruby_proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
+	BFProxy_class = class_new(gensym("gf.proxy"),0,0,sizeof(BFProxy),CLASS_PD|CLASS_NOINLET, A_NULL);
 	class_addanything(BFProxy_class,BFProxy_method_missing);
 	mGridFlow = EVAL("module GridFlow; class<<self; end; Pd=GridFlow; end");
 	gf_data_path.push_back(string(dirresult)+"/images");
@@ -567,9 +567,6 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
-	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
-	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));
-	rb_define_const(mGridFlow, "GCC_VERSION", rb_str_new2(GCC_VERSION));
 	cFObject = rb_define_class_under(mGridFlow, "FObject", rb_cObject);
 	define_many_methods(cFObject,COUNT(FObject_methods),FObject_methods);
 	SDEF(FObject, new, -1);
