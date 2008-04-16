@@ -409,16 +409,6 @@ void BFObject::noutlets_set (int n) {
 	BFObject_redraw(this);
 }
 
-static Ruby FObject_ninlets_set  (Ruby rself, Ruby n_) {DGS(FObject); int n = INT(n_); if (n<1) n=1;
-	self->bself->ninlets_set(n);  return Qnil;};
-static Ruby FObject_noutlets_set (Ruby rself, Ruby n_) {DGS(FObject); int n = INT(n_); if (n<0) n=0;
-	self->bself->noutlets_set(n); return Qnil;};
-
-static Ruby FObject_ninlets  (Ruby rself) {DGS(FObject); BFObject *bself = self->bself;
-	return bself ? R(bself->nin ).r : fclasses_ruby[rb_obj_class(rself)]->ninlets;}
-static Ruby FObject_noutlets (Ruby rself) {DGS(FObject); BFObject *bself = self->bself;
-	return bself ? R(bself->nout).r : fclasses_ruby[rb_obj_class(rself)]->noutlets;}
-
 static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
 	if (TYPE(name_)!=T_STRING) RAISE("argh");
 	char *name = strdup(rb_str_ptr(rb_funcall(name_,SI(to_s),0)));
@@ -689,6 +679,8 @@ void blargh () {
 #define SDEF(_class_,_name_,_argc_)   rb_define_singleton_method(c##_class_,#_name_,(RMethod)_class_##_s_##_name_,_argc_)
 #define SDEF2(_name1_,_name2_,_argc_) rb_define_singleton_method(mGridFlow,_name1_,(RMethod)GridFlow_s_##_name2_,_argc_)
 
+Ruby FObject_dummy () {return Qnil;}
+
 // note: contrary to what m_pd.h says, pd_getfilename() and pd_getdirname()
 // don't exist; also, canvas_getcurrentdir() isn't available during setup
 // (segfaults), in addition to libraries not being canvases ;-)
@@ -731,14 +723,12 @@ BUILTIN_SYMBOLS(FOO)
 	SDEF(FObject, new, -1);
 	SDEF(FObject,add_creator,1);
 	Ruby fo = cFObject;
-	rb_define_method(fo,"ninlets",     (RMethod)FObject_ninlets,  0);
-	rb_define_method(fo,"noutlets",    (RMethod)FObject_noutlets, 0);
-	rb_define_method(fo,"ninlets=",    (RMethod)FObject_ninlets_set,  1);
-	rb_define_method(fo,"noutlets=",   (RMethod)FObject_noutlets_set, 1);
 	rb_define_method(fo,"args",        (RMethod)FObject_args,0);
 	rb_define_method(fo,"send_in",     (RMethod)FObject_send_in,-1);
 	rb_define_method(fo,"send_out",    (RMethod)FObject_send_out,-1);
 	rb_define_method(fo,"delete",      (RMethod)FObject_delete,0);
+	rb_define_method(fo,"initialize",  (RMethod)FObject_dummy,-1);
+	rb_define_method(fo,"initialize2", (RMethod)FObject_dummy,-1);
 	\startall
 	rb_define_singleton_method(EVAL("GridFlow::Clock"  ),"new", (RMethod)Clock_s_new, 1);
 	rb_define_singleton_method(EVAL("GridFlow::Pointer"),"new", (RMethod)Pointer_s_new, 1);

@@ -1,13 +1,6 @@
 module GridFlow
-class << self
-	attr_accessor :data_path
-end
+class << self; attr_accessor :data_path end
 @data_path=[GridFlow::DIR+"/images"]
-class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
-class FObject
-	def initialize2; end
-	def initialize(*) end
-end
 def GridFlow.find_file s
 	s=s.to_s
 	if s==File.basename(s) then
@@ -15,4 +8,6 @@ def GridFlow.find_file s
 		if dir then "#{dir}/#{s}" else s end
 	else s end
 end
+
+class ::Object; def FloatOrSymbol(x) Float(x) rescue x.intern end end
 end # module GridFlow
