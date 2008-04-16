@@ -88,6 +88,40 @@ EACH_FLOAT_TYPE(FOO)
 
 static inline void NUM(Ruby x, ruby &y) { y.r=x; }
 
+void Grid::init_from_list(int n, t_atom *aa, NumberTypeE nt) {
+	t_atom2 *a = (t_atom2 *)aa;
+	t_symbol *delim = gensym("#");
+	for (int i=0; i<n; i++) {
+		if (a[i] == delim) {
+			int32 v[i];
+			if (i!=0 && a[i-1].a_type==A_SYMBOL) nt=NumberTypeE_find(a[--i]);
+			for (int j=0; j<i; j++) v[j] = convert(a[j],(int32*)0);
+			init(new Dim(i,v),nt);
+			CHECK_ALIGN2(this->data,nt);
+			if (a[i] != delim) i++;
+			i++; a+=i; n-=i;
+			goto fill;
+		}
+	}
+	if (n!=0 && a[0].a_type==A_SYMBOL) {
+		nt = NumberTypeE_find(a[0]);
+		a++, n--;
+	}
+	init(new Dim(n),nt);
+	CHECK_ALIGN2(this->data,nt);
+	fill:
+	int nn = dim->prod();
+	n = min(n,nn);
+#define FOO(T) { \
+	T *p = (T *)*this; \
+	if (n==0) CLEAR(p,nn); \
+	else { \
+		for (int i=0; i<n; i++) NUM(a[i],p[i]); \
+		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
+	TYPESWITCH(nt,FOO,)
+#undef FOO
+}
+
 void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 	Ruby delim = SYM(#);
 	for (int i=0; i<n; i++) {
@@ -119,6 +153,21 @@ void Grid::init_from_ruby_list(int n, Ruby *a, NumberTypeE nt) {
 		for (int i=n; i<nn; i+=n) COPY(p+i,p,min(n,nn-i)); }}
 	TYPESWITCH(nt,FOO,)
 #undef FOO
+}
+
+void Grid::init_from_atom(const t_atom &x) {
+	if (x.a_type==A_LIST) {
+		t_binbuf *b = (t_binbuf *)x->a_w.w_gpointer;
+		init_from_list(binbuf_getnatom(x),binbuf_getvec(x));
+	} else if (x.a_type==A_FLOAT) {
+		init(new Dim(),int32_e);
+		CHECK_ALIGN2(this->data,nt);
+		((int32 *)*this)[0] = x.a_w.w_float;
+	} else {
+		rb_funcall(
+		EVAL("proc{|x| raise \"can't convert to grid: #{x.inspect}\"}"),
+		SI(call),1,x);
+	}
 }
 
 void Grid::init_from_ruby(Ruby x) {
@@ -192,12 +241,6 @@ Ruby GridInlet::begin(int argc, Ruby *argv) {TRACE;
 	P<Dim> dim = this->dim = back_out->dim;
 	dex=0;
 	buf=0;
-/*
-	int r = rb_ensure(
-		(RMethod)GridInlet_begin_1,(Ruby)this,
-		(RMethod)GridInlet_begin_2,(Ruby)this);
-	if (!r) {abort(); goto hell;}
-*/
 	try {
 		GridInlet_begin_1(this);
 	} catch (Barf *barf) {
