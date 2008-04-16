@@ -321,12 +321,6 @@ static t_pd *rp_to_pd (Ruby pointer) {
        return (t_pd *)foo->p;
 }
 
-static Ruby GridFlow_s_name_lookup (Ruby rself, Ruby name2) {
-	string name = string(rb_str_ptr(rb_funcall(name2,SI(to_s),0)));
-	if (fclasses.find(name)==fclasses.end()) RAISE("class not found: %s",name.data());
-	return fclasses[name]->rself;
-}
-
 // from pd/src/g_canvas.c
 struct _canvasenvironment {
     t_symbol *ce_dir;   /* directory patch lives in */
@@ -437,12 +431,6 @@ static Ruby FObject_s_add_creator (Ruby rself, Ruby name_) {
 }
 
 //****************************************************************
-
-Ruby GridFlow_s_post_string (Ruby rself, Ruby string) {
-	if (TYPE(string)!=T_STRING) RAISE("not a string!");
-	post("%s",rb_str_ptr(string));
-	return Qnil;
-}
 
 /* revival of the stack end crutch of 2003-2005... just in case */
 static t_clock *hack;
@@ -710,7 +698,6 @@ extern "C" void gridflow_setup () {
     std::set_terminate(blargh);
     try {
 	char *foo[] = {"Ruby-for-PureData","-e",";"};
-	post("setting up Ruby-for-PureData...");
 	char *dirname   = new char[MAXPDSTRING];
 	char *dirresult = new char[MAXPDSTRING];
 	char *nameresult;
@@ -734,8 +721,6 @@ BUILTIN_SYMBOLS(FOO)
 #undef FOO
 	mGridFlow = EVAL("module GridFlow; CObject = ::Object; self end");
 	SDEF2("rdtsc",rdtsc,0);
-	SDEF2("post_string",post_string,1);
-	SDEF2("name_lookup",name_lookup,1);
 	rb_ivar_set(mGridFlow, SI(@fobjects), rb_hash_new());
 	rb_define_const(mGridFlow, "GF_VERSION", rb_str_new2(GF_VERSION));
 	rb_define_const(mGridFlow, "GF_COMPILE_TIME", rb_str_new2(__DATE__", "__TIME__));

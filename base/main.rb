@@ -1,5 +1,4 @@
 module GridFlow
-def self.post(s,*a) post_string(sprintf(s,*a)) end
 class << self
 	attr_accessor :data_path
 end
