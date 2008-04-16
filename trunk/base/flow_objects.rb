@@ -79,11 +79,6 @@ FObject.subclass("plotter_control",1,1) {
 # System, similar to shell
 FObject.subclass("system",1,1) { def _0_system(*a) system(a.join(" ")) end }
 
-module Ioctl
-	def ioctl_intp_out(arg1,arg2) ioctl(arg1,[arg2].pack("l")) end
-	def ioctl_intp_in(arg1)       ioctl(arg1,s="blah"); return s.unpack("l")[0] end
-end
-
 # experimental
 FObject.subclass("rubyarray",2,2) {
   def initialize() @a=[]; @i=0; end
@@ -135,5 +130,3 @@ FObject.subclass("memstat",1,1) {
 }
 
 end # module GridFlow
-
-class IO; include GridFlow::Ioctl; end
