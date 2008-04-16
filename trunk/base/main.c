@@ -62,6 +62,27 @@ Barf::Barf(const char *file, int line, const char *func, const char *s, ...) {
     text = strdup(buf);
 }
 
+void pd_oprint (std::ostream &o, int argc, t_atom *argv) {
+	for (int i=0; i<argc; i++) {
+		t_atomtype t = argv[i].a_type;
+		if (t==A_FLOAT) o << argv[i].a_w.w_float;
+		if (t==A_SYMBOL) o << argv[i].a_w.w_symbol->s_name;
+		if (t==A_POINTER) o << "(pointer)";
+		if (t==A_LIST) {
+			t_binbuf *b = (t_binbuf *)argv[i].a_w.w_gpointer;
+			pd_oprint(o,binbuf_getnatom(b),binbuf_getvec(b));
+		}
+		if (i!=argc-1) o << " ";
+	}
+}
+
+void pd_post (const char *s, int argc, t_atom *argv) {
+	std::ostringstream os;
+	if (s) os << s << ": ";
+	pd_oprint(os,argc,argv);
+	post("%s",os.str().data());
+}
+
 void pd_oprintf (std::ostream &o, const char *s, int argc, t_atom *argv) {
 	int i=0;
 	for (; *s; s++) {
